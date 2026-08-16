@@ -1,4 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
+import { nomDuChantier } from "../src/lib/nom-chantier";
+import { jourIso } from "../src/lib/jour";
 import assert from "node:assert";
 
 // Créer un chantier, et ce que cela demande au patron.
@@ -28,6 +30,11 @@ async function main() {
   await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
 
   const client = `M. E2E ${Date.now()}`;
+  // Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
+  // applique la même règle que le produit plutôt que de la recomposer. Recopié
+  // « Chez … » ici, ce contrôle est passé au rouge le 13 août 2026, le jour où
+  // le patron a fait retirer ce mot.
+  const nomAttendu = nomDuChantier({ nomClient: client, jour: jourIso(new Date()) });
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
 
@@ -44,7 +51,7 @@ async function main() {
     "Le bouton reste inactif sur un formulaire vide : quelque chose est encore exigé."
   );
 
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.click('button:has-text("Créer le chantier")');
 
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
@@ -55,11 +62,18 @@ async function main() {
   // La page hub relit le chantier depuis la base — si ces valeurs s'affichent,
   // la création a bien été persistée (pas de simulation restante).
   //
-  // Le nom attendu est celui que déduit `src/lib/nom-chantier.ts` : « Chez
-  // <client> ». C'est la phrase de l'artisan, pas celle d'un logiciel.
-  await page.waitForSelector(`text=Chez ${client}`, { timeout: 5000 });
+  // Le nom attendu est celui que déduit `src/lib/nom-chantier.ts`.
+  //
+  // **`.first()` et non le locator nu, depuis le 13 août 2026.** Le nom du
+  // chantier ne porte plus « Chez » devant : quand le client s'appelle déjà
+  // « M. … », le nom du chantier lui est IDENTIQUE, et le même texte se trouve
+  // donc à deux endroits de la fiche. Playwright refusait alors d'agir —
+  // « strict mode violation » — sur une page parfaitement juste. Ce qui est
+  // éprouvé ici, c'est que le nom déduit est bien à l'écran, pas qu'il n'y
+  // figure qu'une fois.
+  await page.waitForSelector(`text=${nomAttendu}`, { timeout: 5000 });
   assert.ok(
-    await page.locator(`text=Chez ${client}`).isVisible(),
+    await page.locator(`text=${nomAttendu}`).first().isVisible(),
     "Le chantier n'a pas pris le nom de son client : il est devenu impossible à reconnaître."
   );
   assert.ok(await page.locator("text=Ajouter des photos").isVisible(), "Un chantier neuf doit proposer 'Ajouter des photos'");
@@ -67,7 +81,7 @@ async function main() {
   // Revérifie via la liste (autre écran, autre requête) que le chantier y figure aussi.
   await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
   assert.ok(
-    await page.locator(`text=Chez ${client}`).isVisible(),
+    await page.locator(`text=${nomAttendu}`).first().isVisible(),
     "Le nouveau chantier doit apparaître dans la liste, sous son nom déduit"
   );
 

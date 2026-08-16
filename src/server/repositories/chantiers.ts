@@ -106,6 +106,15 @@ export async function listerChantiersPourAffichage(ctx: Ctx) {
         // celui qu'il a ouvert en premier.
         majAt: chantiers.updatedAt,
         informationsVerifieesAt: chantiers.informationsVerifieesAt,
+        // **Le jalon qui manquait à la LISTE (13 août 2026).** Sans lui,
+        // `getStatutAffiche` ne pouvait pas savoir qu'un devis était écrit, et
+        // annonçait « Brouillon » sur un chantier qui n'attendait plus que son
+        // envoi. C'est ce que le patron a lu sur sa propre liste.
+        // `prixValideAt` sert la REPRISE : sans lui, un chantier chiffré mais
+        // sans devis ramènerait le patron à la dictée au lieu de l'écran du
+        // prix (`lienDeReprise`).
+        prixValideAt: chantiers.prixValideAt,
+        devisGenereAt: chantiers.devisGenereAt,
         devisEnvoyeAt: chantiers.devisEnvoyeAt,
         datePlanifiee: chantiers.datePlanifiee,
         termineAt: chantiers.termineAt,
@@ -230,6 +239,150 @@ export const marquerPrixValide = (ctx: Ctx, chantierId: string) => marquerJalon(
  * a personne à désigner (`src/lib/equipes.ts`).
  */
 export type ChoixDePose = { moment: Moment; rangEquipe: number | null };
+
+/**
+ * L'équipe visée travaille déjà ailleurs à ce moment-là.
+ *
+ * **Distinct de `CreneauIndisponible`**, qui dit que l'ENTREPRISE est pleine.
+ * Ici la place existe — c'est cette équipe-là qui ne l'a pas. Les confondre
+ * ferait dire au patron « aucune place ce matin » devant un planning à moitié
+ * vide, et il chercherait le défaut du mauvais côté.
+ */
+export class EquipeIndisponible extends Error {
+  constructor(public readonly rang: number) {
+    super(`L'équipe de rang ${rang} a déjà un chantier sur ce créneau.`);
+    this.name = "EquipeIndisponible";
+  }
+}
+
+/**
+ * Change l'équipe d'un chantier déjà posé — **sans toucher à la date**.
+ *
+ * *Demandé par le patron le 14 août 2026, arrêté sur planche
+ * (`maquettes/atlas-planning-equipe.html`) : « on devait pouvoir affilier une
+ * équipe à un chantier ajouté au planning une fois que le client a validé le
+ * devis ».*
+ *
+ * **Le geste existait à moitié.** `planifierChantier` choisit déjà l'équipe —
+ * mais seulement au moment de poser le chantier sur un jour. Or un chantier que
+ * le client a validé est justement celui qu'on ne veut plus déplacer : changer
+ * d'équipe passait donc par un déplacement de date, c'est-à-dire par un
+ * mensonge au client.
+ *
+ * **Le jour et la demi-journée ne bougent pas**, et c'est ce que l'écran promet.
+ *
+ * **On refuse si l'équipe visée est déjà prise sur ces créneaux.** La place a
+ * été réservée au moment de la pose ; l'affilier ailleurs la déplace d'une file
+ * à l'autre, et deux chantiers sur la même équipe au même moment ne sont pas
+ * un planning, c'est une journée impossible.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **`rangEquipe: null` RETIRE l'équipe, et c'était impossible jusqu'au
+ * 14 août 2026.** `planifierChantier` écrit `...(equipeId ? { equipeId } : {})`
+ * — le cas « plus personne » y est ignoré en silence — et cette fonction-ci
+ * exigeait un rang. Une équipe posée par erreur ne pouvait donc **plus jamais**
+ * être défaite, par aucun chemin.
+ *
+ * Le patron a retenu le 14 août la pastille sur la ligne
+ * (`docs/maquettes/52-appliquer-une-equipe.html`, geste A), et son écran porte
+ * « Personne pour l'instant ». Le montrer sans pouvoir l'exécuter aurait été
+ * lui livrer un bouton qui ne fait rien.
+ *
+ * **Retirer ne se refuse jamais pour cause d'occupation** : libérer une place
+ * n'en prend aucune. Les contrôles de disponibilité ne s'appliquent qu'à une
+ * affiliation.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+export async function changerEquipeChantier(
+  ctx: Ctx,
+  chantierId: string,
+  rangEquipe: number | null
+) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Retirer : on sort avant tout contrôle.** Rien à vérifier — aucune place
+    // n'est demandée. Le faire passer par la suite obligerait à inventer un
+    // « rang zéro » que le reste du produit ne connaît pas.
+    if (rangEquipe === null) {
+      const [vide] = await tx
+        .update(chantiers)
+        .set({ equipeId: null, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+        .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+        .returning();
+      return vide;
+    }
+
+    const [entreprise] = await tx
+      .select({ nombreEquipes: entreprises.nombreEquipes })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    const nombreEquipes = entreprise?.nombreEquipes ?? 1;
+    // À une seule équipe, il n'y a personne à désigner : écrire un rang ferait
+    // apparaître « Équipe A » sur le planning, ce que le patron a interdit le
+    // 10 août (`src/lib/equipes.ts`).
+    if (nombreEquipes <= 1) throw new EquipeIndisponible(rangEquipe);
+
+    const [courant] = await tx
+      .select({
+        jour: chantiers.datePlanifiee,
+        moment: chantiers.creneauDebut,
+        duree: chantiers.dureeDemiJournees,
+      })
+      .from(chantiers)
+      .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+      .limit(1);
+    if (!courant?.jour) throw new EquipeIndisponible(rangEquipe);
+
+    const equipeId = await idEquipeDeRang(tx, ctx.entrepriseId, rangEquipe);
+    if (!equipeId) throw new EquipeIndisponible(rangEquipe);
+
+    // Les créneaux que CE chantier occupe, et ceux que l'équipe visée occupe
+    // déjà. L'intersection décide.
+    const miens = creneauxDuChantier(
+      {
+        jour: courant.jour,
+        moment: courant.moment === "apres_midi" ? "apres_midi" : "matin",
+      },
+      courant.duree ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
+    ).map(cleCreneau);
+
+    const siens = await tx
+      .select({
+        id: chantiers.id,
+        jour: chantiers.datePlanifiee,
+        moment: chantiers.creneauDebut,
+        duree: chantiers.dureeDemiJournees,
+      })
+      .from(chantiers)
+      .where(
+        and(
+          eq(chantiers.entrepriseId, ctx.entrepriseId),
+          eq(chantiers.equipeId, equipeId),
+          isNull(chantiers.deletedAt),
+          isNotNull(chantiers.datePlanifiee)
+        )
+      );
+
+    const occupes = new Set(
+      siens
+        .filter((c) => c.id !== chantierId && c.jour !== null)
+        .flatMap((c) =>
+          creneauxDuChantier(
+            { jour: c.jour as string, moment: c.moment === "apres_midi" ? "apres_midi" : "matin" },
+            c.duree ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
+          ).map(cleCreneau)
+        )
+    );
+    if (miens.some((c) => occupes.has(c))) throw new EquipeIndisponible(rangEquipe);
+
+    const [row] = await tx
+      .update(chantiers)
+      .set({ equipeId, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+      .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+      .returning();
+    return row;
+  });
+}
 
 export async function planifierChantier(
   ctx: Ctx,

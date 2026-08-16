@@ -47,6 +47,10 @@ export default function FeuilleYAller({
   adresse,
   telephone,
   quand,
+  equipes = [],
+  onDeplacer,
+  rangEquipe = null,
+  onChangerEquipe,
 }: {
   ouverte: boolean;
   onFermer: () => void;
@@ -56,8 +60,29 @@ export default function FeuilleYAller({
   adresse: string | null;
   telephone: string | null;
   quand: string;
+  /**
+   * Les équipes déclarées, avec leur libellé déjà calculé.
+   *
+   * **Vide à une seule équipe**, et la ligne disparaît alors entièrement : il
+   * n'y a personne à distinguer, et proposer un choix à un seul terme ferait
+   * exactement ce que le patron a interdit le 10 août.
+   */
+  equipes?: { rang: number; libelle: string }[];
+  rangEquipe?: number | null;
+  /** Rend un refus lisible plutôt que de lever : voir `changerEquipeChantierAction`. */
+  onChangerEquipe?: (rang: number | null) => Promise<{ succes: boolean; erreur?: string }>;
+  /**
+   * Changer la DATE — arrivé ici le 14 août 2026, la pastille d'équipe lui
+   * ayant pris sa place sur la ligne du planning (geste A). Absent, la ligne
+   * ne s'affiche pas : les écrans qui montent cette feuille sans savoir
+   * déplacer ne doivent pas promettre un geste qui ne fera rien.
+   */
+  onDeplacer?: () => void;
 }) {
   const [motDuCopier, setMotDuCopier] = useState<string | null>(null);
+  const [choixOuvert, setChoixOuvert] = useState(false);
+  const [refusEquipe, setRefusEquipe] = useState<string | null>(null);
+  const [rang, setRang] = useState<number | null>(rangEquipe);
 
   const liens = liensItineraire(adresse);
   const appel = lienAppel(telephone);
@@ -106,8 +131,14 @@ export default function FeuilleYAller({
       <p className="mt-[7px] text-center text-[13.5px]" style={{ color: colors.muted }}>
         {intituleDuChantier(clientNom, nomChantier)}
       </p>
+      {/* **La date, même sans adresse.** Cette ligne disait « À saisir sur la
+          fiche du chantier » — une consigne devenue fausse le 13 août 2026 : le
+          bouton ci-dessous mène au devis complet, pas à la fiche. Et redondante,
+          puisqu'il dit déjà quoi faire. Le titre annonce ce qui manque, le
+          bouton offre de le réparer ; entre les deux, la date reste ce qu'elle
+          est sur tous les autres chantiers. */}
       <p className="mt-[5px] text-center text-[12px]" style={{ color: colors.muted }}>
-        {adresse ? quand : "À saisir sur la fiche du chantier"}
+        {quand}
       </p>
 
       <div className="my-4 h-px" style={{ backgroundColor: colors.lineSoft }} />
@@ -155,6 +186,148 @@ export default function FeuilleYAller({
         )}
       </div>
 
+      {/* **« Saisir l'adresse » — retenu sur maquette le 13 août 2026**
+          (`docs/maquettes/34`, variante B) : *« ça, c'est au cas où la fiche
+          entière n'a pas été rentrée. Dans ce cas-là, tu peux faire ça, mais
+          avec le bouton, tu le mets arrondi. »*
+
+          **Il n'apparaît QUE sans adresse.** La feuille porte déjà « Créer la
+          facture » ; un bouton de plus, visible les onze fois sur douze où
+          l'adresse existe, la chargerait pour rien.
+
+          **Il mène au devis complet, seul endroit où l'adresse s'édite.**
+          Elle ne se saisissait qu'à la création jusqu'au 10 août, et c'est là
+          qu'elle a été rouverte — `mettreAJourAdresseChantier`. L'envoyer vers
+          la fiche l'obligerait à chercher.
+
+          La pastille creuse, et non pleine : le geste principal de cette
+          feuille reste de PARTIR. Celui-ci répare ce qui manque. */}
+      {!liens && (
+        <a
+          href={`/chantiers/${chantierId}/devis-complet`}
+          aria-label={`Saisir l'adresse — ${nomChantier}`}
+          onClick={fermer}
+          className="mt-2.5 block w-full rounded-full py-[13px] text-center text-[14.5px]"
+          style={{ border: `1px solid ${colors.rust}`, color: colors.rust }}
+        >
+          Saisir l’adresse
+        </a>
+      )}
+
+      {/* **L'ÉQUIPE, depuis le 14 août 2026, à sa demande** : *« on devait
+          pouvoir affilier une équipe à un chantier ajouté au planning une fois
+          que le client a validé le devis »* (`ARCHITECTURE.md` §100).
+
+          **Ici et non sur un écran à part** : la feuille porte déjà les gestes
+          du chantier posé, et un écran de plus pour changer un nom ne se
+          justifierait pas.
+
+          **Elle ne touche ni au jour ni à la demi-journée**, et l'écran le dit :
+          un chantier que le client a validé est justement celui qu'on ne veut
+          plus déplacer. */}
+      {equipes.length > 1 && onChangerEquipe && (
+        <div className="mt-4 border-t pt-3" style={{ borderColor: colors.lineSoft }}>
+          <button
+            type="button"
+            onClick={() => setChoixOuvert((o) => !o)}
+            aria-expanded={choixOuvert}
+            className="flex w-full items-center gap-3 py-2 text-left"
+            style={{ minHeight: 44 }}
+          >
+            <span className="flex-1 text-[15px]">Équipe</span>
+            <span className="text-[14px]" style={{ color: colors.muted }}>
+              {equipes.find((e) => e.rang === rang)?.libelle ?? "à choisir"}
+            </span>
+            <span
+              aria-hidden="true"
+              className="-mt-[3px] h-[7px] w-[7px] flex-none rotate-45"
+              style={{ borderRight: `1.5px solid ${colors.chevron}`, borderBottom: `1.5px solid ${colors.chevron}` }}
+            />
+          </button>
+
+          {choixOuvert && (
+            <div className="mt-1.5 overflow-hidden rounded-[4px]" style={{ backgroundColor: colors.card }}>
+              {equipes.map((e) => (
+                <button
+                  key={e.rang}
+                  type="button"
+                  aria-pressed={e.rang === rang}
+                  onClick={async () => {
+                    setRefusEquipe(null);
+                    const avant = rang;
+                    setRang(e.rang); // optimiste : le doigt doit voir tout de suite
+                    const r = await onChangerEquipe(e.rang);
+                    if (r.succes) {
+                      setChoixOuvert(false);
+                    } else {
+                      // **On revient à ce que la base porte, jamais à ce qu'on a
+                      // demandé.** Un refus silencieux laisserait une équipe
+                      // cochée qui n'existe pas.
+                      setRang(avant);
+                      setRefusEquipe(r.erreur ?? "Ce changement n'a pas abouti.");
+                    }
+                  }}
+                  className="flex w-full items-center gap-3 border-b px-3.5 text-left last:border-b-0"
+                  style={{
+                    borderColor: colors.line,
+                    minHeight: 46,
+                    backgroundColor: e.rang === rang ? colors.line : "transparent",
+                  }}
+                >
+                  <span className="flex-1 text-[15px]">{e.libelle}</span>
+                </button>
+              ))}
+
+              {/* **RETIRER L'ÉQUIPE — ajouté ici le 14 août 2026, à sa
+                  question :** *« si on affilie une équipe et qu'au final on
+                  change d'avis, on doit pouvoir la retirer »*.
+
+                  Le geste existait déjà sur la pastille de la ligne. Le laisser
+                  manquer ICI aurait donné **deux chemins qui ne font pas la même
+                  chose** : celui qui passe par le chevron n'aurait offert aucune
+                  sortie, et le patron aurait conclu que c'est impossible. Un
+                  écart de ce genre ne se voit jamais en relisant — il se
+                  découvre le jour où l'on prend l'autre porte.
+
+                  Elle n'apparaît que s'il y a quelque chose à retirer. */}
+              {rang !== null && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setRefusEquipe(null);
+                    const avant = rang;
+                    setRang(null);
+                    const r = await onChangerEquipe(null);
+                    if (r.succes) {
+                      setChoixOuvert(false);
+                    } else {
+                      setRang(avant);
+                      setRefusEquipe(r.erreur ?? "Ce changement n'a pas abouti.");
+                    }
+                  }}
+                  className="flex w-full items-center gap-3 border-t px-3.5 text-left"
+                  style={{ borderColor: colors.line, minHeight: 46 }}
+                >
+                  <span className="flex-1 text-[15px]" style={{ color: colors.muted }}>
+                    Personne pour l’instant
+                  </span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {refusEquipe ? (
+            <p role="alert" className="mt-2 text-[12px] leading-snug" style={{ color: colors.alert }}>
+              {refusEquipe}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-[12px] leading-snug" style={{ color: colors.muted }}>
+              Le jour et la demi-journée ne changent pas.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* **« Créer la facture » vit ici depuis le 12 août 2026, à sa demande :**
           *« il faut cliquer sur le chevron, la page s'ouvre avec le GPS et tout
           machin, et là tu mets créer la facture »*.
@@ -167,12 +340,43 @@ export default function FeuilleYAller({
 
           Créer n'est toujours pas envoyer : l'arrêt 3 reste en travers du
           chemin, et rien ne part sans un geste de plus (`docs/AGENT.md` §6). */}
+      {/* **« Déplacer » est arrivé ici le 14 août 2026**, la pastille d'équipe
+          lui ayant pris sa place sur la ligne du planning (geste A, retenu sur
+          `docs/maquettes/52-appliquer-une-equipe.html`).
+
+          **Creux et non plein.** Le seul aplat de cette feuille reste « Créer la
+          facture » : deux pleins l'un sous l'autre, et l'œil ne sait plus lequel
+          est le geste principal — c'est exactement ce que le patron a fait
+          corriger le 13 août sur la feuille d'envoi.
+
+          **Et il ferme la feuille en partant** : le calendrier se trouve
+          derrière elle, et l'y envoyer sans la refermer donnerait un écran qui
+          défile sous un calque. */}
+      {onDeplacer && (
+        <button
+          type="button"
+          aria-label={`Déplacer le chantier ${nomChantier}`}
+          onClick={() => {
+            fermer();
+            onDeplacer();
+          }}
+          className="mt-2.5 block w-full rounded-full py-[13px] text-center text-[14.5px]"
+          style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
+        >
+          Déplacer ce chantier
+        </button>
+      )}
+
       <div className="mt-4 h-px" style={{ backgroundColor: colors.lineSoft }} />
       <Link
         href={`/chantiers/${chantierId}/facture`}
         aria-label={`Créer la facture — ${nomChantier}`}
         onClick={fermer}
-        className="mt-4 block w-full rounded-md py-[14px] text-center text-[15px]"
+        // **La capsule, comme partout ailleurs.** Il était resté en `rounded-md`
+        // — et le contrôle des boutons arrondis ne l'a pas vu, deux fois : il ne
+        // regardait ni les `<Link>`, ni les rayons NOMMÉS de Tailwind. C'est le
+        // patron qui l'a repéré, le 13 août 2026, sur sa capture.
+        className="mt-4 block w-full rounded-full py-[14px] text-center text-[15px]"
         style={{ backgroundColor: colors.rust, color: colors.cream }}
       >
         Créer la facture

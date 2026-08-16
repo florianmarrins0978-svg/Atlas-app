@@ -1,6 +1,11 @@
 import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+// Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
+// applique la même règle que le produit plutôt que de recomposer « Chez … ».
+// Recopié ici, ce contrôle est passé au rouge le 13 août 2026, le jour où le
+// patron a fait retirer ce mot.
+import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 
 // Ce que devient un devis parti, vu du patron (docs/AGENT.md §2.2).
@@ -54,8 +59,8 @@ async function devisParti(page: Page, suffixe: string) {
   // (« Chez … », voir `src/lib/nom-chantier.ts`). C'est donc le client qui
   // porte la marque unique, et le repère suit.
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
-  const nom = `Chez ${client}`;
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  const nom = avecCivilite(client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -119,9 +124,18 @@ async function main() {
 
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     const carte = page.locator(`text=${nom}`).first().locator("xpath=ancestor::a[1]");
+    // **Le libellé a changé le 13 août 2026, à sa demande** : « en attente de
+    // réponse » était vrai mais ne disait pas CE QUI attend — un devis parti,
+    // ou un client qu'on n'a pas rappelé (`ARCHITECTURE.md` §77).
     assert.ok(
-      (await carte.locator("text=En attente de réponse").count()) > 0,
-      "la liste ne dit pas que le chantier attend le client"
+      (await carte.locator("text=Devis envoyé").count()) > 0,
+      "la liste ne dit pas que le devis est parti"
+    );
+    // Et la date d'envoi, en clair, sous l'état : c'est ce qu'il a demandé de
+    // voir. Sans elle, il ne sait pas depuis combien de temps il attend.
+    assert.ok(
+      (await carte.locator("text=/Envoyé le /").count()) > 0,
+      "la liste ne dit pas QUAND le devis est parti"
     );
 
     // Planifier soi-même une date que le client s'apprête à choisir préparerait

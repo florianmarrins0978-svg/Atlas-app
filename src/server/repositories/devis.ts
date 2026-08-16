@@ -1,6 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
+import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
@@ -95,6 +96,10 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       .limit(1);
 
     const snapshotEnTete = {
+      // **La validité se fige ici**, avec l'identité : lire le réglage au moment
+      // de composer le PDF ferait changer la durée d'engagement d'un devis déjà
+      // envoyé (`ARCHITECTURE.md` §102).
+      validiteJours: conditionsDepuisEntreprise(entreprise).validiteJours,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
@@ -102,6 +107,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
       clientNom: client?.nom,
+      // Recopiée comme le nom : le document dit comment on s'adressait à son
+      // destinataire CE JOUR-LÀ (migration 0038).
+      clientCivilite: client?.civilite ?? null,
       clientAdresse: client?.adresse,
       clientTelephone: client?.telephone,
       clientEmail: client?.email,
@@ -203,10 +211,12 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       // le client reçoit un devis qu'il ne peut pas payer.
       entrepriseIban: d.entrepriseIban,
       clientNom: d.clientNom,
+      clientCivilite: d.clientCivilite,
       clientAdresse: d.clientAdresse,
       clientTelephone: d.clientTelephone,
       adresseChantier: d.adresseChantier,
       conditionsPaiement: d.conditionsPaiement,
+      validiteJours: d.validiteJours,
       devise: d.devise,
       tauxTva: d.tauxTva,
       totalHt: d.totalHt,
@@ -245,6 +255,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       entrepriseEmail: avant.entrepriseEmail,
       entrepriseIban: avant.entrepriseIban,
       clientNom: avant.clientNom,
+      clientCivilite: avant.clientCivilite,
       clientAdresse: avant.clientAdresse,
       clientTelephone: avant.clientTelephone,
       adresseChantier: avant.adresseChantier,

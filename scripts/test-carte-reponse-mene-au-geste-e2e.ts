@@ -40,7 +40,7 @@ type Page = Awaited<ReturnType<Awaited<ReturnType<typeof lancerNavigateur>>["new
 /** Un chantier chiffré, son devis envoyé — et le jeton que le client recevra. */
 async function chantierAvecDevisEnvoye(page: Page, nom: string) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nom);
+  await page.fill('input[placeholder="Bernard"]', nom);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
@@ -58,14 +58,28 @@ async function chantierAvecDevisEnvoye(page: Page, nom: string) {
   await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
   await page.click("text=Envoyer au client");
   await page.getByRole("button", { name: /Envoyer le devis/i }).click();
-  await page.waitForTimeout(3500);
 
-  const { rows } = await pool.query(
-    `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
-    [chantierId]
-  );
-  if (!rows[0]) throw new Error(`aucun envoi pour ${nom} : le devis n'est pas parti`);
-  return { chantierId, jeton: rows[0].jeton as string };
+  // **Attendre l'ÉTAT, jamais un délai fixe.** Trois secondes et demie tiennent
+  // quand la suite est jouée seule ; sous soixante suites enchaînées, l'envoi ne
+  // les tient pas, et le message accusait alors le produit — « le devis n'est
+  // pas parti » — d'un défaut qui n'était qu'une impatience. Quatre suites de ce
+  // dépôt sont tombées sur exactement ce piège les 12 et 13 août 2026.
+  let jeton: string | undefined;
+  for (let i = 0; i < 60 && !jeton; i++) {
+    const { rows } = await pool.query(
+      `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
+      [chantierId]
+    );
+    jeton = rows[0]?.jeton as string | undefined;
+    if (!jeton) await page.waitForTimeout(500);
+  }
+  if (!jeton) {
+    throw new Error(
+      `aucun envoi pour ${nom} après trente secondes : ce n'est pas une attente trop courte, ` +
+        "c'est l'envoi lui-même qui a échoué."
+    );
+  }
+  return { chantierId, jeton };
 }
 
 /**
@@ -164,32 +178,54 @@ async function main() {
   await page.waitForSelector("text=/artisan/i", { timeout: 20_000 }).catch(() => undefined);
   await page.waitForTimeout(1500);
 
-  await cas("correction : la carte mène là où le devis peut être repris", async () => {
-    const { href, libelle } = await lienDeLaCarte(page, correction.chantierId);
-    if (href !== `/chantiers/${correction.chantierId}/export`) {
-      throw new Error(`le lien mène à « ${href} » (libellé : « ${libelle} »)`);
+  // **Sa demande du 13 août 2026 :** *« lorsque je clique sur corriger le
+  // devis, je dois arriver directement sur la page du devis pour pouvoir le
+  // corriger. Et aujourd'hui, ce n'est pas le cas. »*
+  //
+  // Les deux moitiés sont éprouvées séparément parce qu'elles cassent
+  // séparément : arriver sur le devis, ET pouvoir y écrire. La veille, la
+  // seconde manquait — un devis parti refuse la première frappe.
+  await cas("correction : le geste mène DIRECTEMENT au devis", async () => {
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    const carte = page.locator(
+      `[data-atlas="carte-reponse"][data-chantier="${correction.chantierId}"]`
+    );
+    await carte.first().waitFor({ state: "visible", timeout: 20_000 });
+    const geste = carte.first().getByRole("button", { name: /Corriger le devis/i });
+    if ((await geste.count()) === 0) {
+      const ecran = await carte.first().innerText();
+      throw new Error(`la carte n'offre pas « Corriger le devis ».\n      ${ecran}`);
     }
-    if (!/corriger/i.test(libelle)) throw new Error(`libellé inattendu : « ${libelle} »`);
+    await geste.first().click();
+    // Le devis est REPRIS avant l'ouverture : cette attente traverse le réseau,
+    // et c'est elle qui fait la différence entre un document mort et un
+    // document qu'il peut corriger.
+    await page.waitForURL(`${BASE}/chantiers/${correction.chantierId}/devis-complet`);
   });
 
-  await cas("et cet écran porte VRAIMENT le geste promis", async () => {
+  await cas("et le devis y est VRAIMENT modifiable", async () => {
     // **C'est ici que la règle seule ne suffisait pas.** Une adresse juste vers
-    // un écran qui n'offre rien serait verte dans la fonction pure et fausse à
-    // l'usage.
-    await page.goto(`${BASE}/chantiers/${correction.chantierId}/export`, { waitUntil: "networkidle" });
-    await page.waitForTimeout(900);
-    const bouton = page.getByRole("button", { name: /Corriger et renvoyer/i });
-    if ((await bouton.count()) === 0) {
-      const ecran = await page.locator("body").innerText();
+    // un document figé serait verte dans la fonction pure et fausse à l'usage :
+    // il verrait son devis, et ne pourrait rien y changer.
+    await page.waitForSelector("text=Total TTC", { timeout: 30_000 }).catch(() => undefined);
+    const ecran = await page.locator("body").innerText();
+    if (/il ne se modifie plus/i.test(ecran)) {
       throw new Error(
-        "« Corriger et renvoyer » est absent : le lien promet un geste que l'écran " +
-          `n'offre pas.\n      ${ecran.split("\n").filter((l) => l.trim()).slice(0, 10).join("\n      ")}`
+        "le devis ouvert est FIGÉ : le patron arrive sur le document qu'il voulait " +
+          "corriger, et il refuse la première frappe — exactement le défaut du 12 août."
       );
     }
-    // Et le message du client doit être là, sinon il corrige à l'aveugle.
-    const ecran = await page.locator("body").innerText();
-    if (!/diamètre/i.test(ecran)) {
-      throw new Error("le message du client n'est pas sur l'écran où il doit corriger");
+    // Un champ qui accepte réellement la frappe, et pas seulement l'absence du
+    // bandeau : le bandeau pourrait disparaître sans que rien ne s'écrive.
+    const champ = page.getByLabel(/Description 1/i);
+    if ((await champ.count()) === 0) {
+      throw new Error(
+        `aucune ligne à corriger sur le devis rouvert.\n      ` +
+          ecran.split("\n").filter((l) => l.trim()).slice(0, 12).join("\n      ")
+      );
+    }
+    if (await champ.first().isDisabled()) {
+      throw new Error("les lignes du devis rouvert sont verrouillées");
     }
   });
 

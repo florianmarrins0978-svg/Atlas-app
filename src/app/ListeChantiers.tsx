@@ -48,8 +48,27 @@ export type BrinChantier = {
   lieu: string;
   /** L'état et le nombre de photos, sur une ligne : « Brouillon · 3 photos ». */
   etat: string;
+  /**
+   * La ligne en clair sous l'état, ou rien : « Envoyé le lundi 10 août. »
+   *
+   * Sa demande du 13 août 2026, devant la planche des cinq libellés : *« j'aime
+   * bien le D, mais en dessous de "devis envoyé" je veux qu'il y ait marqué la
+   * date à laquelle on l'a envoyé »*. Elle n'existe que quand un envoi est
+   * réellement enregistré — jamais une date approchée (`chantier-etat.ts`).
+   */
+  precision?: string | null;
   /** Ce chantier attend-il un geste du patron ? Lui seul porte la couleur. */
   attend: boolean;
+  /**
+   * Où l'on retombe en touchant cette ligne — **l'écran où le travail s'est
+   * arrêté**, pas la fiche.
+   *
+   * Sa demande du 13 août 2026 : *« si je me suis arrêté à l'étape d'envoyer le
+   * devis [...] que ça me renvoie à l'étape où je me suis arrêté ».* Le lien
+   * est calculé au serveur (`lienDeReprise`) : l'écran ne décide de rien, il
+   * suit — même règle partout, et une seule à corriger le jour venu.
+   */
+  reprise: string;
   /**
    * Compte-t-il dans « Huit en cours » ? Tous les chantiers de la liste n'y
    * entrent pas — un chantier au planning s'affiche sans être compté. Sans ce
@@ -216,7 +235,7 @@ export default function ListeChantiers({
           {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
               restent en place — une ligne qui part d'un bloc coupe le nom en
               plein mot et laisse le fil traverser les lettres. */}
-          <Link href={`/chantiers/${c.id}`} className="atlas-brin block">
+          <Link href={c.reprise} className="atlas-brin block">
             <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
               {c.nom}
             </h2>
@@ -229,6 +248,14 @@ export default function ListeChantiers({
             >
               {c.etat}
             </p>
+            {c.precision && (
+              /* En clair, et non en petites capitales : deux lignes espacées
+                 à 0.28em se liraient comme un pavé. L'œil doit accrocher
+                 l'état, puis lire la date s'il la cherche. */
+              <p className="mt-[4px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+                {c.precision}
+              </p>
+            )}
           </Link>
         </LigneRetirable>
       ))}

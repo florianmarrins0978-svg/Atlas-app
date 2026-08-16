@@ -355,8 +355,14 @@ async function prechaufferEcransPublics() {
   // Enveloppé en entier : rien de ceci ne doit pouvoir empêcher le banc de
   // servir. Au pire, le premier appel repaiera son coût.
   try {
-    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, expliquerObstacle, prechauffer } =
-      await import("./prechauffer.mjs");
+    const {
+      cookieDeSession,
+      ecransDeChantier,
+      ECRANS_A_PRECHAUFFER,
+      ETAT_PRECHAUFFAGE,
+      expliquerObstacle,
+      prechauffer,
+    } = await import("./prechauffer.mjs");
     let motif = null;
     const cookie = await cookieDeSession({
       databaseUrl: process.env.DATABASE_URL,
@@ -372,7 +378,42 @@ async function prechaufferEcransPublics() {
     }
     const ecrans = [...ECRANS_A_PRECHAUFFER, ...(await ecransDeChantier({ base, cookie }))];
     console.log(`  Préchauffage de ${ecrans.length} écrans — ils s'ouvriront ensuite du premier coup.`);
-    const bilan = await prechauffer({ base, cookie, ecrans, ecrire: (l) => console.log(`  · ${l}`) });
+    // **Déposer l'avancement, pour que l'application puisse le DIRE.**
+    //
+    // `prechauffer` porte un rappel `avancer` depuis le 9 août 2026, et
+    // `/api/health/banc` sait déjà lire le fichier qu'il devait produire —
+    // mais **personne ne le lui passait**. La page de diagnostic répondait donc
+    // « le préchauffage n'a pas encore commencé » du début à la fin, et le
+    // bandeau du patron n'avait aucun chiffre à montrer. Une fonction prévue,
+    // documentée, éprouvée, et jamais branchée : elle ne coûtait rien à écrire
+    // et ne servait à rien tant que cette ligne n'existait pas.
+    //
+    // L'écriture est enveloppée : un `/tmp` plein ne doit pas arrêter un
+    // préchauffage qui, lui, rend l'application ouvrable.
+    const deposer = (etat) => {
+      try {
+        writeFileSync(ETAT_PRECHAUFFAGE, JSON.stringify({ ...etat, majAt: new Date().toISOString() }));
+      } catch {
+        // Le confort tombe, le banc continue.
+      }
+    };
+    const bilan = await prechauffer({
+      base,
+      cookie,
+      ecrans,
+      ecrire: (l) => console.log(`  · ${l}`),
+      avancer: deposer,
+    });
+    deposer({
+      faits: ecrans.length,
+      total: ecrans.length,
+      reussis: bilan.reussis,
+      echoues: bilan.echoues,
+      encours: null,
+      termine: true,
+      secondes: bilan.secondes,
+      obstacle: expliquerObstacle(bilan.renvoiDominant),
+    });
     console.log(`  Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
       (bilan.echoues ? `, ${bilan.echoues} en échec` : "") + ` — ${bilan.secondes} s.\n`);
     const obstacle = expliquerObstacle(bilan.renvoiDominant);

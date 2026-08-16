@@ -26,6 +26,9 @@ import { pool } from "../src/server/db/client";
  */
 
 const BASE = "http://localhost:3000";
+
+/** Un nom de chantier dans une expression régulière : il porte des points. */
+const echapper = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const ADRESSE = "12 chemin des Chênes, 33600 Pessac";
 
 let passed = 0;
@@ -63,7 +66,7 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
 async function chantierPlanifie(page: Page, suffixe: string, adresse: string | null) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -166,9 +169,12 @@ async function main() {
   await test("Sans adresse, la feuille le dit et n'offre aucune destination", async () => {
     await ouvrirLaFeuille(page, sans.nom);
     await page.waitForSelector("text=Adresse non renseignée", { timeout: 10_000 });
-    assert.ok(
-      (await page.locator("text=À saisir sur la fiche du chantier").count()) > 0,
-      "la feuille doit dire OÙ saisir l'adresse, sinon le patron ne sait pas quoi faire"
+    // La consigne écrite a cédé la place à un BOUTON (13 août 2026) : ce que ce
+    // contrôle garde est qu'un chemin existe, pas qu'une phrase existe.
+    assert.equal(
+      await page.getByRole("link", { name: /^Saisir l'adresse/ }).count(),
+      1,
+      "sans adresse, la feuille doit offrir d'aller la saisir"
     );
     for (const nom of ["Plans", "Google Maps", "Waze"]) {
       assert.equal(
@@ -179,13 +185,49 @@ async function main() {
     }
   });
 
+  // **Sans adresse, il faut un chemin pour aller la saisir** — sa décision du
+  // 13 août 2026 sur maquette (`docs/maquettes/34`, variante B). La feuille
+  // disait où saisir sans y mener : trois gestes, et il fallait savoir que le
+  // nom du chantier ouvre la fiche.
+  await test("Sans adresse, un bouton mène là où elle se saisit", async () => {
+    await ouvrirLaFeuille(page, sans.nom);
+    const bouton = page.getByRole("link", { name: `Saisir l'adresse — ${sans.nom}` });
+    assert.equal(await bouton.count(), 1, "le bouton manque sur un chantier sans adresse");
+    assert.equal(
+      await bouton.getAttribute("href"),
+      `/chantiers/${sans.chantierId}/devis-complet`,
+      "il doit mener au seul écran où l'adresse s'édite"
+    );
+  });
+
+  // **Et il ne doit PAS encombrer les onze fois sur douze où l'adresse est
+  // là.** La feuille porte déjà « Créer la facture » ; un bouton permanent de
+  // plus la chargerait pour rien.
+  await test("Avec une adresse, ce bouton n'existe pas", async () => {
+    await ouvrirLaFeuille(page, avec.nom);
+    assert.equal(await page.getByRole("link", { name: /^Saisir l'adresse/ }).count(), 0);
+  });
+
   await test("Le chevron ne mange pas le geste voisin de la ligne", async () => {
+    // **LE VOISIN A CHANGÉ LE 14 AOÛT 2026, PAS LE DÉFAUT.** C'était
+    // « Déplacer » ; c'est désormais la pastille d'équipe, qui lui a pris sa
+    // place sur la ligne (geste A). Le carré de 44 px du chevron est invisible :
+    // posé sans précaution, il recouvre son voisin et le geste devient
+    // injoignable — un défaut qu'aucun test de rendu ne voit, puisque les deux
+    // éléments SONT là.
+    //
+    // **Deux équipes sont posées d'abord**, sans quoi la pastille n'existe pas :
+    // à une seule équipe le mot « équipe » ne s'écrit nulle part
+    // (`src/lib/equipes.ts`). Un contrôle qui viserait un élément absent
+    // passerait au vert sans rien avoir mesuré.
+    await pool.query(
+      `UPDATE entreprises SET nombre_equipes = 2
+       WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
+      [avec.chantierId]
+    );
     await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector('h1:has-text("Planning")', { timeout: 30_000 });
-    // Le carré de 44 px est invisible : posé sans précaution, il recouvre
-    // « Déplacer » et le geste devient injoignable — un défaut qu'aucun test de
-    // rendu ne voit, puisque les deux éléments SONT là.
-    const deplacer = page.getByRole("button", { name: `Déplacer le chantier ${avec.nom}` });
+    const deplacer = page.getByRole("button", { name: new RegExp(`l'équipe — ${echapper(avec.nom)}$`) });
     // **Amener à l'écran d'abord, et ce n'est pas une politesse.** `elementFromPoint`
     // lit des coordonnées de FENÊTRE : sur une ligne restée sous le pli, elle
     // interroge un point vide et le contrôle accuse le chevron de recouvrir ce
@@ -193,7 +235,7 @@ async function main() {
     // une boîte — mesurée trop tôt, elle en est encore dépourvue.
     await deplacer.scrollIntoViewIfNeeded();
     const boite = await deplacer.boundingBox();
-    assert.ok(boite, "« Déplacer » doit rester à l'écran");
+    assert.ok(boite, "la pastille d'équipe doit rester à l'écran");
     const dessus = await page.evaluate(
       ([x, y]) => {
         const el = document.elementFromPoint(x as number, y as number);
@@ -202,8 +244,8 @@ async function main() {
       [boite.x + boite.width / 2, boite.y + boite.height / 2]
     );
     assert.ok(
-      /déplacer/i.test(dessus),
-      `au centre de « Déplacer », le doigt touche « ${dessus} » — le chevron le recouvre`
+      /l'équipe/i.test(dessus),
+      `au centre de la pastille d'équipe, le doigt touche « ${dessus} » — le chevron la recouvre`
     );
   });
 

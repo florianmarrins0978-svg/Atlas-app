@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import {
+  AXES_PAR_DEFAUT,
   CELLULE_GRUMES,
-  DIAMETRES,
-  HAUTEURS,
+  GRILLES_PAR_DEFAUT,
   celluleAbattage,
   celluleDepuisCle,
   celluleDeNature,
@@ -49,13 +49,13 @@ function cas(nom: string, verifier: () => void): void {
 console.log("=== Assez de tranches, et des bornes qui ne bougent pas ===\n");
 
 cas("la grille compte 48 cases — « il faut faire plus de tranche »", () => {
-  assert.equal(DIAMETRES.length, 8, "moins de huit diamètres : on retombe sur la grille qu'il a refusée");
-  assert.equal(HAUTEURS.length, 6);
-  assert.equal(toutesLesCellules().length, 48);
+  assert.equal(AXES_PAR_DEFAUT.diametres.length, 8, "moins de huit diamètres : on retombe sur la grille qu'il a refusée");
+  assert.equal(AXES_PAR_DEFAUT.hauteurs.length, 6);
+  assert.equal(toutesLesCellules(AXES_PAR_DEFAUT).length, 48);
 });
 
 cas("les clés sont uniques et stables", () => {
-  const cles = toutesLesCellules().map((c) => c.cle);
+  const cles = toutesLesCellules(AXES_PAR_DEFAUT).map((c) => c.cle);
   assert.equal(new Set(cles).size, cles.length, "deux cases portent la même clé : leurs prix s'écraseraient");
   // Un échantillon écrit en dur : si ces trois-là changent, tous les prix déjà
   // rangés en base deviennent introuvables — sans erreur, sans message.
@@ -65,7 +65,7 @@ cas("les clés sont uniques et stables", () => {
 });
 
 cas("les tranches se touchent sans trou ni recouvrement", () => {
-  for (const liste of [DIAMETRES, HAUTEURS]) {
+  for (const liste of [AXES_PAR_DEFAUT.diametres, AXES_PAR_DEFAUT.hauteurs]) {
     for (let i = 1; i < liste.length; i++) {
       assert.equal(liste[i].de, liste[i - 1].a, `trou ou recouvrement entre « ${liste[i - 1].libelle} » et « ${liste[i].libelle} »`);
     }
@@ -77,44 +77,44 @@ cas("les tranches se touchent sans trou ni recouvrement", () => {
 console.log("\n=== Les valeurs rondes tombent du bon côté ===");
 
 cas("un tronc de 50 cm est « 40 à 50 », pas « 50 à 60 »", () => {
-  assert.equal(trancheDe(50, DIAMETRES)!.libelle, "40 à 50 cm");
-  assert.equal(trancheDe(40, DIAMETRES)!.libelle, "30 à 40 cm");
-  assert.equal(trancheDe(70, DIAMETRES)!.libelle, "60 à 70 cm");
-  assert.equal(trancheDe(50.5, DIAMETRES)!.libelle, "50 à 60 cm");
+  assert.equal(trancheDe(50, AXES_PAR_DEFAUT.diametres)!.libelle, "40 à 50 cm");
+  assert.equal(trancheDe(40, AXES_PAR_DEFAUT.diametres)!.libelle, "30 à 40 cm");
+  assert.equal(trancheDe(70, AXES_PAR_DEFAUT.diametres)!.libelle, "60 à 70 cm");
+  assert.equal(trancheDe(50.5, AXES_PAR_DEFAUT.diametres)!.libelle, "50 à 60 cm");
 });
 
 cas("un arbre de 10 m est « 5 à 10 », pas « 10 à 15 »", () => {
-  assert.equal(trancheDe(10, HAUTEURS)!.libelle, "5 à 10 m");
-  assert.equal(trancheDe(12.5, HAUTEURS)!.libelle, "10 à 15 m");
-  assert.equal(trancheDe(30, HAUTEURS)!.libelle, "plus de 25 m");
+  assert.equal(trancheDe(10, AXES_PAR_DEFAUT.hauteurs)!.libelle, "5 à 10 m");
+  assert.equal(trancheDe(12.5, AXES_PAR_DEFAUT.hauteurs)!.libelle, "10 à 15 m");
+  assert.equal(trancheDe(30, AXES_PAR_DEFAUT.hauteurs)!.libelle, "plus de 25 m");
 });
 
 cas("une mesure qui n'en est pas une ne se range nulle part", () => {
   // Ranger au hasard ce qu'on n'a pas mesuré ferait sortir un prix décidé pour
   // un autre arbre.
   for (const valeur of [0, -5, Number.NaN, Number.POSITIVE_INFINITY]) {
-    assert.equal(trancheDe(valeur, DIAMETRES), null, `${valeur} a trouvé une tranche`);
+    assert.equal(trancheDe(valeur, AXES_PAR_DEFAUT.diametres), null, `${valeur} a trouvé une tranche`);
   }
 });
 
 console.log("\n=== Sans les DEUX mesures, il n'y a pas de case ===");
 
 cas("une seule mesure ne désigne rien", () => {
-  assert.equal(celluleFendage(12, null), null, "un prix sortirait sans connaître le diamètre");
-  assert.equal(celluleFendage(null, 45), null, "un prix sortirait sans connaître la hauteur");
-  assert.equal(celluleFendage(null, null), null);
+  assert.equal(celluleFendage(12, null, AXES_PAR_DEFAUT), null, "un prix sortirait sans connaître le diamètre");
+  assert.equal(celluleFendage(null, 45, AXES_PAR_DEFAUT), null, "un prix sortirait sans connaître la hauteur");
+  assert.equal(celluleFendage(null, null, AXES_PAR_DEFAUT), null);
 });
 
 cas("les deux mesures désignent une case, et son libellé se lit", () => {
-  const c = celluleFendage(12, 45)!;
+  const c = celluleFendage(12, 45, AXES_PAR_DEFAUT)!;
   assert.equal(c.cle, "h10|d40");
   assert.equal(c.libelle, "10 à 15 m de haut · tronc de 40 à 50 cm");
 });
 
 cas("une case se retrouve depuis sa clé, et une clé inventée ne rend rien", () => {
-  assert.equal(celluleDepuisCle("h10|d40")!.libelle, "10 à 15 m de haut · tronc de 40 à 50 cm");
+  assert.equal(celluleDepuisCle("h10|d40", AXES_PAR_DEFAUT)!.libelle, "10 à 15 m de haut · tronc de 40 à 50 cm");
   for (const fausse of ["", "h99|d40", "h10", "d40|h10", "; DROP TABLE"]) {
-    assert.equal(celluleDepuisCle(fausse), null, `« ${fausse} » a désigné une case`);
+    assert.equal(celluleDepuisCle(fausse, AXES_PAR_DEFAUT), null, `« ${fausse} » a désigné une case`);
   }
 });
 
@@ -122,7 +122,7 @@ console.log("\n=== Une case vide reste vide : AUCUNE interpolation ===");
 
 cas("un prix ne sort que de la case exacte", () => {
   const grille = new Map([["h10|d40", "250.00"]]);
-  assert.equal(prixDuFendage(celluleFendage(12, 45), grille)!.prix, "250.00");
+  assert.equal(prixDuFendage(celluleFendage(12, 45, AXES_PAR_DEFAUT), grille)!.prix, "250.00");
 });
 
 cas("une case vide entourée de cases pleines ne se devine pas", () => {
@@ -136,7 +136,7 @@ cas("une case vide entourée de cases pleines ne se devine pas", () => {
     ["h15|d40", "320.00"],
   ]);
   assert.equal(
-    prixDuFendage(celluleFendage(12, 45), grille),
+    prixDuFendage(celluleFendage(12, 45, AXES_PAR_DEFAUT), grille),
     null,
     "un prix a été fabriqué à partir des cases voisines"
   );
@@ -206,21 +206,21 @@ console.log("\n=== Cinq natures, cinq formes, et aucune case qui s'invente ===")
 
 cas("chaque nature a le nombre de cases annoncé", () => {
   const attendu: Record<NatureGrille, number> = {
-    fendage: DIAMETRES.length * HAUTEURS.length,
-    abattage: 3 * DIAMETRES.length,
+    fendage: AXES_PAR_DEFAUT.diametres.length * AXES_PAR_DEFAUT.hauteurs.length,
+    abattage: 3 * AXES_PAR_DEFAUT.diametres.length,
     haie: 1,
-    dessouchage: DIAMETRES.length,
+    dessouchage: AXES_PAR_DEFAUT.diametres.length,
     grumes: 1,
   };
   for (const [nature, n] of Object.entries(attendu)) {
-    assert.equal(cellulesDe(nature as NatureGrille).length, n, `${nature} : mauvais nombre de cases`);
+    assert.equal(cellulesDe(nature as NatureGrille, GRILLES_PAR_DEFAUT).length, n, `${nature} : mauvais nombre de cases`);
   }
 });
 
 cas("le dessouchage se chiffre au diamètre, jamais à la hauteur", () => {
   // La hauteur de l'arbre qui n'est plus là ne décide de rien. La souche, elle,
   // a un diamètre — et c'est le même tronc, donc les mêmes tranches.
-  const c = celluleDessouchage(65);
+  const c = celluleDessouchage(65, AXES_PAR_DEFAUT);
   assert.ok(c);
   assert.equal(c.cle, "d60", `case « ${c.cle} » au lieu de « d60 »`);
   assert.match(c.libelle, /souche/i);
@@ -228,15 +228,15 @@ cas("le dessouchage se chiffre au diamètre, jamais à la hauteur", () => {
   // **Les mêmes tranches que l'abattage, bornes comprises.** 70 cm tombe dans
   // « 60 à 70 » parce que la borne haute est incluse — deux jeux de tranches
   // pour le même tronc finiraient par ranger le même chêne dans deux cases.
-  assert.equal(celluleDessouchage(70)!.cle, "d60");
-  assert.equal(celluleDessouchage(70)!.diametre.cle, celluleAbattage("au_pied", 70)!.diametre.cle);
+  assert.equal(celluleDessouchage(70, AXES_PAR_DEFAUT)!.cle, "d60");
+  assert.equal(celluleDessouchage(70, AXES_PAR_DEFAUT)!.diametre.cle, celluleAbattage("au_pied", 70, AXES_PAR_DEFAUT)!.diametre.cle);
   // Aucune trace de hauteur dans la clé : la case d'un chêne de 5 m et celle
   // d'un chêne de 25 m sont la même dès que le tronc fait 70 cm.
   assert.doesNotMatch(c.cle, /\|/, "la clé porte deux axes alors qu'il n'y en a qu'un");
 });
 
 cas("sans diamètre, pas de case de dessouchage — la question se pose", () => {
-  assert.equal(celluleDessouchage(null), null);
+  assert.equal(celluleDessouchage(null, AXES_PAR_DEFAUT), null);
 });
 
 cas("les clés d'une nature ne désignent rien dans une autre", () => {
@@ -244,10 +244,10 @@ cas("les clés d'une nature ne désignent rien dans une autre", () => {
   // fendage, mais pas avec le même sens. L'unicité en base porte sur le couple
   // (nature, cellule) depuis la migration 0027 — sans quoi poser un prix de
   // souche effacerait un prix de fente.
-  assert.ok(celluleDeNature("dessouchage", "d70"), "d70 devrait exister en dessouchage");
-  assert.equal(celluleDeNature("dessouchage", "au_pied|d70"), null, "une clé d'abattage passe en dessouchage");
-  assert.equal(celluleDeNature("grumes", "d70"), null, "une clé de diamètre passe en grumes");
-  assert.ok(celluleDeNature("grumes", CELLULE_GRUMES));
+  assert.ok(celluleDeNature("dessouchage", "d70", GRILLES_PAR_DEFAUT), "d70 devrait exister en dessouchage");
+  assert.equal(celluleDeNature("dessouchage", "au_pied|d70", GRILLES_PAR_DEFAUT), null, "une clé d'abattage passe en dessouchage");
+  assert.equal(celluleDeNature("grumes", "d70", GRILLES_PAR_DEFAUT), null, "une clé de diamètre passe en grumes");
+  assert.ok(celluleDeNature("grumes", CELLULE_GRUMES, GRILLES_PAR_DEFAUT));
 });
 
 cas("les grumes n'ont qu'une case, et elle dit son unité : la tonne", () => {
@@ -255,7 +255,7 @@ cas("les grumes n'ont qu'une case, et elle dit son unité : la tonne", () => {
   // est levée. Le libellé doit le dire — un prix saisi ici sera MULTIPLIÉ par
   // le tonnage, et le taire ferait écrire un forfait dans une case qui n'en est
   // pas une.
-  const [c] = cellulesDe("grumes");
+  const [c] = cellulesDe("grumes", GRILLES_PAR_DEFAUT);
   assert.equal(c.cle, CELLULE_GRUMES);
   assert.equal(CELLULE_GRUMES, "tonne", "la clé de la case ne dit plus son unité");
   assert.match(c.libelle, /tonne/i);

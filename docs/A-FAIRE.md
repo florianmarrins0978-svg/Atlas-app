@@ -36,7 +36,9 @@ qui ne se résoudra pas en codant.
 6. [Choisir l'outil qui émet les factures](#6-choisir-loutil-qui-émet-les-factures)
 7. [Créer les identifiants Google, pour qui veut relier son agenda](#7-créer-les-identifiants-google-pour-qui-veut-relier-son-agenda)
 8. [Faire valider l'application par Google — AVANT de commercialiser](#8-faire-valider-lapplication-par-google--avant-de-commercialiser)
-9. [Décider si Atlas peut calculer des trajets par la route](#9-décider-si-atlas-peut-calculer-des-trajets-par-la-route)
+9. [Demander à votre comptable : TVA au mois ou au trimestre ?](#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-)
+10. [Le premier jour d'un artisan : ce qui manque pour lui confier Atlas](#10-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas)
+11. [Décider si Atlas peut calculer des trajets par la route](#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route)
 
 ---
 
@@ -682,10 +684,131 @@ Ni l'essai, ni la finition, ni vos premiers artisans. Ce point bloque
 **uniquement** le passage à l'échelle — et il le bloque d'un coup, sans
 prévenir, le jour où vous dépasserez la centaine.
 
+---
+
+## 9. Demander à votre comptable : TVA au mois ou au trimestre ?
+
+**Qui peut le faire :** vous, en une question à votre comptable.
+**Ce que ça débloque :** rien de technique — l'application marche dans les deux
+cas. Mais elle affiche aujourd'hui le rythme que vous lui avez indiqué, et
+personne n'a encore vérifié que c'est le bon.
+
+### Ce qui est déjà fait
+
+Le réglage existe : **Réglages → Votre TVA**, « Tous les mois » ou « Tous les
+trimestres ». Le mois est coché d'avance, parce que c'est le défaut légal — la
+déclaration CA3 est mensuelle.
+
+### Pourquoi je ne peux pas répondre à votre place
+
+Le trimestre est une **option**, ouverte seulement si votre TVA **due** de
+l'année précédente est inférieure à 4 000 €. La TVA due, c'est ce que vous avez
+collecté *moins* ce que vous déduisez sur vos achats — et Atlas ne voit que la
+première. Il ne voit ni votre gazole, ni votre matériel, ni votre assurance.
+
+Il ne peut donc **pas** calculer si vous y avez droit, et il ne doit pas faire
+semblant. C'est la même règle que pour les prix : sans source fiable, on n'écrit
+pas.
+
+### La question exacte à poser
+
+> « Je déclare ma TVA au mois ou au trimestre ? Et est-ce que ça change cette
+> année ? »
+
+Puis cochez la bonne case dans Réglages. C'est tout.
+
+### À savoir pour 2027
+
+Le régime réel simplifié — déclaration annuelle avec deux acomptes — **disparaît
+au 1er janvier 2027**. Si vous y êtes aujourd'hui, votre comptable vous fera
+basculer au mois ou au trimestre. L'application est déjà prête pour les deux :
+il n'y aura rien à changer, sinon la case.
+
+*Ajouté le 2026-08-12, à votre demande.*
 
 ---
 
-## 9. Décider si Atlas peut calculer des trajets par la route
+## 10. Le premier jour d'un artisan : ce qui manque pour lui confier Atlas
+
+**Qui : moi.** C'est du code, pas une décision — mais c'est ici parce que **ça
+bloque la commercialisation**, exactement comme l'hébergement ou l'outil de
+facturation. Vous devez savoir que c'est là.
+
+*Ajouté le 13 août 2026, à votre demande, après votre remarque : « quand
+l'application sera commercialisée, le devis ne comportera aucune information,
+il sera vierge, et c'est avec ces informations-là qu'il devra se remplir
+automatiquement ».*
+
+### Le point de départ
+
+Vous avez raison, et c'est plus lourd que ça n'en a l'air. J'ai vérifié dans le
+code : **rien n'est prévu pour un artisan qui arrive les mains vides.**
+
+### Ce qui manque, dans l'ordre où ça se voit
+
+| | Ce qui se passe aujourd'hui | Ce que ça donne pour lui |
+|---|---|---|
+| 1 | **Votre banc d'essai démarre avec une entreprise déjà remplie** — nom, SIRET, adresse, IBAN | Vous n'avez jamais vu l'écran d'un vrai débutant, et moi non plus |
+| 2 | **Aucun écran ne permet de créer son entreprise** | Il ne peut pas commencer |
+| 3 | **Son identité ne se saisit que dans « le devis écrit à la main »** | S'il suit le parcours normal — dicter, chiffrer, envoyer — il ne la saisit jamais |
+| 4 | **Rien ne vérifie son identité avant l'envoi** | Son premier devis part **sans SIRET, sans adresse, sans IBAN**, sans un mot |
+| 5 | Quand son nom manque, l'application écrit poliment « Votre entreprise » | Le manque est maquillé au lieu d'être signalé |
+| 6 | **Chaque devis fige ses informations le jour où il est créé** | Compléter son SIRET ce soir ne répare **aucun** devis déjà fait — et rien ne le prévient |
+
+Le point 6 mérite d'être compris, parce que c'est du **bon** travail : une pièce
+comptable doit garder l'identité qu'elle portait le jour de son émission. Ce qui
+manque n'est pas le mécanisme, c'est **la phrase qui l'explique**.
+
+### Ce que ça coûte
+
+Rien, en argent. En travail : **les écrans sont dessinés**
+(`maquettes/atlas-reglages-identite.html`), la décision est prise, il reste à
+coder — la création d'entreprise, les champs d'identité dans les réglages, le
+garde-fou avant l'envoi. C'est un lot de quelques jours, pas un chantier.
+
+### ~~La question que je vous pose, et qui vous appartient~~ — **close le 14 août 2026**
+
+~~Faut-il EMPÊCHER l'envoi d'un devis tant que l'identité est incomplète, ou
+seulement avertir ?~~
+
+**Votre réponse finale : ni l'un ni l'autre.** Vous aviez d'abord choisi
+d'empêcher l'envoi, et je l'ai codé. En voyant l'écran, vous avez tranché
+autrement : *« l'IBAN et le SIRET, c'est des choses que l'utilisateur va devoir
+renseigner dans la bonne catégorie. Une fois que c'est enregistré, il faut que
+ça s'ajoute automatiquement à la page du devis, mais c'est tout. Rien de plus,
+rien de moins. »* Tout ce que j'avais ajouté a été retiré.
+
+**Ce que vous demandiez existait déjà**, et je l'ai vérifié dans le code : ce
+que vous saisissez dans « Mon entreprise » — nom, adresse, SIRET, téléphone,
+e-mail, IBAN — se recopie tout seul dans le devis, et un devis pas encore envoyé
+rafraîchit cette copie **chaque fois que vous l'ouvrez**. Un SIRET saisi ce soir
+apparaît donc sur vos devis en cours dès demain. Seuls les devis **déjà partis**
+gardent ce qu'ils portaient, et c'est voulu : une pièce comptable ne se réécrit
+pas après coup.
+
+**Ce qui reste vrai, et que vous savez :** si vous n'avez pas saisi votre SIRET,
+le devis part sans, et rien ne vous prévient. C'est votre choix, pris en
+connaissance de cause.
+
+### Ce qui est lié, et qui n'est pas fait non plus
+
+**Les accès de ses salariés.** Un patron ne peut donner aucun accès aujourd'hui
+— l'écran n'existe pas —, et surtout **rien ne filtre ce que chacun reçoit** :
+un salarié verrait tous vos prix et toutes vos marges. La règle a été posée le
+7 août ([QUESTIONS.md](QUESTIONS.md) question 10) et complétée le 13 : quatre
+rôles, et une portée du planning réglée salarié par salarié. **Le dessin
+existe ; le code, non.** Tant que ce n'est pas fait, Atlas ne peut être confié
+qu'à un artisan qui travaille seul.
+
+### Ce que ça ne bloque pas
+
+Ni votre usage à vous, ni la suite du développement. Ce point bloque **le jour
+où vous confiez Atlas à quelqu'un d'autre que vous** — et il le bloque
+entièrement.
+
+---
+
+## 11. Décider si Atlas peut calculer des trajets par la route
 
 **Qui : vous**, et le juriste du point 2 si la réponse penche vers un
 prestataire privé.

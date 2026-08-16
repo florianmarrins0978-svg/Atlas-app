@@ -1,0 +1,58 @@
+-- Le relevé de TVA se découpe au mois, ou au trimestre — et c'est le patron qui le dit.
+--
+-- **Sa remarque du 2026-08-12 :** *« la TVA collectée, ça doit être mois par
+-- mois et pas trimestre par trimestre. Après tu peux essayer de te renseigner,
+-- mais pour moi la TVA on doit la donner tous les mois […] et si jamais c'est à
+-- nous de choisir, dans ce cas-là il faut que l'utilisateur ait le choix. »*
+--
+-- Il avait raison. L'écran ne connaissait que le trimestre, posé par défaut
+-- sans qu'aucune ligne du dépôt n'explique pourquoi.
+--
+-- =========================================================================
+-- Pourquoi le défaut est le MOIS, et pas le trimestre
+-- =========================================================================
+--
+-- La déclaration au régime réel normal (formulaire CA3) est **mensuelle par
+-- défaut**. Le trimestre n'est pas une alternative libre : c'est une OPTION,
+-- ouverte seulement quand la TVA due de l'année précédente est inférieure à
+-- 4 000 € ; au-delà, la périodicité redevient mensuelle.
+--
+-- Le régime réel simplifié — déclaration annuelle et deux acomptes — disparaît
+-- au 1er janvier 2027 (article 38 de la loi de finances pour 2025, loi
+-- n° 2025-127 du 14 février 2025). À partir de là, « mensuel ou trimestriel »
+-- est la seule question qui se pose : cette colonne couvre donc l'après-2027
+-- sans rien à reprendre.
+--
+-- Le défaut posé ici est donc le défaut LÉGAL, pas une préférence d'écran.
+--
+-- =========================================================================
+-- Ce que l'application ne calculera JAMAIS
+-- =========================================================================
+--
+-- **Le droit au trimestre.** Le seuil des 4 000 € porte sur la TVA *due* —
+-- collectée moins déductible. Atlas ne connaît que la collectée : il ne voit ni
+-- le gazole, ni la tronçonneuse, ni l'assurance. Il ne peut donc pas savoir si
+-- le patron a droit au trimestre, et il ne doit pas le laisser croire
+-- (`CLAUDE.md` §4 : un champ sans source fiable reste vide et signalé).
+--
+-- Cette colonne enregistre donc une DÉCLARATION du patron, faite sur la foi de
+-- son comptable — jamais une déduction de l'application. C'est le même
+-- arbitrage que pour les prix (`docs/AGENT.md` §3) : sans source fiable, on
+-- n'écrit pas.
+--
+-- =========================================================================
+-- Pourquoi une contrainte plutôt qu'un type énuméré
+-- =========================================================================
+--
+-- Un `CHECK` se modifie par un simple `ALTER TABLE` ; un type énuméré
+-- PostgreSQL se fait ajouter des valeurs mais jamais retirer, et se renomme
+-- mal. Si la loi de 2027 amène une troisième maille, la contrainte suivra sans
+-- migration acrobatique.
+--
+-- NOT NULL avec défaut : il n'existe aucun état « périodicité inconnue ». Le
+-- relevé doit toujours pouvoir se découper, y compris pour une entreprise créée
+-- avant cette migration — qui hérite donc du mois, le défaut légal.
+
+ALTER TABLE "entreprises"
+  ADD COLUMN "periodicite_tva" text NOT NULL DEFAULT 'mensuelle'
+    CHECK ("periodicite_tva" IN ('mensuelle', 'trimestrielle'));

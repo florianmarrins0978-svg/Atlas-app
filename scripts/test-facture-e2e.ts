@@ -1,6 +1,11 @@
 import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+// Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
+// applique la même règle que le produit plutôt que de recomposer « Chez … ».
+// Recopié ici, ce contrôle est passé au rouge le 13 août 2026, le jour où le
+// patron a fait retirer ce mot.
+import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 
 // Créer la facture, l'envoyer, et le relevé de TVA — vus depuis l'écran du patron
@@ -66,8 +71,8 @@ async function chantierRealise(page: Page, suffixe: string) {
   // (« Chez … », voir `src/lib/nom-chantier.ts`). C'est donc le client qui
   // porte la marque unique, et le repère suit.
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
-  const nom = `Chez ${client}`;
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  const nom = avecCivilite(client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   await page.click('button:has-text("Créer le chantier")');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });

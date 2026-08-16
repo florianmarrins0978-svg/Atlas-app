@@ -70,6 +70,7 @@
 <li><a href="#brancher-une-vraie-ia-sur-vos-essais">Brancher une vraie IA sur vos essais</a></li>
 <li><a href="#repartir-de-zéro">Repartir de zéro</a></li>
 <li><a href="#fermer-proprement">Fermer proprement</a></li>
+<li><a href="#lapplication-ne-souvre-plus-du-tout"><strong>L'application ne s'ouvre plus du tout</strong></a></li>
 <li><a href="#si-quelque-chose-ne-va-pas">Si quelque chose ne va pas</a></li>
 </ol>
 <hr>
@@ -218,6 +219,38 @@
 <p>Pour tout effacer : <code>github.com/codespaces</code>, puis supprimer l'espace.</p>
 <p>Le compte gratuit inclut 60 heures par mois, largement de quoi essayer.</p>
 <hr>
+<h2 id="lapplication-ne-souvre-plus-du-tout">L'application ne s'ouvre plus du tout</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce que vous voyez :</strong> vous ouvrez votre favori Atlas et, au lieu de l'application, votre téléphone propose de <strong>télécharger un fichier</strong> portant le nom de l'adresse — ou l'onglet reste sur <code>about:blank</code>. Rien à télécharger, rien à lire.</p>
+<p><strong>Ce n'est pas l'application. C'est votre espace de travail qui s'est arrêté.</strong></p>
+<p>GitHub éteint un espace inactif au bout d'une trentaine de minutes. L'adresse, elle, continue d'exister — mais plus personne ne répond derrière, et votre navigateur ne sait pas quoi faire de ce silence : il vous propose de l'enregistrer.</p>
+<h3 id="le-remède-en-deux-gestes">Le remède, en deux gestes</h3>
+<ol>
+<li>Ouvrez <strong><code>github.com/codespaces</code></strong>.</li>
+<li>Touchez votre espace. Il se rallume — comptez une à deux minutes.</li>
+</ol>
+<p>Puis rouvrez votre favori Atlas. L'application redémarre toute seule à chaque allumage : il n'y a rien d'autre à faire, aucun terminal à ouvrir.</p>
+<h3 id="comment-en-être-sûr-avant-de-chercher-ailleurs">Comment en être sûr avant de chercher ailleurs</h3>
+<p>Votre espace publie sa propre fiche d'état, et elle reste lisible <strong>même quand il est éteint</strong> :</p>
+<blockquote><strong><a href="https://github.com/florianmarrins0978-svg/Atlas-app/issues/47" target="_blank" rel="noopener">État du banc d'essai</a></strong></blockquote>
+<p><strong>Regardez d'abord sa date.</strong> Elle se réécrit tous les quarts d'heure tant que l'espace tourne.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que dit la date</th>
+<th>Ce que ça veut dire</th>
+</tr></thead><tbody>
+<tr>
+<td>moins de 20 minutes</td>
+<td>l'espace tourne : le problème est ailleurs, envoyez une capture</td>
+</tr>
+<tr>
+<td>plus de 20 minutes</td>
+<td><strong>l'espace est arrêté</strong> — rallumez-le, c'est tout</td>
+</tr>
+</tbody></table></div>
+<p>La fiche dit aussi quelle version du code votre espace a récupérée : de quoi savoir, d'un coup d'œil, si une correction annoncée est bien arrivée chez vous.</p>
+<h3 id="pourquoi-on-ne-peut-pas-lempêcher">Pourquoi on ne peut pas l'empêcher</h3>
+<p>L'extinction est une règle de GitHub, pas d'Atlas : elle économise vos heures gratuites. Le jour où Atlas tournera sur un vrai hébergement, la question disparaîtra — l'adresse répondra toujours. En attendant, un espace qui dort est le fonctionnement normal, pas une panne.</p>
+<hr>
 <h2 id="si-quelque-chose-ne-va-pas">Si quelque chose ne va pas</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>L'éditeur affiche « The workbench failed to connect to the server », « An unexpected error occurred that requires a reload of this page », ou « Déconnecté de codespace » en bas de l'écran.</strong> Ce n'est pas Atlas : c'est <strong>l'éditeur</strong> qui n'a pas réussi à joindre l'espace de travail. L'application, elle, n'est pas concernée — elle tourne dans l'espace, pas dans l'éditeur.</p>
@@ -242,6 +275,18 @@
 </ol>
 <p><strong>Supprimez-le et créez-en un neuf</strong> (encadré du geste 1). C'est le seul chemin qui ne demande de viser aucun bouton sur un écran de téléphone.</p>
 <p><strong><code>Missing script: "essai"</code>, ou des fichiers manquent dans la liste de gauche (<code>.devcontainer</code>, <code>HANDOVER.md</code>, <code>TODO.md</code>…).</strong> L'espace de travail a été créé avant que ce travail n'arrive sur <code>main</code> : il est resté à la version de ce jour-là. Supprimez-le et recréez-en un — voir l'encadré du geste 1. C'est le cas le plus fréquent, et le plus déroutant, parce que l'erreur ne dit pas que le problème est l'ancienneté de l'espace.</p>
+<p><strong>Avant tout dépannage un peu brutal : mettez la base à l'abri.</strong> Elle vit DANS l'espace de travail — supprimer l'espace emporte vos chantiers, vos clients, et tout ce que l'agent a appris.</p>
+<p>``<code>bash npm run sauvegarder:banc </code>``</p>
+<p>Le fichier <code>sauvegarde-atlas-….sql</code> paraît à la racine, dans la liste de gauche. <strong>Appui long dessus → « Télécharger »</strong> : tant qu'il n'est pas sur votre appareil, il disparaît avec l'espace, puisqu'il vit au même endroit.</p>
+<p><strong><code>AucuneEntrepriseError : l'utilisateur … n'a aucune adhésion d'entreprise active</code>, et toutes les pages s'écroulent.</strong> Constaté le 10 août 2026. Votre navigateur porte encore la session d'un compte de démonstration <strong>qui n'existe plus</strong> : le seed vide puis reconstruit, et le nouveau compte n'a pas le même identifiant que l'ancien. Le cookie reste valide — l'application vous laisse donc entrer, puis ne trouve aucune entreprise derrière vous.</p>
+<p>Deux remèdes, du plus rapide au plus complet :</p>
+<ol>
+<li><strong>Ouvrez l'adresse dans un onglet de navigation privée</strong>, et connectez-vous. Vous saurez en trente secondes si c'était bien ça.</li>
+<li>Si le compte de démonstration manque vraiment, reconstruisez-le :</li>
+</ol>
+<p>``<code>bash DATABASE_URL="$DATABASE_SUPER_URL" npx tsx src/server/db/seed.ts </code>``</p>
+<p>Il <strong>efface les données de démonstration</strong> et les refait à neuf — c'est un banc d'essai, il n'y a rien à y perdre d'irremplaçable. Puis reconnectez-vous <strong>en navigation privée</strong> : le nouveau compte a un nouvel identifiant, et l'ancienne session ne vaut plus rien.</p>
+<blockquote><strong>Ce défaut est le nôtre, pas le vôtre.</strong> Une session périmée devrait vous ramener à l'écran de connexion, jamais faire s'écrouler la page. C'est écrit dans <code>TODO.md</code>.</blockquote>
 <p><strong><code>EADDRINUSE: address already in use 0.0.0.0:3000</code>.</strong> L'application tourne déjà — elle démarre toute seule à l'allumage de l'espace. Ce n'est pas une panne.</p>
 <p><strong>Mais un <code>git pull</code> ne suffit jamais à appliquer un correctif.</strong> Le serveur charge le code une fois, au démarrage : tant qu'il n'est pas relancé, il continue de servir l'ancienne version. Un correctif fusionné, récupéré, et pourtant sans effet — c'est exactement ce qui s'est produit le 2026-08-02.</p>
 <p>Une seule ligne fait tout, dans l'ordre :</p>

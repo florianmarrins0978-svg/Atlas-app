@@ -25,6 +25,7 @@
 // **taire** les autres que de poser celles-là.
 
 import { diametreLu, hauteurLue } from "./mesures-arbre";
+import { TECHNIQUES_PAR_DEFAUT, type Technique } from "./grille-prix";
 
 /** Une réponse proposée, quand la question se referme sur un choix connu. */
 export type OptionReponse = {
@@ -59,12 +60,6 @@ export type QuestionChiffrage = {
 // viennent de ses tarifs et de sa mémoire — voir `docs/EXEMPLE-DICTEE.md` §9,
 // et notamment §9c : tant que la mémoire est vide, l'agent demande le prix
 // plutôt que d'en fabriquer un.
-
-const TECHNIQUES: OptionReponse[] = [
-  { valeur: "au_pied", libelle: "Abattage au pied" },
-  { valeur: "demontage", libelle: "Démontage" },
-  { valeur: "demontage_retention", libelle: "Démontage avec rétention" },
-];
 
 /** Mots qui désignent un arbre qu'on abat ou qu'on démonte. */
 const ABATTAGE = /\b(abattage|abattre|abatt|démont|demont|dessouch)/i;
@@ -148,9 +143,24 @@ export type LignePourQuestions = {
  */
 export function questionsAvantChiffrage(
   prestations: LignePourQuestions[],
-  dejaRepondu: ReadonlySet<string> = new Set()
+  dejaRepondu: ReadonlySet<string> = new Set(),
+  /**
+   * Les façons d'abattre de l'entreprise. Les valeurs de départ quand on ne les
+   * a pas sous la main — c'est le cas des suites pures, jamais du produit :
+   * `devis-depuis-dictee.ts` passe les siennes.
+   */
+  techniques: readonly Technique[] = TECHNIQUES_PAR_DEFAUT
 ): QuestionChiffrage[] {
+  // **Les façons d'abattre viennent de SES grilles depuis le 14 août 2026.**
+  // Il peut en ajouter une (`tranches_grille`, axe `technique`), et une
+  // question qui continuerait à proposer les trois d'origine laisserait sa
+  // quatrième rangée vide pour toujours : la case existerait, rien ne pourrait
+  // jamais la désigner. C'est la règle dupliquée que `CLAUDE.md` §3 interdit.
   const questions: QuestionChiffrage[] = [];
+  const optionsTechnique: OptionReponse[] = techniques.map((t) => ({
+    valeur: t.cle,
+    libelle: t.libelle[0].toUpperCase() + t.libelle.slice(1),
+  }));
 
   // Le diamètre appartient à l'ARBRE, pas à la ligne de devis. Quand un
   // abattage est dicté, c'est lui qui porte la question — la demander une
@@ -217,7 +227,7 @@ export function questionsAvantChiffrage(
           libellePrestation: libelle,
           question: "Comment s'abat-il ?",
           pourquoi: "C'est ce qui pèse le plus : un démontage avec rétention vaut plus du double d'un abattage au pied.",
-          options: TECHNIQUES,
+          options: optionsTechnique,
           unite: null,
         });
       }

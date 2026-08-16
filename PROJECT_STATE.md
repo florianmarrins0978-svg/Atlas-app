@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-13 · branche `main`, six branches fusionnées
-· dernière migration `drizzle/0035_agenda_apple.sql`
+**Dernière mise à jour :** 2026-08-14 · branche `main`
+· dernière migration `drizzle/0042_deconnexion_partout.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -13,6 +13,22 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 ---
 
 ## Ce qu'est Atlas
+
+**La direction, dans ses mots (13 août 2026) :** *« créer un deuxième cerveau au
+sein de l'application, pour qu'elle s'utilise comme un assistant de gestion /
+devis, facture, planning. Elle doit apprendre, enregistrer, s'améliorer,
+s'auto-alimenter. »*
+
+**Ce qui apprend déjà :** la mémoire des prix facturés (`lecons_prix`), les cinq
+grilles (remplies par les devis réels), la base documentaire. **Ce qui ne retient
+rien, par ordre de poids :** le temps réel d'un chantier — donc Atlas ignore si
+ses estimations de durée sont justes, alors que c'est la durée qui fait le prix —,
+les coûts de chiffrage, les délais de paiement réels, et ce qu'un client refuse.
+Le détail est dans `ARCHITECTURE.md` §90 et `docs/QUESTIONS.md` §17.
+
+**La leçon qui commande ce chantier :** `historique_prix` était lue et jamais
+écrite. Devant toute idée d'apprentissage, la question n'est pas « avons-nous une
+table ? » mais **« qui l'écrit, et à quel moment du parcours ? »**
 
 Un agent au service de l'artisan patron, « comme un comptable » : il prépare les
 devis, les envoie au client avec une proposition de date, recueille la réponse,
@@ -89,6 +105,8 @@ seule avec quinze outils.
 | **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
 | **Un calendrier des deux côtés**, où les jours déjà pris sont barrés et ne se choisissent pas | `src/lib/calendrier.ts` + `src/components/atlas/Calendrier.tsx` |
 | **Déposer sa liste de prix Excel ou CSV**, avec aperçu avant écriture | `src/app/reglages/ImportTarifs.tsx` + `src/lib/import-tarifs.ts` + `src/server/import/lire-classeur.ts` |
+| **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
+| **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
 ### Conformité RGPD
 
@@ -103,6 +121,27 @@ seule avec quinze outils.
 | Purge de l'audio après transcription réussie | `src/server/retention.ts` |
 | Export des données d'un client | `src/server/repositories/donnees-client.ts` |
 | Effacement d'un client, respectant la conservation légale | idem |
+
+### Le numéro du client, pris pour un téléphone (13 août 2026)
+
+Deuxième passe sur le même défaut. Le 12 août, l'en-tête `format-detection`
+avait été posée et annoncée comme réglant l'affaire ; le 13, le patron ouvre son
+devis **depuis un SMS** et reçoit la même « Hydration failed », signature d'iOS
+comprise — sur un banc à jour, vérifié par sa fiche d'état. Une vue intégrée à
+Messages ne lit pas cette en-tête, et c'est le seul chemin par lequel son client
+arrive sur la page.
+
+| Brique | Où c'est |
+|---|---|
+| La règle : découper un numéro pour qu'il ne ressemble plus à un téléphone | `src/lib/numero-document.ts` |
+| Ce qui répare vraiment — la coupure du texte aplati par `inline-flex` | `src/components/atlas/NumeroDeDocument.tsx` |
+| Contrôles purs, sans navigateur | `scripts/test-numero-document.ts` |
+| Le texte réellement aplati, lu sur un VRAI devis | `scripts/test-detection-automatique-e2e.ts` |
+| Le pourquoi, le coût assumé et ce qui reste non prouvé | `ARCHITECTURE.md` §81 |
+
+**Non éprouvé ici, et ça ne peut pas l'être** : la détection appartient à un
+logiciel fermé d'Apple, absent de cet environnement. À faire confirmer par le
+patron, depuis ses SMS (`TODO.md`).
 
 ### L'écran d'erreur qui ne menait nulle part (11 août 2026)
 
@@ -152,6 +191,17 @@ l'application. Ce qui est **fait** :
   sa barre grise. Le masque en dégradé et l'animation d'opacité sont hors de
   cause, c'est **mesuré** (`scripts/mesurer-fluidite-fil.mts`) : ne pas les
   accuser sans relancer la mesure.
+- **Le devis, en tête et dans sa synthèse** (13 août) : le chantier ne s'appelle
+  plus « Chez Martins » mais « Mr. Martins », et la carte pose le nom
+  au-dessus du détail au lieu de les coller par un tiret. La civilité vit dans
+  `src/lib/civilite.ts` — **et c'est un défaut, pas une donnée** : sans champ de
+  civilité sur la fiche client, une cliente était nommée « Mr. ». **Tranché le
+  soir même** : deux pastilles « Mr » / « Mme » au-dessus du nom, **à la création
+  seulement** — sur le devis, le mot s'écrit, il ne se choisit pas (le devis est
+  le document, pas la fiche). Recopiées sur le devis et la facture. Un client sur
+  lequel il n'a rien touché garde l'apparence qu'il avait avant. Le message tout prêt l'aborde de la même façon (« Bonjour
+  Mr. Martins »), et l'encart du client porte une phrase qui l'invite à écrire.
+  `ARCHITECTURE.md` §77.
 - **Le devis à la main** : ses trois zones de texte mesurent leur hauteur au
   lieu de l'estimer (11 août 2026). Elles comptaient les caractères ou les
   retours à la ligne, alors qu'un texte se coupe au mot : le devis cachait 24 px
@@ -181,6 +231,36 @@ l'application. Ce qui est **fait** :
   d'y poser une feuille maison. Quatre gestes deviennent deux. Ajouter, regarder
   et retirer se font dans la pellicule ; `/chantiers/[id]/photos` répond 404, et
   une suite le vérifie. `ARCHITECTURE.md` §60.
+- **La TVA due, les achats et le scanner de tickets** (13 août) : l'écran porte
+  collectée, déductible et reste à payer — chacun copiable. Les achats entrent
+  par l'appareil photo ou au clavier (`achats_tva`, migration
+  `drizzle/0036_achats_tva.sql`). La lecture d'un ticket est branchée sur les
+  clés du patron ; **la vision a dû être ajoutée à la couche IA**, qui ne
+  manipulait que du texte. Ce qu'elle rend est une proposition : c'est ce qu'il
+  confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
+  **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
+  environnement. `ARCHITECTURE.md` §84.
+- **Un ticket daté d'un autre mois ne disparaît plus** (13 août) : le patron
+  ajoute un ticket du 24 juillet depuis l'écran d'août ; il était enregistré —
+  dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
+  feuille annonce désormais la destination avant qu'il appuie, et l'écran l'y
+  emmène après. `scripts/test-achat-hors-periode-e2e.ts`, `ARCHITECTURE.md` §91.
+- **« Surtout la page équipe » : l'écran jamais préparé d'avance** (14 août) :
+  le banc compile ses écrans à l'avance, mais la liste — écrite à la main —
+  ignorait les **sept sous-écrans de Réglages** créés depuis. « Équipe »
+  s'ouvrait donc à froid pendant la construction, au-delà de la minute que le
+  relais de GitHub accepte. La liste est désormais confrontée aux dossiers
+  réels. Et un **bandeau** dit « Version rapide en construction — 12 écrans sur
+  19 » puis s'efface seul, pour ne plus confondre « ça bâtit » et « c'est
+  cassé ». **Écarté après mesure : bâtir en priorité basse** (aucun gain, la
+  contention est le disque). `ARCHITECTURE.md` §103, `docs/maquettes/46`.
+- **La TVA au mois ou au trimestre, et son calendrier** (12 août) : Réglages
+  porte le choix, le mois coché d'avance — c'est le défaut légal (déclaration
+  CA3 mensuelle ; le trimestre est une option sous 4 000 € de TVA due). L'écran
+  de TVA et son calendrier suivent : douze pavés ou quatre. **Atlas ne dit
+  jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
+  que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
+  `ARCHITECTURE.md` §83.
 - **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
   chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
   Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
@@ -480,6 +560,67 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 ## Ce qui reste, et que je peux faire seul
 
 Voir `TODO.md` pour le détail et l'ordre.
+
+- **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
+  (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
+  se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le
+  14 août** (`ARCHITECTURE.md` §96), d'après une planche que le patron a envoyée
+  de lui-même : dix rubriques, une icône chacune, « Devis & factures » et
+  « Planning », en filets et dans la charte — sa planche était sombre, il a
+  tranché « crème, comme le reste ». **Tout ce qui s'empilait sur l'écran est
+  parti dans sa rubrique** : tarifs, grilles de prix et catalogue ensemble ;
+  périodicité de TVA auprès du régime ; équipes du planning dans « Planning » ;
+  vocabulaire sous « Atlas IA » ; données sous « Sécurité & données ». La
+  version exécutée reste sur le sommaire, parce qu'une capture doit y répondre.
+  **C'est aussi le premier écran d'Atlas où `getRole` décide de ce qui est
+  RENDU** : un membre ne reçoit que l'ensemble « Moi », et chaque rubrique de
+  l'entreprise refuse un non-propriétaire avant de lire une valeur. Le reste de
+  l'application, lui, ne cloisonne toujours rien. **Dix rubriques sur treize
+  sont codées au 14 août** ; il en reste **trois** marquées *Bientôt* —
+  notifications, apparence, abonnement. Les deux dernières ouvertes sont
+  **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
+  nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
+  plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et
+  une liste d'*appareils* qui n'existent nulle part ; le patron a tranché « A A »
+  le 14 août, les deux mots sont retirés. **L'e-mail ne se change pas encore**,
+  et l'écran le dit : rien ne permettrait de vérifier une nouvelle adresse, et
+  une faute de frappe fermerait le compte sans recours. Ce qui suit décrit l'état
+  d'avant ce lot, et reste vrai pour les neuf autres rubriques : (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §86). Ce qui
+  y est tranché : les deux niveaux « Moi » / « Mon entreprise », qui voit quoi,
+  et ce qui n'aura jamais d'interrupteur. Ce qui ne l'est pas : le rôle
+  **commercial** n'existe ni en base (`membres_entreprise.role` : propriétaire
+  ou membre) ni dans les décisions écrites, et **le cloisonnement par rôle n'est
+  pas codé** — un écran qui n'affiche pas une rubrique ne protège rien
+  (`docs/QUESTIONS.md` §10). L'ordre des lots est dans `TODO.md` §0 quatervicies.
+  **Lot 2 dessiné le 13 août** (l'identité) : il a révélé que le **régime de TVA
+  est deviné d'après le taux appliqué** — donc faux dans les deux sens sur une
+  pièce comptable —, que le **numéro de TVA intracommunautaire n'existe nulle
+  part**, et que le **téléphone et l'e-mail ne s'impriment sur aucun document**
+  (`ARCHITECTURE.md` §87). **Et surtout : le premier jour d'un artisan n'a
+  jamais été vu.** Le jeu de départ pose une entreprise complète, il n'existe
+  aucun parcours d'inscription, l'identité ne se saisit que dans le devis écrit
+  à la main, et **rien ne la vérifie avant l'envoi** — le premier devis d'un vrai
+  artisan part sans SIRET ni IBAN. Un blocage a été codé le 14 août puis
+  **retiré le même jour à sa demande** : *« rien de plus, rien de moins »*
+  (`ARCHITECTURE.md` §97). Ce n'est donc pas un oubli, c'est un risque qu'il
+  assume. **Restent bloquants pour la commercialisation** : aucun écran ne
+  permet de créer son entreprise, le jeu de départ en pose une déjà remplie, et
+  le nom manquant s'écrit encore « Votre entreprise » au lieu d'être signalé
+  (`docs/A-FAIRE.md` §10).
+  **Lot 3 dessiné le 13 août** (l'équipe) : « équipe » désigne déjà une file du
+  planning et non un compte — deux listes séparées —, et le **cloisonnement en
+  lecture n'existe pas** : `getRole` n'est appelé dans aucun écran, un membre
+  voit aujourd'hui tous les montants (`ARCHITECTURE.md` §88). **Lot 4 dessiné le
+  13 août** (tarifs) : **les quatre priorités du patron sont dessinées**. Restent
+  à coder la colonne de famille sur `tarifs`, le signalement d'une unité
+  manquante, et le nombre de prix appris par grille (`ARCHITECTURE.md` §89).
+  **L'unité, elle, est codée le 14 août** : elle se choisit dans un bandeau
+  déroulant, sans se refermer sur une liste (`ARCHITECTURE.md` §101). **Et les
+  tranches des grilles se règlent depuis le 14 août** : elles ne sont plus
+  écrites dans le code (`ARCHITECTURE.md` §105).
+  **Et surtout : `parametres_chiffrage` — cinq valeurs qui décident du prix
+  proposé — n'a aucun écran.** Un artisan dont l'ouvrier coûte 260 €/jour verra
+  des prix trop bas sans savoir d'où ils viennent.
 
 - **Agenda Google** — la connexion du compte demande des identifiants que je n'ai
   pas ; le reste (lecture des disponibilités, écriture de l'intervention) est

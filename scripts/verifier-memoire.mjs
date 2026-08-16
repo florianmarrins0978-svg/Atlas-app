@@ -40,6 +40,29 @@ for (const fichier of FICHIERS) {
   if (!existsSync(fichier)) continue;
   const contenu = readFileSync(fichier, "utf8");
 
+  // **Un conflit de fusion avalé, committé, et poussé.**
+  //
+  // Trouvé le 13 août 2026 sur `main` : `ARCHITECTURE.md` y portait ses
+  // `<<<<<<< HEAD` en clair, sur quatre-vingts lignes. Plusieurs sessions
+  // écrivent ce dépôt en même temps (`CLAUDE.md` §6) ; l'une d'elles a résolu à
+  // moitié, et personne ne l'a vu — la mémoire du dépôt était cassée en ligne,
+  // et c'est le fichier qu'on lit en arrivant.
+  //
+  // Aucun contrôle ne regardait cela : ni le typage, ni le lint, ni les suites
+  // ne lisent le Markdown. Celui-ci coûte trois lignes.
+  for (const marqueur of ["<<<<<<<", "=======", ">>>>>>>"]) {
+    const ligne = contenu.split("\n").findIndex((l) => l.startsWith(marqueur));
+    // `=======` seul est un soulignement Markdown légitime ; on ne le compte
+    // que s'il accompagne un vrai marqueur de conflit.
+    if (ligne !== -1 && (marqueur !== "=======" || /^<<<<<<< /m.test(contenu))) {
+      problemes.push(
+        `${fichier} — marqueur de conflit « ${marqueur} » ligne ${ligne + 1} : ` +
+          "une fusion a été résolue à moitié puis committée."
+      );
+      break;
+    }
+  }
+
   // Liens Markdown relatifs.
   for (const [, cible] of contenu.matchAll(/\]\(([^)#][^)]*)\)/g)) {
     if (/^(https?:|mailto:)/.test(cible)) continue;

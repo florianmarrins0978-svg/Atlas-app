@@ -36,6 +36,11 @@ relues à chaque session) :
 12. [L'agenda Google : mes artisans auront-ils des identifiants à saisir ?](#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-)
 13. [Pourquoi tous les boutons ont-ils la même forme ?](#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-)
 14. [Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?](#14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-)
+15. [Ma TVA, je la déclare tous les mois ou tous les trimestres ?](#15-ma-tva-je-la-déclare-tous-les-mois-ou-tous-les-trimestres-)
+16. [L'IA se sert-elle de mes réglages pour faire les devis ?](#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-)
+17. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
+18. [À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?](#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-)
+19. [Une équipe part cinq jours en déplacement : comment on gère ça ?](#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-)
 
 ---
 
@@ -552,12 +557,45 @@ plus de travail qu'un test dans l'affichage, et c'est la seule version honnête 
 un salarié qui découvre votre marge parce qu'il a su regarder, c'est pire que
 pas de restriction du tout, puisque vous vous croyiez protégé.
 
-### Ce qui reste à trancher
+### Tranché le 13 août 2026 : quatre rôles, et une portée qui se règle par personne
 
 **Le salarié voit-il le planning de toute l'entreprise, ou seulement ses
-chantiers à lui ?** Question posée le 7 août 2026, réponse remise à plus tard :
-*« attends, fais déjà tout le reste, on en reparle après. »* Elle change le
-travail et elle change ce qui se vend.
+chantiers à lui ?** Question posée le 7 août, réponse remise (*« attends, fais
+déjà tout le reste, on en reparle après »*), puis donnée le 13 août :
+
+> *« Accès à tout, mais le patron choisira s'il a accès qu'à ses chantiers ou à
+> tout. »*
+
+**Ce n'est ni l'une ni l'autre des deux options proposées.** C'est un réglage
+**par personne**, posé sous le rôle du salarié : deux salariés peuvent ne pas
+voir la même chose. Et **le défaut est « tout »** — un salarié invité ce matin
+voit le planning entier tant que son patron n'a rien restreint. Restreindre est
+un geste, pas un état de départ.
+
+**Un quatrième rôle est ajouté le même jour : le commercial.** Il vend, il
+n'engage pas.
+
+| Qui | Ce qu'il voit |
+|---|---|
+| **Vous, l'éditeur** | Tout, **plus** le vocabulaire du métier |
+| **Le patron** — *ce qui se vend* | Toute son entreprise, sans exception |
+| **Le commercial** | Les chantiers, le planning, les devis **et les prix** — il en a besoin pour vendre. Ni les factures, ni la TVA, ni l'IBAN, ni les accès, ni l'abonnement. Il lit les tarifs, il ne les change pas |
+| **Le salarié** | Le planning et ses chantiers, les devis **sans aucun montant**. Le patron choisit s'il voit tout le planning ou ses seuls chantiers |
+
+**Attention à un mot qui trompe :** dans Atlas, une « équipe » n'est pas un
+groupe de personnes, c'est une **file du planning** — combien de chantiers
+partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront
+jamais l'application ; un commercial a un compte et ne conduit aucun chantier.
+Les réglages tiennent donc **deux listes séparées** : *qui a accès*, et *vos
+équipes*.
+
+### Ce qui reste vrai, et qui n'est pas encore fait
+
+**Rien de ce tableau n'est en place au 13 août 2026.** La base ne connaît que
+deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès,
+et surtout **rien ne filtre ce qui est envoyé** : un membre voit aujourd'hui
+tous les prix et tous les montants. Le dessin de ces écrans existe
+(`maquettes/atlas-reglages-equipe.html`) ; le code, non.
 
 ---
 
@@ -890,3 +928,268 @@ ligne (`src/lib/agenda-externe.ts`). Le nouveau code n'ajoute qu'une chose : la
 manière d'aller chercher les rendez-vous. Deux fournisseurs, une seule règle —
 c'est ce qui évite que le planning finisse par répondre différemment selon le
 calendrier branché.
+
+## 15. Ma TVA, je la déclare tous les mois ou tous les trimestres ?
+
+*Posée le 2026-08-12.* Vous aviez raison de le demander : l'écran était découpé
+en trimestres, et personne n'avait écrit pourquoi.
+
+### La réponse courte
+
+**Tous les mois, par défaut.** La déclaration de TVA au régime réel normal —
+le formulaire CA3 — est mensuelle. Le trimestre n'est pas un choix libre : c'est
+une **option**, ouverte seulement si votre TVA due de l'année précédente est
+**inférieure à 4 000 €**. Au-dessus, on revient au mois.
+
+### Ce qui change en 2027, et qui vous concerne
+
+Il existe encore aujourd'hui un troisième cas : le **régime réel simplifié**,
+une déclaration annuelle avec deux acomptes en juillet et décembre. **Il
+disparaît au 1er janvier 2027** — voté à l'article 38 de la loi de finances pour
+2025 (loi n° 2025-127 du 14 février 2025), ses modalités ajustées par celle pour
+2026. Toutes les entreprises basculent alors au réel normal : mensuel ou
+trimestriel.
+
+Autrement dit, **la question « mois ou trimestre » sera la seule qui se pose**.
+C'est pour cela que l'application ne propose que ces deux-là.
+
+### Ce qu'Atlas ne vous dira jamais, et pourquoi
+
+**Lequel des deux vous concerne.** Le seuil des 4 000 € porte sur la TVA
+**due** : ce que vous avez collecté *moins* ce que vous déduisez sur vos achats.
+Atlas ne connaît que la première — il ne voit ni votre gazole, ni votre
+tronçonneuse, ni votre assurance.
+
+Il ne peut donc pas calculer si vous avez droit au trimestre, et il ne doit pas
+le laisser croire. C'est la même règle que pour les prix : sans source fiable,
+on n'écrit pas. **Votre comptable tranche ; l'application obéit.**
+
+### Où ça se règle
+
+**Réglages → Votre TVA**, deux boutons : « Tous les mois » ou « Tous les
+trimestres ». Le mois est coché d'avance, puisque c'est le défaut légal. L'écran
+de TVA et son calendrier suivent votre choix — douze mois d'un côté, quatre
+trimestres de l'autre.
+
+---
+
+## 16. L'IA se sert-elle de mes réglages pour faire les devis ?
+
+*Question posée le 13 août 2026, en dessinant l'écran des tarifs.*
+
+### Oui — et dans un ordre précis, qui ne laisse aucune place à l'invention
+
+Quand Atlas doit mettre un prix sur une ligne, il fait toujours la même chose,
+dans cet ordre :
+
+| | Ce qu'il fait |
+|---|---|
+| **1** | Il cherche dans **vos tarifs**. Un seul correspond : il le prend, tel quel |
+| **2** | Plusieurs correspondent : **il ne choisit pas**. Il vous les montre et vous laissez trancher |
+| **3** | Aucun ne correspond : il **calcule** avec vos coûts (durée × ouvriers × coût journalier, + le chef, + le déplacement, + votre marge) |
+| **4** | Il ne peut pas calculer : il écrit **« prix à renseigner »** et se tait |
+
+Le code le dit dans ces mots : *« jamais de prix inventé, jamais de choix
+arbitraire »*.
+
+### Ce qui ne part JAMAIS chez un fournisseur d'IA
+
+**Votre identité — nom, adresse, SIRET, IBAN — n'est jamais envoyée au modèle.**
+Elle est recopiée dans le document au moment où il est créé, c'est tout. Ce qui
+identifie votre entreprise et votre banque ne sort pas de chez vous.
+
+Ce qui sert au modèle, en revanche : **le vocabulaire du métier** (les mots, pour
+comprendre votre dictée) et **ce que vous avez chiffré par le passé**.
+
+### Le problème que cette question a fait apparaître
+
+Le calcul du point 3 s'appuie sur **cinq chiffres enregistrés pour votre
+entreprise** :
+
+| | Valeur posée aujourd'hui |
+|---|---|
+| Un ouvrier, à la journée | 200 € |
+| Un chef d'équipe, à la journée | 280 € |
+| Déplacement, au forfait | 35 € |
+| Votre marge | 20 % |
+| TVA par défaut | 20 % |
+
+**Aucun écran ne permet de les changer.** Ils décident pourtant du prix proposé
+chaque fois qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte 260 €
+par jour verra donc des prix trop bas — **sans jamais savoir d'où ils viennent**.
+
+C'est pire qu'un réglage absent : c'est un réglage qui existe, qui agit, et qu'on
+ne peut pas voir. L'écran est dessiné
+(`maquettes/atlas-reglages-tarifs.html`) ; il reste à le coder.
+
+---
+
+## 17. Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien
+
+*Direction posée par le patron le 13 août 2026 :*
+
+> *« L'idée, c'est de créer un deuxième cerveau au sein de l'application, pour
+> qu'elle s'utilise comme un assistant de gestion / devis, facture, planning.
+> Elle doit apprendre, enregistrer, s'améliorer, s'auto-alimenter. »*
+
+C'est la suite d'une phrase plus ancienne, et il faut les lire ensemble :
+*« si l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ?
+Pour s'améliorer, elle a besoin de mémoire. »*
+
+### Le piège déjà payé une fois, et qu'il ne faut pas refaire
+
+Une table `historique_prix` existait. Le chiffrage la **lisait**. Et
+**l'application ne l'écrivait jamais**. Une mémoire que personne n'alimente n'est
+pas une mémoire — c'est du décor.
+
+**La bonne question n'est donc pas « avons-nous une base pour retenir ? », mais
+« qui l'écrit, et quand ? »** Chaque fois qu'on parlera d'apprentissage, c'est
+cette question-là qu'il faudra poser en premier.
+
+### Ce qui apprend vraiment aujourd'hui
+
+| Ce qui apprend | Ce qu'il retient | Alimenté ? |
+|---|---|---|
+| **La mémoire des prix** | Ce que vous avez **réellement** facturé sur un chantier comparable — rappelé sur le suivant | **oui** |
+| **Les cinq grilles** | Abattage, fendage, dessouchage, haie, grumes : elles se remplissent de vos devis | **oui** |
+| **La base documentaire** | Des fragments de texte indexés, réutilisables par l'agent | **oui** |
+
+Un point de méthode important : le prix retenu est présenté comme un **rappel**,
+jamais comme un calcul. *« Vous aviez facturé 180 € »* se vérifie d'un coup
+d'œil ; *« ça fait 180 € »* demande qu'on fasse confiance.
+
+### Ce qui ne retient rien, et qui manque au deuxième cerveau
+
+- **Vos coûts** (question 15) : figés à des valeurs d'usine, ni réglables ni
+  apprises.
+- **Le temps réel des chantiers.** Rien n'enregistre combien de temps un chantier
+  a *vraiment* pris. Atlas ne peut donc pas savoir si ses estimations de durée
+  sont justes — or c'est la durée qui fait le prix au point 3. **C'est le manque
+  le plus lourd**, et le plus facile à combler : une question à la clôture d'un
+  chantier suffirait.
+- **Les délais de paiement.** Rien ne retient qu'un client règle à 45 jours quand
+  il en a promis 30.
+- **Ce que le client refuse.** Un devis corrigé ou refusé porte une information
+  de prix ; elle n'est pas retenue.
+
+### Ce que ça veut dire concrètement
+
+Le deuxième cerveau **existe déjà en partie** : les prix, les grilles, les
+documents. Ce qui lui manque, ce ne sont pas des idées, ce sont **des moments où
+l'application demande** : à la fin d'un chantier, à la réception d'un paiement,
+au refus d'un devis. Chaque moment est un lot de quelques jours ; chacun rend
+l'agent plus juste sur le devis suivant.
+
+---
+
+## 18. À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?
+
+*Question posée le 14 août 2026, capture de l'écran « Catalogue » à l'appui.*
+
+### Ce que c'est
+
+**Le vocabulaire du métier, partagé par toutes les entreprises qui utilisent
+Atlas.** Chaque entrée porte un nom officiel et tous les mots qui veulent dire la
+même chose : « Élagage » y traîne derrière lui *abattage*, *démontage*,
+*dessouchage*, et les variantes *sapin*, *arbre*, *conifère*.
+
+### À quoi ça sert, concrètement
+
+À **comprendre ce que vous dictez**. Quand vous dites *« faut me démonter le
+sapin du fond »*, aucun mot de la phrase n'est « élagage » — c'est le catalogue
+qui fait le rapprochement. Sans lui, la dictée ne se rattache à rien et l'agent
+ne sait pas quelle prestation écrire sur le devis.
+
+**Il ne porte aucun prix**, et c'est voulu. Vos prix vivent ailleurs :
+
+| Où | Ce qu'on y trouve |
+|---|---|
+| **Mes tarifs** | Ce que vous tapez à la main : un intitulé, un montant, une unité |
+| **Mes prix** | Les cinq grilles du métier — abattage, fendage, dessouchage, haie, grumes |
+| **La mémoire des prix** | Ce que vous avez réellement facturé, rappelé sur le chantier suivant (question 17) |
+| **Le catalogue** | Des **mots**, rien d'autre |
+
+### Pourquoi vous ne pouvez rien y écrire
+
+Parce qu'il est **commun à tout le monde**. Une ligne ajoutée depuis votre
+téléphone changerait le vocabulaire de tous les autres artisans, sans qu'ils
+l'aient demandé ni qu'ils puissent la corriger. Aujourd'hui, il n'est donc rempli
+que par Atlas.
+
+Ce n'est pas un refus définitif : on peut très bien lui ajouter **vos** mots à
+vous, visibles de vous seul, par-dessus le vocabulaire commun. Ça n'existe pas
+encore, personne ne l'a demandé jusqu'ici.
+
+### Deux défauts que la capture a révélés, le même jour
+
+| Défaut | La vérité |
+|---|---|
+| **Pas de flèche de retour** | Simple oubli. L'en-tête de l'écran sait afficher la flèche — la page ne la lui a jamais demandée. On y arrive depuis *Tarifs & catalogue*, et on en repart par la barre du bas. |
+| **« Aucun prix encore constaté par votre entreprise »** | **Cette phrase ne changera jamais**, quoi que vous fassiez. |
+
+La seconde mérite d'être expliquée, parce qu'elle est exactement le piège décrit
+en question 17 — et qu'il traîne encore ici.
+
+**Il y a eu deux mémoires des prix.** La première (`historique_prix`) n'était
+jamais écrite : le fameux décor. Elle a été remplacée par une seconde
+(`lecons_prix`), celle qui marche vraiment, qui retient ce que vous facturez et
+vous le rappelle sur le chantier d'après.
+
+**L'écran du catalogue, lui, est resté branché sur l'ancienne.** Il interroge une
+mémoire vide, et annonce donc fidèlement qu'elle est vide. Vos prix sont bien
+retenus — c'est cet écran-là qui regarde au mauvais endroit.
+
+**Ce qu'il reste à faire :** remettre la flèche, et rebrancher l'écran sur la
+bonne mémoire. Les deux sont inscrits dans `TODO.md` §0 octovicies bis, en
+attente de votre feu vert — rien n'a encore été touché.
+
+---
+
+## 19. Une équipe part cinq jours en déplacement : comment on gère ça ?
+
+**Votre question, le 14 août 2026 :** *« Comment on fait si jamais il y a une
+équipe qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un
+moyen de l'ajouter au planning ? »*
+
+### La réponse courte
+
+**Si toute l'entreprise part : c'est déjà possible aujourd'hui.** Vous créez
+l'événement dans votre agenda Google relié, et les cinq jours se bloquent —
+Atlas ne proposera plus aucune date à un client sur cette période. Une période
+de plusieurs jours occupe toutes les demi-journées qu'elle traverse, week-ends
+compris.
+
+**Si une seule équipe part : rien ne convient.** Et il vaut mieux le savoir
+avant de compter dessus.
+
+### Pourquoi l'agenda ne suffit pas dans ce cas
+
+Une période occupée dans votre agenda bloque **tout le monde**, pas une équipe.
+C'est un choix délibéré, pas un oubli : Atlas ne peut pas deviner si une équipe
+sait partir sans vous. Avec deux équipes dont une seule en déplacement, vous
+perdriez cinq jours de celle qui reste.
+
+L'autre levier — le nombre d'équipes, dans Réglages → Équipe — est **un nombre
+sans dates**. Le passer de 2 à 1 marche, jusqu'au jour où l'on oublie de le
+remonter.
+
+### Un point qui surprend, et qu'il vaut mieux connaître
+
+**L'équipe inscrite sur un chantier est une étiquette, pas une contrainte.**
+Atlas compte les chantiers par demi-journée et compare ce compte au nombre
+d'équipes ; il ne vérifie pas *laquelle* est libre. Deux chantiers le même
+matin, tous les deux sur « Équipe 1 » : Atlas les accepte.
+
+Cela ne gêne pas tant que vous répartissez vous-même. Cela devient faux le jour
+où une équipe est absente — d'où la question.
+
+### Les deux façons de le régler, et ce qu'elles coûtent
+
+| | Ce que ça fait | Ce que ça coûte |
+|---|---|---|
+| **A — L'absence datée** | « Équipe 1 absente du 8 au 12 septembre ». Atlas la retire du compte ces jours-là, et tout revient normal le 13 sans rien défaire | Petit : une table, une règle, un écran dans Réglages → Équipe |
+| **B — L'occupation par équipe** | Atlas sait qui est où, et refuse deux chantiers sur la même équipe au même moment | Gros : il faudrait choisir l'équipe **avant** de proposer une date au client, donc toucher au parcours du devis |
+
+**Recommandation : A d'abord.** B seulement si le télescopage de deux chantiers
+sur une même équipe se produit vraiment — sinon, c'est du travail dont on ne
+verra jamais l'effet.

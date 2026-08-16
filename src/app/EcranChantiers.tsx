@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, texteSituation } from "@/lib/design-tokens";
 import { nombreEnLettres } from "@/lib/nombre-en-lettres";
+import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import FormulaireNouveauChantier from "./chantiers/nouveau/FormulaireNouveauChantier";
@@ -176,12 +177,26 @@ export default function EcranChantiers({
               Bonjour {prenom}
             </p>
           )}
-          <h1
-            className="mt-3.5 whitespace-nowrap text-[36px] leading-[1.02]"
-            style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
-          >
-            Vos chantiers
-          </h1>
+          {/*
+            **L'assistant se pose à côté du titre**, comme sur les autres écrans
+            — cet accueil ne passe pas par `EnTeteEcran`, la pièce partagée ne
+            peut donc pas le poser ici.
+
+            `whitespace-nowrap` sur le titre : « Vos chantiers » ne doit pas se
+            replier, et il ne le fait pas — mesuré, il reste sur une ligne avec
+            les 44 px du bouton à côté.
+          */}
+          <div className="flex items-start justify-between gap-4">
+            <h1
+              className="mt-3.5 whitespace-nowrap text-[36px] leading-[1.02]"
+              style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
+            >
+              Vos chantiers
+            </h1>
+            <div className="mt-3.5 flex-shrink-0">
+              <BoutonAssistant />
+            </div>
+          </div>
           {/* Le compteur, en lettres : un chiffre isolé dans un bandeau de
               capitales se lit comme une donnée de tableau de bord. L'attribut
               sert aux suites de bout en bout — un libellé se réécrit, une

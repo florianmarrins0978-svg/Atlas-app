@@ -15,9 +15,17 @@ import { suiteDeLaReponse, type ReponseClient } from "../src/lib/suite-de-la-rep
 // le lien menait ailleurs : un écran qui annonce un geste et conduit à un autre
 // fait douter de tout le reste.
 //
+// **Corrigé le 13 août 2026, par lui :** *« lorsque je clique sur corriger le
+// devis, je dois arriver directement sur la page du devis pour pouvoir le
+// corriger. Et aujourd'hui, ce n'est pas le cas. »* La veille, « Corriger le
+// devis » menait à l'écran d'envoi, par crainte de reprendre le devis à sa
+// place. La crainte visait juste, mais pas ici : **c'est lui qui appuie**, sur
+// un bouton qui annonce la correction. Le geste est le sien.
+//
 // Fonction pure, éprouvée sans base ni navigateur (`CLAUDE.md` §3). Ce qui est
-// tenu ici n'est pas l'apparence du lien, c'est **la règle** : accepté mène au
-// document figé, tout le reste mène à l'écran qui sait reprendre.
+// tenu ici n'est pas l'apparence du lien, c'est **la règle** : accepté ouvre le
+// document figé sans y toucher ; une correction ouvre le document APRÈS
+// reprise ; un refus ou un silence laisse le choix, sur l'écran d'envoi.
 
 let passed = 0;
 let failed = 0;
@@ -46,10 +54,17 @@ test("accepté : le devis VALIDÉ, pas la fiche du chantier", () => {
   assert.ok(!/chantier/i.test(s.libelle), "le lien ne doit plus parler du chantier");
 });
 
-test("correction demandée : là où le devis peut être repris", () => {
+test("correction demandée : le DEVIS, et modifiable", () => {
   const s = suiteDeLaReponse(CHANTIER, "correction");
-  assert.equal(s.href, `/chantiers/${CHANTIER}/export`);
+  assert.equal(s.href, `/chantiers/${CHANTIER}/devis-complet`);
   assert.match(s.libelle, /corriger/i);
+  // Sans ce drapeau, il tomberait sur le document figé — celui qui refuse la
+  // première frappe. C'est lui qui rend la demande du 13 août réalisable.
+  assert.equal(
+    s.reprendreAvant,
+    true,
+    "le devis n'est pas repris avant d'ouvrir la page : il arriverait sur un document mort"
+  );
 });
 
 test("refus : la reprise, que la carte annonçait déjà", () => {
@@ -64,19 +79,31 @@ test("lien périmé sans réponse : le silence se reprend comme un refus", () =>
   assert.match(s.libelle, /reprendre/i);
 });
 
-test("un devis À CORRIGER ne mène JAMAIS au document figé", () => {
-  // **C'est le piège que ce contrôle existe pour empêcher.** Le mener sur
-  // `devis-complet` paraîtrait plus direct — « ouvrir le devis pour le
-  // modifier » — mais le devis parti refuse la première frappe, et le patron
-  // se retrouverait devant un document mort sans comprendre pourquoi. La
-  // reprise ouvre une nouvelle version, et c'est SON geste.
+test("jamais le document FIGÉ sans l'avoir repris d'abord", () => {
+  // **Le piège que ce contrôle existe pour empêcher, et il n'a pas changé le
+  // 13 août — seule la façon de l'éviter a changé.** Mener sur `devis-complet`
+  // est bien ce que le patron demande ; mais un devis parti refuse la première
+  // frappe, et il se retrouverait devant un document mort sans comprendre
+  // pourquoi. La destination est donc autorisée UNIQUEMENT accompagnée de la
+  // reprise. Les deux séparés reproduiraient exactement l'ancien défaut.
   for (const reponse of ["correction", "refusee", null] as ReponseClient[]) {
     const s = suiteDeLaReponse(CHANTIER, reponse);
-    assert.ok(
-      !s.href.endsWith("/devis-complet"),
-      `« ${reponse} » mène au document figé : le patron ne pourrait rien y modifier`
-    );
+    if (s.href.endsWith("/devis-complet")) {
+      assert.ok(
+        s.reprendreAvant,
+        `« ${reponse} » ouvre le document figé sans le reprendre : le patron ne pourrait rien y modifier`
+      );
+    }
   }
+});
+
+test("un devis ACCEPTÉ n'est jamais repris d'office", () => {
+  // **La limite de la demande du 13 août.** Le document accepté est celui sur
+  // lequel les deux se sont mis d'accord : le reprendre en l'ouvrant le
+  // remplacerait sans le dire, et le patron perdrait la trace de ce que son
+  // client a réellement approuvé.
+  const s = suiteDeLaReponse(CHANTIER, "acceptee");
+  assert.equal(s.reprendreAvant, false, "ouvrir un devis accepté en ouvrirait une nouvelle version");
 });
 
 test("aucune carte ne mène plus à la fiche nue du chantier", () => {

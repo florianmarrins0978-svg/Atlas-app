@@ -4,6 +4,7 @@ import type {
   ResultatLLMAvecOutils,
   MessageConversation,
   DefinitionOutil,
+  ImagePourLecture,
 } from "./interface";
 import { erreurIA } from "../../errors";
 import { getConfigIA } from "../../config";
@@ -41,6 +42,79 @@ function construireMessagesAnthropic(historique: MessageConversation[]): { role:
 // fonctionnera normalement une fois ANTHROPIC_API_KEY définie.
 export const fournisseurLLMAnthropic: FournisseurLLM = {
   nom: "anthropic",
+  /**
+   * Lire une image — un ticket de caisse, en l'occurrence.
+   *
+   * **`max_tokens` reste petit (512) exprès.** On attend un objet de cinq
+   * champs, pas un commentaire sur la photo. Un plafond large invite le modèle
+   * à broder, et il faut ensuite deviner où finit la donnée.
+   *
+   * **`temperature: 0`** : lire un chiffre n'est pas une tâche créative. Deux
+   * lectures du même ticket doivent donner le même montant, sans quoi le patron
+   * verrait le total changer en rescannant.
+   */
+  async lireImage(systeme: string, consigne: string, image: ImagePourLecture): Promise<ResultatLLM> {
+    const cle = getConfigIA().anthropicApiKey;
+    if (!cle) {
+      return { succes: false, erreur: erreurIA("cle_api_absente", "ANTHROPIC_API_KEY n'est pas configurée.") };
+    }
+    try {
+      const controller = new AbortController();
+      // Plus long que pour du texte : une photo de ticket pèse, et le patron
+      // est souvent sur le réseau du bord de route.
+      const timeout = setTimeout(() => controller.abort(), 45_000);
+      const reponse = await fetch(`${getConfigIA().anthropicBaseUrl}/v1/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": cle,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 512,
+          temperature: 0,
+          system: systeme,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "image", source: { type: "base64", media_type: image.mimeType, data: image.base64 } },
+                { type: "text", text: consigne },
+              ],
+            },
+          ],
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (reponse.status === 401 || reponse.status === 403) {
+        return { succes: false, erreur: erreurIA("cle_api_refusee", `ANTHROPIC_API_KEY est refusée (HTTP ${reponse.status}).`) };
+      }
+      if (reponse.status === 429) {
+        return { succes: false, erreur: erreurIA("quota_depasse", "Quota Anthropic dépassé.") };
+      }
+      if (!reponse.ok) {
+        console.error(`Lecture d'image Anthropic échouée : HTTP ${reponse.status}`);
+        return { succes: false, erreur: erreurIA("fournisseur_indisponible", `Erreur du fournisseur (${reponse.status}).`) };
+      }
+      const donnees = (await reponse.json()) as { content?: { type: string; text?: string }[] };
+      const texte = donnees.content?.find((b) => b.type === "text")?.text;
+      if (!texte) {
+        return { succes: false, erreur: erreurIA("reponse_invalide", "Le fournisseur n'a rien renvoyé de lisible.") };
+      }
+      return { succes: true, texte };
+    } catch (err) {
+      const nom = err instanceof Error ? err.name : "";
+      if (nom === "AbortError") {
+        return { succes: false, erreur: erreurIA("fournisseur_indisponible", "La lecture a dépassé le temps imparti.") };
+      }
+      console.error("Lecture d'image Anthropic échouée :", err);
+      return { succes: false, erreur: erreurIA("fournisseur_indisponible", "Le fournisseur n'a pas répondu.") };
+    }
+  },
+
   async genererTexte(systeme: string, message: string): Promise<ResultatLLM> {
     const cle = getConfigIA().anthropicApiKey;
     if (!cle) {

@@ -9,6 +9,8 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
 import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { creerChantierAction } from "./actions";
+import ChoixCivilite from "@/components/atlas/ChoixCivilite";
+import type { Civilite } from "@/lib/civilite";
 
 // Intégration réelle : la création passe désormais par une Server Action
 // (creerChantierAction), qui persiste le chantier (et le client s'il est
@@ -48,6 +50,7 @@ export default function FormulaireNouveauChantier({
 } = {}) {
   const router = useRouter();
   const [nomClient, setNomClient] = useState("");
+  const [civilite, setCivilite] = useState<Civilite | null>(null);
   const [telephone, setTelephone] = useState("");
   const [email, setEmail] = useState("");
   const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(null);
@@ -108,6 +111,7 @@ export default function FormulaireNouveauChantier({
     try {
       const { id } = await creerChantierAction({
         nomClient,
+        civilite: civilite ?? undefined,
         telephone,
         email,
         canal: canal ?? undefined,
@@ -204,9 +208,13 @@ export default function FormulaireNouveauChantier({
               déduit désormais du client, sinon de l'adresse, sinon de la date
               (`src/lib/nom-chantier.ts`). Rien n'est fabriqué : c'est une
               étiquette, pas une donnée sur le chantier. */}
+          {/* **La civilité se choisit AU-DESSUS du nom**, comme il l'a demandé
+              le 13 août 2026. Rien n'est présélectionné : son silence ne doit
+              pas devenir un choix (`src/components/atlas/ChoixCivilite.tsx`). */}
+          <ChoixCivilite valeur={civilite} onChange={setCivilite} />
           <Field
             label="Nom du client (facultatif)"
-            placeholder="M. Bernard"
+            placeholder="Bernard"
             big
             value={nomClient}
             onChange={setNomClient}

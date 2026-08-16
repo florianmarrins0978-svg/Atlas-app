@@ -38,6 +38,11 @@ export const users = pgTable("users", {
   // uniquement, jamais le mot de passe en clair. Nullable : un utilisateur
   // créé via un futur provider OAuth n'en a pas besoin.
   passwordHash: text("password_hash"),
+  // « Me déconnecter partout » (migration 0042) : tout jeton émis AVANT cet
+  // instant est refusé par `getCurrentCtx`. Atlas ne garde aucune session en
+  // base — il n'y a donc rien à supprimer pour fermer une session, mais on peut
+  // refuser ce qui a été signé avant. `null` : jamais demandé.
+  jetonsValidesDepuis: timestamp("jetons_valides_depuis", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -80,9 +85,53 @@ export const entreprises = pgTable("entreprises", {
   telephone: text("telephone"),
   email: text("email"),
   iban: text("iban"),
+  /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0039). */
+  formeJuridique: text("forme_juridique"),
+  /**
+   * Le régime de TVA, **déclaré et jamais déduit** (migration 0039).
+   *
+   * `facture-pdf.ts` devinait jusqu'ici la franchise en regardant si le taux
+   * appliqué valait zéro — donc il tirait une situation fiscale d'un chiffre
+   * saisi chantier par chantier. Les deux sens étaient faux : une franchise
+   * perdait sa mention obligatoire dès qu'un 20 % traînait, un assujetti voyait
+   * s'imprimer « TVA non applicable » sur une pièce comptable.
+   *
+   * Le défaut est « assujettie » : c'est celui qui ne change rien au
+   * comportement observé jusqu'ici, et une franchise se déclare d'un geste.
+   */
+  regimeTva: text("regime_tva", { enum: ["assujettie", "franchise"] })
+    .notNull()
+    .default("assujettie"),
+  /** Numéro de TVA intracommunautaire — attendu sur la facture d'un assujetti. */
+  numeroTva: text("numero_tva"),
+  /** Un IBAN à un nom différent de l'entreprise inquiète au lieu de rassurer. */
+  titulaireCompte: text("titulaire_compte"),
+  /**
+   * Les conditions qui s'impriment sur un devis (migration 0040).
+   *
+   * **Une valeur nulle veut dire « éteint »**, sauf la validité dont le défaut
+   * est celui d'avant — 30 jours, la constante de `devis-pdf.ts`. Deux champs
+   * pour une seule idée (un nombre et un « actif ») finiraient par se
+   * contredire (`src/lib/conditions-documents.ts`).
+   */
+  validiteDevisJours: integer("validite_devis_jours").default(30),
+  acomptePourcent: numeric("acompte_pourcent", { precision: 5, scale: 2 }),
+  delaiPaiementJours: integer("delai_paiement_jours"),
+  moyensPaiement: text("moyens_paiement"),
+  rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
+  textePiedDocuments: text("texte_pied_documents"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
+  // Comment le relevé de TVA découpe l'année. **Le mois est le défaut LÉGAL**
+  // (déclaration CA3 mensuelle ; le trimestre est une option sous condition de
+  // TVA due), pas une préférence d'écran — voir `drizzle/0035_periodicite_tva.sql`.
+  //
+  // C'est une DÉCLARATION du patron, jamais une déduction : le seuil qui ouvre
+  // le trimestre porte sur la TVA due, et Atlas ne connaît que la collectée.
+  periodiciteTva: text("periodicite_tva", { enum: ["mensuelle", "trimestrielle"] })
+    .notNull()
+    .default("mensuelle"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -157,6 +206,11 @@ export const clients = pgTable(
       .notNull()
       .references(() => entreprises.id, { onDelete: "cascade" }),
     nom: text("nom").notNull(),
+    // **NULL est un état normal, pas une donnée manquante** — une société n'est
+    // ni « Mr » ni « Mme », et un client saisi à la volée n'a pas toujours eu
+    // droit à un appui de plus. Ce que NULL vaut à l'écran est décidé dans
+    // `src/lib/civilite.ts`, jamais ici (migration 0038).
+    civilite: text("civilite", { enum: ["mr", "mme"] }),
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
@@ -462,6 +516,10 @@ export const devis = pgTable(
     entrepriseIban: text("entreprise_iban"),
 
     clientNom: text("client_nom"),
+    // Recopiée comme le nom : un document dit comment on s'adressait à son
+    // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
+    // doit pas réécrire un devis déjà parti (migration 0038).
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),
@@ -470,6 +528,15 @@ export const devis = pgTable(
 
     dateEmission: date("date_emission").notNull(),
     dateValidite: date("date_validite"),
+    /**
+     * La durée de validité RECOPIÉE au jour de la création (migration 0040).
+     *
+     * Lire le réglage au moment de composer le PDF ferait changer la durée
+     * d'engagement d'un devis déjà envoyé, simplement parce que l'artisan a
+     * corrigé ses réglages entre-temps — pendant que le client a une autre
+     * feuille sous les yeux (`ARCHITECTURE.md` §102).
+     */
+    validiteJours: integer("validite_jours"),
     conditionsPaiement: text("conditions_paiement"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
@@ -889,11 +956,27 @@ export const factures = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /**
+     * Le régime de TVA **au jour de l'émission** (migration 0039).
+     *
+     * Figé ici, et non lu en direct : une facture émise sous franchise garde sa
+     * mention « art. 293 B » même si l'artisan devient assujetti l'année
+     * suivante. La lire dans `entreprises` réécrirait le passé sur une pièce
+     * comptable.
+     *
+     * Nul pour les factures antérieures à la migration : le PDF se rabat alors
+     * sur le taux appliqué, exactement comme avant.
+     */
+    entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
 
     clientNom: text("client_nom"),
+    // Recopiée comme le nom : un document dit comment on s'adressait à son
+    // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
+    // doit pas réécrire un devis déjà parti (migration 0038).
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),
@@ -1078,9 +1161,13 @@ export const grillePrix = pgTable(
      */
     // `dessouchage` et `grumes` ajoutés le 8 août 2026 (migration 0028), sur sa
     // réponse : « le dessouchage oui, et les grumes aussi ».
-    nature: text("nature", { enum: ["fendage", "abattage", "haie", "dessouchage", "grumes"] })
-      .notNull()
-      .default("fendage"),
+    //
+    // **Liste ouverte depuis le 14 août 2026** (migration 0041) : le patron
+    // ajoute ses propres travaux, et une liste fermée les aurait refusés au
+    // moment où il pose son premier prix — l'erreur aurait accusé le prix. Ce
+    // qui protège la table n'a pas bougé : une clé de case inconnue n'écrit
+    // nulle part (`poserPrixGrille`).
+    nature: text("nature").notNull().default("fendage"),
     /** La case, `h10|d40` ou `au_pied|d70` — fabriquée par `src/lib/grille-prix.ts`. */
     cellule: text("cellule").notNull(),
     prix: numeric("prix", { precision: 10, scale: 2 }).notNull(),
@@ -1089,6 +1176,82 @@ export const grillePrix = pgTable(
     constateLe: timestamp("constate_le", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("grille_prix_cellule_uk").on(t.entrepriseId, t.nature, t.cellule)]
+);
+
+/**
+ * Les tranches d'un axe, quand l'artisan a réglé les siennes (migration 0041).
+ *
+ * **Sa demande du 14 août 2026 :** *« je dois pouvoir ajouter ou retirer des
+ * cases. »* Les huit diamètres, six hauteurs et trois façons d'abattre venaient
+ * de ses devis du 8 août — mais figées dans le code depuis.
+ *
+ * **Cette table est VIDE tant qu'il n'a rien touché**, et c'est délibéré : les
+ * valeurs de départ vivent dans `src/lib/grille-prix.ts`, où elles restent
+ * discutables sans lire une requête. Les lignes n'apparaissent qu'au premier
+ * geste sur un axe — on recopie alors les tranches de départ, puis on applique
+ * son geste (`materialiserAxe`).
+ *
+ * **`retireeLe` plutôt qu'une suppression :** un retrait doit pouvoir se
+ * défaire, les prix de `grille_prix` doivent survivre au retrait de leur
+ * tranche, et la clé ne doit jamais pouvoir être réemployée pour une autre
+ * tranche — sans quoi un prix hériterait d'une case qui n'était pas la sienne.
+ */
+export const tranchesGrille = pgTable(
+  "tranches_grille",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    axe: text("axe", { enum: ["diametre", "hauteur", "technique"] }).notNull(),
+    /** La clé écrite dans `grille_prix.cellule`. Elle ne change jamais. */
+    cle: text("cle").notNull(),
+    /** Borne basse EXCLUE. Une façon d'abattre porte 0 : c'est son libellé qui dit tout. */
+    de: numeric("de", { precision: 10, scale: 2 }).notNull().default("0"),
+    /** Borne haute INCLUSE. `null` pour la dernière tranche, ouverte. */
+    a: numeric("a", { precision: 10, scale: 2 }),
+    libelle: text("libelle").notNull(),
+    rang: integer("rang").notNull().default(0),
+    retireeLe: timestamp("retiree_le", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("tranches_grille_cle_uk").on(t.entrepriseId, t.axe, t.cle),
+    index("tranches_grille_axe_idx").on(t.entrepriseId, t.axe, t.rang),
+  ]
+);
+
+/**
+ * Les natures de travail d'une entreprise (migration 0041).
+ *
+ * Même mécanique que `tranches_grille` : vide tant qu'il n'a rien touché, les
+ * cinq d'origine recopiées au premier geste, et un retrait réversible.
+ *
+ * **Une nature ajoutée par lui n'est pas reconnue par le chiffrage**, et c'est
+ * la limite du geste : `proposition-prix.ts` sait retrouver un abattage ou une
+ * fente dans une dictée, pas « le broyage des branches ». Sa grille se remplit
+ * et se relit ; Atlas ne la proposera pas de lui-même. L'écran le dit —
+ * le lui laisser découvrir sur un devis serait pire.
+ */
+export const naturesGrille = pgTable(
+  "natures_grille",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    cle: text("cle").notNull(),
+    titre: text("titre").notNull(),
+    aide: text("aide").notNull().default(""),
+    axeLibelle: text("axe_libelle").notNull().default(""),
+    forme: text("forme", {
+      enum: ["une-case", "un-axe", "technique-diametre", "hauteur-diametre"],
+    }).notNull(),
+    libelleUnique: text("libelle_unique"),
+    rang: integer("rang").notNull().default(0),
+    retireeLe: timestamp("retiree_le", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("natures_grille_cle_uk").on(t.entrepriseId, t.cle),
+    index("natures_grille_rang_idx").on(t.entrepriseId, t.rang),
+  ]
 );
 
 /**
@@ -1172,3 +1335,41 @@ export const agendasExternes = pgTable(
   },
   (t) => [unique("agendas_externes_entreprise_fournisseur_uk").on(t.entrepriseId, t.fournisseur)]
 );
+
+/**
+ * Les achats du patron, et la TVA qu'il peut déduire.
+ *
+ * **Elle ne porte pas ses achats : elle porte la TVA de ses achats, telle
+ * qu'il l'a CONFIRMÉE.** Aucune règle de déductibilité n'est encodée — elles
+ * dépendent de la dépense et du véhicule, et Atlas n'a pas de source pour en
+ * juger. Il additionne ce qu'il confirme, son comptable fait le tri
+ * (`drizzle/0036_achats_tva.sql`).
+ *
+ * `tvaDeductible` est le seul montant obligatoire : un ticket de station
+ * n'affiche pas toujours son total ni son taux, et refuser l'achat serait
+ * perdre la TVA.
+ */
+export const achatsTva = pgTable("achats_tva", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  /** La date de l'ACHAT, jamais celle de la saisie : c'est elle qui range la
+   *  ligne dans une période. Un ticket de juillet scanné en septembre reste
+   *  un achat de juillet. */
+  dateAchat: date("date_achat").notNull(),
+  fournisseur: text("fournisseur").notNull(),
+  totalTtc: numeric("total_ttc", { precision: 12, scale: 2 }),
+  tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
+  tvaDeductible: numeric("tva_deductible", { precision: 12, scale: 2 }).notNull(),
+  /** Le ticket photographié, dans le stockage. `null` pour une saisie à la main. */
+  photoCle: text("photo_cle"),
+  /** Par où il est entré. Sert le jour où une lecture automatique se révèle
+   *  fautive : il faut pouvoir retrouver ce qui vient de la machine sans
+   *  toucher à ce que le patron a écrit lui-même. */
+  saisie: text("saisie", { enum: ["scan", "main"] }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  createdBy: uuid("created_by").references(() => users.id),
+});
