@@ -720,10 +720,17 @@ le bouton allait très bien. **Devant un rouge sur une suite qui touche au
 planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 `estWeekEndIso`, et éprouvé dans les deux sens.
 
-**LE DEVIS QUI TARDE : UNE TROISIÈME LIGNE, IL ATTEND DEUX MOTS (16 août).**
-`docs/maquettes/56-le-devis-qui-tarde.html`. Il désigne **le ton de la carte**
-(A discrète / B teintée) et **le nombre de jours** (4 proposé). Détail complet :
-`TODO.md` §0 novivicies.
+**LE DEVIS QUI TARDE : B ET 4 JOURS RETENUS, RESTE LE MOT (16 août).**
+`docs/maquettes/56-le-devis-qui-tarde.html`. Sa réponse : *« la B et 4 »* — carte
+teintée, quatre jours. **Il reste un seul mot à choisir**, celui de la ligne dans
+les réglages : elle se pose juste au-dessus de « Devis sans réponse », et deux
+lignes qui commencent par « Devis » ne se distinguent pas. Quatre mots proposés
+en § 3, ma préférence « Chantier sans devis ». Détail : `TODO.md` §0 novivicies.
+
+**LA LEÇON DE CE PASSAGE, ET ELLE VAUT AU-DELÀ :** une confusion entre deux
+libellés **n'existe qu'en contexte**. Montrer une ligne seule ne prouve rien —
+c'est côte à côte avec sa voisine qu'elle se juge. C'est le patron qui l'a vu, pas
+un contrôle.
 
 **⚠ LA RUBRIQUE NOTIFICATIONS EST CODÉE DEPUIS LE 14 AOÛT** — `src/lib/rappels.ts`,
 `src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql`. Deux

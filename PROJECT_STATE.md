@@ -577,8 +577,10 @@ Voir `TODO.md` pour le détail et l'ordre.
   14 août** par une autre session (`src/lib/rappels.ts`, `drizzle/0043_…`) :
   deux rappels réglables, et le délai qui se tape — « Au bout de 7 jours ». Aucun
   des deux ne couvre sa demande : ils parlent d'un devis **parti**, lui d'un
-  devis **jamais parti**. Il désigne le ton de la carte et le nombre de jours ;
-  une demi-journée ensuite. `TODO.md` §0 novivicies.
+  devis **jamais parti**. **Il a retenu la carte teintée et 4 jours** ; reste le
+  **mot de la ligne** — elle tombe au-dessus de « Devis sans réponse », et deux
+  libellés commençant par « Devis » ne se distinguent pas. Une demi-journée une
+  fois le mot choisi. `TODO.md` §0 novivicies.
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le
