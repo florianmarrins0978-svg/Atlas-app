@@ -53,6 +53,51 @@ neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
 
 
 ### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
+### 0 septvicies. La fiche d'entretien — **DEUX MAQUETTES POSÉES, sa décision attendue**
+
+**Sa demande du 16 août 2026**, captures d'une autre application à l'appui : des
+fiches de chantier pour paysagistes en contrat d'entretien — cocher ce qui a été
+fait, puis envoyer au client.
+
+**Terrain neuf** : rien dans `docs/AGENT.md` ne parle d'entretien récurrent.
+Cela suppose, si c'est retenu, un **contrat** (la liste des prestations dues), des
+**passages** récurrents, et un **rapport** par passage. C'est un troisième
+parcours à côté du devis→facture, pas une case à ajouter quelque part.
+
+**Ce qui est posé** (aucune ligne de `src/`) :
+`docs/maquettes/62-la-fiche-dentretien.html` et `63-le-rapport-au-client.html`,
+engendrées d'une seule liste par `scripts/engendrer-maquette-fiche-entretien.mjs`,
+gardées par `scripts/verifier-maquette-fiche-entretien.mjs`.
+
+**Les deux questions qui lui reviennent :**
+
+1. **Le geste sur le chantier** — la liste d'un bloc (A), rangée par familles
+   avec un compte (B), ou trois états dont « sans objet » (C). C coûte trois
+   fois plus de gestes, y compris sur les seize lignes qui ne le concernent pas
+   ce jour-là.
+2. **Ce que voit le client** — tout comme l'autre application (A), seulement ce
+   qui a été fait (B), ou le reste replié en une phrase (C). B est le plus
+   lisible et le plus risqué : quatre lignes pour le prix d'un passage complet
+   peuvent faire douter, et lui valoir l'appel.
+
+**Ce qui n'est pas à trancher, et qui est déjà écrit dans les planches** : la
+liste vient du contrat ; ce qui n'est pas coché n'est pas une faute ; l'envoi
+emprunte le chemin qui porte déjà devis et factures.
+
+### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
+
+### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
+
+Trouvé en cherchant pourquoi il n'arrivait plus à ouvrir l'application. La
+publication vivait dans la boucle de surveillance, qui s'arrête d'avancer dès
+qu'elle appelle `npm run banc`. Elle vit désormais à côté
+(`scripts/test-fiche-pendant-relance.ts`, qui sait rougir).
+
+**Ce qui RESTE à faire, et qui n'est pas corrigé :** on ne sait toujours pas
+pourquoi son serveur ne répondait pas le 16 août à 17 h 06. La fiche s'est tue
+avant de le dire. **Ne pas écrire que cette panne-là est réparée** — seul
+l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
+
 ### 0 quadragies. ~~La réduction accordée au client~~ — **CODÉE le 16 août 2026 (B + « Prix accordé au client »)**
 
 **Sa demande du 16 août 2026 :** *« si jamais un client me demande une

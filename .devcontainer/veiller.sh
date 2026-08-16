@@ -29,6 +29,9 @@ PORT="${PORT:-3000}"
 JOURNAL="${JOURNAL:-/tmp/essai.log}"
 VERROU=/tmp/atlas-veilleur.pid
 INTERVALLE=15
+# Détournable uniquement pour l'éprouver : une suite ne peut pas attendre un
+# quart d'heure pour vérifier qu'une publication a lieu.
+INTERVALLE_RAPPORT="${ATLAS_INTERVALLE_RAPPORT:-900}"
 
 # **Un seul veilleur.** Deux veilleurs relanceraient deux serveurs, et le remède
 # reproduirait la panne. Le verrou porte un identifiant de processus : un
@@ -43,6 +46,38 @@ fi
 echo $$ > "$VERROU"
 
 cd "$DEPOT" || exit 0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# **La fiche se publie À CÔTÉ de la surveillance, jamais dedans.**
+#
+# Défaut trouvé le 16 août 2026, en cherchant pourquoi le patron ne pouvait plus
+# ouvrir l'application et pourquoi sa fiche datait d'une demi-heure.
+#
+# La publication vivait au bas de la boucle ci-dessous. Or cette boucle **ne
+# tourne pas** quand le serveur est tombé : elle appelle `npm run banc`, qui ne
+# rend la main qu'à la mort du serveur suivant — des heures, si tout va bien.
+# Le compteur n'avançait donc plus, et la fiche se figeait **exactement à
+# l'instant où le veilleur se met au travail**, c'est-à-dire au seul moment où
+# quelqu'un a besoin de la lire.
+#
+# Et le piège se refermait deux fois, parce que la fiche porte sa propre règle
+# de lecture : « passé vingt minutes sans réécriture, l'espace est arrêté ».
+# Elle était donc devenue *fausse* — elle envoyait rallumer une machine qui
+# tournait, au lieu de faire chercher la panne. Une consigne qui accuse à tort
+# coûte plus cher que pas de consigne du tout (`CLAUDE.md` §5).
+#
+# Un processus séparé n'a pas ce défaut : rien de ce que fait la surveillance ne
+# peut l'endormir. Il s'arrête avec le veilleur — sans quoi un veilleur relancé
+# laisserait deux publieurs, et la fiche serait réécrite deux fois par quart
+# d'heure sans que personne ne comprenne pourquoi.
+VEILLEUR=$$
+(
+  while true; do
+    sleep "$INTERVALLE_RAPPORT"
+    kill -0 "$VEILLEUR" 2>/dev/null || exit 0
+    ( cd "$DEPOT" && ATLAS_MOMENT=veille node scripts/rapporter-espace.mjs >> "$JOURNAL" 2>&1 )
+  done
+) &
 
 # **`next dev` ne suffit PAS comme motif, et c'est la cause première du 404.**
 #
@@ -106,27 +141,9 @@ while true; do
     MUET=0
   fi
 
-  # ───────────────────────────────────────────────────────────────────────────
-  # **Rafraîchir la fiche d'état, sinon elle devient un piège.**
-  #
-  # Elle s'écrivait au seul allumage. Un espace qui tourne depuis six heures
-  # publiait donc l'état qu'il avait à son réveil — et une conversation qui s'y
-  # fie conclut de travers. C'est le reproche exact que ce dépôt fait à une
-  # documentation périmée : *on s'y fie encore*.
-  #
-  # Une fois par quart d'heure : assez frais pour qu'une session appelée à
-  # l'aide voie la machine telle qu'elle est, assez rare pour ne pas noyer le
-  # dépôt de modifications. La fiche porte sa date de toute façon — mieux vaut
-  # qu'elle soit juste ET datée.
-  #
-  # Détaché et muet : la publication traverse le réseau, et le veilleur a une
-  # seule raison d'être — relever le serveur. Rien de ce qui est écrit ici ne
-  # doit pouvoir l'en empêcher.
-  DEPUIS_RAPPORT=$((${DEPUIS_RAPPORT:-0} + INTERVALLE))
-  if [ "$DEPUIS_RAPPORT" -ge 900 ]; then
-    DEPUIS_RAPPORT=0
-    ( cd "$DEPOT" && ATLAS_MOMENT=veille node scripts/rapporter-espace.mjs >> "$JOURNAL" 2>&1 ) &
-  fi
+  # La fiche, elle, se publie dans le processus séparé ouvert plus haut : cette
+  # boucle-ci s'arrête de tourner dès que le serveur tombe, et c'est précisément
+  # là qu'il faut continuer à publier.
 
   sleep "$INTERVALLE"
 done

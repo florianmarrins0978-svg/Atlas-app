@@ -9,6 +9,58 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### Deux maquettes pour la fiche d'entretien des paysagistes — RIEN N'EST CODÉ
+
+**Sa demande du 16 août**, captures d'une autre application à l'appui : *« des
+fiches de chantier pour les paysagistes qui font de l'entretien […] une fiche où
+ils cochent ce qu'ils ont fait ou non, et ensuite qu'ils peuvent enregistrer et
+envoyer directement au client »*.
+
+Terrain neuf : rien dans le produit ne parle encore d'entretien récurrent. Deux
+planches donc, et **aucune ligne de `src/`** — sa règle du 11 août.
+
+- `62-la-fiche-dentretien.html` — ce qu'il coche sur le chantier. Trois gestes :
+  la liste d'un bloc, rangée par familles avec un compte, ou trois états avec
+  « sans objet ».
+- `63-le-rapport-au-client.html` — ce que le client reçoit. Trois versions :
+  tout comme l'autre application, seulement ce qui a été fait, ou le reste
+  replié en une phrase.
+
+**Ce que la capture de l'autre application apprend, et qu'il ne faut pas
+recopier :** elle affiche les vingt prestations avec « Vrai » ou « Faux ». Sur
+ce passage, quatre sont faites — le client lirait donc **seize fois « Faux »**
+sur un passage qu'il paie.
+
+Les deux planches sont engendrées d'**une seule liste** : recopiées, elles
+finiraient par diverger là où il compare les deux. Le contrôle refuse le
+JavaScript (son lecteur n'en exécute pas), vérifie que les deux listes
+concordent, et que « Faux » ne sort jamais vers le client. Confronté à quatre
+planches dégradées : quatre rouges, chacun nommant le bon coupable.
+
+**Ce qui attend sa décision** : quel geste sur le chantier, et ce que voit le
+client. Rien ne sera codé avant.
+
+---
+
+### La fiche du banc se taisait EXACTEMENT quand elle devenait utile
+
+**Trouvé en cherchant pourquoi il ne pouvait plus ouvrir l'application.** Sa
+fiche datait de vingt-sept minutes et annonçait un serveur muet. Sa propre règle
+de lecture — « passé vingt minutes sans réécriture, l'espace est arrêté » —
+envoyait donc rallumer une machine dont rien ne prouvait qu'elle dormait.
+
+**La cause.** La publication vivait au bas de la boucle de `veiller.sh`. Cette
+boucle s'arrête d'avancer dès qu'elle appelle `npm run banc`, qui ne rend la
+main qu'à la mort du serveur suivant — des heures. Le veilleur **cessait donc de
+publier au moment même où il se mettait au travail**.
+
+**Ce que ça évite :** chercher la panne au mauvais endroit, ou rallumer un espace
+qui tourne. La publication vit désormais dans un processus séparé, que rien de
+la surveillance ne peut endormir, et qui s'arrête avec le veilleur.
+
+`scripts/test-fiche-pendant-relance.ts` le tient — et il **sait rougir** :
+confronté à l'ancienne version, il annonce « aucune publication ». Une suite qui
+n'a jamais échoué ne prouve rien.
 ### Cinq chantiers de test pour éprouver la proposition « par le trajet »
 
 **Sa demande :** *« crée-moi quatre, cinq chantiers de test […] avec des
