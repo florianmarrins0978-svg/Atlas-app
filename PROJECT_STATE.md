@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-14 · branche `main`
-· dernière migration `drizzle/0042_deconnexion_partout.sql`
+· dernière migration `drizzle/0043_rappels_notifications.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -245,6 +245,15 @@ l'application. Ce qui est **fait** :
   dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
   feuille annonce désormais la destination avant qu'il appuie, et l'écran l'y
   emmène après. `scripts/test-achat-hors-periode-e2e.ts`, `ARCHITECTURE.md` §91.
+- **Une équipe peut partir cinq jours** (14 août) : les absences se notent dans
+  Réglages → Équipe, sous les noms (`docs/maquettes/55`, proposition A). Une
+  équipe absente **ne compte plus** dans les dates proposées — l'absence est
+  traitée comme une occupation, ce qui la fait entrer dans les **quatre**
+  calculs de capacité sans changer une signature. Migration
+  `drizzle/0044_absences_equipe.sql`. Si toute l'entreprise part, l'agenda
+  Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
+  l'équipe d'un chantier est une étiquette, pas une contrainte.
+  `ARCHITECTURE.md` §109.
 - **« Surtout la page équipe » : l'écran jamais préparé d'avance** (14 août) :
   le banc compile ses écrans à l'avance, mais la liste — écrite à la main —
   ignorait les **sept sous-écrans de Réglages** créés depuis. « Équipe »
@@ -561,6 +570,17 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **Le devis qui tarde : une TROISIÈME ligne, en attente de deux mots** (16 août)
+  — sa demande d'un *« rappel lorsque le chantier a été ouvert mais le devis n'a
+  pas été envoyé »*. `docs/maquettes/56-le-devis-qui-tarde.html`, réécrite deux
+  fois contre ce qui existait. **La rubrique Notifications a été CODÉE le
+  14 août** par une autre session (`src/lib/rappels.ts`, `drizzle/0043_…`) :
+  deux rappels réglables, et le délai qui se tape — « Au bout de 7 jours ». Aucun
+  des deux ne couvre sa demande : ils parlent d'un devis **parti**, lui d'un
+  devis **jamais parti**. **Il a retenu la carte teintée et 4 jours** ; reste le
+  **mot de la ligne** — elle tombe au-dessus de « Devis sans réponse », et deux
+  libellés commençant par « Devis » ne se distinguent pas. Une demi-journée une
+  fois le mot choisi. `TODO.md` §0 novivicies.
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le
@@ -575,9 +595,14 @@ Voir `TODO.md` pour le détail et l'ordre.
   **C'est aussi le premier écran d'Atlas où `getRole` décide de ce qui est
   RENDU** : un membre ne reçoit que l'ensemble « Moi », et chaque rubrique de
   l'entreprise refuse un non-propriétaire avant de lire une valeur. Le reste de
-  l'application, lui, ne cloisonne toujours rien. **Dix rubriques sur treize
-  sont codées au 14 août** ; il en reste **trois** marquées *Bientôt* —
-  notifications, apparence, abonnement. Les deux dernières ouvertes sont
+  l'application, lui, ne cloisonne toujours rien. **Les TREIZE rubriques sont
+  ouvertes au 14 août 2026** — plus aucune ne porte « Bientôt »
+  (`ARCHITECTURE.md` §108). Deux d'entre elles ne règlent rien et l'assument :
+  *Apparence* (le mode sombre et l'accent demandent de reprendre toute
+  l'application) et *Abonnement* (ni prix ni offre décidés). *Notifications*,
+  elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
+  réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
+  impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont
   **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
   nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
   plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et

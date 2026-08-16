@@ -494,7 +494,7 @@ export const LIBELLE_MOMENT: Record<Moment, string> = {
  * ─────────────────────────────────────────────────────────────────────────
  * **CE QUE LE PATRON A ARRÊTÉ LE 15 AOÛT 2026, ET QUI REMPLACE LA VEILLE.**
  *
- * Sur `docs/maquettes/55-la-ligne-qui-dit-tout.html` : *« je veux journée et
+ * Sur `docs/maquettes/59-la-ligne-qui-dit-tout.html` : *« je veux journée et
  * toute la ligne »*, après avoir demandé *« il doit y avoir le nombre de jour,
  * le matin, l'après-midi et la journée comme infos possible »*.
  *

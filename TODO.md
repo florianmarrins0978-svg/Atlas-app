@@ -27,6 +27,279 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 novivicies. Le devis qui tarde : **B et 4 jours retenus**, reste le mot de la ligne
+
+*`docs/maquettes/56-le-devis-qui-tarde.html`, écrite le 15 août 2026, **réécrite
+deux fois** le 16. Le troisième rappel n'est pas codé — `CLAUDE.md` §3 bis.*
+
+**Sa demande, le 14 août 2026 :** *« Il faudrait créer un rappel lorsque le
+chantier a été ouvert mais le devis n'a pas été envoyé. Et il faudrait également
+le rajouter à une catégorie dans les réglages, avec la possibilité dans les
+notifications de mettre le nombre de jours. Exemple : l'utilisateur pourrait
+dire "si aucun devis n'est parti sous deux, trois, quatre, cinq, six jours, me
+mettre une notification" — comme la Mme Félicie, vue il y a quatorze jours,
+aucun devis envoyé. »*
+
+**LA LEÇON DE CE LOT, APPRISE DEUX FOIS ET DONC ÉCRITE ICI.** Cette planche a
+décrit deux fois un monde qui n'existait plus :
+
+1. première version — elle redessinait un écran de notifications, alors que
+   `maquettes/atlas-reglages-notifications.html` en portait déjà un depuis le
+   13 août ;
+2. seconde version — elle proposait quatre façons de poser un délai, alors que
+   la rubrique avait été **CODÉE le 14** par une autre session, avec son délai.
+
+**Chercher ce qui existe avant de dessiner, dans les DEUX dossiers de maquettes
+et dans le code.** `maquettes/` porte les planches de l'application,
+`docs/maquettes/` celles des décisions — regarder un seul des deux, c'est
+redessiner ce qui est déjà tranché.
+
+**Ce qui est CODÉ, et qu'il ne faut surtout pas refaire** — `src/lib/rappels.ts`,
+`src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql` :
+
+| | |
+|---|---|
+| Rubrique Réglages → Notifications | ouverte, `href` posé |
+| « Devis sans réponse » | un devis parti, sans réponse, **7 jours** |
+| « Chantier fini, pas facturé » | **3 jours** |
+| La forme du délai | **« Au bout de [ N ] jours »**, un nombre tapé, un interrupteur par rappel, bornes 1–90, rangé sur `entreprises` |
+| Ce qui ne se coupe pas | réponse à un devis, lien expiré |
+
+**CE QUI RESTE, ET QUI EST PLUS PETIT QU'ANNONCÉ.** Aucun des deux rappels codés
+ne couvre sa demande : ils parlent d'un devis **parti**. Lui parle d'un devis
+**jamais parti**. C'est donc un **troisième rappel**, à poser en tête des deux
+autres — un devis qui n'est pas parti précède un devis qui attend sa réponse.
+
+**IL A TRANCHÉ LE 16 AOÛT 2026 : « la B et 4 ».** La carte **teintée**, avec le
+compte des jours dans l'étiquette — celle qui se remarque —, et **4 jours** par
+défaut.
+
+**ET IL A VU CE QU'AUCUN CONTRÔLE N'AURAIT VU**, dans la foulée : *« dans la
+catégorie notification, j'ai peur que la façon dont tu l'as écrit ne soit pas
+compréhensible — qu'on ne comprenne pas que cette ligne sert à ça, le devis non
+envoyé. »*
+
+Il avait raison, et c'est mesurable à l'œil : la ligne se pose **juste au-dessus
+de « Devis sans réponse »**. Deux lignes qui commencent par le même mot, l'une
+sur l'autre — il faut lire la petite ligne grise pour les séparer, donc on ne les
+sépare pas. Quatre mots lui sont proposés, **chacun montré avec sa voisine**
+(c'est la seule façon de juger, § 3 de la planche) :
+
+| | Le mot | Ce qu'il vaut |
+|---|---|---|
+| F | « Devis pas encore parti » | Exact — et c'est celui qui l'a inquiété |
+| **G** | **« Chantier sans devis »** | **Ma préférence** : seul à se distinguer **au premier mot**, et les trois lignes racontent alors le chantier dans l'ordre (pas de devis → sans réponse → fini pas facturé) |
+| H | « Aucun devis envoyé » | Ses mots à lui, verbatim. Commence par un mot vide |
+| I | « Devis oublié » | Le plus court, mais **il accuse** : un devis peut attendre exprès |
+
+**Rien d'autre n'attend son avis.**
+
+**Quatre règles y sont posées, à trancher avec lui** : le rappel s'efface seul
+dès que le devis part ; « J'ai vu » repousse au lendemain et ne supprime jamais ;
+le compte part de **l'ouverture du chantier** ; et il ne le verra qu'en ouvrant
+Atlas — ce que l'écran codé dit déjà en toutes lettres.
+
+**Ce que la base porte déjà, vérifié dans `src/server/db/schema.ts` :**
+`chantiers.createdAt` (le compte part de là) et `chantiers.devisEnvoyeAt`
+(NULL = aucun devis parti). La condition se **calcule** — donc la première règle
+est gratuite : il n'y a rien à effacer. **Il n'existe aucune date de visite**,
+ce qui confirme que le compte ne peut pas en partir sans un champ de plus.
+
+Reste à ranger : la colonne du troisième délai, à côté des deux autres sur
+`entreprises` (`rappel_devis_non_parti_jours`), et la mémoire du « J'ai vu »
+repoussé au lendemain — que les deux rappels codés n'ont pas eue à traiter.
+
+**Ce que ça coûtera une fois choisi : une demi-journée**, et non la journée
+annoncée hier — l'écran existe.
+
+### 0 undetricies. L'absence d'une équipe — DESSINÉE le 14 août 2026, en attente de son choix
+### 0 tricies nonies. ~~`test-pastille-equipe-e2e` est ROUGE sur `main`~~ — **RÉGLÉ le 16 août 2026**
+
+**La cause n'était ni le code ni `.first()` : c'était le CALENDRIER.** La suite
+visait « aujourd'hui + 20 jours » et supposait un jour ouvré. Le 16 août, cela
+tombait sur le **samedi 5 septembre** : le panneau affichait « Jamais proposé »,
+aucun bouton « Poser » n'existait — comportement voulu — et la suite rougissait
+sans qu'aucun code n'ait bougé. Constaté à la sonde, en lisant le panneau :
+`sansDate` n'était pas vide, il en comptait cinq.
+
+Elle avance désormais au premier jour ouvré. **Une suite qui échoue selon le
+jour de la semaine s'apprend à être ignorée** — et c'est ce garde-fou-là qu'on
+perd, pas seulement dix minutes.
+
+*Le constat d'origine est gardé ci-dessous : il dit bien ce qui avait été
+écarté, et la piste `.first()` reste juste dans son principe — elle n'était
+simplement pas la cause ici.*
+
+*Constaté le 14 août 2026 au soir, en fusionnant un autre lot. **Ce n'est pas
+une intermittence** : la suite tombe aussi bien seule qu'en batterie, toujours
+sur le même contrôle.*
+
+```
+❌ En posant, les équipes sont des CASES et le bouton dit quoi faire
+   le bouton doit rester à l'écran avant le choix
+```
+
+**Ce qui est déjà écarté**, pour ne pas le refaire : le code du planning est
+identique entre `main` et la branche qui l'a constaté — ce n'est pas une
+collision de fusion.
+
+**Le diagnostic, aussi loin qu'il a été mené :** le contrôle attend
+`[data-atlas="poser"]` dans la page ; il en compte zéro. Ce bouton n'est rendu
+que si `aPoser` existe (`PlanningClient.tsx`), et
+`aPoser = visibles.find(…) ?? sansDate[0] ?? null`. **Il est donc nul parce que
+`sansDate` est vide au moment du contrôle** — la suite crée pourtant un chantier
+sans date juste avant, puis clique `[data-atlas="sans-date"]` **avec
+`.first()`** : rien ne garantit que c'est LE SIEN. Les sections précédentes de
+la même suite posent des chantiers, et le jeu de démonstration en porte
+d'autres.
+
+**Piste à éprouver en premier :** viser le chantier par son nom (il est unique,
+horodaté à la création) plutôt que par `.first()`. C'est exactement le piège
+déjà payé sur `test-unite-tarif-e2e` le 14 août — « viser la dernière ligne
+remplissait la carte d'avant ».
+
+**Ce lot appartient à la session qui a posé la pastille d'équipe.** Écrit ici
+pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue à une
+intermittence.
+
+### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
+
+*Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
+et écrit sur l'écran lui-même plutôt que passé sous silence.*
+
+**Rien dans Atlas n'enregistre qu'une facture a été payée.** Ni colonne, ni
+geste, ni écran. Ce manque bloque à lui seul **trois** des huit familles
+d'alertes de la planche des notifications :
+
+| Ce qui est impossible | Pourquoi |
+|---|---|
+| « Facture impayée » | On ne sait pas laquelle est payée : l'alerte crierait sur toutes, pour toujours |
+| « Facture à échéance dans trois jours » | Même raison |
+| « Client à relancer » | Un client relancé pour une facture déjà réglée, c'est pire que pas de relance |
+
+**Ce n'est pas une requête à écrire, c'est un geste à ajouter au produit** : un
+appui sur la facture, une date de règlement, et de quoi se reprendre. Les
+`docs/QUESTIONS.md` §17 le disent d'ailleurs pour la mémoire des prix — la
+bonne question n'est jamais « avons-nous une table ? » mais **« qui l'écrit, et
+quand ? »**
+
+**À dessiner avant de coder** (`CLAUDE.md` §3 bis) : où se pose le geste — sur
+la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
+partiel.
+
+### 0 duodetricies ter. Apparence : le mode sombre OU l'accent, à trancher
+
+L'écran existe et ne règle rien, délibérément (`ARCHITECTURE.md` §108). Les
+deux chantiers possibles, et leur coût :
+
+| | Ce que ça demande |
+|---|---|
+| **Mode sombre** | Un second jeu de jetons, et **chaque écran repris un à un**. C'est ce qu'il avait envoyé le 14 août : sa planche d'origine était sombre |
+| **Accent au choix** | `colors.rust` et `colors.or` sont écrits en clair dans plus de trois cents endroits, en style en ligne. Il faut les faire passer par une variable CSS — un balayage de toute l'application, à faire et à éprouver d'un coup |
+
+**Ne pas poser d'interrupteur en attendant.** Sa phrase sur la planche : *« on le
+touche, rien ne bouge, et on croit à une panne »*.
+
+### 0 tervicies. Apparier deux demi-journées par la proximité
+
+**Sa demande du 13 août 2026** : quand une demi-journée est prise et l'autre
+libre, que le planning propose le chantier en attente **le plus proche**, pour
+ne pas traverser le département deux fois dans la journée.
+
+**Ce qui existe déjà :** les demi-journées sont en base (`creneauDebut`,
+`dureeDemiJournees`), deux chantiers différents sur le matin et l'après-midi du
+même jour se représentent sans rien ajouter, et le planning affiche « Libre ».
+
+**Ce qui manque, et qui commande tout : aucune distance n'est connue.**
+L'adresse d'un chantier est du texte. La Base Adresse Nationale rend pourtant
+les coordonnées à chaque frappe (`lireSuggestions` ne garde que le libellé et le
+contexte, et **jette la géométrie**). Trois étapes, dans l'ordre :
+
+1. **Garder les coordonnées** au choix d'une suggestion — migration + champs sur
+   `chantiers` ;
+2. **rattraper** celles des chantiers déjà saisis et des adresses tapées hors
+   liste, côté serveur, sans rien demander au patron ;
+3. **apparier** — fonction pure dans `src/lib/`, testable sans base.
+
+**Maquette `docs/maquettes/57-apparier-deux-demi-journees.html`** — quatre
+façons de le proposer (sur la ligne, en bandeau, en feuille de trois candidats,
+au moment de poser la date), le bandeau dessiné **deux fois** (vol d'oiseau et
+route : seule la phrase change), et les deux cas ingrats — rien d'assez proche,
+adresse non situable. **En attente de son choix.**
+
+**La question qui le dépasse** est au point 9 de `docs/A-FAIRE.md` : la route
+suppose un sous-traitant ultérieur. `.github/workflows/itineraire.yml` interroge
+le service de l'État depuis une machine qui a le réseau pour savoir s'il
+dispense d'un prestataire privé.
+
+
+### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie
+
+### 0 undetricies. ~~L'absence d'une équipe~~ — **CODÉE le 14 août 2026 (proposition A)**
+
+
+**Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
+en déplacement pour cinq jours ? »* Réponse complète dans `docs/QUESTIONS.md`
+§19 ; trois propositions dans `docs/maquettes/55`.
+
+**Ce qui existe déjà, et qu'il ne faut pas refaire :** si TOUTE l'entreprise
+part, l'agenda Google relié suffit — une période de plusieurs jours occupe
+toutes les demi-journées qu'elle traverse. **Rien à coder pour ce cas-là.**
+
+**Ce qui manque :** une absence datée **par équipe**. L'agenda bloque tout le
+monde — délibérément, `fusionnerOccupationExterne` pose l'occupation au niveau
+du nombre d'équipes parce qu'Atlas ne peut pas deviner si une équipe sait partir
+sans le patron — et le nombre d'équipes est un nombre **sans dates**.
+
+**Il a retenu la A** — sous les noms, dans Réglages → Équipe. Les deux autres
+restent dessinées : (B) un appui long sur un jour du planning, (C) une ligne de
+déplacement posée comme un chantier. Si l'usage montre que le geste tombe au
+mauvais endroit, le chemin est tracé.
+
+**FAIT.** `drizzle/0044_absences_equipe.sql`, `src/lib/absences-equipe.ts`,
+`src/server/repositories/absences-equipe.ts`, `src/app/reglages/AbsencesEquipe.tsx`.
+Une absence est traitée comme une **occupation** — elle prend la place qu'un
+chantier aurait prise — ce qui la fait entrer dans les quatre calculs de
+capacité sans changer une seule signature. Éprouvée à trois niveaux :
+`test-absences-equipe.ts` (25 cas purs), `test-absences-equipe-repo.ts`
+(isolation, sous `atlas_app`), `test-absence-equipe-e2e.ts` (du doigt jusqu'au
+calendrier, vu rouge quand on retire la réparation). `ARCHITECTURE.md` §109.
+
+### 0 undetricies ter. ~~La page « toutes les maquettes » a pris du retard, en silence~~ — **le contrôle demandé existe (15 août 2026)**
+
+**Ce que cette entrée demandait, le 14 août :** *« un contrôle qui refuse une
+planche présente sur le disque et absente de la liste […]. Le rattrapage des six
+se fait alors une fois, et le trou ne se rouvre plus. »* C'est écrit, et le
+rattrapage est fait — détail et éprouvage en **§0 tricies septies**.
+
+**Une seule chose a changé par rapport à ce qui était demandé, et elle compte :**
+le contrôle n'exige pas d'être dans la page unique, mais **dans l'une des deux
+portes**. La page unique est une *sélection* — elle laisse dehors les planches
+qui se manipulent, dont `43-l-attente-a-lessai`, qui ne vaut que seule ; le
+sommaire est le *catalogue*. Exiger les deux aurait fait rougir des choix
+délibérés, et un contrôle qui accuse à tort finit contourné.
+
+**Et l'entrée avait raison de ne pas rattraper à la main** : les titres écrits
+ici pour `47-ou-mettre-l-assistant` et `53-le-mot-juste-sans-la-date` sont tirés
+de leurs propres en-têtes, pas inventés.
+
+### 0 undetricies bis. L'équipe d'un chantier est une étiquette, pas une contrainte
+
+**Trouvé le 14 août 2026 en répondant à la question ci-dessus, et pas signalé
+par lui.** `compterOccupation` compte les chantiers par demi-journée et compare
+ce total au nombre d'équipes ; il ne regarde **jamais** `equipeId`. Deux
+chantiers le même matin, tous les deux sur « Équipe 1 » : Atlas les accepte sans
+rien dire.
+
+Sans conséquence tant que le patron répartit lui-même. **Faux dès qu'une équipe
+est absente** — d'où le lien avec le point précédent.
+
+**Pourquoi ce n'est PAS dans le même lot :** le régler oblige à choisir l'équipe
+**avant** de proposer une date au client, donc à toucher au parcours du devis
+(trois arrêts, `docs/AGENT.md`). C'est un chantier à part, et il n'a de sens que
+si le télescopage se produit vraiment. **Question posée au patron le 14 août,
+sans réponse à ce jour.**
+
 ### 0 octovicies. ~~Mon compte et Connexion~~ — **CODÉS le 14 août 2026 (« A A »)**
 
 Les deux écrans existent : `/reglages/compte` et `/reglages/connexion`
@@ -85,6 +358,37 @@ planning défile, mais elle n'est pas entièrement là.
 a demandé, la correction touche la hauteur réservée du calendrier, et un
 contrôle qui l'aurait attrapé aurait accusé le déplacement de l'assistant — ce
 qui n'est pas le coupable.
+
+### 0 trigies. Dicter dans le devis — le micro est prêt, le geste attend son choix
+
+Sa demande du 15 août 2026, capture du devis à l'appui : *« rajoute-moi un petit
+dictaphone en haut à droite comme il y a pour les infos clients [...] pour
+pouvoir dicter à l'intérieur du devis s'il y a des choses à reprendre ou à
+modifier. Et je veux exactement les mêmes trois petits points quand ils
+chargent. »*
+
+**Ce qui n'est PAS à décider** : le micro et l'attente. Ils existent
+(`DicterCoordonnees.tsx`, `PointsQuiSoufflent`, `.atlas-souffle`) et se copient
+au trait près — rond de 44 px, rouge pendant l'écoute, points à la place du
+micro pendant le traitement, phrase « Atlas rédige… ».
+
+**Ce qui l'est, et qui attend un mot de lui** —
+`docs/maquettes/54-dicter-dans-le-devis.html`, essayable au doigt :
+
+| | Ce que la dictée fait | Ce que ça coûte |
+|---|---|---|
+| **A** | elle **propose** des changements de lignes, qu'il coche ; rien ne s'applique sans son appui | un vrai morceau de travail : lecture des lignes existantes, appariement, écran de confirmation |
+| **B** | elle écrit une **note** attachée au devis ; le devis ne bouge pas | presque rien — mais elle ne fait pas le travail |
+
+**Une règle tranche déjà, et ne se négocie pas** (`CLAUDE.md` §4) : **aucun prix
+ne s'invente**. « Ajoute l'évacuation » sans montant donne une ligne **vide et
+signalée**, jamais un chiffre deviné.
+
+**Et une question posée dans la planche, sans réponse** : en A, le micro
+doit-il aussi toucher aux **conditions de règlement** et aux mentions du bas, ou
+seulement aux lignes chiffrées ?
+
+**Rien n'est codé** — `src/` n'est pas touché (§3 bis).
 
 ### 0 novemvicies. ~~L'équipe n'était pas applicable~~ — **la pastille CODÉE le 14 août 2026 (geste A)**
 
@@ -263,7 +567,7 @@ coder. Le contrôle de la planche l'interdit explicitement, et il sait rougir.
 
 **Sa réponse finale : « je veux journée et toute la ligne. Tu peux coder. »**
 La ligne du planning porte désormais la date, le moment de départ et la durée,
-toute en or — `ARCHITECTURE.md` §108. Ce qui suit reste écrit parce que le
+toute en or — `ARCHITECTURE.md` §110. Ce qui suit reste écrit parce que le
 chemin importe : la question qu'il a posée n'avait pas la réponse qu'elle
 supposait, et c'est la fouille de l'historique qui l'a montré.
 
@@ -303,7 +607,7 @@ soit : la date est tombée (maquette 53), « Déplacer » a quitté la ligne pou
 feuille du chevron (maquette 52), la pastille d'équipe est arrivée à sa place.
 
 **Rien n'est codé, et ce n'est pas un oubli** (`CLAUDE.md` §3 bis) :
-`docs/maquettes/54-le-nombre-de-jours-en-or.html` lui a montré **quatre
+`docs/maquettes/58-le-nombre-de-jours-en-or.html` lui a montré **quatre
 écritures de la même ligne** — A telle qu'elle est, B la date qui revient, C la
 durée en or, D les deux en or.
 
@@ -311,7 +615,7 @@ durée en or, D les deux en or.
 le 54 la D mais il doit y avoir le nombre de jour, le matin, l'après-midi et la
 journée comme infos possible »*. La ligne portera donc **trois** choses : la
 date, le moment de départ, le nombre de jours.
-`docs/maquettes/55-la-ligne-qui-dit-tout.html` les montre sur les **cinq** cas
+`docs/maquettes/59-la-ligne-qui-dit-tout.html` les montre sur les **cinq** cas
 du produit, et pose les **deux dernières questions** :
 
 | | La question | Les deux réponses |
@@ -428,22 +732,49 @@ mentent pas.
 les chantiers, les devis et les factures lui montrent encore tous les montants.
 Ne pas lire la §96 comme si le sujet était clos.
 
-### 0 tricies septies. La page qui rassemble les maquettes a décroché
+### 0 tricies septies. ~~La page qui rassemble les maquettes a décroché~~ — **contrôlé depuis le 15 août 2026**
 
-`scripts/fusionner-maquettes.mjs` n'inscrit plus rien au-delà de la 45. Les 41,
-42, 43, puis 46 à 54 — la ligne sous le nom, les deux planches de l'attente,
-la place de l'assistant, le mot juste du planning, le nombre de jours en or —
-n'y sont pas : plusieurs sessions ont livré leur maquette sans l'y ajouter, le
-même jour. **Le retard s'aggrave d'un lot par soirée**, et chaque session qui
-n'inscrit que la sienne rendrait la liste plus incohérente encore.
+**C'était plus grave que ce qui était écrit ici.** L'entrée disait « les 41, 42
+et 43 n'y sont pas » et concluait « sans conséquence pour le patron : les
+planches s'ouvrent une par une, et c'est ainsi qu'elles lui sont envoyées ».
 
-**Sans conséquence pour le patron** : les planches s'ouvrent une par une, et
-c'est ainsi qu'elles lui sont envoyées. Ce qui se perd, c'est la page unique où
-l'on compare — celle qui sert quand on rouvre un sujet trois mois plus tard.
+En mesurant plutôt qu'en supposant, **six maquettes** — 38, 39, 41, 42, 43 et
+46 — n'étaient inscrites **ni dans la page unique, ni au sommaire**. Ce n'était
+donc pas la comparaison qui se perdait : c'était le seul chemin qui y menait.
+Elles n'existaient que pour qui connaissait leur nom de fichier.
 
-Non fait d'office : c'est de l'outillage partagé, et l'y toucher au moment de
-pousser un lot déjà éprouvé rouvrirait la batterie complète (`CLAUDE.md` §6).
-À reprendre à froid, avec `verifier-maquettes-page-unique.mjs`.
+**Ce qui l'a laissé passer :** le compte affiché. « 36 maquettes fusionnées »
+reste parfaitement plausible quand il en manque six.
+
+**Le contrôle vit maintenant dans `fusionner-maquettes.mjs`**, joué à chaque
+régénération, et il refuse trois états :
+
+- une maquette sur le disque **qu'aucune des deux portes n'atteint** — l'exigence
+  porte sur leur réunion, pas sur chacune : la page unique est une *sélection*
+  (elle laisse dehors les planches qui se manipulent), le sommaire est le
+  *catalogue* ;
+- un **lien mort** dans le sommaire — le défaut d'origine de ce dossier, trouvé
+  par le patron en cliquant ;
+- un **numéro porté deux fois**. Il les désigne par leur chiffre — « fais la
+  34 » — et cinq numéros l'étaient déjà (33, 34, 35, 36, 37). Ces cinq-là sont
+  tolérés **nommément** : les renuméroter casserait les renvois déjà écrits.
+  **Le 50 aussi, et volontairement** : Gunzi, Goonzi et Gunzy sont la même
+  planche sous trois noms, et les séparer les rendrait incomparables. Tout
+  nouveau doublon rougit.
+
+Éprouvé en le confrontant aux trois états : une maquette orpheline, un doublon
+de numéro, un `href` vers un fichier absent. Il les nomme un par un.
+
+**Et il a servi deux fois dans l'heure qui a suivi.** En fusionnant `main`, il a
+nommé deux planches de plus tombées dans le même trou — `47-ou-mettre-l-assistant`
+et `53-le-mot-juste-sans-la-date` — inscrites au sommaire dans la foulée. C'est
+lui, aussi, qui a fait renommer cette planche-ci **deux fois** : le 46 était pris
+par `46-pendant-que-ca-batit`, puis le 47 par `47-ou-mettre-l-assistant`. Elle
+porte le **56**.
+
+**Avant d'écrire une nouvelle planche, jouer `node scripts/fusionner-maquettes.mjs`**
+: il donne le prochain numéro libre en refusant le doublon, plutôt que de le
+laisser découvrir à la fusion suivante.
 
 ### 0 tricies sexies. ~~Un conflit non refermé était arrivé sur `main`~~ — **contrôlé depuis le 13 août 2026**
 

@@ -1,0 +1,53 @@
+name: Itinéraire — le service de l'IGN
+
+# Interroge le VRAI service d'itinéraire de l'État, à sa vraie adresse.
+#
+# Pourquoi ce workflow existe : le patron veut qu'Atlas apparie deux chantiers
+# d'une demi-journée en regardant lesquels sont les plus proches. Mesure-t-on à
+# vol d'oiseau, ou par la route ?
+#
+# Par la route suppose d'envoyer les adresses de ses clients à un service
+# extérieur — donc un sous-traitant ultérieur de plus, à nommer dans un contrat
+# qui n'existe pas encore (`docs/A-FAIRE.md` points 1 et 2). Sauf si ce service
+# est celui de l'État : c'est exactement le raisonnement qui a fait préférer la
+# Base Adresse Nationale à Google.
+#
+# **Personne ne peut le vérifier là où l'on développe** : le mandataire réseau y
+# refuse les services extérieurs. Ce qui ne peut pas être éprouvé ici doit
+# l'être ailleurs, par une machine — comme `pages.yml` pour le site publié,
+# `adresses.yml` pour la Base Adresse Nationale et `banc-essai.yml` pour
+# l'espace de travail (`AGENTS.md`).
+#
+# **Il éclaire une décision, il ne garde pas un acquis.** Tant que rien n'est
+# tranché, sa sortie se lit ; le jour où l'appariement s'appuiera vraiment sur
+# la route, il deviendra un garde-fou comme les autres.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/eprouver-itineraire-ign.ts"
+      - ".github/workflows/itineraire.yml"
+  # Une fois par semaine : un service public peut changer ses conditions sans
+  # que nous touchions à quoi que ce soit, et c'est le cas qu'aucun autre
+  # déclencheur ne couvre.
+  schedule:
+    - cron: "23 6 * * 2"
+
+jobs:
+  interroger:
+    name: Répond-il, sans clé, et à quel rythme ?
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Interroger la Géoplateforme, pour de vrai
+        run: npx tsx scripts/eprouver-itineraire-ign.ts

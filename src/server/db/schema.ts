@@ -120,6 +120,17 @@ export const entreprises = pgTable("entreprises", {
   moyensPaiement: text("moyens_paiement"),
   rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
   textePiedDocuments: text("texte_pied_documents"),
+
+  /**
+   * Les deux rappels de la rubrique « Notifications » (migration 0043).
+   *
+   * `null` = éteint. Ce sont des CONFORTS, et c'est pour cela qu'ils se
+   * coupent : ne plus être rappelé qu'un devis dort ne fait rien perdre — le
+   * devis est toujours sur la fiche du chantier. La réponse d'un client et le
+   * lien expiré, eux, n'ont pas d'interrupteur (`src/lib/rappels.ts`).
+   */
+  rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
+  rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
@@ -165,6 +176,38 @@ export const equipes = pgTable(
   },
   (t) => [unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang)]
 );
+
+/**
+ * Les jours où une équipe n'est pas là.
+ *
+ * *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement
+ * pour cinq jours ».* Retenu sur maquette (`docs/maquettes/55`, proposition A).
+ *
+ * **Bornes incluses des deux côtés** — « du 8 au 12 » comprend le 8 et le 12.
+ * Une absence d'un seul jour porte deux fois la même date : cas ordinaire.
+ *
+ * **Ce n'est pas un registre de congés** : ni solde, ni validation, ni
+ * salarié. Une équipe est une file du planning, pas une personne
+ * (`ARCHITECTURE.md` §88). Le motif ne sert qu'à ce que le patron se
+ * souvienne ; aucun calcul ne le lit.
+ */
+export const absencesEquipe = pgTable("absences_equipe", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  equipeId: uuid("equipe_id")
+    .notNull()
+    .references(() => equipes.id, { onDelete: "cascade" }),
+  /** Premier jour d'absence, inclus. Format « AAAA-MM-JJ ». */
+  premierJour: date("premier_jour").notNull(),
+  /** Dernier jour d'absence, inclus. */
+  dernierJour: date("dernier_jour").notNull(),
+  motif: text("motif"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
 
 // Correction v2.1 §3 : "prochain_numero_devis" représente le PROCHAIN numéro
 // disponible (pas le dernier attribué). Initialisé à 1 à la création de

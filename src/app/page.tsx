@@ -11,6 +11,8 @@ import { auth } from "@/auth";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
+import { rappelsEnCours } from "@/server/repositories/rappels";
+import { depuisCombien } from "@/lib/rappels";
 import Notifications from "./Notifications";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
@@ -40,11 +42,17 @@ function jourEtMois(date: Date): { jour: string; mois: string } {
 
 export default async function ChantiersPage() {
   const ctx = await getCurrentCtx();
-  const [session, chantiers, notifications, caducs] = await Promise.all([
+  // **L'instant est pris UNE FOIS, ici, et passé plus bas.** Deux appels à
+  // `new Date()` dans la même page donnent deux instants, et un rappel « depuis
+  // 7 jours » calculé sur l'un puis comparé à l'autre finit par osciller autour
+  // de son seuil d'un rechargement à l'autre.
+  const maintenant = new Date();
+  const [session, chantiers, notifications, caducs, rappels] = await Promise.all([
     auth(),
     listerChantiersPourAffichage(ctx),
     notificationsPatron(ctx),
     envoisCaducs(ctx),
+    rappelsEnCours(ctx, maintenant),
   ]);
 
   // Le prénom, jamais le nom complet : « Bonjour Florian Marrins » sonne comme
@@ -110,7 +118,18 @@ export default async function ChantiersPage() {
               AVANT les notifications : c'est la conséquence du geste qu'il
               vient de faire, pas une information de fond. */}
           <AnnonceTransmission />
-          <Notifications initiales={notifications} caducs={caducs} />
+          <Notifications
+            initiales={notifications}
+            caducs={caducs}
+            // Le délai est mis en mots ICI, au serveur : l'écran n'a pas à
+            // recalculer une durée et à en donner une seconde version.
+            rappels={rappels.map((r) => ({
+              genre: r.genre,
+              chantierId: r.chantierId,
+              chantierNom: r.chantierNom,
+              depuisTexte: depuisCombien(maintenant, r.depuis),
+            }))}
+          />
         </>
       }
     />

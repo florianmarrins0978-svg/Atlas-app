@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Éprouve la maquette 55, JAVASCRIPT COUPÉ.
+  Éprouve la maquette 59, JAVASCRIPT COUPÉ.
 
   **Ce qu'elle promet, et qui doit être mesuré plutôt que cru :** la ligne du
   planning porte désormais TROIS choses — la date, le moment (matin,
@@ -49,7 +49,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "55-la-ligne-qui-dit-tout.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "59-la-ligne-qui-dit-tout.html"),
 );
 
 if (!existsSync(CIBLE)) {

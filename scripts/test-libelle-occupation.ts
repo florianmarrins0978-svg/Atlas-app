@@ -15,7 +15,7 @@ import { DUREES } from "../src/lib/durees-chantier";
 // mot parfaitement plausible. C'est en le comparant à la durée qu'il ment.
 //
 // **CE QUI A CHANGÉ LE 15 AOÛT 2026, ET POURQUOI CETTE SUITE A ÉTÉ RÉÉCRITE.**
-// Le patron, sur `docs/maquettes/55-la-ligne-qui-dit-tout.html` : « je veux
+// Le patron, sur `docs/maquettes/59-la-ligne-qui-dit-tout.html` : « je veux
 // journée et toute la ligne », après « il doit y avoir le nombre de jour, le
 // matin, l'après-midi et la journée comme infos possible ». Le moment de départ
 // revient donc sur la ligne — mais JAMAIS SEUL : accolé à la durée, il ne dit

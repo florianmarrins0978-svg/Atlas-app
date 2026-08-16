@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Éprouve la maquette 54, JAVASCRIPT COUPÉ.
+  Éprouve la maquette 58, JAVASCRIPT COUPÉ.
 
   **Pourquoi un contrôle sur une planche qui ne fait que proposer.** Parce que
   trois fois cet été une maquette a été envoyée au patron avec une bascule
@@ -42,7 +42,7 @@ import { existsSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "54-le-nombre-de-jours-en-or.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "58-le-nombre-de-jours-en-or.html"),
 );
 
 if (!existsSync(CIBLE)) {

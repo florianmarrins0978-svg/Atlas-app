@@ -92,7 +92,7 @@ async function main() {
   // **CE CONTRÔLE A ROUGI DEUX FOIS EN DEUX JOURS, ET CHANGÉ DE CIBLE LES DEUX
   // FOIS — jamais disparu.** Il exigeait d'abord le mois sur la ligne ; le
   // patron l'a fait retirer le 14 août (*« pas la date, elle est déjà présente
-  // juste au-dessus »*), puis l'a fait revenir le 15 sur la planche 55 : *« il
+  // juste au-dessus »*), puis l'a fait revenir le 15 sur la planche 59 : *« il
   // doit y avoir le nombre de jour, le matin, l'après-midi et la journée comme
   // infos possible »*. Sa consigne du 14 valait du panneau d'un jour ouvert,
   // qui se titre « Jeudi 10 décembre » ; elle ne vaut pas de cette liste-ci,

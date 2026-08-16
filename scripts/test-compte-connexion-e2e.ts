@@ -1,4 +1,3 @@
-import assert from "node:assert/strict";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 

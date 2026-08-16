@@ -7,7 +7,7 @@ import { pool } from "../src/server/db/client";
 /**
  * La ligne du planning, MESURÉE sur l'écran du patron — 390 px.
  *
- * *Sa demande du 15 août 2026, sur `docs/maquettes/55-la-ligne-qui-dit-tout.html` :
+ * *Sa demande du 15 août 2026, sur `docs/maquettes/59-la-ligne-qui-dit-tout.html` :
  * « il doit y avoir le nombre de jour, le matin, l'après-midi et la journée
  * comme infos possible », puis « je veux journée et toute la ligne ».*
  *
