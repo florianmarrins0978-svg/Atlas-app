@@ -86,7 +86,24 @@ quand ? »**
 la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
 partiel.
 
-### 0 duodetricies ter. Apparence : le mode sombre OU l'accent, à trancher
+### 0 duodetricies quater. La couleur de la barre du navigateur ne suit pas la charte
+
+`themeColor` vaut toujours le crème dans les métadonnées : sur « Nuit », la
+barre d'adresse de l'iPhone reste claire au-dessus d'un écran noir. Ce n'est pas
+dans le rendu de la page — c'est une métadonnée, et elle ne connaît pas la
+personne connectée. Il faut la produire depuis `generateViewport`, ce qui ajoute
+une lecture de base à chaque page : à peser avant de le faire.
+
+### ~~0 duodetricies ter. Apparence : le mode sombre OU l'accent~~ — **FAIT le 14 août 2026**
+
+Ni l'un ni l'autre séparément : **les sept chartes**, dont deux sombres
+(`ARCHITECTURE.md` §109). Le mode sombre qu'il demandait EST Nuit et Sylve.
+
+**Ce qu'il ne faut pas rouvrir :** un interrupteur « sombre » à côté du choix de
+charte. Les deux se contrediraient à la première combinaison — « Nuit » avec le
+sombre éteint ne veut rien dire.
+
+### ~~0 duodetricies ter (d'origine). Apparence : le mode sombre OU l'accent, à trancher~~
 
 L'écran existe et ne règle rien, délibérément (`ARCHITECTURE.md` §108). Les
 deux chantiers possibles, et leur coût :

@@ -2,15 +2,28 @@
 
 /* La charte d'Arborea, relevée sur le site publié du patron plutôt
    qu'approchée à l'œil — voir src/lib/design-tokens.ts. */
+/* ─── ELLES SUIVENT LA CHARTE CHOISIE DEPUIS LE 14 AOÛT 2026 ───────────────
+   Ces variables-ci alimentent les classes Tailwind (`bg-paper`, `text-ink`,
+   `border-line`…) ; `src/lib/design-tokens.ts` alimente les styles en ligne.
+   **Les deux doivent suivre la charte, sinon l'écran se coupe en deux** — vu
+   sur une capture le jour même : tout l'accueil était passé au sombre et la
+   bande sous la barre de navigation restait blanche, parce qu'elle portait
+   `bg-paper` et non un style en ligne.
+
+   Le repli est la charte d'origine, au caractère près : sans variable posée,
+   rien ne change. Le gabarit pose `--atlas-*` sur `<html>` — donc ICI, sur
+   `:root` — et non sur `<body>` : une variable définie sur le corps ne serait
+   pas visible d'une déclaration faite à la racine, et ces sept lignes
+   retomberaient silencieusement sur leur repli. */
 :root {
-  --ink: #1c1c1a;          /* --charcoal */
-  --paper: #f5f3ee;        /* --bone : fond de page */
-  --card: #faf9f5;         /* --cream : cartes et tuiles */
-  --accent: #2f3b2f;       /* --pine : l'accent unique */
-  --accent-deep: #4f5f4c;  /* --pine-light */
-  --line: rgba(28, 28, 26, 0.12);
-  --or: #b98b47;           /* le second accent, celui de ce qu'on LIT */
-  --ok: #7d9a6d;           /* --sage */
+  --ink: var(--atlas-ink, #1c1c1a);            /* --charcoal */
+  --paper: var(--atlas-cream, #f5f3ee);        /* --bone : fond de page */
+  --card: var(--atlas-card, #faf9f5);          /* --cream : cartes et tuiles */
+  --accent: var(--atlas-rust, #2f3b2f);        /* --pine : l'accent unique */
+  --accent-deep: var(--atlas-rustDeep, #4f5f4c); /* --pine-light */
+  --line: var(--atlas-line, rgba(28, 28, 26, 0.12));
+  --or: var(--atlas-or, #b98b47);              /* le second accent, celui de ce qu'on LIT */
+  --ok: #7d9a6d;           /* --sage : ne change pas d'une charte à l'autre */
   --warn: #b8860b;
 }
 
