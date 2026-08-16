@@ -713,6 +713,20 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**DEUX MAQUETTES POUR LA FICHE D'ENTRETIEN (16 août) — RIEN N'EST CODÉ.** Il a
+demandé de recréer les fiches de chantier d'une autre application (paysagistes
+en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
+
+- **Ne pas commencer à coder** : sa règle du 11 août, et les deux questions de
+  fond ne sont pas tranchées (`TODO.md` § « La fiche d'entretien »).
+- **C'est un TROISIÈME parcours**, pas une case en plus : contrat → passages →
+  rapport, à côté de devis → facture.
+- **Le piège à ne pas recopier** : l'autre application liste les vingt
+  prestations avec « Vrai »/« Faux ». Quatre étant faites, le client lit seize
+  fois « Faux » sur un passage qu'il paie.
+- **Les planches sont ENGENDRÉES** (`scripts/engendrer-maquette-fiche-entretien.mjs`)
+  d'une seule liste : ne pas les retoucher à la main, elles divergeraient.
+
 **UN JOUR BARRÉ N'EST PAS UN JOUR PRIS (16 août).** Sa capture de l'écran
 d'envoi, et un défaut de PHRASE, pas de règle.
 

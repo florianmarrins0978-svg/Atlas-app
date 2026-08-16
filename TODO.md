@@ -27,6 +27,37 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 septvicies. La fiche d'entretien — **DEUX MAQUETTES POSÉES, sa décision attendue**
+
+**Sa demande du 16 août 2026**, captures d'une autre application à l'appui : des
+fiches de chantier pour paysagistes en contrat d'entretien — cocher ce qui a été
+fait, puis envoyer au client.
+
+**Terrain neuf** : rien dans `docs/AGENT.md` ne parle d'entretien récurrent.
+Cela suppose, si c'est retenu, un **contrat** (la liste des prestations dues), des
+**passages** récurrents, et un **rapport** par passage. C'est un troisième
+parcours à côté du devis→facture, pas une case à ajouter quelque part.
+
+**Ce qui est posé** (aucune ligne de `src/`) :
+`docs/maquettes/62-la-fiche-dentretien.html` et `63-le-rapport-au-client.html`,
+engendrées d'une seule liste par `scripts/engendrer-maquette-fiche-entretien.mjs`,
+gardées par `scripts/verifier-maquette-fiche-entretien.mjs`.
+
+**Les deux questions qui lui reviennent :**
+
+1. **Le geste sur le chantier** — la liste d'un bloc (A), rangée par familles
+   avec un compte (B), ou trois états dont « sans objet » (C). C coûte trois
+   fois plus de gestes, y compris sur les seize lignes qui ne le concernent pas
+   ce jour-là.
+2. **Ce que voit le client** — tout comme l'autre application (A), seulement ce
+   qui a été fait (B), ou le reste replié en une phrase (C). B est le plus
+   lisible et le plus risqué : quatre lignes pour le prix d'un passage complet
+   peuvent faire douter, et lui valoir l'appel.
+
+**Ce qui n'est pas à trancher, et qui est déjà écrit dans les planches** : la
+liste vient du contrat ; ce qui n'est pas coché n'est pas une faute ; l'envoi
+emprunte le chemin qui porte déjà devis et factures.
+
 ### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
 
 **Sa demande du 16 août 2026 :** *« si jamais un client me demande une
