@@ -9347,3 +9347,86 @@ vaut toujours le crème : sur « Nuit », la barre d'adresse de l'iPhone reste
 claire au-dessus d'un écran noir. Ce n'est pas dans le rendu de la page mais
 dans les métadonnées, qui ne connaissent pas la personne connectée — à traiter à
 part (`TODO.md`).
+
+---
+
+## 115. « Fais cinq pour cent » : le prix accordé au client
+
+*Demandé le 16 août 2026, dessiné (`docs/maquettes/61-la-reduction-au-client.html`),
+puis codé sur sa réponse — **« sous le total et prix accordé au client »**,
+l'arrangement B et son libellé.*
+
+**Sa demande :** *« si jamais un client me demande une réduction, [pouvoir] lui
+demander "fais cinq pour cent sur le montant du devis" et il ajoute une petite
+ligne réduction ou prix accordé au client — cinq pour cent, ou dix, ou quinze.
+C'est moi qui choisis le nombre de pourcentage. »*
+
+### Ce que B coûte, et pourquoi il l'a choisi quand même
+
+Trois arrangements lui ont été montrés, **avec leur prix écrit en face** :
+
+| | Où | Coût annoncé |
+|---|---|---|
+| A | une ligne du tableau | presque rien — une ligne voyage seule jusqu'à la facture |
+| **B** ✔ | sous le total | **une colonne de plus partout**, et chaque endroit oublié est un montant faux |
+| C | le prix barré | même coût que B, et le vocabulaire de la promotion |
+
+Il a choisi B en connaissance de cause. **Ne pas rouvrir ce choix** ; ce qui suit
+n'existe que pour rendre ce coût tenable.
+
+### La parade : un seul calcul, appelé partout
+
+`src/lib/reduction-devis.ts` porte `totauxAvecReduction` — et **personne ne
+recalcule un total ailleurs**. Cinq endroits l'appellent : le devis
+(`src/server/repositories/devis.ts`), la facture
+(`src/server/repositories/factures.ts`, à la création ET à l'émission), le PDF
+commun (`src/server/pdf/document-commun.ts`), et l'écran
+(`DevisCompletClient.tsx`). Le jour où l'un d'eux additionne des lignes à la
+main, il oubliera la remise.
+
+### Trois décisions qui ne sont pas des préférences
+
+1. **La réduction s'applique sur le HT, la TVA se calcule après.** Sur le TTC,
+   elle rendrait une déclaration fausse. Annoncé comme non soumis à son choix.
+2. **`total_ht` porte le montant NET.** Tout ce qui existe déjà — relevé de TVA,
+   export comptable, exigibilité, paiements — y cherche ce qui est *dû*. Y
+   laisser le prix plein aurait demandé de corriger chacun de ces endroits sans
+   en oublier un seul. Le prix plein vaut `total_ht + reduction_montant`.
+3. **Deux colonnes, pas une.** Le pourcentage suffirait à recalculer le montant…
+   tant que les lignes ne bougent pas. Elles bougent. Le montant est donc figé
+   avec le document, comme les totaux qui l'entourent.
+
+**Et deux gardes plutôt qu'un** : `pourcentValide` borne à l'entrée, et la
+migration 0048 pose des contraintes SQL — bornes, et les deux colonnes
+ensemble ou pas du tout. L'écran n'est pas le seul chemin : une action serveur
+ou une reprise de données passeraient à côté de la première.
+
+### Ce que les contrôles ont trouvé, et qu'aucune relecture n'aurait vu
+
+- **`pdf-lib` refusait le « moins » typographique.** `−` (U+2212) n'existe pas en
+  WinAnsi : `WinAnsi cannot encode "−"`, et **plus aucun devis ne se générait**.
+  L'écran, lui, l'affichait très bien. Un trait d'union règle tout
+  (`test-reduction-pdf.ts`).
+- **Le champ disparaissait sous le doigt.** Vider la case ramenait la réduction
+  à `null`, ce qui démontait la ligne — donc le champ — AVANT que `onBlur` ait pu
+  enregistrer. Le retrait n'arrivait jamais au serveur et la remise revenait au
+  rechargement, sans un mot. D'où `remiseOuverte`, un état qui ne dépend pas du
+  montant calculé (`test-reduction-devis-e2e.ts`).
+- **`chargerDevisPourEcran` rend `null` sur un brouillon**, par construction : il
+  sert à relire un devis ENVOYÉ. La retouche dictée l'appelait, et n'aurait donc
+  jamais rien appliqué — le seul cas qui compte étant justement le brouillon
+  (`test-reduction-parcours-db.ts`).
+- **Une ligne vide traînait sur les devis sans remise**, pendant que le PDF
+  n'imprimait rien : l'écran et le document se contredisaient. Vu à la capture,
+  pas au test.
+
+### La voix, et le chemin de secours
+
+« Fais cinq pour cent sur le montant du devis » est la **sixième** retouche
+dictée (`retouches-devis.ts`), et la seule qui ne vise aucune ligne. « Enlève la
+remise » la retire. Elle propose, il coche — comme les cinq autres.
+
+**Et une ligne discrète « + Prix accordé au client » sous les totaux**, qui n'a
+pas été demandée : sans elle, une remise dictée par erreur ne pourrait pas être
+retirée sans redicter, et l'installation sans clé d'IA ne saurait pas en poser.
+Elle ouvre à 5 %, qu'il corrige.

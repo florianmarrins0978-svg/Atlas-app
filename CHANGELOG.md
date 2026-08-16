@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### « Fais cinq pour cent sur le montant du devis »
+
+**Sa demande :** pouvoir dire à l'application *« fais cinq pour cent sur le
+montant du devis »* et voir s'ajouter une petite ligne — *« réduction ou prix
+accordé au client, cinq pour cent, ou dix, ou quinze. C'est moi qui choisis le
+nombre de pourcentage »*. Rien de tel n'existait : aucune remise, nulle part.
+
+Trois arrangements lui ont été montrés **avec leur prix écrit en face**. Il a
+choisi le plus cher, **B — sous le total, « Prix accordé au client »** : le prix
+plein, ce qui a été consenti, puis le net. C'est celui qui permet à son client de
+refaire le calcul.
+
+**Ce que ça évite.** La réduction se calcule sur le HT et la TVA vient après —
+sur le TTC, elle aurait rendu une déclaration fausse. Et elle **suit jusqu'à la
+facture** : accordée sur le devis puis absente de la facture, elle aurait fait
+payer au client le prix qu'on venait de lui retirer.
+
+**Quatre défauts trouvés par les contrôles, et pas un par la relecture :**
+
+- le PDF ne se générait plus du tout dès qu'une remise existait — le « moins »
+  typographique n'existe pas dans la police du document ;
+- vider la case ne retirait rien : le champ disparaissait avant d'avoir
+  enregistré, et la remise revenait au rechargement, sans un mot ;
+- la retouche dictée cherchait le devis par le chemin réservé aux devis
+  **envoyés**, et n'aurait donc jamais rien appliqué à un brouillon ;
+- une ligne vide traînait sur les devis sans remise, que le PDF n'imprimait pas.
+
+Il peut aussi la dicter — « fais cinq pour cent », « enlève la remise » — et une
+ligne discrète sous les totaux permet de la poser sans parler.
+
+Détail : `ARCHITECTURE.md` §115.
+
+### Le micro du devis ne touche QUE les lignes
+
+Il s'était repris : *« je veux que la note, elle ne remplace que les lignes de
+[devis] et rien d'autre, comme c'était déjà avant — on ne touche pas aux
+conditions. »* Il avait répondu l'inverse la veille. **Rien n'avait été codé
+entre les deux** — c'est ce que la règle de la maquette d'abord protège.
+
 ### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
 
 Sa question du 14 août : *« si un client décide de ne pas me payer, la facture
@@ -36,10 +75,6 @@ qu'avant. Ces règlements sont annoncés comme supposés, et se retirent.
 **Et l'écran ne ment plus** : une facture arrêtée disait « elle figure au relevé
 de TVA collectée ». C'était faux dès ce lot. Elle dit maintenant qu'elle y
 entrera au paiement. Raisons : `ARCHITECTURE.md` §111.
-
----
-
-## 2026-08-16
 
 ### La ligne d'état passe en or sur TOUTES les cartes de l'accueil
 

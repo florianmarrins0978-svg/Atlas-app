@@ -3,6 +3,7 @@ import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib"
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
 import { avecCivilite } from "@/lib/civilite";
+import { libelleReduction } from "@/lib/reduction-devis";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -281,9 +282,23 @@ export type DonneesDocument = {
   conditionsPaiement?: string | null;
   devise: string;
   tauxTva: string;
+  /** **Déjà net de la réduction** — voir `src/lib/reduction-devis.ts`. */
   totalHt: string;
   totalTva: string;
   totalTtc: string;
+  /**
+   * Le prix accordé au client, s'il y en a un.
+   *
+   * *Arrangement B, choisi par le patron le 16 août 2026 :* « sous le total et
+   * prix accordé au client ». Le prix plein s'écrit d'abord, la remise dessous,
+   * puis le net — d'où le besoin des DEUX : le pourcentage pour la phrase, le
+   * montant pour la colonne de droite.
+   *
+   * Absents : le bloc de totaux est exactement celui d'avant le 16 août. Les
+   * milliers de devis déjà émis ne changent pas d'un pixel.
+   */
+  reductionPourcent?: string | null;
+  reductionMontant?: string | null;
   lignes: LigneDocument[];
 };
 
@@ -471,13 +486,43 @@ export async function composerDocument(
   // ─── Totaux, calés à droite ─────────────────────────────────────────────
   // Le bloc entier tient sur une seule page : un « Total TTC » séparé de son
   // « Total HT » par un saut de page se lit de travers.
-  place(74);
+  const libelleRemise = libelleReduction(data.reductionPourcent ?? null);
+  const avecRemise = libelleRemise !== null && data.reductionMontant != null;
+  // Deux lignes de plus quand une remise est accordée : la place se réserve
+  // AVANT le saut de page, sinon « Total TTC » se retrouve seul en haut de la
+  // page suivante.
+  place(avecRemise ? 74 + 32 : 74);
   y -= 6;
   const gaucheTotaux = DROITE - 220;
 
-  ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
-  ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
-  y -= 16;
+  if (avecRemise) {
+    // **Le prix plein d'abord**, puis ce qui a été consenti, puis le net : c'est
+    // la présentation qu'il a choisie, et c'est celle qui permet au client de
+    // refaire le calcul. Le brut vaut net + retiré, jamais une troisième
+    // colonne qui pourrait les contredire.
+    const brut = new Decimal(data.totalHt).plus(new Decimal(data.reductionMontant!)).toFixed(2);
+    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(brut, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 16;
+
+    ecrire(ctx, libelleRemise!, gaucheTotaux, y, { taille: 9.5 });
+    // **Le trait d'union, jamais le « moins » typographique (U+2212).** Les
+    // polices standard du PDF sont encodées en WinAnsi, qui ne le connaît pas :
+    // `pdf-lib` lève « WinAnsi cannot encode "−" », et c'est TOUT le devis qui
+    // ne se génère plus. Trouvé par `test-reduction-parcours-db.ts`, pas par le
+    // typage — l'écran, lui, l'affiche très bien, ce qui rendait le défaut
+    // invisible partout ailleurs.
+    ecrireADroite(ctx, `- ${formatMontant(data.reductionMontant!, data.devise)}`, DROITE, y, { taille: 9.5 });
+    y -= 16;
+
+    ecrire(ctx, "Total HT après remise", gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 16;
+  } else {
+    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 16;
+  }
 
   const tauxLisible = new Decimal(data.tauxTva).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
   ecrire(ctx, `TVA (${tauxLisible} %)`, gaucheTotaux, y, { taille: 9.5 });

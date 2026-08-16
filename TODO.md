@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
+### 0 quadragies. ~~La réduction accordée au client~~ — **CODÉE le 16 août 2026 (B + « Prix accordé au client »)**
 
 **Sa demande du 16 août 2026 :** *« si jamais un client me demande une
 réduction, [pouvoir] lui demander "fais cinq pour cent sur le montant du devis"
@@ -36,9 +36,25 @@ cent, ou dix, ou quinze. C'est moi qui choisis le nombre de pourcentage. »*
 
 **Rien de tel n'existe dans le produit** : aucune remise, nulle part — vérifié.
 
-Planche : `docs/maquettes/61-la-reduction-au-client.html`, éprouvée par
-`scripts/verifier-maquette-reduction.mjs`. **Rien n'est codé** (`CLAUDE.md`
-§3 bis).
+**Son choix : « sous le total et prix accordé au client »** — l'arrangement B,
+le plus cher des trois, choisi en connaissance de cause. Livré :
+`src/lib/reduction-devis.ts`, migration 0048, les deux PDF, l'écran du devis, et
+une sixième retouche dictée. Détail : `ARCHITECTURE.md` §115.
+
+**CE QUI RESTE, et qui n'est pas rien :**
+
+1. **Le geste n'a pas été parcouru à la VOIX**, faute de service de
+   transcription et de modèle ici — comme tout le micro du devis (§0 trigies).
+   Ce qui est éprouvé : la règle, le PDF, le parcours devis → facture → relevé
+   de TVA, et l'écran. Le raccord voix → réduction, non.
+2. **Ses deux questions de la planche restent sans réponse**, et ne bloquent
+   rien : un **montant** au lieu d'un pourcentage (« fais-moi 50 € »), et si la
+   remise doit aussi apparaître sur la **facture PDF** autrement que par ses
+   totaux — aujourd'hui elle y est, au même endroit que sur le devis.
+3. **La ligne « + Prix accordé au client » n'a pas été demandée.** Elle a été
+   ajoutée parce que sans elle une remise dictée par erreur ne se retirerait
+   pas, et qu'une installation sans clé d'IA ne saurait pas en poser. À retirer
+   s'il n'en veut pas.
 
 | | Où elle se pose | Ce que ça coûte |
 |---|---|---|

@@ -9,7 +9,7 @@ import { modifierLignePrix, supprimerLignePrix, ajouterLignePrix, listerLignesPr
 import { noterRetenu } from "@/server/repositories/termes-metier";
 import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
-import { mettreAJourEnTeteDevis } from "@/server/repositories/devis";
+import { mettreAJourEnTeteDevis, getDevisPourChantier } from "@/server/repositories/devis";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
@@ -147,11 +147,19 @@ export async function dicterRetouchesDevisAction(chantierId: string, formData: F
   if (!limite.autorise) throw new Error(limite.message);
 
   const lignes = await listerLignesPrix(ctx, chantierId);
+  // La réduction en cours fait partie du contexte : sans elle, « enlève la
+  // remise » ne veut rien dire pour le modèle.
+  // **`getDevisPourChantier` et non `chargerDevisPourEcran`** : celui-ci rend
+  // `null` sur un brouillon, par construction — il sert à relire un devis déjà
+  // ENVOYÉ. Or c'est le brouillon qu'on corrige. Défaut trouvé par
+  // `test-reduction-parcours-db.ts`, jamais par le typage.
+  const devisEnCours = await getDevisPourChantier(ctx, chantierId);
   const octets = Buffer.from(await fichier.arrayBuffer());
   return lireRetouchesDictees(
     octets,
     fichier.type || "audio/webm",
-    lignes.map((l) => ({ id: l.id, libelle: l.libelle, quantite: l.quantite, prixUnitaire: l.prixUnitaire }))
+    lignes.map((l) => ({ id: l.id, libelle: l.libelle, quantite: l.quantite, prixUnitaire: l.prixUnitaire })),
+    devisEnCours?.reductionPourcent ?? null
   );
 }
 
@@ -170,6 +178,16 @@ export async function dicterRetouchesDevisAction(chantierId: string, formData: F
 export async function appliquerRetouchesAction(chantierId: string, changements: Changement[]) {
   for (const c of changements) {
     switch (c.type) {
+      case "reduction": {
+        // **Elle ne touche aucune ligne** : c'est l'en-tête du devis qui la
+        // porte, et `mettreAJourEnTeteDevis` recalcule les totaux au passage.
+        const ctxR = await getCurrentCtx();
+        const devisEnCours = await getDevisPourChantier(ctxR, chantierId);
+        if (devisEnCours) {
+          await mettreAJourEnTeteDevis(ctxR, devisEnCours.id, { reductionPourcent: c.pourcent });
+        }
+        break;
+      }
       case "prix":
         await majLigneAction(c.ligneId, { prixUnitaire: c.prixUnitaire });
         break;
@@ -218,7 +236,7 @@ function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
 // pas des caractéristiques de l'entreprise ni du chantier, mais de CE document.
 export async function majEnTeteDevisAction(
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string }
+  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
 ) {
   const ctx = await getCurrentCtx();
   const devisModifie = await mettreAJourEnTeteDevis(ctx, devisId, data);

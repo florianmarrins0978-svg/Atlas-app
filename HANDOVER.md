@@ -713,6 +713,26 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
+devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture
+et au relevé de TVA. Son choix : l'arrangement **B** de `docs/maquettes/61`, le
+plus cher des trois — **ne pas le rouvrir**, le coût lui a été annoncé avant.
+
+**⚠ TROIS PIÈGES DE CE LOT, tous payés une fois :**
+
+1. **Ne JAMAIS recalculer un total ailleurs qu'en appelant
+   `totauxAvecReduction`** (`src/lib/reduction-devis.ts`). B n'est pas une ligne
+   du tableau : tout endroit qui additionne des lignes à la main oublie la
+   remise, et c'est un montant faux sur un document parti chez un client.
+2. **`total_ht` est le montant NET**, réduction déduite. Le relevé de TVA,
+   l'export comptable et les paiements y cherchent ce qui est dû.
+3. **Pas de « moins » typographique dans un PDF.** `−` (U+2212) fait lever
+   `pdf-lib` et plus aucun devis ne se génère. L'écran, lui, l'affiche très
+   bien — le défaut est invisible partout ailleurs.
+
+**Ce qui n'a pas été parcouru ici** : le geste à la VOIX, faute de transcription
+et de modèle sur cette machine. `ARCHITECTURE.md` §115.
+
 **LE MICRO DU DEVIS (15 août) — et le seul piège qu'il porte.** Il peut
 désormais dicter des corrections dans le devis : « supprime la deuxième ligne »,
 « monte la taille de haie à 350 », « rajoute le broyage à 500 », « fondage du
