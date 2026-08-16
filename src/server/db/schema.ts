@@ -129,6 +129,7 @@ export const entreprises = pgTable("entreprises", {
    * devis est toujours sur la fiche du chantier. La réponse d'un client et le
    * lien expiré, eux, n'ont pas d'interrupteur (`src/lib/rappels.ts`).
    */
+  rappelChantierSansDevisJours: integer("rappel_chantier_sans_devis_jours"),
   rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
   rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant

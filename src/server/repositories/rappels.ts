@@ -5,7 +5,7 @@ import { lireRappels, normaliserRappels, seuilAncienneté, type ReglagesRappels 
 import type { Ctx } from "./context";
 
 /**
- * Les deux rappels : leur réglage, et ce qu'ils rappellent.
+ * Les trois rappels : leur réglage, et ce qu'ils rappellent.
  *
  * **Tout passe par `withEntreprise`** — ici les données appartiennent bien à une
  * entreprise, contrairement au compte de la personne (`compte.ts`). Une requête
@@ -16,6 +16,7 @@ export async function lireReglagesRappels(ctx: Ctx): Promise<ReglagesRappels> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [ligne] = await tx
       .select({
+        chantierSansDevisJours: entreprises.rappelChantierSansDevisJours,
         devisSansReponseJours: entreprises.rappelDevisSansReponseJours,
         chantierNonFactureJours: entreprises.rappelChantierNonFactureJours,
       })
@@ -32,6 +33,7 @@ export async function ecrireReglagesRappels(ctx: Ctx, saisie: Partial<ReglagesRa
     await tx
       .update(entreprises)
       .set({
+        rappelChantierSansDevisJours: propre.chantierSansDevisJours,
         rappelDevisSansReponseJours: propre.devisSansReponseJours,
         rappelChantierNonFactureJours: propre.chantierNonFactureJours,
       })
@@ -41,7 +43,7 @@ export async function ecrireReglagesRappels(ctx: Ctx, saisie: Partial<ReglagesRa
 }
 
 export type Rappel = {
-  genre: "devis-sans-reponse" | "chantier-non-facture";
+  genre: "chantier-sans-devis" | "devis-sans-reponse" | "chantier-non-facture";
   chantierId: string;
   chantierNom: string;
   /** Depuis quand la situation dure — jamais un nombre de jours pré-calculé,
@@ -62,10 +64,53 @@ export type Rappel = {
  */
 export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel[]> {
   const reglages = await lireReglagesRappels(ctx);
-  if (reglages.devisSansReponseJours === null && reglages.chantierNonFactureJours === null) return [];
+  if (
+    reglages.chantierSansDevisJours === null &&
+    reglages.devisSansReponseJours === null &&
+    reglages.chantierNonFactureJours === null
+  ) {
+    return [];
+  }
 
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const sortie: Rappel[] = [];
+
+    // **Le chantier ouvert dont aucun devis n'est parti.** Sa demande du
+    // 14 août 2026 — « comme la Mme Félicie, vue il y a quatorze jours, aucun
+    // devis envoyé ».
+    //
+    // Il se lit sur le CHANTIER, pas sur un envoi : c'est ce qui le distingue
+    // de « devis sans réponse » juste en dessous. Un devis jamais parti ne
+    // laisse aucune ligne dans `envois_devis`, donc rien à interroger là-bas.
+    if (reglages.chantierSansDevisJours !== null) {
+      const seuil = seuilAncienneté(maintenant, reglages.chantierSansDevisJours);
+      const lignes = await tx
+        .select({ id: chantiers.id, nom: chantiers.nom, creeAt: chantiers.createdAt })
+        .from(chantiers)
+        .where(
+          and(
+            eq(chantiers.entrepriseId, ctx.entrepriseId),
+            isNull(chantiers.deletedAt),
+            isNull(chantiers.devisEnvoyeAt),
+            // **Un chantier TERMINÉ ne réclame plus de devis.** Sans cette
+            // ligne, un petit dépannage fait et clos sans devis rappellerait
+            // pour toujours — et c'est justement le cas où le patron a raison
+            // de ne pas en avoir fait.
+            isNull(chantiers.termineAt),
+            sql`${chantiers.createdAt} < ${seuil}`
+          )
+        )
+        .orderBy(desc(chantiers.createdAt));
+
+      for (const l of lignes) {
+        sortie.push({
+          genre: "chantier-sans-devis",
+          chantierId: l.id,
+          chantierNom: l.nom,
+          depuis: l.creeAt,
+        });
+      }
+    }
 
     if (reglages.devisSansReponseJours !== null) {
       const seuil = seuilAncienneté(maintenant, reglages.devisSansReponseJours);

@@ -275,7 +275,7 @@ const MAQUETTES = [
     fichier: "56-le-devis-qui-tarde.html",
     titre: "Le devis qui tarde : le rappel, et le délai",
     famille: "Le devis avant l’envoi",
-    quoi: "Un rappel quand un chantier reste sans devis. La rubrique Notifications ayant été codée entre-temps, ce n’est plus un écran à inventer mais une troisième ligne à y poser : restent le ton de la carte et le nombre de jours.",
+    quoi: "Un rappel quand un chantier reste sans devis. CODÉ le 16 août sur ses trois réponses : carte teintée avec le compte des jours, quatre jours, et « Chantier sans devis » — le seul libellé qui ne se confond pas avec sa voisine.",
   },
   {
     fichier: "58-le-nombre-de-jours-en-or.html",

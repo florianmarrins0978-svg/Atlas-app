@@ -27,6 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 novivicies. ~~Le devis qui tarde~~ — **CODÉ le 16 août 2026 (B, 4 jours, « Chantier sans devis »)**
 ### 0 novovicies. ~~La TVA au PAIEMENT~~ — **CODÉE le 16 août 2026**
 
 *Fait : `ARCHITECTURE.md` §111. Ce qui suit reste pour mémoire du raisonnement.*
@@ -77,91 +78,6 @@ dans `docs/A-FAIRE.md` §12 — son comptable le sait en une phrase.
 **Ce qu'on ne codera pas tant qu'il n'a pas tranché :** deviner son régime. Le
 poser au hasard ferait déclarer trop tôt ou trop tard, et c'est l'administration
 qui arbitrerait.
-
-### 0 novivicies. Le devis qui tarde : **B et 4 jours retenus**, reste le mot de la ligne
-
-*`docs/maquettes/56-le-devis-qui-tarde.html`, écrite le 15 août 2026, **réécrite
-deux fois** le 16. Le troisième rappel n'est pas codé — `CLAUDE.md` §3 bis.*
-
-**Sa demande, le 14 août 2026 :** *« Il faudrait créer un rappel lorsque le
-chantier a été ouvert mais le devis n'a pas été envoyé. Et il faudrait également
-le rajouter à une catégorie dans les réglages, avec la possibilité dans les
-notifications de mettre le nombre de jours. Exemple : l'utilisateur pourrait
-dire "si aucun devis n'est parti sous deux, trois, quatre, cinq, six jours, me
-mettre une notification" — comme la Mme Félicie, vue il y a quatorze jours,
-aucun devis envoyé. »*
-
-**LA LEÇON DE CE LOT, APPRISE DEUX FOIS ET DONC ÉCRITE ICI.** Cette planche a
-décrit deux fois un monde qui n'existait plus :
-
-1. première version — elle redessinait un écran de notifications, alors que
-   `maquettes/atlas-reglages-notifications.html` en portait déjà un depuis le
-   13 août ;
-2. seconde version — elle proposait quatre façons de poser un délai, alors que
-   la rubrique avait été **CODÉE le 14** par une autre session, avec son délai.
-
-**Chercher ce qui existe avant de dessiner, dans les DEUX dossiers de maquettes
-et dans le code.** `maquettes/` porte les planches de l'application,
-`docs/maquettes/` celles des décisions — regarder un seul des deux, c'est
-redessiner ce qui est déjà tranché.
-
-**Ce qui est CODÉ, et qu'il ne faut surtout pas refaire** — `src/lib/rappels.ts`,
-`src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql` :
-
-| | |
-|---|---|
-| Rubrique Réglages → Notifications | ouverte, `href` posé |
-| « Devis sans réponse » | un devis parti, sans réponse, **7 jours** |
-| « Chantier fini, pas facturé » | **3 jours** |
-| La forme du délai | **« Au bout de [ N ] jours »**, un nombre tapé, un interrupteur par rappel, bornes 1–90, rangé sur `entreprises` |
-| Ce qui ne se coupe pas | réponse à un devis, lien expiré |
-
-**CE QUI RESTE, ET QUI EST PLUS PETIT QU'ANNONCÉ.** Aucun des deux rappels codés
-ne couvre sa demande : ils parlent d'un devis **parti**. Lui parle d'un devis
-**jamais parti**. C'est donc un **troisième rappel**, à poser en tête des deux
-autres — un devis qui n'est pas parti précède un devis qui attend sa réponse.
-
-**IL A TRANCHÉ LE 16 AOÛT 2026 : « la B et 4 ».** La carte **teintée**, avec le
-compte des jours dans l'étiquette — celle qui se remarque —, et **4 jours** par
-défaut.
-
-**ET IL A VU CE QU'AUCUN CONTRÔLE N'AURAIT VU**, dans la foulée : *« dans la
-catégorie notification, j'ai peur que la façon dont tu l'as écrit ne soit pas
-compréhensible — qu'on ne comprenne pas que cette ligne sert à ça, le devis non
-envoyé. »*
-
-Il avait raison, et c'est mesurable à l'œil : la ligne se pose **juste au-dessus
-de « Devis sans réponse »**. Deux lignes qui commencent par le même mot, l'une
-sur l'autre — il faut lire la petite ligne grise pour les séparer, donc on ne les
-sépare pas. Quatre mots lui sont proposés, **chacun montré avec sa voisine**
-(c'est la seule façon de juger, § 3 de la planche) :
-
-| | Le mot | Ce qu'il vaut |
-|---|---|---|
-| F | « Devis pas encore parti » | Exact — et c'est celui qui l'a inquiété |
-| **G** | **« Chantier sans devis »** | **Ma préférence** : seul à se distinguer **au premier mot**, et les trois lignes racontent alors le chantier dans l'ordre (pas de devis → sans réponse → fini pas facturé) |
-| H | « Aucun devis envoyé » | Ses mots à lui, verbatim. Commence par un mot vide |
-| I | « Devis oublié » | Le plus court, mais **il accuse** : un devis peut attendre exprès |
-
-**Rien d'autre n'attend son avis.**
-
-**Quatre règles y sont posées, à trancher avec lui** : le rappel s'efface seul
-dès que le devis part ; « J'ai vu » repousse au lendemain et ne supprime jamais ;
-le compte part de **l'ouverture du chantier** ; et il ne le verra qu'en ouvrant
-Atlas — ce que l'écran codé dit déjà en toutes lettres.
-
-**Ce que la base porte déjà, vérifié dans `src/server/db/schema.ts` :**
-`chantiers.createdAt` (le compte part de là) et `chantiers.devisEnvoyeAt`
-(NULL = aucun devis parti). La condition se **calcule** — donc la première règle
-est gratuite : il n'y a rien à effacer. **Il n'existe aucune date de visite**,
-ce qui confirme que le compte ne peut pas en partir sans un champ de plus.
-
-Reste à ranger : la colonne du troisième délai, à côté des deux autres sur
-`entreprises` (`rappel_devis_non_parti_jours`), et la mémoire du « J'ai vu »
-repoussé au lendemain — que les deux rappels codés n'ont pas eue à traiter.
-
-**Ce que ça coûtera une fois choisi : une demi-journée**, et non la journée
-annoncée hier — l'écran existe.
 
 ### 0 undetricies. L'absence d'une équipe — DESSINÉE le 14 août 2026, en attente de son choix
 ### 0 tricies nonies. ~~`test-pastille-equipe-e2e` est ROUGE sur `main`~~ — **RÉGLÉ le 16 août 2026**
