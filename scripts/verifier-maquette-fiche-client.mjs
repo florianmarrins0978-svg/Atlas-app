@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Éprouve la maquette 62, JAVASCRIPT COUPÉ.
+  Éprouve la maquette 66, JAVASCRIPT COUPÉ.
 
   **D'où elle vient.** Le patron, le 16 août 2026, photo d'un « graphe de
   connaissances » à l'appui : *« ça peut me servir pour mon appli ? »*. La
@@ -41,7 +41,7 @@ import { existsSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "62-ce-que-je-sais-du-client.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "66-ce-que-je-sais-du-client.html"),
 );
 
 if (!existsSync(CIBLE)) {
@@ -92,7 +92,7 @@ const contexte = await navigateur.newContext({
 const page = await contexte.newPage();
 await page.goto(`file://${CIBLE}`, { waitUntil: "networkidle" });
 
-console.log("=== La maquette 62 tombe-t-elle juste ? ===\n");
+console.log("=== La maquette 66 tombe-t-elle juste ? ===\n");
 
 // ── 1. Un arrangement à la fois ─────────────────────────────────────────────
 for (const a of ARRANGEMENTS) {
@@ -216,7 +216,7 @@ await navigateur.close();
 
 console.log(
   plaintes.length === 0
-    ? "\n✅ La maquette 62 tombe juste."
-    : `\n❌ ${plaintes.length} défaut(s) sur la maquette 62.`,
+    ? "\n✅ La maquette 66 tombe juste."
+    : `\n❌ ${plaintes.length} défaut(s) sur la maquette 66.`,
 );
 process.exit(plaintes.length === 0 ? 0 : 1);

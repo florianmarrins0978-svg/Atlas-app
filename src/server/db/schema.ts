@@ -138,6 +138,16 @@ export const entreprises = pgTable("entreprises", {
   rappelChantierSansDevisJours: integer("rappel_chantier_sans_devis_jours"),
   rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
   rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
+  /**
+   * Le quatrième rappel et son rythme (migration 0050).
+   *
+   * `rappelFactureImpayeeJours` se compte à partir de l'ÉCHÉANCE quand elle
+   * existe — le délai de paiement réglé — et de l'envoi sinon : c'est le
+   * « A plus B » qu'il a tranché le 16 août 2026. Le rythme, lui, n'est jamais
+   * nul : on éteint le rappel par le délai, pas par le rythme.
+   */
+  rappelFactureImpayeeJours: integer("rappel_facture_impayee_jours"),
+  rappelFactureRythmeJours: integer("rappel_facture_rythme_jours").notNull().default(7),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
@@ -311,6 +321,20 @@ export const chantiers = pgTable(
     nom: text("nom").notNull(),
     adresseChantier: text("adresse_chantier"),
 
+    // **Où se trouve ce chantier, quand on a su le situer.**
+    //
+    // NULL est un état NORMAL et le restera : l'adresse est un champ libre — un
+    // lieu-dit, « derrière l'église », un chantier créé avant la migration 0047.
+    // Ce qui s'appuie dessus doit savoir le DIRE plutôt que se taire.
+    //
+    // `adresseSituee` garde l'adresse exacte qui a produit ces coordonnées : si
+    // elle diffère de `adresseChantier`, le patron a corrigé l'adresse depuis, et
+    // des coordonnées posées sur l'ancienne seraient pires que pas de
+    // coordonnées du tout.
+    latitude: numeric("latitude", { precision: 9, scale: 6 }),
+    longitude: numeric("longitude", { precision: 9, scale: 6 }),
+    adresseSituee: text("adresse_situee"),
+
     // Jalons métier datés — correction v2 §3. NULL = étape non atteinte.
     informationsVerifieesAt: timestamp("informations_verifiees_at", { withTimezone: true }),
     prixValideAt: timestamp("prix_valide_at", { withTimezone: true }),
@@ -330,6 +354,15 @@ export const chantiers = pgTable(
     // Jalons de fin de chantier (docs/AGENT.md §2.3).
     termineAt: timestamp("termine_at", { withTimezone: true }),
     factureEnvoyeeAt: timestamp("facture_envoyee_at", { withTimezone: true }),
+    /**
+     * Le jour du dernier « Plus tard » sur le rappel d'impayé (migration 0050).
+     *
+     * **Ici et pas sur `factures`, et ce n'est pas un rangement** :
+     * `trg_facture_immuable` refuse toute écriture sur une facture émise, date
+     * d'affichage comprise. La relation étant de un à un, le chantier la porte
+     * sans qu'on perde rien — et l'invariant comptable reste entier.
+     */
+    rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
     tailleEquipe: text("taille_equipe"),
     // Quelle équipe tient ce chantier. NULL = pas encore attribué, l'état de
     // tout chantier planifié avant la migration 0034 : rien ne permet de
@@ -1032,6 +1065,7 @@ export const factures = pgTable(
 
     numeroCommercial: text("numero_commercial").notNull(),
     statut: text("statut", { enum: ["brouillon", "emise"] }).notNull().default("brouillon"),
+
 
     // Instantané figé — même principe que le devis.
     entrepriseNom: text("entreprise_nom").notNull(),

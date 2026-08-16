@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { ordonnerLesCartes } from "@/lib/ordre-notifications";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { jourLisible } from "@/lib/jour";
 import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-reponse";
-import { marquerReponseVueAction, corrigerDevisAction } from "./actions";
+import { marquerReponseVueAction, corrigerDevisAction, repousserRappelFactureAction } from "./actions";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
 export type RappelAffiche = {
-  genre: "chantier-sans-devis" | "devis-sans-reponse" | "chantier-non-facture";
+  genre: "chantier-sans-devis" | "devis-sans-reponse" | "chantier-non-facture" | "facture-impayee";
   chantierId: string;
   chantierNom: string;
   /** « depuis 8 jours » — formulé au serveur, pour que l'écran n'ait pas à
@@ -21,6 +22,15 @@ export type RappelAffiche = {
    *  retenu (proposition B, 16 août 2026). Même source que `depuisTexte` :
    *  deux calculs du même délai finiraient par se contredire. */
   depuisJours: number;
+  /**
+   * Ce que porte le seul rappel d'impayé.
+   *
+   * **Le montant est ce qu'il cherche**, et c'est le RESTE dû : sur une facture
+   * partiellement réglée, afficher le total ferait réclamer une somme déjà
+   * encaissée. Le total l'accompagne pour qu'elle ne passe pas pour une petite
+   * facture (sa planche du 16 août 2026, écran 1).
+   */
+  facture?: { id: string; numero: string; resteDu: string; total: string; partielle: boolean };
 };
 
 // Ce qu'est devenu un devis parti, porté au patron (docs/AGENT.md §2.2).
@@ -33,6 +43,11 @@ export type RappelAffiche = {
 /** Ce qui s'affiche, quelle qu'en soit l'origine. */
 type Carte = {
   envoiId: string;
+  /** Le montant dû, sur le seul rappel d'impayé. `sur` : le total, quand un
+   *  acompte est déjà arrivé — sans quoi la facture passerait pour petite. */
+  montant?: { du: string; sur: string | null };
+  /** L'identifiant de la facture à repousser, sur ce même rappel. */
+  repousser?: string;
   /**
    * Un RAPPEL, pas une nouvelle — et cela change deux choses.
    *
@@ -134,6 +149,34 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
 function rappelVersCarte(r: RappelAffiche): Carte {
   const sansDevis = r.genre === "chantier-sans-devis";
   const devis = r.genre === "devis-sans-reponse";
+  const impayee = r.genre === "facture-impayee";
+  if (impayee && r.facture) {
+    return {
+      envoiId: `rappel-${r.genre}-${r.facture.id}`,
+      chantierId: r.chantierId,
+      chantierNom: r.chantierNom,
+      // **Il ne crie pas.** Le fond teinté reste au devis jamais parti, seul
+      // cas où RIEN n'est encore parti au client. Une facture impayée décrit un
+      // travail fait qui attend son règlement — comme les deux autres.
+      urgent: false,
+      rappel: true,
+      titre: "Facture impayée",
+      texte: `Échéance dépassée ${r.depuisTexte}.`,
+      montant: r.facture.partielle
+        ? { du: r.facture.resteDu, sur: r.facture.total }
+        : { du: r.facture.resteDu, sur: null },
+      // **« Plus tard » n'est PAS « J'ai vu ».** Il ne classe rien : il espace
+      // le rappel du rythme réglé, et la facture reste dans l'endroit en
+      // attente. C'est ce qui distingue ce geste d'un acquittement.
+      repousser: r.facture.id,
+      suite: {
+        href: `/termines/tva`,
+        // Le geste attendu est de SOLDER, et il se fait à l'endroit en attente.
+        libelle: r.facture.partielle ? "Noter un règlement" : "Marquer payée",
+        reprendreAvant: false,
+      },
+    };
+  }
   return {
     // Aucun envoi derrière un rappel : la clé se fabrique, et elle porte le
     // genre — un même chantier peut dormir sur son devis un mois, puis sur sa
@@ -204,28 +247,31 @@ export default function Notifications({
    */
   const [refus, setRefus] = useState<{ chantierId: string; message: string } | null>(null);
 
-  // **LES RAPPELS D'ABORD — sa décision du 16 août 2026, « fait la B ».**
+  // **LES RAPPELS D'ABORD, MAIS PAS TOUTE LA PLACE — ses deux décisions du
+  // 16 août 2026 : « fait la B », puis « fait le » pour la place garantie.**
   //
-  // La règle d'avant disait l'inverse : *« les réponses d'abord, quelqu'un a agi,
-  // cela prime sur un silence »*. Elle se défendait, et elle avait un défaut que
-  // seule une photo a montré : l'accueil ne pose que VISIBLES_PAR_DEFAUT cartes,
-  // et **dès deux réponses en attente**, un rappel passait derrière « N autres
-  // devis à regarder ». Un rappel qu'il faut déplier n'est plus un rappel.
+  // La règle d'origine disait l'inverse : *« les réponses d'abord, quelqu'un a
+  // agi, cela prime sur un silence »*. Elle se défendait, et elle avait un
+  // défaut que seule une photo a montré : dès DEUX réponses en attente, son
+  // rappel passait derrière « N autres devis à regarder ». Un rappel qu'il faut
+  // déplier n'est plus un rappel.
   //
-  // Trois dispositions lui ont été PHOTOGRAPHIÉES sur la même scène — deux
-  // réponses de clients plus son rappel (`scripts/capture-rang-trois-cas.sh`).
-  // Il a retenu B. La troisième — montrer trois cartes au lieu de deux — a été
-  // écartée par l'image elle-même : la troisième tombe sous le bord de l'écran.
+  // Puis la batterie a montré le défaut symétrique, et trois suites l'ont dit
+  // en rougissant : avec les rappels devant, trois chantiers sans devis
+  // suffisaient à masquer TOUTES les réponses de clients. Photographié
+  // (`scripts/capture-place-garantie.sh`), puis tranché.
   //
-  // **Ce que ce choix coûte, et il l'a accepté en connaissance de cause :** une
-  // acceptation ou un refus peut désormais attendre derrière un rappel. Ce qu'il
-  // gagne : ce qu'il doit FAIRE passe avant ce qu'on lui a répondu.
-  const cartes = [
-    ...rappels.map(rappelVersCarte),
-    ...initiales.map(versCarte),
-    ...caducs.map(caducVersCarte),
-  ];
-  const restantes = cartes.filter((n) => !masquees.includes(n.envoiId));
+  // **Le partage vit dans `src/lib/ordre-notifications.ts`**, pure et éprouvée
+  // sur les cas limites : ici on ne fait que lui donner les deux sortes.
+  //
+  // **On tresse APRÈS avoir retiré les cartes acquittées**, et l'ordre compte :
+  // tresser d'abord réserverait une place à une réponse que le patron vient de
+  // marquer « J'ai vu » — une place vide, au profit de rien.
+  const lesRappels = rappels.map(rappelVersCarte).filter((n) => !masquees.includes(n.envoiId));
+  const lesReponses = [...initiales.map(versCarte), ...caducs.map(caducVersCarte)].filter(
+    (n) => !masquees.includes(n.envoiId)
+  );
+  const restantes = ordonnerLesCartes(lesRappels, lesReponses, VISIBLES_PAR_DEFAUT);
   if (restantes.length === 0) return null;
 
   const visibles = toutVoir ? restantes : restantes.slice(0, VISIBLES_PAR_DEFAUT);
@@ -249,6 +295,28 @@ export default function Notifications({
    * L'attente est montrée, et ce n'est pas de la décoration : la reprise
    * traverse le réseau, et un bouton qui ne répond pas se presse deux fois.
    */
+  /**
+   * Repousser le rappel d'une facture.
+   *
+   * La carte disparaît tout de suite : le doigt a fait son geste, et la laisser
+   * sous les yeux le ferait douter. Sur refus, elle revient avec le message —
+   * jamais un `catch {}` muet (`AGENTS.md`).
+   */
+  function repousser(carte: Carte) {
+    if (!carte.repousser || enCours) return;
+    setEnCours(carte.repousser);
+    setRefus(null);
+    setMasquees((v) => [...v, carte.envoiId]);
+    demarrer(async () => {
+      const r = await repousserRappelFactureAction(carte.repousser!);
+      setEnCours(null);
+      if (!r.ok) {
+        setMasquees((v) => v.filter((id) => id !== carte.envoiId));
+        setRefus({ chantierId: carte.chantierId, message: r.raison });
+      }
+    });
+  }
+
   function corriger(carte: Carte) {
     if (enCours) return;
     setEnCours(carte.chantierId);
@@ -293,6 +361,21 @@ export default function Notifications({
               {n.texte}
             </p>
 
+            {/* **Le montant est ce qu'il cherche, et il est écrit gros.** Sur
+                une facture partiellement réglée c'est le RESTE dû — réclamer le
+                total ferait redemander une somme déjà encaissée —, et le total
+                l'accompagne pour qu'elle ne passe pas pour une petite facture. */}
+            {n.montant && (
+              <p className="mt-2" style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2, color: colors.ink }}>
+                {n.montant.du}
+                {n.montant.sur && (
+                  <span className="ml-2 text-[12.5px]" style={{ fontFamily: font.body, color: colors.muted }}>
+                    restant sur {n.montant.sur}
+                  </span>
+                )}
+              </p>
+            )}
+
             {/* Le message du client, tel qu'il l'a écrit — jamais résumé, jamais
                 reformulé. C'est une citation : les guillemets et le filet de
                 gauche disent que ces mots ne sont pas ceux de l'application. */}
@@ -331,6 +414,23 @@ export default function Notifications({
                 >
                   {n.suite.libelle}
                 </Link>
+              )}
+              {/* **« Plus tard » n'est pas « J'ai vu ».** Il ne classe rien :
+                  il espace le rappel du rythme réglé dans « Notifications », et
+                  la facture reste dans l'endroit en attente. C'est le seul
+                  moteur du rythme — sans geste, la carte RESTE, parce qu'une
+                  carte qui s'endort seule peut passer un jour où il n'ouvre pas
+                  l'application. */}
+              {n.repousser && (
+                <button
+                  type="button"
+                  onClick={() => repousser(n)}
+                  disabled={enCours !== null}
+                  className="text-[14px] font-medium disabled:opacity-60"
+                  style={{ color: colors.muted }}
+                >
+                  {enCours === n.repousser ? "…" : "Plus tard"}
+                </button>
               )}
               {/* Rien à acquitter sur un rappel : il s'en va quand la
                   situation cesse, pas quand on la regarde. */}

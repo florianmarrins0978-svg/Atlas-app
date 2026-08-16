@@ -1,11 +1,18 @@
 import { and, desc, eq, isNull, isNotNull, lt, gt, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, entreprises, envoisDevis } from "../db/schema";
-import { lireRappels, normaliserRappels, seuilAncienneté, type ReglagesRappels } from "../../lib/rappels";
+import { chantiers, entreprises, envoisDevis, factures } from "../db/schema";
+import {
+  lireRappels,
+  normaliserRappels,
+  seuilAncienneté,
+  echeanceFacture,
+  rappelFactureDu,
+  type ReglagesRappels,
+} from "../../lib/rappels";
 import type { Ctx } from "./context";
 
 /**
- * Les trois rappels : leur réglage, et ce qu'ils rappellent.
+ * Les quatre rappels : leur réglage, et ce qu'ils rappellent.
  *
  * **Tout passe par `withEntreprise`** — ici les données appartiennent bien à une
  * entreprise, contrairement au compte de la personne (`compte.ts`). Une requête
@@ -19,6 +26,8 @@ export async function lireReglagesRappels(ctx: Ctx): Promise<ReglagesRappels> {
         chantierSansDevisJours: entreprises.rappelChantierSansDevisJours,
         devisSansReponseJours: entreprises.rappelDevisSansReponseJours,
         chantierNonFactureJours: entreprises.rappelChantierNonFactureJours,
+        factureImpayeeJours: entreprises.rappelFactureImpayeeJours,
+        factureImpayeeRythmeJours: entreprises.rappelFactureRythmeJours,
       })
       .from(entreprises)
       .where(eq(entreprises.id, ctx.entrepriseId))
@@ -36,6 +45,8 @@ export async function ecrireReglagesRappels(ctx: Ctx, saisie: Partial<ReglagesRa
         rappelChantierSansDevisJours: propre.chantierSansDevisJours,
         rappelDevisSansReponseJours: propre.devisSansReponseJours,
         rappelChantierNonFactureJours: propre.chantierNonFactureJours,
+        rappelFactureImpayeeJours: propre.factureImpayeeJours,
+        rappelFactureRythmeJours: propre.factureImpayeeRythmeJours,
       })
       .where(eq(entreprises.id, ctx.entrepriseId));
     return propre;
@@ -43,12 +54,27 @@ export async function ecrireReglagesRappels(ctx: Ctx, saisie: Partial<ReglagesRa
 }
 
 export type Rappel = {
-  genre: "chantier-sans-devis" | "devis-sans-reponse" | "chantier-non-facture";
+  genre: "chantier-sans-devis" | "devis-sans-reponse" | "chantier-non-facture" | "facture-impayee";
   chantierId: string;
   chantierNom: string;
   /** Depuis quand la situation dure — jamais un nombre de jours pré-calculé,
    *  pour que l'écran le formule dans sa langue. */
   depuis: Date;
+  /**
+   * Ce que porte le seul rappel d'impayé, et lui seul.
+   *
+   * **Le RESTE dû, jamais le total.** Sur une facture partiellement réglée,
+   * afficher le total ferait réclamer une somme déjà encaissée ; afficher le
+   * reste sans rappeler le total la ferait passer pour une petite facture. Les
+   * deux sont donc là (sa planche, écran 1).
+   */
+  facture?: {
+    id: string;
+    numero: string;
+    /** En centimes d'euro, pour que l'écran mette la forme sans arrondir deux fois. */
+    resteDuCts: number;
+    totalCts: number;
+  };
 };
 
 /**
@@ -67,7 +93,8 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
   if (
     reglages.chantierSansDevisJours === null &&
     reglages.devisSansReponseJours === null &&
-    reglages.chantierNonFactureJours === null
+    reglages.chantierNonFactureJours === null &&
+    reglages.factureImpayeeJours === null
   ) {
     return [];
   }
@@ -178,8 +205,110 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
       }
     }
 
+    // ── Le quatrième : une facture dont le règlement n'est pas arrivé ─────
+    //
+    // **« A plus B », sa réponse du 16 août 2026** : l'échéance quand elle
+    // existe — le délai de paiement réglé dans « Devis & factures » — et le
+    // jour de l'envoi sinon (`echeanceFacture`).
+    if (reglages.factureImpayeeJours !== null) {
+      const [reglage] = await tx
+        .select({ delai: entreprises.delaiPaiementJours })
+        .from(entreprises)
+        .where(eq(entreprises.id, ctx.entrepriseId))
+        .limit(1);
+      const delai = reglage?.delai ?? null;
+
+      const lignes = await tx
+        .select({
+          id: factures.id,
+          numero: factures.numeroCommercial,
+          chantierId: factures.chantierId,
+          chantierNom: chantiers.nom,
+          totalTtc: factures.totalTtc,
+          envoyeeLe: chantiers.factureEnvoyeeAt,
+          repousseeLe: chantiers.rappelFactureRepousseLe,
+          // **La somme des règlements décide, jamais un état posé à la main.**
+          // Une facture marquée « payée » sans règlement enregistré, ou
+          // l'inverse, se contrediraient — et c'est le premier des trois
+          // pièges de sa planche.
+          recu: sql<string>`COALESCE((
+            SELECT SUM(p.montant) FROM paiements_facture p WHERE p.facture_id = ${factures.id}
+          ), 0)`,
+        })
+        .from(factures)
+        .innerJoin(chantiers, eq(factures.chantierId, chantiers.id))
+        .where(
+          and(
+            eq(factures.entrepriseId, ctx.entrepriseId),
+            eq(factures.statut, "emise"),
+            isNull(chantiers.deletedAt),
+            isNotNull(chantiers.factureEnvoyeeAt)
+          )
+        );
+
+      for (const l of lignes) {
+        const totalCts = Math.round(Number(l.totalTtc) * 100);
+        const resteDuCts = totalCts - Math.round(Number(l.recu) * 100);
+        // Soldée : elle sort du rappel le jour même, sans geste.
+        if (resteDuCts <= 0) continue;
+
+        const echeance = echeanceFacture(l.envoyeeLe!, delai);
+        const du = rappelFactureDu({
+          maintenant,
+          echeance,
+          apresJours: reglages.factureImpayeeJours,
+          rythmeJours: reglages.factureImpayeeRythmeJours,
+          // Une date civile en base : on la lit comme un jour, pas un instant.
+          repousseeLe: l.repousseeLe ? new Date(`${l.repousseeLe}T00:00:00Z`) : null,
+        });
+        if (!du) continue;
+
+        sortie.push({
+          genre: "facture-impayee",
+          chantierId: l.chantierId,
+          chantierNom: l.chantierNom,
+          // Ce qui compte pour lui, c'est le retard : on compte depuis
+          // l'échéance, pas depuis l'envoi.
+          depuis: echeance,
+          facture: { id: l.id, numero: l.numero, resteDuCts, totalCts },
+        });
+      }
+    }
+
     // Le plus ancien EN PREMIER : c'est celui qui a le plus attendu, et celui
     // qu'on risque le plus d'oublier tout à fait.
     return sortie.sort((a, b) => a.depuis.getTime() - b.depuis.getTime());
+  });
+}
+
+
+/**
+ * « Plus tard » — repousser le rappel d'UNE facture.
+ *
+ * **C'est le seul moteur du rythme.** Tant qu'il n'a rien touché, la carte
+ * reste : une carte qui s'endormirait toute seule pourrait passer un jour où il
+ * n'ouvre pas l'application, et il ne saurait jamais qu'elle est passée (sa
+ * planche du 16 août 2026, écran 5).
+ *
+ * `jour` est une date CIVILE, calculée au serveur : le téléphone peut être à
+ * l'heure d'ailleurs, et « toutes les semaines » se compte en jours.
+ */
+export async function repousserRappelFacture(ctx: Ctx, factureId: string, jour: string): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **On écrit sur le CHANTIER, pas sur la facture.** Une facture émise est
+    // immuable (`trg_facture_immuable`, migration 0018), et l'affaiblir pour
+    // une commodité d'écran serait un contournement — ce que `CLAUDE.md` §4
+    // interdit. La relation est de un à un : rien ne se perd.
+    const [f] = await tx
+      .select({ chantierId: factures.chantierId })
+      .from(factures)
+      .where(and(eq(factures.id, factureId), eq(factures.entrepriseId, ctx.entrepriseId)))
+      .limit(1);
+    if (!f) return false;
+    const r = await tx
+      .update(chantiers)
+      .set({ rappelFactureRepousseLe: jour })
+      .where(and(eq(chantiers.id, f.chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)));
+    return r.rowCount === 1;
   });
 }

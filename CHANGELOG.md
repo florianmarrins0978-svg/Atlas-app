@@ -9,6 +9,255 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### CODÉ : le rappel « facture impayée », et le premier rappel qui a un rythme
+
+Sa demande, en une phrase : *« faut faire a plus b, mais il faut également qu'on
+puisse régler, par exemple, je veux un rappel toutes les semaines ou tous les
+quinze jours, mais pas qu'il y ait la notification tous les jours. »*
+
+| | |
+|---|---|
+| **Quand il paraît** | à l'échéance — envoi **+ le délai de paiement** réglé, ou le jour de l'envoi si aucun délai ne l'est |
+| **Ce qu'il montre** | le **reste dû**, avec le total quand un acompte est arrivé |
+| **« Plus tard »** | espace le rappel du rythme choisi. Il ne classe rien : la facture reste en attente de paiement |
+| **Le rythme** | chaque jour · chaque semaine · tous les 15 jours. Jamais une case à remplir — c'est ce qu'il a exclu |
+| **Il s'éteint** | tout seul dès que le règlement est enregistré (« Terminés › TVA ») |
+
+**Pourquoi celui-ci a un rythme et pas les trois autres.** Les trois premiers
+s'éteignent dès que le geste attendu est fait. Celui-ci dépend du client : sans
+rythme, la carte serait revenue chaque jour pendant des mois, et une carte vue
+tous les jours cesse d'être lue.
+
+**Deux défauts trouvés sur une capture, par aucun test** — « 1 jours après
+l'échéance », et deux espaces mangées autour d'un `<b>` (« tout seuldès que »).
+Le contrôle écrit contre le premier ne mesurait rien : il cherchait la valeur
+d'un `<input>` dans le texte de la page, où elle ne figure jamais.
+`ARCHITECTURE.md` §118.
+
+### Pas de signature sur les rapports d'entretien — et pourquoi c'est mieux
+
+**Sa question, puis sa décision, le 16 août.** *« S'il n'est pas là, on ne peut
+pas le faire signer. Donc est-ce qu'on a vraiment besoin de ça ? »*
+
+**Sa propre capture répondait déjà** : sur le rapport de l'autre application,
+les deux signatures sont « Non signé ». La sienne — qui ne prouve rien, c'est
+son application et son compte — et celle du client, absent onze fois sur douze.
+Un champ qui reste vide fait passer chaque rapport pour un document inachevé.
+
+**Ce qui prouve le passage à leur place existe déjà** : la date, l'heure, le
+temps passé, et l'empreinte du contenu exact — le mécanisme qui sert déjà à
+l'acceptation d'un devis. Plus solide qu'un trait au doigt, et sans un geste.
+S'ajoutera un **« J'ai bien reçu »** sur la page du client : un accusé horodaté.
+
+**La règle qui reste, quelle que soit la suite** : un rapport sans signature ne
+doit pas AVOIR L'AIR incomplet. Si personne n'a signé, la ligne n'existe pas —
+jamais de « Non signé » en gris sur un document qui part chez un client. Un
+contrôle le tient désormais, et il vise le document, pas la page qui l'explique.
+
+**Ce que ça économise** : une journée de travail (zone de dessin, stockage,
+écran verrouillé, conservation RGPD, survie hors réseau) pour un geste fait une
+fois sur vingt.
+
+**Et l'envoi est celui du devis** — sa confirmation du même jour. Le mot
+« automatique » mérite d'être précisé : rien ne part tout seul, c'est sa décision
+du 3 août. Atlas prépare le message avec le lien, ouvre sa messagerie, il appuie.
+
+---
+
+### « L'appli est vraiment très lente » : le banc le dit enfin lui-même
+
+**Sa plainte du 16 août au soir**, et elle était fondée : chaque écran mettait
+jusqu'à une minute à s'ouvrir.
+
+**La cause n'est pas dans le produit.** Le banc sert une version BÂTIE, qui rend
+un écran en 50-100 ms. Faute de version bâtie, il retombe sur le mode
+développement, qui compile chaque écran **à l'ouverture** — 30 à 100 secondes.
+Ce repli existe pour qu'un banc lent vaille mieux qu'un banc mort, et il est
+juste. Ce qui ne l'était pas : **il ne se disait pas.**
+
+Sa fiche annonçait « aucune version bâtie — le banc sert le mode
+développement ». Vrai, et pourtant inutile : cette phrase recouvrait trois états
+qui n'appellent pas la même chose du tout.
+
+| L'état réel | Ce qu'il faut faire |
+|---|---|
+| la construction tourne encore | attendre deux minutes |
+| **elle a ÉCHOUÉ** | **rien ne se réparera seul — le banc restera lent** |
+| elle n'a jamais démarré | il manque un démarrage |
+
+**Ce que ça évite :** chercher un défaut de produit devant une machine qui
+connaît la réponse. Le message d'échec existait — il partait dans
+`/tmp/essai.log`, que personne ne lit et auquel une session n'a pas accès.
+
+Désormais `banc.mjs` dépose un témoin d'échec **hors** du dossier de
+construction (il doit survivre à la tentative qui le remplace), avec l'heure, le
+code de sortie, et **le disque et la mémoire relevés à cet instant précis** —
+une heure plus tard la mémoire est rendue et le coupable a disparu. La fiche le
+publie, nomme la lenteur dans ses mots à lui, et publie de toute façon le disque
+et la mémoire à chaque passage. Une réussite efface le témoin : un échec d'hier
+ne doit pas accuser la construction d'aujourd'hui.
+
+`scripts/test-banc-lent-se-dit.ts` tient les huit points et **sait rougir** :
+contre la version d'avant, les huit tombent.
+
+**Ce qui n'est PAS corrigé, et il faut le lire ainsi :** on ne sait pas encore
+*pourquoi* sa construction échoue. Ce lot ne rend pas son banc rapide — il rend
+la cause lisible en un coup d'œil au lieu d'une soirée.
+### La fiche d'entretien : tout est tranché, la construction peut commencer
+
+**Ses deux dernières réponses du 16 août.** La molette : *« la A »* — celle du
+téléphone, qu'il connaît déjà et qui ne coûte rien à tenir. J'avais recommandé
+la molette Atlas ; sa raison est bonne, et la planche garde la trace du chemin.
+
+Et la fiche, dans ses mots : *« ça sera un modèle à chaque fois qu'on
+pré-remplira et qu'on enverra aux clients. Donc au final, chaque client aura sa
+fiche parce que ça ne sera jamais la même — mais il n'y aura qu'une seule
+fiche. »* Donc **un seul modèle**, tenu dans les Réglages ; rien n'est rangé par
+client.
+
+**Ce que cela suppose, écrit plutôt que tu** : le second passage chez le même
+client doit retrouver son ajustement, sinon il le referait douze fois par an.
+Le pré-remplissage se fera d'après **son dernier passage**, le modèle ne servant
+que la première fois. C'est la lecture retenue, corrigeable d'un mot.
+
+Les quatre planches portent désormais ce qui a été retenu, et deux contrôles le
+tiennent : une planche qui rouvrirait sur une version écartée lui montrerait,
+dans six mois, autre chose que sa décision.
+
+Toujours **aucune ligne de `src/`** — l'ordre de construction est écrit dans
+`TODO.md`.
+
+---
+
+### Le temps passé ne se tape plus : une molette, faite sans JavaScript
+
+**Sa demande du 16 août** : *« ne pas avoir à l'écrire, mais une petite molette
+ou un truc sympa […] je veux une application ultra luxe et moderne »*.
+
+Trois gestes sur `docs/maquettes/65-choisir-l-heure.html` : la molette native du
+téléphone (gratuite, c'est déjà la sienne), les quarts d'heure en pastilles (un
+seul appui, mais le quart d'heure comme seule unité), et **la molette Atlas** —
+une bande qui s'accroche aux crans, un trait doré au centre, et ce qui est loin
+qui s'efface. Elle est faite **sans une ligne de JavaScript** : son lecteur n'en
+exécute pas.
+
+**Pourquoi un clavier était le mauvais outil**, indépendamment du goût : le
+temps se saisit debout, avec des gants. Un clavier demande de viser quatre
+touches et de deviner le format attendu — « 1h40 », « 1:40 », « 100 » ? Une
+molette ne peut produire qu'une valeur juste.
+
+Ce qui n'est pas à choisir : le pas de cinq minutes, l'ouverture sur le temps
+planifié plutôt que sur zéro, et l'écart qui reste affiché.
+
+Le contrôle mesure ce qu'aucune capture ne montre — que l'accroche rattrape
+vraiment un décalage, et que le repère est au centre. **Il refuse de conclure
+sur une boîte de zéro pixel**, le piège payé le 15 août. Confronté aux trois
+états dégradés qu'il vise : trois rouges, chacun nommant le bon coupable.
+
+Toujours **aucune ligne de `src/`**.
+
+---
+
+### La fiche d'entretien : B et B, la saisie du temps, et où elle se compose
+
+**Sa réponse du 16 août : « B et B »** — rangée par familles sur le chantier,
+et seulement ce qui a été fait chez le client. Plus deux ajouts : *« une case
+pour pouvoir rentrer le temps passé »*, et *« dans les réglages […] un endroit
+où l'utilisateur pourra créer cette fiche »*.
+
+Les planches 62 et 63 s'ouvrent désormais sur **B**, et un contrôle le tient :
+une planche qui rouvrirait sur A lui montrerait, dans six mois, autre chose que
+ce qu'il a choisi. Le temps passé devient une **case de saisie**, le planifié
+rappelé à côté et l'écart calculé.
+
+Une troisième planche, `64-composer-sa-fiche.html` : la fiche se compose dans
+les Réglages — ajouter, retirer, renommer, et **se dédire** (le retrait est
+réversible, comme partout depuis le 10 août).
+
+**Une question reste, et elle n'est pas de rangement** : une seule fiche pour
+tous ses clients, ou un modèle puis une fiche par client ? Et une conséquence
+qui n'est pas à choisir : **un rapport déjà envoyé ne change plus jamais** —
+retirer une ligne du modèle en octobre ne doit rien changer aux rapports de
+juillet, qui sont signés et partis chez le client.
+
+Toujours **aucune ligne de `src/`**.
+
+---
+
+### Deux maquettes pour la fiche d'entretien des paysagistes — RIEN N'EST CODÉ
+
+**Sa demande du 16 août**, captures d'une autre application à l'appui : *« des
+fiches de chantier pour les paysagistes qui font de l'entretien […] une fiche où
+ils cochent ce qu'ils ont fait ou non, et ensuite qu'ils peuvent enregistrer et
+envoyer directement au client »*.
+
+Terrain neuf : rien dans le produit ne parle encore d'entretien récurrent. Deux
+planches donc, et **aucune ligne de `src/`** — sa règle du 11 août.
+
+- `62-la-fiche-dentretien.html` — ce qu'il coche sur le chantier. Trois gestes :
+  la liste d'un bloc, rangée par familles avec un compte, ou trois états avec
+  « sans objet ».
+- `63-le-rapport-au-client.html` — ce que le client reçoit. Trois versions :
+  tout comme l'autre application, seulement ce qui a été fait, ou le reste
+  replié en une phrase.
+
+**Ce que la capture de l'autre application apprend, et qu'il ne faut pas
+recopier :** elle affiche les vingt prestations avec « Vrai » ou « Faux ». Sur
+ce passage, quatre sont faites — le client lirait donc **seize fois « Faux »**
+sur un passage qu'il paie.
+
+Les deux planches sont engendrées d'**une seule liste** : recopiées, elles
+finiraient par diverger là où il compare les deux. Le contrôle refuse le
+JavaScript (son lecteur n'en exécute pas), vérifie que les deux listes
+concordent, et que « Faux » ne sort jamais vers le client. Confronté à quatre
+planches dégradées : quatre rouges, chacun nommant le bon coupable.
+
+**Ce qui attend sa décision** : quel geste sur le chantier, et ce que voit le
+client. Rien ne sera codé avant.
+
+---
+
+### La fiche du banc se taisait EXACTEMENT quand elle devenait utile
+
+**Trouvé en cherchant pourquoi il ne pouvait plus ouvrir l'application.** Sa
+fiche datait de vingt-sept minutes et annonçait un serveur muet. Sa propre règle
+de lecture — « passé vingt minutes sans réécriture, l'espace est arrêté » —
+envoyait donc rallumer une machine dont rien ne prouvait qu'elle dormait.
+
+**La cause.** La publication vivait au bas de la boucle de `veiller.sh`. Cette
+boucle s'arrête d'avancer dès qu'elle appelle `npm run banc`, qui ne rend la
+main qu'à la mort du serveur suivant — des heures. Le veilleur **cessait donc de
+publier au moment même où il se mettait au travail**.
+
+**Ce que ça évite :** chercher la panne au mauvais endroit, ou rallumer un espace
+qui tourne. La publication vit désormais dans un processus séparé, que rien de
+la surveillance ne peut endormir, et qui s'arrête avec le veilleur.
+
+`scripts/test-fiche-pendant-relance.ts` le tient — et il **sait rougir** :
+confronté à l'ancienne version, il annonce « aucune publication ». Une suite qui
+n'a jamais échoué ne prouve rien.
+### Cinq chantiers de test pour éprouver la proposition « par le trajet »
+
+**Sa demande :** *« crée-moi quatre, cinq chantiers de test […] avec des
+demandes de demi-journée, avec des adresses plus ou moins espacées […] pas
+encore ajoutées au planning »* — pour essayer si l'appariement des deux
+demi-journées propose bien le chantier le plus proche.
+
+**Un script à part, `npm run essai:chantiers-trajets`, et NON le seed.** Le seed
+vide puis reconstruit tout, une dizaine de suites comptent ses quatre chantiers,
+et il ne repasse qu'à la création du conteneur : y verser cinq chantiers de plus
+aurait cassé la batterie sans jamais parvenir à un banc déjà allumé. Le script
+ajoute cinq chantiers à l'entreprise de démonstration **sans rien tronquer**, et
+se relance sans doublon (préfixe « Chantier test — »).
+
+**Ce que ça évite.** Chaque chantier a un devis parti, une durée d'une
+demi-journée, aucune date, et des coordonnées posées d'avance (mairies autour de
+Nantes) : sans elles, l'appariement dépendrait d'un appel à la Base Adresse
+Nationale que le mandataire réseau du banc peut refuser. Les distances vont de
+5 à 42 km — le dernier (Pornic) au-delà du seuil de 40 km, pour éprouver aussi
+l'écart et le « Voir quand même ». Vérifié en base : cinq candidats reconnus,
+trois proposés, un écarté, zéro sans position.
+
 ### « Fais cinq pour cent sur le montant du devis »
 
 **Sa demande :** pouvoir dire à l'application *« fais cinq pour cent sur le
@@ -109,6 +358,48 @@ qu'avant. Ces règlements sont annoncés comme supposés, et se retirent.
 de TVA collectée ». C'était faux dès ce lot. Elle dit maintenant qu'elle y
 entrera au paiement. Raisons : `ARCHITECTURE.md` §111.
 
+### Le planning propose de compléter une demi-journée — par la route
+
+**Sa demande du 13 août :** *« lorsqu'on a fini des chantiers en demi-journée,
+que le planning soit en mesure de proposer deux demi-journées pour faire une
+journée, mais de deux chantiers qui sont les plus proches »*. Sa décision du
+16 : *« si c'est possible de faire par la route, code par la route »*, avec
+*« la 2 […] mais avec plusieurs proposition comme la 3 »*.
+
+**La vérification a répondu** (`.github/workflows/itineraire.yml`, sur une
+machine qui a le réseau) : le service d'itinéraire de l'IGN accepte **sans clé
+ni compte**, répond en 186 ms, et le vol d'oiseau se trompe de ×1,33 à ×1,56.
+Assez pour **inverser un classement** : un chantier derrière une colline paraît
+proche et se paie en camion.
+
+**Ce que ça évite :** traverser le département deux fois dans la même journée.
+Le bandeau s'ouvre sous la journée dépareillée, propose jusqu'à trois chantiers
+d'une demi-journée classés par temps de route, et **cale sur un appui** — Atlas
+propose, le patron décide.
+
+**Ce qui protège le service public** : le vol d'oiseau classe et écarte d'abord,
+chez nous, sans le moindre appel ; la route ne départage que les trois premiers.
+Trois appels par proposition, pas quinze — aucun en-tête n'annonce de limite
+d'usage, et dix appels ne prouvent pas qu'il en supporte mille.
+
+**Ce qui ne sort pas d'Atlas** : deux paires de nombres, jamais un nom ni une
+adresse en clair — tenu par un contrôle, pas par une phrase.
+
+Migration `0047` (coordonnées + `adresse_situee`), rattrapage automatique au fil
+des ouvertures du planning, et les trois écrans muets dessinés autant que le
+premier. `ARCHITECTURE.md` §117.
+
+### « ½ journée » réservait la journée entière
+
+**Trouvé en écrivant les contrôles ci-dessus.** `dureeEnDemiJournees("½ journée")`
+rendait **2** : le motif connaissait « demi-journée » et « 1/2 journée », pas le
+caractère `½` — qui est pourtant le libellé que la molette affiche au patron,
+donc celui qu'il redit et qu'il **dicte**.
+
+**Ce que ça évite :** une demi-journée dictée qui bloque la journée complète, et
+un planning qui refuse un après-midi libre sans dire pourquoi. Sans conséquence
+par la molette, qui enregistre « une demi-journée ». Réel à la dictée.
+
 ### La ligne d'état passe en or sur TOUTES les cartes de l'accueil
 
 *Sa consigne, capture de l'accueil à l'appui : « mets le "devis prêt à envoyer
@@ -133,7 +424,34 @@ demain resterait gris sans que rien ne rougisse ; et la suite navigateur lit la
 couleur **calculée** sur l'accueil réel, parce que la règle serait verte même si
 l'écran ignorait le drapeau. Elle refuse de conclure sur zéro carte.
 
+---
+
 ## 2026-08-15
+
+### Une place garantie à chaque sorte, sur l'accueil
+
+**Sa décision du 16 août, après deux photos et une question — « quelle est le
+mieux ? » :** *« ok alors fait le »*.
+
+**Ce que ça évite, et la batterie l'avait dit avant l'image.** Les rappels
+passant devant, trois suites ont rougi parce que la réponse de client qu'elles
+cherchaient n'était plus à l'écran. Sur le jeu de démonstration, **cinq rappels
+occupaient les deux places et masquaient toutes les réponses**.
+
+**La raison, et elle vaut plus que la règle :** un rappel se fabrique tout seul
+et s'accumule tant que la situation dure ; une réponse de client est un
+ÉVÉNEMENT, provoqué par quelqu'un, et périssable. Une sorte qui grossit seule ne
+doit pas pouvoir enterrer une sorte rare et urgente.
+
+**Son choix B tient sans changement** : la première place reste au rappel. C'est
+la dernière place visible qui revient aux réponses, et seulement s'il en existe
+— réserver dans le vide laisserait un trou là où il y a quelque chose à montrer.
+
+La règle est pure (`src/lib/ordre-notifications.ts`) et éprouvée sur les cas
+limites qu'un écran ne produit qu'un jour sur cent : zéro d'une sorte, une seule
+place visible, et **aucune carte perdue ni dupliquée** sur les 108 combinaisons.
+Cette dernière garde contre le pire défaut possible ici — un refus de client qui
+disparaîtrait sans que rien ne le signale.
 
 ### Sur l'accueil, les rappels passent devant les réponses
 

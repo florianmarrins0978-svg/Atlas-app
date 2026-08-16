@@ -25,9 +25,34 @@ import { existsSync, readFileSync } from "node:fs";
 
 const DIST = ".next-batie";
 const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
+// Posé par `banc.mjs` quand `next build` tombe. Voir son en-tête : « aucune
+// version bâtie » recouvrait trois états très différents, dont un seul est
+// passager.
+const TEMOIN_ECHEC =
+  // Détournable uniquement pour l'éprouver : une suite ne peut pas écrire
+  // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
+  process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
 const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
 const VERROU_VEILLEUR = "/tmp/atlas-veilleur.pid";
 const PORT = process.env.PORT ?? "3000";
+
+/**
+ * Une mesure du système, sur une ligne, ou « inconnu ».
+ *
+ * Ne lève jamais : ce diagnostic doit rester lisible sur une machine qui n'a ni
+ * `df` ni `free`. Un relevé manquant vaut mieux qu'un diagnostic qui tombe.
+ */
+function mesureSysteme(commande, args) {
+  try {
+    return execFileSync(commande, args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .join(" | ");
+  } catch {
+    return "inconnu";
+  }
+}
 
 /** Une commande git, ou `null` si elle échoue — jamais une exception. */
 function git(...args) {
@@ -72,6 +97,26 @@ const amont = git("rev-parse", `origin/${branche}`);
 const retard = amont && tete ? git("rev-list", "--count", `${tete}..${amont}`) : null;
 const avance = amont && tete ? git("rev-list", "--count", `${amont}..${tete}`) : null;
 const bati = existsSync(TEMOIN_BATI) ? readFileSync(TEMOIN_BATI, "utf8").trim() : null;
+const echecBati = existsSync(TEMOIN_ECHEC) ? readFileSync(TEMOIN_ECHEC, "utf8").trim() : null;
+
+/**
+ * Ce que la ligne « Code SERVI » doit dire, et il y a TROIS cas.
+ *
+ * Le 16 août 2026, elle n'en disait qu'un : « aucune version bâtie — le banc
+ * sert le mode développement ». Vrai dans les trois, et donc inutile dans les
+ * trois : une construction en cours se traverse en deux minutes, une
+ * construction échouée condamne le banc à compiler chaque écran à l'ouverture,
+ * pour toujours. C'est la seconde qu'il a vécue en écrivant « l'appli est
+ * vraiment très lente », et rien ne permettait de les distinguer.
+ */
+function ligneCodeServi() {
+  if (bati) return court(bati);
+  if (echecBati) {
+    const quand = (echecBati.match(/^quand: (.+)$/m) ?? [])[1] ?? "?";
+    return `AUCUNE — la construction a ÉCHOUÉ (${quand}). Le banc compile chaque écran à l'ouverture : il est LENT, et le restera.`;
+  }
+  return "aucune version bâtie — construction en cours, ou pas encore lancée (le banc est lent en attendant)";
+}
 const derniereIssue = existsSync(FICHIER_ISSUE) ? readFileSync(FICHIER_ISSUE, "utf8").trim() : null;
 const vivant = await serveurRepond();
 
@@ -84,14 +129,37 @@ const brancheLisible =
   branche === "HEAD" ? "AUCUNE (tête détachée — la mise à jour ne peut pas fonctionner)" : (branche ?? "inconnue (hors dépôt git ?)");
 console.log(`  Branche suivie   : ${brancheLisible}`);
 console.log(`  Code récupéré    : ${court(tete)}`);
-console.log(`  Code SERVI       : ${bati ? court(bati) : "aucune version bâtie — le banc sert le mode développement"}`);
+console.log(`  Code SERVI       : ${ligneCodeServi()}`);
 console.log(`  Serveur          : ${vivant ? `répond sur le port ${PORT}` : `NE RÉPOND PAS sur le port ${PORT}`}`);
 console.log(`  Veilleur         : ${veilleurVivant() ? "en place" : "absent"}`);
+// **Les deux suspects d'une construction qui tombe sur une machine modeste.**
+// Publiés à chaque fois, et pas seulement en cas d'échec : quand la fiche est
+// enfin lue, la tentative est finie depuis longtemps et la mémoire est rendue.
+console.log(`  Disque libre     : ${mesureSysteme("df", ["-h", "--output=avail,pcent", "."])}`);
+console.log(`  Mémoire          : ${mesureSysteme("free", ["-h", "--si"])}`);
+if (echecBati) {
+  console.log("\n  Au moment de l'échec de construction :");
+  for (const ligne of echecBati.split("\n")) console.log(`    ${ligne}`);
+}
 if (derniereIssue) console.log(`  Dernière m.à.j.  : ${derniereIssue}`);
 
 console.log("\n── Ce qu'il faut en conclure ──────────────────────\n");
 
 const soucis = [];
+
+// **La lenteur passe AVANT le retard de version.** Un banc qui compile chaque
+// écran à l'ouverture est inutilisable ; savoir qu'il a deux commits de retard
+// ne sert alors à rien. Le 16 août 2026, la fiche annonçait le retard et taisait
+// la lenteur — c'est l'inverse qu'il fallait lire.
+if (echecBati) {
+  soucis.push(
+    "LA CONSTRUCTION A ÉCHOUÉ : le banc reste en mode développement, où chaque\n" +
+      "     écran met jusqu'à une minute à s'ouvrir la PREMIÈRE fois. C'est la cause\n" +
+      "     d'une application « très lente », et elle ne se corrige pas toute seule.\n" +
+      "     Les relevés de disque et de mémoire ci-dessus sont pris à l'instant de\n" +
+      "     l'échec : c'est là qu'il faut regarder en premier."
+  );
+}
 
 if (!fetchOk) {
   soucis.push(

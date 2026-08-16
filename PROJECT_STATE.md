@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-16 · branche `main`
-· dernière migration `drizzle/0047_charte_de_couleurs.sql`
+· dernière migration `drizzle/0049_coordonnees_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -110,6 +110,28 @@ seule avec quinze outils.
 | **La TVA quand le client PAIE, et non quand la facture part** — le relevé se calcule sur la date du règlement (défaut légal d'une prestation de services, CGI art. 269-2-c) ; les factures parties attendent dans « Ma TVA » et y entrent d'un appui. Les acomptes n'apportent que leur part. Réglage encaissements / débits. Le passé ne bouge pas : la migration a supposé réglées les factures déjà émises, et le dit (`ARCHITECTURE.md` §110) | `src/lib/exigibilite-tva.ts` + `src/server/repositories/paiements-facture.ts` + `src/app/termines/tva/` + `drizzle/0045_paiements_et_exigibilite.sql` |
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
+
+### Apparier deux demi-journées, par la route (16 août 2026)
+
+Sa demande du 13 août — *« proposer deux demi-journées pour faire une journée,
+mais de deux chantiers qui sont les plus proches »* — et sa décision du 16 :
+**par la route**, après vérification du service de l'IGN sur une machine qui a
+le réseau.
+
+| Brique | Où c'est |
+|---|---|
+| Les règles pures : vol d'oiseau, seuil, classement, phrase affichée | `src/lib/appariement-demi-journees.ts` |
+| Le trajet demandé à la Géoplateforme de l'IGN — sans clé, sans compte | `src/server/itineraire/geoplateforme.ts` |
+| L'assemblage : rattrapage des coordonnées, présélection, appels, classement | `src/server/planning/appariement.ts` |
+| Les coordonnées d'un chantier, et l'adresse qui les a produites | `drizzle/0049_coordonnees_chantier.sql` |
+| Le bandeau sous la journée dépareillée, avec ses trois états muets | `src/components/atlas/BandeauAppariement.tsx` |
+| La vérification du vrai service, là où il y a du réseau | `.github/workflows/itineraire.yml` |
+
+**Ce qui protège le service public** : le vol d'oiseau classe et écarte d'abord,
+chez nous, sans appel ; la route ne départage que les trois premiers. **Ce qui
+ne sort pas d'Atlas** : deux paires de nombres, jamais un nom ni une adresse en
+clair — tenu par un contrôle (`scripts/test-itineraire-ign.ts`).
+`ARCHITECTURE.md` §117.
 
 ### Conformité RGPD
 
@@ -270,6 +292,23 @@ l'application. Ce qui est **fait** :
   Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
   l'équipe d'un chantier est une étiquette, pas une contrainte.
   `ARCHITECTURE.md` §109.
+- **Le rappel « facture impayée »** (16 août) : le **quatrième** rappel, et le
+  seul qui porte un **rythme**. Sa demande : *« faut faire a plus b, mais il faut
+  également qu'on puisse régler […] toutes les semaines ou tous les quinze jours,
+  mais pas qu'il y ait la notification tous les jours. »* Il paraît à l'échéance
+  — envoi **+ le délai de paiement** réglé, ou le jour de l'envoi sinon —, montre
+  le **reste dû** (avec le total quand un acompte est arrivé), et s'éteint tout
+  seul dès que le règlement est enregistré. « Plus tard » ne classe rien : il
+  espace le rappel du rythme choisi, et c'est le **seul moteur** de ce rythme —
+  sans geste, la carte reste, parce qu'une carte qui s'endort seule peut passer
+  un jour où il n'ouvre pas l'application. La date de report vit sur le
+  **chantier**, pas sur la facture : `trg_facture_immuable` refuse toute écriture
+  sur une facture émise, et l'affaiblir aurait été un contournement. Migration
+  `drizzle/0050_rappel_facture_impayee.sql`, `ARCHITECTURE.md` §118.
+  **Deux défauts trouvés sur la capture et par aucun test** — « 1 jours après
+  l'échéance », et deux espaces mangées par JSX autour d'un `<b>`. Le contrôle
+  écrit contre le premier ne mesurait rien : la valeur d'un `<input>` ne figure
+  pas dans `innerText`.
 - **Le rappel du devis qui tarde** (16 août) : un **troisième** rappel dans
   Réglages → Notifications — *« Chantier sans devis »*, 4 jours, allumé
   d'origine —, et sa carte **teintée** à l'accueil avec le compte des jours dans
@@ -283,8 +322,9 @@ l'application. Ce qui est **fait** :
   16 août) : c'est le seul des trois rappels où rien n'est encore parti au
   client. **Et le rang est tranché aussi** (« fait la B », 16 août, après trois
   photos) : sur l'accueil, **les rappels passent devant les réponses de
-  clients** — ce qu'il doit faire avant ce qu'on lui a répondu. `TODO.md`
-  §0 novivicies.
+  clients** — ce qu'il doit faire avant ce qu'on lui a répondu —, **avec une
+  place garantie à chaque sorte** pour qu'une pile de rappels ne puisse pas
+  enterrer un refus (`src/lib/ordre-notifications.ts`). `TODO.md` §0 novivicies.
 - **Une carte ne peut plus se reposer à moitié coupée** (16 août) : sa capture —
   *« le premier message est trop haut et le début n'est pas visible »*. Le cadre
   qui défile déclarait `scroll-snap-type` sans qu'aucun enfant n'ait jamais
@@ -628,9 +668,11 @@ Voir `TODO.md` pour le détail et l'ordre.
   Nuit, dont deux sombres (`ARCHITECTURE.md` §114). Elles repeignent toute
   l'application ; les devis et factures gardent l'identité d'Atlas. Par défaut,
   rien ne change : « Origine » reprend les valeurs d'avant au caractère près. *Notifications*,
-  elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
-  réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
-  impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont
+  elle, porte **quatre rappels réels** qui apparaissent sur l'accueil — chantier
+  sans devis, devis sans réponse, chantier fini non facturé, **facture impayée**.
+  Ce dernier est arrivé le 16 août avec la donnée qui lui manquait — le paiement,
+  noté depuis « Terminés › TVA » —, et c'est le seul qui porte un **rythme**
+  (`ARCHITECTURE.md` §118). Les deux dernières ouvertes sont
   **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
   nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
   plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et

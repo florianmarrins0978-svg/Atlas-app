@@ -1,0 +1,443 @@
+<title>La fiche d'entretien</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LA FICHE D'ENTRETIEN — ce que le paysagiste coche sur le chantier.
+
+    LE PATRON, LE 16 AOÛT 2026, captures d'une AUTRE application à l'appui :
+    « c'est des fiches de chantier pour les paysagistes qui font de l'entretien
+    […] une fiche où ils cochent ce qu'ils ont fait ou non sur le chantier, et
+    ensuite qu'ils peuvent enregistrer et envoyer directement au client. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE LA CAPTURE DE L'AUTRE APPLICATION APPREND — et qu'il ne faut pas
+    recopier.
+
+    Sa fiche affiche les vingt prestations avec, sous chacune, « Vrai » ou
+    « Faux ». Sur ce chantier-là, QUATRE sont faites et SEIZE ne le sont pas :
+    l'écran est donc un mur de « Faux » qu'il faut faire défiler trois fois pour
+    trouver les quatre lignes qui comptent. « Vrai » et « Faux » sont en outre
+    des mots de programmeur — personne ne dit « faux » d'une haie qu'il n'a pas
+    taillée.
+
+    C'est le vrai enjeu de cette planche : vingt lignes tiennent-elles au
+    pouce, sur un chantier, avec des gants ?
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR — ce sont des conséquences, pas des goûts.
+
+    · LA LISTE VIENT DU CONTRAT, jamais d'une saisie libre. Un client qui paie
+      la tonte et le ramassage n'a pas à voir douze lignes qui ne le concernent
+      pas, et le paysagiste n'a pas à les cocher « non » chaque passage.
+    · CE QUI N'A PAS ÉTÉ FAIT N'EST PAS UNE FAUTE. Une haie ne se taille pas en
+      juillet. L'écran ne doit donc jamais peindre en rouge ce qui n'est pas
+      coché — c'est le calendrier du métier, pas un manquement.
+    · L'ENVOI PASSE PAR LE CHEMIN QUI EXISTE DÉJÀ. Atlas sait déjà porter un
+      document jusqu'au client par SMS ou par e-mail, avec une page publique et
+      un PDF (le devis, la facture). Le rapport emprunterait le même — rien à
+      réinventer, et une seule plomberie à tenir.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les cases et les bascules sont des `input` natifs.
+    Engendré par `scripts/engendrer-maquette-fiche-entretien.mjs`.
+    Contrôle : `scripts/verifier-maquette-fiche-entretien.mjs`.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .reglage{margin:0 0 18px}
+  .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .segments{display:flex;flex-wrap:wrap;gap:8px}
+  .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+  .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+  .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+  .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+  .barre .quand{font-size:11.5px;color:var(--gris)}
+  .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+  .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+
+  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:6px}
+
+  .fa,.fb,.fc{display:none}
+  #g-a:checked ~ .dedans .fa,
+  #g-b:checked ~ .dedans .fb,
+  #g-c:checked ~ .dedans .fc{display:block}
+  #g-a:checked ~ .dedans label[for="g-a"],
+  #g-b:checked ~ .dedans label[for="g-b"],
+  #g-c:checked ~ .dedans label[for="g-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+
+  /* Une prestation = une ligne entière touchable. 52 px de haut : c'est la
+     mesure d'un doigt ganté, pas d'un curseur. */
+  .pres{display:flex;align-items:center;gap:12px;min-height:52px;
+        padding:6px 4px;border-bottom:1px solid var(--trait);cursor:pointer}
+  .pres .case{width:24px;height:24px;flex:none;border-radius:7px;
+              border:1.5px solid var(--trait);background:transparent}
+  .pres .mot{font-size:15px;color:var(--gris)}
+  .etat:checked + .pres .case{background:var(--pin);border-color:var(--pin);
+                              box-shadow:inset 0 0 0 3px var(--papier),
+                                         inset 0 0 0 4px var(--pin)}
+  .etat:checked + .pres .mot{color:var(--encre);font-weight:600}
+
+  .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+  .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+
+  /* Trois états : fait, non fait, sans objet. */
+  .tri{display:flex;align-items:center;justify-content:space-between;gap:10px;
+       min-height:52px;border-bottom:1px solid var(--trait);padding:6px 2px}
+  .tri .mot{font-size:14.5px;color:var(--gris);flex:1;min-width:0}
+  .choix{display:flex;gap:4px;flex:none}
+  .tri-c{padding:7px 9px;border-radius:8px;border:1px solid var(--trait);
+         font-size:11.5px;color:var(--gris);cursor:pointer;background:transparent}
+  .etat:checked + .tri-f{background:var(--pin);border-color:var(--pin);color:var(--papier)}
+  .etat:checked + .tri-n{background:var(--teinte);color:var(--encre)}
+  .etat:checked + .tri-s{background:var(--teinte);color:var(--encre)}
+
+  .fin{margin-top:18px;border-top:1px solid var(--trait);padding-top:14px}
+  .champ-nom{margin:12px 0 5px;font-size:11px;letter-spacing:.13em;
+             text-transform:uppercase;color:var(--or);display:flex;
+             justify-content:space-between;align-items:baseline}
+  .champ-nom .prevu{font-size:11px;letter-spacing:0;color:var(--gris);
+                    text-transform:none}
+  .saisie{display:flex;align-items:center;gap:9px}
+  .saisie input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--encre);
+                background:transparent;border:1px solid var(--trait);
+                border-radius:10px;padding:11px 12px}
+  .saisie .ecart{flex:none;font-size:12px;color:var(--pin);
+                 background:var(--teinte);border-radius:999px;padding:5px 10px}
+  .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);
+          font-size:15px}
+</style>
+
+<input type="radio" name="g" id="g-a" class="etat">
+<input type="radio" name="g" id="g-b" class="etat" checked>
+<input type="radio" name="g" id="g-c" class="etat">
+
+<div class="dedans">
+  <h1>La fiche d'entretien</h1>
+  <p class="intro">Votre demande du 16 août, d'après vos captures. <b>Rien n'est
+    codé</b> — c'est votre règle. <b>Touchez les trois gestes</b>, et cochez
+    les lignes : tout réagit.</p>
+
+  <p class="dit">« Des fiches de chantier pour les paysagistes qui font de
+    l'entretien […] <b>une fiche où ils cochent ce qu'ils ont fait ou non</b> sur
+    le chantier, et ensuite qu'ils peuvent <b>enregistrer et envoyer directement
+    au client</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Le geste sur le chantier</span>
+    <div class="segments">
+      <label for="g-a">A · La liste, d'un bloc</label>
+      <label for="g-b">B · Rangée par familles — <b>retenu</b></label>
+      <label for="g-c">C · Fait / non / sans objet</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Entretien</span><span class="quand">Mer. 22 juillet</span></div>
+      <p class="titre-fiche">Monsieur Martins</p>
+      <p class="sous">12 rue des Lilas — passage n° 7 sur 12</p>
+
+      <div class="fa">
+      <input type="checkbox" id="a0" class="etat" checked>
+      <label class="pres" for="a0"><span class="case"></span><span class="mot">Tonte et ébarbage</span></label>
+      <input type="checkbox" id="a1" class="etat">
+      <label class="pres" for="a1"><span class="case"></span><span class="mot">Traitement pelouse</span></label>
+      <input type="checkbox" id="a2" class="etat">
+      <label class="pres" for="a2"><span class="case"></span><span class="mot">Scarification</span></label>
+      <input type="checkbox" id="a3" class="etat">
+      <label class="pres" for="a3"><span class="case"></span><span class="mot">Engrais</span></label>
+      <input type="checkbox" id="a4" class="etat">
+      <label class="pres" for="a4"><span class="case"></span><span class="mot">Taille arbuste automne</span></label>
+      <input type="checkbox" id="a5" class="etat">
+      <label class="pres" for="a5"><span class="case"></span><span class="mot">Taille arbuste printemps</span></label>
+      <input type="checkbox" id="a6" class="etat">
+      <label class="pres" for="a6"><span class="case"></span><span class="mot">Taille de haie automne</span></label>
+      <input type="checkbox" id="a7" class="etat">
+      <label class="pres" for="a7"><span class="case"></span><span class="mot">Taille de haie printemps</span></label>
+      <input type="checkbox" id="a8" class="etat">
+      <label class="pres" for="a8"><span class="case"></span><span class="mot">Taille des rosiers</span></label>
+      <input type="checkbox" id="a9" class="etat">
+      <label class="pres" for="a9"><span class="case"></span><span class="mot">Bêchage</span></label>
+      <input type="checkbox" id="a10" class="etat">
+      <label class="pres" for="a10"><span class="case"></span><span class="mot">Bordures massifs</span></label>
+      <input type="checkbox" id="a11" class="etat" checked>
+      <label class="pres" for="a11"><span class="case"></span><span class="mot">Griffage massifs</span></label>
+      <input type="checkbox" id="a12" class="etat">
+      <label class="pres" for="a12"><span class="case"></span><span class="mot">Désherbage massifs</span></label>
+      <input type="checkbox" id="a13" class="etat">
+      <label class="pres" for="a13"><span class="case"></span><span class="mot">Coupe des fleurs fanées</span></label>
+      <input type="checkbox" id="a14" class="etat">
+      <label class="pres" for="a14"><span class="case"></span><span class="mot">Nettoyage pied de haies</span></label>
+      <input type="checkbox" id="a15" class="etat">
+      <label class="pres" for="a15"><span class="case"></span><span class="mot">Désherbant allée</span></label>
+      <input type="checkbox" id="a16" class="etat">
+      <label class="pres" for="a16"><span class="case"></span><span class="mot">Lierre, liseron, liane</span></label>
+      <input type="checkbox" id="a17" class="etat">
+      <label class="pres" for="a17"><span class="case"></span><span class="mot">Démoussage voirie</span></label>
+      <input type="checkbox" id="a18" class="etat" checked>
+      <label class="pres" for="a18"><span class="case"></span><span class="mot">Ramassage des feuilles</span></label>
+      <input type="checkbox" id="a19" class="etat" checked>
+      <label class="pres" for="a19"><span class="case"></span><span class="mot">Évacuation des déchets</span></label>
+      </div>
+      <div class="fb">
+      <p class="fam">Pelouse<span class="compte">1/4</span></p>
+      <input type="checkbox" id="b0" class="etat" checked>
+      <label class="pres" for="b0"><span class="case"></span><span class="mot">Tonte et ébarbage</span></label>
+      <input type="checkbox" id="b1" class="etat">
+      <label class="pres" for="b1"><span class="case"></span><span class="mot">Traitement pelouse</span></label>
+      <input type="checkbox" id="b2" class="etat">
+      <label class="pres" for="b2"><span class="case"></span><span class="mot">Scarification</span></label>
+      <input type="checkbox" id="b3" class="etat">
+      <label class="pres" for="b3"><span class="case"></span><span class="mot">Engrais</span></label>
+      <p class="fam">Tailles<span class="compte">0/5</span></p>
+      <input type="checkbox" id="b4" class="etat">
+      <label class="pres" for="b4"><span class="case"></span><span class="mot">Taille arbuste automne</span></label>
+      <input type="checkbox" id="b5" class="etat">
+      <label class="pres" for="b5"><span class="case"></span><span class="mot">Taille arbuste printemps</span></label>
+      <input type="checkbox" id="b6" class="etat">
+      <label class="pres" for="b6"><span class="case"></span><span class="mot">Taille de haie automne</span></label>
+      <input type="checkbox" id="b7" class="etat">
+      <label class="pres" for="b7"><span class="case"></span><span class="mot">Taille de haie printemps</span></label>
+      <input type="checkbox" id="b8" class="etat">
+      <label class="pres" for="b8"><span class="case"></span><span class="mot">Taille des rosiers</span></label>
+      <p class="fam">Massifs<span class="compte">1/5</span></p>
+      <input type="checkbox" id="b9" class="etat">
+      <label class="pres" for="b9"><span class="case"></span><span class="mot">Bêchage</span></label>
+      <input type="checkbox" id="b10" class="etat">
+      <label class="pres" for="b10"><span class="case"></span><span class="mot">Bordures massifs</span></label>
+      <input type="checkbox" id="b11" class="etat" checked>
+      <label class="pres" for="b11"><span class="case"></span><span class="mot">Griffage massifs</span></label>
+      <input type="checkbox" id="b12" class="etat">
+      <label class="pres" for="b12"><span class="case"></span><span class="mot">Désherbage massifs</span></label>
+      <input type="checkbox" id="b13" class="etat">
+      <label class="pres" for="b13"><span class="case"></span><span class="mot">Coupe des fleurs fanées</span></label>
+      <p class="fam">Propreté<span class="compte">2/6</span></p>
+      <input type="checkbox" id="b14" class="etat">
+      <label class="pres" for="b14"><span class="case"></span><span class="mot">Nettoyage pied de haies</span></label>
+      <input type="checkbox" id="b15" class="etat">
+      <label class="pres" for="b15"><span class="case"></span><span class="mot">Désherbant allée</span></label>
+      <input type="checkbox" id="b16" class="etat">
+      <label class="pres" for="b16"><span class="case"></span><span class="mot">Lierre, liseron, liane</span></label>
+      <input type="checkbox" id="b17" class="etat">
+      <label class="pres" for="b17"><span class="case"></span><span class="mot">Démoussage voirie</span></label>
+      <input type="checkbox" id="b18" class="etat" checked>
+      <label class="pres" for="b18"><span class="case"></span><span class="mot">Ramassage des feuilles</span></label>
+      <input type="checkbox" id="b19" class="etat" checked>
+      <label class="pres" for="b19"><span class="case"></span><span class="mot">Évacuation des déchets</span></label>
+      </div>
+      <div class="fc">
+      <p class="fam">Pelouse</p>
+      <div class="tri">
+        <span class="mot">Tonte et ébarbage</span>
+        <span class="choix"><input type="radio" name="t0" id="t0-f" class="etat" checked><label class="tri-c tri-f" for="t0-f">Fait</label><input type="radio" name="t0" id="t0-n" class="etat"><label class="tri-c tri-n" for="t0-n">Non</label><input type="radio" name="t0" id="t0-s" class="etat"><label class="tri-c tri-s" for="t0-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Traitement pelouse</span>
+        <span class="choix"><input type="radio" name="t1" id="t1-f" class="etat"><label class="tri-c tri-f" for="t1-f">Fait</label><input type="radio" name="t1" id="t1-n" class="etat" checked><label class="tri-c tri-n" for="t1-n">Non</label><input type="radio" name="t1" id="t1-s" class="etat"><label class="tri-c tri-s" for="t1-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Scarification</span>
+        <span class="choix"><input type="radio" name="t2" id="t2-f" class="etat"><label class="tri-c tri-f" for="t2-f">Fait</label><input type="radio" name="t2" id="t2-n" class="etat" checked><label class="tri-c tri-n" for="t2-n">Non</label><input type="radio" name="t2" id="t2-s" class="etat"><label class="tri-c tri-s" for="t2-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Engrais</span>
+        <span class="choix"><input type="radio" name="t3" id="t3-f" class="etat"><label class="tri-c tri-f" for="t3-f">Fait</label><input type="radio" name="t3" id="t3-n" class="etat" checked><label class="tri-c tri-n" for="t3-n">Non</label><input type="radio" name="t3" id="t3-s" class="etat"><label class="tri-c tri-s" for="t3-s">S.O.</label></span>
+      </div>
+      <p class="fam">Tailles</p>
+      <div class="tri">
+        <span class="mot">Taille arbuste automne</span>
+        <span class="choix"><input type="radio" name="t4" id="t4-f" class="etat"><label class="tri-c tri-f" for="t4-f">Fait</label><input type="radio" name="t4" id="t4-n" class="etat" checked><label class="tri-c tri-n" for="t4-n">Non</label><input type="radio" name="t4" id="t4-s" class="etat"><label class="tri-c tri-s" for="t4-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Taille arbuste printemps</span>
+        <span class="choix"><input type="radio" name="t5" id="t5-f" class="etat"><label class="tri-c tri-f" for="t5-f">Fait</label><input type="radio" name="t5" id="t5-n" class="etat" checked><label class="tri-c tri-n" for="t5-n">Non</label><input type="radio" name="t5" id="t5-s" class="etat"><label class="tri-c tri-s" for="t5-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Taille de haie automne</span>
+        <span class="choix"><input type="radio" name="t6" id="t6-f" class="etat"><label class="tri-c tri-f" for="t6-f">Fait</label><input type="radio" name="t6" id="t6-n" class="etat" checked><label class="tri-c tri-n" for="t6-n">Non</label><input type="radio" name="t6" id="t6-s" class="etat"><label class="tri-c tri-s" for="t6-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Taille de haie printemps</span>
+        <span class="choix"><input type="radio" name="t7" id="t7-f" class="etat"><label class="tri-c tri-f" for="t7-f">Fait</label><input type="radio" name="t7" id="t7-n" class="etat" checked><label class="tri-c tri-n" for="t7-n">Non</label><input type="radio" name="t7" id="t7-s" class="etat"><label class="tri-c tri-s" for="t7-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Taille des rosiers</span>
+        <span class="choix"><input type="radio" name="t8" id="t8-f" class="etat"><label class="tri-c tri-f" for="t8-f">Fait</label><input type="radio" name="t8" id="t8-n" class="etat" checked><label class="tri-c tri-n" for="t8-n">Non</label><input type="radio" name="t8" id="t8-s" class="etat"><label class="tri-c tri-s" for="t8-s">S.O.</label></span>
+      </div>
+      <p class="fam">Massifs</p>
+      <div class="tri">
+        <span class="mot">Bêchage</span>
+        <span class="choix"><input type="radio" name="t9" id="t9-f" class="etat"><label class="tri-c tri-f" for="t9-f">Fait</label><input type="radio" name="t9" id="t9-n" class="etat" checked><label class="tri-c tri-n" for="t9-n">Non</label><input type="radio" name="t9" id="t9-s" class="etat"><label class="tri-c tri-s" for="t9-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Bordures massifs</span>
+        <span class="choix"><input type="radio" name="t10" id="t10-f" class="etat"><label class="tri-c tri-f" for="t10-f">Fait</label><input type="radio" name="t10" id="t10-n" class="etat" checked><label class="tri-c tri-n" for="t10-n">Non</label><input type="radio" name="t10" id="t10-s" class="etat"><label class="tri-c tri-s" for="t10-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Griffage massifs</span>
+        <span class="choix"><input type="radio" name="t11" id="t11-f" class="etat" checked><label class="tri-c tri-f" for="t11-f">Fait</label><input type="radio" name="t11" id="t11-n" class="etat"><label class="tri-c tri-n" for="t11-n">Non</label><input type="radio" name="t11" id="t11-s" class="etat"><label class="tri-c tri-s" for="t11-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Désherbage massifs</span>
+        <span class="choix"><input type="radio" name="t12" id="t12-f" class="etat"><label class="tri-c tri-f" for="t12-f">Fait</label><input type="radio" name="t12" id="t12-n" class="etat" checked><label class="tri-c tri-n" for="t12-n">Non</label><input type="radio" name="t12" id="t12-s" class="etat"><label class="tri-c tri-s" for="t12-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Coupe des fleurs fanées</span>
+        <span class="choix"><input type="radio" name="t13" id="t13-f" class="etat"><label class="tri-c tri-f" for="t13-f">Fait</label><input type="radio" name="t13" id="t13-n" class="etat" checked><label class="tri-c tri-n" for="t13-n">Non</label><input type="radio" name="t13" id="t13-s" class="etat"><label class="tri-c tri-s" for="t13-s">S.O.</label></span>
+      </div>
+      <p class="fam">Propreté</p>
+      <div class="tri">
+        <span class="mot">Nettoyage pied de haies</span>
+        <span class="choix"><input type="radio" name="t14" id="t14-f" class="etat"><label class="tri-c tri-f" for="t14-f">Fait</label><input type="radio" name="t14" id="t14-n" class="etat" checked><label class="tri-c tri-n" for="t14-n">Non</label><input type="radio" name="t14" id="t14-s" class="etat"><label class="tri-c tri-s" for="t14-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Désherbant allée</span>
+        <span class="choix"><input type="radio" name="t15" id="t15-f" class="etat"><label class="tri-c tri-f" for="t15-f">Fait</label><input type="radio" name="t15" id="t15-n" class="etat" checked><label class="tri-c tri-n" for="t15-n">Non</label><input type="radio" name="t15" id="t15-s" class="etat"><label class="tri-c tri-s" for="t15-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Lierre, liseron, liane</span>
+        <span class="choix"><input type="radio" name="t16" id="t16-f" class="etat"><label class="tri-c tri-f" for="t16-f">Fait</label><input type="radio" name="t16" id="t16-n" class="etat" checked><label class="tri-c tri-n" for="t16-n">Non</label><input type="radio" name="t16" id="t16-s" class="etat"><label class="tri-c tri-s" for="t16-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Démoussage voirie</span>
+        <span class="choix"><input type="radio" name="t17" id="t17-f" class="etat"><label class="tri-c tri-f" for="t17-f">Fait</label><input type="radio" name="t17" id="t17-n" class="etat" checked><label class="tri-c tri-n" for="t17-n">Non</label><input type="radio" name="t17" id="t17-s" class="etat"><label class="tri-c tri-s" for="t17-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Ramassage des feuilles</span>
+        <span class="choix"><input type="radio" name="t18" id="t18-f" class="etat" checked><label class="tri-c tri-f" for="t18-f">Fait</label><input type="radio" name="t18" id="t18-n" class="etat"><label class="tri-c tri-n" for="t18-n">Non</label><input type="radio" name="t18" id="t18-s" class="etat"><label class="tri-c tri-s" for="t18-s">S.O.</label></span>
+      </div>
+      <div class="tri">
+        <span class="mot">Évacuation des déchets</span>
+        <span class="choix"><input type="radio" name="t19" id="t19-f" class="etat" checked><label class="tri-c tri-f" for="t19-f">Fait</label><input type="radio" name="t19" id="t19-n" class="etat"><label class="tri-c tri-n" for="t19-n">Non</label><input type="radio" name="t19" id="t19-s" class="etat"><label class="tri-c tri-s" for="t19-s">S.O.</label></span>
+      </div>
+      </div>
+
+      <div class="fin">
+        <p class="champ-nom">Temps passé <span class="prevu">planifié 2 h 30</span></p>
+        <div class="saisie">
+          <input type="text" value="1 h 40" aria-label="Temps passé sur le chantier">
+          <span class="ecart">− 50 min</span>
+        </div>
+
+        <p class="champ-nom">Observations</p>
+        <div class="saisie"><input type="text" value="" placeholder="Rien à signaler" aria-label="Observations"></div>
+
+        <span class="bouton">Enregistrer et envoyer</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="fa">
+        <span class="t">A · La liste, d'un bloc</span>
+        Les vingt lignes à la suite, dans l'ordre du contrat. Une ligne
+        entière se touche — <b>52 px de haut</b>, la mesure d'un doigt ganté.
+        <span class="cout">Ce que ça coûte : <b>trois écrans à faire défiler</b>
+        pour cocher quatre lignes. C'est exactement ce que fait l'autre
+        application, et c'est ce qui la rend pénible sur un chantier.</span>
+      </div>
+      <div class="fb">
+        <span class="t">B · Rangée par familles</span>
+        Pelouse, Tailles, Massifs, Propreté. Chaque famille porte son compte
+        — <b>« 1/4 »</b> — et se lit d'un coup d'œil sans rien ouvrir.
+        <span class="cout">Ce que ça coûte : un niveau de plus à comprendre.
+        En échange, il retrouve ses gestes dans l'ordre où il les fait, et le
+        compte lui dit s'il a oublié une famille entière.</span>
+      </div>
+      <div class="fc">
+        <span class="t">C · Fait / non / sans objet</span>
+        Trois réponses au lieu de deux. <b>« Sans objet »</b> dit quelque chose
+        qu'une case vide ne dit pas : la haie n'était pas à tailler ce mois-ci,
+        ce n'est pas un oubli.
+        <span class="cout">Ce que ça coûte : <b>trois fois plus de gestes</b>,
+        et une décision à prendre sur chaque ligne — y compris les quatorze qui
+        ne le concernent pas ce jour-là. À ne retenir que si la distinction
+        compte pour le client.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Retenu le 16 août 2026</span>
+    <ul>
+      <li><b>B — rangée par familles.</b> Sa réponse, en un mot : « B et B ».</li>
+      <li><b>Le temps passé se saisit à la main</b>, sur la fiche, à la fin du
+        passage. Le temps PLANIFIÉ est rappelé à côté, en petit, et l'écart se
+        calcule tout seul — c'est ce que fait déjà l'autre application, et c'est
+        ce qui vous dit si le contrat est bien taillé.</li>
+      <li><b>Les observations restent un champ libre</b> : c'est là que se note
+        « portail à réparer », et c'est ce que le client lira.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>La liste vient du contrat</b>, jamais d'une saisie libre : un client
+        qui paie la tonte et le ramassage n'a pas à voir douze lignes qui ne le
+        concernent pas.</li>
+      <li><b>Ce qui n'est pas coché n'est pas une faute.</b> Une haie ne se
+        taille pas en juillet — aucun rouge sur ces lignes.</li>
+      <li><b>L'envoi emprunte le chemin qui existe déjà</b> : le SMS ou l'e-mail,
+        la page publique et le PDF qui portent déjà vos devis et vos factures.
+        Rien à réinventer.</li>
+    </ul>
+  </div>
+</div>

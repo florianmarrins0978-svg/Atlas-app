@@ -9172,6 +9172,36 @@ passe avant ce qu'on lui a répondu.
 
 `scripts/test-devis-qui-tarde-e2e.ts` tient l'ordre — et il vérifie l'ordre, pas
 le compte : la règle vaut quel que soit le nombre de cartes.
+
+#### Et une place garantie à chaque sorte
+
+*Sa seconde décision du même jour — **« ok alors fait le »** —, après que la
+batterie ET une photo ont montré le défaut symétrique.*
+
+**Ce que B seul produisait :** les rappels se fabriquant tout seuls, il suffisait
+de trois chantiers sans devis pour que **toutes** les réponses de clients passent
+derrière le repli. Trois suites l'ont dit en rougissant, avant même l'image —
+elles cherchaient une réponse qui n'était plus à l'écran.
+
+**Le partage retenu :** la première place reste au rappel (son choix B ne bouge
+pas) ; **la dernière place visible revient à une réponse**, et seulement s'il en
+existe une. À deux cartes visibles cela donne « un rappel, une réponse » ; à
+trois, « deux rappels, une réponse ».
+
+**Pourquoi ce n'est pas symétrique, et pourquoi c'est juste :** un rappel
+s'accumule et attendra demain sans que rien ne soit perdu ; une réponse de client
+est un événement périssable — quelqu'un attend une réaction. Une sorte qui
+grossit toute seule ne doit pas pouvoir enterrer une sorte rare et urgente.
+
+**La règle est pure** — `src/lib/ordre-notifications.ts` —, et elle est éprouvée
+là où l'écran ne sait pas aller : zéro d'une sorte, une seule place visible, et
+surtout **aucune carte perdue ni dupliquée** sur les 108 combinaisons de zéro à
+cinq de chaque. Cette dernière garde contre le pire défaut possible ici : un
+refus de client qui disparaîtrait sans que rien ne le signale.
+
+**Le tressage se fait APRÈS le retrait des cartes acquittées.** Dans l'autre
+sens, une place serait réservée à une réponse que le patron vient de marquer
+« J'ai vu » — une place vide, au profit de rien.
 ---
 
 ---
@@ -9513,3 +9543,248 @@ pas été demandée : sans elle, une remise dictée par erreur ne pourrait pas �
 retirée sans redicter, et l'installation sans clé d'IA ne saurait pas en poser.
 Elle ouvre à 5 %, qu'il corrige.
 
+
+---
+
+## 117. Deux demi-journées qui font une journée — et la route, pas le vol d'oiseau
+
+**Sa demande du 13 août 2026 :** *« lorsqu'on a fini des chantiers en
+demi-journée, que le planning soit en mesure de proposer deux demi-journées pour
+faire une journée, mais de deux chantiers qui sont les plus proches. […] Je vais
+lui demander s'il veut que je mette ce chantier-là plutôt qu'un autre
+l'après-midi ou le matin. »*
+
+Puis sa question, qui a commandé tout le reste : *« Quel est le problème si on
+fait par la route ? Je n'ai pas compris. »* — et sa décision du 16, une fois la
+réponse revenue : *« Si c'est possible de faire par la route, code par la
+route. »*
+
+### Le problème n'était pas technique, il était juridique
+
+Un service d'itinéraire reçoit les adresses des clients : il devient un
+**sous-traitant ultérieur** au sens du RGPD, à nommer dans un contrat qui
+n'existe pas encore (`docs/A-FAIRE.md` points 1 et 2). C'est le raisonnement qui
+avait déjà fait préférer la Base Adresse Nationale à Google (§ sur l'aide à la
+saisie d'adresse).
+
+**Sauf que l'État publie aussi un service d'itinéraire.** `.github/workflows/itineraire.yml`
+est allé le lui demander depuis une machine qui a le réseau — l'environnement de
+développement, lui, refuse les services extérieurs. Ce qu'il a rapporté le
+16 août 2026 :
+
+| Mesuré | Résultat |
+|---|---|
+| Clé, compte | **Aucun.** Le service répond 200 sans rien |
+| Écart vol d'oiseau → route | **×1,33 à ×1,56** (monts du Lyonnais) |
+| Rafale de dix appels | 1858 ms, **tous en 200**, 186 ms de moyenne |
+| En-têtes de limite d'usage | **Aucun** — donc on ne sait pas, donc on se retient |
+
+Ce que ces chiffres tranchent : le vol d'oiseau se trompe d'un tiers à la
+moitié, et l'erreur n'est **pas la même d'un trajet à l'autre** — elle peut donc
+inverser le classement. Un chantier « à 8 km » derrière une colline se paie plus
+cher qu'un chantier « à 11 km » par la vallée.
+
+### L'ordre imposé, et pourquoi il ne se négocie pas
+
+`src/lib/appariement-demi-journees.ts` :
+
+1. **le vol d'oiseau classe et écarte** — instantané, chez nous, aucun appel ;
+2. **la route ne départage que les trois premiers.**
+
+Trois appels par proposition, pas quinze. Aucun en-tête n'annonce de limite :
+dix appels ne prouvent pas qu'il en supporte mille, et un écran qui arroserait
+un service public à chaque ouverture finirait par s'en voir fermer la porte —
+c'est l'artisan qui perdrait la fonction.
+
+**Ce qui part chez l'IGN : deux paires de nombres, rien d'autre.** Pas de nom,
+pas d'adresse en clair, pas d'identifiant. Des coordonnées ne se remontent pas à
+une personne sans le fichier qui va avec, et ce fichier ne quitte jamais Atlas.
+Un contrôle le tient plutôt qu'une phrase rassurante
+(`scripts/test-itineraire-ign.ts`).
+
+### Ce qu'il a fallu construire avant, et qui ne se voit pas
+
+**Atlas ne connaissait aucune distance.** L'adresse d'un chantier est du texte
+libre, et le restera : on ne va pas empêcher de créer un chantier faute d'un
+numéro de rue. Mais la Base Adresse Nationale rend les coordonnées à chaque
+frappe, dans la réponse que `lireSuggestions` lisait — et qui n'en gardait que
+le libellé. Le reste partait à la poubelle.
+
+- **migration 0049** : `latitude`, `longitude` (`numeric(9,6)`) et
+  **`adresse_situee`** sur `chantiers` ;
+- **`adresse_situee` est la colonne qui compte.** Elle porte l'adresse EXACTE
+  qui a produit les coordonnées. Le jour où le patron corrige l'adresse, des
+  coordonnées posées sur l'ancienne seraient **pires que pas de coordonnées** —
+  elles ne se signalent pas. Comparer les deux attrape d'un coup les chantiers
+  jamais situés et ceux dont l'adresse a changé ;
+- **le rattrapage se fait au fil de l'eau**, huit par ouverture de planning
+  (`situerQuelquesChantiers`). Trois cents chantiers d'un coup feraient trois
+  cents appels et une page d'une minute ;
+- **une panne du service ne s'écrit PAS en base.** Marquer `adresse_situee`
+  pendant une coupure condamnerait l'adresse à ne plus jamais être retentée : le
+  chantier resterait « non situé » pour toujours, sans que rien ne l'explique.
+  Une adresse *refusée* (« derrière l'église »), elle, laisse sa trace — sinon
+  elle repartirait à chaque ouverture, indéfiniment.
+
+### L'écran : sa composition 2, avec les propositions de la 3
+
+*« je veux la 2 par la route mais avec plusieurs proposition comme la 3 »*
+(`docs/maquettes/57-apparier-deux-demi-journees.html`).
+
+Le bandeau vit **sous la journée**, et n'apparaît que là où la question se pose :
+une demi-journée prise, l'autre libre, pour la même équipe. Sur une journée vide
+il n'y a rien à compléter ; sur une journée pleine, rien à ajouter.
+
+**Ses trois états muets comptent autant que le premier** — un écran qui ne dit
+rien passe pour une panne, ce dépôt l'a déjà payé trois fois :
+
+| Situation | Ce que l'écran écrit |
+|---|---|
+| Rien d'assez proche | Combien, et à quelle distance est le plus proche — puis « Voir quand même » |
+| Départ non situable | L'adresse en cause, nommée, et le chemin pour la corriger |
+| Candidat sans adresse | Nommé sous les propositions, jamais tu |
+| Aucun candidat du tout | **Rien** : le bandeau ne s'affiche pas. Le cas ordinaire ne mérite pas du bruit |
+
+**Et la phrase ne ment jamais sur ce qu'elle mesure** : « à 12 km, 20 min de
+route » quand on a la route, « à 8 km à vol d'oiseau » sinon. Écrire « à 8 km »
+tout court laisserait croire à une distance routière, et le patron partirait
+pour un quart d'heure de trajet qui en fait vingt-cinq.
+
+**Atlas propose, le patron décide.** Aucune demi-journée ne se cale toute seule.
+
+### Un défaut trouvé en chemin : « ½ journée » valait une journée entière
+
+`dureeEnDemiJournees("½ journée")` rendait **2**. Le motif reconnaissait
+« demi-journée » et « 1/2 journée », pas le caractère `½` — qui est pourtant
+**le libellé que la molette affiche au patron** (`src/lib/durees-chantier.ts`),
+donc celui qu'il redit et qu'il dicte. La phrase tombait alors sur la règle
+suivante — « journée » sans chiffre reconnu — et réservait la journée entière.
+
+Sans conséquence par l'écran Informations, qui enregistre `libelleDuree(1)` =
+« une demi-journée ». Réel dès qu'il **dicte** sa durée. Corrigé, avec son cas
+dans `scripts/test-creneaux.ts`.
+
+### Ce qui reste, et qui n'est PAS dans ce lot
+
+**Le bandeau ne propose qu'un trou à la fois.** À plusieurs équipes, plusieurs
+demi-journées dépareillées peuvent coexister ; en afficher autant de bandeaux
+ferait trois pavés sous une journée déjà chargée. On complète le premier, le
+suivant apparaît.
+
+**Et la proposition 4 de la maquette — proposer au moment où l'on pose la date —
+n'est pas codée.** Elle se combine avec celle-ci sans la contredire ; elle
+attend son geste.
+
+---
+
+---
+
+## 118. Le quatrième rappel : une facture impayée, et le premier qui porte un RYTHME
+
+**Sa demande du 16 août 2026, en deux temps.** D'abord la question du point de
+départ, à laquelle il répond lui-même devant la maquette
+(`maquettes/atlas-rappel-facture-impayee.html`, cinq écrans) : ***« faut faire
+a plus b »*** — l'échéance quand un délai de paiement est réglé, le jour de
+l'envoi sinon. Puis, dans la même phrase, ce qui fait de ce rappel un cas à
+part : ***« il faut également qu'on puisse régler, par exemple, je veux un
+rappel toutes les semaines ou tous les quinze jours, mais pas qu'il y ait la
+notification tous les jours. »***
+
+### Pourquoi celui-ci a besoin d'un rythme, et pas les trois autres
+
+Les trois premiers rappels **s'éteignent d'eux-mêmes** dès que le geste attendu
+est fait : le devis part, le client répond, la facture est émise. Leur durée de
+vie est bornée par une action qui dépend de lui.
+
+Celui-ci ne dépend pas de lui. Une facture peut rester impayée des mois, et
+aucun geste de sa part ne l'éteint — c'est le client qui décide. Sans rythme, la
+carte se serait posée sur son accueil **chaque jour jusqu'au paiement**, et une
+carte qu'on voit tous les jours cesse d'être lue au bout d'une semaine. Le
+rythme n'est donc pas un confort : c'est ce qui empêche le rappel de se détruire
+lui-même.
+
+### « A plus B » : d'où court le compte
+
+`echeanceFacture(envoyeeLe, delaiPaiementJours)`, dans `src/lib/rappels.ts` :
+
+| Cas | L'échéance |
+|---|---|
+| un délai de paiement est réglé (« Devis & factures ») | envoi **+ le délai** |
+| aucun délai réglé | **le jour de l'envoi** |
+
+Puis le délai du rappel se compte **à partir de cette échéance**, jamais de
+l'envoi. C'est écrit à l'écran — « 1 jour après l'échéance » — parce qu'un délai
+sans son point de départ se comprend spontanément comme partant de l'envoi, et
+il aurait cru le rappel en retard de trente jours.
+
+### Trois rythmes, jamais une case à remplir
+
+`RYTHMES_RAPPEL` n'offre que **chaque jour, chaque semaine, tous les 15 jours**,
+en pastilles. Une case de saisie aurait été plus souple et **aurait rouvert ce
+qu'il a exclu** : rien n'y aurait empêché « tous les jours », ni « tous les
+3 jours ». La contrainte est le sujet de sa demande, pas un effet de bord.
+
+### « Plus tard » est le seul moteur du rythme — et ce n'est pas « J'ai vu »
+
+Le rythme ne s'applique **qu'après un geste**. Tant qu'il n'a rien touché, la
+carte reste, tous les jours. C'est délibéré : une carte qui s'endormirait toute
+seule pourrait passer un jour où il n'ouvre pas l'application, et il ne saurait
+jamais qu'elle est passée.
+
+« Plus tard » **ne classe rien** : la facture reste dans « Terminés › TVA › En
+attente de paiement », le rappel revient au bout du rythme. C'est ce qui le
+distingue d'un acquittement — et pourquoi la carte ne porte pas « J'ai vu ».
+
+### La date de report vit sur le CHANTIER, et ce n'est pas un rangement
+
+`chantiers.rappel_facture_repousse_le`, migration 0050 — et non
+`factures.rappel_repousse_le`, qui était le choix naturel.
+
+**`trg_facture_immuable` (migration 0018) refuse TOUTE écriture sur une facture
+émise**, y compris une date qui ne sert qu'à l'affichage. La première version
+l'a appris par un rouge : *« Failed query: update "factures" set
+"rappel_repousse_le" »*. Affaiblir le déclencheur pour une commodité d'écran
+aurait été exactement ce que `CLAUDE.md` §4 interdit ; la relation
+chantier ↔ facture étant de un à un (`factures_chantier_uk`), rien ne se perd à
+l'écrire de l'autre côté.
+
+### Le montant affiché est le RESTE dû, jamais le total
+
+Le rappel additionne `paiements_facture.montant` et n'affiche que ce qui manque.
+Réclamer le total sur une facture partiellement réglée l'aurait fait redemander
+une somme déjà encaissée — le premier des pièges de sa planche. Le total
+l'accompagne (« 1 880,00 € restant sur 2 880,00 € ») pour qu'une facture entamée
+ne passe pas pour une petite facture. Une facture soldée sort du rappel **le jour
+même**, sans geste.
+
+**Et c'est la somme des règlements qui décide, jamais un état posé à la main.**
+Un « payée » et une somme de règlements peuvent se contredire ; une somme ne se
+contredit pas elle-même.
+
+### Ce que la capture a trouvé, et qu'aucun test ne voyait
+
+Cinquième fois dans ce dépôt qu'un défaut sort d'une image
+(`scripts/capture-facture-impayee.mts`) :
+
+- **« 1 jours après l'échéance »** — le défaut de ce rappel vaut UN, c'était donc
+  la première chose qu'il lisait sur cette ligne ;
+- **deux espaces mangées** par JSX autour d'un `<b>` : « tout seuldès que »,
+  « reste dûqui ».
+
+Et le contrôle écrit pour empêcher le retour du premier **ne mesurait rien** : il
+cherchait « 1 jours » dans `innerText`, où la valeur d'un `<input>` ne figure
+pas. Il passait au vert sur l'écran fautif. L'unité porte donc maintenant son
+propre repère (`data-atlas="rappel-unite"`), et le contrôle la lit là.
+
+**La capture elle-même a menti d'abord, deux fois** — et les deux mensonges
+valent d'être retenus :
+
+1. `fullPage` photographiait le **milieu du cadre qui défile**
+   (`.atlas-fil-defile`), sans une seule carte, pendant que le contrôle lisait le
+   DOM et se déclarait vert. Ce qu'on vérifie doit être ce qu'on **montre** : le
+   contrôle mesure désormais la position de la carte dans le cadre.
+2. Le montage posait le délai de paiement avec `ctx.entreprise` là où le champ
+   s'appelle `entrepriseId` — `WHERE id = NULL`, **zéro ligne, aucune erreur**.
+   L'image annonçait « échéance dépassée depuis 60 jours » au lieu de 30, et
+   c'était le montage qui était faux, pas l'application. Toute écriture de
+   montage vérifie maintenant son `rowCount`.

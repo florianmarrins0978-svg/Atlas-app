@@ -42,7 +42,7 @@ ses données sont déjà reliées dans une base SQL, qui répond mieux qu'un gra
 SAIT qu'un client est venu quatre fois, qu'il a payé 2 460 € et en doit 740,
 qu'on lui fait toujours de l'élagage — **et elle ne le montre nulle part.**
 
-Planche : `docs/maquettes/62-ce-que-je-sais-du-client.html`, éprouvée par
+Planche : `docs/maquettes/66-ce-que-je-sais-du-client.html`, éprouvée par
 `scripts/verifier-maquette-fiche-client.mjs`. **Rien n'est codé** (`CLAUDE.md`
 §3 bis).
 
@@ -63,6 +63,275 @@ reviennent, `lecons_prix` pour les prix pratiqués.
 **Une question posée dans la planche :** « 3 200 € », est-ce le **facturé** ou
 l'**encaissé** ? Les deux se calculent ; la planche montre les deux.
 
+### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
+
+*Dessiné (`maquettes/atlas-rappel-facture-impayee.html`, cinq écrans), tranché,
+puis codé le même jour : « oui c'est bon, code le ».*
+
+Ce qu'il demandait est en place : le **« A plus B »** (échéance = envoi + le
+délai de paiement réglé, ou le jour de l'envoi sinon), le **reste dû** avec son
+total quand un acompte est arrivé, l'extinction **automatique** dès que le
+règlement est enregistré, et les **trois rythmes** en pastilles avec « Plus
+tard » pour seul moteur.
+
+Migration `drizzle/0050_rappel_facture_impayee.sql`, règles pures dans
+`src/lib/rappels.ts`, `ARCHITECTURE.md` §118. Éprouvé par `test-rappels.ts`,
+`test-rappels-db.ts` et `test-facture-impayee-e2e.ts`, photographié par
+`scripts/capture-facture-impayee.mts`.
+
+**Ce que ce lot apprend, et qui vaut au-delà de lui :**
+
+- la date de report vit sur le **chantier**, pas sur la facture —
+  `trg_facture_immuable` refuse toute écriture sur une facture émise, et
+  l'affaiblir pour une commodité d'écran aurait été le contournement que
+  `CLAUDE.md` §4 interdit ;
+- **la valeur d'un `<input>` ne figure PAS dans `innerText`.** Un contrôle qui
+  cherchait « 1 jours » dans le texte de la page ne pouvait jamais le trouver :
+  vert sur l'écran fautif, il ne mesurait rien. Cinquième fois que ce dépôt paie
+  un contrôle qui mesure zéro ;
+- **une capture ment aussi.** `fullPage` a photographié le milieu du cadre qui
+  défile, sans une seule carte, pendant que le contrôle lisait le DOM et se
+  déclarait vert. Et un montage écrit `WHERE id = NULL` sans se plaindre :
+  vérifier le `rowCount` de toute écriture de montage.
+
+### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
+
+**Vu le 16 août 2026**, sur la batterie qui suivait la fusion de son lot. Le
+dernier de ses six cas — *« elle se retire, et le devis revient à son prix
+plein »* — a lu **870,00 €** là où il attendait **1 044,00 €**, et « après
+remise » était encore à l'écran.
+
+**Mesuré, pas supposé :** rejouée seule dans la foulée, sur le même code et la
+même base, la suite passe ses six cas. Ce n'est donc pas une règle fausse.
+
+**Le mécanisme, lisible dans la suite elle-même** (`scripts/test-reduction-devis-e2e.ts`,
+vers la ligne 156) : elle vide le champ, appuie sur Tab, attend **une seconde
+fixe**, puis **recharge**. L'enregistrement part au serveur pendant cette
+seconde ; sous une batterie de quatre-vingt-dix suites, il ne l'a pas toujours
+finie, et le rechargement rend la page d'avant. C'est la même famille que
+`test-devis-parti-signet` juste en dessous : un délai fixe qui suffit à vide et
+plus sous charge.
+
+**Ce qu'il faudrait, et c'est à la session qui tient ce lot :** attendre la
+RÉPONSE de l'enregistrement plutôt qu'une seconde — c'est ce qui a réparé
+`test-unite-tarif-e2e` le 16 août. Un délai plus long ne ferait que déplacer le
+seuil.
+
+**Ce lot-ci n'y touche pas**, et il faut le dire : le rappel d'impayé ne passe
+nulle part près des totaux d'un devis. Corriger la suite d'un autre à sa place
+ferait deux sessions écrivant le même fichier au même moment.
+
+### 0 septvicies. La fiche d'entretien — **TOUT EST TRANCHÉ**, reste à coder
+
+**Ses décisions des 16 août 2026**, toutes prises sur maquettes :
+
+| Question | Sa réponse |
+|---|---|
+| Le geste sur le chantier | **B** — rangée par familles, avec le compte « 1/4 » |
+| Ce que voit le client | **B** — seulement ce qui a été fait |
+| Le temps passé | une **molette**, pas un clavier — et **la A**, celle du téléphone |
+| Où la fiche se compose | dans les **Réglages**, « Ma fiche d'entretien » |
+| Une fiche ou plusieurs | **UN SEUL MODÈLE**, pré-rempli à chaque envoi |
+
+**Ses mots sur la dernière, qui valent mieux qu'un résumé :** *« ça sera un
+modèle à chaque fois qu'on pré-remplira et qu'on enverra aux clients. Donc au
+final, chaque client aura sa fiche parce que ça ne sera jamais la même — d'un
+client à un autre on ne fait pas la même prestation — mais il n'y aura qu'une
+seule fiche. »*
+
+**LA LECTURE RETENUE, ET ELLE EST À CONFIRMER D'UN MOT.** Rien n'est rangé par
+client : à chaque passage, la fiche part du modèle, s'ajuste, et devient celle
+de ce client. Mais le second passage chez le même client doit retrouver son
+ajustement — sinon il le referait douze fois par an. **Le pré-remplissage se
+fait donc d'après SON DERNIER PASSAGE**, le modèle ne servant que la première
+fois. C'est ainsi que ce sera codé sauf mot contraire.
+
+**PAS DE SIGNATURE — décidé le 16 août 2026, et à ne pas rouvrir par bonne
+volonté.** Sur SA capture de l'autre application, les deux signatures étaient
+« Non signé ». Le client est absent onze fois sur douze : il travaille pendant
+qu'on entretient son jardin. Un champ vide fait passer chaque rapport pour un
+document inachevé, et la capture au doigt coûtait une journée (zone de dessin,
+stockage, écran verrouillé quand il tend son téléphone, conservation RGPD,
+survie hors réseau) pour un geste fait une fois sur vingt.
+
+**Ce qui prouve le passage à leur place, et qui existe déjà** : la date, l'heure,
+le temps passé, et l'EMPREINTE du contenu exact (`empreinteDevis`, le mécanisme
+de l'acceptation d'un devis). À prévoir en plus : un bouton **« J'ai bien reçu »**
+sur la page du client — un accusé horodaté, pas une signature.
+
+**L'ENVOI : exactement celui du devis.** Sa confirmation du 16 août. Attention au
+mot « automatique » : **rien ne part tout seul**, et ce n'est pas une limite
+technique — c'est sa décision du 3 août (`docs/A-FAIRE.md` §5). Atlas prépare le
+message avec le lien, ouvre SA messagerie, et c'est lui qui appuie. Un envoi
+réellement automatique demanderait un prestataire sous contrat.
+
+**Les invariants posés, à ne pas rouvrir :**
+
+- **un rapport déjà envoyé ne change plus JAMAIS** quand le modèle change : il
+  est signé et parti chez le client. C'est l'erreur qui ne se rattrape pas ;
+- le retrait d'une ligne est **réversible** (règle du 10 août) ;
+- ce qui n'est pas coché **n'est pas une faute** — aucun rouge ;
+- « Vrai »/« Faux » ne sortent jamais vers le client ;
+- l'envoi emprunte le chemin qui porte déjà devis et factures.
+
+**L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
+une case à ajouter :
+
+1. le **modèle** et son écran de Réglages (rien d'autre n'a de sens sans lui) ;
+2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
+3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
+   porte déjà devis et factures ;
+4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
+
+Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
+`63-le-rapport-au-client.html`, `64-composer-sa-fiche.html`,
+`65-choisir-l-heure.html`.
+
+### 0 trigies bis. `test-devis-parti-signet` a rougi une fois sur deux batteries — instable sous charge
+
+**Vu le 16 août 2026**, sur une batterie complète : la suite attendait le total
+« 840,00 € » et a **dépassé son délai**. Ce n'est donc pas une valeur fausse —
+les contrôles qui la précèdent dans la même suite étaient verts, et le numéro du
+devis était bien affiché.
+
+**Ce qui a été éliminé, mesuré et non supposé :**
+
+- elle **passe seule** ;
+- elle **passe enchaînée derrière `test-devis-complet`**, qui écrit un taux de
+  TVA à 10 % — le premier soupçon, puisque 700 € HT font 840 € à 20 % et 770 € à
+  10 % ;
+- la batterie complète rejouée juste après : **86/86**, le rouge ne revient pas.
+
+**Ce que ça laisse :** un écran lent à rendre pendant qu'une batterie occupe la
+machine. Le `waitForSelector` de cette assertion n'a pas de délai propre, là où
+ses voisines en portent un de 20 s.
+
+**À faire, et ce n'est pas urgent :** lui donner un délai explicite, comme ses
+voisines. Ne PAS la déclarer instable en la retirant — un contrôle qu'on
+neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
+écran que le patron a dessiné lui-même.
+
+
+### 0 septvicies. La fiche d'entretien — **DEUX MAQUETTES POSÉES, sa décision attendue**
+
+**Sa réponse du 16 août 2026 : « B et B »**, plus deux ajouts.
+
+| Tranché | Ce qu'il a choisi |
+|---|---|
+| Le geste sur le chantier | **B** — rangée par familles, avec le compte « 1/4 » |
+| Ce que voit le client | **B** — seulement ce qui a été fait |
+| Le temps passé | **une molette**, pas un clavier (`65-choisir-l-heure.html`) — trois gestes proposés, le mien recommandé est la molette Atlas |
+| Où se compose la fiche | dans les **Réglages**, « Ma fiche d'entretien » — modèle fourni, modifiable |
+
+**Deux choses restent à trancher, et aucune n'est du rangement :**
+
+**a) La molette** — la native du téléphone (gratuite, ressemble à un
+formulaire), les quarts d'heure (un appui, mais imprécise), ou la molette Atlas
+(la seule qui ressemble à l'application ; compter une demi-journée, accessibilité
+comprise). Recommandation écrite dans la planche : la molette Atlas.
+
+**b) CE QUI RESTE À TRANCHER, et ce n'est pas du rangement** (planche
+`docs/maquettes/64-composer-sa-fiche.html`) :
+
+> **Une seule fiche pour tous ses clients, ou un modèle puis une fiche par
+> client ?**
+
+Une fiche unique se tient en un endroit, mais chaque client voit les vingt
+lignes — y compris celles qu'il ne paie pas, et c'est le chantier qui les fait
+défiler. Une fiche par client est ce que le contrat décrit vraiment, au prix
+d'un geste de plus à la signature.
+
+**Ce qui n'est pas à trancher, et qui est déjà écrit dans les planches :**
+
+- **un rapport déjà envoyé ne change plus jamais** — retirer une ligne du modèle
+  en octobre ne touche pas aux rapports de juillet, qui sont signés et partis.
+  C'est l'erreur qui ne se rattrape pas ;
+- le retrait d'une ligne est **réversible** (règle du 10 août) ;
+- la liste vient du contrat, ce qui n'est pas coché n'est pas une faute, et
+  l'envoi emprunte le chemin qui porte déjà devis et factures.
+
+**Ce que ce parcours suppose, s'il est retenu** : un contrat (la liste due), des
+passages récurrents, un rapport par passage. C'est un troisième parcours à côté
+du devis → facture, pas une case à ajouter.
+
+
+### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
+
+Trouvé en cherchant pourquoi il n'arrivait plus à ouvrir l'application. La
+publication vivait dans la boucle de surveillance, qui s'arrête d'avancer dès
+qu'elle appelle `npm run banc`. Elle vit désormais à côté
+(`scripts/test-fiche-pendant-relance.ts`, qui sait rougir).
+
+**Ce qui RESTE à faire, et qui n'est pas corrigé :** on ne sait toujours pas
+pourquoi son serveur ne répondait pas le 16 août à 17 h 06. La fiche s'est tue
+avant de le dire. **Ne pas écrire que cette panne-là est réparée** — seul
+l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
+
+**Le correctif est CONFIRMÉ sur sa machine :** fiche du 16 août 18 h 32,
+« Écrite : par le veilleur, au quart d'heure » — la première publication
+périodique jamais observée chez lui.
+
+### 0 quadragies quater. POURQUOI sa construction échoue — la vraie question, ouverte
+
+**Sa plainte du 16 août 2026 au soir :** *« l'appli, elle est vraiment très
+lente, mais vraiment, vraiment très lente. Est-ce qu'il y a un moyen de la
+rendre juste utilisable ? »*
+
+**Ce qu'on sait, et c'est une déduction, pas une hypothèse.** La fiche lit le
+témoin `.next-batie/atlas-version-batie.txt`, écrit **dès que `next build` rend
+0**, avant même la bascule. Ce témoin n'existe pas chez lui. Donc sa
+construction **échoue**, à chaque démarrage — et le banc retombe pour toujours
+sur le mode développement, où chaque écran se compile à l'ouverture.
+
+La même construction **réussit ici en deux minutes**, sur son commit exact
+(`67b4d8e`). C'est donc son environnement, pas le code.
+
+**Les deux suspects, et pourquoi on ne les a pas départagés :** le disque et la
+mémoire. Un `next build` pendant qu'un serveur de développement sert déjà, avec
+PostgreSQL et Redis à côté, sur une machine à deux cœurs. Ni l'un ni l'autre
+n'était publié — c'est corrigé (voir `CHANGELOG.md` du 16 août), mais le relevé
+n'arrivera **qu'au prochain démarrage de son espace**.
+
+**La marche à suivre, dès que sa fiche republie :**
+
+1. lire « Code SERVI » — si elle dit « la construction a ÉCHOUÉ », le bloc
+   « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là ;
+2. disque saturé → nettoyer avant de bâtir, en épargnant `.next` que le serveur
+   de développement utilise pour servir pendant ce temps ;
+3. mémoire épuisée → plafonner le tas de la construction, ou ne pas bâtir
+   pendant qu'un serveur sert. **Ne pas choisir la valeur au hasard** : c'est
+   ainsi qu'on livre une réparation imaginée (`AGENTS.md`).
+
+**Ne PAS écrire que la lenteur est corrigée.** Elle ne l'est pas. Seul
+l'aveuglement l'est, et c'est la troisième fois en deux jours que la distinction
+compte.
+
+### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
+
+**Payé le 16 août 2026 au soir.** Il redémarre, l'application s'ouvre sur du
+blanc, il écrit « corrige-moi ça ». Rien n'était cassé : la page de connexion
+s'affichait parfaitement sur son commit exact, et la construction réussissait.
+
+**Ce qui se passait vraiment**, et la fiche le disait en une ligne :
+
+    Code SERVI : aucune version bâtie — le banc sert le mode développement
+
+Tant que `.next-batie` n'existe pas, chaque écran se compile **à l'ouverture**
+— 30 à 100 secondes (`scripts/banc.mjs`) — et le mandataire de GitHub renonce au
+bout d'une minute. Le blanc est cet intervalle, rien d'autre. Il se dissipe seul
+dès que la construction retombe, ou en rechargeant une minute plus tard : la
+compilation continue côté serveur même quand le navigateur a renoncé.
+
+**Donc, devant « page blanche » : lire la ligne « Code SERVI » AVANT tout.**
+« aucune version bâtie » + « serveur : répond » = il est dans la fenêtre de
+construction, il n'y a rien à réparer. Chercher un défaut de produit là-dedans,
+c'est ce qui a consommé la soirée.
+
+**Ce qui reste à faire, et qui n'est pas fait :** pendant cette fenêtre, il n'a
+aucun moyen de savoir qu'il doit attendre — il voit du blanc, comme devant une
+panne. Une page d'attente qui dirait « Atlas se prépare, deux minutes » vaudrait
+mieux que le blanc. **À dessiner avant de coder** (`CLAUDE.md` §3 bis) et à lui
+montrer : ce n'est pas à nous de décider qu'il veut un écran de plus.
 
 ### 0 quadragies. ~~La réduction accordée au client~~ — **CODÉE le 16 août 2026 (B + « Prix accordé au client »)**
 
@@ -130,14 +399,15 @@ aucun devis envoyé »*. **Ses quatre décisions, toutes appliquées :** *« la 
 4 »*, *« le G »*, *« le B »* (le ton, reposé capture à l'appui), *« fait la B »*
 (le rang).
 
-**CE QUI RESTE POSÉ, SANS RÉPONSE — et c'est le seul point ouvert de ce lot.**
-Les rappels passant devant, une réponse de client peut être repoussée derrière
-« N autres devis à regarder ». Mesuré sur le jeu de démonstration : **cinq
-rappels occupaient les deux places, et plus aucune réponse n'était visible**.
+**LA PLACE GARANTIE : TRANCHÉE ET CODÉE** (16 août, *« ok alors fait le »*,
+après deux photos). Les rappels passant devant, cinq d'entre eux masquaient
+toutes les réponses de clients — la batterie l'avait dit en rougissant avant que
+l'image ne le montre. Son choix B tient : la **première** place reste au rappel,
+c'est la **dernière place visible** qui revient à une réponse, et seulement s'il
+en existe. Règle pure dans `src/lib/ordre-notifications.ts`, éprouvée sur les cas
+limites et sur les 108 combinaisons — aucune carte perdue ni dupliquée.
 
-La sortie proposée, et elle n'attend que son mot : **garantir une place à
-chacun** sur les deux cartes visibles — un rappel, une réponse. Il verrait
-toujours au moins un de chaque, quel que soit le nombre. Un quart d'heure.
+**Plus aucun point n'attend son avis sur ce lot.**
 
 **Trois leçons de ce lot, à ne pas repayer :**
 
@@ -258,30 +528,24 @@ rouge, relever ce que la page DIT avant d'écrire une cause. Une hypothèse
 consignée dans les tâches se lit ensuite comme un fait.
 
 
-### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
+### ~~0 tricies octies. Marquer une facture PAYÉE~~ — **FAIT les 15 et 16 août 2026**
 
-*Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
-et écrit sur l'écran lui-même plutôt que passé sous silence.*
+*Écrit le 14 août en codant « Notifications », quand rien dans Atlas
+n'enregistrait qu'une facture était réglée. Le manque bloquait alors trois
+familles d'alertes de la planche.*
 
-**Rien dans Atlas n'enregistre qu'une facture a été payée.** Ni colonne, ni
-geste, ni écran. Ce manque bloque à lui seul **trois** des huit familles
-d'alertes de la planche des notifications :
+**Le geste existe** : « Terminés › TVA › En attente de paiement », avec « Payée »
+d'un doigt et « Noter un règlement » pour un acompte (migration 0045,
+`paiements_facture`, codé par une autre session).
 
-| Ce qui est impossible | Pourquoi |
+**Et la première des trois alertes bloquées est codée** : « Facture impayée »,
+le 16 août (`ARCHITECTURE.md` §118). Les deux autres restent ouvertes, et elles
+ne sont plus impossibles — seulement pas demandées :
+
+| Ce qui reste | Ce qu'il faudrait |
 |---|---|
-| « Facture impayée » | On ne sait pas laquelle est payée : l'alerte crierait sur toutes, pour toujours |
-| « Facture à échéance dans trois jours » | Même raison |
-| « Client à relancer » | Un client relancé pour une facture déjà réglée, c'est pire que pas de relance |
-
-**Ce n'est pas une requête à écrire, c'est un geste à ajouter au produit** : un
-appui sur la facture, une date de règlement, et de quoi se reprendre. Les
-`docs/QUESTIONS.md` §17 le disent d'ailleurs pour la mémoire des prix — la
-bonne question n'est jamais « avons-nous une table ? » mais **« qui l'écrit, et
-quand ? »**
-
-**À dessiner avant de coder** (`CLAUDE.md` §3 bis) : où se pose le geste — sur
-la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
-partiel.
+| « Facture à échéance dans trois jours » | Un rappel AVANT l'échéance, symétrique de l'actuel |
+| « Client à relancer » | Se poser sur le client plutôt que sur la facture |
 
 ### 0 duodetricies quater. La couleur de la barre du navigateur ne suit pas la charte
 
@@ -313,37 +577,79 @@ deux chantiers possibles, et leur coût :
 **Ne pas poser d'interrupteur en attendant.** Sa phrase sur la planche : *« on le
 touche, rien ne bouge, et on croit à une panne »*.
 
-### 0 tervicies. Apparier deux demi-journées par la proximité
+### 0 tervicies. ~~Apparier deux demi-journées par la proximité~~ — **CODÉ le 16 août 2026, par la route**
 
 **Sa demande du 13 août 2026** : quand une demi-journée est prise et l'autre
-libre, que le planning propose le chantier en attente **le plus proche**, pour
-ne pas traverser le département deux fois dans la journée.
+libre, que le planning propose le chantier en attente **le plus proche**. Son
+choix du 16 : la composition **2** de la maquette (le bandeau sous la journée),
+**avec plusieurs propositions comme la 3**, et **par la route**.
 
-**Ce qui existe déjà :** les demi-journées sont en base (`creneauDebut`,
-`dureeDemiJournees`), deux chantiers différents sur le matin et l'après-midi du
-même jour se représentent sans rien ajouter, et le planning affiche « Libre ».
+**La question juridique est tranchée** (`docs/A-FAIRE.md` point 11, barré) : le
+service d'itinéraire de l'IGN accepte sans clé ni compte, répond en 186 ms, et
+le vol d'oiseau se trompe de ×1,33 à ×1,56 — assez pour inverser un classement.
+Mesuré, pas supposé : `.github/workflows/itineraire.yml`.
 
-**Ce qui manque, et qui commande tout : aucune distance n'est connue.**
-L'adresse d'un chantier est du texte. La Base Adresse Nationale rend pourtant
-les coordonnées à chaque frappe (`lireSuggestions` ne garde que le libellé et le
-contexte, et **jette la géométrie**). Trois étapes, dans l'ordre :
+**Livré :** migration `0049` (coordonnées + `adresse_situee`), rattrapage
+automatique au fil des ouvertures du planning, règles pures dans
+`src/lib/appariement-demi-journees.ts`, appel IGN dans
+`src/server/itineraire/geoplateforme.ts`, bandeau dans
+`src/components/atlas/BandeauAppariement.tsx`. Détail et pourquoi :
+`ARCHITECTURE.md` §117.
 
-1. **Garder les coordonnées** au choix d'une suggestion — migration + champs sur
-   `chantiers` ;
-2. **rattraper** celles des chantiers déjà saisis et des adresses tapées hors
-   liste, côté serveur, sans rien demander au patron ;
-3. **apparier** — fonction pure dans `src/lib/`, testable sans base.
+**Ce qui RESTE, et n'est pas dans ce lot :**
 
-**Maquette `docs/maquettes/57-apparier-deux-demi-journees.html`** — quatre
-façons de le proposer (sur la ligne, en bandeau, en feuille de trois candidats,
-au moment de poser la date), le bandeau dessiné **deux fois** (vol d'oiseau et
-route : seule la phrase change), et les deux cas ingrats — rien d'assez proche,
-adresse non situable. **En attente de son choix.**
+- **la proposition 4 de la maquette** — proposer au moment où l'on pose la date,
+  et non seulement sur le planning. Les deux ne se disputent pas ; elle attend
+  son geste ;
+- **un seul trou proposé à la fois.** À plusieurs équipes, plusieurs
+  demi-journées dépareillées peuvent coexister. Trois bandeaux sous une même
+  journée seraient illisibles ; on complète le premier, le suivant apparaît. À
+  rouvrir seulement s'il le demande ;
+- **la commune affichée est déduite de l'adresse** (`communeApprochee`), pas
+  lue de la Base Adresse Nationale. Se tromper coûte une ligne un peu longue,
+  jamais une mauvaise décision. Une colonne de plus serait à tenir à jour à
+  chaque correction d'adresse.
 
-**La question qui le dépasse** est au point 9 de `docs/A-FAIRE.md` : la route
-suppose un sous-traitant ultérieur. `.github/workflows/itineraire.yml` interroge
-le service de l'État depuis une machine qui a le réseau pour savoir s'il
-dispense d'un prestataire privé.
+
+### 0 quatervicies. Des suites navigateur tombent en batterie et passent seules
+
+**Constaté le 16 août 2026.** En batterie : *« le serveur de banc n'a jamais
+répondu »* après trois minutes d'attente. Rejoué seul dans la foulée, sans rien
+changer : **six contrôles au vert**.
+
+**Ce que ça n'est pas.** Un défaut du produit : cette suite éprouve un écran qui
+ne s'affiche que sur le banc d'essai, et l'écran répond très bien.
+
+**Ce que c'est probablement.** Elle démarre un **second** `next dev` — le sien,
+avec son propre dossier de construction — pendant que celui de la batterie
+tourne déjà, et pendant qu'un navigateur est ouvert. Deux compilations Next.js
+concurrentes sur cette machine dépassent les trois minutes qu'elle s'accorde.
+
+**Ce qu'il ne faut PAS faire :** allonger le délai jusqu'à ce que ça passe. Un
+contrôle qui attend dix minutes ne dit plus rien de ce qu'il mesure. La piste
+juste est de **réutiliser le serveur de la batterie** avec le profil banc plutôt
+que d'en lancer un second, ou de la jouer avant que le navigateur ne démarre.
+
+**Tant que ce n'est pas fait, l'attitude est simple :** un rouge de cette suite
+en batterie se rejoue seul avant d'être cru — et cette phrase-là est ce qui
+manquait le 16 août, où il a fallu la découvrir.
+
+**Elle n'est pas seule, et c'est ce qui compte.** Le même jour,
+`test-pastille-equipe-e2e` est tombée en batterie sur *« Depuis la feuille du
+chevron aussi, l'équipe se retire — le montage de ce cas n'a pas pris »*, puis a
+donné **neuf contrôles au vert** rejouée seule, sans une ligne modifiée. Deux
+suites différentes, un seul symptôme : la machine est saturée en fin de
+batterie, et un montage qui attend un écran finit par renoncer.
+
+**Donc la règle est générale, pas propre au banc :** un rouge isolé en fin de
+batterie navigateur se rejoue seul **avant** d'ouvrir une enquête. Ce qui reste
+rouge seul est un défaut ; ce qui passe seul est une saturation, et c'est la
+batterie qu'il faut réparer, pas le produit. Ne pas confondre les deux a coûté
+une soirée le 16 août.
+
+**Et ne pas s'en satisfaire.** « Ça passe seul » n'est pas un état acceptable à
+demeure : une batterie qui ment une fois sur dix finit par être crue quand elle
+dit vrai. La piste ci-dessus — un seul serveur Next partagé — vaut pour les deux.
 
 
 ### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie
