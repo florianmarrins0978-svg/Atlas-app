@@ -745,10 +745,13 @@ dans `src/`.
 demandé de recréer les fiches de chantier d'une autre application (paysagistes
 en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 
-- **B et B sont tranchés le 16 août** (familles sur le chantier, seulement ce
-  qui a été fait chez le client), avec la saisie du temps et un écran de
-  Réglages pour composer la fiche. **Une question reste** : une fiche pour tous,
-  ou une par client (`TODO.md` § « La fiche d'entretien »). Ne pas coder avant.
+- **TOUT EST TRANCHÉ le 16 août** : familles sur le chantier, seulement ce qui
+  a été fait chez le client, la molette du TÉLÉPHONE (« la A »), et **un seul
+  modèle** pré-rempli à chaque envoi — rien n'est rangé par client. L'ordre de
+  construction est dans `TODO.md` § « La fiche d'entretien ».
+- **Une lecture à confirmer d'un mot** : le pré-remplissage se fait d'après le
+  DERNIER PASSAGE du client, pas depuis le modèle à chaque fois — sinon il
+  réajusterait douze fois par an.
 - **L'invariant à ne pas perdre** : un rapport déjà envoyé ne change plus jamais
   quand le modèle change. Il est signé et parti chez le client.
 - **Le temps passé se choisit à la MOLETTE, pas au clavier** (16 août) —

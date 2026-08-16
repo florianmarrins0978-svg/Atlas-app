@@ -616,15 +616,21 @@ const PLANCHE_MODELE = `<title>Composer sa fiche d'entretien</title>
     cases s'il le souhaite. »
 
     ————————————————————————————————————————————————————————————————
-    LA QUESTION QUI RESTE, ET ELLE N'EST PAS DE MISE EN PAGE.
+    TRANCHÉ LE 16 AOÛT 2026 — A, et ses mots valent mieux qu'un résumé :
 
-    Une seule fiche pour tous ses clients, ou une par client ?
+      « Ça sera un modèle à chaque fois qu'on pré-remplira et qu'on enverra aux
+      clients. Donc au final, chaque client aura sa fiche parce que ça ne sera
+      jamais la même — d'un client à un autre on ne fait pas la même prestation
+      — mais il n'y aura qu'une seule fiche. »
 
-    Elle a l'air d'un détail de rangement. Elle ne l'est pas : les planches 62
-    et 63 posent que « la liste vient du contrat », et un client qui paie la
-    tonte et le ramassage n'a pas à voir seize lignes qui ne le concernent pas.
-    Une fiche unique est plus simple à tenir ; une fiche par client est ce que
-    le contrat décrit vraiment.
+    UN SEUL MODÈLE, donc, tenu ici. Rien n'est rangé par client : à chaque
+    passage, la fiche part du modèle, s'ajuste, et devient celle de ce client.
+
+    CE QUE CELA SUPPOSE, ET QUI N'EST PAS UN DÉTAIL : le second passage chez le
+    même client doit retrouver son ajustement, sinon il le referait douze fois
+    par an. Le pré-remplissage se fait donc d'après SON DERNIER PASSAGE, et le
+    modèle ne sert que la première fois. C'est la lecture retenue ; s'il en
+    voulait une autre, un mot suffit à la corriger.
 
     ————————————————————————————————————————————————————————————————
     CE QUI N'EST PAS À CHOISIR — ce sont des conséquences.
@@ -701,8 +707,8 @@ ${CHARTE}
   <div class="reglage">
     <span class="quoi">Une fiche, ou plusieurs ?</span>
     <div class="segments">
-      <label for="m-a">A · Une seule fiche, la même partout</label>
-      <label for="m-b">B · Un modèle, puis une fiche par client</label>
+      <label for="m-a">A · Un seul modèle, pré-rempli à chaque envoi — <b>retenu</b></label>
+      <label for="m-b">B · Un modèle, puis une fiche rangée par client</label>
     </div>
   </div>
 
@@ -718,7 +724,7 @@ ${CHARTE}
       </div>
 
       <p class="titre-fiche" style="margin-top:18px">Ma fiche d'entretien</p>
-      <p class="sous ma">Elle sert à tous vos contrats d'entretien.</p>
+      <p class="sous ma">Le modèle. Chaque envoi part de là, puis s'ajuste au client.</p>
       <p class="sous mb">Le modèle. Chaque client part de là, puis s'ajuste.</p>
 
 ${lignesModele}
@@ -736,17 +742,22 @@ ${lignesModele}
 
     <div class="legende">
       <div class="ma">
-        <span class="t">A · Une seule fiche, la même partout</span>
-        Une liste, tenue une fois. Tous les contrats la partagent, et la modifier
-        les met tous à jour d'un coup.
-        <span class="cout">Ce que ça coûte : <b>chaque client voit les vingt
-        lignes</b>, y compris celles qu'il ne paie pas. Sur le chantier, vous
-        faites défiler des prestations qui ne concernent pas ce jardin — et le
-        rapport, lui, ne montre que ce qui a été fait, donc le client ne verra
-        pas la différence. C'est le chantier qui paie, pas le client.</span>
+        <span class="t">A · Un seul modèle, pré-rempli à chaque envoi</span>
+        <b>Sa décision du 16 août 2026</b>, dans ses mots : « ça sera un modèle à
+        chaque fois qu'on pré-remplira et qu'on enverra aux clients. Donc au
+        final, chaque client aura sa fiche, parce que ça ne sera jamais la même
+        — mais il n'y aura qu'une seule fiche. »
+        <span class="cout"><b>Une seule liste à tenir</b>, ici, dans les
+        Réglages. Rien n'est rangé par client : à chaque passage, la fiche part
+        du modèle, s'ajuste sur place, et devient celle de ce client-là.
+        <b>Ce que ça suppose</b>, et qui n'est pas un détail : le second passage
+        chez le même client doit retrouver son ajustement, sinon il le referait
+        douze fois par an. Le pré-remplissage se fait donc d'après SON dernier
+        passage, et le modèle ne sert que la première fois.</span>
       </div>
       <div class="mb">
-        <span class="t">B · Un modèle, puis une fiche par client</span>
+        <span class="t">B · Un modèle, puis une fiche rangée par client</span>
+        <b>Écarté le 16 août.</b> 
         Le modèle sert de point de départ ; à la signature d'un contrat, on
         décoche ce que ce client ne prend pas. Sa fiche ne porte alors que ses
         prestations — quatorze au lieu de vingt.

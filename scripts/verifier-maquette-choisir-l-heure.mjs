@@ -74,13 +74,16 @@ await page.goto(`file://${PLANCHE}`, { waitUntil: "networkidle" });
 await page.locator('label[for="h-c"]').click();
 await page.waitForTimeout(300);
 
-await cas("les trois gestes existent, et C s'ouvre le premier", async () => {
+await cas("les trois gestes existent, et le RETENU s'ouvre le premier", async () => {
   for (const v of ["h-a", "h-b", "h-c"]) {
     assert((await page.locator(`label[for="${v}"]`).count()) === 1, `le geste ${v} a disparu`);
   }
+  // **Sa décision du 16 août : « la A »**, la molette native du téléphone.
+  // Une planche qui rouvrirait sur C lui montrerait, dans six mois, autre chose
+  // que ce qu'il a choisi.
   assert(
-    /id="h-c" class="etat" checked/.test(source),
-    "la planche ne s'ouvre plus sur la molette Atlas"
+    /id="h-a" class="etat" checked/.test(source),
+    "la planche ne s'ouvre plus sur la molette du téléphone, retenue le 16 août"
   );
 });
 

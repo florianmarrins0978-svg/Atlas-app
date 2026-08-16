@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### La fiche d'entretien : tout est tranché, la construction peut commencer
+
+**Ses deux dernières réponses du 16 août.** La molette : *« la A »* — celle du
+téléphone, qu'il connaît déjà et qui ne coûte rien à tenir. J'avais recommandé
+la molette Atlas ; sa raison est bonne, et la planche garde la trace du chemin.
+
+Et la fiche, dans ses mots : *« ça sera un modèle à chaque fois qu'on
+pré-remplira et qu'on enverra aux clients. Donc au final, chaque client aura sa
+fiche parce que ça ne sera jamais la même — mais il n'y aura qu'une seule
+fiche. »* Donc **un seul modèle**, tenu dans les Réglages ; rien n'est rangé par
+client.
+
+**Ce que cela suppose, écrit plutôt que tu** : le second passage chez le même
+client doit retrouver son ajustement, sinon il le referait douze fois par an.
+Le pré-remplissage se fera d'après **son dernier passage**, le modèle ne servant
+que la première fois. C'est la lecture retenue, corrigeable d'un mot.
+
+Les quatre planches portent désormais ce qui a été retenu, et deux contrôles le
+tiennent : une planche qui rouvrirait sur une version écartée lui montrerait,
+dans six mois, autre chose que sa décision.
+
+Toujours **aucune ligne de `src/`** — l'ordre de construction est écrit dans
+`TODO.md`.
+
+---
+
 ### Le temps passé ne se tape plus : une molette, faite sans JavaScript
 
 **Sa demande du 16 août** : *« ne pas avoir à l'écrire, mais une petite molette

@@ -27,7 +27,52 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 septvicies. La fiche d'entretien — **B et B tranchés**, une question reste
+### 0 septvicies. La fiche d'entretien — **TOUT EST TRANCHÉ**, reste à coder
+
+**Ses décisions des 16 août 2026**, toutes prises sur maquettes :
+
+| Question | Sa réponse |
+|---|---|
+| Le geste sur le chantier | **B** — rangée par familles, avec le compte « 1/4 » |
+| Ce que voit le client | **B** — seulement ce qui a été fait |
+| Le temps passé | une **molette**, pas un clavier — et **la A**, celle du téléphone |
+| Où la fiche se compose | dans les **Réglages**, « Ma fiche d'entretien » |
+| Une fiche ou plusieurs | **UN SEUL MODÈLE**, pré-rempli à chaque envoi |
+
+**Ses mots sur la dernière, qui valent mieux qu'un résumé :** *« ça sera un
+modèle à chaque fois qu'on pré-remplira et qu'on enverra aux clients. Donc au
+final, chaque client aura sa fiche parce que ça ne sera jamais la même — d'un
+client à un autre on ne fait pas la même prestation — mais il n'y aura qu'une
+seule fiche. »*
+
+**LA LECTURE RETENUE, ET ELLE EST À CONFIRMER D'UN MOT.** Rien n'est rangé par
+client : à chaque passage, la fiche part du modèle, s'ajuste, et devient celle
+de ce client. Mais le second passage chez le même client doit retrouver son
+ajustement — sinon il le referait douze fois par an. **Le pré-remplissage se
+fait donc d'après SON DERNIER PASSAGE**, le modèle ne servant que la première
+fois. C'est ainsi que ce sera codé sauf mot contraire.
+
+**Les invariants posés, à ne pas rouvrir :**
+
+- **un rapport déjà envoyé ne change plus JAMAIS** quand le modèle change : il
+  est signé et parti chez le client. C'est l'erreur qui ne se rattrape pas ;
+- le retrait d'une ligne est **réversible** (règle du 10 août) ;
+- ce qui n'est pas coché **n'est pas une faute** — aucun rouge ;
+- « Vrai »/« Faux » ne sortent jamais vers le client ;
+- l'envoi emprunte le chemin qui porte déjà devis et factures.
+
+**L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
+une case à ajouter :
+
+1. le **modèle** et son écran de Réglages (rien d'autre n'a de sens sans lui) ;
+2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
+3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
+   porte déjà devis et factures ;
+4. les **signatures**, en dernier : c'est ce qui se voit le moins et coûte le plus.
+
+Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
+`63-le-rapport-au-client.html`, `64-composer-sa-fiche.html`,
+`65-choisir-l-heure.html`.
 
 ### 0 trigies bis. `test-devis-parti-signet` a rougi une fois sur deux batteries — instable sous charge
 
