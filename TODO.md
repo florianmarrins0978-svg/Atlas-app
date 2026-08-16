@@ -52,6 +52,25 @@ ajustement — sinon il le referait douze fois par an. **Le pré-remplissage se
 fait donc d'après SON DERNIER PASSAGE**, le modèle ne servant que la première
 fois. C'est ainsi que ce sera codé sauf mot contraire.
 
+**PAS DE SIGNATURE — décidé le 16 août 2026, et à ne pas rouvrir par bonne
+volonté.** Sur SA capture de l'autre application, les deux signatures étaient
+« Non signé ». Le client est absent onze fois sur douze : il travaille pendant
+qu'on entretient son jardin. Un champ vide fait passer chaque rapport pour un
+document inachevé, et la capture au doigt coûtait une journée (zone de dessin,
+stockage, écran verrouillé quand il tend son téléphone, conservation RGPD,
+survie hors réseau) pour un geste fait une fois sur vingt.
+
+**Ce qui prouve le passage à leur place, et qui existe déjà** : la date, l'heure,
+le temps passé, et l'EMPREINTE du contenu exact (`empreinteDevis`, le mécanisme
+de l'acceptation d'un devis). À prévoir en plus : un bouton **« J'ai bien reçu »**
+sur la page du client — un accusé horodaté, pas une signature.
+
+**L'ENVOI : exactement celui du devis.** Sa confirmation du 16 août. Attention au
+mot « automatique » : **rien ne part tout seul**, et ce n'est pas une limite
+technique — c'est sa décision du 3 août (`docs/A-FAIRE.md` §5). Atlas prépare le
+message avec le lien, ouvre SA messagerie, et c'est lui qui appuie. Un envoi
+réellement automatique demanderait un prestataire sous contrat.
+
 **Les invariants posés, à ne pas rouvrir :**
 
 - **un rapport déjà envoyé ne change plus JAMAIS** quand le modèle change : il
@@ -68,7 +87,7 @@ une case à ajouter :
 2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
 3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
    porte déjà devis et factures ;
-4. les **signatures**, en dernier : c'est ce qui se voit le moins et coûte le plus.
+4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
 
 Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
 `63-le-rapport-au-client.html`, `64-composer-sa-fiche.html`,

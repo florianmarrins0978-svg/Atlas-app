@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### Pas de signature sur les rapports d'entretien — et pourquoi c'est mieux
+
+**Sa question, puis sa décision, le 16 août.** *« S'il n'est pas là, on ne peut
+pas le faire signer. Donc est-ce qu'on a vraiment besoin de ça ? »*
+
+**Sa propre capture répondait déjà** : sur le rapport de l'autre application,
+les deux signatures sont « Non signé ». La sienne — qui ne prouve rien, c'est
+son application et son compte — et celle du client, absent onze fois sur douze.
+Un champ qui reste vide fait passer chaque rapport pour un document inachevé.
+
+**Ce qui prouve le passage à leur place existe déjà** : la date, l'heure, le
+temps passé, et l'empreinte du contenu exact — le mécanisme qui sert déjà à
+l'acceptation d'un devis. Plus solide qu'un trait au doigt, et sans un geste.
+S'ajoutera un **« J'ai bien reçu »** sur la page du client : un accusé horodaté.
+
+**La règle qui reste, quelle que soit la suite** : un rapport sans signature ne
+doit pas AVOIR L'AIR incomplet. Si personne n'a signé, la ligne n'existe pas —
+jamais de « Non signé » en gris sur un document qui part chez un client. Un
+contrôle le tient désormais, et il vise le document, pas la page qui l'explique.
+
+**Ce que ça économise** : une journée de travail (zone de dessin, stockage,
+écran verrouillé, conservation RGPD, survie hors réseau) pour un geste fait une
+fois sur vingt.
+
+**Et l'envoi est celui du devis** — sa confirmation du même jour. Le mot
+« automatique » mérite d'être précisé : rien ne part tout seul, c'est sa décision
+du 3 août. Atlas prépare le message avec le lien, ouvre sa messagerie, il appuie.
+
+---
+
 ### La fiche d'entretien : tout est tranché, la construction peut commencer
 
 **Ses deux dernières réponses du 16 août.** La molette : *« la A »* — celle du

@@ -752,6 +752,15 @@ en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 - **Une lecture à confirmer d'un mot** : le pré-remplissage se fait d'après le
   DERNIER PASSAGE du client, pas depuis le modèle à chaque fois — sinon il
   réajusterait douze fois par an.
+- **PAS DE SIGNATURE, décidé le 16 août.** Ne pas la rouvrir par bonne volonté :
+  le client est absent onze fois sur douze, et sur sa propre capture de l'autre
+  application les deux signatures étaient « Non signé ». La preuve tient à
+  l'horodatage et à l'empreinte du contenu, comme pour l'acceptation d'un devis.
+  **Et un rapport sans signature ne doit pas AVOIR L'AIR incomplet** : pas de
+  « Non signé » en gris — un contrôle le tient.
+- **L'envoi est celui du devis, et RIEN NE PART TOUT SEUL** (`docs/A-FAIRE.md`
+  §5, tranché le 3 août). Le mot « automatique » qu'il emploie désigne le message
+  préparé, pas l'expédition.
 - **L'invariant à ne pas perdre** : un rapport déjà envoyé ne change plus jamais
   quand le modèle change. Il est signé et parti chez le client.
 - **Le temps passé se choisit à la MOLETTE, pas au clavier** (16 août) —
