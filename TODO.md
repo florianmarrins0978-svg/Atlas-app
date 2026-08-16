@@ -28,57 +28,56 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 ## Ce que je peux faire seul
 
 ### 0 novivicies. ~~Le devis qui tarde~~ — **CODÉ le 16 août 2026 (B, 4 jours, « Chantier sans devis »)**
+### 0 novovicies. ~~La TVA au PAIEMENT~~ — **CODÉE le 16 août 2026**
 
-*Planche : `docs/maquettes/56-le-devis-qui-tarde.html`, écrite le 15, réécrite
-deux fois le 16 contre ce qui existait déjà.*
+*Fait : `ARCHITECTURE.md` §111. Ce qui suit reste pour mémoire du raisonnement.*
 
-**Sa demande du 14 août :** *« un rappel lorsque le chantier a été ouvert mais le
-devis n'a pas été envoyé […] si aucun devis n'est parti sous deux, trois, quatre,
-cinq, six jours, me mettre une notification — comme la Mme Félicie, vue il y a
-quatorze jours, aucun devis envoyé »*.
+**Ce qui reste, et qui n'est pas technique :** confirmer son régime auprès de son
+comptable (`docs/A-FAIRE.md` §12). Le défaut posé est `encaissements`, celui de
+la loi ; s'il a opté pour les débits, un appui suffit à le rétablir.
 
-**Ses trois décisions, toutes appliquées :** *« la B et 4 »* (carte teintée, le
-compte des jours dans l'étiquette, quatre jours par défaut), puis *« le G »* —
-le libellé **« Chantier sans devis »**.
+**Ce qui reste à coder :** le rapprochement bancaire qu'il a choisi
+(`docs/A-FAIRE.md` §13) — il attend un prestataire agréé, donc un contrat.
 
-**Ce qui a été codé :**
+#### Le raisonnement d'origine
 
-| | Où |
+*`maquettes/atlas-tva-au-paiement.html`, le 14 août 2026 — deux écrans, 28
+contrôles. Sa question : `docs/QUESTIONS.md` §20.*
+
+**Ce que ça corrige, et ce n'est pas un confort.** `releveTvaCollectee` prend
+toutes les factures `emise` à leur **date d'émission**. Pour une prestation de
+services, la TVA est exigible **à l'encaissement** (CGI art. 269-2-c) ; les
+débits sont une **option** qu'il n'a probablement jamais demandée. L'application
+lui fait donc avancer la TVA d'un client qui n'a pas payé.
+
+**Ce qui se code dès qu'il a la réponse de son comptable :**
+
+| Quoi | Ce qu'il faut |
 |---|---|
-| La colonne, allumée d'origine à 4 | `drizzle/0045_rappel_chantier_sans_devis.sql` |
-| La règle pure, bornes 1–90 | `src/lib/rappels.ts` (`chantierSansDevisJours`) |
-| La requête, isolée par `withEntreprise` | `src/server/repositories/rappels.ts` |
-| La carte teintée et son étiquette | `src/app/Notifications.tsx` |
-| La ligne des réglages, EN PREMIER | `src/app/reglages/notifications/NotificationsClient.tsx` |
-| Les contrôles | `test-rappels.ts`, `test-rappels-db.ts`, `test-devis-qui-tarde-e2e.ts` |
+| **Paiements d'une facture** | une table `paiements_facture` — date, montant, moyen. Acomptes compris : un règlement partiel n'encaisse qu'une part de la TVA |
+| **Le relevé calculé dessus** | `releveTvaCollectee` prend la date du PAIEMENT, plus celle de l'émission |
+| **Le réglage des deux régimes** | `entreprises.tva_exigibilite` : `encaissements` (défaut) ou `debits` |
+| **Ce qui attend, annoncé** | l'écran dit combien de TVA attend son paiement — une facture absente en silence se lit comme un oubli |
 
-**LA LEÇON DE CE LOT, APPRISE TROIS FOIS.** La planche a décrit deux fois un
-monde disparu — un écran déjà dessiné le 13, un délai déjà codé le 14. **Chercher
-ce qui existe avant de dessiner, dans les DEUX dossiers de maquettes et dans le
-code.** `maquettes/` porte les planches de l'application, `docs/maquettes/` celles
-des décisions.
+**Comment Atlas saura qu'il a été payé** — sa question du 14 août, et son choix :
+**la banque** (`maquettes/atlas-banque-rapprochement.html`, 28 contrôles).
 
-**CE QUE SA CRAINTE A PRODUIT, ET QUI VAUT PLUS QUE LE MOT.** Devant « Devis pas
-encore parti » : *« j'ai peur que la façon dont tu l'as écrit ne soit pas
-compréhensible. »* La cause était la VOISINE — « Devis sans réponse », juste en
-dessous. En posant son libellé retenu, le contrôle a trouvé une seconde collision
-que je n'avais pas vue (« Chantier fini, pas facturé ») ; mais celles-là **ne se
-touchent pas**. La règle tenue est donc exactement la sienne : *deux réglages
-VOISINS ne commencent pas par le même mot*. Comparer toutes les paires serait
-trop dur et refuserait un choix qu'il a fait en connaissance de cause.
+| Quoi | Ce qu'il faut |
+|---|---|
+| **Virements lus** | un prestataire agréé DSP2 — contrat et coût à décider, `docs/A-FAIRE.md` §13 |
+| **Le rapprochement PROPOSÉ** | montant exact + nom approchant + fenêtre de dates. une règle pure, éprouvable sans banque, à écrire dans `src/lib/` |
+| **Jamais automatique** | un virement collé à la mauvaise facture met la TVA dans le mauvais trimestre. Atlas propose, le patron confirme |
+| **Les 90 jours** | l'accès se coupe (règle européenne). Prévenir une semaine avant, et retomber sur la saisie à la main |
 
-**LE TON : TRANCHÉ, ET CLOS.** La réserve lui a été posée avec la capture de
-l'accueil — sa carte a exactement le ton de « CORRECTION DEMANDÉE », alors qu'il
-avait choisi B sur une planche où les deux tons étaient seuls. **Sa réponse du
-16 août : « le B ».** Il les a vus voisins et il garde le sien. **Ne pas
-rouvrir** — c'est écrit dans `ARCHITECTURE.md` §110 avec sa raison.
+**La saisie à la main se code sans attendre la banque** — c'est elle qui reste
+quand l'accès dort, et elle ne dépend d'aucun contrat.
 
-**UN SEUL POINT RESTE**, et il n'a pas été tranché : **le rang**. L'accueil ne
-montre que deux cartes et les rappels ferment la marche (`Notifications.tsx`) :
-avec une correction demandée en cours, la sienne passe derrière « 1 autre devis
-à regarder ». Lui a été signalé le 16 août, sans réponse. Ne rien changer sans
-lui : l'ordre actuel est délibéré — *« les réponses d'abord : quelqu'un a agi,
-cela prime sur un silence »*.
+**Ce qui BLOQUE**, et qui n'est pas technique : sous quel régime il est. Inscrit
+dans `docs/A-FAIRE.md` §12 — son comptable le sait en une phrase.
+
+**Ce qu'on ne codera pas tant qu'il n'a pas tranché :** deviner son régime. Le
+poser au hasard ferait déclarer trop tôt ou trop tard, et c'est l'administration
+qui arbitrerait.
 
 ### 0 undetricies. L'absence d'une équipe — DESSINÉE le 14 août 2026, en attente de son choix
 ### 0 tricies nonies. ~~`test-pastille-equipe-e2e` est ROUGE sur `main`~~ — **RÉGLÉ le 16 août 2026**
@@ -530,6 +529,91 @@ l'écran doit rester « Changer mon mot de passe ».
 **Ne pas dessiner d'appareils en attendant.** Une liste plausible — « iPhone ·
 il y a 2 h » — se valide en dix secondes et le défaut n'apparaît qu'au moment de
 coder. Le contrôle de la planche l'interdit explicitement, et il sait rougir.
+
+### 0 novemvicies quinquies. ~~« Le nombre de jour en doré »~~ — **CODÉ le 15 août 2026**
+
+**Sa réponse finale : « je veux journée et toute la ligne. Tu peux coder. »**
+La ligne du planning porte désormais la date, le moment de départ et la durée,
+toute en or — `ARCHITECTURE.md` §111. Ce qui suit reste écrit parce que le
+chemin importe : la question qu'il a posée n'avait pas la réponse qu'elle
+supposait, et c'est la fouille de l'historique qui l'a montré.
+
+**Ce qui reste ouvert, et lui seul le tranchera à l'usage :** la ligne ne dit
+plus quand un chantier long **finit**. « du 21 au 25 août » a été remplacé par
+« matin · 3 jours », et les week-ends sautés interdisent de recalculer la fin de
+tête. Sa place, si elle lui manque, est la **feuille du chevron** — qui a la
+largeur que la ligne n'a pas. Ne pas la remettre sur la ligne sans le lui
+demander : elle en avait été retirée pour faire tenir le nombre de jours.
+
+*Le patron, le 15 août 2026, capture du planning à l'appui : « Avant il y avait
+le Nombre de jour en doré et je sais plus quoi, où c'est passé ? »*
+
+**L'historique a été fouillé, toutes branches, avant de lui répondre.** Aucun
+nombre de jours n'a jamais été écrit **en or** dans `src/`. Trois choses en
+approchent, et ne pas les confondre fait gagner l'aller-retour :
+
+| Ce qui a existé | Où | Quand c'est parti |
+|---|---|---|
+| « matin, 2 jours » — **en gris** (`creneauLisible`) | la ligne du planning | `064d413`, 10 août |
+| « Créer la facture » — **en or**, mais ce n'est pas un nombre | la même ligne | `026e7ba`, 12 août, vers `FeuilleYAller` |
+| « occupe : vendredi 21, lundi 24, mardi 25 » — **un nombre de jours en or** | `docs/maquettes/51`, envoyée le 14 août | jamais codé ; le pied de la planche le disait |
+
+**La troisième est la plus probable** : il a manipulé cette planche la veille, et
+une maquette dorée se confond avec l'application.
+
+Ce qui est en or à cet endroit de l'écran, et qui l'est toujours : le chiffre du
+jour dans le calendrier — aujourd'hui, et le jour ouvert —, les pastilles sous
+les quantièmes, le chevron de la ligne, « À poser », et le pointillé
+d'« Équipe ? » quand elle manque. **La date tombée le 15 août, elle, était
+grise** (`colors.muted`). Et `#c2a05f` / `#8f7130` n'ont jamais existé dans
+`src/` : ce sont les bronzes des vieilles maquettes « Origine ».
+
+**Trois lots ont touché cette ligne en deux jours**, ce qui explique qu'il ne
+s'y retrouve plus, et il faut les lui rappeler avant de conclure quoi que ce
+soit : la date est tombée (maquette 53), « Déplacer » a quitté la ligne pour la
+feuille du chevron (maquette 52), la pastille d'équipe est arrivée à sa place.
+
+**Rien n'est codé, et ce n'est pas un oubli** (`CLAUDE.md` §3 bis) :
+`docs/maquettes/58-le-nombre-de-jours-en-or.html` lui a montré **quatre
+écritures de la même ligne** — A telle qu'elle est, B la date qui revient, C la
+durée en or, D les deux en or.
+
+**IL A CHOISI LA D, ET IL L'A AUGMENTÉE** — sa réponse du 15 août : *« je veux
+le 54 la D mais il doit y avoir le nombre de jour, le matin, l'après-midi et la
+journée comme infos possible »*. La ligne portera donc **trois** choses : la
+date, le moment de départ, le nombre de jours.
+`docs/maquettes/59-la-ligne-qui-dit-tout.html` les montre sur les **cinq** cas
+du produit, et pose les **deux dernières questions** :
+
+| | La question | Les deux réponses |
+|---|---|---|
+| **1** | le chantier d'une journée pleine | **A** « 14 août · journée » · **B** « 14 août · matin · 1 journée » (le départ, puis la durée — comme les quatre autres lignes) |
+| **2** | ce qui est en or | **A** toute la phrase · **B** le seul nombre de jours |
+
+**ET LE VOCABULAIRE NE S'INVENTE PAS : « journée », jamais « jour ».** La liste
+`DUREES` (`src/lib/durees-chantier.ts`) dit « ½ journée », « 1 journée », puis
+« 3 jours » — **et le dit depuis le 4 août 2026, sur une correction du patron,
+capture à l'appui**. La première planche a quand même écrit « ½ jour », et il a
+dû reprendre la même chose une seconde fois : *« 1/2 journée pas jour ! »*.
+
+Le contrôle **lit désormais `DUREES` dans le dépôt** et refuse tout libellé qui
+n'en vient pas — il ne recopie pas la liste, qui dériverait. Absent le fichier,
+il le dit et **échoue** plutôt que de verdir en silence. Une règle déjà écrite et
+enfreinte deux fois n'est pas une règle : c'est un contrôle qui manque.
+
+**ET UN INVARIANT À NE PAS PERDRE EN CODANT.** « matin » ne doit **jamais** être
+écrit sans son nombre de jours : seul, il redit exactement ce qu'il a signalé le
+13 août — *« ça laisse à penser que juste le matin est bloqué alors que c'est la
+journée »*. C'est le nombre accolé qui le rend honnête. Le contrôle de la
+planche le garde déjà, et **la suite du code devra le garder aussi** : ce n'est
+pas une préférence d'écriture, c'est la réparation d'un défaut qu'il a trouvé.
+
+**Ne pas deviner à sa place, et ne pas coder les quatre « pour qu'il essaie ».**
+C'est exactement ce qui a été refusé le 11 août.
+
+Le contrôle de la planche existe et **a été vu rouge trois fois** avant d'être
+livré (`scripts/verifier-maquette-nombre-de-jours.mjs`) : or retiré, bascule
+morte, nom trop long — chacun nomme le bon coupable.
 
 ### 0 octovicies bis. L'écran du catalogue : sa flèche, et sa mémoire morte
 
@@ -2753,6 +2837,7 @@ et c'est déjà arrivé.
 
 ## Terminé
 
+- ~~La TVA n'entre au relevé qu'au paiement, avec l'endroit où les factures attendent~~ — 2026-08-16
 - ~~Ajouter et retirer des cases : tranches, façons d'abattre et travaux se règlent~~ — 2026-08-14
 - ~~L'unité d'un tarif se choisit dans un bandeau déroulant, sans fermer la case~~ — 2026-08-14
 - ~~Reprendre l'application Arborea sans le site vitrine, et la publier~~ — 2026-07-31

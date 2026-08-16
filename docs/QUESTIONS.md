@@ -41,6 +41,7 @@ relues à chaque session) :
 17. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
 18. [À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?](#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-)
 19. [Une équipe part cinq jours en déplacement : comment on gère ça ?](#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-)
+20. [Si un client ne me paie pas, la TVA part quand même ?](#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
 
 ---
 
@@ -1193,3 +1194,85 @@ où une équipe est absente — d'où la question.
 **Recommandation : A d'abord.** B seulement si le télescopage de deux chantiers
 sur une même équipe se produit vraiment — sinon, c'est du travail dont on ne
 verra jamais l'effet.
+
+---
+
+## 20. Si un client ne me paie pas, la TVA part quand même ?
+
+*Question posée le 14 août 2026 : « à partir du moment où j'envoie la facture à
+mon client, elle rentre automatiquement dans mon relevé de TVA. Sauf que s'il
+décide de ne pas me payer, je vais avoir des problèmes. »*
+
+### La réponse courte
+
+**Votre inquiétude est fondée, et la loi est de votre côté.** Pour une
+**prestation de services** — ce que vous vendez —, la TVA est exigible **quand
+vous êtes payé**, pas quand vous facturez. C'est le régime par défaut
+(article 269-2-c du code général des impôts).
+
+Encaisser la TVA sur un chantier qu'on ne vous a pas réglé, ça n'existe pas :
+tant que l'argent n'est pas rentré, l'État n'attend rien.
+
+### Alors pourquoi Atlas la compte à l'émission ?
+
+Parce qu'il a été écrit ainsi, et **c'est à corriger**. Aujourd'hui le relevé
+prend toutes les factures marquées « émise », à leur date d'émission. C'est le
+régime **des débits** — qui existe, mais qui est une **option** : on la demande
+expressément à l'administration, on ne l'a pas par hasard.
+
+| Régime | La TVA est due… | Qui l'a |
+|---|---|---|
+| **Encaissements** | le jour où le client vous paie | tous les prestataires de services, **par défaut** |
+| **Débits** | le jour où vous émettez la facture | ceux qui en ont fait la demande |
+
+### Les deux nuances qui comptent
+
+**Si vous vendez aussi du bois**, c'est une marchandise et non un service : cette
+partie-là reste due à la livraison, quel que soit votre régime. Un chantier qui
+mélange les deux se sépare en deux lignes.
+
+**Sous le régime des débits, une facture jamais payée n'est pas perdue non
+plus** : la TVA se récupère au titre des « créances irrécouvrables », mais
+seulement après avoir prouvé que le recouvrement a échoué. C'est plus long, et
+c'est de l'argent avancé entre-temps.
+
+### Ce que ça change dans Atlas
+
+Rien n'est encore codé. Ce qu'il faudra :
+
+1. une **date de paiement** sur chaque facture, acomptes compris ;
+2. le relevé calculé sur cette date-là, et non sur la date d'émission ;
+3. un réglage **encaissements / débits**, parce que les deux existent.
+
+### « Mais comment Atlas saura que j'ai été payé ? »
+
+*Votre question, dans la foulée — et c'est la bonne.* **Atlas ne le sait pas.**
+Il n'a aucun accès à votre compte en banque. Trois façons, et elles se
+combinent :
+
+| | Comment | Ce que ça coûte |
+|---|---|---|
+| **1** | **Vous le dites** — au moment où vous voyez le virement | Rien à brancher. Mais si vous oubliez, vous **sous-déclarez** — et c'est pire que déclarer trop tôt |
+| **2** | **Atlas vous le demande** — en fin de trimestre, il liste les factures en attente | Un geste par trimestre au lieu d'un par facture. C'est ce qui rend le 1 sûr |
+| **3** | **Votre banque** — Atlas lit vos virements reçus et propose le rapprochement | Un prestataire agréé, un contrat, un coût mensuel |
+
+**Vous avez choisi le 3**, le 14 août 2026. Deux choses en découlent, et elles
+ne se négocient pas :
+
+- **un relevé bancaire ne porte pas de numéro de facture** — seulement une date,
+  un montant et un libellé (« VIR M BERNARD »). Atlas ne peut donc que
+  **proposer** ; c'est votre doigt qui confirme. Quand le montant ne tombe pas
+  juste — un acompte, deux factures en un virement —, il dira qu'il ne sait pas
+  au lieu de deviner ;
+- **l'accès se renouvelle tous les 90 jours**, règle européenne. Vous serez
+  prévenu une semaine avant, et les paiements se noteront à la main pendant ce
+  temps-là.
+
+Le dessin : `maquettes/atlas-banque-rapprochement.html`. Le prestataire reste à
+choisir — [`A-FAIRE.md`](A-FAIRE.md) §13.
+
+### Ce que je ne peux pas décider à votre place
+
+**Sous quel régime vous êtes.** Votre comptable le sait en une phrase, ou c'est
+écrit sur votre dernière déclaration. Le point est inscrit dans
+[`A-FAIRE.md`](A-FAIRE.md) §12.

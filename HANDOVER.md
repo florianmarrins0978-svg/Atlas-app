@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-15 · `main`
+**Point de reprise :** 2026-08-16 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -159,6 +159,7 @@ serait une défaillance du dépôt.
 | Si le patron parle de… | Lui ressortir |
 |---|---|
 | **commercialiser, vendre, premiers clients payants, lancement, mise sur le marché, plusieurs artisans** | **La validation de l'application par Google** (`docs/A-FAIRE.md` §8). Sans elle, l'agenda ne fonctionne que pour **une centaine de comptes inscrits à la main** — et le mur arrive d'un coup, sans prévenir. La vérification demande un domaine, une politique de confidentialité **publiée**, une page d'accueil, une vidéo, et **plusieurs semaines**. Le délai ne se rattrape pas : la demande se lance bien avant la date de vente. Détail complet dans `docs/QUESTIONS.md` §12 |
+| **« avant il y avait… », « où c'est passé ? », « je ne retrouve plus… »** | **NE PAS DEVINER : fouiller l'historique AVANT de répondre**, et lui rendre la liste des candidats plutôt qu'une hypothèse. Le 15 août 2026 — *« avant il y avait le Nombre de jour en doré »* —, la fouille a rendu trois choses différentes, dont **une qui n'a jamais été codée** : une ligne dorée de la maquette 51, qu'il avait manipulée la veille. Répondre de mémoire aurait fait coder ce qui existait déjà ailleurs. Et **penser d'abord aux maquettes qu'on lui a envoyées** : il les essaie en vrai, elles ressemblent à l'application, et rien ne les en distingue sur son téléphone (`TODO.md` §0 novemvicies quinquies) |
 
 Un point traité ici se **barre** avec sa date plutôt qu'il ne se supprime :
 savoir qu'il a été dit évite de le redire, et savoir quand évite de croire qu'il
@@ -711,6 +712,51 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 dans `src/`.
 
 ## Ce qui vient d'être terminé
+
+**LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
+« 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le
+moment de départ, la durée, **toute la ligne en or**. Sa demande sur la
+maquette 59 : *« je veux journée et toute la ligne »*.
+
+**L'INVARIANT À NE JAMAIS PERDRE, et il n'est pas d'écriture :** « matin » ne
+s'écrit **jamais sans sa durée**. Seul, il redit le défaut du 13 août — *« ça
+laisse à penser que juste le matin est bloqué »*. C'est le nombre accolé qui le
+rend honnête. Un contrôle balaie les deux cents durées pour qu'un allègement
+futur ne les sépare pas en silence (`ARCHITECTURE.md` §111).
+
+**Et ce qui a été perdu au passage, sciemment :** « du 21 au 25 août ». La ligne
+ne dit plus quand un chantier long **finit**, et les week-ends sautés interdisent
+de le recalculer de tête. **Ne pas le remettre sur la ligne sans qu'il le
+demande** — il y a été retiré pour faire tenir le nombre de jours ; sa place
+serait la feuille du chevron.
+
+**LA TVA AU PAIEMENT (16 août).** Sa question : *« si un client ne me paie pas,
+la facture rentre quand même dans mon relevé »*. Elle était fondée : pour une
+prestation de services, la TVA est due **à l'encaissement** (CGI art. 269-2-c),
+et les débits — ce que faisait Atlas — sont une **option** qui se demande.
+
+Quatre choses à savoir avant d'y toucher :
+
+1. **Le défaut a CHANGÉ** (`entreprises.tva_exigibilite` = `encaissements`). Ne
+   pas le remettre aux débits « pour retrouver l'ancien comportement » : c'est
+   l'ancien comportement qui était faux.
+2. **La migration 0045 a posé un règlement sur chaque facture déjà émise**, daté
+   de son émission. C'est ce qui empêche un trimestre déjà déclaré de retomber à
+   zéro. Ces lignes portent `origine='reprise'` et l'écran le dit — ne pas les
+   effacer, et ne pas les faire passer pour des observations.
+3. **Un acompte se compte au PRORATA du TTC**, et le règlement qui solde reçoit
+   le reliquat. Sans cela, la somme des lignes du relevé ne tombe plus sur la
+   facture, à un ou deux centimes près — et personne ne sait expliquer l'écart.
+4. **Les refus ne LÈVENT jamais.** `new Decimal("zéro")` jette : une exception
+   en action serveur devient un identifiant opaque chez lui. Tout refus passe
+   par une valeur de retour, avec sa phrase.
+
+Ce qui n'est PAS fait, et qu'il a choisi : le **rapprochement bancaire**
+(`docs/A-FAIRE.md` §13, maquette `atlas-banque-rapprochement.html`). Il demande
+un prestataire agréé, donc un contrat. La saisie à la main reste de toute façon
+nécessaire — l'accès bancaire se coupe tous les 90 jours.
+
+Le reste : `ARCHITECTURE.md` §110.
 
 **⚠ UNE DATE CALCULÉE DEPUIS « AUJOURD'HUI » EST UNE BOMBE À RETARDEMENT (16 août).**
 `test-pastille-equipe-e2e` visait `+ 20 jours` : jeudi le jour où il a été écrit,

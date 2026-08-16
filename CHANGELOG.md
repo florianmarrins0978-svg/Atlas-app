@@ -7,6 +7,38 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-16
+
+### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
+
+Sa question du 14 août : *« si un client décide de ne pas me payer, la facture
+rentre quand même dans mon relevé de TVA »*. Puis sa forme : *« elle arrive dans
+un endroit en attente ; quand j'ai reçu le paiement, je clique sur valider, et
+boum. »*
+
+**Il avait raison, et Atlas avait tort.** Pour une prestation de services, la TVA
+est exigible **à l'encaissement** (CGI art. 269-2-c) ; le régime des débits —
+celui que le relevé appliquait — est une **option** qui se demande. Un artisan
+qui ne l'a jamais demandée avançait donc la TVA de clients qui n'avaient pas
+payé.
+
+| Ce qui change | |
+|---|---|
+| **Le relevé** | calculé sur la date du **règlement**, plus sur celle de l'émission |
+| **L'endroit en attente** | dans Ma TVA : les factures parties, avec « Payée » d'un doigt |
+| **L'acompte** | « Noter un règlement » — une date, un montant. Seule la part reçue entre au relevé, au prorata |
+| **Le réglage** | encaissements (défaut légal) ou débits, à côté du rythme |
+
+**Le passé ne bouge pas.** Chaque facture déjà émise a reçu un règlement daté de
+son émission : un trimestre déjà déclaré rend exactement le même montant
+qu'avant. Ces règlements sont annoncés comme supposés, et se retirent.
+
+**Et l'écran ne ment plus** : une facture arrêtée disait « elle figure au relevé
+de TVA collectée ». C'était faux dès ce lot. Elle dit maintenant qu'elle y
+entrera au paiement. Raisons : `ARCHITECTURE.md` §111.
+
+---
+
 ## 2026-08-15
 
 ### Le rappel du devis qui tarde : CODÉ, sur ses trois mots
@@ -18,7 +50,7 @@ le libellé **« Chantier sans devis »**.
 **Un TROISIÈME rappel**, et il ne se déduisait d'aucun des deux codés le 14 :
 ceux-là partent d'un envoi (`envois_devis.envoye_at`), et un devis jamais parti
 ne laisse aucune ligne d'envoi à interroger. Le sien se lit sur le chantier —
-`created_at` et `devis_envoye_at`. `drizzle/0045_rappel_chantier_sans_devis.sql`.
+`created_at` et `devis_envoye_at`. `drizzle/0046_rappel_chantier_sans_devis.sql`.
 
 **Ce que ça évite :** un chantier ouvert qui s'enfonce dans la liste sans que
 rien ne parte au client — le cas de sa Mme Félicie, vue il y a quatorze jours.
@@ -54,6 +86,136 @@ ne pouvait le dire : elle est valide, elle ne fait simplement rien sans cible.
 **Ce que ça évite :** le compte des jours qu'il a demandé, effacé par le fondu
 au premier glissement. Mesuré après correction : quel que soit le défilement
 demandé, une carte s'arrête désormais à 24 px du bord.
+### La ligne du planning porte enfin ses trois infos — CODÉ
+
+*« Je veux journée et toute la ligne. Tu peux coder. »*
+
+| Le chantier | La ligne, désormais |
+|---|---|
+| une journée pleine | **14 août · journée** |
+| une vraie demi-journée | **17 août · matin · ½ journée** |
+| trois jours | **21 août · matin · 3 jours** |
+| une journée partie l'après-midi | **24 août · après-midi · 1 journée** |
+
+La date, le moment de départ, la durée — **en or**, là où c'était gris.
+
+**Ce que ça évite, et ce n'est pas cosmétique.** Le mot « matin » revient sur la
+ligne d'où il avait été retiré la veille pour cause de mensonge — mais il ne s'y
+écrit **jamais sans sa durée**. Seul, il redit *« juste le matin est bloqué alors
+que c'est la journée »* ; accolé au nombre, il dit **quand ça part**. Un contrôle
+balaie les deux cents durées pour que personne ne les sépare un jour « pour
+alléger ».
+
+**Ce qui se perd, et il vaut mieux le lire ici que le découvrir :** « du 21 au
+25 août » disparaît. La ligne ne dit plus quand le chantier **finit**, et les
+week-ends sautés interdisent de le recalculer de tête. C'est le prix du nombre de
+jours ; sa place, si elle manque, est la feuille du chevron.
+
+**Deux doublons corrigés au passage**, tous deux invisibles séparément : l'équipe
+s'écrivait **deux fois** dès qu'il y en a plusieurs — dans la phrase et sur la
+pastille, côte à côte — et la date, tombée de la liste le matin même, y est
+revenue : la consigne qui l'en avait chassée valait du panneau d'un jour ouvert,
+pas d'une liste qui couvre tout le mois.
+
+Détail complet, et le tableau de ce que chaque contrôle voit : `ARCHITECTURE.md`
+§111.
+
+### Et le contrôle de ce lot dormait — réveillé par la capture, pas par la batterie
+
+La suite qui devait attraper un nom de chantier coupé mesurait la page **avant
+qu'elle soit mise en page** : les deux largeurs comparées valaient zéro, et
+`0 − 0 = 0` annonçait « rien n'est coupé ». En vert. Sur un écran où trois noms
+l'étaient.
+
+**Rien ne l'aurait montré** : la suite était verte, la batterie entière l'était —
+146/146 en base, 82/82 au navigateur. C'est la **capture, regardée**, qui a montré
+les « … ». Quatrième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun
+test.
+
+**Ce que ça évite désormais**, et c'est écrit en règle permanente
+(`CLAUDE.md` §5) : un contrôle qui compare des dimensions attend la mise en page,
+et **refuse de conclure sur une boîte de zéro pixel**. L'absence de matière à
+mesurer n'est pas un succès, c'est une mesure impossible.
+
+Deux défauts de montage sont tombés avec : l'horodatage collé au nom du client
+fabriquait des « Mr. Bernard-Delacroix J1786838107808 » qu'aucun client ne porte —
+le contrôle accusait alors le produit d'une coupure que le montage seul avait
+créée ; et la pastille d'équipe se cherchait par ce nom, donc en trouvait trois.
+
+### « Le nombre de jour en doré » : une planche plutôt qu'une devinette
+
+**Sa question**, capture du planning à l'appui : *« Avant il y avait le Nombre de
+jour en doré et je sais plus quoi, où c'est passé ? »*
+
+**L'historique a été fouillé, toutes branches, avant de répondre quoi que ce
+soit** — et il ne dit pas tout à fait ce que la question suppose. Un nombre de
+jours en or n'a **jamais** existé dans `src/`. Mais trois choses en approchent,
+et elles sont énumérées sur la planche plutôt que gardées pour moi :
+
+| Ce qui a existé | Où | Quand c'est parti |
+|---|---|---|
+| « matin, 2 jours » sur la ligne — **en gris** | le planning | `064d413`, 10 août |
+| « Créer la facture » — **en or**, mais ce n'est pas un nombre | la même ligne | `026e7ba`, 12 août, vers la feuille |
+| « occupe : vendredi 21, lundi 24, mardi 25 » — **un nombre de jours en or** | la **maquette 51**, envoyée le 14 août | jamais codé, et sa planche le disait |
+
+La troisième est la plus probable : une planche qu'il a manipulée la veille se
+confond aisément avec l'application. Et trois lots ont touché cette ligne en deux
+jours — la date tombée, « Déplacer » parti dans la feuille, la pastille d'équipe
+arrivée. Se souvenir de travers, à ce rythme, n'a rien d'étonnant.
+
+**Donc : quatre écritures de la même ligne, sur une planche qu'il manipule**
+(`docs/maquettes/58-le-nombre-de-jours-en-or.html`) — telle qu'elle est, la date
+qui revient, la durée en or, les deux en or. **`src/` n'est pas touché**
+(`CLAUDE.md` §3 bis).
+
+**Ce que ça évite :** coder les quatre « pour qu'il essaie », puis en défaire
+trois. Et surtout, lui rendre une réponse inventée — le piège nommé dans
+`AGENTS.md` : réparer une panne imaginée.
+
+Le contrôle de la planche a été **vu rouge trois fois** avant d'être livré
+(or retiré, bascule morte, nom coupé), et chacun nomme le bon coupable.
+
+### Sa réponse : la D, augmentée — et un invariant à ne plus perdre
+
+*« Je veux le 54 la D mais il doit y avoir le nombre de jour, le matin,
+l'après-midi et la journée comme infos possible. »*
+
+La ligne portera donc **trois** choses et non deux : la date, **le moment où le
+chantier part**, et le nombre de jours.
+`docs/maquettes/59-la-ligne-qui-dit-tout.html` les montre sur les **cinq** cas
+du produit — la journée pleine, les deux vraies demi-journées, le chantier long,
+et celui qui part l'après-midi pour finir le lendemain matin.
+
+**L'invariant qui en sort, et qui vaudra pour le code :** « matin » ne s'écrit
+**jamais sans son nombre de jours**. Seul, il redit ce qu'il avait signalé le
+13 août — *« ça laisse à penser que juste le matin est bloqué »* — et c'est
+précisément pour cela qu'il en avait été retiré la veille. Accolé au nombre, il
+ne dit plus ce qui est bloqué mais **quand ça part**, et l'information qu'il
+réclamait revient sans le défaut qu'elle portait.
+
+Le contrôle mesure les deux réglages restants dans leurs **quatre**
+combinaisons, et il a été vu rouge sur les quatre sabotages qui comptent :
+nombre retiré, nom trop long, phrase trop longue, sélecteur d'or cassé.
+
+### « ½ journée, pas jour ! » — une règle écrite depuis dix jours, enfreinte quand même
+
+La planche disait « ½ jour ». `src/lib/durees-chantier.ts` dit « ½ journée »,
+« 1 journée », « 3 jours » — **et le dit depuis le 4 août 2026, sur cette même
+correction du patron, capture à l'appui**. Il a donc dû la refaire.
+
+**Ce que ça évite désormais :** le contrôle de la planche **lit la liste dans le
+dépôt** au lieu de la recopier, et refuse tout libellé qui n'en vient pas. Il ne
+peut donc plus dériver le jour où la liste change, et si le fichier disparaît il
+**échoue en le disant** plutôt que de passer au vert sans rien mesurer.
+
+Une règle déjà écrite dans le dépôt et enfreinte deux fois n'est pas une règle :
+c'est un contrôle qui manque.
+
+**Et un défaut du contrôle lui-même, trouvé en le lançant :** il lisait la ligne
+par `textContent`, qui rend aussi le texte ÉTEINT — « 14 août · journéematin ·
+1 journée » — et accusait la planche d'un défaut qu'elle n'avait pas. Il compose
+maintenant le texte des seuls nœuds visibles. Un contrôle qui mesure autre chose
+que l'écran ne prouve rien, et coûte le temps de comprendre qu'il a tort.
 
 ### Deux lignes qui commencent par le même mot, l'une sur l'autre
 
@@ -142,6 +304,7 @@ les doublons hérités étant tolérés nommément, dont le 50 qui est volontair
 apporté deux planches de plus tombées dans le même trou, qu'il a nommées.
 
 ---
+
 
 ## 2026-08-14
 
