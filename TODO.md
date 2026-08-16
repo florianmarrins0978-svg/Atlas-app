@@ -52,7 +52,6 @@ neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
 écran que le patron a dessiné lui-même.
 
 
-### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
 ### 0 septvicies. La fiche d'entretien — **DEUX MAQUETTES POSÉES, sa décision attendue**
 
 **Sa demande du 16 août 2026**, captures d'une autre application à l'appui : des
@@ -84,7 +83,6 @@ gardées par `scripts/verifier-maquette-fiche-entretien.mjs`.
 liste vient du contrat ; ce qui n'est pas coché n'est pas une faute ; l'envoi
 emprunte le chemin qui porte déjà devis et factures.
 
-### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
 
 ### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
 
@@ -101,6 +99,41 @@ l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
 **Le correctif est CONFIRMÉ sur sa machine :** fiche du 16 août 18 h 32,
 « Écrite : par le veilleur, au quart d'heure » — la première publication
 périodique jamais observée chez lui.
+
+### 0 quadragies quater. POURQUOI sa construction échoue — la vraie question, ouverte
+
+**Sa plainte du 16 août 2026 au soir :** *« l'appli, elle est vraiment très
+lente, mais vraiment, vraiment très lente. Est-ce qu'il y a un moyen de la
+rendre juste utilisable ? »*
+
+**Ce qu'on sait, et c'est une déduction, pas une hypothèse.** La fiche lit le
+témoin `.next-batie/atlas-version-batie.txt`, écrit **dès que `next build` rend
+0**, avant même la bascule. Ce témoin n'existe pas chez lui. Donc sa
+construction **échoue**, à chaque démarrage — et le banc retombe pour toujours
+sur le mode développement, où chaque écran se compile à l'ouverture.
+
+La même construction **réussit ici en deux minutes**, sur son commit exact
+(`67b4d8e`). C'est donc son environnement, pas le code.
+
+**Les deux suspects, et pourquoi on ne les a pas départagés :** le disque et la
+mémoire. Un `next build` pendant qu'un serveur de développement sert déjà, avec
+PostgreSQL et Redis à côté, sur une machine à deux cœurs. Ni l'un ni l'autre
+n'était publié — c'est corrigé (voir `CHANGELOG.md` du 16 août), mais le relevé
+n'arrivera **qu'au prochain démarrage de son espace**.
+
+**La marche à suivre, dès que sa fiche republie :**
+
+1. lire « Code SERVI » — si elle dit « la construction a ÉCHOUÉ », le bloc
+   « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là ;
+2. disque saturé → nettoyer avant de bâtir, en épargnant `.next` que le serveur
+   de développement utilise pour servir pendant ce temps ;
+3. mémoire épuisée → plafonner le tas de la construction, ou ne pas bâtir
+   pendant qu'un serveur sert. **Ne pas choisir la valeur au hasard** : c'est
+   ainsi qu'on livre une réparation imaginée (`AGENTS.md`).
+
+**Ne PAS écrire que la lenteur est corrigée.** Elle ne l'est pas. Seul
+l'aveuglement l'est, et c'est la troisième fois en deux jours que la distinction
+compte.
 
 ### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
 

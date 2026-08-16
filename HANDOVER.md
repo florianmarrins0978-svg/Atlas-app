@@ -63,7 +63,8 @@ Sur la fiche, deux lignes ensemble tranchent la question sans hypothèse :
 
 | Ce que la fiche montre | Ce que ça veut dire |
 |---|---|
-| `Serveur : répond` **+** `Code SERVI : aucune version bâtie` | **il n'y a rien à réparer** — le banc compile chaque écran à l'ouverture (30-100 s) et le mandataire de GitHub renonce à 60 s. Recharger une minute plus tard suffit |
+| `Serveur : répond` **+** `Code SERVI : … construction en cours` | **rien à réparer, c'est passager** — le banc compile chaque écran à l'ouverture (30-100 s) et le mandataire de GitHub renonce à 60 s. Recharger une minute plus tard suffit |
+| `Code SERVI : … la construction a ÉCHOUÉ` | **ça ne se répare pas tout seul** — le banc restera lent tant que `next build` ne passe pas. Le bloc « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là : c'est là qu'il faut regarder. `TODO.md` 0 quadragies quater |
 | `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
 | `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
 
