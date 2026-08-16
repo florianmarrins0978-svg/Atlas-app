@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-14 · branche `main`
-· dernière migration `drizzle/0043_rappels_notifications.sql`
+**Dernière mise à jour :** 2026-08-16 · branche `main`
+· dernière migration `drizzle/0045_paiements_et_exigibilite.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -106,6 +106,7 @@ seule avec quinze outils.
 | **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
 | **Un calendrier des deux côtés**, où les jours déjà pris sont barrés et ne se choisissent pas | `src/lib/calendrier.ts` + `src/components/atlas/Calendrier.tsx` |
 | **Déposer sa liste de prix Excel ou CSV**, avec aperçu avant écriture | `src/app/reglages/ImportTarifs.tsx` + `src/lib/import-tarifs.ts` + `src/server/import/lire-classeur.ts` |
+| **La TVA quand le client PAIE, et non quand la facture part** — le relevé se calcule sur la date du règlement (défaut légal d'une prestation de services, CGI art. 269-2-c) ; les factures parties attendent dans « Ma TVA » et y entrent d'un appui. Les acomptes n'apportent que leur part. Réglage encaissements / débits. Le passé ne bouge pas : la migration a supposé réglées les factures déjà émises, et le dit (`ARCHITECTURE.md` §110) | `src/lib/exigibilite-tva.ts` + `src/server/repositories/paiements-facture.ts` + `src/app/termines/tva/` + `drizzle/0045_paiements_et_exigibilite.sql` |
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 

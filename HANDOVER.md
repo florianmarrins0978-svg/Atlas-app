@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-15 · `main`
+**Point de reprise :** 2026-08-16 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -729,7 +729,36 @@ de chercher dans la règle.
 
 Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
 deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
-ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §110.
+ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §111.
+
+**LA TVA AU PAIEMENT (16 août).** Sa question : *« si un client ne me paie pas,
+la facture rentre quand même dans mon relevé »*. Elle était fondée : pour une
+prestation de services, la TVA est due **à l'encaissement** (CGI art. 269-2-c),
+et les débits — ce que faisait Atlas — sont une **option** qui se demande.
+
+Quatre choses à savoir avant d'y toucher :
+
+1. **Le défaut a CHANGÉ** (`entreprises.tva_exigibilite` = `encaissements`). Ne
+   pas le remettre aux débits « pour retrouver l'ancien comportement » : c'est
+   l'ancien comportement qui était faux.
+2. **La migration 0045 a posé un règlement sur chaque facture déjà émise**, daté
+   de son émission. C'est ce qui empêche un trimestre déjà déclaré de retomber à
+   zéro. Ces lignes portent `origine='reprise'` et l'écran le dit — ne pas les
+   effacer, et ne pas les faire passer pour des observations.
+3. **Un acompte se compte au PRORATA du TTC**, et le règlement qui solde reçoit
+   le reliquat. Sans cela, la somme des lignes du relevé ne tombe plus sur la
+   facture, à un ou deux centimes près — et personne ne sait expliquer l'écart.
+4. **Les refus ne LÈVENT jamais.** `new Decimal("zéro")` jette : une exception
+   en action serveur devient un identifiant opaque chez lui. Tout refus passe
+   par une valeur de retour, avec sa phrase.
+
+Ce qui n'est PAS fait, et qu'il a choisi : le **rapprochement bancaire**
+(`docs/A-FAIRE.md` §13, maquette `atlas-banque-rapprochement.html`). Il demande
+un prestataire agréé, donc un contrat. La saisie à la main reste de toute façon
+nécessaire — l'accès bancaire se coupe tous les 90 jours.
+
+Le reste : `ARCHITECTURE.md` §110.
+
 
 **⚠ UNE DATE CALCULÉE DEPUIS « AUJOURD'HUI » EST UNE BOMBE À RETARDEMENT (16 août).**
 `test-pastille-equipe-e2e` visait `+ 20 jours` : jeudi le jour où il a été écrit,

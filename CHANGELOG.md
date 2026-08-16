@@ -7,6 +7,38 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-16
+
+### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
+
+Sa question du 14 août : *« si un client décide de ne pas me payer, la facture
+rentre quand même dans mon relevé de TVA »*. Puis sa forme : *« elle arrive dans
+un endroit en attente ; quand j'ai reçu le paiement, je clique sur valider, et
+boum. »*
+
+**Il avait raison, et Atlas avait tort.** Pour une prestation de services, la TVA
+est exigible **à l'encaissement** (CGI art. 269-2-c) ; le régime des débits —
+celui que le relevé appliquait — est une **option** qui se demande. Un artisan
+qui ne l'a jamais demandée avançait donc la TVA de clients qui n'avaient pas
+payé.
+
+| Ce qui change | |
+|---|---|
+| **Le relevé** | calculé sur la date du **règlement**, plus sur celle de l'émission |
+| **L'endroit en attente** | dans Ma TVA : les factures parties, avec « Payée » d'un doigt |
+| **L'acompte** | « Noter un règlement » — une date, un montant. Seule la part reçue entre au relevé, au prorata |
+| **Le réglage** | encaissements (défaut légal) ou débits, à côté du rythme |
+
+**Le passé ne bouge pas.** Chaque facture déjà émise a reçu un règlement daté de
+son émission : un trimestre déjà déclaré rend exactement le même montant
+qu'avant. Ces règlements sont annoncés comme supposés, et se retirent.
+
+**Et l'écran ne ment plus** : une facture arrêtée disait « elle figure au relevé
+de TVA collectée ». C'était faux dès ce lot. Elle dit maintenant qu'elle y
+entrera au paiement. Raisons : `ARCHITECTURE.md` §110.
+
+---
+
 ## 2026-08-15
 
 ### Dicter dans le devis : « je vais pouvoir lui parler comme ça et qu'elle comprenne »
@@ -44,7 +76,7 @@ avec des données posées à la main. Le raccord entre la voix et la feuille ne 
 parcouru qu'avec une clé. Faute de transcription, l'écran le dit plutôt que de
 présenter le texte de remplacement comme une dictée.
 
-Détail : `ARCHITECTURE.md` §110.
+Détail : `ARCHITECTURE.md` §111.
 
 ### Deux lignes qui commencent par le même mot, l'une sur l'autre
 

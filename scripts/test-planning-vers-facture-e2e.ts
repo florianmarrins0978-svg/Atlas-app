@@ -262,7 +262,7 @@ async function main() {
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
     await page.click("text=Confirmer le départ de la facture");
-    await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });
+    await page.waitForSelector("text=arrêtée", { timeout: 15000 });
 
     await page.click("text=Envoyer la facture au client");
     await page.waitForSelector("text=Ouvrir le", { timeout: 15000 });
@@ -277,9 +277,23 @@ async function main() {
     // Le relevé se lit par facture, et on cherche CELLE-CI par son numéro. Les
     // totaux du trimestre cumulent les factures des autres cas de cette suite :
     // les viser rendrait le contrôle vert ou rouge selon l'ordre d'exécution.
+    //
+    // **Elle y arrive une fois ENCAISSÉE**, depuis le 16 août 2026 : la TVA
+    // d'une prestation de services est exigible au paiement, et l'endroit
+    // d'attente porte le geste (`ARCHITECTURE.md` §110).
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const ligne = page.locator("li").filter({ hasText: rows[0].numero_commercial as string });
+    await ligne.getByRole("button", { name: "Payée" }).click();
+    await page.waitForFunction(
+      (numero) => !document.body.innerText.includes(numero),
+      rows[0].numero_commercial as string,
+      { timeout: 15000 }
+    );
+    const sansBlancs = (x: string) => x.replace(/[\s   ]/g, "");
     assert.ok(
-      (await page.locator(`text=${rows[0].numero_commercial}`).count()) > 0,
+      sansBlancs(await page.locator("body").innerText()).includes(
+        sansBlancs(rows[0].numero_commercial as string)
+      ),
       `la facture ${rows[0].numero_commercial} ne figure pas au relevé de TVA du trimestre`
     );
   });
