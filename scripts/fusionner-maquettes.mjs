@@ -326,7 +326,13 @@ const MAQUETTES = [
     quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
   },
   {
-    fichier: "66-le-nouveau-chantier-plus-gros.html",
+    fichier: "66-ce-que-je-sais-du-client.html",
+    titre: "Ce que je sais du client",
+    famille: "Les chantiers",
+    quoi: "L’application sait qu’un client est venu quatre fois et qu’il doit encore 740 € — elle ne le montre nulle part. Un encart, une fiche, ou un cinquième onglet.",
+  },
+  {
+    fichier: "67-le-nouveau-chantier-plus-gros.html",
     titre: "Le nouveau chantier, plus gros",
     famille: "Enlever le gros bouton",
     quoi: "« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.",

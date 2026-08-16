@@ -808,13 +808,13 @@ en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
   d'une seule liste : ne pas les retoucher à la main, elles divergeraient.
 
 **« LE NOUVEAU CHANTIER » A GROSSI (16 août) — dessiné le matin, choisi et codé
-dans la journée.** Sa réponse devant `docs/maquettes/66` : **« les capitales,
+dans la journée.** Sa réponse devant `docs/maquettes/67` : **« les capitales,
 gros et très gras »** — 13 px, graisse 800, interlettrage 0,22 em, rond de
 42 px, signe inchangé à 20. Les valeurs vivent dans `globals.css`
 (`.atlas-mot`, `.atlas-rond`).
 
 **⚠ `docs/maquettes/24-le-bouton-retenu.html` n'est PLUS la référence du
-libellé** — elle porte un bandeau qui le dit, et renvoie à la 66. Elle reste
+libellé** — elle porte un bandeau qui le dit, et renvoie à la 67. Elle reste
 celle de l'onde, des trois tours et des onze grains, qui n'ont pas bougé. Ne pas
 « ré-harmoniser » le reste sur ses chiffres.
 

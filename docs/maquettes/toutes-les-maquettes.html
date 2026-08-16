@@ -5307,133 +5307,97 @@
 #s46 .note li{margin-bottom:6px}
 
 
-/* 47 — Le nouveau chantier, plus gros */
+/* 47 — Ce que je sais du client */
 #s47{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
-    --trait:rgba(28,28,26,.12); --papier:#faf9f5; --pin:#2f3b2f; --teinte:#ece9e1;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
   }
 @media (prefers-color-scheme: dark){
 #s47:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
-      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179; --teinte:#252320;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
     }
 
   
 }
 #s47[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
-    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179; --teinte:#252320;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
   }
 #s47, #s47 *{box-sizing:border-box}
 #s47{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-@media (max-width:430px){
-#s47{padding:20px 9px 60px}
- 
-}
-#s47 .dedans{max-width:940px;margin:0 auto}
+#s47 .dedans{max-width:960px;margin:0 auto}
 #s47 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
 #s47 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
 #s47 .intro b{color:var(--encre);font-weight:600}
-#s47 .dit{margin:0 0 24px;padding:14px 17px;border-radius:12px;
+#s47 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
        background:var(--papier);border-left:3px solid var(--or);
-       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
-#s47 .dit b{font-style:normal;color:var(--encre);font-weight:600}
+       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s47 .dit b{color:var(--encre);font-weight:600}
 #s47 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
-#s47 .reglage{margin:0 0 10px}
-#s47 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
-                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
-#s47 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+#s47 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
 #s47 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
                   border:1px solid var(--trait);font-size:13.5px;
                   background:var(--papier);color:var(--gris);
                   -webkit-tap-highlight-color:transparent}
-#s47 #s47-f-a:checked ~ .dedans .segments label[for="s47-f-a"],#s47 #s47-f-b:checked ~ .dedans .segments label[for="s47-f-b"],#s47 #s47-f-c:checked ~ .dedans .segments label[for="s47-f-c"],#s47 #s47-t-1:checked ~ .dedans .segments label[for="s47-t-1"],#s47 #s47-t-2:checked ~ .dedans .segments label[for="s47-t-2"],#s47 #s47-t-3:checked ~ .dedans .segments label[for="s47-t-3"],#s47 #s47-g-1:checked ~ .dedans .segments label[for="s47-g-1"],#s47 #s47-g-2:checked ~ .dedans .segments label[for="s47-g-2"],#s47 #s47-g-3:checked ~ .dedans .segments label[for="s47-g-3"]{
+#s47 #s47-v-a:checked ~ .dedans .segments label[for="s47-v-a"],#s47 #s47-v-b:checked ~ .dedans .segments label[for="s47-v-b"],#s47 #s47-v-c:checked ~ .dedans .segments label[for="s47-v-c"]{
     background:var(--pin);border-color:var(--pin);color:#fff}
-#s47 .dedans{--cap:17px; --lsp:.16em; --serif:26px; --rond:50px; --signe:24px; --gras:700}
-#s47 #s47-t-1:checked ~ .dedans{--cap:13px; --lsp:.22em; --serif:20px; --rond:42px; --signe:20px}
-#s47 #s47-t-2:checked ~ .dedans{--cap:15px; --lsp:.19em; --serif:23px; --rond:46px; --signe:22px}
-#s47 #s47-t-3:checked ~ .dedans{--cap:17px; --lsp:.16em; --serif:26px; --rond:50px; --signe:24px}
-#s47 #s47-g-1:checked ~ .dedans{--gras:500}
-#s47 #s47-g-2:checked ~ .dedans{--gras:700}
-#s47 #s47-g-3:checked ~ .dedans{--gras:800}
 #s47 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
-#s47 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px 0 0;
-       background:var(--papier);overflow:hidden;
+#s47 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+       background:var(--teinte);
        box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
-#s47 .sceau{text-align:center;font-size:11px;letter-spacing:.42em;color:var(--encre);
-         margin:8px 0 26px}
-#s47 .bonjour{padding:0 26px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;
-           color:var(--or);margin:0}
-#s47 .titre-ecran{padding:0 26px;margin:14px 0 0;font-family:Georgia,serif;font-weight:400;
-               font-size:36px;line-height:1.02;letter-spacing:-.018em}
-#s47 .compteur{padding:0 26px;margin:14px 0 0;font-size:9.5px;font-weight:500;
-            letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
-#s47 .filet{height:1px;background:var(--trait);margin:26px 26px 0}
-#s47 .action{padding:22px 26px 2px;display:flex;justify-content:center}
-#s47 .geste{display:flex;align-items:center;justify-content:center;gap:13px;
-         text-decoration:none;color:var(--encre);
-         -webkit-tap-highlight-color:transparent}
-#s47 .geste .mot{white-space:nowrap}
-#s47 .mot.caps{font-size:var(--cap);font-weight:var(--gras);letter-spacing:var(--lsp);
-            text-transform:uppercase}
-#s47 .mot.serif{font-family:Georgia,"Times New Roman",serif;font-size:var(--serif);
-             font-weight:var(--gras);letter-spacing:-.01em}
-#s47 .rond{position:relative;display:grid;place-items:center;flex:none;
-        width:var(--rond);height:var(--rond);border-radius:9999px}
-#s47 .rond .cerne{position:absolute;inset:0;z-index:2;border-radius:9999px;
-               border:1px solid var(--trait)}
-#s47 .rond .pouls{position:absolute;inset:0;z-index:1;border-radius:9999px;
-               border:1px solid var(--or);opacity:0;
-               animation:s47-battement 3.4s cubic-bezier(.16,.7,.3,1) infinite}
-@keyframes s47-battement{
-    0%{transform:scale(1);opacity:0} 8%{opacity:.5}
-    46%{transform:scale(1.42);opacity:0} 100%{transform:scale(1.42);opacity:0}}
-#s47 .rond svg{position:relative;z-index:4;display:block;
-            width:var(--signe);height:var(--signe)}
-#s47 .rond svg path{stroke:var(--or);stroke-width:1.25}
-#s47 .geste:active .rond{transform:scale(.92)}
-@media (prefers-reduced-motion: reduce){
-#s47 .rond .pouls{animation:none}
- 
-}
-#s47 .f-a,#s47 .f-b,#s47 .f-c{display:none}
-#s47 #s47-f-a:checked ~ .dedans .f-a,#s47 #s47-f-b:checked ~ .dedans .f-b{display:flex}
-#s47 #s47-f-c:checked ~ .dedans .f-c{display:flex}
-#s47 .action.pleine{justify-content:stretch}
-#s47 .geste.large{width:100%;justify-content:space-between;gap:16px}
-#s47 .entete-fil{display:flex;justify-content:space-between;padding:0 26px;
-              margin:30px 0 4px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
-              text-transform:uppercase;color:var(--gris)}
-#s47 .brin{display:flex;gap:16px;padding:14px 26px;border-top:1px solid var(--trait)}
-#s47 .brin .jour{width:52px;flex:none;text-align:center}
-#s47 .brin .nb{font-family:Georgia,serif;font-size:22px;line-height:1}
-#s47 .brin .mois{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
-#s47 .brin .nom{font-family:Georgia,serif;font-size:17px}
-#s47 .brin .ou{font-size:12.5px;color:var(--gris)}
-#s47 .brin .mention{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);
-              margin-top:4px}
-#s47 .bas{display:flex;justify-content:space-between;padding:14px 22px 16px;
-       margin-top:6px;border-top:1px solid var(--trait);
-       font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
-#s47 .bas .actif{color:var(--encre)}
-#s47 .temoin{margin:0 0 18px;padding:14px 16px;border-radius:12px;
-          background:var(--papier);border:1px solid var(--trait)}
-#s47 .legende .temoin .t{display:block;font-family:inherit;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
-             color:var(--gris);margin-bottom:10px}
-#s47 .temoin .geste{justify-content:flex-start}
-#s47 .temoin .mot{font-size:9px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
-#s47 .temoin .rond{width:38px;height:38px}
-#s47 .temoin .rond svg{width:20px;height:20px}
-#s47 .temoin .rond .pouls{animation:none}
-#s47 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s47 .ecran{background:var(--papier);border-radius:14px;padding:18px 17px}
+#s47 .surtitre{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);display:block;margin-bottom:4px}
+#s47 .titre{font-family:Georgia,serif;font-size:21px;line-height:1.2;margin:0 0 2px}
+#s47 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s47 .filet{height:1px;background:var(--trait);margin:14px 0}
+#s47 .chiffres{display:flex;gap:10px}
+#s47 .ch{flex:1;background:var(--teinte);border-radius:10px;padding:10px 11px}
+#s47 .ch .n{display:block;font-family:Georgia,serif;font-size:19px;line-height:1.15}
+#s47 .ch .q{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+         color:var(--gris);margin-top:3px}
+#s47 .ch.du .n{color:var(--alerte)}
+#s47 .lgn{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+       padding:8px 0;border-bottom:1px solid var(--trait)}
+#s47 .lgn:last-child{border-bottom:0}
+#s47 .lgn .fois{color:var(--gris);font-size:12.5px;white-space:nowrap}
+#s47 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--gris);display:block;margin:16px 0 6px}
+#s47 .fiche-chantier .entete{display:flex;justify-content:space-between;
+                          align-items:flex-start;gap:12px}
+#s47 .encart{margin-top:14px;background:var(--teinte);border-radius:12px;
+          padding:13px 14px}
+#s47 .encart .phrase{font-size:13.5px;line-height:1.6;margin:0}
+#s47 .encart .phrase b{color:var(--encre)}
+#s47 .encart .plus{display:inline-block;margin-top:9px;font-size:13px;color:var(--or)}
+#s47 .faux-bloc{margin-top:16px}
+#s47 .faux-bloc .t{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+                color:var(--gris);display:block;margin-bottom:6px}
+#s47 .faux-ligne{height:9px;border-radius:5px;background:var(--teinte);margin-bottom:7px}
+#s47 .faux-ligne.court{width:55%}
+#s47 .cli{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+       padding:11px 0;border-bottom:1px solid var(--trait)}
+#s47 .cli .nom{font-family:Georgia,serif;font-size:16.5px}
+#s47 .cli .det{font-size:12px;color:var(--gris)}
+#s47 .onglets{display:flex;gap:4px;margin-top:14px;border-top:1px solid var(--trait);
+           padding-top:10px;font-size:11px;color:var(--gris);justify-content:space-around}
+#s47 .onglets .actif{color:var(--pin);font-weight:600}
+#s47 .neuf{color:var(--or);font-weight:600}
+#s47 .a-encart,#s47 .a-fiche,#s47 .a-onglet{display:none}
+#s47 #s47-v-a:checked ~ .dedans .a-encart,#s47 #s47-v-b:checked ~ .dedans .a-fiche,#s47 #s47-v-c:checked ~ .dedans .a-onglet{display:block}
+#s47 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
 #s47 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
               color:var(--encre);margin-bottom:8px}
 #s47 .legende b{color:var(--encre);font-weight:600}
 #s47 .l-a,#s47 .l-b,#s47 .l-c{display:none}
-#s47 #s47-f-a:checked ~ .dedans .l-a,#s47 #s47-f-b:checked ~ .dedans .l-b,#s47 #s47-f-c:checked ~ .dedans .l-c{display:block}
+#s47 #s47-v-a:checked ~ .dedans .l-a,#s47 #s47-v-b:checked ~ .dedans .l-b,#s47 #s47-v-c:checked ~ .dedans .l-c{display:block}
 #s47 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
 #s47 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
@@ -5442,6 +5406,143 @@
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
 #s47 .note ul{margin:8px 0 0;padding-left:19px}
 #s47 .note li{margin-bottom:6px}
+
+
+/* 48 — Le nouveau chantier, plus gros */
+#s48{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.12); --papier:#faf9f5; --pin:#2f3b2f; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s48:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179; --teinte:#252320;
+    }
+
+  
+}
+#s48[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179; --teinte:#252320;
+  }
+#s48, #s48 *{box-sizing:border-box}
+#s48{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+@media (max-width:430px){
+#s48{padding:20px 9px 60px}
+ 
+}
+#s48 .dedans{max-width:940px;margin:0 auto}
+#s48 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s48 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s48 .intro b{color:var(--encre);font-weight:600}
+#s48 .dit{margin:0 0 24px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+#s48 .dit b{font-style:normal;color:var(--encre);font-weight:600}
+#s48 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s48 .reglage{margin:0 0 10px}
+#s48 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s48 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+#s48 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s48 #s48-f-a:checked ~ .dedans .segments label[for="s48-f-a"],#s48 #s48-f-b:checked ~ .dedans .segments label[for="s48-f-b"],#s48 #s48-f-c:checked ~ .dedans .segments label[for="s48-f-c"],#s48 #s48-t-1:checked ~ .dedans .segments label[for="s48-t-1"],#s48 #s48-t-2:checked ~ .dedans .segments label[for="s48-t-2"],#s48 #s48-t-3:checked ~ .dedans .segments label[for="s48-t-3"],#s48 #s48-g-1:checked ~ .dedans .segments label[for="s48-g-1"],#s48 #s48-g-2:checked ~ .dedans .segments label[for="s48-g-2"],#s48 #s48-g-3:checked ~ .dedans .segments label[for="s48-g-3"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s48 .dedans{--cap:17px; --lsp:.16em; --serif:26px; --rond:50px; --signe:24px; --gras:700}
+#s48 #s48-t-1:checked ~ .dedans{--cap:13px; --lsp:.22em; --serif:20px; --rond:42px; --signe:20px}
+#s48 #s48-t-2:checked ~ .dedans{--cap:15px; --lsp:.19em; --serif:23px; --rond:46px; --signe:22px}
+#s48 #s48-t-3:checked ~ .dedans{--cap:17px; --lsp:.16em; --serif:26px; --rond:50px; --signe:24px}
+#s48 #s48-g-1:checked ~ .dedans{--gras:500}
+#s48 #s48-g-2:checked ~ .dedans{--gras:700}
+#s48 #s48-g-3:checked ~ .dedans{--gras:800}
+#s48 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s48 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px 0 0;
+       background:var(--papier);overflow:hidden;
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s48 .sceau{text-align:center;font-size:11px;letter-spacing:.42em;color:var(--encre);
+         margin:8px 0 26px}
+#s48 .bonjour{padding:0 26px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;
+           color:var(--or);margin:0}
+#s48 .titre-ecran{padding:0 26px;margin:14px 0 0;font-family:Georgia,serif;font-weight:400;
+               font-size:36px;line-height:1.02;letter-spacing:-.018em}
+#s48 .compteur{padding:0 26px;margin:14px 0 0;font-size:9.5px;font-weight:500;
+            letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+#s48 .filet{height:1px;background:var(--trait);margin:26px 26px 0}
+#s48 .action{padding:22px 26px 2px;display:flex;justify-content:center}
+#s48 .geste{display:flex;align-items:center;justify-content:center;gap:13px;
+         text-decoration:none;color:var(--encre);
+         -webkit-tap-highlight-color:transparent}
+#s48 .geste .mot{white-space:nowrap}
+#s48 .mot.caps{font-size:var(--cap);font-weight:var(--gras);letter-spacing:var(--lsp);
+            text-transform:uppercase}
+#s48 .mot.serif{font-family:Georgia,"Times New Roman",serif;font-size:var(--serif);
+             font-weight:var(--gras);letter-spacing:-.01em}
+#s48 .rond{position:relative;display:grid;place-items:center;flex:none;
+        width:var(--rond);height:var(--rond);border-radius:9999px}
+#s48 .rond .cerne{position:absolute;inset:0;z-index:2;border-radius:9999px;
+               border:1px solid var(--trait)}
+#s48 .rond .pouls{position:absolute;inset:0;z-index:1;border-radius:9999px;
+               border:1px solid var(--or);opacity:0;
+               animation:s48-battement 3.4s cubic-bezier(.16,.7,.3,1) infinite}
+@keyframes s48-battement{
+    0%{transform:scale(1);opacity:0} 8%{opacity:.5}
+    46%{transform:scale(1.42);opacity:0} 100%{transform:scale(1.42);opacity:0}}
+#s48 .rond svg{position:relative;z-index:4;display:block;
+            width:var(--signe);height:var(--signe)}
+#s48 .rond svg path{stroke:var(--or);stroke-width:1.25}
+#s48 .geste:active .rond{transform:scale(.92)}
+@media (prefers-reduced-motion: reduce){
+#s48 .rond .pouls{animation:none}
+ 
+}
+#s48 .f-a,#s48 .f-b,#s48 .f-c{display:none}
+#s48 #s48-f-a:checked ~ .dedans .f-a,#s48 #s48-f-b:checked ~ .dedans .f-b{display:flex}
+#s48 #s48-f-c:checked ~ .dedans .f-c{display:flex}
+#s48 .action.pleine{justify-content:stretch}
+#s48 .geste.large{width:100%;justify-content:space-between;gap:16px}
+#s48 .entete-fil{display:flex;justify-content:space-between;padding:0 26px;
+              margin:30px 0 4px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--gris)}
+#s48 .brin{display:flex;gap:16px;padding:14px 26px;border-top:1px solid var(--trait)}
+#s48 .brin .jour{width:52px;flex:none;text-align:center}
+#s48 .brin .nb{font-family:Georgia,serif;font-size:22px;line-height:1}
+#s48 .brin .mois{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+#s48 .brin .nom{font-family:Georgia,serif;font-size:17px}
+#s48 .brin .ou{font-size:12.5px;color:var(--gris)}
+#s48 .brin .mention{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);
+              margin-top:4px}
+#s48 .bas{display:flex;justify-content:space-between;padding:14px 22px 16px;
+       margin-top:6px;border-top:1px solid var(--trait);
+       font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s48 .bas .actif{color:var(--encre)}
+#s48 .temoin{margin:0 0 18px;padding:14px 16px;border-radius:12px;
+          background:var(--papier);border:1px solid var(--trait)}
+#s48 .legende .temoin .t{display:block;font-family:inherit;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--gris);margin-bottom:10px}
+#s48 .temoin .geste{justify-content:flex-start}
+#s48 .temoin .mot{font-size:9px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+#s48 .temoin .rond{width:38px;height:38px}
+#s48 .temoin .rond svg{width:20px;height:20px}
+#s48 .temoin .rond .pouls{animation:none}
+#s48 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s48 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s48 .legende b{color:var(--encre);font-weight:600}
+#s48 .l-a,#s48 .l-b,#s48 .l-c{display:none}
+#s48 #s48-f-a:checked ~ .dedans .l-a,#s48 #s48-f-b:checked ~ .dedans .l-b,#s48 #s48-f-c:checked ~ .dedans .l-c{display:block}
+#s48 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s48 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s48 .note b{color:var(--encre);font-weight:600}
+#s48 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s48 .note ul{margin:8px 0 0;padding-left:19px}
+#s48 .note li{margin-bottom:6px}
 
 
 </style>
@@ -5657,9 +5758,14 @@
         <span class="no">46</span><span class="titre">Choisir l’heure au pouce</span><span class="fleche">↓</span>
         <span class="quoi">« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.</span>
       </a>
-      <p class="famille">Enlever le gros bouton</p>
+      <p class="famille">Les chantiers</p>
       <a class="item" href="#m47">
-        <span class="no">47</span><span class="titre">Le nouveau chantier, plus gros</span><span class="fleche">↓</span>
+        <span class="no">47</span><span class="titre">Ce que je sais du client</span><span class="fleche">↓</span>
+        <span class="quoi">L’application sait qu’un client est venu quatre fois et qu’il doit encore 740 € — elle ne le montre nulle part. Un encart, une fiche, ou un cinquième onglet.</span>
+      </a>
+      <p class="famille">Enlever le gros bouton</p>
+      <a class="item" href="#m48">
+        <span class="no">48</span><span class="titre">Le nouveau chantier, plus gros</span><span class="fleche">↓</span>
         <span class="quoi">« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.</span>
       </a>
     <p class="note">
@@ -13950,7 +14056,7 @@
     <h1>Resserré, et lui seul</h1>
     <p>La disposition que vous avez gardée : <b>« Nouveau chantier » écrit, le rond qui bat à sa droite</b>. Quatre réglages, et rien d’autre n’a bougé.</p>
     <p class="appui"><b>Appuyez dessus.</b> En haut le bouton seul, à sa taille réelle puis grossi deux fois pour juger le détail ; dessous, dans l’écran. Refermez pour recommencer.</p>
-    <p class="appui" style="border-color:#B98B47"><b>⚠ Ces mesures ont été revues le 16 août 2026.</b> Le libellé de cette planche — 9 px, graisse 500 — est celui que vous aviez arrêté le 11 août. Vous êtes revenu dessus : <b>« les capitales, gros et très gras »</b>, soit 13 px, graisse 800, interlettrage 0,22 em et rond de 42 px. La planche à jour est <b>66 · Le nouveau chantier, plus gros</b> ; l’application suit celle-là. Le reste — l’onde, les trois tours, les onze grains — n’a pas bougé, et se lit toujours ici.</p>
+    <p class="appui" style="border-color:#B98B47"><b>⚠ Ces mesures ont été revues le 16 août 2026.</b> Le libellé de cette planche — 9 px, graisse 500 — est celui que vous aviez arrêté le 11 août. Vous êtes revenu dessus : <b>« les capitales, gros et très gras »</b>, soit 13 px, graisse 800, interlettrage 0,22 em et rond de 42 px. La planche à jour est <b>67 · Le nouveau chantier, plus gros</b> ; l’application suit celle-là. Le reste — l’onde, les trois tours, les onze grains — n’a pas bougé, et se lit toujours ici.</p>
   </div>
 
   <p class="famille"><span>Le bouton seul</span></p>
@@ -19526,19 +19632,192 @@
   <section class="etape" id="m47">
     <div class="etape-tete">
       <span class="etape-no">47</span>
-      <h2>Le nouveau chantier, plus gros</h2>
+      <h2>Ce que je sais du client</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s47">
-<input type="radio" name="f" id="s47-f-a" class="etat" checked>
-<input type="radio" name="f" id="s47-f-b" class="etat">
-<input type="radio" name="f" id="s47-f-c" class="etat">
-<input type="radio" name="t" id="s47-t-1" class="etat">
-<input type="radio" name="t" id="s47-t-2" class="etat">
-<input type="radio" name="t" id="s47-t-3" class="etat" checked>
-<input type="radio" name="g" id="s47-g-1" class="etat">
-<input type="radio" name="g" id="s47-g-2" class="etat" checked>
-<input type="radio" name="g" id="s47-g-3" class="etat">
+<input type="radio" name="v" id="s47-v-a" class="etat" checked>
+<input type="radio" name="v" id="s47-v-b" class="etat">
+<input type="radio" name="v" id="s47-v-c" class="etat">
+
+<div class="dedans">
+  <h1>Ce que je sais du client</h1>
+  <p class="intro">Ce qu’il y avait à prendre du graphe que vous m’avez montré.
+    <b>Rien n’est codé</b> — c’est votre règle. Trois façons de le montrer, de la
+    moins chère à la plus complète.</p>
+
+  <p class="dit">L’application <b>sait déjà</b> que Mme Bracquemont est venue
+    quatre fois, qu’elle a payé 2 460 € et qu’elle en doit encore 740, et qu’on
+    lui fait toujours de l’élagage et de l’évacuation. <b>Elle ne le montre
+    nulle part.</b> Aucun de ces chiffres n’est inventé : ils se calculent tous
+    à partir de ce que la base porte.</p>
+
+  <div class="segments">
+    <label for="s47-v-a">A · Un encart sur le chantier</label>
+    <label for="s47-v-b">B · Une fiche client</label>
+    <label for="s47-v-c">C · Un onglet Clients</label>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+
+      <!-- ═══ A · l'encart, dans la fiche du chantier ═══════════════════════ -->
+      <div class="ecran fiche-chantier a-encart">
+        <div class="entete">
+          <span>
+            <span class="surtitre">Chantier</span>
+            <p class="titre">Mme Bracquemont</p>
+            <p class="sous">12 chemin des Noues · devis à envoyer</p>
+          </span>
+        </div>
+
+        <div class="encart">
+          <p class="phrase">Vous l’avez vue <b>4 fois</b>. <b>3 200 €</b>
+            facturés, dont <b>740 € encore dus</b>. Toujours de l’<b>élagage</b>
+            et de l’<b>évacuation</b>.</p>
+          <span class="plus">Voir ses 4 chantiers →</span>
+        </div>
+
+        <div class="faux-bloc">
+          <span class="t">La suite de la fiche, inchangée</span>
+          <div class="faux-ligne"></div>
+          <div class="faux-ligne"></div>
+          <div class="faux-ligne court"></div>
+        </div>
+      </div>
+
+      <!-- ═══ B · la fiche client ══════════════════════════════════════════ -->
+      <div class="ecran a-fiche">
+        <span class="surtitre">Client</span>
+        <p class="titre">Mme Bracquemont</p>
+        <p class="sous">12 chemin des Noues · 06 79 98 45 14</p>
+
+        <div class="chiffres">
+          <span class="ch"><span class="n">4</span><span class="q">chantiers</span></span>
+          <span class="ch"><span class="n">3 200 €</span><span class="q">facturés</span></span>
+          <span class="ch du"><span class="n">740 €</span><span class="q">encore dus</span></span>
+        </div>
+
+        <span class="etiq">Ce qu’on lui fait, et combien de fois</span>
+        <div class="lgn"><span>Élagage</span><span class="fois">4 fois · 450 € en moyenne</span></div>
+        <div class="lgn"><span>Évacuation des déchets verts</span><span class="fois">4 fois · 240 €</span></div>
+        <div class="lgn"><span>Broyage des branches</span><span class="fois">2 fois · 180 €</span></div>
+
+        <span class="etiq">Ses chantiers</span>
+        <div class="lgn"><span>Élagage — 3 chênes</span><span class="fois">16 août · 887 €</span></div>
+        <div class="lgn"><span>Taille de haie</span><span class="fois">2 juin · 740 € — impayé</span></div>
+        <div class="lgn"><span>Abattage tilleul</span><span class="fois">14 mars · 980 €</span></div>
+        <div class="lgn"><span>Élagage d’entretien</span><span class="fois">9 janvier · 593 €</span></div>
+      </div>
+
+      <!-- ═══ C · l'onglet Clients ═════════════════════════════════════════ -->
+      <div class="ecran a-onglet">
+        <span class="surtitre">Clients</span>
+        <p class="titre">Vos 27 clients</p>
+        <p class="sous">Les plus récents d’abord</p>
+
+        <div class="cli">
+          <span class="nom">Mme Bracquemont</span>
+          <span class="det">4 chantiers · <b style="color:var(--alerte)">740 € dus</b></span>
+        </div>
+        <div class="cli">
+          <span class="nom">M. Ledoux</span>
+          <span class="det">2 chantiers · 1 840 €</span>
+        </div>
+        <div class="cli">
+          <span class="nom">Mme Félicie</span>
+          <span class="det">1 chantier · devis en attente</span>
+        </div>
+        <div class="cli">
+          <span class="nom">M. Verrier</span>
+          <span class="det">6 chantiers · 5 210 €</span>
+        </div>
+
+        <div class="onglets">
+          <span>Chantiers</span><span>Planning</span>
+          <span class="neuf">Clients</span>
+          <span>Terminés</span><span>Réglages</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Un encart sur le chantier</span>
+        Trois phrases sous le nom du client, <b>là où vous êtes déjà</b>. Vous
+        ouvrez un chantier, et vous savez tout de suite à qui vous avez affaire —
+        combien de fois, combien il doit, ce qu’on lui fait d’habitude.
+        <span class="cout"><b>Ce que ça coûte : le moins de tout.</b> Aucun écran
+        nouveau, aucun onglet. Un calcul et un encart.
+        <b>Ce que ça ne fait pas :</b> vous ne pouvez pas chercher un client, ni
+        voir la liste de ceux qui vous doivent de l’argent. Il faut passer par un
+        chantier pour arriver à lui.</span>
+      </div>
+      <div class="l-b">
+        <span class="t">B · Une fiche client</span>
+        Un vrai écran par client, atteint en touchant son nom depuis un chantier.
+        Les trois chiffres, ce qu’on lui fait et à quel prix, et <b>tous ses
+        chantiers</b> avec ce que chacun a rapporté.
+        <span class="cout"><b>Ce que ça coûte :</b> un écran de plus à faire et à
+        tenir — mais pas de nouvel onglet, donc la barre du bas ne bouge pas.
+        <b>Ce que ça ne fait toujours pas :</b> chercher un client sans passer par
+        un chantier.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Un onglet Clients</span>
+        La liste de tous vos clients, du plus récent au plus ancien, avec ce
+        qu’ils doivent — et la fiche de B derrière chaque nom. <b>C’est le seul
+        qui répond à « qui me doit de l’argent ? »</b> d’un coup d’œil.
+        <span class="cout"><b>Ce que ça coûte, et ce n’est pas rien :</b> un
+        <b>cinquième onglet</b>. La barre du bas en porte quatre, elle est pensée
+        pour le pouce, et chaque onglet ajouté rétrécit les autres. C’est aussi
+        deux écrans à faire au lieu d’un.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Aucun de ces chiffres n’est inventé</span>
+    <ul>
+      <li><b>4 chantiers</b> — les chantiers rattachés à ce client.</li>
+      <li><b>3 200 € facturés</b> et <b>740 € encore dus</b> — les factures
+        émises, et ce que les règlements notés en laissent. C’est la même source
+        que l’écran de TVA depuis le 16 août.</li>
+      <li><b>« toujours de l’élagage »</b> — les prestations qui reviennent le
+        plus souvent dans ses devis.</li>
+      <li><b>« 450 € en moyenne »</b> — les prix déjà pratiqués chez lui. La
+        mémoire qui vous dit déjà « la dernière fois — 180 € HT » sur le devis.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Une question, et elle change un chiffre</span>
+    <b>« 3 200 € », c’est ce qui a été facturé ou ce qui a été encaissé ?</b> Les
+    deux se calculent. Facturé dit ce que le chantier a rapporté ; encaissé dit
+    ce qui est vraiment rentré. La planche montre les deux — le total facturé, et
+    ce qui reste dû à côté — mais si vous préférez n’en voir qu’un, dites lequel.
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m48">
+    <div class="etape-tete">
+      <span class="etape-no">48</span>
+      <h2>Le nouveau chantier, plus gros</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s48">
+<input type="radio" name="f" id="s48-f-a" class="etat" checked>
+<input type="radio" name="f" id="s48-f-b" class="etat">
+<input type="radio" name="f" id="s48-f-c" class="etat">
+<input type="radio" name="t" id="s48-t-1" class="etat">
+<input type="radio" name="t" id="s48-t-2" class="etat">
+<input type="radio" name="t" id="s48-t-3" class="etat" checked>
+<input type="radio" name="g" id="s48-g-1" class="etat">
+<input type="radio" name="g" id="s48-g-2" class="etat" checked>
+<input type="radio" name="g" id="s48-g-3" class="etat">
 
 <div class="dedans">
   <h1>Le nouveau chantier, plus gros</h1>
@@ -19553,27 +19832,27 @@
   <div class="reglage">
     <span class="quoi">La forme</span>
     <div class="segments">
-      <label for="s47-f-a">A · Les capitales</label>
-      <label for="s47-f-b">B · La serif du titre</label>
-      <label for="s47-f-c">C · Toute la largeur</label>
+      <label for="s48-f-a">A · Les capitales</label>
+      <label for="s48-f-b">B · La serif du titre</label>
+      <label for="s48-f-c">C · Toute la largeur</label>
     </div>
   </div>
 
   <div class="reglage">
     <span class="quoi">La taille</span>
     <div class="segments">
-      <label for="s47-t-1">Gros</label>
-      <label for="s47-t-2">Plus gros</label>
-      <label for="s47-t-3">Le plus gros</label>
+      <label for="s48-t-1">Gros</label>
+      <label for="s48-t-2">Plus gros</label>
+      <label for="s48-t-3">Le plus gros</label>
     </div>
   </div>
 
   <div class="reglage">
     <span class="quoi">La graisse</span>
     <div class="segments">
-      <label for="s47-g-1">Celle d’aujourd’hui</label>
-      <label for="s47-g-2">Gras</label>
-      <label for="s47-g-3">Très gras</label>
+      <label for="s48-g-1">Celle d’aujourd’hui</label>
+      <label for="s48-g-2">Gras</label>
+      <label for="s48-g-3">Très gras</label>
     </div>
   </div>
 

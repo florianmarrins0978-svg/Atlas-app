@@ -25,7 +25,7 @@ import assert from "node:assert";
  *      une lenteur ;
  *   6. **le mot est gros et très gras, et il n'est pas coupé.** Ajouté le
  *      16 août 2026, quand le patron est revenu sur son propre resserrage :
- *      « les capitales, gros et très gras » (`docs/maquettes/66`). Deux
+ *      « les capitales, gros et très gras » (`docs/maquettes/67`). Deux
  *      dangers, opposés, et une seule mesure les tient : qu'un correctif de
  *      style le ramène au libellé minuscule d'avant, ou qu'on le grossisse
  *      jusqu'à ce qu'il finisse en « … » sur son téléphone. Le contrôle se
@@ -85,7 +85,7 @@ async function main() {
 
   // ── Le mot : gros, très gras, et entier ──────────────────────────────────
   //
-  // Les valeurs viennent de la planche 66, pas d'une appréciation : c'est le
+  // Les valeurs viennent de la planche 67, pas d'une appréciation : c'est le
   // cran « Gros » et la graisse « Très gras » qu'il a désignés. On mesure large
   // (≥ 12 px, ≥ 700) plutôt qu'au pixel près — figer 13 et 800 rendrait rouge
   // le jour où il demande un cran de plus, alors que la suite doit attraper le

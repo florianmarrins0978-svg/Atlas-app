@@ -219,7 +219,7 @@ client. Rien ne sera codé avant.
 
 ### « Le nouveau chantier » grossit : 13 px, très gras, rond de 42
 
-**Son choix du 16 août, la planche 66 en main : « les capitales, gros et très
+**Son choix du 16 août, la planche 67 en main : « les capitales, gros et très
 gras ».** Le libellé passe de 9 à 13 px, de la graisse 500 à 800, son
 interlettrage se resserre de 0,28 à 0,22 em — seize capitales à 0,28 em ne font
 plus un mot mais une frise —, et le rond suit, de 38 à 42 px. Le signe reste à
@@ -234,12 +234,12 @@ opposées — le retour au libellé minuscule (≥ 12 px, ≥ 700) et le « … 
 commit.** C'est lui qui avait resserré cet endroit le 11 août, et cette planche
 chiffre les mesures que le code est censé suivre : la laisser dire 9 px pendant
 que le code en fait 13, c'est garantir qu'une prochaine session croira la
-mauvaise. Elle porte maintenant un bandeau, et renvoie à la 66.
+mauvaise. Elle porte maintenant un bandeau, et renvoie à la 67.
 
 ### La planche de ce choix — trois formes, trois tailles, trois graisses
 
 **Sa demande du 16 août**, capture à l'appui. `src/` n'est pas touché : la
-planche `docs/maquettes/66-le-nouveau-chantier-plus-gros.html` propose trois
+planche `docs/maquettes/67-le-nouveau-chantier-plus-gros.html` propose trois
 formes, trois tailles et trois graisses, avec **le témoin d'aujourd'hui figé à
 côté** — sans repère immobile, « plus gros » ne se compare à rien.
 

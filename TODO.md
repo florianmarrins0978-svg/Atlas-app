@@ -27,6 +27,42 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
+
+**Sa question du 16 août 2026**, photo d'un « graphe de connaissances » à
+l'appui : *« tu peux m'expliquer et me dire si ça peut me servir pour mon
+appli ? »*
+
+**La réponse a été NON, deux fois, et il faut la garder** pour ne pas la
+reprendre : comme mémoire de travail, le dépôt la tient déjà (`CLAUDE.md`,
+`HANDOVER.md`…), et un graphe à côté serait une seconde vérité ; comme fonction,
+ses données sont déjà reliées dans une base SQL, qui répond mieux qu'un graphe.
+
+**Ce qu'il restait à en prendre, et qu'il a demandé de dessiner :** l'application
+SAIT qu'un client est venu quatre fois, qu'il a payé 2 460 € et en doit 740,
+qu'on lui fait toujours de l'élagage — **et elle ne le montre nulle part.**
+
+Planche : `docs/maquettes/66-ce-que-je-sais-du-client.html`, éprouvée par
+`scripts/verifier-maquette-fiche-client.mjs`. **Rien n'est codé** (`CLAUDE.md`
+§3 bis).
+
+| | Ce que ça montre | Ce que ça coûte |
+|---|---|---|
+| **A** | un encart sous le nom du client, dans la fiche du chantier | le moins de tout : aucun écran neuf. Mais on ne peut pas chercher un client |
+| **B** | une vraie fiche client, atteinte en touchant son nom | un écran de plus, sans toucher à la barre du bas |
+| **C** | un onglet « Clients » : la liste + la fiche | **un cinquième onglet**, et deux écrans au lieu d'un. Le seul qui réponde à « qui me doit de l'argent ? » |
+
+**IL N'EXISTE AUCUN ÉCRAN CLIENT AUJOURD'HUI** — vérifié : quatre onglets, et le
+nom d'un client ne mène nulle part. `listerClients` existe dans le dépôt et
+n'est appelé par aucun écran.
+
+**Tout est calculable, rien n'est à inventer** : `chantiers.client_id`,
+`factures` + `paiements_facture`, `lignes_prix` pour les prestations qui
+reviennent, `lecons_prix` pour les prix pratiqués.
+
+**Une question posée dans la planche :** « 3 200 € », est-ce le **facturé** ou
+l'**encaissé** ? Les deux se calculent ; la planche montre les deux.
+
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 
 *Dessiné (`maquettes/atlas-rappel-facture-impayee.html`, cinq écrans), tranché,
@@ -224,7 +260,7 @@ du devis → facture, pas une case à ajouter.
 nouveau chantier fait le plus gros et en gras. »*
 
 **Rien n'est codé** — sa règle du 11 août (`CLAUDE.md` §3 bis). La planche est
-`docs/maquettes/66-le-nouveau-chantier-plus-gros.html` : trois formes (les
+`docs/maquettes/67-le-nouveau-chantier-plus-gros.html` : trois formes (les
 capitales grossies, la serif du titre, toute la largeur), trois tailles, trois
 graisses, et **le témoin d'aujourd'hui figé à côté** — 9 px / 500 / rond de
 38 px, les valeurs de `globals.css`.
@@ -233,7 +269,7 @@ graisses, et **le témoin d'aujourd'hui figé à côté** — 9 px / 500 / rond 
 le jour même — 13 px, graisse 800, interlettrage 0,22 em, rond de 42 px, signe
 inchangé à 20 (`src/app/globals.css`). `docs/maquettes/24-le-bouton-retenu.html`
 porte désormais un bandeau qui dit que ses mesures de libellé sont périmées et
-renvoie à la 66 : c'est lui qui avait resserré cet endroit le 11 août, et laisser
+renvoie à la 67 : c'est lui qui avait resserré cet endroit le 11 août, et laisser
 les deux se contredire aurait fait croire la mauvaise à la session suivante.
 
 **Ce qui n'a PAS bougé, et qu'il ne faut pas « harmoniser » par erreur :** l'onde

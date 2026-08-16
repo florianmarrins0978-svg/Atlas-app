@@ -215,7 +215,7 @@ dehors — l'application le laissait entrer, puis refusait toute écriture.
 ### La refonte de l'interface (10 août 2026)
 
 **Mise à jour du 16 août 2026 :** « Nouveau chantier » a grossi — *« les
-capitales, gros et très gras »*, choisi sur `docs/maquettes/66` : 13 px,
+capitales, gros et très gras »*, choisi sur `docs/maquettes/67` : 13 px,
 graisse 800, 0,22 em, rond de 42 px. `docs/maquettes/24-le-bouton-retenu.html`
 n'est plus la référence du libellé et porte un bandeau qui le dit ; elle reste
 celle du geste (onde, tours, grains), qui n'a pas bougé.

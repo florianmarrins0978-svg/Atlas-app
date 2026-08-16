@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Éprouve la maquette 66, JAVASCRIPT COUPÉ.
+  Éprouve la maquette 67, JAVASCRIPT COUPÉ.
 
   **Ce qu'elle sert à trancher.** Le patron, le 16 août 2026, capture à
   l'appui : *« le nouveau chantier fait le plus gros et en gras »*. Trois
@@ -54,7 +54,7 @@ import { existsSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "66-le-nouveau-chantier-plus-gros.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "67-le-nouveau-chantier-plus-gros.html"),
 );
 
 if (!existsSync(CIBLE)) {
@@ -113,7 +113,7 @@ const page = await contexte.newPage();
 // toutes les largeurs valent 0 — et 0 passe au vert en ne prouvant rien.
 await page.goto(`file://${CIBLE}`, { waitUntil: "networkidle" });
 
-console.log("=== La maquette 66 grossit-elle sans couper ? ===\n");
+console.log("=== La maquette 67 grossit-elle sans couper ? ===\n");
 console.log(`    (budget reconstruit : ${ECRAN_ETROIT} − 2 × ${MARGE} = ${BUDGET} px pour le mot, l'écart et le rond)\n`);
 
 /** Les mesures d'un mot affiché — et jamais une boîte vide rendue pour bonne. */
@@ -258,7 +258,7 @@ for (const t of TAILLES) {
 await page.click('label[for="f-a"]');
 await page.click('label[for="t-3"]');
 await page.click('label[for="g-2"]');
-const capture = join(RACINE, "docs", "maquettes", "images", "66-le-plus-gros.png");
+const capture = join(RACINE, "docs", "maquettes", "images", "67-le-plus-gros.png");
 await page.locator(".tel").screenshot({ path: capture });
 console.log(`\n  → capture : ${capture}`);
 
@@ -266,7 +266,7 @@ await navigateur.close();
 
 console.log(
   plaintes.length === 0
-    ? "\n=== La maquette 66 tient : plus gros, en gras, et jamais coupé. ==="
+    ? "\n=== La maquette 67 tient : plus gros, en gras, et jamais coupé. ==="
     : `\n=== ${plaintes.length} défaut(s) ===\n${plaintes.map((p) => `  · ${p}`).join("\n")}`,
 );
 process.exit(plaintes.length === 0 ? 0 : 1);

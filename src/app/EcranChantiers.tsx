@@ -228,7 +228,7 @@ export default function EcranChantiers({
             les réinventer ici — les deux finiraient par diverger.
 
             **Le MOT, lui, a grossi le 16 août 2026** — « les capitales, gros et
-            très gras », d'après `docs/maquettes/66-le-nouveau-chantier-plus-gros.html` :
+            très gras », d'après `docs/maquettes/67-le-nouveau-chantier-plus-gros.html` :
             13 px, graisse 800, interlettrage 0,22 em, rond de 42 px. Les
             valeurs vivent dans `globals.css` ; ce fichier-ci ne porte que la
             structure.
