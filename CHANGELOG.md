@@ -43,6 +43,28 @@ pas d'une liste qui couvre tout le mois.
 Détail complet, et le tableau de ce que chaque contrôle voit : `ARCHITECTURE.md`
 §108.
 
+### Et le contrôle de ce lot dormait — réveillé par la capture, pas par la batterie
+
+La suite qui devait attraper un nom de chantier coupé mesurait la page **avant
+qu'elle soit mise en page** : les deux largeurs comparées valaient zéro, et
+`0 − 0 = 0` annonçait « rien n'est coupé ». En vert. Sur un écran où trois noms
+l'étaient.
+
+**Rien ne l'aurait montré** : la suite était verte, la batterie entière l'était —
+146/146 en base, 82/82 au navigateur. C'est la **capture, regardée**, qui a montré
+les « … ». Quatrième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun
+test.
+
+**Ce que ça évite désormais**, et c'est écrit en règle permanente
+(`CLAUDE.md` §5) : un contrôle qui compare des dimensions attend la mise en page,
+et **refuse de conclure sur une boîte de zéro pixel**. L'absence de matière à
+mesurer n'est pas un succès, c'est une mesure impossible.
+
+Deux défauts de montage sont tombés avec : l'horodatage collé au nom du client
+fabriquait des « Mr. Bernard-Delacroix J1786838107808 » qu'aucun client ne porte —
+le contrôle accusait alors le produit d'une coupure que le montage seul avait
+créée ; et la pastille d'équipe se cherchait par ce nom, donc en trouvait trois.
+
 ### « Le nombre de jour en doré » : une planche plutôt qu'une devinette
 
 **Sa question**, capture du planning à l'appui : *« Avant il y avait le Nombre de

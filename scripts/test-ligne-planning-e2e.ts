@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
@@ -37,6 +38,23 @@ import { pool } from "../src/server/db/client";
  *
  * Les trois cas posés en base couvrent les trois écritures : la journée pleine,
  * la demi-journée de l'après-midi, et le chantier de trois jours.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **CETTE SUITE A DORMI, ET C'EST LA CAPTURE QUI L'A RÉVEILLÉE.** Écrite avec
+ * `domcontentloaded`, elle mesurait des boîtes de ZÉRO pixel — la feuille de
+ * style n'était pas appliquée, le `<span>` restait en ligne, et
+ * `scrollWidth - clientWidth` valait 0 − 0. Elle annonçait « rien n'est coupé »
+ * en vert, sur un écran où trois noms l'étaient bel et bien.
+ *
+ * Rien ne l'aurait montré : la suite était verte, la batterie entière l'était.
+ * C'est **la capture, regardée**, qui a montré les « … » — exactement ce que
+ * `CLAUDE.md` §5 promet, et pour la quatrième fois de ce dépôt.
+ *
+ * Deux réparations, et la seconde vaut pour toutes les suites à venir :
+ * `networkidle` avant de mesurer, et **le refus de se prononcer sur une boîte
+ * de zéro pixel**. Un contrôle qui mesure zéro ne mesure rien, et il est pire
+ * qu'absent : il rassure.
+ * ─────────────────────────────────────────────────────────────────────────
  */
 
 const BASE = "http://localhost:3000";
@@ -81,17 +99,22 @@ async function main() {
   /**
    * Un chantier posé, dans l'état voulu.
    *
-   * **Le nom est long À DESSEIN** — « Chez M. Bernard-Delacroix » approche ce
-   * que le patron écrit vraiment. Un « M. X » de trois lettres ferait passer
-   * n'importe quelle phrase, et le contrôle dormirait.
+   * **Le nom est long, mais VRAI** — « Bernard-Delacroix » est ce que le patron
+   * écrit vraiment. Un « M. X » de trois lettres ferait passer n'importe quelle
+   * phrase et le contrôle dormirait ; à l'inverse, y coller l'horodatage qui
+   * rend les autres suites rejouables donnait « Mr. Bernard-Delacroix
+   * J1786838107808 » — un nom qu'aucun client ne porte, et le contrôle accusait
+   * alors le produit d'une coupure que seul le montage avait fabriquée.
+   *
+   * **L'unicité ne passe pas par le nom** : les lignes se trouvent par l'`id` du
+   * chantier, jamais par son intitulé.
    */
   async function poser(
-    suffixe: string,
     creneau: "matin" | "apres_midi",
     dureeDemiJournees: number
   ): Promise<{ id: string; nom: string }> {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-    await page.fill('input[placeholder="Bernard"]', `Bernard-Delacroix ${suffixe}`);
+    await page.fill('input[placeholder="Bernard"]', "Bernard-Delacroix");
     await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
     await page.click('button:has-text("Créer le chantier")');
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -119,13 +142,19 @@ async function main() {
     return { id, nom };
   }
 
-  const marque = Date.now();
-  const journee = await poser(`J${marque}`, "matin", 2);
-  const demi = await poser(`D${marque}`, "apres_midi", 1);
-  const longue = await poser(`L${marque}`, "matin", 6);
+  const journee = await poser("matin", 2);
+  const demi = await poser("apres_midi", 1);
+  const longue = await poser("matin", 6);
 
+  // **`networkidle`, et ce n'est pas un excès de prudence — c'est une
+  // réparation.** Écrit `domcontentloaded`, cette suite mesurait des boîtes de
+  // ZÉRO pixel : la feuille de style n'était pas encore appliquée, le `<span>`
+  // restait en ligne, et `scrollWidth - clientWidth` valait 0 − 0. Le contrôle
+  // annonçait « rien n'est coupé » sur un écran où trois noms l'étaient — vu
+  // sur la CAPTURE, jamais autrement. Un contrôle qui mesure zéro ne mesure
+  // rien, et il est pire qu'absent : il rassure.
   const allerAuPlanning = async () => {
-    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
     await page.waitForSelector('h1:has-text("Planning")', { timeout: 30_000 });
   };
 
@@ -139,19 +168,34 @@ async function main() {
   async function ligneDe(id: string) {
     const lien = page.locator(`a[href="/chantiers/${id}"]`);
     await lien.scrollIntoViewIfNeeded();
-    return lien.evaluate((a) => {
+    const mesure = await lien.evaluate((a) => {
       const spans = a.querySelectorAll("span");
       const nom = spans[0] as HTMLElement;
       const quand = spans[1] as HTMLElement;
       return {
         nom: nom.textContent ?? "",
         debordNom: nom.scrollWidth - nom.clientWidth,
+        largeurNom: nom.clientWidth,
         texte: (quand.textContent ?? "").trim(),
         debordTexte: quand.scrollWidth - quand.clientWidth,
+        largeurTexte: quand.clientWidth,
         hauteur: Math.round(quand.getBoundingClientRect().height),
         couleur: getComputedStyle(quand).color,
       };
     });
+
+    // **Le garde-fou qui manquait.** Une boîte de zéro pixel n'est pas une
+    // ligne qui tient : c'est une page pas encore mise en page, et tout écart
+    // mesuré dessus vaut zéro par construction. La suite refuse donc de se
+    // prononcer plutôt que de rendre un vert qui ne prouve rien.
+    if (mesure.largeurNom === 0 || mesure.largeurTexte === 0) {
+      throw new Error(
+        `La ligne « ${mesure.nom.trim()} » mesure 0 px de large : la page n'est pas mise en ` +
+          "page au moment de la mesure, et aucun débordement ne peut être vu. " +
+          "Ce n'est pas le produit qui est en cause, c'est ce contrôle."
+      );
+    }
+    return mesure;
   }
 
   await test("La ligne dit la date, le moment et la durée — ses trois infos", async () => {
@@ -201,12 +245,14 @@ async function main() {
       assert.equal(
         l.debordTexte,
         0,
-        `« ${l.texte} » déborde de ${l.debordTexte} px : la phrase est coupée sur son téléphone`
+        `« ${l.texte} » déborde de ${l.debordTexte} px sur les ${l.largeurTexte} px ` +
+          "de la colonne : la phrase est coupée sur son téléphone"
       );
       assert.equal(
         l.debordNom,
         0,
-        `« ${l.nom.trim()} » déborde de ${l.debordNom} px : c'est le nom du chantier qui paie la phrase`
+        `« ${l.nom.trim()} » déborde de ${l.debordNom} px sur les ${l.largeurNom} px ` +
+          "de la colonne : c'est le nom du chantier qui paie la phrase"
       );
       assert.ok(
         l.hauteur <= 20,
@@ -241,11 +287,28 @@ async function main() {
     );
     // Et elle doit bien être quelque part : la retirer des deux endroits
     // laisserait la ligne muette sur qui s'en occupe.
-    const pastilles = await page
-      .getByRole("button", { name: new RegExp(`l'équipe — ${l.nom.trim()}`) })
-      .count();
-    assert.equal(pastilles, 1, "la pastille d'équipe a disparu de la ligne");
+    //
+    // **Compté DANS LA RANGÉE, pas par le nom du chantier.** Les trois cas de
+    // cette suite portent le même client — le nom ne les distingue pas, et
+    // c'est voulu : y coller un horodatage fabriquait des noms qu'aucun client
+    // ne porte. Chercher « l'équipe — Mr. Bernard-Delacroix » en trouvait donc
+    // trois, et le contrôle accusait la pastille d'avoir disparu. Seul l'`id`
+    // du chantier désigne une ligne sans ambiguïté.
+    const rangee = page.locator(`div:has(> a[href="/chantiers/${journee.id}"])`).last();
+    const pastilles = await rangee.getByRole("button", { name: /l'équipe — / }).count();
+    assert.equal(pastilles, 1, `la ligne porte ${pastilles} pastille(s) d'équipe, une attendue`);
   });
+
+  // **Et une capture, parce que trois défauts réels de ce dépôt ont été trouvés
+  // en REGARDANT** — une barre de navigation sur la page du client, l'ordre des
+  // totaux d'une facture, une pile de notifications qui poussait tout hors de
+  // l'écran. Aucun n'aurait rougi ici. Elle est prise à chaque passage, à la
+  // largeur de son téléphone, et coûte une seconde.
+  await allerAuPlanning();
+  const liste = page.locator('a[href^="/chantiers/"]').first();
+  await liste.scrollIntoViewIfNeeded();
+  mkdirSync("artifacts/screenshots", { recursive: true });
+  await page.screenshot({ path: "artifacts/screenshots/ligne-planning-390.png" });
 
   console.log(
     `\n${failed === 0 ? "✅" : "❌"} La ligne du planning — ${passed} réussi(s), ${failed} échec(s).`
