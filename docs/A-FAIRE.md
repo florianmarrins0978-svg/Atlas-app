@@ -39,6 +39,8 @@ qui ne se résoudra pas en codant.
 9. [Demander à votre comptable : TVA au mois ou au trimestre ?](#9-demander-à-votre-comptable--tva-au-mois-ou-au-trimestre-)
 10. [Le premier jour d'un artisan : ce qui manque pour lui confier Atlas](#10-le-premier-jour-dun-artisan--ce-qui-manque-pour-lui-confier-atlas)
 11. [Décider si Atlas peut calculer des trajets par la route](#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route)
+12. [Demander à votre comptable : TVA sur les encaissements ou sur les débits ?](#12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-)
+13. [Choisir le prestataire qui lit vos virements](#13-choisir-le-prestataire-qui-lit-vos-virements)
 
 ---
 
@@ -861,3 +863,98 @@ devient possible : pas un écran à redessiner
 
 Ni l'essai, ni la finition. L'appariement fonctionnera à vol d'oiseau, et
 gagnera en justesse le jour où la route sera tranchée.
+
+---
+
+## 12. Demander à votre comptable : TVA sur les encaissements ou sur les débits ?
+
+**Qui peut le faire : vous seul.** La réponse est chez votre comptable, ou sur
+votre dernière déclaration de TVA.
+
+### Pourquoi c'est un point bloquant, et pas un détail
+
+Atlas fait aujourd'hui entrer une facture dans votre relevé de TVA **le jour où
+vous l'émettez**. Si votre client met trois mois à payer, vous avancez sa TVA
+pendant trois mois. S'il ne paie jamais, vous l'avancez pour rien — et il faut
+ensuite la récupérer, avec des preuves.
+
+Or, pour une **prestation de services**, la TVA est due **à l'encaissement** par
+défaut (article 269-2-c du CGI). Le régime que l'application applique
+aujourd'hui — les **débits** — est une **option**, qui se demande.
+
+**Donc, de deux choses l'une :**
+
+| Si vous êtes… | Alors |
+|---|---|
+| **aux encaissements** (le cas le plus probable) | Atlas déclare **trop tôt**, et c'est un défaut à corriger |
+| **aux débits** (vous en avez fait la demande) | Atlas est juste, et le réglage servira aux autres artisans |
+
+### La question à lui poser, mot pour mot
+
+> *« Pour mon entreprise, la TVA est-elle exigible sur les encaissements ou sur
+> les débits ? Ai-je opté pour les débits à un moment ? »*
+
+Et, tant qu'il est au téléphone, la question 9 de ce document — mois ou
+trimestre — se règle dans la même phrase.
+
+### Ce que sa réponse débloque
+
+Le codage de la date de paiement sur la facture, du relevé calculé dessus, et du
+réglage entre les deux régimes. Le détail est dans
+[`QUESTIONS.md`](QUESTIONS.md) §19, et une maquette montre à quoi ça
+ressemblerait : `maquettes/atlas-tva-au-paiement.html`.
+
+### Ce que ça ne bloque pas
+
+Rien du reste. Le parcours devis → chantier → facture fonctionne ; c'est le
+relevé de TVA, et lui seul, qui déclare trop tôt.
+
+---
+
+## 13. Choisir le prestataire qui lit vos virements
+
+**Qui peut le faire : vous seul.** C'est un contrat et un coût mensuel, pas une
+ligne de code.
+
+*Décidé le 14 août 2026 : à la question « comment Atlas saura que j'ai été
+payé ? », trois réponses étaient possibles — vous le dites, Atlas vous le
+demande chaque trimestre, ou la banque le dit. Vous avez choisi la banque.
+Dessin : `maquettes/atlas-banque-rapprochement.html`.*
+
+### Pourquoi ça ne se code pas tout seul
+
+**Personne ne se branche directement à une banque.** La loi européenne (DSP2)
+impose de passer par un **prestataire agréé** — un « agrégateur ». Il faut donc
+en choisir un, signer, et payer.
+
+Les noms qui reviennent en France : **Bridge**, **Powens**, **Tink**,
+**GoCardless** (anciennement Nordigen), **Linxo**. Certains annoncent une offre
+gratuite jusqu'à un volume donné ; **à vérifier au devis, je ne l'ai pas
+constaté moi-même**.
+
+### Les trois choses à demander, quel que soit celui que vous retenez
+
+| Quoi | Pourquoi ça compte |
+|---|---|
+| **Le coût réel** : par compte relié et par mois, ou au forfait | À cinq factures par trimestre, un abonnement peut coûter plus cher que le temps qu'il fait gagner |
+| **Votre banque est-elle couverte ?** | Toutes ne le sont pas également, et les banques régionales le sont parfois mal |
+| **Le contrat de sous-traitance RGPD** | Vos virements portent les noms de vos clients. Ce prestataire s'ajoute au registre, comme l'hébergeur (§2 de ce document) |
+
+### Ce qu'il faut savoir avant de signer, et qui ne se négocie pas
+
+**L'accès se coupe tous les 90 jours.** Règle européenne : passé ce délai, vous
+devez vous ré-identifier chez votre banque. Un automatisme qui s'arrête tout
+seul sans prévenir vaudrait mieux ne pas exister — l'écran vous préviendra une
+semaine avant, et les paiements se noteront à la main pendant ce temps.
+
+**Un relevé bancaire ne porte pas de numéro de facture.** Il porte une date, un
+montant et un libellé écrit par la banque de votre client. Atlas ne pourra donc
+que **proposer** un rapprochement ; c'est vous qui confirmez. Quand le montant
+ne tombe pas juste — un acompte, deux factures réglées en un virement —, il le
+dira au lieu de deviner.
+
+### Ce que ça ne bloque pas
+
+**Rien.** La saisie à la main (« Noter un paiement ») se code sans attendre, et
+c'est elle qui reste quand l'accès bancaire dort. La banque n'est pas une
+condition : c'est un confort qui supprime un oubli.

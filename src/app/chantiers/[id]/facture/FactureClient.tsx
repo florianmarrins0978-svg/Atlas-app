@@ -47,6 +47,7 @@ export default function FactureClient({
   clientTelephone,
   clientEmail,
   canalClient,
+  regimeTva,
 }: {
   chantierId: string;
   initialFacture: FacturePourEcran | null;
@@ -57,6 +58,16 @@ export default function FactureClient({
   clientTelephone: string | null;
   clientEmail: string | null;
   canalClient: CanalClient | null;
+  /**
+   * Quand la TVA devient exigible chez cette entreprise (migration 0045).
+   *
+   * **La phrase qui suit l'émission en dépend, et ce n'est pas cosmétique.**
+   * Aux encaissements, une facture arrêtée ne figure PAS au relevé : elle
+   * attend son règlement. Lui dire l'inverse — ce que cet écran faisait — lui
+   * ferait chercher dans son relevé un montant qui n'y est pas, et douter de
+   * l'application au lieu de noter son paiement.
+   */
+  regimeTva: "encaissements" | "debits";
 }) {
   const router = useRouter();
   useRetourDeMessagerie();
@@ -240,8 +251,9 @@ export default function FactureClient({
             Facture <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> arrêtée.
           </p>
           <p className="mt-2 text-center text-[13px]" style={{ color: colors.muted }}>
-            Elle figure au relevé de TVA collectée et ne peut plus être modifiée
-            — une correction passerait par un avoir.
+            {regimeTva === "encaissements"
+              ? "Elle ne peut plus être modifiée — une correction passerait par un avoir. Elle entrera au relevé de TVA le jour où votre client vous paiera : notez-le dans Ma TVA."
+              : "Elle figure au relevé de TVA collectée et ne peut plus être modifiée — une correction passerait par un avoir."}
           </p>
 
           {/* **« Arrêtée » n'est pas « partie ».**

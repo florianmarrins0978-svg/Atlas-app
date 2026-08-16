@@ -18,6 +18,9 @@ import CalendrierPeriodes from "./CalendrierPeriodes";
 import RythmeTva from "./RythmeTva";
 import MontantCopiable from "./MontantCopiable";
 import AchatsTva from "./AchatsTva";
+import EnAttenteDePaiement from "./EnAttenteDePaiement";
+import RegimeTva from "./RegimeTva";
+import { facturesEnAttente } from "@/server/repositories/paiements-facture";
 import { listerAchatsTva, totalTvaDeductible } from "@/server/repositories/achats-tva";
 import { tvaDue } from "@/lib/achat-tva";
 import { jourIso } from "@/lib/jour";
@@ -58,10 +61,14 @@ export default async function ReleveTvaPage({
   const periode = lirePeriode(periodicite, annee, t) ?? periodeCourante(periodicite);
   const courante = periodeCourante(periodicite);
 
-  const [releve, deductible, achats] = await Promise.all([
+  // **L'attente n'est pas bornée à la période affichée**, et c'est délibéré :
+  // une facture d'avril qu'on n'a jamais encaissée doit se voir en août, sinon
+  // elle se perd — et une TVA jamais déclarée finit par se remarquer ailleurs.
+  const [releve, deductible, achats, enAttente] = await Promise.all([
     releveTvaCollectee(ctx, periode.debut, periode.fin),
     totalTvaDeductible(ctx, periode.debut, periode.fin),
     listerAchatsTva(ctx, periode.debut, periode.fin),
+    facturesEnAttente(ctx),
   ]);
   const collectee = Number(releve.totalTva);
   const reste = tvaDue(collectee, deductible);
@@ -89,6 +96,11 @@ export default async function ReleveTvaPage({
         {/* **Le rythme en haut, à sa demande du 13 août 2026.** Il vit aussi
             dans Réglages ; c'est ici qu'on se pose la question. */}
         <RythmeTva actuelle={periodicite} />
+
+        {/* **Quand la TVA devient exigible**, à côté du rythme : ce sont les
+            deux mêmes sortes de choses — des déclarations faites aux impôts,
+            pas des préférences d'écran. Sa question du 14 août 2026. */}
+        <RegimeTva actuelle={releve.regime} />
 
         <EnTeteEcran surtitre="Ma TVA" titre={libellePeriode(periode)} />
 
@@ -182,11 +194,37 @@ export default async function ReleveTvaPage({
           numero={periode.numero}
         />
 
+        {/* **« L'endroit en attente »**, sa demande du 14 août 2026 : la facture
+            partie chez le client attend ici, et un appui la fait entrer au
+            relevé. Placé APRÈS les achats et AVANT le détail des lignes : c'est
+            ce qui reste à faire, et ça se lit avant ce qui est fait. */}
+        <EnAttenteDePaiement
+          regime={releve.regime}
+          aujourdHui={jourIso(new Date())}
+          factures={enAttente.map((f) => ({
+            id: f.id,
+            numeroCommercial: f.numeroCommercial,
+            dateEmission: f.dateEmission,
+            clientNom: f.clientNom,
+            totalTtc: f.totalTtc,
+            reste: f.reste,
+            etat: f.etat,
+            paiements: f.paiements.map((p) => ({
+              id: p.id,
+              date: p.date,
+              montant: p.montant,
+              origine: p.origine,
+            })),
+          }))}
+        />
+
         <div className="mt-6 flex flex-col gap-4 px-6">
           {releve.lignes.length === 0 ? (
             <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
               <p className="text-[14px]" style={{ color: colors.muted }}>
-                Aucune facture émise sur cette période.
+                {releve.regime === "encaissements"
+                  ? "Aucun règlement reçu sur cette période."
+                  : "Aucune facture émise sur cette période."}
               </p>
             </div>
           ) : (
@@ -195,8 +233,13 @@ export default async function ReleveTvaPage({
                 {releve.lignes.length} facture{releve.lignes.length > 1 ? "s" : ""}
               </p>
               <ul className="flex flex-col gap-3">
+                {/* **La clé porte la date, pas seulement le numéro.** Aux
+                    encaissements, une facture réglée en deux acomptes produit
+                    deux lignes : deux clés identiques feraient disparaître la
+                    seconde de l'écran, sans que le total change — un écart que
+                    personne ne saurait expliquer. */}
                 {releve.lignes.map((l) => (
-                  <li key={l.numeroCommercial} className="flex items-baseline justify-between gap-4">
+                  <li key={`${l.numeroCommercial}|${l.dateEmission}|${l.totalTtc}`} className="flex items-baseline justify-between gap-4">
                     <div className="min-w-0">
                       <p className="truncate text-[15px]" style={{ color: colors.ink }}>
                         <NumeroDeDocument valeur={l.numeroCommercial} /> —{" "}

@@ -27,6 +27,57 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 novovicies. ~~La TVA au PAIEMENT~~ — **CODÉE le 16 août 2026**
+
+*Fait : `ARCHITECTURE.md` §111. Ce qui suit reste pour mémoire du raisonnement.*
+
+**Ce qui reste, et qui n'est pas technique :** confirmer son régime auprès de son
+comptable (`docs/A-FAIRE.md` §12). Le défaut posé est `encaissements`, celui de
+la loi ; s'il a opté pour les débits, un appui suffit à le rétablir.
+
+**Ce qui reste à coder :** le rapprochement bancaire qu'il a choisi
+(`docs/A-FAIRE.md` §13) — il attend un prestataire agréé, donc un contrat.
+
+#### Le raisonnement d'origine
+
+*`maquettes/atlas-tva-au-paiement.html`, le 14 août 2026 — deux écrans, 28
+contrôles. Sa question : `docs/QUESTIONS.md` §20.*
+
+**Ce que ça corrige, et ce n'est pas un confort.** `releveTvaCollectee` prend
+toutes les factures `emise` à leur **date d'émission**. Pour une prestation de
+services, la TVA est exigible **à l'encaissement** (CGI art. 269-2-c) ; les
+débits sont une **option** qu'il n'a probablement jamais demandée. L'application
+lui fait donc avancer la TVA d'un client qui n'a pas payé.
+
+**Ce qui se code dès qu'il a la réponse de son comptable :**
+
+| Quoi | Ce qu'il faut |
+|---|---|
+| **Paiements d'une facture** | une table `paiements_facture` — date, montant, moyen. Acomptes compris : un règlement partiel n'encaisse qu'une part de la TVA |
+| **Le relevé calculé dessus** | `releveTvaCollectee` prend la date du PAIEMENT, plus celle de l'émission |
+| **Le réglage des deux régimes** | `entreprises.tva_exigibilite` : `encaissements` (défaut) ou `debits` |
+| **Ce qui attend, annoncé** | l'écran dit combien de TVA attend son paiement — une facture absente en silence se lit comme un oubli |
+
+**Comment Atlas saura qu'il a été payé** — sa question du 14 août, et son choix :
+**la banque** (`maquettes/atlas-banque-rapprochement.html`, 28 contrôles).
+
+| Quoi | Ce qu'il faut |
+|---|---|
+| **Virements lus** | un prestataire agréé DSP2 — contrat et coût à décider, `docs/A-FAIRE.md` §13 |
+| **Le rapprochement PROPOSÉ** | montant exact + nom approchant + fenêtre de dates. une règle pure, éprouvable sans banque, à écrire dans `src/lib/` |
+| **Jamais automatique** | un virement collé à la mauvaise facture met la TVA dans le mauvais trimestre. Atlas propose, le patron confirme |
+| **Les 90 jours** | l'accès se coupe (règle européenne). Prévenir une semaine avant, et retomber sur la saisie à la main |
+
+**La saisie à la main se code sans attendre la banque** — c'est elle qui reste
+quand l'accès dort, et elle ne dépend d'aucun contrat.
+
+**Ce qui BLOQUE**, et qui n'est pas technique : sous quel régime il est. Inscrit
+dans `docs/A-FAIRE.md` §12 — son comptable le sait en une phrase.
+
+**Ce qu'on ne codera pas tant qu'il n'a pas tranché :** deviner son régime. Le
+poser au hasard ferait déclarer trop tôt ou trop tard, et c'est l'administration
+qui arbitrerait.
+
 ### 0 novivicies. Le devis qui tarde : **B et 4 jours retenus**, reste le mot de la ligne
 
 *`docs/maquettes/56-le-devis-qui-tarde.html`, écrite le 15 août 2026, **réécrite
@@ -567,7 +618,7 @@ coder. Le contrôle de la planche l'interdit explicitement, et il sait rougir.
 
 **Sa réponse finale : « je veux journée et toute la ligne. Tu peux coder. »**
 La ligne du planning porte désormais la date, le moment de départ et la durée,
-toute en or — `ARCHITECTURE.md` §110. Ce qui suit reste écrit parce que le
+toute en or — `ARCHITECTURE.md` §111. Ce qui suit reste écrit parce que le
 chemin importe : la question qu'il a posée n'avait pas la réponse qu'elle
 supposait, et c'est la fouille de l'historique qui l'a montré.
 
@@ -2870,6 +2921,7 @@ et c'est déjà arrivé.
 
 ## Terminé
 
+- ~~La TVA n'entre au relevé qu'au paiement, avec l'endroit où les factures attendent~~ — 2026-08-16
 - ~~Ajouter et retirer des cases : tranches, façons d'abattre et travaux se règlent~~ — 2026-08-14
 - ~~L'unité d'un tarif se choisit dans un bandeau déroulant, sans fermer la case~~ — 2026-08-14
 - ~~Reprendre l'application Arborea sans le site vitrine, et la publier~~ — 2026-07-31

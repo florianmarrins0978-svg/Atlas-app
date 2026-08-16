@@ -88,6 +88,7 @@
 <li><a href="#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</a></li>
 <li><a href="#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-">À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?</a></li>
 <li><a href="#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-">Une équipe part cinq jours en déplacement : comment on gère ça ?</a></li>
+<li><a href="#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-">Si un client ne me paie pas, la TVA part quand même ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -931,6 +932,72 @@
 </tr>
 </tbody></table></div>
 <p><strong>Recommandation : A d'abord.</strong> B seulement si le télescopage de deux chantiers sur une même équipe se produit vraiment — sinon, c'est du travail dont on ne verra jamais l'effet.</p>
+<hr>
+<h2 id="20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-">20. Si un client ne me paie pas, la TVA part quand même ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question posée le 14 août 2026 : « à partir du moment où j'envoie la facture à mon client, elle rentre automatiquement dans mon relevé de TVA. Sauf que s'il décide de ne pas me payer, je vais avoir des problèmes. »</em></p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Votre inquiétude est fondée, et la loi est de votre côté.</strong> Pour une <strong>prestation de services</strong> — ce que vous vendez —, la TVA est exigible <strong>quand vous êtes payé</strong>, pas quand vous facturez. C'est le régime par défaut (article 269-2-c du code général des impôts).</p>
+<p>Encaisser la TVA sur un chantier qu'on ne vous a pas réglé, ça n'existe pas : tant que l'argent n'est pas rentré, l'État n'attend rien.</p>
+<h3 id="alors-pourquoi-atlas-la-compte-à-lémission-">Alors pourquoi Atlas la compte à l'émission ?</h3>
+<p>Parce qu'il a été écrit ainsi, et <strong>c'est à corriger</strong>. Aujourd'hui le relevé prend toutes les factures marquées « émise », à leur date d'émission. C'est le régime <strong>des débits</strong> — qui existe, mais qui est une <strong>option</strong> : on la demande expressément à l'administration, on ne l'a pas par hasard.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Régime</th>
+<th>La TVA est due…</th>
+<th>Qui l'a</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Encaissements</strong></td>
+<td>le jour où le client vous paie</td>
+<td>tous les prestataires de services, <strong>par défaut</strong></td>
+</tr>
+<tr>
+<td><strong>Débits</strong></td>
+<td>le jour où vous émettez la facture</td>
+<td>ceux qui en ont fait la demande</td>
+</tr>
+</tbody></table></div>
+<h3 id="les-deux-nuances-qui-comptent">Les deux nuances qui comptent</h3>
+<p><strong>Si vous vendez aussi du bois</strong>, c'est une marchandise et non un service : cette partie-là reste due à la livraison, quel que soit votre régime. Un chantier qui mélange les deux se sépare en deux lignes.</p>
+<p><strong>Sous le régime des débits, une facture jamais payée n'est pas perdue non plus</strong> : la TVA se récupère au titre des « créances irrécouvrables », mais seulement après avoir prouvé que le recouvrement a échoué. C'est plus long, et c'est de l'argent avancé entre-temps.</p>
+<h3 id="ce-que-ça-change-dans-atlas">Ce que ça change dans Atlas</h3>
+<p>Rien n'est encore codé. Ce qu'il faudra :</p>
+<ol>
+<li>une <strong>date de paiement</strong> sur chaque facture, acomptes compris ;</li>
+<li>le relevé calculé sur cette date-là, et non sur la date d'émission ;</li>
+<li>un réglage <strong>encaissements / débits</strong>, parce que les deux existent.</li>
+</ol>
+<h3 id="-mais-comment-atlas-saura-que-jai-été-payé--">« Mais comment Atlas saura que j'ai été payé ? »</h3>
+<p><em>Votre question, dans la foulée — et c'est la bonne.</em> <strong>Atlas ne le sait pas.</strong> Il n'a aucun accès à votre compte en banque. Trois façons, et elles se combinent :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Comment</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>Vous le dites</strong> — au moment où vous voyez le virement</td>
+<td>Rien à brancher. Mais si vous oubliez, vous <strong>sous-déclarez</strong> — et c'est pire que déclarer trop tôt</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>Atlas vous le demande</strong> — en fin de trimestre, il liste les factures en attente</td>
+<td>Un geste par trimestre au lieu d'un par facture. C'est ce qui rend le 1 sûr</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>Votre banque</strong> — Atlas lit vos virements reçus et propose le rapprochement</td>
+<td>Un prestataire agréé, un contrat, un coût mensuel</td>
+</tr>
+</tbody></table></div>
+<p><strong>Vous avez choisi le 3</strong>, le 14 août 2026. Deux choses en découlent, et elles ne se négocient pas :</p>
+<ul>
+<li><strong>un relevé bancaire ne porte pas de numéro de facture</strong> — seulement une date, un montant et un libellé (« VIR M BERNARD »). Atlas ne peut donc que <strong>proposer</strong> ; c'est votre doigt qui confirme. Quand le montant ne tombe pas juste — un acompte, deux factures en un virement —, il dira qu'il ne sait pas au lieu de deviner ;</li>
+<li><strong>l'accès se renouvelle tous les 90 jours</strong>, règle européenne. Vous serez prévenu une semaine avant, et les paiements se noteront à la main pendant ce temps-là.</li>
+</ul>
+<p>Le dessin : <code>maquettes/atlas-banque-rapprochement.html</code>. Le prestataire reste à choisir — <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a> §13.</p>
+<h3 id="ce-que-je-ne-peux-pas-décider-à-votre-place">Ce que je ne peux pas décider à votre place</h3>
+<p><strong>Sous quel régime vous êtes.</strong> Votre comptable le sait en une phrase, ou c'est écrit sur votre dernière déclaration. Le point est inscrit dans <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a> §12.</p>
 </main>
 </body>
 </html>

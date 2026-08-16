@@ -7,6 +7,16 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { verifierTailleFichier } from "@/server/upload-limits";
 import { achatComplet, montantSaisi, type SaisieAchat } from "@/lib/achat-tva";
 import { lireTicket, type TicketLu } from "@/server/ai/services/lire-ticket";
+import { revalidatePath } from "next/cache";
+import {
+  noterPaiement,
+  reglerExigibilite,
+  retirerPaiement,
+  soldera,
+  type ResultatPaiement,
+} from "@/server/repositories/paiements-facture";
+import { exigerProprietaire } from "@/server/autorisation";
+import type { Exigibilite } from "@/lib/exigibilite-tva";
 
 /**
  * Enregistrer un achat, et le retirer.
@@ -125,4 +135,54 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
   }
 
   return { ok: true, cle: objet.storageKey, lu, lecture };
+}
+
+// ---------------------------------------------------------------------------
+// Les règlements reçus — sa demande du 14 août 2026
+// ---------------------------------------------------------------------------
+//
+// *« Lorsque la facture part, au lieu qu'elle rentre directement dans le relevé,
+// elle arrive dans un endroit en attente ; lorsque j'ai reçu le paiement, je
+// retourne dessus, je clique sur valider, et boum, elle va dans le relevé. »*
+//
+// **Mêmes règles qu'au-dessus : les refus se RENDENT.** « Il ne reste que
+// 440,00 € à recevoir » doit lui parvenir mot pour mot ; levé, ce message
+// deviendrait un identifiant opaque et il croirait l'application cassée.
+
+export async function soldeFactureAction(factureId: string, aujourdHui: string): Promise<ResultatPaiement> {
+  const ctx = await getCurrentCtx();
+  const r = await soldera(ctx, factureId, aujourdHui);
+  revalidatePath("/termines/tva");
+  return r;
+}
+
+export async function noterPaiementAction(
+  factureId: string,
+  date: string,
+  montant: string
+): Promise<ResultatPaiement> {
+  const ctx = await getCurrentCtx();
+  const r = await noterPaiement(ctx, factureId, { date, montant });
+  revalidatePath("/termines/tva");
+  return r;
+}
+
+export async function retirerPaiementAction(paiementId: string): Promise<void> {
+  const ctx = await getCurrentCtx();
+  await retirerPaiement(ctx, paiementId);
+  revalidatePath("/termines/tva");
+}
+
+/**
+ * Changer de régime.
+ *
+ * **Réservé au propriétaire**, à la différence de la saisie d'un règlement :
+ * ce choix décide de ce qui part à l'administration pour toute l'entreprise, et
+ * il se déclare aux impôts. Un salarié n'a aucune raison d'y toucher.
+ */
+export async function reglerExigibiliteAction(regime: Exigibilite): Promise<void> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "changer le moment où votre TVA devient exigible");
+  await reglerExigibilite(ctx, regime);
+  revalidatePath("/termines/tva");
 }

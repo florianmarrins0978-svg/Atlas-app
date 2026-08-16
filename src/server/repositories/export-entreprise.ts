@@ -17,6 +17,7 @@ import {
   agendasExternes,
   equipes,
   naturesGrille,
+  paiementsFacture,
   tranchesGrille,
   factures,
   fragmentsDocuments,
@@ -130,6 +131,7 @@ export async function exporterEntreprise(
       sesAbsences,
       sesTranches,
       sesNatures,
+      lesReglements,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -203,6 +205,10 @@ export async function exporterEntreprise(
       // « d90_2 » ne veut rien dire une fois la tranche perdue.
       tx.select().from(tranchesGrille).where(eq(tranchesGrille.entrepriseId, e)),
       tx.select().from(naturesGrille).where(eq(naturesGrille.entrepriseId, e)),
+      // Les règlements reçus (migration 0045). Sans eux, une sauvegarde rendrait
+      // les factures sans dire lesquelles ont été payées — donc sans permettre
+      // de reconstituer un seul relevé de TVA.
+      tx.select().from(paiementsFacture).where(eq(paiementsFacture.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -252,6 +258,8 @@ export async function exporterEntreprise(
       // Les tranches et les travaux qui donnent leur sens aux cases ci-dessus.
       tranches_grille: sesTranches,
       natures_grille: sesNatures,
+      // Ce qui a été encaissé, et quand : c'est ce qui date sa TVA.
+      paiements_facture: lesReglements,
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,
