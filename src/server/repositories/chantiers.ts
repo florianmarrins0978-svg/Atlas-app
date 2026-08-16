@@ -275,9 +275,42 @@ export class EquipeIndisponible extends Error {
  * été réservée au moment de la pose ; l'affilier ailleurs la déplace d'une file
  * à l'autre, et deux chantiers sur la même équipe au même moment ne sont pas
  * un planning, c'est une journée impossible.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **`rangEquipe: null` RETIRE l'équipe, et c'était impossible jusqu'au
+ * 14 août 2026.** `planifierChantier` écrit `...(equipeId ? { equipeId } : {})`
+ * — le cas « plus personne » y est ignoré en silence — et cette fonction-ci
+ * exigeait un rang. Une équipe posée par erreur ne pouvait donc **plus jamais**
+ * être défaite, par aucun chemin.
+ *
+ * Le patron a retenu le 14 août la pastille sur la ligne
+ * (`docs/maquettes/52-appliquer-une-equipe.html`, geste A), et son écran porte
+ * « Personne pour l'instant ». Le montrer sans pouvoir l'exécuter aurait été
+ * lui livrer un bouton qui ne fait rien.
+ *
+ * **Retirer ne se refuse jamais pour cause d'occupation** : libérer une place
+ * n'en prend aucune. Les contrôles de disponibilité ne s'appliquent qu'à une
+ * affiliation.
+ * ─────────────────────────────────────────────────────────────────────────
  */
-export async function changerEquipeChantier(ctx: Ctx, chantierId: string, rangEquipe: number) {
+export async function changerEquipeChantier(
+  ctx: Ctx,
+  chantierId: string,
+  rangEquipe: number | null
+) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Retirer : on sort avant tout contrôle.** Rien à vérifier — aucune place
+    // n'est demandée. Le faire passer par la suite obligerait à inventer un
+    // « rang zéro » que le reste du produit ne connaît pas.
+    if (rangEquipe === null) {
+      const [vide] = await tx
+        .update(chantiers)
+        .set({ equipeId: null, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+        .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+        .returning();
+      return vide;
+    }
+
     const [entreprise] = await tx
       .select({ nombreEquipes: entreprises.nombreEquipes })
       .from(entreprises)

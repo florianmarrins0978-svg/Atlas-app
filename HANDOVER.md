@@ -261,6 +261,26 @@ Ni un champ contrôlé, ni un effet, ni `defaultValue` ne font survivre une vale
 **et** une `key` qui remonte le champ à chaque envoi. Ne pas « simplifier » l'un
 des deux.
 
+## Mon compte et Connexion : CODÉS le 14 août — trois pièges
+
+Dix rubriques sur treize sont codées. Ce lot a ouvert les deux dernières
+(`ARCHITECTURE.md` §107), et il laisse trois choses à ne pas découvrir à froid :
+
+1. **`src/server/repositories/compte.ts` n'appelle PAS `withEntreprise`**, contre
+   la règle de `CLAUDE.md` §3. `users` est la seule table sans RLS : elle ne
+   porte pas d'`entreprise_id`. Ce qui protège à la place, c'est que chaque
+   requête est bornée par `ctx.utilisateurId` — **un `where` oublié changerait le
+   mot de passe de tout le monde, et rien d'autre ne le verrait**.
+   `scripts/test-compte-db.ts` monte deux comptes exprès pour ça.
+2. **« Me déconnecter partout » se fait dans `getCurrentCtx`**, pas dans le
+   middleware (Edge, pas de base). Il compare `session.user.emisLe` — recopié de
+   `token.iat` par `auth.config.ts` — à `users.jetons_valides_depuis`. Un jeton
+   **sans** `iat` passe : refuser par défaut aurait déconnecté tout le monde au
+   déploiement.
+3. **La suite navigateur ne change JAMAIS le mot de passe de démonstration.**
+   Il sert aux 75 suites de la batterie : le changer fermerait la porte à toutes
+   les suivantes, et l'échec accuserait la page de connexion.
+
 ## Les treize rubriques ont toutes leur planche (14 août)
 
 `maquettes/atlas-reglages-moi.html` a fermé la série : **Mon compte** et
@@ -328,7 +348,7 @@ Or **il n'existe aucun parcours d'inscription**, **l'identité ne se saisit que
 dans le devis écrit à la main**, et **rien ne la vérifie avant l'envoi**. Le
 premier devis d'un vrai artisan partirait sans SIRET ni IBAN, sans un mot. Le
 détail des six faits est dans `ARCHITECTURE.md` §87, la liste de travail dans
-`TODO.md` §0 quatervicies.
+`TODO.md` §0 tricies.
 
 **La saisie de « Mon entreprise » a été refaite le 14 août 2026**
 (`ARCHITECTURE.md` §99) : adresse qui propose, téléphone à drapeau, forme
@@ -398,7 +418,7 @@ patron a envoyée sans qu'on la demande, noir et or, avec ce seul mot : « c'est
 **trois manques qui sont du code, pas du dessin** : le régime de TVA est deviné
 d'après le taux appliqué et se trompe dans les deux sens ; le numéro de TVA
 intracommunautaire n'existe nulle part ; le téléphone et l'e-mail sont saisis et
-ne s'impriment sur aucun document. Ils sont dans `TODO.md` §0 quatervicies.
+ne s'impriment sur aucun document. Ils sont dans `TODO.md` §0 tricies.
 
 **Lot 3 fait le 13 août : l'équipe et les rôles**
 (`maquettes/atlas-reglages-equipe.html`, `ARCHITECTURE.md` §88). Deux choses à
@@ -429,7 +449,7 @@ et **aucun écran ne permet de les changer**. Trouvé le 13 août en répondant 
 question « l'IA se servira de ces infos ? ». Ne pas le redécouvrir
 (`ARCHITECTURE.md` §83).
 
-L'ordre des lots est dans `TODO.md` §0 quatervicies ; le pourquoi dans
+L'ordre des lots est dans `TODO.md` §0 tricies ; le pourquoi dans
 `ARCHITECTURE.md` §80 à §83.
 
 **Deux conventions posées le 13 août, qui valent pour toutes les planches à
@@ -582,12 +602,30 @@ vingt-cinq minutes pour observer UNE suite — c'est ce coût-là qui pousse à
 supposer une cause au lieu d'aller la lire. Le script dit à voix haute qu'il
 n'est pas la batterie.
 
+## L'ASSISTANT A QUITTÉ LE COIN FLOTTANT (13 août)
+
+*« La B mais de la même couleur qu'elle est déjà »* — le bouton est dans
+l'en-tête, à côté du titre, en vert pin plein. `ARCHITECTURE.md` §106.
+
+**⚠ Ne jamais le remettre en `fixed`.** C'était la cause : cinq écrans ont été
+déplacés cet été pour éviter cette bulle. Et **ne pas lui donner une ligne à
+lui** au-dessus du titre : essayé, mesuré, défait — 72 px en tête de chaque
+écran, et la dernière semaine du planning passait sous la barre.
+
+`scripts/test-assistant-en-tete-e2e.ts` tient les deux, plus les lignes du titre.
+
+**⚠ Le groupe qui porte l'assistant est `self-stretch`, et ça compte.** « Modifier »,
+posé par une autre session à la même place, s'aligne par `self-end` : enfermé dans
+un groupe haut de 44 px, il descendait de 21 px sous la ligne du titre. Une fusion
+propre ne prouve rien sur la mise en page — deux gestes peuvent se disputer le
+même espace sans qu'aucun conflit ne se déclare.
+
 ## L'ATTENTE DE LA DICTÉE EST CODÉE — « le souffle » (13 août)
 
 Il a répondu **« code la C »**. Les points enflent et se rétractent l'un après
 l'autre, sans se déplacer. `ARCHITECTURE.md` §80 porte le détail.
 
-**Quatre choses à ne pas défaire**, listées dans `TODO.md` §0 quatervicies — dont
+**Quatre choses à ne pas défaire**, listées dans `TODO.md` §0 tricies — dont
 le bouton qui **ne redevient pas** à demi effacé, et la phrase « Atlas rédige… »,
 qui est la seule des trois moitiés à parvenir à qui n'a pas les yeux sur l'écran.
 
@@ -601,7 +639,7 @@ enregistrement.
 **⚠ Une phrase d'attente tient sur UNE LIGNE — 31 caractères, mesurés.** Au-delà
 elle prend toute la colonne de 190 px et casse « Un chantier » en deux, en plein
 milieu de l'attente. Deux contrôles la gardent, et le second existe parce que le
-premier a dormi (`TODO.md` §0 quatervicies quater). **Le message de fin de dictée
+premier a dormi (`TODO.md` §0 tricies quater). **Le message de fin de dictée
 a le même défaut, et il est antérieur** : 47 caractères, non touché, c'est son
 choix.
 
@@ -618,7 +656,7 @@ visionneuse des photos repartait du réseau pour une image déjà affichée, son
 `<img>` n'avait pas fini de charger, et **l'échec accusait la visionneuse** qui
 n'y était pour rien. Relâcher la route dès la mesure faite, et seulement une fois
 l'échange retenu terminé — la couper en vol donne « Route is already handled! ».
-`TODO.md` §0 quatervicies ter.
+`TODO.md` §0 tricies ter.
 
 *Ce qui suit est l'historique du choix, gardé pour ne pas rouvrir ce qui est clos.*
 
@@ -674,8 +712,16 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**⚠ UNE DATE CALCULÉE DEPUIS « AUJOURD'HUI » EST UNE BOMBE À RETARDEMENT (16 août).**
+`test-pastille-equipe-e2e` visait `+ 20 jours` : jeudi le jour où il a été écrit,
+**samedi** deux jours plus tard — et le planning refuse le week-end par
+construction, donc ni journée rendue, ni bouton. Le message accusait le bouton ;
+le bouton allait très bien. **Devant un rouge sur une suite qui touche au
+planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
+`estWeekEndIso`, et éprouvé dans les deux sens.
+
 **LE DEVIS QUI TARDE : DESSINÉ, IL ATTEND SON CHOIX (15 août).**
-`docs/maquettes/47-le-devis-qui-tarde.html`. **Rien n'est codé.** Il doit
+`docs/maquettes/56-le-devis-qui-tarde.html`. **Rien n'est codé.** Il doit
 désigner trois choses : le ton de la carte (A discrète / B teintée), la forme du
 délai (F le nombre tapé — *celle qui existe déjà* / C pastilles / D molette /
 E curseur), et le groupe où ranger la ligne. Détail complet : `TODO.md`
@@ -685,13 +731,13 @@ E curseur), et le groupe où ranger la ligne. Détail complet : `TODO.md`
 DESSINER.** L'écran des notifications était **déjà dessiné** au sixième lot
 (`maquettes/atlas-reglages-notifications.html`) — huit familles en trois groupes,
 et un délai déjà formulé, « 7 jours après l'échéance ». La première version de la
-maquette 47 en redessinait un à côté : le patron se serait retrouvé devant deux
+maquette 56 en redessinait un à côté : le patron se serait retrouvé devant deux
 plans du même écran sans savoir lequel prime. **Le dossier `maquettes/` (celui de
 l'application) et `docs/maquettes/` (les planches de décision) sont deux endroits
 distincts** — regarder les deux avant de dessiner, jamais un seul.
 
-**ET SIX MAQUETTES N'ÉTAIENT ATTEIGNABLES PAR AUCUN CHEMIN** (38, 39, 41, 42, 43,
-46) : ni page unique, ni sommaire. `TODO.md` l'affirmait sans conséquence ; c'était
+**ET HUIT MAQUETTES N'ÉTAIENT ATTEIGNABLES PAR AUCUN CHEMIN** (38, 39, 41, 42,
+43, 46, puis 47 et 53 apportées par la fusion) : ni page unique, ni sommaire. `TODO.md` l'affirmait sans conséquence ; c'était
 faux. `fusionner-maquettes.mjs` refuse désormais une maquette orpheline, un lien
 mort dans le sommaire, et un numéro porté deux fois. **Avant d'écrire une
 nouvelle planche, jouer `node scripts/fusionner-maquettes.mjs` : il donne le
@@ -741,6 +787,34 @@ l'envoi.
 **Et la façon dont ça s'est décidé, à imiter :** cinq maquettes avant tout code
 (`docs/maquettes/45-…`). Sa première idée — le mot « Devis » cliquable — y
 figure telle qu'il l'a dite ; il l'a écartée lui-même en voyant les autres.
+
+**AJOUTER ET RETIRER DES CASES DANS « MES PRIX » (14 août).** Sa demande :
+*« je dois pouvoir ajouter ou retirer des cases »*, puis, devant les trois
+formes dessinées : *« code les toutes »*.
+
+Cinq choses à savoir avant d'y toucher :
+
+1. **Une case ne s'ajoute pas toute seule.** Elle naît du croisement de deux
+   tranches : un diamètre de plus en pose DIX (1 dessouchage, 3 abattage,
+   6 fendage). L'écran l'annonce avant qu'il valide, et le nombre est calculé
+   (`casesParTranche`) — ne jamais l'écrire en dur.
+2. **`axes` est un paramètre OBLIGATOIRE** de toutes les fonctions de
+   `grille-prix.ts`. Ne pas y remettre de valeur par défaut « pour simplifier » :
+   un devis chiffré contre les tranches d'origine pendant qu'il remplit les
+   siennes est un prix faux qu'aucune erreur ne signale.
+3. **Rien n'est semé en base.** Une entreprise sans ligne reçoit les valeurs de
+   départ ; le PREMIER geste sur un axe recopie les tranches d'origine avant
+   d'appliquer le geste. Retirer cette recopie effacerait ses huit tranches d'un
+   coup, au premier ajout.
+4. **Retirer n'efface aucun prix.** `retiree_le`, jamais un `DELETE` : les cases
+   de `grille_prix` restent, sont ignorées à la lecture, et reviennent avec la
+   tranche. Et la clé n'est jamais réemployée — sinon un prix hériterait d'une
+   case qui n'était pas la sienne.
+5. **Un travail ajouté par lui n'est PAS reconnu par le chiffrage.** L'écran le
+   dit sous son titre. Ne pas retirer cette phrase en croyant faire propre : il
+   le découvrirait sur un devis.
+
+Le reste : `ARCHITECTURE.md` §105.
 
 **L'UNITÉ D'UN TARIF SE CHOISIT (14 août).** Sa demande du 13 : *« crée-moi un
 bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »*, puis *« fais
@@ -2459,7 +2533,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les vingt pièges de ce dépôt
+### Les vingt-et-un pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2653,7 +2727,7 @@ site publié à son adresse réelle.
     défaut du patron intact. Il a fallu une sonde imprimant l'adresse et le
     titre après l'appui pour le voir. **Un `push` suffit** : une page
     `force-dynamic` est refaite côté serveur à chaque navigation. Le `refresh`
-    ne se garde que sur la branche qui reste sur place. `ARCHITECTURE.md` §85.
+    ne se garde que sur la branche qui reste sur place. `ARCHITECTURE.md` §106.
 
     *Corollaire de méthode, et c'est le vrai enseignement :* un écran qui écrit
     dans une période et en affiche une autre ne se voit dans **aucune** suite
@@ -2672,7 +2746,7 @@ site publié à son adresse réelle.
     Rien ne rougissait, et rien ne pouvait rougir. `test-prechauffage.ts`
     confronte désormais la liste aux dossiers réels de `src/app/reglages`.
     **Ajouter un écran de premier rang, c'est l'ajouter à cette liste** —
-    `ARCHITECTURE.md` §103.
+    `ARCHITECTURE.md` §106.
 
     *Deux corollaires du même jour.* **Une fonction prévue et jamais branchée ne
     se voit pas :** `prechauffer.mjs` portait un rappel `avancer` et
@@ -2681,6 +2755,20 @@ site publié à son adresse réelle.
     depuis cinq jours. Et **`nice` ne règle rien ici :** faire bâtir en priorité
     basse a été mesuré (16,2 s → 17,4 s à la connexion, construction 69 s → 67 s)
     et **écarté** — la contention est le disque, pas le processeur.
+
+21. **Une date calculée depuis « aujourd'hui » finit par tomber un samedi.**
+    `test-pastille-equipe-e2e` visait `Date.now() + 20 jours` pour trouver un
+    jour libre. Écrit le 14 août 2026 : un jeudi, tout vert. Joué le 16 : un
+    **samedi** — et le planning refuse le week-end par construction, écrit
+    « Jamais proposé » et ne rend même pas la journée, donc ni cases d'équipe ni
+    bouton. Le message accusait alors le bouton d'un défaut qui n'était pas le
+    sien, et le contrôle serait redevenu vert tout seul le lundi.
+
+    **La règle :** un contrôle qui touche au planning vise le **premier jour
+    ouvrable**, jamais un décalage fixe — et il emprunte `estWeekEndIso`
+    (`src/lib/mois.ts`) plutôt que de réécrire la règle, sans quoi les deux
+    finissent par diverger. Plus large : **un rouge qui n'apparaît que certains
+    jours de la semaine n'est presque jamais le défaut qu'il annonce.**
 
 ### Le vocabulaire
 

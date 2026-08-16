@@ -88,10 +88,45 @@ async function main() {
   // passage sur la même base, deux chantiers de décembre coexistent et le
   // contrôle échoue sur son propre passé, en accusant le code.
   const carte = () => page.locator(`a[href="/chantiers/${chantierId}"]`);
+
+  // **CE CONTRÔLE A ROUGI À JUSTE TITRE LE 14 AOÛT 2026, et il a changé de
+  // cible plutôt que de disparaître.** Il exigeait le MOIS sur la ligne du
+  // planning ; le patron l'en a fait retirer — *« pas la date, elle est déjà
+  // présente juste au-dessus »* — et la ligne dit désormais ce que le chantier
+  // OCCUPE. Supprimer le contrôle aurait laissé la pose sans preuve ; on
+  // vérifie donc les deux choses qui restent vraies :
+  //
+  //   · la ligne dit « journée » — le chantier est posé sur une journée
+  //     entière, ce qui est la durée par défaut. Elle disait « matin », et
+  //     c'est précisément le mensonge qu'on vient de réparer ;
+  //   · le JOUR, lui, se lit toujours — dans la feuille du chevron, seul
+  //     endroit où il n'est écrit nulle part ailleurs.
+  const surLaLigne = (await carte().innerText()).toLowerCase();
   assert.ok(
-    (await carte().innerText()).toLowerCase().includes("déc"),
-    `Le mois (décembre) doit figurer sur la ligne de ce chantier : « ${await carte().innerText()} »`
+    surLaLigne.includes("journée"),
+    `La ligne doit dire ce que le chantier occupe : « ${await carte().innerText()} »`
   );
+  assert.ok(
+    !surLaLigne.includes("déc"),
+    `La date ne doit plus figurer sur la ligne du planning : « ${await carte().innerText()} »`
+  );
+  assert.ok(
+    !/\bmatin\b/.test(surLaLigne),
+    `Une journée entière ne s'annonce plus « matin » : « ${await carte().innerText()} »`
+  );
+
+  // Le chevron ouvre la feuille, et c'est là que le jour survit. Le geste est
+  // celui des autres suites — `getByRole` sur le libellé accessible — et non un
+  // `data-atlas` inventé pour l'occasion : un sélecteur qui n'existe que dans
+  // le contrôle ne prouve rien de ce que le patron touche.
+  await page.getByRole("button", { name: `Y aller — ${avecCivilite(nomUnique)}` }).click();
+  await page.waitForSelector("text=Y aller", { timeout: 10000 });
+  assert.ok(
+    (await page.locator("body").innerText()).toLowerCase().includes("déc"),
+    "Le jour doit rester lisible dans la feuille du chevron, seul endroit où il n'est écrit nulle part ailleurs"
+  );
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await page.waitForTimeout(300);
 
   // --- La carte planifiée mène au chantier, pas au sélecteur de date ---
   //
@@ -137,10 +172,19 @@ async function main() {
   // --- Déplacer un chantier déjà posé ---
   //
   // Le sélecteur de date a disparu avec l'ancien écran ; changer une date se
-  // fait désormais avec le MÊME geste que poser — « Déplacer », puis un jour,
-  // une demi-journée, et le bouton s'arme.
+  // fait avec le MÊME geste que poser — « Déplacer », puis un jour, une
+  // demi-journée, et le bouton s'arme.
+  //
+  // **LE GESTE A CHANGÉ DE PLACE LE 14 AOÛT 2026, PAS DE NATURE.** « Déplacer »
+  // a quitté la ligne du planning pour la feuille du chevron, la pastille
+  // d'équipe lui ayant pris sa place (geste A). Ce contrôle suit donc le NOUVEAU
+  // chemin en entier plutôt que de disparaître avec l'ancien : c'est la seule
+  // façon de changer une date, et le planning a déjà été un cul-de-sac une fois
+  // — le 8 août, quand toucher un chantier planifié n'ouvrait rien.
+  await page.getByRole("button", { name: `Y aller — ${avecCivilite(nomUnique)}` }).click();
+  await page.waitForSelector("text=Y aller", { timeout: 10000 });
   await page.getByRole("button", { name: `Déplacer le chantier ${avecCivilite(nomUnique)}` }).click();
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(600);
   for (let i = 0; i < 24; i++) {
     if ((await page.locator('[data-atlas="grille-mois"] button[data-jour="2027-01-15"]').count()) > 0) break;
     await page.click('button[aria-label="Mois suivant"]');
@@ -153,9 +197,22 @@ async function main() {
   await page.click("[data-atlas='poser']");
   await page.waitForTimeout(900);
   await page.reload({ waitUntil: "networkidle" });
+
+  // **Même correction qu'au premier contrôle, et pour la même raison** : la
+  // ligne ne porte plus la date depuis le 14 août 2026. Le déplacement se
+  // vérifie donc là où le jour subsiste — la feuille du chevron. Ce qui est
+  // éprouvé n'a pas changé d'un pouce : que la NOUVELLE date ait bien été
+  // enregistrée, et qu'elle survive à un rechargement.
+  await page.getByRole("button", { name: `Y aller — ${avecCivilite(nomUnique)}` }).click();
+  await page.waitForSelector("text=Y aller", { timeout: 10000 });
+  const apresDeplacement = (await page.locator("body").innerText()).toLowerCase();
   assert.ok(
-    (await carte().innerText()).toLowerCase().includes("janv"),
-    `La nouvelle date (janvier) doit être persistée : « ${await carte().innerText()} »`
+    apresDeplacement.includes("janv"),
+    "La nouvelle date (janvier) doit être persistée et lisible dans la feuille"
+  );
+  assert.ok(
+    !apresDeplacement.includes("déc"),
+    "L'ancienne date (décembre) ne doit plus apparaître nulle part après le déplacement"
   );
 
   await browser.close();

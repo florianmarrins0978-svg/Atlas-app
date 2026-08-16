@@ -8342,3 +8342,316 @@ vérifie aussi que l'écran d'après l'envoi garde SON geste : sans cela, on
 passerait au vert en retirant le lien partout, et le patron n'aurait plus
 d'issue du tout.
 
+
+## 105. Ses tranches et ses travaux, au lieu des nôtres
+
+**Sa demande, le 14 août 2026**, capture de l'écran « Mes prix » à l'appui :
+*« je dois pouvoir ajouter ou retirer des cases. »* Trois formes ont été
+dessinées (`maquettes/atlas-grilles-cases.html`) ; sa réponse : *« code les
+toutes »*. Les trois sont donc en place, et elles ne se remplacent pas.
+
+### Le fait qui commande tout le reste
+
+**Une case ne s'ajoute pas toute seule.** Elle naît du croisement de deux
+tranches. Ajouter un diamètre — « 90 à 120 cm » — n'ajoute pas une case : elle
+en ajoute **dix** (1 pour dessoucher, 3 pour abattre, 6 pour fendre). En retirer
+une en range autant.
+
+C'est pourquoi le geste n'existe pas au niveau de la case, mais à trois niveaux :
+la **tranche** (une mesure), la **façon de faire** (une rangée d'abattage), le
+**travail** (une grille entière). Et c'est pourquoi l'écran **annonce le nombre
+avant de valider** : dix cases posées sans prévenir, ce sont dix questions
+surprises au chantier suivant. Le nombre est calculé (`casesParTranche`), jamais
+écrit à la main — un nombre faux y serait pire que pas de nombre du tout.
+
+### Ce qui a changé dans le code
+
+Les huit diamètres, six hauteurs, trois façons et cinq travaux étaient des
+constantes de `src/lib/grille-prix.ts`. Ils y restent, **comme point de départ**,
+et deux tables portent ce qu'une entreprise a réglé : `tranches_grille` et
+`natures_grille` (migration 0041).
+
+**Le paramètre `axes` est OBLIGATOIRE**, et c'est délibéré : une valeur par
+défaut silencieuse aurait chiffré un devis contre les tranches d'origine pendant
+que le patron remplissait les siennes. Le compilateur oblige chaque appelant à
+dire quelles tranches il emploie — c'est ainsi que `proposition-prix.ts`,
+`apprendre-grille.ts` et `questions-chiffrage.ts` ont été repris un par un.
+
+**La question d'abattage propose SES façons**, et plus les trois d'origine. Elle
+les écrivait une seconde fois dans `questions-chiffrage.ts` : sa quatrième
+rangée serait restée vide pour toujours, la case existant sans que rien ne
+puisse la désigner. C'est la règle dupliquée que `CLAUDE.md` §3 interdit.
+
+### Rien n'est semé, et le premier geste recopie
+
+Une entreprise qui n'a jamais rien touché **n'a aucune ligne** : ce sont les
+valeurs de départ du code qui servent. Les écrire à la migration les aurait
+figées une seconde fois — corriger une borne d'origine aurait demandé une
+migration de plus pour la porter à ceux qui n'y avaient jamais touché.
+
+Les lignes n'apparaissent qu'au **premier geste sur un axe** : on recopie alors
+les tranches de départ, puis on applique le geste. **Sans cette recopie, son
+premier ajout aurait effacé les huit autres** — un axe sans ligne veut dire
+« les tranches de départ », et y insérer une seule ligne le ferait basculer sur
+« une seule tranche, la sienne ». `test-cases-reglables-db.ts` monte la garde
+sur ce point précis.
+
+### Retirer n'efface JAMAIS un prix
+
+C'est la promesse du lot, et la seule qui coûterait vraiment cher : ces prix
+sont ses décisions, et certains viennent de devis réels que rien ne
+reconstituerait.
+
+Une tranche retirée porte `retiree_le` ; sa ligne reste. Les cases de
+`grille_prix` restent en place — une clé qu'aucune tranche ne reconnaît est
+ignorée à la lecture, jamais supprimée (`lireGrillePrix`, comportement antérieur
+à ce lot). Remettre la tranche fait revenir les prix tels quels, et **c'est ce
+retour qui prouve qu'ils n'ont pas été effacés** : la suite base le vérifie
+ainsi, plutôt qu'en interrogeant la table — le rôle applicatif ne traverse pas
+la RLS, et c'est exactement ce qu'on veut de lui.
+
+**La clé ne peut pas être réemployée.** Si la ligne partait, une tranche neuve
+pourrait reprendre `d90` et hériter du prix d'une tranche qui n'était pas la
+sienne : 1 400 € posés pour « plus de 90 cm » se retrouveraient sur des troncs
+de 90 à 120 cm sans que personne ne l'ait décidé.
+
+### Deux refus, et pourquoi ils sont des réponses
+
+**Le recouvrement.** `trancheDe` retient la PREMIÈRE tranche qui contient la
+mesure : deux tranches qui se chevauchent ne produisent pas une erreur, elles
+produisent un prix pris dans la mauvaise case. Un tronc de 95 cm chiffré au
+tarif des 20 cm ne se voit sur aucun écran — il se voit sur le devis du client.
+
+**La dernière tranche est ouverte**, et c'est le cas de tous les jours : « plus
+de 90 cm » n'a pas de borne haute, donc tout ce qui dépasse 90 y tombe déjà, et
+aucune tranche plus haute ne peut s'ajouter tant qu'elle est là. Le refus le dit
+**et dit quoi faire** : retirer d'abord, reposer ensuite. On ne repousse pas sa
+borne à sa place — un prix posé pour « plus de 90 cm » deviendrait celui des
+« plus de 120 cm » sans qu'il l'ait décidé.
+
+### La limite d'un travail ajouté, dite plutôt que découverte
+
+`proposition-prix.ts` sait retrouver un abattage ou une fente dans une dictée ;
+il ne sait pas retrouver « le broyage des branches ». Une nature ajoutée par le
+patron **n'est pas reconnue par le chiffrage** : sa grille se remplit et se
+relit, mais Atlas ne la proposera pas de lui-même. L'écran l'écrit sous le titre
+du travail — le lui laisser découvrir sur un devis serait pire.
+
+### Ce qui est éprouvé, et par quoi
+
+| Ce qui est tenu | Où |
+|---|---|
+| deux tranches ne se chevauchent jamais, et le refus nomme la coupable | `test-cases-reglables.ts` |
+| une clé retirée n'est jamais rendue à une autre tranche | les deux suites |
+| le nombre de cases annoncé est le vrai, et suit ses tranches | `test-cases-reglables.ts` |
+| la question d'abattage propose SES façons | `test-cases-reglables.ts` |
+| le premier geste ne fait pas disparaître les huit autres | `test-cases-reglables-db.ts` |
+| retirer n'efface aucun prix, et « Annuler » les rend | `test-cases-reglables-db.ts` |
+| rien ne déborde d'une entreprise sur une autre | `test-cases-reglables-db.ts` |
+| la conséquence est sous ses yeux avant qu'il valide | `test-cases-reglables-e2e.ts` |
+| le refus lui parvient, et dit quoi faire | `test-cases-reglables-e2e.ts` |
+| les trois formes existent, et l'écran repart comme il a été trouvé | `test-cases-reglables-e2e.ts` |
+
+## 106. L'assistant cesse de flotter — et c'est l'écran qui cesse de reculer
+
+**Le patron, le 13 août 2026 :** *« l'onglet de l'assistant est hyper mal placé,
+propose des choses pour plus qu'il gêne »*. Puis, devant les cinq propositions de
+`docs/maquettes/47-ou-mettre-l-assistant.html` : *« la B mais de la même couleur
+qu'elle est déjà »*.
+
+### Le vrai défaut n'était pas sa position, c'était qu'il flottait
+
+Mesuré dans l'application, sur son écran de 390 × 664 : la bulle occupait
+56 × 56 px à (318, 512) — donc, sur le planning, **par-dessus les dimanches 23
+et 30**, deux cases qu'on touche pour ouvrir une journée.
+
+Et ce n'était pas le premier écran qu'elle mordait. **Cinq fois cet été, c'est
+l'ÉCRAN qu'on a déplacé pour l'éviter :**
+
+| Ce qui a cédé | Où |
+|---|---|
+| « ou rédiger le devis à la main », recouvert | §49 |
+| « Préparer le devis » : 64 px de talon insuffisants, il en a fallu 112 | §46 |
+| un bouton de reprise, 48 px mangés dès deux lignes de message | §63 |
+| une capsule qu'il a fallu **centrer** pour qu'elle lui échappe | §67 |
+| « Reste à payer » calé à gauche, sa fin passant dessous | §84 |
+
+Chaque correction était juste, et aucune n'a traité la cause. **Un élément qui
+flotte finit toujours par recouvrir quelque chose** — y compris sur les écrans
+qui n'existent pas encore. C'est pourquoi aucune des cinq propositions ne
+consistait à le déplacer de vingt pixels.
+
+### Le bouton part, le panneau reste
+
+Le panneau doit toujours couvrir tout l'écran : il reste dans le gabarit racine.
+Le bouton, lui, vit désormais dans l'en-tête de chaque écran. Les deux ne sont
+plus voisins dans l'arbre, d'où `assistant-contexte.tsx` — vingt lignes dont la
+seule fonction est de leur donner un état commun.
+
+`useAssistant()` rend `null` hors du fournisseur au lieu de lever : le bouton est
+posé par `EnTeteEcran`, une pièce que onze écrans emploient, et qu'une page hors
+gabarit pourrait employer demain. Faire tomber une page entière pour un bouton
+d'agrément serait un mauvais échange — et le patron n'en verrait qu'un
+identifiant opaque (`HANDOVER.md`, piège 0 ter).
+
+### Le déplacement s'est trompé une fois, et la mesure l'a dit
+
+Le bouton a d'abord été posé **sur une ligne à lui**, au-dessus du titre. C'était
+défendable : cette ligne existait déjà pour la flèche de retour, et le dépôt
+avait mesuré le 11 août qu'une pastille posée à côté du titre lui prenait la
+moitié de sa largeur.
+
+**Sauf que cette ligne ajoutait 72 px en tête de CHAQUE écran.** Sur le planning,
+la dernière semaine du mois passait de 626 px à 698 — sous la barre du bas. On
+aurait échangé « deux jours recouverts » contre « une semaine hors de l'écran »,
+et personne ne l'aurait vu sans capture.
+
+Posé à côté du titre, il ne coûte rien : mesuré sur les quatre écrans de la
+barre, **aucun titre ne se casse en deux et le calendrier finit exactement où il
+finissait** (626 px). Le risque du 11 août reste réel — il tenait à une *précision*
+de deux lignes sous un titre, pas au titre lui-même — et `test-assistant-en-tete-e2e.ts`
+compte désormais les lignes du titre sur chaque écran.
+
+### Ce que le contrôle a dû apprendre, et qui vaut au-delà d'ici
+
+**Un contrôle qui dénonce un défaut préexistant sous le nom du changement en
+cours envoie chercher au mauvais endroit.** Écrit d'abord « la dernière semaine
+tient au-dessus de la barre », il rougissait — mais elle débordait **déjà** de
+onze pixels avant qu'on ne touche à quoi que ce soit. Le repère est donc devenu
+la mesure prise AVANT le déplacement, et le débordement de onze pixels est allé
+dans `TODO.md`, sous son propre nom.
+
+### Deux sessions ont visé la même ligne le même jour
+
+Le lendemain de ce travail, la fusion avec `main` a rougi sur une suite qui
+n'était pas la mienne : *« Modifier » n'est pas sur la ligne du titre : 21 px
+d'écart*. Une autre session venait de poser ce mot d'or à droite du titre de
+l'écran d'envoi — exactement la place que l'assistant venait de prendre.
+
+**Ce n'était pas un conflit de texte** : `git` avait fusionné sans rien signaler.
+Les deux modifications étaient justes séparément, et fausses ensemble. Leur mot
+s'aligne par `self-end` — sur le BAS de son conteneur, choisi pour tomber sur la
+ligne d'écriture du titre plutôt qu'à côté du surtitre. En le mettant dans un
+groupe haut de 44 px pour qu'il tienne à côté du bouton, son « bas » avait changé
+de sens.
+
+`self-stretch` sur le groupe rend au repère sa hauteur d'origine. Mais la leçon
+n'est pas dans le correctif :
+
+- **une fusion propre ne prouve rien sur la mise en page.** Deux fichiers
+  différents, aucun conflit, et pourtant deux gestes qui se disputent le même
+  espace ;
+- **c'est leur suite qui l'a dit, pas la mienne** — et elle l'a dit au pixel.
+  Vingt et un pixels sur un mot d'or ressemblent à une marge : ni relecture ni
+  capture ne l'auraient relevé ;
+- **d'où la valeur d'un contrôle qui mesure une POSITION plutôt qu'une
+  présence.** « Le lien existe » serait resté vert.
+
+---
+
+---
+
+## 107. « Me déconnecter partout » sans table de sessions, et un e-mail qu'on ne peut pas encore changer
+
+*Dessiné le 14 août 2026 (`maquettes/atlas-reglages-moi.html`), codé le même
+jour sur ses deux réponses — **« A A »**. Rubriques « Mon compte » et
+« Connexion », les deux dernières du sommaire (§96).*
+
+### Ce que la planche a servi à trouver, et qui n'était pas une question de dessin
+
+Les deux écrans sont simples. Ce qui ne l'était pas, c'est que **leur libellé
+promettait deux choses qui n'existaient nulle part** :
+
+| Le sommaire annonçait | Ce que la base porte |
+|---|---|
+| « Nom, e-mail et **téléphone** » | `users` : `email`, `nom`, `image`, `password_hash`. Aucun téléphone, et rien ne l'appellerait — ni SMS ni e-mail sortant (tranché le 4 août) |
+| « Mot de passe et **appareils** » | `src/auth.ts` : `session: {strategy: "jwt"}`. **Aucune session en base**, donc rien à lister |
+
+Le patron a tranché les deux fois pour le retrait : le libellé dit désormais
+« Nom et e-mail », et « Mot de passe et sécurité ». **Ne pas les rouvrir sans
+qu'il le demande.**
+
+### La déconnexion générale : une colonne au lieu d'une table
+
+Atlas ne garde aucune session : il n'y a **rien à supprimer** pour fermer une
+session ouverte sur un téléphone perdu. Mais chaque jeton porte son instant
+d'émission (`iat`), et il suffit de **refuser ceux qui précèdent une coupure** —
+`users.jetons_valides_depuis` (migration 0042).
+
+Trois pièces, et l'ordre importe :
+
+1. `src/auth.config.ts` recopie `token.iat` dans `session.user.emisLe`. Sans
+   cette ligne l'instant existe et reste inatteignable : `auth()` ne rend que la
+   session, jamais le jeton brut ;
+2. `getCurrentCtx` compare, **et c'est le seul endroit possible**. Le
+   `middleware` tourne en Edge et ne peut pas lire la base ; cette fonction, en
+   revanche, est la porte unique de toutes les pages et de toutes les actions ;
+3. sur refus, on part vers `/api/session-perimee`, qui **efface les cookies**.
+   Lever une erreur afficherait un écran de panne en laissant le cookie mort
+   dans le navigateur — le piège du 10 août 2026, une soirée perdue.
+
+**Deux choix qui paraissent des détails et n'en sont pas :**
+
+- **Un jeton sans `iat` est laissé passer.** Ceux d'avant cette version n'en
+  portent pas : refuser par défaut aurait déconnecté tout le monde au
+  déploiement, un geste que personne n'a demandé.
+- **La coupure est arrondie à la seconde SUPÉRIEURE.** Les `iat` sont en
+  secondes entières : un jeton signé à 12:00:00,900 s'annonce à 12:00:00. Posée
+  à la milliseconde, la coupure serait antérieure à sa propre seconde et le
+  jeton du moment survivrait — le patron appuierait sur « me déconnecter
+  partout » en restant connecté sur l'appareil qui vient d'appuyer, ce que
+  l'écran promet pourtant explicitement. Éprouvé par `test-compte-db.ts`.
+
+### L'e-mail se lit, il ne se change pas — et l'écran le dit
+
+C'est l'identifiant de connexion, et **Atlas n'a aucun canal pour vérifier une
+nouvelle adresse** : ni e-mail sortant, ni SMS, ni parcours d'inscription, ni
+réinitialisation par courriel. Une lettre de travers, et le compte devient
+inaccessible sans le moindre moyen de revenir en arrière.
+
+Un champ dont la faute de frappe est **irréparable** ne s'ouvre pas tant qu'il
+n'y a pas de quoi la rattraper. L'écran l'écrit en toutes lettres plutôt que de
+laisser croire à une panne — une absence muette se lit comme un oubli.
+
+### `users` est la seule table sans RLS, et les suites en tiennent lieu
+
+`src/server/repositories/compte.ts` n'appelle **pas** `withEntreprise`, contre
+la règle générale de `CLAUDE.md` §3 — et c'est délibéré : la table
+d'authentification ne porte pas d'`entreprise_id`, aucune politique ne s'y
+applique, et la même personne appartiendra demain à deux entreprises sans
+changer de nom. Poser un contexte d'entreprise pour lire son propre nom ferait
+croire à une isolation qui n'existe pas ici (même raisonnement que
+`catalogue-prestations.ts`).
+
+**Ce qui protège à la place : chaque requête est bornée par
+`ctx.utilisateurId`.** Un `where` oublié ne rougirait nulle part ailleurs — il
+changerait le mot de passe de tout le monde d'un coup. `scripts/test-compte-db.ts`
+monte donc **deux comptes** partageant le même mot de passe de départ, et vérifie
+qu'aucun geste ne touche le voisin. Les deux contrôles ont été vus rouges avant
+d'être laissés verts.
+
+### Les règles du mot de passe : une seule fonction, deux appelants
+
+`src/lib/mot-de-passe.ts` décide **et** de l'allumage du bouton, **et** de
+l'acceptation par le serveur. Deux rédactions divergeraient, et l'écart se
+paierait dans le mauvais sens : un bouton allumé sur une saisie refusée, ou un
+artisan qui croit son mot de passe changé alors qu'il ne l'est pas.
+
+**Aucune exigence de majuscule ni de caractère spécial**, délibérément : elles
+ne valent pas une phrase longue, et sur un chantier elles produisent des mots de
+passe notés sur un carnet.
+
+**Sa demande du 14 août, et elle corrige la mienne :** *« il faut pouvoir
+confirmer son mdp 2× avant de le changer et met le petit œil à côté »*. Ma
+planche proposait l'œil **à la place** de la seconde saisie ; il veut les deux,
+et il a raison — l'œil se touche après coup, la confirmation attrape la faute au
+moment où elle se fait. L'œil est sur **les trois champs** : une confirmation
+qu'on ne peut pas relire ne confirme rien.
+
+### Ce que la suite navigateur n'éprouve PAS, et pourquoi
+
+`test-compte-connexion-e2e.ts` ne change **jamais** le mot de passe pour de bon :
+le compte de démonstration sert aux soixante-quinze suites de la batterie, et le
+changer fermerait la porte à toutes les suivantes — l'échec accuserait alors la
+page de connexion, qui n'y serait pour rien. Le chemin éprouvé au navigateur est
+celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.

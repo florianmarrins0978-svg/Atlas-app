@@ -428,3 +428,90 @@ export const LIBELLE_MOMENT: Record<Moment, string> = {
   matin: "matin",
   apres_midi: "après-midi",
 };
+
+/**
+ * Ce qu'un chantier OCCUPE, dit en toutes lettres.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **LE DÉFAUT QUE CETTE FONCTION REMPLACE, ET POURQUOI IL COMPTAIT.**
+ *
+ * La ligne du planning écrivait `creneauDebut` — la demi-journée de DÉPART —
+ * et rien d'autre. Or `DUREE_PAR_DEFAUT_DEMI_JOURNEES` vaut 2 : un chantier
+ * posé prend la journée entière. **Le cas le plus courant du produit était
+ * donc celui qui mentait**, et un chantier de trois jours annonçait « matin ».
+ *
+ * Le patron, capture à l'appui le 13 août 2026 : *« ça laisse à penser que
+ * juste le matin est bloqué alors que c'est la journée »*.
+ *
+ * **Ce qui n'était PAS en cause :** `compterOccupation()` parcourt déjà
+ * `creneauxDuChantier(départ, durée)`. Les pastilles du calendrier et la
+ * réservation ont toujours compté juste — seule la phrase se trompait. Aucune
+ * donnée n'a été touchée, aucune migration.
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * **La règle vient des créneaux, jamais d'un calcul refait à côté.** On
+ * demande à `creneauxDuChantier` ce que le chantier occupe vraiment — c'est
+ * elle qui saute les week-ends — puis on compte les jours distincts. Refaire
+ * l'arithmétique ici produirait deux vérités : celle de l'écran et celle de la
+ * réservation, qui finiraient par diverger un vendredi.
+ *
+ * **`porteLaDate` n'est pas un détail de présentation.** Sur plusieurs jours,
+ * le libellé contient déjà « du 21 au 25 août » ; préfixer la date par-dessus
+ * donnerait « 21 août · du 21 au 25 août ». L'appelant a besoin de savoir si
+ * la date est dedans — c'est cette fonction qui le sait, pas lui.
+ *
+ * Les mots sont ceux que le patron a arrêtés le 14 août 2026, sur la planche
+ * `docs/maquettes/53-le-mot-juste-sans-la-date.html` : *« Je veux journée et
+ * du 21 au 25 »*. Ni « matin et après-midi », ni « 3 jours dès le matin » —
+ * les deux avaient été proposés et écartés.
+ */
+export type Occupation = {
+  /** « matin », « après-midi », « journée », « du 21 au 25 août ». */
+  texte: string;
+  /** Vrai quand `texte` contient déjà les dates — l'appelant n'en préfixe pas. */
+  porteLaDate: boolean;
+};
+
+export function libelleOccupation(
+  jour: JourIso,
+  moment: Moment | null,
+  dureeDemiJournees: number | null
+): Occupation {
+  // Un chantier posé avant l'existence des créneaux n'a ni moment ni durée :
+  // il est traité comme une journée entière à partir du matin, exactement le
+  // comportement qu'il avait. C'est la même hypothèse que `compterOccupation`,
+  // et elle doit le rester.
+  const depart: Creneau = { jour, moment: moment === "apres_midi" ? "apres_midi" : "matin" };
+  const duree = Math.max(1, Math.trunc(dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES));
+  const creneaux = creneauxDuChantier(depart, duree);
+
+  const jours = [...new Set(creneaux.map((c) => c.jour))];
+
+  if (jours.length === 1) {
+    // Une seule journée : elle est pleine, ou c'est une vraie demi-journée.
+    const pleine = creneaux.length === 2;
+    return {
+      texte: pleine ? "journée" : LIBELLE_MOMENT[depart.moment],
+      porteLaDate: false,
+    };
+  }
+
+  return { texte: `du ${intervalleDeJours(jours[0], jours[jours.length - 1])}`, porteLaDate: true };
+}
+
+/**
+ * « 21 au 25 août », et « 30 août au 2 septembre » quand le mois change.
+ *
+ * Le mois n'est écrit qu'une fois tant qu'il ne bouge pas — c'est ainsi qu'on
+ * lit une plage de dates à voix haute, et la ligne du planning n'a pas la place
+ * de l'écrire deux fois à 390 px.
+ */
+function intervalleDeJours(premier: JourIso, dernier: JourIso): string {
+  const d1 = new Date(`${premier}T12:00:00Z`);
+  const d2 = new Date(`${dernier}T12:00:00Z`);
+  const mois = (d: Date) => d.toLocaleDateString("fr-FR", { month: "long", timeZone: "UTC" });
+  const memeMois = d1.getUTCMonth() === d2.getUTCMonth() && d1.getUTCFullYear() === d2.getUTCFullYear();
+  return memeMois
+    ? `${d1.getUTCDate()} au ${d2.getUTCDate()} ${mois(d2)}`
+    : `${d1.getUTCDate()} ${mois(d1)} au ${d2.getUTCDate()} ${mois(d2)}`;
+}

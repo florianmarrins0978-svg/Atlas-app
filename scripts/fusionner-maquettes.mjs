@@ -250,12 +250,6 @@ const MAQUETTES = [
     quoi: "Deux boutons pleins l’un sous l’autre sur la feuille d’un devis corrigé. Deux lectures du retrait, montrées dans les deux moments — avant et après l’envoi — et trois dosages de « Plutôt par e-mail ».",
   },
   {
-    fichier: "47-le-devis-qui-tarde.html",
-    titre: "Le devis qui tarde : le rappel, et le délai",
-    famille: "Le devis avant l’envoi",
-    quoi: "Un rappel quand un chantier reste sans devis, et le délai qui se règle dans Réglages → Notifications. Deux tons pour la carte, trois façons de poser le nombre de jours.",
-  },
-  {
     fichier: "45-modifier-son-devis.html",
     titre: "Le devis : le reprendre avant de l’envoyer",
     famille: "Le devis avant l’envoi",
@@ -263,9 +257,21 @@ const MAQUETTES = [
   },
   {
     fichier: "46-pendant-que-ca-batit.html",
-    titre: "Pendant que ça bâtit : le dire, sans rien recouvrir",
+    titre: "Pendant que ça bâtit",
     famille: "Le banc d’essai",
-    quoi: "Trois bandeaux qui distinguent « ça bâtit, patiente » de « c’est en panne », avec le compte des écrans déjà prêts. Le chiffre existait ; il n’était écrit nulle part.",
+    quoi: "« Les nouvelles pages ne chargent mal ou pas du tout. » Rien n’était cassé : le banc sert en mode développement pendant qu’il bâtit, et rien ne le disait. Trois façons de montrer l’avancement, avec les mesures.",
+  },
+  {
+    fichier: "55-une-equipe-part-cinq-jours.html",
+    titre: "Une équipe part cinq jours",
+    famille: "Le planning",
+    quoi: "« Comment on fait si une équipe part en déplacement pour cinq jours ? » Si toute l’entreprise part, l’agenda Google suffit déjà. Si une équipe sur deux part, rien ne convient. Trois endroits où poser le geste.",
+  },
+  {
+    fichier: "56-le-devis-qui-tarde.html",
+    titre: "Le devis qui tarde : le rappel, et le délai",
+    famille: "Le devis avant l’envoi",
+    quoi: "Un rappel quand un chantier reste sans devis, et le délai réglé dans Réglages → Notifications. Deux tons pour la carte, et quatre façons de poser le nombre de jours — en commençant par celle que l’écran des notifications a déjà retenue.",
   },
 ];
 
@@ -326,10 +332,14 @@ function verifierLaListe() {
     if (!parNumero.has(numero)) parNumero.set(numero, []);
     parNumero.get(numero).push(f);
   }
-  // Les cinq doublons d'avant le 15 août sont tolérés NOMMÉMENT : les
-  // renuméroter casserait les renvois déjà écrits dans TODO.md, ARCHITECTURE.md
-  // et dans les conversations. Tout nouveau doublon, lui, fait rougir.
-  const DOUBLONS_HERITES = new Set(["33", "34", "35", "36", "37"]);
+  // Les doublons d'avant le 15 août sont tolérés NOMMÉMENT : les renuméroter
+  // casserait les renvois déjà écrits dans TODO.md, ARCHITECTURE.md et dans les
+  // conversations. Tout nouveau doublon, lui, fait rougir.
+  //
+  // Le 50 est un cas à part, et volontaire : Gunzi, Goonzi et Gunzy sont LA MÊME
+  // planche sous trois noms, montrées côte à côte. Les séparer les rendrait
+  // incomparables.
+  const DOUBLONS_HERITES = new Set(["33", "34", "35", "36", "37", "50"]);
   for (const [numero, fichiers] of parNumero) {
     if (fichiers.length > 1 && !DOUBLONS_HERITES.has(numero)) {
       plaintes.push(

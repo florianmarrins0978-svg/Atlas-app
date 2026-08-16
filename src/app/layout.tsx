@@ -5,6 +5,7 @@ import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
 import { estCheminPublic, estPageDuClient } from "@/lib/chemins-publics";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
+import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
 import { laVersionRapideSeConstruit } from "@/server/etat-banc";
@@ -159,10 +160,20 @@ export default async function RootLayout({
         {sansNavigation ? (
           <main>{children}</main>
         ) : (
-          <div
-            className="mx-auto flex max-w-md flex-col bg-paper"
-            style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}
-          >
+          // Le fournisseur entoure le contenu ET le panneau : depuis le
+          // 13 août 2026, le bouton de l'assistant vit dans l'en-tête de chaque
+          // écran, donc DANS `children`, tandis que le panneau reste ici pour
+          // couvrir tout le reste. Les deux se parlent par ce contexte — voir
+          // `assistant-contexte.tsx`.
+          //
+          // Il n'entoure QUE le cadre, sans en changer la hauteur : celle-ci
+          // tient compte du bandeau du banc (`minHeight` ci-dessous), et un
+          // fournisseur ne rend aucun élément.
+          <FournisseurAssistant>
+            <div
+              className="mx-auto flex max-w-md flex-col bg-paper"
+              style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}
+            >
             {/* `atlas-contenu` réserve la hauteur de la barre, indicateur
                 d'accueil compris (voir globals.css) : sans navigation, cette
                 marge laisserait un vide en bas de page. */}
@@ -170,6 +181,7 @@ export default async function RootLayout({
             <AtlasBottomNav />
             <AssistantSidebar />
           </div>
+          </FournisseurAssistant>
         )}
 
         {/* **HORS du choix ci-dessus, et c'est un correctif.** Quand la réponse

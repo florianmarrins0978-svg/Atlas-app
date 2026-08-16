@@ -142,6 +142,68 @@ async function main() {
     assert.equal(apres.datePlanifiee, JOUR);
   });
 
+  // ─── RETIRER L'ÉQUIPE — impossible jusqu'au 14 août 2026 ─────────────────
+  //
+  // **Le défaut que ces cas empêchent de revenir.** `planifierChantier` écrit
+  // `...(equipeId ? { equipeId } : {})` : le cas « plus personne » y est ignoré
+  // en SILENCE, et cette fonction-ci exigeait un rang. Une équipe posée par
+  // erreur ne pouvait donc plus jamais être défaite, par aucun chemin — et rien
+  // à l'écran ne le disait.
+  //
+  // Le patron a retenu le 14 août la pastille sur la ligne
+  // (`docs/maquettes/52-appliquer-une-equipe.html`), et son écran porte
+  // « Personne pour l'instant ».
+  await essai("retirer l'équipe la retire pour de bon", async () => {
+    const ctx = await monter(2);
+    const c = await creerChantier(ctx, { nom: "Abattage" });
+    await planifierChantier(ctx, c.id, JOUR, { moment: "matin", rangEquipe: 1 });
+    const apres = await changerEquipeChantier(ctx, c.id, null);
+    assert.equal(apres.equipeId, null);
+    // La date ne bouge pas : c'est la promesse de l'écran, retirer n'est pas
+    // déplanifier.
+    assert.equal(apres.datePlanifiee, JOUR);
+  });
+
+  // **Libérer une place n'en prend aucune.** Refuser un retrait parce que
+  // « l'équipe est occupée » enfermerait le patron dans son erreur : l'équipe
+  // occupée, c'est justement celle du chantier qu'il veut détacher.
+  await essai("retirer ne se refuse jamais pour occupation", async () => {
+    const ctx = await monter(2);
+    const a = await creerChantier(ctx, { nom: "Haie" });
+    const b = await creerChantier(ctx, { nom: "Élagage" });
+    await planifierChantier(ctx, a.id, JOUR, { moment: "matin", rangEquipe: 1 });
+    await planifierChantier(ctx, b.id, JOUR, { moment: "matin", rangEquipe: 2 });
+    const apres = await changerEquipeChantier(ctx, b.id, null);
+    assert.equal(apres.equipeId, null);
+  });
+
+  // Le chemin complet, celui que fait son doigt : poser, changer, retirer,
+  // remettre. C'est la séquence qui casse quand le retrait laisse la base dans
+  // un état que la réaffiliation ne sait plus lire.
+  await essai("poser, changer, retirer, remettre — la place reste reprenable", async () => {
+    const ctx = await monter(2);
+    const c = await creerChantier(ctx, { nom: "Terrasse" });
+    await planifierChantier(ctx, c.id, JOUR, { moment: "matin", rangEquipe: 1 });
+    await changerEquipeChantier(ctx, c.id, 2);
+    await changerEquipeChantier(ctx, c.id, null);
+    const repris = await changerEquipeChantier(ctx, c.id, 1);
+    const equipes = await listerEquipes(ctx);
+    assert.equal(repris.equipeId, equipes.find((e) => e.rang === 1)?.id);
+  });
+
+  // **À une seule équipe, retirer doit RÉUSSIR** là où affilier se refuse. Un
+  // chantier qui traîne une équipe d'un temps où le compteur était à deux doit
+  // pouvoir s'en défaire, sinon la ligne garde un nom que l'écran n'affiche
+  // plus — et personne ne peut le nettoyer.
+  await essai("à une seule équipe, retirer reste possible", async () => {
+    const ctx = await monter(2);
+    const c = await creerChantier(ctx, { nom: "Clôture" });
+    await planifierChantier(ctx, c.id, JOUR, { moment: "matin", rangEquipe: 1 });
+    await mettreAJourEntreprise(ctx, { nombreEquipes: 1 });
+    const apres = await changerEquipeChantier(ctx, c.id, null);
+    assert.equal(apres.equipeId, null);
+  });
+
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Changement d'équipe — ${echecs} échec(s).`);
   await pool.end();
   process.exit(echecs === 0 ? 0 : 1);

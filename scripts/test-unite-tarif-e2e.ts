@@ -39,6 +39,24 @@ async function carteDuTarif(page: Page, marque: string): Promise<Locator> {
   return page.locator("ul > li").nth(rang);
 }
 
+/**
+ * Attend que l'écriture soit PARTIE avant de recharger.
+ *
+ * **Recharger trop tôt l'avorte.** Le bandeau se referme dès le choix, mais
+ * l'action serveur, elle, est encore en vol : un `reload` immédiat annule la
+ * requête, et le contrôle suivant constate que le choix « n'a pas tenu » — en
+ * accusant l'écran d'un défaut qui n'existe pas. Vu en batterie le 14 août 2026,
+ * là où la suite seule passait.
+ */
+async function ecritureFinie(page: Page, geste: () => Promise<void>): Promise<void> {
+  const partie = page.waitForResponse(
+    (r) => r.request().method() === "POST" && r.url().includes("/reglages/"),
+    { timeout: 15_000 }
+  );
+  await geste();
+  await partie;
+}
+
 /** Ce que la case affiche, chevron mis à part. */
 async function uniteLue(carte: Locator): Promise<string> {
   return (await carte.getByLabel("Unité du tarif").innerText()).trim().replace(/\s*▾$/, "");
@@ -186,7 +204,7 @@ async function main() {
   console.log("  ✓ les six unités et « aucune unité » sont proposées");
 
   // --- 5. Choisir remonte dans la case, et arrive en base -------------------
-  await bandeau().getByRole("option", { name: /^m²/ }).click();
+  await ecritureFinie(page, () => bandeau().getByRole("option", { name: /^m²/ }).click());
   await bandeau().waitFor({ state: "detached" });
   assert.equal(await uniteLue(carte), "m²");
 
@@ -203,7 +221,7 @@ async function main() {
   const champLibre = carte.getByLabel("Une autre unité");
   await champLibre.waitFor({ state: "visible" });
   await champLibre.fill("stère");
-  await champLibre.press("Enter");
+  await ecritureFinie(page, () => champLibre.press("Enter"));
   await bandeau().waitFor({ state: "detached" });
 
   assert.equal(
@@ -216,7 +234,7 @@ async function main() {
 
   // --- 7. Et l'on peut revenir en arrière ----------------------------------
   await carte.getByLabel("Unité du tarif").click();
-  await bandeau().getByRole("option", { name: /Aucune unité/ }).click();
+  await ecritureFinie(page, () => bandeau().getByRole("option", { name: /Aucune unité/ }).click());
   await bandeau().waitFor({ state: "detached" });
 
   assert.match(

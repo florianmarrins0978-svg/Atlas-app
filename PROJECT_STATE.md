@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-14 · branche `main`
-· dernière migration `drizzle/0040_conditions_documents.sql`
+· dernière migration `drizzle/0042_deconnexion_partout.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -105,6 +105,7 @@ seule avec quinze outils.
 | **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
 | **Un calendrier des deux côtés**, où les jours déjà pris sont barrés et ne se choisissent pas | `src/lib/calendrier.ts` + `src/components/atlas/Calendrier.tsx` |
 | **Déposer sa liste de prix Excel ou CSV**, avec aperçu avant écriture | `src/app/reglages/ImportTarifs.tsx` + `src/lib/import-tarifs.ts` + `src/server/import/lire-classeur.ts` |
+| **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
 ### Conformité RGPD
@@ -563,7 +564,7 @@ Voir `TODO.md` pour le détail et l'ordre.
 - **Le devis qui tarde : dessiné, en attente de son choix** (15 août) — sa
   demande d'un *« rappel lorsque le chantier a été ouvert mais le devis n'a pas
   été envoyé »*, avec le nombre de jours réglable.
-  `docs/maquettes/47-le-devis-qui-tarde.html`, **rien n'est codé**. Ce que la
+  `docs/maquettes/56-le-devis-qui-tarde.html`, **rien n'est codé**. Ce que la
   recherche a évité : l'écran des notifications **existait déjà**, dessiné au
   sixième lot (`maquettes/atlas-reglages-notifications.html`, huit familles en
   trois groupes, et un délai déjà formulé — « 7 jours après l'échéance »). Sa
@@ -585,9 +586,16 @@ Voir `TODO.md` pour le détail et l'ordre.
   **C'est aussi le premier écran d'Atlas où `getRole` décide de ce qui est
   RENDU** : un membre ne reçoit que l'ensemble « Moi », et chaque rubrique de
   l'entreprise refuse un non-propriétaire avant de lire une valeur. Le reste de
-  l'application, lui, ne cloisonne toujours rien. Six rubriques sur treize
-  restent marquées *Bientôt* — mon compte, notifications, connexion, apparence,
-  équipe (les comptes), devis & factures, abonnement. Ce qui suit décrit l'état
+  l'application, lui, ne cloisonne toujours rien. **Dix rubriques sur treize
+  sont codées au 14 août** ; il en reste **trois** marquées *Bientôt* —
+  notifications, apparence, abonnement. Les deux dernières ouvertes sont
+  **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
+  nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
+  plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et
+  une liste d'*appareils* qui n'existent nulle part ; le patron a tranché « A A »
+  le 14 août, les deux mots sont retirés. **L'e-mail ne se change pas encore**,
+  et l'écran le dit : rien ne permettrait de vérifier une nouvelle adresse, et
+  une faute de frappe fermerait le compte sans recours. Ce qui suit décrit l'état
   d'avant ce lot, et reste vrai pour les neuf autres rubriques : (`maquettes/atlas-reglages-plan.html`, `ARCHITECTURE.md` §86). Ce qui
   y est tranché : les deux niveaux « Moi » / « Mon entreprise », qui voit quoi,
   et ce qui n'aura jamais d'interrupteur. Ce qui ne l'est pas : le rôle
@@ -618,7 +626,9 @@ Voir `TODO.md` pour le détail et l'ordre.
   à coder la colonne de famille sur `tarifs`, le signalement d'une unité
   manquante, et le nombre de prix appris par grille (`ARCHITECTURE.md` §89).
   **L'unité, elle, est codée le 14 août** : elle se choisit dans un bandeau
-  déroulant, sans se refermer sur une liste (`ARCHITECTURE.md` §101).
+  déroulant, sans se refermer sur une liste (`ARCHITECTURE.md` §101). **Et les
+  tranches des grilles se règlent depuis le 14 août** : elles ne sont plus
+  écrites dans le code (`ARCHITECTURE.md` §105).
   **Et surtout : `parametres_chiffrage` — cinq valeurs qui décident du prix
   proposé — n'a aucun écran.** Un artisan dont l'ouvrier coûte 260 €/jour verra
   des prix trop bas sans savoir d'où ils viennent.

@@ -48,6 +48,7 @@ export default function FeuilleYAller({
   telephone,
   quand,
   equipes = [],
+  onDeplacer,
   rangEquipe = null,
   onChangerEquipe,
 }: {
@@ -69,7 +70,14 @@ export default function FeuilleYAller({
   equipes?: { rang: number; libelle: string }[];
   rangEquipe?: number | null;
   /** Rend un refus lisible plutôt que de lever : voir `changerEquipeChantierAction`. */
-  onChangerEquipe?: (rang: number) => Promise<{ succes: boolean; erreur?: string }>;
+  onChangerEquipe?: (rang: number | null) => Promise<{ succes: boolean; erreur?: string }>;
+  /**
+   * Changer la DATE — arrivé ici le 14 août 2026, la pastille d'équipe lui
+   * ayant pris sa place sur la ligne du planning (geste A). Absent, la ligne
+   * ne s'affiche pas : les écrans qui montent cette feuille sans savoir
+   * déplacer ne doivent pas promettre un geste qui ne fera rien.
+   */
+  onDeplacer?: () => void;
 }) {
   const [motDuCopier, setMotDuCopier] = useState<string | null>(null);
   const [choixOuvert, setChoixOuvert] = useState(false);
@@ -269,6 +277,42 @@ export default function FeuilleYAller({
                   <span className="flex-1 text-[15px]">{e.libelle}</span>
                 </button>
               ))}
+
+              {/* **RETIRER L'ÉQUIPE — ajouté ici le 14 août 2026, à sa
+                  question :** *« si on affilie une équipe et qu'au final on
+                  change d'avis, on doit pouvoir la retirer »*.
+
+                  Le geste existait déjà sur la pastille de la ligne. Le laisser
+                  manquer ICI aurait donné **deux chemins qui ne font pas la même
+                  chose** : celui qui passe par le chevron n'aurait offert aucune
+                  sortie, et le patron aurait conclu que c'est impossible. Un
+                  écart de ce genre ne se voit jamais en relisant — il se
+                  découvre le jour où l'on prend l'autre porte.
+
+                  Elle n'apparaît que s'il y a quelque chose à retirer. */}
+              {rang !== null && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setRefusEquipe(null);
+                    const avant = rang;
+                    setRang(null);
+                    const r = await onChangerEquipe(null);
+                    if (r.succes) {
+                      setChoixOuvert(false);
+                    } else {
+                      setRang(avant);
+                      setRefusEquipe(r.erreur ?? "Ce changement n'a pas abouti.");
+                    }
+                  }}
+                  className="flex w-full items-center gap-3 border-t px-3.5 text-left"
+                  style={{ borderColor: colors.line, minHeight: 46 }}
+                >
+                  <span className="flex-1 text-[15px]" style={{ color: colors.muted }}>
+                    Personne pour l’instant
+                  </span>
+                </button>
+              )}
             </div>
           )}
 
@@ -296,6 +340,33 @@ export default function FeuilleYAller({
 
           Créer n'est toujours pas envoyer : l'arrêt 3 reste en travers du
           chemin, et rien ne part sans un geste de plus (`docs/AGENT.md` §6). */}
+      {/* **« Déplacer » est arrivé ici le 14 août 2026**, la pastille d'équipe
+          lui ayant pris sa place sur la ligne du planning (geste A, retenu sur
+          `docs/maquettes/52-appliquer-une-equipe.html`).
+
+          **Creux et non plein.** Le seul aplat de cette feuille reste « Créer la
+          facture » : deux pleins l'un sous l'autre, et l'œil ne sait plus lequel
+          est le geste principal — c'est exactement ce que le patron a fait
+          corriger le 13 août sur la feuille d'envoi.
+
+          **Et il ferme la feuille en partant** : le calendrier se trouve
+          derrière elle, et l'y envoyer sans la refermer donnerait un écran qui
+          défile sous un calque. */}
+      {onDeplacer && (
+        <button
+          type="button"
+          aria-label={`Déplacer le chantier ${nomChantier}`}
+          onClick={() => {
+            fermer();
+            onDeplacer();
+          }}
+          className="mt-2.5 block w-full rounded-full py-[13px] text-center text-[14.5px]"
+          style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
+        >
+          Déplacer ce chantier
+        </button>
+      )}
+
       <div className="mt-4 h-px" style={{ backgroundColor: colors.lineSoft }} />
       <Link
         href={`/chantiers/${chantierId}/facture`}
