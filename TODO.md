@@ -83,7 +83,10 @@ réellement automatique demanderait un prestataire sous contrat.
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :
 
-1. le **modèle** et son écran de Réglages (rien d'autre n'a de sens sans lui) ;
+1. ~~le **modèle** en base~~ — **FAIT le 16 août** : table `prestations_entretien`
+   (migration `0050`), dépôt `src/server/repositories/prestations-entretien.ts`,
+   règles pures dans `src/lib/prestations-entretien.ts`, suite
+   `scripts/test-prestations-entretien.ts`. **Reste son écran de Réglages** ;
 2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
 3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
    porte déjà devis et factures ;

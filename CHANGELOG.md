@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### La fiche d'entretien commence à exister : le modèle, en base
+
+**Première pierre du troisième parcours**, après quatre planches et cinq
+décisions. Ce lot ne porte que le MODÈLE — un seul par entreprise, comme il l'a
+tranché — et rien d'autre : le passage et le rapport viendront ensuite.
+
+Ce qui est posé : la table `prestations_entretien` avec son isolation, le dépôt
+qui la lit et l'écrit (tout par `withEntreprise`), le modèle fourni de vingt
+prestations relevé de sa capture, et les règles qui ordonnent tout ça.
+
+**Trois décisions de fond, écrites dans le code plutôt que supposées :**
+
+- **une ligne ajoutée se range dans SA famille**, pas au bas de la fiche —
+  sinon il la cherche en bas de l'écran, sur un chantier ;
+- **les doublons sont refusés avec indulgence** : « Tonte » et « tonte » sont le
+  même geste, et deux cases pour un geste donneraient une ligne en double sur le
+  rapport du client ;
+- **les refus se rendent, ils ne lèvent pas** : une exception d'action serveur
+  n'arrive jamais jusqu'à lui.
+
+**Un garde-fou du dépôt a rattrapé un oubli, et c'est exactement son rôle.** La
+suite d'export RGPD refuse qu'une table portant un `entreprise_id` reste hors de
+la sauvegarde : `prestations_entretien` y est entrée. Sans elle, une sauvegarde
+aurait rendu des rapports d'entretien sans dire de quelle fiche ils venaient.
+
+Et un contrôle tient les maquettes et le code d'accord : le modèle du code doit
+porter les mêmes vingt prestations que la planche. L'écart se verrait à
+l'endroit exact où il compare ce qu'on lui a montré et ce qu'il obtient.
+
+**Ce qui n'est pas encore là** : l'écran des Réglages, le passage, le rapport.
+
+---
+
 ### Pas de signature sur les rapports d'entretien — et pourquoi c'est mieux
 
 **Sa question, puis sa décision, le 16 août.** *« S'il n'est pas là, on ne peut

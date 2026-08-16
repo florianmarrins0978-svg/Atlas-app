@@ -746,6 +746,10 @@ dans `src/`.
 demandé de recréer les fiches de chantier d'une autre application (paysagistes
 en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 
+- **LE MODÈLE EST EN BASE depuis le 16 août** (migration `0050`). Un seul par
+  entreprise, aucune fiche rangée par client. Il ne se sème PAS tout seul à
+  l'ouverture d'un écran : la pose est un geste (`poserModeleFourni`). L'écran
+  des Réglages reste à écrire.
 - **TOUT EST TRANCHÉ le 16 août** : familles sur le chantier, seulement ce qui
   a été fait chez le client, la molette du TÉLÉPHONE (« la A »), et **un seul
   modèle** pré-rempli à chaque envoi — rien n'est rangé par client. L'ordre de
