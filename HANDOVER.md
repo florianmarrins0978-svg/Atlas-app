@@ -64,7 +64,17 @@ Sur la fiche, deux lignes ensemble tranchent la question sans hypothèse :
 | Ce que la fiche montre | Ce que ça veut dire |
 |---|---|
 | `Serveur : répond` **+** `Code SERVI : … construction en cours` | **rien à réparer, c'est passager** — le banc compile chaque écran à l'ouverture (30-100 s) et le mandataire de GitHub renonce à 60 s. Recharger une minute plus tard suffit |
-| `Code SERVI : … la construction a ÉCHOUÉ` | **ça ne se répare pas tout seul** — le banc restera lent tant que `next build` ne passe pas. Le bloc « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là : c'est là qu'il faut regarder. `TODO.md` 0 quadragies quater |
+| `Code SERVI : … la construction a ÉCHOUÉ` | **ça ne se répare pas tout seul** — le banc restera lent tant que `next build` ne passe pas. Le bloc « Au moment de l'échec » porte l'heure, le disque, la mémoire **et ce que la construction a dit** : lire cette dernière ligne EN PREMIER, c'est elle qui tranche |
+
+**« Another next build process is already running » : ne pas effacer le
+verrou.** Le message parle d'une construction « qui n'est pas sortie
+proprement », ce qui fait croire à un fichier périmé. **Éprouvé le 16 août
+2026 : faux.** Un `lock` posé à la main n'empêche aucune construction — le
+verrou est pris auprès du système et relâché par le noyau à la mort du
+processus. Quand ce message apparaît, **une construction tourne pour de bon**,
+et l'effacer en lancerait une seconde à côté. La vraie cause était ailleurs :
+`demarrer.sh` n'incluait pas `build` dans son `pkill`, et orphelinait une
+construction à chaque démarrage (`CHANGELOG.md` du 16 août).
 | `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
 | `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
 

@@ -61,6 +61,18 @@ const eslintConfig = defineConfig([
     // cette ligne, `npm run lint` passait de zéro à 1 116 erreurs dès que cette
     // suite avait tourné une fois, toutes venues de code généré.
     ".next-banc-essai/**",
+    // **Et une TROISIÈME fois, le 16 août 2026.** La batterie bâtit désormais
+    // (`verifier-avant-livraison.ts`, étape « Construction »), parce qu'une
+    // panne qui n'existe qu'à la construction traversait sinon tous les
+    // contrôles au vert. Elle bâtit dans son propre dossier pour ne pas écraser
+    // le `.next` d'un serveur qui tourne — et ce dossier doit donc être écarté
+    // ici, sans quoi le lint de la batterie SUIVANTE recracherait des milliers
+    // d'erreurs venues de code généré. Constaté sur-le-champ : 1 478.
+    //
+    // Trois fois le même piège : `scripts/test-verrou-construction.ts` vérifie
+    // maintenant que tout dossier de construction employé par la batterie est
+    // écarté ici, pour qu'il n'y ait pas de quatrième.
+    ".next-verification/**",
     // appli/ est un projet distinct (HTML/JS statique navigateur + scripts
     // Node, sans React ni TypeScript) : les règles Next.js n'y ont pas de sens
     // et rejetteraient par exemple le `require()` de sa batterie de tests.

@@ -177,40 +177,21 @@ l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
 « Écrite : par le veilleur, au quart d'heure » — la première publication
 périodique jamais observée chez lui.
 
-### 0 quadragies quater. POURQUOI sa construction échoue — la vraie question, ouverte
+### 0 quadragies quater. ~~POURQUOI sa construction échoue~~ — **TROUVÉ le 16 août 2026**
 
-**Sa plainte du 16 août 2026 au soir :** *« l'appli, elle est vraiment très
-lente, mais vraiment, vraiment très lente. Est-ce qu'il y a un moyen de la
-rendre juste utilisable ? »*
+`demarrer.sh` tuait `next-server`, `next dev` et `next start` avant de relancer
+le veilleur, **mais pas `next build`**. La construction lancée par le premier
+veilleur survivait donc, orpheline, en gardant le verrou du système ; celle du
+second tombait sur « already running », rendait 1, et le banc repliait en mode
+développement. À chaque allumage qui récupère du code — d'où trois redémarrages
+sans effet. `build` est entré dans le motif
+(`scripts/test-verrou-construction.ts`).
 
-**Ce qu'on sait, et c'est une déduction, pas une hypothèse.** La fiche lit le
-témoin `.next-batie/atlas-version-batie.txt`, écrit **dès que `next build` rend
-0**, avant même la bascule. Ce témoin n'existe pas chez lui. Donc sa
-construction **échoue**, à chaque démarrage — et le banc retombe pour toujours
-sur le mode développement, où chaque écran se compile à l'ouverture.
-
-La même construction **réussit ici en deux minutes**, sur son commit exact
-(`67b4d8e`). C'est donc son environnement, pas le code.
-
-**Les deux suspects, et pourquoi on ne les a pas départagés :** le disque et la
-mémoire. Un `next build` pendant qu'un serveur de développement sert déjà, avec
-PostgreSQL et Redis à côté, sur une machine à deux cœurs. Ni l'un ni l'autre
-n'était publié — c'est corrigé (voir `CHANGELOG.md` du 16 août), mais le relevé
-n'arrivera **qu'au prochain démarrage de son espace**.
-
-**La marche à suivre, dès que sa fiche republie :**
-
-1. lire « Code SERVI » — si elle dit « la construction a ÉCHOUÉ », le bloc
-   « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là ;
-2. disque saturé → nettoyer avant de bâtir, en épargnant `.next` que le serveur
-   de développement utilise pour servir pendant ce temps ;
-3. mémoire épuisée → plafonner le tas de la construction, ou ne pas bâtir
-   pendant qu'un serveur sert. **Ne pas choisir la valeur au hasard** : c'est
-   ainsi qu'on livre une réparation imaginée (`AGENTS.md`).
-
-**Ne PAS écrire que la lenteur est corrigée.** Elle ne l'est pas. Seul
-l'aveuglement l'est, et c'est la troisième fois en deux jours que la distinction
-compte.
+**Ce qui reste à surveiller, et qui n'est PAS tranché :** sa construction met
+manifestement très longtemps sur sa machine (8 Go, sans zone d'échange). Ici
+elle prend deux minutes. Si, le motif corrigé, elle n'aboutit toujours pas dans
+un délai raisonnable, la piste suivante est de **ne pas bâtir pendant qu'on
+sert** — mais il faudra le mesurer avant de le coder, pas le supposer.
 
 ### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
 

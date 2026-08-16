@@ -475,7 +475,7 @@ async function main() {
     // L'attente longue du fil principal : la construction. Tout ce qui est
     // installé après elle ne protège pas pendant ces minutes-là — et c'est
     // exactement la fenêtre où le signal arrivait.
-    const iConstruction = source.indexOf('jouer("npx", ["next", "build"]');
+    const iConstruction = source.search(/"npx", \["next", "build"\]/);
     assert.ok(
       iConstruction > 0,
       "la construction est introuvable : ce contrôle ne sait plus où est la fenêtre qu'il surveille"

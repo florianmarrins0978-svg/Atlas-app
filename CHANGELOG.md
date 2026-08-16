@@ -9,6 +9,48 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### « Vraiment très lente » : une construction orpheline, à chaque démarrage
+
+**Sa plainte du soir**, après une page blanche, une lenteur extrême, puis un
+écran qui refusait de changer de page. Une seule cause aux trois.
+
+**Le mécanisme, et il se rejouait à CHAQUE allumage qui récupère du code :**
+
+| | |
+|---|---|
+| 1 | `demarrer.sh` pose le veilleur **avant** la mise à jour — délibéré, pour qu'une application réponde quoi qu'il arrive ensuite |
+| 2 | ce veilleur lance un banc, qui lance une **construction** |
+| 3 | la mise à jour aboutit : on tue veilleur et serveur pour les remplacer |
+| 4 | le motif tuait `next-server`, `next dev`, `next start` — **pas `next build`** |
+| 5 | la construction survit, orpheline, en gardant le verrou du système |
+| 6 | le banc suivant bâtit → « Another next build process is already running », code 1 |
+| 7 | repli en mode développement : chaque écran se compile à l'ouverture |
+
+**Ce que ça évite :** un banc condamné à la lenteur que trois redémarrages ne
+réparent pas — puisque chaque redémarrage reproduisait la panne.
+
+**Le contre-sens qu'il ne faut PAS refaire**, et il est écrit dans `banc.mjs` :
+le message de Next parle d'une construction « qui n'est pas sortie proprement »,
+ce qui fait croire à un verrou périmé qu'il suffirait d'effacer. **Éprouvé :
+faux.** Un fichier `lock` posé à la main n'empêche aucune construction — le
+verrou est pris auprès du système et relâché par le noyau. Quand le message
+apparaît, une construction tourne pour de bon, et l'effacer en lancerait une
+seconde à côté.
+
+**Deux aveuglements corrigés, et ils comptent autant que la panne :**
+
+- le témoin d'échec portait l'heure, le code, le disque et la mémoire — **jamais
+  ce que la construction avait DIT**. On a donc cherché une saturation pendant
+  des heures alors que le message tenait en une phrase ;
+- **la batterie ne bâtissait pas.** Types, lint, mémoire, suites base, suites
+  navigateur, connexion réelle — et aucune construction. Une panne qui n'existe
+  qu'à la construction traversait les cinquante-huit contrôles au vert, et c'est
+  le patron qui la découvrait, un soir, en cliquant. `next build` y entre.
+
+`scripts/test-verrou-construction.ts` tient les sept points, dont celui qui joue
+le vrai motif de `pkill` sur les vraies lignes de commande — relire un motif ne
+prouve rien, c'est ainsi qu'il est passé inaperçu.
+
 ### Pas de signature sur les rapports d'entretien — et pourquoi c'est mieux
 
 **Sa question, puis sa décision, le 16 août.** *« S'il n'est pas là, on ne peut

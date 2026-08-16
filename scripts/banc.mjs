@@ -173,6 +173,44 @@ function jouer(commande, args, env = process.env) {
 }
 
 /**
+ * Les dernières lignes qu'une commande a écrites, en plus de son code.
+ *
+ * **Écrit le 16 août 2026, après une soirée entière perdue faute de ces
+ * lignes.** Le témoin d'échec portait l'heure, le code de sortie, le disque et
+ * la mémoire — tout sauf ce que la construction avait DIT. On a donc cherché
+ * une saturation pendant des heures, alors que le message tenait en une ligne :
+ * « Another next build process is already running ». C'est le reproche que ce
+ * dépôt se fait à lui-même depuis le 11 août : *aller chercher la ligne exacte
+ * que le programme écrit, jamais l'idée qu'on s'en fait*.
+ *
+ * La sortie reste héritée — le patron doit voir la construction avancer — et
+ * elle est en plus RETENUE, pour que l'échec puisse se raconter.
+ */
+function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
+  return new Promise((resoudre) => {
+    const gardees = [];
+    const retenir = (morceau) => {
+      for (const ligne of morceau.toString().split("\n")) {
+        if (ligne.trim() === "") continue;
+        gardees.push(ligne);
+        if (gardees.length > lignes) gardees.shift();
+      }
+    };
+    const p = spawn(commande, args, { stdio: ["ignore", "pipe", "pipe"], env });
+    p.stdout?.on("data", (m) => {
+      process.stdout.write(m);
+      retenir(m);
+    });
+    p.stderr?.on("data", (m) => {
+      process.stderr.write(m);
+      retenir(m);
+    });
+    p.on("exit", (code) => resoudre({ code: code ?? 1, sortie: gardees.join("\n") }));
+    p.on("error", (e) => resoudre({ code: 1, sortie: String(e?.message ?? e) }));
+  });
+}
+
+/**
  * **Le PORT est-il libre — pas « la santé se tait-elle ».**
  *
  * La version précédente interrogeait `/api/health/live` et concluait « port
@@ -582,9 +620,29 @@ if (raison) {
     // Rien à réparer : au pire le dossier n'existait pas, et c'est le cas normal.
   }
 
+  // **NE PAS RETIRER `<DIST>/lock`. La tentation est forte, et elle est fausse.**
+  //
+  // Le 16 août 2026, la construction du patron rendait :
+  //
+  //     ✕ Another next build process is already running.
+  //       - A previous build that didn't exit cleanly
+  //
+  // La deuxième ligne fait croire à un verrou périmé qu'il suffirait d'effacer.
+  // **Éprouvé, et c'est faux** : un fichier `lock` posé à la main n'empêche
+  // aucune construction — Next prend un verrou du système (`lockfileTryAcquire`),
+  // que le noyau relâche tout seul à la mort du processus. Le fichier qui reste
+  // n'est qu'une trace.
+  //
+  // Donc, quand ce message apparaît, **une construction tourne pour de bon**.
+  // L'effacer lancerait une SECONDE construction à côté de la première, sur une
+  // machine qui n'arrive déjà pas à en finir une — le remède qui tue, que ce
+  // dépôt a déjà payé deux fois (le second serveur du 9 août, le second banc du
+  // 10). Next a raison de refuser ; c'est nous qui devons cesser de le
+  // provoquer.
+
   // La construction écrit dans SON dossier : le serveur de développement garde
   // le sien, et les deux ne se marchent jamais dessus.
-  const code = await jouer("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+  const { code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
 
   if (code === 0) {
     try {
@@ -698,6 +756,11 @@ if (raison) {
           // rendue et le coupable a disparu.
           `disque: ${mesure("df", ["-h", "--output=avail", "."])}`,
           `memoire: ${mesure("free", ["-h"])}`,
+          // **CE QUE LA CONSTRUCTION A DIT.** Sans ces lignes, le 16 août a été
+          // passé à chercher une saturation qui n'existait pas, alors que le
+          // message tenait en une phrase.
+          "dit:",
+          sortie || "(la construction n'a rien écrit)",
         ].join("\n")
       );
     } catch {
