@@ -1,0 +1,477 @@
+<title>Atlas — le rappel « facture impayée »</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page. Son lecteur n'en exécute pas — trois
+    maquettes engendrées en JavaScript ne se sont jamais affichées chez lui.
+    Ce qui bouge ici bouge en CSS pur : une case masquée, un libellé qui la
+    coche. TOUCHEZ les deux propositions de l'écran 2, elles s'ouvrent.
+
+    ─── POURQUOI CETTE PLANCHE EXISTE, ET CE QU'ELLE NE REFAIT PAS ───────────
+
+    Le patron : *« fais la maquette du rappel facture impayée »*, le 16 août
+    2026. C'est le quatrième rappel — les trois autres sont codés (chantier sans
+    devis, devis sans réponse, chantier terminé non facturé).
+
+    **Il était IMPOSSIBLE il y a quelques heures, et il ne l'est plus.** Rien
+    n'enregistrait qu'une facture était payée ; une alerte bâtie là-dessus aurait
+    crié sur toutes les factures, pour toujours. Une autre session a codé entre
+    temps « l'endroit en attente » et le geste « Payée » (migration 0045,
+    `paiements_facture`) : la donnée existe désormais, le rappel devient
+    possible.
+
+    **CE QUI N'EST PAS À REDESSINER :** le geste de marquer une facture payée.
+    Il existe, il est à sa place — Terminés › TVA › En attente de paiement —, et
+    le paiement partiel y est déjà traité par « Noter un règlement ». Cette
+    planche ne parle QUE du rappel.
+
+    ─── LA VRAIE QUESTION, ET ELLE N'EST PAS DE DESSIN ───────────────────────
+
+    À partir de QUAND une facture est-elle « impayée » ? Les trois rappels
+    existants comptent des jours depuis un événement. Celui-ci pourrait faire
+    autrement : Atlas connaît le **délai de paiement** que le patron a réglé
+    dans « Devis & factures », donc l'ÉCHÉANCE. Rappeler à l'échéance, c'est
+    rappeler quand le client est en retard — pas quand une horloge sonne.
+
+    D'où l'écran 2 : deux réponses, leur coût, et ce qu'elles donnent sur le
+    même exemple.
+  */
+
+  :root{
+    --fond:#f5f3ee;   /* colors.cream */
+    --plage:#faf9f5;  /* colors.card  */
+    --encre:#1c1c1a;  /* colors.ink   */
+    --gris:#8a8578;   /* colors.muted */
+    --bronze:#b98b47; /* colors.or */
+    --trait:rgba(28,28,26,.12); /* colors.line */
+    --alerte:#9c3b2e; /* colors.alert */
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c9a15e; --trait:rgba(232,231,221,.15); --alerte:#d0705f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c9a15e; --trait:rgba(232,231,221,.15); --alerte:#d0705f;
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+  .loupe{display:none}
+  @media (min-width:1000px){
+    .loupe{display:block;margin:18px auto 0;padding-top:14px;max-width:56ch;
+           border-top:1px solid var(--trait);font-size:13.5px;color:var(--gris)}
+  }
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:412px;max-width:100%}
+
+  @media (min-width:1000px){
+    .rangee{flex-direction:column;flex-wrap:nowrap;gap:80px;align-items:center}
+    .prop{display:grid;width:auto;max-width:none;column-gap:52px;
+          grid-template-columns:auto 320px;
+          grid-template-rows:auto auto 1fr;
+          grid-template-areas:"tel sous" "tel note" "tel .";
+          justify-items:start}
+    .prop .tel{grid-area:tel;zoom:1.35}
+    .prop .sous{grid-area:sous;text-align:left;align-self:start;padding-top:50px}
+    .prop .note{grid-area:note;text-align:left;max-width:none;align-self:start;
+                font-size:14px;line-height:1.7}
+  }
+  @media (min-width:1500px){
+    .prop{grid-template-columns:auto 360px}
+    .prop .tel{zoom:1.6}
+    .prop .sous{padding-top:59px}
+  }
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+  .note .q{color:var(--bronze);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-bronze:#b98b47; --e-trait:rgba(28,28,26,.12); --e-plein:#2f3b2f;
+         --e-plein-encre:#f5f3ee; --e-alerte:#9c3b2e}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* `EnTeteEcran`, valeur pour valeur. */
+  .tete{padding:34px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q1{left:14px}
+  .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
+
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
+  .corps > .bloc:first-of-type,
+  .corps > .mot:first-child,
+  .corps > .fin:first-child{border-top:0;padding-top:0;margin-top:26px}
+  .bloc .t{margin:0 0 10px;color:var(--e-gris)}
+
+  /* ═══ LA CARTE DU RAPPEL, sur l'accueil ══════════════════════════════
+     La MÊME grammaire que les trois rappels codés : rayon de 18 px, fond de
+     plage, titre en petites capitales. Une quatrième carte qui se dessinerait
+     autrement se lirait comme une alerte d'une autre nature. */
+  .carte{margin:16px 26px 0;border-radius:18px;padding:16px 20px;background:var(--e-plage)}
+  .carte .titre{margin:0 0 6px;color:var(--e-gris)}
+  .carte .nom{margin:0;font:400 16px/1.3 ui-serif,Georgia,serif}
+  .carte .dit{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--e-gris)}
+  /* Le montant dû est ce qu'il cherche : il se lit sans être crié. */
+  .carte .du{margin:8px 0 0;font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .carte .du .reste{font-size:12.5px;color:var(--e-gris);font-family:ui-sans-serif,-apple-system,sans-serif}
+  .carte .gestes{display:flex;gap:16px;margin-top:12px}
+  .carte .gestes a{font-size:14px;font-weight:500;color:var(--e-plein);text-decoration:none}
+  .carte .gestes a.second{color:var(--e-gris);font-weight:400}
+
+  /* ═══ LE RÉGLAGE, quatrième ligne de « Notifications » ═══════════════ */
+  .reg{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--e-trait)}
+  .bloc .reg:last-child{border-bottom:0}
+  .reg .txt{flex:1;min-width:0}
+  .reg .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif}
+  .reg .quoi{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .inter{position:relative;flex:none;width:48px;height:28px;border-radius:99px;background:var(--e-plein)}
+  .inter i{position:absolute;top:3px;left:23px;width:22px;height:22px;border-radius:99px;background:var(--e-fond)}
+  .reg.eteint .inter{background:var(--e-trait)}
+  .reg.eteint .inter i{left:3px}
+  .delai{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:11.5px;color:var(--e-gris)}
+  .delai b{display:inline-block;min-width:52px;padding:8px 10px;border-radius:4px;
+           background:var(--e-plage);color:var(--e-encre);font:400 16px/1 ui-sans-serif,sans-serif;text-align:right}
+
+  /* ═══ LES DEUX RÉPONSES, dépliables au doigt ════════════════════════
+     Elles portent une lettre parce qu'il répond par une lettre. */
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+  .choix{display:block;padding:14px 0;border-bottom:1px solid var(--e-trait)}
+  .bloc .choix:last-of-type{border-bottom:0}
+  .choix .entete{display:flex;gap:12px;align-items:flex-start}
+  .choix .lettre{flex:none;display:flex;align-items:center;justify-content:center;
+                 width:26px;height:26px;border-radius:99px;background:var(--e-plage);
+                 font:400 13px/1 ui-serif,Georgia,serif;color:var(--e-bronze)}
+  .choix .corps_choix{flex:1;min-width:0}
+  .choix .titre_c{display:block;font:400 16px/1.3 ui-serif,Georgia,serif}
+  .choix .quoi{display:block;margin-top:4px;font-size:11.5px;line-height:1.6;color:var(--e-gris)}
+  .choix .cout{display:block;margin-top:5px;font-size:11px;color:var(--e-bronze);
+               text-transform:uppercase;letter-spacing:.22em}
+  .choix .plus{display:none;margin:10px 0 0 38px;padding:11px 13px;border-radius:4px;
+               background:var(--e-plage);font-size:12.5px;line-height:1.6;color:var(--e-gris)}
+  .choix .plus b{color:var(--e-encre);font-weight:500}
+  .interrupteur:checked + .choix .plus{display:block}
+  .choix .toucher{display:block;margin-top:6px;margin-left:38px;font-size:11px;color:var(--e-bronze);
+                  text-transform:uppercase;letter-spacing:.22em}
+  .interrupteur:checked + .choix .toucher{visibility:hidden}
+
+  .mot{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait);
+       font-size:11.5px;line-height:1.75;color:var(--e-gris)}
+  .mot b{color:var(--e-encre);font-weight:500}
+  .mot.grave b{color:var(--e-alerte)}
+  .fin{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait);
+       font-size:11.5px;line-height:1.75;color:var(--e-gris)}
+  .fin b{color:var(--e-encre);font-weight:400}
+
+  /* SUR TÉLÉPHONE, LE CADRE S'EFFACE — règle posée EN DERNIER dans la feuille,
+     sans quoi `.tel{padding:11px}` la reprend à égalité de spécificité. */
+  @media (max-width:520px){
+    body{padding:26px 0 72px}
+    .intro,.sous,.note{padding-left:16px;padding-right:16px}
+    .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
+    .ecran{border-radius:0}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le quatrième rappel</p>
+    <h1>Une facture qui n'est pas payée</h1>
+    <p>
+      Il était <strong>impossible ce matin</strong> — rien n'enregistrait qu'une
+      facture était réglée. Depuis que « l'endroit en attente » existe, il
+      devient possible. <strong>Touchez les deux propositions</strong> de
+      l'écran 2 : elles montrent ce qu'elles donnent sur le même exemple.
+    </p>
+    <p class="loupe">
+      Sur grand écran, les téléphones sont <strong>agrandis à la loupe</strong> :
+      les proportions restent celles d'un iPhone.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── 1. La carte, sur l'accueil ─────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">1 — Ce que vous verriez</p>
+      <div class="tel"><div class="ecran" data-s="accueil">
+        <div class="tete"><p class="sur caps">Bonjour Florian</p><h1>Vos chantiers</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="carte" data-s="carte-impayee">
+            <p class="titre caps">Facture impayée</p>
+            <p class="nom">Reprise de toiture — Mme Lemoine</p>
+            <p class="dit">Échéance dépassée depuis 12 jours.</p>
+            <p class="du">1 240,00 €</p>
+            <div class="gestes">
+              <a href="#">Ouvrir la facture</a>
+              <a href="#" class="second">Marquer payée</a>
+            </div>
+          </div>
+
+          <div class="carte" data-s="carte-partielle">
+            <p class="titre caps">Facture impayée</p>
+            <p class="nom">Élagage du tilleul — M. Bahri</p>
+            <p class="dit">Échéance dépassée depuis 3 jours.</p>
+            <p class="du">480,00 € <span class="reste">restant sur 1 200,00 €</span></p>
+            <div class="gestes">
+              <a href="#">Ouvrir la facture</a>
+              <a href="#" class="second">Noter un règlement</a>
+            </div>
+          </div>
+
+          <p class="mot" data-s="mot-accueil">
+            <b>La même carte que les trois autres rappels</b>, à la même place, et
+            sans « J'ai vu » : elle s'en va quand la facture est réglée, pas quand
+            on la regarde. <b>Le second geste mène droit là où l'on solde</b> —
+            l'endroit en attente —, sans passer par le relevé de TVA.
+          </p>
+
+        </div>
+        <div class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i class="q1"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Le montant est ce qu'il cherche</b>, et il est écrit gros. Sur une
+        facture partiellement réglée, c'est le <b>reste dû</b> qui s'affiche —
+        pas le total : c'est cette somme-là qu'il réclame au téléphone.
+      </p>
+    </div>
+
+    <!-- ── 2. LA QUESTION : à partir de quand ? ───────────────────────── -->
+    <div class="prop">
+      <p class="sous">2 — Question : à partir de quand ?</p>
+      <div class="tel"><div class="ecran" data-s="question">
+        <div class="tete"><p class="sur caps">Une question</p><h1>Impayée dès quand ?</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <p class="mot" data-s="constat">
+            Les trois rappels existants comptent des jours depuis un événement.
+            Celui-ci peut faire mieux : Atlas connaît le <b>délai de paiement</b>
+            que vous avez réglé dans « Devis &amp; factures », donc l&apos;échéance.
+          </p>
+
+          <div class="bloc">
+            <p class="t caps">Deux réponses possibles</p>
+
+            <input class="interrupteur" type="checkbox" id="a">
+            <label class="choix" for="a" data-s="choix-a">
+              <span class="entete">
+                <span class="lettre">A</span>
+                <span class="corps_choix">
+                  <span class="titre_c">À l&apos;échéance, puis chaque jour</span>
+                  <span class="quoi">
+                    La facture est en retard quand la date promise est passée.
+                    Rien avant. C&apos;est la définition du métier.
+                  </span>
+                  <span class="cout">Aucune colonne · une demi-journée</span>
+                </span>
+              </span>
+              <span class="toucher">Touchez pour voir l&apos;exemple</span>
+              <span class="plus">
+                Facture partie le <b>1er juillet</b>, délai réglé à <b>30 jours</b>.
+                Échéance le <b>31 juillet</b> — le rappel paraît le <b>1er août</b>.<br><br>
+                <b>Le cas qui coince :</b> si aucun délai n&apos;est réglé, il n&apos;y
+                a pas d&apos;échéance. Le rappel se tait — ou retombe sur B.
+              </span>
+            </label>
+
+            <input class="interrupteur" type="checkbox" id="b">
+            <label class="choix" for="b" data-s="choix-b">
+              <span class="entete">
+                <span class="lettre">B</span>
+                <span class="corps_choix">
+                  <span class="titre_c">Au bout de N jours, comme les autres</span>
+                  <span class="quoi">
+                    Un nombre de jours après l&apos;envoi de la facture, que vous
+                    réglez. Le même mécanisme que les trois rappels existants.
+                  </span>
+                  <span class="cout">Aucune colonne · deux heures</span>
+                </span>
+              </span>
+              <span class="toucher">Touchez pour voir l&apos;exemple</span>
+              <span class="plus">
+                Facture partie le <b>1er juillet</b>, rappel réglé à <b>30 jours</b>.
+                Le rappel paraît le <b>31 juillet</b>, quel que soit le délai promis
+                au client.<br><br>
+                <b>Le cas qui coince :</b> vous avez accordé 60 jours à ce
+                client-là. Atlas vous rappelle quand même au trentième, et vous
+                appelez quelqu&apos;un qui n&apos;est pas en retard.
+              </span>
+            </label>
+          </div>
+
+          <p class="fin" data-s="avis">
+            <b>Ce que je ferais :</b> A, avec B en secours — l&apos;échéance quand
+            elle existe, sinon un délai réglé. Les deux ensemble ne coûtent
+            presque rien de plus, et il n&apos;y a plus de cas muet.
+          </p>
+
+        </div>
+        <div class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i class="q1"></i></div>
+      </div></div>
+      <p class="note">
+        <span class="q">Répondez « A », « B », ou « A+B ».</span> Cet écran
+        n&apos;existera pas dans l&apos;application : il ne sert qu&apos;à poser la
+        question.
+      </p>
+    </div>
+
+    <!-- ── 3. Le réglage, quatrième ligne de Notifications ────────────── -->
+    <div class="prop">
+      <p class="sous">3 — Le réglage</p>
+      <div class="tel"><div class="ecran" data-s="reglage">
+        <div class="tete"><p class="sur caps">Moi</p><h1>Notifications</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Ce que vous réglez</p>
+
+            <div class="reg" data-s="reg-devis">
+              <span class="txt">
+                <span class="nom">Devis sans réponse</span>
+                <span class="quoi">Un devis parti dont le client n&apos;a rien dit</span>
+              </span>
+              <span class="inter"><i></i></span>
+            </div>
+
+            <div class="reg" data-s="reg-facture">
+              <span class="txt">
+                <span class="nom">Chantier fini, pas facturé</span>
+                <span class="quoi">Le chantier est terminé et aucune facture n&apos;est partie</span>
+              </span>
+              <span class="inter"><i></i></span>
+            </div>
+
+            <div class="reg" data-s="reg-impayee">
+              <span class="txt">
+                <span class="nom">Facture impayée</span>
+                <span class="quoi">L&apos;échéance est passée et le règlement n&apos;est pas arrivé</span>
+                <span class="delai">
+                  Rappeler <b>1</b> jour après l&apos;échéance
+                </span>
+              </span>
+              <span class="inter"><i></i></span>
+            </div>
+          </div>
+
+          <p class="mot" data-s="mot-coupe">
+            <b>Celui-ci se coupe, mais réfléchissez.</b> L&apos;éteindre, c&apos;est
+            accepter de ne plus savoir qu&apos;un client ne vous a pas payé — et
+            c&apos;est le seul des quatre où l&apos;oubli coûte de l&apos;argent.
+          </p>
+
+          <p class="fin" data-s="mot-sans-delai">
+            Sans délai de paiement réglé dans « Devis &amp; factures », il n&apos;y a
+            pas d&apos;échéance : la ligne le dirait, et proposerait d&apos;aller le
+            régler. Jamais un rappel silencieux qu&apos;on croit allumé.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Une quatrième ligne, rien de plus.</b> Le délai est celui de
+        l&apos;échéance, pas de l&apos;envoi : « 1 jour après » veut dire « dès le
+        lendemain du jour promis ».
+      </p>
+    </div>
+
+    <!-- ── 4. Ce qui ne doit PAS arriver ──────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">4 — Ce qu&apos;il faut éviter</p>
+      <div class="tel"><div class="ecran" data-s="pieges">
+        <div class="tete"><p class="sur caps">Attention</p><h1>Trois pièges</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Ce que le rappel ne doit jamais faire</p>
+
+            <div class="reg" data-s="piege-1">
+              <span class="txt">
+                <span class="nom">Crier sur une facture soldée</span>
+                <span class="quoi">
+                  Une facture entièrement réglée sort du rappel le jour même.
+                  C&apos;est la somme des règlements qui décide, pas un état posé
+                  à la main.
+                </span>
+              </span>
+            </div>
+
+            <div class="reg" data-s="piege-2">
+              <span class="txt">
+                <span class="nom">Compter un acompte pour un solde</span>
+                <span class="quoi">
+                  480 € reçus sur 1 200 € : la facture reste rappelée, et c&apos;est
+                  le RESTE qui s&apos;affiche. L&apos;inverse — la faire disparaître —
+                  ferait oublier 720 €.
+                </span>
+              </span>
+            </div>
+
+            <div class="reg" data-s="piege-3">
+              <span class="txt">
+                <span class="nom">Doubler la file d&apos;attente</span>
+                <span class="quoi">
+                  « L&apos;endroit en attente » liste déjà les factures non
+                  soldées. Le rappel ne le remplace pas : il ne sort QUE celles
+                  dont l&apos;échéance est dépassée — les autres attendent
+                  tranquillement leur tour.
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <p class="mot grave" data-s="mot-piege">
+            <b>Le troisième est le plus facile à rater.</b> Deux listes qui disent
+            presque la même chose, et l&apos;on finit par n&apos;en lire aucune.
+          </p>
+
+        </div>
+        <div class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i class="q1"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Rien de tout cela n&apos;est codé.</b> Cette planche attend votre
+        réponse à la question de l&apos;écran 2 — après quoi c&apos;est une
+        demi-journée.
+      </p>
+    </div>
+
+  </div>
+</div>

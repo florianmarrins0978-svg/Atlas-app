@@ -27,6 +27,45 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quadragies. Le rappel « facture impayée » — DESSINÉ, en attente de sa réponse
+
+*`maquettes/atlas-rappel-facture-impayee.html`, le 16 août 2026 — quatre écrans,
+54 contrôles. Sa demande : « fais la maquette du rappel facture impayée ».*
+
+**Il était impossible le matin même, et il ne l'est plus.** Rien n'enregistrait
+qu'une facture était réglée ; une autre session a codé « l'endroit en attente »
+et le geste « Payée » (migration 0045, `paiements_facture`). La donnée existe :
+le quatrième rappel devient codable.
+
+**⚠ NE PAS REDESSINER le geste de marquer une facture payée.** Il existe, il est
+à sa place — Terminés › TVA › En attente de paiement —, et le paiement partiel y
+est déjà traité par « Noter un règlement ». J'ai failli le refaire faute d'avoir
+regardé `main` : la planche ne parle QUE du rappel.
+
+**La question posée, et elle attend :** à partir de quand une facture est-elle
+impayée ?
+
+| | Ce que ça donne |
+|---|---|
+| **A** — à l'échéance | Atlas connaît le délai de paiement réglé dans « Devis & factures ». Rien à créer. **Coince** si aucun délai n'est réglé : pas d'échéance, donc pas de rappel |
+| **B** — N jours après l'envoi | Le mécanisme des trois autres rappels. **Coince** sur un client à qui on a accordé 60 jours : Atlas rappelle au trentième |
+| **A+B** | L'échéance quand elle existe, un délai réglé sinon. Presque rien de plus, et plus aucun cas muet |
+
+**Les trois pièges, écrits sur la planche et à tenir au moment de coder :**
+
+1. une facture soldée sort du rappel **le jour même** — c'est la somme des
+   règlements qui décide, jamais un état posé à la main ;
+2. un acompte ne solde pas : la facture reste rappelée et c'est **le reste dû**
+   qui s'affiche. L'inverse ferait oublier la différence ;
+3. **ne pas doubler « l'endroit en attente »**, qui liste déjà les factures non
+   soldées. Le rappel ne sort que celles dont l'échéance est dépassée. C'est le
+   piège le plus facile à rater : deux listes presque identiques, et l'on finit
+   par n'en lire aucune.
+
+**Corollaire, à corriger en même temps :** l'écran « Notifications » affirme
+encore que « facture impayée » est impossible faute de savoir ce qui est payé.
+C'était vrai le matin, ça ne l'est plus.
+
 ### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
 
 **Sa demande du 16 août 2026 :** *« si jamais un client me demande une
