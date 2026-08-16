@@ -212,8 +212,25 @@ async function main() {
     await page.locator('[data-atlas="sans-date"]').first().click();
     await page.waitForTimeout(300);
 
-    // Un jour libre : le calendrier s'ouvre sur le mois courant.
-    const jour = new Date(Date.now() + 20 * 86400_000).toISOString().slice(0, 10);
+    // **Un jour OUVRÉ, et c'est tout le correctif.**
+    //
+    // Cette suite visait « aujourd'hui + 20 jours », quelle que soit sa nature.
+    // Écrite un jour où cela tombait en semaine, elle est passée au vert ; le
+    // 16 août 2026, les vingt jours menaient à un SAMEDI — que le planning
+    // n'offre jamais (« Jamais proposé »). Aucun créneau, donc aucun bouton
+    // « Poser », et l'échec accusait le bouton alors que c'est le jour qui
+    // n'était pas posable.
+    //
+    // Une bombe à retardement, exactement celle que `test-envois-devis.ts`
+    // avait déjà désamorcée en passant son année de référence explicitement :
+    // une suite qui dépend du calendrier rougit un matin, sur un produit sain.
+    const jourOuvre = (depuis: number) => {
+      const d = new Date(Date.now() + depuis * 86400_000);
+      // 0 = dimanche, 6 = samedi.
+      while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+      return d.toISOString().slice(0, 10);
+    };
+    const jour = jourOuvre(20);
     for (let i = 0; i < 24; i++) {
       if ((await page.locator(`[data-atlas="grille-mois"] button[data-jour="${jour}"]`).count()) > 0) break;
       await page.click('button[aria-label="Mois suivant"]');

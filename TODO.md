@@ -27,39 +27,28 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 tricies nonies. `test-pastille-equipe-e2e` est ROUGE sur `main`
+### ~~0 tricies nonies. `test-pastille-equipe-e2e` était ROUGE sur `main`~~ — **CORRIGÉE le 16 août 2026**
 
-*Constaté le 14 août 2026 au soir, en fusionnant un autre lot. **Ce n'est pas
-une intermittence** : la suite tombe aussi bien seule qu'en batterie, toujours
-sur le même contrôle.*
+**La cause n'était pas celle que j'avais écrite ici**, et l'erreur mérite d'être
+gardée : j'avais accusé le `.first()` qui désigne le chantier à poser. C'était
+faux, et cela venait de m'être soufflé par une ressemblance avec un défaut
+voisin — pas d'une mesure.
 
-```
-❌ En posant, les équipes sont des CASES et le bouton dit quoi faire
-   le bouton doit rester à l'écran avant le choix
-```
+**La vraie cause :** la suite visait *« aujourd'hui + 20 jours »*, quelle que
+soit la nature de ce jour. Écrite un jour où cela tombait en semaine, elle
+passait ; le 16 août 2026, les vingt jours menaient à un **samedi** — que le
+planning n'offre jamais (« Jamais proposé »). Aucun créneau, donc aucun bouton
+« Poser », et le contrôle accusait le bouton alors que c'est le JOUR qui n'était
+pas posable.
 
-**Ce qui est déjà écarté**, pour ne pas le refaire : le code du planning est
-identique entre `main` et la branche qui l'a constaté — ce n'est pas une
-collision de fusion.
+**Ce qui l'a trouvée :** un seul relevé de l'état réel de la page au moment de
+l'échec, plutôt qu'une seconde hypothèse. `Samedi 5 septembre — Jamais proposé`
+était écrit noir sur blanc dans le corps de la page.
 
-**Le diagnostic, aussi loin qu'il a été mené :** le contrôle attend
-`[data-atlas="poser"]` dans la page ; il en compte zéro. Ce bouton n'est rendu
-que si `aPoser` existe (`PlanningClient.tsx`), et
-`aPoser = visibles.find(…) ?? sansDate[0] ?? null`. **Il est donc nul parce que
-`sansDate` est vide au moment du contrôle** — la suite crée pourtant un chantier
-sans date juste avant, puis clique `[data-atlas="sans-date"]` **avec
-`.first()`** : rien ne garantit que c'est LE SIEN. Les sections précédentes de
-la même suite posent des chantiers, et le jeu de démonstration en porte
-d'autres.
-
-**Piste à éprouver en premier :** viser le chantier par son nom (il est unique,
-horodaté à la création) plutôt que par `.first()`. C'est exactement le piège
-déjà payé sur `test-unite-tarif-e2e` le 14 août — « viser la dernière ligne
-remplissait la carte d'avant ».
-
-**Ce lot appartient à la session qui a posé la pastille d'équipe.** Écrit ici
-pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue à une
-intermittence.
+**La leçon, et le dépôt l'avait déjà payée une fois** (`test-envois-devis.ts`,
+qui passe son année de référence explicitement) : **une suite qui dépend du
+calendrier rougit un matin, sur un produit parfaitement sain.** Le correctif
+avance au premier jour ouvré ; il ne dépend plus du jour où la batterie tourne.
 
 ### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
 
