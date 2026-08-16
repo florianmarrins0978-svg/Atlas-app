@@ -214,6 +214,12 @@ dehors — l'application le laissait entrer, puis refusait toute écriture.
 
 ### La refonte de l'interface (10 août 2026)
 
+**Mise à jour du 16 août 2026 :** « Nouveau chantier » a grossi — *« les
+capitales, gros et très gras »*, choisi sur `docs/maquettes/62` : 13 px,
+graisse 800, 0,22 em, rond de 42 px. `docs/maquettes/24-le-bouton-retenu.html`
+n'est plus la référence du libellé et porte un bandeau qui le dit ; elle reste
+celle du geste (onde, tours, grains), qui n'a pas bougé.
+
 Le patron a arrêté un écran après une soirée de maquettes
 (`docs/maquettes/`, treize propositions), puis l'a fait poser dans
 l'application. Ce qui est **fait** :
@@ -627,15 +633,6 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 ## Ce qui reste, et que je peux faire seul
 
 Voir `TODO.md` pour le détail et l'ordre.
-
-- **« Nouveau chantier », plus gros et en gras** — sa demande du 16 août,
-  **dessinée le jour même et pas codée** (`docs/maquettes/62`) : trois formes,
-  trois tailles, trois graisses, et le témoin d'aujourd'hui figé à côté. Deux
-  choses à savoir avant de porter son choix : le cran le plus gros est **le plus
-  gros qui tienne sans couper le mot** sur un écran de 360 px, et
-  `docs/maquettes/24-le-bouton-retenu.html` — où *il* avait resserré cet endroit
-  le 11 août — devra être corrigé dans le même commit, sinon deux sources se
-  contrediront.
 
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA

@@ -724,14 +724,21 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
-**« LE NOUVEAU CHANTIER FAIT LE PLUS GROS ET EN GRAS » (16 août) — DESSINÉ,
-PAS CODÉ, et il n'a pas encore répondu.** `docs/maquettes/62`. **Ne pas porter
-un choix dans `src/` avant qu'il ait désigné une forme** : c'est sa règle du
-11 août. Quand il aura choisi, deux fichiers changent ensemble — `globals.css`
-(`.atlas-mot`, `.atlas-rond`, vers la ligne 813) **et**
-`docs/maquettes/24-le-bouton-retenu.html`, qui chiffre les mesures actuelles
-parce que c'est *lui* qui les avait resserrées le 11 août. Corriger l'un sans
-l'autre laisse deux sources qui se contredisent.
+**« LE NOUVEAU CHANTIER » A GROSSI (16 août) — dessiné le matin, choisi et codé
+dans la journée.** Sa réponse devant `docs/maquettes/62` : **« les capitales,
+gros et très gras »** — 13 px, graisse 800, interlettrage 0,22 em, rond de
+42 px, signe inchangé à 20. Les valeurs vivent dans `globals.css`
+(`.atlas-mot`, `.atlas-rond`).
+
+**⚠ `docs/maquettes/24-le-bouton-retenu.html` n'est PLUS la référence du
+libellé** — elle porte un bandeau qui le dit, et renvoie à la 62. Elle reste
+celle de l'onde, des trois tours et des onze grains, qui n'ont pas bougé. Ne pas
+« ré-harmoniser » le reste sur ses chiffres.
+
+**Et ne pas rétrécir le mot pour faire tenir autre chose à côté :** à 360 px, le
+mot, l'écart et le rond font 237 px pour 308 disponibles.
+`test-bouton-nouveau-chantier-e2e.ts` mesure les deux dérives — le retour au
+libellé minuscule et la coupure en « … ».
 
 **Et un piège de la page unique, corrigé au passage.**
 `scripts/fusionner-maquettes.mjs` préfixe les identifiants pour qu'ils ne se

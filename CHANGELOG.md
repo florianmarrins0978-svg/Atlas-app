@@ -9,7 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
-### « Le nouveau chantier fait le plus gros et en gras » — dessiné, pas codé
+### « Le nouveau chantier » grossit : 13 px, très gras, rond de 42
+
+**Son choix du 16 août, la planche 62 en main : « les capitales, gros et très
+gras ».** Le libellé passe de 9 à 13 px, de la graisse 500 à 800, son
+interlettrage se resserre de 0,28 à 0,22 em — seize capitales à 0,28 em ne font
+plus un mot mais une frise —, et le rond suit, de 38 à 42 px. Le signe reste à
+20 : l'agrandir aurait rempli l'anneau.
+
+**Ce que ça évite, et c'est le risque de ce genre de demande :** grossir
+jusqu'à la coupure. `test-bouton-nouveau-chantier-e2e.ts` mesure désormais le
+mot **à 360 px**, le plus étroit de ses écrans, et refuse les deux dérives
+opposées — le retour au libellé minuscule (≥ 12 px, ≥ 700) et le « … ».
+
+**Et `docs/maquettes/24-le-bouton-retenu.html` a été corrigé dans le même
+commit.** C'est lui qui avait resserré cet endroit le 11 août, et cette planche
+chiffre les mesures que le code est censé suivre : la laisser dire 9 px pendant
+que le code en fait 13, c'est garantir qu'une prochaine session croira la
+mauvaise. Elle porte maintenant un bandeau, et renvoie à la 62.
+
+### La planche de ce choix — trois formes, trois tailles, trois graisses
 
 **Sa demande du 16 août**, capture à l'appui. `src/` n'est pas touché : la
 planche `docs/maquettes/62-le-nouveau-chantier-plus-gros.html` propose trois

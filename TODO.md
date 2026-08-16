@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quadragies ter. « Le nouveau chantier fait le plus gros et en gras » — DESSINÉ le 16 août 2026, en attente de son choix
+### 0 quadragies ter. ~~« Le nouveau chantier fait le plus gros et en gras »~~ — **CODÉ le 16 août 2026 (A · les capitales, gros, très gras)**
 
 **Sa demande du 16 août 2026**, capture de l'écran Chantiers à l'appui : *« Le
 nouveau chantier fait le plus gros et en gras. »*
@@ -38,22 +38,26 @@ capitales grossies, la serif du titre, toute la largeur), trois tailles, trois
 graisses, et **le témoin d'aujourd'hui figé à côté** — 9 px / 500 / rond de
 38 px, les valeurs de `globals.css`.
 
-**Ce qu'il reste à faire quand il aura choisi**, et les deux ne se séparent
-pas :
+**Son choix, la planche en main : « les capitales, gros et très gras ».** Porté
+le jour même — 13 px, graisse 800, interlettrage 0,22 em, rond de 42 px, signe
+inchangé à 20 (`src/app/globals.css`). `docs/maquettes/24-le-bouton-retenu.html`
+porte désormais un bandeau qui dit que ses mesures de libellé sont périmées et
+renvoie à la 62 : c'est lui qui avait resserré cet endroit le 11 août, et laisser
+les deux se contredire aurait fait croire la mauvaise à la session suivante.
 
-1. porter les trois valeurs dans `.atlas-mot` et `.atlas-rond`
-   (`src/app/globals.css`, vers la ligne 813) ;
-2. **corriger `docs/maquettes/24-le-bouton-retenu.html` dans le même commit.**
-   C'est lui qui avait resserré cet endroit le 11 août — libellé de 9,5 à 9 px,
-   rond de 46 à 38, signe de 24 à 20 — et cette maquette chiffre les mesures que
-   le code est censé suivre. Grossir sans la reprendre laisserait deux sources
-   qui se contredisent, et la suivante croira la mauvaise.
+**Ce qui n'a PAS bougé, et qu'il ne faut pas « harmoniser » par erreur :** l'onde
+à 1,42 fois le rond, les trois tours freinés en 560 ms, les onze grains et leur
+portée, l'écart de 13 px entre le mot et le rond, la demi-seconde avant la
+feuille.
 
 **Ce qui est déjà su, et qu'il ne faut pas redécouvrir :** le cran « le plus
 gros » (17 px en capitales, 26 px en serif) est **le plus gros qui tienne sans
 couper le mot** sur un écran de 360 px — 284 px pour 308 disponibles. Au-delà,
 « Nouveau chantier » finit en « … ».
-`scripts/verifier-maquette-nouveau-chantier.mjs` le tient, et sait rougir.
+`scripts/verifier-maquette-nouveau-chantier.mjs` le tient sur la planche, et
+`scripts/test-bouton-nouveau-chantier-e2e.ts` le tient **dans l'application** :
+il mesure le mot à 360 px et refuse aussi bien un retour au libellé minuscule
+(≥ 12 px, ≥ 700) qu'une coupure en « … ».
 
 ### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
 

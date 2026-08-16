@@ -22,7 +22,15 @@ import assert from "node:assert";
  *      chantiers naissent là où il n'en voulait qu'un ;
  *   5. sous « mouvement réduit », elle monte TOUT DE SUITE : attendre une
  *      animation qui ne joue pas ferait passer un réglage d'accessibilité pour
- *      une lenteur.
+ *      une lenteur ;
+ *   6. **le mot est gros et très gras, et il n'est pas coupé.** Ajouté le
+ *      16 août 2026, quand le patron est revenu sur son propre resserrage :
+ *      « les capitales, gros et très gras » (`docs/maquettes/62`). Deux
+ *      dangers, opposés, et une seule mesure les tient : qu'un correctif de
+ *      style le ramène au libellé minuscule d'avant, ou qu'on le grossisse
+ *      jusqu'à ce qu'il finisse en « … » sur son téléphone. Le contrôle se
+ *      fait à 360 px — le plus étroit de ses écrans —, parce qu'une coupure ne
+ *      se voit pas sur un écran large.
  */
 const BASE = "http://localhost:3000";
 
@@ -74,6 +82,51 @@ async function main() {
     `L'anneau doit être rond et petit, pas un aplat qui barre l'écran ` +
       `(mesuré ${Math.round(boite.width)} × ${Math.round(boite.height)})`,
   );
+
+  // ── Le mot : gros, très gras, et entier ──────────────────────────────────
+  //
+  // Les valeurs viennent de la planche 62, pas d'une appréciation : c'est le
+  // cran « Gros » et la graisse « Très gras » qu'il a désignés. On mesure large
+  // (≥ 12 px, ≥ 700) plutôt qu'au pixel près — figer 13 et 800 rendrait rouge
+  // le jour où il demande un cran de plus, alors que la suite doit attraper le
+  // retour au libellé minuscule, pas un réglage qu'il aura voulu.
+  const mot = bouton.locator(".atlas-mot");
+  const ecriture = await mot.evaluate((n) => {
+    const s = getComputedStyle(n);
+    return { taille: Number.parseFloat(s.fontSize), poids: Number.parseInt(s.fontWeight, 10) };
+  });
+  assert.ok(
+    ecriture.taille >= 12,
+    `Le mot doit rester gros — mesuré ${ecriture.taille} px, il en faut au moins 12 ` +
+      `(le patron est revenu sur son resserrage le 16 août 2026)`,
+  );
+  assert.ok(
+    ecriture.poids >= 700,
+    `Le mot doit rester très gras — mesuré ${ecriture.poids}, il en faut au moins 700`,
+  );
+
+  // Et sur son écran le plus étroit, il ne doit pas se couper. Une boîte de
+  // zéro pixel n'est pas un succès : c'est une mesure impossible, et la rendre
+  // verte est le défaut du 15 août 2026.
+  await page.setViewportSize({ width: 360, height: 780 });
+  await page.waitForTimeout(120);
+  const boiteMot = await mot.boundingBox();
+  assert.ok(
+    boiteMot && boiteMot.width > 1,
+    "Le mot ne se mesure pas à 360 px — rien n'a été éprouvé",
+  );
+  const coupe = await mot.evaluate((n) => n.scrollWidth > n.clientWidth + 1);
+  assert.ok(!coupe, "À 360 px, « Nouveau chantier » est coupé : le mot est trop gros");
+  const debordement = await bouton.evaluate((n) => {
+    const b = n.getBoundingClientRect();
+    return { gauche: b.left, droite: window.innerWidth - b.right };
+  });
+  assert.ok(
+    debordement.gauche >= 0 && debordement.droite >= 0,
+    `À 360 px, le bouton déborde de l'écran (${Math.round(debordement.gauche)} px à gauche, ` +
+      `${Math.round(debordement.droite)} px à droite)`,
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
 
   const feuille = page.locator('div[role="dialog"][aria-label="Nouveau chantier"]');
   assert.equal(await feuille.isVisible(), false, "La feuille est fermée au départ");
