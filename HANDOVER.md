@@ -37,6 +37,17 @@ ce soit au patron.** C'est exactement ce qui a coûté quatre allers-retours dan
 la nuit du 11 au 12 août : des hypothèses formulées à distance, toutes fausses,
 pendant que sa machine savait tout.
 
+**Et une fiche FIGÉE ne veut pas dire « espace arrêté » sur les anciens
+espaces.** Défaut trouvé le 16 août 2026 : la publication vivait au bas de la
+boucle de `veiller.sh`, qui cesse d'avancer dès qu'elle appelle `npm run banc`
+— un appel qui ne rend la main qu'à la mort du serveur suivant. La fiche se
+figeait donc **au moment exact où le veilleur se mettait au travail**, et sa
+propre règle de lecture (« passé vingt minutes, l'espace est arrêté ») envoyait
+rallumer une machine qui tournait. Corrigé : la publication vit dans un
+processus séparé. **Mais un espace allumé avant cette correction porte encore
+l'ancien veilleur** — devant une fiche figée, regarder le commit qu'elle annonce
+avant d'en conclure quoi que ce soit.
+
 Cette phrase-là n'est plus à retenir : `.claude/settings.json` branche
 `scripts/rappel-panne.mjs` sur chaque message reçu, et le rappel réapparaît de
 lui-même dès qu'il signale une panne — dans cette session comme dans les trois
@@ -727,6 +738,26 @@ en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 - **Les planches sont ENGENDRÉES** (`scripts/engendrer-maquette-fiche-entretien.mjs`)
   d'une seule liste : ne pas les retoucher à la main, elles divergeraient.
 
+**LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
+devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture
+et au relevé de TVA. Son choix : l'arrangement **B** de `docs/maquettes/61`, le
+plus cher des trois — **ne pas le rouvrir**, le coût lui a été annoncé avant.
+
+**⚠ TROIS PIÈGES DE CE LOT, tous payés une fois :**
+
+1. **Ne JAMAIS recalculer un total ailleurs qu'en appelant
+   `totauxAvecReduction`** (`src/lib/reduction-devis.ts`). B n'est pas une ligne
+   du tableau : tout endroit qui additionne des lignes à la main oublie la
+   remise, et c'est un montant faux sur un document parti chez un client.
+2. **`total_ht` est le montant NET**, réduction déduite. Le relevé de TVA,
+   l'export comptable et les paiements y cherchent ce qui est dû.
+3. **Pas de « moins » typographique dans un PDF.** `−` (U+2212) fait lever
+   `pdf-lib` et plus aucun devis ne se génère. L'écran, lui, l'affiche très
+   bien — le défaut est invisible partout ailleurs.
+
+**Ce qui n'a pas été parcouru ici** : le geste à la VOIX, faute de transcription
+et de modèle sur cette machine. `ARCHITECTURE.md` §116.
+
 **UN JOUR BARRÉ N'EST PAS UN JOUR PRIS (16 août).** Sa capture de l'écran
 d'envoi, et un défaut de PHRASE, pas de règle.
 
@@ -752,6 +783,7 @@ ne s'affiche pas sur le planning » : c'était vrai la veille, corrigé la nuit 
 (§111), et **son banc avait une version de retard** — sa fiche d'état le disait
 en toutes lettres. Lire la fiche AVANT de chercher dans le produit a fait gagner
 la moitié de l'échange.
+
 
 **LE MICRO DU DEVIS (15 août) — et le seul piège qu'il porte.** Il peut
 désormais dicter des corrections dans le devis : « supprime la deuxième ligne »,

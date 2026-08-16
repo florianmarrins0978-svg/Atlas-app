@@ -48,6 +48,20 @@ heures), l'état des services et la fin du journal de démarrage.
    produit, il n'y a plus personne pour le servir. Et lire **à quel moment**
    elle a été écrite : « à l'allumage », un serveur muet est normal ; « par le
    veilleur », c'est une vraie panne ;
+
+   **Cette règle a été FAUSSE du 12 au 16 août 2026, et elle a coûté une
+   soirée.** La publication vivait au bas de la boucle de surveillance — une
+   boucle qui cesse d'avancer dès qu'elle appelle `npm run banc`, lequel ne rend
+   la main qu'à la mort du serveur suivant. La fiche se figeait donc **à
+   l'instant précis où le veilleur se mettait au travail**, c'est-à-dire au seul
+   moment où l'on a besoin de la lire, et sa propre règle envoyait alors
+   rallumer une machine qui tournait. Corrigé le 16 août : la publication vit
+   dans un processus séparé, que rien de la surveillance ne peut endormir
+   (`scripts/test-fiche-pendant-relance.ts`, qui sait rougir contre l'ancienne
+   version). **Conséquence pratique tant qu'un espace n'a pas redémarré depuis :
+   il porte encore l'ancien veilleur, et sa fiche peut mentir. Devant une fiche
+   figée, regarder d'abord si le commit qu'elle annonce est antérieur à cette
+   correction ;**
 2. n'avancer une hypothèse qu'ensuite, et la dire comme telle ;
 3. si un geste sur sa machine est nécessaire, lui faire lancer **`claude`** dans
    son espace plutôt que de lui dicter dix commandes. L'agent y a accès, pas

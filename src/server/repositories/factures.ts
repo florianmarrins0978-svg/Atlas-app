@@ -15,6 +15,7 @@ import type { Ctx } from "./context";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
+import { totauxAvecReduction } from "../../lib/reduction-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import {
   dansLaPeriode,
@@ -150,6 +151,12 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         totalHt: devisSource.totalHt,
         totalTva: devisSource.totalTva,
         totalTtc: devisSource.totalTtc,
+        // **Le prix accordé suit le devis jusqu'ici, et c'est la moitié de la
+        // fonctionnalité.** Une remise consentie sur le devis puis absente de
+        // la facture ferait payer au client le prix qu'on venait de lui
+        // retirer — et c'est lui qui s'en apercevrait.
+        reductionPourcent: devisSource.reductionPourcent,
+        reductionMontant: devisSource.reductionMontant,
         createdBy: ctx.utilisateurId,
       })
       .returning();
@@ -248,6 +255,8 @@ function donneesFacture(
     totalHt: f.totalHt,
     totalTva: f.totalTva,
     totalTtc: f.totalTtc,
+    reductionPourcent: f.reductionPourcent,
+    reductionMontant: f.reductionMontant,
     lignes: lignes
       .slice()
       .sort((a, b) => a.ordre - b.ordre)
@@ -295,9 +304,14 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId));
 
-    const totalHt = lignes.reduce((acc, l) => acc.plus(new Decimal(l.montant)), new Decimal(0));
-    const totalTva = totalHt.times(new Decimal(avant.tauxTva)).dividedBy(100);
-    const totalTtc = totalHt.plus(totalTva);
+    // **La même règle que le devis, appelée et non réécrite.** Le patron a
+    // choisi l'arrangement B : la réduction n'est pas une ligne, donc ce
+    // recalcul-ci l'oublierait s'il additionnait seulement les lignes — et la
+    // facture émise, immuable, partirait au prix plein.
+    const t = totauxAvecReduction(lignes, avant.tauxTva, avant.reductionPourcent);
+    const totalHt = new Decimal(t.totalHt);
+    const totalTva = new Decimal(t.totalTva);
+    const totalTtc = new Decimal(t.totalTtc);
 
     // La pièce est figée au moment de l'émission, jamais régénérée ensuite :
     // une facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit
@@ -316,6 +330,11 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
           totalHt: totalHt.toFixed(2),
           totalTva: totalTva.toFixed(2),
           totalTtc: totalTtc.toFixed(2),
+          // **Le montant retiré se recalcule avec les totaux, jamais séparément.**
+          // Les lignes peuvent avoir bougé depuis la création de la facture ; un
+          // montant resté sur l'ancien HT donnerait un « Total HT après remise »
+          // qui ne serait la différence de rien.
+          reductionMontant: t.reductionMontant,
         },
         lignes,
         d?.numero ?? null
@@ -336,6 +355,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
         totalHt: totalHt.toFixed(2),
         totalTva: totalTva.toFixed(2),
         totalTtc: totalTtc.toFixed(2),
+        reductionMontant: t.reductionMontant,
         pdfStorageKey: objet.storageKey,
         pdfChecksum: objet.checksum,
       })

@@ -9,6 +9,7 @@
     "dev": "next dev",
     "essai": "node scripts/essai.mjs",
     "essai:reinitialiser": "tsx src/server/db/seed.ts",
+    "essai:chantiers-trajets": "tsx scripts/creer-chantiers-test-trajets.mts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

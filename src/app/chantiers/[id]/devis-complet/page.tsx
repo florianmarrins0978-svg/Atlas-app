@@ -111,6 +111,7 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
           montant: l.montant,
         }))}
         tauxTva={devisRow.tauxTva}
+        reductionPourcent={devisRow.reductionPourcent}
         conditionsPaiement={devisRow.conditionsPaiement ?? ""}
         /* La dictée a-t-elle été comprise, ou seulement recopiée ? L'avis vivait
            sur le compte rendu, qui a disparu du parcours : il se dit désormais

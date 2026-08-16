@@ -320,5 +320,44 @@ cas("un ajout reste applicable sans prix, et le prix reste nul", () => {
   });
 });
 
+// ── Le prix accordé au client — sa demande du 16 août ───────────────────────
+
+cas("« fais cinq pour cent » ne vise aucune ligne, et le dit", () => {
+  const [r] = resoudreRetouches(DEVIS, [{ type: "reduction", pourcent: "5" }]);
+  assert.equal(r.etat, "ok");
+  assert.equal(r.ligne, null, "la réduction porte sur le devis entier, pas sur une ligne");
+  const dit = direRetouche(r);
+  assert.equal(dit.verbe, "Accorder");
+  assert.match(dit.quoi, /Prix accordé au client 5 %/);
+  assert.doesNotMatch(dit.quoi, /[Rr]éduction/, "c'est le mot qu'il a écarté le 16 août");
+});
+
+cas("« enlève la remise » se dit aussi, et repart du prix plein", () => {
+  const [r] = resoudreRetouches(DEVIS, [{ type: "reduction", pourcent: null }]);
+  const dit = direRetouche(r);
+  assert.equal(dit.verbe, "Retirer");
+  assert.match(dit.detail, /prix plein/);
+  assert.deepEqual(changementApplicable(r), { type: "reduction", pourcent: null });
+});
+
+cas("le modèle sait rendre une réduction, et ses bornes sont celles du devis", () => {
+  const r = lireRetouchesDuModele({
+    retouches: [
+      { type: "reduction", pourcent: "10" },
+      { type: "reduction", pourcent: "150" },
+      { type: "reduction", pourcent: null },
+      { type: "reduction", pourcent: "beaucoup" },
+      { type: "reduction" },
+    ],
+  });
+  // 10 %, le 150 borné à 100, et le retrait explicite. « beaucoup » et l'absence
+  // de champ ne sont pas des ordres : ils tombent.
+  assert.deepEqual(r, [
+    { type: "reduction", pourcent: "10" },
+    { type: "reduction", pourcent: "100" },
+    { type: "reduction", pourcent: null },
+  ]);
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);
