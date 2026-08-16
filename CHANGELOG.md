@@ -9,6 +9,61 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### CODÉ : le rappel « facture impayée », et le premier rappel qui a un rythme
+
+Sa demande, en une phrase : *« faut faire a plus b, mais il faut également qu'on
+puisse régler, par exemple, je veux un rappel toutes les semaines ou tous les
+quinze jours, mais pas qu'il y ait la notification tous les jours. »*
+
+| | |
+|---|---|
+| **Quand il paraît** | à l'échéance — envoi **+ le délai de paiement** réglé, ou le jour de l'envoi si aucun délai ne l'est |
+| **Ce qu'il montre** | le **reste dû**, avec le total quand un acompte est arrivé |
+| **« Plus tard »** | espace le rappel du rythme choisi. Il ne classe rien : la facture reste en attente de paiement |
+| **Le rythme** | chaque jour · chaque semaine · tous les 15 jours. Jamais une case à remplir — c'est ce qu'il a exclu |
+| **Il s'éteint** | tout seul dès que le règlement est enregistré (« Terminés › TVA ») |
+
+**Pourquoi celui-ci a un rythme et pas les trois autres.** Les trois premiers
+s'éteignent dès que le geste attendu est fait. Celui-ci dépend du client : sans
+rythme, la carte serait revenue chaque jour pendant des mois, et une carte vue
+tous les jours cesse d'être lue.
+
+**Deux défauts trouvés sur une capture, par aucun test** — « 1 jours après
+l'échéance », et deux espaces mangées autour d'un `<b>` (« tout seuldès que »).
+Le contrôle écrit contre le premier ne mesurait rien : il cherchait la valeur
+d'un `<input>` dans le texte de la page, où elle ne figure jamais.
+`ARCHITECTURE.md` §118.
+
+### Pas de signature sur les rapports d'entretien — et pourquoi c'est mieux
+
+**Sa question, puis sa décision, le 16 août.** *« S'il n'est pas là, on ne peut
+pas le faire signer. Donc est-ce qu'on a vraiment besoin de ça ? »*
+
+**Sa propre capture répondait déjà** : sur le rapport de l'autre application,
+les deux signatures sont « Non signé ». La sienne — qui ne prouve rien, c'est
+son application et son compte — et celle du client, absent onze fois sur douze.
+Un champ qui reste vide fait passer chaque rapport pour un document inachevé.
+
+**Ce qui prouve le passage à leur place existe déjà** : la date, l'heure, le
+temps passé, et l'empreinte du contenu exact — le mécanisme qui sert déjà à
+l'acceptation d'un devis. Plus solide qu'un trait au doigt, et sans un geste.
+S'ajoutera un **« J'ai bien reçu »** sur la page du client : un accusé horodaté.
+
+**La règle qui reste, quelle que soit la suite** : un rapport sans signature ne
+doit pas AVOIR L'AIR incomplet. Si personne n'a signé, la ligne n'existe pas —
+jamais de « Non signé » en gris sur un document qui part chez un client. Un
+contrôle le tient désormais, et il vise le document, pas la page qui l'explique.
+
+**Ce que ça économise** : une journée de travail (zone de dessin, stockage,
+écran verrouillé, conservation RGPD, survie hors réseau) pour un geste fait une
+fois sur vingt.
+
+**Et l'envoi est celui du devis** — sa confirmation du même jour. Le mot
+« automatique » mérite d'être précisé : rien ne part tout seul, c'est sa décision
+du 3 août. Atlas prépare le message avec le lien, ouvre sa messagerie, il appuie.
+
+---
+
 ### « L'appli est vraiment très lente » : le banc le dit enfin lui-même
 
 **Sa plainte du 16 août au soir**, et elle était fondée : chaque écran mettait

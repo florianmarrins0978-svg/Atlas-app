@@ -183,6 +183,28 @@ await cas("le modèle porte la même liste que la fiche", async () => {
   assert(ecart.length === 0, `le modèle a divergé de la fiche : ${ecart.join(", ")}`);
 });
 
+await cas("aucune signature, et surtout aucun « Non signé » SUR LE DOCUMENT", async () => {
+  // **Décidé le 16 août 2026.** Sur sa propre capture de l'autre application,
+  // les deux signatures étaient « Non signé » — la sienne et celle du client,
+  // absent onze fois sur douze. Un champ qui reste vide fait passer chaque
+  // rapport pour un document inachevé.
+  //
+  // **Le contrôle vise le TÉLÉPHONE, pas la page.** Sa première version
+  // interdisait la phrase partout après la feuille de style — y compris dans
+  // l'explication de la planche, qui a le droit de citer le défaut qu'elle
+  // corrige. Un contrôle qui accuse le commentaire au lieu du document apprend
+  // à être ignoré.
+  await page.goto(`file://${RAPPORT}`, { waitUntil: "networkidle" });
+  const document = await page.locator(".tel").innerText();
+  assert(!/Non signé/i.test(document), "« Non signé » est revenu sur le rapport du client");
+  assert(!/Signature/i.test(document), "un cadre de signature est revenu sur le rapport");
+  assert(
+    /horodaté|empreinte/i.test(document),
+    "le rapport ne dit plus ce qui le prouve à la place d'une signature"
+  );
+});
+
+
 await contexte.close();
 await navigateur.close();
 

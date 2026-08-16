@@ -5,6 +5,8 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
 import { marquerReponseVue } from "@/server/repositories/envois-devis";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
+import { repousserRappelFacture } from "@/server/repositories/rappels";
+import { jourIso } from "@/lib/jour";
 
 /**
  * Le patron a pris connaissance d'une réponse du client.
@@ -63,5 +65,36 @@ export async function corrigerDevisAction(
         "Le devis n'a pas pu être rouvert pour correction. Passez par l'écran Devis du chantier, " +
         "puis « Corriger et renvoyer ».",
     };
+  }
+}
+
+/**
+ * « Plus tard » — repousser le rappel d'une facture impayée.
+ *
+ * *Sa demande du 16 août 2026 :* ***« je veux un rappel toutes les semaines ou
+ * tous les quinze jours, mais pas qu'il y ait la notification tous les
+ * jours »***. Ce geste est le seul moteur du rythme : tant qu'il n'y touche
+ * pas, la carte reste.
+ *
+ * **Le jour est calculé AU SERVEUR.** Le téléphone peut être à l'heure
+ * d'ailleurs, et « toutes les semaines » se compte en jours civils : une
+ * journée d'écart ferait revenir la carte un jour trop tôt.
+ *
+ * **Le refus est une valeur, jamais une exception** : le message d'une erreur
+ * levée par une action serveur n'arrive jamais jusqu'au patron
+ * (`HANDOVER.md`, piège 0 ter).
+ */
+export async function repousserRappelFactureAction(
+  factureId: string
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    const fait = await repousserRappelFacture(ctx, factureId, jourIso(new Date()));
+    return fait
+      ? { ok: true }
+      : { ok: false, raison: "Cette facture n'existe plus. Rechargez l'écran." };
+  } catch (erreur) {
+    console.error("[accueil] rappel de facture non repoussé", erreur);
+    return { ok: false, raison: "Impossible de repousser ce rappel pour l'instant. Réessayez." };
   }
 }

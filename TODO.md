@@ -27,6 +27,64 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
+
+*Dessiné (`maquettes/atlas-rappel-facture-impayee.html`, cinq écrans), tranché,
+puis codé le même jour : « oui c'est bon, code le ».*
+
+Ce qu'il demandait est en place : le **« A plus B »** (échéance = envoi + le
+délai de paiement réglé, ou le jour de l'envoi sinon), le **reste dû** avec son
+total quand un acompte est arrivé, l'extinction **automatique** dès que le
+règlement est enregistré, et les **trois rythmes** en pastilles avec « Plus
+tard » pour seul moteur.
+
+Migration `drizzle/0050_rappel_facture_impayee.sql`, règles pures dans
+`src/lib/rappels.ts`, `ARCHITECTURE.md` §118. Éprouvé par `test-rappels.ts`,
+`test-rappels-db.ts` et `test-facture-impayee-e2e.ts`, photographié par
+`scripts/capture-facture-impayee.mts`.
+
+**Ce que ce lot apprend, et qui vaut au-delà de lui :**
+
+- la date de report vit sur le **chantier**, pas sur la facture —
+  `trg_facture_immuable` refuse toute écriture sur une facture émise, et
+  l'affaiblir pour une commodité d'écran aurait été le contournement que
+  `CLAUDE.md` §4 interdit ;
+- **la valeur d'un `<input>` ne figure PAS dans `innerText`.** Un contrôle qui
+  cherchait « 1 jours » dans le texte de la page ne pouvait jamais le trouver :
+  vert sur l'écran fautif, il ne mesurait rien. Cinquième fois que ce dépôt paie
+  un contrôle qui mesure zéro ;
+- **une capture ment aussi.** `fullPage` a photographié le milieu du cadre qui
+  défile, sans une seule carte, pendant que le contrôle lisait le DOM et se
+  déclarait vert. Et un montage écrit `WHERE id = NULL` sans se plaindre :
+  vérifier le `rowCount` de toute écriture de montage.
+
+### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
+
+**Vu le 16 août 2026**, sur la batterie qui suivait la fusion de son lot. Le
+dernier de ses six cas — *« elle se retire, et le devis revient à son prix
+plein »* — a lu **870,00 €** là où il attendait **1 044,00 €**, et « après
+remise » était encore à l'écran.
+
+**Mesuré, pas supposé :** rejouée seule dans la foulée, sur le même code et la
+même base, la suite passe ses six cas. Ce n'est donc pas une règle fausse.
+
+**Le mécanisme, lisible dans la suite elle-même** (`scripts/test-reduction-devis-e2e.ts`,
+vers la ligne 156) : elle vide le champ, appuie sur Tab, attend **une seconde
+fixe**, puis **recharge**. L'enregistrement part au serveur pendant cette
+seconde ; sous une batterie de quatre-vingt-dix suites, il ne l'a pas toujours
+finie, et le rechargement rend la page d'avant. C'est la même famille que
+`test-devis-parti-signet` juste en dessous : un délai fixe qui suffit à vide et
+plus sous charge.
+
+**Ce qu'il faudrait, et c'est à la session qui tient ce lot :** attendre la
+RÉPONSE de l'enregistrement plutôt qu'une seconde — c'est ce qui a réparé
+`test-unite-tarif-e2e` le 16 août. Un délai plus long ne ferait que déplacer le
+seuil.
+
+**Ce lot-ci n'y touche pas**, et il faut le dire : le rappel d'impayé ne passe
+nulle part près des totaux d'un devis. Corriger la suite d'un autre à sa place
+ferait deux sessions écrivant le même fichier au même moment.
+
 ### 0 septvicies. La fiche d'entretien — **TOUT EST TRANCHÉ**, reste à coder
 
 **Ses décisions des 16 août 2026**, toutes prises sur maquettes :
@@ -52,6 +110,25 @@ ajustement — sinon il le referait douze fois par an. **Le pré-remplissage se
 fait donc d'après SON DERNIER PASSAGE**, le modèle ne servant que la première
 fois. C'est ainsi que ce sera codé sauf mot contraire.
 
+**PAS DE SIGNATURE — décidé le 16 août 2026, et à ne pas rouvrir par bonne
+volonté.** Sur SA capture de l'autre application, les deux signatures étaient
+« Non signé ». Le client est absent onze fois sur douze : il travaille pendant
+qu'on entretient son jardin. Un champ vide fait passer chaque rapport pour un
+document inachevé, et la capture au doigt coûtait une journée (zone de dessin,
+stockage, écran verrouillé quand il tend son téléphone, conservation RGPD,
+survie hors réseau) pour un geste fait une fois sur vingt.
+
+**Ce qui prouve le passage à leur place, et qui existe déjà** : la date, l'heure,
+le temps passé, et l'EMPREINTE du contenu exact (`empreinteDevis`, le mécanisme
+de l'acceptation d'un devis). À prévoir en plus : un bouton **« J'ai bien reçu »**
+sur la page du client — un accusé horodaté, pas une signature.
+
+**L'ENVOI : exactement celui du devis.** Sa confirmation du 16 août. Attention au
+mot « automatique » : **rien ne part tout seul**, et ce n'est pas une limite
+technique — c'est sa décision du 3 août (`docs/A-FAIRE.md` §5). Atlas prépare le
+message avec le lien, ouvre SA messagerie, et c'est lui qui appuie. Un envoi
+réellement automatique demanderait un prestataire sous contrat.
+
 **Les invariants posés, à ne pas rouvrir :**
 
 - **un rapport déjà envoyé ne change plus JAMAIS** quand le modèle change : il
@@ -68,7 +145,7 @@ une case à ajouter :
 2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
 3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
    porte déjà devis et factures ;
-4. les **signatures**, en dernier : c'est ce qui se voit le moins et coûte le plus.
+4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
 
 Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
 `63-le-rapport-au-client.html`, `64-composer-sa-fiche.html`,
@@ -446,30 +523,24 @@ rouge, relever ce que la page DIT avant d'écrire une cause. Une hypothèse
 consignée dans les tâches se lit ensuite comme un fait.
 
 
-### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
+### ~~0 tricies octies. Marquer une facture PAYÉE~~ — **FAIT les 15 et 16 août 2026**
 
-*Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
-et écrit sur l'écran lui-même plutôt que passé sous silence.*
+*Écrit le 14 août en codant « Notifications », quand rien dans Atlas
+n'enregistrait qu'une facture était réglée. Le manque bloquait alors trois
+familles d'alertes de la planche.*
 
-**Rien dans Atlas n'enregistre qu'une facture a été payée.** Ni colonne, ni
-geste, ni écran. Ce manque bloque à lui seul **trois** des huit familles
-d'alertes de la planche des notifications :
+**Le geste existe** : « Terminés › TVA › En attente de paiement », avec « Payée »
+d'un doigt et « Noter un règlement » pour un acompte (migration 0045,
+`paiements_facture`, codé par une autre session).
 
-| Ce qui est impossible | Pourquoi |
+**Et la première des trois alertes bloquées est codée** : « Facture impayée »,
+le 16 août (`ARCHITECTURE.md` §118). Les deux autres restent ouvertes, et elles
+ne sont plus impossibles — seulement pas demandées :
+
+| Ce qui reste | Ce qu'il faudrait |
 |---|---|
-| « Facture impayée » | On ne sait pas laquelle est payée : l'alerte crierait sur toutes, pour toujours |
-| « Facture à échéance dans trois jours » | Même raison |
-| « Client à relancer » | Un client relancé pour une facture déjà réglée, c'est pire que pas de relance |
-
-**Ce n'est pas une requête à écrire, c'est un geste à ajouter au produit** : un
-appui sur la facture, une date de règlement, et de quoi se reprendre. Les
-`docs/QUESTIONS.md` §17 le disent d'ailleurs pour la mémoire des prix — la
-bonne question n'est jamais « avons-nous une table ? » mais **« qui l'écrit, et
-quand ? »**
-
-**À dessiner avant de coder** (`CLAUDE.md` §3 bis) : où se pose le geste — sur
-la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
-partiel.
+| « Facture à échéance dans trois jours » | Un rappel AVANT l'échéance, symétrique de l'actuel |
+| « Client à relancer » | Se poser sur le client plutôt que sur la facture |
 
 ### 0 duodetricies quater. La couleur de la barre du navigateur ne suit pas la charte
 
