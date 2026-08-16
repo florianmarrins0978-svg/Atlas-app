@@ -164,6 +164,14 @@
   .delai{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:11.5px;color:var(--e-gris)}
   .delai b{display:inline-block;min-width:52px;padding:8px 10px;border-radius:4px;
            background:var(--e-plage);color:var(--e-encre);font:400 16px/1 ui-sans-serif,sans-serif;text-align:right}
+  /* Le rythme se CHOISIT entre trois, il ne se tape pas : « toutes les
+     semaines » et « tous les quinze jours » sont ses mots, et une case de
+     saisie inviterait à écrire 3 jours — ce qu'il vient d'exclure. */
+  .delai .pastilles{display:flex;flex-wrap:wrap;gap:6px}
+  .delai .past{padding:7px 11px;min-height:32px;border-radius:99px;font-size:12px;
+               color:var(--e-gris);box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .delai .past.pris{color:var(--e-plein-encre);background:var(--e-plein);box-shadow:none}
+  .delai{flex-wrap:wrap;align-items:flex-start}
 
   /* ═══ LES DEUX RÉPONSES, dépliables au doigt ════════════════════════
      Elles portent une lettre parce qu'il répond par une lettre. */
@@ -186,6 +194,17 @@
   .choix .toucher{display:block;margin-top:6px;margin-left:38px;font-size:11px;color:var(--e-bronze);
                   text-transform:uppercase;letter-spacing:.22em}
   .interrupteur:checked + .choix .toucher{visibility:hidden}
+
+  /* La chronologie : une date à gauche, ce qui se passe à droite. Montrer
+     six jours de silence est le seul moyen de faire SENTIR le rythme — une
+     phrase qui dit « puis plus rien pendant une semaine » ne se sent pas. */
+  .jour{display:flex;gap:14px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--e-trait)}
+  .bloc .jour:last-child{border-bottom:0}
+  .jour .quand{flex:none;width:74px;color:var(--e-bronze)}
+  .jour .quoi_j{flex:1;min-width:0;font-size:13px;line-height:1.5;color:var(--e-gris)}
+  .jour .quoi_j b{color:var(--e-encre);font-weight:500}
+  .jour.eteint .quand{color:var(--e-gris)}
+  .jour.eteint .quoi_j{opacity:.62}
 
   .mot{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait);
        font-size:11.5px;line-height:1.75;color:var(--e-gris)}
@@ -240,6 +259,7 @@
             <div class="gestes">
               <a href="#">Ouvrir la facture</a>
               <a href="#" class="second">Marquer payée</a>
+              <a href="#" class="second" data-s="plus-tard">Plus tard</a>
             </div>
           </div>
 
@@ -385,6 +405,16 @@
                 <span class="delai">
                   Rappeler <b>1</b> jour après l&apos;échéance
                 </span>
+                <!-- **SA DEMANDE DU 16 AOÛT 2026, mot pour mot :** « il faut
+                     également qu'on puisse régler, par exemple, je veux un
+                     rappel toutes les semaines ou tous les quinze jours, mais
+                     pas qu'il y ait la notification tous les jours ». -->
+                <span class="delai" data-s="rythme">
+                  Puis me le redire
+                  <span class="pastilles">
+                    <span class="past">Chaque jour</span><span class="past pris">Chaque semaine</span><span class="past">Tous les 15 jours</span>
+                  </span>
+                </span>
               </span>
               <span class="inter"><i></i></span>
             </div>
@@ -470,6 +500,68 @@
         <b>Rien de tout cela n&apos;est codé.</b> Cette planche attend votre
         réponse à la question de l&apos;écran 2 — après quoi c&apos;est une
         demi-journée.
+      </p>
+    </div>
+
+    <!-- ── 5. Le rythme : ce qu'il change vraiment ─────────────────────── -->
+    <div class="prop">
+      <p class="sous">5 — Le rythme, jour après jour</p>
+      <div class="tel"><div class="ecran" data-s="rythme-ecran">
+        <div class="tete"><p class="sur caps">Sa demande</p><h1>Pas tous les jours</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <p class="mot" data-s="constat-rythme">
+            <b>Tel que dessiné jusqu&apos;ici, la carte resterait là en
+            permanence</b> — tous les jours, jusqu&apos;au paiement. Au bout d&apos;une
+            semaine on ne la lit plus, et c&apos;est le rappel entier qu&apos;on perd.
+          </p>
+
+          <div class="bloc">
+            <p class="t caps">Ce qui se passe, avec « chaque semaine »</p>
+
+            <div class="jour" data-s="j-1">
+              <span class="quand caps">Lundi 3</span>
+              <span class="quoi_j"><b>La carte paraît.</b> L&apos;échéance est dépassée d&apos;un jour.</span>
+            </div>
+            <div class="jour" data-s="j-2">
+              <span class="quand caps">Lundi 3</span>
+              <span class="quoi_j">Vous touchez <b>« Plus tard »</b>. La carte s&apos;en va.</span>
+            </div>
+            <div class="jour eteint" data-s="j-3">
+              <span class="quand caps">4 → 9</span>
+              <span class="quoi_j">Rien. Six jours de silence.</span>
+            </div>
+            <div class="jour" data-s="j-4">
+              <span class="quand caps">Lundi 10</span>
+              <span class="quoi_j"><b>Elle revient</b>, avec le retard mis à jour.</span>
+            </div>
+            <div class="jour" data-s="j-5">
+              <span class="quand caps">À tout moment</span>
+              <span class="quoi_j">Le client paie : <b>elle disparaît pour de bon</b>, sans geste.</span>
+            </div>
+          </div>
+
+          <p class="mot grave" data-s="pourquoi-geste">
+            <b>Tant que vous ne touchez pas « Plus tard », elle RESTE.</b> Une
+            carte qui se mettrait en sommeil toute seule pourrait passer un jour
+            où vous n&apos;ouvrez pas l&apos;application — et vous ne sauriez jamais
+            qu&apos;elle est passée.
+          </p>
+
+          <p class="fin" data-s="fin-rythme">
+            La facture, elle, ne bouge pas de <b>« l&apos;endroit en attente »</b>
+            pendant ce temps. Le rythme ne cache rien : il espace le rappel.
+          </p>
+
+        </div>
+        <div class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i class="q1"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Le rythme est un réglage, pas une règle</b> : chaque jour, chaque
+        semaine, tous les quinze jours. Il vaut pour <b>ce rappel-là</b> — les
+        trois autres n&apos;en ont pas besoin, ils s&apos;éteignent d&apos;eux-mêmes dès
+        que le geste attendu est fait.
       </p>
     </div>
 

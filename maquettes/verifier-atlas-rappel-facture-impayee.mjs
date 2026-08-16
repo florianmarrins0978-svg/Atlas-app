@@ -163,6 +163,52 @@ try {
     /pas d'échéance/i.test(await texte('[data-s="mot-sans-delai"]')));
 } catch (e) { echecs.push("réglage · interrompu — " + String(e.message).split("\n")[0]); }
 
+// ── 3 ter. LE RYTHME — sa demande du 16 août 2026 ──────────────────────
+//
+// *« Je veux un rappel toutes les semaines ou tous les quinze jours, mais pas
+// qu'il y ait la notification tous les jours. »* Sans ce réglage, la carte
+// resterait à l'écran chaque jour jusqu'au paiement — et au bout d'une semaine
+// on ne la lit plus. C'est le rappel entier qu'on perdrait.
+try {
+  await cadrer('[data-s="reglage"]');
+  const rythme = await texte('[data-s="rythme"]');
+  verifie("le rythme se règle, et ce sont SES mots",
+    /semaine/i.test(rythme) && /15 jours/i.test(rythme), rythme.slice(0, 120));
+
+  // **Trois pastilles, pas une case de saisie.** Une case inviterait à écrire
+  // « 3 jours », ce qu'il vient précisément d'exclure.
+  const pastilles = await page.$$eval('[data-s="rythme"] .past', (l) =>
+    l.map((e) => ({ t: e.textContent.trim(), h: e.getBoundingClientRect().height })));
+  verifie("le rythme se choisit entre trois, il ne se tape pas",
+    pastilles.length === 3, `${pastilles.length}`);
+  verifie("et une seule est prise à la fois",
+    (await page.$$eval('[data-s="rythme"] .past.pris', (l) => l.length)) === 1);
+  verifie("chaque pastille se touche", pastilles.every((p) => p.h >= 30),
+    pastilles.map((p) => p.h.toFixed(0)).join(" "));
+
+  await cadrer('[data-s="rythme-ecran"]');
+  const chrono = await page.$$eval('[data-s="rythme-ecran"] .jour', (l) => l.length);
+  verifie("la chronologie montre le rythme au lieu de le décrire", chrono >= 5, `${chrono}`);
+
+  // **Le silence doit se VOIR.** Une chronologie qui n'afficherait que les
+  // jours où il se passe quelque chose ne ferait pas sentir l'espacement —
+  // c'est pourtant tout l'objet du réglage.
+  verifie("les six jours de silence sont montrés, pas sous-entendus",
+    /Rien\. Six jours de silence/i.test(await texte('[data-s="j-3"]')));
+
+  // Le geste EXISTE sur la carte : sans lui, le rythme n'a rien pour démarrer.
+  verifie("la carte porte le geste « Plus tard » qui met le rythme en marche",
+    (await texte('[data-s="plus-tard"]')) === "Plus tard");
+
+  // Une carte qui s'endormirait seule pourrait passer un jour sans être vue.
+  verifie("l'écran dit pourquoi la carte ne s'endort pas toute seule",
+    /vous ne touchez pas/i.test(await texte('[data-s="pourquoi-geste"]')));
+
+  // Et le rythme ne doit pas faire croire que la facture a disparu.
+  verifie("il rappelle que la facture reste dans l'endroit en attente",
+    /endroit en attente/i.test(await texte('[data-s="fin-rythme"]')));
+} catch (e) { echecs.push("rythme · interrompu — " + String(e.message).split("\n")[0]); }
+
 // ── 3 bis. Les pièges sont nommés, pas sous-entendus ────────────────────
 try {
   await cadrer('[data-s="pieges"]');
@@ -233,7 +279,7 @@ try {
   verifie("rien ne déborde en largeur", !deborde);
 
   const props = await pg.$$(".prop");
-  verifie("les quatre écrans sont capturés", props.length === 4, `${props.length}`);
+  verifie("les cinq écrans sont capturés", props.length === 5, `${props.length}`);
   for (let i = 0; i < props.length; i++) {
     await props[i].scrollIntoViewIfNeeded();
     await pg.waitForTimeout(200);

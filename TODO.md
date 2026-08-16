@@ -42,14 +42,29 @@ le quatrième rappel devient codable.
 est déjà traité par « Noter un règlement ». J'ai failli le refaire faute d'avoir
 regardé `main` : la planche ne parle QUE du rappel.
 
-**La question posée, et elle attend :** à partir de quand une facture est-elle
-impayée ?
+**TRANCHÉ le 16 août 2026 : « faut faire A plus B ».** L'échéance quand elle
+existe — Atlas connaît le délai réglé dans « Devis & factures » —, un délai
+réglé sinon. Plus aucun cas muet.
 
-| | Ce que ça donne |
+**ET UN RYTHME, sa demande du même jour, mot pour mot :** *« il faut également
+qu'on puisse régler, par exemple, je veux un rappel toutes les semaines ou tous
+les quinze jours, mais pas qu'il y ait la notification tous les jours »*.
+
+C'est un vrai manque de ma planche : telle que dessinée, la carte serait restée
+à l'écran **chaque jour jusqu'au paiement**. Au bout d'une semaine on ne la lit
+plus, et c'est le rappel entier qu'on perd.
+
+**Ce qui est dessiné, et qu'il faut coder tel quel :**
+
+| | |
 |---|---|
-| **A** — à l'échéance | Atlas connaît le délai de paiement réglé dans « Devis & factures ». Rien à créer. **Coince** si aucun délai n'est réglé : pas d'échéance, donc pas de rappel |
-| **B** — N jours après l'envoi | Le mécanisme des trois autres rappels. **Coince** sur un client à qui on a accordé 60 jours : Atlas rappelle au trentième |
-| **A+B** | L'échéance quand elle existe, un délai réglé sinon. Presque rien de plus, et plus aucun cas muet |
+| Le rythme | Trois pastilles — chaque jour, chaque semaine, tous les 15 jours. **Pas une case de saisie** : elle inviterait à écrire « 3 jours », ce qu'il vient d'exclure |
+| Ce qui l'enclenche | Un geste **« Plus tard »** sur la carte |
+| **Pourquoi un geste et pas un endormissement automatique** | Une carte qui s'endormirait seule pourrait passer un jour où il n'ouvre pas l'application — il ne saurait jamais qu'elle est passée. Tant qu'il ne touche pas, elle RESTE |
+| Ce qu'il faut stocker | La date du « plus tard », par facture. Une colonne |
+
+**Le rythme ne vaut QUE pour ce rappel-là.** Les trois autres s'éteignent
+d'eux-mêmes dès que le geste attendu est fait ; celui-ci peut durer des mois.
 
 **Les trois pièges, écrits sur la planche et à tenir au moment de coder :**
 
