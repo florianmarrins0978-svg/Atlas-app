@@ -67,10 +67,12 @@ export const statutLabel: Record<ChantierStatut, string> = {
  *    dernière modification du chantier, qui n'est PAS la date d'envoi et le
  *    tromperait le jour où il compte ses jours d'attente (`CLAUDE.md` §4).
  *
- * 3. **L'or.** Il était réservé à ce qui attend un geste DE LUI ; un devis
- *    parti sans réponse n'en attend aucun. Il a retenu la variante dorée en
- *    connaissance de cause — c'était écrit sur la planche. Si la liste devient
- *    trop dorée à l'usage, c'est ici que cela se défait, sur une seule ligne.
+ * 3. **L'or, sur TOUTES les lignes depuis le 16 août 2026.** Il était réservé
+ *    à ce qui attend un geste DE LUI, puis étendu le 13 août aux devis partis
+ *    sans réponse. Le patron l'a voulu partout : *« pour tous les messages je
+ *    veux que cette partie-là apparaisse en doré »*. La nuance qu'il portait se
+ *    lit désormais dans les mots, plus dans la teinte — voir `enOr` plus bas,
+ *    où la règle tient en une ligne et se défait de même.
  *
  * La règle vit dans une fonction pure pour être éprouvée sans base ni
  * navigateur, et pour que l'écran n'ait qu'à afficher (`CLAUDE.md` §3).
@@ -87,21 +89,6 @@ export type LigneEtatChantier = {
 /** Un devis est parti, et le client n'a pas encore répondu. */
 const DEVIS_PARTI_SANS_REPONSE: ChantierStatut[] = ["devis_envoye", "en_attente_client", "a_relancer"];
 
-/**
- * Ce qui appelle un geste de lui — et se met donc en or.
- *
- * `a_relancer` y figure aussi via `DEVIS_PARTI_SANS_REPONSE` : les deux listes
- * se recoupent volontairement, chacune répond à une question différente.
- */
-const APPELLE_UN_GESTE: ChantierStatut[] = [
-  "devis_envoye",
-  "en_attente_client",
-  "a_relancer",
-  "devis_retourne",
-  "devis_a_corriger",
-  "devis_caduc",
-];
-
 export function ligneEtatChantier(params: {
   statut: ChantierStatut;
   photosCount: number;
@@ -110,7 +97,29 @@ export function ligneEtatChantier(params: {
   aujourdHui?: Date;
 }): LigneEtatChantier {
   const { statut, photosCount, envoyeLe, aujourdHui } = params;
-  const enOr = APPELLE_UN_GESTE.includes(statut);
+
+  /**
+   * **En or, TOUJOURS — sa consigne du 16 août 2026**, capture de l'accueil à
+   * l'appui : *« mets le "devis prêt à envoyer sans photo" en doré ; pour tous
+   * les messages je veux que cette partie-là apparaisse en doré »*.
+   *
+   * **Ce que l'or ne dit plus, et il faut le savoir avant de vouloir le
+   * rétablir.** Il distinguait ce qui appelle un geste DE LUI — un devis à
+   * corriger, un devis caduc — de ce qui attend ailleurs. La liste
+   * `APPELLE_UN_GESTE` portait cette nuance ; elle est retirée, parce qu'un
+   * drapeau qui vaut toujours vrai n'est plus un drapeau, et qu'une liste
+   * conservée « au cas où » se serait mise à mentir en silence.
+   *
+   * L'or est désormais **la couleur de la ligne d'état**, un point c'est tout.
+   * Ce qui appelle un geste se lit dans les MOTS — « Devis prêt à envoyer »,
+   * « Correction demandée » —, plus dans la teinte.
+   *
+   * **Le champ survit à la règle, et c'est délibéré :** l'écran n'a jamais
+   * décidé de sa couleur, et ce n'est pas le jour où la règle se simplifie
+   * qu'il faut lui rendre ce pouvoir (`CLAUDE.md` §3). Si la nuance revient,
+   * elle revient ici, sur une ligne.
+   */
+  const enOr = true;
 
   if (DEVIS_PARTI_SANS_REPONSE.includes(statut)) {
     return {
