@@ -655,6 +655,25 @@ acompte.
 (`snapshotEnTete` dans `devis.ts`, puis `devis-pdf.ts`). Les cinq autres
 n'apparaissent nulle part — ni à l'écran, ni au PDF.
 
+**Il a dit « Oui répare » le 16 août.** La planche est posée :
+`docs/maquettes/60-les-conditions-sur-le-devis.html`, éprouvée par
+`scripts/verifier-maquette-conditions-devis.mjs`. **Rien n'est codé tant qu'il
+n'a pas désigné son arrangement** (`CLAUDE.md` §3 bis) — ce n'est pas une
+précaution de style : le bloc « Notes / conditions » est un champ LIBRE qu'il a
+peut-être rempli à la main, et son texte d'invite propose justement « Acompte de
+30 % à la signature ». Se tromper d'arrangement, c'est soit effacer sa saisie,
+soit écrire l'acompte deux fois sur un devis qui part chez un client.
+
+| | Ce que ça fait | Ce que ça coûte |
+|---|---|---|
+| **A** | les conditions **remplacent** le bloc de notes | son texte écrit à la main **disparaît** |
+| **B** | son texte en tête, les conditions dessous, séparées d'un filet | un acompte tapé à la main apparaîtra **deux fois** |
+| **C** | deux blocs : « Notes » et « Conditions » | un bloc de plus, le devis s'allonge ; même doublon qu'en B |
+
+**Une question posée dans la planche, sans réponse et qui ne bloque pas :** les
+conditions doivent-elles aussi descendre sur la **facture** ? Aujourd'hui elle
+ne porte que ses mentions légales obligatoires.
+
 
 `ARCHITECTURE.md` §102 : la rubrique « Devis & factures » règle six conditions,
 mais **seule la validité s'imprime**. L'acompte, le délai de paiement, les
