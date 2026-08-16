@@ -159,6 +159,7 @@ serait une défaillance du dépôt.
 | Si le patron parle de… | Lui ressortir |
 |---|---|
 | **commercialiser, vendre, premiers clients payants, lancement, mise sur le marché, plusieurs artisans** | **La validation de l'application par Google** (`docs/A-FAIRE.md` §8). Sans elle, l'agenda ne fonctionne que pour **une centaine de comptes inscrits à la main** — et le mur arrive d'un coup, sans prévenir. La vérification demande un domaine, une politique de confidentialité **publiée**, une page d'accueil, une vidéo, et **plusieurs semaines**. Le délai ne se rattrape pas : la demande se lance bien avant la date de vente. Détail complet dans `docs/QUESTIONS.md` §12 |
+| **« avant il y avait… », « où c'est passé ? », « je ne retrouve plus… »** | **NE PAS DEVINER : fouiller l'historique AVANT de répondre**, et lui rendre la liste des candidats plutôt qu'une hypothèse. Le 15 août 2026 — *« avant il y avait le Nombre de jour en doré »* —, la fouille a rendu trois choses différentes, dont **une qui n'a jamais été codée** : une ligne dorée de la maquette 51, qu'il avait manipulée la veille. Répondre de mémoire aurait fait coder ce qui existait déjà ailleurs. Et **penser d'abord aux maquettes qu'on lui a envoyées** : il les essaie en vrai, elles ressemblent à l'application, et rien ne les en distingue sur son téléphone (`TODO.md` §0 novemvicies quinquies) |
 
 Un point traité ici se **barre** avec sa date plutôt qu'il ne se supprime :
 savoir qu'il a été dit évite de le redire, et savoir quand évite de croire qu'il
@@ -729,7 +730,25 @@ de chercher dans la règle.
 
 Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
 deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
-ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §111.
+ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §112.
+
+**LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
+« 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le
+moment de départ, la durée, **toute la ligne en or**. Sa demande sur la
+maquette 59 : *« je veux journée et toute la ligne »*.
+
+**L'INVARIANT À NE JAMAIS PERDRE, et il n'est pas d'écriture :** « matin » ne
+s'écrit **jamais sans sa durée**. Seul, il redit le défaut du 13 août — *« ça
+laisse à penser que juste le matin est bloqué »*. C'est le nombre accolé qui le
+rend honnête. Un contrôle balaie les deux cents durées pour qu'un allègement
+futur ne les sépare pas en silence (`ARCHITECTURE.md` §111).
+
+**Et ce qui a été perdu au passage, sciemment :** « du 21 au 25 août ». La ligne
+ne dit plus quand un chantier long **finit**, et les week-ends sautés interdisent
+de le recalculer de tête. **Ne pas le remettre sur la ligne sans qu'il le
+demande** — il y a été retiré pour faire tenir le nombre de jours ; sa place
+serait la feuille du chevron.
+
 
 **LA TVA AU PAIEMENT (16 août).** Sa question : *« si un client ne me paie pas,
 la facture rentre quand même dans mon relevé »*. Elle était fondée : pour une

@@ -4513,6 +4513,194 @@
 #s38 .note li{margin:7px 0}
 
 
+/* 39 — Le nombre de jours, en or */
+#s39{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f;
+  }
+@media (prefers-color-scheme: dark){
+#s39:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+    }
+
+  
+}
+#s39[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+  }
+#s39, #s39 *{box-sizing:border-box}
+#s39{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s39 .page{max-width:940px;margin:0 auto}
+#s39 label{cursor:pointer}
+#s39 .intro{max-width:62ch;margin:0 auto;text-align:center}
+#s39 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s39 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s39 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s39 .intro b{color:var(--encre);font-weight:600}
+#s39 .pistes{max-width:56ch;margin:0 auto 14px;text-align:left;padding-left:22px;
+        color:var(--gris);font-size:14px;line-height:1.7}
+#s39 .pistes li{margin-bottom:8px}
+#s39 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s39 .reglage{margin:30px auto 0;max-width:560px;text-align:center}
+#s39 .reglage .quoi{margin:0 0 10px;font-size:12.4px;color:var(--gris)}
+#s39 .segments{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+#s39 .segments label{display:inline-flex;align-items:center;border-radius:9999px;
+        padding:8px 17px;font:400 15px/1 ui-serif,Georgia,serif;
+        border:1px solid var(--trait);color:var(--gris)}
+#s39 #v-a:checked ~ .page .segments label[for="v-a"],#s39 #v-b:checked ~ .page .segments label[for="v-b"],#s39 #v-c:checked ~ .page .segments label[for="v-c"],#s39 #v-d:checked ~ .page .segments label[for="v-d"]{
+    background:var(--pin);border-color:var(--pin);color:#faf9f5}
+#s39 .scene{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:32px}
+#s39 .etiquette{text-align:center;max-width:420px}
+#s39 .etiquette .t{display:block;margin:0 0 5px;font:400 19px/1.24 ui-serif,Georgia,serif}
+#s39 .etiquette p{margin:0;font-size:12.8px;color:var(--gris);line-height:1.66}
+#s39 .etiquette b{color:var(--encre);font-weight:600}
+#s39 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s39 .ecran{
+    --e-fond:#f5f3ee; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-or:#B98B47; --e-rouille:#8a4b2a; --e-creme:#faf9f5;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:24px 0 16px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s39 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s39 .rubrique{margin:0 26px 10px;color:var(--e-gris)}
+#s39 .sep{margin:22px 26px 16px;border-top:1px solid var(--e-trait)}
+#s39 .semaine{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:0 26px 4px}
+#s39 .semaine span{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:5px;font:400 15px/1 ui-serif,Georgia,serif}
+#s39 .semaine .we{color:rgba(28,28,26,.28)}
+#s39 .semaine .auj{color:var(--e-or)}
+#s39 .semaine i{width:5px;height:5px;border-radius:99px;display:block;background:transparent}
+#s39 .semaine i.plein{background:var(--e-or)}
+#s39 .semaine i.reste{box-shadow:inset 0 0 0 1px var(--e-or)}
+#s39 .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+         margin:0 26px;padding:11px 0;border-bottom:1px solid var(--e-trait)}
+#s39 .ligne .colonne{min-width:0;flex:1}
+#s39 .ligne .nom{display:block;font:400 16px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#s39 .ligne .quand{display:block;margin-top:2px;font-size:12px;color:var(--e-gris)}
+#s39 .ligne .gestes{display:flex;flex-shrink:0;align-items:center;gap:12px}
+#s39 .ligne .equipe{border-radius:9999px;padding:5px 12px;font-size:11.5px;white-space:nowrap;
+        background:var(--e-rouille);color:var(--e-creme);border:1px solid transparent}
+#s39 .ligne .equipe.vide{background:transparent;color:var(--e-or);border:1px dashed var(--e-or)}
+#s39 .ligne .chev{color:var(--e-or);font-size:21px;line-height:1}
+#s39 .v-b,#s39 .v-c,#s39 .v-d{display:none}
+#s39 #v-b:checked ~ .page .v-b,#s39 #v-c:checked ~ .page .v-c,#s39 #v-d:checked ~ .page .v-d{display:inline}
+#s39 #v-b:checked ~ .page .v-a,#s39 #v-c:checked ~ .page .v-a,#s39 #v-d:checked ~ .page .v-a{display:none}
+#s39 .doré{color:var(--e-or)}
+#s39 .rappel{max-width:62ch;margin:34px auto 0;padding:20px 22px;border-radius:12px;
+          background:var(--plage);font-size:13.4px;color:var(--gris);line-height:1.7}
+#s39 .rappel b{color:var(--encre);font-weight:600}
+#s39 .rappel .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+             letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s39 .note{max-width:74ch;margin:56px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s39 .note b{color:var(--encre)}
+#s39 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s39 .note p{margin:0 0 14px}
+#s39 .note p:last-child{margin-bottom:0}
+
+
+/* 40 — La ligne qui dit tout */
+#s40{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f;
+  }
+@media (prefers-color-scheme: dark){
+#s40:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+    }
+
+  
+}
+#s40[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+  }
+#s40, #s40 *{box-sizing:border-box}
+#s40{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+#s40 .page{max-width:940px;margin:0 auto}
+#s40 label{cursor:pointer}
+#s40 .intro{max-width:62ch;margin:0 auto;text-align:center}
+#s40 .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+#s40 .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+#s40 .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+#s40 .intro b{color:var(--encre);font-weight:600}
+#s40 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s40 .reglage{margin:28px auto 0;max-width:560px;text-align:center}
+#s40 .reglage .quoi{margin:0 0 10px;font-size:12.4px;color:var(--gris)}
+#s40 .segments{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+#s40 .segments label{display:inline-flex;align-items:center;border-radius:9999px;
+        padding:8px 17px;font:400 15px/1 ui-serif,Georgia,serif;
+        border:1px solid var(--trait);color:var(--gris)}
+#s40 #j-deux:checked ~ .page .segments label[for="j-deux"],#s40 #j-un:checked ~ .page .segments label[for="j-un"],#s40 #o-tout:checked ~ .page .segments label[for="o-tout"],#s40 #o-nombre:checked ~ .page .segments label[for="o-nombre"]{
+    background:var(--pin);border-color:var(--pin);color:#faf9f5}
+#s40 .scene{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:32px}
+#s40 .etiquette{text-align:center;max-width:430px}
+#s40 .etiquette .t{display:block;margin:0 0 5px;font:400 19px/1.24 ui-serif,Georgia,serif}
+#s40 .etiquette p{margin:0;font-size:12.8px;color:var(--gris);line-height:1.66}
+#s40 .etiquette b{color:var(--encre);font-weight:600}
+#s40 .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+#s40 .ecran{
+    --e-fond:#f5f3ee; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-or:#B98B47; --e-rouille:#8a4b2a; --e-creme:#faf9f5;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:24px 0 16px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+#s40 .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+#s40 .rubrique{margin:0 26px 10px;color:var(--e-gris)}
+#s40 .sep{margin:20px 26px 16px;border-top:1px solid var(--e-trait)}
+#s40 .semaine{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:0 26px 4px}
+#s40 .semaine span{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:5px;font:400 15px/1 ui-serif,Georgia,serif}
+#s40 .semaine .we{color:rgba(28,28,26,.28)}
+#s40 .semaine .auj{color:var(--e-or)}
+#s40 .semaine i{width:5px;height:5px;border-radius:99px;display:block;background:transparent}
+#s40 .semaine i.plein{background:var(--e-or)}
+#s40 .semaine i.reste{box-shadow:inset 0 0 0 1px var(--e-or)}
+#s40 .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+         margin:0 26px;padding:11px 0;border-bottom:1px solid var(--e-trait)}
+#s40 .ligne .colonne{min-width:0;flex:1}
+#s40 .ligne .nom{display:block;font:400 16px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#s40 .ligne .quand{display:block;margin-top:2px;font-size:12px;white-space:nowrap;
+                overflow:hidden;text-overflow:ellipsis}
+#s40 .ligne .gestes{display:flex;flex-shrink:0;align-items:center;gap:12px}
+#s40 .ligne .equipe{border-radius:9999px;padding:5px 12px;font-size:11.5px;white-space:nowrap;
+        background:var(--e-rouille);color:var(--e-creme);border:1px solid transparent}
+#s40 .ligne .equipe.vide{background:transparent;color:var(--e-or);border:1px dashed var(--e-or)}
+#s40 .ligne .chev{color:var(--e-or);font-size:21px;line-height:1}
+#s40 .depart{display:none}
+#s40 #j-un:checked ~ .page .mot{display:none}
+#s40 #j-un:checked ~ .page .depart{display:inline}
+#s40 #o-tout:checked ~ .page .quand{color:var(--e-or)}
+#s40 #o-nombre:checked ~ .page .quand{color:var(--e-gris)}
+#s40 #o-nombre:checked ~ .page .quand .nb{color:var(--e-or)}
+#s40 .rappel{max-width:62ch;margin:34px auto 0;padding:20px 22px;border-radius:12px;
+          background:var(--plage);font-size:13.4px;color:var(--gris);line-height:1.7}
+#s40 .rappel b{color:var(--encre);font-weight:600}
+#s40 .rappel .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+             letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s40 .note{max-width:74ch;margin:56px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+#s40 .note b{color:var(--encre)}
+#s40 .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+#s40 .note p{margin:0 0 14px}
+#s40 .note p:last-child{margin-bottom:0}
+
+
 </style>
 
 <div class="enveloppe">
@@ -4690,6 +4878,15 @@
       <a class="item" href="#m38">
         <span class="no">38</span><span class="titre">Le devis qui tarde : le rappel, et le délai</span><span class="fleche">↓</span>
         <span class="quoi">Un rappel quand un chantier reste sans devis. La rubrique Notifications ayant été codée entre-temps, ce n’est plus un écran à inventer mais une troisième ligne à y poser : restent le ton de la carte et le nombre de jours.</span>
+      </a>
+      <p class="famille">Le planning</p>
+      <a class="item" href="#m39">
+        <span class="no">39</span><span class="titre">Le nombre de jours, en or</span><span class="fleche">↓</span>
+        <span class="quoi">« Avant il y avait le nombre de jour en doré, où c’est passé ? » — il n’avait jamais existé dans l’application. Quatre écritures de la même ligne, et les trois choses qui en approchaient, retrouvées dans l’historique plutôt que devinées.</span>
+      </a>
+      <a class="item" href="#m40">
+        <span class="no">40</span><span class="titre">La ligne qui dit tout</span><span class="fleche">↓</span>
+        <span class="quoi">La date, le moment de départ et la durée sur la ligne d’un chantier posé, sur les cinq cas du produit. Retenue puis CODÉE le 15 août — « je veux journée et toute la ligne ».</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -17010,6 +17207,339 @@
     <p style="margin-top:10px"><b>Cette page ne touche à rien.</b> L’écran des
       réglages, lui, existe déjà et fonctionne — c’est la troisième ligne qui
       attend votre mot.</p>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m39">
+    <div class="etape-tete">
+      <span class="etape-no">39</span>
+      <h2>Le nombre de jours, en or</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s39">
+<input type="radio" name="ecriture" id="v-a" class="etat" checked>
+<input type="radio" name="ecriture" id="v-b" class="etat">
+<input type="radio" name="ecriture" id="v-c" class="etat">
+<input type="radio" name="ecriture" id="v-d" class="etat">
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Planning · la ligne d'un chantier posé</p>
+    <h1>Le nombre de jours, en or</h1>
+    <p>« Avant il y avait le <b>nombre de jour en doré</b> et je sais plus quoi,
+      où c'est passé ? »</p>
+    <p>J'ai fouillé tout l'historique. <b>Un nombre de jours en or n'a jamais
+      existé dans l'application</b> — mais trois choses en approchent, et vous en
+      avez forcément vu une :</p>
+    <ol class="pistes">
+      <li><b>Un nombre de jours a bien été sur cette ligne</b> — « matin,
+        2 jours » — mais <b>en gris</b>. Il en est tombé le 10 août, quand le
+        planning est passé au mois.</li>
+      <li><b>Quelque chose d'or a bien quitté cette ligne</b>, et ce n'était pas
+        un nombre : <b>« Créer la facture »</b>, en capitales d'or. Il est parti
+        dans la feuille du chevron le 12 août.</li>
+      <li><b>Un nombre de jours en or existe</b> — dans la <b>maquette 51</b>,
+        celle que je vous ai envoyée le 14 août : une ligne dorée sous chaque
+        chantier, « occupe : vendredi 21, lundi 24, mardi 25 ». Elle n'a jamais
+        été dans l'application.</li>
+    </ol>
+    <p>Alors on ne devine pas : voici <b>quatre écritures</b> de la même ligne.
+      Touchez, et dites-moi laquelle est celle dont vous vous souvenez.</p>
+  </div>
+
+  <div class="reglage">
+    <p class="quoi">L'écriture sous le nom du chantier :</p>
+    <div class="segments">
+      <label for="v-a">A — aujourd'hui</label>
+      <label for="v-b">B — la date revient</label>
+      <label for="v-c">C — la durée, en or</label>
+      <label for="v-d">D — la date et la durée, en or</label>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="tel"><div class="ecran">
+
+      <!-- La dernière semaine du mois, pour le repère : l'or du 15 est celui
+           qui existe déjà, et il se peut que ce soit celui-là. -->
+      <div class="semaine">
+        <span>11<i class="plein"></i></span>
+        <span>12<i class="plein"></i></span>
+        <span>13<i class="reste"></i></span>
+        <span>14<i class="plein"></i></span>
+        <span class="auj">15<i class="reste"></i></span>
+        <span class="we">16<i></i></span>
+        <span class="we">17<i></i></span>
+      </div>
+
+      <div class="sep"></div>
+
+      <p class="rubrique caps">Planifiés</p>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martin</span>
+          <span class="quand">
+            <span class="v-a">journée</span>
+            <span class="v-b">14 août · journée</span>
+            <span class="v-c">journée · <b class="doré">1 jour</b></span>
+            <span class="v-d"><b class="doré">14 août · 1 jour</b></span>
+          </span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe A</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Madame Roux</span>
+          <span class="quand">
+            <span class="v-a">matin</span>
+            <span class="v-b">17 août · matin</span>
+            <span class="v-c">matin · <b class="doré">½ jour</b></span>
+            <span class="v-d"><b class="doré">17 août · ½ jour</b></span>
+          </span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe B</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Chez M. Bernard</span>
+          <span class="quand">
+            <span class="v-a">du 21 au 25 août</span>
+            <span class="v-b">21 août · du 21 au 25 août</span>
+            <span class="v-c">du 21 au 25 août · <b class="doré">3 jours</b></span>
+            <span class="v-d"><b class="doré">21 août · 3 jours</b></span>
+          </span>
+        </span>
+        <span class="gestes">
+          <span class="equipe vide">Équipe ?</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martins</span>
+          <span class="quand">
+            <span class="v-a">après-midi</span>
+            <span class="v-b">24 août · après-midi</span>
+            <span class="v-c">après-midi · <b class="doré">½ jour</b></span>
+            <span class="v-d"><b class="doré">24 août · ½ jour</b></span>
+          </span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe A</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+    </div></div>
+
+    <div class="etiquette">
+      <span class="t">Ce que chaque écriture coûte</span>
+      <p>
+        <b>A</b> — ce que vous avez sous les yeux depuis ce matin.
+        <b>B</b> — la date revient, mais elle répète le jour déjà écrit
+        au-dessus quand la journée est ouverte.
+        <b>C</b> — la durée s'ajoute et se voit ; c'est la seule qui dit
+        <b>combien de jours</b> sans qu'on compte.
+        <b>D</b> — les deux, mais la ligne fait alors deux nombres pour une
+        seule chose, et à 390 px un nom long commence à se couper.
+      </p>
+    </div>
+  </div>
+
+  <div class="rappel">
+    <span class="t">Si aucune n'est la bonne</span>
+    Dites-moi seulement <b>où c'était sur l'écran</b> — au-dessus du calendrier,
+    sur la ligne, dans la feuille qui s'ouvre au chevron — et je le retrouve dans
+    l'historique. Et si c'est <b>« Créer la facture »</b> qui vous manque : il
+    n'est pas perdu, il est dans la feuille qui s'ouvre au chevron, là où vous
+    m'aviez demandé de le mettre le 12 août. Un mot suffit pour le ramener sur la
+    ligne — mais il faudra alors lui reprendre la place, et c'est le nom du
+    chantier qui la paiera.
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que cette planche ne fait pas</span>
+    <p><b>Rien n'est codé.</b> `src/` n'a pas été touché : c'est la règle posée le
+      11 août — la maquette d'abord, le code une fois choisi.</p>
+    <p><b>Les quatre écritures sont écrites en entier dans la page</b>, et seule
+      leur visibilité change. C'est ce qui permet de basculer de l'une à l'autre
+      sans qu'aucune ligne ne se décale : la comparaison porte sur les mots, pas
+      sur des écrans qui bougent.</p>
+    <p><b>L'équipe et le chevron sont ceux d'aujourd'hui</b>, tels que la ligne
+      les porte depuis hier soir — la pastille pleine quand l'équipe est choisie,
+      le pointillé d'or quand elle manque.</p>
+  </div>
+
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m40">
+    <div class="etape-tete">
+      <span class="etape-no">40</span>
+      <h2>La ligne qui dit tout</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s40">
+<input type="radio" name="pleine" id="j-deux" class="etat" checked>
+<input type="radio" name="pleine" id="j-un" class="etat">
+<input type="radio" name="teinte" id="o-tout" class="etat" checked>
+<input type="radio" name="teinte" id="o-nombre" class="etat">
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Planning · la ligne d'un chantier posé</p>
+    <h1>La ligne qui dit tout</h1>
+    <p>La <b>D</b> de la planche précédente, avec ce qui lui manquait : le
+      <b>matin</b>, l'<b>après-midi</b> et la <b>journée</b> sont revenus à côté
+      du nombre de jours.</p>
+    <p>La ligne porte donc trois choses : <b>la date</b>, <b>quand ça part</b>,
+      <b>combien de temps ça prend</b>. Deux réglages restent à trancher, ci-dessous.</p>
+  </div>
+
+  <div class="reglage">
+    <p class="quoi">Le chantier d'une journée pleine :</p>
+    <div class="segments">
+      <label for="j-deux">journée</label>
+      <label for="j-un">matin · 1 journée</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <p class="quoi">Ce qui est en or :</p>
+    <div class="segments">
+      <label for="o-tout">toute la ligne</label>
+      <label for="o-nombre">le nombre de jours seul</label>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="tel"><div class="ecran">
+
+      <div class="semaine">
+        <span>11<i class="plein"></i></span>
+        <span>12<i class="plein"></i></span>
+        <span>13<i class="reste"></i></span>
+        <span>14<i class="plein"></i></span>
+        <span class="auj">15<i class="reste"></i></span>
+        <span class="we">16<i></i></span>
+        <span class="we">17<i></i></span>
+      </div>
+
+      <div class="sep"></div>
+
+      <p class="rubrique caps">Planifiés</p>
+
+      <!-- 1. La journée pleine — le cas le plus courant du produit. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martin</span>
+          <span class="quand">14 août · <span class="mot">journée</span><span class="depart">matin · <b class="nb">1 journée</b></span></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe A</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <!-- 2. La vraie demi-journée du matin. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Madame Roux</span>
+          <span class="quand">17 août · matin · <b class="nb">½ journée</b></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe B</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <!-- 3. La vraie demi-journée de l'après-midi. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Blanc</span>
+          <span class="quand">20 août · après-midi · <b class="nb">½ journée</b></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe A</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <!-- 4. Le chantier long — celui qui annonçait « matin » tout seul, et qui
+              ne le peut plus : le nombre voyage avec. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Chez M. Bernard</span>
+          <span class="quand">21 août · matin · <b class="nb">3 jours</b></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe vide">Équipe ?</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <!-- 5. Le cas tordu : parti l'après-midi, il finit le matin suivant. La
+              ligne la plus longue des cinq — c'est elle qui décide si ça tient. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martins</span>
+          <span class="quand">24 août · après-midi · <b class="nb">1 journée</b></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe B</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+    </div></div>
+
+    <div class="etiquette">
+      <span class="t">Les cinq cas, et pas quatre</span>
+      <p>La journée pleine, la demi-journée du <b>matin</b>, celle de
+        l'<b>après-midi</b>, le chantier de <b>plusieurs jours</b>, et le piège :
+        une journée entière partie l'<b>après-midi</b>, qui occupe cet
+        après-midi-là <b>et la matinée du lendemain</b> — jamais une seule
+        journée d'un bloc. C'est le cas qu'aucune écriture ne doit rendre faux.</p>
+    </div>
+  </div>
+
+  <div class="rappel">
+    <span class="t">Pourquoi « matin » ne ment plus</span>
+    Le 13 août, vous aviez raison : <b>« matin » tout seul</b> laissait croire que
+    seule la matinée était bloquée. Ici, il ne voyage <b>jamais sans le nombre de
+    jours</b> — « matin · 3 jours » ne se lit pas comme une demi-journée. Les deux
+    doivent donc rester ensemble ; séparer l'un de l'autre, un jour, rouvrirait le
+    défaut exact que vous aviez signalé.
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que cette planche ne fait pas</span>
+    <p><b>Rien n'est codé.</b> `src/` n'a pas été touché : la maquette d'abord, le
+      code une fois choisi.</p>
+    <p><b>Le calendrier reste la source du jour.</b> La date revient sur la ligne
+      alors qu'elle en était tombée le matin même, sur votre consigne « elle est
+      déjà présente juste au-dessus ». C'est vrai du panneau d'un jour ouvert ;
+      ça ne l'est pas de la liste des planifiés, qui couvre tout le mois. Si la
+      répétition vous gêne à l'usage, elle se retire d'un mot.</p>
+    <p><b>Les week-ends restent sautés.</b> « 21 août · matin · 3 jours » part un
+      vendredi et finit le mardi : c'est ce que réserve déjà le planning, et la
+      ligne ne dira jamais autre chose que lui.</p>
   </div>
 
 </div>

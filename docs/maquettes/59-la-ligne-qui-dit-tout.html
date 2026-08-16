@@ -1,0 +1,324 @@
+<title>La ligne qui dit tout</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LA LIGNE QUI DIT TOUT — la D de la planche 58, augmentée de ce qu'il a
+    demandé.
+
+    Le patron, le 15 août 2026 : « Je veux le 54 la D mais il doit y avoir le
+    nombre de jour, le matin, l'après-midi et la journée comme infos possible. »
+
+    CE QUE ÇA VEUT DIRE, ET C'EST PRÉCIS : la ligne porte TROIS choses en or —
+    la DATE, le MOMENT où le chantier part (matin, après-midi, ou la journée
+    entière), et le NOMBRE DE JOURS qu'il prend. La D de la 58 n'en portait que
+    deux : la date et le nombre. Le mot qui dit quand on commence y manquait.
+
+    POURQUOI « MATIN » NE MENT PLUS, ALORS QU'IL MENTAIT LE 13 AOÛT. Sa plainte
+    d'alors — « ça laisse à penser que juste le matin est bloqué alors que c'est
+    la journée » — visait une ligne où « matin » était SEUL. Accolé au nombre de
+    jours, il ne dit plus ce qui est bloqué mais QUAND ÇA PART : « matin ·
+    3 jours » ne se lit pas comme une demi-journée. C'est le nombre qui le
+    protège, et c'est pour cela que les deux doivent voyager ensemble — jamais
+    l'un sans l'autre.
+
+    « JOURNÉE », JAMAIS « JOUR » — et cette règle n'est pas neuve : elle est
+    écrite dans `src/lib/durees-chantier.ts` depuis le 4 août 2026, sur une
+    correction du patron, capture à l'appui. La liste des durées dit « ½ journée »,
+    « 1 journée », puis « 3 jours ». La première version de cette planche écrivait
+    « ½ jour », et il l'a reprise le 15 août : « 1/2 journée pas jour ! ».
+    **Le vocabulaire des durées ne s'invente pas : il se recopie de `DUREES`.**
+
+    LA SEULE QUESTION QUI RESTE, ET ELLE EST POSÉE PLUTÔT QUE TRANCHÉE : pour un
+    chantier d'une journée pleine, le mot « journée » suffit-il — « 14 août ·
+    journée » — ou vaut-il mieux dire le DÉPART et la durée, comme les quatre
+    autres lignes : « 14 août · matin · 1 journée » ? Le premier réglage de la
+    planche fait basculer les deux. Et le second demande si TOUT est en or, ou
+    seulement le nombre.
+
+    CE QUI N'EST PAS PROPOSÉ, ET DÉLIBÉRÉMENT : « journée · 1 journée ». Dire
+    deux fois la même chose sur une ligne de 204 px n'est pas un choix, c'est un
+    défaut — le lui soumettre lui ferait perdre un aller-retour.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les bascules sont des boutons radio natifs.
+    Les écrans font 390 px — la largeur réelle de son téléphone.
+    Le contrôle : `scripts/verifier-maquette-ligne-qui-dit-tout.mjs`.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:940px;margin:0 auto}
+
+  /* Safari sur iPhone n'active pas un <label> sans « cursor:pointer » — payé le
+     10 août 2026 : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  .intro{max-width:62ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+  .reglage{margin:28px auto 0;max-width:560px;text-align:center}
+  .reglage .quoi{margin:0 0 10px;font-size:12.4px;color:var(--gris)}
+  .segments{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+  .segments label{display:inline-flex;align-items:center;border-radius:9999px;
+        padding:8px 17px;font:400 15px/1 ui-serif,Georgia,serif;
+        border:1px solid var(--trait);color:var(--gris)}
+  /* `~ .page` et non `~ .scene` : le combinateur du frère exige un FRÈRE des
+     boutons radio, et `.scene` est leur neveu. Écrit autrement, rien ne bascule
+     et la planche paraît morte sous le doigt — le défaut payé le 14 août. */
+  #j-deux:checked ~ .page .segments label[for="j-deux"],
+  #j-un:checked ~ .page .segments label[for="j-un"],
+  #o-tout:checked ~ .page .segments label[for="o-tout"],
+  #o-nombre:checked ~ .page .segments label[for="o-nombre"]{
+    background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  /* ── L'écran ──────────────────────────────────────────────────────────── */
+  .scene{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:32px}
+  .etiquette{text-align:center;max-width:430px}
+  .etiquette .t{display:block;margin:0 0 5px;font:400 19px/1.24 ui-serif,Georgia,serif}
+  .etiquette p{margin:0;font-size:12.8px;color:var(--gris);line-height:1.66}
+  .etiquette b{color:var(--encre);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-or:#B98B47; --e-rouille:#8a4b2a; --e-creme:#faf9f5;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:24px 0 16px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .rubrique{margin:0 26px 10px;color:var(--e-gris)}
+  .sep{margin:20px 26px 16px;border-top:1px solid var(--e-trait)}
+
+  /* La dernière semaine du mois : le repère habituel, et l'or du quantième du
+     jour — celui qui a toujours été là. */
+  .semaine{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:0 26px 4px}
+  .semaine span{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:5px;font:400 15px/1 ui-serif,Georgia,serif}
+  .semaine .we{color:rgba(28,28,26,.28)}
+  .semaine .auj{color:var(--e-or)}
+  .semaine i{width:5px;height:5px;border-radius:99px;display:block;background:transparent}
+  .semaine i.plein{background:var(--e-or)}
+  .semaine i.reste{box-shadow:inset 0 0 0 1px var(--e-or)}
+
+  .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+         margin:0 26px;padding:11px 0;border-bottom:1px solid var(--e-trait)}
+  .ligne .colonne{min-width:0;flex:1}
+  .ligne .nom{display:block;font:400 16px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* `nowrap` : une phrase qui se casse en deux déforme la ligne, et le contrôle
+     ne verrait qu'un débordement — pas un pli. Ici, un dépassement se VOIT. */
+  .ligne .quand{display:block;margin-top:2px;font-size:12px;white-space:nowrap;
+                overflow:hidden;text-overflow:ellipsis}
+  .ligne .gestes{display:flex;flex-shrink:0;align-items:center;gap:12px}
+  .ligne .equipe{border-radius:9999px;padding:5px 12px;font-size:11.5px;white-space:nowrap;
+        background:var(--e-rouille);color:var(--e-creme);border:1px solid transparent}
+  .ligne .equipe.vide{background:transparent;color:var(--e-or);border:1px dashed var(--e-or)}
+  .ligne .chev{color:var(--e-or);font-size:21px;line-height:1}
+
+  /* ── Les deux réglages ────────────────────────────────────────────────── */
+
+  /* 1. La journée pleine : le mot « journée » porte la durée à lui seul, ou
+        le moment dit le DÉPART et le nombre dit la durée — comme les quatre
+        autres lignes. On ne montre jamais « journée · 1 journée » : dire deux
+        fois la même chose sur une ligne de 204 px, ce n'est pas un choix. */
+  .depart{display:none}
+  #j-un:checked ~ .page .mot{display:none}
+  #j-un:checked ~ .page .depart{display:inline}
+
+  /* 2. L'or : sur tout, ou sur le seul nombre de jours.
+       C'est la ligne ENTIÈRE qui prend l'or par défaut — la classe est posée
+       sur `.quand`, et le nombre garde la sienne pour le second réglage. */
+  #o-tout:checked ~ .page .quand{color:var(--e-or)}
+  #o-nombre:checked ~ .page .quand{color:var(--e-gris)}
+  #o-nombre:checked ~ .page .quand .nb{color:var(--e-or)}
+
+  .rappel{max-width:62ch;margin:34px auto 0;padding:20px 22px;border-radius:12px;
+          background:var(--plage);font-size:13.4px;color:var(--gris);line-height:1.7}
+  .rappel b{color:var(--encre);font-weight:600}
+  .rappel .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+             letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+  .note{max-width:74ch;margin:56px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note p{margin:0 0 14px}
+  .note p:last-child{margin-bottom:0}
+</style>
+
+<input type="radio" name="pleine" id="j-deux" class="etat" checked>
+<input type="radio" name="pleine" id="j-un" class="etat">
+<input type="radio" name="teinte" id="o-tout" class="etat" checked>
+<input type="radio" name="teinte" id="o-nombre" class="etat">
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Planning · la ligne d'un chantier posé</p>
+    <h1>La ligne qui dit tout</h1>
+    <p>La <b>D</b> de la planche précédente, avec ce qui lui manquait : le
+      <b>matin</b>, l'<b>après-midi</b> et la <b>journée</b> sont revenus à côté
+      du nombre de jours.</p>
+    <p>La ligne porte donc trois choses : <b>la date</b>, <b>quand ça part</b>,
+      <b>combien de temps ça prend</b>. Deux réglages restent à trancher, ci-dessous.</p>
+  </div>
+
+  <div class="reglage">
+    <p class="quoi">Le chantier d'une journée pleine :</p>
+    <div class="segments">
+      <label for="j-deux">journée</label>
+      <label for="j-un">matin · 1 journée</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <p class="quoi">Ce qui est en or :</p>
+    <div class="segments">
+      <label for="o-tout">toute la ligne</label>
+      <label for="o-nombre">le nombre de jours seul</label>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="tel"><div class="ecran">
+
+      <div class="semaine">
+        <span>11<i class="plein"></i></span>
+        <span>12<i class="plein"></i></span>
+        <span>13<i class="reste"></i></span>
+        <span>14<i class="plein"></i></span>
+        <span class="auj">15<i class="reste"></i></span>
+        <span class="we">16<i></i></span>
+        <span class="we">17<i></i></span>
+      </div>
+
+      <div class="sep"></div>
+
+      <p class="rubrique caps">Planifiés</p>
+
+      <!-- 1. La journée pleine — le cas le plus courant du produit. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martin</span>
+          <span class="quand">14 août · <span class="mot">journée</span><span class="depart">matin · <b class="nb">1 journée</b></span></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe A</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <!-- 2. La vraie demi-journée du matin. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Madame Roux</span>
+          <span class="quand">17 août · matin · <b class="nb">½ journée</b></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe B</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <!-- 3. La vraie demi-journée de l'après-midi. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Blanc</span>
+          <span class="quand">20 août · après-midi · <b class="nb">½ journée</b></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe A</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <!-- 4. Le chantier long — celui qui annonçait « matin » tout seul, et qui
+              ne le peut plus : le nombre voyage avec. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Chez M. Bernard</span>
+          <span class="quand">21 août · matin · <b class="nb">3 jours</b></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe vide">Équipe ?</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <!-- 5. Le cas tordu : parti l'après-midi, il finit le matin suivant. La
+              ligne la plus longue des cinq — c'est elle qui décide si ça tient. -->
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martins</span>
+          <span class="quand">24 août · après-midi · <b class="nb">1 journée</b></span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe B</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+    </div></div>
+
+    <div class="etiquette">
+      <span class="t">Les cinq cas, et pas quatre</span>
+      <p>La journée pleine, la demi-journée du <b>matin</b>, celle de
+        l'<b>après-midi</b>, le chantier de <b>plusieurs jours</b>, et le piège :
+        une journée entière partie l'<b>après-midi</b>, qui occupe cet
+        après-midi-là <b>et la matinée du lendemain</b> — jamais une seule
+        journée d'un bloc. C'est le cas qu'aucune écriture ne doit rendre faux.</p>
+    </div>
+  </div>
+
+  <div class="rappel">
+    <span class="t">Pourquoi « matin » ne ment plus</span>
+    Le 13 août, vous aviez raison : <b>« matin » tout seul</b> laissait croire que
+    seule la matinée était bloquée. Ici, il ne voyage <b>jamais sans le nombre de
+    jours</b> — « matin · 3 jours » ne se lit pas comme une demi-journée. Les deux
+    doivent donc rester ensemble ; séparer l'un de l'autre, un jour, rouvrirait le
+    défaut exact que vous aviez signalé.
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que cette planche ne fait pas</span>
+    <p><b>Rien n'est codé.</b> `src/` n'a pas été touché : la maquette d'abord, le
+      code une fois choisi.</p>
+    <p><b>Le calendrier reste la source du jour.</b> La date revient sur la ligne
+      alors qu'elle en était tombée le matin même, sur votre consigne « elle est
+      déjà présente juste au-dessus ». C'est vrai du panneau d'un jour ouvert ;
+      ça ne l'est pas de la liste des planifiés, qui couvre tout le mois. Si la
+      répétition vous gêne à l'usage, elle se retire d'un mot.</p>
+    <p><b>Les week-ends restent sautés.</b> « 21 août · matin · 3 jours » part un
+      vendredi et finit le mardi : c'est ce que réserve déjà le planning, et la
+      ligne ne dira jamais autre chose que lui.</p>
+  </div>
+
+</div>

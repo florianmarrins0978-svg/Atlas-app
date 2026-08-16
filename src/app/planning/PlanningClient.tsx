@@ -227,45 +227,42 @@ export default function PlanningClient({
   }
 
   /**
-   * « journée · Équipe A » sur la liste, « 14 août · journée · Équipe A » dans
-   * la feuille — écrit **une seule fois**, parce que les deux disent la même
-   * chose. Deux constructions de la même phrase finissent toujours par
-   * diverger, et l'écart se voit à l'endroit précis où le patron compare.
+   * « 14 août · matin · 3 jours » — écrit **une seule fois**, parce que la
+   * ligne du planning et les deux feuilles disent la même chose. Deux
+   * constructions de la même phrase finissent toujours par diverger, et l'écart
+   * se voit à l'endroit précis où le patron compare les deux.
    *
-   * **CE QUE LA LIGNE DIT, ET CE QU'ELLE NE DIT PLUS.** Elle écrivait la
-   * demi-journée de DÉPART : un chantier d'une journée entière annonçait
-   * « matin », et un chantier de trois jours aussi. Le patron, le 13 août
-   * 2026 : *« ça laisse à penser que juste le matin est bloqué alors que c'est
-   * la journée »*. Elle dit désormais ce que le chantier OCCUPE
-   * (`libelleOccupation`), et les mots sont les siens, arrêtés le 14 août sur
-   * `docs/maquettes/53-le-mot-juste-sans-la-date.html` : « journée », et
-   * « du 21 au 25 août » au-delà d'un jour.
+   * **CE QUE LA LIGNE DIT DEPUIS LE 15 AOÛT 2026**, sur
+   * `docs/maquettes/59-la-ligne-qui-dit-tout.html` : *« je veux journée et
+   * toute la ligne »*, après *« il doit y avoir le nombre de jour, le matin,
+   * l'après-midi et la journée comme infos possible »*. Trois choses donc : la
+   * date, le moment où ça part, la durée — et le tout **en or**.
    *
-   * **LA DATE TOMBE SUR LA LISTE, PAS DANS LA FEUILLE**, et ce n'est pas une
-   * inconséquence. Sa consigne : *« pas la date, elle est déjà présente juste
-   * au-dessus »* — vrai du panneau du jour, qui se titre « Lundi 17 août ».
-   * Dans la feuille du chevron, en revanche, elle n'est écrite **nulle part
-   * ailleurs** : l'en retirer laisserait un chantier sans jour.
+   * **LA DATE EST REVENUE SUR LA LISTE**, d'où elle était tombée le matin même.
+   * Sa consigne d'alors — *« pas la date, elle est déjà présente juste
+   * au-dessus »* — vaut du panneau d'un jour ouvert, qui se titre « Lundi
+   * 17 août ». Elle ne vaut pas de cette liste-ci, qui couvre tout le mois :
+   * sans date, deux chantiers de semaines différentes se lisaient pareil.
    *
-   * `porteLaDate` évite le doublon : sur plusieurs jours le libellé contient
-   * déjà « du 21 au 25 août », et la préfixer donnerait « 21 août · du 21 au
-   * 25 août ».
+   * **L'ÉQUIPE N'EST PLUS DANS LA PHRASE SUR LA LIGNE**, et c'était un doublon
+   * pur : depuis que la pastille existe (14 août), « Équipe A » s'écrivait deux
+   * fois côte à côte dès qu'il y a plusieurs équipes. Les feuilles, elles, n'ont
+   * pas de pastille — elles gardent le nom dans la phrase.
    */
-  function libelleQuand(c: ChantierPlanning, avecLaDate = false): string {
+  function libelleQuand(c: ChantierPlanning, avecEquipe = false): string {
     const occupation = libelleOccupation(
       c.datePlanifiee as JourIso,
       c.creneauDebut === "matin" || c.creneauDebut === "apres_midi" ? c.creneauDebut : null,
       c.dureeDemiJournees
     );
-    const jour =
-      avecLaDate && !occupation.porteLaDate
-        ? new Date(`${c.datePlanifiee}T12:00:00Z`).toLocaleDateString("fr-FR", {
-            day: "numeric",
-            month: "short",
-            timeZone: "UTC",
-          })
-        : null;
-    const equipe = libelleEquipe(lignesEquipes.find((e) => e.rang === c.rangEquipe) ?? null, nombreEquipes);
+    const jour = new Date(`${c.datePlanifiee}T12:00:00Z`).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC",
+    });
+    const equipe = avecEquipe
+      ? libelleEquipe(lignesEquipes.find((e) => e.rang === c.rangEquipe) ?? null, nombreEquipes)
+      : null;
     return [jour, occupation.texte, equipe].filter(Boolean).join(" · ");
   }
 
@@ -623,7 +620,18 @@ export default function PlanningClient({
                   >
                     {c.nom}
                   </span>
-                  <span className="block text-[12px]" style={{ color: colors.muted }}>
+                  {/* **En or, toute la ligne — son choix du 15 août 2026** :
+                      *« je veux journée et toute la ligne »*. Le gris en faisait
+                      une note de bas de page ; il vient de demander que ce soit
+                      l'inverse, parce que c'est là qu'il lit quand il part et
+                      pour combien de temps.
+
+                      `truncate` plutôt qu'un retour à la ligne : la phrase porte
+                      maintenant trois choses, et une seconde ligne déformerait la
+                      rangée. Trop long, elle se coupe — et
+                      `test-ligne-planning-e2e.ts` mesure qu'à 390 px elle ne se
+                      coupe pas. */}
+                  <span className="block truncate text-[12px]" style={{ color: colors.or }}>
                     {libelleQuand(c)}
                   </span>
                 </Link>
@@ -761,8 +769,9 @@ export default function PlanningClient({
             clientNom={yAller.clientNom}
             adresse={yAller.adresseChantier ?? null}
             telephone={yAller.clientTelephone ?? null}
-            // La date reste ICI, et seulement ici : la feuille est le seul
-            // endroit où elle n'est écrite nulle part ailleurs.
+            // **Avec l'équipe, et c'est la seule différence avec la ligne** :
+            // la feuille n'a pas de pastille, le nom n'y serait écrit nulle
+            // part ailleurs.
             quand={libelleQuand(yAller, true)}
             // **Vide à une seule équipe** : `equipesAffichees` ne rend rien à
             // distinguer, et la feuille n'affiche alors aucune ligne d'équipe.
