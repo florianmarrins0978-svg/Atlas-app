@@ -114,6 +114,41 @@ deux chantiers possibles, et leur coût :
 **Ne pas poser d'interrupteur en attendant.** Sa phrase sur la planche : *« on le
 touche, rien ne bouge, et on croit à une panne »*.
 
+### 0 tervicies. Apparier deux demi-journées par la proximité
+
+**Sa demande du 13 août 2026** : quand une demi-journée est prise et l'autre
+libre, que le planning propose le chantier en attente **le plus proche**, pour
+ne pas traverser le département deux fois dans la journée.
+
+**Ce qui existe déjà :** les demi-journées sont en base (`creneauDebut`,
+`dureeDemiJournees`), deux chantiers différents sur le matin et l'après-midi du
+même jour se représentent sans rien ajouter, et le planning affiche « Libre ».
+
+**Ce qui manque, et qui commande tout : aucune distance n'est connue.**
+L'adresse d'un chantier est du texte. La Base Adresse Nationale rend pourtant
+les coordonnées à chaque frappe (`lireSuggestions` ne garde que le libellé et le
+contexte, et **jette la géométrie**). Trois étapes, dans l'ordre :
+
+1. **Garder les coordonnées** au choix d'une suggestion — migration + champs sur
+   `chantiers` ;
+2. **rattraper** celles des chantiers déjà saisis et des adresses tapées hors
+   liste, côté serveur, sans rien demander au patron ;
+3. **apparier** — fonction pure dans `src/lib/`, testable sans base.
+
+**Maquette `docs/maquettes/41-apparier-deux-demi-journees.html`** — quatre
+façons de le proposer (sur la ligne, en bandeau, en feuille de trois candidats,
+au moment de poser la date), le bandeau dessiné **deux fois** (vol d'oiseau et
+route : seule la phrase change), et les deux cas ingrats — rien d'assez proche,
+adresse non situable. **En attente de son choix.**
+
+**La question qui le dépasse** est au point 9 de `docs/A-FAIRE.md` : la route
+suppose un sous-traitant ultérieur. `.github/workflows/itineraire.yml` interroge
+le service de l'État depuis une machine qui a le réseau pour savoir s'il
+dispense d'un prestataire privé.
+
+
+### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie
+
 ### 0 undetricies. ~~L'absence d'une équipe~~ — **CODÉE le 14 août 2026 (proposition A)**
 
 
