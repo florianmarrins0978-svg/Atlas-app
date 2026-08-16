@@ -23,45 +23,52 @@
         vue il y a quatorze jours, aucun devis envoyé. »
 
     ————————————————————————————————————————————————————————————————
-    TROIS CHOSES EXISTENT DÉJÀ, ET ELLES DÉCIDENT DU DESSIN.
+    CE QUI EXISTE DÉJÀ — ET LA LEÇON QUI A ÉTÉ APPRISE DEUX FOIS ICI.
+
+    Cette page a été réécrite DEUX FOIS parce qu'elle décrivait un monde qui
+    n'existait plus. C'est la leçon à retenir avant toute autre : **chercher ce
+    qui est déjà fait AVANT de dessiner**, dans les deux dossiers de maquettes
+    (`maquettes/` pour l'application, `docs/maquettes/` pour les décisions) ET
+    dans le code.
 
     1. LA CARTE. L'accueil sait déjà porter une carte de suivi : c'est celle
        qu'il a photographiée le 13 août — « CORRECTION DEMANDÉE / Mr. Martins /
-       Le client veut ce devis corrigé... ». Étiquette en petites capitales,
-       nom en serif, une ligne d'explication, puis les gestes. Le rappel prend
-       cette forme-là : rien de neuf à apprendre.
+       Le client veut ce devis corrigé... ». Le rappel prend cette forme-là :
+       rien de neuf à apprendre. **C'est la seule chose encore à choisir.**
 
-    2. LA RUBRIQUE. « Notifications — Alertes et rappels » figure DÉJÀ dans le
-       plan des réglages (`src/lib/rubriques-reglages.ts`), rangée dans ce qui
-       appartient à la personne, avec `href: null` — dessinée, pas encore
-       codée. Sa demande tombe exactement dedans : il n'y a pas de catégorie à
-       créer, il y a une rubrique à ouvrir.
+    2. L'ÉCRAN DES NOTIFICATIONS ÉTAIT DESSINÉ (13 août,
+       `maquettes/atlas-reglages-notifications.html`) — première réécriture.
 
-    3. ET L'ÉCRAN LUI-MÊME EST DÉJÀ DESSINÉ. C'est ce que cette page a failli
-       ignorer : `maquettes/atlas-reglages-notifications.html` — sixième lot —
-       porte HUIT familles rangées en trois groupes (son argent, ses journées,
-       ses clients), le canal lu sur la ligne, et **un délai déjà formulé** :
-       « 7 jours après l'échéance », un nombre qu'on tape suivi de son unité.
+    3. ET IL A ÉTÉ **CODÉ** LE 14 AOÛT, pendant que cette page s'écrivait —
+       seconde réécriture, le 16. `src/app/reglages/notifications/`,
+       `src/lib/rappels.ts`, `drizzle/0043_rappels_notifications.sql`. La
+       rubrique s'ouvre pour de bon et porte DEUX rappels réglables :
 
-       Redessiner un écran de notifications à côté aurait mis le patron devant
-       deux plans du même écran, sans lui dire lequel prime. Ce qu'il demande
-       n'est donc pas un écran : c'est une NEUVIÈME FAMILLE, à poser parmi les
-       huit, et un délai qui doit se justifier de ne pas prendre la forme que
-       cette planche a déjà retenue.
+         · « Devis sans réponse » — un devis parti, sans réponse, 7 jours ;
+         · « Chantier fini, pas facturé » — 3 jours.
+
+       Et le délai y a déjà sa forme : **« Au bout de [ N ] jours »**, un nombre
+       qu'on tape, un interrupteur par rappel, bornes 1 à 90, rangé sur
+       `entreprises`. Les quatre façons de poser un délai que cette page
+       proposait ont donc été RETIRÉES : les rouvrir ferait deux manières de
+       faire la même chose sur un seul écran.
 
     ————————————————————————————————————————————————————————————————
-    CE QUE CETTE PAGE MET EN DÉBAT, ET QUI N'EST PAS DÉCORATIF.
+    CE QUI RESTE VRAIMENT À FAIRE, ET QUI EST PLUS PETIT QU'ANNONCÉ.
 
-    - Le délai se choisit-il en JOURS libres, ou parmi quelques valeurs ?
-      Il a dit « deux, trois, quatre, cinq, six ». Trois façons sont dessinées.
-    - Le rappel s'efface-t-il tout seul quand le devis part ? OUI, et ce n'est
-      pas négociable : un rappel qu'il faut ranger à la main devient du bruit.
-    - Que fait « J'ai vu » ? Il ne doit PAS supprimer le rappel pour toujours —
-      sinon un chantier oublié disparaît en même temps que le rappel.
+    Sa demande n'est couverte par aucun des deux rappels codés : ceux-ci parlent
+    d'un devis PARTI. Lui parle d'un devis qui n'est **jamais parti**. C'est donc
+    un TROISIÈME rappel, à poser en tête des deux autres — un devis qui n'est pas
+    parti précède un devis qui attend sa réponse.
+
+    Ce qui se choisit encore, et rien de plus :
+      · le ton de la carte sur l'accueil (A discrète, ou B teintée) ;
+      · le nombre de jours par défaut — 4, au milieu de ses « deux à six » ;
+      · ce que fait « J'ai vu », et d'où part le compte (voir la note finale).
 
     ————————————————————————————————————————————————————————————————
     Aucun script — son lecteur n'en exécute pas. Les écrans font 390 px.
-    Rien n'est codé : `CLAUDE.md` §3 bis.
+    Le troisième rappel, lui, n'est pas codé : `CLAUDE.md` §3 bis.
   */
 
   :root{
@@ -266,14 +273,15 @@
   <div class="intro">
     <p class="sur">Le devis qui tarde</p>
     <h1>Un rappel, et le délai qui vous appartient</h1>
-    <p><b>Trois choses existent déjà, et elles décident du dessin.</b> L’accueil
-      sait porter une carte de suivi — c’est celle que vous avez photographiée
-      hier. La rubrique <b>« Notifications — Alertes et rappels »</b> figure déjà
-      dans le plan de vos réglages. Et <b>l’écran des notifications est dessiné
-      depuis le sixième lot</b> : huit familles rangées en trois groupes.</p>
-    <p>Il n’y a donc <b>ni catégorie à créer, ni écran à inventer</b> : il y a une
-      <b>neuvième famille</b> à poser parmi les huit, une carte de plus sur
-      l’accueil, et le nombre de jours à choisir.</p>
+    <p><b>Bonne nouvelle : le plus gros est déjà fait.</b> Pendant que cette
+      page se dessinait, la rubrique <b>Réglages → Notifications a été codée</b>.
+      Elle s’ouvre pour de bon, et elle porte déjà deux rappels réglables — un
+      devis parti sans réponse, un chantier fini pas facturé — avec le nombre de
+      jours qui se tape : <b>« Au bout de 7 jours »</b>.</p>
+    <p>Ce que vous demandez n’y est pas : ces deux-là parlent d’un devis
+      <b>parti</b>. Vous parlez d’un devis qui n’est <b>jamais parti</b>. C’est
+      donc une <b>troisième ligne</b> dans un écran qui tourne — et il ne vous
+      reste qu’à choisir <b>le ton de la carte</b> et <b>le nombre de jours</b>.</p>
   </div>
 
   <!-- ————————————————————————————————————————————————————————————
@@ -364,49 +372,23 @@
   </div>
 
   <!-- ————————————————————————————————————————————————————————————
-       2. OÙ LE RÉGLAGE SE TROUVE
+       2. L'ÉCRAN EXISTE — VOTRE RAPPEL Y AJOUTE UNE LIGNE
        ———————————————————————————————————————————————————————— -->
-  <p class="famille">2 — Où le régler</p>
-  <p class="sous-famille">La rubrique existe déjà dans le plan de vos réglages,
-    rangée dans <b>ce qui vous appartient</b> — elle vous suit d’une entreprise
-    à l’autre. Et derrière elle, l’écran est <b>déjà dessiné</b> : huit familles
-    en trois groupes. Votre rappel en fait une <b>neuvième</b>.</p>
+  <p class="famille">2 — Où il se règle : l’écran est déjà là</p>
+  <p class="sous-famille"><b>Écrit le 16 août, et ça change tout ce qui suivait.</b>
+    Pendant que cette page se dessinait, la rubrique <b>Réglages → Notifications
+    a été codée</b> : elle existe, elle s’ouvre, et elle porte déjà deux rappels
+    réglables. Votre demande n’est donc plus un écran à inventer — c’est une
+    <b>troisième ligne</b> dans un écran qui tourne.</p>
+  <p class="sous-famille" style="margin-top:-6px"><b>Et le nombre de jours est
+    déjà tranché.</b> Il se pose « Au bout de [ 7 ] jours » — un nombre qu’on
+    tape, avec un interrupteur pour éteindre le rappel. Les quatre façons que
+    cette page proposait n’ont donc plus lieu d’être : en rouvrir la question
+    ferait deux manières de poser un délai sur le même écran.</p>
 
   <div class="grille">
-    <div class="prop">
-      <div class="tel"><div class="ecran">
-        <p class="marque">Atlas</p>
-        <p class="eyebrow">Vous</p>
-        <h3 class="titre-ecran">Réglages</h3>
-        <div class="filet"></div>
-        <p class="sous-titre" style="margin-top:17px">Vous</p>
-        <div style="margin-top:8px"></div>
-        <div class="rubrique"><span class="ico"></span>
-          <div><p class="nom">Mon compte</p><p class="dit">Nom, e-mail et téléphone</p></div>
-          <span class="fleche">›</span></div>
-        <div class="rubrique vise"><span class="ico"></span>
-          <div><p class="nom">Notifications</p><p class="dit">Alertes et rappels</p></div>
-          <span class="fleche">›</span></div>
-        <div class="rubrique"><span class="ico"></span>
-          <div><p class="nom">Connexion</p><p class="dit">Mot de passe et sécurité</p></div>
-          <span class="fleche">›</span></div>
-        <div class="rubrique" style="border-bottom:none"><span class="ico"></span>
-          <div><p class="nom">Apparence</p><p class="dit">Thème clair, sombre et couleurs</p></div>
-          <span class="fleche">›</span></div>
-        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
-      </div></div>
-      <div class="legende">
-        <h2>La rubrique</h2>
-        <p class="titre">Réglages → Notifications</p>
-        <p>Les pictogrammes sont laissés en aplat : ceux de l’application ne
-          se rendent pas dans une page comme celle-ci.</p>
-        <p class="pour">Déjà prévue, déjà nommée « Alertes et rappels ».
-          <b>Rien à inventer</b> — et un salarié pourra y toucher sans pouvoir
-          approcher vos tarifs.</p>
-      </div>
-    </div>
 
-    <!-- La neuvième famille, posée parmi les huit déjà dessinées. -->
+    <!-- L'écran tel qu'il EST, avec la ligne à ajouter. -->
     <div class="prop">
       <div class="tel"><div class="ecran">
         <div class="retour">‹</div>
@@ -414,222 +396,62 @@
         <h3 class="titre-ecran">Notifications</h3>
         <div class="filet"></div>
 
+        <p class="exemple" style="margin-top:15px;border-left-color:var(--e-trait)">
+          Tout se passe <b>dans l’application</b>, sur l’écran d’accueil. Rien ne
+          part sur votre téléphone ni par e-mail.</p>
+
         <div class="groupe">
-          <p class="t">Votre argent</p>
-          <div class="ligne">
-            <div><p class="nom">Facture impayée</p><p class="dit">Passé la date d’échéance</p></div>
-            <span class="canal">Téléphone</span><span class="mini"></span>
-          </div>
+          <p class="t">Ce qui vous est toujours signalé</p>
           <div class="ligne">
             <div><p class="nom">Réponse à un devis</p><p class="dit">Accepté, corrigé ou refusé</p></div>
-            <span class="canal">Téléphone</span><span class="mini"></span>
+            <span class="canal">Toujours</span>
+          </div>
+          <div class="ligne" style="border-bottom:none">
+            <div><p class="nom">Lien de devis expiré</p><p class="dit">Le client n’a pas pu l’ouvrir à temps</p></div>
+            <span class="canal">Toujours</span>
           </div>
         </div>
 
         <div class="groupe">
-          <p class="t">Vos clients et votre équipe</p>
-          <!-- LÀ, et pas ailleurs : un devis qui ne part pas est un client qui
-               attend. C'est le voisin immédiat de « client à relancer ». -->
+          <p class="t">Ce que vous réglez</p>
+          <!-- LA TROISIÈME, et elle se pose AVANT les deux autres : un devis qui
+               n'est pas parti précède un devis sans réponse. -->
           <div class="ligne neuve">
-            <div><p class="nom">Devis pas encore parti</p><p class="dit">Au bout de 4 jours</p></div>
-            <span class="canal">Accueil</span><span class="mini"></span>
+            <div><p class="nom">Devis pas encore parti</p><p class="dit">Le chantier est ouvert, aucun devis n’est parti</p></div>
+            <span class="mini"></span>
           </div>
-          <div class="ligne">
-            <div><p class="nom">Client à relancer</p><p class="dit">Devis sans réponse</p></div>
-            <span class="canal">E-mail</span><span class="mini"></span>
-          </div>
-          <div class="ligne" style="border-bottom:none">
-            <div><p class="nom">Affectation d’équipe</p><p class="dit">Quelqu’un posé sur un chantier</p></div>
-            <span class="canal">Téléphone</span><span class="mini"></span>
-          </div>
-        </div>
-
-        <p class="exemple" style="margin-top:16px">La ligne en or est la
-          <b>neuvième</b>. Les huit autres sont celles du sixième lot, à leur
-          place — c’est chez elles que la vôtre se range.</p>
-        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
-      </div></div>
-      <div class="legende">
-        <h2>La neuvième famille</h2>
-        <p class="titre">« Devis pas encore parti », chez vos clients</p>
-        <p class="pour">Elle se pose <b>à côté de « client à relancer »</b> :
-          c’est la même inquiétude, prise un cran plus tôt — là, c’est le client
-          qui attend une réponse de vous.</p>
-        <p class="contre">On pourrait la ranger dans « votre argent » : un devis
-          qui ne part pas est un chantier qui ne se facture pas. <b>Dites-moi si
-          vous la voulez là</b>, tout en haut de l’écran.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ————————————————————————————————————————————————————————————
-       3. LE DÉLAI — TROIS FAÇONS DE LE POSER
-       ———————————————————————————————————————————————————————— -->
-  <p class="famille">3 — Le délai, quatre façons</p>
-  <p class="sous-famille">Vous avez dit <b>« deux, trois, quatre, cinq, six
-    jours »</b>. Voici les manières de vous laisser choisir — <b>en commençant
-    par celle qui existe déjà</b>, car l’écran des notifications a tranché la
-    question une fois, pour l’impayé.</p>
-  <p class="sous-famille" style="margin-top:-6px"><b>Elles ne se posent pas au
-    même endroit</b>, et ça compte plus que leur forme. <b>F</b> ouvre l’alerte
-    et règle le délai sur sa propre page — comme l’impayé aujourd’hui. <b>C</b>,
-    <b>D</b> et <b>E</b> le posent <b>à même la liste</b>, sous l’interrupteur :
-    un geste de moins, mais neuf familles qui déplient chacune leur réglage font
-    un écran long.</p>
-
-  <div class="grille">
-
-    <!-- F — celle que la planche du sixième lot a déjà retenue. Elle passe en
-         PREMIER : proposer trois formes neuves sans montrer celle qui existe,
-         c'est faire choisir dans le vide. -->
-    <div class="prop">
-      <div class="tel"><div class="ecran">
-        <div class="retour">‹</div>
-        <p class="eyebrow">Notifications</p>
-        <h3 class="titre-ecran">Devis pas encore parti</h3>
-        <div class="filet"></div>
-        <div class="bloc">
-          <p class="quoi" style="font-weight:500">Ce que vous verrez</p>
-          <p class="pourquoi" style="margin-top:8px">« Mme Félicie — chantier
-            ouvert il y a 14 jours, aucun devis envoyé. »</p>
-        </div>
-        <div class="bloc">
-          <p class="quoi" style="font-weight:500">À partir de quand</p>
-          <div class="chiffrer">
+          <div class="chiffrer" style="margin:0 0 13px">
+            <span class="canal" style="align-self:center">Au bout de</span>
             <span class="valeur">4</span>
             <span class="u">jours</span>
-            <span class="apres">après l’ouverture du chantier</span>
+          </div>
+          <div class="ligne">
+            <div><p class="nom">Devis sans réponse</p><p class="dit">Un devis parti, dont le client n’a rien dit</p></div>
+            <span class="canal">7 jours</span><span class="mini"></span>
+          </div>
+          <div class="ligne" style="border-bottom:none">
+            <div><p class="nom">Chantier fini, pas facturé</p><p class="dit">Terminé, aucune facture partie</p></div>
+            <span class="canal">3 jours</span><span class="mini"></span>
           </div>
         </div>
-        <p class="exemple">Un chantier ouvert le <b>lundi</b> sans devis parti
-          vous rappellera à l’ordre le <b>vendredi</b>.</p>
-        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
-      </div></div>
-      <div class="legende">
-        <h2>F — celle qui existe déjà</h2>
-        <p class="titre">Un nombre qu’on tape, et sa phrase</p>
-        <p class="pour"><b>C’est la forme retenue pour l’impayé</b> — « 7 jours
-          après l’échéance ». La reprendre, c’est un écran qui se lit pareil
-          d’une alerte à l’autre, et <b>la phrase dit ce que le nombre veut
-          dire</b>. Aucune borne : 2 comme 30.</p>
-        <p class="contre">Il faut ouvrir un clavier pour changer un chiffre —
-          le geste le plus long des quatre.</p>
-      </div>
-    </div>
 
-    <!-- C — les pastilles -->
-    <div class="prop">
-      <div class="tel"><div class="ecran">
-        <div class="retour">‹</div>
-        <p class="eyebrow">Vous</p>
-        <h3 class="titre-ecran">Notifications</h3>
-        <div class="filet"></div>
-        <div class="bloc">
-          <div class="interrupteur">
-            <div>
-              <p class="quoi">Me rappeler les devis en retard</p>
-              <p class="pourquoi">Quand un chantier reste sans devis.</p>
-            </div>
-            <span class="glissiere"></span>
-          </div>
-          <div class="pastilles">
-            <span class="pastille">2</span>
-            <span class="pastille">3</span>
-            <span class="pastille prise">4</span>
-            <span class="pastille">5</span>
-            <span class="pastille">6</span>
-          </div>
-          <p class="unite">jours après l’ouverture du chantier</p>
-        </div>
-        <p class="exemple">Un chantier ouvert le <b>lundi</b> sans devis parti
-          vous rappellera à l’ordre le <b>vendredi</b>.</p>
         <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
       </div></div>
       <div class="legende">
-        <h2>C — les pastilles</h2>
-        <p class="titre">Vos cinq valeurs, en un appui</p>
-        <p class="pour"><b>Exactement ce que vous avez dit</b>, et le geste le
-          plus court : un doigt, une fois. Même forme que les pastilles Mr / Mme
-          que vous venez de retenir.</p>
-        <p class="contre">Enfermé entre 2 et 6. Le jour où vous voudriez 10, il
-          faut y revenir. Et <b>l’impayé garderait son nombre tapé</b> : deux
-          façons de poser un délai sur le même écran.</p>
-      </div>
-    </div>
-
-    <!-- D — la molette -->
-    <div class="prop">
-      <div class="tel"><div class="ecran">
-        <div class="retour">‹</div>
-        <p class="eyebrow">Vous</p>
-        <h3 class="titre-ecran">Notifications</h3>
-        <div class="filet"></div>
-        <div class="bloc">
-          <div class="interrupteur">
-            <div>
-              <p class="quoi">Me rappeler les devis en retard</p>
-              <p class="pourquoi">Quand un chantier reste sans devis.</p>
-            </div>
-            <span class="glissiere"></span>
-          </div>
-          <div class="molette">
-            <span class="bande"></span>
-            <p class="v">3</p>
-            <p class="v centre">4</p>
-            <p class="v">5</p>
-          </div>
-          <p class="unite">jours — faites tourner</p>
-        </div>
-        <p class="exemple">Un chantier ouvert le <b>lundi</b> sans devis parti
-          vous rappellera à l’ordre le <b>vendredi</b>.</p>
-        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
-      </div></div>
-      <div class="legende">
-        <h2>D — la molette</h2>
-        <p class="titre">Comme le sélecteur d’heure d’un téléphone</p>
-        <p class="pour">Aucune borne : 1 jour comme 30. Le geste est familier —
-          c’est celui des réveils.</p>
-        <p class="contre">Il faut viser et faire tourner : <b>plus long</b> que
-          toucher une pastille, pour un réglage qu’on pose une fois.</p>
-      </div>
-    </div>
-
-    <!-- E — le curseur -->
-    <div class="prop">
-      <div class="tel"><div class="ecran">
-        <div class="retour">‹</div>
-        <p class="eyebrow">Vous</p>
-        <h3 class="titre-ecran">Notifications</h3>
-        <div class="filet"></div>
-        <div class="bloc">
-          <div class="interrupteur">
-            <div>
-              <p class="quoi">Me rappeler les devis en retard</p>
-              <p class="pourquoi">Quand un chantier reste sans devis.</p>
-            </div>
-            <span class="glissiere"></span>
-          </div>
-          <div class="curseur">
-            <div class="piste"><span class="bouton"></span></div>
-            <div class="bornes"><span>1 jour</span><span>15 jours</span></div>
-            <p class="valeur">4 jours<small>après l’ouverture</small></p>
-          </div>
-        </div>
-        <p class="exemple">Un chantier ouvert le <b>lundi</b> sans devis parti
-          vous rappellera à l’ordre le <b>vendredi</b>.</p>
-        <div class="barre"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span></div>
-      </div></div>
-      <div class="legende">
-        <h2>E — le curseur</h2>
-        <p class="titre">De 1 à 15, d’un glissement</p>
-        <p class="pour">Toute l’étendue d’un seul geste, et le nombre s’affiche
-          en gros dessous.</p>
-        <p class="contre">Le plus difficile à viser au doigt sur un chantier,
-          avec des gants — et un jour d’écart se rattrape mal.</p>
+        <h2>La troisième ligne</h2>
+        <p class="titre">« Devis pas encore parti », au-dessus des deux autres</p>
+        <p class="pour">L’écran est <b>celui qui tourne aujourd’hui</b>, pas un
+          dessin : deux rappels réglables, un interrupteur chacun, et le délai
+          qui se tape. La vôtre s’y glisse <b>en tête</b> — un devis qui n’est
+          pas parti vient avant un devis qui attend sa réponse.</p>
+        <p class="contre">Il reste <b>un nombre à choisir</b> : je propose
+          <b>4 jours</b>, au milieu des « deux, trois, quatre, cinq, six » que
+          vous avez dits. Vous pourrez le changer sur cet écran, de 1 à 90.</p>
       </div>
     </div>
 
   </div>
+
 
   <!-- ————————————————————————————————————————————————————————————
        CE QUI NE SE DÉCIDE PAS À L'ŒIL
@@ -650,26 +472,22 @@
         plus à remplir.</li>
       <li><b>Vous ne le verrez qu’en ouvrant Atlas.</b> Aucune alerte ne part
         sur votre téléphone : ni SMS, ni e-mail, ni pastille sur l’icône. C’est
-        la même limite que partout ailleurs, et elle tombera le jour où Atlas
-        sera hébergé pour de vrai. C’est aussi pourquoi la neuvième ligne porte
-        <b>« Accueil »</b> comme canal, là où les autres disent « Téléphone » :
-        elle ne promet que ce qui existe.</li>
-      <li><b>Et une question qui vous revient</b> : la ranger dans « vos
-        clients » (à côté de « client à relancer »), ou dans <b>« votre
-        argent »</b>, tout en haut — un devis qui ne part pas est un chantier
-        qui ne se facture pas.</li>
+        déjà ce que dit l’écran codé, en toutes lettres — <i>« tout se passe dans
+        l’application »</i> — et cette limite tombera le jour où Atlas sera
+        hébergé pour de vrai.</li>
     </ul>
-    <p style="margin-top:14px"><b>Ma préférence : A + F.</b> Le ton discret pour
-      la carte — c’est un pense-bête, pas une alarme. Et pour le délai, la forme
-      qui existe déjà : votre écran de notifications a tranché la question une
-      fois pour l’impayé, et <b>deux façons de poser un délai sur le même écran
-      se remarqueraient</b>. Si vous préférez le geste le plus court, prenez
-      <b>C</b> — mais alors je porte l’impayé sur les pastilles aussi, pour que
-      l’écran reste d’un seul tenant.</p>
-    <p style="margin-top:10px">Dites-moi la carte, puis le réglage, et je code.
-      Comptez une journée : la carte, la rubrique ouverte avec ses neuf familles,
-      le délai enregistré, et les contrôles qui tiennent les règles ci-dessus.</p>
-    <p style="margin-top:10px"><b>Rien n’est touché dans l’application.</b></p>
+    <p style="margin-top:14px"><b>Ma préférence : A, et 4 jours.</b> Le ton
+      discret pour la carte — c’est un pense-bête, pas une alarme. Et quatre
+      jours au milieu de vos « deux à six » : vous pourrez le changer sur
+      l’écran, de 1 à 90. <b>B</b> se défend très bien si vous voulez que ça
+      pique un peu.</p>
+    <p style="margin-top:10px"><b>Ce que ça coûte est plus petit qu’annoncé
+      hier</b>, puisque l’écran existe : une demi-journée. La troisième ligne
+      dans les réglages, la carte sur l’accueil, et les contrôles qui tiennent
+      les règles ci-dessus.</p>
+    <p style="margin-top:10px"><b>Cette page ne touche à rien.</b> L’écran des
+      réglages, lui, existe déjà et fonctionne — c’est la troisième ligne qui
+      attend votre mot.</p>
   </div>
 
 </div>

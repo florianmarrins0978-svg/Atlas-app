@@ -9,26 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-15
 
-### Le devis qui tarde : dessiné — et l'écran qu'on allait dessiner deux fois
+### Le devis qui tarde : dessiné — et deux fois réécrit contre ce qui existait
 
 **Sa demande du 14 août :** *« un rappel lorsque le chantier a été ouvert mais
 le devis n'a pas été envoyé »*, avec *« la possibilité dans les notifications de
 mettre le nombre de jours »*.
 
-`docs/maquettes/56-le-devis-qui-tarde.html`. **Rien n'est codé** — `CLAUDE.md`
-§3 bis : une demande d'apparence se dessine avant de se coder.
+`docs/maquettes/56-le-devis-qui-tarde.html`. Le troisième rappel n'est pas codé
+— `CLAUDE.md` §3 bis.
 
-**Ce que la recherche a évité, et qui vaut plus que la planche.** L'écran des
-notifications **existe déjà**, dessiné au sixième lot
-(`maquettes/atlas-reglages-notifications.html`) : huit familles en trois
-groupes, et un délai déjà formulé — « 7 jours après l'échéance ». La première
-version de cette maquette en redessinait un à côté. Le patron se serait retrouvé
-devant **deux plans du même écran**, sans savoir lequel prime.
+**La leçon de ce lot, et elle a coûté deux réécritures.** La planche a décrit
+deux fois un monde qui n'existait plus : d'abord elle redessinait l'écran des
+notifications, dessiné depuis le 13 août ; puis elle proposait quatre façons de
+poser un délai, alors que la rubrique avait été **codée le 14** par une autre
+session — avec son délai, « Au bout de [ N ] jours ».
 
-Sa demande n'est donc pas un écran : c'est une **neuvième famille** à poser
-parmi les huit, et un délai qui doit se justifier de ne pas prendre la forme
-déjà retenue. La planche montre les deux — et pose les quatre règles qui ne se
-décident pas à l'œil, dont ce que fait « J'ai vu ».
+**Chercher ce qui existe AVANT de dessiner, dans les deux dossiers de maquettes
+et dans le code.** `maquettes/` porte les planches de l'application,
+`docs/maquettes/` celles des décisions ; n'en regarder qu'un, c'est redessiner
+ce qui est déjà tranché — et mettre le patron devant deux plans du même écran.
+
+**Ce que ça évite, une fois la planche corrigée :** lui faire arbitrer une
+question réglée. Sa demande n'est couverte par aucun des deux rappels codés —
+ils parlent d'un devis **parti**, lui d'un devis **jamais parti**. C'est une
+**troisième ligne** dans un écran qui tourne, et il ne reste que deux mots à
+dire : le ton de la carte, et le nombre de jours.
 
 ### Un contrôle qui rougissait le samedi, et redevenait vert le lundi
 
@@ -73,6 +78,68 @@ apporté deux planches de plus tombées dans le même trou, qu'il a nommées.
 ---
 
 ## 2026-08-14
+
+### Les treize rubriques des réglages sont ouvertes — dont deux vrais rappels
+
+Sa consigne : *« Fini toutes les rubriques »*. Plus aucune ne porte
+« Bientôt ».
+
+**Ce qui apporte quelque chose de neuf : deux rappels sur l'accueil.** Un devis
+parti sans réponse depuis sept jours, un chantier terminé sans facture depuis
+trois. Les deux délais se règlent, les deux rappels se coupent — ce sont des
+conforts, et rien ne se perd à les éteindre : le devis reste sur la fiche du
+chantier, le chantier reste dans « Terminés ».
+
+**Ce qui ne se coupe pas, et l'écran le dit :** la réponse d'un client et le
+lien de devis expiré. Les éteindre, ce serait accepter de ne plus savoir qu'on
+a été refusé.
+
+**Et ce qui manque est écrit noir sur blanc :** « facture impayée » serait le
+rappel le plus utile, et il est impossible — **rien dans Atlas n'enregistre
+qu'une facture a été payée**. Tant que ce geste n'existe pas, l'alerte crierait
+sur toutes les factures.
+
+**Apparence et Abonnement s'ouvrent sans rien régler**, délibérément : le mode
+sombre et la couleur d'accent demandent de reprendre toute l'application, et ni
+le prix ni l'offre de l'abonnement ne sont décidés. Les écrans disent ce qui
+viendra et ce qui bloque, au lieu d'un « Bientôt » muet — et pour l'abonnement,
+ils préviennent que « factures » y désigne celles qu'Atlas enverrait, pas celles
+des clients (`ARCHITECTURE.md` §108).
+
+### Une équipe peut partir cinq jours, et Atlas cesse de proposer sa place
+
+**Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
+en déplacement pour cinq jours ? »* Sa réponse, devant les trois planches :
+*« La A »* — sous les noms, dans Réglages → Équipe.
+
+**Ce qui existait déjà et n'a pas été refait :** si TOUTE l'entreprise part,
+l'agenda Google relié suffit. On le lui a dit plutôt que de lui vendre du
+travail inutile.
+
+**Ce qui manquait :** une équipe sur deux. L'agenda bloque tout le monde —
+délibérément — et le nombre d'équipes est un nombre sans dates.
+
+**Ce que ça évite :** proposer à un client une date que l'équipe restante ne
+peut pas tenir. Le déplacement se note en quelques secondes, et **tout revient
+normal après, sans rien défaire**. Le client ne voit jamais rien de ceci.
+
+**La décision qui a tout tenu :** une absence n'est pas une capacité qui varie,
+c'est **une occupation** — elle prend la place qu'un chantier aurait prise. Zéro
+signature changée, et les quatre calculs d'occupation en héritent : les trois
+chemins du client, l'écran d'envoi, la pose manuelle, et le calendrier.
+
+**Trois gardes pour la même règle** — l'écran, l'action serveur, la contrainte
+de base — et une seule fonction pour les trois. Une absence à l'envers
+n'occuperait aucun jour et rendrait la capacité fausse en silence.
+
+**Non fait, et dit :** l'équipe inscrite sur un chantier reste une étiquette,
+pas une contrainte. Deux chantiers le même matin sur la même équipe passent
+toujours. `ARCHITECTURE.md` §109, `docs/QUESTIONS.md` §19.
+
+---
+
+## 2026-08-14
+
 
 ### « Surtout la page équipe » : l'écran qui n'était jamais préparé d'avance
 

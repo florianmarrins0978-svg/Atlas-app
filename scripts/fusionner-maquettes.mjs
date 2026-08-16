@@ -266,12 +266,16 @@ const MAQUETTES = [
     titre: "Une équipe part cinq jours",
     famille: "Le planning",
     quoi: "« Comment on fait si une équipe part en déplacement pour cinq jours ? » Si toute l’entreprise part, l’agenda Google suffit déjà. Si une équipe sur deux part, rien ne convient. Trois endroits où poser le geste.",
+    fichier: "57-apparier-deux-demi-journees.html",
+    titre: "Apparier deux demi-journées",
+    famille: "Le planning",
+    quoi: "Quand une demi-journée est prise et l’autre libre, Atlas propose le chantier en attente le plus proche. Quatre façons de le dire, le bandeau dessiné à vol d’oiseau ET par la route, et les deux cas où il n’y a rien de bon à proposer.",
   },
   {
     fichier: "56-le-devis-qui-tarde.html",
     titre: "Le devis qui tarde : le rappel, et le délai",
     famille: "Le devis avant l’envoi",
-    quoi: "Un rappel quand un chantier reste sans devis, et le délai réglé dans Réglages → Notifications. Deux tons pour la carte, et quatre façons de poser le nombre de jours — en commençant par celle que l’écran des notifications a déjà retenue.",
+    quoi: "Un rappel quand un chantier reste sans devis. La rubrique Notifications ayant été codée entre-temps, ce n’est plus un écran à inventer mais une troisième ligne à y poser : restent le ton de la carte et le nombre de jours.",
   },
 ];
 

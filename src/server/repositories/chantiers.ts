@@ -10,7 +10,8 @@ import {
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type Moment,
 } from "../disponibilites";
-import { equipes } from "../db/schema";
+import { absencesEquipe, equipes } from "../db/schema";
+import { fusionnerAbsences } from "../../lib/absences-equipe";
 import type { Ctx } from "./context";
 
 /**
@@ -423,16 +424,43 @@ export async function planifierChantier(
       dureeEnDemiJournees(courant?.dureePrevue ?? null) ??
       DUREE_PAR_DEFAUT_DEMI_JOURNEES;
 
-    const occupation = compterOccupation(
-      autres
-        .filter((a) => a.id !== chantierId && a.jour !== null)
-        .map((a) => ({
-          jour: a.jour as string,
-          moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
-          dureeDemiJournees: a.duree,
-        }))
-    );
     const nombreEquipes = entreprise?.nombreEquipes ?? 1;
+
+    // **Les équipes absentes comptent ici aussi.** C'est le chemin par lequel
+    // le patron POSE une date lui-même, sans passer par le client. L'oublier
+    // aurait laissé poser un chantier le jour où l'équipe est en déplacement,
+    // pendant que l'écran d'envoi refusait ce même jour : deux vérités sur la
+    // place disponible (`CLAUDE.md` §3).
+    //
+    // Non borné à une fenêtre : cette requête-ci ne l'est pas non plus pour les
+    // chantiers, et une absence lointaine ne coûte qu'une ligne.
+    const absences = await tx
+      .select({
+        equipeId: absencesEquipe.equipeId,
+        premierJour: absencesEquipe.premierJour,
+        dernierJour: absencesEquipe.dernierJour,
+      })
+      .from(absencesEquipe)
+      .where(
+        and(
+          eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
+          isNull(absencesEquipe.deletedAt)
+        )
+      );
+
+    const occupation = fusionnerAbsences(
+      compterOccupation(
+        autres
+          .filter((a) => a.id !== chantierId && a.jour !== null)
+          .map((a) => ({
+            jour: a.jour as string,
+            moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
+            dureeDemiJournees: a.duree,
+          }))
+      ),
+      absences,
+      nombreEquipes
+    );
     const automatique = departPossible(datePlanifiee, duree, occupation, nombreEquipes) ?? "matin";
 
     // **Le choix du patron est REVALIDÉ, jamais cru sur parole.** L'écran ne

@@ -214,25 +214,26 @@ async function main() {
     await page.locator('[data-atlas="sans-date"]').first().click();
     await page.waitForTimeout(300);
 
-    // Un jour libre **et OUVRABLE** : le calendrier s'ouvre sur le mois courant.
+    // **Un jour libre ET OUVRÉ.** « Aujourd'hui + 20 jours » tombe un samedi une
+    // semaine sur trois et demie : le panneau affiche alors « Jamais proposé »,
+    // aucun bouton « Poser » n'existe — c'est le comportement voulu — et cette
+    // suite rougissait sans qu'aucun code n'ait bougé. Vu le 16 août 2026, sur
+    // un 5 septembre qui était un samedi. Écrite le 14, elle visait un jeudi ;
+    // elle serait redevenue verte toute seule le lundi.
     //
-    // **Le décalage fixe de 20 jours était une bombe à retardement**, et elle a
-    // sauté le 16 août 2026 : écrite le 14, elle visait un jeudi ; deux jours
-    // plus tard, le même « + 20 jours » tombait un SAMEDI. Or le planning refuse
-    // le week-end par construction — il écrit « Jamais proposé » et ne rend même
-    // pas `JourneeOuvrable`, donc ni les cases d'équipe ni le bouton. Le contrôle
-    // accusait alors le bouton d'un défaut qui n'était pas le sien, et serait
-    // redevenu vert tout seul le lundi.
+    // Un contrôle qui échoue selon le jour de la semaine s'apprend à être
+    // ignoré, et c'est ce garde-fou-là qu'on perd — pas seulement dix minutes.
     //
-    // `estWeekEndIso` est la règle du produit, pas une seconde écriture de la
-    // même idée : la dupliquer ici finirait par diverger d'elle.
-    const jour = (() => {
-      for (let d = 20; d < 27; d++) {
-        const candidat = new Date(Date.now() + d * 86400_000).toISOString().slice(0, 10) as JourIso;
-        if (!estWeekEndIso(candidat)) return candidat;
-      }
-      throw new Error("aucun jour ouvrable en une semaine — impossible");
-    })();
+    // **`estWeekEndIso` plutôt que `getUTCDay() === 0 || === 6`** : le week-end
+    // est une règle du produit (`src/lib/mois.ts`, et `disponibilites.ts` en
+    // décide), pas une idée à réécrire ici. Deux écritures de la même règle
+    // finissent toujours par diverger — le jour où le samedi travaillé
+    // deviendrait un réglage, celle-ci mentirait sans rougir.
+    const cible = new Date(Date.now() + 20 * 86400_000);
+    while (estWeekEndIso(cible.toISOString().slice(0, 10) as JourIso)) {
+      cible.setUTCDate(cible.getUTCDate() + 1);
+    }
+    const jour = cible.toISOString().slice(0, 10);
     for (let i = 0; i < 24; i++) {
       if ((await page.locator(`[data-atlas="grille-mois"] button[data-jour="${jour}"]`).count()) > 0) break;
       await page.click('button[aria-label="Mois suivant"]');

@@ -720,21 +720,24 @@ le bouton allait très bien. **Devant un rouge sur une suite qui touche au
 planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 `estWeekEndIso`, et éprouvé dans les deux sens.
 
-**LE DEVIS QUI TARDE : DESSINÉ, IL ATTEND SON CHOIX (15 août).**
-`docs/maquettes/56-le-devis-qui-tarde.html`. **Rien n'est codé.** Il doit
-désigner trois choses : le ton de la carte (A discrète / B teintée), la forme du
-délai (F le nombre tapé — *celle qui existe déjà* / C pastilles / D molette /
-E curseur), et le groupe où ranger la ligne. Détail complet : `TODO.md`
-§0 novivicies.
+**LE DEVIS QUI TARDE : UNE TROISIÈME LIGNE, IL ATTEND DEUX MOTS (16 août).**
+`docs/maquettes/56-le-devis-qui-tarde.html`. Il désigne **le ton de la carte**
+(A discrète / B teintée) et **le nombre de jours** (4 proposé). Détail complet :
+`TODO.md` §0 novivicies.
 
-**LA LEÇON DE CE LOT, ET ELLE RESSERVIRA : CHERCHER CE QUI EXISTE DÉJÀ AVANT DE
-DESSINER.** L'écran des notifications était **déjà dessiné** au sixième lot
-(`maquettes/atlas-reglages-notifications.html`) — huit familles en trois groupes,
-et un délai déjà formulé, « 7 jours après l'échéance ». La première version de la
-maquette 56 en redessinait un à côté : le patron se serait retrouvé devant deux
-plans du même écran sans savoir lequel prime. **Le dossier `maquettes/` (celui de
-l'application) et `docs/maquettes/` (les planches de décision) sont deux endroits
-distincts** — regarder les deux avant de dessiner, jamais un seul.
+**⚠ LA RUBRIQUE NOTIFICATIONS EST CODÉE DEPUIS LE 14 AOÛT** — `src/lib/rappels.ts`,
+`src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql`. Deux
+rappels réglables (« devis sans réponse », 7 j ; « chantier fini pas facturé »,
+3 j), un interrupteur chacun, et le délai qui se tape : « Au bout de [ N ] jours »,
+bornes 1–90, rangé sur `entreprises`. **Ne pas le redessiner.** Sa demande n'y est
+pas : ces deux-là parlent d'un devis PARTI, lui d'un devis JAMAIS parti.
+
+**LA LEÇON DE CE LOT, ET ELLE A COÛTÉ DEUX RÉÉCRITURES : CHERCHER CE QUI EXISTE
+AVANT DE DESSINER.** La planche a décrit deux fois un monde disparu — d'abord un
+écran de notifications déjà dessiné le 13, puis un délai déjà codé le 14. **Le
+dossier `maquettes/` (l'application) et `docs/maquettes/` (les décisions) sont
+deux endroits distincts, et le code en est un troisième** — regarder les trois
+avant de dessiner, jamais un seul.
 
 **ET HUIT MAQUETTES N'ÉTAIENT ATTEIGNABLES PAR AUCUN CHEMIN** (38, 39, 41, 42,
 43, 46, puis 47 et 53 apportées par la fusion) : ni page unique, ni sommaire. `TODO.md` l'affirmait sans conséquence ; c'était

@@ -27,10 +27,10 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 novivicies. Le devis qui tarde : dessiné, **il reste à choisir**
+### 0 novivicies. Le devis qui tarde : **une troisième ligne**, et deux mots à dire
 
-*`docs/maquettes/56-le-devis-qui-tarde.html`, le 15 août 2026. **Rien n'est
-codé** — `CLAUDE.md` §3 bis.*
+*`docs/maquettes/56-le-devis-qui-tarde.html`, écrite le 15 août 2026, **réécrite
+deux fois** le 16. Le troisième rappel n'est pas codé — `CLAUDE.md` §3 bis.*
 
 **Sa demande, le 14 août 2026 :** *« Il faudrait créer un rappel lorsque le
 chantier a été ouvert mais le devis n'a pas été envoyé. Et il faudrait également
@@ -40,61 +40,188 @@ dire "si aucun devis n'est parti sous deux, trois, quatre, cinq, six jours, me
 mettre une notification" — comme la Mme Félicie, vue il y a quatorze jours,
 aucun devis envoyé. »*
 
-**Ce que la recherche a changé, et qui vaut plus que la maquette.** Trois
-choses existaient déjà, et la troisième a failli être ignorée :
+**LA LEÇON DE CE LOT, APPRISE DEUX FOIS ET DONC ÉCRITE ICI.** Cette planche a
+décrit deux fois un monde qui n'existait plus :
 
-1. la carte de suivi de l'accueil (`src/app/Notifications.tsx`) — le rappel
-   prend sa forme, rien de neuf à apprendre ;
-2. la rubrique « Notifications — Alertes et rappels » du plan des réglages
-   (`src/lib/rubriques-reglages.ts`, `href: null`) — **il n'y a pas de catégorie
-   à créer**, il y a une rubrique à ouvrir ;
-3. **l'écran lui-même est dessiné depuis le sixième lot** —
-   `maquettes/atlas-reglages-notifications.html` porte huit familles en trois
-   groupes, le canal lu sur la ligne, et **un délai déjà formulé** : « 7 jours
-   après l'échéance », un nombre tapé suivi de sa phrase.
+1. première version — elle redessinait un écran de notifications, alors que
+   `maquettes/atlas-reglages-notifications.html` en portait déjà un depuis le
+   13 août ;
+2. seconde version — elle proposait quatre façons de poser un délai, alors que
+   la rubrique avait été **CODÉE le 14** par une autre session, avec son délai.
 
-La première version de la maquette 56 redessinait un écran de notifications à
-côté de celui-là. Le patron se serait retrouvé devant **deux plans du même
-écran** sans savoir lequel prime. Corrigé avant envoi : sa demande est une
-**neuvième famille** à poser parmi les huit, pas un écran.
+**Chercher ce qui existe avant de dessiner, dans les DEUX dossiers de maquettes
+et dans le code.** `maquettes/` porte les planches de l'application,
+`docs/maquettes/` celles des décisions — regarder un seul des deux, c'est
+redessiner ce qui est déjà tranché.
 
-**Ce qu'il doit désigner** — trois choses, et la page les pose :
+**Ce qui est CODÉ, et qu'il ne faut surtout pas refaire** — `src/lib/rappels.ts`,
+`src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql` :
+
+| | |
+|---|---|
+| Rubrique Réglages → Notifications | ouverte, `href` posé |
+| « Devis sans réponse » | un devis parti, sans réponse, **7 jours** |
+| « Chantier fini, pas facturé » | **3 jours** |
+| La forme du délai | **« Au bout de [ N ] jours »**, un nombre tapé, un interrupteur par rappel, bornes 1–90, rangé sur `entreprises` |
+| Ce qui ne se coupe pas | réponse à un devis, lien expiré |
+
+**CE QUI RESTE, ET QUI EST PLUS PETIT QU'ANNONCÉ.** Aucun des deux rappels codés
+ne couvre sa demande : ils parlent d'un devis **parti**. Lui parle d'un devis
+**jamais parti**. C'est donc un **troisième rappel**, à poser en tête des deux
+autres — un devis qui n'est pas parti précède un devis qui attend sa réponse.
+
+Il désigne **deux choses**, et rien de plus :
 
 | | Le choix | Les propositions |
 |---|---|---|
-| 1 | Le ton de la carte | **A** discrète (pense-bête) · **B** teintée, jours dans l'étiquette |
-| 2 | La forme du délai | **F** le nombre tapé — *celle qui existe déjà* · **C** cinq pastilles 2-6 · **D** molette · **E** curseur 1-15 |
-| 3 | Le groupe d'accueil | « Vos clients » (voisin de « client à relancer ») ou « Votre argent », tout en haut |
+| 1 | Le ton de la carte sur l'accueil | **A** discrète (pense-bête) · **B** teintée, jours dans l'étiquette |
+| 2 | Le nombre de jours par défaut | **4**, au milieu de ses « deux à six » — changeable de 1 à 90 sur l'écran |
 
-**Ma préférence, écrite sur la page : A + F.** Et une conséquence à ne pas
-oublier s'il prend **C** : l'impayé garderait son nombre tapé, donc **deux
-façons de poser un délai sur le même écran** — il faudrait porter l'impayé sur
-les pastilles aussi.
+**Ma préférence, écrite sur la page : A, et 4 jours.**
 
 **Quatre règles y sont posées, à trancher avec lui** : le rappel s'efface seul
 dès que le devis part ; « J'ai vu » repousse au lendemain et ne supprime jamais ;
-le compte part de **l'ouverture du chantier** (Atlas ne connaît pas la date de
-visite — ce serait un champ de plus) ; et il ne le verra **qu'en ouvrant
-Atlas** — d'où le canal « Accueil » sur la ligne, là où les autres disent
-« Téléphone ».
+le compte part de **l'ouverture du chantier** ; et il ne le verra qu'en ouvrant
+Atlas — ce que l'écran codé dit déjà en toutes lettres.
 
 **Ce que la base porte déjà, vérifié dans `src/server/db/schema.ts` :**
 `chantiers.createdAt` (le compte part de là) et `chantiers.devisEnvoyeAt`
-(NULL = aucun devis parti). La condition se **calcule**, elle ne se range pas —
-donc la première règle, « le rappel s'efface seul quand le devis part », est
-gratuite : il n'y a rien à effacer. **Il n'existe aucune date de visite**, ce qui
-confirme que le compte ne peut pas en partir sans un champ de plus.
+(NULL = aucun devis parti). La condition se **calcule** — donc la première règle
+est gratuite : il n'y a rien à effacer. **Il n'existe aucune date de visite**,
+ce qui confirme que le compte ne peut pas en partir sans un champ de plus.
 
-Ce qui manque : où ranger le délai choisi (une colonne sur `entreprises`, ou une
-table de réglages de notifications — à trancher au moment de coder, selon que
-les huit autres familles arrivent en même temps ou non), et la mémoire du
-« J'ai vu » repoussé au lendemain.
+Reste à ranger : la colonne du troisième délai, à côté des deux autres sur
+`entreprises` (`rappel_devis_non_parti_jours`), et la mémoire du « J'ai vu »
+repoussé au lendemain — que les deux rappels codés n'ont pas eue à traiter.
 
-**Ce que ça coûtera une fois choisi :** une journée. La carte, la rubrique
-ouverte avec ses neuf familles, le délai enregistré, et les contrôles qui
-tiennent les quatre règles.
+**Ce que ça coûtera une fois choisi : une demi-journée**, et non la journée
+annoncée hier — l'écran existe.
 
 ### 0 undetricies. L'absence d'une équipe — DESSINÉE le 14 août 2026, en attente de son choix
+### 0 tricies nonies. ~~`test-pastille-equipe-e2e` est ROUGE sur `main`~~ — **RÉGLÉ le 16 août 2026**
+
+**La cause n'était ni le code ni `.first()` : c'était le CALENDRIER.** La suite
+visait « aujourd'hui + 20 jours » et supposait un jour ouvré. Le 16 août, cela
+tombait sur le **samedi 5 septembre** : le panneau affichait « Jamais proposé »,
+aucun bouton « Poser » n'existait — comportement voulu — et la suite rougissait
+sans qu'aucun code n'ait bougé. Constaté à la sonde, en lisant le panneau :
+`sansDate` n'était pas vide, il en comptait cinq.
+
+Elle avance désormais au premier jour ouvré. **Une suite qui échoue selon le
+jour de la semaine s'apprend à être ignorée** — et c'est ce garde-fou-là qu'on
+perd, pas seulement dix minutes.
+
+*Le constat d'origine est gardé ci-dessous : il dit bien ce qui avait été
+écarté, et la piste `.first()` reste juste dans son principe — elle n'était
+simplement pas la cause ici.*
+
+*Constaté le 14 août 2026 au soir, en fusionnant un autre lot. **Ce n'est pas
+une intermittence** : la suite tombe aussi bien seule qu'en batterie, toujours
+sur le même contrôle.*
+
+```
+❌ En posant, les équipes sont des CASES et le bouton dit quoi faire
+   le bouton doit rester à l'écran avant le choix
+```
+
+**Ce qui est déjà écarté**, pour ne pas le refaire : le code du planning est
+identique entre `main` et la branche qui l'a constaté — ce n'est pas une
+collision de fusion.
+
+**Le diagnostic, aussi loin qu'il a été mené :** le contrôle attend
+`[data-atlas="poser"]` dans la page ; il en compte zéro. Ce bouton n'est rendu
+que si `aPoser` existe (`PlanningClient.tsx`), et
+`aPoser = visibles.find(…) ?? sansDate[0] ?? null`. **Il est donc nul parce que
+`sansDate` est vide au moment du contrôle** — la suite crée pourtant un chantier
+sans date juste avant, puis clique `[data-atlas="sans-date"]` **avec
+`.first()`** : rien ne garantit que c'est LE SIEN. Les sections précédentes de
+la même suite posent des chantiers, et le jeu de démonstration en porte
+d'autres.
+
+**Piste à éprouver en premier :** viser le chantier par son nom (il est unique,
+horodaté à la création) plutôt que par `.first()`. C'est exactement le piège
+déjà payé sur `test-unite-tarif-e2e` le 14 août — « viser la dernière ligne
+remplissait la carte d'avant ».
+
+**Ce lot appartient à la session qui a posé la pastille d'équipe.** Écrit ici
+pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue à une
+intermittence.
+
+### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
+
+*Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
+et écrit sur l'écran lui-même plutôt que passé sous silence.*
+
+**Rien dans Atlas n'enregistre qu'une facture a été payée.** Ni colonne, ni
+geste, ni écran. Ce manque bloque à lui seul **trois** des huit familles
+d'alertes de la planche des notifications :
+
+| Ce qui est impossible | Pourquoi |
+|---|---|
+| « Facture impayée » | On ne sait pas laquelle est payée : l'alerte crierait sur toutes, pour toujours |
+| « Facture à échéance dans trois jours » | Même raison |
+| « Client à relancer » | Un client relancé pour une facture déjà réglée, c'est pire que pas de relance |
+
+**Ce n'est pas une requête à écrire, c'est un geste à ajouter au produit** : un
+appui sur la facture, une date de règlement, et de quoi se reprendre. Les
+`docs/QUESTIONS.md` §17 le disent d'ailleurs pour la mémoire des prix — la
+bonne question n'est jamais « avons-nous une table ? » mais **« qui l'écrit, et
+quand ? »**
+
+**À dessiner avant de coder** (`CLAUDE.md` §3 bis) : où se pose le geste — sur
+la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
+partiel.
+
+### 0 duodetricies ter. Apparence : le mode sombre OU l'accent, à trancher
+
+L'écran existe et ne règle rien, délibérément (`ARCHITECTURE.md` §108). Les
+deux chantiers possibles, et leur coût :
+
+| | Ce que ça demande |
+|---|---|
+| **Mode sombre** | Un second jeu de jetons, et **chaque écran repris un à un**. C'est ce qu'il avait envoyé le 14 août : sa planche d'origine était sombre |
+| **Accent au choix** | `colors.rust` et `colors.or` sont écrits en clair dans plus de trois cents endroits, en style en ligne. Il faut les faire passer par une variable CSS — un balayage de toute l'application, à faire et à éprouver d'un coup |
+
+**Ne pas poser d'interrupteur en attendant.** Sa phrase sur la planche : *« on le
+touche, rien ne bouge, et on croit à une panne »*.
+
+### 0 tervicies. Apparier deux demi-journées par la proximité
+
+**Sa demande du 13 août 2026** : quand une demi-journée est prise et l'autre
+libre, que le planning propose le chantier en attente **le plus proche**, pour
+ne pas traverser le département deux fois dans la journée.
+
+**Ce qui existe déjà :** les demi-journées sont en base (`creneauDebut`,
+`dureeDemiJournees`), deux chantiers différents sur le matin et l'après-midi du
+même jour se représentent sans rien ajouter, et le planning affiche « Libre ».
+
+**Ce qui manque, et qui commande tout : aucune distance n'est connue.**
+L'adresse d'un chantier est du texte. La Base Adresse Nationale rend pourtant
+les coordonnées à chaque frappe (`lireSuggestions` ne garde que le libellé et le
+contexte, et **jette la géométrie**). Trois étapes, dans l'ordre :
+
+1. **Garder les coordonnées** au choix d'une suggestion — migration + champs sur
+   `chantiers` ;
+2. **rattraper** celles des chantiers déjà saisis et des adresses tapées hors
+   liste, côté serveur, sans rien demander au patron ;
+3. **apparier** — fonction pure dans `src/lib/`, testable sans base.
+
+**Maquette `docs/maquettes/57-apparier-deux-demi-journees.html`** — quatre
+façons de le proposer (sur la ligne, en bandeau, en feuille de trois candidats,
+au moment de poser la date), le bandeau dessiné **deux fois** (vol d'oiseau et
+route : seule la phrase change), et les deux cas ingrats — rien d'assez proche,
+adresse non situable. **En attente de son choix.**
+
+**La question qui le dépasse** est au point 9 de `docs/A-FAIRE.md` : la route
+suppose un sous-traitant ultérieur. `.github/workflows/itineraire.yml` interroge
+le service de l'État depuis une machine qui a le réseau pour savoir s'il
+dispense d'un prestataire privé.
+
+
+### 0 duovicies. `/chantiers/<id>/facture` ne répond plus en fin de batterie
+
+### 0 undetricies. ~~L'absence d'une équipe~~ — **CODÉE le 14 août 2026 (proposition A)**
+
 
 **Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
 en déplacement pour cinq jours ? »* Réponse complète dans `docs/QUESTIONS.md`
@@ -109,16 +236,19 @@ monde — délibérément, `fusionnerOccupationExterne` pose l'occupation au niv
 du nombre d'équipes parce qu'Atlas ne peut pas deviner si une équipe sait partir
 sans le patron — et le nombre d'équipes est un nombre **sans dates**.
 
-**Trois endroits proposés**, à trancher par lui : (A) sous les noms dans
-Réglages → Équipe, (B) un appui long sur un jour du planning, (C) une ligne de
-déplacement posée comme un chantier.
+**Il a retenu la A** — sous les noms, dans Réglages → Équipe. Les deux autres
+restent dessinées : (B) un appui long sur un jour du planning, (C) une ligne de
+déplacement posée comme un chantier. Si l'usage montre que le geste tombe au
+mauvais endroit, le chemin est tracé.
 
-**Ce que ça demande, une fois choisi :** une table `absences_equipe` (équipe,
-premier jour, dernier jour, motif), une règle pure qui retire l'équipe du compte
-sur ces jours — greffée sur `compterOccupation` / `departPossible`
-(`src/server/disponibilites.ts`) — et l'écran retenu. **La même règle doit
-servir à proposer les dates ET à revérifier celle que le client choisit**, comme
-tout le reste de ce parcours : jamais deux implémentations (`CLAUDE.md` §3).
+**FAIT.** `drizzle/0044_absences_equipe.sql`, `src/lib/absences-equipe.ts`,
+`src/server/repositories/absences-equipe.ts`, `src/app/reglages/AbsencesEquipe.tsx`.
+Une absence est traitée comme une **occupation** — elle prend la place qu'un
+chantier aurait prise — ce qui la fait entrer dans les quatre calculs de
+capacité sans changer une seule signature. Éprouvée à trois niveaux :
+`test-absences-equipe.ts` (25 cas purs), `test-absences-equipe-repo.ts`
+(isolation, sous `atlas_app`), `test-absence-equipe-e2e.ts` (du doigt jusqu'au
+calendrier, vu rouge quand on retire la réparation). `ARCHITECTURE.md` §109.
 
 ### 0 undetricies ter. ~~La page « toutes les maquettes » a pris du retard, en silence~~ — **le contrôle demandé existe (15 août 2026)**
 

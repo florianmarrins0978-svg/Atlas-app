@@ -8655,3 +8655,219 @@ le compte de démonstration sert aux soixante-quinze suites de la batterie, et l
 changer fermerait la porte à toutes les suivantes — l'échec accuserait alors la
 page de connexion, qui n'y serait pour rien. Le chemin éprouvé au navigateur est
 celui du **refus**, qui n'écrit rien ; l'écriture est tenue par la suite base.
+
+---
+
+## 108. Les trois dernières rubriques : deux rappels réels, et deux écrans qui disent ce qui manque
+
+*Codées le 14 août 2026 sur sa consigne — **« Fini toutes les rubriques »**.
+Les treize du sommaire (§96) sont désormais ouvertes ; plus aucune ne porte
+« Bientôt ».*
+
+### Notifications : DEUX rappels, et pas les huit de la planche
+
+`maquettes/atlas-reglages-notifications.html` listait huit familles d'alertes.
+**Une seule existait**, et la planche le disait déjà — *« rien ne part encore
+sur votre téléphone »*. Dessiner les sept autres avec un interrupteur aurait
+fait valider un écran de réglages qui ne règle rien.
+
+Deux se calculent **avec ce que la base porte déjà**, sans nouveau jalon ni
+nouveau geste (migration 0043) :
+
+| Rappel | Ce qu'il lit | Défaut |
+|---|---|---|
+| **Devis sans réponse** | `envois_devis.envoye_at`, `reponse IS NULL`, lien encore valable | 7 jours |
+| **Chantier fini, pas facturé** | `chantiers.termine_at`, `facture_envoyee_at IS NULL` | 3 jours |
+
+**Ils apparaissent sur l'ACCUEIL, à côté des réponses de clients.** Un réglage
+qui ne produirait rien à l'écran est exactement ce que le patron a interdit sur
+la planche : *« on le touche, rien ne bouge, et on croit à une panne »*.
+
+**Trois choix qui paraissent des détails :**
+
+1. **Un rappel n'a pas de « J'ai vu ».** Une réponse de client s'acquitte — elle
+   a été lue. Un rappel décrit une situation qui DURE, et il s'en va quand elle
+   cesse : le client répond, la facture part. Lui donner un bouton d'acquit
+   ferait croire qu'on peut le classer sans rien faire, et le chantier
+   retomberait dans l'oubli qu'on cherchait à éviter.
+2. **Un devis EXPIRÉ n'est pas rappelé** : il a déjà sa carte de devis caduc.
+   Deux cartes pour un même devis feraient chercher la différence.
+3. **Jamais « urgent ».** Le fond teinté est réservé à ce qui appelle une
+   décision — un refus, un lien mort. Un confort qui crierait aussi fort ferait
+   baisser le volume de tous les autres.
+
+**Ce qui n'a PAS d'interrupteur, et l'écran le dit :** la réponse d'un client et
+le lien expiré. Sa règle du 13 août 2026 — *« [des interrupteurs] seulement à
+celles où la désactivation n'entraîne pas de problème juridique ou moral ou de
+dysfonctionnement à l'appli »*. Les couper, ce serait ne plus savoir qu'on a été
+refusé.
+
+**Et ce qui manque est écrit sur l'écran** : « facture impayée » est le rappel le
+plus utile, et il est impossible — **rien n'enregistre qu'une facture a été
+payée**. Bâti sans cette donnée, il crierait sur toutes les factures, pour
+toujours. C'est le prochain lot, et c'est un geste à ajouter au produit, pas une
+requête à écrire.
+
+### Apparence et Abonnement : des écrans qui ne règlent rien, et l'assument
+
+Aucun des deux ne porte d'interrupteur, **délibérément**.
+
+- **Apparence** : ni mode sombre ni accent au choix. `colors.rust` et
+  `colors.or` sont écrits en clair dans plus de trois cents endroits, en style
+  en ligne : les rendre réglables demande de les faire passer par une variable
+  CSS — un balayage de toute l'application, à faire et à éprouver d'un coup. Ce
+  n'est pas un écran de réglages, c'est un lot. L'écran le dit et lui demande
+  lequel des deux il veut d'abord.
+- **Abonnement** : ni prix ni offre ne sont décidés — ce sont ses décisions à
+  lui, pas des lots de code. **Aucun montant n'est affiché**, et c'est la règle
+  de `docs/AGENT.md` §3 : un chiffre sans source, sur une page qui parle
+  d'argent, finirait par être cru.
+
+**Pourquoi les ouvrir quand même**, plutôt que de laisser « Bientôt » : une
+ligne inerte dans le sommaire ne dit ni ce qui viendra, ni pourquoi ce n'est pas
+là, ni ce qui débloque. Ces écrans le disent — et pour l'abonnement, ils
+préviennent d'un piège de vocabulaire qui coûterait un appel affolé : ici,
+« factures » désigne celles qu'**Atlas** enverrait, pas celles de ses clients,
+qui sont dans « Terminés ».
+
+### Le piège payé en prenant les captures
+
+`capture-trois-rubriques.mts` lisait la base sous `DATABASE_ADMIN_URL` et
+annonçait « aucun chantier » sur une base qui en portait quatre. **Les tables
+portent `FORCE ROW LEVEL SECURITY` : la RLS s'applique même au rôle
+PROPRIÉTAIRE.** La capture concluait tranquillement qu'il n'y avait rien à
+montrer — un contrôle qui n'a jamais rien vu ne prouve rien. Les captures
+emploient désormais le rôle qui traverse la RLS, comme les suites navigateur
+(`CLAUDE.md` §5).
+
+## 109. Une équipe part cinq jours : l'absence, et pourquoi elle n'est qu'une occupation
+
+**Le patron, le 14 août 2026 :** *« Comment on fait si jamais il y a une équipe
+qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un moyen de
+l'ajouter au planning ? »*
+
+Retenu sur maquette (`docs/maquettes/55`, **proposition A**) : les absences se
+posent sous les noms, dans Réglages → Équipe. Sa réponse, en un mot : *« La
+A »*.
+
+### Ce qui existait déjà, et qu'on n'a pas refait
+
+**Si TOUTE l'entreprise part, l'agenda extérieur suffit** : une période de
+plusieurs jours occupe toutes les demi-journées qu'elle traverse, week-ends
+compris (`src/lib/agenda-externe.ts`). Rien n'a été écrit pour ce cas — le dire
+valait mieux que de lui vendre du travail inutile.
+
+**Ce qui manquait, c'est l'autre cas : une équipe sur deux.** L'agenda bloque
+tout le monde — délibérément, `fusionnerOccupationExterne` pose
+`Math.max(…, nombreEquipes)` parce qu'Atlas ne peut pas deviner si une équipe
+sait partir sans le patron — et le nombre d'équipes est **un nombre sans
+dates**.
+
+### La décision qui a tout tenu : une absence EST une occupation
+
+Le réflexe était de faire varier le nombre d'équipes jour par jour, donc de
+passer une fonction là où passe aujourd'hui un nombre. Il aurait fallu toucher
+`departPossible`, `jourRetenable` et leurs appelants — **c'est-à-dire les trois
+chemins qui décident d'une date**, dont la revérification de la réponse du
+client. Beaucoup de surface pour un défaut qui ne se verrait qu'en production,
+chez un client ayant retenu un jour impossible.
+
+Une équipe qui n'est pas là **occupe exactement la place qu'un chantier lui
+aurait prise**. La capacité restante se calcule alors toute seule, avec la
+comparaison qui existait déjà — `occupation < nombreEquipes` — et **aucune
+signature ne change**.
+
+Deux différences avec l'agenda extérieur, et elles comptent :
+
+| | Agenda extérieur | Absence d'équipe |
+|---|---|---|
+| Qui part | inconnu | **connu** |
+| Effet | `Math.max(…, nombreEquipes)` — bloque tout le monde | **`+1`** — une unité, une seule |
+| Ordre d'application | après | avant |
+
+L'ordre n'est pas indifférent : les absences **additionnent**, l'agenda **pose
+un plafond**. Dans l'autre sens, l'addition dépasserait le plafond que l'agenda
+venait d'établir.
+
+### Les quatre endroits où la règle entre, et pourquoi les quatre
+
+`fusionnerAbsences` est appelée dans **quatre** calculs d'occupation, et en
+oublier un aurait produit deux vérités sur la même capacité :
+
+1. `envois-devis.ts` — les trois chemins du client (écran d'envoi, création,
+   **revérification de sa réponse**) ;
+2. `preparation-envoi.ts` — l'écran qui propose les dates au patron ;
+3. `chantiers.ts` — le chemin par lequel il pose une date **lui-même** ;
+4. `PlanningClient.tsx` — le calendrier, qui doit marquer le même jour occupé.
+
+Sans le 4, le planning aurait montré un jour libre que l'écran d'envoi refusait,
+**sur deux écrans qui se suivent**.
+
+### Ce que la table n'est pas
+
+Ni solde de congés, ni validation, ni salarié. **Une équipe est une file du
+planning, pas une personne** (§88), et Atlas prépare des devis — il ne tient pas
+la paie. Le motif est un texte libre, pour que le patron se souvienne ; **aucun
+calcul ne le lit**.
+
+**Des jours entiers, pas des demi-journées.** Personne ne part « du mardi
+après-midi au jeudi matin ». Offrir la demi-journée ici, c'est offrir un réglage
+à remplir sans en avoir besoin, et deux champs de plus sur six pouces. Les deux
+colonnes étant des DATES, la précision s'ajoutera sans se contredire le jour où
+elle sera demandée.
+
+**Le bloc n'existe pas à une seule équipe**, et ce n'est pas un oubli : seul,
+noter son absence reviendrait à fermer l'entreprise. L'écran renvoie alors à
+l'agenda, qui est le bon geste dans ce cas.
+
+### Trois gardes, à trois niveaux, pour la même règle
+
+Une absence **à l'envers** n'occuperait aucun jour et rendrait la capacité fausse
+**en silence** — le pire des défauts, celui qui ne se voit qu'au moment où un
+client retient une date impossible. Elle est donc refusée :
+
+1. à l'écran, qui éteint son bouton et **dit lequel des deux champs le gêne** ;
+2. dans l'action serveur, qui rejoue la même fonction pure — un écran n'est pas
+   une garde ;
+3. dans la base (`absences_equipe_ordre_ck`), pour le jour où le code changerait.
+
+Les trois appellent **la même** fonction, `refusDeLAbsence` : deux règles
+finiraient par diverger (`CLAUDE.md` §3).
+
+### Ce que les contrôles ont appris
+
+**Le message d'un contrôle doit désigner le bon coupable.** Le premier jet de la
+suite base posait ses `INSERT` bruts sur le pool : **la RLS les refusait avant
+que la contrainte n'ait son mot à dire**, la suite passait au vert, et son
+message accusait `absences_equipe_ordre_ck` — qui n'avait jamais parlé. Elle
+pose désormais le contexte d'isolation avant d'écrire, et vérifie **aussi** que
+la même absence, dans le bon sens, est acceptée : sans ce second cas, une
+politique refusant TOUT passerait pour une contrainte qui marche.
+
+**Une colonne `date` remonte en objet `Date`.** `String(...)` en tire
+« Sat Sep 12 2026 » : le contrôle comparait deux écritures du même jour et
+accusait la saisie. Le formatage est fait par la base (`to_char`).
+
+**Et l'ordre des deux champs n'est pas indifférent** : avancer le premier jour
+pousse le dernier avec lui — c'est voulu, sinon le patron reste devant un bouton
+éteint sans savoir lequel le gêne. L'état inversé ne s'atteint donc qu'en
+reculant le DERNIER jour, en second. La suite de bout en bout s'y est cassé les
+dents avant de le comprendre.
+
+**Confrontée au défaut** — la fusion retirée du calendrier — la suite rougit en
+nommant le jour : *« le 2026-09-08 est annoncé libre alors qu'une équipe sur
+deux est partie »*.
+
+### Ce qui reste, et qui n'est PAS dans ce lot
+
+**L'équipe inscrite sur un chantier reste une étiquette, pas une contrainte.**
+`compterOccupation` compare un total au nombre d'équipes et ne regarde jamais
+`equipeId` : deux chantiers le même matin, tous deux sur « Équipe 1 », passent.
+Sans conséquence tant que le patron répartit lui-même. Le régler obligerait à
+choisir l'équipe **avant** de proposer une date au client, donc à toucher au
+parcours du devis — c'est un autre chantier, inscrit dans `TODO.md`, et il n'a
+de sens que si le télescopage se produit vraiment. **Question posée au patron le
+14 août, sans réponse à ce jour.**
+
+---
+
