@@ -329,9 +329,13 @@ nom, changer un prix, en ajouter une, corriger une faute — et sa phrase :
    éprouvée qu'en morceaux (27 cas sans navigateur, 5 au navigateur). Le premier
    essai réel sera le sien, ou celui d'une machine avec une clé. **Le lui dire
    plutôt que de le laisser croire éprouvé.**
-2. **Sa question de la planche 54 est toujours sans réponse** : le micro
-   doit-il aussi toucher aux **conditions de règlement** et aux mentions du bas,
-   ou seulement aux lignes chiffrées ? Aujourd'hui : seulement les lignes.
+2. ~~Sa question de la planche 54~~ — **TRANCHÉE le 16 août 2026 : OUI.**
+   *« Oui, il peut néanmoins »* — le micro doit aussi pouvoir toucher aux
+   **conditions de règlement** et aux mentions du bas, pas seulement aux lignes
+   chiffrées. **Pas encore codé.** Ce qui reste à faire : un sixième type de
+   retouche (`conditions`) dans `src/lib/retouches-devis.ts`, la consigne
+   correspondante dans le service, et sa ligne dans la feuille de confirmation.
+   Rien de structurant — l'arrêt reste le même : elle propose, il coche.
 3. **Aucune vérification côté serveur qu'un devis figé refuse les retouches.**
    L'écran retire le micro dès l'envoi, et c'est la seule barrière — exactement
    comme pour les autres champs de cet écran, qui n'en ont jamais eu d'autre. À
@@ -448,6 +452,10 @@ PNG. Ce qui manque est la décision de dessin. Les planches 45 proposent le
 ferait de la porte et de l'écran d'accueil la même image. **Rien n'est décidé.**
 
 ### 0 novemvicies quater. Trois noms proposés — Gunzi, Goonzi, Gunzy
+
+**⚠ MIS EN ATTENTE PAR LE PATRON, le 16 août 2026 :** *« Oublie le mot
+Gunzy, on s'en fout pour l'instant, on verra ça plus tard. »* **Ne plus le lui
+reposer** — c'est lui qui rouvrira. Les trois planches restent où elles sont.
 
 Sa demande du 13 août : *« fais-moi une maquette avec comme nom Gunzi à la place
 d'Atlas. Ne code rien. »*, puis les deux autres noms. Trois planches identiques
@@ -630,7 +638,23 @@ d'abattage — pire que la phrase actuelle, qui au moins n'invente rien.
 sans le redessiner laisserait un écran de 2026-07 au milieu des autres —
 `CLAUDE.md` §3 bis : une maquette d'abord.
 
-### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au PDF
+### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au devis
+
+**⚠ IL L'A VU LUI-MÊME, le 16 août 2026** — et c'est la troisième fois qu'un
+défaut de ce dépôt se trouve en regardant l'écran plutôt qu'en lisant un
+contrôle : *« dans les réglages, lorsqu'on coche le bouton on/off pour les
+formalités de devis, rien n'apparaît sur le devis, c'est normal ? »*
+
+**Non. Et l'écran lui PROMET le contraire** : le bloc « Ce que votre devis dira »
+liste les conditions choisies, ligne à ligne. C'est un aperçu de quelque chose
+qui n'arrive jamais. Un écran qui décrit un document qu'il ne produit pas est
+pire qu'un écran muet — il fait envoyer un devis en croyant qu'il porte un
+acompte.
+
+**Ce qui monte au devis, mesuré et non supposé :** la validité, et elle seule
+(`snapshotEnTete` dans `devis.ts`, puis `devis-pdf.ts`). Les cinq autres
+n'apparaissent nulle part — ni à l'écran, ni au PDF.
+
 
 `ARCHITECTURE.md` §102 : la rubrique « Devis & factures » règle six conditions,
 mais **seule la validité s'imprime**. L'acompte, le délai de paiement, les
