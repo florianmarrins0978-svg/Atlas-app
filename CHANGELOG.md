@@ -28,6 +28,27 @@ la surveillance ne peut endormir, et qui s'arrête avec le veilleur.
 `scripts/test-fiche-pendant-relance.ts` le tient — et il **sait rougir** :
 confronté à l'ancienne version, il annonce « aucune publication ». Une suite qui
 n'a jamais échoué ne prouve rien.
+### Cinq chantiers de test pour éprouver la proposition « par le trajet »
+
+**Sa demande :** *« crée-moi quatre, cinq chantiers de test […] avec des
+demandes de demi-journée, avec des adresses plus ou moins espacées […] pas
+encore ajoutées au planning »* — pour essayer si l'appariement des deux
+demi-journées propose bien le chantier le plus proche.
+
+**Un script à part, `npm run essai:chantiers-trajets`, et NON le seed.** Le seed
+vide puis reconstruit tout, une dizaine de suites comptent ses quatre chantiers,
+et il ne repasse qu'à la création du conteneur : y verser cinq chantiers de plus
+aurait cassé la batterie sans jamais parvenir à un banc déjà allumé. Le script
+ajoute cinq chantiers à l'entreprise de démonstration **sans rien tronquer**, et
+se relance sans doublon (préfixe « Chantier test — »).
+
+**Ce que ça évite.** Chaque chantier a un devis parti, une durée d'une
+demi-journée, aucune date, et des coordonnées posées d'avance (mairies autour de
+Nantes) : sans elles, l'appariement dépendrait d'un appel à la Base Adresse
+Nationale que le mandataire réseau du banc peut refuser. Les distances vont de
+5 à 42 km — le dernier (Pornic) au-delà du seuil de 40 km, pour éprouver aussi
+l'écart et le « Voir quand même ». Vérifié en base : cinq candidats reconnus,
+trois proposés, un écarté, zéro sans position.
 
 ### « Fais cinq pour cent sur le montant du devis »
 
