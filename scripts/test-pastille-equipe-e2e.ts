@@ -30,6 +30,19 @@ const BASE = "http://localhost:3000";
 
 let reussis = 0;
 let failed = 0;
+/**
+ * Le jour ouvrable le plus proche, à partir de celui-ci.
+ *
+ * Le planning ne propose pas les week-ends : tomber un samedi rendrait un
+ * calendrier sans case à cliquer, et l'échec accuserait le produit d'un défaut
+ * qui n'est qu'une date mal choisie.
+ */
+function jourOuvrable(depuis: Date): string {
+  const d = new Date(depuis);
+  while (d.getUTCDay() === 0 || d.getUTCDay() === 6) d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
 async function test(nom: string, fn: () => Promise<void>) {
   try {
     await fn();
@@ -200,8 +213,15 @@ async function main() {
   // attendait en silence.
   await test("En posant, les équipes sont des CASES et le bouton dit quoi faire", async () => {
     // Un chantier sans date, celui qu'on va poser.
+    // **Le chantier se désigne par SON nom, jamais par `.first()`.** Consigné
+    // sur `main` le 15 août 2026 par la session voisine, qui a vu cette suite
+    // rouge chez elle pendant qu'elle passait ici : le jeu de démonstration
+    // porte d'autres chantiers sans date, et les sections précédentes de cette
+    // suite en posent. Viser « le premier » revenait à jouer le contrôle sur le
+    // chantier d'à côté — le piège déjà payé sur `test-unite-tarif-e2e`.
+    const nomAPoser = `M. Cases ${Date.now()}`;
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-    await page.fill('input[placeholder="Bernard"]', `M. Cases ${Date.now()}`);
+    await page.fill('input[placeholder="Bernard"]', nomAPoser);
     await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 13");
     await page.click('button:has-text("Créer le chantier")');
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
@@ -209,11 +229,15 @@ async function main() {
     await pool.query(`UPDATE chantiers SET devis_envoye_at = now() WHERE id = $1`, [aPoser]);
 
     await allerAuPlanning();
-    await page.locator('[data-atlas="sans-date"]').first().click();
+    await page.locator('[data-atlas="sans-date"]', { hasText: nomAPoser }).click();
     await page.waitForTimeout(300);
 
-    // Un jour libre : le calendrier s'ouvre sur le mois courant.
-    const jour = new Date(Date.now() + 20 * 86400_000).toISOString().slice(0, 10);
+    // **Un jour que personne d'autre n'a pu remplir.** Vingt jours tombaient
+    // dans la plage où les autres suites — et le jeu de démonstration — posent
+    // leurs chantiers : la journée s'annonçait alors « pleine », le panneau
+    // n'affichait plus aucune case, et le contrôle accusait le bouton d'avoir
+    // disparu. Six mois plus loin, la place est à nous.
+    const jour = jourOuvrable(new Date(Date.now() + 180 * 86400_000));
     for (let i = 0; i < 24; i++) {
       if ((await page.locator(`[data-atlas="grille-mois"] button[data-jour="${jour}"]`).count()) > 0) break;
       await page.click('button[aria-label="Mois suivant"]');
@@ -223,6 +247,15 @@ async function main() {
     await page.waitForTimeout(600);
 
     // **Le bouton est là AVANT le choix, éteint, et il le dit.**
+    //
+    // Le panneau se lit d'abord, pour que le message accuse le bon coupable :
+    // une journée déjà pleine ne rend AUCUNE case ni bouton, et l'échec
+    // ressemblait alors à un bouton disparu du produit.
+    const panneau = await page.locator("body").innerText();
+    assert.ok(
+      !panneau.includes("Journée pleine"),
+      `le ${jour} était déjà occupé par un autre chantier : ce n'est pas le produit qui manque, c'est la place`
+    );
     const poser = page.locator('[data-atlas="poser"]');
     assert.equal(await poser.count(), 1, "le bouton doit rester à l'écran avant le choix");
     assert.ok(

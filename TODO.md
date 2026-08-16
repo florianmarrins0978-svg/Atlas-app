@@ -27,39 +27,33 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 tricies nonies. `test-pastille-equipe-e2e` est ROUGE sur `main`
+### 0 tricies nonies. ~~`test-pastille-equipe-e2e` est ROUGE sur `main`~~ — **réglé le 15 août 2026**
 
-*Constaté le 14 août 2026 au soir, en fusionnant un autre lot. **Ce n'est pas
-une intermittence** : la suite tombe aussi bien seule qu'en batterie, toujours
-sur le même contrôle.*
+*Signalé par la session voisine, qui l'a vue rouge chez elle pendant qu'elle
+passait au vert ici — d'où sa forme : deux jeux de données, deux verdicts.*
 
 ```
 ❌ En posant, les équipes sont des CASES et le bouton dit quoi faire
    le bouton doit rester à l'écran avant le choix
 ```
 
-**Ce qui est déjà écarté**, pour ne pas le refaire : le code du planning est
-identique entre `main` et la branche qui l'a constaté — ce n'est pas une
-collision de fusion.
+**Sa piste était la bonne, et il y avait un second coupable derrière.**
 
-**Le diagnostic, aussi loin qu'il a été mené :** le contrôle attend
-`[data-atlas="poser"]` dans la page ; il en compte zéro. Ce bouton n'est rendu
-que si `aPoser` existe (`PlanningClient.tsx`), et
-`aPoser = visibles.find(…) ?? sansDate[0] ?? null`. **Il est donc nul parce que
-`sansDate` est vide au moment du contrôle** — la suite crée pourtant un chantier
-sans date juste avant, puis clique `[data-atlas="sans-date"]` **avec
-`.first()`** : rien ne garantit que c'est LE SIEN. Les sections précédentes de
-la même suite posent des chantiers, et le jeu de démonstration en porte
-d'autres.
+1. Le contrôle cliquait `[data-atlas="sans-date"]` **avec `.first()`** : rien ne
+   garantissait que c'était le sien. Il vise désormais le chantier **par son
+   nom**, horodaté donc unique. C'est le piège déjà payé sur
+   `test-unite-tarif-e2e` le 14 août.
+2. **Et le jour choisi pouvait être plein.** Vingt jours plus loin, c'est la
+   plage où les autres suites et le jeu de démonstration posent leurs chantiers.
+   `JourneeOuvrable` rend alors « Journée pleine » et **aucun bouton** — le
+   contrôle accusait donc le produit d'avoir perdu un bouton qui n'avait jamais
+   disparu. Le jour est maintenant pris six mois plus loin, ramené sur un jour
+   ouvrable, et le contrôle lit le panneau AVANT de conclure : si la journée est
+   pleine, il le dit en toutes lettres au lieu de désigner le bouton.
 
-**Piste à éprouver en premier :** viser le chantier par son nom (il est unique,
-horodaté à la création) plutôt que par `.first()`. C'est exactement le piège
-déjà payé sur `test-unite-tarif-e2e` le 14 août — « viser la dernière ligne
-remplissait la carte d'avant ».
-
-**Ce lot appartient à la session qui a posé la pastille d'équipe.** Écrit ici
-pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue à une
-intermittence.
+**Ce que ça évite :** un contrôle vert ou rouge selon l'ordre des suites et
+l'âge de la base — c'est-à-dire un contrôle qui ne prouve rien dans les deux
+sens.
 
 ### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
 
