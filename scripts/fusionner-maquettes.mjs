@@ -325,6 +325,12 @@ const MAQUETTES = [
     famille: "L’entretien récurrent",
     quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
   },
+  {
+    fichier: "66-ce-que-je-sais-du-client.html",
+    titre: "Ce que je sais du client",
+    famille: "Les chantiers",
+    quoi: "L’application sait qu’un client est venu quatre fois et qu’il doit encore 740 € — elle ne le montre nulle part. Un encart, une fiche, ou un cinquième onglet.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

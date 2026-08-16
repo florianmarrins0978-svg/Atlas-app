@@ -18,6 +18,10 @@ import {
   seuilAncienneté,
   depuisCombien,
   joursEcoules,
+  RYTHMES_RAPPEL,
+  rythmeConnu,
+  echeanceFacture,
+  rappelFactureDu,
 } from "../src/lib/rappels";
 
 let echecs = 0;
@@ -32,9 +36,9 @@ function essai(nom: string, fn: () => void) {
   }
 }
 
-console.log("=== Les trois rappels : ce qui s'allume, et ce qui reste éteint ===\n");
+console.log("=== Les quatre rappels : ce qui s'allume, et ce qui reste éteint ===\n");
 
-essai("jamais réglé : les trois rappels sont allumés, aux délais du métier", () => {
+essai("jamais réglé : les quatre rappels sont allumés, aux délais du métier", () => {
   assert.deepEqual(lireRappels(undefined), RAPPELS_PAR_DEFAUT);
   assert.deepEqual(lireRappels({}), RAPPELS_PAR_DEFAUT);
 });
@@ -75,20 +79,27 @@ essai("les jours sont entiers : un rappel « au bout de 3,5 jours » n'existe pa
 // montrerait un nombre et la base en garderait un autre.
 essai("ce qui part en base est ce que l'écran a montré", () => {
   assert.deepEqual(normaliserRappels({ devisSansReponseJours: 9999, chantierNonFactureJours: 5 }), {
-    // Non précisé = éteint, pas « inchangé » : l'écran envoie toujours les trois.
+    // Non précisé = éteint, pas « inchangé » : l'écran envoie toujours les quatre.
     chantierSansDevisJours: null,
     devisSansReponseJours: BORNES_RAPPELS.devisSansReponseJours.max,
     chantierNonFactureJours: 5,
+    factureImpayeeJours: null,
+    // **Le rythme fait exception, et c'est délibéré** : il n'éteint rien, donc
+    // une saisie qui ne le précise pas retombe sur le défaut plutôt que sur
+    // « nul ». Un rythme absent ne doit pas se lire comme un rappel coupé.
+    factureImpayeeRythmeJours: 7,
   });
 });
 
-essai("écrire sans rien préciser éteint les trois, il ne les rallume pas", () => {
-  // `normaliserRappels({})` est ce que rend un écran dont les trois
+essai("écrire sans rien préciser éteint les quatre, il ne les rallume pas", () => {
+  // `normaliserRappels({})` est ce que rend un écran dont les quatre
   // interrupteurs sont coupés : il ne doit pas retomber sur le défaut.
   assert.deepEqual(normaliserRappels({}), {
     chantierSansDevisJours: null,
     devisSansReponseJours: null,
     chantierNonFactureJours: null,
+    factureImpayeeJours: null,
+    factureImpayeeRythmeJours: 7,
   });
 });
 
@@ -152,6 +163,99 @@ essai("un chantier ouvert à l'instant ne compte aucun jour", () => {
   const t = new Date("2026-08-16T12:00:00Z");
   assert.equal(joursEcoules(t, t), 0);
   assert.equal(depuisCombien(t, t), "aujourd'hui");
+});
+
+console.log("");
+// ── Le quatrième rappel : la facture impayée ────────────────────────────────
+//
+// **« A plus B », sa réponse du 16 août 2026.** L'échéance quand elle existe —
+// le délai de paiement réglé dans « Devis & factures » —, le jour de l'envoi
+// sinon. Rendre `null` aurait été le troisième choix, écarté : un rappel qui se
+// tait faute de réglage est un rappel qu'on croit allumé.
+essai("A : avec un délai réglé, l'échéance court à partir de l'envoi", () => {
+  const parti = new Date("2026-07-01T10:00:00Z");
+  assert.equal(echeanceFacture(parti, 30).toISOString().slice(0, 10), "2026-07-31");
+  assert.equal(echeanceFacture(parti, 0).toISOString().slice(0, 10), "2026-07-01");
+});
+
+essai("B : sans délai réglé, c'est le jour de l'envoi — jamais rien", () => {
+  const parti = new Date("2026-07-01T10:00:00Z");
+  assert.equal(echeanceFacture(parti, null).getTime(), parti.getTime());
+});
+
+essai("le rappel ne paraît pas avant son délai", () => {
+  const e = new Date("2026-07-31T00:00:00Z");
+  const commun = { echeance: e, apresJours: 1, rythmeJours: 7, repousseeLe: null };
+  assert.equal(rappelFactureDu({ ...commun, maintenant: new Date("2026-07-31T12:00:00Z") }), false);
+  assert.equal(rappelFactureDu({ ...commun, maintenant: new Date("2026-08-01T00:00:00Z") }), true);
+});
+
+// **LE CŒUR DE SA DEMANDE.** Sans rythme, la carte resterait chaque jour
+// jusqu'au paiement — et au bout d'une semaine on ne la lit plus.
+essai("repoussé, il se tait le temps du rythme, puis revient", () => {
+  const e = new Date("2026-07-31T00:00:00Z");
+  const commun = { echeance: e, apresJours: 1, rythmeJours: 7 };
+  const repousse = new Date("2026-08-03T00:00:00Z");
+  // Le lendemain du « Plus tard » : silence.
+  assert.equal(
+    rappelFactureDu({ ...commun, maintenant: new Date("2026-08-04T00:00:00Z"), repousseeLe: repousse }),
+    false
+  );
+  // Six jours plus tard : toujours silence.
+  assert.equal(
+    rappelFactureDu({ ...commun, maintenant: new Date("2026-08-09T00:00:00Z"), repousseeLe: repousse }),
+    false
+  );
+  // Au septième, il revient.
+  assert.equal(
+    rappelFactureDu({ ...commun, maintenant: new Date("2026-08-10T00:00:00Z"), repousseeLe: repousse }),
+    true
+  );
+});
+
+// **Tant qu'il n'a rien touché, la carte RESTE.** Une carte qui s'endormirait
+// toute seule pourrait passer un jour où il n'ouvre pas l'application.
+essai("jamais repoussé, le rappel ne s'endort pas de lui-même", () => {
+  const e = new Date("2026-07-31T00:00:00Z");
+  for (const j of ["2026-08-01", "2026-08-05", "2026-09-15"]) {
+    assert.equal(
+      rappelFactureDu({
+        maintenant: new Date(`${j}T00:00:00Z`),
+        echeance: e,
+        apresJours: 1,
+        rythmeJours: 7,
+        repousseeLe: null,
+      }),
+      true,
+      j
+    );
+  }
+});
+
+essai("« tous les 15 jours » se tait bien quinze jours", () => {
+  const commun = { echeance: new Date("2026-07-31T00:00:00Z"), apresJours: 1, rythmeJours: 15 };
+  const repousse = new Date("2026-08-03T00:00:00Z");
+  assert.equal(rappelFactureDu({ ...commun, maintenant: new Date("2026-08-17T00:00:00Z"), repousseeLe: repousse }), false);
+  assert.equal(rappelFactureDu({ ...commun, maintenant: new Date("2026-08-18T00:00:00Z"), repousseeLe: repousse }), true);
+});
+
+essai("les trois rythmes sont ceux de sa planche, et eux seuls", () => {
+  assert.deepEqual(RYTHMES_RAPPEL.map((r) => r.jours), [1, 7, 15]);
+  assert.deepEqual(RYTHMES_RAPPEL.map((r) => r.libelle), ["Chaque jour", "Chaque semaine", "Tous les 15 jours"]);
+});
+
+// **Le rythme n'est jamais nul : ce n'est pas un interrupteur.** On éteint le
+// rappel par son délai, et deux façons de l'éteindre se contrediraient.
+essai("un rythme inconnu retombe sur « chaque semaine », il n'éteint rien", () => {
+  assert.equal(rythmeConnu(3), 7);
+  assert.equal(rythmeConnu(null), 7);
+  assert.equal(rythmeConnu("15"), 15);
+  assert.equal(lireRappels({}).factureImpayeeRythmeJours, 7);
+});
+
+essai("le quatrième rappel s'éteint comme les autres, par son délai", () => {
+  assert.equal(lireRappels({}).factureImpayeeJours, 1);
+  assert.equal(lireRappels({ factureImpayeeJours: null }).factureImpayeeJours, null);
 });
 
 if (echecs) {

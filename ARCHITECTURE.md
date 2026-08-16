@@ -9677,3 +9677,114 @@ attend son geste.
 
 ---
 
+---
+
+## 118. Le quatrième rappel : une facture impayée, et le premier qui porte un RYTHME
+
+**Sa demande du 16 août 2026, en deux temps.** D'abord la question du point de
+départ, à laquelle il répond lui-même devant la maquette
+(`maquettes/atlas-rappel-facture-impayee.html`, cinq écrans) : ***« faut faire
+a plus b »*** — l'échéance quand un délai de paiement est réglé, le jour de
+l'envoi sinon. Puis, dans la même phrase, ce qui fait de ce rappel un cas à
+part : ***« il faut également qu'on puisse régler, par exemple, je veux un
+rappel toutes les semaines ou tous les quinze jours, mais pas qu'il y ait la
+notification tous les jours. »***
+
+### Pourquoi celui-ci a besoin d'un rythme, et pas les trois autres
+
+Les trois premiers rappels **s'éteignent d'eux-mêmes** dès que le geste attendu
+est fait : le devis part, le client répond, la facture est émise. Leur durée de
+vie est bornée par une action qui dépend de lui.
+
+Celui-ci ne dépend pas de lui. Une facture peut rester impayée des mois, et
+aucun geste de sa part ne l'éteint — c'est le client qui décide. Sans rythme, la
+carte se serait posée sur son accueil **chaque jour jusqu'au paiement**, et une
+carte qu'on voit tous les jours cesse d'être lue au bout d'une semaine. Le
+rythme n'est donc pas un confort : c'est ce qui empêche le rappel de se détruire
+lui-même.
+
+### « A plus B » : d'où court le compte
+
+`echeanceFacture(envoyeeLe, delaiPaiementJours)`, dans `src/lib/rappels.ts` :
+
+| Cas | L'échéance |
+|---|---|
+| un délai de paiement est réglé (« Devis & factures ») | envoi **+ le délai** |
+| aucun délai réglé | **le jour de l'envoi** |
+
+Puis le délai du rappel se compte **à partir de cette échéance**, jamais de
+l'envoi. C'est écrit à l'écran — « 1 jour après l'échéance » — parce qu'un délai
+sans son point de départ se comprend spontanément comme partant de l'envoi, et
+il aurait cru le rappel en retard de trente jours.
+
+### Trois rythmes, jamais une case à remplir
+
+`RYTHMES_RAPPEL` n'offre que **chaque jour, chaque semaine, tous les 15 jours**,
+en pastilles. Une case de saisie aurait été plus souple et **aurait rouvert ce
+qu'il a exclu** : rien n'y aurait empêché « tous les jours », ni « tous les
+3 jours ». La contrainte est le sujet de sa demande, pas un effet de bord.
+
+### « Plus tard » est le seul moteur du rythme — et ce n'est pas « J'ai vu »
+
+Le rythme ne s'applique **qu'après un geste**. Tant qu'il n'a rien touché, la
+carte reste, tous les jours. C'est délibéré : une carte qui s'endormirait toute
+seule pourrait passer un jour où il n'ouvre pas l'application, et il ne saurait
+jamais qu'elle est passée.
+
+« Plus tard » **ne classe rien** : la facture reste dans « Terminés › TVA › En
+attente de paiement », le rappel revient au bout du rythme. C'est ce qui le
+distingue d'un acquittement — et pourquoi la carte ne porte pas « J'ai vu ».
+
+### La date de report vit sur le CHANTIER, et ce n'est pas un rangement
+
+`chantiers.rappel_facture_repousse_le`, migration 0050 — et non
+`factures.rappel_repousse_le`, qui était le choix naturel.
+
+**`trg_facture_immuable` (migration 0018) refuse TOUTE écriture sur une facture
+émise**, y compris une date qui ne sert qu'à l'affichage. La première version
+l'a appris par un rouge : *« Failed query: update "factures" set
+"rappel_repousse_le" »*. Affaiblir le déclencheur pour une commodité d'écran
+aurait été exactement ce que `CLAUDE.md` §4 interdit ; la relation
+chantier ↔ facture étant de un à un (`factures_chantier_uk`), rien ne se perd à
+l'écrire de l'autre côté.
+
+### Le montant affiché est le RESTE dû, jamais le total
+
+Le rappel additionne `paiements_facture.montant` et n'affiche que ce qui manque.
+Réclamer le total sur une facture partiellement réglée l'aurait fait redemander
+une somme déjà encaissée — le premier des pièges de sa planche. Le total
+l'accompagne (« 1 880,00 € restant sur 2 880,00 € ») pour qu'une facture entamée
+ne passe pas pour une petite facture. Une facture soldée sort du rappel **le jour
+même**, sans geste.
+
+**Et c'est la somme des règlements qui décide, jamais un état posé à la main.**
+Un « payée » et une somme de règlements peuvent se contredire ; une somme ne se
+contredit pas elle-même.
+
+### Ce que la capture a trouvé, et qu'aucun test ne voyait
+
+Cinquième fois dans ce dépôt qu'un défaut sort d'une image
+(`scripts/capture-facture-impayee.mts`) :
+
+- **« 1 jours après l'échéance »** — le défaut de ce rappel vaut UN, c'était donc
+  la première chose qu'il lisait sur cette ligne ;
+- **deux espaces mangées** par JSX autour d'un `<b>` : « tout seuldès que »,
+  « reste dûqui ».
+
+Et le contrôle écrit pour empêcher le retour du premier **ne mesurait rien** : il
+cherchait « 1 jours » dans `innerText`, où la valeur d'un `<input>` ne figure
+pas. Il passait au vert sur l'écran fautif. L'unité porte donc maintenant son
+propre repère (`data-atlas="rappel-unite"`), et le contrôle la lit là.
+
+**La capture elle-même a menti d'abord, deux fois** — et les deux mensonges
+valent d'être retenus :
+
+1. `fullPage` photographiait le **milieu du cadre qui défile**
+   (`.atlas-fil-defile`), sans une seule carte, pendant que le contrôle lisait le
+   DOM et se déclarait vert. Ce qu'on vérifie doit être ce qu'on **montre** : le
+   contrôle mesure désormais la position de la carte dans le cadre.
+2. Le montage posait le délai de paiement avec `ctx.entreprise` là où le champ
+   s'appelle `entrepriseId` — `WHERE id = NULL`, **zéro ligne, aucune erreur**.
+   L'image annonçait « échéance dépassée depuis 60 jours » au lieu de 30, et
+   c'était le montage qui était faux, pas l'application. Toute écriture de
+   montage vérifie maintenant son `rowCount`.

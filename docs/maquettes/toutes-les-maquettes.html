@@ -5307,6 +5307,107 @@
 #s46 .note li{margin-bottom:6px}
 
 
+/* 47 — Ce que je sais du client */
+#s47{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s47:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s47[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s47, #s47 *{box-sizing:border-box}
+#s47{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s47 .dedans{max-width:960px;margin:0 auto}
+#s47 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s47 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s47 .intro b{color:var(--encre);font-weight:600}
+#s47 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s47 .dit b{color:var(--encre);font-weight:600}
+#s47 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s47 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#s47 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s47 #v-a:checked ~ .dedans .segments label[for="v-a"],#s47 #v-b:checked ~ .dedans .segments label[for="v-b"],#s47 #v-c:checked ~ .dedans .segments label[for="v-c"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s47 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s47 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s47 .ecran{background:var(--papier);border-radius:14px;padding:18px 17px}
+#s47 .surtitre{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);display:block;margin-bottom:4px}
+#s47 .titre{font-family:Georgia,serif;font-size:21px;line-height:1.2;margin:0 0 2px}
+#s47 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s47 .filet{height:1px;background:var(--trait);margin:14px 0}
+#s47 .chiffres{display:flex;gap:10px}
+#s47 .ch{flex:1;background:var(--teinte);border-radius:10px;padding:10px 11px}
+#s47 .ch .n{display:block;font-family:Georgia,serif;font-size:19px;line-height:1.15}
+#s47 .ch .q{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+         color:var(--gris);margin-top:3px}
+#s47 .ch.du .n{color:var(--alerte)}
+#s47 .lgn{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+       padding:8px 0;border-bottom:1px solid var(--trait)}
+#s47 .lgn:last-child{border-bottom:0}
+#s47 .lgn .fois{color:var(--gris);font-size:12.5px;white-space:nowrap}
+#s47 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--gris);display:block;margin:16px 0 6px}
+#s47 .fiche-chantier .entete{display:flex;justify-content:space-between;
+                          align-items:flex-start;gap:12px}
+#s47 .encart{margin-top:14px;background:var(--teinte);border-radius:12px;
+          padding:13px 14px}
+#s47 .encart .phrase{font-size:13.5px;line-height:1.6;margin:0}
+#s47 .encart .phrase b{color:var(--encre)}
+#s47 .encart .plus{display:inline-block;margin-top:9px;font-size:13px;color:var(--or)}
+#s47 .faux-bloc{margin-top:16px}
+#s47 .faux-bloc .t{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+                color:var(--gris);display:block;margin-bottom:6px}
+#s47 .faux-ligne{height:9px;border-radius:5px;background:var(--teinte);margin-bottom:7px}
+#s47 .faux-ligne.court{width:55%}
+#s47 .cli{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+       padding:11px 0;border-bottom:1px solid var(--trait)}
+#s47 .cli .nom{font-family:Georgia,serif;font-size:16.5px}
+#s47 .cli .det{font-size:12px;color:var(--gris)}
+#s47 .onglets{display:flex;gap:4px;margin-top:14px;border-top:1px solid var(--trait);
+           padding-top:10px;font-size:11px;color:var(--gris);justify-content:space-around}
+#s47 .onglets .actif{color:var(--pin);font-weight:600}
+#s47 .neuf{color:var(--or);font-weight:600}
+#s47 .a-encart,#s47 .a-fiche,#s47 .a-onglet{display:none}
+#s47 #v-a:checked ~ .dedans .a-encart,#s47 #v-b:checked ~ .dedans .a-fiche,#s47 #v-c:checked ~ .dedans .a-onglet{display:block}
+#s47 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s47 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s47 .legende b{color:var(--encre);font-weight:600}
+#s47 .l-a,#s47 .l-b,#s47 .l-c{display:none}
+#s47 #v-a:checked ~ .dedans .l-a,#s47 #v-b:checked ~ .dedans .l-b,#s47 #v-c:checked ~ .dedans .l-c{display:block}
+#s47 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s47 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s47 .note b{color:var(--encre);font-weight:600}
+#s47 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s47 .note ul{margin:8px 0 0;padding-left:19px}
+#s47 .note li{margin-bottom:6px}
+
+
 </style>
 
 <div class="enveloppe">
@@ -5519,6 +5620,11 @@
       <a class="item" href="#m46">
         <span class="no">46</span><span class="titre">Choisir l’heure au pouce</span><span class="fleche">↓</span>
         <span class="quoi">« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.</span>
+      </a>
+      <p class="famille">Les chantiers</p>
+      <a class="item" href="#m47">
+        <span class="no">47</span><span class="titre">Ce que je sais du client</span><span class="fleche">↓</span>
+        <span class="quoi">L’application sait qu’un client est venu quatre fois et qu’il doit encore 740 € — elle ne le montre nulle part. Un encart, une fiche, ou un cinquième onglet.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -19375,6 +19481,179 @@
       <li><b>Rien ne clignote, rien ne rebondit.</b> Sur un outil de travail, le
         luxe est l'absence de bruit : un seul trait doré, qui ne bouge jamais.</li>
     </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m47">
+    <div class="etape-tete">
+      <span class="etape-no">47</span>
+      <h2>Ce que je sais du client</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s47">
+<input type="radio" name="v" id="v-a" class="etat" checked>
+<input type="radio" name="v" id="v-b" class="etat">
+<input type="radio" name="v" id="v-c" class="etat">
+
+<div class="dedans">
+  <h1>Ce que je sais du client</h1>
+  <p class="intro">Ce qu’il y avait à prendre du graphe que vous m’avez montré.
+    <b>Rien n’est codé</b> — c’est votre règle. Trois façons de le montrer, de la
+    moins chère à la plus complète.</p>
+
+  <p class="dit">L’application <b>sait déjà</b> que Mme Bracquemont est venue
+    quatre fois, qu’elle a payé 2 460 € et qu’elle en doit encore 740, et qu’on
+    lui fait toujours de l’élagage et de l’évacuation. <b>Elle ne le montre
+    nulle part.</b> Aucun de ces chiffres n’est inventé : ils se calculent tous
+    à partir de ce que la base porte.</p>
+
+  <div class="segments">
+    <label for="v-a">A · Un encart sur le chantier</label>
+    <label for="v-b">B · Une fiche client</label>
+    <label for="v-c">C · Un onglet Clients</label>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+
+      <!-- ═══ A · l'encart, dans la fiche du chantier ═══════════════════════ -->
+      <div class="ecran fiche-chantier a-encart">
+        <div class="entete">
+          <span>
+            <span class="surtitre">Chantier</span>
+            <p class="titre">Mme Bracquemont</p>
+            <p class="sous">12 chemin des Noues · devis à envoyer</p>
+          </span>
+        </div>
+
+        <div class="encart">
+          <p class="phrase">Vous l’avez vue <b>4 fois</b>. <b>3 200 €</b>
+            facturés, dont <b>740 € encore dus</b>. Toujours de l’<b>élagage</b>
+            et de l’<b>évacuation</b>.</p>
+          <span class="plus">Voir ses 4 chantiers →</span>
+        </div>
+
+        <div class="faux-bloc">
+          <span class="t">La suite de la fiche, inchangée</span>
+          <div class="faux-ligne"></div>
+          <div class="faux-ligne"></div>
+          <div class="faux-ligne court"></div>
+        </div>
+      </div>
+
+      <!-- ═══ B · la fiche client ══════════════════════════════════════════ -->
+      <div class="ecran a-fiche">
+        <span class="surtitre">Client</span>
+        <p class="titre">Mme Bracquemont</p>
+        <p class="sous">12 chemin des Noues · 06 79 98 45 14</p>
+
+        <div class="chiffres">
+          <span class="ch"><span class="n">4</span><span class="q">chantiers</span></span>
+          <span class="ch"><span class="n">3 200 €</span><span class="q">facturés</span></span>
+          <span class="ch du"><span class="n">740 €</span><span class="q">encore dus</span></span>
+        </div>
+
+        <span class="etiq">Ce qu’on lui fait, et combien de fois</span>
+        <div class="lgn"><span>Élagage</span><span class="fois">4 fois · 450 € en moyenne</span></div>
+        <div class="lgn"><span>Évacuation des déchets verts</span><span class="fois">4 fois · 240 €</span></div>
+        <div class="lgn"><span>Broyage des branches</span><span class="fois">2 fois · 180 €</span></div>
+
+        <span class="etiq">Ses chantiers</span>
+        <div class="lgn"><span>Élagage — 3 chênes</span><span class="fois">16 août · 887 €</span></div>
+        <div class="lgn"><span>Taille de haie</span><span class="fois">2 juin · 740 € — impayé</span></div>
+        <div class="lgn"><span>Abattage tilleul</span><span class="fois">14 mars · 980 €</span></div>
+        <div class="lgn"><span>Élagage d’entretien</span><span class="fois">9 janvier · 593 €</span></div>
+      </div>
+
+      <!-- ═══ C · l'onglet Clients ═════════════════════════════════════════ -->
+      <div class="ecran a-onglet">
+        <span class="surtitre">Clients</span>
+        <p class="titre">Vos 27 clients</p>
+        <p class="sous">Les plus récents d’abord</p>
+
+        <div class="cli">
+          <span class="nom">Mme Bracquemont</span>
+          <span class="det">4 chantiers · <b style="color:var(--alerte)">740 € dus</b></span>
+        </div>
+        <div class="cli">
+          <span class="nom">M. Ledoux</span>
+          <span class="det">2 chantiers · 1 840 €</span>
+        </div>
+        <div class="cli">
+          <span class="nom">Mme Félicie</span>
+          <span class="det">1 chantier · devis en attente</span>
+        </div>
+        <div class="cli">
+          <span class="nom">M. Verrier</span>
+          <span class="det">6 chantiers · 5 210 €</span>
+        </div>
+
+        <div class="onglets">
+          <span>Chantiers</span><span>Planning</span>
+          <span class="neuf">Clients</span>
+          <span>Terminés</span><span>Réglages</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Un encart sur le chantier</span>
+        Trois phrases sous le nom du client, <b>là où vous êtes déjà</b>. Vous
+        ouvrez un chantier, et vous savez tout de suite à qui vous avez affaire —
+        combien de fois, combien il doit, ce qu’on lui fait d’habitude.
+        <span class="cout"><b>Ce que ça coûte : le moins de tout.</b> Aucun écran
+        nouveau, aucun onglet. Un calcul et un encart.
+        <b>Ce que ça ne fait pas :</b> vous ne pouvez pas chercher un client, ni
+        voir la liste de ceux qui vous doivent de l’argent. Il faut passer par un
+        chantier pour arriver à lui.</span>
+      </div>
+      <div class="l-b">
+        <span class="t">B · Une fiche client</span>
+        Un vrai écran par client, atteint en touchant son nom depuis un chantier.
+        Les trois chiffres, ce qu’on lui fait et à quel prix, et <b>tous ses
+        chantiers</b> avec ce que chacun a rapporté.
+        <span class="cout"><b>Ce que ça coûte :</b> un écran de plus à faire et à
+        tenir — mais pas de nouvel onglet, donc la barre du bas ne bouge pas.
+        <b>Ce que ça ne fait toujours pas :</b> chercher un client sans passer par
+        un chantier.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Un onglet Clients</span>
+        La liste de tous vos clients, du plus récent au plus ancien, avec ce
+        qu’ils doivent — et la fiche de B derrière chaque nom. <b>C’est le seul
+        qui répond à « qui me doit de l’argent ? »</b> d’un coup d’œil.
+        <span class="cout"><b>Ce que ça coûte, et ce n’est pas rien :</b> un
+        <b>cinquième onglet</b>. La barre du bas en porte quatre, elle est pensée
+        pour le pouce, et chaque onglet ajouté rétrécit les autres. C’est aussi
+        deux écrans à faire au lieu d’un.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Aucun de ces chiffres n’est inventé</span>
+    <ul>
+      <li><b>4 chantiers</b> — les chantiers rattachés à ce client.</li>
+      <li><b>3 200 € facturés</b> et <b>740 € encore dus</b> — les factures
+        émises, et ce que les règlements notés en laissent. C’est la même source
+        que l’écran de TVA depuis le 16 août.</li>
+      <li><b>« toujours de l’élagage »</b> — les prestations qui reviennent le
+        plus souvent dans ses devis.</li>
+      <li><b>« 450 € en moyenne »</b> — les prix déjà pratiqués chez lui. La
+        mémoire qui vous dit déjà « la dernière fois — 180 € HT » sur le devis.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Une question, et elle change un chiffre</span>
+    <b>« 3 200 € », c’est ce qui a été facturé ou ce qui a été encaissé ?</b> Les
+    deux se calculent. Facturé dit ce que le chantier a rapporté ; encaissé dit
+    ce qui est vraiment rentré. La planche montre les deux — le total facturé, et
+    ce qui reste dû à côté — mais si vous préférez n’en voir qu’un, dites lequel.
   </div>
 </div>
     </div>

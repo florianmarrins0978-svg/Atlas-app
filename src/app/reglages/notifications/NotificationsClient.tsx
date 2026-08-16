@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { BORNES_RAPPELS, type ReglagesRappels } from "@/lib/rappels";
+import { BORNES_RAPPELS, RYTHMES_RAPPEL, type ReglagesRappels } from "@/lib/rappels";
 import { ecrireRappelsAction } from "./actions";
 
 /**
@@ -15,13 +15,12 @@ import { ecrireRappelsAction } from "./actions";
  * interrupteurs] seulement à celles où la désactivation n'entraîne pas de
  * problème juridique ou moral ou de dysfonctionnement à l'appli »*.
  *
- * **Puis ce qui se règle**, et c'est vraiment réglable : trois rappels de
+ * **Puis ce qui se règle**, et c'est vraiment réglable : quatre rappels de
  * confort, qui apparaissent sur l'accueil et se coupent sans rien perdre.
  *
- * **Et ce qui n'existe pas est dit, pas dessiné.** Six familles de la planche
- * attendent une donnée absente — au premier rang « cette facture est payée ».
- * Les dessiner avec un interrupteur aurait fait valider un écran qui ne règle
- * rien.
+ * **Le quatrième est arrivé le 16 août 2026**, avec la donnée qui lui manquait
+ * — le paiement d'une facture, noté depuis « Terminés › TVA ». C'est aussi le
+ * seul qui porte un rythme : voir `Rappel` plus bas.
  */
 export default function NotificationsClient({ initial }: { initial: ReglagesRappels }) {
   const [reglages, setReglages] = useState<ReglagesRappels>(initial);
@@ -122,22 +121,47 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
           enCours={enCours}
           onChange={(v) => ecrire({ chantierNonFactureJours: v })}
         />
+        {/* **Le quatrième, et le seul qui porte un RYTHME.** Les trois autres
+            s'éteignent d'eux-mêmes dès que le geste attendu est fait ; celui-ci
+            peut durer des mois, et sans rythme la carte resterait à l'écran
+            chaque jour jusqu'au paiement (`ARCHITECTURE.md`). */}
+        <Rappel
+          nom="Facture impayée"
+          dit="L'échéance est passée et le règlement n'est pas arrivé"
+          unite="jours"
+          valeur={reglages.factureImpayeeJours}
+          bornes={BORNES_RAPPELS.factureImpayeeJours}
+          enCours={enCours}
+          onChange={(v) => ecrire({ factureImpayeeJours: v })}
+          // Le délai se compte depuis l'ÉCHÉANCE, pas depuis l'envoi : c'est
+          // le « A plus B » qu'il a tranché le 16 août 2026.
+          apres="après l'échéance"
+          rythme={{
+            valeur: reglages.factureImpayeeRythmeJours,
+            onChange: (v) => ecrire({ factureImpayeeRythmeJours: v }),
+          }}
+        />
         <p className={`pt-3 ${texteSituation}`} style={{ color: colors.muted }}>
           Ceux-là se coupent sans rien perdre : le chantier reste dans votre liste, le devis reste sur sa fiche,
           et le chantier fini reste dans « Terminés ».
         </p>
       </Bloc>
 
-      {/* **CE QUI MANQUE SE DIT.** Le dépôt interdit de laisser croire qu'une
-          chose fonctionne ; il interdit aussi de laisser croire qu'elle
-          n'existera jamais. Le patron doit savoir ce qui bloque, parce que
-          c'est LUI qui le débloque. */}
-      <Bloc titre="Ce qui manque encore">
+      {/* **CE PARAGRAPHE DISAIT L'INVERSE IL Y A QUELQUES HEURES**, et il avait
+          raison : « facture impayée » était impossible faute de savoir ce qui
+          était payé. « L'endroit en attente » a été codé entre-temps, la donnée
+          existe, le rappel avec. Une documentation périmée est pire qu'absente
+          — on s'y fie encore (`CLAUDE.md` §1). */}
+      <Bloc titre="Où se solde une facture">
         <p className={texteSituation} style={{ color: colors.muted }}>
-          <b style={{ color: colors.ink, fontWeight: 500 }}>« Facture impayée »</b> est le rappel le plus utile,
-          et il est impossible aujourd&apos;hui : rien dans Atlas n&apos;enregistre qu&apos;une facture a été
-          payée. Tant que ce geste n&apos;existe pas, l&apos;alerte crierait sur toutes vos factures, pour
-          toujours.
+          {/* **Les espaces sont écrits, pas laissés au retour à la ligne.** JSX
+              mange le blanc qui suit une balise en fin de ligne : la capture du
+              16 août 2026 montrait « tout seuldès que » et « reste dûqui ». */}
+          Le rappel s&apos;éteint <b style={{ color: colors.ink, fontWeight: 500 }}>tout seul</b>{" "}
+          dès que le règlement est enregistré, dans « Terminés › TVA › En attente de paiement ». Un acompte ne
+          suffit pas : la facture reste rappelée, et c&apos;est le{" "}
+          <b style={{ color: colors.ink, fontWeight: 500 }}>reste dû</b>{" "}
+          qui s&apos;affiche.
         </p>
       </Bloc>
     </div>
@@ -195,6 +219,8 @@ function Rappel({
   bornes,
   enCours,
   onChange,
+  apres,
+  rythme,
 }: {
   nom: string;
   dit: string;
@@ -203,6 +229,17 @@ function Rappel({
   bornes: { min: number; max: number };
   enCours: boolean;
   onChange: (v: number | null) => void;
+  /** Ce que le délai suit — « après l'échéance » plutôt que l'événement par défaut. */
+  apres?: string;
+  /**
+   * Tous les combien il le redit, sur le seul rappel qui peut durer des mois.
+   *
+   * **Trois pastilles, jamais une case de saisie.** Une case inviterait à
+   * écrire « 3 jours », ce qu'il a précisément exclu le 16 août 2026 : *« je
+   * veux un rappel toutes les semaines ou tous les quinze jours, mais pas
+   * qu'il y ait la notification tous les jours »*.
+   */
+  rythme?: { valeur: number; onChange: (v: number) => void };
 }) {
   const allume = valeur !== null;
   return (
@@ -267,10 +304,55 @@ function Rappel({
             // 16 px au moins : en dessous, iOS agrandit la page à la mise au point.
             style={{ backgroundColor: colors.card, color: colors.ink, fontSize: 16 }}
           />
-          <span className={texteSituation} style={{ color: colors.muted }}>
-            {unite}
+          <span
+            // Repéré parce qu'un `<input>` ne figure PAS dans le texte de la
+            // page : un contrôle qui lisait « 1 jours » dans `innerText` ne
+            // mesurait rien, et passait au vert sur l'écran fautif.
+            data-atlas="rappel-unite"
+            className={texteSituation}
+            style={{ color: colors.muted }}
+          >
+            {/* **« 1 jour », pas « 1 jours ».** Le défaut du rappel d'impayé
+                vaut UN — c'est donc la première chose qu'il lit sur cette ligne,
+                et la faute saute aux yeux. Vue sur la capture du 16 août 2026 ;
+                aucun test ne la voyait, et c'est la cinquième fois dans ce dépôt
+                qu'un défaut sort d'une image (`CLAUDE.md` §5). */}
+            {valeur === 1 ? unite.replace(/s$/, "") : unite}
+            {apres ? ` ${apres}` : ""}
           </span>
         </label>
+      )}
+
+      {allume && rythme && (
+        <div className="mt-2.5">
+          <span className={`block ${texteSituation}`} style={{ color: colors.muted }}>
+            Puis me le redire
+          </span>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {RYTHMES_RAPPEL.map((r) => {
+              const pris = rythme.valeur === r.jours;
+              return (
+                <button
+                  key={r.jours}
+                  type="button"
+                  onClick={() => rythme.onChange(r.jours)}
+                  disabled={enCours}
+                  aria-pressed={pris}
+                  data-rythme={r.jours}
+                  className="rounded-full px-[11px] py-[7px] text-[12px] disabled:opacity-60"
+                  style={{
+                    minHeight: 32,
+                    backgroundColor: pris ? colors.rust : "transparent",
+                    color: pris ? colors.cream : colors.muted,
+                    boxShadow: pris ? "none" : `inset 0 0 0 1px ${colors.line}`,
+                  }}
+                >
+                  {r.libelle}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );
