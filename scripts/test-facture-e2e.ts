@@ -151,13 +151,18 @@ async function main() {
     assert.strictEqual(rows[0].statut, "brouillon", "la facture est partie sans confirmation");
   });
 
-  await test("la confirmation fige la facture et la porte au relevé de TVA", async () => {
+  await test("la confirmation fige la facture, et le règlement la porte au relevé", async () => {
+    // **Ce contrôle a changé de milieu le 16 août 2026, pas d'objet.** Depuis
+    // la migration 0042, une facture arrêtée n'entre au relevé qu'une fois
+    // ENCAISSÉE — c'est le défaut légal d'une prestation de services
+    // (`ARCHITECTURE.md` §106). Le parcours compte donc un geste de plus, et
+    // c'est celui que le patron a demandé : « Payée ».
     const { chantierId } = await chantierRealise(page, "emettre");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
     await page.click("text=Confirmer le départ de la facture");
-    await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });
+    await page.waitForSelector("text=arrêtée", { timeout: 15000 });
 
     const { rows } = await inspecter(
       "SELECT statut, total_tva, numero_commercial FROM factures WHERE chantier_id = $1",
@@ -167,12 +172,26 @@ async function main() {
     assert.strictEqual(rows[0].statut, "emise");
     assert.strictEqual(rows[0].total_tva, "200.00");
 
-    // Le relevé n'est pas une table : il se recalcule à chaque affichage, et
-    // doit donc porter cette facture sans qu'aucune écriture ne l'y ait mise.
+    // Arrêtée mais pas encaissée : elle ATTEND, et l'écran le dit.
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const enAttente = page.locator("li").filter({ hasText: rows[0].numero_commercial as string });
+    await enAttente.getByRole("button", { name: "Payée" }).waitFor({ state: "visible", timeout: 15000 });
+
+    // Le relevé n'est pas une table : il se recalcule à chaque affichage, et
+    // doit donc porter cette facture dès que son règlement est noté — sans
+    // qu'aucune écriture ne l'ait mise dans un relevé.
+    await enAttente.getByRole("button", { name: "Payée" }).click();
+    await page.waitForFunction(
+      (numero) => !document.body.innerText.includes(numero),
+      rows[0].numero_commercial as string,
+      { timeout: 15000 }
+    );
+    const sansBlancs = (x: string) => x.replace(/[\s   ]/g, "");
     assert.ok(
-      await page.locator(`text=${rows[0].numero_commercial}`).isVisible(),
-      "la facture émise ne figure pas au relevé"
+      sansBlancs(await page.locator("body").innerText()).includes(
+        sansBlancs(rows[0].numero_commercial as string)
+      ),
+      "la facture réglée ne figure pas au relevé"
     );
     assert.ok(
       await page.locator("text=Ce relevé est préparé par Atlas").isVisible(),
@@ -186,7 +205,7 @@ async function main() {
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
     await page.click("text=Confirmer le départ de la facture");
-    await page.waitForSelector("text=Elle figure au relevé de TVA collectée", { timeout: 15000 });
+    await page.waitForSelector("text=arrêtée", { timeout: 15000 });
 
     await page.reload({ waitUntil: "networkidle" });
     assert.strictEqual(
