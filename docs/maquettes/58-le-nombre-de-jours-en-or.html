@@ -1,0 +1,338 @@
+<title>Le nombre de jours, en or</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE NOMBRE DE JOURS, EN OR — retrouver ce qui a disparu de la ligne.
+
+    Le patron, le 15 août 2026, capture du planning à l'appui : « Avant il y
+    avait le Nombre de jour en doré et je sais plus quoi, où c'est passé ? »
+
+    CE QUI A RÉELLEMENT BOUGÉ SUR CETTE LIGNE, EN DEUX JOURS ET TROIS LOTS —
+    et c'est beaucoup, ce qui explique qu'il ne s'y retrouve plus :
+
+      · le 15 août au matin, la ligne écrivait « 14 août · matin ». Elle écrit
+        désormais ce que le chantier OCCUPE — « journée », « du 21 au 25 août »
+        — et LA DATE EST TOMBÉE, sur sa consigne « pas la date, elle est déjà
+        présente juste au-dessus » (maquette 53) ;
+      · le mot « Déplacer » a quitté la ligne le 15 août, poussé dehors par la
+        pastille d'équipe : à 390 px, la ligne ne peut pas tout porter, et
+        c'est le NOM qui aurait rétréci (maquette 52) ;
+      · le chevron, lui, n'a jamais cessé d'être en or.
+
+    L'HISTORIQUE A ÉTÉ FOUILLÉ, TOUTES BRANCHES : un nombre de jours écrit en
+    or sur cette ligne n'a JAMAIS existé dans l'application. Mais trois choses
+    en approchent, et il en a forcément vu une :
+
+      1. UN NOMBRE DE JOURS A BIEN ÉTÉ SUR CETTE LIGNE — « matin, 2 jours » —
+         mais EN GRIS. Il en est tombé le 10 août, quand le planning est passé
+         au mois (`064d413`) ;
+      2. QUELQUE CHOSE D'OR A BIEN QUITTÉ CETTE LIGNE, et ce n'était pas un
+         nombre : « Créer la facture », en capitales d'or, parti dans la
+         feuille du chevron le 12 août (`026e7ba`) ;
+      3. ET UN NOMBRE DE JOURS EN OR EXISTE — dans la maquette 51, que je lui
+         ai envoyée le 14 août : une ligne dorée sous chaque chantier disant
+         « occupe : vendredi 21, lundi 24, mardi 25 ». Le pied de cette planche
+         le dit noir sur blanc — elle n'existe que pour la comparaison. Il l'a
+         peut-être prise pour l'application, ce qui serait bien normal.
+
+    DONC ON NE DEVINE PAS : la planche montre QUATRE écritures de la même
+    ligne, il en désigne une. Trois d'entre elles rendent le nombre — la date,
+    la durée, ou les deux — et l'or est proposé là où il croit l'avoir vu.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les bascules sont des boutons radio natifs.
+    Les écrans font 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:940px;margin:0 auto}
+
+  /* Safari sur iPhone n'active pas un <label> sans « cursor:pointer » — payé le
+     10 août 2026 : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  .intro{max-width:62ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+  .pistes{max-width:56ch;margin:0 auto 14px;text-align:left;padding-left:22px;
+        color:var(--gris);font-size:14px;line-height:1.7}
+  .pistes li{margin-bottom:8px}
+
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+  .reglage{margin:30px auto 0;max-width:560px;text-align:center}
+  .reglage .quoi{margin:0 0 10px;font-size:12.4px;color:var(--gris)}
+  .segments{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+  .segments label{display:inline-flex;align-items:center;border-radius:9999px;
+        padding:8px 17px;font:400 15px/1 ui-serif,Georgia,serif;
+        border:1px solid var(--trait);color:var(--gris)}
+  /* `~ .page` et non `~ .banc` : le combinateur du frère exige un FRÈRE des
+     boutons radio. Écrit autrement, rien ne bascule et la planche paraît morte
+     sous le doigt — trouvé en la parcourant, le 14 août. */
+  #v-a:checked ~ .page .segments label[for="v-a"],
+  #v-b:checked ~ .page .segments label[for="v-b"],
+  #v-c:checked ~ .page .segments label[for="v-c"],
+  #v-d:checked ~ .page .segments label[for="v-d"]{
+    background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  /* ── L'écran ──────────────────────────────────────────────────────────── */
+  .scene{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:32px}
+  .etiquette{text-align:center;max-width:420px}
+  .etiquette .t{display:block;margin:0 0 5px;font:400 19px/1.24 ui-serif,Georgia,serif}
+  .etiquette p{margin:0;font-size:12.8px;color:var(--gris);line-height:1.66}
+  .etiquette b{color:var(--encre);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-or:#B98B47; --e-rouille:#8a4b2a; --e-creme:#faf9f5;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:24px 0 16px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .rubrique{margin:0 26px 10px;color:var(--e-gris)}
+  .sep{margin:22px 26px 16px;border-top:1px solid var(--e-trait)}
+
+  /* Le calendrier réduit à sa dernière semaine : il est là pour rappeler que
+     l'or du chiffre existe DÉJÀ au-dessus de la liste — c'est peut-être celui
+     dont il se souvient. Le montrer coupe court à un aller-retour. */
+  .semaine{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:0 26px 4px}
+  .semaine span{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:5px;font:400 15px/1 ui-serif,Georgia,serif}
+  .semaine .we{color:rgba(28,28,26,.28)}
+  .semaine .auj{color:var(--e-or)}
+  .semaine i{width:5px;height:5px;border-radius:99px;display:block;background:transparent}
+  .semaine i.plein{background:var(--e-or)}
+  .semaine i.reste{box-shadow:inset 0 0 0 1px var(--e-or)}
+
+  .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+         margin:0 26px;padding:11px 0;border-bottom:1px solid var(--e-trait)}
+  .ligne .colonne{min-width:0;flex:1}
+  .ligne .nom{display:block;font:400 16px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .quand{display:block;margin-top:2px;font-size:12px;color:var(--e-gris)}
+  .ligne .gestes{display:flex;flex-shrink:0;align-items:center;gap:12px}
+  .ligne .equipe{border-radius:9999px;padding:5px 12px;font-size:11.5px;white-space:nowrap;
+        background:var(--e-rouille);color:var(--e-creme);border:1px solid transparent}
+  .ligne .equipe.vide{background:transparent;color:var(--e-or);border:1px dashed var(--e-or)}
+  .ligne .chev{color:var(--e-or);font-size:21px;line-height:1}
+
+  /* Ce qui bascule d'une écriture à l'autre. Tout est écrit dans le HTML de
+     chaque ligne ; seule la visibilité change — c'est ce qui permet de comparer
+     les quatre sans que rien ne se décale ailleurs. */
+  .v-b,.v-c,.v-d{display:none}
+  #v-b:checked ~ .page .v-b,
+  #v-c:checked ~ .page .v-c,
+  #v-d:checked ~ .page .v-d{display:inline}
+  #v-b:checked ~ .page .v-a,
+  #v-c:checked ~ .page .v-a,
+  #v-d:checked ~ .page .v-a{display:none}
+
+  /* L'or de la variante, posé sur le seul morceau concerné. */
+  .doré{color:var(--e-or)}
+
+  .rappel{max-width:62ch;margin:34px auto 0;padding:20px 22px;border-radius:12px;
+          background:var(--plage);font-size:13.4px;color:var(--gris);line-height:1.7}
+  .rappel b{color:var(--encre);font-weight:600}
+  .rappel .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+             letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+  .note{max-width:74ch;margin:56px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note p{margin:0 0 14px}
+  .note p:last-child{margin-bottom:0}
+</style>
+
+<input type="radio" name="ecriture" id="v-a" class="etat" checked>
+<input type="radio" name="ecriture" id="v-b" class="etat">
+<input type="radio" name="ecriture" id="v-c" class="etat">
+<input type="radio" name="ecriture" id="v-d" class="etat">
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Planning · la ligne d'un chantier posé</p>
+    <h1>Le nombre de jours, en or</h1>
+    <p>« Avant il y avait le <b>nombre de jour en doré</b> et je sais plus quoi,
+      où c'est passé ? »</p>
+    <p>J'ai fouillé tout l'historique. <b>Un nombre de jours en or n'a jamais
+      existé dans l'application</b> — mais trois choses en approchent, et vous en
+      avez forcément vu une :</p>
+    <ol class="pistes">
+      <li><b>Un nombre de jours a bien été sur cette ligne</b> — « matin,
+        2 jours » — mais <b>en gris</b>. Il en est tombé le 10 août, quand le
+        planning est passé au mois.</li>
+      <li><b>Quelque chose d'or a bien quitté cette ligne</b>, et ce n'était pas
+        un nombre : <b>« Créer la facture »</b>, en capitales d'or. Il est parti
+        dans la feuille du chevron le 12 août.</li>
+      <li><b>Un nombre de jours en or existe</b> — dans la <b>maquette 51</b>,
+        celle que je vous ai envoyée le 14 août : une ligne dorée sous chaque
+        chantier, « occupe : vendredi 21, lundi 24, mardi 25 ». Elle n'a jamais
+        été dans l'application.</li>
+    </ol>
+    <p>Alors on ne devine pas : voici <b>quatre écritures</b> de la même ligne.
+      Touchez, et dites-moi laquelle est celle dont vous vous souvenez.</p>
+  </div>
+
+  <div class="reglage">
+    <p class="quoi">L'écriture sous le nom du chantier :</p>
+    <div class="segments">
+      <label for="v-a">A — aujourd'hui</label>
+      <label for="v-b">B — la date revient</label>
+      <label for="v-c">C — la durée, en or</label>
+      <label for="v-d">D — la date et la durée, en or</label>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="tel"><div class="ecran">
+
+      <!-- La dernière semaine du mois, pour le repère : l'or du 15 est celui
+           qui existe déjà, et il se peut que ce soit celui-là. -->
+      <div class="semaine">
+        <span>11<i class="plein"></i></span>
+        <span>12<i class="plein"></i></span>
+        <span>13<i class="reste"></i></span>
+        <span>14<i class="plein"></i></span>
+        <span class="auj">15<i class="reste"></i></span>
+        <span class="we">16<i></i></span>
+        <span class="we">17<i></i></span>
+      </div>
+
+      <div class="sep"></div>
+
+      <p class="rubrique caps">Planifiés</p>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martin</span>
+          <span class="quand">
+            <span class="v-a">journée</span>
+            <span class="v-b">14 août · journée</span>
+            <span class="v-c">journée · <b class="doré">1 jour</b></span>
+            <span class="v-d"><b class="doré">14 août · 1 jour</b></span>
+          </span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe A</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Madame Roux</span>
+          <span class="quand">
+            <span class="v-a">matin</span>
+            <span class="v-b">17 août · matin</span>
+            <span class="v-c">matin · <b class="doré">½ jour</b></span>
+            <span class="v-d"><b class="doré">17 août · ½ jour</b></span>
+          </span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe B</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Chez M. Bernard</span>
+          <span class="quand">
+            <span class="v-a">du 21 au 25 août</span>
+            <span class="v-b">21 août · du 21 au 25 août</span>
+            <span class="v-c">du 21 au 25 août · <b class="doré">3 jours</b></span>
+            <span class="v-d"><b class="doré">21 août · 3 jours</b></span>
+          </span>
+        </span>
+        <span class="gestes">
+          <span class="equipe vide">Équipe ?</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+      <div class="ligne">
+        <span class="colonne">
+          <span class="nom">Monsieur Martins</span>
+          <span class="quand">
+            <span class="v-a">après-midi</span>
+            <span class="v-b">24 août · après-midi</span>
+            <span class="v-c">après-midi · <b class="doré">½ jour</b></span>
+            <span class="v-d"><b class="doré">24 août · ½ jour</b></span>
+          </span>
+        </span>
+        <span class="gestes">
+          <span class="equipe">Équipe A</span>
+          <span class="chev" aria-hidden="true">›</span>
+        </span>
+      </div>
+
+    </div></div>
+
+    <div class="etiquette">
+      <span class="t">Ce que chaque écriture coûte</span>
+      <p>
+        <b>A</b> — ce que vous avez sous les yeux depuis ce matin.
+        <b>B</b> — la date revient, mais elle répète le jour déjà écrit
+        au-dessus quand la journée est ouverte.
+        <b>C</b> — la durée s'ajoute et se voit ; c'est la seule qui dit
+        <b>combien de jours</b> sans qu'on compte.
+        <b>D</b> — les deux, mais la ligne fait alors deux nombres pour une
+        seule chose, et à 390 px un nom long commence à se couper.
+      </p>
+    </div>
+  </div>
+
+  <div class="rappel">
+    <span class="t">Si aucune n'est la bonne</span>
+    Dites-moi seulement <b>où c'était sur l'écran</b> — au-dessus du calendrier,
+    sur la ligne, dans la feuille qui s'ouvre au chevron — et je le retrouve dans
+    l'historique. Et si c'est <b>« Créer la facture »</b> qui vous manque : il
+    n'est pas perdu, il est dans la feuille qui s'ouvre au chevron, là où vous
+    m'aviez demandé de le mettre le 12 août. Un mot suffit pour le ramener sur la
+    ligne — mais il faudra alors lui reprendre la place, et c'est le nom du
+    chantier qui la paiera.
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que cette planche ne fait pas</span>
+    <p><b>Rien n'est codé.</b> `src/` n'a pas été touché : c'est la règle posée le
+      11 août — la maquette d'abord, le code une fois choisi.</p>
+    <p><b>Les quatre écritures sont écrites en entier dans la page</b>, et seule
+      leur visibilité change. C'est ce qui permet de basculer de l'une à l'autre
+      sans qu'aucune ligne ne se décale : la comparaison porte sur les mots, pas
+      sur des écrans qui bougent.</p>
+    <p><b>L'équipe et le chevron sont ceux d'aujourd'hui</b>, tels que la ligne
+      les porte depuis hier soir — la pastille pleine quand l'équipe est choisie,
+      le pointillé d'or quand elle manque.</p>
+  </div>
+
+</div>

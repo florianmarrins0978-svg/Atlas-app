@@ -112,7 +112,7 @@ cas("aucun écarté : on ne dit rien plutôt qu'un zéro", () => {
 
 cas("un chantier sans coordonnées n'est ni proposé ni oublié", () => {
   // **Le cas le plus fréquent au démarrage** : tous les chantiers créés avant la
-  // migration 0045 n'ont pas de coordonnées. Les taire donnerait un écran
+  // migration 0047 n'ont pas de coordonnées. Les taire donnerait un écran
   // presque vide sans la moindre explication.
   const p = preselectionner(SAINT_MARTIN, [chantier("Mornant", MORNANT), chantier("Chez Dupont", null)]);
   assert.deepEqual(

@@ -275,7 +275,19 @@ const MAQUETTES = [
     fichier: "56-le-devis-qui-tarde.html",
     titre: "Le devis qui tarde : le rappel, et le délai",
     famille: "Le devis avant l’envoi",
-    quoi: "Un rappel quand un chantier reste sans devis. La rubrique Notifications ayant été codée entre-temps, ce n’est plus un écran à inventer mais une troisième ligne à y poser : restent le ton de la carte et le nombre de jours.",
+    quoi: "Un rappel quand un chantier reste sans devis. CODÉ le 16 août sur ses trois réponses : carte teintée avec le compte des jours, quatre jours, et « Chantier sans devis » — le seul libellé qui ne se confond pas avec sa voisine.",
+  },
+  {
+    fichier: "58-le-nombre-de-jours-en-or.html",
+    titre: "Le nombre de jours, en or",
+    famille: "Le planning",
+    quoi: "« Avant il y avait le nombre de jour en doré, où c’est passé ? » — il n’avait jamais existé dans l’application. Quatre écritures de la même ligne, et les trois choses qui en approchaient, retrouvées dans l’historique plutôt que devinées.",
+  },
+  {
+    fichier: "59-la-ligne-qui-dit-tout.html",
+    titre: "La ligne qui dit tout",
+    famille: "Le planning",
+    quoi: "La date, le moment de départ et la durée sur la ligne d’un chantier posé, sur les cinq cas du produit. Retenue puis CODÉE le 15 août — « je veux journée et toute la ligne ».",
   },
 ];
 

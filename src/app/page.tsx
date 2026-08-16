@@ -12,7 +12,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
 import { rappelsEnCours } from "@/server/repositories/rappels";
-import { depuisCombien } from "@/lib/rappels";
+import { depuisCombien, joursEcoules } from "@/lib/rappels";
 import Notifications from "./Notifications";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
@@ -128,6 +128,7 @@ export default async function ChantiersPage() {
               chantierId: r.chantierId,
               chantierNom: r.chantierNom,
               depuisTexte: depuisCombien(maintenant, r.depuis),
+              depuisJours: joursEcoules(maintenant, r.depuis),
             }))}
           />
         </>

@@ -1,0 +1,339 @@
+<title>Atlas — La banque dit qui a payé</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT — et pourtant vivante sous le doigt.
+
+    LA BANQUE DIT QUI A PAYÉ, ATLAS PROPOSE, LE PATRON TRANCHE.
+
+    Le patron, le 14 août 2026, après avoir vu la planche de la TVA au
+    paiement : *« comment tu vas savoir quand est-ce que j'ai été payé ? »* —
+    puis, entre les trois réponses possibles : *« j'aimerais bien qu'on essaie
+    de partir sur la trois »*, celle de la banque.
+
+    DEUX FAITS QUI COMMANDENT CE DESSIN, et qu'il faut voir avant de choisir :
+
+    1. **UN RELEVÉ BANCAIRE NE PORTE PAS DE NUMÉRO DE FACTURE.** Il porte une
+       date, un montant, et un libellé écrit par la banque de l'autre : « VIR M
+       BERNARD », parfois « VIREMENT DE COMPTE A COMPTE ». Le rapprochement est
+       donc une SUPPOSITION — montant, nom approchant, fenêtre de dates. Il ne
+       peut pas être automatique et muet : un virement collé à la mauvaise
+       facture met la TVA dans le mauvais trimestre, et c'est l'administration
+       qui arbitre. **Atlas propose, le patron confirme d'un doigt.**
+
+    2. **L'ACCÈS SE RENOUVELLE TOUS LES 90 JOURS.** C'est la règle européenne
+       (DSP2) : passé ce délai, la banque coupe et il faut se ré-identifier. Le
+       taire, c'est lui promettre un automatisme qui s'arrête tout seul un matin
+       de novembre — et une TVA sous-déclarée derrière.
+
+    CE QUI RESTE À TRANCHER, ET QUI NE SE CODE PAS : le prestataire agréé, son
+    contrat et son coût (`docs/A-FAIRE.md` §13). Rien n'est posé dans `src/`
+    (`CLAUDE.md` §3 bis).
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       font-size:16px;line-height:1.65;padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto 26px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font-family:ui-serif,Georgia,"Iowan Old Style",serif;
+            font-weight:400;font-size:30px;line-height:1.25;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .cle{max-width:64ch;margin:0 auto 36px;padding:16px 18px;border-radius:6px;
+       background:var(--plage);border:1px solid var(--trait)}
+  .cle p{margin:0;font-size:14px;color:var(--gris);line-height:1.6}
+  .cle p + p{margin-top:9px}
+  .cle b{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:44ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:760px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         font-size:16px;line-height:1.5;
+         /* La charte Arborea, relevée dans `src/lib/design-tokens.ts`. */
+         --e-fond:#f5f3ee; --e-plage:#ece9e1; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-trait:rgba(28,28,26,.12); --e-pin:#2f3b2f; --e-pin-encre:#faf9f5;
+         --e-or:#B98B47; --e-blanc:#faf9f5; --e-alerte:#9C3B2E}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .corps{flex:1;overflow:auto;padding:20px 16px 24px}
+  .titre-ecran{margin:0 0 2px;font-family:ui-serif,Georgia,serif;font-weight:400;
+               font-size:24px;line-height:1.2;color:var(--e-encre)}
+  .chapo{margin:0 0 14px;font-size:12.5px;line-height:1.5;color:var(--e-gris)}
+
+  h3.bloc{margin:16px 0 3px;font-family:ui-serif,Georgia,serif;font-weight:400;
+          font-size:17px;line-height:1.25;color:var(--e-encre)}
+  p.aide{margin:0 0 9px;font-size:12.5px;line-height:1.45;color:var(--e-gris)}
+
+  .carte{background:var(--e-blanc);border-radius:4px;margin-bottom:8px;padding:12px 14px}
+
+  /* Un virement reçu : ce que la banque dit, et ce qu'Atlas en fait. */
+  .vir{border-bottom:1px solid var(--e-trait);padding:11px 0}
+  .vir:last-child{border-bottom:0}
+  .vir .haut{display:flex;align-items:baseline;gap:8px}
+  .vir .libelle{flex:1;min-width:0}
+  .vir .libelle b{display:block;font-size:14px;font-weight:500;color:var(--e-encre)}
+  .vir .libelle span{font-size:11.5px;color:var(--e-gris)}
+  .vir .montant{font-size:15px;color:var(--e-pin);white-space:nowrap;font-weight:500}
+
+  /* La proposition : elle se lit comme une phrase, pas comme un tableau. */
+  .propose{margin-top:9px;padding:10px 12px;border-radius:4px;background:var(--e-plage)}
+  .propose .quoi{font-size:12.5px;line-height:1.45;color:var(--e-encre)}
+  .propose .quoi b{font-weight:600}
+  .propose .gestes{display:flex;gap:8px;margin-top:9px}
+  .oui{min-height:40px;padding:9px 18px;border:0;border-radius:999px;
+       background:var(--e-pin);color:var(--e-pin-encre);font-size:14px;font-weight:500}
+  .non{min-height:40px;padding:9px 16px;border:0;border-radius:999px;
+       background:transparent;color:var(--e-gris);font-size:14px}
+
+  .marque{display:inline-block;padding:2px 8px;border-radius:999px;
+          font-size:10.5px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+  .marque.fait{background:var(--e-pin);color:var(--e-pin-encre)}
+  .marque.doute{background:#f0e2d8;color:var(--e-alerte)}
+
+  .encart{margin:10px 0 0;padding:10px 12px;border-radius:4px;
+       background:var(--e-plage);color:var(--e-gris);font-size:12px;line-height:1.45}
+  .encart b{color:var(--e-encre);font-weight:600}
+  .encart.alerte{background:#f6ece6;color:var(--e-alerte)}
+  .encart.alerte b{color:var(--e-alerte)}
+
+  /* Ce qui bascule quand il confirme. */
+  .sel{display:none}
+  #ok1:checked ~ .corps .apres{display:block}
+  #ok1:checked ~ .corps .avant{display:none}
+  #ok1:checked ~ .corps .marque-1{display:inline-block}
+
+  /* L'écran du raccordement. */
+  .banque{display:flex;align-items:center;gap:12px;min-height:52px;
+          padding:12px 14px;border-radius:4px;background:var(--e-blanc);margin-bottom:8px}
+  .banque .rond{flex:0 0 34px;width:34px;height:34px;border-radius:999px;
+        background:var(--e-plage);display:flex;align-items:center;justify-content:center;
+        font-size:13px;font-weight:600;color:var(--e-gris)}
+  .banque .nom{flex:1;font-size:14.5px;color:var(--e-encre)}
+  .banque .fleche{color:var(--e-gris);font-size:15px}
+
+  .liste-oui-non{margin:0;padding:0;list-style:none}
+  .liste-oui-non li{display:flex;gap:8px;padding:6px 0;font-size:12.5px;line-height:1.45}
+  .liste-oui-non .signe{flex:0 0 16px;font-weight:700}
+  .liste-oui-non .lit{color:var(--e-pin)}
+  .liste-oui-non .lit-pas{color:var(--e-alerte)}
+
+  .barre{display:flex;justify-content:space-around;align-items:center;
+         padding:12px 8px 16px;border-top:1px solid var(--e-trait);background:var(--e-fond)}
+  .barre span{color:var(--e-gris)}
+  .barre .ici{color:var(--e-encre);border-bottom:1.5px solid var(--e-or);padding-bottom:4px}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Ma TVA · la banque · 14 août 2026</p>
+    <h1>La banque dit qui a payé</h1>
+    <p><strong>Sa question :</strong> « comment tu vas savoir quand est-ce que
+       j'ai été payé ? » — et son choix : la banque.</p>
+  </div>
+
+  <div class="cle">
+    <p><b>Un relevé bancaire ne porte pas de numéro de facture.</b> Il porte une
+       date, un montant, et un libellé écrit par la banque de votre client :
+       « VIR M BERNARD ». Rapprocher, c'est donc <b>supposer</b> — sur le
+       montant, sur le nom, sur la date.</p>
+    <p><b>Donc Atlas propose, vous confirmez d'un doigt.</b> Jamais en silence :
+       un virement collé à la mauvaise facture met la TVA dans le mauvais
+       trimestre, et c'est l'administration qui tranche ensuite. Quand le
+       montant tombe juste ET que le nom correspond, il ne reste qu'à toucher
+       « C'est ça ».</p>
+    <p><b>Et l'accès se renouvelle tous les 90 jours</b> — c'est la règle
+       européenne, pas un choix d'Atlas. L'écran le dit d'avance et vous
+       prévient avant la coupure : un automatisme qui s'arrête tout seul un
+       matin de novembre, sans un mot, vaudrait mieux ne pas exister.</p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ─────────── LES VIREMENTS REÇUS ─────────── -->
+    <div class="prop">
+      <p class="sous">Les virements reçus</p>
+
+      <div class="tel"><div class="ecran">
+        <input class="interrupteur" type="checkbox" id="ok1">
+
+        <div class="corps">
+          <p class="caps" style="color:var(--e-or);margin:0 0 6px">Ma TVA</p>
+          <h2 class="titre-ecran">Qui vous a payé</h2>
+          <p class="chapo">3 virements reçus depuis le 10 août · lus sur votre compte,
+             jamais modifiés.</p>
+
+          <div class="carte" data-s="liste">
+
+            <!-- 1. Le cas facile : montant exact, nom qui colle. -->
+            <div class="vir">
+              <div class="haut">
+                <span class="libelle"><b>VIR M BERNARD</b>
+                  <span>20 août · Crédit Agricole</span></span>
+                <span class="montant">+ 1 440,00 €</span>
+                <span class="marque fait sel marque-1" data-s="marque-1">RAPPROCHÉ</span>
+              </div>
+
+              <div class="propose avant" data-s="propose-1">
+                <p class="quoi" style="margin:0">
+                  Atlas y voit <b>F-2026-042 · M. Bernard</b> — 1 440,00 € TTC, émise le
+                  5 août. <b>Le montant tombe juste</b> et le nom correspond.
+                </p>
+                <div class="gestes">
+                  <label class="oui" for="ok1" data-s="oui-1">C'est ça</label>
+                  <label class="non" for="ok1">Non, autre chose</label>
+                </div>
+              </div>
+
+              <p class="encart apres sel" data-s="fait-1">
+                <b>240,00 € de TVA</b> viennent d'entrer au relevé du 3<sup>e</sup> trimestre.
+                La facture passe à « payée le 20 août ».
+              </p>
+            </div>
+
+            <!-- 2. Déjà fait : rien à décider. -->
+            <div class="vir">
+              <div class="haut">
+                <span class="libelle"><b>VIR DUBOIS C</b>
+                  <span>8 août · Crédit Agricole</span></span>
+                <span class="montant">+ 960,00 €</span>
+                <span class="marque fait">RAPPROCHÉ</span>
+              </div>
+            </div>
+
+            <!-- 3. LE CAS QUI COMPTE : Atlas ne sait pas, et le dit. -->
+            <div class="vir">
+              <div class="haut">
+                <span class="libelle"><b>VIR M LEROY</b>
+                  <span>18 août · Crédit Agricole</span></span>
+                <span class="montant">+ 500,00 €</span>
+                <span class="marque doute">À TRANCHER</span>
+              </div>
+              <p class="encart alerte" data-s="doute">
+                <b>Atlas ne sait pas.</b> 500,00 € ne correspond à aucune facture entière :
+                ce peut être un <b>acompte</b> sur les 1 800,00 € de M. Leroy, ou autre chose.
+                À vous de dire — rien n'entrera au relevé sans votre geste.
+              </p>
+            </div>
+
+          </div>
+
+          <p class="encart" data-s="jamais">
+            <b>Atlas ne rapproche jamais tout seul.</b> Même quand le montant tombe juste,
+            c'est votre doigt qui décide : une facture rangée dans le mauvais trimestre
+            se répare devant l'administration, pas dans l'application.
+          </p>
+        </div>
+
+        <div class="barre">
+          <span class="caps">Chantiers</span><span class="caps">Planning</span>
+          <span class="caps ici">Terminés</span><span class="caps">Réglages</span>
+        </div>
+      </div></div>
+
+      <p class="note">Touchez <b>« C'est ça »</b> sur le premier virement.
+         Le geste tient en un doigt ; c'est le troisième — celui qu'Atlas ne sait pas
+         trancher — qui décide si l'idée tient la route.</p>
+    </div>
+
+    <!-- ─────────── RELIER SA BANQUE ─────────── -->
+    <div class="prop">
+      <p class="sous">Relier ma banque</p>
+
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <p class="caps" style="color:var(--e-or);margin:0 0 6px">Réglages</p>
+          <h2 class="titre-ecran">Ma banque</h2>
+          <p class="chapo">Pour qu'Atlas sache quelles factures ont été payées,
+             sans que vous ayez à le lui dire.</p>
+
+          <h3 class="bloc">Ce qu'Atlas lit, et ce qu'il ne fera jamais</h3>
+          <div class="carte">
+            <ul class="liste-oui-non" data-s="lit">
+              <li><span class="signe lit">✓</span><span>Les <b>virements reçus</b> : date, montant, libellé</span></li>
+              <li><span class="signe lit">✓</span><span>Le nom de votre banque, et le compte relié</span></li>
+              <li><span class="signe lit-pas">✕</span><span><b>Aucun paiement, aucun virement, aucun ordre.</b> Atlas lit, il ne bouge rien</span></li>
+              <li><span class="signe lit-pas">✕</span><span>Aucun accès à vos identifiants : ils restent chez votre banque</span></li>
+              <li><span class="signe lit-pas">✕</span><span>Vos dépenses ne servent à rien ici, et ne sont pas gardées</span></li>
+            </ul>
+          </div>
+
+          <h3 class="bloc">Votre banque</h3>
+          <p class="aide">Vous vous identifiez chez elle, pas ici.</p>
+          <div class="banque">
+            <span class="rond" aria-hidden="true">CA</span>
+            <span class="nom">Crédit Agricole</span>
+            <span class="fleche" aria-hidden="true">›</span>
+          </div>
+          <div class="banque">
+            <span class="rond" aria-hidden="true">CM</span>
+            <span class="nom">Crédit Mutuel</span>
+            <span class="fleche" aria-hidden="true">›</span>
+          </div>
+          <div class="banque">
+            <span class="rond" aria-hidden="true">BP</span>
+            <span class="nom">Banque Populaire</span>
+            <span class="fleche" aria-hidden="true">›</span>
+          </div>
+
+          <p class="encart" data-s="quatre-vingt-dix">
+            <b>L'accès se renouvelle tous les 90 jours.</b> C'est la règle européenne, pas
+            un choix d'Atlas : passé ce délai, votre banque coupe et il faut vous
+            ré-identifier. Vous serez prévenu <b>une semaine avant</b>, et tant que
+            l'accès dort, les paiements se notent à la main comme aujourd'hui.
+          </p>
+
+          <p class="encart" data-s="tiers">
+            <b>Un prestataire agréé se tient entre Atlas et votre banque</b> — c'est la loi,
+            personne ne se branche directement. Il figurera dans vos documents légaux, au
+            même titre que l'hébergeur.
+          </p>
+        </div>
+
+        <div class="barre">
+          <span class="caps">Chantiers</span><span class="caps">Planning</span>
+          <span class="caps">Terminés</span><span class="caps ici">Réglages</span>
+        </div>
+      </div></div>
+
+      <p class="note">Ce qui reste à décider, et qui ne se code pas : <b>quel
+         prestataire</b>, son contrat et son coût — <code>docs/A-FAIRE.md</code> §12.</p>
+    </div>
+
+  </div>
+</div>

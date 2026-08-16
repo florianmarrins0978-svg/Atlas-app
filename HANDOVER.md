@@ -159,6 +159,7 @@ serait une défaillance du dépôt.
 | Si le patron parle de… | Lui ressortir |
 |---|---|
 | **commercialiser, vendre, premiers clients payants, lancement, mise sur le marché, plusieurs artisans** | **La validation de l'application par Google** (`docs/A-FAIRE.md` §8). Sans elle, l'agenda ne fonctionne que pour **une centaine de comptes inscrits à la main** — et le mur arrive d'un coup, sans prévenir. La vérification demande un domaine, une politique de confidentialité **publiée**, une page d'accueil, une vidéo, et **plusieurs semaines**. Le délai ne se rattrape pas : la demande se lance bien avant la date de vente. Détail complet dans `docs/QUESTIONS.md` §12 |
+| **« avant il y avait… », « où c'est passé ? », « je ne retrouve plus… »** | **NE PAS DEVINER : fouiller l'historique AVANT de répondre**, et lui rendre la liste des candidats plutôt qu'une hypothèse. Le 15 août 2026 — *« avant il y avait le Nombre de jour en doré »* —, la fouille a rendu trois choses différentes, dont **une qui n'a jamais été codée** : une ligne dorée de la maquette 51, qu'il avait manipulée la veille. Répondre de mémoire aurait fait coder ce qui existait déjà ailleurs. Et **penser d'abord aux maquettes qu'on lui a envoyées** : il les essaie en vrai, elles ressemblent à l'application, et rien ne les en distingue sur son téléphone (`TODO.md` §0 novemvicies quinquies) |
 
 Un point traité ici se **barre** avec sa date plutôt qu'il ne se supprime :
 savoir qu'il a été dit évite de le redire, et savoir quand évite de croire qu'il
@@ -712,6 +713,51 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
+« 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le
+moment de départ, la durée, **toute la ligne en or**. Sa demande sur la
+maquette 59 : *« je veux journée et toute la ligne »*.
+
+**L'INVARIANT À NE JAMAIS PERDRE, et il n'est pas d'écriture :** « matin » ne
+s'écrit **jamais sans sa durée**. Seul, il redit le défaut du 13 août — *« ça
+laisse à penser que juste le matin est bloqué »*. C'est le nombre accolé qui le
+rend honnête. Un contrôle balaie les deux cents durées pour qu'un allègement
+futur ne les sépare pas en silence (`ARCHITECTURE.md` §111).
+
+**Et ce qui a été perdu au passage, sciemment :** « du 21 au 25 août ». La ligne
+ne dit plus quand un chantier long **finit**, et les week-ends sautés interdisent
+de le recalculer de tête. **Ne pas le remettre sur la ligne sans qu'il le
+demande** — il y a été retiré pour faire tenir le nombre de jours ; sa place
+serait la feuille du chevron.
+
+**LA TVA AU PAIEMENT (16 août).** Sa question : *« si un client ne me paie pas,
+la facture rentre quand même dans mon relevé »*. Elle était fondée : pour une
+prestation de services, la TVA est due **à l'encaissement** (CGI art. 269-2-c),
+et les débits — ce que faisait Atlas — sont une **option** qui se demande.
+
+Quatre choses à savoir avant d'y toucher :
+
+1. **Le défaut a CHANGÉ** (`entreprises.tva_exigibilite` = `encaissements`). Ne
+   pas le remettre aux débits « pour retrouver l'ancien comportement » : c'est
+   l'ancien comportement qui était faux.
+2. **La migration 0045 a posé un règlement sur chaque facture déjà émise**, daté
+   de son émission. C'est ce qui empêche un trimestre déjà déclaré de retomber à
+   zéro. Ces lignes portent `origine='reprise'` et l'écran le dit — ne pas les
+   effacer, et ne pas les faire passer pour des observations.
+3. **Un acompte se compte au PRORATA du TTC**, et le règlement qui solde reçoit
+   le reliquat. Sans cela, la somme des lignes du relevé ne tombe plus sur la
+   facture, à un ou deux centimes près — et personne ne sait expliquer l'écart.
+4. **Les refus ne LÈVENT jamais.** `new Decimal("zéro")` jette : une exception
+   en action serveur devient un identifiant opaque chez lui. Tout refus passe
+   par une valeur de retour, avec sa phrase.
+
+Ce qui n'est PAS fait, et qu'il a choisi : le **rapprochement bancaire**
+(`docs/A-FAIRE.md` §13, maquette `atlas-banque-rapprochement.html`). Il demande
+un prestataire agréé, donc un contrat. La saisie à la main reste de toute façon
+nécessaire — l'accès bancaire se coupe tous les 90 jours.
+
+Le reste : `ARCHITECTURE.md` §110.
+
 **⚠ UNE DATE CALCULÉE DEPUIS « AUJOURD'HUI » EST UNE BOMBE À RETARDEMENT (16 août).**
 `test-pastille-equipe-e2e` visait `+ 20 jours` : jeudi le jour où il a été écrit,
 **samedi** deux jours plus tard — et le planning refuse le week-end par
@@ -720,17 +766,28 @@ le bouton allait très bien. **Devant un rouge sur une suite qui touche au
 planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 `estWeekEndIso`, et éprouvé dans les deux sens.
 
-**LE DEVIS QUI TARDE : B ET 4 JOURS RETENUS, RESTE LE MOT (16 août).**
-`docs/maquettes/56-le-devis-qui-tarde.html`. Sa réponse : *« la B et 4 »* — carte
-teintée, quatre jours. **Il reste un seul mot à choisir**, celui de la ligne dans
-les réglages : elle se pose juste au-dessus de « Devis sans réponse », et deux
-lignes qui commencent par « Devis » ne se distinguent pas. Quatre mots proposés
-en § 3, ma préférence « Chantier sans devis ». Détail : `TODO.md` §0 novivicies.
+**LE DEVIS QUI TARDE : CODÉ (16 août).** Ses trois mots — *« la B et 4 »* puis
+*« le G »* — sont appliqués : carte teintée avec le compte des jours, 4 jours par
+défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
+deux points laissés en suspens : `TODO.md` §0 novivicies.
+
+**⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
+troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un
+envoi : un devis jamais parti ne laisse aucune ligne dans `envois_devis`.
 
 **LA LEÇON DE CE PASSAGE, ET ELLE VAUT AU-DELÀ :** une confusion entre deux
 libellés **n'existe qu'en contexte**. Montrer une ligne seule ne prouve rien —
-c'est côte à côte avec sa voisine qu'elle se juge. C'est le patron qui l'a vu, pas
-un contrôle.
+c'est côte à côte avec sa voisine qu'elle se juge, et la règle tenue porte donc
+sur les VOISINES, pas sur toutes les paires. C'est le patron qui l'a vu, pas un
+contrôle.
+
+**ET UN PIÈGE DE PLUS, LE 22e : UNE PROPRIÉTÉ VALIDE QUI NE FAIT RIEN.**
+`.atlas-fil-defile` déclarait `scroll-snap-type: y proximity` depuis le premier
+jour, et aucun enfant n'avait jamais déclaré `scroll-snap-align`. La propriété
+était inerte, et rien ne pouvait le dire — elle est parfaitement valide. Sa
+conséquence : une carte s'arrêtait où le doigt la laissait, son étiquette effacée
+par le fondu de 18 px du cadre. *« Le premier message est trop haut et le début
+n'est pas visible. »* Corrigé, et mesuré : une carte s'arrête à 24 px du bord.
 
 **⚠ LA RUBRIQUE NOTIFICATIONS EST CODÉE DEPUIS LE 14 AOÛT** — `src/lib/rappels.ts`,
 `src/app/reglages/notifications/`, `drizzle/0043_rappels_notifications.sql`. Deux
@@ -2543,7 +2600,7 @@ conversation. Ce qui ne peut pas être éprouvé ici part en CI :
 `banc-essai.yml` monte l'espace de travail et s'en sert, `pages.yml` vérifie le
 site publié à son adresse réelle.
 
-### Les vingt-et-un pièges de ce dépôt
+### Les vingt-deux pièges de ce dépôt
 
 0. **Une action serveur refusée ne dit rien d'utile.** Next.js compare `Origin`
    à l'hôte : derrière un proxy (Codespaces), ils diffèrent et TOUTE action est
@@ -2779,6 +2836,22 @@ site publié à son adresse réelle.
     (`src/lib/mois.ts`) plutôt que de réécrire la règle, sans quoi les deux
     finissent par diverger. Plus large : **un rouge qui n'apparaît que certains
     jours de la semaine n'est presque jamais le défaut qu'il annonce.**
+
+22. **Une propriété CSS valide qui ne fait rien.**
+    `.atlas-fil-defile` déclarait `scroll-snap-type: y proximity` depuis le
+    premier jour — et **aucun de ses enfants n'avait jamais déclaré
+    `scroll-snap-align`**. Sans cible, la propriété est inerte : elle est
+    parfaitement valide, aucun outil ne la signale, et le fil ne s'accrochait
+    nulle part. Conséquence vue par le patron le 16 août 2026 : *« le premier
+    message est trop haut et le début n'est pas visible »* — une carte
+    s'arrêtait où le doigt la laissait, et le fondu de 18 px du cadre effaçait
+    son étiquette.
+
+    **La règle :** une propriété qui a besoin d'une CONTREPARTIE (snap/align,
+    `grid-template` sans `grid-area`, `aria-controls` sans cible) se vérifie des
+    deux côtés. Et le point d'accroche porte un `scroll-margin-top` plus grand
+    que le fondu — sinon la carte s'accroche pile dans le fondu, c'est-à-dire à
+    moitié effacée : le même défaut, réparé à l'identique.
 
 ### Le vocabulaire
 

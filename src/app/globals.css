@@ -196,6 +196,32 @@ body {
   position: relative;
   padding-bottom: 3.5rem;
 }
+
+/* **Une carte ne peut plus se reposer à moitié coupée.**
+ *
+ * Le patron, le 16 août 2026, capture à l'appui : *« le premier message est
+ * trop haut et le début n'est pas visible. »*
+ *
+ * CE QUI SE PASSAIT, MESURÉ. Les cartes vivent dans `.atlas-fil-defile`, un
+ * cadre de 281 px qui porte 1 368 px de contenu et un fondu de 18 px en haut.
+ * Au repos la première carte est nette — elle commence 38 px sous le bord —
+ * mais dès qu'on fait défiler, elle s'arrête où le doigt la laisse : son
+ * étiquette et le nom du chantier passent sous le fondu, et il ne reste que la
+ * dernière ligne et le geste. C'est exactement ce qu'il a vu.
+ *
+ * LE CADRE DÉCLARAIT DÉJÀ `scroll-snap-type: y proximity` — et AUCUN de ses
+ * enfants n'avait jamais déclaré de point d'accroche. La propriété était donc
+ * inerte depuis le premier jour, et rien ne pouvait le dire : elle est valide,
+ * elle ne fait simplement rien sans cible.
+ *
+ * `scroll-margin-top` vaut plus que le fondu : le point d'arrêt se pose SOUS
+ * lui, jamais dessous-dessus. Sans cette marge, la carte s'accrocherait pile au
+ * bord du cadre — c'est-à-dire dans le fondu, donc à moitié effacée : le défaut
+ * réparé à l'identique. */
+.atlas-fil-defile [data-atlas="carte-reponse"] {
+  scroll-snap-align: start;
+  scroll-margin-top: 24px;
+}
 /* Le fil lui-même est dessiné ligne par ligne (`src/app/ListeChantiers.tsx`)
  * et non ici : la couche qui glisse pour découvrir la corbeille porte le fond
  * de la page, et un trait posé sous elle disparaît. Le défaut ne se voit que

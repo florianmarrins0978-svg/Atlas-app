@@ -253,6 +253,23 @@ exist » quand c'est la base entière qui n'est pas montée envoie chercher au
 mauvais endroit — une erreur qui accuse à tort coûte plus cher que pas d'erreur
 du tout.
 
+**Un contrôle qui mesure ZÉRO ne mesure rien — et il est pire qu'absent.**
+Payé le 15 août 2026. Une suite navigateur comparait la largeur d'un texte à
+celle de sa boîte pour dire si un nom était coupé. Elle mesurait la page après
+`domcontentloaded` : la feuille de style n'était pas appliquée, le `<span>`
+restait en ligne, et les deux largeurs valaient **0**. `0 − 0 = 0` : « rien
+n'est coupé », en vert, sur un écran où trois noms l'étaient.
+
+La batterie entière était verte. C'est **la capture, regardée**, qui a montré
+les « … » — la quatrième fois dans ce dépôt qu'un défaut sort d'une image et
+d'aucun test.
+
+Donc, dès qu'un contrôle compare des dimensions : attendre la mise en page
+(`networkidle`), et **refuser de conclure sur une boîte de zéro pixel** plutôt
+que de rendre un vert qui ne prouve rien. La même règle vaut pour un compte de
+zéro élément, un fichier vide, une réponse sans corps : l'absence de matière à
+mesurer n'est pas un succès, c'est une mesure impossible.
+
 ### Monter la base ici : une commande
 
 ```bash
