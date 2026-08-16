@@ -29,6 +29,34 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ### 0 septvicies. La fiche d'entretien — **B et B tranchés**, une question reste
 
+### 0 trigies bis. `test-devis-parti-signet` a rougi une fois sur deux batteries — instable sous charge
+
+**Vu le 16 août 2026**, sur une batterie complète : la suite attendait le total
+« 840,00 € » et a **dépassé son délai**. Ce n'est donc pas une valeur fausse —
+les contrôles qui la précèdent dans la même suite étaient verts, et le numéro du
+devis était bien affiché.
+
+**Ce qui a été éliminé, mesuré et non supposé :**
+
+- elle **passe seule** ;
+- elle **passe enchaînée derrière `test-devis-complet`**, qui écrit un taux de
+  TVA à 10 % — le premier soupçon, puisque 700 € HT font 840 € à 20 % et 770 € à
+  10 % ;
+- la batterie complète rejouée juste après : **86/86**, le rouge ne revient pas.
+
+**Ce que ça laisse :** un écran lent à rendre pendant qu'une batterie occupe la
+machine. Le `waitForSelector` de cette assertion n'a pas de délai propre, là où
+ses voisines en portent un de 20 s.
+
+**À faire, et ce n'est pas urgent :** lui donner un délai explicite, comme ses
+voisines. Ne PAS la déclarer instable en la retirant — un contrôle qu'on
+neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
+écran que le patron a dessiné lui-même.
+
+
+### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
+### 0 septvicies. La fiche d'entretien — **DEUX MAQUETTES POSÉES, sa décision attendue**
+
 **Sa réponse du 16 août 2026 : « B et B »**, plus deux ajouts.
 
 | Tranché | Ce qu'il a choisi |
@@ -75,6 +103,37 @@ qu'elle appelle `npm run banc`. Elle vit désormais à côté
 pourquoi son serveur ne répondait pas le 16 août à 17 h 06. La fiche s'est tue
 avant de le dire. **Ne pas écrire que cette panne-là est réparée** — seul
 l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
+
+**Le correctif est CONFIRMÉ sur sa machine :** fiche du 16 août 18 h 32,
+« Écrite : par le veilleur, au quart d'heure » — la première publication
+périodique jamais observée chez lui.
+
+### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
+
+**Payé le 16 août 2026 au soir.** Il redémarre, l'application s'ouvre sur du
+blanc, il écrit « corrige-moi ça ». Rien n'était cassé : la page de connexion
+s'affichait parfaitement sur son commit exact, et la construction réussissait.
+
+**Ce qui se passait vraiment**, et la fiche le disait en une ligne :
+
+    Code SERVI : aucune version bâtie — le banc sert le mode développement
+
+Tant que `.next-batie` n'existe pas, chaque écran se compile **à l'ouverture**
+— 30 à 100 secondes (`scripts/banc.mjs`) — et le mandataire de GitHub renonce au
+bout d'une minute. Le blanc est cet intervalle, rien d'autre. Il se dissipe seul
+dès que la construction retombe, ou en rechargeant une minute plus tard : la
+compilation continue côté serveur même quand le navigateur a renoncé.
+
+**Donc, devant « page blanche » : lire la ligne « Code SERVI » AVANT tout.**
+« aucune version bâtie » + « serveur : répond » = il est dans la fenêtre de
+construction, il n'y a rien à réparer. Chercher un défaut de produit là-dedans,
+c'est ce qui a consommé la soirée.
+
+**Ce qui reste à faire, et qui n'est pas fait :** pendant cette fenêtre, il n'a
+aucun moyen de savoir qu'il doit attendre — il voit du blanc, comme devant une
+panne. Une page d'attente qui dirait « Atlas se prépare, deux minutes » vaudrait
+mieux que le blanc. **À dessiner avant de coder** (`CLAUDE.md` §3 bis) et à lui
+montrer : ce n'est pas à nous de décider qu'il veut un écran de plus.
 
 ### 0 quadragies. ~~La réduction accordée au client~~ — **CODÉE le 16 août 2026 (B + « Prix accordé au client »)**
 
@@ -142,14 +201,15 @@ aucun devis envoyé »*. **Ses quatre décisions, toutes appliquées :** *« la 
 4 »*, *« le G »*, *« le B »* (le ton, reposé capture à l'appui), *« fait la B »*
 (le rang).
 
-**CE QUI RESTE POSÉ, SANS RÉPONSE — et c'est le seul point ouvert de ce lot.**
-Les rappels passant devant, une réponse de client peut être repoussée derrière
-« N autres devis à regarder ». Mesuré sur le jeu de démonstration : **cinq
-rappels occupaient les deux places, et plus aucune réponse n'était visible**.
+**LA PLACE GARANTIE : TRANCHÉE ET CODÉE** (16 août, *« ok alors fait le »*,
+après deux photos). Les rappels passant devant, cinq d'entre eux masquaient
+toutes les réponses de clients — la batterie l'avait dit en rougissant avant que
+l'image ne le montre. Son choix B tient : la **première** place reste au rappel,
+c'est la **dernière place visible** qui revient à une réponse, et seulement s'il
+en existe. Règle pure dans `src/lib/ordre-notifications.ts`, éprouvée sur les cas
+limites et sur les 108 combinaisons — aucune carte perdue ni dupliquée.
 
-La sortie proposée, et elle n'attend que son mot : **garantir une place à
-chacun** sur les deux cartes visibles — un rappel, une réponse. Il verrait
-toujours au moins un de chaque, quel que soit le nombre. Un quart d'heure.
+**Plus aucun point n'attend son avis sur ce lot.**
 
 **Trois leçons de ce lot, à ne pas repayer :**
 

@@ -279,6 +279,31 @@ l'écran ignorait le drapeau. Elle refuse de conclure sur zéro carte.
 
 ## 2026-08-15
 
+### Une place garantie à chaque sorte, sur l'accueil
+
+**Sa décision du 16 août, après deux photos et une question — « quelle est le
+mieux ? » :** *« ok alors fait le »*.
+
+**Ce que ça évite, et la batterie l'avait dit avant l'image.** Les rappels
+passant devant, trois suites ont rougi parce que la réponse de client qu'elles
+cherchaient n'était plus à l'écran. Sur le jeu de démonstration, **cinq rappels
+occupaient les deux places et masquaient toutes les réponses**.
+
+**La raison, et elle vaut plus que la règle :** un rappel se fabrique tout seul
+et s'accumule tant que la situation dure ; une réponse de client est un
+ÉVÉNEMENT, provoqué par quelqu'un, et périssable. Une sorte qui grossit seule ne
+doit pas pouvoir enterrer une sorte rare et urgente.
+
+**Son choix B tient sans changement** : la première place reste au rappel. C'est
+la dernière place visible qui revient aux réponses, et seulement s'il en existe
+— réserver dans le vide laisserait un trou là où il y a quelque chose à montrer.
+
+La règle est pure (`src/lib/ordre-notifications.ts`) et éprouvée sur les cas
+limites qu'un écran ne produit qu'un jour sur cent : zéro d'une sorte, une seule
+place visible, et **aucune carte perdue ni dupliquée** sur les 108 combinaisons.
+Cette dernière garde contre le pire défaut possible ici — un refus de client qui
+disparaîtrait sans que rien ne le signale.
+
 ### Sur l'accueil, les rappels passent devant les réponses
 
 **Sa décision du 16 août, devant trois photos : « fait la B ».**

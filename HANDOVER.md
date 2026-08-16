@@ -57,6 +57,23 @@ finit ignoré, et le garde-fou se perd sans bruit.
 
 ---
 
+## ⚠ « PAGE BLANCHE » : lire la ligne « Code SERVI » avant tout (16 août 2026)
+
+Sur la fiche, deux lignes ensemble tranchent la question sans hypothèse :
+
+| Ce que la fiche montre | Ce que ça veut dire |
+|---|---|
+| `Serveur : répond` **+** `Code SERVI : aucune version bâtie` | **il n'y a rien à réparer** — le banc compile chaque écran à l'ouverture (30-100 s) et le mandataire de GitHub renonce à 60 s. Recharger une minute plus tard suffit |
+| `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
+| `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
+
+Le 16 août au soir, une page blanche a été traitée comme un défaut de produit
+pendant une soirée. La page de connexion s'affichait parfaitement sur son commit
+exact, et la construction réussissait : il était simplement dans la fenêtre de
+construction. `TODO.md` 0 quadragies ter.
+
+---
+
 ## ⚠ LE PREMIER RÉFLEXE, DEMANDÉ PAR LE PATRON LE 12 AOÛT 2026
 
 **À faire juste après avoir lu la fiche ci-dessus** : la fiche dit dans quel
@@ -868,10 +885,12 @@ planning, regarder d'abord quel jour de la semaine elle vise.** Corrigé avec
 défaut, libellé **« Chantier sans devis »**, premier des trois réglages. Détail et
 deux points laissés en suspens : `TODO.md` §0 novivicies.
 
-**⚠ SUR L'ACCUEIL, LES RAPPELS PASSENT DEVANT LES RÉPONSES DE CLIENTS** — sa
-décision du 16 août (« fait la B »), après trois photos. La règle d'avant disait
-l'inverse (*« quelqu'un a agi, cela prime sur un silence »*) : ne pas la
-restaurer en la lisant quelque part, elle est datée. `ARCHITECTURE.md` §112.
+**⚠ L'ORDRE DES CARTES DE L'ACCUEIL EST UNE RÈGLE, PAS UNE CONCATÉNATION** —
+`src/lib/ordre-notifications.ts`, deux décisions du 16 août : les rappels passent
+devant (« fait la B »), ET une place est garantie aux réponses de clients
+(« ok alors fait le »). La règle d'origine — *« les réponses d'abord, quelqu'un a
+agi, cela prime sur un silence »* — est datée : ne pas la restaurer en la lisant
+quelque part. `ARCHITECTURE.md` §112.
 
 **⚠ IL Y A MAINTENANT TROIS RAPPELS, PAS DEUX** — `src/lib/rappels.ts`. Le
 troisième se lit sur le CHANTIER (`created_at`, `devis_envoye_at`) et non sur un
