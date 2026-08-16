@@ -58,6 +58,33 @@ Migration `drizzle/0050_rappel_facture_impayee.sql`, règles pures dans
   déclarait vert. Et un montage écrit `WHERE id = NULL` sans se plaindre :
   vérifier le `rowCount` de toute écriture de montage.
 
+### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
+
+**Vu le 16 août 2026**, sur la batterie qui suivait la fusion de son lot. Le
+dernier de ses six cas — *« elle se retire, et le devis revient à son prix
+plein »* — a lu **870,00 €** là où il attendait **1 044,00 €**, et « après
+remise » était encore à l'écran.
+
+**Mesuré, pas supposé :** rejouée seule dans la foulée, sur le même code et la
+même base, la suite passe ses six cas. Ce n'est donc pas une règle fausse.
+
+**Le mécanisme, lisible dans la suite elle-même** (`scripts/test-reduction-devis-e2e.ts`,
+vers la ligne 156) : elle vide le champ, appuie sur Tab, attend **une seconde
+fixe**, puis **recharge**. L'enregistrement part au serveur pendant cette
+seconde ; sous une batterie de quatre-vingt-dix suites, il ne l'a pas toujours
+finie, et le rechargement rend la page d'avant. C'est la même famille que
+`test-devis-parti-signet` juste en dessous : un délai fixe qui suffit à vide et
+plus sous charge.
+
+**Ce qu'il faudrait, et c'est à la session qui tient ce lot :** attendre la
+RÉPONSE de l'enregistrement plutôt qu'une seconde — c'est ce qui a réparé
+`test-unite-tarif-e2e` le 16 août. Un délai plus long ne ferait que déplacer le
+seuil.
+
+**Ce lot-ci n'y touche pas**, et il faut le dire : le rappel d'impayé ne passe
+nulle part près des totaux d'un devis. Corriger la suite d'un autre à sa place
+ferait deux sessions écrivant le même fichier au même moment.
+
 ### 0 trigies bis. `test-devis-parti-signet` a rougi une fois sur deux batteries — instable sous charge
 
 **Vu le 16 août 2026**, sur une batterie complète : la suite attendait le total
