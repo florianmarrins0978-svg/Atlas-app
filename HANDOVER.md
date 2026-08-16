@@ -729,7 +729,7 @@ de chercher dans la règle.
 
 Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
 deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
-ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §108.
+ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §109.
 
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de

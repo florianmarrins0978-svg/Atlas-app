@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-14 · branche `main`
-· dernière migration `drizzle/0042_deconnexion_partout.sql`
+· dernière migration `drizzle/0043_rappels_notifications.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -576,9 +576,14 @@ Voir `TODO.md` pour le détail et l'ordre.
   **C'est aussi le premier écran d'Atlas où `getRole` décide de ce qui est
   RENDU** : un membre ne reçoit que l'ensemble « Moi », et chaque rubrique de
   l'entreprise refuse un non-propriétaire avant de lire une valeur. Le reste de
-  l'application, lui, ne cloisonne toujours rien. **Dix rubriques sur treize
-  sont codées au 14 août** ; il en reste **trois** marquées *Bientôt* —
-  notifications, apparence, abonnement. Les deux dernières ouvertes sont
+  l'application, lui, ne cloisonne toujours rien. **Les TREIZE rubriques sont
+  ouvertes au 14 août 2026** — plus aucune ne porte « Bientôt »
+  (`ARCHITECTURE.md` §108). Deux d'entre elles ne règlent rien et l'assument :
+  *Apparence* (le mode sombre et l'accent demandent de reprendre toute
+  l'application) et *Abonnement* (ni prix ni offre décidés). *Notifications*,
+  elle, porte **deux rappels réels** qui apparaissent sur l'accueil — devis sans
+  réponse, chantier fini non facturé — et dit pourquoi « facture impayée » est
+  impossible : rien n'enregistre qu'une facture a été payée. Les deux dernières ouvertes sont
   **« Mon compte »** et **« Connexion »** (`ARCHITECTURE.md` §107) : changer son
   nom, changer son mot de passe, et **« me déconnecter partout »** — une colonne
   plutôt qu'une table de sessions. Leurs libellés promettaient un *téléphone* et

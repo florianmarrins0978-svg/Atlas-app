@@ -27,6 +27,146 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 tricies nonies. `test-pastille-equipe-e2e` est ROUGE sur `main`
+
+*Constaté le 14 août 2026 au soir, en fusionnant un autre lot. **Ce n'est pas
+une intermittence** : la suite tombe aussi bien seule qu'en batterie, toujours
+sur le même contrôle.*
+
+```
+❌ En posant, les équipes sont des CASES et le bouton dit quoi faire
+   le bouton doit rester à l'écran avant le choix
+```
+
+**Ce qui est déjà écarté**, pour ne pas le refaire : le code du planning est
+identique entre `main` et la branche qui l'a constaté — ce n'est pas une
+collision de fusion.
+
+**Le diagnostic, aussi loin qu'il a été mené :** le contrôle attend
+`[data-atlas="poser"]` dans la page ; il en compte zéro. Ce bouton n'est rendu
+que si `aPoser` existe (`PlanningClient.tsx`), et
+`aPoser = visibles.find(…) ?? sansDate[0] ?? null`. **Il est donc nul parce que
+`sansDate` est vide au moment du contrôle** — la suite crée pourtant un chantier
+sans date juste avant, puis clique `[data-atlas="sans-date"]` **avec
+`.first()`** : rien ne garantit que c'est LE SIEN. Les sections précédentes de
+la même suite posent des chantiers, et le jeu de démonstration en porte
+d'autres.
+
+**Piste à éprouver en premier :** viser le chantier par son nom (il est unique,
+horodaté à la création) plutôt que par `.first()`. C'est exactement le piège
+déjà payé sur `test-unite-tarif-e2e` le 14 août — « viser la dernière ligne
+remplissait la carte d'avant ».
+
+**Ce lot appartient à la session qui a posé la pastille d'équipe.** Écrit ici
+pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue à une
+intermittence.
+
+### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
+
+*Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
+et écrit sur l'écran lui-même plutôt que passé sous silence.*
+
+**Rien dans Atlas n'enregistre qu'une facture a été payée.** Ni colonne, ni
+geste, ni écran. Ce manque bloque à lui seul **trois** des huit familles
+d'alertes de la planche des notifications :
+
+| Ce qui est impossible | Pourquoi |
+|---|---|
+| « Facture impayée » | On ne sait pas laquelle est payée : l'alerte crierait sur toutes, pour toujours |
+| « Facture à échéance dans trois jours » | Même raison |
+| « Client à relancer » | Un client relancé pour une facture déjà réglée, c'est pire que pas de relance |
+
+**Ce n'est pas une requête à écrire, c'est un geste à ajouter au produit** : un
+appui sur la facture, une date de règlement, et de quoi se reprendre. Les
+`docs/QUESTIONS.md` §17 le disent d'ailleurs pour la mémoire des prix — la
+bonne question n'est jamais « avons-nous une table ? » mais **« qui l'écrit, et
+quand ? »**
+
+**À dessiner avant de coder** (`CLAUDE.md` §3 bis) : où se pose le geste — sur
+la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
+partiel.
+
+### 0 duodetricies ter. Apparence : le mode sombre OU l'accent, à trancher
+
+L'écran existe et ne règle rien, délibérément (`ARCHITECTURE.md` §108). Les
+deux chantiers possibles, et leur coût :
+
+| | Ce que ça demande |
+|---|---|
+| **Mode sombre** | Un second jeu de jetons, et **chaque écran repris un à un**. C'est ce qu'il avait envoyé le 14 août : sa planche d'origine était sombre |
+| **Accent au choix** | `colors.rust` et `colors.or` sont écrits en clair dans plus de trois cents endroits, en style en ligne. Il faut les faire passer par une variable CSS — un balayage de toute l'application, à faire et à éprouver d'un coup |
+
+**Ne pas poser d'interrupteur en attendant.** Sa phrase sur la planche : *« on le
+touche, rien ne bouge, et on croit à une panne »*.
+
+### 0 undetricies. L'absence d'une équipe — DESSINÉE le 14 août 2026, en attente de son choix
+
+**Sa question :** *« Comment on fait si jamais il y a une équipe qui doit partir
+en déplacement pour cinq jours ? »* Réponse complète dans `docs/QUESTIONS.md`
+§19 ; trois propositions dans `docs/maquettes/55`.
+
+**Ce qui existe déjà, et qu'il ne faut pas refaire :** si TOUTE l'entreprise
+part, l'agenda Google relié suffit — une période de plusieurs jours occupe
+toutes les demi-journées qu'elle traverse. **Rien à coder pour ce cas-là.**
+
+**Ce qui manque :** une absence datée **par équipe**. L'agenda bloque tout le
+monde — délibérément, `fusionnerOccupationExterne` pose l'occupation au niveau
+du nombre d'équipes parce qu'Atlas ne peut pas deviner si une équipe sait partir
+sans le patron — et le nombre d'équipes est un nombre **sans dates**.
+
+**Trois endroits proposés**, à trancher par lui : (A) sous les noms dans
+Réglages → Équipe, (B) un appui long sur un jour du planning, (C) une ligne de
+déplacement posée comme un chantier.
+
+**Ce que ça demande, une fois choisi :** une table `absences_equipe` (équipe,
+premier jour, dernier jour, motif), une règle pure qui retire l'équipe du compte
+sur ces jours — greffée sur `compterOccupation` / `departPossible`
+(`src/server/disponibilites.ts`) — et l'écran retenu. **La même règle doit
+servir à proposer les dates ET à revérifier celle que le client choisit**, comme
+tout le reste de ce parcours : jamais deux implémentations (`CLAUDE.md` §3).
+
+### 0 undetricies ter. La page « toutes les maquettes » a pris du retard, en silence
+
+**Trouvé le 14 août 2026, et c'est la MÊME famille de défaut que la liste de
+préchauffage** (`ARCHITECTURE.md` §103) : `scripts/fusionner-maquettes.mjs`
+porte une liste **écrite à la main** — un fichier, un titre, une famille, une
+phrase. Une planche ajoutée ailleurs ne s'y ajoute pas toute seule, rien ne
+rougit, et la page unique se met à mentir par omission.
+
+**Manquantes au 14 août** : `47-ou-mettre-l-assistant`, `50-le-nom-goonzi`,
+`51-le-moment-qui-dit-toujours-matin`, `52-appliquer-une-equipe`,
+`53-le-mot-juste-sans-la-date`, `54-dicter-dans-le-devis`. (Les miennes, 46 et
+55, y ont été portées le jour même.) Trois manquent aussi à `index.html` : 47 et
+53.
+
+**Pourquoi ce n'est pas fait ici :** ces planches appartiennent à d'autres
+sessions, qui les écrivaient encore. Leur inventer un titre et une phrase serait
+parler à leur place, et les toucher pendant qu'elles travaillent produirait des
+conflits.
+
+**Ce qu'il faut, et qui vaut plus que le rattrapage :** un contrôle qui
+**refuse une planche présente sur le disque et absente de la liste**, sur le
+modèle de celui écrit pour le préchauffage (`test-prechauffage.ts`, « aucun
+écran de Réglages n'a été oublié »). Le rattrapage des six se fait alors une
+fois, et le trou ne se rouvre plus.
+
+### 0 undetricies bis. L'équipe d'un chantier est une étiquette, pas une contrainte
+
+**Trouvé le 14 août 2026 en répondant à la question ci-dessus, et pas signalé
+par lui.** `compterOccupation` compte les chantiers par demi-journée et compare
+ce total au nombre d'équipes ; il ne regarde **jamais** `equipeId`. Deux
+chantiers le même matin, tous les deux sur « Équipe 1 » : Atlas les accepte sans
+rien dire.
+
+Sans conséquence tant que le patron répartit lui-même. **Faux dès qu'une équipe
+est absente** — d'où le lien avec le point précédent.
+
+**Pourquoi ce n'est PAS dans le même lot :** le régler oblige à choisir l'équipe
+**avant** de proposer une date au client, donc à toucher au parcours du devis
+(trois arrêts, `docs/AGENT.md`). C'est un chantier à part, et il n'a de sens que
+si le télescopage se produit vraiment. **Question posée au patron le 14 août,
+sans réponse à ce jour.**
+
 ### 0 octovicies. ~~Mon compte et Connexion~~ — **CODÉS le 14 août 2026 (« A A »)**
 
 Les deux écrans existent : `/reglages/compte` et `/reglages/connexion`
@@ -98,7 +238,7 @@ nom, changer un prix, en ajouter une, corriger une faute — et sa phrase :
 **Livré** : `src/lib/retouches-devis.ts` (la règle),
 `src/server/ai/services/retouches-devis-service.ts` (le modèle),
 `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` (l'écran). Détail : `ARCHITECTURE.md`
-§108, `CHANGELOG.md` du 15 août.
+§109, `CHANGELOG.md` du 15 août.
 
 **CE QUI RESTE, et qui n'est pas un détail :**
 
