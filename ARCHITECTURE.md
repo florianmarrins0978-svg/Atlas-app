@@ -8451,3 +8451,98 @@ du travail — le lui laisser découvrir sur un devis serait pire.
 | la conséquence est sous ses yeux avant qu'il valide | `test-cases-reglables-e2e.ts` |
 | le refus lui parvient, et dit quoi faire | `test-cases-reglables-e2e.ts` |
 | les trois formes existent, et l'écran repart comme il a été trouvé | `test-cases-reglables-e2e.ts` |
+
+---
+
+## 106. La TVA quand le client paie — et l'endroit où les factures attendent
+
+**Sa question, le 14 août 2026 :** *« si demain un client décide de ne pas me
+payer une facture… à partir du moment où j'envoie la facture, elle rentre
+automatiquement dans mon relevé de TVA. Est-ce qu'il y a une possibilité pour
+qu'elle rentre seulement une fois que le client m'a payé ? »* Puis, sur la
+forme : *« elle arrive dans un endroit en attente ; lorsque j'ai reçu le
+paiement, je retourne dessus, je clique sur valider, et boum, elle va dans le
+relevé. »*
+
+### Il avait raison, et Atlas avait tort
+
+Pour une **prestation de services**, la TVA est exigible **à l'encaissement**
+(CGI art. 269-2-c). Le régime des **débits** — celui que `releveTvaCollectee`
+appliquait depuis toujours, en prenant la `date_emission` — est une **OPTION**
+qui se demande à l'administration. Un artisan qui ne l'a jamais demandée était
+donc invité par l'application à **avancer la TVA d'un client qui n'avait pas
+payé**.
+
+Le défaut est donc devenu `encaissements` (migration 0042), et le réglage existe
+parce que les deux régimes existent : `docs/QUESTIONS.md` §19, `docs/A-FAIRE.md`
+§11.
+
+### Ce qui aurait pu tout casser, et ne l'a pas fait
+
+**Changer le régime sans rien d'autre aurait vidé les relevés déjà déclarés.**
+Un trimestre affiché à 400 € serait retombé à 0 €, et l'écran aurait contredit
+un formulaire déjà envoyé aux impôts.
+
+Chaque facture déjà émise reçoit donc, à la migration, **un règlement daté du
+jour de son émission, pour son total TTC**. Elle apporte exactement ce qu'elle
+apportait hier, dans la même période — quel que soit le régime. Ces règlements
+portent `origine = 'reprise'` et **l'écran le dit** (« supposé réglé à
+l'émission ») : une supposition annoncée reste une supposition, et il peut la
+retirer d'un doigt si la facture n'a jamais été payée.
+
+### Deux portes, parce qu'il les a demandées toutes les deux
+
+| Geste | Où | Pour quoi |
+|---|---|---|
+| **« Payée »** | l'endroit en attente | Solde en un appui, à la date du jour. Le cas de cinquante factures par an |
+| **« Noter un règlement »** | la même ligne, dépliée | Une date, un montant — l'acompte, ou un règlement d'il y a trois semaines |
+
+Une saisie en deux champs pour un geste qu'on fait cinquante fois serait un
+impôt sur le temps ; une seule touche pour un acompte serait faux. Les deux.
+
+### Un acompte n'apporte que SA part de TVA
+
+500 € sur une facture de 1 440 € TTC dont 240 € de TVA apportent **83,33 €** —
+ni 240, ni zéro : au prorata du TTC. C'est la règle comptable, et c'est la seule
+qui ne fasse pas dépendre la déclaration de l'ordre dans lequel le client paie.
+
+**Le règlement qui SOLDE reçoit le reliquat.** Trois acomptes arrondis chacun de
+leur côté perdent un ou deux centimes ; la somme des lignes du relevé ne
+tomberait plus sur le total de la facture, et personne ne saurait expliquer
+l'écart. `test-exigibilite-tva.ts` monte la garde dessus.
+
+### Trois refus, et ce qu'ils empêchent
+
+| Refusé | Ce que ça évite |
+|---|---|
+| Un montant plus grand que le reste dû | Le relevé porterait **plus de TVA que la facture n'en contient** |
+| Un règlement daté d'avant la facture | Un acompte sur DEVIS porte sa propre TVA ; le ranger là le daterait du mauvais trimestre |
+| Un montant illisible | — et surtout, **il ne lève pas** : `new Decimal("zéro")` jette, et une exception en action serveur devient un identifiant opaque chez lui (`AGENTS.md`). Le refus est une valeur de retour, toujours |
+
+### Ce que l'écran ne dit plus
+
+**« Elle figure au relevé de TVA collectée »**, sous une facture qu'on vient
+d'arrêter. C'était vrai aux débits, c'est faux aux encaissements — et il aurait
+cherché dans son relevé un montant qui n'y est pas, pour finir par douter de
+l'application au lieu de noter son paiement. L'écran dit maintenant qu'elle
+**entrera** au relevé le jour du règlement.
+
+### Comment Atlas saura qu'il a été payé
+
+**Il ne le sait pas** : aucun accès bancaire. Trois réponses possibles, et son
+choix du 14 août est **la banque** — `docs/A-FAIRE.md` §12 et
+`maquettes/atlas-banque-rapprochement.html`. Ce lot code la première : **la
+saisie à la main**, qui ne dépend d'aucun contrat et qui restera de toute façon
+le jour où l'accès bancaire dort (il se coupe tous les 90 jours).
+
+### Ce qui est éprouvé, et par quoi
+
+| Ce qui est tenu | Où |
+|---|---|
+| une facture impayée n'entre pas au relevé | les trois suites |
+| elle y entre à la date du RÈGLEMENT, pas de l'émission | `test-exigibilite-tva.ts`, `test-paiements-facture-db.ts` |
+| un acompte n'apporte que sa part, au centime | `test-exigibilite-tva.ts` |
+| un montant trop grand est refusé, avec sa phrase | les trois suites |
+| le passé ne bouge pas (reprise de la migration) | `test-paiements-facture-db.ts` |
+| rien ne déborde d'une entreprise sur une autre | `test-paiements-facture-db.ts` |
+| l'écran ne promet plus le relevé, et porte le geste | `test-tva-au-paiement-e2e.ts` |

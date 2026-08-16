@@ -127,6 +127,20 @@ export const entreprises = pgTable("entreprises", {
   periodiciteTva: text("periodicite_tva", { enum: ["mensuelle", "trimestrielle"] })
     .notNull()
     .default("mensuelle"),
+  /**
+   * **Quand la TVA devient exigible** (migration 0042).
+   *
+   * Sa demande du 14 août 2026 : *« est-ce qu'il y a une possibilité pour que la
+   * facture rentre au relevé seulement une fois que le client m'a payé ? »*
+   *
+   * `encaissements` est le DÉFAUT LÉGAL d'une prestation de services (CGI
+   * art. 269-2-c) ; les `debits` sont une **option** qui se demande à
+   * l'administration. Atlas appliquait les débits sans le dire — donc invitait
+   * à déclarer trop tôt. Voir `docs/QUESTIONS.md` §19.
+   */
+  tvaExigibilite: text("tva_exigibilite", { enum: ["encaissements", "debits"] })
+    .notNull()
+    .default("encaissements"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -1009,6 +1023,44 @@ export const factures = pgTable(
       foreignColumns: [devis.id, devis.entrepriseId],
       name: "factures_devis_entreprise_fk",
     }).onDelete("restrict"),
+  ]
+);
+
+/**
+ * Les règlements reçus sur une facture (migration 0042).
+ *
+ * **Sa demande du 14 août 2026 :** *« lorsque la facture part, au lieu qu'elle
+ * rentre directement dans le relevé, elle arrive dans un endroit en attente ;
+ * lorsque j'ai reçu le paiement, je clique sur valider et boum, elle va dans le
+ * relevé. »*
+ *
+ * **Plusieurs lignes par facture, et c'est le point :** un acompte se note comme
+ * un solde, et seule la part encaissée entre au relevé — au prorata du TTC
+ * (`src/lib/exigibilite-tva.ts`). La part de TVA n'est PAS stockée ici : la
+ * figer la ferait diverger de la facture le jour où un avoir la corrige.
+ *
+ * **`origine` distingue trois choses qui n'ont pas la même valeur** : ce qu'il a
+ * saisi (`saisi`), ce que la migration a supposé pour ne pas déplacer un relevé
+ * déjà déclaré (`reprise`, et l'écran le dit), et ce qu'une banque proposera un
+ * jour (`banque`, `docs/A-FAIRE.md` §12).
+ */
+export const paiementsFacture = pgTable(
+  "paiements_facture",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    factureId: uuid("facture_id").notNull(),
+    /** Date civile : c'est elle qui décide du mois ou du trimestre déclaré. */
+    datePaiement: date("date_paiement").notNull(),
+    montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    note: text("note"),
+    origine: text("origine", { enum: ["saisi", "reprise", "banque"] }).notNull().default("saisi"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("paiements_facture_facture_idx").on(t.entrepriseId, t.factureId),
+    index("paiements_facture_date_idx").on(t.entrepriseId, t.datePaiement),
   ]
 );
 

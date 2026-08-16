@@ -27,7 +27,18 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 novovicies. La TVA au PAIEMENT, et non à l'envoi — dessinée, EN ATTENTE de son régime
+### 0 novovicies. ~~La TVA au PAIEMENT~~ — **CODÉE le 16 août 2026**
+
+*Fait : `ARCHITECTURE.md` §106. Ce qui suit reste pour mémoire du raisonnement.*
+
+**Ce qui reste, et qui n'est pas technique :** confirmer son régime auprès de son
+comptable (`docs/A-FAIRE.md` §11). Le défaut posé est `encaissements`, celui de
+la loi ; s'il a opté pour les débits, un appui suffit à le rétablir.
+
+**Ce qui reste à coder :** le rapprochement bancaire qu'il a choisi
+(`docs/A-FAIRE.md` §12) — il attend un prestataire agréé, donc un contrat.
+
+#### Le raisonnement d'origine
 
 *`maquettes/atlas-tva-au-paiement.html`, le 14 août 2026 — deux écrans, 28
 contrôles. Sa question : `docs/QUESTIONS.md` §19.*
@@ -2294,6 +2305,7 @@ et c'est déjà arrivé.
 
 ## Terminé
 
+- ~~La TVA n'entre au relevé qu'au paiement, avec l'endroit où les factures attendent~~ — 2026-08-16
 - ~~Ajouter et retirer des cases : tranches, façons d'abattre et travaux se règlent~~ — 2026-08-14
 - ~~L'unité d'un tarif se choisit dans un bandeau déroulant, sans fermer la case~~ — 2026-08-14
 - ~~Reprendre l'application Arborea sans le site vitrine, et la publier~~ — 2026-07-31

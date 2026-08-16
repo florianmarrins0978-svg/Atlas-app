@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-14 · `main`
+**Point de reprise :** 2026-08-16 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -673,6 +673,34 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 dans `src/`.
 
 ## Ce qui vient d'être terminé
+
+**LA TVA AU PAIEMENT (16 août).** Sa question : *« si un client ne me paie pas,
+la facture rentre quand même dans mon relevé »*. Elle était fondée : pour une
+prestation de services, la TVA est due **à l'encaissement** (CGI art. 269-2-c),
+et les débits — ce que faisait Atlas — sont une **option** qui se demande.
+
+Quatre choses à savoir avant d'y toucher :
+
+1. **Le défaut a CHANGÉ** (`entreprises.tva_exigibilite` = `encaissements`). Ne
+   pas le remettre aux débits « pour retrouver l'ancien comportement » : c'est
+   l'ancien comportement qui était faux.
+2. **La migration 0042 a posé un règlement sur chaque facture déjà émise**, daté
+   de son émission. C'est ce qui empêche un trimestre déjà déclaré de retomber à
+   zéro. Ces lignes portent `origine='reprise'` et l'écran le dit — ne pas les
+   effacer, et ne pas les faire passer pour des observations.
+3. **Un acompte se compte au PRORATA du TTC**, et le règlement qui solde reçoit
+   le reliquat. Sans cela, la somme des lignes du relevé ne tombe plus sur la
+   facture, à un ou deux centimes près — et personne ne sait expliquer l'écart.
+4. **Les refus ne LÈVENT jamais.** `new Decimal("zéro")` jette : une exception
+   en action serveur devient un identifiant opaque chez lui. Tout refus passe
+   par une valeur de retour, avec sa phrase.
+
+Ce qui n'est PAS fait, et qu'il a choisi : le **rapprochement bancaire**
+(`docs/A-FAIRE.md` §12, maquette `atlas-banque-rapprochement.html`). Il demande
+un prestataire agréé, donc un contrat. La saisie à la main reste de toute façon
+nécessaire — l'accès bancaire se coupe tous les 90 jours.
+
+Le reste : `ARCHITECTURE.md` §106.
 
 **« L'APPLI NE MARCHE PLUS » — ELLE MARCHAIT (14 août, tard).** Son iPhone
 proposait de télécharger un fichier au lieu d'ouvrir Atlas. **Son espace de

@@ -24,6 +24,7 @@ import {
   trimestreSuivant,
   libelleTrimestre,
 } from "../src/server/trimestre";
+import { reglerExigibilite } from "../src/server/repositories/paiements-facture";
 import { nettoyerBase } from "./_test-db";
 
 // Fin de chantier, facture et relevé de TVA — docs/AGENT.md §2.3.
@@ -281,6 +282,13 @@ async function main() {
   // ---- Relevé de TVA
   await test("le relevé ne compte que les factures émises de la période", async () => {
     const ctx = await contexte("releve");
+    // **Sous le régime des DÉBITS**, et c'est délibéré : ce contrôle porte sur
+    // QUELLES factures comptent — les émises, pas les brouillons —, jamais sur
+    // le MOMENT où elles comptent. Depuis le 14 août 2026, le défaut est
+    // l'encaissement (migration 0042) et une facture non réglée n'entre plus au
+    // relevé : sans cette ligne, le contrôle rougirait pour une raison qui n'est
+    // pas la sienne. Le moment a sa propre suite, `test-paiements-facture-db`.
+    await reglerExigibilite(ctx, "debits");
     const a = await chantierDevise(ctx, "1000.00", "2026-05-04");
     const b = await chantierDevise(ctx, "500.00", "2026-05-05");
     const c = await chantierDevise(ctx, "700.00", "2026-05-06");

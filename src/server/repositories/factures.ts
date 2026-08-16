@@ -16,6 +16,13 @@ import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
+import {
+  dansLaPeriode,
+  enAttenteDeReglement,
+  entreesDuReleve,
+  type Exigibilite,
+} from "../../lib/exigibilite-tva";
+import { exigibiliteDe, facturesAvecPaiements } from "./paiements-facture";
 
 // Fin de chantier, facture et TVA — docs/AGENT.md §2.3.
 //
@@ -442,12 +449,22 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
 
 export type LigneReleveTva = {
   numeroCommercial: string;
+  /**
+   * **La date qui compte pour la période**, et non plus forcément l'émission.
+   *
+   * Aux encaissements, c'est celle du règlement : c'est lui qui rend la TVA
+   * exigible (migration 0042). Le nom reste `dateEmission` parce qu'une
+   * douzaine d'écrans et de suites le lisent ; `motif` dit laquelle des deux
+   * c'est, pour que l'écran ne mente pas au patron.
+   */
   dateEmission: string;
   clientNom: string | null;
   totalHt: string;
   tauxTva: string;
   totalTva: string;
   totalTtc: string;
+  /** `paiement` : la ligne est un encaissement. `emission` : le régime des débits. */
+  motif?: "emission" | "paiement";
 };
 
 export type ReleveTva = {
@@ -457,6 +474,10 @@ export type ReleveTva = {
   totalHt: string;
   totalTva: string;
   totalTtc: string;
+  /** Sous quel régime ce relevé a été calculé — l'écran doit pouvoir le dire. */
+  regime: Exigibilite;
+  /** Ce qui n'y est pas encore, et qui attend son paiement. Zéro aux débits. */
+  enAttente: { nombre: number; ttc: string; tva: string };
 };
 
 /**
@@ -469,39 +490,68 @@ export type ReleveTva = {
  * copie.
  */
 export async function releveTvaCollectee(ctx: Ctx, debut: string, fin: string): Promise<ReleveTva> {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const lignes = await tx
-      .select({
-        numeroCommercial: factures.numeroCommercial,
-        dateEmission: factures.dateEmission,
-        clientNom: factures.clientNom,
-        totalHt: factures.totalHt,
-        tauxTva: factures.tauxTva,
-        totalTva: factures.totalTva,
-        totalTtc: factures.totalTtc,
-      })
-      .from(factures)
-      .where(
-        and(
-          eq(factures.statut, "emise"),
-          sql`${factures.dateEmission} >= ${debut}`,
-          sql`${factures.dateEmission} <= ${fin}`
-        )
-      )
-      .orderBy(asc(factures.dateEmission), asc(factures.numeroCommercial));
+  // **Le régime décide de la DATE qui compte** (migration 0042). Aux
+  // encaissements — le défaut légal d'une prestation de services —, une facture
+  // n'entre au relevé qu'à hauteur de ce qui a été reçu, à la date où il l'a
+  // été. Aux débits, elle y entre entière le jour de son émission.
+  const [regime, avecPaiements] = await Promise.all([exigibiliteDe(ctx), facturesAvecPaiements(ctx)]);
 
-    const somme = (champ: keyof LigneReleveTva) =>
-      lignes
-        .reduce((acc, l) => acc.plus(new Decimal(l[champ] as string)), new Decimal(0))
-        .toFixed(2);
+  const lignes: LigneReleveTva[] = [];
+  for (const f of avecPaiements) {
+    const entrees = entreesDuReleve(f, f.paiements, regime);
+    for (const e of entrees) {
+      if (!dansLaPeriode(e, debut, fin)) continue;
+      lignes.push({
+        numeroCommercial: f.numeroCommercial,
+        dateEmission: e.date,
+        clientNom: f.clientNom,
+        totalHt: e.ht,
+        // Le taux figé sur la facture : un acompte ne change pas le taux, il
+        // n'en encaisse qu'une part.
+        tauxTva: tauxDeLaFacture(f),
+        totalTva: e.tva,
+        totalTtc: e.ttc,
+        motif: e.motif,
+      });
+    }
+  }
 
-    return {
-      debut,
-      fin,
-      lignes,
-      totalHt: somme("totalHt"),
-      totalTva: somme("totalTva"),
-      totalTtc: somme("totalTtc"),
-    };
-  });
+  // L'ordre du relevé : la date qui compte, puis le numéro. C'est l'ordre du
+  // formulaire, et celui où il recopie.
+  lignes.sort((a, b) =>
+    a.dateEmission === b.dateEmission
+      ? a.numeroCommercial.localeCompare(b.numeroCommercial)
+      : a.dateEmission < b.dateEmission
+        ? -1
+        : 1
+  );
+
+  const somme = (champ: "totalHt" | "totalTva" | "totalTtc") =>
+    lignes.reduce((acc, l) => acc.plus(new Decimal(l[champ])), new Decimal(0)).toFixed(2);
+
+  return {
+    debut,
+    fin,
+    lignes,
+    totalHt: somme("totalHt"),
+    totalTva: somme("totalTva"),
+    totalTtc: somme("totalTtc"),
+    regime,
+    enAttente: enAttenteDeReglement(
+      avecPaiements.map((f) => ({ facture: f, paiements: f.paiements })),
+      regime
+    ),
+  };
+}
+
+/**
+ * Le taux d'une facture, tel qu'il a été figé.
+ *
+ * Recalculé depuis les totaux quand la colonne manque — une facture ancienne
+ * peut l'avoir laissée vide, et le relevé doit rester lisible.
+ */
+function tauxDeLaFacture(f: { totalHt: string; totalTva: string }): string {
+  const ht = new Decimal(f.totalHt || "0");
+  if (ht.lessThanOrEqualTo(0)) return "0.00";
+  return new Decimal(f.totalTva || "0").dividedBy(ht).times(100).toDecimalPlaces(2).toFixed(2);
 }
