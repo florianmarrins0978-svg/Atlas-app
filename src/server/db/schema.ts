@@ -138,6 +138,16 @@ export const entreprises = pgTable("entreprises", {
   rappelChantierSansDevisJours: integer("rappel_chantier_sans_devis_jours"),
   rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
   rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
+  /**
+   * Le quatrième rappel et son rythme (migration 0048).
+   *
+   * `rappelFactureImpayeeJours` se compte à partir de l'ÉCHÉANCE quand elle
+   * existe — le délai de paiement réglé — et de l'envoi sinon : c'est le
+   * « A plus B » qu'il a tranché le 16 août 2026. Le rythme, lui, n'est jamais
+   * nul : on éteint le rappel par le délai, pas par le rythme.
+   */
+  rappelFactureImpayeeJours: integer("rappel_facture_impayee_jours"),
+  rappelFactureRythmeJours: integer("rappel_facture_rythme_jours").notNull().default(7),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
@@ -330,6 +340,15 @@ export const chantiers = pgTable(
     // Jalons de fin de chantier (docs/AGENT.md §2.3).
     termineAt: timestamp("termine_at", { withTimezone: true }),
     factureEnvoyeeAt: timestamp("facture_envoyee_at", { withTimezone: true }),
+    /**
+     * Le jour du dernier « Plus tard » sur le rappel d'impayé (migration 0048).
+     *
+     * **Ici et pas sur `factures`, et ce n'est pas un rangement** :
+     * `trg_facture_immuable` refuse toute écriture sur une facture émise, date
+     * d'affichage comprise. La relation étant de un à un, le chantier la porte
+     * sans qu'on perde rien — et l'invariant comptable reste entier.
+     */
+    rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
     tailleEquipe: text("taille_equipe"),
     // Quelle équipe tient ce chantier. NULL = pas encore attribué, l'état de
     // tout chantier planifié avant la migration 0034 : rien ne permet de
@@ -1015,6 +1034,7 @@ export const factures = pgTable(
 
     numeroCommercial: text("numero_commercial").notNull(),
     statut: text("statut", { enum: ["brouillon", "emise"] }).notNull().default("brouillon"),
+
 
     // Instantané figé — même principe que le devis.
     entrepriseNom: text("entreprise_nom").notNull(),

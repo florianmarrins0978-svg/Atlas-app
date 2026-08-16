@@ -27,59 +27,36 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quadragies. Le rappel « facture impayée » — DESSINÉ, en attente de sa réponse
+### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 
-*`maquettes/atlas-rappel-facture-impayee.html`, le 16 août 2026 — quatre écrans,
-54 contrôles. Sa demande : « fais la maquette du rappel facture impayée ».*
+*Dessiné (`maquettes/atlas-rappel-facture-impayee.html`, cinq écrans), tranché,
+puis codé le même jour : « oui c'est bon, code le ».*
 
-**Il était impossible le matin même, et il ne l'est plus.** Rien n'enregistrait
-qu'une facture était réglée ; une autre session a codé « l'endroit en attente »
-et le geste « Payée » (migration 0045, `paiements_facture`). La donnée existe :
-le quatrième rappel devient codable.
+Ce qu'il demandait est en place : le **« A plus B »** (échéance = envoi + le
+délai de paiement réglé, ou le jour de l'envoi sinon), le **reste dû** avec son
+total quand un acompte est arrivé, l'extinction **automatique** dès que le
+règlement est enregistré, et les **trois rythmes** en pastilles avec « Plus
+tard » pour seul moteur.
 
-**⚠ NE PAS REDESSINER le geste de marquer une facture payée.** Il existe, il est
-à sa place — Terminés › TVA › En attente de paiement —, et le paiement partiel y
-est déjà traité par « Noter un règlement ». J'ai failli le refaire faute d'avoir
-regardé `main` : la planche ne parle QUE du rappel.
+Migration `drizzle/0048_rappel_facture_impayee.sql`, règles pures dans
+`src/lib/rappels.ts`, `ARCHITECTURE.md` §115. Éprouvé par `test-rappels.ts`,
+`test-rappels-db.ts` et `test-facture-impayee-e2e.ts`, photographié par
+`scripts/capture-facture-impayee.mts`.
 
-**TRANCHÉ le 16 août 2026 : « faut faire A plus B ».** L'échéance quand elle
-existe — Atlas connaît le délai réglé dans « Devis & factures » —, un délai
-réglé sinon. Plus aucun cas muet.
+**Ce que ce lot apprend, et qui vaut au-delà de lui :**
 
-**ET UN RYTHME, sa demande du même jour, mot pour mot :** *« il faut également
-qu'on puisse régler, par exemple, je veux un rappel toutes les semaines ou tous
-les quinze jours, mais pas qu'il y ait la notification tous les jours »*.
-
-C'est un vrai manque de ma planche : telle que dessinée, la carte serait restée
-à l'écran **chaque jour jusqu'au paiement**. Au bout d'une semaine on ne la lit
-plus, et c'est le rappel entier qu'on perd.
-
-**Ce qui est dessiné, et qu'il faut coder tel quel :**
-
-| | |
-|---|---|
-| Le rythme | Trois pastilles — chaque jour, chaque semaine, tous les 15 jours. **Pas une case de saisie** : elle inviterait à écrire « 3 jours », ce qu'il vient d'exclure |
-| Ce qui l'enclenche | Un geste **« Plus tard »** sur la carte |
-| **Pourquoi un geste et pas un endormissement automatique** | Une carte qui s'endormirait seule pourrait passer un jour où il n'ouvre pas l'application — il ne saurait jamais qu'elle est passée. Tant qu'il ne touche pas, elle RESTE |
-| Ce qu'il faut stocker | La date du « plus tard », par facture. Une colonne |
-
-**Le rythme ne vaut QUE pour ce rappel-là.** Les trois autres s'éteignent
-d'eux-mêmes dès que le geste attendu est fait ; celui-ci peut durer des mois.
-
-**Les trois pièges, écrits sur la planche et à tenir au moment de coder :**
-
-1. une facture soldée sort du rappel **le jour même** — c'est la somme des
-   règlements qui décide, jamais un état posé à la main ;
-2. un acompte ne solde pas : la facture reste rappelée et c'est **le reste dû**
-   qui s'affiche. L'inverse ferait oublier la différence ;
-3. **ne pas doubler « l'endroit en attente »**, qui liste déjà les factures non
-   soldées. Le rappel ne sort que celles dont l'échéance est dépassée. C'est le
-   piège le plus facile à rater : deux listes presque identiques, et l'on finit
-   par n'en lire aucune.
-
-**Corollaire, à corriger en même temps :** l'écran « Notifications » affirme
-encore que « facture impayée » est impossible faute de savoir ce qui est payé.
-C'était vrai le matin, ça ne l'est plus.
+- la date de report vit sur le **chantier**, pas sur la facture —
+  `trg_facture_immuable` refuse toute écriture sur une facture émise, et
+  l'affaiblir pour une commodité d'écran aurait été le contournement que
+  `CLAUDE.md` §4 interdit ;
+- **la valeur d'un `<input>` ne figure PAS dans `innerText`.** Un contrôle qui
+  cherchait « 1 jours » dans le texte de la page ne pouvait jamais le trouver :
+  vert sur l'écran fautif, il ne mesurait rien. Cinquième fois que ce dépôt paie
+  un contrôle qui mesure zéro ;
+- **une capture ment aussi.** `fullPage` a photographié le milieu du cadre qui
+  défile, sans une seule carte, pendant que le contrôle lisait le DOM et se
+  déclarait vert. Et un montage écrit `WHERE id = NULL` sans se plaindre :
+  vérifier le `rowCount` de toute écriture de montage.
 
 ### 0 quadragies. La réduction accordée au client — dessinée, attend son mot
 
@@ -259,30 +236,24 @@ rouge, relever ce que la page DIT avant d'écrire une cause. Une hypothèse
 consignée dans les tâches se lit ensuite comme un fait.
 
 
-### 0 tricies octies. Marquer une facture PAYÉE — le geste qui manque le plus
+### ~~0 tricies octies. Marquer une facture PAYÉE~~ — **FAIT les 15 et 16 août 2026**
 
-*Constaté en codant « Notifications » le 14 août 2026 (`ARCHITECTURE.md` §108),
-et écrit sur l'écran lui-même plutôt que passé sous silence.*
+*Écrit le 14 août en codant « Notifications », quand rien dans Atlas
+n'enregistrait qu'une facture était réglée. Le manque bloquait alors trois
+familles d'alertes de la planche.*
 
-**Rien dans Atlas n'enregistre qu'une facture a été payée.** Ni colonne, ni
-geste, ni écran. Ce manque bloque à lui seul **trois** des huit familles
-d'alertes de la planche des notifications :
+**Le geste existe** : « Terminés › TVA › En attente de paiement », avec « Payée »
+d'un doigt et « Noter un règlement » pour un acompte (migration 0045,
+`paiements_facture`, codé par une autre session).
 
-| Ce qui est impossible | Pourquoi |
+**Et la première des trois alertes bloquées est codée** : « Facture impayée »,
+le 16 août (`ARCHITECTURE.md` §115). Les deux autres restent ouvertes, et elles
+ne sont plus impossibles — seulement pas demandées :
+
+| Ce qui reste | Ce qu'il faudrait |
 |---|---|
-| « Facture impayée » | On ne sait pas laquelle est payée : l'alerte crierait sur toutes, pour toujours |
-| « Facture à échéance dans trois jours » | Même raison |
-| « Client à relancer » | Un client relancé pour une facture déjà réglée, c'est pire que pas de relance |
-
-**Ce n'est pas une requête à écrire, c'est un geste à ajouter au produit** : un
-appui sur la facture, une date de règlement, et de quoi se reprendre. Les
-`docs/QUESTIONS.md` §17 le disent d'ailleurs pour la mémoire des prix — la
-bonne question n'est jamais « avons-nous une table ? » mais **« qui l'écrit, et
-quand ? »**
-
-**À dessiner avant de coder** (`CLAUDE.md` §3 bis) : où se pose le geste — sur
-la facture, dans « Terminés », ou les deux —, et ce qu'on fait d'un paiement
-partiel.
+| « Facture à échéance dans trois jours » | Un rappel AVANT l'échéance, symétrique de l'actuel |
+| « Client à relancer » | Se poser sur le client plutôt que sur la facture |
 
 ### 0 duodetricies quater. La couleur de la barre du navigateur ne suit pas la charte
 

@@ -22,10 +22,19 @@ import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { creerChantier } from "../src/server/repositories/chantiers";
-import { getOuCreerDevisBrouillon } from "../src/server/repositories/devis";
+import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
+import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { creerEnvoi } from "../src/server/repositories/envois-devis";
-import { lireReglagesRappels, ecrireReglagesRappels, rappelsEnCours } from "../src/server/repositories/rappels";
+import {
+  lireReglagesRappels,
+  ecrireReglagesRappels,
+  rappelsEnCours,
+  repousserRappelFacture,
+} from "../src/server/repositories/rappels";
 import { RAPPELS_PAR_DEFAUT } from "../src/lib/rappels";
+import { terminerChantier, emettreFacture } from "../src/server/repositories/factures";
+import { noterPaiement } from "../src/server/repositories/paiements-facture";
+import { mettreAJourEntreprise } from "../src/server/repositories/entreprises";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { chantiers, envoisDevis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -136,6 +145,38 @@ async function chantierOuvertIlYA(ctx: Ctx, nom: string, jours: number) {
     );
   }
   return chantier;
+}
+
+/**
+ * Un chantier terminé, sa facture émise et partie il y a N jours.
+ *
+ * **Le chemin réel, pas une ligne fabriquée** : `terminerChantier` puis
+ * `emettreFacture` sont ce que fait l'application. Seule la date d'envoi est
+ * ensuite reculée — attendre trente jours n'est pas une option.
+ */
+async function factureEnvoyeeIlYA(ctx: Ctx, nom: string, jours: number) {
+  const chantier = await creerChantier(ctx, { nom });
+  // **Une facture ne naît pas d'un chantier nu** : `terminerChantier` exige un
+  // devis ENVOYÉ (`FinChantierImpossibleError("devis_absent")`). Le montage
+  // suit donc le vrai parcours — ligne de prix, devis, envoi — plutôt que de
+  // fabriquer une facture que l'application ne produirait jamais.
+  await ajouterLignePrix(ctx, chantier.id, "Main d'œuvre", "1000.00");
+  const brouillon = await getOuCreerDevisBrouillon(ctx, chantier.id);
+  await envoyerDevis(ctx, brouillon.id);
+  const facture = await terminerChantier(ctx, chantier.id, ilYA(jours));
+  await emettreFacture(ctx, facture.id, ilYA(jours));
+  const partie = ilYA(jours);
+  const r = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx.update(chantiers).set({ factureEnvoyeeAt: partie }).where(eq(chantiers.id, chantier.id))
+  );
+  if (r.rowCount !== 1) {
+    throw new Error("le montage n'a pas pu dater l'envoi de la facture (la RLS refuse en silence)");
+  }
+  // **Le total ne se force PAS après coup.** Une facture émise est immuable —
+  // un déclencheur en base le fait respecter, et c'est exactement ce qu'on veut
+  // d'une pièce comptable. Il vient donc de la ligne de prix : 1 000 € HT à
+  // 20 % font 1 200 € TTC, le montant que ces essais attendent.
+  return { chantier, factureId: facture.id };
 }
 
 async function main() {
@@ -295,6 +336,104 @@ async function main() {
     await devisPartiIlYA(ctxA, "Ancien", 25);
     const rappels = await rappelsEnCours(ctxA, MAINTENANT);
     assert.deepEqual(rappels.map((r) => r.chantierNom), ["Ancien", "Récent"]);
+  });
+
+  console.log("");
+
+  // ── Le quatrième rappel : la facture impayée ──────────────────────────────
+  //
+  // **« A plus B », sa réponse du 16 août 2026.** L'échéance quand un délai de
+  // paiement est réglé, le jour de l'envoi sinon.
+  await essai("A : avec un délai de 30 jours, rien n'est rappelé au dixième", async () => {
+    const { ctxA } = await monter();
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
+    await factureEnvoyeeIlYA(ctxA, "Toiture", 10);
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.deepEqual(rappels, []);
+  });
+
+  await essai("A : passée l'échéance, elle est rappelée avec son montant", async () => {
+    const { ctxA } = await monter();
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
+    await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.equal(rappels.length, 1, `${rappels.length}`);
+    assert.equal(rappels[0].facture?.resteDuCts, 120000);
+    assert.equal(rappels[0].facture?.totalCts, 120000);
+  });
+
+  // **B : sans délai réglé, on compte depuis l'envoi.** Rendre `null` aurait
+  // laissé un rappel muet qu'on croit allumé.
+  await essai("B : sans délai réglé, le compte part de l'envoi", async () => {
+    const { ctxA } = await monter();
+    await factureEnvoyeeIlYA(ctxA, "Toiture", 3);
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.equal(rappels.length, 1, "aucun rappel alors qu'aucun délai n'est réglé");
+  });
+
+  // **LE PREMIER PIÈGE DE SA PLANCHE.** C'est la somme des règlements qui
+  // décide, jamais un état posé à la main.
+  await essai("soldée, elle sort du rappel le jour même", async () => {
+    const { ctxA } = await monter();
+    const { factureId } = await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    await noterPaiement(ctxA, factureId, { date: "2026-08-13", montant: "1200.00" });
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.deepEqual(rappels, []);
+  });
+
+  // **LE DEUXIÈME PIÈGE.** Un acompte ne solde pas : la facture reste rappelée
+  // et c'est le RESTE qui s'affiche. La faire disparaître ferait oublier 720 €.
+  await essai("un acompte ne solde pas : le RESTE dû est rappelé", async () => {
+    const { ctxA } = await monter();
+    const { factureId } = await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    await noterPaiement(ctxA, factureId, { date: "2026-08-13", montant: "480.00" });
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.equal(rappels.length, 1, "l'acompte a fait disparaître la facture");
+    assert.equal(rappels[0].facture?.resteDuCts, 72000, "le reste dû est faux");
+    assert.equal(rappels[0].facture?.totalCts, 120000);
+  });
+
+  // **LE RYTHME — sa demande du 16 août.** Sans lui, la carte reviendrait
+  // chaque jour jusqu'au paiement.
+  await essai("« Plus tard » fait taire le rappel le temps du rythme", async () => {
+    const { ctxA } = await monter();
+    const { factureId } = await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    assert.equal((await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee").length, 1);
+
+    await repousserRappelFacture(ctxA, factureId, "2026-08-14");
+    const lendemain = new Date("2026-08-15T12:00:00Z");
+    assert.deepEqual(
+      (await rappelsEnCours(ctxA, lendemain)).filter((r) => r.genre === "facture-impayee"),
+      [],
+      "repoussé, il parle encore le lendemain"
+    );
+
+    // Sept jours plus tard, il revient — c'est « chaque semaine », le défaut.
+    const septJours = new Date("2026-08-21T12:00:00Z");
+    assert.equal(
+      (await rappelsEnCours(ctxA, septJours)).filter((r) => r.genre === "facture-impayee").length,
+      1,
+      "repoussé, il n'est jamais revenu"
+    );
+  });
+
+  await essai("éteint, il ne rappelle plus rien", async () => {
+    const { ctxA } = await monter();
+    await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    await ecrireReglagesRappels(ctxA, { factureImpayeeJours: null });
+    assert.deepEqual(
+      (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee"),
+      []
+    );
+  });
+
+  await essai("et rien ne déborde de l'entreprise voisine", async () => {
+    const { ctxA, ctxB } = await monter();
+    await factureEnvoyeeIlYA(ctxB, "Chez le voisin", 40);
+    assert.deepEqual(
+      (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee"),
+      []
+    );
   });
 
   console.log("");

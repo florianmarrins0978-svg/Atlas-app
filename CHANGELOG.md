@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### CODÉ : le rappel « facture impayée », et le premier rappel qui a un rythme
+
+Sa demande, en une phrase : *« faut faire a plus b, mais il faut également qu'on
+puisse régler, par exemple, je veux un rappel toutes les semaines ou tous les
+quinze jours, mais pas qu'il y ait la notification tous les jours. »*
+
+| | |
+|---|---|
+| **Quand il paraît** | à l'échéance — envoi **+ le délai de paiement** réglé, ou le jour de l'envoi si aucun délai ne l'est |
+| **Ce qu'il montre** | le **reste dû**, avec le total quand un acompte est arrivé |
+| **« Plus tard »** | espace le rappel du rythme choisi. Il ne classe rien : la facture reste en attente de paiement |
+| **Le rythme** | chaque jour · chaque semaine · tous les 15 jours. Jamais une case à remplir — c'est ce qu'il a exclu |
+| **Il s'éteint** | tout seul dès que le règlement est enregistré (« Terminés › TVA ») |
+
+**Pourquoi celui-ci a un rythme et pas les trois autres.** Les trois premiers
+s'éteignent dès que le geste attendu est fait. Celui-ci dépend du client : sans
+rythme, la carte serait revenue chaque jour pendant des mois, et une carte vue
+tous les jours cesse d'être lue.
+
+**Deux défauts trouvés sur une capture, par aucun test** — « 1 jours après
+l'échéance », et deux espaces mangées autour d'un `<b>` (« tout seuldès que »).
+Le contrôle écrit contre le premier ne mesurait rien : il cherchait la valeur
+d'un `<input>` dans le texte de la page, où elle ne figure jamais.
+`ARCHITECTURE.md` §115.
+
 ### CODÉ : la TVA quand le client paie, et l'endroit où les factures attendent
 
 Sa question du 14 août : *« si un client décide de ne pas me payer, la facture
