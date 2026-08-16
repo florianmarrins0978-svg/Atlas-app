@@ -39,6 +39,32 @@ entrera au paiement. Raisons : `ARCHITECTURE.md` §111.
 
 ---
 
+## 2026-08-16
+
+### La ligne d'état passe en or sur TOUTES les cartes de l'accueil
+
+*Sa consigne, capture de l'accueil à l'appui : « mets le "devis prêt à envoyer
+sans photo" en doré ; pour tous les messages je veux que cette partie-là
+apparaisse en doré. »*
+
+**Ce que l'or ne dit plus, et c'est le seul coût.** Il distinguait ce qui appelle
+un geste **de lui** — un devis à corriger, un devis caduc — de ce qui attend
+ailleurs. La nuance se lit désormais dans **les mots** de la ligne, plus dans la
+teinte. C'était déjà à moitié fait : le 13 août, il avait étendu l'or aux devis
+partis sans réponse, qui n'appellent aucun geste.
+
+**La liste `APPELLE_UN_GESTE` est retirée**, pas conservée « au cas où » : un
+drapeau qui vaut toujours vrai n'est plus un drapeau, et une liste qu'on garde
+sans l'employer se met à mentir en silence. Le champ `enOr`, lui, survit — l'écran
+n'a jamais décidé de sa couleur, et ce n'est pas le jour où la règle se simplifie
+qu'il faut lui rendre ce pouvoir.
+
+**Deux contrôles, parce qu'un seul ne suffit pas ici :** la suite base balaie
+**tous** les statuts — tirés du type, jamais recopiés, sans quoi le statut ajouté
+demain resterait gris sans que rien ne rougisse ; et la suite navigateur lit la
+couleur **calculée** sur l'accueil réel, parce que la règle serait verte même si
+l'écran ignorait le drapeau. Elle refuse de conclure sur zéro carte.
+
 ## 2026-08-15
 
 ### Dicter dans le devis : « je vais pouvoir lui parler comme ça et qu'elle comprenne »
