@@ -11,12 +11,16 @@ import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envoi
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
 export type RappelAffiche = {
-  genre: "devis-sans-reponse" | "chantier-non-facture";
+  genre: "chantier-sans-devis" | "devis-sans-reponse" | "chantier-non-facture";
   chantierId: string;
   chantierNom: string;
   /** « depuis 8 jours » — formulé au serveur, pour que l'écran n'ait pas à
    *  recalculer un délai et à en donner une seconde version. */
   depuisTexte: string;
+  /** Le nombre de jours seul — « 14 » —, pour l'étiquette du rappel qu'il a
+   *  retenu (proposition B, 16 août 2026). Même source que `depuisTexte` :
+   *  deux calculs du même délai finiraient par se contredire. */
+  depuisJours: number;
 };
 
 // Ce qu'est devenu un devis parti, porté au patron (docs/AGENT.md §2.2).
@@ -128,6 +132,7 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
  * fait chercher (`suite-de-la-reponse.ts`, relevé par le patron le 12 août).
  */
 function rappelVersCarte(r: RappelAffiche): Carte {
+  const sansDevis = r.genre === "chantier-sans-devis";
   const devis = r.genre === "devis-sans-reponse";
   return {
     // Aucun envoi derrière un rappel : la clé se fabrique, et elle porte le
@@ -136,18 +141,36 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     envoiId: `rappel-${r.genre}-${r.chantierId}`,
     chantierId: r.chantierId,
     chantierNom: r.chantierNom,
-    // **Jamais urgent.** Le fond teinté est réservé à ce qui appelle une
-    // décision : un refus, un lien mort. Un rappel de confort qui crierait
-    // aussi fort ferait baisser le volume de tous les autres.
-    urgent: false,
+    // **Les deux rappels d'origine ne crient pas.** Le fond teinté était
+    // réservé à ce qui appelle une décision : un refus, un lien mort. Un rappel
+    // de confort qui crierait aussi fort ferait baisser le volume des autres.
+    //
+    // **Celui du devis jamais parti fait exception, et c'est SA décision** du
+    // 16 août 2026 — la proposition B, devant les deux tons dessinés : *« la B
+    // et 4 »*. Sa raison, écrite sur la planche : au quatorzième jour, ça ne
+    // doit pas se rater. Et il est le seul des trois où RIEN n'est encore
+    // parti au client : les deux autres décrivent un travail déjà fait qui
+    // attend, celui-ci un travail pas commencé.
+    urgent: sansDevis,
     rappel: true,
-    titre: devis ? "Devis sans réponse" : "À facturer",
-    texte: devis
-      ? `Parti ${r.depuisTexte}, sans un mot du client. Vous pouvez le relancer vous-même.`
-      : `Chantier terminé ${r.depuisTexte}, et aucune facture n'est partie.`,
+    titre: sansDevis
+      // **Le compte des jours DANS l'étiquette**, avant le nom — l'autre moitié
+      // de la proposition B. Le nombre se lit avant qu'on ait lu le chantier.
+      ? `Devis en attente · ${r.depuisJours} jour${r.depuisJours > 1 ? "s" : ""}`
+      : devis
+        ? "Devis sans réponse"
+        : "À facturer",
+    texte: sansDevis
+      ? `Chantier ouvert ${r.depuisTexte}, et aucun devis n'est parti.`
+      : devis
+        ? `Parti ${r.depuisTexte}, sans un mot du client. Vous pouvez le relancer vous-même.`
+        : `Chantier terminé ${r.depuisTexte}, et aucune facture n'est partie.`,
     suite: {
-      href: devis ? `/chantiers/${r.chantierId}` : `/chantiers/${r.chantierId}/facture`,
-      libelle: devis ? "Ouvrir le chantier" : "Créer la facture",
+      // **Le chantier, pas le devis vierge.** De la fiche il dicte, il chiffre,
+      // ou il écrit le devis à la main — trois chemins, et c'est lui qui sait
+      // lequel. L'envoyer d'office sur `devis-complet` choisirait à sa place.
+      href: devis || sansDevis ? `/chantiers/${r.chantierId}` : `/chantiers/${r.chantierId}/facture`,
+      libelle: sansDevis ? "Faire le devis" : devis ? "Ouvrir le chantier" : "Créer la facture",
       reprendreAvant: false,
     },
   };
@@ -238,6 +261,10 @@ export default function Notifications({
             // nom attrape la ligne de la liste et croit lire la carte. Vécu le
             // 12 août 2026, sur le contrôle de ce lien même.
             data-atlas="carte-reponse"
+            // Le TON, lisible de l'extérieur : sa proposition B ne se prouve
+            // qu'à la couleur RENDUE, et un booléen dans le code n'en dit rien
+            // (`test-devis-qui-tarde-e2e`).
+            data-atlas-ton={n.urgent ? "teinte" : "nu"}
             data-chantier={n.chantierId}
             className="rounded-[18px] px-5 py-4"
             style={{ backgroundColor: n.urgent ? colors.rustTint : colors.card }}

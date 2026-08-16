@@ -1,5 +1,5 @@
 /**
- * Les deux rappels qu'Atlas peut vraiment tenir aujourd'hui.
+ * Les trois rappels qu'Atlas peut vraiment tenir aujourd'hui.
  *
  * *Dessinés le 13 août 2026 (`maquettes/atlas-reglages-notifications.html`),
  * codés le 14 — rubrique « Notifications ».*
@@ -14,8 +14,15 @@
  * **Ces deux-là se calculent avec ce que la base porte déjà**, sans nouveau
  * jalon ni nouveau geste :
  *
+ *   · un chantier ouvert depuis N jours dont AUCUN devis n'est parti ;
  *   · un devis parti, toujours valable, sans réponse depuis N jours ;
  *   · un chantier terminé, sans facture, depuis N jours.
+ *
+ * **Le premier a été demandé le 14 août 2026** : *« un rappel lorsque le chantier
+ * a été ouvert mais le devis n'a pas été envoyé »*. Il ne se déduit PAS du
+ * deuxième : celui-là part d'un envoi, et un devis jamais parti n'a pas de ligne
+ * d'envoi à interroger. Le sien se lit sur le chantier — `createdAt` et
+ * `devisEnvoyeAt`.
  *
  * Les six autres attendent une donnée qui n'existe pas — au premier rang de
  * laquelle **« cette facture est payée »**, que rien n'enregistre. Une alerte
@@ -39,6 +46,7 @@
 /** `null` : le rappel est éteint. Aucune colonne « actif » à côté du nombre —
  *  deux champs pour une seule idée finissent par se contredire. */
 export type ReglagesRappels = {
+  chantierSansDevisJours: number | null;
   devisSansReponseJours: number | null;
   chantierNonFactureJours: number | null;
 };
@@ -53,12 +61,16 @@ export type ReglagesRappels = {
  * suit le chantier.
  */
 export const RAPPELS_PAR_DEFAUT: ReglagesRappels = {
+  // **Quatre jours, choisis par lui le 16 août 2026** — « la B et 4 » —, au
+  // milieu des « deux, trois, quatre, cinq, six » qu'il avait énumérés.
+  chantierSansDevisJours: 4,
   devisSansReponseJours: 7,
   chantierNonFactureJours: 3,
 };
 
 /** Bornes de bon sens, les mêmes à l'écran et au serveur. */
 export const BORNES_RAPPELS = {
+  chantierSansDevisJours: { min: 1, max: 90 },
   devisSansReponseJours: { min: 1, max: 90 },
   chantierNonFactureJours: { min: 1, max: 90 },
 } as const;
@@ -76,6 +88,10 @@ function jours(valeur: unknown, bornes: { min: number; max: number }): number | 
 /** Ce que la base rend, mis en forme. `undefined` = jamais réglé → le défaut. */
 export function lireRappels(brut: Partial<Record<keyof ReglagesRappels, number | null>> | null | undefined): ReglagesRappels {
   return {
+    chantierSansDevisJours:
+      brut?.chantierSansDevisJours === undefined
+        ? RAPPELS_PAR_DEFAUT.chantierSansDevisJours
+        : jours(brut.chantierSansDevisJours, BORNES_RAPPELS.chantierSansDevisJours),
     // **`undefined` et `null` ne veulent PAS dire la même chose.** Jamais réglé
     // → le défaut d'Atlas. Réglé puis éteint (`null` en base) → rien n'est
     // rappelé. Les confondre rallumerait un rappel qu'il a délibérément coupé.
@@ -93,6 +109,7 @@ export function lireRappels(brut: Partial<Record<keyof ReglagesRappels, number |
 /** Ce qui part en base après une saisie — la même fonction que pour l'affichage. */
 export function normaliserRappels(saisie: Partial<ReglagesRappels>): ReglagesRappels {
   return lireRappels({
+    chantierSansDevisJours: saisie.chantierSansDevisJours ?? null,
     devisSansReponseJours: saisie.devisSansReponseJours ?? null,
     chantierNonFactureJours: saisie.chantierNonFactureJours ?? null,
   });
@@ -109,9 +126,21 @@ export function seuilAncienneté(maintenant: Date, joursEcoules: number): Date {
   return new Date(maintenant.getTime() - joursEcoules * 24 * 60 * 60 * 1000);
 }
 
+/**
+ * Le nombre de jours pleins écoulés — la SEULE source du compte.
+ *
+ * Sortie séparée parce que l'étiquette du rappel qu'il a retenu l'affiche nu
+ * (« Devis en attente · 14 jours ») pendant que la phrase le met en mots. Deux
+ * calculs du même délai finiraient par se contredire d'une ligne à l'autre :
+ * l'étiquette dirait 14 et la phrase « depuis 13 jours ».
+ */
+export function joursEcoules(maintenant: Date, quand: Date): number {
+  return Math.max(0, Math.floor((maintenant.getTime() - quand.getTime()) / (24 * 60 * 60 * 1000)));
+}
+
 /** « depuis 8 jours », « depuis hier » — jamais une date brute à décoder. */
 export function depuisCombien(maintenant: Date, quand: Date): string {
-  const j = Math.floor((maintenant.getTime() - quand.getTime()) / (24 * 60 * 60 * 1000));
+  const j = joursEcoules(maintenant, quand);
   if (j <= 0) return "aujourd'hui";
   if (j === 1) return "depuis hier";
   return `depuis ${j} jours`;
