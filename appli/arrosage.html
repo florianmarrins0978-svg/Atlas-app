@@ -899,8 +899,17 @@ function recalculer(redessinerZones){
     CATALOGUE.arroseurs.forEach(function(a){
       l.push(a.nom.toLowerCase() + ' (portée ' + nb(a.portee,1) + ' m) → un tous les ' + nb(a.portee*r) + ' m');
     });
-    return 'À ' + Math.round(r*100) + ' % : ' + l.join(' · ') +
-      '. <b>Si ce n\'est pas votre pose, dites-le</b> — c\'est ce réglage qui décide du nombre d\'arroseurs.';
+    // **Il a répondu « non, autre chose » le 17 août.** La règle ci-dessous
+    // n'est donc PLUS une lecture à confirmer : c'est une règle qu'il a
+    // écartée, et l'écran doit le dire. Laisser « si ce n'est pas votre pose,
+    // dites-le » ferait essayer l'outil sur un calcul qu'il a déjà rejeté —
+    // et tout ce qu'il jugerait ensuite (nombre d'arroseurs, secteurs, liste)
+    // porterait cette erreur sans qu'elle soit visible.
+    return '<span class="provisoire">Règle de pose PROVISOIRE — vous m\'avez dit ' +
+      'qu\'elle n\'était pas la bonne, j\'attends la vôtre.</span> En attendant, ' +
+      'à ' + Math.round(r*100) + ' % : ' + l.join(' · ') +
+      '. Tout ce qui en découle — nombre d\'arroseurs, secteurs, liste — bougera ' +
+      'quand vous me l\'aurez donnée.';
   })();
   var mail = document.getElementById('envoyer');
   mail.href = 'mailto:?subject=' + encodeURIComponent('Demande de prix — arrosage automatique') +

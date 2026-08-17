@@ -91,6 +91,30 @@ qui ne le sont pas.
 | 17 | Les buses sont données **à 2 bar**. Que faire quand l'installation tourne à 3 : autre tableau, ou correction ? | *en attente* |
 | 18 | Les **corps escamotables** sur lesquels ces buses se vissent : quelles références ? | *en attente* |
 
+**SES RÉPONSES DU 17 AOÛT (formulaire à cocher — c'est la forme qu'il demande,
+pas des questions en vrac dans un message) :**
+
+| Question | Sa réponse |
+|---|---|
+| Quel modèle pour la suite | **Sonnet pour rentrer le catalogue, Opus pour le calcul et les contrôles.** Le catalogue, c'est de la transcription ; une règle de calcul mal comprise se découvre sur le chantier |
+| Le recouvrement de 80 % | **« Non, autre chose » — MA LECTURE EST FAUSSE, il l'expliquera.** L'écran l'annonce désormais comme provisoire : sans cela il essaierait l'outil sur une règle qu'il a écartée, et tout ce qui en découle porterait l'erreur sans qu'elle se voie |
+| Carré ou quinconce | **« Ça dépend de la forme du terrain »** — il donnera selon quoi |
+| Le choix de buse | **« Selon la largeur, avec mes seuils »** — il donnera les tranches (ex. jusqu'à 3 m → 8-VAN, de 3 à 5 m → 12-VAN…) |
+
+**CE QUE ÇA COMMANDE, ET C'EST UNE LEÇON DE MÉTHODE :** trois réponses sur
+quatre sont « je vais t'expliquer ». **Ne rien figer d'ici là** — ni la pose, ni
+le choix de buse. Ce qui tourne aujourd'hui est un échafaudage qui porte la
+mention « provisoire » à l'écran, et cette mention se retire seulement quand sa
+règle est posée.
+
+**ET SA CONTRAINTE DE CONSOMMATION, du même échange :** *« mon utilisation se
+console super vite »*. Ce qui a coûté le plus n'est pas le modèle mais la
+**batterie complète jouée deux fois** pour un lot qui ne touche pas `src/`. Un
+lot qui ne modifie que `appli/` et `docs/` se vérifie par sa propre suite
+(`appli/tests/e2e.js`) et par `appli/tests/essai-arrosage-detaille.cjs` — la
+batterie complète reste due dès qu'une ligne de `src/` bouge. Lui faire envoyer
+ses photos **par paquets** plutôt qu'une par une, pour la même raison.
+
 **LE CHOIX DE MARQUE — fait le 17 août.** Bandeau déroulant, **Rain Bird par
 défaut**, Toro ensuite ; `CATALOGUE.marques` s'allonge d'une ligne. **Aucune
 valeur générique n'est attribuée à une marque** : l'écran dit « aucun modèle
