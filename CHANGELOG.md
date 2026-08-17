@@ -9,6 +9,57 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le quinconce déplaçait les arroseurs sans jamais en retirer un
+
+**Son constat, capture cerclée en rouge à l'appui :** *« sur le plan tu t'es
+trompé, tu as mis un arroseur en trop. »* Il avait raison — et l'a trouvé en
+regardant l'écran, pas en relisant du code.
+
+Le quinconce se contentait de DÉPLACER les arroseurs de la rangée intérieure
+d'un demi-écart, sans jamais en retirer : même compte qu'une grille carrée
+(nx × ny), juste décalé. Résultat visible sur la capture : deux têtes
+entassées d'un côté du rectangle, un vide de l'autre — parce que le point
+décalé s'approchait trop de la colonne voisine tandis que l'écart s'ouvrait
+de l'autre côté, largement au-delà de sa limite.
+
+Le vrai principe du quinconce, c'est qu'une rangée décalée porte **UN
+ARROSEUR DE MOINS** que la rangée alignée, posé exactement entre chaque paire
+de ses voisins — c'est ce qui le rend plus économe qu'une grille carrée, pas
+seulement plus joli. Sur le jardin d'exemple (18×12 m, buse 18-VAN) : 12 têtes
+deviennent 11, sans rien perdre de la couverture.
+
+**Le plan et le calcul partageaient chacun leur propre version du placement**
+— exactement l'écart que le §3 du dépôt met en garde contre (« deux
+implémentations finissent toujours par diverger »). Les deux passent
+maintenant par une seule fonction, `pointsDeLaPose`, qui produit LA liste de
+positions ; `poser()` en tire ses comptes (coins/bords/intérieur, débit), et
+`dessinerPlans()` la reprend telle quelle pour le SVG. Ils ne peuvent plus
+raconter deux histoires différentes.
+
+**Le contrôle qui l'aurait vu avant lui** vérifie maintenant que le plan
+dessine EXACTEMENT le nombre de têtes que le calcul a compté, et que le
+quinconce en retire une par rapport à la grille carrée. Confronté au défaut
+d'origine (rangée décalée sans retrait de point) : trois rouges, dont un qui
+lit directement le compte de têtes dans le SVG — pas seulement le texte.
+
+### Six familles de turbines entrées, aucune posée automatiquement
+
+Six photos supplémentaires : Hunter PGP-ADJ, PGP Ultra, I 20-04 Ultra ; Rain
+Bird 5000 Plus, 3504 ; Hunter SRM-04, PGJ ; Toro Mini 8. Corps et buses,
+transcrits sans prix.
+
+**Le trou est partout le même : une seule valeur de débit par numéro de buse,
+aucune répartition par angle.** Les tuyères VAN donnaient 90°/180°/270°/360° ;
+ces tableaux de turbines n'en donnent qu'une, à une pression de référence.
+Une turbine balaie l'arc avec un seul filet — son débit est peut-être
+proportionnel à l'arc réglé, ce qui autoriserait à déduire les valeurs de
+coin et de bord, mais c'est précisément le genre de déduction que sa règle du
+17 août interdit tant qu'elle n'est pas confirmée. Les valeurs sont donc
+entrées en `debit:{360: …}` seulement, et le garde-fou posé la veille pour les
+R-VAN (`busesDe` exige les trois angles sur une même référence) les écarte
+automatiquement du calcul — visibles dans le registre de prix, écartées de la
+pose. La question lui est posée plutôt que devinée.
+
 ### Le corps par défaut, choisi par lui — et un sélecteur qu'un montage partiel avait cassé
 
 **Sa réponse :** *« 10 cm sans option, mais proposer à chaque fois les autres en

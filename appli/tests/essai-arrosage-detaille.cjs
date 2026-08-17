@@ -41,6 +41,19 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('la pose est annoncée (carré ou quinconce)',
       /en quinconce|en carré/.test(resume), resume.slice(0, 90));
 
+  // **Le quinconce retire un arroseur, il ne le déplace pas.** Signalé le
+  // 17 août : le plan mettait un arroseur en trop (repérable sur une capture),
+  // parce que la rangée décalée gardait TOUS ses points au lieu d'en perdre un
+  // — l'ancien calcul aurait donné 12 têtes sur cette pelouse, la règle en
+  // demande 11.
+  const zone0 = await page.locator('.zone-res').first().innerText();
+  const combien = zone0.match(/^(\d+)\s/);
+  cas('le quinconce compte UN arroseur de moins que la grille carrée',
+      combien && Number(combien[1]) === 11, zone0.slice(0, 90));
+  const tetesPlan = await page.locator('#plans .plan').first().locator('.tete').count();
+  cas('et le plan dessine EXACTEMENT ce nombre-là',
+      tetesPlan === 11, 'têtes dessinées : ' + tetesPlan);
+
   // La nourrice : tant que sa fiche manque, l'écran le dit au lieu d'inventer.
   const nourrice = await page.locator('#nourrice').innerText();
   cas('la fiche de nourrice manquante est ANNONCÉE', /à renseigner/.test(nourrice), nourrice.slice(0, 70));

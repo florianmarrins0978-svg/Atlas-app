@@ -513,6 +513,42 @@ function materielDe(z){
   return Math.min(Number(z.L)||0, Number(z.l)||0) >= 8 ? 'turbine' : 'tuyere';
 }
 
+/* Les positions réelles d'une pose — la SEULE fonction qui les calcule.
+   `poser()` (pour compter et chiffrer) et `dessinerPlans()` (pour le SVG) s'y
+   réfèrent tous les deux : deux calculs séparés auraient fini par diverger
+   (règle du §3 du dépôt), et c'est justement ce qui s'est produit avant cette
+   version — le plan déplaçait des arroseurs sans jamais en retirer, ce qui
+   entassait deux têtes voisines d'un côté et laissait un trou de l'autre.
+
+   Le quinconce n'est pas un DÉCALAGE des points existants : c'est une rangée
+   sur deux qui porte UN ARROSEUR DE MOINS, posé entre chaque paire de la
+   rangée alignée. C'est ce qui rend le quinconce plus économe qu'une grille
+   carrée — sinon ce n'est qu'une grille carrée déplacée, donc ni plus économe
+   ni mieux couverte, juste plus confuse à l'œil (« un arroseur en trop »,
+   signalé le 17 août). Les coins et les bords restent alignés, sur SA règle :
+   « les derniers arroseurs doivent toujours être dans les coins ». */
+function pointsDeLaPose(nx, ny, ecartX, ecartY, quinconce){
+  var pts = [];
+  for (var j = 0; j < ny; j++){
+    var bordRangee = (j === 0 || j === ny - 1);
+    var decalee = quinconce && !bordRangee && (j % 2 === 1);
+    if (!decalee){
+      for (var i = 0; i < nx; i++){
+        var coin = bordRangee && (i === 0 || i === nx - 1);
+        var bord = bordRangee || i === 0 || i === nx - 1;
+        pts.push({ x: i * ecartX, y: j * ecartY, zone: coin ? 'coin' : (bord ? 'bord' : 'interieur') });
+      }
+    } else {
+      // Une rangée décalée n'a jamais de coin ni de bord : elle est
+      // strictement entre deux rangées alignées, et porte UN POINT DE MOINS.
+      for (var k = 0; k < nx - 1; k++){
+        pts.push({ x: (k + 0.5) * ecartX, y: j * ecartY, zone: 'interieur' });
+      }
+    }
+  }
+  return pts;
+}
+
 function poser(z){
   var petitCote = Math.min(Number(z.L)||0, Number(z.l)||0);
   var dims = { L: Number(z.L)||0, l: Number(z.l)||0 };
@@ -554,17 +590,22 @@ function poser(z){
     // doivent rester occupés. L'écran le DIT au lieu de rendre une pose qu'il
     // refuse : c'est le signe qu'il faut une buse plus petite.
     r.tropSerre = (ecartX < m.portee - 0.01) || (ecartY < m.portee - 0.01);
-    var coins = 4;
-    var bords = Math.max(0, 2*(nx-2)) + Math.max(0, 2*(ny-2));
-    var inter = Math.max(0, nx-2) * Math.max(0, ny-2);
+    // La décision « quinconce ou carré » se prend sur le compte D'UNE GRILLE
+    // ALIGNÉE (sa règle : « quinconce dès qu'il y a plus de 4 arroseurs ») —
+    // ENSUITE seulement le quinconce retire les points qu'il économise.
+    var quinconceVoulu = (nx * ny) > QUINCONCE_AU_DELA_DE;
+    var points = pointsDeLaPose(nx, ny, ecartX, ecartY, quinconceVoulu);
+    var coins = points.filter(function(pt){ return pt.zone === 'coin'; }).length;
+    var bords = points.filter(function(pt){ return pt.zone === 'bord'; }).length;
+    var inter = points.filter(function(pt){ return pt.zone === 'interieur'; }).length;
     // Un arroseur de bord ne tourne que d'un demi-tour, un coin d'un quart.
     // **Le débit de chaque arc est LU au catalogue quand il y est**, pas déduit
     // en divisant : sur les petites buses, quatre fois le quart de tour ne fait
     // pas le tour complet (6-VAN : 0,27 contre 0,32). Diviser aurait surestimé.
     var q = m.debitParAngle ? m.debitParAngle[90]  : m.debit360 / 4;
     var d = m.debitParAngle ? m.debitParAngle[180] : m.debit360 / 2;
-    r.nx = nx; r.ny = ny; r.nombre = coins + bords + inter;
-    r.quinconce = r.nombre > QUINCONCE_AU_DELA_DE;
+    r.nx = nx; r.ny = ny; r.points = points; r.nombre = points.length;
+    r.quinconce = quinconceVoulu;
     r.debit = coins*q + bords*d + inter*m.debit360;
     r.sansCorps = choix.sansCorps;
   } else if (TYPES[z.type].forme === 'nappe') {
@@ -852,25 +893,18 @@ function dessinerPlans(){
     eu = true;
     var E = 11, marge = 26, margeG = 44;
     var L = (Number(z.L)||0) * E, H = (Number(z.l)||0) * E;
+    // **Le plan dessine EXACTEMENT les points que `poser()` a comptés** — la
+    // même liste, jamais recalculée à côté. Une deuxième version de ce calcul
+    // avait fini par diverger : le plan déplaçait des points sans jamais en
+    // retirer, entassant deux têtes d'un côté et laissant un trou de l'autre
+    // (signalé le 17 août). `p.points` est en mètres depuis le coin (0,0) ;
+    // ici on les met seulement à l'échelle du dessin.
     var couronnes = '', tetes = '';
-    for (var i=0;i<p.nx;i++){
-      for (var j=0;j<p.ny;j++){
-        var x = margeG + (i * L) / (p.nx - 1 || 1);
-        var y = marge + (j * H) / (p.ny - 1 || 1);
-        // **Le quinconce se DESSINE, il ne s'annonce pas.** Sa règle du 17 août :
-        // quinconce au-delà de quatre arroseurs, « et les derniers arroseurs
-        // doivent toujours être dans les coins ». Le pourtour reste donc
-        // régulier — coins compris —, et seules les rangées INTÉRIEURES se
-        // décalent d'un demi-écart. Un plan qui écrit « en quinconce » sous une
-        // grille carrée est un plan qui ment, et personne ne le vérifierait.
-        var interieur = (j > 0 && j < p.ny - 1) && (i > 0 && i < p.nx - 1);
-        if (p.quinconce && interieur && (j % 2 === 1)){
-          x += (L / (p.nx - 1 || 1)) / 2;
-        }
-        couronnes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (p.m.portee*E) + '" class="portee"/>';
-        tetes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.5" class="tete"/>';
-      }
-    }
+    p.points.forEach(function(pt){
+      var x = margeG + pt.x * E, y = marge + pt.y * E;
+      couronnes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (p.m.portee*E) + '" class="portee"/>';
+      tetes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.5" class="tete"/>';
+    });
     var id = 'gz' + z.id;
     var bloc = document.createElement('div');
     bloc.innerHTML =

@@ -147,6 +147,49 @@ hiérarchie VAN / R-VAN / MP Rotator sans trancher ce point précis.
 | 17 | **« À 2 bar ou 3 bar c'est quasiment les mêmes valeurs »** — aucune correction de pression à faire | — |
 | 18 | Les **corps escamotables** arrivent | `CATALOGUE.corps`, vide |
 
+**LE PLAN AVAIT UN ARROSEUR EN TROP — trouvé par lui, sur une capture cerclée
+en rouge, le 17 août.** Le quinconce DÉPLAÇAIT les arroseurs sans jamais en
+retirer un : même nombre qu'une grille carrée, juste décalés, ce qui entassait
+deux têtes d'un côté et laissait un trou de l'autre. Corrigé : une rangée
+décalée porte désormais UN ARROSEUR DE MOINS que la rangée alignée, posé entre
+chaque paire de la rangée voisine. Sur le jardin d'exemple (18×12 m, buse
+18-VAN) : 12 → 11. **Le plan et le calcul partagent maintenant la MÊME liste de
+points** (`pointsDeLaPose`), pour que les deux ne puissent plus diverger comme
+ils l'avaient fait — règle du §3 du dépôt, appliquée après coup.
+
+**SIX NOUVELLES PHOTOS DE TURBINES (turbines/rotors, pas des tuyères) — la
+matière est entrée, RIEN N'EST ENCORE POSÉ AUTOMATIQUEMENT.** Hunter PGP-ADJ,
+PGP Ultra, I 20-04 Ultra ; Rain Bird 5000 Plus, 3504 ; Hunter SRM-04, PGJ ;
+Toro Mini 8 — corps ET buses, tous relevés.
+
+**LE VRAI TROU, PARTOUT LE MÊME : une seule valeur de débit par numéro de buse,
+aucune répartition par angle** (contrairement aux tuyères VAN/SRS où le tableau
+donne 90°/180°/270°/360°). Une turbine projette UN SEUL filet qui balaie l'arc
+réglé — peut-être son débit est-il exactement proportionnel à l'arc (ce qui
+justifierait de le déduire pour les coins et les bords), mais sa propre règle
+du 17 août l'interdit tant que ce n'est pas confirmé, et les VAN ont montré que
+« proportionnel » n'est pas toujours vrai (la 6-VAN ne l'était pas). **Donc :
+entrées en `debit:{360: …}` seulement, et le garde-fou déjà posé pour les R-VAN
+(`busesDe` exige les trois angles) les écarte automatiquement du calcul** —
+elles restent visibles dans son registre de prix, sans être posées tant que la
+question n'a pas sa réponse.
+
+**QUESTION À LUI POSER :** le débit d'une turbine à un réglage d'arc partiel
+(90°, 180°) est-il proportionnel au débit plein cercle donné dans ces tableaux,
+ou faut-il un autre tableau par angle comme pour les VAN ?
+
+**Les corps de turbine sont entrés aussi**, marqués `pourType:'turbine'` pour
+ne jamais se mélanger avec les corps de tuyère dans le sélecteur (qui, lui,
+reste câblé sur `pourType:'tuyere'` — la seule famille réellement posée
+aujourd'hui). Une fois les turbines câblées, il faudra un DEUXIÈME sélecteur de
+corps pour elles, puisqu'un jardin réel mélange souvent turbines (grandes
+pelouses) et tuyères (petites zones, bordures) — pas encore fait.
+
+**LES BUSES MPR (5000 Plus, RBA2195-97) n'ont AUCUN débit sur la photo** — juste
+un rayon et un prix. Elles sont « matched precipitation rate » (le même débit
+au mm/h quel que soit l'arc, 90° à 360°), ce qui réglerait élégamment le
+problème des R-VAN si leur débit était connu — mais il ne l'est pas encore.
+
 **CINQ NOUVELLES PHOTOS REÇUES LE 17 AOÛT — ce qui est entré, et ce qui ne l'est PAS.**
 
 | Reçu | Entré comment |

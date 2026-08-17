@@ -934,6 +934,18 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ LE QUINCONCE RETIRE UN ARROSEUR, IL NE LE DÉPLACE PAS (17 août — trouvé
+par lui, capture cerclée).** Une rangée décalée porte UNE tête de moins que la
+rangée alignée. Le plan et le calcul partagent une seule fonction
+(`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
+c'est exactement ce qui a produit le défaut.
+
+**⚠ SIX FAMILLES DE TURBINES ENTRÉES, AUCUNE POSÉE AUTOMATIQUEMENT.** Une seule
+valeur de débit par buse (pas de répartition par angle) — le garde-fou des
+R-VAN (`busesDe` exige 90°/180°/360°) les écarte du calcul tant qu'il n'a pas
+dit si le débit d'une turbine est proportionnel à l'arc réglé. Ne pas deviner :
+poser la question, comme pour les R-VAN.
+
 **⚠ UNE BUSE SANS SES TROIS ANGLES (90°/180°/360°) N'EST JAMAIS CHOISIE SEULE
 (17 août).** Les R-VAN Rain Bird se vendent en DEUX références par taille — une
 réglable 45°-270° (jamais 360°), une fixe 360° (jamais autre chose). `busesDe()`

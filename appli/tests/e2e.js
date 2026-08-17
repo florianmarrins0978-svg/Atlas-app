@@ -273,6 +273,17 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     const secteurs = await page.$$eval('.sec', e => e.length);
     ok('arrosage : le jardin de départ se découpe', secteurs >= 6);
 
+    // **Le quinconce retire un arroseur, il ne le déplace pas.** Une pose
+    // décalée qui garde tous ses points fait exactement ce qu'il a signalé le
+    // 17 août : une capture avec une tête en trop, cerclée en rouge. Le plan
+    // dessine désormais EXACTEMENT ce que le calcul a compté — même liste de
+    // points, jamais recalculée à côté.
+    const nomSurZone = await page.$eval('.zone-res', el => el.textContent);
+    const teteAttendue = Number((nomSurZone.match(/^(\d+)\s/) || [])[1]);
+    const tetesDessinees = await page.$$eval('#plans .plan', e => e.length ? e[0].querySelectorAll('.tete').length : -1);
+    ok('arrosage : le plan dessine autant de têtes que le calcul en compte',
+       teteAttendue > 0 && tetesDessinees === teteAttendue);
+
     // L'invariant du métier : un secteur au-dessus du robinet, et les derniers
     // arroseurs bavent au lieu d'arroser.
     const debits = await page.$$eval('.sec-q', e => e.map(x => parseFloat(x.textContent.replace(',', '.'))));
@@ -407,8 +418,9 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     // **Le montant est vérifié au centime**, pas par un motif de texte. Une
     // version antérieure se contentait de lire « … sans prix » : un total qui
     // comblait ses trous à 10 € la ligne affichait toujours cette phrase et
-    // passait au vert. 12 buses à 3,10 € font 37,20 € — et rien d'autre.
-    ok('tarifs : le total vaut EXACTEMENT les lignes chiffrées', /37,20\s*€/.test(total),
+    // passait au vert. 11 buses (quinconce : un arroseur de moins que la
+    // grille carrée, sa correction du 17 août) à 3,10 € font 34,10 € — rien d'autre.
+    ok('tarifs : le total vaut EXACTEMENT les lignes chiffrées', /34,10\s*€/.test(total),
        'lu : ' + total.slice(0, 80));
     ok('tarifs : et les lignes sans prix restent annoncées', /sans prix|INCOMPLET/.test(total));
 
