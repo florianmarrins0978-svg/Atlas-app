@@ -52,6 +52,39 @@ parce que c'est le seul dossier PUBLIÉ du dépôt : les planches y sont sans
 JavaScript, et il demande à essayer. Gardée par `appli/tests/e2e.js`, jouée
 avant publication **et contre le site en ligne**.
 
+**⚠ RIEN N'ENTRE DANS LE CATALOGUE AVANT SES RÉPONSES — sa consigne du
+17 août 2026 :** *« avant d'enregistrer quoi que ce soit dans la base de
+données, tu me poses toutes les questions nécessaires dont tu as besoin pour
+bien comprendre […] et surtout tu me dis que tu as compris. Moi je connais le
+métier par cœur, donc ça va être moi ton chef d'orchestre. »*
+
+**L'objectif, dans ses mots :** *« construire l'outil de mes rêves, que les
+utilisateurs qui ne connaissent rien en arrosage, à partir d'un plan, tu puisses
+leur sortir exactement tout le matos dont ils vont avoir besoin : le nombre
+d'arroseurs, le nombre de tuyères, mais également le nombre de mètres linéaires
+de goutte-à-goutte. »* Ce n'est donc PAS un outil d'expert : la personne devant
+l'écran ne sait rien du métier, et tout ce qui demande un jugement doit être
+tranché par la règle qu'il aura donnée, pas par une case à cocher de plus.
+
+**LES QUESTIONS POSÉES LE 17 AOÛT, et l'état de ses réponses.** Ne pas les
+reposer si elles sont déjà répondues plus bas ; ne rien enregistrer sur celles
+qui ne le sont pas.
+
+| # | Question | Sa réponse |
+|---|---|---|
+| 1 | Le « recouvrement d'au moins 80 % » : écart entre deux arroseurs = 80 % de la portée ? | *en attente* |
+| 2 | Pose en carré ou en quinconce (triangle) ? | *en attente* |
+| 3 | Portée et débit donnés à quelle pression ? | *en attente* |
+| 4 | Corps + buse, ou corps seul ? Le débit annoncé est-il celui du cercle entier ? | *en attente* |
+| 5 | À partir de quelle largeur passe-t-on de tuyères à turbines ? | *en attente* |
+| 6 | Jusqu'à quel % du débit du robinet charge-t-on un secteur ? | *en attente* |
+| 7 | Ne jamais mélanger turbines/tuyères, ni arroseurs/goutte-à-goutte : confirmé ? | *en attente* |
+| 8 | Massif : combien de lignes de gaine ? Haie : une ou deux ? Potager : au rang ? | *en attente* |
+| 9 | Le diamètre de tuyau suit-il une règle (débit du secteur) ou est-ce au cas par cas ? | *en attente* |
+| 10 | Une grande nourrice ou deux petites au-delà d'une certaine taille ? | *en attente* |
+| 11 | Le croquis du client : rectangles simples, ou formes libres avec obstacles ? | *en attente* |
+| 12 | L'utilisateur qui ne connaît rien saura-t-il mesurer son débit ? Faut-il une valeur par défaut ? | *en attente* |
+
 **⚠ LE CATALOGUE EST LA PROCHAINE ÉTAPE, ET IL EST À LUI.** Le 17 août :
 *« plusieurs choses sont fausses »*, puis : *« je vais t'envoyer des photos avec
 certains arroseurs, leur portée, et ça tu vas l'intégrer dans une base de
