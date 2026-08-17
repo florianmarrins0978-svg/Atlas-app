@@ -91,6 +91,88 @@ var CATALOGUE = {
       source:'provisoire' }
   ],
 
+  /* ── LES BUSES — relevées de SES photos de catalogue ────────────────────
+     Sa première page, le 17 août 2026 : catalogue Aqua Plus 2026, page 8,
+     « ARROSEURS ESCAMOTABLES », buses série VAN à secteur réglable (RBT6xx).
+
+     **Ses mots :** « ça c'est les buses qui vont venir se visser sur les
+     tuyères. Donc là tu as toutes les buses avec les distances, les pressions,
+     tout. »
+
+     ┌────────────────────────────────────────────────────────────────────────┐
+     │ CE QUE CETTE PAGE CHANGE DANS LE CALCUL, ET CE N'EST PAS UN DÉTAIL     │
+     │                                                                        │
+     │ 1. UN ARROSEUR, C'EST UN CORPS + UNE BUSE. La portée et le débit       │
+     │    viennent de la BUSE, pas du corps. Les corps escamotables sont      │
+     │    encore à recevoir (`corps` ci-dessous, vide).                       │
+     │                                                                        │
+     │ 2. LE DÉBIT EST DONNÉ PAR ANGLE, et il ne se calcule PAS en divisant   │
+     │    le débit du cercle entier. C'est ce que faisait l'outil jusqu'ici.  │
+     │    Sur les grosses buses la division tombe juste (18-VAN : 1,20 / 4 =  │
+     │    0,30, exactement la valeur du tableau) ; sur les petites, non —     │
+     │    la 6-VAN donne 0,27 à 360° quand quatre fois son 90° ferait 0,32.   │
+     │    Les valeurs du tableau sont donc lues, jamais déduites.             │
+     │                                                                        │
+     │ 3. LA PRESSION DE RÉFÉRENCE EST 2 BAR, pas 3. Une portée relevée à     │
+     │    2 bars sur une installation à 3 n'est pas la même — l'écran le dit  │
+     │    quand les deux diffèrent.                                           │
+     │                                                                        │
+     │ 4. LE COLISAGE EST DE 25. Il commande par paquets ; la liste au        │
+     │    fournisseur doit le rappeler plutôt que de lui faire découvrir à la │
+     │    commande.                                                           │
+     └────────────────────────────────────────────────────────────────────────┘
+
+     **LES PRIX NE SONT PAS ICI, ET C'EST SA CONSIGNE :** « sur certaines photos
+     tu auras les prix, néanmoins ne les enregistre pas, car c'est des prix pour
+     les clients et pas pour les pros. » Un P.U.H.T. figurait sur la page ; il n'est
+     recopié nulle part, pas même en commentaire — un prix « pour mémoire » finit
+     par être lu comme un prix. Ses prix à lui se saisissent
+     dans `arrosage-tarifs.html`, et vivent dans son navigateur.
+
+     **UNE VALEUR À CONFIRMER, et elle n'est pas recopiée à l'aveugle :** la
+     8-VAN annonce 0,16 m³/h à 90°, soit PLUS que la 10-VAN (0,14) qui porte
+     pourtant plus loin. Recopié tel quel du tableau, signalé ici, à vérifier
+     sur le catalogue papier. Un chiffre douteux qu'on tait devient un chiffre
+     faux qu'on croit. */
+  buses: [
+    { ref:'RBT648', nom:'18-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:5.4, pression:2,
+      debit:{ 90:0.30, 180:0.60, 270:0.90, 360:1.20 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RBT601', nom:'15-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:4.5, pression:2,
+      debit:{ 90:0.21, 180:0.42, 270:0.63, 360:0.84 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RBT636', nom:'12-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:3.6, pression:2,
+      debit:{ 90:0.15, 180:0.30, 270:0.45, 360:0.59 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RBT637', nom:'10-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:2.7, pression:2,
+      debit:{ 90:0.14, 180:0.29, 270:0.43, 360:0.57 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RBT638', nom:'8-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:2.3, pression:2,
+      debit:{ 90:0.16, 180:0.26, 270:0.34, 360:0.38 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
+      aVerifier:'0,16 m³/h à 90° : plus que la 10-VAN, qui porte pourtant plus loin' },
+    { ref:'RBT639', nom:'6-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:1.8, pression:2,
+      debit:{ 90:0.08, 180:0.13, 270:0.24, 360:0.27 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RBT640', nom:'4-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:1.2, pression:2,
+      debit:{ 90:0.06, 180:0.10, 270:0.16, 360:0.20 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' }
+  ],
+
+  /* ── Les corps d'arroseur ───────────────────────────────────────────────
+     VIDE : la page reçue donne les BUSES, pas les corps escamotables sur
+     lesquels elles se vissent. Ils viendront. Tant qu'ils manquent, la liste au
+     fournisseur commande des buses et le DIT — commander une buse sans son
+     corps, c'est un chantier arrêté à la pose. */
+  corps: [],
+
   /* ── Le goutte-à-goutte ─────────────────────────────────────────────────
      `debitMetre` en m³/h par mètre de gaine. */
   gaines: [
@@ -148,6 +230,36 @@ CATALOGUE.arroseursDe = function (marqueCle, type) {
   return CATALOGUE.arroseurs.filter(function (a) {
     return a.marqueCle === marqueCle && (!type || a.type === type);
   });
+};
+
+/* Les buses d'une marque pour un type d'arroseur, de la plus grande portée à
+   la plus petite : c'est dans cet ordre qu'on cherche celle qui tient. */
+CATALOGUE.busesDe = function (marqueCle, pourType) {
+  return CATALOGUE.buses
+    .filter(function (b) { return b.marqueCle === marqueCle && b.pourType === pourType; })
+    .sort(function (a, b) { return b.rayon - a.rayon; });
+};
+
+/* Tout ce qui peut porter un prix, à un seul endroit : c'est la liste qu'il
+   remplira dans son registre, et elle ne doit pas se tenir à deux endroits. */
+CATALOGUE.tousLesProduits = function () {
+  var out = [];
+  CATALOGUE.buses.forEach(function (b) {
+    out.push({ ref:b.ref, nom:'Buse ' + b.nom + ' — ' + (b.marque || 'Rain Bird'),
+               detail:'rayon ' + String(b.rayon).replace('.', ',') + ' m à ' +
+                      String(b.pression).replace('.', ',') + ' bar · par ' + b.colisage,
+               famille:'Buses' });
+  });
+  CATALOGUE.corps.forEach(function (c) {
+    out.push({ ref:c.ref, nom:c.nom, detail:c.detail || '', famille:'Corps d\'arroseur' });
+  });
+  CATALOGUE.gaines.forEach(function (g) {
+    out.push({ ref:g.ref, nom:g.nom, detail:g.detail, famille:'Goutte-à-goutte' });
+  });
+  CATALOGUE.materiel.forEach(function (m) {
+    out.push({ ref:m.ref, nom:m.nom, detail:m.unite === 'ml' ? 'au mètre' : '', famille:'Matériel' });
+  });
+  return out;
 };
 
 CATALOGUE.marqueParDefaut = function () {
