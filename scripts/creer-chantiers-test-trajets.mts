@@ -25,13 +25,24 @@
  * refuser). Ce sont les mairies des communes, à quelques centaines de mètres
  * près : bien assez pour un temps de trajet en camion.
  *
+ * **Un chantier est POSÉ d'office, sur la prochaine matinée libre.** La
+ * proposition par trajet part toujours d'un chantier DÉJÀ posé sur une
+ * demi-journée : sans point de départ, elle n'a rien à comparer et ne s'affiche
+ * pas. Cinq chantiers tous « sans date » ne montraient donc jamais la
+ * fonctionnalité — c'est le blocage signalé le 17 août 2026. Le script pose donc
+ * le premier (« Portail Rezé ») le matin ; son après-midi reste libre, et à
+ * l'ouverture de ce jour la proposition apparaît, classée par le trajet depuis
+ * Rezé. Les quatre autres restent « sans date » : ce sont les candidats proposés.
+ *
  * **Idempotent.** Les chantiers de test portent tous le préfixe « Chantier
  * test — » et leurs clients le suffixe « (test) » : on les efface avant de les
  * réinsérer, de sorte qu'un second passage ne les double pas. La suppression
  * est bornée à l'entreprise de démonstration par la RLS.
  *
  * **`withEntreprise`, jamais `db` en direct** (`CLAUDE.md` §3) : le contexte
- * d'isolation est posé, comme pour n'importe quel appel réel.
+ * d'isolation est posé, comme pour n'importe quel appel réel. La pose passe par
+ * `planifierChantier`, la même fonction que l'écran — jamais une seconde règle
+ * qui finirait par diverger.
  *
  * Lancement, sur le banc, avec la même base que l'application :
  *
@@ -41,6 +52,7 @@ import { eq, like, sql } from "drizzle-orm";
 import { pool, db } from "../src/server/db/client";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { entreprises, membresEntreprise, clients, chantiers } from "../src/server/db/schema";
+import { planifierChantier } from "../src/server/repositories/chantiers";
 import { distanceOiseauKm } from "../src/lib/appariement-demi-journees";
 
 type ChantierTest = {
@@ -102,6 +114,22 @@ const CHANTIERS: ChantierTest[] = [
 /** Une demi-journée, dans les mots que `dureeEnDemiJournees` reconnaît. */
 const DUREE_DEMI_JOURNEE = "une demi-journée";
 
+/**
+ * Le prochain jour ouvrable (lundi–vendredi) strictement après aujourd'hui.
+ *
+ * **Pourquoi pas aujourd'hui.** Un chantier posé « ce matin » a peut-être déjà
+ * commencé : le poser à venir laisse voir la proposition sans ambiguïté. On
+ * saute samedi et dimanche — l'artisan ne cale pas une intervention le week-end,
+ * et le planning barre ces jours.
+ */
+function prochainJourOuvrable(depuis: Date): string {
+  const d = new Date(Date.UTC(depuis.getUTCFullYear(), depuis.getUTCMonth(), depuis.getUTCDate()));
+  do {
+    d.setUTCDate(d.getUTCDate() + 1);
+  } while (d.getUTCDay() === 0 || d.getUTCDay() === 6);
+  return d.toISOString().slice(0, 10);
+}
+
 async function main() {
   // `entreprises` n'est pas sous RLS (drizzle/0001) : lecture directe permise.
   const lignesEntreprise = await db
@@ -133,6 +161,7 @@ async function main() {
   });
 
   const maintenant = new Date();
+  const idParNom: Record<string, string> = {};
 
   await withEntreprise(utilisateurId, entreprise.id, async (tx) => {
     // Effacer une éventuelle exécution précédente : le préfixe « Chantier
@@ -147,7 +176,7 @@ async function main() {
         .values({ entrepriseId: entreprise.id, nom: c.client, telephone: c.telephone })
         .returning();
 
-      await tx.insert(chantiers).values({
+      const [chantier] = await tx.insert(chantiers).values({
         entrepriseId: entreprise.id,
         clientId: client.id,
         nom: c.nom,
@@ -173,12 +202,36 @@ async function main() {
         updatedBy: utilisateurId,
         createdAt: maintenant,
         updatedAt: maintenant,
-      });
+      }).returning({ id: chantiers.id });
+      idParNom[c.nom] = chantier.id;
     }
   });
 
+  // **Poser le chantier de départ**, sinon la proposition n'a rien d'où partir.
+  // Le matin de la prochaine journée ouvrable ; l'après-midi reste libre. On
+  // passe par `planifierChantier` — la fonction même de l'écran — plutôt que
+  // par un UPDATE à la main, pour ne pas dupliquer sa logique d'équipe et
+  // d'occupation. `rangEquipe: 1` vise l'équipe A quand elles sont nommées ;
+  // sinon le chantier retombe sur la première ligne libre, ce qui suffit à
+  // créer le trou de l'après-midi.
+  const departNom = CHANTIERS[0].nom;
+  const jourDepart = prochainJourOuvrable(maintenant);
+  await planifierChantier({ utilisateurId, entrepriseId: entreprise.id }, idParNom[departNom], jourDepart, {
+    moment: "matin",
+    rangEquipe: 1,
+  });
+
+  const jourLisible = new Date(`${jourDepart}T12:00:00Z`).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  });
+
   console.log(`✅ ${CHANTIERS.length} chantiers de test ajoutés à « ${entreprise.nom} ».`);
-  console.log("   Tous : devis envoyé, une demi-journée, pas encore au planning.\n");
+  console.log(`   « ${departNom.replace("Chantier test — ", "")} » est posé le ${jourLisible} matin.`);
+  console.log(`   Ouvrez ce jour dans le planning : l'après-midi propose les plus proches.`);
+  console.log("   Les quatre autres restent « sans date » — ce sont les candidats.\n");
 
   // La matrice des distances à vol d'oiseau, pour VOIR l'espacement — et vérifier
   // qu'il est bien « plus ou moins espacé ». Le seuil d'appariement est à 40 km.

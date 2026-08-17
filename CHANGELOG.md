@@ -40,11 +40,64 @@ bascule. Rien n'est codé : `CLAUDE.md` §3 bis.
 
 **Et un contrôle de maquette que personne ne jouait** — `verifier-maquette-reduction.mjs`
 existait depuis le 16 août sans être branché nulle part. Raccroché, avec celui
-de la 68. Raisons : `ARCHITECTURE.md` §119.
+de la 68. Raisons : `ARCHITECTURE.md` §120.
 
 ---
 
 ## 2026-08-16
+
+### L'écran où vous composez votre fiche d'entretien
+
+**Réglages → Fiche d'entretien.** Vingt prestations rangées par famille, qui
+s'ajoutent, se retirent et se renomment — les familles aussi. C'est la planche
+`64-composer-sa-fiche.html`, telle qu'elle a été retenue.
+
+**Le retrait se défait**, comme partout depuis le 10 août : la ligne se barre,
+« Annuler » la ramène, et **rien n'est écrit tant que le tiroir est ouvert**.
+C'est le geste le plus coûteux de cet écran — une croix nue sur une liste
+composée à la main —, et c'est celui que la suite navigateur éprouve le plus.
+
+**La fiche vide propose, elle ne pose pas.** Elle montre les vingt prestations
+du modèle Atlas AVANT que vous n'appuyiez : vous choisissez en sachant. Rien
+n'est écrit en base parce que quelqu'un a ouvert un écran.
+
+**Trois garde-fous du dépôt ont rattrapé trois oublis**, et c'est leur rôle :
+l'icône empruntée à une autre rubrique, l'écran absent du préchauffage — donc
+lent sur votre banc —, et la rubrique glissée devant « Planning », ce qui
+bousculait vos quatre priorités.
+
+Et un défaut qui aurait rendu l'écran blanc : un fichier « use server » ne peut
+exporter que des fonctions, or les phrases de refus y étaient posées. Elles
+vivent désormais avec les règles pures, ce qui garantit aussi qu'un code de
+refus n'ait jamais deux phrases écrites à deux endroits.
+
+---
+
+### « L'apparence ne change pas » — c'était vrai, et aucun cache n'était en cause
+
+*Sa capture, la pastille « Nuit » cochée, l'écran resté crème.*
+
+**Mesuré avant d'être réparé**, en rejouant sa séquence — choisir, puis toucher
+les onglets du bas, sans jamais recharger : le fond restait `#f5f3ee` après
+l'appui, après « Chantiers », après « Planning », et ne passait à `#101210`
+qu'**au rechargement complet**. Le choix partait donc bien en base ; c'est
+l'écran qui ne le suivait pas.
+
+**La cause n'était pas un cache.** Les couleurs sont posées par le gabarit
+racine, sur `<html>` — et une navigation côté client ne rejoue pas ce gabarit.
+L'attribut restait celui du chargement initial, quoi qu'on invalide au serveur.
+Ni `revalidatePath` ni `router.refresh()` n'auraient réglé cela.
+
+**Le navigateur repeint donc le même élément**, dès l'appui, avec les mêmes
+jetons que le serveur. Le serveur garde son rôle — il pose la charte au premier
+rendu, sinon chaque page clignoterait avant de se repeindre. Un refus rend aussi
+la couleur d'avant.
+
+**Le contrôle existant était vert sur un chemin qu'il ne prend pas :** il
+rechargeait la page entre chaque écran. Le nouveau rejoue **sa séquence à lui**,
+et distingue « pas enregistré » de « enregistré mais pas peint ». Détail :
+`ARCHITECTURE.md` §119.
+
 
 ### La fiche d'entretien commence à exister : le modèle, en base
 
@@ -407,6 +460,15 @@ Nationale que le mandataire réseau du banc peut refuser. Les distances vont de
 5 à 42 km — le dernier (Pornic) au-delà du seuil de 40 km, pour éprouver aussi
 l'écart et le « Voir quand même ». Vérifié en base : cinq candidats reconnus,
 trois proposés, un écarté, zéro sans position.
+
+**Complété le 17 août : le script POSE le chantier de départ.** Cinq chantiers
+tous « sans date » ne montraient jamais la fonctionnalité — la proposition part
+d'un chantier DÉJÀ posé sur une demi-journée, et il n'y en avait aucun. Le patron
+s'est retrouvé bloqué, la pose à la main lui échappant. Le script pose désormais
+« Portail Rezé » le matin de la prochaine journée ouvrable (via
+`planifierChantier`, la fonction de l'écran) ; son après-midi reste libre, et à
+l'ouverture de ce jour le bandeau propose les plus proches. Vérifié en base à
+deux équipes : départ posé, trou de l'après-midi détecté, trois propositions.
 
 ### « Fais cinq pour cent sur le montant du devis »
 

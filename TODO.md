@@ -46,7 +46,7 @@ réduction. »*
 **Ma préférence : C**, puis B. C ne fabrique aucun geste nouveau et dit toujours
 ce qu'il fera ; B est ce qu'il a demandé, et se code en une heure. **Il tranche.**
 
-**Ce qui est DÉJÀ réparé, et ne l'attend pas** (`ARCHITECTURE.md` §119) : écrire
+**Ce qui est DÉJÀ réparé, et ne l'attend pas** (`ARCHITECTURE.md` §120) : écrire
 0 % retire la remise pour de bon, et la dictée aussi.
 
 ### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
@@ -202,10 +202,14 @@ une case à ajouter :
 1. ~~le **modèle** en base~~ — **FAIT le 16 août** : table `prestations_entretien`
    (migration `0051`), dépôt `src/server/repositories/prestations-entretien.ts`,
    règles pures dans `src/lib/prestations-entretien.ts`, suite
-   `scripts/test-prestations-entretien.ts`. **Reste son écran de Réglages** ;
-2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
-3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
-   porte déjà devis et factures ;
+   `scripts/test-prestations-entretien.ts` ;
+2. ~~son **écran de Réglages**~~ — **FAIT le 16 août** : Réglages → Fiche
+   d'entretien (`src/app/reglages/fiche-entretien/`), retrait réversible,
+   suite `scripts/test-fiche-entretien-e2e.ts` ;
+3. le **passage** : la fiche pré-remplie, cochée, le temps à la molette
+   (celle du téléphone — « la A ») ;
+4. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
+   porte déjà devis et factures, plus le « J'ai bien reçu » horodaté ;
 4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
 
 Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
@@ -337,11 +341,12 @@ développement. À chaque allumage qui récupère du code — d'où trois redém
 sans effet. `build` est entré dans le motif
 (`scripts/test-verrou-construction.ts`).
 
-**Ce qui reste à surveiller, et qui n'est PAS tranché :** sa construction met
-manifestement très longtemps sur sa machine (8 Go, sans zone d'échange). Ici
-elle prend deux minutes. Si, le motif corrigé, elle n'aboutit toujours pas dans
-un délai raisonnable, la piste suivante est de **ne pas bâtir pendant qu'on
-sert** — mais il faudra le mesurer avant de le coder, pas le supposer.
+**CONFIRMÉ CHEZ LUI le 16 août 2026 au soir**, et c'est ce qui clôt le sujet :
+correctif poussé, un redémarrage, et sa réponse — *« elle est rapide »*. La
+construction aboutit donc bien sur sa machine une fois qu'on cesse de lui en
+orpheliner une. **La piste « ne pas bâtir pendant qu'on sert » est écartée : ce
+n'était pas une question de ressources.** Ne pas la rouvrir sans une mesure qui
+la justifie.
 
 ### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
 

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { CHARTES, type Charte, type NomCharte } from "@/lib/chartes";
+import { CHARTES, charte, type Charte, type NomCharte } from "@/lib/chartes";
 import { choisirCharteAction } from "./actions";
 
 /**
@@ -28,15 +28,56 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
+  /**
+   * **Repeindre `<html>` À LA MAIN, tout de suite — le correctif du 16 août 2026.**
+   *
+   * Le patron, capture de cet écran à l'appui, la pastille « Nuit » cochée :
+   * *« l'apparence ne change pas »*. C'était exact, et mesuré avant d'être
+   * réparé (`ARCHITECTURE.md` §115) : le choix partait bien en base, mais
+   * l'écran restait dans l'ancienne charte **jusqu'au prochain rechargement
+   * complet** — sur l'écran même, puis sur « Chantiers », puis sur
+   * « Planning ». Il ne recharge jamais : il touche les onglets du bas.
+   *
+   * **Pourquoi ni `revalidatePath` ni `router.refresh()`.** Les variables sont
+   * posées par le gabarit RACINE, sur l'élément `<html>`. Or ce gabarit est
+   * partagé par tous les écrans : une navigation côté client ne le rejoue pas,
+   * elle ne remplace que le contenu — l'attribut `style` de `<html>` reste donc
+   * celui du document initial, quoi qu'on invalide au serveur. Et
+   * `revalidatePath("/", "layout")` avait déjà été retiré pour une bonne
+   * raison : il vidait le cache de toute l'application à chaque appui.
+   *
+   * **C'est le même élément pendant toute la visite**, et c'est ce qui rend ce
+   * geste juste plutôt que rustique : on écrit sur `<html>` exactement ce que le
+   * serveur y aurait écrit, avec les mêmes jetons (`src/lib/chartes.ts`), donc
+   * la couleur suit le doigt sans aller-retour et survit à toutes les
+   * navigations qui suivent.
+   *
+   * **Le serveur garde son rôle**, et il ne fait pas double emploi : c'est lui
+   * qui pose la charte au PREMIER rendu, sans quoi l'écran s'afficherait en
+   * couleurs d'origine avant de se repeindre — un clignotement à chaque page.
+   */
+  function repeindre(nom: NomCharte) {
+    const jetons = charte(nom).jetons;
+    const racine = document.documentElement;
+    for (const [cle, valeur] of Object.entries(jetons)) {
+      racine.style.setProperty(`--atlas-${cle}`, valeur);
+    }
+  }
+
   function choisir(nom: NomCharte) {
     const avant = choisie;
     // Prise à l'écran sans attendre le serveur : le doigt a fait son geste, et
     // une pastille qui met une seconde à se remplir se touche deux fois.
     setChoisie(nom);
+    repeindre(nom);
     demarrer(async () => {
       const r = await choisirCharteAction(nom);
       if (!r.ok) {
+        // La couleur revient AVEC la pastille : laisser l'écran repeint alors
+        // que rien n'est enregistré lui ferait croire au contraire de ce que
+        // dit le message de refus juste au-dessus.
         setChoisie(avant);
+        repeindre(avant);
         setRefus(r.raison);
         return;
       }
