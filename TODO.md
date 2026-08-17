@@ -27,6 +27,54 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quadragies bis. La fiche client — DESSINÉE, en attente de ses deux lettres
+
+*`maquettes/atlas-fiche-client.html`, le 17 août 2026 — trois écrans,
+29 contrôles. Sa demande : « j'ai oublié de rentrer les infos du client […] que
+je puisse cliquer sur le client du dix-sept août […] et que ça me mette
+directement sur la page client où je peux rentrer ces informations par la dictée
+ou par l'écrit ».*
+
+**CE QUI A ÉTÉ TROUVÉ EN REGARDANT LE CODE, ET QUI CHANGE LA DEMANDE.**
+
+1. **Il n'existe AUCUN écran de fiche client.** Ce n'est pas une omission de la
+   maquette : `DevisCompletClient.tsx` le dit en toutes lettres — *« la civilité
+   ne se corrige plus après coup, faute d'écran de fiche client »*. Le nom,
+   l'adresse, le téléphone et l'e-mail ne se saisissent qu'à UN endroit, le
+   document du devis, et **seulement tant qu'il n'est pas parti**.
+2. **Son chantier du 17 août n'a pas de client du tout.** « Chantier du lundi
+   17 août » est le titre que fabrique `nom-chantier.ts` quand il n'y a **ni
+   client ni adresse**. L'écran doit donc savoir en CRÉER une, pas seulement
+   corriger.
+
+**LES DEUX LETTRES ATTENDUES :**
+
+| | Ce qui se décide |
+|---|---|
+| **Écran 1** | A — la mention « Adresse non renseignée » devient le bouton, la ligne garde sa reprise · B — toute la ligne mène à la fiche tant que le client manque |
+| **Écran 3** | A — la dictée propose, il coche (son choix du 15 août pour le devis) · B — elle remplit tout de suite |
+
+**Le vrai enjeu de l'écran 1**, et il faut le lui dire tel quel : sa règle du
+13 août — *« il ne me restait qu'à envoyer mon devis »* — a fait que toucher un
+chantier REPREND le travail. B est une exception à cette règle. L'avis écrit sur
+la planche est **B**, au motif que la règle protégeait son TEMPS et non une
+destination : reprendre un devis sans client, c'est justement le parcours
+inutile.
+
+**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis). Ce que le lot exigera, quelle que soit
+sa réponse :
+
+- un écran de fiche client, et une route qui y mène ;
+- **la civilité redevient corrigeable** — conséquence gratuite, aujourd'hui
+  assumée comme un manque dans le code ;
+- **la dictée d'un nom et d'une adresse n'existe nulle part.** Celle du devis ne
+  sait toucher que les lignes et la remise (`retouches-devis.ts`) : c'est le vrai
+  travail derrière l'écran 3.
+
+**Ce qui NE change pas, et la planche le dit :** un devis déjà parti reste figé.
+La fiche corrige le CLIENT, pas le document que le client a reçu — c'est la
+prochaine version qui portera la bonne adresse.
+
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 
 *Dessiné (`maquettes/atlas-rappel-facture-impayee.html`, cinq écrans), tranché,

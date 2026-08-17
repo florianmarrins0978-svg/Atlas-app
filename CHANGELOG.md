@@ -7,6 +7,27 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-17
+
+### DESSINÉ : la fiche client, depuis l'accueil — rien n'est codé
+
+Sa demande : *« j'ai oublié de rentrer les infos du client […] que je puisse
+cliquer sur le client du dix-sept août […] et que ça me mette directement sur la
+page client où je peux rentrer ces informations par la dictée ou par l'écrit »*.
+
+**Deux découvertes en regardant le code, et elles changent la demande.** Il
+n'existe **aucun écran de fiche client** — le code le dit lui-même : *« faute
+d'écran de fiche client »* —, et son chantier du 17 août n'a **pas de client du
+tout**, ce que son titre auto trahit. L'écran doit donc savoir en créer une.
+
+Trois écrans (`maquettes/atlas-fiche-client.html`), 29 contrôles, confrontés à
+quatre planches dégradées : quatre rouges, chacun nommant le bon coupable. Le
+contrôle a d'ailleurs trouvé un vrai défaut de la planche — la coque du téléphone
+restait sur mobile, et l'écran tombait à 336 px au lieu de 390.
+
+**Deux lettres attendues** : où va le doigt sur la ligne, et si la dictée
+propose ou remplit. `TODO.md` §0 quadragies bis.
+
 ## 2026-08-16
 
 ### CODÉ : le rappel « facture impayée », et le premier rappel qui a un rythme

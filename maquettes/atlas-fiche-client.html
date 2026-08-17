@@ -1,0 +1,567 @@
+<title>Atlas — la fiche client, depuis l'accueil</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT. Son lecteur n'en exécute pas — trois maquettes
+    engendrées en JavaScript ne se sont jamais affichées chez lui. Ce qui bouge
+    ici bouge en CSS pur : une case masquée, un libellé qui la coche.
+    TOUCHEZ les propositions des écrans 1 et 3, elles s'ouvrent.
+
+    ─── SA DEMANDE, LE 17 AOÛT 2026 ──────────────────────────────────────────
+
+    *« J'ai oublié de rentrer les infos du client. Il faut qu'à partir de cette
+    page, il y a marqué adresse non renseignée, que je puisse cliquer sur le
+    client du dix-sept août du coup et que ça me mette directement sur la page,
+    la page client où je peux rentrer ces informations par la dictée ou par
+    l'écrit. »*
+
+    ─── CE QUE J'AI TROUVÉ EN REGARDANT LE CODE, ET QUI CHANGE LA QUESTION ───
+
+    **Il n'y a AUCUN écran de fiche client.** Ce n'est pas une omission de la
+    maquette : c'est écrit dans le code lui-même, en toutes lettres — *« la
+    civilité ne se corrige plus après coup, FAUTE D'ÉCRAN DE FICHE CLIENT »*
+    (`DevisCompletClient.tsx`). Le nom, l'adresse, le téléphone et l'e-mail du
+    client ne se saisissent aujourd'hui qu'à UN endroit : dans le document du
+    devis, et **seulement tant qu'il n'est pas parti**. Une fois envoyé, le
+    document est figé — plus rien ne se corrige nulle part.
+
+    **Et son chantier du 17 août n'a PAS de client du tout.** Son titre le dit
+    sans le vouloir : « Chantier du lundi 17 août » est le nom que fabrique
+    Atlas quand il n'a **ni client ni adresse** (`nom-chantier.ts`). L'écran ne
+    doit donc pas seulement corriger une fiche : il doit savoir en CRÉER une.
+
+    ─── LES DEUX VRAIES QUESTIONS, ET ELLES NE SONT PAS DE DESSIN ────────────
+
+    1. **Que fait le doigt sur la ligne ?** Depuis sa règle du 13 août — *« il
+       ne me restait qu'à envoyer mon devis »* —, toucher un chantier REPREND
+       le travail là où il s'est arrêté. Sur le 17 août, cette reprise mène au
+       devis. Le faire mener ailleurs quand l'adresse manque, c'est une
+       exception à une règle qu'il a lui-même posée. Écran 1.
+
+    2. **Que fait la dictée ?** Elle remplit, ou elle propose ? Le 15 août,
+       devant la dictée du devis, il a tranché « la A » : *elle propose, il
+       coche*. Une adresse mal entendue et écrite d'office partirait sur un
+       document qui va chez le client. Écran 3.
+  */
+
+  :root{
+    --fond:#f5f3ee;   /* colors.cream */
+    --plage:#faf9f5;  /* colors.card  */
+    --encre:#1c1c1a;  /* colors.ink   */
+    --gris:#8a8578;   /* colors.muted */
+    --bronze:#b98b47; /* colors.or */
+    --trait:rgba(28,28,26,.12); /* colors.line */
+    --alerte:#9c3b2e; /* colors.alert */
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c9a15e; --trait:rgba(232,231,221,.15); --alerte:#d0705f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c9a15e; --trait:rgba(232,231,221,.15); --alerte:#d0705f;
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+  .loupe{display:none}
+  @media (min-width:1000px){
+    .loupe{display:block;margin:18px auto 0;padding-top:14px;max-width:56ch;
+           border-top:1px solid var(--trait);font-size:13.5px;color:var(--gris)}
+  }
+
+  .titre-ecran{max-width:62ch;margin:76px auto 30px;text-align:center}
+  .titre-ecran .sur{margin:0 0 12px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .titre-ecran h2{margin:0 0 12px;font:400 25px/1.3 ui-serif,Georgia,serif}
+  .titre-ecran p{margin:0;color:var(--gris);font-size:14.5px}
+  .titre-ecran strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:412px;max-width:100%}
+
+  @media (min-width:1000px){
+    .rangee{flex-direction:column;flex-wrap:nowrap;gap:80px;align-items:center}
+    .prop{display:grid;width:auto;max-width:none;column-gap:52px;
+          grid-template-columns:auto 320px;
+          grid-template-rows:auto auto 1fr;
+          grid-template-areas:"tel sous" "tel note" "tel .";
+          justify-items:start}
+    .prop .tel{grid-area:tel;zoom:1.35}
+    .prop .sous{grid-area:sous;text-align:left;align-self:start;padding-top:50px}
+    .prop .note{grid-area:note;text-align:left;max-width:none;align-self:start;
+                font-size:14px;line-height:1.7}
+  }
+  @media (min-width:1500px){
+    .prop{grid-template-columns:auto 360px}
+    .prop .tel{zoom:1.6}
+    .prop .sous{padding-top:59px}
+  }
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+  .note .q{color:var(--bronze);font-weight:600}
+  .note .cout{color:var(--alerte);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-bronze:#b98b47; --e-trait:rgba(28,28,26,.12); --e-plein:#2f3b2f;
+         --e-plein-encre:#f5f3ee; --e-alerte:#9c3b2e}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  /* `EnTeteEcran`, valeur pour valeur. */
+  .tete{padding:34px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .tete .avant{margin:0 0 10px;font:400 15px/1.3 ui-serif,Georgia,serif;color:var(--e-gris)}
+  .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q1{left:14px}
+
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
+  .corps > .bloc:first-of-type{border-top:0;padding-top:0;margin-top:26px}
+  .bloc .t{margin:0 0 10px;color:var(--e-gris)}
+
+  /* ═══ LA LIGNE DE CHANTIER, telle que `ListeChantiers.tsx` la pose ═══════
+     Grille 47px / reste, écart de 26 px, 17 px de haut et de bas. Le nom en
+     serif à 19 px, le lieu à 11,5 px gris, l'état en petites capitales.
+     Recopiée au pixel : une ligne redessinée « à peu près » ferait juger un
+     écran qui n'est pas le sien. */
+  .liste{margin:20px 0 0;padding:0 26px}
+  .brin{position:relative;display:grid;grid-template-columns:47px 1fr;column-gap:26px;padding:17px 0}
+  .brin .jour{text-align:right;font:400 21px/1 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .brin .mois{display:block;margin-top:5px;color:var(--e-gris);font-size:8.5px;
+              letter-spacing:.28em;text-transform:uppercase}
+  .brin h2{margin:0;font:400 19px/1.15 ui-serif,Georgia,serif;
+           overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .brin .lieu{margin:3px 0 0;font-size:11.5px;color:var(--e-gris)}
+  .brin .etat{margin:7px 0 0;color:var(--e-bronze)}
+  /* Le fil vertical et la perle : le seul point de couleur de l'écran. */
+  .fil{position:absolute;left:59px;top:0;bottom:0;width:1px;background:var(--e-trait)}
+  .perle{position:absolute;left:55.5px;width:10px;height:10px;border-radius:99px;
+         background:var(--e-bronze);top:214px}
+
+  /* Ce qui distingue les deux propositions de l'écran 1. */
+  .brin .lieu.manque{color:var(--e-alerte)}
+  .brin .lieu .bouton{display:inline-block;margin-left:8px;padding:9px 12px;min-height:32px;border-radius:99px;
+                      font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+                      color:var(--e-plein);box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .brin.mene .corps_brin{box-shadow:inset 0 0 0 1px var(--e-bronze);border-radius:10px;
+                         padding:10px 12px;margin:-10px -12px}
+
+  /* ═══ LA FICHE CLIENT, l'écran qui n'existe pas ═════════════════════════
+     `ChampNu` du devis, valeur pour valeur : pas de cadre, un trait sous le
+     texte, 16 px au moins — en dessous, iOS agrandit la page à la mise au
+     point, et il perd sa place. */
+  .champ{display:block;padding:13px 0;border-bottom:1px solid var(--e-trait)}
+  .bloc .champ:last-of-type{border-bottom:0}
+  .champ .et{display:block;margin-bottom:5px;color:var(--e-gris);
+             font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;font-weight:500}
+  .champ .val{display:block;font-size:16px;line-height:1.4;color:var(--e-encre)}
+  .champ .val.vide{color:var(--e-gris)}
+  .champ .val.long{min-height:44px}
+
+  /* Le micro : la même pastille que le devis — ronde, pleine, en haut à droite. */
+  .rangee-tete{display:flex;align-items:flex-start;justify-content:space-between;
+               margin:0 26px;padding-top:26px}
+  .micro{flex:none;display:flex;align-items:center;justify-content:center;
+         width:44px;height:44px;border-radius:99px;background:var(--e-plein)}
+  .micro svg{display:block}
+  .retour{flex:none;display:flex;align-items:center;justify-content:center;
+          width:36px;height:36px;border-radius:99px;background:var(--e-plage)}
+
+  /* Ce que la dictée a compris, quand elle PROPOSE au lieu d'écrire. */
+  .prop-dictee{margin:12px 0 0;border-radius:10px;background:var(--e-plage);padding:14px 16px}
+  .prop-dictee .dit{margin:0 0 12px;font-size:12.5px;line-height:1.6;color:var(--e-gris);font-style:italic}
+  .coche{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--e-trait)}
+  .prop-dictee .coche:last-of-type{border-bottom:0}
+  .coche .case{flex:none;width:20px;height:20px;border-radius:4px;margin-top:2px;
+               background:var(--e-plein);position:relative}
+  .coche .case.off{background:transparent;box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .coche .case svg{position:absolute;top:4px;left:3px}
+  .coche .case.off svg{display:none}
+  .coche .quoi{flex:1;min-width:0;font-size:13px;line-height:1.45}
+  .coche .quoi b{font-weight:500}
+  .coche .quoi i{display:block;margin-top:2px;font-size:11px;color:var(--e-gris);font-style:normal}
+  .valider{margin:14px 0 0;padding:13px;border-radius:6px;background:var(--e-plein);
+           color:var(--e-plein-encre);text-align:center;font-size:14px;font-weight:500}
+
+  /* ═══ LES PROPOSITIONS, dépliables au doigt ═════════════════════════════
+     Elles portent une lettre parce qu'il répond par une lettre. */
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+  .choix{display:block;padding:14px 0;border-bottom:1px solid var(--e-trait)}
+  .bloc .choix:last-of-type{border-bottom:0}
+  .choix .entete{display:flex;gap:12px;align-items:flex-start}
+  .choix .lettre{flex:none;display:flex;align-items:center;justify-content:center;
+                 width:26px;height:26px;border-radius:99px;background:var(--e-plage);
+                 font:400 13px/1 ui-serif,Georgia,serif;color:var(--e-bronze)}
+  .choix .corps_choix{flex:1;min-width:0}
+  .choix .titre_c{display:block;font:400 16px/1.3 ui-serif,Georgia,serif}
+  .choix .quoi{display:block;margin-top:4px;font-size:11.5px;line-height:1.6;color:var(--e-gris)}
+  .choix .cout{display:block;margin-top:5px;font-size:11px;color:var(--e-bronze);
+               text-transform:uppercase;letter-spacing:.22em}
+  .choix .plus{display:none;margin:10px 0 0 38px;padding:11px 13px;border-radius:4px;
+               background:var(--e-plage);font-size:12.5px;line-height:1.6;color:var(--e-gris)}
+  .choix .plus b{color:var(--e-encre);font-weight:500}
+  .interrupteur:checked + .choix .plus{display:block}
+  .choix .toucher{display:block;margin-top:6px;margin-left:38px;font-size:11px;color:var(--e-bronze);
+                  text-transform:uppercase;letter-spacing:.22em}
+  .interrupteur:checked + .choix .toucher{visibility:hidden}
+
+  .avis{max-width:60ch;margin:40px auto 0;padding:16px 20px;border-radius:6px;
+        background:var(--plage);font-size:14px;line-height:1.7;color:var(--gris);
+        border-left:3px solid var(--bronze)}
+  .avis b{color:var(--encre);font-weight:600}
+
+  .fin{margin:80px auto 0;max-width:64ch;padding-top:26px;border-top:1px solid var(--trait);
+       font-size:14px;line-height:1.75;color:var(--gris)}
+  .fin h3{margin:0 0 14px;font:400 19px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+  .fin b{color:var(--encre);font-weight:600}
+  .fin ul{margin:0;padding-left:20px}
+  .fin li{margin:0 0 9px}
+
+  /* SUR SON TÉLÉPHONE, LA COQUE DISPARAÎT. Sans cette règle, le faux boîtier
+     de 11 px et les 16 px de marge du corps mangent 54 px : l'écran tombe à
+     336 px au lieu de 390, et TOUT ce que la planche montre est rétréci d'un
+     sixième sans que rien ne le dise. Trouvé par son propre contrôle. */
+  @media (max-width:520px){
+    body{padding:26px 0 72px}
+    .intro,.titre-ecran,.sous,.note,.avis,.fin{padding-left:16px;padding-right:16px}
+    .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
+    .ecran{border-radius:0}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le 17 août 2026 · rien n'est codé</p>
+    <h1>« Que je puisse cliquer sur le client&nbsp;»</h1>
+    <p>Vous avez oublié les infos du client du 17&nbsp;août, et la ligne le dit déjà :
+       <strong>Adresse non renseignée</strong>. Vous voulez la toucher et arriver
+       <strong>directement</strong> là où ça se remplit — à la voix ou au clavier.</p>
+    <p>En regardant le code, deux choses ont changé la question. <strong>Il n'existe aucune fiche
+       client</strong> : le nom, l'adresse et le téléphone ne se saisissent que dans le document du
+       devis, et seulement tant qu'il n'est pas parti. Et <strong>ce chantier-là n'a pas de client
+       du tout</strong> — « Chantier du lundi 17 août » est le titre qu'Atlas fabrique quand il n'a
+       ni client ni adresse.</p>
+    <p class="loupe">Trois écrans. Le premier et le dernier posent une question et attendent une
+       lettre ; celui du milieu montre l'écran qui manque. Touchez les propositions, elles
+       s'ouvrent.</p>
+  </div>
+
+  <!-- ════════════ ÉCRAN 1 — CE QUE FAIT LE DOIGT SUR LA LIGNE ════════════ -->
+  <div class="titre-ecran">
+    <p class="sur">Écran 1 · une lettre attendue</p>
+    <h2>Où va le doigt&nbsp;?</h2>
+    <p>Depuis votre règle du 13 août — <strong>toucher un chantier, c'est reprendre</strong> —, cette
+       ligne mène là où le travail s'est arrêté : ici, le devis prêt à partir. La faire mener
+       ailleurs quand l'adresse manque est une <strong>exception à une règle que vous avez posée</strong>.
+       Voici les deux façons de vous donner ce que vous demandez.</p>
+  </div>
+
+  <div class="rangee" data-s="ecran1">
+
+    <!-- A — la mention devient le bouton -->
+    <div class="prop" data-s="a1">
+      <div class="tel"><div class="ecran">
+        <div class="tete">
+          <p class="sur caps">Bonjour compte</p>
+          <h1>Vos chantiers</h1>
+        </div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="liste" style="position:relative">
+            <div class="fil"></div><div class="perle"></div>
+            <div class="brin">
+              <div><span class="jour">17</span><span class="mois">Août</span></div>
+              <div class="corps_brin">
+                <h2>Chantier du lundi 17 août</h2>
+                <p class="lieu manque">Adresse non renseignée
+                   <span class="bouton">Compléter</span></p>
+                <p class="etat caps">Devis prêt à envoyer · sans photo</p>
+              </div>
+            </div>
+            <div class="brin">
+              <div><span class="jour">16</span><span class="mois">Août</span></div>
+              <div class="corps_brin">
+                <h2>Mr. Ehouzan</h2>
+                <p class="lieu">40 rue Aristide Briand</p>
+                <p class="etat caps">Devis prêt à envoyer · sans photo</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><i class="q1"></i>
+          <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
+        </div>
+      </div></div>
+      <p class="sous">A · la mention devient le bouton</p>
+      <p class="note"><b>La ligne ne change pas de destination.</b> Elle reprend le travail comme
+         toujours ; c'est la mention en rouge qui porte le geste, et elle ne paraît que
+         lorsqu'il manque quelque chose.
+         <span class="cout">Ce qu'elle coûte :</span> deux cibles sur une même ligne, sous un pouce
+         ganté. La pastille fait 32&nbsp;px de haut pour rester attrapable, et elle mange un peu de
+         la largeur du lieu.</p>
+    </div>
+
+    <!-- B — toute la ligne mène à la fiche -->
+    <div class="prop" data-s="b1">
+      <div class="tel"><div class="ecran">
+        <div class="tete">
+          <p class="sur caps">Bonjour compte</p>
+          <h1>Vos chantiers</h1>
+        </div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="liste" style="position:relative">
+            <div class="fil"></div><div class="perle"></div>
+            <div class="brin mene">
+              <div><span class="jour">17</span><span class="mois">Août</span></div>
+              <div class="corps_brin">
+                <h2>Chantier du lundi 17 août</h2>
+                <p class="lieu manque">Adresse non renseignée</p>
+                <p class="etat caps">À compléter avant d'envoyer</p>
+              </div>
+            </div>
+            <div class="brin">
+              <div><span class="jour">16</span><span class="mois">Août</span></div>
+              <div class="corps_brin">
+                <h2>Mr. Ehouzan</h2>
+                <p class="lieu">40 rue Aristide Briand</p>
+                <p class="etat caps">Devis prêt à envoyer · sans photo</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><i class="q1"></i>
+          <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
+        </div>
+      </div></div>
+      <p class="sous">B · toute la ligne y mène</p>
+      <p class="note"><b>Tant qu'il manque le client, la ligne entière mène à sa fiche</b> — et elle
+         retrouve sa reprise habituelle dès qu'il est rempli. Le cadre doré dit où l'on ira.
+         <b>L'état change aussi</b> : « à compléter avant d'envoyer », parce qu'un devis sans
+         client ne peut pas partir.
+         <span class="cout">Ce qu'elle coûte :</span> la ligne ne mène plus toujours au même
+         endroit. C'est exactement ce que votre règle du 13 août voulait éviter — mais ici
+         l'écran le DIT avant qu'on touche.</p>
+    </div>
+
+  </div>
+
+  <p class="avis" data-s="avis1"><b>Ce que je ferais : B.</b> Votre règle du 13 août disait
+     « ne me refais pas tout le parcours » — elle protégeait votre TEMPS, pas une destination
+     fixe. Or ici, reprendre le devis sans client, c'est justement le parcours inutile : vous
+     arriveriez sur un document qu'on ne peut pas envoyer. B tient donc la règle plutôt qu'elle
+     ne l'enfreint. Et A demande de viser une pastille de 32 px collée à un texte de 11,5 px,
+     avec des gants.</p>
+
+  <!-- ════════════ ÉCRAN 2 — LA FICHE QUI N'EXISTE PAS ════════════ -->
+  <div class="titre-ecran">
+    <p class="sur">Écran 2 · à regarder, rien à choisir</p>
+    <h2>La fiche client</h2>
+    <p>L'écran qui manque. Un seul endroit où le client se remplit et se corrige,
+       <strong>même après l'envoi du devis</strong> — aujourd'hui, un devis parti fige tout et
+       plus rien ne se rattrape.</p>
+  </div>
+
+  <div class="rangee" data-s="fiche">
+    <div class="prop" data-s="fiche-prop">
+      <div class="tel"><div class="ecran">
+        <div class="rangee-tete">
+          <span class="retour">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="2.4">
+              <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="micro">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f5f3ee" stroke-width="1.8">
+              <rect x="9" y="3" width="6" height="11" rx="3"/>
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+        <div class="tete" style="padding-top:14px">
+          <p class="avant">Chantier du lundi 17 août</p>
+          <p class="sur caps">Le client</p>
+          <h1>À renseigner</h1>
+        </div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Qui</p>
+            <span class="champ"><span class="et">Civilité et nom</span>
+              <span class="val vide">Monsieur, Madame, ou une société</span></span>
+            <span class="champ"><span class="et">Adresse</span>
+              <span class="val long vide">Numéro, rue, code postal, ville</span></span>
+            <span class="champ"><span class="et">Téléphone</span>
+              <span class="val vide">06 12 34 56 78</span></span>
+            <span class="champ"><span class="et">E-mail</span>
+              <span class="val vide">Pour lui envoyer le devis</span></span>
+          </div>
+          <div class="bloc">
+            <p class="t caps">Où sont les travaux</p>
+            <span class="champ"><span class="et">Adresse du chantier</span>
+              <span class="val long vide">Vide = la même que celle du client</span></span>
+          </div>
+        </div>
+        <div class="bas"><i class="q1"></i>
+          <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
+        </div>
+      </div></div>
+      <p class="sous">La fiche · ce qu'elle porte</p>
+      <p class="note"><b>Cinq champs, et pas un de plus.</b> Ce sont exactement ceux que le devis
+         imprime en tête. En ajouter (un SIRET, une note) ferait un formulaire ; ceci est une fiche.
+         <br><br><b>L'adresse du chantier est la dernière, et vide par défaut</b> : chez la plupart
+         des clients, les travaux sont chez eux. La demander d'office ferait taper deux fois la
+         même adresse — ce que le devis évite déjà (<span class="q">« l'adresse n'est pas au bon
+         endroit »</span>, le 6 août).
+         <br><br><b>Le micro est en haut à droite</b>, à la même place que sur le devis. Un micro qui
+         change de coin d'un écran à l'autre se cherche.</p>
+    </div>
+  </div>
+
+  <!-- ════════════ ÉCRAN 3 — CE QUE FAIT LA DICTÉE ════════════ -->
+  <div class="titre-ecran">
+    <p class="sur">Écran 3 · une lettre attendue</p>
+    <h2>La dictée écrit-elle, ou propose-t-elle&nbsp;?</h2>
+    <p>Vous dites : <em>« Monsieur Martins, quarante rue Aristide Briand à Vertou,
+       zéro six soixante-dix-neuf quatre-vingt-dix-huit quarante-cinq quatorze. »</em>
+       Le 15 août, devant la dictée du devis, vous aviez tranché <strong>« la A » — elle propose,
+       vous cochez</strong>. La question se repose ici parce qu'une fiche a moins de champs qu'un
+       devis, et qu'on pourrait vouloir aller plus vite.</p>
+  </div>
+
+  <div class="rangee" data-s="ecran3">
+
+    <!-- A — elle propose, il coche -->
+    <div class="prop" data-s="a3">
+      <div class="tel"><div class="ecran">
+        <div class="tete" style="padding-top:26px">
+          <p class="avant">Chantier du lundi 17 août</p>
+          <p class="sur caps">Le client</p>
+          <h1>À renseigner</h1>
+        </div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Ce que j'ai compris</p>
+            <div class="prop-dictee">
+              <p class="dit">« Monsieur Martins, quarante rue Aristide Briand à Vertou, zéro six
+                 soixante-dix-neuf quatre-vingt-dix-huit quarante-cinq quatorze. »</p>
+              <div class="coche"><span class="case">
+                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="#f5f3ee" stroke-width="2.2">
+                  <path d="M1 6l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="quoi"><b>M. Martins</b><i>Civilité et nom</i></span></div>
+              <div class="coche"><span class="case">
+                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="#f5f3ee" stroke-width="2.2">
+                  <path d="M1 6l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="quoi"><b>40 rue Aristide Briand, Vertou</b><i>Adresse</i></span></div>
+              <div class="coche"><span class="case off">
+                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="#f5f3ee" stroke-width="2.2">
+                  <path d="M1 6l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="quoi"><b>06 79 98 45 14</b><i>Téléphone — décochez si ce n'est pas ça</i></span></div>
+              <div class="valider">Reporter ce qui est coché</div>
+            </div>
+          </div>
+        </div>
+        <div class="bas"><i class="q1"></i>
+          <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
+        </div>
+      </div></div>
+      <p class="sous">A · elle propose, vous cochez</p>
+      <p class="note"><b>Rien ne bouge avant votre appui</b> — c'est votre proposition A du 15 août,
+         appliquée telle quelle. Ce que la dictée a mal entendu se décoche au lieu de se corriger.
+         <span class="cout">Ce qu'elle coûte :</span> un geste de plus, à chaque dictée.</p>
+    </div>
+
+    <!-- B — elle remplit directement -->
+    <div class="prop" data-s="b3">
+      <div class="tel"><div class="ecran">
+        <div class="tete" style="padding-top:26px">
+          <p class="avant">Chantier du lundi 17 août</p>
+          <p class="sur caps">Le client</p>
+          <h1>M. Martins</h1>
+        </div>
+        <div class="cheveu"></div>
+        <div class="corps">
+          <div class="bloc">
+            <p class="t caps">Qui</p>
+            <span class="champ"><span class="et">Civilité et nom</span>
+              <span class="val">M. Martins</span></span>
+            <span class="champ"><span class="et">Adresse</span>
+              <span class="val long">40 rue Aristide Briand, Vertou</span></span>
+            <span class="champ"><span class="et">Téléphone</span>
+              <span class="val">06 79 98 45 14</span></span>
+            <span class="champ"><span class="et">E-mail</span>
+              <span class="val vide">Pour lui envoyer le devis</span></span>
+          </div>
+        </div>
+        <div class="bas"><i class="q1"></i>
+          <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
+        </div>
+      </div></div>
+      <p class="sous">B · elle remplit tout de suite</p>
+      <p class="note"><b>Un seul geste : vous parlez, c'est écrit.</b> Les champs restent
+         modifiables au doigt derrière.
+         <span class="cout">Ce qu'elle coûte, et ce n'est pas rien :</span> une adresse mal
+         entendue s'installe <b>sans que rien ne le signale</b>, et c'est cette adresse qui part
+         sur le devis, puis sur la facture. Un numéro à un chiffre près se relit mal une fois
+         écrit — c'est précisément pourquoi vous aviez choisi A pour le devis.</p>
+    </div>
+
+  </div>
+
+  <p class="avis" data-s="avis3"><b>Ce que je ferais : A, la même qu'au devis.</b> Une adresse
+     est ce qui va sur le document que le client reçoit, et une erreur d'un chiffre s'y relit
+     mal. Le geste en plus coûte une seconde ; une facture qui n'arrive pas coûte un
+     recouvrement. Si vous préférez B, la moitié du travail est la même — c'est la
+     compréhension du nom et de l'adresse qui est neuve, pas l'affichage.</p>
+
+  <div class="fin">
+    <h3>Ce que cette planche ne décide pas</h3>
+    <ul>
+      <li><b>Le devis parti reste figé, et c'est voulu.</b> La fiche client corrigera le CLIENT,
+        pas le document déjà envoyé — un devis que le client a reçu ne peut pas changer dans son
+        dos. Ce que ça change concrètement : la prochaine version portera la bonne adresse.</li>
+      <li><b>La civilité redevient corrigeable.</b> Aujourd'hui elle se choisit à la création et
+        jamais plus, faute de cet écran — c'est écrit dans le code comme une conséquence assumée.
+        La fiche la rouvre, sans qu'on ait rien à décider de plus.</li>
+      <li><b>Aucun autre écran n'y mène encore.</b> Cette planche ne pose que le chemin depuis
+        l'accueil, celui que vous avez demandé. La fiche du chantier pourrait y mener aussi —
+        elle affiche déjà « Client non renseigné — adresse non renseignée », sans aucun geste
+        dessus. À dire si vous le voulez.</li>
+      <li><b>La dictée sur cette fiche n'existe nulle part.</b> Celle du devis ne sait toucher que
+        les lignes et la remise ; aucune ne sait lire un nom ou une adresse. C'est le vrai
+        travail derrière l'écran 3, quelle que soit la lettre choisie.</li>
+    </ul>
+  </div>
+
+</div>
