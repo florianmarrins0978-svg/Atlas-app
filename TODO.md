@@ -27,6 +27,197 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quaterquadragies. Le plan d'arrosage — **DEUX CHOIX TRANCHÉS, une maquette essayable**
+
+**Tranché le 17 août 2026 :**
+
+| Question | Sa réponse |
+|---|---|
+| Par où il entre son jardin | **B** — les zones qu'il mesure, Atlas pose le matériel |
+| Ce qui sort du plan | **la LISTE du matériel**, pas un devis |
+| La forme des maquettes | **essayables**, pas des images : *« je veux que tu code rien, d'abord des maquettes dynamiques en .html que je puisse essayer »* |
+
+**Ses mots sur la sortie, qui valent mieux qu'un résumé :** *« il faut simplement
+créer le plan et la liste du matos à acheter, ensuite moi j'envoie à mes
+fournisseurs, ils me font un devis, puis je repasse par le circuit normal de
+l'application pour rédiger le devis et l'envoyer à mes clients. »*
+
+**Conséquence tenue à la lettre : AUCUN PRIX dans cet outil.** Ni total, ni
+estimation. Atlas ne chiffre rien qu'un fournisseur n'ait chiffré. Le devis
+client emprunte le parcours qui existe déjà.
+
+**La page essayable : `appli/arrosage.html`**, publiée avec l'appli, donc
+ouvrable au téléphone. Elle est dans `appli/` et non dans `docs/maquettes/`
+parce que c'est le seul dossier PUBLIÉ du dépôt : les planches y sont sans
+JavaScript, et il demande à essayer. Gardée par `appli/tests/e2e.js`, jouée
+avant publication **et contre le site en ligne**.
+
+**⚠ RIEN N'ENTRE DANS LE CATALOGUE AVANT SES RÉPONSES — sa consigne du
+17 août 2026 :** *« avant d'enregistrer quoi que ce soit dans la base de
+données, tu me poses toutes les questions nécessaires dont tu as besoin pour
+bien comprendre […] et surtout tu me dis que tu as compris. Moi je connais le
+métier par cœur, donc ça va être moi ton chef d'orchestre. »*
+
+**L'objectif, dans ses mots :** *« construire l'outil de mes rêves, que les
+utilisateurs qui ne connaissent rien en arrosage, à partir d'un plan, tu puisses
+leur sortir exactement tout le matos dont ils vont avoir besoin : le nombre
+d'arroseurs, le nombre de tuyères, mais également le nombre de mètres linéaires
+de goutte-à-goutte. »* Ce n'est donc PAS un outil d'expert : la personne devant
+l'écran ne sait rien du métier, et tout ce qui demande un jugement doit être
+tranché par la règle qu'il aura donnée, pas par une case à cocher de plus.
+
+**LES QUESTIONS POSÉES LE 17 AOÛT, et l'état de ses réponses.** Ne pas les
+reposer si elles sont déjà répondues plus bas ; ne rien enregistrer sur celles
+qui ne le sont pas.
+
+| # | Question | Sa réponse |
+|---|---|---|
+| 1 | Le « recouvrement d'au moins 80 % » : écart entre deux arroseurs = 80 % de la portée ? | *en attente* |
+| 2 | Pose en carré ou en quinconce (triangle) ? | *en attente* |
+| 3 | Portée et débit donnés à quelle pression ? | *en attente* |
+| 4 | Corps + buse, ou corps seul ? Le débit annoncé est-il celui du cercle entier ? | *en attente* |
+| 5 | À partir de quelle largeur passe-t-on de tuyères à turbines ? | *en attente* |
+| 6 | Jusqu'à quel % du débit du robinet charge-t-on un secteur ? | *en attente* |
+| 7 | Ne jamais mélanger turbines/tuyères, ni arroseurs/goutte-à-goutte : confirmé ? | *en attente* |
+| 8 | Massif : combien de lignes de gaine ? Haie : une ou deux ? Potager : au rang ? | *en attente* |
+| 9 | Le diamètre de tuyau suit-il une règle (débit du secteur) ou est-ce au cas par cas ? | *en attente* |
+| 10 | Une grande nourrice ou deux petites au-delà d'une certaine taille ? | *en attente* |
+| 11 | Le croquis du client : rectangles simples, ou formes libres avec obstacles ? | *en attente* |
+| 12 | L'utilisateur qui ne connaît rien saura-t-il mesurer son débit ? Faut-il une valeur par défaut ? | *en attente* |
+| 13 | Le choix de marque vaut-il aussi pour le **goutte-à-goutte** et le **reste du matériel** (vannes, programmateur, nourrice), ou seulement pour les arroseurs et tuyères ? | *en attente* |
+| 14 | Quelles marques mettre dans le bandeau en plus de **Rain Bird** et **Toro** ? | *en attente* |
+
+**LE CHOIX DE MARQUE — fait le 17 août.** Bandeau déroulant, **Rain Bird par
+défaut**, Toro ensuite ; `CATALOGUE.marques` s'allonge d'une ligne. **Aucune
+valeur générique n'est attribuée à une marque** : l'écran dit « aucun modèle
+Rain Bird enregistré » et le répète sur chaque zone. Une zone retient un TYPE
+(turbine/tuyère) et non une référence, pour qu'une bascule de marque ne vide pas
+ses zones.
+
+**⚠ LE CATALOGUE EST LA PROCHAINE ÉTAPE, ET IL EST À LUI.** Le 17 août :
+*« plusieurs choses sont fausses »*, puis : *« je vais t'envoyer des photos avec
+certains arroseurs, leur portée, et ça tu vas l'intégrer dans une base de
+données pour cet outil […] et on va également faire ça pour tout le matériel »*.
+
+`appli/arrosage-catalogue.js` est cette base. **Chaque entrée porte une
+`source`** : `'patron'` (relevée de ses photos, de ses devis fournisseurs) ou
+`'provisoire'` (valeur générique, mise là pour que l'outil tourne). L'écran
+affiche le compte de ce qui reste provisoire — onze au 17 août. **Ne jamais
+faire passer une valeur provisoire pour acquise** : une portée fausse fait
+acheter le mauvais nombre d'arroseurs, et c'est lui qui revient poser les
+manquants.
+
+**Ce qu'il faut relever de chaque photo d'arroseur**, et l'absence d'un seul de
+ces éléments rend l'entrée inutilisable : marque et référence, portée EN
+MÈTRES **et à quelle pression**, débit à cette même pression, angle, et la
+pluviométrie si la fiche la donne. Portée et pression vont ensemble — une
+portée relevée à 3 bars ne vaut rien sur une installation à 2.
+
+**PAS DE PLAFOND À SIX VOIES — sa réponse du 17 août : « oui tu peux prévoir
+au-delà de 6 ».** `CATALOGUE.nourrices` est un dictionnaire ouvert :
+`nourrices[12]` se pose comme `nourrices[1]`, sans toucher au code. L'écran dit
+aussi **quelles fiches sont déjà enregistrées**, pour qu'il ne refasse pas une
+fiche donnée la veille.
+
+**ET UNE QUESTION QUI RESTE, à ne pas trancher à sa place :** au-delà d'une
+certaine taille, pose-t-il **une** nourrice de douze voies ou **deux** de six ?
+Les deux se font. Doubler la fiche de six pour en fabriquer une de douze serait
+exactement l'invention que ce fichier interdit — l'écran pose la question et
+attend.
+
+**LES NOURRICES — sa deuxième demande, et ce n'est pas du matériel mais un
+ASSEMBLAGE.** Ses mots : *« pour réaliser une nourrice de une voie, on utilise
+ça, ça, ça. Toi ça tu vas l'enregistrer, et comme ça quand par tes calculs tu
+verras qu'on a besoin d'une voie, tu reprendras toute cette fiche. Ensuite je
+vais faire la même chose pour deux, trois, quatre, cinq et six voies. »*
+`CATALOGUE.nourrices` les attend, **vide et volontairement vide** : tant qu'une
+fiche manque, l'écran l'annonce au lieu de composer une nourrice de son cru. Une
+nourrice inventée, c'est un chantier arrêté à la pose faute d'un té.
+
+**LE RECOUVREMENT — sa règle, et ma lecture est à confirmer d'un mot.** Il a dit
+*« il faut un recouvrement d'au moins quatre-vingt pour cent »*. Lu comme :
+**écart entre deux arroseurs = 80 % de la portée** (à 100 %, c'est la pose
+tête-bêche). C'est réglable à l'écran, et **l'écart en mètres y est écrit** —
+« portée 9 m → un tous les 7,20 m » — pour qu'il corrige d'un coup d'œil plutôt
+que de nous croire sur parole.
+
+**Ce que le passage à 80 % a montré tout de suite** : le jardin d'exemple passe
+de 8 à **9 secteurs**, et la pelouse avant demande 24 tuyères. C'est au-dessus
+des six voies dont il prévoit les fiches — signe que les valeurs génériques
+d'arroseurs sont trop faibles, et que ses vraies références changeront ce
+nombre. À revoir dès que son catalogue sera renseigné.
+
+**Le croquis photographié — sa cible, et elle n'est pas pour tout de suite.**
+*« Le client te fait un petit croquis sur un bout de papier d'un carré de dix
+par dix, il te le prend en photo et il te l'envoie. »* L'application sait déjà
+recevoir des photos et interroger un modèle (`src/server/ai/`) ; il n'y a rien
+à inventer côté plomberie. Mais **rien ne sera lu d'un croquis avant que le
+catalogue soit juste** : deviner des cotes sur une photo avec un catalogue faux
+donnerait un plan faux avec deux causes possibles au lieu d'une.
+
+**Ce qui reste à trancher, et il l'a proposé lui-même :** il a des devis
+fournisseurs à joindre. Ils serviront au **catalogue de matériel** (désignations,
+références, conditionnements), pas aux prix. Rien n'est à coder avant de les
+avoir vus.
+
+**Les prix : la voie trouvée, et elle évite tout scraping.** Chausson laisse
+télécharger le **tarif négocié du client en Excel ou CSV** depuis son compte, et
+Atlas sait déjà importer un tarif Excel/CSV (`src/app/reglages/ImportTarifs.tsx`
++ `src/lib/import-tarifs.ts`). Ses prix à lui, pas des prix publics. Les deux
+sites fournisseurs sont par ailleurs **refusés par le mandataire réseau** ici.
+
+### 0 quaterquadragies bis. Le plan d'arrosage — le raisonnement des trois planches
+
+**Sa demande du 17 août 2026 :** *« j'ai besoin qu'on crée un outil pour les
+paysagistes pour réaliser des plans d'arrosage automatique. »*
+
+Terrain neuf, donc trois planches et **aucune ligne de `src/`** (`CLAUDE.md`
+§3 bis) : `docs/maquettes/69-le-plan-darrosage.html`,
+`70-le-debit-ne-se-partage-pas.html`, `71-ce-qui-sort-du-plan.html`.
+
+**Deux questions attendent sa réponse, et aucune n'est du rangement :**
+
+| Ce qu'il choisit | Les trois possibles |
+|---|---|
+| **Par où il entre son jardin** | **A** la feuille (il saisit tout, Atlas additionne) · **B** les zones (il mesure, Atlas pose le matériel, découpe et calcule les durées) · **C** le plan dessiné |
+| **Par quelle sortie on commence** | **A** le devis · **B** la carte de programmation du coffret · **C** le plan remis au client |
+
+**Ce que je recommande, écrit sur les planches :** **B, puis A** — les zones
+d'abord parce que c'est la seule entrée qui rend du temps de bureau, et le devis
+d'abord parce qu'il entre dans le parcours qui existe déjà (devis → envoi →
+acceptation → facture) sans aucune plomberie nouvelle. Le plan dessiné se pose
+PAR-DESSUS le calcul, jamais à sa place.
+
+**CE QUI N'EST PAS À CHOISIR — ce sont des conséquences du métier :**
+
+- **Le débit se mesure au seau**, il ne se suppose pas. Un plan bâti sur un débit
+  supposé s'écroule à la mise en eau, et c'est le paysagiste qui revient
+  gratuitement.
+- **Une seule pluviométrie par secteur.** La vanne ouvre son secteur entier pour
+  la même durée : turbines (11 mm/h) et tuyères (38 mm/h) ensemble, c'est trois
+  fois trop d'eau d'un côté, quoi qu'on règle. **Un seul rythme par secteur**
+  pour la même raison.
+- **Aucun prix inventé** (§4 du dépôt) : la nomenclature sort avec ses
+  quantités, le prix vient de « Mes prix », et ce qui n'y est pas part vide et
+  signalé.
+- **Rien ne part tout seul.** Le mot « automatique » désigne l'arrosage, pas
+  l'expédition (`docs/A-FAIRE.md` §5, tranché le 3 août).
+
+**Ce qui reste HORS du calcul, et qu'il faut lui dire plutôt que laisser
+croire :** les pertes de charge et le dimensionnement des tuyaux. Sans effet sur
+un jardin de pavillon en PE 32 ; déterminants sur une longue ligne.
+
+**Ce que ça touche quand ce sera codé :** le devis existe déjà (lignes,
+quantités, unités, TVA, envoi, acceptation) — la nomenclature s'y verse, elle
+n'a pas de parcours à elle. L'entretien de l'arrosage (mise en route au
+printemps, hivernage à l'automne) rejoint la **fiche d'entretien** : deux lignes
+de plus dans le modèle, pas un quatrième parcours.
+
+**Ne pas retoucher les planches à la main** : elles sont engendrées d'une seule
+source (`scripts/engendrer-maquette-arrosage.mjs`) et tous leurs nombres sont
+calculés. Contrôle : `scripts/verifier-maquette-arrosage.mjs`, dans
+`npm run verifier:maquette`.
+
 ### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
 
 *Constaté le 16 août 2026 en jouant la batterie complète d'un autre lot.*
@@ -1179,7 +1370,7 @@ morte, nom trop long — chacun nomme le bon coupable.
 
 *Deux captures, trois jours d'écart, la même question : « À quoi sert cette page
 ?? On peut rien modifier rajouter ». Il a choisi **« Réparer + mes mots »**, puis
-l'arrangement **B** de `docs/maquettes/69-mes-mots-au-catalogue.html`. Livré le
+l'arrangement **B** de `docs/maquettes/72-mes-mots-au-catalogue.html`. Livré le
 jour même : `ARCHITECTURE.md` §122, migration 0052.*
 
 **Ce qui est fait :** ses mots s'accrochent aux entrées d'Atlas (`mots_catalogue`,
@@ -1191,7 +1382,7 @@ deviennent « Aussi appelé » ; l'écran est passé à la charte.
 **CE QUI RESTE, et c'est une DÉCISION, pas du code :**
 
 1. **Faut-il remettre un prix sur ces cartes ?** La question est posée au bas de
-   la planche 69 et n'a pas de réponse. `lecons_prix` range par nature de
+   la planche 72 et n'a pas de réponse. `lecons_prix` range par nature de
    chantier (`abattage|demontage_retention|d70`), pas par mot de catalogue : un
    rapprochement approximatif afficherait un prix d'abattage sous « Élagage » —
    pire que la phrase retirée, qui au moins n'inventait rien. Deux réponses

@@ -40,7 +40,7 @@ export async function creerEntreeAction(famille: Famille, nom: string) {
 /**
  * Retire un de SES mots.
  *
- * **Ce geste ne figure pas sur la planche 69, et il est pourtant nécessaire :**
+ * **Ce geste ne figure pas sur la planche 72, et il est pourtant nécessaire :**
  * un mot mal tapé y resterait pour toujours, et il n'aurait aucun moyen de
  * revenir dessus. Rien n'atteint le vocabulaire commun — seuls ses mots à lui
  * sont dans cette table.

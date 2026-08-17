@@ -245,6 +245,84 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     await cDest.close();
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────
+     PLAN D'ARROSAGE — la maquette essayable (17 août 2026).
+
+     Elle n'a pas la barre de navigation d'Arborea, et c'est voulu : c'est une
+     maquette d'Atlas posée ici parce que c'est le seul endroit du dépôt qui
+     soit PUBLIÉ, donc le seul où le patron puisse l'ouvrir depuis son téléphone
+     avec JavaScript. Les contrôles ci-dessous gardent ce qui casserait sans
+     bruit : une erreur au chargement (page blanche), un calcul qui déborde le
+     débit du robinet, et un prix qui apparaîtrait alors que toute la page tient
+     sur la promesse qu'il n'y en a aucun.
+     ───────────────────────────────────────────────────────────────────────── */
+  {
+    const cArr = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await cArr.route(/googleapis|gstatic|cloudflare|jsdelivr/i, r => r.abort());
+    const page = await cArr.newPage();
+    const errs = []; page.on('pageerror', e => errs.push('arrosage: ' + e.message));
+    await page.goto(`${B}/arrosage.html`, { waitUntil:'domcontentloaded' });
+    await page.waitForTimeout(250);
+
+    ok('arrosage : aucune erreur JS au chargement', errs.length === 0);
+    if (errs.length) fails.push(...errs);
+
+    const dispo = (await page.$eval('#debitDispo', el => el.textContent)).trim();
+    ok('arrosage : le débit se calcule du seau', dispo === '1,80');
+
+    const secteurs = await page.$$eval('.sec', e => e.length);
+    ok('arrosage : le jardin de départ se découpe', secteurs >= 6);
+
+    // L'invariant du métier : un secteur au-dessus du robinet, et les derniers
+    // arroseurs bavent au lieu d'arroser.
+    const debits = await page.$$eval('.sec-q', e => e.map(x => parseFloat(x.textContent.replace(',', '.'))));
+    ok('arrosage : aucun secteur au-dessus du robinet',
+       debits.length > 0 && debits.every(d => d <= parseFloat(dispo.replace(',', '.'))));
+
+    // Le cycle décide de l'heure de départ : s'il ne fait pas la somme de ses
+    // secteurs, il envoie arroser en plein soleil.
+    const mins = await page.$$eval('.sec-min', e => e.map(x => Number(x.textContent)));
+    const verdict = await page.$eval('#verdict', el => el.innerText);
+    const m = verdict.match(/(\d+)\s*h\s*(\d+)/);
+    ok('arrosage : le cycle est la somme des secteurs',
+       !!m && Number(m[1]) * 60 + Number(m[2]) === mins.reduce((a, b) => a + b, 0));
+
+    // Sa décision du 17 août : la sortie est une liste de quantités, pas un
+    // devis. Le jour où un montant apparaît, ce contrôle le dit.
+    const corps = await page.$eval('body', el => el.innerText);
+    ok('arrosage : aucun prix nulle part', !/€|\bEUR\b/.test(corps));
+    ok('arrosage : la liste porte le disconnecteur', /Disconnecteur/.test(corps));
+
+    // Un ajout de zone doit vraiment ajouter : c'est le geste central.
+    const avant = await page.$$eval('.zone', e => e.length);
+    await page.click('[data-ajout="massif"]'); await page.waitForTimeout(150);
+    ok('arrosage : ajouter une zone l’ajoute', (await page.$$eval('.zone', e => e.length)) === avant + 1);
+
+    // Rien ne doit déborder sur un téléphone.
+    ok('arrosage : rien ne déborde en largeur',
+       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+
+    // **Le chemin qu'aucune donnée n'emprunte encore.** Ses fiches de nourrice
+    // n'existent pas au 17 août ; le jour où elles arriveront, il faut que le
+    // rendu marche du premier coup — sinon c'est lui qui découvre la panne
+    // après avoir tapé sa fiche. On en injecte une factice, ici et seulement
+    // ici : le catalogue livré, lui, reste vide tant qu'il n'a rien donné.
+    await page.evaluate(() => {
+      CATALOGUE.nourrices[99] = { nom:'Nourrice 99 voies', source:'essai',
+        pieces:[{ q:1, u:'u', nom:'Pièce d’essai' }] };
+      window.__voies = document.querySelectorAll('.sec').length;
+      CATALOGUE.nourrices[window.__voies] = CATALOGUE.nourrices[99];
+      recalculer(false);
+    });
+    await page.waitForTimeout(150);
+    const fiche = await page.$eval('#nourrice', el => el.innerText);
+    ok('arrosage : une fiche de nourrice enregistrée s’affiche',
+       /Pièce d’essai/.test(fiche) && !/à renseigner/.test(fiche));
+
+    ok('arrosage : toujours aucune erreur JS', errs.length === 0);
+    await cArr.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }

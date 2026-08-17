@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  * **Il a posé la même question deux fois**, capture à l'appui (14 puis 17 août
  * 2026) : *« À quoi sert cette page ?? On peut rien modifier rajouter »*. Un
  * écran qu'il faut expliquer deux fois n'est pas mal compris : il ne dit pas ce
- * qu'il fait. Arrangement **B** de `docs/maquettes/69-mes-mots-au-catalogue.html`.
+ * qu'il fait. Arrangement **B** de `docs/maquettes/72-mes-mots-au-catalogue.html`.
  *
  * **Trois choses ont changé, et chacune répare un défaut qu'il a vu :**
  *

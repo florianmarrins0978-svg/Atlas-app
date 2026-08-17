@@ -10174,10 +10174,10 @@ autres artisans, sans qu'ils l'aient demandé ni qu'ils puissent le corriger.
 L'écran était donc en lecture seule **pour une bonne raison**, et ne la disait
 pas. Ce n'est pas un bouton qui manquait : c'est un endroit où poser ses mots.
 
-### Ce qui a été retenu : l'arrangement B de la planche 69
+### Ce qui a été retenu : l'arrangement B de la planche 72
 
 Trois arrangements lui ont été montrés
-(`docs/maquettes/69-mes-mots-au-catalogue.html`). Il a choisi **B**, et le choix
+(`docs/maquettes/72-mes-mots-au-catalogue.html`). Il a choisi **B**, et le choix
 n'était pas cosmétique — il décide de ce que la dictée comprend ensuite :
 
 | | Où vivent ses mots | Ce que ça coûte |

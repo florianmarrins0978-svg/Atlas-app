@@ -344,7 +344,25 @@ const MAQUETTES = [
     quoi: "« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.",
   },
   {
-    fichier: "69-mes-mots-au-catalogue.html",
+    fichier: "69-le-plan-darrosage.html",
+    titre: "Le plan d’arrosage",
+    famille: "L’arrosage automatique",
+    quoi: "« Un outil pour les paysagistes pour réaliser des plans d’arrosage automatique. » Trois façons d’entrer le jardin : la feuille, les zones mesurées, ou le plan dessiné.",
+  },
+  {
+    fichier: "70-le-debit-ne-se-partage-pas.html",
+    titre: "Le débit ne se partage pas",
+    famille: "L’arrosage automatique",
+    quoi: "Le calcul qui fait tout l’outil, et rien n’y est à choisir : 1,80 m³/h au robinet, 8,47 demandés, huit secteurs, 3 h 14 de cycle.",
+  },
+  {
+    fichier: "71-ce-qui-sort-du-plan.html",
+    titre: "Ce qui sort du plan",
+    famille: "L’arrosage automatique",
+    quoi: "Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.",
+  },
+  {
+    fichier: "72-mes-mots-au-catalogue.html",
     titre: "Mes mots au catalogue",
     famille: "Les réglages",
     quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",

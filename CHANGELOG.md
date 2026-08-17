@@ -63,7 +63,7 @@ peut rien modifier rajouter »*. La réponse existait déjà — `docs/QUESTIONS
 deux fois n'est pas mal compris : il ne dit pas ce qu'il fait.
 
 Sa réponse, cette fois : **« Réparer + mes mots »**. La planche
-`docs/maquettes/69-mes-mots-au-catalogue.html` est posée, **rien n'est codé**
+`docs/maquettes/72-mes-mots-au-catalogue.html` est posée, **rien n'est codé**
 (`CLAUDE.md` §3 bis) — il désigne un arrangement.
 
 **Ce que la planche tranche, et qui n'est pas une question de goût.** Le
@@ -96,6 +96,168 @@ conclure sur une boîte de zéro pixel (`CLAUDE.md` §5, payé le 15 août).
 
 **Un défaut trouvé en chemin :** le sommaire des maquettes ne fermait pas le
 lien de la 66, et la 67 se retrouvait imbriquée dedans.
+
+### Le choix de la marque : Rain Bird par défaut, et rien d'attribué sans preuve
+
+**Sa demande :** *« l'utilisateur pourra également choisir entre les marques.
+De base on va mettre les arroseurs et les tuyères de la marque Rain Bird, mais
+s'il veut, il faudra créer un petit bandeau déroulant avec le choix de la marque
+Toro par exemple, et dans ce cas-là tu lui proposeras des arroseurs et des
+tuyères de la marque Toro. Mais de base, ça sera Rain Bird. »*
+
+Le bandeau existe, Rain Bird est le défaut, et `CATALOGUE.marques` s'allonge
+d'une ligne par marque — sans toucher au code.
+
+**Ce qui aurait été facile et qui est refusé : coller les valeurs génériques
+sous le nom de Rain Bird.** Elles viennent de catalogues courants, pas de ses
+photos. L'écran choisit donc Rain Bird, **constate qu'il n'a aucun modèle et le
+dit** — dans le bandeau, puis **sur chaque zone** (« modèle générique, pas
+encore Rain Bird »). Le repli sur le générique est délibérément bruyant : un
+repli muet ferait croire la marque renseignée, et c'est le paysagiste qui
+commanderait la mauvaise référence.
+
+**Une conséquence de structure, pas de goût :** une zone retient un TYPE
+(turbine ou tuyère), pas une référence. Sans quoi une bascule de Rain Bird vers
+Toro viderait ses zones du matériel qu'elles portaient. La liste au fournisseur,
+elle, compte par **référence** et porte la marque en tête — c'est elle qui part
+en commande.
+
+### Le catalogue d'arrosage attend SES données — et l'écran dit ce qui manque
+
+**Son constat, une fois la page essayée :** *« plusieurs choses sont fausses »*.
+Elles l'étaient : les portées, débits et pluviométries venaient de catalogues
+génériques, pas de son matériel. Sa suite : *« je vais t'envoyer des photos avec
+certains arroseurs, leur portée, et ça tu vas l'intégrer dans une base de
+données pour cet outil […] et on va également faire ça pour tout le matériel »*.
+
+**`appli/arrosage-catalogue.js`** est cette base. Chaque entrée porte une
+**source** — `'patron'` ou `'provisoire'` — et l'écran affiche le compte de ce
+qui attend encore ses photos (onze au 17 août). C'est le §4 du dépôt appliqué au
+matériel : une donnée sans source fiable est signalée, jamais présentée comme
+acquise. Une portée qu'on croit juste et qui ne l'est pas fait acheter le mauvais
+nombre d'arroseurs, et c'est lui qui revient poser les manquants.
+
+**Les nourrices : une fiche, ou rien.** Sa seconde demande — *« pour réaliser une
+nourrice de une voie, on utilise ça, ça, ça […] et comme ça quand par tes calculs
+tu verras qu'on a besoin d'une voie, tu reprendras toute cette fiche »*. Le
+calcul donne le nombre de voies, la fiche donne les pièces. `CATALOGUE.nourrices`
+est **vide et volontairement vide** : tant qu'une fiche manque, l'écran l'annonce
+au lieu d'en composer une. Une nourrice inventée, c'est un chantier arrêté à la
+pose faute d'un té.
+
+**Le recouvrement de 80 %, et ce qu'il a immédiatement révélé.** Sa règle : « il
+faut un recouvrement d'au moins quatre-vingt pour cent ». Lue comme *écart entre
+deux arroseurs = 80 % de la portée*, et **la lecture est affichée en mètres**
+(« portée 9 m → un tous les 7,20 m ») plutôt que cachée dans le calcul : c'est
+ainsi qu'il corrigera d'un mot si ce n'est pas sa pose. Le jardin d'exemple passe
+de 8 à **9 secteurs**, au-dessus des six voies dont il prévoit les fiches — signe
+que les valeurs génériques sont trop faibles, et que son catalogue changera ce
+nombre. Dit plutôt que tu.
+
+### La maquette d'arrosage devient ESSAYABLE, et la sortie n'est plus un devis
+
+**Ses trois consignes du 17 août, dans l'ordre où elles sont venues :**
+
+1. *« des maquettes dynamiques en .html que je puisse essayer, pas de photo »* ;
+2. *« je veux que tu code rien »* ;
+3. *« il faut simplement créer le plan et la liste du matos à acheter, ensuite
+   moi j'envoie à mes fournisseurs, ils me font un devis, puis je repasse par le
+   circuit normal de l'application pour rédiger le devis et l'envoyer à mes
+   clients ».*
+
+**`appli/arrosage.html` — la page qui calcule pour de bon.** On entre son point
+d'eau, ses zones et leurs mesures ; le découpage en secteurs, les durées par
+saison, le plan et la liste du matériel se refont à chaque frappe. Rien ne sort
+du téléphone, ce qui est saisi survit à un rechargement.
+
+**Pourquoi dans `appli/` et pas dans `docs/maquettes/`.** Les planches y sont
+volontairement sans JavaScript — son lecteur n'en exécute pas, et une page bâtie
+en JS lui arriverait vide. Or il demande à ESSAYER. `appli/` est le seul dossier
+du dépôt qui soit **publié** (`pages.yml`), donc le seul endroit où la page
+s'ouvre dans un vrai navigateur, au téléphone, avec le calcul qui tourne.
+
+**Sa troisième consigne retire tout prix, et c'est un allègement, pas un
+manque.** La planche 71 ne produit plus un devis chiffré mais une **liste de
+quantités** qui part chez Chausson ou Aqua Plus. Le devis client se rédige
+après, dans Atlas, avec les prix que le fournisseur aura rendus — le circuit
+existe déjà, il n'y a rien à réinventer. Un contrôle refuse désormais tout
+montant en euros sur la page.
+
+**Ce que l'essai a appris tout seul, et qu'aucune planche ne disait :** laissé
+sur « au mieux », le choix d'arroseur met des turbines sur les deux pelouses et
+le jardin tombe de **huit secteurs à quatre** — moins d'électrovannes, un cycle
+plus court. Le jardin de départ garde donc les tuyères des planches, pour que
+la bascule se voie en direct.
+
+**Défaut vu à l'écran, et par rien d'autre :** sur un téléphone, « Pression
+(bar) » passe à la ligne et sa case descendait toute seule pendant que les deux
+voisines restaient en haut. Les champs s'alignent maintenant sur leur bas.
+
+**La page est gardée par la batterie qui publie le site** (`appli/tests/e2e.js`,
+jouée avant chaque déploiement puis **contre le site en ligne**) : aucune erreur
+au chargement, aucun secteur au-dessus du débit du robinet, le cycle qui est la
+somme de ses secteurs, aucun prix, rien qui déborde à 390 px. Confrontée à trois
+pages dégradées : trois rouges, chacun nommant le bon coupable.
+
+**Ce qui a été demandé et ne peut pas se faire ici :** aller chercher les prix
+sur les sites de Chausson et d'Aqua Plus. Les deux domaines sont **refusés par
+le mandataire réseau** de cet environnement — vérifié, pas supposé. Et même
+joignables, ils n'afficheraient que des prix publics, pas les siens. La bonne
+voie existe déjà : Chausson laisse **télécharger son tarif négocié en Excel ou
+CSV** depuis son compte, et Atlas sait déjà importer un tarif Excel/CSV
+(`src/app/reglages/ImportTarifs.tsx`).
+
+### Le plan d'arrosage automatique des paysagistes — TROIS PLANCHES, RIEN N'EST CODÉ
+
+**Sa demande du 17 août :** *« j'ai besoin qu'on crée un outil pour les
+paysagistes pour réaliser des plans d'arrosage automatique. »*
+
+Terrain neuf : rien dans le produit ne parle d'arrosage. Trois planches donc, et
+**aucune ligne de `src/`** — sa règle du 11 août.
+
+- `69-le-plan-darrosage.html` — par où il entre son jardin. Trois gestes : la
+  feuille où il saisit tout, **les zones qu'il mesure et qu'Atlas pose**
+  (recommandé), ou le plan dessiné.
+- `70-le-debit-ne-se-partage-pas.html` — le découpage en secteurs. **Rien à y
+  choisir** : c'est de l'arithmétique, montrée pour être vérifiée.
+- `71-ce-qui-sort-du-plan.html` — le devis, la carte du coffret, le plan remis
+  au client. Ce qu'il y a à choisir : par lequel on commence.
+
+**Ce que le métier impose, et qui n'est pas un goût.** Un robinet de pavillon
+donne 1,80 m³/h ; le jardin de l'exemple en demande 8,47. D'où huit secteurs, un
+cycle de 3 h 14 qui doit finir avant le soleil, et deux règles qui passent avant
+le remplissage : **une seule pluviométrie par secteur** (la vanne l'ouvre en
+entier, pour la même durée : turbines à 11 mm/h et tuyères à 38 dans le même
+secteur, c'est trois fois trop d'eau d'un côté) et **un seul rythme par
+secteur**.
+
+**Tous les nombres des trois planches sont CALCULÉS**, pas écrits : cinq mesures
+entrent, le reste en découle. Une maquette qui compte faux fait douter de tout ce
+qu'elle montre — c'est le piège payé sur la fiche d'entretien (« dix-huit » pour
+vingt prestations).
+
+**Et le calcul a rendu un vrai défaut avant même d'être montré.** Le champ
+`materiel` (une chaîne) était écrasé par l'objet du catalogue : les deux pelouses
+— turbines et tuyères — se retrouvaient dans **le même secteur**, exactement la
+faute que la planche 70 explique. La planche s'affichait parfaitement. C'est le
+listing du générateur qui l'a dit, et c'est maintenant un cas de contrôle.
+
+**Deux défauts trouvés en REGARDANT la capture, et par rien d'autre** — la
+sixième et la septième fois dans ce dépôt : le matériel s'affichait en clé
+technique (« tuyere », sans accent) au lieu du mot du métier, et la cote
+verticale « 12 m » sortait du cadre du plan pour s'afficher **« 2 m »**. Le texte
+était entier dans la page : aucun contrôle de DOM ne pouvait le voir. Le contrôle
+compare désormais les **boîtes** — celle de chaque cote contre celle du plan.
+
+**Le contrôle (`scripts/verifier-maquette-arrosage.mjs`) ne vérifie pas du goût,
+il vérifie de l'arithmétique** : aucun secteur au-dessus du débit du robinet, le
+total qui est bien la somme de ses parts, le cycle qui est la somme des durées,
+les trois planches qui parlent du même jardin, et **aucun prix inventé** (règle
+du §4 : ce qui n'est pas dans « Mes prix » part vide et signalé). Confronté à
+sept planches dégradées : **sept rouges, chacun nommant le bon coupable.**
+
+**Ce qui attend sa décision** : par où il entre son jardin, et par quelle sortie
+on commence. Rien ne sera codé avant.
 
 ### « C'est monsieur Martins » : un client n'est plus recréé à chaque chantier
 

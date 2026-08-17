@@ -11,7 +11,7 @@
 // entreprises** (migration 0007, aucune RLS), et c'est pour ça que personne n'y
 // écrivait.
 //
-// **L'arrangement retenu : B** (`docs/maquettes/69-mes-mots-au-catalogue.html`,
+// **L'arrangement retenu : B** (`docs/maquettes/72-mes-mots-au-catalogue.html`,
 // choisi le 17 août). Ses mots s'ACCROCHENT aux entrées d'Atlas au lieu de
 // vivre à côté. La nuance décide de ce que la dictée comprendra : « écimage »
 // posé à côté d'« Élagage » ferait écrire une prestation neuve à chaque
