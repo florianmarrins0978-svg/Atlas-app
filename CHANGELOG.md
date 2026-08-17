@@ -31,12 +31,18 @@ correctif.
 environnement n'a ni service de transcription ni modèle ; la cause a été trouvée
 en lisant le code, et ce raccord ne sera parcouru qu'avec une clé.
 
-### Le « petit moins » qu'il demande : dessiné, pas codé
+### CODÉ : le « petit moins » en face de la ligne — sa proposition B
 
 *« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un
-petit moins. »* `docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes
-sur **ses** chiffres — glisser la ligne, un rond en face, ou la ligne du bas qui
-bascule. Rien n'est codé : `CLAUDE.md` §3 bis.
+petit moins. »* Dessiné d'abord (`docs/maquettes/68-retirer-le-prix-accorde.html`,
+trois formes sur **ses** chiffres), choisi le 17 août — **« B »** —, puis codé.
+
+Un rond de 26 px devant le libellé, en or. Un appui : le devis affiche son prix
+plein **tout de suite**, et « Annuler » reste six secondes sous la feuille. Rien
+n'est écrit avant la fermeture du tiroir — c'est le geste unique de
+l'application depuis le 10 août, et le prix accordé passe par le même.
+
+Il ne paraît pas sur un devis parti : cet écran ne se modifie plus.
 
 **Et un contrôle de maquette que personne ne jouait** — `verifier-maquette-reduction.mjs`
 existait depuis le 16 août sans être branché nulle part. Raccroché, avec celui

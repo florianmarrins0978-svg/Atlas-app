@@ -772,9 +772,12 @@ correctif.
 un chiffre et le supprimer n'est pas ce qu'on fait. Les deux chemins mènent à
 « aucune réduction », un seul était éprouvé.
 
-**LE « PETIT MOINS » ATTEND SON CHOIX (17 août).**
-`docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes. **Ne pas le
-coder avant qu'il tranche** (`CLAUDE.md` §3 bis). Détail : `TODO.md`.
+**LE « PETIT MOINS » EST CODÉ (17 août) — sa proposition B.** Un rond de 26 px
+devant le libellé du prix accordé. **Il partage le tiroir des lignes**, sous la
+clé réservée `prix-accorde-au-client` : ne pas lui fabriquer un second tiroir,
+c'est ce que le patron a fait disparaître le 10 août. Et **le total montre le
+prix plein dès l'appui**, alors que rien n'est encore écrit — un geste sans effet
+visible pendant six secondes se lit comme une panne.
 
 **⚠ UNE COULEUR POSÉE SUR `<html>` NE PEUT PAS SUIVRE UNE NAVIGATION (16 août).**
 Il choisit « Nuit », rien ne change — et c'était exact. Les variables de charte

@@ -27,7 +27,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 duoquadragies. Le « petit moins » du prix accordé — il choisit entre trois
+### 0 duoquadragies. ~~Le « petit moins » du prix accordé~~ — **CODÉ le 17 août 2026 (proposition B)**
 
 *`docs/maquettes/68-retirer-le-prix-accorde.html`, écrite le 17 août 2026 —
 24 contrôles, sur SES chiffres (1 850,00 € HT, 5 %). Rien n'est codé pour le
@@ -43,8 +43,11 @@ réduction. »*
 | **B — le petit « − » en face** | Ce qu'il a demandé, mot pour mot : un rond de 26 px devant le libellé, en or | Un bouton dans le bloc des totaux, le seul endroit du devis qui n'en portait aucun. Et le « + » ajoute une ligne AU TABLEAU quand ce « − » retire un TOTAL : lisible, mais pas symétrique |
 | **C — la ligne du bas bascule** | « + Prix accordé au client » devient « − Retirer le prix accordé » dès qu'il y en a une. Un seul endroit à connaître | Presque rien : la ligne existe déjà, elle change de mot. Mais le geste est sous le total TTC, pas en face de la remise |
 
-**Ma préférence : C**, puis B. C ne fabrique aucun geste nouveau et dit toujours
-ce qu'il fera ; B est ce qu'il a demandé, et se code en une heure. **Il tranche.**
+**Il a choisi B** le 17 août, contre ma préférence pour C. C'est codé : un rond
+de 26 px devant le libellé, le même tiroir « Annuler » que les lignes, et le
+prix plein affiché dès l'appui. `ARCHITECTURE.md` §120.
+
+*Ce qui suit reste pour mémoire du raisonnement.*
 
 **Ce qui est DÉJÀ réparé, et ne l'attend pas** (`ARCHITECTURE.md` §120) : écrire
 0 % retire la remise pour de bon, et la dictée aussi.

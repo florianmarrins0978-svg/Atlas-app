@@ -9917,16 +9917,30 @@ ni modèle (`src/server/ai/providers/transcription/dev.ts`). La cause a été tr
 code, et le raccord n'aura été parcouru qu'avec une clé — c'est écrit tel quel
 dans `test-dicter-dans-le-devis-e2e.ts` depuis le 15 août.
 
-### 3. Le « petit moins » : dessiné, pas codé
+### 3. Le « petit moins » — dessiné, choisi, codé
 
 *« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un
-petit moins. »* C'est un geste : il se dessine avant de toucher à `src/`
-(`CLAUDE.md` §3 bis). `docs/maquettes/68-retirer-le-prix-accorde.html`, trois
-formes sur **ses** chiffres, 24 contrôles.
+petit moins. »* Dessiné d'abord (`CLAUDE.md` §3 bis) :
+`docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes sur **ses**
+chiffres, 24 contrôles. **Il a choisi B** le 17 août — le rond en face de la
+ligne — et c'est ce qui est codé.
 
-**Le « + » et le « − » ne sont pas symétriques**, et c'est ce que la planche lui
-montre : le « + » ajoute une ligne **au tableau**, le « − » retirerait un
-**total**. Rien d'autre dans ce bloc ne porte de bouton.
+**Le « + » et le « − » ne sont pas symétriques**, et il l'a choisi en le sachant :
+le « + » ajoute une ligne **au tableau**, ce « − » retire un **total**. Rien
+d'autre dans ce bloc ne portait de bouton.
+
+**Il passe par LE MÊME tiroir que les lignes**, sous une clé réservée
+(`prix-accorde-au-client`, impossible à confondre avec un UUID de ligne). Une
+seconde mécanique de retrait sur le même écran est exactement ce que le patron a
+fait disparaître le 10 août 2026 — et cela lui donne « Annuler » sans une ligne
+de plus.
+
+**Rien n'est écrit tant que le tiroir est ouvert**, mais le total, lui, montre le
+prix plein **dès l'appui**. Un geste qui ne changerait rien à l'écran pendant six
+secondes se lirait comme sans effet — c'est précisément sa plainte du 17 août.
+Et les deux états de l'écran sont posés **avant** l'attente du serveur : les
+repousser après laisserait une image où la ligne or revient avec son ancien
+pourcentage.
 
 ### Un contrôle de maquette que personne ne jouait
 
@@ -9943,5 +9957,9 @@ de la 68.
 | et la base ne garde alors aucun reliquat | `test-reduction-devis-e2e.ts` |
 | vider la case la retire aussi, et le devis revient au prix plein | `test-reduction-devis-e2e.ts` |
 | la TVA suit toujours le net, jamais le prix plein | les trois suites de §116 |
+| le « − » existe, fait 26 px, et n'est pas sur un devis parti | `test-reduction-devis-e2e.ts` |
+| un appui rend le prix plein **tout de suite**, sans rien écrire encore | `test-reduction-devis-e2e.ts` |
+| « Annuler » rend la remise avec son pourcentage | `test-reduction-devis-e2e.ts` |
+| le tiroir fermé, l'écran et la base disent la même chose | `test-reduction-devis-e2e.ts` |
 | la planche tombe juste sur les deux états, et le geste ne survit pas à son effet | `verifier-maquette-retirer-remise.mjs` |
 | **non éprouvé ici** : le raccord dictée → écran | il faut une clé de transcription et un modèle |
