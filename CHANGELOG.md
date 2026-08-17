@@ -31,6 +31,29 @@ jour — et a été vu rouge sur le piège remis en place. **Ce défaut aurait
 frappé à chaque réglage ajouté**, et lui seul : c'est le genre qu'on ne voit
 jamais en développant, puisqu'on part d'un navigateur vide.
 
+### Le plan de contrôle quitte l'écran à son tour
+
+*« Je ne comprends pas à quoi sert le 3 ? »*, puis, la question posée :
+« enlevez-le ». Il ne s'en servait pas, et il avait raison de demander. Ce
+plan-là dessinait chaque zone séparément, en rectangles abstraits : utile pour
+vérifier un compte — c'est lui qui avait montré l'arroseur en trop du quinconce
+le matin — mais ce n'est pas le plan qu'il veut. Le sien, c'est celui de la
+planche 75, avec le terrain entier, le regard et les tuyaux. **Un écran
+intermédiaire qui ne sert qu'au développeur n'a rien à faire sous ses yeux.**
+
+Restent trois sections : le point d'eau, le croquis, la liste. Tournent
+toujours dessous, invisibles : la pose, le découpage, et l'affectation des
+arroseurs aux vannes — sans quoi ni le nombre d'électrovannes, ni la fiche de
+nourrice, ni les tés du réseau latéral ne seraient justes. Le coloriage par
+réseau, lui, disparaît avec le plan ; il reviendra avec le vrai plan
+d'ensemble.
+
+**Quatre contrôles lisaient ce dessin. Aucun n'a été supprimé sans regarder ce
+qu'il gardait vraiment** : le compte des têtes devient « le nombre annoncé est
+exactement la liste de points » — l'invariant qui avait fait tomber l'arroseur
+en trop, et qui vaut sans dessin. Deux autres ne gardaient que le rendu (une
+boîte non nulle, une cote non rognée) et partent avec lui.
+
 ### Le croquis prend la place des zones, et le découpage quitte l'écran
 
 Il a parcouru l'outil écran par écran et tranché en une phrase : *« Tu

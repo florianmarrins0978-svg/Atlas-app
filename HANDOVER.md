@@ -1002,8 +1002,12 @@ par-dessus champ par champ (`arrosage.html`). **Le même piège guette partout
 où un état persistant s'étoffe** — et il est invisible en développant, puisque
 le navigateur y part vide.
 
-**⚠ L'OUTIL N'A PLUS QUE QUATRE SECTIONS (17 août) : point d'eau, CROQUIS,
-plan, liste.** Sa consigne : *« tu supprimes la 3, et la 2 ça doit être la
+**⚠ L'OUTIL N'A PLUS QUE TROIS SECTIONS (17 août) : point d'eau, CROQUIS,
+liste. Le découpage PUIS le plan ont été retirés, sur sa demande** (*« à quoi
+sert le 3 ? »* → « enlevez-le »). Le plan de zones dessinait des rectangles
+abstraits, utiles au développeur, pas à lui — le sien est celui de la planche
+75. **La pose, le découpage et l'affectation aux vannes tournent toujours**,
+invisibles, et décident des électrovannes, de la nourrice et des tés. Sa consigne : *« tu supprimes la 3, et la 2 ça doit être la
 photo du croquis ».* **Le découpage en secteurs ne s'AFFICHE plus, mais il se
 CALCULE toujours** — il donne les couleurs du plan, le nombre d'électrovannes
 et la fiche de nourrice. Sont partis avec l'écran : les durées, le cycle total,

@@ -304,14 +304,20 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
 
     // **Le quinconce retire un arroseur, il ne le déplace pas.** Une pose
     // décalée qui garde tous ses points fait exactement ce qu'il a signalé le
-    // 17 août : une capture avec une tête en trop, cerclée en rouge. Le plan
-    // dessine désormais EXACTEMENT ce que le calcul a compté — même liste de
-    // points, jamais recalculée à côté.
+    // 17 août : une capture avec une tête en trop, cerclée en rouge. Le plan a
+    // depuis quitté l'écran, sur sa demande — mais l'invariant qui comptait
+    // reste : le nombre ANNONCÉ sur la zone et la liste de points sont une
+    // seule et même chose, jamais deux calculs côte à côte.
     const nomSurZone = await page.$eval('.zone-res', el => el.textContent);
     const teteAttendue = Number((nomSurZone.match(/^(\d+)\s/) || [])[1]);
-    const tetesDessinees = await page.$$eval('#plans .plan', e => e.length ? e[0].querySelectorAll('.tete').length : -1);
-    ok('arrosage : le plan dessine autant de têtes que le calcul en compte',
-       teteAttendue > 0 && tetesDessinees === teteAttendue);
+    const pointsComptes = await page.evaluate(() => {
+      const z = etat.zones.filter(x => TYPES[x.type].forme === 'surface')[0];
+      const p = poser(z);
+      return { nombre: p.nombre, points: p.points.length };
+    });
+    ok('arrosage : le nombre annoncé est exactement la liste de points',
+       teteAttendue > 0 && pointsComptes.points === teteAttendue &&
+       pointsComptes.nombre === teteAttendue);
 
     // L'invariant du métier : un secteur au-dessus du robinet, et les derniers
     // arroseurs bavent au lieu d'arroser.
@@ -357,8 +363,9 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
        /ne se lisent pas encore/.test(await page.$eval('#croquisNote', el => el.innerText)));
     // Et les sections retirées le sont VRAIMENT : « tu supprimes la 3 ».
     const titres = await page.$$eval('h2', e => e.map(x => x.textContent.trim()));
-    ok('arrosage : quatre sections, le découpage retiré',
-       titres.length === 4 && /Le croquis/.test(titres[1]) && !titres.some(t => /secteurs/i.test(t)));
+    ok('arrosage : trois sections — le découpage ET le plan retirés',
+       titres.length === 3 && /Le croquis/.test(titres[1]) &&
+       !titres.some(t => /secteurs/i.test(t)) && !titres.some(t => /^\d+ · Le plan/.test(t)));
 
     // Sa décision du 17 août : la sortie est une liste de quantités, pas un
     // devis. Le jour où un montant apparaît, ce contrôle le dit.

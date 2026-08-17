@@ -97,8 +97,8 @@ changent.** Sa consigne, mot pour mot : *« Tu supprimes la 3, et la 2 ça doit
 | 1 · Le point d'eau | inchangé |
 | 2 · Les zones | **2 · Le croquis** — la photo d'abord, les zones dessous, à corriger en la regardant |
 | 3 · Le découpage en secteurs | **supprimée** |
-| 4 · Le plan | 3 · Le plan |
-| 5 · La liste | 4 · La liste |
+| 4 · Le plan | **supprimée elle aussi**, une heure plus tard — voir ci-dessous |
+| 5 · La liste | 3 · La liste |
 
 **Ce qui est parti avec la section 3, et qu'il faut savoir pour le lui rendre
 s'il le redemande :** le tableau des secteurs, les durées d'arrosage, le cycle
@@ -112,6 +112,22 @@ en accepte ~5 pour TOUT le jardin. Gardée telle quelle, elle ferait sauter la
 sauvegarde entière — et c'est le jardin qui disparaîtrait au rechargement, pas
 seulement l'image. Si l'enregistrement échoue quand même, on **remet l'état
 d'avant et on le dit**, plutôt que d'afficher une photo qui ne survivra pas.
+
+**ET LE PLAN A SUIVI, dans la foulée : *« je ne comprends pas à quoi sert le
+3 ? »*, puis « enlevez-le ».** Il ne s'en servait pas. Ce plan-là dessinait
+chaque zone SÉPARÉMENT, en rectangles abstraits — utile pour vérifier un
+compte (c'est lui qui a montré l'arroseur en trop du quinconce), mais ce n'est
+pas le plan qu'il veut : le sien, c'est la planche 75, avec le terrain entier,
+le regard et les tuyaux. Un écran intermédiaire qui ne sert qu'au développeur
+n'a rien à faire sous ses yeux.
+
+**Ce qui reste donc à l'écran : trois sections.** Le point d'eau, le croquis,
+la liste. **Et ce qui tourne toujours dessous, invisible :** la pose
+(`pointsDeLaPose`), le découpage (`decouper`), l'affectation des arroseurs aux
+vannes (`reseauDuPoint`) — sans quoi ni le nombre d'électrovannes, ni la fiche
+de nourrice, ni les tés du réseau latéral ne seraient justes. **Le coloriage
+par réseau, lui, n'existe plus** : il vivait dans le plan. Il reviendra avec
+le vrai plan d'ensemble.
 
 **⚠ LES CONTRÔLES QUI LISAIENT LA SECTION 3 ONT ÉTÉ REPORTÉS SUR LE CALCUL**
 (`decouper()`), pas supprimés : aucun secteur au-dessus du robinet, les durées

@@ -275,17 +275,7 @@
   </section>
 
   <section>
-    <h2>3 · Le plan</h2>
-    <p class="aide">L'écart entre deux arroseurs ne descend jamais sous leur
-      portée, et ne la dépasse jamais de plus d'un cinquième — votre règle. Les
-      couronnes s'arrêtent au bord : les arroseurs de bordure ne tournent que
-      d'un demi-tour, ceux des coins d'un quart. <b>Une couleur par réseau</b> :
-      c'est ce qu'une même vanne ouvre en même temps.</p>
-    <div id="plans"></div>
-  </section>
-
-  <section>
-    <h2>4 · La liste à envoyer au fournisseur</h2>
+    <h2>3 · La liste à envoyer au fournisseur</h2>
     <p class="aide">Des <b>quantités</b>, pas des prix. Les longueurs de tuyau
       sont à mesurer sur place : elles ne se devinent pas, alors elles se
       saisissent.</p>
@@ -1191,6 +1181,7 @@ function couleurReseau(i){ return COULEURS_RESEAU[i % COULEURS_RESEAU.length]; }
 
 function dessinerPlans(){
   var hote = document.getElementById('plans');
+  if (!hote) return;   // section retirée le 17 août, sur sa demande
   hote.innerHTML = '';
   var eu = false;
   var d = decouper();

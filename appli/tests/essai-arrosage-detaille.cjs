@@ -132,9 +132,17 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   const combien = zone0.match(/^(\d+)\s/);
   cas('le quinconce compte UN arroseur de moins que la grille carrée',
       combien && Number(combien[1]) === 11, zone0.slice(0, 90));
-  const tetesPlan = await page.locator('#plans .plan').first().locator('.tete').count();
-  cas('et le plan dessine EXACTEMENT ce nombre-là',
-      tetesPlan === 11, 'têtes dessinées : ' + tetesPlan);
+  // Le plan a été retiré de l'écran le 17 août sur sa demande. L'invariant qui
+  // comptait, lui, reste : la liste de points et le nombre annoncé sont UNE
+  // SEULE chose. C'est leur divergence qui avait produit l'arroseur en trop.
+  const pointsZone0 = await page.evaluate(() => {
+    const z = etat.zones.filter(x => TYPES[x.type].forme === 'surface')[0];
+    const p = poser(z);
+    return { nombre: p.nombre, points: p.points.length };
+  });
+  cas('le nombre annoncé est EXACTEMENT la liste de points',
+      pointsZone0.points === pointsZone0.nombre && pointsZone0.nombre === 11,
+      JSON.stringify(pointsZone0));
 
   // **LA NOURRICE — LES DEUX CAS, sur un jardin CHOISI et non sur l'exemple.**
   // Ce cas a rougi deux fois de suite en une soirée, chaque fois parce qu'une
@@ -282,16 +290,9 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
       reseaux.debitsCalcules.every(v => v <= reseaux.limite + 0.005),
       'limite ' + reseaux.limite + ' | ' + reseaux.debitsCalcules.join(', '));
 
-  // Et le plan colorie d'après cette même liste : autant de couleurs
-  // distinctes que de réseaux présents sur la zone.
-  const teintes = await page.evaluate(() => {
-    const t = Array.from(document.querySelectorAll('.plan .tete'));
-    return { total: t.length, distinctes: new Set(t.map(e => e.style.fill)).size };
-  });
-  cas('le plan colorie les têtes par réseau',
-      teintes.total > 0 && teintes.distinctes >= 2, JSON.stringify(teintes));
-  cas('et il porte une légende par réseau',
-      (await page.locator('.plan-legende span').count()) >= 2);
+  // Le coloriage a disparu avec le plan (17 août) ; l'AFFECTATION, elle, sert
+  // toujours — c'est elle qui donne le nombre d'électrovannes et la fiche de
+  // nourrice. Elle est éprouvée juste au-dessus, par ses invariants.
 
   // ── LA SAISON : le calcul survit à la disparition de son écran ────────────
   // La section « découpage en secteurs » a été retirée le 17 août sur sa
@@ -334,19 +335,13 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('le nom se tape en entier sans perdre le curseur',
       (await champNom.inputValue()) === 'Pelouse du fond', 'lu : ' + (await champNom.inputValue()));
 
-  // Le plan se dessine, et sa cote n'est pas rognée.
-  const tetes = await page.locator('#plans .tete').count();
-  cas('le plan pose des arroseurs', tetes > 0, 'aucune tête');
-  const svg = await page.locator('#plans .plan').first().boundingBox();
-  cas('le plan n\'est pas une boîte de zéro pixel', svg && svg.width > 100 && svg.height > 60,
-      svg ? svg.width + ' × ' + svg.height : 'absent');
-  const cotes = page.locator('#plans .plan').first().locator('.cote');
-  let rognee = null;
-  for (let i = 0; i < await cotes.count(); i++){
-    const c = await cotes.nth(i).boundingBox();
-    if (!c || c.x < svg.x - 0.5 || c.x + c.width > svg.x + svg.width + 0.5) rognee = await cotes.nth(i).textContent();
-  }
-  cas('aucune cote rognée par le cadre', rognee === null, 'rognée : ' + rognee);
+  // « Le plan pose des arroseurs » et « aucune cote rognée » ne gardaient que
+  // le DESSIN, retiré le 17 août. Ce qu'ils protégeaient vraiment — qu'une
+  // zone mesurée donne bien des têtes — est éprouvé par le calcul.
+  const posees = await page.evaluate(() => etat.zones
+    .filter(z => TYPES[z.type].forme === 'surface')
+    .reduce((n, z) => n + poser(z).nombre, 0));
+  cas('une zone mesurée donne bien des arroseurs', posees > 0, 'posés : ' + posees);
 
   // La liste du matériel : des quantités, et AUCUN prix.
   const liste = await page.locator('#materiel').innerText();
@@ -534,15 +529,13 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   for (let garde = 0; (await page.locator('.retirer').count()) > 0 && garde < 30; garde++){
     await page.locator('.retirer').first().click(); await page.waitForTimeout(80);
   }
-  // Le panneau des secteurs a disparu le 17 août ; la règle, elle, tient
-  // toujours : sans zone, la page DIT qu'elle attend, au lieu d'afficher des
-  // zéros qu'on prendrait pour un résultat. On la lit là où elle parle
-  // désormais — le plan et la liste.
-  const videPlan = await page.locator('#plans').innerText();
+  // Les panneaux des secteurs puis du plan ont été retirés les uns après les
+  // autres le 17 août ; la règle, elle, tient toujours : sans zone, la page
+  // DIT qu'elle attend, au lieu d'afficher des zéros qu'on prendrait pour un
+  // résultat. On la lit là où elle parle désormais — la liste.
   const videListe = await page.locator('#materiel').innerText();
   cas('sans zone, la page le DIT au lieu d\'afficher zéro',
-      /se dessine dès/.test(videPlan) && /se remplit dès/.test(videListe),
-      (videPlan + ' | ' + videListe).slice(0, 90));
+      /se remplit dès/.test(videListe), videListe.slice(0, 90));
   // ── LE CROQUIS — sa demande du 17 août : « la 2, ça doit être la photo du
   //    croquis qu'on ajoute » ─────────────────────────────────────────────────
   // On éprouve le PARCOURS ENTIER, du choix du fichier au rechargement : une
@@ -583,7 +576,8 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   await page.waitForTimeout(300);
   cas('un jardin enregistré AVANT garde son nom',
       (await page.locator('.zone .zone-tete input').first().inputValue()) === 'Jardin d\'avant');
-  cas('et il se pose toujours', (await page.locator('.plan .tete').count()) > 0);
+  cas('et il se pose toujours',
+      (await page.evaluate(() => poser(etat.zones[0]).nombre)) > 0);
   // Le cœur du cas : un réglage AJOUTÉ depuis prend sa valeur, au lieu d'être vide.
   const amenee = await page.locator('[data-tuyau="amenee"]').inputValue();
   cas('un réglage ajouté depuis n\'arrive pas VIDE',
