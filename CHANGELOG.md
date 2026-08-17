@@ -9,6 +9,41 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### « L'appli est super lente », deuxième soir — la construction orpheline
+
+**Sa plainte, à 21 h :** *« même problème qu'hier, l'appli est super lente,
+corrige-moi ça »*. Sa fiche d'état a tranché en dix secondes, sans lui faire
+recopier un terminal : `Code SERVI : AUCUNE — la construction a ÉCHOUÉ`, et le
+message exact, `Another next build process is already running`.
+
+**Même message que la veille, cause différente — et c'est le piège.** Le
+correctif du 16 tue les constructions orphelines **au démarrage** ; il tient
+toujours. Mais son espace n'a que 8 Go (181 Mo libres au moment de la panne) :
+quand la mémoire manque, le noyau tue un processus. Le banc part, **sa
+construction lui survit**, le veilleur relance un banc, et celui-là tombe sur le
+verrou de l'orpheline. Le banc reste alors en mode développement, où chaque
+écran se compile à l'ouverture — c'est exactement « l'appli est lente ».
+
+**Un second trou ouvrait la même porte :** le verrou de banc regardait si le
+fichier existait, *puis* l'écrivait. Deux bancs démarrant dans la même seconde
+ne se voyaient pas et repartaient tous les deux. Il se prend désormais en
+**création exclusive** — un seul peut réussir.
+
+**Ce qui est posé :** le banc déloge l'orpheline avant de bâtir et réessaie une
+fois si le verrou parle encore (`scripts/verrou-construction.mjs`,
+`ARCHITECTURE.md` §124). **On ne double jamais une construction** — on retire
+celle qui n'a plus de destinataire, puisque le banc qui aurait basculé dessus
+est mort. Et on n'efface toujours pas le fichier `lock` : cette règle-là ne
+bouge pas.
+
+**Les contrôles tuent un vrai processus**, et ont été vus rouges avant d'être
+livrés : délogement neutralisé, le premier rougit ; création exclusive retirée,
+deux cas rougissent — dont celui du 10 août.
+
+**Ce que ça ne règle pas, et qui est écrit noir sur blanc :** la mémoire reste
+étroite. Si le noyau tue à nouveau le banc, le démarrage suivant repartira
+proprement, mais il repartira.
+
 ### Atlas propose de retenir les mots qu'il entend — et ne les écrit jamais tout seul
 
 **Sa question, une heure après le lot ci-dessous :** *« ça veut dire que le
