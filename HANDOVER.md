@@ -756,11 +756,18 @@ dans `src/`.
 montre ce que l'application savait déjà : combien de chantiers, combien facturé,
 combien reste dû, et ce qu'on lui fait d'habitude.
 
-**⚠ ELLE EST PRESQUE VIDE AUJOURD'HUI, ET CE N'EST PAS UN DÉFAUT D'ELLE :** un
-client n'est **jamais réutilisé** (`creerClient` insère toujours ; `listerClients`
-n'est appelé par aucun écran). Deux chantiers pour « M. Bernard » font deux
-clients. **Avant de chercher un défaut dans la fiche, vérifier cela.** La
-réparation est une décision du patron — `TODO.md` §0 duoquadragies.
+**UN CLIENT EST DÉSORMAIS RETROUVÉ, PLUS RECRÉÉ (17 août).** La fiche était
+vide par construction — `creerClient` insérait toujours, et deux chantiers pour
+« M. Martins » faisaient deux fiches. Il l'a tranché le lendemain, en écartant
+qu'on lui **propose** des correspondances : le rapprochement est **automatique**
+(`trouverOuCreerClient`, règle dans `src/lib/rapprochement-client.ts`).
+
+**Ce qu'il faut savoir avant d'y toucher :** une coordonnée qui **contredit**
+interdit le rapprochement — deux « Martins » aux téléphones différents restent
+deux fiches. Rien n'est jamais écrasé : la saisie complète les cases vides, pas
+les autres. Un client effacé (RGPD) n'est jamais réutilisé. Et **une fiche est
+maintenant partagée** : corriger l'adresse du client depuis un devis la corrige
+sur les autres chantiers du même client. `ARCHITECTURE.md` §122.
 
 Trois pièges de ce lot : « 0 € » ne doit jamais s'afficher pour un client non
 facturé (« — » et une phrase) ; les prestations se comptent en chantiers et non

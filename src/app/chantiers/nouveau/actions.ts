@@ -2,7 +2,7 @@
 
 import { getCurrentCtx } from "@/server/session-ctx";
 import { creerChantier } from "@/server/repositories/chantiers";
-import { creerClient, type CanalClient } from "@/server/repositories/clients";
+import { trouverOuCreerClient, type CanalClient } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import type { Civilite } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
@@ -44,7 +44,12 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
           ? "email"
           : undefined;
 
-    const client = await creerClient(ctx, {
+    // **Retrouvé plutôt que recréé.** Le patron, le 17 août 2026 : *« si c'est
+    // monsieur Martins et qu'on a déjà une fiche client monsieur Martins, le
+    // devis, la facture s'ajoute à la fiche de monsieur Martins »*. La règle de
+    // reconnaissance — et les cas où elle REFUSE de rapprocher — vit dans
+    // `src/lib/rapprochement-client.ts`.
+    const { client } = await trouverOuCreerClient(ctx, {
       nom: nomClient,
       civilite: data.civilite,
       telephone,
