@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Atlas propose de retenir les mots qu'il entend — et ne les écrit jamais tout seul
+
+**Sa question, une heure après le lot ci-dessous :** *« ça veut dire que le
+document s'autoalimente à chaque fois qu'on rajoute un nouveau mot dans un devis
+et qu'il comprend ce que c'est ? »*. C'était non ; il a répondu « fais-le ».
+
+**Sa condition est dans sa phrase, et c'est elle qui rend le mécanisme
+honnête** : un mot inconnu n'est proposé que si la ligne qu'il a RETENUE sur son
+devis est reconnue par le catalogue. Sans cela, on proposerait de retenir un mot
+dont personne ne sait ce qu'il désigne — c'est-à-dire d'inventer une donnée.
+
+**Atlas propose, deux boutons, et le « non » est définitif** (migration 0053).
+Une proposition qui revient après un refus n'est plus une proposition : le mot
+écarté reste en base, marqué, invisible et introuvable. **Il peut toutefois
+changer d'avis** — écrire le mot à la main le relève, sans quoi l'index unique
+le refuserait en silence et rien ne lui dirait que c'est son propre « non » qui
+le bloque.
+
+**La liste des mots ordinaires est relevée de ses vraies dictées**, jamais d'un
+dictionnaire : *« il FAUDRA écimer le GRAND tilleul du FOND »* proposait trois
+mots pour un seul qui apprend quelque chose.
+
+**Le vocabulaire d'Atlas, lui, ne s'alimentera jamais tout seul** — il appartient
+à toutes les entreprises. Tout ce qui est retenu entre dans SES mots.
+
+**Deux pièges payés en écrivant les contrôles, et tous deux du côté du
+contrôle :**
+
+- une suite navigateur cherchait « Atlas a entendu ces mots » dans la page,
+  alors que la charte met ce titre en CAPITALES et qu'`innerText` rend le texte
+  **transformé** : elle accusait le produit d'un tort qui était le sien. C'est le
+  message d'erreur, enrichi de ce que l'écran disait vraiment, qui l'a montré ;
+- un mot d'essai horodaté (`motessai1786…`) n'arrivait jamais à l'écran : les
+  chiffres sont retirés des dictées avant rapprochement — un nombre n'apprend
+  aucun vocabulaire.
+
 ### Le catalogue s'écrit enfin : ses mots à lui, par-dessus celui de tout le monde
 
 **Codé le jour même de la planche, sur son « là c'est la B ».** L'écran

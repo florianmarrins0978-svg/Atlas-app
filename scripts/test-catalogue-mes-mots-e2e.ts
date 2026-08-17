@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import { mkdirSync } from "node:fs";
+import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 
 // Le parcours du patron sur l'écran « Catalogue », arrangement B (17 août 2026).
@@ -84,7 +85,105 @@ async function main() {
     `Le mot « ${mot} » est revenu au rechargement : le retrait n'a pas pris.`
   );
 
-  // --- 4. La flèche de retour, le défaut du 14 août --------------------------
+  // --- 4. Ce qu'Atlas a entendu : il propose, il n'écrit pas ------------------
+  //
+  // **Sa demande du 17 août** : *« ça s'autoalimente à chaque fois qu'on rajoute
+  // un nouveau mot dans un devis et qu'il comprend ce que c'est ? »*. Le mot est
+  // unique à chaque exécution : sans cela, la deuxième passe ne proposerait plus
+  // rien — le mot serait déjà retenu — et le contrôle passerait au vert sans
+  // avoir rien éprouvé.
+  //
+  // **Que des LETTRES, et c'est le contrôle lui-même qui l'a appris** : les
+  // chiffres sont retirés des dictées avant le rapprochement — « 450 » n'apprend
+  // aucun vocabulaire —, si bien qu'un mot d'essai horodaté « motessai1786… »
+  // arrivait à l'écran amputé de ses chiffres et n'était jamais retrouvé.
+  const entendu = `ecimatest${Date.now()
+    .toString()
+    .split("")
+    .map((d) => "abcdefghij"[Number(d)])
+    .join("")}`;
+  const base = new Pool({ connectionString: process.env.DATABASE_URL });
+  try {
+    const { rows: comptes } = await base.query(
+      `SELECT m.entreprise_id FROM membres_entreprise m
+         JOIN users u ON u.id = m.utilisateur_id
+        WHERE u.email = 'demo@atlas.local' LIMIT 1`
+    );
+    assert.ok(comptes[0], "le compte de démonstration n'a aucune entreprise : le jeu de démo manque.");
+    const entrepriseId = comptes[0].entreprise_id;
+
+    const { rows: chantiers } = await base.query(
+      `SELECT id FROM chantiers WHERE entreprise_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      [entrepriseId]
+    );
+    assert.ok(chantiers[0], "aucun chantier de démonstration : rien à quoi rattacher une dictée.");
+
+    // Une dictée qu'Atlas a lue, et une ligne retenue que le catalogue reconnaît.
+    const r = await base.query(
+      `INSERT INTO corrections_dictee (entreprise_id, chantier_id, dictee, propose, retenu)
+       VALUES ($1, $2, $3, $4::jsonb, $4::jsonb)
+       ON CONFLICT (chantier_id) DO UPDATE
+         SET dictee = EXCLUDED.dictee, propose = EXCLUDED.propose,
+             retenu = EXCLUDED.retenu, updated_at = now()`,
+      [
+        entrepriseId,
+        chantiers[0].id,
+        `il faudra ${entendu} le grand tilleul du fond`,
+        JSON.stringify([{ libelle: "Élagage", montant: "450.00" }]),
+      ]
+    );
+    assert.equal(r.rowCount, 1, "la dictée d'essai n'a pas été écrite : le contrôle n'éprouverait rien.");
+
+    await page.reload({ waitUntil: "networkidle" });
+    const avecProposition = await page.locator("body").innerText();
+    assert.ok(
+      // **Insensible à la casse, et ce n'est pas une coquetterie** : le titre
+      // est mis en capitales par la charte (`libelleCaps`), et `innerText` rend
+      // le texte TRANSFORMÉ. Cherché tel qu'il est écrit dans le code, il ne se
+      // trouve jamais — le contrôle accusait le produit d'un tort qui était le
+      // sien.
+      /atlas a entendu ces mots/i.test(avecProposition) && avecProposition.includes(entendu),
+      // **Le message montre l'écran.** Sans lui, un rouge ici n'apprend rien :
+      // on ne sait pas si Atlas n'a rien proposé, s'il a proposé autre chose,
+      // ou si la page n'est même pas celle du catalogue.
+      `Atlas n'a rien proposé pour « ${entendu} », alors que la dictée le porte et que la ligne retenue ` +
+        `est un élagage. L'écran dit : ${JSON.stringify(avecProposition.slice(0, 400))}`
+    );
+    assert.ok(
+      /Le retenir comme un mot pour/.test(avecProposition),
+      "la proposition ne dit pas à QUOI le mot serait rattaché : il ne peut pas trancher."
+    );
+
+    // Le bouton de NOTRE proposition, pas le premier venu : d'autres mots de la
+    // même dictée peuvent être proposés au-dessus, et retenir « grand » à la
+    // place ne prouverait rien.
+    const carteProposee = page.locator("li", { hasText: `« ${entendu} »` });
+    await carteProposee.getByRole("button", { name: "Oui, retenir" }).click();
+    // **Attendre la disparition de la PROPOSITION, pas de la section.** Les
+    // autres mots de la dictée restent proposés : attendre la section entière
+    // était une condition qui ne pouvait pas se réaliser, et le contrôle
+    // rougissait sur un délai dépassé au lieu de dire ce qui n'allait pas.
+    await page.waitForFunction(
+      (m) => !document.body.innerText.includes(`« ${m as string} »`),
+      entendu,
+      { timeout: 15000 }
+    );
+
+    await page.reload({ waitUntil: "networkidle" });
+    const apresRetenu = await page.locator("body").innerText();
+    assert.ok(
+      apresRetenu.includes(entendu),
+      "le mot retenu doit rejoindre sa carte, en doré, sous l'entrée d'Atlas."
+    );
+
+    // On repart d'un écran propre : le mot d'essai n'a rien à faire dans son
+    // catalogue, et une suite qui laisse ses déchets fausse la suivante.
+    await base.query(`DELETE FROM mots_catalogue WHERE entreprise_id = $1 AND mot = $2`, [entrepriseId, entendu]);
+  } finally {
+    await base.end();
+  }
+
+  // --- 5. La flèche de retour, le défaut du 14 août --------------------------
   const retour = page.getByRole("link", { name: "Retour aux tarifs" });
   assert.equal(
     await retour.count(),
@@ -94,7 +193,7 @@ async function main() {
   await retour.click();
   await page.getByRole("heading", { name: "Tarifs & catalogue" }).waitFor({ timeout: 15000 });
 
-  console.log("✅ Catalogue — ses mots se posent, se relisent, se retirent, et la flèche ramène.");
+  console.log("✅ Catalogue — ses mots se posent, Atlas en propose, tout se retire, et la flèche ramène.");
   await browser.close();
 }
 

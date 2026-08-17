@@ -777,10 +777,19 @@ dans `ARCHITECTURE.md` §122, migration 0052.
    `lecons_prix` range par nature de chantier, pas par mot de catalogue : un
    prix d'abattage sous « Élagage » serait pire que la phrase retirée.
 
-**Et ce qu'il a demandé, sans réponse à ce jour :** le catalogue ne
-s'auto-alimente PAS. Un mot compris dans un devis ne s'ajoute nulle part. Ce qui
-serait possible — proposer l'ajout à SES mots quand il corrige une dictée, avec
-confirmation, jamais dans le commun — est dans `TODO.md` §0 octovicies bis.
+**L'AUTO-ALIMENTATION EXISTE DEPUIS LE MÊME JOUR** (`ARCHITECTURE.md` §123,
+migration 0053) : Atlas **propose** de retenir un mot entendu quand il sait à
+quoi il se rapporte — la ligne retenue sur le devis doit être reconnue par le
+catalogue, faute de quoi rien n'est proposé. Deux choses à ne pas défaire :
+
+- **le « non » est définitif** (colonne `refuse`) : une proposition qui revient
+  après un refus n'est plus une proposition ;
+- **mais un mot écarté puis écrit à la main se relève** (`ajouterMot`). Sans ce
+  relèvement, l'index unique le refuse en SILENCE : il tape le mot, rien
+  n'apparaît, et rien ne dit que c'est son propre « non » qui le bloque.
+
+**Le vocabulaire d'Atlas, lui, ne s'alimente jamais tout seul** — il est commun
+à toutes les entreprises.
 
 **LA FICHE DU CLIENT (16 août).** Elle s'ouvre depuis le tiroir d'un chantier et
 montre ce que l'application savait déjà : combien de chantiers, combien facturé,

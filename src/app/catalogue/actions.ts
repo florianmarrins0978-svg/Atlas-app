@@ -2,7 +2,7 @@
 
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
-import { ajouterMot, creerEntree, retirerMot, type Famille } from "@/server/repositories/mots-catalogue";
+import { ajouterMot, creerEntree, ecarterMot, retirerMot, type Famille } from "@/server/repositories/mots-catalogue";
 import { phraseDuRefus } from "@/lib/mots-catalogue";
 
 /**
@@ -49,4 +49,32 @@ export async function retirerMotAction(id: string) {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "retirer un mot du catalogue");
   return retirerMot(ctx, id);
+}
+
+/**
+ * Retient un mot qu'Atlas a proposé.
+ *
+ * **Il entre dans SES mots, jamais dans le vocabulaire commun** — celui-là
+ * appartient à toutes les entreprises, et un mot appris chez lui changerait les
+ * devis d'un autre artisan.
+ */
+export async function retenirMotProposeAction(entreeId: string, mot: string) {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "retenir un mot proposé");
+  const resultat = await ajouterMot(ctx, { famille: "prestation", entreeId, mot });
+  return resultat.ok
+    ? { ok: true as const, mot: resultat.mot }
+    : { ok: false as const, phrase: phraseDuRefus(resultat.refus) };
+}
+
+/**
+ * Écarte un mot proposé, **pour de bon**.
+ *
+ * Le « non » est retenu : une proposition qui revient après un refus n'est plus
+ * une proposition. Écrire le mot à la main plus tard le relève.
+ */
+export async function ecarterMotAction(mot: string) {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "écarter un mot proposé");
+  return ecarterMot(ctx, { famille: "prestation", mot });
 }

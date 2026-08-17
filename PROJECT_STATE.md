@@ -694,10 +694,12 @@ Voir `TODO.md` pour le détail et l'ordre.
   partagé reste intouché, et **un mot ajouté est reconnu par la dictée** — les
   quatre chemins de recherche passent par la même fonction. Réparés au passage :
   la flèche de retour, et « aucun prix encore constaté », une phrase qui lisait
-  une mémoire jamais écrite et ne se serait jamais éteinte. **Deux décisions
-  restent à lui** (`TODO.md` §0 octovicies bis) : faut-il remettre un prix sur
-  ces cartes, et le catalogue doit-il s'auto-alimenter depuis ses corrections de
-  dictée — aujourd'hui rien ne s'ajoute tout seul.
+  une mémoire jamais écrite et ne se serait jamais éteinte. **Et Atlas PROPOSE
+  désormais de retenir les mots qu'il entend** quand il sait à quoi ils se
+  rapportent (migration 0053) : deux boutons, le « non » retenu pour toujours,
+  et jamais rien dans le vocabulaire commun. **Une décision reste à lui**
+  (`TODO.md` §0 octovicies bis) : faut-il remettre un prix sur ces cartes, alors
+  que la mémoire des prix range par nature de chantier et non par mot.
 
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA

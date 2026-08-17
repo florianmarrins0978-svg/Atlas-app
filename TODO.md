@@ -1388,14 +1388,12 @@ deviennent « Aussi appelé » ; l'écran est passé à la charte.
    pire que la phrase retirée, qui au moins n'inventait rien. Deux réponses
    possibles : rien du tout (l'état actuel), ou la ligne **uniquement** quand la
    nature correspond exactement.
-2. **Le catalogue doit-il s'auto-alimenter ?** Sa question du 17 août :
-   *« ça veut dire que le document s'autoalimente à chaque fois qu'on rajoute un
-   nouveau mot dans un devis et qu'il comprend ce que c'est ? »*. **Aujourd'hui,
-   non — rien ne s'ajoute tout seul.** Ce qui est possible sans rien casser :
-   proposer l'ajout **à SES mots à lui** quand il corrige une dictée
-   (`corrections_dictee` les porte déjà), avec confirmation. **Jamais dans le
-   vocabulaire commun** : il appartient à toutes les entreprises. En attente de
-   son feu vert.
+2. ~~**Le catalogue doit-il s'auto-alimenter ?**~~ — **FAIT le 17 août.** Atlas
+   propose de retenir un mot entendu **quand il sait à quoi il se rapporte** —
+   sa condition, mot pour mot. Deux boutons sur l'écran du catalogue ; le « non »
+   est retenu pour toujours (migration 0053), et écrire le mot à la main le
+   relève. Le vocabulaire commun, lui, n'est jamais touché (`ARCHITECTURE.md`
+   §123).
 
 ### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au devis
 

@@ -1,7 +1,8 @@
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { listerCartes } from "@/server/repositories/mots-catalogue";
+import { listerCartes, motsAProposer } from "@/server/repositories/mots-catalogue";
+import MotsProposes from "./MotsProposes";
 import MesMots from "./MesMots";
 
 export const dynamic = "force-dynamic";
@@ -30,9 +31,13 @@ export const dynamic = "force-dynamic";
  */
 export default async function CataloguePage() {
   const ctx = await getCurrentCtx();
-  const [prestations, materiels] = await Promise.all([
+  const [prestations, materiels, proposes] = await Promise.all([
     listerCartes(ctx, "prestation"),
     listerCartes(ctx, "materiel"),
+    // Ce qu'Atlas a entendu et ne connaît pas (17 août 2026). Vide la plupart
+    // du temps : il faut une dictée récente, un mot inconnu dedans, et une
+    // ligne retenue que le catalogue reconnaît.
+    motsAProposer(ctx),
   ]);
 
   return (
@@ -48,6 +53,8 @@ export default async function CataloguePage() {
           Les mots qu&apos;Atlas reconnaît quand vous dictez.{" "}
           <span style={{ color: colors.or }}>En doré, les vôtres</span> — visibles de vous seul.
         </p>
+
+        <MotsProposes proposes={proposes} />
 
         <MesMots
           famille="prestation"
