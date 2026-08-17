@@ -9,6 +9,20 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Une prestation qu'il ajoute s'écrit en NOIR, comme les autres
+
+Sa correction du 17 août, capture à l'appui : « Entretient » en doré sous
+« Élagage » en noir — *« les nouvelles prestations doivent toujours être en noir,
+pas en doré »*.
+
+La couleur disait d'où venait l'entrée — du catalogue commun, ou de lui. Mais
+**deux couleurs de titre dans la même liste se lisent comme deux natures de
+prestation**, alors qu'il les coche de la même façon sur un chantier.
+
+**L'or reste sur ses MOTS**, dans « Aussi appelé » : là il sépare le mot du
+commun, qu'on ne retire pas, du sien, qu'un « × » enlève — une distinction qui
+porte un geste. Raisons : `ARCHITECTURE.md` §123.
+
 ### Un réglage ajouté après sa première visite lui arrivait VIDE
 
 Sa question : *« C'est normal qu'il n'y a plus aucune info en mémoire ? »* Son

@@ -183,7 +183,54 @@ async function main() {
     await base.end();
   }
 
-  // --- 5. La flèche de retour, le défaut du 14 août --------------------------
+  // --- 5. Une prestation à lui s'écrit en NOIR, comme les autres -------------
+  //
+  // **Sa correction du 17 août 2026**, capture à l'appui — « Entretient » en
+  // doré juste sous « Élagage » en noir : *« les nouvelles prestations doivent
+  // toujours être en noir, pas en doré »*.
+  //
+  // La couleur marquait la PROVENANCE (le catalogue commun, ou lui). Deux
+  // couleurs de titre dans la même liste se lisent comme deux NATURES de
+  // prestation — or il les cochera de la même façon sur un chantier.
+  //
+  // **Mesuré sur la couleur calculée, jamais sur une classe** : un jeton de
+  // charte qui changerait de valeur passerait au travers d'un contrôle qui ne
+  // regarde que le nom de la règle.
+  const sienne = `prestaessai${Date.now()}`;
+  await page.goto(`${RACINE}/catalogue`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /Nouvelle prestation/ }).click();
+  await page.locator('input[placeholder="Son nom"]').first().fill(sienne);
+  await page.getByRole("button", { name: "Créer" }).first().click();
+  await page.getByText(sienne, { exact: false }).first().waitFor({ timeout: 15000 });
+  await page.reload({ waitUntil: "networkidle" });
+
+  const couleurDe = async (nom: string) => {
+    const titre = page.locator("li span", { hasText: nom }).first();
+    await titre.waitFor({ timeout: 15000 });
+    // Une boîte de zéro pixel ne prouve rien : refuser de conclure plutôt que
+    // de rendre un vert vide (`CLAUDE.md` §5).
+    const boite = await titre.boundingBox();
+    assert.ok(boite && boite.width > 0, `« ${nom} » n'occupe aucune place : rien à mesurer.`);
+    return titre.evaluate((el) => getComputedStyle(el).color);
+  };
+
+  const laSienne = await couleurDe(sienne);
+  const duCommun = await couleurDe("Élagage");
+  assert.equal(
+    laSienne,
+    duCommun,
+    `Une prestation qu'il ajoute (« ${sienne} », ${laSienne}) ne s'écrit pas comme celles du catalogue (« Élagage », ${duCommun}) : il croit lire deux natures de prestation là où il n'y en a qu'une.`
+  );
+
+  const base2 = new Pool({ connectionString: process.env.DATABASE_URL });
+  try {
+    await base2.query(`DELETE FROM mots_catalogue WHERE mot = $1`, [sienne]);
+  } finally {
+    await base2.end();
+  }
+
+  // --- 6. La flèche de retour, le défaut du 14 août --------------------------
+  await page.goto(`${RACINE}/catalogue`, { waitUntil: "networkidle" });
   const retour = page.getByRole("link", { name: "Retour aux tarifs" });
   assert.equal(
     await retour.count(),

@@ -10300,6 +10300,30 @@ puisse le corriger. Tout ce qui est retenu entre dans SES mots, isolés par RLS.
 de l'utilisateur »).
 ---
 
+### L'or marque un MOT, jamais une prestation (corrigé le 17 août 2026)
+
+**Sa correction, capture à l'appui** — « Entretient », qu'il venait d'ajouter, en
+doré juste sous « Élagage » en noir : *« les nouvelles prestations doivent
+toujours être en noir, pas en doré »*.
+
+La couleur du titre marquait la **provenance** : le catalogue commun en noir, ses
+entrées à lui en or. C'était cohérent avec l'or de ses mots — et c'est
+précisément ce qui rendait la chose fausse. **Deux couleurs de titre dans la même
+liste ne se lisent pas comme deux provenances, mais comme deux NATURES de
+prestation** ; or il cochera les deux de la même façon sur un chantier, et le
+rapprochement d'une dictée les traite de la même façon aussi.
+
+**Où l'or garde son sens :** dans la ligne « Aussi appelé ». Là, il sépare deux
+choses réellement différentes — le mot du commun, qu'on ne peut pas retirer, et
+le sien, qu'un « × » enlève. Une distinction qui porte un geste mérite une
+couleur ; une distinction qui n'en porte aucun ne fait que semer le doute.
+
+Éprouvé sur la **couleur calculée**, pas sur un nom de classe : un jeton de
+charte qui changerait de valeur passerait au travers d'un contrôle qui ne
+regarde que la règle CSS (`test-catalogue-mes-mots-e2e.ts`). Rouge en remettant
+l'or, et son message donne les deux couleurs lues.
+
+
 ## 124. « Adresse non renseignée » devient une porte — et rien d'autre ne bouge
 
 **Sa demande du 17 août 2026**, capture de son accueil à l'appui : *« j'ai oublié
