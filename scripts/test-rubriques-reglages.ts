@@ -46,7 +46,7 @@ essai("les rubriques de sa planche du 14 août sont toutes là", () => {
     "Tarifs & catalogue",
     "Devis & factures",
     // « Planning » a été SUPPRIMÉE le 16 août 2026 : elle rendait le même bloc
-    // que « Équipe » et rien d'autre (`ARCHITECTURE.md` §126). Sa place est
+    // que « Équipe » et rien d'autre (`ARCHITECTURE.md` §129). Sa place est
     // prise par la fiche d'entretien, arrivée le même jour.
     "Fiche d'entretien",
     "Atlas IA",

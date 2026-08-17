@@ -34,9 +34,12 @@ export default async function VocabulairePage() {
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
         <div className="px-6 pt-8">
+          {/* Même défaut que « Mes prix », signalé le 17 août 2026 : cet écran
+              ne s'atteint que depuis Atlas IA, et sa flèche renvoyait à la
+              racine des réglages. */}
           <Link
-            href="/reglages"
-            aria-label="Retour aux réglages"
+            href="/reglages/ia"
+            aria-label="Retour à Atlas IA"
             className="flex h-10 w-10 items-center justify-center rounded-full"
             style={{ backgroundColor: colors.rustTint }}
           >

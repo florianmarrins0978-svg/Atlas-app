@@ -333,6 +333,15 @@ l'application. Ce qui est **fait** :
   Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
   l'équipe d'un chantier est une étiquette, pas une contrainte.
   `ARCHITECTURE.md` §109.
+- **Poser une date à la main, enfin possible** (17 août) : *« je peux toujours
+  pas poser de date sur les chantiers test »*. Le geste marchait de bout en bout ;
+  c'est le RACCORD qui manquait — en touchant un chantier de « Sans date »,
+  l'écran écrivait « À poser » et ne bougeait pas, le calendrier restant 231 px
+  au-dessus du haut de la fenêtre. `amenerAuCalendrier` existait déjà et
+  annonçait servir « depuis deux endroits » : la liste ne l'a jamais appelée.
+  **Aucune suite ne le voyait parce que Playwright fait défiler avant de
+  cliquer** — un contrôle qui clique éprouve qu'une cible existe, jamais qu'elle
+  est atteignable. `ARCHITECTURE.md` §127.
 - **« Adresse non renseignée » ouvre l'écran du chantier** (17 août) : la mention
   de l'accueil devient un lien vers `/chantiers/[id]/coordonnees` — l'écran de
   création rouvert, prérempli, qui **enregistre** au lieu de créer. Sa demande,
@@ -698,6 +707,13 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 ## Ce qui reste, et que je peux faire seul
 
 Voir `TODO.md` pour le détail et l'ordre.
+
+- **Les clients ont enfin une porte — FAIT le 17 août au soir.** Sa remarque :
+  *« la catégorie client n'a pas été créée »*. La fiche existait depuis la
+  veille mais ne s'atteignait que depuis un chantier ; la **liste** s'ouvre
+  maintenant depuis l'accueil (« Vos clients »), avec pour chacun ses chantiers,
+  ce qui a été facturé et ce qui reste dû. **Pas de cinquième onglet** : il est
+  réservé aux outils métier (`ARCHITECTURE.md` §125).
 
 - **Le catalogue s'écrit — FAIT le 17 août** (`ARCHITECTURE.md` §122, migration
   0052). Il a posé deux fois la même question sur cet écran : *« À quoi sert

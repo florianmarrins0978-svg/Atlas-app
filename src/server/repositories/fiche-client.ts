@@ -136,3 +136,143 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
     };
   });
 }
+
+/** Ce que la liste des clients montre de chacun : son nom, et deux chiffres. */
+export type ClientEnListe = {
+  id: string;
+  nom: string;
+  chantiers: number;
+  /** `null` : rien n'a encore été facturé — ce n'est pas « zéro euro ». */
+  facture: string | null;
+  /** Ce qui reste dû. `null` quand rien n'est facturé. */
+  du: string | null;
+  /** Le jour du chantier le plus récent : c'est l'ordre de la liste. */
+  dernierJour: string | null;
+};
+
+/**
+ * Tous ses clients, du plus récent au plus ancien.
+ *
+ * **Sa remarque du 17 août 2026 au soir :** *« la catégorie client n'a pas été
+ * créée »*. La fiche d'un client existait depuis la veille — mais **seulement
+ * atteinte depuis un chantier** (arrangement B de la planche 66). Il n'y avait
+ * donc aucun endroit d'où voir SES clients, ni chercher celui qu'on a en tête
+ * sans se rappeler pour quel chantier on l'avait noté.
+ *
+ * **En quatre requêtes, pas en une par client.** Charger la fiche complète de
+ * chaque client à tour de rôle donnerait cinq requêtes par ligne : sur un
+ * téléphone, la liste s'ouvrirait d'autant plus lentement qu'il a de clients —
+ * exactement l'inverse de ce qu'on veut d'un écran d'accueil.
+ *
+ * **Et le calcul reste celui de la fiche** (`composerFicheClient`) : deux façons
+ * d'additionner ce qu'un client doit finiraient par se contredire, et c'est LUI
+ * qui verrait la différence, d'un écran à l'autre.
+ */
+export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [sesClients, sesChantiers] = await Promise.all([
+      tx
+        .select({ id: clients.id, nom: clients.nom })
+        .from(clients)
+        .where(eq(clients.entrepriseId, ctx.entrepriseId)),
+      tx
+        .select({
+          id: chantiers.id,
+          clientId: chantiers.clientId,
+          nom: chantiers.nom,
+          datePlanifiee: chantiers.datePlanifiee,
+          creeLe: chantiers.createdAt,
+        })
+        .from(chantiers)
+        .where(and(eq(chantiers.entrepriseId, ctx.entrepriseId), isNull(chantiers.deletedAt))),
+    ]);
+
+    if (sesClients.length === 0) return [];
+
+    const ids = sesChantiers.map((c) => c.id);
+    const [sesFactures, sesLignes] = ids.length
+      ? await Promise.all([
+          tx
+            .select({
+              id: factures.id,
+              chantierId: factures.chantierId,
+              dateEmission: factures.dateEmission,
+              totalHt: factures.totalHt,
+              totalTva: factures.totalTva,
+              totalTtc: factures.totalTtc,
+            })
+            .from(factures)
+            .where(and(inArray(factures.chantierId, ids), eq(factures.statut, "emise"))),
+          tx
+            .select({ chantierId: lignesPrix.chantierId, libelle: lignesPrix.libelle, montant: lignesPrix.montant })
+            .from(lignesPrix)
+            .where(inArray(lignesPrix.chantierId, ids)),
+        ])
+      : [[], []];
+
+    const paiements = sesFactures.length
+      ? await tx
+          .select()
+          .from(paiementsFacture)
+          .where(
+            inArray(
+              paiementsFacture.factureId,
+              sesFactures.map((f) => f.id)
+            )
+          )
+      : [];
+
+    const parFacture = new Map<string, { date: string; montant: string }[]>();
+    for (const p of paiements) {
+      const liste = parFacture.get(p.factureId) ?? [];
+      liste.push({ date: p.datePaiement, montant: p.montant });
+      parFacture.set(p.factureId, liste);
+    }
+
+    const factureParChantier = new Map<string, { totalTtc: string; reste: string; jour: string }>();
+    for (const f of sesFactures) {
+      factureParChantier.set(f.chantierId, {
+        totalTtc: f.totalTtc,
+        reste: resteDu(f as FacturePourTva, parFacture.get(f.id) ?? []),
+        jour: f.dateEmission,
+      });
+    }
+
+    const lignesParChantier = new Map<string, { chantierId: string; libelle: string; montant: string }[]>();
+    for (const l of sesLignes) {
+      const liste = lignesParChantier.get(l.chantierId) ?? [];
+      liste.push(l);
+      lignesParChantier.set(l.chantierId, liste);
+    }
+
+    const liste = sesClients.map((client) => {
+      const aLui = sesChantiers.filter((c) => c.clientId === client.id);
+      const composables = aLui.map((c) => {
+        const f = factureParChantier.get(c.id);
+        return {
+          id: c.id,
+          nom: c.nom,
+          jour: f?.jour ?? c.datePlanifiee ?? c.creeLe.toISOString().slice(0, 10),
+          totalTtc: f?.totalTtc ?? null,
+          reste: f?.reste ?? null,
+        };
+      });
+      const fiche = composerFicheClient(
+        composables,
+        aLui.flatMap((c) => lignesParChantier.get(c.id) ?? [])
+      );
+      return {
+        id: client.id,
+        nom: client.nom,
+        chantiers: fiche.chantiers,
+        facture: fiche.facture,
+        du: fiche.du,
+        dernierJour: fiche.liste[0]?.jour ?? null,
+      };
+    });
+
+    // Le plus récent d'abord — c'est celui qu'il cherche neuf fois sur dix. Un
+    // client sans aucun chantier passe en dernier, jamais au milieu.
+    return liste.sort((a, b) => (b.dernierJour ?? "").localeCompare(a.dernierJour ?? ""));
+  });
+}
