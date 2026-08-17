@@ -16,6 +16,7 @@ import {
   grillePrix,
   agendasExternes,
   equipes,
+  prestationsEntretien,
   naturesGrille,
   paiementsFacture,
   tranchesGrille,
@@ -36,6 +37,7 @@ import {
   prestations,
   propositionsIa,
   tarifs,
+  motsCatalogue,
 } from "../db/schema";
 import type { Ctx } from "./context";
 
@@ -132,6 +134,8 @@ export async function exporterEntreprise(
       sesTranches,
       sesNatures,
       lesReglements,
+      sonModeleEntretien,
+      sesMotsCatalogue,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -209,6 +213,22 @@ export async function exporterEntreprise(
       // les factures sans dire lesquelles ont été payées — donc sans permettre
       // de reconstituer un seul relevé de TVA.
       tx.select().from(paiementsFacture).where(eq(paiementsFacture.entrepriseId, e)),
+      // Le modèle de fiche d'entretien (migration 0051). C'est SA saisie —
+      // les prestations, leurs familles, leur ordre —, et rien ne la
+      // reconstitue : le modèle fourni au départ n'est qu'un point de départ,
+      // que dix retraits et cinq ajouts ont pu éloigner de tout ce qu'Atlas
+      // sait engendrer. Une sauvegarde qui l'oublierait rendrait des rapports
+      // d'entretien dont plus personne ne saurait de quelle fiche ils viennent.
+      tx
+        .select()
+        .from(prestationsEntretien)
+        .where(eq(prestationsEntretien.entrepriseId, e)),
+      // Les mots qu'il a ajoutés au catalogue (migration 0052). C'est SA
+      // saisie, et rien ne la reconstitue : le vocabulaire d'Atlas, lui, se
+      // retrouve tout seul — ses mots à lui, non. Une sauvegarde qui les
+      // oublierait rendrait une dictée qui ne comprend plus ce qu'elle
+      // comprenait la veille, sans que rien ne dise pourquoi.
+      tx.select().from(motsCatalogue).where(eq(motsCatalogue.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -264,6 +284,9 @@ export async function exporterEntreprise(
       agendas_externes: lesAgendas,
       equipes: lesEquipes,
       absences_equipe: sesAbsences,
+      // Le modèle de fiche d'entretien : ses prestations, ses familles, son ordre.
+      prestations_entretien: sonModeleEntretien,
+      mots_catalogue: sesMotsCatalogue,
     };
 
     const compte: Record<string, number> = {};

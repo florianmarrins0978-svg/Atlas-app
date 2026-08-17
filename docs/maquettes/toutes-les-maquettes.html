@@ -4551,7 +4551,7 @@
 #s39 .segments label{display:inline-flex;align-items:center;border-radius:9999px;
         padding:8px 17px;font:400 15px/1 ui-serif,Georgia,serif;
         border:1px solid var(--trait);color:var(--gris)}
-#s39 #v-a:checked ~ .page .segments label[for="v-a"],#s39 #v-b:checked ~ .page .segments label[for="v-b"],#s39 #v-c:checked ~ .page .segments label[for="v-c"],#s39 #v-d:checked ~ .page .segments label[for="v-d"]{
+#s39 #s39-v-a:checked ~ .page .segments label[for="s39-v-a"],#s39 #s39-v-b:checked ~ .page .segments label[for="s39-v-b"],#s39 #s39-v-c:checked ~ .page .segments label[for="s39-v-c"],#s39 #s39-v-d:checked ~ .page .segments label[for="s39-v-d"]{
     background:var(--pin);border-color:var(--pin);color:#faf9f5}
 #s39 .scene{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:32px}
 #s39 .etiquette{text-align:center;max-width:420px}
@@ -4590,8 +4590,8 @@
 #s39 .ligne .equipe.vide{background:transparent;color:var(--e-or);border:1px dashed var(--e-or)}
 #s39 .ligne .chev{color:var(--e-or);font-size:21px;line-height:1}
 #s39 .v-b,#s39 .v-c,#s39 .v-d{display:none}
-#s39 #v-b:checked ~ .page .v-b,#s39 #v-c:checked ~ .page .v-c,#s39 #v-d:checked ~ .page .v-d{display:inline}
-#s39 #v-b:checked ~ .page .v-a,#s39 #v-c:checked ~ .page .v-a,#s39 #v-d:checked ~ .page .v-a{display:none}
+#s39 #s39-v-b:checked ~ .page .v-b,#s39 #s39-v-c:checked ~ .page .v-c,#s39 #s39-v-d:checked ~ .page .v-d{display:inline}
+#s39 #s39-v-b:checked ~ .page .v-a,#s39 #s39-v-c:checked ~ .page .v-a,#s39 #s39-v-d:checked ~ .page .v-a{display:none}
 #s39 .doré{color:var(--e-or)}
 #s39 .rappel{max-width:62ch;margin:34px auto 0;padding:20px 22px;border-radius:12px;
           background:var(--plage);font-size:13.4px;color:var(--gris);line-height:1.7}
@@ -4642,7 +4642,7 @@
 #s40 .segments label{display:inline-flex;align-items:center;border-radius:9999px;
         padding:8px 17px;font:400 15px/1 ui-serif,Georgia,serif;
         border:1px solid var(--trait);color:var(--gris)}
-#s40 #j-deux:checked ~ .page .segments label[for="j-deux"],#s40 #j-un:checked ~ .page .segments label[for="j-un"],#s40 #o-tout:checked ~ .page .segments label[for="o-tout"],#s40 #o-nombre:checked ~ .page .segments label[for="o-nombre"]{
+#s40 #j-deux:checked ~ .page .segments label[for="j-deux"],#s40 #s40-j-un:checked ~ .page .segments label[for="s40-j-un"],#s40 #o-tout:checked ~ .page .segments label[for="o-tout"],#s40 #o-nombre:checked ~ .page .segments label[for="o-nombre"]{
     background:var(--pin);border-color:var(--pin);color:#faf9f5}
 #s40 .scene{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:32px}
 #s40 .etiquette{text-align:center;max-width:430px}
@@ -4682,8 +4682,8 @@
 #s40 .ligne .equipe.vide{background:transparent;color:var(--e-or);border:1px dashed var(--e-or)}
 #s40 .ligne .chev{color:var(--e-or);font-size:21px;line-height:1}
 #s40 .depart{display:none}
-#s40 #j-un:checked ~ .page .mot{display:none}
-#s40 #j-un:checked ~ .page .depart{display:inline}
+#s40 #s40-j-un:checked ~ .page .mot{display:none}
+#s40 #s40-j-un:checked ~ .page .depart{display:inline}
 #s40 #o-tout:checked ~ .page .quand{color:var(--e-or)}
 #s40 #o-nombre:checked ~ .page .quand{color:var(--e-gris)}
 #s40 #o-nombre:checked ~ .page .quand .nb{color:var(--e-or)}
@@ -4746,7 +4746,7 @@
                   border:1px solid var(--trait);font-size:13.5px;
                   background:var(--papier);color:var(--gris);
                   -webkit-tap-highlight-color:transparent}
-#s41 #v-a:checked ~ .dedans .segments label[for="v-a"],#s41 #v-b:checked ~ .dedans .segments label[for="v-b"],#s41 #v-c:checked ~ .dedans .segments label[for="v-c"]{
+#s41 #s41-v-a:checked ~ .dedans .segments label[for="s41-v-a"],#s41 #s41-v-b:checked ~ .dedans .segments label[for="s41-v-b"],#s41 #s41-v-c:checked ~ .dedans .segments label[for="s41-v-c"]{
     background:var(--pin);border-color:var(--pin);color:#fff}
 #s41 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
 #s41 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
@@ -4786,14 +4786,14 @@
 #s41 .signature{margin-top:24px;border:1px solid var(--trait);border-radius:6px;
              padding:12px;font-size:11.5px;color:var(--gris)}
 #s41 .a-seul,#s41 .a-dessus,#s41 .a-fusion{display:none}
-#s41 #v-a:checked ~ .dedans .a-seul,#s41 #v-b:checked ~ .dedans .a-dessus,#s41 #v-c:checked ~ .dedans .a-fusion{display:block}
+#s41 #s41-v-a:checked ~ .dedans .a-seul,#s41 #s41-v-b:checked ~ .dedans .a-dessus,#s41 #s41-v-c:checked ~ .dedans .a-fusion{display:block}
 #s41 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;
            color:var(--gris)}
 #s41 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
               color:var(--encre);margin-bottom:8px}
 #s41 .legende b{color:var(--encre);font-weight:600}
 #s41 .l-a,#s41 .l-b,#s41 .l-c{display:none}
-#s41 #v-a:checked ~ .dedans .l-a,#s41 #v-b:checked ~ .dedans .l-b,#s41 #v-c:checked ~ .dedans .l-c{display:block}
+#s41 #s41-v-a:checked ~ .dedans .l-a,#s41 #s41-v-b:checked ~ .dedans .l-b,#s41 #s41-v-c:checked ~ .dedans .l-c{display:block}
 #s41 .cout{display:block;margin-top:12px;padding-top:12px;
         border-top:1px solid var(--trait)}
 #s41 .note{margin-top:32px;padding:16px 18px;border-radius:12px;
@@ -4848,12 +4848,12 @@
                   border:1px solid var(--trait);font-size:13.5px;
                   background:var(--papier);color:var(--gris);
                   -webkit-tap-highlight-color:transparent}
-#s42 #v-a:checked ~ .dedans .segments label[for="v-a"],#s42 #v-b:checked ~ .dedans .segments label[for="v-b"],#s42 #v-c:checked ~ .dedans .segments label[for="v-c"],#s42 #m-1:checked ~ .dedans .segments label[for="m-1"],#s42 #m-2:checked ~ .dedans .segments label[for="m-2"],#s42 #t-5:checked ~ .dedans .segments label[for="t-5"],#s42 #t-10:checked ~ .dedans .segments label[for="t-10"],#s42 #t-15:checked ~ .dedans .segments label[for="t-15"]{
+#s42 #s42-v-a:checked ~ .dedans .segments label[for="s42-v-a"],#s42 #s42-v-b:checked ~ .dedans .segments label[for="s42-v-b"],#s42 #s42-v-c:checked ~ .dedans .segments label[for="s42-v-c"],#s42 #s42-m-1:checked ~ .dedans .segments label[for="s42-m-1"],#s42 #s42-m-2:checked ~ .dedans .segments label[for="s42-m-2"],#s42 #s42-t-5:checked ~ .dedans .segments label[for="s42-t-5"],#s42 #s42-t-10:checked ~ .dedans .segments label[for="s42-t-10"],#s42 #s42-t-15:checked ~ .dedans .segments label[for="s42-t-15"]{
     background:var(--pin);border-color:var(--pin);color:#fff}
 #s42 .mot-1,#s42 .mot-2{display:none}
-#s42 #m-1:checked ~ .dedans .mot-1,#s42 #m-2:checked ~ .dedans .mot-2{display:inline}
+#s42 #s42-m-1:checked ~ .dedans .mot-1,#s42 #s42-m-2:checked ~ .dedans .mot-2{display:inline}
 #s42 .p5,#s42 .p10,#s42 .p15{display:none}
-#s42 #t-5:checked ~ .dedans .p5,#s42 #t-10:checked ~ .dedans .p10,#s42 #t-15:checked ~ .dedans .p15{display:inline}
+#s42 #s42-t-5:checked ~ .dedans .p5,#s42 #s42-t-10:checked ~ .dedans .p10,#s42 #s42-t-15:checked ~ .dedans .p15{display:inline}
 #s42 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
 #s42 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
        background:var(--teinte);
@@ -4874,14 +4874,14 @@
             margin-top:6px;border-top:2px solid var(--encre)}
 #s42 .barre-prix{text-decoration:line-through;color:var(--gris)}
 #s42 .a-ligne,#s42 .a-bloc,#s42 .a-barre{display:none}
-#s42 #v-a:checked ~ .dedans .a-ligne,#s42 #v-b:checked ~ .dedans .a-bloc,#s42 #v-c:checked ~ .dedans .a-barre{display:flex}
-#s42 #v-a:checked ~ .dedans .totaux.a-ligne,#s42 #v-b:checked ~ .dedans .totaux.a-bloc,#s42 #v-c:checked ~ .dedans .totaux.a-barre{display:block}
+#s42 #s42-v-a:checked ~ .dedans .a-ligne,#s42 #s42-v-b:checked ~ .dedans .a-bloc,#s42 #s42-v-c:checked ~ .dedans .a-barre{display:flex}
+#s42 #s42-v-a:checked ~ .dedans .totaux.a-ligne,#s42 #s42-v-b:checked ~ .dedans .totaux.a-bloc,#s42 #s42-v-c:checked ~ .dedans .totaux.a-barre{display:block}
 #s42 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
 #s42 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
               color:var(--encre);margin-bottom:8px}
 #s42 .legende b{color:var(--encre);font-weight:600}
 #s42 .l-a,#s42 .l-b,#s42 .l-c{display:none}
-#s42 #v-a:checked ~ .dedans .l-a,#s42 #v-b:checked ~ .dedans .l-b,#s42 #v-c:checked ~ .dedans .l-c{display:block}
+#s42 #s42-v-a:checked ~ .dedans .l-a,#s42 #s42-v-b:checked ~ .dedans .l-b,#s42 #s42-v-c:checked ~ .dedans .l-c{display:block}
 #s42 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
 #s42 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
@@ -4970,8 +4970,8 @@
 #s43 .note ul{margin:8px 0 0;padding-left:19px}
 #s43 .note li{margin-bottom:6px}
 #s43 .fa,#s43 .fb,#s43 .fc{display:none}
-#s43 #g-a:checked ~ .dedans .fa,#s43 #g-b:checked ~ .dedans .fb,#s43 #g-c:checked ~ .dedans .fc{display:block}
-#s43 #g-a:checked ~ .dedans label[for="g-a"],#s43 #g-b:checked ~ .dedans label[for="g-b"],#s43 #g-c:checked ~ .dedans label[for="g-c"]{background:var(--pin);color:var(--papier);
+#s43 #s43-g-a:checked ~ .dedans .fa,#s43 #s43-g-b:checked ~ .dedans .fb,#s43 #s43-g-c:checked ~ .dedans .fc{display:block}
+#s43 #s43-g-a:checked ~ .dedans label[for="s43-g-a"],#s43 #s43-g-b:checked ~ .dedans label[for="s43-g-b"],#s43 #s43-g-c:checked ~ .dedans label[for="s43-g-c"]{background:var(--pin);color:var(--papier);
                                           border-color:var(--pin)}
 #s43 .pres{display:flex;align-items:center;gap:12px;min-height:52px;
         padding:6px 4px;border-bottom:1px solid var(--trait);cursor:pointer}
@@ -5076,8 +5076,8 @@
 #s44 .note ul{margin:8px 0 0;padding-left:19px}
 #s44 .note li{margin-bottom:6px}
 #s44 .ra,#s44 .rb,#s44 .rc{display:none}
-#s44 #r-a:checked ~ .dedans .ra,#s44 #r-b:checked ~ .dedans .rb,#s44 #r-c:checked ~ .dedans .rc{display:block}
-#s44 #r-a:checked ~ .dedans label[for="r-a"],#s44 #r-b:checked ~ .dedans label[for="r-b"],#s44 #r-c:checked ~ .dedans label[for="r-c"]{background:var(--pin);color:var(--papier);
+#s44 #s44-r-a:checked ~ .dedans .ra,#s44 #s44-r-b:checked ~ .dedans .rb,#s44 #s44-r-c:checked ~ .dedans .rc{display:block}
+#s44 #s44-r-a:checked ~ .dedans label[for="s44-r-a"],#s44 #s44-r-b:checked ~ .dedans label[for="s44-r-b"],#s44 #s44-r-c:checked ~ .dedans label[for="s44-r-c"]{background:var(--pin);color:var(--papier);
                                           border-color:var(--pin)}
 #s44 .fam{margin:15px 0 4px;font-size:11px;letter-spacing:.13em;
        text-transform:uppercase;color:var(--or)}
@@ -5166,8 +5166,8 @@
 #s45 .note ul{margin:8px 0 0;padding-left:19px}
 #s45 .note li{margin-bottom:6px}
 #s45 .ma,#s45 .mb{display:none}
-#s45 #m-a:checked ~ .dedans .ma,#s45 #m-b:checked ~ .dedans .mb{display:block}
-#s45 #m-a:checked ~ .dedans label[for="m-a"],#s45 #m-b:checked ~ .dedans label[for="m-b"]{background:var(--pin);color:var(--papier);
+#s45 #s45-m-a:checked ~ .dedans .ma,#s45 #s45-m-b:checked ~ .dedans .mb{display:block}
+#s45 #s45-m-a:checked ~ .dedans label[for="s45-m-a"],#s45 #s45-m-b:checked ~ .dedans label[for="s45-m-b"]{background:var(--pin);color:var(--papier);
                                           border-color:var(--pin)}
 #s45 .reglages{margin-bottom:8px}
 #s45 .reglages .r{display:flex;justify-content:space-between;align-items:center;
@@ -5238,7 +5238,7 @@
 #s46 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
                   border:1px solid var(--trait);background:var(--papier);
                   font-size:13.5px;cursor:pointer;color:var(--gris)}
-#s46 #h-a:checked ~ .dedans label[for="h-a"],#s46 #h-b:checked ~ .dedans label[for="h-b"],#s46 #h-c:checked ~ .dedans label[for="h-c"]{background:var(--pin);color:var(--papier);
+#s46 #s46-h-a:checked ~ .dedans label[for="s46-h-a"],#s46 #s46-h-b:checked ~ .dedans label[for="s46-h-b"],#s46 #s46-h-c:checked ~ .dedans label[for="s46-h-c"]{background:var(--pin);color:var(--papier);
                                           border-color:var(--pin)}
 #s46 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
 #s46 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
@@ -5255,7 +5255,7 @@
 #s46 .champ-nom .prevu{font-size:11px;letter-spacing:0;color:var(--gris);
                     text-transform:none}
 #s46 .ha,#s46 .hb,#s46 .hc{display:none}
-#s46 #h-a:checked ~ .dedans .ha,#s46 #h-b:checked ~ .dedans .hb,#s46 #h-c:checked ~ .dedans .hc{display:block}
+#s46 #s46-h-a:checked ~ .dedans .ha,#s46 #s46-h-b:checked ~ .dedans .hb,#s46 #s46-h-c:checked ~ .dedans .hc{display:block}
 #s46 .duo{display:flex;gap:10px}
 #s46 .duo select{flex:1;font:inherit;font-size:19px;font-family:Georgia,serif;
               color:var(--encre);background:var(--papier);
@@ -5305,6 +5305,747 @@
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
 #s46 .note ul{margin:8px 0 0;padding-left:19px}
 #s46 .note li{margin-bottom:6px}
+
+
+/* 47 — Ce que je sais du client */
+#s47{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s47:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s47[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s47, #s47 *{box-sizing:border-box}
+#s47{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s47 .dedans{max-width:960px;margin:0 auto}
+#s47 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s47 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s47 .intro b{color:var(--encre);font-weight:600}
+#s47 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s47 .dit b{color:var(--encre);font-weight:600}
+#s47 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s47 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#s47 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s47 #s47-v-a:checked ~ .dedans .segments label[for="s47-v-a"],#s47 #s47-v-b:checked ~ .dedans .segments label[for="s47-v-b"],#s47 #s47-v-c:checked ~ .dedans .segments label[for="s47-v-c"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s47 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s47 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s47 .ecran{background:var(--papier);border-radius:14px;padding:18px 17px}
+#s47 .surtitre{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);display:block;margin-bottom:4px}
+#s47 .titre{font-family:Georgia,serif;font-size:21px;line-height:1.2;margin:0 0 2px}
+#s47 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s47 .filet{height:1px;background:var(--trait);margin:14px 0}
+#s47 .chiffres{display:flex;gap:10px}
+#s47 .ch{flex:1;background:var(--teinte);border-radius:10px;padding:10px 11px}
+#s47 .ch .n{display:block;font-family:Georgia,serif;font-size:19px;line-height:1.15}
+#s47 .ch .q{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+         color:var(--gris);margin-top:3px}
+#s47 .ch.du .n{color:var(--alerte)}
+#s47 .lgn{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+       padding:8px 0;border-bottom:1px solid var(--trait)}
+#s47 .lgn:last-child{border-bottom:0}
+#s47 .lgn .fois{color:var(--gris);font-size:12.5px;white-space:nowrap}
+#s47 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--gris);display:block;margin:16px 0 6px}
+#s47 .fiche-chantier .entete{display:flex;justify-content:space-between;
+                          align-items:flex-start;gap:12px}
+#s47 .encart{margin-top:14px;background:var(--teinte);border-radius:12px;
+          padding:13px 14px}
+#s47 .encart .phrase{font-size:13.5px;line-height:1.6;margin:0}
+#s47 .encart .phrase b{color:var(--encre)}
+#s47 .encart .plus{display:inline-block;margin-top:9px;font-size:13px;color:var(--or)}
+#s47 .faux-bloc{margin-top:16px}
+#s47 .faux-bloc .t{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+                color:var(--gris);display:block;margin-bottom:6px}
+#s47 .faux-ligne{height:9px;border-radius:5px;background:var(--teinte);margin-bottom:7px}
+#s47 .faux-ligne.court{width:55%}
+#s47 .cli{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+       padding:11px 0;border-bottom:1px solid var(--trait)}
+#s47 .cli .nom{font-family:Georgia,serif;font-size:16.5px}
+#s47 .cli .det{font-size:12px;color:var(--gris)}
+#s47 .onglets{display:flex;gap:4px;margin-top:14px;border-top:1px solid var(--trait);
+           padding-top:10px;font-size:11px;color:var(--gris);justify-content:space-around}
+#s47 .onglets .actif{color:var(--pin);font-weight:600}
+#s47 .neuf{color:var(--or);font-weight:600}
+#s47 .a-encart,#s47 .a-fiche,#s47 .a-onglet{display:none}
+#s47 #s47-v-a:checked ~ .dedans .a-encart,#s47 #s47-v-b:checked ~ .dedans .a-fiche,#s47 #s47-v-c:checked ~ .dedans .a-onglet{display:block}
+#s47 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s47 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s47 .legende b{color:var(--encre);font-weight:600}
+#s47 .l-a,#s47 .l-b,#s47 .l-c{display:none}
+#s47 #s47-v-a:checked ~ .dedans .l-a,#s47 #s47-v-b:checked ~ .dedans .l-b,#s47 #s47-v-c:checked ~ .dedans .l-c{display:block}
+#s47 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s47 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s47 .note b{color:var(--encre);font-weight:600}
+#s47 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s47 .note ul{margin:8px 0 0;padding-left:19px}
+#s47 .note li{margin-bottom:6px}
+
+
+/* 48 — Le nouveau chantier, plus gros */
+#s48{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.12); --papier:#faf9f5; --pin:#2f3b2f; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s48:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179; --teinte:#252320;
+    }
+
+  
+}
+#s48[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179; --teinte:#252320;
+  }
+#s48, #s48 *{box-sizing:border-box}
+#s48{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+@media (max-width:430px){
+#s48{padding:20px 9px 60px}
+ 
+}
+#s48 .dedans{max-width:940px;margin:0 auto}
+#s48 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s48 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s48 .intro b{color:var(--encre);font-weight:600}
+#s48 .dit{margin:0 0 24px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+#s48 .dit b{font-style:normal;color:var(--encre);font-weight:600}
+#s48 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s48 .reglage{margin:0 0 10px}
+#s48 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s48 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+#s48 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s48 #s48-f-a:checked ~ .dedans .segments label[for="s48-f-a"],#s48 #s48-f-b:checked ~ .dedans .segments label[for="s48-f-b"],#s48 #s48-f-c:checked ~ .dedans .segments label[for="s48-f-c"],#s48 #s48-t-1:checked ~ .dedans .segments label[for="s48-t-1"],#s48 #s48-t-2:checked ~ .dedans .segments label[for="s48-t-2"],#s48 #s48-t-3:checked ~ .dedans .segments label[for="s48-t-3"],#s48 #s48-g-1:checked ~ .dedans .segments label[for="s48-g-1"],#s48 #s48-g-2:checked ~ .dedans .segments label[for="s48-g-2"],#s48 #s48-g-3:checked ~ .dedans .segments label[for="s48-g-3"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s48 .dedans{--cap:17px; --lsp:.16em; --serif:26px; --rond:50px; --signe:24px; --gras:700}
+#s48 #s48-t-1:checked ~ .dedans{--cap:13px; --lsp:.22em; --serif:20px; --rond:42px; --signe:20px}
+#s48 #s48-t-2:checked ~ .dedans{--cap:15px; --lsp:.19em; --serif:23px; --rond:46px; --signe:22px}
+#s48 #s48-t-3:checked ~ .dedans{--cap:17px; --lsp:.16em; --serif:26px; --rond:50px; --signe:24px}
+#s48 #s48-g-1:checked ~ .dedans{--gras:500}
+#s48 #s48-g-2:checked ~ .dedans{--gras:700}
+#s48 #s48-g-3:checked ~ .dedans{--gras:800}
+#s48 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s48 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px 0 0;
+       background:var(--papier);overflow:hidden;
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s48 .sceau{text-align:center;font-size:11px;letter-spacing:.42em;color:var(--encre);
+         margin:8px 0 26px}
+#s48 .bonjour{padding:0 26px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;
+           color:var(--or);margin:0}
+#s48 .titre-ecran{padding:0 26px;margin:14px 0 0;font-family:Georgia,serif;font-weight:400;
+               font-size:36px;line-height:1.02;letter-spacing:-.018em}
+#s48 .compteur{padding:0 26px;margin:14px 0 0;font-size:9.5px;font-weight:500;
+            letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+#s48 .filet{height:1px;background:var(--trait);margin:26px 26px 0}
+#s48 .action{padding:22px 26px 2px;display:flex;justify-content:center}
+#s48 .geste{display:flex;align-items:center;justify-content:center;gap:13px;
+         text-decoration:none;color:var(--encre);
+         -webkit-tap-highlight-color:transparent}
+#s48 .geste .mot{white-space:nowrap}
+#s48 .mot.caps{font-size:var(--cap);font-weight:var(--gras);letter-spacing:var(--lsp);
+            text-transform:uppercase}
+#s48 .mot.serif{font-family:Georgia,"Times New Roman",serif;font-size:var(--serif);
+             font-weight:var(--gras);letter-spacing:-.01em}
+#s48 .rond{position:relative;display:grid;place-items:center;flex:none;
+        width:var(--rond);height:var(--rond);border-radius:9999px}
+#s48 .rond .cerne{position:absolute;inset:0;z-index:2;border-radius:9999px;
+               border:1px solid var(--trait)}
+#s48 .rond .pouls{position:absolute;inset:0;z-index:1;border-radius:9999px;
+               border:1px solid var(--or);opacity:0;
+               animation:s48-battement 3.4s cubic-bezier(.16,.7,.3,1) infinite}
+@keyframes s48-battement{
+    0%{transform:scale(1);opacity:0} 8%{opacity:.5}
+    46%{transform:scale(1.42);opacity:0} 100%{transform:scale(1.42);opacity:0}}
+#s48 .rond svg{position:relative;z-index:4;display:block;
+            width:var(--signe);height:var(--signe)}
+#s48 .rond svg path{stroke:var(--or);stroke-width:1.25}
+#s48 .geste:active .rond{transform:scale(.92)}
+@media (prefers-reduced-motion: reduce){
+#s48 .rond .pouls{animation:none}
+ 
+}
+#s48 .f-a,#s48 .f-b,#s48 .f-c{display:none}
+#s48 #s48-f-a:checked ~ .dedans .f-a,#s48 #s48-f-b:checked ~ .dedans .f-b{display:flex}
+#s48 #s48-f-c:checked ~ .dedans .f-c{display:flex}
+#s48 .action.pleine{justify-content:stretch}
+#s48 .geste.large{width:100%;justify-content:space-between;gap:16px}
+#s48 .entete-fil{display:flex;justify-content:space-between;padding:0 26px;
+              margin:30px 0 4px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--gris)}
+#s48 .brin{display:flex;gap:16px;padding:14px 26px;border-top:1px solid var(--trait)}
+#s48 .brin .jour{width:52px;flex:none;text-align:center}
+#s48 .brin .nb{font-family:Georgia,serif;font-size:22px;line-height:1}
+#s48 .brin .mois{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+#s48 .brin .nom{font-family:Georgia,serif;font-size:17px}
+#s48 .brin .ou{font-size:12.5px;color:var(--gris)}
+#s48 .brin .mention{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);
+              margin-top:4px}
+#s48 .bas{display:flex;justify-content:space-between;padding:14px 22px 16px;
+       margin-top:6px;border-top:1px solid var(--trait);
+       font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s48 .bas .actif{color:var(--encre)}
+#s48 .temoin{margin:0 0 18px;padding:14px 16px;border-radius:12px;
+          background:var(--papier);border:1px solid var(--trait)}
+#s48 .legende .temoin .t{display:block;font-family:inherit;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--gris);margin-bottom:10px}
+#s48 .temoin .geste{justify-content:flex-start}
+#s48 .temoin .mot{font-size:9px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+#s48 .temoin .rond{width:38px;height:38px}
+#s48 .temoin .rond svg{width:20px;height:20px}
+#s48 .temoin .rond .pouls{animation:none}
+#s48 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s48 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s48 .legende b{color:var(--encre);font-weight:600}
+#s48 .l-a,#s48 .l-b,#s48 .l-c{display:none}
+#s48 #s48-f-a:checked ~ .dedans .l-a,#s48 #s48-f-b:checked ~ .dedans .l-b,#s48 #s48-f-c:checked ~ .dedans .l-c{display:block}
+#s48 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s48 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s48 .note b{color:var(--encre);font-weight:600}
+#s48 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s48 .note ul{margin:8px 0 0;padding-left:19px}
+#s48 .note li{margin-bottom:6px}
+
+
+/* 49 — Retirer le prix accordé */
+#s49{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s49:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s49[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s49, #s49 *{box-sizing:border-box}
+#s49{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s49 .dedans{max-width:940px;margin:0 auto}
+#s49 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s49 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s49 .intro b{color:var(--encre);font-weight:600}
+#s49 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+#s49 .dit b{font-style:normal;color:var(--encre);font-weight:600}
+#s49 .repare{margin:0 0 24px;padding:14px 17px;border-radius:12px;
+          background:var(--papier);border-left:3px solid var(--pin);
+          font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s49 .repare .t{display:block;font-size:10.5px;letter-spacing:.13em;
+             text-transform:uppercase;color:var(--pin);margin-bottom:7px}
+#s49 .repare b{color:var(--encre);font-weight:600}
+#s49 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s49 .quoi{display:block;font-size:10px;letter-spacing:.13em;
+        text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s49 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+#s49 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s49 #s49-g-a:checked ~ .dedans .segments label[for="s49-g-a"],#s49 #s49-g-b:checked ~ .dedans .segments label[for="s49-g-b"],#s49 #s49-g-c:checked ~ .dedans .segments label[for="s49-g-c"],#s49 #e-avant:checked ~ .dedans .segments label[for="e-avant"],#s49 #e-apres:checked ~ .dedans .segments label[for="e-apres"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s49 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s49 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s49 .feuille{background:var(--papier);border-radius:10px;padding:20px 18px}
+#s49 .lg{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;
+      padding:8px 0;border-bottom:1px solid var(--trait);color:var(--gris)}
+#s49 .plus-ligne{font-size:13.5px;color:var(--alerte);padding:11px 0 4px}
+#s49 .totaux{margin-top:12px}
+#s49 .tot{display:flex;justify-content:space-between;align-items:center;
+       font-size:14px;padding:4px 0}
+#s49 .tot.or{color:var(--or)}
+#s49 .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;
+            margin-top:6px;border-top:2px solid var(--encre)}
+#s49 .tot .g{display:flex;align-items:center;gap:6px}
+#s49 .case{border:1px dotted var(--trait);border-radius:3px;padding:0 3px}
+#s49 .moins{flex:none;width:26px;height:26px;border-radius:9999px;
+         border:1px solid var(--or);color:var(--or);
+         display:inline-flex;align-items:center;justify-content:center;
+         font-size:15px;line-height:1;background:transparent}
+#s49 .glisse{display:flex;gap:10px;align-items:center;overflow:hidden}
+#s49 .glisse .corps{flex:1;min-width:0;display:flex;justify-content:space-between;
+                 gap:12px;opacity:.55}
+#s49 .glisse .retirer{flex:none;font-size:12.5px;color:var(--alerte);
+                   border:1px solid var(--alerte);border-radius:9999px;
+                   padding:4px 11px;background:transparent}
+#s49 .bascule{font-size:13px;color:var(--or);padding-top:9px;margin-top:2px}
+#s49 .avant,#s49 .apres,#s49 .et-a,#s49 .et-b,#s49 .et-c{display:none}
+#s49 #e-avant:checked ~ .dedans .avant{display:flex}
+#s49 #e-apres:checked ~ .dedans .apres{display:flex}
+#s49 #e-avant:checked ~ .dedans .avant.bloc{display:block}
+#s49 #e-apres:checked ~ .dedans .apres.bloc{display:block}
+#s49 #e-avant:checked ~ .dedans .avant.mot{display:inline}
+#s49 #e-apres:checked ~ .dedans .apres.mot{display:inline}
+#s49 #s49-g-a:checked ~ #e-avant:checked ~ .dedans .et-a,#s49 #s49-g-b:checked ~ #e-avant:checked ~ .dedans .et-b,#s49 #s49-g-c:checked ~ #e-avant:checked ~ .dedans .et-c{display:flex}
+#s49 #s49-g-a:checked ~ #e-avant:checked ~ .dedans .et-a.bloc,#s49 #s49-g-c:checked ~ #e-avant:checked ~ .dedans .et-c.bloc{display:block}
+#s49 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s49 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s49 .legende b{color:var(--encre);font-weight:600}
+#s49 .l-a,#s49 .l-b,#s49 .l-c{display:none}
+#s49 #s49-g-a:checked ~ .dedans .l-a,#s49 #s49-g-b:checked ~ .dedans .l-b,#s49 #s49-g-c:checked ~ .dedans .l-c{display:block}
+#s49 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s49 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s49 .note b{color:var(--encre);font-weight:600}
+#s49 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s49 .note ul{margin:8px 0 0;padding-left:19px}
+#s49 .note li{margin-bottom:6px}
+
+
+/* 50 — Le plan d’arrosage */
+#s50{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+@media (prefers-color-scheme: dark){
+#s50:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+
+  
+}
+#s50[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+#s50, #s50 *{box-sizing:border-box}
+#s50{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s50 .dedans{max-width:940px;margin:0 auto}
+#s50 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s50 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s50 .intro b{color:var(--encre);font-weight:600}
+#s50 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s50 .dit b{color:var(--encre);font-weight:600}
+#s50 .etat{position:absolute;opacity:0;pointer-events:none}
+#s50 .reglage{margin:0 0 18px}
+#s50 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s50 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s50 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s50 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s50 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s50 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s50 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s50 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s50 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s50 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s50 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s50 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s50 .legende b{color:var(--encre);font-weight:600}
+#s50 .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+#s50 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s50 .note b{color:var(--encre);font-weight:600}
+#s50 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s50 .note ul{margin:8px 0 0;padding-left:19px}
+#s50 .note li{margin-bottom:6px}
+#s50 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s50 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+#s50 .ea,#s50 .eb,#s50 .ec{display:none}
+#s50 #s50-e-a:checked ~ .dedans .ea,#s50 #s50-e-b:checked ~ .dedans .eb,#s50 #s50-e-c:checked ~ .dedans .ec{display:block}
+#s50 #s50-e-a:checked ~ .dedans label[for="s50-e-a"],#s50 #s50-e-b:checked ~ .dedans label[for="s50-e-b"],#s50 #s50-e-c:checked ~ .dedans label[for="s50-e-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s50 .fl{display:flex;align-items:center;gap:8px;min-height:52px;
+      border-bottom:1px solid var(--trait);padding:6px 2px}
+#s50 .fl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--gris)}
+#s50 .fl-q{flex:none;font-size:12px;color:var(--gris)}
+#s50 .fl-q input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
+              border:1px solid var(--trait);border-radius:8px;padding:7px 6px;
+              width:44px;text-align:center}
+#s50 .fl-d{flex:none;font-size:12.5px;color:var(--encre);font-variant-numeric:tabular-nums;
+        min-width:64px;text-align:right}
+#s50 .total{display:flex;justify-content:space-between;align-items:baseline;
+         margin-top:14px;padding-top:12px;border-top:1px solid var(--trait);font-size:13px}
+#s50 .total .gros{font-family:Georgia,serif;font-size:21px;color:var(--encre)}
+#s50 .verdict{margin-top:12px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+           font-size:13px;line-height:1.6;color:var(--encre)}
+#s50 .verdict b{color:var(--alerte)}
+#s50 .robinet{border:1px solid var(--trait);border-radius:14px;padding:12px 13px;margin-bottom:12px}
+#s50 .robinet .q{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--or)}
+#s50 .robinet .geste{display:flex;align-items:center;gap:8px;margin:8px 0 6px;font-size:13.5px;color:var(--gris)}
+#s50 .robinet .geste input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
+                        border:1px solid var(--trait);border-radius:8px;padding:8px 6px;
+                        width:52px;text-align:center}
+#s50 .robinet .sort{font-size:13px;color:var(--encre)}
+#s50 .robinet .sort b{font-family:Georgia,serif;font-size:19px;font-weight:400}
+#s50 .zc{border-bottom:1px solid var(--trait);padding:11px 2px}
+#s50 .zc-nom{margin:0;font-size:15px;color:var(--encre);font-weight:600}
+#s50 .zc-mes{margin:2px 0 0;font-size:12.5px;color:var(--gris)}
+#s50 .zc-res{margin:4px 0 0;font-size:12.5px;color:var(--pin);line-height:1.5}
+#s50 .ajouter{display:block;margin-top:12px;text-align:center;padding:13px;
+           border-radius:999px;border:1px dashed var(--trait);color:var(--gris);font-size:13.5px}
+#s50 .plan{width:100%;height:auto;display:block;margin:6px 0 4px}
+#s50 .plan .gazon{fill:var(--teinte)}
+#s50 .plan .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
+#s50 .plan .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35;stroke-width:1}
+#s50 .plan .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
+#s50 .plan .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
+#s50 .plan .cote-g{text-anchor:end}
+#s50 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
+#s50 .recap{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+#s50 .recap span{font-size:12px;color:var(--encre);background:var(--teinte);
+              border-radius:999px;padding:6px 11px}
+
+
+/* 51 — Le débit ne se partage pas */
+#s51{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+@media (prefers-color-scheme: dark){
+#s51:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+
+  
+}
+#s51[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+#s51, #s51 *{box-sizing:border-box}
+#s51{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s51 .dedans{max-width:940px;margin:0 auto}
+#s51 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s51 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s51 .intro b{color:var(--encre);font-weight:600}
+#s51 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s51 .dit b{color:var(--encre);font-weight:600}
+#s51 .etat{position:absolute;opacity:0;pointer-events:none}
+#s51 .reglage{margin:0 0 18px}
+#s51 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s51 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s51 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s51 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s51 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s51 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s51 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s51 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s51 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s51 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s51 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s51 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s51 .legende b{color:var(--encre);font-weight:600}
+#s51 .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+#s51 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s51 .note b{color:var(--encre);font-weight:600}
+#s51 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s51 .note ul{margin:8px 0 0;padding-left:19px}
+#s51 .note li{margin-bottom:6px}
+#s51 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s51 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+#s51 .compare{border:1px solid var(--trait);border-radius:14px;padding:13px;margin-bottom:14px}
+#s51 .compare .l{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;
+              color:var(--gris);margin:0 0 6px}
+#s51 .compare .l b{font-family:Georgia,serif;font-size:20px;font-weight:400;color:var(--encre)}
+#s51 .duo{height:10px;border-radius:999px;background:var(--teinte);overflow:hidden;margin-bottom:4px}
+#s51 .duo span{display:block;height:100%;background:var(--alerte)}
+#s51 .duo.ok span{background:var(--pin)}
+#s51 .compare .dit-le{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--encre)}
+#s51 .compare .dit-le b{color:var(--alerte)}
+#s51 .sec{padding:11px 2px;border-bottom:1px solid var(--trait)}
+#s51 .sec-t{margin:0 0 6px;font-size:14px;color:var(--encre);display:flex;align-items:baseline;gap:8px}
+#s51 .sec-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
+         border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
+#s51 .sec-part{font-size:11.5px;color:var(--gris)}
+#s51 .jauge{height:8px;border-radius:999px;background:var(--teinte);overflow:hidden}
+#s51 .jauge span{display:block;height:100%;background:var(--eau)}
+#s51 .sec-d{margin:5px 0 0;font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s51 .sec-fam{display:inline-block;margin-right:8px;font-size:10.5px;letter-spacing:.08em;
+           text-transform:uppercase;color:var(--pin)}
+#s51 .cycle{margin-top:14px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+         font-size:13px;line-height:1.6;color:var(--encre)}
+#s51 .cycle b{font-family:Georgia,serif;font-size:19px;font-weight:400}
+
+
+/* 52 — Ce qui sort du plan */
+#s52{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+@media (prefers-color-scheme: dark){
+#s52:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+
+  
+}
+#s52[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+#s52, #s52 *{box-sizing:border-box}
+#s52{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s52 .dedans{max-width:940px;margin:0 auto}
+#s52 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s52 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s52 .intro b{color:var(--encre);font-weight:600}
+#s52 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s52 .dit b{color:var(--encre);font-weight:600}
+#s52 .etat{position:absolute;opacity:0;pointer-events:none}
+#s52 .reglage{margin:0 0 18px}
+#s52 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s52 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s52 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s52 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s52 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s52 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s52 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s52 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s52 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s52 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s52 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s52 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s52 .legende b{color:var(--encre);font-weight:600}
+#s52 .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+#s52 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s52 .note b{color:var(--encre);font-weight:600}
+#s52 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s52 .note ul{margin:8px 0 0;padding-left:19px}
+#s52 .note li{margin-bottom:6px}
+#s52 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s52 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+#s52 .sa,#s52 .sb,#s52 .sc{display:none}
+#s52 #s52-s-a:checked ~ .dedans .sa,#s52 #s52-s-b:checked ~ .dedans .sb,#s52 #s52-s-c:checked ~ .dedans .sc{display:block}
+#s52 #s52-s-a:checked ~ .dedans label[for="s52-s-a"],#s52 #s52-s-b:checked ~ .dedans label[for="s52-s-b"],#s52 #s52-s-c:checked ~ .dedans label[for="s52-s-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s52 .nl{display:flex;align-items:baseline;gap:8px;padding:9px 2px;
+      border-bottom:1px solid var(--trait)}
+#s52 .nl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--encre)}
+#s52 .nl-q{flex:none;font-size:12.5px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s52 .nl-p{flex:none;font-size:11px;color:var(--gris);min-width:74px;text-align:right}
+#s52 .nl-p.manque{color:var(--alerte)}
+#s52 .pl{display:flex;align-items:baseline;gap:8px;padding:10px 2px;
+      border-bottom:1px solid var(--trait);font-variant-numeric:tabular-nums}
+#s52 .pl-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
+        border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
+#s52 .pl-z{flex:1;min-width:0;font-size:13px;color:var(--encre)}
+#s52 .pl-m{flex:none;font-size:13px;color:var(--encre)}
+#s52 .pl-j{flex:none;font-size:11.5px;color:var(--gris)}
+#s52 .avert{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--teinte);
+         font-size:12.5px;line-height:1.6;color:var(--encre)}
+#s52 .avert b{color:var(--alerte)}
+#s52 .saison{display:flex;gap:6px;margin:10px 0 2px;flex-wrap:wrap}
+#s52 .saison span{font-size:11.5px;color:var(--gris);border:1px solid var(--trait);
+               border-radius:999px;padding:5px 10px}
+#s52 .saison span.ici{background:var(--pin);color:var(--papier);border-color:var(--pin)}
+#s52 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
+#s52 .plan-mini{width:100%;height:auto;display:block;margin:8px 0 4px;
+             border:1px solid var(--trait);border-radius:12px}
+#s52 .plan-mini .gazon{fill:var(--teinte)}
+#s52 .plan-mini .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35}
+#s52 .plan-mini .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
+#s52 .plan-mini .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
+#s52 .plan-mini .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
+#s52 .plan-mini .cote-g{text-anchor:end}
+
+
+/* 53 — Mes mots au catalogue */
+#s53{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s53:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s53[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s53, #s53 *{box-sizing:border-box}
+#s53{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s53 .dedans{max-width:960px;margin:0 auto}
+#s53 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s53 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s53 .intro b{color:var(--encre);font-weight:600}
+#s53 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s53 .dit b{color:var(--encre);font-weight:600}
+#s53 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s53 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#s53 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s53 #s53-v-a:checked ~ .dedans .segments label[for="s53-v-a"],#s53 #s53-v-b:checked ~ .dedans .segments label[for="s53-v-b"],#s53 #s53-v-c:checked ~ .dedans .segments label[for="s53-v-c"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s53 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s53 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s53 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
+#s53 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
+          border-bottom:1px solid var(--trait)}
+#s53 .retour{flex:none;width:31px;height:31px;border-radius:9px;
+          border:1px solid var(--trait);display:flex;align-items:center;
+          justify-content:center;color:var(--encre);font-size:17px;line-height:1}
+#s53 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
+#s53 .corps{padding:14px 16px 0}
+#s53 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
+#s53 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--gris);display:block;margin:0 0 8px}
+#s53 .etiq.mienne{color:var(--or)}
+#s53 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
+         margin-bottom:9px}
+#s53 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
+              display:block;margin-bottom:3px}
+#s53 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
+#s53 .mien{color:var(--or)}
+#s53 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
+#s53 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
+           border-radius:10px;border:1px dashed var(--or);color:var(--or);
+           font-size:13.5px}
+#s53 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
+#s53 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
+#s53 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
+#s53 .a-part,#s53 .a-dessus,#s53 .a-melange{display:none}
+#s53 #s53-v-a:checked ~ .dedans .a-part,#s53 #s53-v-b:checked ~ .dedans .a-dessus,#s53 #s53-v-c:checked ~ .dedans .a-melange{display:block}
+#s53 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s53 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s53 .legende b{color:var(--encre);font-weight:600}
+#s53 .l-a,#s53 .l-b,#s53 .l-c{display:none}
+#s53 #s53-v-a:checked ~ .dedans .l-a,#s53 #s53-v-b:checked ~ .dedans .l-b,#s53 #s53-v-c:checked ~ .dedans .l-c{display:block}
+#s53 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s53 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
+           background:var(--pin);color:#fff;font-size:11px;letter-spacing:.06em;
+           text-transform:uppercase}
+#s53 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s53 .note b{color:var(--encre);font-weight:600}
+#s53 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s53 .note ul{margin:8px 0 0;padding-left:19px}
+#s53 .note li{margin-bottom:6px}
 
 
 </style>
@@ -5519,6 +6260,39 @@
       <a class="item" href="#m46">
         <span class="no">46</span><span class="titre">Choisir l’heure au pouce</span><span class="fleche">↓</span>
         <span class="quoi">« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.</span>
+      </a>
+      <p class="famille">Les chantiers</p>
+      <a class="item" href="#m47">
+        <span class="no">47</span><span class="titre">Ce que je sais du client</span><span class="fleche">↓</span>
+        <span class="quoi">L’application sait qu’un client est venu quatre fois et qu’il doit encore 740 € — elle ne le montre nulle part. Un encart, une fiche, ou un cinquième onglet.</span>
+      </a>
+      <p class="famille">Enlever le gros bouton</p>
+      <a class="item" href="#m48">
+        <span class="no">48</span><span class="titre">Le nouveau chantier, plus gros</span><span class="fleche">↓</span>
+        <span class="quoi">« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.</span>
+      </a>
+      <p class="famille">Le devis</p>
+      <a class="item" href="#m49">
+        <span class="no">49</span><span class="titre">Retirer le prix accordé</span><span class="fleche">↓</span>
+        <span class="quoi">« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.</span>
+      </a>
+      <p class="famille">L’arrosage automatique</p>
+      <a class="item" href="#m50">
+        <span class="no">50</span><span class="titre">Le plan d’arrosage</span><span class="fleche">↓</span>
+        <span class="quoi">« Un outil pour les paysagistes pour réaliser des plans d’arrosage automatique. » Trois façons d’entrer le jardin : la feuille, les zones mesurées, ou le plan dessiné.</span>
+      </a>
+      <a class="item" href="#m51">
+        <span class="no">51</span><span class="titre">Le débit ne se partage pas</span><span class="fleche">↓</span>
+        <span class="quoi">Le calcul qui fait tout l’outil, et rien n’y est à choisir : 1,80 m³/h au robinet, 8,47 demandés, huit secteurs, 3 h 14 de cycle.</span>
+      </a>
+      <a class="item" href="#m52">
+        <span class="no">52</span><span class="titre">Ce qui sort du plan</span><span class="fleche">↓</span>
+        <span class="quoi">Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.</span>
+      </a>
+      <p class="famille">Les réglages</p>
+      <a class="item" href="#m53">
+        <span class="no">53</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
+        <span class="quoi">« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -13808,6 +14582,7 @@
     <h1>Resserré, et lui seul</h1>
     <p>La disposition que vous avez gardée : <b>« Nouveau chantier » écrit, le rond qui bat à sa droite</b>. Quatre réglages, et rien d’autre n’a bougé.</p>
     <p class="appui"><b>Appuyez dessus.</b> En haut le bouton seul, à sa taille réelle puis grossi deux fois pour juger le détail ; dessous, dans l’écran. Refermez pour recommencer.</p>
+    <p class="appui" style="border-color:#B98B47"><b>⚠ Ces mesures ont été revues le 16 août 2026.</b> Le libellé de cette planche — 9 px, graisse 500 — est celui que vous aviez arrêté le 11 août. Vous êtes revenu dessus : <b>« les capitales, gros et très gras »</b>, soit 13 px, graisse 800, interlettrage 0,22 em et rond de 42 px. La planche à jour est <b>67 · Le nouveau chantier, plus gros</b> ; l’application suit celle-là. Le reste — l’onde, les trois tours, les onze grains — n’a pas bougé, et se lit toujours ici.</p>
   </div>
 
   <p class="famille"><span>Le bouton seul</span></p>
@@ -17871,10 +18646,10 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s39">
-<input type="radio" name="ecriture" id="v-a" class="etat" checked>
-<input type="radio" name="ecriture" id="v-b" class="etat">
-<input type="radio" name="ecriture" id="v-c" class="etat">
-<input type="radio" name="ecriture" id="v-d" class="etat">
+<input type="radio" name="ecriture" id="s39-v-a" class="etat" checked>
+<input type="radio" name="ecriture" id="s39-v-b" class="etat">
+<input type="radio" name="ecriture" id="s39-v-c" class="etat">
+<input type="radio" name="ecriture" id="s39-v-d" class="etat">
 
 <div class="page">
 
@@ -17905,10 +18680,10 @@
   <div class="reglage">
     <p class="quoi">L'écriture sous le nom du chantier :</p>
     <div class="segments">
-      <label for="v-a">A — aujourd'hui</label>
-      <label for="v-b">B — la date revient</label>
-      <label for="v-c">C — la durée, en or</label>
-      <label for="v-d">D — la date et la durée, en or</label>
+      <label for="s39-v-a">A — aujourd'hui</label>
+      <label for="s39-v-b">B — la date revient</label>
+      <label for="s39-v-c">C — la durée, en or</label>
+      <label for="s39-v-d">D — la date et la durée, en or</label>
     </div>
   </div>
 
@@ -18047,7 +18822,7 @@
     </div>
     <div class="cadre" id="s40">
 <input type="radio" name="pleine" id="j-deux" class="etat" checked>
-<input type="radio" name="pleine" id="j-un" class="etat">
+<input type="radio" name="pleine" id="s40-j-un" class="etat">
 <input type="radio" name="teinte" id="o-tout" class="etat" checked>
 <input type="radio" name="teinte" id="o-nombre" class="etat">
 
@@ -18067,7 +18842,7 @@
     <p class="quoi">Le chantier d'une journée pleine :</p>
     <div class="segments">
       <label for="j-deux">journée</label>
-      <label for="j-un">matin · 1 journée</label>
+      <label for="s40-j-un">matin · 1 journée</label>
     </div>
   </div>
 
@@ -18204,9 +18979,9 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s41">
-<input type="radio" name="v" id="v-a" class="etat" checked>
-<input type="radio" name="v" id="v-b" class="etat">
-<input type="radio" name="v" id="v-c" class="etat">
+<input type="radio" name="v" id="s41-v-a" class="etat" checked>
+<input type="radio" name="v" id="s41-v-b" class="etat">
+<input type="radio" name="v" id="s41-v-c" class="etat">
 
 <div class="dedans">
   <h1>Les conditions sur le devis</h1>
@@ -18229,9 +19004,9 @@
   </div>
 
   <div class="segments">
-    <label for="v-a">A · Elles s’écrivent seules</label>
-    <label for="v-b">B · Les vôtres d’abord</label>
-    <label for="v-c">C · Deux blocs séparés</label>
+    <label for="s41-v-a">A · Elles s’écrivent seules</label>
+    <label for="s41-v-b">B · Les vôtres d’abord</label>
+    <label for="s41-v-c">C · Deux blocs séparés</label>
   </div>
 
   <div class="rangee">
@@ -18387,14 +19162,14 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s42">
-<input type="radio" name="v" id="v-a" class="etat" checked>
-<input type="radio" name="v" id="v-b" class="etat">
-<input type="radio" name="v" id="v-c" class="etat">
-<input type="radio" name="m" id="m-1" class="etat" checked>
-<input type="radio" name="m" id="m-2" class="etat">
-<input type="radio" name="t" id="t-5" class="etat" checked>
-<input type="radio" name="t" id="t-10" class="etat">
-<input type="radio" name="t" id="t-15" class="etat">
+<input type="radio" name="v" id="s42-v-a" class="etat" checked>
+<input type="radio" name="v" id="s42-v-b" class="etat">
+<input type="radio" name="v" id="s42-v-c" class="etat">
+<input type="radio" name="m" id="s42-m-1" class="etat" checked>
+<input type="radio" name="m" id="s42-m-2" class="etat">
+<input type="radio" name="t" id="s42-t-5" class="etat" checked>
+<input type="radio" name="t" id="s42-t-10" class="etat">
+<input type="radio" name="t" id="s42-t-15" class="etat">
 
 <div class="dedans">
   <h1>La réduction au client</h1>
@@ -18410,26 +19185,26 @@
   <div class="reglage">
     <span class="quoi">Où elle se pose</span>
     <div class="segments">
-      <label for="v-a">A · Une ligne du devis</label>
-      <label for="v-b">B · Sous le total</label>
-      <label for="v-c">C · Le prix barré</label>
+      <label for="s42-v-a">A · Une ligne du devis</label>
+      <label for="s42-v-b">B · Sous le total</label>
+      <label for="s42-v-c">C · Le prix barré</label>
     </div>
   </div>
 
   <div class="reglage">
     <span class="quoi">Le pourcentage — c’est vous qui le choisissez</span>
     <div class="segments">
-      <label for="t-5">5 %</label>
-      <label for="t-10">10 %</label>
-      <label for="t-15">15 %</label>
+      <label for="s42-t-5">5 %</label>
+      <label for="s42-t-10">10 %</label>
+      <label for="s42-t-15">15 %</label>
     </div>
   </div>
 
   <div class="reglage">
     <span class="quoi">Le mot</span>
     <div class="segments">
-      <label for="m-1">Réduction</label>
-      <label for="m-2">Prix accordé au client</label>
+      <label for="s42-m-1">Réduction</label>
+      <label for="s42-m-2">Prix accordé au client</label>
     </div>
   </div>
 
@@ -18569,9 +19344,9 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s43">
-<input type="radio" name="g" id="g-a" class="etat">
-<input type="radio" name="g" id="g-b" class="etat" checked>
-<input type="radio" name="g" id="g-c" class="etat">
+<input type="radio" name="g" id="s43-g-a" class="etat">
+<input type="radio" name="g" id="s43-g-b" class="etat" checked>
+<input type="radio" name="g" id="s43-g-c" class="etat">
 
 <div class="dedans">
   <h1>La fiche d'entretien</h1>
@@ -18587,9 +19362,9 @@
   <div class="reglage">
     <span class="quoi">Le geste sur le chantier</span>
     <div class="segments">
-      <label for="g-a">A · La liste, d'un bloc</label>
-      <label for="g-b">B · Rangée par familles — <b>retenu</b></label>
-      <label for="g-c">C · Fait / non / sans objet</label>
+      <label for="s43-g-a">A · La liste, d'un bloc</label>
+      <label for="s43-g-b">B · Rangée par familles — <b>retenu</b></label>
+      <label for="s43-g-c">C · Fait / non / sans objet</label>
     </div>
   </div>
 
@@ -18855,9 +19630,9 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s44">
-<input type="radio" name="r" id="r-a" class="etat">
-<input type="radio" name="r" id="r-b" class="etat" checked>
-<input type="radio" name="r" id="r-c" class="etat">
+<input type="radio" name="r" id="s44-r-a" class="etat">
+<input type="radio" name="r" id="s44-r-b" class="etat" checked>
+<input type="radio" name="r" id="s44-r-c" class="etat">
 
 <div class="dedans">
   <h1>Le rapport que reçoit le client</h1>
@@ -18872,9 +19647,9 @@
   <div class="reglage">
     <span class="quoi">Ce que le client voit</span>
     <div class="segments">
-      <label for="r-a">A · Tout, comme l'autre</label>
-      <label for="r-b">B · Seulement ce qui a été fait — <b>retenu</b></label>
-      <label for="r-c">C · Ce qui a été fait, le reste replié</label>
+      <label for="s44-r-a">A · Tout, comme l'autre</label>
+      <label for="s44-r-b">B · Seulement ce qui a été fait — <b>retenu</b></label>
+      <label for="s44-r-c">C · Ce qui a été fait, le reste replié</label>
     </div>
   </div>
 
@@ -18998,8 +19773,8 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s45">
-<input type="radio" name="m" id="m-a" class="etat" checked>
-<input type="radio" name="m" id="m-b" class="etat">
+<input type="radio" name="m" id="s45-m-a" class="etat" checked>
+<input type="radio" name="m" id="s45-m-b" class="etat">
 
 <div class="dedans">
   <h1>Composer sa fiche d'entretien</h1>
@@ -19015,8 +19790,8 @@
   <div class="reglage">
     <span class="quoi">Une fiche, ou plusieurs ?</span>
     <div class="segments">
-      <label for="m-a">A · Un seul modèle, pré-rempli à chaque envoi — <b>retenu</b></label>
-      <label for="m-b">B · Un modèle, puis une fiche rangée par client</label>
+      <label for="s45-m-a">A · Un seul modèle, pré-rempli à chaque envoi — <b>retenu</b></label>
+      <label for="s45-m-b">B · Un modèle, puis une fiche rangée par client</label>
     </div>
   </div>
 
@@ -19218,9 +19993,9 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s46">
-<input type="radio" name="h" id="h-a" class="etat" checked>
-<input type="radio" name="h" id="h-b" class="etat">
-<input type="radio" name="h" id="h-c" class="etat">
+<input type="radio" name="h" id="s46-h-a" class="etat" checked>
+<input type="radio" name="h" id="s46-h-b" class="etat">
+<input type="radio" name="h" id="s46-h-c" class="etat">
 
 <input type="radio" name="q" id="q1" class="etat">
 <input type="radio" name="q" id="q2" class="etat">
@@ -19242,9 +20017,9 @@
   <div class="reglage">
     <span class="quoi">Comment il pose son temps</span>
     <div class="segments">
-      <label for="h-a">A · La molette du téléphone — <b>retenu</b></label>
-      <label for="h-b">B · Les quarts d'heure</label>
-      <label for="h-c">C · La molette Atlas</label>
+      <label for="s46-h-a">A · La molette du téléphone — <b>retenu</b></label>
+      <label for="s46-h-b">B · Les quarts d'heure</label>
+      <label for="s46-h-c">C · La molette Atlas</label>
     </div>
   </div>
 
@@ -19374,6 +20149,1300 @@
         bande paraît tourner sur elle-même au lieu de glisser dans une boîte.</li>
       <li><b>Rien ne clignote, rien ne rebondit.</b> Sur un outil de travail, le
         luxe est l'absence de bruit : un seul trait doré, qui ne bouge jamais.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m47">
+    <div class="etape-tete">
+      <span class="etape-no">47</span>
+      <h2>Ce que je sais du client</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s47">
+<input type="radio" name="v" id="s47-v-a" class="etat" checked>
+<input type="radio" name="v" id="s47-v-b" class="etat">
+<input type="radio" name="v" id="s47-v-c" class="etat">
+
+<div class="dedans">
+  <h1>Ce que je sais du client</h1>
+  <p class="intro">Ce qu’il y avait à prendre du graphe que vous m’avez montré.
+    <b>Rien n’est codé</b> — c’est votre règle. Trois façons de le montrer, de la
+    moins chère à la plus complète.</p>
+
+  <p class="dit">L’application <b>sait déjà</b> que Mme Bracquemont est venue
+    quatre fois, qu’elle a payé 2 460 € et qu’elle en doit encore 740, et qu’on
+    lui fait toujours de l’élagage et de l’évacuation. <b>Elle ne le montre
+    nulle part.</b> Aucun de ces chiffres n’est inventé : ils se calculent tous
+    à partir de ce que la base porte.</p>
+
+  <div class="segments">
+    <label for="s47-v-a">A · Un encart sur le chantier</label>
+    <label for="s47-v-b">B · Une fiche client</label>
+    <label for="s47-v-c">C · Un onglet Clients</label>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+
+      <!-- ═══ A · l'encart, dans la fiche du chantier ═══════════════════════ -->
+      <div class="ecran fiche-chantier a-encart">
+        <div class="entete">
+          <span>
+            <span class="surtitre">Chantier</span>
+            <p class="titre">Mme Bracquemont</p>
+            <p class="sous">12 chemin des Noues · devis à envoyer</p>
+          </span>
+        </div>
+
+        <div class="encart">
+          <p class="phrase">Vous l’avez vue <b>4 fois</b>. <b>3 200 €</b>
+            facturés, dont <b>740 € encore dus</b>. Toujours de l’<b>élagage</b>
+            et de l’<b>évacuation</b>.</p>
+          <span class="plus">Voir ses 4 chantiers →</span>
+        </div>
+
+        <div class="faux-bloc">
+          <span class="t">La suite de la fiche, inchangée</span>
+          <div class="faux-ligne"></div>
+          <div class="faux-ligne"></div>
+          <div class="faux-ligne court"></div>
+        </div>
+      </div>
+
+      <!-- ═══ B · la fiche client ══════════════════════════════════════════ -->
+      <div class="ecran a-fiche">
+        <span class="surtitre">Client</span>
+        <p class="titre">Mme Bracquemont</p>
+        <p class="sous">12 chemin des Noues · 06 79 98 45 14</p>
+
+        <div class="chiffres">
+          <span class="ch"><span class="n">4</span><span class="q">chantiers</span></span>
+          <span class="ch"><span class="n">3 200 €</span><span class="q">facturés</span></span>
+          <span class="ch du"><span class="n">740 €</span><span class="q">encore dus</span></span>
+        </div>
+
+        <span class="etiq">Ce qu’on lui fait, et combien de fois</span>
+        <div class="lgn"><span>Élagage</span><span class="fois">4 fois · 450 € en moyenne</span></div>
+        <div class="lgn"><span>Évacuation des déchets verts</span><span class="fois">4 fois · 240 €</span></div>
+        <div class="lgn"><span>Broyage des branches</span><span class="fois">2 fois · 180 €</span></div>
+
+        <span class="etiq">Ses chantiers</span>
+        <div class="lgn"><span>Élagage — 3 chênes</span><span class="fois">16 août · 887 €</span></div>
+        <div class="lgn"><span>Taille de haie</span><span class="fois">2 juin · 740 € — impayé</span></div>
+        <div class="lgn"><span>Abattage tilleul</span><span class="fois">14 mars · 980 €</span></div>
+        <div class="lgn"><span>Élagage d’entretien</span><span class="fois">9 janvier · 593 €</span></div>
+      </div>
+
+      <!-- ═══ C · l'onglet Clients ═════════════════════════════════════════ -->
+      <div class="ecran a-onglet">
+        <span class="surtitre">Clients</span>
+        <p class="titre">Vos 27 clients</p>
+        <p class="sous">Les plus récents d’abord</p>
+
+        <div class="cli">
+          <span class="nom">Mme Bracquemont</span>
+          <span class="det">4 chantiers · <b style="color:var(--alerte)">740 € dus</b></span>
+        </div>
+        <div class="cli">
+          <span class="nom">M. Ledoux</span>
+          <span class="det">2 chantiers · 1 840 €</span>
+        </div>
+        <div class="cli">
+          <span class="nom">Mme Félicie</span>
+          <span class="det">1 chantier · devis en attente</span>
+        </div>
+        <div class="cli">
+          <span class="nom">M. Verrier</span>
+          <span class="det">6 chantiers · 5 210 €</span>
+        </div>
+
+        <div class="onglets">
+          <span>Chantiers</span><span>Planning</span>
+          <span class="neuf">Clients</span>
+          <span>Terminés</span><span>Réglages</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Un encart sur le chantier</span>
+        Trois phrases sous le nom du client, <b>là où vous êtes déjà</b>. Vous
+        ouvrez un chantier, et vous savez tout de suite à qui vous avez affaire —
+        combien de fois, combien il doit, ce qu’on lui fait d’habitude.
+        <span class="cout"><b>Ce que ça coûte : le moins de tout.</b> Aucun écran
+        nouveau, aucun onglet. Un calcul et un encart.
+        <b>Ce que ça ne fait pas :</b> vous ne pouvez pas chercher un client, ni
+        voir la liste de ceux qui vous doivent de l’argent. Il faut passer par un
+        chantier pour arriver à lui.</span>
+      </div>
+      <div class="l-b">
+        <span class="t">B · Une fiche client</span>
+        Un vrai écran par client, atteint en touchant son nom depuis un chantier.
+        Les trois chiffres, ce qu’on lui fait et à quel prix, et <b>tous ses
+        chantiers</b> avec ce que chacun a rapporté.
+        <span class="cout"><b>Ce que ça coûte :</b> un écran de plus à faire et à
+        tenir — mais pas de nouvel onglet, donc la barre du bas ne bouge pas.
+        <b>Ce que ça ne fait toujours pas :</b> chercher un client sans passer par
+        un chantier.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Un onglet Clients</span>
+        La liste de tous vos clients, du plus récent au plus ancien, avec ce
+        qu’ils doivent — et la fiche de B derrière chaque nom. <b>C’est le seul
+        qui répond à « qui me doit de l’argent ? »</b> d’un coup d’œil.
+        <span class="cout"><b>Ce que ça coûte, et ce n’est pas rien :</b> un
+        <b>cinquième onglet</b>. La barre du bas en porte quatre, elle est pensée
+        pour le pouce, et chaque onglet ajouté rétrécit les autres. C’est aussi
+        deux écrans à faire au lieu d’un.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Aucun de ces chiffres n’est inventé</span>
+    <ul>
+      <li><b>4 chantiers</b> — les chantiers rattachés à ce client.</li>
+      <li><b>3 200 € facturés</b> et <b>740 € encore dus</b> — les factures
+        émises, et ce que les règlements notés en laissent. C’est la même source
+        que l’écran de TVA depuis le 16 août.</li>
+      <li><b>« toujours de l’élagage »</b> — les prestations qui reviennent le
+        plus souvent dans ses devis.</li>
+      <li><b>« 450 € en moyenne »</b> — les prix déjà pratiqués chez lui. La
+        mémoire qui vous dit déjà « la dernière fois — 180 € HT » sur le devis.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Une question, et elle change un chiffre</span>
+    <b>« 3 200 € », c’est ce qui a été facturé ou ce qui a été encaissé ?</b> Les
+    deux se calculent. Facturé dit ce que le chantier a rapporté ; encaissé dit
+    ce qui est vraiment rentré. La planche montre les deux — le total facturé, et
+    ce qui reste dû à côté — mais si vous préférez n’en voir qu’un, dites lequel.
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m48">
+    <div class="etape-tete">
+      <span class="etape-no">48</span>
+      <h2>Le nouveau chantier, plus gros</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s48">
+<input type="radio" name="f" id="s48-f-a" class="etat" checked>
+<input type="radio" name="f" id="s48-f-b" class="etat">
+<input type="radio" name="f" id="s48-f-c" class="etat">
+<input type="radio" name="t" id="s48-t-1" class="etat">
+<input type="radio" name="t" id="s48-t-2" class="etat">
+<input type="radio" name="t" id="s48-t-3" class="etat" checked>
+<input type="radio" name="g" id="s48-g-1" class="etat">
+<input type="radio" name="g" id="s48-g-2" class="etat" checked>
+<input type="radio" name="g" id="s48-g-3" class="etat">
+
+<div class="dedans">
+  <h1>Le nouveau chantier, plus gros</h1>
+  <p class="intro">Votre demande du 16 août. <b>Rien n’est codé</b> — c’est votre
+    règle. <b>Touchez les trois réglages</b> : la forme du mot, sa taille, sa
+    graisse. L’écran suit, et le témoin « aujourd’hui » reste à côté pour
+    comparer.</p>
+
+  <p class="dit">« Le <b>nouveau chantier</b> fait le <b>plus gros et en
+    gras</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">La forme</span>
+    <div class="segments">
+      <label for="s48-f-a">A · Les capitales</label>
+      <label for="s48-f-b">B · La serif du titre</label>
+      <label for="s48-f-c">C · Toute la largeur</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">La taille</span>
+    <div class="segments">
+      <label for="s48-t-1">Gros</label>
+      <label for="s48-t-2">Plus gros</label>
+      <label for="s48-t-3">Le plus gros</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">La graisse</span>
+    <div class="segments">
+      <label for="s48-g-1">Celle d’aujourd’hui</label>
+      <label for="s48-g-2">Gras</label>
+      <label for="s48-g-3">Très gras</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel" data-atlas="ecran">
+      <p class="sceau">ATLAS</p>
+      <p class="bonjour">Bonjour compte</p>
+      <h2 class="titre-ecran">Vos chantiers</h2>
+      <p class="compteur">Sept en cours</p>
+      <div class="filet"></div>
+
+      <!-- ═══ A · les capitales, grossies ════════════════════════════════ -->
+      <div class="action f-a">
+        <a class="geste" href="#" data-forme="a" aria-label="Nouveau chantier">
+          <span class="mot caps" data-atlas="mot">Nouveau chantier</span>
+          <span class="rond">
+            <span class="pouls" aria-hidden="true"></span>
+            <span class="cerne" aria-hidden="true"></span>
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8"/></svg>
+          </span>
+        </a>
+      </div>
+
+      <!-- ═══ B · la serif du titre ══════════════════════════════════════ -->
+      <div class="action f-b">
+        <a class="geste" href="#" data-forme="b" aria-label="Nouveau chantier">
+          <span class="mot serif" data-atlas="mot">Nouveau chantier</span>
+          <span class="rond">
+            <span class="pouls" aria-hidden="true"></span>
+            <span class="cerne" aria-hidden="true"></span>
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8"/></svg>
+          </span>
+        </a>
+      </div>
+
+      <!-- ═══ C · toute la largeur ═══════════════════════════════════════ -->
+      <div class="action pleine f-c">
+        <a class="geste large" href="#" data-forme="c" aria-label="Nouveau chantier">
+          <span class="mot caps" data-atlas="mot">Nouveau chantier</span>
+          <span class="rond">
+            <span class="pouls" aria-hidden="true"></span>
+            <span class="cerne" aria-hidden="true"></span>
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8"/></svg>
+          </span>
+        </a>
+      </div>
+
+      <div class="entete-fil"><span>En cours</span><span>Sept</span></div>
+      <div class="brin">
+        <span class="jour"><span class="nb">16</span><br><span class="mois">Août</span></span>
+        <span><span class="nom">Mr. Felicie 1786867102580</span><br>
+          <span class="ou">Adresse non renseignée</span>
+          <span class="mention">Brouillon · sans photo</span></span>
+      </div>
+      <div class="brin">
+        <span class="jour"><span class="nb">16</span><br><span class="mois">Août</span></span>
+        <span><span class="nom">Mr. Felicie 1786867067405</span><br>
+          <span class="ou">Adresse non renseignée</span>
+          <span class="mention">Brouillon · sans photo</span></span>
+      </div>
+      <div class="bas">
+        <span class="actif">Chantiers</span><span>Planning</span>
+        <span>Terminés</span><span>Réglages</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="temoin" data-atlas="temoin">
+        <span class="t">Aujourd’hui — ce que vous avez à l’écran</span>
+        <a class="geste" href="#" aria-label="Nouveau chantier">
+          <span class="mot" data-atlas="mot-temoin">Nouveau chantier</span>
+          <span class="rond">
+            <span class="cerne" aria-hidden="true"></span>
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8"/></svg>
+          </span>
+        </a>
+      </div>
+
+      <div class="l-a">
+        <span class="t">A · Les capitales</span>
+        Le même mot qu’aujourd’hui, <b>grossi et mis en gras</b>. Il reste une
+        étiquette : il ne concurrence pas « Vos chantiers », et l’or ne se pose
+        toujours que sur le signe.
+        <span class="cout"><b>Ce que ça coûte : rien.</b> Trois valeurs changent
+        dans une feuille de style, le geste et la feuille qui monte ne bougent
+        pas. C’est la seule des trois qui n’a aucune conséquence ailleurs.</span>
+      </div>
+      <div class="l-b">
+        <span class="t">B · La serif du titre</span>
+        Le mot passe dans <b>la police du titre</b>, comme « Vos chantiers ». À
+        surface égale c’est de loin le plus gros, et le plus habité.
+        <span class="cout"><b>Ce que ça coûte, et ce n’est pas technique :</b>
+        vous avez alors <b>deux titres</b> sur le même écran, à quarante pixels
+        l’un de l’autre. L’œil ne sait plus lequel est la page et lequel est
+        l’action. À regarder sur votre téléphone avant de le retenir.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Toute la largeur</span>
+        Le mot est calé <b>à gauche</b>, le rond part <b>au bout de la ligne</b>.
+        L’action occupe toute la largeur : c’est la plus visible des trois, et
+        celle qui se touche le plus facilement du pouce.
+        <span class="cout"><b>Ce que ça coûte :</b> elle prend la forme d’une
+        <b>ligne du fil</b>, et vous aviez refusé les boîtes justement pour que
+        rien ne ressemble à une carte. Le risque n’est pas la place, c’est de
+        la lire comme un chantier de plus.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui ne bouge pas, quelle que soit votre réponse</span>
+    <ul>
+      <li><b>Pas d’aplat vert.</b> Vous l’aviez refusé le 11 août — « ce gros
+        bouton en plein milieu, ça ne fait pas très luxe ». Ce qui grossit ici,
+        c’est le mot, jamais une pastille pleine.</li>
+      <li><b>Le geste reste le vôtre</b> : l’anneau qui bat tant qu’on ne l’a
+        pas touché, les trois tours et les onze grains d’or à l’appui, puis la
+        feuille une demi-seconde plus tard. Cette planche n’exécute aucun
+        script : le battement est là, la gerbe ne peut pas y être.</li>
+      <li><b>Le mot ne sera jamais coupé.</b> Le cran le plus gros est le plus
+        gros qui tienne sur un écran de 360 px — le plus étroit des vôtres —
+        sans « … » ni retour à la ligne : il reste 284 px de mot et de rond
+        pour 308 disponibles. C’est ce que le contrôle mesure, sur les vingt-
+        sept combinaisons.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Une chose à savoir avant de trancher</span>
+    <ul>
+      <li>Le 11 août, c’est <b>vous</b> qui aviez resserré cet endroit : le
+        libellé de 9,5 à 9 px, le rond de 46 à 38, le signe de 24 à 20
+        (maquette 24). Grossir n’est donc pas réparer un oubli, c’est revenir
+        dessus — ce qui est votre droit le plus entier, mais la maquette 24
+        sera corrigée en même temps, sinon les deux se contrediront.</li>
+      <li><b>Ce que vous voyez ici est ce que vous aurez</b> : l’application
+        emploie les polices de votre appareil, exactement comme cette page
+        (vérifié dans <i>globals.css</i>). Une seule réserve : « Très gras »
+        peut se confondre avec « Gras » selon l’appareil — sur iPhone les deux
+        existent vraiment, sur d’autres écrans le second est simulé.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m49">
+    <div class="etape-tete">
+      <span class="etape-no">49</span>
+      <h2>Retirer le prix accordé</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s49">
+<input type="radio" name="g" id="s49-g-a" class="etat">
+<input type="radio" name="g" id="s49-g-b" class="etat" checked>
+<input type="radio" name="g" id="s49-g-c" class="etat">
+<input type="radio" name="e" id="e-avant" class="etat" checked>
+<input type="radio" name="e" id="e-apres" class="etat">
+
+<div class="dedans">
+  <h1>Retirer le prix accordé</h1>
+  <p class="intro">
+    Le devis de sa capture du 17 août, à <b>1 850,00 € HT</b>, avec les
+    <b>5 %</b> qu'il n'arrivait pas à enlever. Touchez les pastilles : le geste
+    change, et l'état aussi.
+  </p>
+
+  <p class="dit">
+    <b>Le 17 août 2026 :</b> « Il n'y a aucun moyen de retirer les cinq pour
+    cent, si ce n'est en écrivant zéro pour cent à la place de cinq. […] Tout
+    comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un petit
+    moins pour supprimer la ligne de la réduction. Et qu'à la note vocale, on
+    puisse également la supprimer. »
+  </p>
+
+  <p class="repare">
+    <span class="t">Déjà réparé — rien à choisir là-dessus</span>
+    <b>Écrire « 0 »</b> ne la retirait pas non plus : la base enregistrait bien
+    « aucune réduction », mais l'écran gardait une ligne or <b>0 %</b> sans
+    montant — un devis qui affirmait une remise que son PDF n'imprimait pas.
+    <b>Et à la voix</b>, « retire-moi les cinq pour cent » était compris, coché,
+    enregistré… puis défait : l'écran ne relisait que les lignes du tableau, et
+    le prix accordé n'est pas une ligne. L'ancien pourcentage restait affiché, et
+    se réécrivait en base au passage suivant dans la case.
+  </p>
+
+  <div class="quoi">Le geste</div>
+  <div class="segments">
+    <label for="s49-g-a">A — glisser la ligne</label>
+    <label for="s49-g-b">B — le petit «&nbsp;−&nbsp;»</label>
+    <label for="s49-g-c">C — la ligne du bas bascule</label>
+  </div>
+
+  <div class="quoi">L'état</div>
+  <div class="segments">
+    <label for="e-avant">Avec les 5 %</label>
+    <label for="e-apres">Une fois retirés</label>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="feuille">
+        <div class="lg"><span>Démontage d'un chêne en rétention</span><span>950,00 €</span></div>
+        <div class="lg"><span>Découpe du bois en 50 cm sur site</span><span>350,00 €</span></div>
+        <div class="lg"><span>Abattage — cèdre en bord d'allée</span><span>550,00 €</span></div>
+        <div class="plus-ligne">+ Ajouter une ligne</div>
+
+        <div class="totaux">
+          <!-- ═════ AVEC LES 5 % ═════ -->
+          <!-- A — la ligne glisse, comme toutes les lignes de l'application
+               depuis le 10 août 2026. -->
+          <div class="tot avant"><span>Total HT</span><span>1 850,00 €</span></div>
+          <div class="tot or et-a">
+            <div class="glisse" style="width:100%">
+              <div class="corps">
+                <span>Prix accordé au client <span class="case">5</span> %</span>
+                <span>− 92,50 €</span>
+              </div>
+              <span class="retirer">Retirer</span>
+            </div>
+          </div>
+          <!-- B — le petit « − », en face de la ligne. Ce qu'il a demandé. -->
+          <div class="tot or et-b">
+            <span class="g"><span class="moins">−</span>Prix accordé au client <span class="case">5</span> %</span>
+            <span>− 92,50 €</span>
+          </div>
+          <!-- C — rien ne change sur la ligne ; c'est le bas qui bascule. -->
+          <div class="tot or et-c">
+            <span class="g">Prix accordé au client <span class="case">5</span> %</span>
+            <span>− 92,50 €</span>
+          </div>
+          <div class="tot avant"><span>Total HT après remise</span><span>1 757,50 €</span></div>
+
+          <!-- ═════ UNE FOIS RETIRÉS ═════ -->
+          <div class="tot apres"><span>Total HT</span><span>1 850,00 €</span></div>
+
+          <div class="tot"><span>TVA (<span class="case">20</span> %)</span>
+            <span class="avant mot">351,50 €</span><span class="apres mot">370,00 €</span></div>
+          <div class="tot gros"><span>Total TTC</span>
+            <span class="avant mot">2 109,00 €</span><span class="apres mot">2 220,00 €</span></div>
+
+          <!-- La ligne du bas : elle existe déjà pour POSER une remise, et ne
+               s'affiche aujourd'hui que sur un devis qui n'en a pas. -->
+          <div class="bascule apres bloc">+ Prix accordé au client</div>
+          <div class="bascule et-c bloc">− Retirer le prix accordé</div>
+          <div class="bascule et-a bloc" style="color:var(--gris)">Glisser la ligne vers la gauche</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A — glisser la ligne, comme partout ailleurs</span>
+        Le geste unique de l'application depuis le 10 août 2026 : la ligne glisse
+        vers la gauche et découvre <b>Retirer</b>, avec le tiroir <b>Annuler</b>
+        en dessous. Trois mécaniques de suppression coexistaient avant cette
+        date ; il n'en a gardé qu'une.
+        <span class="cout">
+          <b>Ce que ça coûte :</b> rien à inventer, tout existe.
+          <b>Ce que ça coûte vraiment :</b> c'est un <b>total</b>, pas une ligne
+          du tableau — rien d'autre ne glisse dans ce bloc, et un geste qu'on ne
+          soupçonne pas est un geste qui n'existe pas. C'est exactement ce qu'il
+          vient de vivre.
+        </span>
+      </div>
+      <div class="l-b">
+        <span class="t">B — le petit « − », en face de la ligne</span>
+        Ce qu'il a demandé, mot pour mot. Un rond de 26 px devant le libellé, en
+        or comme la ligne. Un appui, la ligne part, le devis revient à
+        <b>2 220,00 €</b> — et le tiroir <b>Annuler</b> reste dessous, comme pour
+        une ligne du tableau.
+        <span class="cout">
+          <b>Ce que ça coûte :</b> un bouton de plus dans le bloc des totaux, le
+          seul endroit du devis qui n'en portait aucun.
+          <b>Ce qu'il faut accepter :</b> le « + » ajoute une ligne AU TABLEAU,
+          ce « − » retire un TOTAL. Deux symboles jumeaux pour deux natures
+          différentes — c'est lisible, mais ce n'est pas symétrique.
+        </span>
+      </div>
+      <div class="l-c">
+        <span class="t">C — la ligne du bas bascule</span>
+        La ligne discrète sous le total existe déjà : « <b>+ Prix accordé au
+        client</b> », et elle ne s'affiche que sur un devis qui n'en a pas. Elle
+        devient « <b>− Retirer le prix accordé</b> » dès qu'il y en a une. Un
+        seul endroit à connaître, qui dit toujours ce qu'il fera.
+        <span class="cout">
+          <b>Ce que ça coûte :</b> presque rien — la ligne est déjà là, elle
+          change de mot.
+          <b>Ce qu'il faut accepter :</b> le geste n'est pas <i>en face</i> de la
+          remise mais sous le total TTC, à un centimètre plus bas. Sur son
+          téléphone, les deux sont à l'écran en même temps.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui ne change pas, quel que soit le choix</span>
+    <ul>
+      <li><b>La voix retire aussi</b> — « retire-moi les cinq pour cent »,
+        « enlève la remise ». C'était déjà écrit ; c'est l'écran qui ne suivait
+        pas, et c'est réparé.</li>
+      <li><b>Le retrait se défait.</b> Comme toute suppression depuis le 10 août :
+        un tiroir <b>Annuler</b> sous la feuille, et le pourcentage revient.</li>
+      <li><b>Écrire 0 %, ou vider la case,</b> retirent la remise pour de bon —
+        à l'écran comme sur le PDF.</li>
+      <li><b>La TVA suit toujours le net.</b> 20 % de 1 757,50 € font 351,50 € ;
+        une fois la remise partie, 20 % de 1 850,00 € font 370,00 €. Ce n'est pas
+        un choix de présentation, c'est la seule façon juste.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m50">
+    <div class="etape-tete">
+      <span class="etape-no">50</span>
+      <h2>Le plan d’arrosage</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s50">
+<input type="radio" name="e" id="s50-e-a" class="etat">
+<input type="radio" name="e" id="s50-e-b" class="etat" checked>
+<input type="radio" name="e" id="s50-e-c" class="etat">
+
+<div class="dedans">
+  <h1>Le plan d'arrosage — par où l'on entre</h1>
+  <p class="intro">Votre demande du 17 août. <b>Rien n'est codé</b> — c'est votre
+    règle. <b>Touchez les trois gestes</b> : c'est la seule chose à choisir ici,
+    le calcul est le même dans les trois.</p>
+
+  <p class="dit">« J'ai besoin qu'on crée <b>un outil pour les paysagistes pour
+    réaliser des plans d'arrosage automatique</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Comment il entre son jardin</span>
+    <div class="segments">
+      <label for="s50-e-a">A · La feuille — il saisit tout</label>
+      <label for="s50-e-b">B · Les zones — il mesure, Atlas pose · <b>je recommande</b></label>
+      <label for="s50-e-c">C · Le plan dessiné</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Arrosage</span><span class="quand">Jardin Martins</span></div>
+
+      <div class="ea">
+        <p class="titre-fiche">Ce que je pose</p>
+        <p class="sous">Vous entrez les quantités, Atlas additionne.</p>
+        <div class="fl">
+          <span class="fl-nom">Turbines — pelouse arrière</span>
+          <span class="fl-q"><input type="text" value="9" size="3" aria-label="Quantité pour Pelouse arrière" readonly> arroseurs</span>
+          <span class="fl-d">1,76 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Tuyères — pelouse avant</span>
+          <span class="fl-q"><input type="text" value="20" size="3" aria-label="Quantité pour Pelouse avant" readonly> arroseurs</span>
+          <span class="fl-d">5,76 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — massifs</span>
+          <span class="fl-q"><input type="text" value="45" size="3" aria-label="Quantité pour Massifs" readonly> m</span>
+          <span class="fl-d">0,32 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — haie de charmilles</span>
+          <span class="fl-q"><input type="text" value="60" size="3" aria-label="Quantité pour Haie de charmilles" readonly> m</span>
+          <span class="fl-d">0,42 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — potager</span>
+          <span class="fl-q"><input type="text" value="30" size="3" aria-label="Quantité pour Potager" readonly> m</span>
+          <span class="fl-d">0,21 m³/h</span>
+        </div>
+        <div class="total"><span>Débit demandé</span><span class="gros">8,47 m³/h</span></div>
+        <div class="total"><span>Débit du robinet</span><span>1,80 m³/h</span></div>
+        <p class="verdict"><b>Il faut 8 secteurs.</b> Le jardin
+          demande 4,7 fois le débit disponible : rien ne peut
+          s'ouvrir en même temps.</p>
+        <span class="bouton">Découper en secteurs</span>
+      </div>
+
+      <div class="eb">
+        <p class="titre-fiche">Le point d'eau</p>
+        <div class="robinet">
+          <span class="q">Mesuré au seau</span>
+          <p class="geste">Un seau de
+            <input type="text" value="10" size="2" aria-label="Litres du seau" readonly> L
+            rempli en
+            <input type="text" value="20" size="2" aria-label="Secondes de remplissage" readonly> s
+          </p>
+          <p class="sort">Débit disponible <b>1,80 m³/h</b> · pression 3,0 bar</p>
+        </div>
+        <p class="titre-fiche">Les zones</p>
+        <p class="sous">Vous donnez les mesures. Atlas choisit le matériel, la pose et la durée.</p>
+        <div class="zc">
+          <p class="zc-nom">Pelouse arrière</p>
+          <p class="zc-mes">18 × 12 m · <span class="zc-mat">turbine</span></p>
+          <p class="zc-res">9 arroseurs
+             · 1,76 m³/h · 45 min, 3×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Pelouse avant</p>
+          <p class="zc-mes">12 × 8 m · <span class="zc-mat">tuyère</span></p>
+          <p class="zc-res">20 arroseurs
+             · 5,76 m³/h · 13 min, 3×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Massifs</p>
+          <p class="zc-mes">45 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">45 m de gaine
+             · 0,32 m³/h · 26 min, 2×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Haie de charmilles</p>
+          <p class="zc-mes">60 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">60 m de gaine
+             · 0,42 m³/h · 26 min, 2×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Potager</p>
+          <p class="zc-mes">30 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">30 m de gaine
+             · 0,21 m³/h · 26 min, 3×/semaine</p>
+        </div>
+        <span class="ajouter">+ Ajouter une zone</span>
+        <div class="recap">
+          <span>8 secteurs</span>
+          <span>cycle 3 h 14</span>
+          <span>8,47 m³/h demandés</span>
+        </div>
+        <span class="bouton">Voir le découpage</span>
+      </div>
+
+      <div class="ec">
+        <p class="titre-fiche">Le plan</p>
+        <p class="sous">Pelouse arrière — 9 turbines, portée 9 m,
+          posées tête-bêche.</p>
+        <svg viewBox="0 0 286 196" class="plan" role="img"
+         aria-label="Plan de la pelouse arrière : 9 turbines et leur portée">
+      <defs><clipPath id="gazon"><rect x="44" y="26" width="216" height="144" rx="6"/></clipPath></defs>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="gazon"/>
+      <g clip-path="url(#gazon)">
+      <circle cx="44.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="170.0" r="108" class="portee"/>
+      </g>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="bordure"/>
+      <circle cx="44.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="170.0" r="4.5" class="tete"/>
+      <text x="152" y="187" class="cote">18 m</text>
+      <text x="34" y="98" class="cote cote-g">12 m</text>
+    </svg>
+        <p class="zc-res">Les couronnes s'arrêtent au bord du gazon : les
+          arroseurs de bordure ne tournent que d'un demi-tour, ceux des coins
+          d'un quart. C'est ce qui fait 1,76 m³/h au
+          lieu de 3,96.</p>
+        <span class="bouton">Poser un arroseur</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <span class="t">Ce que chacune coûte, et ce qu'elle rend</span>
+      <p><b>A · La feuille.</b> Il saisit le matériel qu'il a l'habitude de
+        poser ; Atlas additionne les débits, dit combien de secteurs il faut et
+        s'arrête là. C'est utile le jour même — mais ça ne fait que l'addition
+        qu'il sait déjà faire.</p>
+      <p><b>B · Les zones.</b> Il donne le point d'eau et les mesures de chaque
+        zone. Atlas choisit le matériel, calcule la pose tête-bêche, découpe les
+        secteurs et sort les durées d'arrosage par saison. <b>C'est celle qui
+        rend le temps de bureau</b>, et la seule qui peut se tromper à sa place
+        — donc la seule qui doit être juste.</p>
+      <p><b>C · Le plan dessiné.</b> Il pose les arroseurs sur un fond de plan
+        et voit les couronnes se recouvrir. C'est ce que le client comprend d'un
+        coup d'œil — et ce qui coûte le plus cher : dessiner un jardin au doigt,
+        c'est un écran entier, pas une case.</p>
+      <p class="cout"><b>Ce que je recommande :</b> B d'abord, C ensuite. Le
+        plan dessiné se pose PAR-DESSUS le calcul de B — l'inverse n'est pas
+        vrai, et un joli plan qui n'a pas vérifié le débit se paie à la mise en
+        eau.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Le jardin de l'exemple</span>
+    <p>5 zones, 8,47 m³/h demandés pour
+      1,80 disponibles, 8 secteurs,
+      3 h 14 de cycle. <b>Tous ces nombres sont calculés</b>, pas
+      écrits : changez une dimension dans le script et les trois planches
+      suivent. Une maquette qui compte faux fait douter de tout ce qu'elle
+      montre.</p>
+    <ul>
+      <li><b>Ce qui reste hors du calcul pour l'instant :</b> le diamètre des
+        tuyaux et les pertes de charge. Sur un jardin de cette taille en PE 32,
+        ça ne change pas le découpage ; sur 80 m de ligne, si.</li>
+      <li><b>Le disconnecteur n'est pas une option :</b> un réseau d'arrosage
+        raccordé à l'eau potable en demande un. Il est dans la nomenclature.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m51">
+    <div class="etape-tete">
+      <span class="etape-no">51</span>
+      <h2>Le débit ne se partage pas</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s51">
+<div class="dedans">
+  <h1>Le débit ne se partage pas</h1>
+  <p class="intro">Le calcul qui fait tout l'outil. <b>Il n'y a rien à choisir
+    ici</b> — c'est de l'arithmétique, montrée pour être vérifiée. Les nombres
+    sont ceux du jardin de la planche 69.</p>
+
+  <p class="dit">Un robinet de pavillon donne <b>1,80 m³/h</b>.
+    Ce jardin en demande <b>8,47</b>. Tout le métier tient dans
+    cet écart.</p>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Secteurs</span><span class="quand">Jardin Martins</span></div>
+
+      <div class="compare">
+        <p class="l"><span>Demandé, tout ouvert</span><b>8,47</b></p>
+        <div class="duo"><span style="width:100%"></span></div>
+        <p class="l"><span>Disponible au robinet</span><b>1,80</b></p>
+        <div class="duo ok"><span style="width:21%"></span></div>
+        <p class="dit-le"><b>4,7 fois trop.</b> Je découpe en
+          8 secteurs, aucun au-dessus de 1,53 m³/h.</p>
+      </div>
+
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S1</span><span class="sec-z">Pelouse arrière</span> <span class="sec-part">1 sur 2</span></p>
+          <div class="jauge"><span style="width:49%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">0,88</span> m³/h · <span class="sec-min">45</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S2</span><span class="sec-z">Pelouse arrière</span> <span class="sec-part">2 sur 2</span></p>
+          <div class="jauge"><span style="width:49%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">0,88</span> m³/h · <span class="sec-min">45</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S3</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">1 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S4</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">2 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S5</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">3 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S6</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">4 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S7</span><span class="sec-z">Massifs + Haie de charmilles</span></p>
+          <div class="jauge"><span style="width:41%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Goutte-à-goutte</span><span class="sec-q">0,74</span> m³/h · <span class="sec-min">26</span> min · 2×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S8</span><span class="sec-z">Potager</span></p>
+          <div class="jauge"><span style="width:12%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Goutte-à-goutte</span><span class="sec-q">0,21</span> m³/h · <span class="sec-min">26</span> min · 3×/sem.</p>
+        </div>
+
+      <p class="cycle">Cycle complet <b>3 h 14</b><br>
+        Départ 3 h 00, fin 6 h 14 — avant le soleil,
+        sinon la moitié s'évapore.</p>
+    </div>
+
+    <div class="legende">
+      <span class="t">Pourquoi 8 secteurs, et pas 6</span>
+      <p><b>Le seul débit en demanderait 6.</b> Les deux
+        autres viennent des règles ci-dessous, et elles passent avant le
+        remplissage.</p>
+      <p><b>Une pluviométrie par secteur, un rythme par secteur.</b> Un secteur ne porte
+        qu'une pluviométrie — la vanne l'ouvre en entier, pour la même durée, et
+        mélanger turbines et tuyères donne trois fois trop d'eau à l'une des
+        deux. Et un secteur ne porte qu'un rythme : le potager veut trois
+        passages par semaine, la haie deux.</p>
+      <p><b>La pelouse arrière tient en un seul secteur… sur le papier.</b>
+        1,76 m³/h pour 1,53 admissibles :
+        elle est coupée en deux. C'est le genre de dépassement qu'on ne voit pas
+        à l'œil, et qui se paie quand le dernier arroseur de la ligne bave au
+        lieu d'arroser.</p>
+      <p><b>Et la tuyère coûte cher en débit.</b> 20 tuyères
+        pour 12 × 8 m, 5,76 m³/h
+        — quatre secteurs à elles seules, contre deux pour une pelouse deux fois
+        plus grande en turbines. En échange elles arrosent en
+        13 minutes ce que la turbine met
+        45 minutes à faire.</p>
+      <p class="cout"><b>Ce que le cycle change :</b> chaque secteur s'ajoute à
+        la nuit. À 3 h 14, il faut démarrer à 3 h 00.
+        C'est cela qu'il faut dire au client AVANT de poser, pas après.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ce découpage n'a pas encore</span>
+    <ul>
+      <li><b>Les saisons.</b> Ces durées sont celles de juillet. En avril, le
+        besoin tombe de moitié — l'outil devra sortir un tableau par saison,
+        c'est ce que le client colle dans son coffret.</li>
+      <li><b>La pluie.</b> Une sonde de pluie coupe le cycle : c'est une ligne
+        de nomenclature, pas un calcul.</li>
+      <li><b>Les pertes de charge.</b> Voir la planche 69 : sans effet ici,
+        déterminantes sur une longue ligne.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m52">
+    <div class="etape-tete">
+      <span class="etape-no">52</span>
+      <h2>Ce qui sort du plan</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s52">
+<input type="radio" name="s" id="s52-s-a" class="etat" checked>
+<input type="radio" name="s" id="s52-s-b" class="etat">
+<input type="radio" name="s" id="s52-s-c" class="etat">
+
+<div class="dedans">
+  <h1>Ce qui sort du plan</h1>
+  <p class="intro">Trois documents, et ils ne se valent pas. <b>Ce qu'il y a à
+    choisir : par lequel on commence.</b> Le jardin est celui des planches 69
+    et 70 — mêmes nombres, calculés une seule fois.</p>
+
+  <p class="dit">Un plan d'arrosage ne vaut que par ce qu'il produit :
+    <b>un devis</b> qu'on signe, <b>une carte</b> qu'on colle dans le coffret,
+    <b>un plan</b> qu'on remet au client.</p>
+
+  <div class="reglage">
+    <span class="quoi">Ce qui sort</span>
+    <div class="segments">
+      <label for="s52-s-a">A · Le devis · <b>je recommande</b></label>
+      <label for="s52-s-b">B · La carte de programmation</label>
+      <label for="s52-s-c">C · Le plan pour le client</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Arrosage</span><span class="quand">Jardin Martins</span></div>
+
+      <div class="sa">
+        <p class="titre-fiche">La liste pour le fournisseur</p>
+        <p class="sous">9 lignes de quantités. Aucun prix : c'est lui qui les rend.</p>
+        <div class="nl">
+          <span class="nl-nom">Turbines buse 3,0</span>
+          <span class="nl-q">9 u</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Tuyères buse 12</span>
+          <span class="nl-q">20 u</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Gaine de goutteurs 2,3 L/h tous les 33 cm</span>
+          <span class="nl-q">135 ml</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Électrovannes 24 V</span>
+          <span class="nl-q">8 u</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Regards de vannes</span>
+          <span class="nl-q">3 u</span>
+          <span class="nl-p manque">prix absent</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Programmateur 8 voies</span>
+          <span class="nl-q">1 u</span>
+          <span class="nl-p manque">prix absent</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Disconnecteur et réducteur de pression</span>
+          <span class="nl-q">1 u</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Tuyau PE 32 (ligne principale)</span>
+          <span class="nl-q">60 ml</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Tuyau PE 25 (antennes)</span>
+          <span class="nl-q">120 ml</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <p class="avert"><b>Deux prix manquent</b> dans « Mes prix ». Atlas ne
+          les invente pas : la ligne part vide et signalée, et le devis vous
+          attend dessus.</p>
+        <span class="bouton">En faire un devis</span>
+      </div>
+
+      <div class="sb">
+        <p class="titre-fiche">La carte du coffret</p>
+        <p class="sous">Ce que le client retrouve six mois plus tard.</p>
+        <div class="saison">
+          <span>Avril</span><span>Mai–juin</span><span class="ici">Juillet–août</span><span>Septembre</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S1</span>
+          <span class="pl-z">Pelouse arrière (1 sur 2)</span>
+          <span class="pl-m">45 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S2</span>
+          <span class="pl-z">Pelouse arrière (2 sur 2)</span>
+          <span class="pl-m">45 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S3</span>
+          <span class="pl-z">Pelouse avant (1 sur 4)</span>
+          <span class="pl-m">13 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S4</span>
+          <span class="pl-z">Pelouse avant (2 sur 4)</span>
+          <span class="pl-m">13 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S5</span>
+          <span class="pl-z">Pelouse avant (3 sur 4)</span>
+          <span class="pl-m">13 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S6</span>
+          <span class="pl-z">Pelouse avant (4 sur 4)</span>
+          <span class="pl-m">13 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S7</span>
+          <span class="pl-z">Massifs + Haie de charmilles</span>
+          <span class="pl-m">26 min</span>
+          <span class="pl-j">2×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S8</span>
+          <span class="pl-z">Potager</span>
+          <span class="pl-m">26 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <p class="avert">Départ 3 h 00 · cycle 3 h 14 ·
+          fin 6 h 14. Programmateur 8 voies,
+          <b>aucune voie libre</b> — un massif de plus et il faut le changer.</p>
+        <span class="bouton">Envoyer au client</span>
+      </div>
+
+      <div class="sc">
+        <p class="titre-fiche">Le plan remis</p>
+        <p class="sous">Pelouse arrière — 9 turbines, couronnes de 9 m.</p>
+        <svg viewBox="0 0 286 196" class="plan-mini" role="img"
+         aria-label="Plan de la pelouse arrière : 9 turbines et leur portée">
+      <defs><clipPath id="gazon"><rect x="44" y="26" width="216" height="144" rx="6"/></clipPath></defs>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="gazon"/>
+      <g clip-path="url(#gazon)">
+      <circle cx="44.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="170.0" r="108" class="portee"/>
+      </g>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="bordure"/>
+      <circle cx="44.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="170.0" r="4.5" class="tete"/>
+      <text x="152" y="187" class="cote">18 m</text>
+      <text x="34" y="98" class="cote cote-g">12 m</text>
+    </svg>
+        <p class="sous">Le même dessin qu'à la saisie, sans les cotes de pose.
+          C'est ce que le client comprend d'un coup d'œil — et ce qu'il montre
+          au prochain artisan.</p>
+        <span class="bouton">Joindre au devis</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <span class="t">Par lequel commencer</span>
+      <p><b>A · Le devis.</b> La nomenclature entre dans le parcours qui existe
+        déjà : devis, envoi, acceptation, facture. <b>Aucune plomberie
+        nouvelle</b> — et c'est la seule sortie qui rapporte de l'argent.</p>
+      <p><b>B · La carte de programmation.</b> Aujourd'hui c'est un papier
+        manuscrit dans le coffret, et il se perd. Elle coûte peu, et c'est elle
+        qu'on rappelle au paysagiste en juin quand la pelouse jaunit.</p>
+      <p><b>C · Le plan.</b> Le plus beau, le plus cher. Il suppose l'écran de
+        dessin de la planche 69 — donc il vient forcément après.</p>
+      <p class="cout"><b>Et une chose qui n'est pas à choisir :</b> rien ne part
+        tout seul. Le mot « automatique » désigne l'arrosage, pas l'expédition —
+        le devis et la carte partent d'un geste du patron, comme tout le
+        reste (<code>docs/A-FAIRE.md</code> §5).</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ça touche dans Atlas, et ce que ça n'ouvre pas</span>
+    <ul>
+      <li><b>Le devis existe déjà</b> : lignes, quantités, unités, TVA, envoi,
+        acceptation. La nomenclature s'y verse — elle n'a pas de parcours à
+        elle.</li>
+      <li><b>Les prix viennent de « Mes prix »</b>, à la lettre près sur
+        l'unité (piège du §101 de <code>ARCHITECTURE.md</code> : « jours/homme »
+        mal tapé faisait cesser la multiplication en silence).</li>
+      <li><b>L'entretien de l'arrosage rejoint la fiche d'entretien</b> : mise
+        en route au printemps, hivernage à l'automne. Deux lignes de plus dans
+        le modèle, pas un troisième parcours.</li>
+      <li><b>Ce qui n'est pas ouvert :</b> le calcul des pertes de charge et le
+        dimensionnement des tuyaux. À dire au patron plutôt qu'à laisser
+        croire.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m53">
+    <div class="etape-tete">
+      <span class="etape-no">53</span>
+      <h2>Mes mots au catalogue</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s53">
+<input type="radio" name="v" id="s53-v-a" class="etat">
+<input type="radio" name="v" id="s53-v-b" class="etat" checked>
+<input type="radio" name="v" id="s53-v-c" class="etat">
+
+<div class="dedans">
+  <h1>Mes mots au catalogue</h1>
+  <p class="intro">Votre demande du 17 août : <b>pouvoir modifier et ajouter</b>.
+    Trois façons de vous faire une place dans un vocabulaire qui appartient à
+    tout le monde. <b>Rien n’est codé</b> — vous en désignez une.</p>
+
+  <p class="dit">Le catalogue, c’est <b>les mots, jamais les prix</b>. Quand vous
+    dictez <b>« faut me démonter le sapin du fond »</b>, aucun mot de la phrase
+    n’est « élagage » : c’est lui qui fait le rapprochement. Il est <b>commun à
+    toutes les entreprises</b> — d’où la question : où mettre <b>les vôtres</b> ?</p>
+
+  <div class="segments">
+    <label for="s53-v-a">A · Mes mots à part</label>
+    <label for="s53-v-b">B · Mes mots par-dessus</label>
+    <label for="s53-v-c">C · Une seule liste</label>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+
+      <!-- ═══ A · deux listes : celle d'Atlas, puis la sienne ══════════════ -->
+      <div class="ecran a-part">
+        <div class="entete"><span class="retour">‹</span><span class="t">Catalogue</span></div>
+        <div class="corps">
+          <p class="sous">Les mots qu’Atlas reconnaît quand vous dictez.</p>
+
+          <span class="etiq">Le vocabulaire d’Atlas · lecture seule</span>
+          <div class="carte">
+            <span class="nom">Élagage</span>
+            <p class="mots">Aussi appelé : abattage, démontage, dessouchage,
+              sapin, arbre, conifère</p>
+          </div>
+          <div class="carte">
+            <span class="nom">Nacelle</span>
+            <p class="mots">Aussi appelé : plateforme élévatrice</p>
+          </div>
+
+          <div class="sep"></div>
+
+          <span class="etiq mienne">Mes mots · visibles de vous seul</span>
+          <div class="carte">
+            <span class="nom mien">Écimage</span>
+            <p class="mots">Aussi appelé : <span class="mien">étêtage, rabattage</span></p>
+          </div>
+          <div class="carte">
+            <span class="nom mien">Rogneuse</span>
+            <p class="mots">Aussi appelé : <span class="mien">rogneuse de souche</span></p>
+          </div>
+          <span class="ajouter">+ Ajouter un mot à moi</span>
+        </div>
+      </div>
+
+      <!-- ═══ B · ses mots DANS les cartes communes ════════════════════════ -->
+      <div class="ecran a-dessus">
+        <div class="entete"><span class="retour">‹</span><span class="t">Catalogue</span></div>
+        <div class="corps">
+          <p class="sous">Les mots qu’Atlas reconnaît quand vous dictez.
+            <span class="mien">En doré, les vôtres.</span></p>
+
+          <span class="etiq">Prestations</span>
+          <div class="carte">
+            <span class="nom">Élagage</span>
+            <p class="mots">Aussi appelé : abattage, démontage, dessouchage,
+              sapin, arbre, conifère, <span class="mien">écimage, étêtage · vous</span></p>
+            <span class="apres">+ mon mot</span>
+          </div>
+          <div class="carte">
+            <span class="nom">Taille de haie</span>
+            <p class="mots">Aussi appelé : haie, thuyas, lauriers</p>
+            <span class="apres">+ mon mot</span>
+          </div>
+
+          <span class="etiq">Matériels</span>
+          <div class="carte">
+            <span class="nom">Nacelle</span>
+            <p class="mots">Aussi appelé : plateforme élévatrice,
+              <span class="mien">nacelle araignée · vous</span></p>
+            <span class="apres">+ mon mot</span>
+          </div>
+
+          <div class="sep"></div>
+          <p class="glose">Il manque une prestation entière ? Elle sera à vous,
+            visible de vous seul.</p>
+          <span class="ajouter plein">+ Nouvelle prestation</span>
+        </div>
+      </div>
+
+      <!-- ═══ C · tout au même niveau, tout paraît modifiable ══════════════ -->
+      <div class="ecran a-melange">
+        <div class="entete"><span class="retour">‹</span><span class="t">Catalogue</span></div>
+        <div class="corps">
+          <p class="sous">Vos prestations et vos matériels.</p>
+
+          <span class="etiq">Prestations</span>
+          <div class="carte">
+            <span class="nom">Élagage</span>
+            <p class="mots">Aussi appelé : abattage, démontage, dessouchage,
+              écimage, étêtage</p>
+          </div>
+          <div class="carte">
+            <span class="nom">Écimage</span>
+            <p class="mots">Aussi appelé : étêtage, rabattage</p>
+          </div>
+          <div class="carte">
+            <span class="nom">Taille de haie</span>
+            <p class="mots">Aussi appelé : haie, thuyas, lauriers</p>
+          </div>
+
+          <span class="etiq">Matériels</span>
+          <div class="carte">
+            <span class="nom">Nacelle</span>
+            <p class="mots">Aussi appelé : plateforme élévatrice, nacelle araignée</p>
+          </div>
+
+          <span class="ajouter">+ Ajouter</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Mes mots à part</span>
+        Le vocabulaire d’Atlas en haut, <b>intouchable</b> ; vos mots en dessous,
+        <b>à vous seul</b>. Deux listes, aucune confusion possible sur qui a
+        écrit quoi.
+        <span class="cout"><b>Ce que ça coûte : le moins de tout.</b> Une liste
+        de plus sous la première, et le bouton qui va avec.
+        <b>Ce que ça ne fait pas, et ça compte :</b> votre « écimage » vit
+        <b>à côté</b> d’« Élagage », pas <b>dedans</b>. Le jour où vous dictez
+        « faut m’écimer le tilleul », Atlas écrira une prestation « Écimage »
+        toute neuve au lieu de reconnaître l’élagage qu’il sait déjà chiffrer.</span>
+      </div>
+      <div class="l-b">
+        <span class="conseil">Ce que je vous conseille</span>
+        <span class="t">B · Mes mots par-dessus</span>
+        Vos mots s’<b>accrochent</b> au vocabulaire commun : « écimage » entre
+        dans la carte « Élagage », en doré, et Atlas comprend alors « écime-moi
+        le tilleul » comme un élagage — <b>avec les prix et les questions qui
+        vont avec</b>. Et s’il manque une prestation entière, le bouton du bas la
+        crée, à vous seul.
+        <span class="cout"><b>Ce que ça coûte :</b> un geste de plus sur chaque
+        carte, et une couleur à tenir pour distinguer les deux origines.
+        <b>Ce que ça ne fait pas :</b> vous ne pouvez toujours pas <b>retirer</b>
+        un mot d’Atlas — juste en ajouter par-dessus. Retirer « sapin »
+        d’« Élagage » le retirerait chez tout le monde.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Une seule liste</span>
+        Plus de distinction : une seule liste, tout se ressemble, tout a l’air
+        modifiable.
+        <span class="cout"><b>Ce que ça coûte, et c’est cher :</b> vous ne savez
+        plus ce qui est à vous. Vous corrigez « Élagage », l’application refuse —
+        <b>au moment du geste</b>, pas avant. Et le jour où Atlas ajoute un mot
+        au vocabulaire commun, votre écran change tout seul sans que rien
+        n’explique pourquoi. <b>Dessiné pour être comparé, pas pour être
+        choisi.</b></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui disparaît de cet écran, et pourquoi</span>
+    <b>« Aucun prix encore constaté par votre entreprise. »</b> Cette phrase, sur
+    votre capture, <b>ne se serait jamais éteinte</b> : l’écran interroge une
+    mémoire des prix que l’application n’écrit nulle part. Vos prix sont bien
+    retenus — c’est <b>lui</b> qui regardait au mauvais endroit.
+    <ul>
+      <li><b>Le jargon aussi s’en va.</b> « Synonymes » et « Variantes » étaient
+        deux mots pour la même chose : ils deviennent <b>« Aussi appelé »</b>.</li>
+      <li><b>La flèche de retour revient</b>, dans les trois. On arrive ici
+        depuis <i>Tarifs &amp; catalogue</i>, et on n’en repartait que par la
+        barre du bas.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Une question qui reste, et elle ne bloque pas votre choix</span>
+    <b>Faut-il remettre un prix sur ces cartes ?</b> La vraie mémoire des prix
+    existe — c’est elle qui vous dit « la dernière fois — 180 € HT » sur le
+    devis. Mais elle ne range pas ses prix par mot de catalogue : elle les range
+    par <b>nature de chantier</b> (un abattage, un démontage avec rétention, un
+    diamètre de 70). Deux réponses possibles :
+    <ul>
+      <li><b>Rien du tout</b> — le catalogue reste des mots, vos prix restent
+        dans <i>Mes tarifs</i>, <i>Mes prix</i> et le rappel du devis. <b>C’est
+        ce que montre cette planche.</b></li>
+      <li><b>La ligne, mais seulement quand ça correspond exactement</b> — « la
+        dernière fois : 450 € » sous « Élagage » <b>uniquement</b> si la mémoire
+        porte bien un élagage. Sinon rien : afficher un prix d’abattage sous
+        « Élagage » serait pire que la phrase d’aujourd’hui, qui au moins
+        n’invente rien.</li>
     </ul>
   </div>
 </div>

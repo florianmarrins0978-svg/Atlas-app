@@ -218,13 +218,24 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
 
   const ctx = await getCurrentCtx();
   const lignes = await listerLignesPrix(ctx, chantierId);
-  return lignes.map((l) => ({
-    id: l.id,
-    libelle: l.libelle,
-    quantite: l.quantite,
-    prixUnitaire: l.prixUnitaire,
-    montant: l.montant,
-  }));
+  // **Le prix accordé repart avec les lignes, et ce n'est pas une commodité.**
+  // Il ne vit sur AUCUNE ligne : c'est l'en-tête du devis qui le porte. Rendre
+  // les seules lignes laissait donc l'écran avec l'ancien pourcentage sous les
+  // yeux alors que la base l'avait bien retiré — et le premier passage suivant
+  // dans la case le RÉÉCRIVAIT en base. « Retire-moi les cinq pour cent » était
+  // annoncé, accepté, enregistré… puis défait. Signalé par le patron le
+  // 17 août 2026.
+  const devis = await getDevisPourChantier(ctx, chantierId);
+  return {
+    lignes: lignes.map((l) => ({
+      id: l.id,
+      libelle: l.libelle,
+      quantite: l.quantite,
+      prixUnitaire: l.prixUnitaire,
+      montant: l.montant,
+    })),
+    reductionPourcent: devis?.reductionPourcent ?? null,
+  };
 }
 
 function montantDeLaLigne(quantite: string, prixUnitaire: string): string {

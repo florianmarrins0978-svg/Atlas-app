@@ -245,6 +245,169 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     await cDest.close();
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────
+     PLAN D'ARROSAGE — la maquette essayable (17 août 2026).
+
+     Elle n'a pas la barre de navigation d'Arborea, et c'est voulu : c'est une
+     maquette d'Atlas posée ici parce que c'est le seul endroit du dépôt qui
+     soit PUBLIÉ, donc le seul où le patron puisse l'ouvrir depuis son téléphone
+     avec JavaScript. Les contrôles ci-dessous gardent ce qui casserait sans
+     bruit : une erreur au chargement (page blanche), un calcul qui déborde le
+     débit du robinet, et un prix qui apparaîtrait alors que toute la page tient
+     sur la promesse qu'il n'y en a aucun.
+     ───────────────────────────────────────────────────────────────────────── */
+  {
+    const cArr = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await cArr.route(/googleapis|gstatic|cloudflare|jsdelivr/i, r => r.abort());
+    const page = await cArr.newPage();
+    const errs = []; page.on('pageerror', e => errs.push('arrosage: ' + e.message));
+    await page.goto(`${B}/arrosage.html`, { waitUntil:'domcontentloaded' });
+    await page.waitForTimeout(250);
+
+    ok('arrosage : aucune erreur JS au chargement', errs.length === 0);
+    if (errs.length) fails.push(...errs);
+
+    const dispo = (await page.$eval('#debitDispo', el => el.textContent)).trim();
+    ok('arrosage : le débit se calcule du seau', dispo === '1,80');
+
+    const secteurs = await page.$$eval('.sec', e => e.length);
+    ok('arrosage : le jardin de départ se découpe', secteurs >= 6);
+
+    // L'invariant du métier : un secteur au-dessus du robinet, et les derniers
+    // arroseurs bavent au lieu d'arroser.
+    const debits = await page.$$eval('.sec-q', e => e.map(x => parseFloat(x.textContent.replace(',', '.'))));
+    ok('arrosage : aucun secteur au-dessus du robinet',
+       debits.length > 0 && debits.every(d => d <= parseFloat(dispo.replace(',', '.'))));
+
+    // Le cycle décide de l'heure de départ : s'il ne fait pas la somme de ses
+    // secteurs, il envoie arroser en plein soleil.
+    const mins = await page.$$eval('.sec-min', e => e.map(x => Number(x.textContent)));
+    const verdict = await page.$eval('#verdict', el => el.innerText);
+    const m = verdict.match(/(\d+)\s*h\s*(\d+)/);
+    ok('arrosage : le cycle est la somme des secteurs',
+       !!m && Number(m[1]) * 60 + Number(m[2]) === mins.reduce((a, b) => a + b, 0));
+
+    // Sa décision du 17 août : la sortie est une liste de quantités, pas un
+    // devis. Le jour où un montant apparaît, ce contrôle le dit.
+    const corps = await page.$eval('body', el => el.innerText);
+    ok('arrosage : aucun prix nulle part', !/€|\bEUR\b/.test(corps));
+    ok('arrosage : la liste porte le disconnecteur', /Disconnecteur/.test(corps));
+
+    // Un ajout de zone doit vraiment ajouter : c'est le geste central.
+    const avant = await page.$$eval('.zone', e => e.length);
+    await page.click('[data-ajout="massif"]'); await page.waitForTimeout(150);
+    ok('arrosage : ajouter une zone l’ajoute', (await page.$$eval('.zone', e => e.length)) === avant + 1);
+
+    // Rien ne doit déborder sur un téléphone.
+    ok('arrosage : rien ne déborde en largeur',
+       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+
+    // **Le chemin qu'aucune donnée n'emprunte encore.** Ses fiches de nourrice
+    // n'existent pas au 17 août ; le jour où elles arriveront, il faut que le
+    // rendu marche du premier coup — sinon c'est lui qui découvre la panne
+    // après avoir tapé sa fiche. On en injecte une factice, ici et seulement
+    // ici : le catalogue livré, lui, reste vide tant qu'il n'a rien donné.
+    await page.evaluate(() => {
+      CATALOGUE.nourrices[99] = { nom:'Nourrice 99 voies', source:'essai',
+        pieces:[{ q:1, u:'u', nom:'Pièce d’essai' }] };
+      window.__voies = document.querySelectorAll('.sec').length;
+      CATALOGUE.nourrices[window.__voies] = CATALOGUE.nourrices[99];
+      recalculer(false);
+    });
+    await page.waitForTimeout(150);
+    const fiche = await page.$eval('#nourrice', el => el.innerText);
+    ok('arrosage : une fiche de nourrice enregistrée s’affiche',
+       /Pièce d’essai/.test(fiche) && !/à renseigner/.test(fiche));
+
+    // **Les débits par ARC sont lus au catalogue, jamais déduits par division.**
+    // Sur les grosses buses la division tombe juste, donc un contrôle posé sur
+    // la 18-VAN n'aurait rien vu. Celui-ci force une petite zone, où la 6-VAN
+    // est retenue : le tableau donne 0,08 / 0,13 / 0,27, quand une division du
+    // tour complet donnerait 0,0675 / 0,135. Douze arroseurs → 1,64 m³/h par le
+    // tableau, 1,62 par division. Deux centièmes : c'est tout ce qui sépare une
+    // donnée relevée d'une donnée supposée, et c'est mesurable.
+    await page.evaluate(() => {
+      etat.zones = [{ id:900, nom:'Petit gazon', type:'gazon', L:3, l:2, materiel:'tuyere' }];
+      recalculer(true);
+    });
+    await page.waitForTimeout(200);
+    const petite = await page.$eval('.zone-res', el => el.textContent);
+    ok('arrosage : le débit d’un arc vient du tableau, pas d’une division',
+       /1,64\s*m³\/h/.test(petite), 'lu : ' + petite.slice(0, 90));
+
+    ok('arrosage : toujours aucune erreur JS', errs.length === 0);
+    await cArr.close();
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     LE REGISTRE DE SES PRIX (17 août 2026).
+
+     Sa consigne : les prix des catalogues sont des prix CLIENT, ils ne
+     s'enregistrent pas. Les siens, négociés, se tapent ici et ne quittent pas
+     son navigateur. Ce que ces contrôles tiennent, et qui se perdrait sans eux :
+     tant que le registre est vide, AUCUN euro n'apparaît sur le plan ; dès
+     qu'un prix est saisi, il est repris — et les lignes sans prix restent
+     comptées comme manquantes plutôt que comblées.
+     ───────────────────────────────────────────────────────────────────────── */
+  {
+    const cPrix = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await cPrix.route(/googleapis|gstatic|cloudflare|jsdelivr/i, r => r.abort());
+    const page = await cPrix.newPage();
+    const errs = []; page.on('pageerror', e => errs.push('tarifs: ' + e.message));
+    await page.goto(`${B}/arrosage-tarifs.html`, { waitUntil:'domcontentloaded' });
+    await page.waitForTimeout(250);
+    await page.evaluate(() => localStorage.removeItem('atlas-arrosage-prix'));
+    await page.reload({ waitUntil:'domcontentloaded' });
+    await page.waitForTimeout(250);
+
+    ok('tarifs : aucune erreur JS au chargement', errs.length === 0);
+    if (errs.length) fails.push(...errs);
+
+    const produits = await page.$$eval('.p', e => e.length);
+    ok('tarifs : le registre liste les produits du catalogue', produits >= 10);
+    ok('tarifs : aucun prix pré-rempli',
+       (await page.$$eval('.p input', e => e.filter(x => x.value !== '').length)) === 0);
+
+    // **Aucun prix de CATALOGUE nulle part.** Sa consigne : les tarifs imprimés
+    // sont des prix client. Une première version de ce contrôle ne regardait
+    // que le plan — un prix recopié dans la fiche produit passait au vert. Il
+    // regarde donc les descriptifs eux-mêmes.
+    const details = await page.$$eval('.p .det', e => e.map(x => x.textContent).join(' | '));
+    ok('tarifs : aucun montant dans les descriptifs produits', !/\d\s*€/.test(details));
+
+    // Le plan, registre vide : pas un euro. C'est la promesse de toute la page.
+    const plan = await cPrix.newPage();
+    await plan.goto(`${B}/arrosage.html`, { waitUntil:'domcontentloaded' });
+    await plan.waitForTimeout(300);
+    ok('tarifs : registre vide, aucun euro sur le plan',
+       !/€/.test(await plan.$eval('#materiel', el => el.innerText)));
+
+    // Il tape un prix : le plan le reprend, et dit ce qui manque encore.
+    await page.$eval('.p input', el => { el.value = '3.10'; el.dispatchEvent(new Event('input')); });
+    await page.waitForTimeout(200);
+    ok('tarifs : le compte suit la saisie', /1 \/ /.test(await page.$eval('#compte', el => el.innerText)));
+
+    await plan.reload({ waitUntil:'domcontentloaded' });
+    await plan.waitForTimeout(300);
+    const total = await plan.$eval('#total', el => el.innerText);
+    ok('tarifs : le plan chiffre à SON prix', /€ HT/.test(total));
+    // **Le montant est vérifié au centime**, pas par un motif de texte. Une
+    // version antérieure se contentait de lire « … sans prix » : un total qui
+    // comblait ses trous à 10 € la ligne affichait toujours cette phrase et
+    // passait au vert. 12 buses à 3,10 € font 37,20 € — et rien d'autre.
+    ok('tarifs : le total vaut EXACTEMENT les lignes chiffrées', /37,20\s*€/.test(total),
+       'lu : ' + total.slice(0, 80));
+    ok('tarifs : et les lignes sans prix restent annoncées', /sans prix|INCOMPLET/.test(total));
+
+    // Une case vidée efface le prix — « gratuit » n'est pas « pas renseigné ».
+    await page.$eval('.p input', el => { el.value = ''; el.dispatchEvent(new Event('input')); });
+    await page.waitForTimeout(200);
+    ok('tarifs : vider une case efface le prix', /0 \/ /.test(await page.$eval('#compte', el => el.innerText)));
+
+    ok('tarifs : toujours aucune erreur JS', errs.length === 0);
+    await cPrix.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }

@@ -40,6 +40,7 @@ relues à chaque session) :
 16. [L'IA se sert-elle de mes réglages pour faire les devis ?](#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-)
 17. [Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien](#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien)
 18. [À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?](#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-)
+18 bis. [Le catalogue s'écrit maintenant — et non, il ne s'autoalimente pas](#18-bis-le-catalogue-sécrit-maintenant--et-non-il-ne-sautoalimente-pas)
 19. [Une équipe part cinq jours en déplacement : comment on gère ça ?](#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-)
 20. [Si un client ne me paie pas, la TVA part quand même ?](#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
 
@@ -1140,9 +1141,68 @@ vous le rappelle sur le chantier d'après.
 mémoire vide, et annonce donc fidèlement qu'elle est vide. Vos prix sont bien
 retenus — c'est cet écran-là qui regarde au mauvais endroit.
 
-**Ce qu'il reste à faire :** remettre la flèche, et rebrancher l'écran sur la
-bonne mémoire. Les deux sont inscrits dans `TODO.md` §0 octovicies bis, en
-attente de votre feu vert — rien n'a encore été touché.
+**Ce qui a été fait le 17 août :** la flèche est revenue, et la phrase est
+partie. Aucun prix ne l'a remplacée — voir « ce qui reste ouvert », plus bas.
+
+---
+
+## 18 bis. Le catalogue s'écrit maintenant — et non, il ne s'autoalimente pas
+
+*Vous avez reposé la même question le 17 août 2026, même écran, même capture :
+« À quoi sert cette page ?? On peut rien modifier rajouter ». Un écran qu'il faut
+expliquer deux fois n'est pas mal compris : il ne dit pas ce qu'il fait.*
+
+### Ce que vous pouvez faire, depuis le 17 août
+
+| Le geste | Ce qui se passe |
+|---|---|
+| **« + mon mot »** sur une carte | votre mot s'ajoute **en doré** à celle d'Atlas — « écime » sous « Élagage » |
+| **« + Nouvelle prestation »** | une entrée qui n'existe que chez vous |
+| **la croix** à côté d'un de vos mots | il s'en va (un mot d'Atlas, lui, ne se retire pas) |
+
+**Vos mots ne partent chez personne.** Ils sont à vous seul, rangés à part du
+vocabulaire commun. C'est toute la raison pour laquelle cet écran ne s'écrivait
+pas jusque-là : une ligne ajoutée depuis votre téléphone aurait changé le
+vocabulaire de tous les autres artisans.
+
+**Écrivez le mot COURT, comme vous le dites.** Atlas rapproche en cherchant
+votre mot dans la phrase dictée : « écime » attrape *« écime-moi le tilleul »*,
+« écimage » ne l'attrape pas. L'écran vous le rappelle dans le champ.
+
+### Est-ce que ça s'autoalimente ?
+
+**Votre question, le 17 août :** *« ça veut dire que le document s'autoalimente à
+chaque fois qu'on rajoute un nouveau mot dans un devis et qu'il comprend ce que
+c'est, il le rajoute automatiquement ? »*
+
+**Non — et jamais dans le vocabulaire d'Atlas.** Celui-là est commun à toutes les
+entreprises : personne ne peut l'enrichir depuis son téléphone, sinon les mots
+d'un artisan changeraient les devis d'un autre.
+
+**Dans VOS mots, en revanche, oui — c'est fait le 17 août.** Quand une dictée
+contient un mot qu'Atlas ne connaît pas *et* qu'il sait à quoi il se rapporte —
+votre condition, mot pour mot —, une carte apparaît en haut du catalogue :
+
+> **« écime »** — dans votre dictée : « faut m'écimer le tilleul du fond »
+> Le retenir comme un mot pour **Élagage** ?  **[Oui, retenir]  [Non]**
+
+**Il ne s'ajoute rien tout seul.** Vous répondez, et c'est tout. Si vous dites
+non, la proposition ne revient jamais — mais vous pouvez toujours écrire le mot
+à la main plus tard si vous changez d'avis.
+
+**Rien n'est proposé quand Atlas ne comprend pas de quoi parlait la dictée.**
+C'était votre condition : sans savoir à quoi rattacher le mot, le retenir
+n'apprendrait rien à personne.
+
+### Ce qui reste ouvert, et qui attend votre décision
+
+**Faut-il remettre un prix sur ces cartes ?** La mémoire des prix range ses
+montants **par nature de chantier** (un abattage, un démontage avec rétention,
+un diamètre de 70), pas par mot de catalogue. Afficher « la dernière fois :
+450 € » sous « Élagage » alors que la mémoire porte un abattage serait pire que
+l'ancienne phrase, qui au moins n'inventait rien. Deux réponses possibles : rien
+du tout — c'est l'état actuel —, ou la ligne **uniquement** quand la nature
+correspond exactement.
 
 ---
 

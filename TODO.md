@@ -46,9 +46,321 @@ Ce qui avait égaré : le code annonce lui-même qu'il manque une fiche client
 ce n'était pas sa demande. **Un manque réel du produit n'autorise pas à le
 combler dans le lot d'à côté.**
 
-**Ce qui reste ouvert, et qui n'a pas été fait :** il n'y a toujours pas de fiche
-client à proprement parler. Les coordonnées se corrigent depuis le chantier ; un
-client sans chantier ne se modifie nulle part. À rouvrir s'il le demande.
+**Et la fiche client, elle, est arrivée par une autre porte le même jour**
+(`ARCHITECTURE.md` §121) : elle MONTRE ce que l'application sait d'un client.
+Les deux écrans ne se confondent pas — celui-ci corrige les coordonnées d'un
+chantier. C'est la meilleure preuve que la fiche inventée au premier essai aurait
+été un troisième écran de trop.
+
+### 0 quaterquadragies. Le plan d'arrosage — **DEUX CHOIX TRANCHÉS, une maquette essayable**
+
+**Tranché le 17 août 2026 :**
+
+| Question | Sa réponse |
+|---|---|
+| Par où il entre son jardin | **B** — les zones qu'il mesure, Atlas pose le matériel |
+| Ce qui sort du plan | **la LISTE du matériel**, pas un devis |
+| La forme des maquettes | **essayables**, pas des images : *« je veux que tu code rien, d'abord des maquettes dynamiques en .html que je puisse essayer »* |
+
+**Ses mots sur la sortie, qui valent mieux qu'un résumé :** *« il faut simplement
+créer le plan et la liste du matos à acheter, ensuite moi j'envoie à mes
+fournisseurs, ils me font un devis, puis je repasse par le circuit normal de
+l'application pour rédiger le devis et l'envoyer à mes clients. »*
+
+**Conséquence tenue à la lettre : AUCUN PRIX dans cet outil.** Ni total, ni
+estimation. Atlas ne chiffre rien qu'un fournisseur n'ait chiffré. Le devis
+client emprunte le parcours qui existe déjà.
+
+**La page essayable : `appli/arrosage.html`**, publiée avec l'appli, donc
+ouvrable au téléphone. Elle est dans `appli/` et non dans `docs/maquettes/`
+parce que c'est le seul dossier PUBLIÉ du dépôt : les planches y sont sans
+JavaScript, et il demande à essayer. Gardée par `appli/tests/e2e.js`, jouée
+avant publication **et contre le site en ligne**.
+
+**⚠ RIEN N'ENTRE DANS LE CATALOGUE AVANT SES RÉPONSES — sa consigne du
+17 août 2026 :** *« avant d'enregistrer quoi que ce soit dans la base de
+données, tu me poses toutes les questions nécessaires dont tu as besoin pour
+bien comprendre […] et surtout tu me dis que tu as compris. Moi je connais le
+métier par cœur, donc ça va être moi ton chef d'orchestre. »*
+
+**L'objectif, dans ses mots :** *« construire l'outil de mes rêves, que les
+utilisateurs qui ne connaissent rien en arrosage, à partir d'un plan, tu puisses
+leur sortir exactement tout le matos dont ils vont avoir besoin : le nombre
+d'arroseurs, le nombre de tuyères, mais également le nombre de mètres linéaires
+de goutte-à-goutte. »* Ce n'est donc PAS un outil d'expert : la personne devant
+l'écran ne sait rien du métier, et tout ce qui demande un jugement doit être
+tranché par la règle qu'il aura donnée, pas par une case à cocher de plus.
+
+**LES QUESTIONS POSÉES LE 17 AOÛT, et l'état de ses réponses.** Ne pas les
+reposer si elles sont déjà répondues plus bas ; ne rien enregistrer sur celles
+qui ne le sont pas.
+
+| # | Question | Sa réponse |
+|---|---|---|
+| 1 | Le « recouvrement d'au moins 80 % » : écart entre deux arroseurs = 80 % de la portée ? | *en attente* |
+| 2 | Pose en carré ou en quinconce (triangle) ? | *en attente* |
+| 3 | Portée et débit donnés à quelle pression ? | *en attente* |
+| 4 | Corps + buse, ou corps seul ? Le débit annoncé est-il celui du cercle entier ? | *en attente* |
+| 5 | À partir de quelle largeur passe-t-on de tuyères à turbines ? | *en attente* |
+| 6 | Jusqu'à quel % du débit du robinet charge-t-on un secteur ? | *en attente* |
+| 7 | Ne jamais mélanger turbines/tuyères, ni arroseurs/goutte-à-goutte : confirmé ? | *en attente* |
+| 8 | Massif : combien de lignes de gaine ? Haie : une ou deux ? Potager : au rang ? | *en attente* |
+| 9 | Le diamètre de tuyau suit-il une règle (débit du secteur) ou est-ce au cas par cas ? | *en attente* |
+| 10 | Une grande nourrice ou deux petites au-delà d'une certaine taille ? | *en attente* |
+| 11 | Le croquis du client : rectangles simples, ou formes libres avec obstacles ? | *en attente* |
+| 12 | L'utilisateur qui ne connaît rien saura-t-il mesurer son débit ? Faut-il une valeur par défaut ? | *en attente* |
+| 13 | Le choix de marque vaut-il aussi pour le **goutte-à-goutte** et le **reste du matériel** (vannes, programmateur, nourrice), ou seulement pour les arroseurs et tuyères ? | *en attente* |
+| 14 | Quelles marques mettre dans le bandeau en plus de **Rain Bird** et **Toro** ? | *en attente* |
+| 15 | Le choix de buse : je prends **la plus grande qui tienne dans le petit côté** (donc le moins d'arroseurs). C'est bien votre règle ? | *en attente* |
+| 16 | La **8-VAN** annonce 0,16 m³/h à 90°, soit plus que la 10-VAN (0,14) qui porte pourtant plus loin. Coquille du catalogue, ou valeur juste ? | *en attente* |
+| 17 | Les buses sont données **à 2 bar**. Que faire quand l'installation tourne à 3 : autre tableau, ou correction ? | *en attente* |
+| 18 | Les **corps escamotables** sur lesquels ces buses se vissent : quelles références ? | *en attente* |
+
+**LE CHOIX DE MARQUE — fait le 17 août.** Bandeau déroulant, **Rain Bird par
+défaut**, Toro ensuite ; `CATALOGUE.marques` s'allonge d'une ligne. **Aucune
+valeur générique n'est attribuée à une marque** : l'écran dit « aucun modèle
+Rain Bird enregistré » et le répète sur chaque zone. Une zone retient un TYPE
+(turbine/tuyère) et non une référence, pour qu'une bascule de marque ne vide pas
+ses zones.
+
+**⚠ LE CATALOGUE EST LA PROCHAINE ÉTAPE, ET IL EST À LUI.** Le 17 août :
+*« plusieurs choses sont fausses »*, puis : *« je vais t'envoyer des photos avec
+certains arroseurs, leur portée, et ça tu vas l'intégrer dans une base de
+données pour cet outil […] et on va également faire ça pour tout le matériel »*.
+
+`appli/arrosage-catalogue.js` est cette base. **Chaque entrée porte une
+`source`** : `'patron'` (relevée de ses photos, de ses devis fournisseurs) ou
+`'provisoire'` (valeur générique, mise là pour que l'outil tourne). L'écran
+affiche le compte de ce qui reste provisoire — onze au 17 août. **Ne jamais
+faire passer une valeur provisoire pour acquise** : une portée fausse fait
+acheter le mauvais nombre d'arroseurs, et c'est lui qui revient poser les
+manquants.
+
+**Ce qu'il faut relever de chaque photo d'arroseur**, et l'absence d'un seul de
+ces éléments rend l'entrée inutilisable : marque et référence, portée EN
+MÈTRES **et à quelle pression**, débit à cette même pression, angle, et la
+pluviométrie si la fiche la donne. Portée et pression vont ensemble — une
+portée relevée à 3 bars ne vaut rien sur une installation à 2.
+
+**PAS DE PLAFOND À SIX VOIES — sa réponse du 17 août : « oui tu peux prévoir
+au-delà de 6 ».** `CATALOGUE.nourrices` est un dictionnaire ouvert :
+`nourrices[12]` se pose comme `nourrices[1]`, sans toucher au code. L'écran dit
+aussi **quelles fiches sont déjà enregistrées**, pour qu'il ne refasse pas une
+fiche donnée la veille.
+
+**ET UNE QUESTION QUI RESTE, à ne pas trancher à sa place :** au-delà d'une
+certaine taille, pose-t-il **une** nourrice de douze voies ou **deux** de six ?
+Les deux se font. Doubler la fiche de six pour en fabriquer une de douze serait
+exactement l'invention que ce fichier interdit — l'écran pose la question et
+attend.
+
+**LES NOURRICES — sa deuxième demande, et ce n'est pas du matériel mais un
+ASSEMBLAGE.** Ses mots : *« pour réaliser une nourrice de une voie, on utilise
+ça, ça, ça. Toi ça tu vas l'enregistrer, et comme ça quand par tes calculs tu
+verras qu'on a besoin d'une voie, tu reprendras toute cette fiche. Ensuite je
+vais faire la même chose pour deux, trois, quatre, cinq et six voies. »*
+`CATALOGUE.nourrices` les attend, **vide et volontairement vide** : tant qu'une
+fiche manque, l'écran l'annonce au lieu de composer une nourrice de son cru. Une
+nourrice inventée, c'est un chantier arrêté à la pose faute d'un té.
+
+**LE RECOUVREMENT — sa règle, et ma lecture est à confirmer d'un mot.** Il a dit
+*« il faut un recouvrement d'au moins quatre-vingt pour cent »*. Lu comme :
+**écart entre deux arroseurs = 80 % de la portée** (à 100 %, c'est la pose
+tête-bêche). C'est réglable à l'écran, et **l'écart en mètres y est écrit** —
+« portée 9 m → un tous les 7,20 m » — pour qu'il corrige d'un coup d'œil plutôt
+que de nous croire sur parole.
+
+**Ce que le passage à 80 % a montré tout de suite** : le jardin d'exemple passe
+de 8 à **9 secteurs**, et la pelouse avant demande 24 tuyères. C'est au-dessus
+des six voies dont il prévoit les fiches — signe que les valeurs génériques
+d'arroseurs sont trop faibles, et que ses vraies références changeront ce
+nombre. À revoir dès que son catalogue sera renseigné.
+
+**Le croquis photographié — sa cible, et elle n'est pas pour tout de suite.**
+*« Le client te fait un petit croquis sur un bout de papier d'un carré de dix
+par dix, il te le prend en photo et il te l'envoie. »* L'application sait déjà
+recevoir des photos et interroger un modèle (`src/server/ai/`) ; il n'y a rien
+à inventer côté plomberie. Mais **rien ne sera lu d'un croquis avant que le
+catalogue soit juste** : deviner des cotes sur une photo avec un catalogue faux
+donnerait un plan faux avec deux causes possibles au lieu d'une.
+
+**Ce qui reste à trancher, et il l'a proposé lui-même :** il a des devis
+fournisseurs à joindre. Ils serviront au **catalogue de matériel** (désignations,
+références, conditionnements), pas aux prix. Rien n'est à coder avant de les
+avoir vus.
+
+**Les prix : la voie trouvée, et elle évite tout scraping.** Chausson laisse
+télécharger le **tarif négocié du client en Excel ou CSV** depuis son compte, et
+Atlas sait déjà importer un tarif Excel/CSV (`src/app/reglages/ImportTarifs.tsx`
++ `src/lib/import-tarifs.ts`). Ses prix à lui, pas des prix publics. Les deux
+sites fournisseurs sont par ailleurs **refusés par le mandataire réseau** ici.
+
+### 0 quaterquadragies bis. Le plan d'arrosage — le raisonnement des trois planches
+
+**Sa demande du 17 août 2026 :** *« j'ai besoin qu'on crée un outil pour les
+paysagistes pour réaliser des plans d'arrosage automatique. »*
+
+Terrain neuf, donc trois planches et **aucune ligne de `src/`** (`CLAUDE.md`
+§3 bis) : `docs/maquettes/69-le-plan-darrosage.html`,
+`70-le-debit-ne-se-partage-pas.html`, `71-ce-qui-sort-du-plan.html`.
+
+**Deux questions attendent sa réponse, et aucune n'est du rangement :**
+
+| Ce qu'il choisit | Les trois possibles |
+|---|---|
+| **Par où il entre son jardin** | **A** la feuille (il saisit tout, Atlas additionne) · **B** les zones (il mesure, Atlas pose le matériel, découpe et calcule les durées) · **C** le plan dessiné |
+| **Par quelle sortie on commence** | **A** le devis · **B** la carte de programmation du coffret · **C** le plan remis au client |
+
+**Ce que je recommande, écrit sur les planches :** **B, puis A** — les zones
+d'abord parce que c'est la seule entrée qui rend du temps de bureau, et le devis
+d'abord parce qu'il entre dans le parcours qui existe déjà (devis → envoi →
+acceptation → facture) sans aucune plomberie nouvelle. Le plan dessiné se pose
+PAR-DESSUS le calcul, jamais à sa place.
+
+**CE QUI N'EST PAS À CHOISIR — ce sont des conséquences du métier :**
+
+- **Le débit se mesure au seau**, il ne se suppose pas. Un plan bâti sur un débit
+  supposé s'écroule à la mise en eau, et c'est le paysagiste qui revient
+  gratuitement.
+- **Une seule pluviométrie par secteur.** La vanne ouvre son secteur entier pour
+  la même durée : turbines (11 mm/h) et tuyères (38 mm/h) ensemble, c'est trois
+  fois trop d'eau d'un côté, quoi qu'on règle. **Un seul rythme par secteur**
+  pour la même raison.
+- **Aucun prix inventé** (§4 du dépôt) : la nomenclature sort avec ses
+  quantités, le prix vient de « Mes prix », et ce qui n'y est pas part vide et
+  signalé.
+- **Rien ne part tout seul.** Le mot « automatique » désigne l'arrosage, pas
+  l'expédition (`docs/A-FAIRE.md` §5, tranché le 3 août).
+
+**Ce qui reste HORS du calcul, et qu'il faut lui dire plutôt que laisser
+croire :** les pertes de charge et le dimensionnement des tuyaux. Sans effet sur
+un jardin de pavillon en PE 32 ; déterminants sur une longue ligne.
+
+**Ce que ça touche quand ce sera codé :** le devis existe déjà (lignes,
+quantités, unités, TVA, envoi, acceptation) — la nomenclature s'y verse, elle
+n'a pas de parcours à elle. L'entretien de l'arrosage (mise en route au
+printemps, hivernage à l'automne) rejoint la **fiche d'entretien** : deux lignes
+de plus dans le modèle, pas un quatrième parcours.
+
+**Ne pas retoucher les planches à la main** : elles sont engendrées d'une seule
+source (`scripts/engendrer-maquette-arrosage.mjs`) et tous leurs nombres sont
+calculés. Contrôle : `scripts/verifier-maquette-arrosage.mjs`, dans
+`npm run verifier:maquette`.
+
+### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
+
+*Constaté le 16 août 2026 en jouant la batterie complète d'un autre lot.*
+
+```
+❌ « Plus tard » fait taire le rappel, et la date part en base
+   rien n'est écrit en base : le geste n'a pas porté
+```
+
+**Elle passe au vert jouée seule**, immédiatement après. Ce n'est donc pas le
+produit : c'est un geste dont on lit la trace en base **avant que l'action
+serveur ait répondu** — sous quatre-vingt-onze suites, la réponse arrive plus
+tard qu'à vide.
+
+**C'est le même piège que celui payé le même jour sur `test-fiche-client-e2e`** :
+attendre l'écran, ou un délai fixe, c'est mesurer ce qu'on vient de taper.
+La parade y a été de **relire la base en boucle jusqu'à ce qu'elle ait reçu**,
+plutôt que d'attendre un nombre de millisecondes.
+
+**Ce lot appartient à la session qui a posé le rappel des impayés** (`228572a`).
+Écrit ici pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue
+au hasard.
+
+
+### 0 unquadragies. ~~Montrer ce que l'application sait déjà d'un client~~ — **CODÉE le 16 août 2026 (fiche B)**
+
+### 0 quattuorquadragies. ~~Le « petit moins » du prix accordé~~ — **CODÉ le 17 août 2026 (proposition B)**
+
+*`docs/maquettes/68-retirer-le-prix-accorde.html`, écrite le 17 août 2026 —
+24 contrôles, sur SES chiffres (1 850,00 € HT, 5 %). Rien n'est codé pour le
+geste : `CLAUDE.md` §3 bis.*
+
+**Sa demande, le 17 août 2026 :** *« Tout comme on ajoute une ligne avec un petit
+plus, il faudrait qu'on ait un petit moins pour supprimer la ligne de la
+réduction. »*
+
+| | Ce que ça fait | Ce que ça coûte |
+|---|---|---|
+| **A — glisser la ligne** | Le geste unique de l'application depuis le 10 août : la ligne découvre « Retirer », le tiroir « Annuler » dessous | Rien à inventer. Mais c'est un **total**, pas une ligne du tableau : rien d'autre ne glisse dans ce bloc, et un geste qu'on ne soupçonne pas n'existe pas — c'est exactement ce qu'il vient de vivre |
+| **B — le petit « − » en face** | Ce qu'il a demandé, mot pour mot : un rond de 26 px devant le libellé, en or | Un bouton dans le bloc des totaux, le seul endroit du devis qui n'en portait aucun. Et le « + » ajoute une ligne AU TABLEAU quand ce « − » retire un TOTAL : lisible, mais pas symétrique |
+| **C — la ligne du bas bascule** | « + Prix accordé au client » devient « − Retirer le prix accordé » dès qu'il y en a une. Un seul endroit à connaître | Presque rien : la ligne existe déjà, elle change de mot. Mais le geste est sous le total TTC, pas en face de la remise |
+
+**Il a choisi B** le 17 août, contre ma préférence pour C. C'est codé : un rond
+de 26 px devant le libellé, le même tiroir « Annuler » que les lignes, et le
+prix plein affiché dès l'appui. `ARCHITECTURE.md` §120.
+
+*Ce qui suit reste pour mémoire du raisonnement.*
+
+**Ce qui est DÉJÀ réparé, et ne l'attend pas** (`ARCHITECTURE.md` §120) : écrire
+0 % retire la remise pour de bon, et la dictée aussi.
+
+### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
+
+
+**Sa question du 16 août 2026**, photo d'un « graphe de connaissances » à
+l'appui : *« tu peux m'expliquer et me dire si ça peut me servir pour mon
+appli ? »*
+
+**La réponse a été NON, deux fois, et il faut la garder** pour ne pas la
+reprendre : comme mémoire de travail, le dépôt la tient déjà (`CLAUDE.md`,
+`HANDOVER.md`…), et un graphe à côté serait une seconde vérité ; comme fonction,
+ses données sont déjà reliées dans une base SQL, qui répond mieux qu'un graphe.
+
+**Ce qu'il restait à en prendre, et qu'il a demandé de dessiner :** l'application
+SAIT qu'un client est venu quatre fois, qu'il a payé 2 460 € et en doit 740,
+qu'on lui fait toujours de l'élagage — **et elle ne le montre nulle part.**
+
+Planche : `docs/maquettes/66-ce-que-je-sais-du-client.html`, éprouvée par
+`scripts/verifier-maquette-fiche-client.mjs`. **Rien n'est codé** (`CLAUDE.md`
+§3 bis).
+
+| | Ce que ça montre | Ce que ça coûte |
+|---|---|---|
+| **A** | un encart sous le nom du client, dans la fiche du chantier | le moins de tout : aucun écran neuf. Mais on ne peut pas chercher un client |
+| **B** | une vraie fiche client, atteinte en touchant son nom | un écran de plus, sans toucher à la barre du bas |
+| **C** | un onglet « Clients » : la liste + la fiche | **un cinquième onglet**, et deux écrans au lieu d'un. Le seul qui réponde à « qui me doit de l'argent ? » |
+
+**IL N'EXISTE AUCUN ÉCRAN CLIENT AUJOURD'HUI** — vérifié : quatre onglets, et le
+nom d'un client ne mène nulle part. `listerClients` existe dans le dépôt et
+n'est appelé par aucun écran.
+
+**Tout est calculable, rien n'est à inventer** : `chantiers.client_id`,
+`factures` + `paiements_facture`, `lignes_prix` pour les prestations qui
+reviennent, `lecons_prix` pour les prix pratiqués.
+
+**Livré** : `src/lib/fiche-client.ts`, `src/server/repositories/fiche-client.ts`,
+`src/app/clients/[id]/page.tsx`, atteinte depuis le tiroir de la fiche du
+chantier. Les deux chiffres sont montrés — facturé, et reste dû. Détail :
+`ARCHITECTURE.md` §121.
+
+---
+
+### 0 duoquadragies. ~~Un client n'était jamais réutilisé~~ — **TRANCHÉ ET CODÉ le 17 août 2026**
+
+`creerClient` insérait **toujours** : deux chantiers pour « M. Martins »
+faisaient deux fiches, et la fiche client annonçait « 1 chantier » à vie.
+
+**Le patron a écarté le chemin « proposer »** — *« non justement, il ne faut
+pas »* — et demandé le rapprochement **automatique** : *« si je crée un
+nouveau chantier, mais que c'est monsieur Martins et qu'on a déjà une fiche
+client monsieur Martins, [il faut que] le devis, la facture s'ajoute à la fiche
+client de monsieur Martins qui est déjà créé. »*
+
+Le risque qu'il portait — fusionner deux homonymes — est borné par une règle :
+**une coordonnée qui contredit interdit le rapprochement**. Deux « Martins »
+aux téléphones différents restent deux fiches. `src/lib/rapprochement-client.ts`,
+`ARCHITECTURE.md` §122.
+
+**CE QUI RESTE OUVERT, ET QU'IL FAUDRA LUI POSER UN JOUR :** deux homonymes que
+**rien** ne distingue (aucun téléphone, aucun e-mail des deux côtés) sont
+rapprochés, et **rien ne permet de les reséparer**. Il n'existe aucun geste
+« ce chantier n'est pas ce client-là ». À dessiner le jour où le cas se
+présente — pas avant : une commande de démixage jamais utilisée coûterait plus
+cher à tenir qu'à attendre.
 
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 
@@ -202,10 +514,17 @@ réellement automatique demanderait un prestataire sous contrat.
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :
 
-1. le **modèle** et son écran de Réglages (rien d'autre n'a de sens sans lui) ;
-2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
-3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
-   porte déjà devis et factures ;
+1. ~~le **modèle** en base~~ — **FAIT le 16 août** : table `prestations_entretien`
+   (migration `0051`), dépôt `src/server/repositories/prestations-entretien.ts`,
+   règles pures dans `src/lib/prestations-entretien.ts`, suite
+   `scripts/test-prestations-entretien.ts` ;
+2. ~~son **écran de Réglages**~~ — **FAIT le 16 août** : Réglages → Fiche
+   d'entretien (`src/app/reglages/fiche-entretien/`), retrait réversible,
+   suite `scripts/test-fiche-entretien-e2e.ts` ;
+3. le **passage** : la fiche pré-remplie, cochée, le temps à la molette
+   (celle du téléphone — « la A ») ;
+4. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
+   porte déjà devis et factures, plus le « J'ai bien reçu » horodaté ;
 4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
 
 Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
@@ -279,6 +598,37 @@ d'un geste de plus à la signature.
 passages récurrents, un rapport par passage. C'est un troisième parcours à côté
 du devis → facture, pas une case à ajouter.
 
+### 0 quadragies ter. ~~« Le nouveau chantier fait le plus gros et en gras »~~ — **CODÉ le 16 août 2026 (A · les capitales, gros, très gras)**
+
+**Sa demande du 16 août 2026**, capture de l'écran Chantiers à l'appui : *« Le
+nouveau chantier fait le plus gros et en gras. »*
+
+**Rien n'est codé** — sa règle du 11 août (`CLAUDE.md` §3 bis). La planche est
+`docs/maquettes/67-le-nouveau-chantier-plus-gros.html` : trois formes (les
+capitales grossies, la serif du titre, toute la largeur), trois tailles, trois
+graisses, et **le témoin d'aujourd'hui figé à côté** — 9 px / 500 / rond de
+38 px, les valeurs de `globals.css`.
+
+**Son choix, la planche en main : « les capitales, gros et très gras ».** Porté
+le jour même — 13 px, graisse 800, interlettrage 0,22 em, rond de 42 px, signe
+inchangé à 20 (`src/app/globals.css`). `docs/maquettes/24-le-bouton-retenu.html`
+porte désormais un bandeau qui dit que ses mesures de libellé sont périmées et
+renvoie à la 67 : c'est lui qui avait resserré cet endroit le 11 août, et laisser
+les deux se contredire aurait fait croire la mauvaise à la session suivante.
+
+**Ce qui n'a PAS bougé, et qu'il ne faut pas « harmoniser » par erreur :** l'onde
+à 1,42 fois le rond, les trois tours freinés en 560 ms, les onze grains et leur
+portée, l'écart de 13 px entre le mot et le rond, la demi-seconde avant la
+feuille.
+
+**Ce qui est déjà su, et qu'il ne faut pas redécouvrir :** le cran « le plus
+gros » (17 px en capitales, 26 px en serif) est **le plus gros qui tienne sans
+couper le mot** sur un écran de 360 px — 284 px pour 308 disponibles. Au-delà,
+« Nouveau chantier » finit en « … ».
+`scripts/verifier-maquette-nouveau-chantier.mjs` le tient sur la planche, et
+`scripts/test-bouton-nouveau-chantier-e2e.ts` le tient **dans l'application** :
+il mesure le mot à 360 px et refuse aussi bien un retour au libellé minuscule
+(≥ 12 px, ≥ 700) qu'une coupure en « … ».
 
 ### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
 
@@ -296,40 +646,22 @@ l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
 « Écrite : par le veilleur, au quart d'heure » — la première publication
 périodique jamais observée chez lui.
 
-### 0 quadragies quater. POURQUOI sa construction échoue — la vraie question, ouverte
+### 0 quadragies quater. ~~POURQUOI sa construction échoue~~ — **TROUVÉ le 16 août 2026**
 
-**Sa plainte du 16 août 2026 au soir :** *« l'appli, elle est vraiment très
-lente, mais vraiment, vraiment très lente. Est-ce qu'il y a un moyen de la
-rendre juste utilisable ? »*
+`demarrer.sh` tuait `next-server`, `next dev` et `next start` avant de relancer
+le veilleur, **mais pas `next build`**. La construction lancée par le premier
+veilleur survivait donc, orpheline, en gardant le verrou du système ; celle du
+second tombait sur « already running », rendait 1, et le banc repliait en mode
+développement. À chaque allumage qui récupère du code — d'où trois redémarrages
+sans effet. `build` est entré dans le motif
+(`scripts/test-verrou-construction.ts`).
 
-**Ce qu'on sait, et c'est une déduction, pas une hypothèse.** La fiche lit le
-témoin `.next-batie/atlas-version-batie.txt`, écrit **dès que `next build` rend
-0**, avant même la bascule. Ce témoin n'existe pas chez lui. Donc sa
-construction **échoue**, à chaque démarrage — et le banc retombe pour toujours
-sur le mode développement, où chaque écran se compile à l'ouverture.
-
-La même construction **réussit ici en deux minutes**, sur son commit exact
-(`67b4d8e`). C'est donc son environnement, pas le code.
-
-**Les deux suspects, et pourquoi on ne les a pas départagés :** le disque et la
-mémoire. Un `next build` pendant qu'un serveur de développement sert déjà, avec
-PostgreSQL et Redis à côté, sur une machine à deux cœurs. Ni l'un ni l'autre
-n'était publié — c'est corrigé (voir `CHANGELOG.md` du 16 août), mais le relevé
-n'arrivera **qu'au prochain démarrage de son espace**.
-
-**La marche à suivre, dès que sa fiche republie :**
-
-1. lire « Code SERVI » — si elle dit « la construction a ÉCHOUÉ », le bloc
-   « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là ;
-2. disque saturé → nettoyer avant de bâtir, en épargnant `.next` que le serveur
-   de développement utilise pour servir pendant ce temps ;
-3. mémoire épuisée → plafonner le tas de la construction, ou ne pas bâtir
-   pendant qu'un serveur sert. **Ne pas choisir la valeur au hasard** : c'est
-   ainsi qu'on livre une réparation imaginée (`AGENTS.md`).
-
-**Ne PAS écrire que la lenteur est corrigée.** Elle ne l'est pas. Seul
-l'aveuglement l'est, et c'est la troisième fois en deux jours que la distinction
-compte.
+**CONFIRMÉ CHEZ LUI le 16 août 2026 au soir**, et c'est ce qui clôt le sujet :
+correctif poussé, un redémarrage, et sa réponse — *« elle est rapide »*. La
+construction aboutit donc bien sur sa machine une fois qu'on cesse de lui en
+orpheliner une. **La piste « ne pas bâtir pendant qu'on sert » est écartée : ce
+n'était pas une question de ressources.** Ne pas la rouvrir sans une mesure qui
+la justifie.
 
 ### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
 
@@ -1101,40 +1433,34 @@ Le contrôle de la planche existe et **a été vu rouge trois fois** avant d'êt
 livré (`scripts/verifier-maquette-nombre-de-jours.mjs`) : or retiré, bascule
 morte, nom trop long — chacun nomme le bon coupable.
 
-### 0 octovicies bis. L'écran du catalogue : sa flèche, et sa mémoire morte
+### 0 octovicies bis. ~~L'écran du catalogue~~ — CODÉ le 17 août 2026
 
-*Les deux défauts sont sortis d'une capture du patron, le 14 août 2026 — pas
-d'une suite verte. Ils sont expliqués en langage courant dans
-`docs/QUESTIONS.md` §18. **En attente de son feu vert** : rien n'a été touché.*
+*Deux captures, trois jours d'écart, la même question : « À quoi sert cette page
+?? On peut rien modifier rajouter ». Il a choisi **« Réparer + mes mots »**, puis
+l'arrangement **B** de `docs/maquettes/72-mes-mots-au-catalogue.html`. Livré le
+jour même : `ARCHITECTURE.md` §122, migration 0052.*
 
-**1. Aucune flèche de retour.** `src/app/catalogue/page.tsx` appelle
-`ScreenHeader` sans lui passer `backHref`, alors que le composant sait
-l'afficher. On y arrive depuis *Tarifs & catalogue* : `backHref="/reglages/tarifs"`
-suffit. Une ligne.
+**Ce qui est fait :** ses mots s'accrochent aux entrées d'Atlas (`mots_catalogue`,
+isolée par RLS — le catalogue partagé n'est pas touché) ; il crée ses propres
+entrées ; il retire ses mots ; la flèche de retour existe ; la phrase morte
+« Aucun prix encore constaté » est retirée ; « Synonymes »/« Variantes »
+deviennent « Aussi appelé » ; l'écran est passé à la charte.
 
-**2. « Aucun prix encore constaté » est un mensonge de branchement, et il ne
-s'éteindra jamais.** L'écran lit `historique_prix` — l'ancienne mémoire, celle
-que l'application **n'écrit nulle part** (`enregistrerPrixHistorique` n'est
-appelée que par `scripts/test-ia-05-catalogue.ts` et `test-ia-06-chiffrage.ts`).
-La mémoire vivante est `lecons_prix` depuis la migration 0023 : écrite par
-`retenirLecon` depuis `src/app/chantiers/[id]/devis-complet/actions.ts`, relue
-par `leconsComparables`.
+**CE QUI RESTE, et c'est une DÉCISION, pas du code :**
 
-C'est **exactement** le piège que `docs/QUESTIONS.md` §17 dit avoir payé une
-fois — il a survécu ici, sur un écran que personne ne regardait.
-
-**Ce que ça veut dire pour le correctif :** ne pas se contenter de rebrancher le
-`SELECT`. Le rapprochement de `lecons_prix` se fait par **signature de métier**
-(`src/lib/lecons-prix.ts` : `abattage|demontage_retention|d70`), pas par
-`prestationId` du catalogue. Il faut donc décider ce que la carte « Élagage »
-montre : le dernier prix de **toutes** les leçons dont la nature correspond, ou
-rien. Un rapprochement approximatif afficherait sous « Élagage » un prix
-d'abattage — pire que la phrase actuelle, qui au moins n'invente rien.
-
-**Et tant qu'on y est :** cet écran porte encore l'ancienne échelle (`p-4`,
-`text-ink/40`, `rounded-md`) et n'a jamais été passé à la charte. Le retoucher
-sans le redessiner laisserait un écran de 2026-07 au milieu des autres —
-`CLAUDE.md` §3 bis : une maquette d'abord.
+1. **Faut-il remettre un prix sur ces cartes ?** La question est posée au bas de
+   la planche 72 et n'a pas de réponse. `lecons_prix` range par nature de
+   chantier (`abattage|demontage_retention|d70`), pas par mot de catalogue : un
+   rapprochement approximatif afficherait un prix d'abattage sous « Élagage » —
+   pire que la phrase retirée, qui au moins n'inventait rien. Deux réponses
+   possibles : rien du tout (l'état actuel), ou la ligne **uniquement** quand la
+   nature correspond exactement.
+2. ~~**Le catalogue doit-il s'auto-alimenter ?**~~ — **FAIT le 17 août.** Atlas
+   propose de retenir un mot entendu **quand il sait à quoi il se rapporte** —
+   sa condition, mot pour mot. Deux boutons sur l'écran du catalogue ; le « non »
+   est retenu pour toujours (migration 0053), et écrire le mot à la main le
+   relève. Le vocabulaire commun, lui, n'est jamais touché (`ARCHITECTURE.md`
+   §123).
 
 ### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au devis
 

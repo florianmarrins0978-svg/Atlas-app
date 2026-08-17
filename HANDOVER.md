@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-16 · `main`
+**Point de reprise :** 2026-08-17 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -64,7 +64,17 @@ Sur la fiche, deux lignes ensemble tranchent la question sans hypothèse :
 | Ce que la fiche montre | Ce que ça veut dire |
 |---|---|
 | `Serveur : répond` **+** `Code SERVI : … construction en cours` | **rien à réparer, c'est passager** — le banc compile chaque écran à l'ouverture (30-100 s) et le mandataire de GitHub renonce à 60 s. Recharger une minute plus tard suffit |
-| `Code SERVI : … la construction a ÉCHOUÉ` | **ça ne se répare pas tout seul** — le banc restera lent tant que `next build` ne passe pas. Le bloc « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là : c'est là qu'il faut regarder. `TODO.md` 0 quadragies quater |
+| `Code SERVI : … la construction a ÉCHOUÉ` | **ça ne se répare pas tout seul** — le banc restera lent tant que `next build` ne passe pas. Le bloc « Au moment de l'échec » porte l'heure, le disque, la mémoire **et ce que la construction a dit** : lire cette dernière ligne EN PREMIER, c'est elle qui tranche |
+
+**« Another next build process is already running » : ne pas effacer le
+verrou.** Le message parle d'une construction « qui n'est pas sortie
+proprement », ce qui fait croire à un fichier périmé. **Éprouvé le 16 août
+2026 : faux.** Un `lock` posé à la main n'empêche aucune construction — le
+verrou est pris auprès du système et relâché par le noyau à la mort du
+processus. Quand ce message apparaît, **une construction tourne pour de bon**,
+et l'effacer en lancerait une seconde à côté. La vraie cause était ailleurs :
+`demarrer.sh` n'incluait pas `build` dans son `pkill`, et orphelinait une
+construction à chaque démarrage (`CHANGELOG.md` du 16 août).
 | `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
 | `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
 
@@ -792,6 +802,107 @@ existait. **Devant une demande qui touche à un écran, chercher d'abord si
 l'écran existe.** Ce qui avait égaré : le code annonce lui-même qu'il manque une
 fiche client — c'est vrai, et ce n'était pas sa demande.
 
+**LE CATALOGUE EST ÉCRIVABLE (17 août) — CODÉ, arrangement B.** Il a posé deux
+fois la même question (14 puis 17 août) : *« À quoi sert cette page ?? On peut
+rien modifier rajouter »*. Ses mots s'accrochent désormais aux entrées d'Atlas,
+en or. Planche `docs/maquettes/72-mes-mots-au-catalogue.html`, récit complet
+dans `ARCHITECTURE.md` §122, migration 0052.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **Le catalogue reste PARTAGÉ et intouchable** (migration 0007, aucune RLS).
+   Ses mots vivent dans `mots_catalogue`, isolée par RLS, et se superposent au
+   commun à la lecture. Rien ne retire jamais un mot d'Atlas : ce serait le
+   retirer chez tous les autres artisans.
+2. **Un mot visible DOIT être un mot reconnu.** Les quatre chemins de recherche
+   passent par `rechercherCartes` — les deux outils de l'agent, celui des
+   synonymes, le service de chiffrage. En débrancher un rendrait des mots
+   affichés et muets : il croirait avoir appris quelque chose à Atlas, et rien
+   ne le détromperait. La suite base rougit exactement là.
+3. **Le rapprochement se fait par INCLUSION**, comme pour le commun : « écime »
+   attrape « écime-moi le tilleul », « écimage » ne l'attrape pas. Le champ de
+   saisie le dit. Ne pas inventer une seconde règle pour ses mots — deux règles
+   divergent toujours.
+4. **Ne pas remettre de prix sur cet écran sans trancher le rapprochement.**
+   `lecons_prix` range par nature de chantier, pas par mot de catalogue : un
+   prix d'abattage sous « Élagage » serait pire que la phrase retirée.
+
+**L'AUTO-ALIMENTATION EXISTE DEPUIS LE MÊME JOUR** (`ARCHITECTURE.md` §123,
+migration 0053) : Atlas **propose** de retenir un mot entendu quand il sait à
+quoi il se rapporte — la ligne retenue sur le devis doit être reconnue par le
+catalogue, faute de quoi rien n'est proposé. Deux choses à ne pas défaire :
+
+- **le « non » est définitif** (colonne `refuse`) : une proposition qui revient
+  après un refus n'est plus une proposition ;
+- **mais un mot écarté puis écrit à la main se relève** (`ajouterMot`). Sans ce
+  relèvement, l'index unique le refuse en SILENCE : il tape le mot, rien
+  n'apparaît, et rien ne dit que c'est son propre « non » qui le bloque.
+
+**Le vocabulaire d'Atlas, lui, ne s'alimente jamais tout seul** — il est commun
+à toutes les entreprises.
+
+**LA FICHE DU CLIENT (16 août).** Elle s'ouvre depuis le tiroir d'un chantier et
+montre ce que l'application savait déjà : combien de chantiers, combien facturé,
+combien reste dû, et ce qu'on lui fait d'habitude.
+
+**UN CLIENT EST DÉSORMAIS RETROUVÉ, PLUS RECRÉÉ (17 août).** La fiche était
+vide par construction — `creerClient` insérait toujours, et deux chantiers pour
+« M. Martins » faisaient deux fiches. Il l'a tranché le lendemain, en écartant
+qu'on lui **propose** des correspondances : le rapprochement est **automatique**
+(`trouverOuCreerClient`, règle dans `src/lib/rapprochement-client.ts`).
+
+**Ce qu'il faut savoir avant d'y toucher :** une coordonnée qui **contredit**
+interdit le rapprochement — deux « Martins » aux téléphones différents restent
+deux fiches. Rien n'est jamais écrasé : la saisie complète les cases vides, pas
+les autres. Un client effacé (RGPD) n'est jamais réutilisé. Et **une fiche est
+maintenant partagée** : corriger l'adresse du client depuis un devis la corrige
+sur les autres chantiers du même client. `ARCHITECTURE.md` §122.
+
+Trois pièges de ce lot : « 0 € » ne doit jamais s'afficher pour un client non
+facturé (« — » et une phrase) ; les prestations se comptent en chantiers et non
+en lignes ; et un contrôle qui cherche « 0,00 € » dans une page le trouve dans
+« 450,00 € ». `ARCHITECTURE.md` §121.
+
+**LE PRIX ACCORDÉ NE VIT PAS SUR UNE LIGNE (17 août).** Il vit sur l'EN-TÊTE du
+devis (`reduction_pourcent`), et c'est le prix de l'arrangement B qu'il a choisi
+le 16. Conséquence pratique : **tout ce qui recopie « les lignes » et rien
+d'autre l'oublie en silence.** C'est ce qui a produit ses deux défauts du
+17 août — la dictée qui retirait la remise puis la voyait revenir, et le « 0 % »
+qui laissait une ligne or sur un devis dont le PDF n'imprimait rien. Avant de
+toucher à quoi que ce soit qui relise le devis après une écriture, se demander
+si l'en-tête repart avec.
+
+**⚠ UN CONTRÔLE QUI RECHARGE N'ÉPROUVE PAS L'ÉCRAN, IL ÉPROUVE LA BASE (17 août).**
+`test-reduction-devis-e2e` était vert sur un retrait de remise… en rechargeant la
+page juste avant de vérifier. Le défaut vivait précisément dans l'état de
+l'écran. Le nouveau cas mesure **sans rechargement**, et il est rouge sans le
+correctif.
+
+**ET IL FAUT ÉPROUVER SON GESTE, PAS LE NÔTRE.** La suite vidait la case ; lui
+écrit « 0 » par-dessus — viser un champ de 36 px sur un téléphone, sélectionner
+un chiffre et le supprimer n'est pas ce qu'on fait. Les deux chemins mènent à
+« aucune réduction », un seul était éprouvé.
+
+**LE « PETIT MOINS » EST CODÉ (17 août) — sa proposition B.** Un rond de 26 px
+devant le libellé du prix accordé. **Il partage le tiroir des lignes**, sous la
+clé réservée `prix-accorde-au-client` : ne pas lui fabriquer un second tiroir,
+c'est ce que le patron a fait disparaître le 10 août. Et **le total montre le
+prix plein dès l'appui**, alors que rien n'est encore écrit — un geste sans effet
+visible pendant six secondes se lit comme une panne.
+
+**⚠ UNE COULEUR POSÉE SUR `<html>` NE PEUT PAS SUIVRE UNE NAVIGATION (16 août).**
+Il choisit « Nuit », rien ne change — et c'était exact. Les variables de charte
+sont posées par le gabarit RACINE ; une navigation côté client ne le rejoue pas,
+donc l'attribut `style` de `<html>` reste celui du chargement initial. **Ni
+`revalidatePath` ni `router.refresh()` ne règlent cela** : c'est le navigateur qui
+doit repeindre le même élément. Réparé et éprouvé sur SA séquence — appui, onglet,
+onglet, sans rechargement (`ARCHITECTURE.md` §119).
+
+**ET LA LEÇON, LA MÊME QUE LE 12 AOÛT :** le contrôle existant était **vert** — il
+rechargeait la page entre chaque écran. Le seul chemin où le défaut existe, les
+onglets du bas, n'était parcouru nulle part. **Rejouer sa séquence, pas le geste
+isolé.**
+
 
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
@@ -823,10 +934,107 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ SES PRIX NE SONT JAMAIS DANS LE CATALOGUE (17 août).** Sa consigne : les
+tarifs imprimés sont des prix CLIENT, ils ne s'enregistrent pas — pas même en
+commentaire. Ses prix négociés se saisissent dans `appli/arrosage-tarifs.html`
+et vivent dans son navigateur. **Une case vide reste vide** : le total du plan
+annonce les lignes manquantes plutôt que de les combler. Les mélanger ferait
+chiffrer un devis au prix public, et ça ne se verrait pas — le total reste
+plausible.
+
+**⚠ UN ARROSEUR = UN CORPS + UNE BUSE, et le débit se LIT par arc.** Sa page du
+17 août (Aqua Plus 2026 p. 8, buses VAN) : le débit d'un quart de tour n'est pas
+le quart du tour complet sur les petites buses. Ne pas « simplifier » en
+divisant — un contrôle mesure 1,64 m³/h sur une zone qui retient la 6-VAN, et
+1,62 trahirait la division. Les corps escamotables manquent encore.
+
+**⚠ LE CATALOGUE D'ARROSAGE EST À LUI, PAS À NOUS (17 août).** Il a dit
+« plusieurs choses sont fausses », et il envoie ses photos d'arroseurs et ses
+nomenclatures. `appli/arrosage-catalogue.js` les reçoit ; **chaque entrée porte
+une `source`** (`'patron'` ou `'provisoire'`), et l'écran compte ce qui reste
+provisoire. **Ne jamais présenter une valeur provisoire comme acquise**, et ne
+jamais composer une **nourrice** absente : `CATALOGUE.nourrices` est vide parce
+qu'il en donnera les fiches. **Aucun plafond à six voies** (sa réponse du
+17 août) — et **ne pas fabriquer une nourrice de douze en doublant celle de
+six** : une seule grande ou deux petites, il ne l'a pas tranché. L'écran annonce la fiche
+manquante — c'est voulu, ce n'est pas un trou à boucher. Détail complet dans
+`TODO.md` § « 0 quaterquadragies ».
+
+**⚠ LE RECOUVREMENT (80 %) EST UNE LECTURE À CONFIRMER.** Sa phrase : « il faut
+un recouvrement d'au moins quatre-vingt pour cent ». Lu comme *écart = 80 % de
+la portée*. Réglable à l'écran, et l'écart en mètres y est écrit pour qu'il
+tranche d'un regard. Passer de 100 à 80 % fait passer le jardin d'exemple de 8 à
+9 secteurs : ce réglage décide du nombre d'arroseurs, donc de la facture.
+
+**⚠ LE PLAN D'ARROSAGE : LA PAGE ESSAYABLE EST `appli/arrosage.html` (17 août).**
+Sa consigne, après les trois planches : *« je veux que tu code rien, d'abord des
+maquettes dynamiques en .html que je puisse essayer, pas de photo »*.
+
+- **Elle vit dans `appli/` et NON dans `docs/maquettes/`, et ce n'est pas un
+  rangement.** Les planches y sont sans JavaScript parce que son lecteur n'en
+  exécute pas ; or il demande à essayer. `appli/` est le seul dossier PUBLIÉ du
+  dépôt (`pages.yml`) : c'est le seul endroit où la page s'ouvre dans un vrai
+  navigateur, au téléphone, avec le calcul qui tourne. **Ne pas la « ranger »
+  dans `docs/maquettes/` : elle y arriverait vide.**
+- **AUCUN PRIX, et c'est SA décision du 17 août** : *« il faut simplement créer
+  le plan et la liste du matos à acheter, ensuite moi j'envoie à mes
+  fournisseurs, ils me font un devis, puis je repasse par le circuit normal de
+  l'application »*. La sortie est une liste de QUANTITÉS. Un contrôle refuse
+  tout montant en euros — ne pas le contourner par bonne volonté.
+- **Elle est gardée par `appli/tests/e2e.js`**, jouée avant publication puis
+  **contre le site en ligne** : erreur JS, secteur au-dessus du robinet, cycle
+  qui ne fait pas la somme, prix, débordement à 390 px.
+- **Ce que l'essai apprend et qu'aucune planche ne disait** : sur « au mieux »,
+  les deux pelouses passent en turbines et le jardin tombe de huit secteurs à
+  quatre. Le jardin de départ garde les tuyères pour que la bascule se voie.
+- **Les prix fournisseurs : ne pas tenter d'aller les chercher.** Chausson et
+  Aqua Plus sont refusés par le mandataire réseau (vérifié), et leurs sites
+  n'auraient que des prix publics. La voie est ailleurs, et elle existe déjà :
+  Chausson laisse **télécharger le tarif négocié en Excel/CSV** depuis le compte
+  client, et Atlas sait importer un tarif Excel/CSV.
+- **Il a proposé de joindre ses devis fournisseurs** : ils serviront au
+  catalogue de matériel (désignations, références), pas aux prix.
+
+**LE PLAN D'ARROSAGE AUTOMATIQUE (17 août) — TROIS MAQUETTES, RIEN N'EST CODÉ.**
+Sa demande : *« un outil pour les paysagistes pour réaliser des plans d'arrosage
+automatique »*. Terrain neuf — rien dans le produit ne parlait d'arrosage.
+
+- **Les planches** : `docs/maquettes/69-le-plan-darrosage.html` (par où il entre
+  son jardin), `70-le-debit-ne-se-partage-pas.html` (le découpage en secteurs,
+  **rien à y choisir**), `71-ce-qui-sort-du-plan.html` (devis, carte du coffret,
+  plan client). **Sa décision est attendue sur deux points**, listés dans
+  `TODO.md` § « 0 quaterquadragies ».
+- **TOUS LES NOMBRES SONT CALCULÉS**, pas écrits : cinq mesures entrent
+  (dimensions des zones, débit au seau), le reste en découle — arroseurs,
+  débits, secteurs, durées, cycle, nomenclature. **Ne pas retoucher les planches
+  à la main**, elles divergeraient : `scripts/engendrer-maquette-arrosage.mjs`.
+- **Le calcul qui commande tout** : le robinet donne 1,80 m³/h, le jardin en
+  demande 8,47 → huit secteurs, cycle de 3 h 14. **Deux règles passent avant le
+  remplissage** — une seule pluviométrie par secteur (une vanne ouvre son
+  secteur entier, pour la même durée) et un seul rythme par secteur. Les
+  mélanger, c'est trois fois trop d'eau d'un côté, quoi qu'on règle ensuite.
+- **Le défaut à ne pas recommettre, il a été commis ici** : le champ `materiel`
+  (une chaîne) écrasé par l'objet du catalogue fondait les deux pelouses —
+  turbines et tuyères — dans le même secteur. La planche s'affichait
+  parfaitement. C'est un cas de contrôle depuis.
+- **Deux défauts sortis d'une CAPTURE et d'aucun test** (les 6ᵉ et 7ᵉ de ce
+  dépôt) : le matériel affiché en clé technique (« tuyere »), et la cote « 12 m »
+  rognée en **« 2 m »** par le cadre du plan — texte entier dans la page, donc
+  invisible à tout contrôle de DOM. Le contrôle compare maintenant les **boîtes**.
+- **Ce qui n'est PAS ouvert, et qu'il faut dire** : pertes de charge et
+  dimensionnement des tuyaux. Sans effet sur un pavillon en PE 32, déterminants
+  sur une longue ligne.
+- **L'arrosage rejoint la fiche d'entretien** (mise en route, hivernage) : deux
+  lignes de modèle, pas un quatrième parcours.
+
 **DEUX MAQUETTES POUR LA FICHE D'ENTRETIEN (16 août) — RIEN N'EST CODÉ.** Il a
 demandé de recréer les fiches de chantier d'une autre application (paysagistes
 en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
 
+- **LE MODÈLE EST EN BASE depuis le 16 août** (migration `0051`). Un seul par
+  entreprise, aucune fiche rangée par client. Il ne se sème PAS tout seul à
+  l'ouverture d'un écran : la pose est un geste (`poserModeleFourni`). L'écran
+  des Réglages reste à écrire.
 - **TOUT EST TRANCHÉ le 16 août** : familles sur le chantier, seulement ce qui
   a été fait chez le client, la molette du TÉLÉPHONE (« la A »), et **un seul
   modèle** pré-rempli à chaque envoi — rien n'est rangé par client. L'ordre de
@@ -857,6 +1065,30 @@ en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
   fois « Faux » sur un passage qu'il paie.
 - **Les planches sont ENGENDRÉES** (`scripts/engendrer-maquette-fiche-entretien.mjs`)
   d'une seule liste : ne pas les retoucher à la main, elles divergeraient.
+
+**« LE NOUVEAU CHANTIER » A GROSSI (16 août) — dessiné le matin, choisi et codé
+dans la journée.** Sa réponse devant `docs/maquettes/67` : **« les capitales,
+gros et très gras »** — 13 px, graisse 800, interlettrage 0,22 em, rond de
+42 px, signe inchangé à 20. Les valeurs vivent dans `globals.css`
+(`.atlas-mot`, `.atlas-rond`).
+
+**⚠ `docs/maquettes/24-le-bouton-retenu.html` n'est PLUS la référence du
+libellé** — elle porte un bandeau qui le dit, et renvoie à la 67. Elle reste
+celle de l'onde, des trois tours et des onze grains, qui n'ont pas bougé. Ne pas
+« ré-harmoniser » le reste sur ses chiffres.
+
+**Et ne pas rétrécir le mot pour faire tenir autre chose à côté :** à 360 px, le
+mot, l'écart et le rond font 237 px pour 308 disponibles.
+`test-bouton-nouveau-chantier-e2e.ts` mesure les deux dérives — le retour au
+libellé minuscule et la coupure en « … ».
+
+**Et un piège de la page unique, corrigé au passage.**
+`scripts/fusionner-maquettes.mjs` préfixe les identifiants pour qu'ils ne se
+marchent pas dessus d'une maquette à l'autre. Il ne le faisait **que dans le
+corps** : `#t-3:checked ~ …` et `label[for="t-3"]` restaient nus dans la feuille
+de style et ne désignaient plus rien. La planche s'affichait parfaitement et ne
+répondait à rien — aucune capture ne le montre. Les deux sont réécrits ensemble
+depuis, et la fusion refuse toute référence orpheline.
 
 **LE PRIX ACCORDÉ AU CLIENT (16 août).** « Fais cinq pour cent sur le montant du
 devis » : une remise en pourcentage, sous le total, qui suit jusqu'à la facture

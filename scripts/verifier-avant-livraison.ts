@@ -70,6 +70,35 @@ const ETAPES: Etape[] = [
     ceQueCaAttrape: "les pièges connus de React et de Next",
   },
   {
+    // **LA CONSTRUCTION, et il aura fallu une soirée entière pour l'ajouter.**
+    //
+    // Le 16 août 2026, le patron : « l'appli est vraiment très lente, mais
+    // vraiment ». Son banc servait le mode développement, où chaque écran se
+    // compile à l'ouverture, parce que `next build` échouait chez lui à chaque
+    // démarrage. Or cette batterie vérifiait les types, le lint, la mémoire,
+    // les suites base, les suites navigateur et une connexion réelle — **et ne
+    // bâtissait jamais**. Une panne qui n'existe qu'à la construction
+    // traversait donc les cinquante-huit contrôles au vert, et c'est LUI qui la
+    // découvrait, un soir, en cliquant.
+    //
+    // Les suites navigateur ne la rattrapent pas : elles démarrent un serveur
+    // de DÉVELOPPEMENT, qui compile à la demande et ne passe jamais par le
+    // chemin de production — vérification des types de routes, rendu statique,
+    // découpage des paquets. Le typecheck non plus : `tsc` ne connaît pas les
+    // types de routes qu'engendre Next.
+    //
+    // Placée tôt, juste après le lint : elle dure deux à trois minutes, et
+    // découvrir à la vingtième que rien ne se bâtit ferait perdre les dix-neuf
+    // autres.
+    nom: "Construction",
+    commande: "npm",
+    args: ["run", "build"],
+    // Dans SON dossier, comme le banc : sans quoi la construction écraserait le
+    // `.next` d'un serveur de développement qui tourne peut-être à côté.
+    env: { ATLAS_DIST_DIR: ".next-verification" },
+    ceQueCaAttrape: "une erreur qui n'existe qu'à la construction — et qui condamne le banc au mode lent",
+  },
+  {
     nom: "Mémoire du dépôt",
     commande: "npm",
     args: ["run", "verifier:memoire"],

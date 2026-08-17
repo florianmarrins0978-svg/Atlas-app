@@ -77,7 +77,11 @@
     ".next/dev/dev/types/**/*.ts",
     ".next-banc-essai/types/**/*.ts",
     ".next-banc-essai/dev/types/**/*.ts",
-    ".next-banc-essai/dev/dev/types/**/*.ts"
+    ".next-banc-essai/dev/dev/types/**/*.ts",
+    ".next-verrou-essai/types/**/*.ts",
+    ".next-verrou-essai/dev/types/**/*.ts",
+    ".next-verification/types/**/*.ts",
+    ".next-verification/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

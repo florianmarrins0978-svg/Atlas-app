@@ -2,7 +2,7 @@
 
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier, reprendreChantier } from "@/server/repositories/chantiers";
-import { creerClient, mettreAJourClient, type CanalClient } from "@/server/repositories/clients";
+import { trouverOuCreerClient, mettreAJourClient, type CanalClient } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import type { Civilite } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
@@ -90,7 +90,15 @@ export async function reprendreChantierAction(
       } else {
         // **Le cas de sa capture : un chantier SANS client du tout.** C'est le
         // nom qui crée la fiche — sans lui, aucun client n'est rattaché.
-        const client = await creerClient(ctx, {
+        //
+        // **RETROUVÉ PLUTÔT QUE RECRÉÉ, et c'est SA règle du même jour :**
+        // *« si c'est monsieur Martins et qu'on a déjà une fiche client
+        // monsieur Martins, le devis, la facture s'ajoute à la fiche de
+        // monsieur Martins »* (`ARCHITECTURE.md` §122). Passer par `creerClient`
+        // ici aurait fabriqué le doublon que l'autre porte vient précisément
+        // d'apprendre à éviter — et le patron aurait vu deux fiches Martins
+        // selon qu'il a rempli le chantier à sa création ou après coup.
+        const { client } = await trouverOuCreerClient(ctx, {
           nom: nomClient,
           civilite: data.civilite,
           telephone,

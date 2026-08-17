@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-16 · branche `main`
+**Dernière mise à jour :** 2026-08-17 · branche `main`
 · dernière migration `drizzle/0049_coordonnees_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -70,6 +70,9 @@ seule avec quinze outils.
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
 | Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
 | Le prix accordé au client — remise en % sous le total, jusqu'à la facture (16 août) | `src/lib/reduction-devis.ts`, migration `0048` |
+| La fiche d'un client — ses chantiers, ce qu'il doit, ce qu'on lui fait (16 août) | `src/lib/fiche-client.ts`, `src/app/clients/[id]/page.tsx` |
+| **Un client est RETROUVÉ, plus recréé** à chaque chantier — rapprochement automatique, refusé si une coordonnée contredit (17 août) | `src/lib/rapprochement-client.ts`, `trouverOuCreerClient` |
+| **Et il se RETIRE pour de bon** (17 août) — un « − » en face de la ligne (sa proposition B), écrire 0 %, vider la case, ou le dire à la voix. Les deux derniers chemins étaient cassés : l'écran gardait une remise que la base n'avait plus, et la réécrivait au passage suivant (`ARCHITECTURE.md` §120) | `src/app/chantiers/[id]/devis-complet/` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
@@ -110,6 +113,38 @@ seule avec quinze outils.
 | **La TVA quand le client PAIE, et non quand la facture part** — le relevé se calcule sur la date du règlement (défaut légal d'une prestation de services, CGI art. 269-2-c) ; les factures parties attendent dans « Ma TVA » et y entrent d'un appui. Les acomptes n'apportent que leur part. Réglage encaissements / débits. Le passé ne bouge pas : la migration a supposé réglées les factures déjà émises, et le dit (`ARCHITECTURE.md` §110) | `src/lib/exigibilite-tva.ts` + `src/server/repositories/paiements-facture.ts` + `src/app/termines/tva/` + `drizzle/0045_paiements_et_exigibilite.sql` |
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
+
+### Le plan d'arrosage automatique — ESSAYABLE le 17 août 2026, rien n'est codé
+
+**La page qui calcule pour de bon : `appli/arrosage.html`**, publiée avec
+l'appli, donc ouvrable au téléphone. Point d'eau, zones, secteurs, durées par
+saison, plan et liste du matériel : tout se refait à chaque frappe.
+
+**Sa décision sur la sortie, le 17 août :** *« il faut simplement créer le plan
+et la liste du matos à acheter, ensuite moi j'envoie à mes fournisseurs, ils me
+font un devis, puis je repasse par le circuit normal de l'application. »* Donc
+**aucun prix** dans cet outil — le devis client emprunte le parcours qui existe.
+
+### Le raisonnement, en trois planches sans JavaScript
+
+**Sa demande :** *« un outil pour les paysagistes pour réaliser des plans
+d'arrosage automatique. »* Terrain neuf : le produit ne parlait pas d'arrosage.
+
+Trois planches, **aucune ligne de `src/`** : `docs/maquettes/69` (par où il entre
+son jardin : la feuille, les zones, le plan dessiné), `70` (le découpage en
+secteurs — rien à y choisir, c'est de l'arithmétique), `71` (ce qui en sort : le
+devis, la carte du coffret, le plan client).
+
+**Ce qui attend sa décision** : par où il entre, et par quelle sortie on
+commence. Ma recommandation, écrite sur les planches : **les zones**, puis **le
+devis** — c'est la seule entrée qui rend du temps de bureau, et la seule sortie
+qui n'ouvre aucune plomberie nouvelle. Le détail est dans `TODO.md`
+§ « 0 quaterquadragies ».
+
+**Ce qui est déjà su du métier, et qui ne se rediscutera pas** : le débit se
+mesure au seau ; une seule pluviométrie et un seul rythme par secteur ; aucun
+prix inventé ; rien ne part tout seul. Les pertes de charge restent hors du
+calcul, et c'est dit sur la planche plutôt que passé sous silence.
 
 ### Apparier deux demi-journées, par la route (16 août 2026)
 
@@ -213,6 +248,12 @@ dehors — l'application le laissait entrer, puis refusait toute écriture.
 | Un seul banc à la fois, et le veilleur ne tue plus la bascule | `.devcontainer/bascule-en-cours.sh` + `scripts/verrou-banc.mjs` + `scripts/test-bascule-veilleur.ts` (`ARCHITECTURE.md` §56) |
 
 ### La refonte de l'interface (10 août 2026)
+
+**Mise à jour du 16 août 2026 :** « Nouveau chantier » a grossi — *« les
+capitales, gros et très gras »*, choisi sur `docs/maquettes/67` : 13 px,
+graisse 800, 0,22 em, rond de 42 px. `docs/maquettes/24-le-bouton-retenu.html`
+n'est plus la référence du libellé et porte un bandeau qui le dit ; elle reste
+celle du geste (onde, tours, grains), qui n'a pas bougé.
 
 Le patron a arrêté un écran après une soirée de maquettes
 (`docs/maquettes/`, treize propositions), puis l'a fait poser dans
@@ -657,6 +698,20 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 ## Ce qui reste, et que je peux faire seul
 
 Voir `TODO.md` pour le détail et l'ordre.
+
+- **Le catalogue s'écrit — FAIT le 17 août** (`ARCHITECTURE.md` §122, migration
+  0052). Il a posé deux fois la même question sur cet écran : *« À quoi sert
+  cette page ?? On peut rien modifier rajouter »*. Ses mots s'accrochent
+  désormais aux entrées d'Atlas (arrangement B de la planche 72), le catalogue
+  partagé reste intouché, et **un mot ajouté est reconnu par la dictée** — les
+  quatre chemins de recherche passent par la même fonction. Réparés au passage :
+  la flèche de retour, et « aucun prix encore constaté », une phrase qui lisait
+  une mémoire jamais écrite et ne se serait jamais éteinte. **Et Atlas PROPOSE
+  désormais de retenir les mots qu'il entend** quand il sait à quoi ils se
+  rapportent (migration 0053) : deux boutons, le « non » retenu pour toujours,
+  et jamais rien dans le vocabulaire commun. **Une décision reste à lui**
+  (`TODO.md` §0 octovicies bis) : faut-il remettre un prix sur ces cartes, alors
+  que la mémoire des prix range par nature de chantier et non par mot.
 
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
