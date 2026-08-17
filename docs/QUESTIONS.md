@@ -42,6 +42,7 @@ relues à chaque session) :
 18. [À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?](#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-)
 19. [Une équipe part cinq jours en déplacement : comment on gère ça ?](#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-)
 20. [Si un client ne me paie pas, la TVA part quand même ?](#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
+21. [Quelle est la différence entre « Planning » et « Équipe » dans les réglages ?](#21-quelle-est-la-différence-entre--planning--et--équipe--dans-les-réglages-)
 
 ---
 
@@ -1276,3 +1277,39 @@ choisir — [`A-FAIRE.md`](A-FAIRE.md) §13.
 **Sous quel régime vous êtes.** Votre comptable le sait en une phrase, ou c'est
 écrit sur votre dernière déclaration. Le point est inscrit dans
 [`A-FAIRE.md`](A-FAIRE.md) §12.
+
+---
+
+## 21. Quelle est la différence entre « Planning » et « Équipe » dans les réglages ?
+
+*Votre question du 16 août 2026, capture de l'écran « Réglages ▸ Planning » à
+l'appui.*
+
+**Aucune. Et c'était un défaut, pas une subtilité.**
+
+| La rubrique | Ce qu'on y réglait vraiment |
+|---|---|
+| **Planning** | Combien partent en même temps · leurs noms |
+| **Équipe** | **La même chose**, plus les absences (« Julien part cinq jours ») |
+
+Les deux écrans affichaient **le même bloc**. « Planning » promettait « horaires,
+équipes et disponibilités » : les horaires ne se règlent pas — le planning
+raisonne en demi-journées, et chaque jour est libre ou porte le nom de son
+chantier —, et les disponibilités, ce sont les absences, qui vivent dans
+« Équipe ».
+
+**Ce qui a été fait, le jour même :** la rubrique « Planning » est supprimée.
+Tout est dans **« Équipe »** — combien partent en même temps, leurs noms, leurs
+absences. Une seule porte.
+
+**Attention à un mot qui trompe, et il vaut la peine d'être redit** : dans Atlas,
+une « équipe » n'est pas un groupe de personnes, c'est une **file du planning** —
+combien de chantiers partent en même temps. « Équipe B » peut désigner deux
+ouvriers qui n'ouvriront jamais l'application. Le jour où des gens auront un
+compte, ce sera une **autre** liste (voir §11).
+
+**Si les horaires viennent un jour** — « on commence à 8 h, on finit à 17 h » —,
+ils iront dans « Équipe » eux aussi, ou dans une rubrique qui ne parle QUE
+d'horaires. Recréer une rubrique « Planning » qui montre à nouveau les équipes,
+c'est rouvrir exactement ce qui vient d'être refermé.
+

@@ -9854,3 +9854,51 @@ couleurs.
 C'est la leçon du 12 août, une fois de plus : **reproduire la séquence du patron,
 pas le geste isolé.**
 
+---
+
+## 120. Deux rubriques pour la même chose — « Planning » supprimée des réglages
+
+*Sa question du 16 août 2026, capture à l'appui : **« quelle est la différence
+entre planning et équipe ? »**. Il n'y en avait pas.*
+
+| La rubrique | Ce qu'elle rendait |
+|---|---|
+| Réglages ▸ **Planning** | `<VosEquipes>` — combien partent en même temps, leurs noms |
+| Réglages ▸ **Équipe** | `<VosEquipes>` **+** `<AbsencesEquipe>` |
+
+Le même composant, aux mêmes valeurs. « Planning » était donc un **sous-ensemble
+strict** de « Équipe » : deux portes vers le même réglage, et rien pour dire
+laquelle ouvrir.
+
+### Pourquoi le doublon a pu naître, et ce qui le rendait invisible
+
+La rubrique promettait *« horaires, équipes et disponibilités »* — trois choses,
+dont **une seule existe**. Les horaires ne se règlent pas : le planning raisonne
+en demi-journées, et chaque jour est libre ou porte le nom de son chantier. Les
+disponibilités, ce sont les absences — arrivées le 15 août **dans l'autre
+rubrique**, sur sa maquette 55. Le jour où elles y sont entrées, « Planning »
+n'avait plus rien à lui.
+
+**Aucun contrôle ne pouvait le voir**, et il ne faut pas en attendre un : les
+deux écrans étaient corrects, chacun de son côté. C'est une question de sens, et
+elle s'est posée en ouvrant la rubrique — comme les quatre défauts sortis d'une
+capture plutôt que d'un test.
+
+### Ce qui a été retiré, et ce qui ne l'est pas
+
+`src/app/reglages/planning/` disparaît, avec son entrée de sommaire et ses
+quatre mentions d'outillage (préchauffage, deux suites de mise en page, le script
+de captures). **Aucune règle métier n'est touchée** : `VosEquipes`,
+`AbsencesEquipe` et tout ce qui les alimente restent où ils sont, dans « Équipe ».
+
+**La garde du préchauffage l'aurait attrapée si on l'avait oubliée** :
+`test-prechauffage.ts` compare la liste écrite à la main aux écrans réellement
+présents sur le disque, et nomme celui qui diverge.
+
+### Ce qu'il ne faut pas refaire
+
+Le jour où les horaires viendront — « on commence à 8 h » —, **ne pas recréer une
+rubrique « Planning » qui remontrerait les équipes**. Soit ils rejoignent
+« Équipe », soit ils ont une rubrique qui ne parle QUE d'horaires. La réponse est
+écrite dans la langue du patron : `docs/QUESTIONS.md` §21.
+

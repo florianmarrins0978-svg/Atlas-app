@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### « Quelle est la différence entre planning et équipe ? » — aucune, et c'est réparé
+
+*Sa question, capture des réglages à l'appui.* Les deux rubriques rendaient **le
+même bloc** : combien d'équipes partent en même temps, et leurs noms. « Équipe »
+avait en plus les absences, arrivées la veille. « Planning » était donc un
+doublon complet, et sa promesse — *« horaires, équipes et disponibilités »* — ne
+tenait que par le mot du milieu : les horaires ne se règlent pas, et les
+disponibilités sont les absences, qui vivent dans l'autre rubrique.
+
+**« Planning » est supprimée des réglages.** Tout est dans « Équipe » : combien
+partent en même temps, leurs noms, leurs absences. Une seule porte.
+
+**Ce que ça évite :** ouvrir une rubrique pour y trouver ce qu'on vient de régler
+dans l'autre, et se demander laquelle fait foi.
+
+**Aucun contrôle ne pouvait le voir** — les deux écrans étaient corrects chacun de
+son côté. C'est une question de sens, posée en ouvrant la rubrique. Détail :
+`ARCHITECTURE.md` §120, et la réponse dans sa langue : `docs/QUESTIONS.md` §21.
+
+
 ### « L'apparence ne change pas » — c'était vrai, et aucun cache n'était en cause
 
 *Sa capture, la pastille « Nuit » cochée, l'écran resté crème.*

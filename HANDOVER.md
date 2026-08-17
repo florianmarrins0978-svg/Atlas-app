@@ -752,6 +752,13 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LA RUBRIQUE « PLANNING » DES RÉGLAGES N'EXISTE PLUS (16 août).** Sa question :
+*« quelle est la différence entre planning et équipe ? »* — il n'y en avait
+aucune, les deux rendaient le même composant. Tout est dans **« Équipe »** :
+combien partent en même temps, leurs noms, leurs absences. **Ne pas la recréer**
+le jour où les horaires viendront (`ARCHITECTURE.md` §120, `docs/QUESTIONS.md`
+§21).
+
 **⚠ UNE COULEUR POSÉE SUR `<html>` NE PEUT PAS SUIVRE UNE NAVIGATION (16 août).**
 Il choisit « Nuit », rien ne change — et c'était exact. Les variables de charte
 sont posées par le gabarit RACINE ; une navigation côté client ne le rejoue pas,

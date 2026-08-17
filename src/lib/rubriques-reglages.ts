@@ -94,7 +94,19 @@ const ENTREPRISE: Rubrique[] = [
     // permissions » promettait trois choses qui n'existent pas, et le patron
     // ouvrait la rubrique pour n'y rien voir. Ce qui s'y règle aujourd'hui,
     // c'est combien d'équipes partent en même temps (§99).
-    dit: "Combien partent en même temps, et leurs noms",
+    //
+    // **ET LES ABSENCES DEPUIS LE 16 AOÛT**, parce que la rubrique « Planning »
+    // a été supprimée ce jour-là : elle montrait le MÊME bloc que celle-ci, et
+    // rien d'autre. Le patron : *« quelle est la différence entre planning et
+    // équipe ? »* — il n'y en avait pas. Sa promesse — « horaires, équipes et
+    // disponibilités » — ne tenait que par le mot du milieu : les horaires ne se
+    // règlent pas (le planning raisonne en demi-journées), et les
+    // disponibilités, ce sont les absences, qui vivent ici.
+    //
+    // **Ne pas la recréer pour y mettre les horaires le jour où ils viendront**
+    // sans se poser la question : deux portes vers les mêmes équipes, c'est ce
+    // qu'on vient de refermer.
+    dit: "Combien partent en même temps, leurs noms et leurs absences",
     icone: "personnes",
     href: "/reglages/equipe",
   },
@@ -111,12 +123,6 @@ const ENTREPRISE: Rubrique[] = [
     dit: "Validité, acompte, délai de paiement et mentions",
     icone: "feuille",
     href: "/reglages/documents",
-  },
-  {
-    nom: "Planning",
-    dit: "Horaires, équipes et disponibilités",
-    icone: "calendrier",
-    href: "/reglages/planning",
   },
   { nom: "Atlas IA", dit: "Automatisations et suggestions", icone: "etincelle", href: "/reglages/ia" },
   {
