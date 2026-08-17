@@ -333,6 +333,18 @@ l'application. Ce qui est **fait** :
   Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
   l'équipe d'un chantier est une étiquette, pas une contrainte.
   `ARCHITECTURE.md` §109.
+- **« Adresse non renseignée » ouvre l'écran du chantier** (17 août) : la mention
+  de l'accueil devient un lien vers `/chantiers/[id]/coordonnees` — l'écran de
+  création rouvert, prérempli, qui **enregistre** au lieu de créer. Sa demande,
+  puis sa correction : *« que ça m'amène sur la page que je t'ai envoyée sur la
+  deuxième photo. Rien de plus, rien de moins. »* **La mention SEULE est la
+  cible** : le nom du chantier garde sa reprise du 13 août. **Le nom du chantier
+  se recalcule** à l'enregistrement — sans quoi la ligne dirait « Chantier du … »
+  pour toujours, le défaut corrigé partout sauf là où il l'a vu. Deux mots
+  changent parce qu'ils mentiraient : « Nouveau » et « Créer le chantier ».
+  `ARCHITECTURE.md` §124. **Leçon : devant une demande qui touche à un écran,
+  chercher d'abord si l'écran existe** — une première planche avait dessiné une
+  fiche client de toutes pièces.
 - **Le rappel « facture impayée »** (16 août) : le **quatrième** rappel, et le
   seul qui porte un **rythme**. Sa demande : *« faut faire a plus b, mais il faut
   également qu'on puisse régler […] toutes les semaines ou tous les quinze jours,

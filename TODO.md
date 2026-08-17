@@ -27,6 +27,286 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### ~~0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier~~ — **FAIT le 17 août 2026**
+
+*Dessiné, corrigé par lui, puis codé le même jour.* `ARCHITECTURE.md` §124.
+
+La mention devient un lien vers `/chantiers/[id]/coordonnees` — l'écran de
+création rouvert, prérempli, qui enregistre au lieu de créer. Le nom du chantier
+se recalcule, sinon la ligne dirait « Chantier du … » pour toujours.
+
+**LA LEÇON DE CE LOT, ET ELLE VAUT AU-DELÀ DE LUI.** Une première planche a
+dessiné une « fiche client » de toutes pièces ; il a répondu : *« je ne suis pas
+sûr que tu aies bien compris […] rien de plus, rien de moins »*. **Devant une
+demande qui touche à un écran, chercher d'abord SI L'ÉCRAN EXISTE** — sa seconde
+photo le montrait.
+
+Ce qui avait égaré : le code annonce lui-même qu'il manque une fiche client
+(*« faute d'écran de fiche client »*, `DevisCompletClient.tsx`). C'est vrai, et
+ce n'était pas sa demande. **Un manque réel du produit n'autorise pas à le
+combler dans le lot d'à côté.**
+
+**Et la fiche client, elle, est arrivée par une autre porte le même jour**
+(`ARCHITECTURE.md` §121) : elle MONTRE ce que l'application sait d'un client.
+Les deux écrans ne se confondent pas — celui-ci corrige les coordonnées d'un
+chantier. C'est la meilleure preuve que la fiche inventée au premier essai aurait
+été un troisième écran de trop.
+
+### 0 quaterquadragies AB. Où vivent les outils métier — TRANCHÉ le 17 août
+
+**Sa question :** *« L'idée c'est de créer des outils comme celui-là pour les
+paysagistes ; après je ferai la même chose pour les terrasses bois. Une
+nouvelle catégorie paysage ? Ou on range ça dans les réglages ? »*
+**Sa décision : un cinquième onglet « Outils ».** Le raisonnement complet, et
+ce qui a été écarté, est dans `ARCHITECTURE.md` §125.
+
+**⚠ CE QUE ÇA COÛTE, MESURÉ ET NON SUPPOSÉ** (planche 76) : à cinq colonnes sur
+un écran de 360 px, la colonne tombe à 71,6 px et **« CHANTIERS » en demande
+78,8 — il déborde de 7,2 px**. Deux variantes sont donc à écarter d'office :
+poser le cinquième onglet sans rien changer (A), et resserrer l'espacement (B,
+qui ne tient que de 1,3 px — un changement de police entre téléphones, et le
+défaut réapparaît **chez lui seulement**).
+
+Restent **C** (lettre à 8,5 px) et **D** (une icône au-dessus du mot). **D
+revient sur sa décision du 10 août** — il avait retiré les icônes parce
+qu'elles répétaient les mots ; à cinq colonnes elles rendent un autre service,
+viser sans lire. C'est recevable, mais **c'est à lui de le dire**.
+
+**À faire, dans cet ordre :**
+
+1. **Lui faire choisir C ou D** sur la planche 76 — rien ne se code avant.
+2. Poser l'onglet dans `AtlasBottomNav.tsx` (`ONGLETS`, la grille `grid-cols-4`
+   et la largeur du trait d'or, qui est en `/ 4` à deux endroits).
+3. **Un contrôle qui mesure la barre à 360 px** avant chaque mise en ligne :
+   c'est exactement le genre de défaut qu'on ne voit pas en développant sur un
+   grand écran, et qui n'apparaît que sur son téléphone.
+4. L'onglet porte une LISTE d'outils (arrosage, puis terrasse bois) — d'où son
+   nom au pluriel, et non « Arrosage ».
+5. **Pouvoir rattacher un plan à un chantier après coup.** C'est le revers de
+   l'accès sans chantier qu'il a voulu : un plan fait en visite de devis doit
+   pouvoir rejoindre son client, sinon on le cherchera six mois plus tard.
+
+---
+
+### 0 quaterquadragies AA. Le parcours COMPLET, dicté par lui le 17 août 2026
+
+**C'est la cible du produit, dans son ordre à lui.** Tout ce qui précède
+(catalogue, pose, nourrice, réseau latéral) sont des pièces de ce parcours ;
+ceci est le parcours. À relire avant de décider quoi coder ensuite — plusieurs
+morceaux existent déjà, et les confondre ferait refaire ce qui est fait.
+
+| # | Ce qu'il décrit | État au 17 août |
+|---|---|---|
+| 1 | **Il choisit son piquage** : après compteur d'eau, ou sur un robinet extérieur | **FAIT** (`#compteur`) |
+| 2 | **Au compteur, la ville délivre ≥ 3 bar** — valeur connue, appliquée d'office aux calculs | **FAIT** (bascule à 3 bar) |
+| 3 | **Au robinet, il donne la pression DYNAMIQUE ET STATIQUE** | **PAS FAIT** — un seul champ `pression` aujourd'hui, et surtout : *ce qu'on FAIT de l'écart entre les deux n'est pas su* |
+| 4 | **Une case pour joindre une PHOTO** d'une zone avec ses métrés | **FAIT le 17 août** — la section 2 EST le croquis. La photo se joint, s'affiche, survit au rechargement. La LECTURE des cotes reste impossible ici (page statique), et l'écran le dit |
+| 5 | À partir de la photo et des métrés, **estimer les réseaux** (« deux réseaux d'arroseurs, un de goutte-à-goutte ») | Le découpage existe (`decouper`) à partir des zones SAISIES, pas d'une photo |
+| 6 | **Les mètres linéaires de PEHD Ø25 ou Ø32**, choisis selon les distances, le débit des arroseurs et la pression saisie | **DÉBLOQUÉ ET FAIT le 17 août** — sa règle est arrivée, voir ci-dessous. La LONGUEUR reste à mesurer, le DIAMÈTRE se calcule |
+| 7 | **La liste exacte des pièces à commander** | **FAIT** — buses, corps par famille, SBE, PEBD, réseau latéral, nourrice |
+| 8 | **Un plan avec les réseaux en COULEURS** (réseau 1 bleu, 2 vert, 3 jaune…) | **FAIT le 17 août** — voir ci-dessous, et ça a demandé plus qu'une couleur |
+| 9 | **Le regard placé sur le plan**, « bien souvent caché, donc on le met dans les massifs » | **PAS FAIT** — voir le blocage ci-dessous |
+| 10 | **Le total à ses prix**, une fois son registre rempli | **FAIT** (`arrosage-tarifs.html`) |
+
+**⚠ DEUX BLOCAGES DE STRUCTURE, à ne pas contourner par une invention.**
+
+1. **La photo ne peut pas être LUE par cette page.** `appli/` est publié en
+   pages statiques (`pages.yml`) : pas de serveur, pas de modèle d'IA. Joindre
+   une photo et l'afficher à côté du plan est faisable ; en tirer des cotes
+   automatiquement ne l'est pas ici. L'application Next.js, elle, sait déjà
+   recevoir une photo et interroger un modèle (`src/server/ai/`) — **c'est là
+   que ce morceau devra vivre**, ou alors la page devra parler à un service.
+   Ne pas promettre la lecture automatique depuis la page essayable.
+2. **Le plan d'ensemble n'existe pas, et le regard n'a donc nulle part où se
+   poser.** Aujourd'hui chaque zone est dessinée SEULE : l'outil ne sait pas où
+   la pelouse est par rapport au massif. « Mettre le regard dans les massifs »
+   suppose un plan du jardin entier, avec les zones les unes par rapport aux
+   autres — c'est-à-dire exactement ce que le croquis photographié apporterait.
+   **Placer le regard « quelque part » avant cela serait inventer un jardin.**
+
+**✅ IL A REVU L'OUTIL ÉCRAN PAR ÉCRAN — 17 août au soir, et deux sections
+changent.** Sa consigne, mot pour mot : *« Tu supprimes la 3, et la 2 ça doit
+être la photo du croquis qu'on ajoute. »*
+
+| Avant | Après |
+|---|---|
+| 1 · Le point d'eau | inchangé |
+| 2 · Les zones | **2 · Le croquis** — la photo d'abord, les zones dessous, à corriger en la regardant |
+| 3 · Le découpage en secteurs | **supprimée** |
+| 4 · Le plan | **supprimée elle aussi**, une heure plus tard — voir ci-dessous |
+| 5 · La liste | 3 · La liste |
+
+**Ce qui est parti avec la section 3, et qu'il faut savoir pour le lui rendre
+s'il le redemande :** le tableau des secteurs, les durées d'arrosage, le cycle
+total (« départ 3 h 00, fin 6 h 14 ») et **le sélecteur de saison**. Le CALCUL,
+lui, tourne toujours — c'est lui qui donne les couleurs du plan, le nombre
+d'électrovannes et la fiche de nourrice. Seul l'écran a disparu.
+
+**La photo est REDIMENSIONNÉE avant d'être gardée (1400 px, JPEG 0,75), et ce
+n'est pas du confort :** une photo de téléphone pèse 3 à 8 Mo, `localStorage`
+en accepte ~5 pour TOUT le jardin. Gardée telle quelle, elle ferait sauter la
+sauvegarde entière — et c'est le jardin qui disparaîtrait au rechargement, pas
+seulement l'image. Si l'enregistrement échoue quand même, on **remet l'état
+d'avant et on le dit**, plutôt que d'afficher une photo qui ne survivra pas.
+
+**ET LE PLAN A SUIVI, dans la foulée : *« je ne comprends pas à quoi sert le
+3 ? »*, puis « enlevez-le ».** Il ne s'en servait pas. Ce plan-là dessinait
+chaque zone SÉPARÉMENT, en rectangles abstraits — utile pour vérifier un
+compte (c'est lui qui a montré l'arroseur en trop du quinconce), mais ce n'est
+pas le plan qu'il veut : le sien, c'est la planche 75, avec le terrain entier,
+le regard et les tuyaux. Un écran intermédiaire qui ne sert qu'au développeur
+n'a rien à faire sous ses yeux.
+
+**Ce qui reste donc à l'écran : trois sections.** Le point d'eau, le croquis,
+la liste. **Et ce qui tourne toujours dessous, invisible :** la pose
+(`pointsDeLaPose`), le découpage (`decouper`), l'affectation des arroseurs aux
+vannes (`reseauDuPoint`) — sans quoi ni le nombre d'électrovannes, ni la fiche
+de nourrice, ni les tés du réseau latéral ne seraient justes. **Le coloriage
+par réseau, lui, n'existe plus** : il vivait dans le plan. Il reviendra avec
+le vrai plan d'ensemble.
+
+**⚠ LES CONTRÔLES QUI LISAIENT LA SECTION 3 ONT ÉTÉ REPORTÉS SUR LE CALCUL**
+(`decouper()`), pas supprimés : aucun secteur au-dessus du robinet, les durées
+qui baissent en avril, le découpage qui ne recâble pas. C'est la même leçon que
+le matin — **un contrôle garde une règle, pas un écran.** Et trois gardes
+nouvelles sur le croquis, éprouvées à l'envers : la photo s'affiche, survit au
+rechargement, se retire, et l'écran ANNONCE qu'il ne lit pas encore les cotes.
+
+**LA CIBLE EST DESSINÉE — planche `75-le-plan-comme-le-sien.html`, 17 août.**
+Il a envoyé la photo d'un **plan d'exécution professionnel** : échelle 1/100e,
+légende (DRIPLINE, Turbine 3504, Tube PE.H.D, Électrovanne 9 V), symboles,
+diamètres Ø16 et Ø25 cotés le long des tuyaux, robinet repéré. Sa demande :
+*« Lorsqu'on te donne un croquis comme celui-là, tu rentres toutes les infos
+comme sur la photo […] tu me fais ça en couleur, tu sépares les réseaux, chaque
+réseau d'une couleur différente. C'est là où je veux arriver au final. »*
+
+**Ce que la planche fixe, et qu'il faut lui faire valider avant d'écrire quoi
+que ce soit** (règle du §3 bis — une planche se corrige en dix minutes, un
+moteur de plan en deux jours) :
+
+| | |
+|---|---|
+| Symboles | cercle = arroseur, nœud papillon = électrovanne, tireté = PEHD, ⊕ = robinet — les siens |
+| Couleurs | une par réseau, **jusque dans le regard** : chaque électrovanne porte la couleur de sa vanne |
+| Dripline | **NON TRACÉE** — sa consigne : *« juste la dripline, ça tu ne le mets pas »*. Lu comme : sa vanne reste, son tracé au sol disparaît. **À confirmer d'un mot** |
+| Regard | posé **dans le massif**, caché, comme il le fait |
+| Cotes | côtés de la pelouse et diamètres, le long des tuyaux comme sur sa photo |
+
+**CE QUI MANQUE POUR LE CODER, ET C'EST UNE SEULE CHOSE : un jardin
+D'ENSEMBLE.** Tout ce qui est chiffré sur cette planche, l'outil le calcule
+déjà — les onze têtes, le quinconce, les couronnes, la coupe en deux vannes,
+la liste entière. Ce qu'il ignore, c'est **où les zones sont les unes par
+rapport aux autres** : il connaît des zones, pas un terrain. Sans cela, ni le
+regard, ni les tuyaux, ni le robinet n'ont d'endroit où se poser.
+
+**Deux façons de le lui donner, et c'est la question suivante :** il place ses
+zones lui-même sur un quadrillage (faisable tout de suite, quelques gestes),
+ou il photographie le croquis et on le lit (plus proche de son geste, mais la
+page publiée ne sait pas lire une photo — il faut passer par l'application).
+
+**Un piège de dessin payé sur cette planche, et il vaut au-delà d'elle :** le
+contour de la pelouse était un second `<rect class="gazon" fill="none">` posé
+APRÈS les couronnes. **Une règle CSS l'emporte sur un attribut de présentation
+SVG** — `fill="none"` était donc ignoré, le rectangle repeignait la pelouse en
+opaque, et le plan s'affichait proprement SANS la seule chose qu'il doit
+montrer : le recouvrement. Vu sur la capture, par rien d'autre.
+
+**Ce qui est donc faisable tout de suite, sans rien inventer :** les couleurs
+par réseau sur les plans de zone existants (#8, fait), et la case photo comme
+PIÈCE JOINTE montrée à côté du plan (#4 partiel, pas encore fait).
+
+**#8 EST FAIT — et il a fallu réparer le découpage pour l'obtenir.** Colorier
+supposait de savoir QUEL ARROSEUR EST SUR QUELLE VANNE : `decouper()` ne le
+savait pas. Il comptait « il faut 4 secteurs » en divisant le débit total en
+parts égales, sans jamais désigner les arroseurs de chacun. Trois choses ont
+donc changé, et les deux dernières corrigent de vrais défauts :
+
+1. **`decouper()` rend `reseauDuPoint`** — le numéro de vanne de chaque tête,
+   et le plan colorie d'après CETTE liste, jamais un second calcul à côté
+   (§3 ; c'est cette divergence-là qui avait produit l'arroseur en trop du
+   quinconce).
+2. **La coupe suit l'ORDRE DE POSE et reste d'un seul tenant.** Une vanne
+   dessert une bande continue, jamais un arroseur sur deux — une coupe
+   alternée donnerait le même compte et un plan impossible à poser.
+3. **Le débit annoncé d'un secteur est celui de SES arroseurs.** Les parts
+   égales étaient une fiction : sur la pelouse arrière, la coupe réelle donne
+   0,80 et 0,96 m³/h, pas deux fois 0,88. L'écran annonçait un chiffre que le
+   plan démentait.
+
+**Deux pièges rencontrés là-dedans, à ne pas réintroduire :**
+
+- **Couper seulement entre RANGÉES ne marche pas.** La rangée du milieu de la
+  pelouse avant boit 1,77 m³/h à elle seule, au-dessus de la limite de 1,53 :
+  insécable, elle fabriquait un secteur en dépassement. On coupe donc **au
+  point près**, dans l'ordre de pose — une longue rangée alimentée par deux
+  vannes, une à chaque bout, est ce qu'on pose tous les jours.
+- **Remplir jusqu'à la limite déséquilibre.** Le premier remplissage donnait
+  9 têtes sur une vanne et 2 sur l'autre : juste au sens du débit, absurde au
+  sens du chantier. On calcule donc d'abord COMBIEN de vannes il faut, puis on
+  répartit autour de cette moyenne, la limite ne servant plus que de garde-fou.
+
+Les couleurs commencent par les siennes (bleu, vert, jaune) et bouclent
+au-delà de huit ; **le NUMÉRO reste écrit à côté de la pastille**, pour que le
+plan se lise aussi quand on distingue mal deux teintes.
+
+**✅ SA RÈGLE DU Ø25 / Ø32 — 17 août, et elle débloque #6.** *« Du compteur au
+regard : Ø25 par défaut. Passer en Ø32 UNIQUEMENT si le calcul hydraulique
+démontre que le Ø25 est insuffisant. »* Le Ø32 doit donc se MÉRITER : il coûte
+plus cher et se pose moins bien.
+
+Le calcul est celui de Hazen-Williams (C = 150 pour le PE lisse), sur le débit
+du **plus gros secteur** — les vannes s'ouvrent l'une après l'autre, jamais
+ensemble, c'est tout l'objet du découpage ; prendre la somme
+surdimensionnerait chaque chantier. Le verdict tombe quand la pression restant
+au regard passe sous celle à laquelle les buses posées sont données au
+catalogue. Sur le jardin d'exemple : 30 m → Ø25 (perte 0,27 bar) ; 150 m → Ø32.
+
+**⚠ CE QUE CE CALCUL NE CONTIENT PAS, et l'écran le dit :** les pertes des
+antennes, des raccords, de l'électrovanne, du disconnecteur. Un « le Ø25
+suffit » est donc un PLANCHER, pas une garantie — ce qu'il tranche sûrement,
+c'est l'inverse. **Et les diamètres INTÉRIEURS sont `provisoire`** : ils
+dépendent de la pression nominale du tube (PN6/PN10/PN16), qu'il n'a pas
+précisée, et se tromper de gamme fausse le verdict dans le sens dangereux.
+Ce sont ceux du PN10. À lui confirmer.
+
+**✅ LES TUYÈRES SONT POUR LES PETITS ESPACES — sa règle du 17 août, et elle
+corrige un seuil FAUX de moitié.** *« Les tuyères, on s'en sert uniquement pour
+les petits espaces : inférieur à 3,50 m, 4 m grand max. Sinon on passe en 3504
+ou plus gros. Un carré de douze par dix, c'est que des arroseurs, pas de
+tuyères. Les tuyères, c'est un carré de trois par trois, ou un long couloir de
+dix mètres sur deux de large. »*
+
+Le seuil était à **8 m**, il est à **4**. Ce n'est pas un détail : une pelouse
+de 12 × 8 partait en tuyères, donc en pluviométrie triple, beaucoup plus de
+têtes et beaucoup plus de débit — des secteurs en plus et une facture sans
+rapport. **C'est le PETIT CÔTÉ qui décide, et lui seul** : ses deux exemples le
+disent, le couloir de 10 × 2 prend des tuyères malgré ses 10 m de long.
+Un repli vers les tuyères au-delà de 4 m est désormais **interdit** : si aucune
+turbine ne pave, l'écran le dit plutôt que de rendre un plan posable et faux.
+
+**Le jardin d'exemple a dû changer avec cette règle** : ses deux pelouses
+étaient forcées en tuyères pour montrer une bascule, ce que sa règle interdit
+maintenant. Elles passent sur « au mieux », et **son couloir de 10 × 2 m entre
+dans le jardin** pour que les tuyères restent montrées là où elles ont leur
+place. Un écran d'accueil qui viole la règle qu'il vient de donner enseigne le
+contraire de ce qu'il a dit.
+
+**⚠ ET UN DÉFAUT QUE CETTE RÈGLE A RÉVÉLÉ, VU SUR LE PLAN ET PAR AUCUN TEST :
+deux pluviométries sous une même vanne.** La clé de groupe ne portait que le
+TYPE ('turbine'/'tuyère') : tant que les deux pelouses étaient l'une en
+turbines et l'autre en tuyères, elles ne se rencontraient jamais. Le jour où
+sa règle les a mises toutes deux en turbines, elles se sont retrouvées sur la
+même vanne avec **5,9 et 6,1 mm/h** — et c'est le plan, en les coloriant de la
+même couleur, qui l'a montré. La pluviométrie entre donc dans la clé de
+groupe : sa règle « ça ne se mélange jamais », appliquée à la lettre.
+
+**Ce que ça lui coûte, et il faut le lui dire :** une vanne de plus quand deux
+zones portent des buses différentes, même de 3 % d'écart. C'est le sens
+prudent — jamais de sous-arrosage — mais s'il juge que quelques pour cent se
+tolèrent, la clé se relâche en une ligne.
+
+---
+
 ### 0 quaterquadragies. Le plan d'arrosage — **DEUX CHOIX TRANCHÉS, une maquette essayable**
 
 **Tranché le 17 août 2026 :**
@@ -89,7 +369,305 @@ qui ne le sont pas.
 | 15 | Le choix de buse : je prends **la plus grande qui tienne dans le petit côté** (donc le moins d'arroseurs). C'est bien votre règle ? | *en attente* |
 | 16 | La **8-VAN** annonce 0,16 m³/h à 90°, soit plus que la 10-VAN (0,14) qui porte pourtant plus loin. Coquille du catalogue, ou valeur juste ? | *en attente* |
 | 17 | Les buses sont données **à 2 bar**. Que faire quand l'installation tourne à 3 : autre tableau, ou correction ? | *en attente* |
-| 18 | Les **corps escamotables** sur lesquels ces buses se vissent : quelles références ? | *en attente* |
+| 18 | ~~Les corps escamotables~~ — **REÇUS le 17 août** : Rain Bird série 1800 (RT1802-1832, 4 hauteurs × 3 options), Hunter Pro-Spray/I-Spray (7 réf.). Voir ci-dessous |
+
+**SES RÉPONSES DÉTAILLÉES DU 17 AOÛT — LE MÉTIER, PAR LUI.** Tout ce qui suit
+est appliqué dans `appli/arrosage.html`. Ne pas le redéduire, ne pas l'assouplir.
+
+| # | Sa règle | Où c'est |
+|---|---|---|
+| 5 | **« 80 % minimum entre chaque arroseur. Portée 5 m : distance ~5,50 m, 6 m max, 5 m étant la perfection. Jamais moins. En dessous de 5 m, 4 m, 3 m : JAMAIS. »** Donc écart ∈ [portée ; 1,2 × portée]. L'outil faisait exactement l'inverse (0,8 × portée) | `ECART_MAX_FACTEUR`, `paveSelonSaRegle` |
+| 6 | **Quinconce au-delà de 4 arroseurs, carré en dessous. « Les derniers arroseurs doivent toujours être dans les coins »** — pourtour régulier, seules les rangées intérieures se décalent | `QUINCONCE_AU_DELA_DE`, `dessinerPlans` |
+| 7 | Il enverra **un tableau portée × distance** : l'écart viendra alors du catalogue, pas d'un facteur | à venir |
+| 8 | **85 % du débit par secteur : confirmé** | `MARGE` |
+| 9 | **« Ça ne se mélange jamais »** — ni deux pluviométries, ni deux familles | `decouper()` |
+| 10 | **Massifs : lignes tous les 80 cm. Potager : 70 cm. Haies : une ou deux lignes, À DEMANDER à l'utilisateur** | `TYPES`, forme `nappe` |
+**LES RÉPONSES DU 17 AOÛT (deuxième tour, formulaire à cocher) :**
+
+| Question | Sa réponse |
+|---|---|
+| Comment poser les R-VAN (deux références par taille) | *« La R-VAN s'utilise lorsqu'on a moins de débit/pression que recommandé — privilégier les 360°. »* Rien à seuil numérique donné : **non câblé** dans le calcul, resté en note. Il précise n'avoir jamais utilisé de R-VAN lui-même |
+| Corps par défaut | **10 cm, sans option** — voir plus haut, câblé |
+| Buses en jet plat, R-VAN, MP Rotator : lesquelles comptent | *« Ce que j'utilise le plus sont les VAN […] les MP Rotator, plus chers, aspect différent, haut de gamme, à présenter tel quel, l'utilisateur choisira. »* VAN reste la référence par défaut. MP Rotator : présentés comme un choix à part une fois ses portées/débits reçus — **aucune spécification technique n'était sur la photo**, rien à enregistrer encore |
+
+**CE QUI N'A PAS EU DE RÉPONSE DIRECTE, à redemander sans insister :** les
+buses en jet plat (bordures rectangulaires) — sa réponse a porté sur la
+hiérarchie VAN / R-VAN / MP Rotator sans trancher ce point précis.
+
+| 12 | Une grande nourrice ou deux petites : **« question à poser à l'utilisateur, il décidera »** | à faire |
+| 13 | Le croquis client sera **les deux** — carré simple, ou avec obstacles, courbes, arbre au milieu. **« Je vais te donner les clés »** | à venir |
+| 14 | **L'utilisateur dit s'il se repique juste après le compteur** (le meilleur cas : la ville délivre ≥ 3 bar, c'est du sûr). Sinon **on lui explique quoi faire** pour avoir les bonnes infos | champ `compteur` |
+| 15 | Le choix de marque vaut **aussi pour les électrovannes**, pas pour le reste | `suitLaMarque` |
+| 16 | D'autres marques viendront **au fil des photos** | — |
+| 17 | **« À 2 bar ou 3 bar c'est quasiment les mêmes valeurs »** — aucune correction de pression à faire | — |
+| 18 | Les **corps escamotables** arrivent | `CATALOGUE.corps`, vide |
+
+**LE RÉSEAU LATÉRAL — sa planche manuscrite, 17 août 2026 : la tuyauterie
+ENTRE les arroseurs d'un même secteur, jamais couverte avant (tout portait sur
+un arroseur isolé).** Trois positions le long d'une ligne PE25 : DÉPART et
+MILIEU (le même té : 90° taraudé 25×3/4"×25) ; FIN (un coude taraudé 25×3/4",
+puisque rien ne continue) ; et JONCTION (un té 90° 25×25×25, non taraudé — un
+coude de tuyauterie qui n'alimente rien à cet endroit).
+
+**Ce qui a été calculé sans attendre, parce que ça ne dépend PAS du tracé :**
+chaque arroseur porte en réalité **DEUX SBE**, pas un — celui du bas (toujours
+3/4", sur le raccord de tuyauterie) et celui du haut (au diamètre du corps,
+déjà compté). Le SBE du bas était absent de la liste ; il y est maintenant.
+Et « environ 2 m de PEBD rigide Ø16 » par arroseur, compté (`totalArroseurs × 2`).
+
+**✅ LE TRACÉ EST TRANCHÉ ET CALCULÉ — 17 août, planche `73-le-trace-du-tuyau.html`.**
+Posée en dessin sur sa demande (*« fais-moi un croquis pour cette question que
+je te réponde correctement »*) : deux tracés du même secteur (3 rangées de
+4 arroseurs), à toucher pour comparer. Sa réponse : **B**, plusieurs lignes
+parallèles depuis un tronc au regard — **avec une correction essentielle** :
+
+> *« C'est le B, sauf que la jonction […] ressemble à un té […] un coude avec
+> un tuyau, le tuyau on peut le courber pour former le coude. Chose qu'on ne
+> peut pas faire lorsque c'est un té, puisqu'on est obligé de couper pour
+> mettre un té et remettre un bout de tuyau au milieu. »*
+
+Autrement dit : **une jonction (té 25×25×25) à chaque rangée où le tronc
+CONTINUE** au-delà (il faut couper le tuyau pour insérer le té) — **mais RIEN
+à la toute DERNIÈRE rangée** : le tronc s'y arrête en se courbant, sans pièce
+à couper. Pour un secteur de `ny` rangées : `ny − 1` jonctions, jamais `ny`.
+
+**Câblé dans `listeMateriel()` (`appli/arrosage.html`), plus besoin d'écarter
+ces pièces.** Par secteur : `nombre − ny` tés de ligne (départ + milieux),
+`ny` coudes de fin, `max(0, ny − 1)` jonctions — `ny` et `nombre` viennent
+directement de `poser()` (déjà calculés pour la couverture). Vérifié sur le
+jardin d'exemple (18×12 m, quinconce) : nx=4, ny=3, 11 points → 8 tés,
+3 coudes, 2 jonctions. `essai-arrosage-detaille.cjs` (32/32) et `tests/e2e.js`
+(90/90) au vert après le câblage.
+
+**Et la règle GÉNÉRALE derrière, donnée en croquis le même jour :** compter
+les **portions de tuyau** qui se rejoignent en un point. **Deux → coude**
+(le tuyau se courbe, aucune pièce). **Trois → té/jonction** (on coupe le
+tuyau pour insérer la pièce). Départ/Milieu (3 portions), Fin (2), jonction
+du tronc (3 tant qu'une rangée suit, 2 à la dernière) en découlent tous —
+à reprendre telle quelle pour tout futur point de raccordement plutôt que
+de redemander un cas par cas.
+
+**✅ ET IL A ÉPROUVÉ LA RÈGLE SUR UN TRACÉ LIBRE — planche `74-ou-sont-les-tes.html`,
+17 août.** *« Combien de té ? Où sont-ils ? Marque-les d'un point jaune ! »*
+sur un croquis à lui : six arroseurs **répartis n'importe comment** autour du
+regard, courbes, branches inégales — **pas une grille**. C'était un contrôle,
+pas une demande de dessin : une règle qui ne tiendrait que sur une grille ne
+vaudrait rien sur un chantier réel.
+
+**Elle tient, et elle se résume à un nombre : `N − 1`.** Un réseau part d'UNE
+ligne au regard et doit finir sur `N` bouts ; chaque té coupe une ligne en
+deux, donc ajoute un bout. D'où `N − 1` tés, **quelle que soit la forme du
+terrain et quel que soit l'ordre dans lequel le tuyau relie les arroseurs**.
+Six arroseurs → cinq tés, marqués et numérotés sur la planche.
+
+**Ce que ce contrôle prouve sur le code, et c'est la vraie prise :** l'outil
+compte sur une grille `(nombre − ny)` tés de ligne + `(ny − 1)` jonctions —
+**dont la somme vaut exactement `nombre − 1`**. Les deux comptages, l'un par
+la grille et l'autre par la topologie, tombent sur le même nombre : la formule
+de `listeMateriel()` **n'était donc pas un cas particulier de la grille**, elle
+vaut aussi sur un tracé libre. Rien à corriger dans le code — mais désormais on
+sait *pourquoi* elle est juste, et non plus seulement qu'elle l'est sur
+l'exemple.
+
+**Et la règle est GARDÉE, par son invariant plutôt que par des nombres**
+(`essai-arrosage-detaille.cjs`) : le contrôle vérifie
+`tés + jonctions === arroseurs − réseaux` et `tés + coudes === arroseurs`,
+pas « 8 tés sur ce jardin-là » — un compte figé serait périmé au prochain
+catalogue, l'invariant non. **Éprouvé à l'envers avant d'être gardé** : posé
+à `ny` jonctions au lieu de `ny − 1` (l'erreur exacte que sa correction
+visait), il rougit ; posé à `nombre` tés au lieu de `nombre − ny`, les deux
+contrôles rougissent. Remis droit, 35/35 au vert.
+
+**LA NOURRICE SE MODIFIE QUAND UNE VOIE PART EN GOUTTE-À-GOUTTE — sa règle du
+17 août.** *« À ne pas oublier : lorsqu'un réseau est pour du goutte-à-goutte,
+quelques modifications s'appliquent […] tout le reste ne doit pas être
+modifié, que ce soit pour une voie ou six — respecte la règle des pièces que
+je t'ai envoyée. »* Par voie en goutte-à-goutte : l'électrovanne 100 DV 1"
+**MM** standard de la fiche cède la place à une électrovanne 100 DV 1" **FF**,
+plus un régulateur de pression FF 3/4", plus deux mamelons réduits MM
+1"-3/4" et un mamelon fileté MM 1". Les autres voies de la même fiche, elles,
+gardent EXACTEMENT les pièces qu'il a transcrites — rien n'est retouché
+au-delà des voies concernées.
+
+`CATALOGUE.ficheNourrice(n, combienGoutte)` fait cette bascule : elle part de
+la fiche de base à `n` voies, réduit l'électrovanne MM du nombre de voies
+goutte-à-goutte, ajoute les pièces FF, puis fusionne les lignes de même
+référence (le mamelon réduit de la fiche de base et celui ajouté par la
+bascule ne doivent faire qu'UNE ligne, pas deux — piège trouvé et corrigé
+avant publication : la liste affichait « 2 u » deux fois plutôt que « 4 u »
+une fois). `arrosage.html` compte les voies goutte-à-goutte du jardin
+(`combienGoutteAGoutte`) et passe ce nombre partout où une fiche de nourrice
+est lue — liste au fournisseur, panneau nourrice, texte envoyé aux
+fournisseurs.
+
+**LES SIX FICHES DE NOURRICE SONT ARRIVÉES — de 1 à 6 voies, 17 août.**
+*« Voici toutes les pièces pour la nourrice, ce qui se trouve dans le regard
+d'arrosage. »* `CATALOGUE.nourrices[1..6]` porte désormais les vraies pièces
+— clarinettes, coudes, unions, électrovannes Rain Bird 100 DV, regards
+(rectangle 12", jumbo RG17106, jumbo 5/6 voies), programmateurs BL-IP,
+connexions étanches. Un catalogue de pièces dédupliqué (`piecesNourrice`) les
+porte une seule fois, référencé par chaque fiche — retaper « Électrovanne
+100 DV » six fois aurait fini par diverger.
+
+**Elles REMPLACENT les lignes génériques**, plutôt que de s'ajouter à côté :
+« Électrovannes 24 V », « Regards de vannes », « Programmateur X voies »
+disparaissent dès qu'une fiche existe pour le nombre de secteurs — remplacées
+par ses vraies références, dans la liste chiffrable ET dans le registre de
+prix. Ce qui reste toujours, quelle que soit la fiche : disconnecteur,
+réducteur de pression, sonde de pluie — des pièces de tête de réseau, jamais
+dans un regard.
+
+**Ce qui n'est PAS dans ses fiches, et n'a pas été ajouté en silence :** aucun
+disconnecteur ni réducteur listé dans le regard — cohérent avec leur position
+en tête de réseau. **La redite de la fiche 6 voies est CONFIRMÉE, pas une coquille — 17 août.**
+Sa réponse : *« oui c'est voulu, c'est comme ça que se constitue une nourrice
+6 voies. »* Même clarinette « 4 vannes » que la fiche 5, plus un Té 1'' MMF en
+plus. Ne pas y toucher.
+
+**LES COUDES SBE REMPLACENT LA « CROSSE » GÉNÉRIQUE — 17 août.** *« Sous les
+arroseurs il faut obligatoirement des coudes SBE, choisis-les en fonction des
+diamètres, un à chaque fois par arroseur. »* Deux références (`CATALOGUE.coudes`) :
+OD501 (SBE 050, 16×1/2") et OD502 (SBE 075, 16×3/4"). Le choix suit le
+**taraudage du corps posé**, pas une case cochée à part — chaque corps porte
+désormais son `filetage` ('1/2' ou '3/4'), relevé sur les photos. L'ancienne
+ligne « Crosse de raccordement », un espace réservé jamais raccordé à rien de
+réel, a disparu.
+
+**LE PLAN AVAIT UN ARROSEUR EN TROP — trouvé par lui, sur une capture cerclée
+en rouge, le 17 août.** Le quinconce DÉPLAÇAIT les arroseurs sans jamais en
+retirer un : même nombre qu'une grille carrée, juste décalés, ce qui entassait
+deux têtes d'un côté et laissait un trou de l'autre. Corrigé : une rangée
+décalée porte désormais UN ARROSEUR DE MOINS que la rangée alignée, posé entre
+chaque paire de la rangée voisine. Sur le jardin d'exemple (18×12 m, buse
+18-VAN) : 12 → 11. **Le plan et le calcul partagent maintenant la MÊME liste de
+points** (`pointsDeLaPose`), pour que les deux ne puissent plus diverger comme
+ils l'avaient fait — règle du §3 du dépôt, appliquée après coup.
+
+**✅ LES SIX FAMILLES DE TURBINES SE POSENT — débloqué le 17 août par sa
+réponse sur le débit.** Hunter PGP-ADJ, PGP Ultra, I 20-04 Ultra ; Rain Bird
+5000 Plus, 3504 ; Hunter SRM-04, PGJ ; Toro Mini 8 — corps ET buses.
+
+**CE QUI BLOQUAIT :** une seule valeur de débit par numéro de buse, aucune
+répartition par angle (contrairement aux tuyères VAN/SRS dont le tableau donne
+90°/180°/270°/360°). `busesDe` exige les trois angles, donc aucune turbine
+n'était choisie. **Sa réponse tranche, et il a fallu trois formulations pour
+la lui poser correctement** — les deux premières parlaient d'« angle », et il
+répondait sur le PLACEMENT (coin/bord/milieu), qui était déjà juste :
+
+> *« Les débits, portées qui sont dans le tableau sont donnés pour les
+> arroseurs en 360 degrés ; c'est les mêmes données que pour 90 ou 180
+> degrés. »*
+
+**Donc : le chiffre du tableau vaut à tous les arcs — on n'a jamais eu à
+diviser.** Un passage documenté dans `arrosage-catalogue.js` recopie le 360°
+sur le 90° et le 180° des turbines, et **de rien d'autre** : les tuyères
+gardent leurs valeurs par angle, qui sont réellement différentes (6-VAN :
+0,27 à 90°, 0,32 à 360° — jamais proportionnelles). Physiquement cela se tient :
+une turbine projette un filet par un orifice fixe qui balaie l'arc, alors
+qu'une tuyère projette un éventail dont la largeur change avec l'arc.
+
+**Ce que ça change sur le jardin d'exemple :** la pelouse arrière passe en
+turbines 3504, son débit tombe de 3,4 à 1,76 m³/h, et le jardin passe de
+**10 secteurs à 7**.
+
+**LA LEÇON DE MÉTHODE, ET ELLE VAUT POUR TOUTES LES QUESTIONS À LUI POSER.**
+Une question qui reste sans réponse deux fois n'est pas mal comprise : elle
+est mal posée. « Le débit à 90° » se lisait comme « quand met-on du 90° » —
+sujet qu'il maîtrise et qui était déjà réglé. La formulation qui a marché
+nommait la SOURCE (« sur vos tableaux, il n'y a qu'un seul chiffre ») et non
+le concept. **Montrer ce qu'on a relevé de ses photos, et lui demander ce qui
+manque** — c'est ce tableau de trois colonnes qui a débloqué en un message ce
+que deux formulaires n'avaient pas obtenu.
+
+**⚠ ET UN DÉFAUT QUE CE DÉBLOCAGE A CRÉÉ, TROUVÉ SUR UNE CAPTURE ET PAR AUCUN
+TEST.** Les turbines posées, la liste comptait toujours **un corps de TUYÈRE
+pour tous les arroseurs** — 22 corps 1800 et 22 SBE 1/2" là où 11 arroseurs
+étaient des turbines (corps 3504, et 3/4" sur les grosses séries). Les 39
+contrôles étaient verts : aucun ne regardait le corps par famille. **C'est la
+sixième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun test**
+(§5). Corrigé : `listeMateriel()` compte désormais le corps **par famille**,
+et le SBE du haut **par diamètre de corps** — un jardin mixte porte donc les
+deux diamètres, chacun pour sa part.
+
+**Le corps d'une turbine ne se CHOISIT pas**, contrairement à celui d'une
+tuyère (son sélecteur, « 10 cm sans option ») : la buse 0,75 du 3504 ne va que
+dans un corps 3504. `CATALOGUE.corpsDeLaBuse` fait l'appariement en lisant la
+référence (`RA3504-B075` → `RA3504`), et **un contrôle exige que chaque buse
+de turbine posable trouve son corps** — sans quoi une convention de référence
+cassée à la prochaine transcription ferait manquer un corps en silence, et le
+chantier s'arrêterait à la pose. Le deuxième sélecteur de corps (pour qu'il
+choisisse hauteur et options des turbines comme il le fait des tuyères) reste
+à faire — mais plus rien n'est faux en attendant.
+
+**LES BUSES MPR (5000 Plus, RBA2195-97) n'ont AUCUN débit sur la photo** — juste
+un rayon et un prix. Elles sont « matched precipitation rate » (le même débit
+au mm/h quel que soit l'arc, 90° à 360°), ce qui réglerait élégamment le
+problème des R-VAN si leur débit était connu — mais il ne l'est pas encore.
+
+**CINQ NOUVELLES PHOTOS REÇUES LE 17 AOÛT — ce qui est entré, et ce qui ne l'est PAS.**
+
+| Reçu | Entré comment |
+|---|---|
+| Corps Rain Bird 1800 (RT1802 → RT1832) | Dans `CATALOGUE.corps` — 4 hauteurs (5/10/15/30 cm) × options (aucune, SAM, SAM-PRS) |
+| Corps Hunter Pro-Spray / I-Spray | Dans `CATALOGUE.corps` — mêmes 4 hauteurs, I-Spray = régulateur intégré |
+| Buses Hunter SRS (7A à 17A) | Dans `CATALOGUE.buses`, même forme que les VAN — **Hunter est maintenant une marque active**, pas seulement listée |
+| Buses Rain Bird R-VAN (14/18/24) | Entrées, mais **NON choisies automatiquement** — voir ci-dessous, c'est le vrai sujet |
+| Buses bande (SST/RCS/LCS, SS-530…) | **Pas entrées.** Zone rectangulaire, pas une couronne — tout le calcul de cette page suppose des cercles. Un cas à part, pas encore posé |
+| Buses MP Rotator (NA23xx, TBT10xxx) | **Pas entrées.** Aucune portée ni débit sur la photo — juste réf et prix. Sans ces deux nombres, une entrée calculerait faux |
+
+**⚠ LA VRAIE DÉCOUVERTE : LES R-VAN SE VENDENT EN DEUX RÉFÉRENCES, PAS UNE.**
+Les VAN (p. 8) tiennent en une seule référence par taille, réglable de 90° à
+360°. Les R-VAN (p. 9 bis) sont **deux produits physiques différents** : une
+version réglable 45°-270° (jamais 360°), une version fixe 360° (jamais autre
+chose). Le tableau le montre par ses « X ».
+
+Une buse qui n'a QUE le 360° ne peut pas se poser dans un coin ni sur un bord —
+elle arroserait chez le voisin. Une buse qui n'a QUE 45°-270° ne peut pas couvrir
+l'intérieur. **Aucune des deux n'est donc choisie automatiquement** par le
+calcul (`busesDe` exige les trois angles 90/180/360 sur une seule référence) ;
+les deux restent visibles dans son registre de prix. Poser une pelouse avec des
+R-VAN suppose de mélanger les deux références selon la position — un
+pavage à deux références que l'outil ne fait pas encore.
+
+**LE CHOIX DU CORPS EST TRANCHÉ le 17 août :** *« 10 cm sans option, mais
+proposer à chaque fois les autres en expliquant ce qu'il apporte — l'utilisateur
+décidera. »* Un sélecteur dédié (`#corps`), une phrase par option (hauteur : ce
+qu'elle convient à faucher ; SAM : évite les fuites en point bas sur une pente ;
+PRS : utile si la pression varie), défaut au 10 cm sans option, réversible.
+Câblé dans la liste au fournisseur, un corps par arroseur posé — quand un a été
+enregistré pour la marque courante.
+
+**CE QUE SA RÈGLE D'ÉCART A RÉVÉLÉ, ET QUI N'ÉTAIT PAS VISIBLE AVANT :** le
+choix de buse doit OBÉIR à la règle, pas être corrigé après coup. Une turbine de
+9 m de portée ne pave pas une pelouse de 12 m de large — deux rangées feraient
+12 m d'écart (au-delà de sa limite), trois en feraient 6 (sous la portée, ce
+qu'il interdit). L'outil prend donc, de la plus grande à la plus petite, **la
+première buse qui pave les deux côtés selon sa règle**. Il ne reste d'alerte que
+sur les zones réellement impossibles.
+
+**SES RÉPONSES DU 17 AOÛT (formulaire à cocher — c'est la forme qu'il demande,
+pas des questions en vrac dans un message) :**
+
+| Question | Sa réponse |
+|---|---|
+| Quel modèle pour la suite | **Sonnet pour rentrer le catalogue, Opus pour le calcul et les contrôles.** Le catalogue, c'est de la transcription ; une règle de calcul mal comprise se découvre sur le chantier |
+| Le recouvrement de 80 % | **« Non, autre chose » — MA LECTURE EST FAUSSE, il l'expliquera.** L'écran l'annonce désormais comme provisoire : sans cela il essaierait l'outil sur une règle qu'il a écartée, et tout ce qui en découle porterait l'erreur sans qu'elle se voie |
+| Carré ou quinconce | **« Ça dépend de la forme du terrain »** — il donnera selon quoi |
+| Le choix de buse | **« Selon la largeur, avec mes seuils »** — il donnera les tranches (ex. jusqu'à 3 m → 8-VAN, de 3 à 5 m → 12-VAN…) |
+
+**CE QUE ÇA COMMANDE, ET C'EST UNE LEÇON DE MÉTHODE :** trois réponses sur
+quatre sont « je vais t'expliquer ». **Ne rien figer d'ici là** — ni la pose, ni
+le choix de buse. Ce qui tourne aujourd'hui est un échafaudage qui porte la
+mention « provisoire » à l'écran, et cette mention se retire seulement quand sa
+règle est posée.
+
+**ET SA CONTRAINTE DE CONSOMMATION, du même échange :** *« mon utilisation se
+console super vite »*. Ce qui a coûté le plus n'est pas le modèle mais la
+**batterie complète jouée deux fois** pour un lot qui ne touche pas `src/`. Un
+lot qui ne modifie que `appli/` et `docs/` se vérifie par sa propre suite
+(`appli/tests/e2e.js`) et par `appli/tests/essai-arrosage-detaille.cjs` — la
+batterie complète reste due dès qu'une ligne de `src/` bouge. Lui faire envoyer
+ses photos **par paquets** plutôt qu'une par une, pour la même raison.
 
 **LE CHOIX DE MARQUE — fait le 17 août.** Bandeau déroulant, **Rain Bird par
 défaut**, Toro ensuite ; `CATALOGUE.marques` s'allonge d'une ligne. **Aucune
@@ -367,6 +945,44 @@ Migration `drizzle/0050_rappel_facture_impayee.sql`, règles pures dans
   défile, sans une seule carte, pendant que le contrôle lisait le DOM et se
   déclarait vert. Et un montage écrit `WHERE id = NULL` sans se plaindre :
   vérifier le `rowCount` de toute écriture de montage.
+
+### 0 trigies quater. `test-fiche-pendant-relance` : le rouge venait de CELUI QUI L'OBSERVAIT
+
+**Vu le 17 août 2026**, et d'abord mal expliqué — ce point a été écrit une
+première fois sous le titre « rougit sous charge », ce qui était **faux**. La
+correction est ici parce qu'une hypothèse consignée dans les tâches se lit
+ensuite comme un fait (`TODO.md` 0 tricies nonies bis).
+
+**Le symptôme :** son deuxième cas — *« le veilleur est bien bloqué à relancer »*
+— rouge dans la batterie complète, vert rejoué seul. Quatre fois de suite.
+
+**LA CAUSE, MESURÉE.** `veiller.sh` ne se déclare « serveur mort » que si
+`pgrep -f '[n]ext(-server| dev| start)'` ne trouve **rien**. Or `pgrep -f`
+compare la **ligne de commande entière de tout processus de la machine**. Les
+batteries rouges avaient été lancées par une commande qui commençait par
+`pgrep -af "next-server|next dev" | xargs kill` — un ménage des serveurs
+orphelins. **Ce shell-là reste vivant pendant toute la batterie, et sa ligne de
+commande contient littéralement « next-server » et « next dev ».** Le veilleur
+voyait donc un serveur, prenait l'autre branche, et n'écrivait jamais le message
+que la suite attend.
+
+**La preuve tient en deux lignes de journal :** la batterie lancée SANS ce
+préfixe (`batterie19`) a la suite au vert ; les quatre suivantes, avec, au rouge.
+
+**CE QUE ÇA APPREND, ET CE N'EST PAS UNE ANECDOTE :**
+
+- **`pgrep -f` attrape l'observateur.** Toute commande de diagnostic qui NOMME
+  un motif surveillé par le produit devient elle-même ce qu'elle cherche. Faire
+  le ménage des serveurs dans un appel SÉPARÉ, qui se termine avant la batterie.
+- **Un rouge reproductible n'est pas forcément un défaut du code.** Celui-ci
+  l'était quatre fois d'affilée, et « sous charge » était une explication
+  plausible, cohérente, et fausse. Deux voisines de ce fichier rougissent
+  vraiment sous charge : la ressemblance est précisément ce qui a fait mal
+  deviner.
+
+**Rien n'est à corriger dans le produit ni dans la suite.** Elle a raison de
+refuser de conclure quand son montage n'a pas reproduit le cas — c'est ce qui a
+permis de le voir.
 
 ### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
 

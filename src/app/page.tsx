@@ -6,7 +6,7 @@ import {
 } from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
-import { lieuDuChantier } from "@/lib/nom-chantier";
+import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { auth } from "@/auth";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
@@ -73,6 +73,7 @@ export default async function ChantiersPage() {
     // gauche est `majAt` — le chantier a pu bouger depuis pour une photo. Ce
     // qu'il compte, lui, ce sont les jours depuis que le devis est parti.
     const envoiLe = c.envoiEnvoyeAt ?? c.devisEnvoyeAt;
+    const lieu = lieuDuChantier(c.nom, c.adresseChantier, c.clientNom);
     const ligne = ligneEtatChantier({
       statut: c.statut,
       photosCount: c.photosCount,
@@ -83,7 +84,12 @@ export default async function ChantiersPage() {
       nom: c.nom,
       jour,
       mois,
-      lieu: lieuDuChantier(c.nom, c.adresseChantier, c.clientNom),
+      lieu,
+      // **La question se tranche ICI, au serveur, et une seule fois.** L'écran
+      // qui comparerait le texte de son côté referait la règle une seconde
+      // fois : le jour où le repli change de mots, la ligne cesserait
+      // silencieusement d'être cliquable (`CLAUDE.md` §3).
+      lieuManquant: lieuEstManquant(lieu),
       // L'état, et la ligne en clair sous lui quand il y a une date d'envoi à
       // dire. La règle vit dans `chantier-etat.ts` : l'écran n'a rien à décider.
       etat: ligne.etat,

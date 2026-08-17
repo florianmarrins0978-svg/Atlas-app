@@ -10298,10 +10298,190 @@ puisse le corriger. Tout ce qui est retenu entre dans SES mots, isolés par RLS.
 **Et rien ne s'écrit sans son geste** — le dépôt le refuse depuis toujours
 (`creerPrestationCatalogue` : « toujours déclenchée après confirmation explicite
 de l'utilisateur »).
+---
+
+## 124. « Adresse non renseignée » devient une porte — et rien d'autre ne bouge
+
+**Sa demande du 17 août 2026**, capture de son accueil à l'appui : *« j'ai oublié
+de rentrer les infos du client. Il faut qu'à partir de cette page, il y a marqué
+adresse non renseignée, que je puisse cliquer dessus »*.
+
+**Puis sa correction, le même jour, et c'est elle qui compte.** Une première
+planche avait dessiné une « fiche client » de toutes pièces, avec ses champs et
+ses questions. Il a répondu : ***« je ne suis pas sûr que tu aies bien compris
+[…] que ça m'amène sur la page que je t'ai envoyée sur la deuxième photo. RIEN
+DE PLUS, RIEN DE MOINS. »*** — sa seconde photo montrait l'écran de création.
+
+### La leçon, et elle a coûté deux allers-retours
+
+**Devant une demande qui touche à un écran, chercher d'abord SI L'ÉCRAN
+EXISTE.** Ici la réponse était sous la main, dans sa propre capture. En dessiner
+un neuf lui a fait relire une planche entière pour dire « ce n'est pas ça ».
+
+Ce qui avait égaré : le code lui-même annonçait qu'il manquait une fiche client
+— *« la civilité ne se corrige plus après coup, faute d'écran de fiche client »*
+(`DevisCompletClient.tsx`). C'était vrai, et ce n'était pas sa demande. **Un
+manque réel du produit n'autorise pas à le combler dans le lot d'à côté**
+(`CLAUDE.md` §3 bis).
+
+**Et il ne manque plus :** une autre session a codé la fiche du client le même
+jour (§121), atteinte depuis le chantier. Les deux écrans ne se marchent pas
+dessus et ne doivent pas être confondus — **celui-ci corrige les coordonnées d'un
+chantier**, celui-là **montre ce que l'application sait d'un client** (combien de
+fois il est venu, ce qu'il doit). C'est la meilleure preuve que la fiche
+inventée ici aurait été un troisième écran de trop.
+
+### Un seul composant, deux chemins d'écriture
+
+`FormulaireNouveauChantier` reçoit une entrée `reprise` : présente, il préremplit
+et **enregistre** au lieu de créer. Un formulaire jumeau aurait divergé au
+premier champ ajouté — l'un garderait le canal d'envoi, l'autre l'aurait oublié.
+C'est la raison qui l'avait déjà fait extraire de sa page le 10 août.
+
+| | Créer | Reprendre |
+|---|---|---|
+| Route | `/chantiers/nouveau` | `/chantiers/[id]/coordonnees` |
+| Action | `creerChantierAction` | `reprendreChantierAction` |
+| Surtitre | « Nouveau » | « Les coordonnées » |
+| Bouton | « Créer le chantier » | « Enregistrer » |
+
+**Les deux mots changent parce qu'ils mentiraient**, et pour aucune autre raison.
+« Nouveau » au-dessus d'un chantier ouvert trois jours plus tôt fait douter
+d'avoir cliqué au bon endroit ; « Créer le chantier » annoncerait une action que
+l'écran ne fait pas, et il chercherait ensuite pourquoi il a deux chantiers.
+
+### Le client est RETROUVÉ, jamais recréé
+
+Un chantier sans client en gagne un dès qu'un nom est saisi — et ce nom passe par
+`trouverOuCreerClient` (§122), arrivé le même jour : *« si c'est monsieur Martins
+et qu'on a déjà une fiche client monsieur Martins, le devis, la facture s'ajoute
+à la fiche de monsieur Martins »*.
+
+**Passer par `creerClient` ici aurait fabriqué le doublon que l'autre porte vient
+d'apprendre à éviter**, et le patron aurait vu deux fiches Martins selon qu'il a
+rempli le chantier à sa création ou après coup. Un chantier qui a DÉJÀ un client
+voit le sien mis à jour : le recréer laisserait un orphelin derrière, et les
+devis déjà partis pointent sur le premier.
+
+### Le nom du chantier se RECALCULE, et c'est tout l'intérêt du geste
+
+`chantiers.nom` n'est pas saisi : il se déduit du client, sinon de l'adresse,
+sinon de la date (`nom-chantier.ts` — le champ « nom du chantier » a été retiré
+le 5 août 2026, *« un élagueur ne baptise pas ses chantiers »*).
+
+**Sans ce recalcul, remplir « Martins » aurait laissé la ligne afficher
+« Chantier du lundi 17 août » pour toujours** — le défaut corrigé partout sauf à
+l'endroit exact d'où il est parti. La règle appliquée est la MÊME qu'à la
+création : une seconde règle de nommage aurait fini par diverger.
+
+**Et la date employée est celle de la CRÉATION**, jamais aujourd'hui. Un chantier
+ouvert le 17 et repris le 20 ne doit pas devenir « Chantier du jeudi 20 août » :
+il ne se reconnaîtrait plus.
+
+### La mention seule est la cible — et la ligne reste UN SEUL lien
+
+Le nom du chantier garde sa reprise, et **sa règle du 13 août n'est pas
+touchée** : *« que ça me renvoie à l'étape où je me suis arrêté »*. Il a dit
+« cliquer DESSUS », pas « sur la ligne ».
+
+**UNE LIGNE = UN SEUL `<a>`, ET CET INVARIANT A ÉTÉ DÉCOUVERT EN LE CASSANT.**
+Un lien dans un lien n'étant pas du HTML valide, la première version avait coupé
+le lien de la ligne en trois — le nom, la mention, l'état. C'était valide, et
+**trois suites sont tombées d'un coup à la batterie** :
+
+| Suite | Ce qu'elle supposait |
+|---|---|
+| `test-dashboard-e2e` | compte les lignes par `a.atlas-brin` — il n'y avait plus d'ancre portant cette classe |
+| `test-suivi-devis-e2e` | remonte du nom à `ancestor::a[1]` pour y lire l'état — l'état était dans une AUTRE ancre |
+| `test-transcription-e2e` | clique au milieu de `.atlas-ligne` — le milieu tombait entre deux ancres |
+
+Aucune des trois n'avait tort : **la ligne EST un lien, et ce qu'on lit dedans
+doit rester dedans.** La mention est donc un `<span role="link">` posé DANS
+l'ancre — contenu de phrasé, parfaitement légal — qui détourne le geste vers le
+routeur. Un contrôle dédié compte les ancres de la ligne pour que personne ne
+recommence sans le voir (`test-coordonnees-depuis-accueil-e2e`).
+
+**Ce que ça enseigne au-delà de ce lot :** un changement de STRUCTURE dans un
+composant partagé casse des suites qui ne parlent pas de lui. Trois rouges dont
+aucun ne nommait la mention — c'est la batterie complète qui les a montrés,
+et c'est exactement ce pour quoi elle existe (`CLAUDE.md` §5).
+
+**Une seule source décide de ce qu'est une cible** : `lieuEstManquant`, comparée
+à `LIEU_MANQUANT`. L'accueil qui aurait comparé le texte de son côté aurait
+refait la règle une seconde fois — et le jour où le repli change de mots, la
+mention cesserait silencieusement d'être cliquable.
+
+### Ce que la capture a trouvé, et qu'aucun test ne voyait
+
+**Sixième fois dans ce dépôt qu'un défaut sort d'une image.** La cible fait 34 px
+de haut — un texte de 11,5 px ne s'attrape pas sous un pouce ganté —, et le trait
+pointillé était porté par le lien : il se posait donc au **bas des 34 px**, à dix
+pixels sous le mot. Ce n'était plus un soulignement, c'était un trait perdu. Il
+vit désormais sur un `<span>` intérieur.
+
+**La capture elle-même a menti une fois de plus** : l'image « après » visait
+`.atlas-fil-defile`, c'est-à-dire le cadre lui-même. Le calcul de position valait
+zéro, et la photo montrait le HAUT du fil au lieu de la ligne corrigée. Une
+capture qui cadre autre chose que ce qu'elle annonce ne prouve rien.
 
 ---
 
-## 124. « L'appli est super lente », deux soirs de suite — et deux causes différentes
+## 125. Les outils métier : un cinquième onglet, et ce qu'il coûte à la barre
+
+**Sa question du 17 août 2026 :** *« L'idée, c'est de créer des outils comme
+celui-là pour les paysagistes ; après je ferai la même chose pour les terrasses
+bois. Pour toi le mieux c'est de créer une nouvelle catégorie paysage ? Ou
+alors on range ça dans les réglages, sous une catégorie paysage ? »*
+
+**Ce qui a été écarté, et pourquoi.**
+
+- **Les Réglages, non.** On y règle ce qui vaut une fois pour toutes — tarifs,
+  équipe, TVA, identité. Un plan d'arrosage se refait à chaque client, comme un
+  devis. L'y ranger le nommerait mal et l'enterrerait sous quinze rubriques.
+- **Une catégorie « Paysage », non plus.** Le paysage est son métier ENTIER :
+  le mot ne distingue rien de ce que l'application fait déjà. Ce qu'il sépare
+  en réalité, ce sont des **outils de calcul** — arrosage, terrasse bois — face
+  au parcours commercial (chantier, devis, facture).
+- **Attaché au chantier seul** — ma recommandation — **écartée par lui.** Elle
+  avait pour elle que le plan est toujours fait *pour quelqu'un* et se
+  retrouverait six mois plus tard chez le bon client. Son objection tient : un
+  outil qui exige un chantier ne sert pas en visite de devis, quand le client
+  n'existe pas encore.
+
+**Sa décision : un cinquième onglet « Outils ».**
+
+**LE COÛT EST MESURABLE, ET IL A ÉTÉ MESURÉ** (`docs/maquettes/76-le-cinquieme-onglet.html`).
+La barre porte quatre onglets depuis le 10 août, en capitales de 9,5 px
+espacées de 0,28em, sans icône — son choix d'alors (*« quatre pictogrammes
+sous quatre mots répétaient la même information »*). Passer à cinq fait tomber
+la colonne de 89,5 à **71,6 px** sur un écran de 360. Or « CHANTIERS », le plus
+long des cinq mots, en demande 78,8.
+
+| Variante | Largeur de « CHANTIERS » | Verdict |
+|---|---|---|
+| A · cinq onglets, rien d'autre changé | 78,8 px | **déborde de 7,2** |
+| B · espacement resserré à 0,18em | 70,3 px | tient de **1,3 px** — faux confort |
+| C · lettre à 8,5 px, espacement 0,14em | 59,8 px | tient, 11,8 px de marge |
+| D · icône au-dessus du mot | 56,8 px | tient, 14,8 px de marge |
+
+**A est donc à écarter, et B aussi :** 1,3 px de marge ne survit pas à un
+changement de police entre téléphones, et le défaut serait invisible ici pour
+apparaître chez lui. **D revient sur sa décision du 10 août** (les icônes
+retirées) — recevable, puisque le service rendu n'est plus le même à cinq
+colonnes qu'à quatre : viser sans lire. Mais c'est à lui de le dire.
+
+**Ce qui reste à trancher avec lui**, et qui n'est pas de la place : l'onglet
+porte une LISTE d'outils (arrosage, puis terrasse bois), donc il s'appelle
+« Outils » et non « Arrosage » ; et il faudra pouvoir **rattacher un plan à un
+chantier après coup**, sans quoi un plan fait en visite de devis se perdra —
+c'est précisément ce que l'accès sans chantier fait gagner et risque de coûter.
+
+---
+
+
+---
+
+## 126. « L'appli est super lente », deux soirs de suite — et deux causes différentes
 
 **Le 16 août, puis le 17 : le même message, la même lenteur, et pourtant deux
 pannes distinctes.** Le piège de ce genre de défaut est là : le symptôme est
