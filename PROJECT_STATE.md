@@ -652,17 +652,17 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
-- **Le catalogue : écrire ses propres mots** — planche 68 posée le 17 août
-  (`docs/maquettes/68-mes-mots-au-catalogue.html`), **en attente de son
-  arrangement**. Il a reposé la question du 14 août sur le même écran : *« À quoi
-  sert cette page ?? On peut rien modifier rajouter »*. Le catalogue est
-  **partagé sans RLS** (migration 0007) : ses mots demanderont une table à part,
-  sous `withEntreprise`, superposée au commun **à la lecture ET à la recherche**
-  — visibles à l'écran mais muets à la dictée serait le pire des deux mondes.
-  La planche répare au passage les deux défauts du 14 août (`TODO.md`
-  §0 octovicies bis) : la flèche de retour, et « aucun prix encore constaté »,
-  une phrase qui interrogeait une mémoire jamais écrite et ne se serait donc
-  jamais éteinte.
+- **Le catalogue s'écrit — FAIT le 17 août** (`ARCHITECTURE.md` §122, migration
+  0052). Il a posé deux fois la même question sur cet écran : *« À quoi sert
+  cette page ?? On peut rien modifier rajouter »*. Ses mots s'accrochent
+  désormais aux entrées d'Atlas (arrangement B de la planche 68), le catalogue
+  partagé reste intouché, et **un mot ajouté est reconnu par la dictée** — les
+  quatre chemins de recherche passent par la même fonction. Réparés au passage :
+  la flèche de retour, et « aucun prix encore constaté », une phrase qui lisait
+  une mémoire jamais écrite et ne se serait jamais éteinte. **Deux décisions
+  restent à lui** (`TODO.md` §0 octovicies bis) : faut-il remettre un prix sur
+  ces cartes, et le catalogue doit-il s'auto-alimenter depuis ses corrections de
+  dictée — aujourd'hui rien ne s'ajoute tout seul.
 
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA

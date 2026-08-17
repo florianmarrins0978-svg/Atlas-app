@@ -9,6 +9,51 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le catalogue s'écrit enfin : ses mots à lui, par-dessus celui de tout le monde
+
+**Codé le jour même de la planche, sur son « là c'est la B ».** L'écran
+« Catalogue » se lisait sans pouvoir s'écrire, et il l'a signalé deux fois en
+trois jours. Il porte désormais SES mots, en or, accrochés aux entrées d'Atlas.
+
+**La table `mots_catalogue` (migration 0052) existe parce que le catalogue est
+PARTAGÉ.** `catalogue_prestations` n'a pas de colonne d'entreprise et pas de
+RLS : une ligne écrite depuis son téléphone changerait le vocabulaire de tous
+les autres artisans. Ses mots vivent donc à part, isolés comme le reste de ses
+données, et se superposent au commun à la lecture.
+
+**Ce qui compte le plus dans ce lot ne se voit pas à l'écran : un mot visible
+est un mot RECONNU.** Un mot ajouté et ignoré par la recherche aurait donné le
+pire des deux mondes — il aurait cru apprendre quelque chose à Atlas pendant que
+la dictée continuait de ne rien comprendre, sans un message pour le détromper.
+Les quatre chemins de recherche passent donc par la même fonction : les deux
+outils de l'agent, celui des synonymes, et le service de chiffrage. La suite
+base rougit précisément là si on les débranche.
+
+**Le mot se pose court, et le champ le dit** (« Comme vous le dites : "écime" ») :
+le rapprochement se fait par inclusion, comme pour le vocabulaire commun —
+« écime » attrape « écime-moi le tilleul », « écimage » ne l'attrape pas. Deux
+règles de rapprochement auraient fini par diverger.
+
+**Trois défauts de ses captures réparés dans le même lot :** la flèche de retour
+existe enfin ; « Aucun prix encore constaté par votre entreprise » disparaît —
+elle lisait une mémoire que l'application n'écrit nulle part, et ne se serait
+jamais éteinte ; « Synonymes » et « Variantes » deviennent « Aussi appelé ».
+L'écran est passé à la charte au passage : il portait encore l'échelle de
+juillet.
+
+**Un geste qui n'était PAS sur la planche a été ajouté : retirer un de ses
+mots.** Sans lui, un mot mal tapé restait pour toujours et faussait la dictée
+sans recours. Rien n'atteint le vocabulaire commun.
+
+**Ce que ce lot ne fait pas, et qu'il a demandé :** rien ne s'alimente tout
+seul. Un mot compris dans un devis ne s'ajoute nulle part — ni au commun, ni
+chez lui. `ARCHITECTURE.md` §122 dit ce qu'il faudrait pour le faire, si la
+décision est prise.
+
+Éprouvé par `scripts/test-mots-catalogue.ts` (isolation, refus rendus,
+recherche, catalogue partagé intact) et `scripts/test-catalogue-mes-mots-e2e.ts`
+(le geste, le rechargement, le retrait, la flèche).
+
 ### Le catalogue : une planche pour y écrire enfin, et les deux défauts du 14 août réparés dessus
 
 **Il a posé la même question deux fois, et c'est le vrai signal.** Le 17 août,
