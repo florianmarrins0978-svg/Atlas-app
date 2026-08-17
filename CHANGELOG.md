@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### La cible est dessinée : son plan d'exécution, en couleur
+
+Il a envoyé la photo d'un vrai plan de chantier — échelle 1/100e, légende,
+symboles, diamètres cotés le long des tuyaux — et sa demande : *« lorsqu'on te
+donne un croquis comme celui-là, tu rentres toutes les infos comme sur la
+photo […] tu me fais ça en couleur, tu sépares les réseaux. C'est là où je veux
+arriver au final. »*
+
+`docs/maquettes/75-le-plan-comme-le-sien.html` refait ce plan, un réseau par
+couleur, **sur les nombres que l'outil calcule déjà** — onze têtes en
+quinconce, coupées 5 / 6 entre deux vannes, la liste entière. Pas des nombres
+de décor : ce sont ceux du jardin d'exemple.
+
+**C'est une planche et non du code, et c'est sa règle** (§3 bis). Ce plan-là
+demande la seule chose que l'outil n'a pas : un jardin d'ENSEMBLE. Il connaît
+des zones, pas un terrain — donc ni le regard, ni les tuyaux, ni le robinet
+n'ont d'endroit où se poser. Bâtir cela, c'est un moteur de plan entier ; une
+planche se corrige en dix minutes. Ce qu'elle lui demande de trancher : les
+symboles, les cotes voulues, et surtout la lecture de *« juste la dripline, ça
+tu ne le mets pas »* — comprise comme « sa vanne reste, son tracé disparaît ».
+
+**Un piège de dessin payé au passage, et il vaut au-delà de cette planche :**
+le contour de la pelouse était un second rectangle `fill="none"` posé après
+les couronnes. **Une règle CSS l'emporte sur un attribut de présentation SVG**,
+donc le `fill="none"` était ignoré : le rectangle repeignait la pelouse en
+opaque et effaçait toutes les couronnes. Le plan s'affichait proprement, sans
+la seule chose qu'il doit montrer. Vu sur la capture, par rien d'autre — la
+septième fois dans ce dépôt.
+
 ### Les tuyères reviennent aux petits espaces, et le Ø25/Ø32 se calcule
 
 Deux règles de métier, données ensemble. **Les tuyères d'abord :** *« on s'en

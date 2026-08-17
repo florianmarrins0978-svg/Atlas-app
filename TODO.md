@@ -88,6 +88,45 @@ morceaux existent déjà, et les confondre ferait refaire ce qui est fait.
    autres — c'est-à-dire exactement ce que le croquis photographié apporterait.
    **Placer le regard « quelque part » avant cela serait inventer un jardin.**
 
+**LA CIBLE EST DESSINÉE — planche `75-le-plan-comme-le-sien.html`, 17 août.**
+Il a envoyé la photo d'un **plan d'exécution professionnel** : échelle 1/100e,
+légende (DRIPLINE, Turbine 3504, Tube PE.H.D, Électrovanne 9 V), symboles,
+diamètres Ø16 et Ø25 cotés le long des tuyaux, robinet repéré. Sa demande :
+*« Lorsqu'on te donne un croquis comme celui-là, tu rentres toutes les infos
+comme sur la photo […] tu me fais ça en couleur, tu sépares les réseaux, chaque
+réseau d'une couleur différente. C'est là où je veux arriver au final. »*
+
+**Ce que la planche fixe, et qu'il faut lui faire valider avant d'écrire quoi
+que ce soit** (règle du §3 bis — une planche se corrige en dix minutes, un
+moteur de plan en deux jours) :
+
+| | |
+|---|---|
+| Symboles | cercle = arroseur, nœud papillon = électrovanne, tireté = PEHD, ⊕ = robinet — les siens |
+| Couleurs | une par réseau, **jusque dans le regard** : chaque électrovanne porte la couleur de sa vanne |
+| Dripline | **NON TRACÉE** — sa consigne : *« juste la dripline, ça tu ne le mets pas »*. Lu comme : sa vanne reste, son tracé au sol disparaît. **À confirmer d'un mot** |
+| Regard | posé **dans le massif**, caché, comme il le fait |
+| Cotes | côtés de la pelouse et diamètres, le long des tuyaux comme sur sa photo |
+
+**CE QUI MANQUE POUR LE CODER, ET C'EST UNE SEULE CHOSE : un jardin
+D'ENSEMBLE.** Tout ce qui est chiffré sur cette planche, l'outil le calcule
+déjà — les onze têtes, le quinconce, les couronnes, la coupe en deux vannes,
+la liste entière. Ce qu'il ignore, c'est **où les zones sont les unes par
+rapport aux autres** : il connaît des zones, pas un terrain. Sans cela, ni le
+regard, ni les tuyaux, ni le robinet n'ont d'endroit où se poser.
+
+**Deux façons de le lui donner, et c'est la question suivante :** il place ses
+zones lui-même sur un quadrillage (faisable tout de suite, quelques gestes),
+ou il photographie le croquis et on le lit (plus proche de son geste, mais la
+page publiée ne sait pas lire une photo — il faut passer par l'application).
+
+**Un piège de dessin payé sur cette planche, et il vaut au-delà d'elle :** le
+contour de la pelouse était un second `<rect class="gazon" fill="none">` posé
+APRÈS les couronnes. **Une règle CSS l'emporte sur un attribut de présentation
+SVG** — `fill="none"` était donc ignoré, le rectangle repeignait la pelouse en
+opaque, et le plan s'affichait proprement SANS la seule chose qu'il doit
+montrer : le recouvrement. Vu sur la capture, par rien d'autre.
+
 **Ce qui est donc faisable tout de suite, sans rien inventer :** les couleurs
 par réseau sur les plans de zone existants (#8, fait), et la case photo comme
 PIÈCE JOINTE montrée à côté du plan (#4 partiel, pas encore fait).

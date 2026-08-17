@@ -1,0 +1,335 @@
+<title>Le plan comme le sien</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE PLAN COMME LE SIEN — la cible du produit, dessinée avant d'être codée.
+
+    Sa photo du 17 août 2026 : un plan d'exécution professionnel, à l'échelle
+    1/100e, avec sa légende (DRIPLINE, Turbine 3504, Tube PE.H.D, Électrovanne
+    9 V), ses symboles, ses diamètres Ø16 et Ø25 cotés sur les tuyaux, et le
+    robinet repéré. Sa demande : « Lorsqu'on te donne un croquis comme
+    celui-là, tu rentres toutes les infos comme sur la photo […] et tu me fais
+    ça en couleur, tu sépares les réseaux, chaque réseau d'une couleur
+    différente. C'est là où je veux arriver au final. »
+
+    ————————————————————————————————————————————————————————————————
+    POURQUOI UNE MAQUETTE PLUTÔT QUE DU CODE, et c'est SA règle (§3 bis).
+
+    Ce plan-là demande une chose que l'outil n'a pas : un jardin D'ENSEMBLE.
+    Aujourd'hui chaque zone est dessinée seule, et rien ne dit où la pelouse
+    est par rapport au massif — donc ni le regard, ni les tuyaux, ni le robinet
+    n'ont d'endroit où se poser. Bâtir ça, c'est un moteur de plan entier.
+
+    Avant de l'écrire, il faut qu'il valide CE QU'IL VERRA : les symboles, la
+    légende, ce qui est tracé et ce qui ne l'est pas. Une planche se corrige en
+    dix minutes, un moteur de plan en deux jours.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EST REPRIS DE SA PHOTO, ET CE QUI EN DIFFÈRE
+
+    · Repris : la légende à gauche, les symboles (cercle = arroseur, nœud
+      papillon = électrovanne, trait tireté = PEHD), les diamètres cotés sur
+      les tuyaux, le robinet repéré, l'échelle.
+    · Ajouté, et c'est sa demande : UNE COULEUR PAR RÉSEAU, jusque dans la
+      légende — sa photo est en noir et blanc, les réseaux s'y devinent.
+    · **NON TRACÉ : la dripline.** Sa consigne du 17 août — « juste la
+      dripline, ça tu ne le mets pas ». Son électrovanne, elle, reste sur le
+      plan : la vanne existe, c'est son tracé au sol qui ne se dessine pas.
+      À confirmer d'un mot si la lecture est fausse.
+
+    Les nombres sont ceux que l'outil calcule déjà sur ce jardin (18 × 12 m,
+    turbine 3504 buse 0,75, portée 5 m, 11 têtes en quinconce réparties 5 / 6
+    entre deux vannes) — pas des nombres de décor.
+
+    RIEN N'EST CODÉ : `src/` n'est pas touché. AUCUN SCRIPT.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --teinte:#ece9e1; --plan:#1c1c1a; --herbe:#eef0e6;
+    --r1:#2F6FB5; --r2:#3E8F4E; --r3:#D9A520;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
+      --r1:#6FA3DC; --r2:#6FB87E; --r3:#E8C255;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
+    --r1:#6FA3DC; --r2:#6FB87E; --r3:#E8C255;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:1000px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .feuille{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
+           padding:16px 14px 10px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
+  .feuille svg{width:100%;height:auto;display:block}
+
+  /* Le dessin, dans son vocabulaire à lui. */
+  .parcelle{fill:none;stroke:var(--plan);stroke-width:2.5}
+  .maison{fill:var(--teinte);stroke:var(--plan);stroke-width:2}
+  .gazon{fill:var(--herbe);stroke:var(--plan);stroke-width:1.4}
+  .contour{fill:none;stroke:var(--plan);stroke-width:1.6}
+  .massif{fill:none;stroke:var(--gris);stroke-width:1.2;stroke-dasharray:1 5;stroke-linecap:round}
+  .massif-f{fill:var(--teinte)}
+  .arc{fill:none;stroke-width:1.2;stroke-opacity:.85}
+  .zone-arc{fill-opacity:.17}
+  .tete{fill:var(--papier);stroke-width:2.6}
+  .tuyau{fill:none;stroke-width:2.4;stroke-dasharray:9 5;stroke-linecap:round}
+  .tuyau-p{fill:none;stroke:var(--plan);stroke-width:2.8;stroke-dasharray:11 5;stroke-linecap:round}
+  .cote{fill:var(--gris);font-size:12px;font-family:inherit}
+  .repere{fill:var(--plan);font-size:12.5px;font-family:inherit}
+  .repere-b{fill:var(--plan);font-size:12.5px;font-weight:700;font-family:inherit}
+  .ech{fill:var(--gris);font-size:12px;font-family:inherit;font-style:italic}
+
+  .leg-t{fill:var(--encre);font-size:13px;font-weight:700;font-family:inherit}
+  .leg{fill:var(--encre);font-size:12.5px;font-family:inherit}
+  .leg-g{fill:var(--gris);font-size:11.5px;font-family:inherit}
+
+  .rangee{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+  .colonne{flex:1;min-width:270px}
+  .liste{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
+         padding:14px 16px 16px}
+  .liste h2{font-family:Georgia,serif;font-weight:400;font-size:17px;margin:0 0 2px}
+  .liste .sous{font-size:12px;color:var(--gris);margin:0 0 12px}
+  .l{display:flex;gap:10px;align-items:baseline;padding:7px 0;
+     border-bottom:1px solid var(--trait);font-size:13px}
+  .l .q{flex:none;min-width:52px;color:var(--gris);font-variant-numeric:tabular-nums}
+  .l .n{flex:1;min-width:0}
+  .l.fam{border:0;padding:12px 0 2px;font-size:10.5px;letter-spacing:.13em;
+         text-transform:uppercase;color:var(--or)}
+
+  .note{margin-top:20px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note + .note{margin-top:14px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:7px}
+</style>
+
+<div class="dedans">
+  <h1>Le plan comme le sien</h1>
+  <p class="intro">Votre plan du 17 août, refait <b>en couleur, un réseau par
+    couleur</b>. Les nombres sont ceux que l'outil calcule déjà — pelouse
+    18 × 12 m, turbine 3504 buse 0,75, portée 5 m, onze têtes en quinconce,
+    réparties 5 et 6 entre deux vannes. <b>Rien n'est codé</b> : c'est la
+    planche à corriger avant que j'écrive le moteur de plan.</p>
+
+  <p class="dit">« Lorsqu'on te donne un croquis comme celui-là, tu rentres
+    toutes les infos comme sur la photo […] et tu me fais ça <b>en couleur, tu
+    sépares les réseaux, chaque réseau d'une couleur différente</b>. C'est là
+    où je veux arriver au final. »</p>
+
+  <div class="feuille">
+    <svg viewBox="0 0 900 560" role="img"
+         aria-label="Plan d'arrosage : deux réseaux de turbines en couleur, un réseau de goutte-à-goutte, le regard et le robinet">
+
+      <!-- ══════ LA LÉGENDE, comme sur sa photo — mais en couleur ══════ -->
+      <text class="leg-t" x="24" y="86">LÉGENDE</text>
+
+      <!-- turbine -->
+      <circle class="tete" cx="38" cy="118" r="6" style="stroke:var(--plan)"/>
+      <text class="leg" x="58" y="123">Turbine 3504</text>
+      <!-- électrovanne : le nœud papillon de sa photo -->
+      <path d="M30 138 L46 148 L30 158 Z" fill="var(--plan)"/>
+      <path d="M62 138 L46 148 L62 158 Z" fill="var(--plan)"/>
+      <text class="leg" x="72" y="153">Électrovanne 9 V</text>
+      <!-- tuyau PEHD -->
+      <path class="tuyau-p" d="M28 180 H62"/>
+      <text class="leg" x="72" y="185">Tube PE.H.D</text>
+      <!-- robinet -->
+      <circle cx="40" cy="210" r="7" fill="var(--plan)"/>
+      <path d="M40 200 V220 M30 210 H50" stroke="var(--papier)" stroke-width="2"/>
+      <text class="leg" x="58" y="215">Robinet</text>
+      <!-- dripline : PRÉSENTE en légende, mais NON TRACÉE sur le plan -->
+      <path d="M28 242 q9 -8 17 0 t17 0" fill="none" stroke="var(--r3)" stroke-width="3.5"/>
+      <text class="leg" x="72" y="247">Dripline</text>
+      <text class="leg-g" x="24" y="266">non tracée sur le plan,</text>
+      <text class="leg-g" x="24" y="282">seulement sa vanne</text>
+
+      <text class="leg-t" x="24" y="322">RÉSEAUX</text>
+      <circle cx="38" cy="350" r="7" fill="var(--r1)"/>
+      <text class="leg" x="58" y="355">1 · Pelouse nord</text>
+      <text class="leg-g" x="58" y="371">5 turbines · 0,80 m³/h</text>
+      <circle cx="38" cy="398" r="7" fill="var(--r2)"/>
+      <text class="leg" x="58" y="403">2 · Pelouse sud</text>
+      <text class="leg-g" x="58" y="419">6 turbines · 0,96 m³/h</text>
+      <circle cx="38" cy="446" r="7" fill="var(--r3)"/>
+      <text class="leg" x="58" y="451">3 · Massifs</text>
+      <text class="leg-g" x="58" y="467">42 ml de dripline · 0,29 m³/h</text>
+
+      <text class="ech" x="24" y="510">Échelle 1/100e</text>
+
+      <!-- ══════ LA PARCELLE ══════ -->
+      <!-- 24 × 20 m à 22 px/m, coin haut-gauche (300, 60) -->
+      <rect class="massif-f" x="300" y="60" width="528" height="44"/>
+      <rect class="massif-f" x="784" y="60" width="44" height="440"/>
+      <rect class="parcelle" x="300" y="60" width="528" height="440"/>
+
+      <!-- le massif, en pointillé fin : c'est une ZONE, pas un tuyau -->
+      <rect class="massif" x="300" y="60" width="528" height="44"/>
+      <rect class="massif" x="784" y="60" width="44" height="440"/>
+      <text class="repere" x="312" y="88">Massifs — goutte-à-goutte</text>
+
+      <!-- la maison, d'où part le robinet -->
+      <rect class="maison" x="300" y="430" width="150" height="70"/>
+      <text class="repere" x="330" y="472">Maison</text>
+
+      <!-- ══════ LA PELOUSE, 18 × 12 m ══════ -->
+      <defs>
+        <clipPath id="dansGazon"><rect x="366" y="104" width="396" height="264"/></clipPath>
+      </defs>
+      <rect class="gazon" x="366" y="104" width="396" height="264"/>
+
+      <!-- Les couronnes, portée 5 m = 110 px, coupées au bord de la pelouse -->
+      <g clip-path="url(#dansGazon)">
+        <g class="zone-arc" fill="var(--r1)"><circle cx="366" cy="104" r="110"/><circle cx="498" cy="104" r="110"/><circle cx="630" cy="104" r="110"/><circle cx="762" cy="104" r="110"/><circle cx="432" cy="236" r="110"/></g>
+        <g class="zone-arc" fill="var(--r2)"><circle cx="564" cy="236" r="110"/><circle cx="696" cy="236" r="110"/><circle cx="366" cy="368" r="110"/><circle cx="498" cy="368" r="110"/><circle cx="630" cy="368" r="110"/><circle cx="762" cy="368" r="110"/></g>
+        <g class="arc" stroke="var(--r1)"><circle cx="366" cy="104" r="110" fill="none"/><circle cx="498" cy="104" r="110" fill="none"/><circle cx="630" cy="104" r="110" fill="none"/><circle cx="762" cy="104" r="110" fill="none"/><circle cx="432" cy="236" r="110" fill="none"/></g>
+        <g class="arc" stroke="var(--r2)"><circle cx="564" cy="236" r="110" fill="none"/><circle cx="696" cy="236" r="110" fill="none"/><circle cx="366" cy="368" r="110" fill="none"/><circle cx="498" cy="368" r="110" fill="none"/><circle cx="630" cy="368" r="110" fill="none"/><circle cx="762" cy="368" r="110" fill="none"/></g>
+      </g>
+      <rect class="contour" x="366" y="104" width="396" height="264"/>
+
+      <!-- ══════ LES TUYAUX ══════ -->
+      <!-- amenée Ø25 : du robinet au regard, le long de la maison puis du massif -->
+      <path class="tuyau-p" d="M452 465 H806 V430"/>
+      <text class="cote" x="640" y="484" text-anchor="middle">Ø25 — amenée compteur → regard</text>
+
+      <!-- réseau 1, en bleu : remonte le long du massif puis dessert la rangée haute -->
+      <path class="tuyau" stroke="var(--r1)" d="M806 404 V104 H762 M762 104 H630 M630 104 H498 M498 104 H366 M432 236 V104"/>
+      <!-- réseau 2, en vert : descend et dessert la rangée basse et le milieu -->
+      <path class="tuyau" stroke="var(--r2)" d="M806 412 V368 H762 M762 368 H630 M630 368 H498 M498 368 H366 M696 236 V368 M564 236 V368"/>
+      <!-- réseau 3, en jaune : sa vanne et son départ, mais AUCUN tracé dans le massif -->
+      <path class="tuyau" stroke="var(--r3)" d="M796 420 V300"/>
+      <text class="cote" x="800" y="330" text-anchor="middle" transform="rotate(-90 800 330)">Ø16 — dripline</text>
+
+      <!-- ══════ LES TÊTES, colorées par réseau ══════ -->
+      <g class="tete" style="stroke:var(--r1)">
+        <circle cx="366" cy="104" r="6"/><circle cx="498" cy="104" r="6"/>
+        <circle cx="630" cy="104" r="6"/><circle cx="762" cy="104" r="6"/>
+        <circle cx="432" cy="236" r="6"/>
+      </g>
+      <g class="tete" style="stroke:var(--r2)">
+        <circle cx="564" cy="236" r="6"/><circle cx="696" cy="236" r="6"/>
+        <circle cx="366" cy="368" r="6"/><circle cx="498" cy="368" r="6"/>
+        <circle cx="630" cy="368" r="6"/><circle cx="762" cy="368" r="6"/>
+      </g>
+
+      <!-- ══════ LE REGARD ET SES TROIS ÉLECTROVANNES ══════ -->
+      <rect x="778" y="396" width="52" height="40" rx="4"
+            fill="var(--papier)" stroke="var(--plan)" stroke-width="2"/>
+      <!-- trois nœuds papillon, un par réseau, à sa couleur -->
+      <g>
+        <path d="M782 399 L795 404 L782 409 Z" fill="var(--r1)"/><path d="M808 399 L795 404 L808 409 Z" fill="var(--r1)"/>
+        <path d="M782 411 L795 416 L782 421 Z" fill="var(--r2)"/><path d="M808 411 L795 416 L808 421 Z" fill="var(--r2)"/>
+        <path d="M782 423 L795 428 L782 433 Z" fill="var(--r3)"/><path d="M808 423 L795 428 L808 433 Z" fill="var(--r3)"/>
+      </g>
+      <text class="repere-b" x="770" y="388" text-anchor="end">Regard 3 voies</text>
+      <text class="leg-g" x="770" y="404" text-anchor="end" style="fill:var(--gris)">caché dans le massif</text>
+
+      <!-- ══════ LE ROBINET ══════ -->
+      <circle cx="452" cy="465" r="7" fill="var(--plan)"/>
+      <path d="M452 455 V475 M442 465 H462" stroke="var(--papier)" stroke-width="2"/>
+      <text class="repere" x="466" y="446">Robinet</text>
+
+      <!-- ══════ LES COTES DE LA PELOUSE ══════ -->
+      <path d="M366 386 H762" stroke="var(--gris)" stroke-width="1"/>
+      <path d="M366 381 V391 M762 381 V391" stroke="var(--gris)" stroke-width="1"/>
+      <text class="cote" x="540" y="404" text-anchor="middle">18 m</text>
+      <path d="M348 104 V368" stroke="var(--gris)" stroke-width="1"/>
+      <path d="M343 104 H353 M343 368 H353" stroke="var(--gris)" stroke-width="1"/>
+      <text class="cote" x="340" y="240" text-anchor="end">12 m</text>
+    </svg>
+  </div>
+
+  <div class="rangee">
+    <div class="colonne liste">
+      <h2>La liste des fournitures</h2>
+      <p class="sous">Ce que l'outil sort déjà, pour ce jardin. Des quantités,
+        jamais un prix du catalogue.</p>
+
+      <div class="l fam">Arroseurs</div>
+      <div class="l"><span class="q">11 u</span><span class="n">Rain Bird Turbines 3504 · buse 0,75</span></div>
+      <div class="l"><span class="q">11 u</span><span class="n">Turbine 3504 — escamotable 10 cm</span></div>
+      <div class="l"><span class="q">11 u</span><span class="n">Coude SBE 050 (haut, au corps)</span></div>
+      <div class="l"><span class="q">11 u</span><span class="n">Coude SBE 075 (bas, sur la ligne)</span></div>
+      <div class="l"><span class="q">22 ml</span><span class="n">PEBD rigide Ø16 (~2 m par arroseur)</span></div>
+
+      <div class="l fam">Réseau latéral</div>
+      <div class="l"><span class="q">8 u</span><span class="n">Té 90° taraudé 25×3/4"×25</span></div>
+      <div class="l"><span class="q">3 u</span><span class="n">Coude 90° taraudé 25×3/4"</span></div>
+      <div class="l"><span class="q">2 u</span><span class="n">Té 90° 25×25×25 (jonction)</span></div>
+
+      <div class="l fam">Goutte-à-goutte</div>
+      <div class="l"><span class="q">42 ml</span><span class="n">Gaine de goutteurs 2,3 L/h tous les 33 cm</span></div>
+
+      <div class="l fam">Regard 3 voies</div>
+      <div class="l"><span class="q">1 u</span><span class="n">Dura Clarinette taraudée 1" — 2 vannes</span></div>
+      <div class="l"><span class="q">2 u</span><span class="n">Rain Bird Électrovanne 100 DV 1" MM 9V</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Rain Bird Électrovanne 100 DV 1" FF 9V</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Dura Régulateur de pression FF 3/4"</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Programmateur BL-IP 3 stations 9V</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Dura Regard rectangle 12"</span></div>
+
+      <div class="l fam">Tête de réseau</div>
+      <div class="l"><span class="q">36 ml</span><span class="n">Tuyau PEHD Ø25 (amenée compteur → regard)</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Disconnecteur</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Réducteur de pression</span></div>
+    </div>
+
+    <div class="colonne">
+      <div class="note">
+        <span class="t">Ce que je vous demande de regarder</span>
+        <ul>
+          <li><b>Les symboles.</b> Cercle = arroseur, nœud papillon =
+            électrovanne, trait tireté = PEHD, comme sur votre plan. Il en
+            manque ?</li>
+          <li><b>La dripline non tracée.</b> J'ai compris « juste la dripline,
+            ça tu ne le mets pas » comme : sa vanne reste, son tracé au sol
+            disparaît. Corrigez d'un mot si c'est l'inverse.</li>
+          <li><b>Les couleurs jusque dans le regard.</b> Chaque électrovanne
+            porte la couleur de son réseau — pour qu'on sache laquelle
+            débrancher sans suivre le tuyau à la main.</li>
+          <li><b>Les cotes que vous voulez voir.</b> Ici : les côtés de la
+            pelouse et les diamètres. Faut-il aussi les distances entre
+            arroseurs, ou l'écart au mur ?</li>
+        </ul>
+      </div>
+
+      <div class="note">
+        <span class="t">Ce qu'il faut construire derrière, et le seul obstacle</span>
+        <p>Tout ce qui est chiffré sur ce plan, <b>l'outil le calcule déjà</b> :
+          les onze têtes, le quinconce, les couronnes, la coupe en deux vannes,
+          la liste entière. Ce qui manque, c'est <b>où les choses sont les unes
+          par rapport aux autres</b> — la pelouse, le massif, la maison, le
+          robinet. L'outil connaît des zones, pas un terrain.</p>
+        <p>Deux façons de le lui donner, et c'est la question suivante :
+          <b>vous placez les zones vous-même</b> sur un quadrillage (quelques
+          gestes, disponible tout de suite), ou <b>vous photographiez le
+          croquis</b> et je le lis (plus proche de votre geste, mais la page
+          publiée ne sait pas lire une photo — il faut passer par
+          l'application).</p>
+      </div>
+    </div>
+  </div>
+</div>

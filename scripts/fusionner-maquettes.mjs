@@ -368,6 +368,12 @@ const MAQUETTES = [
     quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.",
   },
   {
+    fichier: "75-le-plan-comme-le-sien.html",
+    titre: "Le plan comme le sien",
+    famille: "L’arrosage automatique",
+    quoi: "Sa photo d’un plan d’exécution, refaite un réseau par couleur : la cible du produit, dessinée avant d’écrire le moteur de plan.",
+  },
+  {
     fichier: "74-ou-sont-les-tes.html",
     titre: "Où sont les tés",
     famille: "L’arrosage automatique",

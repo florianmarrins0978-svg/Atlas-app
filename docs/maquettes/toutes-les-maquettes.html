@@ -6029,17 +6029,19 @@
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
 
 
-/* 54 — Où sont les tés */
+/* 54 — Le plan comme le sien */
 #s54{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
-    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#2F4C78; --jaune:#F2C230;
+    --teinte:#ece9e1; --plan:#1c1c1a; --herbe:#eef0e6;
+    --r1:#2F6FB5; --r2:#3E8F4E; --r3:#D9A520;
   }
 @media (prefers-color-scheme: dark){
 #s54:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-      --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
+      --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
+      --r1:#6FA3DC; --r2:#6FB87E; --r3:#E8C255;
     }
 
   
@@ -6047,13 +6049,14 @@
 #s54[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-    --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
+    --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
+    --r1:#6FA3DC; --r2:#6FB87E; --r3:#E8C255;
   }
 #s54, #s54 *{box-sizing:border-box}
 #s54{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s54 .dedans{max-width:900px;margin:0 auto}
+#s54 .dedans{max-width:1000px;margin:0 auto}
 #s54 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
 #s54 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
@@ -6061,48 +6064,60 @@
 #s54 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
 #s54 .dit b{color:var(--encre);font-weight:600}
-#s54 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
-           padding:18px 16px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
-#s54 .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;flex-wrap:wrap}
-#s54 .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
-#s54 .verdict .quoi{font-size:14px;color:var(--gris)}
-#s54 .trace{width:100%;height:auto;display:block;margin:0 0 6px}
-#s54 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:9;
-                stroke-linecap:round;stroke-linejoin:round}
-#s54 .trace .arroseur{fill:none;stroke:var(--eau);stroke-width:9}
-#s54 .trace .regard-b{fill:none;stroke:var(--eau);stroke-width:9}
-#s54 .trace .te{fill:var(--jaune);stroke:var(--encre);stroke-width:5}
-#s54 .trace .te-n{fill:var(--encre);font-size:38px;font-weight:700;
-               font-family:inherit;text-anchor:middle}
-#s54 .trace .etq{fill:var(--gris);font-size:34px;font-family:inherit}
-#s54 .trace .etq-a{fill:var(--pin);font-size:32px;font-family:inherit;text-anchor:middle}
-#s54 .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
-           font-size:12.5px;color:var(--gris)}
-#s54 .legende span{display:inline-flex;align-items:center;gap:7px}
-#s54 .pastille{width:15px;height:15px;border-radius:50%;flex:none;
-            background:var(--jaune);border:2px solid var(--encre)}
-#s54 .cercle{width:15px;height:15px;border-radius:50%;flex:none;
-          border:3px solid var(--eau)}
-#s54 .note{margin-top:8px;padding:16px 18px;border-radius:12px;
+#s54 .feuille{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
+           padding:16px 14px 10px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
+#s54 .feuille svg{width:100%;height:auto;display:block}
+#s54 .parcelle{fill:none;stroke:var(--plan);stroke-width:2.5}
+#s54 .maison{fill:var(--teinte);stroke:var(--plan);stroke-width:2}
+#s54 .gazon{fill:var(--herbe);stroke:var(--plan);stroke-width:1.4}
+#s54 .contour{fill:none;stroke:var(--plan);stroke-width:1.6}
+#s54 .massif{fill:none;stroke:var(--gris);stroke-width:1.2;stroke-dasharray:1 5;stroke-linecap:round}
+#s54 .massif-f{fill:var(--teinte)}
+#s54 .arc{fill:none;stroke-width:1.2;stroke-opacity:.85}
+#s54 .zone-arc{fill-opacity:.17}
+#s54 .tete{fill:var(--papier);stroke-width:2.6}
+#s54 .tuyau{fill:none;stroke-width:2.4;stroke-dasharray:9 5;stroke-linecap:round}
+#s54 .tuyau-p{fill:none;stroke:var(--plan);stroke-width:2.8;stroke-dasharray:11 5;stroke-linecap:round}
+#s54 .cote{fill:var(--gris);font-size:12px;font-family:inherit}
+#s54 .repere{fill:var(--plan);font-size:12.5px;font-family:inherit}
+#s54 .repere-b{fill:var(--plan);font-size:12.5px;font-weight:700;font-family:inherit}
+#s54 .ech{fill:var(--gris);font-size:12px;font-family:inherit;font-style:italic}
+#s54 .leg-t{fill:var(--encre);font-size:13px;font-weight:700;font-family:inherit}
+#s54 .leg{fill:var(--encre);font-size:12.5px;font-family:inherit}
+#s54 .leg-g{fill:var(--gris);font-size:11.5px;font-family:inherit}
+#s54 .rangee{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+#s54 .colonne{flex:1;min-width:270px}
+#s54 .liste{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
+         padding:14px 16px 16px}
+#s54 .liste h2{font-family:Georgia,serif;font-weight:400;font-size:17px;margin:0 0 2px}
+#s54 .liste .sous{font-size:12px;color:var(--gris);margin:0 0 12px}
+#s54 .l{display:flex;gap:10px;align-items:baseline;padding:7px 0;
+     border-bottom:1px solid var(--trait);font-size:13px}
+#s54 .l .q{flex:none;min-width:52px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s54 .l .n{flex:1;min-width:0}
+#s54 .l.fam{border:0;padding:12px 0 2px;font-size:10.5px;letter-spacing:.13em;
+         text-transform:uppercase;color:var(--or)}
+#s54 .note{margin-top:20px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
 #s54 .note b{color:var(--encre);font-weight:600}
 #s54 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
 #s54 .note + .note{margin-top:14px}
-#s54 .note code{font-size:12.5px}
+#s54 .note ul{margin:8px 0 0;padding-left:19px}
+#s54 .note li{margin-bottom:7px}
 
 
-/* 55 — Mes mots au catalogue */
+/* 55 — Où sont les tés */
 #s55{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
-    --alerte:#9C3B2E; --teinte:#ece9e1;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#2F4C78; --jaune:#F2C230;
   }
 @media (prefers-color-scheme: dark){
 #s55:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-      --alerte:#C87058; --teinte:#252320;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
     }
 
   
@@ -6110,77 +6125,140 @@
 #s55[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-    --alerte:#C87058; --teinte:#252320;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
   }
 #s55, #s55 *{box-sizing:border-box}
 #s55{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s55 .dedans{max-width:960px;margin:0 auto}
+#s55 .dedans{max-width:900px;margin:0 auto}
 #s55 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
 #s55 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
 #s55 .intro b{color:var(--encre);font-weight:600}
-#s55 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
-       background:var(--papier);border-left:3px solid var(--or);
-       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s55 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
 #s55 .dit b{color:var(--encre);font-weight:600}
-#s55 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
-#s55 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
-#s55 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
-                  border:1px solid var(--trait);font-size:13.5px;
-                  background:var(--papier);color:var(--gris);
-                  -webkit-tap-highlight-color:transparent}
-#s55 #s55-v-a:checked ~ .dedans .segments label[for="s55-v-a"],#s55 #s55-v-b:checked ~ .dedans .segments label[for="s55-v-b"],#s55 #s55-v-c:checked ~ .dedans .segments label[for="s55-v-c"]{
-    background:var(--pin);border-color:var(--pin);color:#fff}
-#s55 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
-#s55 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
-       background:var(--teinte);
-       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
-#s55 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
-#s55 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
-          border-bottom:1px solid var(--trait)}
-#s55 .retour{flex:none;width:31px;height:31px;border-radius:9px;
-          border:1px solid var(--trait);display:flex;align-items:center;
-          justify-content:center;color:var(--encre);font-size:17px;line-height:1}
-#s55 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
-#s55 .corps{padding:14px 16px 0}
-#s55 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
-#s55 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
-        color:var(--gris);display:block;margin:0 0 8px}
-#s55 .etiq.mienne{color:var(--or)}
-#s55 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
-         margin-bottom:9px}
-#s55 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
-              display:block;margin-bottom:3px}
-#s55 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
-#s55 .mien{color:var(--or)}
-#s55 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
-#s55 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
-           border-radius:10px;border:1px dashed var(--or);color:var(--or);
-           font-size:13.5px}
-#s55 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
-#s55 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
-#s55 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
-#s55 .a-part,#s55 .a-dessus,#s55 .a-melange{display:none}
-#s55 #s55-v-a:checked ~ .dedans .a-part,#s55 #s55-v-b:checked ~ .dedans .a-dessus,#s55 #s55-v-c:checked ~ .dedans .a-melange{display:block}
-#s55 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s55 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
-              color:var(--encre);margin-bottom:8px}
-#s55 .legende b{color:var(--encre);font-weight:600}
-#s55 .l-a,#s55 .l-b,#s55 .l-c{display:none}
-#s55 #s55-v-a:checked ~ .dedans .l-a,#s55 #s55-v-b:checked ~ .dedans .l-b,#s55 #s55-v-c:checked ~ .dedans .l-c{display:block}
-#s55 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
-#s55 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
-           background:var(--pin);color:#fff;font-size:11px;letter-spacing:.06em;
-           text-transform:uppercase}
-#s55 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+#s55 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
+           padding:18px 16px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
+#s55 .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+#s55 .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
+#s55 .verdict .quoi{font-size:14px;color:var(--gris)}
+#s55 .trace{width:100%;height:auto;display:block;margin:0 0 6px}
+#s55 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:9;
+                stroke-linecap:round;stroke-linejoin:round}
+#s55 .trace .arroseur{fill:none;stroke:var(--eau);stroke-width:9}
+#s55 .trace .regard-b{fill:none;stroke:var(--eau);stroke-width:9}
+#s55 .trace .te{fill:var(--jaune);stroke:var(--encre);stroke-width:5}
+#s55 .trace .te-n{fill:var(--encre);font-size:38px;font-weight:700;
+               font-family:inherit;text-anchor:middle}
+#s55 .trace .etq{fill:var(--gris);font-size:34px;font-family:inherit}
+#s55 .trace .etq-a{fill:var(--pin);font-size:32px;font-family:inherit;text-anchor:middle}
+#s55 .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
+           font-size:12.5px;color:var(--gris)}
+#s55 .legende span{display:inline-flex;align-items:center;gap:7px}
+#s55 .pastille{width:15px;height:15px;border-radius:50%;flex:none;
+            background:var(--jaune);border:2px solid var(--encre)}
+#s55 .cercle{width:15px;height:15px;border-radius:50%;flex:none;
+          border:3px solid var(--eau)}
+#s55 .note{margin-top:8px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
 #s55 .note b{color:var(--encre);font-weight:600}
 #s55 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s55 .note ul{margin:8px 0 0;padding-left:19px}
-#s55 .note li{margin-bottom:6px}
+#s55 .note + .note{margin-top:14px}
+#s55 .note code{font-size:12.5px}
+
+
+/* 56 — Mes mots au catalogue */
+#s56{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s56:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s56[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s56, #s56 *{box-sizing:border-box}
+#s56{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s56 .dedans{max-width:960px;margin:0 auto}
+#s56 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s56 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s56 .intro b{color:var(--encre);font-weight:600}
+#s56 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s56 .dit b{color:var(--encre);font-weight:600}
+#s56 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s56 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#s56 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s56 #s56-v-a:checked ~ .dedans .segments label[for="s56-v-a"],#s56 #s56-v-b:checked ~ .dedans .segments label[for="s56-v-b"],#s56 #s56-v-c:checked ~ .dedans .segments label[for="s56-v-c"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s56 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s56 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s56 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
+#s56 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
+          border-bottom:1px solid var(--trait)}
+#s56 .retour{flex:none;width:31px;height:31px;border-radius:9px;
+          border:1px solid var(--trait);display:flex;align-items:center;
+          justify-content:center;color:var(--encre);font-size:17px;line-height:1}
+#s56 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
+#s56 .corps{padding:14px 16px 0}
+#s56 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
+#s56 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--gris);display:block;margin:0 0 8px}
+#s56 .etiq.mienne{color:var(--or)}
+#s56 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
+         margin-bottom:9px}
+#s56 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
+              display:block;margin-bottom:3px}
+#s56 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
+#s56 .mien{color:var(--or)}
+#s56 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
+#s56 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
+           border-radius:10px;border:1px dashed var(--or);color:var(--or);
+           font-size:13.5px}
+#s56 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
+#s56 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
+#s56 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
+#s56 .a-part,#s56 .a-dessus,#s56 .a-melange{display:none}
+#s56 #s56-v-a:checked ~ .dedans .a-part,#s56 #s56-v-b:checked ~ .dedans .a-dessus,#s56 #s56-v-c:checked ~ .dedans .a-melange{display:block}
+#s56 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s56 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s56 .legende b{color:var(--encre);font-weight:600}
+#s56 .l-a,#s56 .l-b,#s56 .l-c{display:none}
+#s56 #s56-v-a:checked ~ .dedans .l-a,#s56 #s56-v-b:checked ~ .dedans .l-b,#s56 #s56-v-c:checked ~ .dedans .l-c{display:block}
+#s56 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s56 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
+           background:var(--pin);color:#fff;font-size:11px;letter-spacing:.06em;
+           text-transform:uppercase}
+#s56 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s56 .note b{color:var(--encre);font-weight:600}
+#s56 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s56 .note ul{margin:8px 0 0;padding-left:19px}
+#s56 .note li{margin-bottom:6px}
 
 
 </style>
@@ -6429,12 +6507,16 @@
         <span class="quoi">Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.</span>
       </a>
       <a class="item" href="#m54">
-        <span class="no">54</span><span class="titre">Où sont les tés</span><span class="fleche">↓</span>
+        <span class="no">54</span><span class="titre">Le plan comme le sien</span><span class="fleche">↓</span>
+        <span class="quoi">Sa photo d’un plan d’exécution, refaite un réseau par couleur : la cible du produit, dessinée avant d’écrire le moteur de plan.</span>
+      </a>
+      <a class="item" href="#m55">
+        <span class="no">55</span><span class="titre">Où sont les tés</span><span class="fleche">↓</span>
         <span class="quoi">« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! » — son tracé libre, cinq tés marqués, et la règle qui vaut partout : N arroseurs, N − 1 tés.</span>
       </a>
       <p class="famille">Les réglages</p>
-      <a class="item" href="#m55">
-        <span class="no">55</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
+      <a class="item" href="#m56">
+        <span class="no">56</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
         <span class="quoi">« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.</span>
       </a>
     <p class="note">
@@ -21580,10 +21662,226 @@
   <section class="etape" id="m54">
     <div class="etape-tete">
       <span class="etape-no">54</span>
-      <h2>Où sont les tés</h2>
+      <h2>Le plan comme le sien</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s54">
+<div class="dedans">
+  <h1>Le plan comme le sien</h1>
+  <p class="intro">Votre plan du 17 août, refait <b>en couleur, un réseau par
+    couleur</b>. Les nombres sont ceux que l'outil calcule déjà — pelouse
+    18 × 12 m, turbine 3504 buse 0,75, portée 5 m, onze têtes en quinconce,
+    réparties 5 et 6 entre deux vannes. <b>Rien n'est codé</b> : c'est la
+    planche à corriger avant que j'écrive le moteur de plan.</p>
+
+  <p class="dit">« Lorsqu'on te donne un croquis comme celui-là, tu rentres
+    toutes les infos comme sur la photo […] et tu me fais ça <b>en couleur, tu
+    sépares les réseaux, chaque réseau d'une couleur différente</b>. C'est là
+    où je veux arriver au final. »</p>
+
+  <div class="feuille">
+    <svg viewBox="0 0 900 560" role="img"
+         aria-label="Plan d'arrosage : deux réseaux de turbines en couleur, un réseau de goutte-à-goutte, le regard et le robinet">
+
+      <!-- ══════ LA LÉGENDE, comme sur sa photo — mais en couleur ══════ -->
+      <text class="leg-t" x="24" y="86">LÉGENDE</text>
+
+      <!-- turbine -->
+      <circle class="tete" cx="38" cy="118" r="6" style="stroke:var(--plan)"/>
+      <text class="leg" x="58" y="123">Turbine 3504</text>
+      <!-- électrovanne : le nœud papillon de sa photo -->
+      <path d="M30 138 L46 148 L30 158 Z" fill="var(--plan)"/>
+      <path d="M62 138 L46 148 L62 158 Z" fill="var(--plan)"/>
+      <text class="leg" x="72" y="153">Électrovanne 9 V</text>
+      <!-- tuyau PEHD -->
+      <path class="tuyau-p" d="M28 180 H62"/>
+      <text class="leg" x="72" y="185">Tube PE.H.D</text>
+      <!-- robinet -->
+      <circle cx="40" cy="210" r="7" fill="var(--plan)"/>
+      <path d="M40 200 V220 M30 210 H50" stroke="var(--papier)" stroke-width="2"/>
+      <text class="leg" x="58" y="215">Robinet</text>
+      <!-- dripline : PRÉSENTE en légende, mais NON TRACÉE sur le plan -->
+      <path d="M28 242 q9 -8 17 0 t17 0" fill="none" stroke="var(--r3)" stroke-width="3.5"/>
+      <text class="leg" x="72" y="247">Dripline</text>
+      <text class="leg-g" x="24" y="266">non tracée sur le plan,</text>
+      <text class="leg-g" x="24" y="282">seulement sa vanne</text>
+
+      <text class="leg-t" x="24" y="322">RÉSEAUX</text>
+      <circle cx="38" cy="350" r="7" fill="var(--r1)"/>
+      <text class="leg" x="58" y="355">1 · Pelouse nord</text>
+      <text class="leg-g" x="58" y="371">5 turbines · 0,80 m³/h</text>
+      <circle cx="38" cy="398" r="7" fill="var(--r2)"/>
+      <text class="leg" x="58" y="403">2 · Pelouse sud</text>
+      <text class="leg-g" x="58" y="419">6 turbines · 0,96 m³/h</text>
+      <circle cx="38" cy="446" r="7" fill="var(--r3)"/>
+      <text class="leg" x="58" y="451">3 · Massifs</text>
+      <text class="leg-g" x="58" y="467">42 ml de dripline · 0,29 m³/h</text>
+
+      <text class="ech" x="24" y="510">Échelle 1/100e</text>
+
+      <!-- ══════ LA PARCELLE ══════ -->
+      <!-- 24 × 20 m à 22 px/m, coin haut-gauche (300, 60) -->
+      <rect class="massif-f" x="300" y="60" width="528" height="44"/>
+      <rect class="massif-f" x="784" y="60" width="44" height="440"/>
+      <rect class="parcelle" x="300" y="60" width="528" height="440"/>
+
+      <!-- le massif, en pointillé fin : c'est une ZONE, pas un tuyau -->
+      <rect class="massif" x="300" y="60" width="528" height="44"/>
+      <rect class="massif" x="784" y="60" width="44" height="440"/>
+      <text class="repere" x="312" y="88">Massifs — goutte-à-goutte</text>
+
+      <!-- la maison, d'où part le robinet -->
+      <rect class="maison" x="300" y="430" width="150" height="70"/>
+      <text class="repere" x="330" y="472">Maison</text>
+
+      <!-- ══════ LA PELOUSE, 18 × 12 m ══════ -->
+      <defs>
+        <clipPath id="dansGazon"><rect x="366" y="104" width="396" height="264"/></clipPath>
+      </defs>
+      <rect class="gazon" x="366" y="104" width="396" height="264"/>
+
+      <!-- Les couronnes, portée 5 m = 110 px, coupées au bord de la pelouse -->
+      <g clip-path="url(#dansGazon)">
+        <g class="zone-arc" fill="var(--r1)"><circle cx="366" cy="104" r="110"/><circle cx="498" cy="104" r="110"/><circle cx="630" cy="104" r="110"/><circle cx="762" cy="104" r="110"/><circle cx="432" cy="236" r="110"/></g>
+        <g class="zone-arc" fill="var(--r2)"><circle cx="564" cy="236" r="110"/><circle cx="696" cy="236" r="110"/><circle cx="366" cy="368" r="110"/><circle cx="498" cy="368" r="110"/><circle cx="630" cy="368" r="110"/><circle cx="762" cy="368" r="110"/></g>
+        <g class="arc" stroke="var(--r1)"><circle cx="366" cy="104" r="110" fill="none"/><circle cx="498" cy="104" r="110" fill="none"/><circle cx="630" cy="104" r="110" fill="none"/><circle cx="762" cy="104" r="110" fill="none"/><circle cx="432" cy="236" r="110" fill="none"/></g>
+        <g class="arc" stroke="var(--r2)"><circle cx="564" cy="236" r="110" fill="none"/><circle cx="696" cy="236" r="110" fill="none"/><circle cx="366" cy="368" r="110" fill="none"/><circle cx="498" cy="368" r="110" fill="none"/><circle cx="630" cy="368" r="110" fill="none"/><circle cx="762" cy="368" r="110" fill="none"/></g>
+      </g>
+      <rect class="contour" x="366" y="104" width="396" height="264"/>
+
+      <!-- ══════ LES TUYAUX ══════ -->
+      <!-- amenée Ø25 : du robinet au regard, le long de la maison puis du massif -->
+      <path class="tuyau-p" d="M452 465 H806 V430"/>
+      <text class="cote" x="640" y="484" text-anchor="middle">Ø25 — amenée compteur → regard</text>
+
+      <!-- réseau 1, en bleu : remonte le long du massif puis dessert la rangée haute -->
+      <path class="tuyau" stroke="var(--r1)" d="M806 404 V104 H762 M762 104 H630 M630 104 H498 M498 104 H366 M432 236 V104"/>
+      <!-- réseau 2, en vert : descend et dessert la rangée basse et le milieu -->
+      <path class="tuyau" stroke="var(--r2)" d="M806 412 V368 H762 M762 368 H630 M630 368 H498 M498 368 H366 M696 236 V368 M564 236 V368"/>
+      <!-- réseau 3, en jaune : sa vanne et son départ, mais AUCUN tracé dans le massif -->
+      <path class="tuyau" stroke="var(--r3)" d="M796 420 V300"/>
+      <text class="cote" x="800" y="330" text-anchor="middle" transform="rotate(-90 800 330)">Ø16 — dripline</text>
+
+      <!-- ══════ LES TÊTES, colorées par réseau ══════ -->
+      <g class="tete" style="stroke:var(--r1)">
+        <circle cx="366" cy="104" r="6"/><circle cx="498" cy="104" r="6"/>
+        <circle cx="630" cy="104" r="6"/><circle cx="762" cy="104" r="6"/>
+        <circle cx="432" cy="236" r="6"/>
+      </g>
+      <g class="tete" style="stroke:var(--r2)">
+        <circle cx="564" cy="236" r="6"/><circle cx="696" cy="236" r="6"/>
+        <circle cx="366" cy="368" r="6"/><circle cx="498" cy="368" r="6"/>
+        <circle cx="630" cy="368" r="6"/><circle cx="762" cy="368" r="6"/>
+      </g>
+
+      <!-- ══════ LE REGARD ET SES TROIS ÉLECTROVANNES ══════ -->
+      <rect x="778" y="396" width="52" height="40" rx="4"
+            fill="var(--papier)" stroke="var(--plan)" stroke-width="2"/>
+      <!-- trois nœuds papillon, un par réseau, à sa couleur -->
+      <g>
+        <path d="M782 399 L795 404 L782 409 Z" fill="var(--r1)"/><path d="M808 399 L795 404 L808 409 Z" fill="var(--r1)"/>
+        <path d="M782 411 L795 416 L782 421 Z" fill="var(--r2)"/><path d="M808 411 L795 416 L808 421 Z" fill="var(--r2)"/>
+        <path d="M782 423 L795 428 L782 433 Z" fill="var(--r3)"/><path d="M808 423 L795 428 L808 433 Z" fill="var(--r3)"/>
+      </g>
+      <text class="repere-b" x="770" y="388" text-anchor="end">Regard 3 voies</text>
+      <text class="leg-g" x="770" y="404" text-anchor="end" style="fill:var(--gris)">caché dans le massif</text>
+
+      <!-- ══════ LE ROBINET ══════ -->
+      <circle cx="452" cy="465" r="7" fill="var(--plan)"/>
+      <path d="M452 455 V475 M442 465 H462" stroke="var(--papier)" stroke-width="2"/>
+      <text class="repere" x="466" y="446">Robinet</text>
+
+      <!-- ══════ LES COTES DE LA PELOUSE ══════ -->
+      <path d="M366 386 H762" stroke="var(--gris)" stroke-width="1"/>
+      <path d="M366 381 V391 M762 381 V391" stroke="var(--gris)" stroke-width="1"/>
+      <text class="cote" x="540" y="404" text-anchor="middle">18 m</text>
+      <path d="M348 104 V368" stroke="var(--gris)" stroke-width="1"/>
+      <path d="M343 104 H353 M343 368 H353" stroke="var(--gris)" stroke-width="1"/>
+      <text class="cote" x="340" y="240" text-anchor="end">12 m</text>
+    </svg>
+  </div>
+
+  <div class="rangee">
+    <div class="colonne liste">
+      <h2>La liste des fournitures</h2>
+      <p class="sous">Ce que l'outil sort déjà, pour ce jardin. Des quantités,
+        jamais un prix du catalogue.</p>
+
+      <div class="l fam">Arroseurs</div>
+      <div class="l"><span class="q">11 u</span><span class="n">Rain Bird Turbines 3504 · buse 0,75</span></div>
+      <div class="l"><span class="q">11 u</span><span class="n">Turbine 3504 — escamotable 10 cm</span></div>
+      <div class="l"><span class="q">11 u</span><span class="n">Coude SBE 050 (haut, au corps)</span></div>
+      <div class="l"><span class="q">11 u</span><span class="n">Coude SBE 075 (bas, sur la ligne)</span></div>
+      <div class="l"><span class="q">22 ml</span><span class="n">PEBD rigide Ø16 (~2 m par arroseur)</span></div>
+
+      <div class="l fam">Réseau latéral</div>
+      <div class="l"><span class="q">8 u</span><span class="n">Té 90° taraudé 25×3/4"×25</span></div>
+      <div class="l"><span class="q">3 u</span><span class="n">Coude 90° taraudé 25×3/4"</span></div>
+      <div class="l"><span class="q">2 u</span><span class="n">Té 90° 25×25×25 (jonction)</span></div>
+
+      <div class="l fam">Goutte-à-goutte</div>
+      <div class="l"><span class="q">42 ml</span><span class="n">Gaine de goutteurs 2,3 L/h tous les 33 cm</span></div>
+
+      <div class="l fam">Regard 3 voies</div>
+      <div class="l"><span class="q">1 u</span><span class="n">Dura Clarinette taraudée 1" — 2 vannes</span></div>
+      <div class="l"><span class="q">2 u</span><span class="n">Rain Bird Électrovanne 100 DV 1" MM 9V</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Rain Bird Électrovanne 100 DV 1" FF 9V</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Dura Régulateur de pression FF 3/4"</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Programmateur BL-IP 3 stations 9V</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Dura Regard rectangle 12"</span></div>
+
+      <div class="l fam">Tête de réseau</div>
+      <div class="l"><span class="q">36 ml</span><span class="n">Tuyau PEHD Ø25 (amenée compteur → regard)</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Disconnecteur</span></div>
+      <div class="l"><span class="q">1 u</span><span class="n">Réducteur de pression</span></div>
+    </div>
+
+    <div class="colonne">
+      <div class="note">
+        <span class="t">Ce que je vous demande de regarder</span>
+        <ul>
+          <li><b>Les symboles.</b> Cercle = arroseur, nœud papillon =
+            électrovanne, trait tireté = PEHD, comme sur votre plan. Il en
+            manque ?</li>
+          <li><b>La dripline non tracée.</b> J'ai compris « juste la dripline,
+            ça tu ne le mets pas » comme : sa vanne reste, son tracé au sol
+            disparaît. Corrigez d'un mot si c'est l'inverse.</li>
+          <li><b>Les couleurs jusque dans le regard.</b> Chaque électrovanne
+            porte la couleur de son réseau — pour qu'on sache laquelle
+            débrancher sans suivre le tuyau à la main.</li>
+          <li><b>Les cotes que vous voulez voir.</b> Ici : les côtés de la
+            pelouse et les diamètres. Faut-il aussi les distances entre
+            arroseurs, ou l'écart au mur ?</li>
+        </ul>
+      </div>
+
+      <div class="note">
+        <span class="t">Ce qu'il faut construire derrière, et le seul obstacle</span>
+        <p>Tout ce qui est chiffré sur ce plan, <b>l'outil le calcule déjà</b> :
+          les onze têtes, le quinconce, les couronnes, la coupe en deux vannes,
+          la liste entière. Ce qui manque, c'est <b>où les choses sont les unes
+          par rapport aux autres</b> — la pelouse, le massif, la maison, le
+          robinet. L'outil connaît des zones, pas un terrain.</p>
+        <p>Deux façons de le lui donner, et c'est la question suivante :
+          <b>vous placez les zones vous-même</b> sur un quadrillage (quelques
+          gestes, disponible tout de suite), ou <b>vous photographiez le
+          croquis</b> et je le lis (plus proche de votre geste, mais la page
+          publiée ne sait pas lire une photo — il faut passer par
+          l'application).</p>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m55">
+    <div class="etape-tete">
+      <span class="etape-no">55</span>
+      <h2>Où sont les tés</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s55">
 <div class="dedans">
   <h1>Où sont les tés</h1>
   <p class="intro">Votre tracé du 17 août, redessiné, avec <b>les cinq tés en
@@ -21713,16 +22011,16 @@
     </div>
   </section>
 
-  <section class="etape" id="m55">
+  <section class="etape" id="m56">
     <div class="etape-tete">
-      <span class="etape-no">55</span>
+      <span class="etape-no">56</span>
       <h2>Mes mots au catalogue</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s55">
-<input type="radio" name="v" id="s55-v-a" class="etat">
-<input type="radio" name="v" id="s55-v-b" class="etat" checked>
-<input type="radio" name="v" id="s55-v-c" class="etat">
+    <div class="cadre" id="s56">
+<input type="radio" name="v" id="s56-v-a" class="etat">
+<input type="radio" name="v" id="s56-v-b" class="etat" checked>
+<input type="radio" name="v" id="s56-v-c" class="etat">
 
 <div class="dedans">
   <h1>Mes mots au catalogue</h1>
@@ -21736,9 +22034,9 @@
     toutes les entreprises</b> — d’où la question : où mettre <b>les vôtres</b> ?</p>
 
   <div class="segments">
-    <label for="s55-v-a">A · Mes mots à part</label>
-    <label for="s55-v-b">B · Mes mots par-dessus</label>
-    <label for="s55-v-c">C · Une seule liste</label>
+    <label for="s56-v-a">A · Mes mots à part</label>
+    <label for="s56-v-b">B · Mes mots par-dessus</label>
+    <label for="s56-v-c">C · Une seule liste</label>
   </div>
 
   <div class="rangee">
