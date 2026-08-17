@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### « L'apparence ne change pas » — c'était vrai, et aucun cache n'était en cause
+
+*Sa capture, la pastille « Nuit » cochée, l'écran resté crème.*
+
+**Mesuré avant d'être réparé**, en rejouant sa séquence — choisir, puis toucher
+les onglets du bas, sans jamais recharger : le fond restait `#f5f3ee` après
+l'appui, après « Chantiers », après « Planning », et ne passait à `#101210`
+qu'**au rechargement complet**. Le choix partait donc bien en base ; c'est
+l'écran qui ne le suivait pas.
+
+**La cause n'était pas un cache.** Les couleurs sont posées par le gabarit
+racine, sur `<html>` — et une navigation côté client ne rejoue pas ce gabarit.
+L'attribut restait celui du chargement initial, quoi qu'on invalide au serveur.
+Ni `revalidatePath` ni `router.refresh()` n'auraient réglé cela.
+
+**Le navigateur repeint donc le même élément**, dès l'appui, avec les mêmes
+jetons que le serveur. Le serveur garde son rôle — il pose la charte au premier
+rendu, sinon chaque page clignoterait avant de se repeindre. Un refus rend aussi
+la couleur d'avant.
+
+**Le contrôle existant était vert sur un chemin qu'il ne prend pas :** il
+rechargeait la page entre chaque écran. Le nouveau rejoue **sa séquence à lui**,
+et distingue « pas enregistré » de « enregistré mais pas peint ». Détail :
+`ARCHITECTURE.md` §119.
+
+
 ### La fiche d'entretien commence à exister : le modèle, en base
 
 **Première pierre du troisième parcours**, après quatre planches et cinq
