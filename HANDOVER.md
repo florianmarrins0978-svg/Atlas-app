@@ -845,6 +845,22 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ LE CATALOGUE D'ARROSAGE EST À LUI, PAS À NOUS (17 août).** Il a dit
+« plusieurs choses sont fausses », et il envoie ses photos d'arroseurs et ses
+nomenclatures. `appli/arrosage-catalogue.js` les reçoit ; **chaque entrée porte
+une `source`** (`'patron'` ou `'provisoire'`), et l'écran compte ce qui reste
+provisoire. **Ne jamais présenter une valeur provisoire comme acquise**, et ne
+jamais composer une **nourrice** absente : `CATALOGUE.nourrices` est vide parce
+qu'il en donnera les fiches, de une à six voies. L'écran annonce la fiche
+manquante — c'est voulu, ce n'est pas un trou à boucher. Détail complet dans
+`TODO.md` § « 0 quaterquadragies ».
+
+**⚠ LE RECOUVREMENT (80 %) EST UNE LECTURE À CONFIRMER.** Sa phrase : « il faut
+un recouvrement d'au moins quatre-vingt pour cent ». Lu comme *écart = 80 % de
+la portée*. Réglable à l'écran, et l'écart en mètres y est écrit pour qu'il
+tranche d'un regard. Passer de 100 à 80 % fait passer le jardin d'exemple de 8 à
+9 secteurs : ce réglage décide du nombre d'arroseurs, donc de la facture.
+
 **⚠ LE PLAN D'ARROSAGE : LA PAGE ESSAYABLE EST `appli/arrosage.html` (17 août).**
 Sa consigne, après les trois planches : *« je veux que tu code rien, d'abord des
 maquettes dynamiques en .html que je puisse essayer, pas de photo »*.

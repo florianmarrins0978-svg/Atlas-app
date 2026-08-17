@@ -52,6 +52,55 @@ parce que c'est le seul dossier PUBLIÉ du dépôt : les planches y sont sans
 JavaScript, et il demande à essayer. Gardée par `appli/tests/e2e.js`, jouée
 avant publication **et contre le site en ligne**.
 
+**⚠ LE CATALOGUE EST LA PROCHAINE ÉTAPE, ET IL EST À LUI.** Le 17 août :
+*« plusieurs choses sont fausses »*, puis : *« je vais t'envoyer des photos avec
+certains arroseurs, leur portée, et ça tu vas l'intégrer dans une base de
+données pour cet outil […] et on va également faire ça pour tout le matériel »*.
+
+`appli/arrosage-catalogue.js` est cette base. **Chaque entrée porte une
+`source`** : `'patron'` (relevée de ses photos, de ses devis fournisseurs) ou
+`'provisoire'` (valeur générique, mise là pour que l'outil tourne). L'écran
+affiche le compte de ce qui reste provisoire — onze au 17 août. **Ne jamais
+faire passer une valeur provisoire pour acquise** : une portée fausse fait
+acheter le mauvais nombre d'arroseurs, et c'est lui qui revient poser les
+manquants.
+
+**Ce qu'il faut relever de chaque photo d'arroseur**, et l'absence d'un seul de
+ces éléments rend l'entrée inutilisable : marque et référence, portée EN
+MÈTRES **et à quelle pression**, débit à cette même pression, angle, et la
+pluviométrie si la fiche la donne. Portée et pression vont ensemble — une
+portée relevée à 3 bars ne vaut rien sur une installation à 2.
+
+**LES NOURRICES — sa deuxième demande, et ce n'est pas du matériel mais un
+ASSEMBLAGE.** Ses mots : *« pour réaliser une nourrice de une voie, on utilise
+ça, ça, ça. Toi ça tu vas l'enregistrer, et comme ça quand par tes calculs tu
+verras qu'on a besoin d'une voie, tu reprendras toute cette fiche. Ensuite je
+vais faire la même chose pour deux, trois, quatre, cinq et six voies. »*
+`CATALOGUE.nourrices` les attend, **vide et volontairement vide** : tant qu'une
+fiche manque, l'écran l'annonce au lieu de composer une nourrice de son cru. Une
+nourrice inventée, c'est un chantier arrêté à la pose faute d'un té.
+
+**LE RECOUVREMENT — sa règle, et ma lecture est à confirmer d'un mot.** Il a dit
+*« il faut un recouvrement d'au moins quatre-vingt pour cent »*. Lu comme :
+**écart entre deux arroseurs = 80 % de la portée** (à 100 %, c'est la pose
+tête-bêche). C'est réglable à l'écran, et **l'écart en mètres y est écrit** —
+« portée 9 m → un tous les 7,20 m » — pour qu'il corrige d'un coup d'œil plutôt
+que de nous croire sur parole.
+
+**Ce que le passage à 80 % a montré tout de suite** : le jardin d'exemple passe
+de 8 à **9 secteurs**, et la pelouse avant demande 24 tuyères. C'est au-dessus
+des six voies dont il prévoit les fiches — signe que les valeurs génériques
+d'arroseurs sont trop faibles, et que ses vraies références changeront ce
+nombre. À revoir dès que son catalogue sera renseigné.
+
+**Le croquis photographié — sa cible, et elle n'est pas pour tout de suite.**
+*« Le client te fait un petit croquis sur un bout de papier d'un carré de dix
+par dix, il te le prend en photo et il te l'envoie. »* L'application sait déjà
+recevoir des photos et interroger un modèle (`src/server/ai/`) ; il n'y a rien
+à inventer côté plomberie. Mais **rien ne sera lu d'un croquis avant que le
+catalogue soit juste** : deviner des cotes sur une photo avec un catalogue faux
+donnerait un plan faux avec deux causes possibles au lieu d'une.
+
 **Ce qui reste à trancher, et il l'a proposé lui-même :** il a des devis
 fournisseurs à joindre. Ils serviront au **catalogue de matériel** (désignations,
 références, conditionnements), pas aux prix. Rien n'est à coder avant de les

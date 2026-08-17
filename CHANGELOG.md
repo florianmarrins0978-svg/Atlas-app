@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le catalogue d'arrosage attend SES données — et l'écran dit ce qui manque
+
+**Son constat, une fois la page essayée :** *« plusieurs choses sont fausses »*.
+Elles l'étaient : les portées, débits et pluviométries venaient de catalogues
+génériques, pas de son matériel. Sa suite : *« je vais t'envoyer des photos avec
+certains arroseurs, leur portée, et ça tu vas l'intégrer dans une base de
+données pour cet outil […] et on va également faire ça pour tout le matériel »*.
+
+**`appli/arrosage-catalogue.js`** est cette base. Chaque entrée porte une
+**source** — `'patron'` ou `'provisoire'` — et l'écran affiche le compte de ce
+qui attend encore ses photos (onze au 17 août). C'est le §4 du dépôt appliqué au
+matériel : une donnée sans source fiable est signalée, jamais présentée comme
+acquise. Une portée qu'on croit juste et qui ne l'est pas fait acheter le mauvais
+nombre d'arroseurs, et c'est lui qui revient poser les manquants.
+
+**Les nourrices : une fiche, ou rien.** Sa seconde demande — *« pour réaliser une
+nourrice de une voie, on utilise ça, ça, ça […] et comme ça quand par tes calculs
+tu verras qu'on a besoin d'une voie, tu reprendras toute cette fiche »*. Le
+calcul donne le nombre de voies, la fiche donne les pièces. `CATALOGUE.nourrices`
+est **vide et volontairement vide** : tant qu'une fiche manque, l'écran l'annonce
+au lieu d'en composer une. Une nourrice inventée, c'est un chantier arrêté à la
+pose faute d'un té.
+
+**Le recouvrement de 80 %, et ce qu'il a immédiatement révélé.** Sa règle : « il
+faut un recouvrement d'au moins quatre-vingt pour cent ». Lue comme *écart entre
+deux arroseurs = 80 % de la portée*, et **la lecture est affichée en mètres**
+(« portée 9 m → un tous les 7,20 m ») plutôt que cachée dans le calcul : c'est
+ainsi qu'il corrigera d'un mot si ce n'est pas sa pose. Le jardin d'exemple passe
+de 8 à **9 secteurs**, au-dessus des six voies dont il prévoit les fiches — signe
+que les valeurs génériques sont trop faibles, et que son catalogue changera ce
+nombre. Dit plutôt que tu.
+
 ### La maquette d'arrosage devient ESSAYABLE, et la sortie n'est plus un devis
 
 **Ses trois consignes du 17 août, dans l'ordre où elles sont venues :**

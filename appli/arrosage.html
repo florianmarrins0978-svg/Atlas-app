@@ -158,6 +158,17 @@
   .option input{width:22px;height:22px;flex:none;-webkit-appearance:checkbox;appearance:checkbox}
   .aide-courte{display:block;font-size:12px;color:var(--gris);margin-top:4px;line-height:1.45}
 
+  .provisoire{color:var(--alerte)}
+  .bandeau{margin:0 0 14px;padding:12px 13px;border-radius:12px;background:var(--papier);
+           border:1px solid var(--trait);box-shadow:inset 3px 0 0 var(--or);
+           font-size:13px;line-height:1.55;color:var(--gris)}
+  .bandeau b{color:var(--encre)}
+  .manque-fiche{margin:0 0 12px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+                font-size:13px;line-height:1.55}
+  .manque-fiche b{color:var(--alerte)}
+  .piece{display:flex;gap:9px;padding:7px 2px;font-size:13px;border-bottom:1px solid var(--trait)}
+  .piece span:first-child{flex:none;min-width:52px;font-variant-numeric:tabular-nums}
+
   .gestes{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
   .gestes button,.gestes a{flex:1 1 140px;text-align:center;padding:14px 12px;border-radius:999px;
     background:var(--pin);color:var(--papier);border:0;font:inherit;font-size:14.5px;
@@ -179,6 +190,7 @@
 <div class="dedans">
 
   <p class="sur">Atlas · maquette essayable</p>
+  <p class="bandeau" id="bandeau"></p>
   <h1>Plan d'arrosage automatique</h1>
   <p class="chapo">Entrez votre jardin : tout se recalcule à chaque frappe.
     <b>Rien n'est codé dans l'application</b> — cette page sert à éprouver le
@@ -197,6 +209,12 @@
     </div>
     <p class="sortie">Débit disponible <b id="debitDispo">—</b> m³/h
       <span class="petit" id="debitNote"></span></p>
+
+    <div class="ligne" style="margin-top:12px">
+      <div><label for="recouvrement">Recouvrement des arroseurs (%)</label>
+        <input id="recouvrement" type="number" inputmode="numeric" min="30" max="150" step="5" value="80"></div>
+    </div>
+    <p class="aide" id="recouvrementNote" style="margin:8px 0 0"></p>
   </section>
 
   <section>
@@ -238,6 +256,7 @@
       saisissent.</p>
     <p class="option"><label class="case"><input type="checkbox" id="sonde"> Ajouter une sonde de pluie</label>
       <span class="aide-courte">Elle coupe le cycle quand il a plu : c'est une ligne d'achat, pas un calcul.</span></p>
+    <div id="nourrice"></div>
     <div id="materiel"></div>
     <div class="gestes">
       <button type="button" id="copier">Copier la liste</button>
@@ -257,19 +276,22 @@
   </p>
 </div>
 
+<script src="arrosage-catalogue.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
-   LE CATALOGUE — valeurs de catalogue courantes à 3 bar.
-   Portée, débit et pluviométrie vont TOUJOURS ensemble : c'est leur rapport
-   qui fait tout le calcul. Les modifier séparément rendrait les durées fausses
-   sans que rien ne s'en aperçoive.
+   LE MATÉRIEL VIENT DU CATALOGUE, plus de cette page.
+
+   Sa demande du 17 août : ses photos d'arroseurs et ses nomenclatures entrent
+   dans une base, et l'outil calcule dessus. `arrosage-catalogue.js` est cette
+   base. Tant qu'une valeur y porte `source: 'provisoire'`, l'écran le signale :
+   une portée qu'on croit juste et qui ne l'est pas fait acheter le mauvais
+   nombre d'arroseurs, et c'est lui qui revient poser les manquants.
    ═══════════════════════════════════════════════════════════════════════════ */
-var MATERIELS = {
-  turbine: { nom:'Turbine', detail:'buse 3,0', portee:9,   debit360:0.44, pluvio:11, famille:'Arroseurs' },
-  tuyere:  { nom:'Tuyère',  detail:'buse 12',  portee:3.7, debit360:0.48, pluvio:38, famille:'Arroseurs' },
-  gaine:   { nom:'Gaine de goutteurs', detail:'2,3 L/h tous les 33 cm',
-             debitMetre:0.007, pluvio:23, famille:'Goutte-à-goutte' }
-};
+var MATERIELS = {};
+CATALOGUE.arroseurs.forEach(function(a){
+  MATERIELS[a.ref === 'turbine-generique' ? 'turbine' : (a.ref === 'tuyere-generique' ? 'tuyere' : a.ref)] = a;
+});
+CATALOGUE.gaines.forEach(function(g){ MATERIELS[g.ref === 'gaine-generique' ? 'gaine' : g.ref] = g; });
 
 /* Les besoins en millimètres par semaine, et le nombre de passages.
    LES SECTEURS NE CHANGENT PAS AVEC LA SAISON — c'est du câblage, il est posé
@@ -292,11 +314,22 @@ var TYPES = {
 };
 
 var MARGE = 0.85;         // on ne charge jamais un secteur jusqu'au robinet
+
+/* LE RECOUVREMENT — sa règle du 17 août : « il faut un recouvrement d'au moins
+   quatre-vingt pour cent ». Lu ici comme : l'écart entre deux arroseurs vaut
+   80 % de leur portée. À 100 %, c'est la pose tête-bêche classique (chacun
+   arrose jusqu'au pied du suivant) ; à 80 %, les couronnes se chevauchent
+   davantage, la lame d'eau est plus régulière — et il faut plus d'arroseurs.
+   C'EST RÉGLABLE À L'ÉCRAN, et l'écart en mètres est affiché : s'il lit
+   « un arroseur tous les 4,00 m » et que ce n'est pas sa pratique, il le voit
+   d'un coup d'œil et le dit en un mot. Deviner sa règle aurait coûté un
+   chantier ; l'afficher coûte une ligne. */
+var RECOUVREMENT_DEFAUT = 0.80;
 var DEPART = 3 * 60;      // départ du cycle : 3 h du matin
 var LEVER = 6 * 60 + 30;  // au-delà, l'eau s'évapore avant d'entrer
 
 var etat = charger() || {
-  seau:10, temps:20, pression:3, saison:'juillet',
+  seau:10, temps:20, pression:3, saison:'juillet', recouvrement:RECOUVREMENT_DEFAUT,
   pe32:60, pe25:120, sonde:false,
   zones:[
     { id:1, nom:'Pelouse arrière', type:'gazon',   L:18, l:12, materiel:'auto' },
@@ -341,7 +374,9 @@ function poser(z){
   if (TYPES[z.type].forme === 'surface'){
     var L = Number(z.L)||0, l = Number(z.l)||0;
     if (L <= 0 || l <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0, nx:0, ny:0 });
-    var nx = Math.ceil(L / m.portee) + 1, ny = Math.ceil(l / m.portee) + 1;
+    var ecart = m.portee * recouvrementCourant();
+    var nx = Math.ceil(L / ecart) + 1, ny = Math.ceil(l / ecart) + 1;
+    r.ecart = ecart;
     var coins = 4;
     var bords = Math.max(0, 2*(nx-2)) + Math.max(0, 2*(ny-2));
     var inter = Math.max(0, nx-2) * Math.max(0, ny-2);
@@ -358,6 +393,14 @@ function poser(z){
   // quantité d'eau demande 45 min de turbine et 13 min de tuyère.
   r.minutes = passages > 0 ? Math.round((besoin / passages / m.pluvio) * 60) : 0;
   return r;
+}
+
+function recouvrementCourant(){
+  var r = Number(etat.recouvrement);
+  // Un recouvrement nul ou aberrant ferait diviser par zéro et poser une
+  // infinité d'arroseurs : on retombe sur la valeur retenue plutôt que de
+  // rendre un écran qui compte n'importe quoi.
+  return (r > 0.2 && r <= 1.5) ? r : RECOUVREMENT_DEFAUT;
 }
 
 function saisonCourante(){
@@ -432,9 +475,11 @@ function dessinerZones(){
 
     var resume = p.debit > 0
       ? (t.forme === 'surface'
-          ? p.nombre + ' ' + p.m.nom.toLowerCase() + (p.nombre>1?'s':'') + ' (' + p.nx + ' × ' + p.ny + ')'
+          ? p.nombre + ' ' + p.m.nom.toLowerCase() + (p.nombre>1?'s':'') + ' (' + p.nx + ' × ' + p.ny + ')' +
+            ' — un tous les ' + nb(p.ecart) + ' m'
           : p.nombre + ' m de gaine')
         + ' · ' + nb(p.debit) + ' m³/h · ' + p.minutes + ' min, ' + p.passages + '×/semaine'
+        + (p.m.source === 'provisoire' ? ' · <span class="provisoire">portée à confirmer</span>' : '')
       : 'Mesures à compléter.';
 
     bloc.innerHTML =
@@ -617,6 +662,40 @@ function dessinerMateriel(d){
   });
 }
 
+/* La nourrice : SA fiche, ou rien. Composer une nourrice de son cru, c'est
+   envoyer une commande à laquelle il manquera un té — et le chantier s'arrête
+   à la pose, pas au bureau. */
+function dessinerNourrice(d){
+  var hote = document.getElementById('nourrice');
+  hote.innerHTML = '';
+  var voies = d.secteurs.length;
+  if (!voies) return;
+  var fiche = CATALOGUE.nourrices[voies];
+  if (!fiche){
+    hote.innerHTML = '<p class="manque-fiche"><b>Fiche « nourrice ' + voies + ' voie' +
+      (voies>1?'s':'') + ' » à renseigner.</b> Le calcul dit qu\'il en faut une ; ' +
+      'je ne compose pas son contenu à votre place. Dites-moi ce qu\'il y a dedans, ' +
+      'elle se reprendra ensuite toute seule à chaque plan.</p>';
+    return;
+  }
+  var html = '<p class="aide" style="margin:0 0 6px"><b>' + fiche.nom + '</b> — votre fiche.</p>';
+  fiche.pieces.forEach(function(x){
+    html += '<div class="piece"><span>' + x.q + ' ' + x.u + '</span><span>' + x.nom + '</span></div>';
+  });
+  hote.innerHTML = html;
+}
+
+function dessinerBandeau(){
+  var n = CATALOGUE.provisoires();
+  var fiches = Object.keys(CATALOGUE.nourrices).length;
+  document.getElementById('bandeau').innerHTML = n === 0 && fiches > 0
+    ? '<b>Catalogue à jour.</b> Toutes les valeurs viennent de vos fiches.'
+    : '<b>' + n + ' valeur' + (n>1?'s':'') + ' encore provisoire' + (n>1?'s':'') +
+      '</b> — portées, débits et matériel de catalogue générique, en attendant vos photos. ' +
+      (fiches === 0 ? 'Aucune fiche de nourrice enregistrée pour l\'instant.'
+                    : fiches + ' fiche(s) de nourrice enregistrée(s).');
+}
+
 function texteDeLaListe(d){
   var l = ['Demande de prix — arrosage automatique', ''];
   listeMateriel(d).forEach(function(x){ l.push('- ' + x.q + ' ' + x.u + '  ' + x.nom); });
@@ -624,6 +703,15 @@ function texteDeLaListe(d){
   l.push('- ' + etat.pe25 + ' ml  Tuyau PE 25 (antennes)');
   l.push('');
   l.push('Installation : ' + d.secteurs.length + ' secteurs, débit disponible ' + nb(d.dispo) + ' m³/h à ' + nb(etat.pression,1) + ' bar.');
+  var fiche = CATALOGUE.nourrices[d.secteurs.length];
+  if (fiche){
+    l.push('');
+    l.push(fiche.nom + ' :');
+    fiche.pieces.forEach(function(x){ l.push('- ' + x.q + ' ' + x.u + '  ' + x.nom); });
+  } else if (d.secteurs.length) {
+    l.push('');
+    l.push('Nourrice ' + d.secteurs.length + ' voies : fiche non renseignée.');
+  }
   return l.join('\n');
 }
 
@@ -638,7 +726,17 @@ function recalculer(redessinerZones){
   dessinerSecteurs(d);
   dessinerVerdict(d);
   dessinerPlans();
+  dessinerNourrice(d);
   dessinerMateriel(d);
+  dessinerBandeau();
+  document.getElementById('recouvrementNote').innerHTML = (function(){
+    var r = recouvrementCourant(), l = [];
+    CATALOGUE.arroseurs.forEach(function(a){
+      l.push(a.nom.toLowerCase() + ' (portée ' + nb(a.portee,1) + ' m) → un tous les ' + nb(a.portee*r) + ' m');
+    });
+    return 'À ' + Math.round(r*100) + ' % : ' + l.join(' · ') +
+      '. <b>Si ce n\'est pas votre pose, dites-le</b> — c\'est ce réglage qui décide du nombre d\'arroseurs.';
+  })();
   var mail = document.getElementById('envoyer');
   mail.href = 'mailto:?subject=' + encodeURIComponent('Demande de prix — arrosage automatique') +
               '&body=' + encodeURIComponent(texteDeLaListe(d));
@@ -657,6 +755,13 @@ function charger(){
     etat[id] = e.target.value; recalculer(false);
   });
 });
+document.getElementById('recouvrement').addEventListener('input', function(e){
+  // Saisi en pour-cent parce que c'est ainsi qu'il en parle ; gardé en fraction
+  // parce que c'est ainsi qu'on multiplie.
+  etat.recouvrement = Number(e.target.value) / 100;
+  recalculer(true);
+});
+document.getElementById('recouvrement').value = Math.round(recouvrementCourant() * 100);
 document.getElementById('seau').value = etat.seau;
 document.getElementById('temps').value = etat.temps;
 document.getElementById('pression').value = etat.pression;
