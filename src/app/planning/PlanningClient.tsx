@@ -582,7 +582,28 @@ export default function PlanningClient({
                 >
                   <button
                     type="button"
-                    onClick={() => setAPoserId(c.id)}
+                    // **`amenerAuCalendrier`, ET NON `setAPoserId`.** Le patron,
+                    // le 17 août 2026 : *« je peux toujours pas poser de date
+                    // sur les chantiers test »* — « toujours », parce qu'une
+                    // autre session l'avait déjà constaté le même jour et
+                    // l'avait CONTOURNÉ en pré-posant un chantier par script.
+                    //
+                    // Le geste marchait pourtant de bout en bout : toucher le
+                    // chantier, toucher un jour, choisir la demi-journée,
+                    // poser. Ce qui manquait n'était pas une fonction, c'était
+                    // le RACCORD — mesuré sur son écran : après l'appui, le
+                    // calendrier était à 231 px AU-DESSUS du haut de l'écran.
+                    // Seule sa dernière rangée dépassait, aucune journée ne
+                    // s'ouvrait, et rien ne disait quoi faire. La ligne
+                    // annonçait « À poser » et l'écran n'offrait aucun chemin.
+                    //
+                    // `amenerAuCalendrier` existait DÉJÀ, et sa propre note
+                    // annonce qu'elle sert « depuis deux endroits — la liste
+                    // Sans date et la feuille du chevron ». Le second était
+                    // branché, celui-ci ne l'a jamais été. Elle referme aussi le
+                    // jour ouvert : sans cela l'écran resterait sur une journée
+                    // qui ne concerne plus le chantier qu'on vient de choisir.
+                    onClick={() => amenerAuCalendrier(c.id)}
                     aria-pressed={vise}
                     data-atlas="sans-date"
                     className="flex w-full items-baseline justify-between gap-3.5 py-[11px] text-left"

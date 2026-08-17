@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### CORRIGÉ : poser une date à la main — le calendrier ne venait jamais
+
+Sa plainte : *« je peux toujours pas poser de date sur les chantiers test »*.
+**« Toujours » : une autre session l'avait déjà constaté le même jour** et
+l'avait contourné en faisant pré-poser un chantier par un script.
+
+**Le geste marchait pourtant de bout en bout.** Ce qui manquait était le
+raccord : en touchant un chantier de « Sans date », l'écran écrivait « À poser »
+et **ne bougeait pas d'un pixel**. Mesuré sur son écran : le calendrier se
+trouvait 231 px **au-dessus** du haut de la fenêtre — seule sa dernière rangée
+dépassait, celle des « 31 1 2 3 4 5 6 » de sa capture. Aucun chemin visible vers
+une date.
+
+`amenerAuCalendrier` existait déjà et annonçait servir « depuis deux endroits ».
+Le second était branché, la liste « Sans date » ne l'a jamais été.
+
+**Pourquoi aucune suite ne le voyait :** Playwright fait défiler un élément
+jusqu'à lui avant de cliquer. Un contrôle qui clique éprouve qu'une cible
+existe, jamais qu'elle est ATTEIGNABLE. Le nouveau mesure la position du
+calendrier dans la fenêtre. `ARCHITECTURE.md` §125.
+
+
 ### CODÉ : « Adresse non renseignée » ouvre l'écran du chantier
 
 Sa demande, puis sa correction : *« que ça m'amène sur la page que je t'ai

@@ -333,6 +333,15 @@ l'application. Ce qui est **fait** :
   Google suffisait déjà et rien n'a été écrit pour ça. **Reste faux, et dit :**
   l'équipe d'un chantier est une étiquette, pas une contrainte.
   `ARCHITECTURE.md` §109.
+- **Poser une date à la main, enfin possible** (17 août) : *« je peux toujours
+  pas poser de date sur les chantiers test »*. Le geste marchait de bout en bout ;
+  c'est le RACCORD qui manquait — en touchant un chantier de « Sans date »,
+  l'écran écrivait « À poser » et ne bougeait pas, le calendrier restant 231 px
+  au-dessus du haut de la fenêtre. `amenerAuCalendrier` existait déjà et
+  annonçait servir « depuis deux endroits » : la liste ne l'a jamais appelée.
+  **Aucune suite ne le voyait parce que Playwright fait défiler avant de
+  cliquer** — un contrôle qui clique éprouve qu'une cible existe, jamais qu'elle
+  est atteignable. `ARCHITECTURE.md` §125.
 - **« Adresse non renseignée » ouvre l'écran du chantier** (17 août) : la mention
   de l'accueil devient un lien vers `/chantiers/[id]/coordonnees` — l'écran de
   création rouvert, prérempli, qui **enregistre** au lieu de créer. Sa demande,

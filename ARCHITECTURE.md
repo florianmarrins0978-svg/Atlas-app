@@ -10423,3 +10423,67 @@ vit désormais sur un `<span>` intérieur.
 `.atlas-fil-defile`, c'est-à-dire le cadre lui-même. Le calcul de position valait
 zéro, et la photo montrait le HAUT du fil au lieu de la ligne corrigée. Une
 capture qui cadre autre chose que ce qu'elle annonce ne prouve rien.
+
+---
+
+## 125. « Toujours pas poser de date » — une fonction écrite, jamais branchée
+
+**Le patron, le 17 août 2026**, capture de son planning à l'appui : *« je peux
+toujours pas poser de date sur les chantiers test, corrige ça ! »*
+
+**« TOUJOURS » N'EST PAS UNE FIGURE DE STYLE.** Une autre session l'avait déjà
+constaté le même jour et l'a écrit dans le journal : *« le patron s'est retrouvé
+bloqué, la pose à la main lui échappant »*. Sa réponse a été de faire **pré-poser
+un chantier par un script**, pour que la fonctionnalité qu'elle éprouvait ait un
+point de départ. Le contournement a marché ; le geste, lui, est resté cassé.
+
+### Ce qui était cassé, et ce qui ne l'était pas
+
+**Le geste marchait de bout en bout.** Toucher le chantier, toucher un jour,
+choisir la demi-journée, poser : `test-planning-e2e` le parcourt entièrement, et
+il était vert.
+
+Ce qui manquait n'était pas une fonction, c'était **le raccord**. Mesuré sur son
+écran de 664 px, après l'appui sur un chantier de « Sans date » :
+
+| | |
+|---|---|
+| Le calendrier | à **231 px AU-DESSUS** du haut de la fenêtre |
+| Ce qui en dépassait | sa dernière rangée — les « 31 1 2 3 4 5 6 » de sa capture |
+| Journée ouverte | aucune |
+| Ce que l'écran disait de faire | rien |
+
+La ligne annonçait « À poser » et **l'écran n'offrait aucun chemin.** De là, un
+artisan conclut que la fonctionnalité n'existe pas. Il a conclu deux fois.
+
+### La fonction existait déjà — elle n'était appelée que d'un seul endroit
+
+`amenerAuCalendrier` était écrite, et sa propre note annonçait sa raison d'être :
+*« le geste part maintenant de DEUX endroits — la liste "Sans date" et la feuille
+du chevron »*. Elle pose le chantier à placer, referme la journée ouverte, et
+**amène le calendrier sous les yeux**.
+
+La feuille du chevron l'appelait. **La liste « Sans date » ne l'a jamais
+appelée** : elle faisait `setAPoserId` en direct. Un mot dans un `onClick`.
+
+**Ce que ça enseigne, et qui vaut au-delà :** une fonction dont le commentaire
+annonce deux appelants et qui n'en a qu'un est un défaut visible à la lecture,
+pas à l'exécution. Rien ne rougit ; l'intention est écrite et démentie par le
+code d'à côté.
+
+### Pourquoi aucune suite ne le voyait, et le contrôle qui le tient maintenant
+
+**Playwright fait défiler un élément jusqu'à lui AVANT de cliquer dessus.** Un
+contrôle qui « clique » n'éprouve donc jamais si la cible était ATTEIGNABLE — il
+éprouve qu'elle existe. Toutes les suites du planning cliquaient ; toutes
+étaient vertes ; et le patron, lui, ne voyait pas le calendrier.
+
+`test-poser-une-date-e2e` ne clique pas pour vérifier : il **mesure la position
+du calendrier dans la fenêtre** avant et après l'appui, ce qu'aucun clic ne peut
+dire. Il exige aussi que la scène soit bien la sienne — si le calendrier était
+déjà visible avant l'appui, il refuse de conclure plutôt que de rendre un vert
+qui ne prouve rien (`CLAUDE.md` §5).
+
+**Remis à `setAPoserId`, il rougit et nomme le coupable :** *« le calendrier
+n'est pas venu sous les yeux : −13 → 287 pour 664 px d'écran (il était à −13
+avant l'appui) »*.
