@@ -687,6 +687,18 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **Le catalogue s'écrit — FAIT le 17 août** (`ARCHITECTURE.md` §122, migration
+  0052). Il a posé deux fois la même question sur cet écran : *« À quoi sert
+  cette page ?? On peut rien modifier rajouter »*. Ses mots s'accrochent
+  désormais aux entrées d'Atlas (arrangement B de la planche 72), le catalogue
+  partagé reste intouché, et **un mot ajouté est reconnu par la dictée** — les
+  quatre chemins de recherche passent par la même fonction. Réparés au passage :
+  la flèche de retour, et « aucun prix encore constaté », une phrase qui lisait
+  une mémoire jamais écrite et ne se serait jamais éteinte. **Deux décisions
+  restent à lui** (`TODO.md` §0 octovicies bis) : faut-il remettre un prix sur
+  ces cartes, et le catalogue doit-il s'auto-alimenter depuis ses corrections de
+  dictée — aujourd'hui rien ne s'ajoute tout seul.
+
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le

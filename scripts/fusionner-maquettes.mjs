@@ -361,6 +361,12 @@ const MAQUETTES = [
     famille: "L’arrosage automatique",
     quoi: "Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.",
   },
+  {
+    fichier: "72-mes-mots-au-catalogue.html",
+    titre: "Mes mots au catalogue",
+    famille: "Les réglages",
+    quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

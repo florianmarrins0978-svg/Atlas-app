@@ -752,6 +752,36 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE CATALOGUE EST ÉCRIVABLE (17 août) — CODÉ, arrangement B.** Il a posé deux
+fois la même question (14 puis 17 août) : *« À quoi sert cette page ?? On peut
+rien modifier rajouter »*. Ses mots s'accrochent désormais aux entrées d'Atlas,
+en or. Planche `docs/maquettes/72-mes-mots-au-catalogue.html`, récit complet
+dans `ARCHITECTURE.md` §122, migration 0052.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **Le catalogue reste PARTAGÉ et intouchable** (migration 0007, aucune RLS).
+   Ses mots vivent dans `mots_catalogue`, isolée par RLS, et se superposent au
+   commun à la lecture. Rien ne retire jamais un mot d'Atlas : ce serait le
+   retirer chez tous les autres artisans.
+2. **Un mot visible DOIT être un mot reconnu.** Les quatre chemins de recherche
+   passent par `rechercherCartes` — les deux outils de l'agent, celui des
+   synonymes, le service de chiffrage. En débrancher un rendrait des mots
+   affichés et muets : il croirait avoir appris quelque chose à Atlas, et rien
+   ne le détromperait. La suite base rougit exactement là.
+3. **Le rapprochement se fait par INCLUSION**, comme pour le commun : « écime »
+   attrape « écime-moi le tilleul », « écimage » ne l'attrape pas. Le champ de
+   saisie le dit. Ne pas inventer une seconde règle pour ses mots — deux règles
+   divergent toujours.
+4. **Ne pas remettre de prix sur cet écran sans trancher le rapprochement.**
+   `lecons_prix` range par nature de chantier, pas par mot de catalogue : un
+   prix d'abattage sous « Élagage » serait pire que la phrase retirée.
+
+**Et ce qu'il a demandé, sans réponse à ce jour :** le catalogue ne
+s'auto-alimente PAS. Un mot compris dans un devis ne s'ajoute nulle part. Ce qui
+serait possible — proposer l'ajout à SES mots quand il corrige une dictée, avec
+confirmation, jamais dans le commun — est dans `TODO.md` §0 octovicies bis.
+
 **LA FICHE DU CLIENT (16 août).** Elle s'ouvre depuis le tiroir d'un chantier et
 montre ce que l'application savait déjà : combien de chantiers, combien facturé,
 combien reste dû, et ce qu'on lui fait d'habitude.

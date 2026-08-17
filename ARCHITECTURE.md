@@ -10150,3 +10150,117 @@ du patron. Un contrôle jamais vu rouge ne prouve rien (`AGENTS.md`).
 **silencieusement** — la ligne n'était pas supprimée, et le cas « un client
 supprimé n'est pas réutilisé » passait au vert sans avoir rien supprimé
 (`CLAUDE.md` §3).
+
+---
+
+## 123. Ses mots au catalogue : écrire dans un vocabulaire qui appartient à tout le monde
+
+**Il a posé la même question deux fois, à trois jours d'écart, sur le même
+écran** — le 14 puis le 17 août 2026, capture à l'appui : *« À quoi sert cette
+page ?? On peut rien modifier rajouter »*. La première fois a produit une
+explication (`docs/QUESTIONS.md` §18) et deux défauts inscrits dans `TODO.md`.
+La seconde a produit ce lot. **Un écran qu'il faut expliquer deux fois n'est pas
+mal compris : il ne dit pas ce qu'il fait.**
+
+### Le problème, et il n'était pas d'interface
+
+Le catalogue est le vocabulaire du métier : quand il dicte « faut me démonter le
+sapin du fond », aucun mot de la phrase n'est « élagage » — c'est lui qui fait
+le rapprochement. Mais `catalogue_prestations` et `catalogue_materiels` sont
+**partagés entre toutes les entreprises** (migration 0007, aucun `entreprise_id`,
+aucune RLS). Y écrire depuis son téléphone changerait le vocabulaire de tous les
+autres artisans, sans qu'ils l'aient demandé ni qu'ils puissent le corriger.
+
+L'écran était donc en lecture seule **pour une bonne raison**, et ne la disait
+pas. Ce n'est pas un bouton qui manquait : c'est un endroit où poser ses mots.
+
+### Ce qui a été retenu : l'arrangement B de la planche 72
+
+Trois arrangements lui ont été montrés
+(`docs/maquettes/72-mes-mots-au-catalogue.html`). Il a choisi **B**, et le choix
+n'était pas cosmétique — il décide de ce que la dictée comprend ensuite :
+
+| | Où vivent ses mots | Ce que ça coûte |
+|---|---|---|
+| A | une liste « Mes mots » sous celle d'Atlas | « écime » vit **à côté** d'« Élagage » : une dictée « écime-moi le tilleul » ouvrirait une prestation neuve au lieu de reconnaître l'élagage déjà chiffrable |
+| **B** *(retenu)* | **dans** les cartes d'Atlas, en or, suivis de « vous » | un geste par carte, une couleur à tenir |
+| C | tout mélangé | il croit corriger le commun, l'application refuse au moment du geste |
+
+### La table, et ses quatre formes
+
+`mots_catalogue` (migration 0052) porte `entreprise_id`, sa politique RLS et
+rien d'autre que ses mots. Une seule table pour quatre formes, ce qui la rend
+lisible d'un coup d'œil :
+
+1. un mot posé sur une prestation d'Atlas → `prestation_id` ;
+2. un mot posé sur un matériel d'Atlas → `materiel_id` ;
+3. **son** entrée à lui → les trois renvois à `NULL`, `mot` porte le nom ;
+4. un mot posé sur son entrée à lui → `parent_id`.
+
+Deux contraintes tiennent l'ensemble : un seul ancrage à la fois, et une
+famille accordée à son ancrage. Un index unique sur
+`(entreprise_id, famille, lower(mot))` empêche le même mot de désigner deux
+choses — « écimage » sous « Élagage » *et* sous « Taille de haie » ferait
+hésiter le rapprochement au lieu de l'aider.
+
+### Ce qui compte vraiment : un mot visible est un mot RECONNU
+
+**C'est le piège que ce lot devait éviter, et il aurait été muet.** Un mot ajouté
+à l'écran mais ignoré par la recherche donnerait le pire des deux mondes : il
+croirait avoir appris quelque chose à Atlas, la dictée continuerait de ne pas
+comprendre, et **rien ne le lui dirait**. Les quatre chemins de recherche
+passent donc par la même fonction (`rechercherCartes`) : les deux outils de
+l'agent, celui des synonymes, et le service de chiffrage.
+
+**Les entrées d'Atlas passent devant les siennes**, et ce n'est pas un détail
+d'affichage : quand « écime » a été posé SUR « Élagage », c'est « Élagage » qui
+ressort — avec son historique de prix et ses questions de chiffrage. Une entrée
+à lui n'a rien de tout cela.
+
+**Le mot se pose court, et l'écran le dit.** Le rapprochement se fait par
+inclusion, comme pour le vocabulaire commun : « écime » attrape « écime-moi le
+tilleul », « écimage » ne l'attrape pas. Deux règles de rapprochement — une pour
+le commun, une pour ses mots — auraient fini par diverger, et il aurait vu un
+mot reconnu et l'autre non sans pouvoir deviner pourquoi.
+
+### Ce que le même lot répare, et qui venait de ses captures
+
+- **La flèche de retour existe enfin.** `ScreenHeader` savait l'afficher ;
+  l'écran ne la lui avait jamais demandée. On arrivait ici depuis « Tarifs &
+  catalogue » et on n'en repartait que par la barre du bas.
+- **« Aucun prix encore constaté par votre entreprise » est retiré.** Cette
+  phrase interrogeait `historique_prix` — l'ancienne mémoire, celle que
+  l'application **n'écrit nulle part** — et **ne se serait donc jamais
+  éteinte**, quoi qu'il fasse. Aucun montant ne la remplace : `lecons_prix`,
+  la mémoire vivante, range par nature de chantier
+  (`abattage|demontage_retention|d70`) et non par mot de catalogue. Afficher un
+  prix d'abattage sous « Élagage » serait pire que la phrase d'hier, qui au
+  moins n'inventait rien. **La question reste ouverte au bas de la planche.**
+- **« Synonymes » et « Variantes » sont fondus en « Aussi appelé ».** Les deux
+  lignes de sa capture disaient la même chose sous deux mots de jargon, et
+  personne n'a jamais su ce qui allait dans lequel.
+- **L'écran est passé à la charte** (`EnTeteEcran`, `design-tokens`). Il portait
+  encore l'échelle de juillet (`p-4`, `text-ink/40`, `rounded-md`) : le réparer
+  sans le redessiner aurait laissé un écran d'avant au milieu des autres.
+
+### Un geste qui n'est PAS sur la planche, et pourquoi il existe quand même
+
+**Retirer un de ses mots.** La planche ne le montrait pas ; sans lui, un mot mal
+tapé resterait pour toujours et fausserait la dictée sans recours. Rien
+n'atteint le vocabulaire commun — seuls ses mots à lui sont dans cette table, et
+la RLS empêche d'effacer ceux d'une autre entreprise.
+
+### Ce que ce lot ne fait PAS, et qu'il ne faut pas croire acquis
+
+**Rien ne s'alimente tout seul.** Ni le vocabulaire d'Atlas — qui est commun, et
+qu'aucune entreprise ne doit pouvoir changer depuis son téléphone —, ni ses mots
+à lui. Un mot rencontré dans un devis et compris par l'agent **ne s'ajoute
+nulle part** : il faut le poser à la main sur l'écran du catalogue. La question
+a été posée par le patron le 17 août, et la réponse honnête était non.
+
+**Ce qu'il faudrait pour que ça s'alimente, si la décision est prise :** ne
+jamais écrire dans le commun, proposer l'ajout **à ses mots à lui** au moment où
+il corrige une dictée (`corrections_dictee` porte déjà ces corrections), et lui
+demander confirmation — le dépôt refuse depuis toujours l'écriture automatique
+dans le catalogue (`creerPrestationCatalogue` : « toujours déclenchée après
+confirmation explicite de l'utilisateur »).

@@ -54,6 +54,93 @@ vérifient maintenant des **nombres** — 37,20 € au centime, 1,64 m³/h sur u
 zone assez petite pour retenir la 6-VAN — et non des tournures de phrase. Un
 contrôle posé sur la 18-VAN n'aurait rien vu : cette buse-là est exactement
 linéaire.
+### Le catalogue s'écrit enfin : ses mots à lui, par-dessus celui de tout le monde
+
+**Codé le jour même de la planche, sur son « là c'est la B ».** L'écran
+« Catalogue » se lisait sans pouvoir s'écrire, et il l'a signalé deux fois en
+trois jours. Il porte désormais SES mots, en or, accrochés aux entrées d'Atlas.
+
+**La table `mots_catalogue` (migration 0052) existe parce que le catalogue est
+PARTAGÉ.** `catalogue_prestations` n'a pas de colonne d'entreprise et pas de
+RLS : une ligne écrite depuis son téléphone changerait le vocabulaire de tous
+les autres artisans. Ses mots vivent donc à part, isolés comme le reste de ses
+données, et se superposent au commun à la lecture.
+
+**Ce qui compte le plus dans ce lot ne se voit pas à l'écran : un mot visible
+est un mot RECONNU.** Un mot ajouté et ignoré par la recherche aurait donné le
+pire des deux mondes — il aurait cru apprendre quelque chose à Atlas pendant que
+la dictée continuait de ne rien comprendre, sans un message pour le détromper.
+Les quatre chemins de recherche passent donc par la même fonction : les deux
+outils de l'agent, celui des synonymes, et le service de chiffrage. La suite
+base rougit précisément là si on les débranche.
+
+**Le mot se pose court, et le champ le dit** (« Comme vous le dites : "écime" ») :
+le rapprochement se fait par inclusion, comme pour le vocabulaire commun —
+« écime » attrape « écime-moi le tilleul », « écimage » ne l'attrape pas. Deux
+règles de rapprochement auraient fini par diverger.
+
+**Trois défauts de ses captures réparés dans le même lot :** la flèche de retour
+existe enfin ; « Aucun prix encore constaté par votre entreprise » disparaît —
+elle lisait une mémoire que l'application n'écrit nulle part, et ne se serait
+jamais éteinte ; « Synonymes » et « Variantes » deviennent « Aussi appelé ».
+L'écran est passé à la charte au passage : il portait encore l'échelle de
+juillet.
+
+**Un geste qui n'était PAS sur la planche a été ajouté : retirer un de ses
+mots.** Sans lui, un mot mal tapé restait pour toujours et faussait la dictée
+sans recours. Rien n'atteint le vocabulaire commun.
+
+**Ce que ce lot ne fait pas, et qu'il a demandé :** rien ne s'alimente tout
+seul. Un mot compris dans un devis ne s'ajoute nulle part — ni au commun, ni
+chez lui. `ARCHITECTURE.md` §122 dit ce qu'il faudrait pour le faire, si la
+décision est prise.
+
+Éprouvé par `scripts/test-mots-catalogue.ts` (isolation, refus rendus,
+recherche, catalogue partagé intact) et `scripts/test-catalogue-mes-mots-e2e.ts`
+(le geste, le rechargement, le retrait, la flèche).
+
+### Le catalogue : une planche pour y écrire enfin, et les deux défauts du 14 août réparés dessus
+
+**Il a posé la même question deux fois, et c'est le vrai signal.** Le 17 août,
+capture de l'écran « Catalogue » à l'appui : *« À quoi sert cette page ?? On
+peut rien modifier rajouter »*. La réponse existait déjà — `docs/QUESTIONS.md`
+§18, écrite le 14 août, après la même capture. Un écran qu'il faut expliquer
+deux fois n'est pas mal compris : il ne dit pas ce qu'il fait.
+
+Sa réponse, cette fois : **« Réparer + mes mots »**. La planche
+`docs/maquettes/72-mes-mots-au-catalogue.html` est posée, **rien n'est codé**
+(`CLAUDE.md` §3 bis) — il désigne un arrangement.
+
+**Ce que la planche tranche, et qui n'est pas une question de goût.** Le
+catalogue est **commun à toutes les entreprises** : où vivent *ses* mots à lui
+décide de ce que la dictée comprendra ensuite. Ses mots à part (A) laissent
+« écimage » à côté d'« Élagage » — et une dictée « écime-moi le tilleul »
+créerait une prestation neuve au lieu de reconnaître l'élagage déjà chiffrable.
+Par-dessus (B), ils s'accrochent à l'entrée commune. Tout mélangé (C), il ne
+sait plus ce qui est à lui, et l'application refuse au moment du geste.
+
+**Les deux défauts de sa capture du 14 août sont réparés dans la planche**
+(`TODO.md` §0 octovicies bis, en attente depuis) : la flèche de retour revient
+dans les trois arrangements, et « Aucun prix encore constaté par votre
+entreprise » disparaît — cette phrase interrogeait `historique_prix`, la mémoire
+que l'application n'écrit nulle part, et ne se serait donc **jamais** éteinte.
+Aucun montant ne la remplace tant que le rapprochement n'est pas décidé : la
+mémoire vivante (`lecons_prix`) range par nature de chantier, pas par mot de
+catalogue, et afficher un prix d'abattage sous « Élagage » serait pire que la
+phrase d'hier — qui au moins n'inventait rien. La question est posée en bas de
+la planche.
+
+Au passage, le jargon s'en va : « Synonymes » et « Variantes » disaient la même
+chose sur sa capture, ils deviennent « Aussi appelé ».
+
+**Le contrôle sait échouer, et il nomme le coupable**
+(`scripts/verifier-maquette-mes-mots.mjs`) : éprouvé sur quatre copies
+dégradées — flèche retirée, phrase morte remise, bouton d'ajout retiré, marque
+dorée retirée de B —, chacune rougit sur son propre défaut. Et il refuse de
+conclure sur une boîte de zéro pixel (`CLAUDE.md` §5, payé le 15 août).
+
+**Un défaut trouvé en chemin :** le sommaire des maquettes ne fermait pas le
+lien de la 66, et la 67 se retrouvait imbriquée dedans.
 
 ### Le choix de la marque : Rain Bird par défaut, et rien d'attribué sans preuve
 

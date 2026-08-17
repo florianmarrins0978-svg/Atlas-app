@@ -1370,40 +1370,36 @@ Le contrôle de la planche existe et **a été vu rouge trois fois** avant d'êt
 livré (`scripts/verifier-maquette-nombre-de-jours.mjs`) : or retiré, bascule
 morte, nom trop long — chacun nomme le bon coupable.
 
-### 0 octovicies bis. L'écran du catalogue : sa flèche, et sa mémoire morte
+### 0 octovicies bis. ~~L'écran du catalogue~~ — CODÉ le 17 août 2026
 
-*Les deux défauts sont sortis d'une capture du patron, le 14 août 2026 — pas
-d'une suite verte. Ils sont expliqués en langage courant dans
-`docs/QUESTIONS.md` §18. **En attente de son feu vert** : rien n'a été touché.*
+*Deux captures, trois jours d'écart, la même question : « À quoi sert cette page
+?? On peut rien modifier rajouter ». Il a choisi **« Réparer + mes mots »**, puis
+l'arrangement **B** de `docs/maquettes/72-mes-mots-au-catalogue.html`. Livré le
+jour même : `ARCHITECTURE.md` §122, migration 0052.*
 
-**1. Aucune flèche de retour.** `src/app/catalogue/page.tsx` appelle
-`ScreenHeader` sans lui passer `backHref`, alors que le composant sait
-l'afficher. On y arrive depuis *Tarifs & catalogue* : `backHref="/reglages/tarifs"`
-suffit. Une ligne.
+**Ce qui est fait :** ses mots s'accrochent aux entrées d'Atlas (`mots_catalogue`,
+isolée par RLS — le catalogue partagé n'est pas touché) ; il crée ses propres
+entrées ; il retire ses mots ; la flèche de retour existe ; la phrase morte
+« Aucun prix encore constaté » est retirée ; « Synonymes »/« Variantes »
+deviennent « Aussi appelé » ; l'écran est passé à la charte.
 
-**2. « Aucun prix encore constaté » est un mensonge de branchement, et il ne
-s'éteindra jamais.** L'écran lit `historique_prix` — l'ancienne mémoire, celle
-que l'application **n'écrit nulle part** (`enregistrerPrixHistorique` n'est
-appelée que par `scripts/test-ia-05-catalogue.ts` et `test-ia-06-chiffrage.ts`).
-La mémoire vivante est `lecons_prix` depuis la migration 0023 : écrite par
-`retenirLecon` depuis `src/app/chantiers/[id]/devis-complet/actions.ts`, relue
-par `leconsComparables`.
+**CE QUI RESTE, et c'est une DÉCISION, pas du code :**
 
-C'est **exactement** le piège que `docs/QUESTIONS.md` §17 dit avoir payé une
-fois — il a survécu ici, sur un écran que personne ne regardait.
-
-**Ce que ça veut dire pour le correctif :** ne pas se contenter de rebrancher le
-`SELECT`. Le rapprochement de `lecons_prix` se fait par **signature de métier**
-(`src/lib/lecons-prix.ts` : `abattage|demontage_retention|d70`), pas par
-`prestationId` du catalogue. Il faut donc décider ce que la carte « Élagage »
-montre : le dernier prix de **toutes** les leçons dont la nature correspond, ou
-rien. Un rapprochement approximatif afficherait sous « Élagage » un prix
-d'abattage — pire que la phrase actuelle, qui au moins n'invente rien.
-
-**Et tant qu'on y est :** cet écran porte encore l'ancienne échelle (`p-4`,
-`text-ink/40`, `rounded-md`) et n'a jamais été passé à la charte. Le retoucher
-sans le redessiner laisserait un écran de 2026-07 au milieu des autres —
-`CLAUDE.md` §3 bis : une maquette d'abord.
+1. **Faut-il remettre un prix sur ces cartes ?** La question est posée au bas de
+   la planche 72 et n'a pas de réponse. `lecons_prix` range par nature de
+   chantier (`abattage|demontage_retention|d70`), pas par mot de catalogue : un
+   rapprochement approximatif afficherait un prix d'abattage sous « Élagage » —
+   pire que la phrase retirée, qui au moins n'inventait rien. Deux réponses
+   possibles : rien du tout (l'état actuel), ou la ligne **uniquement** quand la
+   nature correspond exactement.
+2. **Le catalogue doit-il s'auto-alimenter ?** Sa question du 17 août :
+   *« ça veut dire que le document s'autoalimente à chaque fois qu'on rajoute un
+   nouveau mot dans un devis et qu'il comprend ce que c'est ? »*. **Aujourd'hui,
+   non — rien ne s'ajoute tout seul.** Ce qui est possible sans rien casser :
+   proposer l'ajout **à SES mots à lui** quand il corrige une dictée
+   (`corrections_dictee` les porte déjà), avec confirmation. **Jamais dans le
+   vocabulaire commun** : il appartient à toutes les entreprises. En attente de
+   son feu vert.
 
 ### 0 quinvicies bis. Faire ARRIVER les conditions jusqu'au devis
 
