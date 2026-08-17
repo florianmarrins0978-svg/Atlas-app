@@ -139,7 +139,7 @@ export const entreprises = pgTable("entreprises", {
   rappelDevisSansReponseJours: integer("rappel_devis_sans_reponse_jours"),
   rappelChantierNonFactureJours: integer("rappel_chantier_non_facture_jours"),
   /**
-   * Le quatrième rappel et son rythme (migration 0050).
+   * Le quatrième rappel et son rythme (migration 0051).
    *
    * `rappelFactureImpayeeJours` se compte à partir de l'ÉCHÉANCE quand elle
    * existe — le délai de paiement réglé — et de l'envoi sinon : c'est le
@@ -192,6 +192,33 @@ export const entreprises = pgTable("entreprises", {
  * c'est voulu — redescendre puis remonter ne doit pas effacer un nom saisi à
  * la main.
  */
+/**
+ * Le modèle de fiche d'entretien — UN SEUL par entreprise.
+ *
+ * Sa décision du 16 août 2026 : « il n'y aura qu'une seule fiche ». Rien n'est
+ * rangé par client ; à chaque passage, la fiche part de ce modèle et s'ajuste.
+ * Le passage lui-même — ce qui a été coché, le temps, le rapport envoyé — aura
+ * sa propre table : un modèle évolue, un rapport parti chez un client ne doit
+ * JAMAIS changer.
+ */
+export const prestationsEntretien = pgTable(
+  "prestations_entretien",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    /** « Pelouse », « Tailles »… le mot du patron, renommable. */
+    famille: text("famille").notNull(),
+    libelle: text("libelle").notNull(),
+    /** Croissant, avec des trous : ils permettent d'insérer sans tout réécrire. */
+    ordre: integer("ordre").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("prestations_entretien_ordre_idx").on(t.entrepriseId, t.ordre)]
+);
+
 export const equipes = pgTable(
   "equipes",
   {
@@ -355,7 +382,7 @@ export const chantiers = pgTable(
     termineAt: timestamp("termine_at", { withTimezone: true }),
     factureEnvoyeeAt: timestamp("facture_envoyee_at", { withTimezone: true }),
     /**
-     * Le jour du dernier « Plus tard » sur le rappel d'impayé (migration 0050).
+     * Le jour du dernier « Plus tard » sur le rappel d'impayé (migration 0051).
      *
      * **Ici et pas sur `factures`, et ce n'est pas un rangement** :
      * `trg_facture_immuable` refuse toute écriture sur une facture émise, date

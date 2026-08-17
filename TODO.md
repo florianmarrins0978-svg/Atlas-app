@@ -232,7 +232,10 @@ réellement automatique demanderait un prestataire sous contrat.
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :
 
-1. le **modèle** et son écran de Réglages (rien d'autre n'a de sens sans lui) ;
+1. ~~le **modèle** en base~~ — **FAIT le 16 août** : table `prestations_entretien`
+   (migration `0051`), dépôt `src/server/repositories/prestations-entretien.ts`,
+   règles pures dans `src/lib/prestations-entretien.ts`, suite
+   `scripts/test-prestations-entretien.ts`. **Reste son écran de Réglages** ;
 2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
 3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
    porte déjà devis et factures ;
@@ -309,6 +312,37 @@ d'un geste de plus à la signature.
 passages récurrents, un rapport par passage. C'est un troisième parcours à côté
 du devis → facture, pas une case à ajouter.
 
+### 0 quadragies ter. ~~« Le nouveau chantier fait le plus gros et en gras »~~ — **CODÉ le 16 août 2026 (A · les capitales, gros, très gras)**
+
+**Sa demande du 16 août 2026**, capture de l'écran Chantiers à l'appui : *« Le
+nouveau chantier fait le plus gros et en gras. »*
+
+**Rien n'est codé** — sa règle du 11 août (`CLAUDE.md` §3 bis). La planche est
+`docs/maquettes/67-le-nouveau-chantier-plus-gros.html` : trois formes (les
+capitales grossies, la serif du titre, toute la largeur), trois tailles, trois
+graisses, et **le témoin d'aujourd'hui figé à côté** — 9 px / 500 / rond de
+38 px, les valeurs de `globals.css`.
+
+**Son choix, la planche en main : « les capitales, gros et très gras ».** Porté
+le jour même — 13 px, graisse 800, interlettrage 0,22 em, rond de 42 px, signe
+inchangé à 20 (`src/app/globals.css`). `docs/maquettes/24-le-bouton-retenu.html`
+porte désormais un bandeau qui dit que ses mesures de libellé sont périmées et
+renvoie à la 67 : c'est lui qui avait resserré cet endroit le 11 août, et laisser
+les deux se contredire aurait fait croire la mauvaise à la session suivante.
+
+**Ce qui n'a PAS bougé, et qu'il ne faut pas « harmoniser » par erreur :** l'onde
+à 1,42 fois le rond, les trois tours freinés en 560 ms, les onze grains et leur
+portée, l'écart de 13 px entre le mot et le rond, la demi-seconde avant la
+feuille.
+
+**Ce qui est déjà su, et qu'il ne faut pas redécouvrir :** le cran « le plus
+gros » (17 px en capitales, 26 px en serif) est **le plus gros qui tienne sans
+couper le mot** sur un écran de 360 px — 284 px pour 308 disponibles. Au-delà,
+« Nouveau chantier » finit en « … ».
+`scripts/verifier-maquette-nouveau-chantier.mjs` le tient sur la planche, et
+`scripts/test-bouton-nouveau-chantier-e2e.ts` le tient **dans l'application** :
+il mesure le mot à 360 px et refuse aussi bien un retour au libellé minuscule
+(≥ 12 px, ≥ 700) qu'une coupure en « … ».
 
 ### 0 quadragies bis. ~~La fiche du banc se figeait quand le veilleur travaillait~~ — **CORRIGÉ le 16 août 2026**
 
@@ -326,40 +360,22 @@ l'aveuglement l'est. Si elle revient, la fiche saura enfin la raconter.
 « Écrite : par le veilleur, au quart d'heure » — la première publication
 périodique jamais observée chez lui.
 
-### 0 quadragies quater. POURQUOI sa construction échoue — la vraie question, ouverte
+### 0 quadragies quater. ~~POURQUOI sa construction échoue~~ — **TROUVÉ le 16 août 2026**
 
-**Sa plainte du 16 août 2026 au soir :** *« l'appli, elle est vraiment très
-lente, mais vraiment, vraiment très lente. Est-ce qu'il y a un moyen de la
-rendre juste utilisable ? »*
+`demarrer.sh` tuait `next-server`, `next dev` et `next start` avant de relancer
+le veilleur, **mais pas `next build`**. La construction lancée par le premier
+veilleur survivait donc, orpheline, en gardant le verrou du système ; celle du
+second tombait sur « already running », rendait 1, et le banc repliait en mode
+développement. À chaque allumage qui récupère du code — d'où trois redémarrages
+sans effet. `build` est entré dans le motif
+(`scripts/test-verrou-construction.ts`).
 
-**Ce qu'on sait, et c'est une déduction, pas une hypothèse.** La fiche lit le
-témoin `.next-batie/atlas-version-batie.txt`, écrit **dès que `next build` rend
-0**, avant même la bascule. Ce témoin n'existe pas chez lui. Donc sa
-construction **échoue**, à chaque démarrage — et le banc retombe pour toujours
-sur le mode développement, où chaque écran se compile à l'ouverture.
-
-La même construction **réussit ici en deux minutes**, sur son commit exact
-(`67b4d8e`). C'est donc son environnement, pas le code.
-
-**Les deux suspects, et pourquoi on ne les a pas départagés :** le disque et la
-mémoire. Un `next build` pendant qu'un serveur de développement sert déjà, avec
-PostgreSQL et Redis à côté, sur une machine à deux cœurs. Ni l'un ni l'autre
-n'était publié — c'est corrigé (voir `CHANGELOG.md` du 16 août), mais le relevé
-n'arrivera **qu'au prochain démarrage de son espace**.
-
-**La marche à suivre, dès que sa fiche republie :**
-
-1. lire « Code SERVI » — si elle dit « la construction a ÉCHOUÉ », le bloc
-   « Au moment de l'échec » donne le disque et la mémoire à cette seconde-là ;
-2. disque saturé → nettoyer avant de bâtir, en épargnant `.next` que le serveur
-   de développement utilise pour servir pendant ce temps ;
-3. mémoire épuisée → plafonner le tas de la construction, ou ne pas bâtir
-   pendant qu'un serveur sert. **Ne pas choisir la valeur au hasard** : c'est
-   ainsi qu'on livre une réparation imaginée (`AGENTS.md`).
-
-**Ne PAS écrire que la lenteur est corrigée.** Elle ne l'est pas. Seul
-l'aveuglement l'est, et c'est la troisième fois en deux jours que la distinction
-compte.
+**CONFIRMÉ CHEZ LUI le 16 août 2026 au soir**, et c'est ce qui clôt le sujet :
+correctif poussé, un redémarrage, et sa réponse — *« elle est rapide »*. La
+construction aboutit donc bien sur sa machine une fois qu'on cesse de lui en
+orpheliner une. **La piste « ne pas bâtir pendant qu'on sert » est écartée : ce
+n'était pas une question de ressources.** Ne pas la rouvrir sans une mesure qui
+la justifie.
 
 ### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
 

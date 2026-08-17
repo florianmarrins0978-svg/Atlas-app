@@ -784,6 +784,23 @@ body {
  * `docs/maquettes/24-le-bouton-retenu.html` — c'est lui qui a resserré l'onde,
  * réduit le rond et ramené la gerbe de seize grains à onze.
  *
+ * **LE MOT A GROSSI LE 16 AOÛT 2026, ET C'EST LUI QUI EST REVENU DESSUS.**
+ * *« Le nouveau chantier fait le plus gros et en gras »*, puis, la planche
+ * `docs/maquettes/67-le-nouveau-chantier-plus-gros.html` en main : **« les
+ * capitales, gros et très gras »**. Le libellé passe donc de 9 à 13 px, de la
+ * graisse 500 à 800, son interlettrage se resserre de 0,28 à 0,22 em — au-delà,
+ * un mot de seize capitales n'est plus un mot mais une frise —, et le rond
+ * suit, de 38 à 42 px. **Le signe reste à 20 px** : c'est le rapport de la
+ * planche, et l'agrandir aurait rempli l'anneau.
+ *
+ * Ce sont les valeurs du cran « Gros » de la planche 67, pas des chiffres
+ * approchés à l'œil. Elles y sont mesurées : 13 px de capitales à 0,22 em font
+ * 182 px, plus 13 d'écart et 42 de rond — 237 px, quand l'écran le plus étroit
+ * du patron (360 px, moins deux marges de 26) en laisse 308. **La marge n'est
+ * donc pas là par hasard : c'est ce qui garantit que « Nouveau chantier » ne
+ * finira jamais en « … ».** `scripts/test-bouton-nouveau-chantier-e2e.ts` le
+ * mesure à chaque batterie.
+ *
  * Le geste, dans l'ordre : l'anneau BAT tant qu'on ne l'a pas touché ; à
  * l'appui il s'enfonce, le signe part en trois tours freinés, onze grains d'or
  * sont projetés depuis le bord ; la feuille monte 520 ms plus tard.
@@ -811,21 +828,23 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .atlas-geste-nouveau .atlas-mot {
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.28em;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   white-space: nowrap;
   transition: letter-spacing 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-[data-geste="part"] .atlas-mot { letter-spacing: 0.38em; }
+/* L'écart de départ reste le même — +0,10 em — pour que le mot s'ouvre d'autant
+   qu'avant sous le doigt, sans que le geste change de caractère. */
+[data-geste="part"] .atlas-mot { letter-spacing: 0.32em; }
 
 .atlas-rond {
   position: relative;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 9999px;
   transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
