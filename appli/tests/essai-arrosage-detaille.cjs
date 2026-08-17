@@ -567,6 +567,31 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   await page.waitForTimeout(200);
   cas('et elle se retire', (await page.locator('.croquis-vue img').count()) === 0);
 
+  // ── UNE SAUVEGARDE D'AVANT NE DOIT RIEN PERDRE, NI RIEN LAISSER VIDE ─────
+  // **Le piège s'est refermé le 17 août**, et sur lui seul : `charger() ||
+  // défauts` sautait tout l'objet de défauts dès qu'une sauvegarde existait,
+  // donc chaque champ ajouté après sa première visite lui arrivait vide. La
+  // page d'un nouveau venu était juste, la sienne non — le pire des deux, car
+  // rien ne le disait. On éprouve donc le cas RÉEL : un jardin enregistré
+  // AVANT les réglages du jour.
+  await page.evaluate(() => localStorage.setItem('atlas-arrosage', JSON.stringify({
+    seau: 10, temps: 20, pression: 3, saison: 'juillet', compteur: 'oui',
+    corps: null, marque: null, pe32: 60, pe25: 120, sonde: false,
+    zones: [{ id: 1, nom: 'Jardin d\'avant', type: 'gazon', L: 20, l: 14, materiel: 'auto' }]
+  })));
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(300);
+  cas('un jardin enregistré AVANT garde son nom',
+      (await page.locator('.zone .zone-tete input').first().inputValue()) === 'Jardin d\'avant');
+  cas('et il se pose toujours', (await page.locator('.plan .tete').count()) > 0);
+  // Le cœur du cas : un réglage AJOUTÉ depuis prend sa valeur, au lieu d'être vide.
+  const amenee = await page.locator('[data-tuyau="amenee"]').inputValue();
+  cas('un réglage ajouté depuis n\'arrive pas VIDE',
+      amenee !== '' && Number(amenee) > 0, 'lu : ' + JSON.stringify(amenee));
+  // Et une clé disparue du produit ne traîne pas.
+  cas('un réglage retiré du produit ne traîne pas',
+      await page.evaluate(() => etat.pe32 === undefined));
+
   cas('toujours aucune erreur JavaScript', erreurs.length === 0, erreurs.join(' | '));
 
   await page.screenshot({ path: '/tmp/claude-0/-home-user-Atlas-app/625ed6e8-234d-549b-a18f-cc9e3938615c/scratchpad/vues/arrosage-vide.png', fullPage: true });

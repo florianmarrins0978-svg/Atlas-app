@@ -489,7 +489,20 @@ var QUINCONCE_AU_DELA_DE = 4;
 var DEPART = 3 * 60;      // départ du cycle : 3 h du matin
 var LEVER = 6 * 60 + 30;  // au-delà, l'eau s'évapore avant d'entrer
 
-var etat = charger() || {
+/* ══ CE QU'IL A SAISI, ET CE QUE L'OUTIL A APPRIS DEPUIS ════════════════════
+
+   **`charger() || défauts` était un piège, et il s'est refermé le 17 août.**
+   Dès qu'une sauvegarde existait, l'objet de défauts était entièrement sauté —
+   donc TOUT CHAMP AJOUTÉ APRÈS SA PREMIÈRE VISITE arrivait `undefined` chez
+   lui, et chez lui seul. Le champ « du compteur au regard » s'ouvrait vide,
+   le verdict Ø25/Ø32 ne pouvait plus se calculer, et rien ne le disait : la
+   page d'un nouveau venu était juste, celle du patron non.
+
+   On part donc TOUJOURS des défauts, et on pose sa saisie par-dessus. Ses
+   valeurs gagnent toujours ; les champs qu'il n'a jamais vus prennent la
+   valeur du jour. C'est ce qui permet d'ajouter un réglage sans casser les
+   jardins déjà enregistrés — et il y aura d'autres réglages. */
+var DEFAUTS = {
   seau:10, temps:20, pression:3, saison:'juillet', compteur:null, corps:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   amenee:30, pe25:120, sonde:false, croquis:null,
@@ -510,6 +523,19 @@ var etat = charger() || {
     { id:5, nom:'Potager',         type:'potager', L:8,  l:3,   materiel:'gaine' }
   ]
 };
+
+var etat = (function(){
+  var sauve = charger();
+  if (!sauve) return DEFAUTS;
+  var e = {};
+  Object.keys(DEFAUTS).forEach(function(k){ e[k] = DEFAUTS[k]; });
+  // Sa saisie l'emporte, champ par champ — sauf pour ce qu'il n'a jamais eu.
+  Object.keys(sauve).forEach(function(k){ if (sauve[k] !== undefined) e[k] = sauve[k]; });
+  // Une clé disparue du produit (le `pe32` d'avant le calcul de diamètre) ne
+  // doit pas traîner : elle ne sert plus, et elle ferait croire à un réglage.
+  delete e.pe32;
+  return e;
+})();
 var prochainId = 100;
 
 /* ── Mise en forme française ─────────────────────────────────────────────── */

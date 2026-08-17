@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Un réglage ajouté après sa première visite lui arrivait VIDE
+
+Sa question : *« C'est normal qu'il n'y a plus aucune info en mémoire ? »* Son
+jardin était bien là — mais un piège s'était refermé, et sur lui seul.
+
+`var etat = charger() || {défauts}` : dès qu'une sauvegarde existait, **tout
+l'objet de défauts était sauté**. Donc chaque champ ajouté au produit APRÈS sa
+première visite lui arrivait `undefined` : le champ « du compteur au regard »
+s'ouvrait vide, le verdict Ø25/Ø32 ne pouvait plus se calculer. La page d'un
+nouveau venu était juste, la sienne non — le pire des deux cas, puisque rien
+ne le disait.
+
+On part désormais **toujours** des défauts, et sa saisie se pose par-dessus,
+champ par champ : ses valeurs gagnent, les réglages qu'il n'a jamais vus
+prennent celle du jour. Une clé retirée du produit (le `pe32` d'avant le calcul
+de diamètre) est effacée plutôt que laissée à traîner.
+
+Le contrôle éprouve le cas réel — un jardin enregistré avant les réglages du
+jour — et a été vu rouge sur le piège remis en place. **Ce défaut aurait
+frappé à chaque réglage ajouté**, et lui seul : c'est le genre qu'on ne voit
+jamais en développant, puisqu'on part d'un navigateur vide.
+
 ### Le croquis prend la place des zones, et le découpage quitte l'écran
 
 Il a parcouru l'outil écran par écran et tranché en une phrase : *« Tu

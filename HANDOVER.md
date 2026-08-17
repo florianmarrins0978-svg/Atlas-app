@@ -994,6 +994,14 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
+**⚠ NE JAMAIS ÉCRIRE `charger() || {défauts}` — le piège a frappé le 17 août.**
+Dès qu'une sauvegarde existe, l'objet de défauts est entièrement sauté : tout
+champ ajouté au produit APRÈS sa première visite lui arrive `undefined`, à lui
+seul, et sans un mot. On part toujours de `DEFAUTS` et on pose la sauvegarde
+par-dessus champ par champ (`arrosage.html`). **Le même piège guette partout
+où un état persistant s'étoffe** — et il est invisible en développant, puisque
+le navigateur y part vide.
+
 **⚠ L'OUTIL N'A PLUS QUE QUATRE SECTIONS (17 août) : point d'eau, CROQUIS,
 plan, liste.** Sa consigne : *« tu supprimes la 3, et la 2 ça doit être la
 photo du croquis ».* **Le découpage en secteurs ne s'AFFICHE plus, mais il se
