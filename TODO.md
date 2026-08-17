@@ -176,6 +176,28 @@ secteur), ou y a-t-il plusieurs réseaux parallèles partant du regard pour un
 même secteur ? Sans cette réponse, compter les tés/coudes serait inventer un
 tracé.
 
+**LA NOURRICE SE MODIFIE QUAND UNE VOIE PART EN GOUTTE-À-GOUTTE — sa règle du
+17 août.** *« À ne pas oublier : lorsqu'un réseau est pour du goutte-à-goutte,
+quelques modifications s'appliquent […] tout le reste ne doit pas être
+modifié, que ce soit pour une voie ou six — respecte la règle des pièces que
+je t'ai envoyée. »* Par voie en goutte-à-goutte : l'électrovanne 100 DV 1"
+**MM** standard de la fiche cède la place à une électrovanne 100 DV 1" **FF**,
+plus un régulateur de pression FF 3/4", plus deux mamelons réduits MM
+1"-3/4" et un mamelon fileté MM 1". Les autres voies de la même fiche, elles,
+gardent EXACTEMENT les pièces qu'il a transcrites — rien n'est retouché
+au-delà des voies concernées.
+
+`CATALOGUE.ficheNourrice(n, combienGoutte)` fait cette bascule : elle part de
+la fiche de base à `n` voies, réduit l'électrovanne MM du nombre de voies
+goutte-à-goutte, ajoute les pièces FF, puis fusionne les lignes de même
+référence (le mamelon réduit de la fiche de base et celui ajouté par la
+bascule ne doivent faire qu'UNE ligne, pas deux — piège trouvé et corrigé
+avant publication : la liste affichait « 2 u » deux fois plutôt que « 4 u »
+une fois). `arrosage.html` compte les voies goutte-à-goutte du jardin
+(`combienGoutteAGoutte`) et passe ce nombre partout où une fiche de nourrice
+est lue — liste au fournisseur, panneau nourrice, texte envoyé aux
+fournisseurs.
+
 **LES SIX FICHES DE NOURRICE SONT ARRIVÉES — de 1 à 6 voies, 17 août.**
 *« Voici toutes les pièces pour la nourrice, ce qui se trouve dans le regard
 d'arrosage. »* `CATALOGUE.nourrices[1..6]` porte désormais les vraies pièces

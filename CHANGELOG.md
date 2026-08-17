@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### La nourrice se modifie quand une voie part en goutte-à-goutte
+
+Sa règle, envoyée juste après le réseau latéral : *« lorsqu'un réseau est
+pour du goutte-à-goutte, quelques modifications s'appliquent […] tout le
+reste ne doit pas être modifié, que ce soit pour une voie ou six ».* Par voie
+concernée : l'électrovanne 100 DV 1" MM standard cède la place à une
+électrovanne 100 DV 1" FF, plus un régulateur de pression FF 3/4", plus deux
+mamelons réduits MM 1"-3/4" et un mamelon fileté MM 1".
+
+`CATALOGUE.ficheNourrice(n, combienGoutte)` overlaye cette bascule sur une
+fiche de base sans y toucher : elle réduit l'électrovanne MM du nombre de
+voies concernées, ajoute les pièces FF, puis fusionne les lignes de même
+référence avant de rendre le résultat. `appli/arrosage.html` compte les voies
+goutte-à-goutte du jardin (`combienGoutteAGoutte`) et passe désormais partout
+par cette fonction plutôt que par `CATALOGUE.nourrices[n]` directement — la
+liste au fournisseur, le panneau nourrice, et le texte envoyé aux
+fournisseurs lisent tous la même fiche modifiée.
+
+**Piège trouvé avant publication, pas après :** la première version ajoutait
+le mamelon réduit de la bascule à CÔTÉ de celui déjà présent dans la fiche de
+base, au lieu de les additionner — la liste affichait deux lignes « 2 u
+Mamelon réduit » plutôt qu'une ligne « 4 u ». Corrigé par une fusion par
+référence en sortie de `ficheNourrice`. Vérifié en construisant un jardin à 4
+voies (3 arroseurs + 1 massif goutte-à-goutte) : l'électrovanne MM standard
+passe de 4 à 3, une électrovanne FF et un régulateur FF apparaissent, les
+mamelons réduits s'affichent en une seule ligne à 4. Les suites
+`essai-arrosage-detaille.cjs` (32/32) et `tests/e2e.js` (90/90) restent au
+vert.
+
 ### Le réseau latéral, et un SBE qui manquait à chaque arroseur
 
 **Sa planche manuscrite** couvre pour la première fois la tuyauterie ENTRE les

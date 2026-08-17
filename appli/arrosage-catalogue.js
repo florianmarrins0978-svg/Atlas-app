@@ -684,7 +684,18 @@ var CATALOGUE = {
     'prog-4':        { nom:'Programmateur BL-IP 4 stations 9V' },
     'prog-6':        { nom:'Programmateur BL-IP 6 stations 9V' },
     'pile-9v':       { nom:'Pile alcaline 9V' },
-    'connexion':     { nom:'Connexion étanche' }
+    'connexion':     { nom:'Connexion étanche' },
+
+    /* ── Modification GOUTTE-À-GOUTTE — reçue le 17 août 2026 ───────────────
+       « Lorsqu'un réseau est pour du goutte-à-goutte, quelques modifications
+       s'appliquent : régulateur de pression FF 3/4", électrovanne 100-DV 1"
+       FF (au lieu de MM), 2 mamelons réduits en plus, 1 mamelon droit. »
+       Ces pièces ne remplacent PAS une fiche entière : elles s'appliquent
+       PAR VOIE, à celles qui alimentent une zone goutte-à-goutte. Voir
+       `CATALOGUE.ficheNourrice`, plus bas, qui fait ce mélange. */
+    'regulateur-ff34':      { nom:'Régulateur de pression FF 3/4"', marque:'Dura' },
+    'electrovanne-100dv-ff':{ nom:'Électrovanne 100 DV 1" FF 9V', marque:'Rain Bird' },
+    'mamelon-droit-1':      { nom:'Mamelon fileté MM 1"', marque:'Dura' }
   },
 
   /* ── Les nourrices, par nombre de voies — reçues le 17 août 2026 ─────────
@@ -781,6 +792,43 @@ var CATALOGUE = {
    sait faire le lien entre un `ref` et son nom, sa marque. */
 CATALOGUE.piece = function (ref) {
   return CATALOGUE.piecesNourrice[ref] || null;
+};
+
+/* La fiche RÉELLEMENT posée pour N voies, DONT `combienGoutte` alimentent une
+   zone goutte-à-goutte. La fiche de base (`CATALOGUE.nourrices[n]`) suppose
+   tout en arroseur/tuyère ; sa consigne du 17 août modifie CHAQUE VOIE
+   goutte-à-goutte, pas la fiche entière : une électrovanne standard en moins,
+   une électrovanne FF en plus, un régulateur, des mamelons en plus. Le reste
+   — regard, programmateur, pile, connexions, tés/coudes — NE CHANGE PAS,
+   « que ce soit pour une voie ou six ».
+
+   `combienGoutte` ne peut pas dépasser `n` : une voie ne peut pas être « à
+   moitié » goutte-à-goutte, un mélange dans une même voie n'a pas de sens et
+   ce n'est pas à cette fonction de l'inventer. */
+CATALOGUE.ficheNourrice = function (n, combienGoutte) {
+  var base = CATALOGUE.nourrices[n];
+  if (!base) return null;
+  var g = Math.max(0, Math.min(combienGoutte || 0, n));
+  var pieces = base.pieces.map(function (p) { return { ref: p.ref, q: p.q }; });
+  if (g > 0) {
+    var electro = pieces.filter(function (p) { return p.ref === 'electrovanne-100dv'; })[0];
+    if (electro) electro.q = Math.max(0, electro.q - g);
+    pieces.push({ ref: 'electrovanne-100dv-ff', q: g });
+    pieces.push({ ref: 'regulateur-ff34', q: g });
+    pieces.push({ ref: 'mamelon', q: g * 2 });
+    pieces.push({ ref: 'mamelon-droit-1', q: g });
+  }
+  // Fusionner les lignes de même référence — sinon « mamelon réduit » se voit
+  // deux fois à l'écran (2 dans la fiche de base, 2 ajoutés par la voie
+  // goutte-à-goutte) au lieu d'une fois à 4. Le total est juste dans les deux
+  // cas ; seule la lecture change, et une ligne dédoublée se lit comme un
+  // doublon plutôt que comme un total.
+  var fusion = {};
+  pieces.forEach(function (p) { fusion[p.ref] = (fusion[p.ref] || 0) + p.q; });
+  var piecesFusionnees = Object.keys(fusion)
+    .filter(function (ref) { return fusion[ref] > 0; })
+    .map(function (ref) { return { ref: ref, q: fusion[ref] }; });
+  return { nom: base.nom, source: base.source, pieces: piecesFusionnees };
 };
 
 /* Ce que l'écran doit savoir dire, et qui se compte ici plutôt qu'à trois

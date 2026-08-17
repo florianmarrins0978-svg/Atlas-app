@@ -947,6 +947,19 @@ qu'elles s'appliquent — dans la liste ET dans le registre de prix.
 `CATALOGUE.piecesNourrice` porte chaque pièce une seule fois ; **ne jamais
 retaper un nom de pièce dans une fiche**, toujours référencer par `ref`.
 
+**⚠ UNE VOIE GOUTTE-À-GOUTTE MODIFIE SA NOURRICE, LES AUTRES VOIES NON
+(17 août).** Sa règle : électrovanne MM standard → FF, plus régulateur FF
+3/4", plus deux mamelons réduits MM 1"-3/4" et un mamelon fileté MM 1" — par
+voie concernée seulement. `CATALOGUE.ficheNourrice(n, combienGoutte)` fait
+cette bascule au-dessus de la fiche de base, jamais `CATALOGUE.nourrices[n]`
+directement — **les trois endroits qui lisaient la fiche brute
+(`dessinerNourrice`, `listeMateriel`, `texteDeLaListe`) passent maintenant
+tous par cette fonction**, sans quoi l'un des trois afficherait la fiche
+non modifiée. Elle fusionne aussi les lignes de même référence en sortie :
+sans cette fusion, le mamelon réduit de la bascule s'affichait à côté de
+celui de la fiche de base au lieu de s'additionner avec lui — deux lignes
+« 2 u » plutôt qu'une « 4 u ».
+
 **⚠ LE QUINCONCE RETIRE UN ARROSEUR, IL NE LE DÉPLACE PAS (17 août — trouvé
 par lui, capture cerclée).** Une rangée décalée porte UNE tête de moins que la
 rangée alignée. Le plan et le calcul partagent une seule fonction

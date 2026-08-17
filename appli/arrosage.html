@@ -991,7 +991,7 @@ function listeMateriel(d){
     // qu'il a relevé dans le regard, avec les VRAIES références. Tant qu'elle
     // manque, les lignes génériques (source « provisoire ») tiennent la
     // place, comme avant.
-    var fiche = CATALOGUE.nourrices[d.secteurs.length];
+    var fiche = CATALOGUE.ficheNourrice(d.secteurs.length, combienGoutteAGoutte(d));
     if (fiche){
       fiche.pieces.forEach(function(x){
         var p = CATALOGUE.piece(x.ref);
@@ -1054,12 +1054,18 @@ function dessinerMateriel(d){
 /* La nourrice : SA fiche, ou rien. Composer une nourrice de son cru, c'est
    envoyer une commande à laquelle il manquera un té — et le chantier s'arrête
    à la pose, pas au bureau. */
+// Combien des voies de CE jardin alimentent une zone goutte-à-goutte : c'est
+// ce qui décide de la fiche RÉELLEMENT posée (`CATALOGUE.ficheNourrice`).
+function combienGoutteAGoutte(d){
+  return d.secteurs.filter(function(s){ return s.famille === 'Goutte-à-goutte'; }).length;
+}
+
 function dessinerNourrice(d){
   var hote = document.getElementById('nourrice');
   hote.innerHTML = '';
   var voies = d.secteurs.length;
   if (!voies) return;
-  var fiche = CATALOGUE.nourrices[voies];
+  var fiche = CATALOGUE.ficheNourrice(voies, combienGoutteAGoutte(d));
   if (!fiche){
     // On dit AUSSI ce qui est déjà enregistré : sans cela, il ne sait pas où il
     // en est de ses envois, et il refait une fiche déjà donnée.
@@ -1130,7 +1136,7 @@ function texteDeLaListe(d){
   // Le contenu du regard est déjà dans les lignes ci-dessus (listeMateriel le
   // reprend depuis la fiche) : pas la peine de le lister deux fois dans le
   // même message.
-  if (d.secteurs.length && !CATALOGUE.nourrices[d.secteurs.length]) {
+  if (d.secteurs.length && !CATALOGUE.ficheNourrice(d.secteurs.length, combienGoutteAGoutte(d))) {
     l.push('');
     l.push('Nourrice ' + d.secteurs.length + ' voies : fiche non renseignée.');
   }
