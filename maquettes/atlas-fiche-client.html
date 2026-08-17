@@ -1,48 +1,46 @@
-<title>Atlas — la fiche client, depuis l'accueil</title>
+<title>Atlas — « Adresse non renseignée » ouvre l'écran du chantier</title>
 
 <style>
   /*
     ═══════════════════════════════════════════════════════════════════════════
-    SANS AUCUN SCRIPT, ET POURTANT ELLE SE TOUCHE.
+    UN SEUL GESTE, ET AUCUN ÉCRAN NOUVEAU.
     ═══════════════════════════════════════════════════════════════════════════
 
-    Son lecteur n'exécute pas de JavaScript — trois maquettes engendrées en JS
-    ne se sont jamais affichées chez lui. Tout ce qui bouge ici bouge en CSS
-    pur : une case masquée, un libellé qui la coche, un frère qui réagit.
+    **Sa correction, le 17 août 2026 :** *« Je ne suis pas sûr que tu aies bien
+    compris. Je veux que lorsque sur la première photo s'affiche Adresse non
+    renseignée, je puisse cliquer dessus et que ça m'amène sur la page que je
+    t'ai envoyée sur la deuxième photo. RIEN DE PLUS, RIEN DE MOINS. »*
 
-    CE QUI SE TOUCHE, ET POURQUOI CHAQUE GESTE COMPTE :
+    La version précédente dessinait une « fiche client » inventée, avec ses
+    propres champs et ses propres questions. Elle est retirée : la destination
+    existe déjà, c'est `FormulaireNouveauChantier` — le nom, le téléphone,
+    l'e-mail, le canal d'envoi, l'adresse du chantier, et le micro. Rien à
+    dessiner, rien à choisir.
 
-      · ÉCRAN 1 — la ligne de l'accueil, dans les deux propositions. Sur A,
-        SEULE la pastille répond : il sentira qu'il faut viser. Sur B, toute la
-        ligne répond. C'est la seule façon de trancher cette question — elle ne
-        se décide pas en regardant, elle se décide au pouce.
-      · ÉCRAN 2 — la fiche, vivante. Le micro ouvre la dictée ; les trois
-        propositions se cochent et se décochent ; « Reporter » remplit les
-        champs, et NE reporte que ce qui est resté coché. Décochez le téléphone,
-        reportez : il reste vide. C'est « elle propose, vous cochez » éprouvé au
-        doigt plutôt que décrit.
+    ─── CE QUI SE TOUCHE ─────────────────────────────────────────────────────
 
-    ─── SA DEMANDE, LE 17 AOÛT 2026 ──────────────────────────────────────────
+    La mention « Adresse non renseignée » de l'accueil. Elle ouvre l'écran, qui
+    arrive par la droite. Le chevron le referme.
 
-    *« J'ai oublié de rentrer les infos du client. Il faut qu'à partir de cette
-    page, il y a marqué adresse non renseignée, que je puisse cliquer sur le
-    client du dix-sept août du coup et que ça me mette directement sur la page,
-    la page client où je peux rentrer ces informations par la dictée ou par
-    l'écrit. »*
+    Sans aucun script : son lecteur n'en exécute pas. Une case masquée, un
+    libellé qui la coche.
 
-    ─── CE QUE J'AI TROUVÉ EN REGARDANT LE CODE, ET QUI CHANGE LA QUESTION ───
+    ─── LES DEUX SEULS MOTS QUI NE PEUVENT PAS RESTER TELS QUELS ─────────────
 
-    **Il n'y a AUCUN écran de fiche client.** Ce n'est pas une omission de la
-    maquette : c'est écrit dans le code lui-même, en toutes lettres — *« la
-    civilité ne se corrige plus après coup, FAUTE D'ÉCRAN DE FICHE CLIENT »*
-    (`DevisCompletClient.tsx`). Le nom, l'adresse, le téléphone et l'e-mail du
-    client ne se saisissent aujourd'hui qu'à UN endroit : dans le document du
-    devis, et **seulement tant qu'il n'est pas parti**.
+    L'écran d'origine crée un chantier. Rouvert sur un chantier qui EXISTE, deux
+    de ses mots deviendraient faux, et ils sont montrés corrigés :
 
-    **Et son chantier du 17 août n'a PAS de client du tout.** Son titre le dit
-    sans le vouloir : « Chantier du lundi 17 août » est le nom que fabrique
-    Atlas quand il n'a **ni client ni adresse** (`nom-chantier.ts`). L'écran ne
-    doit donc pas seulement corriger une fiche : il doit savoir en CRÉER une.
+      · le surtitre « NOUVEAU » — le chantier date du 17 août ;
+      · le bouton « Créer le chantier » — il ne créerait rien.
+
+    Tout le reste est repris au caractère près : mêmes champs, même ordre, mêmes
+    « (facultatif) », même bascule « Je dicte / J'écris », même micro.
+
+    ─── CE QUE LE CODE APPRENDRA À FAIRE, ET QUI NE SE DESSINE PAS ───────────
+
+    Le formulaire ne sait aujourd'hui que CRÉER (`creerChantierAction`). Rouvert,
+    il devra enregistrer sur le chantier existant. C'est du travail, mais pas une
+    décision : il n'y a rien à trancher là-dessus.
   */
 
   :root{
@@ -67,86 +65,59 @@
 
   /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
   label{cursor:pointer}
-  /* Et sur une planche qu'on ESSAIE, un doigt qui insiste ne doit pas
-     sélectionner le texte : la surbrillance bleue casse l'illusion net. */
+  /* Sur une planche qu'on ESSAIE, un doigt qui insiste ne doit pas sélectionner
+     le texte : la surbrillance bleue casse l'illusion net. */
   label,.tel{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 
   *{box-sizing:border-box}
   body{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-       padding:52px 16px 96px;
-       /* Le grain très léger d'un papier crème : c'est ce qui sépare un fond
-          plat d'une matière. Deux dégradés, aucune image à charger. */
-       background-image:
-         radial-gradient(1200px 600px at 50% -10%, rgba(185,139,71,.07), transparent 70%),
-         radial-gradient(900px 500px at 50% 110%, rgba(47,59,47,.05), transparent 70%)}
+       padding:52px 16px 96px}
   .page{max-width:1700px;margin:0 auto}
 
-  .intro{max-width:62ch;margin:0 auto 30px;text-align:center}
+  .intro{max-width:60ch;margin:0 auto 40px;text-align:center}
   .intro .sur{margin:0 0 18px;font-size:10px;letter-spacing:.36em;text-transform:uppercase;color:var(--bronze)}
-  .intro h1{margin:0 0 18px;font:400 clamp(28px,4vw,38px)/1.18 ui-serif,Georgia,"Iowan Old Style",serif;
+  .intro h1{margin:0 0 18px;font:400 clamp(27px,4vw,36px)/1.18 ui-serif,Georgia,"Iowan Old Style",serif;
             letter-spacing:-.018em}
   .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
   .intro strong{color:var(--encre);font-weight:600}
   /* Le filet doré : la signature de l'application, et la seule ornementation
-     qu'elle s'autorise. */
-  .filet{width:54px;height:1px;margin:26px auto 0;background:var(--bronze);opacity:.6}
-
-  .titre-ecran{max-width:62ch;margin:96px auto 34px;text-align:center}
-  .titre-ecran .sur{margin:0 0 14px;font-size:10px;letter-spacing:.36em;text-transform:uppercase;color:var(--bronze)}
-  .titre-ecran h2{margin:0 0 14px;font:400 clamp(23px,3vw,29px)/1.28 ui-serif,Georgia,serif;letter-spacing:-.012em}
-  .titre-ecran p{margin:0;color:var(--gris);font-size:14.5px}
-  .titre-ecran strong{color:var(--encre);font-weight:600}
-  /* L'invitation à toucher : elle doit se voir, sinon la planche passe pour
-     une image et personne n'essaie. */
-  .essayez{display:inline-flex;align-items:center;gap:9px;margin-top:20px;padding:9px 16px;
+     qu'elle s'autorise. La charte ne porte aucune ombre portée — son luxe est
+     fait de ce qu'elle retranche, et son vérificateur le tient. */
+  .filet{width:54px;height:1px;margin:28px auto 0;background:var(--bronze);opacity:.6}
+  .essayez{display:inline-flex;align-items:center;gap:9px;margin-top:26px;padding:9px 16px;
            border-radius:99px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
            font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--bronze)}
   .essayez .pt{width:7px;height:7px;border-radius:99px;background:var(--bronze)}
 
-  .rangee{display:flex;flex-wrap:wrap;gap:52px 36px;justify-content:center;align-items:flex-start}
+  .rangee{display:flex;justify-content:center}
   .prop{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;width:412px;max-width:100%}
-
   @media (min-width:1000px){
-    .rangee{flex-direction:column;flex-wrap:nowrap;gap:92px;align-items:center}
     .prop{display:grid;width:auto;max-width:none;column-gap:56px;
-          grid-template-columns:auto 330px;
-          grid-template-rows:auto auto 1fr;
-          grid-template-areas:"tel sous" "tel note" "tel .";
+          grid-template-columns:auto 340px;
+          grid-template-rows:auto 1fr;
+          grid-template-areas:"tel note" "tel .";
           justify-items:start}
     .prop .tel{grid-area:tel;zoom:1.35}
-    .prop .sous{grid-area:sous;text-align:left;align-self:start;padding-top:50px}
     .prop .note{grid-area:note;text-align:left;max-width:none;align-self:start;
-                font-size:14px;line-height:1.75}
+                padding-top:50px;font-size:14px;line-height:1.75;border-top:0}
   }
   @media (min-width:1500px){
-    .prop{grid-template-columns:auto 370px}
+    .prop{grid-template-columns:auto 380px}
     .prop .tel{zoom:1.6}
-    .prop .sous{padding-top:59px}
   }
-  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
   .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
         border-top:1px solid var(--trait);padding-top:12px}
   .note b{color:var(--encre);font-weight:600}
   .note .q{color:var(--bronze);font-weight:600}
-  .note .cout{color:var(--alerte);font-weight:600}
 
   /* ═══ LA COQUE ══════════════════════════════════════════════════════════
-     UNE SEULE OMBRE DANS TOUTE LA PLANCHE, ET ELLE EST HORS DE L'ÉCRAN.
-     Sa demande du 17 août — « ultra luxe et moderne » — se tient ici par le
-     contraire d'un effet : la charte d'Atlas ne porte PAS une seule ombre
-     portée (`cardShadow` vaut « none » depuis le 10 août), et son propre
-     vérificateur les refuse. Le luxe est fait de ce qu'elle retranche — un
-     filet doré, du blanc, une serif. Une ombre ajoutée « pour faire haut de
-     gamme » irait contre son choix, et la première version de cette planche
-     en portait cinq. ════════════════════════════════════════════════════════════════════════════════════════════════════════════════
      L'ombre de la coque est celle des vingt-trois autres planches, au
      caractère près : c'est la seule que `charte.mjs` tolère, et s'en écarter
-     aurait fait rougir la planche entière. */
-  .tel{width:412px;max-width:100%;border-radius:46px;padding:11px;
-       background:linear-gradient(160deg,#d6d3ca,#c3c0b7);
+     ferait rougir la planche entière. */
+  .tel{width:412px;max-width:100%;border-radius:46px;padding:11px;background:#cfccc4;
        box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
-  .ecran{position:relative;overflow:hidden;border-radius:35px;height:720px;
+  .ecran{position:relative;overflow:hidden;border-radius:35px;height:760px;
          background:var(--e-fond);color:var(--e-encre);
          font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
          --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
@@ -154,24 +125,19 @@
          --e-plein-encre:#f5f3ee; --e-alerte:#9c3b2e; --e-teinte:#ece9e1}
   .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
 
-  /* ═══ LES VUES QUI GLISSENT ═══════════════════════════════════════════════
-     La fiche ARRIVE par la droite et recouvre l'accueil, comme une pile de
-     cartes. Elle ne remplace pas l'écran : elle passe dessus, et le retour la
-     renvoie d'où elle vient. C'est la grammaire d'Atlas — le tiroir de la
-     fiche chantier monte de la même façon. */
+  /* ═══ LES DEUX VUES ═════════════════════════════════════════════════════
+     L'écran du chantier ARRIVE par la droite et recouvre l'accueil. C'est la
+     grammaire d'Atlas — le formulaire monte déjà en feuille par-dessus la
+     liste (`FormulaireNouveauChantier`, `enFeuille`). */
   .vue{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--e-fond)}
-  .vue-fiche{transform:translateX(101%);
-             transition:transform .42s cubic-bezier(.32,.72,0,1);
-             border-left:1px solid var(--e-trait)}
-  /* L'accueil recule légèrement : la profondeur dit « on est passé au-dessus »,
-     et le retour se comprend sans qu'on l'explique. */
-  .vue-accueil{transition:transform .42s cubic-bezier(.32,.72,0,1),filter .42s ease}
+  .vue-form{transform:translateX(101%);
+            transition:transform .42s cubic-bezier(.32,.72,0,1);
+            border-left:1px solid var(--e-trait)}
+  .vue-accueil{transition:transform .42s cubic-bezier(.32,.72,0,1)}
 
-  /* `EnTeteEcran`, valeur pour valeur. */
   .tete{padding:34px 26px 0;flex:none}
   .tete .sur{margin:0;color:var(--e-bronze)}
   .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
-  .tete .avant{margin:0 0 10px;font:400 15px/1.3 ui-serif,Georgia,serif;color:var(--e-gris)}
   .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
   .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
 
@@ -183,15 +149,10 @@
   .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
   .bas i.q1{left:14px}
 
-  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
-  .corps > .bloc:first-of-type{border-top:0;padding-top:0;margin-top:26px}
-  .bloc .t{margin:0 0 12px;color:var(--e-gris)}
-
   /* ═══ LA LIGNE DE CHANTIER, telle que `ListeChantiers.tsx` la pose ═══════
-     Grille 47 px / reste, écart de 26 px, 17 px de haut et de bas. Le nom en
-     serif à 19 px, le lieu à 11,5 px gris, l'état en petites capitales.
-     Recopiée au pixel : une ligne redessinée « à peu près » ferait juger un
-     écran qui n'est pas le sien — et c'est SUR cette ligne qu'il décide. */
+     Grille 47 px / reste, écart de 26 px, 17 px de haut et de bas. Nom en serif
+     à 19 px, lieu à 11,5 px gris, état en petites capitales. Recopiée au pixel :
+     c'est SUR cette ligne que le geste se juge. */
   .liste{position:relative;margin:20px 0 0;padding:0 26px}
   .brin{position:relative;display:grid;grid-template-columns:47px 1fr;column-gap:26px;padding:17px 0}
   .brin .jour{text-align:right;font:400 21px/1 ui-serif,Georgia,serif;color:var(--e-encre)}
@@ -205,148 +166,80 @@
   .perle{position:absolute;left:55.5px;top:64px;width:9px;height:9px;border-radius:99px;
          background:var(--e-bronze);border:4px solid var(--e-fond)}
 
-  .brin .lieu.manque{color:var(--e-alerte)}
-  /* La pastille de la proposition A : 32 px de haut, sans quoi elle ne
-     s'attrape pas sous un pouce ganté. Elle s'enfonce quand on la touche — un
-     bouton qui ne répond pas au doigt se presse deux fois. */
-  .brin .bouton{display:inline-flex;align-items:center;margin-left:8px;padding:9px 13px;min-height:32px;
-                border-radius:99px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
-                color:var(--e-plein);background:var(--e-fond);box-shadow:inset 0 0 0 1px var(--e-trait);
-                transition:background .18s ease,color .18s ease,box-shadow .18s ease}
-  .brin .bouton:active{background:var(--e-plein);color:var(--e-plein-encre);box-shadow:none}
-  /* La proposition B : toute la ligne est la cible, et elle le DIT au repos —
-     un liseré doré, non un cadre plein. Une ligne qui changerait de
-     destination en silence est exactement ce que sa règle du 13 août évite. */
-  .brin.mene .corps_brin{display:block;border-radius:12px;padding:11px 13px;margin:-11px -13px;
-                         box-shadow:inset 0 0 0 1px var(--e-bronze);
-                         transition:background .18s ease}
-  .brin.mene .corps_brin:active{background:var(--e-teinte)}
+  /* **LA MENTION EST LA CIBLE, et elle seule.** Sa phrase : « lorsque s'affiche
+     Adresse non renseignée, je puisse cliquer DESSUS ». Le reste de la ligne
+     garde donc sa reprise habituelle — sa règle du 13 août n'est pas touchée.
 
-  /* ═══ LA FICHE CLIENT ═══════════════════════════════════════════════════
-     `ChampNu` du devis, valeur pour valeur : pas de cadre, un trait sous le
-     texte, 16 px au moins — en dessous, iOS agrandit la page à la mise au
-     point, et il perd sa place. */
-  .champ{display:block;padding:14px 0;border-bottom:1px solid var(--e-trait)}
-  .bloc .champ:last-of-type{border-bottom:0}
-  .champ .et{display:block;margin-bottom:6px;color:var(--e-gris);
-             font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;font-weight:500}
-  .champ .val{display:block;font-size:16px;line-height:1.4;color:var(--e-encre)}
-  .champ .val.long{min-height:24px}
-  /* Le creux : ce qui manque se dit en gris, et se remplace d'un fondu quand
-     la dictée le reporte. Un champ qui saute d'un texte à l'autre ne se voit
-     pas changer — et c'est justement ce qu'il faut voir. */
-  .champ .creux{display:block;font-size:16px;line-height:1.4;color:var(--e-gris)}
-  .champ .plein{display:none;animation:parait .45s cubic-bezier(.32,.72,0,1) both}
-  @keyframes parait{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+     Elle se voit cliquable sans crier : la couleur d'alerte qu'elle porte déjà,
+     et un soulignement pointillé. 34 px de haut sous le pouce, gants compris. */
+  .brin .manque{display:inline-flex;align-items:center;min-height:34px;margin-top:1px;
+                color:var(--e-alerte);font-size:11.5px;
+                border-bottom:1px dotted var(--e-alerte);
+                transition:background .18s ease}
+  .brin .manque:active{background:var(--e-teinte)}
 
-  .rangee-tete{display:flex;align-items:center;justify-content:space-between;
-               margin:0 26px;padding-top:26px;min-height:46px}
-  .micro{position:relative;flex:none;display:flex;align-items:center;justify-content:center;
-         width:46px;height:46px;border-radius:99px;background:var(--e-plein);
-         transition:transform .2s ease}
-  .micro:active{transform:scale(.94)}
-  .retour{flex:none;display:flex;align-items:center;justify-content:center;
-          width:38px;height:38px;border-radius:99px;background:var(--e-teinte);
-          transition:transform .2s ease}
-  .retour:active{transform:scale(.94)}
-
-  /* ═══ CE QUE LA DICTÉE PROPOSE ══════════════════════════════════════════ */
-  .prop-dictee{margin:12px 0 0;border-radius:12px;background:var(--e-plage);padding:16px 18px;
-               box-shadow:inset 0 0 0 1px var(--e-trait);
-               animation:monte .4s cubic-bezier(.32,.72,0,1) both}
-  @keyframes monte{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-  .prop-dictee .dit{margin:0 0 14px;font-size:12.5px;line-height:1.65;color:var(--e-gris);font-style:italic}
-  .coche{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--e-trait)}
-  .prop-dictee .coche:last-of-type{border-bottom:0}
-  .coche .case{flex:none;width:22px;height:22px;border-radius:5px;margin-top:1px;position:relative;
-               background:var(--e-plein);transition:background .18s ease,box-shadow .18s ease}
-  .coche .case svg{position:absolute;top:5px;left:4px;transition:opacity .18s ease}
-  .coche .quoi{flex:1;min-width:0;font-size:13.5px;line-height:1.45}
-  .coche .quoi b{font-weight:500}
-  .coche .quoi i{display:block;margin-top:3px;font-size:11px;color:var(--e-gris);font-style:normal}
-  .valider{display:block;margin:16px 0 0;padding:14px;border-radius:7px;background:var(--e-plein);
-           color:var(--e-plein-encre);text-align:center;font-size:14px;font-weight:500;
-           transition:transform .18s ease}
-  .valider:active{transform:scale(.98)}
-  .apres{display:none;margin:0;font-size:12.5px;line-height:1.65;color:var(--e-gris);text-align:center}
-
-  /* ═══════════════════════════════════════════════════════════════════════
-     LA MÉCANIQUE : des cases masquées, et des frères qui réagissent.
-     Elles sont posées AVANT le téléphone pour que `~` les atteigne.
+  /* ═══ L'ÉCRAN DU CHANTIER — `FormulaireNouveauChantier`, au caractère près
      ═══════════════════════════════════════════════════════════════════════ */
+  .form-tete{display:flex;align-items:flex-start;justify-content:space-between;
+             gap:16px;padding:0 24px}
+  .form-tete .sur{margin:0 0 8px;color:var(--e-plein)}
+  .form-tete h1{margin:0;font:400 32px/1.12 ui-serif,Georgia,serif}
+  /* Le micro : rond discret, jamais l'action principale de l'écran. */
+  .micro{flex:none;display:flex;align-items:center;justify-content:center;
+         width:46px;height:46px;border-radius:99px;background:var(--e-teinte)}
+  .repris{margin:6px 0 0;font-size:12.5px;line-height:1.45;color:var(--e-gris);text-align:right}
+  .retour{display:flex;align-items:center;justify-content:center;
+          width:38px;height:38px;border-radius:99px;background:var(--e-teinte);
+          margin:22px 0 18px 24px}
+
+  .form{display:flex;flex-direction:column;gap:16px;margin-top:28px;padding:0 24px}
+  .ch{display:flex;flex-direction:column;gap:6px}
+  .ch .et{color:var(--e-gris)}
+  /* `champPlage` + `styleChampPlage` : fond de plage, rayon 4, 16 px au moins —
+     en dessous, iOS agrandit la page à la mise au point. */
+  .ch .zone{border:0;border-radius:4px;padding:12px 15px;background:var(--e-plage);
+            color:var(--e-encre);font-size:16px;line-height:1.4;
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ch .zone.vide{color:var(--e-gris)}
+
+  .canal{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .canal span{border-radius:99px;padding:13px;text-align:center;font-size:15px;
+              background:var(--e-plage);color:var(--e-encre)}
+  .canal span.pris{background:var(--e-teinte)}
+  .lien{margin:2px 0 0;font-size:14px;color:var(--e-plein)}
+
+  .bascule{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:16px;
+           border-bottom:1px solid var(--e-trait)}
+  .bascule span{padding:10px 0 12px;text-align:center;font-size:13.5px;color:var(--e-gris)}
+  .bascule span.pris{color:var(--e-encre);box-shadow:inset 0 -1.5px 0 var(--e-bronze)}
+  .principal{margin-top:20px;border-radius:6px;padding:16px;text-align:center;
+             background:var(--e-plein);color:var(--e-plein-encre);font-size:15px;font-weight:500}
+
+  /* Ce qui change parce que le chantier EXISTE : montré en place, et signalé. */
+  .change{position:relative}
+  .change::after{content:"";position:absolute;left:-11px;top:2px;bottom:2px;width:2px;
+                 background:var(--e-bronze)}
+
+  /* ═══ LA MÉCANIQUE ══════════════════════════════════════════════════════
+     Une case masquée, posée AVANT le téléphone pour que `~` l'atteigne. */
   .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+  .ouvre:checked ~ .tel .vue-form{transform:none}
+  .ouvre:checked ~ .tel .vue-accueil{transform:translateX(-14%)}
 
-  /* Toucher la cible fait glisser la fiche par-dessus l'accueil. */
-  .ouvre-fiche:checked ~ .tel .vue-fiche{transform:none}
-  .ouvre-fiche:checked ~ .tel .vue-accueil{transform:translateX(-14%);filter:brightness(.965)}
-
-  /* Le micro ouvre la dictée. */
-  .dictee{display:none}
-  .ouvre-dictee:checked ~ .tel .dictee{display:block}
-
-  /* Les trois propositions se DÉCOCHENT — c'est tout l'objet de « elle
-     propose, vous cochez » : ce qui a été mal entendu se retire. Cocher la
-     case cachée veut donc dire « refusée », et non l'inverse : c'est ce qui
-     permet de partir toutes cochées sans attribut `checked`, lequel ne
-     reviendrait jamais à l'état de départ une fois la page touchée. */
-  .c-nom:checked ~ .tel .k-nom .case{background:transparent;box-shadow:inset 0 0 0 1.5px var(--e-trait)}
-  .c-nom:checked ~ .tel .k-nom .case svg{opacity:0}
-  .c-adr:checked ~ .tel .k-adr .case{background:transparent;box-shadow:inset 0 0 0 1.5px var(--e-trait)}
-  .c-adr:checked ~ .tel .k-adr .case svg{opacity:0}
-  .c-tel:checked ~ .tel .k-tel .case{background:transparent;box-shadow:inset 0 0 0 1.5px var(--e-trait)}
-  .c-tel:checked ~ .tel .k-tel .case svg{opacity:0}
-
-  /* « Reporter » remplit les champs — et NE remplit que ce qui est resté
-     coché. Les cases de refus étant posées AVANT celle du report, une chaîne
-     de frères suffit : aucun script, et la règle montrée est la vraie. */
-  .reporte:checked ~ .tel .v-nom .plein{display:block}
-  .reporte:checked ~ .tel .v-nom .creux{display:none}
-  .c-nom:checked ~ .reporte:checked ~ .tel .v-nom .plein{display:none}
-  .c-nom:checked ~ .reporte:checked ~ .tel .v-nom .creux{display:block}
-
-  .reporte:checked ~ .tel .v-adr .plein{display:block}
-  .reporte:checked ~ .tel .v-adr .creux{display:none}
-  .c-adr:checked ~ .reporte:checked ~ .tel .v-adr .plein{display:none}
-  .c-adr:checked ~ .reporte:checked ~ .tel .v-adr .creux{display:block}
-
-  .reporte:checked ~ .tel .v-tel .plein{display:block}
-  .reporte:checked ~ .tel .v-tel .creux{display:none}
-  .c-tel:checked ~ .reporte:checked ~ .tel .v-tel .plein{display:none}
-  .c-tel:checked ~ .reporte:checked ~ .tel .v-tel .creux{display:block}
-
-  /* Reporté, le titre de la fiche cesse de dire « à renseigner ». */
-  .titre-plein{display:none}
-  .reporte:checked ~ .tel .titre-vide{display:none}
-  .reporte:checked ~ .tel .titre-plein{display:block}
-  .c-nom:checked ~ .reporte:checked ~ .tel .titre-vide{display:block}
-  .c-nom:checked ~ .reporte:checked ~ .tel .titre-plein{display:none}
-
-  /* Le panneau se referme et laisse un mot : sans cela, ce que le geste a
-     produit reste caché DERRIÈRE le panneau qui l'a produit. */
-  .reporte:checked ~ .tel .prop-dictee .coche,
-  .reporte:checked ~ .tel .prop-dictee .dit,
-  .reporte:checked ~ .tel .prop-dictee .valider{display:none}
-  .reporte:checked ~ .tel .prop-dictee .apres{display:block}
-
-  .avis{max-width:60ch;margin:46px auto 0;padding:18px 22px;border-radius:8px;
-        background:var(--plage);font-size:14px;line-height:1.75;color:var(--gris);
-        border-left:3px solid var(--bronze)}
-  .avis b{color:var(--encre);font-weight:600}
-
-  .fin{margin:92px auto 0;max-width:64ch;padding-top:28px;border-top:1px solid var(--trait);
+  .fin{margin:80px auto 0;max-width:64ch;padding-top:28px;border-top:1px solid var(--trait);
        font-size:14px;line-height:1.8;color:var(--gris)}
   .fin h3{margin:0 0 16px;font:400 20px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
   .fin b{color:var(--encre);font-weight:600}
   .fin ul{margin:0;padding-left:20px}
   .fin li{margin:0 0 10px}
 
-  /* SUR SON TÉLÉPHONE, LA COQUE DISPARAÎT. Sans cette règle, le faux boîtier
-     de 11 px et les 16 px de marge du corps mangent 54 px : l'écran tombe à
-     336 px au lieu de 390, et TOUT ce que la planche montre est rétréci d'un
-     sixième sans que rien ne le dise. Trouvé par son propre contrôle. */
+  /* SUR SON TÉLÉPHONE, LA COQUE DISPARAÎT. Sans cette règle, le faux boîtier de
+     11 px et les 16 px de marge du corps mangent 54 px : l'écran tombe à 336 px
+     au lieu de 390, et tout ce que la planche montre est rétréci d'un sixième
+     sans que rien ne le dise. Trouvé par son propre contrôle. */
   @media (max-width:520px){
     body{padding:30px 0 80px}
-    .intro,.titre-ecran,.sous,.note,.avis,.fin{padding-left:16px;padding-right:16px}
+    .intro,.note,.fin{padding-left:16px;padding-right:16px}
     .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
     .ecran{border-radius:0}
   }
@@ -356,37 +249,23 @@
 
   <div class="intro">
     <p class="sur">Le 17 août 2026 · rien n'est codé</p>
-    <h1>« Que je puisse cliquer sur le client&nbsp;»</h1>
-    <p>Vous avez oublié les infos du client du 17&nbsp;août, et la ligne le dit déjà :
-       <strong>Adresse non renseignée</strong>. Vous voulez la toucher et arriver
-       <strong>directement</strong> là où ça se remplit — à la voix ou au clavier.</p>
-    <p>Deux choses trouvées dans le code déplacent la question. <strong>Il n'existe aucune fiche
-       client</strong> : le nom, l'adresse et le téléphone ne se saisissent que dans le document du
-       devis, et seulement tant qu'il n'est pas parti. Et <strong>ce chantier-là n'a pas de client
-       du tout</strong> — « Chantier du lundi 17 août » est le titre qu'Atlas fabrique quand il n'a
-       ni client ni adresse.</p>
-    <div class="filet"></div>
+    <h1>« Adresse non renseignée » ouvre l'écran du chantier</h1>
+    <p>Rien de plus, rien de moins. La mention devient touchable, et elle mène à
+       <strong>l'écran qui existe déjà</strong> — celui de votre seconde photo, avec ses champs,
+       son micro et sa bascule.</p>
+    <p>Aucun écran n'est inventé. <strong>Deux mots seulement changent</strong>, parce que le
+       chantier existe déjà : le surtitre « Nouveau » et le bouton « Créer le chantier »
+       diraient le faux.</p>
+    <p class="essayez"><span class="pt"></span> Touchez « Adresse non renseignée »</p>
   </div>
 
-  <!-- ════════════ ÉCRAN 1 — CE QUE FAIT LE DOIGT SUR LA LIGNE ════════════ -->
-  <div class="titre-ecran">
-    <p class="sur">Écran 1 · une lettre attendue</p>
-    <h2>Où va le doigt&nbsp;?</h2>
-    <p>Depuis votre règle du 13 août — <strong>toucher un chantier, c'est reprendre</strong> —, cette
-       ligne mène là où le travail s'est arrêté : ici, le devis prêt à partir. La faire mener
-       ailleurs quand le client manque est une <strong>exception à une règle que vous avez
-       posée</strong>.</p>
-    <p class="essayez"><span class="pt"></span> Essayez les deux · seule la bonne cible répond</p>
-  </div>
-
-  <div class="rangee" data-s="ecran1">
-
-    <!-- A — la mention devient le bouton -->
-    <div class="prop" data-s="a1">
-      <input type="checkbox" id="a-fiche" class="interrupteur ouvre-fiche">
+  <div class="rangee" data-s="rangee">
+    <div class="prop" data-s="prop">
+      <input type="checkbox" id="ouvrir" class="interrupteur ouvre">
       <div class="tel"><div class="ecran">
 
-        <div class="vue vue-accueil">
+        <!-- ── L'accueil, tel qu'il est aujourd'hui ────────────────────── -->
+        <div class="vue vue-accueil" data-s="accueil">
           <div class="tete">
             <p class="sur caps">Bonjour compte</p>
             <h1>Vos chantiers</h1>
@@ -397,16 +276,15 @@
               <div class="fil"></div><div class="perle"></div>
               <div class="brin">
                 <div><span class="jour">17</span><span class="mois">Août</span></div>
-                <div class="corps_brin">
+                <div>
                   <h2>Chantier du lundi 17 août</h2>
-                  <p class="lieu manque">Adresse non renseignée
-                     <label class="bouton" for="a-fiche">Compléter</label></p>
+                  <label class="manque" for="ouvrir" data-s="mention">Adresse non renseignée</label>
                   <p class="etat caps">Devis prêt à envoyer · sans photo</p>
                 </div>
               </div>
               <div class="brin">
                 <div><span class="jour">16</span><span class="mois">Août</span></div>
-                <div class="corps_brin">
+                <div>
                   <h2>Mr. Ehouzan</h2>
                   <p class="lieu">40 rue Aristide Briand</p>
                   <p class="etat caps">Devis prêt à envoyer · sans photo</p>
@@ -419,73 +297,51 @@
           </div>
         </div>
 
-        <div class="vue vue-fiche">
-          <div class="rangee-tete">
-            <label class="retour" for="a-fiche" aria-label="Revenir aux chantiers">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="2.4">
-                <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </label>
-          </div>
-          <div class="tete" style="padding-top:16px">
-            <p class="avant">Chantier du lundi 17 août</p>
-            <p class="sur caps">Le client</p>
-            <h1>À renseigner</h1>
-          </div>
-          <div class="cheveu"></div>
+        <!-- ── L'écran du chantier, rouvert ───────────────────────────── -->
+        <div class="vue vue-form" data-s="form">
+          <label class="retour" for="ouvrir" aria-label="Revenir aux chantiers">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="2.4">
+              <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </label>
           <div class="corps">
-            <div class="bloc">
-              <p class="t caps">Vous y êtes</p>
-              <span class="champ"><span class="et">Civilité et nom</span>
-                <span class="creux">Monsieur, Madame, ou une société</span></span>
-              <span class="champ"><span class="et">Adresse</span>
-                <span class="creux">Numéro, rue, code postal, ville</span></span>
-            </div>
-          </div>
-          <div class="bas"><i class="q1"></i>
-            <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
-          </div>
-        </div>
-
-      </div></div>
-      <p class="sous">A · la mention devient le bouton</p>
-      <p class="note"><b>La ligne ne change pas de destination.</b> Elle reprend le travail comme
-         toujours ; c'est la mention en rouge qui porte le geste, et elle ne paraît que
-         lorsqu'il manque quelque chose.
-         <span class="cout">Ce qu'elle coûte :</span> deux cibles sur une même ligne. Touchez le
-         nom du chantier : rien ne bouge. Il faut viser la pastille — c'est exactement ce que ça
-         donnera avec des gants.</p>
-    </div>
-
-    <!-- B — toute la ligne mène à la fiche -->
-    <div class="prop" data-s="b1">
-      <input type="checkbox" id="b-fiche" class="interrupteur ouvre-fiche">
-      <div class="tel"><div class="ecran">
-
-        <div class="vue vue-accueil">
-          <div class="tete">
-            <p class="sur caps">Bonjour compte</p>
-            <h1>Vos chantiers</h1>
-          </div>
-          <div class="cheveu"></div>
-          <div class="corps">
-            <div class="liste">
-              <div class="fil"></div><div class="perle"></div>
-              <div class="brin mene">
-                <div><span class="jour">17</span><span class="mois">Août</span></div>
-                <label class="corps_brin" for="b-fiche">
-                  <h2>Chantier du lundi 17 août</h2>
-                  <p class="lieu manque">Adresse non renseignée</p>
-                  <p class="etat caps">À compléter avant d'envoyer</p>
-                </label>
+            <div class="form-tete">
+              <div>
+                <!-- **« NOUVEAU » deviendrait faux** : ce chantier date du
+                     17 août. C'est l'un des deux seuls mots que la reprise
+                     oblige à changer. -->
+                <p class="sur caps change" data-s="surtitre">Le chantier du 17 août</p>
+                <h1>Un chantier</h1>
               </div>
-              <div class="brin">
-                <div><span class="jour">16</span><span class="mois">Août</span></div>
-                <div class="corps_brin">
-                  <h2>Mr. Ehouzan</h2>
-                  <p class="lieu">40 rue Aristide Briand</p>
-                  <p class="etat caps">Devis prêt à envoyer · sans photo</p>
-                </div>
+              <span class="micro" aria-label="Dicter les coordonnées">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1c1c1a" stroke-width="1.7">
+                  <rect x="9" y="3" width="6" height="11" rx="3"/>
+                  <path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </div>
+
+            <div class="form">
+              <div class="ch"><span class="et caps">Nom du client (facultatif)</span>
+                <span class="zone vide">Bernard</span></div>
+              <div class="ch"><span class="et caps">Téléphone (facultatif)</span>
+                <span class="zone vide">06 12 34 56 78</span></div>
+              <div class="ch"><span class="et caps">E-mail (facultatif)</span>
+                <span class="zone vide">client@exemple.fr</span></div>
+
+              <div class="ch"><span class="et caps">Comment lui envoyer son devis ?</span>
+                <div class="canal"><span class="pris">Par SMS</span><span>Par e-mail</span></div></div>
+
+              <div class="ch"><span class="et caps">Adresse du chantier (facultatif)</span>
+                <span class="zone vide">10 rue des Lilas, Nantes</span></div>
+
+              <p class="lien">+ Ajouter une adresse client différente</p>
+
+              <div>
+                <div class="bascule"><span class="pris">Je dicte</span><span>Je l'écris</span></div>
+                <!-- **« Créer le chantier » ne créerait rien** : il existe. Le
+                     second des deux mots que la reprise oblige à changer. -->
+                <div class="principal change" data-s="bouton">Enregistrer</div>
               </div>
             </div>
           </div>
@@ -494,185 +350,32 @@
           </div>
         </div>
 
-        <div class="vue vue-fiche">
-          <div class="rangee-tete">
-            <label class="retour" for="b-fiche" aria-label="Revenir aux chantiers">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="2.4">
-                <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </label>
-          </div>
-          <div class="tete" style="padding-top:16px">
-            <p class="avant">Chantier du lundi 17 août</p>
-            <p class="sur caps">Le client</p>
-            <h1>À renseigner</h1>
-          </div>
-          <div class="cheveu"></div>
-          <div class="corps">
-            <div class="bloc">
-              <p class="t caps">Vous y êtes</p>
-              <span class="champ"><span class="et">Civilité et nom</span>
-                <span class="creux">Monsieur, Madame, ou une société</span></span>
-              <span class="champ"><span class="et">Adresse</span>
-                <span class="creux">Numéro, rue, code postal, ville</span></span>
-            </div>
-          </div>
-          <div class="bas"><i class="q1"></i>
-            <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
-          </div>
-        </div>
-
       </div></div>
-      <p class="sous">B · toute la ligne y mène</p>
-      <p class="note"><b>Tant qu'il manque le client, la ligne entière mène à sa fiche</b> — et elle
-         retrouve sa reprise habituelle dès qu'il est rempli. Le liseré doré dit où l'on ira
-         <b>avant</b> qu'on touche, et l'état le dit en mots : « à compléter avant d'envoyer ».
-         <span class="cout">Ce qu'elle coûte :</span> la ligne ne mène plus toujours au même
-         endroit. C'est ce que votre règle du 13 août voulait éviter — mais ici l'écran l'annonce.</p>
-    </div>
 
-  </div>
-
-  <p class="avis" data-s="avis1"><b>Ce que je ferais : B.</b> Votre règle du 13 août disait
-     « ne me refais pas tout le parcours » — elle protégeait votre TEMPS, pas une destination
-     fixe. Or ici, reprendre le devis sans client, c'est justement le parcours inutile : vous
-     arriveriez sur un document qu'on ne peut pas envoyer. B tient donc la règle plutôt qu'elle
-     ne l'enfreint. Et A demande de viser une pastille collée à un texte de 11,5&nbsp;px, avec des
-     gants — essayez les deux ci-dessus, la différence se sent au doigt.</p>
-
-  <!-- ════════════ ÉCRAN 2 — LA FICHE, VIVANTE ════════════ -->
-  <div class="titre-ecran">
-    <p class="sur">Écran 2 · la fiche, et la dictée</p>
-    <h2>Elle propose, vous cochez</h2>
-    <p>L'écran qui manque, et le geste que vous demandez. Vous dites&nbsp;:
-       <em>« Monsieur Martins, quarante rue Aristide Briand à Vertou, zéro six soixante-dix-neuf
-       quatre-vingt-dix-huit quarante-cinq quatorze. »</em> Le 15 août, devant la dictée du devis,
-       vous aviez tranché <strong>« la A » — elle propose, vous cochez</strong>. La voici appliquée
-       ici, et elle marche pour de bon.</p>
-    <p class="essayez"><span class="pt"></span> Micro · décochez le téléphone · reportez</p>
-  </div>
-
-  <div class="rangee" data-s="fiche">
-    <div class="prop" data-s="fiche-prop">
-      <input type="checkbox" id="f-nom" class="interrupteur c-nom">
-      <input type="checkbox" id="f-adr" class="interrupteur c-adr">
-      <input type="checkbox" id="f-tel" class="interrupteur c-tel">
-      <input type="checkbox" id="f-reporte" class="interrupteur reporte">
-      <input type="checkbox" id="f-dictee" class="interrupteur ouvre-dictee">
-      <div class="tel"><div class="ecran">
-        <div class="vue">
-          <div class="rangee-tete">
-            <span class="retour">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="2.4">
-                <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <label class="micro" for="f-dictee" aria-label="Dicter les informations du client">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#f5f3ee" stroke-width="1.8">
-                <rect x="9" y="3" width="6" height="11" rx="3"/>
-                <path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke-linecap="round"/>
-              </svg>
-            </label>
-          </div>
-          <div class="tete" style="padding-top:16px">
-            <p class="avant">Chantier du lundi 17 août</p>
-            <p class="sur caps">Le client</p>
-            <h1 class="titre-vide">À renseigner</h1>
-            <h1 class="titre-plein">M. Martins</h1>
-          </div>
-          <div class="cheveu"></div>
-          <div class="corps">
-
-            <div class="dictee" data-s="dictee">
-              <div class="bloc">
-                <p class="t caps">Ce que j'ai compris</p>
-                <div class="prop-dictee">
-                  <p class="dit">« Monsieur Martins, quarante rue Aristide Briand à Vertou, zéro six
-                     soixante-dix-neuf quatre-vingt-dix-huit quarante-cinq quatorze. »</p>
-                  <label class="coche k-nom" for="f-nom"><span class="case">
-                    <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="#f5f3ee" stroke-width="2.2">
-                      <path d="M1 6l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <span class="quoi"><b>M. Martins</b><i>Civilité et nom</i></span></label>
-                  <label class="coche k-adr" for="f-adr"><span class="case">
-                    <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="#f5f3ee" stroke-width="2.2">
-                      <path d="M1 6l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <span class="quoi"><b>40 rue Aristide Briand, Vertou</b><i>Adresse</i></span></label>
-                  <label class="coche k-tel" for="f-tel"><span class="case">
-                    <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="#f5f3ee" stroke-width="2.2">
-                      <path d="M1 6l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <span class="quoi"><b>06 79 98 45 14</b><i>Téléphone — décochez si ce n'est pas ça</i></span></label>
-                  <label class="valider" for="f-reporte">Reporter ce qui est coché</label>
-                  <p class="apres">Reporté. <b>Ce que vous aviez décoché est resté vide</b>, plus bas.</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="bloc">
-              <p class="t caps">Qui</p>
-              <span class="champ v-nom"><span class="et">Civilité et nom</span>
-                <span class="creux">Monsieur, Madame, ou une société</span>
-                <span class="val plein">M. Martins</span></span>
-              <span class="champ v-adr"><span class="et">Adresse</span>
-                <span class="creux">Numéro, rue, code postal, ville</span>
-                <span class="val long plein">40 rue Aristide Briand, Vertou</span></span>
-              <span class="champ v-tel"><span class="et">Téléphone</span>
-                <!-- **PAS un numéro d'exemple, et c'est la capture qui l'a dit.**
-                     Le repère gris « 06 12 34 56 78 » se lisait comme une vraie
-                     valeur — précisément dans l'état qui porte la démonstration,
-                     où l'on doit voir que le décoché est RESTÉ VIDE. -->
-                <span class="creux">Numéro de téléphone</span>
-                <span class="val plein">06 79 98 45 14</span></span>
-              <span class="champ"><span class="et">E-mail</span>
-                <span class="creux">Pour lui envoyer le devis</span></span>
-            </div>
-
-            <div class="bloc">
-              <p class="t caps">Où sont les travaux</p>
-              <span class="champ"><span class="et">Adresse du chantier</span>
-                <span class="creux">Vide = la même que celle du client</span></span>
-            </div>
-
-          </div>
-          <div class="bas"><i class="q1"></i>
-            <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
-          </div>
-        </div>
-      </div></div>
-      <p class="sous">La fiche · elle se remplit sous vos yeux</p>
-      <p class="note"><b>Cinq champs, et pas un de plus.</b> Ce sont exactement ceux que le devis
-         imprime en tête. En ajouter (un SIRET, une note) ferait un formulaire ; ceci est une fiche.
-         <br><br><b>L'adresse du chantier est la dernière, et vide par défaut</b> : chez la plupart
-         des clients, les travaux sont chez eux. La demander d'office ferait taper deux fois la
-         même adresse — ce que le devis évite déjà (<span class="q">« l'adresse n'est pas au bon
-         endroit »</span>, le 6 août).
-         <br><br><b>Décochez le téléphone avant de reporter</b> : il reste vide. C'est toute la
-         différence entre « elle propose » et « elle remplit » — ce qu'elle a mal entendu se
-         retire au lieu de partir sur le devis.</p>
+      <p class="note"><b>C'est l'écran de votre seconde photo</b>, sans un champ de plus ni de
+         moins : le nom, le téléphone, l'e-mail, le canal d'envoi, l'adresse du chantier,
+         l'adresse client différente, le micro et la bascule.
+         <br><br><b>Les deux traits dorés</b> marquent les seuls mots que la reprise oblige à
+         changer — « <span class="q">Le chantier du 17 août</span> » au lieu de « Nouveau », et
+         « <span class="q">Enregistrer</span> » au lieu de « Créer le chantier ». Les laisser
+         tels quels ferait dire à l'écran qu'il crée un chantier qui existe déjà.
+         <br><br><b>La mention seule est la cible</b>, comme vous l'avez dit : « cliquer
+         dessus ». Le reste de la ligne garde sa reprise habituelle — votre règle du 13 août
+         n'est pas touchée.</p>
     </div>
   </div>
-
-  <p class="avis" data-s="avis3"><b>Et pour la dictée : la même règle qu'au devis.</b> Une adresse
-     est ce qui va sur le document que le client reçoit, et une erreur d'un chiffre s'y relit
-     mal. Le geste en plus coûte une seconde ; une facture qui n'arrive pas coûte un
-     recouvrement. Si vous préférez qu'elle remplisse d'office, dites-le — la moitié du travail
-     est la même, c'est la compréhension du nom et de l'adresse qui est neuve, pas l'affichage.</p>
 
   <div class="fin">
-    <h3>Ce que cette planche ne décide pas</h3>
+    <h3>Ce qu'il reste à faire, et qui ne se dessine pas</h3>
     <ul>
-      <li><b>Le devis parti reste figé, et c'est voulu.</b> La fiche client corrigera le CLIENT,
-        pas le document déjà envoyé — un devis que le client a reçu ne peut pas changer dans son
-        dos. Ce que ça change concrètement : la prochaine version portera la bonne adresse.</li>
-      <li><b>La civilité redevient corrigeable.</b> Aujourd'hui elle se choisit à la création et
-        jamais plus, faute de cet écran — c'est écrit dans le code comme une conséquence assumée.
-        La fiche la rouvre, sans qu'on ait rien à décider de plus.</li>
-      <li><b>Aucun autre écran n'y mène encore.</b> Cette planche ne pose que le chemin depuis
-        l'accueil, celui que vous avez demandé. La fiche du chantier pourrait y mener aussi —
-        elle affiche déjà « Client non renseigné — adresse non renseignée », sans aucun geste
-        dessus. À dire si vous le voulez.</li>
-      <li><b>La dictée sur cette fiche n'existe nulle part.</b> Celle du devis ne sait toucher que
-        les lignes et la remise ; aucune ne sait lire un nom ou une adresse. C'est le vrai
-        travail derrière l'écran 2, quelle que soit la lettre choisie.</li>
+      <li><b>Le formulaire ne sait aujourd'hui que CRÉER.</b> Rouvert sur un chantier existant,
+        il devra enregistrer dessus. C'est du travail, pas une décision — il n'y a rien à
+        trancher.</li>
+      <li><b>Le devis déjà parti reste figé</b>, et c'est voulu : un devis que le client a reçu
+        ne change pas dans son dos. La correction porte sur le chantier et son client ; c'est la
+        prochaine version du devis qui l'emportera.</li>
+      <li><b>La mention ne paraît que lorsqu'il manque quelque chose.</b> Dès que l'adresse est
+        là, la ligne redevient celle de toujours, sans cible supplémentaire.</li>
     </ul>
   </div>
 

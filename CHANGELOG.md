@@ -9,32 +9,21 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
-### DESSINÉ : la fiche client, depuis l'accueil — rien n'est codé
+### DESSINÉ : « Adresse non renseignée » ouvre l'écran du chantier — rien n'est codé
 
-Sa demande : *« j'ai oublié de rentrer les infos du client […] que je puisse
-cliquer sur le client du dix-sept août […] et que ça me mette directement sur la
-page client où je peux rentrer ces informations par la dictée ou par l'écrit »*.
+Sa demande, puis sa correction : *« que ça m'amène sur la page que je t'ai
+envoyée sur la deuxième photo. Rien de plus, rien de moins. »*
 
-**Deux découvertes en regardant le code, et elles changent la demande.** Il
-n'existe **aucun écran de fiche client** — le code le dit lui-même : *« faute
-d'écran de fiche client »* —, et son chantier du 17 août n'a **pas de client du
-tout**, ce que son titre auto trahit. L'écran doit donc savoir en créer une.
+**La première planche inventait une fiche client**, avec ses champs et ses
+questions. Elle est retirée : la destination existe déjà — c'est l'écran
+« Un chantier » (`FormulaireNouveauChantier`), avec son micro et sa bascule.
 
-**Elle se touche pour de bon** — sa demande : *« fais-moi des maquettes
-dynamiques »*. Sans un script : une case masquée, un libellé qui la coche. Sur A,
-seule la pastille ouvre la fiche ; sur B, toute la ligne. Sur la fiche, le micro
-ouvre la dictée, les propositions se décochent, et « Reporter » ne reporte que ce
-qui est resté coché.
+**La leçon, et elle a coûté deux allers-retours :** devant une demande qui touche
+à un écran, chercher d'abord si l'écran existe. Sa seconde photo le montrait.
 
-`maquettes/atlas-fiche-client.html`, 43 contrôles — dont les **gestes eux-mêmes**,
-rejoués et mesurés. Confrontés à huit planches dégradées : huit rouges, chacun
-nommant le bon coupable. Trois vrais défauts trouvés par ces contrôles : la coque
-du téléphone restait sur mobile (écran à 336 px au lieu de 390), et **cinq ombres
-portées ajoutées « pour faire haut de gamme »** — la charte d'Atlas n'en porte pas
-une seule, et son luxe est fait de ce qu'elle refuse.
-
-**Deux lettres attendues** : où va le doigt sur la ligne, et si la dictée
-propose ou remplit. `TODO.md` §0 quadragies bis.
+Deux mots seulement changent, parce que le chantier existe déjà : le surtitre
+« Nouveau » et le bouton « Créer le chantier » mentiraient. `TODO.md`
+§0 quadragies bis.
 
 ## 2026-08-16
 

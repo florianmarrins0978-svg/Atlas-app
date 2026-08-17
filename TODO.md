@@ -27,61 +27,50 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quadragies bis. La fiche client — DESSINÉE, en attente de ses deux lettres
+### 0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier — DESSINÉ
 
-*`maquettes/atlas-fiche-client.html`, le 17 août 2026 — trois écrans **qui se
-touchent**, 43 contrôles. Sa demande : « j'ai oublié de rentrer les infos du client […] que
-je puisse cliquer sur le client du dix-sept août […] et que ça me mette
-directement sur la page client où je peux rentrer ces informations par la dictée
-ou par l'écrit ».*
+*`maquettes/atlas-fiche-client.html`, le 17 août 2026 — un geste, 25 contrôles.*
 
-**CE QUI A ÉTÉ TROUVÉ EN REGARDANT LE CODE, ET QUI CHANGE LA DEMANDE.**
+**SA DEMANDE, ET SA CORRECTION.** D'abord : *« j'ai oublié de rentrer les infos
+du client […] que je puisse cliquer sur le client du dix-sept août et que ça me
+mette directement sur la page client »*. Puis, devant une planche qui inventait
+une fiche client de toutes pièces : ***« je ne suis pas sûr que tu aies bien
+compris […] que ça m'amène sur la page que je t'ai envoyée sur la deuxième
+photo. RIEN DE PLUS, RIEN DE MOINS. »***
 
-1. **Il n'existe AUCUN écran de fiche client.** Ce n'est pas une omission de la
-   maquette : `DevisCompletClient.tsx` le dit en toutes lettres — *« la civilité
-   ne se corrige plus après coup, faute d'écran de fiche client »*. Le nom,
-   l'adresse, le téléphone et l'e-mail ne se saisissent qu'à UN endroit, le
-   document du devis, et **seulement tant qu'il n'est pas parti**.
-2. **Son chantier du 17 août n'a pas de client du tout.** « Chantier du lundi
-   17 août » est le titre que fabrique `nom-chantier.ts` quand il n'y a **ni
-   client ni adresse**. L'écran doit donc savoir en CRÉER une, pas seulement
-   corriger.
+**La destination n'est pas à dessiner : c'est `FormulaireNouveauChantier`**, qui
+existe — nom, téléphone, e-mail, canal d'envoi, adresse du chantier, adresse
+client différente, micro, bascule « Je dicte / Je l'écris ».
 
-**LES DEUX LETTRES ATTENDUES :**
+**LA LEÇON, ET ELLE COÛTE DEUX ALLERS-RETOURS.** Devant une demande qui touche à
+un écran, chercher d'abord SI L'ÉCRAN EXISTE. Ici la réponse était sous la main :
+sa propre seconde photo le montrait. En dessiner un neuf, avec ses champs et ses
+questions, lui a fait relire une planche entière pour dire « ce n'est pas ça ».
 
-| | Ce qui se décide |
+**CE QUI RESTE À DÉCIDER : rien.** Deux mots seulement changent, parce que le
+chantier existe déjà, et ils ne se discutent pas — les laisser tels quels ferait
+mentir l'écran :
+
+| Aujourd'hui | Rouvert |
 |---|---|
-| **Écran 1** | A — la mention « Adresse non renseignée » devient le bouton, la ligne garde sa reprise · B — toute la ligne mène à la fiche tant que le client manque |
-| **Écran 3** | A — la dictée propose, il coche (son choix du 15 août pour le devis) · B — elle remplit tout de suite |
+| Surtitre « **Nouveau** » | « Le chantier du 17 août » |
+| Bouton « **Créer le chantier** » | « Enregistrer » |
 
-**Le vrai enjeu de l'écran 1**, et il faut le lui dire tel quel : sa règle du
-13 août — *« il ne me restait qu'à envoyer mon devis »* — a fait que toucher un
-chantier REPREND le travail. B est une exception à cette règle. L'avis écrit sur
-la planche est **B**, au motif que la règle protégeait son TEMPS et non une
-destination : reprendre un devis sans client, c'est justement le parcours
-inutile.
+**CE QUE LE CODE DEVRA APPRENDRE**, et ce n'est pas une décision :
 
-**LA PLANCHE SE JOUE AU DOIGT, et les gestes sont ÉPROUVÉS, pas décrits.** Sur
-A, seule la pastille ouvre la fiche — toucher le nom du chantier ne fait rien,
-et c'est le sujet même de la question. Sur B, toute la ligne répond. Sur la
-fiche, le micro ouvre ce que la dictée a compris, les trois propositions se
-décochent, et « Reporter » ne reporte **que ce qui est resté coché** : décochez
-le téléphone, il reste vide. Le contrôle rejoue ces gestes et mesure leur effet ;
-confronté à une planche où le décoché arrive quand même, il rougit.
+- une route qui rouvre le formulaire sur un chantier existant, préremplie ;
+- `FormulaireNouveauChantier` ne sait que **créer** (`creerChantierAction`) : il
+  lui faut un second chemin qui enregistre sur le chantier ;
+- la mention n'est cliquable **que lorsqu'il manque quelque chose**, et elle doit
+  tenir 34 px de haut — un texte de 11,5 px n'est pas une cible sous un gant ;
+- **la mention SEULE est la cible.** Le reste de la ligne garde sa reprise : sa
+  règle du 13 août n'est pas touchée, et il a dit « cliquer dessus ».
 
-**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis). Ce que le lot exigera, quelle que soit
-sa réponse :
+**Ce qui NE change pas :** un devis déjà parti reste figé. La correction porte
+sur le chantier et son client ; c'est la prochaine version du devis qui
+l'emportera.
 
-- un écran de fiche client, et une route qui y mène ;
-- **la civilité redevient corrigeable** — conséquence gratuite, aujourd'hui
-  assumée comme un manque dans le code ;
-- **la dictée d'un nom et d'une adresse n'existe nulle part.** Celle du devis ne
-  sait toucher que les lignes et la remise (`retouches-devis.ts`) : c'est le vrai
-  travail derrière l'écran 3.
-
-**Ce qui NE change pas, et la planche le dit :** un devis déjà parti reste figé.
-La fiche corrige le CLIENT, pas le document que le client a reçu — c'est la
-prochaine version qui portera la bonne adresse.
+**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis).
 
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 

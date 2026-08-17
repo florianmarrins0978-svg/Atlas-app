@@ -1,34 +1,34 @@
 /*
-  Contrôle de la planche « La fiche client, depuis l'accueil » — JavaScript
-  coupé, iPhone 13, meta viewport injectée.
+  Contrôle de la planche « Adresse non renseignée ouvre l'écran du chantier » —
+  JavaScript coupé, iPhone 13, meta viewport injectée.
 
   CE QU'IL SURVEILLE, ET POURQUOI :
 
-    · LA LIGNE DE L'ACCUEIL EST RECOPIÉE, PAS RÉINVENTÉE. Elle existe déjà
-      (`ListeChantiers.tsx`) : grille 47 px / reste, écart de 26 px, nom en
-      serif à 19 px, lieu à 11,5 px. Une ligne redessinée « à peu près » ferait
-      juger un écran qui n'est pas le sien — et c'est SUR cette ligne qu'il doit
-      décider où va son doigt.
-    · LES DEUX QUESTIONS PORTENT UNE LETTRE, UN COÛT ET UN AVIS. Il répond par
-      une lettre — « la B et 4 », « AA », « la A » — et une question sans coût
-      chiffré se répond au hasard.
-    · LA PLANCHE NE PROMET RIEN QUE LE CODE NE PUISSE TENIR. Elle dit en toutes
-      lettres que le devis PARTI reste figé : une fiche qui laisserait croire
-      qu'elle corrige un document déjà chez le client serait un mensonge, et il
-      s'en apercevrait au premier essai.
-    · LE CAS RÉEL EST CELUI DE SA CAPTURE : un chantier SANS client du tout,
-      titré « Chantier du lundi 17 août ». Dessiner un client existant à
-      corriger aurait esquivé le cas difficile — créer une fiche qui n'est pas
-      là.
-    · LES CIBLES SE TOUCHENT. La pastille de la proposition A est la seule cible
-      neuve de cette planche : si elle passe sous 30 px, A n'est pas jouable
-      sous un pouce ganté, et il faut le savoir AVANT de la choisir.
+    · LA PLANCHE N'INVENTE AUCUN ÉCRAN. C'est toute sa correction du 17 août :
+      *« rien de plus, rien de moins »*. La destination est
+      `FormulaireNouveauChantier`, qui existe — le contrôle vérifie que ses SEPT
+      éléments y sont, dans l'ordre, avec leurs « (facultatif) ». Une planche qui
+      en oublierait un, ou qui en ajouterait, ferait valider un écran qui n'est
+      pas le sien ; et c'est exactement l'erreur que la version précédente a
+      commise, en dessinant une « fiche client » de toutes pièces.
+    · LA MENTION EST LA CIBLE, ET ELLE SEULE. Sa phrase : « lorsque s'affiche
+      Adresse non renseignée, je puisse cliquer DESSUS ». Toucher le nom du
+      chantier ne doit donc RIEN faire — sans quoi la ligne changerait de
+      destination, ce que sa règle du 13 août évite.
+    · LE GESTE BOUGE POUR DE BON. Une planche qu'on annonce touchable et qui ne
+      bouge pas se valide sur une capture, et le défaut ne paraît qu'entre ses
+      mains. L'ouverture et le retour sont JOUÉS, et leur effet mesuré.
+    · LES DEUX MOTS QUE LA REPRISE OBLIGE À CHANGER SONT DITS. « Nouveau » et
+      « Créer le chantier » deviendraient faux sur un chantier qui existe. Les
+      laisser passer en silence ferait livrer un écran qui ment.
+    · LA CIBLE SE TOUCHE. Sous un pouce ganté, un texte de 11,5 px n'est pas une
+      cible : la mention doit tenir ses 34 px de haut.
 
-  CHACUN SAIT ÉCHOUER, et c'est vérifiable à la main : retirer « Adresse non
-  renseignée » de l'écran 1 rougit le premier ; retirer un « ce qu'elle coûte »
-  rougit le deuxième ; retirer la phrase sur le devis figé rougit le troisième ;
-  remplacer le titre du 17 août par un nom de client rougit le quatrième ;
-  rapetisser la pastille rougit le dernier.
+  CHACUN SAIT ÉCHOUER, et c'est vérifiable à la main : retirer un champ du
+  formulaire rougit le premier ; rendre le nom du chantier cliquable rougit le
+  deuxième ; couper le lien de la mention rougit le troisième ; remettre
+  « Nouveau » et « Créer le chantier » rougit le quatrième ; rapetisser la
+  mention rougit le dernier.
 */
 import fs from "node:fs";
 import path from "node:path";
@@ -61,103 +61,84 @@ const ctx = await nav.newContext({ ...devices["iPhone 13"], javaScriptEnabled: f
 const page = await ctx.newPage();
 await page.goto("file://" + path.resolve(ESSAI));
 
-const cadrer = async (s) => { await (await page.$(s)).scrollIntoViewIfNeeded(); await page.waitForTimeout(200); };
 const texte = async (s) => page.$eval(s, (e) => e.innerText.replace(/\s+/g, " ").trim()).catch(() => "");
-const vu = async (s) => page.$eval(s, (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })).catch(() => false);
 
 fs.mkdirSync(SORTIE, { recursive: true });
 
-// ── 1. L'écran 1 montre SA ligne, et son cas exact ──────────────────────
+// ── 1. L'accueil montre SA ligne, et son cas exact ──────────────────────
 try {
-  await cadrer('[data-s="ecran1"]');
-
-  // **Le cas dessiné est celui de sa capture, et pas un cas confortable.**
-  // « Chantier du lundi 17 août » est le titre qu'Atlas fabrique quand il n'y
-  // a NI client NI adresse (`nom-chantier.ts`). Dessiner un client existant à
-  // corriger aurait esquivé le vrai travail : créer une fiche absente.
-  const a = await texte('[data-s="a1"]');
+  // « Chantier du lundi 17 août » est le titre qu'Atlas fabrique quand il n'y a
+  // NI client NI adresse (`nom-chantier.ts`) — c'est le cas de sa capture, et le
+  // seul qui vaille : dessiner un client existant esquiverait le vrai travail.
+  const acc = await texte('[data-s="accueil"]');
   verifie("la ligne dessinée est celle de sa capture, sans client du tout",
-    /Chantier du lundi 17 août/.test(a), a.slice(0, 120));
-  verifie("et elle porte la mention qu'il a lue", /Adresse non renseignée/.test(a));
+    /Chantier du lundi 17 août/.test(acc), acc.slice(0, 120));
+  verifie("et elle porte la mention qu'il a lue", /Adresse non renseignée/.test(acc));
 
-  // **Les deux propositions diffèrent par le GESTE, et on compte l'ÉLÉMENT,
-  // pas le mot.** Chercher « compléter » dans le texte accusait B à tort : son
-  // état dit « à compléter avant d'envoyer », ce qui est exactement le contraire
-  // d'un bouton. Une alerte qui accuse la bonne proposition coûte plus cher que
-  // pas d'alerte (`AGENTS.md`).
-  const boutonA = await page.$$eval('[data-s="a1"] .bouton', (l) => l.length);
-  const boutonB = await page.$$eval('[data-s="b1"] .bouton', (l) => l.length);
-  verifie("A pose un bouton sur la mention", boutonA === 1, `${boutonA} bouton(s)`);
-  verifie("B n'en pose aucun — c'est toute la ligne qui mène", boutonB === 0, `${boutonB} bouton(s)`);
-  // Et B doit DIRE où elle mène avant qu'on touche : sans cela, la ligne change
-  // de destination en silence, ce que sa règle du 13 août interdit.
-  const b = await texte('[data-s="b1"]');
-  verifie("B annonce l'exception au lieu de la subir",
-    /à compléter avant d'envoyer/i.test(b), b.slice(0, 160));
-
-  // **La cible neuve se mesure.** Sous un pouce ganté, une pastille de moins
-  // de 30 px ne s'attrape pas — et c'est la seule chose que A ajoute.
-  const past = await page.$eval('[data-s="a1"] .bouton', (e) => {
+  // **Sous un pouce ganté, un texte de 11,5 px n'est pas une cible.**
+  const m = await page.$eval('[data-s="mention"]', (e) => {
     const r = e.getBoundingClientRect();
     return { h: r.height, l: r.width };
   }).catch(() => null);
-  verifie("la pastille de A se touche pour de vrai",
-    past !== null && past.h >= 32, past ? `${past.l.toFixed(0)}×${past.h.toFixed(0)}` : "absente");
-} catch (e) { echecs.push("écran 1 · interrompu — " + String(e.message).split("\n")[0]); }
+  verifie("la mention tient ses 34 px de haut",
+    m !== null && m.h >= 34, m ? `${m.l.toFixed(0)}×${m.h.toFixed(0)}` : "absente");
+} catch (e) { echecs.push("accueil · interrompu — " + String(e.message).split("\n")[0]); }
 
-// ── 2. La question porte lettres, coûts et avis ─────────────────────────
+// ── 2. LE GESTE : la mention ouvre, et elle SEULE ───────────────────────
+//
+// **« Rien de plus, rien de moins », le 17 août.** Si le nom du chantier
+// ouvrait lui aussi, la ligne changerait de destination — ce que sa règle du
+// 13 août évite, et ce qu'il n'a pas demandé.
 try {
-  // **UNE SEULE question à lettres, et c'est délibéré.** L'écran 2 ne propose
-  // plus deux dictées côte à côte : la règle « elle propose, vous cochez » se
-  // JOUE au doigt plus bas, et un comportement éprouvé vaut mieux que deux
-  // images à comparer. La planche ne demande donc qu'une lettre — l'autre
-  // question se pose en une phrase dans l'avis.
-  const lettres = await page.$$eval('[data-s="ecran1"] .sous', (l) => l.map((e) => e.textContent.trim()));
-  verifie("les deux propositions de l'écran 1 portent leur lettre",
-    lettres.length === 2 && /^A ·/.test(lettres[0]) && /^B ·/.test(lettres[1]), lettres.join(" | "));
+  const bord = await page.$eval('[data-s="prop"] .ecran', (e) => Math.round(e.getBoundingClientRect().left));
+  const ou = async () =>
+    page.$eval('[data-s="form"]', (e) => Math.round(e.getBoundingClientRect().left));
 
-  // **Une proposition sans son coût se choisit sur sa promesse**, et le défaut
-  // se découvre après le code.
-  const couts = await page.$$eval('[data-s="ecran1"] .note .cout', (l) => l.map((e) => e.textContent.trim()));
-  verifie("les deux avouent ce qu'elles coûtent", couts.length === 2, `${couts.length} coût(s)`);
+  verifie("au repos, l'écran du chantier est hors du cadre", (await ou()) > bord + 100,
+    `${await ou()} contre ${bord}`);
 
-  const avis1 = await texte('[data-s="avis1"]');
-  const avis3 = await texte('[data-s="avis3"]');
-  verifie("la question du geste porte un avis motivé",
-    /ce que je ferais/i.test(avis1) && avis1.length > 120, avis1.slice(0, 90));
-  verifie("et la dictée reçoit le sien, même sans lettre à donner",
-    avis3.length > 120 && /coûte/i.test(avis3), avis3.slice(0, 90));
+  await page.click('[data-s="accueil"] .brin h2');
+  await page.waitForTimeout(500);
+  verifie("toucher le NOM du chantier ne fait rien — la mention seule est la cible",
+    (await ou()) > bord + 100, `${await ou()}`);
 
-  // **L'avis doit rappeler ce qu'il a DÉJÀ tranché**, sinon il rejuge à froid
-  // une question réglée ailleurs — et les deux réponses divergeront.
-  verifie("l'avis du geste confronte sa règle du 13 août", /13 août/.test(avis1), avis1.slice(0, 90));
-  verifie("l'avis de la dictée rappelle son choix du devis",
-    /devis/i.test(avis3), avis3.slice(0, 90));
-} catch (e) { echecs.push("questions · interrompu — " + String(e.message).split("\n")[0]); }
+  await page.click('[data-s="mention"]');
+  await page.waitForTimeout(650);
+  verifie("toucher la mention ouvre l'écran du chantier",
+    Math.abs((await ou()) - bord) < 6, `${await ou()} contre ${bord}`);
 
-// ── 3. La fiche ne promet rien que le code ne tienne ────────────────────
+  // Un aller sans retour enferme : le chevron doit ramener.
+  await page.click('[data-s="form"] .retour');
+  await page.waitForTimeout(650);
+  verifie("et le chevron ramène à la liste", (await ou()) > bord + 100, `${await ou()}`);
+} catch (e) { echecs.push("geste · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 3. L'ÉCRAN D'ARRIVÉE EST LE SIEN, PAS UN ÉCRAN INVENTÉ ──────────────
+//
+// **LE CONTRÔLE QUI PORTE LA PLANCHE.** La version précédente a dessiné une
+// « fiche client » de toutes pièces, et il a dû corriger. Ce contrôle refuse
+// qu'on recommence : les sept éléments de `FormulaireNouveauChantier` sont
+// exigés, avec leurs mots.
 try {
-  await cadrer('[data-s="fiche"]');
-  const f = await texte('[data-s="fiche-prop"]');
+  await page.click('[data-s="mention"]');
+  await page.waitForTimeout(650);
+  const f = await texte('[data-s="form"]');
 
-  // Cinq champs, et ce sont ceux du devis. En inventer un ferait valider un
-  // formulaire dont la moitié n'a nulle part où aller en base.
-  const champs = await page.$$eval('[data-s="fiche-prop"] .champ .et', (l) =>
-    l.map((e) => e.textContent.trim()));
-  verifie("la fiche porte cinq champs, ni plus ni moins",
-    champs.length === 5, champs.join(" | "));
-  verifie("et ce sont ceux que le devis imprime",
-    /Civilité et nom/.test(champs.join("|")) && /Adresse/.test(champs.join("|")) &&
-    /Téléphone/.test(champs.join("|")) && /E-mail/.test(champs.join("|")), champs.join(" | "));
+  const attendus = [
+    "Nom du client (facultatif)",
+    "Téléphone (facultatif)",
+    "E-mail (facultatif)",
+    "Comment lui envoyer son devis ?",
+    "Adresse du chantier (facultatif)",
+    "Ajouter une adresse client différente",
+    "Je dicte",
+  ];
+  const manquants = attendus.filter((a) => !f.toUpperCase().includes(a.toUpperCase()));
+  verifie("l'écran d'arrivée est celui qui EXISTE, avec ses sept éléments",
+    manquants.length === 0, manquants.join(" / "));
 
-  // **L'adresse des travaux est la DERNIÈRE et vide par défaut.** La demander
-  // d'office ferait taper deux fois la même adresse — le défaut qu'il a signalé
-  // le 6 août sur le devis.
-  verifie("l'adresse du chantier vient en dernier, et vide par défaut",
-    champs[4] === "Adresse du chantier" && /Vide = la même/.test(f), champs.join(" | "));
-
-  // Le micro qu'il a demandé — « par la dictée ou par l'écrit ».
-  const micro = await page.$eval('[data-s="fiche-prop"] .micro', (e) => {
+  // Le micro qu'il montre sur sa photo, et qui porte « par la dictée ».
+  const micro = await page.$eval('[data-s="form"] .micro', (e) => {
     const r = e.getBoundingClientRect();
     return { h: r.height, l: r.width };
   }).catch(() => null);
@@ -165,159 +146,84 @@ try {
     micro !== null && micro.h >= 40 && micro.l >= 40,
     micro ? `${micro.l.toFixed(0)}×${micro.h.toFixed(0)}` : "absent");
 
-  // **LE CONTRÔLE QUI PORTE LA PLANCHE.** Un devis parti est immuable. Une
-  // fiche qui laisserait croire qu'elle le corrige serait un mensonge, et il
-  // s'en apercevrait au premier essai — après avoir compté sur elle.
-  const fin = await texte(".fin");
-  verifie("la planche dit que le devis PARTI reste figé",
-    /figé/i.test(fin) && /prochaine version/i.test(fin), fin.slice(0, 160));
-  verifie("et qu'aucune dictée ne sait encore lire un nom ou une adresse",
-    /aucune ne sait lire un nom ou une adresse/i.test(fin), fin.slice(0, 200));
-} catch (e) { echecs.push("fiche · interrompu — " + String(e.message).split("\n")[0]); }
+  // **AUCUN CHAMP INVENTÉ.** Sept zones de saisie et pas une de plus : en
+  // ajouter une ferait valider un écran que le code ne porte pas.
+  const zones = await page.$$eval('[data-s="form"] .ch', (l) =>
+    l.map((e) => (e.querySelector(".et")?.textContent ?? "").trim()));
+  verifie("et pas un champ de plus que les siens", zones.length === 5, zones.join(" | "));
+} catch (e) { echecs.push("écran d'arrivée · interrompu — " + String(e.message).split("\n")[0]); }
 
-// ── 3 bis. LES GESTES BOUGENT POUR DE BON ───────────────────────────────
+// ── 4. LES DEUX MOTS QUE LA REPRISE OBLIGE À CHANGER ────────────────────
 //
-// **Sa demande du 17 août : « fais-moi des maquettes DYNAMIQUES ».** Une
-// planche qu'on annonce touchable et qui ne bouge pas se valide sur une
-// capture, et le défaut ne paraît qu'entre ses mains. Chaque geste promis est
-// donc joué ici, et son effet MESURÉ — pas supposé.
+// « Nouveau » et « Créer le chantier » deviendraient faux sur un chantier qui
+// existe. Les laisser passer ferait livrer un écran qui ment au patron.
 try {
-  // 1. La fiche est cachée au repos, et arrive quand on touche la cible.
-  const positionA = async () =>
-    page.$eval('[data-s="a1"] .vue-fiche', (e) => Math.round(e.getBoundingClientRect().left));
-  const gaucheEcran = await page.$eval('[data-s="a1"] .ecran', (e) => Math.round(e.getBoundingClientRect().left));
-  verifie("au repos, la fiche est hors de l'écran", (await positionA()) > gaucheEcran + 100,
-    `${await positionA()} contre ${gaucheEcran}`);
+  const surtitre = await texte('[data-s="surtitre"]');
+  const bouton = await texte('[data-s="bouton"]');
+  verifie("le surtitre ne dit plus « Nouveau » — le chantier existe",
+    !/^NOUVEAU$/i.test(surtitre) && surtitre.length > 3, surtitre);
+  verifie("et le bouton ne dit plus « Créer » — il ne créerait rien",
+    !/cr[ée]er/i.test(bouton) && bouton.length > 3, bouton);
 
-  // **SUR A, LE NOM DU CHANTIER NE FAIT RIEN — et c'est le sujet même de la
-  // question.** S'il répondait, A et B seraient la même chose et il
-  // trancherait entre deux propositions identiques.
-  await page.click('[data-s="a1"] .brin h2');
-  await page.waitForTimeout(500);
-  verifie("A : toucher le nom du chantier ne fait rien, il faut viser",
-    (await positionA()) > gaucheEcran + 100, `${await positionA()}`);
+  // Et la planche doit DIRE lesquels : un changement silencieux se découvre au
+  // moment de coder, quand il est trop tard pour en discuter.
+  const note = await texte(".note");
+  verifie("la note désigne les deux mots changés, elle ne les glisse pas",
+    /Nouveau/.test(note) && /Créer le chantier/.test(note), note.slice(0, 140));
+} catch (e) { echecs.push("mots changés · interrompu — " + String(e.message).split("\n")[0]); }
 
-  await page.click('[data-s="a1"] .bouton');
-  await page.waitForTimeout(600);
-  verifie("A : la pastille fait bien venir la fiche",
-    Math.abs((await positionA()) - gaucheEcran) < 6, `${await positionA()} contre ${gaucheEcran}`);
-
-  // Et le retour la renvoie d'où elle vient : un aller sans retour enferme.
-  await page.click('[data-s="a1"] .retour');
-  await page.waitForTimeout(600);
-  verifie("A : le retour renvoie la fiche d'où elle vient",
-    (await positionA()) > gaucheEcran + 100, `${await positionA()}`);
-
-  // 2. Sur B, c'est toute la ligne — y compris le nom.
-  const positionB = async () =>
-    page.$eval('[data-s="b1"] .vue-fiche', (e) => Math.round(e.getBoundingClientRect().left));
-  const gaucheB = await page.$eval('[data-s="b1"] .ecran', (e) => Math.round(e.getBoundingClientRect().left));
-  await page.click('[data-s="b1"] .brin.mene h2');
-  await page.waitForTimeout(600);
-  verifie("B : toucher le nom du chantier suffit",
-    Math.abs((await positionB()) - gaucheB) < 6, `${await positionB()} contre ${gaucheB}`);
-} catch (e) { echecs.push("gestes écran 1 · interrompu — " + String(e.message).split("\n")[0]); }
-
-// ── 3 ter. LA DICTÉE : elle PROPOSE, et ne reporte que le coché ─────────
-//
-// **C'est la règle même qu'il doit juger**, et une planche qui la décrirait
-// sans la jouer lui ferait valider une phrase au lieu d'un comportement.
+// ── 5. La loupe : les mesures ci-dessus sont celles de SON écran ────────
 try {
-  await cadrer('[data-s="fiche"]');
-  verifie("au repos, la dictée est fermée", !(await vu('[data-s="dictee"]')));
-
-  await page.click('[data-s="fiche-prop"] .micro');
-  await page.waitForTimeout(400);
-  verifie("le micro ouvre ce qu'elle a compris", await vu('[data-s="dictee"]'));
-
-  // Les champs restent VIDES tant que rien n'est reporté : une dictée qui
-  // remplirait d'office serait la proposition inverse.
-  verifie("avant de reporter, les champs sont vides",
-    !(await vu('[data-s="fiche-prop"] .v-nom .plein')));
-
-  // **Le geste qui porte la question : on DÉCOCHE, puis on reporte.**
-  await page.click('[data-s="fiche-prop"] .k-tel');
-  await page.waitForTimeout(260);
-  await page.click('[data-s="fiche-prop"] .valider');
-  await page.waitForTimeout(500);
-
-  verifie("reporté, le nom coché arrive dans son champ",
-    await vu('[data-s="fiche-prop"] .v-nom .plein'));
-  verifie("et l'adresse cochée aussi",
-    await vu('[data-s="fiche-prop"] .v-adr .plein'));
-  // **LE CONTRÔLE QUI PORTE L'ÉCRAN 2.** Si le décoché arrivait quand même,
-  // la planche montrerait « elle remplit » en prétendant montrer « elle
-  // propose » — et il trancherait sur un écran qui ment.
-  verifie("MAIS le téléphone décoché reste vide — « elle propose » tient",
-    !(await vu('[data-s="fiche-prop"] .v-tel .plein')),
-    await texte('[data-s="fiche-prop"] .v-tel'));
-
-  // Le panneau se referme et dit ce qu'il a fait : sinon le résultat est caché
-  // derrière le panneau qui l'a produit.
-  verifie("le panneau laisse un mot au lieu de rester ouvert",
-    await vu('[data-s="fiche-prop"] .apres'));
-} catch (e) { echecs.push("gestes dictée · interrompu — " + String(e.message).split("\n")[0]); }
-
-// ── 4. La loupe : les mesures ci-dessus sont celles de SON écran ────────
-try {
-  const w = await page.$eval('[data-s="a1"] .ecran', (e) => e.getBoundingClientRect().width);
+  const w = await page.$eval('[data-s="prop"] .ecran', (e) => e.getBoundingClientRect().width);
   verifie("sur téléphone, la loupe est éteinte — les mesures ci-dessus sont vraies",
     w <= 390, `${w.toFixed(0)} px`);
   verifie("et l'écran fait bien 390 px, pas ce qui reste après la coque",
     w >= 390, `${w.toFixed(0)} px`);
 } catch (e) { echecs.push("loupe · interrompu — " + String(e.message).split("\n")[0]); }
 
-// ── 5. Le gros plan, et les captures ────────────────────────────────────
+// ── 6. Le gros plan, et les captures ────────────────────────────────────
 try {
-  const grand = await nav.newContext({ viewport: { width: 1600, height: 1200 }, colorScheme: "light" });
+  const grand = await nav.newContext({ viewport: { width: 1600, height: 1400 }, colorScheme: "light" });
   const pg = await grand.newPage();
   await pg.goto("file://" + path.resolve(ESSAI));
   await pg.waitForTimeout(300);
 
-  const large = await pg.$eval('[data-s="a1"] .ecran', (e) => e.getBoundingClientRect().width);
+  const large = await pg.$eval('[data-s="prop"] .ecran', (e) => e.getBoundingClientRect().width);
   verifie("sur grand écran, la loupe agrandit pour de bon", large > 520, `${large.toFixed(0)} px`);
 
   const deborde = await pg.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   verifie("rien ne déborde en largeur", !deborde);
 
-  const props = await pg.$$(".prop");
-  verifie("les trois écrans sont capturés", props.length === 3, `${props.length}`);
-  for (let i = 0; i < props.length; i++) {
-    await props[i].scrollIntoViewIfNeeded();
-    await pg.waitForTimeout(200);
-    await props[i].screenshot({ path: `${SORTIE}/fiche-client-${i + 1}.png` });
-  }
-  // **ET DES CAPTURES DES ÉTATS, PAS SEULEMENT DU REPOS.** Sans elles, la
-  // planche envoyée montre trois écrans immobiles : le geste qu'il a demandé
-  // n'y est pas visible, et il devrait ouvrir la page pour le voir. La leçon
-  // vient de `verifier-atlas-rappel-facture-impayee`, qui l'a payée avant.
-  await pg.click('[data-s="b1"] .brin.mene h2');
-  await pg.waitForTimeout(700);
-  const arrivee = await pg.$eval('[data-s="b1"] .vue-fiche', (e) => Math.round(e.getBoundingClientRect().left));
-  const bordB = await pg.$eval('[data-s="b1"] .ecran', (e) => Math.round(e.getBoundingClientRect().left));
-  verifie("la capture du geste montre la fiche ARRIVÉE, pas en route",
-    Math.abs(arrivee - bordB) < 8, `${arrivee} contre ${bordB}`);
-  const vueB = await pg.$('[data-s="b1"] .tel');
-  await vueB.scrollIntoViewIfNeeded();
+  const tel = await pg.$('[data-s="prop"] .tel');
+  await tel.scrollIntoViewIfNeeded();
   await pg.waitForTimeout(200);
-  await vueB.screenshot({ path: `${SORTIE}/fiche-client-4-fiche-ouverte.png` });
+  await tel.screenshot({ path: `${SORTIE}/fiche-client-1-accueil.png` });
 
-  await pg.click('[data-s="fiche-prop"] .micro');
+  // **ET UNE CAPTURE L'ÉCRAN OUVERT.** Sans elle, la planche envoyée ne montre
+  // qu'une liste : le geste qu'il a demandé n'y est pas visible, et il devrait
+  // ouvrir la page pour le voir.
+  await pg.click('[data-s="mention"]');
+  await pg.waitForTimeout(700);
+  const bordG = await pg.$eval('[data-s="prop"] .ecran', (e) => Math.round(e.getBoundingClientRect().left));
+  const arrive = await pg.$eval('[data-s="form"]', (e) => Math.round(e.getBoundingClientRect().left));
+  verifie("la capture montre l'écran ARRIVÉ, pas en route",
+    Math.abs(arrive - bordG) < 8, `${arrive} contre ${bordG}`);
+  await tel.screenshot({ path: `${SORTIE}/fiche-client-2-ecran-chantier.png` });
+
+  // **ET LE BAS DE L'ÉCRAN.** Le bouton est l'un des deux mots que la reprise
+  // oblige à changer, et il tombe sous le pli — comme sur sa propre capture.
+  // Une planche envoyée sans cette image lui cacherait la moitié de ce qu'elle
+  // lui demande de valider.
+  await pg.$eval('[data-s="form"] .corps', (e) => e.scrollTo({ top: e.scrollHeight }));
   await pg.waitForTimeout(400);
-  const dictee = await pg.$('[data-s="fiche-prop"] .tel');
-  await dictee.scrollIntoViewIfNeeded();
-  await pg.waitForTimeout(250);
-  await dictee.screenshot({ path: `${SORTIE}/fiche-client-5-dictee.png` });
-
-  await pg.click('[data-s="fiche-prop"] .k-tel');
-  await pg.waitForTimeout(260);
-  await pg.click('[data-s="fiche-prop"] .valider');
-  await pg.waitForTimeout(600);
-  const resteVide = !(await pg.$eval('[data-s="fiche-prop"] .v-tel .plein',
-    (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })).catch(() => false));
-  verifie("et celle du report montre bien le téléphone RESTÉ vide", resteVide);
-  await dictee.screenshot({ path: `${SORTIE}/fiche-client-6-reporte.png` });
+  const vuBouton = await pg.$eval('[data-s="bouton"]', (e) => {
+    const r = e.getBoundingClientRect();
+    const c = e.closest(".ecran").getBoundingClientRect();
+    return r.top >= c.top && r.bottom <= c.bottom && r.height > 10;
+  }).catch(() => false);
+  verifie("le bouton se rejoint en défilant, et tient dans le cadre", vuBouton);
+  await tel.screenshot({ path: `${SORTIE}/fiche-client-3-le-bouton.png` });
 
   await grand.close();
 } catch (e) { echecs.push("gros plan · interrompu — " + String(e.message).split("\n")[0]); }
