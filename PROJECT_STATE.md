@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-16 · branche `main`
+**Dernière mise à jour :** 2026-08-17 · branche `main`
 · dernière migration `drizzle/0049_coordonnees_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -70,6 +70,7 @@ seule avec quinze outils.
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
 | Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
 | Le prix accordé au client — remise en % sous le total, jusqu'à la facture (16 août) | `src/lib/reduction-devis.ts`, migration `0048` |
+| **Et il se RETIRE pour de bon** (17 août) — écrire 0 %, vider la case, ou le dire à la voix. Les deux derniers chemins étaient cassés : l'écran gardait une remise que la base n'avait plus, et la réécrivait au passage suivant (`ARCHITECTURE.md` §119) | `src/app/chantiers/[id]/devis-complet/` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |

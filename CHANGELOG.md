@@ -7,6 +7,43 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-17
+
+### « Il n'y a aucun moyen de retirer les cinq pour cent » — il avait raison deux fois
+
+Son constat du 17 août, capture à l'appui. Trois choses dans une phrase, et
+**deux étaient des défauts**, tenant à la même cause : le prix accordé ne vit pas
+sur une ligne du tableau mais sur l'en-tête du devis. Tout ce qui recopie « les
+lignes » et rien d'autre l'oublie en silence.
+
+| Ce qui n'allait pas | Ce que ça donnait |
+|---|---|
+| **À la voix** | « retire-moi les cinq pour cent » était compris, coché, enregistré — puis l'écran gardait l'ancien pourcentage et le **réécrivait en base** au passage suivant dans la case |
+| **En écrivant 0** | la base retirait bien la remise, mais l'écran laissait une ligne or « 0 % » sans montant : il affirmait une remise que le PDF n'imprimait pas |
+
+**Pourquoi rien ne l'avait vu.** La suite éprouvait le retrait en **vidant** la
+case puis en **rechargeant** la page — deux gestes qu'il ne fait ni l'un ni
+l'autre, et le rechargement masquait précisément le défaut puisqu'il repartait
+de la base. Le nouveau cas mesure sans rechargement, et il est rouge sans le
+correctif.
+
+**Ce qui n'a PAS pu être éprouvé ici :** le raccord dictée → écran. Cet
+environnement n'a ni service de transcription ni modèle ; la cause a été trouvée
+en lisant le code, et ce raccord ne sera parcouru qu'avec une clé.
+
+### Le « petit moins » qu'il demande : dessiné, pas codé
+
+*« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un
+petit moins. »* `docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes
+sur **ses** chiffres — glisser la ligne, un rond en face, ou la ligne du bas qui
+bascule. Rien n'est codé : `CLAUDE.md` §3 bis.
+
+**Et un contrôle de maquette que personne ne jouait** — `verifier-maquette-reduction.mjs`
+existait depuis le 16 août sans être branché nulle part. Raccroché, avec celui
+de la 68. Raisons : `ARCHITECTURE.md` §119.
+
+---
+
 ## 2026-08-16
 
 ### La fiche d'entretien commence à exister : le modèle, en base

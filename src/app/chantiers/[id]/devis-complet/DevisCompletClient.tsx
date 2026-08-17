@@ -12,7 +12,7 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { CIVILITES, type Civilite } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
-import { LIBELLE_REDUCTION, totauxAvecReduction } from "@/lib/reduction-devis";
+import { LIBELLE_REDUCTION, pourcentValide, totauxAvecReduction } from "@/lib/reduction-devis";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import {
   appliquerRetouchesAction,
@@ -111,7 +111,18 @@ export default function DevisCompletClient(props: Props) {
   async function enregistrerRemise() {
     const valeur = reduction.trim() || null;
     await majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur });
-    if (valeur === null) setRemiseOuverte(false);
+    // **On se referme sur ce que le serveur a RETENU, pas sur ce qu'il a tapé.**
+    // La case vide n'est pas le seul moyen d'annuler : « 0 », « 0,00 », ou une
+    // saisie illisible valent tous « aucune réduction » (`reduction-devis.ts`).
+    // Comparer la chaîne brute à `null` laissait donc une ligne or « Prix
+    // accordé au client 0 % » sans montant, pendant que la base n'en portait
+    // plus aucune — et c'est ce que le patron a vu le 17 août 2026 : *« il n'y
+    // a aucun moyen de retirer les cinq pour cent, si ce n'est en écrivant zéro
+    // pour cent à la place »*. Écrire zéro ne le retirait pas non plus.
+    if (pourcentValide(valeur) === null) {
+      setReduction("");
+      setRemiseOuverte(false);
+    }
   }
   const [conditions, setConditions] = useState(props.conditionsPaiement);
 
@@ -202,12 +213,18 @@ export default function DevisCompletClient(props: Props) {
   async function appliquerRetouches(changements: Changement[]) {
     const apres = await appliquerRetouchesAction(props.chantierId, changements);
     setLignes(
-      apres.map((l) => ({
+      apres.lignes.map((l) => ({
         ...l,
         quantite: sansZerosInutiles(l.quantite),
         prixUnitaire: sansZerosInutiles(l.prixUnitaire),
       }))
     );
+    // **Le prix accordé se recale lui aussi**, et il ne s'en déduit pas : il ne
+    // tombe sur aucune ligne. Sans ces deux lignes, « retire-moi les cinq pour
+    // cent » était compris, coché, enregistré — et l'écran continuait de les
+    // afficher, jusqu'à les réécrire en base au premier passage dans la case.
+    setReduction(apres.reductionPourcent === null ? "" : sansZerosInutiles(apres.reductionPourcent));
+    setRemiseOuverte(apres.reductionPourcent !== null);
   }
 
   return (

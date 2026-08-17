@@ -9788,3 +9788,94 @@ valent d'être retenus :
    L'image annonçait « échéance dépassée depuis 60 jours » au lieu de 30, et
    c'était le montage qui était faux, pas l'application. Toute écriture de
    montage vérifie maintenant son `rowCount`.
+
+---
+
+## 119. Retirer le prix accordé — trois défauts, dont deux qu'aucun test ne voyait
+
+**Son constat du 17 août 2026, capture à l'appui :** *« Il n'y a aucun moyen de
+retirer les cinq pour cent. Si ce n'est en écrivant zéro pour cent à la place de
+cinq. Et lorsqu'on l'a dicté, je dis "retire-moi la ligne des cinq pour cent",
+je vois bien le message écrit "vous voulez retirer cinq pour cent", et quand on
+valide, ça ne le retire pas. »*
+
+Trois choses dans une seule phrase. **Deux étaient des défauts, et ils tenaient
+tous les deux à la même cause : le prix accordé n'est pas une ligne du tableau.**
+
+### La cause commune, et elle vaut pour tout ce qui vivra dans l'en-tête
+
+`reduction_pourcent` vit sur **l'en-tête du devis**, pas sur une ligne de prix.
+C'est le prix de l'arrangement B qu'il a choisi le 16 août (§116), et il lui
+avait été annoncé : la réduction ne voyage pas toute seule. Chaque endroit qui
+recopie « les lignes » et rien d'autre l'oublie donc **en silence**.
+
+### 1. « Retire-moi les cinq pour cent » à la voix : compris, enregistré, défait
+
+Le chemin était juste jusqu'au bout : le modèle rendait `reduction: null`, la
+feuille de confirmation l'annonçait avec sa phrase, `appliquerRetouchesAction`
+appelait bien `mettreAJourEnTeteDevis`. **La base retirait la remise.**
+
+Puis l'action rendait **les seules lignes**, et l'écran ne recalait que les
+lignes. Le pourcentage restait affiché — et, au premier passage suivant dans la
+case, `onBlur` le **réécrivait en base**. Le retrait était donc annoncé, fait,
+puis annulé sans un mot.
+
+L'action rend désormais `{ lignes, reductionPourcent }`, et l'écran se recale
+sur les deux.
+
+### 2. Écrire « 0 » ne la retirait pas non plus
+
+`pourcentValide` traite zéro comme « aucune réduction » — c'est juste, et
+volontaire (§116). Mais l'écran, lui, ne refermait la ligne que si la chaîne
+tapée était **vide**. Écrire 0 laissait donc une ligne or « Prix accordé au
+client 0 % », sans montant, sur un devis dont le PDF n'imprimait rien.
+
+**L'écran affirmait une remise que le document ne portait pas.** Il se referme
+maintenant sur ce que le serveur a **retenu** (`pourcentValide`), jamais sur ce
+qui a été tapé.
+
+### Pourquoi aucune suite ne l'avait vu
+
+`test-reduction-devis-e2e.ts` éprouvait le retrait **en vidant la case**, puis en
+**rechargeant la page** — deux gestes qu'il ne fait ni l'un ni l'autre. Vider un
+champ de 36 px sur un téléphone demande de viser, sélectionner, supprimer ;
+écrire 0 par-dessus est le geste naturel. Et le rechargement masquait
+exactement le défaut, puisqu'il repartait de la base.
+
+**La leçon, et elle dépasse cet écran :** un contrôle qui recharge avant de
+vérifier n'éprouve pas l'écran, il éprouve la base. Le nouveau cas mesure
+**sans rechargement**.
+
+Quant à la dictée, elle reste **inéprouvable ici** : ni service de transcription
+ni modèle (`src/server/ai/providers/transcription/dev.ts`). La cause a été trouvée en lisant le
+code, et le raccord n'aura été parcouru qu'avec une clé — c'est écrit tel quel
+dans `test-dicter-dans-le-devis-e2e.ts` depuis le 15 août.
+
+### 3. Le « petit moins » : dessiné, pas codé
+
+*« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un
+petit moins. »* C'est un geste : il se dessine avant de toucher à `src/`
+(`CLAUDE.md` §3 bis). `docs/maquettes/68-retirer-le-prix-accorde.html`, trois
+formes sur **ses** chiffres, 24 contrôles.
+
+**Le « + » et le « − » ne sont pas symétriques**, et c'est ce que la planche lui
+montre : le « + » ajoute une ligne **au tableau**, le « − » retirerait un
+**total**. Rien d'autre dans ce bloc ne porte de bouton.
+
+### Un contrôle de maquette que personne ne jouait
+
+`verifier-maquette-reduction.mjs` existait depuis le 16 août et **n'était branché
+nulle part** — ni dans `verifier:maquette`, ni ailleurs. Un contrôle que
+personne ne joue ne prouve rien (`CLAUDE.md` §5). Il est raccroché, avec celui
+de la 68.
+
+### Ce qui est éprouvé, et par quoi
+
+| Ce qui est tenu | Où |
+|---|---|
+| écrire 0 % retire la remise à l'écran **sans rechargement** | `test-reduction-devis-e2e.ts` |
+| et la base ne garde alors aucun reliquat | `test-reduction-devis-e2e.ts` |
+| vider la case la retire aussi, et le devis revient au prix plein | `test-reduction-devis-e2e.ts` |
+| la TVA suit toujours le net, jamais le prix plein | les trois suites de §116 |
+| la planche tombe juste sur les deux états, et le geste ne survit pas à son effet | `verifier-maquette-retirer-remise.mjs` |
+| **non éprouvé ici** : le raccord dictée → écran | il faut une clé de transcription et un modèle |

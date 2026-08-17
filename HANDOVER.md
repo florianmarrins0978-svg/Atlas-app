@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-16 · `main`
+**Point de reprise :** 2026-08-17 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -751,6 +751,30 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 dans `src/`.
 
 ## Ce qui vient d'être terminé
+
+**LE PRIX ACCORDÉ NE VIT PAS SUR UNE LIGNE (17 août).** Il vit sur l'EN-TÊTE du
+devis (`reduction_pourcent`), et c'est le prix de l'arrangement B qu'il a choisi
+le 16. Conséquence pratique : **tout ce qui recopie « les lignes » et rien
+d'autre l'oublie en silence.** C'est ce qui a produit ses deux défauts du
+17 août — la dictée qui retirait la remise puis la voyait revenir, et le « 0 % »
+qui laissait une ligne or sur un devis dont le PDF n'imprimait rien. Avant de
+toucher à quoi que ce soit qui relise le devis après une écriture, se demander
+si l'en-tête repart avec.
+
+**⚠ UN CONTRÔLE QUI RECHARGE N'ÉPROUVE PAS L'ÉCRAN, IL ÉPROUVE LA BASE (17 août).**
+`test-reduction-devis-e2e` était vert sur un retrait de remise… en rechargeant la
+page juste avant de vérifier. Le défaut vivait précisément dans l'état de
+l'écran. Le nouveau cas mesure **sans rechargement**, et il est rouge sans le
+correctif.
+
+**ET IL FAUT ÉPROUVER SON GESTE, PAS LE NÔTRE.** La suite vidait la case ; lui
+écrit « 0 » par-dessus — viser un champ de 36 px sur un téléphone, sélectionner
+un chiffre et le supprimer n'est pas ce qu'on fait. Les deux chemins mènent à
+« aucune réduction », un seul était éprouvé.
+
+**LE « PETIT MOINS » ATTEND SON CHOIX (17 août).**
+`docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes. **Ne pas le
+coder avant qu'il tranche** (`CLAUDE.md` §3 bis). Détail : `TODO.md`.
 
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans

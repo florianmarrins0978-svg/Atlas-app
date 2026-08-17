@@ -27,6 +27,28 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 duoquadragies. Le « petit moins » du prix accordé — il choisit entre trois
+
+*`docs/maquettes/68-retirer-le-prix-accorde.html`, écrite le 17 août 2026 —
+24 contrôles, sur SES chiffres (1 850,00 € HT, 5 %). Rien n'est codé pour le
+geste : `CLAUDE.md` §3 bis.*
+
+**Sa demande, le 17 août 2026 :** *« Tout comme on ajoute une ligne avec un petit
+plus, il faudrait qu'on ait un petit moins pour supprimer la ligne de la
+réduction. »*
+
+| | Ce que ça fait | Ce que ça coûte |
+|---|---|---|
+| **A — glisser la ligne** | Le geste unique de l'application depuis le 10 août : la ligne découvre « Retirer », le tiroir « Annuler » dessous | Rien à inventer. Mais c'est un **total**, pas une ligne du tableau : rien d'autre ne glisse dans ce bloc, et un geste qu'on ne soupçonne pas n'existe pas — c'est exactement ce qu'il vient de vivre |
+| **B — le petit « − » en face** | Ce qu'il a demandé, mot pour mot : un rond de 26 px devant le libellé, en or | Un bouton dans le bloc des totaux, le seul endroit du devis qui n'en portait aucun. Et le « + » ajoute une ligne AU TABLEAU quand ce « − » retire un TOTAL : lisible, mais pas symétrique |
+| **C — la ligne du bas bascule** | « + Prix accordé au client » devient « − Retirer le prix accordé » dès qu'il y en a une. Un seul endroit à connaître | Presque rien : la ligne existe déjà, elle change de mot. Mais le geste est sous le total TTC, pas en face de la remise |
+
+**Ma préférence : C**, puis B. C ne fabrique aucun geste nouveau et dit toujours
+ce qu'il fera ; B est ce qu'il a demandé, et se code en une heure. **Il tranche.**
+
+**Ce qui est DÉJÀ réparé, et ne l'attend pas** (`ARCHITECTURE.md` §119) : écrire
+0 % retire la remise pour de bon, et la dictée aussi.
+
 ### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
 
 **Sa question du 16 août 2026**, photo d'un « graphe de connaissances » à
