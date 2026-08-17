@@ -162,6 +162,9 @@ export async function getChantierPourHub(ctx: Ctx, id: string) {
         nom: chantiers.nom,
         adresseChantier: chantiers.adresseChantier,
         clientNom: clients.nom,
+        // La fiche du chantier ouvre celle du client depuis le 16 août 2026 :
+        // il lui faut donc l'identifiant, pas seulement le nom.
+        clientId: chantiers.clientId,
         informationsVerifieesAt: chantiers.informationsVerifieesAt,
         prixValideAt: chantiers.prixValideAt,
         devisGenereAt: chantiers.devisGenereAt,

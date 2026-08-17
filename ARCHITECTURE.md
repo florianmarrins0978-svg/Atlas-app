@@ -9963,3 +9963,190 @@ de la 68.
 | le tiroir fermé, l'écran et la base disent la même chose | `test-reduction-devis-e2e.ts` |
 | la planche tombe juste sur les deux états, et le geste ne survit pas à son effet | `verifier-maquette-retirer-remise.mjs` |
 | **non éprouvé ici** : le raccord dictée → écran | il faut une clé de transcription et un modèle |
+
+---
+
+## 121. La fiche du client : montrer ce que l'application savait déjà
+
+*Demandé le 16 août 2026, dessiné (`docs/maquettes/66-ce-que-je-sais-du-client.html`),
+puis codé sur son choix — **l'arrangement B**, la fiche atteinte depuis le
+chantier.*
+
+**D'où ça vient, et la réponse qu'il faut garder.** Le patron a montré la photo
+d'un « graphe de connaissances » : *« tu peux m'expliquer et me dire si ça peut
+me servir pour mon appli ? »* La réponse a été **non, deux fois** :
+
+- **comme mémoire de travail**, le dépôt la tient déjà (`CLAUDE.md`,
+  `HANDOVER.md`, `ARCHITECTURE.md`…). Un graphe à côté serait une seconde
+  vérité, et c'est exactement ce que ces fichiers existent pour empêcher ;
+- **comme fonction**, ses données sont déjà reliées dans une base SQL, qui
+  répond mieux qu'un graphe à « combien j'ai facturé chez les Ledoux ? ».
+
+**Ce qu'il restait à en prendre** — et c'est cet écran : l'application SAIT
+qu'un client est venu quatre fois, qu'il doit encore 740 €, qu'on lui fait
+toujours de l'élagage… **et elle ne le montrait nulle part.**
+
+### Pourquoi B, et pas un onglet « Clients »
+
+Le seul avantage de l'onglet aurait été de répondre à « qui me doit de
+l'argent ? ». **Cet écran existe déjà** — « En attente de paiement », dans
+Terminés → TVA (§110). Un cinquième onglet aurait coûté de la place au pouce
+pour redire ce qui est là. Ne pas le rouvrir sans qu'il le demande.
+
+### Trois étages, et ce que chacun refuse
+
+| Étage | Fichier | Ce qu'il fait |
+|---|---|---|
+| La règle | `src/lib/fiche-client.ts` | compte, additionne, regroupe. **Aucune base** : éprouvé sans rien monter |
+| La lecture | `src/server/repositories/fiche-client.ts` | lit sous `withEntreprise`, et **ne calcule rien** |
+| L'écran | `src/app/clients/[id]/page.tsx` | affiche, et ne décide de rien |
+
+**« 0 € » est le chiffre le plus dangereux de cette fiche.** Un client dont
+aucun chantier n'est facturé n'a pas rapporté zéro euro : il n'a pas encore été
+facturé. Affiché « 0 € », il se lit comme un mauvais payeur, et le patron
+déciderait sur une phrase fausse. La règle rend donc `null`, l'écran écrit
+« — », et une phrase dit pourquoi (`CLAUDE.md` §4).
+
+**Les prestations se comptent en CHANTIERS, pas en lignes.** Un devis portant
+« Élagage — chêne » et « Élagage — frêne » ne fait pas deux visites.
+
+**Ce que la règle refuse de faire, et c'est écrit pour que ce soit un choix :**
+sans séparateur, « Élagage chêne » et « Élagage frêne » restent deux
+prestations. Les regrouper demanderait de deviner que le premier mot porte le
+métier — c'est le travail de `signatureLecon`, qui le fait déjà pour les prix.
+Le refaire ici en moins bien créerait deux vérités.
+
+### La porte, et pourquoi elle n'est pas sur le nom du client
+
+Elle vit dans le **tiroir de la fiche du chantier**, avec les autres
+destinations. Le nom du client, en tête d'écran, passe par `precision` —
+**une simple chaîne** d'`EnTeteEcran`, partagé par tous les écrans. Le rendre
+cliquable aurait demandé de toucher une pièce commune pour un seul écran.
+
+Elle n'existe **que si le chantier a un client** : une fiche de personne n'a
+rien à montrer.
+
+### ⚠ CE QUI LIMITE CETTE FICHE AUJOURD'HUI, ET QUI N'EST PAS DE SON FAIT
+
+**Un client n'est JAMAIS réutilisé.** `creerClient` insère toujours, et il n'est
+appelé que depuis la création d'un chantier ; `listerClients` existe et n'est
+appelé par aucun écran. Deux chantiers pour « M. Bernard » créent donc **deux
+clients** — et la fiche affichera « 1 chantier » à chaque fois.
+
+La fiche est juste ; c'est sa matière qui manque. **Le corriger est une décision
+du patron, pas une correction technique** : rapprocher deux clients sur leur nom
+fusionnerait deux personnes réellement homonymes, et il n'existe aucun moyen de
+défaire cela. Consigné dans `TODO.md`, à lui poser.
+
+### Trois défauts trouvés en regardant, pas en relisant
+
+- **« ENCORE DUS » se cassait en deux lignes** dans sa case à 390 px. Devenu
+  « reste dû ». Vu à la capture ; une suite le mesure désormais.
+- **« 1 fois · 0,00 € »** s'affichait pour une prestation écrite mais pas encore
+  chiffrée — cela se lit comme un travail fait pour rien. Le prix ne s'écrit
+  plus qu'au-dessus de zéro.
+- **Le contrôle accusait à tort** : il cherchait « 0,00 € » dans la page, et le
+  trouvait dans « 45**0,00 €** ». Une erreur qui accuse à tort coûte plus cher
+  que pas de contrôle (`CLAUDE.md` §5).
+
+
+---
+
+## 122. « C'est monsieur Martins » : retrouver un client au lieu d'en refaire un
+
+**Le patron, le 17 août 2026**, une journée après avoir reçu sa fiche client et
+l'avoir vue annoncer « 1 chantier » chez quelqu'un qu'il connaît depuis des
+mois : *« si je crée un nouveau chantier, mais que c'est monsieur Martins et
+qu'on a déjà une fiche client monsieur Martins, [il faut que] le devis, la
+facture s'ajoute à la fiche client de monsieur Martins qui est déjà créé. »*
+
+C'est la suite directe du §121, et le défaut y était déjà écrit noir sur blanc :
+`creerClient` **insérait toujours**. La fiche était juste ; sa matière ne
+pouvait pas exister.
+
+### Le chemin qu'il a écarté, et il faut le savoir avant d'y revenir
+
+Trois chemins lui avaient été soumis — lui **proposer** les clients qui
+ressemblent, **rapprocher seul**, ou **fusionner après coup**. Le premier lui
+avait été recommandé, comme le seul qui n'invente rien.
+
+Il l'a refusé en une phrase : *« non justement, il ne faut pas »*. Le
+rapprochement se fait **sans geste de sa part**. Ne pas rouvrir cette porte sans
+lui : ce n'est pas un oubli, c'est un choix.
+
+### Ce qui borne le risque : une contradiction interdit le rapprochement
+
+Le danger de ce chemin est unique et il ne se répare pas d'un clic — verser le
+chiffre d'affaires d'un homme sur la fiche d'un autre, et lui montrer une dette
+qui n'est pas la sienne. La règle vit dans `src/lib/rapprochement-client.ts`,
+pure et éprouvée sans base :
+
+| La saisie… | face à un homonyme… | Alors |
+|---|---|---|
+| porte un téléphone ou un e-mail **qui concorde** | — | c'est lui, sans discussion |
+| porte une coordonnée **qui diffère** | l'homonyme en porte une aussi | **deux fiches** : ce n'est pas lui |
+| ne porte rien | l'homonyme porte ce qu'il veut | c'est lui — le cas courant |
+| — | plusieurs homonymes indiscernables | le **plus récent** |
+
+**L'homonyme qui contredit est écarté seul, pas en bloc.** Deux « Martins » en
+base dont un seul porte un autre numéro laissent le bon disponible ; les écarter
+ensemble aurait fabriqué un troisième Martins — exactement ce qu'on répare.
+
+**Le nom se compare sans sa civilité**, via `aDejaUneCivilite` et non une
+seconde liste de graphies (`CLAUDE.md` §3) : « Martins » et « M. Martins » sont
+le même homme, et c'est précisément l'écart qui fabriquait les doublons. Le
+garde-fou de `civilite.ts` sert ici aussi — « Merlin » et « Mathieu Dubois » ne
+sont pas amputés de leur première syllabe.
+
+**Le téléphone se compare sur ses chiffres, indicatif ramené au zéro** :
+« +33 6 12 34 56 78 » et « 06.12.34.56.78 » sont le même numéro. Sans cela, le
+même homme noté de deux façons serait passé pour une contradiction et aurait
+fabriqué la fiche en double.
+
+### Ce qui n'est jamais fait : écraser
+
+Ce qu'il tape à la volée **complète les cases vides** de la fiche retrouvée —
+téléphone, e-mail, adresse, civilité, canal — et **ne touche à rien d'autre**.
+Il crée un chantier entre deux rendez-vous et tape un portable là où il avait
+noté le fixe : garder les deux est impossible, choisir le nouveau lui ferait
+perdre le sien sans un mot.
+
+### Les effacés et les supprimés sont hors du jeu
+
+Un effacement RGPD (`donnees-client.ts`) pose `efface_le` **et** `deleted_at`.
+Rattacher un chantier neuf à cette fiche-là ressusciterait un dossier que le
+client a demandé de faire disparaître. Le filtre porte les deux colonnes, bien
+qu'une seule suffise : c'est une garantie qu'on veut pouvoir lire.
+
+### La conséquence à connaître, et qui est le prix de ce qu'il a demandé
+
+Une fiche client est désormais **partagée entre plusieurs chantiers**. Corriger
+l'adresse du client depuis le devis du chantier B la corrige aussi sur le devis
+du chantier A. C'est le sens même d'une fiche client — et l'adresse **du
+chantier** reste, elle, propre à chaque chantier (`chantiers.adresse_chantier`).
+
+**Ce qui n'existe pas, et qu'il faudra peut-être un jour :** aucun geste ne
+permet de dire « ce chantier n'est pas ce client-là ». Deux homonymes que rien
+ne distingue sont rapprochés définitivement. Consigné dans `TODO.md` plutôt que
+codé à l'avance : une commande de démixage jamais employée coûterait plus cher à
+tenir qu'à attendre.
+
+### Éprouvé
+
+- `scripts/test-rapprochement-client.ts` — 19 cas, la règle sans base. Le
+  père et le fils, la civilité, les graphies de téléphone, le non-écrasement.
+- `scripts/test-rapprochement-client-db.ts` — 8 cas, dont **l'isolation** : le
+  rapprochement parcourt la liste des clients, et une suite navigateur (qui
+  traverse la RLS) ne verrait jamais un chantier rattaché chez le voisin.
+- `scripts/test-rapprochement-client-e2e.ts` — son parcours : deux chantiers
+  créés au formulaire, une seule fiche, et **« 2 chantiers »** sur l'écran.
+
+**La suite base sait rougir** : confrontée à l'ancien comportement — un
+rapprochement qui ne trouve jamais rien — elle rend quatre échecs, dont le cas
+du patron. Un contrôle jamais vu rouge ne prouve rien (`AGENTS.md`).
+
+**Et un piège payé en l'écrivant** : la préparation d'un cas passait par
+`db.update(…)` plutôt que par `withEntreprise`. La RLS annule ces écritures
+**silencieusement** — la ligne n'était pas supprimée, et le cas « un client
+supprimé n'est pas réutilisé » passait au vert sans avoir rien supprimé
+(`CLAUDE.md` §3).

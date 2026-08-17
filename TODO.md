@@ -27,7 +27,33 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 duoquadragies. ~~Le « petit moins » du prix accordé~~ — **CODÉ le 17 août 2026 (proposition B)**
+### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
+
+*Constaté le 16 août 2026 en jouant la batterie complète d'un autre lot.*
+
+```
+❌ « Plus tard » fait taire le rappel, et la date part en base
+   rien n'est écrit en base : le geste n'a pas porté
+```
+
+**Elle passe au vert jouée seule**, immédiatement après. Ce n'est donc pas le
+produit : c'est un geste dont on lit la trace en base **avant que l'action
+serveur ait répondu** — sous quatre-vingt-onze suites, la réponse arrive plus
+tard qu'à vide.
+
+**C'est le même piège que celui payé le même jour sur `test-fiche-client-e2e`** :
+attendre l'écran, ou un délai fixe, c'est mesurer ce qu'on vient de taper.
+La parade y a été de **relire la base en boucle jusqu'à ce qu'elle ait reçu**,
+plutôt que d'attendre un nombre de millisecondes.
+
+**Ce lot appartient à la session qui a posé le rappel des impayés** (`228572a`).
+Écrit ici pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue
+au hasard.
+
+
+### 0 unquadragies. ~~Montrer ce que l'application sait déjà d'un client~~ — **CODÉE le 16 août 2026 (fiche B)**
+
+### 0 quattuorquadragies. ~~Le « petit moins » du prix accordé~~ — **CODÉ le 17 août 2026 (proposition B)**
 
 *`docs/maquettes/68-retirer-le-prix-accorde.html`, écrite le 17 août 2026 —
 24 contrôles, sur SES chiffres (1 850,00 € HT, 5 %). Rien n'est codé pour le
@@ -53,6 +79,7 @@ prix plein affiché dès l'appui. `ARCHITECTURE.md` §120.
 0 % retire la remise pour de bon, et la dictée aussi.
 
 ### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
+
 
 **Sa question du 16 août 2026**, photo d'un « graphe de connaissances » à
 l'appui : *« tu peux m'expliquer et me dire si ça peut me servir pour mon
@@ -85,8 +112,35 @@ n'est appelé par aucun écran.
 `factures` + `paiements_facture`, `lignes_prix` pour les prestations qui
 reviennent, `lecons_prix` pour les prix pratiqués.
 
-**Une question posée dans la planche :** « 3 200 € », est-ce le **facturé** ou
-l'**encaissé** ? Les deux se calculent ; la planche montre les deux.
+**Livré** : `src/lib/fiche-client.ts`, `src/server/repositories/fiche-client.ts`,
+`src/app/clients/[id]/page.tsx`, atteinte depuis le tiroir de la fiche du
+chantier. Les deux chiffres sont montrés — facturé, et reste dû. Détail :
+`ARCHITECTURE.md` §121.
+
+---
+
+### 0 duoquadragies. ~~Un client n'était jamais réutilisé~~ — **TRANCHÉ ET CODÉ le 17 août 2026**
+
+`creerClient` insérait **toujours** : deux chantiers pour « M. Martins »
+faisaient deux fiches, et la fiche client annonçait « 1 chantier » à vie.
+
+**Le patron a écarté le chemin « proposer »** — *« non justement, il ne faut
+pas »* — et demandé le rapprochement **automatique** : *« si je crée un
+nouveau chantier, mais que c'est monsieur Martins et qu'on a déjà une fiche
+client monsieur Martins, [il faut que] le devis, la facture s'ajoute à la fiche
+client de monsieur Martins qui est déjà créé. »*
+
+Le risque qu'il portait — fusionner deux homonymes — est borné par une règle :
+**une coordonnée qui contredit interdit le rapprochement**. Deux « Martins »
+aux téléphones différents restent deux fiches. `src/lib/rapprochement-client.ts`,
+`ARCHITECTURE.md` §122.
+
+**CE QUI RESTE OUVERT, ET QU'IL FAUDRA LUI POSER UN JOUR :** deux homonymes que
+**rien** ne distingue (aucun téléphone, aucun e-mail des deux côtés) sont
+rapprochés, et **rien ne permet de les reséparer**. Il n'existe aucun geste
+« ce chantier n'est pas ce client-là ». À dessiner le jour où le cas se
+présente — pas avant : une commande de démixage jamais utilisée coûterait plus
+cher à tenir qu'à attendre.
 
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 

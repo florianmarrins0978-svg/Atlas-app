@@ -9,6 +9,41 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### « C'est monsieur Martins » : un client n'est plus recréé à chaque chantier
+
+Sa demande, le lendemain de la fiche client : *« si je crée un nouveau chantier,
+mais que c'est monsieur Martins et qu'on a déjà une fiche client monsieur
+Martins, [il faut que] le devis, la facture s'ajoute à la fiche client de
+monsieur Martins qui est déjà créé. »*
+
+**Ce que ça répare.** `creerClient` insérait **toujours**. Deux chantiers pour le
+même homme faisaient deux fiches, et la fiche client livrée la veille annonçait
+« 1 chantier » à vie — juste, mais sans matière.
+
+**Le chemin qu'il a écarté**, et qu'il ne faut pas rouvrir sans lui : qu'on lui
+**propose** les clients qui ressemblent. *« Non justement, il ne faut pas »*. Le
+rapprochement est automatique.
+
+**Ce qui borne le risque de mélanger deux homonymes** — le seul danger, et il ne
+se répare pas d'un clic : **une coordonnée qui contredit interdit le
+rapprochement**. Deux « Martins » aux téléphones différents restent deux fiches.
+Le nom, lui, se compare sans sa civilité (« Martins » = « M. Martins ») et le
+téléphone sur ses chiffres (« +33 6 12… » = « 06.12… »).
+
+**Rien n'est jamais écrasé** : ce qu'il tape complète les cases vides de la fiche
+retrouvée, et ne touche pas à ce qu'il avait déjà noté. Un client effacé (RGPD)
+n'est jamais réutilisé.
+
+`src/lib/rapprochement-client.ts`, `ARCHITECTURE.md` §122. Éprouvé par
+`test-rapprochement-client.ts` (19 cas), `test-rapprochement-client-db.ts`
+(8 cas, dont l'isolation entre entreprises) et `test-rapprochement-client-e2e.ts`
+(deux chantiers créés au formulaire, « 2 chantiers » sur la fiche). La suite base
+rend **quatre échecs** contre l'ancien comportement.
+
+**Ce qui n'existe pas encore :** aucun geste ne permet de dire « ce chantier
+n'est pas ce client-là ». Deux homonymes que rien ne distingue sont rapprochés
+définitivement (`TODO.md` §0 duoquadragies).
+
 ### « Il n'y a aucun moyen de retirer les cinq pour cent » — il avait raison deux fois
 
 Son constat du 17 août, capture à l'appui. Trois choses dans une phrase, et
@@ -51,6 +86,32 @@ de la 68. Raisons : `ARCHITECTURE.md` §120.
 ---
 
 ## 2026-08-16
+
+### La fiche du client : montrer ce que l'application savait déjà
+
+**Sa question, photo d'un « graphe de connaissances » à l'appui :** *« ça peut me
+servir pour mon appli ? »* Non, deux fois — le dépôt tient déjà sa mémoire, et
+ses données sont déjà reliées dans une base qui répond mieux qu'un graphe.
+
+**Mais il y avait quelque chose dessous, et c'est livré :** l'application SAIT
+qu'un client est venu quatre fois, qu'il doit encore 740 €, qu'on lui fait
+toujours de l'élagage — et elle ne le montrait **nulle part**. Sa fiche s'ouvre
+maintenant depuis le tiroir de n'importe lequel de ses chantiers.
+
+Il a choisi l'arrangement B contre le cinquième onglet, et c'était le bon : « qui
+me doit de l'argent ? » a déjà son écran, dans Terminés → TVA.
+
+**Ce que ça évite.** Un client dont rien n'est facturé affiche « — » et une
+phrase, jamais « 0 € » : un zéro se lirait comme un mauvais payeur, et il
+déciderait sur une phrase fausse.
+
+**⚠ CE QUI LIMITE CETTE FICHE, et ce n'est pas elle :** un client n'est **jamais
+réutilisé**. Deux chantiers pour « M. Bernard » créent deux clients, donc sa
+fiche dira « 1 chantier » à chaque fois. La réparation est une **décision** —
+rapprocher deux clients sur leur nom mélangerait deux homonymes sans retour
+possible. Trois chemins sont écrits dans `TODO.md`, à trancher.
+
+Détail : `ARCHITECTURE.md` §121.
 
 ### L'écran où vous composez votre fiche d'entretien
 
@@ -179,6 +240,7 @@ seconde à côté.
 `scripts/test-verrou-construction.ts` tient les sept points, dont celui qui joue
 le vrai motif de `pkill` sur les vraies lignes de commande — relire un motif ne
 prouve rien, c'est ainsi qu'il est passé inaperçu.
+
 ### CODÉ : le rappel « facture impayée », et le premier rappel qui a un rythme
 
 Sa demande, en une phrase : *« faut faire a plus b, mais il faut également qu'on

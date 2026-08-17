@@ -752,6 +752,28 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LA FICHE DU CLIENT (16 août).** Elle s'ouvre depuis le tiroir d'un chantier et
+montre ce que l'application savait déjà : combien de chantiers, combien facturé,
+combien reste dû, et ce qu'on lui fait d'habitude.
+
+**UN CLIENT EST DÉSORMAIS RETROUVÉ, PLUS RECRÉÉ (17 août).** La fiche était
+vide par construction — `creerClient` insérait toujours, et deux chantiers pour
+« M. Martins » faisaient deux fiches. Il l'a tranché le lendemain, en écartant
+qu'on lui **propose** des correspondances : le rapprochement est **automatique**
+(`trouverOuCreerClient`, règle dans `src/lib/rapprochement-client.ts`).
+
+**Ce qu'il faut savoir avant d'y toucher :** une coordonnée qui **contredit**
+interdit le rapprochement — deux « Martins » aux téléphones différents restent
+deux fiches. Rien n'est jamais écrasé : la saisie complète les cases vides, pas
+les autres. Un client effacé (RGPD) n'est jamais réutilisé. Et **une fiche est
+maintenant partagée** : corriger l'adresse du client depuis un devis la corrige
+sur les autres chantiers du même client. `ARCHITECTURE.md` §122.
+
+Trois pièges de ce lot : « 0 € » ne doit jamais s'afficher pour un client non
+facturé (« — » et une phrase) ; les prestations se comptent en chantiers et non
+en lignes ; et un contrôle qui cherche « 0,00 € » dans une page le trouve dans
+« 450,00 € ». `ARCHITECTURE.md` §121.
+
 **LE PRIX ACCORDÉ NE VIT PAS SUR UNE LIGNE (17 août).** Il vit sur l'EN-TÊTE du
 devis (`reduction_pourcent`), et c'est le prix de l'arrangement B qu'il a choisi
 le 16. Conséquence pratique : **tout ce qui recopie « les lignes » et rien
@@ -791,6 +813,7 @@ onglet, sans rechargement (`ARCHITECTURE.md` §119).
 rechargeait la page entre chaque écran. Le seul chemin où le défaut existe, les
 onglets du bas, n'était parcouru nulle part. **Rejouer sa séquence, pas le geste
 isolé.**
+
 
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
