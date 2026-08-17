@@ -845,6 +845,35 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ LE PLAN D'ARROSAGE : LA PAGE ESSAYABLE EST `appli/arrosage.html` (17 août).**
+Sa consigne, après les trois planches : *« je veux que tu code rien, d'abord des
+maquettes dynamiques en .html que je puisse essayer, pas de photo »*.
+
+- **Elle vit dans `appli/` et NON dans `docs/maquettes/`, et ce n'est pas un
+  rangement.** Les planches y sont sans JavaScript parce que son lecteur n'en
+  exécute pas ; or il demande à essayer. `appli/` est le seul dossier PUBLIÉ du
+  dépôt (`pages.yml`) : c'est le seul endroit où la page s'ouvre dans un vrai
+  navigateur, au téléphone, avec le calcul qui tourne. **Ne pas la « ranger »
+  dans `docs/maquettes/` : elle y arriverait vide.**
+- **AUCUN PRIX, et c'est SA décision du 17 août** : *« il faut simplement créer
+  le plan et la liste du matos à acheter, ensuite moi j'envoie à mes
+  fournisseurs, ils me font un devis, puis je repasse par le circuit normal de
+  l'application »*. La sortie est une liste de QUANTITÉS. Un contrôle refuse
+  tout montant en euros — ne pas le contourner par bonne volonté.
+- **Elle est gardée par `appli/tests/e2e.js`**, jouée avant publication puis
+  **contre le site en ligne** : erreur JS, secteur au-dessus du robinet, cycle
+  qui ne fait pas la somme, prix, débordement à 390 px.
+- **Ce que l'essai apprend et qu'aucune planche ne disait** : sur « au mieux »,
+  les deux pelouses passent en turbines et le jardin tombe de huit secteurs à
+  quatre. Le jardin de départ garde les tuyères pour que la bascule se voie.
+- **Les prix fournisseurs : ne pas tenter d'aller les chercher.** Chausson et
+  Aqua Plus sont refusés par le mandataire réseau (vérifié), et leurs sites
+  n'auraient que des prix publics. La voie est ailleurs, et elle existe déjà :
+  Chausson laisse **télécharger le tarif négocié en Excel/CSV** depuis le compte
+  client, et Atlas sait importer un tarif Excel/CSV.
+- **Il a proposé de joindre ses devis fournisseurs** : ils serviront au
+  catalogue de matériel (désignations, références), pas aux prix.
+
 **LE PLAN D'ARROSAGE AUTOMATIQUE (17 août) — TROIS MAQUETTES, RIEN N'EST CODÉ.**
 Sa demande : *« un outil pour les paysagistes pour réaliser des plans d'arrosage
 automatique »*. Terrain neuf — rien dans le produit ne parlait d'arrosage.

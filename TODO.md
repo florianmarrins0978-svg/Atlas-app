@@ -27,7 +27,43 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quaterquadragies. Le plan d'arrosage — **TROIS MAQUETTES POSÉES, sa décision attendue**
+### 0 quaterquadragies. Le plan d'arrosage — **DEUX CHOIX TRANCHÉS, une maquette essayable**
+
+**Tranché le 17 août 2026 :**
+
+| Question | Sa réponse |
+|---|---|
+| Par où il entre son jardin | **B** — les zones qu'il mesure, Atlas pose le matériel |
+| Ce qui sort du plan | **la LISTE du matériel**, pas un devis |
+| La forme des maquettes | **essayables**, pas des images : *« je veux que tu code rien, d'abord des maquettes dynamiques en .html que je puisse essayer »* |
+
+**Ses mots sur la sortie, qui valent mieux qu'un résumé :** *« il faut simplement
+créer le plan et la liste du matos à acheter, ensuite moi j'envoie à mes
+fournisseurs, ils me font un devis, puis je repasse par le circuit normal de
+l'application pour rédiger le devis et l'envoyer à mes clients. »*
+
+**Conséquence tenue à la lettre : AUCUN PRIX dans cet outil.** Ni total, ni
+estimation. Atlas ne chiffre rien qu'un fournisseur n'ait chiffré. Le devis
+client emprunte le parcours qui existe déjà.
+
+**La page essayable : `appli/arrosage.html`**, publiée avec l'appli, donc
+ouvrable au téléphone. Elle est dans `appli/` et non dans `docs/maquettes/`
+parce que c'est le seul dossier PUBLIÉ du dépôt : les planches y sont sans
+JavaScript, et il demande à essayer. Gardée par `appli/tests/e2e.js`, jouée
+avant publication **et contre le site en ligne**.
+
+**Ce qui reste à trancher, et il l'a proposé lui-même :** il a des devis
+fournisseurs à joindre. Ils serviront au **catalogue de matériel** (désignations,
+références, conditionnements), pas aux prix. Rien n'est à coder avant de les
+avoir vus.
+
+**Les prix : la voie trouvée, et elle évite tout scraping.** Chausson laisse
+télécharger le **tarif négocié du client en Excel ou CSV** depuis son compte, et
+Atlas sait déjà importer un tarif Excel/CSV (`src/app/reglages/ImportTarifs.tsx`
++ `src/lib/import-tarifs.ts`). Ses prix à lui, pas des prix publics. Les deux
+sites fournisseurs sont par ailleurs **refusés par le mandataire réseau** ici.
+
+### 0 quaterquadragies bis. Le plan d'arrosage — le raisonnement des trois planches
 
 **Sa demande du 17 août 2026 :** *« j'ai besoin qu'on crée un outil pour les
 paysagistes pour réaliser des plans d'arrosage automatique. »*

@@ -321,9 +321,12 @@ await cas("aucun prix inventé dans la nomenclature", async () => {
     !/\d[\d\s.,]*\s*€/.test(devis),
     "un montant en euros est apparu dans la nomenclature : Atlas n'invente pas de prix"
   );
-  const manquants = await page.locator(".sa .nl-p.manque").count();
-  assert(manquants > 0, "plus aucune ligne « prix absent » : le cas qu'il doit voir a disparu");
-  assert(/invente/i.test(devis), "la planche ne dit plus qu'Atlas n'invente aucun prix");
+  const aMesurer = await page.locator(".sa .nl-p.manque").count();
+  assert(aMesurer > 0, "plus aucune ligne « à mesurer » : les longueurs de tuyau sont redevenues devinées");
+  // **Sa décision du 17 août** : la sortie est une liste de quantités qui part
+  // chez le fournisseur. Le jour où cette planche reparle de chiffrer, elle
+  // contredit le parcours qu'il a choisi.
+  assert(/fournisseur/i.test(devis), "la planche ne dit plus que la liste part chez le fournisseur");
 });
 
 await contexte.close();

@@ -9,6 +9,59 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### La maquette d'arrosage devient ESSAYABLE, et la sortie n'est plus un devis
+
+**Ses trois consignes du 17 août, dans l'ordre où elles sont venues :**
+
+1. *« des maquettes dynamiques en .html que je puisse essayer, pas de photo »* ;
+2. *« je veux que tu code rien »* ;
+3. *« il faut simplement créer le plan et la liste du matos à acheter, ensuite
+   moi j'envoie à mes fournisseurs, ils me font un devis, puis je repasse par le
+   circuit normal de l'application pour rédiger le devis et l'envoyer à mes
+   clients ».*
+
+**`appli/arrosage.html` — la page qui calcule pour de bon.** On entre son point
+d'eau, ses zones et leurs mesures ; le découpage en secteurs, les durées par
+saison, le plan et la liste du matériel se refont à chaque frappe. Rien ne sort
+du téléphone, ce qui est saisi survit à un rechargement.
+
+**Pourquoi dans `appli/` et pas dans `docs/maquettes/`.** Les planches y sont
+volontairement sans JavaScript — son lecteur n'en exécute pas, et une page bâtie
+en JS lui arriverait vide. Or il demande à ESSAYER. `appli/` est le seul dossier
+du dépôt qui soit **publié** (`pages.yml`), donc le seul endroit où la page
+s'ouvre dans un vrai navigateur, au téléphone, avec le calcul qui tourne.
+
+**Sa troisième consigne retire tout prix, et c'est un allègement, pas un
+manque.** La planche 71 ne produit plus un devis chiffré mais une **liste de
+quantités** qui part chez Chausson ou Aqua Plus. Le devis client se rédige
+après, dans Atlas, avec les prix que le fournisseur aura rendus — le circuit
+existe déjà, il n'y a rien à réinventer. Un contrôle refuse désormais tout
+montant en euros sur la page.
+
+**Ce que l'essai a appris tout seul, et qu'aucune planche ne disait :** laissé
+sur « au mieux », le choix d'arroseur met des turbines sur les deux pelouses et
+le jardin tombe de **huit secteurs à quatre** — moins d'électrovannes, un cycle
+plus court. Le jardin de départ garde donc les tuyères des planches, pour que
+la bascule se voie en direct.
+
+**Défaut vu à l'écran, et par rien d'autre :** sur un téléphone, « Pression
+(bar) » passe à la ligne et sa case descendait toute seule pendant que les deux
+voisines restaient en haut. Les champs s'alignent maintenant sur leur bas.
+
+**La page est gardée par la batterie qui publie le site** (`appli/tests/e2e.js`,
+jouée avant chaque déploiement puis **contre le site en ligne**) : aucune erreur
+au chargement, aucun secteur au-dessus du débit du robinet, le cycle qui est la
+somme de ses secteurs, aucun prix, rien qui déborde à 390 px. Confrontée à trois
+pages dégradées : trois rouges, chacun nommant le bon coupable.
+
+**Ce qui a été demandé et ne peut pas se faire ici :** aller chercher les prix
+sur les sites de Chausson et d'Aqua Plus. Les deux domaines sont **refusés par
+le mandataire réseau** de cet environnement — vérifié, pas supposé. Et même
+joignables, ils n'afficheraient que des prix publics, pas les siens. La bonne
+voie existe déjà : Chausson laisse **télécharger son tarif négocié en Excel ou
+CSV** depuis son compte, et Atlas sait déjà importer un tarif Excel/CSV
+(`src/app/reglages/ImportTarifs.tsx`).
+
 ### Le plan d'arrosage automatique des paysagistes — TROIS PLANCHES, RIEN N'EST CODÉ
 
 **Sa demande du 17 août :** *« j'ai besoin qu'on crée un outil pour les

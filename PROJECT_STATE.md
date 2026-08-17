@@ -114,7 +114,18 @@ seule avec quinze outils.
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
-### Le plan d'arrosage automatique — DESSINÉ le 17 août 2026, rien n'est codé
+### Le plan d'arrosage automatique — ESSAYABLE le 17 août 2026, rien n'est codé
+
+**La page qui calcule pour de bon : `appli/arrosage.html`**, publiée avec
+l'appli, donc ouvrable au téléphone. Point d'eau, zones, secteurs, durées par
+saison, plan et liste du matériel : tout se refait à chaque frappe.
+
+**Sa décision sur la sortie, le 17 août :** *« il faut simplement créer le plan
+et la liste du matos à acheter, ensuite moi j'envoie à mes fournisseurs, ils me
+font un devis, puis je repasse par le circuit normal de l'application. »* Donc
+**aucun prix** dans cet outil — le devis client emprunte le parcours qui existe.
+
+### Le raisonnement, en trois planches sans JavaScript
 
 **Sa demande :** *« un outil pour les paysagistes pour réaliser des plans
 d'arrosage automatique. »* Terrain neuf : le produit ne parlait pas d'arrosage.

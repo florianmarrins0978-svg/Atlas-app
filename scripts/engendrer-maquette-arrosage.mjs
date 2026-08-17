@@ -901,8 +901,8 @@ ${CHARTE}
       <div class="barre"><span class="ou">Arrosage</span><span class="quand">Jardin Martins</span></div>
 
       <div class="sa">
-        <p class="titre-fiche">La nomenclature</p>
-        <p class="sous">${NOMENCLATURE.length} lignes, prêtes à devenir un devis.</p>
+        <p class="titre-fiche">La liste pour le fournisseur</p>
+        <p class="sous">${NOMENCLATURE.length} lignes de quantités. Aucun prix : c'est lui qui les rend.</p>
 ${lignesDeNomenclature()}
         <p class="avert"><b>${MANQUANTS_MOT} prix ${PRIX_MANQUANTS > 1 ? "manquent" : "manque"}</b> dans « Mes prix ». Atlas ne
           les invente pas : la ligne part vide et signalée, et le devis vous
