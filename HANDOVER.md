@@ -740,6 +740,27 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 `maquettes/atlas-centre-de-la-fiche.html` reste au placard, et n'a rien changé
 dans `src/`.
 
+## ⚠ Faire le ménage des serveurs dans un appel SÉPARÉ de la batterie
+
+**Payé quatre batteries, le 17 août 2026.** `test-fiche-pendant-relance` rougit
+si la commande qui lance la batterie contient elle-même
+`pgrep -af "next-server|next dev"` — le ménage des serveurs orphelins.
+
+`veiller.sh` ne conclut « serveur mort » que si `pgrep -f '[n]ext(…)'` ne trouve
+**rien**, et `pgrep -f` compare la **ligne de commande entière de tout processus
+vivant**. Le shell qui porte à la fois le ménage et la batterie reste vivant
+pendant toute celle-ci : sa propre ligne de commande contient « next dev », le
+veilleur croit voir un serveur, et la suite échoue sur un montage qui n'a pas
+reproduit son cas.
+
+**Donc : deux appels, jamais un.** Le ménage d'abord, qui se termine ; la
+batterie ensuite, dans une commande qui ne nomme aucun de ces motifs.
+
+**Et la leçon générale :** une commande de diagnostic qui NOMME un motif
+surveillé par le produit devient elle-même ce qu'elle cherche. Le rouge était
+reproductible quatre fois, « sous charge » était une explication plausible — et
+fausse. `TODO.md` §0 trigies quater.
+
 ## Ce qui vient d'être terminé
 
 **« ADRESSE NON RENSEIGNÉE » OUVRE L'ÉCRAN DU CHANTIER (17 août).** La mention de

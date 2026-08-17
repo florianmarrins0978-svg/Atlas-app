@@ -81,26 +81,43 @@ Migration `drizzle/0050_rappel_facture_impayee.sql`, règles pures dans
   déclarait vert. Et un montage écrit `WHERE id = NULL` sans se plaindre :
   vérifier le `rowCount` de toute écriture de montage.
 
-### 0 trigies quater. `test-fiche-pendant-relance` rougit sous charge, pas toute seule
+### 0 trigies quater. `test-fiche-pendant-relance` : le rouge venait de CELUI QUI L'OBSERVAIT
 
-**Vu le 17 août 2026**, sur la batterie complète. Son deuxième cas — *« le
-veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien »* — a
-rendu : *« le veilleur n'a jamais tenté de relance : le montage ne reproduit pas
-le cas réel »*.
+**Vu le 17 août 2026**, et d'abord mal expliqué — ce point a été écrit une
+première fois sous le titre « rougit sous charge », ce qui était **faux**. La
+correction est ici parce qu'une hypothèse consignée dans les tâches se lit
+ensuite comme un fait (`TODO.md` 0 tricies nonies bis).
 
-**Mesuré, pas supposé :** rejouée seule dans la foulée, sur le même code et la
-même base, la suite passe ses trois cas.
+**Le symptôme :** son deuxième cas — *« le veilleur est bien bloqué à relancer »*
+— rouge dans la batterie complète, vert rejoué seul. Quatre fois de suite.
 
-**Le mécanisme, et il est dans le montage :** ce cas attend que le veilleur
-ATTEIGNE l'état « en train de relancer » avant de vérifier que la fiche se publie
-quand même. Sous une batterie de quatre-vingt-onze suites, la machine est prise
-et cet état n'arrive pas dans la fenêtre prévue. Le contrôle a alors raison de se
-plaindre : son montage n'a effectivement pas reproduit le cas — mais la cause est
-la charge, pas le produit.
+**LA CAUSE, MESURÉE.** `veiller.sh` ne se déclare « serveur mort » que si
+`pgrep -f '[n]ext(-server| dev| start)'` ne trouve **rien**. Or `pgrep -f`
+compare la **ligne de commande entière de tout processus de la machine**. Les
+batteries rouges avaient été lancées par une commande qui commençait par
+`pgrep -af "next-server|next dev" | xargs kill` — un ménage des serveurs
+orphelins. **Ce shell-là reste vivant pendant toute la batterie, et sa ligne de
+commande contient littéralement « next-server » et « next dev ».** Le veilleur
+voyait donc un serveur, prenait l'autre branche, et n'écrivait jamais le message
+que la suite attend.
 
-**Ce lot-ci n'y touche pas**, et il faut le dire : la mention de l'accueil ne
-passe nulle part près du veilleur. À la session qui tient ce lot d'attendre
-l'ÉTAT plutôt qu'un délai — même remède que pour les deux voisines ci-dessous.
+**La preuve tient en deux lignes de journal :** la batterie lancée SANS ce
+préfixe (`batterie19`) a la suite au vert ; les quatre suivantes, avec, au rouge.
+
+**CE QUE ÇA APPREND, ET CE N'EST PAS UNE ANECDOTE :**
+
+- **`pgrep -f` attrape l'observateur.** Toute commande de diagnostic qui NOMME
+  un motif surveillé par le produit devient elle-même ce qu'elle cherche. Faire
+  le ménage des serveurs dans un appel SÉPARÉ, qui se termine avant la batterie.
+- **Un rouge reproductible n'est pas forcément un défaut du code.** Celui-ci
+  l'était quatre fois d'affilée, et « sous charge » était une explication
+  plausible, cohérente, et fausse. Deux voisines de ce fichier rougissent
+  vraiment sous charge : la ressemblance est précisément ce qui a fait mal
+  deviner.
+
+**Rien n'est à corriger dans le produit ni dans la suite.** Elle a raison de
+refuser de conclure quand son montage n'a pas reproduit le cas — c'est ce qui a
+permis de le voir.
 
 ### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
 
