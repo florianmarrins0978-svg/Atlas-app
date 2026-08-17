@@ -39,6 +39,43 @@ supprimé) et le parcours complet dans `scripts/test-fiche-client-e2e.ts` — de
 l'accueil, en touchant le lien, **et un contrôle qui vérifie que la barre du bas
 n'a pas gagné d'onglet**.
 
+### CORRIGÉ : poser une date à la main — le calendrier ne venait jamais
+
+Sa plainte : *« je peux toujours pas poser de date sur les chantiers test »*.
+**« Toujours » : une autre session l'avait déjà constaté le même jour** et
+l'avait contourné en faisant pré-poser un chantier par un script.
+
+**Le geste marchait pourtant de bout en bout.** Ce qui manquait était le
+raccord : en touchant un chantier de « Sans date », l'écran écrivait « À poser »
+et **ne bougeait pas d'un pixel**. Mesuré sur son écran : le calendrier se
+trouvait 231 px **au-dessus** du haut de la fenêtre — seule sa dernière rangée
+dépassait, celle des « 31 1 2 3 4 5 6 » de sa capture. Aucun chemin visible vers
+une date.
+
+`amenerAuCalendrier` existait déjà et annonçait servir « depuis deux endroits ».
+Le second était branché, la liste « Sans date » ne l'a jamais été.
+
+**Pourquoi aucune suite ne le voyait :** Playwright fait défiler un élément
+jusqu'à lui avant de cliquer. Un contrôle qui clique éprouve qu'une cible
+existe, jamais qu'elle est ATTEIGNABLE. Le nouveau mesure la position du
+calendrier dans la fenêtre. `ARCHITECTURE.md` §127.
+
+
+
+### Une prestation qu'il ajoute s'écrit en NOIR, comme les autres
+
+Sa correction du 17 août, capture à l'appui : « Entretient » en doré sous
+« Élagage » en noir — *« les nouvelles prestations doivent toujours être en noir,
+pas en doré »*.
+
+La couleur disait d'où venait l'entrée — du catalogue commun, ou de lui. Mais
+**deux couleurs de titre dans la même liste se lisent comme deux natures de
+prestation**, alors qu'il les coche de la même façon sur un chantier.
+
+**L'or reste sur ses MOTS**, dans « Aussi appelé » : là il sépare le mot du
+commun, qu'on ne retire pas, du sien, qu'un « × » enlève — une distinction qui
+porte un geste. Raisons : `ARCHITECTURE.md` §123.
+
 ### « L'appli est super lente », deuxième soir — la construction orpheline
 
 **Sa plainte, à 21 h :** *« même problème qu'hier, l'appli est super lente,

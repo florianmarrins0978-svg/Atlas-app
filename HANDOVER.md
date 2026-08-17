@@ -791,6 +791,28 @@ surveillé par le produit devient elle-même ce qu'elle cherche. Le rouge était
 reproductible quatre fois, « sous charge » était une explication plausible — et
 fausse. `TODO.md` §0 trigies quater.
 
+## ⚠ Un contrôle qui CLIQUE n'éprouve pas qu'une cible est ATTEIGNABLE
+
+**Payé le 17 août 2026, et deux fois par le patron.** Il ne pouvait pas poser de
+date à la main sur le planning ; toutes les suites du planning étaient vertes, et
+l'une d'elles parcourt le geste entier.
+
+**Playwright fait défiler un élément jusqu'à lui AVANT de cliquer dessus.** Un
+contrôle qui clique éprouve donc qu'une cible EXISTE, jamais qu'elle est sous les
+yeux. Chez lui, le calendrier était 231 px au-dessus du haut de l'écran après
+l'appui : rien ne bougeait, aucune journée ne s'ouvrait, et il concluait que la
+fonctionnalité n'existait pas.
+
+**Devant un « je ne peux pas faire X » alors que la suite de X est verte :
+MESURER la position de la cible dans la fenêtre**, jamais se fier au fait que le
+clic passe. `test-poser-une-date-e2e` le fait, et refuse de conclure si la scène
+n'est pas la sienne. `ARCHITECTURE.md` §127.
+
+**Et la cause était lisible sans exécuter :** `amenerAuCalendrier` annonçait dans
+son propre commentaire servir « depuis deux endroits », et n'était appelée que
+d'un seul. Une fonction dont la note promet deux appelants et qui n'en a qu'un
+est un défaut qui ne rougit nulle part.
+
 ## Ce qui vient d'être terminé
 
 **LA LISTE DES CLIENTS (17 août, au soir) — sa remarque : « la catégorie client
