@@ -337,21 +337,23 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
 
     // **Le chemin qu'aucune donnée n'emprunte encore.** Ses fiches de nourrice
-    // n'existent pas au 17 août ; le jour où elles arriveront, il faut que le
-    // rendu marche du premier coup — sinon c'est lui qui découvre la panne
-    // après avoir tapé sa fiche. On en injecte une factice, ici et seulement
-    // ici : le catalogue livré, lui, reste vide tant qu'il n'a rien donné.
+    // arrivées le 17 août 2026 (de 1 à 6 voies, relevées « ce qui se trouve
+    // dans le regard d'arrosage »). Un jardin de 8×6 m avec des tuyères
+    // tombe sur 3 secteurs, qui a sa fiche réelle : la 3504 (Rain Bird) prend
+    // sa place. Testé sur de VRAIES données, pas un montage de fortune.
     await page.evaluate(() => {
-      CATALOGUE.nourrices[99] = { nom:'Nourrice 99 voies', source:'essai',
-        pieces:[{ q:1, u:'u', nom:'Pièce d’essai' }] };
-      window.__voies = document.querySelectorAll('.sec').length;
-      CATALOGUE.nourrices[window.__voies] = CATALOGUE.nourrices[99];
-      recalculer(false);
+      etat.zones = [{ id:900, nom:'Test', type:'gazon', L:8, l:6, materiel:'tuyere' }];
+      recalculer(true);
     });
     await page.waitForTimeout(150);
     const fiche = await page.$eval('#nourrice', el => el.innerText);
     ok('arrosage : une fiche de nourrice enregistrée s’affiche',
-       /Pièce d’essai/.test(fiche) && !/à renseigner/.test(fiche));
+       /Clarinette/.test(fiche) && /Électrovanne/.test(fiche) && !/à renseigner/.test(fiche));
+    // Ses pièces se retrouvent aussi dans la liste chiffrable — pas dupliquées,
+    // pas oubliées : c'est ELLES qui remplacent les lignes génériques.
+    const materiel2 = await page.$eval('#materiel', el => el.innerText);
+    ok('arrosage : les pièces de la fiche entrent dans la liste chiffrable',
+       /Clarinette/.test(materiel2) && !/Électrovannes 24 V/.test(materiel2));
 
     // **Les débits par ARC sont lus au catalogue, jamais déduits par division.**
     // Sur les grosses buses la division tombe juste, donc un contrôle posé sur

@@ -147,6 +147,30 @@ hiérarchie VAN / R-VAN / MP Rotator sans trancher ce point précis.
 | 17 | **« À 2 bar ou 3 bar c'est quasiment les mêmes valeurs »** — aucune correction de pression à faire | — |
 | 18 | Les **corps escamotables** arrivent | `CATALOGUE.corps`, vide |
 
+**LES SIX FICHES DE NOURRICE SONT ARRIVÉES — de 1 à 6 voies, 17 août.**
+*« Voici toutes les pièces pour la nourrice, ce qui se trouve dans le regard
+d'arrosage. »* `CATALOGUE.nourrices[1..6]` porte désormais les vraies pièces
+— clarinettes, coudes, unions, électrovannes Rain Bird 100 DV, regards
+(rectangle 12", jumbo RG17106, jumbo 5/6 voies), programmateurs BL-IP,
+connexions étanches. Un catalogue de pièces dédupliqué (`piecesNourrice`) les
+porte une seule fois, référencé par chaque fiche — retaper « Électrovanne
+100 DV » six fois aurait fini par diverger.
+
+**Elles REMPLACENT les lignes génériques**, plutôt que de s'ajouter à côté :
+« Électrovannes 24 V », « Regards de vannes », « Programmateur X voies »
+disparaissent dès qu'une fiche existe pour le nombre de secteurs — remplacées
+par ses vraies références, dans la liste chiffrable ET dans le registre de
+prix. Ce qui reste toujours, quelle que soit la fiche : disconnecteur,
+réducteur de pression, sonde de pluie — des pièces de tête de réseau, jamais
+dans un regard.
+
+**Ce qui n'est PAS dans ses fiches, et n'a pas été ajouté en silence :** aucun
+disconnecteur ni réducteur listé dans le regard — cohérent avec leur position
+en tête de réseau. **Une redite relevée telle quelle, sans la corriger** : la
+fiche 6 voies répète « Clarinette 4 vannes » (identique à la fiche 5 voies) et
+ajoute un Té 1'' MMF absent de la fiche 5 — ce n'était pas à cette page de
+décider si c'était voulu.
+
 **LES COUDES SBE REMPLACENT LA « CROSSE » GÉNÉRIQUE — 17 août.** *« Sous les
 arroseurs il faut obligatoirement des coudes SBE, choisis-les en fonction des
 diamètres, un à chaque fois par arroseur. »* Deux références (`CATALOGUE.coudes`) :

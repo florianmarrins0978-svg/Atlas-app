@@ -611,28 +611,131 @@ var CATALOGUE = {
     { ref:'pe25', nom:'Tuyau PE 25 (antennes)', regle:'aMesurer', unite:'ml', source:'provisoire' }
   ],
 
-  /* ── Les nourrices, par nombre de voies ─────────────────────────────────
-     VIDE, ET C'EST VOULU : il les envoie une par une. Tant qu'une fiche manque,
-     l'écran le DIT au lieu de composer une nourrice de son cru.
+  /* ── LES PIÈCES DE NOURRICE — un catalogue à part, référencé par les fiches
+     ci-dessous. Chaque pièce n'est écrite QU'UNE FOIS ici, même si elle
+     revient dans les six fiches (l'électrovanne, par exemple, est dans les
+     six) : la retaper à chaque fois aurait fini par diverger — un accent, un
+     chiffre — et l'écart se serait vu exactement là où il compare deux
+     fiches. Reçues le 17 août 2026 : « voici toutes les pièces pour la
+     nourrice, ce qui se trouve dans le regard d'arrosage. » */
+  piecesNourrice: {
+    'coude-mf':      { nom:'Coude 90° taraudé/fileté MF 1"', marque:'Dura' },
+    'coude-mm':      { nom:'Coude 90° taraudé MM 1"', marque:'Dura' },
+    'mamelon':       { nom:'Mamelon réduit fileté MM 1"-3/4"', marque:'Dura' },
+    'union':         { nom:'Union droite taraudée MM 1"', marque:'Dura' },
+    'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', marque:'Dura' },
+    'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird' },
+    'raccord-male25':{ nom:'Raccord mâle 25 1"', marque:'Dura' },
+    'regard-rect12': { nom:'Regard rectangle 12"', marque:'Dura' },
+    'regard-rg17106':{ nom:'Regard jumbo RG17106', marque:'Dura' },
+    'regard-jumbo5': { nom:'Regard jumbo 5 voies', marque:'Dura' },
+    'regard-jumbo6': { nom:'Regard jumbo 6 voies', marque:'Dura' },
+    'te-mmf':        { nom:'Té taraudé/fileté 1" MMF', marque:'Dura' },
+    'clarinette-2v': { nom:'Clarinette taraudée 1" — 2 vannes', marque:'Dura' },
+    'clarinette-3v': { nom:'Clarinette taraudée 1" — 3 vannes', marque:'Dura' },
+    'clarinette-4v': { nom:'Clarinette taraudée 1" — 4 vannes', marque:'Dura' },
+    'prog-1':        { nom:'Programmateur BL-IP 1 station 9V' },
+    'prog-2':        { nom:'Programmateur BL-IP 2 stations 9V' },
+    'prog-4':        { nom:'Programmateur BL-IP 4 stations 9V' },
+    'prog-6':        { nom:'Programmateur BL-IP 6 stations 9V' },
+    'pile-9v':       { nom:'Pile alcaline 9V' },
+    'connexion':     { nom:'Connexion étanche' }
+  },
 
-     **AUCUN PLAFOND À SIX VOIES** — sa réponse du 17 août 2026 : « oui tu peux
-     prévoir au-delà de 6 ». La table est donc un dictionnaire ouvert, pas une
-     liste de six cases : `nourrices[12]` se pose exactement comme
-     `nourrices[1]`, sans rien changer au code. Le calcul, lui, monte facilement
-     à neuf ou douze voies sur un jardin ordinaire.
+  /* ── Les nourrices, par nombre de voies — reçues le 17 août 2026 ─────────
+     « Ce qui se trouve dans le regard d'arrosage » : une fiche = un regard.
+     De une à six voies, relevées mot pour mot, transcrites sans un prix.
 
-     Forme attendue, quand elles arriveront :
-
-       1: { nom:'Nourrice 1 voie', source:'patron', date:'2026-08-…',
-            pieces:[ { q:1, u:'u', nom:'…' }, … ] },
+     **AUCUN PLAFOND À SIX VOIES** — sa réponse du 17 août : « oui tu peux
+     prévoir au-delà de 6 ». `nourrices[12]` se poserait comme `nourrices[1]`,
+     sans rien changer au code, le jour où il l'enverra.
 
      **CE QUI N'EST PAS TRANCHÉ, et qui ne sera PAS supposé** : au-delà d'une
      certaine taille, pose-t-il UNE nourrice de douze voies, ou DEUX de six ?
      Les deux se font. Composer une nourrice de douze en doublant celle de six
      serait exactement l'invention que ce fichier interdit — l'écran demande
      donc la fiche, et attend.
-  */
-  nourrices: {}
+
+     **CE QUI N'EST PAS DANS SES FICHES, et qui ne doit pas s'y ajouter en
+     silence** : ni disconnecteur, ni réducteur de pression, ni sonde de
+     pluie. Ce sont des pièces de tête de réseau, pas du regard — elles
+     restent des lignes séparées ailleurs dans la liste. */
+  nourrices: {
+    1: {
+      nom: 'Nourrice 1 voie', source:'patron', releve:'17 août 2026',
+      pieces: [
+        { ref:'coude-mf', q:1 }, { ref:'coude-mm', q:1 },
+        { ref:'mamelon', q:2 }, { ref:'union', q:2 },
+        { ref:'vanne-purge', q:1 }, { ref:'electrovanne-100dv', q:1 },
+        { ref:'raccord-male25', q:2 }, { ref:'regard-rect12', q:1 },
+        { ref:'prog-1', q:1 }, { ref:'pile-9v', q:1 }, { ref:'connexion', q:2 }
+      ]
+    },
+    2: {
+      nom: 'Nourrice 2 voies', source:'patron', releve:'17 août 2026',
+      pieces: [
+        { ref:'te-mmf', q:1 }, { ref:'coude-mm', q:1 }, { ref:'union', q:3 },
+        { ref:'electrovanne-100dv', q:2 }, { ref:'raccord-male25', q:3 },
+        { ref:'coude-mf', q:1 }, { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 },
+        { ref:'regard-rect12', q:1 }, { ref:'prog-2', q:1 },
+        { ref:'pile-9v', q:1 }, { ref:'connexion', q:6 }
+      ]
+    },
+    3: {
+      nom: 'Nourrice 3 voies', source:'patron', releve:'17 août 2026',
+      pieces: [
+        { ref:'clarinette-2v', q:1 }, { ref:'union', q:4 },
+        { ref:'electrovanne-100dv', q:3 }, { ref:'raccord-male25', q:4 },
+        { ref:'coude-mm', q:1 }, { ref:'coude-mf', q:1 },
+        { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 },
+        { ref:'regard-rect12', q:1 }, { ref:'prog-4', q:1 },
+        { ref:'pile-9v', q:1 }, { ref:'connexion', q:6 }
+      ]
+    },
+    4: {
+      nom: 'Nourrice 4 voies', source:'patron', releve:'17 août 2026',
+      pieces: [
+        { ref:'clarinette-3v', q:1 }, { ref:'union', q:5 },
+        { ref:'electrovanne-100dv', q:4 }, { ref:'raccord-male25', q:5 },
+        { ref:'coude-mm', q:1 }, { ref:'coude-mf', q:1 },
+        { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 },
+        { ref:'regard-rg17106', q:1 }, { ref:'prog-4', q:1 },
+        { ref:'pile-9v', q:1 }, { ref:'connexion', q:8 }
+      ]
+    },
+    5: {
+      nom: 'Nourrice 5 voies', source:'patron', releve:'17 août 2026',
+      pieces: [
+        { ref:'clarinette-4v', q:1 }, { ref:'union', q:6 },
+        { ref:'electrovanne-100dv', q:5 }, { ref:'raccord-male25', q:6 },
+        { ref:'coude-mm', q:1 }, { ref:'coude-mf', q:1 },
+        { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 },
+        { ref:'regard-jumbo5', q:1 }, { ref:'prog-6', q:1 },
+        { ref:'pile-9v', q:1 }, { ref:'connexion', q:12 }
+      ]
+    },
+    6: {
+      // Sa fiche répète « Clarinette 4 vannes » ici aussi (identique à 5
+      // voies) et ajoute un Té 1" MMF que les autres fiches n'ont pas — relevé
+      // tel quel, sans corriger ce qui pourrait passer pour une redite : ce
+      // n'est pas à cette page de décider si c'est voulu.
+      nom: 'Nourrice 6 voies', source:'patron', releve:'17 août 2026',
+      pieces: [
+        { ref:'clarinette-4v', q:1 }, { ref:'union', q:7 },
+        { ref:'electrovanne-100dv', q:6 }, { ref:'raccord-male25', q:7 },
+        { ref:'coude-mm', q:1 }, { ref:'coude-mf', q:1 },
+        { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 }, { ref:'te-mmf', q:1 },
+        { ref:'regard-jumbo6', q:1 }, { ref:'prog-6', q:1 },
+        { ref:'pile-9v', q:1 }, { ref:'connexion', q:20 }
+      ]
+    }
+  }
+};
+
+/* Une pièce de nourrice, résolue depuis sa référence — un seul endroit qui
+   sait faire le lien entre un `ref` et son nom, sa marque. */
+CATALOGUE.piece = function (ref) {
+  return CATALOGUE.piecesNourrice[ref] || null;
 };
 
 /* Ce que l'écran doit savoir dire, et qui se compte ici plutôt qu'à trois
@@ -683,6 +786,10 @@ CATALOGUE.tousLesProduits = function () {
   });
   CATALOGUE.coudes.forEach(function (c) {
     out.push({ ref:c.ref, nom:c.nom, detail:c.detail, famille:'Raccordement' });
+  });
+  Object.keys(CATALOGUE.piecesNourrice).forEach(function (ref) {
+    var p = CATALOGUE.piecesNourrice[ref];
+    out.push({ ref:ref, nom:(p.marque ? p.marque + ' ' : '') + p.nom, detail:'', famille:'Nourrice' });
   });
   CATALOGUE.gaines.forEach(function (g) {
     out.push({ ref:g.ref, nom:g.nom, detail:g.detail, famille:'Goutte-à-goutte' });

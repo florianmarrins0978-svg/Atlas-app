@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Les six fiches de nourrice, de une à six voies
+
+**Sa consigne :** *« voici toutes les pièces pour la nourrice — ce qui se
+trouve dans le regard d'arrosage. »* Six fiches complètes, une par nombre de
+voies : clarinettes Dura, coudes, unions, électrovannes Rain Bird 100 DV,
+regards (rectangle 12", jumbo RG17106, jumbo 5 et 6 voies), programmateurs
+BL-IP, connexions étanches.
+
+**Un catalogue de pièces dédupliqué porte chaque référence une seule fois** —
+l'électrovanne 100 DV revient dans les six fiches ; la retaper six fois aurait
+fini par diverger d'une virgule, et l'écart se serait vu exactement là où il
+compare deux fiches. Chaque fiche référence donc les pièces par un code
+plutôt que de recopier leur nom.
+
+**Elles remplacent les lignes génériques au lieu de s'y ajouter.**
+« Électrovannes 24 V », « Regards de vannes » et « Programmateur X voies » —
+des espaces réservés depuis le premier jour — disparaissent dès qu'une fiche
+existe pour le nombre de secteurs, remplacés par ses vraies références. Elles
+entrent aussi dans le registre de prix, pour qu'il puisse chiffrer chaque
+pièce du regard, pas seulement les arroseurs.
+
+**Une redite dans sa fiche 6 voies, relevée telle quelle plutôt que
+« corrigée » :** elle répète la même clarinette que la fiche 5 voies et ajoute
+un té absent ailleurs. Ce n'est pas à cette page de trancher si c'est voulu.
+
 ### Les coudes SBE remplacent une pièce qui n'avait jamais existé
 
 **Sa consigne, photo à l'appui :** *« sous les arroseurs il faut

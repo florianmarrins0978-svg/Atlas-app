@@ -934,6 +934,12 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ LES FICHES DE NOURRICE EXISTENT MAINTENANT (1 à 6 voies, 17 août) et
+REMPLACENT les lignes génériques (électrovanne/regard/programmateur) dès
+qu'elles s'appliquent — dans la liste ET dans le registre de prix.
+`CATALOGUE.piecesNourrice` porte chaque pièce une seule fois ; **ne jamais
+retaper un nom de pièce dans une fiche**, toujours référencer par `ref`.
+
 **⚠ LE QUINCONCE RETIRE UN ARROSEUR, IL NE LE DÉPLACE PAS (17 août — trouvé
 par lui, capture cerclée).** Une rangée décalée porte UNE tête de moins que la
 rangée alignée. Le plan et le calcul partagent une seule fonction

@@ -968,9 +968,25 @@ function listeMateriel(d){
     if (coude) lignes.push({ ref:coude.ref, nom:coude.nom + ' — ' + coude.detail, q: totalArroseurs, u:'u' });
   }
   if (d.secteurs.length){
-    lignes.push({ ref:'electrovanne', nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
-    lignes.push({ ref:'regard', nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
-    lignes.push({ nom:'Programmateur ' + voiesProgrammateur(d.secteurs.length) + ' voies', q:1, u:'u' });
+    // **Sa fiche de nourrice REMPLACE les lignes génériques**, quand elle
+    // existe : électrovanne, regard, clarinette, programmateur — tout ce
+    // qu'il a relevé dans le regard, avec les VRAIES références. Tant qu'elle
+    // manque, les lignes génériques (source « provisoire ») tiennent la
+    // place, comme avant.
+    var fiche = CATALOGUE.nourrices[d.secteurs.length];
+    if (fiche){
+      fiche.pieces.forEach(function(x){
+        var p = CATALOGUE.piece(x.ref);
+        if (!p) return;
+        lignes.push({ ref:x.ref, nom:(p.marque ? p.marque + ' ' : '') + p.nom, q:x.q, u:'u' });
+      });
+    } else {
+      lignes.push({ ref:'electrovanne', nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
+      lignes.push({ ref:'regard', nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
+      lignes.push({ nom:'Programmateur ' + voiesProgrammateur(d.secteurs.length) + ' voies', q:1, u:'u' });
+    }
+    // Pièces de tête de réseau, pas du regard : jamais dans une fiche de
+    // nourrice, toujours présentes.
     lignes.push({ ref:'disconnecteur', nom:'Disconnecteur (obligatoire sur l\'eau potable)', q:1, u:'u' });
     lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
     if (etat.sonde) lignes.push({ ref:'sonde-pluie', nom:'Sonde de pluie', q:1, u:'u' });
@@ -1044,7 +1060,9 @@ function dessinerNourrice(d){
   }
   var html = '<p class="aide" style="margin:0 0 6px"><b>' + fiche.nom + '</b> — votre fiche.</p>';
   fiche.pieces.forEach(function(x){
-    html += '<div class="piece"><span>' + x.q + ' ' + x.u + '</span><span>' + x.nom + '</span></div>';
+    var p = CATALOGUE.piece(x.ref);
+    var nom = p ? (p.marque ? p.marque + ' ' : '') + p.nom : x.ref;
+    html += '<div class="piece"><span>' + x.q + ' u</span><span>' + nom + '</span></div>';
   });
   hote.innerHTML = html;
 }
@@ -1091,12 +1109,10 @@ function texteDeLaListe(d){
   l.push('- ' + etat.pe25 + ' ml  Tuyau PE 25 (antennes)');
   l.push('');
   l.push('Installation : ' + d.secteurs.length + ' secteurs, débit disponible ' + nb(d.dispo) + ' m³/h à ' + nb(etat.pression,1) + ' bar.');
-  var fiche = CATALOGUE.nourrices[d.secteurs.length];
-  if (fiche){
-    l.push('');
-    l.push(fiche.nom + ' :');
-    fiche.pieces.forEach(function(x){ l.push('- ' + x.q + ' ' + x.u + '  ' + x.nom); });
-  } else if (d.secteurs.length) {
+  // Le contenu du regard est déjà dans les lignes ci-dessus (listeMateriel le
+  // reprend depuis la fiche) : pas la peine de le lister deux fois dans le
+  // même message.
+  if (d.secteurs.length && !CATALOGUE.nourrices[d.secteurs.length]) {
     l.push('');
     l.push('Nourrice ' + d.secteurs.length + ' voies : fiche non renseignée.');
   }
