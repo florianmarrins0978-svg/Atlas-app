@@ -31,6 +31,29 @@ jour — et a été vu rouge sur le piège remis en place. **Ce défaut aurait
 frappé à chaque réglage ajouté**, et lui seul : c'est le genre qu'on ne voit
 jamais en développant, puisqu'on part d'un navigateur vide.
 
+### Où vivent les outils métier : un cinquième onglet, et ce qu'il coûte
+
+Sa question, en vue des terrasses bois qui suivront l'arrosage : une catégorie
+« Paysage », ou une rubrique dans les Réglages ? Les deux ont été écartées — on
+règle dans les Réglages ce qui vaut une fois pour toutes, et « paysage » est
+son métier entier, donc ne distingue rien. Ma recommandation (attacher les
+outils au chantier) l'a été aussi, et son objection tient : un outil qui exige
+un chantier ne sert pas en visite de devis, quand le client n'existe pas
+encore. **Sa décision : un cinquième onglet « Outils ».**
+
+**Le coût de ce choix est mesurable, et il a été mesuré avant d'écrire une
+ligne** (planche 76). La barre porte quatre onglets depuis le 10 août ; à cinq,
+la colonne tombe de 89,5 à 71,6 px sur un écran de 360 — et « CHANTIERS » en
+demande 78,8. **Il déborde de 7,2 px.** Resserrer l'espacement le fait tenir de
+1,3 px, ce qui n'est pas tenir : un changement de police entre téléphones, et
+le défaut revient — invisible ici, visible chez lui.
+
+Restent deux variantes viables, et l'une d'elles revient sur sa décision du
+10 août (les icônes retirées). Elle est recevable — à cinq colonnes, une icône
+sert à viser sans lire, ce qu'elle ne faisait pas à quatre — mais c'est à lui
+de la reprendre, pas à moi de la défaire en silence. **Rien n'est codé** :
+`ARCHITECTURE.md` §125 porte le raisonnement, `TODO.md` la marche à suivre.
+
 ### Le plan de contrôle quitte l'écran à son tour
 
 *« Je ne comprends pas à quoi sert le 3 ? »*, puis, la question posée :

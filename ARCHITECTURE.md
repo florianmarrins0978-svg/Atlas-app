@@ -10423,3 +10423,55 @@ vit désormais sur un `<span>` intérieur.
 `.atlas-fil-defile`, c'est-à-dire le cadre lui-même. Le calcul de position valait
 zéro, et la photo montrait le HAUT du fil au lieu de la ligne corrigée. Une
 capture qui cadre autre chose que ce qu'elle annonce ne prouve rien.
+
+---
+
+## 125. Les outils métier : un cinquième onglet, et ce qu'il coûte à la barre
+
+**Sa question du 17 août 2026 :** *« L'idée, c'est de créer des outils comme
+celui-là pour les paysagistes ; après je ferai la même chose pour les terrasses
+bois. Pour toi le mieux c'est de créer une nouvelle catégorie paysage ? Ou
+alors on range ça dans les réglages, sous une catégorie paysage ? »*
+
+**Ce qui a été écarté, et pourquoi.**
+
+- **Les Réglages, non.** On y règle ce qui vaut une fois pour toutes — tarifs,
+  équipe, TVA, identité. Un plan d'arrosage se refait à chaque client, comme un
+  devis. L'y ranger le nommerait mal et l'enterrerait sous quinze rubriques.
+- **Une catégorie « Paysage », non plus.** Le paysage est son métier ENTIER :
+  le mot ne distingue rien de ce que l'application fait déjà. Ce qu'il sépare
+  en réalité, ce sont des **outils de calcul** — arrosage, terrasse bois — face
+  au parcours commercial (chantier, devis, facture).
+- **Attaché au chantier seul** — ma recommandation — **écartée par lui.** Elle
+  avait pour elle que le plan est toujours fait *pour quelqu'un* et se
+  retrouverait six mois plus tard chez le bon client. Son objection tient : un
+  outil qui exige un chantier ne sert pas en visite de devis, quand le client
+  n'existe pas encore.
+
+**Sa décision : un cinquième onglet « Outils ».**
+
+**LE COÛT EST MESURABLE, ET IL A ÉTÉ MESURÉ** (`docs/maquettes/76-le-cinquieme-onglet.html`).
+La barre porte quatre onglets depuis le 10 août, en capitales de 9,5 px
+espacées de 0,28em, sans icône — son choix d'alors (*« quatre pictogrammes
+sous quatre mots répétaient la même information »*). Passer à cinq fait tomber
+la colonne de 89,5 à **71,6 px** sur un écran de 360. Or « CHANTIERS », le plus
+long des cinq mots, en demande 78,8.
+
+| Variante | Largeur de « CHANTIERS » | Verdict |
+|---|---|---|
+| A · cinq onglets, rien d'autre changé | 78,8 px | **déborde de 7,2** |
+| B · espacement resserré à 0,18em | 70,3 px | tient de **1,3 px** — faux confort |
+| C · lettre à 8,5 px, espacement 0,14em | 59,8 px | tient, 11,8 px de marge |
+| D · icône au-dessus du mot | 56,8 px | tient, 14,8 px de marge |
+
+**A est donc à écarter, et B aussi :** 1,3 px de marge ne survit pas à un
+changement de police entre téléphones, et le défaut serait invisible ici pour
+apparaître chez lui. **D revient sur sa décision du 10 août** (les icônes
+retirées) — recevable, puisque le service rendu n'est plus le même à cinq
+colonnes qu'à quatre : viser sans lire. Mais c'est à lui de le dire.
+
+**Ce qui reste à trancher avec lui**, et qui n'est pas de la place : l'onglet
+porte une LISTE d'outils (arrosage, puis terrasse bois), donc il s'appelle
+« Outils » et non « Arrosage » ; et il faudra pouvoir **rattacher un plan à un
+chantier après coup**, sans quoi un plan fait en visite de devis se perdra —
+c'est précisément ce que l'accès sans chantier fait gagner et risque de coûter.

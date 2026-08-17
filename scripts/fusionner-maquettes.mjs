@@ -368,6 +368,12 @@ const MAQUETTES = [
     quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.",
   },
   {
+    fichier: "76-le-cinquieme-onglet.html",
+    titre: "Le cinquième onglet",
+    famille: "L’arrosage automatique",
+    quoi: "Où ranger les outils métier ? Sa décision : un cinquième onglet « Outils ». Cinq variantes de barre, mesurées à 360 px — deux sont à écarter.",
+  },
+  {
     fichier: "75-le-plan-comme-le-sien.html",
     titre: "Le plan comme le sien",
     famille: "L’arrosage automatique",

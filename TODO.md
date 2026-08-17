@@ -52,6 +52,42 @@ Les deux écrans ne se confondent pas — celui-ci corrige les coordonnées d'un
 chantier. C'est la meilleure preuve que la fiche inventée au premier essai aurait
 été un troisième écran de trop.
 
+### 0 quaterquadragies AB. Où vivent les outils métier — TRANCHÉ le 17 août
+
+**Sa question :** *« L'idée c'est de créer des outils comme celui-là pour les
+paysagistes ; après je ferai la même chose pour les terrasses bois. Une
+nouvelle catégorie paysage ? Ou on range ça dans les réglages ? »*
+**Sa décision : un cinquième onglet « Outils ».** Le raisonnement complet, et
+ce qui a été écarté, est dans `ARCHITECTURE.md` §125.
+
+**⚠ CE QUE ÇA COÛTE, MESURÉ ET NON SUPPOSÉ** (planche 76) : à cinq colonnes sur
+un écran de 360 px, la colonne tombe à 71,6 px et **« CHANTIERS » en demande
+78,8 — il déborde de 7,2 px**. Deux variantes sont donc à écarter d'office :
+poser le cinquième onglet sans rien changer (A), et resserrer l'espacement (B,
+qui ne tient que de 1,3 px — un changement de police entre téléphones, et le
+défaut réapparaît **chez lui seulement**).
+
+Restent **C** (lettre à 8,5 px) et **D** (une icône au-dessus du mot). **D
+revient sur sa décision du 10 août** — il avait retiré les icônes parce
+qu'elles répétaient les mots ; à cinq colonnes elles rendent un autre service,
+viser sans lire. C'est recevable, mais **c'est à lui de le dire**.
+
+**À faire, dans cet ordre :**
+
+1. **Lui faire choisir C ou D** sur la planche 76 — rien ne se code avant.
+2. Poser l'onglet dans `AtlasBottomNav.tsx` (`ONGLETS`, la grille `grid-cols-4`
+   et la largeur du trait d'or, qui est en `/ 4` à deux endroits).
+3. **Un contrôle qui mesure la barre à 360 px** avant chaque mise en ligne :
+   c'est exactement le genre de défaut qu'on ne voit pas en développant sur un
+   grand écran, et qui n'apparaît que sur son téléphone.
+4. L'onglet porte une LISTE d'outils (arrosage, puis terrasse bois) — d'où son
+   nom au pluriel, et non « Arrosage ».
+5. **Pouvoir rattacher un plan à un chantier après coup.** C'est le revers de
+   l'accès sans chantier qu'il a voulu : un plan fait en visite de devis doit
+   pouvoir rejoindre son client, sinon on le cherchera six mois plus tard.
+
+---
+
 ### 0 quaterquadragies AA. Le parcours COMPLET, dicté par lui le 17 août 2026
 
 **C'est la cible du produit, dans son ordre à lui.** Tout ce qui précède
