@@ -371,6 +371,15 @@ Nationale que le mandataire réseau du banc peut refuser. Les distances vont de
 l'écart et le « Voir quand même ». Vérifié en base : cinq candidats reconnus,
 trois proposés, un écarté, zéro sans position.
 
+**Complété le 17 août : le script POSE le chantier de départ.** Cinq chantiers
+tous « sans date » ne montraient jamais la fonctionnalité — la proposition part
+d'un chantier DÉJÀ posé sur une demi-journée, et il n'y en avait aucun. Le patron
+s'est retrouvé bloqué, la pose à la main lui échappant. Le script pose désormais
+« Portail Rezé » le matin de la prochaine journée ouvrable (via
+`planifierChantier`, la fonction de l'écran) ; son après-midi reste libre, et à
+l'ouverture de ce jour le bandeau propose les plus proches. Vérifié en base à
+deux équipes : départ posé, trou de l'après-midi détecté, trois propositions.
+
 ### « Fais cinq pour cent sur le montant du devis »
 
 **Sa demande :** pouvoir dire à l'application *« fais cinq pour cent sur le
