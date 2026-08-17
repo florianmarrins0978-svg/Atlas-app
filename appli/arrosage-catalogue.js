@@ -187,7 +187,11 @@ var CATALOGUE = {
      par secteur. `parArroseur` : une par arroseur. `fixe` : une par chantier.
      `aMesurer` : la quantité ne se déduit pas, elle se relève sur le terrain. */
   materiel: [
-    { ref:'electrovanne', nom:'Électrovanne 24 V', regle:'parSecteur', source:'provisoire' },
+    // **La marque vaut pour elle aussi** — sa réponse du 17 août : « ça sera
+    // valable aussi pour les électrovannes, pour le reste non. » Le jour où ses
+    // références arriveront, cette ligne se dédoublera par marque.
+    { ref:'electrovanne', nom:'Électrovanne 24 V', regle:'parSecteur',
+      suitLaMarque:true, source:'provisoire' },
     { ref:'crosse', nom:'Crosse de raccordement', regle:'parArroseur', source:'provisoire' },
     { ref:'regard', nom:'Regard de vannes', regle:'parTroisSecteurs', source:'provisoire' },
     { ref:'disconnecteur', nom:'Disconnecteur (obligatoire sur l\'eau potable)', regle:'fixe', source:'provisoire' },

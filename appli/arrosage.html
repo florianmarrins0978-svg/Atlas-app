@@ -199,9 +199,18 @@
 
   <section>
     <h2>1 · Le point d'eau</h2>
-    <p class="aide">Le débit se <b>mesure</b>, il ne se suppose pas : remplissez
-      un seau et comptez les secondes. Un plan bâti sur un débit supposé
-      s'écroule à la mise en eau.</p>
+    <p class="aide">D'où part l'arrosage ? C'est ce qui décide de tout le
+      reste — et c'est la seule chose que l'outil ne peut pas deviner.</p>
+
+    <div class="ligne" style="margin-bottom:10px">
+      <div><label for="compteur">Le piquage se fait…</label>
+        <select id="compteur">
+          <option value="oui">Juste après le compteur d'eau</option>
+          <option value="non">Ailleurs (robinet de jardin, nourrice existante…)</option>
+        </select></div>
+    </div>
+    <p class="aide" id="compteurNote" style="margin:0 0 12px"></p>
+
     <div class="ligne">
       <div><label for="seau">Seau (litres)</label><input id="seau" type="number" inputmode="decimal" min="1" step="1" value="10"></div>
       <div><label for="temps">Rempli en (s)</label><input id="temps" type="number" inputmode="decimal" min="1" step="1" value="20"></div>
@@ -210,11 +219,7 @@
     <p class="sortie">Débit disponible <b id="debitDispo">—</b> m³/h
       <span class="petit" id="debitNote"></span></p>
 
-    <div class="ligne" style="margin-top:12px">
-      <div><label for="recouvrement">Recouvrement des arroseurs (%)</label>
-        <input id="recouvrement" type="number" inputmode="numeric" min="30" max="150" step="5" value="80"></div>
-    </div>
-    <p class="aide" id="recouvrementNote" style="margin:8px 0 0"></p>
+    <p class="aide" id="recouvrementNote" style="margin:12px 0 0"></p>
   </section>
 
   <section>
@@ -311,13 +316,46 @@ CATALOGUE.arroseurs.concat(CATALOGUE.gaines).forEach(function(m){ MATERIELS[m.re
    le moins d'arroseurs possible. S'il en choisit une autre (confort de pose,
    régularité, stock d'agence), une ligne suffit à la changer. L'écran l'annonce
    plutôt que de la cacher dans le calcul. */
-function modelePour(type, plusPetitCote){
+/* **UN CÔTÉ SE PAVE-T-IL AVEC CETTE PORTÉE ?** Sa règle impose un écart compris
+   entre la portée et 1,2 × la portée, coins occupés aux deux bouts. Sur un côté
+   de longueur D, le nombre d'arroseurs est donc contraint : on prend le moins
+   possible (écart maximal), et on regarde si l'écart obtenu reste au-dessus de
+   la portée.
+
+   Exemple qui a tout déclenché : une pelouse de 12 m de large avec une portée
+   de 9 m. Deux rangées feraient 12 m d'écart — au-delà de sa limite. Trois
+   rangées font 6 m — sous la portée, ce qu'il refuse en majuscules. **Aucune
+   pose valable : c'est la BUSE qui est trop grande**, et il faut en prendre une
+   plus petite. L'outil choisissait la plus grande qui « rentrait » et affichait
+   ensuite une alerte sur chaque zone ; il choisit maintenant celle qui SATISFAIT
+   la règle. L'alerte ne parle plus que des cas réellement impossibles. */
+function paveSelonSaRegle(dimension, portee){
+  if (!(dimension > 0) || !(portee > 0)) return null;
+  var n = Math.max(2, Math.ceil(dimension / (portee * ECART_MAX_FACTEUR)) + 1);
+  var ecart = dimension / (n - 1);
+  return ecart >= portee - 0.01 ? { n:n, ecart:ecart } : null;
+}
+
+function modelePour(type, plusPetitCote, dims){
   var marque = marqueCourante();
 
   var buses = CATALOGUE.busesDe(marque, type);
   if (buses.length){
-    var tenue = buses.filter(function(b){ return !plusPetitCote || b.rayon <= plusPetitCote; });
-    var b = tenue[0] || buses[buses.length - 1]; // à défaut, la plus petite
+    var b = null;
+    if (dims && dims.L > 0 && dims.l > 0){
+      // De la plus grande portée à la plus petite : la première qui pave les
+      // deux côtés selon sa règle est la bonne — c'est le moins d'arroseurs
+      // possible SANS enfreindre l'écart minimum.
+      for (var i = 0; i < buses.length; i++){
+        if (paveSelonSaRegle(dims.L, buses[i].rayon) && paveSelonSaRegle(dims.l, buses[i].rayon)){
+          b = buses[i]; break;
+        }
+      }
+    }
+    if (!b){
+      var tenue = buses.filter(function(x){ return !plusPetitCote || x.rayon <= plusPetitCote; });
+      b = tenue[0] || buses[buses.length - 1];
+    }
     return {
       m: {
         ref: b.ref, nom: type === 'tuyere' ? 'Tuyère' : 'Turbine', detail: b.nom,
@@ -371,30 +409,60 @@ var SAISONS = [
 
 /* La famille de plantes commande le rythme : un potager ne s'arrose pas comme
    une haie. Deux familles dans un secteur, c'est l'une des deux qui perd. */
+/* Ses espacements de goutte-à-goutte, le 17 août 2026 :
+
+     « Espacement de 80 cm pour le goutte-à-goutte dans les massifs. À demander
+      lors de la rédaction à l'utilisateur s'il veut une ligne ou deux lignes
+      de goutte-à-goutte pour ses haies arbustes. Pour le potager, espacé de
+      70 cm. »
+
+   Un massif et un potager se mesurent donc en SURFACE (on y couche des lignes
+   parallèles), une haie en LONGUEUR (une ou deux lignes, à son choix). C'est
+   pour cela que le massif ne se saisit plus en mètres linéaires : demander des
+   mètres de gaine à quelqu'un « qui ne connaît rien en arrosage » — ses mots —
+   revient à lui faire faire le calcul qu'on lui promettait. */
 var TYPES = {
   gazon:   { nom:'Pelouse',  forme:'surface',  famille:'gazon',    materiels:['turbine','tuyere'] },
-  massif:  { nom:'Massif',   forme:'lineaire', famille:'arbustes', materiels:['gaine'] },
-  haie:    { nom:'Haie',     forme:'lineaire', famille:'arbustes', materiels:['gaine'] },
-  potager: { nom:'Potager',  forme:'lineaire', famille:'potager',  materiels:['gaine'] }
+  massif:  { nom:'Massif',   forme:'nappe',    famille:'arbustes', ecartLignes:0.80 },
+  haie:    { nom:'Haie',     forme:'lineaire', famille:'arbustes' },
+  potager: { nom:'Potager',  forme:'nappe',    famille:'potager',  ecartLignes:0.70 }
 };
 
 var MARGE = 0.85;         // on ne charge jamais un secteur jusqu'au robinet
 
-/* LE RECOUVREMENT — sa règle du 17 août : « il faut un recouvrement d'au moins
-   quatre-vingt pour cent ». Lu ici comme : l'écart entre deux arroseurs vaut
-   80 % de leur portée. À 100 %, c'est la pose tête-bêche classique (chacun
-   arrose jusqu'au pied du suivant) ; à 80 %, les couronnes se chevauchent
-   davantage, la lame d'eau est plus régulière — et il faut plus d'arroseurs.
-   C'EST RÉGLABLE À L'ÉCRAN, et l'écart en mètres est affiché : s'il lit
-   « un arroseur tous les 4,00 m » et que ce n'est pas sa pratique, il le voit
-   d'un coup d'œil et le dit en un mot. Deviner sa règle aurait coûté un
-   chantier ; l'afficher coûte une ligne. */
-var RECOUVREMENT_DEFAUT = 0.80;
+/* ═══════════════════════════════════════════════════════════════════════
+   LA RÈGLE DE POSE — la sienne, le 17 août 2026, et elle a corrigé l'inverse.
+
+     « 80 % minimum entre chaque arroseur. Donc portée 5 m : distance entre
+      chaque arroseur ~5,50 m, 6 m max, 5 m étant la perfection. Jamais moins.
+      En dessous de 5 m, 4 m, 3 m : JAMAIS. »
+
+   Ce que ça veut dire, et ce que l'outil faisait de travers :
+
+   · LE RECOUVREMENT SE MESURE SUR L'ÉCART, PAS SUR LA PORTÉE. 80 % de
+     recouvrement = portée / écart ≥ 0,80, donc écart ≤ portée / 0,80. Pour une
+     portée de 5 m : jusqu'à 6,25 m d'écart, et il dit 6 m — on retient sa
+     limite, pas la mienne.
+   · L'ÉCART IDÉAL VAUT LA PORTÉE (« 5 m étant la perfection »), c'est-à-dire
+     la pose tête-bêche.
+   · ON NE RESSERRE JAMAIS SOUS LA PORTÉE. L'outil posait un arroseur tous les
+     0,8 × portée — soit 4 m pour une portée de 5. C'est précisément le cas
+     qu'il écrit en majuscules. Un arroseur de plus tous les quatre mètres,
+     c'est un secteur de plus, un devis plus cher, et un client qui compare.
+   ═══════════════════════════════════════════════════════════════════════ */
+var RECOUVREMENT_MIN = 0.80;   // portée / écart ≥ 0,80
+var ECART_MAX_FACTEUR = 1.20;  // sa limite à lui : 6 m pour une portée de 5
+
+/* Quinconce au-delà de quatre arroseurs, carré en dessous — sa règle du
+   17 août. Et dans les deux cas : « les derniers arroseurs doivent toujours
+   être dans les coins ». Le pourtour est donc régulier, coins compris, et
+   seules les rangées INTÉRIEURES se décalent d'un demi-écart. */
+var QUINCONCE_AU_DELA_DE = 4;
 var DEPART = 3 * 60;      // départ du cycle : 3 h du matin
 var LEVER = 6 * 60 + 30;  // au-delà, l'eau s'évapore avant d'entrer
 
 var etat = charger() || {
-  seau:10, temps:20, pression:3, saison:'juillet', recouvrement:RECOUVREMENT_DEFAUT,
+  seau:10, temps:20, pression:3, saison:'juillet', compteur:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   pe32:60, pe25:120, sonde:false,
   zones:[
@@ -404,9 +472,9 @@ var etat = charger() || {
     // le jardin tombe de huit secteurs à quatre — la démonstration vaut mieux
     // qu'un paragraphe.
     { id:2, nom:'Pelouse avant',   type:'gazon',   L:12, l:8,  materiel:'tuyere' },
-    { id:3, nom:'Massifs',         type:'massif',  ml:45, materiel:'gaine' },
-    { id:4, nom:'Haie',            type:'haie',    ml:60, materiel:'gaine' },
-    { id:5, nom:'Potager',         type:'potager', ml:30, materiel:'gaine' }
+    { id:3, nom:'Massifs',         type:'massif',  L:15, l:2.4, materiel:'gaine' },
+    { id:4, nom:'Haie',            type:'haie',    ml:60, lignesHaie:1, materiel:'gaine' },
+    { id:5, nom:'Potager',         type:'potager', L:8,  l:3,   materiel:'gaine' }
   ]
 };
 var prochainId = 100;
@@ -438,9 +506,23 @@ function materielDe(z){
 
 function poser(z){
   var petitCote = Math.min(Number(z.L)||0, Number(z.l)||0);
-  var cle = materielDe(z), choix = cle === 'gaine'
-    ? { m: CATALOGUE.gaines[0], emprunte: CATALOGUE.gaines[0].marqueCle === 'generique' }
-    : modelePour(cle, petitCote || null);
+  var dims = { L: Number(z.L)||0, l: Number(z.l)||0 };
+  var cle = materielDe(z), choix;
+  if (cle === 'gaine'){
+    choix = { m: CATALOGUE.gaines[0], emprunte: CATALOGUE.gaines[0].marqueCle === 'generique' };
+  } else {
+    choix = modelePour(cle, petitCote || null, dims);
+    // Si le type retenu d'office ne donne aucune pose valable, on essaie
+    // l'autre AVANT de rendre une alerte : une turbine qui ne tient pas sur une
+    // pelouse de 12 m de large n'est pas une fatalité, c'est une tuyère.
+    if (z.materiel === 'auto' && choix.m && dims.L > 0 &&
+        !(paveSelonSaRegle(dims.L, choix.m.portee) && paveSelonSaRegle(dims.l, choix.m.portee))){
+      var autre = modelePour(cle === 'turbine' ? 'tuyere' : 'turbine', petitCote || null, dims);
+      if (autre.m && paveSelonSaRegle(dims.L, autre.m.portee) && paveSelonSaRegle(dims.l, autre.m.portee)){
+        choix = autre; cle = cle === 'turbine' ? 'tuyere' : 'turbine';
+      }
+    }
+  }
   var m = choix.m, sais = saisonCourante();
   if (!m) return { cle:cle, m:null, nombre:0, debit:0, minutes:0, nx:0, ny:0, emprunte:true };
   var besoin = sais[TYPES[z.type].famille][0], passages = sais[TYPES[z.type].famille][1];
@@ -449,9 +531,20 @@ function poser(z){
   if (TYPES[z.type].forme === 'surface'){
     var L = Number(z.L)||0, l = Number(z.l)||0;
     if (L <= 0 || l <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0, nx:0, ny:0 });
-    var ecart = m.portee * recouvrementCourant();
-    var nx = Math.ceil(L / ecart) + 1, ny = Math.ceil(l / ecart) + 1;
-    r.ecart = ecart;
+    // On écarte AU MAXIMUM dans sa limite, puis on répartit : c'est le moins
+    // d'arroseurs possible sans jamais descendre sous la portée.
+    var px = paveSelonSaRegle(L, m.portee), py = paveSelonSaRegle(l, m.portee);
+    var ecartMax = m.portee * ECART_MAX_FACTEUR;
+    var nx = px ? px.n : Math.max(2, Math.ceil(L / ecartMax) + 1);
+    var ny = py ? py.n : Math.max(2, Math.ceil(l / ecartMax) + 1);
+    var ecartX = L / (nx - 1), ecartY = l / (ny - 1);
+    r.ecart = Math.max(ecartX, ecartY);
+    r.ecartX = ecartX; r.ecartY = ecartY;
+    // « Jamais moins que la portée. » Quand la zone est trop étroite pour cette
+    // buse, l'écart tombe sous la portée quoi qu'on fasse — puisque les coins
+    // doivent rester occupés. L'écran le DIT au lieu de rendre une pose qu'il
+    // refuse : c'est le signe qu'il faut une buse plus petite.
+    r.tropSerre = (ecartX < m.portee - 0.01) || (ecartY < m.portee - 0.01);
     var coins = 4;
     var bords = Math.max(0, 2*(nx-2)) + Math.max(0, 2*(ny-2));
     var inter = Math.max(0, nx-2) * Math.max(0, ny-2);
@@ -462,11 +555,27 @@ function poser(z){
     var q = m.debitParAngle ? m.debitParAngle[90]  : m.debit360 / 4;
     var d = m.debitParAngle ? m.debitParAngle[180] : m.debit360 / 2;
     r.nx = nx; r.ny = ny; r.nombre = coins + bords + inter;
+    r.quinconce = r.nombre > QUINCONCE_AU_DELA_DE;
     r.debit = coins*q + bords*d + inter*m.debit360;
     r.sansCorps = choix.sansCorps;
+  } else if (TYPES[z.type].forme === 'nappe') {
+    // Des lignes parallèles dans la largeur, à l'écart qu'il a donné. La
+    // première et la dernière longent les bords : d'où le « + 1 ».
+    var L2 = Number(z.L)||0, l2 = Number(z.l)||0;
+    if (L2 <= 0 || l2 <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0 });
+    var e = TYPES[z.type].ecartLignes;
+    var lignes = Math.max(1, Math.floor(l2 / e) + 1);
+    r.lignes = lignes; r.ecartLignes = e;
+    r.nombre = Math.round(lignes * L2);
+    r.debit = r.nombre * m.debitMetre;
   } else {
+    // Une haie : une ou deux lignes, c'est LUI qui décide — sa consigne du
+    // 17 août, et l'écran pose la question au lieu de trancher.
     var ml = Number(z.ml)||0;
-    r.nombre = ml; r.debit = ml * m.debitMetre;
+    var n2 = Number(z.lignesHaie) === 2 ? 2 : 1;
+    r.lignes = n2;
+    r.nombre = Math.round(ml * n2);
+    r.debit = r.nombre * m.debitMetre;
   }
   // La durée dépend de la PLUVIOMÉTRIE, jamais de la surface : la même
   // quantité d'eau demande 45 min de turbine et 13 min de tuyère.
@@ -474,12 +583,10 @@ function poser(z){
   return r;
 }
 
-function recouvrementCourant(){
-  var r = Number(etat.recouvrement);
-  // Un recouvrement nul ou aberrant ferait diviser par zéro et poser une
-  // infinité d'arroseurs : on retombe sur la valeur retenue plutôt que de
-  // rendre un écran qui compte n'importe quoi.
-  return (r > 0.2 && r <= 1.5) ? r : RECOUVREMENT_DEFAUT;
+/* Le taux réellement obtenu sur une pose : portée / écart. Affiché pour qu'il
+   vérifie d'un regard que rien ne descend sous ses 80 %. */
+function recouvrementObtenu(portee, ecart){
+  return ecart > 0 ? portee / ecart : 0;
 }
 
 function saisonCourante(){
@@ -541,24 +648,36 @@ function dessinerZones(){
     var t = TYPES[z.type], p = poser(z), bloc = document.createElement('div');
     if (!p.m) { p = Object.assign(p, { m: { nom:'—', detail:'', portee:0, source:'provisoire' } }); }
     bloc.className = 'zone';
-    var mesures = t.forme === 'surface'
+    var mesures = (t.forme === 'surface' || t.forme === 'nappe')
       ? '<div class="ligne">' +
         '<div><label>Longueur (m)</label><input type="number" inputmode="decimal" min="0" step="0.5" data-champ="L" value="' + (z.L||'') + '"></div>' +
         '<div><label>Largeur (m)</label><input type="number" inputmode="decimal" min="0" step="0.5" data-champ="l" value="' + (z.l||'') + '"></div>' +
-        '<div><label>Arroseur</label><select data-champ="materiel">' +
-          '<option value="auto"' + (z.materiel==='auto'?' selected':'') + '>Au mieux</option>' +
-          '<option value="turbine"' + (z.materiel==='turbine'?' selected':'') + '>Turbines</option>' +
-          '<option value="tuyere"' + (z.materiel==='tuyere'?' selected':'') + '>Tuyères</option>' +
-        '</select></div></div>'
-      : '<div class="ligne"><div><label>Longueur à équiper (m)</label>' +
-        '<input type="number" inputmode="decimal" min="0" step="1" data-champ="ml" value="' + (z.ml||'') + '"></div></div>';
+        (t.forme === 'surface'
+          ? '<div><label>Arroseur</label><select data-champ="materiel">' +
+              '<option value="auto"' + (z.materiel==='auto'?' selected':'') + '>Au mieux</option>' +
+              '<option value="turbine"' + (z.materiel==='turbine'?' selected':'') + '>Turbines</option>' +
+              '<option value="tuyere"' + (z.materiel==='tuyere'?' selected':'') + '>Tuyères</option>' +
+            '</select></div>'
+          : '') + '</div>'
+      : '<div class="ligne"><div><label>Longueur de haie (m)</label>' +
+        '<input type="number" inputmode="decimal" min="0" step="1" data-champ="ml" value="' + (z.ml||'') + '"></div>' +
+        '<div><label>Lignes de goutte-à-goutte</label><select data-champ="lignesHaie">' +
+          '<option value="1"' + (Number(z.lignesHaie)!==2?' selected':'') + '>Une ligne</option>' +
+          '<option value="2"' + (Number(z.lignesHaie)===2?' selected':'') + '>Deux lignes</option>' +
+        '</select></div></div>';
 
     var resume = p.debit > 0
       ? (t.forme === 'surface'
           ? p.nombre + ' ' + p.m.nom.toLowerCase() + (p.nombre>1?'s':'') +
             (p.m.detail ? ' ' + p.m.detail : '') + ' (' + p.nx + ' × ' + p.ny + ')' +
-            ' — un tous les ' + nb(p.ecart) + ' m'
-          : p.nombre + ' m de gaine')
+            ' — un tous les ' + nb(p.ecart) + ' m, recouvrement ' +
+            Math.round(recouvrementObtenu(p.m.portee, p.ecart) * 100) + ' %' +
+            (p.quinconce ? ', en quinconce' : ', en carré') +
+            (p.tropSerre ? ' · <span class="provisoire">buse trop grande pour cette zone : ' +
+              'l\'écart tombe sous la portée</span>' : '')
+          : (p.lignes ? p.lignes + ' ligne' + (p.lignes>1?'s':'') +
+              (p.ecartLignes ? ' à ' + Math.round(p.ecartLignes*100) + ' cm' : '') + ' · ' : '') +
+            p.nombre + ' m de gaine')
         + ' · ' + nb(p.debit) + ' m³/h · ' + p.minutes + ' min, ' + p.passages + '×/semaine'
         + (p.emprunte ? ' · <span class="provisoire">modèle générique, pas encore ' + nomDeMarque(marqueCourante()) + '</span>'
                       : (p.m.source === 'provisoire' ? ' · <span class="provisoire">portée à confirmer</span>' : ''))
@@ -698,6 +817,16 @@ function dessinerPlans(){
       for (var j=0;j<p.ny;j++){
         var x = margeG + (i * L) / (p.nx - 1 || 1);
         var y = marge + (j * H) / (p.ny - 1 || 1);
+        // **Le quinconce se DESSINE, il ne s'annonce pas.** Sa règle du 17 août :
+        // quinconce au-delà de quatre arroseurs, « et les derniers arroseurs
+        // doivent toujours être dans les coins ». Le pourtour reste donc
+        // régulier — coins compris —, et seules les rangées INTÉRIEURES se
+        // décalent d'un demi-écart. Un plan qui écrit « en quinconce » sous une
+        // grille carrée est un plan qui ment, et personne ne le vérifierait.
+        var interieur = (j > 0 && j < p.ny - 1) && (i > 0 && i < p.nx - 1);
+        if (p.quinconce && interieur && (j % 2 === 1)){
+          x += (L / (p.nx - 1 || 1)) / 2;
+        }
         couronnes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (p.m.portee*E) + '" class="portee"/>';
         tetes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.5" class="tete"/>';
       }
@@ -834,12 +963,18 @@ function dessinerNourrice(d){
 function dessinerBandeau(){
   var n = CATALOGUE.provisoires();
   var fiches = Object.keys(CATALOGUE.nourrices).length;
-  document.getElementById('bandeau').innerHTML = n === 0 && fiches > 0
-    ? '<b>Catalogue à jour.</b> Toutes les valeurs viennent de vos fiches.'
-    : '<b>' + n + ' valeur' + (n>1?'s':'') + ' encore provisoire' + (n>1?'s':'') +
-      '</b> — portées, débits et matériel de catalogue générique, en attendant vos photos. ' +
-      (fiches === 0 ? 'Aucune fiche de nourrice enregistrée pour l\'instant.'
-                    : fiches + ' fiche(s) de nourrice enregistrée(s).');
+  var relevees = CATALOGUE.buses.filter(function(b){ return b.source === 'patron'; }).length;
+  // **Dire ce qui est ARRIVÉ autant que ce qui manque.** Un bandeau qui ne
+  // compte que les trous laisse croire que rien n'a avancé le jour même où sept
+  // buses sont entrées — et il finit par être ignoré.
+  var arrive = relevees
+    ? '<b>' + relevees + ' buses relevées de vos catalogues.</b> ' : '';
+  document.getElementById('bandeau').innerHTML = arrive + (n === 0 && fiches > 0
+    ? 'Catalogue à jour : toutes les valeurs viennent de vos fiches.'
+    : n + ' valeur' + (n>1?'s':'') + ' encore provisoire' + (n>1?'s':'') +
+      ' (turbines, gaine, matériel), ' +
+      (fiches === 0 ? 'et aucune fiche de nourrice.'
+                    : 'et ' + fiches + ' fiche(s) de nourrice.'));
 }
 
 var PRIX = (function(){ try { return JSON.parse(localStorage.getItem('atlas-arrosage-prix')) || {}; }
@@ -894,23 +1029,29 @@ function recalculer(redessinerZones){
   dessinerNourrice(d);
   dessinerMateriel(d);
   dessinerBandeau();
-  document.getElementById('recouvrementNote').innerHTML = (function(){
-    var r = recouvrementCourant(), l = [];
-    CATALOGUE.arroseurs.forEach(function(a){
-      l.push(a.nom.toLowerCase() + ' (portée ' + nb(a.portee,1) + ' m) → un tous les ' + nb(a.portee*r) + ' m');
-    });
-    // **Il a répondu « non, autre chose » le 17 août.** La règle ci-dessous
-    // n'est donc PLUS une lecture à confirmer : c'est une règle qu'il a
-    // écartée, et l'écran doit le dire. Laisser « si ce n'est pas votre pose,
-    // dites-le » ferait essayer l'outil sur un calcul qu'il a déjà rejeté —
-    // et tout ce qu'il jugerait ensuite (nombre d'arroseurs, secteurs, liste)
-    // porterait cette erreur sans qu'elle soit visible.
-    return '<span class="provisoire">Règle de pose PROVISOIRE — vous m\'avez dit ' +
-      'qu\'elle n\'était pas la bonne, j\'attends la vôtre.</span> En attendant, ' +
-      'à ' + Math.round(r*100) + ' % : ' + l.join(' · ') +
-      '. Tout ce qui en découle — nombre d\'arroseurs, secteurs, liste — bougera ' +
-      'quand vous me l\'aurez donnée.';
-  })();
+    // **Sa règle du 17 août :** « L'utilisateur devra dire s'il se repique juste
+  // après le compteur d'eau — le top du top, la ville délivre au moins 3 bar,
+  // du sûr, et là tu sauras. Sinon tu dois lui expliquer quoi faire pour que tu
+  // aies les bonnes infos. » L'écran ne se contente donc pas de poser la
+  // question : dans le cas défavorable, il dit QUOI FAIRE. Une question sans
+  // marche à suivre renvoie l'utilisateur à son ignorance.
+  document.getElementById('compteurNote').innerHTML = etat.compteur === 'non'
+    ? '<b>Alors il faut mesurer sur place</b>, et c\'est deux gestes : ' +
+      '<b>1.</b> ouvrir en grand et remplir un seau gradué en comptant les secondes ' +
+      '(c\'est le débit ci-dessous) ; <b>2.</b> visser un manomètre à 5 € sur le ' +
+      'robinet, ouvert, pour lire la pression. <span class="provisoire">Sans ces ' +
+      'deux mesures, le plan repose sur une supposition</span> — et il s\'écroule à ' +
+      'la mise en eau.'
+    : '<b>Le meilleur cas.</b> Le réseau de ville délivre au moins 3 bar au ' +
+      'compteur : la pression est connue, il ne reste que le débit à mesurer au seau.';
+  document.getElementById('compteur').value = etat.compteur === 'non' ? 'non' : 'oui';
+
+  document.getElementById('recouvrementNote').innerHTML =
+    '<b>Votre règle de pose :</b> écart entre arroseurs jamais inférieur à la ' +
+    'portée, jamais au-delà de ' + nb(ECART_MAX_FACTEUR,1).replace(',0','') +
+    ' × la portée (' + Math.round(RECOUVREMENT_MIN*100) + ' % de recouvrement au minimum). ' +
+    'Une portée de 5 m donne donc entre 5 et 6 m. Quinconce dès ' +
+    (QUINCONCE_AU_DELA_DE + 1) + ' arroseurs, et les coins toujours occupés.';
   var mail = document.getElementById('envoyer');
   mail.href = 'mailto:?subject=' + encodeURIComponent('Demande de prix — arrosage automatique') +
               '&body=' + encodeURIComponent(texteDeLaListe(d));
@@ -929,13 +1070,7 @@ function charger(){
     etat[id] = e.target.value; recalculer(false);
   });
 });
-document.getElementById('recouvrement').addEventListener('input', function(e){
-  // Saisi en pour-cent parce que c'est ainsi qu'il en parle ; gardé en fraction
-  // parce que c'est ainsi qu'on multiplie.
-  etat.recouvrement = Number(e.target.value) / 100;
-  recalculer(true);
-});
-document.getElementById('recouvrement').value = Math.round(recouvrementCourant() * 100);
+
 document.getElementById('seau').value = etat.seau;
 document.getElementById('temps').value = etat.temps;
 document.getElementById('pression').value = etat.pression;
@@ -944,7 +1079,9 @@ document.querySelectorAll('[data-ajout]').forEach(function(b){
   b.addEventListener('click', function(){
     var type = b.getAttribute('data-ajout');
     var z = { id: prochainId++, nom: TYPES[type].nom, type: type, materiel: type === 'gazon' ? 'auto' : 'gaine' };
-    if (TYPES[type].forme === 'surface') { z.L = 10; z.l = 8; } else { z.ml = 20; }
+    if (TYPES[type].forme === 'surface') { z.L = 10; z.l = 8; }
+    else if (TYPES[type].forme === 'nappe') { z.L = 10; z.l = 2; }
+    else { z.ml = 20; z.lignesHaie = 1; }
     etat.zones.push(z);
     recalculer(true);
   });
@@ -962,6 +1099,17 @@ document.getElementById('copier').addEventListener('click', function(){
     window.prompt('Copiez la liste :', texte); dire('Copié');
   }
 });
+document.getElementById('compteur').addEventListener('change', function(e){
+  etat.compteur = e.target.value;
+  // Au compteur, la pression est celle du réseau : au moins 3 bar. On la pose
+  // plutôt que de la laisser à 3 « par hasard » — et il peut la corriger.
+  if (etat.compteur === 'oui' && (!etat.pression || Number(etat.pression) < 3)){
+    etat.pression = 3;
+    document.getElementById('pression').value = 3;
+  }
+  recalculer(false);
+});
+
 document.getElementById('imprimer').addEventListener('click', function(){ window.print(); });
 
 var caseSonde = document.getElementById('sonde');

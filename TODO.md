@@ -91,6 +91,33 @@ qui ne le sont pas.
 | 17 | Les buses sont données **à 2 bar**. Que faire quand l'installation tourne à 3 : autre tableau, ou correction ? | *en attente* |
 | 18 | Les **corps escamotables** sur lesquels ces buses se vissent : quelles références ? | *en attente* |
 
+**SES RÉPONSES DÉTAILLÉES DU 17 AOÛT — LE MÉTIER, PAR LUI.** Tout ce qui suit
+est appliqué dans `appli/arrosage.html`. Ne pas le redéduire, ne pas l'assouplir.
+
+| # | Sa règle | Où c'est |
+|---|---|---|
+| 5 | **« 80 % minimum entre chaque arroseur. Portée 5 m : distance ~5,50 m, 6 m max, 5 m étant la perfection. Jamais moins. En dessous de 5 m, 4 m, 3 m : JAMAIS. »** Donc écart ∈ [portée ; 1,2 × portée]. L'outil faisait exactement l'inverse (0,8 × portée) | `ECART_MAX_FACTEUR`, `paveSelonSaRegle` |
+| 6 | **Quinconce au-delà de 4 arroseurs, carré en dessous. « Les derniers arroseurs doivent toujours être dans les coins »** — pourtour régulier, seules les rangées intérieures se décalent | `QUINCONCE_AU_DELA_DE`, `dessinerPlans` |
+| 7 | Il enverra **un tableau portée × distance** : l'écart viendra alors du catalogue, pas d'un facteur | à venir |
+| 8 | **85 % du débit par secteur : confirmé** | `MARGE` |
+| 9 | **« Ça ne se mélange jamais »** — ni deux pluviométries, ni deux familles | `decouper()` |
+| 10 | **Massifs : lignes tous les 80 cm. Potager : 70 cm. Haies : une ou deux lignes, À DEMANDER à l'utilisateur** | `TYPES`, forme `nappe` |
+| 12 | Une grande nourrice ou deux petites : **« question à poser à l'utilisateur, il décidera »** | à faire |
+| 13 | Le croquis client sera **les deux** — carré simple, ou avec obstacles, courbes, arbre au milieu. **« Je vais te donner les clés »** | à venir |
+| 14 | **L'utilisateur dit s'il se repique juste après le compteur** (le meilleur cas : la ville délivre ≥ 3 bar, c'est du sûr). Sinon **on lui explique quoi faire** pour avoir les bonnes infos | champ `compteur` |
+| 15 | Le choix de marque vaut **aussi pour les électrovannes**, pas pour le reste | `suitLaMarque` |
+| 16 | D'autres marques viendront **au fil des photos** | — |
+| 17 | **« À 2 bar ou 3 bar c'est quasiment les mêmes valeurs »** — aucune correction de pression à faire | — |
+| 18 | Les **corps escamotables** arrivent | `CATALOGUE.corps`, vide |
+
+**CE QUE SA RÈGLE D'ÉCART A RÉVÉLÉ, ET QUI N'ÉTAIT PAS VISIBLE AVANT :** le
+choix de buse doit OBÉIR à la règle, pas être corrigé après coup. Une turbine de
+9 m de portée ne pave pas une pelouse de 12 m de large — deux rangées feraient
+12 m d'écart (au-delà de sa limite), trois en feraient 6 (sous la portée, ce
+qu'il interdit). L'outil prend donc, de la plus grande à la plus petite, **la
+première buse qui pave les deux côtés selon sa règle**. Il ne reste d'alerte que
+sur les zones réellement impossibles.
+
 **SES RÉPONSES DU 17 AOÛT (formulaire à cocher — c'est la forme qu'il demande,
 pas des questions en vrac dans un message) :**
 

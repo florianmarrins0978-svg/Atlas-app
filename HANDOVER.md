@@ -884,6 +884,19 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ SA RÈGLE DE POSE (17 août), et l'outil faisait l'inverse.** « 80 % minimum
+entre chaque arroseur. Portée 5 m : ~5,50 m, 6 m max, 5 m étant la perfection.
+Jamais moins. 4 m, 3 m : JAMAIS. » Donc **écart ∈ [portée ; 1,2 × portée]** — le
+recouvrement se mesure sur l'écart, pas sur la portée. **Ne pas resserrer sous
+la portée par prudence** : c'est un arroseur de trop tous les quatre mètres, donc
+un secteur de plus et un devis plus cher.
+
+**⚠ ET LE CHOIX DE BUSE OBÉIT À CETTE RÈGLE.** Une turbine de 9 m ne pave pas une
+pelouse de 12 m de large ; l'outil prend la plus grande buse qui pave les deux
+côtés (`paveSelonSaRegle`). Ne pas revenir à « la plus grande qui rentre » suivie
+d'une alerte : cette version-là criait sur toutes les zones, y compris les
+bonnes, et une alerte qui parle à tort s'apprend à être ignorée.
+
 **⚠ SES PRIX NE SONT JAMAIS DANS LE CATALOGUE (17 août).** Sa consigne : les
 tarifs imprimés sont des prix CLIENT, ils ne s'enregistrent pas — pas même en
 commentaire. Ses prix négociés se saisissent dans `appli/arrosage-tarifs.html`

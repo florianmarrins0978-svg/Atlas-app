@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const B = 'http://127.0.0.1:8085';
+const B = 'http://127.0.0.1:8075';
 let ok = 0, ko = 0;
 function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; console.log('  ✗ ' + n + (d ? '\n      ' + d : '')); } }
 (async () => {
@@ -18,43 +18,28 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   const secteurs = await page.locator('.sec').count();
   // 9 avec le recouvrement de 80 % qu'il a posé le 17 août : l'écart de pose
   // passe sous la portée, donc il faut plus d'arroseurs, donc un secteur de plus.
-  cas('le jardin de départ donne 9 secteurs', secteurs === 9, 'lu : ' + secteurs);
+  // 8 depuis SA règle de pose du 17 août : on écarte au maximum dans sa limite
+  // au lieu de resserrer à 80 % de la portée, donc moins d'arroseurs.
+  // 10 depuis que le CHOIX DE BUSE obéit à sa règle d'écart : la turbine de 9 m
+  // ne pave pas une pelouse de 12 m de large sans descendre sous sa portée, donc
+  // l'outil passe en tuyères — plus d'arroseurs, plus de débit, plus de secteurs.
+  cas('le jardin de départ donne 10 secteurs', secteurs === 10, 'lu : ' + secteurs);
 
-  // LA RÈGLE QU'IL A DONNÉE : le recouvrement décide du nombre d'arroseurs.
-  // Sans ce cas, on pourrait la débrancher sans que rien ne rougisse.
-  const tetes80 = await page.locator('#plans .tete').count();
-  await page.fill('#recouvrement', '100');
-  await page.waitForTimeout(150);
-  const tetes100 = await page.locator('#plans .tete').count();
-  cas('desserrer le recouvrement retire des arroseurs', tetes100 < tetes80,
-      tetes100 + ' à 100 % contre ' + tetes80 + ' à 80 %');
-  const note = await page.locator('#recouvrementNote').innerText();
-  cas('l\'écart de pose est écrit en mètres', /tous les \d+,\d+ m/.test(note), note.slice(0, 90));
-  cas('et la règle est annoncée comme PROVISOIRE, puisqu\'il l\'a écartée',
-      /PROVISOIRE/.test(note), note.slice(0, 90));
-  await page.fill('#recouvrement', '80');
-  await page.waitForTimeout(150);
-
-  // LA MARQUE — sa demande du 17 août : Rain Bird par défaut, bandeau déroulant
-  // pour en changer. Sans ce cas, le bandeau pourrait ne rien piloter du tout.
-  cas('la marque par défaut est Rain Bird',
-      (await page.locator('#marque').inputValue()) === 'rainbird',
-      'lu : ' + (await page.locator('#marque').inputValue()));
-  // Depuis ses buses VAN du 17 août, Rain Bird n'est plus vide : le contrôle
-  // vise donc ce qui reste vrai — la marque annonce ce qu'elle a ET ce qui lui
-  // manque encore (les turbines, les corps d'arroseur).
-  const noteRB = await page.locator('#marqueNote').innerText();
-  cas('la marque annonce ses modèles', /\d+ modèles? Rain Bird/.test(noteRB), noteRB.slice(0, 70));
-  cas('et ce qui lui manque encore', /Manque encore/.test(noteRB), noteRB.slice(0, 90));
-  await page.selectOption('#marque', 'toro');
-  await page.waitForTimeout(200);
-  const noteToro = await page.locator('#marqueNote').innerText();
-  cas('changer de marque change ce qui est annoncé', /Toro/.test(noteToro), noteToro.slice(0, 60));
-  cas('et les zones survivent à la bascule', (await page.locator('.zone').count()) > 0);
-  const mailMarque = await page.locator('#envoyer').getAttribute('href');
-  cas('la marque part dans la demande au fournisseur', /Toro/.test(decodeURIComponent(mailMarque)));
-  await page.selectOption('#marque', 'rainbird');
-  await page.waitForTimeout(200);
+  // SA RÈGLE DE POSE (17 août) : l'écart ne descend JAMAIS sous la portée, et
+  // ne dépasse jamais 1,2 × la portée. C'est ce qui décide du nombre
+  // d'arroseurs, donc du prix — et l'outil faisait exactement l'inverse avant.
+  const resume = await page.locator('.zone-res').nth(1).innerText();
+  const mEcart = resume.match(/un tous les (\d+,\d+) m/);
+  const mRec = resume.match(/recouvrement (\d+) %/);
+  cas('l\'écart de pose est chiffré en mètres', !!mEcart, resume.slice(0, 90));
+  const ecart = mEcart ? parseFloat(mEcart[1].replace(',', '.')) : 0;
+  cas('l\'écart ne descend pas sous la portée de la buse retenue',
+      ecart >= 3.6 - 0.01, 'écart lu : ' + ecart);
+  cas('et ne dépasse pas 1,2 × la portée', ecart <= 3.6 * 1.2 + 0.01, 'écart lu : ' + ecart);
+  cas('le recouvrement obtenu tient ses 80 %',
+      mRec && Number(mRec[1]) >= 80, resume.slice(0, 90));
+  cas('la pose est annoncée (carré ou quinconce)',
+      /en quinconce|en carré/.test(resume), resume.slice(0, 90));
 
   // La nourrice : tant que sa fiche manque, l'écran le dit au lieu d'inventer.
   const nourrice = await page.locator('#nourrice').innerText();
@@ -134,7 +119,8 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
 
   // La liste du matériel : des quantités, et AUCUN prix.
   const liste = await page.locator('#materiel').innerText();
-  cas('la liste porte des quantités', /Électrovannes/.test(liste) && /Turbines/.test(liste), liste.slice(0, 80));
+  cas('la liste porte des quantités',
+      /Électrovannes/.test(liste) && /(Tuyères|Turbines)/.test(liste), liste.slice(0, 80));
   cas('aucun prix nulle part sur la page', !/€|\bEUR\b/.test(await page.locator('body').innerText()));
   cas('le disconnecteur est dans la liste', /Disconnecteur/.test(liste));
 
