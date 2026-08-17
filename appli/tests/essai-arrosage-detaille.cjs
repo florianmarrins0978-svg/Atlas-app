@@ -23,7 +23,13 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // 10 depuis que le CHOIX DE BUSE obéit à sa règle d'écart : la turbine de 9 m
   // ne pave pas une pelouse de 12 m de large sans descendre sous sa portée, donc
   // l'outil passe en tuyères — plus d'arroseurs, plus de débit, plus de secteurs.
-  cas('le jardin de départ donne 10 secteurs', secteurs === 10, 'lu : ' + secteurs);
+  // 7 depuis SA RÈGLE DU 17 AOÛT sur le débit des turbines (« c'est les mêmes
+  // données que pour 90 ou 180 degrés ») : les six familles de turbines
+  // deviennent posables, la pelouse arrière prend une 3504 au lieu de tuyères,
+  // et son débit tombe de 3,4 à 1,76 m³/h — d'où trois secteurs de moins.
+  // **Ce nombre est un TÉMOIN, pas une cible** : il bougera encore à chaque
+  // catalogue. Ce qu'il garde, c'est qu'un changement de données se VOIE.
+  cas('le jardin de départ donne 7 secteurs', secteurs === 7, 'lu : ' + secteurs);
 
   // SA RÈGLE DE POSE (17 août) : l'écart ne descend JAMAIS sous la portée, et
   // ne dépasse jamais 1,2 × la portée. C'est ce qui décide du nombre
@@ -61,6 +67,37 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // Et les valeurs provisoires sont signalées, jamais présentées comme acquises.
   const bandeau = await page.locator('#bandeau').innerText();
   cas('les valeurs provisoires sont signalées', /provisoire/.test(bandeau), bandeau.slice(0, 70));
+
+  // ── LE DÉBIT DES TURBINES NE DÉPEND PAS DE L'ARC — sa règle du 17 août ────
+  // « Les débits, portées qui sont dans le tableau sont donnés pour les
+  //   arroseurs en 360 degrés ; c'est les mêmes données que pour 90 ou 180. »
+  //
+  // Deux choses à tenir ensemble, et c'est leur COUPLE qui compte : une
+  // turbine porte le même débit aux trois angles, une tuyère VAN garde des
+  // valeurs DIFFÉRENTES par angle. Ne garder que la première laisserait
+  // passer un « on uniformise tout », qui écraserait les vraies valeurs des
+  // VAN ; ne garder que la seconde laisserait revenir la division par l'arc.
+  const angles = await page.evaluate(() => {
+    const t = CATALOGUE.buses.filter(b => b.pourType === 'turbine' && b.debit[360] != null);
+    const mauvaises = t.filter(b => b.debit[90] !== b.debit[360] || b.debit[180] !== b.debit[360]);
+    const van6 = CATALOGUE.buses.filter(b => b.ref === 'RBT630')[0]
+              || CATALOGUE.buses.filter(b => /-VAN$/.test(b.nom) && b.debit[90] != null)[0];
+    return { turbines: t.length, mauvaises: mauvaises.map(b => b.nom),
+             posables: CATALOGUE.busesDe('hunter', 'turbine').length,
+             van: van6 && { nom: van6.nom, q: van6.debit[90], t: van6.debit[360] } };
+  });
+  // **Un contrôle qui mesure ZÉRO ne mesure rien** (§5) : sans ce premier cas,
+  // un catalogue vidé de ses turbines rendrait « aucune mauvaise » en vert.
+  cas('des turbines sont bien au catalogue, avec un débit',
+      angles.turbines >= 20, 'lues : ' + angles.turbines);
+  cas('sa règle : une turbine porte le MÊME débit à 90, 180 et 360',
+      angles.mauvaises.length === 0, 'fautives : ' + angles.mauvaises.join(', '));
+  cas('et les turbines sont désormais POSABLES (elles étaient écartées)',
+      angles.posables >= 20, 'posables : ' + angles.posables);
+  // Le pendant, qui protège les tuyères : leur tableau donne un chiffre PAR
+  // ANGLE, et il est lu tel quel — la 6-VAN n'est pas proportionnelle.
+  cas('mais une tuyère VAN garde ses valeurs par angle, non uniformisées',
+      angles.van && angles.van.q !== angles.van.t, JSON.stringify(angles.van));
 
   // Le geste réel : il change le temps de remplissage, tout doit suivre.
   await page.fill('#temps', '40');
@@ -136,6 +173,61 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
       /Électrovannes/.test(liste) && /(Tuyères|Turbines)/.test(liste), liste.slice(0, 80));
   cas('aucun prix nulle part sur la page', !/€|\bEUR\b/.test(await page.locator('body').innerText()));
   cas('le disconnecteur est dans la liste', /Disconnecteur/.test(liste));
+
+  // ── UN CORPS DE SA FAMILLE, ET UN SBE À SON DIAMÈTRE ─────────────────────
+  // **Ce cas naît d'un défaut que les 39 autres n'ont pas vu**, et qu'une
+  // capture a montré : le jour où les turbines sont devenues posables, la
+  // liste comptait un corps de TUYÈRE pour les 22 arroseurs — dont 11
+  // turbines — et 22 SBE en 1/2" quand une turbine se raccorde en 3/4". Tout
+  // était vert. On éprouve donc un jardin qui MÊLE les deux familles, avec
+  // une turbine en 3/4" : c'est le seul cas où l'erreur se voit.
+  const familles = await page.evaluate(() => {
+    window.__avant = { zones: JSON.parse(JSON.stringify(etat.zones)), marque: etat.marque };
+    etat.marque = 'hunter';
+    etat.zones = [ { id:1, nom:'Grande pelouse', type:'gazon', L:'30', l:'22', materiel:'turbine' },
+                   { id:2, nom:'Petite bande',   type:'gazon', L:'8',  l:'4',  materiel:'tuyere' } ];
+    recalculer(true);
+    const l = listeMateriel(decouper());
+    const n = etat.zones.map(z => poser(z).nombre);
+    const q = (re) => l.filter(x => re.test(x.nom)).reduce((s, x) => s + x.q, 0);
+    const corpsTurb = l.filter(x => /^Turbine /.test(x.nom))[0];
+    const corpsTuy  = l.filter(x => /^Tuyère /.test(x.nom))[0];
+    return { nTurb:n[0], nTuy:n[1],
+             corpsTurb: corpsTurb && corpsTurb.q, corpsTuy: corpsTuy && corpsTuy.q,
+             sbe34haut: q(/SBE 075 \(haut/), sbe12haut: q(/SBE 050 \(haut/),
+             sbeBas: q(/\(bas, sur la ligne\)/) };
+  });
+  // Le cas qui empêche de mesurer zéro : sans deux familles réellement posées,
+  // tout ce qui suit vaudrait 0 === 0, en vert, sans rien prouver.
+  cas('le jardin d\'épreuve mêle bien turbines ET tuyères',
+      familles.nTurb > 0 && familles.nTuy > 0, JSON.stringify(familles));
+  cas('chaque famille reçoit le corps de SA série, pas celui de l\'autre',
+      familles.corpsTurb === familles.nTurb && familles.corpsTuy === familles.nTuy,
+      JSON.stringify(familles));
+  cas('et le SBE du haut suit le diamètre de chaque corps (3/4 et 1/2)',
+      familles.sbe34haut === familles.nTurb && familles.sbe12haut === familles.nTuy,
+      JSON.stringify(familles));
+  // Le SBE du BAS, lui, ne dépend pas du corps : toujours 3/4", un par arroseur.
+  cas('le SBE du bas reste un par arroseur, toutes familles confondues',
+      familles.sbeBas === familles.nTurb + familles.nTuy, JSON.stringify(familles));
+  // Et la convention de référence qui apparie buse et corps de turbine doit
+  // tenir pour TOUTES les buses posables — sans quoi un corps manquerait en
+  // silence dans la liste, et le chantier s'arrêterait à la pose.
+  const apparies = await page.evaluate(() =>
+    CATALOGUE.buses.filter(b => b.pourType === 'turbine' && b.debit[360] != null)
+      .filter(b => !CATALOGUE.corpsDeLaBuse(b)).map(b => b.ref));
+  cas('chaque buse de turbine posable trouve son corps',
+      apparies.length === 0, 'sans corps : ' + apparies.join(', '));
+
+  // On remet SON jardin — celui qu'il a saisi plus haut dans cette suite, avec
+  // le nom tapé à la main. Vider `localStorage` l'effacerait, et le contrôle
+  // « la saisie survit à un rechargement » deviendrait rouge pour une raison
+  // qui n'est pas la sienne.
+  await page.evaluate(() => {
+    etat.zones = window.__avant.zones; etat.marque = window.__avant.marque;
+    recalculer(true);
+  });
+  await page.waitForTimeout(150);
 
   // ── LA RÈGLE DES TÉS, ÉPROUVÉE PAR LUI SUR UN TRACÉ LIBRE (planche 74) ────
   // « N arroseurs sur un réseau, c'est N − 1 tés » — un réseau part d'UNE

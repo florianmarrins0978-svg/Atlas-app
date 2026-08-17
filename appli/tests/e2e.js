@@ -427,7 +427,19 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
        !/€/.test(await plan.$eval('#materiel', el => el.innerText)));
 
     // Il tape un prix : le plan le reprend, et dit ce qui manque encore.
-    await page.$eval('.p input', el => { el.value = '3.10'; el.dispatchEvent(new Event('input')); });
+    // **Le prix se pose sur une référence que le jardin d'exemple emploie
+    // VRAIMENT (RBT636, la 12-VAN de la pelouse avant), pas sur la première
+    // ligne du registre.** Viser la première a tenu tant que le jardin
+    // commençait par elle — puis les turbines sont devenues posables
+    // (sa règle du 17 août sur leur débit), la pelouse arrière a changé de
+    // buse, et le contrôle chiffrait un produit que le plan ne commande plus :
+    // total vide, trois contrôles rouges pour une raison qui n'était pas la
+    // leur. Une référence nommée ne bouge pas sous les pieds du contrôle.
+    await page.$$eval('.p', (cartes) => {
+      const carte = cartes.filter(c => /RBT636/.test(c.textContent))[0];
+      const el = carte.querySelector('input');
+      el.value = '3.10'; el.dispatchEvent(new Event('input'));
+    });
     await page.waitForTimeout(200);
     ok('tarifs : le compte suit la saisie', /1 \/ /.test(await page.$eval('#compte', el => el.innerText)));
 
@@ -438,14 +450,21 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     // **Le montant est vérifié au centime**, pas par un motif de texte. Une
     // version antérieure se contentait de lire « … sans prix » : un total qui
     // comblait ses trous à 10 € la ligne affichait toujours cette phrase et
-    // passait au vert. 11 buses (quinconce : un arroseur de moins que la
-    // grille carrée, sa correction du 17 août) à 3,10 € font 34,10 € — rien d'autre.
+    // passait au vert. 11 buses 12-VAN (quinconce : un arroseur de moins que
+    // la grille carrée, sa correction du 17 août) à 3,10 € font 34,10 € —
+    // rien d'autre, et surtout pas les 22 arroseurs des deux pelouses.
     ok('tarifs : le total vaut EXACTEMENT les lignes chiffrées', /34,10\s*€/.test(total),
        'lu : ' + total.slice(0, 80));
     ok('tarifs : et les lignes sans prix restent annoncées', /sans prix|INCOMPLET/.test(total));
 
     // Une case vidée efface le prix — « gratuit » n'est pas « pas renseigné ».
-    await page.$eval('.p input', el => { el.value = ''; el.dispatchEvent(new Event('input')); });
+    // La MÊME carte que celle qu'on vient de remplir, sinon on vide une case
+    // déjà vide et le contrôle passe au vert sans rien avoir éprouvé.
+    await page.$$eval('.p', (cartes) => {
+      const carte = cartes.filter(c => /RBT636/.test(c.textContent))[0];
+      const el = carte.querySelector('input');
+      el.value = ''; el.dispatchEvent(new Event('input'));
+    });
     await page.waitForTimeout(200);
     ok('tarifs : vider une case efface le prix', /0 \/ /.test(await page.$eval('#compte', el => el.innerText)));
 

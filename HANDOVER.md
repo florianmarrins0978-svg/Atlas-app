@@ -994,11 +994,28 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
-**⚠ SIX FAMILLES DE TURBINES ENTRÉES, AUCUNE POSÉE AUTOMATIQUEMENT.** Une seule
-valeur de débit par buse (pas de répartition par angle) — le garde-fou des
-R-VAN (`busesDe` exige 90°/180°/360°) les écarte du calcul tant qu'il n'a pas
-dit si le débit d'une turbine est proportionnel à l'arc réglé. Ne pas deviner :
-poser la question, comme pour les R-VAN.
+**⚠ LE DÉBIT D'UNE TURBINE NE DÉPEND PAS DE L'ARC — sa règle du 17 août, et
+c'est elle qui a débloqué les six familles.** *« Les débits, portées qui sont
+dans le tableau sont donnés pour les arroseurs en 360 degrés ; c'est les mêmes
+données que pour 90 ou 180 degrés. »* Le chiffre unique du tableau vaut donc à
+tous les arcs, et un passage d'`arrosage-catalogue.js` le recopie sur le 90° et
+le 180° — **des turbines SEULEMENT**. Les tuyères gardent leurs valeurs par
+angle, qui diffèrent vraiment (6-VAN : 0,27 à 90°, 0,32 à 360°). **Ne jamais
+diviser par l'arc, et ne jamais étendre l'uniformisation aux tuyères** : deux
+contrôles opposés gardent ce couple, et chacun a été vu rouge sur son défaut.
+
+**⚠ UNE TURBINE NE PREND PAS UN CORPS DE TUYÈRE — défaut vu sur une CAPTURE,
+par aucun des 39 contrôles d'alors.** Le jour où les turbines sont devenues
+posables, la liste comptait encore 22 corps 1800 et 22 SBE 1/2" pour un jardin
+dont 11 arroseurs étaient des turbines. `listeMateriel()` compte maintenant le
+corps **par famille** et le SBE du haut **par diamètre de corps**. Et le corps
+d'une turbine **ne se choisit pas** (la buse 0,75 du 3504 ne va que dans un
+corps 3504) : `CATALOGUE.corpsDeLaBuse` les apparie par la référence
+(`RA3504-B075` → `RA3504`). **Cette convention de référence est une dette** —
+un contrôle exige que chaque buse de turbine posable trouve son corps, sinon
+une transcription future ferait manquer un corps en silence. **Reste à faire :
+le deuxième sélecteur de corps**, pour qu'il choisisse hauteur et options des
+turbines comme il le fait des tuyères. Rien n'est faux en attendant.
 
 **⚠ UNE BUSE SANS SES TROIS ANGLES (90°/180°/360°) N'EST JAMAIS CHOISIE SEULE
 (17 août).** Les R-VAN Rain Bird se vendent en DEUX références par taille — une

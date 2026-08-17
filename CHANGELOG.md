@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Les turbines se posent enfin — et un corps de tuyère leur était compté
+
+*« Les débits, portées qui sont dans le tableau sont donnés pour les arroseurs
+en 360 degrés ; c'est les mêmes données que pour 90 ou 180 degrés. »* Cette
+phrase débloque les six familles de turbines, entrées depuis le matin mais
+jamais choisies : leurs tableaux ne donnent qu'un chiffre de débit par buse,
+et `busesDe` exige les trois angles avant de poser quoi que ce soit.
+
+**On n'a donc jamais eu à diviser** — le chiffre du tableau EST la valeur à
+90° comme à 360°. Un passage documenté recopie le 360° sur les deux autres
+angles des turbines, **et d'elles seules** : les tuyères gardent leurs valeurs
+par angle, qui sont réellement différentes (6-VAN : 0,27 à 90°, 0,32 à 360°).
+Physiquement cela se tient — une turbine projette un filet par un orifice fixe
+qui balaie l'arc réglé, une tuyère un éventail dont la largeur change avec
+l'arc. Sur le jardin d'exemple, la pelouse arrière passe en 3504, son débit
+tombe de 3,4 à 1,76 m³/h, et le jardin passe de dix secteurs à sept.
+
+**Le défaut que ce déblocage a créé, et qu'aucun des 39 contrôles n'a vu.** Les
+turbines posées, la liste comptait toujours un corps de TUYÈRE pour tous les
+arroseurs : 22 corps 1800 et 22 coudes SBE en 1/2", quand 11 de ces arroseurs
+étaient des turbines — corps 3504, et 3/4" sur les grosses séries. Tout était
+vert. **C'est une capture qui l'a montré, la sixième fois dans ce dépôt qu'un
+défaut sort d'une image et d'aucun test.** `listeMateriel()` compte désormais
+le corps par FAMILLE et le SBE du haut par DIAMÈTRE DE CORPS : un jardin mixte
+porte les deux diamètres, chacun pour sa part.
+
+Et le corps d'une turbine ne se choisit pas, contrairement à celui d'une
+tuyère : la buse 0,75 du 3504 ne va que dans un corps 3504.
+`CATALOGUE.corpsDeLaBuse` les apparie par la référence
+(`RA3504-B075` → `RA3504`), et un contrôle exige que **chaque** buse de
+turbine posable trouve son corps — une convention de référence cassée à la
+prochaine transcription ferait sinon manquer un corps en silence, donc un
+chantier arrêté à la pose.
+
+**Ce qui a été éprouvé à l'envers**, comme le veut le §5 : la division par
+l'arc rougit le contrôle du débit ; l'uniformisation étendue aux tuyères
+rougit celui qui protège leurs valeurs par angle ; le corps unique pour toutes
+les familles rougit les deux contrôles de corps et de diamètre. Chaque cas
+refuse aussi de conclure sur un jardin qui ne mêlerait pas les deux familles,
+pour ne pas rendre un vert qui ne mesure rien. 44/44 et 90/90.
+
+**Et « corps 1800 » devient « tuyère 1800 »**, sur sa correction — étendue aux
+Pro-Spray et I-Spray, et aux corps de turbine devenus « turbine X » : laisser
+deux mots pour la même chose dans un même sélecteur aurait été le genre
+d'écart qui se voit à l'écran et pas dans le code.
+
 ### Il éprouve la règle des tés sur un tracé libre — elle tient, `N − 1`
 
 *« Combien de té ? Où sont-ils ? Marque-les d'un point jaune ! »*, sur un

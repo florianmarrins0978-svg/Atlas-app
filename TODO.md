@@ -288,33 +288,61 @@ chaque paire de la rangée voisine. Sur le jardin d'exemple (18×12 m, buse
 points** (`pointsDeLaPose`), pour que les deux ne puissent plus diverger comme
 ils l'avaient fait — règle du §3 du dépôt, appliquée après coup.
 
-**SIX NOUVELLES PHOTOS DE TURBINES (turbines/rotors, pas des tuyères) — la
-matière est entrée, RIEN N'EST ENCORE POSÉ AUTOMATIQUEMENT.** Hunter PGP-ADJ,
-PGP Ultra, I 20-04 Ultra ; Rain Bird 5000 Plus, 3504 ; Hunter SRM-04, PGJ ;
-Toro Mini 8 — corps ET buses, tous relevés.
+**✅ LES SIX FAMILLES DE TURBINES SE POSENT — débloqué le 17 août par sa
+réponse sur le débit.** Hunter PGP-ADJ, PGP Ultra, I 20-04 Ultra ; Rain Bird
+5000 Plus, 3504 ; Hunter SRM-04, PGJ ; Toro Mini 8 — corps ET buses.
 
-**LE VRAI TROU, PARTOUT LE MÊME : une seule valeur de débit par numéro de buse,
-aucune répartition par angle** (contrairement aux tuyères VAN/SRS où le tableau
-donne 90°/180°/270°/360°). Une turbine projette UN SEUL filet qui balaie l'arc
-réglé — peut-être son débit est-il exactement proportionnel à l'arc (ce qui
-justifierait de le déduire pour les coins et les bords), mais sa propre règle
-du 17 août l'interdit tant que ce n'est pas confirmé, et les VAN ont montré que
-« proportionnel » n'est pas toujours vrai (la 6-VAN ne l'était pas). **Donc :
-entrées en `debit:{360: …}` seulement, et le garde-fou déjà posé pour les R-VAN
-(`busesDe` exige les trois angles) les écarte automatiquement du calcul** —
-elles restent visibles dans son registre de prix, sans être posées tant que la
-question n'a pas sa réponse.
+**CE QUI BLOQUAIT :** une seule valeur de débit par numéro de buse, aucune
+répartition par angle (contrairement aux tuyères VAN/SRS dont le tableau donne
+90°/180°/270°/360°). `busesDe` exige les trois angles, donc aucune turbine
+n'était choisie. **Sa réponse tranche, et il a fallu trois formulations pour
+la lui poser correctement** — les deux premières parlaient d'« angle », et il
+répondait sur le PLACEMENT (coin/bord/milieu), qui était déjà juste :
 
-**QUESTION À LUI POSER :** le débit d'une turbine à un réglage d'arc partiel
-(90°, 180°) est-il proportionnel au débit plein cercle donné dans ces tableaux,
-ou faut-il un autre tableau par angle comme pour les VAN ?
+> *« Les débits, portées qui sont dans le tableau sont donnés pour les
+> arroseurs en 360 degrés ; c'est les mêmes données que pour 90 ou 180
+> degrés. »*
 
-**Les corps de turbine sont entrés aussi**, marqués `pourType:'turbine'` pour
-ne jamais se mélanger avec les corps de tuyère dans le sélecteur (qui, lui,
-reste câblé sur `pourType:'tuyere'` — la seule famille réellement posée
-aujourd'hui). Une fois les turbines câblées, il faudra un DEUXIÈME sélecteur de
-corps pour elles, puisqu'un jardin réel mélange souvent turbines (grandes
-pelouses) et tuyères (petites zones, bordures) — pas encore fait.
+**Donc : le chiffre du tableau vaut à tous les arcs — on n'a jamais eu à
+diviser.** Un passage documenté dans `arrosage-catalogue.js` recopie le 360°
+sur le 90° et le 180° des turbines, et **de rien d'autre** : les tuyères
+gardent leurs valeurs par angle, qui sont réellement différentes (6-VAN :
+0,27 à 90°, 0,32 à 360° — jamais proportionnelles). Physiquement cela se tient :
+une turbine projette un filet par un orifice fixe qui balaie l'arc, alors
+qu'une tuyère projette un éventail dont la largeur change avec l'arc.
+
+**Ce que ça change sur le jardin d'exemple :** la pelouse arrière passe en
+turbines 3504, son débit tombe de 3,4 à 1,76 m³/h, et le jardin passe de
+**10 secteurs à 7**.
+
+**LA LEÇON DE MÉTHODE, ET ELLE VAUT POUR TOUTES LES QUESTIONS À LUI POSER.**
+Une question qui reste sans réponse deux fois n'est pas mal comprise : elle
+est mal posée. « Le débit à 90° » se lisait comme « quand met-on du 90° » —
+sujet qu'il maîtrise et qui était déjà réglé. La formulation qui a marché
+nommait la SOURCE (« sur vos tableaux, il n'y a qu'un seul chiffre ») et non
+le concept. **Montrer ce qu'on a relevé de ses photos, et lui demander ce qui
+manque** — c'est ce tableau de trois colonnes qui a débloqué en un message ce
+que deux formulaires n'avaient pas obtenu.
+
+**⚠ ET UN DÉFAUT QUE CE DÉBLOCAGE A CRÉÉ, TROUVÉ SUR UNE CAPTURE ET PAR AUCUN
+TEST.** Les turbines posées, la liste comptait toujours **un corps de TUYÈRE
+pour tous les arroseurs** — 22 corps 1800 et 22 SBE 1/2" là où 11 arroseurs
+étaient des turbines (corps 3504, et 3/4" sur les grosses séries). Les 39
+contrôles étaient verts : aucun ne regardait le corps par famille. **C'est la
+sixième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun test**
+(§5). Corrigé : `listeMateriel()` compte désormais le corps **par famille**,
+et le SBE du haut **par diamètre de corps** — un jardin mixte porte donc les
+deux diamètres, chacun pour sa part.
+
+**Le corps d'une turbine ne se CHOISIT pas**, contrairement à celui d'une
+tuyère (son sélecteur, « 10 cm sans option ») : la buse 0,75 du 3504 ne va que
+dans un corps 3504. `CATALOGUE.corpsDeLaBuse` fait l'appariement en lisant la
+référence (`RA3504-B075` → `RA3504`), et **un contrôle exige que chaque buse
+de turbine posable trouve son corps** — sans quoi une convention de référence
+cassée à la prochaine transcription ferait manquer un corps en silence, et le
+chantier s'arrêterait à la pose. Le deuxième sélecteur de corps (pour qu'il
+choisisse hauteur et options des turbines comme il le fait des tuyères) reste
+à faire — mais plus rien n'est faux en attendant.
 
 **LES BUSES MPR (5000 Plus, RBA2195-97) n'ont AUCUN débit sur la photo** — juste
 un rayon et un prix. Elles sont « matched precipitation rate » (le même débit

@@ -445,58 +445,58 @@ var CATALOGUE = {
      l'outil peut deviner. Tant qu'il n'a pas dit lequel prendre par défaut,
      aucun corps n'est choisi automatiquement dans la liste au fournisseur. */
   corps: [
-    { ref:'RT1802', nom:'Corps 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1802', nom:'Tuyère 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:5, options:[], detail:'escamotable 5 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1804', nom:'Corps 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1804', nom:'Tuyère 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:10, options:[], detail:'escamotable 10 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1806', nom:'Corps 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1806', nom:'Tuyère 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:15, options:[], detail:'escamotable 15 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1812', nom:'Corps 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1812', nom:'Tuyère 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:30, options:[], detail:'escamotable 30 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1824', nom:'Corps 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1824', nom:'Tuyère 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:10, options:['clapet anti-vidange'], detail:'escamotable 10 cm · SAM',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1826', nom:'Corps 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1826', nom:'Tuyère 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:15, options:['clapet anti-vidange'], detail:'escamotable 15 cm · SAM',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1822', nom:'Corps 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1822', nom:'Tuyère 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:30, options:['clapet anti-vidange'], detail:'escamotable 30 cm · SAM',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1834', nom:'Corps 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1834', nom:'Tuyère 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:10, options:['clapet anti-vidange','régulateur de pression'],
       detail:'escamotable 10 cm · SAM-PRS (2,1 bar)',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1836', nom:'Corps 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1836', nom:'Tuyère 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:15, options:['clapet anti-vidange','régulateur de pression'],
       detail:'escamotable 15 cm · SAM-PRS (2,1 bar)',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RT1832', nom:'Corps 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RT1832', nom:'Tuyère 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:30, options:['clapet anti-vidange','régulateur de pression'],
       detail:'escamotable 30 cm · SAM-PRS (2,1 bar)',
       source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'HT1541', nom:'Corps Pro-Spray-02', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HT1541', nom:'Tuyère Pro-Spray-02', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:5, options:[], detail:'escamotable 5 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 9' },
-    { ref:'HT1543', nom:'Corps Pro-Spray-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HT1543', nom:'Tuyère Pro-Spray-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:10, options:[], detail:'escamotable 10 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 9' },
-    { ref:'HT1544', nom:'Corps Pro-Spray-06', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HT1544', nom:'Tuyère Pro-Spray-06', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:15, options:[], detail:'escamotable 15 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 9' },
-    { ref:'HT1546', nom:'Corps Pro-Spray-12', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HT1546', nom:'Tuyère Pro-Spray-12', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:30, options:[], detail:'escamotable 30 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 9' },
-    { ref:'HT1521', nom:'Corps I-Spray-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HT1521', nom:'Tuyère I-Spray-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:10, options:['régulateur de pression'], detail:'escamotable 10 cm · régulateur',
       source:'patron', releve:'Aqua Plus 2026, p. 9' },
-    { ref:'HT1522', nom:'Corps I-Spray-06', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HT1522', nom:'Tuyère I-Spray-06', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:15, options:['régulateur de pression'], detail:'escamotable 15 cm · régulateur',
       source:'patron', releve:'Aqua Plus 2026, p. 9' },
-    { ref:'HT1523', nom:'Corps I-Spray-12', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HT1523', nom:'Tuyère I-Spray-12', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:30, options:['régulateur de pression'], detail:'escamotable 30 cm · régulateur',
       source:'patron', releve:'Aqua Plus 2026, p. 9' },
 
@@ -505,63 +505,63 @@ var CATALOGUE = {
        ci-dessus. Un jour où les turbines seront posées automatiquement, le
        sélecteur de corps devra distinguer les deux — pour l'instant seuls
        les corps `tuyere` sont câblés dans la liste au fournisseur. */
-    { ref:'HA2211', nom:'Corps PGP-ADJ', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HA2211', nom:'Turbine PGP-ADJ', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['réglable 40°-360°'],
       detail:'escamotable 10 cm · secteur réglable 40°-360°, livré avec 12 buses',
       source:'patron', releve:'Aqua Plus 2026, p. 13' },
-    { ref:'HA2210', nom:'Corps PGP Ultra', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HA2210', nom:'Turbine PGP Ultra', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['réglable et plein cercle'],
       detail:'escamotable 10 cm · réglable ET plein cercle (modèle unique), livré avec 8 buses',
       source:'patron', releve:'Aqua Plus 2026, p. 13' },
-    { ref:'HA2222', nom:'Corps I 20-04 Ultra', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HA2222', nom:'Turbine I 20-04 Ultra', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['FloStop'],
       detail:'escamotable, réglage par clé 40°-360°, coupure FloStop à la clé, livré avec 12 buses dont 4 angle bas',
       source:'patron', releve:'Aqua Plus 2026, p. 13' },
-    { ref:'HA2225', nom:'Corps I 20-04 Ultra SS Inox', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HA2225', nom:'Turbine I 20-04 Ultra SS Inox', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['FloStop','tige inox'],
       detail:'comme I 20-04 Ultra, tige escamotable en acier inox',
       source:'patron', releve:'Aqua Plus 2026, p. 13' },
-    { ref:'RA2181', nom:'Corps 5004 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RA2181', nom:'Turbine 5004 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['réglable'],
       detail:'escamotable 10 cm · secteur réglable, fermeture de débit sur l\'arroseur',
       source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
-    { ref:'RA5004FC', nom:'Corps 5004 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RA5004FC', nom:'Turbine 5004 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['plein cercle'],
       detail:'escamotable 10 cm · plein cercle',
       source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
-    { ref:'RA5006PC', nom:'Corps 5006 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RA5006PC', nom:'Turbine 5006 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:15, options:['réglable'],
       detail:'escamotable 15 cm · secteur réglable',
       source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
-    { ref:'RA5012PCSAM', nom:'Corps 5012 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RA5012PCSAM', nom:'Turbine 5012 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:30, options:['réglable','clapet anti-vidange'],
       detail:'escamotable 30 cm · secteur réglable · SAM',
       source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
-    { ref:'RA2180', nom:'Corps 5004 Plus SS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RA2180', nom:'Turbine 5004 Plus SS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['réglable','clapet anti-vidange','tige inox'],
       detail:'tige escamotable inox · secteur réglable · SAM',
       source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
-    { ref:'TAMINI8-4P', nom:'Corps Mini 8', marqueCle:'toro', fournisseur:'Aqua Plus',
+    { ref:'TAMINI8-4P', nom:'Turbine Mini 8', marqueCle:'toro', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'1/2', hauteur:9.5, options:['faible consommation'],
       detail:'escamotable 9,5 cm · réglage sur le dessus, 5 buses interchangeables',
       source:'patron', releve:'Aqua Plus 2026, p. 11' },
-    { ref:'RA3504', nom:'Corps 3504', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RA3504', nom:'Turbine 3504', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'1/2', hauteur:0, options:['réglable'],
       detail:'un seul modèle réglable 40°-360°, livré avec 6 buses',
       source:'patron', releve:'Aqua Plus 2026, p. 11' },
-    { ref:'RA3504SAM', nom:'Corps 3504 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RA3504SAM', nom:'Turbine 3504 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'1/2', hauteur:0, options:['réglable','clapet anti-vidange'],
       detail:'comme 3504 · SAM',
       source:'patron', releve:'Aqua Plus 2026, p. 11' },
-    { ref:'HA2264', nom:'Corps SRM-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HA2264', nom:'Turbine SRM-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'1/2', hauteur:0, options:['réglable et plein cercle'],
       detail:'faible débit, un seul modèle réglable et plein cercle',
       source:'patron', releve:'Aqua Plus 2026, p. 11' },
-    { ref:'HA2274', nom:'Corps PGJ-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HA2274', nom:'Turbine PGJ-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'1/2', hauteur:10, options:['réglable et plein cercle'],
       detail:'faible débit, escamotable 10 cm, réglable et plein cercle',
       source:'patron', releve:'Aqua Plus 2026, p. 11' },
-    { ref:'HA2272', nom:'Corps PGJ-12', marqueCle:'hunter', fournisseur:'Aqua Plus',
+    { ref:'HA2272', nom:'Turbine PGJ-12', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'1/2', hauteur:30, options:['réglable et plein cercle'],
       detail:'faible débit, escamotable 30 cm, réglable et plein cercle',
       source:'patron', releve:'Aqua Plus 2026, p. 11' }
@@ -831,6 +831,45 @@ CATALOGUE.ficheNourrice = function (n, combienGoutte) {
   return { nom: base.nom, source: base.source, pieces: piecesFusionnees };
 };
 
+/* ══ LE DÉBIT D'UNE TURBINE NE DÉPEND PAS DE L'ARC — sa réponse du 17 août ══
+
+   « Les débits, portées qui sont dans le tableau sont donnés pour les
+     arroseurs en 360 degrés ; c'est les mêmes données que pour 90 ou
+     180 degrés. »
+
+   C'est ce qui manquait pour poser les turbines. Leurs tableaux ne donnent
+   qu'UN chiffre par numéro de buse, là où les tuyères VAN en donnent un par
+   angle — et `busesDe()` exige les trois angles avant de poser une buse. Les
+   six familles de turbines étaient donc entrées mais jamais choisies.
+
+   **Et ce n'est PAS la déduction que le §3 du dépôt interdit.** On ne divise
+   rien : sa règle dit que le chiffre du tableau EST la valeur à 90° comme à
+   360°. Diviser aurait été inventer — et l'aurait été gravement, puisque la
+   moitié des turbines d'un jardin sont en coin ou en bord : un quart du débit
+   compté quatre fois de trop, ce sont des secteurs en moins sur le papier et
+   un arrosage qui bave sur le chantier.
+
+   Physiquement, cela se tient : une turbine projette UN filet par un orifice
+   fixe, qui balaie l'arc réglé. Réduire l'arc ne réduit pas le filet — ça
+   arrose plus souvent la même bande. C'est l'inverse d'une tuyère, dont le
+   jet est un éventail dont la largeur change avec l'arc : d'où des valeurs
+   par angle dans SES tableaux à elle, et la 6-VAN qui n'est pas
+   proportionnelle (0,27 à 90°, 0,32 à 360°).
+
+   DONC, ET LA DISTINCTION EST TOUT : quand le tableau donne UN chiffre, il
+   vaut pour tous les arcs ; quand il en donne un PAR ANGLE, on lit chaque
+   angle. Ce passage n'écrit donc que ce qui manque, et ne recouvre jamais une
+   valeur relevée. Il ne touche pas non plus les buses sans aucun débit (les
+   MPR 5000 Plus, dont la photo ne portait qu'un rayon) : rien à étendre. */
+CATALOGUE.buses.forEach(function (b) {
+  if (b.pourType !== 'turbine') return;
+  if (b.debit[360] == null) return;
+  if (b.debit[90] != null || b.debit[180] != null) return;
+  b.debit[90] = b.debit[360];
+  b.debit[180] = b.debit[360];
+  b.debitMemeQuelQueSoitLArc = true;
+});
+
 /* Ce que l'écran doit savoir dire, et qui se compte ici plutôt qu'à trois
    endroits : combien de valeurs attendent encore ses données. */
 /* Les arroseurs d'une marque, par type. Rend un tableau VIDE quand la marque
@@ -915,6 +954,37 @@ CATALOGUE.corpsParDefaut = function (marqueCle) {
   var chez = CATALOGUE.corpsDe(marqueCle);
   var dix = chez.filter(function (c) { return c.hauteur === 10 && c.options.length === 0; })[0];
   return dix || chez[0] || null;
+};
+
+/* LE CORPS QUI VA AVEC UNE BUSE DE TURBINE — et pourquoi ce n'est PAS un choix.
+
+   Une buse de tuyère se visse sur n'importe quel corps de tuyère de la marque :
+   c'est pour cela que le corps s'y CHOISIT (son sélecteur, « 10 cm sans option »
+   par défaut, sa décision du 17 août). Une turbine, non : la buse 0,75 du 3504
+   ne va que dans un corps 3504, celle du PGP que dans un PGP. Le couple est le
+   produit, il n'y a rien à trancher.
+
+   Le lien se lit sur la référence, parce que c'est ainsi qu'elles ont été
+   relevées de ses photos : la buse porte la référence du corps, suivie de son
+   numéro (`RA3504-B075` → `RA3504`, `HA2211-B4` → `HA2211`). Les corps à
+   variante allongent ce préfixe plutôt que de le rompre (`RA5004` → `RA5004FC`,
+   `TAMINI8` → `TAMINI8-4P`), d'où la comparaison par DÉBUT de référence et non
+   par égalité.
+
+   **Une convention de référence peut se casser à la prochaine transcription**,
+   et le jour où elle se cassera ce serait silencieux : un corps manquant dans
+   la liste, donc un chantier arrêté. Un contrôle exige donc que CHAQUE buse de
+   turbine posable trouve son corps (`essai-arrosage-detaille.cjs`). Ici, rien
+   n'est deviné : sans correspondance, on rend `null` et l'écran le dit. */
+CATALOGUE.corpsDeLaBuse = function (buse) {
+  if (!buse || buse.pourType !== 'turbine') return null;
+  var base = buse.ref.split('-B')[0];
+  return CATALOGUE.corps.filter(function (c) {
+    return c.pourType === 'turbine' && c.marqueCle === buse.marqueCle &&
+           c.ref.indexOf(base) === 0 && c.options.length <= 1;
+  })[0] || CATALOGUE.corps.filter(function (c) {
+    return c.pourType === 'turbine' && c.marqueCle === buse.marqueCle && c.ref.indexOf(base) === 0;
+  })[0] || null;
 };
 // Ce que chaque option apporte, en une phrase — pour que le choix se fasse
 // sur ce que ça change, pas sur un sigle (« SAM », « PRS ») que personne ne

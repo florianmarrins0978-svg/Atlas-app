@@ -964,22 +964,51 @@ function listeMateriel(d){
     var g = CATALOGUE.gaines[0];
     lignes.push({ ref:g.ref, nom:'Gaine de goutteurs ' + g.detail, q: totalGaine, u:'ml' });
   }
-  // Un corps par arroseur — celui qu'il a choisi (10 cm sans option par
-  // défaut, réglable à l'écran). Sans corps enregistré pour la marque
-  // courante, on ne compte rien plutôt que de compter un corps qui n'existe
-  // pas dans son catalogue.
-  var corps = corpsCourant();
-  if (totalArroseurs && corps) lignes.push({ ref:corps.ref, nom:corps.nom + ' — ' + corps.detail, q: totalArroseurs, u:'u' });
+  // **UN CORPS PAR ARROSEUR, MAIS LE CORPS DE SA FAMILLE.** Une tuyère prend
+  // le corps qu'il a choisi à l'écran (10 cm sans option par défaut, sa
+  // décision du 17 août) ; une turbine prend le corps de SA série — la buse
+  // 0,75 du 3504 ne va que dans un corps 3504, il n'y a rien à trancher là
+  // (`CATALOGUE.corpsDeLaBuse`).
+  //
+  // **Ce partage est né d'un défaut vu SUR L'ÉCRAN, pas d'un test.** Le jour
+  // où les turbines sont devenues posables (sa règle du 17 août sur leur
+  // débit), cette liste comptait encore un corps de TUYÈRE pour les 22
+  // arroseurs du jardin — dont 11 turbines — et 22 coudes SBE en 1/2" quand
+  // les turbines se raccordent en 3/4". Les suites étaient toutes vertes :
+  // aucune ne regardait le corps par famille. C'est la capture qui l'a montré,
+  // la cinquième fois dans ce dépôt (§5).
+  //
+  // Sans corps enregistré pour la marque courante, on ne compte rien plutôt
+  // que de compter un corps qui n'existe pas dans son catalogue.
+  var parCorps = {}, corpsDe = {};
+  Object.keys(compte).forEach(function(ref){
+    var m = modeles[ref];
+    if (m.type === 'gaine') return;
+    var c = m.type === 'turbine' ? CATALOGUE.corpsDeLaBuse(m.buse) : corpsCourant();
+    if (!c) return;
+    parCorps[c.ref] = (parCorps[c.ref] || 0) + compte[ref];
+    corpsDe[c.ref] = c;
+  });
+  Object.keys(parCorps).forEach(function(cref){
+    var c = corpsDe[cref];
+    lignes.push({ ref:c.ref, nom:c.nom + ' — ' + c.detail, q: parCorps[cref], u:'u' });
+  });
   // « Sous les arroseurs il faut obligatoirement des coudes SBE, choisis-les
   // en fonction des diamètres, un à chaque fois par arroseur » — sa consigne
-  // du 17 août. Le taraudage vient du CORPS choisi, pas du hasard : un
-  // 1800 se raccorde en 1/2", un PGP Ultra en 3/4". Sans corps enregistré pour
-  // la marque courante, le taraudage n'est pas connu — on ne devine pas, on
-  // ne compte rien.
-  if (totalArroseurs && corps && corps.filetage){
-    var coude = CATALOGUE.coudes.filter(function(c){ return c.filetage === corps.filetage; })[0];
-    if (coude) lignes.push({ ref:coude.ref, nom:coude.nom + ' (haut, au corps) — ' + coude.detail, q: totalArroseurs, u:'u' });
-  }
+  // du 17 août. Le taraudage vient du CORPS posé, pas du hasard : un 1800 se
+  // raccorde en 1/2", un PGP Ultra en 3/4". Un jardin qui mêle turbines et
+  // tuyères porte donc les DEUX diamètres, chacun pour sa part — c'est
+  // exactement ce que la version précédente ne savait pas faire.
+  var parFiletage = {};
+  Object.keys(parCorps).forEach(function(cref){
+    var f = corpsDe[cref].filetage;
+    if (f) parFiletage[f] = (parFiletage[f] || 0) + parCorps[cref];
+  });
+  Object.keys(parFiletage).forEach(function(f){
+    var coude = CATALOGUE.coudes.filter(function(c){ return c.filetage === f; })[0];
+    if (coude) lignes.push({ ref:coude.ref, nom:coude.nom + ' (haut, au corps) — ' + coude.detail,
+                             q: parFiletage[f], u:'u' });
+  });
   // **Un DEUXIÈME SBE, celui du bas** — sa planche du 17 août sur le réseau
   // latéral : chaque arroseur (départ, milieu ou fin de ligne) porte 1 SBE
   // 3/4" au raccord de tuyauterie, TOUJOURS 3/4" quel que soit le corps —
