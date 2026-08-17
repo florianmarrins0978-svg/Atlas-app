@@ -362,6 +362,12 @@ const MAQUETTES = [
     quoi: "Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.",
   },
   {
+    fichier: "73-le-trace-du-tuyau.html",
+    titre: "Le tracé du tuyau",
+    famille: "L’arrosage automatique",
+    quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel.",
+  },
+  {
     fichier: "72-mes-mots-au-catalogue.html",
     titre: "Mes mots au catalogue",
     famille: "Les réglages",

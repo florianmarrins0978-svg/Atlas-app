@@ -176,6 +176,12 @@ secteur), ou y a-t-il plusieurs réseaux parallèles partant du regard pour un
 même secteur ? Sans cette réponse, compter les tés/coudes serait inventer un
 tracé.
 
+**Posée en dessin le 17 août, sur sa demande** (*« fais-moi un croquis pour
+cette question que je te réponde correctement »*) : `docs/maquettes/73-le-trace-du-tuyau.html`,
+deux tracés du même secteur (3 rangées de 4 arroseurs) qu'il touche pour
+comparer — A, une seule ligne en serpentin ; B, plusieurs lignes parallèles
+depuis une jonction par rangée. En attente de sa réponse.
+
 **LA NOURRICE SE MODIFIE QUAND UNE VOIE PART EN GOUTTE-À-GOUTTE — sa règle du
 17 août.** *« À ne pas oublier : lorsqu'un réseau est pour du goutte-à-goutte,
 quelques modifications s'appliquent […] tout le reste ne doit pas être
