@@ -47,6 +47,12 @@ function verifier(intitule: string, fn: () => void) {
 
 const dossier = mkdtempSync(path.join(tmpdir(), "atlas-lent-"));
 const TEMOIN_ECHEC = path.join(dossier, "echec.txt");
+// **Le témoin de version bâtie est détourné lui aussi, et il a fallu quatre
+// rouges pour le comprendre.** La dernière étape de la batterie lance un vrai
+// banc, qui bâtit et écrit `.next-batie/atlas-version-batie.txt` avec le commit
+// courant. La suite lisait ce reste et voyait « Code SERVI : <commit> » là où
+// elle attendait « en cours » — quatre cas rouges, aucun défaut de produit.
+const TEMOIN_BATI = path.join(dossier, "version-batie.txt");
 
 /**
  * Joue le diagnostic et rend sa sortie.
@@ -60,7 +66,7 @@ function diagnostiquer(): string {
   try {
     return execFileSync("node", [DIAGNOSTIC], {
       encoding: "utf8",
-      env: { ...process.env, ATLAS_TEMOIN_ECHEC: TEMOIN_ECHEC },
+      env: { ...process.env, ATLAS_TEMOIN_ECHEC: TEMOIN_ECHEC, ATLAS_TEMOIN_BATI: TEMOIN_BATI },
       stdio: ["ignore", "pipe", "ignore"],
     });
   } catch (err) {

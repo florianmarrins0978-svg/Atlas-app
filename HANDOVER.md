@@ -75,6 +75,26 @@ processus. Quand ce message apparaît, **une construction tourne pour de bon**,
 et l'effacer en lancerait une seconde à côté. La vraie cause était ailleurs :
 `demarrer.sh` n'incluait pas `build` dans son `pkill`, et orphelinait une
 construction à chaque démarrage (`CHANGELOG.md` du 16 août).
+
+**LE MÊME MESSAGE EST REVENU LE 17 AOÛT AU SOIR, et ce n'était pas la même
+panne.** *« Même problème qu'hier, l'appli est super lente. »* Le `pkill` du
+démarrage tient toujours — mais il ne protège QUE le démarrage. Son espace n'a
+que 8 Go (181 Mo libres au moment de la panne) : quand la mémoire manque, le
+noyau tue un processus, le banc part, et **sa construction lui survit**. Le
+veilleur relance un banc, qui tombe sur le verrou de l'orpheline.
+
+**Ce qui est posé depuis** (`ARCHITECTURE.md` §126) :
+
+- **le banc déloge l'orpheline avant de bâtir** (`scripts/verrou-construction.mjs`)
+  — on ne double pas une construction, on retire celle qui n'a plus de
+  destinataire : le banc qui aurait basculé dessus est mort ;
+- **il réessaie une fois** quand c'est ce refus-là qui a parlé ;
+- **le verrou de banc se prend en création exclusive** (`wx`) : deux bancs qui
+  démarrent dans la même seconde ne pouvaient PAS se voir — ils repartaient tous
+  les deux, avec deux constructions.
+
+**Ce qui reste vrai et ne doit pas être défait :** on n'efface jamais le fichier
+`lock`. Tuer le processus, oui ; effacer sa trace, jamais.
 | `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
 | `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
 

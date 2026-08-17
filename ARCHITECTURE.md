@@ -10499,3 +10499,78 @@ porte une LISTE d'outils (arrosage, puis terrasse bois), donc il s'appelle
 « Outils » et non « Arrosage » ; et il faudra pouvoir **rattacher un plan à un
 chantier après coup**, sans quoi un plan fait en visite de devis se perdra —
 c'est précisément ce que l'accès sans chantier fait gagner et risque de coûter.
+
+---
+
+
+---
+
+## 126. « L'appli est super lente », deux soirs de suite — et deux causes différentes
+
+**Le 16 août, puis le 17 : le même message, la même lenteur, et pourtant deux
+pannes distinctes.** Le piège de ce genre de défaut est là : le symptôme est
+identique, le remède de la veille est toujours en place, et il ne suffit plus.
+
+### Ce que sa fiche disait, et qui a tranché en dix secondes
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (2026-08-17T19:34:24Z)
+dit: ⨯ Another next build process is already running.
+```
+
+C'est la fiche d'état publiée par son espace (`CLAUDE.md` §1 bis) qui a donné
+cette ligne, sans qu'il ait rien à recopier depuis son téléphone. **Sans elle,
+la première hypothèse aurait porté sur le réseau ou sur la base** — et le
+message tenait en une phrase.
+
+### La cause du 16 : une construction orphelinée AU DÉMARRAGE
+
+`demarrer.sh` pose un veilleur avant la mise à jour ; ce veilleur lance un banc,
+donc une construction. La mise à jour remplace ensuite veilleur et serveur — et
+laissait la construction derrière. Corrigé le 16 en ajoutant `build` au motif du
+`pkill` de démarrage. **Ce correctif tient toujours, et il reste nécessaire.**
+
+### La cause du 17 : la même chose, mais N'IMPORTE QUAND après
+
+Son espace a **8 Go de mémoire, dont 181 Mo libres** au moment de la panne.
+Quand la mémoire manque, le noyau tue un processus. S'il tue le banc, **sa
+construction lui survit** : elle garde le verrou du système, le veilleur
+constate qu'aucun serveur ne répond, relance un banc, et celui-là se heurte à
+l'orpheline. Le `pkill` du démarrage n'y peut rien — le démarrage est passé.
+
+**Et un second trou, plus discret, ouvrait la même porte :** le verrou de banc
+(`/tmp/atlas-banc.pid`) regardait si le fichier existait, *puis* l'écrivait.
+Deux bancs qui démarrent dans la même seconde — l'espace à l'allumage, le
+veilleur qui croit le serveur mort — ne trouvaient donc rien ni l'un ni l'autre.
+Deux bancs, deux constructions, un seul verrou chez Next.
+
+### Ce qui est posé
+
+| | Ce que ça fait |
+|---|---|
+| `scripts/verrou-construction.mjs` | déloge les constructions **orphelines** avant de bâtir, et attend que le noyau rende le verrou |
+| `banc.mjs` | une **seconde tentative**, et une seule, quand c'est ce refus-là qui a parlé |
+| `verrou-banc.mjs` | le verrou se prend en **création exclusive** (`wx`) : un seul des deux bancs peut réussir |
+
+**Pourquoi tuer l'orpheline ne contredit pas la règle « ne jamais effacer le
+verrou ».** Les deux gestes n'ont rien à voir. Effacer le fichier `lock` ne
+libère rien — Next prend un verrou auprès du système — et lancerait une SECONDE
+construction à côté de la première : le remède qui tue, déjà payé deux fois.
+Ici, on ne double pas, **on retire ce qui n'a plus de destinataire** : la
+construction orpheline chauffe un processeur que son voisin attend, garde le
+verrou, et son succès ne servirait personne, puisque le banc qui aurait basculé
+dessus est mort.
+
+**Les contrôles tuent un vrai processus** (`scripts/test-verrou-construction.ts`,
+`scripts/test-bascule-veilleur.ts`), sur un motif d'essai distinctif qui ne peut
+pas toucher une construction réelle. Éprouvés rouges avant d'être livrés :
+délogement neutralisé → le premier rougit ; création exclusive retirée → deux
+cas rougissent, dont celui du 10 août.
+
+### Ce que ça ne règle PAS, et qu'il faut savoir
+
+**La mémoire reste étroite.** Bâtir Next sur 8 Go pendant qu'un serveur de
+développement tourne est près de la limite ; si le noyau tue à nouveau le banc,
+le prochain démarrage repartira proprement — mais il repartira. Le vrai remède,
+si cela revient, est d'augmenter la machine ou de cesser de servir en mode
+développement pendant la construction.
