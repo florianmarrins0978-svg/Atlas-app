@@ -35,6 +35,7 @@ export type NomIcone =
   | "personnes"
   | "etiquette"
   | "feuille"
+  | "liste_cochee"
   | "calendrier"
   | "etincelle"
   | "puzzle"
@@ -93,6 +94,14 @@ const TRACES: Record<NomIcone, React.ReactNode> = {
       <path d="M13.2 3H6.4A1.4 1.4 0 0 0 5 4.4v15.2A1.4 1.4 0 0 0 6.4 21h11.2a1.4 1.4 0 0 0 1.4-1.4V8.8z" />
       <path d="M13.2 3v5.8H19" />
       <path d="M8.4 13h7.2M8.4 16.6h5" />
+    </>
+  ),
+  liste_cochee: (
+    <>
+      <path d="M4 6.5l1.8 1.8L9 5" />
+      <path d="M4 12.5l1.8 1.8L9 9" />
+      <path d="M4 18.5l1.8 1.8L9 15" />
+      <path d="M12.5 7h7.5M12.5 13h7.5M12.5 19h5" />
     </>
   ),
   calendrier: (

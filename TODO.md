@@ -180,10 +180,14 @@ une case à ajouter :
 1. ~~le **modèle** en base~~ — **FAIT le 16 août** : table `prestations_entretien`
    (migration `0051`), dépôt `src/server/repositories/prestations-entretien.ts`,
    règles pures dans `src/lib/prestations-entretien.ts`, suite
-   `scripts/test-prestations-entretien.ts`. **Reste son écran de Réglages** ;
-2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
-3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
-   porte déjà devis et factures ;
+   `scripts/test-prestations-entretien.ts` ;
+2. ~~son **écran de Réglages**~~ — **FAIT le 16 août** : Réglages → Fiche
+   d'entretien (`src/app/reglages/fiche-entretien/`), retrait réversible,
+   suite `scripts/test-fiche-entretien-e2e.ts` ;
+3. le **passage** : la fiche pré-remplie, cochée, le temps à la molette
+   (celle du téléphone — « la A ») ;
+4. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
+   porte déjà devis et factures, plus le « J'ai bien reçu » horodaté ;
 4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
 
 Planches : `docs/maquettes/62-la-fiche-dentretien.html`,

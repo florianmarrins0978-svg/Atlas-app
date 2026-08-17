@@ -118,6 +118,24 @@ const ENTREPRISE: Rubrique[] = [
     icone: "calendrier",
     href: "/reglages/planning",
   },
+  {
+    // **L'entretien récurrent, décidé le 16 août 2026.** Rangé juste après le
+    // planning — pas avant : les cinq premières rubriques sont SES quatre
+    // priorités, et un contrôle les tient. Ici parce que c'est ce qu'il a demandé — « dans les
+    // réglages, un endroit où l'utilisateur pourra créer cette fiche » — et
+    // parce que la fiche EST un document qui part chez le client.
+    //
+    // Le libellé ne dit pas « modèle » : il n'a jamais employé ce mot, et « ma
+    // fiche » est ce qu'il cherche. Qu'elle serve de modèle à chaque passage est
+    // une conséquence, pas une étiquette d'écran.
+    nom: "Fiche d'entretien",
+    dit: "Les prestations que vous cochez sur un chantier d'entretien",
+    // Une icône À ELLE : le dépôt refuse qu'une rubrique en emprunte une autre
+    // (`test-rubriques-reglages.ts`). La feuille est celle des devis, et deux
+    // rubriques identiques à l'œil se visent au hasard sur un téléphone.
+    icone: "liste_cochee",
+    href: "/reglages/fiche-entretien",
+  },
   { nom: "Atlas IA", dit: "Automatisations et suggestions", icone: "etincelle", href: "/reglages/ia" },
   {
     nom: "Intégrations",

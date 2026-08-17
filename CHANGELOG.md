@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-16
 
+### L'écran où vous composez votre fiche d'entretien
+
+**Réglages → Fiche d'entretien.** Vingt prestations rangées par famille, qui
+s'ajoutent, se retirent et se renomment — les familles aussi. C'est la planche
+`64-composer-sa-fiche.html`, telle qu'elle a été retenue.
+
+**Le retrait se défait**, comme partout depuis le 10 août : la ligne se barre,
+« Annuler » la ramène, et **rien n'est écrit tant que le tiroir est ouvert**.
+C'est le geste le plus coûteux de cet écran — une croix nue sur une liste
+composée à la main —, et c'est celui que la suite navigateur éprouve le plus.
+
+**La fiche vide propose, elle ne pose pas.** Elle montre les vingt prestations
+du modèle Atlas AVANT que vous n'appuyiez : vous choisissez en sachant. Rien
+n'est écrit en base parce que quelqu'un a ouvert un écran.
+
+**Trois garde-fous du dépôt ont rattrapé trois oublis**, et c'est leur rôle :
+l'icône empruntée à une autre rubrique, l'écran absent du préchauffage — donc
+lent sur votre banc —, et la rubrique glissée devant « Planning », ce qui
+bousculait vos quatre priorités.
+
+Et un défaut qui aurait rendu l'écran blanc : un fichier « use server » ne peut
+exporter que des fonctions, or les phrases de refus y étaient posées. Elles
+vivent désormais avec les règles pures, ce qui garantit aussi qu'un code de
+refus n'ait jamais deux phrases écrites à deux endroits.
+
+---
+
 ### La fiche d'entretien commence à exister : le modèle, en base
 
 **Première pierre du troisième parcours**, après quatre planches et cinq

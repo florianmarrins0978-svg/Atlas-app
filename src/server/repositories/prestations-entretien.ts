@@ -16,7 +16,10 @@ import {
   MODELE_FOURNI,
   libelleNettoye,
   memeLibelle,
+  type RefusPrestation,
 } from "@/lib/prestations-entretien";
+
+export type { RefusPrestation };
 
 export type Prestation = {
   id: string;
@@ -50,13 +53,6 @@ export async function listerPrestations(ctx: Ctx): Promise<Prestation[]> {
       .orderBy(asc(prestationsEntretien.ordre), asc(prestationsEntretien.libelle));
   });
 }
-
-export type RefusPrestation =
-  | "libelle_vide"
-  | "famille_vide"
-  | "doublon"
-  | "trop_de_prestations"
-  | "introuvable";
 
 /**
  * Ajoute une prestation à la fin d'une famille.
