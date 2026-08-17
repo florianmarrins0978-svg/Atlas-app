@@ -81,7 +81,9 @@
     ".next-verrou-essai/types/**/*.ts",
     ".next-verrou-essai/dev/types/**/*.ts",
     ".next-verification/types/**/*.ts",
-    ".next-verification/dev/types/**/*.ts"
+    ".next-verification/dev/types/**/*.ts",
+    ".next-essai/types/**/*.ts",
+    ".next-essai/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
