@@ -46,6 +46,19 @@ export type BrinChantier = {
   /** Le mois abrégé, sous le quantième : « juil. ». */
   mois: string;
   lieu: string;
+  /**
+   * Le lieu est-il le repli « Adresse non renseignée » — donc une CIBLE ?
+   *
+   * **Sa demande du 17 août 2026 :** *« lorsque s'affiche Adresse non
+   * renseignée, je puisse cliquer dessus et que ça m'amène sur la page […] rien
+   * de plus, rien de moins »*.
+   *
+   * La question se tranche au serveur (`lieuEstManquant`), jamais ici : l'écran
+   * qui comparerait le texte de son côté referait la règle une seconde fois, et
+   * le jour où le repli change de mots la ligne cesserait silencieusement d'être
+   * cliquable (`CLAUDE.md` §3).
+   */
+  lieuManquant?: boolean;
   /** L'état et le nombre de photos, sur une ligne : « Brouillon · 3 photos ». */
   etat: string;
   /**
@@ -235,28 +248,74 @@ export default function ListeChantiers({
           {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
               restent en place — une ligne qui part d'un bloc coupe le nom en
               plein mot et laisse le fil traverser les lettres. */}
-          <Link href={c.reprise} className="atlas-brin block">
-            <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
-              {c.nom}
-            </h2>
-            <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
-              {c.lieu}
-            </p>
-            <p
-              className="mt-[7px] text-[9.5px] font-medium uppercase"
-              style={{ color: c.attend ? colors.or : colors.muted, letterSpacing: "0.28em" }}
-            >
-              {c.etat}
-            </p>
-            {c.precision && (
-              /* En clair, et non en petites capitales : deux lignes espacées
-                 à 0.28em se liraient comme un pavé. L'œil doit accrocher
-                 l'état, puis lire la date s'il la cherche. */
-              <p className="mt-[4px] truncate text-[11.5px]" style={{ color: colors.muted }}>
-                {c.precision}
-              </p>
+          {/* **LE LIEN DE REPRISE EST COUPÉ EN TROIS, ET C'EST LA MENTION QUI
+              L'EXIGE.** Sa demande du 17 août 2026 : *« lorsque s'affiche
+              Adresse non renseignée, je puisse cliquer DESSUS »* — la mention
+              mène donc ailleurs que le reste de la ligne.
+
+              Un lien dans un lien n'est pas du HTML valide, et le navigateur
+              les démêle en silence : le doigt serait tombé sur l'un ou sur
+              l'autre selon le rendu. Les trois morceaux mènent au même endroit
+              qu'avant, sauf celui du milieu quand il manque quelque chose.
+
+              `atlas-brin` reste posé sur l'enveloppe : le glissement, lui, vit
+              dans `.atlas-volet` (`LigneRetirable`), et rien ne dépend de la
+              balise qui porte ce nom. */}
+          <div className="atlas-brin">
+            <Link href={c.reprise} className="block">
+              <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
+                {c.nom}
+              </h2>
+            </Link>
+            {c.lieuManquant ? (
+              /* **34 px de haut, et le trait pointillé.** Un texte de 11,5 px
+                 n'est pas une cible sous un pouce ganté ; et une mention
+                 cliquable qui ne se distingue en rien d'une mention morte ne
+                 sera jamais touchée. La couleur d'alerte, elle, était déjà la
+                 sienne — c'est une information qui appelle un geste. */
+              <Link
+                href={`/chantiers/${c.id}/coordonnees`}
+                data-atlas="lieu-manquant"
+                className="inline-flex min-h-[34px] max-w-full items-center text-[11.5px]"
+                style={{ color: colors.alert }}
+              >
+                {/* **LE TRAIT EST SUR LE MOT, PAS SUR LA CIBLE.** Porté par le
+                    lien lui-même, il se posait au bas des 34 px — un pointillé
+                    flottant à dix pixels sous le texte, qui ne se lisait plus
+                    comme un soulignement mais comme un trait perdu. Vu sur la
+                    capture, par aucun test : la sixième fois dans ce dépôt
+                    qu'un défaut sort d'une image (`CLAUDE.md` §5). */}
+                <span
+                  className="truncate"
+                  style={{ borderBottom: `1px dotted ${colors.alert}`, paddingBottom: 1 }}
+                >
+                  {c.lieu}
+                </span>
+              </Link>
+            ) : (
+              <Link href={c.reprise} className="block">
+                <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+                  {c.lieu}
+                </p>
+              </Link>
             )}
-          </Link>
+            <Link href={c.reprise} className="block">
+              <p
+                className="mt-[7px] text-[9.5px] font-medium uppercase"
+                style={{ color: c.attend ? colors.or : colors.muted, letterSpacing: "0.28em" }}
+              >
+                {c.etat}
+              </p>
+              {c.precision && (
+                /* En clair, et non en petites capitales : deux lignes espacées
+                   à 0.28em se liraient comme un pavé. L'œil doit accrocher
+                   l'état, puis lire la date s'il la cherche. */
+                <p className="mt-[4px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+                  {c.precision}
+                </p>
+              )}
+            </Link>
+          </div>
         </LigneRetirable>
       ))}
     </div>

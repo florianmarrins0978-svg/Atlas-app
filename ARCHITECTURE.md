@@ -9788,3 +9788,92 @@ valent d'être retenus :
    L'image annonçait « échéance dépassée depuis 60 jours » au lieu de 30, et
    c'était le montage qui était faux, pas l'application. Toute écriture de
    montage vérifie maintenant son `rowCount`.
+
+---
+
+## 119. « Adresse non renseignée » devient une porte — et rien d'autre ne bouge
+
+**Sa demande du 17 août 2026**, capture de son accueil à l'appui : *« j'ai oublié
+de rentrer les infos du client. Il faut qu'à partir de cette page, il y a marqué
+adresse non renseignée, que je puisse cliquer dessus »*.
+
+**Puis sa correction, le même jour, et c'est elle qui compte.** Une première
+planche avait dessiné une « fiche client » de toutes pièces, avec ses champs et
+ses questions. Il a répondu : ***« je ne suis pas sûr que tu aies bien compris
+[…] que ça m'amène sur la page que je t'ai envoyée sur la deuxième photo. RIEN
+DE PLUS, RIEN DE MOINS. »*** — sa seconde photo montrait l'écran de création.
+
+### La leçon, et elle a coûté deux allers-retours
+
+**Devant une demande qui touche à un écran, chercher d'abord SI L'ÉCRAN
+EXISTE.** Ici la réponse était sous la main, dans sa propre capture. En dessiner
+un neuf lui a fait relire une planche entière pour dire « ce n'est pas ça ».
+
+Ce qui avait égaré : le code lui-même annonce qu'il manque une fiche client —
+*« la civilité ne se corrige plus après coup, faute d'écran de fiche client »*
+(`DevisCompletClient.tsx`). C'est vrai, et ce n'était pas sa demande. **Un manque
+réel du produit n'autorise pas à le combler dans le lot d'à côté** (`CLAUDE.md`
+§3 bis).
+
+### Un seul composant, deux chemins d'écriture
+
+`FormulaireNouveauChantier` reçoit une entrée `reprise` : présente, il préremplit
+et **enregistre** au lieu de créer. Un formulaire jumeau aurait divergé au
+premier champ ajouté — l'un garderait le canal d'envoi, l'autre l'aurait oublié.
+C'est la raison qui l'avait déjà fait extraire de sa page le 10 août.
+
+| | Créer | Reprendre |
+|---|---|---|
+| Route | `/chantiers/nouveau` | `/chantiers/[id]/coordonnees` |
+| Action | `creerChantierAction` | `reprendreChantierAction` |
+| Surtitre | « Nouveau » | « Les coordonnées » |
+| Bouton | « Créer le chantier » | « Enregistrer » |
+
+**Les deux mots changent parce qu'ils mentiraient**, et pour aucune autre raison.
+« Nouveau » au-dessus d'un chantier ouvert trois jours plus tôt fait douter
+d'avoir cliqué au bon endroit ; « Créer le chantier » annoncerait une action que
+l'écran ne fait pas, et il chercherait ensuite pourquoi il a deux chantiers.
+
+### Le nom du chantier se RECALCULE, et c'est tout l'intérêt du geste
+
+`chantiers.nom` n'est pas saisi : il se déduit du client, sinon de l'adresse,
+sinon de la date (`nom-chantier.ts` — le champ « nom du chantier » a été retiré
+le 5 août 2026, *« un élagueur ne baptise pas ses chantiers »*).
+
+**Sans ce recalcul, remplir « Martins » aurait laissé la ligne afficher
+« Chantier du lundi 17 août » pour toujours** — le défaut corrigé partout sauf à
+l'endroit exact d'où il est parti. La règle appliquée est la MÊME qu'à la
+création : une seconde règle de nommage aurait fini par diverger.
+
+**Et la date employée est celle de la CRÉATION**, jamais aujourd'hui. Un chantier
+ouvert le 17 et repris le 20 ne doit pas devenir « Chantier du jeudi 20 août » :
+il ne se reconnaîtrait plus.
+
+### La mention seule est la cible
+
+Le lien de reprise de la ligne est **coupé en trois** (`ListeChantiers.tsx`) : le
+nom, la mention, l'état. Un lien dans un lien n'est pas du HTML valide, et le
+navigateur les démêle en silence — le doigt serait tombé sur l'un ou sur l'autre
+selon le rendu.
+
+Le nom du chantier garde donc sa reprise, et **sa règle du 13 août n'est pas
+touchée** : *« que ça me renvoie à l'étape où je me suis arrêté »*. Il a dit
+« cliquer DESSUS », pas « sur la ligne ».
+
+**Une seule source décide de ce qu'est une cible** : `lieuEstManquant`, comparée
+à `LIEU_MANQUANT`. L'accueil qui aurait comparé le texte de son côté aurait
+refait la règle une seconde fois — et le jour où le repli change de mots, la
+mention cesserait silencieusement d'être cliquable.
+
+### Ce que la capture a trouvé, et qu'aucun test ne voyait
+
+**Sixième fois dans ce dépôt qu'un défaut sort d'une image.** La cible fait 34 px
+de haut — un texte de 11,5 px ne s'attrape pas sous un pouce ganté —, et le trait
+pointillé était porté par le lien : il se posait donc au **bas des 34 px**, à dix
+pixels sous le mot. Ce n'était plus un soulignement, c'était un trait perdu. Il
+vit désormais sur un `<span>` intérieur.
+
+**La capture elle-même a menti une fois de plus** : l'image « après » visait
+`.atlas-fil-defile`, c'est-à-dire le cadre lui-même. Le calcul de position valait
+zéro, et la photo montrait le HAUT du fil au lieu de la ligne corrigée. Une
+capture qui cadre autre chose que ce qu'elle annonce ne prouve rien.

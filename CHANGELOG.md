@@ -9,21 +9,27 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
-### DESSINÉ : « Adresse non renseignée » ouvre l'écran du chantier — rien n'est codé
+### CODÉ : « Adresse non renseignée » ouvre l'écran du chantier
 
 Sa demande, puis sa correction : *« que ça m'amène sur la page que je t'ai
 envoyée sur la deuxième photo. Rien de plus, rien de moins. »*
 
-**La première planche inventait une fiche client**, avec ses champs et ses
-questions. Elle est retirée : la destination existe déjà — c'est l'écran
-« Un chantier » (`FormulaireNouveauChantier`), avec son micro et sa bascule.
+| | |
+|---|---|
+| **La cible** | la mention seule — le nom du chantier garde sa reprise du 13 août |
+| **L'arrivée** | l'écran de création, prérempli. Aucun écran nouveau |
+| **Ce qui change** | deux mots qui mentiraient : « Nouveau » et « Créer le chantier » |
+| **Le nom du chantier** | se recalcule — sans quoi la ligne dirait « Chantier du … » pour toujours |
 
 **La leçon, et elle a coûté deux allers-retours :** devant une demande qui touche
-à un écran, chercher d'abord si l'écran existe. Sa seconde photo le montrait.
+à un écran, chercher d'abord si l'écran existe. Une première planche avait
+dessiné une fiche client de toutes pièces ; sa seconde photo montrait la
+destination. Un manque réel du produit — il n'y a effectivement pas de fiche
+client — n'autorise pas à le combler dans le lot d'à côté.
 
-Deux mots seulement changent, parce que le chantier existe déjà : le surtitre
-« Nouveau » et le bouton « Créer le chantier » mentiraient. `TODO.md`
-§0 quadragies bis.
+**Sixième défaut trouvé sur une capture et par aucun test :** le trait pointillé
+de la mention se posait au bas de la cible de 34 px, à dix pixels sous le mot.
+`ARCHITECTURE.md` §119.
 
 ## 2026-08-16
 

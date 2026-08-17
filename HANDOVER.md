@@ -742,6 +742,32 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**« ADRESSE NON RENSEIGNÉE » OUVRE L'ÉCRAN DU CHANTIER (17 août).** La mention de
+l'accueil est un lien vers `/chantiers/[id]/coordonnees` — l'écran de création
+rouvert, prérempli, qui enregistre au lieu de créer. `ARCHITECTURE.md` §119.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **LA MENTION SEULE EST LA CIBLE.** Le nom du chantier garde sa reprise du
+   13 août. Le lien de la ligne est donc coupé en trois dans
+   `ListeChantiers.tsx` — un lien dans un lien n'est pas du HTML valide, et le
+   navigateur les démêle en silence.
+2. **Le nom du chantier se RECALCULE à l'enregistrement**, avec la date de
+   CRÉATION du chantier et non celle du jour. Sans ce recalcul, la ligne
+   afficherait « Chantier du … » pour toujours — le défaut corrigé partout sauf
+   là où il l'a vu. Avec la date du jour, le chantier se renommerait et il ne le
+   reconnaîtrait plus.
+3. **Deux mots seulement changent** entre créer et reprendre : le surtitre et le
+   bouton. Ils changent parce qu'ils mentiraient, pas par décoration.
+
+**LA LEÇON DE MÉTHODE, ET ELLE A COÛTÉ DEUX ALLERS-RETOURS.** Une première
+planche avait dessiné une « fiche client » de toutes pièces ; il a répondu
+*« rien de plus, rien de moins »* en renvoyant la capture de l'écran qui
+existait. **Devant une demande qui touche à un écran, chercher d'abord si
+l'écran existe.** Ce qui avait égaré : le code annonce lui-même qu'il manque une
+fiche client — c'est vrai, et ce n'était pas sa demande.
+
+
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
 « Devis & factures », ou le jour de l'envoi si aucun délai ne l'est — son

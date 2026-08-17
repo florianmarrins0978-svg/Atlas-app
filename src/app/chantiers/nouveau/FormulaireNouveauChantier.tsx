@@ -9,6 +9,7 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
 import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { creerChantierAction } from "./actions";
+import { reprendreChantierAction } from "../[id]/coordonnees/actions";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import type { Civilite } from "@/lib/civilite";
 
@@ -41,22 +42,55 @@ import type { Civilite } from "@/lib/civilite";
  */
 type Porte = "dictee" | "main";
 
+/**
+ * Un chantier DÉJÀ LÀ, que cet écran rouvre au lieu d'en créer un.
+ *
+ * **Sa demande du 17 août 2026 :** *« lorsque s'affiche Adresse non renseignée,
+ * je puisse cliquer dessus et que ça m'amène sur la page […] RIEN DE PLUS, RIEN
+ * DE MOINS »* — la page en question étant celle-ci, sa propre capture à l'appui.
+ *
+ * **Pourquoi le même composant, et pas un second écran.** Un formulaire jumeau
+ * aurait divergé au premier champ ajouté : l'un enregistrerait le canal d'envoi,
+ * l'autre l'aurait oublié. C'est la raison qui avait déjà fait extraire ce
+ * formulaire de sa page le 10 août — « il n'y en a qu'un, et il ne connaît de
+ * son hôte que deux choses ».
+ */
+export type ChantierRepris = {
+  id: string;
+  nomClient: string;
+  civilite: Civilite | null;
+  telephone: string;
+  email: string;
+  canal: "sms" | "email" | null;
+  adresseChantier: string;
+  /** Vide quand elle est la même que celle du chantier — l'écran ne la montre
+   *  alors pas, comme à la création. */
+  adresseClient: string;
+};
+
 export default function FormulaireNouveauChantier({
   enFeuille = false,
   onFermer,
+  reprise,
 }: {
   enFeuille?: boolean;
   onFermer?: () => void;
+  /** Présent : l'écran ENREGISTRE sur ce chantier au lieu d'en créer un. */
+  reprise?: ChantierRepris;
 } = {}) {
   const router = useRouter();
-  const [nomClient, setNomClient] = useState("");
-  const [civilite, setCivilite] = useState<Civilite | null>(null);
-  const [telephone, setTelephone] = useState("");
-  const [email, setEmail] = useState("");
-  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(null);
-  const [adresseChantier, setAdresseChantier] = useState("");
-  const [adresseClient, setAdresseClient] = useState("");
-  const [adresseClientVisible, setAdresseClientVisible] = useState(false);
+  const [nomClient, setNomClient] = useState(reprise?.nomClient ?? "");
+  const [civilite, setCivilite] = useState<Civilite | null>(reprise?.civilite ?? null);
+  const [telephone, setTelephone] = useState(reprise?.telephone ?? "");
+  const [email, setEmail] = useState(reprise?.email ?? "");
+  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(reprise?.canal ?? null);
+  const [adresseChantier, setAdresseChantier] = useState(reprise?.adresseChantier ?? "");
+  const [adresseClient, setAdresseClient] = useState(reprise?.adresseClient ?? "");
+  // Déjà dépliée quand elle porte quelque chose : la replier cacherait une
+  // adresse qu'il a saisie, et il la croirait perdue.
+  const [adresseClientVisible, setAdresseClientVisible] = useState(
+    (reprise?.adresseClient ?? "").length > 0
+  );
   // Le choix par défaut est la dictée, et il ne se discute pas : c'est le
   // produit. La porte du devis à la main existe pour ceux qui savent déjà ; la
   // proposer en premier reviendrait à ne plus jamais proposer la dictée.
@@ -108,6 +142,32 @@ export default function FormulaireNouveauChantier({
     if (enCours) return;
     setEnCours(true);
     setErreur(null);
+
+    // **Rouvert, l'écran ENREGISTRE — il ne crée pas un second chantier.** La
+    // saisie est la même, la destination aussi ; seul le chemin d'écriture
+    // change, et il vit côté serveur (`coordonnees/actions.ts`).
+    if (reprise) {
+      const r = await reprendreChantierAction(reprise.id, {
+        nomClient,
+        civilite: civilite ?? undefined,
+        telephone,
+        email,
+        canal: canal ?? undefined,
+        adresseChantier,
+        adresseClient,
+      });
+      if (!r.ok) {
+        // Le refus se dit en toutes lettres, jamais un `catch {}` muet : le
+        // 11 août 2026, « impossible d'enregistrer la note » ne pouvait être
+        // expliqué par personne (`AGENTS.md`).
+        setErreur(r.raison);
+        setEnCours(false);
+        return;
+      }
+      router.push(vers === "devis" ? `/chantiers/${reprise.id}/devis-complet` : `/chantiers/${reprise.id}`);
+      return;
+    }
+
     try {
       const { id } = await creerChantierAction({
         nomClient,
@@ -173,8 +233,14 @@ export default function FormulaireNouveauChantier({
 
         <div className="flex items-start justify-between gap-4 px-6 pt-5">
           <div>
+            {/* **« NOUVEAU » DEVIENDRAIT FAUX, et c'est l'un des deux seuls
+                mots que la reprise oblige à changer** (planche du 17 août 2026,
+                `maquettes/atlas-fiche-client.html`). Un écran qui annonce
+                « nouveau » au-dessus d'un chantier ouvert trois jours plus tôt
+                fait douter d'avoir cliqué au bon endroit — et le geste qu'il
+                venait faire est justement de CORRIGER, pas de recommencer. */}
             <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-              Nouveau
+              {reprise ? "Les coordonnées" : "Nouveau"}
             </p>
             <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
               Un chantier
@@ -325,7 +391,11 @@ export default function FormulaireNouveauChantier({
                 disabled={!peutCreer}
                 onClick={() => creerPuisAller(porte === "main" ? "devis" : "fiche")}
               >
-                {enCours ? "Création…" : <LibelleDeLaPorte porte={porte} />}
+                {enCours
+                  ? reprise
+                    ? "Enregistrement…"
+                    : "Création…"
+                  : <LibelleDeLaPorte porte={porte} reprise={reprise !== undefined} />}
               </PrimaryButton>
             </div>
           </div>
@@ -435,12 +505,25 @@ function BasculePorte({
  * Le libellé caché est retiré aux lecteurs d'écran : deux textes lus à la suite
  * pour un seul bouton n'apprendraient rien à personne.
  */
-function LibelleDeLaPorte({ porte }: { porte: Porte }) {
+/**
+ * Ce que dit le bouton, selon la porte — et selon qu'il crée ou qu'il reprend.
+ *
+ * **« Créer le chantier » ne créerait rien sur un chantier qui existe.** C'est
+ * le second des deux mots que la reprise oblige à changer (planche du 17 août
+ * 2026) : le laisser ferait annoncer à l'écran une action qu'il ne fait pas, et
+ * le patron chercherait ensuite pourquoi il a deux chantiers.
+ *
+ * **Les DEUX libellés restent dans le bouton**, l'un à `opacity:0` — c'est ce
+ * qui permet à la bascule de glisser sans que la largeur saute. Les suites le
+ * savent et visent le repère `data-atlas="action-creation"` plutôt que le texte
+ * (`test-devis-main-depuis-creation-e2e`).
+ */
+function LibelleDeLaPorte({ porte, reprise = false }: { porte: Porte; reprise?: boolean }) {
   return (
     <span className="grid">
       {(
         [
-          ["dictee", "Créer le chantier →"],
+          ["dictee", reprise ? "Enregistrer →" : "Créer le chantier →"],
           ["main", "Ouvrir le devis →"],
         ] as const
       ).map(([valeur, libelle]) => (

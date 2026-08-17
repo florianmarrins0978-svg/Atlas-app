@@ -27,50 +27,28 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier — DESSINÉ
+### ~~0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier~~ — **FAIT le 17 août 2026**
 
-*`maquettes/atlas-fiche-client.html`, le 17 août 2026 — un geste, 25 contrôles.*
+*Dessiné, corrigé par lui, puis codé le même jour.* `ARCHITECTURE.md` §119.
 
-**SA DEMANDE, ET SA CORRECTION.** D'abord : *« j'ai oublié de rentrer les infos
-du client […] que je puisse cliquer sur le client du dix-sept août et que ça me
-mette directement sur la page client »*. Puis, devant une planche qui inventait
-une fiche client de toutes pièces : ***« je ne suis pas sûr que tu aies bien
-compris […] que ça m'amène sur la page que je t'ai envoyée sur la deuxième
-photo. RIEN DE PLUS, RIEN DE MOINS. »***
+La mention devient un lien vers `/chantiers/[id]/coordonnees` — l'écran de
+création rouvert, prérempli, qui enregistre au lieu de créer. Le nom du chantier
+se recalcule, sinon la ligne dirait « Chantier du … » pour toujours.
 
-**La destination n'est pas à dessiner : c'est `FormulaireNouveauChantier`**, qui
-existe — nom, téléphone, e-mail, canal d'envoi, adresse du chantier, adresse
-client différente, micro, bascule « Je dicte / Je l'écris ».
+**LA LEÇON DE CE LOT, ET ELLE VAUT AU-DELÀ DE LUI.** Une première planche a
+dessiné une « fiche client » de toutes pièces ; il a répondu : *« je ne suis pas
+sûr que tu aies bien compris […] rien de plus, rien de moins »*. **Devant une
+demande qui touche à un écran, chercher d'abord SI L'ÉCRAN EXISTE** — sa seconde
+photo le montrait.
 
-**LA LEÇON, ET ELLE COÛTE DEUX ALLERS-RETOURS.** Devant une demande qui touche à
-un écran, chercher d'abord SI L'ÉCRAN EXISTE. Ici la réponse était sous la main :
-sa propre seconde photo le montrait. En dessiner un neuf, avec ses champs et ses
-questions, lui a fait relire une planche entière pour dire « ce n'est pas ça ».
+Ce qui avait égaré : le code annonce lui-même qu'il manque une fiche client
+(*« faute d'écran de fiche client »*, `DevisCompletClient.tsx`). C'est vrai, et
+ce n'était pas sa demande. **Un manque réel du produit n'autorise pas à le
+combler dans le lot d'à côté.**
 
-**CE QUI RESTE À DÉCIDER : rien.** Deux mots seulement changent, parce que le
-chantier existe déjà, et ils ne se discutent pas — les laisser tels quels ferait
-mentir l'écran :
-
-| Aujourd'hui | Rouvert |
-|---|---|
-| Surtitre « **Nouveau** » | « Le chantier du 17 août » |
-| Bouton « **Créer le chantier** » | « Enregistrer » |
-
-**CE QUE LE CODE DEVRA APPRENDRE**, et ce n'est pas une décision :
-
-- une route qui rouvre le formulaire sur un chantier existant, préremplie ;
-- `FormulaireNouveauChantier` ne sait que **créer** (`creerChantierAction`) : il
-  lui faut un second chemin qui enregistre sur le chantier ;
-- la mention n'est cliquable **que lorsqu'il manque quelque chose**, et elle doit
-  tenir 34 px de haut — un texte de 11,5 px n'est pas une cible sous un gant ;
-- **la mention SEULE est la cible.** Le reste de la ligne garde sa reprise : sa
-  règle du 13 août n'est pas touchée, et il a dit « cliquer dessus ».
-
-**Ce qui NE change pas :** un devis déjà parti reste figé. La correction porte
-sur le chantier et son client ; c'est la prochaine version du devis qui
-l'emportera.
-
-**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis).
+**Ce qui reste ouvert, et qui n'a pas été fait :** il n'y a toujours pas de fiche
+client à proprement parler. Les coordonnées se corrigent depuis le chantier ; un
+client sans chantier ne se modifie nulle part. À rouvrir s'il le demande.
 
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 
