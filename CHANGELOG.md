@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Les coudes SBE remplacent une pièce qui n'avait jamais existé
+
+**Sa consigne, photo à l'appui :** *« sous les arroseurs il faut
+obligatoirement des coudes SBE, choisis-les en fonction des diamètres, un à
+chaque fois par arroseur. »*
+
+La liste au fournisseur portait depuis le premier jour une ligne « Crosse de
+raccordement » — un nom inventé, jamais raccordé à une référence réelle,
+justement provisoire. Elle disparaît, remplacée par les deux vraies pièces :
+OD501 (SBE 050, 16×1/2") et OD502 (SBE 075, 16×3/4").
+
+**Le choix n'est pas laissé au hasard : il suit le taraudage du corps posé.**
+Chaque corps du catalogue porte désormais son filetage — 1/2" pour les corps
+de tuyère et les petites turbines (3504, SRM-04, PGJ, Mini 8), 3/4" pour les
+grosses (PGP-ADJ, PGP Ultra, I 20-04, 5000 Plus) — relevé sur les descriptifs
+des photos, pas deviné. Sans corps enregistré pour la marque courante, aucun
+coude n'est compté : mieux vaut manquer que se tromper de diamètre.
+
 ### Le quinconce déplaçait les arroseurs sans jamais en retirer un
 
 **Son constat, capture cerclée en rouge à l'appui :** *« sur le plan tu t'es

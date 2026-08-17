@@ -309,7 +309,17 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     await page.click('[data-ajout="massif"]'); await page.waitForTimeout(150);
     ok('arrosage : ajouter une zone l’ajoute', (await page.$$eval('.zone', e => e.length)) === avant + 1);
 
-    // **Le corps par défaut, sa décision du 17 août : « 10 cm sans option,
+    // **Le coude SBE, sa consigne du 17 août : « sous les arroseurs il faut
+    // obligatoirement des coudes SBE, choisis-les en fonction des diamètres,
+    // un à chaque fois par arroseur. »** Le taraudage vient du corps choisi
+    // (1/2" ou 3/4"), pas d'une supposition — deux références différentes
+    // selon la famille, et le mauvais choix ne visse simplement pas.
+    const materiel = await page.$eval('#materiel', el => el.innerText);
+    ok('arrosage : un coude SBE est compté, un par arroseur', /Coude SBE/.test(materiel));
+    ok('arrosage : plus de « crosse » générique — remplacée par le vrai coude',
+       !/[Cc]rosse/.test(materiel), materiel.match(/[Cc]rosse[^\n]*/)?.[0] || '');
+
+        // **Le corps par défaut, sa décision du 17 août : « 10 cm sans option,
     // mais proposer les autres à chaque fois ». Un sélecteur cassé (élément
     // absent du DOM) fait planter TOUTE la page — c'est le défaut réellement
     // survenu en écrivant ce lot : une édition partielle avait laissé le

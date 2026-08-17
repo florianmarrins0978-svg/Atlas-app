@@ -147,6 +147,15 @@ hiérarchie VAN / R-VAN / MP Rotator sans trancher ce point précis.
 | 17 | **« À 2 bar ou 3 bar c'est quasiment les mêmes valeurs »** — aucune correction de pression à faire | — |
 | 18 | Les **corps escamotables** arrivent | `CATALOGUE.corps`, vide |
 
+**LES COUDES SBE REMPLACENT LA « CROSSE » GÉNÉRIQUE — 17 août.** *« Sous les
+arroseurs il faut obligatoirement des coudes SBE, choisis-les en fonction des
+diamètres, un à chaque fois par arroseur. »* Deux références (`CATALOGUE.coudes`) :
+OD501 (SBE 050, 16×1/2") et OD502 (SBE 075, 16×3/4"). Le choix suit le
+**taraudage du corps posé**, pas une case cochée à part — chaque corps porte
+désormais son `filetage` ('1/2' ou '3/4'), relevé sur les photos. L'ancienne
+ligne « Crosse de raccordement », un espace réservé jamais raccordé à rien de
+réel, a disparu.
+
 **LE PLAN AVAIT UN ARROSEUR EN TROP — trouvé par lui, sur une capture cerclée
 en rouge, le 17 août.** Le quinconce DÉPLAÇAIT les arroseurs sans jamais en
 retirer un : même nombre qu'une grille carrée, juste décalés, ce qui entassait

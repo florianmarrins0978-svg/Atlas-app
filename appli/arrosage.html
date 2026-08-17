@@ -951,13 +951,22 @@ function listeMateriel(d){
     var g = CATALOGUE.gaines[0];
     lignes.push({ ref:g.ref, nom:'Gaine de goutteurs ' + g.detail, q: totalGaine, u:'ml' });
   }
-  if (totalArroseurs) lignes.push({ ref:'crosse', nom:'Crosses de raccordement (une par arroseur)', q: totalArroseurs, u:'u' });
   // Un corps par arroseur — celui qu'il a choisi (10 cm sans option par
   // défaut, réglable à l'écran). Sans corps enregistré pour la marque
   // courante, on ne compte rien plutôt que de compter un corps qui n'existe
   // pas dans son catalogue.
   var corps = corpsCourant();
   if (totalArroseurs && corps) lignes.push({ ref:corps.ref, nom:corps.nom + ' — ' + corps.detail, q: totalArroseurs, u:'u' });
+  // « Sous les arroseurs il faut obligatoirement des coudes SBE, choisis-les
+  // en fonction des diamètres, un à chaque fois par arroseur » — sa consigne
+  // du 17 août. Le taraudage vient du CORPS choisi, pas du hasard : un
+  // 1800 se raccorde en 1/2", un PGP Ultra en 3/4". Sans corps enregistré pour
+  // la marque courante, le taraudage n'est pas connu — on ne devine pas, on
+  // ne compte rien.
+  if (totalArroseurs && corps && corps.filetage){
+    var coude = CATALOGUE.coudes.filter(function(c){ return c.filetage === corps.filetage; })[0];
+    if (coude) lignes.push({ ref:coude.ref, nom:coude.nom + ' — ' + coude.detail, q: totalArroseurs, u:'u' });
+  }
   if (d.secteurs.length){
     lignes.push({ ref:'electrovanne', nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
     lignes.push({ ref:'regard', nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
