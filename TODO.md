@@ -71,6 +71,18 @@ MÈTRES **et à quelle pression**, débit à cette même pression, angle, et la
 pluviométrie si la fiche la donne. Portée et pression vont ensemble — une
 portée relevée à 3 bars ne vaut rien sur une installation à 2.
 
+**PAS DE PLAFOND À SIX VOIES — sa réponse du 17 août : « oui tu peux prévoir
+au-delà de 6 ».** `CATALOGUE.nourrices` est un dictionnaire ouvert :
+`nourrices[12]` se pose comme `nourrices[1]`, sans toucher au code. L'écran dit
+aussi **quelles fiches sont déjà enregistrées**, pour qu'il ne refasse pas une
+fiche donnée la veille.
+
+**ET UNE QUESTION QUI RESTE, à ne pas trancher à sa place :** au-delà d'une
+certaine taille, pose-t-il **une** nourrice de douze voies ou **deux** de six ?
+Les deux se font. Doubler la fiche de six pour en fabriquer une de douze serait
+exactement l'invention que ce fichier interdit — l'écran pose la question et
+attend.
+
 **LES NOURRICES — sa deuxième demande, et ce n'est pas du matériel mais un
 ASSEMBLAGE.** Ses mots : *« pour réaliser une nourrice de une voie, on utilise
 ça, ça, ça. Toi ça tu vas l'enregistrer, et comme ça quand par tes calculs tu

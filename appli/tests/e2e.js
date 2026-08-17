@@ -302,6 +302,23 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     ok('arrosage : rien ne déborde en largeur',
        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
 
+    // **Le chemin qu'aucune donnée n'emprunte encore.** Ses fiches de nourrice
+    // n'existent pas au 17 août ; le jour où elles arriveront, il faut que le
+    // rendu marche du premier coup — sinon c'est lui qui découvre la panne
+    // après avoir tapé sa fiche. On en injecte une factice, ici et seulement
+    // ici : le catalogue livré, lui, reste vide tant qu'il n'a rien donné.
+    await page.evaluate(() => {
+      CATALOGUE.nourrices[99] = { nom:'Nourrice 99 voies', source:'essai',
+        pieces:[{ q:1, u:'u', nom:'Pièce d’essai' }] };
+      window.__voies = document.querySelectorAll('.sec').length;
+      CATALOGUE.nourrices[window.__voies] = CATALOGUE.nourrices[99];
+      recalculer(false);
+    });
+    await page.waitForTimeout(150);
+    const fiche = await page.$eval('#nourrice', el => el.innerText);
+    ok('arrosage : une fiche de nourrice enregistrée s’affiche',
+       /Pièce d’essai/.test(fiche) && !/à renseigner/.test(fiche));
+
     ok('arrosage : toujours aucune erreur JS', errs.length === 0);
     await cArr.close();
   }

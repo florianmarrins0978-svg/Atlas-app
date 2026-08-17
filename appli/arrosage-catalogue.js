@@ -93,14 +93,25 @@ var CATALOGUE = {
   ],
 
   /* ── Les nourrices, par nombre de voies ─────────────────────────────────
-     VIDE, ET C'EST VOULU : il a annoncé les envoyer, une par une, de une à six
-     voies. Tant qu'une fiche manque, l'écran le DIT au lieu de composer une
-     nourrice de son cru.
+     VIDE, ET C'EST VOULU : il les envoie une par une. Tant qu'une fiche manque,
+     l'écran le DIT au lieu de composer une nourrice de son cru.
+
+     **AUCUN PLAFOND À SIX VOIES** — sa réponse du 17 août 2026 : « oui tu peux
+     prévoir au-delà de 6 ». La table est donc un dictionnaire ouvert, pas une
+     liste de six cases : `nourrices[12]` se pose exactement comme
+     `nourrices[1]`, sans rien changer au code. Le calcul, lui, monte facilement
+     à neuf ou douze voies sur un jardin ordinaire.
 
      Forme attendue, quand elles arriveront :
 
        1: { nom:'Nourrice 1 voie', source:'patron', date:'2026-08-…',
             pieces:[ { q:1, u:'u', nom:'…' }, … ] },
+
+     **CE QUI N'EST PAS TRANCHÉ, et qui ne sera PAS supposé** : au-delà d'une
+     certaine taille, pose-t-il UNE nourrice de douze voies, ou DEUX de six ?
+     Les deux se font. Composer une nourrice de douze en doublant celle de six
+     serait exactement l'invention que ce fichier interdit — l'écran demande
+     donc la fiche, et attend.
   */
   nourrices: {}
 };

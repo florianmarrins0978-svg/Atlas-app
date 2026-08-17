@@ -672,10 +672,19 @@ function dessinerNourrice(d){
   if (!voies) return;
   var fiche = CATALOGUE.nourrices[voies];
   if (!fiche){
+    // On dit AUSSI ce qui est déjà enregistré : sans cela, il ne sait pas où il
+    // en est de ses envois, et il refait une fiche déjà donnée.
+    var connues = Object.keys(CATALOGUE.nourrices)
+      .map(Number).sort(function(a,b){ return a - b; });
+    var etat = connues.length
+      ? 'Déjà enregistrées : ' + connues.join(', ') + ' voies.'
+      : 'Aucune fiche enregistrée pour l\'instant.';
     hote.innerHTML = '<p class="manque-fiche"><b>Fiche « nourrice ' + voies + ' voie' +
       (voies>1?'s':'') + ' » à renseigner.</b> Le calcul dit qu\'il en faut une ; ' +
-      'je ne compose pas son contenu à votre place. Dites-moi ce qu\'il y a dedans, ' +
-      'elle se reprendra ensuite toute seule à chaque plan.</p>';
+      'je ne compose pas son contenu à votre place. ' + etat +
+      '<br><span class="aide-courte">Et au-delà d\'une certaine taille : une seule ' +
+      'nourrice, ou deux plus petites ? Je ne le suppose pas — dites-le, ' +
+      'et ce sera pareil pour toutes.</span></p>';
     return;
   }
   var html = '<p class="aide" style="margin:0 0 6px"><b>' + fiche.nom + '</b> — votre fiche.</p>';

@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const B = 'http://127.0.0.1:8097';
+const B = 'http://127.0.0.1:8095';
 let ok = 0, ko = 0;
 function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; console.log('  ✗ ' + n + (d ? '\n      ' + d : '')); } }
 (async () => {

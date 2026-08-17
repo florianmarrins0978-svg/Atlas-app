@@ -851,7 +851,9 @@ nomenclatures. `appli/arrosage-catalogue.js` les reçoit ; **chaque entrée port
 une `source`** (`'patron'` ou `'provisoire'`), et l'écran compte ce qui reste
 provisoire. **Ne jamais présenter une valeur provisoire comme acquise**, et ne
 jamais composer une **nourrice** absente : `CATALOGUE.nourrices` est vide parce
-qu'il en donnera les fiches, de une à six voies. L'écran annonce la fiche
+qu'il en donnera les fiches. **Aucun plafond à six voies** (sa réponse du
+17 août) — et **ne pas fabriquer une nourrice de douze en doublant celle de
+six** : une seule grande ou deux petites, il ne l'a pas tranché. L'écran annonce la fiche
 manquante — c'est voulu, ce n'est pas un trou à boucher. Détail complet dans
 `TODO.md` § « 0 quaterquadragies ».
 
