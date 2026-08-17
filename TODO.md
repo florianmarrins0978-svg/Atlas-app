@@ -315,11 +315,12 @@ développement. À chaque allumage qui récupère du code — d'où trois redém
 sans effet. `build` est entré dans le motif
 (`scripts/test-verrou-construction.ts`).
 
-**Ce qui reste à surveiller, et qui n'est PAS tranché :** sa construction met
-manifestement très longtemps sur sa machine (8 Go, sans zone d'échange). Ici
-elle prend deux minutes. Si, le motif corrigé, elle n'aboutit toujours pas dans
-un délai raisonnable, la piste suivante est de **ne pas bâtir pendant qu'on
-sert** — mais il faudra le mesurer avant de le coder, pas le supposer.
+**CONFIRMÉ CHEZ LUI le 16 août 2026 au soir**, et c'est ce qui clôt le sujet :
+correctif poussé, un redémarrage, et sa réponse — *« elle est rapide »*. La
+construction aboutit donc bien sur sa machine une fois qu'on cesse de lui en
+orpheliner une. **La piste « ne pas bâtir pendant qu'on sert » est écartée : ce
+n'était pas une question de ressources.** Ne pas la rouvrir sans une mesure qui
+la justifie.
 
 ### 0 quadragies ter. Une PAGE BLANCHE sur son banc n'est presque jamais une panne
 
