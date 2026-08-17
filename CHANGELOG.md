@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Sa première page de catalogue entre dans la base — et le registre de SES prix
+
+**Sa photo :** catalogue Aqua Plus 2026, page 8, buses série VAN à secteur
+réglable (RBT648 à RBT640). *« Ça c'est les buses qui vont venir se visser sur
+les tuyères. Donc là tu as toutes les buses avec les distances, les pressions,
+tout. »* Les sept sont entrées, avec leur source et la page d'où elles viennent.
+
+**Trois choses que cette page corrige dans le calcul, et aucune n'est cosmétique :**
+
+| Ce qui était supposé | Ce que le catalogue dit |
+|---|---|
+| Un arroseur est un produit | C'est un **corps + une buse** : la portée et le débit viennent de la buse. Les corps manquent encore, et l'écran le dit |
+| Le débit d'un quart de tour = le quart du tour complet | **Faux sur les petites buses** : la 6-VAN donne 0,27 m³/h à 360° quand quatre fois son 90° ferait 0,32. Les valeurs sont désormais **lues**, jamais déduites |
+| Portées données à 3 bars | **2 bars** sur cette page. Une portée relevée à 2 bars sur une installation à 3, ce n'est pas la même |
+
+**Le colisage de 25 est repris dans la liste au fournisseur** : il commande par
+paquets, et l'apprendre à la commande est un aller-retour de trop.
+
+**AUCUN PRIX N'A ÉTÉ ENREGISTRÉ, et c'est sa consigne :** *« sur certaines
+photos tu auras les prix, néanmoins ne les enregistre pas, car c'est des prix
+pour les clients et pas pour les pros »*. Un P.U.H.T. figurait sur la page ; il
+n'est recopié nulle part — **pas même en commentaire**. La première rédaction le
+citait « pour mémoire » en affirmant ne pas l'enregistrer : une contradiction
+retirée avant le commit.
+
+**`appli/arrosage-tarifs.html` — le registre qu'il a demandé.** *« Une fiche
+avec tous les produits, à côté une petite case pour le prix […] et à terme tu
+seras capable de lui sortir les fournitures, le plan, et donc le total avec ses
+prix pro. »* Ses prix vivent dans son navigateur, le plan les reprend, et **une
+case vide reste vide** : le total dit combien de lignes lui manquent au lieu
+d'afficher un chiffre auquel on se fierait.
+
+**Pourquoi ses prix ne sont PAS dans le catalogue** : un tarif imprimé est
+public, le sien est négocié et change d'une agence à l'autre. Les mélanger
+finirait par chiffrer un devis au prix public — l'erreur la plus chère que cet
+outil puisse commettre, parce qu'elle ne se voit pas : le total reste plausible.
+
+**Et trois contrôles qui ne savaient pas échouer ont été durcis.** Confrontés
+aux dégradations qu'ils prétendaient détecter, les trois passaient au vert : un
+prix de catalogue glissé dans une fiche produit, un total qui comblait ses
+lignes manquantes à 10 € pièce, et les débits d'arc redéduits par division. Ils
+vérifient maintenant des **nombres** — 37,20 € au centime, 1,64 m³/h sur une
+zone assez petite pour retenir la 6-VAN — et non des tournures de phrase. Un
+contrôle posé sur la 18-VAN n'aurait rien vu : cette buse-là est exactement
+linéaire.
+
 ### Le choix de la marque : Rain Bird par défaut, et rien d'attribué sans preuve
 
 **Sa demande :** *« l'utilisateur pourra également choisir entre les marques.

@@ -86,6 +86,10 @@ qui ne le sont pas.
 | 12 | L'utilisateur qui ne connaît rien saura-t-il mesurer son débit ? Faut-il une valeur par défaut ? | *en attente* |
 | 13 | Le choix de marque vaut-il aussi pour le **goutte-à-goutte** et le **reste du matériel** (vannes, programmateur, nourrice), ou seulement pour les arroseurs et tuyères ? | *en attente* |
 | 14 | Quelles marques mettre dans le bandeau en plus de **Rain Bird** et **Toro** ? | *en attente* |
+| 15 | Le choix de buse : je prends **la plus grande qui tienne dans le petit côté** (donc le moins d'arroseurs). C'est bien votre règle ? | *en attente* |
+| 16 | La **8-VAN** annonce 0,16 m³/h à 90°, soit plus que la 10-VAN (0,14) qui porte pourtant plus loin. Coquille du catalogue, ou valeur juste ? | *en attente* |
+| 17 | Les buses sont données **à 2 bar**. Que faire quand l'installation tourne à 3 : autre tableau, ou correction ? | *en attente* |
+| 18 | Les **corps escamotables** sur lesquels ces buses se vissent : quelles références ? | *en attente* |
 
 **LE CHOIX DE MARQUE — fait le 17 août.** Bandeau déroulant, **Rain Bird par
 défaut**, Toro ensuite ; `CATALOGUE.marques` s'allonge d'une ligne. **Aucune

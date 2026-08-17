@@ -845,6 +845,20 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ SES PRIX NE SONT JAMAIS DANS LE CATALOGUE (17 août).** Sa consigne : les
+tarifs imprimés sont des prix CLIENT, ils ne s'enregistrent pas — pas même en
+commentaire. Ses prix négociés se saisissent dans `appli/arrosage-tarifs.html`
+et vivent dans son navigateur. **Une case vide reste vide** : le total du plan
+annonce les lignes manquantes plutôt que de les combler. Les mélanger ferait
+chiffrer un devis au prix public, et ça ne se verrait pas — le total reste
+plausible.
+
+**⚠ UN ARROSEUR = UN CORPS + UNE BUSE, et le débit se LIT par arc.** Sa page du
+17 août (Aqua Plus 2026 p. 8, buses VAN) : le débit d'un quart de tour n'est pas
+le quart du tour complet sur les petites buses. Ne pas « simplifier » en
+divisant — un contrôle mesure 1,64 m³/h sur une zone qui retient la 6-VAN, et
+1,62 trahirait la division. Les corps escamotables manquent encore.
+
 **⚠ LE CATALOGUE D'ARROSAGE EST À LUI, PAS À NOUS (17 août).** Il a dit
 « plusieurs choses sont fausses », et il envoie ses photos d'arroseurs et ses
 nomenclatures. `appli/arrosage-catalogue.js` les reçoit ; **chaque entrée porte

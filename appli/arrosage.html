@@ -263,8 +263,10 @@
       <span class="aide-courte">Elle coupe le cycle quand il a plu : c'est une ligne d'achat, pas un calcul.</span></p>
     <div id="nourrice"></div>
     <div id="materiel"></div>
+    <p id="total"></p>
     <div class="gestes">
       <button type="button" id="copier">Copier la liste</button>
+      <a class="second" href="arrosage-tarifs.html">Mes prix</a>
       <a id="envoyer" href="#">Envoyer par mail</a>
       <button type="button" class="second" id="imprimer">Imprimer</button>
     </div>
@@ -299,12 +301,52 @@ CATALOGUE.arroseurs.concat(CATALOGUE.gaines).forEach(function(m){ MATERIELS[m.re
    **Le repli sur le générique est BRUYANT** : il rend aussi `emprunte`, et
    l'écran l'affiche. Un repli muet ferait croire que Rain Bird est renseigné
    alors qu'aucune de ses références n'est encore entrée. */
-function modelePour(type){
+/* Le modèle retenu pour un type d'arroseur, dans la marque choisie.
+
+   **La buse se choisit sur la ZONE, pas dans l'absolu** : on prend la plus
+   grande dont le rayon tienne dans le plus petit côté. Une 18-VAN qui porte à
+   5,4 m sur un massif de 3 m arrose surtout le mur d'en face.
+
+   **CETTE RÈGLE EST À CONFIRMER** — c'est la plus grande buse qui tient, donc
+   le moins d'arroseurs possible. S'il en choisit une autre (confort de pose,
+   régularité, stock d'agence), une ligne suffit à la changer. L'écran l'annonce
+   plutôt que de la cacher dans le calcul. */
+function modelePour(type, plusPetitCote){
   var marque = marqueCourante();
+
+  var buses = CATALOGUE.busesDe(marque, type);
+  if (buses.length){
+    var tenue = buses.filter(function(b){ return !plusPetitCote || b.rayon <= plusPetitCote; });
+    var b = tenue[0] || buses[buses.length - 1]; // à défaut, la plus petite
+    return {
+      m: {
+        ref: b.ref, nom: type === 'tuyere' ? 'Tuyère' : 'Turbine', detail: b.nom,
+        marque: nomDeMarque(b.marqueCle),
+        marqueCle: b.marqueCle, type: type, portee: b.rayon, pression: b.pression,
+        debit360: b.debit[360], debitParAngle: b.debit, colisage: b.colisage,
+        source: b.source, buse: b,
+        // La pluviométrie n'est pas au catalogue : elle se déduit du débit et de
+        // la surface couverte. Déduite, donc signalée comme telle.
+        pluvio: pluviometrie(b),
+        famille: 'Arroseurs'
+      },
+      emprunte: false,
+      sansCorps: CATALOGUE.corps.length === 0
+    };
+  }
+
   var chez = CATALOGUE.arroseursDe(marque, type);
   if (chez.length) return { m: chez[0], emprunte: false };
   var generique = CATALOGUE.arroseursDe('generique', type);
   return { m: generique[0] || null, emprunte: true };
+}
+
+/* Millimètres par heure, en pose tête-bêche : le débit d'un cercle entier
+   réparti sur le carré qu'il dessert (espacement × espacement, l'espacement
+   valant la portée). 1 m³/h sur 1 m² = 1000 mm/h. */
+function pluviometrie(b){
+  var carre = b.rayon * b.rayon;
+  return carre > 0 ? Math.round((b.debit[360] * 1000) / carre * 10) / 10 : 0;
 }
 
 function marqueCourante(){
@@ -395,9 +437,10 @@ function materielDe(z){
 }
 
 function poser(z){
+  var petitCote = Math.min(Number(z.L)||0, Number(z.l)||0);
   var cle = materielDe(z), choix = cle === 'gaine'
     ? { m: CATALOGUE.gaines[0], emprunte: CATALOGUE.gaines[0].marqueCle === 'generique' }
-    : modelePour(cle);
+    : modelePour(cle, petitCote || null);
   var m = choix.m, sais = saisonCourante();
   if (!m) return { cle:cle, m:null, nombre:0, debit:0, minutes:0, nx:0, ny:0, emprunte:true };
   var besoin = sais[TYPES[z.type].famille][0], passages = sais[TYPES[z.type].famille][1];
@@ -413,10 +456,14 @@ function poser(z){
     var bords = Math.max(0, 2*(nx-2)) + Math.max(0, 2*(ny-2));
     var inter = Math.max(0, nx-2) * Math.max(0, ny-2);
     // Un arroseur de bord ne tourne que d'un demi-tour, un coin d'un quart.
-    // Tout compter en cercle entier gonfle le débit de moitié, et fait acheter
-    // des secteurs pour rien.
+    // **Le débit de chaque arc est LU au catalogue quand il y est**, pas déduit
+    // en divisant : sur les petites buses, quatre fois le quart de tour ne fait
+    // pas le tour complet (6-VAN : 0,27 contre 0,32). Diviser aurait surestimé.
+    var q = m.debitParAngle ? m.debitParAngle[90]  : m.debit360 / 4;
+    var d = m.debitParAngle ? m.debitParAngle[180] : m.debit360 / 2;
     r.nx = nx; r.ny = ny; r.nombre = coins + bords + inter;
-    r.debit = coins*(m.debit360/4) + bords*(m.debit360/2) + inter*m.debit360;
+    r.debit = coins*q + bords*d + inter*m.debit360;
+    r.sansCorps = choix.sansCorps;
   } else {
     var ml = Number(z.ml)||0;
     r.nombre = ml; r.debit = ml * m.debitMetre;
@@ -508,7 +555,8 @@ function dessinerZones(){
 
     var resume = p.debit > 0
       ? (t.forme === 'surface'
-          ? p.nombre + ' ' + p.m.nom.toLowerCase() + (p.nombre>1?'s':'') + ' (' + p.nx + ' × ' + p.ny + ')' +
+          ? p.nombre + ' ' + p.m.nom.toLowerCase() + (p.nombre>1?'s':'') +
+            (p.m.detail ? ' ' + p.m.detail : '') + ' (' + p.nx + ' × ' + p.ny + ')' +
             ' — un tous les ' + nb(p.ecart) + ' m'
           : p.nombre + ' m de gaine')
         + ' · ' + nb(p.debit) + ' m³/h · ' + p.minutes + ' min, ' + p.passages + '×/semaine'
@@ -552,9 +600,20 @@ function dessinerMarques(){
   }
   choix.value = marqueCourante();
 
-  var cle = marqueCourante(), combien = CATALOGUE.arroseursDe(cle).length;
+  var cle = marqueCourante();
+  var combien = CATALOGUE.arroseursDe(cle).length +
+                CATALOGUE.buses.filter(function(b){ return b.marqueCle === cle; }).length;
   document.getElementById('marqueNote').innerHTML = combien
-    ? combien + ' modèle' + (combien>1?'s':'') + ' ' + nomDeMarque(cle) + ' au catalogue.'
+    ? combien + ' modèle' + (combien>1?'s':'') + ' ' + nomDeMarque(cle) + ' au catalogue.' +
+      (function(){
+        var trous = [];
+        if (!CATALOGUE.busesDe(cle,'turbine').length && !CATALOGUE.arroseursDe(cle,'turbine').length)
+          trous.push('aucune turbine');
+        if (!CATALOGUE.corps.length) trous.push('aucun corps d\'arroseur');
+        return trous.length
+          ? ' <span class="provisoire">Manque encore : ' + trous.join(', ') + '.</span>'
+          : '';
+      })()
     : '<span class="provisoire">Aucun modèle ' + nomDeMarque(cle) + ' enregistré.</span> ' +
       'Je calcule avec des valeurs génériques en attendant vos photos — et je le ' +
       'redis sur chaque zone plutôt que de le laisser croire.';
@@ -679,21 +738,24 @@ function listeMateriel(d){
     var m = modeles[ref];
     if (m.type === 'gaine'){ totalGaine += compte[ref]; return; }
     totalArroseurs += compte[ref];
-    lignes.push({ nom: (m.marqueCle === 'generique' ? '' : m.marque + ' ') +
-                       m.nom + 's ' + m.detail, q: compte[ref], u:'u' });
+    lignes.push({ ref: m.ref,
+                  nom: (m.marqueCle === 'generique' ? '' : m.marque + ' ') +
+                       m.nom + 's ' + m.detail +
+                       (m.colisage ? ' — par ' + m.colisage : ''),
+                  q: compte[ref], u:'u' });
   });
   if (totalGaine){
     var g = CATALOGUE.gaines[0];
-    lignes.push({ nom:'Gaine de goutteurs ' + g.detail, q: totalGaine, u:'ml' });
+    lignes.push({ ref:g.ref, nom:'Gaine de goutteurs ' + g.detail, q: totalGaine, u:'ml' });
   }
-  if (totalArroseurs) lignes.push({ nom:'Crosses de raccordement (une par arroseur)', q: totalArroseurs, u:'u' });
+  if (totalArroseurs) lignes.push({ ref:'crosse', nom:'Crosses de raccordement (une par arroseur)', q: totalArroseurs, u:'u' });
   if (d.secteurs.length){
-    lignes.push({ nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
-    lignes.push({ nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
+    lignes.push({ ref:'electrovanne', nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
+    lignes.push({ ref:'regard', nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
     lignes.push({ nom:'Programmateur ' + voiesProgrammateur(d.secteurs.length) + ' voies', q:1, u:'u' });
-    lignes.push({ nom:'Disconnecteur (obligatoire sur l\'eau potable)', q:1, u:'u' });
-    lignes.push({ nom:'Réducteur de pression', q:1, u:'u' });
-    if (etat.sonde) lignes.push({ nom:'Sonde de pluie', q:1, u:'u' });
+    lignes.push({ ref:'disconnecteur', nom:'Disconnecteur (obligatoire sur l\'eau potable)', q:1, u:'u' });
+    lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    if (etat.sonde) lignes.push({ ref:'sonde-pluie', nom:'Sonde de pluie', q:1, u:'u' });
   }
   return lignes;
 }
@@ -709,9 +771,20 @@ function dessinerMateriel(d){
   lignes.forEach(function(l){
     var b = document.createElement('div');
     b.className = 'mat';
-    b.innerHTML = '<span class="mat-q">' + l.q + ' ' + l.u + '</span><span class="mat-n">' + l.nom + '</span>';
+    var p = l.ref != null ? PRIX[l.ref] : undefined;
+    b.innerHTML = '<span class="mat-q">' + l.q + ' ' + l.u + '</span><span class="mat-n">' + l.nom + '</span>' +
+      (p != null ? '<span class="mat-a">' + nb(p * l.q) + ' € HT</span>' : '');
     hote.appendChild(b);
   });
+  var t = totalDeLaListe(lignes);
+  document.getElementById('total').className = 'avert' + (t.manquantes ? '' : ' ');
+  document.getElementById('total').innerHTML = t.chiffrees === 0
+    ? 'Aucun prix enregistré. <b style="color:inherit">Saisissez les vôtres</b> dans « Mes prix » : ' +
+      'le total sortira alors à vos tarifs, jamais à ceux du catalogue.'
+    : (t.manquantes
+        ? '<b>' + nb(t.somme) + ' € HT</b> sur ' + t.chiffrees + ' ligne(s) — ' +
+          '<b>' + t.manquantes + ' sans prix</b>, non comptée(s). Le total est donc INCOMPLET.'
+        : '<b style="color:inherit">' + nb(t.somme) + ' € HT</b> — toutes les lignes chiffrées à vos prix.');
   // Les tuyaux ne se devinent pas : ils dépendent du chemin, pas des surfaces.
   // Une valeur inventée ici serait pire qu'une case vide — elle serait crue.
   [['pe32','Tuyau PE 32 (ligne principale)','ml'],['pe25','Tuyau PE 25 (antennes)','ml']].forEach(function(t){
@@ -767,6 +840,23 @@ function dessinerBandeau(){
       '</b> — portées, débits et matériel de catalogue générique, en attendant vos photos. ' +
       (fiches === 0 ? 'Aucune fiche de nourrice enregistrée pour l\'instant.'
                     : fiches + ' fiche(s) de nourrice enregistrée(s).');
+}
+
+var PRIX = (function(){ try { return JSON.parse(localStorage.getItem('atlas-arrosage-prix')) || {}; }
+                        catch (e) { return {}; } })();
+
+/* Le total à SES prix. **Aucune ligne n'est complétée par une autre** : ce qui
+   n'a pas de prix dans son registre est compté comme manquant et annoncé. Un
+   total qui bouche ses trous est faux d'une façon qui ne se voit pas — il reste
+   plausible. */
+function totalDeLaListe(lignes){
+  var somme = 0, manquantes = 0, chiffrees = 0;
+  lignes.forEach(function(l){
+    var p = l.ref != null ? PRIX[l.ref] : undefined;
+    if (p == null) { manquantes++; return; }
+    somme += p * l.q; chiffrees++;
+  });
+  return { somme:somme, manquantes:manquantes, chiffrees:chiffrees };
 }
 
 function texteDeLaListe(d){
