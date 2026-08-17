@@ -61,6 +61,40 @@ sept planches dégradées : **sept rouges, chacun nommant le bon coupable.**
 **Ce qui attend sa décision** : par où il entre son jardin, et par quelle sortie
 on commence. Rien ne sera codé avant.
 
+### « C'est monsieur Martins » : un client n'est plus recréé à chaque chantier
+
+Sa demande, le lendemain de la fiche client : *« si je crée un nouveau chantier,
+mais que c'est monsieur Martins et qu'on a déjà une fiche client monsieur
+Martins, [il faut que] le devis, la facture s'ajoute à la fiche client de
+monsieur Martins qui est déjà créé. »*
+
+**Ce que ça répare.** `creerClient` insérait **toujours**. Deux chantiers pour le
+même homme faisaient deux fiches, et la fiche client livrée la veille annonçait
+« 1 chantier » à vie — juste, mais sans matière.
+
+**Le chemin qu'il a écarté**, et qu'il ne faut pas rouvrir sans lui : qu'on lui
+**propose** les clients qui ressemblent. *« Non justement, il ne faut pas »*. Le
+rapprochement est automatique.
+
+**Ce qui borne le risque de mélanger deux homonymes** — le seul danger, et il ne
+se répare pas d'un clic : **une coordonnée qui contredit interdit le
+rapprochement**. Deux « Martins » aux téléphones différents restent deux fiches.
+Le nom, lui, se compare sans sa civilité (« Martins » = « M. Martins ») et le
+téléphone sur ses chiffres (« +33 6 12… » = « 06.12… »).
+
+**Rien n'est jamais écrasé** : ce qu'il tape complète les cases vides de la fiche
+retrouvée, et ne touche pas à ce qu'il avait déjà noté. Un client effacé (RGPD)
+n'est jamais réutilisé.
+
+`src/lib/rapprochement-client.ts`, `ARCHITECTURE.md` §122. Éprouvé par
+`test-rapprochement-client.ts` (19 cas), `test-rapprochement-client-db.ts`
+(8 cas, dont l'isolation entre entreprises) et `test-rapprochement-client-e2e.ts`
+(deux chantiers créés au formulaire, « 2 chantiers » sur la fiche). La suite base
+rend **quatre échecs** contre l'ancien comportement.
+
+**Ce qui n'existe pas encore :** aucun geste ne permet de dire « ce chantier
+n'est pas ce client-là ». Deux homonymes que rien ne distingue sont rapprochés
+définitivement (`TODO.md` §0 duoquadragies).
 
 ### « Il n'y a aucun moyen de retirer les cinq pour cent » — il avait raison deux fois
 
@@ -84,12 +118,18 @@ correctif.
 environnement n'a ni service de transcription ni modèle ; la cause a été trouvée
 en lisant le code, et ce raccord ne sera parcouru qu'avec une clé.
 
-### Le « petit moins » qu'il demande : dessiné, pas codé
+### CODÉ : le « petit moins » en face de la ligne — sa proposition B
 
 *« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un
-petit moins. »* `docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes
-sur **ses** chiffres — glisser la ligne, un rond en face, ou la ligne du bas qui
-bascule. Rien n'est codé : `CLAUDE.md` §3 bis.
+petit moins. »* Dessiné d'abord (`docs/maquettes/68-retirer-le-prix-accorde.html`,
+trois formes sur **ses** chiffres), choisi le 17 août — **« B »** —, puis codé.
+
+Un rond de 26 px devant le libellé, en or. Un appui : le devis affiche son prix
+plein **tout de suite**, et « Annuler » reste six secondes sous la feuille. Rien
+n'est écrit avant la fermeture du tiroir — c'est le geste unique de
+l'application depuis le 10 août, et le prix accordé passe par le même.
+
+Il ne paraît pas sur un devis parti : cet écran ne se modifie plus.
 
 **Et un contrôle de maquette que personne ne jouait** — `verifier-maquette-reduction.mjs`
 existait depuis le 16 août sans être branché nulle part. Raccroché, avec celui

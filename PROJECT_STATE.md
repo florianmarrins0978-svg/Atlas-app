@@ -71,9 +71,8 @@ seule avec quinze outils.
 | Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
 | Le prix accordé au client — remise en % sous le total, jusqu'à la facture (16 août) | `src/lib/reduction-devis.ts`, migration `0048` |
 | La fiche d'un client — ses chantiers, ce qu'il doit, ce qu'on lui fait (16 août) | `src/lib/fiche-client.ts`, `src/app/clients/[id]/page.tsx` |
-
-| **Et il se RETIRE pour de bon** (17 août) — écrire 0 %, vider la case, ou le dire à la voix. Les deux derniers chemins étaient cassés : l'écran gardait une remise que la base n'avait plus, et la réécrivait au passage suivant (`ARCHITECTURE.md` §120) | `src/app/chantiers/[id]/devis-complet/` |
-
+| **Un client est RETROUVÉ, plus recréé** à chaque chantier — rapprochement automatique, refusé si une coordonnée contredit (17 août) | `src/lib/rapprochement-client.ts`, `trouverOuCreerClient` |
+| **Et il se RETIRE pour de bon** (17 août) — un « − » en face de la ligne (sa proposition B), écrire 0 %, vider la case, ou le dire à la voix. Les deux derniers chemins étaient cassés : l'écran gardait une remise que la base n'avait plus, et la réécrivait au passage suivant (`ARCHITECTURE.md` §120) | `src/app/chantiers/[id]/devis-complet/` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |

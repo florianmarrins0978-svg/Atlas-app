@@ -756,11 +756,18 @@ dans `src/`.
 montre ce que l'application savait déjà : combien de chantiers, combien facturé,
 combien reste dû, et ce qu'on lui fait d'habitude.
 
-**⚠ ELLE EST PRESQUE VIDE AUJOURD'HUI, ET CE N'EST PAS UN DÉFAUT D'ELLE :** un
-client n'est **jamais réutilisé** (`creerClient` insère toujours ; `listerClients`
-n'est appelé par aucun écran). Deux chantiers pour « M. Bernard » font deux
-clients. **Avant de chercher un défaut dans la fiche, vérifier cela.** La
-réparation est une décision du patron — `TODO.md` §0 duoquadragies.
+**UN CLIENT EST DÉSORMAIS RETROUVÉ, PLUS RECRÉÉ (17 août).** La fiche était
+vide par construction — `creerClient` insérait toujours, et deux chantiers pour
+« M. Martins » faisaient deux fiches. Il l'a tranché le lendemain, en écartant
+qu'on lui **propose** des correspondances : le rapprochement est **automatique**
+(`trouverOuCreerClient`, règle dans `src/lib/rapprochement-client.ts`).
+
+**Ce qu'il faut savoir avant d'y toucher :** une coordonnée qui **contredit**
+interdit le rapprochement — deux « Martins » aux téléphones différents restent
+deux fiches. Rien n'est jamais écrasé : la saisie complète les cases vides, pas
+les autres. Un client effacé (RGPD) n'est jamais réutilisé. Et **une fiche est
+maintenant partagée** : corriger l'adresse du client depuis un devis la corrige
+sur les autres chantiers du même client. `ARCHITECTURE.md` §122.
 
 Trois pièges de ce lot : « 0 € » ne doit jamais s'afficher pour un client non
 facturé (« — » et une phrase) ; les prestations se comptent en chantiers et non
@@ -787,9 +794,12 @@ correctif.
 un chiffre et le supprimer n'est pas ce qu'on fait. Les deux chemins mènent à
 « aucune réduction », un seul était éprouvé.
 
-**LE « PETIT MOINS » ATTEND SON CHOIX (17 août).**
-`docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes. **Ne pas le
-coder avant qu'il tranche** (`CLAUDE.md` §3 bis). Détail : `TODO.md`.
+**LE « PETIT MOINS » EST CODÉ (17 août) — sa proposition B.** Un rond de 26 px
+devant le libellé du prix accordé. **Il partage le tiroir des lignes**, sous la
+clé réservée `prix-accorde-au-client` : ne pas lui fabriquer un second tiroir,
+c'est ce que le patron a fait disparaître le 10 août. Et **le total montre le
+prix plein dès l'appui**, alors que rien n'est encore écrit — un geste sans effet
+visible pendant six secondes se lit comme une panne.
 
 **⚠ UNE COULEUR POSÉE SUR `<html>` NE PEUT PAS SUIVRE UNE NAVIGATION (16 août).**
 Il choisit « Nuit », rien ne change — et c'était exact. Les variables de charte

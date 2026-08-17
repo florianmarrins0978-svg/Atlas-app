@@ -105,7 +105,7 @@ au hasard.
 
 ### 0 unquadragies. ~~Montrer ce que l'application sait déjà d'un client~~ — **CODÉE le 16 août 2026 (fiche B)**
 
-### 0 duoquadragies. Le « petit moins » du prix accordé — il choisit entre trois
+### 0 quattuorquadragies. ~~Le « petit moins » du prix accordé~~ — **CODÉ le 17 août 2026 (proposition B)**
 
 *`docs/maquettes/68-retirer-le-prix-accorde.html`, écrite le 17 août 2026 —
 24 contrôles, sur SES chiffres (1 850,00 € HT, 5 %). Rien n'est codé pour le
@@ -121,8 +121,11 @@ réduction. »*
 | **B — le petit « − » en face** | Ce qu'il a demandé, mot pour mot : un rond de 26 px devant le libellé, en or | Un bouton dans le bloc des totaux, le seul endroit du devis qui n'en portait aucun. Et le « + » ajoute une ligne AU TABLEAU quand ce « − » retire un TOTAL : lisible, mais pas symétrique |
 | **C — la ligne du bas bascule** | « + Prix accordé au client » devient « − Retirer le prix accordé » dès qu'il y en a une. Un seul endroit à connaître | Presque rien : la ligne existe déjà, elle change de mot. Mais le geste est sous le total TTC, pas en face de la remise |
 
-**Ma préférence : C**, puis B. C ne fabrique aucun geste nouveau et dit toujours
-ce qu'il fera ; B est ce qu'il a demandé, et se code en une heure. **Il tranche.**
+**Il a choisi B** le 17 août, contre ma préférence pour C. C'est codé : un rond
+de 26 px devant le libellé, le même tiroir « Annuler » que les lignes, et le
+prix plein affiché dès l'appui. `ARCHITECTURE.md` §120.
+
+*Ce qui suit reste pour mémoire du raisonnement.*
 
 **Ce qui est DÉJÀ réparé, et ne l'attend pas** (`ARCHITECTURE.md` §120) : écrire
 0 % retire la remise pour de bon, et la dictée aussi.
@@ -168,32 +171,28 @@ chantier. Les deux chiffres sont montrés — facturé, et reste dû. Détail :
 
 ---
 
-### 0 duoquadragies. ⚠ UN CLIENT N'EST JAMAIS RÉUTILISÉ — et ça vide la fiche
+### 0 duoquadragies. ~~Un client n'était jamais réutilisé~~ — **TRANCHÉ ET CODÉ le 17 août 2026**
 
-**Trouvé le 16 août 2026 en éprouvant la fiche client, et c'est le point qui
-décide de son utilité.**
+`creerClient` insérait **toujours** : deux chantiers pour « M. Martins »
+faisaient deux fiches, et la fiche client annonçait « 1 chantier » à vie.
 
-`creerClient` **insère toujours**. Il n'est appelé que depuis la création d'un
-chantier, et `listerClients` n'est appelé par **aucun écran**. Deux chantiers
-pour « M. Bernard » créent donc **deux clients distincts** — et sa fiche
-affichera « 1 chantier » à chaque fois, pour toujours.
+**Le patron a écarté le chemin « proposer »** — *« non justement, il ne faut
+pas »* — et demandé le rapprochement **automatique** : *« si je crée un
+nouveau chantier, mais que c'est monsieur Martins et qu'on a déjà une fiche
+client monsieur Martins, [il faut que] le devis, la facture s'ajoute à la fiche
+client de monsieur Martins qui est déjà créé. »*
 
-**La fiche est juste ; c'est sa matière qui manque.** « Vous l'avez vu 4 fois »
-ne se produira jamais tant que ceci n'est pas réglé.
+Le risque qu'il portait — fusionner deux homonymes — est borné par une règle :
+**une coordonnée qui contredit interdit le rapprochement**. Deux « Martins »
+aux téléphones différents restent deux fiches. `src/lib/rapprochement-client.ts`,
+`ARCHITECTURE.md` §122.
 
-**CE N'EST PAS UNE CORRECTION TECHNIQUE, C'EST UNE DÉCISION DU PATRON.**
-Rapprocher deux clients sur leur nom fusionnerait deux personnes réellement
-homonymes — deux « M. Martin » d'un même village — et **rien ne permettrait de
-défaire** ce mélange. Trois chemins possibles, à lui soumettre sur planche :
-
-| | Ce que ça fait | Ce que ça risque |
-|---|---|---|
-| **Proposer** | à la saisie du nom, l'application montre les clients connus qui ressemblent, et il choisit | rien : c'est lui qui tranche, chantier par chantier |
-| **Rapprocher seul** | même nom + même téléphone → même client | deux homonymes qui partagent un numéro d'entreprise se mélangeraient |
-| **Fusionner après coup** | un geste « c'est le même client » sur la fiche | il faut le faire, donc il ne le fera pas toujours |
-
-**À dessiner avant de coder** (`CLAUDE.md` §3 bis). Le premier chemin est le
-seul qui n'invente rien — mais c'est à lui de le dire.
+**CE QUI RESTE OUVERT, ET QU'IL FAUDRA LUI POSER UN JOUR :** deux homonymes que
+**rien** ne distingue (aucun téléphone, aucun e-mail des deux côtés) sont
+rapprochés, et **rien ne permet de les reséparer**. Il n'existe aucun geste
+« ce chantier n'est pas ce client-là ». À dessiner le jour où le cas se
+présente — pas avant : une commande de démixage jamais utilisée coûterait plus
+cher à tenir qu'à attendre.
 
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 

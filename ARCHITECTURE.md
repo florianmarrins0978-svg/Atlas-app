@@ -9917,16 +9917,30 @@ ni modèle (`src/server/ai/providers/transcription/dev.ts`). La cause a été tr
 code, et le raccord n'aura été parcouru qu'avec une clé — c'est écrit tel quel
 dans `test-dicter-dans-le-devis-e2e.ts` depuis le 15 août.
 
-### 3. Le « petit moins » : dessiné, pas codé
+### 3. Le « petit moins » — dessiné, choisi, codé
 
 *« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un
-petit moins. »* C'est un geste : il se dessine avant de toucher à `src/`
-(`CLAUDE.md` §3 bis). `docs/maquettes/68-retirer-le-prix-accorde.html`, trois
-formes sur **ses** chiffres, 24 contrôles.
+petit moins. »* Dessiné d'abord (`CLAUDE.md` §3 bis) :
+`docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes sur **ses**
+chiffres, 24 contrôles. **Il a choisi B** le 17 août — le rond en face de la
+ligne — et c'est ce qui est codé.
 
-**Le « + » et le « − » ne sont pas symétriques**, et c'est ce que la planche lui
-montre : le « + » ajoute une ligne **au tableau**, le « − » retirerait un
-**total**. Rien d'autre dans ce bloc ne porte de bouton.
+**Le « + » et le « − » ne sont pas symétriques**, et il l'a choisi en le sachant :
+le « + » ajoute une ligne **au tableau**, ce « − » retire un **total**. Rien
+d'autre dans ce bloc ne portait de bouton.
+
+**Il passe par LE MÊME tiroir que les lignes**, sous une clé réservée
+(`prix-accorde-au-client`, impossible à confondre avec un UUID de ligne). Une
+seconde mécanique de retrait sur le même écran est exactement ce que le patron a
+fait disparaître le 10 août 2026 — et cela lui donne « Annuler » sans une ligne
+de plus.
+
+**Rien n'est écrit tant que le tiroir est ouvert**, mais le total, lui, montre le
+prix plein **dès l'appui**. Un geste qui ne changerait rien à l'écran pendant six
+secondes se lirait comme sans effet — c'est précisément sa plainte du 17 août.
+Et les deux états de l'écran sont posés **avant** l'attente du serveur : les
+repousser après laisserait une image où la ligne or revient avec son ancien
+pourcentage.
 
 ### Un contrôle de maquette que personne ne jouait
 
@@ -9943,6 +9957,10 @@ de la 68.
 | et la base ne garde alors aucun reliquat | `test-reduction-devis-e2e.ts` |
 | vider la case la retire aussi, et le devis revient au prix plein | `test-reduction-devis-e2e.ts` |
 | la TVA suit toujours le net, jamais le prix plein | les trois suites de §116 |
+| le « − » existe, fait 26 px, et n'est pas sur un devis parti | `test-reduction-devis-e2e.ts` |
+| un appui rend le prix plein **tout de suite**, sans rien écrire encore | `test-reduction-devis-e2e.ts` |
+| « Annuler » rend la remise avec son pourcentage | `test-reduction-devis-e2e.ts` |
+| le tiroir fermé, l'écran et la base disent la même chose | `test-reduction-devis-e2e.ts` |
 | la planche tombe juste sur les deux états, et le geste ne survit pas à son effet | `verifier-maquette-retirer-remise.mjs` |
 | **non éprouvé ici** : le raccord dictée → écran | il faut une clé de transcription et un modèle |
 
@@ -10031,3 +10049,104 @@ défaire cela. Consigné dans `TODO.md`, à lui poser.
   trouvait dans « 45**0,00 €** ». Une erreur qui accuse à tort coûte plus cher
   que pas de contrôle (`CLAUDE.md` §5).
 
+
+---
+
+## 122. « C'est monsieur Martins » : retrouver un client au lieu d'en refaire un
+
+**Le patron, le 17 août 2026**, une journée après avoir reçu sa fiche client et
+l'avoir vue annoncer « 1 chantier » chez quelqu'un qu'il connaît depuis des
+mois : *« si je crée un nouveau chantier, mais que c'est monsieur Martins et
+qu'on a déjà une fiche client monsieur Martins, [il faut que] le devis, la
+facture s'ajoute à la fiche client de monsieur Martins qui est déjà créé. »*
+
+C'est la suite directe du §121, et le défaut y était déjà écrit noir sur blanc :
+`creerClient` **insérait toujours**. La fiche était juste ; sa matière ne
+pouvait pas exister.
+
+### Le chemin qu'il a écarté, et il faut le savoir avant d'y revenir
+
+Trois chemins lui avaient été soumis — lui **proposer** les clients qui
+ressemblent, **rapprocher seul**, ou **fusionner après coup**. Le premier lui
+avait été recommandé, comme le seul qui n'invente rien.
+
+Il l'a refusé en une phrase : *« non justement, il ne faut pas »*. Le
+rapprochement se fait **sans geste de sa part**. Ne pas rouvrir cette porte sans
+lui : ce n'est pas un oubli, c'est un choix.
+
+### Ce qui borne le risque : une contradiction interdit le rapprochement
+
+Le danger de ce chemin est unique et il ne se répare pas d'un clic — verser le
+chiffre d'affaires d'un homme sur la fiche d'un autre, et lui montrer une dette
+qui n'est pas la sienne. La règle vit dans `src/lib/rapprochement-client.ts`,
+pure et éprouvée sans base :
+
+| La saisie… | face à un homonyme… | Alors |
+|---|---|---|
+| porte un téléphone ou un e-mail **qui concorde** | — | c'est lui, sans discussion |
+| porte une coordonnée **qui diffère** | l'homonyme en porte une aussi | **deux fiches** : ce n'est pas lui |
+| ne porte rien | l'homonyme porte ce qu'il veut | c'est lui — le cas courant |
+| — | plusieurs homonymes indiscernables | le **plus récent** |
+
+**L'homonyme qui contredit est écarté seul, pas en bloc.** Deux « Martins » en
+base dont un seul porte un autre numéro laissent le bon disponible ; les écarter
+ensemble aurait fabriqué un troisième Martins — exactement ce qu'on répare.
+
+**Le nom se compare sans sa civilité**, via `aDejaUneCivilite` et non une
+seconde liste de graphies (`CLAUDE.md` §3) : « Martins » et « M. Martins » sont
+le même homme, et c'est précisément l'écart qui fabriquait les doublons. Le
+garde-fou de `civilite.ts` sert ici aussi — « Merlin » et « Mathieu Dubois » ne
+sont pas amputés de leur première syllabe.
+
+**Le téléphone se compare sur ses chiffres, indicatif ramené au zéro** :
+« +33 6 12 34 56 78 » et « 06.12.34.56.78 » sont le même numéro. Sans cela, le
+même homme noté de deux façons serait passé pour une contradiction et aurait
+fabriqué la fiche en double.
+
+### Ce qui n'est jamais fait : écraser
+
+Ce qu'il tape à la volée **complète les cases vides** de la fiche retrouvée —
+téléphone, e-mail, adresse, civilité, canal — et **ne touche à rien d'autre**.
+Il crée un chantier entre deux rendez-vous et tape un portable là où il avait
+noté le fixe : garder les deux est impossible, choisir le nouveau lui ferait
+perdre le sien sans un mot.
+
+### Les effacés et les supprimés sont hors du jeu
+
+Un effacement RGPD (`donnees-client.ts`) pose `efface_le` **et** `deleted_at`.
+Rattacher un chantier neuf à cette fiche-là ressusciterait un dossier que le
+client a demandé de faire disparaître. Le filtre porte les deux colonnes, bien
+qu'une seule suffise : c'est une garantie qu'on veut pouvoir lire.
+
+### La conséquence à connaître, et qui est le prix de ce qu'il a demandé
+
+Une fiche client est désormais **partagée entre plusieurs chantiers**. Corriger
+l'adresse du client depuis le devis du chantier B la corrige aussi sur le devis
+du chantier A. C'est le sens même d'une fiche client — et l'adresse **du
+chantier** reste, elle, propre à chaque chantier (`chantiers.adresse_chantier`).
+
+**Ce qui n'existe pas, et qu'il faudra peut-être un jour :** aucun geste ne
+permet de dire « ce chantier n'est pas ce client-là ». Deux homonymes que rien
+ne distingue sont rapprochés définitivement. Consigné dans `TODO.md` plutôt que
+codé à l'avance : une commande de démixage jamais employée coûterait plus cher à
+tenir qu'à attendre.
+
+### Éprouvé
+
+- `scripts/test-rapprochement-client.ts` — 19 cas, la règle sans base. Le
+  père et le fils, la civilité, les graphies de téléphone, le non-écrasement.
+- `scripts/test-rapprochement-client-db.ts` — 8 cas, dont **l'isolation** : le
+  rapprochement parcourt la liste des clients, et une suite navigateur (qui
+  traverse la RLS) ne verrait jamais un chantier rattaché chez le voisin.
+- `scripts/test-rapprochement-client-e2e.ts` — son parcours : deux chantiers
+  créés au formulaire, une seule fiche, et **« 2 chantiers »** sur l'écran.
+
+**La suite base sait rougir** : confrontée à l'ancien comportement — un
+rapprochement qui ne trouve jamais rien — elle rend quatre échecs, dont le cas
+du patron. Un contrôle jamais vu rouge ne prouve rien (`AGENTS.md`).
+
+**Et un piège payé en l'écrivant** : la préparation d'un cas passait par
+`db.update(…)` plutôt que par `withEntreprise`. La RLS annule ces écritures
+**silencieusement** — la ligne n'était pas supprimée, et le cas « un client
+supprimé n'est pas réutilisé » passait au vert sans avoir rien supprimé
+(`CLAUDE.md` §3).
