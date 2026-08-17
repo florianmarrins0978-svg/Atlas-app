@@ -884,6 +884,20 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ UNE BUSE SANS SES TROIS ANGLES (90°/180°/360°) N'EST JAMAIS CHOISIE SEULE
+(17 août).** Les R-VAN Rain Bird se vendent en DEUX références par taille — une
+réglable 45°-270° (jamais 360°), une fixe 360° (jamais autre chose). `busesDe()`
+exige les trois angles sur une même référence avant de la rendre poseable ; les
+deux restent visibles dans le registre de prix. **Ne pas relâcher cette
+exigence à deux angles** : une version antérieure du filtre a laissé passer la
+réglable seule, et le calcul de l'intérieur d'une pelouse (qui a besoin du
+360°) a produit « Mesures à compléter » au lieu d'un plan.
+
+**⚠ LES CORPS SONT ENTRÉS (Rain Bird 1800, Hunter Pro-Spray/I-Spray), MAIS
+AUCUN N'EST CHOISI PAR DÉFAUT.** Quatre hauteurs, trois options — un choix de
+chantier qu'il n'a pas encore tranché. Ne pas en supposer un « raisonnable » :
+c'est exactement le genre de décision qu'il a réservée depuis le début.
+
 **⚠ SA RÈGLE DE POSE (17 août), et l'outil faisait l'inverse.** « 80 % minimum
 entre chaque arroseur. Portée 5 m : ~5,50 m, 6 m max, 5 m étant la perfection.
 Jamais moins. 4 m, 3 m : JAMAIS. » Donc **écart ∈ [portée ; 1,2 × portée]** — le

@@ -369,7 +369,9 @@ function modelePour(type, plusPetitCote, dims){
         famille: 'Arroseurs'
       },
       emprunte: false,
-      sansCorps: CATALOGUE.corps.length === 0
+      // Corps de CETTE marque, pas tous marques confondues : Rain Bird peut
+      // être complet pendant que Toro n'a encore aucun corps.
+      sansCorps: CATALOGUE.corps.filter(function(c){ return c.marqueCle === marque; }).length === 0
     };
   }
 
@@ -728,7 +730,8 @@ function dessinerMarques(){
         var trous = [];
         if (!CATALOGUE.busesDe(cle,'turbine').length && !CATALOGUE.arroseursDe(cle,'turbine').length)
           trous.push('aucune turbine');
-        if (!CATALOGUE.corps.length) trous.push('aucun corps d\'arroseur');
+        var corpsDeLaMarque = CATALOGUE.corps.filter(function(c){ return c.marqueCle === cle; }).length;
+        if (!corpsDeLaMarque) trous.push('aucun corps d\'arroseur');
         return trous.length
           ? ' <span class="provisoire">Manque encore : ' + trous.join(', ') + '.</span>'
           : '';

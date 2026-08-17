@@ -9,6 +9,49 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Les corps d'arroseur, Hunter, et une buse qui se vend en deux morceaux
+
+**Cinq photos** : les corps Rain Bird 1800 (« livrée sans buse » — exactement ce
+qui manquait), les corps Hunter Pro-Spray/I-Spray, les buses Hunter SRS, les
+buses Rain Bird R-VAN, et les MP Rotator (prix et références seulement).
+
+**Hunter devient une marque active**, pas une ligne vide : ses cinq buses SRS
+(7A à 17A) sont entrées, même forme que les VAN — une référence, tous les
+angles.
+
+**Ce que les corps apportent — et ce qu'ils n'apportent pas encore.** Quatre
+hauteurs d'escamotage (5/10/15/30 cm), trois niveaux d'option (rien, clapet
+anti-vidange SAM, régulateur de pression PRS). Ils entrent dans le catalogue et
+dans son registre de prix ; **aucun n'est encore choisi automatiquement** dans
+la liste au fournisseur — quatre hauteurs et trois options, c'est un choix de
+chantier, pas une valeur à deviner.
+
+**Et une vraie découverte de structure : les R-VAN se vendent en DEUX
+références par taille, pas une.** Les VAN (première page) tiennent en une seule
+référence réglable de 90° à 360°. Les R-VAN sont deux produits physiques
+différents — une version réglable 45°-270° qui n'atteint jamais le 360°, une
+version fixe 360° qui ne fait rien d'autre. Une buse sans 360° ne peut pas
+couvrir l'intérieur d'une pelouse ; une buse sans 90°/180° ne peut pas se poser
+en coin ou en bord. **Le calcul ne choisit donc ni l'une ni l'autre seule** —
+`busesDe()` exige désormais les trois angles sur une même référence — et les
+deux restent visibles dans le registre de prix sans être posées automatiquement.
+
+**Le bug qui a précédé ce garde-fou, et pourquoi il fallait le voir tourner
+faux avant de le corriger.** Une première version du filtre ne vérifiait que
+90°/180°, pas 360°. Elle laissait passer la R-VAN réglable seule, qui n'a pas de
+débit à 360° : le calcul de l'intérieur d'une pelouse divisait par une valeur
+absente, deux secteurs sortaient au lieu de dix, et l'écran affichait « Mesures
+à compléter » à la place d'un plan. Confronté à l'ancien filtre (90°/180° sans
+360°) : cinq contrôles rouges, retombés à zéro une fois le troisième angle
+exigé.
+
+**Deux familles vues et volontairement PAS entrées.** Les buses « bande »
+(SST, RCS, LCS…) arrosent un rectangle, pas un cercle — tout le calcul de
+cette page suppose des couronnes, et les compter comme un arroseur rond
+donnerait une couverture fausse. Les MP Rotator n'avaient ni portée ni débit
+sur la photo, seulement une référence et un prix — sans ces deux nombres, une
+entrée calculerait faux plutôt que de manquer honnêtement.
+
 ### Sa règle de pose, enfin la sienne — et l'outil faisait l'exact contraire
 
 **Ses mots, au formulaire :** *« 80 % minimum entre chaque arroseur. Donc portée

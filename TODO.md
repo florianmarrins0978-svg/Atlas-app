@@ -89,7 +89,7 @@ qui ne le sont pas.
 | 15 | Le choix de buse : je prends **la plus grande qui tienne dans le petit côté** (donc le moins d'arroseurs). C'est bien votre règle ? | *en attente* |
 | 16 | La **8-VAN** annonce 0,16 m³/h à 90°, soit plus que la 10-VAN (0,14) qui porte pourtant plus loin. Coquille du catalogue, ou valeur juste ? | *en attente* |
 | 17 | Les buses sont données **à 2 bar**. Que faire quand l'installation tourne à 3 : autre tableau, ou correction ? | *en attente* |
-| 18 | Les **corps escamotables** sur lesquels ces buses se vissent : quelles références ? | *en attente* |
+| 18 | ~~Les corps escamotables~~ — **REÇUS le 17 août** : Rain Bird série 1800 (RT1802-1832, 4 hauteurs × 3 options), Hunter Pro-Spray/I-Spray (7 réf.). Voir ci-dessous |
 
 **SES RÉPONSES DÉTAILLÉES DU 17 AOÛT — LE MÉTIER, PAR LUI.** Tout ce qui suit
 est appliqué dans `appli/arrosage.html`. Ne pas le redéduire, ne pas l'assouplir.
@@ -109,6 +109,37 @@ est appliqué dans `appli/arrosage.html`. Ne pas le redéduire, ne pas l'assoupl
 | 16 | D'autres marques viendront **au fil des photos** | — |
 | 17 | **« À 2 bar ou 3 bar c'est quasiment les mêmes valeurs »** — aucune correction de pression à faire | — |
 | 18 | Les **corps escamotables** arrivent | `CATALOGUE.corps`, vide |
+
+**CINQ NOUVELLES PHOTOS REÇUES LE 17 AOÛT — ce qui est entré, et ce qui ne l'est PAS.**
+
+| Reçu | Entré comment |
+|---|---|
+| Corps Rain Bird 1800 (RT1802 → RT1832) | Dans `CATALOGUE.corps` — 4 hauteurs (5/10/15/30 cm) × options (aucune, SAM, SAM-PRS) |
+| Corps Hunter Pro-Spray / I-Spray | Dans `CATALOGUE.corps` — mêmes 4 hauteurs, I-Spray = régulateur intégré |
+| Buses Hunter SRS (7A à 17A) | Dans `CATALOGUE.buses`, même forme que les VAN — **Hunter est maintenant une marque active**, pas seulement listée |
+| Buses Rain Bird R-VAN (14/18/24) | Entrées, mais **NON choisies automatiquement** — voir ci-dessous, c'est le vrai sujet |
+| Buses bande (SST/RCS/LCS, SS-530…) | **Pas entrées.** Zone rectangulaire, pas une couronne — tout le calcul de cette page suppose des cercles. Un cas à part, pas encore posé |
+| Buses MP Rotator (NA23xx, TBT10xxx) | **Pas entrées.** Aucune portée ni débit sur la photo — juste réf et prix. Sans ces deux nombres, une entrée calculerait faux |
+
+**⚠ LA VRAIE DÉCOUVERTE : LES R-VAN SE VENDENT EN DEUX RÉFÉRENCES, PAS UNE.**
+Les VAN (p. 8) tiennent en une seule référence par taille, réglable de 90° à
+360°. Les R-VAN (p. 9 bis) sont **deux produits physiques différents** : une
+version réglable 45°-270° (jamais 360°), une version fixe 360° (jamais autre
+chose). Le tableau le montre par ses « X ».
+
+Une buse qui n'a QUE le 360° ne peut pas se poser dans un coin ni sur un bord —
+elle arroserait chez le voisin. Une buse qui n'a QUE 45°-270° ne peut pas couvrir
+l'intérieur. **Aucune des deux n'est donc choisie automatiquement** par le
+calcul (`busesDe` exige les trois angles 90/180/360 sur une seule référence) ;
+les deux restent visibles dans son registre de prix. Poser une pelouse avec des
+R-VAN suppose de mélanger les deux références selon la position — un
+pavage à deux références que l'outil ne fait pas encore.
+
+**LE CHOIX DU CORPS RESTE OUVERT, ET CE N'EST PAS DU RANGEMENT :** quatre
+hauteurs, trois niveaux d'option (rien, clapet anti-vidange, régulateur de
+pression) — un choix de chantier, pas une valeur à deviner. Aucun corps n'entre
+encore dans la liste au fournisseur tant qu'il n'a pas dit lequel prendre par
+défaut.
 
 **CE QUE SA RÈGLE D'ÉCART A RÉVÉLÉ, ET QUI N'ÉTAIT PAS VISIBLE AVANT :** le
 choix de buse doit OBÉIR à la règle, pas être corrigé après coup. Une turbine de
