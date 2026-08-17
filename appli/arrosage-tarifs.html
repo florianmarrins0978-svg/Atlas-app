@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mes prix fournisseur — arrosage</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  LE REGISTRE DE SES PRIX — maquette essayable, rien n'est codé dans l'appli.
+
+  SA DEMANDE DU 17 AOÛT 2026, mot pour mot :
+
+    « Sur certaines photos tu auras les prix. Néanmoins ne les enregistre pas,
+     car c'est des prix pour les clients et pas pour les pros. Après, ce que
+     l'on peut créer c'est à côté de ça une fiche avec tous les produits que je
+     vais t'envoyer, à côté une petite case pour le prix. Et lorsque
+     l'utilisateur fera ses commandes, à chaque fois il recevra ses prix
+     personnalisés : il pourra aller dans ce petit registre et lui-même taper
+     les prix. Comme ça, à terme, une fois qu'il aura enregistré tous ces prix,
+     toi tu seras capable de lui sortir les fournitures, le plan, et donc le
+     total avec ses prix pro. »
+
+  ─────────────────────────────────────────────────────────────────────────────
+  POURQUOI CE REGISTRE EXISTE, ET POURQUOI IL EST SÉPARÉ DU CATALOGUE
+
+  Un tarif de catalogue est un prix PUBLIC. Le sien est négocié, il change d'une
+  agence à l'autre et d'une année à l'autre. Mélanger les deux dans un même
+  fichier finirait par faire chiffrer un devis au prix public — l'erreur la plus
+  chère qu'un outil comme celui-ci puisse commettre, parce qu'elle ne se voit
+  pas : le total est plausible, simplement faux.
+
+  Donc : le catalogue porte les CARACTÉRISTIQUES (portées, débits, colisages),
+  jamais un prix. Ce registre porte SES prix, et eux seuls. Ils vivent dans son
+  navigateur — ils ne partent nulle part.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QUE L'ÉCRAN NE FERA JAMAIS : compléter un prix manquant par un autre.
+  Une case vide reste vide, et le total du plan dit combien de lignes lui
+  manquent au lieu d'afficher un chiffre auquel on se fierait.
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:18px 14px 90px}
+  .dedans{max-width:640px;margin:0 auto}
+  .sur{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--or);margin:0 0 8px}
+  h1{font-family:Georgia,serif;font-weight:400;font-size:25px;line-height:1.15;margin:0 0 6px}
+  .chapo{color:var(--gris);font-size:13.5px;margin:0 0 16px}
+  .chapo b{color:var(--encre)}
+  a.retour{display:inline-block;margin-bottom:16px;font-size:13.5px;color:var(--pin)}
+
+  .compte{padding:12px 13px;border-radius:12px;background:var(--papier);
+          border:1px solid var(--trait);box-shadow:inset 3px 0 0 var(--or);
+          font-size:13.5px;margin-bottom:14px}
+  .compte b{font-family:Georgia,serif;font-size:20px;font-weight:400}
+
+  .fam{margin:20px 0 6px;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--or)}
+  .p{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--trait)}
+  .p .txt{flex:1;min-width:0}
+  /* Chacun sur sa ligne. En `inline` — le défaut d'un `<span>` — le nom, le
+     détail et la référence se collaient bout à bout : « Buse 18-VAN — Rain
+     Birdrayon 5,4 m à 2 bar · colisage 25RBT648 ». Vu à l'écran, pas en
+     relisant le code. */
+  .p .nom{display:block;font-size:14px}
+  .p .det{display:block;font-size:11.5px;color:var(--gris);margin-top:2px}
+  .p .ref{display:block;font-size:11px;color:var(--or);letter-spacing:.06em;margin-top:2px}
+  .p input{flex:none;width:104px;font:inherit;font-size:16px;text-align:right;
+           color:var(--encre);background:transparent;border:1px solid var(--trait);
+           border-radius:10px;padding:10px 34px 10px 10px}
+  .p .cadre{position:relative;flex:none}
+  .p .unite{position:absolute;right:11px;top:50%;transform:translateY(-50%);
+            font-size:13px;color:var(--gris);pointer-events:none}
+  .p.rempli input{border-color:var(--pin)}
+
+  .gestes{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+  .gestes button,.gestes a{flex:1 1 150px;text-align:center;padding:14px 12px;border-radius:999px;
+    background:var(--pin);color:var(--papier);border:0;font:inherit;font-size:14.5px;
+    cursor:pointer;text-decoration:none}
+  .gestes .second{background:transparent;color:var(--encre);border:1px solid var(--trait)}
+  .pied{font-size:12.5px;color:var(--gris);line-height:1.6;margin-top:20px}
+  .pied b{color:var(--encre)}
+</style>
+</head>
+<body>
+<div class="dedans">
+  <p class="sur">Atlas · maquette essayable</p>
+  <h1>Mes prix fournisseur</h1>
+  <p class="chapo">Vos prix négociés, pas ceux du catalogue. <b>Ils restent dans
+    ce téléphone</b> et ne partent nulle part. Une fois remplis, le plan sort
+    les fournitures <b>et le total à vos prix</b>.</p>
+  <a class="retour" href="arrosage.html">← Retour au plan d'arrosage</a>
+
+  <p class="compte" id="compte"></p>
+  <div id="liste"></div>
+
+  <div class="gestes">
+    <a href="arrosage.html">Voir le plan et le total</a>
+    <button type="button" class="second" id="vider">Tout effacer</button>
+  </div>
+
+  <p class="pied">
+    <b>Pourquoi vos prix ne sont pas dans le catalogue.</b> Un tarif de catalogue
+    est public ; le vôtre est négocié et change d'une agence à l'autre. Mélanger
+    les deux finirait par chiffrer un devis au prix public — une erreur qui ne se
+    voit pas, parce que le total reste plausible.<br>
+    <b>Une case vide reste vide.</b> Le total du plan dira combien de lignes
+    manquent plutôt que d'afficher un chiffre auquel vous vous fieriez.
+  </p>
+</div>
+
+<script src="arrosage-catalogue.js"></script>
+<script>
+var CLEF = 'atlas-arrosage-prix';
+var prix = (function(){ try { return JSON.parse(localStorage.getItem(CLEF)) || {}; }
+                        catch (e) { return {}; } })();
+
+function enregistrer(){ try { localStorage.setItem(CLEF, JSON.stringify(prix)); } catch (e) {} }
+
+function dessiner(){
+  var hote = document.getElementById('liste');
+  hote.innerHTML = '';
+  var produits = CATALOGUE.tousLesProduits();
+  var familles = [];
+  produits.forEach(function(p){ if (familles.indexOf(p.famille) < 0) familles.push(p.famille); });
+
+  familles.forEach(function(f){
+    var titre = document.createElement('p');
+    titre.className = 'fam'; titre.textContent = f;
+    hote.appendChild(titre);
+    produits.filter(function(p){ return p.famille === f; }).forEach(function(p){
+      var l = document.createElement('div');
+      l.className = 'p' + (prix[p.ref] ? ' rempli' : '');
+      l.innerHTML =
+        '<span class="txt"><span class="nom">' + p.nom + '</span>' +
+          (p.detail ? '<span class="det">' + p.detail + '</span>' : '') +
+          '<span class="det ref">' + p.ref + '</span></span>' +
+        '<span class="cadre"><input type="number" inputmode="decimal" min="0" step="0.01" ' +
+          'aria-label="Prix de ' + p.nom + '" value="' + (prix[p.ref] != null ? prix[p.ref] : '') + '">' +
+          '<span class="unite">€ HT</span></span>';
+      var champ = l.querySelector('input');
+      champ.addEventListener('input', function(){
+        // Une case vidée EFFACE le prix au lieu d'enregistrer zéro : « gratuit »
+        // et « pas encore renseigné » ne sont pas la même chose, et le total du
+        // plan doit pouvoir distinguer les deux.
+        if (champ.value === '') delete prix[p.ref]; else prix[p.ref] = Number(champ.value);
+        l.className = 'p' + (prix[p.ref] ? ' rempli' : '');
+        enregistrer(); compter();
+      });
+      hote.appendChild(l);
+    });
+  });
+  compter();
+}
+
+function compter(){
+  var total = CATALOGUE.tousLesProduits().length;
+  var remplis = CATALOGUE.tousLesProduits().filter(function(p){ return prix[p.ref] != null; }).length;
+  document.getElementById('compte').innerHTML = remplis === total
+    ? '<b>' + total + '</b> produits, tous renseignés. Le plan peut sortir un total.'
+    : '<b>' + remplis + ' / ' + total + '</b> produits renseignés. ' +
+      'Le plan chiffrera ce qu\'il peut et dira ce qui manque.';
+}
+
+document.getElementById('vider').addEventListener('click', function(){
+  if (!confirm('Effacer tous les prix enregistrés ?')) return;
+  prix = {}; enregistrer(); dessiner();
+});
+
+dessiner();
+</script>
+</body>
+</html>

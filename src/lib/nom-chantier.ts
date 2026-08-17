@@ -110,6 +110,24 @@ export function intituleDuChantier(nomClient: string | null | undefined, nomChan
  * Quand il n'y a pas d'adresse, dire qu'elle manque vaut mieux que répéter :
  * c'est une information, et elle appelle un geste.
  */
+/**
+ * La phrase exacte que la ligne affiche quand elle n'a rien à dire.
+ *
+ * **Elle est nommée parce qu'elle est devenue une CIBLE**, le 17 août 2026 :
+ * *« lorsque s'affiche Adresse non renseignée, je puisse cliquer dessus »*.
+ * L'accueil doit donc savoir reconnaître ce cas — et le reconnaître en
+ * comparant à cette constante, jamais en refaisant le calcul de son côté.
+ * Deux implémentations d'une même règle finissent toujours par diverger
+ * (`CLAUDE.md` §3) : le jour où le repli change de mots, la ligne cesserait
+ * silencieusement d'être cliquable.
+ */
+export const LIEU_MANQUANT = "Adresse non renseignée";
+
+/** Ce lieu-là est-il le repli, celui qui appelle un geste ? */
+export function lieuEstManquant(lieu: string): boolean {
+  return lieu === LIEU_MANQUANT;
+}
+
 export function lieuDuChantier(
   nomChantier: string,
   adresseChantier?: string | null,
@@ -126,5 +144,5 @@ export function lieuDuChantier(
     t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   if (client && !aplati(nomChantier).includes(aplati(client))) return client;
 
-  return "Adresse non renseignée";
+  return LIEU_MANQUANT;
 }

@@ -9856,7 +9856,630 @@ pas le geste isolé.**
 
 ---
 
-## 120. Deux rubriques pour la même chose — « Planning » supprimée des réglages
+## 120. Retirer le prix accordé — trois défauts, dont deux qu'aucun test ne voyait
+
+**Son constat du 17 août 2026, capture à l'appui :** *« Il n'y a aucun moyen de
+retirer les cinq pour cent. Si ce n'est en écrivant zéro pour cent à la place de
+cinq. Et lorsqu'on l'a dicté, je dis "retire-moi la ligne des cinq pour cent",
+je vois bien le message écrit "vous voulez retirer cinq pour cent", et quand on
+valide, ça ne le retire pas. »*
+
+Trois choses dans une seule phrase. **Deux étaient des défauts, et ils tenaient
+tous les deux à la même cause : le prix accordé n'est pas une ligne du tableau.**
+
+### La cause commune, et elle vaut pour tout ce qui vivra dans l'en-tête
+
+`reduction_pourcent` vit sur **l'en-tête du devis**, pas sur une ligne de prix.
+C'est le prix de l'arrangement B qu'il a choisi le 16 août (§116), et il lui
+avait été annoncé : la réduction ne voyage pas toute seule. Chaque endroit qui
+recopie « les lignes » et rien d'autre l'oublie donc **en silence**.
+
+### 1. « Retire-moi les cinq pour cent » à la voix : compris, enregistré, défait
+
+Le chemin était juste jusqu'au bout : le modèle rendait `reduction: null`, la
+feuille de confirmation l'annonçait avec sa phrase, `appliquerRetouchesAction`
+appelait bien `mettreAJourEnTeteDevis`. **La base retirait la remise.**
+
+Puis l'action rendait **les seules lignes**, et l'écran ne recalait que les
+lignes. Le pourcentage restait affiché — et, au premier passage suivant dans la
+case, `onBlur` le **réécrivait en base**. Le retrait était donc annoncé, fait,
+puis annulé sans un mot.
+
+L'action rend désormais `{ lignes, reductionPourcent }`, et l'écran se recale
+sur les deux.
+
+### 2. Écrire « 0 » ne la retirait pas non plus
+
+`pourcentValide` traite zéro comme « aucune réduction » — c'est juste, et
+volontaire (§116). Mais l'écran, lui, ne refermait la ligne que si la chaîne
+tapée était **vide**. Écrire 0 laissait donc une ligne or « Prix accordé au
+client 0 % », sans montant, sur un devis dont le PDF n'imprimait rien.
+
+**L'écran affirmait une remise que le document ne portait pas.** Il se referme
+maintenant sur ce que le serveur a **retenu** (`pourcentValide`), jamais sur ce
+qui a été tapé.
+
+### Pourquoi aucune suite ne l'avait vu
+
+`test-reduction-devis-e2e.ts` éprouvait le retrait **en vidant la case**, puis en
+**rechargeant la page** — deux gestes qu'il ne fait ni l'un ni l'autre. Vider un
+champ de 36 px sur un téléphone demande de viser, sélectionner, supprimer ;
+écrire 0 par-dessus est le geste naturel. Et le rechargement masquait
+exactement le défaut, puisqu'il repartait de la base.
+
+**La leçon, et elle dépasse cet écran :** un contrôle qui recharge avant de
+vérifier n'éprouve pas l'écran, il éprouve la base. Le nouveau cas mesure
+**sans rechargement**.
+
+Quant à la dictée, elle reste **inéprouvable ici** : ni service de transcription
+ni modèle (`src/server/ai/providers/transcription/dev.ts`). La cause a été trouvée en lisant le
+code, et le raccord n'aura été parcouru qu'avec une clé — c'est écrit tel quel
+dans `test-dicter-dans-le-devis-e2e.ts` depuis le 15 août.
+
+### 3. Le « petit moins » — dessiné, choisi, codé
+
+*« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un
+petit moins. »* Dessiné d'abord (`CLAUDE.md` §3 bis) :
+`docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes sur **ses**
+chiffres, 24 contrôles. **Il a choisi B** le 17 août — le rond en face de la
+ligne — et c'est ce qui est codé.
+
+**Le « + » et le « − » ne sont pas symétriques**, et il l'a choisi en le sachant :
+le « + » ajoute une ligne **au tableau**, ce « − » retire un **total**. Rien
+d'autre dans ce bloc ne portait de bouton.
+
+**Il passe par LE MÊME tiroir que les lignes**, sous une clé réservée
+(`prix-accorde-au-client`, impossible à confondre avec un UUID de ligne). Une
+seconde mécanique de retrait sur le même écran est exactement ce que le patron a
+fait disparaître le 10 août 2026 — et cela lui donne « Annuler » sans une ligne
+de plus.
+
+**Rien n'est écrit tant que le tiroir est ouvert**, mais le total, lui, montre le
+prix plein **dès l'appui**. Un geste qui ne changerait rien à l'écran pendant six
+secondes se lirait comme sans effet — c'est précisément sa plainte du 17 août.
+Et les deux états de l'écran sont posés **avant** l'attente du serveur : les
+repousser après laisserait une image où la ligne or revient avec son ancien
+pourcentage.
+
+### Un contrôle de maquette que personne ne jouait
+
+`verifier-maquette-reduction.mjs` existait depuis le 16 août et **n'était branché
+nulle part** — ni dans `verifier:maquette`, ni ailleurs. Un contrôle que
+personne ne joue ne prouve rien (`CLAUDE.md` §5). Il est raccroché, avec celui
+de la 68.
+
+### Ce qui est éprouvé, et par quoi
+
+| Ce qui est tenu | Où |
+|---|---|
+| écrire 0 % retire la remise à l'écran **sans rechargement** | `test-reduction-devis-e2e.ts` |
+| et la base ne garde alors aucun reliquat | `test-reduction-devis-e2e.ts` |
+| vider la case la retire aussi, et le devis revient au prix plein | `test-reduction-devis-e2e.ts` |
+| la TVA suit toujours le net, jamais le prix plein | les trois suites de §116 |
+| le « − » existe, fait 26 px, et n'est pas sur un devis parti | `test-reduction-devis-e2e.ts` |
+| un appui rend le prix plein **tout de suite**, sans rien écrire encore | `test-reduction-devis-e2e.ts` |
+| « Annuler » rend la remise avec son pourcentage | `test-reduction-devis-e2e.ts` |
+| le tiroir fermé, l'écran et la base disent la même chose | `test-reduction-devis-e2e.ts` |
+| la planche tombe juste sur les deux états, et le geste ne survit pas à son effet | `verifier-maquette-retirer-remise.mjs` |
+| **non éprouvé ici** : le raccord dictée → écran | il faut une clé de transcription et un modèle |
+
+---
+
+## 121. La fiche du client : montrer ce que l'application savait déjà
+
+*Demandé le 16 août 2026, dessiné (`docs/maquettes/66-ce-que-je-sais-du-client.html`),
+puis codé sur son choix — **l'arrangement B**, la fiche atteinte depuis le
+chantier.*
+
+**D'où ça vient, et la réponse qu'il faut garder.** Le patron a montré la photo
+d'un « graphe de connaissances » : *« tu peux m'expliquer et me dire si ça peut
+me servir pour mon appli ? »* La réponse a été **non, deux fois** :
+
+- **comme mémoire de travail**, le dépôt la tient déjà (`CLAUDE.md`,
+  `HANDOVER.md`, `ARCHITECTURE.md`…). Un graphe à côté serait une seconde
+  vérité, et c'est exactement ce que ces fichiers existent pour empêcher ;
+- **comme fonction**, ses données sont déjà reliées dans une base SQL, qui
+  répond mieux qu'un graphe à « combien j'ai facturé chez les Ledoux ? ».
+
+**Ce qu'il restait à en prendre** — et c'est cet écran : l'application SAIT
+qu'un client est venu quatre fois, qu'il doit encore 740 €, qu'on lui fait
+toujours de l'élagage… **et elle ne le montrait nulle part.**
+
+### Pourquoi B, et pas un onglet « Clients »
+
+Le seul avantage de l'onglet aurait été de répondre à « qui me doit de
+l'argent ? ». **Cet écran existe déjà** — « En attente de paiement », dans
+Terminés → TVA (§110). Un cinquième onglet aurait coûté de la place au pouce
+pour redire ce qui est là. Ne pas le rouvrir sans qu'il le demande.
+
+### Trois étages, et ce que chacun refuse
+
+| Étage | Fichier | Ce qu'il fait |
+|---|---|---|
+| La règle | `src/lib/fiche-client.ts` | compte, additionne, regroupe. **Aucune base** : éprouvé sans rien monter |
+| La lecture | `src/server/repositories/fiche-client.ts` | lit sous `withEntreprise`, et **ne calcule rien** |
+| L'écran | `src/app/clients/[id]/page.tsx` | affiche, et ne décide de rien |
+
+**« 0 € » est le chiffre le plus dangereux de cette fiche.** Un client dont
+aucun chantier n'est facturé n'a pas rapporté zéro euro : il n'a pas encore été
+facturé. Affiché « 0 € », il se lit comme un mauvais payeur, et le patron
+déciderait sur une phrase fausse. La règle rend donc `null`, l'écran écrit
+« — », et une phrase dit pourquoi (`CLAUDE.md` §4).
+
+**Les prestations se comptent en CHANTIERS, pas en lignes.** Un devis portant
+« Élagage — chêne » et « Élagage — frêne » ne fait pas deux visites.
+
+**Ce que la règle refuse de faire, et c'est écrit pour que ce soit un choix :**
+sans séparateur, « Élagage chêne » et « Élagage frêne » restent deux
+prestations. Les regrouper demanderait de deviner que le premier mot porte le
+métier — c'est le travail de `signatureLecon`, qui le fait déjà pour les prix.
+Le refaire ici en moins bien créerait deux vérités.
+
+### La porte, et pourquoi elle n'est pas sur le nom du client
+
+Elle vit dans le **tiroir de la fiche du chantier**, avec les autres
+destinations. Le nom du client, en tête d'écran, passe par `precision` —
+**une simple chaîne** d'`EnTeteEcran`, partagé par tous les écrans. Le rendre
+cliquable aurait demandé de toucher une pièce commune pour un seul écran.
+
+Elle n'existe **que si le chantier a un client** : une fiche de personne n'a
+rien à montrer.
+
+### ⚠ CE QUI LIMITE CETTE FICHE AUJOURD'HUI, ET QUI N'EST PAS DE SON FAIT
+
+**Un client n'est JAMAIS réutilisé.** `creerClient` insère toujours, et il n'est
+appelé que depuis la création d'un chantier ; `listerClients` existe et n'est
+appelé par aucun écran. Deux chantiers pour « M. Bernard » créent donc **deux
+clients** — et la fiche affichera « 1 chantier » à chaque fois.
+
+La fiche est juste ; c'est sa matière qui manque. **Le corriger est une décision
+du patron, pas une correction technique** : rapprocher deux clients sur leur nom
+fusionnerait deux personnes réellement homonymes, et il n'existe aucun moyen de
+défaire cela. Consigné dans `TODO.md`, à lui poser.
+
+### Trois défauts trouvés en regardant, pas en relisant
+
+- **« ENCORE DUS » se cassait en deux lignes** dans sa case à 390 px. Devenu
+  « reste dû ». Vu à la capture ; une suite le mesure désormais.
+- **« 1 fois · 0,00 € »** s'affichait pour une prestation écrite mais pas encore
+  chiffrée — cela se lit comme un travail fait pour rien. Le prix ne s'écrit
+  plus qu'au-dessus de zéro.
+- **Le contrôle accusait à tort** : il cherchait « 0,00 € » dans la page, et le
+  trouvait dans « 45**0,00 €** ». Une erreur qui accuse à tort coûte plus cher
+  que pas de contrôle (`CLAUDE.md` §5).
+
+
+---
+
+## 122. « C'est monsieur Martins » : retrouver un client au lieu d'en refaire un
+
+**Le patron, le 17 août 2026**, une journée après avoir reçu sa fiche client et
+l'avoir vue annoncer « 1 chantier » chez quelqu'un qu'il connaît depuis des
+mois : *« si je crée un nouveau chantier, mais que c'est monsieur Martins et
+qu'on a déjà une fiche client monsieur Martins, [il faut que] le devis, la
+facture s'ajoute à la fiche client de monsieur Martins qui est déjà créé. »*
+
+C'est la suite directe du §121, et le défaut y était déjà écrit noir sur blanc :
+`creerClient` **insérait toujours**. La fiche était juste ; sa matière ne
+pouvait pas exister.
+
+### Le chemin qu'il a écarté, et il faut le savoir avant d'y revenir
+
+Trois chemins lui avaient été soumis — lui **proposer** les clients qui
+ressemblent, **rapprocher seul**, ou **fusionner après coup**. Le premier lui
+avait été recommandé, comme le seul qui n'invente rien.
+
+Il l'a refusé en une phrase : *« non justement, il ne faut pas »*. Le
+rapprochement se fait **sans geste de sa part**. Ne pas rouvrir cette porte sans
+lui : ce n'est pas un oubli, c'est un choix.
+
+### Ce qui borne le risque : une contradiction interdit le rapprochement
+
+Le danger de ce chemin est unique et il ne se répare pas d'un clic — verser le
+chiffre d'affaires d'un homme sur la fiche d'un autre, et lui montrer une dette
+qui n'est pas la sienne. La règle vit dans `src/lib/rapprochement-client.ts`,
+pure et éprouvée sans base :
+
+| La saisie… | face à un homonyme… | Alors |
+|---|---|---|
+| porte un téléphone ou un e-mail **qui concorde** | — | c'est lui, sans discussion |
+| porte une coordonnée **qui diffère** | l'homonyme en porte une aussi | **deux fiches** : ce n'est pas lui |
+| ne porte rien | l'homonyme porte ce qu'il veut | c'est lui — le cas courant |
+| — | plusieurs homonymes indiscernables | le **plus récent** |
+
+**L'homonyme qui contredit est écarté seul, pas en bloc.** Deux « Martins » en
+base dont un seul porte un autre numéro laissent le bon disponible ; les écarter
+ensemble aurait fabriqué un troisième Martins — exactement ce qu'on répare.
+
+**Le nom se compare sans sa civilité**, via `aDejaUneCivilite` et non une
+seconde liste de graphies (`CLAUDE.md` §3) : « Martins » et « M. Martins » sont
+le même homme, et c'est précisément l'écart qui fabriquait les doublons. Le
+garde-fou de `civilite.ts` sert ici aussi — « Merlin » et « Mathieu Dubois » ne
+sont pas amputés de leur première syllabe.
+
+**Le téléphone se compare sur ses chiffres, indicatif ramené au zéro** :
+« +33 6 12 34 56 78 » et « 06.12.34.56.78 » sont le même numéro. Sans cela, le
+même homme noté de deux façons serait passé pour une contradiction et aurait
+fabriqué la fiche en double.
+
+### Ce qui n'est jamais fait : écraser
+
+Ce qu'il tape à la volée **complète les cases vides** de la fiche retrouvée —
+téléphone, e-mail, adresse, civilité, canal — et **ne touche à rien d'autre**.
+Il crée un chantier entre deux rendez-vous et tape un portable là où il avait
+noté le fixe : garder les deux est impossible, choisir le nouveau lui ferait
+perdre le sien sans un mot.
+
+### Les effacés et les supprimés sont hors du jeu
+
+Un effacement RGPD (`donnees-client.ts`) pose `efface_le` **et** `deleted_at`.
+Rattacher un chantier neuf à cette fiche-là ressusciterait un dossier que le
+client a demandé de faire disparaître. Le filtre porte les deux colonnes, bien
+qu'une seule suffise : c'est une garantie qu'on veut pouvoir lire.
+
+### La conséquence à connaître, et qui est le prix de ce qu'il a demandé
+
+Une fiche client est désormais **partagée entre plusieurs chantiers**. Corriger
+l'adresse du client depuis le devis du chantier B la corrige aussi sur le devis
+du chantier A. C'est le sens même d'une fiche client — et l'adresse **du
+chantier** reste, elle, propre à chaque chantier (`chantiers.adresse_chantier`).
+
+**Ce qui n'existe pas, et qu'il faudra peut-être un jour :** aucun geste ne
+permet de dire « ce chantier n'est pas ce client-là ». Deux homonymes que rien
+ne distingue sont rapprochés définitivement. Consigné dans `TODO.md` plutôt que
+codé à l'avance : une commande de démixage jamais employée coûterait plus cher à
+tenir qu'à attendre.
+
+### Éprouvé
+
+- `scripts/test-rapprochement-client.ts` — 19 cas, la règle sans base. Le
+  père et le fils, la civilité, les graphies de téléphone, le non-écrasement.
+- `scripts/test-rapprochement-client-db.ts` — 8 cas, dont **l'isolation** : le
+  rapprochement parcourt la liste des clients, et une suite navigateur (qui
+  traverse la RLS) ne verrait jamais un chantier rattaché chez le voisin.
+- `scripts/test-rapprochement-client-e2e.ts` — son parcours : deux chantiers
+  créés au formulaire, une seule fiche, et **« 2 chantiers »** sur l'écran.
+
+**La suite base sait rougir** : confrontée à l'ancien comportement — un
+rapprochement qui ne trouve jamais rien — elle rend quatre échecs, dont le cas
+du patron. Un contrôle jamais vu rouge ne prouve rien (`AGENTS.md`).
+
+**Et un piège payé en l'écrivant** : la préparation d'un cas passait par
+`db.update(…)` plutôt que par `withEntreprise`. La RLS annule ces écritures
+**silencieusement** — la ligne n'était pas supprimée, et le cas « un client
+supprimé n'est pas réutilisé » passait au vert sans avoir rien supprimé
+(`CLAUDE.md` §3).
+
+---
+
+## 123. Ses mots au catalogue : écrire dans un vocabulaire qui appartient à tout le monde
+
+**Il a posé la même question deux fois, à trois jours d'écart, sur le même
+écran** — le 14 puis le 17 août 2026, capture à l'appui : *« À quoi sert cette
+page ?? On peut rien modifier rajouter »*. La première fois a produit une
+explication (`docs/QUESTIONS.md` §18) et deux défauts inscrits dans `TODO.md`.
+La seconde a produit ce lot. **Un écran qu'il faut expliquer deux fois n'est pas
+mal compris : il ne dit pas ce qu'il fait.**
+
+### Le problème, et il n'était pas d'interface
+
+Le catalogue est le vocabulaire du métier : quand il dicte « faut me démonter le
+sapin du fond », aucun mot de la phrase n'est « élagage » — c'est lui qui fait
+le rapprochement. Mais `catalogue_prestations` et `catalogue_materiels` sont
+**partagés entre toutes les entreprises** (migration 0007, aucun `entreprise_id`,
+aucune RLS). Y écrire depuis son téléphone changerait le vocabulaire de tous les
+autres artisans, sans qu'ils l'aient demandé ni qu'ils puissent le corriger.
+
+L'écran était donc en lecture seule **pour une bonne raison**, et ne la disait
+pas. Ce n'est pas un bouton qui manquait : c'est un endroit où poser ses mots.
+
+### Ce qui a été retenu : l'arrangement B de la planche 72
+
+Trois arrangements lui ont été montrés
+(`docs/maquettes/72-mes-mots-au-catalogue.html`). Il a choisi **B**, et le choix
+n'était pas cosmétique — il décide de ce que la dictée comprend ensuite :
+
+| | Où vivent ses mots | Ce que ça coûte |
+|---|---|---|
+| A | une liste « Mes mots » sous celle d'Atlas | « écime » vit **à côté** d'« Élagage » : une dictée « écime-moi le tilleul » ouvrirait une prestation neuve au lieu de reconnaître l'élagage déjà chiffrable |
+| **B** *(retenu)* | **dans** les cartes d'Atlas, en or, suivis de « vous » | un geste par carte, une couleur à tenir |
+| C | tout mélangé | il croit corriger le commun, l'application refuse au moment du geste |
+
+### La table, et ses quatre formes
+
+`mots_catalogue` (migration 0052) porte `entreprise_id`, sa politique RLS et
+rien d'autre que ses mots. Une seule table pour quatre formes, ce qui la rend
+lisible d'un coup d'œil :
+
+1. un mot posé sur une prestation d'Atlas → `prestation_id` ;
+2. un mot posé sur un matériel d'Atlas → `materiel_id` ;
+3. **son** entrée à lui → les trois renvois à `NULL`, `mot` porte le nom ;
+4. un mot posé sur son entrée à lui → `parent_id`.
+
+Deux contraintes tiennent l'ensemble : un seul ancrage à la fois, et une
+famille accordée à son ancrage. Un index unique sur
+`(entreprise_id, famille, lower(mot))` empêche le même mot de désigner deux
+choses — « écimage » sous « Élagage » *et* sous « Taille de haie » ferait
+hésiter le rapprochement au lieu de l'aider.
+
+### Ce qui compte vraiment : un mot visible est un mot RECONNU
+
+**C'est le piège que ce lot devait éviter, et il aurait été muet.** Un mot ajouté
+à l'écran mais ignoré par la recherche donnerait le pire des deux mondes : il
+croirait avoir appris quelque chose à Atlas, la dictée continuerait de ne pas
+comprendre, et **rien ne le lui dirait**. Les quatre chemins de recherche
+passent donc par la même fonction (`rechercherCartes`) : les deux outils de
+l'agent, celui des synonymes, et le service de chiffrage.
+
+**Les entrées d'Atlas passent devant les siennes**, et ce n'est pas un détail
+d'affichage : quand « écime » a été posé SUR « Élagage », c'est « Élagage » qui
+ressort — avec son historique de prix et ses questions de chiffrage. Une entrée
+à lui n'a rien de tout cela.
+
+**Le mot se pose court, et l'écran le dit.** Le rapprochement se fait par
+inclusion, comme pour le vocabulaire commun : « écime » attrape « écime-moi le
+tilleul », « écimage » ne l'attrape pas. Deux règles de rapprochement — une pour
+le commun, une pour ses mots — auraient fini par diverger, et il aurait vu un
+mot reconnu et l'autre non sans pouvoir deviner pourquoi.
+
+### Ce que le même lot répare, et qui venait de ses captures
+
+- **La flèche de retour existe enfin.** `ScreenHeader` savait l'afficher ;
+  l'écran ne la lui avait jamais demandée. On arrivait ici depuis « Tarifs &
+  catalogue » et on n'en repartait que par la barre du bas.
+- **« Aucun prix encore constaté par votre entreprise » est retiré.** Cette
+  phrase interrogeait `historique_prix` — l'ancienne mémoire, celle que
+  l'application **n'écrit nulle part** — et **ne se serait donc jamais
+  éteinte**, quoi qu'il fasse. Aucun montant ne la remplace : `lecons_prix`,
+  la mémoire vivante, range par nature de chantier
+  (`abattage|demontage_retention|d70`) et non par mot de catalogue. Afficher un
+  prix d'abattage sous « Élagage » serait pire que la phrase d'hier, qui au
+  moins n'inventait rien. **La question reste ouverte au bas de la planche.**
+- **« Synonymes » et « Variantes » sont fondus en « Aussi appelé ».** Les deux
+  lignes de sa capture disaient la même chose sous deux mots de jargon, et
+  personne n'a jamais su ce qui allait dans lequel.
+- **L'écran est passé à la charte** (`EnTeteEcran`, `design-tokens`). Il portait
+  encore l'échelle de juillet (`p-4`, `text-ink/40`, `rounded-md`) : le réparer
+  sans le redessiner aurait laissé un écran d'avant au milieu des autres.
+
+### Un geste qui n'est PAS sur la planche, et pourquoi il existe quand même
+
+**Retirer un de ses mots.** La planche ne le montrait pas ; sans lui, un mot mal
+tapé resterait pour toujours et fausserait la dictée sans recours. Rien
+n'atteint le vocabulaire commun — seuls ses mots à lui sont dans cette table, et
+la RLS empêche d'effacer ceux d'une autre entreprise.
+
+### Ce qu'Atlas PROPOSE de retenir — l'auto-alimentation, et sa limite
+
+**Sa question, le 17 août, une heure après le lot ci-dessus :** *« ça veut dire
+que le document s'autoalimente à chaque fois qu'on rajoute un nouveau mot dans
+un devis ET QU'IL COMPREND CE QUE C'EST ? »*. La réponse était non ; il a
+répondu « fais-le ».
+
+**Sa condition est dans sa phrase, et elle commande tout le mécanisme.** Un mot
+inconnu n'est proposé que si l'on sait à quoi il se rapporte. Concrètement
+(`src/lib/mots-a-retenir.ts`), pour chacune des dix dernières dictées :
+
+1. **de quoi parlait-elle ?** — la ligne qu'il a RETENUE sur son devis, et non
+   ce qu'Atlas avait cru lire, doit être reconnue par le catalogue. Sinon, rien
+   n'est proposé : retenir un mot dont on ignore le sens, c'est inventer une
+   donnée (`CLAUDE.md` §4) ;
+2. **quels mots restent inconnus ?** — ceux d'au moins quatre lettres, absents
+   de la liste des mots ordinaires, et que rien du vocabulaire (celui d'Atlas
+   comme le sien) ne reconnaît déjà.
+
+**Atlas propose, il n'écrit pas.** Deux boutons sur l'écran du catalogue, et
+l'extrait de la dictée au-dessus — « écime » seul ne lui dit rien trois semaines
+plus tard ; *« faut m'écimer le tilleul du fond »* lui rend la scène.
+
+**Le « non » se retient aussi** (migration 0053, colonne `refuse`). Sans lui, la
+proposition reviendrait à chaque affichage — et une proposition qui revient
+après un refus n'est plus une proposition. Le mot écarté reste en base, marqué :
+il ne s'affiche pas, ne se cherche pas, ne se propose plus. **Mais il peut
+changer d'avis** : écrire le mot à la main le relève (`ajouterMot`), sans quoi
+l'index unique le refuserait en silence — il taperait « écime », rien
+n'apparaîtrait, et aucune phrase ne dirait que c'est son propre « non » d'il y a
+trois semaines qui le bloque.
+
+**La liste des mots ordinaires vient de ses vraies dictées, pas d'un
+dictionnaire.** *« Il FAUDRA écimer le GRAND tilleul du FOND »* proposait trois
+mots pour un seul qui apprend quelque chose. Elle ne cherche pas
+l'exhaustivité : un mot ordinaire qui passe au travers coûte un « non », et le
+« non » est définitif.
+
+### Ce que ce lot ne fait toujours PAS
+
+**Le vocabulaire d'ATLAS ne s'alimente jamais tout seul**, et cette limite n'est
+pas technique : il est commun à toutes les entreprises. Un mot appris chez un
+artisan changerait les devis d'un autre, sans qu'il l'ait demandé ni qu'il
+puisse le corriger. Tout ce qui est retenu entre dans SES mots, isolés par RLS.
+
+**Et rien ne s'écrit sans son geste** — le dépôt le refuse depuis toujours
+(`creerPrestationCatalogue` : « toujours déclenchée après confirmation explicite
+de l'utilisateur »).
+---
+
+## 124. « Adresse non renseignée » devient une porte — et rien d'autre ne bouge
+
+**Sa demande du 17 août 2026**, capture de son accueil à l'appui : *« j'ai oublié
+de rentrer les infos du client. Il faut qu'à partir de cette page, il y a marqué
+adresse non renseignée, que je puisse cliquer dessus »*.
+
+**Puis sa correction, le même jour, et c'est elle qui compte.** Une première
+planche avait dessiné une « fiche client » de toutes pièces, avec ses champs et
+ses questions. Il a répondu : ***« je ne suis pas sûr que tu aies bien compris
+[…] que ça m'amène sur la page que je t'ai envoyée sur la deuxième photo. RIEN
+DE PLUS, RIEN DE MOINS. »*** — sa seconde photo montrait l'écran de création.
+
+### La leçon, et elle a coûté deux allers-retours
+
+**Devant une demande qui touche à un écran, chercher d'abord SI L'ÉCRAN
+EXISTE.** Ici la réponse était sous la main, dans sa propre capture. En dessiner
+un neuf lui a fait relire une planche entière pour dire « ce n'est pas ça ».
+
+Ce qui avait égaré : le code lui-même annonçait qu'il manquait une fiche client
+— *« la civilité ne se corrige plus après coup, faute d'écran de fiche client »*
+(`DevisCompletClient.tsx`). C'était vrai, et ce n'était pas sa demande. **Un
+manque réel du produit n'autorise pas à le combler dans le lot d'à côté**
+(`CLAUDE.md` §3 bis).
+
+**Et il ne manque plus :** une autre session a codé la fiche du client le même
+jour (§121), atteinte depuis le chantier. Les deux écrans ne se marchent pas
+dessus et ne doivent pas être confondus — **celui-ci corrige les coordonnées d'un
+chantier**, celui-là **montre ce que l'application sait d'un client** (combien de
+fois il est venu, ce qu'il doit). C'est la meilleure preuve que la fiche
+inventée ici aurait été un troisième écran de trop.
+
+### Un seul composant, deux chemins d'écriture
+
+`FormulaireNouveauChantier` reçoit une entrée `reprise` : présente, il préremplit
+et **enregistre** au lieu de créer. Un formulaire jumeau aurait divergé au
+premier champ ajouté — l'un garderait le canal d'envoi, l'autre l'aurait oublié.
+C'est la raison qui l'avait déjà fait extraire de sa page le 10 août.
+
+| | Créer | Reprendre |
+|---|---|---|
+| Route | `/chantiers/nouveau` | `/chantiers/[id]/coordonnees` |
+| Action | `creerChantierAction` | `reprendreChantierAction` |
+| Surtitre | « Nouveau » | « Les coordonnées » |
+| Bouton | « Créer le chantier » | « Enregistrer » |
+
+**Les deux mots changent parce qu'ils mentiraient**, et pour aucune autre raison.
+« Nouveau » au-dessus d'un chantier ouvert trois jours plus tôt fait douter
+d'avoir cliqué au bon endroit ; « Créer le chantier » annoncerait une action que
+l'écran ne fait pas, et il chercherait ensuite pourquoi il a deux chantiers.
+
+### Le client est RETROUVÉ, jamais recréé
+
+Un chantier sans client en gagne un dès qu'un nom est saisi — et ce nom passe par
+`trouverOuCreerClient` (§122), arrivé le même jour : *« si c'est monsieur Martins
+et qu'on a déjà une fiche client monsieur Martins, le devis, la facture s'ajoute
+à la fiche de monsieur Martins »*.
+
+**Passer par `creerClient` ici aurait fabriqué le doublon que l'autre porte vient
+d'apprendre à éviter**, et le patron aurait vu deux fiches Martins selon qu'il a
+rempli le chantier à sa création ou après coup. Un chantier qui a DÉJÀ un client
+voit le sien mis à jour : le recréer laisserait un orphelin derrière, et les
+devis déjà partis pointent sur le premier.
+
+### Le nom du chantier se RECALCULE, et c'est tout l'intérêt du geste
+
+`chantiers.nom` n'est pas saisi : il se déduit du client, sinon de l'adresse,
+sinon de la date (`nom-chantier.ts` — le champ « nom du chantier » a été retiré
+le 5 août 2026, *« un élagueur ne baptise pas ses chantiers »*).
+
+**Sans ce recalcul, remplir « Martins » aurait laissé la ligne afficher
+« Chantier du lundi 17 août » pour toujours** — le défaut corrigé partout sauf à
+l'endroit exact d'où il est parti. La règle appliquée est la MÊME qu'à la
+création : une seconde règle de nommage aurait fini par diverger.
+
+**Et la date employée est celle de la CRÉATION**, jamais aujourd'hui. Un chantier
+ouvert le 17 et repris le 20 ne doit pas devenir « Chantier du jeudi 20 août » :
+il ne se reconnaîtrait plus.
+
+### La mention seule est la cible — et la ligne reste UN SEUL lien
+
+Le nom du chantier garde sa reprise, et **sa règle du 13 août n'est pas
+touchée** : *« que ça me renvoie à l'étape où je me suis arrêté »*. Il a dit
+« cliquer DESSUS », pas « sur la ligne ».
+
+**UNE LIGNE = UN SEUL `<a>`, ET CET INVARIANT A ÉTÉ DÉCOUVERT EN LE CASSANT.**
+Un lien dans un lien n'étant pas du HTML valide, la première version avait coupé
+le lien de la ligne en trois — le nom, la mention, l'état. C'était valide, et
+**trois suites sont tombées d'un coup à la batterie** :
+
+| Suite | Ce qu'elle supposait |
+|---|---|
+| `test-dashboard-e2e` | compte les lignes par `a.atlas-brin` — il n'y avait plus d'ancre portant cette classe |
+| `test-suivi-devis-e2e` | remonte du nom à `ancestor::a[1]` pour y lire l'état — l'état était dans une AUTRE ancre |
+| `test-transcription-e2e` | clique au milieu de `.atlas-ligne` — le milieu tombait entre deux ancres |
+
+Aucune des trois n'avait tort : **la ligne EST un lien, et ce qu'on lit dedans
+doit rester dedans.** La mention est donc un `<span role="link">` posé DANS
+l'ancre — contenu de phrasé, parfaitement légal — qui détourne le geste vers le
+routeur. Un contrôle dédié compte les ancres de la ligne pour que personne ne
+recommence sans le voir (`test-coordonnees-depuis-accueil-e2e`).
+
+**Ce que ça enseigne au-delà de ce lot :** un changement de STRUCTURE dans un
+composant partagé casse des suites qui ne parlent pas de lui. Trois rouges dont
+aucun ne nommait la mention — c'est la batterie complète qui les a montrés,
+et c'est exactement ce pour quoi elle existe (`CLAUDE.md` §5).
+
+**Une seule source décide de ce qu'est une cible** : `lieuEstManquant`, comparée
+à `LIEU_MANQUANT`. L'accueil qui aurait comparé le texte de son côté aurait
+refait la règle une seconde fois — et le jour où le repli change de mots, la
+mention cesserait silencieusement d'être cliquable.
+
+### Ce que la capture a trouvé, et qu'aucun test ne voyait
+
+**Sixième fois dans ce dépôt qu'un défaut sort d'une image.** La cible fait 34 px
+de haut — un texte de 11,5 px ne s'attrape pas sous un pouce ganté —, et le trait
+pointillé était porté par le lien : il se posait donc au **bas des 34 px**, à dix
+pixels sous le mot. Ce n'était plus un soulignement, c'était un trait perdu. Il
+vit désormais sur un `<span>` intérieur.
+
+**La capture elle-même a menti une fois de plus** : l'image « après » visait
+`.atlas-fil-defile`, c'est-à-dire le cadre lui-même. Le calcul de position valait
+zéro, et la photo montrait le HAUT du fil au lieu de la ligne corrigée. Une
+capture qui cadre autre chose que ce qu'elle annonce ne prouve rien.
+
+---
+
+## 125. Les outils métier : un cinquième onglet, et ce qu'il coûte à la barre
+
+**Sa question du 17 août 2026 :** *« L'idée, c'est de créer des outils comme
+celui-là pour les paysagistes ; après je ferai la même chose pour les terrasses
+bois. Pour toi le mieux c'est de créer une nouvelle catégorie paysage ? Ou
+alors on range ça dans les réglages, sous une catégorie paysage ? »*
+
+**Ce qui a été écarté, et pourquoi.**
+
+- **Les Réglages, non.** On y règle ce qui vaut une fois pour toutes — tarifs,
+  équipe, TVA, identité. Un plan d'arrosage se refait à chaque client, comme un
+  devis. L'y ranger le nommerait mal et l'enterrerait sous quinze rubriques.
+- **Une catégorie « Paysage », non plus.** Le paysage est son métier ENTIER :
+  le mot ne distingue rien de ce que l'application fait déjà. Ce qu'il sépare
+  en réalité, ce sont des **outils de calcul** — arrosage, terrasse bois — face
+  au parcours commercial (chantier, devis, facture).
+- **Attaché au chantier seul** — ma recommandation — **écartée par lui.** Elle
+  avait pour elle que le plan est toujours fait *pour quelqu'un* et se
+  retrouverait six mois plus tard chez le bon client. Son objection tient : un
+  outil qui exige un chantier ne sert pas en visite de devis, quand le client
+  n'existe pas encore.
+
+**Sa décision : un cinquième onglet « Outils ».**
+
+**LE COÛT EST MESURABLE, ET IL A ÉTÉ MESURÉ** (`docs/maquettes/76-le-cinquieme-onglet.html`).
+La barre porte quatre onglets depuis le 10 août, en capitales de 9,5 px
+espacées de 0,28em, sans icône — son choix d'alors (*« quatre pictogrammes
+sous quatre mots répétaient la même information »*). Passer à cinq fait tomber
+la colonne de 89,5 à **71,6 px** sur un écran de 360. Or « CHANTIERS », le plus
+long des cinq mots, en demande 78,8.
+
+| Variante | Largeur de « CHANTIERS » | Verdict |
+|---|---|---|
+| A · cinq onglets, rien d'autre changé | 78,8 px | **déborde de 7,2** |
+| B · espacement resserré à 0,18em | 70,3 px | tient de **1,3 px** — faux confort |
+| C · lettre à 8,5 px, espacement 0,14em | 59,8 px | tient, 11,8 px de marge |
+| D · icône au-dessus du mot | 56,8 px | tient, 14,8 px de marge |
+
+**A est donc à écarter, et B aussi :** 1,3 px de marge ne survit pas à un
+changement de police entre téléphones, et le défaut serait invisible ici pour
+apparaître chez lui. **D revient sur sa décision du 10 août** (les icônes
+retirées) — recevable, puisque le service rendu n'est plus le même à cinq
+colonnes qu'à quatre : viser sans lire. Mais c'est à lui de le dire.
+
+**Ce qui reste à trancher avec lui**, et qui n'est pas de la place : l'onglet
+porte une LISTE d'outils (arrosage, puis terrasse bois), donc il s'appelle
+« Outils » et non « Arrosage » ; et il faudra pouvoir **rattacher un plan à un
+chantier après coup**, sans quoi un plan fait en visite de devis se perdra —
+c'est précisément ce que l'accès sans chantier fait gagner et risque de coûter.
+
+---
+
+---
+
+## 126. Deux rubriques pour la même chose — « Planning » supprimée des réglages
 
 *Sa question du 16 août 2026, capture à l'appui : **« quelle est la différence
 entre planning et équipe ? »**. Il n'y en avait pas.*
@@ -9901,4 +10524,3 @@ Le jour où les horaires viendront — « on commence à 8 h » —, **ne pas re
 rubrique « Planning » qui remontrerait les équipes**. Soit ils rejoignent
 « Équipe », soit ils ont une rubrique qui ne parle QUE d'horaires. La réponse est
 écrite dans la langue du patron : `docs/QUESTIONS.md` §21.
-

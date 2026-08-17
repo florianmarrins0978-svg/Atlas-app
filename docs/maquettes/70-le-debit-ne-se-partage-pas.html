@@ -1,0 +1,252 @@
+<title>Le débit ne se partage pas</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE DÉCOUPAGE EN SECTEURS — le calcul qui fait tout l'outil.
+
+    Il n'y a RIEN À CHOISIR sur cette planche : c'est de l'arithmétique, et
+    elle est montrée pour être vérifiée, pas pour être préférée.
+
+    ————————————————————————————————————————————————————————————————
+    LE RAISONNEMENT, EN TROIS LIGNES
+
+    Le robinet donne 1,80 m³/h. Le jardin en demande
+    8,47, soit 4,7 fois plus. On ouvre donc les
+    zones l'une APRÈS l'autre, par groupes qui tiennent dans le débit : ce sont
+    les secteurs, et ici il en faut 8.
+
+    On ne charge jamais un secteur à 1,80 : il faut de la
+    marge pour les pertes de charge, sinon les derniers arroseurs de la ligne
+    bavent. La limite retenue est 85 % du
+    débit, soit 1,53 m³/h — et AUCUN secteur ne la dépasse.
+
+    ————————————————————————————————————————————————————————————————
+    LES DEUX RÈGLES QUI DÉCOUPENT, ET QUI NE SE NÉGOCIENT PAS
+
+    1. UN SECTEUR, UNE PLUVIOMÉTRIE. La vanne ouvre tout son secteur pour la
+       même durée. Mélanger turbines (11 mm/h) et tuyères (38 mm/h) revient à
+       donner trois fois trop d'eau à l'une des deux zones — quoi qu'on règle.
+    2. UN SECTEUR, UN RYTHME. Le potager veut trois passages par semaine, la
+       haie deux. Deux rythmes dans un secteur, c'est un des deux qui perd.
+
+    Ces deux règles PASSENT AVANT le remplissage : mieux vaut un secteur à
+    0,21 m³/h qu'un secteur mélangé plein.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE LE NOMBRE DE SECTEURS COÛTE VRAIMENT — et personne ne le voit à la
+    signature du devis : chaque secteur allonge le CYCLE. Ici 3 h 14,
+    départ 3 h 00, fin 6 h 14. Un secteur de
+    plus, et l'arrosage finit après le lever du soleil — donc s'évapore.
+
+    RIEN N'EST CODÉ : `src/` n'est pas touché.
+    Engendré par `scripts/engendrer-maquette-arrosage.mjs`.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .reglage{margin:0 0 18px}
+  .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .segments{display:flex;flex-wrap:wrap;gap:8px}
+  .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+  .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+  .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+  .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+  .barre .quand{font-size:11.5px;color:var(--gris)}
+  .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+  .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+
+  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:6px}
+
+  .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+  .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+
+  .compare{border:1px solid var(--trait);border-radius:14px;padding:13px;margin-bottom:14px}
+  .compare .l{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;
+              color:var(--gris);margin:0 0 6px}
+  .compare .l b{font-family:Georgia,serif;font-size:20px;font-weight:400;color:var(--encre)}
+  .duo{height:10px;border-radius:999px;background:var(--teinte);overflow:hidden;margin-bottom:4px}
+  .duo span{display:block;height:100%;background:var(--alerte)}
+  .duo.ok span{background:var(--pin)}
+  .compare .dit-le{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--encre)}
+  .compare .dit-le b{color:var(--alerte)}
+
+  .sec{padding:11px 2px;border-bottom:1px solid var(--trait)}
+  .sec-t{margin:0 0 6px;font-size:14px;color:var(--encre);display:flex;align-items:baseline;gap:8px}
+  .sec-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
+         border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
+  .sec-part{font-size:11.5px;color:var(--gris)}
+  .jauge{height:8px;border-radius:999px;background:var(--teinte);overflow:hidden}
+  .jauge span{display:block;height:100%;background:var(--eau)}
+  .sec-d{margin:5px 0 0;font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+  .sec-fam{display:inline-block;margin-right:8px;font-size:10.5px;letter-spacing:.08em;
+           text-transform:uppercase;color:var(--pin)}
+
+  .cycle{margin-top:14px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+         font-size:13px;line-height:1.6;color:var(--encre)}
+  .cycle b{font-family:Georgia,serif;font-size:19px;font-weight:400}
+</style>
+
+<div class="dedans">
+  <h1>Le débit ne se partage pas</h1>
+  <p class="intro">Le calcul qui fait tout l'outil. <b>Il n'y a rien à choisir
+    ici</b> — c'est de l'arithmétique, montrée pour être vérifiée. Les nombres
+    sont ceux du jardin de la planche 69.</p>
+
+  <p class="dit">Un robinet de pavillon donne <b>1,80 m³/h</b>.
+    Ce jardin en demande <b>8,47</b>. Tout le métier tient dans
+    cet écart.</p>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Secteurs</span><span class="quand">Jardin Martins</span></div>
+
+      <div class="compare">
+        <p class="l"><span>Demandé, tout ouvert</span><b>8,47</b></p>
+        <div class="duo"><span style="width:100%"></span></div>
+        <p class="l"><span>Disponible au robinet</span><b>1,80</b></p>
+        <div class="duo ok"><span style="width:21%"></span></div>
+        <p class="dit-le"><b>4,7 fois trop.</b> Je découpe en
+          8 secteurs, aucun au-dessus de 1,53 m³/h.</p>
+      </div>
+
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S1</span><span class="sec-z">Pelouse arrière</span> <span class="sec-part">1 sur 2</span></p>
+          <div class="jauge"><span style="width:49%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">0,88</span> m³/h · <span class="sec-min">45</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S2</span><span class="sec-z">Pelouse arrière</span> <span class="sec-part">2 sur 2</span></p>
+          <div class="jauge"><span style="width:49%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">0,88</span> m³/h · <span class="sec-min">45</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S3</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">1 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S4</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">2 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S5</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">3 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S6</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">4 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S7</span><span class="sec-z">Massifs + Haie de charmilles</span></p>
+          <div class="jauge"><span style="width:41%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Goutte-à-goutte</span><span class="sec-q">0,74</span> m³/h · <span class="sec-min">26</span> min · 2×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S8</span><span class="sec-z">Potager</span></p>
+          <div class="jauge"><span style="width:12%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Goutte-à-goutte</span><span class="sec-q">0,21</span> m³/h · <span class="sec-min">26</span> min · 3×/sem.</p>
+        </div>
+
+      <p class="cycle">Cycle complet <b>3 h 14</b><br>
+        Départ 3 h 00, fin 6 h 14 — avant le soleil,
+        sinon la moitié s'évapore.</p>
+    </div>
+
+    <div class="legende">
+      <span class="t">Pourquoi 8 secteurs, et pas 6</span>
+      <p><b>Le seul débit en demanderait 6.</b> Les deux
+        autres viennent des règles ci-dessous, et elles passent avant le
+        remplissage.</p>
+      <p><b>Une pluviométrie par secteur, un rythme par secteur.</b> Un secteur ne porte
+        qu'une pluviométrie — la vanne l'ouvre en entier, pour la même durée, et
+        mélanger turbines et tuyères donne trois fois trop d'eau à l'une des
+        deux. Et un secteur ne porte qu'un rythme : le potager veut trois
+        passages par semaine, la haie deux.</p>
+      <p><b>La pelouse arrière tient en un seul secteur… sur le papier.</b>
+        1,76 m³/h pour 1,53 admissibles :
+        elle est coupée en deux. C'est le genre de dépassement qu'on ne voit pas
+        à l'œil, et qui se paie quand le dernier arroseur de la ligne bave au
+        lieu d'arroser.</p>
+      <p><b>Et la tuyère coûte cher en débit.</b> 20 tuyères
+        pour 12 × 8 m, 5,76 m³/h
+        — quatre secteurs à elles seules, contre deux pour une pelouse deux fois
+        plus grande en turbines. En échange elles arrosent en
+        13 minutes ce que la turbine met
+        45 minutes à faire.</p>
+      <p class="cout"><b>Ce que le cycle change :</b> chaque secteur s'ajoute à
+        la nuit. À 3 h 14, il faut démarrer à 3 h 00.
+        C'est cela qu'il faut dire au client AVANT de poser, pas après.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ce découpage n'a pas encore</span>
+    <ul>
+      <li><b>Les saisons.</b> Ces durées sont celles de juillet. En avril, le
+        besoin tombe de moitié — l'outil devra sortir un tableau par saison,
+        c'est ce que le client colle dans son coffret.</li>
+      <li><b>La pluie.</b> Une sonde de pluie coupe le cycle : c'est une ligne
+        de nomenclature, pas un calcul.</li>
+      <li><b>Les pertes de charge.</b> Voir la planche 69 : sans effet ici,
+        déterminantes sur une longue ligne.</li>
+    </ul>
+  </div>
+</div>

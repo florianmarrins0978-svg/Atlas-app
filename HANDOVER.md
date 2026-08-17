@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-16 · `main`
+**Point de reprise :** 2026-08-17 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -750,14 +750,152 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 `maquettes/atlas-centre-de-la-fiche.html` reste au placard, et n'a rien changé
 dans `src/`.
 
+## ⚠ Faire le ménage des serveurs dans un appel SÉPARÉ de la batterie
+
+**Payé quatre batteries, le 17 août 2026.** `test-fiche-pendant-relance` rougit
+si la commande qui lance la batterie contient elle-même
+`pgrep -af "next-server|next dev"` — le ménage des serveurs orphelins.
+
+`veiller.sh` ne conclut « serveur mort » que si `pgrep -f '[n]ext(…)'` ne trouve
+**rien**, et `pgrep -f` compare la **ligne de commande entière de tout processus
+vivant**. Le shell qui porte à la fois le ménage et la batterie reste vivant
+pendant toute celle-ci : sa propre ligne de commande contient « next dev », le
+veilleur croit voir un serveur, et la suite échoue sur un montage qui n'a pas
+reproduit son cas.
+
+**Donc : deux appels, jamais un.** Le ménage d'abord, qui se termine ; la
+batterie ensuite, dans une commande qui ne nomme aucun de ces motifs.
+
+**Et la leçon générale :** une commande de diagnostic qui NOMME un motif
+surveillé par le produit devient elle-même ce qu'elle cherche. Le rouge était
+reproductible quatre fois, « sous charge » était une explication plausible — et
+fausse. `TODO.md` §0 trigies quater.
+
 ## Ce qui vient d'être terminé
 
 **LA RUBRIQUE « PLANNING » DES RÉGLAGES N'EXISTE PLUS (16 août).** Sa question :
 *« quelle est la différence entre planning et équipe ? »* — il n'y en avait
 aucune, les deux rendaient le même composant. Tout est dans **« Équipe »** :
 combien partent en même temps, leurs noms, leurs absences. **Ne pas la recréer**
-le jour où les horaires viendront (`ARCHITECTURE.md` §120, `docs/QUESTIONS.md`
+le jour où les horaires viendront (`ARCHITECTURE.md` §126, `docs/QUESTIONS.md`
 §21).
+
+**« ADRESSE NON RENSEIGNÉE » OUVRE L'ÉCRAN DU CHANTIER (17 août).** La mention de
+l'accueil est un lien vers `/chantiers/[id]/coordonnees` — l'écran de création
+rouvert, prérempli, qui enregistre au lieu de créer. `ARCHITECTURE.md` §124.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **UNE LIGNE DE L'ACCUEIL = UN SEUL `<a>`, et cet invariant a été découvert
+   en le cassant.** La mention seule est la cible ; le nom du chantier garde sa
+   reprise du 13 août. Un lien dans un lien n'étant pas valide, la première
+   version avait coupé le lien de la ligne en trois — **et trois suites sont
+   tombées d'un coup** : `test-dashboard` compte `a.atlas-brin`,
+   `test-suivi-devis` remonte à `ancestor::a[1]`, `test-transcription` clique au
+   milieu de `.atlas-ligne`. La mention est donc un `<span role="link">` posé
+   DANS l'ancre, qui détourne le geste. **Ne pas la « rétablir » en vrai lien.**
+2. **Le nom du chantier se RECALCULE à l'enregistrement**, avec la date de
+   CRÉATION du chantier et non celle du jour. Sans ce recalcul, la ligne
+   afficherait « Chantier du … » pour toujours — le défaut corrigé partout sauf
+   là où il l'a vu. Avec la date du jour, le chantier se renommerait et il ne le
+   reconnaîtrait plus.
+3. **Deux mots seulement changent** entre créer et reprendre : le surtitre et le
+   bouton. Ils changent parce qu'ils mentiraient, pas par décoration.
+
+**LA LEÇON DE MÉTHODE, ET ELLE A COÛTÉ DEUX ALLERS-RETOURS.** Une première
+planche avait dessiné une « fiche client » de toutes pièces ; il a répondu
+*« rien de plus, rien de moins »* en renvoyant la capture de l'écran qui
+existait. **Devant une demande qui touche à un écran, chercher d'abord si
+l'écran existe.** Ce qui avait égaré : le code annonce lui-même qu'il manque une
+fiche client — c'est vrai, et ce n'était pas sa demande.
+
+**LE CATALOGUE EST ÉCRIVABLE (17 août) — CODÉ, arrangement B.** Il a posé deux
+fois la même question (14 puis 17 août) : *« À quoi sert cette page ?? On peut
+rien modifier rajouter »*. Ses mots s'accrochent désormais aux entrées d'Atlas,
+en or. Planche `docs/maquettes/72-mes-mots-au-catalogue.html`, récit complet
+dans `ARCHITECTURE.md` §122, migration 0052.
+
+**Quatre choses à savoir avant d'y toucher :**
+
+1. **Le catalogue reste PARTAGÉ et intouchable** (migration 0007, aucune RLS).
+   Ses mots vivent dans `mots_catalogue`, isolée par RLS, et se superposent au
+   commun à la lecture. Rien ne retire jamais un mot d'Atlas : ce serait le
+   retirer chez tous les autres artisans.
+2. **Un mot visible DOIT être un mot reconnu.** Les quatre chemins de recherche
+   passent par `rechercherCartes` — les deux outils de l'agent, celui des
+   synonymes, le service de chiffrage. En débrancher un rendrait des mots
+   affichés et muets : il croirait avoir appris quelque chose à Atlas, et rien
+   ne le détromperait. La suite base rougit exactement là.
+3. **Le rapprochement se fait par INCLUSION**, comme pour le commun : « écime »
+   attrape « écime-moi le tilleul », « écimage » ne l'attrape pas. Le champ de
+   saisie le dit. Ne pas inventer une seconde règle pour ses mots — deux règles
+   divergent toujours.
+4. **Ne pas remettre de prix sur cet écran sans trancher le rapprochement.**
+   `lecons_prix` range par nature de chantier, pas par mot de catalogue : un
+   prix d'abattage sous « Élagage » serait pire que la phrase retirée.
+
+**L'AUTO-ALIMENTATION EXISTE DEPUIS LE MÊME JOUR** (`ARCHITECTURE.md` §123,
+migration 0053) : Atlas **propose** de retenir un mot entendu quand il sait à
+quoi il se rapporte — la ligne retenue sur le devis doit être reconnue par le
+catalogue, faute de quoi rien n'est proposé. Deux choses à ne pas défaire :
+
+- **le « non » est définitif** (colonne `refuse`) : une proposition qui revient
+  après un refus n'est plus une proposition ;
+- **mais un mot écarté puis écrit à la main se relève** (`ajouterMot`). Sans ce
+  relèvement, l'index unique le refuse en SILENCE : il tape le mot, rien
+  n'apparaît, et rien ne dit que c'est son propre « non » qui le bloque.
+
+**Le vocabulaire d'Atlas, lui, ne s'alimente jamais tout seul** — il est commun
+à toutes les entreprises.
+
+**LA FICHE DU CLIENT (16 août).** Elle s'ouvre depuis le tiroir d'un chantier et
+montre ce que l'application savait déjà : combien de chantiers, combien facturé,
+combien reste dû, et ce qu'on lui fait d'habitude.
+
+**UN CLIENT EST DÉSORMAIS RETROUVÉ, PLUS RECRÉÉ (17 août).** La fiche était
+vide par construction — `creerClient` insérait toujours, et deux chantiers pour
+« M. Martins » faisaient deux fiches. Il l'a tranché le lendemain, en écartant
+qu'on lui **propose** des correspondances : le rapprochement est **automatique**
+(`trouverOuCreerClient`, règle dans `src/lib/rapprochement-client.ts`).
+
+**Ce qu'il faut savoir avant d'y toucher :** une coordonnée qui **contredit**
+interdit le rapprochement — deux « Martins » aux téléphones différents restent
+deux fiches. Rien n'est jamais écrasé : la saisie complète les cases vides, pas
+les autres. Un client effacé (RGPD) n'est jamais réutilisé. Et **une fiche est
+maintenant partagée** : corriger l'adresse du client depuis un devis la corrige
+sur les autres chantiers du même client. `ARCHITECTURE.md` §122.
+
+Trois pièges de ce lot : « 0 € » ne doit jamais s'afficher pour un client non
+facturé (« — » et une phrase) ; les prestations se comptent en chantiers et non
+en lignes ; et un contrôle qui cherche « 0,00 € » dans une page le trouve dans
+« 450,00 € ». `ARCHITECTURE.md` §121.
+
+**LE PRIX ACCORDÉ NE VIT PAS SUR UNE LIGNE (17 août).** Il vit sur l'EN-TÊTE du
+devis (`reduction_pourcent`), et c'est le prix de l'arrangement B qu'il a choisi
+le 16. Conséquence pratique : **tout ce qui recopie « les lignes » et rien
+d'autre l'oublie en silence.** C'est ce qui a produit ses deux défauts du
+17 août — la dictée qui retirait la remise puis la voyait revenir, et le « 0 % »
+qui laissait une ligne or sur un devis dont le PDF n'imprimait rien. Avant de
+toucher à quoi que ce soit qui relise le devis après une écriture, se demander
+si l'en-tête repart avec.
+
+**⚠ UN CONTRÔLE QUI RECHARGE N'ÉPROUVE PAS L'ÉCRAN, IL ÉPROUVE LA BASE (17 août).**
+`test-reduction-devis-e2e` était vert sur un retrait de remise… en rechargeant la
+page juste avant de vérifier. Le défaut vivait précisément dans l'état de
+l'écran. Le nouveau cas mesure **sans rechargement**, et il est rouge sans le
+correctif.
+
+**ET IL FAUT ÉPROUVER SON GESTE, PAS LE NÔTRE.** La suite vidait la case ; lui
+écrit « 0 » par-dessus — viser un champ de 36 px sur un téléphone, sélectionner
+un chiffre et le supprimer n'est pas ce qu'on fait. Les deux chemins mènent à
+« aucune réduction », un seul était éprouvé.
+
+**LE « PETIT MOINS » EST CODÉ (17 août) — sa proposition B.** Un rond de 26 px
+devant le libellé du prix accordé. **Il partage le tiroir des lignes**, sous la
+clé réservée `prix-accorde-au-client` : ne pas lui fabriquer un second tiroir,
+c'est ce que le patron a fait disparaître le 10 août. Et **le total montre le
+prix plein dès l'appui**, alors que rien n'est encore écrit — un geste sans effet
+visible pendant six secondes se lit comme une panne.
 
 **⚠ UNE COULEUR POSÉE SUR `<html>` NE PEUT PAS SUIVRE UNE NAVIGATION (16 août).**
 Il choisit « Nuit », rien ne change — et c'était exact. Les variables de charte
@@ -771,6 +909,7 @@ onglet, sans rechargement (`ARCHITECTURE.md` §119).
 rechargeait la page entre chaque écran. Le seul chemin où le défaut existe, les
 onglets du bas, n'était parcouru nulle part. **Rejouer sa séquence, pas le geste
 isolé.**
+
 
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
@@ -801,6 +940,301 @@ photographié le milieu du cadre qui défile (`.atlas-fil-defile`), sans une seu
 carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une image
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
+
+**⚠ CHAQUE ARROSEUR PORTE DEUX SBE, PAS UN (17 août) — le bas (toujours 3/4",
+sur la ligne) et le haut (au diamètre du corps). Compté depuis ce lot.**
+
+**⚠ LE TRACÉ DU RÉSEAU LATÉRAL EST TRANCHÉ ET CALCULÉ (17 août, planche 73,
+répondue par un croquis plutôt qu'en mots).** Plusieurs lignes parallèles
+depuis le regard — **avec une règle physique à ne pas oublier** : une
+jonction (té 25×25×25) là où le tronc CONTINUE vers une autre rangée (on doit
+couper le tuyau), mais RIEN à la toute dernière rangée — le tronc s'y arrête
+en se courbant, sans pièce à couper. `listeMateriel()` calcule maintenant
+`nombre − ny` tés de ligne, `ny` coudes de fin, `ny − 1` jonctions (jamais
+`ny`) à partir de `poser()`. **Ne jamais compter `ny` jonctions** : c'est
+l'erreur qu'un lecteur pressé ferait, et c'est exactement celle que sa
+correction du 17 août visait.
+
+**LA RÈGLE GÉNÉRALE DERRIÈRE, donnée en croquis le 17 août : compter les
+PORTIONS DE TUYAU qui se rejoignent en un point.** Deux portions → coude (le
+tuyau se courbe, aucune pièce). Trois portions → té/jonction (on doit couper
+le tuyau pour insérer la pièce). C'est le même principe qui classe Départ et
+Milieu (3 portions : ça entre, ça continue, ça monte vers l'arroseur) en té,
+Fin (2 portions : ça entre, ça monte) en coude, et la jonction du tronc (3
+tant qu'une rangée suit, 2 à la dernière) — **à réutiliser tel quel pour
+tout futur point de raccordement**, plutôt que de retrouver un cas par cas.
+
+**ET LE NOMBRE QUI EN DÉCOULE, ÉPROUVÉ PAR LUI SUR UN TRACÉ LIBRE (planche
+74) : `N` arroseurs sur un réseau ⇒ `N − 1` TÉS, toujours.** Un réseau part
+d'une seule ligne et finit sur `N` bouts ; chaque té ajoute un bout. **Ni la
+forme du terrain ni l'ordre de raccordement ne changent ce compte.** Il l'a
+vérifié en envoyant un croquis délibérément irrégulier (six arroseurs
+dispersés, courbes, branches inégales) et en demandant de placer les tés —
+c'était un contrôle du raisonnement, pas une demande de dessin. **La formule
+de `listeMateriel()` passe ce contrôle sans être modifiée** : sur une grille,
+`(nombre − ny)` tés + `(ny − 1)` jonctions **= `nombre − 1`**. Devant tout
+doute futur sur un comptage de tuyauterie, c'est le repère qui tranche en une
+soustraction.
+
+**⚠ LES FICHES DE NOURRICE EXISTENT MAINTENANT (1 à 6 voies, 17 août) et
+REMPLACENT les lignes génériques (électrovanne/regard/programmateur) dès
+qu'elles s'appliquent — dans la liste ET dans le registre de prix.
+`CATALOGUE.piecesNourrice` porte chaque pièce une seule fois ; **ne jamais
+retaper un nom de pièce dans une fiche**, toujours référencer par `ref`.
+
+**⚠ UNE VOIE GOUTTE-À-GOUTTE MODIFIE SA NOURRICE, LES AUTRES VOIES NON
+(17 août).** Sa règle : électrovanne MM standard → FF, plus régulateur FF
+3/4", plus deux mamelons réduits MM 1"-3/4" et un mamelon fileté MM 1" — par
+voie concernée seulement. `CATALOGUE.ficheNourrice(n, combienGoutte)` fait
+cette bascule au-dessus de la fiche de base, jamais `CATALOGUE.nourrices[n]`
+directement — **les trois endroits qui lisaient la fiche brute
+(`dessinerNourrice`, `listeMateriel`, `texteDeLaListe`) passent maintenant
+tous par cette fonction**, sans quoi l'un des trois afficherait la fiche
+non modifiée. Elle fusionne aussi les lignes de même référence en sortie :
+sans cette fusion, le mamelon réduit de la bascule s'affichait à côté de
+celui de la fiche de base au lieu de s'additionner avec lui — deux lignes
+« 2 u » plutôt qu'une « 4 u ».
+
+**⚠ LE QUINCONCE RETIRE UN ARROSEUR, IL NE LE DÉPLACE PAS (17 août — trouvé
+par lui, capture cerclée).** Une rangée décalée porte UNE tête de moins que la
+rangée alignée. Le plan et le calcul partagent une seule fonction
+(`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
+c'est exactement ce qui a produit le défaut.
+
+**⚠ NE JAMAIS ÉCRIRE `charger() || {défauts}` — le piège a frappé le 17 août.**
+Dès qu'une sauvegarde existe, l'objet de défauts est entièrement sauté : tout
+champ ajouté au produit APRÈS sa première visite lui arrive `undefined`, à lui
+seul, et sans un mot. On part toujours de `DEFAUTS` et on pose la sauvegarde
+par-dessus champ par champ (`arrosage.html`). **Le même piège guette partout
+où un état persistant s'étoffe** — et il est invisible en développant, puisque
+le navigateur y part vide.
+
+**⚠ L'OUTIL N'A PLUS QUE TROIS SECTIONS (17 août) : point d'eau, CROQUIS,
+liste. Le découpage PUIS le plan ont été retirés, sur sa demande** (*« à quoi
+sert le 3 ? »* → « enlevez-le »). Le plan de zones dessinait des rectangles
+abstraits, utiles au développeur, pas à lui — le sien est celui de la planche
+75. **La pose, le découpage et l'affectation aux vannes tournent toujours**,
+invisibles, et décident des électrovannes, de la nourrice et des tés. Sa consigne : *« tu supprimes la 3, et la 2 ça doit être la
+photo du croquis ».* **Le découpage en secteurs ne s'AFFICHE plus, mais il se
+CALCULE toujours** — il donne les couleurs du plan, le nombre d'électrovannes
+et la fiche de nourrice. Sont partis avec l'écran : les durées, le cycle total,
+et le sélecteur de saison (`etat.saison` reste, à « juillet »). Les contrôles
+correspondants lisent maintenant `decouper()` — **ne pas les réécrire sur des
+sélecteurs DOM qui n'existent plus.**
+
+**⚠ LA PHOTO DU CROQUIS EST REDIMENSIONNÉE AVANT D'ÊTRE GARDÉE, et c'est
+vital :** une photo de téléphone (3 à 8 Mo) ferait sauter `localStorage`
+(~5 Mo pour tout le jardin) — et c'est le JARDIN ENTIER qui disparaîtrait au
+rechargement, pas seulement l'image. 1400 px, JPEG 0,75. En cas d'échec malgré
+tout, on remet l'état d'avant et on le dit. **Et l'écran annonce qu'il ne lit
+pas encore les cotes** : page statique, pas de serveur, la lecture demande
+`src/server/ai/`.
+
+**⚠ UNE PLANCHE NE RECOPIE JAMAIS UN CALCUL QUE L'OUTIL SAIT FAIRE.** Payé le
+17 août : la planche 75 portait une liste de fournitures tapée à la main, avec
+un « regard 3 voies » composé de pièces piochées dans plusieurs de ses fiches.
+Il l'a lue et a tout de suite vu le mélange. **Le code refusait déjà cette
+composition** (§4) — c'est la planche qui l'a faite. Une planche montre ce qui
+n'existe pas encore ; tout ce qui tourne déjà se lit dans l'outil.
+
+**⚠ LES TUYÈRES SONT POUR LES PETITS ESPACES : 4 m DE PETIT CÔTÉ, GRAND MAX
+(17 août).** Sa règle — « un carré de douze par dix, c'est que des arroseurs ;
+les tuyères, c'est un carré de trois par trois, ou un couloir de dix sur
+deux ». Le seuil de l'outil était à 8 m : **il était faux du simple au
+double**, et faisait partir des pelouses entières en tuyères, donc en
+pluviométrie triple. C'est le PETIT CÔTÉ qui décide, et lui seul.
+`TUYERE_JUSQUA` dans `arrosage.html`. **Le repli vers les tuyères au-delà de
+4 m est interdit** : si aucune turbine ne pave, l'écran le dit plutôt que de
+rendre un plan posable et faux.
+
+**⚠ UN SECTEUR, UNE PLUVIOMÉTRIE — et le TYPE ne suffit pas à le garantir.**
+La clé de groupe de `decouper()` porte le type, la famille **et la
+pluviométrie**. Sans elle, deux turbines de buses différentes (5,9 et
+6,1 mm/h) se retrouvaient sur la même vanne, ouverte pour une seule durée.
+Le défaut est resté invisible tant que les deux pelouses d'exemple étaient de
+familles différentes ; **c'est le coloriage par réseau qui l'a montré**, en
+leur donnant la même couleur. Ne pas retirer la pluviométrie de cette clé.
+
+**⚠ Ø25 PAR DÉFAUT DU COMPTEUR AU REGARD, Ø32 SEULEMENT SI LE CALCUL LE
+DÉMONTRE (17 août).** Hazen-Williams sur le débit du PLUS GROS SECTEUR — les
+vannes s'ouvrent l'une après l'autre, prendre la somme surdimensionnerait
+chaque chantier. **Le calcul ne couvre QUE l'amenée** : ni antennes, ni
+raccords, ni électrovanne — un « le Ø25 suffit » est un plancher, pas une
+garantie, et l'écran le dit. **Les diamètres INTÉRIEURS sont `provisoire`** :
+ils dépendent de la pression nominale (PN6/PN10/PN16), non précisée, et se
+tromper de gamme fausse le verdict dans le sens dangereux.
+
+**⚠ UN CONTRÔLE DOIT GARDER UNE RÈGLE, PAS UN JARDIN.** Trois cas ont rougi le
+17 août sans qu'aucun défaut existe, simplement parce que ses règles avaient
+changé le jardin d'exemple : une portée de 3,6 écrite en dur, une référence de
+buse nommée, une boucle de cinq clics pour vider six zones. Ils lisent
+désormais la portée réelle de chaque zone, **demandent au plan quelle
+référence il commande**, et retirent jusqu'à ce qu'il n'en reste plus. Devant
+un cas qui rougit après un changement de règle métier, se demander d'abord
+s'il gardait un nombre plutôt qu'un invariant.
+
+**⚠ LE PARCOURS COMPLET DU PRODUIT EST ÉCRIT — il l'a dicté le 17 août, et il
+est dans `TODO.md` § « 0 quaterquadragies AA », en dix étapes avec leur état.**
+À lire avant de décider quoi coder ensuite : sept des dix sont faites, et les
+confondre ferait refaire ce qui existe. **Deux blocages de structure y sont
+nommés, à ne pas contourner par une invention :** la page publiée est statique,
+donc elle ne peut pas LIRE une photo (l'IA vit dans `src/server/ai/`) ; et il
+n'existe pas de plan d'ensemble du jardin, donc **le regard n'a nulle part où
+se poser** — chaque zone est dessinée seule, l'outil ignore où la pelouse est
+par rapport au massif. Le placer « quelque part » serait inventer un jardin.
+
+**⚠ `decouper()` DIT MAINTENANT QUEL ARROSEUR EST SUR QUELLE VANNE
+(`reseauDuPoint`), et le plan colorie d'après CETTE liste.** Ne jamais
+recalculer l'affectation dans le rendu — c'est la divergence qui avait produit
+l'arroseur en trop du quinconce. Trois règles tiennent ce découpage, chacune
+gardée par un contrôle vu rouge : la coupe suit **l'ordre de pose** et reste
+**d'un seul tenant** (une vanne dessert une bande, jamais un arroseur sur
+deux) ; elle se fait **au point près et non à la rangée** (une rangée peut
+dépasser la limite à elle seule) ; et le **débit annoncé d'un secteur est
+celui de ses arroseurs réels**, jamais le total divisé en parts égales.
+
+**⚠ LE DÉBIT D'UNE TURBINE NE DÉPEND PAS DE L'ARC — sa règle du 17 août, et
+c'est elle qui a débloqué les six familles.** *« Les débits, portées qui sont
+dans le tableau sont donnés pour les arroseurs en 360 degrés ; c'est les mêmes
+données que pour 90 ou 180 degrés. »* Le chiffre unique du tableau vaut donc à
+tous les arcs, et un passage d'`arrosage-catalogue.js` le recopie sur le 90° et
+le 180° — **des turbines SEULEMENT**. Les tuyères gardent leurs valeurs par
+angle, qui diffèrent vraiment (6-VAN : 0,27 à 90°, 0,32 à 360°). **Ne jamais
+diviser par l'arc, et ne jamais étendre l'uniformisation aux tuyères** : deux
+contrôles opposés gardent ce couple, et chacun a été vu rouge sur son défaut.
+
+**⚠ UNE TURBINE NE PREND PAS UN CORPS DE TUYÈRE — défaut vu sur une CAPTURE,
+par aucun des 39 contrôles d'alors.** Le jour où les turbines sont devenues
+posables, la liste comptait encore 22 corps 1800 et 22 SBE 1/2" pour un jardin
+dont 11 arroseurs étaient des turbines. `listeMateriel()` compte maintenant le
+corps **par famille** et le SBE du haut **par diamètre de corps**. Et le corps
+d'une turbine **ne se choisit pas** (la buse 0,75 du 3504 ne va que dans un
+corps 3504) : `CATALOGUE.corpsDeLaBuse` les apparie par la référence
+(`RA3504-B075` → `RA3504`). **Cette convention de référence est une dette** —
+un contrôle exige que chaque buse de turbine posable trouve son corps, sinon
+une transcription future ferait manquer un corps en silence. **Reste à faire :
+le deuxième sélecteur de corps**, pour qu'il choisisse hauteur et options des
+turbines comme il le fait des tuyères. Rien n'est faux en attendant.
+
+**⚠ UNE BUSE SANS SES TROIS ANGLES (90°/180°/360°) N'EST JAMAIS CHOISIE SEULE
+(17 août).** Les R-VAN Rain Bird se vendent en DEUX références par taille — une
+réglable 45°-270° (jamais 360°), une fixe 360° (jamais autre chose). `busesDe()`
+exige les trois angles sur une même référence avant de la rendre poseable ; les
+deux restent visibles dans le registre de prix. **Ne pas relâcher cette
+exigence à deux angles** : une version antérieure du filtre a laissé passer la
+réglable seule, et le calcul de l'intérieur d'une pelouse (qui a besoin du
+360°) a produit « Mesures à compléter » au lieu d'un plan.
+
+**⚠ LES CORPS SONT ENTRÉS (Rain Bird 1800, Hunter Pro-Spray/I-Spray), MAIS
+AUCUN N'EST CHOISI PAR DÉFAUT.** Quatre hauteurs, trois options — un choix de
+chantier qu'il n'a pas encore tranché. Ne pas en supposer un « raisonnable » :
+c'est exactement le genre de décision qu'il a réservée depuis le début.
+
+**⚠ SA RÈGLE DE POSE (17 août), et l'outil faisait l'inverse.** « 80 % minimum
+entre chaque arroseur. Portée 5 m : ~5,50 m, 6 m max, 5 m étant la perfection.
+Jamais moins. 4 m, 3 m : JAMAIS. » Donc **écart ∈ [portée ; 1,2 × portée]** — le
+recouvrement se mesure sur l'écart, pas sur la portée. **Ne pas resserrer sous
+la portée par prudence** : c'est un arroseur de trop tous les quatre mètres, donc
+un secteur de plus et un devis plus cher.
+
+**⚠ ET LE CHOIX DE BUSE OBÉIT À CETTE RÈGLE.** Une turbine de 9 m ne pave pas une
+pelouse de 12 m de large ; l'outil prend la plus grande buse qui pave les deux
+côtés (`paveSelonSaRegle`). Ne pas revenir à « la plus grande qui rentre » suivie
+d'une alerte : cette version-là criait sur toutes les zones, y compris les
+bonnes, et une alerte qui parle à tort s'apprend à être ignorée.
+
+**⚠ SES PRIX NE SONT JAMAIS DANS LE CATALOGUE (17 août).** Sa consigne : les
+tarifs imprimés sont des prix CLIENT, ils ne s'enregistrent pas — pas même en
+commentaire. Ses prix négociés se saisissent dans `appli/arrosage-tarifs.html`
+et vivent dans son navigateur. **Une case vide reste vide** : le total du plan
+annonce les lignes manquantes plutôt que de les combler. Les mélanger ferait
+chiffrer un devis au prix public, et ça ne se verrait pas — le total reste
+plausible.
+
+**⚠ UN ARROSEUR = UN CORPS + UNE BUSE, et le débit se LIT par arc.** Sa page du
+17 août (Aqua Plus 2026 p. 8, buses VAN) : le débit d'un quart de tour n'est pas
+le quart du tour complet sur les petites buses. Ne pas « simplifier » en
+divisant — un contrôle mesure 1,64 m³/h sur une zone qui retient la 6-VAN, et
+1,62 trahirait la division. Les corps escamotables manquent encore.
+
+**⚠ LE CATALOGUE D'ARROSAGE EST À LUI, PAS À NOUS (17 août).** Il a dit
+« plusieurs choses sont fausses », et il envoie ses photos d'arroseurs et ses
+nomenclatures. `appli/arrosage-catalogue.js` les reçoit ; **chaque entrée porte
+une `source`** (`'patron'` ou `'provisoire'`), et l'écran compte ce qui reste
+provisoire. **Ne jamais présenter une valeur provisoire comme acquise**, et ne
+jamais composer une **nourrice** absente : `CATALOGUE.nourrices` est vide parce
+qu'il en donnera les fiches. **Aucun plafond à six voies** (sa réponse du
+17 août) — et **ne pas fabriquer une nourrice de douze en doublant celle de
+six** : une seule grande ou deux petites, il ne l'a pas tranché. L'écran annonce la fiche
+manquante — c'est voulu, ce n'est pas un trou à boucher. Détail complet dans
+`TODO.md` § « 0 quaterquadragies ».
+
+**⚠ LE RECOUVREMENT (80 %) EST UNE LECTURE À CONFIRMER.** Sa phrase : « il faut
+un recouvrement d'au moins quatre-vingt pour cent ». Lu comme *écart = 80 % de
+la portée*. Réglable à l'écran, et l'écart en mètres y est écrit pour qu'il
+tranche d'un regard. Passer de 100 à 80 % fait passer le jardin d'exemple de 8 à
+9 secteurs : ce réglage décide du nombre d'arroseurs, donc de la facture.
+
+**⚠ LE PLAN D'ARROSAGE : LA PAGE ESSAYABLE EST `appli/arrosage.html` (17 août).**
+Sa consigne, après les trois planches : *« je veux que tu code rien, d'abord des
+maquettes dynamiques en .html que je puisse essayer, pas de photo »*.
+
+- **Elle vit dans `appli/` et NON dans `docs/maquettes/`, et ce n'est pas un
+  rangement.** Les planches y sont sans JavaScript parce que son lecteur n'en
+  exécute pas ; or il demande à essayer. `appli/` est le seul dossier PUBLIÉ du
+  dépôt (`pages.yml`) : c'est le seul endroit où la page s'ouvre dans un vrai
+  navigateur, au téléphone, avec le calcul qui tourne. **Ne pas la « ranger »
+  dans `docs/maquettes/` : elle y arriverait vide.**
+- **AUCUN PRIX, et c'est SA décision du 17 août** : *« il faut simplement créer
+  le plan et la liste du matos à acheter, ensuite moi j'envoie à mes
+  fournisseurs, ils me font un devis, puis je repasse par le circuit normal de
+  l'application »*. La sortie est une liste de QUANTITÉS. Un contrôle refuse
+  tout montant en euros — ne pas le contourner par bonne volonté.
+- **Elle est gardée par `appli/tests/e2e.js`**, jouée avant publication puis
+  **contre le site en ligne** : erreur JS, secteur au-dessus du robinet, cycle
+  qui ne fait pas la somme, prix, débordement à 390 px.
+- **Ce que l'essai apprend et qu'aucune planche ne disait** : sur « au mieux »,
+  les deux pelouses passent en turbines et le jardin tombe de huit secteurs à
+  quatre. Le jardin de départ garde les tuyères pour que la bascule se voie.
+- **Les prix fournisseurs : ne pas tenter d'aller les chercher.** Chausson et
+  Aqua Plus sont refusés par le mandataire réseau (vérifié), et leurs sites
+  n'auraient que des prix publics. La voie est ailleurs, et elle existe déjà :
+  Chausson laisse **télécharger le tarif négocié en Excel/CSV** depuis le compte
+  client, et Atlas sait importer un tarif Excel/CSV.
+- **Il a proposé de joindre ses devis fournisseurs** : ils serviront au
+  catalogue de matériel (désignations, références), pas aux prix.
+
+**LE PLAN D'ARROSAGE AUTOMATIQUE (17 août) — TROIS MAQUETTES, RIEN N'EST CODÉ.**
+Sa demande : *« un outil pour les paysagistes pour réaliser des plans d'arrosage
+automatique »*. Terrain neuf — rien dans le produit ne parlait d'arrosage.
+
+- **Les planches** : `docs/maquettes/69-le-plan-darrosage.html` (par où il entre
+  son jardin), `70-le-debit-ne-se-partage-pas.html` (le découpage en secteurs,
+  **rien à y choisir**), `71-ce-qui-sort-du-plan.html` (devis, carte du coffret,
+  plan client). **Sa décision est attendue sur deux points**, listés dans
+  `TODO.md` § « 0 quaterquadragies ».
+- **TOUS LES NOMBRES SONT CALCULÉS**, pas écrits : cinq mesures entrent
+  (dimensions des zones, débit au seau), le reste en découle — arroseurs,
+  débits, secteurs, durées, cycle, nomenclature. **Ne pas retoucher les planches
+  à la main**, elles divergeraient : `scripts/engendrer-maquette-arrosage.mjs`.
+- **Le calcul qui commande tout** : le robinet donne 1,80 m³/h, le jardin en
+  demande 8,47 → huit secteurs, cycle de 3 h 14. **Deux règles passent avant le
+  remplissage** — une seule pluviométrie par secteur (une vanne ouvre son
+  secteur entier, pour la même durée) et un seul rythme par secteur. Les
+  mélanger, c'est trois fois trop d'eau d'un côté, quoi qu'on règle ensuite.
+- **Le défaut à ne pas recommettre, il a été commis ici** : le champ `materiel`
+  (une chaîne) écrasé par l'objet du catalogue fondait les deux pelouses —
+  turbines et tuyères — dans le même secteur. La planche s'affichait
+  parfaitement. C'est un cas de contrôle depuis.
+- **Deux défauts sortis d'une CAPTURE et d'aucun test** (les 6ᵉ et 7ᵉ de ce
+  dépôt) : le matériel affiché en clé technique (« tuyere »), et la cote « 12 m »
+  rognée en **« 2 m »** par le cadre du plan — texte entier dans la page, donc
+  invisible à tout contrôle de DOM. Le contrôle compare maintenant les **boîtes**.
+- **Ce qui n'est PAS ouvert, et qu'il faut dire** : pertes de charge et
+  dimensionnement des tuyaux. Sans effet sur un pavillon en PE 32, déterminants
+  sur une longue ligne.
+- **L'arrosage rejoint la fiche d'entretien** (mise en route, hivernage) : deux
+  lignes de modèle, pas un quatrième parcours.
 
 **DEUX MAQUETTES POUR LA FICHE D'ENTRETIEN (16 août) — RIEN N'EST CODÉ.** Il a
 demandé de recréer les fiches de chantier d'une autre application (paysagistes

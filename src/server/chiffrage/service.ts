@@ -3,7 +3,7 @@ import type { Ctx } from "../repositories/context";
 import { getChantier } from "../repositories/chantiers";
 import { getOuCreerParametresChiffrage } from "../repositories/parametres-chiffrage";
 import { listerHistoriquePrix } from "../repositories/historique-prix";
-import { rechercherPrestationCatalogue } from "../repositories/catalogue-prestations";
+import { rechercherCartes } from "../repositories/mots-catalogue";
 import { parseNombreFrancais } from "./parse";
 import { calculerVariantes } from "./moteur";
 import type { ChiffrageAvecVariantes } from "./types";
@@ -32,10 +32,13 @@ export async function chiffrerChantier(
   let historique: ChiffrageAvecVariantes["historique"] = null;
 
   if (motCleCatalogue) {
-    const correspondances = await rechercherPrestationCatalogue(motCleCatalogue);
+    // **Ses mots à lui comptent ici aussi** (17 août 2026) : si « écime » a été
+    // posé sur « Élagage », un chantier dicté avec ce mot doit être chiffré
+    // comme un élagage, et non tomber dans le calcul sans nom de prestation.
+    const correspondances = await rechercherCartes(ctx, "prestation", motCleCatalogue);
     const prestation = correspondances[0];
     if (prestation) {
-      nomPrestation = prestation.nomCanonique;
+      nomPrestation = prestation.nom;
       const lignesHistorique = await listerHistoriquePrix(ctx, prestation.id);
       if (lignesHistorique.length > 0) {
         const somme = lignesHistorique.reduce((acc, l) => acc.plus(l.prix), new Decimal(0));

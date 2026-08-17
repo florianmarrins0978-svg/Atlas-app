@@ -23,6 +23,7 @@ import {
   char,
   boolean,
   jsonb,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -765,6 +766,44 @@ export const catalogueMateriels = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("catalogue_materiels_nom_unique").on(t.nomCanonique)]
+);
+
+// --- Ses mots à lui, par-dessus le vocabulaire commun (migration 0052) ---
+//
+// **Sa demande du 17 août 2026** : *« On peut rien modifier rajouter »*, sur
+// l'écran du catalogue. Le catalogue étant partagé, ses mots ne peuvent pas y
+// entrer — ils vivent ici, isolés par RLS, et se superposent au commun à la
+// lecture ET à la recherche. Le récit complet est en tête de la migration et
+// dans `src/lib/mots-catalogue.ts`.
+//
+// Quatre formes dans une seule table : un mot sur une prestation d'Atlas, un
+// mot sur un matériel d'Atlas, son entrée à lui (aucun renvoi), un mot sur son
+// entrée à lui (`parentId`).
+export const motsCatalogue = pgTable(
+  "mots_catalogue",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    famille: text("famille", { enum: ["prestation", "materiel"] }).notNull(),
+    /** Le mot ajouté — ou le nom de son entrée à lui quand rien n'est ancré. */
+    mot: text("mot").notNull(),
+    prestationId: uuid("prestation_id").references(() => cataloguePrestations.id, { onDelete: "cascade" }),
+    materielId: uuid("materiel_id").references(() => catalogueMateriels.id, { onDelete: "cascade" }),
+    parentId: uuid("parent_id").references((): AnyPgColumn => motsCatalogue.id, { onDelete: "cascade" }),
+    /**
+     * Un mot qu'Atlas a proposé et qu'il a refusé (migration 0053).
+     *
+     * Il reste en base pour ne PLUS être proposé : une proposition qui revient
+     * après un « non » n'est plus une proposition. Il ne s'affiche pas et ne se
+     * cherche pas ; l'écrire à la main le relève.
+     */
+    refuse: boolean("refuse").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("mots_catalogue_entreprise_idx").on(t.entrepriseId, t.famille)]
 );
 
 // Historique de prix — scopé par entreprise (RLS), jamais mélangé entre

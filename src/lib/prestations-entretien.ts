@@ -128,3 +128,34 @@ export function parFamilles<T extends { famille: string }>(
   }
   return groupes;
 }
+
+/**
+ * Ce qu'un geste peut se voir refuser — et la phrase qui le dit.
+ *
+ * **Les deux vivent ICI, ensemble, et pas dans l'action serveur.** D'abord
+ * parce qu'un fichier « use server » ne peut exporter que des fonctions — la
+ * première version l'a appris en rendant l'écran blanc. Ensuite parce qu'un
+ * code de refus sans sa phrase finit par en recevoir deux, écrites à deux
+ * endroits, qui divergent.
+ *
+ * **Une phrase, jamais un code.** Le patron ne doit jamais lire « doublon ».
+ */
+export type RefusPrestation =
+  | "libelle_vide"
+  | "famille_vide"
+  | "doublon"
+  | "trop_de_prestations"
+  | "introuvable"
+  | "fiche_non_vide"
+  | "non_autorise";
+
+export const PHRASE_REFUS: Record<RefusPrestation, string> = {
+  libelle_vide: "Écrivez d'abord le nom de la prestation.",
+  famille_vide: "Cette prestation doit appartenir à une famille.",
+  doublon: "Cette prestation est déjà dans votre fiche.",
+  trop_de_prestations:
+    "Votre fiche est pleine. Retirez une prestation avant d'en ajouter une autre.",
+  introuvable: "Cette prestation n'existe plus. Rechargez l'écran.",
+  fiche_non_vide: "Votre fiche contient déjà des prestations.",
+  non_autorise: "Seul le propriétaire de l'entreprise peut modifier la fiche.",
+};

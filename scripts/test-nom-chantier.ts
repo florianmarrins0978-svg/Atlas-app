@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { nomDuChantier, intituleDuChantier, lieuDuChantier } from "../src/lib/nom-chantier";
+import {
+  nomDuChantier,
+  intituleDuChantier,
+  lieuDuChantier,
+  lieuEstManquant,
+  LIEU_MANQUANT,
+} from "../src/lib/nom-chantier";
 import { CIVILITE_PAR_DEFAUT, avecCivilite } from "../src/lib/civilite";
 
 // Comment un chantier s'appelle, quand personne ne le nomme.
@@ -181,6 +187,35 @@ cas("le client s'affiche quand il apprend quelque chose", () => {
 
 cas("ni adresse ni client : on dit ce qui manque", () => {
   assert.equal(lieuDuChantier("Chantier du mercredi 5 août", null, null), "Adresse non renseignée");
+});
+
+console.log("\n=== Le lieu qui manque est une CIBLE, et il se reconnaît ===");
+
+cas("le repli se reconnaît, et il est le SEUL à se reconnaître", () => {
+  // **Sa demande du 17 août 2026 :** *« lorsque s'affiche Adresse non
+  // renseignée, je puisse cliquer dessus »*. L'accueil doit donc distinguer ce
+  // cas des autres — et il le fait par cette fonction, jamais en comparant le
+  // texte de son côté (`CLAUDE.md` §3).
+  assert.equal(lieuEstManquant(lieuDuChantier("Chantier du mercredi 5 août", null, null)), true);
+  assert.equal(lieuEstManquant(lieuDuChantier(avecCivilite("Martins"), null, "Martins")), true);
+
+  // Une adresse et un nom de client ne sont PAS des cibles : la ligne garde sa
+  // reprise, et sa règle du 13 août n'est pas touchée.
+  assert.equal(lieuEstManquant(lieuDuChantier(avecCivilite("Bernard"), "12 rue des Lilas", "Bernard")), false);
+  assert.equal(lieuEstManquant(lieuDuChantier("3 chemin du Bois", null, "Mme Roux")), false);
+});
+
+cas("la phrase et la constante sont la MÊME, sinon la mention meurt en silence", () => {
+  // Le piège que cette constante existe pour fermer : le jour où le repli
+  // change de mots, une comparaison écrite ailleurs cesserait de correspondre —
+  // sans rougir nulle part, et la ligne ne serait plus cliquable.
+  assert.equal(lieuDuChantier("Chantier du mercredi 5 août", null, null), LIEU_MANQUANT);
+  assert.equal(lieuEstManquant(LIEU_MANQUANT), true);
+  assert.equal(lieuEstManquant("Adresse non renseigne"), false);
+});
+
+cas("une adresse blanche compte comme absente — elle appelle le même geste", () => {
+  assert.equal(lieuEstManquant(lieuDuChantier("Chantier du mercredi 5 août", "   ", null)), true);
 });
 
 if (echecs > 0) {

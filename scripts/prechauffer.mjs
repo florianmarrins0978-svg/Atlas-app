@@ -112,6 +112,7 @@ export const ECRANS_A_PRECHAUFFER = [
   "/reglages/equipe",
   "/reglages/tarifs",
   "/reglages/documents",
+  "/reglages/fiche-entretien",
   "/reglages/ia",
   "/reglages/donnees",
   "/reglages/agenda",
