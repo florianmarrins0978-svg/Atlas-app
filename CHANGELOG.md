@@ -38,6 +38,72 @@ de « Mes prix ». Le surtitre dit d'où l'on vient — il porte maintenant
 de la planche 72) et porte désormais sa propre flèche vers « Tarifs & catalogue ».
 C'est cette version-là qui a été gardée à la fusion ; la suite ci-dessus la
 couvre telle quelle.
+### « La catégorie client n'a pas été créée » — la liste, sans cinquième onglet
+
+**Sa remarque du soir, et elle était juste.** La FICHE d'un client existait
+depuis la veille (arrangement B de la planche 66), mais elle ne s'atteignait que
+**depuis un chantier** : il n'y avait aucun endroit d'où voir ses clients, ni
+retrouver celui qu'on a en tête sans se rappeler pour quel chantier on l'avait
+noté.
+
+**La liste s'ouvre depuis l'accueil, sous « quatre en cours ».** Pas de
+cinquième onglet : la barre du bas en porte quatre, le cinquième est déjà décidé
+pour les outils métier (`ARCHITECTURE.md` §125), et à cinq colonnes
+« CHANTIERS » déborde déjà sur 360 px. Le lien est en or et en petites
+capitales, comme le reste de ce bloc — ce qu'on LIT, jamais ce qu'on FAIT :
+l'action de cet écran reste « Nouveau chantier ».
+
+**Le calcul est celui de la fiche, pas un second.** `composerFicheClient` sert
+les deux écrans : deux façons d'additionner ce qu'un client doit finiraient par
+se contredire, et c'est lui qui verrait la différence en passant de la liste à
+la fiche. Et la liste se charge en **quatre requêtes**, pas en cinq par ligne :
+sinon elle s'ouvrirait d'autant plus lentement qu'il a de clients.
+
+**Rien ne s'invente :** un client sans facture affiche « rien de facturé », pas
+« 0 € » — un zéro se lirait comme un mauvais payeur. Ce qui reste dû n'apparaît
+que s'il y en a.
+
+Éprouvé par `scripts/test-liste-clients.ts` (isolation, reste dû, ordre, chantier
+supprimé) et le parcours complet dans `scripts/test-fiche-client-e2e.ts` — depuis
+l'accueil, en touchant le lien, **et un contrôle qui vérifie que la barre du bas
+n'a pas gagné d'onglet**.
+
+### CORRIGÉ : poser une date à la main — le calendrier ne venait jamais
+
+Sa plainte : *« je peux toujours pas poser de date sur les chantiers test »*.
+**« Toujours » : une autre session l'avait déjà constaté le même jour** et
+l'avait contourné en faisant pré-poser un chantier par un script.
+
+**Le geste marchait pourtant de bout en bout.** Ce qui manquait était le
+raccord : en touchant un chantier de « Sans date », l'écran écrivait « À poser »
+et **ne bougeait pas d'un pixel**. Mesuré sur son écran : le calendrier se
+trouvait 231 px **au-dessus** du haut de la fenêtre — seule sa dernière rangée
+dépassait, celle des « 31 1 2 3 4 5 6 » de sa capture. Aucun chemin visible vers
+une date.
+
+`amenerAuCalendrier` existait déjà et annonçait servir « depuis deux endroits ».
+Le second était branché, la liste « Sans date » ne l'a jamais été.
+
+**Pourquoi aucune suite ne le voyait :** Playwright fait défiler un élément
+jusqu'à lui avant de cliquer. Un contrôle qui clique éprouve qu'une cible
+existe, jamais qu'elle est ATTEIGNABLE. Le nouveau mesure la position du
+calendrier dans la fenêtre. `ARCHITECTURE.md` §127.
+
+
+
+### Une prestation qu'il ajoute s'écrit en NOIR, comme les autres
+
+Sa correction du 17 août, capture à l'appui : « Entretient » en doré sous
+« Élagage » en noir — *« les nouvelles prestations doivent toujours être en noir,
+pas en doré »*.
+
+La couleur disait d'où venait l'entrée — du catalogue commun, ou de lui. Mais
+**deux couleurs de titre dans la même liste se lisent comme deux natures de
+prestation**, alors qu'il les coche de la même façon sur un chantier.
+
+**L'or reste sur ses MOTS**, dans « Aussi appelé » : là il sépare le mot du
+commun, qu'on ne retire pas, du sien, qu'un « × » enlève — une distinction qui
+porte un geste. Raisons : `ARCHITECTURE.md` §123.
 
 ### « L'appli est super lente », deuxième soir — la construction orpheline
 

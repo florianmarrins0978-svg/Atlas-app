@@ -10300,6 +10300,30 @@ puisse le corriger. Tout ce qui est retenu entre dans SES mots, isolés par RLS.
 de l'utilisateur »).
 ---
 
+### L'or marque un MOT, jamais une prestation (corrigé le 17 août 2026)
+
+**Sa correction, capture à l'appui** — « Entretient », qu'il venait d'ajouter, en
+doré juste sous « Élagage » en noir : *« les nouvelles prestations doivent
+toujours être en noir, pas en doré »*.
+
+La couleur du titre marquait la **provenance** : le catalogue commun en noir, ses
+entrées à lui en or. C'était cohérent avec l'or de ses mots — et c'est
+précisément ce qui rendait la chose fausse. **Deux couleurs de titre dans la même
+liste ne se lisent pas comme deux provenances, mais comme deux NATURES de
+prestation** ; or il cochera les deux de la même façon sur un chantier, et le
+rapprochement d'une dictée les traite de la même façon aussi.
+
+**Où l'or garde son sens :** dans la ligne « Aussi appelé ». Là, il sépare deux
+choses réellement différentes — le mot du commun, qu'on ne peut pas retirer, et
+le sien, qu'un « × » enlève. Une distinction qui porte un geste mérite une
+couleur ; une distinction qui n'en porte aucun ne fait que semer le doute.
+
+Éprouvé sur la **couleur calculée**, pas sur un nom de classe : un jeton de
+charte qui changerait de valeur passerait au travers d'un contrôle qui ne
+regarde que la règle CSS (`test-catalogue-mes-mots-e2e.ts`). Rouge en remettant
+l'or, et son message donne les deux couleurs lues.
+
+
 ## 124. « Adresse non renseignée » devient une porte — et rien d'autre ne bouge
 
 **Sa demande du 17 août 2026**, capture de son accueil à l'appui : *« j'ai oublié
@@ -10550,3 +10574,116 @@ développement tourne est près de la limite ; si le noyau tue à nouveau le ban
 le prochain démarrage repartira proprement — mais il repartira. Le vrai remède,
 si cela revient, est d'augmenter la machine ou de cesser de servir en mode
 développement pendant la construction.
+---
+
+## 127. « Toujours pas poser de date » — une fonction écrite, jamais branchée
+
+**Le patron, le 17 août 2026**, capture de son planning à l'appui : *« je peux
+toujours pas poser de date sur les chantiers test, corrige ça ! »*
+
+**« TOUJOURS » N'EST PAS UNE FIGURE DE STYLE.** Une autre session l'avait déjà
+constaté le même jour et l'a écrit dans le journal : *« le patron s'est retrouvé
+bloqué, la pose à la main lui échappant »*. Sa réponse a été de faire **pré-poser
+un chantier par un script**, pour que la fonctionnalité qu'elle éprouvait ait un
+point de départ. Le contournement a marché ; le geste, lui, est resté cassé.
+
+### Ce qui était cassé, et ce qui ne l'était pas
+
+**Le geste marchait de bout en bout.** Toucher le chantier, toucher un jour,
+choisir la demi-journée, poser : `test-planning-e2e` le parcourt entièrement, et
+il était vert.
+
+Ce qui manquait n'était pas une fonction, c'était **le raccord**. Mesuré sur son
+écran de 664 px, après l'appui sur un chantier de « Sans date » :
+
+| | |
+|---|---|
+| Le calendrier | à **231 px AU-DESSUS** du haut de la fenêtre |
+| Ce qui en dépassait | sa dernière rangée — les « 31 1 2 3 4 5 6 » de sa capture |
+| Journée ouverte | aucune |
+| Ce que l'écran disait de faire | rien |
+
+La ligne annonçait « À poser » et **l'écran n'offrait aucun chemin.** De là, un
+artisan conclut que la fonctionnalité n'existe pas. Il a conclu deux fois.
+
+### La fonction existait déjà — elle n'était appelée que d'un seul endroit
+
+`amenerAuCalendrier` était écrite, et sa propre note annonçait sa raison d'être :
+*« le geste part maintenant de DEUX endroits — la liste "Sans date" et la feuille
+du chevron »*. Elle pose le chantier à placer, referme la journée ouverte, et
+**amène le calendrier sous les yeux**.
+
+La feuille du chevron l'appelait. **La liste « Sans date » ne l'a jamais
+appelée** : elle faisait `setAPoserId` en direct. Un mot dans un `onClick`.
+
+**Ce que ça enseigne, et qui vaut au-delà :** une fonction dont le commentaire
+annonce deux appelants et qui n'en a qu'un est un défaut visible à la lecture,
+pas à l'exécution. Rien ne rougit ; l'intention est écrite et démentie par le
+code d'à côté.
+
+### Pourquoi aucune suite ne le voyait, et le contrôle qui le tient maintenant
+
+**Playwright fait défiler un élément jusqu'à lui AVANT de cliquer dessus.** Un
+contrôle qui « clique » n'éprouve donc jamais si la cible était ATTEIGNABLE — il
+éprouve qu'elle existe. Toutes les suites du planning cliquaient ; toutes
+étaient vertes ; et le patron, lui, ne voyait pas le calendrier.
+
+`test-poser-une-date-e2e` ne clique pas pour vérifier : il **mesure la position
+du calendrier dans la fenêtre** avant et après l'appui, ce qu'aucun clic ne peut
+dire. Il exige aussi que la scène soit bien la sienne — si le calendrier était
+déjà visible avant l'appui, il refuse de conclure plutôt que de rendre un vert
+qui ne prouve rien (`CLAUDE.md` §5).
+
+**Remis à `setAPoserId`, il rougit et nomme le coupable :** *« le calendrier
+n'est pas venu sous les yeux : −13 → 287 pour 664 px d'écran (il était à −13
+avant l'appui) »*.
+
+---
+
+## 128. « La catégorie client n'a pas été créée » — la liste, et pourquoi pas un onglet
+
+**Sa remarque du 17 août 2026 au soir**, une heure après la livraison de la
+fiche client : *« la catégorie client n'a pas été créée »*. Elle était juste, et
+elle disait quelque chose que la planche 66 n'avait pas vu.
+
+**Ce qui existait, et ce qui manquait.** L'arrangement B — retenu par lui la
+veille — donne une **fiche** par client, atteinte en touchant son nom depuis un
+chantier. Elle répond à « que sais-je de ce client-là ? ». Elle ne répond pas à
+« qui sont mes clients ? », ni à « comment je retrouve celui dont je ne me
+rappelle plus le chantier ? ». C'est la moitié de C — la liste — qui manquait,
+sans son coût.
+
+### Pourquoi pas le cinquième onglet, cette fois encore
+
+Le 16 août, C avait été écarté parce que « qui me doit de l'argent ? » a déjà
+son écran (Terminés → TVA). Le 17, un second argument s'y ajoute et il est
+définitif : **le cinquième onglet est pris.** Il revient aux outils métier
+(§125), et à cinq colonnes sur 360 px « CHANTIERS » déborde déjà de 7,2 px —
+mesuré, pas supposé. Un sixième onglet ne se discute même pas.
+
+**La liste s'ouvre donc depuis l'accueil**, sous le compteur « quatre en
+cours », en or et en petites capitales : la grammaire de ce bloc est celle de
+ce qu'on LIT. L'action de l'écran reste « Nouveau chantier », et rien ne doit
+lui disputer l'œil (§ sur le bouton retenu).
+
+### Ce qui tient les deux écrans d'accord
+
+`composerFicheClient` sert la liste **et** la fiche. Deux façons d'additionner
+ce qu'un client doit finiraient par se contredire — et c'est lui qui verrait la
+différence en passant de l'une à l'autre, sur le même client, à trois secondes
+d'intervalle.
+
+**Quatre requêtes, pas cinq par ligne.** Charger la fiche complète de chaque
+client à tour de rôle aurait rendu la liste d'autant plus lente qu'il a de
+clients : l'écran serait devenu inutilisable au moment précis où il devient
+utile. Les chantiers, les factures émises, les règlements et les lignes de prix
+sont lus en bloc, puis regroupés en mémoire.
+
+**Et rien ne s'invente** : un client sans facture affiche « rien de facturé »,
+jamais « 0 € ». Un zéro se lit comme un mauvais payeur (`CLAUDE.md` §4).
+
+### Le contrôle qui gardera la barre du bas
+
+`scripts/test-fiche-client-e2e.ts` compte les onglets après avoir ouvert la
+liste : à cinq, il rougit. C'est le genre de dérive qui arrive par petits pas,
+et personne ne la mesure au moment où elle passe.

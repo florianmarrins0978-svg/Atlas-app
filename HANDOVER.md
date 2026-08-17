@@ -791,6 +791,28 @@ surveillé par le produit devient elle-même ce qu'elle cherche. Le rouge était
 reproductible quatre fois, « sous charge » était une explication plausible — et
 fausse. `TODO.md` §0 trigies quater.
 
+## ⚠ Un contrôle qui CLIQUE n'éprouve pas qu'une cible est ATTEIGNABLE
+
+**Payé le 17 août 2026, et deux fois par le patron.** Il ne pouvait pas poser de
+date à la main sur le planning ; toutes les suites du planning étaient vertes, et
+l'une d'elles parcourt le geste entier.
+
+**Playwright fait défiler un élément jusqu'à lui AVANT de cliquer dessus.** Un
+contrôle qui clique éprouve donc qu'une cible EXISTE, jamais qu'elle est sous les
+yeux. Chez lui, le calendrier était 231 px au-dessus du haut de l'écran après
+l'appui : rien ne bougeait, aucune journée ne s'ouvrait, et il concluait que la
+fonctionnalité n'existait pas.
+
+**Devant un « je ne peux pas faire X » alors que la suite de X est verte :
+MESURER la position de la cible dans la fenêtre**, jamais se fier au fait que le
+clic passe. `test-poser-une-date-e2e` le fait, et refuse de conclure si la scène
+n'est pas la sienne. `ARCHITECTURE.md` §127.
+
+**Et la cause était lisible sans exécuter :** `amenerAuCalendrier` annonçait dans
+son propre commentaire servir « depuis deux endroits », et n'était appelée que
+d'un seul. Une fonction dont la note promet deux appelants et qui n'en a qu'un
+est un défaut qui ne rougit nulle part.
+
 ## Ce qui vient d'être terminé
 
 **LES RETOURS DES RÉGLAGES (17 août).** Les réglages ont **deux étages**, et un
@@ -807,6 +829,19 @@ question ne se pose pas.
 
 *(Le catalogue a été refait en parallèle par une autre session — voir plus bas —
 et porte sa propre flèche : c'est cette version-là qui a été gardée.)*
+**LA LISTE DES CLIENTS (17 août, au soir) — sa remarque : « la catégorie client
+n'a pas été créée ».** Elle s'ouvre depuis l'accueil (« Vos clients », sous le
+compteur), pas depuis un cinquième onglet : celui-ci est réservé aux outils
+métier (`ARCHITECTURE.md` §125), et la barre déborde déjà à cinq colonnes.
+
+**Deux choses à ne pas défaire :**
+
+1. **La liste et la fiche partagent `composerFicheClient`.** Un second calcul du
+   reste dû se contredirait d'un écran à l'autre, et c'est lui qui le verrait.
+2. **Quatre requêtes, pas cinq par client.** Charger la fiche complète de chaque
+   client à tour de rôle rendrait la liste plus lente à mesure qu'il en a — et
+   c'est un écran d'accueil.
+
 
 **« ADRESSE NON RENSEIGNÉE » OUVRE L'ÉCRAN DU CHANTIER (17 août).** La mention de
 l'accueil est un lien vers `/chantiers/[id]/coordonnees` — l'écran de création
