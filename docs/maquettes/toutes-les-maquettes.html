@@ -5545,6 +5545,97 @@
 #s48 .note li{margin-bottom:6px}
 
 
+/* 49 — Mes mots au catalogue */
+#s49{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s49:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s49[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s49, #s49 *{box-sizing:border-box}
+#s49{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s49 .dedans{max-width:960px;margin:0 auto}
+#s49 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s49 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s49 .intro b{color:var(--encre);font-weight:600}
+#s49 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s49 .dit b{color:var(--encre);font-weight:600}
+#s49 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s49 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#s49 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s49 #s49-v-a:checked ~ .dedans .segments label[for="s49-v-a"],#s49 #s49-v-b:checked ~ .dedans .segments label[for="s49-v-b"],#s49 #s49-v-c:checked ~ .dedans .segments label[for="s49-v-c"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s49 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s49 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s49 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
+#s49 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
+          border-bottom:1px solid var(--trait)}
+#s49 .retour{flex:none;width:31px;height:31px;border-radius:9px;
+          border:1px solid var(--trait);display:flex;align-items:center;
+          justify-content:center;color:var(--encre);font-size:17px;line-height:1}
+#s49 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
+#s49 .corps{padding:14px 16px 0}
+#s49 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
+#s49 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--gris);display:block;margin:0 0 8px}
+#s49 .etiq.mienne{color:var(--or)}
+#s49 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
+         margin-bottom:9px}
+#s49 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
+              display:block;margin-bottom:3px}
+#s49 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
+#s49 .mien{color:var(--or)}
+#s49 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
+#s49 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
+           border-radius:10px;border:1px dashed var(--or);color:var(--or);
+           font-size:13.5px}
+#s49 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
+#s49 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
+#s49 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
+#s49 .a-part,#s49 .a-dessus,#s49 .a-melange{display:none}
+#s49 #s49-v-a:checked ~ .dedans .a-part,#s49 #s49-v-b:checked ~ .dedans .a-dessus,#s49 #s49-v-c:checked ~ .dedans .a-melange{display:block}
+#s49 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s49 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s49 .legende b{color:var(--encre);font-weight:600}
+#s49 .l-a,#s49 .l-b,#s49 .l-c{display:none}
+#s49 #s49-v-a:checked ~ .dedans .l-a,#s49 #s49-v-b:checked ~ .dedans .l-b,#s49 #s49-v-c:checked ~ .dedans .l-c{display:block}
+#s49 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s49 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
+           background:var(--pin);color:#fff;font-size:11px;letter-spacing:.06em;
+           text-transform:uppercase}
+#s49 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s49 .note b{color:var(--encre);font-weight:600}
+#s49 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s49 .note ul{margin:8px 0 0;padding-left:19px}
+#s49 .note li{margin-bottom:6px}
+
+
 </style>
 
 <div class="enveloppe">
@@ -5767,6 +5858,11 @@
       <a class="item" href="#m48">
         <span class="no">48</span><span class="titre">Le nouveau chantier, plus gros</span><span class="fleche">↓</span>
         <span class="quoi">« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.</span>
+      </a>
+      <p class="famille">Les réglages</p>
+      <a class="item" href="#m49">
+        <span class="no">49</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
+        <span class="quoi">« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -19993,6 +20089,215 @@
         (vérifié dans <i>globals.css</i>). Une seule réserve : « Très gras »
         peut se confondre avec « Gras » selon l’appareil — sur iPhone les deux
         existent vraiment, sur d’autres écrans le second est simulé.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m49">
+    <div class="etape-tete">
+      <span class="etape-no">49</span>
+      <h2>Mes mots au catalogue</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s49">
+<input type="radio" name="v" id="s49-v-a" class="etat">
+<input type="radio" name="v" id="s49-v-b" class="etat" checked>
+<input type="radio" name="v" id="s49-v-c" class="etat">
+
+<div class="dedans">
+  <h1>Mes mots au catalogue</h1>
+  <p class="intro">Votre demande du 17 août : <b>pouvoir modifier et ajouter</b>.
+    Trois façons de vous faire une place dans un vocabulaire qui appartient à
+    tout le monde. <b>Rien n’est codé</b> — vous en désignez une.</p>
+
+  <p class="dit">Le catalogue, c’est <b>les mots, jamais les prix</b>. Quand vous
+    dictez <b>« faut me démonter le sapin du fond »</b>, aucun mot de la phrase
+    n’est « élagage » : c’est lui qui fait le rapprochement. Il est <b>commun à
+    toutes les entreprises</b> — d’où la question : où mettre <b>les vôtres</b> ?</p>
+
+  <div class="segments">
+    <label for="s49-v-a">A · Mes mots à part</label>
+    <label for="s49-v-b">B · Mes mots par-dessus</label>
+    <label for="s49-v-c">C · Une seule liste</label>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+
+      <!-- ═══ A · deux listes : celle d'Atlas, puis la sienne ══════════════ -->
+      <div class="ecran a-part">
+        <div class="entete"><span class="retour">‹</span><span class="t">Catalogue</span></div>
+        <div class="corps">
+          <p class="sous">Les mots qu’Atlas reconnaît quand vous dictez.</p>
+
+          <span class="etiq">Le vocabulaire d’Atlas · lecture seule</span>
+          <div class="carte">
+            <span class="nom">Élagage</span>
+            <p class="mots">Aussi appelé : abattage, démontage, dessouchage,
+              sapin, arbre, conifère</p>
+          </div>
+          <div class="carte">
+            <span class="nom">Nacelle</span>
+            <p class="mots">Aussi appelé : plateforme élévatrice</p>
+          </div>
+
+          <div class="sep"></div>
+
+          <span class="etiq mienne">Mes mots · visibles de vous seul</span>
+          <div class="carte">
+            <span class="nom mien">Écimage</span>
+            <p class="mots">Aussi appelé : <span class="mien">étêtage, rabattage</span></p>
+          </div>
+          <div class="carte">
+            <span class="nom mien">Rogneuse</span>
+            <p class="mots">Aussi appelé : <span class="mien">rogneuse de souche</span></p>
+          </div>
+          <span class="ajouter">+ Ajouter un mot à moi</span>
+        </div>
+      </div>
+
+      <!-- ═══ B · ses mots DANS les cartes communes ════════════════════════ -->
+      <div class="ecran a-dessus">
+        <div class="entete"><span class="retour">‹</span><span class="t">Catalogue</span></div>
+        <div class="corps">
+          <p class="sous">Les mots qu’Atlas reconnaît quand vous dictez.
+            <span class="mien">En doré, les vôtres.</span></p>
+
+          <span class="etiq">Prestations</span>
+          <div class="carte">
+            <span class="nom">Élagage</span>
+            <p class="mots">Aussi appelé : abattage, démontage, dessouchage,
+              sapin, arbre, conifère, <span class="mien">écimage, étêtage · vous</span></p>
+            <span class="apres">+ mon mot</span>
+          </div>
+          <div class="carte">
+            <span class="nom">Taille de haie</span>
+            <p class="mots">Aussi appelé : haie, thuyas, lauriers</p>
+            <span class="apres">+ mon mot</span>
+          </div>
+
+          <span class="etiq">Matériels</span>
+          <div class="carte">
+            <span class="nom">Nacelle</span>
+            <p class="mots">Aussi appelé : plateforme élévatrice,
+              <span class="mien">nacelle araignée · vous</span></p>
+            <span class="apres">+ mon mot</span>
+          </div>
+
+          <div class="sep"></div>
+          <p class="glose">Il manque une prestation entière ? Elle sera à vous,
+            visible de vous seul.</p>
+          <span class="ajouter plein">+ Nouvelle prestation</span>
+        </div>
+      </div>
+
+      <!-- ═══ C · tout au même niveau, tout paraît modifiable ══════════════ -->
+      <div class="ecran a-melange">
+        <div class="entete"><span class="retour">‹</span><span class="t">Catalogue</span></div>
+        <div class="corps">
+          <p class="sous">Vos prestations et vos matériels.</p>
+
+          <span class="etiq">Prestations</span>
+          <div class="carte">
+            <span class="nom">Élagage</span>
+            <p class="mots">Aussi appelé : abattage, démontage, dessouchage,
+              écimage, étêtage</p>
+          </div>
+          <div class="carte">
+            <span class="nom">Écimage</span>
+            <p class="mots">Aussi appelé : étêtage, rabattage</p>
+          </div>
+          <div class="carte">
+            <span class="nom">Taille de haie</span>
+            <p class="mots">Aussi appelé : haie, thuyas, lauriers</p>
+          </div>
+
+          <span class="etiq">Matériels</span>
+          <div class="carte">
+            <span class="nom">Nacelle</span>
+            <p class="mots">Aussi appelé : plateforme élévatrice, nacelle araignée</p>
+          </div>
+
+          <span class="ajouter">+ Ajouter</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Mes mots à part</span>
+        Le vocabulaire d’Atlas en haut, <b>intouchable</b> ; vos mots en dessous,
+        <b>à vous seul</b>. Deux listes, aucune confusion possible sur qui a
+        écrit quoi.
+        <span class="cout"><b>Ce que ça coûte : le moins de tout.</b> Une liste
+        de plus sous la première, et le bouton qui va avec.
+        <b>Ce que ça ne fait pas, et ça compte :</b> votre « écimage » vit
+        <b>à côté</b> d’« Élagage », pas <b>dedans</b>. Le jour où vous dictez
+        « faut m’écimer le tilleul », Atlas écrira une prestation « Écimage »
+        toute neuve au lieu de reconnaître l’élagage qu’il sait déjà chiffrer.</span>
+      </div>
+      <div class="l-b">
+        <span class="conseil">Ce que je vous conseille</span>
+        <span class="t">B · Mes mots par-dessus</span>
+        Vos mots s’<b>accrochent</b> au vocabulaire commun : « écimage » entre
+        dans la carte « Élagage », en doré, et Atlas comprend alors « écime-moi
+        le tilleul » comme un élagage — <b>avec les prix et les questions qui
+        vont avec</b>. Et s’il manque une prestation entière, le bouton du bas la
+        crée, à vous seul.
+        <span class="cout"><b>Ce que ça coûte :</b> un geste de plus sur chaque
+        carte, et une couleur à tenir pour distinguer les deux origines.
+        <b>Ce que ça ne fait pas :</b> vous ne pouvez toujours pas <b>retirer</b>
+        un mot d’Atlas — juste en ajouter par-dessus. Retirer « sapin »
+        d’« Élagage » le retirerait chez tout le monde.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Une seule liste</span>
+        Plus de distinction : une seule liste, tout se ressemble, tout a l’air
+        modifiable.
+        <span class="cout"><b>Ce que ça coûte, et c’est cher :</b> vous ne savez
+        plus ce qui est à vous. Vous corrigez « Élagage », l’application refuse —
+        <b>au moment du geste</b>, pas avant. Et le jour où Atlas ajoute un mot
+        au vocabulaire commun, votre écran change tout seul sans que rien
+        n’explique pourquoi. <b>Dessiné pour être comparé, pas pour être
+        choisi.</b></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui disparaît de cet écran, et pourquoi</span>
+    <b>« Aucun prix encore constaté par votre entreprise. »</b> Cette phrase, sur
+    votre capture, <b>ne se serait jamais éteinte</b> : l’écran interroge une
+    mémoire des prix que l’application n’écrit nulle part. Vos prix sont bien
+    retenus — c’est <b>lui</b> qui regardait au mauvais endroit.
+    <ul>
+      <li><b>Le jargon aussi s’en va.</b> « Synonymes » et « Variantes » étaient
+        deux mots pour la même chose : ils deviennent <b>« Aussi appelé »</b>.</li>
+      <li><b>La flèche de retour revient</b>, dans les trois. On arrive ici
+        depuis <i>Tarifs &amp; catalogue</i>, et on n’en repartait que par la
+        barre du bas.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Une question qui reste, et elle ne bloque pas votre choix</span>
+    <b>Faut-il remettre un prix sur ces cartes ?</b> La vraie mémoire des prix
+    existe — c’est elle qui vous dit « la dernière fois — 180 € HT » sur le
+    devis. Mais elle ne range pas ses prix par mot de catalogue : elle les range
+    par <b>nature de chantier</b> (un abattage, un démontage avec rétention, un
+    diamètre de 70). Deux réponses possibles :
+    <ul>
+      <li><b>Rien du tout</b> — le catalogue reste des mots, vos prix restent
+        dans <i>Mes tarifs</i>, <i>Mes prix</i> et le rappel du devis. <b>C’est
+        ce que montre cette planche.</b></li>
+      <li><b>La ligne, mais seulement quand ça correspond exactement</b> — « la
+        dernière fois : 450 € » sous « Élagage » <b>uniquement</b> si la mémoire
+        porte bien un élagage. Sinon rien : afficher un prix d’abattage sous
+        « Élagage » serait pire que la phrase d’aujourd’hui, qui au moins
+        n’invente rien.</li>
     </ul>
   </div>
 </div>

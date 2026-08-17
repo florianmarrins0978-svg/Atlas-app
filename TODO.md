@@ -1092,11 +1092,37 @@ Le contrôle de la planche existe et **a été vu rouge trois fois** avant d'êt
 livré (`scripts/verifier-maquette-nombre-de-jours.mjs`) : or retiré, bascule
 morte, nom trop long — chacun nomme le bon coupable.
 
-### 0 octovicies bis. L'écran du catalogue : sa flèche, et sa mémoire morte
+### 0 octovicies bis. L'écran du catalogue : sa flèche, sa mémoire morte, et ses mots à lui
 
 *Les deux défauts sont sortis d'une capture du patron, le 14 août 2026 — pas
 d'une suite verte. Ils sont expliqués en langage courant dans
-`docs/QUESTIONS.md` §18. **En attente de son feu vert** : rien n'a été touché.*
+`docs/QUESTIONS.md` §18.*
+
+**⚠ IL A REPOSÉ LA MÊME QUESTION LE 17 AOÛT**, même écran, même capture :
+*« À quoi sert cette page ?? On peut rien modifier rajouter »*. Sa réponse au
+choix proposé : **« Réparer + mes mots »**.
+
+**La planche est posée : `docs/maquettes/68-mes-mots-au-catalogue.html`**,
+éprouvée par `scripts/verifier-maquette-mes-mots.mjs`. **Rien n'est codé tant
+qu'il n'a pas désigné son arrangement** (`CLAUDE.md` §3 bis) — et le choix n'est
+pas cosmétique : il décide de ce que la DICTÉE comprendra ensuite.
+
+| | Où vivent ses mots | Ce que ça coûte |
+|---|---|---|
+| **A** | une liste « Mes mots » **sous** le vocabulaire d'Atlas | « écimage » vit **à côté** d'« Élagage » : dicter « écime-moi le tilleul » créerait une prestation neuve au lieu de reconnaître l'élagage déjà chiffrable |
+| **B** *(conseillé)* | **dans** les cartes d'Atlas, en doré, marqués « vous » | un geste de plus par carte, une couleur à tenir ; **retirer** un mot d'Atlas reste impossible — il est à tout le monde |
+| **C** | tout mélangé, plus aucune distinction | il croit corriger le commun, l'application refuse **au moment du geste** ; et un mot ajouté par Atlas change son écran sans explication |
+
+**Ce que le code devra porter, quel que soit l'arrangement.** Le catalogue est
+**partagé, sans RLS** (migration 0007) : ses mots à lui ne peuvent PAS y entrer
+tels quels. Il faut une table portant `entreprise_id`, sous `withEntreprise`,
+qui se superpose au vocabulaire commun à la lecture — et la recherche
+(`rechercherPrestationCatalogue`, `rechercherMaterielCatalogue`) doit alors
+interroger les deux, sans quoi ses mots seraient visibles à l'écran et muets à
+la dictée : le pire des deux mondes.
+
+**La flèche et la phrase morte sont réparées dans la planche** — le détail
+ci-dessous reste vrai pour le code.
 
 **1. Aucune flèche de retour.** `src/app/catalogue/page.tsx` appelle
 `ScreenHeader` sans lui passer `backHref`, alors que le composant sait

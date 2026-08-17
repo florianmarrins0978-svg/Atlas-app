@@ -337,6 +337,12 @@ const MAQUETTES = [
     famille: "Enlever le gros bouton",
     quoi: "« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.",
   },
+  {
+    fichier: "68-mes-mots-au-catalogue.html",
+    titre: "Mes mots au catalogue",
+    famille: "Les réglages",
+    quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

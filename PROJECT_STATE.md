@@ -652,6 +652,18 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **Le catalogue : écrire ses propres mots** — planche 68 posée le 17 août
+  (`docs/maquettes/68-mes-mots-au-catalogue.html`), **en attente de son
+  arrangement**. Il a reposé la question du 14 août sur le même écran : *« À quoi
+  sert cette page ?? On peut rien modifier rajouter »*. Le catalogue est
+  **partagé sans RLS** (migration 0007) : ses mots demanderont une table à part,
+  sous `withEntreprise`, superposée au commun **à la lecture ET à la recherche**
+  — visibles à l'écran mais muets à la dictée serait le pire des deux mondes.
+  La planche répare au passage les deux défauts du 14 août (`TODO.md`
+  §0 octovicies bis) : la flèche de retour, et « aucun prix encore constaté »,
+  une phrase qui interrogeait une mémoire jamais écrite et ne se serait donc
+  jamais éteinte.
+
 - **Les réglages, dix rubriques** — **toutes dessinées, la première est codée**
   (`ARCHITECTURE.md` §94) : `/reglages/identite` existe, et le **régime de TVA
   se déclare au lieu d'être deviné d'après le taux**. **Le sommaire lui-même est CODÉ le

@@ -7,6 +7,53 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-17
+
+### Le catalogue : une planche pour y écrire enfin, et les deux défauts du 14 août réparés dessus
+
+**Il a posé la même question deux fois, et c'est le vrai signal.** Le 17 août,
+capture de l'écran « Catalogue » à l'appui : *« À quoi sert cette page ?? On
+peut rien modifier rajouter »*. La réponse existait déjà — `docs/QUESTIONS.md`
+§18, écrite le 14 août, après la même capture. Un écran qu'il faut expliquer
+deux fois n'est pas mal compris : il ne dit pas ce qu'il fait.
+
+Sa réponse, cette fois : **« Réparer + mes mots »**. La planche
+`docs/maquettes/68-mes-mots-au-catalogue.html` est posée, **rien n'est codé**
+(`CLAUDE.md` §3 bis) — il désigne un arrangement.
+
+**Ce que la planche tranche, et qui n'est pas une question de goût.** Le
+catalogue est **commun à toutes les entreprises** : où vivent *ses* mots à lui
+décide de ce que la dictée comprendra ensuite. Ses mots à part (A) laissent
+« écimage » à côté d'« Élagage » — et une dictée « écime-moi le tilleul »
+créerait une prestation neuve au lieu de reconnaître l'élagage déjà chiffrable.
+Par-dessus (B), ils s'accrochent à l'entrée commune. Tout mélangé (C), il ne
+sait plus ce qui est à lui, et l'application refuse au moment du geste.
+
+**Les deux défauts de sa capture du 14 août sont réparés dans la planche**
+(`TODO.md` §0 octovicies bis, en attente depuis) : la flèche de retour revient
+dans les trois arrangements, et « Aucun prix encore constaté par votre
+entreprise » disparaît — cette phrase interrogeait `historique_prix`, la mémoire
+que l'application n'écrit nulle part, et ne se serait donc **jamais** éteinte.
+Aucun montant ne la remplace tant que le rapprochement n'est pas décidé : la
+mémoire vivante (`lecons_prix`) range par nature de chantier, pas par mot de
+catalogue, et afficher un prix d'abattage sous « Élagage » serait pire que la
+phrase d'hier — qui au moins n'inventait rien. La question est posée en bas de
+la planche.
+
+Au passage, le jargon s'en va : « Synonymes » et « Variantes » disaient la même
+chose sur sa capture, ils deviennent « Aussi appelé ».
+
+**Le contrôle sait échouer, et il nomme le coupable**
+(`scripts/verifier-maquette-mes-mots.mjs`) : éprouvé sur quatre copies
+dégradées — flèche retirée, phrase morte remise, bouton d'ajout retiré, marque
+dorée retirée de B —, chacune rougit sur son propre défaut. Et il refuse de
+conclure sur une boîte de zéro pixel (`CLAUDE.md` §5, payé le 15 août).
+
+**Un défaut trouvé en chemin :** le sommaire des maquettes ne fermait pas le
+lien de la 66, et la 67 se retrouvait imbriquée dedans.
+
+---
+
 ## 2026-08-16
 
 ### La fiche d'entretien commence à exister : le modèle, en base

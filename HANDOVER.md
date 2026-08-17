@@ -752,6 +752,28 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LE CATALOGUE, PLANCHE 68 (17 août) — RIEN N'EST CODÉ, il doit désigner un
+arrangement.** Il a reposé la question du 14 août, même écran, même capture :
+*« À quoi sert cette page ?? On peut rien modifier rajouter »*, et il a choisi
+**« Réparer + mes mots »**. La planche est
+`docs/maquettes/68-mes-mots-au-catalogue.html`
+(`scripts/verifier-maquette-mes-mots.mjs`), le détail est dans `TODO.md`
+§0 octovicies bis.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **Le catalogue est PARTAGÉ, sans RLS** (migration 0007) : ses mots à lui ne
+   peuvent pas y entrer. Il faut une table portant `entreprise_id`, sous
+   `withEntreprise`, superposée au commun à la lecture.
+2. **La recherche doit interroger les deux** (`rechercherPrestationCatalogue`,
+   `rechercherMaterielCatalogue`), sinon ses mots seront visibles à l'écran et
+   muets à la dictée — le pire des deux mondes, et il n'aura aucun moyen de
+   comprendre pourquoi.
+3. **Ne pas remettre de prix sur cet écran sans trancher le rapprochement.**
+   `lecons_prix` range par nature de chantier (`abattage|retention|d70`), pas
+   par mot de catalogue : un rapprochement approximatif afficherait un prix
+   d'abattage sous « Élagage ». La question est posée en bas de la planche.
+
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
 « Devis & factures », ou le jour de l'envoi si aucun délai ne l'est — son
