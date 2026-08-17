@@ -715,10 +715,10 @@ var CATALOGUE = {
       ]
     },
     6: {
-      // Sa fiche répète « Clarinette 4 vannes » ici aussi (identique à 5
-      // voies) et ajoute un Té 1" MMF que les autres fiches n'ont pas — relevé
-      // tel quel, sans corriger ce qui pourrait passer pour une redite : ce
-      // n'est pas à cette page de décider si c'est voulu.
+      // Même clarinette « 4 vannes » que la fiche 5 voies, plus un Té 1" MMF
+      // absent des autres fiches : CONFIRMÉ par lui le 17 août — « oui c'est
+      // voulu, c'est comme ça que se constitue une nourrice 6 voies ». Ce
+      // n'était pas une coquille de transcription ; ne pas y toucher.
       nom: 'Nourrice 6 voies', source:'patron', releve:'17 août 2026',
       pieces: [
         { ref:'clarinette-4v', q:1 }, { ref:'union', q:7 },

@@ -30,9 +30,9 @@ existe pour le nombre de secteurs, remplacés par ses vraies références. Elles
 entrent aussi dans le registre de prix, pour qu'il puisse chiffrer chaque
 pièce du regard, pas seulement les arroseurs.
 
-**Une redite dans sa fiche 6 voies, relevée telle quelle plutôt que
-« corrigée » :** elle répète la même clarinette que la fiche 5 voies et ajoute
-un té absent ailleurs. Ce n'est pas à cette page de trancher si c'est voulu.
+**La redite dans sa fiche 6 voies est confirmée, le même jour :** *« oui c'est
+voulu, c'est comme ça que se constitue une nourrice 6 voies. »* Relevée telle
+quelle d'abord, sans la corriger, puis confirmée plutôt que devinée.
 
 ### Les coudes SBE remplacent une pièce qui n'avait jamais existé
 

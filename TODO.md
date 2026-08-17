@@ -166,10 +166,10 @@ dans un regard.
 
 **Ce qui n'est PAS dans ses fiches, et n'a pas été ajouté en silence :** aucun
 disconnecteur ni réducteur listé dans le regard — cohérent avec leur position
-en tête de réseau. **Une redite relevée telle quelle, sans la corriger** : la
-fiche 6 voies répète « Clarinette 4 vannes » (identique à la fiche 5 voies) et
-ajoute un Té 1'' MMF absent de la fiche 5 — ce n'était pas à cette page de
-décider si c'était voulu.
+en tête de réseau. **La redite de la fiche 6 voies est CONFIRMÉE, pas une coquille — 17 août.**
+Sa réponse : *« oui c'est voulu, c'est comme ça que se constitue une nourrice
+6 voies. »* Même clarinette « 4 vannes » que la fiche 5, plus un Té 1'' MMF en
+plus. Ne pas y toucher.
 
 **LES COUDES SBE REMPLACENT LA « CROSSE » GÉNÉRIQUE — 17 août.** *« Sous les
 arroseurs il faut obligatoirement des coudes SBE, choisis-les en fonction des
