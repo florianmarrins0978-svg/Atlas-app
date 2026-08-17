@@ -31,6 +31,46 @@ jour — et a été vu rouge sur le piège remis en place. **Ce défaut aurait
 frappé à chaque réglage ajouté**, et lui seul : c'est le genre qu'on ne voit
 jamais en développant, puisqu'on part d'un navigateur vide.
 
+### Le contrôle de la barre a trouvé une erreur — la mienne, dans la mesure
+
+**Il a rougi dès sa première exécution**, sur le trait d'or : « trait de 66,4 px
+pour une colonne de 72,0 px ». Le trait était juste ; c'est ma mesure de la
+colonne qui était fausse — je divisais la largeur de la rangée par cinq, en
+comptant ses 28 px de marge intérieure comme de la place disponible. **Les deux
+contrôles de largeur passaient donc avec 5,6 px de trop.**
+
+**Et la première correction était fausse elle aussi.** Mesurer la boîte du LIEN
+paraissait évident — c'est la cellule de grille. Sauf qu'une cellule `1fr`
+**s'élargit quand son contenu déborde** : le lien mesure alors exactement la
+largeur du mot, et « déborde » ne se voit plus jamais. Un mot de 120 px aurait
+rendu « colonne 120, texte 120, tout va bien ».
+
+La mesure juste est la **part** : le contenu de la rangée, marges déduites,
+divisé par le nombre d'onglets — 66,4 px. C'est aussi la largeur du trait d'or,
+et c'est pour ça que les comparer a révélé l'écart.
+
+**Ce que ça change aux nombres donnés au patron**, et il fallait le lui dire :
+
+| | Annoncé d'abord | Réel |
+|---|---|---|
+| A · sans rien changer | déborde de 7,2 | **déborde de 12,4** |
+| B · espacement resserré | tient de 1,3 | **déborde de 3,9** |
+| C · lettre plus petite | 11,8 de marge | **6,2 de marge** |
+| D · avec une icône | 14,8 de marge | **9,2 de marge** |
+
+Son choix ne change pas — C reste la seule variante sans icône qui rentre —
+mais B ne « tenait » pas du tout, et la planche 76 le dit maintenant.
+
+**Le seuil du contrôle passe de 6 à 4 px**, et le seuil s'explique : il doit
+rejeter B (qui déborde) sans mettre C à un cheveu du rouge. Un contrôle qui
+passe de justesse rougit au premier rendu un peu différent, et l'on prend
+l'habitude de le rejouer au lieu de le croire.
+
+**La leçon, et elle dépasse cette barre : deux mesures qui devraient tomber
+pareil valent mieux qu'une mesure seule.** Ici, le trait d'or et la colonne
+sont la même largeur par construction ; les comparer a trouvé ce qu'aucune des
+deux n'aurait dit isolément.
+
 ### Le cinquième onglet est posé, et un contrôle mesure la barre
 
 Sa variante retenue sur la planche 76 : **C**, la lettre à 8,5 px espacée de

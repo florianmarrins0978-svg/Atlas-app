@@ -154,7 +154,7 @@
           <span class="fil" style="transform:translateX(0)"><span></span></span>
         </div></div>
       </div>
-      <p class="verdict ko" id="vA"><b>Ça ne tient pas.</b> La colonne fait 71,6 px, « CHANTIERS » en demande 78,8 : <b>7,2 px de trop</b>. Le mot se coupe ou déborde.</p>
+      <p class="verdict ko" id="vA"><b>Ça ne tient pas.</b> Une colonne a droit à 66,4 px ; « CHANTIERS » en demande 78,8 : <b>12,4 px de trop</b>. Le mot pousse sa colonne et écrase les voisines.</p>
     </div>
 
     <div class="cas">
@@ -170,7 +170,7 @@
           <span class="fil" style="transform:translateX(0)"><span></span></span>
         </div></div>
       </div>
-      <p class="verdict ko" id="vB"><b>Ça tient de 1,3 px</b> — 70,3 pour 71,6. C'est un faux confort : une autre police de téléphone, et ça repasse dessous. Je ne le livrerais pas comme ça.</p>
+      <p class="verdict ko" id="vB"><b>Ça ne tient pas non plus</b> — 70,3 px pour 66,4, soit <b>3,9 px de trop</b>. (J'avais d'abord annoncé que ça passait de 1,3 px : ma mesure était fausse, voir plus bas.)</p>
     </div>
 
     <div class="cas">
@@ -186,7 +186,7 @@
           <span class="fil" style="transform:translateX(0)"><span></span></span>
         </div></div>
       </div>
-      <p class="verdict ok" id="vC"><b>Ça tient largement</b> — 59,8 px pour 71,6, soit 11,8 px de marge. La seule question est la lisibilité à bout de bras.</p>
+      <p class="verdict ok" id="vC"><b>Ça tient</b> — 59,8 px pour 66,4, soit <b>6,2 px de marge</b>. C'est la variante retenue.</p>
     </div>
 
     <div class="cas">
@@ -205,7 +205,7 @@
           <span class="fil" style="transform:translateX(0)"><span></span></span>
         </div></div>
       </div>
-      <p class="verdict ok" id="vD"><b>Ça tient le mieux</b> — 56,8 px pour 71,6, 14,8 px de marge. Et l'icône se vise sans lire.</p>
+      <p class="verdict ok" id="vD"><b>Ça tient le plus large</b> — 56,8 px pour 66,4, <b>9,2 px de marge</b>. Et l'icône se vise sans lire.</p>
     </div>
 
     <div class="cas">
@@ -237,18 +237,30 @@
       colonne. À cinq onglets, la colonne tombe de 89,5 à <b>71,6 px</b>.</p>
     <table style="border-collapse:collapse;font-size:12.5px;margin-top:8px">
       <tr><td style="padding:3px 14px 3px 0">A · sans rien changer</td>
-          <td style="padding:3px 0"><b class="ko">78,8 px — déborde de 7,2</b></td></tr>
+          <td style="padding:3px 0"><b class="ko">78,8 px — déborde de 12,4</b></td></tr>
       <tr><td style="padding:3px 14px 3px 0">B · espacement resserré</td>
-          <td style="padding:3px 0"><b class="ko">70,3 px — 1,3 px de marge</b></td></tr>
+          <td style="padding:3px 0"><b class="ko">70,3 px — déborde de 3,9</b></td></tr>
       <tr><td style="padding:3px 14px 3px 0">C · lettre plus petite</td>
-          <td style="padding:3px 0"><b class="ok">59,8 px — 11,8 de marge</b></td></tr>
+          <td style="padding:3px 0"><b class="ok">59,8 px — 6,2 de marge</b></td></tr>
       <tr><td style="padding:3px 14px 3px 0">D · avec une icône</td>
-          <td style="padding:3px 0"><b class="ok">56,8 px — 14,8 de marge</b></td></tr>
+          <td style="padding:3px 0"><b class="ok">56,8 px — 9,2 de marge</b></td></tr>
     </table>
-    <p style="margin-top:10px"><b>Donc : A est à écarter</b>, et B ne tient que
-      sur cette police-ci — une autre, et il repasse dessous. Un contrôle
-      mesurera la barre à 360 px avant chaque mise en ligne, comme il le fait
-      déjà pour le reste de l'écran.</p>
+    <p style="margin-top:10px"><b>A et B sont donc à écarter tous les deux</b> :
+      ni l'un ni l'autre ne rentre.</p>
+
+    <p style="margin-top:10px"><b>⚠ Ces nombres corrigent une première mesure
+      fausse, et il faut le dire.</b> J'avais d'abord divisé la largeur de la
+      barre par cinq, en comptant ses marges intérieures comme de la place
+      disponible : j'annonçais 71,6 px de colonne au lieu de 66,4, donc des
+      marges gonflées de 5,6 px — et je vous ai écrit que B « tenait de
+      1,3 px » alors qu'il débordait de 3,9. <b>C'est le contrôle qui l'a
+      trouvé</b>, en comparant le trait d'or à la colonne : deux mesures qui
+      auraient dû tomber pareil, et qui ne tombaient pas. Votre choix, lui, ne
+      change pas : C reste la bonne.</p>
+
+    <p style="margin-top:10px">Un contrôle mesure désormais la barre à 360 px
+      avant chaque mise en ligne (<code>scripts/test-barre-basse-e2e.ts</code>),
+      parce que ce défaut est invisible sur un grand écran.</p>
     <p><b>Le mot qui décide, c'est « CHANTIERS »</b> : neuf lettres, le plus
       long des cinq. Si lui passe, tous passent.</p>
   </div>

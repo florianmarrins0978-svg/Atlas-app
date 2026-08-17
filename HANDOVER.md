@@ -994,10 +994,21 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
+**⚠ MESURER UNE COLONNE DE GRILLE : DEUX FAÇONS DE SE TROMPER, payées le
+17 août.** (1) Diviser la largeur de la rangée par le nombre de colonnes compte
+les marges intérieures comme de la place — 72 px annoncés pour 66,4 réels.
+(2) Mesurer la boîte de la CELLULE ne marche pas non plus : une cellule `1fr`
+**s'élargit quand son contenu déborde**, donc « déborde » ne se voit jamais.
+**La mesure juste est la PART** : contenu de la rangée moins ses marges, divisé
+par le nombre de colonnes. Et la leçon générale : **deux mesures qui devraient
+tomber pareil valent mieux qu'une seule** — ici le trait d'or et la colonne,
+identiques par construction, et c'est leur écart qui a révélé l'erreur.
+
 **⚠ LA BARRE DU BAS PORTE CINQ ONGLETS DEPUIS LE 17 AOÛT, ET ELLE EST JUSTE
 À LA LIMITE.** « Outils » s'ajoute à Chantiers/Planning/Terminés/Réglages, et
 la lettre est passée à 8,5 px / 0,14em pour que « CHANTIERS » rentre encore sur
-un écran de 360 (sa variante C ; sans ce changement il débordait de 7,2 px).
+un écran de 360 (sa variante C : 59,8 px pour 66,4 de part, soit 6,2 px de
+marge — sans ce changement il débordait de 12,4 px).
 **Trois pièges si l'on y retouche :** la largeur du trait d'or est écrite en
 dur (`/ 5`) et doit suivre tout ajout d'onglet ; remonter la lettre à 9,5 px
 fait déborder à nouveau ; et un sixième onglet ne rentre pas.

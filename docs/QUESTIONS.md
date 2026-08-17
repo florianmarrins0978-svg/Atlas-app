@@ -1359,10 +1359,9 @@ autres pistes ont été écartées, pour ne pas les rouvrir dans trois mois.
 **Ce que le cinquième onglet a coûté, et ce n'est pas rien.** La barre du bas
 en portait quatre. À cinq, chaque colonne perd un cinquième de sa largeur — et
 sur un téléphone de 360 pixels, **le mot « CHANTIERS » ne rentrait plus** : il
-débordait de 7 pixels. Resserrer un peu les lettres le faisait tenir à
-1,3 pixel près, ce qui n'est pas tenir : une autre police de téléphone, et le
-mot repasse dessous. Vous avez choisi de **réduire la taille des lettres**
-(8,5 px au lieu de 9,5), qui laisse près de 12 pixels de marge.
+débordait de 12 pixels. Resserrer un peu les lettres ne suffisait pas non plus
+— il débordait encore de 4. Vous avez choisi de **réduire la taille des
+lettres** (8,5 px au lieu de 9,5), qui laisse un peu plus de 6 pixels de marge.
 
 Le dessin des cinq variantes, avec les mesures :
 `docs/maquettes/76-le-cinquieme-onglet.html`. Et un contrôle mesure désormais
