@@ -815,6 +815,20 @@ est un défaut qui ne rougit nulle part.
 
 ## Ce qui vient d'être terminé
 
+**LES RETOURS DES RÉGLAGES (17 août).** Les réglages ont **deux étages**, et un
+écran du second doit ramener à **sa rubrique**, pas à la racine — sa remarque :
+*« lorsque je vais dans mes prix et que je fais un retour, je retourne
+directement dans l'application et pas dans la catégorie tarif »*. Trois écrans
+étaient fautifs (Mes prix, Le catalogue — qui n'avait **aucune** flèche —, Le
+vocabulaire).
+
+**Avant d'ajouter un écran sous une rubrique :** l'inscrire dans la table de
+`scripts/test-retours-reglages-e2e.ts`. Aucun test ne voyait ce défaut parce
+qu'aucun ne PARCOURAIT le chemin — chaque écran s'ouvrait par son adresse, où la
+question ne se pose pas.
+
+*(Le catalogue a été refait en parallèle par une autre session — voir plus bas —
+et porte sa propre flèche : c'est cette version-là qui a été gardée.)*
 **LA LISTE DES CLIENTS (17 août, au soir) — sa remarque : « la catégorie client
 n'a pas été créée ».** Elle s'ouvre depuis l'accueil (« Vos clients », sous le
 compteur), pas depuis un cinquième onglet : celui-ci est réservé aux outils
@@ -862,7 +876,7 @@ fiche client — c'est vrai, et ce n'était pas sa demande.
 fois la même question (14 puis 17 août) : *« À quoi sert cette page ?? On peut
 rien modifier rajouter »*. Ses mots s'accrochent désormais aux entrées d'Atlas,
 en or. Planche `docs/maquettes/72-mes-mots-au-catalogue.html`, récit complet
-dans `ARCHITECTURE.md` §122, migration 0052.
+dans `ARCHITECTURE.md` §123, migration 0052.
 
 **Quatre choses à savoir avant d'y toucher :**
 
@@ -884,7 +898,7 @@ dans `ARCHITECTURE.md` §122, migration 0052.
    prix d'abattage sous « Élagage » serait pire que la phrase retirée.
 
 **L'AUTO-ALIMENTATION EXISTE DEPUIS LE MÊME JOUR** (`ARCHITECTURE.md` §123,
-migration 0053) : Atlas **propose** de retenir un mot entendu quand il sait à
+« Ce qu'Atlas PROPOSE de retenir », migration 0053) : Atlas **propose** de retenir un mot entendu quand il sait à
 quoi il se rapporte — la ligne retenue sur le devis doit être reconnue par le
 catalogue, faute de quoi rien n'est proposé. Deux choses à ne pas défaire :
 
