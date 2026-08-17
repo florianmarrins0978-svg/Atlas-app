@@ -24,7 +24,15 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 
 const DIST = ".next-batie";
-const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
+// **Détournable pour l'éprouver, comme le témoin d'échec plus bas — et ce
+// n'est pas une commodité.** Le 17 août 2026, la suite `test-banc-lent-se-dit`
+// a rougi sur QUATRE cas sans le moindre défaut de produit : la batterie
+// elle-même lance un banc à sa dernière étape, ce banc bâtit, et laisse dans le
+// dépôt un témoin portant le commit courant. Le diagnostic répondait alors
+// « Code SERVI : <commit> » là où la suite attendait « en cours » ou
+// « ÉCHOUÉ ». Un contrôle qui dépend d'un reste laissé par un autre contrôle
+// rougit au hasard — et un rouge au hasard s'apprend à être ignoré.
+const TEMOIN_BATI = process.env.ATLAS_TEMOIN_BATI || `${DIST}/atlas-version-batie.txt`;
 // Posé par `banc.mjs` quand `next build` tombe. Voir son en-tête : « aucune
 // version bâtie » recouvrait trois états très différents, dont un seul est
 // passager.

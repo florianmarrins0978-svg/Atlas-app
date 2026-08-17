@@ -108,10 +108,22 @@ export default function MesMots({
             className="rounded-[11px] px-[13px] py-[11px]"
             style={{ backgroundColor: colors.card, border: `1px solid ${colors.lineSoft}` }}
           >
-            <span
-              className="block text-[17px] leading-[1.25]"
-              style={{ fontFamily: font.display, color: carte.aMoi ? colors.or : colors.ink }}
-            >
+            {/* **Le nom d'une prestation est TOUJOURS en noir**, qu'elle vienne
+                du catalogue commun ou qu'il l'ait ajoutée lui-même.
+
+                Il portait l'or quand elle était à lui — une marque de
+                provenance. **Le patron l'a écartée le 17 août 2026** en voyant
+                « Entretient » en doré à côté d'« Élagage » en noir : *« les
+                nouvelles prestations doivent toujours être en noir, pas en
+                doré »*. Et il a raison sur le fond : deux couleurs de titre dans
+                la même liste se lisent comme deux NATURES de prestation, pas
+                comme deux provenances — or c'est la même chose, et il la
+                cochera de la même façon sur un chantier.
+
+                L'or reste sur SES MOTS, dans la ligne « Aussi appelé » : là, il
+                distingue deux choses qui sont vraiment différentes — le mot du
+                commun et celui qu'il a ajouté, qu'il peut retirer. */}
+            <span className="block text-[17px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
               {carte.nom}
             </span>
 

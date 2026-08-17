@@ -198,6 +198,23 @@ cas("un second banc ne peut pas démarrer pendant qu'un premier vit", () => {
 // **Un verrou qui survit à son porteur enfermerait le patron dehors.** Un banc
 // tué — ou un conteneur redémarré — laisse son fichier derrière lui ; s'il
 // valait encore, plus aucun banc ne démarrerait jamais, et rien ne le dirait.
+// **Le trou du 17 août 2026 : deux bancs qui démarrent EN MÊME TEMPS.**
+//
+// L'ancien verrou regardait si le fichier existait, puis l'écrivait : deux
+// démarrages simultanés ne trouvaient rien ni l'un ni l'autre et repartaient
+// tous les deux. Deux constructions, un seul verrou chez Next — « Another next
+// build process is already running » —, et le banc reste lent.
+cas("un verrou vivant n'est jamais écrasé, même par un banc pressé", () => {
+  writeFileSync(VERROU, `${process.ppid}\n`);
+  const r = prendreVerrouBanc({ chemin: VERROU, pid: process.pid });
+  assert.equal(r.pris, false, "un second banc a écrasé le verrou d'un banc vivant");
+  assert.equal(
+    readFileSync(VERROU, "utf8").trim(),
+    String(process.ppid),
+    "le verrou porte maintenant un autre porteur : le premier banc ne le rendra jamais"
+  );
+});
+
 cas("un verrou laissé par un processus mort ne bloque personne", () => {
   // Un identifiant hors de portée : personne ne le porte.
   writeFileSync(VERROU, "999999\n");

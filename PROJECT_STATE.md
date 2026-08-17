@@ -341,7 +341,7 @@ l'application. Ce qui est **fait** :
   annonçait servir « depuis deux endroits » : la liste ne l'a jamais appelée.
   **Aucune suite ne le voyait parce que Playwright fait défiler avant de
   cliquer** — un contrôle qui clique éprouve qu'une cible existe, jamais qu'elle
-  est atteignable. `ARCHITECTURE.md` §125.
+  est atteignable. `ARCHITECTURE.md` §127.
 - **« Adresse non renseignée » ouvre l'écran du chantier** (17 août) : la mention
   de l'accueil devient un lien vers `/chantiers/[id]/coordonnees` — l'écran de
   création rouvert, prérempli, qui **enregistre** au lieu de créer. Sa demande,

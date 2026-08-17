@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
+import {
+  constructionsEnCours,
+  delogerConstructionsOrphelines,
+} from "./verrou-construction.mjs";
 
 // **« L'appli est vraiment très lente, mais vraiment. »** — 16 août 2026.
 //
@@ -172,5 +177,118 @@ verifier("le dossier bâti par la batterie est écarté du lint", () => {
   }
 });
 
-console.log(`\n${echecs === 0 ? "✅" : "❌"} Le verrou de construction — ${echecs} échec(s).`);
-process.exit(echecs === 0 ? 0 : 1);
+// ── L'ORPHELINE, et c'est la panne du 17 août au soir ───────────────────────
+//
+// *« Même problème qu'hier, l'appli est super lente. »* Sa fiche portait le même
+// refus que la veille — mais pas la même cause : le correctif du 16 tue les
+// constructions **au démarrage**, et celle-là est née bien après. Son espace n'a
+// que 8 Go ; le noyau tue un processus quand la mémoire manque, le banc part, et
+// SA construction lui survit. Le veilleur en relance un, qui tombe sur le verrou
+// de l'orpheline, et le banc reste lent pour la soirée.
+//
+// **Ces deux cas tuent un vrai processus, et échouent si on ne le tue pas.**
+// Le motif d'essai est distinctif : rien ici ne peut toucher une construction
+// réelle qui tournerait à côté.
+const MOTIF_ESSAI = "next build --epreuve-du-verrou";
+
+async function verifierAsync(intitule: string, fn: () => Promise<void>) {
+  try {
+    await fn();
+    console.log(`✅ ${intitule}`);
+  } catch (err) {
+    echecs++;
+    console.error(`❌ ${intitule}`);
+    console.error(`   ${(err as Error).message}`);
+  }
+}
+
+/** Un faux « next build » qui ne fait rien d'autre que vivre. */
+function fausseConstruction() {
+  const p = spawn(
+    process.execPath,
+    ["-e", "setTimeout(() => {}, 60000)", "next", "build", "--epreuve-du-verrou"],
+    { stdio: "ignore" }
+  );
+  return p;
+}
+
+const vivant = (pid: number) => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// Les suites de ce dépôt sont jouées en CommonJS : pas d'`await` au premier
+// niveau. Les deux cas qui tuent un vrai processus vivent donc dans une
+// fonction, appelée tout en bas.
+async function casQuiTuentUnVraiProcessus() {
+await verifierAsync("une construction orpheline est VUE, puis délogée", async () => {
+  const faux = fausseConstruction();
+  const pidFaux = faux.pid;
+  assert.ok(pidFaux, "le faux processus n'a pas démarré : rien à éprouver");
+  await new Promise((r) => setTimeout(r, 500));
+  try {
+    const vues = constructionsEnCours({ motif: MOTIF_ESSAI });
+    assert.ok(
+      vues.some((v) => v.pid === pidFaux),
+      `la construction en cours (pid ${pidFaux}) n'est pas vue : le banc bâtirait par-dessus et Next refuserait`
+    );
+
+    const bilan = await delogerConstructionsOrphelines({ motif: MOTIF_ESSAI, patienceMs: 5000 });
+    assert.ok(bilan.delogees >= 1, "aucune construction délogée");
+    assert.equal(bilan.restantes, 0, "une construction survit au délogement : le verrou reste tenu");
+    assert.equal(
+      vivant(pidFaux),
+      false,
+      "la construction orpheline est toujours vivante — le banc retomberait sur son verrou, et resterait lent"
+    );
+  } finally {
+    try {
+      faux.kill("SIGKILL");
+    } catch {
+      // Déjà mort : c'est précisément ce que le cas vérifie.
+    }
+  }
+});
+
+await verifierAsync("sans orpheline, on ne déloge rien et on ne se tue pas soi-même", async () => {
+  const bilan = await delogerConstructionsOrphelines({ motif: MOTIF_ESSAI, patienceMs: 1000 });
+  assert.deepEqual(bilan, { delogees: 0, restantes: 0 });
+  // Le contrôle qui court après lui-même : `constructionsEnCours` ne doit
+  // jamais rendre notre propre processus, sans quoi le banc se tuerait en
+  // voulant déloger.
+  assert.equal(
+    constructionsEnCours({ motif: "node" }).some((v) => v.pid === process.pid),
+    false,
+    "la recherche rend notre propre processus : le banc se tuerait lui-même avant de bâtir"
+  );
+});
+
+}
+
+verifier("banc.mjs déloge l'orpheline AVANT de bâtir", () => {
+  const iDelogement = source.indexOf("delogerConstructionsOrphelines");
+  const iConstruction = source.indexOf('jouerEnRetenant("npx", ["next", "build"]');
+  assert.ok(iDelogement > 0, "banc.mjs ne déloge aucune construction orpheline");
+  assert.ok(
+    iDelogement < iConstruction,
+    "le délogement arrive APRÈS le lancement de la construction : il ne protège alors de rien"
+  );
+});
+
+verifier("banc.mjs réessaie UNE fois quand c'est le verrou qui a parlé", () => {
+  assert.match(
+    source,
+    /Another next build process is already running/,
+    "banc.mjs ne reconnaît pas le refus du verrou : une construction née dans l'intervalle laisserait le banc lent " +
+      "jusqu'au prochain allumage"
+  );
+});
+
+casQuiTuentUnVraiProcessus().then(() => {
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} Le verrou de construction — ${echecs} échec(s).`);
+  process.exit(echecs === 0 ? 0 : 1);
+});

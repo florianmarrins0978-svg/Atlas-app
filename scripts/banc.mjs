@@ -32,6 +32,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
+import { delogerConstructionsOrphelines } from "./verrou-construction.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
@@ -640,9 +641,36 @@ if (raison) {
   // 10). Next a raison de refuser ; c'est nous qui devons cesser de le
   // provoquer.
 
+  // **MAIS ON DÉLOGE L'ORPHELINE — et ce n'est pas le même geste.**
+  //
+  // Le 17 août 2026 au soir : *« même problème qu'hier, l'appli est super
+  // lente »*, et sa fiche portait le même refus qu'la veille. Ce n'était
+  // pourtant pas la même panne : le correctif du 16 tue les constructions **au
+  // démarrage**, or son espace n'a que 8 Go et le noyau tue un processus quand
+  // la mémoire manque. Un banc tué laisse SA construction vivante ; le veilleur
+  // en relance un ; celui-là tombe sur le verrou de l'orpheline, et le banc
+  // reste lent pour le reste de la soirée.
+  //
+  // On ne double donc pas une construction — on retire celle qui n'a plus de
+  // destinataire. Le raisonnement complet est dans `verrou-construction.mjs`.
+  await delogerConstructionsOrphelines({ dire: (m) => console.log(m) });
+
   // La construction écrit dans SON dossier : le serveur de développement garde
   // le sien, et les deux ne se marchent jamais dessus.
-  const { code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+  let { code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+
+  // **Une seconde tentative, et une seule, quand c'est LE verrou qui a parlé.**
+  //
+  // Une construction peut naître entre notre délogement et notre lancement — la
+  // fenêtre est courte, elle n'est pas nulle. Repartir coûte quelques minutes ;
+  // ne pas repartir coûte une soirée entière en mode développement, où chaque
+  // écran se compile à l'ouverture. On ne réessaie QUE sur ce refus-là : une
+  // erreur de types ne se répare pas en insistant.
+  if (code !== 0 && /Another next build process is already running/i.test(sortie)) {
+    console.log("\n  (Le verrou de construction était encore tenu : on déloge et on réessaie une fois.)\n");
+    await delogerConstructionsOrphelines({ dire: (m) => console.log(m) });
+    ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
+  }
 
   if (code === 0) {
     try {

@@ -10300,6 +10300,30 @@ puisse le corriger. Tout ce qui est retenu entre dans SES mots, isolés par RLS.
 de l'utilisateur »).
 ---
 
+### L'or marque un MOT, jamais une prestation (corrigé le 17 août 2026)
+
+**Sa correction, capture à l'appui** — « Entretient », qu'il venait d'ajouter, en
+doré juste sous « Élagage » en noir : *« les nouvelles prestations doivent
+toujours être en noir, pas en doré »*.
+
+La couleur du titre marquait la **provenance** : le catalogue commun en noir, ses
+entrées à lui en or. C'était cohérent avec l'or de ses mots — et c'est
+précisément ce qui rendait la chose fausse. **Deux couleurs de titre dans la même
+liste ne se lisent pas comme deux provenances, mais comme deux NATURES de
+prestation** ; or il cochera les deux de la même façon sur un chantier, et le
+rapprochement d'une dictée les traite de la même façon aussi.
+
+**Où l'or garde son sens :** dans la ligne « Aussi appelé ». Là, il sépare deux
+choses réellement différentes — le mot du commun, qu'on ne peut pas retirer, et
+le sien, qu'un « × » enlève. Une distinction qui porte un geste mérite une
+couleur ; une distinction qui n'en porte aucun ne fait que semer le doute.
+
+Éprouvé sur la **couleur calculée**, pas sur un nom de classe : un jeton de
+charte qui changerait de valeur passerait au travers d'un contrôle qui ne
+regarde que la règle CSS (`test-catalogue-mes-mots-e2e.ts`). Rouge en remettant
+l'or, et son message donne les deux couleurs lues.
+
+
 ## 124. « Adresse non renseignée » devient une porte — et rien d'autre ne bouge
 
 **Sa demande du 17 août 2026**, capture de son accueil à l'appui : *« j'ai oublié
@@ -10426,7 +10450,133 @@ capture qui cadre autre chose que ce qu'elle annonce ne prouve rien.
 
 ---
 
-## 125. « Toujours pas poser de date » — une fonction écrite, jamais branchée
+## 125. Les outils métier : un cinquième onglet, et ce qu'il coûte à la barre
+
+**Sa question du 17 août 2026 :** *« L'idée, c'est de créer des outils comme
+celui-là pour les paysagistes ; après je ferai la même chose pour les terrasses
+bois. Pour toi le mieux c'est de créer une nouvelle catégorie paysage ? Ou
+alors on range ça dans les réglages, sous une catégorie paysage ? »*
+
+**Ce qui a été écarté, et pourquoi.**
+
+- **Les Réglages, non.** On y règle ce qui vaut une fois pour toutes — tarifs,
+  équipe, TVA, identité. Un plan d'arrosage se refait à chaque client, comme un
+  devis. L'y ranger le nommerait mal et l'enterrerait sous quinze rubriques.
+- **Une catégorie « Paysage », non plus.** Le paysage est son métier ENTIER :
+  le mot ne distingue rien de ce que l'application fait déjà. Ce qu'il sépare
+  en réalité, ce sont des **outils de calcul** — arrosage, terrasse bois — face
+  au parcours commercial (chantier, devis, facture).
+- **Attaché au chantier seul** — ma recommandation — **écartée par lui.** Elle
+  avait pour elle que le plan est toujours fait *pour quelqu'un* et se
+  retrouverait six mois plus tard chez le bon client. Son objection tient : un
+  outil qui exige un chantier ne sert pas en visite de devis, quand le client
+  n'existe pas encore.
+
+**Sa décision : un cinquième onglet « Outils ».**
+
+**LE COÛT EST MESURABLE, ET IL A ÉTÉ MESURÉ** (`docs/maquettes/76-le-cinquieme-onglet.html`).
+La barre porte quatre onglets depuis le 10 août, en capitales de 9,5 px
+espacées de 0,28em, sans icône — son choix d'alors (*« quatre pictogrammes
+sous quatre mots répétaient la même information »*). Passer à cinq fait tomber
+la colonne de 89,5 à **71,6 px** sur un écran de 360. Or « CHANTIERS », le plus
+long des cinq mots, en demande 78,8.
+
+| Variante | Largeur de « CHANTIERS » | Verdict |
+|---|---|---|
+| A · cinq onglets, rien d'autre changé | 78,8 px | **déborde de 7,2** |
+| B · espacement resserré à 0,18em | 70,3 px | tient de **1,3 px** — faux confort |
+| C · lettre à 8,5 px, espacement 0,14em | 59,8 px | tient, 11,8 px de marge |
+| D · icône au-dessus du mot | 56,8 px | tient, 14,8 px de marge |
+
+**A est donc à écarter, et B aussi :** 1,3 px de marge ne survit pas à un
+changement de police entre téléphones, et le défaut serait invisible ici pour
+apparaître chez lui. **D revient sur sa décision du 10 août** (les icônes
+retirées) — recevable, puisque le service rendu n'est plus le même à cinq
+colonnes qu'à quatre : viser sans lire. Mais c'est à lui de le dire.
+
+**Ce qui reste à trancher avec lui**, et qui n'est pas de la place : l'onglet
+porte une LISTE d'outils (arrosage, puis terrasse bois), donc il s'appelle
+« Outils » et non « Arrosage » ; et il faudra pouvoir **rattacher un plan à un
+chantier après coup**, sans quoi un plan fait en visite de devis se perdra —
+c'est précisément ce que l'accès sans chantier fait gagner et risque de coûter.
+
+---
+
+
+---
+
+## 126. « L'appli est super lente », deux soirs de suite — et deux causes différentes
+
+**Le 16 août, puis le 17 : le même message, la même lenteur, et pourtant deux
+pannes distinctes.** Le piège de ce genre de défaut est là : le symptôme est
+identique, le remède de la veille est toujours en place, et il ne suffit plus.
+
+### Ce que sa fiche disait, et qui a tranché en dix secondes
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (2026-08-17T19:34:24Z)
+dit: ⨯ Another next build process is already running.
+```
+
+C'est la fiche d'état publiée par son espace (`CLAUDE.md` §1 bis) qui a donné
+cette ligne, sans qu'il ait rien à recopier depuis son téléphone. **Sans elle,
+la première hypothèse aurait porté sur le réseau ou sur la base** — et le
+message tenait en une phrase.
+
+### La cause du 16 : une construction orphelinée AU DÉMARRAGE
+
+`demarrer.sh` pose un veilleur avant la mise à jour ; ce veilleur lance un banc,
+donc une construction. La mise à jour remplace ensuite veilleur et serveur — et
+laissait la construction derrière. Corrigé le 16 en ajoutant `build` au motif du
+`pkill` de démarrage. **Ce correctif tient toujours, et il reste nécessaire.**
+
+### La cause du 17 : la même chose, mais N'IMPORTE QUAND après
+
+Son espace a **8 Go de mémoire, dont 181 Mo libres** au moment de la panne.
+Quand la mémoire manque, le noyau tue un processus. S'il tue le banc, **sa
+construction lui survit** : elle garde le verrou du système, le veilleur
+constate qu'aucun serveur ne répond, relance un banc, et celui-là se heurte à
+l'orpheline. Le `pkill` du démarrage n'y peut rien — le démarrage est passé.
+
+**Et un second trou, plus discret, ouvrait la même porte :** le verrou de banc
+(`/tmp/atlas-banc.pid`) regardait si le fichier existait, *puis* l'écrivait.
+Deux bancs qui démarrent dans la même seconde — l'espace à l'allumage, le
+veilleur qui croit le serveur mort — ne trouvaient donc rien ni l'un ni l'autre.
+Deux bancs, deux constructions, un seul verrou chez Next.
+
+### Ce qui est posé
+
+| | Ce que ça fait |
+|---|---|
+| `scripts/verrou-construction.mjs` | déloge les constructions **orphelines** avant de bâtir, et attend que le noyau rende le verrou |
+| `banc.mjs` | une **seconde tentative**, et une seule, quand c'est ce refus-là qui a parlé |
+| `verrou-banc.mjs` | le verrou se prend en **création exclusive** (`wx`) : un seul des deux bancs peut réussir |
+
+**Pourquoi tuer l'orpheline ne contredit pas la règle « ne jamais effacer le
+verrou ».** Les deux gestes n'ont rien à voir. Effacer le fichier `lock` ne
+libère rien — Next prend un verrou auprès du système — et lancerait une SECONDE
+construction à côté de la première : le remède qui tue, déjà payé deux fois.
+Ici, on ne double pas, **on retire ce qui n'a plus de destinataire** : la
+construction orpheline chauffe un processeur que son voisin attend, garde le
+verrou, et son succès ne servirait personne, puisque le banc qui aurait basculé
+dessus est mort.
+
+**Les contrôles tuent un vrai processus** (`scripts/test-verrou-construction.ts`,
+`scripts/test-bascule-veilleur.ts`), sur un motif d'essai distinctif qui ne peut
+pas toucher une construction réelle. Éprouvés rouges avant d'être livrés :
+délogement neutralisé → le premier rougit ; création exclusive retirée → deux
+cas rougissent, dont celui du 10 août.
+
+### Ce que ça ne règle PAS, et qu'il faut savoir
+
+**La mémoire reste étroite.** Bâtir Next sur 8 Go pendant qu'un serveur de
+développement tourne est près de la limite ; si le noyau tue à nouveau le banc,
+le prochain démarrage repartira proprement — mais il repartira. Le vrai remède,
+si cela revient, est d'augmenter la machine ou de cesser de servir en mode
+développement pendant la construction.
+---
+
+## 127. « Toujours pas poser de date » — une fonction écrite, jamais branchée
 
 **Le patron, le 17 août 2026**, capture de son planning à l'appui : *« je peux
 toujours pas poser de date sur les chantiers test, corrige ça ! »*
