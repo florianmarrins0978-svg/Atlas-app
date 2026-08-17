@@ -752,6 +752,19 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**⚠ UNE COULEUR POSÉE SUR `<html>` NE PEUT PAS SUIVRE UNE NAVIGATION (16 août).**
+Il choisit « Nuit », rien ne change — et c'était exact. Les variables de charte
+sont posées par le gabarit RACINE ; une navigation côté client ne le rejoue pas,
+donc l'attribut `style` de `<html>` reste celui du chargement initial. **Ni
+`revalidatePath` ni `router.refresh()` ne règlent cela** : c'est le navigateur qui
+doit repeindre le même élément. Réparé et éprouvé sur SA séquence — appui, onglet,
+onglet, sans rechargement (`ARCHITECTURE.md` §119).
+
+**ET LA LEÇON, LA MÊME QUE LE 12 AOÛT :** le contrôle existant était **vert** — il
+rechargeait la page entre chaque écran. Le seul chemin où le défaut existe, les
+onglets du bas, n'était parcouru nulle part. **Rejouer sa séquence, pas le geste
+isolé.**
+
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
 « Devis & factures », ou le jour de l'envoi si aucun délai ne l'est — son

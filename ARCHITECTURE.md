@@ -9788,3 +9788,69 @@ valent d'être retenus :
    L'image annonçait « échéance dépassée depuis 60 jours » au lieu de 30, et
    c'était le montage qui était faux, pas l'application. Toute écriture de
    montage vérifie maintenant son `rowCount`.
+
+---
+
+## 119. « L'apparence ne change pas » — une couleur posée sur `<html>` ne peut pas suivre une navigation
+
+*Le patron, le 16 août 2026, capture de l'écran Apparence à l'appui, la pastille
+« Nuit » cochée : **« l'apparence ne change pas »**. Il avait raison.*
+
+### Ce qui se passait, mesuré avant d'être réparé
+
+Sa séquence rejouée telle quelle — choisir Nuit, puis toucher les onglets du bas,
+sans jamais recharger :
+
+| Le moment | Le fond que `<html>` portait |
+|---|---|
+| l'écran Apparence, avant l'appui | `#f5f3ee` (Origine) |
+| **juste après l'appui sur Nuit** | `#f5f3ee` — **rien n'a bougé** |
+| après l'onglet « Chantiers » | `#f5f3ee` |
+| après l'onglet « Planning » | `#f5f3ee` |
+| après un **rechargement complet** | `#101210` (Nuit) |
+
+Le choix partait donc bien en base — la dernière ligne le prouve. C'est l'écran
+qui ne le suivait pas.
+
+### La cause, et pourquoi aucune invalidation de cache ne l'aurait réglée
+
+Les variables de couleur sont posées par le **gabarit racine**, sur l'élément
+`<html>`. Ce gabarit est partagé par tous les écrans : **une navigation côté
+client ne le rejoue pas** — elle remplace le contenu, pas le document. L'attribut
+`style` de `<html>` reste donc celui du chargement initial, quoi qu'on invalide
+au serveur.
+
+C'est pourquoi ni `revalidatePath("/", "layout")` ni `router.refresh()` n'étaient
+la réponse. Le premier avait d'ailleurs été retiré la veille pour une **bonne**
+raison : il vidait le cache de toute l'application à chaque appui, au point de
+faire tomber une suite voisine par ralentissement.
+
+### La réparation : le navigateur repeint le même élément
+
+`ApparenceClient` écrit les jetons de la charte sur `document.documentElement`,
+dès l'appui. C'est **le même élément pendant toute la visite** : la couleur suit
+le doigt sans aller-retour, et survit à toutes les navigations qui suivent.
+
+**Le serveur garde son rôle, et il ne fait pas double emploi :** c'est lui qui
+pose la charte au PREMIER rendu, sans quoi chaque page s'afficherait en couleurs
+d'origine avant de se repeindre — un clignotement à chaque écran, sur un
+téléphone lent, qui se lit comme un défaut.
+
+**Un refus rend AUSSI la couleur d'avant.** Laisser l'écran repeint alors que
+rien n'est enregistré lui ferait croire le contraire du message qu'il lit.
+
+### Le contrôle était vert sur un chemin qu'il ne prend pas
+
+`test-chartes-e2e.ts` vérifiait la couleur — et elle était juste — mais avec un
+`page.goto()` entre chaque écran, c'est-à-dire **un rechargement complet à chaque
+fois**. Le seul chemin où le défaut existe, la navigation par les onglets, n'était
+parcouru nulle part.
+
+`test-charte-suit-le-doigt-e2e.ts` rejoue **sa séquence** : appui, onglet, onglet,
+et le rechargement seulement à la fin — pour distinguer « pas enregistré » de
+« enregistré mais pas peint ». Confronté au défaut, il tombe en donnant les deux
+couleurs.
+
+C'est la leçon du 12 août, une fois de plus : **reproduire la séquence du patron,
+pas le geste isolé.**
+
