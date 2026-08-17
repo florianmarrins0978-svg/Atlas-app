@@ -9,6 +9,49 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Sa règle de pose, enfin la sienne — et l'outil faisait l'exact contraire
+
+**Ses mots, au formulaire :** *« 80 % minimum entre chaque arroseur. Donc portée
+5 m : distance entre chaque arroseur ~5,50 m, 6 m max, 5 m étant la perfection.
+Jamais moins. En dessous de 5 m, 4 m, 3 m : JAMAIS. »*
+
+L'outil posait un arroseur tous les **0,8 × la portée** — soit 4 m pour une
+portée de 5. Précisément le cas qu'il écrit en majuscules. Le recouvrement se
+mesure sur l'ÉCART, pas sur la portée : écart ≤ portée / 0,80, et jamais sous la
+portée. Un arroseur de trop tous les quatre mètres, c'est un secteur de plus, un
+devis plus cher, et un client qui compare.
+
+**Et cette règle en a révélé une autre, plus profonde : le choix de buse doit
+OBÉIR à la pose, pas être rattrapé après coup.** Une turbine de 9 m ne pave pas
+une pelouse de 12 m de large — deux rangées font 12 m d'écart (trop), trois en
+font 6 (trop peu). L'outil affichait alors « buse trop grande » **sur toutes les
+zones**, y compris celles qui allaient bien. Il prend désormais, de la plus
+grande à la plus petite, la première buse qui pave les deux côtés selon sa règle.
+L'alerte ne parle plus que des zones réellement impossibles.
+
+**Le quinconce se DESSINE.** Sa règle : quinconce au-delà de quatre arroseurs,
+« et les derniers arroseurs doivent toujours être dans les coins ». Le pourtour
+reste régulier, seules les rangées intérieures se décalent d'un demi-écart. Une
+première version se contentait d'écrire « en quinconce » sous une grille carrée
+— un plan qui ment, et que personne n'aurait vérifié.
+
+**Le goutte-à-goutte prend ses mesures à lui :** lignes tous les 80 cm dans les
+massifs, 70 cm au potager, et pour une haie **la question est posée** — une ligne
+ou deux, c'est l'utilisateur qui tranche. Conséquence : un massif se saisit
+désormais en longueur × largeur, plus en mètres de gaine. Demander des mètres de
+gaine à quelqu'un « qui ne connaît rien en arrosage » revenait à lui faire faire
+le calcul qu'on lui promettait.
+
+**Le point d'eau demande d'où l'on se repique.** Sa règle : juste après le
+compteur, la ville délivre au moins 3 bar et c'est du sûr ; ailleurs, **il faut
+lui expliquer quoi faire** — seau gradué pour le débit, manomètre à cinq euros
+pour la pression. Une question sans marche à suivre renvoie l'utilisateur à son
+ignorance.
+
+**Confirmé sans changement :** 85 % du débit par secteur, jamais de mélange de
+pluviométries ni de familles, et aucune correction de pression à faire (« à
+2 bar ou 3 bar c'est quasiment les mêmes valeurs »).
+
 ### Atlas propose de retenir les mots qu'il entend — et ne les écrit jamais tout seul
 
 **Sa question, une heure après le lot ci-dessous :** *« ça veut dire que le
