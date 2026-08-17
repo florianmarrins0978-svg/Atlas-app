@@ -115,6 +115,73 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   const trop = debits.map(t => parseFloat(t.replace(',', '.'))).filter(x => x > dispoN);
   cas('aucun secteur au-dessus du robinet', trop.length === 0, trop.join(', '));
 
+  // ── QUEL ARROSEUR SUR QUELLE VANNE — sa demande du 17 août (« un petit plan
+  //    avec le nombre de réseaux, avec des couleurs différentes ») ───────────
+  // Le découpage ne comptait que des secteurs ; il dit maintenant lesquels des
+  // arroseurs y sont, et le plan les colorie d'après CETTE liste — jamais un
+  // second calcul à côté, qui finirait par diverger (§3, déjà payé sur le
+  // quinconce).
+  const reseaux = await page.evaluate(() => {
+    const d = decouper();
+    const surfaces = etat.zones.filter(z => TYPES[z.type].forme === 'surface');
+    let points = 0, sansReseau = 0, contigus = 0, coupes = 0;
+    const parSecteur = {};
+    surfaces.forEach(z => {
+      const p = poser(z);
+      let precedent = null;
+      p.points.forEach(pt => {
+        points++;
+        const i = d.reseauDuPoint[z.id + ':' + pt.x.toFixed(3) + ':' + pt.y.toFixed(3)];
+        if (i == null) { sansReseau++; return; }
+        parSecteur[i] = (parSecteur[i] || 0) + (pt.debit || 0);
+        // Dans l'ordre de pose, le numéro de réseau ne doit qu'AVANCER : une
+        // vanne dessert une bande d'un seul tenant. S'il revenait en arrière,
+        // le plan montrerait un arroseur sur deux, impossible à poser.
+        if (precedent != null && i < precedent) coupes++;
+        if (precedent != null && i !== precedent) contigus++;
+        precedent = i;
+      });
+    });
+    return { points, sansReseau, retoursEnArriere: coupes, changements: contigus,
+             limite: d.limite,
+             debitsCalcules: Object.keys(parSecteur).map(k => +parSecteur[k].toFixed(3)),
+             debitsAnnonces: d.secteurs.map(s => +s.debit.toFixed(3)) };
+  });
+  // Le cas qui empêche de mesurer zéro : sans arroseurs, tout le reste serait
+  // vert sans rien prouver.
+  cas('le jardin d\'exemple a bien des arroseurs à répartir',
+      reseaux.points >= 10, 'points : ' + reseaux.points);
+  cas('chaque arroseur sait sur quelle vanne il est',
+      reseaux.sansReseau === 0, 'orphelins : ' + reseaux.sansReseau);
+  cas('une vanne dessert une bande d\'un seul tenant (jamais un arroseur sur deux)',
+      reseaux.retoursEnArriere === 0, 'retours en arrière : ' + reseaux.retoursEnArriere);
+  cas('le jardin d\'exemple se coupe bien en plusieurs réseaux',
+      reseaux.changements >= 2, 'changements de réseau : ' + reseaux.changements);
+  // **Le débit ANNONCÉ pour un secteur est celui de ses arroseurs réels.** Une
+  // version antérieure divisait le total en parts égales : l'écran annonçait
+  // deux secteurs à 0,88 quand la coupe en mettait 7 d'un côté et 4 de
+  // l'autre. Le plan démentait la liste, exactement la divergence que le §3
+  // interdit.
+  const memeDebits = reseaux.debitsCalcules.every(v =>
+    reseaux.debitsAnnonces.some(a => Math.abs(a - v) < 0.005));
+  cas('le débit annoncé d\'un secteur est celui de SES arroseurs',
+      memeDebits, 'calculés ' + reseaux.debitsCalcules.join(', ') +
+                  ' | annoncés ' + reseaux.debitsAnnonces.join(', '));
+  cas('et aucune vanne ne dépasse la limite du robinet',
+      reseaux.debitsCalcules.every(v => v <= reseaux.limite + 0.005),
+      'limite ' + reseaux.limite + ' | ' + reseaux.debitsCalcules.join(', '));
+
+  // Et le plan colorie d'après cette même liste : autant de couleurs
+  // distinctes que de réseaux présents sur la zone.
+  const teintes = await page.evaluate(() => {
+    const t = Array.from(document.querySelectorAll('.plan .tete'));
+    return { total: t.length, distinctes: new Set(t.map(e => e.style.fill)).size };
+  });
+  cas('le plan colorie les têtes par réseau',
+      teintes.total > 0 && teintes.distinctes >= 2, JSON.stringify(teintes));
+  cas('et il porte une légende par réseau',
+      (await page.locator('.plan-legende span').count()) >= 2);
+
   // Le cycle affiché est la somme des durées.
   const mins = (await page.locator('.sec-min').allTextContents()).map(Number);
   const somme = mins.reduce((a, b) => a + b, 0);

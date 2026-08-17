@@ -143,6 +143,9 @@
   .plan .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
   .plan .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
   .plan .cote-g{text-anchor:end}
+  .plan-legende{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 14px;font-size:12px;color:var(--gris)}
+  .plan-legende span{display:inline-flex;align-items:center;gap:6px}
+  .plan-legende i{width:11px;height:11px;border-radius:50%;flex:none}
   .plan-nom{font-size:12.5px;color:var(--gris);margin:12px 0 0}
 
   .mat{display:flex;align-items:baseline;gap:9px;padding:9px 2px;border-bottom:1px solid var(--trait)}
@@ -607,6 +610,13 @@ function poser(z){
     r.nx = nx; r.ny = ny; r.points = points; r.nombre = points.length;
     r.quinconce = quinconceVoulu;
     r.debit = coins*q + bords*d + inter*m.debit360;
+    // Le débit de CHAQUE tête, porté par le point lui-même : c'est ce qui
+    // permet au découpage de répartir les arroseurs entre les vannes en
+    // sachant ce que chacun boit, au lieu de diviser le total en parts égales
+    // qu'aucune coupe réelle ne produit.
+    points.forEach(function(pt){
+      pt.debit = pt.zone === 'coin' ? q : (pt.zone === 'bord' ? d : m.debit360);
+    });
     r.sansCorps = choix.sansCorps;
   } else if (TYPES[z.type].forme === 'nappe') {
     // Des lignes parallèles dans la largeur, à l'écart qu'il a donné. La
@@ -652,8 +662,9 @@ function decouper(){
     // La clé du groupe ne contient QUE ce qui ne change pas avec la saison :
     // le matériel et la famille de plantes. Un secteur est du câblage.
     var clef = p.cle + '|' + TYPES[z.type].famille;
-    if (!groupes[clef]) { groupes[clef] = { zones:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
+    if (!groupes[clef]) { groupes[clef] = { zones:[], membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
     groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
+    groupes[clef].membres.push({ zoneId: z.id, points: p.points });
     groupes[clef].debit += p.debit;
     groupes[clef].minutes = p.minutes;
     groupes[clef].passages = p.passages;
@@ -661,22 +672,92 @@ function decouper(){
     groupes[clef].forme = TYPES[z.type].forme;
   });
 
-  var secteurs = [];
+  var secteurs = [], reseauDuPoint = {};
   ordre.forEach(function(clef){
     var g = groupes[clef];
-    var combien = limite > 0 ? Math.max(1, Math.ceil(g.debit / limite)) : 1;
-    for (var i=0;i<combien;i++){
+    var premier = secteurs.length;
+    var ajouter = function(debit, combien, rang){
       secteurs.push({
         nom: g.zones.join(' + '),
-        part: combien > 1 ? (i+1) + ' sur ' + combien : null,
+        part: combien > 1 ? rang + ' sur ' + combien : null,
         famille: g.m.famille,
-        debit: g.debit / combien,
+        debit: debit,
         minutes: g.minutes,
         passages: g.passages
       });
+    };
+
+    // **QUEL ARROSEUR EST SUR QUELLE VANNE** — ce que le découpage ne disait
+    // pas jusqu'ici. Il comptait « il faut 4 secteurs » sans jamais dire
+    // lesquels des arroseurs y étaient, et le plan ne pouvait donc pas les
+    // colorier (sa demande du 17 août : « un petit plan avec le nombre de
+    // réseaux, avec des couleurs différentes »).
+    //
+    // **La coupe se fait par RANGÉES CONTIGUËS, et elle REMPLIT jusqu'à la
+    // limite** — deux choses, et chacune corrige un défaut.
+    //
+    // Contiguës : sur un chantier, une vanne dessert une bande d'un seul
+    // tenant, pas un arroseur sur deux. Une coupe alternée donnerait le même
+    // compte et un plan impossible à poser.
+    //
+    // Et remplie pour de vrai, au lieu de diviser le total en parts égales :
+    // une première version annonçait deux secteurs « à 0,88 m³/h » quand la
+    // coupe par rangées en mettait 7 d'un côté et 4 de l'autre. Le plan
+    // montrait alors une répartition que la liste des secteurs démentait —
+    // exactement la divergence que le §3 du dépôt interdit. Ici, le nombre de
+    // secteurs SORT du remplissage : on ferme une vanne quand la rangée
+    // suivante la ferait déborder.
+    // Les têtes dans L'ORDRE DE POSE (rangée par rangée, et de gauche à droite
+    // dans chaque rangée) : c'est `pointsDeLaPose` qui les engendre ainsi, et
+    // c'est l'ordre dans lequel un tuyau les visiterait.
+    var suite = [];
+    g.membres.forEach(function(mb){
+      if (!mb.points) return;
+      mb.points.forEach(function(pt){ suite.push({ zoneId: mb.zoneId, pt: pt, debit: pt.debit || 0 }); });
+    });
+
+    if (!suite.length){
+      // Goutte-à-goutte : pas de têtes à répartir, la gaine se coupe où l'on
+      // veut. La division en parts égales reste juste pour elle.
+      var n = limite > 0 ? Math.max(1, Math.ceil(g.debit / limite)) : 1;
+      for (var i=0;i<n;i++) ajouter(g.debit / n, n, i+1);
+      return;
     }
+
+    // **On coupe AU POINT PRÈS, pas à la rangée.** Couper seulement entre
+    // rangées paraissait plus propre, jusqu'à ce que la pelouse avant le
+    // démente : sa rangée du milieu boit 1,77 m³/h à elle seule, au-dessus de
+    // la limite de 1,53 — insécable, elle fabriquait un secteur en
+    // dépassement. Une rangée longue alimentée par deux vannes, une à chaque
+    // bout, est pourtant ce qu'on pose tous les jours.
+    //
+    // **Et l'on VISE l'équilibre au lieu de remplir à ras bord.** Remplir
+    // jusqu'à la limite donnait 9 têtes sur une vanne et 2 sur l'autre : juste
+    // au sens du débit, absurde au sens du chantier. On calcule donc d'abord
+    // combien de vannes il faut, puis on répartit autour de cette moyenne — en
+    // gardant la limite comme garde-fou dur, jamais franchi.
+    var total = suite.reduce(function(s,x){ return s + x.debit; }, 0);
+    var combien = limite > 0 ? Math.max(1, Math.ceil(total / limite)) : 1;
+    var visee = total / combien;
+    var paquets = [[]], debits = [0];
+    suite.forEach(function(x){
+      var i = paquets.length - 1;
+      var trop = debits[i] + x.debit;
+      var ouvrirUnAutre = paquets[i].length > 0 && (
+        (paquets.length < combien && trop > visee + 1e-9) ||   // l'équilibre visé
+        (limite > 0 && trop > limite + 1e-9)                   // le garde-fou dur
+      );
+      if (ouvrirUnAutre){ paquets.push([]); debits.push(0); i++; }
+      paquets[i].push(x); debits[i] += x.debit;
+    });
+    paquets.forEach(function(pq, i){
+      ajouter(debits[i], paquets.length, i+1);
+      pq.forEach(function(x){
+        reseauDuPoint[x.zoneId + ':' + x.pt.x.toFixed(3) + ':' + x.pt.y.toFixed(3)] = premier + i;
+      });
+    });
   });
-  return { secteurs:secteurs, dispo:dispo, limite:limite,
+  return { secteurs:secteurs, dispo:dispo, limite:limite, reseauDuPoint:reseauDuPoint,
            demande: etat.zones.reduce(function(s,z){ return s + poser(z).debit; }, 0) };
 }
 
@@ -882,10 +963,21 @@ function dessinerVerdict(d){
   hote.innerHTML = html;
 }
 
+/* Les couleurs des réseaux — les siennes en tête (« réseau un en bleu, réseau
+   deux en vert, réseau trois en jaune, ainsi de suite »), puis de quoi tenir
+   au-delà sans que deux voisines se confondent. Un jardin dépasse vite six
+   secteurs : la liste boucle plutôt que de rendre du gris, et le numéro reste
+   écrit à côté de la pastille — c'est LUI qui identifie le réseau, la couleur
+   ne fait que le retrouver d'un coup d'œil. Quelqu'un qui distingue mal le
+   vert du rouge lit toujours le plan. */
+var COULEURS_RESEAU = ['#2F6FB5','#3E8F4E','#D9A520','#B5502F','#7A4FA3','#1F8A8A','#B5417F','#6B7A2F'];
+function couleurReseau(i){ return COULEURS_RESEAU[i % COULEURS_RESEAU.length]; }
+
 function dessinerPlans(){
   var hote = document.getElementById('plans');
   hote.innerHTML = '';
   var eu = false;
+  var d = decouper();
   etat.zones.forEach(function(z){
     if (TYPES[z.type].forme !== 'surface') return;
     var p = poser(z);
@@ -899,12 +991,24 @@ function dessinerPlans(){
     // retirer, entassant deux têtes d'un côté et laissant un trou de l'autre
     // (signalé le 17 août). `p.points` est en mètres depuis le coin (0,0) ;
     // ici on les met seulement à l'échelle du dessin.
-    var couronnes = '', tetes = '';
+    var couronnes = '', tetes = '', vusIci = [];
     p.points.forEach(function(pt){
       var x = margeG + pt.x * E, y = marge + pt.y * E;
-      couronnes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (p.m.portee*E) + '" class="portee"/>';
-      tetes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.5" class="tete"/>';
+      // Le réseau vient du DÉCOUPAGE, jamais recalculé ici : le plan et la
+      // liste des secteurs doivent désigner la même vanne (règle du §3).
+      var iRes = d.reseauDuPoint[z.id + ':' + pt.x.toFixed(3) + ':' + pt.y.toFixed(3)];
+      var c = iRes == null ? null : couleurReseau(iRes);
+      if (iRes != null && vusIci.indexOf(iRes) < 0) vusIci.push(iRes);
+      couronnes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (p.m.portee*E) + '" class="portee"' +
+                   (c ? ' style="fill:' + c + ';stroke:' + c + '"' : '') + '/>';
+      tetes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.5" class="tete"' +
+               (c ? ' style="fill:' + c + '"' : '') + '/>';
     });
+    vusIci.sort(function(a,b){ return a - b; });
+    var legende = vusIci.length < 2 ? '' :
+      '<p class="plan-legende">' + vusIci.map(function(i){
+        return '<span><i style="background:' + couleurReseau(i) + '"></i>Réseau ' + (i+1) + '</span>';
+      }).join('') + '</p>';
     var id = 'gz' + z.id;
     var bloc = document.createElement('div');
     bloc.innerHTML =
@@ -919,7 +1023,7 @@ function dessinerPlans(){
         tetes +
         '<text x="' + (margeG + L/2) + '" y="' + (marge+H+17) + '" class="cote">' + nb(Number(z.L)||0,0) + ' m</text>' +
         '<text x="' + (margeG-10) + '" y="' + (marge+H/2) + '" class="cote cote-g">' + nb(Number(z.l)||0,0) + ' m</text>' +
-      '</svg>';
+      '</svg>' + legende;
     hote.appendChild(bloc);
   });
   if (!eu) hote.innerHTML = '<p class="vide">Le plan se dessine dès qu\'une pelouse est mesurée.</p>';

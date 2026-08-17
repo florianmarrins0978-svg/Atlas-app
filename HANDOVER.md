@@ -994,6 +994,26 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
+**⚠ LE PARCOURS COMPLET DU PRODUIT EST ÉCRIT — il l'a dicté le 17 août, et il
+est dans `TODO.md` § « 0 quaterquadragies AA », en dix étapes avec leur état.**
+À lire avant de décider quoi coder ensuite : sept des dix sont faites, et les
+confondre ferait refaire ce qui existe. **Deux blocages de structure y sont
+nommés, à ne pas contourner par une invention :** la page publiée est statique,
+donc elle ne peut pas LIRE une photo (l'IA vit dans `src/server/ai/`) ; et il
+n'existe pas de plan d'ensemble du jardin, donc **le regard n'a nulle part où
+se poser** — chaque zone est dessinée seule, l'outil ignore où la pelouse est
+par rapport au massif. Le placer « quelque part » serait inventer un jardin.
+
+**⚠ `decouper()` DIT MAINTENANT QUEL ARROSEUR EST SUR QUELLE VANNE
+(`reseauDuPoint`), et le plan colorie d'après CETTE liste.** Ne jamais
+recalculer l'affectation dans le rendu — c'est la divergence qui avait produit
+l'arroseur en trop du quinconce. Trois règles tiennent ce découpage, chacune
+gardée par un contrôle vu rouge : la coupe suit **l'ordre de pose** et reste
+**d'un seul tenant** (une vanne dessert une bande, jamais un arroseur sur
+deux) ; elle se fait **au point près et non à la rangée** (une rangée peut
+dépasser la limite à elle seule) ; et le **débit annoncé d'un secteur est
+celui de ses arroseurs réels**, jamais le total divisé en parts égales.
+
 **⚠ LE DÉBIT D'UNE TURBINE NE DÉPEND PAS DE L'ARC — sa règle du 17 août, et
 c'est elle qui a débloqué les six familles.** *« Les débits, portées qui sont
 dans le tableau sont donnés pour les arroseurs en 360 degrés ; c'est les mêmes

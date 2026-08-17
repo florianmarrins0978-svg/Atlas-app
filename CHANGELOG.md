@@ -9,6 +9,43 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le plan dit enfin quel arroseur est sur quelle vanne
+
+Sa demande, dans le parcours complet qu'il a dicté : *« un petit plan avec le
+nombre de réseaux, avec des couleurs différentes pour les différencier —
+réseau un en bleu, réseau deux en vert, réseau trois en jaune ».* La couleur
+était la partie facile ; **le découpage ne savait pas répondre à la question.**
+Il comptait « il faut 4 secteurs » en divisant le débit total en parts égales,
+sans jamais désigner les arroseurs de chacun.
+
+`decouper()` rend donc maintenant `reseauDuPoint` — le numéro de vanne de
+chaque tête — et le plan colorie d'après cette liste, jamais un second calcul
+à côté : c'est cette divergence-là qui avait produit l'arroseur en trop du
+quinconce le matin même.
+
+**Deux défauts sont tombés au passage, et aucun n'était visible avant que la
+question soit posée :**
+
+- **Les parts égales étaient une fiction.** Sur la pelouse arrière, la coupe
+  réelle donne 0,80 et 0,96 m³/h, pas deux fois 0,88. L'écran annonçait un
+  chiffre que le plan aurait démenti dès la première capture.
+- **Couper entre rangées seulement ne tient pas.** La rangée du milieu de la
+  pelouse avant boit 1,77 m³/h à elle seule, au-dessus de la limite de 1,53 —
+  insécable, elle fabriquait un secteur en dépassement. La coupe se fait donc
+  au point près, dans l'ordre de pose : une longue rangée alimentée par deux
+  vannes, une à chaque bout, est ce qu'on pose tous les jours.
+
+Et l'équilibre est visé au lieu de remplir à ras bord : le premier
+remplissage mettait 9 têtes sur une vanne et 2 sur l'autre — juste au sens du
+débit, absurde au sens du chantier. On calcule combien de vannes il faut, puis
+on répartit autour de cette moyenne, la limite ne servant plus que de
+garde-fou.
+
+Huit contrôles gardent l'ensemble, **chacun vu rouge sur son défaut** : la
+coupe alternée en rougit trois, les parts égales rétablies en rougissent un.
+Le numéro du réseau reste écrit à côté de la pastille, pour que le plan se
+lise aussi quand on distingue mal deux teintes. 52/52 et 90/90.
+
 ### Les turbines se posent enfin — et un corps de tuyère leur était compté
 
 *« Les débits, portées qui sont dans le tableau sont donnés pour les arroseurs

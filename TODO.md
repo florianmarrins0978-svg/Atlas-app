@@ -52,6 +52,87 @@ Les deux écrans ne se confondent pas — celui-ci corrige les coordonnées d'un
 chantier. C'est la meilleure preuve que la fiche inventée au premier essai aurait
 été un troisième écran de trop.
 
+### 0 quaterquadragies AA. Le parcours COMPLET, dicté par lui le 17 août 2026
+
+**C'est la cible du produit, dans son ordre à lui.** Tout ce qui précède
+(catalogue, pose, nourrice, réseau latéral) sont des pièces de ce parcours ;
+ceci est le parcours. À relire avant de décider quoi coder ensuite — plusieurs
+morceaux existent déjà, et les confondre ferait refaire ce qui est fait.
+
+| # | Ce qu'il décrit | État au 17 août |
+|---|---|---|
+| 1 | **Il choisit son piquage** : après compteur d'eau, ou sur un robinet extérieur | **FAIT** (`#compteur`) |
+| 2 | **Au compteur, la ville délivre ≥ 3 bar** — valeur connue, appliquée d'office aux calculs | **FAIT** (bascule à 3 bar) |
+| 3 | **Au robinet, il donne la pression DYNAMIQUE ET STATIQUE** | **PAS FAIT** — un seul champ `pression` aujourd'hui, et surtout : *ce qu'on FAIT de l'écart entre les deux n'est pas su* |
+| 4 | **Une case pour joindre une PHOTO** d'une zone avec ses métrés | **PAS FAIT** — voir le blocage ci-dessous |
+| 5 | À partir de la photo et des métrés, **estimer les réseaux** (« deux réseaux d'arroseurs, un de goutte-à-goutte ») | Le découpage existe (`decouper`) à partir des zones SAISIES, pas d'une photo |
+| 6 | **Les mètres linéaires de PEHD Ø25 ou Ø32**, choisis selon les distances, le débit des arroseurs et la pression saisie | **PAS FAIT** — deux champs à remplir à la main. Bloqué : sa règle Ø25/Ø32 n'est pas donnée |
+| 7 | **La liste exacte des pièces à commander** | **FAIT** — buses, corps par famille, SBE, PEBD, réseau latéral, nourrice |
+| 8 | **Un plan avec les réseaux en COULEURS** (réseau 1 bleu, 2 vert, 3 jaune…) | **FAIT le 17 août** — voir ci-dessous, et ça a demandé plus qu'une couleur |
+| 9 | **Le regard placé sur le plan**, « bien souvent caché, donc on le met dans les massifs » | **PAS FAIT** — voir le blocage ci-dessous |
+| 10 | **Le total à ses prix**, une fois son registre rempli | **FAIT** (`arrosage-tarifs.html`) |
+
+**⚠ DEUX BLOCAGES DE STRUCTURE, à ne pas contourner par une invention.**
+
+1. **La photo ne peut pas être LUE par cette page.** `appli/` est publié en
+   pages statiques (`pages.yml`) : pas de serveur, pas de modèle d'IA. Joindre
+   une photo et l'afficher à côté du plan est faisable ; en tirer des cotes
+   automatiquement ne l'est pas ici. L'application Next.js, elle, sait déjà
+   recevoir une photo et interroger un modèle (`src/server/ai/`) — **c'est là
+   que ce morceau devra vivre**, ou alors la page devra parler à un service.
+   Ne pas promettre la lecture automatique depuis la page essayable.
+2. **Le plan d'ensemble n'existe pas, et le regard n'a donc nulle part où se
+   poser.** Aujourd'hui chaque zone est dessinée SEULE : l'outil ne sait pas où
+   la pelouse est par rapport au massif. « Mettre le regard dans les massifs »
+   suppose un plan du jardin entier, avec les zones les unes par rapport aux
+   autres — c'est-à-dire exactement ce que le croquis photographié apporterait.
+   **Placer le regard « quelque part » avant cela serait inventer un jardin.**
+
+**Ce qui est donc faisable tout de suite, sans rien inventer :** les couleurs
+par réseau sur les plans de zone existants (#8, fait), et la case photo comme
+PIÈCE JOINTE montrée à côté du plan (#4 partiel, pas encore fait).
+
+**#8 EST FAIT — et il a fallu réparer le découpage pour l'obtenir.** Colorier
+supposait de savoir QUEL ARROSEUR EST SUR QUELLE VANNE : `decouper()` ne le
+savait pas. Il comptait « il faut 4 secteurs » en divisant le débit total en
+parts égales, sans jamais désigner les arroseurs de chacun. Trois choses ont
+donc changé, et les deux dernières corrigent de vrais défauts :
+
+1. **`decouper()` rend `reseauDuPoint`** — le numéro de vanne de chaque tête,
+   et le plan colorie d'après CETTE liste, jamais un second calcul à côté
+   (§3 ; c'est cette divergence-là qui avait produit l'arroseur en trop du
+   quinconce).
+2. **La coupe suit l'ORDRE DE POSE et reste d'un seul tenant.** Une vanne
+   dessert une bande continue, jamais un arroseur sur deux — une coupe
+   alternée donnerait le même compte et un plan impossible à poser.
+3. **Le débit annoncé d'un secteur est celui de SES arroseurs.** Les parts
+   égales étaient une fiction : sur la pelouse arrière, la coupe réelle donne
+   0,80 et 0,96 m³/h, pas deux fois 0,88. L'écran annonçait un chiffre que le
+   plan démentait.
+
+**Deux pièges rencontrés là-dedans, à ne pas réintroduire :**
+
+- **Couper seulement entre RANGÉES ne marche pas.** La rangée du milieu de la
+  pelouse avant boit 1,77 m³/h à elle seule, au-dessus de la limite de 1,53 :
+  insécable, elle fabriquait un secteur en dépassement. On coupe donc **au
+  point près**, dans l'ordre de pose — une longue rangée alimentée par deux
+  vannes, une à chaque bout, est ce qu'on pose tous les jours.
+- **Remplir jusqu'à la limite déséquilibre.** Le premier remplissage donnait
+  9 têtes sur une vanne et 2 sur l'autre : juste au sens du débit, absurde au
+  sens du chantier. On calcule donc d'abord COMBIEN de vannes il faut, puis on
+  répartit autour de cette moyenne, la limite ne servant plus que de garde-fou.
+
+Les couleurs commencent par les siennes (bleu, vert, jaune) et bouclent
+au-delà de huit ; **le NUMÉRO reste écrit à côté de la pastille**, pour que le
+plan se lise aussi quand on distingue mal deux teintes.
+
+**LA QUESTION QUI DÉBLOQUE LE PEHD (#6), et elle seule :** le diamètre suit-il
+une règle de débit (par exemple : au-delà de tant de m³/h dans une ligne, on
+passe en Ø32), ou est-ce au cas par cas selon la longueur ? C'est la question 9
+du premier tour, restée sans réponse.
+
+---
+
 ### 0 quaterquadragies. Le plan d'arrosage — **DEUX CHOIX TRANCHÉS, une maquette essayable**
 
 **Tranché le 17 août 2026 :**
