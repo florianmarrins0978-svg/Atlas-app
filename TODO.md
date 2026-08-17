@@ -27,6 +27,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### ~~0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier~~ — **FAIT le 17 août 2026**
+
+*Dessiné, corrigé par lui, puis codé le même jour.* `ARCHITECTURE.md` §124.
+
+La mention devient un lien vers `/chantiers/[id]/coordonnees` — l'écran de
+création rouvert, prérempli, qui enregistre au lieu de créer. Le nom du chantier
+se recalcule, sinon la ligne dirait « Chantier du … » pour toujours.
+
+**LA LEÇON DE CE LOT, ET ELLE VAUT AU-DELÀ DE LUI.** Une première planche a
+dessiné une « fiche client » de toutes pièces ; il a répondu : *« je ne suis pas
+sûr que tu aies bien compris […] rien de plus, rien de moins »*. **Devant une
+demande qui touche à un écran, chercher d'abord SI L'ÉCRAN EXISTE** — sa seconde
+photo le montrait.
+
+Ce qui avait égaré : le code annonce lui-même qu'il manque une fiche client
+(*« faute d'écran de fiche client »*, `DevisCompletClient.tsx`). C'est vrai, et
+ce n'était pas sa demande. **Un manque réel du produit n'autorise pas à le
+combler dans le lot d'à côté.**
+
+**Et la fiche client, elle, est arrivée par une autre porte le même jour**
+(`ARCHITECTURE.md` §121) : elle MONTRE ce que l'application sait d'un client.
+Les deux écrans ne se confondent pas — celui-ci corrige les coordonnées d'un
+chantier. C'est la meilleure preuve que la fiche inventée au premier essai aurait
+été un troisième écran de trop.
+
 ### 0 quaterquadragies. Le plan d'arrosage — **DEUX CHOIX TRANCHÉS, une maquette essayable**
 
 **Tranché le 17 août 2026 :**
@@ -463,6 +488,44 @@ Migration `drizzle/0050_rappel_facture_impayee.sql`, règles pures dans
   défile, sans une seule carte, pendant que le contrôle lisait le DOM et se
   déclarait vert. Et un montage écrit `WHERE id = NULL` sans se plaindre :
   vérifier le `rowCount` de toute écriture de montage.
+
+### 0 trigies quater. `test-fiche-pendant-relance` : le rouge venait de CELUI QUI L'OBSERVAIT
+
+**Vu le 17 août 2026**, et d'abord mal expliqué — ce point a été écrit une
+première fois sous le titre « rougit sous charge », ce qui était **faux**. La
+correction est ici parce qu'une hypothèse consignée dans les tâches se lit
+ensuite comme un fait (`TODO.md` 0 tricies nonies bis).
+
+**Le symptôme :** son deuxième cas — *« le veilleur est bien bloqué à relancer »*
+— rouge dans la batterie complète, vert rejoué seul. Quatre fois de suite.
+
+**LA CAUSE, MESURÉE.** `veiller.sh` ne se déclare « serveur mort » que si
+`pgrep -f '[n]ext(-server| dev| start)'` ne trouve **rien**. Or `pgrep -f`
+compare la **ligne de commande entière de tout processus de la machine**. Les
+batteries rouges avaient été lancées par une commande qui commençait par
+`pgrep -af "next-server|next dev" | xargs kill` — un ménage des serveurs
+orphelins. **Ce shell-là reste vivant pendant toute la batterie, et sa ligne de
+commande contient littéralement « next-server » et « next dev ».** Le veilleur
+voyait donc un serveur, prenait l'autre branche, et n'écrivait jamais le message
+que la suite attend.
+
+**La preuve tient en deux lignes de journal :** la batterie lancée SANS ce
+préfixe (`batterie19`) a la suite au vert ; les quatre suivantes, avec, au rouge.
+
+**CE QUE ÇA APPREND, ET CE N'EST PAS UNE ANECDOTE :**
+
+- **`pgrep -f` attrape l'observateur.** Toute commande de diagnostic qui NOMME
+  un motif surveillé par le produit devient elle-même ce qu'elle cherche. Faire
+  le ménage des serveurs dans un appel SÉPARÉ, qui se termine avant la batterie.
+- **Un rouge reproductible n'est pas forcément un défaut du code.** Celui-ci
+  l'était quatre fois d'affilée, et « sous charge » était une explication
+  plausible, cohérente, et fausse. Deux voisines de ce fichier rougissent
+  vraiment sous charge : la ressemblance est précisément ce qui a fait mal
+  deviner.
+
+**Rien n'est à corriger dans le produit ni dans la suite.** Elle a raison de
+refuser de conclure quand son montage n'a pas reproduit le cas — c'est ce qui a
+permis de le voir.
 
 ### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
 

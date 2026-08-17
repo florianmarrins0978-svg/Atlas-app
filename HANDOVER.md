@@ -750,7 +750,57 @@ chantier »* — c'est la LIGNE DE LA LISTE qu'il désignait, pas la fiche.
 `maquettes/atlas-centre-de-la-fiche.html` reste au placard, et n'a rien changé
 dans `src/`.
 
+## ⚠ Faire le ménage des serveurs dans un appel SÉPARÉ de la batterie
+
+**Payé quatre batteries, le 17 août 2026.** `test-fiche-pendant-relance` rougit
+si la commande qui lance la batterie contient elle-même
+`pgrep -af "next-server|next dev"` — le ménage des serveurs orphelins.
+
+`veiller.sh` ne conclut « serveur mort » que si `pgrep -f '[n]ext(…)'` ne trouve
+**rien**, et `pgrep -f` compare la **ligne de commande entière de tout processus
+vivant**. Le shell qui porte à la fois le ménage et la batterie reste vivant
+pendant toute celle-ci : sa propre ligne de commande contient « next dev », le
+veilleur croit voir un serveur, et la suite échoue sur un montage qui n'a pas
+reproduit son cas.
+
+**Donc : deux appels, jamais un.** Le ménage d'abord, qui se termine ; la
+batterie ensuite, dans une commande qui ne nomme aucun de ces motifs.
+
+**Et la leçon générale :** une commande de diagnostic qui NOMME un motif
+surveillé par le produit devient elle-même ce qu'elle cherche. Le rouge était
+reproductible quatre fois, « sous charge » était une explication plausible — et
+fausse. `TODO.md` §0 trigies quater.
+
 ## Ce qui vient d'être terminé
+
+**« ADRESSE NON RENSEIGNÉE » OUVRE L'ÉCRAN DU CHANTIER (17 août).** La mention de
+l'accueil est un lien vers `/chantiers/[id]/coordonnees` — l'écran de création
+rouvert, prérempli, qui enregistre au lieu de créer. `ARCHITECTURE.md` §124.
+
+**Trois choses à savoir avant d'y toucher :**
+
+1. **UNE LIGNE DE L'ACCUEIL = UN SEUL `<a>`, et cet invariant a été découvert
+   en le cassant.** La mention seule est la cible ; le nom du chantier garde sa
+   reprise du 13 août. Un lien dans un lien n'étant pas valide, la première
+   version avait coupé le lien de la ligne en trois — **et trois suites sont
+   tombées d'un coup** : `test-dashboard` compte `a.atlas-brin`,
+   `test-suivi-devis` remonte à `ancestor::a[1]`, `test-transcription` clique au
+   milieu de `.atlas-ligne`. La mention est donc un `<span role="link">` posé
+   DANS l'ancre, qui détourne le geste. **Ne pas la « rétablir » en vrai lien.**
+2. **Le nom du chantier se RECALCULE à l'enregistrement**, avec la date de
+   CRÉATION du chantier et non celle du jour. Sans ce recalcul, la ligne
+   afficherait « Chantier du … » pour toujours — le défaut corrigé partout sauf
+   là où il l'a vu. Avec la date du jour, le chantier se renommerait et il ne le
+   reconnaîtrait plus.
+3. **Deux mots seulement changent** entre créer et reprendre : le surtitre et le
+   bouton. Ils changent parce qu'ils mentiraient, pas par décoration.
+
+**LA LEÇON DE MÉTHODE, ET ELLE A COÛTÉ DEUX ALLERS-RETOURS.** Une première
+planche avait dessiné une « fiche client » de toutes pièces ; il a répondu
+*« rien de plus, rien de moins »* en renvoyant la capture de l'écran qui
+existait. **Devant une demande qui touche à un écran, chercher d'abord si
+l'écran existe.** Ce qui avait égaré : le code annonce lui-même qu'il manque une
+fiche client — c'est vrai, et ce n'était pas sa demande.
 
 **LE CATALOGUE EST ÉCRIVABLE (17 août) — CODÉ, arrangement B.** Il a posé deux
 fois la même question (14 puis 17 août) : *« À quoi sert cette page ?? On peut
