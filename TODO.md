@@ -84,6 +84,15 @@ qui ne le sont pas.
 | 10 | Une grande nourrice ou deux petites au-delà d'une certaine taille ? | *en attente* |
 | 11 | Le croquis du client : rectangles simples, ou formes libres avec obstacles ? | *en attente* |
 | 12 | L'utilisateur qui ne connaît rien saura-t-il mesurer son débit ? Faut-il une valeur par défaut ? | *en attente* |
+| 13 | Le choix de marque vaut-il aussi pour le **goutte-à-goutte** et le **reste du matériel** (vannes, programmateur, nourrice), ou seulement pour les arroseurs et tuyères ? | *en attente* |
+| 14 | Quelles marques mettre dans le bandeau en plus de **Rain Bird** et **Toro** ? | *en attente* |
+
+**LE CHOIX DE MARQUE — fait le 17 août.** Bandeau déroulant, **Rain Bird par
+défaut**, Toro ensuite ; `CATALOGUE.marques` s'allonge d'une ligne. **Aucune
+valeur générique n'est attribuée à une marque** : l'écran dit « aucun modèle
+Rain Bird enregistré » et le répète sur chaque zone. Une zone retient un TYPE
+(turbine/tuyère) et non une référence, pour qu'une bascule de marque ne vide pas
+ses zones.
 
 **⚠ LE CATALOGUE EST LA PROCHAINE ÉTAPE, ET IL EST À LUI.** Le 17 août :
 *« plusieurs choses sont fausses »*, puis : *« je vais t'envoyer des photos avec

@@ -222,6 +222,11 @@
     <p class="aide">Une zone = une partie du jardin qui s'arrose pareil. Les
       mesures suffisent : le matériel et la pose se déduisent, et se
       changent.</p>
+    <div class="ligne" style="margin-bottom:10px">
+      <div><label for="marque">Marque des arroseurs</label>
+        <select id="marque"></select></div>
+    </div>
+    <p class="aide" id="marqueNote" style="margin:0 0 12px"></p>
     <div id="zones"></div>
     <div class="ajouts">
       <button type="button" data-ajout="gazon">+ Pelouse</button>
@@ -288,10 +293,28 @@
    nombre d'arroseurs, et c'est lui qui revient poser les manquants.
    ═══════════════════════════════════════════════════════════════════════════ */
 var MATERIELS = {};
-CATALOGUE.arroseurs.forEach(function(a){
-  MATERIELS[a.ref === 'turbine-generique' ? 'turbine' : (a.ref === 'tuyere-generique' ? 'tuyere' : a.ref)] = a;
-});
-CATALOGUE.gaines.forEach(function(g){ MATERIELS[g.ref === 'gaine-generique' ? 'gaine' : g.ref] = g; });
+CATALOGUE.arroseurs.concat(CATALOGUE.gaines).forEach(function(m){ MATERIELS[m.ref] = m; });
+
+/* Le modèle retenu pour un type d'arroseur, dans la marque choisie.
+   **Le repli sur le générique est BRUYANT** : il rend aussi `emprunte`, et
+   l'écran l'affiche. Un repli muet ferait croire que Rain Bird est renseigné
+   alors qu'aucune de ses références n'est encore entrée. */
+function modelePour(type){
+  var marque = marqueCourante();
+  var chez = CATALOGUE.arroseursDe(marque, type);
+  if (chez.length) return { m: chez[0], emprunte: false };
+  var generique = CATALOGUE.arroseursDe('generique', type);
+  return { m: generique[0] || null, emprunte: true };
+}
+
+function marqueCourante(){
+  var connues = CATALOGUE.marques.map(function(x){ return x.cle; });
+  return connues.indexOf(etat.marque) >= 0 ? etat.marque : CATALOGUE.marqueParDefaut();
+}
+function nomDeMarque(cle){
+  var m = CATALOGUE.marques.filter(function(x){ return x.cle === cle; })[0];
+  return m ? m.nom : cle;
+}
 
 /* Les besoins en millimètres par semaine, et le nombre de passages.
    LES SECTEURS NE CHANGENT PAS AVEC LA SAISON — c'est du câblage, il est posé
@@ -330,6 +353,7 @@ var LEVER = 6 * 60 + 30;  // au-delà, l'eau s'évapore avant d'entrer
 
 var etat = charger() || {
   seau:10, temps:20, pression:3, saison:'juillet', recouvrement:RECOUVREMENT_DEFAUT,
+  marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   pe32:60, pe25:120, sonde:false,
   zones:[
     { id:1, nom:'Pelouse arrière', type:'gazon',   L:18, l:12, materiel:'auto' },
@@ -360,16 +384,24 @@ function debitDisponible(){
 
 /* Le matériel se choisit sur la LARGEUR de la pelouse : une turbine porte à 9 m,
    la poser sur une bande de 5 m arroserait surtout le mur d'en face. */
+/* Rend un TYPE ('turbine', 'tuyere', 'gaine'), pas une référence : la référence
+   dépend de la marque choisie, et elle peut changer sous les pieds de la zone
+   quand il bascule de Rain Bird à Toro. Garder un type laisse ses zones
+   intactes à la bascule — ce qu'un changement de marque doit faire. */
 function materielDe(z){
-  if (z.materiel && z.materiel !== 'auto') return z.materiel;
   if (TYPES[z.type].forme !== 'surface') return 'gaine';
+  if (z.materiel === 'turbine' || z.materiel === 'tuyere') return z.materiel;
   return Math.min(Number(z.L)||0, Number(z.l)||0) >= 8 ? 'turbine' : 'tuyere';
 }
 
 function poser(z){
-  var cle = materielDe(z), m = MATERIELS[cle], sais = saisonCourante();
+  var cle = materielDe(z), choix = cle === 'gaine'
+    ? { m: CATALOGUE.gaines[0], emprunte: CATALOGUE.gaines[0].marqueCle === 'generique' }
+    : modelePour(cle);
+  var m = choix.m, sais = saisonCourante();
+  if (!m) return { cle:cle, m:null, nombre:0, debit:0, minutes:0, nx:0, ny:0, emprunte:true };
   var besoin = sais[TYPES[z.type].famille][0], passages = sais[TYPES[z.type].famille][1];
-  var r = { cle:cle, m:m, besoin:besoin, passages:passages };
+  var r = { cle:cle, m:m, besoin:besoin, passages:passages, emprunte:choix.emprunte };
 
   if (TYPES[z.type].forme === 'surface'){
     var L = Number(z.L)||0, l = Number(z.l)||0;
@@ -460,6 +492,7 @@ function dessinerZones(){
   }
   etat.zones.forEach(function(z){
     var t = TYPES[z.type], p = poser(z), bloc = document.createElement('div');
+    if (!p.m) { p = Object.assign(p, { m: { nom:'—', detail:'', portee:0, source:'provisoire' } }); }
     bloc.className = 'zone';
     var mesures = t.forme === 'surface'
       ? '<div class="ligne">' +
@@ -479,7 +512,8 @@ function dessinerZones(){
             ' — un tous les ' + nb(p.ecart) + ' m'
           : p.nombre + ' m de gaine')
         + ' · ' + nb(p.debit) + ' m³/h · ' + p.minutes + ' min, ' + p.passages + '×/semaine'
-        + (p.m.source === 'provisoire' ? ' · <span class="provisoire">portée à confirmer</span>' : '')
+        + (p.emprunte ? ' · <span class="provisoire">modèle générique, pas encore ' + nomDeMarque(marqueCourante()) + '</span>'
+                      : (p.m.source === 'provisoire' ? ' · <span class="provisoire">portée à confirmer</span>' : ''))
       : 'Mesures à compléter.';
 
     bloc.innerHTML =
@@ -504,6 +538,26 @@ function dessinerZones(){
     });
     hote.appendChild(bloc);
   });
+}
+
+function dessinerMarques(){
+  var choix = document.getElementById('marque');
+  if (!choix.options.length){
+    CATALOGUE.marques.filter(function(m){ return !m.cache; }).forEach(function(m){
+      var o = document.createElement('option');
+      o.value = m.cle; o.textContent = m.nom;
+      choix.appendChild(o);
+    });
+    choix.addEventListener('change', function(){ etat.marque = choix.value; recalculer(true); });
+  }
+  choix.value = marqueCourante();
+
+  var cle = marqueCourante(), combien = CATALOGUE.arroseursDe(cle).length;
+  document.getElementById('marqueNote').innerHTML = combien
+    ? combien + ' modèle' + (combien>1?'s':'') + ' ' + nomDeMarque(cle) + ' au catalogue.'
+    : '<span class="provisoire">Aucun modèle ' + nomDeMarque(cle) + ' enregistré.</span> ' +
+      'Je calcule avec des valeurs génériques en attendant vos photos — et je le ' +
+      'redis sur chaque zone plutôt que de le laisser croire.';
 }
 
 function dessinerSaisons(){
@@ -610,18 +664,28 @@ function dessinerPlans(){
 }
 
 function listeMateriel(d){
-  var lignes = [], compte = {};
+  var lignes = [], compte = {}, modeles = {};
   etat.zones.forEach(function(z){
     var p = poser(z);
-    if (!p.nombre) return;
-    var clef = p.cle;
-    compte[clef] = (compte[clef] || 0) + p.nombre;
+    if (!p.nombre || !p.m) return;
+    // Compté par RÉFÉRENCE : c'est elle qui part chez le fournisseur, et elle
+    // change quand il bascule de marque. Compter par type ferait commander
+    // « des turbines » sans dire lesquelles.
+    compte[p.m.ref] = (compte[p.m.ref] || 0) + p.nombre;
+    modeles[p.m.ref] = p.m;
   });
-  ['turbine','tuyere'].forEach(function(cle){
-    if (compte[cle]) lignes.push({ nom: MATERIELS[cle].nom + 's ' + MATERIELS[cle].detail, q: compte[cle], u:'u' });
+  var totalArroseurs = 0, totalGaine = 0;
+  Object.keys(compte).forEach(function(ref){
+    var m = modeles[ref];
+    if (m.type === 'gaine'){ totalGaine += compte[ref]; return; }
+    totalArroseurs += compte[ref];
+    lignes.push({ nom: (m.marqueCle === 'generique' ? '' : m.marque + ' ') +
+                       m.nom + 's ' + m.detail, q: compte[ref], u:'u' });
   });
-  if (compte.gaine) lignes.push({ nom:'Gaine de goutteurs ' + MATERIELS.gaine.detail, q: compte.gaine, u:'ml' });
-  var totalArroseurs = (compte.turbine || 0) + (compte.tuyere || 0);
+  if (totalGaine){
+    var g = CATALOGUE.gaines[0];
+    lignes.push({ nom:'Gaine de goutteurs ' + g.detail, q: totalGaine, u:'ml' });
+  }
   if (totalArroseurs) lignes.push({ nom:'Crosses de raccordement (une par arroseur)', q: totalArroseurs, u:'u' });
   if (d.secteurs.length){
     lignes.push({ nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
@@ -706,7 +770,8 @@ function dessinerBandeau(){
 }
 
 function texteDeLaListe(d){
-  var l = ['Demande de prix — arrosage automatique', ''];
+  var l = ['Demande de prix — arrosage automatique',
+           'Marque souhaitée : ' + nomDeMarque(marqueCourante()), ''];
   listeMateriel(d).forEach(function(x){ l.push('- ' + x.q + ' ' + x.u + '  ' + x.nom); });
   l.push('- ' + etat.pe32 + ' ml  Tuyau PE 32 (ligne principale)');
   l.push('- ' + etat.pe25 + ' ml  Tuyau PE 25 (antennes)');
@@ -731,6 +796,7 @@ function recalculer(redessinerZones){
   document.getElementById('debitNote').textContent = d.dispo > 0
     ? Math.round(d.dispo * 1000 / 60) + ' L/min · un secteur ne dépassera pas ' + nb(d.limite) + ' m³/h'
     : 'Remplissez le seau et le temps.';
+  dessinerMarques();
   if (redessinerZones) dessinerZones();
   dessinerSecteurs(d);
   dessinerVerdict(d);

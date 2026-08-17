@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le choix de la marque : Rain Bird par défaut, et rien d'attribué sans preuve
+
+**Sa demande :** *« l'utilisateur pourra également choisir entre les marques.
+De base on va mettre les arroseurs et les tuyères de la marque Rain Bird, mais
+s'il veut, il faudra créer un petit bandeau déroulant avec le choix de la marque
+Toro par exemple, et dans ce cas-là tu lui proposeras des arroseurs et des
+tuyères de la marque Toro. Mais de base, ça sera Rain Bird. »*
+
+Le bandeau existe, Rain Bird est le défaut, et `CATALOGUE.marques` s'allonge
+d'une ligne par marque — sans toucher au code.
+
+**Ce qui aurait été facile et qui est refusé : coller les valeurs génériques
+sous le nom de Rain Bird.** Elles viennent de catalogues courants, pas de ses
+photos. L'écran choisit donc Rain Bird, **constate qu'il n'a aucun modèle et le
+dit** — dans le bandeau, puis **sur chaque zone** (« modèle générique, pas
+encore Rain Bird »). Le repli sur le générique est délibérément bruyant : un
+repli muet ferait croire la marque renseignée, et c'est le paysagiste qui
+commanderait la mauvaise référence.
+
+**Une conséquence de structure, pas de goût :** une zone retient un TYPE
+(turbine ou tuyère), pas une référence. Sans quoi une bascule de Rain Bird vers
+Toro viderait ses zones du matériel qu'elles portaient. La liste au fournisseur,
+elle, compte par **référence** et porte la marque en tête — c'est elle qui part
+en commande.
+
 ### Le catalogue d'arrosage attend SES données — et l'écran dit ce qui manque
 
 **Son constat, une fois la page essayée :** *« plusieurs choses sont fausses »*.

@@ -56,15 +56,37 @@
 
 var CATALOGUE = {
 
+  /* ── Les marques ────────────────────────────────────────────────────────
+     Sa demande du 17 août 2026 : « de base on va mettre les arroseurs et les
+     tuyères de la marque Rain Bird, mais s'il veut, il faudra créer un petit
+     bandeau déroulant avec le choix de la marque Toro par exemple, et dans ce
+     cas-là tu lui proposeras des arroseurs et des tuyères de la marque Toro.
+     Mais de base, ça sera Rain Bird. »
+
+     **RAIN BIRD EST LE DÉFAUT, ET AUCUN MODÈLE NE LUI EST ENCORE ATTRIBUÉ.**
+     Les deux entrées ci-dessous portent la marque « générique » : ce sont des
+     valeurs de catalogue courantes, et les coller sous le nom de Rain Bird
+     ferait passer une supposition pour une référence — c'est précisément ce
+     que ce fichier interdit. L'écran choisit donc Rain Bird, constate qu'il n'a
+     rien, et le DIT en utilisant les valeurs génériques en attendant.
+     `marques` s'allonge sans toucher au code : une marque de plus est une ligne. */
+  marques: [
+    { cle:'rainbird', nom:'Rain Bird', defaut:true },
+    { cle:'toro',     nom:'Toro' },
+    { cle:'generique', nom:'Générique (provisoire)', cache:true }
+  ],
+
   /* ── Les arroseurs ──────────────────────────────────────────────────────
      `portee` en mètres à `pression` bars. `debit360` en m³/h pour un cercle
      entier — un arroseur de bord n'en consomme que la moitié, un coin le quart.
      `pluvio` en mm/h : c'est elle qui donne les DURÉES, jamais la surface. */
   arroseurs: [
-    { ref:'turbine-generique', marque:'—', nom:'Turbine', detail:'buse 3,0',
+    { ref:'turbine-generique', marqueCle:'generique', marque:'—',
+      type:'turbine', nom:'Turbine', detail:'buse 3,0',
       portee:9, pression:3, debit360:0.44, pluvio:11, famille:'Arroseurs',
       source:'provisoire' },
-    { ref:'tuyere-generique', marque:'—', nom:'Tuyère', detail:'buse 12',
+    { ref:'tuyere-generique', marqueCle:'generique', marque:'—',
+      type:'tuyere', nom:'Tuyère', detail:'buse 12',
       portee:3.7, pression:3, debit360:0.48, pluvio:38, famille:'Arroseurs',
       source:'provisoire' }
   ],
@@ -72,7 +94,8 @@ var CATALOGUE = {
   /* ── Le goutte-à-goutte ─────────────────────────────────────────────────
      `debitMetre` en m³/h par mètre de gaine. */
   gaines: [
-    { ref:'gaine-generique', marque:'—', nom:'Gaine de goutteurs',
+    { ref:'gaine-generique', marqueCle:'generique', marque:'—', type:'gaine',
+      nom:'Gaine de goutteurs',
       detail:'2,3 L/h tous les 33 cm', debitMetre:0.007, pluvio:23,
       famille:'Goutte-à-goutte', source:'provisoire' }
   ],
@@ -118,6 +141,20 @@ var CATALOGUE = {
 
 /* Ce que l'écran doit savoir dire, et qui se compte ici plutôt qu'à trois
    endroits : combien de valeurs attendent encore ses données. */
+/* Les arroseurs d'une marque, par type. Rend un tableau VIDE quand la marque
+   n'a rien : c'est à l'écran de le dire, pas à ce fichier de le masquer par un
+   repli silencieux — un repli muet ferait croire que Rain Bird est renseigné. */
+CATALOGUE.arroseursDe = function (marqueCle, type) {
+  return CATALOGUE.arroseurs.filter(function (a) {
+    return a.marqueCle === marqueCle && (!type || a.type === type);
+  });
+};
+
+CATALOGUE.marqueParDefaut = function () {
+  var d = CATALOGUE.marques.filter(function (m) { return m.defaut; })[0];
+  return d ? d.cle : CATALOGUE.marques[0].cle;
+};
+
 CATALOGUE.provisoires = function () {
   var n = 0;
   ['arroseurs','gaines','materiel'].forEach(function (famille) {

@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const B = 'http://127.0.0.1:8095';
+const B = 'http://127.0.0.1:8093';
 let ok = 0, ko = 0;
 function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; console.log('  ✗ ' + n + (d ? '\n      ' + d : '')); } }
 (async () => {
@@ -32,6 +32,23 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('l\'écart de pose est écrit en mètres', /un tous les \d/.test(note), note.slice(0, 70));
   await page.fill('#recouvrement', '80');
   await page.waitForTimeout(150);
+
+  // LA MARQUE — sa demande du 17 août : Rain Bird par défaut, bandeau déroulant
+  // pour en changer. Sans ce cas, le bandeau pourrait ne rien piloter du tout.
+  cas('la marque par défaut est Rain Bird',
+      (await page.locator('#marque').inputValue()) === 'rainbird',
+      'lu : ' + (await page.locator('#marque').inputValue()));
+  const noteRB = await page.locator('#marqueNote').innerText();
+  cas('une marque sans modèle le DIT', /Aucun modèle Rain Bird/.test(noteRB), noteRB.slice(0, 60));
+  await page.selectOption('#marque', 'toro');
+  await page.waitForTimeout(200);
+  const noteToro = await page.locator('#marqueNote').innerText();
+  cas('changer de marque change ce qui est annoncé', /Toro/.test(noteToro), noteToro.slice(0, 60));
+  cas('et les zones survivent à la bascule', (await page.locator('.zone').count()) > 0);
+  const mailMarque = await page.locator('#envoyer').getAttribute('href');
+  cas('la marque part dans la demande au fournisseur', /Toro/.test(decodeURIComponent(mailMarque)));
+  await page.selectOption('#marque', 'rainbird');
+  await page.waitForTimeout(200);
 
   // La nourrice : tant que sa fiche manque, l'écran le dit au lieu d'inventer.
   const nourrice = await page.locator('#nourrice').innerText();
