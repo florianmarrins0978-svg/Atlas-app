@@ -1,75 +1,73 @@
-import ScreenHeader from "@/components/ScreenHeader";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { listerCataloguePrestations } from "@/server/repositories/catalogue-prestations";
-import { listerCatalogueMateriels } from "@/server/repositories/catalogue-materiels";
-import { listerHistoriquePrix } from "@/server/repositories/historique-prix";
+import { listerCartes, motsAProposer } from "@/server/repositories/mots-catalogue";
+import MotsProposes from "./MotsProposes";
+import MesMots from "./MesMots";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Le catalogue — le vocabulaire du métier, et ses mots à lui par-dessus.
+ *
+ * **Il a posé la même question deux fois**, capture à l'appui (14 puis 17 août
+ * 2026) : *« À quoi sert cette page ?? On peut rien modifier rajouter »*. Un
+ * écran qu'il faut expliquer deux fois n'est pas mal compris : il ne dit pas ce
+ * qu'il fait. Arrangement **B** de `docs/maquettes/72-mes-mots-au-catalogue.html`.
+ *
+ * **Trois choses ont changé, et chacune répare un défaut qu'il a vu :**
+ *
+ *   - **la flèche de retour** existe enfin. On arrive ici depuis « Tarifs &
+ *     catalogue » et on n'en repartait que par la barre du bas ;
+ *   - **« Aucun prix encore constaté par votre entreprise » a disparu.** Cette
+ *     phrase interrogeait `historique_prix`, une mémoire que l'application
+ *     n'écrit nulle part : elle ne se serait JAMAIS éteinte. Aucun montant ne
+ *     la remplace — la mémoire vivante (`lecons_prix`) range par nature de
+ *     chantier, pas par mot de catalogue, et afficher un prix d'abattage sous
+ *     « Élagage » serait pire que la phrase d'hier, qui au moins n'inventait
+ *     rien (question laissée ouverte au bas de la planche) ;
+ *   - **« Synonymes » et « Variantes » disaient la même chose.** Un seul mot
+ *     désormais : « Aussi appelé ».
+ */
 export default async function CataloguePage() {
   const ctx = await getCurrentCtx();
-  const prestations = await listerCataloguePrestations();
-  const materiels = await listerCatalogueMateriels();
-
-  const prestationsAvecHistorique = await Promise.all(
-    prestations.map(async (p) => ({
-      ...p,
-      historique: await listerHistoriquePrix(ctx, p.id),
-    }))
-  );
+  const [prestations, materiels, proposes] = await Promise.all([
+    listerCartes(ctx, "prestation"),
+    listerCartes(ctx, "materiel"),
+    // Ce qu'Atlas a entendu et ne connaît pas (17 août 2026). Vide la plupart
+    // du temps : il faut une dictée récente, un mot inconnu dedans, et une
+    // ligne retenue que le catalogue reconnaît.
+    motsAProposer(ctx),
+  ]);
 
   return (
-    <div>
-      {/* **Sans `backHref`, `ScreenHeader` n'affiche AUCUNE flèche** — et cet
-          écran n'a qu'une porte, « Le catalogue » sous Tarifs. On y entrait
-          sans pouvoir en ressortir autrement que par la barre du bas. Trouvé
-          en corrigeant le retour de « Mes prix », le 17 août 2026. */}
-      <ScreenHeader title="Catalogue" backHref="/reglages/tarifs" />
-      <div className="p-4">
-        <p className="mb-3 text-xs text-ink/40">
-          Base de connaissance partagée : prestations et matériels reconnus par Atlas, avec l&apos;historique des
-          prix pratiqués par votre entreprise.
+    <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
+      <div className="pb-24">
+        <EnTeteEcran
+          surtitre="Réglages"
+          titre="Catalogue"
+          retour={{ href: "/reglages/tarifs", libelle: "Retour aux tarifs" }}
+        />
+
+        <p className="mx-[26px] mt-[18px] text-[13px] leading-[1.55]" style={{ color: colors.muted }}>
+          Les mots qu&apos;Atlas reconnaît quand vous dictez.{" "}
+          <span style={{ color: colors.or }}>En doré, les vôtres</span> — visibles de vous seul.
         </p>
 
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">Prestations</p>
-        {prestationsAvecHistorique.length === 0 ? (
-          <p className="mb-4 text-xs text-ink/40">Aucune prestation dans le catalogue pour l&apos;instant.</p>
-        ) : (
-          <ul className="mb-4 flex flex-col gap-2">
-            {prestationsAvecHistorique.map((p) => (
-              <li key={p.id} className="rounded-md border border-line bg-card px-4 py-3">
-                <p className="text-sm font-semibold text-ink">{p.nomCanonique}</p>
-                {p.synonymes.length > 0 && (
-                  <p className="mt-1 text-xs text-ink/50">Synonymes : {p.synonymes.join(", ")}</p>
-                )}
-                {p.variantes.length > 0 && (
-                  <p className="text-xs text-ink/50">Variantes : {p.variantes.join(", ")}</p>
-                )}
-                {p.historique.length > 0 ? (
-                  <p className="mt-1 text-xs text-ink/70">
-                    Dernier prix pratiqué : {p.historique[0].prix} € ({new Date(p.historique[0].constateLe).toLocaleDateString("fr-FR")})
-                  </p>
-                ) : (
-                  <p className="mt-1 text-xs text-ink/40">Aucun prix encore constaté par votre entreprise.</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        <MotsProposes proposes={proposes} />
 
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">Matériels</p>
-        {materiels.length === 0 ? (
-          <p className="text-xs text-ink/40">Aucun matériel dans le catalogue pour l&apos;instant.</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {materiels.map((m) => (
-              <li key={m.id} className="rounded-md border border-line bg-card px-4 py-3">
-                <p className="text-sm font-semibold text-ink">{m.nomCanonique}</p>
-                {m.variantes.length > 0 && <p className="mt-1 text-xs text-ink/50">Variantes : {m.variantes.join(", ")}</p>}
-              </li>
-            ))}
-          </ul>
-        )}
+        <MesMots
+          famille="prestation"
+          titre="Prestations"
+          cartesInitiales={prestations}
+          libelleNouvelle="+ Nouvelle prestation"
+        />
+        <MesMots
+          famille="materiel"
+          titre="Matériels"
+          cartesInitiales={materiels}
+          libelleNouvelle="+ Nouveau matériel"
+        />
       </div>
     </div>
   );

@@ -218,6 +218,72 @@ async function main() {
     assert.equal(rows[0].total_ht, "870.00");
   });
 
+  // **LE « − » EN FACE DE LA LIGNE — sa proposition B, retenue le 17 août 2026.**
+  //
+  // *« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait
+  // un petit moins pour supprimer la ligne de la réduction. »*
+  // `docs/maquettes/68-retirer-le-prix-accorde.html`.
+  const moins = () => page.getByRole("button", { name: /Retirer le prix accordé/i });
+
+  await cas("le « − » existe, et se touche : 26 px", async () => {
+    await page.getByRole("button", { name: /^\+ Prix accordé au client/ }).click();
+    await page.waitForTimeout(900);
+    assert.equal(await moins().count(), 1, "aucun « − » en face de la ligne");
+    const b = await moins().boundingBox();
+    // Une boîte de zéro pixel ne prouve rien : refuser de conclure plutôt que
+    // de rendre un vert vide (`CLAUDE.md` §5).
+    assert.ok(b && b.width > 0, "le « − » n'occupe aucune place : rien à mesurer");
+    assert.ok(b!.width >= 24 && b!.height >= 24, `le « − » fait ${Math.round(b!.width)} × ${Math.round(b!.height)} px — au doigt, il en faut 24`);
+  });
+
+  await cas("un appui rend le prix plein TOUT DE SUITE, avant toute écriture", async () => {
+    await moins().click();
+    await page.waitForTimeout(400);
+
+    // **Sans attendre le tiroir** : rien n'est écrit tant qu'il peut annuler
+    // (`useRetraits`), mais le total doit avoir bougé sous ses yeux — sinon le
+    // geste paraît sans effet, et c'est exactement sa plainte du 17 août.
+    const texte = await totaux().innerText();
+    assert.match(texte.replace(/\s/g, " "), /1 044,00/, `le devis n'affiche pas le prix plein :\n${texte}`);
+    assert.ok(!texte.includes("après remise"), "le net est encore nommé comme s'il y avait une remise");
+
+    // Et la base n'a RIEN perdu : « Annuler » doit pouvoir tout rendre.
+    const { rows } = await pool.query(
+      `SELECT reduction_pourcent FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
+      [chantierId]
+    );
+    assert.equal(rows[0].reduction_pourcent, "5.00", "la remise est déjà effacée : « Annuler » ne rendrait rien");
+  });
+
+  await cas("« Annuler » la rend, avec son pourcentage", async () => {
+    await page.getByRole("button", { name: /Annuler/i }).first().click();
+    await page.waitForTimeout(600);
+    const texte = await totaux().innerText();
+    assert.ok(texte.includes("après remise"), `la remise n'est pas revenue :\n${texte}`);
+    assert.match(texte.replace(/\s/g, " "), /991,80/, `le TTC remisé manque :\n${texte}`);
+  });
+
+  await cas("laissé fermer, le retrait devient définitif — écran et base d'accord", async () => {
+    await moins().click();
+    // Le tiroir se ferme au bout de six secondes ; on lui laisse le temps.
+    await page.waitForTimeout(8_000);
+
+    const texte = await totaux().innerText();
+    assert.equal(
+      await page.locator('input[aria-label="Prix accordé au client, en pourcentage"]').count(),
+      0,
+      `la ligne or survit à son propre retrait :\n${texte}`
+    );
+    const { rows } = await pool.query(
+      `SELECT reduction_pourcent, reduction_montant, total_ht FROM devis
+        WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
+      [chantierId]
+    );
+    assert.equal(rows[0].reduction_pourcent, null, "la base garde une remise que l'écran dit absente");
+    assert.equal(rows[0].reduction_montant, null, "un montant sans pourcentage laisse la base incohérente");
+    assert.equal(rows[0].total_ht, "870.00");
+  });
+
   await contexte.close();
   await navigateur.close();
   await pool.end();

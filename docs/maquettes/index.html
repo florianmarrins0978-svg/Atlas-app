@@ -55,6 +55,48 @@
     <span class="quoi">Le même sommaire, mais les écrans sont dessous : cliquer un titre y descend, sans quitter la page. Engendrée par <code>scripts/fusionner-maquettes.mjs</code>.</span>
   </a>
 
+  <p class="famille">L’arrosage automatique</p>
+
+  <a class="item retenu" href="../../appli/arrosage.html">
+    <span class="no">▶</span><span class="titre">La maquette ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 17 août : <b>« des maquettes dynamiques en .html que je puisse essayer, pas de photo »</b>. Celle-ci <b>calcule pour de bon</b> : on entre son propre jardin, et le découpage, les durées, le plan et la liste du matériel se refont à chaque frappe. Publiée avec l’appli, donc ouvrable au téléphone : <b>…github.io/Atlas-app/arrosage.html</b>. Les trois planches ci-dessous restent le raisonnement ; celle-ci est l’essai.</span>
+  </a>
+
+  <a class="item" href="69-le-plan-darrosage.html">
+    <span class="no">69</span><span class="titre">Le plan d’arrosage</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 17 août : <b>« un outil pour les paysagistes pour réaliser des plans d’arrosage automatique »</b>. Terrain neuf. Trois façons d’entrer le jardin : la feuille où il saisit tout, <b>les zones qu’il mesure et qu’Atlas pose</b>, ou le plan dessiné. Le jardin de l’exemple est calculé, pas écrit — débit, arroseurs, secteurs et durées découlent de cinq mesures.</span>
+  </a>
+
+  <a class="item" href="70-le-debit-ne-se-partage-pas.html">
+    <span class="no">70</span><span class="titre">Le débit ne se partage pas</span><span class="fleche">→</span>
+    <span class="quoi">Le calcul qui fait tout l’outil, et <b>il n’y a rien à y choisir</b>. Un robinet donne 1,80 m³/h, ce jardin en demande 8,47 : il faut <b>huit secteurs</b>, et un cycle de 3 h 14 qui doit finir avant le soleil. Deux règles passent avant le remplissage — une pluviométrie par secteur, un rythme par secteur.</span>
+  </a>
+
+  <a class="item" href="71-ce-qui-sort-du-plan.html">
+    <span class="no">71</span><span class="titre">Ce qui sort du plan</span><span class="fleche">→</span>
+    <span class="quoi">Trois documents, et ils ne se valent pas : <b>le devis</b> (la nomenclature entre dans le parcours qui existe déjà), <b>la carte du coffret</b> (ce que le client redemande six mois plus tard), <b>le plan remis au client</b>. Ce qu’il y a à choisir : par lequel on commence. Aucun prix n’est inventé — ce qui manque dans « Mes prix » part vide et signalé.</span>
+  </a>
+
+  <a class="item" href="73-le-trace-du-tuyau.html">
+    <span class="no">73</span><span class="titre">Le tracé du tuyau</span><span class="fleche">→</span>
+    <span class="quoi">La question qui bloque le comptage des tés et coudes : <b>une seule ligne en serpentin</b> depuis le regard, ou <b>plusieurs lignes parallèles</b> pour un même secteur ? Le même secteur — 3 rangées de 4 arroseurs — tracé des deux façons, pour qu’il pointe son geste réel plutôt que de le décrire en mots. <b>Tranché : c’est B</b>, avec sa correction sur le té et le coude.</span>
+  </a>
+
+  <a class="item retenu" href="76-le-cinquieme-onglet.html">
+    <span class="no">76</span><span class="titre">Le cinquième onglet</span><span class="fleche">→</span>
+    <span class="quoi">Sa question du 17 août : où ranger les outils métier — arrosage, puis terrasses bois ? <b>Sa décision : un cinquième onglet « Outils »</b>. Le seul vrai risque est la place : à cinq colonnes sur 360 px, <b>« CHANTIERS » déborde de 7,2 px</b>. Cinq variantes mesurées, pas supposées — et deux d'entre elles sont à écarter.</span>
+  </a>
+
+  <a class="item retenu" href="75-le-plan-comme-le-sien.html">
+    <span class="no">75</span><span class="titre">Le plan comme le sien</span><span class="fleche">→</span>
+    <span class="quoi">Sa photo du 17 août — un plan d’exécution au 1/100e, sa légende, ses symboles, ses diamètres cotés — et sa demande : <b>« tu me fais ça en couleur, tu sépares les réseaux […] c’est là où je veux arriver au final »</b>. Le même plan, refait <b>un réseau par couleur</b>, sur les nombres que l’outil calcule déjà. <b>Rien n’est codé</b> : c’est la planche à corriger avant d’écrire le moteur de plan.</span>
+  </a>
+
+  <a class="item" href="74-ou-sont-les-tes.html">
+    <span class="no">74</span><span class="titre">Où sont les tés</span><span class="fleche">→</span>
+    <span class="quoi">Son contrôle du 17 août, sur son propre tracé : <b>« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! »</b> — et le tracé n’est <b>pas une grille</b>, six arroseurs répartis n’importe comment. Réponse : <b>cinq</b>, marqués et numérotés. Et ce n’est pas un comptage à l’œil : <b>N arroseurs sur un réseau, c’est toujours N − 1 tés</b> — exactement ce que l’outil calcule déjà sur une grille.</span>
+  </a>
+
   <p class="famille">Le point de départ</p>
 
   <a class="item" href="01-reference-du-patron.html">
@@ -417,6 +459,10 @@
   <a class="item" href="68-retirer-le-prix-accorde.html">
     <span class="no">68</span><span class="titre">Retirer le prix accordé</span><span class="fleche">→</span>
     <span class="quoi">Son constat du 17 août : <b>« il n’y a aucun moyen de retirer les cinq pour cent »</b>. <b>Deux de ses trois phrases étaient des défauts, et ils sont réparés</b> — écrire « 0 » laissait une ligne or que le PDF n’imprimait pas, et à la voix le retrait était compris, enregistré… puis défait. Reste le <b>« petit moins »</b> qu’il demande : trois façons de le poser, sur ses chiffres à lui.</span>
+
+  <a class="item" href="72-mes-mots-au-catalogue.html">
+    <span class="no">72</span><span class="titre">Mes mots au catalogue</span><span class="fleche">→</span>
+    <span class="quoi">Sa question du 17 août, capture à l’appui : <b>« À quoi sert cette page ?? On peut rien modifier rajouter »</b> — la <b>seconde</b> fois qu’il la pose. Le catalogue est le vocabulaire commun à toutes les entreprises : trois façons d’y faire une place à <b>ses</b> mots — à part, par-dessus, ou tout mélangé. Au passage, les deux défauts de sa capture du 14 août : la <b>flèche de retour</b> revient, et la phrase <b>« aucun prix encore constaté »</b> — qui ne se serait jamais éteinte — s’en va.</span>
   </a>
 
   <a class="item" href="67-le-nouveau-chantier-plus-gros.html">

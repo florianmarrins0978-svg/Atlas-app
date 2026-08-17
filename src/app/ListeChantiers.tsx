@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { descenteDeLaPerle } from "@/lib/perle-descente";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
@@ -46,6 +47,19 @@ export type BrinChantier = {
   /** Le mois abrégé, sous le quantième : « juil. ». */
   mois: string;
   lieu: string;
+  /**
+   * Le lieu est-il le repli « Adresse non renseignée » — donc une CIBLE ?
+   *
+   * **Sa demande du 17 août 2026 :** *« lorsque s'affiche Adresse non
+   * renseignée, je puisse cliquer dessus et que ça m'amène sur la page […] rien
+   * de plus, rien de moins »*.
+   *
+   * La question se tranche au serveur (`lieuEstManquant`), jamais ici : l'écran
+   * qui comparerait le texte de son côté referait la règle une seconde fois, et
+   * le jour où le repli change de mots la ligne cesserait silencieusement d'être
+   * cliquable (`CLAUDE.md` §3).
+   */
+  lieuManquant?: boolean;
   /** L'état et le nombre de photos, sur une ligne : « Brouillon · 3 photos ». */
   etat: string;
   /**
@@ -119,6 +133,9 @@ export default function ListeChantiers({
   estRetire: (id: string) => boolean;
   onRetirer: (id: string, libelle: string) => void;
 }) {
+  // La mention « Adresse non renseignée » navigue par le routeur : elle vit
+  // DANS le lien de la ligne et ne peut donc pas être une ancre elle-même.
+  const router = useRouter();
   const perle = useRef<HTMLSpanElement>(null);
 
   // **La descente sur le dernier jour, et rien d'autre.** Le maintien à
@@ -235,13 +252,66 @@ export default function ListeChantiers({
           {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
               restent en place — une ligne qui part d'un bloc coupe le nom en
               plein mot et laisse le fil traverser les lettres. */}
+          {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
+              restent en place — une ligne qui part d'un bloc coupe le nom en
+              plein mot et laisse le fil traverser les lettres. */}
           <Link href={c.reprise} className="atlas-brin block">
             <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
               {c.nom}
             </h2>
-            <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
-              {c.lieu}
-            </p>
+            {c.lieuManquant ? (
+              /* **LA MENTION MÈNE AILLEURS QUE LA LIGNE — et ce n'est PAS un
+                 second lien.** Sa demande du 17 août 2026 : *« lorsque
+                 s'affiche Adresse non renseignée, je puisse cliquer dessus »*.
+                 Le reste de la ligne garde sa reprise : il a dit « dessus ».
+
+                 **UNE LIGNE = UN SEUL `<a>`, ET C'EST UN INVARIANT DE CE
+                 DÉPÔT.** La première version coupait le lien en trois — c'était
+                 du HTML valide, et trois suites sont tombées d'un coup :
+                 `test-dashboard` compte `a.atlas-brin`, `test-suivi-devis`
+                 remonte à `ancestor::a[1]` pour lire l'état, `test-transcription`
+                 clique au milieu de `.atlas-ligne`. Aucune n'avait tort : la
+                 ligne EST un lien, et ce qu'on lit dedans doit rester dedans.
+
+                 Un `<span>` est donc posé dans l'ancre — contenu de phrasé,
+                 parfaitement légal, contrairement à un `<a>` imbriqué — et il
+                 détourne le geste. La navigation est celle du routeur, la même
+                 que celle d'un lien. */
+              <span
+                role="link"
+                tabIndex={0}
+                data-atlas="lieu-manquant"
+                data-href={`/chantiers/${c.id}/coordonnees`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/chantiers/${c.id}/coordonnees`);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter" && e.key !== " ") return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/chantiers/${c.id}/coordonnees`);
+                }}
+                /* 34 px de haut : un texte de 11,5 px ne s'attrape pas sous un
+                   pouce ganté. Le trait pointillé, lui, est sur le MOT — porté
+                   par la cible, il se posait dix pixels plus bas et se lisait
+                   comme un trait perdu (vu en capture, le 17 août). */
+                className="inline-flex min-h-[34px] max-w-full items-center text-[11.5px]"
+                style={{ color: colors.alert }}
+              >
+                <span
+                  className="truncate"
+                  style={{ borderBottom: `1px dotted ${colors.alert}`, paddingBottom: 1 }}
+                >
+                  {c.lieu}
+                </span>
+              </span>
+            ) : (
+              <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+                {c.lieu}
+              </p>
+            )}
             <p
               className="mt-[7px] text-[9.5px] font-medium uppercase"
               style={{ color: c.attend ? colors.or : colors.muted, letterSpacing: "0.28em" }}

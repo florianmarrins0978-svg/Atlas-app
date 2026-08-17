@@ -187,6 +187,42 @@ export async function getChantierPourHub(ctx: Ctx, id: string) {
   });
 }
 
+/**
+ * Un chantier et les coordonnées de son client — pour rouvrir l'écran de saisie.
+ *
+ * **Une requête à part, et non un élargissement de `getChantierPourHub`.**
+ * Celui-là sert la fiche du chantier, appelée à chaque ouverture : lui ajouter
+ * cinq colonnes dont elle n'affiche aucune les ferait voyager pour rien, et la
+ * prochaine session ne saurait plus lesquelles servent vraiment.
+ *
+ * `clientId` est rendu tel quel : l'action a besoin de savoir s'il y a un client
+ * à corriger ou un client à créer — c'est le cas de sa capture du 17 août, un
+ * chantier qui n'en a aucun.
+ */
+export async function getChantierPourCoordonnees(ctx: Ctx, id: string) {
+  if (!UUID_RE.test(id)) return null;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({
+        id: chantiers.id,
+        nom: chantiers.nom,
+        adresseChantier: chantiers.adresseChantier,
+        clientId: chantiers.clientId,
+        clientNom: clients.nom,
+        clientCivilite: clients.civilite,
+        clientTelephone: clients.telephone,
+        clientEmail: clients.email,
+        clientAdresse: clients.adresse,
+        clientCanal: clients.canalCommunication,
+      })
+      .from(chantiers)
+      .leftJoin(clients, eq(chantiers.clientId, clients.id))
+      .where(and(eq(chantiers.id, id), isNull(chantiers.deletedAt)))
+      .limit(1);
+    return rows[0] ?? null;
+  });
+}
+
 export async function creerChantier(
   ctx: Ctx,
   data: { nom: string; adresseChantier?: string; clientId?: string | null }
@@ -204,6 +240,59 @@ export async function creerChantier(
       })
       .returning();
     return row;
+  });
+}
+
+/**
+ * Reprendre un chantier existant : son adresse, son client, et son nom.
+ *
+ * **Née de sa demande du 17 août 2026** — *« lorsque s'affiche Adresse non
+ * renseignée, je puisse cliquer dessus et que ça m'amène sur la page […] rien
+ * de plus, rien de moins »*. L'écran d'arrivée est celui de la création, rouvert
+ * sur un chantier qui existe : il lui fallait un second chemin, puisque
+ * `creerChantier` ne sait qu'insérer.
+ *
+ * **LE NOM SE RECALCULE, ET C'EST TOUT L'INTÉRÊT.** `chantiers.nom` n'est pas
+ * saisi : il se déduit du client, sinon de l'adresse, sinon de la date
+ * (`nom-chantier.ts` — le champ « nom du chantier » a été retiré le 5 août 2026,
+ * parce qu'un élagueur ne baptise pas ses chantiers). Sans ce recalcul, remplir
+ * « Martins » laisserait la ligne afficher « Chantier du lundi 17 août » pour
+ * toujours — c'est-à-dire exactement le défaut qu'il vient de signaler, corrigé
+ * partout sauf là où il l'a vu.
+ *
+ * Le nom est donc passé par l'appelant, qui applique la MÊME règle qu'à la
+ * création : une seconde règle de nommage ici finirait par diverger de l'autre
+ * (`CLAUDE.md` §3).
+ */
+export async function reprendreChantier(
+  ctx: Ctx,
+  chantierId: string,
+  data: { nom: string; adresseChantier?: string | null; clientId?: string | null }
+) {
+  if (!UUID_RE.test(chantierId)) return null;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .update(chantiers)
+      .set({
+        nom: data.nom,
+        adresseChantier: data.adresseChantier?.trim() || null,
+        // **Un client déjà rattaché ne se détache jamais ici.** L'écran ne
+        // propose pas de le retirer ; `undefined` veut donc dire « n'y touche
+        // pas », et non « efface ». Les confondre ferait perdre un client au
+        // premier enregistrement où le nom n'aurait pas changé.
+        ...(data.clientId === undefined ? {} : { clientId: data.clientId }),
+        updatedBy: ctx.utilisateurId,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(chantiers.id, chantierId),
+          eq(chantiers.entrepriseId, ctx.entrepriseId),
+          isNull(chantiers.deletedAt)
+        )
+      )
+      .returning();
+    return row ?? null;
   });
 }
 

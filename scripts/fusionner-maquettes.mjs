@@ -343,6 +343,54 @@ const MAQUETTES = [
     famille: "Le devis",
     quoi: "« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.",
   },
+  {
+    fichier: "69-le-plan-darrosage.html",
+    titre: "Le plan d’arrosage",
+    famille: "L’arrosage automatique",
+    quoi: "« Un outil pour les paysagistes pour réaliser des plans d’arrosage automatique. » Trois façons d’entrer le jardin : la feuille, les zones mesurées, ou le plan dessiné.",
+  },
+  {
+    fichier: "70-le-debit-ne-se-partage-pas.html",
+    titre: "Le débit ne se partage pas",
+    famille: "L’arrosage automatique",
+    quoi: "Le calcul qui fait tout l’outil, et rien n’y est à choisir : 1,80 m³/h au robinet, 8,47 demandés, huit secteurs, 3 h 14 de cycle.",
+  },
+  {
+    fichier: "71-ce-qui-sort-du-plan.html",
+    titre: "Ce qui sort du plan",
+    famille: "L’arrosage automatique",
+    quoi: "Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.",
+  },
+  {
+    fichier: "73-le-trace-du-tuyau.html",
+    titre: "Le tracé du tuyau",
+    famille: "L’arrosage automatique",
+    quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.",
+  },
+  {
+    fichier: "76-le-cinquieme-onglet.html",
+    titre: "Le cinquième onglet",
+    famille: "L’arrosage automatique",
+    quoi: "Où ranger les outils métier ? Sa décision : un cinquième onglet « Outils ». Cinq variantes de barre, mesurées à 360 px — deux sont à écarter.",
+  },
+  {
+    fichier: "75-le-plan-comme-le-sien.html",
+    titre: "Le plan comme le sien",
+    famille: "L’arrosage automatique",
+    quoi: "Sa photo d’un plan d’exécution, refaite un réseau par couleur : la cible du produit, dessinée avant d’écrire le moteur de plan.",
+  },
+  {
+    fichier: "74-ou-sont-les-tes.html",
+    titre: "Où sont les tés",
+    famille: "L’arrosage automatique",
+    quoi: "« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! » — son tracé libre, cinq tés marqués, et la règle qui vaut partout : N arroseurs, N − 1 tés.",
+  },
+  {
+    fichier: "72-mes-mots-au-catalogue.html",
+    titre: "Mes mots au catalogue",
+    famille: "Les réglages",
+    quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
