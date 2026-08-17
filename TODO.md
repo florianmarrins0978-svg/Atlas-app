@@ -64,7 +64,7 @@ morceaux existent déjà, et les confondre ferait refaire ce qui est fait.
 | 1 | **Il choisit son piquage** : après compteur d'eau, ou sur un robinet extérieur | **FAIT** (`#compteur`) |
 | 2 | **Au compteur, la ville délivre ≥ 3 bar** — valeur connue, appliquée d'office aux calculs | **FAIT** (bascule à 3 bar) |
 | 3 | **Au robinet, il donne la pression DYNAMIQUE ET STATIQUE** | **PAS FAIT** — un seul champ `pression` aujourd'hui, et surtout : *ce qu'on FAIT de l'écart entre les deux n'est pas su* |
-| 4 | **Une case pour joindre une PHOTO** d'une zone avec ses métrés | **PAS FAIT** — voir le blocage ci-dessous |
+| 4 | **Une case pour joindre une PHOTO** d'une zone avec ses métrés | **FAIT le 17 août** — la section 2 EST le croquis. La photo se joint, s'affiche, survit au rechargement. La LECTURE des cotes reste impossible ici (page statique), et l'écran le dit |
 | 5 | À partir de la photo et des métrés, **estimer les réseaux** (« deux réseaux d'arroseurs, un de goutte-à-goutte ») | Le découpage existe (`decouper`) à partir des zones SAISIES, pas d'une photo |
 | 6 | **Les mètres linéaires de PEHD Ø25 ou Ø32**, choisis selon les distances, le débit des arroseurs et la pression saisie | **DÉBLOQUÉ ET FAIT le 17 août** — sa règle est arrivée, voir ci-dessous. La LONGUEUR reste à mesurer, le DIAMÈTRE se calcule |
 | 7 | **La liste exacte des pièces à commander** | **FAIT** — buses, corps par famille, SBE, PEBD, réseau latéral, nourrice |
@@ -87,6 +87,38 @@ morceaux existent déjà, et les confondre ferait refaire ce qui est fait.
    suppose un plan du jardin entier, avec les zones les unes par rapport aux
    autres — c'est-à-dire exactement ce que le croquis photographié apporterait.
    **Placer le regard « quelque part » avant cela serait inventer un jardin.**
+
+**✅ IL A REVU L'OUTIL ÉCRAN PAR ÉCRAN — 17 août au soir, et deux sections
+changent.** Sa consigne, mot pour mot : *« Tu supprimes la 3, et la 2 ça doit
+être la photo du croquis qu'on ajoute. »*
+
+| Avant | Après |
+|---|---|
+| 1 · Le point d'eau | inchangé |
+| 2 · Les zones | **2 · Le croquis** — la photo d'abord, les zones dessous, à corriger en la regardant |
+| 3 · Le découpage en secteurs | **supprimée** |
+| 4 · Le plan | 3 · Le plan |
+| 5 · La liste | 4 · La liste |
+
+**Ce qui est parti avec la section 3, et qu'il faut savoir pour le lui rendre
+s'il le redemande :** le tableau des secteurs, les durées d'arrosage, le cycle
+total (« départ 3 h 00, fin 6 h 14 ») et **le sélecteur de saison**. Le CALCUL,
+lui, tourne toujours — c'est lui qui donne les couleurs du plan, le nombre
+d'électrovannes et la fiche de nourrice. Seul l'écran a disparu.
+
+**La photo est REDIMENSIONNÉE avant d'être gardée (1400 px, JPEG 0,75), et ce
+n'est pas du confort :** une photo de téléphone pèse 3 à 8 Mo, `localStorage`
+en accepte ~5 pour TOUT le jardin. Gardée telle quelle, elle ferait sauter la
+sauvegarde entière — et c'est le jardin qui disparaîtrait au rechargement, pas
+seulement l'image. Si l'enregistrement échoue quand même, on **remet l'état
+d'avant et on le dit**, plutôt que d'afficher une photo qui ne survivra pas.
+
+**⚠ LES CONTRÔLES QUI LISAIENT LA SECTION 3 ONT ÉTÉ REPORTÉS SUR LE CALCUL**
+(`decouper()`), pas supprimés : aucun secteur au-dessus du robinet, les durées
+qui baissent en avril, le découpage qui ne recâble pas. C'est la même leçon que
+le matin — **un contrôle garde une règle, pas un écran.** Et trois gardes
+nouvelles sur le croquis, éprouvées à l'envers : la photo s'affiche, survit au
+rechargement, se retire, et l'écran ANNONCE qu'il ne lit pas encore les cotes.
 
 **LA CIBLE EST DESSINÉE — planche `75-le-plan-comme-le-sien.html`, 17 août.**
 Il a envoyé la photo d'un **plan d'exécution professionnel** : échelle 1/100e,

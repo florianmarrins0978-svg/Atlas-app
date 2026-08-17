@@ -22,6 +22,33 @@ function ok(name, cond){ if (cond) pass++; else { fail++; fails.push(name); } }
    Même mécanisme que scripts/e2e-browser.ts, côté application Next.js. */
 const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
 
+/* Une photo d'essai engendrée ici, pour éprouver le croquis sans dépendre d'un
+   binaire déposé à la main — qui se perdrait au premier rangement du dépôt. */
+const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
+{
+  const { writeFileSync } = require('fs');
+  const zlib = require('zlib');
+  const w = 900, h = 700, lignes = [];
+  for (let y = 0; y < h; y++){
+    const l = Buffer.alloc(1 + w * 3);
+    for (let x = 0; x < w; x++){ l[1 + x*3] = 205; l[2 + x*3] = 212; l[3 + x*3] = 195; }
+    lignes.push(l);
+  }
+  const morceau = (type, data) => {
+    const c = Buffer.concat([Buffer.from(type), data]);
+    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+    const crc = Buffer.alloc(4); crc.writeUInt32BE(zlib.crc32(c));
+    return Buffer.concat([len, c, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2;
+  writeFileSync(CROQUIS_ESSAI, Buffer.concat([
+    Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]),
+    morceau('IHDR', ihdr), morceau('IDAT', zlib.deflateSync(Buffer.concat(lignes))),
+    morceau('IEND', Buffer.alloc(0))
+  ]));
+}
+
 (async () => {
   const browser = await chromium.launch(EXE ? { executablePath: EXE } : {});
   const ctx = await browser.newContext();
@@ -270,7 +297,9 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     const dispo = (await page.$eval('#debitDispo', el => el.textContent)).trim();
     ok('arrosage : le débit se calcule du seau', dispo === '1,80');
 
-    const secteurs = await page.$$eval('.sec', e => e.length);
+    // Le panneau des secteurs a été retiré le 17 août sur sa demande ; le
+    // découpage, lui, tourne toujours et décide de tout le reste.
+    const secteurs = await page.evaluate(() => decouper().secteurs.length);
     ok('arrosage : le jardin de départ se découpe', secteurs >= 6);
 
     // **Le quinconce retire un arroseur, il ne le déplace pas.** Une pose
@@ -286,17 +315,50 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
 
     // L'invariant du métier : un secteur au-dessus du robinet, et les derniers
     // arroseurs bavent au lieu d'arroser.
-    const debits = await page.$$eval('.sec-q', e => e.map(x => parseFloat(x.textContent.replace(',', '.'))));
+    //
+    // **Lu dans le CALCUL et non à l'écran** : le panneau des secteurs a été
+    // retiré le 17 août sur sa demande (« tu supprimes la 3 »), mais le
+    // découpage tourne toujours — c'est lui qui donne les couleurs du plan et
+    // le nombre d'électrovannes. L'invariant, lui, n'a pas bougé d'un pouce.
+    const debits = await page.evaluate(() => decouper().secteurs.map(s => s.debit));
     ok('arrosage : aucun secteur au-dessus du robinet',
-       debits.length > 0 && debits.every(d => d <= parseFloat(dispo.replace(',', '.'))));
+       debits.length > 0 && debits.every(d => d <= parseFloat(dispo.replace(',', '.')) + 1e-9));
 
-    // Le cycle décide de l'heure de départ : s'il ne fait pas la somme de ses
-    // secteurs, il envoie arroser en plein soleil.
-    const mins = await page.$$eval('.sec-min', e => e.map(x => Number(x.textContent)));
-    const verdict = await page.$eval('#verdict', el => el.innerText);
-    const m = verdict.match(/(\d+)\s*h\s*(\d+)/);
-    ok('arrosage : le cycle est la somme des secteurs',
-       !!m && Number(m[1]) * 60 + Number(m[2]) === mins.reduce((a, b) => a + b, 0));
+    // La saison change les durées, jamais le câblage : c'est ce qui décide de
+    // l'heure de départ, et un cycle qui déborde envoie arroser en plein soleil.
+    const cycle = await page.evaluate(() => {
+      const lire = () => { const d = decouper();
+        return { n: d.secteurs.length, min: d.secteurs.reduce((a, s) => a + s.minutes, 0) }; };
+      const avant = etat.saison;
+      etat.saison = 'juillet'; const juillet = lire();
+      etat.saison = 'avril';   const avril = lire();
+      etat.saison = avant;     recalculer(true);
+      return { juillet, avril };
+    });
+    await page.waitForTimeout(120);
+    ok('arrosage : les durées existent et baissent en avril',
+       cycle.juillet.min > 0 && cycle.avril.min < cycle.juillet.min);
+    ok('arrosage : changer de saison ne recâble pas', cycle.avril.n === cycle.juillet.n);
+
+    // **LE CROQUIS — sa demande du 17 août : « la 2, ça doit être la photo du
+    // croquis qu'on ajoute ».** La page est publiée sans serveur : elle ne LIT
+    // pas les cotes, et elle doit le dire. Un écran qui laisserait croire le
+    // contraire ferait partir un jardin vide sur un chantier.
+    ok('arrosage : le croquis se photographie', (await page.$$eval('#croquisFichier', e => e.length)) === 1);
+    // **On POSE une photo pour éprouver l'avertissement.** Une première version
+    // acceptait aussi le texte affiché SANS photo : elle passait au vert même
+    // quand l'avertissement avait disparu, puisque l'autre branche du message
+    // suffisait à la satisfaire. Un contrôle qui accepte deux états n'en garde
+    // aucun.
+    await page.setInputFiles('#croquisFichier', CROQUIS_ESSAI);
+    await page.waitForTimeout(900);
+    ok('arrosage : la photo du croquis s\'affiche', (await page.$$eval('.croquis-vue img', e => e.length)) === 1);
+    ok('arrosage : et la page annonce ce qu\'elle ne sait pas encore lire',
+       /ne se lisent pas encore/.test(await page.$eval('#croquisNote', el => el.innerText)));
+    // Et les sections retirées le sont VRAIMENT : « tu supprimes la 3 ».
+    const titres = await page.$$eval('h2', e => e.map(x => x.textContent.trim()));
+    ok('arrosage : quatre sections, le découpage retiré',
+       titres.length === 4 && /Le croquis/.test(titres[1]) && !titres.some(t => /secteurs/i.test(t)));
 
     // Sa décision du 17 août : la sortie est une liste de quantités, pas un
     // devis. Le jour où un montant apparaît, ce contrôle le dit.

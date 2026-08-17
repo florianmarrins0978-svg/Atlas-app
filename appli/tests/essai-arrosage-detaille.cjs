@@ -1,4 +1,34 @@
 const { chromium } = require('playwright');
+const { writeFileSync } = require('fs');
+const zlib = require('zlib');
+/* Une photo d'essai ENGENDRÉE ICI, plutôt qu'un fichier à côté : un contrôle
+   qui dépend d'un binaire déposé à la main se met à rougir le jour où
+   quelqu'un range le dépôt. */
+const CROQUIS_ESSAI = '/tmp/croquis-essai-suite.png';
+(function engendrerCroquis(){
+  const w = 1200, h = 900;
+  const lignes = [];
+  for (let y = 0; y < h; y++){
+    const l = Buffer.alloc(1 + w * 3);
+    for (let x = 0; x < w; x++){ l[1 + x*3] = 200; l[2 + x*3] = 210; l[3 + x*3] = 190; }
+    lignes.push(l);
+  }
+  const morceau = (type, data) => {
+    const c = Buffer.concat([Buffer.from(type), data]);
+    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+    const crc = Buffer.alloc(4); crc.writeUInt32BE(zlib.crc32 ? zlib.crc32(c) : require('zlib').crc32(c));
+    return Buffer.concat([len, c, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8; ihdr[9] = 2;
+  writeFileSync(CROQUIS_ESSAI, Buffer.concat([
+    Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]),
+    morceau('IHDR', ihdr),
+    morceau('IDAT', zlib.deflateSync(Buffer.concat(lignes))),
+    morceau('IEND', Buffer.alloc(0))
+  ]));
+})();
 const B = 'http://127.0.0.1:8099';
 let ok = 0, ko = 0;
 function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; console.log('  ✗ ' + n + (d ? '\n      ' + d : '')); } }
@@ -15,7 +45,7 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   const dispo = await page.locator('#debitDispo').textContent();
   cas('le débit se calcule du seau (10 L / 20 s = 1,80)', dispo.trim() === '1,80', 'lu : ' + dispo);
 
-  const secteurs = await page.locator('.sec').count();
+  const secteurs = await page.evaluate(() => decouper().secteurs.length);
   // 9 avec le recouvrement de 80 % qu'il a posé le 17 août : l'écart de pose
   // passe sous la portée, donc il faut plus d'arroseurs, donc un secteur de plus.
   // 8 depuis SA règle de pose du 17 août : on écarte au maximum dans sa limite
@@ -184,16 +214,16 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   await page.fill('#temps', '40');
   await page.waitForTimeout(120);
   const dispo2 = await page.locator('#debitDispo').textContent();
-  const secteurs2 = await page.locator('.sec').count();
+  const secteurs2 = await page.evaluate(() => decouper().secteurs.length);
   cas('un débit deux fois plus faible se voit', dispo2.trim() === '0,90', 'lu : ' + dispo2);
   cas('et il faut plus de secteurs', secteurs2 > secteurs, secteurs2 + ' contre ' + secteurs);
   await page.fill('#temps', '20');
   await page.waitForTimeout(120);
 
   // Aucun secteur ne doit dépasser le débit du robinet — l'invariant du métier.
-  const debits = await page.locator('.sec-q').allTextContents();
   const dispoN = parseFloat(dispo.replace(',', '.'));
-  const trop = debits.map(t => parseFloat(t.replace(',', '.'))).filter(x => x > dispoN);
+  const trop = (await page.evaluate(() => decouper().secteurs.map(s => s.debit)))
+    .filter(x => x > dispoN + 1e-9);
   cas('aucun secteur au-dessus du robinet', trop.length === 0, trop.join(', '));
 
   // ── QUEL ARROSEUR SUR QUELLE VANNE — sa demande du 17 août (« un petit plan
@@ -263,24 +293,27 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('et il porte une légende par réseau',
       (await page.locator('.plan-legende span').count()) >= 2);
 
-  // Le cycle affiché est la somme des durées.
-  const mins = (await page.locator('.sec-min').allTextContents()).map(Number);
-  const somme = mins.reduce((a, b) => a + b, 0);
-  const verdict = await page.locator('#verdict').innerText();
-  const m = verdict.match(/(\d+)\s*h\s*(\d+)/);
-  cas('le cycle est la somme des secteurs', m && Number(m[1]) * 60 + Number(m[2]) === somme,
-      'affiché ' + (m ? m[0] : '—') + ', somme ' + somme);
-
-  // La saison change les durées, JAMAIS le nombre de secteurs (c'est du câblage).
-  await page.locator('#saisons button', { hasText: 'Avril' }).click();
+  // ── LA SAISON : le calcul survit à la disparition de son écran ────────────
+  // La section « découpage en secteurs » a été retirée le 17 août sur sa
+  // demande, et le sélecteur de saison est parti avec elle. Le CALCUL, lui,
+  // reste : c'est lui qui donne les durées, et elles décident du cycle de
+  // nuit. On l'éprouve donc par l'état plutôt que par des boutons — un
+  // contrôle garde une règle, pas un écran.
+  const saisons = await page.evaluate(() => {
+    const lire = () => { const d = decouper();
+      return { n: d.secteurs.length, min: d.secteurs.reduce((a, s) => a + s.minutes, 0) }; };
+    const avant = etat.saison;
+    etat.saison = 'juillet'; const juillet = lire();
+    etat.saison = 'avril';   const avril = lire();
+    etat.saison = avant;     recalculer(true);
+    return { juillet, avril };
+  });
   await page.waitForTimeout(120);
-  const secteursAvril = await page.locator('.sec').count();
-  const minsAvril = (await page.locator('.sec-min').allTextContents()).map(Number);
-  cas('changer de saison ne recâble pas', secteursAvril === secteurs, secteursAvril + ' contre ' + secteurs);
-  cas('mais les durées baissent en avril', minsAvril.reduce((a,b)=>a+b,0) < somme,
-      minsAvril.join(',') + ' contre ' + mins.join(','));
-  await page.locator('#saisons button', { hasText: 'Juillet' }).click();
-  await page.waitForTimeout(120);
+  cas('des durées à comparer', saisons.juillet.min > 0, JSON.stringify(saisons));
+  cas('changer de saison ne recâble pas',
+      saisons.avril.n === saisons.juillet.n, JSON.stringify(saisons));
+  cas('mais les durées baissent en avril',
+      saisons.avril.min < saisons.juillet.min, JSON.stringify(saisons));
 
   // Ajouter une zone : le geste central.
   const avant = await page.locator('.zone').count();
@@ -501,8 +534,39 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   for (let garde = 0; (await page.locator('.retirer').count()) > 0 && garde < 30; garde++){
     await page.locator('.retirer').first().click(); await page.waitForTimeout(80);
   }
-  const vide = await page.locator('#secteurs').innerText();
-  cas('sans zone, la page le DIT au lieu d\'afficher zéro', /Rien à découper/.test(vide), vide.slice(0, 60));
+  // Le panneau des secteurs a disparu le 17 août ; la règle, elle, tient
+  // toujours : sans zone, la page DIT qu'elle attend, au lieu d'afficher des
+  // zéros qu'on prendrait pour un résultat. On la lit là où elle parle
+  // désormais — le plan et la liste.
+  const videPlan = await page.locator('#plans').innerText();
+  const videListe = await page.locator('#materiel').innerText();
+  cas('sans zone, la page le DIT au lieu d\'afficher zéro',
+      /se dessine dès/.test(videPlan) && /se remplit dès/.test(videListe),
+      (videPlan + ' | ' + videListe).slice(0, 90));
+  // ── LE CROQUIS — sa demande du 17 août : « la 2, ça doit être la photo du
+  //    croquis qu'on ajoute » ─────────────────────────────────────────────────
+  // On éprouve le PARCOURS ENTIER, du choix du fichier au rechargement : une
+  // photo qui s'affiche mais ne survit pas serait pire qu'absente, puisqu'il
+  // la croirait gardée. Et la page dit ce qu'elle NE SAIT PAS faire — lire les
+  // cotes — plutôt que de le laisser supposer.
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(150);
+  cas('sans photo, la page en propose une', /ajouter la photo/i.test(
+      await page.locator('#croquisLibelle').innerText()));
+  cas('aucune photo affichée au départ', (await page.locator('.croquis-vue img').count()) === 0);
+  await page.setInputFiles('#croquisFichier', CROQUIS_ESSAI);
+  await page.waitForTimeout(900);
+  cas('la photo du croquis s\'affiche', (await page.locator('.croquis-vue img').count()) === 1);
+  cas('et la page DIT qu\'elle ne lit pas encore les cotes',
+      /ne se lisent pas encore/.test(await page.locator('#croquisNote').innerText()));
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(300);
+  cas('la photo survit à un rechargement',
+      (await page.locator('.croquis-vue img').count()) === 1);
+  await page.locator('.croquis-vue button').click();
+  await page.waitForTimeout(200);
+  cas('et elle se retire', (await page.locator('.croquis-vue img').count()) === 0);
+
   cas('toujours aucune erreur JavaScript', erreurs.length === 0, erreurs.join(' | '));
 
   await page.screenshot({ path: '/tmp/claude-0/-home-user-Atlas-app/625ed6e8-234d-549b-a18f-cc9e3938615c/scratchpad/vues/arrosage-vide.png', fullPage: true });

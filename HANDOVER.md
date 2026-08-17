@@ -994,6 +994,23 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
+**⚠ L'OUTIL N'A PLUS QUE QUATRE SECTIONS (17 août) : point d'eau, CROQUIS,
+plan, liste.** Sa consigne : *« tu supprimes la 3, et la 2 ça doit être la
+photo du croquis ».* **Le découpage en secteurs ne s'AFFICHE plus, mais il se
+CALCULE toujours** — il donne les couleurs du plan, le nombre d'électrovannes
+et la fiche de nourrice. Sont partis avec l'écran : les durées, le cycle total,
+et le sélecteur de saison (`etat.saison` reste, à « juillet »). Les contrôles
+correspondants lisent maintenant `decouper()` — **ne pas les réécrire sur des
+sélecteurs DOM qui n'existent plus.**
+
+**⚠ LA PHOTO DU CROQUIS EST REDIMENSIONNÉE AVANT D'ÊTRE GARDÉE, et c'est
+vital :** une photo de téléphone (3 à 8 Mo) ferait sauter `localStorage`
+(~5 Mo pour tout le jardin) — et c'est le JARDIN ENTIER qui disparaîtrait au
+rechargement, pas seulement l'image. 1400 px, JPEG 0,75. En cas d'échec malgré
+tout, on remet l'état d'avant et on le dit. **Et l'écran annonce qu'il ne lit
+pas encore les cotes** : page statique, pas de serveur, la lecture demande
+`src/server/ai/`.
+
 **⚠ UNE PLANCHE NE RECOPIE JAMAIS UN CALCUL QUE L'OUTIL SAIT FAIRE.** Payé le
 17 août : la planche 75 portait une liste de fournitures tapée à la main, avec
 un « regard 3 voies » composé de pièces piochées dans plusieurs de ses fiches.

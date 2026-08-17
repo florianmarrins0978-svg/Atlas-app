@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le croquis prend la place des zones, et le découpage quitte l'écran
+
+Il a parcouru l'outil écran par écran et tranché en une phrase : *« Tu
+supprimes la 3, et la 2 ça doit être la photo du croquis qu'on ajoute. »*
+
+La section 2 devient **Le croquis** : on photographie le croquis du client, il
+reste affiché pendant qu'on renseigne le jardin dessous, et il part avec le
+chantier. La section 3 — le tableau des secteurs — disparaît. **Le calcul, lui,
+tourne toujours** : c'est lui qui donne les couleurs du plan, le nombre
+d'électrovannes et la fiche de nourrice. Seul l'écran s'en va.
+
+**Ce qui est parti avec la section 3**, et qu'il faut savoir pour le lui rendre
+s'il le redemande : les durées d'arrosage, le cycle total, et le sélecteur de
+saison.
+
+**La photo est redimensionnée avant d'être gardée, et ce n'est pas du
+confort.** Une photo de téléphone pèse 3 à 8 Mo ; `localStorage` en accepte
+environ 5 pour tout le jardin. Gardée telle quelle, elle ferait sauter la
+sauvegarde entière — et c'est le jardin qui disparaîtrait au rechargement, pas
+seulement l'image. Elle est donc ramenée à 1400 px, en JPEG, ce qui suffit à
+relire des cotes écrites à la main. Si l'enregistrement échoue quand même, la
+page **remet l'état d'avant et le dit**, au lieu d'afficher une photo qui ne
+survivra pas.
+
+Et l'écran **annonce qu'il ne lit pas encore les cotes** : la page est servie
+sans serveur, la lecture demande l'application. Laisser croire le contraire
+ferait partir un jardin vide sur un chantier.
+
+**Les contrôles qui lisaient la section 3 ont été reportés sur le calcul, pas
+supprimés** — aucun secteur au-dessus du robinet, les durées qui baissent en
+avril, le découpage qui ne recâble pas. Même leçon que le matin : un contrôle
+garde une règle, pas un écran. Le garde-fou du croquis, lui, a d'abord été
+écrit trop lâche : il acceptait aussi le texte affiché SANS photo, donc restait
+vert quand l'avertissement disparaissait. Il pose maintenant une vraie photo
+avant de lire. 73/73 et 96/96.
+
 ### La liste de la planche 75 était TAPÉE À LA MAIN, et fausse
 
 Il l'a lue et il a compté : *« énormément de choses qui ne sont pas correctes
