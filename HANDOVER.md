@@ -948,6 +948,15 @@ en se courbant, sans pièce à couper. `listeMateriel()` calcule maintenant
 l'erreur qu'un lecteur pressé ferait, et c'est exactement celle que sa
 correction du 17 août visait.
 
+**LA RÈGLE GÉNÉRALE DERRIÈRE, donnée en croquis le 17 août : compter les
+PORTIONS DE TUYAU qui se rejoignent en un point.** Deux portions → coude (le
+tuyau se courbe, aucune pièce). Trois portions → té/jonction (on doit couper
+le tuyau pour insérer la pièce). C'est le même principe qui classe Départ et
+Milieu (3 portions : ça entre, ça continue, ça monte vers l'arroseur) en té,
+Fin (2 portions : ça entre, ça monte) en coude, et la jonction du tronc (3
+tant qu'une rangée suit, 2 à la dernière) — **à réutiliser tel quel pour
+tout futur point de raccordement**, plutôt que de retrouver un cas par cas.
+
 **⚠ LES FICHES DE NOURRICE EXISTENT MAINTENANT (1 à 6 voies, 17 août) et
 REMPLACENT les lignes génériques (électrovanne/regard/programmateur) dès
 qu'elles s'appliquent — dans la liste ET dans le registre de prix.

@@ -184,6 +184,14 @@ jardin d'exemple (18×12 m, quinconce) : nx=4, ny=3, 11 points → 8 tés,
 3 coudes, 2 jonctions. `essai-arrosage-detaille.cjs` (32/32) et `tests/e2e.js`
 (90/90) au vert après le câblage.
 
+**Et la règle GÉNÉRALE derrière, donnée en croquis le même jour :** compter
+les **portions de tuyau** qui se rejoignent en un point. **Deux → coude**
+(le tuyau se courbe, aucune pièce). **Trois → té/jonction** (on coupe le
+tuyau pour insérer la pièce). Départ/Milieu (3 portions), Fin (2), jonction
+du tronc (3 tant qu'une rangée suit, 2 à la dernière) en découlent tous —
+à reprendre telle quelle pour tout futur point de raccordement plutôt que
+de redemander un cas par cas.
+
 **LA NOURRICE SE MODIFIE QUAND UNE VOIE PART EN GOUTTE-À-GOUTTE — sa règle du
 17 août.** *« À ne pas oublier : lorsqu'un réseau est pour du goutte-à-goutte,
 quelques modifications s'appliquent […] tout le reste ne doit pas être
