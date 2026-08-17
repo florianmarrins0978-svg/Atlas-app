@@ -10250,17 +10250,51 @@ tapé resterait pour toujours et fausserait la dictée sans recours. Rien
 n'atteint le vocabulaire commun — seuls ses mots à lui sont dans cette table, et
 la RLS empêche d'effacer ceux d'une autre entreprise.
 
-### Ce que ce lot ne fait PAS, et qu'il ne faut pas croire acquis
+### Ce qu'Atlas PROPOSE de retenir — l'auto-alimentation, et sa limite
 
-**Rien ne s'alimente tout seul.** Ni le vocabulaire d'Atlas — qui est commun, et
-qu'aucune entreprise ne doit pouvoir changer depuis son téléphone —, ni ses mots
-à lui. Un mot rencontré dans un devis et compris par l'agent **ne s'ajoute
-nulle part** : il faut le poser à la main sur l'écran du catalogue. La question
-a été posée par le patron le 17 août, et la réponse honnête était non.
+**Sa question, le 17 août, une heure après le lot ci-dessus :** *« ça veut dire
+que le document s'autoalimente à chaque fois qu'on rajoute un nouveau mot dans
+un devis ET QU'IL COMPREND CE QUE C'EST ? »*. La réponse était non ; il a
+répondu « fais-le ».
 
-**Ce qu'il faudrait pour que ça s'alimente, si la décision est prise :** ne
-jamais écrire dans le commun, proposer l'ajout **à ses mots à lui** au moment où
-il corrige une dictée (`corrections_dictee` porte déjà ces corrections), et lui
-demander confirmation — le dépôt refuse depuis toujours l'écriture automatique
-dans le catalogue (`creerPrestationCatalogue` : « toujours déclenchée après
-confirmation explicite de l'utilisateur »).
+**Sa condition est dans sa phrase, et elle commande tout le mécanisme.** Un mot
+inconnu n'est proposé que si l'on sait à quoi il se rapporte. Concrètement
+(`src/lib/mots-a-retenir.ts`), pour chacune des dix dernières dictées :
+
+1. **de quoi parlait-elle ?** — la ligne qu'il a RETENUE sur son devis, et non
+   ce qu'Atlas avait cru lire, doit être reconnue par le catalogue. Sinon, rien
+   n'est proposé : retenir un mot dont on ignore le sens, c'est inventer une
+   donnée (`CLAUDE.md` §4) ;
+2. **quels mots restent inconnus ?** — ceux d'au moins quatre lettres, absents
+   de la liste des mots ordinaires, et que rien du vocabulaire (celui d'Atlas
+   comme le sien) ne reconnaît déjà.
+
+**Atlas propose, il n'écrit pas.** Deux boutons sur l'écran du catalogue, et
+l'extrait de la dictée au-dessus — « écime » seul ne lui dit rien trois semaines
+plus tard ; *« faut m'écimer le tilleul du fond »* lui rend la scène.
+
+**Le « non » se retient aussi** (migration 0053, colonne `refuse`). Sans lui, la
+proposition reviendrait à chaque affichage — et une proposition qui revient
+après un refus n'est plus une proposition. Le mot écarté reste en base, marqué :
+il ne s'affiche pas, ne se cherche pas, ne se propose plus. **Mais il peut
+changer d'avis** : écrire le mot à la main le relève (`ajouterMot`), sans quoi
+l'index unique le refuserait en silence — il taperait « écime », rien
+n'apparaîtrait, et aucune phrase ne dirait que c'est son propre « non » d'il y a
+trois semaines qui le bloque.
+
+**La liste des mots ordinaires vient de ses vraies dictées, pas d'un
+dictionnaire.** *« Il FAUDRA écimer le GRAND tilleul du FOND »* proposait trois
+mots pour un seul qui apprend quelque chose. Elle ne cherche pas
+l'exhaustivité : un mot ordinaire qui passe au travers coûte un « non », et le
+« non » est définitif.
+
+### Ce que ce lot ne fait toujours PAS
+
+**Le vocabulaire d'ATLAS ne s'alimente jamais tout seul**, et cette limite n'est
+pas technique : il est commun à toutes les entreprises. Un mot appris chez un
+artisan changerait les devis d'un autre, sans qu'il l'ait demandé ni qu'il
+puisse le corriger. Tout ce qui est retenu entre dans SES mots, isolés par RLS.
+
+**Et rien ne s'écrit sans son geste** — le dépôt le refuse depuis toujours
+(`creerPrestationCatalogue` : « toujours déclenchée après confirmation explicite
+de l'utilisateur »).

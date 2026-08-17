@@ -11,10 +11,11 @@
 
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { motsCatalogue } from "../db/schema";
+import { correctionsDictee, motsCatalogue } from "../db/schema";
 import type { Ctx } from "./context";
 import { listerCataloguePrestations } from "./catalogue-prestations";
 import { listerCatalogueMateriels } from "./catalogue-materiels";
+import { motsARetenir, type MotPropose } from "@/lib/mots-a-retenir";
 import {
   MAX_ENTREES_A_MOI,
   carteCorrespond,
@@ -40,7 +41,15 @@ async function sesMots(ctx: Ctx, famille: Famille): Promise<MotAMoi[]> {
         parentId: motsCatalogue.parentId,
       })
       .from(motsCatalogue)
-      .where(and(eq(motsCatalogue.entrepriseId, ctx.entrepriseId), eq(motsCatalogue.famille, famille)))
+      // Les mots écartés restent en base pour ne plus être proposés
+      // (migration 0053) : ils ne s'affichent pas et ne se cherchent pas.
+      .where(
+        and(
+          eq(motsCatalogue.entrepriseId, ctx.entrepriseId),
+          eq(motsCatalogue.famille, famille),
+          eq(motsCatalogue.refuse, false)
+        )
+      )
       .orderBy(asc(motsCatalogue.createdAt), asc(motsCatalogue.mot));
 
     return lignes.map((l) => ({
@@ -115,6 +124,30 @@ export async function ajouterMot(
   if (!propre) return { ok: false, refus: "vide" };
 
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Un mot ÉCARTÉ puis écrit à la main se relève** (migration 0053). Sans
+    // ce relèvement, l'index unique refuserait silencieusement son ajout : il
+    // taperait « écime », rien n'apparaîtrait, et aucune phrase ne dirait que
+    // c'est son propre « non » d'il y a trois semaines qui le bloque.
+    const [releve] = await tx
+      .update(motsCatalogue)
+      .set({
+        refuse: false,
+        prestationId: !carte.aMoi && args.famille === "prestation" ? args.entreeId : null,
+        materielId: !carte.aMoi && args.famille === "materiel" ? args.entreeId : null,
+        parentId: carte.aMoi ? args.entreeId : null,
+        updatedAt: sql`now()`,
+      })
+      .where(
+        and(
+          eq(motsCatalogue.entrepriseId, ctx.entrepriseId),
+          eq(motsCatalogue.famille, args.famille),
+          eq(motsCatalogue.refuse, true),
+          sql`lower(${motsCatalogue.mot}) = lower(${propre})`
+        )
+      )
+      .returning({ id: motsCatalogue.id, mot: motsCatalogue.mot });
+    if (releve) return { ok: true, mot: releve };
+
     const [ligne] = await tx
       .insert(motsCatalogue)
       .values({
@@ -163,6 +196,22 @@ export async function creerEntree(
   if (!propre) return { ok: false, refus: "vide" };
 
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // Même relèvement qu'au-dessus : un nom écarté un jour peut devenir une
+    // entrée à lui le lendemain, et l'index unique le refuserait sans un mot.
+    const [releve] = await tx
+      .update(motsCatalogue)
+      .set({ refuse: false, prestationId: null, materielId: null, parentId: null, updatedAt: sql`now()` })
+      .where(
+        and(
+          eq(motsCatalogue.entrepriseId, ctx.entrepriseId),
+          eq(motsCatalogue.famille, args.famille),
+          eq(motsCatalogue.refuse, true),
+          sql`lower(${motsCatalogue.mot}) = lower(${propre})`
+        )
+      )
+      .returning({ id: motsCatalogue.id, mot: motsCatalogue.mot });
+    if (releve) return { ok: true, mot: releve };
+
     const [ligne] = await tx
       .insert(motsCatalogue)
       .values({ entrepriseId: ctx.entrepriseId, famille: args.famille, mot: propre })
@@ -223,4 +272,85 @@ export async function rechercherCartes(
   if (!cle) return [];
   const cartes = await listerCartes(ctx, famille);
   return cartes.filter((c) => carteCorrespond(c, cle));
+}
+
+// ─── Ce qu'Atlas propose de retenir (17 août 2026) ──────────────────────────
+//
+// **Sa demande, et sa condition** : *« ça s'autoalimente à chaque fois qu'on
+// rajoute un nouveau mot dans un devis ET QU'IL COMPREND CE QUE C'EST ? »*.
+// Atlas PROPOSE, il n'écrit pas — et jamais dans le vocabulaire commun.
+
+/** Les dictées récentes et ce qu'il a finalement retenu, pour les propositions. */
+async function dicteesRecentes(ctx: Ctx, limite = 10) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .select({
+        dictee: correctionsDictee.dictee,
+        retenu: correctionsDictee.retenu,
+        propose: correctionsDictee.propose,
+      })
+      .from(correctionsDictee)
+      .where(eq(correctionsDictee.entrepriseId, ctx.entrepriseId))
+      .orderBy(sql`${correctionsDictee.updatedAt} DESC`)
+      .limit(limite);
+
+    return lignes.map((l) => {
+      // **Le libellé RETENU d'abord, et à défaut celui proposé.** C'est ce
+      // qu'il a validé lui-même qui dit de quoi parlait la dictée ; la
+      // proposition d'Atlas ne vaut qu'en dernier recours, quand il n'a rien
+      // retouché — auquel cas elle est justement ce qu'il a laissé passer.
+      const lignesRetenues = (l.retenu ?? l.propose ?? []) as { libelle?: string }[];
+      return {
+        dictee: l.dictee ?? "",
+        libelles: lignesRetenues.map((x) => x?.libelle ?? "").filter(Boolean),
+      };
+    });
+  });
+}
+
+/** Tous ses mots d'une famille, **écartés compris** — on ne repropose jamais. */
+async function motsDejaVus(ctx: Ctx, famille: Famille): Promise<string[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .select({ mot: motsCatalogue.mot })
+      .from(motsCatalogue)
+      .where(and(eq(motsCatalogue.entrepriseId, ctx.entrepriseId), eq(motsCatalogue.famille, famille)));
+    return lignes.map((l) => l.mot);
+  });
+}
+
+/**
+ * Les mots qu'Atlas a entendus, ne connaît pas, et sait rattacher.
+ *
+ * **Vide la plupart du temps, et c'est normal.** Il faut une dictée récente,
+ * un mot inconnu dedans, et une ligne retenue que le catalogue reconnaît. Sans
+ * les trois, on ne saurait pas ce que le mot désigne — et proposer de retenir
+ * un mot dont on ignore le sens reviendrait à inventer une donnée.
+ */
+export async function motsAProposer(ctx: Ctx): Promise<MotPropose[]> {
+  const [dictees, cartes, deja] = await Promise.all([
+    dicteesRecentes(ctx),
+    listerCartes(ctx, "prestation"),
+    motsDejaVus(ctx, "prestation"),
+  ]);
+  return motsARetenir({ dictees, cartes, deja });
+}
+
+/**
+ * Écarte un mot proposé — pour de bon.
+ *
+ * Il reste en base, marqué : une proposition qui revient après un « non » n'est
+ * plus une proposition. L'écrire à la main le relève (voir `ajouterMot`).
+ */
+export async function ecarterMot(ctx: Ctx, args: { famille: Famille; mot: string }): Promise<{ ecarte: boolean }> {
+  const propre = motNettoye(args.mot);
+  if (!propre) return { ecarte: false };
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .insert(motsCatalogue)
+      .values({ entrepriseId: ctx.entrepriseId, famille: args.famille, mot: propre, refuse: true })
+      .onConflictDoNothing()
+      .returning({ id: motsCatalogue.id });
+    return { ecarte: lignes.length > 0 };
+  });
 }

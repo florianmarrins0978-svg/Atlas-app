@@ -4,10 +4,14 @@ import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import {
   ajouterMot,
   creerEntree,
+  ecarterMot,
   listerCartes,
+  motsAProposer,
   rechercherCartes,
   retirerMot,
 } from "../src/server/repositories/mots-catalogue";
+import { motsARetenir } from "../src/lib/mots-a-retenir";
+import { pool as poolBase } from "../src/server/db/client";
 import { creerPrestationCatalogue } from "../src/server/repositories/catalogue-prestations";
 import { creerMaterielCatalogue } from "../src/server/repositories/catalogue-materiels";
 import {
@@ -262,6 +266,125 @@ async function main() {
 
     const chezB = (await listerCartes(ctxB, "prestation")).find((c) => c.id === commune.id);
     assert.ok(chezB?.mesMots.some((m) => m.id === pose.mot.id), "le mot de B a disparu");
+  });
+
+  // ─── Ce qu'Atlas propose de retenir (17 août 2026) ────────────────────────
+
+  await cas("rien n'est proposé quand Atlas ne comprend pas de quoi on parle", () => {
+    const cartes = [
+      { id: "c1", nom: "Élagage", motsCommuns: ["sapin"], mesMots: [], aMoi: false },
+    ];
+    // Aucune ligne retenue ne se rattache au catalogue : le mot « écime »
+    // resterait un mot sans sens, et le retenir n'apprendrait rien à personne.
+    assert.deepEqual(
+      motsARetenir({
+        dictees: [{ dictee: "faut m'écimer le grand tilleul", libelles: ["Terrassement"] }],
+        cartes,
+        deja: [],
+      }),
+      []
+    );
+  });
+
+  await cas("un mot inconnu est proposé, rattaché à ce qu'il a retenu", () => {
+    const cartes = [
+      { id: "c1", nom: "Élagage", motsCommuns: ["sapin"], mesMots: [], aMoi: false },
+    ];
+    const proposes = motsARetenir({
+      dictees: [{ dictee: "faut m'écimer le grand tilleul du fond", libelles: ["Élagage 3 arbres"] }],
+      cartes,
+      deja: [],
+    });
+    const mots = proposes.map((p) => p.mot);
+    assert.ok(mots.includes("écimer"), `« écimer » devrait être proposé (vu : ${mots.join(", ")})`);
+    assert.equal(proposes[0].entreeNom, "Élagage");
+    // **Les mots ordinaires ne sont jamais proposés.** Sans la liste, la
+    // première proposition serait « faut ».
+    assert.equal(mots.includes("faut"), false, "« faut » n'apprend rien");
+    // Un mot déjà connu du catalogue n'apporte rien de plus.
+    assert.equal(mots.includes("sapin"), false, "« sapin » est déjà compris");
+  });
+
+  await cas("un mot déjà posé, ou déjà refusé, n'est plus jamais proposé", () => {
+    const cartes = [{ id: "c1", nom: "Élagage", motsCommuns: [], mesMots: [], aMoi: false }];
+    const proposes = motsARetenir({
+      dictees: [{ dictee: "écimer le tilleul", libelles: ["Élagage"] }],
+      cartes,
+      deja: ["Écimer"],
+    });
+    assert.equal(
+      proposes.some((p) => p.mot === "écimer"),
+      false,
+      "un mot déjà vu revient : une proposition qui revient après un « non » n'est plus une proposition"
+    );
+  });
+
+  await cas("le tour complet : Atlas entend, propose, il refuse, ça ne revient pas", async () => {
+    const ctxD = await contexte("d");
+
+    // **Une entrée au nom sans équivoque.** Avec « Élagage », le rapprochement
+    // par inclusion trouve aussi l'« Élagage » du catalogue de démonstration —
+    // et le contrôle accuserait le produit pour une ambiguïté qu'il a lui-même
+    // fabriquée. Un contrôle qui accuse à tort coûte plus cher que pas de
+    // contrôle (`CLAUDE.md` §5).
+    const propre = await creerPrestationCatalogue({
+      nomCanonique: `Zpropositiontest${Date.now()}`,
+      variantes: [],
+      synonymes: [],
+    });
+
+    // Une dictée qu'Atlas a lue, et une ligne retenue que le catalogue reconnaît.
+    // **La préparation passe par le contexte RLS, comme le produit.** Écrire
+    // en direct avec `pool.query` fait annuler l'insertion par la politique —
+    // sans erreur pour un SELECT, avec un refus sec pour un INSERT. Le piège
+    // est déjà payé ailleurs dans ce dépôt (`CLAUDE.md` §3).
+    const client = await poolBase.connect();
+    try {
+      await client.query(`SELECT set_config('app.entreprise_id', $1, false)`, [ctxD.entrepriseId]);
+      const { rows: clientRows } = await client.query(
+        `INSERT INTO clients (entreprise_id, nom) VALUES ($1, 'Client essai') RETURNING id`,
+        [ctxD.entrepriseId]
+      );
+      const { rows: chRows } = await client.query(
+        `INSERT INTO chantiers (entreprise_id, client_id, nom) VALUES ($1, $2, 'Chantier essai') RETURNING id`,
+        [ctxD.entrepriseId, clientRows[0].id]
+      );
+      await client.query(
+        `INSERT INTO corrections_dictee (entreprise_id, chantier_id, dictee, propose, retenu)
+         VALUES ($1, $2, $3, $4::jsonb, $4::jsonb)`,
+        [
+          ctxD.entrepriseId,
+          chRows[0].id,
+          `faut m'écimer le grand tilleul du fond`,
+          JSON.stringify([{ libelle: propre.nomCanonique, montant: "450.00" }]),
+        ]
+      );
+    } finally {
+      await client.query(`SELECT set_config('app.entreprise_id', '', false)`).catch(() => undefined);
+      client.release();
+    }
+
+    const proposes = await motsAProposer(ctxD);
+    const mots = proposes.map((p) => p.mot);
+    assert.ok(mots.includes("écimer"), `Atlas devrait proposer « écimer » (vu : ${mots.join(", ") || "rien"})`);
+    assert.equal(proposes.find((p) => p.mot === "écimer")?.entreeId, propre.id);
+
+    // Il dit non : le mot s'en va, et ne revient pas.
+    assert.deepEqual(await ecarterMot(ctxD, { famille: "prestation", mot: "écimer" }), { ecarte: true });
+    const apres = (await motsAProposer(ctxD)).map((p) => p.mot);
+    assert.equal(apres.includes("écimer"), false, "le mot refusé est reproposé");
+
+    // Et un mot écarté ne s'affiche pas non plus dans ses cartes.
+    const carte = (await listerCartes(ctxD, "prestation")).find((c) => c.id === propre.id);
+    assert.equal(carte?.mesMots.some((m) => m.mot === "écimer"), false, "un mot refusé s'affiche");
+
+    // **Mais il peut changer d'avis, et l'écrire à la main.** Sans le
+    // relèvement, l'index unique refuserait en silence : il taperait le mot,
+    // rien n'apparaîtrait, et aucune phrase ne dirait pourquoi.
+    const ecrit = await ajouterMot(ctxD, { famille: "prestation", entreeId: propre.id, mot: "écimer" });
+    assert.equal(ecrit.ok, true, `un mot écarté puis écrit à la main doit être accepté : ${JSON.stringify(ecrit)}`);
+    const apresEcriture = (await listerCartes(ctxD, "prestation")).find((c) => c.id === propre.id);
+    assert.ok(apresEcriture?.mesMots.some((m) => m.mot === "écimer"), "le mot relevé ne s'affiche pas");
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Ses mots au catalogue — ${echecs} échec(s).`);

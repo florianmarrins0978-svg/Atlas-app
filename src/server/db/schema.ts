@@ -792,6 +792,14 @@ export const motsCatalogue = pgTable(
     prestationId: uuid("prestation_id").references(() => cataloguePrestations.id, { onDelete: "cascade" }),
     materielId: uuid("materiel_id").references(() => catalogueMateriels.id, { onDelete: "cascade" }),
     parentId: uuid("parent_id").references((): AnyPgColumn => motsCatalogue.id, { onDelete: "cascade" }),
+    /**
+     * Un mot qu'Atlas a proposé et qu'il a refusé (migration 0053).
+     *
+     * Il reste en base pour ne PLUS être proposé : une proposition qui revient
+     * après un « non » n'est plus une proposition. Il ne s'affiche pas et ne se
+     * cherche pas ; l'écrire à la main le relève.
+     */
+    refuse: boolean("refuse").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
