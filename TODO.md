@@ -27,7 +27,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
-### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
+### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
+
+*Constaté le 16 août 2026 en jouant la batterie complète d'un autre lot.*
+
+```
+❌ « Plus tard » fait taire le rappel, et la date part en base
+   rien n'est écrit en base : le geste n'a pas porté
+```
+
+**Elle passe au vert jouée seule**, immédiatement après. Ce n'est donc pas le
+produit : c'est un geste dont on lit la trace en base **avant que l'action
+serveur ait répondu** — sous quatre-vingt-onze suites, la réponse arrive plus
+tard qu'à vide.
+
+**C'est le même piège que celui payé le même jour sur `test-fiche-client-e2e`** :
+attendre l'écran, ou un délai fixe, c'est mesurer ce qu'on vient de taper.
+La parade y a été de **relire la base en boucle jusqu'à ce qu'elle ait reçu**,
+plutôt que d'attendre un nombre de millisecondes.
+
+**Ce lot appartient à la session qui a posé le rappel des impayés** (`228572a`).
+Écrit ici pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue
+au hasard.
+
+
+### 0 unquadragies. ~~Montrer ce que l'application sait déjà d'un client~~ — **CODÉE le 16 août 2026 (fiche B)**
 
 **Sa question du 16 août 2026**, photo d'un « graphe de connaissances » à
 l'appui : *« tu peux m'expliquer et me dire si ça peut me servir pour mon
@@ -60,8 +84,39 @@ n'est appelé par aucun écran.
 `factures` + `paiements_facture`, `lignes_prix` pour les prestations qui
 reviennent, `lecons_prix` pour les prix pratiqués.
 
-**Une question posée dans la planche :** « 3 200 € », est-ce le **facturé** ou
-l'**encaissé** ? Les deux se calculent ; la planche montre les deux.
+**Livré** : `src/lib/fiche-client.ts`, `src/server/repositories/fiche-client.ts`,
+`src/app/clients/[id]/page.tsx`, atteinte depuis le tiroir de la fiche du
+chantier. Les deux chiffres sont montrés — facturé, et reste dû. Détail :
+`ARCHITECTURE.md` §119.
+
+---
+
+### 0 duoquadragies. ⚠ UN CLIENT N'EST JAMAIS RÉUTILISÉ — et ça vide la fiche
+
+**Trouvé le 16 août 2026 en éprouvant la fiche client, et c'est le point qui
+décide de son utilité.**
+
+`creerClient` **insère toujours**. Il n'est appelé que depuis la création d'un
+chantier, et `listerClients` n'est appelé par **aucun écran**. Deux chantiers
+pour « M. Bernard » créent donc **deux clients distincts** — et sa fiche
+affichera « 1 chantier » à chaque fois, pour toujours.
+
+**La fiche est juste ; c'est sa matière qui manque.** « Vous l'avez vu 4 fois »
+ne se produira jamais tant que ceci n'est pas réglé.
+
+**CE N'EST PAS UNE CORRECTION TECHNIQUE, C'EST UNE DÉCISION DU PATRON.**
+Rapprocher deux clients sur leur nom fusionnerait deux personnes réellement
+homonymes — deux « M. Martin » d'un même village — et **rien ne permettrait de
+défaire** ce mélange. Trois chemins possibles, à lui soumettre sur planche :
+
+| | Ce que ça fait | Ce que ça risque |
+|---|---|---|
+| **Proposer** | à la saisie du nom, l'application montre les clients connus qui ressemblent, et il choisit | rien : c'est lui qui tranche, chantier par chantier |
+| **Rapprocher seul** | même nom + même téléphone → même client | deux homonymes qui partagent un numéro d'entreprise se mélangeraient |
+| **Fusionner après coup** | un geste « c'est le même client » sur la fiche | il faut le faire, donc il ne le fera pas toujours |
+
+**À dessiner avant de coder** (`CLAUDE.md` §3 bis). Le premier chemin est le
+seul qui n'invente rien — mais c'est à lui de le dire.
 
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 

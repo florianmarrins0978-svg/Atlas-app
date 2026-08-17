@@ -227,6 +227,26 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
         photos={photos.map((p) => ({ id: p.id, storageKey: p.storageKey }))}
         etapes={[
           ...etapes,
+          // **La porte vers la fiche du client** — retenue le 16 août 2026
+          // (arrangement B de `docs/maquettes/66`). Elle vit ici plutôt que sur
+          // le nom du client en tête d'écran : celui-ci passe par `precision`,
+          // une simple chaîne d'`EnTeteEcran`, et le rendre cliquable aurait
+          // demandé de toucher une pièce partagée par tous les écrans pour un
+          // seul d'entre eux.
+          //
+          // Elle n'existe QUE si le chantier a un client : une fiche de personne
+          // n'a rien à montrer, et la proposer serait une porte sur du vide.
+          ...(chantier.clientId
+            ? [
+                {
+                  key: "fiche-client" as const,
+                  label: chantier.clientNom ?? "Le client",
+                  meta: "Ce qu'on sait de lui",
+                  done: false,
+                  href: `/clients/${chantier.clientId}`,
+                },
+              ]
+            : []),
           // **La sortie de secours suit le même chemin que le reste.**
           // Le patron, le 4 août : « je ne peux toujours pas rédiger mon devis
           // seulement à la main si je le souhaite ». Elle vivait sous le bouton

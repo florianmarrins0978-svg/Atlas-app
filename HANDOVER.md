@@ -742,6 +742,21 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LA FICHE DU CLIENT (16 août).** Elle s'ouvre depuis le tiroir d'un chantier et
+montre ce que l'application savait déjà : combien de chantiers, combien facturé,
+combien reste dû, et ce qu'on lui fait d'habitude.
+
+**⚠ ELLE EST PRESQUE VIDE AUJOURD'HUI, ET CE N'EST PAS UN DÉFAUT D'ELLE :** un
+client n'est **jamais réutilisé** (`creerClient` insère toujours ; `listerClients`
+n'est appelé par aucun écran). Deux chantiers pour « M. Bernard » font deux
+clients. **Avant de chercher un défaut dans la fiche, vérifier cela.** La
+réparation est une décision du patron — `TODO.md` §0 duoquadragies.
+
+Trois pièges de ce lot : « 0 € » ne doit jamais s'afficher pour un client non
+facturé (« — » et une phrase) ; les prestations se comptent en chantiers et non
+en lignes ; et un contrôle qui cherche « 0,00 € » dans une page le trouve dans
+« 450,00 € ». `ARCHITECTURE.md` §119.
+
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
 « Devis & factures », ou le jour de l'envoi si aucun délai ne l'est — son

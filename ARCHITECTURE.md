@@ -9788,3 +9788,88 @@ valent d'être retenus :
    L'image annonçait « échéance dépassée depuis 60 jours » au lieu de 30, et
    c'était le montage qui était faux, pas l'application. Toute écriture de
    montage vérifie maintenant son `rowCount`.
+
+---
+
+## 119. La fiche du client : montrer ce que l'application savait déjà
+
+*Demandé le 16 août 2026, dessiné (`docs/maquettes/66-ce-que-je-sais-du-client.html`),
+puis codé sur son choix — **l'arrangement B**, la fiche atteinte depuis le
+chantier.*
+
+**D'où ça vient, et la réponse qu'il faut garder.** Le patron a montré la photo
+d'un « graphe de connaissances » : *« tu peux m'expliquer et me dire si ça peut
+me servir pour mon appli ? »* La réponse a été **non, deux fois** :
+
+- **comme mémoire de travail**, le dépôt la tient déjà (`CLAUDE.md`,
+  `HANDOVER.md`, `ARCHITECTURE.md`…). Un graphe à côté serait une seconde
+  vérité, et c'est exactement ce que ces fichiers existent pour empêcher ;
+- **comme fonction**, ses données sont déjà reliées dans une base SQL, qui
+  répond mieux qu'un graphe à « combien j'ai facturé chez les Ledoux ? ».
+
+**Ce qu'il restait à en prendre** — et c'est cet écran : l'application SAIT
+qu'un client est venu quatre fois, qu'il doit encore 740 €, qu'on lui fait
+toujours de l'élagage… **et elle ne le montrait nulle part.**
+
+### Pourquoi B, et pas un onglet « Clients »
+
+Le seul avantage de l'onglet aurait été de répondre à « qui me doit de
+l'argent ? ». **Cet écran existe déjà** — « En attente de paiement », dans
+Terminés → TVA (§110). Un cinquième onglet aurait coûté de la place au pouce
+pour redire ce qui est là. Ne pas le rouvrir sans qu'il le demande.
+
+### Trois étages, et ce que chacun refuse
+
+| Étage | Fichier | Ce qu'il fait |
+|---|---|---|
+| La règle | `src/lib/fiche-client.ts` | compte, additionne, regroupe. **Aucune base** : éprouvé sans rien monter |
+| La lecture | `src/server/repositories/fiche-client.ts` | lit sous `withEntreprise`, et **ne calcule rien** |
+| L'écran | `src/app/clients/[id]/page.tsx` | affiche, et ne décide de rien |
+
+**« 0 € » est le chiffre le plus dangereux de cette fiche.** Un client dont
+aucun chantier n'est facturé n'a pas rapporté zéro euro : il n'a pas encore été
+facturé. Affiché « 0 € », il se lit comme un mauvais payeur, et le patron
+déciderait sur une phrase fausse. La règle rend donc `null`, l'écran écrit
+« — », et une phrase dit pourquoi (`CLAUDE.md` §4).
+
+**Les prestations se comptent en CHANTIERS, pas en lignes.** Un devis portant
+« Élagage — chêne » et « Élagage — frêne » ne fait pas deux visites.
+
+**Ce que la règle refuse de faire, et c'est écrit pour que ce soit un choix :**
+sans séparateur, « Élagage chêne » et « Élagage frêne » restent deux
+prestations. Les regrouper demanderait de deviner que le premier mot porte le
+métier — c'est le travail de `signatureLecon`, qui le fait déjà pour les prix.
+Le refaire ici en moins bien créerait deux vérités.
+
+### La porte, et pourquoi elle n'est pas sur le nom du client
+
+Elle vit dans le **tiroir de la fiche du chantier**, avec les autres
+destinations. Le nom du client, en tête d'écran, passe par `precision` —
+**une simple chaîne** d'`EnTeteEcran`, partagé par tous les écrans. Le rendre
+cliquable aurait demandé de toucher une pièce commune pour un seul écran.
+
+Elle n'existe **que si le chantier a un client** : une fiche de personne n'a
+rien à montrer.
+
+### ⚠ CE QUI LIMITE CETTE FICHE AUJOURD'HUI, ET QUI N'EST PAS DE SON FAIT
+
+**Un client n'est JAMAIS réutilisé.** `creerClient` insère toujours, et il n'est
+appelé que depuis la création d'un chantier ; `listerClients` existe et n'est
+appelé par aucun écran. Deux chantiers pour « M. Bernard » créent donc **deux
+clients** — et la fiche affichera « 1 chantier » à chaque fois.
+
+La fiche est juste ; c'est sa matière qui manque. **Le corriger est une décision
+du patron, pas une correction technique** : rapprocher deux clients sur leur nom
+fusionnerait deux personnes réellement homonymes, et il n'existe aucun moyen de
+défaire cela. Consigné dans `TODO.md`, à lui poser.
+
+### Trois défauts trouvés en regardant, pas en relisant
+
+- **« ENCORE DUS » se cassait en deux lignes** dans sa case à 390 px. Devenu
+  « reste dû ». Vu à la capture ; une suite le mesure désormais.
+- **« 1 fois · 0,00 € »** s'affichait pour une prestation écrite mais pas encore
+  chiffrée — cela se lit comme un travail fait pour rien. Le prix ne s'écrit
+  plus qu'au-dessus de zéro.
+- **Le contrôle accusait à tort** : il cherchait « 0,00 € » dans la page, et le
+  trouvait dans « 45**0,00 €** ». Une erreur qui accuse à tort coûte plus cher
+  que pas de contrôle (`CLAUDE.md` §5).
