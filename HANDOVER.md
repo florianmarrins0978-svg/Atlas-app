@@ -994,6 +994,13 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
+**⚠ UNE PLANCHE NE RECOPIE JAMAIS UN CALCUL QUE L'OUTIL SAIT FAIRE.** Payé le
+17 août : la planche 75 portait une liste de fournitures tapée à la main, avec
+un « regard 3 voies » composé de pièces piochées dans plusieurs de ses fiches.
+Il l'a lue et a tout de suite vu le mélange. **Le code refusait déjà cette
+composition** (§4) — c'est la planche qui l'a faite. Une planche montre ce qui
+n'existe pas encore ; tout ce qui tourne déjà se lit dans l'outil.
+
 **⚠ LES TUYÈRES SONT POUR LES PETITS ESPACES : 4 m DE PETIT CÔTÉ, GRAND MAX
 (17 août).** Sa règle — « un carré de douze par dix, c'est que des arroseurs ;
 les tuyères, c'est un carré de trois par trois, ou un couloir de dix sur

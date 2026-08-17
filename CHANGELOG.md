@@ -9,6 +9,21 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### La liste de la planche 75 était TAPÉE À LA MAIN, et fausse
+
+Il l'a lue et il a compté : *« énormément de choses qui ne sont pas correctes
+[…] le Dura rectangle, tu as mélangé une pièce avec le regard ».* Il avait
+raison, et la cause n'est pas une erreur de frappe mais une faute de méthode :
+cette liste avait été **écrite à la main dans la planche** au lieu d'être
+produite par l'outil. J'y ai composé un « regard 3 voies » en piochant des
+pièces dans plusieurs de ses fiches — c'est exactement ce que le §4 interdit,
+et ce que le code, lui, refuse de faire depuis le début.
+
+La liste est retirée de la planche, remplacée par la raison de son retrait et
+un renvoi vers l'outil. **Une planche ne recopie jamais un calcul** : elle
+montre ce qui n'existe pas encore, et rien d'autre. Ici, ce qui n'existait pas
+encore, c'était le PLAN — la liste, elle, tournait déjà.
+
 ### La cible est dessinée : son plan d'exécution, en couleur
 
 Il a envoyé la photo d'un vrai plan de chantier — échelle 1/100e, légende,
