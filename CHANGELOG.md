@@ -29,7 +29,93 @@ client — n'autorise pas à le combler dans le lot d'à côté.
 
 **Sixième défaut trouvé sur une capture et par aucun test :** le trait pointillé
 de la mention se posait au bas de la cible de 34 px, à dix pixels sous le mot.
-`ARCHITECTURE.md` §119.
+`ARCHITECTURE.md` §124.
+
+### Les corps d'arroseur, Hunter, et une buse qui se vend en deux morceaux
+
+**Cinq photos** : les corps Rain Bird 1800 (« livrée sans buse » — exactement ce
+qui manquait), les corps Hunter Pro-Spray/I-Spray, les buses Hunter SRS, les
+buses Rain Bird R-VAN, et les MP Rotator (prix et références seulement).
+
+**Hunter devient une marque active**, pas une ligne vide : ses cinq buses SRS
+(7A à 17A) sont entrées, même forme que les VAN — une référence, tous les
+angles.
+
+**Ce que les corps apportent — et ce qu'ils n'apportent pas encore.** Quatre
+hauteurs d'escamotage (5/10/15/30 cm), trois niveaux d'option (rien, clapet
+anti-vidange SAM, régulateur de pression PRS). Ils entrent dans le catalogue et
+dans son registre de prix ; **aucun n'est encore choisi automatiquement** dans
+la liste au fournisseur — quatre hauteurs et trois options, c'est un choix de
+chantier, pas une valeur à deviner.
+
+**Et une vraie découverte de structure : les R-VAN se vendent en DEUX
+références par taille, pas une.** Les VAN (première page) tiennent en une seule
+référence réglable de 90° à 360°. Les R-VAN sont deux produits physiques
+différents — une version réglable 45°-270° qui n'atteint jamais le 360°, une
+version fixe 360° qui ne fait rien d'autre. Une buse sans 360° ne peut pas
+couvrir l'intérieur d'une pelouse ; une buse sans 90°/180° ne peut pas se poser
+en coin ou en bord. **Le calcul ne choisit donc ni l'une ni l'autre seule** —
+`busesDe()` exige désormais les trois angles sur une même référence — et les
+deux restent visibles dans le registre de prix sans être posées automatiquement.
+
+**Le bug qui a précédé ce garde-fou, et pourquoi il fallait le voir tourner
+faux avant de le corriger.** Une première version du filtre ne vérifiait que
+90°/180°, pas 360°. Elle laissait passer la R-VAN réglable seule, qui n'a pas de
+débit à 360° : le calcul de l'intérieur d'une pelouse divisait par une valeur
+absente, deux secteurs sortaient au lieu de dix, et l'écran affichait « Mesures
+à compléter » à la place d'un plan. Confronté à l'ancien filtre (90°/180° sans
+360°) : cinq contrôles rouges, retombés à zéro une fois le troisième angle
+exigé.
+
+**Deux familles vues et volontairement PAS entrées.** Les buses « bande »
+(SST, RCS, LCS…) arrosent un rectangle, pas un cercle — tout le calcul de
+cette page suppose des couronnes, et les compter comme un arroseur rond
+donnerait une couverture fausse. Les MP Rotator n'avaient ni portée ni débit
+sur la photo, seulement une référence et un prix — sans ces deux nombres, une
+entrée calculerait faux plutôt que de manquer honnêtement.
+
+### Sa règle de pose, enfin la sienne — et l'outil faisait l'exact contraire
+
+**Ses mots, au formulaire :** *« 80 % minimum entre chaque arroseur. Donc portée
+5 m : distance entre chaque arroseur ~5,50 m, 6 m max, 5 m étant la perfection.
+Jamais moins. En dessous de 5 m, 4 m, 3 m : JAMAIS. »*
+
+L'outil posait un arroseur tous les **0,8 × la portée** — soit 4 m pour une
+portée de 5. Précisément le cas qu'il écrit en majuscules. Le recouvrement se
+mesure sur l'ÉCART, pas sur la portée : écart ≤ portée / 0,80, et jamais sous la
+portée. Un arroseur de trop tous les quatre mètres, c'est un secteur de plus, un
+devis plus cher, et un client qui compare.
+
+**Et cette règle en a révélé une autre, plus profonde : le choix de buse doit
+OBÉIR à la pose, pas être rattrapé après coup.** Une turbine de 9 m ne pave pas
+une pelouse de 12 m de large — deux rangées font 12 m d'écart (trop), trois en
+font 6 (trop peu). L'outil affichait alors « buse trop grande » **sur toutes les
+zones**, y compris celles qui allaient bien. Il prend désormais, de la plus
+grande à la plus petite, la première buse qui pave les deux côtés selon sa règle.
+L'alerte ne parle plus que des zones réellement impossibles.
+
+**Le quinconce se DESSINE.** Sa règle : quinconce au-delà de quatre arroseurs,
+« et les derniers arroseurs doivent toujours être dans les coins ». Le pourtour
+reste régulier, seules les rangées intérieures se décalent d'un demi-écart. Une
+première version se contentait d'écrire « en quinconce » sous une grille carrée
+— un plan qui ment, et que personne n'aurait vérifié.
+
+**Le goutte-à-goutte prend ses mesures à lui :** lignes tous les 80 cm dans les
+massifs, 70 cm au potager, et pour une haie **la question est posée** — une ligne
+ou deux, c'est l'utilisateur qui tranche. Conséquence : un massif se saisit
+désormais en longueur × largeur, plus en mètres de gaine. Demander des mètres de
+gaine à quelqu'un « qui ne connaît rien en arrosage » revenait à lui faire faire
+le calcul qu'on lui promettait.
+
+**Le point d'eau demande d'où l'on se repique.** Sa règle : juste après le
+compteur, la ville délivre au moins 3 bar et c'est du sûr ; ailleurs, **il faut
+lui expliquer quoi faire** — seau gradué pour le débit, manomètre à cinq euros
+pour la pression. Une question sans marche à suivre renvoie l'utilisateur à son
+ignorance.
+
+**Confirmé sans changement :** 85 % du débit par secteur, jamais de mélange de
+pluviométries ni de familles, et aucune correction de pression à faire (« à
+2 bar ou 3 bar c'est quasiment les mêmes valeurs »).
 
 ### Atlas propose de retenir les mots qu'il entend — et ne les écrit jamais tout seul
 

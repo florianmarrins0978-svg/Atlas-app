@@ -342,7 +342,7 @@ l'application. Ce qui est **fait** :
   se recalcule** à l'enregistrement — sans quoi la ligne dirait « Chantier du … »
   pour toujours, le défaut corrigé partout sauf là où il l'a vu. Deux mots
   changent parce qu'ils mentiraient : « Nouveau » et « Créer le chantier ».
-  `ARCHITECTURE.md` §119. **Leçon : devant une demande qui touche à un écran,
+  `ARCHITECTURE.md` §124. **Leçon : devant une demande qui touche à un écran,
   chercher d'abord si l'écran existe** — une première planche avait dessiné une
   fiche client de toutes pièces.
 - **Le rappel « facture impayée »** (16 août) : le **quatrième** rappel, et le

@@ -29,7 +29,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ### ~~0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier~~ — **FAIT le 17 août 2026**
 
-*Dessiné, corrigé par lui, puis codé le même jour.* `ARCHITECTURE.md` §119.
+*Dessiné, corrigé par lui, puis codé le même jour.* `ARCHITECTURE.md` §124.
 
 La mention devient un lien vers `/chantiers/[id]/coordonnees` — l'écran de
 création rouvert, prérempli, qui enregistre au lieu de créer. Le nom du chantier
@@ -114,7 +114,89 @@ qui ne le sont pas.
 | 15 | Le choix de buse : je prends **la plus grande qui tienne dans le petit côté** (donc le moins d'arroseurs). C'est bien votre règle ? | *en attente* |
 | 16 | La **8-VAN** annonce 0,16 m³/h à 90°, soit plus que la 10-VAN (0,14) qui porte pourtant plus loin. Coquille du catalogue, ou valeur juste ? | *en attente* |
 | 17 | Les buses sont données **à 2 bar**. Que faire quand l'installation tourne à 3 : autre tableau, ou correction ? | *en attente* |
-| 18 | Les **corps escamotables** sur lesquels ces buses se vissent : quelles références ? | *en attente* |
+| 18 | ~~Les corps escamotables~~ — **REÇUS le 17 août** : Rain Bird série 1800 (RT1802-1832, 4 hauteurs × 3 options), Hunter Pro-Spray/I-Spray (7 réf.). Voir ci-dessous |
+
+**SES RÉPONSES DÉTAILLÉES DU 17 AOÛT — LE MÉTIER, PAR LUI.** Tout ce qui suit
+est appliqué dans `appli/arrosage.html`. Ne pas le redéduire, ne pas l'assouplir.
+
+| # | Sa règle | Où c'est |
+|---|---|---|
+| 5 | **« 80 % minimum entre chaque arroseur. Portée 5 m : distance ~5,50 m, 6 m max, 5 m étant la perfection. Jamais moins. En dessous de 5 m, 4 m, 3 m : JAMAIS. »** Donc écart ∈ [portée ; 1,2 × portée]. L'outil faisait exactement l'inverse (0,8 × portée) | `ECART_MAX_FACTEUR`, `paveSelonSaRegle` |
+| 6 | **Quinconce au-delà de 4 arroseurs, carré en dessous. « Les derniers arroseurs doivent toujours être dans les coins »** — pourtour régulier, seules les rangées intérieures se décalent | `QUINCONCE_AU_DELA_DE`, `dessinerPlans` |
+| 7 | Il enverra **un tableau portée × distance** : l'écart viendra alors du catalogue, pas d'un facteur | à venir |
+| 8 | **85 % du débit par secteur : confirmé** | `MARGE` |
+| 9 | **« Ça ne se mélange jamais »** — ni deux pluviométries, ni deux familles | `decouper()` |
+| 10 | **Massifs : lignes tous les 80 cm. Potager : 70 cm. Haies : une ou deux lignes, À DEMANDER à l'utilisateur** | `TYPES`, forme `nappe` |
+| 12 | Une grande nourrice ou deux petites : **« question à poser à l'utilisateur, il décidera »** | à faire |
+| 13 | Le croquis client sera **les deux** — carré simple, ou avec obstacles, courbes, arbre au milieu. **« Je vais te donner les clés »** | à venir |
+| 14 | **L'utilisateur dit s'il se repique juste après le compteur** (le meilleur cas : la ville délivre ≥ 3 bar, c'est du sûr). Sinon **on lui explique quoi faire** pour avoir les bonnes infos | champ `compteur` |
+| 15 | Le choix de marque vaut **aussi pour les électrovannes**, pas pour le reste | `suitLaMarque` |
+| 16 | D'autres marques viendront **au fil des photos** | — |
+| 17 | **« À 2 bar ou 3 bar c'est quasiment les mêmes valeurs »** — aucune correction de pression à faire | — |
+| 18 | Les **corps escamotables** arrivent | `CATALOGUE.corps`, vide |
+
+**CINQ NOUVELLES PHOTOS REÇUES LE 17 AOÛT — ce qui est entré, et ce qui ne l'est PAS.**
+
+| Reçu | Entré comment |
+|---|---|
+| Corps Rain Bird 1800 (RT1802 → RT1832) | Dans `CATALOGUE.corps` — 4 hauteurs (5/10/15/30 cm) × options (aucune, SAM, SAM-PRS) |
+| Corps Hunter Pro-Spray / I-Spray | Dans `CATALOGUE.corps` — mêmes 4 hauteurs, I-Spray = régulateur intégré |
+| Buses Hunter SRS (7A à 17A) | Dans `CATALOGUE.buses`, même forme que les VAN — **Hunter est maintenant une marque active**, pas seulement listée |
+| Buses Rain Bird R-VAN (14/18/24) | Entrées, mais **NON choisies automatiquement** — voir ci-dessous, c'est le vrai sujet |
+| Buses bande (SST/RCS/LCS, SS-530…) | **Pas entrées.** Zone rectangulaire, pas une couronne — tout le calcul de cette page suppose des cercles. Un cas à part, pas encore posé |
+| Buses MP Rotator (NA23xx, TBT10xxx) | **Pas entrées.** Aucune portée ni débit sur la photo — juste réf et prix. Sans ces deux nombres, une entrée calculerait faux |
+
+**⚠ LA VRAIE DÉCOUVERTE : LES R-VAN SE VENDENT EN DEUX RÉFÉRENCES, PAS UNE.**
+Les VAN (p. 8) tiennent en une seule référence par taille, réglable de 90° à
+360°. Les R-VAN (p. 9 bis) sont **deux produits physiques différents** : une
+version réglable 45°-270° (jamais 360°), une version fixe 360° (jamais autre
+chose). Le tableau le montre par ses « X ».
+
+Une buse qui n'a QUE le 360° ne peut pas se poser dans un coin ni sur un bord —
+elle arroserait chez le voisin. Une buse qui n'a QUE 45°-270° ne peut pas couvrir
+l'intérieur. **Aucune des deux n'est donc choisie automatiquement** par le
+calcul (`busesDe` exige les trois angles 90/180/360 sur une seule référence) ;
+les deux restent visibles dans son registre de prix. Poser une pelouse avec des
+R-VAN suppose de mélanger les deux références selon la position — un
+pavage à deux références que l'outil ne fait pas encore.
+
+**LE CHOIX DU CORPS RESTE OUVERT, ET CE N'EST PAS DU RANGEMENT :** quatre
+hauteurs, trois niveaux d'option (rien, clapet anti-vidange, régulateur de
+pression) — un choix de chantier, pas une valeur à deviner. Aucun corps n'entre
+encore dans la liste au fournisseur tant qu'il n'a pas dit lequel prendre par
+défaut.
+
+**CE QUE SA RÈGLE D'ÉCART A RÉVÉLÉ, ET QUI N'ÉTAIT PAS VISIBLE AVANT :** le
+choix de buse doit OBÉIR à la règle, pas être corrigé après coup. Une turbine de
+9 m de portée ne pave pas une pelouse de 12 m de large — deux rangées feraient
+12 m d'écart (au-delà de sa limite), trois en feraient 6 (sous la portée, ce
+qu'il interdit). L'outil prend donc, de la plus grande à la plus petite, **la
+première buse qui pave les deux côtés selon sa règle**. Il ne reste d'alerte que
+sur les zones réellement impossibles.
+
+**SES RÉPONSES DU 17 AOÛT (formulaire à cocher — c'est la forme qu'il demande,
+pas des questions en vrac dans un message) :**
+
+| Question | Sa réponse |
+|---|---|
+| Quel modèle pour la suite | **Sonnet pour rentrer le catalogue, Opus pour le calcul et les contrôles.** Le catalogue, c'est de la transcription ; une règle de calcul mal comprise se découvre sur le chantier |
+| Le recouvrement de 80 % | **« Non, autre chose » — MA LECTURE EST FAUSSE, il l'expliquera.** L'écran l'annonce désormais comme provisoire : sans cela il essaierait l'outil sur une règle qu'il a écartée, et tout ce qui en découle porterait l'erreur sans qu'elle se voie |
+| Carré ou quinconce | **« Ça dépend de la forme du terrain »** — il donnera selon quoi |
+| Le choix de buse | **« Selon la largeur, avec mes seuils »** — il donnera les tranches (ex. jusqu'à 3 m → 8-VAN, de 3 à 5 m → 12-VAN…) |
+
+**CE QUE ÇA COMMANDE, ET C'EST UNE LEÇON DE MÉTHODE :** trois réponses sur
+quatre sont « je vais t'expliquer ». **Ne rien figer d'ici là** — ni la pose, ni
+le choix de buse. Ce qui tourne aujourd'hui est un échafaudage qui porte la
+mention « provisoire » à l'écran, et cette mention se retire seulement quand sa
+règle est posée.
+
+**ET SA CONTRAINTE DE CONSOMMATION, du même échange :** *« mon utilisation se
+console super vite »*. Ce qui a coûté le plus n'est pas le modèle mais la
+**batterie complète jouée deux fois** pour un lot qui ne touche pas `src/`. Un
+lot qui ne modifie que `appli/` et `docs/` se vérifie par sa propre suite
+(`appli/tests/e2e.js`) et par `appli/tests/essai-arrosage-detaille.cjs` — la
+batterie complète reste due dès qu'une ligne de `src/` bouge. Lui faire envoyer
+ses photos **par paquets** plutôt qu'une par une, pour la même raison.
 
 **LE CHOIX DE MARQUE — fait le 17 août.** Bandeau déroulant, **Rain Bird par
 défaut**, Toro ensuite ; `CATALOGUE.marques` s'allonge d'une ligne. **Aucune

@@ -73,6 +73,10 @@ var CATALOGUE = {
   marques: [
     { cle:'rainbird', nom:'Rain Bird', defaut:true },
     { cle:'toro',     nom:'Toro' },
+    // Ajoutée le 17 août 2026 : il a envoyé ses photos Hunter sans qu'on la
+    // lui demande — les buses SRS (Hunter, p. 9) et les corps Pro-Spray /
+    // I-Spray. Une marque de plus est une ligne, comme prévu.
+    { cle:'hunter',   nom:'Hunter' },
     { cle:'generique', nom:'Générique (provisoire)', cache:true }
   ],
 
@@ -163,15 +167,169 @@ var CATALOGUE = {
     { ref:'RBT640', nom:'4-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:1.2, pression:2,
       debit:{ 90:0.06, 180:0.10, 270:0.16, 360:0.20 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' }
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
+
+    /* ── LES BUSES HUNTER SRS — sa deuxième page, le 17 août 2026 ───────────
+       Même forme que les VAN : UNE référence couvre tous les angles, donnée
+       « à 2,1 bars ». Il donne aussi le 120°, que le calcul n'utilise pas
+       encore (seuls 90°/180°/360° comptent pour les coins, bords, intérieurs) —
+       gardé quand même, une donnée relevée ne se jette pas. */
+    { ref:'HBT1559', nom:'SRS 7A', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:2.1, pression:2.1,
+      debit:{ 90:0.11, 120:0.15, 180:0.22, 270:0.33, 360:0.44 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HBT1560', nom:'SRS 10A', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:3.0, pression:2.1,
+      debit:{ 90:0.11, 120:0.15, 180:0.22, 270:0.33, 360:0.44 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HBT1561', nom:'SRS 12A', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:3.7, pression:2.1,
+      debit:{ 90:0.16, 120:0.22, 180:0.33, 270:0.49, 360:0.65 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HBT1562', nom:'SRS 15A', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:4.6, pression:2.1,
+      debit:{ 90:0.21, 120:0.28, 180:0.42, 270:0.63, 360:0.84 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HBT1563', nom:'SRS 17A', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:5.5, pression:2.1,
+      debit:{ 90:0.27, 120:0.36, 180:0.55, 270:0.82, 360:1.09 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9' },
+
+    /* ── LES BUSES R-VAN — sa troisième page, et une structure DIFFÉRENTE ───
+       Contrairement aux VAN : CHAQUE PORTÉE SE VEND EN DEUX RÉFÉRENCES
+       SÉPARÉES — une réglable de 45° à 270° (jamais 360°), une fixe à 360°
+       (jamais autre chose). Le tableau le montre par ses « X » : la ligne
+       « Débit à 360° » est vide pour la réglable, les lignes 90°/180° sont
+       vides pour la fixe.
+
+       **CE QUE ÇA CHANGE, ET QUE LA QUESTION POSÉE PLUS BAS DEMANDE À
+       CONFIRMER :** une buse qui n'a QUE le 360° ne peut physiquement pas se
+       poser dans un coin ou sur un bord (elle arroserait le trottoir du
+       voisin) — il y faut sa jumelle réglable. `busesDe()` retient donc
+       seulement les entrées qui couvrent 90° ET 180° pour les coins/bords : la
+       360°-seule reste au catalogue, visible dans son registre de prix, mais
+       n'est pas encore choisie automatiquement par le calcul. RIEN N'EST
+       DÉDUIT pour combler le manque — c'est sa règle du 17 août. */
+    { ref:'RBT1418', nom:'14 R-VAN réglable', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:4.0, pression:2.4,
+      debit:{ 90:0.066, 180:0.132 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      aVerifier:'270° absent du relevé — seuls 90° et 180° étaient lisibles' },
+    { ref:'RBT1419', nom:'14 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:4.0, pression:2.4,
+      debit:{ 360:0.264 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      pairAvec:'RBT1418' },
+    { ref:'RBT1428', nom:'18 R-VAN réglable', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:4.9, pression:2.4,
+      debit:{ 90:0.106, 180:0.206 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      aVerifier:'270° absent du relevé — seuls 90° et 180° étaient lisibles' },
+    { ref:'RBT1429', nom:'18 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:4.9, pression:2.4,
+      debit:{ 360:0.412 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      pairAvec:'RBT1428' },
+    { ref:'RBT1438', nom:'24 R-VAN réglable', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:6.1, pression:2.4,
+      debit:{ 90:0.148, 180:0.295 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      aVerifier:'270° absent du relevé — seuls 90° et 180° étaient lisibles' },
+    { ref:'RBT1439', nom:'24 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      pourType:'tuyere', rayon:6.1, pression:2.4,
+      debit:{ 360:0.590 },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      pairAvec:'RBT1438' }
   ],
+
+  /* ── LES BUSES « BANDE » (strip) — vues, pas enregistrées comme poseables.
+     RBT1400/-D/-G (Rain Bird), HBT1567/1568/1569 (Hunter SS-530, RCS-515,
+     LCS-515) : leur zone n'est pas un cercle mais un rectangle
+     (« 1,5 × 9,1 m »). Tout le calcul de cette page — portée, coins, bords —
+     suppose des couronnes circulaires. Les compter comme une buse ronde
+     donnerait une couverture fausse. Elles attendent une question à part :
+     le paillage/bordures en jet plat n'est pas encore un cas du calculateur. */
+
+  /* ── LES BUSES MP ROTATOR — vues, pas enregistrées : AUCUNE portée/débit
+     n'était lisible sur la photo (juste réf et prix). NA23xx (filetage mâle,
+     universel Rain Bird/Hunter/Nelson) et TBT10xxx-1xxx (filetage femelle,
+     Toro). Sans rayon ni débit, une entrée ne calculerait rien de juste —
+     mieux vaut les demander à part que deviner. */
 
   /* ── Les corps d'arroseur ───────────────────────────────────────────────
      VIDE : la page reçue donne les BUSES, pas les corps escamotables sur
      lesquels elles se vissent. Ils viendront. Tant qu'ils manquent, la liste au
      fournisseur commande des buses et le DIT — commander une buse sans son
      corps, c'est un chantier arrêté à la pose. */
-  corps: [],
+  /* ── LES CORPS — arrivés le 17 août 2026, série 1800 (Rain Bird) et
+     Pro-Spray / I-Spray (Hunter). « Livrée sans buse » : c'est exactement le
+     corps qui manquait pour poser les buses ci-dessus.
+
+     `hauteur` = la hauteur d'escamotage en cm (5/10/15/30 selon la gamme).
+     `options` : SAM = clapet anti-vidange (évite les fuites en point bas
+     après l'arrêt), PRS = régulateur de pression intégré, pré-réglé.
+
+     **CE QUI N'EST PAS TRANCHÉ, et l'écran ne choisit rien à sa place :**
+     quatre hauteurs, trois niveaux d'option — c'est un choix de chantier
+     (terrain plat ou en pente, herbe haute ou tondue ras), pas une valeur que
+     l'outil peut deviner. Tant qu'il n'a pas dit lequel prendre par défaut,
+     aucun corps n'est choisi automatiquement dans la liste au fournisseur. */
+  corps: [
+    { ref:'RT1802', nom:'Corps 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:5, options:[], detail:'escamotable 5 cm',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1804', nom:'Corps 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:10, options:[], detail:'escamotable 10 cm',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1806', nom:'Corps 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:15, options:[], detail:'escamotable 15 cm',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1812', nom:'Corps 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:30, options:[], detail:'escamotable 30 cm',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1824', nom:'Corps 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:10, options:['clapet anti-vidange'], detail:'escamotable 10 cm · SAM',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1826', nom:'Corps 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:15, options:['clapet anti-vidange'], detail:'escamotable 15 cm · SAM',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1822', nom:'Corps 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:30, options:['clapet anti-vidange'], detail:'escamotable 30 cm · SAM',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1834', nom:'Corps 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:10, options:['clapet anti-vidange','régulateur de pression'],
+      detail:'escamotable 10 cm · SAM-PRS (2,1 bar)',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1836', nom:'Corps 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:15, options:['clapet anti-vidange','régulateur de pression'],
+      detail:'escamotable 15 cm · SAM-PRS (2,1 bar)',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'RT1832', nom:'Corps 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+      hauteur:30, options:['clapet anti-vidange','régulateur de pression'],
+      detail:'escamotable 30 cm · SAM-PRS (2,1 bar)',
+      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    { ref:'HT1541', nom:'Corps Pro-Spray-02', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      hauteur:5, options:[], detail:'escamotable 5 cm',
+      source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HT1543', nom:'Corps Pro-Spray-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      hauteur:10, options:[], detail:'escamotable 10 cm',
+      source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HT1544', nom:'Corps Pro-Spray-06', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      hauteur:15, options:[], detail:'escamotable 15 cm',
+      source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HT1546', nom:'Corps Pro-Spray-12', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      hauteur:30, options:[], detail:'escamotable 30 cm',
+      source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HT1521', nom:'Corps I-Spray-04', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      hauteur:10, options:['régulateur de pression'], detail:'escamotable 10 cm · régulateur',
+      source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HT1522', nom:'Corps I-Spray-06', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      hauteur:15, options:['régulateur de pression'], detail:'escamotable 15 cm · régulateur',
+      source:'patron', releve:'Aqua Plus 2026, p. 9' },
+    { ref:'HT1523', nom:'Corps I-Spray-12', marqueCle:'hunter', fournisseur:'Aqua Plus',
+      hauteur:30, options:['régulateur de pression'], detail:'escamotable 30 cm · régulateur',
+      source:'patron', releve:'Aqua Plus 2026, p. 9' }
+  ],
 
   /* ── Le goutte-à-goutte ─────────────────────────────────────────────────
      `debitMetre` en m³/h par mètre de gaine. */
@@ -187,7 +345,11 @@ var CATALOGUE = {
      par secteur. `parArroseur` : une par arroseur. `fixe` : une par chantier.
      `aMesurer` : la quantité ne se déduit pas, elle se relève sur le terrain. */
   materiel: [
-    { ref:'electrovanne', nom:'Électrovanne 24 V', regle:'parSecteur', source:'provisoire' },
+    // **La marque vaut pour elle aussi** — sa réponse du 17 août : « ça sera
+    // valable aussi pour les électrovannes, pour le reste non. » Le jour où ses
+    // références arriveront, cette ligne se dédoublera par marque.
+    { ref:'electrovanne', nom:'Électrovanne 24 V', regle:'parSecteur',
+      suitLaMarque:true, source:'provisoire' },
     { ref:'crosse', nom:'Crosse de raccordement', regle:'parArroseur', source:'provisoire' },
     { ref:'regard', nom:'Regard de vannes', regle:'parTroisSecteurs', source:'provisoire' },
     { ref:'disconnecteur', nom:'Disconnecteur (obligatoire sur l\'eau potable)', regle:'fixe', source:'provisoire' },
@@ -236,7 +398,21 @@ CATALOGUE.arroseursDe = function (marqueCle, type) {
    la plus petite : c'est dans cet ordre qu'on cherche celle qui tient. */
 CATALOGUE.busesDe = function (marqueCle, pourType) {
   return CATALOGUE.buses
-    .filter(function (b) { return b.marqueCle === marqueCle && b.pourType === pourType; })
+    .filter(function (b) {
+      if (b.marqueCle !== marqueCle || b.pourType !== pourType) return false;
+      // **Une pose complète a besoin des TROIS angles.** Coins (1/4 de tour,
+      // 90°), bords (1/2 tour, 180°) ET intérieur (tour complet, 360°) — la
+      // pluviométrie elle-même se déduit du 360°. Une buse qui n'en a que
+      // deux — les R-VAN, vendues en DEUX références séparées : une réglable
+      // 45°-270° (jamais 360°), une fixe 360° (jamais autre chose) — ne peut
+      // pas, SEULE, couvrir une pose entière. Sa jumelle existe (`pairAvec`),
+      // mais tant que le pavage à deux références n'est pas construit, aucune
+      // des deux n'est choisie automatiquement : posée seule, l'une manquerait
+      // les coins et les bords, l'autre l'intérieur. Toutes deux restent
+      // visibles dans son registre de prix (`tousLesProduits`, qui ne filtre
+      // rien) — seul le CALCUL les met de côté.
+      return b.debit[90] != null && b.debit[180] != null && b.debit[360] != null;
+    })
     .sort(function (a, b) { return b.rayon - a.rayon; });
 };
 

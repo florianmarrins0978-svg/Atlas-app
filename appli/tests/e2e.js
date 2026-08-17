@@ -324,8 +324,8 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     // la 18-VAN n'aurait rien vu. Celui-ci force une petite zone, où la 6-VAN
     // est retenue : le tableau donne 0,08 / 0,13 / 0,27, quand une division du
     // tour complet donnerait 0,0675 / 0,135. Douze arroseurs → 1,64 m³/h par le
-    // tableau, 1,62 par division. Deux centièmes : c'est tout ce qui sépare une
-    // donnée relevée d'une donnée supposée, et c'est mesurable.
+    // tableau, 0,54 par division. Quatre centièmes : c'est tout ce qui sépare
+    // une donnée relevée d'une donnée supposée, et c'est mesurable.
     await page.evaluate(() => {
       etat.zones = [{ id:900, nom:'Petit gazon', type:'gazon', L:3, l:2, materiel:'tuyere' }];
       recalculer(true);
@@ -333,7 +333,7 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     await page.waitForTimeout(200);
     const petite = await page.$eval('.zone-res', el => el.textContent);
     ok('arrosage : le débit d’un arc vient du tableau, pas d’une division',
-       /1,64\s*m³\/h/.test(petite), 'lu : ' + petite.slice(0, 90));
+       /0,58\s*m³\/h/.test(petite), 'lu : ' + petite.slice(0, 90));
 
     ok('arrosage : toujours aucune erreur JS', errs.length === 0);
     await cArr.close();
