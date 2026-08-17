@@ -699,6 +699,13 @@ changent ensemble — les cinq, sinon deux chartes coexisteront comme en juillet
 
 Voir `TODO.md` pour le détail et l'ordre.
 
+- **Les clients ont enfin une porte — FAIT le 17 août au soir.** Sa remarque :
+  *« la catégorie client n'a pas été créée »*. La fiche existait depuis la
+  veille mais ne s'atteignait que depuis un chantier ; la **liste** s'ouvre
+  maintenant depuis l'accueil (« Vos clients »), avec pour chacun ses chantiers,
+  ce qui a été facturé et ce qui reste dû. **Pas de cinquième onglet** : il est
+  réservé aux outils métier (`ARCHITECTURE.md` §125).
+
 - **Le catalogue s'écrit — FAIT le 17 août** (`ARCHITECTURE.md` §122, migration
   0052). Il a posé deux fois la même question sur cet écran : *« À quoi sert
   cette page ?? On peut rien modifier rajouter »*. Ses mots s'accrochent

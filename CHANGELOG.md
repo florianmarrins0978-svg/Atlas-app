@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### « La catégorie client n'a pas été créée » — la liste, sans cinquième onglet
+
+**Sa remarque du soir, et elle était juste.** La FICHE d'un client existait
+depuis la veille (arrangement B de la planche 66), mais elle ne s'atteignait que
+**depuis un chantier** : il n'y avait aucun endroit d'où voir ses clients, ni
+retrouver celui qu'on a en tête sans se rappeler pour quel chantier on l'avait
+noté.
+
+**La liste s'ouvre depuis l'accueil, sous « quatre en cours ».** Pas de
+cinquième onglet : la barre du bas en porte quatre, le cinquième est déjà décidé
+pour les outils métier (`ARCHITECTURE.md` §125), et à cinq colonnes
+« CHANTIERS » déborde déjà sur 360 px. Le lien est en or et en petites
+capitales, comme le reste de ce bloc — ce qu'on LIT, jamais ce qu'on FAIT :
+l'action de cet écran reste « Nouveau chantier ».
+
+**Le calcul est celui de la fiche, pas un second.** `composerFicheClient` sert
+les deux écrans : deux façons d'additionner ce qu'un client doit finiraient par
+se contredire, et c'est lui qui verrait la différence en passant de la liste à
+la fiche. Et la liste se charge en **quatre requêtes**, pas en cinq par ligne :
+sinon elle s'ouvrirait d'autant plus lentement qu'il a de clients.
+
+**Rien ne s'invente :** un client sans facture affiche « rien de facturé », pas
+« 0 € » — un zéro se lirait comme un mauvais payeur. Ce qui reste dû n'apparaît
+que s'il y en a.
+
+Éprouvé par `scripts/test-liste-clients.ts` (isolation, reste dû, ordre, chantier
+supprimé) et le parcours complet dans `scripts/test-fiche-client-e2e.ts` — depuis
+l'accueil, en touchant le lien, **et un contrôle qui vérifie que la barre du bas
+n'a pas gagné d'onglet**.
+
 ### « L'appli est super lente », deuxième soir — la construction orpheline
 
 **Sa plainte, à 21 h :** *« même problème qu'hier, l'appli est super lente,

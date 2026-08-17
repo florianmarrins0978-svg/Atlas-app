@@ -793,6 +793,20 @@ fausse. `TODO.md` §0 trigies quater.
 
 ## Ce qui vient d'être terminé
 
+**LA LISTE DES CLIENTS (17 août, au soir) — sa remarque : « la catégorie client
+n'a pas été créée ».** Elle s'ouvre depuis l'accueil (« Vos clients », sous le
+compteur), pas depuis un cinquième onglet : celui-ci est réservé aux outils
+métier (`ARCHITECTURE.md` §125), et la barre déborde déjà à cinq colonnes.
+
+**Deux choses à ne pas défaire :**
+
+1. **La liste et la fiche partagent `composerFicheClient`.** Un second calcul du
+   reste dû se contredirait d'un écran à l'autre, et c'est lui qui le verrait.
+2. **Quatre requêtes, pas cinq par client.** Charger la fiche complète de chaque
+   client à tour de rôle rendrait la liste plus lente à mesure qu'il en a — et
+   c'est un écran d'accueil.
+
+
 **« ADRESSE NON RENSEIGNÉE » OUVRE L'ÉCRAN DU CHANTIER (17 août).** La mention de
 l'accueil est un lien vers `/chantiers/[id]/coordonnees` — l'écran de création
 rouvert, prérempli, qui enregistre au lieu de créer. `ARCHITECTURE.md` §124.
