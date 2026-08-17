@@ -31,6 +31,38 @@ jour — et a été vu rouge sur le piège remis en place. **Ce défaut aurait
 frappé à chaque réglage ajouté**, et lui seul : c'est le genre qu'on ne voit
 jamais en développant, puisqu'on part d'un navigateur vide.
 
+### Le cinquième onglet est posé, et un contrôle mesure la barre
+
+Sa variante retenue sur la planche 76 : **C**, la lettre à 8,5 px espacée de
+0,14em, **sans icône** — sa décision du 10 août de retirer les pictogrammes
+tient donc aussi à cinq colonnes. 11,8 px de marge, de quoi encaisser une autre
+police de téléphone.
+
+Trois choses sont posées avec l'onglet :
+
+- **La largeur du trait d'or suit le nombre d'onglets.** Elle était écrite en
+  dur (`/ 4`) : l'oublier aurait laissé le trait à cheval sur deux colonnes,
+  un défaut de dessin que rien n'aurait dit.
+- **Un écran derrière l'onglet**, sans quoi il mènerait à une page introuvable
+  — la troisième fois qu'il appuierait sur quelque chose qui ne répond pas.
+  **Et cet écran dit la vérité** : l'outil d'arrosage n'est pas dans
+  l'application, c'est une page publiée à part. La ligne porte « À l'essai » au
+  lieu d'un chevron, et ouvre la page dehors. Promettre un écran interne aurait
+  été mentir d'un signe.
+- **Un contrôle qui mesure la barre à 360 px** (`test-barre-basse-e2e.ts`). Il
+  mesure la boîte du **nœud de texte**, pas celle du lien : un lien de grille
+  remplit sa colonne quoi qu'il porte, sa largeur ne dirait rien. Il exige
+  **6 px de marge minimum** — précisément pour refuser la variante écartée et
+  son faux confort de 1,3 px — et refuse de conclure sur une barre absente.
+
+Ce genre de défaut ne se voit pas en développant sur un grand écran ; il
+n'apparaît que sur son téléphone. C'est exactement pourquoi il fallait un
+contrôle plutôt qu'un commentaire.
+
+**La décision est aussi entrée dans `docs/QUESTIONS.md` §21**, avec son accord
+— pourquoi ni les Réglages ni une catégorie « Paysage », et ce que le cinquième
+onglet a coûté à la barre.
+
 ### Où vivent les outils métier : un cinquième onglet, et ce qu'il coûte
 
 Sa question, en vue des terrasses bois qui suivront l'arrosage : une catégorie

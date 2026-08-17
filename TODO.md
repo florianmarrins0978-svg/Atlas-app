@@ -72,19 +72,31 @@ revient sur sa décision du 10 août** — il avait retiré les icônes parce
 qu'elles répétaient les mots ; à cinq colonnes elles rendent un autre service,
 viser sans lire. C'est recevable, mais **c'est à lui de le dire**.
 
-**À faire, dans cet ordre :**
+**~~1. Lui faire choisir~~ — FAIT : il a pris C**, la lettre à 8,5 px
+(espacement 0,14em), sans icône. Sa décision du 10 août — pas de pictogrammes —
+tient donc à cinq onglets aussi.
 
-1. **Lui faire choisir C ou D** sur la planche 76 — rien ne se code avant.
-2. Poser l'onglet dans `AtlasBottomNav.tsx` (`ONGLETS`, la grille `grid-cols-4`
-   et la largeur du trait d'or, qui est en `/ 4` à deux endroits).
-3. **Un contrôle qui mesure la barre à 360 px** avant chaque mise en ligne :
-   c'est exactement le genre de défaut qu'on ne voit pas en développant sur un
-   grand écran, et qui n'apparaît que sur son téléphone.
-4. L'onglet porte une LISTE d'outils (arrosage, puis terrasse bois) — d'où son
-   nom au pluriel, et non « Arrosage ».
-5. **Pouvoir rattacher un plan à un chantier après coup.** C'est le revers de
-   l'accès sans chantier qu'il a voulu : un plan fait en visite de devis doit
-   pouvoir rejoindre son client, sinon on le cherchera six mois plus tard.
+**~~2. Poser l'onglet~~ — FAIT.** `AtlasBottomNav.tsx` : `ONGLETS` gagne
+« Outils », la grille passe en `grid-cols-5`, et **la largeur du trait d'or
+suit** (`/ 5`) — elle était écrite en dur, et l'oublier aurait laissé le trait
+à cheval sur deux colonnes.
+
+**~~3. Le contrôle qui mesure~~ — FAIT** : `scripts/test-barre-basse-e2e.ts`.
+Il mesure la boîte du NŒUD DE TEXTE (une plage), pas celle du lien — un lien
+de grille remplit sa colonne quoi qu'il porte, sa largeur ne dirait rien. Il
+exige **6 px de marge minimum**, précisément pour refuser la variante B et son
+faux confort de 1,3 px. Et il refuse de conclure sur une barre absente.
+
+**~~4. L'écran derrière l'onglet~~ — FAIT** : `src/app/outils/page.tsx`. **Il
+dit la vérité, et c'est tout son sujet** : l'outil d'arrosage n'est PAS dans
+l'application, c'est une page publiée à part. La ligne porte « À l'essai » au
+lieu d'un chevron, et ouvre la page dehors — plutôt que de promettre un écran
+interne qui n'existe pas. La terrasse bois porte « Bientôt », sans lien.
+
+**5. RESTE À FAIRE — rattacher un plan à un chantier après coup.** C'est le
+revers de l'accès sans chantier qu'il a voulu : un plan fait en visite de devis
+doit pouvoir rejoindre son client, sinon on le cherchera six mois plus tard.
+Rien n'est encore posé pour ça.
 
 ---
 

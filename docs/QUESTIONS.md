@@ -43,6 +43,7 @@ relues à chaque session) :
 18 bis. [Le catalogue s'écrit maintenant — et non, il ne s'autoalimente pas](#18-bis-le-catalogue-sécrit-maintenant--et-non-il-ne-sautoalimente-pas)
 19. [Une équipe part cinq jours en déplacement : comment on gère ça ?](#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-)
 20. [Si un client ne me paie pas, la TVA part quand même ?](#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
+21. [Mes outils de calcul, on les range où dans l'application ?](#21-mes-outils-de-calcul-on-les-range-où-dans-lapplication-)
 
 ---
 
@@ -1336,3 +1337,43 @@ choisir — [`A-FAIRE.md`](A-FAIRE.md) §13.
 **Sous quel régime vous êtes.** Votre comptable le sait en une phrase, ou c'est
 écrit sur votre dernière déclaration. Le point est inscrit dans
 [`A-FAIRE.md`](A-FAIRE.md) §12.
+
+---
+
+## 21. Mes outils de calcul, on les range où dans l'application ?
+
+*Votre question du 17 août 2026 :* **« L'idée, c'est de créer des outils comme
+celui-là pour les paysagistes ; après je ferai la même chose pour les terrasses
+bois. Pour toi le mieux, c'est de créer une nouvelle catégorie paysage ? Ou
+alors on range ça dans les réglages, sous une catégorie paysage ? »**
+
+**Votre décision : un cinquième onglet, « Outils ».** Voici pourquoi les deux
+autres pistes ont été écartées, pour ne pas les rouvrir dans trois mois.
+
+| Où | Pourquoi non |
+|---|---|
+| **Dans les Réglages** | On y règle ce qui vaut **une fois pour toutes** : vos tarifs, votre équipe, votre TVA. Un plan d'arrosage se refait à **chaque client**, comme un devis. Rangé là, il serait mal nommé et enterré sous quinze rubriques |
+| **Une catégorie « Paysage »** | Le paysage, c'est votre métier **entier** — le mot ne distingue rien de ce qu'Atlas fait déjà. Ce que vous séparez en réalité, ce sont des **outils de calcul** face au parcours commercial |
+| **Attaché au chantier** *(ce que je proposais)* | Un plan est toujours fait pour quelqu'un, et rangé là on le retrouve six mois plus tard chez le bon client. **Mais** un outil qui exige un chantier ne sert pas en visite de devis, quand le client n'existe pas encore. Votre objection l'emporte |
+
+**Ce que le cinquième onglet a coûté, et ce n'est pas rien.** La barre du bas
+en portait quatre. À cinq, chaque colonne perd un cinquième de sa largeur — et
+sur un téléphone de 360 pixels, **le mot « CHANTIERS » ne rentrait plus** : il
+débordait de 7 pixels. Resserrer un peu les lettres le faisait tenir à
+1,3 pixel près, ce qui n'est pas tenir : une autre police de téléphone, et le
+mot repasse dessous. Vous avez choisi de **réduire la taille des lettres**
+(8,5 px au lieu de 9,5), qui laisse près de 12 pixels de marge.
+
+Le dessin des cinq variantes, avec les mesures :
+`docs/maquettes/76-le-cinquieme-onglet.html`. Et un contrôle mesure désormais
+la barre à 360 pixels avant chaque mise en ligne — ce genre de défaut ne se
+voit pas sur un grand écran, seulement sur le vôtre.
+
+**Deux choses restent ouvertes**, et elles se décideront à l'usage :
+
+- l'onglet s'appelle **« Outils » au pluriel** : il portera l'arrosage, puis la
+  terrasse bois. Le nommer d'après le premier obligerait à le renommer au
+  second ;
+- un plan fait **en visite de devis** doit pouvoir rejoindre son chantier
+  ensuite. C'est le revers de l'accès sans chantier que vous avez voulu : sans
+  ce rattachement, on cherchera le plan six mois plus tard.

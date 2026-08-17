@@ -994,6 +994,16 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
+**⚠ LA BARRE DU BAS PORTE CINQ ONGLETS DEPUIS LE 17 AOÛT, ET ELLE EST JUSTE
+À LA LIMITE.** « Outils » s'ajoute à Chantiers/Planning/Terminés/Réglages, et
+la lettre est passée à 8,5 px / 0,14em pour que « CHANTIERS » rentre encore sur
+un écran de 360 (sa variante C ; sans ce changement il débordait de 7,2 px).
+**Trois pièges si l'on y retouche :** la largeur du trait d'or est écrite en
+dur (`/ 5`) et doit suivre tout ajout d'onglet ; remonter la lettre à 9,5 px
+fait déborder à nouveau ; et un sixième onglet ne rentre pas.
+`scripts/test-barre-basse-e2e.ts` mesure tout cela à 360 px et exige 6 px de
+marge — **ce défaut est invisible en développant sur un grand écran.**
+
 **⚠ NE JAMAIS ÉCRIRE `charger() || {défauts}` — le piège a frappé le 17 août.**
 Dès qu'une sauvegarde existe, l'objet de défauts est entièrement sauté : tout
 champ ajouté au produit APRÈS sa première visite lui arrive `undefined`, à lui
