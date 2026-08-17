@@ -748,10 +748,14 @@ rouvert, prérempli, qui enregistre au lieu de créer. `ARCHITECTURE.md` §119.
 
 **Trois choses à savoir avant d'y toucher :**
 
-1. **LA MENTION SEULE EST LA CIBLE.** Le nom du chantier garde sa reprise du
-   13 août. Le lien de la ligne est donc coupé en trois dans
-   `ListeChantiers.tsx` — un lien dans un lien n'est pas du HTML valide, et le
-   navigateur les démêle en silence.
+1. **UNE LIGNE DE L'ACCUEIL = UN SEUL `<a>`, et cet invariant a été découvert
+   en le cassant.** La mention seule est la cible ; le nom du chantier garde sa
+   reprise du 13 août. Un lien dans un lien n'étant pas valide, la première
+   version avait coupé le lien de la ligne en trois — **et trois suites sont
+   tombées d'un coup** : `test-dashboard` compte `a.atlas-brin`,
+   `test-suivi-devis` remonte à `ancestor::a[1]`, `test-transcription` clique au
+   milieu de `.atlas-ligne`. La mention est donc un `<span role="link">` posé
+   DANS l'ancre, qui détourne le geste. **Ne pas la « rétablir » en vrai lien.**
 2. **Le nom du chantier se RECALCULE à l'enregistrement**, avec la date de
    CRÉATION du chantier et non celle du jour. Sans ce recalcul, la ligne
    afficherait « Chantier du … » pour toujours — le défaut corrigé partout sauf

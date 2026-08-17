@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { descenteDeLaPerle } from "@/lib/perle-descente";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
@@ -132,6 +133,9 @@ export default function ListeChantiers({
   estRetire: (id: string) => boolean;
   onRetirer: (id: string, libelle: string) => void;
 }) {
+  // La mention « Adresse non renseignée » navigue par le routeur : elle vit
+  // DANS le lien de la ligne et ne peut donc pas être une ancre elle-même.
+  const router = useRouter();
   const perle = useRef<HTMLSpanElement>(null);
 
   // **La descente sur le dernier jour, et rien d'autre.** Le maintien à
@@ -248,74 +252,81 @@ export default function ListeChantiers({
           {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
               restent en place — une ligne qui part d'un bloc coupe le nom en
               plein mot et laisse le fil traverser les lettres. */}
-          {/* **LE LIEN DE REPRISE EST COUPÉ EN TROIS, ET C'EST LA MENTION QUI
-              L'EXIGE.** Sa demande du 17 août 2026 : *« lorsque s'affiche
-              Adresse non renseignée, je puisse cliquer DESSUS »* — la mention
-              mène donc ailleurs que le reste de la ligne.
-
-              Un lien dans un lien n'est pas du HTML valide, et le navigateur
-              les démêle en silence : le doigt serait tombé sur l'un ou sur
-              l'autre selon le rendu. Les trois morceaux mènent au même endroit
-              qu'avant, sauf celui du milieu quand il manque quelque chose.
-
-              `atlas-brin` reste posé sur l'enveloppe : le glissement, lui, vit
-              dans `.atlas-volet` (`LigneRetirable`), et rien ne dépend de la
-              balise qui porte ce nom. */}
-          <div className="atlas-brin">
-            <Link href={c.reprise} className="block">
-              <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
-                {c.nom}
-              </h2>
-            </Link>
+          {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
+              restent en place — une ligne qui part d'un bloc coupe le nom en
+              plein mot et laisse le fil traverser les lettres. */}
+          <Link href={c.reprise} className="atlas-brin block">
+            <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
+              {c.nom}
+            </h2>
             {c.lieuManquant ? (
-              /* **34 px de haut, et le trait pointillé.** Un texte de 11,5 px
-                 n'est pas une cible sous un pouce ganté ; et une mention
-                 cliquable qui ne se distingue en rien d'une mention morte ne
-                 sera jamais touchée. La couleur d'alerte, elle, était déjà la
-                 sienne — c'est une information qui appelle un geste. */
-              <Link
-                href={`/chantiers/${c.id}/coordonnees`}
+              /* **LA MENTION MÈNE AILLEURS QUE LA LIGNE — et ce n'est PAS un
+                 second lien.** Sa demande du 17 août 2026 : *« lorsque
+                 s'affiche Adresse non renseignée, je puisse cliquer dessus »*.
+                 Le reste de la ligne garde sa reprise : il a dit « dessus ».
+
+                 **UNE LIGNE = UN SEUL `<a>`, ET C'EST UN INVARIANT DE CE
+                 DÉPÔT.** La première version coupait le lien en trois — c'était
+                 du HTML valide, et trois suites sont tombées d'un coup :
+                 `test-dashboard` compte `a.atlas-brin`, `test-suivi-devis`
+                 remonte à `ancestor::a[1]` pour lire l'état, `test-transcription`
+                 clique au milieu de `.atlas-ligne`. Aucune n'avait tort : la
+                 ligne EST un lien, et ce qu'on lit dedans doit rester dedans.
+
+                 Un `<span>` est donc posé dans l'ancre — contenu de phrasé,
+                 parfaitement légal, contrairement à un `<a>` imbriqué — et il
+                 détourne le geste. La navigation est celle du routeur, la même
+                 que celle d'un lien. */
+              <span
+                role="link"
+                tabIndex={0}
                 data-atlas="lieu-manquant"
+                data-href={`/chantiers/${c.id}/coordonnees`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/chantiers/${c.id}/coordonnees`);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter" && e.key !== " ") return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/chantiers/${c.id}/coordonnees`);
+                }}
+                /* 34 px de haut : un texte de 11,5 px ne s'attrape pas sous un
+                   pouce ganté. Le trait pointillé, lui, est sur le MOT — porté
+                   par la cible, il se posait dix pixels plus bas et se lisait
+                   comme un trait perdu (vu en capture, le 17 août). */
                 className="inline-flex min-h-[34px] max-w-full items-center text-[11.5px]"
                 style={{ color: colors.alert }}
               >
-                {/* **LE TRAIT EST SUR LE MOT, PAS SUR LA CIBLE.** Porté par le
-                    lien lui-même, il se posait au bas des 34 px — un pointillé
-                    flottant à dix pixels sous le texte, qui ne se lisait plus
-                    comme un soulignement mais comme un trait perdu. Vu sur la
-                    capture, par aucun test : la sixième fois dans ce dépôt
-                    qu'un défaut sort d'une image (`CLAUDE.md` §5). */}
                 <span
                   className="truncate"
                   style={{ borderBottom: `1px dotted ${colors.alert}`, paddingBottom: 1 }}
                 >
                   {c.lieu}
                 </span>
-              </Link>
+              </span>
             ) : (
-              <Link href={c.reprise} className="block">
-                <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
-                  {c.lieu}
-                </p>
-              </Link>
-            )}
-            <Link href={c.reprise} className="block">
-              <p
-                className="mt-[7px] text-[9.5px] font-medium uppercase"
-                style={{ color: c.attend ? colors.or : colors.muted, letterSpacing: "0.28em" }}
-              >
-                {c.etat}
+              <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+                {c.lieu}
               </p>
-              {c.precision && (
-                /* En clair, et non en petites capitales : deux lignes espacées
-                   à 0.28em se liraient comme un pavé. L'œil doit accrocher
-                   l'état, puis lire la date s'il la cherche. */
-                <p className="mt-[4px] truncate text-[11.5px]" style={{ color: colors.muted }}>
-                  {c.precision}
-                </p>
-              )}
-            </Link>
-          </div>
+            )}
+            <p
+              className="mt-[7px] text-[9.5px] font-medium uppercase"
+              style={{ color: c.attend ? colors.or : colors.muted, letterSpacing: "0.28em" }}
+            >
+              {c.etat}
+            </p>
+            {c.precision && (
+              /* En clair, et non en petites capitales : deux lignes espacées
+                 à 0.28em se liraient comme un pavé. L'œil doit accrocher
+                 l'état, puis lire la date s'il la cherche. */
+              <p className="mt-[4px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+                {c.precision}
+              </p>
+            )}
+          </Link>
         </LigneRetirable>
       ))}
     </div>

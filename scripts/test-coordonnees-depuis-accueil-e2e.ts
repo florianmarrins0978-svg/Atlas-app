@@ -66,7 +66,13 @@ async function main() {
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantierId = page.url().split("/").pop()!.split("?")[0];
 
-  const ligne = page.locator(`[data-atlas="lieu-manquant"][href$="/chantiers/${chantierId}/coordonnees"]`);
+  // **La mention n'est PAS une ancre, et c'est voulu.** Une ligne de l'accueil
+  // est un seul `<a>` — trois suites l'ont prouvé le 17 août en tombant d'un
+  // coup quand ce lien avait été coupé en trois. La mention vit donc dans
+  // l'ancre et détourne le geste ; son `data-href` dit où elle mène.
+  const ligne = page.locator(
+    `[data-atlas="lieu-manquant"][data-href="/chantiers/${chantierId}/coordonnees"]`
+  );
 
   await cas("la mention est un lien, et elle mène aux coordonnées de CE chantier", async () => {
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
@@ -96,11 +102,34 @@ async function main() {
     // S'il menait lui aussi aux coordonnées, la ligne changerait de destination
     // et sa règle du 13 août — « que ça me renvoie à l'étape où je me suis
     // arrêté » — cesserait de valoir. Il a dit « cliquer DESSUS ».
-    const nom = page.locator(`a:has(h2)`).filter({ hasText: "Chantier du" }).first();
-    const cible = await nom.getAttribute("href");
+    const cible = await page
+      .locator(`a.atlas-brin:has-text("Chantier du")`)
+      .first()
+      .getAttribute("href");
     if (cible === null) throw new Error("le nom du chantier ne mène nulle part");
     if (/\/coordonnees$/.test(cible)) {
-      throw new Error(`le nom mène aussi aux coordonnées (${cible}) : la mention n'est plus seule`);
+      throw new Error(`la ligne mène aux coordonnées (${cible}) : la mention n'est plus seule`);
+    }
+  });
+
+  await cas("et la ligne reste UN SEUL lien — l'invariant que trois suites tiennent", async () => {
+    // **Payé le 17 août 2026.** La mention avait d'abord été posée en second
+    // `<a>`, ce qui obligeait à couper le lien de la ligne en trois : HTML
+    // valide, et trois suites tombées d'un coup — `test-dashboard` compte
+    // `a.atlas-brin`, `test-suivi-devis` remonte à `ancestor::a[1]` pour lire
+    // l'état, `test-transcription` clique au milieu de `.atlas-ligne`. Ce
+    // contrôle existe pour que personne ne recommence sans le voir.
+    const ancres = await page
+      .locator(`.atlas-ligne:has([data-atlas="lieu-manquant"]) a`)
+      .count();
+    if (ancres !== 1) {
+      throw new Error(`${ancres} lien(s) dans la ligne : il en faut exactement un`);
+    }
+    // Et cette ancre porte bien tout ce qu'on lit sur la ligne.
+    const brin = page.locator(`a.atlas-brin:has([data-atlas="lieu-manquant"])`).first();
+    const dedans = (await brin.innerText()).replace(/\s+/g, " ");
+    if (!/Adresse non renseignée/.test(dedans) || !/BROUILLON|DEVIS/i.test(dedans)) {
+      throw new Error(`la ligne ne porte pas tout dans son lien : « ${dedans} »`);
     }
   });
 

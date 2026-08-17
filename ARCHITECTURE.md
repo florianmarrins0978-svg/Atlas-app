@@ -9849,16 +9849,33 @@ création : une seconde règle de nommage aurait fini par diverger.
 ouvert le 17 et repris le 20 ne doit pas devenir « Chantier du jeudi 20 août » :
 il ne se reconnaîtrait plus.
 
-### La mention seule est la cible
+### La mention seule est la cible — et la ligne reste UN SEUL lien
 
-Le lien de reprise de la ligne est **coupé en trois** (`ListeChantiers.tsx`) : le
-nom, la mention, l'état. Un lien dans un lien n'est pas du HTML valide, et le
-navigateur les démêle en silence — le doigt serait tombé sur l'un ou sur l'autre
-selon le rendu.
-
-Le nom du chantier garde donc sa reprise, et **sa règle du 13 août n'est pas
+Le nom du chantier garde sa reprise, et **sa règle du 13 août n'est pas
 touchée** : *« que ça me renvoie à l'étape où je me suis arrêté »*. Il a dit
 « cliquer DESSUS », pas « sur la ligne ».
+
+**UNE LIGNE = UN SEUL `<a>`, ET CET INVARIANT A ÉTÉ DÉCOUVERT EN LE CASSANT.**
+Un lien dans un lien n'étant pas du HTML valide, la première version avait coupé
+le lien de la ligne en trois — le nom, la mention, l'état. C'était valide, et
+**trois suites sont tombées d'un coup à la batterie** :
+
+| Suite | Ce qu'elle supposait |
+|---|---|
+| `test-dashboard-e2e` | compte les lignes par `a.atlas-brin` — il n'y avait plus d'ancre portant cette classe |
+| `test-suivi-devis-e2e` | remonte du nom à `ancestor::a[1]` pour y lire l'état — l'état était dans une AUTRE ancre |
+| `test-transcription-e2e` | clique au milieu de `.atlas-ligne` — le milieu tombait entre deux ancres |
+
+Aucune des trois n'avait tort : **la ligne EST un lien, et ce qu'on lit dedans
+doit rester dedans.** La mention est donc un `<span role="link">` posé DANS
+l'ancre — contenu de phrasé, parfaitement légal — qui détourne le geste vers le
+routeur. Un contrôle dédié compte les ancres de la ligne pour que personne ne
+recommence sans le voir (`test-coordonnees-depuis-accueil-e2e`).
+
+**Ce que ça enseigne au-delà de ce lot :** un changement de STRUCTURE dans un
+composant partagé casse des suites qui ne parlent pas de lui. Trois rouges dont
+aucun ne nommait la mention — c'est la batterie complète qui les a montrés,
+et c'est exactement ce pour quoi elle existe (`CLAUDE.md` §5).
 
 **Une seule source décide de ce qu'est une cible** : `lieuEstManquant`, comparée
 à `LIEU_MANQUANT`. L'accueil qui aurait comparé le texte de son côté aurait

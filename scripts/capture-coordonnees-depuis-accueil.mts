@@ -38,7 +38,11 @@ await page.click('button:has-text("Créer le chantier")');
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
 const chantierId = page.url().split("/").pop()!.split("?")[0];
 
-const mention = page.locator(`[data-atlas="lieu-manquant"][href$="/chantiers/${chantierId}/coordonnees"]`);
+// La mention n'est pas une ancre : une ligne de l'accueil est UN SEUL `<a>`, et
+// la mention vit dedans en détournant le geste. Son `data-href` dit où elle mène.
+const mention = page.locator(
+  `[data-atlas="lieu-manquant"][data-href="/chantiers/${chantierId}/coordonnees"]`
+);
 
 /**
  * Amène la ligne dans le cadre qui défile, puis photographie l'écran.
@@ -114,7 +118,7 @@ if (!/Mr\. Martins|Martins/.test(apres)) echecs.push("le nom du chantier n'a pas
 // La ligne corrigée porte désormais le nom du client : c'est elle qu'on cadre,
 // et le repère la désigne sans ambiguïté parmi les cinq autres.
 await page.evaluate((id) => {
-  const lien = document.querySelector(`a[href="/chantiers/${id}"]`);
+  const lien = document.querySelector(`a.atlas-brin[href="/chantiers/${id}"]`);
   lien?.setAttribute("data-photo", "ligne-corrigee");
 }, chantierId);
 await photographier('[data-photo="ligne-corrigee"]', "4-la-ligne-apres.png");
