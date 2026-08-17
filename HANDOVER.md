@@ -752,6 +752,18 @@ dans `src/`.
 
 ## Ce qui vient d'être terminé
 
+**LES RETOURS DES RÉGLAGES (17 août).** Les réglages ont **deux étages**, et un
+écran du second doit ramener à **sa rubrique**, pas à la racine — sa remarque :
+*« lorsque je vais dans mes prix et que je fais un retour, je retourne
+directement dans l'application et pas dans la catégorie tarif »*. Trois écrans
+étaient fautifs (Mes prix, Le catalogue — qui n'avait **aucune** flèche —, Le
+vocabulaire).
+
+**Avant d'ajouter un écran sous une rubrique :** l'inscrire dans la table de
+`scripts/test-retours-reglages-e2e.ts`. Aucun test ne voyait ce défaut parce
+qu'aucun ne PARCOURAIT le chemin — chaque écran s'ouvrait par son adresse, où la
+question ne se pose pas.
+
 **LA FICHE DU CLIENT (16 août).** Elle s'ouvre depuis le tiroir d'un chantier et
 montre ce que l'application savait déjà : combien de chantiers, combien facturé,
 combien reste dû, et ce qu'on lui fait d'habitude.

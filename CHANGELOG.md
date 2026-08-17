@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### « Je retourne dans l'application et pas dans la catégorie tarif »
+
+Sa remarque du 17 août, capture à l'appui, depuis « Mes prix ». Les réglages ont
+deux étages, et **trois écrans du second renvoyaient au mauvais endroit** — ou
+nulle part :
+
+| L'écran | Sa seule porte | Ce que la flèche faisait |
+|---|---|---|
+| Mes prix | Tarifs & catalogue | ramenait à la racine des réglages |
+| Le catalogue | Tarifs & catalogue | **aucune flèche du tout** |
+| Le vocabulaire | Atlas IA | ramenait à la racine des réglages |
+
+Chacun ramène désormais à la rubrique qui l'ouvre.
+
+**Pourquoi aucun test ne le voyait :** aucun ne PARCOURAIT le chemin. Chaque
+écran s'ouvrait par son adresse, où la question ne se pose pas.
+`test-retours-reglages-e2e.ts` entre par la porte et ressort par la flèche,
+comme lui — elle rendait **cinq échecs** avant le correctif. Le retour du
+vocabulaire, lui, **n'est pas éprouvé** : son renvoi n'existe que pour le compte
+éditeur, que la suite ne peut pas être.
+
+**Et vu à la capture, pas par un test :** l'écran affichait « MES PRIX » au-dessus
+de « Mes prix ». Le surtitre dit d'où l'on vient — il porte maintenant
+« Tarifs & catalogue ».
+
 ### « C'est monsieur Martins » : un client n'est plus recréé à chaque chantier
 
 Sa demande, le lendemain de la fiche client : *« si je crée un nouveau chantier,

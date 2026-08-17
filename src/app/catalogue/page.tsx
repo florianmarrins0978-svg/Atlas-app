@@ -20,7 +20,11 @@ export default async function CataloguePage() {
 
   return (
     <div>
-      <ScreenHeader title="Catalogue" />
+      {/* **Sans `backHref`, `ScreenHeader` n'affiche AUCUNE flèche** — et cet
+          écran n'a qu'une porte, « Le catalogue » sous Tarifs. On y entrait
+          sans pouvoir en ressortir autrement que par la barre du bas. Trouvé
+          en corrigeant le retour de « Mes prix », le 17 août 2026. */}
+      <ScreenHeader title="Catalogue" backHref="/reglages/tarifs" />
       <div className="p-4">
         <p className="mb-3 text-xs text-ink/40">
           Base de connaissance partagée : prestations et matériels reconnus par Atlas, avec l&apos;historique des
