@@ -319,6 +319,14 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     ok('arrosage : plus de « crosse » générique — remplacée par le vrai coude',
        !/[Cc]rosse/.test(materiel), materiel.match(/[Cc]rosse[^\n]*/)?.[0] || '');
 
+    // **Deux SBE par arroseur, pas un** — sa planche du 17 août sur le réseau
+    // latéral : un raccord en bas (toujours 3/4", sur la tuyauterie) et un en
+    // haut (au diamètre du corps). En manquer un sous-compte une pièce que
+    // chaque arroseur porte réellement.
+    ok('arrosage : le SBE du bas (raccord de ligne) est compté', /bas, sur la ligne/.test(materiel));
+    ok('arrosage : le SBE du haut (raccord au corps) est compté', /haut, au corps/.test(materiel));
+    ok('arrosage : le PEBD16 de reprise est compté', /PEBD rigide/.test(materiel));
+
         // **Le corps par défaut, sa décision du 17 août : « 10 cm sans option,
     // mais proposer les autres à chaque fois ». Un sélecteur cassé (élément
     // absent du DOM) fait planter TOUTE la page — c'est le défaut réellement

@@ -934,6 +934,13 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**⚠ CHAQUE ARROSEUR PORTE DEUX SBE, PAS UN (17 août) — le bas (toujours 3/4",
+sur la ligne) et le haut (au diamètre du corps). Compté depuis ce lot** ;
+**mais les TÉS/COUDES DE LA TUYAUTERIE (`CATALOGUE.piecesReseau`) NE LE SONT
+PAS ENCORE** — leur nombre dépend du tracé du tuyau entre les arroseurs
+(serpentin ? lignes parallèles ?), question posée et non tranchée. **Ne pas
+deviner un tracé pour les compter.**
+
 **⚠ LES FICHES DE NOURRICE EXISTENT MAINTENANT (1 à 6 voies, 17 août) et
 REMPLACENT les lignes génériques (électrovanne/regard/programmateur) dès
 qu'elles s'appliquent — dans la liste ET dans le registre de prix.

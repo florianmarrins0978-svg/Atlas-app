@@ -965,7 +965,25 @@ function listeMateriel(d){
   // ne compte rien.
   if (totalArroseurs && corps && corps.filetage){
     var coude = CATALOGUE.coudes.filter(function(c){ return c.filetage === corps.filetage; })[0];
-    if (coude) lignes.push({ ref:coude.ref, nom:coude.nom + ' — ' + coude.detail, q: totalArroseurs, u:'u' });
+    if (coude) lignes.push({ ref:coude.ref, nom:coude.nom + ' (haut, au corps) — ' + coude.detail, q: totalArroseurs, u:'u' });
+  }
+  // **Un DEUXIÈME SBE, celui du bas** — sa planche du 17 août sur le réseau
+  // latéral : chaque arroseur (départ, milieu ou fin de ligne) porte 1 SBE
+  // 3/4" au raccord de tuyauterie, TOUJOURS 3/4" quel que soit le corps —
+  // c'est le té ou le coude de la ligne qui impose ce diamètre, pas le corps.
+  // Ce raccord-là ne manque à aucun arroseur, contrairement au té/coude de
+  // ligne qui dépend du TRACÉ (voir plus bas) : compté ici sans attendre.
+  if (totalArroseurs){
+    var sbeBas = CATALOGUE.coudes.filter(function(c){ return c.filetage === '3/4'; })[0];
+    // Même RÉFÉRENCE que le SBE du haut quand le corps est aussi en 3/4"
+    // (grosses turbines) : deux lignes distinctes dans la liste, mais le même
+    // produit — son prix s'applique aux deux, la quantité totale suit.
+    if (sbeBas) lignes.push({ ref:sbeBas.ref, nom:sbeBas.nom + ' (bas, sur la ligne) — ' + sbeBas.detail, q: totalArroseurs, u:'u' });
+    // « Environ 2 m de PEBD rigide Ø16 » entre la ligne et l'arroseur, par
+    // position — sa valeur, pas une supposition. Approximative comme elle
+    // l'a donnée : elle varie selon la profondeur réelle de pose.
+    var pebd = CATALOGUE.piecesReseau['pebd16'];
+    lignes.push({ ref:'pebd16', nom:pebd.nom + ' (~2 m par arroseur)', q: totalArroseurs * 2, u:'ml' });
   }
   if (d.secteurs.length){
     // **Sa fiche de nourrice REMPLACE les lignes génériques**, quand elle

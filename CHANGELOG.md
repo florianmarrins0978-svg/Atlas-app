@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le réseau latéral, et un SBE qui manquait à chaque arroseur
+
+**Sa planche manuscrite** couvre pour la première fois la tuyauterie ENTRE les
+arroseurs d'un même secteur — tout ce qui avait été enregistré jusqu'ici
+portait sur un arroseur isolé (buse, corps, coude), jamais sur la ligne qui
+les relie depuis le regard.
+
+Trois positions le long d'une ligne PE25, sa règle : DÉPART et MILIEU portent
+le même té (90° taraudé 25×3/4"×25, puisque le tuyau continue) ; FIN porte un
+coude (rien ne continue après). Une quatrième pièce, JONCTION, sert quand le
+tuyau tourne sans alimenter d'arroseur à cet endroit — un té non taraudé.
+
+**Ce qui a immédiatement corrigé la liste, sans attendre le reste :** chaque
+arroseur porte en réalité DEUX raccords SBE, pas un — celui du bas (toujours
+3/4", sur le raccord de tuyauterie) et celui du haut (au diamètre du corps,
+déjà compté depuis les coudes SBE). Le SBE du bas ne dépend d'aucun tracé de
+tuyau : chaque position en porte un, qu'elle soit départ, milieu ou fin. Il
+est compté. Et « environ 2 m de PEBD rigide Ø16 » par arroseur, comme donné.
+
+**Ce qui reste délibérément hors du calcul : les tés, les coudes et les
+jonctions.** Combien il en faut pour un secteur dépend de l'ORDRE dans lequel
+le tuyau relie les arroseurs — un secteur en grille de plusieurs rangées peut
+se piquer d'une seule ligne serpentine ou de plusieurs lignes parallèles, et
+rien dans l'outil ne sait aujourd'hui répondre à cette question. Les compter
+sans savoir aurait inventé un tracé. Les trois pièces restent au catalogue,
+visibles dans son registre de prix, écartées de la liste — même geste que
+pour les R-VAN et les turbines avant elles.
+
 ### Les six fiches de nourrice, de une à six voies
 
 **Sa consigne :** *« voici toutes les pièces pour la nourrice — ce qui se

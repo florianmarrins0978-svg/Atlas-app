@@ -582,6 +582,51 @@ var CATALOGUE = {
       filetage:'3/4', detail:'16 x 3/4" coudé', source:'patron', releve:'Aqua Plus 2026' }
   ],
 
+  /* ── LE RÉSEAU LATÉRAL — sa planche manuscrite du 17 août 2026, deux pages.
+     Comment le PE25 relie les arroseurs D'UN MÊME SECTEUR entre eux, depuis
+     le regard : ce qu'aucune donnée reçue jusqu'ici ne couvrait — tout portait
+     sur UN arroseur (buse, corps, coude), rien sur la LIGNE qui les relie.
+
+     Trois positions le long d'une ligne, sa règle mot pour mot :
+
+       · DÉPART  — Té 90° taraudé 25×3/4"×25 : la ligne continue en 25, une
+         sortie 3/4" monte vers l'arroseur.
+       · MILIEU  — « exactement la même chose » que le départ. Même té : la
+         ligne entre, continue, ET une sortie 3/4" alimente l'arroseur.
+       · FIN     — Coude taraudé 25×3/4" : rien ne continue après, donc un
+         coude plutôt qu'un té.
+
+     Et une quatrième pièce, PAS un point d'arrosage : JONCTION — Té 90°
+     25×25×25 (aucun taraudage), pour un coude de tuyauterie qui ne nourrit
+     rien à cet endroit précis.
+
+     **À chaque position d'arrosage (départ, milieu ou fin) :** 1 SBE 3/4"
+     (le raccord du bas, sur le té ou le coude — TOUJOURS 3/4", quel que soit
+     le corps) + environ 2 m de PEBD rigide Ø16 + l'arroseur complet (corps +
+     SON PROPRE SBE, au diamètre du corps cette fois — 1/2" ou 3/4" selon la
+     famille, voir `CATALOGUE.corps` — + la buse). Sa phrase : « peu importe
+     que ce soit arroseur ou tuyère » — la règle ne distingue pas les deux.
+
+     **DEUX SBE PAR ARROSEUR, PAS UN : celui du bas (toujours 3/4", sur la
+     tuyauterie) et celui du haut (au diamètre du corps).** C'était manquant
+     dans la liste au fournisseur jusqu'ici — un seul SBE y était compté par
+     arroseur, celui du haut.
+
+     **CE QUI N'EST PAS ENCORE CALCULÉ, et ne doit pas être deviné :** combien
+     de départs, de milieux, de fins pour UN secteur donné dépend de l'ORDRE
+     dans lequel le tuyau visite les arroseurs — une question de tracé, pas de
+     position. `pointsDeLaPose` sait où les arroseurs sont, pas dans quel ordre
+     un tuyau les relierait. Tant que ce tracé n'est pas donné, ces pièces
+     restent au catalogue, VISIBLES au registre de prix, mais ne comptent pas
+     encore dans la liste au fournisseur — comme les R-VAN et les turbines
+     avant elles. */
+  piecesReseau: {
+    'te-taraude-25-34-25': { nom:'Té 90° taraudé 25×3/4"×25', marque:'Dura' },
+    'coude-taraude-25-34': { nom:'Coude 90° taraudé 25×3/4"', marque:'Dura' },
+    'te-25-25-25':         { nom:'Té 90° 25×25×25 (jonction, non taraudé)', marque:'Dura' },
+    'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' }
+  },
+
   /* ── Le goutte-à-goutte ─────────────────────────────────────────────────
      `debitMetre` en m³/h par mètre de gaine. */
   gaines: [
@@ -790,6 +835,10 @@ CATALOGUE.tousLesProduits = function () {
   Object.keys(CATALOGUE.piecesNourrice).forEach(function (ref) {
     var p = CATALOGUE.piecesNourrice[ref];
     out.push({ ref:ref, nom:(p.marque ? p.marque + ' ' : '') + p.nom, detail:'', famille:'Nourrice' });
+  });
+  Object.keys(CATALOGUE.piecesReseau).forEach(function (ref) {
+    var p = CATALOGUE.piecesReseau[ref];
+    out.push({ ref:ref, nom:(p.marque ? p.marque + ' ' : '') + p.nom, detail:'', famille:'Réseau latéral' });
   });
   CATALOGUE.gaines.forEach(function (g) {
     out.push({ ref:g.ref, nom:g.nom, detail:g.detail, famille:'Goutte-à-goutte' });

@@ -147,6 +147,35 @@ hiérarchie VAN / R-VAN / MP Rotator sans trancher ce point précis.
 | 17 | **« À 2 bar ou 3 bar c'est quasiment les mêmes valeurs »** — aucune correction de pression à faire | — |
 | 18 | Les **corps escamotables** arrivent | `CATALOGUE.corps`, vide |
 
+**LE RÉSEAU LATÉRAL — sa planche manuscrite, 17 août 2026 : la tuyauterie
+ENTRE les arroseurs d'un même secteur, jamais couverte avant (tout portait sur
+un arroseur isolé).** Trois positions le long d'une ligne PE25 : DÉPART et
+MILIEU (le même té : 90° taraudé 25×3/4"×25) ; FIN (un coude taraudé 25×3/4",
+puisque rien ne continue) ; et JONCTION (un té 90° 25×25×25, non taraudé — un
+coude de tuyauterie qui n'alimente rien à cet endroit).
+
+**Ce qui a été calculé sans attendre, parce que ça ne dépend PAS du tracé :**
+chaque arroseur porte en réalité **DEUX SBE**, pas un — celui du bas (toujours
+3/4", sur le raccord de tuyauterie) et celui du haut (au diamètre du corps,
+déjà compté). Le SBE du bas était absent de la liste ; il y est maintenant.
+Et « environ 2 m de PEBD rigide Ø16 » par arroseur, compté (`totalArroseurs × 2`).
+
+**⚠ CE QUI N'EST PAS CALCULÉ, ET NE DOIT PAS ÊTRE DEVINÉ :** combien de
+départs / milieux / fins pour un secteur donné dépend de l'ORDRE dans lequel
+le tuyau relie les arroseurs entre eux — une question de TRACÉ, que rien dans
+l'outil ne modélise encore. `pointsDeLaPose` sait OÙ les arroseurs sont
+(coins/bords/intérieur, pour la couverture), pas dans quel ORDRE un tuyau les
+visiterait. Tés, coudes et jonctions restent au catalogue
+(`CATALOGUE.piecesReseau`), visibles dans son registre de prix, **écartés de
+la liste au fournisseur** — même geste que pour les R-VAN et les turbines.
+
+**QUESTION À LUI POSER, et elle conditionne tout calcul automatique de
+tuyauterie :** dans un secteur à plusieurs rangées (une grille, pas une seule
+ligne), le tuyau serpente-t-il rangée par rangée (un seul réseau continu par
+secteur), ou y a-t-il plusieurs réseaux parallèles partant du regard pour un
+même secteur ? Sans cette réponse, compter les tés/coudes serait inventer un
+tracé.
+
 **LES SIX FICHES DE NOURRICE SONT ARRIVÉES — de 1 à 6 voies, 17 août.**
 *« Voici toutes les pièces pour la nourrice, ce qui se trouve dans le regard
 d'arrosage. »* `CATALOGUE.nourrices[1..6]` porte désormais les vraies pièces
