@@ -994,6 +994,42 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
+**⚠ LES TUYÈRES SONT POUR LES PETITS ESPACES : 4 m DE PETIT CÔTÉ, GRAND MAX
+(17 août).** Sa règle — « un carré de douze par dix, c'est que des arroseurs ;
+les tuyères, c'est un carré de trois par trois, ou un couloir de dix sur
+deux ». Le seuil de l'outil était à 8 m : **il était faux du simple au
+double**, et faisait partir des pelouses entières en tuyères, donc en
+pluviométrie triple. C'est le PETIT CÔTÉ qui décide, et lui seul.
+`TUYERE_JUSQUA` dans `arrosage.html`. **Le repli vers les tuyères au-delà de
+4 m est interdit** : si aucune turbine ne pave, l'écran le dit plutôt que de
+rendre un plan posable et faux.
+
+**⚠ UN SECTEUR, UNE PLUVIOMÉTRIE — et le TYPE ne suffit pas à le garantir.**
+La clé de groupe de `decouper()` porte le type, la famille **et la
+pluviométrie**. Sans elle, deux turbines de buses différentes (5,9 et
+6,1 mm/h) se retrouvaient sur la même vanne, ouverte pour une seule durée.
+Le défaut est resté invisible tant que les deux pelouses d'exemple étaient de
+familles différentes ; **c'est le coloriage par réseau qui l'a montré**, en
+leur donnant la même couleur. Ne pas retirer la pluviométrie de cette clé.
+
+**⚠ Ø25 PAR DÉFAUT DU COMPTEUR AU REGARD, Ø32 SEULEMENT SI LE CALCUL LE
+DÉMONTRE (17 août).** Hazen-Williams sur le débit du PLUS GROS SECTEUR — les
+vannes s'ouvrent l'une après l'autre, prendre la somme surdimensionnerait
+chaque chantier. **Le calcul ne couvre QUE l'amenée** : ni antennes, ni
+raccords, ni électrovanne — un « le Ø25 suffit » est un plancher, pas une
+garantie, et l'écran le dit. **Les diamètres INTÉRIEURS sont `provisoire`** :
+ils dépendent de la pression nominale (PN6/PN10/PN16), non précisée, et se
+tromper de gamme fausse le verdict dans le sens dangereux.
+
+**⚠ UN CONTRÔLE DOIT GARDER UNE RÈGLE, PAS UN JARDIN.** Trois cas ont rougi le
+17 août sans qu'aucun défaut existe, simplement parce que ses règles avaient
+changé le jardin d'exemple : une portée de 3,6 écrite en dur, une référence de
+buse nommée, une boucle de cinq clics pour vider six zones. Ils lisent
+désormais la portée réelle de chaque zone, **demandent au plan quelle
+référence il commande**, et retirent jusqu'à ce qu'il n'en reste plus. Devant
+un cas qui rougit après un changement de règle métier, se demander d'abord
+s'il gardait un nombre plutôt qu'un invariant.
+
 **⚠ LE PARCOURS COMPLET DU PRODUIT EST ÉCRIT — il l'a dicté le 17 août, et il
 est dans `TODO.md` § « 0 quaterquadragies AA », en dix étapes avec leur état.**
 À lire avant de décider quoi coder ensuite : sept des dix sont faites, et les

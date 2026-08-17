@@ -9,6 +9,59 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Les tuyères reviennent aux petits espaces, et le Ø25/Ø32 se calcule
+
+Deux règles de métier, données ensemble. **Les tuyères d'abord :** *« on s'en
+sert uniquement pour les petits espaces — inférieur à 3,50 m, 4 m grand max.
+Un carré de douze par dix, c'est que des arroseurs. Les tuyères, c'est un
+carré de trois par trois, ou un long couloir de dix mètres sur deux. »* Le
+seuil de l'outil était à **8 m**, il est à **4** — et l'écart n'a rien de
+cosmétique : une pelouse de 12 × 8 partait en tuyères, donc en pluviométrie
+triple, beaucoup plus de têtes et beaucoup plus de débit. C'est le petit côté
+qui décide, et lui seul : son couloir de 10 × 2 prend des tuyères malgré ses
+dix mètres de long. Au-delà de 4 m, le repli vers les tuyères est désormais
+interdit — si aucune turbine ne pave, l'écran le dit plutôt que de rendre un
+plan posable et faux.
+
+Le jardin d'exemple a suivi : ses deux pelouses étaient **forcées** en tuyères
+pour montrer une bascule, ce que sa règle interdit maintenant. Un écran
+d'accueil qui viole la règle qu'on vient de recevoir enseigne le contraire de
+ce qui a été dit. Elles passent sur « au mieux », et son couloir de 10 × 2
+entre dans le jardin pour que les tuyères restent montrées à leur place.
+
+**Le Ø25/Ø32 ensuite :** *« du compteur au regard, Ø25 par défaut ; passer en
+Ø32 uniquement si le calcul hydraulique démontre que le Ø25 est
+insuffisant. »* Le calcul est celui de Hazen-Williams, sur le débit du **plus
+gros secteur** — les vannes s'ouvrent l'une après l'autre, prendre la somme
+surdimensionnerait chaque chantier. Le verdict tombe quand la pression restant
+au regard passe sous celle à laquelle les buses posées sont données. 30 m →
+Ø25 (perte 0,27 bar) ; 150 m → Ø32. Les deux champs de tuyau à remplir à la
+main deviennent une longueur à mesurer et un diamètre calculé.
+
+Ce que le calcul ne contient pas est écrit à l'écran : ni antennes, ni
+raccords, ni électrovanne. Un « le Ø25 suffit » est un plancher, pas une
+garantie. Et les diamètres intérieurs sont marqués provisoires — ils dépendent
+de la pression nominale du tube, qu'il n'a pas précisée, et se tromper de
+gamme fausserait le verdict dans le sens dangereux.
+
+**Le défaut que ces règles ont révélé, vu sur le PLAN et par aucun test : deux
+pluviométries sous une même vanne.** La clé de groupe ne portait que le type ;
+tant qu'une pelouse était en turbines et l'autre en tuyères, elles ne se
+rencontraient jamais. Le jour où sa règle les a mises toutes deux en turbines,
+elles se sont retrouvées sur la même vanne avec 5,9 et 6,1 mm/h — et c'est le
+coloriage par réseau, livré une heure plus tôt, qui l'a rendu visible. La
+pluviométrie entre donc dans la clé : sa règle « ça ne se mélange jamais »,
+appliquée à la lettre. Cela coûte une vanne quand deux zones portent des buses
+différentes, même de 3 % d'écart — le sens prudent, à relâcher d'une ligne
+s'il le juge trop strict.
+
+**Et les contrôles ont été rendus indépendants du jardin d'exemple.** Trois
+d'entre eux ont rougi ce soir sans qu'aucun défaut existe : ils gardaient un
+jardin (une portée de 3,6 écrite en dur, une référence de buse nommée, une
+boucle de cinq clics) au lieu de garder une règle. Ils lisent désormais la
+portée réelle de chaque zone, demandent au plan quelle référence il commande,
+et retirent les zones jusqu'à ce qu'il n'en reste plus. 67/67 et 91/91.
+
 ### Le plan dit enfin quel arroseur est sur quelle vanne
 
 Sa demande, dans le parcours complet qu'il a dicté : *« un petit plan avec le

@@ -66,7 +66,7 @@ morceaux existent déjà, et les confondre ferait refaire ce qui est fait.
 | 3 | **Au robinet, il donne la pression DYNAMIQUE ET STATIQUE** | **PAS FAIT** — un seul champ `pression` aujourd'hui, et surtout : *ce qu'on FAIT de l'écart entre les deux n'est pas su* |
 | 4 | **Une case pour joindre une PHOTO** d'une zone avec ses métrés | **PAS FAIT** — voir le blocage ci-dessous |
 | 5 | À partir de la photo et des métrés, **estimer les réseaux** (« deux réseaux d'arroseurs, un de goutte-à-goutte ») | Le découpage existe (`decouper`) à partir des zones SAISIES, pas d'une photo |
-| 6 | **Les mètres linéaires de PEHD Ø25 ou Ø32**, choisis selon les distances, le débit des arroseurs et la pression saisie | **PAS FAIT** — deux champs à remplir à la main. Bloqué : sa règle Ø25/Ø32 n'est pas donnée |
+| 6 | **Les mètres linéaires de PEHD Ø25 ou Ø32**, choisis selon les distances, le débit des arroseurs et la pression saisie | **DÉBLOQUÉ ET FAIT le 17 août** — sa règle est arrivée, voir ci-dessous. La LONGUEUR reste à mesurer, le DIAMÈTRE se calcule |
 | 7 | **La liste exacte des pièces à commander** | **FAIT** — buses, corps par famille, SBE, PEBD, réseau latéral, nourrice |
 | 8 | **Un plan avec les réseaux en COULEURS** (réseau 1 bleu, 2 vert, 3 jaune…) | **FAIT le 17 août** — voir ci-dessous, et ça a demandé plus qu'une couleur |
 | 9 | **Le regard placé sur le plan**, « bien souvent caché, donc on le met dans les massifs » | **PAS FAIT** — voir le blocage ci-dessous |
@@ -126,10 +126,61 @@ Les couleurs commencent par les siennes (bleu, vert, jaune) et bouclent
 au-delà de huit ; **le NUMÉRO reste écrit à côté de la pastille**, pour que le
 plan se lise aussi quand on distingue mal deux teintes.
 
-**LA QUESTION QUI DÉBLOQUE LE PEHD (#6), et elle seule :** le diamètre suit-il
-une règle de débit (par exemple : au-delà de tant de m³/h dans une ligne, on
-passe en Ø32), ou est-ce au cas par cas selon la longueur ? C'est la question 9
-du premier tour, restée sans réponse.
+**✅ SA RÈGLE DU Ø25 / Ø32 — 17 août, et elle débloque #6.** *« Du compteur au
+regard : Ø25 par défaut. Passer en Ø32 UNIQUEMENT si le calcul hydraulique
+démontre que le Ø25 est insuffisant. »* Le Ø32 doit donc se MÉRITER : il coûte
+plus cher et se pose moins bien.
+
+Le calcul est celui de Hazen-Williams (C = 150 pour le PE lisse), sur le débit
+du **plus gros secteur** — les vannes s'ouvrent l'une après l'autre, jamais
+ensemble, c'est tout l'objet du découpage ; prendre la somme
+surdimensionnerait chaque chantier. Le verdict tombe quand la pression restant
+au regard passe sous celle à laquelle les buses posées sont données au
+catalogue. Sur le jardin d'exemple : 30 m → Ø25 (perte 0,27 bar) ; 150 m → Ø32.
+
+**⚠ CE QUE CE CALCUL NE CONTIENT PAS, et l'écran le dit :** les pertes des
+antennes, des raccords, de l'électrovanne, du disconnecteur. Un « le Ø25
+suffit » est donc un PLANCHER, pas une garantie — ce qu'il tranche sûrement,
+c'est l'inverse. **Et les diamètres INTÉRIEURS sont `provisoire`** : ils
+dépendent de la pression nominale du tube (PN6/PN10/PN16), qu'il n'a pas
+précisée, et se tromper de gamme fausse le verdict dans le sens dangereux.
+Ce sont ceux du PN10. À lui confirmer.
+
+**✅ LES TUYÈRES SONT POUR LES PETITS ESPACES — sa règle du 17 août, et elle
+corrige un seuil FAUX de moitié.** *« Les tuyères, on s'en sert uniquement pour
+les petits espaces : inférieur à 3,50 m, 4 m grand max. Sinon on passe en 3504
+ou plus gros. Un carré de douze par dix, c'est que des arroseurs, pas de
+tuyères. Les tuyères, c'est un carré de trois par trois, ou un long couloir de
+dix mètres sur deux de large. »*
+
+Le seuil était à **8 m**, il est à **4**. Ce n'est pas un détail : une pelouse
+de 12 × 8 partait en tuyères, donc en pluviométrie triple, beaucoup plus de
+têtes et beaucoup plus de débit — des secteurs en plus et une facture sans
+rapport. **C'est le PETIT CÔTÉ qui décide, et lui seul** : ses deux exemples le
+disent, le couloir de 10 × 2 prend des tuyères malgré ses 10 m de long.
+Un repli vers les tuyères au-delà de 4 m est désormais **interdit** : si aucune
+turbine ne pave, l'écran le dit plutôt que de rendre un plan posable et faux.
+
+**Le jardin d'exemple a dû changer avec cette règle** : ses deux pelouses
+étaient forcées en tuyères pour montrer une bascule, ce que sa règle interdit
+maintenant. Elles passent sur « au mieux », et **son couloir de 10 × 2 m entre
+dans le jardin** pour que les tuyères restent montrées là où elles ont leur
+place. Un écran d'accueil qui viole la règle qu'il vient de donner enseigne le
+contraire de ce qu'il a dit.
+
+**⚠ ET UN DÉFAUT QUE CETTE RÈGLE A RÉVÉLÉ, VU SUR LE PLAN ET PAR AUCUN TEST :
+deux pluviométries sous une même vanne.** La clé de groupe ne portait que le
+TYPE ('turbine'/'tuyère') : tant que les deux pelouses étaient l'une en
+turbines et l'autre en tuyères, elles ne se rencontraient jamais. Le jour où
+sa règle les a mises toutes deux en turbines, elles se sont retrouvées sur la
+même vanne avec **5,9 et 6,1 mm/h** — et c'est le plan, en les coloriant de la
+même couleur, qui l'a montré. La pluviométrie entre donc dans la clé de
+groupe : sa règle « ça ne se mélange jamais », appliquée à la lettre.
+
+**Ce que ça lui coûte, et il faut le lui dire :** une vanne de plus quand deux
+zones portent des buses différentes, même de 3 % d'écart. C'est le sens
+prudent — jamais de sous-arrosage — mais s'il juge que quelques pour cent se
+tolèrent, la clé se relâche en une ligne.
 
 ---
 

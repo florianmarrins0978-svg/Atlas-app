@@ -29,19 +29,65 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // et son débit tombe de 3,4 à 1,76 m³/h — d'où trois secteurs de moins.
   // **Ce nombre est un TÉMOIN, pas une cible** : il bougera encore à chaque
   // catalogue. Ce qu'il garde, c'est qu'un changement de données se VOIE.
+  // 6 depuis SA RÈGLE DU 17 AOÛT sur les tuyères (« uniquement pour les petits
+  // espaces, 4 m grand max ») : la pelouse avant, forcée en tuyères jusque-là,
+  // passe en turbines — moins de têtes, bien moins de débit. Un couloir de
+  // 10 × 2 m, son propre exemple, entre dans le jardin pour que les tuyères
+  // restent montrées là où elles ont leur place.
+  // 7 depuis que la PLUVIOMÉTRIE entre dans la clé de groupe : les deux
+  // pelouses, toutes deux en turbines mais avec des buses différentes (5,9 et
+  // 6,1 mm/h), ne partagent plus une vanne. Sa règle « ça ne se mélange
+  // jamais », appliquée à la lettre — le plan les coloriait de la même
+  // couleur, c'est ainsi que le défaut s'est vu.
   cas('le jardin de départ donne 7 secteurs', secteurs === 7, 'lu : ' + secteurs);
+
+  // **UN SECTEUR, UNE PLUVIOMÉTRIE — sa règle du 17 août, « ça ne se mélange
+  // jamais ».** Une vanne ouvre tout son secteur pour la MÊME durée : deux
+  // pluviométries dessous, et l'une des deux reçoit la mauvaise quantité,
+  // quoi qu'on règle. Le contrôle regarde les zones réellement réunies sous
+  // une même vanne, pas la théorie.
+  const melange = await page.evaluate(() => {
+    const d = decouper();
+    const parVanne = {};
+    etat.zones.filter(z => TYPES[z.type].forme === 'surface').forEach(z => {
+      const p = poser(z);
+      p.points.forEach(pt => {
+        const i = d.reseauDuPoint[z.id + ':' + pt.x.toFixed(3) + ':' + pt.y.toFixed(3)];
+        if (i == null) return;
+        (parVanne[i] = parVanne[i] || new Set()).add(p.m.pluvio);
+      });
+    });
+    return { vannes: Object.keys(parVanne).length,
+             fautives: Object.keys(parVanne).filter(k => parVanne[k].size > 1).length };
+  });
+  cas('des vannes a eprouver', melange.vannes >= 2, JSON.stringify(melange));
+  cas('aucune vanne ne melange deux pluviometries',
+      melange.fautives === 0, JSON.stringify(melange));
 
   // SA RÈGLE DE POSE (17 août) : l'écart ne descend JAMAIS sous la portée, et
   // ne dépasse jamais 1,2 × la portée. C'est ce qui décide du nombre
   // d'arroseurs, donc du prix — et l'outil faisait exactement l'inverse avant.
+  //
+  // **Éprouvé sur TOUTES les zones et contre LEUR portée réelle**, au lieu
+  // d'une seule zone et d'un 3,6 écrit en dur. La version en dur a rougi le
+  // jour où le jardin d'exemple a changé de buse — elle ne gardait pas la
+  // règle, elle gardait un jardin.
+  const poses = await page.evaluate(() => etat.zones
+    .filter(z => TYPES[z.type].forme === 'surface')
+    .map(z => { const p = poser(z);
+      return p.m ? { zone: z.nom, portee: p.m.portee, ex: p.ecartX, ey: p.ecartY, serre: p.tropSerre } : null; })
+    .filter(Boolean));
+  cas('des poses à éprouver, sur plusieurs zones', poses.length >= 2, JSON.stringify(poses));
+  const horsRegle = poses.filter(p => !p.serre &&
+    (p.ex < p.portee - 0.01 || p.ey < p.portee - 0.01 ||
+     p.ex > p.portee * 1.2 + 0.01 || p.ey > p.portee * 1.2 + 0.01));
+  cas('sur CHAQUE zone, l\'écart tient entre la portée et 1,2 × la portée',
+      horsRegle.length === 0, JSON.stringify(horsRegle));
+
   const resume = await page.locator('.zone-res').nth(1).innerText();
   const mEcart = resume.match(/un tous les (\d+,\d+) m/);
   const mRec = resume.match(/recouvrement (\d+) %/);
   cas('l\'écart de pose est chiffré en mètres', !!mEcart, resume.slice(0, 90));
-  const ecart = mEcart ? parseFloat(mEcart[1].replace(',', '.')) : 0;
-  cas('l\'écart ne descend pas sous la portée de la buse retenue',
-      ecart >= 3.6 - 0.01, 'écart lu : ' + ecart);
-  cas('et ne dépasse pas 1,2 × la portée', ecart <= 3.6 * 1.2 + 0.01, 'écart lu : ' + ecart);
   cas('le recouvrement obtenu tient ses 80 %',
       mRec && Number(mRec[1]) >= 80, resume.slice(0, 90));
   cas('la pose est annoncée (carré ou quinconce)',
@@ -60,9 +106,44 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('et le plan dessine EXACTEMENT ce nombre-là',
       tetesPlan === 11, 'têtes dessinées : ' + tetesPlan);
 
-  // La nourrice : tant que sa fiche manque, l'écran le dit au lieu d'inventer.
-  const nourrice = await page.locator('#nourrice').innerText();
-  cas('la fiche de nourrice manquante est ANNONCÉE', /à renseigner/.test(nourrice), nourrice.slice(0, 70));
+  // **LA NOURRICE — LES DEUX CAS, sur un jardin CHOISI et non sur l'exemple.**
+  // Ce cas a rougi deux fois de suite en une soirée, chaque fois parce qu'une
+  // de ses règles changeait le nombre de voies du jardin d'exemple : au-dessus
+  // de six, l'écran annonce le manque ; en dessous, il sert sa fiche. Les deux
+  // comportements sont justes — c'est le contrôle qui visait mal. On éprouve
+  // donc chacun sur un jardin bâti pour lui.
+  const fiches = await page.evaluate(() => {
+    const avant = JSON.parse(JSON.stringify(etat.zones));
+    // Un jardin volontairement petit : une pelouse et un massif, donc deux
+    // voies dont une en goutte-à-goutte — sa fiche 2 voies existe.
+    etat.zones = [ { id:1, nom:'Pelouse', type:'gazon', L:'10', l:'8', materiel:'auto' },
+                   { id:2, nom:'Massif',  type:'massif', L:'6', l:'1.6', materiel:'gaine' } ];
+    recalculer(true);
+    const petit = { voies: decouper().secteurs.length,
+                    texte: document.getElementById('nourrice').innerText };
+    // Et un jardin trop grand pour ses six fiches : l'écran doit le DIRE.
+    etat.zones = [];
+    for (let i = 1; i <= 8; i++)
+      etat.zones.push({ id:i, nom:'Zone '+i, type:'gazon', L:'10', l:'8', materiel:'auto' });
+    recalculer(true);
+    const grand = { voies: decouper().secteurs.length,
+                    texte: document.getElementById('nourrice').innerText };
+    etat.zones = avant; recalculer(true);
+    return { petit: petit, grand: grand };
+  });
+  await page.waitForTimeout(120);
+  cas('le petit jardin tient bien dans ses fiches (≤ 6 voies)',
+      fiches.petit.voies >= 1 && fiches.petit.voies <= 6, JSON.stringify(fiches.petit.voies));
+  cas('alors la fiche servie est la SIENNE, pas une composée',
+      /votre fiche/i.test(fiches.petit.texte) && /Clarinette/.test(fiches.petit.texte),
+      fiches.petit.texte.slice(0, 120));
+  cas('et sa modification goutte-a-goutte y est appliquee',
+      /100 DV 1" FF/.test(fiches.petit.texte) && /Regulateur|Régulateur/.test(fiches.petit.texte),
+      fiches.petit.texte.slice(0, 260));
+  cas('le grand jardin depasse bien ses six fiches',
+      fiches.grand.voies > 6, 'voies : ' + fiches.grand.voies);
+  cas('et alors le manque est ANNONCE, jamais comble par une nourrice inventee',
+      /à renseigner/.test(fiches.grand.texte), fiches.grand.texte.slice(0, 120));
 
   // Et les valeurs provisoires sont signalées, jamais présentées comme acquises.
   const bandeau = await page.locator('#bandeau').innerText();
@@ -236,10 +317,73 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
 
   // La liste du matériel : des quantités, et AUCUN prix.
   const liste = await page.locator('#materiel').innerText();
+  // « Électrovanne » sans « s » : depuis que ses fiches de nourrice servent, la
+  // ligne porte la vraie référence (« Électrovanne 100 DV 1" MM 9V ») et non
+  // plus le générique « Électrovannes 24 V ». Le motif couvre les deux.
   cas('la liste porte des quantités',
-      /Électrovannes/.test(liste) && /(Tuyères|Turbines)/.test(liste), liste.slice(0, 80));
+      /Électrovanne/.test(liste) && /(Tuyères|Turbines)/.test(liste), liste.slice(0, 120));
   cas('aucun prix nulle part sur la page', !/€|\bEUR\b/.test(await page.locator('body').innerText()));
   cas('le disconnecteur est dans la liste', /Disconnecteur/.test(liste));
+
+  // ── LES TUYÈRES SONT POUR LES PETITS ESPACES — sa règle du 17 août ───────
+  // « Inférieur à 3,50 m, 4 m grand max. Sinon on passe en 3504 ou plus gros.
+  //   Un carré de 12 × 10, c'est que des arroseurs, pas de tuyères. Les
+  //   tuyères c'est un carré de 3 × 3, ou un long couloir de 10 × 2. »
+  // Le seuil était à 8 m : une pelouse de 12 × 8 partait en tuyères, donc en
+  // pluviométrie triple, beaucoup plus de têtes et beaucoup plus de débit.
+  // **On éprouve SES TROIS EXEMPLES**, pas des cas inventés — c'est le petit
+  // côté qui décide, et le couloir de 10 × 2 le prouve : long, mais étroit.
+  const seuil = await page.evaluate(() => {
+    // On garde SON jardin de côté et on le remet : vider `localStorage`
+    // effacerait le nom qu'il a tapé plus haut dans cette suite, et le
+    // contrôle « la saisie survit à un rechargement » rougirait pour une
+    // raison qui n'est pas la sienne.
+    const avant = JSON.parse(JSON.stringify(etat.zones));
+    const essai = (L, l) => {
+      etat.zones = [{ id: 1, nom: 'essai', type: 'gazon', L: String(L), l: String(l), materiel: 'auto' }];
+      const p = poser(etat.zones[0]);
+      return p.m ? p.m.type : null;
+    };
+    const r = { carre12x10: essai(12, 10), couloir10x2: essai(10, 2), carre3x3: essai(3, 3),
+                pelouse12x8: essai(12, 8), carre4x4: essai(4, 4), carre5x5: essai(5, 5) };
+    etat.zones = avant; recalculer(true);
+    return r;
+  });
+  await page.waitForTimeout(150);
+  // Ses trois exemples, mot pour mot.
+  cas('son carré de 12 × 10 : que des turbines, aucune tuyère',
+      seuil.carre12x10 === 'turbine', JSON.stringify(seuil));
+  cas('son couloir de 10 × 2 : des tuyères, malgré ses 10 m de long',
+      seuil.couloir10x2 === 'tuyere', JSON.stringify(seuil));
+  cas('son carré de 3 × 3 : des tuyères', seuil.carre3x3 === 'tuyere', JSON.stringify(seuil));
+  // Et la frontière elle-même : 4 m est le « grand max », au-delà on bascule.
+  cas('4 m de petit côté tient encore en tuyères (son « grand max »)',
+      seuil.carre4x4 === 'tuyere', JSON.stringify(seuil));
+  cas('au-delà de 4 m, on passe en turbines',
+      seuil.carre5x5 === 'turbine' && seuil.pelouse12x8 === 'turbine', JSON.stringify(seuil));
+
+  // ── Ø25 PAR DÉFAUT, Ø32 SEULEMENT SI LE CALCUL LE DÉMONTRE ───────────────
+  // Sa règle du 17 août. Le Ø32 doit se MÉRITER : il coûte plus cher et se
+  // pose moins bien. On éprouve donc les DEUX verdicts — un contrôle qui ne
+  // verrait jamais le Ø32 ne prouverait pas que le calcul sait basculer.
+  const tuyau = await page.evaluate(() => {
+    const lire = (L) => { etat.amenee = L; const a = amenee(decouper());
+      return { d: a.diametre, perte: +a.perte25.toFixed(3), exigee: a.exigee, source: a.source, debit: +a.debit.toFixed(3) }; };
+    const court = lire(30), long = lire(150);
+    etat.amenee = 30;
+    return { court, long };
+  });
+  cas('le calcul a de quoi trancher (un débit, une pression exigée)',
+      tuyau.court.debit > 0 && tuyau.court.exigee > 0, JSON.stringify(tuyau.court));
+  cas('amenée courte : Ø25, on n\'y touche pas',
+      tuyau.court.d === 25, JSON.stringify(tuyau.court));
+  cas('amenée longue : le Ø25 ne passe plus, on bascule en Ø32',
+      tuyau.long.d === 32, JSON.stringify(tuyau.long));
+  // La perte doit CROÎTRE avec la longueur — sans quoi le calcul ne calcule
+  // rien et les deux verdicts ci-dessus seraient un hasard.
+  cas('et la perte de charge croît bien avec la longueur',
+      tuyau.long.perte > tuyau.court.perte * 2,
+      tuyau.court.perte + ' bar à 30 m, ' + tuyau.long.perte + ' bar à 150 m');
 
   // ── UN CORPS DE SA FAMILLE, ET UN SBE À SON DIAMÈTRE ─────────────────────
   // **Ce cas naît d'un défaut que les 39 autres n'ont pas vu**, et qu'une
@@ -332,8 +476,11 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
 
   // Le mail part avec la liste dedans.
   const href = await page.locator('#envoyer').getAttribute('href');
-  cas('le mail au fournisseur porte la liste', href.startsWith('mailto:') && /Electrovannes|%C3%89lectrovannes/.test(href),
-      href.slice(0, 90));
+  // Même raison qu'au-dessus : depuis ses fiches de nourrice, la ligne porte la
+  // référence réelle (« Électrovanne 100 DV ») et non le générique au pluriel.
+  cas('le mail au fournisseur porte la liste',
+      href.startsWith('mailto:') && /Electrovanne|%C3%89lectrovanne/.test(href),
+      href.slice(0, 120));
 
   // Rien ne doit déborder à 360 px.
   const large = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
@@ -348,7 +495,12 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // Et le cas dégradé : un jardin vide ne doit pas mentir.
   await page.evaluate(() => { localStorage.removeItem('atlas-arrosage'); });
   await page.reload({ waitUntil: 'networkidle' });
-  for (let i = 0; i < 5; i++){ await page.locator('.retirer').first().click(); await page.waitForTimeout(80); }
+  // On retire JUSQU'À CE QU'IL N'EN RESTE PLUS, au lieu de compter cinq clics :
+  // le jardin d'exemple a gagné une zone le 17 août, et une boucle à compte
+  // fixe en laissait une derrière elle.
+  for (let garde = 0; (await page.locator('.retirer').count()) > 0 && garde < 30; garde++){
+    await page.locator('.retirer').first().click(); await page.waitForTimeout(80);
+  }
   const vide = await page.locator('#secteurs').innerText();
   cas('sans zone, la page le DIT au lieu d\'afficher zéro', /Rien à découper/.test(vide), vide.slice(0, 60));
   cas('toujours aucune erreur JavaScript', erreurs.length === 0, erreurs.join(' | '));

@@ -620,6 +620,25 @@ var CATALOGUE = {
      restent au catalogue, VISIBLES au registre de prix, mais ne comptent pas
      encore dans la liste au fournisseur — comme les R-VAN et les turbines
      avant elles. */
+  /* ── LES TUYAUX D'AMENÉE, et leur diamètre INTÉRIEUR ────────────────────
+     Sa règle du 17 août : « Du compteur au regard : Ø25 par défaut. Passer en
+     Ø32 uniquement si le calcul hydraulique démontre que le Ø25 est
+     insuffisant. » Le calcul, lui, ne travaille pas sur le diamètre écrit sur
+     le tuyau (extérieur) mais sur le diamètre INTÉRIEUR — et celui-ci dépend
+     de l'épaisseur de paroi, donc de la pression nominale du tube (PN6, PN10,
+     PN16), qu'il n'a pas précisée.
+
+     **Ces deux valeurs sont donc `provisoire`, et l'écran le dit.** Ce sont
+     celles du PN10, le plus courant en arrosage — mais un PN16 a la paroi plus
+     épaisse, donc moins de passage, donc plus de perte : se tromper de gamme
+     fausse le verdict Ø25/Ø32 dans le sens dangereux. À confirmer par lui. */
+  tuyaux: {
+    pe25: { nom:'Tuyau PEHD Ø25', dInterieur:20.4, source:'provisoire',
+            aVerifier:'Diamètre intérieur du PN10 — dépend de la pression nominale, non précisée' },
+    pe32: { nom:'Tuyau PEHD Ø32', dInterieur:26.2, source:'provisoire',
+            aVerifier:'Diamètre intérieur du PN10 — dépend de la pression nominale, non précisée' }
+  },
+
   piecesReseau: {
     'te-taraude-25-34-25': { nom:'Té 90° taraudé 25×3/4"×25', marque:'Dura' },
     'coude-taraude-25-34': { nom:'Coude 90° taraudé 25×3/4"', marque:'Dura' },

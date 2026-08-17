@@ -263,9 +263,11 @@
 
   <section>
     <h2>4 · Le plan</h2>
-    <p class="aide">Pose tête-bêche : l'écart entre deux arroseurs vaut leur
-      portée. Les couronnes s'arrêtent au bord — les arroseurs de bordure ne
-      tournent que d'un demi-tour, ceux des coins d'un quart.</p>
+    <p class="aide">L'écart entre deux arroseurs ne descend jamais sous leur
+      portée, et ne la dépasse jamais de plus d'un cinquième — votre règle. Les
+      couronnes s'arrêtent au bord : les arroseurs de bordure ne tournent que
+      d'un demi-tour, ceux des coins d'un quart. <b>Une couleur par réseau</b> :
+      c'est ce qu'une même vanne ouvre en même temps.</p>
     <div id="plans"></div>
   </section>
 
@@ -288,9 +290,10 @@
   </section>
 
   <p class="pied">
-    <b>Ce que cette page ne calcule pas</b> — les pertes de charge et le
-    diamètre des tuyaux. Sans effet sur un pavillon en PE 32, déterminants sur
-    une longue ligne : à vérifier avec le fournisseur.<br>
+    <b>La perte de charge n'est calculée que sur l'amenée</b> (compteur →
+    regard), pour trancher son diamètre. Ni les antennes, ni les raccords, ni
+    l'électrovanne n'y sont : un « le Ø25 suffit » est un plancher, pas une
+    garantie.<br>
     <b>Le disconnecteur n'est pas une option</b> : un réseau d'arrosage
     raccordé à l'eau potable en demande un.<br>
     <b>Rien ne part tout seul.</b> « Automatique » désigne l'arrosage, pas
@@ -476,14 +479,19 @@ var LEVER = 6 * 60 + 30;  // au-delà, l'eau s'évapore avant d'entrer
 var etat = charger() || {
   seau:10, temps:20, pression:3, saison:'juillet', compteur:null, corps:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
-  pe32:60, pe25:120, sonde:false,
+  amenee:30, pe25:120, sonde:false,
   zones:[
     { id:1, nom:'Pelouse arrière', type:'gazon',   L:18, l:12, materiel:'auto' },
-    // Tuyères imposées devant, comme sur les planches 69-71 : c'est ce qui rend
-    // la bascule visible. Mis sur « Au mieux », la page choisit des turbines et
-    // le jardin tombe de huit secteurs à quatre — la démonstration vaut mieux
-    // qu'un paragraphe.
-    { id:2, nom:'Pelouse avant',   type:'gazon',   L:12, l:8,  materiel:'tuyere' },
+    // **Plus de tuyères imposées sur une grande pelouse (17 août).** Les deux
+    // pelouses étaient auparavant forcées en tuyères pour montrer la bascule ;
+    // sa règle du jour l'interdit — « un carré de douze par dix, c'est que des
+    // arroseurs, pas de tuyères ». Un jardin d'exemple qui la viole enseigne
+    // le contraire de ce qu'il vient de dire, et c'est le premier écran qu'on
+    // ouvre. Les deux pelouses sont donc sur « au mieux ».
+    { id:2, nom:'Pelouse avant',   type:'gazon',   L:12, l:8,  materiel:'auto' },
+    // Et les tuyères se montrent là où elles ont leur place, dans SON exemple
+    // à lui : « un long couloir qui fait dix mètres sur deux mètres de large ».
+    { id:6, nom:'Couloir latéral', type:'gazon',   L:10, l:2,  materiel:'auto' },
     { id:3, nom:'Massifs',         type:'massif',  L:15, l:2.4, materiel:'gaine' },
     { id:4, nom:'Haie',            type:'haie',    ml:60, lignesHaie:1, materiel:'gaine' },
     { id:5, nom:'Potager',         type:'potager', L:8,  l:3,   materiel:'gaine' }
@@ -504,16 +512,96 @@ function debitDisponible(){
   return (s / t) * 3.6;
 }
 
-/* Le matériel se choisit sur la LARGEUR de la pelouse : une turbine porte à 9 m,
-   la poser sur une bande de 5 m arroserait surtout le mur d'en face. */
-/* Rend un TYPE ('turbine', 'tuyere', 'gaine'), pas une référence : la référence
-   dépend de la marque choisie, et elle peut changer sous les pieds de la zone
-   quand il bascule de Rain Bird à Toro. Garder un type laisse ses zones
-   intactes à la bascule — ce qu'un changement de marque doit faire. */
+/* ══ LA PERTE DE CHARGE D'UNE AMENÉE, ET LE CHOIX Ø25 / Ø32 ═════════════════
+
+   Sa règle du 17 août : « Du compteur au regard : Ø25 par défaut. Passer en
+   Ø32 UNIQUEMENT si le calcul hydraulique démontre que le Ø25 est
+   insuffisant. » Le défaut est donc le Ø25, et le Ø32 doit se MÉRITER — il
+   coûte plus cher et se pose moins bien.
+
+   La formule est celle de Hazen-Williams, l'usage en arrosage, avec C = 150
+   pour le polyéthylène lisse :
+
+       perte (m) = 10,67 × L × (Q/C)^1,852 / D^4,87      Q en m³/s, D en m
+
+   **Le débit retenu est celui du PLUS GROS SECTEUR, pas la somme** : les
+   vannes s'ouvrent l'une après l'autre, jamais ensemble — c'est tout l'objet
+   du découpage. Prendre la somme surdimensionnerait chaque chantier.
+
+   ⚠ **CE QUE CE CALCUL NE CONTIENT PAS, et il faut le dire à l'écran :** les
+   pertes des antennes, des raccords, de l'électrovanne et du disconnecteur.
+   Un verdict « le Ø25 suffit » est donc un PLANCHER, pas une garantie. Ce
+   qu'il tranche sûrement, c'est l'inverse : si le Ø25 ne passe déjà pas en
+   ignorant tout le reste, il ne passera jamais. */
+function perteDeCharge(debitM3h, longueurM, dInterieurMm){
+  if (!(debitM3h > 0) || !(longueurM > 0) || !(dInterieurMm > 0)) return 0;
+  var q = debitM3h / 3600;          // m³/s
+  var d = dInterieurMm / 1000;      // m
+  var metres = 10.67 * longueurM * Math.pow(q / 150, 1.852) / Math.pow(d, 4.87);
+  return metres / 10.2;             // 10,2 m de colonne d'eau = 1 bar
+}
+
+/* Ce que devient l'amenée compteur → regard, une fois le jardin découpé. */
+function amenee(d){
+  var longueur = Number(etat.amenee) || 0;
+  var pire = d.secteurs.reduce(function(s, x){ return Math.max(s, x.debit || 0); }, 0);
+  // La pression dont les buses posées ont besoin : celle à laquelle leur
+  // portée et leur débit sont donnés au catalogue. En dessous, la portée
+  // annoncée n'est plus la bonne et tout le pavage est faux.
+  var exigee = 0;
+  etat.zones.forEach(function(z){
+    var p = poser(z);
+    if (p.m && p.m.pression) exigee = Math.max(exigee, p.m.pression);
+  });
+  var t25 = CATALOGUE.tuyaux.pe25, t32 = CATALOGUE.tuyaux.pe32;
+  var perte25 = perteDeCharge(pire, longueur, t25.dInterieur);
+  var perte32 = perteDeCharge(pire, longueur, t32.dInterieur);
+  var source = Number(etat.pression) || 0;
+  // Le Ø25 est insuffisant quand, PERTES DES ANTENNES MISES À PART, il ne
+  // laisse déjà plus aux buses la pression à laquelle elles sont données.
+  var suffit = !(longueur > 0 && pire > 0 && exigee > 0) || (source - perte25 >= exigee);
+  return { longueur:longueur, debit:pire, exigee:exigee, source:source,
+           perte25:perte25, perte32:perte32, suffit:suffit,
+           auRegard: source - (suffit ? perte25 : perte32),
+           diametre: suffit ? 25 : 32,
+           provisoire: (suffit ? t25 : t32).source === 'provisoire' };
+}
+
+/* ══ TUYÈRE OU TURBINE : SA RÈGLE DU 17 AOÛT, ET ELLE CORRIGE UN SEUIL FAUX ══
+
+   « Les tuyères, on s'en sert uniquement pour les petits espaces. Donc
+     inférieur à trois mètres cinquante, quatre mètres grand max. Sinon après
+     on passe en 3504 ou plus gros. Généralement quand tu as un carré de douze
+     mètres par dix, c'est que des arroseurs, pas de tuyères. Les tuyères c'est
+     vraiment lorsque derrière un massif il y a une petite zone, un carré de
+     trois par trois, ou un long couloir de dix mètres sur deux de large. »
+
+   Le seuil était à 8 m, et il est à 4. L'écart n'est pas cosmétique : une
+   pelouse de 12 × 8 partait en tuyères, c'est-à-dire en une pluviométrie
+   trois fois plus forte, beaucoup plus de têtes et beaucoup plus de débit —
+   donc des secteurs en plus, et une facture qui n'a rien à voir.
+
+   **C'est le PETIT CÔTÉ qui décide, et lui seul** : ses deux exemples le
+   disent — le couloir de 10 × 2 m prend des tuyères malgré ses 10 m de long,
+   le carré de 12 × 10 n'en prend aucune. Une tuyère porte 3 à 5 m ; ce qu'elle
+   ne peut pas faire, c'est traverser une largeur.
+
+   4 m est la limite HAUTE (« grand max »), 3,50 m le cas courant. On retient
+   donc 4 m comme frontière, et l'écran écrit la règle pour qu'il la corrige
+   d'un coup d'œil s'il la voulait plus serrée.
+
+   Rend un TYPE ('turbine', 'tuyere', 'gaine'), pas une référence : la
+   référence dépend de la marque choisie, et elle peut changer sous les pieds
+   de la zone quand il bascule de Rain Bird à Toro. Garder un type laisse ses
+   zones intactes à la bascule — ce qu'un changement de marque doit faire. */
+var TUYERE_JUSQUA = 4;      // mètres, sur le PETIT côté — « 4 m grand max »
+var TUYERE_CONFORT = 3.5;   // le cas courant, écrit à l'écran
+
 function materielDe(z){
   if (TYPES[z.type].forme !== 'surface') return 'gaine';
   if (z.materiel === 'turbine' || z.materiel === 'tuyere') return z.materiel;
-  return Math.min(Number(z.L)||0, Number(z.l)||0) >= 8 ? 'turbine' : 'tuyere';
+  var petit = Math.min(Number(z.L)||0, Number(z.l)||0);
+  return petit > TUYERE_JUSQUA ? 'turbine' : 'tuyere';
 }
 
 /* Les positions réelles d'une pose — la SEULE fonction qui les calcule.
@@ -562,12 +650,22 @@ function poser(z){
     choix = modelePour(cle, petitCote || null, dims);
     // Si le type retenu d'office ne donne aucune pose valable, on essaie
     // l'autre AVANT de rendre une alerte : une turbine qui ne tient pas sur une
-    // pelouse de 12 m de large n'est pas une fatalité, c'est une tuyère.
+    // petite zone n'est pas une fatalité, c'est une tuyère.
+    //
+    // **Mais ce repli NE PEUT PLUS ramener une grande zone aux tuyères**
+    // (17 août) : au-delà de 4 m de petit côté, sa règle est sans exception —
+    // « sinon on passe en 3504 ou plus gros ». Si aucune turbine ne pave, il
+    // faut le DIRE, pas retomber en silence sur un matériel qu'il a exclu :
+    // le plan serait posable et faux, ce qui est le pire des deux.
+    var repliPermis = Math.min(dims.L, dims.l) <= TUYERE_JUSQUA;
     if (z.materiel === 'auto' && choix.m && dims.L > 0 &&
         !(paveSelonSaRegle(dims.L, choix.m.portee) && paveSelonSaRegle(dims.l, choix.m.portee))){
-      var autre = modelePour(cle === 'turbine' ? 'tuyere' : 'turbine', petitCote || null, dims);
-      if (autre.m && paveSelonSaRegle(dims.L, autre.m.portee) && paveSelonSaRegle(dims.l, autre.m.portee)){
-        choix = autre; cle = cle === 'turbine' ? 'tuyere' : 'turbine';
+      var vers = cle === 'turbine' ? 'tuyere' : 'turbine';
+      if (vers === 'turbine' || repliPermis){
+        var autre = modelePour(vers, petitCote || null, dims);
+        if (autre.m && paveSelonSaRegle(dims.L, autre.m.portee) && paveSelonSaRegle(dims.l, autre.m.portee)){
+          choix = autre; cle = vers;
+        }
       }
     }
   }
@@ -661,7 +759,18 @@ function decouper(){
     if (p.debit <= 0) return;
     // La clé du groupe ne contient QUE ce qui ne change pas avec la saison :
     // le matériel et la famille de plantes. Un secteur est du câblage.
-    var clef = p.cle + '|' + TYPES[z.type].famille;
+    //
+    // **ET LA PLUVIOMÉTRIE EN FAIT PARTIE — sa règle du 17 août, « ça ne se
+    // mélange jamais ».** Le type ne suffit pas : deux TURBINES peuvent avoir
+    // des pluviométries différentes selon leur buse, et une vanne les ouvrirait
+    // pour la même durée. Le défaut est resté invisible tant que les deux
+    // pelouses du jardin d'exemple étaient l'une en turbines et l'autre en
+    // tuyères ; le jour où sa règle sur les tuyères les a mises toutes deux en
+    // turbines, elles se sont retrouvées sur la même vanne avec 5,9 et
+    // 6,1 mm/h — et c'est le PLAN, en les coloriant de la même couleur, qui l'a
+    // montré. Ici l'écart était de 3 % ; entre une 3504 fine et une grosse
+    // PGP, il se compte en multiples.
+    var clef = p.cle + '|' + TYPES[z.type].famille + '|' + (p.m.pluvio || 0);
     if (!groupes[clef]) { groupes[clef] = { zones:[], membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
     groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
     groupes[clef].membres.push({ zoneId: z.id, points: p.points });
@@ -1200,9 +1309,10 @@ function dessinerMateriel(d){
         ? '<b>' + nb(t.somme) + ' € HT</b> sur ' + t.chiffrees + ' ligne(s) — ' +
           '<b>' + t.manquantes + ' sans prix</b>, non comptée(s). Le total est donc INCOMPLET.'
         : '<b style="color:inherit">' + nb(t.somme) + ' € HT</b> — toutes les lignes chiffrées à vos prix.');
-  // Les tuyaux ne se devinent pas : ils dépendent du chemin, pas des surfaces.
-  // Une valeur inventée ici serait pire qu'une case vide — elle serait crue.
-  [['pe32','Tuyau PE 32 (ligne principale)','ml'],['pe25','Tuyau PE 25 (antennes)','ml']].forEach(function(t){
+  // Les LONGUEURS ne se devinent pas : elles dépendent du chemin, pas des
+  // surfaces. Une valeur inventée ici serait pire qu'une case vide — elle
+  // serait crue. Le DIAMÈTRE, lui, se calcule (voir `amenee`).
+  [['amenee','Du compteur au regard','ml'],['pe25','Antennes vers les secteurs (Ø25)','ml']].forEach(function(t){
     var b = document.createElement('div');
     b.className = 'mat';
     b.innerHTML = '<span class="mat-q"><input type="number" inputmode="numeric" min="0" step="5" data-tuyau="' + t[0] + '" value="' + etat[t[0]] + '"></span>' +
@@ -1212,6 +1322,35 @@ function dessinerMateriel(d){
     });
     hote.appendChild(b);
   });
+
+  // **LE VERDICT Ø25 / Ø32 — sa règle du 17 août, et il porte ses nombres.**
+  // Un « prenez du Ø32 » sans les chiffres qui l'imposent est un ordre ; avec
+  // eux, c'est un calcul qu'il peut contredire. Et ce qui N'EST PAS compté est
+  // écrit noir sur blanc : un verdict qu'on croit complet quand il ne l'est
+  // pas coûte plus cher qu'un verdict absent.
+  var a = amenee(d);
+  var note = document.createElement('p');
+  note.className = 'aide';
+  note.style.margin = '10px 0 0';
+  if (!(a.longueur > 0)){
+    note.innerHTML = '<b>Le diamètre de l\'amenée se calcule</b> dès que sa longueur est saisie ' +
+                     'ci-dessus. Sa règle : <b>Ø25 par défaut</b>, Ø32 seulement si le calcul le démontre.';
+  } else if (!(a.debit > 0 && a.exigee > 0)){
+    note.innerHTML = '<b>Ø25</b> par défaut — le calcul ne peut pas encore trancher : il lui manque ' +
+                     'un secteur posé et sa pression de service.';
+  } else {
+    note.innerHTML = '<b>Amenée : Ø' + a.diametre + '</b> sur ' + nb(a.longueur,0) + ' m. ' +
+      'Le plus gros secteur tire ' + nb(a.debit) + ' m³/h ; en Ø25 la perte est de ' +
+      nb(a.perte25,2) + ' bar, ce qui laisse ' + nb(a.source - a.perte25,2) + ' bar au regard pour ' +
+      nb(a.exigee,1) + ' bar exigés par les buses' +
+      (a.suffit
+        ? '. <b>Le Ø25 suffit</b>, on n\'y touche pas.'
+        : '. <b>Insuffisant : on passe en Ø32</b> (perte ' + nb(a.perte32,2) + ' bar, soit ' +
+          nb(a.source - a.perte32,2) + ' bar au regard).') +
+      ' <span class="provisoire">Ce calcul ne compte QUE l\'amenée</span> — ni les antennes, ni les ' +
+      'raccords, ni l\'électrovanne. Un « le Ø25 suffit » est donc un plancher, pas une garantie.';
+  }
+  hote.appendChild(note);
 }
 
 /* La nourrice : SA fiche, ou rien. Composer une nourrice de son cru, c'est
@@ -1292,8 +1431,11 @@ function texteDeLaListe(d){
   var l = ['Demande de prix — arrosage automatique',
            'Marque souhaitée : ' + nomDeMarque(marqueCourante()), ''];
   listeMateriel(d).forEach(function(x){ l.push('- ' + x.q + ' ' + x.u + '  ' + x.nom); });
-  l.push('- ' + etat.pe32 + ' ml  Tuyau PE 32 (ligne principale)');
-  l.push('- ' + etat.pe25 + ' ml  Tuyau PE 25 (antennes)');
+  // Le diamètre de l'amenée est CALCULÉ (sa règle : Ø25 par défaut, Ø32 s'il
+  // le faut) — le fournisseur doit lire le bon, pas un Ø32 posé d'office.
+  var a = amenee(d);
+  l.push('- ' + etat.amenee + ' ml  Tuyau PEHD Ø' + a.diametre + ' (amenée compteur → regard)');
+  l.push('- ' + etat.pe25 + ' ml  Tuyau PEHD Ø25 (antennes vers les secteurs)');
   l.push('');
   l.push('Installation : ' + d.secteurs.length + ' secteurs, débit disponible ' + nb(d.dispo) + ' m³/h à ' + nb(etat.pression,1) + ' bar.');
   // Le contenu du regard est déjà dans les lignes ci-dessus (listeMateriel le
