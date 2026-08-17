@@ -20,10 +20,18 @@ n'existe **aucun écran de fiche client** — le code le dit lui-même : *« fau
 d'écran de fiche client »* —, et son chantier du 17 août n'a **pas de client du
 tout**, ce que son titre auto trahit. L'écran doit donc savoir en créer une.
 
-Trois écrans (`maquettes/atlas-fiche-client.html`), 29 contrôles, confrontés à
-quatre planches dégradées : quatre rouges, chacun nommant le bon coupable. Le
-contrôle a d'ailleurs trouvé un vrai défaut de la planche — la coque du téléphone
-restait sur mobile, et l'écran tombait à 336 px au lieu de 390.
+**Elle se touche pour de bon** — sa demande : *« fais-moi des maquettes
+dynamiques »*. Sans un script : une case masquée, un libellé qui la coche. Sur A,
+seule la pastille ouvre la fiche ; sur B, toute la ligne. Sur la fiche, le micro
+ouvre la dictée, les propositions se décochent, et « Reporter » ne reporte que ce
+qui est resté coché.
+
+`maquettes/atlas-fiche-client.html`, 43 contrôles — dont les **gestes eux-mêmes**,
+rejoués et mesurés. Confrontés à huit planches dégradées : huit rouges, chacun
+nommant le bon coupable. Trois vrais défauts trouvés par ces contrôles : la coque
+du téléphone restait sur mobile (écran à 336 px au lieu de 390), et **cinq ombres
+portées ajoutées « pour faire haut de gamme »** — la charte d'Atlas n'en porte pas
+une seule, et son luxe est fait de ce qu'elle refuse.
 
 **Deux lettres attendues** : où va le doigt sur la ligne, et si la dictée
 propose ou remplit. `TODO.md` §0 quadragies bis.

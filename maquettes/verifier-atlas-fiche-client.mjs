@@ -63,6 +63,7 @@ await page.goto("file://" + path.resolve(ESSAI));
 
 const cadrer = async (s) => { await (await page.$(s)).scrollIntoViewIfNeeded(); await page.waitForTimeout(200); };
 const texte = async (s) => page.$eval(s, (e) => e.innerText.replace(/\s+/g, " ").trim()).catch(() => "");
+const vu = async (s) => page.$eval(s, (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })).catch(() => false);
 
 fs.mkdirSync(SORTIE, { recursive: true });
 
@@ -104,28 +105,31 @@ try {
     past !== null && past.h >= 32, past ? `${past.l.toFixed(0)}×${past.h.toFixed(0)}` : "absente");
 } catch (e) { echecs.push("écran 1 · interrompu — " + String(e.message).split("\n")[0]); }
 
-// ── 2. Chaque question porte lettre, coût et avis ───────────────────────
+// ── 2. La question porte lettres, coûts et avis ─────────────────────────
 try {
-  const lettres = await page.$$eval(".sous", (l) => l.map((e) => e.textContent.trim()));
-  verifie("chaque proposition porte sa lettre",
-    lettres.filter((t) => /^A ·/.test(t)).length === 2 &&
-    lettres.filter((t) => /^B ·/.test(t)).length === 2, lettres.join(" | "));
+  // **UNE SEULE question à lettres, et c'est délibéré.** L'écran 2 ne propose
+  // plus deux dictées côte à côte : la règle « elle propose, vous cochez » se
+  // JOUE au doigt plus bas, et un comportement éprouvé vaut mieux que deux
+  // images à comparer. La planche ne demande donc qu'une lettre — l'autre
+  // question se pose en une phrase dans l'avis.
+  const lettres = await page.$$eval('[data-s="ecran1"] .sous', (l) => l.map((e) => e.textContent.trim()));
+  verifie("les deux propositions de l'écran 1 portent leur lettre",
+    lettres.length === 2 && /^A ·/.test(lettres[0]) && /^B ·/.test(lettres[1]), lettres.join(" | "));
 
   // **Une proposition sans son coût se choisit sur sa promesse**, et le défaut
-  // se découvre après le code. Les quatre doivent l'avouer.
-  const couts = await page.$$eval(".prop .note .cout", (l) => l.map((e) => e.textContent.trim()));
-  verifie("les quatre propositions avouent ce qu'elles coûtent",
-    couts.length === 4, `${couts.length} coût(s)`);
+  // se découvre après le code.
+  const couts = await page.$$eval('[data-s="ecran1"] .note .cout', (l) => l.map((e) => e.textContent.trim()));
+  verifie("les deux avouent ce qu'elles coûtent", couts.length === 2, `${couts.length} coût(s)`);
 
   const avis1 = await texte('[data-s="avis1"]');
   const avis3 = await texte('[data-s="avis3"]');
   verifie("la question du geste porte un avis motivé",
     /ce que je ferais/i.test(avis1) && avis1.length > 120, avis1.slice(0, 90));
-  verifie("celle de la dictée aussi",
-    /ce que je ferais/i.test(avis3) && avis3.length > 120, avis3.slice(0, 90));
+  verifie("et la dictée reçoit le sien, même sans lettre à donner",
+    avis3.length > 120 && /coûte/i.test(avis3), avis3.slice(0, 90));
 
   // **L'avis doit rappeler ce qu'il a DÉJÀ tranché**, sinon il rejuge à froid
-  // une question déjà réglée ailleurs — et les deux réponses divergeront.
+  // une question réglée ailleurs — et les deux réponses divergeront.
   verifie("l'avis du geste confronte sa règle du 13 août", /13 août/.test(avis1), avis1.slice(0, 90));
   verifie("l'avis de la dictée rappelle son choix du devis",
     /devis/i.test(avis3), avis3.slice(0, 90));
@@ -171,6 +175,89 @@ try {
     /aucune ne sait lire un nom ou une adresse/i.test(fin), fin.slice(0, 200));
 } catch (e) { echecs.push("fiche · interrompu — " + String(e.message).split("\n")[0]); }
 
+// ── 3 bis. LES GESTES BOUGENT POUR DE BON ───────────────────────────────
+//
+// **Sa demande du 17 août : « fais-moi des maquettes DYNAMIQUES ».** Une
+// planche qu'on annonce touchable et qui ne bouge pas se valide sur une
+// capture, et le défaut ne paraît qu'entre ses mains. Chaque geste promis est
+// donc joué ici, et son effet MESURÉ — pas supposé.
+try {
+  // 1. La fiche est cachée au repos, et arrive quand on touche la cible.
+  const positionA = async () =>
+    page.$eval('[data-s="a1"] .vue-fiche', (e) => Math.round(e.getBoundingClientRect().left));
+  const gaucheEcran = await page.$eval('[data-s="a1"] .ecran', (e) => Math.round(e.getBoundingClientRect().left));
+  verifie("au repos, la fiche est hors de l'écran", (await positionA()) > gaucheEcran + 100,
+    `${await positionA()} contre ${gaucheEcran}`);
+
+  // **SUR A, LE NOM DU CHANTIER NE FAIT RIEN — et c'est le sujet même de la
+  // question.** S'il répondait, A et B seraient la même chose et il
+  // trancherait entre deux propositions identiques.
+  await page.click('[data-s="a1"] .brin h2');
+  await page.waitForTimeout(500);
+  verifie("A : toucher le nom du chantier ne fait rien, il faut viser",
+    (await positionA()) > gaucheEcran + 100, `${await positionA()}`);
+
+  await page.click('[data-s="a1"] .bouton');
+  await page.waitForTimeout(600);
+  verifie("A : la pastille fait bien venir la fiche",
+    Math.abs((await positionA()) - gaucheEcran) < 6, `${await positionA()} contre ${gaucheEcran}`);
+
+  // Et le retour la renvoie d'où elle vient : un aller sans retour enferme.
+  await page.click('[data-s="a1"] .retour');
+  await page.waitForTimeout(600);
+  verifie("A : le retour renvoie la fiche d'où elle vient",
+    (await positionA()) > gaucheEcran + 100, `${await positionA()}`);
+
+  // 2. Sur B, c'est toute la ligne — y compris le nom.
+  const positionB = async () =>
+    page.$eval('[data-s="b1"] .vue-fiche', (e) => Math.round(e.getBoundingClientRect().left));
+  const gaucheB = await page.$eval('[data-s="b1"] .ecran', (e) => Math.round(e.getBoundingClientRect().left));
+  await page.click('[data-s="b1"] .brin.mene h2');
+  await page.waitForTimeout(600);
+  verifie("B : toucher le nom du chantier suffit",
+    Math.abs((await positionB()) - gaucheB) < 6, `${await positionB()} contre ${gaucheB}`);
+} catch (e) { echecs.push("gestes écran 1 · interrompu — " + String(e.message).split("\n")[0]); }
+
+// ── 3 ter. LA DICTÉE : elle PROPOSE, et ne reporte que le coché ─────────
+//
+// **C'est la règle même qu'il doit juger**, et une planche qui la décrirait
+// sans la jouer lui ferait valider une phrase au lieu d'un comportement.
+try {
+  await cadrer('[data-s="fiche"]');
+  verifie("au repos, la dictée est fermée", !(await vu('[data-s="dictee"]')));
+
+  await page.click('[data-s="fiche-prop"] .micro');
+  await page.waitForTimeout(400);
+  verifie("le micro ouvre ce qu'elle a compris", await vu('[data-s="dictee"]'));
+
+  // Les champs restent VIDES tant que rien n'est reporté : une dictée qui
+  // remplirait d'office serait la proposition inverse.
+  verifie("avant de reporter, les champs sont vides",
+    !(await vu('[data-s="fiche-prop"] .v-nom .plein')));
+
+  // **Le geste qui porte la question : on DÉCOCHE, puis on reporte.**
+  await page.click('[data-s="fiche-prop"] .k-tel');
+  await page.waitForTimeout(260);
+  await page.click('[data-s="fiche-prop"] .valider');
+  await page.waitForTimeout(500);
+
+  verifie("reporté, le nom coché arrive dans son champ",
+    await vu('[data-s="fiche-prop"] .v-nom .plein'));
+  verifie("et l'adresse cochée aussi",
+    await vu('[data-s="fiche-prop"] .v-adr .plein'));
+  // **LE CONTRÔLE QUI PORTE L'ÉCRAN 2.** Si le décoché arrivait quand même,
+  // la planche montrerait « elle remplit » en prétendant montrer « elle
+  // propose » — et il trancherait sur un écran qui ment.
+  verifie("MAIS le téléphone décoché reste vide — « elle propose » tient",
+    !(await vu('[data-s="fiche-prop"] .v-tel .plein')),
+    await texte('[data-s="fiche-prop"] .v-tel'));
+
+  // Le panneau se referme et dit ce qu'il a fait : sinon le résultat est caché
+  // derrière le panneau qui l'a produit.
+  verifie("le panneau laisse un mot au lieu de rester ouvert",
+    await vu('[data-s="fiche-prop"] .apres'));
+} catch (e) { echecs.push("gestes dictée · interrompu — " + String(e.message).split("\n")[0]); }
+
 // ── 4. La loupe : les mesures ci-dessus sont celles de SON écran ────────
 try {
   const w = await page.$eval('[data-s="a1"] .ecran', (e) => e.getBoundingClientRect().width);
@@ -195,12 +282,43 @@ try {
   verifie("rien ne déborde en largeur", !deborde);
 
   const props = await pg.$$(".prop");
-  verifie("les cinq écrans sont capturés", props.length === 5, `${props.length}`);
+  verifie("les trois écrans sont capturés", props.length === 3, `${props.length}`);
   for (let i = 0; i < props.length; i++) {
     await props[i].scrollIntoViewIfNeeded();
     await pg.waitForTimeout(200);
     await props[i].screenshot({ path: `${SORTIE}/fiche-client-${i + 1}.png` });
   }
+  // **ET DES CAPTURES DES ÉTATS, PAS SEULEMENT DU REPOS.** Sans elles, la
+  // planche envoyée montre trois écrans immobiles : le geste qu'il a demandé
+  // n'y est pas visible, et il devrait ouvrir la page pour le voir. La leçon
+  // vient de `verifier-atlas-rappel-facture-impayee`, qui l'a payée avant.
+  await pg.click('[data-s="b1"] .brin.mene h2');
+  await pg.waitForTimeout(700);
+  const arrivee = await pg.$eval('[data-s="b1"] .vue-fiche', (e) => Math.round(e.getBoundingClientRect().left));
+  const bordB = await pg.$eval('[data-s="b1"] .ecran', (e) => Math.round(e.getBoundingClientRect().left));
+  verifie("la capture du geste montre la fiche ARRIVÉE, pas en route",
+    Math.abs(arrivee - bordB) < 8, `${arrivee} contre ${bordB}`);
+  const vueB = await pg.$('[data-s="b1"] .tel');
+  await vueB.scrollIntoViewIfNeeded();
+  await pg.waitForTimeout(200);
+  await vueB.screenshot({ path: `${SORTIE}/fiche-client-4-fiche-ouverte.png` });
+
+  await pg.click('[data-s="fiche-prop"] .micro');
+  await pg.waitForTimeout(400);
+  const dictee = await pg.$('[data-s="fiche-prop"] .tel');
+  await dictee.scrollIntoViewIfNeeded();
+  await pg.waitForTimeout(250);
+  await dictee.screenshot({ path: `${SORTIE}/fiche-client-5-dictee.png` });
+
+  await pg.click('[data-s="fiche-prop"] .k-tel');
+  await pg.waitForTimeout(260);
+  await pg.click('[data-s="fiche-prop"] .valider');
+  await pg.waitForTimeout(600);
+  const resteVide = !(await pg.$eval('[data-s="fiche-prop"] .v-tel .plein',
+    (e) => e.checkVisibility({ opacityProperty: true, visibilityProperty: true })).catch(() => false));
+  verifie("et celle du report montre bien le téléphone RESTÉ vide", resteVide);
+  await dictee.screenshot({ path: `${SORTIE}/fiche-client-6-reporte.png` });
+
   await grand.close();
 } catch (e) { echecs.push("gros plan · interrompu — " + String(e.message).split("\n")[0]); }
 

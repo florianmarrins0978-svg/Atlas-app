@@ -29,8 +29,8 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ### 0 quadragies bis. La fiche client — DESSINÉE, en attente de ses deux lettres
 
-*`maquettes/atlas-fiche-client.html`, le 17 août 2026 — trois écrans,
-29 contrôles. Sa demande : « j'ai oublié de rentrer les infos du client […] que
+*`maquettes/atlas-fiche-client.html`, le 17 août 2026 — trois écrans **qui se
+touchent**, 43 contrôles. Sa demande : « j'ai oublié de rentrer les infos du client […] que
 je puisse cliquer sur le client du dix-sept août […] et que ça me mette
 directement sur la page client où je peux rentrer ces informations par la dictée
 ou par l'écrit ».*
@@ -60,6 +60,14 @@ chantier REPREND le travail. B est une exception à cette règle. L'avis écrit 
 la planche est **B**, au motif que la règle protégeait son TEMPS et non une
 destination : reprendre un devis sans client, c'est justement le parcours
 inutile.
+
+**LA PLANCHE SE JOUE AU DOIGT, et les gestes sont ÉPROUVÉS, pas décrits.** Sur
+A, seule la pastille ouvre la fiche — toucher le nom du chantier ne fait rien,
+et c'est le sujet même de la question. Sur B, toute la ligne répond. Sur la
+fiche, le micro ouvre ce que la dictée a compris, les trois propositions se
+décochent, et « Reporter » ne reporte **que ce qui est resté coché** : décochez
+le téléphone, il reste vide. Le contrôle rejoue ces gestes et mesure leur effet ;
+confronté à une planche où le décoché arrive quand même, il rougit.
 
 **RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis). Ce que le lot exigera, quelle que soit
 sa réponse :
