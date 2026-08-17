@@ -552,6 +552,59 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cPrix.close();
   }
 
+  // ── Les clients, à l'essai ────────────────────────────────────────────────
+  //
+  // Sa demande du 17 août 2026 au soir : *« montre-moi depuis chantier ce que ça
+  // donnerait, crée une maquette dynamique que je puisse essayer »*.
+  //
+  // **Elle se manipule SANS JavaScript** — la navigation passe par `:target`.
+  // Le contrôle coupe donc le script : c'est la seule façon de prouver que la
+  // page ne dépend pas de lui, et une planche qui ne s'ouvrirait pas chez lui
+  // ne vaut rien.
+  {
+    const cCl = await browser.newContext({ viewport: { width: 390, height: 850 }, javaScriptEnabled: false });
+    const page = await cCl.newPage();
+    const visible = (id) => page.locator('#' + id).isVisible();
+
+    await page.goto(`${B}/clients.html`, { waitUntil: 'domcontentloaded' });
+    ok('clients : l\'accueil s\'ouvre seul', (await visible('accueil')) && !(await visible('liste')));
+
+    await page.locator('#accueil a[href="#liste"]').click();
+    ok('clients : « Vos clients » ouvre la liste', (await visible('liste')) && !(await visible('accueil')));
+
+    await page.locator('#liste a[href="#client"]').first().click();
+    ok('clients : un nom ouvre sa fiche', await visible('client'));
+
+    // **Le chemin qu'il a demandé de voir : DEPUIS un chantier.**
+    await page.locator('#client a[href="#chantier"]').first().click();
+    ok('clients : un chantier s\'ouvre depuis la fiche', await visible('chantier'));
+    await page.locator('#chantier a[href="#client"]').first().click();
+    ok('clients : et le chantier ramène à la fiche du client', await visible('client'));
+
+    // **L'arithmétique, parce qu'il la refait.** Le détail des chantiers doit
+    // faire le total facturé, et le seul impayé doit faire ce qui reste dû.
+    await page.goto(`${B}/clients.html#client`, { waitUntil: 'domcontentloaded' });
+    const texte = await page.locator('#client').innerText();
+    const montants = (texte.match(/(\d[\d  ]*) €/g) || []).map(m => Number(m.replace(/[^\d]/g, '')));
+    const parChantier = [887, 740, 980, 593];
+    ok('clients : le détail des chantiers fait bien le total facturé',
+       montants.indexOf(parChantier.reduce((a, b) => a + b, 0)) >= 0,
+       'attendu 3200 quelque part dans : ' + montants.join(', '));
+    ok('clients : ce qui reste dû est bien le seul chantier impayé',
+       /740 €.*impay|impay.*740 €/s.test(texte) && montants.indexOf(740) >= 0);
+
+    // La barre du bas garde QUATRE onglets : le cinquième est réservé aux
+    // outils métier, et à cinq colonnes « CHANTIERS » déborde déjà.
+    const onglets = await page.locator('.barre span').count();
+    ok('clients : la barre du bas garde quatre onglets', onglets === 4, 'vus : ' + onglets);
+
+    // Rien ne déborde sur son téléphone.
+    const large = await page.evaluate(() => document.documentElement.scrollWidth);
+    ok('clients : rien ne déborde à 390 px', large <= 391, 'largeur ' + large);
+
+    await cCl.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }

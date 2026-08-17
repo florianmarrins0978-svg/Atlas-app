@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### La maquette des clients, ESSAYABLE — et le libellé qui disait « lui » à une cliente
+
+**Sa demande, le soir même :** *« montre-moi depuis chantier ce que ça donnerait,
+crée une maquette dynamique que je puisse essayer, pas de photo, en .html »* — et
+sa validation dans la foulée : *« c'est bien comme ça, sous le nombre de
+chantiers en cours, en or »*. C'était déjà codé et sur `main` ; la planche sert
+à l'essayer sans rallumer son espace.
+
+**`appli/clients.html`**, publiée avec l'appli — donc ouvrable au téléphone
+(`…github.io/Atlas-app/clients.html`). Quatre écrans qui s'enchaînent pour de
+bon : l'accueil, la liste, la fiche d'un client, et **le chemin depuis un
+chantier**, celui qu'il voulait voir.
+
+**Sans une ligne de JavaScript.** La navigation passe par `:target`, et le
+contrôle coupe le script pour le prouver : une planche qui ne s'ouvrirait pas
+chez lui ne vaut rien. Elle marche aussi hors ligne.
+
+**Un piège évité en l'écrivant :** l'accueil devait se cacher dès qu'un autre
+écran est visé. La règle évidente (`:has()`) n'existe pas sur les téléphones un
+peu anciens — la maquette se serait affichée en double, sans un mot. L'accueil
+est donc écrit en dernier, et une règle de frère suffit.
+
+**Et un défaut sorti de la planche, jamais d'un test :** la ligne qui ouvre la
+fiche d'un client disait *« Ce qu'on sait de lui »* — devant « Mme
+Bracquemont ». Elle est neutre désormais : rien dans la base ne dit le genre
+d'un client, et un sur deux est une cliente.
+
+
 ### « Je retourne dans l'application et pas dans la catégorie tarif »
 
 Sa remarque du 17 août, capture à l'appui, depuis « Mes prix ». Les réglages ont
