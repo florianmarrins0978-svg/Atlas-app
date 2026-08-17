@@ -102,6 +102,18 @@ est appliqué dans `appli/arrosage.html`. Ne pas le redéduire, ne pas l'assoupl
 | 8 | **85 % du débit par secteur : confirmé** | `MARGE` |
 | 9 | **« Ça ne se mélange jamais »** — ni deux pluviométries, ni deux familles | `decouper()` |
 | 10 | **Massifs : lignes tous les 80 cm. Potager : 70 cm. Haies : une ou deux lignes, À DEMANDER à l'utilisateur** | `TYPES`, forme `nappe` |
+**LES RÉPONSES DU 17 AOÛT (deuxième tour, formulaire à cocher) :**
+
+| Question | Sa réponse |
+|---|---|
+| Comment poser les R-VAN (deux références par taille) | *« La R-VAN s'utilise lorsqu'on a moins de débit/pression que recommandé — privilégier les 360°. »* Rien à seuil numérique donné : **non câblé** dans le calcul, resté en note. Il précise n'avoir jamais utilisé de R-VAN lui-même |
+| Corps par défaut | **10 cm, sans option** — voir plus haut, câblé |
+| Buses en jet plat, R-VAN, MP Rotator : lesquelles comptent | *« Ce que j'utilise le plus sont les VAN […] les MP Rotator, plus chers, aspect différent, haut de gamme, à présenter tel quel, l'utilisateur choisira. »* VAN reste la référence par défaut. MP Rotator : présentés comme un choix à part une fois ses portées/débits reçus — **aucune spécification technique n'était sur la photo**, rien à enregistrer encore |
+
+**CE QUI N'A PAS EU DE RÉPONSE DIRECTE, à redemander sans insister :** les
+buses en jet plat (bordures rectangulaires) — sa réponse a porté sur la
+hiérarchie VAN / R-VAN / MP Rotator sans trancher ce point précis.
+
 | 12 | Une grande nourrice ou deux petites : **« question à poser à l'utilisateur, il décidera »** | à faire |
 | 13 | Le croquis client sera **les deux** — carré simple, ou avec obstacles, courbes, arbre au milieu. **« Je vais te donner les clés »** | à venir |
 | 14 | **L'utilisateur dit s'il se repique juste après le compteur** (le meilleur cas : la ville délivre ≥ 3 bar, c'est du sûr). Sinon **on lui explique quoi faire** pour avoir les bonnes infos | champ `compteur` |
@@ -135,11 +147,13 @@ les deux restent visibles dans son registre de prix. Poser une pelouse avec des
 R-VAN suppose de mélanger les deux références selon la position — un
 pavage à deux références que l'outil ne fait pas encore.
 
-**LE CHOIX DU CORPS RESTE OUVERT, ET CE N'EST PAS DU RANGEMENT :** quatre
-hauteurs, trois niveaux d'option (rien, clapet anti-vidange, régulateur de
-pression) — un choix de chantier, pas une valeur à deviner. Aucun corps n'entre
-encore dans la liste au fournisseur tant qu'il n'a pas dit lequel prendre par
-défaut.
+**LE CHOIX DU CORPS EST TRANCHÉ le 17 août :** *« 10 cm sans option, mais
+proposer à chaque fois les autres en expliquant ce qu'il apporte — l'utilisateur
+décidera. »* Un sélecteur dédié (`#corps`), une phrase par option (hauteur : ce
+qu'elle convient à faucher ; SAM : évite les fuites en point bas sur une pente ;
+PRS : utile si la pression varie), défaut au 10 cm sans option, réversible.
+Câblé dans la liste au fournisseur, un corps par arroseur posé — quand un a été
+enregistré pour la marque courante.
 
 **CE QUE SA RÈGLE D'ÉCART A RÉVÉLÉ, ET QUI N'ÉTAIT PAS VISIBLE AVANT :** le
 choix de buse doit OBÉIR à la règle, pas être corrigé après coup. Une turbine de

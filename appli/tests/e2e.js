@@ -298,6 +298,19 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     await page.click('[data-ajout="massif"]'); await page.waitForTimeout(150);
     ok('arrosage : ajouter une zone l’ajoute', (await page.$$eval('.zone', e => e.length)) === avant + 1);
 
+    // **Le corps par défaut, sa décision du 17 août : « 10 cm sans option,
+    // mais proposer les autres à chaque fois ». Un sélecteur cassé (élément
+    // absent du DOM) fait planter TOUTE la page — c'est le défaut réellement
+    // survenu en écrivant ce lot : une édition partielle avait laissé le
+    // script référencer un <select id="corps"> qui n'existait pas.**
+    const corpsChoix = await page.$eval('#corps', el => el.value);
+    ok('arrosage : un corps est sélectionné par défaut', !!corpsChoix, 'lu : ' + corpsChoix);
+    const corpsNote = await page.$eval('#corpsNote', el => el.innerText);
+    ok('arrosage : le corps par défaut est le 10 cm sans option',
+       /10 cm/.test(corpsNote) && !/SAM|régulateur/i.test(corpsNote), corpsNote.slice(0, 80));
+    ok('arrosage : ce que le corps apporte est expliqué en clair',
+       /courant|pente|pression/i.test(corpsNote), corpsNote.slice(0, 80));
+
     // Rien ne doit déborder sur un téléphone.
     ok('arrosage : rien ne déborde en largeur',
        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));

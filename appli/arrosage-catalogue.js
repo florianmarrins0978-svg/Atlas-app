@@ -438,6 +438,38 @@ CATALOGUE.tousLesProduits = function () {
   return out;
 };
 
+/* Le corps par défaut, une fois qu'il l'a tranché le 17 août : « 10 cm sans
+   option, mais proposer à chaque fois les autres en expliquant ce qu'il
+   apporte — l'utilisateur décidera. » Le choix reste donc RÉGLABLE (ce n'est
+   pas une valeur figée), mais avec un point de départ raisonnable et jamais
+   une décision cachée : chaque option porte sa phrase, sur l'écran. */
+CATALOGUE.corpsDe = function (marqueCle) {
+  return CATALOGUE.corps.filter(function (c) { return c.marqueCle === marqueCle; });
+};
+CATALOGUE.corpsParDefaut = function (marqueCle) {
+  var chez = CATALOGUE.corpsDe(marqueCle);
+  var dix = chez.filter(function (c) { return c.hauteur === 10 && c.options.length === 0; })[0];
+  return dix || chez[0] || null;
+};
+// Ce que chaque option apporte, en une phrase — pour que le choix se fasse
+// sur ce que ça change, pas sur un sigle (« SAM », « PRS ») que personne ne
+// devine.
+CATALOGUE.explicationCorps = function (c) {
+  var h = 'Escamotable ' + c.hauteur + ' cm — ' +
+    (c.hauteur <= 5 ? 'pour un gazon tondu ras.'
+      : c.hauteur <= 10 ? 'le plus courant.'
+      : c.hauteur <= 15 ? 'pour une herbe plus haute ou un massif bas.'
+      : 'pour une végétation haute, loin de la tondeuse.');
+  var opts = c.options.map(function (o) {
+    return o === 'clapet anti-vidange'
+      ? 'Clapet anti-vidange : évite les fuites au point bas après l\'arrêt — utile sur un terrain en pente.'
+      : o === 'régulateur de pression'
+      ? 'Pression régulée : utile si la pression varie sur le réseau.'
+      : o;
+  });
+  return [h].concat(opts).join(' ');
+};
+
 CATALOGUE.marqueParDefaut = function () {
   var d = CATALOGUE.marques.filter(function (m) { return m.defaut; })[0];
   return d ? d.cle : CATALOGUE.marques[0].cle;

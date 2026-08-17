@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le corps par défaut, choisi par lui — et un sélecteur qu'un montage partiel avait cassé
+
+**Sa réponse :** *« 10 cm sans option, mais proposer à chaque fois les autres en
+expliquant ce qu'il apporte — l'utilisateur décidera. »* Un sélecteur dédié,
+une phrase par option (hauteur : à quoi elle convient ; clapet anti-vidange :
+utile sur une pente ; régulateur : utile si la pression varie), le défaut posé
+sur le 10 cm sans option, réversible d'un choix.
+
+**Ce que ça a révélé en cours d'écriture, et qui vaut d'être noté : une édition
+en trois scripts a échoué au milieu, et un seul des trois a persisté.** Le
+premier posait le marquage HTML, l'initialisation d'état et l'affichage ; il a
+buté sur une hypothèse de texte fausse et n'a **rien écrit du tout** — un
+script Python n'enregistre qu'à la fin, une assertion qui échoue au milieu
+laisse le fichier intact. Un deuxième script, plus tard, a corrigé un point
+voisin avec succès et **a été confondu avec une réussite complète**. Résultat :
+le code référençait un `<select id="corps">` qui n'existait pas dans la page,
+et la page entière plantait au chargement — *aucune* zone ne s'affichait, une
+panne bien plus grave que le défaut visé. Retrouvé en ouvrant la page pour de
+vrai, pas en relisant le diff.
+
+**Un contrôle le tient désormais, dans la batterie qui garde le site publié** :
+un corps sélectionné par défaut, le 10 cm sans option précisément, et
+l'explication qui l'accompagne. C'est le contrôle qui aurait dit non avant
+publication.
+
 ### Les corps d'arroseur, Hunter, et une buse qui se vend en deux morceaux
 
 **Cinq photos** : les corps Rain Bird 1800 (« livrée sans buse » — exactement ce

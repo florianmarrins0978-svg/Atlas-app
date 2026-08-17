@@ -232,6 +232,13 @@
         <select id="marque"></select></div>
     </div>
     <p class="aide" id="marqueNote" style="margin:0 0 12px"></p>
+
+    <div class="ligne" style="margin-bottom:6px">
+      <div><label for="corps">Corps d'arroseur</label>
+        <select id="corps"></select></div>
+    </div>
+    <p class="aide" id="corpsNote" style="margin:0 0 12px"></p>
+
     <div id="zones"></div>
     <div class="ajouts">
       <button type="button" data-ajout="gazon">+ Pelouse</button>
@@ -464,7 +471,7 @@ var DEPART = 3 * 60;      // départ du cycle : 3 h du matin
 var LEVER = 6 * 60 + 30;  // au-delà, l'eau s'évapore avant d'entrer
 
 var etat = charger() || {
-  seau:10, temps:20, pression:3, saison:'juillet', compteur:null,
+  seau:10, temps:20, pression:3, saison:'juillet', compteur:null, corps:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   pe32:60, pe25:120, sonde:false,
   zones:[
@@ -717,7 +724,9 @@ function dessinerMarques(){
       o.value = m.cle; o.textContent = m.nom;
       choix.appendChild(o);
     });
-    choix.addEventListener('change', function(){ etat.marque = choix.value; recalculer(true); });
+    choix.addEventListener('change', function(){
+      etat.marque = choix.value; etat.corps = null; recalculer(true);
+    });
   }
   choix.value = marqueCourante();
 
@@ -739,6 +748,34 @@ function dessinerMarques(){
     : '<span class="provisoire">Aucun modèle ' + nomDeMarque(cle) + ' enregistré.</span> ' +
       'Je calcule avec des valeurs génériques en attendant vos photos — et je le ' +
       'redis sur chaque zone plutôt que de le laisser croire.';
+}
+
+function corpsCourant(){
+  var chez = CATALOGUE.corpsDe(marqueCourante());
+  var choisi = chez.filter(function(c){ return c.ref === etat.corps; })[0];
+  return choisi || CATALOGUE.corpsParDefaut(marqueCourante());
+}
+
+function dessinerCorps(){
+  var choix = document.getElementById('corps');
+  var chez = CATALOGUE.corpsDe(marqueCourante());
+  choix.innerHTML = '';
+  if (!chez.length){
+    choix.innerHTML = '<option value="">Aucun corps ' + nomDeMarque(marqueCourante()) + ' enregistré</option>';
+    document.getElementById('corpsNote').innerHTML =
+      '<span class="provisoire">Aucun corps ' + nomDeMarque(marqueCourante()) +
+      ' au catalogue.</span> La liste ne comptera pas de corps pour cette marque.';
+    return;
+  }
+  chez.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c.ref; o.textContent = c.nom + ' — ' + c.detail;
+    choix.appendChild(o);
+  });
+  var courant = corpsCourant();
+  choix.value = courant.ref;
+  document.getElementById('corpsNote').innerHTML =
+    '<b>' + courant.nom + '.</b> ' + CATALOGUE.explicationCorps(courant);
 }
 
 function dessinerSaisons(){
@@ -881,6 +918,12 @@ function listeMateriel(d){
     lignes.push({ ref:g.ref, nom:'Gaine de goutteurs ' + g.detail, q: totalGaine, u:'ml' });
   }
   if (totalArroseurs) lignes.push({ ref:'crosse', nom:'Crosses de raccordement (une par arroseur)', q: totalArroseurs, u:'u' });
+  // Un corps par arroseur — celui qu'il a choisi (10 cm sans option par
+  // défaut, réglable à l'écran). Sans corps enregistré pour la marque
+  // courante, on ne compte rien plutôt que de compter un corps qui n'existe
+  // pas dans son catalogue.
+  var corps = corpsCourant();
+  if (totalArroseurs && corps) lignes.push({ ref:corps.ref, nom:corps.nom + ' — ' + corps.detail, q: totalArroseurs, u:'u' });
   if (d.secteurs.length){
     lignes.push({ ref:'electrovanne', nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
     lignes.push({ ref:'regard', nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
@@ -1025,6 +1068,7 @@ function recalculer(redessinerZones){
     ? Math.round(d.dispo * 1000 / 60) + ' L/min · un secteur ne dépassera pas ' + nb(d.limite) + ' m³/h'
     : 'Remplissez le seau et le temps.';
   dessinerMarques();
+  dessinerCorps();
   if (redessinerZones) dessinerZones();
   dessinerSecteurs(d);
   dessinerVerdict(d);
@@ -1102,6 +1146,11 @@ document.getElementById('copier').addEventListener('click', function(){
     window.prompt('Copiez la liste :', texte); dire('Copié');
   }
 });
+document.getElementById('corps').addEventListener('change', function(e){
+  etat.corps = e.target.value || null;
+  recalculer(false);
+});
+
 document.getElementById('compteur').addEventListener('change', function(e){
   etat.compteur = e.target.value;
   // Au compteur, la pression est celle du réseau : au moins 3 bar. On la pose
