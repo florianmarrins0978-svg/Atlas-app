@@ -1,0 +1,375 @@
+<title>Le plan d'arrosage</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE PLAN D'ARROSAGE AUTOMATIQUE — par où le paysagiste y entre.
+
+    LE PATRON, LE 17 AOÛT 2026 : « j'ai besoin qu'on crée un outil pour les
+    paysagistes pour réaliser des plans d'arrosage automatique. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE L'OUTIL DOIT SAVOIR FAIRE, ET QUE PERSONNE NE FAIT DE TÊTE
+
+    Un plan d'arrosage tient en trois nombres qui s'enchaînent :
+
+      · LE DÉBIT DU ROBINET  — 1,80 m³/h ici, mesuré au seau.
+      · LE DÉBIT DEMANDÉ     — 8,47 m³/h pour ce jardin,
+                               soit 4,7 fois ce qu'on a.
+      · LA PLUVIOMÉTRIE      — 11 mm/h pour une turbine, 38 pour une tuyère.
+
+    Le premier interdit d'ouvrir tout le jardin à la fois : il faut DÉCOUPER
+    EN SECTEURS. Le troisième donne les durées, et il ne se devine pas — la
+    même quantité d'eau demande 45 minutes de turbine
+    et 13 minutes de tuyère.
+
+    C'est exactement le travail de bureau que le patron veut voir disparaître :
+    des additions faites sur un coin de camionnette, et refaites à chaque fois
+    que le client déplace un massif.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR — ce sont des conséquences, pas des goûts.
+
+    · LE DÉBIT SE MESURE, il ne se suppose pas. Un seau de 10 L
+      rempli en 20 s : 1,80 m³/h. Un plan
+      bâti sur un débit supposé s'écroule à la mise en eau, et c'est le
+      paysagiste qui revient gratuitement.
+    · ON NE MÉLANGE PAS DEUX PLUVIOMÉTRIES dans un secteur. La vanne les ouvre
+      ensemble, donc pour la même durée : l'un reçoit trois fois l'eau de
+      l'autre. C'est le défaut le plus courant des installations reprises.
+    · ATLAS N'INVENTE AUCUN PRIX. Le matériel arrive dans le devis avec ses
+      QUANTITÉS ; le prix vient de « Mes prix », et reste vide et signalé quand
+      il n'y est pas (règle du §4 du dépôt, et `docs/AGENT.md` §3).
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les bascules sont des `input` natifs, le plan est du SVG.
+    Engendré par `scripts/engendrer-maquette-arrosage.mjs`.
+    Contrôle : `scripts/verifier-maquette-arrosage.mjs`.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .reglage{margin:0 0 18px}
+  .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .segments{display:flex;flex-wrap:wrap;gap:8px}
+  .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+  .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+  .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+  .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+  .barre .quand{font-size:11.5px;color:var(--gris)}
+  .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+  .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+
+  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:6px}
+
+  .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+  .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+
+  .ea,.eb,.ec{display:none}
+  #e-a:checked ~ .dedans .ea,
+  #e-b:checked ~ .dedans .eb,
+  #e-c:checked ~ .dedans .ec{display:block}
+  #e-a:checked ~ .dedans label[for="e-a"],
+  #e-b:checked ~ .dedans label[for="e-b"],
+  #e-c:checked ~ .dedans label[for="e-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+
+  /* A — la feuille : il saisit, Atlas additionne. */
+  .fl{display:flex;align-items:center;gap:8px;min-height:52px;
+      border-bottom:1px solid var(--trait);padding:6px 2px}
+  .fl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--gris)}
+  .fl-q{flex:none;font-size:12px;color:var(--gris)}
+  .fl-q input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
+              border:1px solid var(--trait);border-radius:8px;padding:7px 6px;
+              width:44px;text-align:center}
+  .fl-d{flex:none;font-size:12.5px;color:var(--encre);font-variant-numeric:tabular-nums;
+        min-width:64px;text-align:right}
+
+  .total{display:flex;justify-content:space-between;align-items:baseline;
+         margin-top:14px;padding-top:12px;border-top:1px solid var(--trait);font-size:13px}
+  .total .gros{font-family:Georgia,serif;font-size:21px;color:var(--encre)}
+  .verdict{margin-top:12px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+           font-size:13px;line-height:1.6;color:var(--encre)}
+  .verdict b{color:var(--alerte)}
+
+  /* B — les zones : il mesure, Atlas pose le matériel. */
+  .robinet{border:1px solid var(--trait);border-radius:14px;padding:12px 13px;margin-bottom:12px}
+  .robinet .q{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--or)}
+  .robinet .geste{display:flex;align-items:center;gap:8px;margin:8px 0 6px;font-size:13.5px;color:var(--gris)}
+  .robinet .geste input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
+                        border:1px solid var(--trait);border-radius:8px;padding:8px 6px;
+                        width:52px;text-align:center}
+  .robinet .sort{font-size:13px;color:var(--encre)}
+  .robinet .sort b{font-family:Georgia,serif;font-size:19px;font-weight:400}
+
+  .zc{border-bottom:1px solid var(--trait);padding:11px 2px}
+  .zc-nom{margin:0;font-size:15px;color:var(--encre);font-weight:600}
+  .zc-mes{margin:2px 0 0;font-size:12.5px;color:var(--gris)}
+  .zc-res{margin:4px 0 0;font-size:12.5px;color:var(--pin);line-height:1.5}
+  .ajouter{display:block;margin-top:12px;text-align:center;padding:13px;
+           border-radius:999px;border:1px dashed var(--trait);color:var(--gris);font-size:13.5px}
+
+  /* C — le plan dessiné. */
+  .plan{width:100%;height:auto;display:block;margin:6px 0 4px}
+  .plan .gazon{fill:var(--teinte)}
+  .plan .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
+  .plan .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35;stroke-width:1}
+  .plan .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
+  .plan .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
+  .plan .cote-g{text-anchor:end}
+
+  .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
+  .recap{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .recap span{font-size:12px;color:var(--encre);background:var(--teinte);
+              border-radius:999px;padding:6px 11px}
+</style>
+
+<input type="radio" name="e" id="e-a" class="etat">
+<input type="radio" name="e" id="e-b" class="etat" checked>
+<input type="radio" name="e" id="e-c" class="etat">
+
+<div class="dedans">
+  <h1>Le plan d'arrosage — par où l'on entre</h1>
+  <p class="intro">Votre demande du 17 août. <b>Rien n'est codé</b> — c'est votre
+    règle. <b>Touchez les trois gestes</b> : c'est la seule chose à choisir ici,
+    le calcul est le même dans les trois.</p>
+
+  <p class="dit">« J'ai besoin qu'on crée <b>un outil pour les paysagistes pour
+    réaliser des plans d'arrosage automatique</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Comment il entre son jardin</span>
+    <div class="segments">
+      <label for="e-a">A · La feuille — il saisit tout</label>
+      <label for="e-b">B · Les zones — il mesure, Atlas pose · <b>je recommande</b></label>
+      <label for="e-c">C · Le plan dessiné</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Arrosage</span><span class="quand">Jardin Martins</span></div>
+
+      <div class="ea">
+        <p class="titre-fiche">Ce que je pose</p>
+        <p class="sous">Vous entrez les quantités, Atlas additionne.</p>
+        <div class="fl">
+          <span class="fl-nom">Turbines — pelouse arrière</span>
+          <span class="fl-q"><input type="text" value="9" size="3" aria-label="Quantité pour Pelouse arrière" readonly> arroseurs</span>
+          <span class="fl-d">1,76 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Tuyères — pelouse avant</span>
+          <span class="fl-q"><input type="text" value="20" size="3" aria-label="Quantité pour Pelouse avant" readonly> arroseurs</span>
+          <span class="fl-d">5,76 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — massifs</span>
+          <span class="fl-q"><input type="text" value="45" size="3" aria-label="Quantité pour Massifs" readonly> m</span>
+          <span class="fl-d">0,32 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — haie de charmilles</span>
+          <span class="fl-q"><input type="text" value="60" size="3" aria-label="Quantité pour Haie de charmilles" readonly> m</span>
+          <span class="fl-d">0,42 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — potager</span>
+          <span class="fl-q"><input type="text" value="30" size="3" aria-label="Quantité pour Potager" readonly> m</span>
+          <span class="fl-d">0,21 m³/h</span>
+        </div>
+        <div class="total"><span>Débit demandé</span><span class="gros">8,47 m³/h</span></div>
+        <div class="total"><span>Débit du robinet</span><span>1,80 m³/h</span></div>
+        <p class="verdict"><b>Il faut 8 secteurs.</b> Le jardin
+          demande 4,7 fois le débit disponible : rien ne peut
+          s'ouvrir en même temps.</p>
+        <span class="bouton">Découper en secteurs</span>
+      </div>
+
+      <div class="eb">
+        <p class="titre-fiche">Le point d'eau</p>
+        <div class="robinet">
+          <span class="q">Mesuré au seau</span>
+          <p class="geste">Un seau de
+            <input type="text" value="10" size="2" aria-label="Litres du seau" readonly> L
+            rempli en
+            <input type="text" value="20" size="2" aria-label="Secondes de remplissage" readonly> s
+          </p>
+          <p class="sort">Débit disponible <b>1,80 m³/h</b> · pression 3,0 bar</p>
+        </div>
+        <p class="titre-fiche">Les zones</p>
+        <p class="sous">Vous donnez les mesures. Atlas choisit le matériel, la pose et la durée.</p>
+        <div class="zc">
+          <p class="zc-nom">Pelouse arrière</p>
+          <p class="zc-mes">18 × 12 m · <span class="zc-mat">turbine</span></p>
+          <p class="zc-res">9 arroseurs
+             · 1,76 m³/h · 45 min, 3×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Pelouse avant</p>
+          <p class="zc-mes">12 × 8 m · <span class="zc-mat">tuyère</span></p>
+          <p class="zc-res">20 arroseurs
+             · 5,76 m³/h · 13 min, 3×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Massifs</p>
+          <p class="zc-mes">45 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">45 m de gaine
+             · 0,32 m³/h · 26 min, 2×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Haie de charmilles</p>
+          <p class="zc-mes">60 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">60 m de gaine
+             · 0,42 m³/h · 26 min, 2×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Potager</p>
+          <p class="zc-mes">30 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">30 m de gaine
+             · 0,21 m³/h · 26 min, 3×/semaine</p>
+        </div>
+        <span class="ajouter">+ Ajouter une zone</span>
+        <div class="recap">
+          <span>8 secteurs</span>
+          <span>cycle 3 h 14</span>
+          <span>8,47 m³/h demandés</span>
+        </div>
+        <span class="bouton">Voir le découpage</span>
+      </div>
+
+      <div class="ec">
+        <p class="titre-fiche">Le plan</p>
+        <p class="sous">Pelouse arrière — 9 turbines, portée 9 m,
+          posées tête-bêche.</p>
+        <svg viewBox="0 0 286 196" class="plan" role="img"
+         aria-label="Plan de la pelouse arrière : 9 turbines et leur portée">
+      <defs><clipPath id="gazon"><rect x="44" y="26" width="216" height="144" rx="6"/></clipPath></defs>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="gazon"/>
+      <g clip-path="url(#gazon)">
+      <circle cx="44.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="170.0" r="108" class="portee"/>
+      </g>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="bordure"/>
+      <circle cx="44.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="170.0" r="4.5" class="tete"/>
+      <text x="152" y="187" class="cote">18 m</text>
+      <text x="34" y="98" class="cote cote-g">12 m</text>
+    </svg>
+        <p class="zc-res">Les couronnes s'arrêtent au bord du gazon : les
+          arroseurs de bordure ne tournent que d'un demi-tour, ceux des coins
+          d'un quart. C'est ce qui fait 1,76 m³/h au
+          lieu de 3,96.</p>
+        <span class="bouton">Poser un arroseur</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <span class="t">Ce que chacune coûte, et ce qu'elle rend</span>
+      <p><b>A · La feuille.</b> Il saisit le matériel qu'il a l'habitude de
+        poser ; Atlas additionne les débits, dit combien de secteurs il faut et
+        s'arrête là. C'est utile le jour même — mais ça ne fait que l'addition
+        qu'il sait déjà faire.</p>
+      <p><b>B · Les zones.</b> Il donne le point d'eau et les mesures de chaque
+        zone. Atlas choisit le matériel, calcule la pose tête-bêche, découpe les
+        secteurs et sort les durées d'arrosage par saison. <b>C'est celle qui
+        rend le temps de bureau</b>, et la seule qui peut se tromper à sa place
+        — donc la seule qui doit être juste.</p>
+      <p><b>C · Le plan dessiné.</b> Il pose les arroseurs sur un fond de plan
+        et voit les couronnes se recouvrir. C'est ce que le client comprend d'un
+        coup d'œil — et ce qui coûte le plus cher : dessiner un jardin au doigt,
+        c'est un écran entier, pas une case.</p>
+      <p class="cout"><b>Ce que je recommande :</b> B d'abord, C ensuite. Le
+        plan dessiné se pose PAR-DESSUS le calcul de B — l'inverse n'est pas
+        vrai, et un joli plan qui n'a pas vérifié le débit se paie à la mise en
+        eau.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Le jardin de l'exemple</span>
+    <p>5 zones, 8,47 m³/h demandés pour
+      1,80 disponibles, 8 secteurs,
+      3 h 14 de cycle. <b>Tous ces nombres sont calculés</b>, pas
+      écrits : changez une dimension dans le script et les trois planches
+      suivent. Une maquette qui compte faux fait douter de tout ce qu'elle
+      montre.</p>
+    <ul>
+      <li><b>Ce qui reste hors du calcul pour l'instant :</b> le diamètre des
+        tuyaux et les pertes de charge. Sur un jardin de cette taille en PE 32,
+        ça ne change pas le découpage ; sur 80 m de ligne, si.</li>
+      <li><b>Le disconnecteur n'est pas une option :</b> un réseau d'arrosage
+        raccordé à l'eau potable en demande un. Il est dans la nomenclature.</li>
+    </ul>
+  </div>
+</div>

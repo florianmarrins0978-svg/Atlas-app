@@ -9,6 +9,59 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le plan d'arrosage automatique des paysagistes — TROIS PLANCHES, RIEN N'EST CODÉ
+
+**Sa demande du 17 août :** *« j'ai besoin qu'on crée un outil pour les
+paysagistes pour réaliser des plans d'arrosage automatique. »*
+
+Terrain neuf : rien dans le produit ne parle d'arrosage. Trois planches donc, et
+**aucune ligne de `src/`** — sa règle du 11 août.
+
+- `69-le-plan-darrosage.html` — par où il entre son jardin. Trois gestes : la
+  feuille où il saisit tout, **les zones qu'il mesure et qu'Atlas pose**
+  (recommandé), ou le plan dessiné.
+- `70-le-debit-ne-se-partage-pas.html` — le découpage en secteurs. **Rien à y
+  choisir** : c'est de l'arithmétique, montrée pour être vérifiée.
+- `71-ce-qui-sort-du-plan.html` — le devis, la carte du coffret, le plan remis
+  au client. Ce qu'il y a à choisir : par lequel on commence.
+
+**Ce que le métier impose, et qui n'est pas un goût.** Un robinet de pavillon
+donne 1,80 m³/h ; le jardin de l'exemple en demande 8,47. D'où huit secteurs, un
+cycle de 3 h 14 qui doit finir avant le soleil, et deux règles qui passent avant
+le remplissage : **une seule pluviométrie par secteur** (la vanne l'ouvre en
+entier, pour la même durée : turbines à 11 mm/h et tuyères à 38 dans le même
+secteur, c'est trois fois trop d'eau d'un côté) et **un seul rythme par
+secteur**.
+
+**Tous les nombres des trois planches sont CALCULÉS**, pas écrits : cinq mesures
+entrent, le reste en découle. Une maquette qui compte faux fait douter de tout ce
+qu'elle montre — c'est le piège payé sur la fiche d'entretien (« dix-huit » pour
+vingt prestations).
+
+**Et le calcul a rendu un vrai défaut avant même d'être montré.** Le champ
+`materiel` (une chaîne) était écrasé par l'objet du catalogue : les deux pelouses
+— turbines et tuyères — se retrouvaient dans **le même secteur**, exactement la
+faute que la planche 70 explique. La planche s'affichait parfaitement. C'est le
+listing du générateur qui l'a dit, et c'est maintenant un cas de contrôle.
+
+**Deux défauts trouvés en REGARDANT la capture, et par rien d'autre** — la
+sixième et la septième fois dans ce dépôt : le matériel s'affichait en clé
+technique (« tuyere », sans accent) au lieu du mot du métier, et la cote
+verticale « 12 m » sortait du cadre du plan pour s'afficher **« 2 m »**. Le texte
+était entier dans la page : aucun contrôle de DOM ne pouvait le voir. Le contrôle
+compare désormais les **boîtes** — celle de chaque cote contre celle du plan.
+
+**Le contrôle (`scripts/verifier-maquette-arrosage.mjs`) ne vérifie pas du goût,
+il vérifie de l'arithmétique** : aucun secteur au-dessus du débit du robinet, le
+total qui est bien la somme de ses parts, le cycle qui est la somme des durées,
+les trois planches qui parlent du même jardin, et **aucun prix inventé** (règle
+du §4 : ce qui n'est pas dans « Mes prix » part vide et signalé). Confronté à
+sept planches dégradées : **sept rouges, chacun nommant le bon coupable.**
+
+**Ce qui attend sa décision** : par où il entre son jardin, et par quelle sortie
+on commence. Rien ne sera codé avant.
+
+
 ### « Il n'y a aucun moyen de retirer les cinq pour cent » — il avait raison deux fois
 
 Son constat du 17 août, capture à l'appui. Trois choses dans une phrase, et

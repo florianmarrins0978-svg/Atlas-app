@@ -115,6 +115,27 @@ seule avec quinze outils.
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
+### Le plan d'arrosage automatique — DESSINÉ le 17 août 2026, rien n'est codé
+
+**Sa demande :** *« un outil pour les paysagistes pour réaliser des plans
+d'arrosage automatique. »* Terrain neuf : le produit ne parlait pas d'arrosage.
+
+Trois planches, **aucune ligne de `src/`** : `docs/maquettes/69` (par où il entre
+son jardin : la feuille, les zones, le plan dessiné), `70` (le découpage en
+secteurs — rien à y choisir, c'est de l'arithmétique), `71` (ce qui en sort : le
+devis, la carte du coffret, le plan client).
+
+**Ce qui attend sa décision** : par où il entre, et par quelle sortie on
+commence. Ma recommandation, écrite sur les planches : **les zones**, puis **le
+devis** — c'est la seule entrée qui rend du temps de bureau, et la seule sortie
+qui n'ouvre aucune plomberie nouvelle. Le détail est dans `TODO.md`
+§ « 0 quaterquadragies ».
+
+**Ce qui est déjà su du métier, et qui ne se rediscutera pas** : le débit se
+mesure au seau ; une seule pluviométrie et un seul rythme par secteur ; aucun
+prix inventé ; rien ne part tout seul. Les pertes de charge restent hors du
+calcul, et c'est dit sur la planche plutôt que passé sous silence.
+
 ### Apparier deux demi-journées, par la route (16 août 2026)
 
 Sa demande du 13 août — *« proposer deux demi-journées pour faire une journée,

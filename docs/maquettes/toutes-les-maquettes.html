@@ -5646,6 +5646,317 @@
 #s49 .note li{margin-bottom:6px}
 
 
+/* 50 — Le plan d’arrosage */
+#s50{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+@media (prefers-color-scheme: dark){
+#s50:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+
+  
+}
+#s50[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+#s50, #s50 *{box-sizing:border-box}
+#s50{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s50 .dedans{max-width:940px;margin:0 auto}
+#s50 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s50 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s50 .intro b{color:var(--encre);font-weight:600}
+#s50 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s50 .dit b{color:var(--encre);font-weight:600}
+#s50 .etat{position:absolute;opacity:0;pointer-events:none}
+#s50 .reglage{margin:0 0 18px}
+#s50 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s50 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s50 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s50 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s50 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s50 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s50 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s50 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s50 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s50 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s50 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s50 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s50 .legende b{color:var(--encre);font-weight:600}
+#s50 .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+#s50 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s50 .note b{color:var(--encre);font-weight:600}
+#s50 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s50 .note ul{margin:8px 0 0;padding-left:19px}
+#s50 .note li{margin-bottom:6px}
+#s50 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s50 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+#s50 .ea,#s50 .eb,#s50 .ec{display:none}
+#s50 #s50-e-a:checked ~ .dedans .ea,#s50 #s50-e-b:checked ~ .dedans .eb,#s50 #s50-e-c:checked ~ .dedans .ec{display:block}
+#s50 #s50-e-a:checked ~ .dedans label[for="s50-e-a"],#s50 #s50-e-b:checked ~ .dedans label[for="s50-e-b"],#s50 #s50-e-c:checked ~ .dedans label[for="s50-e-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s50 .fl{display:flex;align-items:center;gap:8px;min-height:52px;
+      border-bottom:1px solid var(--trait);padding:6px 2px}
+#s50 .fl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--gris)}
+#s50 .fl-q{flex:none;font-size:12px;color:var(--gris)}
+#s50 .fl-q input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
+              border:1px solid var(--trait);border-radius:8px;padding:7px 6px;
+              width:44px;text-align:center}
+#s50 .fl-d{flex:none;font-size:12.5px;color:var(--encre);font-variant-numeric:tabular-nums;
+        min-width:64px;text-align:right}
+#s50 .total{display:flex;justify-content:space-between;align-items:baseline;
+         margin-top:14px;padding-top:12px;border-top:1px solid var(--trait);font-size:13px}
+#s50 .total .gros{font-family:Georgia,serif;font-size:21px;color:var(--encre)}
+#s50 .verdict{margin-top:12px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+           font-size:13px;line-height:1.6;color:var(--encre)}
+#s50 .verdict b{color:var(--alerte)}
+#s50 .robinet{border:1px solid var(--trait);border-radius:14px;padding:12px 13px;margin-bottom:12px}
+#s50 .robinet .q{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--or)}
+#s50 .robinet .geste{display:flex;align-items:center;gap:8px;margin:8px 0 6px;font-size:13.5px;color:var(--gris)}
+#s50 .robinet .geste input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
+                        border:1px solid var(--trait);border-radius:8px;padding:8px 6px;
+                        width:52px;text-align:center}
+#s50 .robinet .sort{font-size:13px;color:var(--encre)}
+#s50 .robinet .sort b{font-family:Georgia,serif;font-size:19px;font-weight:400}
+#s50 .zc{border-bottom:1px solid var(--trait);padding:11px 2px}
+#s50 .zc-nom{margin:0;font-size:15px;color:var(--encre);font-weight:600}
+#s50 .zc-mes{margin:2px 0 0;font-size:12.5px;color:var(--gris)}
+#s50 .zc-res{margin:4px 0 0;font-size:12.5px;color:var(--pin);line-height:1.5}
+#s50 .ajouter{display:block;margin-top:12px;text-align:center;padding:13px;
+           border-radius:999px;border:1px dashed var(--trait);color:var(--gris);font-size:13.5px}
+#s50 .plan{width:100%;height:auto;display:block;margin:6px 0 4px}
+#s50 .plan .gazon{fill:var(--teinte)}
+#s50 .plan .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
+#s50 .plan .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35;stroke-width:1}
+#s50 .plan .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
+#s50 .plan .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
+#s50 .plan .cote-g{text-anchor:end}
+#s50 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
+#s50 .recap{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+#s50 .recap span{font-size:12px;color:var(--encre);background:var(--teinte);
+              border-radius:999px;padding:6px 11px}
+
+
+/* 51 — Le débit ne se partage pas */
+#s51{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+@media (prefers-color-scheme: dark){
+#s51:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+
+  
+}
+#s51[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+#s51, #s51 *{box-sizing:border-box}
+#s51{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s51 .dedans{max-width:940px;margin:0 auto}
+#s51 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s51 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s51 .intro b{color:var(--encre);font-weight:600}
+#s51 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s51 .dit b{color:var(--encre);font-weight:600}
+#s51 .etat{position:absolute;opacity:0;pointer-events:none}
+#s51 .reglage{margin:0 0 18px}
+#s51 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s51 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s51 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s51 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s51 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s51 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s51 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s51 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s51 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s51 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s51 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s51 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s51 .legende b{color:var(--encre);font-weight:600}
+#s51 .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+#s51 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s51 .note b{color:var(--encre);font-weight:600}
+#s51 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s51 .note ul{margin:8px 0 0;padding-left:19px}
+#s51 .note li{margin-bottom:6px}
+#s51 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s51 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+#s51 .compare{border:1px solid var(--trait);border-radius:14px;padding:13px;margin-bottom:14px}
+#s51 .compare .l{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;
+              color:var(--gris);margin:0 0 6px}
+#s51 .compare .l b{font-family:Georgia,serif;font-size:20px;font-weight:400;color:var(--encre)}
+#s51 .duo{height:10px;border-radius:999px;background:var(--teinte);overflow:hidden;margin-bottom:4px}
+#s51 .duo span{display:block;height:100%;background:var(--alerte)}
+#s51 .duo.ok span{background:var(--pin)}
+#s51 .compare .dit-le{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--encre)}
+#s51 .compare .dit-le b{color:var(--alerte)}
+#s51 .sec{padding:11px 2px;border-bottom:1px solid var(--trait)}
+#s51 .sec-t{margin:0 0 6px;font-size:14px;color:var(--encre);display:flex;align-items:baseline;gap:8px}
+#s51 .sec-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
+         border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
+#s51 .sec-part{font-size:11.5px;color:var(--gris)}
+#s51 .jauge{height:8px;border-radius:999px;background:var(--teinte);overflow:hidden}
+#s51 .jauge span{display:block;height:100%;background:var(--eau)}
+#s51 .sec-d{margin:5px 0 0;font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s51 .sec-fam{display:inline-block;margin-right:8px;font-size:10.5px;letter-spacing:.08em;
+           text-transform:uppercase;color:var(--pin)}
+#s51 .cycle{margin-top:14px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+         font-size:13px;line-height:1.6;color:var(--encre)}
+#s51 .cycle b{font-family:Georgia,serif;font-size:19px;font-weight:400}
+
+
+/* 52 — Ce qui sort du plan */
+#s52{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+@media (prefers-color-scheme: dark){
+#s52:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+
+  
+}
+#s52[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+#s52, #s52 *{box-sizing:border-box}
+#s52{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s52 .dedans{max-width:940px;margin:0 auto}
+#s52 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s52 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s52 .intro b{color:var(--encre);font-weight:600}
+#s52 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s52 .dit b{color:var(--encre);font-weight:600}
+#s52 .etat{position:absolute;opacity:0;pointer-events:none}
+#s52 .reglage{margin:0 0 18px}
+#s52 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s52 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s52 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s52 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s52 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s52 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s52 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s52 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s52 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s52 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s52 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s52 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s52 .legende b{color:var(--encre);font-weight:600}
+#s52 .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+#s52 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s52 .note b{color:var(--encre);font-weight:600}
+#s52 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s52 .note ul{margin:8px 0 0;padding-left:19px}
+#s52 .note li{margin-bottom:6px}
+#s52 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s52 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+#s52 .sa,#s52 .sb,#s52 .sc{display:none}
+#s52 #s52-s-a:checked ~ .dedans .sa,#s52 #s52-s-b:checked ~ .dedans .sb,#s52 #s52-s-c:checked ~ .dedans .sc{display:block}
+#s52 #s52-s-a:checked ~ .dedans label[for="s52-s-a"],#s52 #s52-s-b:checked ~ .dedans label[for="s52-s-b"],#s52 #s52-s-c:checked ~ .dedans label[for="s52-s-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s52 .nl{display:flex;align-items:baseline;gap:8px;padding:9px 2px;
+      border-bottom:1px solid var(--trait)}
+#s52 .nl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--encre)}
+#s52 .nl-q{flex:none;font-size:12.5px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s52 .nl-p{flex:none;font-size:11px;color:var(--gris);min-width:74px;text-align:right}
+#s52 .nl-p.manque{color:var(--alerte)}
+#s52 .pl{display:flex;align-items:baseline;gap:8px;padding:10px 2px;
+      border-bottom:1px solid var(--trait);font-variant-numeric:tabular-nums}
+#s52 .pl-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
+        border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
+#s52 .pl-z{flex:1;min-width:0;font-size:13px;color:var(--encre)}
+#s52 .pl-m{flex:none;font-size:13px;color:var(--encre)}
+#s52 .pl-j{flex:none;font-size:11.5px;color:var(--gris)}
+#s52 .avert{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--teinte);
+         font-size:12.5px;line-height:1.6;color:var(--encre)}
+#s52 .avert b{color:var(--alerte)}
+#s52 .saison{display:flex;gap:6px;margin:10px 0 2px;flex-wrap:wrap}
+#s52 .saison span{font-size:11.5px;color:var(--gris);border:1px solid var(--trait);
+               border-radius:999px;padding:5px 10px}
+#s52 .saison span.ici{background:var(--pin);color:var(--papier);border-color:var(--pin)}
+#s52 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
+#s52 .plan-mini{width:100%;height:auto;display:block;margin:8px 0 4px;
+             border:1px solid var(--trait);border-radius:12px}
+#s52 .plan-mini .gazon{fill:var(--teinte)}
+#s52 .plan-mini .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35}
+#s52 .plan-mini .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
+#s52 .plan-mini .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
+#s52 .plan-mini .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
+#s52 .plan-mini .cote-g{text-anchor:end}
+
+
 </style>
 
 <div class="enveloppe">
@@ -5873,6 +6184,19 @@
       <a class="item" href="#m49">
         <span class="no">49</span><span class="titre">Retirer le prix accordé</span><span class="fleche">↓</span>
         <span class="quoi">« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.</span>
+      </a>
+      <p class="famille">L’arrosage automatique</p>
+      <a class="item" href="#m50">
+        <span class="no">50</span><span class="titre">Le plan d’arrosage</span><span class="fleche">↓</span>
+        <span class="quoi">« Un outil pour les paysagistes pour réaliser des plans d’arrosage automatique. » Trois façons d’entrer le jardin : la feuille, les zones mesurées, ou le plan dessiné.</span>
+      </a>
+      <a class="item" href="#m51">
+        <span class="no">51</span><span class="titre">Le débit ne se partage pas</span><span class="fleche">↓</span>
+        <span class="quoi">Le calcul qui fait tout l’outil, et rien n’y est à choisir : 1,80 m³/h au robinet, 8,47 demandés, huit secteurs, 3 h 14 de cycle.</span>
+      </a>
+      <a class="item" href="#m52">
+        <span class="no">52</span><span class="titre">Ce qui sort du plan</span><span class="fleche">↓</span>
+        <span class="quoi">Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -20268,6 +20592,552 @@
       <li><b>La TVA suit toujours le net.</b> 20 % de 1 757,50 € font 351,50 € ;
         une fois la remise partie, 20 % de 1 850,00 € font 370,00 €. Ce n'est pas
         un choix de présentation, c'est la seule façon juste.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m50">
+    <div class="etape-tete">
+      <span class="etape-no">50</span>
+      <h2>Le plan d’arrosage</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s50">
+<input type="radio" name="e" id="s50-e-a" class="etat">
+<input type="radio" name="e" id="s50-e-b" class="etat" checked>
+<input type="radio" name="e" id="s50-e-c" class="etat">
+
+<div class="dedans">
+  <h1>Le plan d'arrosage — par où l'on entre</h1>
+  <p class="intro">Votre demande du 17 août. <b>Rien n'est codé</b> — c'est votre
+    règle. <b>Touchez les trois gestes</b> : c'est la seule chose à choisir ici,
+    le calcul est le même dans les trois.</p>
+
+  <p class="dit">« J'ai besoin qu'on crée <b>un outil pour les paysagistes pour
+    réaliser des plans d'arrosage automatique</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Comment il entre son jardin</span>
+    <div class="segments">
+      <label for="s50-e-a">A · La feuille — il saisit tout</label>
+      <label for="s50-e-b">B · Les zones — il mesure, Atlas pose · <b>je recommande</b></label>
+      <label for="s50-e-c">C · Le plan dessiné</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Arrosage</span><span class="quand">Jardin Martins</span></div>
+
+      <div class="ea">
+        <p class="titre-fiche">Ce que je pose</p>
+        <p class="sous">Vous entrez les quantités, Atlas additionne.</p>
+        <div class="fl">
+          <span class="fl-nom">Turbines — pelouse arrière</span>
+          <span class="fl-q"><input type="text" value="9" size="3" aria-label="Quantité pour Pelouse arrière" readonly> arroseurs</span>
+          <span class="fl-d">1,76 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Tuyères — pelouse avant</span>
+          <span class="fl-q"><input type="text" value="20" size="3" aria-label="Quantité pour Pelouse avant" readonly> arroseurs</span>
+          <span class="fl-d">5,76 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — massifs</span>
+          <span class="fl-q"><input type="text" value="45" size="3" aria-label="Quantité pour Massifs" readonly> m</span>
+          <span class="fl-d">0,32 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — haie de charmilles</span>
+          <span class="fl-q"><input type="text" value="60" size="3" aria-label="Quantité pour Haie de charmilles" readonly> m</span>
+          <span class="fl-d">0,42 m³/h</span>
+        </div>
+        <div class="fl">
+          <span class="fl-nom">Gaine de goutteurs — potager</span>
+          <span class="fl-q"><input type="text" value="30" size="3" aria-label="Quantité pour Potager" readonly> m</span>
+          <span class="fl-d">0,21 m³/h</span>
+        </div>
+        <div class="total"><span>Débit demandé</span><span class="gros">8,47 m³/h</span></div>
+        <div class="total"><span>Débit du robinet</span><span>1,80 m³/h</span></div>
+        <p class="verdict"><b>Il faut 8 secteurs.</b> Le jardin
+          demande 4,7 fois le débit disponible : rien ne peut
+          s'ouvrir en même temps.</p>
+        <span class="bouton">Découper en secteurs</span>
+      </div>
+
+      <div class="eb">
+        <p class="titre-fiche">Le point d'eau</p>
+        <div class="robinet">
+          <span class="q">Mesuré au seau</span>
+          <p class="geste">Un seau de
+            <input type="text" value="10" size="2" aria-label="Litres du seau" readonly> L
+            rempli en
+            <input type="text" value="20" size="2" aria-label="Secondes de remplissage" readonly> s
+          </p>
+          <p class="sort">Débit disponible <b>1,80 m³/h</b> · pression 3,0 bar</p>
+        </div>
+        <p class="titre-fiche">Les zones</p>
+        <p class="sous">Vous donnez les mesures. Atlas choisit le matériel, la pose et la durée.</p>
+        <div class="zc">
+          <p class="zc-nom">Pelouse arrière</p>
+          <p class="zc-mes">18 × 12 m · <span class="zc-mat">turbine</span></p>
+          <p class="zc-res">9 arroseurs
+             · 1,76 m³/h · 45 min, 3×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Pelouse avant</p>
+          <p class="zc-mes">12 × 8 m · <span class="zc-mat">tuyère</span></p>
+          <p class="zc-res">20 arroseurs
+             · 5,76 m³/h · 13 min, 3×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Massifs</p>
+          <p class="zc-mes">45 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">45 m de gaine
+             · 0,32 m³/h · 26 min, 2×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Haie de charmilles</p>
+          <p class="zc-mes">60 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">60 m de gaine
+             · 0,42 m³/h · 26 min, 2×/semaine</p>
+        </div>
+        <div class="zc">
+          <p class="zc-nom">Potager</p>
+          <p class="zc-mes">30 m linéaires · <span class="zc-mat">gaine de goutteurs</span></p>
+          <p class="zc-res">30 m de gaine
+             · 0,21 m³/h · 26 min, 3×/semaine</p>
+        </div>
+        <span class="ajouter">+ Ajouter une zone</span>
+        <div class="recap">
+          <span>8 secteurs</span>
+          <span>cycle 3 h 14</span>
+          <span>8,47 m³/h demandés</span>
+        </div>
+        <span class="bouton">Voir le découpage</span>
+      </div>
+
+      <div class="ec">
+        <p class="titre-fiche">Le plan</p>
+        <p class="sous">Pelouse arrière — 9 turbines, portée 9 m,
+          posées tête-bêche.</p>
+        <svg viewBox="0 0 286 196" class="plan" role="img"
+         aria-label="Plan de la pelouse arrière : 9 turbines et leur portée">
+      <defs><clipPath id="gazon"><rect x="44" y="26" width="216" height="144" rx="6"/></clipPath></defs>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="gazon"/>
+      <g clip-path="url(#gazon)">
+      <circle cx="44.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="170.0" r="108" class="portee"/>
+      </g>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="bordure"/>
+      <circle cx="44.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="170.0" r="4.5" class="tete"/>
+      <text x="152" y="187" class="cote">18 m</text>
+      <text x="34" y="98" class="cote cote-g">12 m</text>
+    </svg>
+        <p class="zc-res">Les couronnes s'arrêtent au bord du gazon : les
+          arroseurs de bordure ne tournent que d'un demi-tour, ceux des coins
+          d'un quart. C'est ce qui fait 1,76 m³/h au
+          lieu de 3,96.</p>
+        <span class="bouton">Poser un arroseur</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <span class="t">Ce que chacune coûte, et ce qu'elle rend</span>
+      <p><b>A · La feuille.</b> Il saisit le matériel qu'il a l'habitude de
+        poser ; Atlas additionne les débits, dit combien de secteurs il faut et
+        s'arrête là. C'est utile le jour même — mais ça ne fait que l'addition
+        qu'il sait déjà faire.</p>
+      <p><b>B · Les zones.</b> Il donne le point d'eau et les mesures de chaque
+        zone. Atlas choisit le matériel, calcule la pose tête-bêche, découpe les
+        secteurs et sort les durées d'arrosage par saison. <b>C'est celle qui
+        rend le temps de bureau</b>, et la seule qui peut se tromper à sa place
+        — donc la seule qui doit être juste.</p>
+      <p><b>C · Le plan dessiné.</b> Il pose les arroseurs sur un fond de plan
+        et voit les couronnes se recouvrir. C'est ce que le client comprend d'un
+        coup d'œil — et ce qui coûte le plus cher : dessiner un jardin au doigt,
+        c'est un écran entier, pas une case.</p>
+      <p class="cout"><b>Ce que je recommande :</b> B d'abord, C ensuite. Le
+        plan dessiné se pose PAR-DESSUS le calcul de B — l'inverse n'est pas
+        vrai, et un joli plan qui n'a pas vérifié le débit se paie à la mise en
+        eau.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Le jardin de l'exemple</span>
+    <p>5 zones, 8,47 m³/h demandés pour
+      1,80 disponibles, 8 secteurs,
+      3 h 14 de cycle. <b>Tous ces nombres sont calculés</b>, pas
+      écrits : changez une dimension dans le script et les trois planches
+      suivent. Une maquette qui compte faux fait douter de tout ce qu'elle
+      montre.</p>
+    <ul>
+      <li><b>Ce qui reste hors du calcul pour l'instant :</b> le diamètre des
+        tuyaux et les pertes de charge. Sur un jardin de cette taille en PE 32,
+        ça ne change pas le découpage ; sur 80 m de ligne, si.</li>
+      <li><b>Le disconnecteur n'est pas une option :</b> un réseau d'arrosage
+        raccordé à l'eau potable en demande un. Il est dans la nomenclature.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m51">
+    <div class="etape-tete">
+      <span class="etape-no">51</span>
+      <h2>Le débit ne se partage pas</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s51">
+<div class="dedans">
+  <h1>Le débit ne se partage pas</h1>
+  <p class="intro">Le calcul qui fait tout l'outil. <b>Il n'y a rien à choisir
+    ici</b> — c'est de l'arithmétique, montrée pour être vérifiée. Les nombres
+    sont ceux du jardin de la planche 69.</p>
+
+  <p class="dit">Un robinet de pavillon donne <b>1,80 m³/h</b>.
+    Ce jardin en demande <b>8,47</b>. Tout le métier tient dans
+    cet écart.</p>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Secteurs</span><span class="quand">Jardin Martins</span></div>
+
+      <div class="compare">
+        <p class="l"><span>Demandé, tout ouvert</span><b>8,47</b></p>
+        <div class="duo"><span style="width:100%"></span></div>
+        <p class="l"><span>Disponible au robinet</span><b>1,80</b></p>
+        <div class="duo ok"><span style="width:21%"></span></div>
+        <p class="dit-le"><b>4,7 fois trop.</b> Je découpe en
+          8 secteurs, aucun au-dessus de 1,53 m³/h.</p>
+      </div>
+
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S1</span><span class="sec-z">Pelouse arrière</span> <span class="sec-part">1 sur 2</span></p>
+          <div class="jauge"><span style="width:49%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">0,88</span> m³/h · <span class="sec-min">45</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S2</span><span class="sec-z">Pelouse arrière</span> <span class="sec-part">2 sur 2</span></p>
+          <div class="jauge"><span style="width:49%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">0,88</span> m³/h · <span class="sec-min">45</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S3</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">1 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S4</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">2 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S5</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">3 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S6</span><span class="sec-z">Pelouse avant</span> <span class="sec-part">4 sur 4</span></p>
+          <div class="jauge"><span style="width:80%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Arroseurs</span><span class="sec-q">1,44</span> m³/h · <span class="sec-min">13</span> min · 3×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S7</span><span class="sec-z">Massifs + Haie de charmilles</span></p>
+          <div class="jauge"><span style="width:41%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Goutte-à-goutte</span><span class="sec-q">0,74</span> m³/h · <span class="sec-min">26</span> min · 2×/sem.</p>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><span class="sec-n">S8</span><span class="sec-z">Potager</span></p>
+          <div class="jauge"><span style="width:12%"></span></div>
+          <p class="sec-d"><span class="sec-fam">Goutte-à-goutte</span><span class="sec-q">0,21</span> m³/h · <span class="sec-min">26</span> min · 3×/sem.</p>
+        </div>
+
+      <p class="cycle">Cycle complet <b>3 h 14</b><br>
+        Départ 3 h 00, fin 6 h 14 — avant le soleil,
+        sinon la moitié s'évapore.</p>
+    </div>
+
+    <div class="legende">
+      <span class="t">Pourquoi 8 secteurs, et pas 6</span>
+      <p><b>Le seul débit en demanderait 6.</b> Les deux
+        autres viennent des règles ci-dessous, et elles passent avant le
+        remplissage.</p>
+      <p><b>Une pluviométrie par secteur, un rythme par secteur.</b> Un secteur ne porte
+        qu'une pluviométrie — la vanne l'ouvre en entier, pour la même durée, et
+        mélanger turbines et tuyères donne trois fois trop d'eau à l'une des
+        deux. Et un secteur ne porte qu'un rythme : le potager veut trois
+        passages par semaine, la haie deux.</p>
+      <p><b>La pelouse arrière tient en un seul secteur… sur le papier.</b>
+        1,76 m³/h pour 1,53 admissibles :
+        elle est coupée en deux. C'est le genre de dépassement qu'on ne voit pas
+        à l'œil, et qui se paie quand le dernier arroseur de la ligne bave au
+        lieu d'arroser.</p>
+      <p><b>Et la tuyère coûte cher en débit.</b> 20 tuyères
+        pour 12 × 8 m, 5,76 m³/h
+        — quatre secteurs à elles seules, contre deux pour une pelouse deux fois
+        plus grande en turbines. En échange elles arrosent en
+        13 minutes ce que la turbine met
+        45 minutes à faire.</p>
+      <p class="cout"><b>Ce que le cycle change :</b> chaque secteur s'ajoute à
+        la nuit. À 3 h 14, il faut démarrer à 3 h 00.
+        C'est cela qu'il faut dire au client AVANT de poser, pas après.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ce découpage n'a pas encore</span>
+    <ul>
+      <li><b>Les saisons.</b> Ces durées sont celles de juillet. En avril, le
+        besoin tombe de moitié — l'outil devra sortir un tableau par saison,
+        c'est ce que le client colle dans son coffret.</li>
+      <li><b>La pluie.</b> Une sonde de pluie coupe le cycle : c'est une ligne
+        de nomenclature, pas un calcul.</li>
+      <li><b>Les pertes de charge.</b> Voir la planche 69 : sans effet ici,
+        déterminantes sur une longue ligne.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m52">
+    <div class="etape-tete">
+      <span class="etape-no">52</span>
+      <h2>Ce qui sort du plan</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s52">
+<input type="radio" name="s" id="s52-s-a" class="etat" checked>
+<input type="radio" name="s" id="s52-s-b" class="etat">
+<input type="radio" name="s" id="s52-s-c" class="etat">
+
+<div class="dedans">
+  <h1>Ce qui sort du plan</h1>
+  <p class="intro">Trois documents, et ils ne se valent pas. <b>Ce qu'il y a à
+    choisir : par lequel on commence.</b> Le jardin est celui des planches 69
+    et 70 — mêmes nombres, calculés une seule fois.</p>
+
+  <p class="dit">Un plan d'arrosage ne vaut que par ce qu'il produit :
+    <b>un devis</b> qu'on signe, <b>une carte</b> qu'on colle dans le coffret,
+    <b>un plan</b> qu'on remet au client.</p>
+
+  <div class="reglage">
+    <span class="quoi">Ce qui sort</span>
+    <div class="segments">
+      <label for="s52-s-a">A · Le devis · <b>je recommande</b></label>
+      <label for="s52-s-b">B · La carte de programmation</label>
+      <label for="s52-s-c">C · Le plan pour le client</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Arrosage</span><span class="quand">Jardin Martins</span></div>
+
+      <div class="sa">
+        <p class="titre-fiche">La nomenclature</p>
+        <p class="sous">9 lignes, prêtes à devenir un devis.</p>
+        <div class="nl">
+          <span class="nl-nom">Turbines buse 3,0</span>
+          <span class="nl-q">9 u</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Tuyères buse 12</span>
+          <span class="nl-q">20 u</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Gaine de goutteurs 2,3 L/h tous les 33 cm</span>
+          <span class="nl-q">135 ml</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Électrovannes 24 V</span>
+          <span class="nl-q">8 u</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Regards de vannes</span>
+          <span class="nl-q">3 u</span>
+          <span class="nl-p manque">prix absent</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Programmateur 8 voies</span>
+          <span class="nl-q">1 u</span>
+          <span class="nl-p manque">prix absent</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Disconnecteur et réducteur de pression</span>
+          <span class="nl-q">1 u</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Tuyau PE 32 (ligne principale)</span>
+          <span class="nl-q">60 ml</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <div class="nl">
+          <span class="nl-nom">Tuyau PE 25 (antennes)</span>
+          <span class="nl-q">120 ml</span>
+          <span class="nl-p">à votre tarif</span>
+        </div>
+        <p class="avert"><b>Deux prix manquent</b> dans « Mes prix ». Atlas ne
+          les invente pas : la ligne part vide et signalée, et le devis vous
+          attend dessus.</p>
+        <span class="bouton">En faire un devis</span>
+      </div>
+
+      <div class="sb">
+        <p class="titre-fiche">La carte du coffret</p>
+        <p class="sous">Ce que le client retrouve six mois plus tard.</p>
+        <div class="saison">
+          <span>Avril</span><span>Mai–juin</span><span class="ici">Juillet–août</span><span>Septembre</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S1</span>
+          <span class="pl-z">Pelouse arrière (1 sur 2)</span>
+          <span class="pl-m">45 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S2</span>
+          <span class="pl-z">Pelouse arrière (2 sur 2)</span>
+          <span class="pl-m">45 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S3</span>
+          <span class="pl-z">Pelouse avant (1 sur 4)</span>
+          <span class="pl-m">13 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S4</span>
+          <span class="pl-z">Pelouse avant (2 sur 4)</span>
+          <span class="pl-m">13 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S5</span>
+          <span class="pl-z">Pelouse avant (3 sur 4)</span>
+          <span class="pl-m">13 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S6</span>
+          <span class="pl-z">Pelouse avant (4 sur 4)</span>
+          <span class="pl-m">13 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S7</span>
+          <span class="pl-z">Massifs + Haie de charmilles</span>
+          <span class="pl-m">26 min</span>
+          <span class="pl-j">2×/sem.</span>
+        </div>
+        <div class="pl">
+          <span class="pl-n">S8</span>
+          <span class="pl-z">Potager</span>
+          <span class="pl-m">26 min</span>
+          <span class="pl-j">3×/sem.</span>
+        </div>
+        <p class="avert">Départ 3 h 00 · cycle 3 h 14 ·
+          fin 6 h 14. Programmateur 8 voies,
+          <b>aucune voie libre</b> — un massif de plus et il faut le changer.</p>
+        <span class="bouton">Envoyer au client</span>
+      </div>
+
+      <div class="sc">
+        <p class="titre-fiche">Le plan remis</p>
+        <p class="sous">Pelouse arrière — 9 turbines, couronnes de 9 m.</p>
+        <svg viewBox="0 0 286 196" class="plan-mini" role="img"
+         aria-label="Plan de la pelouse arrière : 9 turbines et leur portée">
+      <defs><clipPath id="gazon"><rect x="44" y="26" width="216" height="144" rx="6"/></clipPath></defs>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="gazon"/>
+      <g clip-path="url(#gazon)">
+      <circle cx="44.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="44.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="152.0" cy="170.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="26.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="98.0" r="108" class="portee"/>
+      <circle cx="260.0" cy="170.0" r="108" class="portee"/>
+      </g>
+      <rect x="44" y="26" width="216" height="144" rx="6" class="bordure"/>
+      <circle cx="44.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="44.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="152.0" cy="170.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="26.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="98.0" r="4.5" class="tete"/>
+      <circle cx="260.0" cy="170.0" r="4.5" class="tete"/>
+      <text x="152" y="187" class="cote">18 m</text>
+      <text x="34" y="98" class="cote cote-g">12 m</text>
+    </svg>
+        <p class="sous">Le même dessin qu'à la saisie, sans les cotes de pose.
+          C'est ce que le client comprend d'un coup d'œil — et ce qu'il montre
+          au prochain artisan.</p>
+        <span class="bouton">Joindre au devis</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <span class="t">Par lequel commencer</span>
+      <p><b>A · Le devis.</b> La nomenclature entre dans le parcours qui existe
+        déjà : devis, envoi, acceptation, facture. <b>Aucune plomberie
+        nouvelle</b> — et c'est la seule sortie qui rapporte de l'argent.</p>
+      <p><b>B · La carte de programmation.</b> Aujourd'hui c'est un papier
+        manuscrit dans le coffret, et il se perd. Elle coûte peu, et c'est elle
+        qu'on rappelle au paysagiste en juin quand la pelouse jaunit.</p>
+      <p><b>C · Le plan.</b> Le plus beau, le plus cher. Il suppose l'écran de
+        dessin de la planche 69 — donc il vient forcément après.</p>
+      <p class="cout"><b>Et une chose qui n'est pas à choisir :</b> rien ne part
+        tout seul. Le mot « automatique » désigne l'arrosage, pas l'expédition —
+        le devis et la carte partent d'un geste du patron, comme tout le
+        reste (<code>docs/A-FAIRE.md</code> §5).</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ça touche dans Atlas, et ce que ça n'ouvre pas</span>
+    <ul>
+      <li><b>Le devis existe déjà</b> : lignes, quantités, unités, TVA, envoi,
+        acceptation. La nomenclature s'y verse — elle n'a pas de parcours à
+        elle.</li>
+      <li><b>Les prix viennent de « Mes prix »</b>, à la lettre près sur
+        l'unité (piège du §101 de <code>ARCHITECTURE.md</code> : « jours/homme »
+        mal tapé faisait cesser la multiplication en silence).</li>
+      <li><b>L'entretien de l'arrosage rejoint la fiche d'entretien</b> : mise
+        en route au printemps, hivernage à l'automne. Deux lignes de plus dans
+        le modèle, pas un troisième parcours.</li>
+      <li><b>Ce qui n'est pas ouvert :</b> le calcul des pertes de charge et le
+        dimensionnement des tuyaux. À dire au patron plutôt qu'à laisser
+        croire.</li>
     </ul>
   </div>
 </div>

@@ -27,6 +27,58 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quaterquadragies. Le plan d'arrosage — **TROIS MAQUETTES POSÉES, sa décision attendue**
+
+**Sa demande du 17 août 2026 :** *« j'ai besoin qu'on crée un outil pour les
+paysagistes pour réaliser des plans d'arrosage automatique. »*
+
+Terrain neuf, donc trois planches et **aucune ligne de `src/`** (`CLAUDE.md`
+§3 bis) : `docs/maquettes/69-le-plan-darrosage.html`,
+`70-le-debit-ne-se-partage-pas.html`, `71-ce-qui-sort-du-plan.html`.
+
+**Deux questions attendent sa réponse, et aucune n'est du rangement :**
+
+| Ce qu'il choisit | Les trois possibles |
+|---|---|
+| **Par où il entre son jardin** | **A** la feuille (il saisit tout, Atlas additionne) · **B** les zones (il mesure, Atlas pose le matériel, découpe et calcule les durées) · **C** le plan dessiné |
+| **Par quelle sortie on commence** | **A** le devis · **B** la carte de programmation du coffret · **C** le plan remis au client |
+
+**Ce que je recommande, écrit sur les planches :** **B, puis A** — les zones
+d'abord parce que c'est la seule entrée qui rend du temps de bureau, et le devis
+d'abord parce qu'il entre dans le parcours qui existe déjà (devis → envoi →
+acceptation → facture) sans aucune plomberie nouvelle. Le plan dessiné se pose
+PAR-DESSUS le calcul, jamais à sa place.
+
+**CE QUI N'EST PAS À CHOISIR — ce sont des conséquences du métier :**
+
+- **Le débit se mesure au seau**, il ne se suppose pas. Un plan bâti sur un débit
+  supposé s'écroule à la mise en eau, et c'est le paysagiste qui revient
+  gratuitement.
+- **Une seule pluviométrie par secteur.** La vanne ouvre son secteur entier pour
+  la même durée : turbines (11 mm/h) et tuyères (38 mm/h) ensemble, c'est trois
+  fois trop d'eau d'un côté, quoi qu'on règle. **Un seul rythme par secteur**
+  pour la même raison.
+- **Aucun prix inventé** (§4 du dépôt) : la nomenclature sort avec ses
+  quantités, le prix vient de « Mes prix », et ce qui n'y est pas part vide et
+  signalé.
+- **Rien ne part tout seul.** Le mot « automatique » désigne l'arrosage, pas
+  l'expédition (`docs/A-FAIRE.md` §5, tranché le 3 août).
+
+**Ce qui reste HORS du calcul, et qu'il faut lui dire plutôt que laisser
+croire :** les pertes de charge et le dimensionnement des tuyaux. Sans effet sur
+un jardin de pavillon en PE 32 ; déterminants sur une longue ligne.
+
+**Ce que ça touche quand ce sera codé :** le devis existe déjà (lignes,
+quantités, unités, TVA, envoi, acceptation) — la nomenclature s'y verse, elle
+n'a pas de parcours à elle. L'entretien de l'arrosage (mise en route au
+printemps, hivernage à l'automne) rejoint la **fiche d'entretien** : deux lignes
+de plus dans le modèle, pas un quatrième parcours.
+
+**Ne pas retoucher les planches à la main** : elles sont engendrées d'une seule
+source (`scripts/engendrer-maquette-arrosage.mjs`) et tous leurs nombres sont
+calculés. Contrôle : `scripts/verifier-maquette-arrosage.mjs`, dans
+`npm run verifier:maquette`.
+
 ### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
 
 *Constaté le 16 août 2026 en jouant la batterie complète d'un autre lot.*

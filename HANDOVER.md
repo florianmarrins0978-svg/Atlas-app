@@ -835,6 +835,38 @@ carte, et un montage a écrit `WHERE id = NULL` sans se plaindre — d'où une i
 annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et non de
 l'application.
 
+**LE PLAN D'ARROSAGE AUTOMATIQUE (17 août) — TROIS MAQUETTES, RIEN N'EST CODÉ.**
+Sa demande : *« un outil pour les paysagistes pour réaliser des plans d'arrosage
+automatique »*. Terrain neuf — rien dans le produit ne parlait d'arrosage.
+
+- **Les planches** : `docs/maquettes/69-le-plan-darrosage.html` (par où il entre
+  son jardin), `70-le-debit-ne-se-partage-pas.html` (le découpage en secteurs,
+  **rien à y choisir**), `71-ce-qui-sort-du-plan.html` (devis, carte du coffret,
+  plan client). **Sa décision est attendue sur deux points**, listés dans
+  `TODO.md` § « 0 quaterquadragies ».
+- **TOUS LES NOMBRES SONT CALCULÉS**, pas écrits : cinq mesures entrent
+  (dimensions des zones, débit au seau), le reste en découle — arroseurs,
+  débits, secteurs, durées, cycle, nomenclature. **Ne pas retoucher les planches
+  à la main**, elles divergeraient : `scripts/engendrer-maquette-arrosage.mjs`.
+- **Le calcul qui commande tout** : le robinet donne 1,80 m³/h, le jardin en
+  demande 8,47 → huit secteurs, cycle de 3 h 14. **Deux règles passent avant le
+  remplissage** — une seule pluviométrie par secteur (une vanne ouvre son
+  secteur entier, pour la même durée) et un seul rythme par secteur. Les
+  mélanger, c'est trois fois trop d'eau d'un côté, quoi qu'on règle ensuite.
+- **Le défaut à ne pas recommettre, il a été commis ici** : le champ `materiel`
+  (une chaîne) écrasé par l'objet du catalogue fondait les deux pelouses —
+  turbines et tuyères — dans le même secteur. La planche s'affichait
+  parfaitement. C'est un cas de contrôle depuis.
+- **Deux défauts sortis d'une CAPTURE et d'aucun test** (les 6ᵉ et 7ᵉ de ce
+  dépôt) : le matériel affiché en clé technique (« tuyere »), et la cote « 12 m »
+  rognée en **« 2 m »** par le cadre du plan — texte entier dans la page, donc
+  invisible à tout contrôle de DOM. Le contrôle compare maintenant les **boîtes**.
+- **Ce qui n'est PAS ouvert, et qu'il faut dire** : pertes de charge et
+  dimensionnement des tuyaux. Sans effet sur un pavillon en PE 32, déterminants
+  sur une longue ligne.
+- **L'arrosage rejoint la fiche d'entretien** (mise en route, hivernage) : deux
+  lignes de modèle, pas un quatrième parcours.
+
 **DEUX MAQUETTES POUR LA FICHE D'ENTRETIEN (16 août) — RIEN N'EST CODÉ.** Il a
 demandé de recréer les fiches de chantier d'une autre application (paysagistes
 en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
