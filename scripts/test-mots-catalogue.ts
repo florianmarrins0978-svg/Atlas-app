@@ -23,7 +23,7 @@ import {
 //
 // **Sa question du 17 août 2026**, posée pour la seconde fois sur le même
 // écran : *« À quoi sert cette page ?? On peut rien modifier rajouter »*.
-// Arrangement B de la planche 68.
+// Arrangement B de la planche 69.
 //
 // Ce qui est éprouvé ici, et pourquoi chaque cas existe :
 //

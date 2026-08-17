@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-16 · branche `main`
+**Dernière mise à jour :** 2026-08-17 · branche `main`
 · dernière migration `drizzle/0049_coordonnees_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -70,6 +70,9 @@ seule avec quinze outils.
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
 | Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
 | Le prix accordé au client — remise en % sous le total, jusqu'à la facture (16 août) | `src/lib/reduction-devis.ts`, migration `0048` |
+| La fiche d'un client — ses chantiers, ce qu'il doit, ce qu'on lui fait (16 août) | `src/lib/fiche-client.ts`, `src/app/clients/[id]/page.tsx` |
+| **Un client est RETROUVÉ, plus recréé** à chaque chantier — rapprochement automatique, refusé si une coordonnée contredit (17 août) | `src/lib/rapprochement-client.ts`, `trouverOuCreerClient` |
+| **Et il se RETIRE pour de bon** (17 août) — un « − » en face de la ligne (sa proposition B), écrire 0 %, vider la case, ou le dire à la voix. Les deux derniers chemins étaient cassés : l'écran gardait une remise que la base n'avait plus, et la réécrivait au passage suivant (`ARCHITECTURE.md` §120) | `src/app/chantiers/[id]/devis-complet/` |
 | Notification « devis retourné » à l'accueil | `src/app/Notifications.tsx` |
 | Reprise d'un devis retourné en nouvelle version | `src/app/chantiers/[id]/export/actions.ts` |
 | Onglet « Terminés » et fin de chantier | `src/app/termines/` |
@@ -655,7 +658,7 @@ Voir `TODO.md` pour le détail et l'ordre.
 - **Le catalogue s'écrit — FAIT le 17 août** (`ARCHITECTURE.md` §122, migration
   0052). Il a posé deux fois la même question sur cet écran : *« À quoi sert
   cette page ?? On peut rien modifier rajouter »*. Ses mots s'accrochent
-  désormais aux entrées d'Atlas (arrangement B de la planche 68), le catalogue
+  désormais aux entrées d'Atlas (arrangement B de la planche 69), le catalogue
   partagé reste intouché, et **un mot ajouté est reconnu par la dictée** — les
   quatre chemins de recherche passent par la même fonction. Réparés au passage :
   la flèche de retour, et « aucun prix encore constaté », une phrase qui lisait

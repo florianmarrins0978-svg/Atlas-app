@@ -63,7 +63,7 @@ peut rien modifier rajouter »*. La réponse existait déjà — `docs/QUESTIONS
 deux fois n'est pas mal compris : il ne dit pas ce qu'il fait.
 
 Sa réponse, cette fois : **« Réparer + mes mots »**. La planche
-`docs/maquettes/68-mes-mots-au-catalogue.html` est posée, **rien n'est codé**
+`docs/maquettes/69-mes-mots-au-catalogue.html` est posée, **rien n'est codé**
 (`CLAUDE.md` §3 bis) — il désigne un arrangement.
 
 **Ce que la planche tranche, et qui n'est pas une question de goût.** Le
@@ -97,9 +97,162 @@ conclure sur une boîte de zéro pixel (`CLAUDE.md` §5, payé le 15 août).
 **Un défaut trouvé en chemin :** le sommaire des maquettes ne fermait pas le
 lien de la 66, et la 67 se retrouvait imbriquée dedans.
 
+### « C'est monsieur Martins » : un client n'est plus recréé à chaque chantier
+
+Sa demande, le lendemain de la fiche client : *« si je crée un nouveau chantier,
+mais que c'est monsieur Martins et qu'on a déjà une fiche client monsieur
+Martins, [il faut que] le devis, la facture s'ajoute à la fiche client de
+monsieur Martins qui est déjà créé. »*
+
+**Ce que ça répare.** `creerClient` insérait **toujours**. Deux chantiers pour le
+même homme faisaient deux fiches, et la fiche client livrée la veille annonçait
+« 1 chantier » à vie — juste, mais sans matière.
+
+**Le chemin qu'il a écarté**, et qu'il ne faut pas rouvrir sans lui : qu'on lui
+**propose** les clients qui ressemblent. *« Non justement, il ne faut pas »*. Le
+rapprochement est automatique.
+
+**Ce qui borne le risque de mélanger deux homonymes** — le seul danger, et il ne
+se répare pas d'un clic : **une coordonnée qui contredit interdit le
+rapprochement**. Deux « Martins » aux téléphones différents restent deux fiches.
+Le nom, lui, se compare sans sa civilité (« Martins » = « M. Martins ») et le
+téléphone sur ses chiffres (« +33 6 12… » = « 06.12… »).
+
+**Rien n'est jamais écrasé** : ce qu'il tape complète les cases vides de la fiche
+retrouvée, et ne touche pas à ce qu'il avait déjà noté. Un client effacé (RGPD)
+n'est jamais réutilisé.
+
+`src/lib/rapprochement-client.ts`, `ARCHITECTURE.md` §122. Éprouvé par
+`test-rapprochement-client.ts` (19 cas), `test-rapprochement-client-db.ts`
+(8 cas, dont l'isolation entre entreprises) et `test-rapprochement-client-e2e.ts`
+(deux chantiers créés au formulaire, « 2 chantiers » sur la fiche). La suite base
+rend **quatre échecs** contre l'ancien comportement.
+
+**Ce qui n'existe pas encore :** aucun geste ne permet de dire « ce chantier
+n'est pas ce client-là ». Deux homonymes que rien ne distingue sont rapprochés
+définitivement (`TODO.md` §0 duoquadragies).
+
+### « Il n'y a aucun moyen de retirer les cinq pour cent » — il avait raison deux fois
+
+Son constat du 17 août, capture à l'appui. Trois choses dans une phrase, et
+**deux étaient des défauts**, tenant à la même cause : le prix accordé ne vit pas
+sur une ligne du tableau mais sur l'en-tête du devis. Tout ce qui recopie « les
+lignes » et rien d'autre l'oublie en silence.
+
+| Ce qui n'allait pas | Ce que ça donnait |
+|---|---|
+| **À la voix** | « retire-moi les cinq pour cent » était compris, coché, enregistré — puis l'écran gardait l'ancien pourcentage et le **réécrivait en base** au passage suivant dans la case |
+| **En écrivant 0** | la base retirait bien la remise, mais l'écran laissait une ligne or « 0 % » sans montant : il affirmait une remise que le PDF n'imprimait pas |
+
+**Pourquoi rien ne l'avait vu.** La suite éprouvait le retrait en **vidant** la
+case puis en **rechargeant** la page — deux gestes qu'il ne fait ni l'un ni
+l'autre, et le rechargement masquait précisément le défaut puisqu'il repartait
+de la base. Le nouveau cas mesure sans rechargement, et il est rouge sans le
+correctif.
+
+**Ce qui n'a PAS pu être éprouvé ici :** le raccord dictée → écran. Cet
+environnement n'a ni service de transcription ni modèle ; la cause a été trouvée
+en lisant le code, et ce raccord ne sera parcouru qu'avec une clé.
+
+### CODÉ : le « petit moins » en face de la ligne — sa proposition B
+
+*« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un
+petit moins. »* Dessiné d'abord (`docs/maquettes/68-retirer-le-prix-accorde.html`,
+trois formes sur **ses** chiffres), choisi le 17 août — **« B »** —, puis codé.
+
+Un rond de 26 px devant le libellé, en or. Un appui : le devis affiche son prix
+plein **tout de suite**, et « Annuler » reste six secondes sous la feuille. Rien
+n'est écrit avant la fermeture du tiroir — c'est le geste unique de
+l'application depuis le 10 août, et le prix accordé passe par le même.
+
+Il ne paraît pas sur un devis parti : cet écran ne se modifie plus.
+
+**Et un contrôle de maquette que personne ne jouait** — `verifier-maquette-reduction.mjs`
+existait depuis le 16 août sans être branché nulle part. Raccroché, avec celui
+de la 68. Raisons : `ARCHITECTURE.md` §120.
+
 ---
 
 ## 2026-08-16
+
+### La fiche du client : montrer ce que l'application savait déjà
+
+**Sa question, photo d'un « graphe de connaissances » à l'appui :** *« ça peut me
+servir pour mon appli ? »* Non, deux fois — le dépôt tient déjà sa mémoire, et
+ses données sont déjà reliées dans une base qui répond mieux qu'un graphe.
+
+**Mais il y avait quelque chose dessous, et c'est livré :** l'application SAIT
+qu'un client est venu quatre fois, qu'il doit encore 740 €, qu'on lui fait
+toujours de l'élagage — et elle ne le montrait **nulle part**. Sa fiche s'ouvre
+maintenant depuis le tiroir de n'importe lequel de ses chantiers.
+
+Il a choisi l'arrangement B contre le cinquième onglet, et c'était le bon : « qui
+me doit de l'argent ? » a déjà son écran, dans Terminés → TVA.
+
+**Ce que ça évite.** Un client dont rien n'est facturé affiche « — » et une
+phrase, jamais « 0 € » : un zéro se lirait comme un mauvais payeur, et il
+déciderait sur une phrase fausse.
+
+**⚠ CE QUI LIMITE CETTE FICHE, et ce n'est pas elle :** un client n'est **jamais
+réutilisé**. Deux chantiers pour « M. Bernard » créent deux clients, donc sa
+fiche dira « 1 chantier » à chaque fois. La réparation est une **décision** —
+rapprocher deux clients sur leur nom mélangerait deux homonymes sans retour
+possible. Trois chemins sont écrits dans `TODO.md`, à trancher.
+
+Détail : `ARCHITECTURE.md` §121.
+
+### L'écran où vous composez votre fiche d'entretien
+
+**Réglages → Fiche d'entretien.** Vingt prestations rangées par famille, qui
+s'ajoutent, se retirent et se renomment — les familles aussi. C'est la planche
+`64-composer-sa-fiche.html`, telle qu'elle a été retenue.
+
+**Le retrait se défait**, comme partout depuis le 10 août : la ligne se barre,
+« Annuler » la ramène, et **rien n'est écrit tant que le tiroir est ouvert**.
+C'est le geste le plus coûteux de cet écran — une croix nue sur une liste
+composée à la main —, et c'est celui que la suite navigateur éprouve le plus.
+
+**La fiche vide propose, elle ne pose pas.** Elle montre les vingt prestations
+du modèle Atlas AVANT que vous n'appuyiez : vous choisissez en sachant. Rien
+n'est écrit en base parce que quelqu'un a ouvert un écran.
+
+**Trois garde-fous du dépôt ont rattrapé trois oublis**, et c'est leur rôle :
+l'icône empruntée à une autre rubrique, l'écran absent du préchauffage — donc
+lent sur votre banc —, et la rubrique glissée devant « Planning », ce qui
+bousculait vos quatre priorités.
+
+Et un défaut qui aurait rendu l'écran blanc : un fichier « use server » ne peut
+exporter que des fonctions, or les phrases de refus y étaient posées. Elles
+vivent désormais avec les règles pures, ce qui garantit aussi qu'un code de
+refus n'ait jamais deux phrases écrites à deux endroits.
+
+---
+
+### « L'apparence ne change pas » — c'était vrai, et aucun cache n'était en cause
+
+*Sa capture, la pastille « Nuit » cochée, l'écran resté crème.*
+
+**Mesuré avant d'être réparé**, en rejouant sa séquence — choisir, puis toucher
+les onglets du bas, sans jamais recharger : le fond restait `#f5f3ee` après
+l'appui, après « Chantiers », après « Planning », et ne passait à `#101210`
+qu'**au rechargement complet**. Le choix partait donc bien en base ; c'est
+l'écran qui ne le suivait pas.
+
+**La cause n'était pas un cache.** Les couleurs sont posées par le gabarit
+racine, sur `<html>` — et une navigation côté client ne rejoue pas ce gabarit.
+L'attribut restait celui du chargement initial, quoi qu'on invalide au serveur.
+Ni `revalidatePath` ni `router.refresh()` n'auraient réglé cela.
+
+**Le navigateur repeint donc le même élément**, dès l'appui, avec les mêmes
+jetons que le serveur. Le serveur garde son rôle — il pose la charte au premier
+rendu, sinon chaque page clignoterait avant de se repeindre. Un refus rend aussi
+la couleur d'avant.
+
+**Le contrôle existant était vert sur un chemin qu'il ne prend pas :** il
+rechargeait la page entre chaque écran. Le nouveau rejoue **sa séquence à lui**,
+et distingue « pas enregistré » de « enregistré mais pas peint ». Détail :
+`ARCHITECTURE.md` §119.
+
 
 ### La fiche d'entretien commence à exister : le modèle, en base
 
@@ -175,6 +328,7 @@ seconde à côté.
 `scripts/test-verrou-construction.ts` tient les sept points, dont celui qui joue
 le vrai motif de `pkill` sur les vraies lignes de commande — relire un motif ne
 prouve rien, c'est ainsi qu'il est passé inaperçu.
+
 ### CODÉ : le rappel « facture impayée », et le premier rappel qui a un rythme
 
 Sa demande, en une phrase : *« faut faire a plus b, mais il faut également qu'on

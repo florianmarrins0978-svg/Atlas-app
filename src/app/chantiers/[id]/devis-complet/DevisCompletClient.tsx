@@ -12,7 +12,7 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { CIVILITES, type Civilite } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
-import { LIBELLE_REDUCTION, totauxAvecReduction } from "@/lib/reduction-devis";
+import { LIBELLE_REDUCTION, pourcentValide, totauxAvecReduction } from "@/lib/reduction-devis";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import {
   appliquerRetouchesAction,
@@ -48,6 +48,17 @@ import {
 // la facture de fin de chantier et le relevé de TVA continuent d'en découler.
 
 type Ligne = { id: string; libelle: string; quantite: string; prixUnitaire: string; montant: string };
+
+/**
+ * La clé du prix accordé dans le tiroir des retirés.
+ *
+ * **Réservée, et elle ne peut croiser aucune ligne** : celles-ci portent un
+ * UUID. C'est ce qui permet au « − » de la remise de partager le tiroir des
+ * lignes plutôt que d'en fabriquer un second — deux mécaniques de retrait sur
+ * le même écran sont exactement ce que le patron a fait disparaître le 10 août
+ * 2026.
+ */
+const CLE_REDUCTION = "prix-accorde-au-client";
 
 type Props = {
   chantierId: string;
@@ -111,7 +122,18 @@ export default function DevisCompletClient(props: Props) {
   async function enregistrerRemise() {
     const valeur = reduction.trim() || null;
     await majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur });
-    if (valeur === null) setRemiseOuverte(false);
+    // **On se referme sur ce que le serveur a RETENU, pas sur ce qu'il a tapé.**
+    // La case vide n'est pas le seul moyen d'annuler : « 0 », « 0,00 », ou une
+    // saisie illisible valent tous « aucune réduction » (`reduction-devis.ts`).
+    // Comparer la chaîne brute à `null` laissait donc une ligne or « Prix
+    // accordé au client 0 % » sans montant, pendant que la base n'en portait
+    // plus aucune — et c'est ce que le patron a vu le 17 août 2026 : *« il n'y
+    // a aucun moyen de retirer les cinq pour cent, si ce n'est en écrivant zéro
+    // pour cent à la place »*. Écrire zéro ne le retirait pas non plus.
+    if (pourcentValide(valeur) === null) {
+      setReduction("");
+      setRemiseOuverte(false);
+    }
   }
   const [conditions, setConditions] = useState(props.conditionsPaiement);
 
@@ -131,10 +153,29 @@ export default function DevisCompletClient(props: Props) {
   // nue sans retour possible est le geste le plus coûteux de l'application.
   const retraits = useRetraits({
     valider: async (id) => {
+      // **Le prix accordé passe par LE MÊME tiroir que les lignes**, et c'est
+      // délibéré : une seconde mécanique de retrait sur le même écran est
+      // exactement ce que le patron a fait disparaître le 10 août 2026. Sa clé
+      // réservée ne peut croiser aucune ligne — celles-ci portent un UUID.
+      if (id === CLE_REDUCTION) {
+        // Posé AVANT l'attente : `fermer()` vide la pile puis appelle ceci dans
+        // le même tour. Repousser ces deux états après le serveur laisserait
+        // une image où la ligne or est revenue avec son ancien pourcentage.
+        setReduction("");
+        setRemiseOuverte(false);
+        await majEnTeteDevisAction(props.devisId, { reductionPourcent: null });
+        return;
+      }
       await retirerLigneAction(id);
       setLignes((cur) => cur.filter((l) => l.id !== id));
     },
   });
+
+  // **Rien n'est écrit tant que le tiroir est ouvert** (`useRetraits`) : le
+  // devis doit donc afficher son prix plein dès l'appui, sans quoi « Annuler »
+  // porterait sur un total qui n'a pas bougé — et le geste semblerait sans
+  // effet, ce qui est précisément la plainte du 17 août.
+  const remiseVisible = remiseOuverte && !retraits.estRetire(CLE_REDUCTION);
 
   // Les totaux se recalculent sous ses yeux, à chaque frappe : un devis dont le
   // total n'apparaît qu'après enregistrement se relit deux fois.
@@ -151,7 +192,7 @@ export default function DevisCompletClient(props: Props) {
   const totaux = totauxAvecReduction(
     lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2) })),
     String(nombre(tauxTva)),
-    reduction
+    remiseVisible ? reduction : null
   );
   const brutHt = Number(totaux.brutHt);
   const totalHt = Number(totaux.totalHt);
@@ -202,12 +243,18 @@ export default function DevisCompletClient(props: Props) {
   async function appliquerRetouches(changements: Changement[]) {
     const apres = await appliquerRetouchesAction(props.chantierId, changements);
     setLignes(
-      apres.map((l) => ({
+      apres.lignes.map((l) => ({
         ...l,
         quantite: sansZerosInutiles(l.quantite),
         prixUnitaire: sansZerosInutiles(l.prixUnitaire),
       }))
     );
+    // **Le prix accordé se recale lui aussi**, et il ne s'en déduit pas : il ne
+    // tombe sur aucune ligne. Sans ces deux lignes, « retire-moi les cinq pour
+    // cent » était compris, coché, enregistré — et l'écran continuait de les
+    // afficher, jusqu'à les réécrire en base au premier passage dans la case.
+    setReduction(apres.reductionPourcent === null ? "" : sansZerosInutiles(apres.reductionPourcent));
+    setRemiseOuverte(apres.reductionPourcent !== null);
   }
 
   return (
@@ -529,8 +576,13 @@ export default function DevisCompletClient(props: Props) {
               Pour en poser une à la main, la ligne discrète plus bas — même
               vocabulaire que « + Ajouter une ligne ». Il l'a demandée à la VOIX ;
               ceci n'est que le chemin de secours quand on n'a pas envie de
-              parler, et le seul moyen de la retirer. */}
-          {remiseOuverte ? (
+              parler.
+
+              **Et pour la retirer, le « − » en face — sa proposition B du
+              17 août** (`docs/maquettes/68`). Il n'y avait avant que deux
+              chemins, et il ne les a trouvés ni l'un ni l'autre : vider une case
+              de 36 px au doigt, ou le dire au micro. */}
+          {remiseVisible ? (
             <>
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">Total HT</span>
@@ -538,6 +590,21 @@ export default function DevisCompletClient(props: Props) {
               </div>
               <div className="flex items-center justify-between py-1.5" style={{ color: colors.or }}>
                 <span className="flex items-center gap-1 text-[15px]">
+                  {/* **Le « − », sa proposition B, retenue le 17 août 2026.**
+                      26 px : en dessous de 24, on le rate au doigt, et c'est sur
+                      un téléphone qu'il s'en sert. Il ne paraît pas sur un devis
+                      parti — cet écran ne se modifie plus. */}
+                  {!fige && (
+                    <button
+                      type="button"
+                      aria-label={`Retirer le ${LIBELLE_REDUCTION.toLowerCase()}`}
+                      onClick={() => retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)}
+                      className="mr-1 flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
+                      style={{ border: `1px solid ${colors.or}`, color: colors.or }}
+                    >
+                      −
+                    </button>
+                  )}
                   {LIBELLE_REDUCTION}
                   <input
                     value={reduction}

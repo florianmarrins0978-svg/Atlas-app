@@ -7,7 +7,7 @@ import type { Famille } from "@/server/repositories/mots-catalogue";
 import { ajouterMotAction, creerEntreeAction, retirerMotAction } from "./actions";
 
 /**
- * Le catalogue, et ses mots par-dessus — arrangement **B** de la planche 68,
+ * Le catalogue, et ses mots par-dessus — arrangement **B** de la planche 69,
  * choisi par le patron le 17 août 2026.
  *
  * **Ses mots s'accrochent aux entrées d'Atlas**, en or, suivis de « vous ». Ils

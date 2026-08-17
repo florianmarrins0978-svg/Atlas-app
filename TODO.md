@@ -27,7 +27,59 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
+
+*Constaté le 16 août 2026 en jouant la batterie complète d'un autre lot.*
+
+```
+❌ « Plus tard » fait taire le rappel, et la date part en base
+   rien n'est écrit en base : le geste n'a pas porté
+```
+
+**Elle passe au vert jouée seule**, immédiatement après. Ce n'est donc pas le
+produit : c'est un geste dont on lit la trace en base **avant que l'action
+serveur ait répondu** — sous quatre-vingt-onze suites, la réponse arrive plus
+tard qu'à vide.
+
+**C'est le même piège que celui payé le même jour sur `test-fiche-client-e2e`** :
+attendre l'écran, ou un délai fixe, c'est mesurer ce qu'on vient de taper.
+La parade y a été de **relire la base en boucle jusqu'à ce qu'elle ait reçu**,
+plutôt que d'attendre un nombre de millisecondes.
+
+**Ce lot appartient à la session qui a posé le rappel des impayés** (`228572a`).
+Écrit ici pour qu'elle ne reparte pas de zéro, et pour que personne ne conclue
+au hasard.
+
+
+### 0 unquadragies. ~~Montrer ce que l'application sait déjà d'un client~~ — **CODÉE le 16 août 2026 (fiche B)**
+
+### 0 quattuorquadragies. ~~Le « petit moins » du prix accordé~~ — **CODÉ le 17 août 2026 (proposition B)**
+
+*`docs/maquettes/68-retirer-le-prix-accorde.html`, écrite le 17 août 2026 —
+24 contrôles, sur SES chiffres (1 850,00 € HT, 5 %). Rien n'est codé pour le
+geste : `CLAUDE.md` §3 bis.*
+
+**Sa demande, le 17 août 2026 :** *« Tout comme on ajoute une ligne avec un petit
+plus, il faudrait qu'on ait un petit moins pour supprimer la ligne de la
+réduction. »*
+
+| | Ce que ça fait | Ce que ça coûte |
+|---|---|---|
+| **A — glisser la ligne** | Le geste unique de l'application depuis le 10 août : la ligne découvre « Retirer », le tiroir « Annuler » dessous | Rien à inventer. Mais c'est un **total**, pas une ligne du tableau : rien d'autre ne glisse dans ce bloc, et un geste qu'on ne soupçonne pas n'existe pas — c'est exactement ce qu'il vient de vivre |
+| **B — le petit « − » en face** | Ce qu'il a demandé, mot pour mot : un rond de 26 px devant le libellé, en or | Un bouton dans le bloc des totaux, le seul endroit du devis qui n'en portait aucun. Et le « + » ajoute une ligne AU TABLEAU quand ce « − » retire un TOTAL : lisible, mais pas symétrique |
+| **C — la ligne du bas bascule** | « + Prix accordé au client » devient « − Retirer le prix accordé » dès qu'il y en a une. Un seul endroit à connaître | Presque rien : la ligne existe déjà, elle change de mot. Mais le geste est sous le total TTC, pas en face de la remise |
+
+**Il a choisi B** le 17 août, contre ma préférence pour C. C'est codé : un rond
+de 26 px devant le libellé, le même tiroir « Annuler » que les lignes, et le
+prix plein affiché dès l'appui. `ARCHITECTURE.md` §120.
+
+*Ce qui suit reste pour mémoire du raisonnement.*
+
+**Ce qui est DÉJÀ réparé, et ne l'attend pas** (`ARCHITECTURE.md` §120) : écrire
+0 % retire la remise pour de bon, et la dictée aussi.
+
 ### 0 unquadragies. Montrer ce que l'application sait déjà d'un client
+
 
 **Sa question du 16 août 2026**, photo d'un « graphe de connaissances » à
 l'appui : *« tu peux m'expliquer et me dire si ça peut me servir pour mon
@@ -60,8 +112,35 @@ n'est appelé par aucun écran.
 `factures` + `paiements_facture`, `lignes_prix` pour les prestations qui
 reviennent, `lecons_prix` pour les prix pratiqués.
 
-**Une question posée dans la planche :** « 3 200 € », est-ce le **facturé** ou
-l'**encaissé** ? Les deux se calculent ; la planche montre les deux.
+**Livré** : `src/lib/fiche-client.ts`, `src/server/repositories/fiche-client.ts`,
+`src/app/clients/[id]/page.tsx`, atteinte depuis le tiroir de la fiche du
+chantier. Les deux chiffres sont montrés — facturé, et reste dû. Détail :
+`ARCHITECTURE.md` §121.
+
+---
+
+### 0 duoquadragies. ~~Un client n'était jamais réutilisé~~ — **TRANCHÉ ET CODÉ le 17 août 2026**
+
+`creerClient` insérait **toujours** : deux chantiers pour « M. Martins »
+faisaient deux fiches, et la fiche client annonçait « 1 chantier » à vie.
+
+**Le patron a écarté le chemin « proposer »** — *« non justement, il ne faut
+pas »* — et demandé le rapprochement **automatique** : *« si je crée un
+nouveau chantier, mais que c'est monsieur Martins et qu'on a déjà une fiche
+client monsieur Martins, [il faut que] le devis, la facture s'ajoute à la fiche
+client de monsieur Martins qui est déjà créé. »*
+
+Le risque qu'il portait — fusionner deux homonymes — est borné par une règle :
+**une coordonnée qui contredit interdit le rapprochement**. Deux « Martins »
+aux téléphones différents restent deux fiches. `src/lib/rapprochement-client.ts`,
+`ARCHITECTURE.md` §122.
+
+**CE QUI RESTE OUVERT, ET QU'IL FAUDRA LUI POSER UN JOUR :** deux homonymes que
+**rien** ne distingue (aucun téléphone, aucun e-mail des deux côtés) sont
+rapprochés, et **rien ne permet de les reséparer**. Il n'existe aucun geste
+« ce chantier n'est pas ce client-là ». À dessiner le jour où le cas se
+présente — pas avant : une commande de démixage jamais utilisée coûterait plus
+cher à tenir qu'à attendre.
 
 ### 0 quadragies. ~~Le rappel « facture impayée »~~ — CODÉ le 16 août 2026
 
@@ -180,10 +259,14 @@ une case à ajouter :
 1. ~~le **modèle** en base~~ — **FAIT le 16 août** : table `prestations_entretien`
    (migration `0051`), dépôt `src/server/repositories/prestations-entretien.ts`,
    règles pures dans `src/lib/prestations-entretien.ts`, suite
-   `scripts/test-prestations-entretien.ts`. **Reste son écran de Réglages** ;
-2. le **passage** : la fiche pré-remplie, cochée, le temps à la molette ;
-3. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
-   porte déjà devis et factures ;
+   `scripts/test-prestations-entretien.ts` ;
+2. ~~son **écran de Réglages**~~ — **FAIT le 16 août** : Réglages → Fiche
+   d'entretien (`src/app/reglages/fiche-entretien/`), retrait réversible,
+   suite `scripts/test-fiche-entretien-e2e.ts` ;
+3. le **passage** : la fiche pré-remplie, cochée, le temps à la molette
+   (celle du téléphone — « la A ») ;
+4. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
+   porte déjà devis et factures, plus le « J'ai bien reçu » horodaté ;
 4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
 
 Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
@@ -1096,7 +1179,7 @@ morte, nom trop long — chacun nomme le bon coupable.
 
 *Deux captures, trois jours d'écart, la même question : « À quoi sert cette page
 ?? On peut rien modifier rajouter ». Il a choisi **« Réparer + mes mots »**, puis
-l'arrangement **B** de `docs/maquettes/68-mes-mots-au-catalogue.html`. Livré le
+l'arrangement **B** de `docs/maquettes/69-mes-mots-au-catalogue.html`. Livré le
 jour même : `ARCHITECTURE.md` §122, migration 0052.*
 
 **Ce qui est fait :** ses mots s'accrochent aux entrées d'Atlas (`mots_catalogue`,
@@ -1108,7 +1191,7 @@ deviennent « Aussi appelé » ; l'écran est passé à la charte.
 **CE QUI RESTE, et c'est une DÉCISION, pas du code :**
 
 1. **Faut-il remettre un prix sur ces cartes ?** La question est posée au bas de
-   la planche 68 et n'a pas de réponse. `lecons_prix` range par nature de
+   la planche 69 et n'a pas de réponse. `lecons_prix` range par nature de
    chantier (`abattage|demontage_retention|d70`), pas par mot de catalogue : un
    rapprochement approximatif afficherait un prix d'abattage sous « Élagage » —
    pire que la phrase retirée, qui au moins n'inventait rien. Deux réponses

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Éprouve la maquette 68, JAVASCRIPT COUPÉ.
+  Éprouve la maquette 69, JAVASCRIPT COUPÉ.
 
   **D'où elle vient.** Le patron, le 17 août 2026, capture de l'écran
   « Catalogue » à l'appui : *« À quoi sert cette page ?? On peut rien modifier
@@ -52,7 +52,7 @@ import { existsSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(
-  process.argv[2] ?? join(RACINE, "docs", "maquettes", "68-mes-mots-au-catalogue.html"),
+  process.argv[2] ?? join(RACINE, "docs", "maquettes", "69-mes-mots-au-catalogue.html"),
 );
 
 if (!existsSync(CIBLE)) {
@@ -84,7 +84,7 @@ const page = await contexte.newPage();
 // les boîtes valent zéro et toute mesure de largeur rendrait un vert creux.
 await page.goto(`file://${CIBLE}`, { waitUntil: "networkidle" });
 
-console.log("=== La maquette 68 répond-elle à sa demande ? ===\n");
+console.log("=== La maquette 69 répond-elle à sa demande ? ===\n");
 
 // ── 1. Un arrangement à la fois, sans script ────────────────────────────────
 for (const a of ARRANGEMENTS) {
@@ -219,7 +219,7 @@ await navigateur.close();
 
 console.log(
   plaintes.length === 0
-    ? "\n✅ La maquette 68 répond, et les deux défauts du 14 août sont réparés."
-    : `\n❌ ${plaintes.length} défaut(s) sur la maquette 68.`,
+    ? "\n✅ La maquette 69 répond, et les deux défauts du 14 août sont réparés."
+    : `\n❌ ${plaintes.length} défaut(s) sur la maquette 69.`,
 );
 process.exit(plaintes.length === 0 ? 0 : 1);

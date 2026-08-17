@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-16 · `main`
+**Point de reprise :** 2026-08-17 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -755,7 +755,7 @@ dans `src/`.
 **LE CATALOGUE EST ÉCRIVABLE (17 août) — CODÉ, arrangement B.** Il a posé deux
 fois la même question (14 puis 17 août) : *« À quoi sert cette page ?? On peut
 rien modifier rajouter »*. Ses mots s'accrochent désormais aux entrées d'Atlas,
-en or. Planche `docs/maquettes/68-mes-mots-au-catalogue.html`, récit complet
+en or. Planche `docs/maquettes/69-mes-mots-au-catalogue.html`, récit complet
 dans `ARCHITECTURE.md` §122, migration 0052.
 
 **Quatre choses à savoir avant d'y toucher :**
@@ -781,6 +781,69 @@ dans `ARCHITECTURE.md` §122, migration 0052.
 s'auto-alimente PAS. Un mot compris dans un devis ne s'ajoute nulle part. Ce qui
 serait possible — proposer l'ajout à SES mots quand il corrige une dictée, avec
 confirmation, jamais dans le commun — est dans `TODO.md` §0 octovicies bis.
+
+**LA FICHE DU CLIENT (16 août).** Elle s'ouvre depuis le tiroir d'un chantier et
+montre ce que l'application savait déjà : combien de chantiers, combien facturé,
+combien reste dû, et ce qu'on lui fait d'habitude.
+
+**UN CLIENT EST DÉSORMAIS RETROUVÉ, PLUS RECRÉÉ (17 août).** La fiche était
+vide par construction — `creerClient` insérait toujours, et deux chantiers pour
+« M. Martins » faisaient deux fiches. Il l'a tranché le lendemain, en écartant
+qu'on lui **propose** des correspondances : le rapprochement est **automatique**
+(`trouverOuCreerClient`, règle dans `src/lib/rapprochement-client.ts`).
+
+**Ce qu'il faut savoir avant d'y toucher :** une coordonnée qui **contredit**
+interdit le rapprochement — deux « Martins » aux téléphones différents restent
+deux fiches. Rien n'est jamais écrasé : la saisie complète les cases vides, pas
+les autres. Un client effacé (RGPD) n'est jamais réutilisé. Et **une fiche est
+maintenant partagée** : corriger l'adresse du client depuis un devis la corrige
+sur les autres chantiers du même client. `ARCHITECTURE.md` §122.
+
+Trois pièges de ce lot : « 0 € » ne doit jamais s'afficher pour un client non
+facturé (« — » et une phrase) ; les prestations se comptent en chantiers et non
+en lignes ; et un contrôle qui cherche « 0,00 € » dans une page le trouve dans
+« 450,00 € ». `ARCHITECTURE.md` §121.
+
+**LE PRIX ACCORDÉ NE VIT PAS SUR UNE LIGNE (17 août).** Il vit sur l'EN-TÊTE du
+devis (`reduction_pourcent`), et c'est le prix de l'arrangement B qu'il a choisi
+le 16. Conséquence pratique : **tout ce qui recopie « les lignes » et rien
+d'autre l'oublie en silence.** C'est ce qui a produit ses deux défauts du
+17 août — la dictée qui retirait la remise puis la voyait revenir, et le « 0 % »
+qui laissait une ligne or sur un devis dont le PDF n'imprimait rien. Avant de
+toucher à quoi que ce soit qui relise le devis après une écriture, se demander
+si l'en-tête repart avec.
+
+**⚠ UN CONTRÔLE QUI RECHARGE N'ÉPROUVE PAS L'ÉCRAN, IL ÉPROUVE LA BASE (17 août).**
+`test-reduction-devis-e2e` était vert sur un retrait de remise… en rechargeant la
+page juste avant de vérifier. Le défaut vivait précisément dans l'état de
+l'écran. Le nouveau cas mesure **sans rechargement**, et il est rouge sans le
+correctif.
+
+**ET IL FAUT ÉPROUVER SON GESTE, PAS LE NÔTRE.** La suite vidait la case ; lui
+écrit « 0 » par-dessus — viser un champ de 36 px sur un téléphone, sélectionner
+un chiffre et le supprimer n'est pas ce qu'on fait. Les deux chemins mènent à
+« aucune réduction », un seul était éprouvé.
+
+**LE « PETIT MOINS » EST CODÉ (17 août) — sa proposition B.** Un rond de 26 px
+devant le libellé du prix accordé. **Il partage le tiroir des lignes**, sous la
+clé réservée `prix-accorde-au-client` : ne pas lui fabriquer un second tiroir,
+c'est ce que le patron a fait disparaître le 10 août. Et **le total montre le
+prix plein dès l'appui**, alors que rien n'est encore écrit — un geste sans effet
+visible pendant six secondes se lit comme une panne.
+
+**⚠ UNE COULEUR POSÉE SUR `<html>` NE PEUT PAS SUIVRE UNE NAVIGATION (16 août).**
+Il choisit « Nuit », rien ne change — et c'était exact. Les variables de charte
+sont posées par le gabarit RACINE ; une navigation côté client ne le rejoue pas,
+donc l'attribut `style` de `<html>` reste celui du chargement initial. **Ni
+`revalidatePath` ni `router.refresh()` ne règlent cela** : c'est le navigateur qui
+doit repeindre le même élément. Réparé et éprouvé sur SA séquence — appui, onglet,
+onglet, sans rechargement (`ARCHITECTURE.md` §119).
+
+**ET LA LEÇON, LA MÊME QUE LE 12 AOÛT :** le contrôle existant était **vert** — il
+rechargeait la page entre chaque écran. Le seul chemin où le défaut existe, les
+onglets du bas, n'était parcouru nulle part. **Rejouer sa séquence, pas le geste
+isolé.**
+
 
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans
