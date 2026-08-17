@@ -81,6 +81,27 @@ Migration `drizzle/0050_rappel_facture_impayee.sql`, règles pures dans
   déclarait vert. Et un montage écrit `WHERE id = NULL` sans se plaindre :
   vérifier le `rowCount` de toute écriture de montage.
 
+### 0 trigies quater. `test-fiche-pendant-relance` rougit sous charge, pas toute seule
+
+**Vu le 17 août 2026**, sur la batterie complète. Son deuxième cas — *« le
+veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien »* — a
+rendu : *« le veilleur n'a jamais tenté de relance : le montage ne reproduit pas
+le cas réel »*.
+
+**Mesuré, pas supposé :** rejouée seule dans la foulée, sur le même code et la
+même base, la suite passe ses trois cas.
+
+**Le mécanisme, et il est dans le montage :** ce cas attend que le veilleur
+ATTEIGNE l'état « en train de relancer » avant de vérifier que la fiche se publie
+quand même. Sous une batterie de quatre-vingt-onze suites, la machine est prise
+et cet état n'arrive pas dans la fenêtre prévue. Le contrôle a alors raison de se
+plaindre : son montage n'a effectivement pas reproduit le cas — mais la cause est
+la charge, pas le produit.
+
+**Ce lot-ci n'y touche pas**, et il faut le dire : la mention de l'accueil ne
+passe nulle part près du veilleur. À la session qui tient ce lot d'attendre
+l'ÉTAT plutôt qu'un délai — même remède que pour les deux voisines ci-dessous.
+
 ### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
 
 **Vu le 16 août 2026**, sur la batterie qui suivait la fusion de son lot. Le

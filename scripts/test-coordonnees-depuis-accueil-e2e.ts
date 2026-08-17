@@ -119,14 +119,21 @@ async function main() {
     // `a.atlas-brin`, `test-suivi-devis` remonte à `ancestor::a[1]` pour lire
     // l'état, `test-transcription` clique au milieu de `.atlas-ligne`. Ce
     // contrôle existe pour que personne ne recommence sans le voir.
-    const ancres = await page
-      .locator(`.atlas-ligne:has([data-atlas="lieu-manquant"]) a`)
-      .count();
+    // **On compte les ancres de SA ligne, pas de toutes.** La première version
+    // visait `.atlas-ligne:has([data-atlas="lieu-manquant"])` : jouée seule elle
+    // trouvait une ligne, jouée dans la batterie elle en trouvait huit — les
+    // autres suites créent elles aussi des chantiers sans adresse. Le contrôle
+    // annonçait « 8 liens dans la ligne » et accusait la ligne d'un défaut qui
+    // était le sien (`AGENTS.md` : un contrôle doit désigner le bon coupable).
+    const saLigne = page.locator(
+      `.atlas-ligne:has([data-href="/chantiers/${chantierId}/coordonnees"])`
+    );
+    const ancres = await saLigne.locator("a").count();
     if (ancres !== 1) {
-      throw new Error(`${ancres} lien(s) dans la ligne : il en faut exactement un`);
+      throw new Error(`${ancres} lien(s) dans SA ligne : il en faut exactement un`);
     }
     // Et cette ancre porte bien tout ce qu'on lit sur la ligne.
-    const brin = page.locator(`a.atlas-brin:has([data-atlas="lieu-manquant"])`).first();
+    const brin = saLigne.locator("a.atlas-brin").first();
     const dedans = (await brin.innerText()).replace(/\s+/g, " ");
     if (!/Adresse non renseignée/.test(dedans) || !/BROUILLON|DEVIS/i.test(dedans)) {
       throw new Error(`la ligne ne porte pas tout dans son lien : « ${dedans} »`);
