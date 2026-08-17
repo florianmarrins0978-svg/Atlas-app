@@ -927,6 +927,14 @@ function dessinerPlans(){
 
 function listeMateriel(d){
   var lignes = [], compte = {}, modeles = {};
+  // Le tracé du réseau latéral, sa règle du 17 août (planche 73) : un té
+  // (« Départ »/« Milieu ») à chaque point sauf le dernier de sa rangée, qui
+  // porte un coude (« Fin »). Et depuis le regard, plusieurs lignes
+  // parallèles — un té de JONCTION à chaque rangée où le tronc continue vers
+  // la suivante, mais RIEN à la dernière : le tuyau s'y courbe sans pièce à
+  // couper. D'où, par secteur de `ny` rangées et `nombre` points au total :
+  // (nombre − ny) tés de ligne, `ny` coudes de fin, (ny − 1) jonctions.
+  var totalPointsReseau = 0, totalRangeesReseau = 0, totalJonctionsReseau = 0;
   etat.zones.forEach(function(z){
     var p = poser(z);
     if (!p.nombre || !p.m) return;
@@ -935,6 +943,11 @@ function listeMateriel(d){
     // « des turbines » sans dire lesquelles.
     compte[p.m.ref] = (compte[p.m.ref] || 0) + p.nombre;
     modeles[p.m.ref] = p.m;
+    if (p.ny){
+      totalPointsReseau += p.nombre;
+      totalRangeesReseau += p.ny;
+      totalJonctionsReseau += Math.max(0, p.ny - 1);
+    }
   });
   var totalArroseurs = 0, totalGaine = 0;
   Object.keys(compte).forEach(function(ref){
@@ -984,6 +997,23 @@ function listeMateriel(d){
     // l'a donnée : elle varie selon la profondeur réelle de pose.
     var pebd = CATALOGUE.piecesReseau['pebd16'];
     lignes.push({ ref:'pebd16', nom:pebd.nom + ' (~2 m par arroseur)', q: totalArroseurs * 2, u:'ml' });
+  }
+  // **Le tracé du réseau latéral — comptable depuis sa réponse du 17 août
+  // (planche 73) : « c'est le B », plusieurs lignes parallèles, avec sa
+  // correction sur le té et le coude.** Un té à chaque point de ligne sauf le
+  // dernier de sa rangée (qui porte le coude de fin), et une jonction par
+  // rangée où le tronc continue au-delà — jamais à la dernière, qui se courbe
+  // sans pièce à couper.
+  if (totalPointsReseau){
+    var teLigne = CATALOGUE.piecesReseau['te-taraude-25-34-25'];
+    var coudeLigne = CATALOGUE.piecesReseau['coude-taraude-25-34'];
+    var totalTesLigne = totalPointsReseau - totalRangeesReseau;
+    if (totalTesLigne > 0) lignes.push({ ref:'te-taraude-25-34-25', nom: teLigne.nom + ' (départ/milieu de ligne)', q: totalTesLigne, u:'u' });
+    lignes.push({ ref:'coude-taraude-25-34', nom: coudeLigne.nom + ' (fin de ligne)', q: totalRangeesReseau, u:'u' });
+    if (totalJonctionsReseau > 0){
+      var jonction = CATALOGUE.piecesReseau['te-25-25-25'];
+      lignes.push({ ref:'te-25-25-25', nom: jonction.nom, q: totalJonctionsReseau, u:'u' });
+    }
   }
   if (d.secteurs.length){
     // **Sa fiche de nourrice REMPLACE les lignes génériques**, quand elle

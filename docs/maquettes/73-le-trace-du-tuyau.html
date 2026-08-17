@@ -80,6 +80,7 @@
   .trace .tuyau-fleche{fill:var(--eau)}
   .trace .tete{fill:var(--pin);stroke:var(--papier);stroke-width:2}
   .trace .regard{fill:var(--or);stroke:var(--papier);stroke-width:2}
+  .trace .coude-tronc{fill:var(--pin);stroke:var(--papier);stroke-width:2}
   .trace .etq{fill:var(--gris);font-size:10.5px;font-family:inherit}
   .trace .etq-b{fill:var(--encre);font-weight:600;font-size:10.5px;font-family:inherit}
   .trace .rang{fill:var(--gris);font-size:10px;font-family:inherit;text-anchor:end}
@@ -99,25 +100,26 @@
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
 </style>
 
-<input type="radio" name="t" id="t-a" class="etat" checked>
-<input type="radio" name="t" id="t-b" class="etat">
+<input type="radio" name="t" id="t-a" class="etat">
+<input type="radio" name="t" id="t-b" class="etat" checked>
 
 <div class="dedans">
   <h1>Le tracé du tuyau</h1>
-  <p class="intro">La question qui bloque le comptage des tés et coudes.
-    <b>Touchez A ou B</b> : c'est tout ce qu'il y a à faire ici, il n'y a rien
-    à saisir. Le même secteur — 3 rangées de 4 arroseurs, depuis le même
-    regard — est tracé des deux façons.</p>
+  <p class="intro"><b>Tranché le 17 août : c'est B</b>, plusieurs lignes
+    parallèles — avec sa correction sur les jonctions. A reste ci-dessous pour
+    mémoire, ce n'est pas votre geste. Le même secteur — 3 rangées de 4
+    arroseurs, depuis le même regard — est tracé des deux façons.</p>
 
-  <p class="dit">« Dans un secteur à plusieurs rangées, le tuyau serpente-t-il
-    rangée par rangée en <b>une seule ligne continue</b> depuis le regard, ou
-    partez-vous en <b>plusieurs lignes parallèles</b> pour un même secteur ? »</p>
+  <p class="dit">« C'est le B, sauf que la jonction […] ressemble à un té […]
+    un coude avec un tuyau, le tuyau on peut le courber pour former le coude.
+    Chose qu'on ne peut pas faire lorsque c'est un té, puisqu'on est obligé de
+    couper pour mettre un té. »</p>
 
   <div class="reglage">
-    <span class="quoi">Votre geste sur le chantier</span>
+    <span class="quoi">Son geste sur le chantier</span>
     <div class="segments">
       <label for="t-a">A · Une seule ligne, en serpentin</label>
-      <label for="t-b">B · Plusieurs lignes parallèles</label>
+      <label for="t-b">B · Plusieurs lignes parallèles · <b>retenu</b></label>
     </div>
   </div>
 
@@ -190,9 +192,11 @@
   <div class="tb">
     <div class="planche">
       <p class="titre-p">B · Plusieurs lignes parallèles depuis le regard</p>
-      <p class="sous-p">Un tronc commun part du regard ; à chaque rangée, une
-        <b>jonction</b> détache une ligne indépendante qui va d'un bout à
-        l'autre de sa rangée et s'arrête. Trois lignes, trois fins.</p>
+      <p class="sous-p">Un tronc commun part du regard ; tant qu'il lui reste
+        une rangée à atteindre plus loin, il se détache par une <b>jonction</b>
+        (un té — on coupe le tuyau). À la <b>dernière</b> rangée, il n'a plus
+        besoin de continuer : le tuyau se courbe pour y entrer, sans té à couper.
+        Corrigé le 17 août sur son geste réel.</p>
 
       <svg class="trace" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet">
         <rect class="fond-plan" x="0" y="0" width="640" height="300" rx="14"/>
@@ -211,12 +215,16 @@
         <polygon class="tuyau-fleche" points="514,144 514,156 526,150" />
         <polygon class="tuyau-fleche" points="514,224 514,236 526,230" />
 
-        <!-- jonctions sur le tronc -->
-        <circle class="regard" cx="31" cy="70" r="6"/>
-        <circle class="regard" cx="31" cy="150" r="6"/>
+        <!-- Le tronc CONTINUE après ces deux points (une rangée de plus à
+             atteindre) : ce sont de vraies jonctions, un té qu'on coupe. -->
         <circle class="regard" cx="31" cy="230" r="6"/>
-        <text class="etq" x="48" y="88">Jonction</text>
-        <text class="etq" x="48" y="168">Jonction</text>
+        <circle class="regard" cx="31" cy="150" r="6"/>
+        <text class="etq-b" x="48" y="222">Jonction (té)</text>
+        <text class="etq-b" x="48" y="142">Jonction (té)</text>
+
+        <!-- Ici le tronc S'ARRÊTE : rien à couper, le tuyau se courbe. -->
+        <circle class="coude-tronc" cx="31" cy="70" r="6"/>
+        <text class="etq-b" x="48" y="62">Coude (tuyau courbé)</text>
 
         <!-- rangée 1 -->
         <circle class="tete" cx="100" cy="70" r="9"/>
@@ -252,24 +260,27 @@
       <div class="compte">
         <span><b>3</b> Départs, <b>3</b> Fins</span>
         <span><b>6</b> Milieux</span>
-        <span><b>2</b> Jonctions sur le tronc</span>
+        <span><b>2</b> Jonctions (tés) sur le tronc</span>
+        <span><b>0</b> pièce à la dernière rangée</span>
       </div>
 
-      <p class="consequence"><b>Ce que ça change pour le comptage :</b> chaque
-        rangée compte son propre Départ et son propre Fin — trois fois plus de
-        ces deux pièces qu'en A. En échange, une pièce de plus apparaît : la
-        <b>Jonction</b>, au point où le tronc se détache vers une rangée sans
-        alimenter d'arroseur à cet endroit précis.</p>
+      <p class="consequence"><b>Sa correction du 17 août :</b> une jonction
+        ressemble à un té — on doit couper le tuyau pour l'insérer. Ça vaut
+        pour chaque rangée où le tronc CONTINUE ensuite : ici, les deux plus
+        proches du regard. À la <b>dernière</b> rangée, le tronc s'arrête ; un
+        coude se fait en courbant le tuyau lui-même, <b>sans pièce à part</b> —
+        ce qu'on ne peut pas faire pour un té, qui exige de couper. Pour N
+        rangées : <b>(N − 1)</b> jonctions, <b>0</b> pièce à la dernière.</p>
     </div>
   </div>
 
   <div class="note">
-    <span class="t">Pourquoi ce dessin, et pas une question de plus</span>
-    <p>Les deux tracés desservent le <b>même</b> secteur, avec la <b>même</b>
-      vanne au regard — ce n'est pas un choix de plomberie différente, c'est
-      votre geste réel qui compte le nombre de Départs, Milieux, Fins et
-      Jonctions. <b>Sans cette réponse, l'outil n'ose pas compter ces quatre
-      pièces</b> et les laisse dans votre registre de prix, en dehors de la
-      liste automatique — voir <code>TODO.md</code> § « 0 quaterquadragies ».</p>
+    <span class="t">Ce que sa réponse débloque</span>
+    <p>Réponse tranchée le 17 août : <b>B</b>, avec la règle du té et du coude.
+      Les quatre pièces du réseau latéral (Départ/Milieu, Fin, Jonction, PEBD)
+      sont désormais comptées automatiquement, secteur par secteur, dans
+      <code>appli/arrosage.html</code> — elles ne restent plus à l'écart de la
+      liste au fournisseur. Détail dans <code>TODO.md</code> §
+      « 0 quaterquadragies ».</p>
   </div>
 </div>

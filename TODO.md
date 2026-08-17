@@ -160,27 +160,29 @@ chaque arroseur porte en réalité **DEUX SBE**, pas un — celui du bas (toujou
 déjà compté). Le SBE du bas était absent de la liste ; il y est maintenant.
 Et « environ 2 m de PEBD rigide Ø16 » par arroseur, compté (`totalArroseurs × 2`).
 
-**⚠ CE QUI N'EST PAS CALCULÉ, ET NE DOIT PAS ÊTRE DEVINÉ :** combien de
-départs / milieux / fins pour un secteur donné dépend de l'ORDRE dans lequel
-le tuyau relie les arroseurs entre eux — une question de TRACÉ, que rien dans
-l'outil ne modélise encore. `pointsDeLaPose` sait OÙ les arroseurs sont
-(coins/bords/intérieur, pour la couverture), pas dans quel ORDRE un tuyau les
-visiterait. Tés, coudes et jonctions restent au catalogue
-(`CATALOGUE.piecesReseau`), visibles dans son registre de prix, **écartés de
-la liste au fournisseur** — même geste que pour les R-VAN et les turbines.
+**✅ LE TRACÉ EST TRANCHÉ ET CALCULÉ — 17 août, planche `73-le-trace-du-tuyau.html`.**
+Posée en dessin sur sa demande (*« fais-moi un croquis pour cette question que
+je te réponde correctement »*) : deux tracés du même secteur (3 rangées de
+4 arroseurs), à toucher pour comparer. Sa réponse : **B**, plusieurs lignes
+parallèles depuis un tronc au regard — **avec une correction essentielle** :
 
-**QUESTION À LUI POSER, et elle conditionne tout calcul automatique de
-tuyauterie :** dans un secteur à plusieurs rangées (une grille, pas une seule
-ligne), le tuyau serpente-t-il rangée par rangée (un seul réseau continu par
-secteur), ou y a-t-il plusieurs réseaux parallèles partant du regard pour un
-même secteur ? Sans cette réponse, compter les tés/coudes serait inventer un
-tracé.
+> *« C'est le B, sauf que la jonction […] ressemble à un té […] un coude avec
+> un tuyau, le tuyau on peut le courber pour former le coude. Chose qu'on ne
+> peut pas faire lorsque c'est un té, puisqu'on est obligé de couper pour
+> mettre un té et remettre un bout de tuyau au milieu. »*
 
-**Posée en dessin le 17 août, sur sa demande** (*« fais-moi un croquis pour
-cette question que je te réponde correctement »*) : `docs/maquettes/73-le-trace-du-tuyau.html`,
-deux tracés du même secteur (3 rangées de 4 arroseurs) qu'il touche pour
-comparer — A, une seule ligne en serpentin ; B, plusieurs lignes parallèles
-depuis une jonction par rangée. En attente de sa réponse.
+Autrement dit : **une jonction (té 25×25×25) à chaque rangée où le tronc
+CONTINUE** au-delà (il faut couper le tuyau pour insérer le té) — **mais RIEN
+à la toute DERNIÈRE rangée** : le tronc s'y arrête en se courbant, sans pièce
+à couper. Pour un secteur de `ny` rangées : `ny − 1` jonctions, jamais `ny`.
+
+**Câblé dans `listeMateriel()` (`appli/arrosage.html`), plus besoin d'écarter
+ces pièces.** Par secteur : `nombre − ny` tés de ligne (départ + milieux),
+`ny` coudes de fin, `max(0, ny − 1)` jonctions — `ny` et `nombre` viennent
+directement de `poser()` (déjà calculés pour la couverture). Vérifié sur le
+jardin d'exemple (18×12 m, quinconce) : nx=4, ny=3, 11 points → 8 tés,
+3 coudes, 2 jonctions. `essai-arrosage-detaille.cjs` (32/32) et `tests/e2e.js`
+(90/90) au vert après le câblage.
 
 **LA NOURRICE SE MODIFIE QUAND UNE VOIE PART EN GOUTTE-À-GOUTTE — sa règle du
 17 août.** *« À ne pas oublier : lorsqu'un réseau est pour du goutte-à-goutte,

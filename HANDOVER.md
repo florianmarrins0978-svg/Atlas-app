@@ -935,11 +935,18 @@ annonçant « 60 jours » au lieu de 30, faute qui était celle du montage et no
 l'application.
 
 **⚠ CHAQUE ARROSEUR PORTE DEUX SBE, PAS UN (17 août) — le bas (toujours 3/4",
-sur la ligne) et le haut (au diamètre du corps). Compté depuis ce lot** ;
-**mais les TÉS/COUDES DE LA TUYAUTERIE (`CATALOGUE.piecesReseau`) NE LE SONT
-PAS ENCORE** — leur nombre dépend du tracé du tuyau entre les arroseurs
-(serpentin ? lignes parallèles ?), question posée et non tranchée. **Ne pas
-deviner un tracé pour les compter.**
+sur la ligne) et le haut (au diamètre du corps). Compté depuis ce lot.**
+
+**⚠ LE TRACÉ DU RÉSEAU LATÉRAL EST TRANCHÉ ET CALCULÉ (17 août, planche 73,
+répondue par un croquis plutôt qu'en mots).** Plusieurs lignes parallèles
+depuis le regard — **avec une règle physique à ne pas oublier** : une
+jonction (té 25×25×25) là où le tronc CONTINUE vers une autre rangée (on doit
+couper le tuyau), mais RIEN à la toute dernière rangée — le tronc s'y arrête
+en se courbant, sans pièce à couper. `listeMateriel()` calcule maintenant
+`nombre − ny` tés de ligne, `ny` coudes de fin, `ny − 1` jonctions (jamais
+`ny`) à partir de `poser()`. **Ne jamais compter `ny` jonctions** : c'est
+l'erreur qu'un lecteur pressé ferait, et c'est exactement celle que sa
+correction du 17 août visait.
 
 **⚠ LES FICHES DE NOURRICE EXISTENT MAINTENANT (1 à 6 voies, 17 août) et
 REMPLACENT les lignes génériques (électrovanne/regard/programmateur) dès

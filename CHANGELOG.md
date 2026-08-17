@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Le tracé du réseau latéral est tranché, et calculé automatiquement
+
+La question posée depuis le lot du réseau latéral — le tuyau serpente-t-il
+en une seule ligne, ou en plusieurs lignes parallèles depuis le regard ? —
+bloquait le comptage des tés, coudes et jonctions. Sur sa demande (*« fais-moi
+un croquis pour cette question que je te réponde correctement »*), un dessin
+(`docs/maquettes/73-le-trace-du-tuyau.html`) a tracé le même secteur des deux
+façons, à toucher plutôt qu'à lire.
+
+Sa réponse : **plusieurs lignes parallèles**, avec une correction physique
+qui change le compte. Une jonction (té 25×25×25) ressemble à un té : on doit
+couper le tuyau pour l'insérer. Ça vaut à chaque rangée où le tronc continue
+vers la suivante — mais PAS à la dernière rangée, où le tronc s'arrête : le
+tuyau s'y courbe directement, sans pièce à couper. Pour un secteur de `ny`
+rangées, c'est donc `ny − 1` jonctions, jamais `ny`.
+
+`listeMateriel()` (`appli/arrosage.html`) calcule maintenant les quatre pièces
+du réseau latéral par secteur, à partir de `ny` et `nombre` que `poser()`
+connaît déjà : `nombre − ny` tés de ligne, `ny` coudes de fin, `ny − 1`
+jonctions. Elles ne sont plus écartées de la liste au fournisseur — même
+geste que pour le SBE du bas et le PEBD16, comptés sans attendre au lot
+précédent. Le dessin lui-même a été corrigé pour porter la même règle
+(jonction sur les rangées où le tronc continue, coude sans pièce à la
+dernière), sinon il aurait fini par contredire le calcul qu'il a motivé.
+
+Vérifié sur le jardin d'exemple (18×12 m, quinconce) : 8 tés, 3 coudes,
+2 jonctions pour 11 arroseurs sur 3 rangées. `essai-arrosage-detaille.cjs`
+(32/32) et `tests/e2e.js` (90/90) au vert.
+
 ### La nourrice se modifie quand une voie part en goutte-à-goutte
 
 Sa règle, envoyée juste après le réseau latéral : *« lorsqu'un réseau est
