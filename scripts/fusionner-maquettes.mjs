@@ -337,6 +337,12 @@ const MAQUETTES = [
     famille: "Enlever le gros bouton",
     quoi: "« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.",
   },
+  {
+    fichier: "68-retirer-le-prix-accorde.html",
+    titre: "Retirer le prix accordé",
+    famille: "Le devis",
+    quoi: "« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————

@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-16 · `main`
+**Point de reprise :** 2026-08-17 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -765,7 +765,45 @@ réparation est une décision du patron — `TODO.md` §0 duoquadragies.
 Trois pièges de ce lot : « 0 € » ne doit jamais s'afficher pour un client non
 facturé (« — » et une phrase) ; les prestations se comptent en chantiers et non
 en lignes ; et un contrôle qui cherche « 0,00 € » dans une page le trouve dans
-« 450,00 € ». `ARCHITECTURE.md` §119.
+« 450,00 € ». `ARCHITECTURE.md` §121.
+
+**LE PRIX ACCORDÉ NE VIT PAS SUR UNE LIGNE (17 août).** Il vit sur l'EN-TÊTE du
+devis (`reduction_pourcent`), et c'est le prix de l'arrangement B qu'il a choisi
+le 16. Conséquence pratique : **tout ce qui recopie « les lignes » et rien
+d'autre l'oublie en silence.** C'est ce qui a produit ses deux défauts du
+17 août — la dictée qui retirait la remise puis la voyait revenir, et le « 0 % »
+qui laissait une ligne or sur un devis dont le PDF n'imprimait rien. Avant de
+toucher à quoi que ce soit qui relise le devis après une écriture, se demander
+si l'en-tête repart avec.
+
+**⚠ UN CONTRÔLE QUI RECHARGE N'ÉPROUVE PAS L'ÉCRAN, IL ÉPROUVE LA BASE (17 août).**
+`test-reduction-devis-e2e` était vert sur un retrait de remise… en rechargeant la
+page juste avant de vérifier. Le défaut vivait précisément dans l'état de
+l'écran. Le nouveau cas mesure **sans rechargement**, et il est rouge sans le
+correctif.
+
+**ET IL FAUT ÉPROUVER SON GESTE, PAS LE NÔTRE.** La suite vidait la case ; lui
+écrit « 0 » par-dessus — viser un champ de 36 px sur un téléphone, sélectionner
+un chiffre et le supprimer n'est pas ce qu'on fait. Les deux chemins mènent à
+« aucune réduction », un seul était éprouvé.
+
+**LE « PETIT MOINS » ATTEND SON CHOIX (17 août).**
+`docs/maquettes/68-retirer-le-prix-accorde.html`, trois formes. **Ne pas le
+coder avant qu'il tranche** (`CLAUDE.md` §3 bis). Détail : `TODO.md`.
+
+**⚠ UNE COULEUR POSÉE SUR `<html>` NE PEUT PAS SUIVRE UNE NAVIGATION (16 août).**
+Il choisit « Nuit », rien ne change — et c'était exact. Les variables de charte
+sont posées par le gabarit RACINE ; une navigation côté client ne le rejoue pas,
+donc l'attribut `style` de `<html>` reste celui du chargement initial. **Ni
+`revalidatePath` ni `router.refresh()` ne règlent cela** : c'est le navigateur qui
+doit repeindre le même élément. Réparé et éprouvé sur SA séquence — appui, onglet,
+onglet, sans rechargement (`ARCHITECTURE.md` §119).
+
+**ET LA LEÇON, LA MÊME QUE LE 12 AOÛT :** le contrôle existant était **vert** — il
+rechargeait la page entre chaque écran. Le seul chemin où le défaut existe, les
+onglets du bas, n'était parcouru nulle part. **Rejouer sa séquence, pas le geste
+isolé.**
+
 
 **LE RAPPEL « FACTURE IMPAYÉE » (16 août) — le quatrième, et le premier qui a un
 RYTHME.** Il paraît à l'échéance (envoi **+ le délai de paiement** réglé dans

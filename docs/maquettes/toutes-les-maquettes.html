@@ -5545,6 +5545,107 @@
 #s48 .note li{margin-bottom:6px}
 
 
+/* 49 — Retirer le prix accordé */
+#s49{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s49:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s49[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s49, #s49 *{box-sizing:border-box}
+#s49{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s49 .dedans{max-width:940px;margin:0 auto}
+#s49 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s49 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s49 .intro b{color:var(--encre);font-weight:600}
+#s49 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+#s49 .dit b{font-style:normal;color:var(--encre);font-weight:600}
+#s49 .repare{margin:0 0 24px;padding:14px 17px;border-radius:12px;
+          background:var(--papier);border-left:3px solid var(--pin);
+          font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s49 .repare .t{display:block;font-size:10.5px;letter-spacing:.13em;
+             text-transform:uppercase;color:var(--pin);margin-bottom:7px}
+#s49 .repare b{color:var(--encre);font-weight:600}
+#s49 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s49 .quoi{display:block;font-size:10px;letter-spacing:.13em;
+        text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s49 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+#s49 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s49 #s49-g-a:checked ~ .dedans .segments label[for="s49-g-a"],#s49 #s49-g-b:checked ~ .dedans .segments label[for="s49-g-b"],#s49 #s49-g-c:checked ~ .dedans .segments label[for="s49-g-c"],#s49 #e-avant:checked ~ .dedans .segments label[for="e-avant"],#s49 #e-apres:checked ~ .dedans .segments label[for="e-apres"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s49 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s49 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s49 .feuille{background:var(--papier);border-radius:10px;padding:20px 18px}
+#s49 .lg{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;
+      padding:8px 0;border-bottom:1px solid var(--trait);color:var(--gris)}
+#s49 .plus-ligne{font-size:13.5px;color:var(--alerte);padding:11px 0 4px}
+#s49 .totaux{margin-top:12px}
+#s49 .tot{display:flex;justify-content:space-between;align-items:center;
+       font-size:14px;padding:4px 0}
+#s49 .tot.or{color:var(--or)}
+#s49 .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;
+            margin-top:6px;border-top:2px solid var(--encre)}
+#s49 .tot .g{display:flex;align-items:center;gap:6px}
+#s49 .case{border:1px dotted var(--trait);border-radius:3px;padding:0 3px}
+#s49 .moins{flex:none;width:26px;height:26px;border-radius:9999px;
+         border:1px solid var(--or);color:var(--or);
+         display:inline-flex;align-items:center;justify-content:center;
+         font-size:15px;line-height:1;background:transparent}
+#s49 .glisse{display:flex;gap:10px;align-items:center;overflow:hidden}
+#s49 .glisse .corps{flex:1;min-width:0;display:flex;justify-content:space-between;
+                 gap:12px;opacity:.55}
+#s49 .glisse .retirer{flex:none;font-size:12.5px;color:var(--alerte);
+                   border:1px solid var(--alerte);border-radius:9999px;
+                   padding:4px 11px;background:transparent}
+#s49 .bascule{font-size:13px;color:var(--or);padding-top:9px;margin-top:2px}
+#s49 .avant,#s49 .apres,#s49 .et-a,#s49 .et-b,#s49 .et-c{display:none}
+#s49 #e-avant:checked ~ .dedans .avant{display:flex}
+#s49 #e-apres:checked ~ .dedans .apres{display:flex}
+#s49 #e-avant:checked ~ .dedans .avant.bloc{display:block}
+#s49 #e-apres:checked ~ .dedans .apres.bloc{display:block}
+#s49 #e-avant:checked ~ .dedans .avant.mot{display:inline}
+#s49 #e-apres:checked ~ .dedans .apres.mot{display:inline}
+#s49 #s49-g-a:checked ~ #e-avant:checked ~ .dedans .et-a,#s49 #s49-g-b:checked ~ #e-avant:checked ~ .dedans .et-b,#s49 #s49-g-c:checked ~ #e-avant:checked ~ .dedans .et-c{display:flex}
+#s49 #s49-g-a:checked ~ #e-avant:checked ~ .dedans .et-a.bloc,#s49 #s49-g-c:checked ~ #e-avant:checked ~ .dedans .et-c.bloc{display:block}
+#s49 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s49 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s49 .legende b{color:var(--encre);font-weight:600}
+#s49 .l-a,#s49 .l-b,#s49 .l-c{display:none}
+#s49 #s49-g-a:checked ~ .dedans .l-a,#s49 #s49-g-b:checked ~ .dedans .l-b,#s49 #s49-g-c:checked ~ .dedans .l-c{display:block}
+#s49 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s49 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s49 .note b{color:var(--encre);font-weight:600}
+#s49 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s49 .note ul{margin:8px 0 0;padding-left:19px}
+#s49 .note li{margin-bottom:6px}
+
+
 </style>
 
 <div class="enveloppe">
@@ -5767,6 +5868,11 @@
       <a class="item" href="#m48">
         <span class="no">48</span><span class="titre">Le nouveau chantier, plus gros</span><span class="fleche">↓</span>
         <span class="quoi">« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.</span>
+      </a>
+      <p class="famille">Le devis</p>
+      <a class="item" href="#m49">
+        <span class="no">49</span><span class="titre">Retirer le prix accordé</span><span class="fleche">↓</span>
+        <span class="quoi">« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -19993,6 +20099,175 @@
         (vérifié dans <i>globals.css</i>). Une seule réserve : « Très gras »
         peut se confondre avec « Gras » selon l’appareil — sur iPhone les deux
         existent vraiment, sur d’autres écrans le second est simulé.</li>
+    </ul>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m49">
+    <div class="etape-tete">
+      <span class="etape-no">49</span>
+      <h2>Retirer le prix accordé</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s49">
+<input type="radio" name="g" id="s49-g-a" class="etat">
+<input type="radio" name="g" id="s49-g-b" class="etat" checked>
+<input type="radio" name="g" id="s49-g-c" class="etat">
+<input type="radio" name="e" id="e-avant" class="etat" checked>
+<input type="radio" name="e" id="e-apres" class="etat">
+
+<div class="dedans">
+  <h1>Retirer le prix accordé</h1>
+  <p class="intro">
+    Le devis de sa capture du 17 août, à <b>1 850,00 € HT</b>, avec les
+    <b>5 %</b> qu'il n'arrivait pas à enlever. Touchez les pastilles : le geste
+    change, et l'état aussi.
+  </p>
+
+  <p class="dit">
+    <b>Le 17 août 2026 :</b> « Il n'y a aucun moyen de retirer les cinq pour
+    cent, si ce n'est en écrivant zéro pour cent à la place de cinq. […] Tout
+    comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait un petit
+    moins pour supprimer la ligne de la réduction. Et qu'à la note vocale, on
+    puisse également la supprimer. »
+  </p>
+
+  <p class="repare">
+    <span class="t">Déjà réparé — rien à choisir là-dessus</span>
+    <b>Écrire « 0 »</b> ne la retirait pas non plus : la base enregistrait bien
+    « aucune réduction », mais l'écran gardait une ligne or <b>0 %</b> sans
+    montant — un devis qui affirmait une remise que son PDF n'imprimait pas.
+    <b>Et à la voix</b>, « retire-moi les cinq pour cent » était compris, coché,
+    enregistré… puis défait : l'écran ne relisait que les lignes du tableau, et
+    le prix accordé n'est pas une ligne. L'ancien pourcentage restait affiché, et
+    se réécrivait en base au passage suivant dans la case.
+  </p>
+
+  <div class="quoi">Le geste</div>
+  <div class="segments">
+    <label for="s49-g-a">A — glisser la ligne</label>
+    <label for="s49-g-b">B — le petit «&nbsp;−&nbsp;»</label>
+    <label for="s49-g-c">C — la ligne du bas bascule</label>
+  </div>
+
+  <div class="quoi">L'état</div>
+  <div class="segments">
+    <label for="e-avant">Avec les 5 %</label>
+    <label for="e-apres">Une fois retirés</label>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="feuille">
+        <div class="lg"><span>Démontage d'un chêne en rétention</span><span>950,00 €</span></div>
+        <div class="lg"><span>Découpe du bois en 50 cm sur site</span><span>350,00 €</span></div>
+        <div class="lg"><span>Abattage — cèdre en bord d'allée</span><span>550,00 €</span></div>
+        <div class="plus-ligne">+ Ajouter une ligne</div>
+
+        <div class="totaux">
+          <!-- ═════ AVEC LES 5 % ═════ -->
+          <!-- A — la ligne glisse, comme toutes les lignes de l'application
+               depuis le 10 août 2026. -->
+          <div class="tot avant"><span>Total HT</span><span>1 850,00 €</span></div>
+          <div class="tot or et-a">
+            <div class="glisse" style="width:100%">
+              <div class="corps">
+                <span>Prix accordé au client <span class="case">5</span> %</span>
+                <span>− 92,50 €</span>
+              </div>
+              <span class="retirer">Retirer</span>
+            </div>
+          </div>
+          <!-- B — le petit « − », en face de la ligne. Ce qu'il a demandé. -->
+          <div class="tot or et-b">
+            <span class="g"><span class="moins">−</span>Prix accordé au client <span class="case">5</span> %</span>
+            <span>− 92,50 €</span>
+          </div>
+          <!-- C — rien ne change sur la ligne ; c'est le bas qui bascule. -->
+          <div class="tot or et-c">
+            <span class="g">Prix accordé au client <span class="case">5</span> %</span>
+            <span>− 92,50 €</span>
+          </div>
+          <div class="tot avant"><span>Total HT après remise</span><span>1 757,50 €</span></div>
+
+          <!-- ═════ UNE FOIS RETIRÉS ═════ -->
+          <div class="tot apres"><span>Total HT</span><span>1 850,00 €</span></div>
+
+          <div class="tot"><span>TVA (<span class="case">20</span> %)</span>
+            <span class="avant mot">351,50 €</span><span class="apres mot">370,00 €</span></div>
+          <div class="tot gros"><span>Total TTC</span>
+            <span class="avant mot">2 109,00 €</span><span class="apres mot">2 220,00 €</span></div>
+
+          <!-- La ligne du bas : elle existe déjà pour POSER une remise, et ne
+               s'affiche aujourd'hui que sur un devis qui n'en a pas. -->
+          <div class="bascule apres bloc">+ Prix accordé au client</div>
+          <div class="bascule et-c bloc">− Retirer le prix accordé</div>
+          <div class="bascule et-a bloc" style="color:var(--gris)">Glisser la ligne vers la gauche</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A — glisser la ligne, comme partout ailleurs</span>
+        Le geste unique de l'application depuis le 10 août 2026 : la ligne glisse
+        vers la gauche et découvre <b>Retirer</b>, avec le tiroir <b>Annuler</b>
+        en dessous. Trois mécaniques de suppression coexistaient avant cette
+        date ; il n'en a gardé qu'une.
+        <span class="cout">
+          <b>Ce que ça coûte :</b> rien à inventer, tout existe.
+          <b>Ce que ça coûte vraiment :</b> c'est un <b>total</b>, pas une ligne
+          du tableau — rien d'autre ne glisse dans ce bloc, et un geste qu'on ne
+          soupçonne pas est un geste qui n'existe pas. C'est exactement ce qu'il
+          vient de vivre.
+        </span>
+      </div>
+      <div class="l-b">
+        <span class="t">B — le petit « − », en face de la ligne</span>
+        Ce qu'il a demandé, mot pour mot. Un rond de 26 px devant le libellé, en
+        or comme la ligne. Un appui, la ligne part, le devis revient à
+        <b>2 220,00 €</b> — et le tiroir <b>Annuler</b> reste dessous, comme pour
+        une ligne du tableau.
+        <span class="cout">
+          <b>Ce que ça coûte :</b> un bouton de plus dans le bloc des totaux, le
+          seul endroit du devis qui n'en portait aucun.
+          <b>Ce qu'il faut accepter :</b> le « + » ajoute une ligne AU TABLEAU,
+          ce « − » retire un TOTAL. Deux symboles jumeaux pour deux natures
+          différentes — c'est lisible, mais ce n'est pas symétrique.
+        </span>
+      </div>
+      <div class="l-c">
+        <span class="t">C — la ligne du bas bascule</span>
+        La ligne discrète sous le total existe déjà : « <b>+ Prix accordé au
+        client</b> », et elle ne s'affiche que sur un devis qui n'en a pas. Elle
+        devient « <b>− Retirer le prix accordé</b> » dès qu'il y en a une. Un
+        seul endroit à connaître, qui dit toujours ce qu'il fera.
+        <span class="cout">
+          <b>Ce que ça coûte :</b> presque rien — la ligne est déjà là, elle
+          change de mot.
+          <b>Ce qu'il faut accepter :</b> le geste n'est pas <i>en face</i> de la
+          remise mais sous le total TTC, à un centimètre plus bas. Sur son
+          téléphone, les deux sont à l'écran en même temps.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui ne change pas, quel que soit le choix</span>
+    <ul>
+      <li><b>La voix retire aussi</b> — « retire-moi les cinq pour cent »,
+        « enlève la remise ». C'était déjà écrit ; c'est l'écran qui ne suivait
+        pas, et c'est réparé.</li>
+      <li><b>Le retrait se défait.</b> Comme toute suppression depuis le 10 août :
+        un tiroir <b>Annuler</b> sous la feuille, et le pourcentage revient.</li>
+      <li><b>Écrire 0 %, ou vider la case,</b> retirent la remise pour de bon —
+        à l'écran comme sur le PDF.</li>
+      <li><b>La TVA suit toujours le net.</b> 20 % de 1 757,50 € font 351,50 € ;
+        une fois la remise partie, 20 % de 1 850,00 € font 370,00 €. Ce n'est pas
+        un choix de présentation, c'est la seule façon juste.</li>
     </ul>
   </div>
 </div>
