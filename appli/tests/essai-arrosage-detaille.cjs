@@ -137,6 +137,40 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('aucun prix nulle part sur la page', !/€|\bEUR\b/.test(await page.locator('body').innerText()));
   cas('le disconnecteur est dans la liste', /Disconnecteur/.test(liste));
 
+  // ── LA RÈGLE DES TÉS, ÉPROUVÉE PAR LUI SUR UN TRACÉ LIBRE (planche 74) ────
+  // « N arroseurs sur un réseau, c'est N − 1 tés » — un réseau part d'UNE
+  // ligne et finit sur N bouts, chaque té ajoute un bout. Ni la forme du
+  // terrain ni l'ordre de raccordement n'y changent rien.
+  //
+  // Ce contrôle vaut plus que le compte du jour : il tient la formule de
+  // `listeMateriel()` par SON INVARIANT, et non par les nombres d'un jardin
+  // d'exemple qui bougeront au prochain catalogue. Un jour où quelqu'un
+  // écrira `ny` jonctions au lieu de `ny − 1` — l'erreur exacte que sa
+  // correction du 17 août visait — la somme cessera de tomber juste, et
+  // c'est ici que ça se verra.
+  const reseau = await page.evaluate(() => {
+    const d = decouper();
+    const l = listeMateriel(d);
+    const q = (ref) => { const x = l.filter(y => y.ref === ref)[0]; return x ? x.q : 0; };
+    // Un secteur peut porter plusieurs zones ; c'est bien par ZONE qu'un
+    // réseau part du regard, donc c'est par zone que se compte le « − 1 ».
+    let arroseurs = 0, reseaux = 0;
+    etat.zones.forEach(z => { const p = poser(z); if (p.nombre && p.ny){ arroseurs += p.nombre; reseaux++; } });
+    return { tes: q('te-taraude-25-34-25'), jonctions: q('te-25-25-25'),
+             coudes: q('coude-taraude-25-34'), arroseurs, reseaux };
+  });
+  cas('le réseau latéral est bien compté (des tés, pas zéro)',
+      reseau.tes > 0 && reseau.arroseurs > 0, JSON.stringify(reseau));
+  // **Un contrôle qui mesure ZÉRO ne mesure rien** (règle du §5 du dépôt) :
+  // sans la ligne ci-dessus, un jardin sans arroseur rendrait 0 === 0 en vert.
+  cas('sa règle des tés : N arroseurs ⇒ N − 1 tés par réseau',
+      reseau.tes + reseau.jonctions === reseau.arroseurs - reseau.reseaux,
+      JSON.stringify(reseau) + ' — attendu ' + (reseau.arroseurs - reseau.reseaux));
+  // Et le pendant : chaque arroseur porte un té OU un coude, jamais les deux,
+  // jamais rien. Les jonctions, elles, n'alimentent aucun arroseur.
+  cas('chaque arroseur porte un té ou un coude, et rien d\'autre',
+      reseau.tes + reseau.coudes === reseau.arroseurs, JSON.stringify(reseau));
+
   // Le mail part avec la liste dedans.
   const href = await page.locator('#envoyer').getAttribute('href');
   cas('le mail au fournisseur porte la liste', href.startsWith('mailto:') && /Electrovannes|%C3%89lectrovannes/.test(href),

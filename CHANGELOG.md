@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### Il éprouve la règle des tés sur un tracé libre — elle tient, `N − 1`
+
+*« Combien de té ? Où sont-ils ? Marque-les d'un point jaune ! »*, sur un
+croquis à lui. **C'était un contrôle, pas une demande de dessin** : son tracé
+n'est délibérément pas une grille — six arroseurs répartis n'importe comment
+autour du regard, des courbes, des branches de longueurs inégales. Une règle
+qui n'aurait tenu que sur une grille ne vaudrait rien sur un chantier.
+
+Elle tient, et elle se résume à une soustraction : un réseau part d'UNE ligne
+au regard et doit finir sur `N` bouts ; chaque té coupe une ligne en deux,
+donc ajoute un bout. D'où **`N − 1` tés, quelle que soit la forme du terrain
+et quel que soit l'ordre de raccordement**. Six arroseurs, cinq tés — marqués
+et numérotés dans `docs/maquettes/74-ou-sont-les-tes.html`.
+
+**Ce que ça prouve sur le code, et c'est la vraie prise du lot :** l'outil
+compte sur une grille `(nombre − ny)` tés de ligne + `(ny − 1)` jonctions,
+**dont la somme vaut exactement `nombre − 1`**. Les deux comptages — l'un par
+la grille, l'autre par la topologie de son tracé libre — tombent sur le même
+nombre. La formule de `listeMateriel()` n'était donc pas un cas particulier
+de la grille. **Aucune ligne de calcul n'a changé** : ce lot livre le dessin,
+la certitude — et un garde-fou.
+
+**Le garde-fou tient la règle par son INVARIANT, pas par des nombres**
+(`essai-arrosage-detaille.cjs`) : `tés + jonctions === arroseurs − réseaux`
+et `tés + coudes === arroseurs`. Écrire « 8 tés sur ce jardin » aurait été
+périmé au prochain catalogue ; l'invariant, lui, survit à tout changement de
+buse ou de dimension. **Éprouvé à l'envers avant d'être gardé**, comme le
+veut le §5 : reposé à `ny` jonctions au lieu de `ny − 1` — l'erreur exacte
+que sa correction du 17 août visait — il rougit ; reposé à `nombre` tés au
+lieu de `nombre − ny`, les deux contrôles rougissent. Et il refuse de
+conclure sur un jardin sans arroseur, pour ne pas rendre un `0 === 0` vert
+(le piège du contrôle qui mesure zéro, payé le 15 août). Remis droit :
+35/35 et 90/90 au vert.
+
 ### Le tracé du réseau latéral est tranché, et calculé automatiquement
 
 La question posée depuis le lot du réseau latéral — le tuyau serpente-t-il

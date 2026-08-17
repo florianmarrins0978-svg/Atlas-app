@@ -365,7 +365,13 @@ const MAQUETTES = [
     fichier: "73-le-trace-du-tuyau.html",
     titre: "Le tracé du tuyau",
     famille: "L’arrosage automatique",
-    quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel.",
+    quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.",
+  },
+  {
+    fichier: "74-ou-sont-les-tes.html",
+    titre: "Où sont les tés",
+    famille: "L’arrosage automatique",
+    quoi: "« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! » — son tracé libre, cinq tés marqués, et la règle qui vaut partout : N arroseurs, N − 1 tés.",
   },
   {
     fichier: "72-mes-mots-au-catalogue.html",

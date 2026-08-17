@@ -6012,6 +6012,7 @@
 #s53 .trace .tuyau-fleche{fill:var(--eau)}
 #s53 .trace .tete{fill:var(--pin);stroke:var(--papier);stroke-width:2}
 #s53 .trace .regard{fill:var(--or);stroke:var(--papier);stroke-width:2}
+#s53 .trace .coude-tronc{fill:var(--pin);stroke:var(--papier);stroke-width:2}
 #s53 .trace .etq{fill:var(--gris);font-size:10.5px;font-family:inherit}
 #s53 .trace .etq-b{fill:var(--encre);font-weight:600;font-size:10.5px;font-family:inherit}
 #s53 .trace .rang{fill:var(--gris);font-size:10px;font-family:inherit;text-anchor:end}
@@ -6028,17 +6029,17 @@
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
 
 
-/* 54 — Mes mots au catalogue */
+/* 54 — Où sont les tés */
 #s54{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
-    --alerte:#9C3B2E; --teinte:#ece9e1;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#2F4C78; --jaune:#F2C230;
   }
 @media (prefers-color-scheme: dark){
 #s54:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-      --alerte:#C87058; --teinte:#252320;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
     }
 
   
@@ -6046,77 +6047,140 @@
 #s54[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-    --alerte:#C87058; --teinte:#252320;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
   }
 #s54, #s54 *{box-sizing:border-box}
 #s54{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s54 .dedans{max-width:960px;margin:0 auto}
+#s54 .dedans{max-width:900px;margin:0 auto}
 #s54 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
 #s54 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
 #s54 .intro b{color:var(--encre);font-weight:600}
-#s54 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
-       background:var(--papier);border-left:3px solid var(--or);
-       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s54 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
 #s54 .dit b{color:var(--encre);font-weight:600}
-#s54 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
-#s54 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
-#s54 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
-                  border:1px solid var(--trait);font-size:13.5px;
-                  background:var(--papier);color:var(--gris);
-                  -webkit-tap-highlight-color:transparent}
-#s54 #s54-v-a:checked ~ .dedans .segments label[for="s54-v-a"],#s54 #s54-v-b:checked ~ .dedans .segments label[for="s54-v-b"],#s54 #s54-v-c:checked ~ .dedans .segments label[for="s54-v-c"]{
-    background:var(--pin);border-color:var(--pin);color:#fff}
-#s54 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
-#s54 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
-       background:var(--teinte);
-       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
-#s54 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
-#s54 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
-          border-bottom:1px solid var(--trait)}
-#s54 .retour{flex:none;width:31px;height:31px;border-radius:9px;
-          border:1px solid var(--trait);display:flex;align-items:center;
-          justify-content:center;color:var(--encre);font-size:17px;line-height:1}
-#s54 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
-#s54 .corps{padding:14px 16px 0}
-#s54 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
-#s54 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
-        color:var(--gris);display:block;margin:0 0 8px}
-#s54 .etiq.mienne{color:var(--or)}
-#s54 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
-         margin-bottom:9px}
-#s54 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
-              display:block;margin-bottom:3px}
-#s54 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
-#s54 .mien{color:var(--or)}
-#s54 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
-#s54 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
-           border-radius:10px;border:1px dashed var(--or);color:var(--or);
-           font-size:13.5px}
-#s54 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
-#s54 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
-#s54 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
-#s54 .a-part,#s54 .a-dessus,#s54 .a-melange{display:none}
-#s54 #s54-v-a:checked ~ .dedans .a-part,#s54 #s54-v-b:checked ~ .dedans .a-dessus,#s54 #s54-v-c:checked ~ .dedans .a-melange{display:block}
-#s54 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s54 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
-              color:var(--encre);margin-bottom:8px}
-#s54 .legende b{color:var(--encre);font-weight:600}
-#s54 .l-a,#s54 .l-b,#s54 .l-c{display:none}
-#s54 #s54-v-a:checked ~ .dedans .l-a,#s54 #s54-v-b:checked ~ .dedans .l-b,#s54 #s54-v-c:checked ~ .dedans .l-c{display:block}
-#s54 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
-#s54 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
-           background:var(--pin);color:#fff;font-size:11px;letter-spacing:.06em;
-           text-transform:uppercase}
-#s54 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+#s54 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
+           padding:18px 16px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
+#s54 .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+#s54 .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
+#s54 .verdict .quoi{font-size:14px;color:var(--gris)}
+#s54 .trace{width:100%;height:auto;display:block;margin:0 0 6px}
+#s54 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:9;
+                stroke-linecap:round;stroke-linejoin:round}
+#s54 .trace .arroseur{fill:none;stroke:var(--eau);stroke-width:9}
+#s54 .trace .regard-b{fill:none;stroke:var(--eau);stroke-width:9}
+#s54 .trace .te{fill:var(--jaune);stroke:var(--encre);stroke-width:5}
+#s54 .trace .te-n{fill:var(--encre);font-size:38px;font-weight:700;
+               font-family:inherit;text-anchor:middle}
+#s54 .trace .etq{fill:var(--gris);font-size:34px;font-family:inherit}
+#s54 .trace .etq-a{fill:var(--pin);font-size:32px;font-family:inherit;text-anchor:middle}
+#s54 .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
+           font-size:12.5px;color:var(--gris)}
+#s54 .legende span{display:inline-flex;align-items:center;gap:7px}
+#s54 .pastille{width:15px;height:15px;border-radius:50%;flex:none;
+            background:var(--jaune);border:2px solid var(--encre)}
+#s54 .cercle{width:15px;height:15px;border-radius:50%;flex:none;
+          border:3px solid var(--eau)}
+#s54 .note{margin-top:8px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
 #s54 .note b{color:var(--encre);font-weight:600}
 #s54 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s54 .note ul{margin:8px 0 0;padding-left:19px}
-#s54 .note li{margin-bottom:6px}
+#s54 .note + .note{margin-top:14px}
+#s54 .note code{font-size:12.5px}
+
+
+/* 55 — Mes mots au catalogue */
+#s55{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s55:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s55[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s55, #s55 *{box-sizing:border-box}
+#s55{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s55 .dedans{max-width:960px;margin:0 auto}
+#s55 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s55 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s55 .intro b{color:var(--encre);font-weight:600}
+#s55 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;color:var(--gris)}
+#s55 .dit b{color:var(--encre);font-weight:600}
+#s55 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s55 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#s55 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s55 #s55-v-a:checked ~ .dedans .segments label[for="s55-v-a"],#s55 #s55-v-b:checked ~ .dedans .segments label[for="s55-v-b"],#s55 #s55-v-c:checked ~ .dedans .segments label[for="s55-v-c"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s55 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s55 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s55 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
+#s55 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
+          border-bottom:1px solid var(--trait)}
+#s55 .retour{flex:none;width:31px;height:31px;border-radius:9px;
+          border:1px solid var(--trait);display:flex;align-items:center;
+          justify-content:center;color:var(--encre);font-size:17px;line-height:1}
+#s55 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
+#s55 .corps{padding:14px 16px 0}
+#s55 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
+#s55 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--gris);display:block;margin:0 0 8px}
+#s55 .etiq.mienne{color:var(--or)}
+#s55 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
+         margin-bottom:9px}
+#s55 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
+              display:block;margin-bottom:3px}
+#s55 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
+#s55 .mien{color:var(--or)}
+#s55 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
+#s55 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
+           border-radius:10px;border:1px dashed var(--or);color:var(--or);
+           font-size:13.5px}
+#s55 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
+#s55 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
+#s55 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
+#s55 .a-part,#s55 .a-dessus,#s55 .a-melange{display:none}
+#s55 #s55-v-a:checked ~ .dedans .a-part,#s55 #s55-v-b:checked ~ .dedans .a-dessus,#s55 #s55-v-c:checked ~ .dedans .a-melange{display:block}
+#s55 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s55 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s55 .legende b{color:var(--encre);font-weight:600}
+#s55 .l-a,#s55 .l-b,#s55 .l-c{display:none}
+#s55 #s55-v-a:checked ~ .dedans .l-a,#s55 #s55-v-b:checked ~ .dedans .l-b,#s55 #s55-v-c:checked ~ .dedans .l-c{display:block}
+#s55 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s55 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
+           background:var(--pin);color:#fff;font-size:11px;letter-spacing:.06em;
+           text-transform:uppercase}
+#s55 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s55 .note b{color:var(--encre);font-weight:600}
+#s55 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s55 .note ul{margin:8px 0 0;padding-left:19px}
+#s55 .note li{margin-bottom:6px}
 
 
 </style>
@@ -6362,11 +6426,15 @@
       </a>
       <a class="item" href="#m53">
         <span class="no">53</span><span class="titre">Le tracé du tuyau</span><span class="fleche">↓</span>
-        <span class="quoi">Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel.</span>
+        <span class="quoi">Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.</span>
+      </a>
+      <a class="item" href="#m54">
+        <span class="no">54</span><span class="titre">Où sont les tés</span><span class="fleche">↓</span>
+        <span class="quoi">« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! » — son tracé libre, cinq tés marqués, et la règle qui vaut partout : N arroseurs, N − 1 tés.</span>
       </a>
       <p class="famille">Les réglages</p>
-      <a class="item" href="#m54">
-        <span class="no">54</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
+      <a class="item" href="#m55">
+        <span class="no">55</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
         <span class="quoi">« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.</span>
       </a>
     <p class="note">
@@ -21322,25 +21390,26 @@
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s53">
-<input type="radio" name="t" id="s53-t-a" class="etat" checked>
-<input type="radio" name="t" id="s53-t-b" class="etat">
+<input type="radio" name="t" id="s53-t-a" class="etat">
+<input type="radio" name="t" id="s53-t-b" class="etat" checked>
 
 <div class="dedans">
   <h1>Le tracé du tuyau</h1>
-  <p class="intro">La question qui bloque le comptage des tés et coudes.
-    <b>Touchez A ou B</b> : c'est tout ce qu'il y a à faire ici, il n'y a rien
-    à saisir. Le même secteur — 3 rangées de 4 arroseurs, depuis le même
-    regard — est tracé des deux façons.</p>
+  <p class="intro"><b>Tranché le 17 août : c'est B</b>, plusieurs lignes
+    parallèles — avec sa correction sur les jonctions. A reste ci-dessous pour
+    mémoire, ce n'est pas votre geste. Le même secteur — 3 rangées de 4
+    arroseurs, depuis le même regard — est tracé des deux façons.</p>
 
-  <p class="dit">« Dans un secteur à plusieurs rangées, le tuyau serpente-t-il
-    rangée par rangée en <b>une seule ligne continue</b> depuis le regard, ou
-    partez-vous en <b>plusieurs lignes parallèles</b> pour un même secteur ? »</p>
+  <p class="dit">« C'est le B, sauf que la jonction […] ressemble à un té […]
+    un coude avec un tuyau, le tuyau on peut le courber pour former le coude.
+    Chose qu'on ne peut pas faire lorsque c'est un té, puisqu'on est obligé de
+    couper pour mettre un té. »</p>
 
   <div class="reglage">
-    <span class="quoi">Votre geste sur le chantier</span>
+    <span class="quoi">Son geste sur le chantier</span>
     <div class="segments">
       <label for="s53-t-a">A · Une seule ligne, en serpentin</label>
-      <label for="s53-t-b">B · Plusieurs lignes parallèles</label>
+      <label for="s53-t-b">B · Plusieurs lignes parallèles · <b>retenu</b></label>
     </div>
   </div>
 
@@ -21413,9 +21482,11 @@
   <div class="tb">
     <div class="planche">
       <p class="titre-p">B · Plusieurs lignes parallèles depuis le regard</p>
-      <p class="sous-p">Un tronc commun part du regard ; à chaque rangée, une
-        <b>jonction</b> détache une ligne indépendante qui va d'un bout à
-        l'autre de sa rangée et s'arrête. Trois lignes, trois fins.</p>
+      <p class="sous-p">Un tronc commun part du regard ; tant qu'il lui reste
+        une rangée à atteindre plus loin, il se détache par une <b>jonction</b>
+        (un té — on coupe le tuyau). À la <b>dernière</b> rangée, il n'a plus
+        besoin de continuer : le tuyau se courbe pour y entrer, sans té à couper.
+        Corrigé le 17 août sur son geste réel.</p>
 
       <svg class="trace" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet">
         <rect class="fond-plan" x="0" y="0" width="640" height="300" rx="14"/>
@@ -21434,12 +21505,16 @@
         <polygon class="tuyau-fleche" points="514,144 514,156 526,150" />
         <polygon class="tuyau-fleche" points="514,224 514,236 526,230" />
 
-        <!-- jonctions sur le tronc -->
-        <circle class="regard" cx="31" cy="70" r="6"/>
-        <circle class="regard" cx="31" cy="150" r="6"/>
+        <!-- Le tronc CONTINUE après ces deux points (une rangée de plus à
+             atteindre) : ce sont de vraies jonctions, un té qu'on coupe. -->
         <circle class="regard" cx="31" cy="230" r="6"/>
-        <text class="etq" x="48" y="88">Jonction</text>
-        <text class="etq" x="48" y="168">Jonction</text>
+        <circle class="regard" cx="31" cy="150" r="6"/>
+        <text class="etq-b" x="48" y="222">Jonction (té)</text>
+        <text class="etq-b" x="48" y="142">Jonction (té)</text>
+
+        <!-- Ici le tronc S'ARRÊTE : rien à couper, le tuyau se courbe. -->
+        <circle class="coude-tronc" cx="31" cy="70" r="6"/>
+        <text class="etq-b" x="48" y="62">Coude (tuyau courbé)</text>
 
         <!-- rangée 1 -->
         <circle class="tete" cx="100" cy="70" r="9"/>
@@ -21475,25 +21550,28 @@
       <div class="compte">
         <span><b>3</b> Départs, <b>3</b> Fins</span>
         <span><b>6</b> Milieux</span>
-        <span><b>2</b> Jonctions sur le tronc</span>
+        <span><b>2</b> Jonctions (tés) sur le tronc</span>
+        <span><b>0</b> pièce à la dernière rangée</span>
       </div>
 
-      <p class="consequence"><b>Ce que ça change pour le comptage :</b> chaque
-        rangée compte son propre Départ et son propre Fin — trois fois plus de
-        ces deux pièces qu'en A. En échange, une pièce de plus apparaît : la
-        <b>Jonction</b>, au point où le tronc se détache vers une rangée sans
-        alimenter d'arroseur à cet endroit précis.</p>
+      <p class="consequence"><b>Sa correction du 17 août :</b> une jonction
+        ressemble à un té — on doit couper le tuyau pour l'insérer. Ça vaut
+        pour chaque rangée où le tronc CONTINUE ensuite : ici, les deux plus
+        proches du regard. À la <b>dernière</b> rangée, le tronc s'arrête ; un
+        coude se fait en courbant le tuyau lui-même, <b>sans pièce à part</b> —
+        ce qu'on ne peut pas faire pour un té, qui exige de couper. Pour N
+        rangées : <b>(N − 1)</b> jonctions, <b>0</b> pièce à la dernière.</p>
     </div>
   </div>
 
   <div class="note">
-    <span class="t">Pourquoi ce dessin, et pas une question de plus</span>
-    <p>Les deux tracés desservent le <b>même</b> secteur, avec la <b>même</b>
-      vanne au regard — ce n'est pas un choix de plomberie différente, c'est
-      votre geste réel qui compte le nombre de Départs, Milieux, Fins et
-      Jonctions. <b>Sans cette réponse, l'outil n'ose pas compter ces quatre
-      pièces</b> et les laisse dans votre registre de prix, en dehors de la
-      liste automatique — voir <code>TODO.md</code> § « 0 quaterquadragies ».</p>
+    <span class="t">Ce que sa réponse débloque</span>
+    <p>Réponse tranchée le 17 août : <b>B</b>, avec la règle du té et du coude.
+      Les quatre pièces du réseau latéral (Départ/Milieu, Fin, Jonction, PEBD)
+      sont désormais comptées automatiquement, secteur par secteur, dans
+      <code>appli/arrosage.html</code> — elles ne restent plus à l'écart de la
+      liste au fournisseur. Détail dans <code>TODO.md</code> §
+      « 0 quaterquadragies ».</p>
   </div>
 </div>
     </div>
@@ -21502,13 +21580,149 @@
   <section class="etape" id="m54">
     <div class="etape-tete">
       <span class="etape-no">54</span>
-      <h2>Mes mots au catalogue</h2>
+      <h2>Où sont les tés</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s54">
-<input type="radio" name="v" id="s54-v-a" class="etat">
-<input type="radio" name="v" id="s54-v-b" class="etat" checked>
-<input type="radio" name="v" id="s54-v-c" class="etat">
+<div class="dedans">
+  <h1>Où sont les tés</h1>
+  <p class="intro">Votre tracé du 17 août, redessiné, avec <b>les cinq tés en
+    jaune</b>. Chacun est numéroté pour que vous puissiez les retrouver un par
+    un sur votre feuille.</p>
+
+  <p class="dit">« Combien de té ? Où sont-ils ? <b>Marque-les d'un point
+    jaune !</b> »</p>
+
+  <div class="planche">
+    <div class="verdict">
+      <span class="gros">5</span>
+      <span class="quoi">tés — et ce n'est pas un comptage à l'œil :
+        <b>6 arroseurs sur un réseau, c'est toujours 5 tés</b>, quelle que
+        soit la forme du terrain.</span>
+    </div>
+
+    <svg class="trace" viewBox="0 0 2000 1290" preserveAspectRatio="xMidYMid meet"
+         role="img" aria-label="Le tracé du réseau, avec les cinq tés marqués en jaune">
+
+      <!-- ══ LE TRONC : du regard vers le haut, puis vers la droite ══ -->
+      <path class="tuyau" d="M 1010 1020 L 1010 862 L 1688 842 L 1690 200 L 300 216"/>
+      <!-- fin de la ligne du haut : elle plonge sur l'arroseur A -->
+      <path class="tuyau" d="M 300 216 Q 288 218 288 240"/>
+
+      <!-- branche du té 2 : descente vers l'arroseur F, en bas à droite -->
+      <path class="tuyau" d="M 1688 842 L 1700 1012 Q 1706 1078 1766 1088"/>
+
+      <!-- branche du té 1 : elle remonte et repart à droite vers l'arroseur B -->
+      <path class="tuyau" d="M 1390 194 L 1392 168 Q 1396 150 1428 147 L 1662 130"/>
+
+      <!-- ══ LA BRANCHE GAUCHE : du té 3 vers la gauche ══ -->
+      <path class="tuyau" d="M 1008 975 L 420 992"/>
+
+      <!-- branche du té 5 : elle plonge vers l'arroseur E, en bas à gauche -->
+      <path class="tuyau" d="M 420 992 Q 344 1022 300 1064 L 276 1158"/>
+
+      <!-- remontée du té 5 vers le té 4 -->
+      <path class="tuyau" d="M 419 990 L 403 740"/>
+
+      <!-- branche du té 4 : vers l'arroseur C, à gauche -->
+      <path class="tuyau" d="M 403 740 Q 396 638 342 612 L 268 601"/>
+
+      <!-- branche du té 4 : elle part à droite puis remonte vers l'arroseur D -->
+      <path class="tuyau" d="M 403 740 L 645 734 C 838 729 944 664 992 484"/>
+
+      <!-- ══ LE REGARD ══ -->
+      <rect class="regard-b" x="898" y="1020" width="218" height="142" rx="8"/>
+      <text class="etq" x="947" y="1112">regard</text>
+
+      <!-- ══ LES SIX ARROSEURS — les bouts de ligne, comme sur sa feuille ══ -->
+      <circle class="arroseur" cx="285" cy="258" r="21"/>
+      <text class="etq-a" x="285" y="325">A</text>
+      <circle class="arroseur" cx="1684" cy="128" r="21"/>
+      <text class="etq-a" x="1684" y="76">B</text>
+      <circle class="arroseur" cx="248" cy="600" r="21"/>
+      <text class="etq-a" x="248" y="668">C</text>
+      <circle class="arroseur" cx="1000" cy="461" r="21"/>
+      <text class="etq-a" x="1000" y="410">D</text>
+      <circle class="arroseur" cx="274" cy="1180" r="21"/>
+      <text class="etq-a" x="274" y="1250">E</text>
+      <circle class="arroseur" cx="1774" cy="1092" r="21"/>
+      <text class="etq-a" x="1836" y="1103">F</text>
+
+      <!-- ══ LES CINQ TÉS, EN JAUNE ══ -->
+      <circle class="te" cx="1390" cy="194" r="30"/>
+      <text class="te-n" x="1390" y="208">1</text>
+
+      <circle class="te" cx="1688" cy="842" r="30"/>
+      <text class="te-n" x="1688" y="856">2</text>
+
+      <circle class="te" cx="1008" cy="975" r="30"/>
+      <text class="te-n" x="1008" y="989">3</text>
+
+      <circle class="te" cx="403" cy="740" r="30"/>
+      <text class="te-n" x="403" y="754">4</text>
+
+      <circle class="te" cx="420" cy="991" r="30"/>
+      <text class="te-n" x="420" y="1005">5</text>
+    </svg>
+
+    <div class="legende">
+      <span><i class="pastille"></i> Té — 3 portions de tuyau se rejoignent</span>
+      <span><i class="cercle"></i> Arroseur — bout de ligne</span>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que chaque té dessert</span>
+    <p><b>1</b> — sur la ligne du haut, là où une branche remonte vers
+      l'arroseur B pendant que la ligne continue vers l'arroseur A.<br>
+      <b>2</b> — côté droit : la ligne qui vient du regard arrive, et repart à
+      la fois vers le haut (A et B) et vers le bas (F).<br>
+      <b>3</b> — juste au-dessus du regard : le réseau se sépare en deux, la
+      moitié droite et la moitié gauche du jardin.<br>
+      <b>4</b> — à gauche : une branche vers l'arroseur C, une autre qui repart
+      à droite vers l'arroseur D.<br>
+      <b>5</b> — en bas à gauche : une branche plonge vers l'arroseur E,
+      l'autre remonte vers le té 4.</p>
+  </div>
+
+  <div class="note">
+    <span class="t">Pourquoi c'est toujours 5, et jamais à compter à l'œil</span>
+    <p>Un réseau part <b>d'une seule ligne</b> au regard et doit finir sur
+      <b>six bouts</b>. Chaque té coupe une ligne en deux, donc ajoute un bout.
+      D'une ligne à six bouts, il faut donc exactement <b>six moins un</b>
+      tés — <b>N − 1</b>, quelle que soit la forme du terrain, quel que soit
+      l'ordre dans lequel le tuyau les relie. Déplacer un arroseur ne change
+      pas le compte ; en ajouter un le monte à six tés.</p>
+    <p><b>Partout ailleurs où le tuyau tourne, c'est un coude</b> : deux
+      portions seulement, le tuyau se courbe, aucune pièce à acheter. C'est
+      votre règle du même jour, et elle suffit à tout classer.</p>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ce contrôle prouve sur l'outil</span>
+    <p>Votre tracé n'est <b>pas une grille</b> : six arroseurs répartis autour
+      du regard, des courbes, des branches inégales. L'outil, lui, compte sur
+      une grille — <code>(nombre − ny)</code> tés de ligne plus
+      <code>(ny − 1)</code> jonctions. Or cette somme vaut
+      <code>nombre − 1</code> : <b>exactement le même nombre</b> que la règle
+      ci-dessus. Les deux façons de compter tombent d'accord, donc la formule
+      de la grille n'était pas un cas particulier — elle vaut aussi sur un
+      tracé libre comme le vôtre.</p>
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m55">
+    <div class="etape-tete">
+      <span class="etape-no">55</span>
+      <h2>Mes mots au catalogue</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s55">
+<input type="radio" name="v" id="s55-v-a" class="etat">
+<input type="radio" name="v" id="s55-v-b" class="etat" checked>
+<input type="radio" name="v" id="s55-v-c" class="etat">
 
 <div class="dedans">
   <h1>Mes mots au catalogue</h1>
@@ -21522,9 +21736,9 @@
     toutes les entreprises</b> — d’où la question : où mettre <b>les vôtres</b> ?</p>
 
   <div class="segments">
-    <label for="s54-v-a">A · Mes mots à part</label>
-    <label for="s54-v-b">B · Mes mots par-dessus</label>
-    <label for="s54-v-c">C · Une seule liste</label>
+    <label for="s55-v-a">A · Mes mots à part</label>
+    <label for="s55-v-b">B · Mes mots par-dessus</label>
+    <label for="s55-v-c">C · Une seule liste</label>
   </div>
 
   <div class="rangee">

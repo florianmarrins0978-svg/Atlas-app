@@ -192,6 +192,37 @@ du tronc (3 tant qu'une rangée suit, 2 à la dernière) en découlent tous —
 à reprendre telle quelle pour tout futur point de raccordement plutôt que
 de redemander un cas par cas.
 
+**✅ ET IL A ÉPROUVÉ LA RÈGLE SUR UN TRACÉ LIBRE — planche `74-ou-sont-les-tes.html`,
+17 août.** *« Combien de té ? Où sont-ils ? Marque-les d'un point jaune ! »*
+sur un croquis à lui : six arroseurs **répartis n'importe comment** autour du
+regard, courbes, branches inégales — **pas une grille**. C'était un contrôle,
+pas une demande de dessin : une règle qui ne tiendrait que sur une grille ne
+vaudrait rien sur un chantier réel.
+
+**Elle tient, et elle se résume à un nombre : `N − 1`.** Un réseau part d'UNE
+ligne au regard et doit finir sur `N` bouts ; chaque té coupe une ligne en
+deux, donc ajoute un bout. D'où `N − 1` tés, **quelle que soit la forme du
+terrain et quel que soit l'ordre dans lequel le tuyau relie les arroseurs**.
+Six arroseurs → cinq tés, marqués et numérotés sur la planche.
+
+**Ce que ce contrôle prouve sur le code, et c'est la vraie prise :** l'outil
+compte sur une grille `(nombre − ny)` tés de ligne + `(ny − 1)` jonctions —
+**dont la somme vaut exactement `nombre − 1`**. Les deux comptages, l'un par
+la grille et l'autre par la topologie, tombent sur le même nombre : la formule
+de `listeMateriel()` **n'était donc pas un cas particulier de la grille**, elle
+vaut aussi sur un tracé libre. Rien à corriger dans le code — mais désormais on
+sait *pourquoi* elle est juste, et non plus seulement qu'elle l'est sur
+l'exemple.
+
+**Et la règle est GARDÉE, par son invariant plutôt que par des nombres**
+(`essai-arrosage-detaille.cjs`) : le contrôle vérifie
+`tés + jonctions === arroseurs − réseaux` et `tés + coudes === arroseurs`,
+pas « 8 tés sur ce jardin-là » — un compte figé serait périmé au prochain
+catalogue, l'invariant non. **Éprouvé à l'envers avant d'être gardé** : posé
+à `ny` jonctions au lieu de `ny − 1` (l'erreur exacte que sa correction
+visait), il rougit ; posé à `nombre` tés au lieu de `nombre − ny`, les deux
+contrôles rougissent. Remis droit, 35/35 au vert.
+
 **LA NOURRICE SE MODIFIE QUAND UNE VOIE PART EN GOUTTE-À-GOUTTE — sa règle du
 17 août.** *« À ne pas oublier : lorsqu'un réseau est pour du goutte-à-goutte,
 quelques modifications s'appliquent […] tout le reste ne doit pas être

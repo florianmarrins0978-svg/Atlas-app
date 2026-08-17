@@ -957,6 +957,18 @@ Fin (2 portions : ça entre, ça monte) en coude, et la jonction du tronc (3
 tant qu'une rangée suit, 2 à la dernière) — **à réutiliser tel quel pour
 tout futur point de raccordement**, plutôt que de retrouver un cas par cas.
 
+**ET LE NOMBRE QUI EN DÉCOULE, ÉPROUVÉ PAR LUI SUR UN TRACÉ LIBRE (planche
+74) : `N` arroseurs sur un réseau ⇒ `N − 1` TÉS, toujours.** Un réseau part
+d'une seule ligne et finit sur `N` bouts ; chaque té ajoute un bout. **Ni la
+forme du terrain ni l'ordre de raccordement ne changent ce compte.** Il l'a
+vérifié en envoyant un croquis délibérément irrégulier (six arroseurs
+dispersés, courbes, branches inégales) et en demandant de placer les tés —
+c'était un contrôle du raisonnement, pas une demande de dessin. **La formule
+de `listeMateriel()` passe ce contrôle sans être modifiée** : sur une grille,
+`(nombre − ny)` tés + `(ny − 1)` jonctions **= `nombre − 1`**. Devant tout
+doute futur sur un comptage de tuyauterie, c'est le repère qui tranche en une
+soustraction.
+
 **⚠ LES FICHES DE NOURRICE EXISTENT MAINTENANT (1 à 6 voies, 17 août) et
 REMPLACENT les lignes génériques (électrovanne/regard/programmateur) dès
 qu'elles s'appliquent — dans la liste ET dans le registre de prix.
