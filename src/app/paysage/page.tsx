@@ -3,20 +3,30 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 
 /**
- * « Outils » — les outils de calcul du métier, derrière le cinquième onglet.
+ * « Paysage » — les outils de calcul du métier, derrière le cinquième onglet.
  *
  * **Sa décision du 17 août 2026.** Sa question : *« L'idée, c'est de créer des
  * outils comme celui-là pour les paysagistes ; après je ferai la même chose
  * pour les terrasses bois. Pour toi le mieux c'est de créer une nouvelle
  * catégorie paysage ? Ou alors on range ça dans les réglages ? »* — et sa
  * réponse au formulaire : **un cinquième onglet**. Le raisonnement, et ce qui a
- * été écarté (les Réglages, une catégorie « Paysage », l'attache au chantier),
- * sont dans `ARCHITECTURE.md` §125.
+ * été écarté (les Réglages, l'attache au chantier), sont dans
+ * `ARCHITECTURE.md` §125.
  *
- * **Pourquoi « Outils » au pluriel, et jamais « Arrosage ».** L'onglet porte une
- * LISTE : l'arrosage aujourd'hui, la terrasse bois ensuite. Le nommer d'après
- * son premier occupant obligerait à le renommer au second — et un onglet qui
- * change de nom fait perdre le repère de celui qui l'ouvre vingt fois par jour.
+ * **« PAYSAGE », ET NON « OUTILS » — son dernier mot, le 17 août au soir.** Il
+ * avait d'abord retenu « Outils », et j'avais écarté « Paysage » au motif que
+ * le paysage est son métier ENTIER, donc ne distinguerait rien. **Il est revenu
+ * dessus, et c'est son produit.** Son choix se défend mieux que mon objection :
+ * l'onglet porte le nom du MÉTIER qu'il sert, pas la nature de ce qu'il
+ * contient. Le jour où un menuisier s'en servira, il y aura un onglet
+ * « Menuiserie » à côté — et ça se lira mieux que deux listes d'« outils »
+ * qu'il faudrait départager en entrant.
+ *
+ * **Il reste que l'onglet porte une LISTE** : l'arrosage aujourd'hui, la
+ * terrasse bois ensuite. C'est pourquoi le titre de l'écran n'est pas
+ * « Arrosage » — le nommer d'après son premier occupant obligerait à le
+ * renommer au second, et un onglet qui change de nom fait perdre le repère de
+ * celui qui l'ouvre vingt fois par jour.
  *
  * **CE QUI EST DIT ICI EST VRAI, ET C'EST TOUT LE SUJET DE CET ÉCRAN.** L'outil
  * d'arrosage n'est PAS dans l'application : c'est une page publiée à part, qu'il
@@ -25,7 +35,7 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
  * Une ligne qui promettrait un écran interne serait la troisième fois qu'il
  * appuie sur quelque chose qui ne répond pas (`reglages/Sommaire.tsx`).
  */
-export const metadata = { title: "Outils — Atlas" };
+export const metadata = { title: "Paysage — Atlas" };
 
 /** L'adresse de la maquette essayable, publiée avec `appli/` (`pages.yml`). */
 const ARROSAGE = "https://florianmarrins0978-svg.github.io/Atlas-app/arrosage.html";
@@ -53,7 +63,7 @@ const OUTILS: Outil[] = [
   },
 ];
 
-export default function OutilsPage() {
+export default function PaysagePage() {
   return (
     <div
       style={{
@@ -63,8 +73,8 @@ export default function OutilsPage() {
         minHeight: "100%",
       }}
     >
-      <div className="pb-10" data-atlas="ecran-outils">
-        <EnTeteEcran surtitre="Calculs du métier" titre="Outils" />
+      <div className="pb-10" data-atlas="ecran-paysage">
+        <EnTeteEcran surtitre="Outils du métier" titre="Paysage" />
 
         <section className="mx-[26px] mt-[26px]">
           {OUTILS.map((o, i) => (

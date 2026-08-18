@@ -190,6 +190,28 @@ jour — et a été vu rouge sur le piège remis en place. **Ce défaut aurait
 frappé à chaque réglage ajouté**, et lui seul : c'est le genre qu'on ne voit
 jamais en développant, puisqu'on part d'un navigateur vide.
 
+### « Paysage » plutôt qu'« Outils » — il revient sur son choix, et il a raison
+
+*« As-tu créé la fiche outils ? Je préférerais qu'elle s'appelle Paysage
+finalement. »* L'onglet, son écran et son adresse sont renommés.
+
+**J'avais écarté ce mot le matin même**, au motif que le paysage est son métier
+entier et ne distinguerait donc rien. **L'argument était faux**, et il faut
+dire pourquoi sans quoi quelqu'un le ressortira : il supposait qu'Atlas
+resterait l'application d'un paysagiste. Or Atlas sert des artisans, et lui-même
+prépare déjà la terrasse bois. Dans une application multi-métiers, « Paysage »
+distingue exactement ce qu'il faut — le jour où un menuisier s'en sert, il aura
+un onglet « Menuiserie » à côté, là où deux listes d'« Outils » auraient
+demandé de les départager en entrant.
+
+Et le mot vaut mieux pour une seconde raison : « Outils » nomme la nature de ce
+qu'il y a dedans, « Paysage » nomme le métier servi. Le second se lit sans avoir
+à ouvrir.
+
+Un cas de contrôle s'ajoute : **le libellé et l'adresse doivent aller
+ensemble**. Renommer l'un sans l'autre donnerait un onglet « Paysage » qui ouvre
+`/outils` — un 404 que personne n'aurait voulu, et que rien n'aurait dit.
+
 ### Le contrôle de la barre a trouvé une erreur — la mienne, dans la mesure
 
 **Il a rougi dès sa première exécution**, sur le trait d'or : « trait de 66,4 px

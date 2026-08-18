@@ -57,7 +57,7 @@ chantier. C'est la meilleure preuve que la fiche inventée au premier essai aura
 **Sa question :** *« L'idée c'est de créer des outils comme celui-là pour les
 paysagistes ; après je ferai la même chose pour les terrasses bois. Une
 nouvelle catégorie paysage ? Ou on range ça dans les réglages ? »*
-**Sa décision : un cinquième onglet « Outils ».** Le raisonnement complet, et
+**Sa décision : un cinquième onglet, nommé « Paysage ».** Le raisonnement complet, et
 ce qui a été écarté, est dans `ARCHITECTURE.md` §125.
 
 **⚠ CE QUE ÇA COÛTE, MESURÉ ET NON SUPPOSÉ** (planche 76) : à cinq colonnes sur
@@ -87,7 +87,7 @@ de grille remplit sa colonne quoi qu'il porte, sa largeur ne dirait rien. Il
 exige **6 px de marge minimum**, précisément pour refuser la variante B et son
 faux confort de 1,3 px. Et il refuse de conclure sur une barre absente.
 
-**~~4. L'écran derrière l'onglet~~ — FAIT** : `src/app/outils/page.tsx`. **Il
+**~~4. L'écran derrière l'onglet~~ — FAIT** : `src/app/paysage/page.tsx`. **Il
 dit la vérité, et c'est tout son sujet** : l'outil d'arrosage n'est PAS dans
 l'application, c'est une page publiée à part. La ligne porte « À l'essai » au
 lieu d'un chevron, et ouvre la page dehors — plutôt que de promettre un écran

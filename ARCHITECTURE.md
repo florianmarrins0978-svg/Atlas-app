@@ -10471,7 +10471,8 @@ alors on range ça dans les réglages, sous une catégorie paysage ? »*
   outil qui exige un chantier ne sert pas en visite de devis, quand le client
   n'existe pas encore.
 
-**Sa décision : un cinquième onglet « Outils ».**
+**Sa décision : un cinquième onglet.** Nommé « Outils » d'abord, puis
+**« Paysage »** le soir même — voir §125 bis, plus bas.
 
 **LE COÛT EST MESURABLE, ET IL A ÉTÉ MESURÉ** (`docs/maquettes/76-le-cinquieme-onglet.html`).
 La barre porte quatre onglets depuis le 10 août, en capitales de 9,5 px
@@ -10503,6 +10504,41 @@ chantier après coup**, sans quoi un plan fait en visite de devis se perdra —
 c'est précisément ce que l'accès sans chantier fait gagner et risque de coûter.
 
 ---
+
+---
+
+## 125 bis. « Paysage » plutôt qu'« Outils » — il revient sur son choix, et il a raison
+
+**Le 17 août au soir, après avoir vu l'onglet posé :** *« As-tu créé la fiche
+outils ? Je préférerais qu'elle s'appelle Paysage finalement. »*
+
+**J'avais écarté ce mot le matin même**, et voici l'argument que j'avais donné :
+le paysage est son métier ENTIER, donc le mot ne distingue rien de ce qu'Atlas
+fait déjà. **Cet argument était faux, et il faut dire pourquoi** — sans quoi
+quelqu'un le ressortira.
+
+Il partait d'une prémisse implicite : qu'Atlas restera l'application d'un
+paysagiste. Or ce n'est pas le produit — Atlas sert des artisans, et lui-même
+prépare déjà la terrasse bois. **Dans une application multi-métiers, « Paysage »
+distingue exactement ce qu'il faut** : le jour où un menuisier s'en sert, il
+aura un onglet « Menuiserie » à côté. Deux listes d'« Outils » auraient au
+contraire demandé de les départager en entrant.
+
+**Et le mot vaut mieux pour une seconde raison, qui touche à ce qu'il montre.**
+« Outils » nomme la NATURE de ce qu'il y a dedans — des calculateurs.
+« Paysage » nomme le MÉTIER servi. Le second se lit sans savoir ce qu'on va y
+trouver ; le premier demande d'ouvrir pour comprendre.
+
+**Ce qui ne change pas :** l'onglet porte une LISTE (l'arrosage, puis la
+terrasse bois), et c'est pourquoi il ne s'appelle pas « Arrosage » — il faudrait
+le renommer au second occupant, et un onglet qui change de nom fait perdre le
+repère de celui qui l'ouvre vingt fois par jour.
+
+**La place n'est pas un sujet ici** : « PAYSAGE » fait sept lettres contre neuf
+à « CHANTIERS », qui reste le mot qui décide. `test-barre-basse-e2e.ts` le
+vérifie à 360 px, et un cas de plus exige que le libellé et l'adresse aillent
+ensemble — renommer l'un sans l'autre donnerait un onglet « Paysage » qui ouvre
+`/outils`, donc un 404 que personne n'aurait voulu.
 
 ---
 

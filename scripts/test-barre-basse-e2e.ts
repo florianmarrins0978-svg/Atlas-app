@@ -187,15 +187,28 @@ async function main() {
     }
   });
 
-  await cas("l'onglet Outils mène à un écran qui répond", async () => {
+  await cas("l'onglet Paysage mène à un écran qui répond", async () => {
     // Un onglet qui ouvre une page introuvable, c'est la troisième fois qu'il
     // appuie sur quelque chose qui ne répond pas (`reglages/Sommaire.tsx`).
-    const reponse = await page.goto(`${BASE}/outils`, { waitUntil: "networkidle" });
+    const reponse = await page.goto(`${BASE}/paysage`, { waitUntil: "networkidle" });
     if (!reponse || reponse.status() >= 400) {
-      throw new Error(`/outils répond ${reponse ? reponse.status() : "rien"}`);
+      throw new Error(`/paysage répond ${reponse ? reponse.status() : "rien"}`);
     }
-    const titre = await page.locator('[data-atlas="ecran-outils"] h1').first().innerText();
-    if (!/Outils/i.test(titre)) throw new Error(`titre lu : « ${titre} »`);
+    const titre = await page.locator('[data-atlas="ecran-paysage"] h1').first().innerText();
+    if (!/Paysage/i.test(titre)) throw new Error(`titre lu : « ${titre} »`);
+  });
+
+  await cas("et l'onglet porte bien son nom dans la barre", async () => {
+    // **Le libellé et l'adresse doivent aller ensemble.** Renommer l'un sans
+    // l'autre donne un onglet « Paysage » qui ouvre `/outils` — ou l'inverse,
+    // et l'écran répond 404 sans que personne ne l'ait voulu.
+    const onglet = m.onglets.find((o) => /paysage/i.test(o.mot));
+    if (!onglet) {
+      throw new Error(
+        "aucun onglet « Paysage » dans la barre — lu : " +
+          m.onglets.map((o) => o.mot).join(", ")
+      );
+    }
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Barre du bas — ${echecs} échec(s).`);

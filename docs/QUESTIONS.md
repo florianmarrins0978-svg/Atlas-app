@@ -1383,13 +1383,13 @@ celui-là pour les paysagistes ; après je ferai la même chose pour les terrass
 bois. Pour toi le mieux, c'est de créer une nouvelle catégorie paysage ? Ou
 alors on range ça dans les réglages, sous une catégorie paysage ? »**
 
-**Votre décision : un cinquième onglet, « Outils ».** Voici pourquoi les deux
+**Votre décision : un cinquième onglet, « Paysage ».** Voici pourquoi les deux
 autres pistes ont été écartées, pour ne pas les rouvrir dans trois mois.
 
 | Où | Pourquoi non |
 |---|---|
 | **Dans les Réglages** | On y règle ce qui vaut **une fois pour toutes** : vos tarifs, votre équipe, votre TVA. Un plan d'arrosage se refait à **chaque client**, comme un devis. Rangé là, il serait mal nommé et enterré sous quinze rubriques |
-| **Une catégorie « Paysage »** | Le paysage, c'est votre métier **entier** — le mot ne distingue rien de ce qu'Atlas fait déjà. Ce que vous séparez en réalité, ce sont des **outils de calcul** face au parcours commercial |
+| **Une rubrique dans les Réglages, sous « Paysage »** | Même raison que ci-dessus : c'est l'endroit qui ne va pas, pas le mot. Le mot « Paysage », lui, vous l'avez finalement gardé pour l'onglet — voir plus bas |
 | **Attaché au chantier** *(ce que je proposais)* | Un plan est toujours fait pour quelqu'un, et rangé là on le retrouve six mois plus tard chez le bon client. **Mais** un outil qui exige un chantier ne sert pas en visite de devis, quand le client n'existe pas encore. Votre objection l'emporte |
 
 **Ce que le cinquième onglet a coûté, et ce n'est pas rien.** La barre du bas
@@ -1406,9 +1406,15 @@ voit pas sur un grand écran, seulement sur le vôtre.
 
 **Deux choses restent ouvertes**, et elles se décideront à l'usage :
 
-- l'onglet s'appelle **« Outils » au pluriel** : il portera l'arrosage, puis la
-  terrasse bois. Le nommer d'après le premier obligerait à le renommer au
-  second ;
+- l'onglet s'appelle **« Paysage »**. Vous aviez d'abord retenu « Outils », et
+  j'avais écarté « Paysage » en disant que c'était votre métier entier, donc
+  que ça ne distinguait rien. **Vous êtes revenu dessus, et votre choix se
+  défend mieux que mon objection** : l'onglet porte le nom du MÉTIER qu'il
+  sert. Le jour où un menuisier utilisera Atlas, il aura un onglet
+  « Menuiserie » à côté — et ça se lira mieux que deux listes d'« outils »
+  qu'il faudrait départager en entrant. Ce qui reste vrai : l'onglet porte une
+  LISTE, donc il ne s'appelle pas « Arrosage » — sinon il faudrait le renommer
+  à la terrasse bois ;
 - un plan fait **en visite de devis** doit pouvoir rejoindre son chantier
   ensuite. C'est le revers de l'accès sans chantier que vous avez voulu : sans
   ce rattachement, on cherchera le plan six mois plus tard.

@@ -48,10 +48,17 @@ const ONGLETS = [
   { href: "/", label: "Chantiers" },
   { href: "/planning", label: "Planning" },
   { href: "/termines", label: "Terminés" },
-  // « Outils » au pluriel, et jamais « Arrosage » : l'onglet porte une LISTE
-  // d'outils de calcul — l'arrosage d'abord, la terrasse bois ensuite. Le
-  // nommer d'après son premier occupant obligerait à le renommer au second.
-  { href: "/outils", label: "Outils" },
+  // **« Paysage », et non « Outils » — son dernier mot, le 17 août au soir.**
+  // Il avait d'abord retenu « Outils », et j'avais écarté « Paysage » au motif
+  // que le paysage est son métier ENTIER, donc ne distinguerait rien. Il est
+  // revenu dessus, et c'est son produit : l'onglet porte le NOM DU MÉTIER
+  // qu'il sert, pas la nature de ce qu'il contient. Le jour où un menuisier
+  // s'en servira, il y aura un onglet « Menuiserie » à côté — et ça se lira
+  // mieux que deux listes d'« outils » qu'il faudrait départager en entrant.
+  //
+  // Il reste que l'onglet porte une LISTE : l'arrosage d'abord, la terrasse
+  // bois ensuite. Le nommer « Arrosage » aurait obligé à le renommer au second.
+  { href: "/paysage", label: "Paysage" },
   // « Réglages » depuis que cet écran porte aussi le nombre d'équipes : un
   // onglet nommé « Tarifs » cacherait le réglage qui commande le planning.
   { href: "/reglages", label: "Réglages" },
