@@ -10365,13 +10365,30 @@ C'est la raison qui l'avait déjà fait extraire de sa page le 10 août.
 |---|---|---|
 | Route | `/chantiers/nouveau` | `/chantiers/[id]/coordonnees` |
 | Action | `creerChantierAction` | `reprendreChantierAction` |
-| Surtitre | « Nouveau » | « Les coordonnées » |
+| Titre | « Fiche client » | « Fiche client » |
 | Bouton | « Créer le chantier » | « Enregistrer » |
 
-**Les deux mots changent parce qu'ils mentiraient**, et pour aucune autre raison.
-« Nouveau » au-dessus d'un chantier ouvert trois jours plus tôt fait douter
-d'avoir cliqué au bon endroit ; « Créer le chantier » annoncerait une action que
-l'écran ne fait pas, et il chercherait ensuite pourquoi il a deux chantiers.
+**Il ne reste qu'UN mot qui change**, et c'est le bouton : « Créer le chantier »
+annoncerait une action que l'écran ne fait pas, et le patron chercherait ensuite
+pourquoi il a deux chantiers.
+
+**Le surtitre a disparu le 16 août 2026**, sur sa demande — *« Enlève nouveau un
+chantier et remplace par fiche client »*, capture à l'appui. Il portait
+« Nouveau » à la création, et « Les coordonnées » en reprise **pour la seule
+raison que « nouveau » aurait été faux** au-dessus d'un chantier ouvert trois
+jours plus tôt. Le titre ne disant plus « nouveau », ce contre-mot n'a plus rien
+à contrer : « Fiche client » est vrai des deux côtés. Lui garder une ligne
+au-dessus aurait obligé à inventer un mot qu'il n'a pas demandé (`CLAUDE.md` §4).
+
+*Ce que le contrôle garde encore, et qui suffit :*
+`test-coordonnees-depuis-accueil-e2e.ts` refuse que « NOUVEAU » reparaisse sur un
+chantier qui existe — la garde tient, quel que soit l'endroit d'où le mot
+reviendrait.
+
+*Détail vu à l'écran, pas dans le code :* le micro de la dictée était aligné par
+le haut (`items-start`), ce qui le posait au-dessus d'un titre devenu seul sur sa
+ligne. Passé en `items-center` — les deux centres tombent désormais sur le même
+pixel.
 
 ### Le client est RETROUVÉ, jamais recréé
 

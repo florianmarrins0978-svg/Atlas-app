@@ -7,6 +7,29 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-16
+
+### L'écran de création s'appelle « Fiche client »
+
+**Sa demande, capture à l'appui :** *« Enlève nouveau un chantier et remplace par
+fiche client. »*
+
+**Ce qui change :** « NOUVEAU · Un chantier » devient **« Fiche client »**, à la
+création comme à la reprise. Le surtitre disparaît avec le mot qu'il portait :
+il disait « Nouveau », et « Les coordonnées » en reprise **uniquement** parce que
+« nouveau » aurait été faux au-dessus d'un chantier ouvert trois jours plus tôt.
+Le titre ne disant plus « nouveau », ce contre-mot n'a plus rien à contrer.
+
+**Ce que ça évite :** un écran qui annonce une création alors qu'on vient
+corriger une fiche existante. Le nom dit maintenant ce que l'écran EST, pas ce
+qu'on y fait.
+
+**Vu à l'écran, pas dans le code :** le micro de la dictée était aligné par le
+haut et se posait au-dessus d'un titre devenu seul sur sa ligne. Recentré — les
+deux centres tombent sur le même pixel. `ARCHITECTURE.md` §124.
+
+---
+
 ## 2026-08-18
 
 ### « Il peut proposer une autre date » : un interrupteur avant l'envoi
