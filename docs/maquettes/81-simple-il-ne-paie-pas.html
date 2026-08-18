@@ -1,0 +1,290 @@
+<title>Simple : il ne paie pas</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    SIMPLE — un bouton, deux réponses, c'est fini.
+
+    LE PATRON, LE 17 AOÛT 2026, devant les planches 79 et 80 :
+    « C'est trop compliqué, il faut faire quelque chose de simple, l'utilisateur
+    a besoin d'aller à l'essentiel constamment. »
+
+    Il avait raison, et le défaut était de méthode : les 79 et 80 lui
+    présentaient SIX arrangements à comparer, un tableau à cinq lignes et deux
+    pages de comptabilité. Lui demander de trancher un vocabulaire de comptable
+    entre deux chantiers, c'est lui faire faire notre travail.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI A ÉTÉ RETIRÉ, ET POURQUOI CE N'EST PAS UNE PERTE.
+
+    · LE MOT « AVOIR » N'APPARAÎT NULLE PART. C'est un mot de comptable, et il
+      ne décrit rien de ce qu'il vit. Le document s'appellera bien « AVOIR »
+      quand il partira chez le client — l'écran, lui, parle sa langue.
+    · LE CHOIX ENTRE TROIS ARRANGEMENTS A DISPARU : il n'y en a plus qu'un.
+      Choisir, c'était encore du travail.
+    · LES EXPLICATIONS DE TVA ONT DISPARU. Sa TVA ne bouge pas (elle est
+      exigible au paiement, §110) : ce qui ne bouge pas n'a pas à s'afficher.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI RESTE, ET QUI NE PEUT PAS ÊTRE RETIRÉ.
+
+    LES DEUX RÉPONSES. Elles font l'inverse l'une de l'autre, et l'une est
+    irréversible :
+
+      · « je lui enlève quelque chose » → la somme n'est plus due. Il ne pourra
+        plus jamais la réclamer ;
+      · « il ne paiera pas » → la facture reste entière. Il peut encore
+        réclamer, même dans deux ans.
+
+    N'en garder qu'une serait plus simple d'un cran et lui coûterait de
+    l'argent : la seule porte deviendrait celle qui le désarme. UNE LIGNE
+    chacune suffit à les distinguer — c'est la limite du simple, pas une
+    précaution de juriste.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : boutons radio natifs. Facture 1 440,00 € TTC ; retirer 300 €
+    laisse 1 140,00 €. Contrôle : `scripts/verifier-maquette-avoir.mjs`.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:900px;margin:0 auto}
+
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 20px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .reglage{margin:0 0 8px}
+  .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+  .segments{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+  #e-1:checked ~ .dedans .segments label[for="e-1"],
+  #e-2:checked ~ .dedans .segments label[for="e-2"],
+  #e-3:checked ~ .dedans .segments label[for="e-3"],
+  #e-4:checked ~ .dedans .segments label[for="e-4"],
+  #m-3:checked ~ .dedans .segments label[for="m-3"],
+  #m-t:checked ~ .dedans .segments label[for="m-t"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+  .feuille{background:var(--papier);border-radius:14px;padding:22px 20px;min-height:430px}
+
+  .sur{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+       color:var(--or);margin-bottom:5px}
+  .h2{font-family:Georgia,serif;font-size:22px;margin:0 0 3px;line-height:1.25}
+  .sous{font-size:12.5px;color:var(--gris);margin:0 0 18px}
+
+  .tot{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+  .tot.gros{font-family:Georgia,serif;font-size:18px;padding-top:9px;margin-top:7px;
+            border-top:2px solid var(--encre)}
+  .tot.rouge{color:var(--alerte)}
+
+  .gros-bouton{display:block;margin-top:20px;padding:15px 17px;border-radius:13px;
+               background:var(--pin);color:#fff;font-size:15.5px;text-align:center}
+  .lien-discret{display:block;margin-top:14px;text-align:center;font-size:13.5px;
+                color:var(--or)}
+
+  /* Les deux réponses — le cœur de l'écran, et tout le reste s'efface. */
+  .reponse{display:block;margin-top:12px;padding:16px 17px;border-radius:13px;
+           background:var(--teinte);border:1px solid var(--trait)}
+  .reponse .nom{display:block;font-family:Georgia,serif;font-size:18px;line-height:1.25}
+  .reponse .det{display:block;font-size:12.5px;color:var(--gris);margin-top:5px;line-height:1.5}
+
+  .case{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--teinte)}
+  .case .lab{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--gris);margin-bottom:6px}
+  .case .val{font-family:Georgia,serif;font-size:26px}
+  .apres{margin-top:16px;border-top:1px solid var(--trait);padding-top:12px}
+
+  .fini{text-align:center;padding-top:24px}
+  .fini .coche{display:block;font-size:34px;color:var(--pin);margin-bottom:10px}
+
+  .ec-1,.ec-2,.ec-3,.ec-4{display:none}
+  #e-1:checked ~ .dedans .ec-1,
+  #e-2:checked ~ .dedans .ec-2,
+  #e-3:checked ~ .dedans .ec-3,
+  #e-4:checked ~ .dedans .ec-4{display:block}
+  .m3,.mt{display:none}
+  #m-3:checked ~ .dedans .m3,
+  #m-t:checked ~ .dedans .mt{display:inline}
+  /* Le réglage du montant ne sert qu'aux écrans où l'on retire une somme. */
+  .si-montant{display:none}
+  #e-3:checked ~ .dedans .si-montant,
+  #e-4:checked ~ .dedans .si-montant{display:block}
+
+  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .legende p{margin:0 0 14px}
+
+  .note{margin-top:28px;padding:16px 18px;border-radius:12px;background:var(--papier);
+        font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+           color:var(--or);margin-bottom:8px}
+  .note a{color:var(--or)}
+</style>
+
+<input type="radio" name="e" id="e-1" class="etat" checked>
+<input type="radio" name="e" id="e-2" class="etat">
+<input type="radio" name="e" id="e-3" class="etat">
+<input type="radio" name="e" id="e-4" class="etat">
+<input type="radio" name="m" id="m-3" class="etat" checked>
+<input type="radio" name="m" id="m-t" class="etat">
+
+<div class="dedans">
+  <h1>Simple : il ne paie pas</h1>
+  <p class="intro">
+    Un bouton sur la facture, <b>deux réponses</b>, c'est fini. Avancez d'un
+    écran à l'autre — vous verrez qu'il n'y a rien d'autre.
+  </p>
+
+  <div class="reglage">
+    <span class="quoi">Avancez</span>
+    <div class="segments">
+      <label for="e-1">1 · La facture</label>
+      <label for="e-2">2 · La question</label>
+      <label for="e-3">3 · Combien</label>
+      <label for="e-4">4 · Fini</label>
+    </div>
+  </div>
+
+  <div class="si-montant reglage">
+    <span class="quoi">Vous lui enlevez</span>
+    <div class="segments">
+      <label for="m-3">300 €</label>
+      <label for="m-t">Tout</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="feuille">
+
+        <!-- 1 · La facture, telle qu'elle est déjà -->
+        <div class="ec-1">
+          <span class="sur">Facture F2026-0031</span>
+          <p class="h2">M. Martins</p>
+          <p class="sous">Émise le 12 juillet · 37 jours de retard</p>
+          <div class="tot"><span>Total TTC</span><span>1 440,00 €</span></div>
+          <div class="tot gros rouge"><span>Reste dû</span><span>1 440,00 €</span></div>
+          <span class="gros-bouton">J'ai reçu l'argent</span>
+          <span class="lien-discret">Il ne me paiera pas →</span>
+        </div>
+
+        <!-- 2 · La question, et il n'y en a qu'une -->
+        <div class="ec-2">
+          <span class="sur">F2026-0031 · M. Martins</span>
+          <p class="h2">Que voulez-vous faire ?</p>
+          <p class="sous">1 440,00 € toujours dus</p>
+
+          <span class="reponse">
+            <span class="nom">Je lui enlève quelque chose</span>
+            <span class="det">Il devra moins. Un document part chez lui.</span>
+          </span>
+
+          <span class="reponse">
+            <span class="nom">Il ne paiera pas</span>
+            <span class="det">On arrête de vous le rappeler. Vous pourrez
+              toujours réclamer.</span>
+          </span>
+        </div>
+
+        <!-- 3 · Combien — une case, rien d'autre -->
+        <div class="ec-3">
+          <span class="sur">F2026-0031 · M. Martins</span>
+          <p class="h2">Vous lui enlevez combien ?</p>
+          <p class="sous">Sur les 1 440,00 € qu'il doit</p>
+
+          <div class="case">
+            <span class="lab">Montant retiré</span>
+            <span class="val"><span class="m3">300,00 €</span><span class="mt">1 440,00 €</span></span>
+          </div>
+
+          <div class="apres">
+            <div class="tot"><span>Il devra</span><span>
+              <span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+          </div>
+
+          <span class="gros-bouton">C'est bon</span>
+        </div>
+
+        <!-- 4 · Fini -->
+        <div class="ec-4">
+          <div class="fini">
+            <span class="coche">✓</span>
+            <p class="h2">C'est fait</p>
+            <p class="sous">
+              <span class="m3">M. Martins ne devra plus que 1 140,00 €.</span>
+              <span class="mt">M. Martins ne doit plus rien.</span><br>
+              Son document est prêt à partir.</p>
+            <span class="gros-bouton">Le lui envoyer</span>
+            <span class="lien-discret">Plus tard</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="legende">
+      <span class="t">Ce que ça donne</span>
+      <p><b>Un lien discret sur la facture</b>, sous le bouton qui sert tous les
+        jours. Il ne gêne personne et se trouve quand on en a besoin.</p>
+      <p><b>Une question, deux réponses.</b> Pas de mot de comptable, pas de
+        choix de forme, pas de tableau.</p>
+      <p><b>Une case, un chiffre.</b> Vous voyez tout de suite ce qu'il devra.</p>
+
+      <span class="t" style="margin-top:22px">Pourquoi deux réponses et pas une</span>
+      <p>Elles font l'inverse l'une de l'autre. <b>Enlever une somme, c'est y
+        renoncer</b> — vous ne pourrez plus jamais la réclamer. <b>Dire qu'il ne
+        paiera pas</b> garde la facture entière et votre droit avec.</p>
+      <p>N'en garder qu'une serait plus simple d'un cran, et la seule qui
+        resterait est celle qui vous désarme. <b>Une ligne chacune</b>, c'est
+        aussi court que ça peut l'être sans vous coûter de l'argent.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui a été retiré depuis les planches d'avant</span>
+    Le mot « avoir » — c'est du vocabulaire de comptable, et le document le
+    portera de toute façon quand il partira. Le choix entre trois formes de
+    document : Atlas prend la bonne. Les explications de TVA : la vôtre ne bouge
+    pas, vous la payez quand le client paie — ce qui ne bouge pas n'a rien à
+    faire à l'écran.
+    <br><br>
+    Le raisonnement complet reste lisible dans
+    <a href="79-il-ne-paie-pas.html">79</a> et
+    <a href="80-l-avoir.html">80</a>, si un jour la question se repose.
+  </div>
+</div>
