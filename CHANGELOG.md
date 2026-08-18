@@ -115,6 +115,39 @@ détail d'affichage, c'est ce qu'il commande chez son fournisseur.
 **Ce que la maquette simule, et elle le dit en rouge :** la lecture de la photo.
 Le plan et la liste, eux, sont vraiment calculés, sur son catalogue.
 
+### Le quinconce, enfin posé — son croquis, et 12 tuyères qui deviennent 7
+
+**Son croquis du 18 août :** un couloir à **14** arroseurs alignés, le même à
+**7** en quinconce. *« Dans les couloirs, le but c'est de poser les tuyères en
+quinconce, car le but c'est que celle de gauche recouvre quasi 100 % jusqu'à
+celle de droite. »*
+
+**Le code n'en posait aucun.** Il ne décalait que les rangées intérieures ; un
+couloir n'a que deux rangées, toutes deux en bord — donc rien. Le drapeau
+« quinconce » valait pourtant `true` : l'écran l'annonçait, le dessin le
+démentait, et aucun contrôle ne regardait le dessin.
+
+**Le quinconce est maintenant un damier** — un point sur deux, i + j pair — et
+il ne se suppose pas : `couvreTout` mesure si tout le terrain reste arrosé, et
+`poser` resserre tant que ce n'est pas le cas. Sur son couloir, la boucle tombe
+sur **7**, exactement son croquis, par un chemin qui ne le connaissait pas.
+
+| Zone | Avant | Après |
+|---|---|---|
+| 10 × 2 (son couloir) | 12 | **7** |
+| 18 × 12 | 20 | **10** |
+| 30 × 22 | 16 | **8** |
+
+**Sept contrôles sont devenus rouges sur du code juste** — tous visaient un
+nombre ou un mot, aucun ne visait une règle. Deux étaient pires : ils
+continuaient de passer **en éprouvant le cas d'à côté**, sans un mot. Ils
+construisent désormais leur cas en visant la condition, et échouent s'ils n'y
+arrivent pas.
+
+**Ce que cela révise :** sa règle du 17 août « les derniers arroseurs toujours
+dans les coins » vaut pour la pose alignée. Sur un damier deux coins n'ont pas
+de tête — ils restent arrosés, et il l'a validé : *« oui, ça me va »*.
+
 ### Le disconnecteur disparaît de la liste — sa décision
 
 *« Le disconnecteur, tu peux le supprimer à tout jamais, je n'en mets
@@ -200,6 +233,48 @@ défaut qu'il prétend attraper.
 
 ## 2026-08-17
 
+### « Il faut pouvoir créer un avoir » — dessiné, et une distinction qui vaut de l'argent
+
+Sa demande du 17 août : *« si jamais on facture un client et qui décide de ne
+pas nous payer, il faut avoir la possibilité de créer un avoir […] crée-moi des
+maquettes dynamiques en .html, pas de photo »*.
+
+**Ce que les planches lui disent, et qui n'était pas dans sa question.** Un
+avoir et un impayé ne sont pas la même chose, et les confondre coûte cher **sans
+retour possible** :
+
+| | Ce que ça fait | Peut-il encore réclamer ? |
+|---|---|---|
+| **Avoir** | annule tout ou partie de la facture | **non, plus jamais** |
+| **Facture perdue** | la facture reste entière, le rappel se tait | **oui** |
+
+Un client qui refuse de payer relève du second. Faire un avoir dans ce cas, ce
+serait se désarmer soi-même — et rien à l'écran ne l'en avertirait. C'est
+pourquoi l'arrangement le plus simple (une porte, un montant) est aussi le plus
+dangereux, et la planche le dit en toutes lettres.
+
+**Et une bonne nouvelle qui lui appartient :** sa TVA étant exigible au paiement
+depuis le 16 août (§110), une facture jamais payée n'est **jamais entrée** dans
+son relevé. Il ne doit rien dessus, il n'a rien à récupérer, aucune démarche à
+faire. Sous l'autre régime il aurait avancé 240 € de TVA sur un chantier jamais
+payé.
+
+`docs/maquettes/79-il-ne-paie-pas.html` (trois arrangements pour la situation,
+deux portes d'entrée) et `80-l-avoir.html` (trois formes de document, trois
+montants essayables). **Rien n'est codé** : `src/` n'est pas touché (§3 bis).
+
+**Ce que le code ne permet pas encore, et qui est écrit sur la planche :**
+`factures` n'accepte **qu'une facture par chantier**
+(`factures_chantier_uk`), la numérotation n'a **qu'une série**
+(`prochain_numero_facture`), et `resteDu` ne connaît que les règlements. Un
+avoir demande sa place, son compteur, et d'être vu par le reste dû — sans quoi
+la fiche client et le rappel d'impayé réclameraient une somme annulée.
+
+Contrôle : `scripts/verifier-maquette-avoir.mjs`, javascript coupé. Il recalcule
+chaque total depuis le TTC affiché plutôt que de le recopier, et **refuse la TVA
+prise sur le TTC** — 300 € d'avoir font 250,00 € HT et 50,00 € de TVA, jamais
+300 € de HT. Confronté à trois planches dégradées : trois rouges, chacun nommant
+le bon coupable, y compris le retrait de la phrase sur le droit de réclamer.
 ### La maquette des clients, ESSAYABLE — et le libellé qui disait « lui » à une cliente
 
 **Sa demande, le soir même :** *« montre-moi depuis chantier ce que ça donnerait,

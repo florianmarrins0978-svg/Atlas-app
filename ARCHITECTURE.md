@@ -11011,6 +11011,79 @@ témoin, lui, reste vert : la différence porte bien sur ce qu'on a changé.
 
 ---
 
+## §127. Le quinconce est un damier, et il se vérifie au lieu de se supposer
+
+**Son croquis du 18 août 2026**, deux couloirs superposés sur du papier
+quadrillé : le premier porte **14** arroseurs en deux rangées face à face, le
+second **7** — une tête sur deux, en alternant les bords, avec les arcs tracés
+en couleur pour montrer que chacune atteint bien la suivante en diagonale. Sa
+phrase : *« dans les couloirs, le but c'est de poser les tuyères en quinconce,
+car le but c'est que celle de gauche recouvre quasi 100 % jusqu'à celle de
+droite »*, et pour les grands espaces *« l'idée est de faire la même »*.
+
+**Ce que le code faisait, et pourquoi c'était invisible.** `pointsDeLaPose` ne
+décalait que les rangées **intérieures** d'un demi-écart, en gardant tout le
+pourtour. Un couloir n'ayant que deux rangées, toutes deux en bord, il n'y avait
+**aucun quinconce du tout** — la grille alignée, et ses 12 tuyères là où il en
+pose 7. Le drapeau `quinconce` valait pourtant `true` : l'écran l'annonçait, le
+dessin le démentait, et aucun contrôle ne regardait le dessin.
+
+**La règle, désormais :** on garde le point (i, j) quand **i + j est pair**. Sur
+deux rangées, c'est son alternance ; sur davantage, le quinconce triangulaire.
+
+### Ce qui rend la règle sûre : on mesure la couverture
+
+Retirer une tête sur deux **double la distance entre voisins d'une même
+rangée**. Si l'écart de départ était au maximum de sa tolérance du 17 août
+(1,20 × portée), le coin abandonné se retrouve à sec — vérifié, ce n'est pas une
+crainte théorique.
+
+`couvreTout(points, portée, L, l)` échantillonne le terrain au **dixième de la
+portée** et répond : tout point est-il à portée d'une tête ? `poser` s'en sert
+comme d'un garde-fou : il essaie le damier sur la grille la plus large, et
+**resserre tant que ce n'est pas couvert**, en allongeant du côté où l'écart est
+le plus grand. La boucle s'arrête d'elle-même — dès que le damier ne coûte plus
+moins que l'aligné, on garde l'aligné, qui couvre par construction.
+
+**Sur son couloir de 10 × 2 m, cette boucle tombe sur 7.** Exactement son
+croquis, par un chemin qui ne le connaissait pas.
+
+| Zone | Aligné | Quinconce |
+|---|---|---|
+| 10 × 2 (son couloir) | 12 | **7** |
+| 18 × 12 | 20 | **10** |
+| 22 × 14 | 20 | **10** |
+| 30 × 22 | 16 | **8** |
+
+### Ce que cela révise, et ce que cela a coûté aux contrôles
+
+**Sa règle du 17 août — « les derniers arroseurs toujours dans les coins » —
+vaut pour la pose ALIGNÉE.** Sur un damier, deux coins opposés portent un
+i + j impair et n'ont pas de tête. Ils restent arrosés (`couvreTout` l'exige) ;
+il l'a validé le 18 août : *« oui, ça me va »*.
+
+**Sept contrôles sont devenus rouges sur du code juste**, et aucun ne visait une
+règle — tous visaient un nombre ou un mot :
+
+| Ce qu'il regardait | Ce qu'il regarde maintenant |
+|---|---|
+| « le quinconce compte 11 arroseurs » | il en pose **strictement moins** que la grille alignée, **et il couvre** |
+| « le jardin donne 7 secteurs » | témoin, mis à jour à 5 avec sa raison |
+| « la fiche contient le mot Clarinette » | la fiche est la SIENNE (`source: 'patron'`) et **remplace** les lignes génériques |
+| « le débit lu vaut 0,58 m³/h » | le débit par table **diffère** de celui obtenu par division |
+| « 8 zones dépassent six voies » | on **grossit** le jardin jusqu'à dépasser six voies, et l'on dit si on n'y arrive pas |
+| « le jardin d'exemple se coupe en plusieurs réseaux » | on **agrandit** une pelouse jusqu'à ce qu'une vanne ne suffise plus |
+
+**La leçon, la troisième fois en deux jours :** un contrôle accroché à un
+nombre ou à un libellé meurt à la première règle métier qui change — et il meurt
+en accusant du code juste, ce qui coûte plus cher qu'un contrôle absent. Deux
+d'entre eux étaient pires : ils continuaient de passer **en éprouvant le cas
+d'à côté**, silencieusement. D'où la parade, appliquée partout ici : quand un
+contrôle a besoin d'un cas particulier, il le **construit en visant la
+condition**, et il **échoue s'il n'y arrive pas**.
+
+---
+
 ## 132. « Il peut proposer une autre date » — un interrupteur avant l'envoi
 
 **Sa demande du 17 août 2026 :** *« pour le lien du planning qui part au client,
