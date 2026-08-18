@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-18
 
+### Dessiner les deux boutons du devis avant de retirer la bascule
+
+**Sa demande :** *« supprime "je dicterai" et "je l'écris", remplace par un
+bouton cliquable "je dicte mon devis" et un autre "j'écris mon devis", en
+gardant le chemin »*.
+
+**Rien n'est codé, et c'est la règle** (`CLAUDE.md` §3 bis) : une demande
+d'apparence se dessine, se montre, et ne touche à `src/` qu'une fois choisie.
+`docs/maquettes/79-les-deux-boutons-du-devis.html` pose cinq façons de le faire,
+sur un écran de 390 px, sans une ligne de JavaScript.
+
+**Ce que le dessin a fait apparaître, et que la demande ne pouvait pas dire.**
+Deux choses, toutes deux dans `TODO.md` :
+
+- **« Créer le chantier » disparaît de l'écran.** C'est le libellé actuel du
+  bouton, et le seul endroit qui annonce que le chantier se crée. Deux boutons
+  nommés d'après le devis l'effacent en silence.
+- **Côte à côte, ça ne rentre pas.** Mesuré plutôt qu'estimé
+  (`scripts/mesurer-maquette-deux-boutons.mjs`, joué dans `verifier:maquette`) :
+  à 390 px chaque moitié fait 166 px, « Je dicte mon devis → » en demande 156 de
+  texte et casse sur deux lignes, quand « J'écris mon devis → » tient à 1,5 px
+  près. Les capsules montent alors à 73 px et redeviennent les pavés qu'il avait
+  fait retirer le 11 août.
+
+Le contrôle **refuse de conclure sur une boîte de zéro pixel** plutôt que de
+rendre un vert : c'est la leçon du 15 août 2026, où `0 − 0 = 0` avait certifié
+« rien n'est coupé » sur un écran où trois noms l'étaient.
+
+
 ### « Il peut proposer une autre date » : un interrupteur avant l'envoi
 
 **Sa demande :** *« pour le lien du planning qui part au client, il faut que

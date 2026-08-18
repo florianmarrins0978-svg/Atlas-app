@@ -25,6 +25,48 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## En attente d'une réponse — les deux boutons du devis
+
+### Sa demande du 18 août, et la planche 79
+
+*« Supprime "je dicterai" et "je l'écris", remplace par un bouton cliquable
+"je dicte mon devis" et un autre "j'écris mon devis", en gardant le chemin entre
+un pour écrire le devis et l'autre pour le dicter. »*
+
+**Rien n'est codé** : `docs/maquettes/79-les-deux-boutons-du-devis.html` montre
+cinq façons de le poser, sur son écran, à 390 px. Le code de l'application
+(`FormulaireNouveauChantier.tsx`, `BasculePorte`, `LibelleDeLaPorte`) n'a pas
+bougé — règle du dessin d'abord (`CLAUDE.md` §3 bis).
+
+**Ce que la mesure dit déjà**, faite dans un navigateur et non à l'œil
+(`scripts/mesurer-maquette-deux-boutons.mjs`) :
+
+| Pose | Hauteur | Lignes |
+|---|---|---|
+| empilées (prop. 1, 2, 5) | 52,7 px | 1 ligne chacune |
+| côte à côte (prop. 3) | 73,4 px | « Je dicte mon devis » casse sur **2 lignes** |
+
+Côte à côte, chaque moitié fait 166 px : « Je dicte mon devis → » demande 156 px
+de texte et déborde ; « J'écris mon devis → » en demande 148,5 et tient **à
+1,5 px près** — une marge trop mince pour être tenue par une autre charte.
+
+**Trois points à trancher, et le second n'est pas dans sa phrase :**
+
+1. **laquelle des cinq** ;
+2. **« Créer le chantier » disparaît de l'écran.** C'est aujourd'hui le libellé
+   du bouton, et le seul endroit qui annonce que le chantier se crée. Deux
+   boutons nommés d'après le devis l'effacent : la prop. 2 le redit en une ligne
+   grise, les autres l'assument ;
+3. **la reprise.** Le même écran sert à corriger les coordonnées d'un chantier
+   existant ; le bouton dit alors « Enregistrer ». Avec deux boutons de devis, il
+   faut décider ce qu'il voit à ce moment-là.
+
+**Ce qui ne change pas, quelle que soit la réponse :** les deux chemins
+(« je dicte » → la fiche du chantier, « j'écris » → le devis), la porte du tiroir
+sur la fiche chantier, et la capsule comme unique forme d'action.
+
+---
+
 ## En attente d'une réponse — le quinconce
 
 ### Sa règle du 18 août, et la planche 78

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Je dicte mon devis / J’écris mon devis</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LES DEUX BOUTONS DU DEVIS — cinq façons de remplacer la bascule
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 18 août 2026 : « supprime "je dicterai" et "je l’écris",
+    remplace par un bouton cliquable "je dicte mon devis" et un autre
+    "j’écris mon devis", en gardant le chemin de chacun ».
+
+    CE QUE ÇA CHANGE VRAIMENT, et qui n’est pas dans la phrase : aujourd’hui il
+    y a un choix PUIS une action (deux gestes, un seul bouton à toucher). Avec
+    deux boutons, le choix EST l’action — un seul geste. Mais le mot « Créer le
+    chantier » disparaît de l’écran : c’est le seul endroit qui disait que le
+    chantier se crée. Les propositions 2 et 5 répondent à ça de deux façons
+    différentes ; c’est le vrai point à trancher.
+
+    AUCUN SCRIPT DANS CETTE PAGE — son lecteur n’exécute pas le JavaScript, et
+    une maquette qui s’engendre en script lui rend une page blanche. Ce qui
+    bouge ici bouge en CSS pur (l’appui du doigt).
+
+    Les valeurs de couleur viennent de `src/lib/design-tokens.ts`, pas de l’œil.
+    Les écrans font 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1240px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 18px;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+  .intro .note{font-size:13.5px}
+
+  .grille{display:flex;flex-wrap:wrap;gap:56px 44px;justify-content:center;align-items:flex-start;margin-top:46px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:412px}
+  .legende{text-align:center;max-width:390px}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+  .legende .reserve{margin-top:7px;color:var(--or)}
+
+  /* ── Le téléphone ────────────────────────────────────────────────────── */
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+
+  /* L’écran garde la charte Origine quel que soit le thème de la page :
+     l’application est claire, et la montrer en sombre serait montrer un écran
+     qui n’existe pas. */
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-or-clair:#C9A15E; --e-papier:#ece9e1;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:26px 0 30px}
+  .libelle{text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600;color:var(--e-gris)}
+
+  /* Le haut de formulaire, identique partout : c’est le BAS qui change, et
+     seul le bas doit se comparer. */
+  .champ{margin:0 24px 16px}
+  .champ .val{margin-top:7px;border-radius:4px;background:var(--e-plage);
+              padding:14px 15px;font-size:16px;color:var(--e-gris)}
+  .ajout{margin:2px 24px 0;font-size:14px;font-weight:500;color:var(--e-pin)}
+  .actions{margin:26px 24px 0}
+
+  /* ── La capsule, telle qu’elle existe dans l’application ─────────────────
+     `PrimaryButton` : aplat vert pin, demi-cercle franc, jamais pleine
+     largeur — c’est le blanc autour d’elle qui l’allège, pas son rayon. Tout
+     ce qui suit part de cette forme ; aucune proposition n’en invente une
+     seconde, ce serait rouvrir « une seule forme d’action ». */
+  .caps{display:inline-block;border-radius:999px;padding:16px 30px;
+        font-family:ui-serif,Georgia,"Iowan Old Style",serif;font-size:18px;line-height:1.15;
+        text-align:center;white-space:nowrap}
+  .pleine{background:var(--e-pin);color:#faf9f5}
+  .cernee{background:transparent;color:var(--e-pin);box-shadow:inset 0 0 0 1px var(--e-or)}
+  .papier{background:var(--e-papier);color:var(--e-pin)}
+  .p,.p *{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .12s ease}
+  .p:active{transform:scale(.985)}
+  .cernee:active{background:var(--e-papier)}
+
+  /* Empilées : centrées, l’une sous l’autre, 12 px d’écart. */
+  .pile{display:flex;flex-direction:column;align-items:center;gap:12px}
+
+  /* Côte à côte : deux moitiés égales. C’est ici que la LARGEUR décide —
+     195 px par moitié, marges déduites, pour un libellé de 17 caractères en
+     serif. `scripts/mesurer-maquette-deux-boutons.mjs` le mesure au lieu de
+     l’estimer, et refuse de conclure sur une boîte de zéro pixel. */
+  .paire{display:flex;gap:10px;align-items:stretch}
+  .paire>*{flex:1;display:flex;align-items:center;justify-content:center;
+           padding-left:8px;padding-right:8px;white-space:normal}
+
+  /* Le mot qui reste au-dessus quand « Créer le chantier » disparaît. */
+  .mention{margin:0 0 12px;text-align:center;font-size:12.5px;color:var(--e-gris)}
+  .mention b{color:var(--e-or);font-weight:600}
+
+  /* La bascule d’AUJOURD’HUI, reproduite pour comparer — sans script : elle
+     est figée sur « Je dicterai », l’état par défaut de l’application. */
+  .bascule{display:flex;border-bottom:1px solid var(--e-trait);position:relative}
+  .bascule span{flex:1;text-align:center;padding-bottom:12px;
+                font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--e-gris)}
+  .bascule span.actif{color:var(--e-encre)}
+  .bascule .filet{position:absolute;left:0;bottom:-1px;width:50%;height:1.5px;background:var(--e-or)}
+
+  .pied{max-width:66ch;margin:66px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        color:var(--gris);font-size:13.6px;line-height:1.7}
+  .pied h3{margin:0 0 10px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--or)}
+  .pied ul{margin:0 0 22px;padding-left:1.1em}
+  .pied li{margin-bottom:8px}
+  .pied b{color:var(--encre);font-weight:600}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas · 18 août 2026</p>
+    <h1>Je dicte mon devis · J’écris mon devis</h1>
+    <p>Sa demande : <em>supprimer « Je dicterai / Je l’écris » et mettre deux
+      boutons, chacun menant à son chemin</em>. Cinq façons de le poser, sur son
+      écran, à sa largeur réelle.</p>
+    <p class="note"><strong>Appuyez dessus</strong> : ils répondent. Rien à
+      installer, rien à ouvrir.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ───────────────────────────── AUJOURD’HUI ───────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Aujourd’hui</h2>
+        <p class="titre">La bascule, et un bouton</p>
+        <p>Deux mots, un filet d’or qui glisse dessous, puis <strong>un seul</strong>
+          bouton dont le libellé suit le choix. Deux gestes pour qui écrit son
+          devis, un seul pour qui le dicte.</p>
+        <p class="reserve">C’est ce qui est remplacé.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="bascule">
+            <span class="actif">Je dicterai</span>
+            <span>Je l’écris</span>
+            <i class="filet"></i>
+          </div>
+          <div class="pile" style="margin-top:20px">
+            <div class="p caps pleine">Créer le chantier&nbsp;→</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 1 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">Les deux capsules empilées</p>
+        <p>La dictée pleine, l’écriture cernée d’or, l’une sous l’autre. Les
+          libellés tiennent sur <strong>une ligne</strong> chacun, et le geste
+          ordinaire garde son poids sans que l’autre soit caché.</p>
+      </div>
+      <div class="tel"><div class="ecran" data-mesure="1">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="pile">
+            <div class="p caps pleine" data-bouton>Je dicte mon devis&nbsp;→</div>
+            <div class="p caps cernee" data-bouton>J’écris mon devis&nbsp;→</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 2 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">Empilées, et le chantier annoncé</p>
+        <p>La même chose, avec la ligne que la disparition de « Créer le
+          chantier » oblige à écrire : <strong>le chantier se crée dans les deux
+          cas</strong>. Sans elle, plus rien à l’écran ne le dit.</p>
+      </div>
+      <div class="tel"><div class="ecran" data-mesure="1">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <p class="mention">Le chantier est créé <b>dans les deux cas</b>.</p>
+          <div class="pile">
+            <div class="p caps pleine" data-bouton>Je dicte mon devis&nbsp;→</div>
+            <div class="p caps cernee" data-bouton>J’écris mon devis&nbsp;→</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 3 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">Côte à côte, à égalité</p>
+        <p>Sa demande au pied de la lettre : deux boutons de même poids, sur la
+          même ligne.</p>
+        <p class="reserve">Ce que ça coûte, mesuré et non supposé : à 390 px
+          chaque moitié fait 166 px. « Je dicte mon devis » demande 156 px de
+          texte et passe sur <strong>deux lignes</strong> ; « J’écris mon devis »
+          en demande 148,5 et tient — <strong>à 1,5 px près</strong>. Les
+          capsules montent à 73 px et redeviennent des pavés, ce qu’il avait
+          fait retirer le 11 août.</p>
+      </div>
+      <div class="tel"><div class="ecran" data-mesure="1">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="p paire">
+            <div class="caps pleine" data-bouton>Je dicte mon devis&nbsp;→</div>
+            <div class="caps pleine" data-bouton>J’écris mon devis&nbsp;→</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 4 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 4</h2>
+        <p class="titre">Côte à côte, raccourcis</p>
+        <p>La même ligne, mais les libellés tenus sur un mot : <strong>Je
+          dicte</strong> / <strong>J’écris</strong>, et « mon devis » écrit une
+          seule fois au-dessus. Tout tient sur une ligne, et le mot « devis »
+          reste dit.</p>
+      </div>
+      <div class="tel"><div class="ecran" data-mesure="1">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <p class="mention">Mon devis, je le…</p>
+          <div class="p paire">
+            <div class="caps pleine" data-bouton>Dicte&nbsp;→</div>
+            <div class="caps papier" data-bouton>Écris&nbsp;→</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 5 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 5</h2>
+        <p class="titre">Empilées, toutes deux pleines</p>
+        <p>Aucune hiérarchie : deux aplats verts, l’un sous l’autre. Le plus
+          proche de « deux boutons » au sens strict.</p>
+        <p class="reserve">Ce que ça coûte : deux aplats de suite pèsent lourd
+          en bas d’écran, et plus rien ne dit lequel est le geste ordinaire.</p>
+      </div>
+      <div class="tel"><div class="ecran" data-mesure="1">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions">
+          <div class="pile">
+            <div class="p caps pleine" data-bouton>Je dicte mon devis&nbsp;→</div>
+            <div class="p caps pleine" data-bouton>J’écris mon devis&nbsp;→</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <h3>Ce qui se décide ici</h3>
+    <ul>
+      <li><b>Laquelle des cinq.</b> Mesuré par
+        <code>scripts/mesurer-maquette-deux-boutons.mjs</code>, dans un vrai
+        navigateur à 390 px : les propositions <b>1, 2 et 5</b> tiennent sur une
+        ligne (52,7 px de haut) ; la <b>3</b> — sa demande au pied de la lettre —
+        casse un libellé sur deux lignes et monte à 73,4 px ; la <b>4</b> la
+        sauve en raccourcissant les mots.</li>
+      <li><b>Faut-il dire que le chantier se crée ?</b> Aujourd’hui le bouton
+        s’appelle « Créer le chantier ». Avec deux boutons nommés d’après le
+        devis, ce mot disparaît de l’écran — c’est le seul endroit qui l’annonce.
+        La 2 le remet en une ligne grise ; les autres l’assument disparu.</li>
+      <li><b>Et quand il REVIENT sur un chantier déjà créé.</b> L’écran sert
+        aussi à corriger les coordonnées ; le bouton dit alors « Enregistrer ».
+        Avec deux boutons de devis, il faut décider ce qu’il voit à ce
+        moment-là : les mêmes deux boutons, ou « Enregistrer » seul.</li>
+    </ul>
+    <h3>Ce qui ne change pas</h3>
+    <ul>
+      <li><b>Les deux chemins.</b> « Je dicte » mène à la fiche du chantier, où
+        se prend la dictée ; « J’écris » ouvre le devis directement. C’est
+        exactement ce que fait la bascule aujourd’hui — seul le geste change.</li>
+      <li><b>La porte du tiroir, sur la fiche chantier.</b> Ce n’est pas un
+        doublon : ici c’est « je sais déjà que je l’écrirai », là-bas « j’ai
+        commencé, finalement je l’écris ».</li>
+      <li><b>La forme.</b> Aucune proposition n’invente une seconde forme
+        d’action : ce sont toutes des capsules, celle de l’application.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
