@@ -10777,7 +10777,7 @@ rubrique « Planning » qui remontrerait les équipes**. Soit ils rejoignent
 
 ---
 
-## §126. Le calcul d'arrosage sort de l'écran — `appli/arrosage-calcul.js`
+## 130. Le calcul d'arrosage sort de l'écran — `appli/arrosage-calcul.js`
 
 **Le problème, posé le 18 août 2026.** Il a demandé un second écran : *« une
 fois que j'ai envoyé la photo [...] tout ce qu'il y a en dessous, tu peux le
@@ -10926,3 +10926,68 @@ une pelouse de 40 × 30 en Hunter, qui pose une PGP Ultra en 3/4" — et un
 contrôle vérifie que ce corps a bien été posé, faute de quoi elle le dit au lieu
 de rendre un vert vide. C'est le piège du 15 août dans sa version « jamais
 atteint » : mesurer zéro et mesurer rien se ressemblent trop.
+
+---
+
+## 131. La construction qui a échoué n'était jamais retentée — le dernier trou de la version lente
+
+*Le patron, le 18 août 2026 : **« je crois que j'ai encore la version lente »**.
+Sa fiche disait pourquoi, sans qu'il ait rien à recopier :*
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (2026-08-18T05:13:44Z)
+dit: ⨯ Another next build process is already running.
+```
+
+### Ce qui était DÉJÀ réparé, et qui ne suffisait pas
+
+Le même refus avait été traité deux fois (§126) : l'orpheline est délogée avant
+de bâtir, le verrou de banc se prend en création exclusive, et une seconde
+tentative part quand c'est ce message-là qui a parlé. **Son espace portait bien
+ces correctifs** — le commit récupéré, `757ab1d`, les contient tous.
+
+Il était lent quand même, et c'est ce qui désigne le trou : **aucun de ces
+remèdes ne couvre le cas où les deux tentatives tombent.**
+
+### Le trou, et pourquoi personne ne le voyait
+
+`veiller.sh` ne relance `npm run banc` que lorsque **rien ne répond** sur le
+port. Or une construction qui échoue laisse le banc en mode développement — et
+ce mode-là **répond très bien**. Les deux conditions du veilleur étaient donc
+satisfaites, il se déclarait content, et plus rien nulle part ne retentait quoi
+que ce soit : le patron passait la soirée sur la version lente.
+
+**Le témoin d'échec existait déjà** (`/tmp/atlas-construction-echouee.txt`,
+écrit par `banc.mjs`, effacé dès qu'une construction réussit) — mais **personne
+ne le lisait**, sinon la fiche, pour le raconter.
+
+### Ce qui est posé
+
+Le veilleur gagne une seconde raison d'agir : *le serveur répond, mais sert-il
+la version rapide ?* Témoin présent ⇒ on retente, **au plus trois fois, espacées
+de dix minutes**, et jamais si une construction tourne déjà.
+
+**Pourquoi réessayer marche ici, alors qu'insister est d'ordinaire une faute :**
+la cause est passagère. Son espace a 8 Go et **132 Mo libres** au moment de la
+panne ; dix minutes plus tard la mémoire est rendue, et la même construction
+passe. Réessayer coûte quelques minutes de processeur et rapporte une soirée.
+
+**Et pourquoi c'est BORNÉ.** Une erreur de types ne se répare pas en insistant,
+et rebâtir sans fin sur une machine qui manque de mémoire la maintient à genoux
+— le remède qui tue, déjà payé deux fois dans ce dépôt. Après trois échecs, le
+veilleur se tait et l'abandon s'écrit dans le journal.
+
+### Le contrôle, et son témoin
+
+`test-relance-construction.ts` fait tourner le vrai veilleur devant un serveur
+qui répond, avec un faux `npm` en tête de `PATH` pour ne pas bâtir pour de vrai.
+
+| Ce qu'il mesure | Pourquoi |
+|---|---|
+| témoin présent ⇒ on retente | la panne du 18 août |
+| **témoin absent ⇒ on ne relance RIEN** | le TÉMOIN : sans lui, un veilleur qui rebâtirait en boucle passerait pour correct |
+| le compte est borné, et l'abandon se dit | ne pas maintenir l'espace à genoux |
+| une construction en cours n'en déclenche pas une seconde | la panne d'origine, précisément |
+
+Confronté au veilleur d'avant, il tombe sur le premier et le troisième — et le
+témoin, lui, reste vert : la différence porte bien sur ce qu'on a changé.

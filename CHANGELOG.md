@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-18
 
+### La fiche de chantier rejoint Paysage — et le pont vers le client
+
+**Sa décision du 17 août**, contre ma recommandation : *« la fiche chantier, la
+ranger comme étant un outil dans la case paysage à côté de arrosage automatique
+et terrasse bois […] faire un pont vers la case client, pour pouvoir ajouter des
+informations du client et lui envoyer »*.
+
+J'avais proposé le planning, au motif qu'un rapport n'a pas de sens sans client
+ni sans date. **Sa raison est meilleure, et c'est la sienne, posée le matin
+même** : un outil doit s'ouvrir SANS client, sinon il ne sert pas en visite. Le
+client vient au moment d'envoyer.
+
+**Au passage, je me suis trompé sur un nom** : l'onglet s'appelle bien
+« Paysage » — il l'a tranché le 17 au soir, après que `ARCHITECTURE.md` §125 eut
+retenu « Outils ». J'ai cité §125 sans voir qu'il était dépassé.
+
+**La tension qui reste, et que la planche 77 pose** : il a décidé la veille que
+le pré-remplissage viendrait du DERNIER passage du client — or pré-remplir exige
+de savoir qui, dès l'ouverture. Trois moments possibles pour nommer le client,
+avec leur coût ; ma recommandation est le troisième : **nommable à tout moment**,
+et la fiche se replie sur ses prestations dès qu'il est connu.
+
+Toujours **aucune ligne de `src/`**.
+
+---
+
 ### Du croquis au plan : la maquette essayable, et le calcul sorti de l'écran
 
 **Sa demande :** *« une fois que j'ai envoyé la photo de mon jardin avec les
@@ -1406,6 +1432,32 @@ existait depuis le 16 août sans être branché nulle part. Raccroché, avec cel
 de la 68. Raisons : `ARCHITECTURE.md` §129.
 
 ---
+
+## 2026-08-18
+
+### « J'ai encore la version lente » — la construction échouée se retente enfin
+
+**Sa fiche disait tout**, sans qu'il ait rien à recopier : *« Code SERVI :
+AUCUNE — la construction a ÉCHOUÉ »*, avec le même refus que l'avant-veille.
+
+**Ce qui était déjà réparé ne suffisait pas.** L'orpheline est délogée, le
+verrou est exclusif, une seconde tentative part sur ce refus-là — son espace
+portait bien ces trois correctifs. Mais **aucun ne couvre le cas où les deux
+tentatives tombent**.
+
+**Le trou :** le veilleur ne relançait le banc que lorsque *rien* ne répondait
+sur le port. Or une construction ratée laisse le banc en mode développement, et
+ce mode-là répond très bien. Le veilleur se déclarait content, et plus rien ne
+retentait — toute la soirée sur la version lente.
+
+**Ce que ça évite désormais :** le veilleur regarde aussi *si la version rapide
+est là*. Le témoin d'échec existait déjà et personne ne le lisait. Trois
+tentatives espacées de dix minutes, jamais deux constructions à la fois, puis on
+se tait et la fiche porte la cause.
+
+**Pourquoi réessayer marche ici :** la cause est passagère — 132 Mo libres au
+moment de la panne, sur 8 Go. Dix minutes plus tard, la même construction passe.
+Détail et tableau des contrôles : `ARCHITECTURE.md` §131.
 
 ## 2026-08-16
 
