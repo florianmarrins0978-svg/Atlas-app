@@ -326,6 +326,12 @@ const MAQUETTES = [
     quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
   },
   {
+    fichier: "77-la-fiche-dans-paysage.html",
+    titre: "La fiche de chantier, et le pont vers le client",
+    famille: "L’entretien récurrent",
+    quoi: "Rangée dans Paysage, à côté de l’arrosage — sa décision du 17 août. La seule question qui reste : à quel moment le client est-il nommé, sachant qu’un outil doit s’ouvrir sans lui et que le pré-remplissage l’exige.",
+  },
+  {
     fichier: "66-ce-que-je-sais-du-client.html",
     titre: "Ce que je sais du client",
     famille: "Les chantiers",

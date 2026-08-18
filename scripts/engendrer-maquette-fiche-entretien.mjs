@@ -812,5 +812,222 @@ writeFileSync(join(DOSSIER, "62-la-fiche-dentretien.html"), PLANCHE_FICHE);
 writeFileSync(join(DOSSIER, "63-le-rapport-au-client.html"), PLANCHE_RAPPORT);
 writeFileSync(join(DOSSIER, "64-composer-sa-fiche.html"), PLANCHE_MODELE);
 console.log(
-  `✅ Trois planches engendrées — ${TOUTES.length} prestations, dont ${FAITES.length} faites.`
+  `✅ Quatre planches engendrées — ${TOUTES.length} prestations, dont ${FAITES.length} faites.`
 );
+
+/* ── Planche 77 : la fiche ouverte depuis Paysage, et le pont vers le client ─ */
+
+const familleCochee = FAMILLES.slice(0, 2)
+  .map(
+    (f) => `        <p class="fam">${f.nom}</p>\n` +
+      f.lignes
+        .map(
+          (l, j) =>
+            `        <div class="pr${l.fait ? " ok" : ""}"><span class="cs"></span><span>${l.nom}</span></div>`
+        )
+        .join("\n")
+  )
+  .join("\n");
+
+const PLANCHE_PASSAGE = `<title>La fiche de chantier, et le pont vers le client</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LA FICHE DE CHANTIER — rangée dans PAYSAGE, à côté de l'arrosage.
+
+    SA DÉCISION DU 17 AOÛT 2026 : « la fiche chantier, la ranger comme étant un
+    outil dans la case paysage à côté de arrosage automatique et terrasse bois.
+    Et l'idée, c'est qu'à partir de cette catégorie-là, le clic sur ma fiche
+    chantier, je puisse la remplir. Vu que maintenant on a créé une catégorie
+    client, on va pouvoir enregistrer tous les clients qu'on a. À partir de
+    cette fiche chantier, pour faire un pont vers la case client, pour pouvoir
+    ajouter des informations du client et lui envoyer. »
+
+    J'AVAIS RECOMMANDÉ L'INVERSE — la fiche ouverte depuis le PLANNING, au motif
+    qu'un rapport n'a pas de sens sans client ni sans date. Sa raison est
+    meilleure, et c'est la sienne, posée le matin même : un outil doit s'ouvrir
+    SANS client, sinon il ne sert pas en visite. Le client vient au moment
+    d'envoyer, pas avant.
+
+    ————————————————————————————————————————————————————————————————
+    LA TENSION QUI RESTE, ET ELLE EST RÉELLE.
+
+    Il a décidé la veille que le pré-remplissage se ferait d'après le DERNIER
+    PASSAGE du client — sans quoi il retrierait vingt lignes douze fois par an
+    chez le même client. Or pré-remplir exige de savoir QUI dès l'ouverture.
+
+    Les deux décisions ne se contredisent pas ; elles se rencontrent sur le
+    moment où le client est nommé. C'est la seule question de cette planche.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR.
+
+    · LE CLIENT NE SE RESAISIT PAS. La catégorie client existe depuis le
+      16 août : on le retrouve, on ne le retape pas.
+    · UNE FICHE SANS CLIENT NE S'ENVOIE PAS. Elle se remplit, elle se garde —
+      mais le bouton d'envoi reste éteint tant que personne n'est nommé, et il
+      DIT pourquoi.
+    · CE QUI PART EST FIGÉ. Le rapport envoyé porte sa date, son heure et
+      l'empreinte de son contenu ; le modifier ensuite ne le change pas chez le
+      client.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT. Engendré par scripts/engendrer-maquette-fiche-entretien.mjs
+  */
+${CHARTE}
+  .qa,.qb,.qc{display:none}
+  #q-a:checked ~ .dedans .qa,
+  #q-b:checked ~ .dedans .qb,
+  #q-c:checked ~ .dedans .qc{display:block}
+  #q-a:checked ~ .dedans label[for="q-a"],
+  #q-b:checked ~ .dedans label[for="q-b"],
+  #q-c:checked ~ .dedans label[for="q-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+
+  .outils .o{display:flex;justify-content:space-between;align-items:flex-start;
+             gap:12px;padding:13px 2px;border-bottom:1px solid var(--trait)}
+  .outils .o .n{font-family:Georgia,serif;font-size:16px;color:var(--encre)}
+  .outils .o .d{display:block;font-size:11.5px;color:var(--gris);margin-top:2px}
+  .outils .o.neuf .n{font-weight:600}
+  .outils .o .mq{flex:none;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or)}
+
+  .fam{margin:14px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or)}
+  .pr{display:flex;align-items:center;gap:11px;min-height:46px;
+      border-bottom:1px solid var(--trait);font-size:14.5px;color:var(--gris)}
+  .pr .cs{width:22px;height:22px;flex:none;border-radius:7px;
+          border:1.5px solid var(--trait)}
+  .pr.ok{color:var(--encre);font-weight:600}
+  .pr.ok .cs{background:var(--pin);border-color:var(--pin);
+             box-shadow:inset 0 0 0 3px var(--papier),inset 0 0 0 4px var(--pin)}
+
+  .pour{margin:14px 0 0;padding:12px 13px;border-radius:12px;background:var(--teinte);
+        font-size:13px;color:var(--gris)}
+  .pour b{color:var(--encre)}
+  .pour .lien{color:var(--or)}
+  .bouton{display:block;margin-top:14px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
+  .bouton.eteint{background:transparent;color:var(--gris);
+                 border:1px solid var(--trait)}
+  .pourquoi{display:block;margin-top:7px;text-align:center;font-size:12px;color:var(--gris)}
+</style>
+
+<input type="radio" name="q" id="q-a" class="etat">
+<input type="radio" name="q" id="q-b" class="etat">
+<input type="radio" name="q" id="q-c" class="etat" checked>
+
+<div class="dedans">
+  <h1>La fiche de chantier, et le pont vers le client</h1>
+  <p class="intro">Rangée dans <b>Paysage</b>, à côté de l'arrosage — votre
+    décision du 17 août. <b>Rien n'est codé.</b> La seule question qui reste :
+    <b>à quel moment le client est-il nommé ?</b></p>
+
+  <p class="dit">« La fiche chantier, la ranger comme étant un outil dans la case
+    paysage […] À partir de cette fiche chantier, faire un <b>pont vers la case
+    client</b>, pour pouvoir ajouter des informations du client et
+    <b>lui envoyer</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Quand le client est-il nommé ?</span>
+    <div class="segments">
+      <label for="q-a">A · Au début</label>
+      <label for="q-b">B · À la fin, pour envoyer</label>
+      <label for="q-c">C · Quand vous voulez — <b>ma recommandation</b></label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Outils du métier</span><span class="quand">Paysage</span></div>
+      <div class="outils">
+        <div class="o"><span><span class="n">Plan d'arrosage automatique</span>
+          <span class="d">Zones, arroseurs, secteurs.</span></span><span class="mq">À l'essai</span></div>
+        <div class="o neuf"><span><span class="n">Fiche de chantier</span>
+          <span class="d">Cocher ce qui a été fait, puis l'envoyer au client.</span></span><span class="mq">Ouvrir</span></div>
+        <div class="o"><span><span class="n">Terrasse bois</span>
+          <span class="d">Lambourdes, plots, visserie.</span></span><span class="mq">Bientôt</span></div>
+      </div>
+
+      <p class="titre-fiche" style="margin-top:20px">Fiche de chantier</p>
+
+      <!-- A · le client d'abord -->
+      <div class="qa">
+        <p class="sous">Pour qui ?</p>
+        <div class="pour"><b>Monsieur Martins</b> — 12 rue des Lilas.
+          <span class="lien">Changer</span></div>
+        <p class="sous" style="margin-top:12px">Reprise de son passage du 22 juillet.</p>
+      </div>
+
+      <!-- B · rien avant la fin -->
+      <div class="qb"><p class="sous">Mercredi 19 août</p></div>
+
+      <!-- C · nommable à tout moment -->
+      <div class="qc">
+        <div class="pour"><span class="lien">+ C'est pour quel client ?</span><br>
+          <span style="font-size:12px">Facultatif — vous pourrez le dire à la fin.</span></div>
+      </div>
+
+${familleCochee}
+
+      <p class="champ-nom" style="margin-top:14px">Temps passé <span class="prevu">à la molette</span></p>
+      <div class="saisie"><input type="text" value="1 h 40" aria-label="Temps passé"></div>
+
+      <div class="qa"><span class="bouton">Envoyer à M. Martins</span></div>
+      <div class="qb">
+        <div class="pour"><span class="lien">Choisir le client</span> — puis envoyer.</div>
+        <span class="bouton eteint">Envoyer</span>
+        <span class="pourquoi">Nommez d'abord le client : c'est lui qui recevra le rapport.</span>
+      </div>
+      <div class="qc"><span class="bouton">Enregistrer et envoyer</span></div>
+    </div>
+
+    <div class="legende">
+      <div class="qa">
+        <span class="t">A · Le client d'abord</span>
+        On le choisit en ouvrant, et la fiche arrive <b>déjà pré-remplie d'après
+        son dernier passage</b> — ce que vous avez décidé hier.
+        <span class="cout">Ce que ça coûte : <b>l'outil ne s'ouvre plus sans
+        client</b>, et c'est exactement ce que vous avez refusé ce matin pour
+        l'arrosage. En visite, chez quelqu'un qui n'existe pas encore dans
+        Atlas, il faudrait d'abord créer une fiche client.</span>
+      </div>
+      <div class="qb">
+        <span class="t">B · À la fin, pour envoyer</span>
+        L'outil s'ouvre nu, comme l'arrosage. Vous cochez, puis vous dites à qui
+        c'est — le bouton d'envoi reste éteint jusque-là, <b>et il dit pourquoi</b>.
+        <span class="cout">Ce que ça coûte : <b>plus de pré-remplissage</b>. La
+        fiche part des vingt lignes du modèle à chaque passage, y compris le
+        douzième chez le même client — c'est le tri que vous vouliez éviter.</span>
+      </div>
+      <div class="qc">
+        <span class="t">C · Quand vous voulez</span>
+        L'outil s'ouvre nu. Une ligne discrète en haut — <b>« c'est pour quel
+        client ? »</b> — se touche à tout moment. Dès qu'un client est nommé, la
+        fiche se replie sur SES prestations et reprend son dernier passage ;
+        si vous ne le dites qu'à la fin, elle part du modèle complet.
+        <span class="cout">Ce que ça coûte : <b>un état de plus à tenir</b> —
+        la fiche doit savoir se recomposer en cours de route sans effacer ce que
+        vous venez de cocher. C'est du travail invisible, et c'est le prix pour
+        que vos deux décisions tiennent ensemble.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>Le client ne se resaisit pas.</b> La catégorie client existe depuis
+        le 16 août : on le retrouve, on ne le retape pas.</li>
+      <li><b>Une fiche sans client ne s'envoie pas</b> — mais elle se garde. Le
+        bouton reste éteint et DIT pourquoi, au lieu de ne rien faire.</li>
+      <li><b>Ce qui part est figé</b> : date, heure, et empreinte du contenu. Le
+        modifier ensuite ne change rien chez votre client.</li>
+    </ul>
+  </div>
+</div>
+`;
+
+writeFileSync(join(DOSSIER, "77-la-fiche-dans-paysage.html"), PLANCHE_PASSAGE);

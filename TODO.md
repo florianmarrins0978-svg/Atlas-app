@@ -1105,6 +1105,19 @@ réellement automatique demanderait un prestataire sous contrat.
 - « Vrai »/« Faux » ne sortent jamais vers le client ;
 - l'envoi emprunte le chemin qui porte déjà devis et factures.
 
+**OÙ LA FICHE VIT — tranché le 17 août 2026, contre ma recommandation.** Pas
+depuis le planning : **dans l'onglet « Paysage »**, à côté de l'arrosage et de
+la terrasse bois. Sa raison, qui est la sienne du matin même : un outil doit
+s'ouvrir SANS client, sinon il ne sert pas en visite. Le client vient au moment
+d'envoyer, par un pont vers la fiche client (existante depuis le 16 août).
+
+**LA QUESTION OUVERTE, et elle n'est pas de mise en page**
+(`docs/maquettes/77-la-fiche-dans-paysage.html`) : pré-remplir d'après le dernier
+passage exige de savoir QUI dès l'ouverture, ce qui contredit l'ouverture sans
+client. Trois moments proposés ; ma recommandation est le troisième — le client
+se nomme à tout moment, et la fiche se replie sur ses prestations dès qu'il est
+connu. **Attend sa réponse.**
+
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :
 
