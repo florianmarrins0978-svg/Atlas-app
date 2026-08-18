@@ -66,6 +66,13 @@ jobs:
           done
           curl -sf http://127.0.0.1:8080/app.html >/dev/null
           BASE_URL=http://127.0.0.1:8080 npm run test:e2e
+          # **Les suites de l'arrosage gardent le calcul, pas les écrans.** Elles
+          # étaient jouées à la main jusqu'au 18 août — et ce jour-là, un morceau
+          # de calcul resté dans `arrosage.html` a mis la liste des pièces à zéro
+          # sur la page du croquis sans qu'aucune suite jouée en ligne ne le
+          # voie. Une suite qui ne barre pas la publication ne barre rien.
+          BASE_URL=http://127.0.0.1:8080 npm run test:arrosage
+          BASE_URL=http://127.0.0.1:8080 npm run test:croquis
 
   deploy:
     name: Déploiement

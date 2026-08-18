@@ -44,6 +44,7 @@ relues à chaque session) :
 19. [Une équipe part cinq jours en déplacement : comment on gère ça ?](#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-)
 20. [Si un client ne me paie pas, la TVA part quand même ?](#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
 21. [Quelle est la différence entre « Planning » et « Équipe » dans les réglages ?](#21-quelle-est-la-différence-entre--planning--et--équipe--dans-les-réglages-)
+22. [Mes outils de calcul, on les range où dans l'application ?](#22-mes-outils-de-calcul-on-les-range-où-dans-lapplication-)
 
 ---
 
@@ -1372,4 +1373,49 @@ compte, ce sera une **autre** liste (voir §11).
 ils iront dans « Équipe » eux aussi, ou dans une rubrique qui ne parle QUE
 d'horaires. Recréer une rubrique « Planning » qui montre à nouveau les équipes,
 c'est rouvrir exactement ce qui vient d'être refermé.
+
+---
+
+## 22. Mes outils de calcul, on les range où dans l'application ?
+
+*Votre question du 17 août 2026 :* **« L'idée, c'est de créer des outils comme
+celui-là pour les paysagistes ; après je ferai la même chose pour les terrasses
+bois. Pour toi le mieux, c'est de créer une nouvelle catégorie paysage ? Ou
+alors on range ça dans les réglages, sous une catégorie paysage ? »**
+
+**Votre décision : un cinquième onglet, « Paysage ».** Voici pourquoi les deux
+autres pistes ont été écartées, pour ne pas les rouvrir dans trois mois.
+
+| Où | Pourquoi non |
+|---|---|
+| **Dans les Réglages** | On y règle ce qui vaut **une fois pour toutes** : vos tarifs, votre équipe, votre TVA. Un plan d'arrosage se refait à **chaque client**, comme un devis. Rangé là, il serait mal nommé et enterré sous quinze rubriques |
+| **Une rubrique dans les Réglages, sous « Paysage »** | Même raison que ci-dessus : c'est l'endroit qui ne va pas, pas le mot. Le mot « Paysage », lui, vous l'avez finalement gardé pour l'onglet — voir plus bas |
+| **Attaché au chantier** *(ce que je proposais)* | Un plan est toujours fait pour quelqu'un, et rangé là on le retrouve six mois plus tard chez le bon client. **Mais** un outil qui exige un chantier ne sert pas en visite de devis, quand le client n'existe pas encore. Votre objection l'emporte |
+
+**Ce que le cinquième onglet a coûté, et ce n'est pas rien.** La barre du bas
+en portait quatre. À cinq, chaque colonne perd un cinquième de sa largeur — et
+sur un téléphone de 360 pixels, **le mot « CHANTIERS » ne rentrait plus** : il
+débordait de 12 pixels. Resserrer un peu les lettres ne suffisait pas non plus
+— il débordait encore de 4. Vous avez choisi de **réduire la taille des
+lettres** (8,5 px au lieu de 9,5), qui laisse un peu plus de 6 pixels de marge.
+
+Le dessin des cinq variantes, avec les mesures :
+`docs/maquettes/76-le-cinquieme-onglet.html`. Et un contrôle mesure désormais
+la barre à 360 pixels avant chaque mise en ligne — ce genre de défaut ne se
+voit pas sur un grand écran, seulement sur le vôtre.
+
+**Deux choses restent ouvertes**, et elles se décideront à l'usage :
+
+- l'onglet s'appelle **« Paysage »**. Vous aviez d'abord retenu « Outils », et
+  j'avais écarté « Paysage » en disant que c'était votre métier entier, donc
+  que ça ne distinguait rien. **Vous êtes revenu dessus, et votre choix se
+  défend mieux que mon objection** : l'onglet porte le nom du MÉTIER qu'il
+  sert. Le jour où un menuisier utilisera Atlas, il aura un onglet
+  « Menuiserie » à côté — et ça se lira mieux que deux listes d'« outils »
+  qu'il faudrait départager en entrant. Ce qui reste vrai : l'onglet porte une
+  LISTE, donc il ne s'appelle pas « Arrosage » — sinon il faudrait le renommer
+  à la terrasse bois ;
+- un plan fait **en visite de devis** doit pouvoir rejoindre son chantier
+  ensuite. C'est le revers de l'accès sans chantier que vous avez voulu : sans
+  ce rattachement, on cherchera le plan six mois plus tard.
 

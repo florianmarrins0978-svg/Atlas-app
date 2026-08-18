@@ -10471,7 +10471,8 @@ alors on range ça dans les réglages, sous une catégorie paysage ? »*
   outil qui exige un chantier ne sert pas en visite de devis, quand le client
   n'existe pas encore.
 
-**Sa décision : un cinquième onglet « Outils ».**
+**Sa décision : un cinquième onglet.** Nommé « Outils » d'abord, puis
+**« Paysage »** le soir même — voir §125 bis, plus bas.
 
 **LE COÛT EST MESURABLE, ET IL A ÉTÉ MESURÉ** (`docs/maquettes/76-le-cinquieme-onglet.html`).
 La barre porte quatre onglets depuis le 10 août, en capitales de 9,5 px
@@ -10493,6 +10494,9 @@ apparaître chez lui. **D revient sur sa décision du 10 août** (les icônes
 retirées) — recevable, puisque le service rendu n'est plus le même à cinq
 colonnes qu'à quatre : viser sans lire. Mais c'est à lui de le dire.
 
+**La réponse dans sa langue est dans `docs/QUESTIONS.md` §22**, avec son
+accord explicite — pour que la question ne se repose pas dans trois mois.
+
 **Ce qui reste à trancher avec lui**, et qui n'est pas de la place : l'onglet
 porte une LISTE d'outils (arrosage, puis terrasse bois), donc il s'appelle
 « Outils » et non « Arrosage » ; et il faudra pouvoir **rattacher un plan à un
@@ -10500,6 +10504,41 @@ chantier après coup**, sans quoi un plan fait en visite de devis se perdra —
 c'est précisément ce que l'accès sans chantier fait gagner et risque de coûter.
 
 ---
+
+---
+
+## 125 bis. « Paysage » plutôt qu'« Outils » — il revient sur son choix, et il a raison
+
+**Le 17 août au soir, après avoir vu l'onglet posé :** *« As-tu créé la fiche
+outils ? Je préférerais qu'elle s'appelle Paysage finalement. »*
+
+**J'avais écarté ce mot le matin même**, et voici l'argument que j'avais donné :
+le paysage est son métier ENTIER, donc le mot ne distingue rien de ce qu'Atlas
+fait déjà. **Cet argument était faux, et il faut dire pourquoi** — sans quoi
+quelqu'un le ressortira.
+
+Il partait d'une prémisse implicite : qu'Atlas restera l'application d'un
+paysagiste. Or ce n'est pas le produit — Atlas sert des artisans, et lui-même
+prépare déjà la terrasse bois. **Dans une application multi-métiers, « Paysage »
+distingue exactement ce qu'il faut** : le jour où un menuisier s'en sert, il
+aura un onglet « Menuiserie » à côté. Deux listes d'« Outils » auraient au
+contraire demandé de les départager en entrant.
+
+**Et le mot vaut mieux pour une seconde raison, qui touche à ce qu'il montre.**
+« Outils » nomme la NATURE de ce qu'il y a dedans — des calculateurs.
+« Paysage » nomme le MÉTIER servi. Le second se lit sans savoir ce qu'on va y
+trouver ; le premier demande d'ouvrir pour comprendre.
+
+**Ce qui ne change pas :** l'onglet porte une LISTE (l'arrosage, puis la
+terrasse bois), et c'est pourquoi il ne s'appelle pas « Arrosage » — il faudrait
+le renommer au second occupant, et un onglet qui change de nom fait perdre le
+repère de celui qui l'ouvre vingt fois par jour.
+
+**La place n'est pas un sujet ici** : « PAYSAGE » fait sept lettres contre neuf
+à « CHANTIERS », qui reste le mot qui décide. `test-barre-basse-e2e.ts` le
+vérifie à 360 px, et un cas de plus exige que le libellé et l'adresse aillent
+ensemble — renommer l'un sans l'autre donnerait un onglet « Paysage » qui ouvre
+`/outils`, donc un 404 que personne n'aurait voulu.
 
 ---
 
@@ -10738,7 +10777,102 @@ rubrique « Planning » qui remontrerait les équipes**. Soit ils rejoignent
 
 ---
 
-## 130. La construction qui a échoué n'était jamais retentée — le dernier trou de la version lente
+## 130. Le calcul d'arrosage sort de l'écran — `appli/arrosage-calcul.js`
+
+**Le problème, posé le 18 août 2026.** Il a demandé un second écran : *« une
+fois que j'ai envoyé la photo [...] tout ce qu'il y a en dessous, tu peux le
+supprimer. Et tu me fais le plan en couleur [...] et la liste des pièces à
+acheter. »* Deux pages devaient donc rendre **le même plan et la même liste**,
+à partir du même catalogue.
+
+**Ce qu'on n'a PAS fait : recopier le calcul dans la seconde page.** Le §3 du
+dépôt l'interdit — *« jamais de règle dupliquée entre l'affichage et la
+vérification »* — et la raison est ici très concrète : cette liste est ce qu'il
+commande chez son fournisseur. Deux versions qui divergent, ce sont deux
+camions de pièces différents pour le même jardin.
+
+Le calcul vit donc dans **`appli/arrosage-calcul.js`** : mise en forme, état et
+sauvegarde, règles de pose (`pointsDeLaPose`, `poser`), découpage en réseaux
+(`decouper`), hydraulique (`amenee`, `perteDeCharge`), et la liste
+(`listeMateriel`). `arrosage.html` et `arrosage-croquis.html` ne font plus que
+**dessiner** ce qu'il rend.
+
+**La clé de sauvegarde est la seule chose qui les sépare.** Le module lit
+`window.CLE_ETAT` avant de se charger ; la maquette pose
+`atlas-arrosage-croquis`. Sans cela, l'essayer effacerait le jardin qu'il a
+saisi dans l'outil — et rien ne le lui aurait dit.
+
+### Le défaut que cette extraction a fabriqué, et ce qu'il enseigne
+
+`corpsCourant()` est resté dans `arrosage.html`. `listeMateriel` l'appelle pour
+compter un corps sous chaque tuyère : **toute page autre que celle-là partait
+donc en `ReferenceError` dès qu'un jardin posait une tuyère.** L'écran, lui,
+rendait *« la liste se remplit dès qu'un jardin est lu »* — un vide qui
+ressemble à un état normal.
+
+Les 73 suites de l'arrosage et les 105 de l'appli étaient vertes. **Aucune ne
+demandait la liste d'un jardin MIXTE** — turbines sur la grande pelouse,
+tuyères dans le couloir étroit —, le seul cas qui traverse cette ligne.
+
+Deux règles en sortent, et elles valent au-delà de ce fichier :
+
+1. **Une pièce de calcul qui reste dans un écran est une pièce que le second
+   écran n'a pas.** À l'extraction, ce n'est pas le fichier d'arrivée qu'il
+   faut relire, c'est le fichier de DÉPART : ce qui y reste et que le module
+   appelle est un piège armé.
+2. **Un écran qui ne sait pas dire « je suis tombé » ment.** La liste vide
+   parlait comme une liste pas encore remplie. C'est le corollaire du piège 0
+   ter de `HANDOVER.md`, en version statique.
+
+## §126 bis. Le plan : ce que le dessin doit prouver
+
+Le plan de `arrosage-croquis.html` reprend le sien (sa photo du 17 août) : les
+réseaux séparés par la couleur, la nourrice dans son regard, le PE en
+pointillés, les arroseurs en ronds — **et la dripline non tracée**, sa
+consigne.
+
+**Trois défauts du dessin, tous trouvés sur une capture, jamais par un test.**
+
+| Ce qui était dessiné | Ce que ça donnait à lire | Corrigé par |
+|---|---|---|
+| Une ligne de tuyau par RANGÉE | Une rangée avec une seule tête de ce réseau n'avait pas de ligne : l'arroseur flottait, relié à rien | Un tracé de proche en proche, à angle droit, depuis la tête la plus près du regard |
+| Un serpentin dans l'ordre de pose (première correction) | Le tuyau repartait du bout d'une rangée chercher une tête à l'autre bout, **en traversant les arroseurs d'un autre réseau** — un té à lire là où il n'y a rien | idem |
+| Bande de massif grise et anonyme | Deux couleurs au dessin, trois voies à la nourrice, et rien ne disait où passait la troisième | `reseauxDeZone`, ajouté à `decouper()` : la bande porte la couleur de SA vanne |
+| Contour de pelouse tracé APRÈS les tuyaux | La rangée du bas — dont les têtes sont posées sur la bordure — voyait son tuyau repeint par le trait noir | Le contour passe avant |
+
+**`reseauxDeZone` mérite son existence.** `reseauDuPoint` ne répond que pour une
+TÊTE, et un massif n'en a aucune : le goutte-à-goutte occupait donc une voie de
+la nourrice qu'aucun trait du plan ne justifiait.
+
+**Et le piège de la feuille de style s'est présenté une seconde fois.** Une
+règle CSS l'emporte sur un attribut de présentation : `.massif{stroke:…}`
+écrasait la couleur portée par l'attribut, exactement comme `.gazon{fill:…}`
+avait effacé les cercles de portée de la planche 75. Les deux propriétés qui
+arrivent par attribut ont été retirées de la feuille, avec le commentaire qui
+dit pourquoi.
+
+## §126 ter. Une suite qui ne barre pas la publication ne barre rien
+
+`appli/tests/essai-arrosage-detaille.cjs` (73 contrôles) avait son adresse
+écrite en dur — `127.0.0.1:8099`. Elle ne pouvait donc être jouée qu'à la main,
+et `pages.yml` ne l'appelait pas : **elle ne barrait aucune mise en ligne.**
+C'est exactement ce qui a laissé passer le défaut de `corpsCourant`.
+
+Elle lit désormais `BASE_URL`, et le flux de publication l'enchaîne avec
+`appli/tests/essai-croquis.cjs` (25 contrôles). Les trois suites barrent la
+publication ; un rouge, et la version en ligne reste celle d'avant.
+
+**Les six contrôles de la nouvelle suite ont été vus ROUGE avant d'être
+gardés**, en réintroduisant chaque fois le défaut qu'ils prétendent attraper —
+`corpsCourant` retiré, le tuyau redessiné par rangée, la bande redevenue grise,
+une pièce composée à la main dans un casier, la clé de sauvegarde de l'outil
+reprise, un texte qui déborde. Aucun ne regarde un identifiant d'écran : ils
+interrogent le calcul et le tracé, et survivront au prochain remaniement de la
+page — il en a déjà demandé deux.
+
+---
+
+## 131. La construction qui a échoué n'était jamais retentée — le dernier trou de la version lente
 
 *Le patron, le 18 août 2026 : **« je crois que j'ai encore la version lente »**.
 Sa fiche disait pourquoi, sans qu'il ait rien à recopier :*
@@ -10800,4 +10934,3 @@ qui répond, avec un faux `npm` en tête de `PATH` pour ne pas bâtir pour de vr
 
 Confronté au veilleur d'avant, il tombe sur le premier et le troisième — et le
 témoin, lui, reste vert : la différence porte bien sur ce qu'on a changé.
-

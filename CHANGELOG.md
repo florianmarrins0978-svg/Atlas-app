@@ -7,6 +7,65 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-18
+
+### Du croquis au plan : la maquette essayable, et le calcul sorti de l'écran
+
+**Sa demande :** *« une fois que j'ai envoyé la photo de mon jardin avec les
+mesures, il y a le petit encart où on peut choisir la marque. Tout ce qu'il y a
+en dessous, tu peux le supprimer. Et une fois que tu as lu les mesures avec
+l'IA, tu me fais le plan en couleur avec les différents réseaux, contenant la
+nourrice, les PE en pointillés, les arroseurs représentés par des ronds, et tu
+me fais la liste des pièces à acheter [...] Avant de coder quoi que ce soit,
+crée-moi une maquette dynamique que je puisse essayer. »*
+
+**`appli/arrosage-croquis.html`**, publiée avec l'appli — ouvrable au téléphone
+(`…github.io/Atlas-app/arrosage-croquis.html`). Un seul écran de saisie : la
+photo et la marque. Puis le plan en couleur et les pièces rangées en casiers.
+
+**Le calcul a été SORTI de l'écran** dans `appli/arrosage-calcul.js`, plutôt que
+recopié dans la maquette. Deux implémentations d'une même règle finissent
+toujours par diverger (`CLAUDE.md` §3) — et la liste des pièces n'est pas un
+détail d'affichage, c'est ce qu'il commande chez son fournisseur.
+
+**Ce que la maquette simule, et elle le dit en rouge :** la lecture de la photo.
+Le plan et la liste, eux, sont vraiment calculés, sur son catalogue.
+
+### Quatre défauts, et aucun n'a été trouvé par une suite
+
+1. **`corpsCourant` était resté dans `arrosage.html`** à l'extraction. Toute
+   page autre que celle-là partait en `ReferenceError` dès qu'un jardin posait
+   une tuyère — et l'écran rendait *« la liste se remplit dès qu'un jardin est
+   lu »*, un vide qui ressemble à un état normal. Les 73 et les 105 suites
+   étaient vertes : aucune ne demandait la liste d'un jardin MIXTE.
+2. **Le tuyau se dessinait une ligne par rangée.** Une rangée qui ne portait
+   qu'une tête de son réseau n'en avait aucune : l'arroseur flottait, relié à
+   rien. Le tracé va désormais de proche en proche, à angle droit.
+3. **La bande du goutte-à-goutte était grise et anonyme.** Le dessin montrait
+   deux couleurs quand la nourrice en annonçait trois, sans dire où passait la
+   troisième voie. Elle porte la couleur de sa vanne (`reseauxDeZone`, ajouté
+   à `decouper`).
+4. **Le contour de la pelouse était dessiné APRÈS les tuyaux**, et repeignait
+   la rangée du bas — dont les têtes sont posées sur la bordure. Le tracé était
+   juste, le plan montrait un réseau à moitié relié.
+
+**Les trois premiers sortent de la capture d'écran, le quatrième aussi.** C'est
+la sixième fois dans ce dépôt (`CLAUDE.md` §5).
+
+### Les suites de l'arrosage barrent enfin la publication
+
+`appli/tests/essai-arrosage-detaille.cjs` avait son adresse écrite en dur : elle
+ne pouvait être jouée qu'à la main, et ne barrait donc rien. Elle lit désormais
+`BASE_URL`, et `pages.yml` l'enchaîne avec la nouvelle
+`appli/tests/essai-croquis.cjs` (25 contrôles). **Une suite qui ne barre pas la
+publication ne barre rien** — c'est exactement ce qui a laissé passer le défaut
+n° 1.
+
+Chacun des six contrôles a été vu ROUGE avant d'être gardé, en réintroduisant le
+défaut qu'il prétend attraper.
+
+---
+
 ## 2026-08-17
 
 ### La maquette des clients, ESSAYABLE — et le libellé qui disait « lui » à une cliente
@@ -189,6 +248,100 @@ Le contrôle éprouve le cas réel — un jardin enregistré avant les réglages
 jour — et a été vu rouge sur le piège remis en place. **Ce défaut aurait
 frappé à chaque réglage ajouté**, et lui seul : c'est le genre qu'on ne voit
 jamais en développant, puisqu'on part d'un navigateur vide.
+
+### « Paysage » plutôt qu'« Outils » — il revient sur son choix, et il a raison
+
+*« As-tu créé la fiche outils ? Je préférerais qu'elle s'appelle Paysage
+finalement. »* L'onglet, son écran et son adresse sont renommés.
+
+**J'avais écarté ce mot le matin même**, au motif que le paysage est son métier
+entier et ne distinguerait donc rien. **L'argument était faux**, et il faut
+dire pourquoi sans quoi quelqu'un le ressortira : il supposait qu'Atlas
+resterait l'application d'un paysagiste. Or Atlas sert des artisans, et lui-même
+prépare déjà la terrasse bois. Dans une application multi-métiers, « Paysage »
+distingue exactement ce qu'il faut — le jour où un menuisier s'en sert, il aura
+un onglet « Menuiserie » à côté, là où deux listes d'« Outils » auraient
+demandé de les départager en entrant.
+
+Et le mot vaut mieux pour une seconde raison : « Outils » nomme la nature de ce
+qu'il y a dedans, « Paysage » nomme le métier servi. Le second se lit sans avoir
+à ouvrir.
+
+Un cas de contrôle s'ajoute : **le libellé et l'adresse doivent aller
+ensemble**. Renommer l'un sans l'autre donnerait un onglet « Paysage » qui ouvre
+`/outils` — un 404 que personne n'aurait voulu, et que rien n'aurait dit.
+
+### Le contrôle de la barre a trouvé une erreur — la mienne, dans la mesure
+
+**Il a rougi dès sa première exécution**, sur le trait d'or : « trait de 66,4 px
+pour une colonne de 72,0 px ». Le trait était juste ; c'est ma mesure de la
+colonne qui était fausse — je divisais la largeur de la rangée par cinq, en
+comptant ses 28 px de marge intérieure comme de la place disponible. **Les deux
+contrôles de largeur passaient donc avec 5,6 px de trop.**
+
+**Et la première correction était fausse elle aussi.** Mesurer la boîte du LIEN
+paraissait évident — c'est la cellule de grille. Sauf qu'une cellule `1fr`
+**s'élargit quand son contenu déborde** : le lien mesure alors exactement la
+largeur du mot, et « déborde » ne se voit plus jamais. Un mot de 120 px aurait
+rendu « colonne 120, texte 120, tout va bien ».
+
+La mesure juste est la **part** : le contenu de la rangée, marges déduites,
+divisé par le nombre d'onglets — 66,4 px. C'est aussi la largeur du trait d'or,
+et c'est pour ça que les comparer a révélé l'écart.
+
+**Ce que ça change aux nombres donnés au patron**, et il fallait le lui dire :
+
+| | Annoncé d'abord | Réel |
+|---|---|---|
+| A · sans rien changer | déborde de 7,2 | **déborde de 12,4** |
+| B · espacement resserré | tient de 1,3 | **déborde de 3,9** |
+| C · lettre plus petite | 11,8 de marge | **6,2 de marge** |
+| D · avec une icône | 14,8 de marge | **9,2 de marge** |
+
+Son choix ne change pas — C reste la seule variante sans icône qui rentre —
+mais B ne « tenait » pas du tout, et la planche 76 le dit maintenant.
+
+**Le seuil du contrôle passe de 6 à 4 px**, et le seuil s'explique : il doit
+rejeter B (qui déborde) sans mettre C à un cheveu du rouge. Un contrôle qui
+passe de justesse rougit au premier rendu un peu différent, et l'on prend
+l'habitude de le rejouer au lieu de le croire.
+
+**La leçon, et elle dépasse cette barre : deux mesures qui devraient tomber
+pareil valent mieux qu'une mesure seule.** Ici, le trait d'or et la colonne
+sont la même largeur par construction ; les comparer a trouvé ce qu'aucune des
+deux n'aurait dit isolément.
+
+### Le cinquième onglet est posé, et un contrôle mesure la barre
+
+Sa variante retenue sur la planche 76 : **C**, la lettre à 8,5 px espacée de
+0,14em, **sans icône** — sa décision du 10 août de retirer les pictogrammes
+tient donc aussi à cinq colonnes. 11,8 px de marge, de quoi encaisser une autre
+police de téléphone.
+
+Trois choses sont posées avec l'onglet :
+
+- **La largeur du trait d'or suit le nombre d'onglets.** Elle était écrite en
+  dur (`/ 4`) : l'oublier aurait laissé le trait à cheval sur deux colonnes,
+  un défaut de dessin que rien n'aurait dit.
+- **Un écran derrière l'onglet**, sans quoi il mènerait à une page introuvable
+  — la troisième fois qu'il appuierait sur quelque chose qui ne répond pas.
+  **Et cet écran dit la vérité** : l'outil d'arrosage n'est pas dans
+  l'application, c'est une page publiée à part. La ligne porte « À l'essai » au
+  lieu d'un chevron, et ouvre la page dehors. Promettre un écran interne aurait
+  été mentir d'un signe.
+- **Un contrôle qui mesure la barre à 360 px** (`test-barre-basse-e2e.ts`). Il
+  mesure la boîte du **nœud de texte**, pas celle du lien : un lien de grille
+  remplit sa colonne quoi qu'il porte, sa largeur ne dirait rien. Il exige
+  **6 px de marge minimum** — précisément pour refuser la variante écartée et
+  son faux confort de 1,3 px — et refuse de conclure sur une barre absente.
+
+Ce genre de défaut ne se voit pas en développant sur un grand écran ; il
+n'apparaît que sur son téléphone. C'est exactement pourquoi il fallait un
+contrôle plutôt qu'un commentaire.
+
+**La décision est aussi entrée dans `docs/QUESTIONS.md` §22**, avec son accord
+— pourquoi ni les Réglages ni une catégorie « Paysage », et ce que le cinquième
+onglet a coûté à la barre.
 
 ### Où vivent les outils métier : un cinquième onglet, et ce qu'il coûte
 
@@ -1230,7 +1383,7 @@ se tait et la fiche porte la cause.
 
 **Pourquoi réessayer marche ici :** la cause est passagère — 132 Mo libres au
 moment de la panne, sur 8 Go. Dix minutes plus tard, la même construction passe.
-Détail et tableau des contrôles : `ARCHITECTURE.md` §130.
+Détail et tableau des contrôles : `ARCHITECTURE.md` §131.
 
 ## 2026-08-16
 
