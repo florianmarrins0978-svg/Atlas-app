@@ -324,6 +324,17 @@ entièrement carrée.
 l'ancienne identité — terre cuite `#B5502F` écrite en dur, carte blanche, aucune
 serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
+## « Envoyer au client » est une capsule sur les DEUX écrans (18 août)
+
+Le pied du devis modifiable (`devis-complet`) écrivait l'envoi comme un lien, à
+côté de « Aperçu du PDF » et dans la même encre : il porte maintenant
+`PrimaryButton`, comme sur l'écran d'envoi. **Aucune forme nouvelle n'a été
+dessinée** — s'il faut retoucher ce bouton, c'est `PrimaryButton.tsx` qu'on
+touche, et les dix-sept écrans suivent.
+
+Repère de suite : `data-atlas="devis-complet-envoyer"` — le texte seul ne suffit
+pas à le désigner, « Envoyer au client → » existe aussi sur `export`.
+
 ## La porte est refaite (12 août) — et deux pièges à connaître
 
 `src/app/login/page.tsx` porte ses trois choix : ligne d'imprimé, sceau à la

@@ -8,6 +8,7 @@ import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { CIVILITES, type Civilite } from "@/lib/civilite";
@@ -733,13 +734,15 @@ export default function DevisCompletClient(props: Props) {
         >
           Aperçu du PDF
         </a>
-        <a
-          href={`/chantiers/${props.chantierId}/export`}
-          className="text-[14px] font-medium"
-          style={{ color: colors.rust }}
-        >
+        {/* **L'envoi porte la capsule verte, comme partout ailleurs.** Il était
+            écrit ici comme un lien de la même graisse et de la même couleur que
+            « Aperçu du PDF » : deux gestes de poids très différents se lisaient
+            pareil, et le seul qui engage vis-à-vis du client était le moins
+            visible des deux. C'est le même bouton que sur l'écran d'envoi
+            (`ExportClient`), donc rien de nouveau n'est dessiné ici. */}
+        <PrimaryButton href={`/chantiers/${props.chantierId}/export`} repere="devis-complet-envoyer">
           Envoyer au client →
-        </a>
+        </PrimaryButton>
         <p className="pb-1 text-center text-[12px]" style={{ color: colors.muted }}>
           Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
         </p>

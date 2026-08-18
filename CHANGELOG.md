@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-18
 
+### « Envoyer au client » redevient un bouton, sur le devis à la main
+
+**Sa demande, capture à l'appui :** *« modifie le Envoyer au client en créant un
+bouton vert arrondi, ne modifie pas le texte »*.
+
+Au pied du devis modifiable, l'envoi était écrit comme un **lien**, de la même
+graisse et de la même couleur que « Aperçu du PDF » juste au-dessus. Deux gestes
+de poids très différents — relire un PDF, engager le document auprès du client —
+se lisaient donc à l'identique, et le seul qui compte était le moins visible des
+deux.
+
+Il porte désormais `PrimaryButton`, la capsule vert pin retenue le 11 août :
+**rien de nouveau n'est dessiné**, c'est exactement le bouton que l'écran
+d'envoi (`ExportClient`) affiche déjà sous le même libellé. Le texte n'a pas
+bougé, flèche comprise.
+
+Le repère `devis-complet-envoyer` est posé pour que les contrôles désignent ce
+lien autrement que par son texte — « Envoyer au client → » existe sur deux
+écrans.
+
 ### « Il peut proposer une autre date » : un interrupteur avant l'envoi
 
 **Sa demande :** *« pour le lien du planning qui part au client, il faut que
