@@ -1,0 +1,437 @@
+<title>Il ne paie pas</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    IL NE PAIE PAS — trois situations qui ne se ressemblent pas.
+
+    LE PATRON, LE 17 AOÛT 2026 : « si jamais on facture un client et qui décide
+    de ne pas nous payer, il faut avoir la possibilité de créer un avoir. Donc,
+    je te laisse me proposer des idées de comment on pourrait faire ça, ne code
+    rien et surtout crée-moi des maquettes dynamiques. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QU'IL FAUT LUI DIRE, ET QUI CHANGE LE DESSIN.
+
+    Un AVOIR annule une facture — une erreur, une prestation non faite, un geste
+    commercial. Un client qui REFUSE DE PAYER n'est pas un cas d'avoir : c'est
+    une créance irrécouvrable. La différence n'est pas un mot :
+
+      · faire un avoir, c'est DIRE QUE LA SOMME N'EST PLUS DUE. Il perd alors le
+        droit de la réclamer — plus de relance, plus de recouvrement, plus de
+        procédure. Il s'est lui-même désarmé ;
+      · déclarer la créance perdue, c'est garder la facture telle quelle, cesser
+        d'être harcelé par le rappel, et RESTER en droit de réclamer.
+
+    Il a demandé « un avoir ». Il a besoin des DEUX, et l'application ne doit
+    surtout pas les confondre. D'où la planche : elle ne propose pas une porte,
+    elle en propose trois, et demande laquelle il reconnaît.
+
+    ————————————————————————————————————————————————————————————————
+    LA BONNE NOUVELLE, ET ELLE EST À LUI.
+
+    Sa TVA est exigible AU PAIEMENT depuis le 16 août (`ARCHITECTURE.md` §110).
+    Une facture jamais payée n'est donc JAMAIS entrée dans son relevé : il ne
+    doit rien dessus, il n'a rien à récupérer, il n'a aucune démarche à faire.
+    L'impayé lui coûte le travail — pas la TVA. Sous l'autre régime (sur les
+    débits), il aurait avancé 240 € de TVA sur un chantier jamais payé.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les bascules sont des boutons radio natifs — son lecteur n'en
+    exécute aucun. Tous les nombres qui dépendent d'un choix existent en autant
+    d'exemplaires, calculés à la main et revérifiés par
+    `scripts/verifier-maquette-avoir.mjs` à partir de la facture lue à l'écran.
+
+    LES CHIFFRES : facture F2026-0031, 1 200,00 € HT + 240,00 € de TVA à 20 %
+    = 1 440,00 € TTC. Geste de 200 € TTC → 166,67 HT + 33,33. Geste de 300 €
+    → 250,00 + 50,00. Avoir total → 1 200,00 + 240,00.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:960px;margin:0 auto}
+
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+  .dit b{font-style:normal;color:var(--encre);font-weight:600}
+
+  .attention{margin:0 0 24px;padding:15px 17px;border-radius:12px;
+             background:var(--papier);border-left:3px solid var(--alerte);
+             font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .attention .t{display:block;font-size:11px;letter-spacing:.13em;
+                text-transform:uppercase;color:var(--alerte);margin-bottom:8px}
+  .attention b{color:var(--encre);font-weight:600}
+
+  /* ═══ Les bascules — des radios, aucun script ════════════════════════ */
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .reglage{margin:0 0 14px}
+  .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+  .segments{display:flex;gap:8px;flex-wrap:wrap}
+  .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+  #v-a:checked ~ .dedans .segments label[for="v-a"],
+  #v-b:checked ~ .dedans .segments label[for="v-b"],
+  #v-c:checked ~ .dedans .segments label[for="v-c"],
+  #p-r:checked ~ .dedans .segments label[for="p-r"],
+  #p-f:checked ~ .dedans .segments label[for="p-f"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+
+  /* ═══ Le téléphone ═══════════════════════════════════════════════════ */
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
+  .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+  .feuille{background:var(--papier);border-radius:14px;padding:20px 18px}
+
+  .sur{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+       color:var(--or);margin-bottom:5px}
+  .h2{font-family:Georgia,serif;font-size:21px;margin:0 0 3px;line-height:1.2}
+  .sous{font-size:12.5px;color:var(--gris);margin:0 0 16px}
+
+  /* La carte de rappel, telle qu'elle existe depuis le 16 août. */
+  .rappel{border-radius:12px;background:var(--teinte);padding:15px 16px;margin-bottom:14px}
+  .rappel .quand{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--alerte);margin-bottom:5px}
+  .rappel .quoi{font-family:Georgia,serif;font-size:17px;margin:0 0 4px}
+  .rappel .det{font-size:12.5px;color:var(--gris);margin:0 0 12px}
+  .boutons{display:flex;gap:8px;flex-wrap:wrap}
+  .bt{font-size:13px;padding:8px 14px;border-radius:9999px;border:1px solid var(--trait);
+      color:var(--gris);background:var(--papier)}
+  .bt.fort{background:var(--pin);border-color:var(--pin);color:#fff}
+
+  /* Le pavé de la facture. */
+  .pave{border-top:1px solid var(--trait);padding-top:13px;margin-top:4px}
+  .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+  .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;margin-top:6px;
+            border-top:2px solid var(--encre)}
+  .tot.or{color:var(--or)}
+  .tot.rouge{color:var(--alerte)}
+
+  /* Les portes proposées — c'est ce qui change d'un arrangement à l'autre. */
+  .porte{display:flex;gap:12px;align-items:flex-start;padding:13px 0;
+         border-bottom:1px solid var(--trait)}
+  .porte:last-child{border-bottom:0}
+  .porte .rond{flex:none;width:30px;height:30px;border-radius:9999px;
+               background:var(--teinte);color:var(--or);display:flex;
+               align-items:center;justify-content:center;font-size:15px}
+  .porte .txt{min-width:0}
+  .porte .nom{display:block;font-family:Georgia,serif;font-size:16px;line-height:1.3}
+  .porte .det{display:block;font-size:12px;color:var(--gris);line-height:1.5;margin-top:2px}
+  .porte.pale .nom,.porte.pale .det{color:var(--gris)}
+
+  .g-a,.g-b,.g-c{display:none}
+  #v-a:checked ~ .dedans .g-a,
+  #v-b:checked ~ .dedans .g-b,
+  #v-c:checked ~ .dedans .g-c{display:block}
+
+  .d-rappel,.d-facture{display:none}
+  #p-r:checked ~ .dedans .d-rappel,
+  #p-f:checked ~ .dedans .d-facture{display:block}
+
+  /* ═══ La légende ═════════════════════════════════════════════════════ */
+  .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .l-a,.l-b,.l-c{display:none}
+  #v-a:checked ~ .dedans .l-a,
+  #v-b:checked ~ .dedans .l-b,
+  #v-c:checked ~ .dedans .l-c{display:block}
+  .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+  .cout .e{color:var(--alerte);font-weight:600}
+  .cout .ok{color:var(--pin);font-weight:600}
+
+  table{border-collapse:collapse;width:100%;margin:14px 0 0;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait);
+        vertical-align:top}
+  th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--or);
+     font-weight:400}
+  td b{color:var(--encre)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:7px}
+  .suite{margin-top:22px;font-size:13.5px;color:var(--gris)}
+  .suite a{color:var(--or)}
+</style>
+
+<input type="radio" name="v" id="v-a" class="etat" checked>
+<input type="radio" name="v" id="v-b" class="etat">
+<input type="radio" name="v" id="v-c" class="etat">
+<input type="radio" name="p" id="p-r" class="etat" checked>
+<input type="radio" name="p" id="p-f" class="etat">
+
+<div class="dedans">
+  <h1>Il ne paie pas</h1>
+  <p class="intro">
+    Trois arrangements pour la même situation : <b>M. Martins doit 1 440 € depuis
+    37 jours</b>. Touchez les pastilles — la planche change vraiment.
+  </p>
+
+  <p class="dit">
+    « Si jamais on facture un client et qui décide de ne pas nous payer, il faut
+    avoir la possibilité de <b>créer un avoir</b>. »
+  </p>
+
+  <div class="attention">
+    <span class="t">Avant de choisir — ce ne sont pas des mots</span>
+    <b>Un avoir dit que la somme n'est plus due.</b> En le faisant, vous
+    renoncez à réclamer l'argent : plus de relance, plus de recouvrement, plus
+    de procédure possible. C'est ce qu'il faut quand <b>vous</b> voulez annuler
+    (erreur, geste commercial).<br><br>
+    <b>Quand c'est LUI qui refuse de payer</b>, ce n'est pas un avoir qu'il vous
+    faut : c'est de dire que la facture est <b>perdue</b>. Elle reste entière,
+    le rappel se tait, et vous gardez le droit de la réclamer — même dans deux
+    ans.<br><br>
+    <b>Votre TVA, elle, ne bouge pas.</b> Vous la payez quand le client paie
+    (réglé le 16 août) : une facture jamais payée n'est jamais entrée dans votre
+    relevé. Vous n'avez <b>rien à récupérer et aucune démarche à faire</b>.
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Ce que l'application vous propose</span>
+    <div class="segments">
+      <label for="v-a">A · Trois portes</label>
+      <label for="v-b">B · Un avoir, un montant</label>
+      <label for="v-c">C · Deux portes</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">D'où vous y arrivez</span>
+    <div class="segments">
+      <label for="p-r">Depuis le rappel</label>
+      <label for="p-f">Depuis la facture</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="feuille">
+
+        <div class="d-rappel">
+          <span class="sur">Aujourd'hui</span>
+          <p class="h2">Ce qui vous attend</p>
+          <p class="sous">Mardi 18 août</p>
+          <div class="rappel">
+            <span class="quand">37 jours de retard</span>
+            <p class="quoi">M. Martins n'a pas payé</p>
+            <p class="det">F2026-0031 · 1 440,00 € · échéance le 11 août</p>
+            <div class="boutons">
+              <span class="bt fort">J'ai reçu l'argent</span>
+              <span class="bt">Plus tard</span>
+              <span class="bt g-a">Il ne paiera pas</span>
+              <span class="bt g-b">Faire un avoir</span>
+              <span class="bt g-c">Régler autrement</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-facture">
+          <span class="sur">Facture F2026-0031</span>
+          <p class="h2">M. Martins</p>
+          <p class="sous">Émise le 12 juillet · échéance le 11 août · rien reçu</p>
+          <div class="pave">
+            <div class="tot"><span>Total HT</span><span>1 200,00 €</span></div>
+            <div class="tot"><span>TVA 20 %</span><span>240,00 €</span></div>
+            <div class="tot gros"><span>Total TTC</span><span>1 440,00 €</span></div>
+            <div class="tot rouge"><span>Reste dû</span><span>1 440,00 €</span></div>
+          </div>
+          <div class="boutons" style="margin-top:14px">
+            <span class="bt fort">Noter un règlement</span>
+            <span class="bt g-a">Cette facture pose problème</span>
+            <span class="bt g-b">Faire un avoir</span>
+            <span class="bt g-c">Régler autrement</span>
+          </div>
+        </div>
+
+        <!-- ══ A · TROIS PORTES NOMMÉES ══════════════════════════════ -->
+        <div class="g-a" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:12px">Que s'est-il passé ?</p>
+
+          <div class="porte">
+            <span class="rond">✎</span>
+            <span class="txt">
+              <span class="nom">Je me suis trompé</span>
+              <span class="det">Mauvais prix, ligne en trop, mauvais client.
+                Atlas fait un <b>avoir de 1 440,00 €</b> et prépare la facture
+                corrigée.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">–</span>
+            <span class="txt">
+              <span class="nom">Je lui fais un geste</span>
+              <span class="det">Il conteste, vous coupez la poire en deux.
+                <b>Avoir partiel</b> — vous dites combien. Le reste, il le doit
+                toujours.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">✕</span>
+            <span class="txt">
+              <span class="nom">Il ne paiera jamais</span>
+              <span class="det">La facture reste entière. Le rappel se tait,
+                les <b>1 440,00 € passent en « perdus »</b> — et vous gardez le
+                droit de les réclamer.</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- ══ B · UNE SEULE PORTE ═══════════════════════════════════ -->
+        <div class="g-b" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:4px">Faire un avoir</p>
+          <p class="sous">Sur la facture F2026-0031 — 1 440,00 €</p>
+          <div class="pave" style="border-top:0;padding-top:0">
+            <div class="porte"><span class="rond">€</span><span class="txt">
+              <span class="nom">Montant de l'avoir</span>
+              <span class="det">Vous tapez ce que vous retirez. Tout, ou une
+                partie.</span></span></div>
+            <div class="porte"><span class="rond">✎</span><span class="txt">
+              <span class="nom">Motif</span>
+              <span class="det">Une ligne libre, portée sur le document.</span></span></div>
+          </div>
+          <div class="boutons" style="margin-top:14px">
+            <span class="bt fort">Établir l'avoir</span>
+          </div>
+        </div>
+
+        <!-- ══ C · DEUX PORTES ═══════════════════════════════════════ -->
+        <div class="g-c" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:12px">Régler autrement</p>
+
+          <div class="porte">
+            <span class="rond">€</span>
+            <span class="txt">
+              <span class="nom">Faire un avoir</span>
+              <span class="det">Vous annulez tout ou partie de la facture —
+                erreur de votre part, ou geste que vous lui accordez. Vous dites
+                combien.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">✕</span>
+            <span class="txt">
+              <span class="nom">Facture perdue</span>
+              <span class="det">Il ne paiera pas. La facture reste entière, le
+                rappel se tait, et vous gardez le droit de réclamer.</span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Trois portes nommées</span>
+        L'application ne demande pas un mot de comptable : elle demande
+        <b>ce qui s'est passé</b>, dans les mots où vous le diriez. Chaque porte
+        fait autre chose, et c'est elle qui sait laquelle est la bonne.
+        <span class="cout">
+          <span class="ok">Ce que ça vous évite</span> — de faire un avoir sur un
+          client qui refuse de payer, et de perdre ainsi le droit de le
+          réclamer. C'est le seul vrai piège de tout ce sujet, et il est
+          irréversible.<br><br>
+          <span class="e">Ce que ça coûte</span> — trois chemins à bâtir au lieu
+          d'un, et trois écrans à tenir.
+        </span>
+      </div>
+
+      <div class="l-b">
+        <span class="t">B · Un avoir, un montant</span>
+        Le plus court à faire et le plus simple à lire : une porte, une somme,
+        un document. C'est exactement ce que vous avez demandé.
+        <span class="cout">
+          <span class="e">Ce que ça coûte, et ce n'est pas petit</span> — quand
+          c'est le client qui refuse de payer, faire un avoir <b>éteint la
+          dette</b>. Vous ne pouvez plus rien réclamer, et rien à l'écran ne
+          vous aura prévenu. Le geste le plus simple est ici le plus
+          dangereux.<br><br>
+          Il resterait juste dans deux cas sur trois : votre erreur, votre
+          geste. C'est le troisième qui manque — et c'est celui que vous
+          décriviez.
+        </span>
+      </div>
+
+      <div class="l-c">
+        <span class="t">C · Deux portes</span>
+        Le compromis : la distinction qui compte est faite — annuler d'un côté,
+        constater une perte de l'autre — sans multiplier les écrans. L'erreur et
+        le geste se rejoignent, puisqu'ils produisent le même document.
+        <span class="cout">
+          <span class="ok">Ce que ça vous évite</span> — la même chose que A :
+          l'avoir posé par erreur sur un mauvais payeur.<br><br>
+          <span class="e">Ce que ça coûte</span> — « faire un avoir » reste un
+          mot de comptable, et il faut savoir si l'on est dedans avant
+          d'appuyer. A, lui, pose la question à votre place.
+        </span>
+      </div>
+
+      <table>
+        <tr><th>Ce qui arrive</th><th>Avoir</th><th>Facture perdue</th></tr>
+        <tr><td>La facture</td><td>annulée, en tout ou partie</td><td><b>intacte</b></td></tr>
+        <tr><td>Vous pouvez encore réclamer</td><td><b>non, jamais</b></td><td><b>oui</b></td></tr>
+        <tr><td>Un document part au client</td><td>oui, l'avoir</td><td>non</td></tr>
+        <tr><td>Le rappel</td><td>se tait</td><td>se tait</td></tr>
+        <tr><td>Votre relevé de TVA</td><td colspan="2"><b>ne bouge pas</b> — rien n'a été encaissé, donc rien n'y était entré</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que cette planche ne tranche pas</span>
+    <ul>
+      <li><b>À quoi ressemble l'avoir lui-même</b> — le document, son numéro, et
+        ce que deviennent les chiffres. C'est la planche suivante.</li>
+      <li><b>Faut-il relancer avant de renoncer ?</b> Une mise en demeure se
+        rédige, s'envoie en recommandé, et c'est elle qui ouvre la suite. Atlas
+        pourrait la préparer — dites si ça vous servirait.</li>
+      <li><b>Et si le client paie APRÈS</b> qu'on l'a déclarée perdue ? Le
+        règlement se note normalement et tout se remet en place. Rien n'est
+        définitif de ce côté-là.</li>
+    </ul>
+  </div>
+
+  <p class="suite">Suite : <a href="78-l-avoir.html">78 · L'avoir</a> — le document, et ce que les chiffres deviennent.</p>
+</div>

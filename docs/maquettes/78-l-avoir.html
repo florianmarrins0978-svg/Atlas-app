@@ -1,0 +1,407 @@
+<title>L'avoir</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    L'AVOIR — le document, et ce que les chiffres deviennent.
+
+    Suite de `77-il-ne-paie-pas.html`. Celle-ci suppose la décision prise :
+    on annule tout ou partie d'une facture. Reste à savoir SOUS QUELLE FORME.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR — c'est de la comptabilité, pas du dessin.
+
+    · UNE FACTURE ÉMISE NE SE MODIFIE JAMAIS. Ni son montant, ni ses lignes, ni
+      son numéro. C'est la règle qui fonde tout le reste : la seule correction
+      possible est une SECONDE pièce qui vient dessus. Corriger la première
+      serait réécrire une pièce comptable déjà partie chez le client.
+    · L'AVOIR PORTE LES MÊMES MENTIONS QU'UNE FACTURE — identité, client, date,
+      HT, taux, TVA, TTC — plus le numéro de la facture qu'il corrige. Sans ce
+      renvoi, son comptable ne peut pas les rapprocher.
+    · LA TVA SE CALCULE SUR LE HT, comme partout ailleurs (même règle que le
+      prix accordé, §116). Un avoir de 300 € TTC, c'est 250,00 € HT et 50,00 €
+      de TVA — jamais 300 € de HT.
+    · SA TVA ÉTANT EXIGIBLE AU PAIEMENT (§110), un avoir sur une facture NON
+      PAYÉE ne change RIEN à son relevé : rien n'y était entré. S'il avait déjà
+      reçu un acompte, la part encaissée reste déclarée — elle a bien été
+      encaissée.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE LE CODE D'AUJOURD'HUI NE PERMET PAS ENCORE, ET QU'IL FAUT SAVOIR.
+
+    · `factures` porte `unique("factures_chantier_uk").on(chantierId)` : UNE
+      SEULE facture par chantier. Un avoir ne peut donc pas être une ligne de
+      plus dans cette table sans lever cette contrainte — ou il lui faut la
+      sienne.
+    · La numérotation vit dans `entreprise_compteurs.prochain_numero_facture`
+      (`attribuerNumeroFacture`). Une série d'avoirs demande son propre
+      compteur : mélanger les deux ferait des trous dans la suite des factures,
+      ce que l'administration regarde.
+    · `resteDu` (`src/lib/exigibilite-tva.ts`) ne connaît que les règlements.
+      Il faudra qu'il connaisse les avoirs, sinon la fiche client et le rappel
+      d'impayé continueront de réclamer une somme annulée.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : boutons radio natifs. Les trois montants sont préparés, pas
+    calculés — et `scripts/verifier-maquette-avoir.mjs` les recalcule depuis la
+    facture affichée. Un document de maquette qui ne tombe pas juste apprend à
+    douter des totaux du vrai.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:960px;margin:0 auto}
+
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 20px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .reglage{margin:0 0 14px}
+  .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+  .segments{display:flex;gap:8px;flex-wrap:wrap}
+  .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+  #v-a:checked ~ .dedans .segments label[for="v-a"],
+  #v-b:checked ~ .dedans .segments label[for="v-b"],
+  #v-c:checked ~ .dedans .segments label[for="v-c"],
+  #m-2:checked ~ .dedans .segments label[for="m-2"],
+  #m-3:checked ~ .dedans .segments label[for="m-3"],
+  #m-t:checked ~ .dedans .segments label[for="m-t"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+
+  /* Les trois montants : préparés en trois exemplaires, jamais calculés. */
+  .m2,.m3,.mt{display:none}
+  #m-2:checked ~ .dedans .m2,
+  #m-3:checked ~ .dedans .m3,
+  #m-t:checked ~ .dedans .mt{display:inline}
+
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
+  .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+  .feuille{background:var(--papier);border-radius:10px;padding:22px 20px}
+
+  .titre-doc{font-family:Georgia,serif;font-size:20px;letter-spacing:.14em;
+             text-align:center;margin:0 0 3px}
+  .sous-doc{text-align:center;font-size:11.5px;color:var(--gris);margin:0 0 4px}
+  .renvoi{text-align:center;font-size:11.5px;color:var(--or);margin:0 0 16px}
+
+  .bloc-id{display:flex;gap:16px;font-size:11.5px;color:var(--gris);
+           line-height:1.5;margin-bottom:16px}
+  .bloc-id div{flex:1}
+  .bloc-id b{display:block;color:var(--encre);font-size:12.5px;font-weight:600}
+
+  .lg{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+      padding:9px 0;border-bottom:1px solid var(--trait)}
+  .lg .prix{white-space:nowrap}
+  .lg.neg{color:var(--alerte)}
+  .totaux{margin-top:14px}
+  .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+  .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;margin-top:6px;
+            border-top:2px solid var(--encre)}
+  .tot.or{color:var(--or)}
+  .tot.rouge{color:var(--alerte)}
+  .mention{margin-top:14px;font-size:10.5px;line-height:1.5;color:var(--gris);
+           border-top:1px solid var(--trait);padding-top:10px}
+
+  /* La facture d'origine, montrée à côté du document. */
+  .apres{margin-top:16px;border-radius:12px;background:var(--teinte);padding:14px 15px}
+  .apres .t{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);margin-bottom:8px}
+  .apres .lgn{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+  .apres .lgn.fort{font-family:Georgia,serif;font-size:15px;padding-top:7px;margin-top:5px;
+                   border-top:1px solid var(--trait)}
+  .barre{text-decoration:line-through;color:var(--gris)}
+
+  .v-a,.v-b,.v-c{display:none}
+  #v-a:checked ~ .dedans .v-a,
+  #v-b:checked ~ .dedans .v-b,
+  #v-c:checked ~ .dedans .v-c{display:block}
+
+  .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .l-a,.l-b,.l-c{display:none}
+  #v-a:checked ~ .dedans .l-a,
+  #v-b:checked ~ .dedans .l-b,
+  #v-c:checked ~ .dedans .l-c{display:block}
+  .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+  .cout .e{color:var(--alerte);font-weight:600}
+  .cout .ok{color:var(--pin);font-weight:600}
+
+  table{border-collapse:collapse;width:100%;margin:16px 0 0;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait);
+        vertical-align:top}
+  th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--or);
+     font-weight:400}
+  td b{color:var(--encre)}
+  td.num{text-align:right;white-space:nowrap}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:7px}
+  .retour{margin-top:22px;font-size:13.5px;color:var(--gris)}
+  .retour a{color:var(--or)}
+</style>
+
+<input type="radio" name="v" id="v-a" class="etat" checked>
+<input type="radio" name="v" id="v-b" class="etat">
+<input type="radio" name="v" id="v-c" class="etat">
+<input type="radio" name="m" id="m-2" class="etat">
+<input type="radio" name="m" id="m-3" class="etat" checked>
+<input type="radio" name="m" id="m-t" class="etat">
+
+<div class="dedans">
+  <h1>L'avoir</h1>
+  <p class="intro">
+    La décision est prise : on annule tout ou partie de la facture
+    <b>F2026-0031 — M. Martins — 1 440,00 €</b>. Reste à savoir sous quelle
+    forme. Changez le montant, changez la forme : tout se recalcule.
+  </p>
+
+  <div class="reglage">
+    <span class="quoi">Sous quelle forme</span>
+    <div class="segments">
+      <label for="v-a">A · Un document à part</label>
+      <label for="v-b">B · Une mention sur la facture</label>
+      <label for="v-c">C · Une facture refaite</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Combien vous retirez</span>
+    <div class="segments">
+      <label for="m-2">200 €</label>
+      <label for="m-3">300 €</label>
+      <label for="m-t">Tout — 1 440 €</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+
+      <!-- ══ A · UN DOCUMENT À PART ═══════════════════════════════════ -->
+      <div class="v-a">
+        <div class="feuille">
+          <p class="titre-doc">AVOIR</p>
+          <p class="sous-doc">A2026-0001 · 18 août 2026</p>
+          <p class="renvoi">sur la facture F2026-0031 du 12 juillet 2026</p>
+
+          <div class="bloc-id">
+            <div><b>Gunzi Élagage</b>12 route des Pins<br>33240 Saint-André<br>SIRET 813 204 559 00021</div>
+            <div><b>M. Martins</b>3 rue des Lilas<br>33240 Saint-André</div>
+          </div>
+
+          <div class="lg neg">
+            <span class="m2">Geste commercial</span>
+            <span class="m3">Geste commercial</span>
+            <span class="mt">Annulation de la facture</span>
+            <span class="prix">
+              <span class="m2">−166,67 €</span><span class="m3">−250,00 €</span><span class="mt">−1 200,00 €</span>
+            </span>
+          </div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>
+              <span class="m2">−166,67 €</span><span class="m3">−250,00 €</span><span class="mt">−1 200,00 €</span></span></div>
+            <div class="tot"><span>TVA 20 %</span><span>
+              <span class="m2">−33,33 €</span><span class="m3">−50,00 €</span><span class="mt">−240,00 €</span></span></div>
+            <div class="tot gros rouge"><span>Total TTC</span><span>
+              <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+          </div>
+
+          <p class="mention">Avoir émis en annulation partielle de la facture
+            F2026-0031. TVA sur les encaissements.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">La facture, après</span>
+          <div class="lgn"><span>F2026-0031 · Total TTC</span><span>1 440,00 €</span></div>
+          <div class="lgn"><span>Avoir A2026-0001</span><span>
+            <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+          <div class="lgn fort"><span>Reste dû</span><span>
+            <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+        </div>
+      </div>
+
+      <!-- ══ B · UNE MENTION SUR LA FACTURE ═══════════════════════════ -->
+      <div class="v-b">
+        <div class="feuille">
+          <p class="titre-doc">FACTURE</p>
+          <p class="sous-doc">F2026-0031 · 12 juillet 2026</p>
+          <p class="renvoi">M. Martins</p>
+
+          <div class="lg"><span>Abattage de chêne — démontage</span><span class="prix">850,00 €</span></div>
+          <div class="lg"><span>Enlèvement des grumes</span><span class="prix">350,00 €</span></div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>1 200,00 €</span></div>
+            <div class="tot"><span>TVA 20 %</span><span>240,00 €</span></div>
+            <div class="tot gros"><span>Total TTC</span><span>1 440,00 €</span></div>
+            <div class="tot or"><span>Avoir accordé le 18 août</span><span>
+              <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+            <div class="tot rouge"><span>Reste dû</span><span>
+              <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+          </div>
+
+          <p class="mention">Aucun second document. La mention vit sur la
+            facture, et sur elle seule.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">Ce que le client reçoit</span>
+          <div class="lgn"><span>Un document</span><span>aucun</span></div>
+          <div class="lgn"><span>Une pièce pour son comptable</span><span>aucune</span></div>
+        </div>
+      </div>
+
+      <!-- ══ C · UNE FACTURE REFAITE ══════════════════════════════════ -->
+      <div class="v-c">
+        <div class="feuille">
+          <p class="titre-doc">FACTURE</p>
+          <p class="sous-doc">F2026-0034 · 18 août 2026</p>
+          <p class="renvoi">annule et remplace la facture F2026-0031</p>
+
+          <div class="bloc-id">
+            <div><b>Gunzi Élagage</b>12 route des Pins<br>33240 Saint-André</div>
+            <div><b>M. Martins</b>3 rue des Lilas<br>33240 Saint-André</div>
+          </div>
+
+          <div class="lg"><span>Abattage de chêne — démontage</span><span class="prix">
+            <span class="m2">683,33 €</span><span class="m3">600,00 €</span><span class="mt">0,00 €</span></span></div>
+          <div class="lg"><span>Enlèvement des grumes</span><span class="prix">
+            <span class="m2">350,00 €</span><span class="m3">350,00 €</span><span class="mt">0,00 €</span></span></div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>
+              <span class="m2">1 033,33 €</span><span class="m3">950,00 €</span><span class="mt">0,00 €</span></span></div>
+            <div class="tot"><span>TVA 20 %</span><span>
+              <span class="m2">206,67 €</span><span class="m3">190,00 €</span><span class="mt">0,00 €</span></span></div>
+            <div class="tot gros"><span>Total TTC</span><span>
+              <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+          </div>
+
+          <p class="mention">La première facture reste au dossier, marquée
+            « remplacée ». Un avoir de son montant total l'accompagne.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">Ce que ça produit</span>
+          <div class="lgn"><span>F2026-0031</span><span class="barre">1 440,00 €</span></div>
+          <div class="lgn"><span>Avoir A2026-0001</span><span>−1 440,00 €</span></div>
+          <div class="lgn fort"><span>F2026-0034 · reste dû</span><span>
+            <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Un document à part</span>
+        L'avoir est une pièce, comme la facture : son numéro, sa date, son PDF,
+        et il part au client par le même chemin. <b>La facture ne bouge pas</b> —
+        c'est la règle qui fonde tout : une facture émise ne se corrige jamais,
+        on lui ajoute une pièce par-dessus.
+        <span class="cout">
+          <span class="ok">Ce que ça vous donne</span> — quelque chose à envoyer
+          au client, et quelque chose à donner à votre comptable. Les deux se
+          rapprochent tout seuls par le numéro.<br><br>
+          <span class="e">Ce que ça coûte</span> — une deuxième série de numéros
+          à tenir, et un second document dans l'application.
+        </span>
+      </div>
+
+      <div class="l-b">
+        <span class="t">B · Une mention sur la facture</span>
+        Rien de neuf : une ligne de plus sous le total, et le reste dû tombe.
+        C'est de loin le plus court à faire, et le plus simple à lire sur un
+        téléphone.
+        <span class="cout">
+          <span class="e">Ce que ça coûte, et c'est rédhibitoire</span> — il n'y
+          a <b>aucune pièce</b>. Votre client n'a rien à classer, votre
+          comptable n'a rien à joindre, et si l'administration demande pourquoi
+          1 440 € facturés sont devenus 1 140 €, la réponse est une ligne dans
+          une application.<br><br>
+          Pire : la facture affichée ne dit plus la même chose que celle que le
+          client a déjà reçue en PDF.
+        </span>
+      </div>
+
+      <div class="l-c">
+        <span class="t">C · Une facture refaite</span>
+        La façon « propre » quand la première facture était <b>fausse</b> : on
+        annule tout par un avoir, et on réémet la bonne. C'est ce qu'on fait
+        pour une erreur de prix ou de client.
+        <span class="cout">
+          <span class="ok">Ce que ça vous donne</span> — un dossier limpide
+          quand vous vous êtes trompé : une facture juste, et la trace de la
+          fausse.<br><br>
+          <span class="e">Ce que ça coûte</span> — trois documents pour un
+          chantier, un numéro de facture qui change (votre client cherchera
+          l'ancien), et c'est <b>trop lourd pour un simple geste commercial</b>.
+        </span>
+      </div>
+
+      <table>
+        <tr><th>Vous retirez</th><th class="num">HT</th><th class="num">TVA</th><th class="num">TTC</th><th class="num">Reste</th></tr>
+        <tr><td>200 €</td><td class="num">166,67</td><td class="num">33,33</td><td class="num">200,00</td><td class="num"><b>1 240,00</b></td></tr>
+        <tr><td>300 €</td><td class="num">250,00</td><td class="num">50,00</td><td class="num">300,00</td><td class="num"><b>1 140,00</b></td></tr>
+        <tr><td>Tout</td><td class="num">1 200,00</td><td class="num">240,00</td><td class="num">1 440,00</td><td class="num"><b>0,00</b></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ça touche ailleurs, et qu'on ne voit pas ici</span>
+    <ul>
+      <li><b>Votre relevé de TVA ne bouge pas.</b> Vous payez la TVA quand le
+        client paie : rien n'a été encaissé sur cette facture, donc rien n'y
+        était entré. S'il vous avait versé un acompte, la part reçue reste
+        déclarée — elle a bien été reçue.</li>
+      <li><b>La fiche du client.</b> Son « reste dû » doit tomber, sans quoi
+        elle réclamera une somme annulée. Et ce qu'il vous a rapporté doit
+        baisser d'autant.</li>
+      <li><b>Le rappel « facture impayée » se tait</b> dès que le reste dû
+        atteint zéro — c'est déjà ainsi qu'il s'éteint quand on note un
+        règlement.</li>
+      <li><b>Ce que l'application ne sait pas faire aujourd'hui :</b> elle ne
+        tient qu'<b>une facture par chantier</b> et une seule série de numéros.
+        Un avoir demande sa place et son compteur. Ce n'est pas un obstacle,
+        c'est ce qu'il y a à bâtir.</li>
+    </ul>
+  </div>
+
+  <p class="retour">Avant : <a href="77-il-ne-paie-pas.html">77 · Il ne paie pas</a> — quelle situation, et ce que chacune déclenche.</p>
+</div>

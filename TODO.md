@@ -27,6 +27,52 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ## Ce que je peux faire seul
 
+### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
+
+Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
+payer, il faut avoir la possibilité de créer un avoir »*. Deux planches,
+`docs/maquettes/77-il-ne-paie-pas.html` et `78-l-avoir.html`. Rien dans `src/`.
+
+**CE QU'IL FAUT AVOIR COMPRIS AVANT DE CODER QUOI QUE CE SOIT.** Un avoir et un
+impayé ne sont pas la même chose :
+
+| | Ce que ça fait | Peut-il encore réclamer ? |
+|---|---|---|
+| **Avoir** | annule tout ou partie de la facture | **non, plus jamais** |
+| **Facture perdue** (créance irrécouvrable) | la facture reste entière, le rappel se tait | **oui** |
+
+Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
+seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
+
+**Deux réponses à attendre de lui :**
+
+1. **quel arrangement** (77) : trois portes nommées, une porte et un montant, ou
+   deux portes ;
+2. **quelle forme de document** (78) : un document à part, une mention sur la
+   facture, ou une facture refaite.
+
+**Ce que le code devra lever, et ce n'est pas anodin :**
+
+- `factures_chantier_uk` n'accepte **qu'une facture par chantier** — un avoir
+  demande sa table, ou la levée de cette contrainte ;
+- `attribuerNumeroFacture` n'a **qu'un compteur**
+  (`entreprise_compteurs.prochain_numero_facture`) : une série d'avoirs demande
+  le sien, sinon la suite des factures aura des trous ;
+- `resteDu` (`src/lib/exigibilite-tva.ts`) ne connaît que les règlements. Tant
+  qu'il ignore les avoirs, la fiche client et le rappel d'impayé réclameront une
+  somme annulée ;
+- une facture émise **ne se modifie jamais** : la correction est toujours une
+  seconde pièce.
+
+**Ce qui NE bouge pas, et qu'il est inutile de bâtir :** son relevé de TVA. Elle
+est exigible au paiement (§110) — une facture jamais payée n'y est jamais
+entrée. Aucune récupération, aucune démarche.
+
+**Deux questions posées sur la planche, sans réponse :** faut-il qu'Atlas
+prépare une **mise en demeure** avant de renoncer ? et le cas du client qui
+**paie après** qu'on a déclaré la facture perdue (le règlement se note
+normalement, rien n'est définitif — mais ça reste à confirmer avec lui).
+
 ### ~~0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier~~ — **FAIT le 17 août 2026**
 
 *Dessiné, corrigé par lui, puis codé le même jour.* `ARCHITECTURE.md` §124.
