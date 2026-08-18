@@ -746,10 +746,22 @@ function listeMateriel(d){
     var f = corpsDe[cref].filetage;
     if (f) parFiletage[f] = (parFiletage[f] || 0) + parCorps[cref];
   });
+  //
+  // **UN PRODUIT, UNE LIGNE — et c'est la suite de sa consigne du 18 août.**
+  // Les deux SBE portaient « (haut, au corps) » et « (bas, sur la ligne) » :
+  // l'emploi de la pièce, pas sa désignation. Les retirer sans plus aurait
+  // produit DEUX lignes identiques dès qu'un corps est en 3/4" (les grosses
+  // turbines) — même référence en haut et en bas —, ce qui se lit comme un
+  // défaut de comptage. On additionne donc par RÉFÉRENCE : il commande un
+  // produit et une quantité, pas un emplacement.
+  var parSbe = {}, ordreSbe = [];
+  var noterSbe = function(coude, q){
+    if (!coude) return;
+    if (!parSbe[coude.ref]) { parSbe[coude.ref] = { c: coude, q: 0 }; ordreSbe.push(coude.ref); }
+    parSbe[coude.ref].q += q;
+  };
   Object.keys(parFiletage).forEach(function(f){
-    var coude = CATALOGUE.coudes.filter(function(c){ return c.filetage === f; })[0];
-    if (coude) lignes.push({ ref:coude.ref, nom:coude.nom + ' (haut, au corps) — ' + coude.detail,
-                             q: parFiletage[f], u:'u' });
+    noterSbe(CATALOGUE.coudes.filter(function(c){ return c.filetage === f; })[0], parFiletage[f]);
   });
   // **Un DEUXIÈME SBE, celui du bas** — sa planche du 17 août sur le réseau
   // latéral : chaque arroseur (départ, milieu ou fin de ligne) porte 1 SBE
@@ -760,27 +772,51 @@ function listeMateriel(d){
   if (totalArroseurs){
     var sbeBas = CATALOGUE.coudes.filter(function(c){ return c.filetage === '3/4'; })[0];
     // Même RÉFÉRENCE que le SBE du haut quand le corps est aussi en 3/4"
-    // (grosses turbines) : deux lignes distinctes dans la liste, mais le même
-    // produit — son prix s'applique aux deux, la quantité totale suit.
-    if (sbeBas) lignes.push({ ref:sbeBas.ref, nom:sbeBas.nom + ' (bas, sur la ligne) — ' + sbeBas.detail, q: totalArroseurs, u:'u' });
+    // (grosses turbines) : c'est exactement pourquoi les deux emplois
+    // s'additionnent au lieu de faire deux lignes.
+    noterSbe(sbeBas, totalArroseurs);
     // « Environ 2 m de PEBD rigide Ø16 » entre la ligne et l'arroseur, par
     // position — sa valeur, pas une supposition. Approximative comme elle
     // l'a donnée : elle varie selon la profondeur réelle de pose.
     var pebd = CATALOGUE.piecesReseau['pebd16'];
-    lignes.push({ ref:'pebd16', nom:pebd.nom + ' (~2 m par arroseur)', q: totalArroseurs * 2, u:'ml' });
+    // Le « (~2 m par arroseur) » qui suivait a été retiré le 18 août, même
+    // consigne que pour les tés : c'est la règle du COMPTE, pas la désignation
+    // de la pièce. Elle reste écrite juste au-dessus, où elle sert.
+    lignes.push({ ref:'pebd16', nom:pebd.nom, q: totalArroseurs * 2, u:'ml' });
   }
+  // Les SBE, une fois les DEUX emplois comptés : une ligne par référence.
+  ordreSbe.forEach(function(ref){
+    var e = parSbe[ref];
+    lignes.push({ ref: ref, nom: e.c.nom + ' — ' + e.c.detail, q: e.q, u:'u' });
+  });
   // **Le tracé du réseau latéral — comptable depuis sa réponse du 17 août
   // (planche 73) : « c'est le B », plusieurs lignes parallèles, avec sa
   // correction sur le té et le coude.** Un té à chaque point de ligne sauf le
   // dernier de sa rangée (qui porte le coude de fin), et une jonction par
   // rangée où le tronc continue au-delà — jamais à la dernière, qui se courbe
   // sans pièce à couper.
+  //
+  // **CE QUI EST COMPTÉ SE DIT ; POURQUOI, NON — sa consigne du 18 août.** Les
+  // lignes portaient « (départ/milieu de ligne) », « (fin de ligne) »,
+  // « (jonction, non taraudé) » : *« ce sont des données pour toi, pour que tu
+  // comprennes les endroits où doit y avoir des tés et les autres où c'est des
+  // tés taraudés. Mais pour l'utilisateur, il n'a pas besoin de ces infos-là.
+  // Donc tu peux les supprimer, mais tu les gardes pour toi. »*
+  //
+  // Il commande ces pièces chez son fournisseur : la désignation doit être
+  // celle du catalogue, rien de plus. Le raisonnement reste ici, où il sert —
+  // le supprimer, c'est le reperdre à la prochaine conversation.
+  //
+  // **Les références, elles, ne changent pas.** Deux lignes ne peuvent pas se
+  // confondre une fois le commentaire retiré : le té de ligne est taraudé
+  // (25×3/4"×25), la jonction ne l'est pas (25×25×25), et le coude de fin est
+  // un coude. Ce sont trois produits différents, pas trois emplois d'un même.
   if (totalPointsReseau){
     var teLigne = CATALOGUE.piecesReseau['te-taraude-25-34-25'];
     var coudeLigne = CATALOGUE.piecesReseau['coude-taraude-25-34'];
     var totalTesLigne = totalPointsReseau - totalRangeesReseau;
-    if (totalTesLigne > 0) lignes.push({ ref:'te-taraude-25-34-25', nom: teLigne.nom + ' (départ/milieu de ligne)', q: totalTesLigne, u:'u' });
-    lignes.push({ ref:'coude-taraude-25-34', nom: coudeLigne.nom + ' (fin de ligne)', q: totalRangeesReseau, u:'u' });
+    if (totalTesLigne > 0) lignes.push({ ref:'te-taraude-25-34-25', nom: teLigne.nom, q: totalTesLigne, u:'u' });
+    lignes.push({ ref:'coude-taraude-25-34', nom: coudeLigne.nom, q: totalRangeesReseau, u:'u' });
     if (totalJonctionsReseau > 0){
       var jonction = CATALOGUE.piecesReseau['te-25-25-25'];
       lignes.push({ ref:'te-25-25-25', nom: jonction.nom, q: totalJonctionsReseau, u:'u' });

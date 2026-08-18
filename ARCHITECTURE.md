@@ -10869,3 +10869,60 @@ une pièce composée à la main dans un casier, la clé de sauvegarde de l'outil
 reprise, un texte qui déborde. Aucun ne regarde un identifiant d'écran : ils
 interrogent le calcul et le tracé, et survivront au prochain remaniement de la
 page — il en a déjà demandé deux.
+
+## §126 quater. La liste dit ce qu'on achète, pas pourquoi
+
+**Sa consigne du 18 août au soir**, devant la capture du casier « Le réseau
+enterré » : *« Départ milieu de ligne, fin de ligne et jonction, ce sont des
+données pour toi, pour que tu comprennes les endroits où doit y avoir des tés
+et les autres où c'est des tés taraudés. Mais pour l'utilisateur, il n'a pas
+besoin de ces infos-là. Donc tu peux les supprimer, mais tu les gardes pour
+toi. »*
+
+**La règle qui en sort :** une ligne de la liste porte la **désignation du
+catalogue**, et rien d'autre. Il commande sur cette désignation ; ce qui s'y
+ajoute est une invitation à chercher chez son fournisseur une pièce qui
+n'existe pas sous ce nom. Le raisonnement, lui, reste en commentaire dans
+`listeMateriel` — le supprimer serait le reperdre à la prochaine conversation.
+
+| Retiré | Ce que c'était |
+|---|---|
+| `(départ/milieu de ligne)` | l'emploi du té taraudé |
+| `(fin de ligne)` | l'emploi du coude taraudé |
+| `(jonction, non taraudé)` | l'emploi du té 25×25×25 — et c'était dans le CATALOGUE |
+| `(~2 m par arroseur)` | la règle du compte du PEBD Ø16 |
+| `(haut, au corps)` / `(bas, sur la ligne)` | les deux emplois du coude SBE |
+
+**Les références ne se confondent pas pour autant** : le té de ligne est taraudé
+(25×3/4"×25), la jonction ne l'est pas (25×25×25), le coude de fin est un
+coude. Trois produits différents, pas trois emplois d'un même.
+
+### Sauf les SBE — et c'est pourquoi ils fusionnent
+
+Les deux coudes SBE, eux, **sont** deux emplois d'un même produit dès que le
+corps est en 3/4" (les grosses turbines : PGP, I-20). Retirer les mentions sans
+plus aurait donné **deux lignes identiques**, ce qui se lit comme un défaut de
+comptage. Les emplois s'additionnent donc par **référence** : un produit, une
+ligne, une quantité. C'est aussi ce qu'il commande.
+
+### Ce que cette consigne a coûté aux contrôles, et ce qu'elle leur apprend
+
+**Trois contrôles lisaient ces étiquettes**, sur deux suites — deux dans
+`essai-arrosage-detaille.cjs` (« le SBE du haut suit le diamètre de chaque
+corps », « le SBE du bas reste un par arroseur »), un dans `e2e.js`. Ils sont
+devenus rouges sur du code juste.
+
+Ils vérifient maintenant la **règle en quantités** : un SBE 1/2" par corps de
+tuyère, un SBE 3/4" par corps de turbine plus un par arroseur, deux SBE par
+arroseur au total. **Un contrôle accroché à un libellé meurt au premier
+changement de libellé** — la même leçon que le 17 août, quand la section 3 a
+disparu de l'écran et que ses contrôles ont dû être reportés sur `decouper()`.
+
+**Et une garde nouvelle refuse de conclure sur un cas jamais rencontré.** Le
+contrôle « une référence n'apparaît qu'une fois » ne pouvait pas rougir : les
+trois jardins d'exemple posent tous des corps en 1/2" (3504, SRM, PGJ), où les
+deux SBE sont deux références distinctes. La suite **provoque** donc le cas —
+une pelouse de 40 × 30 en Hunter, qui pose une PGP Ultra en 3/4" — et un
+contrôle vérifie que ce corps a bien été posé, faute de quoi elle le dit au lieu
+de rendre un vert vide. C'est le piège du 15 août dans sa version « jamais
+atteint » : mesurer zéro et mesurer rien se ressemblent trop.

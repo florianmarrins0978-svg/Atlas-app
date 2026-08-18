@@ -392,8 +392,29 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // latéral : un raccord en bas (toujours 3/4", sur la tuyauterie) et un en
     // haut (au diamètre du corps). En manquer un sous-compte une pièce que
     // chaque arroseur porte réellement.
-    ok('arrosage : le SBE du bas (raccord de ligne) est compté', /bas, sur la ligne/.test(materiel));
-    ok('arrosage : le SBE du haut (raccord au corps) est compté', /haut, au corps/.test(materiel));
+    //
+    // **Ce contrôle lisait les étiquettes « (haut, au corps) » et « (bas, sur
+    // la ligne) » ; il compte désormais.** Le patron a fait retirer ces
+    // mentions le 18 août — *« ce sont des données pour toi [...] l'utilisateur
+    // n'a pas besoin de ces infos-là »* —, et les deux emplois d'une même
+    // référence se sont fondus en une ligne. Un contrôle accroché à un libellé
+    // meurt au premier changement de libellé ; la RÈGLE, elle, ne bouge pas :
+    // deux SBE par arroseur, quel que soit le nom écrit sur la ligne.
+    const sbe = await page.evaluate(() => {
+      const arroseurs = etat.zones.reduce((s, z) => {
+        const p = poser(z);
+        return s + (p.m && p.m.type !== 'gaine' ? p.nombre : 0);
+      }, 0);
+      const total = listeMateriel(decouper())
+        .filter(l => /SBE/.test(l.nom)).reduce((s, l) => s + l.q, 0);
+      return { arroseurs, total };
+    });
+    // Le cas qui empêche de mesurer zéro : sans arroseur posé, 0 === 2×0 serait
+    // vert sans rien prouver (le piège du 15 août).
+    ok('arrosage : le jardin d\'épreuve pose bien des arroseurs', sbe.arroseurs > 0,
+       JSON.stringify(sbe));
+    ok('arrosage : deux SBE par arroseur — celui du haut ET celui du bas',
+       sbe.arroseurs > 0 && sbe.total === sbe.arroseurs * 2, JSON.stringify(sbe));
     ok('arrosage : le PEBD16 de reprise est compté', /PEBD rigide/.test(materiel));
 
         // **Le corps par défaut, sa décision du 17 août : « 10 cm sans option,

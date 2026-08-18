@@ -31,6 +31,42 @@ détail d'affichage, c'est ce qu'il commande chez son fournisseur.
 **Ce que la maquette simule, et elle le dit en rouge :** la lecture de la photo.
 Le plan et la liste, eux, sont vraiment calculés, sur son catalogue.
 
+### La liste dit CE QU'ON ACHÈTE, plus POURQUOI — sa consigne du soir
+
+*« Départ milieu de ligne, fin de ligne et jonction, ce sont des données pour
+toi, pour que tu comprennes les endroits où doit y avoir des tés et les autres
+où c'est des tés taraudés. Mais pour l'utilisateur, il n'a pas besoin de ces
+infos-là. Donc tu peux les supprimer, mais tu les gardes pour toi. »*
+
+Quatre mentions retirées des désignations — `(départ/milieu de ligne)`,
+`(fin de ligne)`, `(jonction, non taraudé)`, `(~2 m par arroseur)` —, et le
+raisonnement conservé en commentaire, là où il sert. **Il commande sur la
+désignation du catalogue :** ce qui s'y ajoute est une invitation à chercher
+une pièce qui n'existe pas sous ce nom.
+
+**Un contrôle en a trouvé une cinquième que je n'avais pas vue** — le
+`(~2 m par arroseur)` du PEBD Ø16 —, en comparant chaque ligne à l'entrée du
+catalogue plutôt qu'à une liste écrite à la main.
+
+**Et les deux coudes SBE ont fusionné.** Ils se distinguaient par
+`(haut, au corps)` et `(bas, sur la ligne)` : retirer ces mentions aurait donné
+**deux lignes identiques** dès qu'un corps est en 3/4" (les grosses turbines),
+ce qui se lit comme un défaut de comptage. Les emplois s'additionnent désormais
+par référence — un produit, une ligne, une quantité.
+
+**Trois contrôles lisaient ces étiquettes, sur deux suites.** Ils vérifient
+maintenant la règle en quantités : un SBE 1/2" par corps de tuyère, un SBE 3/4"
+par corps de turbine plus un par arroseur, deux SBE par arroseur au total. **Un
+contrôle accroché à un libellé meurt au premier changement de libellé** — c'est
+la même leçon que le 17 août, quand la section 3 a disparu.
+
+**Le cas du corps en 3/4" est PROVOQUÉ dans la suite**, avec une pelouse de
+40 × 30 en Hunter : les trois jardins d'exemple posent tous des corps en 1/2",
+et la garde n'aurait jamais rencontré son cas. Une garde qui ne rencontre pas
+son cas ne mesure rien — le piège du 15 août, en version « jamais atteint ». Un
+contrôle de plus refuse d'ailleurs de conclure si ce corps en 3/4" venait à
+disparaître du catalogue.
+
 ### Quatre défauts, et aucun n'a été trouvé par une suite
 
 1. **`corpsCourant` était resté dans `arrosage.html`** à l'extraction. Toute

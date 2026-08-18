@@ -437,10 +437,21 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
     const q = (re) => l.filter(x => re.test(x.nom)).reduce((s, x) => s + x.q, 0);
     const corpsTurb = l.filter(x => /^Turbine /.test(x.nom))[0];
     const corpsTuy  = l.filter(x => /^Tuyère /.test(x.nom))[0];
+    // **CE CONTRÔLE LISAIT UNE ÉTIQUETTE, IL LIT DÉSORMAIS LA QUANTITÉ.**
+    // Il comptait « SBE 075 (haut » et « (bas, sur la ligne) » — des mentions
+    // que le patron a fait retirer le 18 août (*« ce sont des données pour toi
+    // [...] l'utilisateur n'a pas besoin de ces infos-là »*), et les deux
+    // emplois d'une même référence se sont fondus en une ligne. Un contrôle
+    // accroché à un libellé meurt au premier changement de libellé : celui-ci
+    // vérifie maintenant la RÈGLE, en totaux par diamètre.
+    //
+    // La règle, inchangée : un SBE en haut au diamètre du corps de chaque
+    // famille, plus un SBE 3/4" en bas par arroseur, toutes familles
+    // confondues. Le 3/4" porte donc les deux emplois quand le corps est en
+    // 3/4" — c'est précisément le cas de ce jardin d'épreuve.
     return { nTurb:n[0], nTuy:n[1],
              corpsTurb: corpsTurb && corpsTurb.q, corpsTuy: corpsTuy && corpsTuy.q,
-             sbe34haut: q(/SBE 075 \(haut/), sbe12haut: q(/SBE 050 \(haut/),
-             sbeBas: q(/\(bas, sur la ligne\)/) };
+             sbe34: q(/SBE 075/), sbe12: q(/SBE 050/) };
   });
   // Le cas qui empêche de mesurer zéro : sans deux familles réellement posées,
   // tout ce qui suit vaudrait 0 === 0, en vert, sans rien prouver.
@@ -449,12 +460,14 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('chaque famille reçoit le corps de SA série, pas celui de l\'autre',
       familles.corpsTurb === familles.nTurb && familles.corpsTuy === familles.nTuy,
       JSON.stringify(familles));
-  cas('et le SBE du haut suit le diamètre de chaque corps (3/4 et 1/2)',
-      familles.sbe34haut === familles.nTurb && familles.sbe12haut === familles.nTuy,
+  // Le SBE du haut suit le diamètre de CHAQUE corps : 1/2" sous les tuyères.
+  cas('le SBE en 1/2" ne sert qu\'aux corps de tuyère',
+      familles.sbe12 === familles.nTuy, JSON.stringify(familles));
+  // Et le 3/4" porte les deux emplois : le haut des turbines, plus le bas de
+  // TOUS les arroseurs — ce raccord-là ne dépend pas du corps.
+  cas('le SBE en 3/4" porte le haut des turbines ET le bas de tous les arroseurs',
+      familles.sbe34 === familles.nTurb + familles.nTurb + familles.nTuy,
       JSON.stringify(familles));
-  // Le SBE du BAS, lui, ne dépend pas du corps : toujours 3/4", un par arroseur.
-  cas('le SBE du bas reste un par arroseur, toutes familles confondues',
-      familles.sbeBas === familles.nTurb + familles.nTuy, JSON.stringify(familles));
   // Et la convention de référence qui apparie buse et corps de turbine doit
   // tenir pour TOUTES les buses posables — sans quoi un corps manquerait en
   // silence dans la liste, et le chantier s'arrêterait à la pose.

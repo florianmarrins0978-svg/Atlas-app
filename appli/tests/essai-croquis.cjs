@@ -132,11 +132,89 @@ const ORPHELINS = `(() => {
     cas(nom + ' : aucune pièce n\'est inventée dans les casiers',
         horsCatalogue.length === 0, horsCatalogue.join(' | '));
 
-    // 5. Rien ne déborde de son écran.
+    // 5. **Une désignation, rien de plus.** Sa consigne du 18 août : les lignes
+    //    du réseau enterré portaient « (départ/milieu de ligne) », « (fin de
+    //    ligne) », « (jonction, non taraudé) » — *« ce sont des données pour
+    //    toi [...] pour l'utilisateur, il n'a pas besoin de ces infos-là ».*
+    //    Il commande sur la désignation du catalogue : ce qui s'y ajoute est
+    //    une invitation à chercher une pièce qui n'existe pas sous ce nom.
+    const commentees = await page.evaluate(() => {
+      const dessous = CATALOGUE.piecesReseau;
+      return listeMateriel(decouper())
+        .filter(l => dessous[l.ref])
+        .filter(l => l.nom !== dessous[l.ref].nom)
+        .map(l => l.nom + '  ≠  ' + dessous[l.ref].nom);
+    });
+    cas(nom + ' : le réseau enterré porte la désignation du catalogue, rien de plus',
+        commentees.length === 0, commentees.join(' | '));
+
+    // 6. **Un produit, une ligne.** Les deux coudes SBE se distinguaient par
+    //    « (haut, au corps) » et « (bas, sur la ligne) ». Retirer ces mentions
+    //    — sa consigne — aurait donné DEUX lignes identiques dès qu'un corps
+    //    est en 3/4" (les grosses turbines), ce qui se lit comme un défaut de
+    //    comptage. Les emplois s'additionnent désormais par référence ; ce
+    //    contrôle garde l'invariant, y compris pour les pièces à venir.
+    const doubles = await page.evaluate(() => {
+      const vus = {}, deuxFois = [];
+      listeMateriel(decouper()).forEach(l => {
+        if (!l.ref) return;
+        if (vus[l.ref]) deuxFois.push(l.ref + ' : « ' + vus[l.ref] + ' » et « ' + l.nom + ' »');
+        vus[l.ref] = l.nom;
+      });
+      return deuxFois;
+    });
+    cas(nom + ' : une référence n\'apparaît qu\'une fois dans la liste',
+        doubles.length === 0, doubles.join(' | '));
+
+    // 7. Rien ne déborde de son écran.
     const debord = await page.evaluate(() =>
       document.documentElement.scrollWidth - document.documentElement.clientWidth);
     cas(nom + ' : rien ne déborde à 360 px', debord <= 0, debord + ' px de trop');
   }
+
+  // ── LE CAS OÙ LES DEUX SBE SONT LE MÊME PRODUIT ──────────────────────────
+  //
+  // **Sans ce passage, le contrôle « une référence n'apparaît qu'une fois » ne
+  // pouvait pas rougir.** Les trois jardins d'exemple posent des corps en 1/2"
+  // (3504, SRM, PGJ) : le SBE du haut est un 050, celui du bas un 075, deux
+  // références. Le cas à garder est celui du corps en **3/4"** — les grosses
+  // turbines —, où les deux emplois sont LE MÊME PRODUIT et où retirer les
+  // mentions « (haut, au corps) / (bas, sur la ligne) », qu'il a demandé le
+  // 18 août, donnerait deux lignes identiques.
+  //
+  // On le PROVOQUE, avec une pelouse assez grande pour qu'une PGP soit posée.
+  // Un contrôle qui ne rencontre jamais son cas ne mesure rien — le piège du
+  // 15 août, en version « jamais atteint ».
+  const gros = await page.evaluate(() => {
+    etat.marque = 'hunter';
+    etat.zones = [{ id: 1, nom: 'Grande pelouse', type: 'gazon', L: 40, l: 30, materiel: 'auto' }];
+    const p = poser(etat.zones[0]);
+    const c = p.m && p.m.type === 'turbine' ? CATALOGUE.corpsDeLaBuse(p.m.buse) : null;
+    const lignes = listeMateriel(decouper());
+    const vus = {}, deuxFois = [];
+    lignes.forEach(l => {
+      if (!l.ref) return;
+      if (vus[l.ref]) deuxFois.push(l.ref + ' : « ' + vus[l.ref] + ' » et « ' + l.nom + ' »');
+      vus[l.ref] = l.nom;
+    });
+    return {
+      corps: c ? c.ref + ' en ' + c.filetage : 'aucun',
+      enTroisQuarts: !!(c && c.filetage === '3/4'),
+      deuxFois,
+      sbe: lignes.filter(l => /SBE/.test(l.nom)).map(l => l.q + ' × ' + l.nom),
+    };
+  });
+  // **Et l'on refuse de conclure si le cas n'a pas été atteint.** Le jour où le
+  // catalogue n'aurait plus un seul corps en 3/4", le contrôle suivant
+  // passerait au vert sans avoir rien éprouvé — et personne ne le saurait.
+  cas('une grande pelouse pose bien un corps en 3/4" — le cas est atteint',
+      gros.enTroisQuarts, 'corps posé : ' + gros.corps);
+  cas('et les deux emplois du SBE ne font qu\'UNE ligne',
+      gros.enTroisQuarts && gros.deuxFois.length === 0,
+      gros.deuxFois.join(' | ') + '  —  lu : ' + gros.sbe.join(' / '));
+
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(250);
 
   cas('toujours aucune erreur JavaScript', erreurs.length === 0, erreurs.join(' | '));
 
