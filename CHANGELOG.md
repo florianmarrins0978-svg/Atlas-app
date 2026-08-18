@@ -9,6 +9,165 @@ Format : le plus récent en tête.
 
 ## 2026-08-17
 
+### La maquette des clients, ESSAYABLE — et le libellé qui disait « lui » à une cliente
+
+**Sa demande, le soir même :** *« montre-moi depuis chantier ce que ça donnerait,
+crée une maquette dynamique que je puisse essayer, pas de photo, en .html »* — et
+sa validation dans la foulée : *« c'est bien comme ça, sous le nombre de
+chantiers en cours, en or »*. C'était déjà codé et sur `main` ; la planche sert
+à l'essayer sans rallumer son espace.
+
+**`appli/clients.html`**, publiée avec l'appli — donc ouvrable au téléphone
+(`…github.io/Atlas-app/clients.html`). Quatre écrans qui s'enchaînent pour de
+bon : l'accueil, la liste, la fiche d'un client, et **le chemin depuis un
+chantier**, celui qu'il voulait voir.
+
+**Sans une ligne de JavaScript.** La navigation passe par `:target`, et le
+contrôle coupe le script pour le prouver : une planche qui ne s'ouvrirait pas
+chez lui ne vaut rien. Elle marche aussi hors ligne.
+
+**Un piège évité en l'écrivant :** l'accueil devait se cacher dès qu'un autre
+écran est visé. La règle évidente (`:has()`) n'existe pas sur les téléphones un
+peu anciens — la maquette se serait affichée en double, sans un mot. L'accueil
+est donc écrit en dernier, et une règle de frère suffit.
+
+**Et un défaut sorti de la planche, jamais d'un test :** la ligne qui ouvre la
+fiche d'un client disait *« Ce qu'on sait de lui »* — devant « Mme
+Bracquemont ». Elle est neutre désormais : rien dans la base ne dit le genre
+d'un client, et un sur deux est une cliente.
+
+
+### « Je retourne dans l'application et pas dans la catégorie tarif »
+
+Sa remarque du 17 août, capture à l'appui, depuis « Mes prix ». Les réglages ont
+deux étages, et **trois écrans du second renvoyaient au mauvais endroit** — ou
+nulle part :
+
+| L'écran | Sa seule porte | Ce que la flèche faisait |
+|---|---|---|
+| Mes prix | Tarifs & catalogue | ramenait à la racine des réglages |
+| Le catalogue | Tarifs & catalogue | **aucune flèche du tout** |
+| Le vocabulaire | Atlas IA | ramenait à la racine des réglages |
+
+Chacun ramène désormais à la rubrique qui l'ouvre.
+
+**Pourquoi aucun test ne le voyait :** aucun ne PARCOURAIT le chemin. Chaque
+écran s'ouvrait par son adresse, où la question ne se pose pas.
+`test-retours-reglages-e2e.ts` entre par la porte et ressort par la flèche,
+comme lui — elle rendait **cinq échecs** avant le correctif. Le retour du
+vocabulaire, lui, **n'est pas éprouvé** : son renvoi n'existe que pour le compte
+éditeur, que la suite ne peut pas être.
+
+**Et vu à la capture, pas par un test :** l'écran affichait « MES PRIX » au-dessus
+de « Mes prix ». Le surtitre dit d'où l'on vient — il porte maintenant
+« Tarifs & catalogue ».
+
+**Le catalogue a été refait en parallèle par une autre session** (arrangement B
+de la planche 72) et porte désormais sa propre flèche vers « Tarifs & catalogue ».
+C'est cette version-là qui a été gardée à la fusion ; la suite ci-dessus la
+couvre telle quelle.
+### « La catégorie client n'a pas été créée » — la liste, sans cinquième onglet
+
+**Sa remarque du soir, et elle était juste.** La FICHE d'un client existait
+depuis la veille (arrangement B de la planche 66), mais elle ne s'atteignait que
+**depuis un chantier** : il n'y avait aucun endroit d'où voir ses clients, ni
+retrouver celui qu'on a en tête sans se rappeler pour quel chantier on l'avait
+noté.
+
+**La liste s'ouvre depuis l'accueil, sous « quatre en cours ».** Pas de
+cinquième onglet : la barre du bas en porte quatre, le cinquième est déjà décidé
+pour les outils métier (`ARCHITECTURE.md` §125), et à cinq colonnes
+« CHANTIERS » déborde déjà sur 360 px. Le lien est en or et en petites
+capitales, comme le reste de ce bloc — ce qu'on LIT, jamais ce qu'on FAIT :
+l'action de cet écran reste « Nouveau chantier ».
+
+**Le calcul est celui de la fiche, pas un second.** `composerFicheClient` sert
+les deux écrans : deux façons d'additionner ce qu'un client doit finiraient par
+se contredire, et c'est lui qui verrait la différence en passant de la liste à
+la fiche. Et la liste se charge en **quatre requêtes**, pas en cinq par ligne :
+sinon elle s'ouvrirait d'autant plus lentement qu'il a de clients.
+
+**Rien ne s'invente :** un client sans facture affiche « rien de facturé », pas
+« 0 € » — un zéro se lirait comme un mauvais payeur. Ce qui reste dû n'apparaît
+que s'il y en a.
+
+Éprouvé par `scripts/test-liste-clients.ts` (isolation, reste dû, ordre, chantier
+supprimé) et le parcours complet dans `scripts/test-fiche-client-e2e.ts` — depuis
+l'accueil, en touchant le lien, **et un contrôle qui vérifie que la barre du bas
+n'a pas gagné d'onglet**.
+
+### CORRIGÉ : poser une date à la main — le calendrier ne venait jamais
+
+Sa plainte : *« je peux toujours pas poser de date sur les chantiers test »*.
+**« Toujours » : une autre session l'avait déjà constaté le même jour** et
+l'avait contourné en faisant pré-poser un chantier par un script.
+
+**Le geste marchait pourtant de bout en bout.** Ce qui manquait était le
+raccord : en touchant un chantier de « Sans date », l'écran écrivait « À poser »
+et **ne bougeait pas d'un pixel**. Mesuré sur son écran : le calendrier se
+trouvait 231 px **au-dessus** du haut de la fenêtre — seule sa dernière rangée
+dépassait, celle des « 31 1 2 3 4 5 6 » de sa capture. Aucun chemin visible vers
+une date.
+
+`amenerAuCalendrier` existait déjà et annonçait servir « depuis deux endroits ».
+Le second était branché, la liste « Sans date » ne l'a jamais été.
+
+**Pourquoi aucune suite ne le voyait :** Playwright fait défiler un élément
+jusqu'à lui avant de cliquer. Un contrôle qui clique éprouve qu'une cible
+existe, jamais qu'elle est ATTEIGNABLE. Le nouveau mesure la position du
+calendrier dans la fenêtre. `ARCHITECTURE.md` §127.
+
+
+
+### Une prestation qu'il ajoute s'écrit en NOIR, comme les autres
+
+Sa correction du 17 août, capture à l'appui : « Entretient » en doré sous
+« Élagage » en noir — *« les nouvelles prestations doivent toujours être en noir,
+pas en doré »*.
+
+La couleur disait d'où venait l'entrée — du catalogue commun, ou de lui. Mais
+**deux couleurs de titre dans la même liste se lisent comme deux natures de
+prestation**, alors qu'il les coche de la même façon sur un chantier.
+
+**L'or reste sur ses MOTS**, dans « Aussi appelé » : là il sépare le mot du
+commun, qu'on ne retire pas, du sien, qu'un « × » enlève — une distinction qui
+porte un geste. Raisons : `ARCHITECTURE.md` §123.
+
+### « L'appli est super lente », deuxième soir — la construction orpheline
+
+**Sa plainte, à 21 h :** *« même problème qu'hier, l'appli est super lente,
+corrige-moi ça »*. Sa fiche d'état a tranché en dix secondes, sans lui faire
+recopier un terminal : `Code SERVI : AUCUNE — la construction a ÉCHOUÉ`, et le
+message exact, `Another next build process is already running`.
+
+**Même message que la veille, cause différente — et c'est le piège.** Le
+correctif du 16 tue les constructions orphelines **au démarrage** ; il tient
+toujours. Mais son espace n'a que 8 Go (181 Mo libres au moment de la panne) :
+quand la mémoire manque, le noyau tue un processus. Le banc part, **sa
+construction lui survit**, le veilleur relance un banc, et celui-là tombe sur le
+verrou de l'orpheline. Le banc reste alors en mode développement, où chaque
+écran se compile à l'ouverture — c'est exactement « l'appli est lente ».
+
+**Un second trou ouvrait la même porte :** le verrou de banc regardait si le
+fichier existait, *puis* l'écrivait. Deux bancs démarrant dans la même seconde
+ne se voyaient pas et repartaient tous les deux. Il se prend désormais en
+**création exclusive** — un seul peut réussir.
+
+**Ce qui est posé :** le banc déloge l'orpheline avant de bâtir et réessaie une
+fois si le verrou parle encore (`scripts/verrou-construction.mjs`,
+`ARCHITECTURE.md` §129). **On ne double jamais une construction** — on retire
+celle qui n'a plus de destinataire, puisque le banc qui aurait basculé dessus
+est mort. Et on n'efface toujours pas le fichier `lock` : cette règle-là ne
+bouge pas.
+
+**Les contrôles tuent un vrai processus**, et ont été vus rouges avant d'être
+livrés : délogement neutralisé, le premier rougit ; création exclusive retirée,
+deux cas rougissent — dont celui du 10 août.
+
+**Ce que ça ne règle pas, et qui est écrit noir sur blanc :** la mémoire reste
+étroite. Si le noyau tue à nouveau le banc, le démarrage suivant repartira
+proprement, mais il repartira.
+
 ### Un réglage ajouté après sa première visite lui arrivait VIDE
 
 Sa question : *« C'est normal qu'il n'y a plus aucune info en mémoire ? »* Son
@@ -99,7 +258,7 @@ Ce genre de défaut ne se voit pas en développant sur un grand écran ; il
 n'apparaît que sur son téléphone. C'est exactement pourquoi il fallait un
 contrôle plutôt qu'un commentaire.
 
-**La décision est aussi entrée dans `docs/QUESTIONS.md` §21**, avec son accord
+**La décision est aussi entrée dans `docs/QUESTIONS.md` §22**, avec son accord
 — pourquoi ni les Réglages ni une catégorie « Paysage », et ce que le cinquième
 onglet a coûté à la barre.
 
@@ -1115,11 +1274,30 @@ Il ne paraît pas sur un devis parti : cet écran ne se modifie plus.
 
 **Et un contrôle de maquette que personne ne jouait** — `verifier-maquette-reduction.mjs`
 existait depuis le 16 août sans être branché nulle part. Raccroché, avec celui
-de la 68. Raisons : `ARCHITECTURE.md` §120.
+de la 68. Raisons : `ARCHITECTURE.md` §129.
 
 ---
 
 ## 2026-08-16
+
+### « Quelle est la différence entre planning et équipe ? » — aucune, et c'est réparé
+
+*Sa question, capture des réglages à l'appui.* Les deux rubriques rendaient **le
+même bloc** : combien d'équipes partent en même temps, et leurs noms. « Équipe »
+avait en plus les absences, arrivées la veille. « Planning » était donc un
+doublon complet, et sa promesse — *« horaires, équipes et disponibilités »* — ne
+tenait que par le mot du milieu : les horaires ne se règlent pas, et les
+disponibilités sont les absences, qui vivent dans l'autre rubrique.
+
+**« Planning » est supprimée des réglages.** Tout est dans « Équipe » : combien
+partent en même temps, leurs noms, leurs absences. Une seule porte.
+
+**Ce que ça évite :** ouvrir une rubrique pour y trouver ce qu'on vient de régler
+dans l'autre, et se demander laquelle fait foi.
+
+**Aucun contrôle ne pouvait le voir** — les deux écrans étaient corrects chacun de
+son côté. C'est une question de sens, posée en ouvrant la rubrique. Détail :
+`ARCHITECTURE.md` §129, et la réponse dans sa langue : `docs/QUESTIONS.md` §21.
 
 ### La fiche du client : montrer ce que l'application savait déjà
 

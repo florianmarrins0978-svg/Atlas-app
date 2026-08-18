@@ -209,6 +209,29 @@ export default function EcranChantiers({
           >
             {compteEnLettres} en cours
           </p>
+
+          {/* **« La catégorie client n'a pas été créée » — 17 août 2026, au
+              soir.** La fiche d'un client existait depuis la veille, mais elle
+              ne s'atteignait que depuis un chantier : rien ne menait à SES
+              clients. Le lien se pose ici, sous le compteur, plutôt que dans un
+              cinquième onglet — la barre du bas en porte quatre et le cinquième
+              est déjà décidé pour les outils métier (`ARCHITECTURE.md` §125).
+
+              En or et en petites capitales, comme le reste de ce bloc : ce
+              qu'on LIT, jamais ce qu'on FAIT. L'action de cet écran reste
+              « Nouveau chantier », et rien ne doit lui disputer l'œil. */}
+          <Link
+            href="/clients"
+            className="mt-[10px] inline-flex items-center gap-[6px] text-[9.5px] font-medium uppercase"
+            style={{ color: colors.or, letterSpacing: "0.28em" }}
+          >
+            Vos clients
+            <span
+              aria-hidden="true"
+              className="h-[5px] w-[5px] rotate-45"
+              style={{ borderRight: `1.5px solid ${colors.or}`, borderTop: `1.5px solid ${colors.or}` }}
+            />
+          </Link>
         </div>
 
         {/* Le seul trait de l'en-tête : celui qui le ferme. */}

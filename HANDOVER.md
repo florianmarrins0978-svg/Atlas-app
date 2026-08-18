@@ -75,6 +75,26 @@ processus. Quand ce message apparaît, **une construction tourne pour de bon**,
 et l'effacer en lancerait une seconde à côté. La vraie cause était ailleurs :
 `demarrer.sh` n'incluait pas `build` dans son `pkill`, et orphelinait une
 construction à chaque démarrage (`CHANGELOG.md` du 16 août).
+
+**LE MÊME MESSAGE EST REVENU LE 17 AOÛT AU SOIR, et ce n'était pas la même
+panne.** *« Même problème qu'hier, l'appli est super lente. »* Le `pkill` du
+démarrage tient toujours — mais il ne protège QUE le démarrage. Son espace n'a
+que 8 Go (181 Mo libres au moment de la panne) : quand la mémoire manque, le
+noyau tue un processus, le banc part, et **sa construction lui survit**. Le
+veilleur relance un banc, qui tombe sur le verrou de l'orpheline.
+
+**Ce qui est posé depuis** (`ARCHITECTURE.md` §129) :
+
+- **le banc déloge l'orpheline avant de bâtir** (`scripts/verrou-construction.mjs`)
+  — on ne double pas une construction, on retire celle qui n'a plus de
+  destinataire : le banc qui aurait basculé dessus est mort ;
+- **il réessaie une fois** quand c'est ce refus-là qui a parlé ;
+- **le verrou de banc se prend en création exclusive** (`wx`) : deux bancs qui
+  démarrent dans la même seconde ne pouvaient PAS se voir — ils repartaient tous
+  les deux, avec deux constructions.
+
+**Ce qui reste vrai et ne doit pas être défait :** on n'efface jamais le fichier
+`lock`. Tuer le processus, oui ; effacer sa trace, jamais.
 | `Serveur : NE RÉPOND PAS`, fiche écrite **à l'allumage** | normal à cet instant, le veilleur relève dans quinze secondes |
 | `Serveur : NE RÉPOND PAS`, fiche écrite **par le veilleur** | vraie panne |
 
@@ -771,7 +791,63 @@ surveillé par le produit devient elle-même ce qu'elle cherche. Le rouge était
 reproductible quatre fois, « sous charge » était une explication plausible — et
 fausse. `TODO.md` §0 trigies quater.
 
+## ⚠ Un contrôle qui CLIQUE n'éprouve pas qu'une cible est ATTEIGNABLE
+
+**Payé le 17 août 2026, et deux fois par le patron.** Il ne pouvait pas poser de
+date à la main sur le planning ; toutes les suites du planning étaient vertes, et
+l'une d'elles parcourt le geste entier.
+
+**Playwright fait défiler un élément jusqu'à lui AVANT de cliquer dessus.** Un
+contrôle qui clique éprouve donc qu'une cible EXISTE, jamais qu'elle est sous les
+yeux. Chez lui, le calendrier était 231 px au-dessus du haut de l'écran après
+l'appui : rien ne bougeait, aucune journée ne s'ouvrait, et il concluait que la
+fonctionnalité n'existait pas.
+
+**Devant un « je ne peux pas faire X » alors que la suite de X est verte :
+MESURER la position de la cible dans la fenêtre**, jamais se fier au fait que le
+clic passe. `test-poser-une-date-e2e` le fait, et refuse de conclure si la scène
+n'est pas la sienne. `ARCHITECTURE.md` §127.
+
+**Et la cause était lisible sans exécuter :** `amenerAuCalendrier` annonçait dans
+son propre commentaire servir « depuis deux endroits », et n'était appelée que
+d'un seul. Une fonction dont la note promet deux appelants et qui n'en a qu'un
+est un défaut qui ne rougit nulle part.
+
 ## Ce qui vient d'être terminé
+
+**LA RUBRIQUE « PLANNING » DES RÉGLAGES N'EXISTE PLUS (16 août).** Sa question :
+*« quelle est la différence entre planning et équipe ? »* — il n'y en avait
+aucune, les deux rendaient le même composant. Tout est dans **« Équipe »** :
+combien partent en même temps, leurs noms, leurs absences. **Ne pas la recréer**
+le jour où les horaires viendront (`ARCHITECTURE.md` §129, `docs/QUESTIONS.md`
+§21).
+
+**LES RETOURS DES RÉGLAGES (17 août).** Les réglages ont **deux étages**, et un
+écran du second doit ramener à **sa rubrique**, pas à la racine — sa remarque :
+*« lorsque je vais dans mes prix et que je fais un retour, je retourne
+directement dans l'application et pas dans la catégorie tarif »*. Trois écrans
+étaient fautifs (Mes prix, Le catalogue — qui n'avait **aucune** flèche —, Le
+vocabulaire).
+
+**Avant d'ajouter un écran sous une rubrique :** l'inscrire dans la table de
+`scripts/test-retours-reglages-e2e.ts`. Aucun test ne voyait ce défaut parce
+qu'aucun ne PARCOURAIT le chemin — chaque écran s'ouvrait par son adresse, où la
+question ne se pose pas.
+
+*(Le catalogue a été refait en parallèle par une autre session — voir plus bas —
+et porte sa propre flèche : c'est cette version-là qui a été gardée.)*
+**LA LISTE DES CLIENTS (17 août, au soir) — sa remarque : « la catégorie client
+n'a pas été créée ».** Elle s'ouvre depuis l'accueil (« Vos clients », sous le
+compteur), pas depuis un cinquième onglet : celui-ci est réservé aux outils
+métier (`ARCHITECTURE.md` §125), et la barre déborde déjà à cinq colonnes.
+
+**Deux choses à ne pas défaire :**
+
+1. **La liste et la fiche partagent `composerFicheClient`.** Un second calcul du
+   reste dû se contredirait d'un écran à l'autre, et c'est lui qui le verrait.
+2. **Quatre requêtes, pas cinq par client.** Charger la fiche complète de chaque
+   client à tour de rôle rendrait la liste plus lente à mesure qu'il en a — et
+   c'est un écran d'accueil.
 
 **« ADRESSE NON RENSEIGNÉE » OUVRE L'ÉCRAN DU CHANTIER (17 août).** La mention de
 l'accueil est un lien vers `/chantiers/[id]/coordonnees` — l'écran de création
@@ -806,7 +882,7 @@ fiche client — c'est vrai, et ce n'était pas sa demande.
 fois la même question (14 puis 17 août) : *« À quoi sert cette page ?? On peut
 rien modifier rajouter »*. Ses mots s'accrochent désormais aux entrées d'Atlas,
 en or. Planche `docs/maquettes/72-mes-mots-au-catalogue.html`, récit complet
-dans `ARCHITECTURE.md` §122, migration 0052.
+dans `ARCHITECTURE.md` §123, migration 0052.
 
 **Quatre choses à savoir avant d'y toucher :**
 
@@ -828,7 +904,7 @@ dans `ARCHITECTURE.md` §122, migration 0052.
    prix d'abattage sous « Élagage » serait pire que la phrase retirée.
 
 **L'AUTO-ALIMENTATION EXISTE DEPUIS LE MÊME JOUR** (`ARCHITECTURE.md` §123,
-migration 0053) : Atlas **propose** de retenir un mot entendu quand il sait à
+« Ce qu'Atlas PROPOSE de retenir », migration 0053) : Atlas **propose** de retenir un mot entendu quand il sait à
 quoi il se rapporte — la ligne retenue sur le devis doit être reconnue par le
 catalogue, faute de quoi rien n'est proposé. Deux choses à ne pas défaire :
 

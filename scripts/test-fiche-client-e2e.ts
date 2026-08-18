@@ -174,11 +174,58 @@ async function main() {
     );
   });
 
+  // ── La LISTE, sa remarque du 17 août au soir ──────────────────────────────
+  //
+  // *« La catégorie client n'a pas été créée. »* La fiche existait, mais elle ne
+  // s'atteignait que depuis un chantier : rien ne menait à SES clients. Le
+  // chemin s'éprouve donc DEPUIS L'ACCUEIL, en touchant le lien — viser
+  // l'adresse directement laisserait passer un lien qui ne mène nulle part.
+  await cas("depuis l'accueil, « Vos clients » ouvre la liste", async () => {
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    const lien = page.getByRole("link", { name: /Vos clients/i });
+    assert.equal(await lien.count(), 1, "aucun lien « Vos clients » sur l'accueil : la liste est introuvable");
+    await lien.click();
+    await page.waitForURL(`${BASE}/clients`, { timeout: 15_000 });
+    // **Attendre le CONTENU, pas l'adresse.** L'adresse change avant le rendu :
+    // la première ouverture d'un écran se compile sur le serveur de
+    // développement, et la page affiche « Chargement… ». Le contrôle lisait ce
+    // mot-là et accusait la liste d'être vide.
+    await page.locator('a[href^="/clients/"]').first().waitFor({ timeout: 30_000 });
+    const texte = await page.locator("body").innerText();
+    // Le titre COMPTE, et le message montre ce qui a été vu : un contrôle qui
+    // dit seulement « ça ne correspond pas » fait relire la page à la main.
+    assert.match(
+      texte,
+      /\d+\s+clients?/i,
+      `la liste ne dit pas combien de clients elle porte. L'écran dit : ${JSON.stringify(texte.slice(0, 200))}`
+    );
+    assert.ok(texte.includes(nomClient), `le client « ${nomClient} » manque dans sa propre liste`);
+  });
+
+  await cas("un nom de la liste ouvre sa fiche", async () => {
+    await page.getByRole("link", { name: new RegExp(nomClient.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }).click();
+    await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    assert.match(await page.locator("body").innerText(), new RegExp(nomClient.split(" ")[0]));
+  });
+
+  await cas("la barre du bas n'a pas gagné d'onglet", async () => {
+    // Le cinquième onglet est décidé pour les outils métier
+    // (`ARCHITECTURE.md` §125) : la liste des clients ne doit PAS lui prendre
+    // sa place, et à cinq colonnes « CHANTIERS » déborde déjà sur 360 px.
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    const onglets = await page.locator("nav a").allInnerTexts();
+    assert.equal(
+      onglets.length,
+      4,
+      `la barre du bas porte ${onglets.length} onglets au lieu de quatre : ${onglets.join(", ")}`
+    );
+  });
+
   await contexte.close();
   await navigateur.close();
   await pool.end();
 
-  console.log(`\n${echecs === 0 ? "✅" : "❌"} La fiche du client — ${echecs} échec(s).`);
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} La fiche du client et sa liste — ${echecs} échec(s).`);
   process.exit(echecs === 0 ? 0 : 1);
 }
 

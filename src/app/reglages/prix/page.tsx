@@ -35,9 +35,15 @@ export default async function GrillesPrixPage() {
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
         <div className="px-6 pt-8">
+          {/* **Le retour ramène d'où l'on vient, pas à la racine.** Le patron,
+              le 17 août 2026 : *« lorsque je vais dans mes prix et que je fais
+              un retour, je retourne directement dans l'application et pas dans
+              la catégorie tarif »*. Cet écran n'a qu'une porte —
+              `/reglages/tarifs` —, et la flèche renvoyait deux étages plus
+              haut : il fallait rouvrir Tarifs pour reprendre où il en était. */}
           <Link
-            href="/reglages"
-            aria-label="Retour aux réglages"
+            href="/reglages/tarifs"
+            aria-label="Retour aux tarifs"
             className="flex h-10 w-10 items-center justify-center rounded-full"
             style={{ backgroundColor: colors.rustTint }}
           >
@@ -48,8 +54,12 @@ export default async function GrillesPrixPage() {
         </div>
 
         <div className="px-6 pt-5">
+          {/* **Le surtitre dit d'où l'on vient**, jamais où l'on est — c'est la
+              grammaire des écrans (« Mes mesures » porte « Mes prix »). Celui-ci
+              répétait son propre titre : « MES PRIX / Mes prix ». Vu à la
+              capture en corrigeant la flèche, le 17 août 2026. */}
           <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            Mes prix
+            Tarifs &amp; catalogue
           </p>
           <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
             Mes prix
