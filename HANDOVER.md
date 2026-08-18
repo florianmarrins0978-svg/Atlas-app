@@ -328,7 +328,8 @@ serif. C'est le premier écran qu'il voit. `TODO.md` §0 nonies.
 
 Le pied du devis modifiable (`devis-complet`) écrivait l'envoi comme un lien, à
 côté de « Aperçu du PDF » et dans la même encre : il porte maintenant
-`PrimaryButton`, comme sur l'écran d'envoi. **Aucune forme nouvelle n'a été
+`PrimaryButton`, comme sur l'écran d'envoi, **et il passe au-dessus du lien du
+PDF** — l'ordre disait l'inverse de l'importance. **Aucune forme nouvelle n'a été
 dessinée** — s'il faut retoucher ce bouton, c'est `PrimaryButton.tsx` qu'on
 touche, et les dix-sept écrans suivent.
 

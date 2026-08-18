@@ -725,24 +725,29 @@ export default function DevisCompletClient(props: Props) {
 
       {/* Les seules actions de la page, discrètes, sous le document. */}
       <div className="mt-10 flex flex-col items-center gap-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
+        {/* **L'envoi passe DEVANT, et porte la capsule verte comme partout
+            ailleurs.** Il était écrit ici comme un lien de la même graisse et de
+            la même couleur que « Aperçu du PDF », et posé sous lui : deux gestes
+            de poids très différents se lisaient pareil, et le seul qui engage
+            vis-à-vis du client venait en second. C'est le même bouton que sur
+            l'écran d'envoi (`ExportClient`), donc rien de nouveau n'est dessiné.
+
+            Le retrait haut voyage avec le premier des deux : il sépare ce bloc
+            du filet au-dessus, et l'oublier collerait le bouton au trait. */}
+        <div className="w-full pt-6">
+          <PrimaryButton href={`/chantiers/${props.chantierId}/export`} repere="devis-complet-envoyer">
+            Envoyer au client →
+          </PrimaryButton>
+        </div>
         <a
           href={`/api/devis/${props.devisId}/pdf`}
           target="_blank"
           rel="noopener noreferrer"
-          className="pt-6 text-[14px] font-medium"
+          className="text-[14px] font-medium"
           style={{ color: colors.rust }}
         >
           Aperçu du PDF
         </a>
-        {/* **L'envoi porte la capsule verte, comme partout ailleurs.** Il était
-            écrit ici comme un lien de la même graisse et de la même couleur que
-            « Aperçu du PDF » : deux gestes de poids très différents se lisaient
-            pareil, et le seul qui engage vis-à-vis du client était le moins
-            visible des deux. C'est le même bouton que sur l'écran d'envoi
-            (`ExportClient`), donc rien de nouveau n'est dessiné ici. */}
-        <PrimaryButton href={`/chantiers/${props.chantierId}/export`} repere="devis-complet-envoyer">
-          Envoyer au client →
-        </PrimaryButton>
         <p className="pb-1 text-center text-[12px]" style={{ color: colors.muted }}>
           Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
         </p>

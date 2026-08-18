@@ -25,6 +25,9 @@ Il porte désormais `PrimaryButton`, la capsule vert pin retenue le 11 août :
 d'envoi (`ExportClient`) affiche déjà sous le même libellé. Le texte n'a pas
 bougé, flèche comprise.
 
+**Et les deux ont échangé leur place**, à sa demande : le bouton d'abord, la
+relecture du PDF dessous. L'ordre disait l'inverse de l'importance.
+
 Le repère `devis-complet-envoyer` est posé pour que les contrôles désignent ce
 lien autrement que par son texte — « Envoyer au client → » existe sur deux
 écrans.
