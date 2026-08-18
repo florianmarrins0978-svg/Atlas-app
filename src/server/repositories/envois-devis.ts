@@ -195,6 +195,13 @@ export type CreationEnvoi = {
   canal: CanalCommunication;
   /** Une ou deux dates — la forme est tranchée par le patron à la validation. */
   datesProposees: JourIso[];
+  /**
+   * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
+   *
+   * Absent : `true`, c'est-à-dire ce que faisait l'application depuis toujours.
+   * Un défaut à `false` changerait sans un mot ce que le patron croit envoyer.
+   */
+  autreDateAutorisee?: boolean;
   contenuDevis: string;
   /**
    * Durée à réserver, en demi-journées. Absente : elle se déduit de la dictée,
@@ -296,6 +303,7 @@ export async function creerEnvoi(
         envoyeAt: maintenant,
         canal: creation.canal,
         datesProposees: creation.datesProposees,
+        autreDateAutorisee: creation.autreDateAutorisee ?? true,
         empreinteDevis: empreinteDevis(creation.contenuDevis),
       })
       .returning();
@@ -328,6 +336,8 @@ export type EnvoiPourClient = {
   devisId: string;
   chantierId: string;
   datesProposees: JourIso[];
+  /** Le calendrier « une autre date » n'est offert que si le patron l'a permis. */
+  autreDateAutorisee: boolean;
   /**
    * Jours indisponibles dans la fenêtre — **des dates, rien d'autre**.
    *
@@ -526,6 +536,7 @@ export async function lireParJeton(
       devisId: envoi.devisId,
       chantierId: envoi.chantierId,
       datesProposees: envoi.datesProposees,
+      autreDateAutorisee: envoi.autreDateAutorisee,
       joursOccupes: joursSansPlace,
       fenetre,
       reponse: envoi.reponse,
@@ -642,7 +653,9 @@ export type ResultatReponse =
         | "deja_repondu"
         | "date_indisponible"
         | "date_manquante"
-        | "message_manquant";
+        | "message_manquant"
+        /** Le patron n'a pas autorisé d'autre date sur CET envoi (17 août 2026). */
+        | "autre_date_refusee";
     };
 
 /**
@@ -712,6 +725,16 @@ export async function enregistrerReponse(
     if (!date) return { succes: false, motif: "date_manquante" as const };
 
     const contreProposee = !envoi.datesProposees.includes(date);
+
+    // **Le refus se fait ICI, pas seulement à l'écran** (17 août 2026). La page
+    // du client est publique : elle s'ouvre sans compte, et son formulaire se
+    // rejoue. Cacher le calendrier suffit à l'usage, jamais à la règle — un
+    // envoi où le patron n'a pas autorisé d'autre date ne doit pas pouvoir en
+    // recevoir une, quoi qu'on lui poste. C'est la règle du dépôt : jamais de
+    // règle dupliquée entre l'affichage et la vérification (`CLAUDE.md` §3).
+    if (contreProposee && !envoi.autreDateAutorisee) {
+      return { succes: false, motif: "autre_date_refusee" as const };
+    }
 
     // Revérification côté serveur — la seule qui fasse foi.
     //

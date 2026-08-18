@@ -10991,3 +10991,57 @@ qui répond, avec un faux `npm` en tête de `PATH` pour ne pas bâtir pour de vr
 
 Confronté au veilleur d'avant, il tombe sur le premier et le troisième — et le
 témoin, lui, reste vert : la différence porte bien sur ce qu'on a changé.
+
+---
+
+## 132. « Il peut proposer une autre date » — un interrupteur avant l'envoi
+
+**Sa demande du 17 août 2026 :** *« pour le lien du planning qui part au client,
+il faut que l'utilisateur puisse choisir avant d'envoyer s'il autorise ou non le
+client à choisir une date si celles proposées ne lui conviennent pas »*.
+
+**Ce que l'application faisait jusque-là, et qu'il n'avait pas choisi.** La page
+publique offrait TOUJOURS un calendrier sous les dates proposées. Sur un
+chantier serré, une contre-proposition à six mois ne l'arrange pas — et le seul
+moyen de l'éviter était de n'envoyer aucune date, c'est-à-dire de perdre le
+parcours entier.
+
+### Où le choix se pose, et pourquoi là
+
+**Sous les dates, juste avant le bouton d'envoi.** C'est le dernier regard avant
+que le lien parte, et le seul endroit où les deux décisions se voient ensemble :
+quelles dates, et si le client peut en sortir. **La phrase récapitulative suit
+l'interrupteur** — « Le client choisira entre ces deux dates, et rien d'autre »
+—, sans quoi il enverrait sans savoir ce que son client va lire.
+
+### Ce qui est FIGÉ, et ce qui ne l'est pas
+
+Le choix est écrit dans l'envoi (`envois_devis.autre_date_autorisee`,
+migration 0054), **pas lu dans un réglage**. Même raison que les dates proposées
+et la fenêtre du client (migration 0027) : l'écran du client doit dire demain ce
+qu'il disait aujourd'hui. Un réglage relu à l'ouverture changerait après coup la
+promesse faite à quelqu'un qui a le lien ouvert.
+
+**Vrai par défaut**, à la colonne comme à l'écran. Les liens déjà partis
+continuent de se comporter comme leurs destinataires les ont reçus, et un patron
+qui n'y touche pas envoie ce qu'il a toujours envoyé.
+
+### La règle vit à UN endroit, et ce n'est pas l'écran
+
+**Cacher le calendrier ne suffit pas.** Cette page est publique : elle s'ouvre
+sans compte, et son formulaire se rejoue. `enregistrerReponse` refuse donc toute
+date hors des propositions quand l'envoi ne l'autorise pas
+(motif `autre_date_refusee`), et le message rendu au client lui dit quoi faire
+plutôt que de l'accuser : choisir une des dates, ou demander une correction.
+
+C'est la règle du dépôt — jamais de règle dupliquée entre l'affichage et la
+vérification (`CLAUDE.md` §3). Le contrôle correspondant poste une
+contre-proposition **sans passer par l'écran** : c'est le seul qui prouve que la
+porte est fermée pour de bon.
+
+### Ce que ça ne fait pas
+
+**Aucun réglage par défaut dans les Réglages.** Il choisit envoi par envoi, et
+c'est ce qu'il a demandé. Si l'habitude s'installe — toujours ouvert, ou
+toujours fermé —, un réglage « Devis & factures » pourra porter la position de
+départ ; il n'y a rien à décider tant qu'il ne l'a pas dit.

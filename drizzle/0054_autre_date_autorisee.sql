@@ -1,0 +1,25 @@
+-- Le client peut-il proposer une AUTRE date ? C'est au patron de le décider,
+-- avant d'envoyer.
+--
+-- **Sa demande du 17 août 2026 :** *« pour le lien du planning qui part au
+-- client, il faut que l'utilisateur puisse choisir avant d'envoyer s'il
+-- autorise ou non le client à choisir une date si celles proposées ne lui
+-- conviennent pas »*.
+--
+-- **Jusqu'ici, le client le pouvait TOUJOURS.** La page publique offrait un
+-- calendrier sous les dates proposées, sans que le patron ait rien à dire.
+-- C'est un choix qui lui appartient : sur un chantier serré, une date
+-- contre-proposée à six mois ne l'arrange pas, et il n'avait aucun moyen de
+-- l'empêcher — sinon en n'envoyant pas de dates du tout.
+--
+-- **Vrai par défaut, et c'est délibéré.** Les envois déjà partis continuent de
+-- se comporter comme le client les a reçus : une colonne à `false` par défaut
+-- aurait changé, sans un mot, la promesse faite à des clients qui ont le lien
+-- ouvert. La valeur ne se décide qu'à l'envoi suivant.
+--
+-- **Elle est FIGÉE à l'envoi, comme les dates proposées.** L'écran du client
+-- doit dire la même chose demain qu'aujourd'hui : la relire dans un réglage
+-- changerait après coup ce qu'on lui a promis (même raison que
+-- `dates_proposees` et `expire_at`, migration 0027).
+ALTER TABLE "envois_devis"
+  ADD COLUMN "autre_date_autorisee" boolean NOT NULL DEFAULT true;

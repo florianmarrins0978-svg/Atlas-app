@@ -1051,6 +1051,14 @@ export const envoisDevis = pgTable(
     expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     datesProposees: date("dates_proposees").array().notNull(),
+    /**
+     * Le client peut-il proposer une autre date que celles offertes ?
+     *
+     * Décidé par le patron **avant l'envoi** (17 août 2026), puis FIGÉ ici :
+     * l'écran du client doit dire demain ce qu'il disait aujourd'hui. Vrai par
+     * défaut — c'est le comportement qu'ont connu les envois déjà partis.
+     */
+    autreDateAutorisee: boolean("autre_date_autorisee").notNull().default(true),
 
 
     empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),
