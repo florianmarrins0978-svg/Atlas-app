@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 
@@ -10,6 +11,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // formulaire de création jusqu'au lien que le client ouvrira.
 
 const BASE = "http://localhost:3000";
+const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 
 /**
  * Combien de temps attendre qu'un écran paraisse.
@@ -278,6 +280,87 @@ async function main() {
       0,
       "l'envoi est reproposé après rechargement"
     );
+  });
+
+  // ── Autoriser (ou non) une autre date — sa demande du 17 août 2026 ────────
+  //
+  // *« Il faut que l'utilisateur puisse choisir AVANT D'ENVOYER s'il autorise
+  // ou non le client à choisir une date si celles proposées ne lui conviennent
+  // pas. »* Le contrôle va jusqu'au bout du chemin : l'interrupteur, l'envoi,
+  // puis **la page telle que le client la reçoit** — c'est elle qui prouve que
+  // le choix a servi à quelque chose.
+
+  await test("l'interrupteur est ouvert par défaut, et le dit", async () => {
+    const url = await creerChantierFacturable(page, "porte-ouverte");
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+    await page.click("text=Envoyer au client");
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+
+    const bascule = page.getByRole("switch", { name: /autre date/i });
+    assert.ok(await bascule.isVisible(), "l'interrupteur « une autre date » manque avant l'envoi");
+
+    // **Une capture, parce que trois défauts de ce dépôt sont sortis d'une
+    // image et d'aucun test** (`CLAUDE.md` §5). Elle ne juge rien ici : elle
+    // existe pour être REGARDÉE avant de livrer.
+    mkdirSync(CAPTURES, { recursive: true });
+    await bascule.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `${CAPTURES}/envoi-autre-date.png` });
+    assert.strictEqual(
+      await bascule.getAttribute("aria-checked"),
+      "true",
+      "il doit être ouvert par défaut : c'est ce que l'application faisait jusqu'ici"
+    );
+
+    // La phrase sous les dates suit l'interrupteur — sans quoi il enverrait
+    // sans savoir ce que son client va voir.
+    await bascule.click();
+    assert.strictEqual(await bascule.getAttribute("aria-checked"), "false");
+    const texte = await page.locator("body").innerText();
+    assert.match(
+      texte,
+      /ne pourra pas en proposer une autre|et rien d'autre/,
+      `la phrase ne suit pas l'interrupteur. L'écran dit : ${JSON.stringify(texte.slice(0, 220))}`
+    );
+    await page.click('button:has-text("Annuler")');
+  });
+
+  await test("refusé, le client ne voit AUCUN calendrier sur son lien", async () => {
+    const url = await creerChantierFacturable(page, "sans-calendrier");
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+    await page.click("text=Envoyer au client");
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+
+    await page.getByRole("switch", { name: /autre date/i }).click();
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+
+    // **Décodé d'abord** : le lien voyage dans le corps d'un `sms:`, donc
+    // encodé (`%2Fdevis%2F`). Cherché tel quel, on ne le trouve jamais — et le
+    // contrôle accuse l'envoi de ne pas produire de lien.
+    const adresseMessage = decodeURIComponent(
+      (await page.locator("a[data-transmission]").getAttribute("href")) ?? ""
+    );
+    const debut = adresseMessage.indexOf("/devis/");
+    assert.ok(debut >= 0, `aucun lien de devis dans le message : ${adresseMessage.slice(0, 90)}`);
+    const chemin = adresseMessage.slice(debut).split(/\s/)[0];
+
+    // La page du client, ouverte sans session — comme lui l'ouvrira.
+    const sansCompte = await browser.newContext();
+    const pageClient = await sansCompte.newPage();
+    await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
+    const vu = await pageClient.locator("body").innerText();
+    assert.match(vu, /Quelle date vous arrange/, `la page du client ne s'est pas ouverte : ${vu.slice(0, 200)}`);
+    assert.doesNotMatch(
+      vu,
+      /une autre date|autre date/i,
+      "le client peut encore demander une autre date alors que l'artisan l'a refusé"
+    );
+    assert.strictEqual(
+      await pageClient.locator('input[name="choixDate"][value="autre"]').count(),
+      0,
+      "le choix « autre » existe encore dans le formulaire : il se rejouerait à la main"
+    );
+    await sansCompte.close();
   });
 
   await context.close();

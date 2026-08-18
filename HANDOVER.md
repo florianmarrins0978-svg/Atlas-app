@@ -837,6 +837,21 @@ est un défaut qui ne rougit nulle part.
 
 ## Ce qui vient d'être terminé
 
+**« IL PEUT PROPOSER UNE AUTRE DATE » (17 août, au soir).** Un interrupteur sous
+les dates, avant le bouton d'envoi : le patron décide, envoi par envoi, si le
+client peut sortir des dates offertes. `ARCHITECTURE.md` §132, migration 0054.
+
+**Trois choses à ne pas défaire :**
+
+1. **Le choix est FIGÉ dans l'envoi**, pas lu dans un réglage — l'écran du
+   client doit dire demain ce qu'il disait aujourd'hui.
+2. **Vrai par défaut**, à la colonne comme à l'écran : les liens déjà partis
+   gardent leur promesse.
+3. **Le refus vit dans `enregistrerReponse`**, pas seulement à l'écran. La page
+   du client est publique et son formulaire se rejoue ; cacher le calendrier ne
+   ferme rien.
+
+
 **⚠ « ENCORE LA VERSION LENTE » : LE VEILLEUR RETENTE MAINTENANT (18 août).**
 Une construction ratée laisse le banc en mode développement — et ce mode
 **répond** à la santé. Le veilleur, qui ne relançait que sur un port muet, se

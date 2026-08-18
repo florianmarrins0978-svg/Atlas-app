@@ -95,6 +95,15 @@ function Contenu({
 }: Omit<Props, "ouvert">) {
   const [preparation, setPreparation] = useState<PreparationEnvoi | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
+  /**
+   * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
+   *
+   * **Ouvert par défaut**, parce que c'est ce que l'application faisait depuis
+   * toujours : un défaut fermé changerait sans un mot ce qu'il croit envoyer.
+   * Le choix est figé dans l'envoi — l'écran du client dira demain ce qu'il dit
+   * aujourd'hui.
+   */
+  const [autreDateAutorisee, setAutreDateAutorisee] = useState(true);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   // `undefined` tant que le patron n'a rien corrigé : le serveur déduit alors
@@ -239,7 +248,8 @@ function Contenu({
         chantierId,
         devisId,
         [...selection].sort(),
-        preparation?.dureeDemiJournees
+        preparation?.dureeDemiJournees,
+        autreDateAutorisee
       );
       if (!r.succes) {
         setErreur(r.erreur);
@@ -522,10 +532,60 @@ function Contenu({
             </div>
           )}
 
+          {/* **Sa demande du 17 août 2026 :** *« il faut que l'utilisateur
+              puisse choisir avant d'envoyer s'il autorise ou non le client à
+              choisir une date si celles proposées ne lui conviennent pas »*.
+
+              Posé ICI, sous les dates et avant le bouton : c'est le dernier
+              regard avant l'envoi, et la phrase en dessous change avec lui —
+              sans quoi il enverrait sans savoir ce que son client va voir. */}
+          {/* **La ligne n'est pas un bouton, l'interrupteur en est un** — c'est
+              la forme des réglages (`NotificationsClient`), et c'est aussi ce
+              que le dépôt exige : toute action ronde, jamais un rectangle. */}
+          <div
+            className="mb-3 flex items-start gap-3 rounded-2xl px-4 py-3"
+            style={{ backgroundColor: colors.card, border: `1px solid ${colors.lineSoft}` }}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px]" style={{ color: colors.ink }}>
+                Il peut proposer une autre date
+              </span>
+              <span className="mt-0.5 block text-[12px] leading-[1.45]" style={{ color: colors.muted }}>
+                {autreDateAutorisee
+                  ? "Un calendrier de vos jours libres s'ouvrira sous vos dates."
+                  : "Il choisira uniquement parmi vos dates, ou demandera une correction."}
+              </span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autreDateAutorisee}
+              aria-label="Il peut proposer une autre date"
+              onClick={() => setAutreDateAutorisee((ouvert) => !ouvert)}
+              // 28 × 48, comme partout ailleurs : la pièce se reconnaît d'un
+              // écran à l'autre, et le pouce la trouve sans regarder.
+              className="relative mt-0.5 h-[28px] w-[48px] flex-none rounded-full transition-colors"
+              style={{
+                backgroundColor: autreDateAutorisee ? colors.rust : colors.line,
+                boxShadow: autreDateAutorisee ? "none" : `inset 0 0 0 1px ${colors.line}`,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-all"
+                style={{ backgroundColor: colors.card, left: autreDateAutorisee ? 23 : 3 }}
+              />
+            </button>
+          </div>
+
           <p className="mb-4 text-center text-[12px]" style={{ color: colors.muted }}>
             {selection.length === 2
-              ? "Le client choisira entre ces deux dates."
-              : "Le client pourra aussi en proposer une autre, parmi vos jours libres."}
+              ? autreDateAutorisee
+                ? "Le client choisira entre ces deux dates, ou en proposera une autre."
+                : "Le client choisira entre ces deux dates, et rien d'autre."
+              : autreDateAutorisee
+                ? "Le client pourra aussi en proposer une autre, parmi vos jours libres."
+                : "Le client ne pourra pas en proposer une autre."}
           </p>
         </>
       )}

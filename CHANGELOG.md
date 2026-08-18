@@ -9,6 +9,41 @@ Format : le plus récent en tête.
 
 ## 2026-08-18
 
+### « Il peut proposer une autre date » : un interrupteur avant l'envoi
+
+**Sa demande :** *« pour le lien du planning qui part au client, il faut que
+l'utilisateur puisse choisir avant d'envoyer s'il autorise ou non le client à
+choisir une date si celles proposées ne lui conviennent pas »*.
+
+**Jusqu'ici, le client le pouvait TOUJOURS** — la page publique offrait un
+calendrier sous les dates, sans que le patron ait rien à dire. Sur un chantier
+serré, une contre-proposition à six mois ne l'arrange pas, et son seul recours
+était de n'envoyer aucune date.
+
+L'interrupteur se pose **sous les dates, juste avant le bouton d'envoi**, et la
+phrase récapitulative le suit : « Le client choisira entre ces deux dates, et
+rien d'autre ». **Ouvert par défaut** — un défaut fermé changerait sans un mot
+ce qu'il croit envoyer, et ce que les liens déjà partis promettent.
+
+**Le choix est FIGÉ dans l'envoi** (migration 0054), jamais relu dans un
+réglage : l'écran du client doit dire demain ce qu'il disait aujourd'hui, comme
+les dates proposées et la fenêtre (migration 0027).
+
+**Et la règle ne vit pas à l'écran.** Cette page est publique, son formulaire se
+rejoue : le serveur refuse toute date hors des propositions quand l'envoi ne
+l'autorise pas, et le message dit au client quoi faire — choisir une date, ou
+demander une correction — au lieu de l'accuser. Le contrôle poste la
+contre-proposition **sans passer par l'écran** ; c'est le seul qui prouve que la
+porte est fermée. Vu rouge avant d'être livré : refus retiré, ce cas-là tombe.
+
+Le parcours entier est éprouvé au navigateur (`test-envoi-client-e2e.ts`) :
+l'interrupteur, l'envoi, puis **la page telle que le client la reçoit**, ouverte
+sans compte. `ARCHITECTURE.md` §132.
+
+---
+
+## 2026-08-18
+
 ### La fiche de chantier rejoint Paysage — et le pont vers le client
 
 **Sa décision du 17 août**, contre ma recommandation : *« la fiche chantier, la
