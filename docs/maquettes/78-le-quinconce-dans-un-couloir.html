@@ -1,0 +1,301 @@
+<title>Le quinconce dans un couloir</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE QUINCONCE DANS UN COULOIR — sa règle du 18 août 2026 :
+
+      « Dans les couloirs, le but c'est de poser les tuyères en quinconce, car
+       le but c'est que celle de gauche recouvre quasi 100 % jusqu'à celle de
+       droite. Donc le quinconce est optimal. »
+
+    ————————————————————————————————————————————————————————————————
+    POURQUOI UNE PLANCHE PLUTÔT QU'UN CHANGEMENT DIRECT.
+
+    Cette règle ne déplace pas des points sur un dessin : elle change le NOMBRE
+    D'ARROSEURS, donc la liste qu'il commande chez son fournisseur. Sur son
+    couloir de 10 × 2 m, l'écart va de 12 tuyères à 3. Se tromper de géométrie,
+    ce n'est pas un détail d'affichage — c'est un camion de pièces.
+
+    Et une chose doit être tranchée par LUI, parce qu'elle relève du métier et
+    non du calcul : le quinconce n'est optimal QUE si l'on accepte une portée
+    plus grande que la largeur du couloir. Plus la buse porte loin, moins il
+    faut de tuyères — et plus il en tombe À CÔTÉ. L'outil ne peut pas savoir ce
+    qu'il y a le long du couloir.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : ni `appli/`, ni `src/` (règle du §3 bis).
+    AUCUN SCRIPT : tout est du SVG, il se dessine sans JavaScript.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#2F4C78; --herbe:#dfe6d4;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --herbe:#2a3226;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --herbe:#2a3226;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:900px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
+           padding:18px 16px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
+  .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 4px;flex-wrap:wrap}
+  .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
+  .verdict .quoi{font-size:14px;color:var(--gris)}
+  .verdict .quoi b{color:var(--encre);font-weight:600}
+  .sous{font-size:13px;color:var(--gris);margin:0 0 12px}
+  .sous b{color:var(--encre);font-weight:600}
+
+  .cadre{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .trace{width:100%;min-width:430px;height:auto;display:block;margin:0}
+  .trace .dehors{fill:var(--teinte)}
+  .trace .sol{fill:var(--herbe)}
+  .trace .contour{fill:none;stroke:var(--encre);stroke-width:3}
+  /* Le jet ENTIER, y compris ce qui passe par-dessus le bord opposé. */
+  .trace .jet{fill:var(--eau);fill-opacity:.10;stroke:var(--eau);stroke-width:2;
+              stroke-opacity:.4;stroke-dasharray:8 7}
+  /* Le même jet borné au couloir : c'est là que se lit le recouvrement. */
+  .trace .jet-dedans{fill:var(--eau);fill-opacity:.16;stroke:var(--eau);
+                     stroke-width:2;stroke-opacity:.55}
+  .trace .tete{fill:var(--papier);stroke:var(--eau);stroke-width:6}
+
+  .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
+           font-size:12.5px;color:var(--gris)}
+  .legende span{display:inline-flex;align-items:center;gap:7px}
+  .cercle{width:15px;height:15px;border-radius:50%;flex:none;
+          border:3px solid var(--eau)}
+  .plein{width:15px;height:15px;border-radius:50%;flex:none;
+         background:var(--eau);opacity:.3}
+  .tirets{width:20px;height:0;flex:none;border-top:2px dashed var(--eau);opacity:.6}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 0}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--trait);
+        vertical-align:top}
+  th{font-weight:600;font-size:11.5px;letter-spacing:.09em;
+     text-transform:uppercase;color:var(--or)}
+  td.n{font-family:Georgia,serif;font-size:19px;white-space:nowrap}
+
+  .note{margin-top:8px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note + .note{margin-top:14px}
+  .rouge{color:var(--alerte)}
+</style>
+
+<div class="dedans">
+  <h1>Le quinconce dans un couloir</h1>
+  <p class="intro">Votre couloir de <b>10 × 2 m</b>, posé de trois façons. Le
+    disque plein est ce qui tombe <b>dans</b> le couloir, le pointillé ce qui
+    tombe <b>à côté</b>. Une seule chose vous est demandée, tout en bas.</p>
+
+  <p class="dit">« Dans les couloirs, le but c'est de poser les tuyères
+    <b>en quinconce</b>, car le but c'est que celle de gauche recouvre quasi
+    100 % jusqu'à celle de droite. »</p>
+
+  <div class="planche">
+    <div class="verdict">
+      <span class="gros">A</span>
+      <span class="quoi"><b>12 tuyères</b> — ce que l'outil pose aujourd'hui.
+        Buse 6-VAN, portée 1,80 m.</span>
+    </div>
+    <p class="sous">C'est ce que vous avez vu à l'écran. Les têtes sont alignées
+      deux à deux : ce n'est pas un quinconce, et <b>la portée ne traverse même
+      pas les 2 m du couloir</b>.</p>
+    <div class="cadre">
+<svg class="trace" viewBox="0 0 1120 600" role="img" aria-label="Pose A, deux rangees alignees">
+      <defs><clipPath id="cA"><rect x="60" y="200" width="1000" height="200" rx="6"/></clipPath></defs>
+      <rect class="dehors" x="0" y="0" width="1120" height="200"/>
+      <rect class="dehors" x="0" y="400" width="1120" height="200"/>
+      <rect class="sol" x="60" y="200" width="1000" height="200" rx="6"/>
+      <path class="jet" d="M -120 200 A 180 180 0 0 0 240 200 Z"/>
+      <path class="jet" d="M 80 200 A 180 180 0 0 0 440 200 Z"/>
+      <path class="jet" d="M 280 200 A 180 180 0 0 0 640 200 Z"/>
+      <path class="jet" d="M 480 200 A 180 180 0 0 0 840 200 Z"/>
+      <path class="jet" d="M 680 200 A 180 180 0 0 0 1040 200 Z"/>
+      <path class="jet" d="M 880 200 A 180 180 0 0 0 1240 200 Z"/>
+      <path class="jet" d="M -120 400 A 180 180 0 0 1 240 400 Z"/>
+      <path class="jet" d="M 80 400 A 180 180 0 0 1 440 400 Z"/>
+      <path class="jet" d="M 280 400 A 180 180 0 0 1 640 400 Z"/>
+      <path class="jet" d="M 480 400 A 180 180 0 0 1 840 400 Z"/>
+      <path class="jet" d="M 680 400 A 180 180 0 0 1 1040 400 Z"/>
+      <path class="jet" d="M 880 400 A 180 180 0 0 1 1240 400 Z"/>
+      <g clip-path="url(#cA)">
+      <path class="jet-dedans" d="M -120 200 A 180 180 0 0 0 240 200 Z"/>
+      <path class="jet-dedans" d="M 80 200 A 180 180 0 0 0 440 200 Z"/>
+      <path class="jet-dedans" d="M 280 200 A 180 180 0 0 0 640 200 Z"/>
+      <path class="jet-dedans" d="M 480 200 A 180 180 0 0 0 840 200 Z"/>
+      <path class="jet-dedans" d="M 680 200 A 180 180 0 0 0 1040 200 Z"/>
+      <path class="jet-dedans" d="M 880 200 A 180 180 0 0 0 1240 200 Z"/>
+      <path class="jet-dedans" d="M -120 400 A 180 180 0 0 1 240 400 Z"/>
+      <path class="jet-dedans" d="M 80 400 A 180 180 0 0 1 440 400 Z"/>
+      <path class="jet-dedans" d="M 280 400 A 180 180 0 0 1 640 400 Z"/>
+      <path class="jet-dedans" d="M 480 400 A 180 180 0 0 1 840 400 Z"/>
+      <path class="jet-dedans" d="M 680 400 A 180 180 0 0 1 1040 400 Z"/>
+      <path class="jet-dedans" d="M 880 400 A 180 180 0 0 1 1240 400 Z"/>
+      </g>
+      <rect class="contour" x="60" y="200" width="1000" height="200" rx="6"/>
+      <circle class="tete" cx="60" cy="200" r="13"/>
+      <circle class="tete" cx="260" cy="200" r="13"/>
+      <circle class="tete" cx="460" cy="200" r="13"/>
+      <circle class="tete" cx="660" cy="200" r="13"/>
+      <circle class="tete" cx="860" cy="200" r="13"/>
+      <circle class="tete" cx="1060" cy="200" r="13"/>
+      <circle class="tete" cx="60" cy="400" r="13"/>
+      <circle class="tete" cx="260" cy="400" r="13"/>
+      <circle class="tete" cx="460" cy="400" r="13"/>
+      <circle class="tete" cx="660" cy="400" r="13"/>
+      <circle class="tete" cx="860" cy="400" r="13"/>
+      <circle class="tete" cx="1060" cy="400" r="13"/>
+      </svg>    </div>
+  </div>
+
+  <div class="planche">
+    <div class="verdict">
+      <span class="gros">B</span>
+      <span class="quoi"><b>5 tuyères</b> — le quinconce, buse 12-VAN,
+        portée 3,60 m.</span>
+    </div>
+    <p class="sous">Une tête sur un bord, la suivante sur l'autre, tous les
+      <b>2,50 m</b>. Chacune atteint la suivante en diagonale : la gauche
+      recouvre bien jusqu'à la droite. <b class="rouge">Il tombe de l'eau
+      jusqu'à 1,60 m au-delà du couloir.</b></p>
+    <div class="cadre">
+<svg class="trace" viewBox="0 0 1120 600" role="img" aria-label="Pose B, quinconce 12-VAN">
+      <defs><clipPath id="cB"><rect x="60" y="200" width="1000" height="200" rx="6"/></clipPath></defs>
+      <rect class="dehors" x="0" y="0" width="1120" height="200"/>
+      <rect class="dehors" x="0" y="400" width="1120" height="200"/>
+      <rect class="sol" x="60" y="200" width="1000" height="200" rx="6"/>
+      <path class="jet" d="M -300 200 A 360 360 0 0 0 420 200 Z"/>
+      <path class="jet" d="M -50 400 A 360 360 0 0 1 670 400 Z"/>
+      <path class="jet" d="M 200 200 A 360 360 0 0 0 920 200 Z"/>
+      <path class="jet" d="M 450 400 A 360 360 0 0 1 1170 400 Z"/>
+      <path class="jet" d="M 700 200 A 360 360 0 0 0 1420 200 Z"/>
+      <g clip-path="url(#cB)">
+      <path class="jet-dedans" d="M -300 200 A 360 360 0 0 0 420 200 Z"/>
+      <path class="jet-dedans" d="M -50 400 A 360 360 0 0 1 670 400 Z"/>
+      <path class="jet-dedans" d="M 200 200 A 360 360 0 0 0 920 200 Z"/>
+      <path class="jet-dedans" d="M 450 400 A 360 360 0 0 1 1170 400 Z"/>
+      <path class="jet-dedans" d="M 700 200 A 360 360 0 0 0 1420 200 Z"/>
+      </g>
+      <rect class="contour" x="60" y="200" width="1000" height="200" rx="6"/>
+      <circle class="tete" cx="60" cy="200" r="13"/>
+      <circle class="tete" cx="310" cy="400" r="13"/>
+      <circle class="tete" cx="560" cy="200" r="13"/>
+      <circle class="tete" cx="810" cy="400" r="13"/>
+      <circle class="tete" cx="1060" cy="200" r="13"/>
+      </svg>    </div>
+  </div>
+
+  <div class="planche">
+    <div class="verdict">
+      <span class="gros">C</span>
+      <span class="quoi"><b>3 tuyères</b> — le même quinconce, buse 18-VAN,
+        portée 5,40 m.</span>
+    </div>
+    <p class="sous">Trois têtes pour dix mètres, écart de <b>5 m</b>.
+      <b class="rouge">Mais il tombe de l'eau jusqu'à 3,40 m au-delà du
+      couloir</b> — plus que sa largeur.</p>
+    <div class="cadre">
+<svg class="trace" viewBox="0 0 1120 600" role="img" aria-label="Pose C, quinconce 18-VAN">
+      <defs><clipPath id="cC"><rect x="60" y="200" width="1000" height="200" rx="6"/></clipPath></defs>
+      <rect class="dehors" x="0" y="0" width="1120" height="200"/>
+      <rect class="dehors" x="0" y="400" width="1120" height="200"/>
+      <rect class="sol" x="60" y="200" width="1000" height="200" rx="6"/>
+      <path class="jet" d="M -480 200 A 540 540 0 0 0 600 200 Z"/>
+      <path class="jet" d="M 20 400 A 540 540 0 0 1 1100 400 Z"/>
+      <path class="jet" d="M 520 200 A 540 540 0 0 0 1600 200 Z"/>
+      <g clip-path="url(#cC)">
+      <path class="jet-dedans" d="M -480 200 A 540 540 0 0 0 600 200 Z"/>
+      <path class="jet-dedans" d="M 20 400 A 540 540 0 0 1 1100 400 Z"/>
+      <path class="jet-dedans" d="M 520 200 A 540 540 0 0 0 1600 200 Z"/>
+      </g>
+      <rect class="contour" x="60" y="200" width="1000" height="200" rx="6"/>
+      <circle class="tete" cx="60" cy="200" r="13"/>
+      <circle class="tete" cx="560" cy="400" r="13"/>
+      <circle class="tete" cx="1060" cy="200" r="13"/>
+      </svg>    </div>
+    <div class="legende">
+      <span><span class="cercle"></span>une tuyère, en 180° vers le couloir</span>
+      <span><span class="plein"></span>ce qui arrose le couloir</span>
+      <span><span class="tirets"></span>ce qui passe par-dessus le bord d'en face</span>
+    </div>
+  </div>
+
+  <div class="planche">
+    <table>
+      <tr><th>Pose</th><th>Buse</th><th>Écart</th><th>Tuyères</th><th>Eau à côté</th></tr>
+      <tr><td>A — aujourd'hui</td><td>6-VAN</td><td>2,00 m</td><td class="n">12</td><td>—</td></tr>
+      <tr><td>B — quinconce</td><td>12-VAN</td><td>2,50 m</td><td class="n">5</td><td>1,60 m</td></tr>
+      <tr><td>C — quinconce</td><td>18-VAN</td><td>5,00 m</td><td class="n">3</td><td>3,40 m</td></tr>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qu'il faut que vous tranchiez</span>
+    <b>Jusqu'où acceptez-vous que ça arrose à côté ?</b> C'est la seule chose
+    qui sépare B de C, et je ne peux pas la deviner : elle dépend de ce qu'il y
+    a le long du couloir — un massif, qui sera content ; une terrasse ou la
+    clôture du voisin, qui le seront moins.
+    <br><br>
+    Trois réponses possibles, une seule suffit :
+    <b>« la portée ne dépasse pas la largeur »</b>,
+    <b>« elle peut dépasser d'une demi-largeur »</b>, ou
+    <b>« prends la plus grosse qui passe »</b>.
+  </div>
+
+  <div class="note">
+    <span class="t">Et pour les grands espaces</span>
+    Votre seconde phrase — <b>« pour les espaces plus grands, si les arroseurs
+    3500 le permettent, l'idée est de faire la même : un quinconce avec les
+    arroseurs de droite qui recouvrent jusqu'à ceux de gauche »</b> — suit
+    exactement la même arithmétique : c'est la <b>diagonale</b> entre deux
+    rangées qui doit tenir dans la portée, pas l'écart le long d'une rangée.
+    L'outil, lui, mesure aujourd'hui les deux séparément, et il pose donc trop
+    d'arroseurs.
+    <br><br>
+    Je le corrige dans la foulée, avec votre réponse ci-dessus : la règle est la
+    même, seule la tolérance change.
+  </div>
+
+  <div class="note">
+    <span class="t">Pourquoi des demi-cercles</span>
+    Une tête posée contre un bord est en <b>180°</b> — votre règle du 17 août :
+    « s'il est sur une ligne droite collée au mur, ça sera 180 ». Elle n'envoie
+    donc rien derrière elle : tout ce qui déborde passe par-dessus <b>le bord
+    d'en face</b>. C'est ce que montre le pointillé, et c'est de ce
+    dépassement-là qu'il s'agit ci-dessus.
+  </div>
+
+  <div class="note">
+    <span class="t">Les coins</span>
+    Vous aviez dit le 17 août que <b>« les derniers arroseurs doivent toujours
+    être dans les coins »</b>. En quinconce, les deux bouts de la chaîne tombent
+    bien dans deux coins ; les deux autres coins sont couverts par la portée
+    mais n'ont pas de tête. Si ça ne vous va pas, dites-le — c'est une
+    quatrième variante, et elle coûte deux tuyères de plus.
+  </div>
+</div>

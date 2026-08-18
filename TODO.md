@@ -25,6 +25,57 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## En attente d'une réponse — le quinconce
+
+### Sa règle du 18 août, et la planche 78
+
+*« Dans les couloirs, le but c'est de poser les tuyères en quinconce, car le
+but c'est que celle de gauche recouvre quasi 100 % jusqu'à celle de droite,
+donc le quinconce est optimal. »* Puis : *« pour les espaces plus grands, si
+les arroseurs 3500 le permettent, l'idée est de faire la même — un quinconce
+avec les arroseurs de droite qui recouvrent jusqu'à ceux de gauche. »*
+
+**Ce que l'outil fait de travers aujourd'hui.** `pointsDeLaPose` ne décale que
+les rangées INTÉRIEURES (`bordRangee` exclu) : un couloir n'a que deux rangées,
+toutes deux en bord, donc **aucun quinconce** — c'est la grille alignée qu'il a
+vue à l'écran. Et surtout, `poser` mesure l'écart le long d'une rangée ET
+l'écart entre rangées **séparément**, alors que ce qui compte en quinconce est
+la **diagonale** : √(pas² + largeur²) ≤ portée. D'où beaucoup trop d'arroseurs.
+
+**Ce que ça change, sur son couloir de 10 × 2 m** (`docs/maquettes/78`) :
+
+| Pose | Buse | Écart | Tuyères | Eau à côté |
+|---|---|---|---|---|
+| aujourd'hui, aligné | 6-VAN (1,80 m) | 2,00 m | **12** | — |
+| quinconce | 12-VAN (3,60 m) | 2,50 m | **5** | 1,60 m |
+| quinconce | 18-VAN (5,40 m) | 5,00 m | **3** | 3,40 m |
+
+**Pourquoi on attend au lieu de coder.** Ce n'est pas un choix d'affichage :
+c'est ce qu'il commande chez son fournisseur, et l'écart va de 12 pièces à 3.
+La géométrie du quinconce se calcule, mais **la tolérance ne se devine pas** :
+plus la buse porte loin, moins il faut de têtes, et plus il en tombe à côté —
+sur un massif, une terrasse ou chez le voisin. L'outil ne sait pas ce qu'il y a
+le long du couloir.
+
+**La question posée, en une phrase :** jusqu'où accepte-t-il que ça arrose à
+côté — la portée ne dépasse pas la largeur, elle dépasse d'une demi-largeur, ou
+la plus grosse buse qui passe ?
+
+**Un second point, mineur, à confirmer avec :** sa règle du 17 août veut les
+derniers arroseurs dans les coins. En quinconce, les deux bouts de la chaîne
+tombent dans deux coins ; les deux autres sont couverts par la portée mais sans
+tête. S'il les veut équipés, c'est deux tuyères de plus.
+
+**Et un défaut du DESSIN, trouvé sur la capture et pas autrement** (§5) : la
+première version de la planche traçait des disques ENTIERS. Une tête contre un
+bord est en 180° — sa règle — et n'envoie rien derrière elle : la planche
+montrait de l'eau là où il n'en tombe pas, et faisait paraître le quinconce
+bien pire qu'il n'est. Le sens de balayage de l'arc SVG était faux par-dessus
+le marché (l'axe y descend). Deux erreurs invisibles dans le code, évidentes
+sur l'image.
+
+---
+
 ## À surveiller — non reproduit
 
 ### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
