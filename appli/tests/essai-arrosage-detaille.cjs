@@ -75,7 +75,11 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // 6,1 mm/h), ne partagent plus une vanne. Sa règle « ça ne se mélange
   // jamais », appliquée à la lettre — le plan les coloriait de la même
   // couleur, c'est ainsi que le défaut s'est vu.
-  cas('le jardin de départ donne 7 secteurs', secteurs === 7, 'lu : ' + secteurs);
+  // 5 depuis SON CROQUIS DU 18 AOÛT sur le quinconce : le damier retire une
+  // tête sur deux là où il couvre encore (vérifié, pas supposé). Moins de
+  // têtes, moins de débit, moins de vannes — c'est tout l'intérêt de sa règle,
+  // et il se lit ici.
+  cas('le jardin de départ donne 5 secteurs', secteurs === 5, 'lu : ' + secteurs);
 
   // **UN SECTEUR, UNE PLUVIOMÉTRIE — sa règle du 17 août, « ça ne se mélange
   // jamais ».** Une vanne ouvre tout son secteur pour la MÊME durée : deux
@@ -129,26 +133,44 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('la pose est annoncée (carré ou quinconce)',
       /en quinconce|en carré/.test(resume), resume.slice(0, 90));
 
-  // **Le quinconce retire un arroseur, il ne le déplace pas.** Signalé le
-  // 17 août : le plan mettait un arroseur en trop (repérable sur une capture),
-  // parce que la rangée décalée gardait TOUS ses points au lieu d'en perdre un
-  // — l'ancien calcul aurait donné 12 têtes sur cette pelouse, la règle en
-  // demande 11.
-  const zone0 = await page.locator('.zone-res').first().innerText();
-  const combien = zone0.match(/^(\d+)\s/);
-  cas('le quinconce compte UN arroseur de moins que la grille carrée',
-      combien && Number(combien[1]) === 11, zone0.slice(0, 90));
-  // Le plan a été retiré de l'écran le 17 août sur sa demande. L'invariant qui
-  // comptait, lui, reste : la liste de points et le nombre annoncé sont UNE
-  // SEULE chose. C'est leur divergence qui avait produit l'arroseur en trop.
-  const pointsZone0 = await page.evaluate(() => {
+  // ── LE QUINCONCE COÛTE MOINS CHER QUE LA GRILLE, ET IL COUVRE ───────────
+  //
+  // **Ce contrôle visait le nombre 11, et il est devenu faux le 18 août** —
+  // le jour où son croquis a montré ce qu'est vraiment un quinconce : un
+  // couloir à 14 arroseurs alignés se pose à **7**, une tête sur deux en
+  // alternant les bords. L'ancienne règle ne décalait que les rangées
+  // intérieures et n'économisait qu'un point par rangée décalée.
+  //
+  // **Un nombre écrit en dur ne dit pas ce qu'il garde.** La règle, elle, ne
+  // bouge pas et se dit en deux temps : le quinconce pose **strictement
+  // moins** de têtes que la grille alignée, et il **couvre quand même**. La
+  // seconde moitié est la plus importante : sans elle, « moins d'arroseurs »
+  // se satisferait d'un jardin à sec.
+  const quinc = await page.evaluate(() => {
     const z = etat.zones.filter(x => TYPES[x.type].forme === 'surface')[0];
     const p = poser(z);
-    return { nombre: p.nombre, points: p.points.length };
+    const L = Number(z.L), l = Number(z.l);
+    const alignes = pointsDeLaPose(p.nx, p.ny, p.ecartX, p.ecartY, false);
+    return {
+      nombre: p.nombre, points: p.points.length, quinconce: p.quinconce,
+      alignes: alignes.length, portee: p.m.portee,
+      couvre: couvreTout(p.points, p.m.portee, L, l),
+    };
   });
+  cas('la pelouse est bien posée en quinconce', quinc.quinconce === true,
+      JSON.stringify(quinc));
+  cas('le quinconce pose STRICTEMENT moins de têtes que la grille alignée',
+      quinc.quinconce && quinc.nombre > 0 && quinc.nombre < quinc.alignes,
+      JSON.stringify(quinc));
+  // Et il arrose tout : c'est ce qui interdit d'économiser une tête de trop.
+  cas('et il arrose quand même toute la pelouse', quinc.couvre === true,
+      JSON.stringify(quinc));
+  // L'invariant du 17 août, qui n'a pas bougé : la liste de points et le
+  // nombre annoncé sont UNE SEULE chose. C'est leur divergence qui avait
+  // produit l'arroseur en trop, repéré sur une capture et par aucun test.
   cas('le nombre annoncé est EXACTEMENT la liste de points',
-      pointsZone0.points === pointsZone0.nombre && pointsZone0.nombre === 11,
-      JSON.stringify(pointsZone0));
+      quinc.points === quinc.nombre && quinc.nombre > 0,
+      JSON.stringify(quinc));
 
   // **LA NOURRICE — LES DEUX CAS, sur un jardin CHOISI et non sur l'exemple.**
   // Ce cas a rougi deux fois de suite en une soirée, chaque fois parce qu'une
@@ -166,24 +188,45 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
     const petit = { voies: decouper().secteurs.length,
                     texte: document.getElementById('nourrice').innerText };
     // Et un jardin trop grand pour ses six fiches : l'écran doit le DIRE.
-    etat.zones = [];
-    for (let i = 1; i <= 8; i++)
-      etat.zones.push({ id:i, nom:'Zone '+i, type:'gazon', L:'10', l:'8', materiel:'auto' });
-    recalculer(true);
-    const grand = { voies: decouper().secteurs.length,
-                    texte: document.getElementById('nourrice').innerText };
+    //
+    // **On GROSSIT le jardin jusqu'à dépasser six voies au lieu d'écrire un
+    // nombre de zones en dur.** Huit zones suffisaient jusqu'au 18 août ; le
+    // quinconce de son croquis a fait tomber le débit, et huit zones ne font
+    // plus que six voies — le contrôle éprouvait alors le cas d'À CÔTÉ, en
+    // vert, sans que rien ne le dise. C'est le piège du 15 août dans sa
+    // version « cas jamais atteint », et il s'évite en visant la CONDITION.
+    let grand = null;
+    for (let n = 8; n <= 40; n += 2){
+      etat.zones = [];
+      for (let i = 1; i <= n; i++)
+        etat.zones.push({ id:i, nom:'Zone '+i, type:'gazon', L:'10', l:'8', materiel:'auto' });
+      recalculer(true);
+      const v = decouper().secteurs.length;
+      if (v > 6){ grand = { zones:n, voies:v, texte: document.getElementById('nourrice').innerText }; break; }
+    }
+    if (!grand) grand = { zones:0, voies:0, texte:'' };   // le cas n'a pas été atteint
     etat.zones = avant; recalculer(true);
     return { petit: petit, grand: grand };
   });
   await page.waitForTimeout(120);
   cas('le petit jardin tient bien dans ses fiches (≤ 6 voies)',
       fiches.petit.voies >= 1 && fiches.petit.voies <= 6, JSON.stringify(fiches.petit.voies));
+  // **Ce contrôle exigeait le mot « Clarinette », et il est devenu faux le
+  // 18 août** : le quinconce a fait tomber ce jardin à deux voies, et sa fiche
+  // 2 voies se monte sans clarinette — un té, deux coudes. Le mot n'était
+  // qu'un indice de « c'est bien une vraie fiche » ; la RÈGLE, elle, est que
+  // sa fiche REMPLACE les lignes génériques au lieu de s'y ajouter.
   cas('alors la fiche servie est la SIENNE, pas une composée',
-      /votre fiche/i.test(fiches.petit.texte) && /Clarinette/.test(fiches.petit.texte),
-      fiches.petit.texte.slice(0, 120));
+      /votre fiche/i.test(fiches.petit.texte) &&
+      !/Électrovannes 24 V|Regards de vannes/.test(fiches.petit.texte),
+      fiches.petit.texte.slice(0, 160));
   cas('et sa modification goutte-a-goutte y est appliquee',
       /100 DV 1" FF/.test(fiches.petit.texte) && /Regulateur|Régulateur/.test(fiches.petit.texte),
       fiches.petit.texte.slice(0, 260));
+  // Le cas doit avoir été ATTEINT : sans cela le contrôle suivant ne mesure rien.
+  cas('un jardin assez grand pour dépasser six voies a bien été construit',
+      fiches.grand.zones > 0,
+      'aucun jardin jusqu\'à 40 zones ne dépasse six voies — le contrôle suivant n\'éprouve rien');
   cas('le grand jardin depasse bien ses six fiches',
       fiches.grand.voies > 6, 'voies : ' + fiches.grand.voies);
   cas('et alors le manque est ANNONCE, jamais comble par une nourrice inventee',
@@ -247,6 +290,19 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // second calcul à côté, qui finirait par diverger (§3, déjà payé sur le
   // quinconce).
   const reseaux = await page.evaluate(() => {
+    // **ON AGRANDIT LA PELOUSE JUSQU'À CE QU'UNE VANNE NE SUFFISE PLUS.**
+    // Le jardin d'exemple coupait en plusieurs réseaux jusqu'au 18 août ; le
+    // quinconce de son croquis a fait tomber le débit, et chaque zone tient
+    // désormais sur une seule vanne. Le contrôle passait alors à côté de ce
+    // qu'il garde — la coupe d'une zone entre plusieurs vannes — sans que rien
+    // ne le dise. On vise donc la CONDITION, pas une taille écrite en dur.
+    const avant = JSON.parse(JSON.stringify(etat.zones));
+    let atteint = 0;
+    for (let cote = 20; cote <= 60; cote += 5){
+      etat.zones = [{ id:1, nom:'Grande pelouse', type:'gazon',
+                      L:String(cote), l:String(Math.round(cote*0.7)), materiel:'auto' }];
+      if (decouper().secteurs.length >= 3){ atteint = cote; break; }
+    }
     const d = decouper();
     const surfaces = etat.zones.filter(z => TYPES[z.type].forme === 'surface');
     let points = 0, sansReseau = 0, contigus = 0, coupes = 0;
@@ -267,20 +323,30 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
         precedent = i;
       });
     });
+    etat.zones = avant;
     return { points, sansReseau, retoursEnArriere: coupes, changements: contigus,
-             limite: d.limite,
+             atteint: atteint, limite: d.limite,
              debitsCalcules: Object.keys(parSecteur).map(k => +parSecteur[k].toFixed(3)),
              debitsAnnonces: d.secteurs.map(s => +s.debit.toFixed(3)) };
   });
   // Le cas qui empêche de mesurer zéro : sans arroseurs, tout le reste serait
   // vert sans rien prouver.
-  cas('le jardin d\'exemple a bien des arroseurs à répartir',
-      reseaux.points >= 10, 'points : ' + reseaux.points);
+  // Le seuil était de 10 arroseurs : il visait le jardin d'exemple d'alors.
+  // Ce qu'il empêche n'a pas changé — mesurer une répartition sur zéro tête —
+  // et la pelouse est désormais construite pour tenir sur PLUSIEURS vannes,
+  // ce que le contrôle d'à côté vérifie. Deux têtes suffisent donc à prouver
+  // qu'il y a de la matière ; en exiger dix redeviendrait un nombre en dur.
+  cas('la pelouse d\'épreuve a bien des arroseurs à répartir',
+      reseaux.points >= 2, 'points : ' + reseaux.points);
   cas('chaque arroseur sait sur quelle vanne il est',
       reseaux.sansReseau === 0, 'orphelins : ' + reseaux.sansReseau);
   cas('une vanne dessert une bande d\'un seul tenant (jamais un arroseur sur deux)',
       reseaux.retoursEnArriere === 0, 'retours en arrière : ' + reseaux.retoursEnArriere);
-  cas('le jardin d\'exemple se coupe bien en plusieurs réseaux',
+  // Le cas doit avoir été atteint, sinon rien de ce qui suit n'a de sens.
+  cas('une pelouse assez grande pour tenir sur PLUSIEURS vannes a été construite',
+      reseaux.atteint > 0,
+      'aucune pelouse jusqu\'à 60 m ne demande trois vannes — le contrôle suivant n\'éprouve rien');
+  cas('une zone trop grande se coupe bien en plusieurs réseaux',
       reseaux.changements >= 2, 'changements de réseau : ' + reseaux.changements);
   // **Le débit ANNONCÉ pour un secteur est celui de ses arroseurs réels.** Une
   // version antérieure divisait le total en parts égales : l'écran annonçait
@@ -357,7 +423,14 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('la liste porte des quantités',
       /Électrovanne/.test(liste) && /(Tuyères|Turbines)/.test(liste), liste.slice(0, 120));
   cas('aucun prix nulle part sur la page', !/€|\bEUR\b/.test(await page.locator('body').innerText()));
-  cas('le disconnecteur est dans la liste', /Disconnecteur/.test(liste));
+  // **LE DISCONNECTEUR NE DOIT PLUS Y ÊTRE — sa décision du 18 août :** *« tu
+  // peux le supprimer à tout jamais, je n'en mets jamais. »* Ce contrôle
+  // exigeait exactement l'inverse jusqu'à ce jour-là. Il est retourné plutôt
+  // que supprimé : sans lui, la pièce reviendrait au premier « il en faut un,
+  // c'est obligatoire sur l'eau potable » — un raisonnement juste en général
+  // et faux pour lui, et personne ne saurait que la question a été tranchée.
+  cas('le disconnecteur n\'est plus dans la liste', !/Disconnecteur/.test(liste),
+      (liste.match(/[^\n]*Disconnecteur[^\n]*/) || [''])[0]);
 
   // ── LES TUYÈRES SONT POUR LES PETITS ESPACES — sa règle du 17 août ───────
   // « Inférieur à 3,50 m, 4 m grand max. Sinon on passe en 3504 ou plus gros.
@@ -437,10 +510,21 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
     const q = (re) => l.filter(x => re.test(x.nom)).reduce((s, x) => s + x.q, 0);
     const corpsTurb = l.filter(x => /^Turbine /.test(x.nom))[0];
     const corpsTuy  = l.filter(x => /^Tuyère /.test(x.nom))[0];
+    // **CE CONTRÔLE LISAIT UNE ÉTIQUETTE, IL LIT DÉSORMAIS LA QUANTITÉ.**
+    // Il comptait « SBE 075 (haut » et « (bas, sur la ligne) » — des mentions
+    // que le patron a fait retirer le 18 août (*« ce sont des données pour toi
+    // [...] l'utilisateur n'a pas besoin de ces infos-là »*), et les deux
+    // emplois d'une même référence se sont fondus en une ligne. Un contrôle
+    // accroché à un libellé meurt au premier changement de libellé : celui-ci
+    // vérifie maintenant la RÈGLE, en totaux par diamètre.
+    //
+    // La règle, inchangée : un SBE en haut au diamètre du corps de chaque
+    // famille, plus un SBE 3/4" en bas par arroseur, toutes familles
+    // confondues. Le 3/4" porte donc les deux emplois quand le corps est en
+    // 3/4" — c'est précisément le cas de ce jardin d'épreuve.
     return { nTurb:n[0], nTuy:n[1],
              corpsTurb: corpsTurb && corpsTurb.q, corpsTuy: corpsTuy && corpsTuy.q,
-             sbe34haut: q(/SBE 075 \(haut/), sbe12haut: q(/SBE 050 \(haut/),
-             sbeBas: q(/\(bas, sur la ligne\)/) };
+             sbe34: q(/SBE 075/), sbe12: q(/SBE 050/) };
   });
   // Le cas qui empêche de mesurer zéro : sans deux familles réellement posées,
   // tout ce qui suit vaudrait 0 === 0, en vert, sans rien prouver.
@@ -449,12 +533,14 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('chaque famille reçoit le corps de SA série, pas celui de l\'autre',
       familles.corpsTurb === familles.nTurb && familles.corpsTuy === familles.nTuy,
       JSON.stringify(familles));
-  cas('et le SBE du haut suit le diamètre de chaque corps (3/4 et 1/2)',
-      familles.sbe34haut === familles.nTurb && familles.sbe12haut === familles.nTuy,
+  // Le SBE du haut suit le diamètre de CHAQUE corps : 1/2" sous les tuyères.
+  cas('le SBE en 1/2" ne sert qu\'aux corps de tuyère',
+      familles.sbe12 === familles.nTuy, JSON.stringify(familles));
+  // Et le 3/4" porte les deux emplois : le haut des turbines, plus le bas de
+  // TOUS les arroseurs — ce raccord-là ne dépend pas du corps.
+  cas('le SBE en 3/4" porte le haut des turbines ET le bas de tous les arroseurs',
+      familles.sbe34 === familles.nTurb + familles.nTurb + familles.nTuy,
       JSON.stringify(familles));
-  // Le SBE du BAS, lui, ne dépend pas du corps : toujours 3/4", un par arroseur.
-  cas('le SBE du bas reste un par arroseur, toutes familles confondues',
-      familles.sbeBas === familles.nTurb + familles.nTuy, JSON.stringify(familles));
   // Et la convention de référence qui apparie buse et corps de turbine doit
   // tenir pour TOUTES les buses posables — sans quoi un corps manquerait en
   // silence dans la liste, et le chantier s'arrêterait à la pose.

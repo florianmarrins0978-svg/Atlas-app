@@ -45,7 +45,7 @@ export type { RefusPassage };
  *
  * La copie n'est pas une commodité : c'est ce qui garantit qu'un rapport parti
  * chez un client ne changera plus jamais quand le modèle bougera (l'invariant
- * du 16 août). Le récit est dans la migration `0054`.
+ * du 16 août). Le récit est dans la migration `0055`.
  *
  * **Refuse si le modèle est vide**, et le dit : ouvrir une fiche sans une seule
  * ligne à cocher donnerait un écran blanc dont il ne saurait pas quoi faire.
@@ -331,7 +331,7 @@ export async function figerPassage(
         envoyeLe: maintenant,
         empreinte,
         jeton,
-        // Le nom part avec le rapport : voir la migration 0054. Le relire à la
+        // Le nom part avec le rapport : voir la migration 0055. Le relire à la
         // lecture le ferait changer sous les yeux du client.
         clientNomFige: passage.clientNom,
         updatedAt: maintenant,
@@ -448,7 +448,7 @@ export type RapportPublic = {
  * **Contourne `withEntreprise` à dessein**, comme le devis : le client n'a pas
  * de session, donc pas de contexte d'entreprise. Ce n'est pas un
  * contournement de l'isolation mais une autre porte, gardée par la politique
- * `passages_entretien_lecture_par_jeton` (migration 0054) : sans le jeton
+ * `passages_entretien_lecture_par_jeton` (migration 0055) : sans le jeton
  * exact, la requête ne rend rien. Le filtre n'est pas dans ce code, il est
  * dans la base — et c'est ce qui le rend sûr.
  *

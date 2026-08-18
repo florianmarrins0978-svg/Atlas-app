@@ -243,7 +243,7 @@ export const passagesEntretien = pgTable(
     /** Le temps passé, à la molette. NULL tant qu'il ne l'a pas posé. */
     minutes: integer("minutes"),
     observations: text("observations"),
-    /** Recopié à l'envoi : un rapport parti ne se renomme plus (migration 0054). */
+    /** Recopié à l'envoi : un rapport parti ne se renomme plus (migration 0055). */
     clientNomFige: text("client_nom"),
     envoyeLe: timestamp("envoye_le", { withTimezone: true }),
     empreinte: char("empreinte", { length: 64 }),
@@ -263,7 +263,7 @@ export const passagesEntretien = pgTable(
  *
  * C'est ce qui garantit qu'un rapport déjà envoyé ne change plus jamais quand
  * le modèle bouge (l'invariant du 16 août). Le récit est dans la migration
- * `0054`.
+ * `0055`.
  */
 export const lignesPassage = pgTable(
   "lignes_passage",
@@ -1114,6 +1114,14 @@ export const envoisDevis = pgTable(
     expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     datesProposees: date("dates_proposees").array().notNull(),
+    /**
+     * Le client peut-il proposer une autre date que celles offertes ?
+     *
+     * Décidé par le patron **avant l'envoi** (17 août 2026), puis FIGÉ ici :
+     * l'écran du client doit dire demain ce qu'il disait aujourd'hui. Vrai par
+     * défaut — c'est le comportement qu'ont connu les envois déjà partis.
+     */
+    autreDateAutorisee: boolean("autre_date_autorisee").notNull().default(true),
 
 
     empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),

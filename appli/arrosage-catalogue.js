@@ -642,7 +642,11 @@ var CATALOGUE = {
   piecesReseau: {
     'te-taraude-25-34-25': { nom:'Té 90° taraudé 25×3/4"×25', marque:'Dura' },
     'coude-taraude-25-34': { nom:'Coude 90° taraudé 25×3/4"', marque:'Dura' },
-    'te-25-25-25':         { nom:'Té 90° 25×25×25 (jonction, non taraudé)', marque:'Dura' },
+    // Le « (jonction, non taraudé) » qui suivait ce nom a été retiré le 18 août
+    // sur sa consigne : c'est l'emploi de la pièce, pas sa désignation, et il
+    // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
+    // — un taraudé porte son filetage dans son nom (25×3/4"×25).
+    'te-25-25-25':         { nom:'Té 90° 25×25×25', marque:'Dura' },
     'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' }
   },
 
@@ -668,6 +672,10 @@ var CATALOGUE = {
     // « crosse » générique retirée le 17 août : remplacée par les coudes SBE
     // réels, choisis selon le taraudage du corps (voir CATALOGUE.coudes).
     { ref:'regard', nom:'Regard de vannes', regle:'parTroisSecteurs', source:'provisoire' },
+    // Le disconnecteur a été retiré de la liste le 18 août sur sa décision
+    // (« je n'en mets jamais »). L'entrée reste ici, inutilisée : le jour où il
+    // en poserait un, elle est prête, et sa suppression pure et simple ferait
+    // reperdre la référence.
     { ref:'disconnecteur', nom:'Disconnecteur (obligatoire sur l\'eau potable)', regle:'fixe', source:'provisoire' },
     { ref:'reducteur', nom:'Réducteur de pression', regle:'fixe', source:'provisoire' },
     { ref:'sonde-pluie', nom:'Sonde de pluie', regle:'option', source:'provisoire' },

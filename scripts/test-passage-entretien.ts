@@ -555,7 +555,7 @@ async function main() {
   });
 
   await cas("sans le jeton exact, la page publique ne rend RIEN", async () => {
-    // C'est la politique de la base qui filtre, pas ce code (migration 0054).
+    // C'est la politique de la base qui filtre, pas ce code (migration 0055).
     // Le cas doit donc savoir échouer si la politique disparaissait.
     const ctx = await contexte("jeton-faux");
     await petitModele(ctx);

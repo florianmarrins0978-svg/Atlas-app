@@ -10365,13 +10365,30 @@ C'est la raison qui l'avait déjà fait extraire de sa page le 10 août.
 |---|---|---|
 | Route | `/chantiers/nouveau` | `/chantiers/[id]/coordonnees` |
 | Action | `creerChantierAction` | `reprendreChantierAction` |
-| Surtitre | « Nouveau » | « Les coordonnées » |
+| Titre | « Fiche client » | « Fiche client » |
 | Bouton | « Créer le chantier » | « Enregistrer » |
 
-**Les deux mots changent parce qu'ils mentiraient**, et pour aucune autre raison.
-« Nouveau » au-dessus d'un chantier ouvert trois jours plus tôt fait douter
-d'avoir cliqué au bon endroit ; « Créer le chantier » annoncerait une action que
-l'écran ne fait pas, et il chercherait ensuite pourquoi il a deux chantiers.
+**Il ne reste qu'UN mot qui change**, et c'est le bouton : « Créer le chantier »
+annoncerait une action que l'écran ne fait pas, et le patron chercherait ensuite
+pourquoi il a deux chantiers.
+
+**Le surtitre a disparu le 16 août 2026**, sur sa demande — *« Enlève nouveau un
+chantier et remplace par fiche client »*, capture à l'appui. Il portait
+« Nouveau » à la création, et « Les coordonnées » en reprise **pour la seule
+raison que « nouveau » aurait été faux** au-dessus d'un chantier ouvert trois
+jours plus tôt. Le titre ne disant plus « nouveau », ce contre-mot n'a plus rien
+à contrer : « Fiche client » est vrai des deux côtés. Lui garder une ligne
+au-dessus aurait obligé à inventer un mot qu'il n'a pas demandé (`CLAUDE.md` §4).
+
+*Ce que le contrôle garde encore, et qui suffit :*
+`test-coordonnees-depuis-accueil-e2e.ts` refuse que « NOUVEAU » reparaisse sur un
+chantier qui existe — la garde tient, quel que soit l'endroit d'où le mot
+reviendrait.
+
+*Détail vu à l'écran, pas dans le code :* le micro de la dictée était aligné par
+le haut (`items-start`), ce qui le posait au-dessus d'un titre devenu seul sur sa
+ligne. Passé en `items-center` — les deux centres tombent désormais sur le même
+pixel.
 
 ### Le client est RETROUVÉ, jamais recréé
 
@@ -10870,6 +10887,63 @@ reprise, un texte qui déborde. Aucun ne regarde un identifiant d'écran : ils
 interrogent le calcul et le tracé, et survivront au prochain remaniement de la
 page — il en a déjà demandé deux.
 
+## §126 quater. La liste dit ce qu'on achète, pas pourquoi
+
+**Sa consigne du 18 août au soir**, devant la capture du casier « Le réseau
+enterré » : *« Départ milieu de ligne, fin de ligne et jonction, ce sont des
+données pour toi, pour que tu comprennes les endroits où doit y avoir des tés
+et les autres où c'est des tés taraudés. Mais pour l'utilisateur, il n'a pas
+besoin de ces infos-là. Donc tu peux les supprimer, mais tu les gardes pour
+toi. »*
+
+**La règle qui en sort :** une ligne de la liste porte la **désignation du
+catalogue**, et rien d'autre. Il commande sur cette désignation ; ce qui s'y
+ajoute est une invitation à chercher chez son fournisseur une pièce qui
+n'existe pas sous ce nom. Le raisonnement, lui, reste en commentaire dans
+`listeMateriel` — le supprimer serait le reperdre à la prochaine conversation.
+
+| Retiré | Ce que c'était |
+|---|---|
+| `(départ/milieu de ligne)` | l'emploi du té taraudé |
+| `(fin de ligne)` | l'emploi du coude taraudé |
+| `(jonction, non taraudé)` | l'emploi du té 25×25×25 — et c'était dans le CATALOGUE |
+| `(~2 m par arroseur)` | la règle du compte du PEBD Ø16 |
+| `(haut, au corps)` / `(bas, sur la ligne)` | les deux emplois du coude SBE |
+
+**Les références ne se confondent pas pour autant** : le té de ligne est taraudé
+(25×3/4"×25), la jonction ne l'est pas (25×25×25), le coude de fin est un
+coude. Trois produits différents, pas trois emplois d'un même.
+
+### Sauf les SBE — et c'est pourquoi ils fusionnent
+
+Les deux coudes SBE, eux, **sont** deux emplois d'un même produit dès que le
+corps est en 3/4" (les grosses turbines : PGP, I-20). Retirer les mentions sans
+plus aurait donné **deux lignes identiques**, ce qui se lit comme un défaut de
+comptage. Les emplois s'additionnent donc par **référence** : un produit, une
+ligne, une quantité. C'est aussi ce qu'il commande.
+
+### Ce que cette consigne a coûté aux contrôles, et ce qu'elle leur apprend
+
+**Trois contrôles lisaient ces étiquettes**, sur deux suites — deux dans
+`essai-arrosage-detaille.cjs` (« le SBE du haut suit le diamètre de chaque
+corps », « le SBE du bas reste un par arroseur »), un dans `e2e.js`. Ils sont
+devenus rouges sur du code juste.
+
+Ils vérifient maintenant la **règle en quantités** : un SBE 1/2" par corps de
+tuyère, un SBE 3/4" par corps de turbine plus un par arroseur, deux SBE par
+arroseur au total. **Un contrôle accroché à un libellé meurt au premier
+changement de libellé** — la même leçon que le 17 août, quand la section 3 a
+disparu de l'écran et que ses contrôles ont dû être reportés sur `decouper()`.
+
+**Et une garde nouvelle refuse de conclure sur un cas jamais rencontré.** Le
+contrôle « une référence n'apparaît qu'une fois » ne pouvait pas rougir : les
+trois jardins d'exemple posent tous des corps en 1/2" (3504, SRM, PGJ), où les
+deux SBE sont deux références distinctes. La suite **provoque** donc le cas —
+une pelouse de 40 × 30 en Hunter, qui pose une PGP Ultra en 3/4" — et un
+contrôle vérifie que ce corps a bien été posé, faute de quoi elle le dit au lieu
+de rendre un vert vide. C'est le piège du 15 août dans sa version « jamais
+atteint » : mesurer zéro et mesurer rien se ressemblent trop.
+
 ---
 
 ## 131. La construction qui a échoué n'était jamais retentée — le dernier trou de la version lente
@@ -10935,7 +11009,136 @@ qui répond, avec un faux `npm` en tête de `PATH` pour ne pas bâtir pour de vr
 Confronté au veilleur d'avant, il tombe sur le premier et le troisième — et le
 témoin, lui, reste vert : la différence porte bien sur ce qu'on a changé.
 
-## §127. La fiche de chantier : ce qui a été fait, un jour, chez quelqu'un
+---
+
+## §127. Le quinconce est un damier, et il se vérifie au lieu de se supposer
+
+**Son croquis du 18 août 2026**, deux couloirs superposés sur du papier
+quadrillé : le premier porte **14** arroseurs en deux rangées face à face, le
+second **7** — une tête sur deux, en alternant les bords, avec les arcs tracés
+en couleur pour montrer que chacune atteint bien la suivante en diagonale. Sa
+phrase : *« dans les couloirs, le but c'est de poser les tuyères en quinconce,
+car le but c'est que celle de gauche recouvre quasi 100 % jusqu'à celle de
+droite »*, et pour les grands espaces *« l'idée est de faire la même »*.
+
+**Ce que le code faisait, et pourquoi c'était invisible.** `pointsDeLaPose` ne
+décalait que les rangées **intérieures** d'un demi-écart, en gardant tout le
+pourtour. Un couloir n'ayant que deux rangées, toutes deux en bord, il n'y avait
+**aucun quinconce du tout** — la grille alignée, et ses 12 tuyères là où il en
+pose 7. Le drapeau `quinconce` valait pourtant `true` : l'écran l'annonçait, le
+dessin le démentait, et aucun contrôle ne regardait le dessin.
+
+**La règle, désormais :** on garde le point (i, j) quand **i + j est pair**. Sur
+deux rangées, c'est son alternance ; sur davantage, le quinconce triangulaire.
+
+### Ce qui rend la règle sûre : on mesure la couverture
+
+Retirer une tête sur deux **double la distance entre voisins d'une même
+rangée**. Si l'écart de départ était au maximum de sa tolérance du 17 août
+(1,20 × portée), le coin abandonné se retrouve à sec — vérifié, ce n'est pas une
+crainte théorique.
+
+`couvreTout(points, portée, L, l)` échantillonne le terrain au **dixième de la
+portée** et répond : tout point est-il à portée d'une tête ? `poser` s'en sert
+comme d'un garde-fou : il essaie le damier sur la grille la plus large, et
+**resserre tant que ce n'est pas couvert**, en allongeant du côté où l'écart est
+le plus grand. La boucle s'arrête d'elle-même — dès que le damier ne coûte plus
+moins que l'aligné, on garde l'aligné, qui couvre par construction.
+
+**Sur son couloir de 10 × 2 m, cette boucle tombe sur 7.** Exactement son
+croquis, par un chemin qui ne le connaissait pas.
+
+| Zone | Aligné | Quinconce |
+|---|---|---|
+| 10 × 2 (son couloir) | 12 | **7** |
+| 18 × 12 | 20 | **10** |
+| 22 × 14 | 20 | **10** |
+| 30 × 22 | 16 | **8** |
+
+### Ce que cela révise, et ce que cela a coûté aux contrôles
+
+**Sa règle du 17 août — « les derniers arroseurs toujours dans les coins » —
+vaut pour la pose ALIGNÉE.** Sur un damier, deux coins opposés portent un
+i + j impair et n'ont pas de tête. Ils restent arrosés (`couvreTout` l'exige) ;
+il l'a validé le 18 août : *« oui, ça me va »*.
+
+**Sept contrôles sont devenus rouges sur du code juste**, et aucun ne visait une
+règle — tous visaient un nombre ou un mot :
+
+| Ce qu'il regardait | Ce qu'il regarde maintenant |
+|---|---|
+| « le quinconce compte 11 arroseurs » | il en pose **strictement moins** que la grille alignée, **et il couvre** |
+| « le jardin donne 7 secteurs » | témoin, mis à jour à 5 avec sa raison |
+| « la fiche contient le mot Clarinette » | la fiche est la SIENNE (`source: 'patron'`) et **remplace** les lignes génériques |
+| « le débit lu vaut 0,58 m³/h » | le débit par table **diffère** de celui obtenu par division |
+| « 8 zones dépassent six voies » | on **grossit** le jardin jusqu'à dépasser six voies, et l'on dit si on n'y arrive pas |
+| « le jardin d'exemple se coupe en plusieurs réseaux » | on **agrandit** une pelouse jusqu'à ce qu'une vanne ne suffise plus |
+
+**La leçon, la troisième fois en deux jours :** un contrôle accroché à un
+nombre ou à un libellé meurt à la première règle métier qui change — et il meurt
+en accusant du code juste, ce qui coûte plus cher qu'un contrôle absent. Deux
+d'entre eux étaient pires : ils continuaient de passer **en éprouvant le cas
+d'à côté**, silencieusement. D'où la parade, appliquée partout ici : quand un
+contrôle a besoin d'un cas particulier, il le **construit en visant la
+condition**, et il **échoue s'il n'y arrive pas**.
+
+---
+
+## 132. « Il peut proposer une autre date » — un interrupteur avant l'envoi
+
+**Sa demande du 17 août 2026 :** *« pour le lien du planning qui part au client,
+il faut que l'utilisateur puisse choisir avant d'envoyer s'il autorise ou non le
+client à choisir une date si celles proposées ne lui conviennent pas »*.
+
+**Ce que l'application faisait jusque-là, et qu'il n'avait pas choisi.** La page
+publique offrait TOUJOURS un calendrier sous les dates proposées. Sur un
+chantier serré, une contre-proposition à six mois ne l'arrange pas — et le seul
+moyen de l'éviter était de n'envoyer aucune date, c'est-à-dire de perdre le
+parcours entier.
+
+### Où le choix se pose, et pourquoi là
+
+**Sous les dates, juste avant le bouton d'envoi.** C'est le dernier regard avant
+que le lien parte, et le seul endroit où les deux décisions se voient ensemble :
+quelles dates, et si le client peut en sortir. **La phrase récapitulative suit
+l'interrupteur** — « Le client choisira entre ces deux dates, et rien d'autre »
+—, sans quoi il enverrait sans savoir ce que son client va lire.
+
+### Ce qui est FIGÉ, et ce qui ne l'est pas
+
+Le choix est écrit dans l'envoi (`envois_devis.autre_date_autorisee`,
+migration 0055), **pas lu dans un réglage**. Même raison que les dates proposées
+et la fenêtre du client (migration 0027) : l'écran du client doit dire demain ce
+qu'il disait aujourd'hui. Un réglage relu à l'ouverture changerait après coup la
+promesse faite à quelqu'un qui a le lien ouvert.
+
+**Vrai par défaut**, à la colonne comme à l'écran. Les liens déjà partis
+continuent de se comporter comme leurs destinataires les ont reçus, et un patron
+qui n'y touche pas envoie ce qu'il a toujours envoyé.
+
+### La règle vit à UN endroit, et ce n'est pas l'écran
+
+**Cacher le calendrier ne suffit pas.** Cette page est publique : elle s'ouvre
+sans compte, et son formulaire se rejoue. `enregistrerReponse` refuse donc toute
+date hors des propositions quand l'envoi ne l'autorise pas
+(motif `autre_date_refusee`), et le message rendu au client lui dit quoi faire
+plutôt que de l'accuser : choisir une des dates, ou demander une correction.
+
+C'est la règle du dépôt — jamais de règle dupliquée entre l'affichage et la
+vérification (`CLAUDE.md` §3). Le contrôle correspondant poste une
+contre-proposition **sans passer par l'écran** : c'est le seul qui prouve que la
+porte est fermée pour de bon.
+
+### Ce que ça ne fait pas
+
+**Aucun réglage par défaut dans les Réglages.** Il choisit envoi par envoi, et
+c'est ce qu'il a demandé. Si l'habitude s'installe — toujours ouvert, ou
+toujours fermé —, un réglage « Devis & factures » pourra porter la position de
+départ ; il n'y a rien à décider tant qu'il ne l'a pas dit.
+
+---
+
+## §128. La fiche de chantier : ce qui a été fait, un jour, chez quelqu'un
 
 *Sa demande du 16 août 2026, capture d'une application concurrente à l'appui :
 « une fiche où ils cochent ce qu'ils ont fait ou non sur le chantier et ensuite
@@ -10995,7 +11198,7 @@ Une jointure vers `prestations_entretien` aurait été plus courte à écrire et
 fausse au premier retrait. Les lignes sont donc copiées à l'ouverture du
 passage — libellé **et** famille, parce qu'un renommage doit lui aussi rester
 sans effet sur le passé. Le nom du client suit la même règle : il est recopié
-**à l'envoi**, pas relu à la lecture (`client_nom`, migration 0054).
+**à l'envoi**, pas relu à la lecture (`client_nom`, migration 0055).
 
 ### Pas de signature — l'horodatage et l'empreinte à la place
 
@@ -11063,3 +11266,4 @@ client ouverte **dans un contexte sans session** — `test-fiche-chantier-e2e.ts
 qui prend ses captures en passant (`ATLAS_CAPTURES`). C'est là qu'on voit ce
 qu'aucune suite base ne peut voir : que l'écran appelle bien les règles, et que
 le client ne reçoit pas les dix-sept lignes qu'il n'a pas payées.
+

@@ -5740,17 +5740,17 @@
 #s50 .note li{margin-bottom:6px}
 
 
-/* 51 — Le plan d’arrosage */
+/* 51 — Le quinconce dans un couloir */
 #s51{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
-    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#2F4C78; --herbe:#dfe6d4;
   }
 @media (prefers-color-scheme: dark){
 #s51:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --herbe:#2a3226;
     }
 
   
@@ -5758,13 +5758,13 @@
 #s51[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
-    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --herbe:#2a3226;
   }
 #s51, #s51 *{box-sizing:border-box}
 #s51{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s51 .dedans{max-width:940px;margin:0 auto}
+#s51 .dedans{max-width:900px;margin:0 auto}
 #s51 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
 #s51 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
@@ -5772,90 +5772,48 @@
 #s51 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
 #s51 .dit b{color:var(--encre);font-weight:600}
-#s51 .etat{position:absolute;opacity:0;pointer-events:none}
-#s51 .reglage{margin:0 0 18px}
-#s51 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
-                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s51 .segments{display:flex;flex-wrap:wrap;gap:8px}
-#s51 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
-                  border:1px solid var(--trait);background:var(--papier);
-                  font-size:13.5px;cursor:pointer;color:var(--gris)}
-#s51 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
-#s51 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
-       border:1px solid var(--trait);padding:16px 15px 20px;
-       box-shadow:0 10px 34px rgba(28,28,26,.09)}
-#s51 .barre{display:flex;justify-content:space-between;align-items:baseline;
-         margin-bottom:12px}
-#s51 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
-             color:var(--or)}
-#s51 .barre .quand{font-size:11.5px;color:var(--gris)}
-#s51 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
-#s51 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
-#s51 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s51 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
-              color:var(--encre);margin-bottom:8px}
-#s51 .legende b{color:var(--encre);font-weight:600}
-#s51 .legende .cout{display:block;margin-top:12px;padding-top:12px;
-                 border-top:1px solid var(--trait)}
-#s51 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+#s51 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
+           padding:18px 16px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
+#s51 .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 4px;flex-wrap:wrap}
+#s51 .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
+#s51 .verdict .quoi{font-size:14px;color:var(--gris)}
+#s51 .verdict .quoi b{color:var(--encre);font-weight:600}
+#s51 .sous{font-size:13px;color:var(--gris);margin:0 0 12px}
+#s51 .sous b{color:var(--encre);font-weight:600}
+#s51 .cadre{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#s51 .trace{width:100%;min-width:430px;height:auto;display:block;margin:0}
+#s51 .trace .dehors{fill:var(--teinte)}
+#s51 .trace .sol{fill:var(--herbe)}
+#s51 .trace .contour{fill:none;stroke:var(--encre);stroke-width:3}
+#s51 .trace .jet{fill:var(--eau);fill-opacity:.10;stroke:var(--eau);stroke-width:2;
+              stroke-opacity:.4;stroke-dasharray:8 7}
+#s51 .trace .jet-dedans{fill:var(--eau);fill-opacity:.16;stroke:var(--eau);
+                     stroke-width:2;stroke-opacity:.55}
+#s51 .trace .tete{fill:var(--papier);stroke:var(--eau);stroke-width:6}
+#s51 .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
+           font-size:12.5px;color:var(--gris)}
+#s51 .legende span{display:inline-flex;align-items:center;gap:7px}
+#s51 .cercle{width:15px;height:15px;border-radius:50%;flex:none;
+          border:3px solid var(--eau)}
+#s51 .plein{width:15px;height:15px;border-radius:50%;flex:none;
+         background:var(--eau);opacity:.3}
+#s51 .tirets{width:20px;height:0;flex:none;border-top:2px dashed var(--eau);opacity:.6}
+#s51 table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 0}
+#s51 th,#s51 td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--trait);
+        vertical-align:top}
+#s51 th{font-weight:600;font-size:11.5px;letter-spacing:.09em;
+     text-transform:uppercase;color:var(--or)}
+#s51 td.n{font-family:Georgia,serif;font-size:19px;white-space:nowrap}
+#s51 .note{margin-top:8px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
 #s51 .note b{color:var(--encre);font-weight:600}
 #s51 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s51 .note ul{margin:8px 0 0;padding-left:19px}
-#s51 .note li{margin-bottom:6px}
-#s51 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
-       text-transform:uppercase;color:var(--or);display:flex;
-       justify-content:space-between;align-items:baseline}
-#s51 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
-#s51 .ea,#s51 .eb,#s51 .ec{display:none}
-#s51 #s51-e-a:checked ~ .dedans .ea,#s51 #s51-e-b:checked ~ .dedans .eb,#s51 #s51-e-c:checked ~ .dedans .ec{display:block}
-#s51 #s51-e-a:checked ~ .dedans label[for="s51-e-a"],#s51 #s51-e-b:checked ~ .dedans label[for="s51-e-b"],#s51 #s51-e-c:checked ~ .dedans label[for="s51-e-c"]{background:var(--pin);color:var(--papier);
-                                          border-color:var(--pin)}
-#s51 .fl{display:flex;align-items:center;gap:8px;min-height:52px;
-      border-bottom:1px solid var(--trait);padding:6px 2px}
-#s51 .fl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--gris)}
-#s51 .fl-q{flex:none;font-size:12px;color:var(--gris)}
-#s51 .fl-q input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
-              border:1px solid var(--trait);border-radius:8px;padding:7px 6px;
-              width:44px;text-align:center}
-#s51 .fl-d{flex:none;font-size:12.5px;color:var(--encre);font-variant-numeric:tabular-nums;
-        min-width:64px;text-align:right}
-#s51 .total{display:flex;justify-content:space-between;align-items:baseline;
-         margin-top:14px;padding-top:12px;border-top:1px solid var(--trait);font-size:13px}
-#s51 .total .gros{font-family:Georgia,serif;font-size:21px;color:var(--encre)}
-#s51 .verdict{margin-top:12px;padding:12px 13px;border-radius:12px;background:var(--teinte);
-           font-size:13px;line-height:1.6;color:var(--encre)}
-#s51 .verdict b{color:var(--alerte)}
-#s51 .robinet{border:1px solid var(--trait);border-radius:14px;padding:12px 13px;margin-bottom:12px}
-#s51 .robinet .q{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--or)}
-#s51 .robinet .geste{display:flex;align-items:center;gap:8px;margin:8px 0 6px;font-size:13.5px;color:var(--gris)}
-#s51 .robinet .geste input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
-                        border:1px solid var(--trait);border-radius:8px;padding:8px 6px;
-                        width:52px;text-align:center}
-#s51 .robinet .sort{font-size:13px;color:var(--encre)}
-#s51 .robinet .sort b{font-family:Georgia,serif;font-size:19px;font-weight:400}
-#s51 .zc{border-bottom:1px solid var(--trait);padding:11px 2px}
-#s51 .zc-nom{margin:0;font-size:15px;color:var(--encre);font-weight:600}
-#s51 .zc-mes{margin:2px 0 0;font-size:12.5px;color:var(--gris)}
-#s51 .zc-res{margin:4px 0 0;font-size:12.5px;color:var(--pin);line-height:1.5}
-#s51 .ajouter{display:block;margin-top:12px;text-align:center;padding:13px;
-           border-radius:999px;border:1px dashed var(--trait);color:var(--gris);font-size:13.5px}
-#s51 .plan{width:100%;height:auto;display:block;margin:6px 0 4px}
-#s51 .plan .gazon{fill:var(--teinte)}
-#s51 .plan .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
-#s51 .plan .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35;stroke-width:1}
-#s51 .plan .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
-#s51 .plan .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
-#s51 .plan .cote-g{text-anchor:end}
-#s51 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
-          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
-#s51 .recap{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-#s51 .recap span{font-size:12px;color:var(--encre);background:var(--teinte);
-              border-radius:999px;padding:6px 11px}
+#s51 .note + .note{margin-top:14px}
+#s51 .rouge{color:var(--alerte)}
 
 
-/* 52 — Le débit ne se partage pas */
+/* 52 — Le plan d’arrosage */
 #s52{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
@@ -5923,31 +5881,54 @@
        text-transform:uppercase;color:var(--or);display:flex;
        justify-content:space-between;align-items:baseline}
 #s52 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
-#s52 .compare{border:1px solid var(--trait);border-radius:14px;padding:13px;margin-bottom:14px}
-#s52 .compare .l{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;
-              color:var(--gris);margin:0 0 6px}
-#s52 .compare .l b{font-family:Georgia,serif;font-size:20px;font-weight:400;color:var(--encre)}
-#s52 .duo{height:10px;border-radius:999px;background:var(--teinte);overflow:hidden;margin-bottom:4px}
-#s52 .duo span{display:block;height:100%;background:var(--alerte)}
-#s52 .duo.ok span{background:var(--pin)}
-#s52 .compare .dit-le{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--encre)}
-#s52 .compare .dit-le b{color:var(--alerte)}
-#s52 .sec{padding:11px 2px;border-bottom:1px solid var(--trait)}
-#s52 .sec-t{margin:0 0 6px;font-size:14px;color:var(--encre);display:flex;align-items:baseline;gap:8px}
-#s52 .sec-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
-         border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
-#s52 .sec-part{font-size:11.5px;color:var(--gris)}
-#s52 .jauge{height:8px;border-radius:999px;background:var(--teinte);overflow:hidden}
-#s52 .jauge span{display:block;height:100%;background:var(--eau)}
-#s52 .sec-d{margin:5px 0 0;font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
-#s52 .sec-fam{display:inline-block;margin-right:8px;font-size:10.5px;letter-spacing:.08em;
-           text-transform:uppercase;color:var(--pin)}
-#s52 .cycle{margin-top:14px;padding:12px 13px;border-radius:12px;background:var(--teinte);
-         font-size:13px;line-height:1.6;color:var(--encre)}
-#s52 .cycle b{font-family:Georgia,serif;font-size:19px;font-weight:400}
+#s52 .ea,#s52 .eb,#s52 .ec{display:none}
+#s52 #s52-e-a:checked ~ .dedans .ea,#s52 #s52-e-b:checked ~ .dedans .eb,#s52 #s52-e-c:checked ~ .dedans .ec{display:block}
+#s52 #s52-e-a:checked ~ .dedans label[for="s52-e-a"],#s52 #s52-e-b:checked ~ .dedans label[for="s52-e-b"],#s52 #s52-e-c:checked ~ .dedans label[for="s52-e-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s52 .fl{display:flex;align-items:center;gap:8px;min-height:52px;
+      border-bottom:1px solid var(--trait);padding:6px 2px}
+#s52 .fl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--gris)}
+#s52 .fl-q{flex:none;font-size:12px;color:var(--gris)}
+#s52 .fl-q input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
+              border:1px solid var(--trait);border-radius:8px;padding:7px 6px;
+              width:44px;text-align:center}
+#s52 .fl-d{flex:none;font-size:12.5px;color:var(--encre);font-variant-numeric:tabular-nums;
+        min-width:64px;text-align:right}
+#s52 .total{display:flex;justify-content:space-between;align-items:baseline;
+         margin-top:14px;padding-top:12px;border-top:1px solid var(--trait);font-size:13px}
+#s52 .total .gros{font-family:Georgia,serif;font-size:21px;color:var(--encre)}
+#s52 .verdict{margin-top:12px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+           font-size:13px;line-height:1.6;color:var(--encre)}
+#s52 .verdict b{color:var(--alerte)}
+#s52 .robinet{border:1px solid var(--trait);border-radius:14px;padding:12px 13px;margin-bottom:12px}
+#s52 .robinet .q{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--or)}
+#s52 .robinet .geste{display:flex;align-items:center;gap:8px;margin:8px 0 6px;font-size:13.5px;color:var(--gris)}
+#s52 .robinet .geste input{font:inherit;font-size:15px;color:var(--encre);background:transparent;
+                        border:1px solid var(--trait);border-radius:8px;padding:8px 6px;
+                        width:52px;text-align:center}
+#s52 .robinet .sort{font-size:13px;color:var(--encre)}
+#s52 .robinet .sort b{font-family:Georgia,serif;font-size:19px;font-weight:400}
+#s52 .zc{border-bottom:1px solid var(--trait);padding:11px 2px}
+#s52 .zc-nom{margin:0;font-size:15px;color:var(--encre);font-weight:600}
+#s52 .zc-mes{margin:2px 0 0;font-size:12.5px;color:var(--gris)}
+#s52 .zc-res{margin:4px 0 0;font-size:12.5px;color:var(--pin);line-height:1.5}
+#s52 .ajouter{display:block;margin-top:12px;text-align:center;padding:13px;
+           border-radius:999px;border:1px dashed var(--trait);color:var(--gris);font-size:13.5px}
+#s52 .plan{width:100%;height:auto;display:block;margin:6px 0 4px}
+#s52 .plan .gazon{fill:var(--teinte)}
+#s52 .plan .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
+#s52 .plan .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35;stroke-width:1}
+#s52 .plan .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
+#s52 .plan .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
+#s52 .plan .cote-g{text-anchor:end}
+#s52 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
+#s52 .recap{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+#s52 .recap span{font-size:12px;color:var(--encre);background:var(--teinte);
+              border-radius:999px;padding:6px 11px}
 
 
-/* 53 — Ce qui sort du plan */
+/* 53 — Le débit ne se partage pas */
 #s53{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
@@ -6015,43 +5996,31 @@
        text-transform:uppercase;color:var(--or);display:flex;
        justify-content:space-between;align-items:baseline}
 #s53 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
-#s53 .sa,#s53 .sb,#s53 .sc{display:none}
-#s53 #s53-s-a:checked ~ .dedans .sa,#s53 #s53-s-b:checked ~ .dedans .sb,#s53 #s53-s-c:checked ~ .dedans .sc{display:block}
-#s53 #s53-s-a:checked ~ .dedans label[for="s53-s-a"],#s53 #s53-s-b:checked ~ .dedans label[for="s53-s-b"],#s53 #s53-s-c:checked ~ .dedans label[for="s53-s-c"]{background:var(--pin);color:var(--papier);
-                                          border-color:var(--pin)}
-#s53 .nl{display:flex;align-items:baseline;gap:8px;padding:9px 2px;
-      border-bottom:1px solid var(--trait)}
-#s53 .nl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--encre)}
-#s53 .nl-q{flex:none;font-size:12.5px;color:var(--gris);font-variant-numeric:tabular-nums}
-#s53 .nl-p{flex:none;font-size:11px;color:var(--gris);min-width:74px;text-align:right}
-#s53 .nl-p.manque{color:var(--alerte)}
-#s53 .pl{display:flex;align-items:baseline;gap:8px;padding:10px 2px;
-      border-bottom:1px solid var(--trait);font-variant-numeric:tabular-nums}
-#s53 .pl-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
-        border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
-#s53 .pl-z{flex:1;min-width:0;font-size:13px;color:var(--encre)}
-#s53 .pl-m{flex:none;font-size:13px;color:var(--encre)}
-#s53 .pl-j{flex:none;font-size:11.5px;color:var(--gris)}
-#s53 .avert{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--teinte);
-         font-size:12.5px;line-height:1.6;color:var(--encre)}
-#s53 .avert b{color:var(--alerte)}
-#s53 .saison{display:flex;gap:6px;margin:10px 0 2px;flex-wrap:wrap}
-#s53 .saison span{font-size:11.5px;color:var(--gris);border:1px solid var(--trait);
-               border-radius:999px;padding:5px 10px}
-#s53 .saison span.ici{background:var(--pin);color:var(--papier);border-color:var(--pin)}
-#s53 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
-          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
-#s53 .plan-mini{width:100%;height:auto;display:block;margin:8px 0 4px;
-             border:1px solid var(--trait);border-radius:12px}
-#s53 .plan-mini .gazon{fill:var(--teinte)}
-#s53 .plan-mini .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35}
-#s53 .plan-mini .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
-#s53 .plan-mini .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
-#s53 .plan-mini .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
-#s53 .plan-mini .cote-g{text-anchor:end}
+#s53 .compare{border:1px solid var(--trait);border-radius:14px;padding:13px;margin-bottom:14px}
+#s53 .compare .l{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;
+              color:var(--gris);margin:0 0 6px}
+#s53 .compare .l b{font-family:Georgia,serif;font-size:20px;font-weight:400;color:var(--encre)}
+#s53 .duo{height:10px;border-radius:999px;background:var(--teinte);overflow:hidden;margin-bottom:4px}
+#s53 .duo span{display:block;height:100%;background:var(--alerte)}
+#s53 .duo.ok span{background:var(--pin)}
+#s53 .compare .dit-le{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--encre)}
+#s53 .compare .dit-le b{color:var(--alerte)}
+#s53 .sec{padding:11px 2px;border-bottom:1px solid var(--trait)}
+#s53 .sec-t{margin:0 0 6px;font-size:14px;color:var(--encre);display:flex;align-items:baseline;gap:8px}
+#s53 .sec-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
+         border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
+#s53 .sec-part{font-size:11.5px;color:var(--gris)}
+#s53 .jauge{height:8px;border-radius:999px;background:var(--teinte);overflow:hidden}
+#s53 .jauge span{display:block;height:100%;background:var(--eau)}
+#s53 .sec-d{margin:5px 0 0;font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s53 .sec-fam{display:inline-block;margin-right:8px;font-size:10.5px;letter-spacing:.08em;
+           text-transform:uppercase;color:var(--pin)}
+#s53 .cycle{margin-top:14px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+         font-size:13px;line-height:1.6;color:var(--encre)}
+#s53 .cycle b{font-family:Georgia,serif;font-size:19px;font-weight:400}
 
 
-/* 54 — Le tracé du tuyau */
+/* 54 — Ce qui sort du plan */
 #s54{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
@@ -6075,7 +6044,7 @@
 #s54{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s54 .dedans{max-width:900px;margin:0 auto}
+#s54 .dedans{max-width:940px;margin:0 auto}
 #s54 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
 #s54 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
@@ -6084,70 +6053,102 @@
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
 #s54 .dit b{color:var(--encre);font-weight:600}
 #s54 .etat{position:absolute;opacity:0;pointer-events:none}
-#s54 .reglage{margin:0 0 20px}
+#s54 .reglage{margin:0 0 18px}
 #s54 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
                  text-transform:uppercase;color:var(--or);margin-bottom:8px}
 #s54 .segments{display:flex;flex-wrap:wrap;gap:8px}
-#s54 .segments label{display:inline-block;padding:10px 16px;border-radius:999px;
+#s54 .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
                   border:1px solid var(--trait);background:var(--papier);
-                  font-size:14px;cursor:pointer;color:var(--gris)}
-#s54 .ta,#s54 .tb{display:none}
-#s54 #s54-t-a:checked ~ .dedans .ta,#s54 #s54-t-b:checked ~ .dedans .tb{display:block}
-#s54 #s54-t-a:checked ~ .dedans label[for="s54-t-a"],#s54 #s54-t-b:checked ~ .dedans label[for="s54-t-b"]{background:var(--pin);color:var(--papier);
-                                          border-color:var(--pin)}
-#s54 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
-           padding:18px 18px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08)}
-#s54 .planche .titre-p{font-family:Georgia,serif;font-size:19px;margin:0 0 3px}
-#s54 .planche .sous-p{font-size:12.5px;color:var(--gris);margin:0 0 14px}
-#s54 .trace{width:100%;height:auto;display:block;margin:0 0 14px}
-#s54 .trace .fond-plan{fill:var(--teinte)}
-#s54 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:3.4;
-                stroke-linecap:round;stroke-linejoin:round}
-#s54 .trace .tuyau-fleche{fill:var(--eau)}
-#s54 .trace .tete{fill:var(--pin);stroke:var(--papier);stroke-width:2}
-#s54 .trace .regard{fill:var(--or);stroke:var(--papier);stroke-width:2}
-#s54 .trace .coude-tronc{fill:var(--pin);stroke:var(--papier);stroke-width:2}
-#s54 .trace .etq{fill:var(--gris);font-size:10.5px;font-family:inherit}
-#s54 .trace .etq-b{fill:var(--encre);font-weight:600;font-size:10.5px;font-family:inherit}
-#s54 .trace .rang{fill:var(--gris);font-size:10px;font-family:inherit;text-anchor:end}
-#s54 .compte{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
-#s54 .compte span{font-size:12px;color:var(--encre);background:var(--teinte);
-              border-radius:999px;padding:6px 12px}
-#s54 .compte b{font-family:Georgia,serif;font-size:14px;font-weight:400}
-#s54 .consequence{font-size:13.5px;line-height:1.7;color:var(--gris);margin:0}
-#s54 .consequence b{color:var(--encre);font-weight:600}
-#s54 .note{margin-top:24px;padding:16px 18px;border-radius:12px;
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+#s54 .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+#s54 .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:16px 15px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+#s54 .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:12px}
+#s54 .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+#s54 .barre .quand{font-size:11.5px;color:var(--gris)}
+#s54 .titre-fiche{font-family:Georgia,serif;font-size:20px;margin:0 0 2px}
+#s54 .sous{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s54 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s54 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+#s54 .legende b{color:var(--encre);font-weight:600}
+#s54 .legende .cout{display:block;margin-top:12px;padding-top:12px;
+                 border-top:1px solid var(--trait)}
+#s54 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
 #s54 .note b{color:var(--encre);font-weight:600}
 #s54 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s54 .note ul{margin:8px 0 0;padding-left:19px}
+#s54 .note li{margin-bottom:6px}
+#s54 .fam{margin:16px 0 2px;font-size:11px;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--or);display:flex;
+       justify-content:space-between;align-items:baseline}
+#s54 .fam .compte{font-size:11px;color:var(--gris);letter-spacing:0}
+#s54 .sa,#s54 .sb,#s54 .sc{display:none}
+#s54 #s54-s-a:checked ~ .dedans .sa,#s54 #s54-s-b:checked ~ .dedans .sb,#s54 #s54-s-c:checked ~ .dedans .sc{display:block}
+#s54 #s54-s-a:checked ~ .dedans label[for="s54-s-a"],#s54 #s54-s-b:checked ~ .dedans label[for="s54-s-b"],#s54 #s54-s-c:checked ~ .dedans label[for="s54-s-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s54 .nl{display:flex;align-items:baseline;gap:8px;padding:9px 2px;
+      border-bottom:1px solid var(--trait)}
+#s54 .nl-nom{flex:1;min-width:0;font-size:13.5px;color:var(--encre)}
+#s54 .nl-q{flex:none;font-size:12.5px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s54 .nl-p{flex:none;font-size:11px;color:var(--gris);min-width:74px;text-align:right}
+#s54 .nl-p.manque{color:var(--alerte)}
+#s54 .pl{display:flex;align-items:baseline;gap:8px;padding:10px 2px;
+      border-bottom:1px solid var(--trait);font-variant-numeric:tabular-nums}
+#s54 .pl-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
+        border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
+#s54 .pl-z{flex:1;min-width:0;font-size:13px;color:var(--encre)}
+#s54 .pl-m{flex:none;font-size:13px;color:var(--encre)}
+#s54 .pl-j{flex:none;font-size:11.5px;color:var(--gris)}
+#s54 .avert{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--teinte);
+         font-size:12.5px;line-height:1.6;color:var(--encre)}
+#s54 .avert b{color:var(--alerte)}
+#s54 .saison{display:flex;gap:6px;margin:10px 0 2px;flex-wrap:wrap}
+#s54 .saison span{font-size:11.5px;color:var(--gris);border:1px solid var(--trait);
+               border-radius:999px;padding:5px 10px}
+#s54 .saison span.ici{background:var(--pin);color:var(--papier);border-color:var(--pin)}
+#s54 .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);font-size:15px}
+#s54 .plan-mini{width:100%;height:auto;display:block;margin:8px 0 4px;
+             border:1px solid var(--trait);border-radius:12px}
+#s54 .plan-mini .gazon{fill:var(--teinte)}
+#s54 .plan-mini .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35}
+#s54 .plan-mini .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
+#s54 .plan-mini .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
+#s54 .plan-mini .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
+#s54 .plan-mini .cote-g{text-anchor:end}
 
 
-/* 55 — Le cinquième onglet */
+/* 55 — Le tracé du tuyau */
 #s55{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
-    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --alerte:#9C3B2E; --pin:#2f3b2f;
-    --creme:#f5f3ee; --ligne:rgba(28,28,26,0.12);
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
   }
 @media (prefers-color-scheme: dark){
 #s55:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
-      --trait:rgba(233,229,220,.16); --papier:#201e1a; --alerte:#C87058; --pin:#7d9179;
-      --creme:#1e1c18; --ligne:rgba(233,229,220,0.16);
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
     }
 
   
 }
 #s55[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
-    --trait:rgba(233,229,220,.16); --papier:#201e1a; --alerte:#C87058; --pin:#7d9179;
-    --creme:#1e1c18; --ligne:rgba(233,229,220,0.16);
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
   }
 #s55, #s55 *{box-sizing:border-box}
 #s55{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s55 .dedans{max-width:1000px;margin:0 auto}
+#s55 .dedans{max-width:900px;margin:0 auto}
 #s55 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
 #s55 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
@@ -6155,57 +6156,346 @@
 #s55 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
 #s55 .dit b{color:var(--encre);font-weight:600}
-#s55 .jeu{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
-#s55 .cas{flex:0 0 auto;width:360px}
-#s55 .cas .titre{font-family:Georgia,serif;font-size:17px;margin:0 0 3px}
-#s55 .cas .quoi{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 10px;min-height:56px}
-#s55 .cas .verdict{font-size:12.5px;margin:8px 0 0;line-height:1.55}
-#s55 .cas .verdict b{font-weight:600}
-#s55 .ok{color:var(--pin)}
-#s55 .ko{color:var(--alerte)}
-#s55 .tel{width:360px;border:1px solid var(--trait);border-radius:14px;overflow:hidden;
-       background:var(--papier)}
-#s55 .ecran{height:78px;background:var(--fond);display:flex;align-items:center;
-         justify-content:center;font-size:12px;color:var(--gris)}
-#s55 .barre{background:var(--creme);border-top:1px solid var(--ligne);position:relative}
-#s55 .rangee{display:grid;padding:18px 14px 8px;position:relative}
-#s55 .rangee.q4{grid-template-columns:repeat(4,1fr)}
-#s55 .rangee.q5{grid-template-columns:repeat(5,1fr)}
-#s55 .rangee a{padding-bottom:8px;text-align:center;font-size:9.5px;font-weight:500;
-            text-transform:uppercase;letter-spacing:.28em;color:var(--gris);
-            text-decoration:none;white-space:nowrap}
-#s55 .rangee a.actif{color:var(--encre);transform:translateY(-2px)}
-#s55 .serre a{letter-spacing:.18em}
-#s55 .petit a{font-size:8.5px;letter-spacing:.14em}
-#s55 .icone a{font-size:8.5px;letter-spacing:.10em}
-#s55 .icone .pic{display:block;font-size:15px;letter-spacing:0;margin-bottom:3px;
-              filter:grayscale(1);opacity:.8}
-#s55 .icone a.actif .pic{filter:none;opacity:1}
-#s55 .fil{position:absolute;bottom:8px;left:14px;pointer-events:none}
-#s55 .rangee.q4 .fil{width:calc((100% - 28px) / 4)}
-#s55 .rangee.q5 .fil{width:calc((100% - 28px) / 5)}
-#s55 .fil span{display:block;height:1px;background:var(--or)}
-#s55 .mesure{margin-top:8px;font-size:11.5px;color:var(--gris);
-          font-variant-numeric:tabular-nums}
-#s55 .note{margin-top:26px;padding:16px 18px;border-radius:12px;
+#s55 .etat{position:absolute;opacity:0;pointer-events:none}
+#s55 .reglage{margin:0 0 20px}
+#s55 .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s55 .segments{display:flex;flex-wrap:wrap;gap:8px}
+#s55 .segments label{display:inline-block;padding:10px 16px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:14px;cursor:pointer;color:var(--gris)}
+#s55 .ta,#s55 .tb{display:none}
+#s55 #s55-t-a:checked ~ .dedans .ta,#s55 #s55-t-b:checked ~ .dedans .tb{display:block}
+#s55 #s55-t-a:checked ~ .dedans label[for="s55-t-a"],#s55 #s55-t-b:checked ~ .dedans label[for="s55-t-b"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+#s55 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
+           padding:18px 18px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08)}
+#s55 .planche .titre-p{font-family:Georgia,serif;font-size:19px;margin:0 0 3px}
+#s55 .planche .sous-p{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+#s55 .trace{width:100%;height:auto;display:block;margin:0 0 14px}
+#s55 .trace .fond-plan{fill:var(--teinte)}
+#s55 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:3.4;
+                stroke-linecap:round;stroke-linejoin:round}
+#s55 .trace .tuyau-fleche{fill:var(--eau)}
+#s55 .trace .tete{fill:var(--pin);stroke:var(--papier);stroke-width:2}
+#s55 .trace .regard{fill:var(--or);stroke:var(--papier);stroke-width:2}
+#s55 .trace .coude-tronc{fill:var(--pin);stroke:var(--papier);stroke-width:2}
+#s55 .trace .etq{fill:var(--gris);font-size:10.5px;font-family:inherit}
+#s55 .trace .etq-b{fill:var(--encre);font-weight:600;font-size:10.5px;font-family:inherit}
+#s55 .trace .rang{fill:var(--gris);font-size:10px;font-family:inherit;text-anchor:end}
+#s55 .compte{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+#s55 .compte span{font-size:12px;color:var(--encre);background:var(--teinte);
+              border-radius:999px;padding:6px 12px}
+#s55 .compte b{font-family:Georgia,serif;font-size:14px;font-weight:400}
+#s55 .consequence{font-size:13.5px;line-height:1.7;color:var(--gris);margin:0}
+#s55 .consequence b{color:var(--encre);font-weight:600}
+#s55 .note{margin-top:24px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
 #s55 .note b{color:var(--encre);font-weight:600}
 #s55 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s55 .note + .note{margin-top:14px}
-#s55 .note ul{margin:8px 0 0;padding-left:19px}
-#s55 .note li{margin-bottom:7px}
 
 
-/* 56 — Le plan comme le sien */
+/* 56 — Il ne paie pas */
 #s56{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s56:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s56[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s56, #s56 *{box-sizing:border-box}
+#s56{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s56 .dedans{max-width:960px;margin:0 auto}
+#s56 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s56 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s56 .intro b{color:var(--encre);font-weight:600}
+#s56 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+#s56 .dit b{font-style:normal;color:var(--encre);font-weight:600}
+#s56 .attention{margin:0 0 24px;padding:15px 17px;border-radius:12px;
+             background:var(--papier);border-left:3px solid var(--alerte);
+             font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s56 .attention .t{display:block;font-size:11px;letter-spacing:.13em;
+                text-transform:uppercase;color:var(--alerte);margin-bottom:8px}
+#s56 .attention b{color:var(--encre);font-weight:600}
+#s56 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s56 .reglage{margin:0 0 14px}
+#s56 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s56 .segments{display:flex;gap:8px;flex-wrap:wrap}
+#s56 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s56 #s56-v-a:checked ~ .dedans .segments label[for="s56-v-a"],#s56 #s56-v-b:checked ~ .dedans .segments label[for="s56-v-b"],#s56 #s56-v-c:checked ~ .dedans .segments label[for="s56-v-c"],#s56 #s56-p-r:checked ~ .dedans .segments label[for="s56-p-r"],#s56 #s56-p-f:checked ~ .dedans .segments label[for="s56-p-f"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s56 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
+#s56 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s56 .feuille{background:var(--papier);border-radius:14px;padding:20px 18px}
+#s56 .sur{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+       color:var(--or);margin-bottom:5px}
+#s56 .h2{font-family:Georgia,serif;font-size:21px;margin:0 0 3px;line-height:1.2}
+#s56 .sous{font-size:12.5px;color:var(--gris);margin:0 0 16px}
+#s56 .rappel{border-radius:12px;background:var(--teinte);padding:15px 16px;margin-bottom:14px}
+#s56 .rappel .quand{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--alerte);margin-bottom:5px}
+#s56 .rappel .quoi{font-family:Georgia,serif;font-size:17px;margin:0 0 4px}
+#s56 .rappel .det{font-size:12.5px;color:var(--gris);margin:0 0 12px}
+#s56 .boutons{display:flex;gap:8px;flex-wrap:wrap}
+#s56 .bt{font-size:13px;padding:8px 14px;border-radius:9999px;border:1px solid var(--trait);
+      color:var(--gris);background:var(--papier)}
+#s56 .bt.fort{background:var(--pin);border-color:var(--pin);color:#fff}
+#s56 .pave{border-top:1px solid var(--trait);padding-top:13px;margin-top:4px}
+#s56 .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+#s56 .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;margin-top:6px;
+            border-top:2px solid var(--encre)}
+#s56 .tot.or{color:var(--or)}
+#s56 .tot.rouge{color:var(--alerte)}
+#s56 .porte{display:flex;gap:12px;align-items:flex-start;padding:13px 0;
+         border-bottom:1px solid var(--trait)}
+#s56 .porte:last-child{border-bottom:0}
+#s56 .porte .rond{flex:none;width:30px;height:30px;border-radius:9999px;
+               background:var(--teinte);color:var(--or);display:flex;
+               align-items:center;justify-content:center;font-size:15px}
+#s56 .porte .txt{min-width:0}
+#s56 .porte .nom{display:block;font-family:Georgia,serif;font-size:16px;line-height:1.3}
+#s56 .porte .det{display:block;font-size:12px;color:var(--gris);line-height:1.5;margin-top:2px}
+#s56 .porte.pale .nom,#s56 .porte.pale .det{color:var(--gris)}
+#s56 .g-a,#s56 .g-b,#s56 .g-c{display:none}
+#s56 #s56-v-a:checked ~ .dedans .g-a,#s56 #s56-v-b:checked ~ .dedans .g-b,#s56 #s56-v-c:checked ~ .dedans .g-c{display:block}
+#s56 .d-rappel,#s56 .d-facture{display:none}
+#s56 #s56-p-r:checked ~ .dedans .d-rappel,#s56 #s56-p-f:checked ~ .dedans .d-facture{display:block}
+#s56 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s56 .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
+              color:var(--encre);margin-bottom:8px}
+#s56 .legende b{color:var(--encre);font-weight:600}
+#s56 .l-a,#s56 .l-b,#s56 .l-c{display:none}
+#s56 #s56-v-a:checked ~ .dedans .l-a,#s56 #s56-v-b:checked ~ .dedans .l-b,#s56 #s56-v-c:checked ~ .dedans .l-c{display:block}
+#s56 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s56 .cout .e{color:var(--alerte);font-weight:600}
+#s56 .cout .ok{color:var(--pin);font-weight:600}
+#s56 table{border-collapse:collapse;width:100%;margin:14px 0 0;font-size:13px}
+#s56 th,#s56 td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait);
+        vertical-align:top}
+#s56 th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--or);
+     font-weight:400}
+#s56 td b{color:var(--encre)}
+#s56 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s56 .note b{color:var(--encre);font-weight:600}
+#s56 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s56 .note ul{margin:8px 0 0;padding-left:19px}
+#s56 .note li{margin-bottom:7px}
+#s56 .suite{margin-top:22px;font-size:13.5px;color:var(--gris)}
+#s56 .suite a{color:var(--or)}
+
+
+/* 57 — L’avoir */
+#s57{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s57:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s57[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s57, #s57 *{box-sizing:border-box}
+#s57{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s57 .dedans{max-width:960px;margin:0 auto}
+#s57 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s57 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 20px}
+#s57 .intro b{color:var(--encre);font-weight:600}
+#s57 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s57 .reglage{margin:0 0 14px}
+#s57 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s57 .segments{display:flex;gap:8px;flex-wrap:wrap}
+#s57 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s57 #s57-v-a:checked ~ .dedans .segments label[for="s57-v-a"],#s57 #s57-v-b:checked ~ .dedans .segments label[for="s57-v-b"],#s57 #s57-v-c:checked ~ .dedans .segments label[for="s57-v-c"],#s57 #s57-m-2:checked ~ .dedans .segments label[for="s57-m-2"],#s57 #s57-m-3:checked ~ .dedans .segments label[for="s57-m-3"],#s57 #s57-m-t:checked ~ .dedans .segments label[for="s57-m-t"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s57 .m2,#s57 .m3,#s57 .mt{display:none}
+#s57 #s57-m-2:checked ~ .dedans .m2,#s57 #s57-m-3:checked ~ .dedans .m3,#s57 #s57-m-t:checked ~ .dedans .mt{display:inline}
+#s57 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
+#s57 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s57 .feuille{background:var(--papier);border-radius:10px;padding:22px 20px}
+#s57 .titre-doc{font-family:Georgia,serif;font-size:20px;letter-spacing:.14em;
+             text-align:center;margin:0 0 3px}
+#s57 .sous-doc{text-align:center;font-size:11.5px;color:var(--gris);margin:0 0 4px}
+#s57 .renvoi{text-align:center;font-size:11.5px;color:var(--or);margin:0 0 16px}
+#s57 .bloc-id{display:flex;gap:16px;font-size:11.5px;color:var(--gris);
+           line-height:1.5;margin-bottom:16px}
+#s57 .bloc-id div{flex:1}
+#s57 .bloc-id b{display:block;color:var(--encre);font-size:12.5px;font-weight:600}
+#s57 .lg{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+      padding:9px 0;border-bottom:1px solid var(--trait)}
+#s57 .lg .prix{white-space:nowrap}
+#s57 .lg.neg{color:var(--alerte)}
+#s57 .totaux{margin-top:14px}
+#s57 .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+#s57 .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;margin-top:6px;
+            border-top:2px solid var(--encre)}
+#s57 .tot.or{color:var(--or)}
+#s57 .tot.rouge{color:var(--alerte)}
+#s57 .mention{margin-top:14px;font-size:10.5px;line-height:1.5;color:var(--gris);
+           border-top:1px solid var(--trait);padding-top:10px}
+#s57 .apres{margin-top:16px;border-radius:12px;background:var(--teinte);padding:14px 15px}
+#s57 .apres .t{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);margin-bottom:8px}
+#s57 .apres .lgn{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+#s57 .apres .lgn.fort{font-family:Georgia,serif;font-size:15px;padding-top:7px;margin-top:5px;
+                   border-top:1px solid var(--trait)}
+#s57 .barre{text-decoration:line-through;color:var(--gris)}
+#s57 .v-a,#s57 .v-b,#s57 .v-c{display:none}
+#s57 #s57-v-a:checked ~ .dedans .v-a,#s57 #s57-v-b:checked ~ .dedans .v-b,#s57 #s57-v-c:checked ~ .dedans .v-c{display:block}
+#s57 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s57 .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
+              color:var(--encre);margin-bottom:8px}
+#s57 .legende b{color:var(--encre);font-weight:600}
+#s57 .l-a,#s57 .l-b,#s57 .l-c{display:none}
+#s57 #s57-v-a:checked ~ .dedans .l-a,#s57 #s57-v-b:checked ~ .dedans .l-b,#s57 #s57-v-c:checked ~ .dedans .l-c{display:block}
+#s57 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s57 .cout .e{color:var(--alerte);font-weight:600}
+#s57 .cout .ok{color:var(--pin);font-weight:600}
+#s57 table{border-collapse:collapse;width:100%;margin:16px 0 0;font-size:13px}
+#s57 th,#s57 td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait);
+        vertical-align:top}
+#s57 th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--or);
+     font-weight:400}
+#s57 td b{color:var(--encre)}
+#s57 td.num{text-align:right;white-space:nowrap}
+#s57 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s57 .note b{color:var(--encre);font-weight:600}
+#s57 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s57 .note ul{margin:8px 0 0;padding-left:19px}
+#s57 .note li{margin-bottom:7px}
+#s57 .retour{margin-top:22px;font-size:13.5px;color:var(--gris)}
+#s57 .retour a{color:var(--or)}
+
+
+/* 58 — Le cinquième onglet */
+#s58{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --alerte:#9C3B2E; --pin:#2f3b2f;
+    --creme:#f5f3ee; --ligne:rgba(28,28,26,0.12);
+  }
+@media (prefers-color-scheme: dark){
+#s58:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --alerte:#C87058; --pin:#7d9179;
+      --creme:#1e1c18; --ligne:rgba(233,229,220,0.16);
+    }
+
+  
+}
+#s58[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --alerte:#C87058; --pin:#7d9179;
+    --creme:#1e1c18; --ligne:rgba(233,229,220,0.16);
+  }
+#s58, #s58 *{box-sizing:border-box}
+#s58{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s58 .dedans{max-width:1000px;margin:0 auto}
+#s58 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s58 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s58 .intro b{color:var(--encre);font-weight:600}
+#s58 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+#s58 .dit b{color:var(--encre);font-weight:600}
+#s58 .jeu{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+#s58 .cas{flex:0 0 auto;width:360px}
+#s58 .cas .titre{font-family:Georgia,serif;font-size:17px;margin:0 0 3px}
+#s58 .cas .quoi{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 10px;min-height:56px}
+#s58 .cas .verdict{font-size:12.5px;margin:8px 0 0;line-height:1.55}
+#s58 .cas .verdict b{font-weight:600}
+#s58 .ok{color:var(--pin)}
+#s58 .ko{color:var(--alerte)}
+#s58 .tel{width:360px;border:1px solid var(--trait);border-radius:14px;overflow:hidden;
+       background:var(--papier)}
+#s58 .ecran{height:78px;background:var(--fond);display:flex;align-items:center;
+         justify-content:center;font-size:12px;color:var(--gris)}
+#s58 .barre{background:var(--creme);border-top:1px solid var(--ligne);position:relative}
+#s58 .rangee{display:grid;padding:18px 14px 8px;position:relative}
+#s58 .rangee.q4{grid-template-columns:repeat(4,1fr)}
+#s58 .rangee.q5{grid-template-columns:repeat(5,1fr)}
+#s58 .rangee a{padding-bottom:8px;text-align:center;font-size:9.5px;font-weight:500;
+            text-transform:uppercase;letter-spacing:.28em;color:var(--gris);
+            text-decoration:none;white-space:nowrap}
+#s58 .rangee a.actif{color:var(--encre);transform:translateY(-2px)}
+#s58 .serre a{letter-spacing:.18em}
+#s58 .petit a{font-size:8.5px;letter-spacing:.14em}
+#s58 .icone a{font-size:8.5px;letter-spacing:.10em}
+#s58 .icone .pic{display:block;font-size:15px;letter-spacing:0;margin-bottom:3px;
+              filter:grayscale(1);opacity:.8}
+#s58 .icone a.actif .pic{filter:none;opacity:1}
+#s58 .fil{position:absolute;bottom:8px;left:14px;pointer-events:none}
+#s58 .rangee.q4 .fil{width:calc((100% - 28px) / 4)}
+#s58 .rangee.q5 .fil{width:calc((100% - 28px) / 5)}
+#s58 .fil span{display:block;height:1px;background:var(--or)}
+#s58 .mesure{margin-top:8px;font-size:11.5px;color:var(--gris);
+          font-variant-numeric:tabular-nums}
+#s58 .note{margin-top:26px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s58 .note b{color:var(--encre);font-weight:600}
+#s58 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s58 .note + .note{margin-top:14px}
+#s58 .note ul{margin:8px 0 0;padding-left:19px}
+#s58 .note li{margin-bottom:7px}
+
+
+/* 59 — Le plan comme le sien */
+#s59{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
     --teinte:#ece9e1; --plan:#1c1c1a; --herbe:#eef0e6;
     --r1:#2F6FB5; --r2:#3E8F4E; --r3:#D9A520;
   }
 @media (prefers-color-scheme: dark){
-#s56:not([data-theme="light"]){
+#s59:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
       --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
@@ -6214,75 +6504,75 @@
 
   
 }
-#s56[data-theme="dark"]{
+#s59[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
     --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
     --r1:#6FA3DC; --r2:#6FB87E; --r3:#E8C255;
   }
-#s56, #s56 *{box-sizing:border-box}
-#s56{margin:0;background:var(--fond);color:var(--encre);
+#s59, #s59 *{box-sizing:border-box}
+#s59{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s56 .dedans{max-width:1000px;margin:0 auto}
-#s56 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+#s59 .dedans{max-width:1000px;margin:0 auto}
+#s59 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
-#s56 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
-#s56 .intro b{color:var(--encre);font-weight:600}
-#s56 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+#s59 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s59 .intro b{color:var(--encre);font-weight:600}
+#s59 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
-#s56 .dit b{color:var(--encre);font-weight:600}
-#s56 .feuille{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
+#s59 .dit b{color:var(--encre);font-weight:600}
+#s59 .feuille{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
            padding:16px 14px 10px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
-#s56 .feuille svg{width:100%;height:auto;display:block}
-#s56 .parcelle{fill:none;stroke:var(--plan);stroke-width:2.5}
-#s56 .maison{fill:var(--teinte);stroke:var(--plan);stroke-width:2}
-#s56 .gazon{fill:var(--herbe);stroke:var(--plan);stroke-width:1.4}
-#s56 .contour{fill:none;stroke:var(--plan);stroke-width:1.6}
-#s56 .massif{fill:none;stroke:var(--gris);stroke-width:1.2;stroke-dasharray:1 5;stroke-linecap:round}
-#s56 .massif-f{fill:var(--teinte)}
-#s56 .arc{fill:none;stroke-width:1.2;stroke-opacity:.85}
-#s56 .zone-arc{fill-opacity:.17}
-#s56 .tete{fill:var(--papier);stroke-width:2.6}
-#s56 .tuyau{fill:none;stroke-width:2.4;stroke-dasharray:9 5;stroke-linecap:round}
-#s56 .tuyau-p{fill:none;stroke:var(--plan);stroke-width:2.8;stroke-dasharray:11 5;stroke-linecap:round}
-#s56 .cote{fill:var(--gris);font-size:12px;font-family:inherit}
-#s56 .repere{fill:var(--plan);font-size:12.5px;font-family:inherit}
-#s56 .repere-b{fill:var(--plan);font-size:12.5px;font-weight:700;font-family:inherit}
-#s56 .ech{fill:var(--gris);font-size:12px;font-family:inherit;font-style:italic}
-#s56 .leg-t{fill:var(--encre);font-size:13px;font-weight:700;font-family:inherit}
-#s56 .leg{fill:var(--encre);font-size:12.5px;font-family:inherit}
-#s56 .leg-g{fill:var(--gris);font-size:11.5px;font-family:inherit}
-#s56 .rangee{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
-#s56 .colonne{flex:1;min-width:270px}
-#s56 .liste{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
+#s59 .feuille svg{width:100%;height:auto;display:block}
+#s59 .parcelle{fill:none;stroke:var(--plan);stroke-width:2.5}
+#s59 .maison{fill:var(--teinte);stroke:var(--plan);stroke-width:2}
+#s59 .gazon{fill:var(--herbe);stroke:var(--plan);stroke-width:1.4}
+#s59 .contour{fill:none;stroke:var(--plan);stroke-width:1.6}
+#s59 .massif{fill:none;stroke:var(--gris);stroke-width:1.2;stroke-dasharray:1 5;stroke-linecap:round}
+#s59 .massif-f{fill:var(--teinte)}
+#s59 .arc{fill:none;stroke-width:1.2;stroke-opacity:.85}
+#s59 .zone-arc{fill-opacity:.17}
+#s59 .tete{fill:var(--papier);stroke-width:2.6}
+#s59 .tuyau{fill:none;stroke-width:2.4;stroke-dasharray:9 5;stroke-linecap:round}
+#s59 .tuyau-p{fill:none;stroke:var(--plan);stroke-width:2.8;stroke-dasharray:11 5;stroke-linecap:round}
+#s59 .cote{fill:var(--gris);font-size:12px;font-family:inherit}
+#s59 .repere{fill:var(--plan);font-size:12.5px;font-family:inherit}
+#s59 .repere-b{fill:var(--plan);font-size:12.5px;font-weight:700;font-family:inherit}
+#s59 .ech{fill:var(--gris);font-size:12px;font-family:inherit;font-style:italic}
+#s59 .leg-t{fill:var(--encre);font-size:13px;font-weight:700;font-family:inherit}
+#s59 .leg{fill:var(--encre);font-size:12.5px;font-family:inherit}
+#s59 .leg-g{fill:var(--gris);font-size:11.5px;font-family:inherit}
+#s59 .rangee{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+#s59 .colonne{flex:1;min-width:270px}
+#s59 .liste{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
          padding:14px 16px 16px}
-#s56 .liste h2{font-family:Georgia,serif;font-weight:400;font-size:17px;margin:0 0 2px}
-#s56 .liste .sous{font-size:12px;color:var(--gris);margin:0 0 12px}
-#s56 .l{display:flex;gap:10px;align-items:baseline;padding:7px 0;
+#s59 .liste h2{font-family:Georgia,serif;font-weight:400;font-size:17px;margin:0 0 2px}
+#s59 .liste .sous{font-size:12px;color:var(--gris);margin:0 0 12px}
+#s59 .l{display:flex;gap:10px;align-items:baseline;padding:7px 0;
      border-bottom:1px solid var(--trait);font-size:13px}
-#s56 .l .q{flex:none;min-width:52px;color:var(--gris);font-variant-numeric:tabular-nums}
-#s56 .l .n{flex:1;min-width:0}
-#s56 .l.fam{border:0;padding:12px 0 2px;font-size:10.5px;letter-spacing:.13em;
+#s59 .l .q{flex:none;min-width:52px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s59 .l .n{flex:1;min-width:0}
+#s59 .l.fam{border:0;padding:12px 0 2px;font-size:10.5px;letter-spacing:.13em;
          text-transform:uppercase;color:var(--or)}
-#s56 .note{margin-top:20px;padding:16px 18px;border-radius:12px;
+#s59 .note{margin-top:20px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s56 .note b{color:var(--encre);font-weight:600}
-#s56 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+#s59 .note b{color:var(--encre);font-weight:600}
+#s59 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s56 .note + .note{margin-top:14px}
-#s56 .note ul{margin:8px 0 0;padding-left:19px}
-#s56 .note li{margin-bottom:7px}
+#s59 .note + .note{margin-top:14px}
+#s59 .note ul{margin:8px 0 0;padding-left:19px}
+#s59 .note li{margin-bottom:7px}
 
 
-/* 57 — Où sont les tés */
-#s57{
+/* 60 — Où sont les tés */
+#s60{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
     --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#2F4C78; --jaune:#F2C230;
   }
 @media (prefers-color-scheme: dark){
-#s57:not([data-theme="light"]){
+#s60:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
       --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
@@ -6290,62 +6580,62 @@
 
   
 }
-#s57[data-theme="dark"]{
+#s60[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
     --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
   }
-#s57, #s57 *{box-sizing:border-box}
-#s57{margin:0;background:var(--fond);color:var(--encre);
+#s60, #s60 *{box-sizing:border-box}
+#s60{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s57 .dedans{max-width:900px;margin:0 auto}
-#s57 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+#s60 .dedans{max-width:900px;margin:0 auto}
+#s60 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
-#s57 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
-#s57 .intro b{color:var(--encre);font-weight:600}
-#s57 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+#s60 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s60 .intro b{color:var(--encre);font-weight:600}
+#s60 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
-#s57 .dit b{color:var(--encre);font-weight:600}
-#s57 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
+#s60 .dit b{color:var(--encre);font-weight:600}
+#s60 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
            padding:18px 16px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
-#s57 .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;flex-wrap:wrap}
-#s57 .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
-#s57 .verdict .quoi{font-size:14px;color:var(--gris)}
-#s57 .trace{width:100%;height:auto;display:block;margin:0 0 6px}
-#s57 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:9;
+#s60 .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+#s60 .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
+#s60 .verdict .quoi{font-size:14px;color:var(--gris)}
+#s60 .trace{width:100%;height:auto;display:block;margin:0 0 6px}
+#s60 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:9;
                 stroke-linecap:round;stroke-linejoin:round}
-#s57 .trace .arroseur{fill:none;stroke:var(--eau);stroke-width:9}
-#s57 .trace .regard-b{fill:none;stroke:var(--eau);stroke-width:9}
-#s57 .trace .te{fill:var(--jaune);stroke:var(--encre);stroke-width:5}
-#s57 .trace .te-n{fill:var(--encre);font-size:38px;font-weight:700;
+#s60 .trace .arroseur{fill:none;stroke:var(--eau);stroke-width:9}
+#s60 .trace .regard-b{fill:none;stroke:var(--eau);stroke-width:9}
+#s60 .trace .te{fill:var(--jaune);stroke:var(--encre);stroke-width:5}
+#s60 .trace .te-n{fill:var(--encre);font-size:38px;font-weight:700;
                font-family:inherit;text-anchor:middle}
-#s57 .trace .etq{fill:var(--gris);font-size:34px;font-family:inherit}
-#s57 .trace .etq-a{fill:var(--pin);font-size:32px;font-family:inherit;text-anchor:middle}
-#s57 .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
+#s60 .trace .etq{fill:var(--gris);font-size:34px;font-family:inherit}
+#s60 .trace .etq-a{fill:var(--pin);font-size:32px;font-family:inherit;text-anchor:middle}
+#s60 .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
            font-size:12.5px;color:var(--gris)}
-#s57 .legende span{display:inline-flex;align-items:center;gap:7px}
-#s57 .pastille{width:15px;height:15px;border-radius:50%;flex:none;
+#s60 .legende span{display:inline-flex;align-items:center;gap:7px}
+#s60 .pastille{width:15px;height:15px;border-radius:50%;flex:none;
             background:var(--jaune);border:2px solid var(--encre)}
-#s57 .cercle{width:15px;height:15px;border-radius:50%;flex:none;
+#s60 .cercle{width:15px;height:15px;border-radius:50%;flex:none;
           border:3px solid var(--eau)}
-#s57 .note{margin-top:8px;padding:16px 18px;border-radius:12px;
+#s60 .note{margin-top:8px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s57 .note b{color:var(--encre);font-weight:600}
-#s57 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+#s60 .note b{color:var(--encre);font-weight:600}
+#s60 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s57 .note + .note{margin-top:14px}
-#s57 .note code{font-size:12.5px}
+#s60 .note + .note{margin-top:14px}
+#s60 .note code{font-size:12.5px}
 
 
-/* 58 — Mes mots au catalogue */
-#s58{
+/* 61 — Mes mots au catalogue */
+#s61{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
     --alerte:#9C3B2E; --teinte:#ece9e1;
   }
 @media (prefers-color-scheme: dark){
-#s58:not([data-theme="light"]){
+#s61:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
       --alerte:#C87058; --teinte:#252320;
@@ -6353,80 +6643,80 @@
 
   
 }
-#s58[data-theme="dark"]{
+#s61[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
     --alerte:#C87058; --teinte:#252320;
   }
-#s58, #s58 *{box-sizing:border-box}
-#s58{margin:0;background:var(--fond);color:var(--encre);
+#s61, #s61 *{box-sizing:border-box}
+#s61{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s58 .dedans{max-width:960px;margin:0 auto}
-#s58 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+#s61 .dedans{max-width:960px;margin:0 auto}
+#s61 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
-#s58 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
-#s58 .intro b{color:var(--encre);font-weight:600}
-#s58 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+#s61 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s61 .intro b{color:var(--encre);font-weight:600}
+#s61 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
        background:var(--papier);border-left:3px solid var(--or);
        font-size:13.5px;line-height:1.65;color:var(--gris)}
-#s58 .dit b{color:var(--encre);font-weight:600}
-#s58 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
-#s58 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
-#s58 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+#s61 .dit b{color:var(--encre);font-weight:600}
+#s61 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s61 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#s61 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
                   border:1px solid var(--trait);font-size:13.5px;
                   background:var(--papier);color:var(--gris);
                   -webkit-tap-highlight-color:transparent}
-#s58 #s58-v-a:checked ~ .dedans .segments label[for="s58-v-a"],#s58 #s58-v-b:checked ~ .dedans .segments label[for="s58-v-b"],#s58 #s58-v-c:checked ~ .dedans .segments label[for="s58-v-c"]{
+#s61 #s61-v-a:checked ~ .dedans .segments label[for="s61-v-a"],#s61 #s61-v-b:checked ~ .dedans .segments label[for="s61-v-b"],#s61 #s61-v-c:checked ~ .dedans .segments label[for="s61-v-c"]{
     background:var(--pin);border-color:var(--pin);color:#fff}
-#s58 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
-#s58 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+#s61 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s61 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
        background:var(--teinte);
        box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
-#s58 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
-#s58 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
+#s61 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
+#s61 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
           border-bottom:1px solid var(--trait)}
-#s58 .retour{flex:none;width:31px;height:31px;border-radius:9px;
+#s61 .retour{flex:none;width:31px;height:31px;border-radius:9px;
           border:1px solid var(--trait);display:flex;align-items:center;
           justify-content:center;color:var(--encre);font-size:17px;line-height:1}
-#s58 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
-#s58 .corps{padding:14px 16px 0}
-#s58 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
-#s58 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+#s61 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
+#s61 .corps{padding:14px 16px 0}
+#s61 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
+#s61 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
         color:var(--gris);display:block;margin:0 0 8px}
-#s58 .etiq.mienne{color:var(--or)}
-#s58 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
+#s61 .etiq.mienne{color:var(--or)}
+#s61 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
          margin-bottom:9px}
-#s58 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
+#s61 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
               display:block;margin-bottom:3px}
-#s58 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
-#s58 .mien{color:var(--or)}
-#s58 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
-#s58 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
+#s61 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
+#s61 .mien{color:var(--or)}
+#s61 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
+#s61 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
            border-radius:10px;border:1px dashed var(--or);color:var(--or);
            font-size:13.5px}
-#s58 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
-#s58 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
-#s58 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
-#s58 .a-part,#s58 .a-dessus,#s58 .a-melange{display:none}
-#s58 #s58-v-a:checked ~ .dedans .a-part,#s58 #s58-v-b:checked ~ .dedans .a-dessus,#s58 #s58-v-c:checked ~ .dedans .a-melange{display:block}
-#s58 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s58 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+#s61 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
+#s61 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
+#s61 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
+#s61 .a-part,#s61 .a-dessus,#s61 .a-melange{display:none}
+#s61 #s61-v-a:checked ~ .dedans .a-part,#s61 #s61-v-b:checked ~ .dedans .a-dessus,#s61 #s61-v-c:checked ~ .dedans .a-melange{display:block}
+#s61 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s61 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
               color:var(--encre);margin-bottom:8px}
-#s58 .legende b{color:var(--encre);font-weight:600}
-#s58 .l-a,#s58 .l-b,#s58 .l-c{display:none}
-#s58 #s58-v-a:checked ~ .dedans .l-a,#s58 #s58-v-b:checked ~ .dedans .l-b,#s58 #s58-v-c:checked ~ .dedans .l-c{display:block}
-#s58 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
-#s58 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
+#s61 .legende b{color:var(--encre);font-weight:600}
+#s61 .l-a,#s61 .l-b,#s61 .l-c{display:none}
+#s61 #s61-v-a:checked ~ .dedans .l-a,#s61 #s61-v-b:checked ~ .dedans .l-b,#s61 #s61-v-c:checked ~ .dedans .l-c{display:block}
+#s61 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s61 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
            background:var(--pin);color:#fff;font-size:11px;letter-spacing:.06em;
            text-transform:uppercase}
-#s58 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+#s61 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s58 .note b{color:var(--encre);font-weight:600}
-#s58 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+#s61 .note b{color:var(--encre);font-weight:600}
+#s61 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s58 .note ul{margin:8px 0 0;padding-left:19px}
-#s58 .note li{margin-bottom:6px}
+#s61 .note ul{margin:8px 0 0;padding-left:19px}
+#s61 .note li{margin-bottom:6px}
 
 
 </style>
@@ -6663,36 +6953,50 @@
       </a>
       <p class="famille">L’arrosage automatique</p>
       <a class="item" href="#m51">
-        <span class="no">51</span><span class="titre">Le plan d’arrosage</span><span class="fleche">↓</span>
-        <span class="quoi">« Un outil pour les paysagistes pour réaliser des plans d’arrosage automatique. » Trois façons d’entrer le jardin : la feuille, les zones mesurées, ou le plan dessiné.</span>
+        <span class="no">51</span><span class="titre">Le quinconce dans un couloir</span><span class="fleche">↓</span>
+        <span class="quoi">Sa règle du 18 août : « dans les couloirs, le but c’est de poser les tuyères en quinconce, celle de gauche recouvre quasi 100 % jusqu’à celle de droite ». Son couloir de 10 × 2 m posé de trois façons — 12 tuyères aujourd’hui, 5 en quinconce, 3 avec une plus grosse buse. La seule chose à trancher : jusqu’où il accepte que ça arrose à côté.</span>
       </a>
       <a class="item" href="#m52">
-        <span class="no">52</span><span class="titre">Le débit ne se partage pas</span><span class="fleche">↓</span>
-        <span class="quoi">Le calcul qui fait tout l’outil, et rien n’y est à choisir : 1,80 m³/h au robinet, 8,47 demandés, huit secteurs, 3 h 14 de cycle.</span>
+        <span class="no">52</span><span class="titre">Le plan d’arrosage</span><span class="fleche">↓</span>
+        <span class="quoi">« Un outil pour les paysagistes pour réaliser des plans d’arrosage automatique. » Trois façons d’entrer le jardin : la feuille, les zones mesurées, ou le plan dessiné.</span>
       </a>
       <a class="item" href="#m53">
-        <span class="no">53</span><span class="titre">Ce qui sort du plan</span><span class="fleche">↓</span>
-        <span class="quoi">Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.</span>
+        <span class="no">53</span><span class="titre">Le débit ne se partage pas</span><span class="fleche">↓</span>
+        <span class="quoi">Le calcul qui fait tout l’outil, et rien n’y est à choisir : 1,80 m³/h au robinet, 8,47 demandés, huit secteurs, 3 h 14 de cycle.</span>
       </a>
       <a class="item" href="#m54">
-        <span class="no">54</span><span class="titre">Le tracé du tuyau</span><span class="fleche">↓</span>
-        <span class="quoi">Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.</span>
+        <span class="no">54</span><span class="titre">Ce qui sort du plan</span><span class="fleche">↓</span>
+        <span class="quoi">Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.</span>
       </a>
       <a class="item" href="#m55">
-        <span class="no">55</span><span class="titre">Le cinquième onglet</span><span class="fleche">↓</span>
-        <span class="quoi">Où ranger les outils métier ? Sa décision : un cinquième onglet « Outils ». Cinq variantes de barre, mesurées à 360 px — deux sont à écarter.</span>
+        <span class="no">55</span><span class="titre">Le tracé du tuyau</span><span class="fleche">↓</span>
+        <span class="quoi">Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.</span>
       </a>
+      <p class="famille">L’argent qui ne rentre pas</p>
       <a class="item" href="#m56">
-        <span class="no">56</span><span class="titre">Le plan comme le sien</span><span class="fleche">↓</span>
-        <span class="quoi">Sa photo d’un plan d’exécution, refaite un réseau par couleur : la cible du produit, dessinée avant d’écrire le moteur de plan.</span>
+        <span class="no">56</span><span class="titre">Il ne paie pas</span><span class="fleche">↓</span>
+        <span class="quoi">Un avoir éteint la dette et interdit de réclamer ; une facture déclarée perdue reste réclamable. Trois arrangements.</span>
       </a>
       <a class="item" href="#m57">
-        <span class="no">57</span><span class="titre">Où sont les tés</span><span class="fleche">↓</span>
+        <span class="no">57</span><span class="titre">L’avoir</span><span class="fleche">↓</span>
+        <span class="quoi">La forme du document : à part, en mention, ou facture refaite. Trois montants essayables, tous recalculés.</span>
+      </a>
+      <p class="famille">L’arrosage automatique</p>
+      <a class="item" href="#m58">
+        <span class="no">58</span><span class="titre">Le cinquième onglet</span><span class="fleche">↓</span>
+        <span class="quoi">Où ranger les outils métier ? Sa décision : un cinquième onglet « Outils ». Cinq variantes de barre, mesurées à 360 px — deux sont à écarter.</span>
+      </a>
+      <a class="item" href="#m59">
+        <span class="no">59</span><span class="titre">Le plan comme le sien</span><span class="fleche">↓</span>
+        <span class="quoi">Sa photo d’un plan d’exécution, refaite un réseau par couleur : la cible du produit, dessinée avant d’écrire le moteur de plan.</span>
+      </a>
+      <a class="item" href="#m60">
+        <span class="no">60</span><span class="titre">Où sont les tés</span><span class="fleche">↓</span>
         <span class="quoi">« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! » — son tracé libre, cinq tés marqués, et la règle qui vaut partout : N arroseurs, N − 1 tés.</span>
       </a>
       <p class="famille">Les réglages</p>
-      <a class="item" href="#m58">
-        <span class="no">58</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
+      <a class="item" href="#m61">
+        <span class="no">61</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
         <span class="quoi">« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.</span>
       </a>
     <p class="note">
@@ -21231,13 +21535,216 @@
   <section class="etape" id="m51">
     <div class="etape-tete">
       <span class="etape-no">51</span>
-      <h2>Le plan d’arrosage</h2>
+      <h2>Le quinconce dans un couloir</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s51">
-<input type="radio" name="e" id="s51-e-a" class="etat">
-<input type="radio" name="e" id="s51-e-b" class="etat" checked>
-<input type="radio" name="e" id="s51-e-c" class="etat">
+<div class="dedans">
+  <h1>Le quinconce dans un couloir</h1>
+  <p class="intro">Votre couloir de <b>10 × 2 m</b>, posé de trois façons. Le
+    disque plein est ce qui tombe <b>dans</b> le couloir, le pointillé ce qui
+    tombe <b>à côté</b>. Une seule chose vous est demandée, tout en bas.</p>
+
+  <p class="dit">« Dans les couloirs, le but c'est de poser les tuyères
+    <b>en quinconce</b>, car le but c'est que celle de gauche recouvre quasi
+    100 % jusqu'à celle de droite. »</p>
+
+  <div class="planche">
+    <div class="verdict">
+      <span class="gros">A</span>
+      <span class="quoi"><b>12 tuyères</b> — ce que l'outil pose aujourd'hui.
+        Buse 6-VAN, portée 1,80 m.</span>
+    </div>
+    <p class="sous">C'est ce que vous avez vu à l'écran. Les têtes sont alignées
+      deux à deux : ce n'est pas un quinconce, et <b>la portée ne traverse même
+      pas les 2 m du couloir</b>.</p>
+    <div class="cadre">
+<svg class="trace" viewBox="0 0 1120 600" role="img" aria-label="Pose A, deux rangees alignees">
+      <defs><clipPath id="cA"><rect x="60" y="200" width="1000" height="200" rx="6"/></clipPath></defs>
+      <rect class="dehors" x="0" y="0" width="1120" height="200"/>
+      <rect class="dehors" x="0" y="400" width="1120" height="200"/>
+      <rect class="sol" x="60" y="200" width="1000" height="200" rx="6"/>
+      <path class="jet" d="M -120 200 A 180 180 0 0 0 240 200 Z"/>
+      <path class="jet" d="M 80 200 A 180 180 0 0 0 440 200 Z"/>
+      <path class="jet" d="M 280 200 A 180 180 0 0 0 640 200 Z"/>
+      <path class="jet" d="M 480 200 A 180 180 0 0 0 840 200 Z"/>
+      <path class="jet" d="M 680 200 A 180 180 0 0 0 1040 200 Z"/>
+      <path class="jet" d="M 880 200 A 180 180 0 0 0 1240 200 Z"/>
+      <path class="jet" d="M -120 400 A 180 180 0 0 1 240 400 Z"/>
+      <path class="jet" d="M 80 400 A 180 180 0 0 1 440 400 Z"/>
+      <path class="jet" d="M 280 400 A 180 180 0 0 1 640 400 Z"/>
+      <path class="jet" d="M 480 400 A 180 180 0 0 1 840 400 Z"/>
+      <path class="jet" d="M 680 400 A 180 180 0 0 1 1040 400 Z"/>
+      <path class="jet" d="M 880 400 A 180 180 0 0 1 1240 400 Z"/>
+      <g clip-path="url(#cA)">
+      <path class="jet-dedans" d="M -120 200 A 180 180 0 0 0 240 200 Z"/>
+      <path class="jet-dedans" d="M 80 200 A 180 180 0 0 0 440 200 Z"/>
+      <path class="jet-dedans" d="M 280 200 A 180 180 0 0 0 640 200 Z"/>
+      <path class="jet-dedans" d="M 480 200 A 180 180 0 0 0 840 200 Z"/>
+      <path class="jet-dedans" d="M 680 200 A 180 180 0 0 0 1040 200 Z"/>
+      <path class="jet-dedans" d="M 880 200 A 180 180 0 0 0 1240 200 Z"/>
+      <path class="jet-dedans" d="M -120 400 A 180 180 0 0 1 240 400 Z"/>
+      <path class="jet-dedans" d="M 80 400 A 180 180 0 0 1 440 400 Z"/>
+      <path class="jet-dedans" d="M 280 400 A 180 180 0 0 1 640 400 Z"/>
+      <path class="jet-dedans" d="M 480 400 A 180 180 0 0 1 840 400 Z"/>
+      <path class="jet-dedans" d="M 680 400 A 180 180 0 0 1 1040 400 Z"/>
+      <path class="jet-dedans" d="M 880 400 A 180 180 0 0 1 1240 400 Z"/>
+      </g>
+      <rect class="contour" x="60" y="200" width="1000" height="200" rx="6"/>
+      <circle class="tete" cx="60" cy="200" r="13"/>
+      <circle class="tete" cx="260" cy="200" r="13"/>
+      <circle class="tete" cx="460" cy="200" r="13"/>
+      <circle class="tete" cx="660" cy="200" r="13"/>
+      <circle class="tete" cx="860" cy="200" r="13"/>
+      <circle class="tete" cx="1060" cy="200" r="13"/>
+      <circle class="tete" cx="60" cy="400" r="13"/>
+      <circle class="tete" cx="260" cy="400" r="13"/>
+      <circle class="tete" cx="460" cy="400" r="13"/>
+      <circle class="tete" cx="660" cy="400" r="13"/>
+      <circle class="tete" cx="860" cy="400" r="13"/>
+      <circle class="tete" cx="1060" cy="400" r="13"/>
+      </svg>    </div>
+  </div>
+
+  <div class="planche">
+    <div class="verdict">
+      <span class="gros">B</span>
+      <span class="quoi"><b>5 tuyères</b> — le quinconce, buse 12-VAN,
+        portée 3,60 m.</span>
+    </div>
+    <p class="sous">Une tête sur un bord, la suivante sur l'autre, tous les
+      <b>2,50 m</b>. Chacune atteint la suivante en diagonale : la gauche
+      recouvre bien jusqu'à la droite. <b class="rouge">Il tombe de l'eau
+      jusqu'à 1,60 m au-delà du couloir.</b></p>
+    <div class="cadre">
+<svg class="trace" viewBox="0 0 1120 600" role="img" aria-label="Pose B, quinconce 12-VAN">
+      <defs><clipPath id="cB"><rect x="60" y="200" width="1000" height="200" rx="6"/></clipPath></defs>
+      <rect class="dehors" x="0" y="0" width="1120" height="200"/>
+      <rect class="dehors" x="0" y="400" width="1120" height="200"/>
+      <rect class="sol" x="60" y="200" width="1000" height="200" rx="6"/>
+      <path class="jet" d="M -300 200 A 360 360 0 0 0 420 200 Z"/>
+      <path class="jet" d="M -50 400 A 360 360 0 0 1 670 400 Z"/>
+      <path class="jet" d="M 200 200 A 360 360 0 0 0 920 200 Z"/>
+      <path class="jet" d="M 450 400 A 360 360 0 0 1 1170 400 Z"/>
+      <path class="jet" d="M 700 200 A 360 360 0 0 0 1420 200 Z"/>
+      <g clip-path="url(#cB)">
+      <path class="jet-dedans" d="M -300 200 A 360 360 0 0 0 420 200 Z"/>
+      <path class="jet-dedans" d="M -50 400 A 360 360 0 0 1 670 400 Z"/>
+      <path class="jet-dedans" d="M 200 200 A 360 360 0 0 0 920 200 Z"/>
+      <path class="jet-dedans" d="M 450 400 A 360 360 0 0 1 1170 400 Z"/>
+      <path class="jet-dedans" d="M 700 200 A 360 360 0 0 0 1420 200 Z"/>
+      </g>
+      <rect class="contour" x="60" y="200" width="1000" height="200" rx="6"/>
+      <circle class="tete" cx="60" cy="200" r="13"/>
+      <circle class="tete" cx="310" cy="400" r="13"/>
+      <circle class="tete" cx="560" cy="200" r="13"/>
+      <circle class="tete" cx="810" cy="400" r="13"/>
+      <circle class="tete" cx="1060" cy="200" r="13"/>
+      </svg>    </div>
+  </div>
+
+  <div class="planche">
+    <div class="verdict">
+      <span class="gros">C</span>
+      <span class="quoi"><b>3 tuyères</b> — le même quinconce, buse 18-VAN,
+        portée 5,40 m.</span>
+    </div>
+    <p class="sous">Trois têtes pour dix mètres, écart de <b>5 m</b>.
+      <b class="rouge">Mais il tombe de l'eau jusqu'à 3,40 m au-delà du
+      couloir</b> — plus que sa largeur.</p>
+    <div class="cadre">
+<svg class="trace" viewBox="0 0 1120 600" role="img" aria-label="Pose C, quinconce 18-VAN">
+      <defs><clipPath id="cC"><rect x="60" y="200" width="1000" height="200" rx="6"/></clipPath></defs>
+      <rect class="dehors" x="0" y="0" width="1120" height="200"/>
+      <rect class="dehors" x="0" y="400" width="1120" height="200"/>
+      <rect class="sol" x="60" y="200" width="1000" height="200" rx="6"/>
+      <path class="jet" d="M -480 200 A 540 540 0 0 0 600 200 Z"/>
+      <path class="jet" d="M 20 400 A 540 540 0 0 1 1100 400 Z"/>
+      <path class="jet" d="M 520 200 A 540 540 0 0 0 1600 200 Z"/>
+      <g clip-path="url(#cC)">
+      <path class="jet-dedans" d="M -480 200 A 540 540 0 0 0 600 200 Z"/>
+      <path class="jet-dedans" d="M 20 400 A 540 540 0 0 1 1100 400 Z"/>
+      <path class="jet-dedans" d="M 520 200 A 540 540 0 0 0 1600 200 Z"/>
+      </g>
+      <rect class="contour" x="60" y="200" width="1000" height="200" rx="6"/>
+      <circle class="tete" cx="60" cy="200" r="13"/>
+      <circle class="tete" cx="560" cy="400" r="13"/>
+      <circle class="tete" cx="1060" cy="200" r="13"/>
+      </svg>    </div>
+    <div class="legende">
+      <span><span class="cercle"></span>une tuyère, en 180° vers le couloir</span>
+      <span><span class="plein"></span>ce qui arrose le couloir</span>
+      <span><span class="tirets"></span>ce qui passe par-dessus le bord d'en face</span>
+    </div>
+  </div>
+
+  <div class="planche">
+    <table>
+      <tr><th>Pose</th><th>Buse</th><th>Écart</th><th>Tuyères</th><th>Eau à côté</th></tr>
+      <tr><td>A — aujourd'hui</td><td>6-VAN</td><td>2,00 m</td><td class="n">12</td><td>—</td></tr>
+      <tr><td>B — quinconce</td><td>12-VAN</td><td>2,50 m</td><td class="n">5</td><td>1,60 m</td></tr>
+      <tr><td>C — quinconce</td><td>18-VAN</td><td>5,00 m</td><td class="n">3</td><td>3,40 m</td></tr>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qu'il faut que vous tranchiez</span>
+    <b>Jusqu'où acceptez-vous que ça arrose à côté ?</b> C'est la seule chose
+    qui sépare B de C, et je ne peux pas la deviner : elle dépend de ce qu'il y
+    a le long du couloir — un massif, qui sera content ; une terrasse ou la
+    clôture du voisin, qui le seront moins.
+    <br><br>
+    Trois réponses possibles, une seule suffit :
+    <b>« la portée ne dépasse pas la largeur »</b>,
+    <b>« elle peut dépasser d'une demi-largeur »</b>, ou
+    <b>« prends la plus grosse qui passe »</b>.
+  </div>
+
+  <div class="note">
+    <span class="t">Et pour les grands espaces</span>
+    Votre seconde phrase — <b>« pour les espaces plus grands, si les arroseurs
+    3500 le permettent, l'idée est de faire la même : un quinconce avec les
+    arroseurs de droite qui recouvrent jusqu'à ceux de gauche »</b> — suit
+    exactement la même arithmétique : c'est la <b>diagonale</b> entre deux
+    rangées qui doit tenir dans la portée, pas l'écart le long d'une rangée.
+    L'outil, lui, mesure aujourd'hui les deux séparément, et il pose donc trop
+    d'arroseurs.
+    <br><br>
+    Je le corrige dans la foulée, avec votre réponse ci-dessus : la règle est la
+    même, seule la tolérance change.
+  </div>
+
+  <div class="note">
+    <span class="t">Pourquoi des demi-cercles</span>
+    Une tête posée contre un bord est en <b>180°</b> — votre règle du 17 août :
+    « s'il est sur une ligne droite collée au mur, ça sera 180 ». Elle n'envoie
+    donc rien derrière elle : tout ce qui déborde passe par-dessus <b>le bord
+    d'en face</b>. C'est ce que montre le pointillé, et c'est de ce
+    dépassement-là qu'il s'agit ci-dessus.
+  </div>
+
+  <div class="note">
+    <span class="t">Les coins</span>
+    Vous aviez dit le 17 août que <b>« les derniers arroseurs doivent toujours
+    être dans les coins »</b>. En quinconce, les deux bouts de la chaîne tombent
+    bien dans deux coins ; les deux autres coins sont couverts par la portée
+    mais n'ont pas de tête. Si ça ne vous va pas, dites-le — c'est une
+    quatrième variante, et elle coûte deux tuyères de plus.
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m52">
+    <div class="etape-tete">
+      <span class="etape-no">52</span>
+      <h2>Le plan d’arrosage</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s52">
+<input type="radio" name="e" id="s52-e-a" class="etat">
+<input type="radio" name="e" id="s52-e-b" class="etat" checked>
+<input type="radio" name="e" id="s52-e-c" class="etat">
 
 <div class="dedans">
   <h1>Le plan d'arrosage — par où l'on entre</h1>
@@ -21251,9 +21758,9 @@
   <div class="reglage">
     <span class="quoi">Comment il entre son jardin</span>
     <div class="segments">
-      <label for="s51-e-a">A · La feuille — il saisit tout</label>
-      <label for="s51-e-b">B · Les zones — il mesure, Atlas pose · <b>je recommande</b></label>
-      <label for="s51-e-c">C · Le plan dessiné</label>
+      <label for="s52-e-a">A · La feuille — il saisit tout</label>
+      <label for="s52-e-b">B · Les zones — il mesure, Atlas pose · <b>je recommande</b></label>
+      <label for="s52-e-c">C · Le plan dessiné</label>
     </div>
   </div>
 
@@ -21431,13 +21938,13 @@
     </div>
   </section>
 
-  <section class="etape" id="m52">
+  <section class="etape" id="m53">
     <div class="etape-tete">
-      <span class="etape-no">52</span>
+      <span class="etape-no">53</span>
       <h2>Le débit ne se partage pas</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s52">
+    <div class="cadre" id="s53">
 <div class="dedans">
   <h1>Le débit ne se partage pas</h1>
   <p class="intro">Le calcul qui fait tout l'outil. <b>Il n'y a rien à choisir
@@ -21550,16 +22057,16 @@
     </div>
   </section>
 
-  <section class="etape" id="m53">
+  <section class="etape" id="m54">
     <div class="etape-tete">
-      <span class="etape-no">53</span>
+      <span class="etape-no">54</span>
       <h2>Ce qui sort du plan</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s53">
-<input type="radio" name="s" id="s53-s-a" class="etat" checked>
-<input type="radio" name="s" id="s53-s-b" class="etat">
-<input type="radio" name="s" id="s53-s-c" class="etat">
+    <div class="cadre" id="s54">
+<input type="radio" name="s" id="s54-s-a" class="etat" checked>
+<input type="radio" name="s" id="s54-s-b" class="etat">
+<input type="radio" name="s" id="s54-s-c" class="etat">
 
 <div class="dedans">
   <h1>Ce qui sort du plan</h1>
@@ -21574,9 +22081,9 @@
   <div class="reglage">
     <span class="quoi">Ce qui sort</span>
     <div class="segments">
-      <label for="s53-s-a">A · Le devis · <b>je recommande</b></label>
-      <label for="s53-s-b">B · La carte de programmation</label>
-      <label for="s53-s-c">C · Le plan pour le client</label>
+      <label for="s54-s-a">A · Le devis · <b>je recommande</b></label>
+      <label for="s54-s-b">B · La carte de programmation</label>
+      <label for="s54-s-c">C · Le plan pour le client</label>
     </div>
   </div>
 
@@ -21774,15 +22281,15 @@
     </div>
   </section>
 
-  <section class="etape" id="m54">
+  <section class="etape" id="m55">
     <div class="etape-tete">
-      <span class="etape-no">54</span>
+      <span class="etape-no">55</span>
       <h2>Le tracé du tuyau</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s54">
-<input type="radio" name="t" id="s54-t-a" class="etat">
-<input type="radio" name="t" id="s54-t-b" class="etat" checked>
+    <div class="cadre" id="s55">
+<input type="radio" name="t" id="s55-t-a" class="etat">
+<input type="radio" name="t" id="s55-t-b" class="etat" checked>
 
 <div class="dedans">
   <h1>Le tracé du tuyau</h1>
@@ -21799,8 +22306,8 @@
   <div class="reglage">
     <span class="quoi">Son geste sur le chantier</span>
     <div class="segments">
-      <label for="s54-t-a">A · Une seule ligne, en serpentin</label>
-      <label for="s54-t-b">B · Plusieurs lignes parallèles · <b>retenu</b></label>
+      <label for="s55-t-a">A · Une seule ligne, en serpentin</label>
+      <label for="s55-t-b">B · Plusieurs lignes parallèles · <b>retenu</b></label>
     </div>
   </div>
 
@@ -21968,13 +22475,509 @@
     </div>
   </section>
 
-  <section class="etape" id="m55">
+  <section class="etape" id="m56">
     <div class="etape-tete">
-      <span class="etape-no">55</span>
+      <span class="etape-no">56</span>
+      <h2>Il ne paie pas</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s56">
+<input type="radio" name="v" id="s56-v-a" class="etat" checked>
+<input type="radio" name="v" id="s56-v-b" class="etat">
+<input type="radio" name="v" id="s56-v-c" class="etat">
+<input type="radio" name="p" id="s56-p-r" class="etat" checked>
+<input type="radio" name="p" id="s56-p-f" class="etat">
+
+<div class="dedans">
+  <h1>Il ne paie pas</h1>
+  <p class="intro">
+    Trois arrangements pour la même situation : <b>M. Martins doit 1 440 € depuis
+    37 jours</b>. Touchez les pastilles — la planche change vraiment.
+  </p>
+
+  <p class="dit">
+    « Si jamais on facture un client et qui décide de ne pas nous payer, il faut
+    avoir la possibilité de <b>créer un avoir</b>. »
+  </p>
+
+  <div class="attention">
+    <span class="t">Avant de choisir — ce ne sont pas des mots</span>
+    <b>Un avoir dit que la somme n'est plus due.</b> En le faisant, vous
+    renoncez à réclamer l'argent : plus de relance, plus de recouvrement, plus
+    de procédure possible. C'est ce qu'il faut quand <b>vous</b> voulez annuler
+    (erreur, geste commercial).<br><br>
+    <b>Quand c'est LUI qui refuse de payer</b>, ce n'est pas un avoir qu'il vous
+    faut : c'est de dire que la facture est <b>perdue</b>. Elle reste entière,
+    le rappel se tait, et vous gardez le droit de la réclamer — même dans deux
+    ans.<br><br>
+    <b>Votre TVA, elle, ne bouge pas.</b> Vous la payez quand le client paie
+    (réglé le 16 août) : une facture jamais payée n'est jamais entrée dans votre
+    relevé. Vous n'avez <b>rien à récupérer et aucune démarche à faire</b>.
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Ce que l'application vous propose</span>
+    <div class="segments">
+      <label for="s56-v-a">A · Trois portes</label>
+      <label for="s56-v-b">B · Un avoir, un montant</label>
+      <label for="s56-v-c">C · Deux portes</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">D'où vous y arrivez</span>
+    <div class="segments">
+      <label for="s56-p-r">Depuis le rappel</label>
+      <label for="s56-p-f">Depuis la facture</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="feuille">
+
+        <div class="d-rappel">
+          <span class="sur">Aujourd'hui</span>
+          <p class="h2">Ce qui vous attend</p>
+          <p class="sous">Mardi 18 août</p>
+          <div class="rappel">
+            <span class="quand">37 jours de retard</span>
+            <p class="quoi">M. Martins n'a pas payé</p>
+            <p class="det">F2026-0031 · 1 440,00 € · échéance le 11 août</p>
+            <div class="boutons">
+              <span class="bt fort">J'ai reçu l'argent</span>
+              <span class="bt">Plus tard</span>
+              <span class="bt g-a">Il ne paiera pas</span>
+              <span class="bt g-b">Faire un avoir</span>
+              <span class="bt g-c">Régler autrement</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-facture">
+          <span class="sur">Facture F2026-0031</span>
+          <p class="h2">M. Martins</p>
+          <p class="sous">Émise le 12 juillet · échéance le 11 août · rien reçu</p>
+          <div class="pave">
+            <div class="tot"><span>Total HT</span><span>1 200,00 €</span></div>
+            <div class="tot"><span>TVA 20 %</span><span>240,00 €</span></div>
+            <div class="tot gros"><span>Total TTC</span><span>1 440,00 €</span></div>
+            <div class="tot rouge"><span>Reste dû</span><span>1 440,00 €</span></div>
+          </div>
+          <div class="boutons" style="margin-top:14px">
+            <span class="bt fort">Noter un règlement</span>
+            <span class="bt g-a">Cette facture pose problème</span>
+            <span class="bt g-b">Faire un avoir</span>
+            <span class="bt g-c">Régler autrement</span>
+          </div>
+        </div>
+
+        <!-- ══ A · TROIS PORTES NOMMÉES ══════════════════════════════ -->
+        <div class="g-a" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:12px">Que s'est-il passé ?</p>
+
+          <div class="porte">
+            <span class="rond">✎</span>
+            <span class="txt">
+              <span class="nom">Je me suis trompé</span>
+              <span class="det">Mauvais prix, ligne en trop, mauvais client.
+                Atlas fait un <b>avoir de 1 440,00 €</b> et prépare la facture
+                corrigée.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">–</span>
+            <span class="txt">
+              <span class="nom">Je lui fais un geste</span>
+              <span class="det">Il conteste, vous coupez la poire en deux.
+                <b>Avoir partiel</b> — vous dites combien. Le reste, il le doit
+                toujours.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">✕</span>
+            <span class="txt">
+              <span class="nom">Il ne paiera jamais</span>
+              <span class="det">La facture reste entière. Le rappel se tait,
+                les <b>1 440,00 € passent en « perdus »</b> — et vous gardez le
+                droit de les réclamer.</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- ══ B · UNE SEULE PORTE ═══════════════════════════════════ -->
+        <div class="g-b" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:4px">Faire un avoir</p>
+          <p class="sous">Sur la facture F2026-0031 — 1 440,00 €</p>
+          <div class="pave" style="border-top:0;padding-top:0">
+            <div class="porte"><span class="rond">€</span><span class="txt">
+              <span class="nom">Montant de l'avoir</span>
+              <span class="det">Vous tapez ce que vous retirez. Tout, ou une
+                partie.</span></span></div>
+            <div class="porte"><span class="rond">✎</span><span class="txt">
+              <span class="nom">Motif</span>
+              <span class="det">Une ligne libre, portée sur le document.</span></span></div>
+          </div>
+          <div class="boutons" style="margin-top:14px">
+            <span class="bt fort">Établir l'avoir</span>
+          </div>
+        </div>
+
+        <!-- ══ C · DEUX PORTES ═══════════════════════════════════════ -->
+        <div class="g-c" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:12px">Régler autrement</p>
+
+          <div class="porte">
+            <span class="rond">€</span>
+            <span class="txt">
+              <span class="nom">Faire un avoir</span>
+              <span class="det">Vous annulez tout ou partie de la facture —
+                erreur de votre part, ou geste que vous lui accordez. Vous dites
+                combien.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">✕</span>
+            <span class="txt">
+              <span class="nom">Facture perdue</span>
+              <span class="det">Il ne paiera pas. La facture reste entière, le
+                rappel se tait, et vous gardez le droit de réclamer.</span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Trois portes nommées</span>
+        L'application ne demande pas un mot de comptable : elle demande
+        <b>ce qui s'est passé</b>, dans les mots où vous le diriez. Chaque porte
+        fait autre chose, et c'est elle qui sait laquelle est la bonne.
+        <span class="cout">
+          <span class="ok">Ce que ça vous évite</span> — de faire un avoir sur un
+          client qui refuse de payer, et de perdre ainsi le droit de le
+          réclamer. C'est le seul vrai piège de tout ce sujet, et il est
+          irréversible.<br><br>
+          <span class="e">Ce que ça coûte</span> — trois chemins à bâtir au lieu
+          d'un, et trois écrans à tenir.
+        </span>
+      </div>
+
+      <div class="l-b">
+        <span class="t">B · Un avoir, un montant</span>
+        Le plus court à faire et le plus simple à lire : une porte, une somme,
+        un document. C'est exactement ce que vous avez demandé.
+        <span class="cout">
+          <span class="e">Ce que ça coûte, et ce n'est pas petit</span> — quand
+          c'est le client qui refuse de payer, faire un avoir <b>éteint la
+          dette</b>. Vous ne pouvez plus rien réclamer, et rien à l'écran ne
+          vous aura prévenu. Le geste le plus simple est ici le plus
+          dangereux.<br><br>
+          Il resterait juste dans deux cas sur trois : votre erreur, votre
+          geste. C'est le troisième qui manque — et c'est celui que vous
+          décriviez.
+        </span>
+      </div>
+
+      <div class="l-c">
+        <span class="t">C · Deux portes</span>
+        Le compromis : la distinction qui compte est faite — annuler d'un côté,
+        constater une perte de l'autre — sans multiplier les écrans. L'erreur et
+        le geste se rejoignent, puisqu'ils produisent le même document.
+        <span class="cout">
+          <span class="ok">Ce que ça vous évite</span> — la même chose que A :
+          l'avoir posé par erreur sur un mauvais payeur.<br><br>
+          <span class="e">Ce que ça coûte</span> — « faire un avoir » reste un
+          mot de comptable, et il faut savoir si l'on est dedans avant
+          d'appuyer. A, lui, pose la question à votre place.
+        </span>
+      </div>
+
+      <table>
+        <tr><th>Ce qui arrive</th><th>Avoir</th><th>Facture perdue</th></tr>
+        <tr><td>La facture</td><td>annulée, en tout ou partie</td><td><b>intacte</b></td></tr>
+        <tr><td>Vous pouvez encore réclamer</td><td><b>non, jamais</b></td><td><b>oui</b></td></tr>
+        <tr><td>Un document part au client</td><td>oui, l'avoir</td><td>non</td></tr>
+        <tr><td>Le rappel</td><td>se tait</td><td>se tait</td></tr>
+        <tr><td>Votre relevé de TVA</td><td colspan="2"><b>ne bouge pas</b> — rien n'a été encaissé, donc rien n'y était entré</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que cette planche ne tranche pas</span>
+    <ul>
+      <li><b>À quoi ressemble l'avoir lui-même</b> — le document, son numéro, et
+        ce que deviennent les chiffres. C'est la planche suivante.</li>
+      <li><b>Faut-il relancer avant de renoncer ?</b> Une mise en demeure se
+        rédige, s'envoie en recommandé, et c'est elle qui ouvre la suite. Atlas
+        pourrait la préparer — dites si ça vous servirait.</li>
+      <li><b>Et si le client paie APRÈS</b> qu'on l'a déclarée perdue ? Le
+        règlement se note normalement et tout se remet en place. Rien n'est
+        définitif de ce côté-là.</li>
+    </ul>
+  </div>
+
+  <p class="suite">Suite : <a href="80-l-avoir.html">80 · L'avoir</a> — le document, et ce que les chiffres deviennent.</p>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m57">
+    <div class="etape-tete">
+      <span class="etape-no">57</span>
+      <h2>L’avoir</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s57">
+<input type="radio" name="v" id="s57-v-a" class="etat" checked>
+<input type="radio" name="v" id="s57-v-b" class="etat">
+<input type="radio" name="v" id="s57-v-c" class="etat">
+<input type="radio" name="m" id="s57-m-2" class="etat">
+<input type="radio" name="m" id="s57-m-3" class="etat" checked>
+<input type="radio" name="m" id="s57-m-t" class="etat">
+
+<div class="dedans">
+  <h1>L'avoir</h1>
+  <p class="intro">
+    La décision est prise : on annule tout ou partie de la facture
+    <b>F2026-0031 — M. Martins — 1 440,00 €</b>. Reste à savoir sous quelle
+    forme. Changez le montant, changez la forme : tout se recalcule.
+  </p>
+
+  <div class="reglage">
+    <span class="quoi">Sous quelle forme</span>
+    <div class="segments">
+      <label for="s57-v-a">A · Un document à part</label>
+      <label for="s57-v-b">B · Une mention sur la facture</label>
+      <label for="s57-v-c">C · Une facture refaite</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Combien vous retirez</span>
+    <div class="segments">
+      <label for="s57-m-2">200 €</label>
+      <label for="s57-m-3">300 €</label>
+      <label for="s57-m-t">Tout — 1 440 €</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+
+      <!-- ══ A · UN DOCUMENT À PART ═══════════════════════════════════ -->
+      <div class="v-a">
+        <div class="feuille">
+          <p class="titre-doc">AVOIR</p>
+          <p class="sous-doc">A2026-0001 · 18 août 2026</p>
+          <p class="renvoi">sur la facture F2026-0031 du 12 juillet 2026</p>
+
+          <div class="bloc-id">
+            <div><b>Gunzi Élagage</b>12 route des Pins<br>33240 Saint-André<br>SIRET 813 204 559 00021</div>
+            <div><b>M. Martins</b>3 rue des Lilas<br>33240 Saint-André</div>
+          </div>
+
+          <div class="lg neg">
+            <span class="m2">Geste commercial</span>
+            <span class="m3">Geste commercial</span>
+            <span class="mt">Annulation de la facture</span>
+            <span class="prix">
+              <span class="m2">−166,67 €</span><span class="m3">−250,00 €</span><span class="mt">−1 200,00 €</span>
+            </span>
+          </div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>
+              <span class="m2">−166,67 €</span><span class="m3">−250,00 €</span><span class="mt">−1 200,00 €</span></span></div>
+            <div class="tot"><span>TVA 20 %</span><span>
+              <span class="m2">−33,33 €</span><span class="m3">−50,00 €</span><span class="mt">−240,00 €</span></span></div>
+            <div class="tot gros rouge"><span>Total TTC</span><span>
+              <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+          </div>
+
+          <p class="mention">Avoir émis en annulation partielle de la facture
+            F2026-0031. TVA sur les encaissements.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">La facture, après</span>
+          <div class="lgn"><span>F2026-0031 · Total TTC</span><span>1 440,00 €</span></div>
+          <div class="lgn"><span>Avoir A2026-0001</span><span>
+            <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+          <div class="lgn fort"><span>Reste dû</span><span>
+            <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+        </div>
+      </div>
+
+      <!-- ══ B · UNE MENTION SUR LA FACTURE ═══════════════════════════ -->
+      <div class="v-b">
+        <div class="feuille">
+          <p class="titre-doc">FACTURE</p>
+          <p class="sous-doc">F2026-0031 · 12 juillet 2026</p>
+          <p class="renvoi">M. Martins</p>
+
+          <div class="lg"><span>Abattage de chêne — démontage</span><span class="prix">850,00 €</span></div>
+          <div class="lg"><span>Enlèvement des grumes</span><span class="prix">350,00 €</span></div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>1 200,00 €</span></div>
+            <div class="tot"><span>TVA 20 %</span><span>240,00 €</span></div>
+            <div class="tot gros"><span>Total TTC</span><span>1 440,00 €</span></div>
+            <div class="tot or"><span>Avoir accordé le 18 août</span><span>
+              <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+            <div class="tot rouge"><span>Reste dû</span><span>
+              <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+          </div>
+
+          <p class="mention">Aucun second document. La mention vit sur la
+            facture, et sur elle seule.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">Ce que le client reçoit</span>
+          <div class="lgn"><span>Un document</span><span>aucun</span></div>
+          <div class="lgn"><span>Une pièce pour son comptable</span><span>aucune</span></div>
+        </div>
+      </div>
+
+      <!-- ══ C · UNE FACTURE REFAITE ══════════════════════════════════ -->
+      <div class="v-c">
+        <div class="feuille">
+          <p class="titre-doc">FACTURE</p>
+          <p class="sous-doc">F2026-0034 · 18 août 2026</p>
+          <p class="renvoi">annule et remplace la facture F2026-0031</p>
+
+          <div class="bloc-id">
+            <div><b>Gunzi Élagage</b>12 route des Pins<br>33240 Saint-André</div>
+            <div><b>M. Martins</b>3 rue des Lilas<br>33240 Saint-André</div>
+          </div>
+
+          <div class="lg"><span>Abattage de chêne — démontage</span><span class="prix">
+            <span class="m2">683,33 €</span><span class="m3">600,00 €</span><span class="mt">0,00 €</span></span></div>
+          <div class="lg"><span>Enlèvement des grumes</span><span class="prix">
+            <span class="m2">350,00 €</span><span class="m3">350,00 €</span><span class="mt">0,00 €</span></span></div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>
+              <span class="m2">1 033,33 €</span><span class="m3">950,00 €</span><span class="mt">0,00 €</span></span></div>
+            <div class="tot"><span>TVA 20 %</span><span>
+              <span class="m2">206,67 €</span><span class="m3">190,00 €</span><span class="mt">0,00 €</span></span></div>
+            <div class="tot gros"><span>Total TTC</span><span>
+              <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+          </div>
+
+          <p class="mention">La première facture reste au dossier, marquée
+            « remplacée ». Un avoir de son montant total l'accompagne.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">Ce que ça produit</span>
+          <div class="lgn"><span>F2026-0031</span><span class="barre">1 440,00 €</span></div>
+          <div class="lgn"><span>Avoir A2026-0001</span><span>−1 440,00 €</span></div>
+          <div class="lgn fort"><span>F2026-0034 · reste dû</span><span>
+            <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Un document à part</span>
+        L'avoir est une pièce, comme la facture : son numéro, sa date, son PDF,
+        et il part au client par le même chemin. <b>La facture ne bouge pas</b> —
+        c'est la règle qui fonde tout : une facture émise ne se corrige jamais,
+        on lui ajoute une pièce par-dessus.
+        <span class="cout">
+          <span class="ok">Ce que ça vous donne</span> — quelque chose à envoyer
+          au client, et quelque chose à donner à votre comptable. Les deux se
+          rapprochent tout seuls par le numéro.<br><br>
+          <span class="e">Ce que ça coûte</span> — une deuxième série de numéros
+          à tenir, et un second document dans l'application.
+        </span>
+      </div>
+
+      <div class="l-b">
+        <span class="t">B · Une mention sur la facture</span>
+        Rien de neuf : une ligne de plus sous le total, et le reste dû tombe.
+        C'est de loin le plus court à faire, et le plus simple à lire sur un
+        téléphone.
+        <span class="cout">
+          <span class="e">Ce que ça coûte, et c'est rédhibitoire</span> — il n'y
+          a <b>aucune pièce</b>. Votre client n'a rien à classer, votre
+          comptable n'a rien à joindre, et si l'administration demande pourquoi
+          1 440 € facturés sont devenus 1 140 €, la réponse est une ligne dans
+          une application.<br><br>
+          Pire : la facture affichée ne dit plus la même chose que celle que le
+          client a déjà reçue en PDF.
+        </span>
+      </div>
+
+      <div class="l-c">
+        <span class="t">C · Une facture refaite</span>
+        La façon « propre » quand la première facture était <b>fausse</b> : on
+        annule tout par un avoir, et on réémet la bonne. C'est ce qu'on fait
+        pour une erreur de prix ou de client.
+        <span class="cout">
+          <span class="ok">Ce que ça vous donne</span> — un dossier limpide
+          quand vous vous êtes trompé : une facture juste, et la trace de la
+          fausse.<br><br>
+          <span class="e">Ce que ça coûte</span> — trois documents pour un
+          chantier, un numéro de facture qui change (votre client cherchera
+          l'ancien), et c'est <b>trop lourd pour un simple geste commercial</b>.
+        </span>
+      </div>
+
+      <table>
+        <tr><th>Vous retirez</th><th class="num">HT</th><th class="num">TVA</th><th class="num">TTC</th><th class="num">Reste</th></tr>
+        <tr><td>200 €</td><td class="num">166,67</td><td class="num">33,33</td><td class="num">200,00</td><td class="num"><b>1 240,00</b></td></tr>
+        <tr><td>300 €</td><td class="num">250,00</td><td class="num">50,00</td><td class="num">300,00</td><td class="num"><b>1 140,00</b></td></tr>
+        <tr><td>Tout</td><td class="num">1 200,00</td><td class="num">240,00</td><td class="num">1 440,00</td><td class="num"><b>0,00</b></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ça touche ailleurs, et qu'on ne voit pas ici</span>
+    <ul>
+      <li><b>Votre relevé de TVA ne bouge pas.</b> Vous payez la TVA quand le
+        client paie : rien n'a été encaissé sur cette facture, donc rien n'y
+        était entré. S'il vous avait versé un acompte, la part reçue reste
+        déclarée — elle a bien été reçue.</li>
+      <li><b>La fiche du client.</b> Son « reste dû » doit tomber, sans quoi
+        elle réclamera une somme annulée. Et ce qu'il vous a rapporté doit
+        baisser d'autant.</li>
+      <li><b>Le rappel « facture impayée » se tait</b> dès que le reste dû
+        atteint zéro — c'est déjà ainsi qu'il s'éteint quand on note un
+        règlement.</li>
+      <li><b>Ce que l'application ne sait pas faire aujourd'hui :</b> elle ne
+        tient qu'<b>une facture par chantier</b> et une seule série de numéros.
+        Un avoir demande sa place et son compteur. Ce n'est pas un obstacle,
+        c'est ce qu'il y a à bâtir.</li>
+    </ul>
+  </div>
+
+  <p class="retour">Avant : <a href="79-il-ne-paie-pas.html">79 · Il ne paie pas</a> — quelle situation, et ce que chacune déclenche.</p>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m58">
+    <div class="etape-tete">
+      <span class="etape-no">58</span>
       <h2>Le cinquième onglet</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s55">
+    <div class="cadre" id="s58">
 <div class="dedans">
   <h1>Le cinquième onglet</h1>
   <p class="intro">Votre choix : <b>un onglet « Outils »</b>, pour l'arrosage
@@ -22148,13 +23151,13 @@
     </div>
   </section>
 
-  <section class="etape" id="m56">
+  <section class="etape" id="m59">
     <div class="etape-tete">
-      <span class="etape-no">56</span>
+      <span class="etape-no">59</span>
       <h2>Le plan comme le sien</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s56">
+    <div class="cadre" id="s59">
 <div class="dedans">
   <h1>Le plan comme le sien</h1>
   <p class="intro">Votre plan du 17 août, refait <b>en couleur, un réseau par
@@ -22347,13 +23350,13 @@
     </div>
   </section>
 
-  <section class="etape" id="m57">
+  <section class="etape" id="m60">
     <div class="etape-tete">
-      <span class="etape-no">57</span>
+      <span class="etape-no">60</span>
       <h2>Où sont les tés</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s57">
+    <div class="cadre" id="s60">
 <div class="dedans">
   <h1>Où sont les tés</h1>
   <p class="intro">Votre tracé du 17 août, redessiné, avec <b>les cinq tés en
@@ -22483,16 +23486,16 @@
     </div>
   </section>
 
-  <section class="etape" id="m58">
+  <section class="etape" id="m61">
     <div class="etape-tete">
-      <span class="etape-no">58</span>
+      <span class="etape-no">61</span>
       <h2>Mes mots au catalogue</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s58">
-<input type="radio" name="v" id="s58-v-a" class="etat">
-<input type="radio" name="v" id="s58-v-b" class="etat" checked>
-<input type="radio" name="v" id="s58-v-c" class="etat">
+    <div class="cadre" id="s61">
+<input type="radio" name="v" id="s61-v-a" class="etat">
+<input type="radio" name="v" id="s61-v-b" class="etat" checked>
+<input type="radio" name="v" id="s61-v-c" class="etat">
 
 <div class="dedans">
   <h1>Mes mots au catalogue</h1>
@@ -22506,9 +23509,9 @@
     toutes les entreprises</b> — d’où la question : où mettre <b>les vôtres</b> ?</p>
 
   <div class="segments">
-    <label for="s58-v-a">A · Mes mots à part</label>
-    <label for="s58-v-b">B · Mes mots par-dessus</label>
-    <label for="s58-v-c">C · Une seule liste</label>
+    <label for="s61-v-a">A · Mes mots à part</label>
+    <label for="s61-v-b">B · Mes mots par-dessus</label>
+    <label for="s61-v-c">C · Une seule liste</label>
   </div>
 
   <div class="rangee">

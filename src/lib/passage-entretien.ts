@@ -128,7 +128,7 @@ export function recomposerPourClient(
   // des Réglages depuis — n'est pas dans `actuelles`, et on ne la ramène PAS :
   // le modèle est ce qu'il propose aujourd'hui, et ressusciter une ligne qu'il
   // a retirée irait contre son geste. Le rapport du passé, lui, garde la
-  // sienne : il porte sa propre copie (migration 0054).
+  // sienne : il porte sa propre copie (migration 0055).
   return actuelles.filter((l) => l.faite || sien.has(plie(l.libelle)));
 }
 

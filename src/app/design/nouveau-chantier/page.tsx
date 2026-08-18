@@ -33,12 +33,13 @@ export default function NouveauChantierMockup() {
           </Link>
         </div>
 
+        {/* « Fiche client » depuis le 16 août 2026, sur sa demande. Cette page
+            SUIT l'écran réel — c'est écrit plus bas : une maquette qui montre
+            un titre disparu induit en erreur plus sûrement qu'une maquette
+            absente. */}
         <div className="px-6 pt-5">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            Nouveau
-          </p>
           <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            Un chantier
+            Fiche client
           </h1>
         </div>
 

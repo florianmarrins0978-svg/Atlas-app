@@ -300,7 +300,12 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // Le panneau des secteurs a été retiré le 17 août sur sa demande ; le
     // découpage, lui, tourne toujours et décide de tout le reste.
     const secteurs = await page.evaluate(() => decouper().secteurs.length);
-    ok('arrosage : le jardin de départ se découpe', secteurs >= 6);
+    // Le seuil était de 6 : il visait le jardin d'exemple d'alors. Le quinconce
+    // de son croquis du 18 août a fait tomber le débit, donc le nombre de
+    // vannes. Ce que ce contrôle garde n'est pas un nombre — c'est que le
+    // découpage RÉPONDE au lieu de rendre zéro, ce qui serait le signe qu'il ne
+    // tourne plus depuis que son écran a disparu.
+    ok('arrosage : le jardin de départ se découpe', secteurs >= 1);
 
     // **Le quinconce retire un arroseur, il ne le déplace pas.** Une pose
     // décalée qui garde tous ses points fait exactement ce qu'il a signalé le
@@ -371,7 +376,13 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // devis. Le jour où un montant apparaît, ce contrôle le dit.
     const corps = await page.$eval('body', el => el.innerText);
     ok('arrosage : aucun prix nulle part', !/€|\bEUR\b/.test(corps));
-    ok('arrosage : la liste porte le disconnecteur', /Disconnecteur/.test(corps));
+    // Retourné le 18 août sur sa décision : *« le disconnecteur, tu peux le
+    // supprimer à tout jamais, je n'en mets jamais. »* Gardé plutôt que
+    // supprimé, pour que la pièce ne revienne pas au premier raisonnement
+    // « c'est obligatoire sur l'eau potable » — juste en général, faux pour
+    // lui, et sa décision serait perdue.
+    ok('arrosage : le disconnecteur n\'est plus dans la liste', !/Disconnecteur/.test(corps),
+       (corps.match(/[^\n]*Disconnecteur[^\n]*/) || [''])[0]);
 
     // Un ajout de zone doit vraiment ajouter : c'est le geste central.
     const avant = await page.$$eval('.zone', e => e.length);
@@ -392,8 +403,29 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // latéral : un raccord en bas (toujours 3/4", sur la tuyauterie) et un en
     // haut (au diamètre du corps). En manquer un sous-compte une pièce que
     // chaque arroseur porte réellement.
-    ok('arrosage : le SBE du bas (raccord de ligne) est compté', /bas, sur la ligne/.test(materiel));
-    ok('arrosage : le SBE du haut (raccord au corps) est compté', /haut, au corps/.test(materiel));
+    //
+    // **Ce contrôle lisait les étiquettes « (haut, au corps) » et « (bas, sur
+    // la ligne) » ; il compte désormais.** Le patron a fait retirer ces
+    // mentions le 18 août — *« ce sont des données pour toi [...] l'utilisateur
+    // n'a pas besoin de ces infos-là »* —, et les deux emplois d'une même
+    // référence se sont fondus en une ligne. Un contrôle accroché à un libellé
+    // meurt au premier changement de libellé ; la RÈGLE, elle, ne bouge pas :
+    // deux SBE par arroseur, quel que soit le nom écrit sur la ligne.
+    const sbe = await page.evaluate(() => {
+      const arroseurs = etat.zones.reduce((s, z) => {
+        const p = poser(z);
+        return s + (p.m && p.m.type !== 'gaine' ? p.nombre : 0);
+      }, 0);
+      const total = listeMateriel(decouper())
+        .filter(l => /SBE/.test(l.nom)).reduce((s, l) => s + l.q, 0);
+      return { arroseurs, total };
+    });
+    // Le cas qui empêche de mesurer zéro : sans arroseur posé, 0 === 2×0 serait
+    // vert sans rien prouver (le piège du 15 août).
+    ok('arrosage : le jardin d\'épreuve pose bien des arroseurs', sbe.arroseurs > 0,
+       JSON.stringify(sbe));
+    ok('arrosage : deux SBE par arroseur — celui du haut ET celui du bas',
+       sbe.arroseurs > 0 && sbe.total === sbe.arroseurs * 2, JSON.stringify(sbe));
     ok('arrosage : le PEBD16 de reprise est compté', /PEBD rigide/.test(materiel));
 
         // **Le corps par défaut, sa décision du 17 août : « 10 cm sans option,
@@ -424,13 +456,36 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     });
     await page.waitForTimeout(150);
     const fiche = await page.$eval('#nourrice', el => el.innerText);
+    // Le mot « Clarinette » était un indice de « c'est une vraie fiche », et il
+    // est tombé le 18 août : les petites fiches se montent sans clarinette.
+    // Ce qui compte est que la fiche soit LA SIENNE (source « patron ») et
+    // qu'elle s'affiche complète.
     ok('arrosage : une fiche de nourrice enregistrée s’affiche',
-       /Clarinette/.test(fiche) && /Électrovanne/.test(fiche) && !/à renseigner/.test(fiche));
+       /votre fiche/i.test(fiche) && /Électrovanne/.test(fiche) && !/à renseigner/.test(fiche));
     // Ses pièces se retrouvent aussi dans la liste chiffrable — pas dupliquées,
     // pas oubliées : c'est ELLES qui remplacent les lignes génériques.
+    // **Ce contrôle exigeait le mot « Clarinette », et il est devenu faux le
+    // 18 août** : le quinconce de son croquis a fait tomber ce jardin à moins
+    // de voies, et les petites fiches se montent sans clarinette. Le mot
+    // n'était qu'un indice ; la RÈGLE est que ses pièces REMPLACENT les
+    // lignes génériques au lieu de s'y ajouter.
     const materiel2 = await page.$eval('#materiel', el => el.innerText);
+    const remplace = await page.evaluate(() => {
+      const d = decouper();
+      const f = CATALOGUE.ficheNourrice(d.secteurs.length, combienGoutteAGoutte(d));
+      if (!f || !f.pieces || !f.pieces.length) return { fiche: false };
+      const refs = listeMateriel(d).map(l => l.ref);
+      const manquantes = f.pieces.filter(x => refs.indexOf(x.ref) < 0);
+      return { fiche: true, source: f.source, pieces: f.pieces.length,
+               manquantes: manquantes.map(x => x.ref) };
+    });
+    // Sans fiche, rien n'est éprouvé : on le dit au lieu de rendre du vert.
+    ok('arrosage : une fiche de nourrice existe bien pour ce jardin',
+       remplace.fiche === true && remplace.source === 'patron', JSON.stringify(remplace));
     ok('arrosage : les pièces de la fiche entrent dans la liste chiffrable',
-       /Clarinette/.test(materiel2) && !/Électrovannes 24 V/.test(materiel2));
+       remplace.fiche && remplace.pieces > 0 && remplace.manquantes.length === 0 &&
+       !/Électrovannes 24 V|Regards de vannes/.test(materiel2),
+       'manquantes : ' + (remplace.manquantes || []).join(', '));
 
     // **Les débits par ARC sont lus au catalogue, jamais déduits par division.**
     // Sur les grosses buses la division tombe juste, donc un contrôle posé sur
@@ -444,9 +499,24 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       recalculer(true);
     });
     await page.waitForTimeout(200);
-    const petite = await page.$eval('.zone-res', el => el.textContent);
+    // **Le nombre 0,58 était écrit en dur, et il a bougé avec le quinconce.**
+    // Ce qu'il gardait ne bouge pas : le débit d'un quart et d'un demi-tour est
+    // LU au catalogue, jamais obtenu en divisant le tour complet. On compare
+    // donc les deux façons de compter — et l'on exige qu'elles DIFFÈRENT, ce
+    // qui est le seul témoignage qu'on a bien lu le tableau.
+    const arcs = await page.evaluate(() => {
+      const z = etat.zones[0], p = poser(z);
+      if (!p.m || !p.points) return { pose: false };
+      const parTable = p.debit;
+      const parDivision = p.points.reduce((s, pt) =>
+        s + (pt.zone === 'coin' ? p.m.debit360/4 : pt.zone === 'bord' ? p.m.debit360/2 : p.m.debit360), 0);
+      return { pose: true, buse: p.m.nom + ' ' + p.m.detail, tetes: p.points.length,
+               lu: !!p.m.debitParAngle, parTable: +parTable.toFixed(3), parDivision: +parDivision.toFixed(3) };
+    });
+    ok('arrosage : la petite zone pose bien des tuyères à arcs', arcs.pose && arcs.tetes > 0 && arcs.lu,
+       JSON.stringify(arcs));
     ok('arrosage : le débit d’un arc vient du tableau, pas d’une division',
-       /0,58\s*m³\/h/.test(petite), 'lu : ' + petite.slice(0, 90));
+       arcs.pose && Math.abs(arcs.parTable - arcs.parDivision) > 0.005, JSON.stringify(arcs));
 
     ok('arrosage : toujours aucune erreur JS', errs.length === 0);
     await cArr.close();

@@ -7,6 +7,64 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-16
+
+### L'écran de création s'appelle « Fiche client »
+
+**Sa demande, capture à l'appui :** *« Enlève nouveau un chantier et remplace par
+fiche client. »*
+
+**Ce qui change :** « NOUVEAU · Un chantier » devient **« Fiche client »**, à la
+création comme à la reprise. Le surtitre disparaît avec le mot qu'il portait :
+il disait « Nouveau », et « Les coordonnées » en reprise **uniquement** parce que
+« nouveau » aurait été faux au-dessus d'un chantier ouvert trois jours plus tôt.
+Le titre ne disant plus « nouveau », ce contre-mot n'a plus rien à contrer.
+
+**Ce que ça évite :** un écran qui annonce une création alors qu'on vient
+corriger une fiche existante. Le nom dit maintenant ce que l'écran EST, pas ce
+qu'on y fait.
+
+**Vu à l'écran, pas dans le code :** le micro de la dictée était aligné par le
+haut et se posait au-dessus d'un titre devenu seul sur sa ligne. Recentré — les
+deux centres tombent sur le même pixel. `ARCHITECTURE.md` §124.
+
+---
+
+## 2026-08-18
+
+### « Il peut proposer une autre date » : un interrupteur avant l'envoi
+
+**Sa demande :** *« pour le lien du planning qui part au client, il faut que
+l'utilisateur puisse choisir avant d'envoyer s'il autorise ou non le client à
+choisir une date si celles proposées ne lui conviennent pas »*.
+
+**Jusqu'ici, le client le pouvait TOUJOURS** — la page publique offrait un
+calendrier sous les dates, sans que le patron ait rien à dire. Sur un chantier
+serré, une contre-proposition à six mois ne l'arrange pas, et son seul recours
+était de n'envoyer aucune date.
+
+L'interrupteur se pose **sous les dates, juste avant le bouton d'envoi**, et la
+phrase récapitulative le suit : « Le client choisira entre ces deux dates, et
+rien d'autre ». **Ouvert par défaut** — un défaut fermé changerait sans un mot
+ce qu'il croit envoyer, et ce que les liens déjà partis promettent.
+
+**Le choix est FIGÉ dans l'envoi** (migration 0055), jamais relu dans un
+réglage : l'écran du client doit dire demain ce qu'il disait aujourd'hui, comme
+les dates proposées et la fenêtre (migration 0027).
+
+**Et la règle ne vit pas à l'écran.** Cette page est publique, son formulaire se
+rejoue : le serveur refuse toute date hors des propositions quand l'envoi ne
+l'autorise pas, et le message dit au client quoi faire — choisir une date, ou
+demander une correction — au lieu de l'accuser. Le contrôle poste la
+contre-proposition **sans passer par l'écran** ; c'est le seul qui prouve que la
+porte est fermée. Vu rouge avant d'être livré : refus retiré, ce cas-là tombe.
+
+Le parcours entier est éprouvé au navigateur (`test-envoi-client-e2e.ts`) :
+l'interrupteur, l'envoi, puis **la page telle que le client la reçoit**, ouverte
+sans compte. `ARCHITECTURE.md` §132.
+
+---
+
 ## 2026-08-18
 
 ### La fiche de chantier se remplit, et le rapport part chez le client
@@ -26,7 +84,7 @@ retrier au douzième passage chez le même.
 d'atteindre le patron. Regarder les lignes *présentes* du dernier passage ne
 replie jamais rien ; regarder les lignes *cochées* du seul dernier passage fait
 disparaître une taille de haie d'automne dès le passage de mars. Le repli lit
-donc **tout l'historique envoyé** du client. `ARCHITECTURE.md` §127.
+donc **tout l'historique envoyé** du client. `ARCHITECTURE.md` §128.
 
 **Le rapport parti ne change plus jamais.** Les lignes sont copiées, pas lues
 dans le modèle ; le nom du client aussi. Retirer une prestation des réglages en
@@ -56,9 +114,10 @@ contexte sans session : `test-passage-entretien.ts` (19 cas) et
 - la garde du préchauffage a réclamé les nouveaux écrans avant qu'ils ne
   manquent chez lui ;
 - **`test-fiche-client-e2e` comptait quatre onglets et la barre en porte cinq
-  depuis « Paysage »** : ce contrôle était rouge sur `main` avant ce lot, écrit
-  quand le cinquième onglet était décidé mais pas encore posé. Remis à cinq — un
-  contrôle qui mesure un état révolu ne fait plus que du bruit.
+  depuis « Paysage »** : ce contrôle était rouge sur `main` avant ce lot. Une
+  autre session l'a corrigé le même jour, et mieux — elle compare la barre aux
+  onglets décidés au lieu d'attendre un nombre. Sa version a été gardée à la
+  fusion, la mienne écartée.
 
 ### La fiche de chantier rejoint Paysage — et le pont vers le client
 
@@ -108,6 +167,87 @@ détail d'affichage, c'est ce qu'il commande chez son fournisseur.
 **Ce que la maquette simule, et elle le dit en rouge :** la lecture de la photo.
 Le plan et la liste, eux, sont vraiment calculés, sur son catalogue.
 
+### Le quinconce, enfin posé — son croquis, et 12 tuyères qui deviennent 7
+
+**Son croquis du 18 août :** un couloir à **14** arroseurs alignés, le même à
+**7** en quinconce. *« Dans les couloirs, le but c'est de poser les tuyères en
+quinconce, car le but c'est que celle de gauche recouvre quasi 100 % jusqu'à
+celle de droite. »*
+
+**Le code n'en posait aucun.** Il ne décalait que les rangées intérieures ; un
+couloir n'a que deux rangées, toutes deux en bord — donc rien. Le drapeau
+« quinconce » valait pourtant `true` : l'écran l'annonçait, le dessin le
+démentait, et aucun contrôle ne regardait le dessin.
+
+**Le quinconce est maintenant un damier** — un point sur deux, i + j pair — et
+il ne se suppose pas : `couvreTout` mesure si tout le terrain reste arrosé, et
+`poser` resserre tant que ce n'est pas le cas. Sur son couloir, la boucle tombe
+sur **7**, exactement son croquis, par un chemin qui ne le connaissait pas.
+
+| Zone | Avant | Après |
+|---|---|---|
+| 10 × 2 (son couloir) | 12 | **7** |
+| 18 × 12 | 20 | **10** |
+| 30 × 22 | 16 | **8** |
+
+**Sept contrôles sont devenus rouges sur du code juste** — tous visaient un
+nombre ou un mot, aucun ne visait une règle. Deux étaient pires : ils
+continuaient de passer **en éprouvant le cas d'à côté**, sans un mot. Ils
+construisent désormais leur cas en visant la condition, et échouent s'ils n'y
+arrivent pas.
+
+**Ce que cela révise :** sa règle du 17 août « les derniers arroseurs toujours
+dans les coins » vaut pour la pose alignée. Sur un damier deux coins n'ont pas
+de tête — ils restent arrosés, et il l'a validé : *« oui, ça me va »*.
+
+### Le disconnecteur disparaît de la liste — sa décision
+
+*« Le disconnecteur, tu peux le supprimer à tout jamais, je n'en mets
+jamais. »* Retiré de `listeMateriel` et de la note de bas d'écran qui le disait
+obligatoire. **Ce qu'on évite :** une pièce qu'il écarte à chaque chantier, et
+qu'il faut décompter à chaque commande.
+
+Les deux contrôles qui exigeaient sa présence ont été **retournés, pas
+supprimés** : sans eux, la pièce reviendrait au premier raisonnement « c'est
+obligatoire sur l'eau potable » — juste en général, faux pour lui, et sa
+décision serait perdue. L'entrée reste au catalogue, inutilisée.
+
+### La liste dit CE QU'ON ACHÈTE, plus POURQUOI — sa consigne du soir
+
+*« Départ milieu de ligne, fin de ligne et jonction, ce sont des données pour
+toi, pour que tu comprennes les endroits où doit y avoir des tés et les autres
+où c'est des tés taraudés. Mais pour l'utilisateur, il n'a pas besoin de ces
+infos-là. Donc tu peux les supprimer, mais tu les gardes pour toi. »*
+
+Quatre mentions retirées des désignations — `(départ/milieu de ligne)`,
+`(fin de ligne)`, `(jonction, non taraudé)`, `(~2 m par arroseur)` —, et le
+raisonnement conservé en commentaire, là où il sert. **Il commande sur la
+désignation du catalogue :** ce qui s'y ajoute est une invitation à chercher
+une pièce qui n'existe pas sous ce nom.
+
+**Un contrôle en a trouvé une cinquième que je n'avais pas vue** — le
+`(~2 m par arroseur)` du PEBD Ø16 —, en comparant chaque ligne à l'entrée du
+catalogue plutôt qu'à une liste écrite à la main.
+
+**Et les deux coudes SBE ont fusionné.** Ils se distinguaient par
+`(haut, au corps)` et `(bas, sur la ligne)` : retirer ces mentions aurait donné
+**deux lignes identiques** dès qu'un corps est en 3/4" (les grosses turbines),
+ce qui se lit comme un défaut de comptage. Les emplois s'additionnent désormais
+par référence — un produit, une ligne, une quantité.
+
+**Trois contrôles lisaient ces étiquettes, sur deux suites.** Ils vérifient
+maintenant la règle en quantités : un SBE 1/2" par corps de tuyère, un SBE 3/4"
+par corps de turbine plus un par arroseur, deux SBE par arroseur au total. **Un
+contrôle accroché à un libellé meurt au premier changement de libellé** — c'est
+la même leçon que le 17 août, quand la section 3 a disparu.
+
+**Le cas du corps en 3/4" est PROVOQUÉ dans la suite**, avec une pelouse de
+40 × 30 en Hunter : les trois jardins d'exemple posent tous des corps en 1/2",
+et la garde n'aurait jamais rencontré son cas. Une garde qui ne rencontre pas
+son cas ne mesure rien — le piège du 15 août, en version « jamais atteint ». Un
+contrôle de plus refuse d'ailleurs de conclure si ce corps en 3/4" venait à
+disparaître du catalogue.
+
 ### Quatre défauts, et aucun n'a été trouvé par une suite
 
 1. **`corpsCourant` était resté dans `arrosage.html`** à l'extraction. Toute
@@ -145,6 +285,48 @@ défaut qu'il prétend attraper.
 
 ## 2026-08-17
 
+### « Il faut pouvoir créer un avoir » — dessiné, et une distinction qui vaut de l'argent
+
+Sa demande du 17 août : *« si jamais on facture un client et qui décide de ne
+pas nous payer, il faut avoir la possibilité de créer un avoir […] crée-moi des
+maquettes dynamiques en .html, pas de photo »*.
+
+**Ce que les planches lui disent, et qui n'était pas dans sa question.** Un
+avoir et un impayé ne sont pas la même chose, et les confondre coûte cher **sans
+retour possible** :
+
+| | Ce que ça fait | Peut-il encore réclamer ? |
+|---|---|---|
+| **Avoir** | annule tout ou partie de la facture | **non, plus jamais** |
+| **Facture perdue** | la facture reste entière, le rappel se tait | **oui** |
+
+Un client qui refuse de payer relève du second. Faire un avoir dans ce cas, ce
+serait se désarmer soi-même — et rien à l'écran ne l'en avertirait. C'est
+pourquoi l'arrangement le plus simple (une porte, un montant) est aussi le plus
+dangereux, et la planche le dit en toutes lettres.
+
+**Et une bonne nouvelle qui lui appartient :** sa TVA étant exigible au paiement
+depuis le 16 août (§110), une facture jamais payée n'est **jamais entrée** dans
+son relevé. Il ne doit rien dessus, il n'a rien à récupérer, aucune démarche à
+faire. Sous l'autre régime il aurait avancé 240 € de TVA sur un chantier jamais
+payé.
+
+`docs/maquettes/79-il-ne-paie-pas.html` (trois arrangements pour la situation,
+deux portes d'entrée) et `80-l-avoir.html` (trois formes de document, trois
+montants essayables). **Rien n'est codé** : `src/` n'est pas touché (§3 bis).
+
+**Ce que le code ne permet pas encore, et qui est écrit sur la planche :**
+`factures` n'accepte **qu'une facture par chantier**
+(`factures_chantier_uk`), la numérotation n'a **qu'une série**
+(`prochain_numero_facture`), et `resteDu` ne connaît que les règlements. Un
+avoir demande sa place, son compteur, et d'être vu par le reste dû — sans quoi
+la fiche client et le rappel d'impayé réclameraient une somme annulée.
+
+Contrôle : `scripts/verifier-maquette-avoir.mjs`, javascript coupé. Il recalcule
+chaque total depuis le TTC affiché plutôt que de le recopier, et **refuse la TVA
+prise sur le TTC** — 300 € d'avoir font 250,00 € HT et 50,00 € de TVA, jamais
+300 € de HT. Confronté à trois planches dégradées : trois rouges, chacun nommant
+le bon coupable, y compris le retrait de la phrase sur le droit de réclamer.
 ### La maquette des clients, ESSAYABLE — et le libellé qui disait « lui » à une cliente
 
 **Sa demande, le soir même :** *« montre-moi depuis chantier ce que ça donnerait,

@@ -227,7 +227,7 @@ export async function exporterEntreprise(
         .select()
         .from(prestationsEntretien)
         .where(eq(prestationsEntretien.entrepriseId, e)),
-      // Les passages d'entretien et leurs lignes (migration 0054). Ce sont les
+      // Les passages d'entretien et leurs lignes (migration 0055). Ce sont les
       // rapports partis chez ses clients — avec leur horodatage et leur
       // empreinte, qui font la preuve du passage depuis qu'il a écarté les
       // signatures (16 août 2026). Rien ne les reconstitue : les lignes sont

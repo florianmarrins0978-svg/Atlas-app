@@ -9,6 +9,28 @@ sert.
 
 ---
 
+## Ne JAMAIS attendre une publication en interrogeant `github.io`
+
+**Payé le 18 août 2026.** Après une fusion sur `main`, une boucle interrogeait
+`https://…github.io/Atlas-app/…` toutes les 30 s pour annoncer la mise en ligne.
+Au bout de vingt minutes elle a conclu *« la publication a peut-être échoué »* —
+et c'était **faux** : la publication avait réussi onze minutes plus tôt.
+
+Le mandataire réseau de cet environnement **refuse `github.io`**
+(`CLAUDE.md` §5). La boucle ne mesurait donc pas le déploiement, elle mesurait
+un `CONNECT tunnel failed, response 403` — et rendait `000` à chaque tour. Elle
+ne pouvait pas réussir, quel que soit l'état du site. C'est le piège du contrôle
+qui mesure zéro, dans sa version la plus traître : il ne rend pas un faux vert,
+il rend un faux ROUGE, et l'on part chercher une panne qui n'existe pas.
+
+**Ce qu'on interroge à la place :** l'état du flux `pages.yml`, par l'outil
+GitHub (`actions_list`, `list_workflow_runs`) — `conclusion: success` sur le
+commit qu'on vient de pousser. C'est l'observable qu'on a vraiment.
+
+**Et la règle générale :** avant d'écrire une boucle d'attente, se demander si
+son test peut réussir ici. Un `curl` vers une adresse que le mandataire refuse
+n'attend rien — il échoue en boucle.
+
 ## Voir la machine du patron sans y avoir accès
 
 **Il n'y a aucun accès, et il ne faut pas en fabriquer un.** La question a été
@@ -813,7 +835,53 @@ son propre commentaire servir « depuis deux endroits », et n'était appelée q
 d'un seul. Une fonction dont la note promet deux appelants et qui n'en a qu'un
 est un défaut qui ne rougit nulle part.
 
+## Piège d'outillage : une page SUPPRIMÉE laisse un validateur qui rougit
+
+**Payé le 17 août 2026, vingt minutes.** La batterie est tombée sur deux étapes
+— **Types** et **Construction** — avec ce message :
+
+> `.next-batie/types/validator.ts(440,39): Cannot find module
+> '../../src/app/reglages/planning/page.js'`
+
+**Aucune source ne mentionnait cette page.** Une autre session l'avait
+supprimée à dessein (« Supprimer la rubrique Planning, qui doublait Équipe »).
+Ce qui restait, c'était le **validateur engendré** par une construction
+antérieure — et `tsconfig.json` inclut `.next-batie/types/**/*.ts`
+délibérément, pour que les défauts de route se voient ici plutôt que chez le
+patron.
+
+**L'erreur accuse le mauvais coupable :** elle envoie chercher une page
+disparue, alors que le fautif est un dossier de construction périmé. Et elle est
+circulaire — la construction se type-vérifie contre le reste qu'elle devrait
+remplacer.
+
+**Le geste, et il ne coûte rien :**
+
+```bash
+rm -rf .next-batie .next-verification   # engendrés, ignorés par git
+```
+
+**Ce qui reste à faire, et n'a PAS été fait ici** (ce lot ne touchait que des
+planches) : la batterie devrait nettoyer ces dossiers avant l'étape
+« Construction » de `scripts/verifier-avant-livraison.ts`. Sans quoi le piège
+reviendra à la prochaine page supprimée.
+
 ## Ce qui vient d'être terminé
+
+**« IL PEUT PROPOSER UNE AUTRE DATE » (17 août, au soir).** Un interrupteur sous
+les dates, avant le bouton d'envoi : le patron décide, envoi par envoi, si le
+client peut sortir des dates offertes. `ARCHITECTURE.md` §132, migration 0055.
+
+**Trois choses à ne pas défaire :**
+
+1. **Le choix est FIGÉ dans l'envoi**, pas lu dans un réglage — l'écran du
+   client doit dire demain ce qu'il disait aujourd'hui.
+2. **Vrai par défaut**, à la colonne comme à l'écran : les liens déjà partis
+   gardent leur promesse.
+3. **Le refus vit dans `enregistrerReponse`**, pas seulement à l'écran. La page
+   du client est publique et son formulaire se rejoue ; cacher le calendrier ne
+   ferme rien.
+
 
 **⚠ « ENCORE LA VERSION LENTE » : LE VEILLEUR RETENTE MAINTENANT (18 août).**
 Une construction ratée laisse le banc en mode développement — et ce mode
@@ -1364,7 +1432,7 @@ demandé le 16 août de recréer les fiches de chantier d'une autre application
 (paysagistes en contrat d'entretien : cocher ce qui a été fait, envoyer au
 client). Le modèle, l'écran des réglages, le passage et le rapport du client
 existent. Le détail, et les deux versions du repli qui ont été refusées par leur
-propre contrôle, sont dans `ARCHITECTURE.md` §127.
+propre contrôle, sont dans `ARCHITECTURE.md` §128.
 
 **Ce qu'il faut savoir avant d'y toucher :**
 

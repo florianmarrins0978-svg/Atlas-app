@@ -209,24 +209,24 @@ async function main() {
   });
 
   await cas("la barre du bas n'a pas gagné d'onglet", async () => {
-    // **La liste des clients ne prend pas de place dans la barre**, et c'est
-    // tout ce que ce cas surveille : elle s'ouvre depuis l'accueil.
+    // **CE CONTRÔLE ATTENDAIT QUATRE ONGLETS, ET IL EST DEVENU FAUX LE 17 AOÛT**
+    // — le jour où le cinquième, « Paysage », a été posé sur sa décision
+    // (`ARCHITECTURE.md` §125 et §125 bis). Il a rougi sur du code juste, et
+    // c'est le lot d'à côté qui l'avait laissé derrière lui.
     //
-    // **Le nombre attendu est passé de quatre à CINQ le 18 août 2026**, et ce
-    // n'est pas un assouplissement : « Paysage » a été posé entre-temps
-    // (`ARCHITECTURE.md` §125, renommé le 17 au soir). Ce contrôle est donc
-    // resté rouge sur `main` entre les deux — écrit quand le cinquième onglet
-    // était décidé mais pas encore là, il comptait la barre d'avant. Un
-    // contrôle qui mesure un état révolu n'attrape plus rien : il fait du
-    // bruit, et on finit par le lire de travers.
-    //
-    // Cinq est la borne : à six colonnes, « CHANTIERS » déborde sur 360 px.
+    // **Un nombre écrit en dur ne dit pas ce qu'il garde.** La règle, elle, ne
+    // bouge pas : la liste des clients s'atteint depuis l'accueil, elle ne
+    // prend PAS de place dans la barre — à cinq colonnes, « CHANTIERS » tient
+    // déjà de justesse sur 360 px (`scripts/test-barre-basse-e2e.ts`). On
+    // vérifie donc que la barre porte exactement les onglets décidés, et que
+    // « Clients » n'en est pas.
+    const DECIDES = ["CHANTIERS", "PLANNING", "TERMINÉS", "PAYSAGE", "RÉGLAGES"];
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
-    const onglets = await page.locator("nav a").allInnerTexts();
-    assert.equal(
-      onglets.length,
-      5,
-      `la barre du bas porte ${onglets.length} onglets au lieu de cinq : ${onglets.join(", ")}`
+    const onglets = (await page.locator("nav a").allInnerTexts()).map((t) => t.trim().toUpperCase());
+    assert.deepEqual(
+      onglets,
+      DECIDES,
+      `la barre du bas porte ${onglets.join(", ")} au lieu de ${DECIDES.join(", ")}`
     );
   });
 

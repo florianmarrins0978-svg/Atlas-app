@@ -25,7 +25,99 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## ~~Le quinconce~~ — **FAIT le 18 août 2026**
+
+Sa règle, puis son croquis : un couloir à **14** arroseurs alignés se pose à
+**7** en quinconce. Le code n'en posait aucun — il ne décalait que les rangées
+intérieures, et un couloir n'a que deux rangées de bord.
+
+**Fait :** le quinconce est un damier (i + j pair), et `couvreTout` mesure qu'il
+arrose encore tout ; `poser` resserre tant que ce n'est pas vrai. Son couloir
+tombe sur 7. Détail et conséquences sur les contrôles : `ARCHITECTURE.md` §127.
+
+**Ce qui reste ouvert, et qu'il faudra lui demander un jour :** sa décision
+« la portée ne dépasse jamais la largeur » n'a PAS été câblée. Elle n'a pas été
+nécessaire — le damier suffit à retrouver son 7 sans monter en buse —, mais le
+choix de buse reste celui d'avant. Si un jour une pose choisit une buse qui
+arrose largement à côté, c'est là qu'il faudra la brancher.
+
+---
+
+## À surveiller — non reproduit
+
+### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
+
+**Écrit comme NON REPRODUIT, pas comme corrigé.** Pendant la batterie du
+18 août, la suite s'est arrêtée sur son propre garde-fou : *« Aucune
+proposition de prix n'a pu être calculée : ce contrôle n'a rien éprouvé.
+Vérifier les tarifs de démonstration. »* Elle cherche un tarif « Dépose
+carrelage », qui existe bien dans `src/server/db/seed.ts`.
+
+**Rejouée seule sur une base fraîche : verte. Rejouée dans la batterie
+entière (99 suites) : verte.** Rien n'a été corrigé — il n'y avait rien à
+corriger de visible. La piste la plus probable est une suite antérieure du même
+passage qui consomme ou modifie ce tarif : les 99 suites partagent une base
+semée **une seule fois** au début.
+
+**Si elle retombe :** ne pas la rejouer en croyant que ça suffit. Chercher
+quelle suite touche aux tarifs de démonstration avant elle, et lui faire semer
+son propre tarif plutôt que d'emprunter celui du jeu commun. Une suite qui
+dépend de l'état laissé par une autre finit toujours par rougir dans un ordre
+donné — et jamais seule, ce qui la rend introuvable.
+
+**Ce qui est déjà bien fait, et qu'il ne faut pas défaire :** son garde-fou.
+Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
+15 août. C'est lui qui a rendu la panne visible.
+
+---
+
 ## Ce que je peux faire seul
+
+### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
+
+Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
+payer, il faut avoir la possibilité de créer un avoir »*. Deux planches,
+`docs/maquettes/79-il-ne-paie-pas.html` et `80-l-avoir.html`. Rien dans `src/`.
+
+**CE QU'IL FAUT AVOIR COMPRIS AVANT DE CODER QUOI QUE CE SOIT.** Un avoir et un
+impayé ne sont pas la même chose :
+
+| | Ce que ça fait | Peut-il encore réclamer ? |
+|---|---|---|
+| **Avoir** | annule tout ou partie de la facture | **non, plus jamais** |
+| **Facture perdue** (créance irrécouvrable) | la facture reste entière, le rappel se tait | **oui** |
+
+Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
+seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
+
+**Deux réponses à attendre de lui :**
+
+1. **quel arrangement** (77) : trois portes nommées, une porte et un montant, ou
+   deux portes ;
+2. **quelle forme de document** (78) : un document à part, une mention sur la
+   facture, ou une facture refaite.
+
+**Ce que le code devra lever, et ce n'est pas anodin :**
+
+- `factures_chantier_uk` n'accepte **qu'une facture par chantier** — un avoir
+  demande sa table, ou la levée de cette contrainte ;
+- `attribuerNumeroFacture` n'a **qu'un compteur**
+  (`entreprise_compteurs.prochain_numero_facture`) : une série d'avoirs demande
+  le sien, sinon la suite des factures aura des trous ;
+- `resteDu` (`src/lib/exigibilite-tva.ts`) ne connaît que les règlements. Tant
+  qu'il ignore les avoirs, la fiche client et le rappel d'impayé réclameront une
+  somme annulée ;
+- une facture émise **ne se modifie jamais** : la correction est toujours une
+  seconde pièce.
+
+**Ce qui NE bouge pas, et qu'il est inutile de bâtir :** son relevé de TVA. Elle
+est exigible au paiement (§110) — une facture jamais payée n'y est jamais
+entrée. Aucune récupération, aucune démarche.
+
+**Deux questions posées sur la planche, sans réponse :** faut-il qu'Atlas
+prépare une **mise en demeure** avant de renoncer ? et le cas du client qui
+**paie après** qu'on a déclaré la facture perdue (le règlement se note
+normalement, rien n'est définitif — mais ça reste à confirmer avec lui).
 
 ### ~~0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier~~ — **FAIT le 17 août 2026**
 
@@ -554,9 +646,16 @@ porte une seule fois, référencé par chaque fiche — retaper « Électrovanne
 « Électrovannes 24 V », « Regards de vannes », « Programmateur X voies »
 disparaissent dès qu'une fiche existe pour le nombre de secteurs — remplacées
 par ses vraies références, dans la liste chiffrable ET dans le registre de
-prix. Ce qui reste toujours, quelle que soit la fiche : disconnecteur,
-réducteur de pression, sonde de pluie — des pièces de tête de réseau, jamais
-dans un regard.
+prix. Ce qui reste toujours, quelle que soit la fiche : réducteur de pression
+et sonde de pluie — des pièces de tête de réseau, jamais dans un regard.
+
+**Le DISCONNECTEUR n'y est plus — sa décision du 18 août :** *« le
+disconnecteur, tu peux le supprimer à tout jamais, je n'en mets jamais. »* La
+liste sert à commander ce qu'IL pose. Ne pas le remettre au motif qu'un réseau
+raccordé à l'eau potable en demande un : c'est juste en général, et ce n'est
+pas sa pratique. Deux contrôles gardent son absence (`essai-arrosage-detaille`,
+`e2e.js`), retournés plutôt que supprimés pour que la question ne se rouvre
+pas. L'entrée reste au catalogue, inutilisée.
 
 **Ce qui n'est PAS dans ses fiches, et n'a pas été ajouté en silence :** aucun
 disconnecteur ni réducteur listé dans le regard — cohérent avec leur position
@@ -1083,7 +1182,7 @@ faux dans les deux sens** :
 
 Le repli lit donc **tout ce que ce client a déjà pris**, rapports envoyés
 confondus. Trouvé par le contrôle avant d'atteindre le patron.
-`ARCHITECTURE.md` §127.
+`ARCHITECTURE.md` §128.
 
 **PAS DE SIGNATURE — décidé le 16 août 2026, et à ne pas rouvrir par bonne
 volonté.** Sur SA capture de l'autre application, les deux signatures étaient
@@ -1122,7 +1221,7 @@ d'envoyer, par un pont vers la fiche client (existante depuis le 16 août).
 **LA QUESTION EST TRANCHÉE — « Fait la C », le 17 août 2026**
 (`docs/maquettes/77-la-fiche-dans-paysage.html`). Le client se nomme à tout
 moment, et la fiche se replie sur ses prestations dès qu'il est connu, **sans
-perdre une coche**. Codé le 18 août : `ARCHITECTURE.md` §127.
+perdre une coche**. Codé le 18 août : `ARCHITECTURE.md` §128.
 
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :
@@ -1136,7 +1235,7 @@ une case à ajouter :
    suite `scripts/test-fiche-entretien-e2e.ts` ;
 3. ~~le **passage** : la fiche pré-remplie, cochée, le temps à la molette~~ —
    **FAIT le 18 août** : tables `passages_entretien` et `lignes_passage`
-   (migration `0054`), règles pures dans `src/lib/passage-entretien.ts`, dépôt
+   (migration `0055`), règles pures dans `src/lib/passage-entretien.ts`, dépôt
    `src/server/repositories/passages-entretien.ts`, écrans
    `src/app/paysage/fiche/`, suites `scripts/test-passage-entretien.ts` et
    `scripts/test-fiche-chantier-e2e.ts` ;

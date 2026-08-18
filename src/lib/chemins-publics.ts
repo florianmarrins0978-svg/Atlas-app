@@ -45,7 +45,7 @@ export const CHEMINS_PUBLICS = [
   // patron avait constaté que sa facture arrêtée ne parvenait jamais à son
   // client, faute de tout chemin vers lui.
   "/factures",
-  // Le compte rendu de passage d'entretien (migration 0054, 18 août 2026).
+  // Le compte rendu de passage d'entretien (migration 0055, 18 août 2026).
   // Même mécanique et même garde-fou : l'accès est un jeton imprévisible,
   // contrôlé par une politique dédiée. Sans jeton exact, aucune ligne.
   "/entretien",
