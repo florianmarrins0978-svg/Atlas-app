@@ -57,6 +57,39 @@ détail d'affichage, c'est ce qu'il commande chez son fournisseur.
 **Ce que la maquette simule, et elle le dit en rouge :** la lecture de la photo.
 Le plan et la liste, eux, sont vraiment calculés, sur son catalogue.
 
+### Le quinconce, enfin posé — son croquis, et 12 tuyères qui deviennent 7
+
+**Son croquis du 18 août :** un couloir à **14** arroseurs alignés, le même à
+**7** en quinconce. *« Dans les couloirs, le but c'est de poser les tuyères en
+quinconce, car le but c'est que celle de gauche recouvre quasi 100 % jusqu'à
+celle de droite. »*
+
+**Le code n'en posait aucun.** Il ne décalait que les rangées intérieures ; un
+couloir n'a que deux rangées, toutes deux en bord — donc rien. Le drapeau
+« quinconce » valait pourtant `true` : l'écran l'annonçait, le dessin le
+démentait, et aucun contrôle ne regardait le dessin.
+
+**Le quinconce est maintenant un damier** — un point sur deux, i + j pair — et
+il ne se suppose pas : `couvreTout` mesure si tout le terrain reste arrosé, et
+`poser` resserre tant que ce n'est pas le cas. Sur son couloir, la boucle tombe
+sur **7**, exactement son croquis, par un chemin qui ne le connaissait pas.
+
+| Zone | Avant | Après |
+|---|---|---|
+| 10 × 2 (son couloir) | 12 | **7** |
+| 18 × 12 | 20 | **10** |
+| 30 × 22 | 16 | **8** |
+
+**Sept contrôles sont devenus rouges sur du code juste** — tous visaient un
+nombre ou un mot, aucun ne visait une règle. Deux étaient pires : ils
+continuaient de passer **en éprouvant le cas d'à côté**, sans un mot. Ils
+construisent désormais leur cas en visant la condition, et échouent s'ils n'y
+arrivent pas.
+
+**Ce que cela révise :** sa règle du 17 août « les derniers arroseurs toujours
+dans les coins » vaut pour la pose alignée. Sur un damier deux coins n'ont pas
+de tête — ils restent arrosés, et il l'a validé : *« oui, ça me va »*.
+
 ### Le disconnecteur disparaît de la liste — sa décision
 
 *« Le disconnecteur, tu peux le supprimer à tout jamais, je n'en mets
