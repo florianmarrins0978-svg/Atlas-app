@@ -33,7 +33,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 "je dicte mon devis" et un autre "j'écris mon devis", en gardant le chemin entre
 un pour écrire le devis et l'autre pour le dicter. »*
 
-**Rien n'est codé** : `docs/maquettes/79-les-deux-boutons-du-devis.html` montre
+**Rien n'est codé** : `appli/deux-boutons-devis.html` montre
 cinq façons de le poser, sur son écran, à 390 px. Le code de l'application
 (`FormulaireNouveauChantier.tsx`, `BasculePorte`, `LibelleDeLaPorte`) n'a pas
 bougé — règle du dessin d'abord (`CLAUDE.md` §3 bis).

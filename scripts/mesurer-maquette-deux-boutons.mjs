@@ -2,6 +2,11 @@
 /*
   Mesure les deux boutons du devis, à la largeur réelle de son téléphone.
 
+  La planche vit dans `appli/` et non dans `docs/maquettes/` : c'est le SEUL
+  dossier publié du dépôt (`.github/workflows/pages.yml`), donc le seul endroit
+  d'où une planche s'ouvre depuis son téléphone. Même raison que
+  `appli/arrosage.html`. Le sommaire des maquettes y renvoie.
+
   **Pourquoi mesurer plutôt qu’estimer.** La planche 79 affirme qu’une
   proposition tient sur une ligne et qu’une autre déborde sur deux. Écrit à
   l’œil, c’est une opinion ; et une opinion fausse ferait choisir au patron un
@@ -28,7 +33,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
-const FICHIER = join(RACINE, "docs", "maquettes", "79-les-deux-boutons-du-devis.html");
+const FICHIER = join(RACINE, "appli", "deux-boutons-devis.html");
 
 // Chemin propre à cet environnement, utilisé seulement s’il existe : ailleurs,
 // Playwright trouve son propre navigateur.

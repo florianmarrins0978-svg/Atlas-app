@@ -17,7 +17,7 @@ gardant le chemin »*.
 
 **Rien n'est codé, et c'est la règle** (`CLAUDE.md` §3 bis) : une demande
 d'apparence se dessine, se montre, et ne touche à `src/` qu'une fois choisie.
-`docs/maquettes/79-les-deux-boutons-du-devis.html` pose cinq façons de le faire,
+`appli/deux-boutons-devis.html` pose cinq façons de le faire,
 sur un écran de 390 px, sans une ligne de JavaScript.
 
 **Ce que le dessin a fait apparaître, et que la demande ne pouvait pas dire.**
