@@ -300,7 +300,12 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // Le panneau des secteurs a été retiré le 17 août sur sa demande ; le
     // découpage, lui, tourne toujours et décide de tout le reste.
     const secteurs = await page.evaluate(() => decouper().secteurs.length);
-    ok('arrosage : le jardin de départ se découpe', secteurs >= 6);
+    // Le seuil était de 6 : il visait le jardin d'exemple d'alors. Le quinconce
+    // de son croquis du 18 août a fait tomber le débit, donc le nombre de
+    // vannes. Ce que ce contrôle garde n'est pas un nombre — c'est que le
+    // découpage RÉPONDE au lieu de rendre zéro, ce qui serait le signe qu'il ne
+    // tourne plus depuis que son écran a disparu.
+    ok('arrosage : le jardin de départ se découpe', secteurs >= 1);
 
     // **Le quinconce retire un arroseur, il ne le déplace pas.** Une pose
     // décalée qui garde tous ses points fait exactement ce qu'il a signalé le
@@ -451,13 +456,36 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     });
     await page.waitForTimeout(150);
     const fiche = await page.$eval('#nourrice', el => el.innerText);
+    // Le mot « Clarinette » était un indice de « c'est une vraie fiche », et il
+    // est tombé le 18 août : les petites fiches se montent sans clarinette.
+    // Ce qui compte est que la fiche soit LA SIENNE (source « patron ») et
+    // qu'elle s'affiche complète.
     ok('arrosage : une fiche de nourrice enregistrée s’affiche',
-       /Clarinette/.test(fiche) && /Électrovanne/.test(fiche) && !/à renseigner/.test(fiche));
+       /votre fiche/i.test(fiche) && /Électrovanne/.test(fiche) && !/à renseigner/.test(fiche));
     // Ses pièces se retrouvent aussi dans la liste chiffrable — pas dupliquées,
     // pas oubliées : c'est ELLES qui remplacent les lignes génériques.
+    // **Ce contrôle exigeait le mot « Clarinette », et il est devenu faux le
+    // 18 août** : le quinconce de son croquis a fait tomber ce jardin à moins
+    // de voies, et les petites fiches se montent sans clarinette. Le mot
+    // n'était qu'un indice ; la RÈGLE est que ses pièces REMPLACENT les
+    // lignes génériques au lieu de s'y ajouter.
     const materiel2 = await page.$eval('#materiel', el => el.innerText);
+    const remplace = await page.evaluate(() => {
+      const d = decouper();
+      const f = CATALOGUE.ficheNourrice(d.secteurs.length, combienGoutteAGoutte(d));
+      if (!f || !f.pieces || !f.pieces.length) return { fiche: false };
+      const refs = listeMateriel(d).map(l => l.ref);
+      const manquantes = f.pieces.filter(x => refs.indexOf(x.ref) < 0);
+      return { fiche: true, source: f.source, pieces: f.pieces.length,
+               manquantes: manquantes.map(x => x.ref) };
+    });
+    // Sans fiche, rien n'est éprouvé : on le dit au lieu de rendre du vert.
+    ok('arrosage : une fiche de nourrice existe bien pour ce jardin',
+       remplace.fiche === true && remplace.source === 'patron', JSON.stringify(remplace));
     ok('arrosage : les pièces de la fiche entrent dans la liste chiffrable',
-       /Clarinette/.test(materiel2) && !/Électrovannes 24 V/.test(materiel2));
+       remplace.fiche && remplace.pieces > 0 && remplace.manquantes.length === 0 &&
+       !/Électrovannes 24 V|Regards de vannes/.test(materiel2),
+       'manquantes : ' + (remplace.manquantes || []).join(', '));
 
     // **Les débits par ARC sont lus au catalogue, jamais déduits par division.**
     // Sur les grosses buses la division tombe juste, donc un contrôle posé sur
@@ -471,9 +499,24 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       recalculer(true);
     });
     await page.waitForTimeout(200);
-    const petite = await page.$eval('.zone-res', el => el.textContent);
+    // **Le nombre 0,58 était écrit en dur, et il a bougé avec le quinconce.**
+    // Ce qu'il gardait ne bouge pas : le débit d'un quart et d'un demi-tour est
+    // LU au catalogue, jamais obtenu en divisant le tour complet. On compare
+    // donc les deux façons de compter — et l'on exige qu'elles DIFFÈRENT, ce
+    // qui est le seul témoignage qu'on a bien lu le tableau.
+    const arcs = await page.evaluate(() => {
+      const z = etat.zones[0], p = poser(z);
+      if (!p.m || !p.points) return { pose: false };
+      const parTable = p.debit;
+      const parDivision = p.points.reduce((s, pt) =>
+        s + (pt.zone === 'coin' ? p.m.debit360/4 : pt.zone === 'bord' ? p.m.debit360/2 : p.m.debit360), 0);
+      return { pose: true, buse: p.m.nom + ' ' + p.m.detail, tetes: p.points.length,
+               lu: !!p.m.debitParAngle, parTable: +parTable.toFixed(3), parDivision: +parDivision.toFixed(3) };
+    });
+    ok('arrosage : la petite zone pose bien des tuyères à arcs', arcs.pose && arcs.tetes > 0 && arcs.lu,
+       JSON.stringify(arcs));
     ok('arrosage : le débit d’un arc vient du tableau, pas d’une division',
-       /0,58\s*m³\/h/.test(petite), 'lu : ' + petite.slice(0, 90));
+       arcs.pose && Math.abs(arcs.parTable - arcs.parDivision) > 0.005, JSON.stringify(arcs));
 
     ok('arrosage : toujours aucune erreur JS', errs.length === 0);
     await cArr.close();
