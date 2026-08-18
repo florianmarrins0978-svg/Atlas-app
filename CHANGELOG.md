@@ -1206,6 +1206,32 @@ de la 68. Raisons : `ARCHITECTURE.md` §129.
 
 ---
 
+## 2026-08-18
+
+### « J'ai encore la version lente » — la construction échouée se retente enfin
+
+**Sa fiche disait tout**, sans qu'il ait rien à recopier : *« Code SERVI :
+AUCUNE — la construction a ÉCHOUÉ »*, avec le même refus que l'avant-veille.
+
+**Ce qui était déjà réparé ne suffisait pas.** L'orpheline est délogée, le
+verrou est exclusif, une seconde tentative part sur ce refus-là — son espace
+portait bien ces trois correctifs. Mais **aucun ne couvre le cas où les deux
+tentatives tombent**.
+
+**Le trou :** le veilleur ne relançait le banc que lorsque *rien* ne répondait
+sur le port. Or une construction ratée laisse le banc en mode développement, et
+ce mode-là répond très bien. Le veilleur se déclarait content, et plus rien ne
+retentait — toute la soirée sur la version lente.
+
+**Ce que ça évite désormais :** le veilleur regarde aussi *si la version rapide
+est là*. Le témoin d'échec existait déjà et personne ne le lisait. Trois
+tentatives espacées de dix minutes, jamais deux constructions à la fois, puis on
+se tait et la fiche porte la cause.
+
+**Pourquoi réessayer marche ici :** la cause est passagère — 132 Mo libres au
+moment de la panne, sur 8 Go. Dix minutes plus tard, la même construction passe.
+Détail et tableau des contrôles : `ARCHITECTURE.md` §130.
+
 ## 2026-08-16
 
 ### « Quelle est la différence entre planning et équipe ? » — aucune, et c'est réparé

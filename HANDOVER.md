@@ -815,6 +815,17 @@ est un défaut qui ne rougit nulle part.
 
 ## Ce qui vient d'être terminé
 
+**⚠ « ENCORE LA VERSION LENTE » : LE VEILLEUR RETENTE MAINTENANT (18 août).**
+Une construction ratée laisse le banc en mode développement — et ce mode
+**répond** à la santé. Le veilleur, qui ne relançait que sur un port muet, se
+déclarait donc content pour la soirée entière. Il lit désormais le témoin
+d'échec : trois tentatives espacées de dix minutes, jamais deux constructions à
+la fois (`ARCHITECTURE.md` §130).
+
+**LA MÉTHODE, ET ELLE A TRANCHÉ EN DIX SECONDES :** lire la fiche d'état
+(issue #47) AVANT toute hypothèse. Elle portait le message exact de l'échec et
+le commit réellement servi — sans elle, on aurait cherché du côté du réseau.
+
 **LA RUBRIQUE « PLANNING » DES RÉGLAGES N'EXISTE PLUS (16 août).** Sa question :
 *« quelle est la différence entre planning et équipe ? »* — il n'y en avait
 aucune, les deux rendaient le même composant. Tout est dans **« Équipe »** :
