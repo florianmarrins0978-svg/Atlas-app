@@ -116,6 +116,19 @@ seule avec quinze outils.
 
 ### Le plan d'arrosage automatique — ESSAYABLE le 17 août 2026, rien n'est codé
 
+**Du croquis au plan, sa demande du 18 août :** *« une fois que j'ai envoyé la
+photo, il y a le petit encart où on choisit la marque. Tout ce qu'il y a en
+dessous, tu peux le supprimer. Et tu me fais le plan en couleur avec les
+différents réseaux [...] et la liste des pièces à acheter. »*
+→ **`appli/arrosage-croquis.html`** : un seul écran de saisie (la photo, la
+marque), puis le plan en couleur et les pièces rangées en casiers. La lecture de
+la photo y est **simulée**, et la page le dit en rouge ; le plan et la liste,
+eux, sont vraiment calculés.
+
+**Le calcul est commun aux deux pages : `appli/arrosage-calcul.js`.** Il n'a pas
+été recopié — cette liste est ce qu'il commande chez son fournisseur, et deux
+versions qui divergent font deux camions de pièces (`ARCHITECTURE.md` §126).
+
 **La page qui calcule pour de bon : `appli/arrosage.html`**, publiée avec
 l'appli, donc ouvrable au téléphone. Point d'eau, zones, secteurs, durées par
 saison, plan et liste du matériel : tout se refait à chaque frappe.

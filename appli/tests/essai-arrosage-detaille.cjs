@@ -29,11 +29,17 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-suite.png';
     morceau('IEND', Buffer.alloc(0))
   ]));
 })();
-const B = 'http://127.0.0.1:8099';
+// **L'adresse vient de l'environnement.** Elle était écrite en dur : la suite
+// ne pouvait donc pas être jouée par la publication, qui sert sur 8080. Une
+// suite qu'on ne peut jouer qu'à la main est une suite qu'on oublie.
+const B = process.env.BASE_URL || 'http://127.0.0.1:8099';
 let ok = 0, ko = 0;
 function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; console.log('  ✗ ' + n + (d ? '\n      ' + d : '')); } }
 (async () => {
-  const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const CHEMIN = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  const exe = process.env.PLAYWRIGHT_EXECUTABLE_PATH ||
+              (require('fs').existsSync(CHEMIN) ? CHEMIN : undefined);
+  const nav = await chromium.launch(exe ? { executablePath: exe } : {});
   // L'écran le plus étroit du parc : 360 px. C'est là que ça casse.
   const ctx = await nav.newContext({ viewport: { width: 360, height: 740 }, deviceScaleFactor: 2 });
   const page = await ctx.newPage();

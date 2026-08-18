@@ -184,6 +184,35 @@ le matin — **un contrôle garde une règle, pas un écran.** Et trois gardes
 nouvelles sur le croquis, éprouvées à l'envers : la photo s'affiche, survit au
 rechargement, se retire, et l'écran ANNONCE qu'il ne lit pas encore les cotes.
 
+**✅ LA CIBLE EST MAINTENANT ESSAYABLE — `appli/arrosage-croquis.html`, 18 août.**
+
+Sa demande : *« une fois que j'ai envoyé la photo de mon jardin avec les
+mesures, il y a le petit encart où on peut choisir la marque. Tout ce qu'il y a
+en dessous, tu peux le supprimer. Et une fois que tu as lu les mesures avec
+l'IA, tu me fais le plan en couleur avec les différents réseaux, contenant la
+nourrice, les PE en pointillés, les arroseurs représentés par des ronds, et tu
+me fais la liste des pièces à acheter [...] Avant de coder quoi que ce soit,
+crée-moi une maquette dynamique que je puisse essayer, pas de photos en .html. »*
+
+- **Un seul écran de saisie** : la photo et la marque. Rien d'autre, comme il l'a
+  demandé.
+- **Le plan** : un réseau une couleur, PE en pointillés, arroseurs en ronds,
+  nourrice dans son regard, massifs en bandes à la couleur de leur vanne —
+  **dripline non tracée**, sa consigne.
+- **Les pièces en casiers** : les arroseurs, le goutte-à-goutte, la nourrice, le
+  réseau enterré, la tête de réseau, le tuyau PE. Un bandeau dit d'un coup
+  combien de réseaux, quel arroseur, quel diamètre d'amenée.
+- **Ce qui est SIMULÉ, et la page le dit en rouge** : la lecture de la photo —
+  une page statique n'a pas de serveur. Trois jardins d'exemple tiennent lieu de
+  lecture. Le plan et la liste, eux, sont vraiment calculés sur son catalogue.
+
+**Ce qui reste à trancher avec lui** — à ne pas deviner :
+la longueur d'une couronne de PE (comptée à 50 m, marqué *à confirmer* : c'est
+le conditionnement de son fournisseur, pas une donnée du catalogue), la longueur
+des antennes vers les réseaux (elle dépend du tracé sur le terrain — inventée,
+elle se paie à la pose), et la pression nominale de son PEHD, qui décide du
+verdict Ø25/Ø32.
+
 **LA CIBLE EST DESSINÉE — planche `75-le-plan-comme-le-sien.html`, 17 août.**
 Il a envoyé la photo d'un **plan d'exécution professionnel** : échelle 1/100e,
 légende (DRIPLINE, Turbine 3504, Tube PE.H.D, Électrovanne 9 V), symboles,

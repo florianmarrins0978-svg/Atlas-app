@@ -7,6 +7,65 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-18
+
+### Du croquis au plan : la maquette essayable, et le calcul sorti de l'écran
+
+**Sa demande :** *« une fois que j'ai envoyé la photo de mon jardin avec les
+mesures, il y a le petit encart où on peut choisir la marque. Tout ce qu'il y a
+en dessous, tu peux le supprimer. Et une fois que tu as lu les mesures avec
+l'IA, tu me fais le plan en couleur avec les différents réseaux, contenant la
+nourrice, les PE en pointillés, les arroseurs représentés par des ronds, et tu
+me fais la liste des pièces à acheter [...] Avant de coder quoi que ce soit,
+crée-moi une maquette dynamique que je puisse essayer. »*
+
+**`appli/arrosage-croquis.html`**, publiée avec l'appli — ouvrable au téléphone
+(`…github.io/Atlas-app/arrosage-croquis.html`). Un seul écran de saisie : la
+photo et la marque. Puis le plan en couleur et les pièces rangées en casiers.
+
+**Le calcul a été SORTI de l'écran** dans `appli/arrosage-calcul.js`, plutôt que
+recopié dans la maquette. Deux implémentations d'une même règle finissent
+toujours par diverger (`CLAUDE.md` §3) — et la liste des pièces n'est pas un
+détail d'affichage, c'est ce qu'il commande chez son fournisseur.
+
+**Ce que la maquette simule, et elle le dit en rouge :** la lecture de la photo.
+Le plan et la liste, eux, sont vraiment calculés, sur son catalogue.
+
+### Quatre défauts, et aucun n'a été trouvé par une suite
+
+1. **`corpsCourant` était resté dans `arrosage.html`** à l'extraction. Toute
+   page autre que celle-là partait en `ReferenceError` dès qu'un jardin posait
+   une tuyère — et l'écran rendait *« la liste se remplit dès qu'un jardin est
+   lu »*, un vide qui ressemble à un état normal. Les 73 et les 105 suites
+   étaient vertes : aucune ne demandait la liste d'un jardin MIXTE.
+2. **Le tuyau se dessinait une ligne par rangée.** Une rangée qui ne portait
+   qu'une tête de son réseau n'en avait aucune : l'arroseur flottait, relié à
+   rien. Le tracé va désormais de proche en proche, à angle droit.
+3. **La bande du goutte-à-goutte était grise et anonyme.** Le dessin montrait
+   deux couleurs quand la nourrice en annonçait trois, sans dire où passait la
+   troisième voie. Elle porte la couleur de sa vanne (`reseauxDeZone`, ajouté
+   à `decouper`).
+4. **Le contour de la pelouse était dessiné APRÈS les tuyaux**, et repeignait
+   la rangée du bas — dont les têtes sont posées sur la bordure. Le tracé était
+   juste, le plan montrait un réseau à moitié relié.
+
+**Les trois premiers sortent de la capture d'écran, le quatrième aussi.** C'est
+la sixième fois dans ce dépôt (`CLAUDE.md` §5).
+
+### Les suites de l'arrosage barrent enfin la publication
+
+`appli/tests/essai-arrosage-detaille.cjs` avait son adresse écrite en dur : elle
+ne pouvait être jouée qu'à la main, et ne barrait donc rien. Elle lit désormais
+`BASE_URL`, et `pages.yml` l'enchaîne avec la nouvelle
+`appli/tests/essai-croquis.cjs` (25 contrôles). **Une suite qui ne barre pas la
+publication ne barre rien** — c'est exactement ce qui a laissé passer le défaut
+n° 1.
+
+Chacun des six contrôles a été vu ROUGE avant d'être gardé, en réintroduisant le
+défaut qu'il prétend attraper.
+
+---
+
 ## 2026-08-17
 
 ### La maquette des clients, ESSAYABLE — et le libellé qui disait « lui » à une cliente

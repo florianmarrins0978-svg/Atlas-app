@@ -1265,6 +1265,26 @@ la portée*. Réglable à l'écran, et l'écart en mètres y est écrit pour qu'
 tranche d'un regard. Passer de 100 à 80 % fait passer le jardin d'exemple de 8 à
 9 secteurs : ce réglage décide du nombre d'arroseurs, donc de la facture.
 
+**⚠ DEUX PAGES ESSAYABLES, ET LE CALCUL EST DANS UN TROISIÈME FICHIER (18 août).**
+
+- `appli/arrosage.html` — l'outil complet : le point d'eau, le croquis, la liste.
+- `appli/arrosage-croquis.html` — sa demande du 18 août : **la photo et la
+  marque, rien d'autre**, puis le plan en couleur et les pièces en casiers.
+- `appli/arrosage-calcul.js` — **le calcul, partagé par les deux.** Ni l'une ni
+  l'autre ne calcule quoi que ce soit : elles dessinent ce qu'il rend.
+
+**Le piège de ce partage, payé le jour même.** `corpsCourant()` était resté dans
+`arrosage.html` : toute page AUTRE que celle-là partait en `ReferenceError` dès
+qu'un jardin posait une tuyère, et l'écran rendait *« la liste se remplit dès
+qu'un jardin est lu »* — un vide qui ressemble à un état normal. Les 73 et les
+105 suites étaient vertes ; aucune ne demandait la liste d'un jardin MIXTE.
+**À toute extraction, relire le fichier de DÉPART, pas celui d'arrivée**
+(`ARCHITECTURE.md` §126).
+
+**Et la clé de sauvegarde sépare les deux pages.** Le module lit
+`window.CLE_ETAT` ; la maquette pose `atlas-arrosage-croquis`. Sans cela,
+l'essayer effacerait le jardin qu'il a saisi dans l'outil.
+
 **⚠ LE PLAN D'ARROSAGE : LA PAGE ESSAYABLE EST `appli/arrosage.html` (17 août).**
 Sa consigne, après les trois planches : *« je veux que tu code rien, d'abord des
 maquettes dynamiques en .html que je puisse essayer, pas de photo »*.
@@ -1280,9 +1300,11 @@ maquettes dynamiques en .html que je puisse essayer, pas de photo »*.
   fournisseurs, ils me font un devis, puis je repasse par le circuit normal de
   l'application »*. La sortie est une liste de QUANTITÉS. Un contrôle refuse
   tout montant en euros — ne pas le contourner par bonne volonté.
-- **Elle est gardée par `appli/tests/e2e.js`**, jouée avant publication puis
-  **contre le site en ligne** : erreur JS, secteur au-dessus du robinet, cycle
-  qui ne fait pas la somme, prix, débordement à 390 px.
+- **Elle est gardée par TROIS suites, toutes jouées avant publication** depuis
+  le 18 août : `appli/tests/e2e.js` (105), `essai-arrosage-detaille.cjs` (73) et
+  `essai-croquis.cjs` (25). Les deux dernières avaient leur adresse écrite en
+  dur et ne barraient donc **aucune** mise en ligne — c'est ce qui a laissé
+  passer le défaut de `corpsCourant`. Elles lisent `BASE_URL` maintenant.
 - **Ce que l'essai apprend et qu'aucune planche ne disait** : sur « au mieux »,
   les deux pelouses passent en turbines et le jardin tombe de huit secteurs à
   quatre. Le jardin de départ garde les tuyères pour que la bascule se voie.
