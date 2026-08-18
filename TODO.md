@@ -25,6 +25,34 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## À surveiller — non reproduit
+
+### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
+
+**Écrit comme NON REPRODUIT, pas comme corrigé.** Pendant la batterie du
+18 août, la suite s'est arrêtée sur son propre garde-fou : *« Aucune
+proposition de prix n'a pu être calculée : ce contrôle n'a rien éprouvé.
+Vérifier les tarifs de démonstration. »* Elle cherche un tarif « Dépose
+carrelage », qui existe bien dans `src/server/db/seed.ts`.
+
+**Rejouée seule sur une base fraîche : verte. Rejouée dans la batterie
+entière (99 suites) : verte.** Rien n'a été corrigé — il n'y avait rien à
+corriger de visible. La piste la plus probable est une suite antérieure du même
+passage qui consomme ou modifie ce tarif : les 99 suites partagent une base
+semée **une seule fois** au début.
+
+**Si elle retombe :** ne pas la rejouer en croyant que ça suffit. Chercher
+quelle suite touche aux tarifs de démonstration avant elle, et lui faire semer
+son propre tarif plutôt que d'emprunter celui du jeu commun. Une suite qui
+dépend de l'état laissé par une autre finit toujours par rougir dans un ordre
+donné — et jamais seule, ce qui la rend introuvable.
+
+**Ce qui est déjà bien fait, et qu'il ne faut pas défaire :** son garde-fou.
+Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
+15 août. C'est lui qui a rendu la panne visible.
+
+---
+
 ## Ce que je peux faire seul
 
 ### ~~0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier~~ — **FAIT le 17 août 2026**
