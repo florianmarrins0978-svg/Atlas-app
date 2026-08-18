@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /*
-  Éprouve les maquettes 77 et 78, JAVASCRIPT COUPÉ.
+  Éprouve les maquettes 79 et 80, JAVASCRIPT COUPÉ.
 
   **Ce qu'elles servent à trancher.** Le patron, le 17 août 2026 : *« si jamais
   on facture un client et qui décide de ne pas nous payer, il faut avoir la
-  possibilité de créer un avoir »*. La 77 pose la question de la SITUATION
-  (erreur, geste, mauvais payeur), la 78 celle de la FORME du document.
+  possibilité de créer un avoir »*. La 79 pose la question de la SITUATION
+  (erreur, geste, mauvais payeur), la 80 celle de la FORME du document.
 
   ────────────────────────────────────────────────────────────────────────────
   LE CONTRÔLE QUI COMPTE VRAIMENT EST L'ARITHMÉTIQUE, et pour deux raisons.
@@ -23,7 +23,7 @@
   ────────────────────────────────────────────────────────────────────────────
   ET UN CONTRÔLE QUI N'EST PAS ARITHMÉTIQUE, mais qui est le plus important.
 
-  **La 77 DOIT dire qu'un avoir éteint le droit de réclamer**, et qu'une facture
+  **La 79 DOIT dire qu'un avoir éteint le droit de réclamer**, et qu'une facture
   déclarée perdue le garde. C'est la seule chose de tout ce sujet qui, mal
   comprise, coûte de l'argent irréversiblement : il ferait un avoir à un client
   qui refuse de payer, et se priverait lui-même de tout recours. Une planche qui
@@ -57,10 +57,10 @@ import { existsSync, readFileSync } from "node:fs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DOSSIER = resolve(process.argv[2] ?? join(RACINE, "docs", "maquettes"));
-const M77 = join(DOSSIER, "77-il-ne-paie-pas.html");
-const M78 = join(DOSSIER, "78-l-avoir.html");
+const M79 = join(DOSSIER, "79-il-ne-paie-pas.html");
+const M80 = join(DOSSIER, "80-l-avoir.html");
 
-for (const f of [M77, M78]) {
+for (const f of [M79, M80]) {
   if (!existsSync(f)) {
     console.error(`La maquette n'existe pas : ${f}`);
     process.exit(1);
@@ -110,27 +110,27 @@ const contexte = await navigateur.newContext({
 });
 const page = await contexte.newPage();
 
-console.log("=== Les maquettes 77 et 78 tombent-elles juste ? ===\n");
+console.log("=== Les maquettes 79 et 80 tombent-elles juste ? ===\n");
 
 // ── 0. Aucun script, dans aucune des deux ───────────────────────────────────
-for (const [nom, f] of [["77", M77], ["78", M78]]) {
+for (const [nom, f] of [["79", M79], ["80", M80]]) {
   const source = readFileSync(f, "utf8");
   dire(!/<script[\s>]/i.test(source), `la maquette ${nom} ne contient aucun script`);
 }
 
-// ── 1. La 77 : trois arrangements, un seul à la fois ────────────────────────
-console.log("\n→ 77 · Il ne paie pas");
-await page.goto(`file://${M77}`, { waitUntil: "networkidle" });
+// ── 1. La 79 : trois arrangements, un seul à la fois ────────────────────────
+console.log("\n→ 79 · Il ne paie pas");
+await page.goto(`file://${M79}`, { waitUntil: "networkidle" });
 
-const A77 = [
+const A79 = [
   { radio: "v-a", nom: "A · Trois portes", panneau: ".g-a" },
   { radio: "v-b", nom: "B · Un avoir, un montant", panneau: ".g-b" },
   { radio: "v-c", nom: "C · Deux portes", panneau: ".g-c" },
 ];
-for (const a of A77) {
+for (const a of A79) {
   await page.click(`label[for="${a.radio}"]`);
   const vus = [];
-  for (const autre of A77) {
+  for (const autre of A79) {
     if ((await page.locator(`div${autre.panneau}:visible`).count()) > 0) vus.push(autre.radio);
   }
   dire(
@@ -156,37 +156,37 @@ for (const [radio, panneau, nom] of [
 //
 // La distinction avoir / facture perdue doit être ÉCRITE, pas sous-entendue :
 // c'est la seule erreur de ce sujet qu'on ne peut pas défaire.
-const texte77 = await page.locator("body").innerText();
+const texte79 = await page.locator("body").innerText();
 dire(
-  /avoir dit que la somme n'est plus due/i.test(texte77),
-  "la 77 dit qu'un avoir éteint la dette",
+  /avoir dit que la somme n'est plus due/i.test(texte79),
+  "la 79 dit qu'un avoir éteint la dette",
 );
 dire(
-  /vous renoncez à réclamer/i.test(texte77),
-  "la 77 dit qu'on renonce alors à réclamer l'argent",
+  /vous renoncez à réclamer/i.test(texte79),
+  "la 79 dit qu'on renonce alors à réclamer l'argent",
 );
 dire(
-  /gardez le droit de (la )?réclamer/i.test(texte77),
-  "la 77 dit qu'une facture perdue laisse le droit de réclamer",
+  /gardez le droit de (la )?réclamer/i.test(texte79),
+  "la 79 dit qu'une facture perdue laisse le droit de réclamer",
 );
 dire(
-  /ne bouge pas/i.test(texte77) && /TVA/i.test(texte77),
-  "la 77 dit que son relevé de TVA ne bouge pas",
+  /ne bouge pas/i.test(texte79) && /TVA/i.test(texte79),
+  "la 79 dit que son relevé de TVA ne bouge pas",
 );
 
-// ── 3. La 78 : trois arrangements, un seul à la fois ────────────────────────
-console.log("\n→ 78 · L'avoir");
-await page.goto(`file://${M78}`, { waitUntil: "networkidle" });
+// ── 3. La 80 : trois arrangements, un seul à la fois ────────────────────────
+console.log("\n→ 80 · L'avoir");
+await page.goto(`file://${M80}`, { waitUntil: "networkidle" });
 
-const A78 = [
+const A80 = [
   { radio: "v-a", nom: "A · Un document à part", panneau: ".v-a" },
   { radio: "v-b", nom: "B · Une mention sur la facture", panneau: ".v-b" },
   { radio: "v-c", nom: "C · Une facture refaite", panneau: ".v-c" },
 ];
-for (const a of A78) {
+for (const a of A80) {
   await page.click(`label[for="${a.radio}"]`);
   const vus = [];
-  for (const autre of A78) {
+  for (const autre of A80) {
     if ((await page.locator(`div${autre.panneau}:visible`).count()) > 0) vus.push(autre.radio);
   }
   dire(
@@ -276,7 +276,7 @@ for (const m of MONTANTS) {
 
 // ── 5. Les renvois croisés visent des fichiers qui existent ─────────────────
 console.log("\n→ Les renvois");
-for (const [source, nom] of [[M77, "77"], [M78, "78"]]) {
+for (const [source, nom] of [[M79, "79"], [M80, "80"]]) {
   await page.goto(`file://${source}`, { waitUntil: "networkidle" });
   const cibles = await page.locator("a[href$='.html']").evaluateAll((as) =>
     as.map((a) => a.getAttribute("href")),

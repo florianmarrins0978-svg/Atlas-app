@@ -53,19 +53,31 @@ export default function FormulaireReponse({
             </label>
           ))}
 
-          <label className="flex items-center gap-3 text-[15px] text-ink">
-            <input
-              type="radio"
-              name="choixDate"
-              value="autre"
-              checked={choixDate === "autre"}
-              onChange={(e) => setChoixDate(e.target.value)}
-              className="h-5 w-5"
-            />
-            <span>{libelleAutreDate(envoi.datesProposees.length)}</span>
-          </label>
+          {/* **« Une autre date » n'apparaît que si l'artisan l'a permis**
+              (17 août 2026, sa demande : *« il faut que l'utilisateur puisse
+              choisir avant d'envoyer s'il autorise ou non le client à choisir
+              une date »*). Le choix est FIGÉ dans l'envoi : cet écran dira
+              demain ce qu'il dit aujourd'hui.
 
-          {choixDate === "autre" && (
+              **Cacher ne suffit pas** : cette page est publique et son
+              formulaire se rejoue. Le serveur refuse la contre-proposition de
+              son côté (`enregistrerReponse`, motif `autre_date_refusee`) — une
+              règle tenue à un seul endroit, jamais deux. */}
+          {envoi.autreDateAutorisee && (
+            <label className="flex items-center gap-3 text-[15px] text-ink">
+              <input
+                type="radio"
+                name="choixDate"
+                value="autre"
+                checked={choixDate === "autre"}
+                onChange={(e) => setChoixDate(e.target.value)}
+                className="h-5 w-5"
+              />
+              <span>{libelleAutreDate(envoi.datesProposees.length)}</span>
+            </label>
+          )}
+
+          {envoi.autreDateAutorisee && choixDate === "autre" && (
             <div className="mt-2 flex flex-col gap-1">
               {/* **Un calendrier, et non plus le sélecteur du téléphone.**
                   Sa demande du 8 août 2026 : « qu'il ait accès au calendrier

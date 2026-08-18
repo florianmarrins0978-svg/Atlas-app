@@ -326,6 +326,12 @@ const MAQUETTES = [
     quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
   },
   {
+    fichier: "77-la-fiche-dans-paysage.html",
+    titre: "La fiche de chantier, et le pont vers le client",
+    famille: "L’entretien récurrent",
+    quoi: "Rangée dans Paysage, à côté de l’arrosage — sa décision du 17 août. La seule question qui reste : à quel moment le client est-il nommé, sachant qu’un outil doit s’ouvrir sans lui et que le pré-remplissage l’exige.",
+  },
+  {
     fichier: "66-ce-que-je-sais-du-client.html",
     titre: "Ce que je sais du client",
     famille: "Les chantiers",
@@ -342,6 +348,12 @@ const MAQUETTES = [
     titre: "Retirer le prix accordé",
     famille: "Le devis",
     quoi: "« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.",
+  },
+  {
+    fichier: "78-le-quinconce-dans-un-couloir.html",
+    titre: "Le quinconce dans un couloir",
+    famille: "L’arrosage automatique",
+    quoi: "Sa règle du 18 août : « dans les couloirs, le but c’est de poser les tuyères en quinconce, celle de gauche recouvre quasi 100 % jusqu’à celle de droite ». Son couloir de 10 × 2 m posé de trois façons — 12 tuyères aujourd’hui, 5 en quinconce, 3 avec une plus grosse buse. La seule chose à trancher : jusqu’où il accepte que ça arrose à côté.",
   },
   {
     fichier: "69-le-plan-darrosage.html",
@@ -368,13 +380,13 @@ const MAQUETTES = [
     quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.",
   },
   {
-    fichier: "77-il-ne-paie-pas.html",
+    fichier: "79-il-ne-paie-pas.html",
     titre: "Il ne paie pas",
     famille: "L’argent qui ne rentre pas",
     quoi: "Un avoir éteint la dette et interdit de réclamer ; une facture déclarée perdue reste réclamable. Trois arrangements.",
   },
   {
-    fichier: "78-l-avoir.html",
+    fichier: "80-l-avoir.html",
     titre: "L’avoir",
     famille: "L’argent qui ne rentre pas",
     quoi: "La forme du document : à part, en mention, ou facture refaite. Trois montants essayables, tous recalculés.",

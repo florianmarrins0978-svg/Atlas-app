@@ -241,7 +241,11 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
                 {
                   key: "fiche-client" as const,
                   label: chantier.clientNom ?? "Le client",
-                  meta: "Ce qu'on sait de lui",
+                  // **« De lui » devant « Mme Bracquemont » — vu le 17 août
+                  // 2026 sur la maquette, et jamais par un test.** Le libellé
+                  // est neutre : un client sur deux est une cliente, et rien
+                  // dans la base ne dit lequel.
+                  meta: "Ce qu'on sait de ce client",
                   done: false,
                   href: `/clients/${chantier.clientId}`,
                 },

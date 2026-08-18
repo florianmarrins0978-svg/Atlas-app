@@ -371,7 +371,13 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // devis. Le jour où un montant apparaît, ce contrôle le dit.
     const corps = await page.$eval('body', el => el.innerText);
     ok('arrosage : aucun prix nulle part', !/€|\bEUR\b/.test(corps));
-    ok('arrosage : la liste porte le disconnecteur', /Disconnecteur/.test(corps));
+    // Retourné le 18 août sur sa décision : *« le disconnecteur, tu peux le
+    // supprimer à tout jamais, je n'en mets jamais. »* Gardé plutôt que
+    // supprimé, pour que la pièce ne revienne pas au premier raisonnement
+    // « c'est obligatoire sur l'eau potable » — juste en général, faux pour
+    // lui, et sa décision serait perdue.
+    ok('arrosage : le disconnecteur n\'est plus dans la liste', !/Disconnecteur/.test(corps),
+       (corps.match(/[^\n]*Disconnecteur[^\n]*/) || [''])[0]);
 
     // Un ajout de zone doit vraiment ajouter : c'est le geste central.
     const avant = await page.$$eval('.zone', e => e.length);
@@ -392,8 +398,29 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // latéral : un raccord en bas (toujours 3/4", sur la tuyauterie) et un en
     // haut (au diamètre du corps). En manquer un sous-compte une pièce que
     // chaque arroseur porte réellement.
-    ok('arrosage : le SBE du bas (raccord de ligne) est compté', /bas, sur la ligne/.test(materiel));
-    ok('arrosage : le SBE du haut (raccord au corps) est compté', /haut, au corps/.test(materiel));
+    //
+    // **Ce contrôle lisait les étiquettes « (haut, au corps) » et « (bas, sur
+    // la ligne) » ; il compte désormais.** Le patron a fait retirer ces
+    // mentions le 18 août — *« ce sont des données pour toi [...] l'utilisateur
+    // n'a pas besoin de ces infos-là »* —, et les deux emplois d'une même
+    // référence se sont fondus en une ligne. Un contrôle accroché à un libellé
+    // meurt au premier changement de libellé ; la RÈGLE, elle, ne bouge pas :
+    // deux SBE par arroseur, quel que soit le nom écrit sur la ligne.
+    const sbe = await page.evaluate(() => {
+      const arroseurs = etat.zones.reduce((s, z) => {
+        const p = poser(z);
+        return s + (p.m && p.m.type !== 'gaine' ? p.nombre : 0);
+      }, 0);
+      const total = listeMateriel(decouper())
+        .filter(l => /SBE/.test(l.nom)).reduce((s, l) => s + l.q, 0);
+      return { arroseurs, total };
+    });
+    // Le cas qui empêche de mesurer zéro : sans arroseur posé, 0 === 2×0 serait
+    // vert sans rien prouver (le piège du 15 août).
+    ok('arrosage : le jardin d\'épreuve pose bien des arroseurs', sbe.arroseurs > 0,
+       JSON.stringify(sbe));
+    ok('arrosage : deux SBE par arroseur — celui du haut ET celui du bas',
+       sbe.arroseurs > 0 && sbe.total === sbe.arroseurs * 2, JSON.stringify(sbe));
     ok('arrosage : le PEBD16 de reprise est compté', /PEBD rigide/.test(materiel));
 
         // **Le corps par défaut, sa décision du 17 août : « 10 cm sans option,
@@ -550,6 +577,59 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
 
     ok('tarifs : toujours aucune erreur JS', errs.length === 0);
     await cPrix.close();
+  }
+
+  // ── Les clients, à l'essai ────────────────────────────────────────────────
+  //
+  // Sa demande du 17 août 2026 au soir : *« montre-moi depuis chantier ce que ça
+  // donnerait, crée une maquette dynamique que je puisse essayer »*.
+  //
+  // **Elle se manipule SANS JavaScript** — la navigation passe par `:target`.
+  // Le contrôle coupe donc le script : c'est la seule façon de prouver que la
+  // page ne dépend pas de lui, et une planche qui ne s'ouvrirait pas chez lui
+  // ne vaut rien.
+  {
+    const cCl = await browser.newContext({ viewport: { width: 390, height: 850 }, javaScriptEnabled: false });
+    const page = await cCl.newPage();
+    const visible = (id) => page.locator('#' + id).isVisible();
+
+    await page.goto(`${B}/clients.html`, { waitUntil: 'domcontentloaded' });
+    ok('clients : l\'accueil s\'ouvre seul', (await visible('accueil')) && !(await visible('liste')));
+
+    await page.locator('#accueil a[href="#liste"]').click();
+    ok('clients : « Vos clients » ouvre la liste', (await visible('liste')) && !(await visible('accueil')));
+
+    await page.locator('#liste a[href="#client"]').first().click();
+    ok('clients : un nom ouvre sa fiche', await visible('client'));
+
+    // **Le chemin qu'il a demandé de voir : DEPUIS un chantier.**
+    await page.locator('#client a[href="#chantier"]').first().click();
+    ok('clients : un chantier s\'ouvre depuis la fiche', await visible('chantier'));
+    await page.locator('#chantier a[href="#client"]').first().click();
+    ok('clients : et le chantier ramène à la fiche du client', await visible('client'));
+
+    // **L'arithmétique, parce qu'il la refait.** Le détail des chantiers doit
+    // faire le total facturé, et le seul impayé doit faire ce qui reste dû.
+    await page.goto(`${B}/clients.html#client`, { waitUntil: 'domcontentloaded' });
+    const texte = await page.locator('#client').innerText();
+    const montants = (texte.match(/(\d[\d  ]*) €/g) || []).map(m => Number(m.replace(/[^\d]/g, '')));
+    const parChantier = [887, 740, 980, 593];
+    ok('clients : le détail des chantiers fait bien le total facturé',
+       montants.indexOf(parChantier.reduce((a, b) => a + b, 0)) >= 0,
+       'attendu 3200 quelque part dans : ' + montants.join(', '));
+    ok('clients : ce qui reste dû est bien le seul chantier impayé',
+       /740 €.*impay|impay.*740 €/s.test(texte) && montants.indexOf(740) >= 0);
+
+    // La barre du bas garde QUATRE onglets : le cinquième est réservé aux
+    // outils métier, et à cinq colonnes « CHANTIERS » déborde déjà.
+    const onglets = await page.locator('.barre span').count();
+    ok('clients : la barre du bas garde quatre onglets', onglets === 4, 'vus : ' + onglets);
+
+    // Rien ne déborde sur son téléphone.
+    const large = await page.evaluate(() => document.documentElement.scrollWidth);
+    ok('clients : rien ne déborde à 390 px', large <= 391, 'largeur ' + large);
+
+    await cCl.close();
   }
 
   await browser.close();

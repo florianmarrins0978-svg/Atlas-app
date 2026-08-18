@@ -28,10 +28,48 @@ DEPOT="${1:-$(pwd)}"
 PORT="${PORT:-3000}"
 JOURNAL="${JOURNAL:-/tmp/essai.log}"
 VERROU=/tmp/atlas-veilleur.pid
-INTERVALLE=15
-# Détournable uniquement pour l'éprouver : une suite ne peut pas attendre un
-# quart d'heure pour vérifier qu'une publication a lieu.
+# Détournables uniquement pour les ÉPROUVER : une suite ne peut pas attendre un
+# quart d'heure pour vérifier qu'une publication a lieu, ni dix minutes pour
+# voir une construction se retenter.
+INTERVALLE="${ATLAS_INTERVALLE_VEILLE:-15}"
 INTERVALLE_RAPPORT="${ATLAS_INTERVALLE_RAPPORT:-900}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# **LA CONSTRUCTION QUI A ÉCHOUÉ N'ÉTAIT JAMAIS RETENTÉE.**
+#
+# Le patron, le 18 août 2026 : *« je crois que j'ai encore la version lente »*.
+# Sa fiche disait exactement pourquoi :
+#
+#     Code SERVI : AUCUNE — la construction a ÉCHOUÉ (05:13:44Z)
+#     dit: ⨯ Another next build process is already running.
+#
+# Tout le reste avait déjà été réparé : la construction orpheline est délogée
+# avant de bâtir, le verrou de banc se prend en création exclusive, et une
+# seconde tentative part quand c'est ce refus-là qui a parlé
+# (`ARCHITECTURE.md` §126). **Et pourtant il était encore lent** — parce
+# qu'aucun de ces correctifs ne couvre le cas où les deux tentatives tombent.
+#
+# **Le trou était ICI, et il est béant :** ce veilleur ne relance `npm run banc`
+# que lorsque RIEN ne répond sur le port. Or une construction qui échoue laisse
+# le banc en mode développement, et ce mode-là **répond très bien**. Les deux
+# conditions ci-dessous étaient donc satisfaites, le veilleur se déclarait
+# content, et le patron passait sa soirée sur la version lente — sans que rien,
+# nulle part, ne retente quoi que ce soit.
+#
+# La cause de l'échec, elle, est souvent PASSAGÈRE : son espace a 8 Go et 132 Mo
+# libres au moment de la panne. Dix minutes plus tard, la mémoire est rendue et
+# la même construction passe. C'est exactement le cas où réessayer coûte
+# quelques minutes de processeur et rapporte une soirée entière.
+#
+# **Borné, et il faut qu'il le soit.** Une erreur de types ne se répare pas en
+# insistant : trois tentatives espacées, puis on se tait et la fiche porte
+# l'échec. Réessayer sans fin sur une machine qui manque de mémoire, ce serait
+# la maintenir à genoux — le remède qui tue, que ce dépôt a déjà payé deux fois.
+TEMOIN_ECHEC="${ATLAS_TEMOIN_ECHEC:-/tmp/atlas-construction-echouee.txt}"
+RELANCE_APRES="${ATLAS_RELANCE_CONSTRUCTION_S:-600}"
+RELANCES_MAX="${ATLAS_RELANCES_CONSTRUCTION_MAX:-3}"
+RELANCES=0
+PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
 
 # **Un seul veilleur.** Deux veilleurs relanceraient deux serveurs, et le remède
 # reproduirait la panne. Le verrou porte un identifiant de processus : un
@@ -139,6 +177,33 @@ while true; do
     fi
   else
     MUET=0
+
+    # **Le serveur répond — mais sert-il la version rapide ?**
+    #
+    # `banc.mjs` efface ce témoin dès qu'une construction réussit : sa présence
+    # veut donc dire « la dernière tentative a échoué, et nous sommes lents ».
+    # C'est le seul signal qui distingue un banc rapide d'un banc lent, et les
+    # deux répondent pareil à la santé.
+    if [ -f "$TEMOIN_ECHEC" ] && [ "$RELANCES" -lt "$RELANCES_MAX" ] \
+       && [ "$(date +%s)" -ge "$PROCHAINE_RELANCE" ]; then
+      # **Jamais deux constructions à la fois.** C'est la panne d'origine : une
+      # seconde construction lancée à côté d'une première tombe sur son verrou,
+      # et les deux échouent. Si une construction tourne déjà — la nôtre de tout
+      # à l'heure, ou celle d'un banc relancé ailleurs — on la laisse finir.
+      if ! pgrep -f '[n]ext build' >/dev/null 2>&1; then
+        RELANCES=$((RELANCES + 1))
+        echo "$(date '+%d/%m %H:%M:%S') — la version rapide manque encore : on retente la construction (${RELANCES}/${RELANCES_MAX})" >> "$JOURNAL"
+        # Bloque jusqu'à la mort du serveur suivant, comme la relance ci-dessus.
+        # Si la construction passe, `banc.mjs` remplace le mode développement
+        # par la version bâtie et le patron cesse d'attendre ses écrans.
+        npm run banc >> "$JOURNAL" 2>&1
+        echo "$(date '+%d/%m %H:%M:%S') — le serveur s'est arrêté" >> "$JOURNAL"
+      fi
+      PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
+      if [ "$RELANCES" -ge "$RELANCES_MAX" ]; then
+        echo "$(date '+%d/%m %H:%M:%S') — ${RELANCES_MAX} tentatives de construction ont échoué : on n'insiste plus, la fiche porte la cause" >> "$JOURNAL"
+      fi
+    fi
   fi
 
   # La fiche, elle, se publie dans le processus séparé ouvert plus haut : cette

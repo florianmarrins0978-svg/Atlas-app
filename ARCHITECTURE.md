@@ -9854,7 +9854,6 @@ couleurs.
 C'est la leçon du 12 août, une fois de plus : **reproduire la séquence du patron,
 pas le geste isolé.**
 
-
 ---
 
 ## 120. Retirer le prix accordé — trois défauts, dont deux qu'aucun test ne voyait
@@ -10472,7 +10471,8 @@ alors on range ça dans les réglages, sous une catégorie paysage ? »*
   outil qui exige un chantier ne sert pas en visite de devis, quand le client
   n'existe pas encore.
 
-**Sa décision : un cinquième onglet « Outils ».**
+**Sa décision : un cinquième onglet.** Nommé « Outils » d'abord, puis
+**« Paysage »** le soir même — voir §125 bis, plus bas.
 
 **LE COÛT EST MESURABLE, ET IL A ÉTÉ MESURÉ** (`docs/maquettes/76-le-cinquieme-onglet.html`).
 La barre porte quatre onglets depuis le 10 août, en capitales de 9,5 px
@@ -10494,6 +10494,9 @@ apparaître chez lui. **D revient sur sa décision du 10 août** (les icônes
 retirées) — recevable, puisque le service rendu n'est plus le même à cinq
 colonnes qu'à quatre : viser sans lire. Mais c'est à lui de le dire.
 
+**La réponse dans sa langue est dans `docs/QUESTIONS.md` §22**, avec son
+accord explicite — pour que la question ne se repose pas dans trois mois.
+
 **Ce qui reste à trancher avec lui**, et qui n'est pas de la place : l'onglet
 porte une LISTE d'outils (arrosage, puis terrasse bois), donc il s'appelle
 « Outils » et non « Arrosage » ; et il faudra pouvoir **rattacher un plan à un
@@ -10502,6 +10505,40 @@ c'est précisément ce que l'accès sans chantier fait gagner et risque de coût
 
 ---
 
+---
+
+## 125 bis. « Paysage » plutôt qu'« Outils » — il revient sur son choix, et il a raison
+
+**Le 17 août au soir, après avoir vu l'onglet posé :** *« As-tu créé la fiche
+outils ? Je préférerais qu'elle s'appelle Paysage finalement. »*
+
+**J'avais écarté ce mot le matin même**, et voici l'argument que j'avais donné :
+le paysage est son métier ENTIER, donc le mot ne distingue rien de ce qu'Atlas
+fait déjà. **Cet argument était faux, et il faut dire pourquoi** — sans quoi
+quelqu'un le ressortira.
+
+Il partait d'une prémisse implicite : qu'Atlas restera l'application d'un
+paysagiste. Or ce n'est pas le produit — Atlas sert des artisans, et lui-même
+prépare déjà la terrasse bois. **Dans une application multi-métiers, « Paysage »
+distingue exactement ce qu'il faut** : le jour où un menuisier s'en sert, il
+aura un onglet « Menuiserie » à côté. Deux listes d'« Outils » auraient au
+contraire demandé de les départager en entrant.
+
+**Et le mot vaut mieux pour une seconde raison, qui touche à ce qu'il montre.**
+« Outils » nomme la NATURE de ce qu'il y a dedans — des calculateurs.
+« Paysage » nomme le MÉTIER servi. Le second se lit sans savoir ce qu'on va y
+trouver ; le premier demande d'ouvrir pour comprendre.
+
+**Ce qui ne change pas :** l'onglet porte une LISTE (l'arrosage, puis la
+terrasse bois), et c'est pourquoi il ne s'appelle pas « Arrosage » — il faudrait
+le renommer au second occupant, et un onglet qui change de nom fait perdre le
+repère de celui qui l'ouvre vingt fois par jour.
+
+**La place n'est pas un sujet ici** : « PAYSAGE » fait sept lettres contre neuf
+à « CHANTIERS », qui reste le mot qui décide. `test-barre-basse-e2e.ts` le
+vérifie à 360 px, et un cas de plus exige que le libellé et l'adresse aillent
+ensemble — renommer l'un sans l'autre donnerait un onglet « Paysage » qui ouvre
+`/outils`, donc un 404 que personne n'aurait voulu.
 
 ---
 
@@ -10687,3 +10724,324 @@ jamais « 0 € ». Un zéro se lit comme un mauvais payeur (`CLAUDE.md` §4).
 `scripts/test-fiche-client-e2e.ts` compte les onglets après avoir ouvert la
 liste : à cinq, il rougit. C'est le genre de dérive qui arrive par petits pas,
 et personne ne la mesure au moment où elle passe.
+
+---
+
+---
+
+## 129. Deux rubriques pour la même chose — « Planning » supprimée des réglages
+
+*Sa question du 16 août 2026, capture à l'appui : **« quelle est la différence
+entre planning et équipe ? »**. Il n'y en avait pas.*
+
+| La rubrique | Ce qu'elle rendait |
+|---|---|
+| Réglages ▸ **Planning** | `<VosEquipes>` — combien partent en même temps, leurs noms |
+| Réglages ▸ **Équipe** | `<VosEquipes>` **+** `<AbsencesEquipe>` |
+
+Le même composant, aux mêmes valeurs. « Planning » était donc un **sous-ensemble
+strict** de « Équipe » : deux portes vers le même réglage, et rien pour dire
+laquelle ouvrir.
+
+### Pourquoi le doublon a pu naître, et ce qui le rendait invisible
+
+La rubrique promettait *« horaires, équipes et disponibilités »* — trois choses,
+dont **une seule existe**. Les horaires ne se règlent pas : le planning raisonne
+en demi-journées, et chaque jour est libre ou porte le nom de son chantier. Les
+disponibilités, ce sont les absences — arrivées le 15 août **dans l'autre
+rubrique**, sur sa maquette 55. Le jour où elles y sont entrées, « Planning »
+n'avait plus rien à lui.
+
+**Aucun contrôle ne pouvait le voir**, et il ne faut pas en attendre un : les
+deux écrans étaient corrects, chacun de son côté. C'est une question de sens, et
+elle s'est posée en ouvrant la rubrique — comme les quatre défauts sortis d'une
+capture plutôt que d'un test.
+
+### Ce qui a été retiré, et ce qui ne l'est pas
+
+`src/app/reglages/planning/` disparaît, avec son entrée de sommaire et ses
+quatre mentions d'outillage (préchauffage, deux suites de mise en page, le script
+de captures). **Aucune règle métier n'est touchée** : `VosEquipes`,
+`AbsencesEquipe` et tout ce qui les alimente restent où ils sont, dans « Équipe ».
+
+**La garde du préchauffage l'aurait attrapée si on l'avait oubliée** :
+`test-prechauffage.ts` compare la liste écrite à la main aux écrans réellement
+présents sur le disque, et nomme celui qui diverge.
+
+### Ce qu'il ne faut pas refaire
+
+Le jour où les horaires viendront — « on commence à 8 h » —, **ne pas recréer une
+rubrique « Planning » qui remontrerait les équipes**. Soit ils rejoignent
+« Équipe », soit ils ont une rubrique qui ne parle QUE d'horaires. La réponse est
+écrite dans la langue du patron : `docs/QUESTIONS.md` §21.
+
+---
+
+## 130. Le calcul d'arrosage sort de l'écran — `appli/arrosage-calcul.js`
+
+**Le problème, posé le 18 août 2026.** Il a demandé un second écran : *« une
+fois que j'ai envoyé la photo [...] tout ce qu'il y a en dessous, tu peux le
+supprimer. Et tu me fais le plan en couleur [...] et la liste des pièces à
+acheter. »* Deux pages devaient donc rendre **le même plan et la même liste**,
+à partir du même catalogue.
+
+**Ce qu'on n'a PAS fait : recopier le calcul dans la seconde page.** Le §3 du
+dépôt l'interdit — *« jamais de règle dupliquée entre l'affichage et la
+vérification »* — et la raison est ici très concrète : cette liste est ce qu'il
+commande chez son fournisseur. Deux versions qui divergent, ce sont deux
+camions de pièces différents pour le même jardin.
+
+Le calcul vit donc dans **`appli/arrosage-calcul.js`** : mise en forme, état et
+sauvegarde, règles de pose (`pointsDeLaPose`, `poser`), découpage en réseaux
+(`decouper`), hydraulique (`amenee`, `perteDeCharge`), et la liste
+(`listeMateriel`). `arrosage.html` et `arrosage-croquis.html` ne font plus que
+**dessiner** ce qu'il rend.
+
+**La clé de sauvegarde est la seule chose qui les sépare.** Le module lit
+`window.CLE_ETAT` avant de se charger ; la maquette pose
+`atlas-arrosage-croquis`. Sans cela, l'essayer effacerait le jardin qu'il a
+saisi dans l'outil — et rien ne le lui aurait dit.
+
+### Le défaut que cette extraction a fabriqué, et ce qu'il enseigne
+
+`corpsCourant()` est resté dans `arrosage.html`. `listeMateriel` l'appelle pour
+compter un corps sous chaque tuyère : **toute page autre que celle-là partait
+donc en `ReferenceError` dès qu'un jardin posait une tuyère.** L'écran, lui,
+rendait *« la liste se remplit dès qu'un jardin est lu »* — un vide qui
+ressemble à un état normal.
+
+Les 73 suites de l'arrosage et les 105 de l'appli étaient vertes. **Aucune ne
+demandait la liste d'un jardin MIXTE** — turbines sur la grande pelouse,
+tuyères dans le couloir étroit —, le seul cas qui traverse cette ligne.
+
+Deux règles en sortent, et elles valent au-delà de ce fichier :
+
+1. **Une pièce de calcul qui reste dans un écran est une pièce que le second
+   écran n'a pas.** À l'extraction, ce n'est pas le fichier d'arrivée qu'il
+   faut relire, c'est le fichier de DÉPART : ce qui y reste et que le module
+   appelle est un piège armé.
+2. **Un écran qui ne sait pas dire « je suis tombé » ment.** La liste vide
+   parlait comme une liste pas encore remplie. C'est le corollaire du piège 0
+   ter de `HANDOVER.md`, en version statique.
+
+## §126 bis. Le plan : ce que le dessin doit prouver
+
+Le plan de `arrosage-croquis.html` reprend le sien (sa photo du 17 août) : les
+réseaux séparés par la couleur, la nourrice dans son regard, le PE en
+pointillés, les arroseurs en ronds — **et la dripline non tracée**, sa
+consigne.
+
+**Trois défauts du dessin, tous trouvés sur une capture, jamais par un test.**
+
+| Ce qui était dessiné | Ce que ça donnait à lire | Corrigé par |
+|---|---|---|
+| Une ligne de tuyau par RANGÉE | Une rangée avec une seule tête de ce réseau n'avait pas de ligne : l'arroseur flottait, relié à rien | Un tracé de proche en proche, à angle droit, depuis la tête la plus près du regard |
+| Un serpentin dans l'ordre de pose (première correction) | Le tuyau repartait du bout d'une rangée chercher une tête à l'autre bout, **en traversant les arroseurs d'un autre réseau** — un té à lire là où il n'y a rien | idem |
+| Bande de massif grise et anonyme | Deux couleurs au dessin, trois voies à la nourrice, et rien ne disait où passait la troisième | `reseauxDeZone`, ajouté à `decouper()` : la bande porte la couleur de SA vanne |
+| Contour de pelouse tracé APRÈS les tuyaux | La rangée du bas — dont les têtes sont posées sur la bordure — voyait son tuyau repeint par le trait noir | Le contour passe avant |
+
+**`reseauxDeZone` mérite son existence.** `reseauDuPoint` ne répond que pour une
+TÊTE, et un massif n'en a aucune : le goutte-à-goutte occupait donc une voie de
+la nourrice qu'aucun trait du plan ne justifiait.
+
+**Et le piège de la feuille de style s'est présenté une seconde fois.** Une
+règle CSS l'emporte sur un attribut de présentation : `.massif{stroke:…}`
+écrasait la couleur portée par l'attribut, exactement comme `.gazon{fill:…}`
+avait effacé les cercles de portée de la planche 75. Les deux propriétés qui
+arrivent par attribut ont été retirées de la feuille, avec le commentaire qui
+dit pourquoi.
+
+## §126 ter. Une suite qui ne barre pas la publication ne barre rien
+
+`appli/tests/essai-arrosage-detaille.cjs` (73 contrôles) avait son adresse
+écrite en dur — `127.0.0.1:8099`. Elle ne pouvait donc être jouée qu'à la main,
+et `pages.yml` ne l'appelait pas : **elle ne barrait aucune mise en ligne.**
+C'est exactement ce qui a laissé passer le défaut de `corpsCourant`.
+
+Elle lit désormais `BASE_URL`, et le flux de publication l'enchaîne avec
+`appli/tests/essai-croquis.cjs` (25 contrôles). Les trois suites barrent la
+publication ; un rouge, et la version en ligne reste celle d'avant.
+
+**Les six contrôles de la nouvelle suite ont été vus ROUGE avant d'être
+gardés**, en réintroduisant chaque fois le défaut qu'ils prétendent attraper —
+`corpsCourant` retiré, le tuyau redessiné par rangée, la bande redevenue grise,
+une pièce composée à la main dans un casier, la clé de sauvegarde de l'outil
+reprise, un texte qui déborde. Aucun ne regarde un identifiant d'écran : ils
+interrogent le calcul et le tracé, et survivront au prochain remaniement de la
+page — il en a déjà demandé deux.
+
+## §126 quater. La liste dit ce qu'on achète, pas pourquoi
+
+**Sa consigne du 18 août au soir**, devant la capture du casier « Le réseau
+enterré » : *« Départ milieu de ligne, fin de ligne et jonction, ce sont des
+données pour toi, pour que tu comprennes les endroits où doit y avoir des tés
+et les autres où c'est des tés taraudés. Mais pour l'utilisateur, il n'a pas
+besoin de ces infos-là. Donc tu peux les supprimer, mais tu les gardes pour
+toi. »*
+
+**La règle qui en sort :** une ligne de la liste porte la **désignation du
+catalogue**, et rien d'autre. Il commande sur cette désignation ; ce qui s'y
+ajoute est une invitation à chercher chez son fournisseur une pièce qui
+n'existe pas sous ce nom. Le raisonnement, lui, reste en commentaire dans
+`listeMateriel` — le supprimer serait le reperdre à la prochaine conversation.
+
+| Retiré | Ce que c'était |
+|---|---|
+| `(départ/milieu de ligne)` | l'emploi du té taraudé |
+| `(fin de ligne)` | l'emploi du coude taraudé |
+| `(jonction, non taraudé)` | l'emploi du té 25×25×25 — et c'était dans le CATALOGUE |
+| `(~2 m par arroseur)` | la règle du compte du PEBD Ø16 |
+| `(haut, au corps)` / `(bas, sur la ligne)` | les deux emplois du coude SBE |
+
+**Les références ne se confondent pas pour autant** : le té de ligne est taraudé
+(25×3/4"×25), la jonction ne l'est pas (25×25×25), le coude de fin est un
+coude. Trois produits différents, pas trois emplois d'un même.
+
+### Sauf les SBE — et c'est pourquoi ils fusionnent
+
+Les deux coudes SBE, eux, **sont** deux emplois d'un même produit dès que le
+corps est en 3/4" (les grosses turbines : PGP, I-20). Retirer les mentions sans
+plus aurait donné **deux lignes identiques**, ce qui se lit comme un défaut de
+comptage. Les emplois s'additionnent donc par **référence** : un produit, une
+ligne, une quantité. C'est aussi ce qu'il commande.
+
+### Ce que cette consigne a coûté aux contrôles, et ce qu'elle leur apprend
+
+**Trois contrôles lisaient ces étiquettes**, sur deux suites — deux dans
+`essai-arrosage-detaille.cjs` (« le SBE du haut suit le diamètre de chaque
+corps », « le SBE du bas reste un par arroseur »), un dans `e2e.js`. Ils sont
+devenus rouges sur du code juste.
+
+Ils vérifient maintenant la **règle en quantités** : un SBE 1/2" par corps de
+tuyère, un SBE 3/4" par corps de turbine plus un par arroseur, deux SBE par
+arroseur au total. **Un contrôle accroché à un libellé meurt au premier
+changement de libellé** — la même leçon que le 17 août, quand la section 3 a
+disparu de l'écran et que ses contrôles ont dû être reportés sur `decouper()`.
+
+**Et une garde nouvelle refuse de conclure sur un cas jamais rencontré.** Le
+contrôle « une référence n'apparaît qu'une fois » ne pouvait pas rougir : les
+trois jardins d'exemple posent tous des corps en 1/2" (3504, SRM, PGJ), où les
+deux SBE sont deux références distinctes. La suite **provoque** donc le cas —
+une pelouse de 40 × 30 en Hunter, qui pose une PGP Ultra en 3/4" — et un
+contrôle vérifie que ce corps a bien été posé, faute de quoi elle le dit au lieu
+de rendre un vert vide. C'est le piège du 15 août dans sa version « jamais
+atteint » : mesurer zéro et mesurer rien se ressemblent trop.
+
+---
+
+## 131. La construction qui a échoué n'était jamais retentée — le dernier trou de la version lente
+
+*Le patron, le 18 août 2026 : **« je crois que j'ai encore la version lente »**.
+Sa fiche disait pourquoi, sans qu'il ait rien à recopier :*
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (2026-08-18T05:13:44Z)
+dit: ⨯ Another next build process is already running.
+```
+
+### Ce qui était DÉJÀ réparé, et qui ne suffisait pas
+
+Le même refus avait été traité deux fois (§126) : l'orpheline est délogée avant
+de bâtir, le verrou de banc se prend en création exclusive, et une seconde
+tentative part quand c'est ce message-là qui a parlé. **Son espace portait bien
+ces correctifs** — le commit récupéré, `757ab1d`, les contient tous.
+
+Il était lent quand même, et c'est ce qui désigne le trou : **aucun de ces
+remèdes ne couvre le cas où les deux tentatives tombent.**
+
+### Le trou, et pourquoi personne ne le voyait
+
+`veiller.sh` ne relance `npm run banc` que lorsque **rien ne répond** sur le
+port. Or une construction qui échoue laisse le banc en mode développement — et
+ce mode-là **répond très bien**. Les deux conditions du veilleur étaient donc
+satisfaites, il se déclarait content, et plus rien nulle part ne retentait quoi
+que ce soit : le patron passait la soirée sur la version lente.
+
+**Le témoin d'échec existait déjà** (`/tmp/atlas-construction-echouee.txt`,
+écrit par `banc.mjs`, effacé dès qu'une construction réussit) — mais **personne
+ne le lisait**, sinon la fiche, pour le raconter.
+
+### Ce qui est posé
+
+Le veilleur gagne une seconde raison d'agir : *le serveur répond, mais sert-il
+la version rapide ?* Témoin présent ⇒ on retente, **au plus trois fois, espacées
+de dix minutes**, et jamais si une construction tourne déjà.
+
+**Pourquoi réessayer marche ici, alors qu'insister est d'ordinaire une faute :**
+la cause est passagère. Son espace a 8 Go et **132 Mo libres** au moment de la
+panne ; dix minutes plus tard la mémoire est rendue, et la même construction
+passe. Réessayer coûte quelques minutes de processeur et rapporte une soirée.
+
+**Et pourquoi c'est BORNÉ.** Une erreur de types ne se répare pas en insistant,
+et rebâtir sans fin sur une machine qui manque de mémoire la maintient à genoux
+— le remède qui tue, déjà payé deux fois dans ce dépôt. Après trois échecs, le
+veilleur se tait et l'abandon s'écrit dans le journal.
+
+### Le contrôle, et son témoin
+
+`test-relance-construction.ts` fait tourner le vrai veilleur devant un serveur
+qui répond, avec un faux `npm` en tête de `PATH` pour ne pas bâtir pour de vrai.
+
+| Ce qu'il mesure | Pourquoi |
+|---|---|
+| témoin présent ⇒ on retente | la panne du 18 août |
+| **témoin absent ⇒ on ne relance RIEN** | le TÉMOIN : sans lui, un veilleur qui rebâtirait en boucle passerait pour correct |
+| le compte est borné, et l'abandon se dit | ne pas maintenir l'espace à genoux |
+| une construction en cours n'en déclenche pas une seconde | la panne d'origine, précisément |
+
+Confronté au veilleur d'avant, il tombe sur le premier et le troisième — et le
+témoin, lui, reste vert : la différence porte bien sur ce qu'on a changé.
+
+---
+
+## 132. « Il peut proposer une autre date » — un interrupteur avant l'envoi
+
+**Sa demande du 17 août 2026 :** *« pour le lien du planning qui part au client,
+il faut que l'utilisateur puisse choisir avant d'envoyer s'il autorise ou non le
+client à choisir une date si celles proposées ne lui conviennent pas »*.
+
+**Ce que l'application faisait jusque-là, et qu'il n'avait pas choisi.** La page
+publique offrait TOUJOURS un calendrier sous les dates proposées. Sur un
+chantier serré, une contre-proposition à six mois ne l'arrange pas — et le seul
+moyen de l'éviter était de n'envoyer aucune date, c'est-à-dire de perdre le
+parcours entier.
+
+### Où le choix se pose, et pourquoi là
+
+**Sous les dates, juste avant le bouton d'envoi.** C'est le dernier regard avant
+que le lien parte, et le seul endroit où les deux décisions se voient ensemble :
+quelles dates, et si le client peut en sortir. **La phrase récapitulative suit
+l'interrupteur** — « Le client choisira entre ces deux dates, et rien d'autre »
+—, sans quoi il enverrait sans savoir ce que son client va lire.
+
+### Ce qui est FIGÉ, et ce qui ne l'est pas
+
+Le choix est écrit dans l'envoi (`envois_devis.autre_date_autorisee`,
+migration 0054), **pas lu dans un réglage**. Même raison que les dates proposées
+et la fenêtre du client (migration 0027) : l'écran du client doit dire demain ce
+qu'il disait aujourd'hui. Un réglage relu à l'ouverture changerait après coup la
+promesse faite à quelqu'un qui a le lien ouvert.
+
+**Vrai par défaut**, à la colonne comme à l'écran. Les liens déjà partis
+continuent de se comporter comme leurs destinataires les ont reçus, et un patron
+qui n'y touche pas envoie ce qu'il a toujours envoyé.
+
+### La règle vit à UN endroit, et ce n'est pas l'écran
+
+**Cacher le calendrier ne suffit pas.** Cette page est publique : elle s'ouvre
+sans compte, et son formulaire se rejoue. `enregistrerReponse` refuse donc toute
+date hors des propositions quand l'envoi ne l'autorise pas
+(motif `autre_date_refusee`), et le message rendu au client lui dit quoi faire
+plutôt que de l'accuser : choisir une des dates, ou demander une correction.
+
+C'est la règle du dépôt — jamais de règle dupliquée entre l'affichage et la
+vérification (`CLAUDE.md` §3). Le contrôle correspondant poste une
+contre-proposition **sans passer par l'écran** : c'est le seul qui prouve que la
+porte est fermée pour de bon.
+
+### Ce que ça ne fait pas
+
+**Aucun réglage par défaut dans les Réglages.** Il choisit envoi par envoi, et
+c'est ce qu'il a demandé. Si l'habitude s'installe — toujours ouvert, ou
+toujours fermé —, un réglage « Devis & factures » pourra porter la position de
+départ ; il n'y a rien à décider tant qu'il ne l'a pas dit.

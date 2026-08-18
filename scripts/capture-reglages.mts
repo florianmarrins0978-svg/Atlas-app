@@ -57,7 +57,6 @@ for (const [nom, adresse] of [
   ["sommaire", "/reglages"],
   ["entreprise", "/reglages/identite"],
   ["tarifs", "/reglages/tarifs"],
-  ["planning", "/reglages/planning"],
   ["ia", "/reglages/ia"],
   ["donnees", "/reglages/donnees"],
 ] as const) {

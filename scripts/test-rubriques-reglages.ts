@@ -38,14 +38,17 @@ essai("le patron voit les deux ensembles, l'entreprise d'abord", () => {
   assert.deepEqual(titres, ["L'entreprise", "Moi"]);
 });
 
-essai("les dix rubriques de sa planche du 14 août sont toutes là", () => {
+essai("les rubriques de sa planche du 14 août sont toutes là", () => {
   const noms = toutes("proprietaire").map((r) => r.nom);
   for (const attendue of [
     "Mon entreprise",
     "Équipe",
     "Tarifs & catalogue",
     "Devis & factures",
-    "Planning",
+    // « Planning » a été SUPPRIMÉE le 16 août 2026 : elle rendait le même bloc
+    // que « Équipe » et rien d'autre (`ARCHITECTURE.md` §129). Sa place est
+    // prise par la fiche d'entretien, arrivée le même jour.
+    "Fiche d'entretien",
     "Atlas IA",
     "Notifications",
     "Intégrations",
@@ -58,12 +61,17 @@ essai("les dix rubriques de sa planche du 14 août sont toutes là", () => {
 
 essai("ses quatre priorités ouvrent l'ensemble de l'entreprise", () => {
   const entreprise = rubriquesReglages("proprietaire")[0].rubriques.map((r) => r.nom);
+  // **Ses QUATRE priorités, et elles n'ont pas bougé.** La cinquième ligne
+  // était « Planning », supprimée le 16 août faute d'avoir quoi que ce soit à
+  // elle ; c'est la fiche d'entretien qui suit désormais. Le contrôle porte sur
+  // les quatre premières — celles qu'il a nommées — et sur ce qui vient juste
+  // après, pour qu'une rubrique nouvelle ne s'insère pas au milieu d'elles.
   assert.deepEqual(entreprise.slice(0, 5), [
     "Mon entreprise",
     "Équipe",
     "Tarifs & catalogue",
     "Devis & factures",
-    "Planning",
+    "Fiche d'entretien",
   ]);
 });
 
@@ -77,7 +85,7 @@ essai("un membre ne reçoit AUCUNE rubrique de l'entreprise", () => {
     "Équipe",
     "Tarifs & catalogue",
     "Devis & factures",
-    "Planning",
+    "Fiche d'entretien",
     "Atlas IA",
     "Intégrations",
     "Abonnement",

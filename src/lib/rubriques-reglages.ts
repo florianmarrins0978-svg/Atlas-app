@@ -94,7 +94,19 @@ const ENTREPRISE: Rubrique[] = [
     // permissions » promettait trois choses qui n'existent pas, et le patron
     // ouvrait la rubrique pour n'y rien voir. Ce qui s'y règle aujourd'hui,
     // c'est combien d'équipes partent en même temps (§99).
-    dit: "Combien partent en même temps, et leurs noms",
+    //
+    // **ET LES ABSENCES DEPUIS LE 16 AOÛT**, parce que la rubrique « Planning »
+    // a été supprimée ce jour-là : elle montrait le MÊME bloc que celle-ci, et
+    // rien d'autre. Le patron : *« quelle est la différence entre planning et
+    // équipe ? »* — il n'y en avait pas. Sa promesse — « horaires, équipes et
+    // disponibilités » — ne tenait que par le mot du milieu : les horaires ne se
+    // règlent pas (le planning raisonne en demi-journées), et les
+    // disponibilités, ce sont les absences, qui vivent ici.
+    //
+    // **Ne pas la recréer pour y mettre les horaires le jour où ils viendront**
+    // sans se poser la question : deux portes vers les mêmes équipes, c'est ce
+    // qu'on vient de refermer.
+    dit: "Combien partent en même temps, leurs noms et leurs absences",
     icone: "personnes",
     href: "/reglages/equipe",
   },
@@ -113,16 +125,12 @@ const ENTREPRISE: Rubrique[] = [
     href: "/reglages/documents",
   },
   {
-    nom: "Planning",
-    dit: "Horaires, équipes et disponibilités",
-    icone: "calendrier",
-    href: "/reglages/planning",
-  },
-  {
-    // **L'entretien récurrent, décidé le 16 août 2026.** Rangé juste après le
-    // planning — pas avant : les cinq premières rubriques sont SES quatre
-    // priorités, et un contrôle les tient. Ici parce que c'est ce qu'il a demandé — « dans les
-    // réglages, un endroit où l'utilisateur pourra créer cette fiche » — et
+    // **L'entretien récurrent, décidé le 16 août 2026.** Rangé après « Devis &
+    // factures » — pas avant : les premières rubriques sont SES priorités, et un
+    // contrôle les tient. (Il était rangé « juste après le planning » ; cette
+    // rubrique-là a été supprimée le même jour, elle doublait « Équipe » —
+    // `ARCHITECTURE.md` §120.) Ici parce que c'est ce qu'il a demandé — « dans
+    // les réglages, un endroit où l'utilisateur pourra créer cette fiche » — et
     // parce que la fiche EST un document qui part chez le client.
     //
     // Le libellé ne dit pas « modèle » : il n'a jamais employé ce mot, et « ma

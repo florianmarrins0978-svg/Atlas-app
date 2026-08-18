@@ -7,6 +7,174 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-18
+
+### « Il peut proposer une autre date » : un interrupteur avant l'envoi
+
+**Sa demande :** *« pour le lien du planning qui part au client, il faut que
+l'utilisateur puisse choisir avant d'envoyer s'il autorise ou non le client à
+choisir une date si celles proposées ne lui conviennent pas »*.
+
+**Jusqu'ici, le client le pouvait TOUJOURS** — la page publique offrait un
+calendrier sous les dates, sans que le patron ait rien à dire. Sur un chantier
+serré, une contre-proposition à six mois ne l'arrange pas, et son seul recours
+était de n'envoyer aucune date.
+
+L'interrupteur se pose **sous les dates, juste avant le bouton d'envoi**, et la
+phrase récapitulative le suit : « Le client choisira entre ces deux dates, et
+rien d'autre ». **Ouvert par défaut** — un défaut fermé changerait sans un mot
+ce qu'il croit envoyer, et ce que les liens déjà partis promettent.
+
+**Le choix est FIGÉ dans l'envoi** (migration 0054), jamais relu dans un
+réglage : l'écran du client doit dire demain ce qu'il disait aujourd'hui, comme
+les dates proposées et la fenêtre (migration 0027).
+
+**Et la règle ne vit pas à l'écran.** Cette page est publique, son formulaire se
+rejoue : le serveur refuse toute date hors des propositions quand l'envoi ne
+l'autorise pas, et le message dit au client quoi faire — choisir une date, ou
+demander une correction — au lieu de l'accuser. Le contrôle poste la
+contre-proposition **sans passer par l'écran** ; c'est le seul qui prouve que la
+porte est fermée. Vu rouge avant d'être livré : refus retiré, ce cas-là tombe.
+
+Le parcours entier est éprouvé au navigateur (`test-envoi-client-e2e.ts`) :
+l'interrupteur, l'envoi, puis **la page telle que le client la reçoit**, ouverte
+sans compte. `ARCHITECTURE.md` §132.
+
+---
+
+## 2026-08-18
+
+### La fiche de chantier rejoint Paysage — et le pont vers le client
+
+**Sa décision du 17 août**, contre ma recommandation : *« la fiche chantier, la
+ranger comme étant un outil dans la case paysage à côté de arrosage automatique
+et terrasse bois […] faire un pont vers la case client, pour pouvoir ajouter des
+informations du client et lui envoyer »*.
+
+J'avais proposé le planning, au motif qu'un rapport n'a pas de sens sans client
+ni sans date. **Sa raison est meilleure, et c'est la sienne, posée le matin
+même** : un outil doit s'ouvrir SANS client, sinon il ne sert pas en visite. Le
+client vient au moment d'envoyer.
+
+**Au passage, je me suis trompé sur un nom** : l'onglet s'appelle bien
+« Paysage » — il l'a tranché le 17 au soir, après que `ARCHITECTURE.md` §125 eut
+retenu « Outils ». J'ai cité §125 sans voir qu'il était dépassé.
+
+**La tension qui reste, et que la planche 77 pose** : il a décidé la veille que
+le pré-remplissage viendrait du DERNIER passage du client — or pré-remplir exige
+de savoir qui, dès l'ouverture. Trois moments possibles pour nommer le client,
+avec leur coût ; ma recommandation est le troisième : **nommable à tout moment**,
+et la fiche se replie sur ses prestations dès qu'il est connu.
+
+Toujours **aucune ligne de `src/`**.
+
+---
+
+### Du croquis au plan : la maquette essayable, et le calcul sorti de l'écran
+
+**Sa demande :** *« une fois que j'ai envoyé la photo de mon jardin avec les
+mesures, il y a le petit encart où on peut choisir la marque. Tout ce qu'il y a
+en dessous, tu peux le supprimer. Et une fois que tu as lu les mesures avec
+l'IA, tu me fais le plan en couleur avec les différents réseaux, contenant la
+nourrice, les PE en pointillés, les arroseurs représentés par des ronds, et tu
+me fais la liste des pièces à acheter [...] Avant de coder quoi que ce soit,
+crée-moi une maquette dynamique que je puisse essayer. »*
+
+**`appli/arrosage-croquis.html`**, publiée avec l'appli — ouvrable au téléphone
+(`…github.io/Atlas-app/arrosage-croquis.html`). Un seul écran de saisie : la
+photo et la marque. Puis le plan en couleur et les pièces rangées en casiers.
+
+**Le calcul a été SORTI de l'écran** dans `appli/arrosage-calcul.js`, plutôt que
+recopié dans la maquette. Deux implémentations d'une même règle finissent
+toujours par diverger (`CLAUDE.md` §3) — et la liste des pièces n'est pas un
+détail d'affichage, c'est ce qu'il commande chez son fournisseur.
+
+**Ce que la maquette simule, et elle le dit en rouge :** la lecture de la photo.
+Le plan et la liste, eux, sont vraiment calculés, sur son catalogue.
+
+### Le disconnecteur disparaît de la liste — sa décision
+
+*« Le disconnecteur, tu peux le supprimer à tout jamais, je n'en mets
+jamais. »* Retiré de `listeMateriel` et de la note de bas d'écran qui le disait
+obligatoire. **Ce qu'on évite :** une pièce qu'il écarte à chaque chantier, et
+qu'il faut décompter à chaque commande.
+
+Les deux contrôles qui exigeaient sa présence ont été **retournés, pas
+supprimés** : sans eux, la pièce reviendrait au premier raisonnement « c'est
+obligatoire sur l'eau potable » — juste en général, faux pour lui, et sa
+décision serait perdue. L'entrée reste au catalogue, inutilisée.
+
+### La liste dit CE QU'ON ACHÈTE, plus POURQUOI — sa consigne du soir
+
+*« Départ milieu de ligne, fin de ligne et jonction, ce sont des données pour
+toi, pour que tu comprennes les endroits où doit y avoir des tés et les autres
+où c'est des tés taraudés. Mais pour l'utilisateur, il n'a pas besoin de ces
+infos-là. Donc tu peux les supprimer, mais tu les gardes pour toi. »*
+
+Quatre mentions retirées des désignations — `(départ/milieu de ligne)`,
+`(fin de ligne)`, `(jonction, non taraudé)`, `(~2 m par arroseur)` —, et le
+raisonnement conservé en commentaire, là où il sert. **Il commande sur la
+désignation du catalogue :** ce qui s'y ajoute est une invitation à chercher
+une pièce qui n'existe pas sous ce nom.
+
+**Un contrôle en a trouvé une cinquième que je n'avais pas vue** — le
+`(~2 m par arroseur)` du PEBD Ø16 —, en comparant chaque ligne à l'entrée du
+catalogue plutôt qu'à une liste écrite à la main.
+
+**Et les deux coudes SBE ont fusionné.** Ils se distinguaient par
+`(haut, au corps)` et `(bas, sur la ligne)` : retirer ces mentions aurait donné
+**deux lignes identiques** dès qu'un corps est en 3/4" (les grosses turbines),
+ce qui se lit comme un défaut de comptage. Les emplois s'additionnent désormais
+par référence — un produit, une ligne, une quantité.
+
+**Trois contrôles lisaient ces étiquettes, sur deux suites.** Ils vérifient
+maintenant la règle en quantités : un SBE 1/2" par corps de tuyère, un SBE 3/4"
+par corps de turbine plus un par arroseur, deux SBE par arroseur au total. **Un
+contrôle accroché à un libellé meurt au premier changement de libellé** — c'est
+la même leçon que le 17 août, quand la section 3 a disparu.
+
+**Le cas du corps en 3/4" est PROVOQUÉ dans la suite**, avec une pelouse de
+40 × 30 en Hunter : les trois jardins d'exemple posent tous des corps en 1/2",
+et la garde n'aurait jamais rencontré son cas. Une garde qui ne rencontre pas
+son cas ne mesure rien — le piège du 15 août, en version « jamais atteint ». Un
+contrôle de plus refuse d'ailleurs de conclure si ce corps en 3/4" venait à
+disparaître du catalogue.
+
+### Quatre défauts, et aucun n'a été trouvé par une suite
+
+1. **`corpsCourant` était resté dans `arrosage.html`** à l'extraction. Toute
+   page autre que celle-là partait en `ReferenceError` dès qu'un jardin posait
+   une tuyère — et l'écran rendait *« la liste se remplit dès qu'un jardin est
+   lu »*, un vide qui ressemble à un état normal. Les 73 et les 105 suites
+   étaient vertes : aucune ne demandait la liste d'un jardin MIXTE.
+2. **Le tuyau se dessinait une ligne par rangée.** Une rangée qui ne portait
+   qu'une tête de son réseau n'en avait aucune : l'arroseur flottait, relié à
+   rien. Le tracé va désormais de proche en proche, à angle droit.
+3. **La bande du goutte-à-goutte était grise et anonyme.** Le dessin montrait
+   deux couleurs quand la nourrice en annonçait trois, sans dire où passait la
+   troisième voie. Elle porte la couleur de sa vanne (`reseauxDeZone`, ajouté
+   à `decouper`).
+4. **Le contour de la pelouse était dessiné APRÈS les tuyaux**, et repeignait
+   la rangée du bas — dont les têtes sont posées sur la bordure. Le tracé était
+   juste, le plan montrait un réseau à moitié relié.
+
+**Les trois premiers sortent de la capture d'écran, le quatrième aussi.** C'est
+la sixième fois dans ce dépôt (`CLAUDE.md` §5).
+
+### Les suites de l'arrosage barrent enfin la publication
+
+`appli/tests/essai-arrosage-detaille.cjs` avait son adresse écrite en dur : elle
+ne pouvait être jouée qu'à la main, et ne barrait donc rien. Elle lit désormais
+`BASE_URL`, et `pages.yml` l'enchaîne avec la nouvelle
+`appli/tests/essai-croquis.cjs` (25 contrôles). **Une suite qui ne barre pas la
+publication ne barre rien** — c'est exactement ce qui a laissé passer le défaut
+n° 1.
+
+Chacun des six contrôles a été vu ROUGE avant d'être gardé, en réintroduisant le
+défaut qu'il prétend attraper.
+
+---
+
 ## 2026-08-17
 
 ### « Il faut pouvoir créer un avoir » — dessiné, et une distinction qui vaut de l'argent
@@ -35,8 +203,8 @@ son relevé. Il ne doit rien dessus, il n'a rien à récupérer, aucune démarch
 faire. Sous l'autre régime il aurait avancé 240 € de TVA sur un chantier jamais
 payé.
 
-`docs/maquettes/77-il-ne-paie-pas.html` (trois arrangements pour la situation,
-deux portes d'entrée) et `78-l-avoir.html` (trois formes de document, trois
+`docs/maquettes/79-il-ne-paie-pas.html` (trois arrangements pour la situation,
+deux portes d'entrée) et `80-l-avoir.html` (trois formes de document, trois
 montants essayables). **Rien n'est codé** : `src/` n'est pas touché (§3 bis).
 
 **Ce que le code ne permet pas encore, et qui est écrit sur la planche :**
@@ -51,6 +219,33 @@ chaque total depuis le TTC affiché plutôt que de le recopier, et **refuse la T
 prise sur le TTC** — 300 € d'avoir font 250,00 € HT et 50,00 € de TVA, jamais
 300 € de HT. Confronté à trois planches dégradées : trois rouges, chacun nommant
 le bon coupable, y compris le retrait de la phrase sur le droit de réclamer.
+### La maquette des clients, ESSAYABLE — et le libellé qui disait « lui » à une cliente
+
+**Sa demande, le soir même :** *« montre-moi depuis chantier ce que ça donnerait,
+crée une maquette dynamique que je puisse essayer, pas de photo, en .html »* — et
+sa validation dans la foulée : *« c'est bien comme ça, sous le nombre de
+chantiers en cours, en or »*. C'était déjà codé et sur `main` ; la planche sert
+à l'essayer sans rallumer son espace.
+
+**`appli/clients.html`**, publiée avec l'appli — donc ouvrable au téléphone
+(`…github.io/Atlas-app/clients.html`). Quatre écrans qui s'enchaînent pour de
+bon : l'accueil, la liste, la fiche d'un client, et **le chemin depuis un
+chantier**, celui qu'il voulait voir.
+
+**Sans une ligne de JavaScript.** La navigation passe par `:target`, et le
+contrôle coupe le script pour le prouver : une planche qui ne s'ouvrirait pas
+chez lui ne vaut rien. Elle marche aussi hors ligne.
+
+**Un piège évité en l'écrivant :** l'accueil devait se cacher dès qu'un autre
+écran est visé. La règle évidente (`:has()`) n'existe pas sur les téléphones un
+peu anciens — la maquette se serait affichée en double, sans un mot. L'accueil
+est donc écrit en dernier, et une règle de frère suffit.
+
+**Et un défaut sorti de la planche, jamais d'un test :** la ligne qui ouvre la
+fiche d'un client disait *« Ce qu'on sait de lui »* — devant « Mme
+Bracquemont ». Elle est neutre désormais : rien dans la base ne dit le genre
+d'un client, et un sur deux est une cliente.
+
 
 ### « Je retourne dans l'application et pas dans la catégorie tarif »
 
@@ -170,7 +365,7 @@ ne se voyaient pas et repartaient tous les deux. Il se prend désormais en
 
 **Ce qui est posé :** le banc déloge l'orpheline avant de bâtir et réessaie une
 fois si le verrou parle encore (`scripts/verrou-construction.mjs`,
-`ARCHITECTURE.md` §126). **On ne double jamais une construction** — on retire
+`ARCHITECTURE.md` §129). **On ne double jamais une construction** — on retire
 celle qui n'a plus de destinataire, puisque le banc qui aurait basculé dessus
 est mort. Et on n'efface toujours pas le fichier `lock` : cette règle-là ne
 bouge pas.
@@ -204,6 +399,100 @@ Le contrôle éprouve le cas réel — un jardin enregistré avant les réglages
 jour — et a été vu rouge sur le piège remis en place. **Ce défaut aurait
 frappé à chaque réglage ajouté**, et lui seul : c'est le genre qu'on ne voit
 jamais en développant, puisqu'on part d'un navigateur vide.
+
+### « Paysage » plutôt qu'« Outils » — il revient sur son choix, et il a raison
+
+*« As-tu créé la fiche outils ? Je préférerais qu'elle s'appelle Paysage
+finalement. »* L'onglet, son écran et son adresse sont renommés.
+
+**J'avais écarté ce mot le matin même**, au motif que le paysage est son métier
+entier et ne distinguerait donc rien. **L'argument était faux**, et il faut
+dire pourquoi sans quoi quelqu'un le ressortira : il supposait qu'Atlas
+resterait l'application d'un paysagiste. Or Atlas sert des artisans, et lui-même
+prépare déjà la terrasse bois. Dans une application multi-métiers, « Paysage »
+distingue exactement ce qu'il faut — le jour où un menuisier s'en sert, il aura
+un onglet « Menuiserie » à côté, là où deux listes d'« Outils » auraient
+demandé de les départager en entrant.
+
+Et le mot vaut mieux pour une seconde raison : « Outils » nomme la nature de ce
+qu'il y a dedans, « Paysage » nomme le métier servi. Le second se lit sans avoir
+à ouvrir.
+
+Un cas de contrôle s'ajoute : **le libellé et l'adresse doivent aller
+ensemble**. Renommer l'un sans l'autre donnerait un onglet « Paysage » qui ouvre
+`/outils` — un 404 que personne n'aurait voulu, et que rien n'aurait dit.
+
+### Le contrôle de la barre a trouvé une erreur — la mienne, dans la mesure
+
+**Il a rougi dès sa première exécution**, sur le trait d'or : « trait de 66,4 px
+pour une colonne de 72,0 px ». Le trait était juste ; c'est ma mesure de la
+colonne qui était fausse — je divisais la largeur de la rangée par cinq, en
+comptant ses 28 px de marge intérieure comme de la place disponible. **Les deux
+contrôles de largeur passaient donc avec 5,6 px de trop.**
+
+**Et la première correction était fausse elle aussi.** Mesurer la boîte du LIEN
+paraissait évident — c'est la cellule de grille. Sauf qu'une cellule `1fr`
+**s'élargit quand son contenu déborde** : le lien mesure alors exactement la
+largeur du mot, et « déborde » ne se voit plus jamais. Un mot de 120 px aurait
+rendu « colonne 120, texte 120, tout va bien ».
+
+La mesure juste est la **part** : le contenu de la rangée, marges déduites,
+divisé par le nombre d'onglets — 66,4 px. C'est aussi la largeur du trait d'or,
+et c'est pour ça que les comparer a révélé l'écart.
+
+**Ce que ça change aux nombres donnés au patron**, et il fallait le lui dire :
+
+| | Annoncé d'abord | Réel |
+|---|---|---|
+| A · sans rien changer | déborde de 7,2 | **déborde de 12,4** |
+| B · espacement resserré | tient de 1,3 | **déborde de 3,9** |
+| C · lettre plus petite | 11,8 de marge | **6,2 de marge** |
+| D · avec une icône | 14,8 de marge | **9,2 de marge** |
+
+Son choix ne change pas — C reste la seule variante sans icône qui rentre —
+mais B ne « tenait » pas du tout, et la planche 76 le dit maintenant.
+
+**Le seuil du contrôle passe de 6 à 4 px**, et le seuil s'explique : il doit
+rejeter B (qui déborde) sans mettre C à un cheveu du rouge. Un contrôle qui
+passe de justesse rougit au premier rendu un peu différent, et l'on prend
+l'habitude de le rejouer au lieu de le croire.
+
+**La leçon, et elle dépasse cette barre : deux mesures qui devraient tomber
+pareil valent mieux qu'une mesure seule.** Ici, le trait d'or et la colonne
+sont la même largeur par construction ; les comparer a trouvé ce qu'aucune des
+deux n'aurait dit isolément.
+
+### Le cinquième onglet est posé, et un contrôle mesure la barre
+
+Sa variante retenue sur la planche 76 : **C**, la lettre à 8,5 px espacée de
+0,14em, **sans icône** — sa décision du 10 août de retirer les pictogrammes
+tient donc aussi à cinq colonnes. 11,8 px de marge, de quoi encaisser une autre
+police de téléphone.
+
+Trois choses sont posées avec l'onglet :
+
+- **La largeur du trait d'or suit le nombre d'onglets.** Elle était écrite en
+  dur (`/ 4`) : l'oublier aurait laissé le trait à cheval sur deux colonnes,
+  un défaut de dessin que rien n'aurait dit.
+- **Un écran derrière l'onglet**, sans quoi il mènerait à une page introuvable
+  — la troisième fois qu'il appuierait sur quelque chose qui ne répond pas.
+  **Et cet écran dit la vérité** : l'outil d'arrosage n'est pas dans
+  l'application, c'est une page publiée à part. La ligne porte « À l'essai » au
+  lieu d'un chevron, et ouvre la page dehors. Promettre un écran interne aurait
+  été mentir d'un signe.
+- **Un contrôle qui mesure la barre à 360 px** (`test-barre-basse-e2e.ts`). Il
+  mesure la boîte du **nœud de texte**, pas celle du lien : un lien de grille
+  remplit sa colonne quoi qu'il porte, sa largeur ne dirait rien. Il exige
+  **6 px de marge minimum** — précisément pour refuser la variante écartée et
+  son faux confort de 1,3 px — et refuse de conclure sur une barre absente.
+
+Ce genre de défaut ne se voit pas en développant sur un grand écran ; il
+n'apparaît que sur son téléphone. C'est exactement pourquoi il fallait un
+contrôle plutôt qu'un commentaire.
+
+**La décision est aussi entrée dans `docs/QUESTIONS.md` §22**, avec son accord
+— pourquoi ni les Réglages ni une catégorie « Paysage », et ce que le cinquième
+onglet a coûté à la barre.
 
 ### Où vivent les outils métier : un cinquième onglet, et ce qu'il coûte
 
@@ -1217,11 +1506,56 @@ Il ne paraît pas sur un devis parti : cet écran ne se modifie plus.
 
 **Et un contrôle de maquette que personne ne jouait** — `verifier-maquette-reduction.mjs`
 existait depuis le 16 août sans être branché nulle part. Raccroché, avec celui
-de la 68. Raisons : `ARCHITECTURE.md` §120.
+de la 68. Raisons : `ARCHITECTURE.md` §129.
 
 ---
 
+## 2026-08-18
+
+### « J'ai encore la version lente » — la construction échouée se retente enfin
+
+**Sa fiche disait tout**, sans qu'il ait rien à recopier : *« Code SERVI :
+AUCUNE — la construction a ÉCHOUÉ »*, avec le même refus que l'avant-veille.
+
+**Ce qui était déjà réparé ne suffisait pas.** L'orpheline est délogée, le
+verrou est exclusif, une seconde tentative part sur ce refus-là — son espace
+portait bien ces trois correctifs. Mais **aucun ne couvre le cas où les deux
+tentatives tombent**.
+
+**Le trou :** le veilleur ne relançait le banc que lorsque *rien* ne répondait
+sur le port. Or une construction ratée laisse le banc en mode développement, et
+ce mode-là répond très bien. Le veilleur se déclarait content, et plus rien ne
+retentait — toute la soirée sur la version lente.
+
+**Ce que ça évite désormais :** le veilleur regarde aussi *si la version rapide
+est là*. Le témoin d'échec existait déjà et personne ne le lisait. Trois
+tentatives espacées de dix minutes, jamais deux constructions à la fois, puis on
+se tait et la fiche porte la cause.
+
+**Pourquoi réessayer marche ici :** la cause est passagère — 132 Mo libres au
+moment de la panne, sur 8 Go. Dix minutes plus tard, la même construction passe.
+Détail et tableau des contrôles : `ARCHITECTURE.md` §131.
+
 ## 2026-08-16
+
+### « Quelle est la différence entre planning et équipe ? » — aucune, et c'est réparé
+
+*Sa question, capture des réglages à l'appui.* Les deux rubriques rendaient **le
+même bloc** : combien d'équipes partent en même temps, et leurs noms. « Équipe »
+avait en plus les absences, arrivées la veille. « Planning » était donc un
+doublon complet, et sa promesse — *« horaires, équipes et disponibilités »* — ne
+tenait que par le mot du milieu : les horaires ne se règlent pas, et les
+disponibilités sont les absences, qui vivent dans l'autre rubrique.
+
+**« Planning » est supprimée des réglages.** Tout est dans « Équipe » : combien
+partent en même temps, leurs noms, leurs absences. Une seule porte.
+
+**Ce que ça évite :** ouvrir une rubrique pour y trouver ce qu'on vient de régler
+dans l'autre, et se demander laquelle fait foi.
+
+**Aucun contrôle ne pouvait le voir** — les deux écrans étaient corrects chacun de
+son côté. C'est une question de sens, posée en ouvrant la rubrique. Détail :
+`ARCHITECTURE.md` §129, et la réponse dans sa langue : `docs/QUESTIONS.md` §21.
 
 ### La fiche du client : montrer ce que l'application savait déjà
 

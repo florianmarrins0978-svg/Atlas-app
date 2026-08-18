@@ -155,7 +155,6 @@ async function ecrans(): Promise<Array<[string, string]>> {
     ["les terminés", "/termines"],
     ["les réglages", "/reglages"],
     ["les tarifs", "/reglages/tarifs"],
-    ["le planning réglé", "/reglages/planning"],
     ["Atlas IA", "/reglages/ia"],
     ["mes prix", "/reglages/prix"],
     ["mon agenda", "/reglages/agenda"],

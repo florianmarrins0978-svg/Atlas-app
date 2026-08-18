@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — vos clients, à l'essai</title>
+<style>
+  /*
+    LES CLIENTS, À L'ESSAI — sa demande du 17 août 2026 au soir :
+    « montre-moi depuis chantier ce que ça donnerait, crée une maquette
+    dynamique que je puisse essayer, pas de photo, en .html ».
+
+    **Elle se manipule pour de bon** : on part de l'accueil, on ouvre la liste,
+    on entre dans un client, on ouvre un de ses chantiers, et depuis ce chantier
+    on revient à sa fiche. C'est exactement le chemin qui est codé.
+
+    **AUCUN JAVASCRIPT.** La navigation passe par `:target` — des ancres, que le
+    navigateur gère seul. C'est la règle de ce dépôt (son lecteur n'en exécute
+    pas toujours), et c'est aussi ce qui fait que cette page marche hors ligne,
+    dans un onglet laissé ouvert, sans rien télécharger.
+
+    **Les chiffres ne sont pas inventés au hasard** : ils tombent juste.
+    2 460 encaissés + 740 dus = 3 200 facturés, et les quatre chantiers listés
+    font bien 3 200. Un artisan refait la somme.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bone:#171613; --cream:#201e1a; --paper:#252320;
+      --charcoal:#e9e5dc; --charcoal-soft:#c9c5bc; --muted:#8a867c;
+      --pine:#7d9179; --or:#C9A15E; --alerte:#C87058;
+      --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
+
+  .cadre{max-width:430px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:78px}
+
+  /* ── Les écrans : un seul à la fois, sans une ligne de script ───────────── */
+  .ecran{display:none;padding:26px 0 0}
+  .ecran:target{display:block}
+  /* L'accueil est l'écran par défaut : il s'affiche tant que rien n'est visé,
+     et se cache dès qu'un autre l'est.
+
+     **Il est écrit EN DERNIER dans la page, et c'est la raison de la règle
+     ci-dessous** : `~` ne voit que les frères qui SUIVENT. Écrit en premier,
+     il aurait fallu `:has()`, que les téléphones un peu anciens ne connaissent
+     pas — et la maquette se serait affichée en double chez lui, sans que rien
+     ne le dise. */
+  #accueil{display:block}
+  .ecran:target ~ #accueil{display:none}
+
+  .surtitre{display:block;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--or);padding:0 26px}
+  h1{margin:14px 0 0;padding:0 26px;font-family:Georgia,"Times New Roman",serif;
+     font-weight:400;font-size:36px;line-height:1.02;letter-spacing:-.018em}
+  .compte{display:block;margin-top:14px;padding:0 26px;font-size:9.5px;font-weight:500;
+          letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+
+  /* Le lien qu'il vient de valider : en or, sous le nombre de chantiers. */
+  .vers-clients{display:inline-flex;align-items:center;gap:6px;margin:10px 26px 0;
+                font-size:9.5px;font-weight:500;letter-spacing:.28em;
+                text-transform:uppercase;color:var(--or)}
+  .chevron{width:5px;height:5px;transform:rotate(45deg);
+           border-right:1.5px solid currentColor;border-top:1.5px solid currentColor}
+
+  .filet{height:1px;background:var(--line);margin:26px}
+
+  .retour{display:flex;align-items:center;justify-content:center;width:36px;height:36px;
+          margin:0 0 0 26px;border-radius:9999px;background:var(--paper);
+          font-size:17px;line-height:1;color:var(--charcoal)}
+
+  .action{display:flex;align-items:center;gap:14px;padding:0 26px;margin:6px 0 22px}
+  .action .mot{font-size:13px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
+  .action .rond{width:42px;height:42px;border-radius:9999px;border:1px solid var(--or);
+                display:flex;align-items:center;justify-content:center;color:var(--or)}
+
+  .etiq{display:block;padding:0 26px;margin:0 0 10px;font-size:9.5px;font-weight:500;
+        letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+
+  .liste{margin:0 26px;padding:0;list-style:none}
+  .ligne{display:flex;align-items:center;gap:15px;min-height:56px;padding:13px 0;
+         border-bottom:1px solid var(--line)}
+  .liste li:last-child .ligne{border-bottom:0}
+  .ligne .nom{flex:1;min-width:0}
+  .ligne .nom b{display:block;font-family:Georgia,serif;font-weight:400;font-size:17px;line-height:1.25}
+  .ligne .nom span{display:block;margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.5}
+  .du{flex:none;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+      text-transform:uppercase;color:var(--alerte)}
+  .ligne .fleche{flex:none;width:8px;height:8px;transform:rotate(45deg);
+                 border-right:1.5px solid rgba(138,133,120,.7);border-top:1.5px solid rgba(138,133,120,.7)}
+
+  .carte{margin:0 26px 12px;background:var(--cream);border:1px solid var(--line-soft);
+         border-radius:16px;padding:16px 17px}
+  .carte .quoi{font-size:9.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
+  .carte h2{margin:8px 0 0;font-family:Georgia,serif;font-weight:400;font-size:21px;line-height:1.2}
+  .carte p{margin:6px 0 0;font-size:13.5px;line-height:1.6;color:var(--charcoal-soft)}
+
+  .chiffres{display:flex;gap:10px;margin:18px 26px 0}
+  .ch{flex:1;background:var(--paper);border-radius:12px;padding:11px 12px}
+  .ch b{display:block;font-family:Georgia,serif;font-weight:400;font-size:19px;line-height:1.15}
+  .ch span{display:block;margin-top:3px;font-size:9.5px;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--muted)}
+  .ch.due b{color:var(--alerte)}
+
+  .sous{margin:6px 26px 0;font-size:12.5px;color:var(--muted);line-height:1.55}
+
+  /* La barre du bas : QUATRE onglets, et c'est un fait, pas un décor. Le
+     cinquième est réservé aux outils métier — un sixième ne tiendrait pas. */
+  .barre{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;
+         display:flex;justify-content:space-around;padding:14px 10px 18px;
+         background:var(--bone);border-top:1px solid var(--line);
+         font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+  .barre .actif{color:var(--pine);font-weight:600}
+
+  .dit{margin:22px 26px 0;padding:14px 16px;border-radius:12px;background:var(--cream);
+       border-left:3px solid var(--or);font-size:13px;line-height:1.6;color:var(--muted)}
+  .dit b{color:var(--charcoal)}
+</style>
+</head>
+<body>
+<div class="cadre">
+
+  <!-- ═══ 2. La liste des clients ═════════════════════════════════════════ -->
+  <section class="ecran" id="liste">
+    <a class="retour" href="#accueil">‹</a>
+    <span class="surtitre" style="margin-top:14px">Vos clients</span>
+    <h1>4 clients</h1>
+
+    <div class="filet"></div>
+
+    <ul class="liste">
+      <li><a class="ligne" href="#client">
+        <span class="nom"><b>Mme Bracquemont</b><span>4 chantiers · 3 200 € facturés</span></span>
+        <span class="du">740 € dus</span><i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#client">
+        <span class="nom"><b>M. Ledoux</b><span>2 chantiers · 1 840 € facturés</span></span>
+        <i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#client">
+        <span class="nom"><b>Mme Félicie</b><span>1 chantier · rien de facturé</span></span>
+        <i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#client">
+        <span class="nom"><b>M. Verrier</b><span>6 chantiers · 5 210 € facturés</span></span>
+        <i class="fleche"></i></a></li>
+    </ul>
+
+    <p class="dit"><b>« Rien de facturé »</b>, et jamais « 0 € » : un zéro se lirait
+      comme un mauvais payeur, alors qu'il s'agit d'un chantier qui n'est pas encore parti.</p>
+  </section>
+
+  <!-- ═══ 3. La fiche d'un client ═════════════════════════════════════════ -->
+  <section class="ecran" id="client">
+    <a class="retour" href="#liste">‹</a>
+    <span class="surtitre" style="margin-top:14px">Client</span>
+    <h1>Mme Bracquemont</h1>
+    <p class="sous">12 chemin des Noues · 06 79 98 45 14</p>
+
+    <div class="chiffres">
+      <span class="ch"><b>4</b><span>chantiers</span></span>
+      <span class="ch"><b>3 200 €</b><span>facturés</span></span>
+      <span class="ch due"><b>740 €</b><span>encore dus</span></span>
+    </div>
+
+    <div class="filet"></div>
+
+    <span class="etiq">Ce qu'on lui fait, et combien de fois</span>
+    <ul class="liste">
+      <li><span class="ligne"><span class="nom"><b>Élagage</b><span>4 fois · 450 € en moyenne</span></span></span></li>
+      <li><span class="ligne"><span class="nom"><b>Évacuation des déchets verts</b><span>4 fois · 240 €</span></span></span></li>
+      <li><span class="ligne"><span class="nom"><b>Broyage des branches</b><span>2 fois · 180 €</span></span></span></li>
+    </ul>
+
+    <span class="etiq" style="margin-top:22px">Ses chantiers</span>
+    <ul class="liste">
+      <li><a class="ligne" href="#chantier">
+        <span class="nom"><b>Élagage — 3 chênes</b><span>16 août · 887 €</span></span><i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#chantier">
+        <span class="nom"><b>Taille de haie</b><span>2 juin · 740 € — impayé</span></span><i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#chantier">
+        <span class="nom"><b>Abattage tilleul</b><span>14 mars · 980 €</span></span><i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#chantier">
+        <span class="nom"><b>Élagage d'entretien</b><span>9 janvier · 593 €</span></span><i class="fleche"></i></a></li>
+    </ul>
+
+    <p class="dit">887 + 740 + 980 + 593 = <b>3 200 €</b>, et le seul impayé fait bien
+      les <b>740 € dus</b>. Rien n'est écrit au hasard sur cette planche.</p>
+  </section>
+
+  <!-- ═══ 4. La fiche d'un chantier — la porte vers le client ═════════════ -->
+  <section class="ecran" id="chantier">
+    <a class="retour" href="#accueil">‹</a>
+    <span class="surtitre" style="margin-top:14px">Chantier</span>
+    <h1>Élagage — 3 chênes</h1>
+    <p class="sous">Mme Bracquemont · 12 chemin des Noues</p>
+
+    <div class="filet"></div>
+
+    <div class="carte">
+      <span class="quoi">Devis</span>
+      <h2>887 € — à envoyer</h2>
+      <p>Trois chênes en bord de route, nacelle une demi-journée.</p>
+    </div>
+
+    <div class="carte">
+      <span class="quoi">Photos et notes</span>
+      <h2>2 photos, 1 dictée</h2>
+      <p>La dictée du 14 août est transcrite et rattachée au devis.</p>
+    </div>
+
+    <span class="etiq" style="margin-top:22px">Le reste de la fiche</span>
+    <ul class="liste">
+      <li><a class="ligne" href="#client">
+        <span class="nom"><b>Mme Bracquemont</b><span>Ce qu'on sait de ce client</span></span>
+        <i class="fleche"></i></a></li>
+      <li><span class="ligne"><span class="nom"><b>Informations du chantier</b><span>Adresse, accès, équipe</span></span></span></li>
+      <li><span class="ligne"><span class="nom"><b>Rédiger le devis à la main</b><span>Sans passer par la dictée</span></span></span></li>
+    </ul>
+
+    <p class="dit"><b>C'est d'ici que la fiche du client s'ouvrait déjà</b> — en touchant
+      son nom. Ce qui manquait, et qui est ajouté : la <b>liste</b>, pour le retrouver
+      sans passer par un chantier.</p>
+  </section>
+
+  <!-- ═══ 1. L'accueil — le lien en or sous le nombre de chantiers ═════════ -->
+  <section class="ecran" id="accueil">
+    <span class="surtitre">Bonjour Florian</span>
+    <h1>Vos chantiers</h1>
+    <span class="compte">Quatre en cours</span>
+    <a class="vers-clients" href="#liste">Vos clients <i class="chevron"></i></a>
+
+    <div class="filet"></div>
+
+    <div class="action"><span class="mot">Nouveau chantier</span><span class="rond">+</span></div>
+
+    <span class="etiq">En cours</span>
+    <ul class="liste">
+      <li><a class="ligne" href="#chantier">
+        <span class="nom"><b>Mme Bracquemont</b><span>Élagage — 3 chênes · devis à envoyer</span></span>
+        <i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#chantier">
+        <span class="nom"><b>M. Ledoux</b><span>Taille de haie · prévu le 22 août</span></span>
+        <i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#chantier">
+        <span class="nom"><b>Mme Félicie</b><span>Abattage tilleul · à chiffrer</span></span>
+        <i class="fleche"></i></a></li>
+      <li><a class="ligne" href="#chantier">
+        <span class="nom"><b>M. Verrier</b><span>Broyage · terminé, à facturer</span></span>
+        <i class="fleche"></i></a></li>
+    </ul>
+
+    <p class="dit"><b>Touchez « Vos clients »</b> pour la liste, ou un chantier pour voir
+      d'où l'on ouvre la fiche d'un client. Tout est manipulable : c'est l'écran, pas une image.</p>
+  </section>
+
+  <nav class="barre">
+    <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span>
+  </nav>
+</div>
+</body>
+</html>

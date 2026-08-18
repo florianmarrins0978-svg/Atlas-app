@@ -25,13 +25,118 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## En attente d'une réponse — le quinconce
+
+### Sa règle du 18 août, et la planche 78
+
+*« Dans les couloirs, le but c'est de poser les tuyères en quinconce, car le
+but c'est que celle de gauche recouvre quasi 100 % jusqu'à celle de droite,
+donc le quinconce est optimal. »* Puis : *« pour les espaces plus grands, si
+les arroseurs 3500 le permettent, l'idée est de faire la même — un quinconce
+avec les arroseurs de droite qui recouvrent jusqu'à ceux de gauche. »*
+
+**Ce que l'outil fait de travers aujourd'hui.** `pointsDeLaPose` ne décale que
+les rangées INTÉRIEURES (`bordRangee` exclu) : un couloir n'a que deux rangées,
+toutes deux en bord, donc **aucun quinconce** — c'est la grille alignée qu'il a
+vue à l'écran. Et surtout, `poser` mesure l'écart le long d'une rangée ET
+l'écart entre rangées **séparément**, alors que ce qui compte en quinconce est
+la **diagonale** : √(pas² + largeur²) ≤ portée. D'où beaucoup trop d'arroseurs.
+
+**Ce que ça change, sur son couloir de 10 × 2 m** (`docs/maquettes/78`) :
+
+| Pose | Buse | Écart | Tuyères | Eau à côté |
+|---|---|---|---|---|
+| aujourd'hui, aligné | 6-VAN (1,80 m) | 2,00 m | **12** | — |
+| quinconce | 12-VAN (3,60 m) | 2,50 m | **5** | 1,60 m |
+| quinconce | 18-VAN (5,40 m) | 5,00 m | **3** | 3,40 m |
+
+**Pourquoi on attend au lieu de coder.** Ce n'est pas un choix d'affichage :
+c'est ce qu'il commande chez son fournisseur, et l'écart va de 12 pièces à 3.
+La géométrie du quinconce se calcule, mais **la tolérance ne se devine pas** :
+plus la buse porte loin, moins il faut de têtes, et plus il en tombe à côté —
+sur un massif, une terrasse ou chez le voisin. L'outil ne sait pas ce qu'il y a
+le long du couloir.
+
+**SA RÉPONSE, 18 août : « jamais plus que la largeur »** — et elle entre en
+conflit avec sa règle du 17 août. **Ne pas coder avant d'avoir tranché ce
+conflit.**
+
+Sa règle du 17 août veut un écart ≤ **1,20 × la portée** (« portée 5 m :
+5,50 m, 6 m max »). Sur un couloir de 2 m, la LARGEUR consomme déjà presque
+tout ce budget : la diagonale d'un quinconce vaut √((écart/2)² + 2²), et elle
+dépasse 1,20 × portée avant même que l'écart ne serve à quoi que ce soit.
+
+| Buse | Portée | Aligné | Quinconce |
+|---|---|---|---|
+| 6-VAN | 1,80 m | **12** | **15** |
+| 8-VAN | 2,30 m ⚠ dépasse la largeur | 10 | 7 |
+| 12-VAN | 3,60 m ⚠ dépasse la largeur | 8 | 5 |
+
+**Le quinconce ne gagne QUE si la portée dépasse la largeur** — ce qu'il vient
+d'exclure. Avec sa règle des 80 % et une portée bornée à la largeur, il coûte
+trois tuyères de PLUS, pas de moins. Sa phrase « le quinconce est optimal »
+reste vraie ; c'est la borne sur la portée qui la neutralise dans un couloir
+étroit.
+
+**Une troisième piste, à lui soumettre, et qui n'avait pas été regardée :** une
+SEULE rangée au MILIEU du couloir, en 360°. Vérifié numériquement — 6-VAN,
+6 tuyères, écart 2,00 m, couverture complète, 0,80 m d'eau de chaque côté.
+**Six au lieu de douze**, sans jamais monter en buse. C'est peut-être ce qu'il
+fait déjà en vrai, et ni la planche ni moi ne l'avions envisagé.
+
+**Ce qui reste à trancher, en une phrase :** dans un couloir, pose-t-il deux
+rangées sur les bords, ou une rangée au milieu ?
+
+**Un second point, mineur, à confirmer avec :** sa règle du 17 août veut les
+derniers arroseurs dans les coins. En quinconce, les deux bouts de la chaîne
+tombent dans deux coins ; les deux autres sont couverts par la portée mais sans
+tête. S'il les veut équipés, c'est deux tuyères de plus.
+
+**Et un défaut du DESSIN, trouvé sur la capture et pas autrement** (§5) : la
+première version de la planche traçait des disques ENTIERS. Une tête contre un
+bord est en 180° — sa règle — et n'envoie rien derrière elle : la planche
+montrait de l'eau là où il n'en tombe pas, et faisait paraître le quinconce
+bien pire qu'il n'est. Le sens de balayage de l'arc SVG était faux par-dessus
+le marché (l'axe y descend). Deux erreurs invisibles dans le code, évidentes
+sur l'image.
+
+---
+
+## À surveiller — non reproduit
+
+### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
+
+**Écrit comme NON REPRODUIT, pas comme corrigé.** Pendant la batterie du
+18 août, la suite s'est arrêtée sur son propre garde-fou : *« Aucune
+proposition de prix n'a pu être calculée : ce contrôle n'a rien éprouvé.
+Vérifier les tarifs de démonstration. »* Elle cherche un tarif « Dépose
+carrelage », qui existe bien dans `src/server/db/seed.ts`.
+
+**Rejouée seule sur une base fraîche : verte. Rejouée dans la batterie
+entière (99 suites) : verte.** Rien n'a été corrigé — il n'y avait rien à
+corriger de visible. La piste la plus probable est une suite antérieure du même
+passage qui consomme ou modifie ce tarif : les 99 suites partagent une base
+semée **une seule fois** au début.
+
+**Si elle retombe :** ne pas la rejouer en croyant que ça suffit. Chercher
+quelle suite touche aux tarifs de démonstration avant elle, et lui faire semer
+son propre tarif plutôt que d'emprunter celui du jeu commun. Une suite qui
+dépend de l'état laissé par une autre finit toujours par rougir dans un ordre
+donné — et jamais seule, ce qui la rend introuvable.
+
+**Ce qui est déjà bien fait, et qu'il ne faut pas défaire :** son garde-fou.
+Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
+15 août. C'est lui qui a rendu la panne visible.
+
+---
+
 ## Ce que je peux faire seul
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
 payer, il faut avoir la possibilité de créer un avoir »*. Deux planches,
-`docs/maquettes/77-il-ne-paie-pas.html` et `78-l-avoir.html`. Rien dans `src/`.
+`docs/maquettes/79-il-ne-paie-pas.html` et `80-l-avoir.html`. Rien dans `src/`.
 
 **CE QU'IL FAUT AVOIR COMPRIS AVANT DE CODER QUOI QUE CE SOIT.** Un avoir et un
 impayé ne sont pas la même chose :
@@ -103,7 +208,7 @@ chantier. C'est la meilleure preuve que la fiche inventée au premier essai aura
 **Sa question :** *« L'idée c'est de créer des outils comme celui-là pour les
 paysagistes ; après je ferai la même chose pour les terrasses bois. Une
 nouvelle catégorie paysage ? Ou on range ça dans les réglages ? »*
-**Sa décision : un cinquième onglet « Outils ».** Le raisonnement complet, et
+**Sa décision : un cinquième onglet, nommé « Paysage ».** Le raisonnement complet, et
 ce qui a été écarté, est dans `ARCHITECTURE.md` §125.
 
 **⚠ CE QUE ÇA COÛTE, MESURÉ ET NON SUPPOSÉ** (planche 76) : à cinq colonnes sur
@@ -118,19 +223,31 @@ revient sur sa décision du 10 août** — il avait retiré les icônes parce
 qu'elles répétaient les mots ; à cinq colonnes elles rendent un autre service,
 viser sans lire. C'est recevable, mais **c'est à lui de le dire**.
 
-**À faire, dans cet ordre :**
+**~~1. Lui faire choisir~~ — FAIT : il a pris C**, la lettre à 8,5 px
+(espacement 0,14em), sans icône. Sa décision du 10 août — pas de pictogrammes —
+tient donc à cinq onglets aussi.
 
-1. **Lui faire choisir C ou D** sur la planche 76 — rien ne se code avant.
-2. Poser l'onglet dans `AtlasBottomNav.tsx` (`ONGLETS`, la grille `grid-cols-4`
-   et la largeur du trait d'or, qui est en `/ 4` à deux endroits).
-3. **Un contrôle qui mesure la barre à 360 px** avant chaque mise en ligne :
-   c'est exactement le genre de défaut qu'on ne voit pas en développant sur un
-   grand écran, et qui n'apparaît que sur son téléphone.
-4. L'onglet porte une LISTE d'outils (arrosage, puis terrasse bois) — d'où son
-   nom au pluriel, et non « Arrosage ».
-5. **Pouvoir rattacher un plan à un chantier après coup.** C'est le revers de
-   l'accès sans chantier qu'il a voulu : un plan fait en visite de devis doit
-   pouvoir rejoindre son client, sinon on le cherchera six mois plus tard.
+**~~2. Poser l'onglet~~ — FAIT.** `AtlasBottomNav.tsx` : `ONGLETS` gagne
+« Outils », la grille passe en `grid-cols-5`, et **la largeur du trait d'or
+suit** (`/ 5`) — elle était écrite en dur, et l'oublier aurait laissé le trait
+à cheval sur deux colonnes.
+
+**~~3. Le contrôle qui mesure~~ — FAIT** : `scripts/test-barre-basse-e2e.ts`.
+Il mesure la boîte du NŒUD DE TEXTE (une plage), pas celle du lien — un lien
+de grille remplit sa colonne quoi qu'il porte, sa largeur ne dirait rien. Il
+exige **6 px de marge minimum**, précisément pour refuser la variante B et son
+faux confort de 1,3 px. Et il refuse de conclure sur une barre absente.
+
+**~~4. L'écran derrière l'onglet~~ — FAIT** : `src/app/paysage/page.tsx`. **Il
+dit la vérité, et c'est tout son sujet** : l'outil d'arrosage n'est PAS dans
+l'application, c'est une page publiée à part. La ligne porte « À l'essai » au
+lieu d'un chevron, et ouvre la page dehors — plutôt que de promettre un écran
+interne qui n'existe pas. La terrasse bois porte « Bientôt », sans lien.
+
+**5. RESTE À FAIRE — rattacher un plan à un chantier après coup.** C'est le
+revers de l'accès sans chantier qu'il a voulu : un plan fait en visite de devis
+doit pouvoir rejoindre son client, sinon on le cherchera six mois plus tard.
+Rien n'est encore posé pour ça.
 
 ---
 
@@ -217,6 +334,35 @@ qui baissent en avril, le découpage qui ne recâble pas. C'est la même leçon 
 le matin — **un contrôle garde une règle, pas un écran.** Et trois gardes
 nouvelles sur le croquis, éprouvées à l'envers : la photo s'affiche, survit au
 rechargement, se retire, et l'écran ANNONCE qu'il ne lit pas encore les cotes.
+
+**✅ LA CIBLE EST MAINTENANT ESSAYABLE — `appli/arrosage-croquis.html`, 18 août.**
+
+Sa demande : *« une fois que j'ai envoyé la photo de mon jardin avec les
+mesures, il y a le petit encart où on peut choisir la marque. Tout ce qu'il y a
+en dessous, tu peux le supprimer. Et une fois que tu as lu les mesures avec
+l'IA, tu me fais le plan en couleur avec les différents réseaux, contenant la
+nourrice, les PE en pointillés, les arroseurs représentés par des ronds, et tu
+me fais la liste des pièces à acheter [...] Avant de coder quoi que ce soit,
+crée-moi une maquette dynamique que je puisse essayer, pas de photos en .html. »*
+
+- **Un seul écran de saisie** : la photo et la marque. Rien d'autre, comme il l'a
+  demandé.
+- **Le plan** : un réseau une couleur, PE en pointillés, arroseurs en ronds,
+  nourrice dans son regard, massifs en bandes à la couleur de leur vanne —
+  **dripline non tracée**, sa consigne.
+- **Les pièces en casiers** : les arroseurs, le goutte-à-goutte, la nourrice, le
+  réseau enterré, la tête de réseau, le tuyau PE. Un bandeau dit d'un coup
+  combien de réseaux, quel arroseur, quel diamètre d'amenée.
+- **Ce qui est SIMULÉ, et la page le dit en rouge** : la lecture de la photo —
+  une page statique n'a pas de serveur. Trois jardins d'exemple tiennent lieu de
+  lecture. Le plan et la liste, eux, sont vraiment calculés sur son catalogue.
+
+**Ce qui reste à trancher avec lui** — à ne pas deviner :
+la longueur d'une couronne de PE (comptée à 50 m, marqué *à confirmer* : c'est
+le conditionnement de son fournisseur, pas une donnée du catalogue), la longueur
+des antennes vers les réseaux (elle dépend du tracé sur le terrain — inventée,
+elle se paie à la pose), et la pression nominale de son PEHD, qui décide du
+verdict Ø25/Ø32.
 
 **LA CIBLE EST DESSINÉE — planche `75-le-plan-comme-le-sien.html`, 17 août.**
 Il a envoyé la photo d'un **plan d'exécution professionnel** : échelle 1/100e,
@@ -559,9 +705,16 @@ porte une seule fois, référencé par chaque fiche — retaper « Électrovanne
 « Électrovannes 24 V », « Regards de vannes », « Programmateur X voies »
 disparaissent dès qu'une fiche existe pour le nombre de secteurs — remplacées
 par ses vraies références, dans la liste chiffrable ET dans le registre de
-prix. Ce qui reste toujours, quelle que soit la fiche : disconnecteur,
-réducteur de pression, sonde de pluie — des pièces de tête de réseau, jamais
-dans un regard.
+prix. Ce qui reste toujours, quelle que soit la fiche : réducteur de pression
+et sonde de pluie — des pièces de tête de réseau, jamais dans un regard.
+
+**Le DISCONNECTEUR n'y est plus — sa décision du 18 août :** *« le
+disconnecteur, tu peux le supprimer à tout jamais, je n'en mets jamais. »* La
+liste sert à commander ce qu'IL pose. Ne pas le remettre au motif qu'un réseau
+raccordé à l'eau potable en demande un : c'est juste en général, et ce n'est
+pas sa pratique. Deux contrôles gardent son absence (`essai-arrosage-detaille`,
+`e2e.js`), retournés plutôt que supprimés pour que la question ne se rouvre
+pas. L'entrée reste au catalogue, inutilisée.
 
 **Ce qui n'est PAS dans ses fiches, et n'a pas été ajouté en silence :** aucun
 disconnecteur ni réducteur listé dans le regard — cohérent avec leur position
@@ -1109,6 +1262,19 @@ réellement automatique demanderait un prestataire sous contrat.
 - ce qui n'est pas coché **n'est pas une faute** — aucun rouge ;
 - « Vrai »/« Faux » ne sortent jamais vers le client ;
 - l'envoi emprunte le chemin qui porte déjà devis et factures.
+
+**OÙ LA FICHE VIT — tranché le 17 août 2026, contre ma recommandation.** Pas
+depuis le planning : **dans l'onglet « Paysage »**, à côté de l'arrosage et de
+la terrasse bois. Sa raison, qui est la sienne du matin même : un outil doit
+s'ouvrir SANS client, sinon il ne sert pas en visite. Le client vient au moment
+d'envoyer, par un pont vers la fiche client (existante depuis le 16 août).
+
+**LA QUESTION OUVERTE, et elle n'est pas de mise en page**
+(`docs/maquettes/77-la-fiche-dans-paysage.html`) : pré-remplir d'après le dernier
+passage exige de savoir QUI dès l'ouverture, ce qui contredit l'ouverture sans
+client. Trois moments proposés ; ma recommandation est le troisième — le client
+se nomme à tout moment, et la fiche se replie sur ses prestations dès qu'il est
+connu. **Attend sa réponse.**
 
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :

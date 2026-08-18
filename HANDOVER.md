@@ -9,6 +9,28 @@ sert.
 
 ---
 
+## Ne JAMAIS attendre une publication en interrogeant `github.io`
+
+**Payé le 18 août 2026.** Après une fusion sur `main`, une boucle interrogeait
+`https://…github.io/Atlas-app/…` toutes les 30 s pour annoncer la mise en ligne.
+Au bout de vingt minutes elle a conclu *« la publication a peut-être échoué »* —
+et c'était **faux** : la publication avait réussi onze minutes plus tôt.
+
+Le mandataire réseau de cet environnement **refuse `github.io`**
+(`CLAUDE.md` §5). La boucle ne mesurait donc pas le déploiement, elle mesurait
+un `CONNECT tunnel failed, response 403` — et rendait `000` à chaque tour. Elle
+ne pouvait pas réussir, quel que soit l'état du site. C'est le piège du contrôle
+qui mesure zéro, dans sa version la plus traître : il ne rend pas un faux vert,
+il rend un faux ROUGE, et l'on part chercher une panne qui n'existe pas.
+
+**Ce qu'on interroge à la place :** l'état du flux `pages.yml`, par l'outil
+GitHub (`actions_list`, `list_workflow_runs`) — `conclusion: success` sur le
+commit qu'on vient de pousser. C'est l'observable qu'on a vraiment.
+
+**Et la règle générale :** avant d'écrire une boucle d'attente, se demander si
+son test peut réussir ici. Un `curl` vers une adresse que le mandataire refuse
+n'attend rien — il échoue en boucle.
+
 ## Voir la machine du patron sans y avoir accès
 
 **Il n'y a aucun accès, et il ne faut pas en fabriquer un.** La question a été
@@ -83,7 +105,7 @@ que 8 Go (181 Mo libres au moment de la panne) : quand la mémoire manque, le
 noyau tue un processus, le banc part, et **sa construction lui survit**. Le
 veilleur relance un banc, qui tombe sur le verrou de l'orpheline.
 
-**Ce qui est posé depuis** (`ARCHITECTURE.md` §126) :
+**Ce qui est posé depuis** (`ARCHITECTURE.md` §129) :
 
 - **le banc déloge l'orpheline avant de bâtir** (`scripts/verrou-construction.mjs`)
   — on ne double pas une construction, on retire celle qui n'a plus de
@@ -815,6 +837,39 @@ est un défaut qui ne rougit nulle part.
 
 ## Ce qui vient d'être terminé
 
+**« IL PEUT PROPOSER UNE AUTRE DATE » (17 août, au soir).** Un interrupteur sous
+les dates, avant le bouton d'envoi : le patron décide, envoi par envoi, si le
+client peut sortir des dates offertes. `ARCHITECTURE.md` §132, migration 0054.
+
+**Trois choses à ne pas défaire :**
+
+1. **Le choix est FIGÉ dans l'envoi**, pas lu dans un réglage — l'écran du
+   client doit dire demain ce qu'il disait aujourd'hui.
+2. **Vrai par défaut**, à la colonne comme à l'écran : les liens déjà partis
+   gardent leur promesse.
+3. **Le refus vit dans `enregistrerReponse`**, pas seulement à l'écran. La page
+   du client est publique et son formulaire se rejoue ; cacher le calendrier ne
+   ferme rien.
+
+
+**⚠ « ENCORE LA VERSION LENTE » : LE VEILLEUR RETENTE MAINTENANT (18 août).**
+Une construction ratée laisse le banc en mode développement — et ce mode
+**répond** à la santé. Le veilleur, qui ne relançait que sur un port muet, se
+déclarait donc content pour la soirée entière. Il lit désormais le témoin
+d'échec : trois tentatives espacées de dix minutes, jamais deux constructions à
+la fois (`ARCHITECTURE.md` §131).
+
+**LA MÉTHODE, ET ELLE A TRANCHÉ EN DIX SECONDES :** lire la fiche d'état
+(issue #47) AVANT toute hypothèse. Elle portait le message exact de l'échec et
+le commit réellement servi — sans elle, on aurait cherché du côté du réseau.
+
+**LA RUBRIQUE « PLANNING » DES RÉGLAGES N'EXISTE PLUS (16 août).** Sa question :
+*« quelle est la différence entre planning et équipe ? »* — il n'y en avait
+aucune, les deux rendaient le même composant. Tout est dans **« Équipe »** :
+combien partent en même temps, leurs noms, leurs absences. **Ne pas la recréer**
+le jour où les horaires viendront (`ARCHITECTURE.md` §129, `docs/QUESTIONS.md`
+§21).
+
 **LES RETOURS DES RÉGLAGES (17 août).** Les réglages ont **deux étages**, et un
 écran du second doit ramener à **sa rubrique**, pas à la racine — sa remarque :
 *« lorsque je vais dans mes prix et que je fais un retour, je retourne
@@ -841,7 +896,6 @@ métier (`ARCHITECTURE.md` §125), et la barre déborde déjà à cinq colonnes.
 2. **Quatre requêtes, pas cinq par client.** Charger la fiche complète de chaque
    client à tour de rôle rendrait la liste plus lente à mesure qu'il en a — et
    c'est un écran d'accueil.
-
 
 **« ADRESSE NON RENSEIGNÉE » OUVRE L'ÉCRAN DU CHANTIER (17 août).** La mention de
 l'accueil est un lien vers `/chantiers/[id]/coordonnees` — l'écran de création
@@ -1064,6 +1118,27 @@ rangée alignée. Le plan et le calcul partagent une seule fonction
 (`pointsDeLaPose`) — **ne jamais réintroduire un second calcul de position**,
 c'est exactement ce qui a produit le défaut.
 
+**⚠ MESURER UNE COLONNE DE GRILLE : DEUX FAÇONS DE SE TROMPER, payées le
+17 août.** (1) Diviser la largeur de la rangée par le nombre de colonnes compte
+les marges intérieures comme de la place — 72 px annoncés pour 66,4 réels.
+(2) Mesurer la boîte de la CELLULE ne marche pas non plus : une cellule `1fr`
+**s'élargit quand son contenu déborde**, donc « déborde » ne se voit jamais.
+**La mesure juste est la PART** : contenu de la rangée moins ses marges, divisé
+par le nombre de colonnes. Et la leçon générale : **deux mesures qui devraient
+tomber pareil valent mieux qu'une seule** — ici le trait d'or et la colonne,
+identiques par construction, et c'est leur écart qui a révélé l'erreur.
+
+**⚠ LA BARRE DU BAS PORTE CINQ ONGLETS DEPUIS LE 17 AOÛT, ET ELLE EST JUSTE
+À LA LIMITE.** « Paysage » s'ajoute à Chantiers/Planning/Terminés/Réglages, et
+la lettre est passée à 8,5 px / 0,14em pour que « CHANTIERS » rentre encore sur
+un écran de 360 (sa variante C : 59,8 px pour 66,4 de part, soit 6,2 px de
+marge — sans ce changement il débordait de 12,4 px).
+**Trois pièges si l'on y retouche :** la largeur du trait d'or est écrite en
+dur (`/ 5`) et doit suivre tout ajout d'onglet ; remonter la lettre à 9,5 px
+fait déborder à nouveau ; et un sixième onglet ne rentre pas.
+`scripts/test-barre-basse-e2e.ts` mesure tout cela à 360 px et exige 6 px de
+marge — **ce défaut est invisible en développant sur un grand écran.**
+
 **⚠ NE JAMAIS ÉCRIRE `charger() || {défauts}` — le piège a frappé le 17 août.**
 Dès qu'une sauvegarde existe, l'objet de défauts est entièrement sauté : tout
 champ ajouté au produit APRÈS sa première visite lui arrive `undefined`, à lui
@@ -1238,6 +1313,26 @@ la portée*. Réglable à l'écran, et l'écart en mètres y est écrit pour qu'
 tranche d'un regard. Passer de 100 à 80 % fait passer le jardin d'exemple de 8 à
 9 secteurs : ce réglage décide du nombre d'arroseurs, donc de la facture.
 
+**⚠ DEUX PAGES ESSAYABLES, ET LE CALCUL EST DANS UN TROISIÈME FICHIER (18 août).**
+
+- `appli/arrosage.html` — l'outil complet : le point d'eau, le croquis, la liste.
+- `appli/arrosage-croquis.html` — sa demande du 18 août : **la photo et la
+  marque, rien d'autre**, puis le plan en couleur et les pièces en casiers.
+- `appli/arrosage-calcul.js` — **le calcul, partagé par les deux.** Ni l'une ni
+  l'autre ne calcule quoi que ce soit : elles dessinent ce qu'il rend.
+
+**Le piège de ce partage, payé le jour même.** `corpsCourant()` était resté dans
+`arrosage.html` : toute page AUTRE que celle-là partait en `ReferenceError` dès
+qu'un jardin posait une tuyère, et l'écran rendait *« la liste se remplit dès
+qu'un jardin est lu »* — un vide qui ressemble à un état normal. Les 73 et les
+105 suites étaient vertes ; aucune ne demandait la liste d'un jardin MIXTE.
+**À toute extraction, relire le fichier de DÉPART, pas celui d'arrivée**
+(`ARCHITECTURE.md` §126).
+
+**Et la clé de sauvegarde sépare les deux pages.** Le module lit
+`window.CLE_ETAT` ; la maquette pose `atlas-arrosage-croquis`. Sans cela,
+l'essayer effacerait le jardin qu'il a saisi dans l'outil.
+
 **⚠ LE PLAN D'ARROSAGE : LA PAGE ESSAYABLE EST `appli/arrosage.html` (17 août).**
 Sa consigne, après les trois planches : *« je veux que tu code rien, d'abord des
 maquettes dynamiques en .html que je puisse essayer, pas de photo »*.
@@ -1253,9 +1348,11 @@ maquettes dynamiques en .html que je puisse essayer, pas de photo »*.
   fournisseurs, ils me font un devis, puis je repasse par le circuit normal de
   l'application »*. La sortie est une liste de QUANTITÉS. Un contrôle refuse
   tout montant en euros — ne pas le contourner par bonne volonté.
-- **Elle est gardée par `appli/tests/e2e.js`**, jouée avant publication puis
-  **contre le site en ligne** : erreur JS, secteur au-dessus du robinet, cycle
-  qui ne fait pas la somme, prix, débordement à 390 px.
+- **Elle est gardée par TROIS suites, toutes jouées avant publication** depuis
+  le 18 août : `appli/tests/e2e.js` (105), `essai-arrosage-detaille.cjs` (73) et
+  `essai-croquis.cjs` (25). Les deux dernières avaient leur adresse écrite en
+  dur et ne barraient donc **aucune** mise en ligne — c'est ce qui a laissé
+  passer le défaut de `corpsCourant`. Elles lisent `BASE_URL` maintenant.
 - **Ce que l'essai apprend et qu'aucune planche ne disait** : sur « au mieux »,
   les deux pelouses passent en turbines et le jardin tombe de huit secteurs à
   quatre. Le jardin de départ garde les tuyères pour que la bascule se voie.
