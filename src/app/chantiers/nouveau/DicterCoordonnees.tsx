@@ -14,7 +14,8 @@ import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { dicterCoordonneesAction } from "./actions";
 
 /**
- * Le micro discret, à droite du titre « Un chantier ».
+ * Le micro discret, à droite du titre « Fiche client » (« Un chantier » jusqu'au
+ * 16 août 2026).
  *
  * Le patron, le 7 août 2026 : *« à côté de "Un chantier", à droite, je veux une
  * petite touche discrète, juste le signe de la note vocale, pour que je puisse

@@ -27,6 +27,10 @@ const MESSAGES: Record<string, string> = {
   date_indisponible:
     "Cette date vient d'être retenue par ailleurs. Choisissez-en une autre — votre accord sur le devis reste valable.",
   date_manquante: "Choisissez une date d'intervention avant de valider.",
+  // Le patron n'a pas ouvert le calendrier sur cet envoi : la phrase le dit
+  // sans accuser le client, et le renvoie vers ce qu'il peut faire.
+  autre_date_refusee:
+    "Votre artisan propose des dates précises pour ce chantier. Choisissez-en une, ou demandez-lui une correction en un mot.",
   message_manquant: "Dites en un mot ce qui doit être corrigé : sans cela, votre artisan ne saura pas quoi reprendre.",
 };
 

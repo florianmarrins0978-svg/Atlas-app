@@ -389,25 +389,74 @@ function materielDe(z){
    signalé le 17 août). Les coins et les bords restent alignés, sur SA règle :
    « les derniers arroseurs doivent toujours être dans les coins ». */
 function pointsDeLaPose(nx, ny, ecartX, ecartY, quinconce){
+  // ── LE QUINCONCE EST UN DAMIER — son croquis du 18 août 2026 ─────────────
+  //
+  // *« Dans les couloirs, le but c'est de poser les tuyères en quinconce, car
+  // le but c'est que celle de gauche recouvre quasi 100 % jusqu'à celle de
+  // droite. Donc le quinconce est optimal. »* Puis son croquis, sans
+  // ambiguïté : un couloir à **14** arroseurs alignés, le même à **7** en
+  // quinconce — une tête sur deux, en alternant les bords.
+  //
+  // **C'est exactement un damier : on garde le point (i, j) quand i + j est
+  // pair.** Sur deux rangées, cela donne son alternance ; sur davantage, le
+  // vrai quinconce triangulaire.
+  //
+  // **Ce que la version d'avant faisait, et pourquoi c'était faux.** Elle ne
+  // décalait que les rangées INTÉRIEURES d'un demi-écart, en gardant tout le
+  // pourtour. Un couloir n'ayant que deux rangées, toutes deux en bord, il
+  // n'y avait **aucun quinconce du tout** — c'est la grille alignée qu'il a vue
+  // à l'écran, et ses 12 tuyères là où il en pose 7.
+  //
+  // **Et deux coins perdent leur tête, ce qu'il a validé le 18 août** (« oui,
+  // ça me va ») : sur un damier, deux coins opposés portent un i + j impair.
+  // Ils restent arrosés — c'est `couvreTout` qui l'exige —, simplement sans
+  // arroseur dessus. Cela révise sa règle du 17 août (« les derniers arroseurs
+  // toujours dans les coins »), qui valait pour la pose alignée.
   var pts = [];
   for (var j = 0; j < ny; j++){
-    var bordRangee = (j === 0 || j === ny - 1);
-    var decalee = quinconce && !bordRangee && (j % 2 === 1);
-    if (!decalee){
-      for (var i = 0; i < nx; i++){
-        var coin = bordRangee && (i === 0 || i === nx - 1);
-        var bord = bordRangee || i === 0 || i === nx - 1;
-        pts.push({ x: i * ecartX, y: j * ecartY, zone: coin ? 'coin' : (bord ? 'bord' : 'interieur') });
-      }
-    } else {
-      // Une rangée décalée n'a jamais de coin ni de bord : elle est
-      // strictement entre deux rangées alignées, et porte UN POINT DE MOINS.
-      for (var k = 0; k < nx - 1; k++){
-        pts.push({ x: (k + 0.5) * ecartX, y: j * ecartY, zone: 'interieur' });
-      }
+    for (var i = 0; i < nx; i++){
+      if (quinconce && (i + j) % 2 !== 0) continue;
+      var bordRangee = (j === 0 || j === ny - 1);
+      var coin = bordRangee && (i === 0 || i === nx - 1);
+      var bord = bordRangee || i === 0 || i === nx - 1;
+      pts.push({ x: i * ecartX, y: j * ecartY, zone: coin ? 'coin' : (bord ? 'bord' : 'interieur') });
     }
   }
   return pts;
+}
+
+/* ── EST-CE QUE TOUT LE TERRAIN EST ARROSÉ ? ────────────────────────────────
+
+   **Cette fonction existe parce qu'un damier ne couvre pas toujours.** Retirer
+   une tête sur deux double la distance entre voisins d'une même rangée : si
+   l'écart de départ était au maximum de sa tolérance (1,20 × portée), le coin
+   abandonné se retrouve à sec. On ne le SUPPOSE donc pas — on le mesure, et
+   `poser` resserre tant que ce n'est pas vrai.
+
+   **On échantillonne au dixième de la portée.** Ni plus fin (cette fonction est
+   appelée à chaque frappe), ni plus grossier : un manque plus petit que le
+   dixième d'une portée n'existe pas sur un chantier, et le doute penche du bon
+   côté puisqu'un échantillon manqué ne fait que resserrer la pose.
+
+   **Elle refuse de conclure sans matière** — le piège du 15 août : sans tête,
+   ou sur une zone de dimension nulle, elle rend `false` plutôt qu'un vrai qui
+   n'aurait rien regardé. */
+function couvreTout(points, portee, L, l){
+  if (!points || !points.length || !(portee > 0) || !(L > 0) || !(l > 0)) return false;
+  var pas = portee / 10, p2 = portee * portee;
+  for (var x = 0; x <= L + 1e-9; x = Math.min(x + pas, L + 1e-9)){
+    for (var y = 0; y <= l + 1e-9; y = Math.min(y + pas, l + 1e-9)){
+      var atteint = false;
+      for (var k = 0; k < points.length; k++){
+        var dx = x - points[k].x, dy = y - points[k].y;
+        if (dx*dx + dy*dy <= p2 + 1e-9){ atteint = true; break; }
+      }
+      if (!atteint) return false;
+      if (y >= l) break;
+    }
+    if (x >= L) break;
+  }
+  return true;
 }
 
 function poser(z){
@@ -461,11 +510,48 @@ function poser(z){
     // doivent rester occupés. L'écran le DIT au lieu de rendre une pose qu'il
     // refuse : c'est le signe qu'il faut une buse plus petite.
     r.tropSerre = (ecartX < m.portee - 0.01) || (ecartY < m.portee - 0.01);
-    // La décision « quinconce ou carré » se prend sur le compte D'UNE GRILLE
-    // ALIGNÉE (sa règle : « quinconce dès qu'il y a plus de 4 arroseurs ») —
-    // ENSUITE seulement le quinconce retire les points qu'il économise.
+    // ── LE QUINCONCE : ON L'ESSAIE, ON LE MESURE, ON RESSERRE ────────────
+    //
+    // Sa règle du 18 août, croquis à l'appui : un couloir à 14 arroseurs
+    // alignés se pose à **7** en quinconce. Le damier retire une tête sur
+    // deux — mais il double du même coup la distance entre voisins d'une
+    // rangée, et le coin abandonné peut se retrouver à sec.
+    //
+    // **On ne le suppose donc pas : on le mesure** (`couvreTout`), et l'on
+    // resserre la grille tant que ce n'est pas couvert — en allongeant
+    // toujours du côté où l'écart est le plus grand, pour rester régulier.
+    // La boucle s'arrête d'elle-même : dès que le damier ne coûte plus moins
+    // que l'aligné, on garde l'aligné, qui couvre par construction.
+    //
+    // **Le compte se décide sur la grille ALIGNÉE** (sa règle du 17 août :
+    // « quinconce dès qu'il y a plus de 4 arroseurs »), avant que le damier
+    // n'en retire.
     var quinconceVoulu = (nx * ny) > QUINCONCE_AU_DELA_DE;
-    var points = pointsDeLaPose(nx, ny, ecartX, ecartY, quinconceVoulu);
+    var alignes = pointsDeLaPose(nx, ny, ecartX, ecartY, false);
+    var points = alignes;
+    if (quinconceVoulu){
+      var ax = nx, ay = ny, essai = null;
+      for (var t = 0; t < 40; t++){
+        var ex2 = L / (ax - 1), ey2 = l / (ay - 1);
+        var damier = pointsDeLaPose(ax, ay, ex2, ey2, true);
+        if (damier.length >= alignes.length) break;      // plus rien à gagner
+        if (couvreTout(damier, m.portee, L, l)){
+          essai = { pts: damier, nx: ax, ny: ay, ecartX: ex2, ecartY: ey2 };
+          break;
+        }
+        if (ex2 >= ey2) ax++; else ay++;
+      }
+      if (essai){
+        points = essai.pts;
+        nx = essai.nx; ny = essai.ny;
+        ecartX = essai.ecartX; ecartY = essai.ecartY;
+        r.ecart = Math.max(ecartX, ecartY);
+        r.ecartX = ecartX; r.ecartY = ecartY;
+        r.tropSerre = (ecartX < m.portee - 0.01) || (ecartY < m.portee - 0.01);
+      } else {
+        quinconceVoulu = false;   // le damier ne couvre pas : on reste aligné
+      }
+    }
     var coins = points.filter(function(pt){ return pt.zone === 'coin'; }).length;
     var bords = points.filter(function(pt){ return pt.zone === 'bord'; }).length;
     var inter = points.filter(function(pt){ return pt.zone === 'interieur'; }).length;

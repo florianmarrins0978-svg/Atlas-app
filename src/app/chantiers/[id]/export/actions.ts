@@ -95,7 +95,15 @@ export async function envoyerAuClientAction(
   chantierId: string,
   devisId: string,
   datesProposees: string[],
-  dureeDemiJournees?: number
+  dureeDemiJournees?: number,
+  /**
+   * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
+   *
+   * Absent : `true` — ce que l'application faisait depuis toujours. Le
+   * paramètre est en dernier et facultatif pour que rien d'existant ne change
+   * de comportement en silence.
+   */
+  autreDateAutorisee?: boolean
 ): Promise<ResultatEnvoiClient> {
   const ctx = await getCurrentCtx();
 
@@ -146,6 +154,7 @@ export async function envoyerAuClientAction(
       devisId,
       canal: preparation.canal,
       datesProposees,
+      autreDateAutorisee: autreDateAutorisee ?? true,
       contenuDevis: `${devisEnvoye.numeroCommercial}|${devisEnvoye.numeroVersion}|${devisEnvoye.totalTtc}`,
       // La durée réellement retenue, telle que l'écran l'a affichée : c'est sur
       // elle que les dates proposables ont été calculées, et c'est elle qui sera
