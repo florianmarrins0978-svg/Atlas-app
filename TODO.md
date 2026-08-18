@@ -57,9 +57,35 @@ plus la buse porte loin, moins il faut de têtes, et plus il en tombe à côté 
 sur un massif, une terrasse ou chez le voisin. L'outil ne sait pas ce qu'il y a
 le long du couloir.
 
-**La question posée, en une phrase :** jusqu'où accepte-t-il que ça arrose à
-côté — la portée ne dépasse pas la largeur, elle dépasse d'une demi-largeur, ou
-la plus grosse buse qui passe ?
+**SA RÉPONSE, 18 août : « jamais plus que la largeur »** — et elle entre en
+conflit avec sa règle du 17 août. **Ne pas coder avant d'avoir tranché ce
+conflit.**
+
+Sa règle du 17 août veut un écart ≤ **1,20 × la portée** (« portée 5 m :
+5,50 m, 6 m max »). Sur un couloir de 2 m, la LARGEUR consomme déjà presque
+tout ce budget : la diagonale d'un quinconce vaut √((écart/2)² + 2²), et elle
+dépasse 1,20 × portée avant même que l'écart ne serve à quoi que ce soit.
+
+| Buse | Portée | Aligné | Quinconce |
+|---|---|---|---|
+| 6-VAN | 1,80 m | **12** | **15** |
+| 8-VAN | 2,30 m ⚠ dépasse la largeur | 10 | 7 |
+| 12-VAN | 3,60 m ⚠ dépasse la largeur | 8 | 5 |
+
+**Le quinconce ne gagne QUE si la portée dépasse la largeur** — ce qu'il vient
+d'exclure. Avec sa règle des 80 % et une portée bornée à la largeur, il coûte
+trois tuyères de PLUS, pas de moins. Sa phrase « le quinconce est optimal »
+reste vraie ; c'est la borne sur la portée qui la neutralise dans un couloir
+étroit.
+
+**Une troisième piste, à lui soumettre, et qui n'avait pas été regardée :** une
+SEULE rangée au MILIEU du couloir, en 360°. Vérifié numériquement — 6-VAN,
+6 tuyères, écart 2,00 m, couverture complète, 0,80 m d'eau de chaque côté.
+**Six au lieu de douze**, sans jamais monter en buse. C'est peut-être ce qu'il
+fait déjà en vrai, et ni la planche ni moi ne l'avions envisagé.
+
+**Ce qui reste à trancher, en une phrase :** dans un couloir, pose-t-il deux
+rangées sur les bords, ou une rangée au milieu ?
 
 **Un second point, mineur, à confirmer avec :** sa règle du 17 août veut les
 derniers arroseurs dans les coins. En quinconce, les deux bouts de la chaîne
