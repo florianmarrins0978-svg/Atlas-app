@@ -58,19 +58,26 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 const attendre = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * « Un chantier » tient-il toujours sur une ligne ?
+ * Le titre de l'écran tient-il toujours sur une ligne ?
  *
  * **C'est la vraie règle**, dont le plafond de caractères de
  * `test-attente-longue.ts` n'est que la sentinelle rapide. Une phrase d'attente
  * qui passe à deux lignes prend toute la colonne de 190 px et casse le titre —
  * l'écran se réorganise sous les yeux du patron pendant qu'il attend. Vu à la
  * capture, jamais à la mesure, jusqu'à ce contrôle.
+ *
+ * **Il vise le titre de l'écran, plus un MOT qu'il contiendrait.** Il cherchait
+ * un `h1` portant « chantier » ; le 16 août 2026 le titre est devenu « Fiche
+ * client » sur sa demande, la recherche n'a plus rien trouvé, et le contrôle
+ * s'est cassé sur `getBoundingClientRect of undefined` — une panne d'outil qui
+ * accuse le produit. Un contrôle qui s'ancre au libellé casse au premier mot que
+ * le patron fait changer, et ce n'est pas ce qu'il éprouve : ce qui compte, c'est
+ * que LE titre, quel qu'il soit, ne se brise pas en deux.
  */
 async function titreIntact(page: Page, quand: string) {
   const lignes = await page.evaluate(() => {
-    const titre = [...document.querySelectorAll("h1,h2")].find((e) =>
-      e.textContent?.includes("chantier"),
-    )!;
+    const titre = document.querySelector("h1");
+    if (!titre) throw new Error("aucun titre sur cet écran — ce n'est pas celui qu'on croit mesurer");
     return Math.round(
       titre.getBoundingClientRect().height / parseFloat(getComputedStyle(titre).lineHeight),
     );
