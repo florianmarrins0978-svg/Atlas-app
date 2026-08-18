@@ -63,7 +63,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('button:has-text("Créer le chantier")');
+  await page.click('[data-atlas="action-dicter"]');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;

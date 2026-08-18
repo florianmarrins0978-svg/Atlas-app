@@ -34,13 +34,14 @@ import type { Civilite } from "@/lib/civilite";
  * feuille, et comment se refermer.
  */
 /**
- * Par quelle porte on sort de cet écran.
+ * Où l'on va en sortant de cet écran — et ce n'est plus un « choix » à faire
+ * avant d'agir : depuis le 18 août 2026, chaque bouton porte sa destination.
  *
- * `dictee` mène à la fiche du chantier — c'est là qu'on dicte, et c'est la
- * réponse neuf fois sur dix. `main` mène au devis entier, à remplir soi-même.
- * Les deux passent par la MÊME création : voir `creerPuisAller`.
+ * `fiche` mène à la fiche du chantier, là où l'on dicte. `devis` mène au devis
+ * entier, à remplir soi-même. Les deux passent par la MÊME création : voir
+ * `creerPuisAller`.
  */
-type Porte = "dictee" | "main";
+type Destination = "fiche" | "devis";
 
 /**
  * Un chantier DÉJÀ LÀ, que cet écran rouvre au lieu d'en créer un.
@@ -91,11 +92,11 @@ export default function FormulaireNouveauChantier({
   const [adresseClientVisible, setAdresseClientVisible] = useState(
     (reprise?.adresseClient ?? "").length > 0
   );
-  // Le choix par défaut est la dictée, et il ne se discute pas : c'est le
-  // produit. La porte du devis à la main existe pour ceux qui savent déjà ; la
-  // proposer en premier reviendrait à ne plus jamais proposer la dictée.
-  const [porte, setPorte] = useState<Porte>("dictee");
-  const [enCours, setEnCours] = useState(false);
+  // **Quel bouton travaille**, et pas seulement « ça travaille ». Les deux
+  // capsules sont identiques ; sans cela, « Création… » s'afficherait sur celle
+  // qu'il n'a pas touchée, et il croirait s'être trompé de geste.
+  const [enCoursVers, setEnCoursVers] = useState<Destination | null>(null);
+  const enCours = enCoursVers !== null;
   const [erreur, setErreur] = useState<string | null>(null);
 
   // Plus rien n'est obligatoire : le chantier prend le nom de ce qui a été
@@ -138,9 +139,9 @@ export default function FormulaireNouveauChantier({
    * premier champ ajouté — l'un enregistrerait le téléphone, l'autre l'aurait
    * oublié.
    */
-  async function creerPuisAller(vers: "fiche" | "devis") {
+  async function creerPuisAller(vers: Destination) {
     if (enCours) return;
-    setEnCours(true);
+    setEnCoursVers(vers);
     setErreur(null);
 
     // **Rouvert, l'écran ENREGISTRE — il ne crée pas un second chantier.** La
@@ -161,7 +162,7 @@ export default function FormulaireNouveauChantier({
         // 11 août 2026, « impossible d'enregistrer la note » ne pouvait être
         // expliqué par personne (`AGENTS.md`).
         setErreur(r.raison);
-        setEnCours(false);
+        setEnCoursVers(null);
         return;
       }
       router.push(vers === "devis" ? `/chantiers/${reprise.id}/devis-complet` : `/chantiers/${reprise.id}`);
@@ -181,7 +182,7 @@ export default function FormulaireNouveauChantier({
       router.push(vers === "devis" ? `/chantiers/${id}/devis-complet` : `/chantiers/${id}`);
     } catch {
       setErreur("Impossible de créer le chantier pour l'instant. Réessayez.");
-      setEnCours(false);
+      setEnCoursVers(null);
     }
   }
 
@@ -256,14 +257,14 @@ export default function FormulaireNouveauChantier({
           className="mt-7 flex flex-col gap-4 px-6"
           onSubmit={(e) => {
             e.preventDefault();
-            // **« Entrée » suit désormais la bascule, et c'est un changement.**
-            // Tant que le devis à la main était un lien discret, valider un
-            // champ au clavier ne devait surtout pas y mener : on n'aurait pas
-            // choisi cette sortie, on serait tombé dedans. Depuis que le choix
-            // est explicite et affiché au-dessus du bouton, l'ignorer serait
-            // l'inverse du défaut : le patron aurait touché « je l'écris » et se
-            // retrouverait sur la fiche sans comprendre pourquoi.
-            creerPuisAller(porte === "main" ? "devis" : "fiche");
+            // **« Entrée » mène à la dictée, et c'est un retour en arrière
+            // assumé.** Tant qu'une bascule portait le choix, la touche devait
+            // le suivre — l'ignorer aurait envoyé sur la fiche quelqu'un qui
+            // venait de toucher « je l'écris ». Il n'y a plus de choix à
+            // suivre : deux boutons, deux gestes distincts. Une touche ne peut
+            // pas deviner lequel, et tomber dans le devis à la main sans
+            // l'avoir demandé est le défaut le plus coûteux des deux.
+            creerPuisAller("fiche");
           }}
         >
           {/* 1 — Nom du client.
@@ -356,48 +357,69 @@ export default function FormulaireNouveauChantier({
             />
           )}
 
-          {/* 8 — Le choix, puis l'action.
+          {/* 8 — Les deux actions.
 
-              **Le patron, le 11 août 2026 au soir, capture à l'appui :** *« on
-              ne voit que création de chantier, on ne voit pas devis à la
-              main »*. C'était juste : le lien en capitales d'or vivait SOUS le
-              bouton, dans la zone où l'œil ne revient pas une fois qu'il a
-              trouvé ce qu'il cherchait — et sur son téléphone, la barre du
-              navigateur mange le bas.
+              **Sa demande du 18 août 2026 :** *« supprime "je dicterai" et
+              "je l'écris", remplace par un bouton cliquable "je dicte mon
+              devis" et un autre "j'écris mon devis", en gardant le chemin »* —
+              puis, devant la planche (`appli/deux-boutons-devis.html`) :
+              *« la 5, mais sans les flèches »*.
 
-              **Ce qui a été gardé de la version d'avant, et qui gouverne ce
-              dessin :** deux boutons à égalité obligeraient TOUT LE MONDE à
-              trancher avant d'avoir vu le chantier, alors que neuf fois sur dix
-              la réponse est « je dicterai ». D'où la bascule plutôt que deux
-              portes : les deux chemins se voient, et il n'y a toujours qu'un
-              seul bouton à toucher. Le geste ordinaire n'a pas changé de coût.
+              **Ce que ça change, et qui n'est pas qu'une affaire de dessin.**
+              Jusqu'ici il y avait un CHOIX (la bascule) puis une ACTION (le
+              bouton) : deux gestes pour qui écrit son devis. Le choix est
+              maintenant l'action — un seul geste dans les deux cas.
 
-              **Elle ne remplace pas la porte du tiroir**, sur la fiche
+              **Les deux capsules sont identiques, à dessein.** Il a écarté la
+              hiérarchie (une pleine, une cernée) qu'on lui proposait : ici les
+              deux chemins se valent. C'est la proposition 5 de la planche.
+
+              **Pas de flèche.** Sa correction, littérale. Le reste de
+              l'application en porte — « Créer le chantier → », « Ouvrir le
+              devis → » — mais ces deux-là n'annoncent pas un pas de plus : ils
+              disent ce qu'il va faire, et le font.
+
+              **« Créer le chantier » a disparu de l'écran, et c'est assumé.**
+              C'était le seul endroit qui annonçait la création. Les deux
+              boutons créent le chantier avant d'aller où ils disent — sans quoi
+              le devis serait orphelin (`creerPuisAller`).
+
+              **Elles ne remplacent pas la porte du tiroir**, sur la fiche
               chantier, et ce n'est pas un doublon : ce sont deux MOMENTS. Ici,
               « je sais déjà que je l'écrirai moi-même » ; là-bas, « j'ai
-              commencé, finalement je l'écris ». Retirer la seconde enfermerait
-              un chantier créé la veille dont la dictée n'a rien donné.
+              commencé, finalement je l'écris ».
 
-              Six dessins de bascule et huit de bouton lui ont été montrés
-              (`docs/maquettes/15-…`, `17-…`) ; il a retenu le trait qui glisse
-              et la capsule. */}
-          <div className="pt-4">
-            <BasculePorte porte={porte} onChange={setPorte} />
-            {/* Le repère sert aux suites : les DEUX libellés vivent dans le
-                bouton — l'un à `opacity:0` — et un sélecteur par le texte les
-                trouverait tous les deux. Voir `test-devis-main-depuis-creation-e2e`. */}
-            <div className="mt-5" data-atlas="action-creation">
+              **En reprise, un seul bouton — et c'est délibéré.** L'écran sert
+              alors à corriger des coordonnées (sa demande du 17 août : « RIEN
+              DE PLUS, RIEN DE MOINS ») ; lui proposer deux devis pour changer
+              une adresse serait lui poser une question qu'il n'a pas. */}
+          <div className="flex flex-col gap-3 pt-4">
+            {reprise ? (
               <PrimaryButton
                 disabled={!peutCreer}
-                onClick={() => creerPuisAller(porte === "main" ? "devis" : "fiche")}
+                onClick={() => creerPuisAller("fiche")}
+                repere="action-creation"
               >
-                {enCours
-                  ? reprise
-                    ? "Enregistrement…"
-                    : "Création…"
-                  : <LibelleDeLaPorte porte={porte} reprise={reprise !== undefined} />}
+                {enCours ? "Enregistrement…" : "Enregistrer →"}
               </PrimaryButton>
-            </div>
+            ) : (
+              <>
+                <PrimaryButton
+                  disabled={!peutCreer}
+                  onClick={() => creerPuisAller("fiche")}
+                  repere="action-dicter"
+                >
+                  {enCoursVers === "fiche" ? "Création…" : "Je dicte mon devis"}
+                </PrimaryButton>
+                <PrimaryButton
+                  disabled={!peutCreer}
+                  onClick={() => creerPuisAller("devis")}
+                  repere="action-ecrire"
+                >
+                  {enCoursVers === "devis" ? "Création…" : "J'écris mon devis"}
+                </PrimaryButton>
+              </>
+            )}
           </div>
           {/* **Cette ligne ne parle plus que quand il y a quelque chose à dire.**
               Elle portait aussi, en permanence, « Le nom crée la fiche du
@@ -430,119 +452,20 @@ export default function FormulaireNouveauChantier({
 }
 
 /**
- * **Les deux mots, et le trait d'or qui glisse de l'un à l'autre.**
+ * **Ce qui vivait ici jusqu'au 18 août 2026 : la bascule, et le bouton dont le
+ * libellé la suivait.**
  *
- * Trois choix de dessin, tous mesurés à l'écran plutôt que raisonnés :
+ * `BasculePorte` — deux mots en serif, un filet d'or qui glissait de l'un à
+ * l'autre — et `LibelleDeLaPorte`, qui gardait les deux libellés superposés
+ * dans le bouton, l'un à `opacity:0`, pour que sa largeur ne saute pas au
+ * moment du choix. Les deux ont été retirés d'un bloc : deux boutons portent
+ * désormais chacun leur destination, et il n'y a plus de choix à refléter.
  *
- * 1. **La serif, pas les capitales.** Un mot en capitales espacées est un
- *    panneau ; le même en serif est une phrase. On choisit ici entre deux
- *    façons de travailler, pas entre deux rubriques.
- * 2. **Le trait GLISSE, il ne saute pas.** Un repère qui saute d'un bloc à
- *    l'autre donne un écran mécanique ; le même qui glisse en trois dixièmes de
- *    seconde donne un écran habité. C'est un `translateX`, jamais un
- *    changement de bordure : déplacer coûte moins cher au navigateur que
- *    repeindre, et le mouvement reste fluide sur son téléphone.
- * 3. **La couleur désigne, jamais le gras.** Un mot qui grossit décale son
- *    voisin, et l'œil voit bouger ce qui n'a pas changé.
- *
- * `aria-pressed` plutôt qu'un `role="tablist"` : ce ne sont pas des onglets —
- * rien n'apparaît en dessous. C'est un choix qui arme le bouton.
+ * **Rien n'en est gardé « au cas où ».** Un dessin que plus rien n'emploie
+ * finit repris au hasard par un écran futur — c'est la raison qui avait déjà
+ * fait supprimer la variante « plaque » du bouton principal le 11 août.
+ * L'historique les garde ; le code, non.
  */
-function BasculePorte({
-  porte,
-  onChange,
-}: {
-  porte: Porte;
-  onChange: (p: Porte) => void;
-}) {
-  return (
-    <div className="relative flex" style={{ borderBottom: `1px solid ${colors.line}` }}>
-      {(
-        [
-          ["dictee", "Je dicterai"],
-          ["main", "Je l'écris"],
-        ] as const
-      ).map(([valeur, libelle]) => (
-        <button
-          key={valeur}
-          type="button"
-          onClick={() => onChange(valeur)}
-          aria-pressed={porte === valeur}
-          className="flex-1 pb-3 text-center text-[17px]"
-          style={{
-            fontFamily: font.display,
-            color: porte === valeur ? colors.ink : colors.muted,
-            transition: "color .26s ease",
-          }}
-        >
-          {libelle}
-        </button>
-      ))}
-      <span
-        aria-hidden="true"
-        className="absolute left-0 w-1/2"
-        style={{
-          bottom: -1,
-          height: 1.5,
-          backgroundColor: colors.or,
-          transform: porte === "main" ? "translateX(100%)" : "none",
-          transition: "transform .3s cubic-bezier(.4,0,.2,1)",
-        }}
-      />
-    </div>
-  );
-}
-
-/**
- * **Les deux libellés superposés dans la même case, qui se croisent en
- * opacité.**
- *
- * Les afficher l'un OU l'autre ferait changer le bouton de largeur au moment du
- * choix — et un bouton qui bouge sous le doigt est la façon la plus sûre de
- * faire douter de ce qu'on vient de toucher. Superposés, ils imposent au bouton
- * la largeur du plus long, une fois pour toutes.
- *
- * Le libellé caché est retiré aux lecteurs d'écran : deux textes lus à la suite
- * pour un seul bouton n'apprendraient rien à personne.
- */
-/**
- * Ce que dit le bouton, selon la porte — et selon qu'il crée ou qu'il reprend.
- *
- * **« Créer le chantier » ne créerait rien sur un chantier qui existe.** C'est
- * le second des deux mots que la reprise oblige à changer (planche du 17 août
- * 2026) : le laisser ferait annoncer à l'écran une action qu'il ne fait pas, et
- * le patron chercherait ensuite pourquoi il a deux chantiers.
- *
- * **Les DEUX libellés restent dans le bouton**, l'un à `opacity:0` — c'est ce
- * qui permet à la bascule de glisser sans que la largeur saute. Les suites le
- * savent et visent le repère `data-atlas="action-creation"` plutôt que le texte
- * (`test-devis-main-depuis-creation-e2e`).
- */
-function LibelleDeLaPorte({ porte, reprise = false }: { porte: Porte; reprise?: boolean }) {
-  return (
-    <span className="grid">
-      {(
-        [
-          ["dictee", reprise ? "Enregistrer →" : "Créer le chantier →"],
-          ["main", "Ouvrir le devis →"],
-        ] as const
-      ).map(([valeur, libelle]) => (
-        <span
-          key={valeur}
-          aria-hidden={porte !== valeur}
-          className="whitespace-nowrap"
-          style={{
-            gridArea: "1 / 1",
-            opacity: porte === valeur ? 1 : 0,
-            transition: "opacity .26s ease",
-          }}
-        >
-          {libelle}
-        </span>
-      ))}
-    </span>
-  );
-}
 
 // Un canal sans sa coordonnée est proposé mais inerte : le masquer laisserait
 // le patron chercher pourquoi le choix qu'il attend n'est pas là.

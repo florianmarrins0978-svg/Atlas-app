@@ -34,7 +34,7 @@ async function main() {
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Chantier capture devis IA ${Date.now()}`);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.click('[data-atlas="action-dicter"]');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const chantierUrl = page.url();
 

@@ -47,12 +47,12 @@ async function main() {
 
   // Et rien n'est obligatoire : le bouton est actif sur un formulaire vierge.
   assert.ok(
-    await page.getByRole("button", { name: /Créer le chantier/ }).isEnabled(),
+    await page.locator('[data-atlas="action-dicter"]').isEnabled(),
     "Le bouton reste inactif sur un formulaire vide : quelque chose est encore exigé."
   );
 
   await page.fill('input[placeholder="Bernard"]', client);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.click('[data-atlas="action-dicter"]');
 
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const url = page.url();
@@ -90,7 +90,7 @@ async function main() {
   // doit exister quand même, et rester reconnaissable : la date est la seule
   // chose vraie qui reste, et elle vaut mieux qu'un « Sans titre ».
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.click('button:has-text("Créer le chantier")');
+  await page.click('[data-atlas="action-dicter"]');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const titre = await page.locator("h1").first().innerText();
   assert.ok(

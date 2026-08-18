@@ -25,45 +25,33 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
-## En attente d'une réponse — les deux boutons du devis
+## ~~Les deux boutons du devis~~ — **tranché et codé le 18 août 2026**
 
-### Sa demande du 18 août, et la planche 79
+Sa demande : *« supprime "je dicterai" et "je l'écris", remplace par un bouton
+cliquable "je dicte mon devis" et un autre "j'écris mon devis", en gardant le
+chemin »*. Cinq façons lui ont été montrées (`appli/deux-boutons-devis.html`),
+**il a retenu la 5, sans les flèches** : deux capsules vertes empilées, à
+égalité, « Je dicte mon devis » et « J'écris mon devis ».
 
-*« Supprime "je dicterai" et "je l'écris", remplace par un bouton cliquable
-"je dicte mon devis" et un autre "j'écris mon devis", en gardant le chemin entre
-un pour écrire le devis et l'autre pour le dicter. »*
+**Ce qui a changé dans le produit** (`FormulaireNouveauChantier.tsx`) : la
+bascule `BasculePorte` et le bouton `LibelleDeLaPorte` sont retirés ; chaque
+bouton porte sa destination. Le geste passe de deux temps (choisir, puis agir)
+à un seul.
 
-**Rien n'est codé** : `appli/deux-boutons-devis.html` montre
-cinq façons de le poser, sur son écran, à 390 px. Le code de l'application
-(`FormulaireNouveauChantier.tsx`, `BasculePorte`, `LibelleDeLaPorte`) n'a pas
-bougé — règle du dessin d'abord (`CLAUDE.md` §3 bis).
+**Deux conséquences assumées, pas des oublis :**
 
-**Ce que la mesure dit déjà**, faite dans un navigateur et non à l'œil
-(`scripts/mesurer-maquette-deux-boutons.mjs`) :
+- **« Créer le chantier » a disparu de l'écran.** C'était le seul endroit qui
+  annonçait la création. Les deux boutons créent le chantier avant d'aller où
+  ils disent — sinon le devis serait orphelin. Il n'a pas voulu de la ligne qui
+  le redisait (proposition 2) ;
+- **en reprise, un seul bouton « Enregistrer »**, comme avant. Cet écran sert
+  alors à corriger des coordonnées (« RIEN DE PLUS, RIEN DE MOINS », 17 août) :
+  lui proposer deux devis pour changer une adresse serait lui poser une question
+  qu'il n'a pas. **À revoir s'il dit le contraire.**
 
-| Pose | Hauteur | Lignes |
-|---|---|---|
-| empilées (prop. 1, 2, 5) | 52,7 px | 1 ligne chacune |
-| côte à côte (prop. 3) | 73,4 px | « Je dicte mon devis » casse sur **2 lignes** |
-
-Côte à côte, chaque moitié fait 166 px : « Je dicte mon devis → » demande 156 px
-de texte et déborde ; « J'écris mon devis → » en demande 148,5 et tient **à
-1,5 px près** — une marge trop mince pour être tenue par une autre charte.
-
-**Trois points à trancher, et le second n'est pas dans sa phrase :**
-
-1. **laquelle des cinq** ;
-2. **« Créer le chantier » disparaît de l'écran.** C'est aujourd'hui le libellé
-   du bouton, et le seul endroit qui annonce que le chantier se crée. Deux
-   boutons nommés d'après le devis l'effacent : la prop. 2 le redit en une ligne
-   grise, les autres l'assument ;
-3. **la reprise.** Le même écran sert à corriger les coordonnées d'un chantier
-   existant ; le bouton dit alors « Enregistrer ». Avec deux boutons de devis, il
-   faut décider ce qu'il voit à ce moment-là.
-
-**Ce qui ne change pas, quelle que soit la réponse :** les deux chemins
-(« je dicte » → la fiche du chantier, « j'écris » → le devis), la porte du tiroir
-sur la fiche chantier, et la capsule comme unique forme d'action.
+**Les 73 suites qui créaient un chantier en cliquant « Créer le chantier »**
+visent désormais le repère `[data-atlas="action-dicter"]` — un libellé
+n'aurait pas survécu au prochain changement de mot.
 
 ---
 

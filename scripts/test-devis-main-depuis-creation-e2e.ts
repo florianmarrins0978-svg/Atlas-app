@@ -1,5 +1,4 @@
 import { lancerNavigateur } from "./e2e-browser";
-import type { Locator } from "playwright";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 
@@ -26,41 +25,19 @@ import { Pool } from "pg";
 //      jour où les deux chemins se confondraient, la sortie de secours
 //      deviendrait le chemin ordinaire — et personne ne dicterait plus rien.
 //
-// **La porte a changé de forme le 11 août 2026 au soir.** Ce n'était plus un
-// lien sous le bouton — « on ne voit que création de chantier, on ne voit pas
-// devis à la main » — mais une BASCULE au-dessus : on touche « Je l'écris », et
-// le bouton unique change de libellé. Ce que cette suite éprouve n'a pas
-// changé ; la façon de l'atteindre, si.
+// **La porte a changé de forme deux fois.** Le 11 août 2026 au soir, le lien
+// discret est devenu une BASCULE au-dessus d'un bouton unique — « on ne voit
+// que création de chantier, on ne voit pas devis à la main ». Le 18 août, la
+// bascule a cédé la place à DEUX BOUTONS, « Je dicte mon devis » et « J'écris
+// mon devis », chacun portant sa destination (sa demande, puis « la 5, mais
+// sans les flèches »). Ce que cette suite éprouve n'a pas changé ; la façon de
+// l'atteindre, si — et c'est bien pour ça qu'elle vise des repères
+// `data-atlas`, pas des libellés.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const BASE = "http://localhost:3000";
 
 let echecs = 0;
-
-/**
- * **Le libellé qu'on LIT sur le bouton — pas ce que `innerText` rend.**
- *
- * Les deux libellés vivent en même temps dans le bouton, superposés dans la
- * même case de grille, l'un à `opacity:0` : c'est ce qui empêche le bouton de
- * changer de largeur au moment du choix. Mais `innerText` ne connaît pas
- * l'opacité — il rendrait TOUJOURS les deux. Un contrôle écrit dessus passerait
- * au vert quel que soit l'état, y compris sur une bascule complètement morte :
- * il ne saurait pas échouer, donc il ne prouverait rien.
- *
- * On lit donc le style calculé. Et l'on attend que le fondu (260 ms) soit fini :
- * pendant sa première moitié, l'ancien libellé est encore au-dessus de 0,5, et
- * conclure là donnerait l'état d'AVANT — le piège exact déjà payé sur les
- * maquettes (`scripts/verifier-maquette-bascule.mjs`).
- */
-async function libelleLu(bouton: Locator): Promise<string> {
-  await bouton.page().waitForTimeout(500);
-  return bouton.evaluate((b) =>
-    [...b.querySelectorAll("span")]
-      .filter((s) => s.childElementCount === 0 && Number(getComputedStyle(s).opacity) > 0.5)
-      .map((s) => s.textContent?.trim() ?? "")
-      .join(" | ")
-  );
-}
 
 async function cas(nom: string, verifier: () => Promise<void>) {
   try {
@@ -93,33 +70,39 @@ async function main() {
   await page.fill('input[placeholder="06 12 34 56 78"]', "0699887766");
   await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', adresse);
 
-  const versLaMain = page.getByRole("button", { name: /je l'écris/i });
-  const bouton = page.locator('[data-atlas="action-creation"] button');
+  const versLaMain = page.locator('[data-atlas="action-ecrire"]');
+  const versLaDictee = page.locator('[data-atlas="action-dicter"]');
 
-  await cas("la porte est sur l'écran de création, et une seule fois", async () => {
+  await cas("les deux boutons sont là, une fois chacun", async () => {
     assert.equal(
       await versLaMain.count(),
       1,
       "aucune porte vers le devis à la main sur l'écran de création — ou plusieurs"
     );
+    assert.equal(await versLaDictee.count(), 1, "le bouton de la dictée manque, ou il y en a plusieurs");
   });
 
-  // **Le libellé doit suivre le choix, sinon la bascule ment.** C'était toute
-  // la demande : voir les deux chemins. Un bouton qui resterait sur « Créer le
-  // chantier » après un appui sur « Je l'écris » enverrait le patron ailleurs
-  // que là où il croit aller.
-  await cas("toucher « Je l'écris » change le libellé du bouton", async () => {
-    assert.match(await libelleLu(bouton), /Créer le chantier/, "au repos, le bouton doit proposer la dictée");
-    await versLaMain.click();
-    assert.match(
-      await libelleLu(bouton),
-      /Ouvrir le devis/,
-      "le bouton n'a pas suivi le choix : la bascule ne sert à rien"
-    );
+  // **Ce qu'ils DISENT, et ce qu'ils ne disent plus.** Sa correction du 18 août
+  // était littérale — « la 5, mais sans les flèches » —, et une flèche revenue
+  // par mégarde ne se verrait dans aucun autre contrôle : les deux boutons
+  // mèneraient toujours au bon endroit.
+  await cas("les libellés sont les siens, et sans flèche", async () => {
+    assert.equal((await versLaDictee.innerText()).trim(), "Je dicte mon devis");
+    assert.equal((await versLaMain.innerText()).trim(), "J'écris mon devis");
+  });
+
+  // **Plus rien ne doit annoncer « Créer le chantier ».** C'était le libellé du
+  // bouton unique ; le laisser traîner ferait trois actions à l'écran là où il
+  // en a demandé deux.
+  await cas("la bascule et son bouton ont bien disparu", async () => {
+    const ecran = await page.locator("form").innerText();
+    for (const disparu of ["Je dicterai", "Je l'écris", "Créer le chantier"]) {
+      assert.ok(!ecran.includes(disparu), `l'écran dit encore « ${disparu} »`);
+    }
   });
 
   await cas("elle mène au devis complet, et le chantier existe vraiment", async () => {
-    await bouton.click();
+    await versLaMain.click();
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}\/devis-complet$/, { timeout: 30_000 });
 
     const chantierId = page.url().split("/").slice(-2)[0];
@@ -161,19 +144,19 @@ async function main() {
     }
   });
 
-  // **Le contrôle qui protège du remède.** Si le bouton menait au devis SANS
-  // qu'on ait touché la bascule, la sortie de secours deviendrait le chemin
-  // ordinaire — et la dictée, qui EST le produit, ne serait plus jamais
-  // proposée en premier. C'est le choix par défaut qui est éprouvé ici : on ne
-  // touche rien, et l'on doit arriver sur la fiche.
-  await cas("sans toucher la bascule, le bouton mène toujours à la fiche", async () => {
+  // **Le contrôle qui protège du remède.** Le jour où les deux boutons
+  // mèneraient au même endroit, la sortie de secours deviendrait le chemin
+  // ordinaire — et la dictée, qui EST le produit, ne serait plus jamais prise.
+  // Deux boutons identiques rendent ce défaut INVISIBLE à l'œil : rien à
+  // l'écran ne le trahirait, d'où ce contrôle.
+  await cas("« Je dicte mon devis » mène à la fiche, pas au devis", async () => {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', `M. Ordinaire ${Date.now()}`);
-    await page.click('button:has-text("Créer le chantier")');
+    await page.locator('[data-atlas="action-dicter"]').click();
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 30_000 });
     assert.ok(
       !page.url().endsWith("/devis-complet"),
-      "le bouton principal ouvre le devis : la dictée n'est plus proposée en premier"
+      "le bouton de la dictée ouvre le devis : la dictée n'est plus proposée"
     );
     await page.waitForSelector('[data-atlas="anneau-note-vocale"]', { timeout: 30_000 });
   });

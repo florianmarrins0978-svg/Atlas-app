@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-18
 
+### Deux boutons à la place de la bascule, sur l'écran de création
+
+**Sa demande, puis sa réponse devant la planche :** *« supprime "je dicterai"
+et "je l'écris", remplace par un bouton cliquable "je dicte mon devis" et un
+autre "j'écris mon devis" »*, puis *« la 5, mais sans les flèches »*.
+
+L'écran de création porte désormais **deux capsules vertes empilées, à
+égalité** — « Je dicte mon devis », « J'écris mon devis ». La bascule et le
+bouton dont le libellé la suivait sont retirés : chaque bouton porte sa
+destination, et le geste passe de deux temps à un seul.
+
+**Ce que ça évite** : deux gestes pour qui savait déjà qu'il écrirait son devis
+lui-même — toucher un onglet, puis un bouton dont le mot venait de changer sous
+ses yeux.
+
+**Deux conséquences assumées :**
+
+- **« Créer le chantier » disparaît de l'écran.** C'était le seul endroit qui
+  annonçait la création ; les deux boutons créent le chantier avant d'aller où
+  ils disent, sans quoi le devis serait orphelin (`creerPuisAller`). La ligne
+  qui l'aurait redit lui a été proposée, il ne l'a pas retenue ;
+- **en reprise, un seul bouton « Enregistrer »**, comme avant : cet écran sert
+  alors à corriger des coordonnées, pas à faire un devis.
+
+**« Entrée » mène à la dictée**, et non plus au dernier choix : il n'y a plus
+de choix à suivre, et tomber dans le devis à la main sans l'avoir demandé est
+le plus coûteux des deux défauts.
+
+**Les suites visent des repères, pas des mots.** Soixante-treize d'entre elles
+créaient leur chantier d'essai en cliquant « Créer le chantier » ; elles visent
+maintenant `[data-atlas="action-dicter"]`. Un libellé ne survit pas au
+changement suivant — celui-ci vient d'en faire la démonstration.
+
 ### Dessiner les deux boutons du devis avant de retirer la bascule
 
 **Sa demande :** *« supprime "je dicterai" et "je l'écris", remplace par un

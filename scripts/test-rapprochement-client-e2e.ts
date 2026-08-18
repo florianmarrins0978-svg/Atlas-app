@@ -49,7 +49,7 @@ async function main() {
   async function creerChantier(nomSaisi: string): Promise<string> {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', nomSaisi);
-    await page.click('button:has-text("Créer le chantier")');
+    await page.click('[data-atlas="action-dicter"]');
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
     return page.url().split("/").pop()!;
   }
