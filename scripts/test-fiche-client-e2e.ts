@@ -209,15 +209,24 @@ async function main() {
   });
 
   await cas("la barre du bas n'a pas gagné d'onglet", async () => {
-    // Le cinquième onglet est décidé pour les outils métier
-    // (`ARCHITECTURE.md` §125) : la liste des clients ne doit PAS lui prendre
-    // sa place, et à cinq colonnes « CHANTIERS » déborde déjà sur 360 px.
+    // **CE CONTRÔLE ATTENDAIT QUATRE ONGLETS, ET IL EST DEVENU FAUX LE 17 AOÛT**
+    // — le jour où le cinquième, « Paysage », a été posé sur sa décision
+    // (`ARCHITECTURE.md` §125 et §125 bis). Il a rougi sur du code juste, et
+    // c'est le lot d'à côté qui l'avait laissé derrière lui.
+    //
+    // **Un nombre écrit en dur ne dit pas ce qu'il garde.** La règle, elle, ne
+    // bouge pas : la liste des clients s'atteint depuis l'accueil, elle ne
+    // prend PAS de place dans la barre — à cinq colonnes, « CHANTIERS » tient
+    // déjà de justesse sur 360 px (`scripts/test-barre-basse-e2e.ts`). On
+    // vérifie donc que la barre porte exactement les onglets décidés, et que
+    // « Clients » n'en est pas.
+    const DECIDES = ["CHANTIERS", "PLANNING", "TERMINÉS", "PAYSAGE", "RÉGLAGES"];
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
-    const onglets = await page.locator("nav a").allInnerTexts();
-    assert.equal(
-      onglets.length,
-      4,
-      `la barre du bas porte ${onglets.length} onglets au lieu de quatre : ${onglets.join(", ")}`
+    const onglets = (await page.locator("nav a").allInnerTexts()).map((t) => t.trim().toUpperCase());
+    assert.deepEqual(
+      onglets,
+      DECIDES,
+      `la barre du bas porte ${onglets.join(", ")} au lieu de ${DECIDES.join(", ")}`
     );
   });
 
