@@ -554,9 +554,16 @@ porte une seule fois, référencé par chaque fiche — retaper « Électrovanne
 « Électrovannes 24 V », « Regards de vannes », « Programmateur X voies »
 disparaissent dès qu'une fiche existe pour le nombre de secteurs — remplacées
 par ses vraies références, dans la liste chiffrable ET dans le registre de
-prix. Ce qui reste toujours, quelle que soit la fiche : disconnecteur,
-réducteur de pression, sonde de pluie — des pièces de tête de réseau, jamais
-dans un regard.
+prix. Ce qui reste toujours, quelle que soit la fiche : réducteur de pression
+et sonde de pluie — des pièces de tête de réseau, jamais dans un regard.
+
+**Le DISCONNECTEUR n'y est plus — sa décision du 18 août :** *« le
+disconnecteur, tu peux le supprimer à tout jamais, je n'en mets jamais. »* La
+liste sert à commander ce qu'IL pose. Ne pas le remettre au motif qu'un réseau
+raccordé à l'eau potable en demande un : c'est juste en général, et ce n'est
+pas sa pratique. Deux contrôles gardent son absence (`essai-arrosage-detaille`,
+`e2e.js`), retournés plutôt que supprimés pour que la question ne se rouvre
+pas. L'entrée reste au catalogue, inutilisée.
 
 **Ce qui n'est PAS dans ses fiches, et n'a pas été ajouté en silence :** aucun
 disconnecteur ni réducteur listé dans le regard — cohérent avec leur position

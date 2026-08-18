@@ -357,7 +357,14 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('la liste porte des quantités',
       /Électrovanne/.test(liste) && /(Tuyères|Turbines)/.test(liste), liste.slice(0, 120));
   cas('aucun prix nulle part sur la page', !/€|\bEUR\b/.test(await page.locator('body').innerText()));
-  cas('le disconnecteur est dans la liste', /Disconnecteur/.test(liste));
+  // **LE DISCONNECTEUR NE DOIT PLUS Y ÊTRE — sa décision du 18 août :** *« tu
+  // peux le supprimer à tout jamais, je n'en mets jamais. »* Ce contrôle
+  // exigeait exactement l'inverse jusqu'à ce jour-là. Il est retourné plutôt
+  // que supprimé : sans lui, la pièce reviendrait au premier « il en faut un,
+  // c'est obligatoire sur l'eau potable » — un raisonnement juste en général
+  // et faux pour lui, et personne ne saurait que la question a été tranchée.
+  cas('le disconnecteur n\'est plus dans la liste', !/Disconnecteur/.test(liste),
+      (liste.match(/[^\n]*Disconnecteur[^\n]*/) || [''])[0]);
 
   // ── LES TUYÈRES SONT POUR LES PETITS ESPACES — sa règle du 17 août ───────
   // « Inférieur à 3,50 m, 4 m grand max. Sinon on passe en 3504 ou plus gros.

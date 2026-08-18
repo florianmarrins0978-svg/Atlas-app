@@ -842,7 +842,14 @@ function listeMateriel(d){
     }
     // Pièces de tête de réseau, pas du regard : jamais dans une fiche de
     // nourrice, toujours présentes.
-    lignes.push({ ref:'disconnecteur', nom:'Disconnecteur (obligatoire sur l\'eau potable)', q:1, u:'u' });
+    //
+    // **LE DISCONNECTEUR NE FIGURE PLUS — sa décision du 18 août :** *« le
+    // disconnecteur, tu peux le supprimer à tout jamais, je n'en mets
+    // jamais. »* La liste sert à commander ce qu'IL pose ; y laisser une pièce
+    // qu'il écarte à chaque chantier, c'est lui faire décompter une ligne à
+    // chaque commande. Ne pas le remettre « par prudence » : la question a été
+    // posée et tranchée, et ce commentaire existe pour éviter qu'on la
+    // rouvre.
     lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
     if (etat.sonde) lignes.push({ ref:'sonde-pluie', nom:'Sonde de pluie', q:1, u:'u' });
   }

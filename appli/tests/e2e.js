@@ -371,7 +371,13 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // devis. Le jour où un montant apparaît, ce contrôle le dit.
     const corps = await page.$eval('body', el => el.innerText);
     ok('arrosage : aucun prix nulle part', !/€|\bEUR\b/.test(corps));
-    ok('arrosage : la liste porte le disconnecteur', /Disconnecteur/.test(corps));
+    // Retourné le 18 août sur sa décision : *« le disconnecteur, tu peux le
+    // supprimer à tout jamais, je n'en mets jamais. »* Gardé plutôt que
+    // supprimé, pour que la pièce ne revienne pas au premier raisonnement
+    // « c'est obligatoire sur l'eau potable » — juste en général, faux pour
+    // lui, et sa décision serait perdue.
+    ok('arrosage : le disconnecteur n\'est plus dans la liste', !/Disconnecteur/.test(corps),
+       (corps.match(/[^\n]*Disconnecteur[^\n]*/) || [''])[0]);
 
     // Un ajout de zone doit vraiment ajouter : c'est le geste central.
     const avant = await page.$$eval('.zone', e => e.length);

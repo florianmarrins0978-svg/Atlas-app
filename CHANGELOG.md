@@ -31,6 +31,18 @@ détail d'affichage, c'est ce qu'il commande chez son fournisseur.
 **Ce que la maquette simule, et elle le dit en rouge :** la lecture de la photo.
 Le plan et la liste, eux, sont vraiment calculés, sur son catalogue.
 
+### Le disconnecteur disparaît de la liste — sa décision
+
+*« Le disconnecteur, tu peux le supprimer à tout jamais, je n'en mets
+jamais. »* Retiré de `listeMateriel` et de la note de bas d'écran qui le disait
+obligatoire. **Ce qu'on évite :** une pièce qu'il écarte à chaque chantier, et
+qu'il faut décompter à chaque commande.
+
+Les deux contrôles qui exigeaient sa présence ont été **retournés, pas
+supprimés** : sans eux, la pièce reviendrait au premier raisonnement « c'est
+obligatoire sur l'eau potable » — juste en général, faux pour lui, et sa
+décision serait perdue. L'entrée reste au catalogue, inutilisée.
+
 ### La liste dit CE QU'ON ACHÈTE, plus POURQUOI — sa consigne du soir
 
 *« Départ milieu de ligne, fin de ligne et jonction, ce sont des données pour
