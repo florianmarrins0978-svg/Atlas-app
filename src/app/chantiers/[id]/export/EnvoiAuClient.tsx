@@ -539,12 +539,11 @@ function Contenu({
               Posé ICI, sous les dates et avant le bouton : c'est le dernier
               regard avant l'envoi, et la phrase en dessous change avec lui —
               sans quoi il enverrait sans savoir ce que son client va voir. */}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={autreDateAutorisee}
-            onClick={() => setAutreDateAutorisee((ouvert) => !ouvert)}
-            className="mb-3 flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
+          {/* **La ligne n'est pas un bouton, l'interrupteur en est un** — c'est
+              la forme des réglages (`NotificationsClient`), et c'est aussi ce
+              que le dépôt exige : toute action ronde, jamais un rectangle. */}
+          <div
+            className="mb-3 flex items-start gap-3 rounded-2xl px-4 py-3"
             style={{ backgroundColor: colors.card, border: `1px solid ${colors.lineSoft}` }}
           >
             <span className="min-w-0 flex-1">
@@ -557,20 +556,27 @@ function Contenu({
                   : "Il choisira uniquement parmi vos dates, ou demandera une correction."}
               </span>
             </span>
-            <span
-              aria-hidden="true"
-              className="relative h-[28px] w-[48px] flex-none rounded-full transition-colors"
-              style={{ backgroundColor: autreDateAutorisee ? colors.rust : colors.line }}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autreDateAutorisee}
+              aria-label="Il peut proposer une autre date"
+              onClick={() => setAutreDateAutorisee((ouvert) => !ouvert)}
+              // 28 × 48, comme partout ailleurs : la pièce se reconnaît d'un
+              // écran à l'autre, et le pouce la trouve sans regarder.
+              className="relative mt-0.5 h-[28px] w-[48px] flex-none rounded-full transition-colors"
+              style={{
+                backgroundColor: autreDateAutorisee ? colors.rust : colors.line,
+                boxShadow: autreDateAutorisee ? "none" : `inset 0 0 0 1px ${colors.line}`,
+              }}
             >
               <span
+                aria-hidden="true"
                 className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-all"
-                style={{
-                  backgroundColor: colors.card,
-                  left: autreDateAutorisee ? "23px" : "3px",
-                }}
+                style={{ backgroundColor: colors.card, left: autreDateAutorisee ? 23 : 3 }}
               />
-            </span>
-          </button>
+            </button>
+          </div>
 
           <p className="mb-4 text-center text-[12px]" style={{ color: colors.muted }}>
             {selection.length === 2
