@@ -210,6 +210,48 @@ défaut qu'il prétend attraper.
 
 ## 2026-08-17
 
+### « Il faut pouvoir créer un avoir » — dessiné, et une distinction qui vaut de l'argent
+
+Sa demande du 17 août : *« si jamais on facture un client et qui décide de ne
+pas nous payer, il faut avoir la possibilité de créer un avoir […] crée-moi des
+maquettes dynamiques en .html, pas de photo »*.
+
+**Ce que les planches lui disent, et qui n'était pas dans sa question.** Un
+avoir et un impayé ne sont pas la même chose, et les confondre coûte cher **sans
+retour possible** :
+
+| | Ce que ça fait | Peut-il encore réclamer ? |
+|---|---|---|
+| **Avoir** | annule tout ou partie de la facture | **non, plus jamais** |
+| **Facture perdue** | la facture reste entière, le rappel se tait | **oui** |
+
+Un client qui refuse de payer relève du second. Faire un avoir dans ce cas, ce
+serait se désarmer soi-même — et rien à l'écran ne l'en avertirait. C'est
+pourquoi l'arrangement le plus simple (une porte, un montant) est aussi le plus
+dangereux, et la planche le dit en toutes lettres.
+
+**Et une bonne nouvelle qui lui appartient :** sa TVA étant exigible au paiement
+depuis le 16 août (§110), une facture jamais payée n'est **jamais entrée** dans
+son relevé. Il ne doit rien dessus, il n'a rien à récupérer, aucune démarche à
+faire. Sous l'autre régime il aurait avancé 240 € de TVA sur un chantier jamais
+payé.
+
+`docs/maquettes/79-il-ne-paie-pas.html` (trois arrangements pour la situation,
+deux portes d'entrée) et `80-l-avoir.html` (trois formes de document, trois
+montants essayables). **Rien n'est codé** : `src/` n'est pas touché (§3 bis).
+
+**Ce que le code ne permet pas encore, et qui est écrit sur la planche :**
+`factures` n'accepte **qu'une facture par chantier**
+(`factures_chantier_uk`), la numérotation n'a **qu'une série**
+(`prochain_numero_facture`), et `resteDu` ne connaît que les règlements. Un
+avoir demande sa place, son compteur, et d'être vu par le reste dû — sans quoi
+la fiche client et le rappel d'impayé réclameraient une somme annulée.
+
+Contrôle : `scripts/verifier-maquette-avoir.mjs`, javascript coupé. Il recalcule
+chaque total depuis le TTC affiché plutôt que de le recopier, et **refuse la TVA
+prise sur le TTC** — 300 € d'avoir font 250,00 € HT et 50,00 € de TVA, jamais
+300 € de HT. Confronté à trois planches dégradées : trois rouges, chacun nommant
+le bon coupable, y compris le retrait de la phrase sur le droit de réclamer.
 ### La maquette des clients, ESSAYABLE — et le libellé qui disait « lui » à une cliente
 
 **Sa demande, le soir même :** *« montre-moi depuis chantier ce que ça donnerait,

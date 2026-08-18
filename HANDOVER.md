@@ -835,6 +835,37 @@ son propre commentaire servir « depuis deux endroits », et n'était appelée q
 d'un seul. Une fonction dont la note promet deux appelants et qui n'en a qu'un
 est un défaut qui ne rougit nulle part.
 
+## Piège d'outillage : une page SUPPRIMÉE laisse un validateur qui rougit
+
+**Payé le 17 août 2026, vingt minutes.** La batterie est tombée sur deux étapes
+— **Types** et **Construction** — avec ce message :
+
+> `.next-batie/types/validator.ts(440,39): Cannot find module
+> '../../src/app/reglages/planning/page.js'`
+
+**Aucune source ne mentionnait cette page.** Une autre session l'avait
+supprimée à dessein (« Supprimer la rubrique Planning, qui doublait Équipe »).
+Ce qui restait, c'était le **validateur engendré** par une construction
+antérieure — et `tsconfig.json` inclut `.next-batie/types/**/*.ts`
+délibérément, pour que les défauts de route se voient ici plutôt que chez le
+patron.
+
+**L'erreur accuse le mauvais coupable :** elle envoie chercher une page
+disparue, alors que le fautif est un dossier de construction périmé. Et elle est
+circulaire — la construction se type-vérifie contre le reste qu'elle devrait
+remplacer.
+
+**Le geste, et il ne coûte rien :**
+
+```bash
+rm -rf .next-batie .next-verification   # engendrés, ignorés par git
+```
+
+**Ce qui reste à faire, et n'a PAS été fait ici** (ce lot ne touchait que des
+planches) : la batterie devrait nettoyer ces dossiers avant l'étape
+« Construction » de `scripts/verifier-avant-livraison.ts`. Sans quoi le piège
+reviendra à la prochaine page supprimée.
+
 ## Ce qui vient d'être terminé
 
 **« IL PEUT PROPOSER UNE AUTRE DATE » (17 août, au soir).** Un interrupteur sous
