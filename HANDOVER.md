@@ -9,6 +9,28 @@ sert.
 
 ---
 
+## Ne JAMAIS attendre une publication en interrogeant `github.io`
+
+**Payé le 18 août 2026.** Après une fusion sur `main`, une boucle interrogeait
+`https://…github.io/Atlas-app/…` toutes les 30 s pour annoncer la mise en ligne.
+Au bout de vingt minutes elle a conclu *« la publication a peut-être échoué »* —
+et c'était **faux** : la publication avait réussi onze minutes plus tôt.
+
+Le mandataire réseau de cet environnement **refuse `github.io`**
+(`CLAUDE.md` §5). La boucle ne mesurait donc pas le déploiement, elle mesurait
+un `CONNECT tunnel failed, response 403` — et rendait `000` à chaque tour. Elle
+ne pouvait pas réussir, quel que soit l'état du site. C'est le piège du contrôle
+qui mesure zéro, dans sa version la plus traître : il ne rend pas un faux vert,
+il rend un faux ROUGE, et l'on part chercher une panne qui n'existe pas.
+
+**Ce qu'on interroge à la place :** l'état du flux `pages.yml`, par l'outil
+GitHub (`actions_list`, `list_workflow_runs`) — `conclusion: success` sur le
+commit qu'on vient de pousser. C'est l'observable qu'on a vraiment.
+
+**Et la règle générale :** avant d'écrire une boucle d'attente, se demander si
+son test peut réussir ici. Un `curl` vers une adresse que le mandataire refuse
+n'attend rien — il échoue en boucle.
+
 ## Voir la machine du patron sans y avoir accès
 
 **Il n'y a aucun accès, et il ne faut pas en fabriquer un.** La question a été
