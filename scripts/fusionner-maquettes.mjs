@@ -350,6 +350,12 @@ const MAQUETTES = [
     quoi: "« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.",
   },
   {
+    fichier: "78-le-quinconce-dans-un-couloir.html",
+    titre: "Le quinconce dans un couloir",
+    famille: "L’arrosage automatique",
+    quoi: "Sa règle du 18 août : « dans les couloirs, le but c’est de poser les tuyères en quinconce, celle de gauche recouvre quasi 100 % jusqu’à celle de droite ». Son couloir de 10 × 2 m posé de trois façons — 12 tuyères aujourd’hui, 5 en quinconce, 3 avec une plus grosse buse. La seule chose à trancher : jusqu’où il accepte que ça arrose à côté.",
+  },
+  {
     fichier: "69-le-plan-darrosage.html",
     titre: "Le plan d’arrosage",
     famille: "L’arrosage automatique",

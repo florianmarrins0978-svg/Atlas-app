@@ -25,6 +25,83 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## En attente d'une réponse — le quinconce
+
+### Sa règle du 18 août, et la planche 78
+
+*« Dans les couloirs, le but c'est de poser les tuyères en quinconce, car le
+but c'est que celle de gauche recouvre quasi 100 % jusqu'à celle de droite,
+donc le quinconce est optimal. »* Puis : *« pour les espaces plus grands, si
+les arroseurs 3500 le permettent, l'idée est de faire la même — un quinconce
+avec les arroseurs de droite qui recouvrent jusqu'à ceux de gauche. »*
+
+**Ce que l'outil fait de travers aujourd'hui.** `pointsDeLaPose` ne décale que
+les rangées INTÉRIEURES (`bordRangee` exclu) : un couloir n'a que deux rangées,
+toutes deux en bord, donc **aucun quinconce** — c'est la grille alignée qu'il a
+vue à l'écran. Et surtout, `poser` mesure l'écart le long d'une rangée ET
+l'écart entre rangées **séparément**, alors que ce qui compte en quinconce est
+la **diagonale** : √(pas² + largeur²) ≤ portée. D'où beaucoup trop d'arroseurs.
+
+**Ce que ça change, sur son couloir de 10 × 2 m** (`docs/maquettes/78`) :
+
+| Pose | Buse | Écart | Tuyères | Eau à côté |
+|---|---|---|---|---|
+| aujourd'hui, aligné | 6-VAN (1,80 m) | 2,00 m | **12** | — |
+| quinconce | 12-VAN (3,60 m) | 2,50 m | **5** | 1,60 m |
+| quinconce | 18-VAN (5,40 m) | 5,00 m | **3** | 3,40 m |
+
+**Pourquoi on attend au lieu de coder.** Ce n'est pas un choix d'affichage :
+c'est ce qu'il commande chez son fournisseur, et l'écart va de 12 pièces à 3.
+La géométrie du quinconce se calcule, mais **la tolérance ne se devine pas** :
+plus la buse porte loin, moins il faut de têtes, et plus il en tombe à côté —
+sur un massif, une terrasse ou chez le voisin. L'outil ne sait pas ce qu'il y a
+le long du couloir.
+
+**SA RÉPONSE, 18 août : « jamais plus que la largeur »** — et elle entre en
+conflit avec sa règle du 17 août. **Ne pas coder avant d'avoir tranché ce
+conflit.**
+
+Sa règle du 17 août veut un écart ≤ **1,20 × la portée** (« portée 5 m :
+5,50 m, 6 m max »). Sur un couloir de 2 m, la LARGEUR consomme déjà presque
+tout ce budget : la diagonale d'un quinconce vaut √((écart/2)² + 2²), et elle
+dépasse 1,20 × portée avant même que l'écart ne serve à quoi que ce soit.
+
+| Buse | Portée | Aligné | Quinconce |
+|---|---|---|---|
+| 6-VAN | 1,80 m | **12** | **15** |
+| 8-VAN | 2,30 m ⚠ dépasse la largeur | 10 | 7 |
+| 12-VAN | 3,60 m ⚠ dépasse la largeur | 8 | 5 |
+
+**Le quinconce ne gagne QUE si la portée dépasse la largeur** — ce qu'il vient
+d'exclure. Avec sa règle des 80 % et une portée bornée à la largeur, il coûte
+trois tuyères de PLUS, pas de moins. Sa phrase « le quinconce est optimal »
+reste vraie ; c'est la borne sur la portée qui la neutralise dans un couloir
+étroit.
+
+**Une troisième piste, à lui soumettre, et qui n'avait pas été regardée :** une
+SEULE rangée au MILIEU du couloir, en 360°. Vérifié numériquement — 6-VAN,
+6 tuyères, écart 2,00 m, couverture complète, 0,80 m d'eau de chaque côté.
+**Six au lieu de douze**, sans jamais monter en buse. C'est peut-être ce qu'il
+fait déjà en vrai, et ni la planche ni moi ne l'avions envisagé.
+
+**Ce qui reste à trancher, en une phrase :** dans un couloir, pose-t-il deux
+rangées sur les bords, ou une rangée au milieu ?
+
+**Un second point, mineur, à confirmer avec :** sa règle du 17 août veut les
+derniers arroseurs dans les coins. En quinconce, les deux bouts de la chaîne
+tombent dans deux coins ; les deux autres sont couverts par la portée mais sans
+tête. S'il les veut équipés, c'est deux tuyères de plus.
+
+**Et un défaut du DESSIN, trouvé sur la capture et pas autrement** (§5) : la
+première version de la planche traçait des disques ENTIERS. Une tête contre un
+bord est en 180° — sa règle — et n'envoie rien derrière elle : la planche
+montrait de l'eau là où il n'en tombe pas, et faisait paraître le quinconce
+bien pire qu'il n'est. Le sens de balayage de l'arc SVG était faux par-dessus
+le marché (l'axe y descend). Deux erreurs invisibles dans le code, évidentes
+sur l'image.
+
+---
+
 ## À surveiller — non reproduit
 
 ### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
