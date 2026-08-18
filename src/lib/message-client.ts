@@ -123,6 +123,43 @@ export function composerMessageFacture(params: {
 }
 
 /**
+ * Compose le message remettant le compte rendu de passage au client.
+ *
+ * **Même forme que le devis et la facture, et c'est le sujet.** Un client
+ * abordé « Bonjour Mr. Martins » sur son devis et « Bonjour Martins » sur son
+ * compte rendu douterait que les deux viennent du même artisan. Le lien reste
+ * seul sur sa ligne, entre deux lignes vides — sans quoi les messageries ne le
+ * rendent pas cliquable (payé le 10 août 2026).
+ *
+ * **Aucun prix, aucune facture évoquée.** Un compte rendu de passage dit ce qui
+ * a été fait, rien d'autre : mêler les deux ferait lire une relance là où il
+ * n'y en a pas.
+ */
+export function composerMessageEntretien(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, lien } = params;
+  const bonjour = clientNom.trim() ? `Bonjour ${avecCivilite(clientNom, clientCivilite)},` : "Bonjour,";
+
+  return {
+    objet: `Compte rendu de passage — ${entrepriseNom}`,
+    corps: [
+      bonjour,
+      "",
+      "Voici le compte rendu de mon passage chez vous :",
+      "",
+      lien,
+      "",
+      "Bien à vous,",
+      entrepriseNom,
+    ].join("\n"),
+  };
+}
+
+/**
  * Adresse `mailto:` ou `sms:` ouvrant l'application du patron, message prêt.
  *
  * Le destinataire peut manquer : le message s'ouvre alors sans lui plutôt que

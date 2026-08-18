@@ -198,9 +198,9 @@ export const entreprises = pgTable("entreprises", {
  *
  * Sa décision du 16 août 2026 : « il n'y aura qu'une seule fiche ». Rien n'est
  * rangé par client ; à chaque passage, la fiche part de ce modèle et s'ajuste.
- * Le passage lui-même — ce qui a été coché, le temps, le rapport envoyé — aura
- * sa propre table : un modèle évolue, un rapport parti chez un client ne doit
- * JAMAIS changer.
+ * Le passage lui-même — ce qui a été coché, le temps, le rapport envoyé — a sa
+ * propre table (`passagesEntretien`, juste en dessous) : un modèle évolue, un
+ * rapport parti chez un client ne doit JAMAIS changer.
  */
 export const prestationsEntretien = pgTable(
   "prestations_entretien",
@@ -218,6 +218,69 @@ export const prestationsEntretien = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("prestations_entretien_ordre_idx").on(t.entrepriseId, t.ordre)]
+);
+
+/**
+ * Un PASSAGE d'entretien — ce qui a été coché, un jour, chez quelqu'un.
+ *
+ * `clientId` est NULL tant qu'il ne l'a pas nommé : la fiche s'ouvre sans
+ * client (arrangement C du 17 août 2026), elle ne s'ENVOIE pas sans lui.
+ *
+ * `envoyeLe`, `empreinte` et `jeton` vont ensemble — une contrainte l'impose :
+ * les deux premières font la preuve de passage qui remplace les signatures, le
+ * troisième est l'adresse où le client la lit. Tant qu'elles sont nulles, c'est
+ * un brouillon, et un brouillon n'a pas d'adresse publique.
+ */
+export const passagesEntretien = pgTable(
+  "passages_entretien",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+    jour: date("jour").notNull(),
+    /** Le temps passé, à la molette. NULL tant qu'il ne l'a pas posé. */
+    minutes: integer("minutes"),
+    observations: text("observations"),
+    /** Recopié à l'envoi : un rapport parti ne se renomme plus (migration 0054). */
+    clientNomFige: text("client_nom"),
+    envoyeLe: timestamp("envoye_le", { withTimezone: true }),
+    empreinte: char("empreinte", { length: 64 }),
+    /** L'adresse publique du rapport. NULL tant qu'il n'est pas parti. */
+    jeton: text("jeton"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("passages_entretien_client_idx").on(t.entrepriseId, t.clientId, t.jour),
+    unique("passages_entretien_jeton_uk").on(t.jeton),
+  ]
+);
+
+/**
+ * Les lignes d'un passage — une COPIE du modèle, jamais une référence.
+ *
+ * C'est ce qui garantit qu'un rapport déjà envoyé ne change plus jamais quand
+ * le modèle bouge (l'invariant du 16 août). Le récit est dans la migration
+ * `0054`.
+ */
+export const lignesPassage = pgTable(
+  "lignes_passage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    passageId: uuid("passage_id")
+      .notNull()
+      .references(() => passagesEntretien.id, { onDelete: "cascade" }),
+    famille: text("famille").notNull(),
+    libelle: text("libelle").notNull(),
+    ordre: integer("ordre").notNull(),
+    faite: boolean("faite").notNull().default(false),
+  },
+  (t) => [unique("lignes_passage_libelle_uk").on(t.passageId, t.libelle)]
 );
 
 export const equipes = pgTable(

@@ -45,6 +45,10 @@ export const CHEMINS_PUBLICS = [
   // patron avait constaté que sa facture arrêtée ne parvenait jamais à son
   // client, faute de tout chemin vers lui.
   "/factures",
+  // Le compte rendu de passage d'entretien (migration 0054, 18 août 2026).
+  // Même mécanique et même garde-fou : l'accès est un jeton imprévisible,
+  // contrôlé par une politique dédiée. Sans jeton exact, aucune ligne.
+  "/entretien",
 ] as const;
 
 /** Ce chemin est-il atteignable sans compte ? */
@@ -53,12 +57,14 @@ export function estCheminPublic(chemin: string): boolean {
 }
 
 /**
- * Les deux pages que le CLIENT DE L'ARTISAN reçoit — et elles seules.
+ * Les pages que le CLIENT DE L'ARTISAN reçoit — et elles seules.
  *
  * **Public ne veut pas dire « pour le client ».** `/login` est public aussi,
  * mais c'est l'écran du patron : ce qui lui parle d'Atlas, de mises à jour ou
  * de son banc y est chez lui. Sur le devis et la facture, non — celui qui les
  * ouvre n'a jamais entendu parler de l'outil, et n'a rien à faire de son état.
+ * Le compte rendu d'entretien les a rejointes le 18 août 2026, pour la même
+ * raison : c'est un client qui l'ouvre, depuis un SMS.
  *
  * **Écrit le 13 août 2026, sur une remarque du patron :** *« s'il clique sur
  * les cases en bas, il est dans l'application. Or il doit recevoir simplement
@@ -71,7 +77,7 @@ export function estCheminPublic(chemin: string): boolean {
  * futur chemin public — une page d'aide, un mode d'emploi — deviendrait
  * « page client » sans que personne l'ait décidé.
  */
-export const CHEMINS_DU_CLIENT = ["/devis", "/factures"] as const;
+export const CHEMINS_DU_CLIENT = ["/devis", "/factures", "/entretien"] as const;
 
 /** Cette page est-elle celle que le client de l'artisan reçoit ? */
 export function estPageDuClient(chemin: string | null): boolean {

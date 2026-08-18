@@ -209,15 +209,24 @@ async function main() {
   });
 
   await cas("la barre du bas n'a pas gagné d'onglet", async () => {
-    // Le cinquième onglet est décidé pour les outils métier
-    // (`ARCHITECTURE.md` §125) : la liste des clients ne doit PAS lui prendre
-    // sa place, et à cinq colonnes « CHANTIERS » déborde déjà sur 360 px.
+    // **La liste des clients ne prend pas de place dans la barre**, et c'est
+    // tout ce que ce cas surveille : elle s'ouvre depuis l'accueil.
+    //
+    // **Le nombre attendu est passé de quatre à CINQ le 18 août 2026**, et ce
+    // n'est pas un assouplissement : « Paysage » a été posé entre-temps
+    // (`ARCHITECTURE.md` §125, renommé le 17 au soir). Ce contrôle est donc
+    // resté rouge sur `main` entre les deux — écrit quand le cinquième onglet
+    // était décidé mais pas encore là, il comptait la barre d'avant. Un
+    // contrôle qui mesure un état révolu n'attrape plus rien : il fait du
+    // bruit, et on finit par le lire de travers.
+    //
+    // Cinq est la borne : à six colonnes, « CHANTIERS » déborde sur 360 px.
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
     const onglets = await page.locator("nav a").allInnerTexts();
     assert.equal(
       onglets.length,
-      4,
-      `la barre du bas porte ${onglets.length} onglets au lieu de quatre : ${onglets.join(", ")}`
+      5,
+      `la barre du bas porte ${onglets.length} onglets au lieu de cinq : ${onglets.join(", ")}`
     );
   });
 
