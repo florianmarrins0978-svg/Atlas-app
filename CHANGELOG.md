@@ -9,7 +9,7 @@ Format : le plus récent en tête.
 
 ## 2026-08-19
 
-### Une maquette qui se manipule pour la plainte « trop de mots »
+### Atlas dépouillé, utilisable, pour la plainte « trop de mots »
 
 **Sa plainte, la troisième :** *« il y a beaucoup trop de mots dans tous les
 sens […] s'ils passent quinze minutes à essayer de comprendre comment elle
@@ -17,28 +17,31 @@ marche, ils ne vont juste pas l'utiliser »*. Le 11 et le 17 août, la même cho
 avait été dite et un écran avait été corrigé au jugé ; la gêne est revenue
 ailleurs à chaque fois.
 
-`appli/moins-de-mots.html` montre trois écrans — fiche client, accueil,
-réglages — avec un bouton « Aujourd'hui / Proposé » qui les change **sur
-place**, le compte de mots et le bilan avec. Boutons radio et `:checked` : pas
-une ligne de JavaScript, donc ouvrable depuis son téléphone, hors ligne.
+`appli/moins-de-mots.html` n'est pas une planche : c'est **l'application
+dépouillée, dont on se sert**. La barre du bas fonctionne, « Créer un devis »
+ouvre la fiche client, les champs se remplissent au clavier, le devis s'envoie,
+« Mes prix » s'ouvre. Un bouton « Avant » remet l'écran d'aujourd'hui sur les
+trois écrans qui changent. Boutons radio et `:checked` : pas une ligne de
+JavaScript, donc ouvrable depuis son téléphone, hors ligne.
 
-**Ce que ça évite :** lui demander de trancher sur une description. Il voit
-l'écran d'aujourd'hui, il appuie, il voit l'autre — et le nombre de mots tombe
-sous ses yeux.
+**Ce que ça évite :** lui demander de juger une application sur une capture. On
+ne sait pas si un écran est plus simple en le regardant — on le sait en s'en
+servant.
 
 **Rien dans `src/`** — `CLAUDE.md` §3 bis : il choisit avant qu'on code.
 
-### Ce qu'il a fallu corriger dans la première version
+### Deux versions refusées avant celle-là, et ce qu'elles apprennent
 
-**Sa consigne, répétée :** *« je t'ai dit de rien coder, seulement une maquette
-dynamique »*. La planche était arrivée entourée de deux scripts — un qui
-mesurait l'application, un qui recomptait ses nombres. Utiles, hors de `src/`,
-et **hors sujet** : une demande de maquette n'autorise pas l'outillage qui va
-avec. Retirés.
+**« Je t'ai dit de rien coder, seulement une maquette dynamique. »** La première
+arrivait entourée de deux scripts — un qui mesurait l'application, un qui
+recomptait ses nombres. Utiles, hors de `src/`, et **hors sujet** : une demande
+de maquette n'autorise pas l'outillage qui va avec. Retirés.
 
-Et elle posait **deux téléphones côte à côte**. Sur un écran de 390 px, deux
-colonnes ne se comparent pas — elles se font défiler, et l'on perd exactement ce
-qu'on voulait montrer.
+**« Une maquette dynamique QUE JE PUISSE UTILISER. »** La deuxième était une
+planche avant/après à regarder — des écrans côte à côte, des comptes de mots,
+des flèches. **Une maquette, dans ce dépôt, est un bout d'application qui
+marche**, pas une présentation de ce qu'elle serait. Les autres essayables de
+`appli/` l'étaient déjà ; il aurait fallu s'en inspirer dès le départ.
 
 ### Une maquette qu'il doit ouvrir vit dans `appli/`, pas dans `docs/maquettes/`
 

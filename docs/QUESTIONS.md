@@ -1494,9 +1494,11 @@ quatrième fois.
 
 ### Ce que ça coûte, et ce que vous devez décider
 
-**Rien n'est codé.** La planche **« Moins de mots »** montre les trois écrans
-avant et après, avec les comptes. Elle s'ouvre depuis votre page habituelle,
-**« À essayer »** — c'est le premier lien, tout en haut.
+**Rien n'est codé.** La maquette **« Moins de mots »** est Atlas dépouillé, et
+**elle se sert** : appuyez sur « Créer un devis », tapez le nom de votre client,
+arrivez au devis, envoyez-le. Les cinq onglets marchent. Un bouton « Avant » en
+haut remet l'écran d'aujourd'hui, pour comparer dans le même geste. Elle s'ouvre
+depuis votre page habituelle, **« À essayer »** — c'est le premier lien.
 
 - les **trois écrans** : deux à trois jours ;
 - le **compteur de mots** qui empêche de regrossir : une journée ;

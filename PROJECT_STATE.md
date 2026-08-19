@@ -870,11 +870,12 @@ téléphone et leurs mots comptés :
 | Accueil | 35 mots | 21 |
 | Réglages | 89 mots | 26 |
 
-**Proposé, pas codé** — la maquette `appli/moins-de-mots.html`, qui **se
-manipule** (un bouton « Aujourd'hui / Proposé », sans JavaScript), liée depuis
-`appli/essais.html` — la seule adresse qu'il puisse ouvrir. Et
-`docs/QUESTIONS.md` §23. **Rien dans `src/`** tant qu'il n'a pas choisi
-(`CLAUDE.md` §3 bis).
+**Proposé, pas codé** — `appli/moins-de-mots.html` est **Atlas dépouillé et
+utilisable** : la barre du bas marche, « Créer un devis » ouvre la fiche, les
+champs se remplissent, le devis part ; un bouton « Avant » remet l'écran
+d'aujourd'hui. Sans JavaScript. Liée depuis `appli/essais.html` — la seule
+adresse qu'il puisse ouvrir. Et `docs/QUESTIONS.md` §23. **Rien dans `src/`**
+tant qu'il n'a pas choisi (`CLAUDE.md` §3 bis).
 
 Ce qui compte le plus n'est pas les trois écrans : c'est que **rien n'empêche
 l'application de regrossir**. Les deux fois précédentes, un écran a été corrigé

@@ -16,18 +16,19 @@ tous les sens […] des entrepreneurs qui n'ont pas de temps […] il y a des
 boomers dessus »*. Le 11 et le 17 août, la même chose avait été dite et un écran
 avait été corrigé au jugé ; la gêne est revenue ailleurs à chaque fois.
 
-**Ce qui existe :** `appli/moins-de-mots.html` — trois écrans, un bouton
-« Aujourd'hui / Proposé » qui les change sur place, **sans une ligne de
-JavaScript**. Liée depuis `appli/essais.html`. `docs/QUESTIONS.md` §23 porte la
-réponse en clair.
+**Ce qui existe :** `appli/moins-de-mots.html` — **Atlas dépouillé, qui se
+sert** : la barre du bas marche, « Créer un devis » ouvre la fiche, les champs
+se remplissent au clavier, le devis part. Un bouton « Avant » remet l'écran
+d'aujourd'hui. Sans une ligne de JavaScript. Liée depuis `appli/essais.html`.
+`docs/QUESTIONS.md` §23.
 
-**⚠ DEUX CHOSES QU'IL A DÛ CORRIGER, à ne pas refaire.** *« Je t'ai dit de rien
-coder, seulement une maquette dynamique. »* La première version arrivait
-entourée de deux scripts (mesure et contrôle) : **une demande de maquette
-n'autorise pas l'outillage qui va avec**, même utile, même hors de `src/`. Et
-elle posait deux téléphones côte à côte : **« dynamique » veut dire qu'il la
-manipule**, pas qu'on lui montre deux images l'une à côté de l'autre — sur
-390 px, deux colonnes se font défiler au lieu de se comparer.
+**⚠ DEUX VERSIONS ONT ÉTÉ REFUSÉES AVANT CELLE-LÀ.** *« Je t'ai dit de rien
+coder »* — la première portait deux scripts autour de la maquette ; une demande
+de maquette n'autorise pas l'outillage qui va avec, même hors de `src/`. Puis
+*« une maquette dynamique QUE JE PUISSE UTILISER »* — la deuxième était une
+planche avant/après à REGARDER. **Une maquette, ici, est un bout d'application
+qui marche**, pas une présentation de ce qu'elle serait. Les autres essayables
+de `appli/` le sont déjà : s'en inspirer.
 
 **⚠ RIEN N'EST FUSIONNÉ, ET IL L'A VOULU AINSI.** Le lot est poussé sur
 `claude/app-complexity-ux-ug3k5o`. À la question « je fusionne pour que tu

@@ -61,33 +61,40 @@ encombre l'écran, ce sont les **phrases qui expliquent** — un écran qui a be
 de se justifier est un écran qui n'est pas clair. Retirer le soin apporté au
 dessin ne règlerait rien et coûterait ce qui a été gagné.
 
-**CE QUI EST FAIT : une maquette, et rien d'autre.** `appli/moins-de-mots.html`
-— trois écrans, un bouton **« Aujourd'hui / Proposé »** qui les change sur place,
-le compte de mots et le bilan avec. Boutons radio et `:checked`, **pas une ligne
-de JavaScript** : ouvrable au téléphone, hors ligne. Liée depuis
-`appli/essais.html`. `docs/QUESTIONS.md` §23 porte la réponse en clair.
+**CE QUI EST FAIT : une maquette qui SE SERT.** `appli/moins-de-mots.html` —
+Atlas dépouillé, utilisable au pouce : la barre du bas marche, « Créer un
+devis » ouvre la fiche client, les champs se remplissent au clavier, le devis
+part, « Mes prix » s'ouvre. Un bouton **« Avant »** en haut remet l'écran
+d'aujourd'hui sur les trois écrans qui changent. Sans une ligne de JavaScript
+(boutons radio et `:checked`), donc ouvrable au téléphone hors ligne. Liée
+depuis `appli/essais.html`. `docs/QUESTIONS.md` §23.
 
-| Écran | Aujourd'hui | Proposé | Ce qui part |
-|---|---|---|---|
-| Fiche client | 39 mots | 19 | « facultatif » ×5, alors que **tous** les champs le sont ; la question du canal, que l'application devine déjà |
-| Accueil | 35 mots | 21 | le nombre de chantiers et l'ancienneté du devis, écrits **deux fois chacun** |
-| Réglages | 89 mots | 26 | les **treize** phrases d'explication sous les treize titres |
+Ce qui est retiré, écran par écran :
 
-**Elle vit dans `appli/`, et c'est le point à retenir :** `pages.yml` ne publie
-que ce dossier. Une maquette laissée dans `docs/maquettes/` n'a aucune adresse —
-il ne peut pas l'ouvrir. **La règle est écrite dans `CLAUDE.md` §3 bis.**
+| Écran | Ce qui part |
+|---|---|
+| Fiche client | « facultatif » ×5 — **tous** les champs le sont ; la question du canal d'envoi, que l'application devine déjà ; la civilité, qui rentre dans le nom |
+| Accueil | le nombre de chantiers et l'ancienneté du devis, écrits **deux fois chacun** ; « Faire le devis », alors que toucher la ligne le fait |
+| Réglages | les **treize** phrases d'explication sous les treize titres ; « Intégrations », qui est un mot d'informaticien |
+| Le devis | le document entier passe derrière « Voir le document » — il faisait **2,6 hauteurs d'écran** avant d'atteindre « Envoyer » |
 
-**⚠ SA CONSIGNE, ET ELLE A DÛ ÊTRE RÉPÉTÉE : *« je t'ai dit de rien coder,
-seulement une maquette dynamique »*.** La première version arrivait entourée de
-deux scripts — un qui mesurait l'application, un qui recomptait ses nombres.
-Utiles, hors de `src/`, et **hors sujet**. Retirés. Une demande de maquette
-n'autorise pas l'outillage qui va avec.
+**⚠ DEUX VERSIONS ONT RATÉ LA DEMANDE. Ne pas refaire la même erreur.**
 
-**Et « dynamique » veut dire QU'IL LA MANIPULE.** La première version posait deux
-téléphones côte à côte : sur un écran de 390 px, deux colonnes ne se comparent
-pas, elles se font défiler — et l'on perd précisément ce qu'on voulait montrer.
-Un seul téléphone et un bouton, c'est le geste qu'il fait déjà dans
-l'application.
+1. *« Je t'ai dit de rien coder, seulement une maquette dynamique. »* La
+   première arrivait entourée de deux scripts — un qui mesurait l'application,
+   un qui recomptait ses nombres. Utiles, hors de `src/`, et **hors sujet** :
+   une demande de maquette n'autorise pas l'outillage qui va avec ;
+2. *« Une maquette dynamique QUE JE PUISSE UTILISER. »* La deuxième était une
+   **planche à regarder** — des écrans avant/après, des flèches, des comptes de
+   mots. **Ce n'est pas ça qu'il demande.** Il veut poser le pouce dessus et
+   sentir si c'est plus simple. On ne juge pas une application sur une capture ;
+   on la juge en s'en servant.
+
+**La règle qui en sort, et qui vaut pour toutes les maquettes :** une maquette,
+ici, est un **bout d'application qui marche** — pas une présentation de ce
+qu'elle serait. Les autres essayables de `appli/` le sont déjà
+(`clients-recherche.html`, `arrosage.html`) : s'en inspirer plutôt que de
+réinventer une planche.
 
 **⚠ RIEN N'EST FUSIONNÉ, ET IL L'A VOULU AINSI.** À la question « je fusionne
 pour que tu puisses l'ouvrir ? », il a répondu **« non, pas encore »** le
