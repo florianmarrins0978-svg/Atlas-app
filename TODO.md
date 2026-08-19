@@ -76,8 +76,13 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
-payer, il faut avoir la possibilité de créer un avoir »*. Deux planches,
-`docs/maquettes/79-il-ne-paie-pas.html` et `80-l-avoir.html`. Rien dans `src/`.
+payer, il faut avoir la possibilité de créer un avoir »*.
+
+**LA PLANCHE À REGARDER EST LA 81**, `docs/maquettes/81-simple-il-ne-paie-pas.html`
+— un lien sur la facture, une question, deux réponses, quatre écrans. Les 79 et
+80 ont été **jugées trop compliquées par lui** (*« l'utilisateur a besoin d'aller
+à l'essentiel constamment »*) : elles restent comme raisonnement, pas comme
+proposition. Rien dans `src/`.
 
 **CE QU'IL FAUT AVOIR COMPRIS AVANT DE CODER QUOI QUE CE SOIT.** Un avoir et un
 impayé ne sont pas la même chose :
@@ -90,12 +95,10 @@ impayé ne sont pas la même chose :
 Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
 seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
 
-**Deux réponses à attendre de lui :**
-
-1. **quel arrangement** (77) : trois portes nommées, une porte et un montant, ou
-   deux portes ;
-2. **quelle forme de document** (78) : un document à part, une mention sur la
-   facture, ou une facture refaite.
+**Une seule réponse à attendre de lui : la 81 lui va-t-elle ?** Le choix
+d'arrangement et le choix de forme ont été retirés — c'était précisément la
+complication qu'il a refusée. Si elle lui va, la forme du document est celle de
+la 80-A : une pièce à part, avec sa propre série de numéros.
 
 **Ce que le code devra lever, et ce n'est pas anodin :**
 

@@ -59,8 +59,9 @@ const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DOSSIER = resolve(process.argv[2] ?? join(RACINE, "docs", "maquettes"));
 const M79 = join(DOSSIER, "79-il-ne-paie-pas.html");
 const M80 = join(DOSSIER, "80-l-avoir.html");
+const M81 = join(DOSSIER, "81-simple-il-ne-paie-pas.html");
 
-for (const f of [M79, M80]) {
+for (const f of [M79, M80, M81]) {
   if (!existsSync(f)) {
     console.error(`La maquette n'existe pas : ${f}`);
     process.exit(1);
@@ -110,10 +111,10 @@ const contexte = await navigateur.newContext({
 });
 const page = await contexte.newPage();
 
-console.log("=== Les maquettes 79 et 80 tombent-elles juste ? ===\n");
+console.log("=== Les maquettes 79, 80 et 81 tombent-elles juste ? ===\n");
 
 // ── 0. Aucun script, dans aucune des deux ───────────────────────────────────
-for (const [nom, f] of [["79", M79], ["80", M80]]) {
+for (const [nom, f] of [["79", M79], ["80", M80], ["81", M81]]) {
   const source = readFileSync(f, "utf8");
   dire(!/<script[\s>]/i.test(source), `la maquette ${nom} ne contient aucun script`);
 }
@@ -274,14 +275,86 @@ for (const m of MONTANTS) {
   );
 }
 
+// ── 5. La 81 : la version SIMPLE, et ce que « simple » doit encore tenir ───
+//
+// **Sa correction du 17 août, devant les 79 et 80 :** *« c'est trop compliqué,
+// il faut faire quelque chose de simple, l'utilisateur a besoin d'aller à
+// l'essentiel constamment »*. Les contrôles ci-dessous gardent la
+// simplification acquise — un écran qui se recompliquerait redeviendrait vert
+// sans eux.
+console.log("\n→ 81 · Simple");
+await page.goto(`file://${M81}`, { waitUntil: "networkidle" });
+
+const ECRANS = [
+  { radio: "e-1", nom: "1 · La facture", panneau: ".ec-1" },
+  { radio: "e-2", nom: "2 · La question", panneau: ".ec-2" },
+  { radio: "e-3", nom: "3 · Combien", panneau: ".ec-3" },
+  { radio: "e-4", nom: "4 · Fini", panneau: ".ec-4" },
+];
+for (const e of ECRANS) {
+  await page.click(`label[for="${e.radio}"]`);
+  const vus = [];
+  for (const autre of ECRANS) {
+    if ((await page.locator(`div${autre.panneau}:visible`).count()) > 0) vus.push(autre.radio);
+  }
+  dire(vus.length === 1 && vus[0] === e.radio, `81 · ${e.nom} s'affiche seul (vus : ${vus.join(", ") || "aucun"})`);
+}
+
+// **LE PARCOURS TIENT EN QUATRE ÉCRANS.** C'est la mesure de « simple », et
+// elle est comptée, pas affirmée : un cinquième écran qui apparaîtrait un jour
+// rendrait ce contrôle rouge, et c'est exactement ce qu'on veut.
+dire(ECRANS.length === 4, `81 · le parcours tient en ${ECRANS.length} écrans`);
+
+// **LA QUESTION N'A QUE DEUX RÉPONSES.** Une troisième serait un choix de plus
+// à faire entre deux chantiers.
+await page.click('label[for="e-2"]');
+const reponses = await page.locator(".ec-2 .reponse:visible .nom").allInnerTexts();
+dire(
+  reponses.length === 2,
+  `81 · la question a deux réponses (${reponses.length} : ${reponses.join(" / ") || "aucune"})`,
+);
+
+// **ET C'EST LA SEULE CHOSE QU'ON NE PEUT PAS SIMPLIFIER DAVANTAGE.** Les deux
+// réponses font l'inverse l'une de l'autre, et l'une est irréversible. L'écran
+// doit dire, sur le téléphone et non dans une légende, qu'après « il ne paiera
+// pas » il peut encore réclamer. Sans cette ligne, la simplification lui coûte
+// de l'argent.
+const surLeTelephone = await page.locator(".feuille:visible").innerText();
+dire(
+  /toujours réclamer/i.test(surLeTelephone),
+  "81 · le téléphone dit qu'il pourra toujours réclamer",
+);
+
+// **LE MOT « AVOIR » N'EST PAS SUR LE TÉLÉPHONE.** C'est du vocabulaire de
+// comptable ; le document le portera quand il partira. Le contrôle garde la
+// simplification : le jour où le mot revient sur un écran, il rougit.
+for (const e of ECRANS) {
+  await page.click(`label[for="${e.radio}"]`);
+  const vu = await page.locator(".feuille:visible").innerText();
+  dire(!/\bavoirs?\b/i.test(vu), `81 · l'écran « ${e.nom} » ne dit pas « avoir »`);
+}
+
+// ── L'arithmétique de la 81, aux deux montants ─────────────────────────────
+for (const [radio, retire] of [["m-3", 300], ["m-t", FACTURE_TTC]]) {
+  const reste = Math.round((FACTURE_TTC - retire) * 100) / 100;
+  await page.click('label[for="e-3"]');
+  await page.click(`label[for="${radio}"]`);
+  const montant = enNombre(await page.locator(".ec-3 .case .val:visible").innerText());
+  const devra = enNombre((await page.locator(".ec-3 .apres .tot:visible").innerText()).split("\n").pop());
+  dire(
+    proche(montant, retire) && proche(devra, reste),
+    `81 · retirer ${sou(retire)} laisse ${sou(devra)} (attendu ${sou(reste)})`,
+  );
+}
+
 // ── 5. Les renvois croisés visent des fichiers qui existent ─────────────────
 console.log("\n→ Les renvois");
-for (const [source, nom] of [[M79, "79"], [M80, "80"]]) {
+for (const [source, nom] of [[M79, "79"], [M80, "80"], [M81, "81"]]) {
   await page.goto(`file://${source}`, { waitUntil: "networkidle" });
   const cibles = await page.locator("a[href$='.html']").evaluateAll((as) =>
     as.map((a) => a.getAttribute("href")),
   );
-  dire(cibles.length >= 1, `la ${nom} renvoie à l'autre planche`);
+  dire(cibles.length >= 1, `la ${nom} renvoie aux planches voisines`);
   for (const c of cibles) {
     dire(existsSync(join(DOSSIER, c)), `le renvoi « ${c} » de la ${nom} vise un fichier existant`);
   }
@@ -292,7 +365,7 @@ await navigateur.close();
 
 console.log("");
 if (plaintes.length === 0) {
-  console.log("✅ Les deux planches tombent juste, et disent ce qu'elles doivent dire.");
+  console.log("✅ Les trois planches tombent juste, et disent ce qu'elles doivent dire.");
   process.exit(0);
 }
 console.log(`❌ ${plaintes.length} défaut(s) :`);

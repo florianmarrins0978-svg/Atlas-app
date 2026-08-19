@@ -285,6 +285,39 @@ défaut qu'il prétend attraper.
 
 ## 2026-08-17
 
+### « C'est trop compliqué » — l'avoir, refait en quatre écrans
+
+Sa correction, devant les planches 79 et 80 : *« c'est trop compliqué, il faut
+faire quelque chose de simple, l'utilisateur a besoin d'aller à l'essentiel
+constamment »*.
+
+**Il avait raison, et le défaut était de méthode.** On lui présentait six
+arrangements à comparer, un tableau à cinq lignes et deux pages de comptabilité.
+Lui faire trancher un vocabulaire de comptable entre deux chantiers, c'est lui
+faire faire notre travail.
+
+`docs/maquettes/81-simple-il-ne-paie-pas.html` — **un lien sur la facture, une
+question, deux réponses.** Quatre écrans, et c'est tout.
+
+**Ce qui a été retiré :** le mot « avoir » (le document le portera quand il
+partira ; l'écran parle sa langue), le choix entre trois formes de document
+(Atlas prend la bonne), les explications de TVA (la sienne ne bouge pas — ce qui
+ne bouge pas n'a rien à faire à l'écran).
+
+**Ce qui ne pouvait pas être retiré, et une ligne suffit :** les deux réponses
+font l'inverse l'une de l'autre. *Enlever une somme* y renonce définitivement ;
+*dire qu'il ne paiera pas* garde la facture et le droit de réclamer. N'en garder
+qu'une serait plus simple d'un cran, et la seule qui resterait est celle qui le
+désarme.
+
+**Le contrôle garde la simplification, il ne la constate pas :**
+`verifier-maquette-avoir.mjs` compte les écrans (quatre), compte les réponses
+(deux), **refuse le mot « avoir » sur le téléphone** et exige la phrase sur le
+droit de réclamer. Trois planches dégradées, trois rouges — dont le mot de
+comptable revenu sur un bouton.
+
+Les 79 et 80 restent au dépôt : écartées, elles racontent le chemin (§3 bis).
+
 ### « Il faut pouvoir créer un avoir » — dessiné, et une distinction qui vaut de l'argent
 
 Sa demande du 17 août : *« si jamais on facture un client et qui décide de ne
