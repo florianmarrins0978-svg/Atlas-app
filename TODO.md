@@ -25,6 +25,48 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## ⏸ « Trop compliquée » — sa plainte du 19 août 2026, RIEN n'est tranché
+
+**Ses mots, qui valent mieux qu'un résumé :** *« l'application va être trop
+compliquée à utiliser, il y a beaucoup trop de mots dans tous les sens. Ce n'est
+pas ludique, ce n'est pas pratique, ce n'est pas facile. J'ai voulu créer une
+application luxe, mais au final j'ai l'impression que je me suis perdu (…) des
+entrepreneurs qui n'ont pas de temps, s'ils passent quinze minutes à essayer de
+comprendre comment elle marche, ils ne vont juste pas l'utiliser. Il ne faut pas
+oublier qu'il y a des boomers dessus qui ont déjà du mal à utiliser leur
+téléphone. »*
+
+**Ce n'est pas la première fois, et c'est ÇA le fait important.** La même chose
+a été dite trois fois, chaque fois sur un écran différent, chaque fois traitée
+localement :
+
+| Quand | Ses mots | Ce qu'on a fait |
+|---|---|---|
+| 11 août | *« informations, prix, devis peuvent disparaître »* | trois étapes retirées du tiroir de la fiche |
+| 17 août | *« l'utilisateur a besoin d'aller à l'essentiel constamment »* | planches 79 et 80 de l'avoir jetées, la 81 refaite |
+| 19 août | ci-dessus | **rien encore** |
+
+Trois corrections ponctuelles, et la plainte revient. Donc le défaut n'est pas
+dans un écran : **il est dans le fait que rien n'empêche l'application de
+regrossir.** Chaque décision juste ajoute une ligne, un écran, une phrase
+d'explication — et personne n'en retire jamais.
+
+**L'état mesuré au 19 août 2026**, à confronter avant de proposer quoi que ce
+soit : **54 écrans** (`find src/app -name page.tsx`), **18 rubriques de
+réglages**, **5 onglets** en bas.
+
+**Le contresens à ne pas commettre.** Il dit « j'ai voulu faire luxe et je me
+suis perdu ». Le luxe n'est pas la cause : le luxe, c'est le vide. Ce qui
+encombre l'écran, ce sont les **phrases qui expliquent** — un écran qui a besoin
+de se justifier est un écran qui n'est pas clair. Retirer le soin apporté au
+dessin ne règlerait rien et coûterait ce qui a été gagné.
+
+**Ce qui est attendu de lui avant de toucher à `src/` :** rien n'a été décidé,
+et `CLAUDE.md` §3 bis interdit de coder une refonte d'apparence avant son
+accord. Le chemin proposé — mesurer d'abord le parcours réel (combien de gestes
+et combien de mots entre l'ouverture et un devis parti), puis une planche de la
+version dépouillée, puis son choix.
+
 ## ~~Les deux boutons du devis~~ — **tranché et codé le 18 août 2026**
 
 Sa demande : *« supprime "je dicterai" et "je l'écris", remplace par un bouton
