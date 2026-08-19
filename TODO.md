@@ -25,6 +25,97 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## ⏸ « Trop compliquée » — sa plainte du 19 août 2026, RIEN n'est tranché
+
+**Ses mots, qui valent mieux qu'un résumé :** *« l'application va être trop
+compliquée à utiliser, il y a beaucoup trop de mots dans tous les sens. Ce n'est
+pas ludique, ce n'est pas pratique, ce n'est pas facile. J'ai voulu créer une
+application luxe, mais au final j'ai l'impression que je me suis perdu (…) des
+entrepreneurs qui n'ont pas de temps, s'ils passent quinze minutes à essayer de
+comprendre comment elle marche, ils ne vont juste pas l'utiliser. Il ne faut pas
+oublier qu'il y a des boomers dessus qui ont déjà du mal à utiliser leur
+téléphone. »*
+
+**Ce n'est pas la première fois, et c'est ÇA le fait important.** La même chose
+a été dite trois fois, chaque fois sur un écran différent, chaque fois traitée
+localement :
+
+| Quand | Ses mots | Ce qu'on a fait |
+|---|---|---|
+| 11 août | *« informations, prix, devis peuvent disparaître »* | trois étapes retirées du tiroir de la fiche |
+| 17 août | *« l'utilisateur a besoin d'aller à l'essentiel constamment »* | planches 79 et 80 de l'avoir jetées, la 81 refaite |
+| 19 août | ci-dessus | **rien encore** |
+
+Trois corrections ponctuelles, et la plainte revient. Donc le défaut n'est pas
+dans un écran : **il est dans le fait que rien n'empêche l'application de
+regrossir.** Chaque décision juste ajoute une ligne, un écran, une phrase
+d'explication — et personne n'en retire jamais.
+
+**L'état mesuré au 19 août 2026**, à confronter avant de proposer quoi que ce
+soit : **54 écrans** (`find src/app -name page.tsx`), **18 rubriques de
+réglages**, **5 onglets** en bas.
+
+**Le contresens à ne pas commettre.** Il dit « j'ai voulu faire luxe et je me
+suis perdu ». Le luxe n'est pas la cause : le luxe, c'est le vide. Ce qui
+encombre l'écran, ce sont les **phrases qui expliquent** — un écran qui a besoin
+de se justifier est un écran qui n'est pas clair. Retirer le soin apporté au
+dessin ne règlerait rien et coûterait ce qui a été gagné.
+
+**CE QUI EST FAIT : une maquette qui SE SERT.** `appli/moins-de-mots.html` —
+Atlas dépouillé, utilisable au pouce : la barre du bas marche, « Créer un
+devis » ouvre la fiche client, les champs se remplissent au clavier, le devis
+part, « Mes prix » s'ouvre. Un bouton **« Avant »** en haut remet l'écran
+d'aujourd'hui sur les trois écrans qui changent. Sans une ligne de JavaScript
+(boutons radio et `:checked`), donc ouvrable au téléphone hors ligne. Liée
+depuis `appli/essais.html`. `docs/QUESTIONS.md` §23.
+
+Ce qui est retiré, écran par écran :
+
+| Écran | Ce qui part |
+|---|---|
+| Fiche client | « facultatif » ×5 — **tous** les champs le sont ; la question du canal d'envoi, que l'application devine déjà ; la civilité, qui rentre dans le nom |
+| Accueil | le nombre de chantiers et l'ancienneté du devis, écrits **deux fois chacun** ; « Faire le devis », alors que toucher la ligne le fait |
+| Réglages | les **treize** phrases d'explication sous les treize titres ; « Intégrations », qui est un mot d'informaticien |
+| Le devis | le document entier passe derrière « Voir le document » — il faisait **2,6 hauteurs d'écran** avant d'atteindre « Envoyer » |
+
+**⚠ DEUX VERSIONS ONT RATÉ LA DEMANDE. Ne pas refaire la même erreur.**
+
+1. *« Je t'ai dit de rien coder, seulement une maquette dynamique. »* La
+   première arrivait entourée de deux scripts — un qui mesurait l'application,
+   un qui recomptait ses nombres. Utiles, hors de `src/`, et **hors sujet** :
+   une demande de maquette n'autorise pas l'outillage qui va avec ;
+2. *« Une maquette dynamique QUE JE PUISSE UTILISER. »* La deuxième était une
+   **planche à regarder** — des écrans avant/après, des flèches, des comptes de
+   mots. **Ce n'est pas ça qu'il demande.** Il veut poser le pouce dessus et
+   sentir si c'est plus simple. On ne juge pas une application sur une capture ;
+   on la juge en s'en servant.
+
+**La règle qui en sort, et qui vaut pour toutes les maquettes :** une maquette,
+ici, est un **bout d'application qui marche** — pas une présentation de ce
+qu'elle serait. Les autres essayables de `appli/` le sont déjà
+(`clients-recherche.html`, `arrosage.html`) : s'en inspirer plutôt que de
+réinventer une planche.
+
+**Fusionné sur `main` le 19 août 2026, à sa demande** — il a d'abord dit non,
+puis a demandé ce que la fusion changerait à son application. La réponse tenait
+en une ligne et vaut d'être gardée : **zéro fichier de `src/` touché**. La
+maquette est une page de plus dans `appli/`, à côté du plan d'arrosage et de
+« Vos clients » ; son Atlas n'a pas bougé d'un pixel.
+
+**La leçon, et elle vaut pour la prochaine fois :** il n'a pas refusé la fusion,
+il ne savait pas ce qu'elle emportait. Annoncer « je fusionne ? » sans dire **ce
+que ça change chez lui** lui fait porter un risque qu'il n'a pas les moyens
+d'évaluer — et il répond non, ce qui est la bonne réponse à une question mal
+posée.
+
+**CE QUI RESTE, ET QUI EST À LUI :** ces trois écrans lui vont-ils ? Rien dans
+`src/` tant qu'il n'a pas répondu (`CLAUDE.md` §3 bis).
+
+**CE QUI N'EST PAS PROPOSÉ, EXPRÈS :** relire les autres écrans. Ce serait au
+jugé, et c'est l'erreur qu'on cherche à arrêter. Et il faudra se souvenir que
+corriger trois écrans de plus ne suffira pas : c'est déjà la troisième fois, et
+rien n'empêche l'application de regrossir.
+
 ## ~~Les deux boutons du devis~~ — **tranché et codé le 18 août 2026**
 
 Sa demande : *« supprime "je dicterai" et "je l'écris", remplace par un bouton

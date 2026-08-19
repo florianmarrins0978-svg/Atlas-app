@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-18 · branche `main`
+**Dernière mise à jour :** 2026-08-19 · branche `main`
 · dernière migration `drizzle/0055_passage_entretien.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -857,6 +857,29 @@ Voir `TODO.md` pour le détail et l'ordre.
   messagerie du patron comme l'envoi.
 
 ---
+
+## L'application est jugée trop chargée — mesuré, pas encore tranché (19 août)
+
+**Sa plainte, la troisième** (11, 17 puis 19 août) : *« beaucoup trop de mots
+dans tous les sens »*. Trois écrans ont été regardés à la taille de son
+téléphone et leurs mots comptés :
+
+| Écran | Aujourd'hui | Proposé |
+|---|---|---|
+| Fiche client | 39 mots | 19 |
+| Accueil | 35 mots | 21 |
+| Réglages | 89 mots | 26 |
+
+**Proposé, pas codé** — `appli/moins-de-mots.html` est **Atlas dépouillé et
+utilisable** : la barre du bas marche, « Créer un devis » ouvre la fiche, les
+champs se remplissent, le devis part ; un bouton « Avant » remet l'écran
+d'aujourd'hui. Sans JavaScript. Liée depuis `appli/essais.html` — la seule
+adresse qu'il puisse ouvrir. Et `docs/QUESTIONS.md` §23. **Rien dans `src/`**
+tant qu'il n'a pas choisi (`CLAUDE.md` §3 bis).
+
+Ce qui compte le plus n'est pas les trois écrans : c'est que **rien n'empêche
+l'application de regrossir**. Les deux fois précédentes, un écran a été corrigé
+et la gêne est revenue ailleurs.
 
 ## Ce qui bloque, et qui n'avancera pas en codant
 
