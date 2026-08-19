@@ -49,6 +49,68 @@ deux centres tombent sur le même pixel. `ARCHITECTURE.md` §124.
 
 ## 2026-08-18
 
+### Deux boutons à la place de la bascule, sur l'écran de création
+
+**Sa demande, puis sa réponse devant la planche :** *« supprime "je dicterai"
+et "je l'écris", remplace par un bouton cliquable "je dicte mon devis" et un
+autre "j'écris mon devis" »*, puis *« la 5, mais sans les flèches »*.
+
+L'écran de création porte désormais **deux capsules vertes empilées, à
+égalité** — « Je dicte mon devis », « J'écris mon devis ». La bascule et le
+bouton dont le libellé la suivait sont retirés : chaque bouton porte sa
+destination, et le geste passe de deux temps à un seul.
+
+**Ce que ça évite** : deux gestes pour qui savait déjà qu'il écrirait son devis
+lui-même — toucher un onglet, puis un bouton dont le mot venait de changer sous
+ses yeux.
+
+**Deux conséquences assumées :**
+
+- **« Créer le chantier » disparaît de l'écran.** C'était le seul endroit qui
+  annonçait la création ; les deux boutons créent le chantier avant d'aller où
+  ils disent, sans quoi le devis serait orphelin (`creerPuisAller`). La ligne
+  qui l'aurait redit lui a été proposée, il ne l'a pas retenue ;
+- **en reprise, un seul bouton « Enregistrer »**, comme avant : cet écran sert
+  alors à corriger des coordonnées, pas à faire un devis.
+
+**« Entrée » mène à la dictée**, et non plus au dernier choix : il n'y a plus
+de choix à suivre, et tomber dans le devis à la main sans l'avoir demandé est
+le plus coûteux des deux défauts.
+
+**Les suites visent des repères, pas des mots.** Soixante-treize d'entre elles
+créaient leur chantier d'essai en cliquant « Créer le chantier » ; elles visent
+maintenant `[data-atlas="action-dicter"]`. Un libellé ne survit pas au
+changement suivant — celui-ci vient d'en faire la démonstration.
+
+### Dessiner les deux boutons du devis avant de retirer la bascule
+
+**Sa demande :** *« supprime "je dicterai" et "je l'écris", remplace par un
+bouton cliquable "je dicte mon devis" et un autre "j'écris mon devis", en
+gardant le chemin »*.
+
+**Rien n'est codé, et c'est la règle** (`CLAUDE.md` §3 bis) : une demande
+d'apparence se dessine, se montre, et ne touche à `src/` qu'une fois choisie.
+`appli/deux-boutons-devis.html` pose cinq façons de le faire,
+sur un écran de 390 px, sans une ligne de JavaScript.
+
+**Ce que le dessin a fait apparaître, et que la demande ne pouvait pas dire.**
+Deux choses, toutes deux dans `TODO.md` :
+
+- **« Créer le chantier » disparaît de l'écran.** C'est le libellé actuel du
+  bouton, et le seul endroit qui annonce que le chantier se crée. Deux boutons
+  nommés d'après le devis l'effacent en silence.
+- **Côte à côte, ça ne rentre pas.** Mesuré plutôt qu'estimé
+  (`scripts/mesurer-maquette-deux-boutons.mjs`, joué dans `verifier:maquette`) :
+  à 390 px chaque moitié fait 166 px, « Je dicte mon devis → » en demande 156 de
+  texte et casse sur deux lignes, quand « J'écris mon devis → » tient à 1,5 px
+  près. Les capsules montent alors à 73 px et redeviennent les pavés qu'il avait
+  fait retirer le 11 août.
+
+Le contrôle **refuse de conclure sur une boîte de zéro pixel** plutôt que de
+rendre un vert : c'est la leçon du 15 août 2026, où `0 − 0 = 0` avait certifié
+« rien n'est coupé » sur un écran où trois noms l'étaient.
+
+
 ### « Il peut proposer une autre date » : un interrupteur avant l'envoi
 
 **Sa demande :** *« pour le lien du planning qui part au client, il faut que

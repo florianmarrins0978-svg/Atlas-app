@@ -17,7 +17,7 @@ async function main() {
   const nomUnique = `Chantier propositions e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.click('[data-atlas="action-dicter"]');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
 

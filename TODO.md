@@ -25,6 +25,36 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## ~~Les deux boutons du devis~~ — **tranché et codé le 18 août 2026**
+
+Sa demande : *« supprime "je dicterai" et "je l'écris", remplace par un bouton
+cliquable "je dicte mon devis" et un autre "j'écris mon devis", en gardant le
+chemin »*. Cinq façons lui ont été montrées (`appli/deux-boutons-devis.html`),
+**il a retenu la 5, sans les flèches** : deux capsules vertes empilées, à
+égalité, « Je dicte mon devis » et « J'écris mon devis ».
+
+**Ce qui a changé dans le produit** (`FormulaireNouveauChantier.tsx`) : la
+bascule `BasculePorte` et le bouton `LibelleDeLaPorte` sont retirés ; chaque
+bouton porte sa destination. Le geste passe de deux temps (choisir, puis agir)
+à un seul.
+
+**Deux conséquences assumées, pas des oublis :**
+
+- **« Créer le chantier » a disparu de l'écran.** C'était le seul endroit qui
+  annonçait la création. Les deux boutons créent le chantier avant d'aller où
+  ils disent — sinon le devis serait orphelin. Il n'a pas voulu de la ligne qui
+  le redisait (proposition 2) ;
+- **en reprise, un seul bouton « Enregistrer »**, comme avant. Cet écran sert
+  alors à corriger des coordonnées (« RIEN DE PLUS, RIEN DE MOINS », 17 août) :
+  lui proposer deux devis pour changer une adresse serait lui poser une question
+  qu'il n'a pas. **À revoir s'il dit le contraire.**
+
+**Les 73 suites qui créaient un chantier en cliquant « Créer le chantier »**
+visent désormais le repère `[data-atlas="action-dicter"]` — un libellé
+n'aurait pas survécu au prochain changement de mot.
+
+---
+
 ## ~~Le quinconce~~ — **FAIT le 18 août 2026**
 
 Sa règle, puis son croquis : un couloir à **14** arroseurs alignés se pose à
