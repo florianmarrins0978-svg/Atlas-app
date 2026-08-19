@@ -57,6 +57,15 @@ const OUTILS: Outil[] = [
     dehors: true,
   },
   {
+    // **Le premier outil qui vit DANS Atlas.** L'arrosage est une page publiée
+    // à part ; celui-ci s'ouvre ici, avec ses clients et son modèle de fiche.
+    // Sa demande du 17 août : *« la ranger comme étant un outil dans la case
+    // paysage à côté de arrosage automatique et terrasse bois »*.
+    nom: "Fiche de chantier",
+    dit: "Cocher ce qui a été fait, puis l'envoyer au client.",
+    href: "/paysage/fiche",
+  },
+  {
     nom: "Terrasse bois",
     dit: "Lambourdes, plots, visserie — le même principe, à partir des mesures.",
     href: null,

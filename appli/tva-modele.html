@@ -153,7 +153,14 @@
   .btn-scan-stop:hover{background:var(--cream);color:var(--forest-deep);}
 
   .achat-form{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;}
-  .achat-form .form-row{display:flex;flex-direction:column;gap:0.4rem;}
+  /* **`min-width:0`, et sans lui la page déborde de 141 px sur un téléphone.**
+     Un enfant de grille vaut `min-width:auto` par défaut : l'`input` refuse
+     alors de descendre sous sa largeur naturelle (~222 px), deux colonnes en
+     demandent 444 sur une dalle de 390, et le patron doit faire glisser l'écran
+     de côté pour lire ses chiffres. Mesuré, jamais visible à la relecture. */
+  .achat-form .form-row{display:flex;flex-direction:column;gap:0.4rem;min-width:0;}
+  .achat-form .form-row input,
+  .achat-form .form-row select{width:100%;min-width:0;}
   .achat-form label{font-size:0.7rem;letter-spacing:0.05em;text-transform:uppercase;color:#6b6b5c;font-weight:600;}
   .achat-form input{
     font-family:'Inter',sans-serif;font-size:0.92rem;padding:0.6rem 0.7rem;

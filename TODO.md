@@ -1202,12 +1202,20 @@ final, chaque client aura sa fiche parce que ça ne sera jamais la même — d'u
 client à un autre on ne fait pas la même prestation — mais il n'y aura qu'une
 seule fiche. »*
 
-**LA LECTURE RETENUE, ET ELLE EST À CONFIRMER D'UN MOT.** Rien n'est rangé par
-client : à chaque passage, la fiche part du modèle, s'ajuste, et devient celle
-de ce client. Mais le second passage chez le même client doit retrouver son
-ajustement — sinon il le referait douze fois par an. **Le pré-remplissage se
-fait donc d'après SON DERNIER PASSAGE**, le modèle ne servant que la première
-fois. C'est ainsi que ce sera codé sauf mot contraire.
+**LA LECTURE RETENUE — confirmée le 17 août par « Fait la C », et CORRIGÉE une
+fois codée.** Rien n'est rangé par client : à chaque passage, la fiche part du
+modèle, s'ajuste, et devient celle de ce client. Le pré-remplissage devait se
+faire d'après SON DERNIER PASSAGE — c'est ce qui était écrit ici, et **c'était
+faux dans les deux sens** :
+
+  · les lignes *présentes* du dernier passage ne convergent jamais (au premier
+    passage la fiche porte le modèle entier) ;
+  · les lignes *cochées* du seul dernier passage font disparaître une taille de
+    haie d'automne dès le passage de mars.
+
+Le repli lit donc **tout ce que ce client a déjà pris**, rapports envoyés
+confondus. Trouvé par le contrôle avant d'atteindre le patron.
+`ARCHITECTURE.md` §128.
 
 **PAS DE SIGNATURE — décidé le 16 août 2026, et à ne pas rouvrir par bonne
 volonté.** Sur SA capture de l'autre application, les deux signatures étaient
@@ -1243,12 +1251,10 @@ la terrasse bois. Sa raison, qui est la sienne du matin même : un outil doit
 s'ouvrir SANS client, sinon il ne sert pas en visite. Le client vient au moment
 d'envoyer, par un pont vers la fiche client (existante depuis le 16 août).
 
-**LA QUESTION OUVERTE, et elle n'est pas de mise en page**
-(`docs/maquettes/77-la-fiche-dans-paysage.html`) : pré-remplir d'après le dernier
-passage exige de savoir QUI dès l'ouverture, ce qui contredit l'ouverture sans
-client. Trois moments proposés ; ma recommandation est le troisième — le client
-se nomme à tout moment, et la fiche se replie sur ses prestations dès qu'il est
-connu. **Attend sa réponse.**
+**LA QUESTION EST TRANCHÉE — « Fait la C », le 17 août 2026**
+(`docs/maquettes/77-la-fiche-dans-paysage.html`). Le client se nomme à tout
+moment, et la fiche se replie sur ses prestations dès qu'il est connu, **sans
+perdre une coche**. Codé le 18 août : `ARCHITECTURE.md` §128.
 
 **L'ordre de construction, quand ça démarre** — c'est un troisième parcours, pas
 une case à ajouter :
@@ -1260,10 +1266,17 @@ une case à ajouter :
 2. ~~son **écran de Réglages**~~ — **FAIT le 16 août** : Réglages → Fiche
    d'entretien (`src/app/reglages/fiche-entretien/`), retrait réversible,
    suite `scripts/test-fiche-entretien-e2e.ts` ;
-3. le **passage** : la fiche pré-remplie, cochée, le temps à la molette
-   (celle du téléphone — « la A ») ;
-4. le **rapport** : la page publique, le PDF, l'envoi — en réemployant ce qui
-   porte déjà devis et factures, plus le « J'ai bien reçu » horodaté ;
+3. ~~le **passage** : la fiche pré-remplie, cochée, le temps à la molette~~ —
+   **FAIT le 18 août** : tables `passages_entretien` et `lignes_passage`
+   (migration `0055`), règles pures dans `src/lib/passage-entretien.ts`, dépôt
+   `src/server/repositories/passages-entretien.ts`, écrans
+   `src/app/paysage/fiche/`, suites `scripts/test-passage-entretien.ts` et
+   `scripts/test-fiche-chantier-e2e.ts` ;
+4. ~~le **rapport** : la page publique, l'envoi~~ — **FAIT le 18 août** :
+   `/entretien/[jeton]`, lecture par jeton sous politique dédiée, message
+   préparé dans SA messagerie. **Restent deux conforts, non faits :** le PDF du
+   rapport, et le bouton **« J'ai bien reçu »** horodaté sur la page du client
+   — un accusé, pas une signature ;
 4. ~~les signatures~~ — **RETIRÉES le 16 août 2026**, voir ci-dessous.
 
 Planches : `docs/maquettes/62-la-fiche-dentretien.html`,
