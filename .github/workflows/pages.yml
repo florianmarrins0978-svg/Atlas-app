@@ -161,7 +161,12 @@ jobs:
         run: |
           set -e
           BASE="${PAGE_URL%/}"
-          for f in index.html app.html devis-vocal.html devis-modele.html \
+          # `essais.html` est L'ADRESSE QU'ON LUI DONNE : si elle ne répond pas,
+          # tout le reste est inutile. Ajoutée le 18 août 2026 après qu'il a
+          # écrit « quand je fais pour cliquer, je ne peux pas cliquer » — une
+          # adresse transmise sans preuve qu'elle répond n'est pas une adresse.
+          for f in index.html app.html essais.html clients.html clients-recherche.html \
+                   devis-vocal.html devis-modele.html \
                    facture-modele.html tva-modele.html mes-tarifs.html \
                    arrosage.html arrosage-tarifs.html arrosage-catalogue.js nav.js; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
