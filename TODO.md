@@ -61,58 +61,47 @@ encombre l'écran, ce sont les **phrases qui expliquent** — un écran qui a be
 de se justifier est un écran qui n'est pas clair. Retirer le soin apporté au
 dessin ne règlerait rien et coûterait ce qui a été gagné.
 
-**CE QUI EST FAIT — mesure et planche, le 19 août 2026 au soir.**
+**CE QUI EST FAIT : une maquette, et rien d'autre.** `appli/moins-de-mots.html`
+— trois écrans, un bouton **« Aujourd'hui / Proposé »** qui les change sur place,
+le compte de mots et le bilan avec. Boutons radio et `:checked`, **pas une ligne
+de JavaScript** : ouvrable au téléphone, hors ligne. Liée depuis
+`appli/essais.html`. `docs/QUESTIONS.md` §23 porte la réponse en clair.
 
-1. **L'application a été parcourue pour de bon**, dans un navigateur, à la
-   taille de son téléphone, sur le jeu de démonstration
-   (`scripts/mesurer-parcours-reel.mts`). Le relevé est versionné :
-   `appli/moins-de-mots-mesures.json`, plus les captures dans
-   `docs/maquettes/images/82/`.
+| Écran | Aujourd'hui | Proposé | Ce qui part |
+|---|---|---|---|
+| Fiche client | 39 mots | 19 | « facultatif » ×5, alors que **tous** les champs le sont ; la question du canal, que l'application devine déjà |
+| Accueil | 35 mots | 21 | le nombre de chantiers et l'ancienneté du devis, écrits **deux fois chacun** |
+| Réglages | 89 mots | 26 | les **treize** phrases d'explication sous les treize titres |
 
-   | Écran | Mots | Touchables | Hauteurs d'écran |
-   |---|---|---|---|
-   | Accueil | 135 | 22 | 1 |
-   | Fiche client (la feuille seule) | 39 | — | 1 |
-   | Le devis | 99 | 24 | **2,6** |
-   | Réglages | 129 | 20 | **2,3** |
-   | Planning | 102 | **54** | 1,4 |
+**Elle vit dans `appli/`, et c'est le point à retenir :** `pages.yml` ne publie
+que ce dossier. Une maquette laissée dans `docs/maquettes/` n'a aucune adresse —
+il ne peut pas l'ouvrir. **La règle est écrite dans `CLAUDE.md` §3 bis.**
 
-   De l'ouverture au devis : **8 gestes, 507 mots** traversés.
+**⚠ SA CONSIGNE, ET ELLE A DÛ ÊTRE RÉPÉTÉE : *« je t'ai dit de rien coder,
+seulement une maquette dynamique »*.** La première version arrivait entourée de
+deux scripts — un qui mesurait l'application, un qui recomptait ses nombres.
+Utiles, hors de `src/`, et **hors sujet**. Retirés. Une demande de maquette
+n'autorise pas l'outillage qui va avec.
 
-2. **La planche « Moins de mots »** — `appli/moins-de-mots.html` — montre
-   trois écrans avant/après : fiche client (39 → 19 mots), accueil (35 → 21),
-   réglages (89 → 26). `docs/QUESTIONS.md` §23 porte la réponse en clair.
+**Et « dynamique » veut dire QU'IL LA MANIPULE.** La première version posait deux
+téléphones côte à côte : sur un écran de 390 px, deux colonnes ne se comparent
+pas, elles se font défiler — et l'on perd précisément ce qu'on voulait montrer.
+Un seul téléphone et un bouton, c'est le geste qu'il fait déjà dans
+l'application.
 
-   **Elle est dans `appli/`, et c'est le point à retenir :** `pages.yml` ne
-   publie que ce dossier. Une planche laissée dans `docs/maquettes/` n'a aucune
-   adresse — il ne peut pas l'ouvrir. Elle est liée depuis `appli/essais.html`,
-   la page qu'on lui donne, et son nom est dans la liste vérifiée en ligne.
-   **La règle est écrite dans `CLAUDE.md` §3 bis.**
+**⚠ RIEN N'EST FUSIONNÉ, ET IL L'A VOULU AINSI.** À la question « je fusionne
+pour que tu puisses l'ouvrir ? », il a répondu **« non, pas encore »** le
+19 août 2026. Tant que c'est sur la branche, `pages.yml` ne publie rien : **il
+n'a pas vu la maquette**, et son silence ne vaut pas refus. Ne pas fusionner
+sans un nouveau mot de lui (`CLAUDE.md` §6).
 
-**TROIS PIÈGES PAYÉS EN LA FABRIQUANT, à ne pas repayer :**
+**CE QUI RESTE, ET QUI EST À LUI :** ces trois écrans lui vont-ils ? Rien dans
+`src/` tant qu'il n'a pas répondu (`CLAUDE.md` §3 bis).
 
-- **la feuille RECOUVRE l'accueil sans le retirer du document.** `innerText`
-  du corps additionne donc les deux : la fiche client « pesait » 190 mots, dont
-  151 appartenaient à l'écran de derrière. Un chiffre faux dans le sens qui
-  arrange — le pire des deux. `feuilleSeule()` isole, et prend le PLUS GRAND
-  bloc portant le titre : le plus petit est le titre lui-même, et il rendait
-  « 2 mots » ;
-- **le script CRÉE un chantier à chaque passage, et `db:seed` ne le retire
-  pas.** Trois exécutions ont fait passer l'accueil de 135 à 167 mots sans
-  qu'une ligne de produit ait bougé. Le script refuse désormais de mesurer si
-  l'accueil n'annonce pas « quatre en cours » ;
-- **la connexion est limitée en débit, et le refus est MUET côté navigateur** :
-  la suite attend puis expire sur `waitForURL`, ce qui accuse la page. La ligne
-  qui tranche est dans le journal du serveur (« Limite de tentatives de
-  connexion atteinte »), et `redis-cli flushall` remet le compteur à zéro.
-
-**CE QUI RESTE, ET QUI EST À LUI :** la planche 82 lui va-t-elle ? Rien dans
-`src/` tant qu'il n'a pas répondu (`CLAUDE.md` §3 bis). S'il dit oui, deux
-choses se codent : les trois écrans, **et le compteur de mots qui empêche de
-regrossir** — sans lui, il y aura une quatrième fois.
-
-**CE QUI N'EST PAS PROPOSÉ, EXPRÈS :** relire les 51 autres écrans. Ce serait
-au jugé, et c'est l'erreur qu'on cherche à arrêter.
+**CE QUI N'EST PAS PROPOSÉ, EXPRÈS :** relire les autres écrans. Ce serait au
+jugé, et c'est l'erreur qu'on cherche à arrêter. Et il faudra se souvenir que
+corriger trois écrans de plus ne suffira pas : c'est déjà la troisième fois, et
+rien n'empêche l'application de regrossir.
 
 ## ~~Les deux boutons du devis~~ — **tranché et codé le 18 août 2026**
 

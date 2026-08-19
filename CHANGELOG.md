@@ -9,28 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-19
 
-### Mesurer l'application plutôt que de la deviner trop chargée
+### Une maquette qui se manipule pour la plainte « trop de mots »
 
 **Sa plainte, la troisième :** *« il y a beaucoup trop de mots dans tous les
 sens […] s'ils passent quinze minutes à essayer de comprendre comment elle
-marche, ils ne vont juste pas l'utiliser »*. Les deux fois précédentes — le
-11 et le 17 août — un écran avait été corrigé au jugé, et la gêne était revenue
-ailleurs.
+marche, ils ne vont juste pas l'utiliser »*. Le 11 et le 17 août, la même chose
+avait été dite et un écran avait été corrigé au jugé ; la gêne est revenue
+ailleurs à chaque fois.
 
-**Ce qui a été ajouté :** `scripts/mesurer-parcours-reel.mts` parcourt
-l'application pour de bon, à la taille de son téléphone, et compte les mots, les
-choses touchables et les hauteurs d'écran de chaque écran du parcours. Le relevé
-est versionné (`appli/moins-de-mots-mesures.json`) et la planche
-`appli/moins-de-mots.html` montre trois écrans avant/après.
-`scripts/verifier-maquette-moins-de-mots.mjs` recompte ce que la planche
-annonce, contre le texte dessiné **et** contre le relevé — une planche qui
-vieillirait mieux que l'application deviendrait rouge.
+`appli/moins-de-mots.html` montre trois écrans — fiche client, accueil,
+réglages — avec un bouton « Aujourd'hui / Proposé » qui les change **sur
+place**, le compte de mots et le bilan avec. Boutons radio et `:checked` : pas
+une ligne de JavaScript, donc ouvrable depuis son téléphone, hors ligne.
 
-**Ce que ça évite :** dépouiller au jugé. Retirer ce qu'on croit lourd plutôt
-que ce qui l'est, c'est ce qui a produit trois corrections d'écran sans effet
-sur la gêne.
+**Ce que ça évite :** lui demander de trancher sur une description. Il voit
+l'écran d'aujourd'hui, il appuie, il voit l'autre — et le nombre de mots tombe
+sous ses yeux.
 
 **Rien dans `src/`** — `CLAUDE.md` §3 bis : il choisit avant qu'on code.
+
+### Ce qu'il a fallu corriger dans la première version
+
+**Sa consigne, répétée :** *« je t'ai dit de rien coder, seulement une maquette
+dynamique »*. La planche était arrivée entourée de deux scripts — un qui
+mesurait l'application, un qui recomptait ses nombres. Utiles, hors de `src/`,
+et **hors sujet** : une demande de maquette n'autorise pas l'outillage qui va
+avec. Retirés.
+
+Et elle posait **deux téléphones côte à côte**. Sur un écran de 390 px, deux
+colonnes ne se comparent pas — elles se font défiler, et l'on perd exactement ce
+qu'on voulait montrer.
 
 ### Une maquette qu'il doit ouvrir vit dans `appli/`, pas dans `docs/maquettes/`
 

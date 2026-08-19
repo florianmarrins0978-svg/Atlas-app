@@ -1432,28 +1432,24 @@ temps : s'ils passent quinze minutes à essayer de comprendre comment elle
 marche, ils ne vont juste pas l'utiliser. Il ne faut pas oublier qu'il y a des
 boomers dessus qui ont déjà du mal à utiliser leur téléphone. »*
 
-### La réponse courte : oui, et c'est mesuré
+### La réponse courte : oui, et voilà où
 
-L'application a été parcourue pour de bon, dans un navigateur, à la taille de
-votre téléphone. Pas d'impression, pas de souvenir : des nombres.
+Trois écrans ont été regardés à la taille de votre téléphone, et leurs mots
+comptés.
 
-| Écran | Mots à lire | Choses touchables | Hauteurs d'écran |
-|---|---|---|---|
-| Accueil | 135 | 22 | 1 |
-| La fiche client | 39 | — | 1 |
-| Le devis | 99 | 24 | **2,6** |
-| Réglages | 129 | 20 | **2,3** |
-| Planning | 102 | **54** | 1,4 |
-
-Ouvrir l'application, créer le chantier, arriver sur le devis : **8 gestes** et
-**507 mots** traversés.
+| Écran | Mots aujourd'hui | En retirant ce qui ne sert à rien |
+|---|---|---|
+| La fiche client | 39 | **19** |
+| L'accueil | 35 | **21** |
+| Les réglages | 89 | **26** |
 
 ### Ce qui est bon, et qu'il ne faut pas casser
 
-**Les 8 gestes.** C'est déjà le minimum : votre client vous donne son nom, son
-numéro et son adresse, vous appuyez sur « J'écris mon devis ». On ne peut pas
-faire moins sans deviner à votre place. **Le problème n'est pas le nombre de
-gestes — c'est le nombre de mots entre deux gestes.**
+**Le nombre de gestes.** De l'ouverture au devis, il en faut huit, et c'est déjà
+le minimum : votre client vous donne son nom, son numéro et son adresse, vous
+appuyez sur « J'écris mon devis ». On ne peut pas faire moins sans deviner à
+votre place. **Le problème n'est pas le nombre de gestes — c'est le nombre de
+mots entre deux gestes.**
 
 ### Là où je ne suis pas d'accord avec vous
 
@@ -1491,11 +1487,10 @@ défaut n'est donc pas dans un écran : rien n'empêche l'application de
 regrossir.** Chaque décision juste ajoute une ligne, une phrase, un écran, et
 personne n'en retire jamais.
 
-C'est pour cela que la planche 82 propose, en plus des trois écrans, **un
-contrôle qui compte les mots de chaque écran et refuse la mise en ligne quand
-un écran en gagne** — comme les contrôles refusent déjà un prix mal calculé.
-Un écran qui grossit deviendrait alors une décision prise exprès, au lieu d'un
-glissement que personne ne voit.
+Le jour où vous direz oui à ces trois écrans, il faudra donc **quelque chose qui
+compte les mots et qui bloque quand un écran en gagne** — comme il existe déjà
+des contrôles qui bloquent sur un prix mal calculé. Sans ça, il y aura une
+quatrième fois.
 
 ### Ce que ça coûte, et ce que vous devez décider
 
@@ -1505,9 +1500,9 @@ avant et après, avec les comptes. Elle s'ouvre depuis votre page habituelle,
 
 - les **trois écrans** : deux à trois jours ;
 - le **compteur de mots** qui empêche de regrossir : une journée ;
-- la **relecture des 51 autres écrans** : elle n'est pas proposée, et c'est
+- la **relecture des autres écrans** : elle n'est pas proposée, et c'est
   volontaire. La faire au jugé, c'est exactement l'erreur qu'on cherche à
   arrêter.
 
-**La seule chose à me dire : les trois écrans de la planche 82 vous
-vont-ils ?** Si un seul vous va, on ne fait que celui-là.
+**La seule chose à me dire : ces trois écrans vous vont-ils ?** Si un seul vous
+va, on ne fait que celui-là.

@@ -16,14 +16,24 @@ tous les sens […] des entrepreneurs qui n'ont pas de temps […] il y a des
 boomers dessus »*. Le 11 et le 17 août, la même chose avait été dite et un écran
 avait été corrigé au jugé ; la gêne est revenue ailleurs à chaque fois.
 
-**Ce qui existe maintenant, et qu'il ne faut pas refaire :**
+**Ce qui existe :** `appli/moins-de-mots.html` — trois écrans, un bouton
+« Aujourd'hui / Proposé » qui les change sur place, **sans une ligne de
+JavaScript**. Liée depuis `appli/essais.html`. `docs/QUESTIONS.md` §23 porte la
+réponse en clair.
 
-- `scripts/mesurer-parcours-reel.mts` — parcourt l'application pour de bon, à la
-  taille de son téléphone, et compte. Relevé versionné :
-  `appli/moins-de-mots-mesures.json` ; captures : `docs/maquettes/images/82/` ;
-- la **planche**, `appli/moins-de-mots.html` — trois écrans avant/après, liée
-  depuis `appli/essais.html` ;
-- `docs/QUESTIONS.md` §23 — la réponse en clair, dans sa langue.
+**⚠ DEUX CHOSES QU'IL A DÛ CORRIGER, à ne pas refaire.** *« Je t'ai dit de rien
+coder, seulement une maquette dynamique. »* La première version arrivait
+entourée de deux scripts (mesure et contrôle) : **une demande de maquette
+n'autorise pas l'outillage qui va avec**, même utile, même hors de `src/`. Et
+elle posait deux téléphones côte à côte : **« dynamique » veut dire qu'il la
+manipule**, pas qu'on lui montre deux images l'une à côté de l'autre — sur
+390 px, deux colonnes se font défiler au lieu de se comparer.
+
+**⚠ RIEN N'EST FUSIONNÉ, ET IL L'A VOULU AINSI.** Le lot est poussé sur
+`claude/app-complexity-ux-ug3k5o`. À la question « je fusionne pour que tu
+puisses l'ouvrir ? », il a répondu **« non, pas encore »**. Tant que c'est là,
+`pages.yml` ne publie rien : **il n'a pas vu la maquette**, et son silence ne
+vaut pas refus (`CLAUDE.md` §6).
 
 **CE QU'ON ATTEND DE LUI, et rien ne se code avant :** la planche 82 lui
 va-t-elle ? (`CLAUDE.md` §3 bis.)
@@ -33,12 +43,6 @@ plus ne réglera rien — ce serait la quatrième fois. Ce qui manque, c'est **u
 contrôle qui compte les mots de chaque écran et rougit quand un écran en
 gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
 ajoute une ligne et que personne n'en retire jamais.
-
-**Trois pièges payés en mesurant** (détail dans `TODO.md`) : une feuille qui
-monte ne retire pas l'écran de dessous du document (`innerText` additionnait les
-deux) ; le script crée un chantier que `db:seed` ne retire pas (trois passages
-= +32 mots à l'accueil) ; la limitation de débit à la connexion est **muette**
-côté navigateur — `redis-cli flushall`.
 
 ## Ne JAMAIS attendre une publication en interrogeant `github.io`
 
