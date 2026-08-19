@@ -20,8 +20,8 @@ ailleurs.
 **Ce qui a été ajouté :** `scripts/mesurer-parcours-reel.mts` parcourt
 l'application pour de bon, à la taille de son téléphone, et compte les mots, les
 choses touchables et les hauteurs d'écran de chaque écran du parcours. Le relevé
-est versionné (`docs/maquettes/82-mesures.json`) et la planche 82
-(`docs/maquettes/82-moins-de-mots.html`) montre trois écrans avant/après.
+est versionné (`appli/moins-de-mots-mesures.json`) et la planche
+`appli/moins-de-mots.html` montre trois écrans avant/après.
 `scripts/verifier-maquette-moins-de-mots.mjs` recompte ce que la planche
 annonce, contre le texte dessiné **et** contre le relevé — une planche qui
 vieillirait mieux que l'application deviendrait rouge.
@@ -31,6 +31,23 @@ que ce qui l'est, c'est ce qui a produit trois corrections d'écran sans effet
 sur la gêne.
 
 **Rien dans `src/`** — `CLAUDE.md` §3 bis : il choisit avant qu'on code.
+
+### Une maquette qu'il doit ouvrir vit dans `appli/`, pas dans `docs/maquettes/`
+
+**Trouvé en essayant de lui transmettre la planche.** `pages.yml` ne publie
+**que** le dossier `appli/` : une planche déposée dans `docs/maquettes/` n'a
+aucune adresse, et il ne peut pas l'ouvrir depuis son téléphone. On attendrait
+alors un choix qu'il n'a pas les moyens de faire — et l'on conclurait qu'il ne
+répond pas.
+
+La planche est donc dans `appli/`, liée depuis `appli/essais.html` — l'adresse
+qu'on lui donne —, et son nom est entré dans la liste que `pages.yml` interroge
+sur le site publié. Le chemin a été parcouru en entier, du lien à la planche, à
+la taille de son téléphone. La règle est écrite dans `CLAUDE.md` §3 bis.
+
+**À vérifier avant de conclure quoi que ce soit :** la planche 81, posée le
+17 août et toujours sans réponse, est restée dans `docs/maquettes/`. Son silence
+n'est peut-être pas un refus.
 
 ### Trois pièges de mesure, trouvés en la fabriquant
 

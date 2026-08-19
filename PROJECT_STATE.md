@@ -864,7 +864,7 @@ Voir `TODO.md` pour le détail et l'ordre.
 dans tous les sens »*. Ce n'est plus une impression : l'application a été
 parcourue à la taille de son téléphone et comptée
 (`scripts/mesurer-parcours-reel.mts`, relevé dans
-`docs/maquettes/82-mesures.json`).
+`appli/moins-de-mots-mesures.json`).
 
 | Écran | Mots | Touchables | Hauteurs d'écran |
 |---|---|---|---|
@@ -877,8 +877,9 @@ parcourue à la taille de son téléphone et comptée
 De l'ouverture au devis : **8 gestes, 507 mots**. Les gestes sont déjà au
 minimum ; ce sont les mots qui pèsent.
 
-**Proposé, pas codé** — la planche 82 (`docs/maquettes/82-moins-de-mots.html`)
-et `docs/QUESTIONS.md` §23. **Rien dans `src/` tant qu'il n'a pas choisi**
+**Proposé, pas codé** — la planche `appli/moins-de-mots.html` (liée depuis
+`appli/essais.html`, la seule adresse qu'il puisse ouvrir) et
+`docs/QUESTIONS.md` §23. **Rien dans `src/` tant qu'il n'a pas choisi**
 (`CLAUDE.md` §3 bis). Ce qui compte le plus dans la proposition n'est pas les
 trois écrans mais **le compteur de mots qui empêcherait l'application de
 regrossir** : sans lui, il y aura une quatrième fois.

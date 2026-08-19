@@ -20,9 +20,9 @@ avait été corrigé au jugé ; la gêne est revenue ailleurs à chaque fois.
 
 - `scripts/mesurer-parcours-reel.mts` — parcourt l'application pour de bon, à la
   taille de son téléphone, et compte. Relevé versionné :
-  `docs/maquettes/82-mesures.json` ; captures : `docs/maquettes/images/82/` ;
-- la **planche 82**, `docs/maquettes/82-moins-de-mots.html` — trois écrans
-  avant/après ;
+  `appli/moins-de-mots-mesures.json` ; captures : `docs/maquettes/images/82/` ;
+- la **planche**, `appli/moins-de-mots.html` — trois écrans avant/après, liée
+  depuis `appli/essais.html` ;
 - `docs/QUESTIONS.md` §23 — la réponse en clair, dans sa langue.
 
 **CE QU'ON ATTEND DE LUI, et rien ne se code avant :** la planche 82 lui

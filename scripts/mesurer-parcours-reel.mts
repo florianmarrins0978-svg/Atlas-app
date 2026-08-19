@@ -19,8 +19,8 @@
  *   npm run build && npx next start -p 3000     # ATLAS_BANC_ESSAI=1
  *   npx tsx scripts/mesurer-parcours-reel.mts [port]
  *
- * Écrit `docs/maquettes/82-mesures.json`, que `verifier-maquette-moins-de-mots.mjs`
- * confronte aux nombres imprimés sur la planche 82.
+ * Écrit `appli/moins-de-mots-mesures.json`, que `verifier-maquette-moins-de-mots.mjs`
+ * confronte aux nombres imprimés sur la planche.
  */
 import { existsSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import { chromium, devices, type Page } from "playwright";
@@ -202,7 +202,7 @@ console.log(
 );
 
 writeFileSync(
-  "docs/maquettes/82-mesures.json",
+  "appli/moins-de-mots-mesures.json",
   JSON.stringify(
     {
       quand: "mesuré sur le jeu de démonstration ; regénérer avec scripts/mesurer-parcours-reel.mts",

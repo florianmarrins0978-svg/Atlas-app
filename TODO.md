@@ -66,7 +66,7 @@ dessin ne règlerait rien et coûterait ce qui a été gagné.
 1. **L'application a été parcourue pour de bon**, dans un navigateur, à la
    taille de son téléphone, sur le jeu de démonstration
    (`scripts/mesurer-parcours-reel.mts`). Le relevé est versionné :
-   `docs/maquettes/82-mesures.json`, plus les captures dans
+   `appli/moins-de-mots-mesures.json`, plus les captures dans
    `docs/maquettes/images/82/`.
 
    | Écran | Mots | Touchables | Hauteurs d'écran |
@@ -79,9 +79,15 @@ dessin ne règlerait rien et coûterait ce qui a été gagné.
 
    De l'ouverture au devis : **8 gestes, 507 mots** traversés.
 
-2. **La planche 82** — `docs/maquettes/82-moins-de-mots.html` — montre trois
-   écrans avant/après : fiche client (39 → 19 mots), accueil (35 → 21),
+2. **La planche « Moins de mots »** — `appli/moins-de-mots.html` — montre
+   trois écrans avant/après : fiche client (39 → 19 mots), accueil (35 → 21),
    réglages (89 → 26). `docs/QUESTIONS.md` §23 porte la réponse en clair.
+
+   **Elle est dans `appli/`, et c'est le point à retenir :** `pages.yml` ne
+   publie que ce dossier. Une planche laissée dans `docs/maquettes/` n'a aucune
+   adresse — il ne peut pas l'ouvrir. Elle est liée depuis `appli/essais.html`,
+   la page qu'on lui donne, et son nom est dans la liste vérifiée en ligne.
+   **La règle est écrite dans `CLAUDE.md` §3 bis.**
 
 **TROIS PIÈGES PAYÉS EN LA FABRIQUANT, à ne pas repayer :**
 

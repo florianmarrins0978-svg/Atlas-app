@@ -15,7 +15,14 @@
  */
 import { readFileSync } from "node:fs";
 
-const PLANCHE = "docs/maquettes/82-moins-de-mots.html";
+/**
+ * **La planche vit dans `appli/`, et ce n'est pas un rangement au hasard.**
+ * `pages.yml` ne publie QUE ce dossier : une planche laissée dans
+ * `docs/maquettes/` n'est joignable depuis aucun téléphone. Le patron ne
+ * pourrait pas l'ouvrir, et l'on attendrait une réponse qu'il ne peut pas
+ * donner.
+ */
+const PLANCHE = "appli/moins-de-mots.html";
 
 /**
  * Les cadres de téléphone, dans l'ordre où ils apparaissent.
@@ -151,7 +158,7 @@ if (eprouver) {
 // l'application, et rien n'empêcherait la planche de continuer à annoncer 135
 // mots six mois après qu'un écran en porte 210. Une planche périmée est pire
 // qu'absente : on décide encore d'après elle.
-const mesures = JSON.parse(readFileSync("docs/maquettes/82-mesures.json", "utf8"));
+const mesures = JSON.parse(readFileSync("appli/moins-de-mots-mesures.json", "utf8"));
 const parNom = Object.fromEntries(mesures.releves.map((r) => [r.nom, r]));
 
 const LIGNES = [

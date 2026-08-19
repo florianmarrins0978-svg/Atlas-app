@@ -1499,9 +1499,9 @@ glissement que personne ne voit.
 
 ### Ce que ça coûte, et ce que vous devez décider
 
-**Rien n'est codé.** La planche
-[`docs/maquettes/82-moins-de-mots.html`](maquettes/82-moins-de-mots.html)
-montre les trois écrans avant et après, avec les comptes.
+**Rien n'est codé.** La planche **« Moins de mots »** montre les trois écrans
+avant et après, avec les comptes. Elle s'ouvre depuis votre page habituelle,
+**« À essayer »** — c'est le premier lien, tout en haut.
 
 - les **trois écrans** : deux à trois jours ;
 - le **compteur de mots** qui empêche de regrossir : une journée ;
