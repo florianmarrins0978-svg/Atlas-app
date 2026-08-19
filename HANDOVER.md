@@ -9,6 +9,37 @@ sert.
 
 ---
 
+## ⏸ « TROP DE MOTS » — mesuré le 19 août, il n'a pas encore répondu
+
+**Sa plainte, et c'est la troisième :** *« il y a beaucoup trop de mots dans
+tous les sens […] des entrepreneurs qui n'ont pas de temps […] il y a des
+boomers dessus »*. Le 11 et le 17 août, la même chose avait été dite et un écran
+avait été corrigé au jugé ; la gêne est revenue ailleurs à chaque fois.
+
+**Ce qui existe maintenant, et qu'il ne faut pas refaire :**
+
+- `scripts/mesurer-parcours-reel.mts` — parcourt l'application pour de bon, à la
+  taille de son téléphone, et compte. Relevé versionné :
+  `docs/maquettes/82-mesures.json` ; captures : `docs/maquettes/images/82/` ;
+- la **planche 82**, `docs/maquettes/82-moins-de-mots.html` — trois écrans
+  avant/après ;
+- `docs/QUESTIONS.md` §23 — la réponse en clair, dans sa langue.
+
+**CE QU'ON ATTEND DE LUI, et rien ne se code avant :** la planche 82 lui
+va-t-elle ? (`CLAUDE.md` §3 bis.)
+
+**LA CHOSE À NE PAS OUBLIER SI L'ON REPREND CE SUJET.** Corriger trois écrans de
+plus ne réglera rien — ce serait la quatrième fois. Ce qui manque, c'est **un
+contrôle qui compte les mots de chaque écran et rougit quand un écran en
+gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
+ajoute une ligne et que personne n'en retire jamais.
+
+**Trois pièges payés en mesurant** (détail dans `TODO.md`) : une feuille qui
+monte ne retire pas l'écran de dessous du document (`innerText` additionnait les
+deux) ; le script crée un chantier que `db:seed` ne retire pas (trois passages
+= +32 mots à l'accueil) ; la limitation de débit à la connexion est **muette**
+côté navigateur — `redis-cli flushall`.
+
 ## Ne JAMAIS attendre une publication en interrogeant `github.io`
 
 **Payé le 18 août 2026.** Après une fusion sur `main`, une boucle interrogeait

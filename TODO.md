@@ -61,11 +61,52 @@ encombre l'écran, ce sont les **phrases qui expliquent** — un écran qui a be
 de se justifier est un écran qui n'est pas clair. Retirer le soin apporté au
 dessin ne règlerait rien et coûterait ce qui a été gagné.
 
-**Ce qui est attendu de lui avant de toucher à `src/` :** rien n'a été décidé,
-et `CLAUDE.md` §3 bis interdit de coder une refonte d'apparence avant son
-accord. Le chemin proposé — mesurer d'abord le parcours réel (combien de gestes
-et combien de mots entre l'ouverture et un devis parti), puis une planche de la
-version dépouillée, puis son choix.
+**CE QUI EST FAIT — mesure et planche, le 19 août 2026 au soir.**
+
+1. **L'application a été parcourue pour de bon**, dans un navigateur, à la
+   taille de son téléphone, sur le jeu de démonstration
+   (`scripts/mesurer-parcours-reel.mts`). Le relevé est versionné :
+   `docs/maquettes/82-mesures.json`, plus les captures dans
+   `docs/maquettes/images/82/`.
+
+   | Écran | Mots | Touchables | Hauteurs d'écran |
+   |---|---|---|---|
+   | Accueil | 135 | 22 | 1 |
+   | Fiche client (la feuille seule) | 39 | — | 1 |
+   | Le devis | 99 | 24 | **2,6** |
+   | Réglages | 129 | 20 | **2,3** |
+   | Planning | 102 | **54** | 1,4 |
+
+   De l'ouverture au devis : **8 gestes, 507 mots** traversés.
+
+2. **La planche 82** — `docs/maquettes/82-moins-de-mots.html` — montre trois
+   écrans avant/après : fiche client (39 → 19 mots), accueil (35 → 21),
+   réglages (89 → 26). `docs/QUESTIONS.md` §23 porte la réponse en clair.
+
+**TROIS PIÈGES PAYÉS EN LA FABRIQUANT, à ne pas repayer :**
+
+- **la feuille RECOUVRE l'accueil sans le retirer du document.** `innerText`
+  du corps additionne donc les deux : la fiche client « pesait » 190 mots, dont
+  151 appartenaient à l'écran de derrière. Un chiffre faux dans le sens qui
+  arrange — le pire des deux. `feuilleSeule()` isole, et prend le PLUS GRAND
+  bloc portant le titre : le plus petit est le titre lui-même, et il rendait
+  « 2 mots » ;
+- **le script CRÉE un chantier à chaque passage, et `db:seed` ne le retire
+  pas.** Trois exécutions ont fait passer l'accueil de 135 à 167 mots sans
+  qu'une ligne de produit ait bougé. Le script refuse désormais de mesurer si
+  l'accueil n'annonce pas « quatre en cours » ;
+- **la connexion est limitée en débit, et le refus est MUET côté navigateur** :
+  la suite attend puis expire sur `waitForURL`, ce qui accuse la page. La ligne
+  qui tranche est dans le journal du serveur (« Limite de tentatives de
+  connexion atteinte »), et `redis-cli flushall` remet le compteur à zéro.
+
+**CE QUI RESTE, ET QUI EST À LUI :** la planche 82 lui va-t-elle ? Rien dans
+`src/` tant qu'il n'a pas répondu (`CLAUDE.md` §3 bis). S'il dit oui, deux
+choses se codent : les trois écrans, **et le compteur de mots qui empêche de
+regrossir** — sans lui, il y aura une quatrième fois.
+
+**CE QUI N'EST PAS PROPOSÉ, EXPRÈS :** relire les 51 autres écrans. Ce serait
+au jugé, et c'est l'erreur qu'on cherche à arrêter.
 
 ## ~~Les deux boutons du devis~~ — **tranché et codé le 18 août 2026**
 

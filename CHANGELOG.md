@@ -7,6 +7,47 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-19
+
+### Mesurer l'application plutôt que de la deviner trop chargée
+
+**Sa plainte, la troisième :** *« il y a beaucoup trop de mots dans tous les
+sens […] s'ils passent quinze minutes à essayer de comprendre comment elle
+marche, ils ne vont juste pas l'utiliser »*. Les deux fois précédentes — le
+11 et le 17 août — un écran avait été corrigé au jugé, et la gêne était revenue
+ailleurs.
+
+**Ce qui a été ajouté :** `scripts/mesurer-parcours-reel.mts` parcourt
+l'application pour de bon, à la taille de son téléphone, et compte les mots, les
+choses touchables et les hauteurs d'écran de chaque écran du parcours. Le relevé
+est versionné (`docs/maquettes/82-mesures.json`) et la planche 82
+(`docs/maquettes/82-moins-de-mots.html`) montre trois écrans avant/après.
+`scripts/verifier-maquette-moins-de-mots.mjs` recompte ce que la planche
+annonce, contre le texte dessiné **et** contre le relevé — une planche qui
+vieillirait mieux que l'application deviendrait rouge.
+
+**Ce que ça évite :** dépouiller au jugé. Retirer ce qu'on croit lourd plutôt
+que ce qui l'est, c'est ce qui a produit trois corrections d'écran sans effet
+sur la gêne.
+
+**Rien dans `src/`** — `CLAUDE.md` §3 bis : il choisit avant qu'on code.
+
+### Trois pièges de mesure, trouvés en la fabriquant
+
+- **une feuille qui monte ne retire pas l'écran de dessous du document.**
+  `body.innerText` additionnait les deux : la fiche client paraissait peser
+  190 mots, dont 151 étaient l'accueil derrière elle. Faux dans le sens qui
+  arrange ;
+- **un script qui crée une donnée fausse ses propres mesures.** Trois passages
+  ont fait passer l'accueil de 135 à 167 mots sans qu'une ligne de produit ait
+  bougé, parce que `db:seed` ne retire pas les chantiers créés par le parcours.
+  Le script refuse désormais de mesurer sur un jeu de démonstration usagé ;
+- **le refus de la limitation de débit à la connexion est muet côté
+  navigateur.** La suite expire sur l'attente de redirection et accuse la page ;
+  la ligne qui tranche n'est que dans le journal du serveur.
+
+---
+
 ## 2026-08-18
 
 ### Le bouton de l'accueil dit « Créer un devis »

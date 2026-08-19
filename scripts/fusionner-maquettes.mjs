@@ -380,6 +380,12 @@ const MAQUETTES = [
     quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.",
   },
   {
+    fichier: "82-moins-de-mots.html",
+    titre: "Moins de mots",
+    famille: "Trop de mots",
+    quoi: "Sa plainte du 19 août, la troisième : trois écrans avant/après, et des comptes de mots mesurés dans l’application.",
+  },
+  {
     fichier: "81-simple-il-ne-paie-pas.html",
     titre: "Simple : il ne paie pas",
     famille: "L’argent qui ne rentre pas",

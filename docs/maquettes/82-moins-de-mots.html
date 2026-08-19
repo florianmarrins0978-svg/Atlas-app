@@ -1,0 +1,401 @@
+<title>Moins de mots</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    MOINS DE MOTS — trois écrans, avant et après, rien de codé.
+
+    LE PATRON, LE 19 AOÛT 2026 :
+    « L'application va être trop compliquée à utiliser, il y a beaucoup trop de
+    mots dans tous les sens. Ce n'est pas ludique, ce n'est pas pratique, ce
+    n'est pas facile. […] des entrepreneurs qui n'ont pas de temps, s'ils
+    passent quinze minutes à essayer de comprendre comment elle marche, ils ne
+    vont juste pas l'utiliser. Il ne faut pas oublier qu'il y a des boomers
+    dessus qui ont déjà du mal à utiliser leur téléphone. »
+
+    ————————————————————————————————————————————————————————————————
+    LES CHIFFRES NE SONT PAS AU JUGÉ.
+
+    L'application a été parcourue pour de bon, dans un navigateur, à la taille
+    de son téléphone, connecté au jeu de démonstration
+    (`scripts/mesurer-parcours-reel.mts`). Les « AVANT » de cette planche sont
+    la copie de ce que la mesure a rendu, mot pour mot — pas un souvenir.
+
+    ————————————————————————————————————————————————————————————————
+    LE CONTRESENS À NE PAS COMMETTRE.
+
+    Il dit « j'ai voulu faire luxe et je me suis perdu ». Le luxe n'est pas la
+    cause : le luxe, c'est le vide. Aucune de ces trois propositions ne retire
+    une police, une couleur, une capsule ou un blanc. Ce qui part, ce sont les
+    PHRASES QUI EXPLIQUENT — et un écran qui a besoin de se justifier est un
+    écran qui n'est pas clair.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EST PROPOSÉ, ET CE QUI NE L'EST PAS.
+
+    Trois écrans seulement, choisis parce que la mesure y a trouvé des mots qui
+    ne servent à rien — pas parce qu'ils étaient les plus faciles. La refonte
+    des cinquante et un autres écrans n'est PAS proposée ici : elle se ferait
+    au jugé, et c'est exactement ce qu'on veut arrêter.
+
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT, aucune image, aucune police à télécharger — la page s'ouvre
+    depuis un téléphone, hors ligne.
+    Les comptes de mots affichés sont vérifiés par
+    `scripts/verifier-maquette-moins-de-mots.mjs`, qui sait rougir.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:30px 18px 80px}
+  .dedans{max-width:1000px;margin:0 auto}
+
+  .sur{display:block;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+       color:var(--or);margin-bottom:10px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:32px;line-height:1.15;margin:0 0 12px;letter-spacing:-.01em}
+  .intro{color:var(--gris);font-size:14.5px;line-height:1.7;margin:0 0 6px;max-width:62ch}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .cite{margin:22px 0 30px;padding:16px 18px;border-left:2px solid var(--or);
+        background:var(--papier);border-radius:0 10px 10px 0;
+        font-family:Georgia,serif;font-size:15px;line-height:1.6;max-width:62ch}
+  .cite .qui{display:block;margin-top:9px;font-family:ui-sans-serif,sans-serif;
+             font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+
+  h2{font-family:Georgia,serif;font-weight:400;font-size:23px;margin:46px 0 4px}
+  .pourquoi{color:var(--gris);font-size:13.5px;line-height:1.65;margin:0 0 20px;max-width:62ch}
+
+  .duo{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .colonne{flex:1 1 330px;min-width:300px}
+  .etiquette{display:flex;align-items:baseline;gap:9px;margin:0 0 9px}
+  .etiquette .mot{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .etiquette .compte{font-size:11.5px;color:var(--gris)}
+  .etiquette.apres .mot{color:var(--pin)}
+
+  .tel{border-radius:24px;padding:11px;background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 20px 46px rgba(20,18,14,.16)}
+  .feuille{background:var(--papier);border-radius:13px;padding:20px 17px;min-height:340px}
+
+  .titre-ecran{font-family:Georgia,serif;font-size:21px;margin:0 0 14px;line-height:1.2}
+  .chapeau{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 4px}
+  .lab{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin:14px 0 5px}
+  .champ{background:var(--teinte);border-radius:5px;padding:11px 12px;font-size:14.5px;color:var(--encre)}
+  .champ.vide{color:var(--gris)}
+  .pastilles{display:flex;gap:7px;margin-top:2px}
+  .pastille{padding:7px 15px;border-radius:9999px;background:var(--teinte);font-size:13px;color:var(--gris)}
+  .pastille.prise{background:var(--pin);color:#fff}
+  .capsule{display:block;margin-top:12px;padding:13px;border-radius:9999px;
+           background:var(--pin);color:#fff;font-size:14.5px;text-align:center}
+
+  /* Ce qui est en trop, montré comme tel — et non pas simplement absent :
+     une planche qui se contente de l'« après » ne prouve rien. */
+  .trop{background:rgba(156,59,46,.13);border-radius:3px;
+        box-shadow:0 0 0 1px rgba(156,59,46,.28);padding:0 3px}
+
+  .ligne-chantier{background:var(--teinte);border-radius:11px;padding:14px 15px;margin-top:11px}
+  .ligne-chantier .etat{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--encre);margin-bottom:6px}
+  .ligne-chantier .nom{font-family:Georgia,serif;font-size:17px;margin-bottom:5px}
+  .ligne-chantier .dit{font-size:13px;color:var(--gris);line-height:1.5}
+  .ligne-chantier .agir{font-size:14px;margin-top:9px}
+
+  .rubrique{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--trait)}
+  .rubrique .rond{flex:none;width:17px;height:17px;border-radius:5px;border:1.5px solid var(--or);margin-top:2px}
+  .rubrique .nom{font-family:Georgia,serif;font-size:15.5px;line-height:1.25}
+  .rubrique .sous{font-size:12px;color:var(--gris);line-height:1.45;margin-top:2px}
+
+  .bilan{margin-top:22px;padding:15px 17px;background:var(--papier);
+         border:1px solid var(--trait);border-radius:11px;font-size:13.5px;line-height:1.7;max-width:62ch}
+  .bilan b{font-weight:600}
+  .bilan .part{color:var(--alerte)}
+  .bilan .reste{color:var(--pin)}
+
+  table{border-collapse:collapse;width:100%;max-width:640px;margin:14px 0 0;font-size:13.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait);vertical-align:top}
+  th{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);font-weight:400}
+  td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .fin{margin-top:52px;padding-top:22px;border-top:1px solid var(--trait);
+       color:var(--gris);font-size:13.5px;line-height:1.7;max-width:62ch}
+  .fin b{color:var(--encre)}
+</style>
+
+<div class="dedans">
+
+  <span class="sur">Planche 82 · 19 août 2026</span>
+  <h1>Moins de mots</h1>
+  <p class="intro">Trois écrans, tels qu'ils sont aujourd'hui et tels qu'ils
+  pourraient être. <b>Rien n'est codé.</b> Ce qui est surligné en rouge est ce
+  qui part — et à chaque fois, la raison tient en une ligne.</p>
+
+  <div class="cite">
+    « Il y a beaucoup trop de mots dans tous les sens. […] S'ils passent quinze
+    minutes à essayer de comprendre comment elle marche, ils ne vont juste pas
+    l'utiliser. »
+    <span class="qui">Le patron, 19 août 2026</span>
+  </div>
+
+  <p class="intro"><b>Le luxe n'est pas le coupable.</b> Rien ici ne retire une
+  police, une couleur ni un blanc : le luxe, c'est le vide. Ce qui part, ce sont
+  les phrases qui expliquent — un écran qui a besoin de se justifier est un
+  écran qui n'est pas clair.</p>
+
+  <!-- ─────────────────────────────  1  ───────────────────────────── -->
+
+  <h2>1 · La fiche client</h2>
+  <p class="pourquoi">Le mot <b>« (facultatif) »</b> est écrit <b>cinq fois</b>
+  sur cet écran — et <b>tous</b> les champs le sont. Un mot qui vaut pour tout
+  ne distingue rien : il allonge cinq étiquettes et n'en éclaire aucune.
+  <br>La question « comment lui envoyer son devis ? » ne se pose pas non plus :
+  l'application le devine déjà toute seule quand une seule coordonnée est
+  remplie (c'est écrit dans le code, <i>FormulaireNouveauChantier.tsx</i>). Elle
+  n'a lieu d'être qu'au moment d'envoyer, et seulement s'il y a les deux.</p>
+
+  <div class="duo">
+    <div class="colonne">
+      <div class="etiquette"><span class="mot">Aujourd'hui</span><span class="compte">39 mots</span></div>
+      <div class="tel"><div class="feuille">
+        <div class="titre-ecran">Fiche client</div>
+        <p class="lab">Civilité <span class="trop">(facultatif)</span></p>
+        <div class="pastilles"><span class="pastille">Mr</span><span class="pastille">Mme</span></div>
+        <p class="lab">Nom du client <span class="trop">(facultatif)</span></p>
+        <div class="champ">Dupont</div>
+        <p class="lab">Téléphone <span class="trop">(facultatif)</span></p>
+        <div class="champ">06 12 34 56 78</div>
+        <p class="lab">E-mail <span class="trop">(facultatif)</span></p>
+        <div class="champ vide">bernard@exemple.fr</div>
+        <p class="lab"><span class="trop">Comment lui envoyer son devis ?</span></p>
+        <div class="pastilles"><span class="pastille prise">Par SMS</span><span class="pastille">Par e-mail</span></div>
+        <p class="lab">Adresse du chantier <span class="trop">(facultatif)</span></p>
+        <div class="champ">8 rue du Port, Nantes</div>
+        <p class="lab" style="color:var(--or);margin-top:12px">+ Ajouter une <span class="trop">adresse client différente</span></p>
+        <span class="capsule">Je dicte mon devis</span>
+        <span class="capsule">J'écris mon devis</span>
+      </div></div>
+    </div>
+
+    <div class="colonne">
+      <div class="etiquette apres"><span class="mot">Proposé</span><span class="compte">19 mots</span></div>
+      <div class="tel"><div class="feuille">
+        <div class="titre-ecran">Votre client</div>
+        <p class="lab">Nom</p>
+        <div class="champ">M. Dupont</div>
+        <p class="lab">Téléphone ou e-mail</p>
+        <div class="champ">06 12 34 56 78</div>
+        <p class="lab">Adresse du chantier</p>
+        <div class="champ">8 rue du Port, Nantes</div>
+        <p class="lab" style="color:var(--or);margin-top:12px">+ Adresse du client</p>
+        <span class="capsule">Je dicte mon devis</span>
+        <span class="capsule">J'écris mon devis</span>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="bilan">
+    <b>Trente-neuf mots deviennent dix-neuf.</b><br>
+    <span class="part">Part :</span> « (facultatif) » ×5 — tout l'est ;
+    la question du canal d'envoi — elle se devine, et se pose à l'envoi ;
+    la civilité, qui rentre dans le nom (« M. Dupont »), comme il l'écrirait.<br>
+    <span class="reste">Reste :</span> les trois choses qu'il connaît de son
+    client en descendant de sa camionnette. Rien n'est perdu : un client sans
+    e-mail marche comme avant.
+  </div>
+
+  <!-- ─────────────────────────────  2  ───────────────────────────── -->
+
+  <h2>2 · L'accueil</h2>
+  <p class="pourquoi">Deux informations sont écrites <b>deux fois chacune</b>,
+  à trois centimètres d'intervalle : le nombre de chantiers en cours
+  (« quatre en cours », puis « en cours … quatre »), et l'ancienneté du devis
+  (« 28 jours » dans l'état, puis la phrase qui le redit).</p>
+
+  <div class="duo">
+    <div class="colonne">
+      <div class="etiquette"><span class="mot">Aujourd'hui</span><span class="compte">35 mots</span></div>
+      <div class="tel"><div class="feuille">
+        <p class="chapeau">Bonjour Florian</p>
+        <div class="titre-ecran">Vos chantiers</div>
+        <p class="lab"><span class="trop">Quatre en cours</span></p>
+        <p class="lab" style="color:var(--or)">Vos clients ›</p>
+        <div style="height:1px;background:var(--trait);margin:16px 0"></div>
+        <p class="lab" style="font-size:12px;letter-spacing:.2em;color:var(--encre)">Créer un devis &nbsp;+</p>
+        <div style="display:flex;justify-content:space-between;margin-top:16px">
+          <span class="lab" style="margin:0"><span class="trop">En cours</span></span>
+          <span class="lab" style="margin:0"><span class="trop">Quatre</span></span>
+        </div>
+        <div class="ligne-chantier">
+          <div class="etat">Devis en attente · 28 jours</div>
+          <div class="nom">Terrasse bois</div>
+          <div class="dit"><span class="trop">Chantier ouvert depuis 28 jours, et aucun devis n'est parti.</span></div>
+          <div class="agir"><span class="trop">Faire le devis</span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="colonne">
+      <div class="etiquette apres"><span class="mot">Proposé</span><span class="compte">21 mots</span></div>
+      <div class="tel"><div class="feuille">
+        <p class="chapeau">Bonjour Florian</p>
+        <div class="titre-ecran">Vos chantiers</div>
+        <p class="lab" style="color:var(--or)">Vos clients ›</p>
+        <div style="height:1px;background:var(--trait);margin:16px 0"></div>
+        <p class="lab" style="font-size:12px;letter-spacing:.2em;color:var(--encre)">Créer un devis &nbsp;+</p>
+        <div class="ligne-chantier" style="margin-top:20px">
+          <div class="etat">Devis à envoyer · 28 jours</div>
+          <div class="nom">Terrasse bois</div>
+        </div>
+        <div class="ligne-chantier">
+          <div class="etat">Correction demandée</div>
+          <div class="nom">Reprise de toiture</div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="bilan">
+    <b>Le compteur disparaît — les chantiers se comptent tout seuls.</b><br>
+    <span class="part">Part :</span> « quatre en cours » (dit deux fois) ;
+    la phrase qui redit les 28 jours ; « Faire le devis » — toucher la ligne
+    le fait déjà, et c'était le seul rôle du mot.<br>
+    <span class="reste">Reste :</span> une ligne par chantier, son état, son
+    ancienneté. <b>Deux chantiers tiennent maintenant là où il n'en voyait qu'un.</b>
+  </div>
+
+  <!-- ─────────────────────────────  3  ───────────────────────────── -->
+
+  <h2>3 · Les réglages</h2>
+  <p class="pourquoi">Treize rubriques, et sous chacune une phrase qui énumère
+  ce qu'elle contient. L'écran fait <b>2,3 hauteurs de téléphone</b> : il faut
+  défiler deux fois et lire treize phrases pour changer un prix. Si le titre ne
+  suffit pas, c'est le titre qu'il faut corriger — pas une phrase qu'il faut
+  ajouter dessous.
+  <br>Et une rubrique s'appelle <b>« Intégrations »</b> : c'est un mot
+  d'informaticien. Personne ne cherche ses <i>intégrations</i> — il cherche son
+  agenda.</p>
+
+  <div class="duo">
+    <div class="colonne">
+      <div class="etiquette"><span class="mot">Aujourd'hui</span><span class="compte">89 mots</span></div>
+      <div class="tel"><div class="feuille">
+        <div class="titre-ecran">Réglages</div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Mon entreprise</div><div class="sous"><span class="trop">Identité, coordonnées et informations légales</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Équipe</div><div class="sous"><span class="trop">Combien partent en même temps, leurs noms et leurs absences</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Tarifs &amp; catalogue</div><div class="sous"><span class="trop">Prestations, main-d'œuvre, matériel et marges</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Devis &amp; factures</div><div class="sous"><span class="trop">Validité, acompte, délai de paiement et mentions</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Fiche d'entretien</div><div class="sous"><span class="trop">Les prestations que vous cochez sur un chantier d'entretien</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Atlas IA</div><div class="sous"><span class="trop">Automatisations et suggestions</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Intégrations</div><div class="sous"><span class="trop">Calendrier, comptabilité et services connectés</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Abonnement</div><div class="sous"><span class="trop">Offre, paiement et factures Atlas</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Sécurité &amp; données</div><div class="sous"><span class="trop">Export, effacement et RGPD</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Mon compte</div><div class="sous"><span class="trop">Nom et e-mail</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Notifications</div><div class="sous"><span class="trop">Alertes et rappels</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Connexion</div><div class="sous"><span class="trop">Mot de passe et sécurité</span></div></div></div>
+        <div class="rubrique"><span class="rond"></span><div><div class="nom">Apparence</div><div class="sous"><span class="trop">Les couleurs de l'application</span></div></div></div>
+      </div></div>
+    </div>
+
+    <div class="colonne">
+      <div class="etiquette apres"><span class="mot">Proposé</span><span class="compte">26 mots</span></div>
+      <div class="tel"><div class="feuille">
+        <div class="titre-ecran">Réglages</div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Mon entreprise</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Mon équipe</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Mes prix</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Mes devis et factures</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Fiche d'entretien</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Atlas IA</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Agenda</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Abonnement</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Mes données</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Mon compte</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Notifications</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Mot de passe</div></div>
+        <div class="rubrique"><span class="rond"></span><div class="nom">Couleurs</div></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="bilan">
+    <b>Les treize rubriques tiennent sur un écran, sans en retirer aucune.</b><br>
+    <span class="part">Part :</span> les treize phrases d'explication.
+    « Tarifs &amp; catalogue » devient « Mes prix », « Intégrations » devient
+    « Agenda », « Sécurité &amp; données » devient « Mes données » — les mots
+    qu'il emploie, lui.<br>
+    <span class="reste">Reste :</span> les treize rubriques, dans le même ordre.
+    <b>Plus de défilement pour changer un prix.</b>
+  </div>
+
+  <!-- ───────────────────────────  le compte  ─────────────────────── -->
+
+  <h2>Ce que ça change, en tout</h2>
+  <p class="pourquoi">Les nombres sous les téléphones ci-dessus sont ceux des
+  dessins, et le contrôle les recompte. Ceux du tableau ci-dessous sont
+  <b>mesurés dans l'application</b>, dans un navigateur, à la taille de son
+  téléphone, sur le jeu de démonstration
+  (<i>scripts/mesurer-parcours-reel.mts</i>) — pas estimés.</p>
+
+  <table>
+    <tr><th>Écran</th><th class="n">Mots</th><th class="n">Choses touchables</th><th class="n">Écrans à défiler</th></tr>
+    <tr><td>Accueil</td><td class="n">135</td><td class="n">22</td><td class="n">1</td></tr>
+    <tr><td>La fiche client <span style="color:var(--gris)">(la feuille seule)</span></td><td class="n">39</td><td class="n">—</td><td class="n">1</td></tr>
+    <tr><td>Le devis</td><td class="n">99</td><td class="n">24</td><td class="n">2,6</td></tr>
+    <tr><td>Réglages</td><td class="n">129</td><td class="n">20</td><td class="n">2,3</td></tr>
+    <tr><td>Planning</td><td class="n">102</td><td class="n">54</td><td class="n">1,4</td></tr>
+  </table>
+
+  <p class="pourquoi" style="margin-top:18px"><b>Le parcours complet</b> — ouvrir
+  l'application, créer le chantier, arriver sur le devis — coûte <b>8 gestes</b>
+  et fait traverser <b>507 mots</b>. Les gestes ne bougent pas : ils sont déjà au
+  minimum, et c'est du bon travail. Ce sont les mots qui tombent.</p>
+
+  <p class="pourquoi">Deux chiffres qui ne sont pas dans le tableau et qui
+  comptent autant : <b>le planning fait toucher 54 choses</b> sur un seul écran,
+  et <b>le devis se déroule sur 2,6 hauteurs de téléphone</b> avant qu'il
+  atteigne « Envoyer au client ». Aucun des deux n'est traité par cette planche
+  — ils méritent la leur, et elle ne se dessine pas sans lui.</p>
+
+  <!-- ───────────────────────────  la règle  ──────────────────────── -->
+
+  <h2>Et pour que ça ne regrossisse pas</h2>
+  <p class="pourquoi">C'est la <b>troisième fois</b> qu'il le dit — le 11 août,
+  le 17 août, aujourd'hui. Les deux premières fois, un écran a été corrigé et
+  la plainte est revenue ailleurs. Corriger trois écrans de plus ne suffira
+  donc pas : rien n'empêche l'application de regrossir, et chaque décision
+  juste ajoute une ligne.</p>
+  <p class="pourquoi"><b>Ce qui est proposé, et qui n'existe pas encore :</b>
+  un contrôle qui compte les mots de chaque écran et <b>rougit quand un écran
+  en gagne</b> — comme les suites rougissent déjà quand un prix se calcule mal.
+  Un écran qui grossit devient alors une décision qu'on prend exprès, au lieu
+  d'un glissement que personne ne voit.</p>
+
+  <div class="fin">
+    <b>Ce qu'il reste à décider — et c'est à lui.</b><br>
+    Ces trois écrans lui vont-ils ? Si oui, ils se codent, et le compteur de
+    mots avec. Si un seul lui va, on ne fait que celui-là. S'il veut aller plus
+    loin — moins d'onglets, moins d'écrans — c'est une autre planche, et elle
+    ne se dessine pas sans lui.
+    <br><br>
+    <b>Ce qui n'est pas proposé ici, exprès :</b> toucher aux 51 autres écrans.
+    Ce serait au jugé, et c'est exactement ce qu'on cherche à arrêter.
+  </div>
+
+</div>

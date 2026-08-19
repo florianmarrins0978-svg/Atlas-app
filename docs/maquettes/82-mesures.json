@@ -1,0 +1,106 @@
+{
+  "quand": "mesuré sur le jeu de démonstration ; regénérer avec scripts/mesurer-parcours-reel.mts",
+  "ecran": "iPhone 13 (390 × 664, la place qui reste sous la barre d'adresse)",
+  "total": {
+    "gestes": 8,
+    "motsDuParcours": 507
+  },
+  "ficheClientSeule": {
+    "mots": 30,
+    "texte": "Fiche client | CIVILITÉ (FACULTATIF) | Mr | Mme | NOM DU CLIENT (FACULTATIF) | TÉLÉPHONE (FACULTATIF) | E-MAIL (FACULTATIF) | ADRESSE DU CHANTIER (FACULTATIF) | + Ajouter une adresse client différente | Je dicte mon devis | J'écris mon devis"
+  },
+  "ficheClientRemplie": {
+    "mots": 39,
+    "texte": "Fiche client | CIVILITÉ (FACULTATIF) | Mr | Mme | NOM DU CLIENT (FACULTATIF) | TÉLÉPHONE (FACULTATIF) | E-MAIL (FACULTATIF) | COMMENT LUI ENVOYER SON DEVIS ? | Par SMS | Par e-mail | ADRESSE DU CHANTIER (FACULTATIF) | + Ajouter une adresse client différente | Je dicte mon devis | J'écris mon devis"
+  },
+  "accueil": {
+    "nom": "Accueil",
+    "url": "/",
+    "mots": 135,
+    "touchables": 22,
+    "ecransADefiler": 1,
+    "gestesCumules": 3
+  },
+  "devis": {
+    "nom": "Le devis",
+    "url": "/chantiers/74170bdf-1b50-4588-85e3-36442be872cb/devis-complet",
+    "mots": 99,
+    "touchables": 24,
+    "ecransADefiler": 2.6,
+    "gestesCumules": 8
+  },
+  "reglages": {
+    "nom": "Onglet Réglages",
+    "url": "/reglages",
+    "mots": 129,
+    "touchables": 20,
+    "ecransADefiler": 2.3,
+    "gestesCumules": 8
+  },
+  "releves": [
+    {
+      "nom": "Connexion",
+      "url": "/login",
+      "mots": 6,
+      "touchables": 3,
+      "ecransADefiler": 1,
+      "gestesCumules": 0
+    },
+    {
+      "nom": "Accueil",
+      "url": "/",
+      "mots": 135,
+      "touchables": 22,
+      "ecransADefiler": 1,
+      "gestesCumules": 3
+    },
+    {
+      "nom": "Fiche client",
+      "url": "/",
+      "mots": 165,
+      "touchables": 33,
+      "ecransADefiler": 1,
+      "gestesCumules": 4
+    },
+    {
+      "nom": "Le devis",
+      "url": "/chantiers/74170bdf-1b50-4588-85e3-36442be872cb/devis-complet",
+      "mots": 99,
+      "touchables": 24,
+      "ecransADefiler": 2.6,
+      "gestesCumules": 8
+    },
+    {
+      "nom": "Onglet Planning",
+      "url": "/planning",
+      "mots": 102,
+      "touchables": 54,
+      "ecransADefiler": 1.4,
+      "gestesCumules": 8
+    },
+    {
+      "nom": "Onglet Terminés",
+      "url": "/termines",
+      "mots": 36,
+      "touchables": 7,
+      "ecransADefiler": 1,
+      "gestesCumules": 8
+    },
+    {
+      "nom": "Onglet Paysage",
+      "url": "/paysage",
+      "mots": 76,
+      "touchables": 8,
+      "ecransADefiler": 1,
+      "gestesCumules": 8
+    },
+    {
+      "nom": "Onglet Réglages",
+      "url": "/reglages",
+      "mots": 129,
+      "touchables": 20,
+      "ecransADefiler": 2.3,
+      "gestesCumules": 8
+    }
+  ]
+}

@@ -45,6 +45,7 @@ relues à chaque session) :
 20. [Si un client ne me paie pas, la TVA part quand même ?](#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-)
 21. [Quelle est la différence entre « Planning » et « Équipe » dans les réglages ?](#21-quelle-est-la-différence-entre--planning--et--équipe--dans-les-réglages-)
 22. [Mes outils de calcul, on les range où dans l'application ?](#22-mes-outils-de-calcul-on-les-range-où-dans-lapplication-)
+23. [L'application est-elle trop compliquée pour un artisan pressé ?](#23-lapplication-est-elle-trop-compliquée-pour-un-artisan-pressé-)
 
 ---
 
@@ -1419,3 +1420,94 @@ voit pas sur un grand écran, seulement sur le vôtre.
   ensuite. C'est le revers de l'accès sans chantier que vous avez voulu : sans
   ce rattachement, on cherchera le plan six mois plus tard.
 
+---
+
+## 23. L'application est-elle trop compliquée pour un artisan pressé ?
+
+**Votre question, le 19 août 2026 :** *« j'ai l'impression que l'application va
+être trop compliquée à utiliser, il y a beaucoup trop de mots dans tous les
+sens. […] J'ai voulu créer une application luxe, mais au final j'ai
+l'impression que je me suis perdu. […] Des entrepreneurs qui n'ont pas de
+temps : s'ils passent quinze minutes à essayer de comprendre comment elle
+marche, ils ne vont juste pas l'utiliser. Il ne faut pas oublier qu'il y a des
+boomers dessus qui ont déjà du mal à utiliser leur téléphone. »*
+
+### La réponse courte : oui, et c'est mesuré
+
+L'application a été parcourue pour de bon, dans un navigateur, à la taille de
+votre téléphone. Pas d'impression, pas de souvenir : des nombres.
+
+| Écran | Mots à lire | Choses touchables | Hauteurs d'écran |
+|---|---|---|---|
+| Accueil | 135 | 22 | 1 |
+| La fiche client | 39 | — | 1 |
+| Le devis | 99 | 24 | **2,6** |
+| Réglages | 129 | 20 | **2,3** |
+| Planning | 102 | **54** | 1,4 |
+
+Ouvrir l'application, créer le chantier, arriver sur le devis : **8 gestes** et
+**507 mots** traversés.
+
+### Ce qui est bon, et qu'il ne faut pas casser
+
+**Les 8 gestes.** C'est déjà le minimum : votre client vous donne son nom, son
+numéro et son adresse, vous appuyez sur « J'écris mon devis ». On ne peut pas
+faire moins sans deviner à votre place. **Le problème n'est pas le nombre de
+gestes — c'est le nombre de mots entre deux gestes.**
+
+### Là où je ne suis pas d'accord avec vous
+
+Vous dites : *« j'ai voulu faire luxe et je me suis perdu »*. **Le luxe n'est
+pas le coupable — le luxe, c'est le vide.** Les polices, les couleurs, les
+capsules vertes, les blancs : rien de tout cela ne vous encombre.
+
+Ce qui encombre, ce sont **les phrases qui expliquent**. Trois exemples réels,
+relevés à l'écran :
+
+- sur la **fiche client**, le mot *« (facultatif) »* est écrit **cinq fois** —
+  et **tous** les champs le sont. Un mot qui vaut pour tout ne distingue rien ;
+- sur l'**accueil**, le nombre de chantiers est écrit **deux fois** à trois
+  centimètres d'intervalle, et l'ancienneté du devis **deux fois** aussi
+  (« 28 jours », puis la phrase qui le redit) ;
+- dans les **réglages**, chaque rubrique porte dessous une phrase qui énumère
+  ce qu'elle contient — treize phrases, et il faut défiler deux fois pour
+  changer un prix.
+
+**Un écran qui a besoin de se justifier est un écran qui n'est pas clair.** La
+phrase d'explication ne répare jamais un mauvais titre : elle le cache.
+
+### Ce qui compte le plus, et qui n'est pas dans les chiffres
+
+**C'est la troisième fois que vous le dites.**
+
+| Quand | Vos mots | Ce qu'on a fait |
+|---|---|---|
+| 11 août | *« informations, prix, devis peuvent disparaître »* | trois étapes retirées d'un écran |
+| 17 août | *« l'utilisateur a besoin d'aller à l'essentiel constamment »* | deux maquettes jetées, une refaite |
+| 19 août | ci-dessus | la planche 82 |
+
+Trois fois, un écran a été corrigé — et la gêne est revenue ailleurs. **Le
+défaut n'est donc pas dans un écran : rien n'empêche l'application de
+regrossir.** Chaque décision juste ajoute une ligne, une phrase, un écran, et
+personne n'en retire jamais.
+
+C'est pour cela que la planche 82 propose, en plus des trois écrans, **un
+contrôle qui compte les mots de chaque écran et refuse la mise en ligne quand
+un écran en gagne** — comme les contrôles refusent déjà un prix mal calculé.
+Un écran qui grossit deviendrait alors une décision prise exprès, au lieu d'un
+glissement que personne ne voit.
+
+### Ce que ça coûte, et ce que vous devez décider
+
+**Rien n'est codé.** La planche
+[`docs/maquettes/82-moins-de-mots.html`](maquettes/82-moins-de-mots.html)
+montre les trois écrans avant et après, avec les comptes.
+
+- les **trois écrans** : deux à trois jours ;
+- le **compteur de mots** qui empêche de regrossir : une journée ;
+- la **relecture des 51 autres écrans** : elle n'est pas proposée, et c'est
+  volontaire. La faire au jugé, c'est exactement l'erreur qu'on cherche à
+  arrêter.
+
+**La seule chose à me dire : les trois écrans de la planche 82 vous
+vont-ils ?** Si un seul vous va, on ne fait que celui-là.
