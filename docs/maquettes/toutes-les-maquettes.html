@@ -6196,14 +6196,318 @@
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
 
 
-/* 56 — Le cinquième onglet */
+/* 56 — Simple : il ne paie pas */
 #s56{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s56:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s56[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s56, #s56 *{box-sizing:border-box}
+#s56{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s56 .dedans{max-width:900px;margin:0 auto}
+#s56 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s56 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 20px}
+#s56 .intro b{color:var(--encre);font-weight:600}
+#s56 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s56 .reglage{margin:0 0 8px}
+#s56 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s56 .segments{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+#s56 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s56 #s56-e-1:checked ~ .dedans .segments label[for="s56-e-1"],#s56 #s56-e-2:checked ~ .dedans .segments label[for="s56-e-2"],#s56 #s56-e-3:checked ~ .dedans .segments label[for="s56-e-3"],#s56 #s56-e-4:checked ~ .dedans .segments label[for="s56-e-4"],#s56 #s56-m-3:checked ~ .dedans .segments label[for="s56-m-3"],#s56 #s56-m-t:checked ~ .dedans .segments label[for="s56-m-t"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s56 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s56 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s56 .feuille{background:var(--papier);border-radius:14px;padding:22px 20px;min-height:430px}
+#s56 .sur{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+       color:var(--or);margin-bottom:5px}
+#s56 .h2{font-family:Georgia,serif;font-size:22px;margin:0 0 3px;line-height:1.25}
+#s56 .sous{font-size:12.5px;color:var(--gris);margin:0 0 18px}
+#s56 .tot{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+#s56 .tot.gros{font-family:Georgia,serif;font-size:18px;padding-top:9px;margin-top:7px;
+            border-top:2px solid var(--encre)}
+#s56 .tot.rouge{color:var(--alerte)}
+#s56 .gros-bouton{display:block;margin-top:20px;padding:15px 17px;border-radius:13px;
+               background:var(--pin);color:#fff;font-size:15.5px;text-align:center}
+#s56 .lien-discret{display:block;margin-top:14px;text-align:center;font-size:13.5px;
+                color:var(--or)}
+#s56 .reponse{display:block;margin-top:12px;padding:16px 17px;border-radius:13px;
+           background:var(--teinte);border:1px solid var(--trait)}
+#s56 .reponse .nom{display:block;font-family:Georgia,serif;font-size:18px;line-height:1.25}
+#s56 .reponse .det{display:block;font-size:12.5px;color:var(--gris);margin-top:5px;line-height:1.5}
+#s56 .case{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--teinte)}
+#s56 .case .lab{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--gris);margin-bottom:6px}
+#s56 .case .val{font-family:Georgia,serif;font-size:26px}
+#s56 .apres{margin-top:16px;border-top:1px solid var(--trait);padding-top:12px}
+#s56 .fini{text-align:center;padding-top:24px}
+#s56 .fini .coche{display:block;font-size:34px;color:var(--pin);margin-bottom:10px}
+#s56 .ec-1,#s56 .ec-2,#s56 .ec-3,#s56 .ec-4{display:none}
+#s56 #s56-e-1:checked ~ .dedans .ec-1,#s56 #s56-e-2:checked ~ .dedans .ec-2,#s56 #s56-e-3:checked ~ .dedans .ec-3,#s56 #s56-e-4:checked ~ .dedans .ec-4{display:block}
+#s56 .m3,#s56 .mt{display:none}
+#s56 #s56-m-3:checked ~ .dedans .m3,#s56 #s56-m-t:checked ~ .dedans .mt{display:inline}
+#s56 .si-montant{display:none}
+#s56 #s56-e-3:checked ~ .dedans .si-montant,#s56 #s56-e-4:checked ~ .dedans .si-montant{display:block}
+#s56 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s56 .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
+              color:var(--encre);margin-bottom:8px}
+#s56 .legende b{color:var(--encre);font-weight:600}
+#s56 .legende p{margin:0 0 14px}
+#s56 .note{margin-top:28px;padding:16px 18px;border-radius:12px;background:var(--papier);
+        font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s56 .note b{color:var(--encre);font-weight:600}
+#s56 .note .t{display:block;font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+           color:var(--or);margin-bottom:8px}
+#s56 .note a{color:var(--or)}
+
+
+/* 57 — Il ne paie pas */
+#s57{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s57:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s57[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s57, #s57 *{box-sizing:border-box}
+#s57{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s57 .dedans{max-width:960px;margin:0 auto}
+#s57 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s57 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s57 .intro b{color:var(--encre);font-weight:600}
+#s57 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+#s57 .dit b{font-style:normal;color:var(--encre);font-weight:600}
+#s57 .attention{margin:0 0 24px;padding:15px 17px;border-radius:12px;
+             background:var(--papier);border-left:3px solid var(--alerte);
+             font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s57 .attention .t{display:block;font-size:11px;letter-spacing:.13em;
+                text-transform:uppercase;color:var(--alerte);margin-bottom:8px}
+#s57 .attention b{color:var(--encre);font-weight:600}
+#s57 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s57 .reglage{margin:0 0 14px}
+#s57 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s57 .segments{display:flex;gap:8px;flex-wrap:wrap}
+#s57 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s57 #s57-v-a:checked ~ .dedans .segments label[for="s57-v-a"],#s57 #s57-v-b:checked ~ .dedans .segments label[for="s57-v-b"],#s57 #s57-v-c:checked ~ .dedans .segments label[for="s57-v-c"],#s57 #s57-p-r:checked ~ .dedans .segments label[for="s57-p-r"],#s57 #s57-p-f:checked ~ .dedans .segments label[for="s57-p-f"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s57 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
+#s57 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s57 .feuille{background:var(--papier);border-radius:14px;padding:20px 18px}
+#s57 .sur{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+       color:var(--or);margin-bottom:5px}
+#s57 .h2{font-family:Georgia,serif;font-size:21px;margin:0 0 3px;line-height:1.2}
+#s57 .sous{font-size:12.5px;color:var(--gris);margin:0 0 16px}
+#s57 .rappel{border-radius:12px;background:var(--teinte);padding:15px 16px;margin-bottom:14px}
+#s57 .rappel .quand{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--alerte);margin-bottom:5px}
+#s57 .rappel .quoi{font-family:Georgia,serif;font-size:17px;margin:0 0 4px}
+#s57 .rappel .det{font-size:12.5px;color:var(--gris);margin:0 0 12px}
+#s57 .boutons{display:flex;gap:8px;flex-wrap:wrap}
+#s57 .bt{font-size:13px;padding:8px 14px;border-radius:9999px;border:1px solid var(--trait);
+      color:var(--gris);background:var(--papier)}
+#s57 .bt.fort{background:var(--pin);border-color:var(--pin);color:#fff}
+#s57 .pave{border-top:1px solid var(--trait);padding-top:13px;margin-top:4px}
+#s57 .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+#s57 .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;margin-top:6px;
+            border-top:2px solid var(--encre)}
+#s57 .tot.or{color:var(--or)}
+#s57 .tot.rouge{color:var(--alerte)}
+#s57 .porte{display:flex;gap:12px;align-items:flex-start;padding:13px 0;
+         border-bottom:1px solid var(--trait)}
+#s57 .porte:last-child{border-bottom:0}
+#s57 .porte .rond{flex:none;width:30px;height:30px;border-radius:9999px;
+               background:var(--teinte);color:var(--or);display:flex;
+               align-items:center;justify-content:center;font-size:15px}
+#s57 .porte .txt{min-width:0}
+#s57 .porte .nom{display:block;font-family:Georgia,serif;font-size:16px;line-height:1.3}
+#s57 .porte .det{display:block;font-size:12px;color:var(--gris);line-height:1.5;margin-top:2px}
+#s57 .porte.pale .nom,#s57 .porte.pale .det{color:var(--gris)}
+#s57 .g-a,#s57 .g-b,#s57 .g-c{display:none}
+#s57 #s57-v-a:checked ~ .dedans .g-a,#s57 #s57-v-b:checked ~ .dedans .g-b,#s57 #s57-v-c:checked ~ .dedans .g-c{display:block}
+#s57 .d-rappel,#s57 .d-facture{display:none}
+#s57 #s57-p-r:checked ~ .dedans .d-rappel,#s57 #s57-p-f:checked ~ .dedans .d-facture{display:block}
+#s57 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s57 .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
+              color:var(--encre);margin-bottom:8px}
+#s57 .legende b{color:var(--encre);font-weight:600}
+#s57 .l-a,#s57 .l-b,#s57 .l-c{display:none}
+#s57 #s57-v-a:checked ~ .dedans .l-a,#s57 #s57-v-b:checked ~ .dedans .l-b,#s57 #s57-v-c:checked ~ .dedans .l-c{display:block}
+#s57 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s57 .cout .e{color:var(--alerte);font-weight:600}
+#s57 .cout .ok{color:var(--pin);font-weight:600}
+#s57 table{border-collapse:collapse;width:100%;margin:14px 0 0;font-size:13px}
+#s57 th,#s57 td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait);
+        vertical-align:top}
+#s57 th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--or);
+     font-weight:400}
+#s57 td b{color:var(--encre)}
+#s57 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s57 .note b{color:var(--encre);font-weight:600}
+#s57 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s57 .note ul{margin:8px 0 0;padding-left:19px}
+#s57 .note li{margin-bottom:7px}
+#s57 .suite{margin-top:22px;font-size:13.5px;color:var(--gris)}
+#s57 .suite a{color:var(--or)}
+
+
+/* 58 — L’avoir */
+#s58{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+@media (prefers-color-scheme: dark){
+#s58:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+
+  
+}
+#s58[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+#s58, #s58 *{box-sizing:border-box}
+#s58{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+#s58 .dedans{max-width:960px;margin:0 auto}
+#s58 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+#s58 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 20px}
+#s58 .intro b{color:var(--encre);font-weight:600}
+#s58 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s58 .reglage{margin:0 0 14px}
+#s58 .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+#s58 .segments{display:flex;gap:8px;flex-wrap:wrap}
+#s58 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+#s58 #s58-v-a:checked ~ .dedans .segments label[for="s58-v-a"],#s58 #s58-v-b:checked ~ .dedans .segments label[for="s58-v-b"],#s58 #s58-v-c:checked ~ .dedans .segments label[for="s58-v-c"],#s58 #s58-m-2:checked ~ .dedans .segments label[for="s58-m-2"],#s58 #s58-m-3:checked ~ .dedans .segments label[for="s58-m-3"],#s58 #s58-m-t:checked ~ .dedans .segments label[for="s58-m-t"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+#s58 .m2,#s58 .m3,#s58 .mt{display:none}
+#s58 #s58-m-2:checked ~ .dedans .m2,#s58 #s58-m-3:checked ~ .dedans .m3,#s58 #s58-m-t:checked ~ .dedans .mt{display:inline}
+#s58 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
+#s58 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px;
+       background:var(--teinte);
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+#s58 .feuille{background:var(--papier);border-radius:10px;padding:22px 20px}
+#s58 .titre-doc{font-family:Georgia,serif;font-size:20px;letter-spacing:.14em;
+             text-align:center;margin:0 0 3px}
+#s58 .sous-doc{text-align:center;font-size:11.5px;color:var(--gris);margin:0 0 4px}
+#s58 .renvoi{text-align:center;font-size:11.5px;color:var(--or);margin:0 0 16px}
+#s58 .bloc-id{display:flex;gap:16px;font-size:11.5px;color:var(--gris);
+           line-height:1.5;margin-bottom:16px}
+#s58 .bloc-id div{flex:1}
+#s58 .bloc-id b{display:block;color:var(--encre);font-size:12.5px;font-weight:600}
+#s58 .lg{display:flex;justify-content:space-between;gap:12px;font-size:14px;
+      padding:9px 0;border-bottom:1px solid var(--trait)}
+#s58 .lg .prix{white-space:nowrap}
+#s58 .lg.neg{color:var(--alerte)}
+#s58 .totaux{margin-top:14px}
+#s58 .tot{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+#s58 .tot.gros{font-family:Georgia,serif;font-size:17px;padding-top:8px;margin-top:6px;
+            border-top:2px solid var(--encre)}
+#s58 .tot.or{color:var(--or)}
+#s58 .tot.rouge{color:var(--alerte)}
+#s58 .mention{margin-top:14px;font-size:10.5px;line-height:1.5;color:var(--gris);
+           border-top:1px solid var(--trait);padding-top:10px}
+#s58 .apres{margin-top:16px;border-radius:12px;background:var(--teinte);padding:14px 15px}
+#s58 .apres .t{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);margin-bottom:8px}
+#s58 .apres .lgn{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+#s58 .apres .lgn.fort{font-family:Georgia,serif;font-size:15px;padding-top:7px;margin-top:5px;
+                   border-top:1px solid var(--trait)}
+#s58 .barre{text-decoration:line-through;color:var(--gris)}
+#s58 .v-a,#s58 .v-b,#s58 .v-c{display:none}
+#s58 #s58-v-a:checked ~ .dedans .v-a,#s58 #s58-v-b:checked ~ .dedans .v-b,#s58 #s58-v-c:checked ~ .dedans .v-c{display:block}
+#s58 .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s58 .legende .t{display:block;font-family:Georgia,serif;font-size:19px;
+              color:var(--encre);margin-bottom:8px}
+#s58 .legende b{color:var(--encre);font-weight:600}
+#s58 .l-a,#s58 .l-b,#s58 .l-c{display:none}
+#s58 #s58-v-a:checked ~ .dedans .l-a,#s58 #s58-v-b:checked ~ .dedans .l-b,#s58 #s58-v-c:checked ~ .dedans .l-c{display:block}
+#s58 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s58 .cout .e{color:var(--alerte);font-weight:600}
+#s58 .cout .ok{color:var(--pin);font-weight:600}
+#s58 table{border-collapse:collapse;width:100%;margin:16px 0 0;font-size:13px}
+#s58 th,#s58 td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait);
+        vertical-align:top}
+#s58 th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--or);
+     font-weight:400}
+#s58 td b{color:var(--encre)}
+#s58 td.num{text-align:right;white-space:nowrap}
+#s58 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s58 .note b{color:var(--encre);font-weight:600}
+#s58 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+#s58 .note ul{margin:8px 0 0;padding-left:19px}
+#s58 .note li{margin-bottom:7px}
+#s58 .retour{margin-top:22px;font-size:13.5px;color:var(--gris)}
+#s58 .retour a{color:var(--or)}
+
+
+/* 59 — Le cinquième onglet */
+#s59{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --alerte:#9C3B2E; --pin:#2f3b2f;
     --creme:#f5f3ee; --ligne:rgba(28,28,26,0.12);
   }
 @media (prefers-color-scheme: dark){
-#s56:not([data-theme="light"]){
+#s59:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --alerte:#C87058; --pin:#7d9179;
       --creme:#1e1c18; --ligne:rgba(233,229,220,0.16);
@@ -6211,74 +6515,74 @@
 
   
 }
-#s56[data-theme="dark"]{
+#s59[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --alerte:#C87058; --pin:#7d9179;
     --creme:#1e1c18; --ligne:rgba(233,229,220,0.16);
   }
-#s56, #s56 *{box-sizing:border-box}
-#s56{margin:0;background:var(--fond);color:var(--encre);
+#s59, #s59 *{box-sizing:border-box}
+#s59{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s56 .dedans{max-width:1000px;margin:0 auto}
-#s56 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+#s59 .dedans{max-width:1000px;margin:0 auto}
+#s59 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
-#s56 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
-#s56 .intro b{color:var(--encre);font-weight:600}
-#s56 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+#s59 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s59 .intro b{color:var(--encre);font-weight:600}
+#s59 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
-#s56 .dit b{color:var(--encre);font-weight:600}
-#s56 .jeu{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
-#s56 .cas{flex:0 0 auto;width:360px}
-#s56 .cas .titre{font-family:Georgia,serif;font-size:17px;margin:0 0 3px}
-#s56 .cas .quoi{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 10px;min-height:56px}
-#s56 .cas .verdict{font-size:12.5px;margin:8px 0 0;line-height:1.55}
-#s56 .cas .verdict b{font-weight:600}
-#s56 .ok{color:var(--pin)}
-#s56 .ko{color:var(--alerte)}
-#s56 .tel{width:360px;border:1px solid var(--trait);border-radius:14px;overflow:hidden;
+#s59 .dit b{color:var(--encre);font-weight:600}
+#s59 .jeu{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+#s59 .cas{flex:0 0 auto;width:360px}
+#s59 .cas .titre{font-family:Georgia,serif;font-size:17px;margin:0 0 3px}
+#s59 .cas .quoi{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 10px;min-height:56px}
+#s59 .cas .verdict{font-size:12.5px;margin:8px 0 0;line-height:1.55}
+#s59 .cas .verdict b{font-weight:600}
+#s59 .ok{color:var(--pin)}
+#s59 .ko{color:var(--alerte)}
+#s59 .tel{width:360px;border:1px solid var(--trait);border-radius:14px;overflow:hidden;
        background:var(--papier)}
-#s56 .ecran{height:78px;background:var(--fond);display:flex;align-items:center;
+#s59 .ecran{height:78px;background:var(--fond);display:flex;align-items:center;
          justify-content:center;font-size:12px;color:var(--gris)}
-#s56 .barre{background:var(--creme);border-top:1px solid var(--ligne);position:relative}
-#s56 .rangee{display:grid;padding:18px 14px 8px;position:relative}
-#s56 .rangee.q4{grid-template-columns:repeat(4,1fr)}
-#s56 .rangee.q5{grid-template-columns:repeat(5,1fr)}
-#s56 .rangee a{padding-bottom:8px;text-align:center;font-size:9.5px;font-weight:500;
+#s59 .barre{background:var(--creme);border-top:1px solid var(--ligne);position:relative}
+#s59 .rangee{display:grid;padding:18px 14px 8px;position:relative}
+#s59 .rangee.q4{grid-template-columns:repeat(4,1fr)}
+#s59 .rangee.q5{grid-template-columns:repeat(5,1fr)}
+#s59 .rangee a{padding-bottom:8px;text-align:center;font-size:9.5px;font-weight:500;
             text-transform:uppercase;letter-spacing:.28em;color:var(--gris);
             text-decoration:none;white-space:nowrap}
-#s56 .rangee a.actif{color:var(--encre);transform:translateY(-2px)}
-#s56 .serre a{letter-spacing:.18em}
-#s56 .petit a{font-size:8.5px;letter-spacing:.14em}
-#s56 .icone a{font-size:8.5px;letter-spacing:.10em}
-#s56 .icone .pic{display:block;font-size:15px;letter-spacing:0;margin-bottom:3px;
+#s59 .rangee a.actif{color:var(--encre);transform:translateY(-2px)}
+#s59 .serre a{letter-spacing:.18em}
+#s59 .petit a{font-size:8.5px;letter-spacing:.14em}
+#s59 .icone a{font-size:8.5px;letter-spacing:.10em}
+#s59 .icone .pic{display:block;font-size:15px;letter-spacing:0;margin-bottom:3px;
               filter:grayscale(1);opacity:.8}
-#s56 .icone a.actif .pic{filter:none;opacity:1}
-#s56 .fil{position:absolute;bottom:8px;left:14px;pointer-events:none}
-#s56 .rangee.q4 .fil{width:calc((100% - 28px) / 4)}
-#s56 .rangee.q5 .fil{width:calc((100% - 28px) / 5)}
-#s56 .fil span{display:block;height:1px;background:var(--or)}
-#s56 .mesure{margin-top:8px;font-size:11.5px;color:var(--gris);
+#s59 .icone a.actif .pic{filter:none;opacity:1}
+#s59 .fil{position:absolute;bottom:8px;left:14px;pointer-events:none}
+#s59 .rangee.q4 .fil{width:calc((100% - 28px) / 4)}
+#s59 .rangee.q5 .fil{width:calc((100% - 28px) / 5)}
+#s59 .fil span{display:block;height:1px;background:var(--or)}
+#s59 .mesure{margin-top:8px;font-size:11.5px;color:var(--gris);
           font-variant-numeric:tabular-nums}
-#s56 .note{margin-top:26px;padding:16px 18px;border-radius:12px;
+#s59 .note{margin-top:26px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s56 .note b{color:var(--encre);font-weight:600}
-#s56 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+#s59 .note b{color:var(--encre);font-weight:600}
+#s59 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s56 .note + .note{margin-top:14px}
-#s56 .note ul{margin:8px 0 0;padding-left:19px}
-#s56 .note li{margin-bottom:7px}
+#s59 .note + .note{margin-top:14px}
+#s59 .note ul{margin:8px 0 0;padding-left:19px}
+#s59 .note li{margin-bottom:7px}
 
 
-/* 57 — Le plan comme le sien */
-#s57{
+/* 60 — Le plan comme le sien */
+#s60{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
     --teinte:#ece9e1; --plan:#1c1c1a; --herbe:#eef0e6;
     --r1:#2F6FB5; --r2:#3E8F4E; --r3:#D9A520;
   }
 @media (prefers-color-scheme: dark){
-#s57:not([data-theme="light"]){
+#s60:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
       --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
@@ -6287,75 +6591,75 @@
 
   
 }
-#s57[data-theme="dark"]{
+#s60[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
     --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
     --r1:#6FA3DC; --r2:#6FB87E; --r3:#E8C255;
   }
-#s57, #s57 *{box-sizing:border-box}
-#s57{margin:0;background:var(--fond);color:var(--encre);
+#s60, #s60 *{box-sizing:border-box}
+#s60{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s57 .dedans{max-width:1000px;margin:0 auto}
-#s57 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+#s60 .dedans{max-width:1000px;margin:0 auto}
+#s60 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
-#s57 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
-#s57 .intro b{color:var(--encre);font-weight:600}
-#s57 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+#s60 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s60 .intro b{color:var(--encre);font-weight:600}
+#s60 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
-#s57 .dit b{color:var(--encre);font-weight:600}
-#s57 .feuille{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
+#s60 .dit b{color:var(--encre);font-weight:600}
+#s60 .feuille{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
            padding:16px 14px 10px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
-#s57 .feuille svg{width:100%;height:auto;display:block}
-#s57 .parcelle{fill:none;stroke:var(--plan);stroke-width:2.5}
-#s57 .maison{fill:var(--teinte);stroke:var(--plan);stroke-width:2}
-#s57 .gazon{fill:var(--herbe);stroke:var(--plan);stroke-width:1.4}
-#s57 .contour{fill:none;stroke:var(--plan);stroke-width:1.6}
-#s57 .massif{fill:none;stroke:var(--gris);stroke-width:1.2;stroke-dasharray:1 5;stroke-linecap:round}
-#s57 .massif-f{fill:var(--teinte)}
-#s57 .arc{fill:none;stroke-width:1.2;stroke-opacity:.85}
-#s57 .zone-arc{fill-opacity:.17}
-#s57 .tete{fill:var(--papier);stroke-width:2.6}
-#s57 .tuyau{fill:none;stroke-width:2.4;stroke-dasharray:9 5;stroke-linecap:round}
-#s57 .tuyau-p{fill:none;stroke:var(--plan);stroke-width:2.8;stroke-dasharray:11 5;stroke-linecap:round}
-#s57 .cote{fill:var(--gris);font-size:12px;font-family:inherit}
-#s57 .repere{fill:var(--plan);font-size:12.5px;font-family:inherit}
-#s57 .repere-b{fill:var(--plan);font-size:12.5px;font-weight:700;font-family:inherit}
-#s57 .ech{fill:var(--gris);font-size:12px;font-family:inherit;font-style:italic}
-#s57 .leg-t{fill:var(--encre);font-size:13px;font-weight:700;font-family:inherit}
-#s57 .leg{fill:var(--encre);font-size:12.5px;font-family:inherit}
-#s57 .leg-g{fill:var(--gris);font-size:11.5px;font-family:inherit}
-#s57 .rangee{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
-#s57 .colonne{flex:1;min-width:270px}
-#s57 .liste{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
+#s60 .feuille svg{width:100%;height:auto;display:block}
+#s60 .parcelle{fill:none;stroke:var(--plan);stroke-width:2.5}
+#s60 .maison{fill:var(--teinte);stroke:var(--plan);stroke-width:2}
+#s60 .gazon{fill:var(--herbe);stroke:var(--plan);stroke-width:1.4}
+#s60 .contour{fill:none;stroke:var(--plan);stroke-width:1.6}
+#s60 .massif{fill:none;stroke:var(--gris);stroke-width:1.2;stroke-dasharray:1 5;stroke-linecap:round}
+#s60 .massif-f{fill:var(--teinte)}
+#s60 .arc{fill:none;stroke-width:1.2;stroke-opacity:.85}
+#s60 .zone-arc{fill-opacity:.17}
+#s60 .tete{fill:var(--papier);stroke-width:2.6}
+#s60 .tuyau{fill:none;stroke-width:2.4;stroke-dasharray:9 5;stroke-linecap:round}
+#s60 .tuyau-p{fill:none;stroke:var(--plan);stroke-width:2.8;stroke-dasharray:11 5;stroke-linecap:round}
+#s60 .cote{fill:var(--gris);font-size:12px;font-family:inherit}
+#s60 .repere{fill:var(--plan);font-size:12.5px;font-family:inherit}
+#s60 .repere-b{fill:var(--plan);font-size:12.5px;font-weight:700;font-family:inherit}
+#s60 .ech{fill:var(--gris);font-size:12px;font-family:inherit;font-style:italic}
+#s60 .leg-t{fill:var(--encre);font-size:13px;font-weight:700;font-family:inherit}
+#s60 .leg{fill:var(--encre);font-size:12.5px;font-family:inherit}
+#s60 .leg-g{fill:var(--gris);font-size:11.5px;font-family:inherit}
+#s60 .rangee{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+#s60 .colonne{flex:1;min-width:270px}
+#s60 .liste{background:var(--papier);border:1px solid var(--trait);border-radius:14px;
          padding:14px 16px 16px}
-#s57 .liste h2{font-family:Georgia,serif;font-weight:400;font-size:17px;margin:0 0 2px}
-#s57 .liste .sous{font-size:12px;color:var(--gris);margin:0 0 12px}
-#s57 .l{display:flex;gap:10px;align-items:baseline;padding:7px 0;
+#s60 .liste h2{font-family:Georgia,serif;font-weight:400;font-size:17px;margin:0 0 2px}
+#s60 .liste .sous{font-size:12px;color:var(--gris);margin:0 0 12px}
+#s60 .l{display:flex;gap:10px;align-items:baseline;padding:7px 0;
      border-bottom:1px solid var(--trait);font-size:13px}
-#s57 .l .q{flex:none;min-width:52px;color:var(--gris);font-variant-numeric:tabular-nums}
-#s57 .l .n{flex:1;min-width:0}
-#s57 .l.fam{border:0;padding:12px 0 2px;font-size:10.5px;letter-spacing:.13em;
+#s60 .l .q{flex:none;min-width:52px;color:var(--gris);font-variant-numeric:tabular-nums}
+#s60 .l .n{flex:1;min-width:0}
+#s60 .l.fam{border:0;padding:12px 0 2px;font-size:10.5px;letter-spacing:.13em;
          text-transform:uppercase;color:var(--or)}
-#s57 .note{margin-top:20px;padding:16px 18px;border-radius:12px;
+#s60 .note{margin-top:20px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s57 .note b{color:var(--encre);font-weight:600}
-#s57 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+#s60 .note b{color:var(--encre);font-weight:600}
+#s60 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s57 .note + .note{margin-top:14px}
-#s57 .note ul{margin:8px 0 0;padding-left:19px}
-#s57 .note li{margin-bottom:7px}
+#s60 .note + .note{margin-top:14px}
+#s60 .note ul{margin:8px 0 0;padding-left:19px}
+#s60 .note li{margin-bottom:7px}
 
 
-/* 58 — Où sont les tés */
-#s58{
+/* 61 — Où sont les tés */
+#s61{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
     --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#2F4C78; --jaune:#F2C230;
   }
 @media (prefers-color-scheme: dark){
-#s58:not([data-theme="light"]){
+#s61:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
       --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
@@ -6363,62 +6667,62 @@
 
   
 }
-#s58[data-theme="dark"]{
+#s61[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
     --alerte:#C87058; --teinte:#252320; --eau:#7FA8D8; --jaune:#F7CE45;
   }
-#s58, #s58 *{box-sizing:border-box}
-#s58{margin:0;background:var(--fond);color:var(--encre);
+#s61, #s61 *{box-sizing:border-box}
+#s61{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s58 .dedans{max-width:900px;margin:0 auto}
-#s58 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+#s61 .dedans{max-width:900px;margin:0 auto}
+#s61 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
-#s58 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
-#s58 .intro b{color:var(--encre);font-weight:600}
-#s58 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+#s61 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s61 .intro b{color:var(--encre);font-weight:600}
+#s61 .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
        background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
-#s58 .dit b{color:var(--encre);font-weight:600}
-#s58 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
+#s61 .dit b{color:var(--encre);font-weight:600}
+#s61 .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
            padding:18px 16px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08);margin-bottom:18px}
-#s58 .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;flex-wrap:wrap}
-#s58 .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
-#s58 .verdict .quoi{font-size:14px;color:var(--gris)}
-#s58 .trace{width:100%;height:auto;display:block;margin:0 0 6px}
-#s58 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:9;
+#s61 .verdict{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+#s61 .verdict .gros{font-family:Georgia,serif;font-size:34px;line-height:1;color:var(--encre)}
+#s61 .verdict .quoi{font-size:14px;color:var(--gris)}
+#s61 .trace{width:100%;height:auto;display:block;margin:0 0 6px}
+#s61 .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:9;
                 stroke-linecap:round;stroke-linejoin:round}
-#s58 .trace .arroseur{fill:none;stroke:var(--eau);stroke-width:9}
-#s58 .trace .regard-b{fill:none;stroke:var(--eau);stroke-width:9}
-#s58 .trace .te{fill:var(--jaune);stroke:var(--encre);stroke-width:5}
-#s58 .trace .te-n{fill:var(--encre);font-size:38px;font-weight:700;
+#s61 .trace .arroseur{fill:none;stroke:var(--eau);stroke-width:9}
+#s61 .trace .regard-b{fill:none;stroke:var(--eau);stroke-width:9}
+#s61 .trace .te{fill:var(--jaune);stroke:var(--encre);stroke-width:5}
+#s61 .trace .te-n{fill:var(--encre);font-size:38px;font-weight:700;
                font-family:inherit;text-anchor:middle}
-#s58 .trace .etq{fill:var(--gris);font-size:34px;font-family:inherit}
-#s58 .trace .etq-a{fill:var(--pin);font-size:32px;font-family:inherit;text-anchor:middle}
-#s58 .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
+#s61 .trace .etq{fill:var(--gris);font-size:34px;font-family:inherit}
+#s61 .trace .etq-a{fill:var(--pin);font-size:32px;font-family:inherit;text-anchor:middle}
+#s61 .legende{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;
            font-size:12.5px;color:var(--gris)}
-#s58 .legende span{display:inline-flex;align-items:center;gap:7px}
-#s58 .pastille{width:15px;height:15px;border-radius:50%;flex:none;
+#s61 .legende span{display:inline-flex;align-items:center;gap:7px}
+#s61 .pastille{width:15px;height:15px;border-radius:50%;flex:none;
             background:var(--jaune);border:2px solid var(--encre)}
-#s58 .cercle{width:15px;height:15px;border-radius:50%;flex:none;
+#s61 .cercle{width:15px;height:15px;border-radius:50%;flex:none;
           border:3px solid var(--eau)}
-#s58 .note{margin-top:8px;padding:16px 18px;border-radius:12px;
+#s61 .note{margin-top:8px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s58 .note b{color:var(--encre);font-weight:600}
-#s58 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+#s61 .note b{color:var(--encre);font-weight:600}
+#s61 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s58 .note + .note{margin-top:14px}
-#s58 .note code{font-size:12.5px}
+#s61 .note + .note{margin-top:14px}
+#s61 .note code{font-size:12.5px}
 
 
-/* 59 — Mes mots au catalogue */
-#s59{
+/* 62 — Mes mots au catalogue */
+#s62{
     --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
     --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
     --alerte:#9C3B2E; --teinte:#ece9e1;
   }
 @media (prefers-color-scheme: dark){
-#s59:not([data-theme="light"]){
+#s62:not([data-theme="light"]){
       --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
       --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
       --alerte:#C87058; --teinte:#252320;
@@ -6426,80 +6730,80 @@
 
   
 }
-#s59[data-theme="dark"]{
+#s62[data-theme="dark"]{
     --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
     --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
     --alerte:#C87058; --teinte:#252320;
   }
-#s59, #s59 *{box-sizing:border-box}
-#s59{margin:0;background:var(--fond);color:var(--encre);
+#s62, #s62 *{box-sizing:border-box}
+#s62{margin:0;background:var(--fond);color:var(--encre);
        font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
        padding:26px 18px 70px}
-#s59 .dedans{max-width:960px;margin:0 auto}
-#s59 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+#s62 .dedans{max-width:960px;margin:0 auto}
+#s62 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
      font-size:27px;line-height:1.2;margin:0 0 8px}
-#s59 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
-#s59 .intro b{color:var(--encre);font-weight:600}
-#s59 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
+#s62 .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+#s62 .intro b{color:var(--encre);font-weight:600}
+#s62 .dit{margin:0 0 22px;padding:14px 17px;border-radius:12px;
        background:var(--papier);border-left:3px solid var(--or);
        font-size:13.5px;line-height:1.65;color:var(--gris)}
-#s59 .dit b{color:var(--encre);font-weight:600}
-#s59 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
-#s59 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
-#s59 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+#s62 .dit b{color:var(--encre);font-weight:600}
+#s62 .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#s62 .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#s62 .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
                   border:1px solid var(--trait);font-size:13.5px;
                   background:var(--papier);color:var(--gris);
                   -webkit-tap-highlight-color:transparent}
-#s59 #s59-v-a:checked ~ .dedans .segments label[for="s59-v-a"],#s59 #s59-v-b:checked ~ .dedans .segments label[for="s59-v-b"],#s59 #s59-v-c:checked ~ .dedans .segments label[for="s59-v-c"]{
+#s62 #s62-v-a:checked ~ .dedans .segments label[for="s62-v-a"],#s62 #s62-v-b:checked ~ .dedans .segments label[for="s62-v-b"],#s62 #s62-v-c:checked ~ .dedans .segments label[for="s62-v-c"]{
     background:var(--pin);border-color:var(--pin);color:#fff}
-#s59 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
-#s59 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
+#s62 .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+#s62 .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:14px 12px;
        background:var(--teinte);
        box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
-#s59 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
-#s59 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
+#s62 .ecran{background:var(--papier);border-radius:14px;padding:0 0 16px;overflow:hidden}
+#s62 .entete{display:flex;align-items:center;gap:11px;padding:15px 16px 13px;
           border-bottom:1px solid var(--trait)}
-#s59 .retour{flex:none;width:31px;height:31px;border-radius:9px;
+#s62 .retour{flex:none;width:31px;height:31px;border-radius:9px;
           border:1px solid var(--trait);display:flex;align-items:center;
           justify-content:center;color:var(--encre);font-size:17px;line-height:1}
-#s59 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
-#s59 .corps{padding:14px 16px 0}
-#s59 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
-#s59 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+#s62 .entete .t{font-family:Georgia,serif;font-size:22px;line-height:1.15}
+#s62 .corps{padding:14px 16px 0}
+#s62 .sous{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 15px}
+#s62 .etiq{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
         color:var(--gris);display:block;margin:0 0 8px}
-#s59 .etiq.mienne{color:var(--or)}
-#s59 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
+#s62 .etiq.mienne{color:var(--or)}
+#s62 .carte{background:var(--teinte);border-radius:11px;padding:11px 13px;
          margin-bottom:9px}
-#s59 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
+#s62 .carte .nom{font-family:Georgia,serif;font-size:17px;line-height:1.2;
               display:block;margin-bottom:3px}
-#s59 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
-#s59 .mien{color:var(--or)}
-#s59 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
-#s59 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
+#s62 .carte .mots{font-size:12.5px;color:var(--gris);line-height:1.5;margin:0}
+#s62 .mien{color:var(--or)}
+#s62 .apres{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--or)}
+#s62 .ajouter{display:block;text-align:center;margin:2px 0 4px;padding:10px 12px;
            border-radius:10px;border:1px dashed var(--or);color:var(--or);
            font-size:13.5px}
-#s59 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
-#s59 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
-#s59 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
-#s59 .a-part,#s59 .a-dessus,#s59 .a-melange{display:none}
-#s59 #s59-v-a:checked ~ .dedans .a-part,#s59 #s59-v-b:checked ~ .dedans .a-dessus,#s59 #s59-v-c:checked ~ .dedans .a-melange{display:block}
-#s59 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s59 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+#s62 .plein{border-style:solid;background:var(--pin);border-color:var(--pin);color:#fff}
+#s62 .sep{height:1px;background:var(--trait);margin:15px 0 14px}
+#s62 .glose{font-size:11.5px;color:var(--gris);line-height:1.5;margin:0 0 12px}
+#s62 .a-part,#s62 .a-dessus,#s62 .a-melange{display:none}
+#s62 #s62-v-a:checked ~ .dedans .a-part,#s62 #s62-v-b:checked ~ .dedans .a-dessus,#s62 #s62-v-c:checked ~ .dedans .a-melange{display:block}
+#s62 .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+#s62 .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
               color:var(--encre);margin-bottom:8px}
-#s59 .legende b{color:var(--encre);font-weight:600}
-#s59 .l-a,#s59 .l-b,#s59 .l-c{display:none}
-#s59 #s59-v-a:checked ~ .dedans .l-a,#s59 #s59-v-b:checked ~ .dedans .l-b,#s59 #s59-v-c:checked ~ .dedans .l-c{display:block}
-#s59 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
-#s59 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
+#s62 .legende b{color:var(--encre);font-weight:600}
+#s62 .l-a,#s62 .l-b,#s62 .l-c{display:none}
+#s62 #s62-v-a:checked ~ .dedans .l-a,#s62 #s62-v-b:checked ~ .dedans .l-b,#s62 #s62-v-c:checked ~ .dedans .l-c{display:block}
+#s62 .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+#s62 .conseil{display:inline-block;margin-bottom:9px;padding:3px 10px;border-radius:9999px;
            background:var(--pin);color:#fff;font-size:11px;letter-spacing:.06em;
            text-transform:uppercase}
-#s59 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+#s62 .note{margin-top:30px;padding:16px 18px;border-radius:12px;
         background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
-#s59 .note b{color:var(--encre);font-weight:600}
-#s59 .note .t{display:block;font-size:11px;letter-spacing:.13em;
+#s62 .note b{color:var(--encre);font-weight:600}
+#s62 .note .t{display:block;font-size:11px;letter-spacing:.13em;
            text-transform:uppercase;color:var(--or);margin-bottom:8px}
-#s59 .note ul{margin:8px 0 0;padding-left:19px}
-#s59 .note li{margin-bottom:6px}
+#s62 .note ul{margin:8px 0 0;padding-left:19px}
+#s62 .note li{margin-bottom:6px}
 
 
 </style>
@@ -6755,21 +7059,35 @@
         <span class="no">55</span><span class="titre">Le tracé du tuyau</span><span class="fleche">↓</span>
         <span class="quoi">Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.</span>
       </a>
+      <p class="famille">L’argent qui ne rentre pas</p>
       <a class="item" href="#m56">
-        <span class="no">56</span><span class="titre">Le cinquième onglet</span><span class="fleche">↓</span>
-        <span class="quoi">Où ranger les outils métier ? Sa décision : un cinquième onglet « Outils ». Cinq variantes de barre, mesurées à 360 px — deux sont à écarter.</span>
+        <span class="no">56</span><span class="titre">Simple : il ne paie pas</span><span class="fleche">↓</span>
+        <span class="quoi">Refait après sa correction « c’est trop compliqué » : un lien, une question, deux réponses. Quatre écrans.</span>
       </a>
       <a class="item" href="#m57">
-        <span class="no">57</span><span class="titre">Le plan comme le sien</span><span class="fleche">↓</span>
-        <span class="quoi">Sa photo d’un plan d’exécution, refaite un réseau par couleur : la cible du produit, dessinée avant d’écrire le moteur de plan.</span>
+        <span class="no">57</span><span class="titre">Il ne paie pas</span><span class="fleche">↓</span>
+        <span class="quoi">Un avoir éteint la dette et interdit de réclamer ; une facture déclarée perdue reste réclamable. Trois arrangements.</span>
       </a>
       <a class="item" href="#m58">
-        <span class="no">58</span><span class="titre">Où sont les tés</span><span class="fleche">↓</span>
+        <span class="no">58</span><span class="titre">L’avoir</span><span class="fleche">↓</span>
+        <span class="quoi">La forme du document : à part, en mention, ou facture refaite. Trois montants essayables, tous recalculés.</span>
+      </a>
+      <p class="famille">L’arrosage automatique</p>
+      <a class="item" href="#m59">
+        <span class="no">59</span><span class="titre">Le cinquième onglet</span><span class="fleche">↓</span>
+        <span class="quoi">Où ranger les outils métier ? Sa décision : un cinquième onglet « Outils ». Cinq variantes de barre, mesurées à 360 px — deux sont à écarter.</span>
+      </a>
+      <a class="item" href="#m60">
+        <span class="no">60</span><span class="titre">Le plan comme le sien</span><span class="fleche">↓</span>
+        <span class="quoi">Sa photo d’un plan d’exécution, refaite un réseau par couleur : la cible du produit, dessinée avant d’écrire le moteur de plan.</span>
+      </a>
+      <a class="item" href="#m61">
+        <span class="no">61</span><span class="titre">Où sont les tés</span><span class="fleche">↓</span>
         <span class="quoi">« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! » — son tracé libre, cinq tés marqués, et la règle qui vaut partout : N arroseurs, N − 1 tés.</span>
       </a>
       <p class="famille">Les réglages</p>
-      <a class="item" href="#m59">
-        <span class="no">59</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
+      <a class="item" href="#m62">
+        <span class="no">62</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
         <span class="quoi">« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.</span>
       </a>
     <p class="note">
@@ -22251,10 +22569,648 @@
   <section class="etape" id="m56">
     <div class="etape-tete">
       <span class="etape-no">56</span>
-      <h2>Le cinquième onglet</h2>
+      <h2>Simple : il ne paie pas</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s56">
+<input type="radio" name="e" id="s56-e-1" class="etat" checked>
+<input type="radio" name="e" id="s56-e-2" class="etat">
+<input type="radio" name="e" id="s56-e-3" class="etat">
+<input type="radio" name="e" id="s56-e-4" class="etat">
+<input type="radio" name="m" id="s56-m-3" class="etat" checked>
+<input type="radio" name="m" id="s56-m-t" class="etat">
+
+<div class="dedans">
+  <h1>Simple : il ne paie pas</h1>
+  <p class="intro">
+    Un bouton sur la facture, <b>deux réponses</b>, c'est fini. Avancez d'un
+    écran à l'autre — vous verrez qu'il n'y a rien d'autre.
+  </p>
+
+  <div class="reglage">
+    <span class="quoi">Avancez</span>
+    <div class="segments">
+      <label for="s56-e-1">1 · La facture</label>
+      <label for="s56-e-2">2 · La question</label>
+      <label for="s56-e-3">3 · Combien</label>
+      <label for="s56-e-4">4 · Fini</label>
+    </div>
+  </div>
+
+  <div class="si-montant reglage">
+    <span class="quoi">Vous lui enlevez</span>
+    <div class="segments">
+      <label for="s56-m-3">300 €</label>
+      <label for="s56-m-t">Tout</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="feuille">
+
+        <!-- 1 · La facture, telle qu'elle est déjà -->
+        <div class="ec-1">
+          <span class="sur">Facture F2026-0031</span>
+          <p class="h2">M. Martins</p>
+          <p class="sous">Émise le 12 juillet · 37 jours de retard</p>
+          <div class="tot"><span>Total TTC</span><span>1 440,00 €</span></div>
+          <div class="tot gros rouge"><span>Reste dû</span><span>1 440,00 €</span></div>
+          <span class="gros-bouton">J'ai reçu l'argent</span>
+          <span class="lien-discret">Il ne me paiera pas →</span>
+        </div>
+
+        <!-- 2 · La question, et il n'y en a qu'une -->
+        <div class="ec-2">
+          <span class="sur">F2026-0031 · M. Martins</span>
+          <p class="h2">Que voulez-vous faire ?</p>
+          <p class="sous">1 440,00 € toujours dus</p>
+
+          <span class="reponse">
+            <span class="nom">Je lui enlève quelque chose</span>
+            <span class="det">Il devra moins. Un document part chez lui.</span>
+          </span>
+
+          <span class="reponse">
+            <span class="nom">Il ne paiera pas</span>
+            <span class="det">On arrête de vous le rappeler. Vous pourrez
+              toujours réclamer.</span>
+          </span>
+        </div>
+
+        <!-- 3 · Combien — une case, rien d'autre -->
+        <div class="ec-3">
+          <span class="sur">F2026-0031 · M. Martins</span>
+          <p class="h2">Vous lui enlevez combien ?</p>
+          <p class="sous">Sur les 1 440,00 € qu'il doit</p>
+
+          <div class="case">
+            <span class="lab">Montant retiré</span>
+            <span class="val"><span class="m3">300,00 €</span><span class="mt">1 440,00 €</span></span>
+          </div>
+
+          <div class="apres">
+            <div class="tot"><span>Il devra</span><span>
+              <span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+          </div>
+
+          <span class="gros-bouton">C'est bon</span>
+        </div>
+
+        <!-- 4 · Fini -->
+        <div class="ec-4">
+          <div class="fini">
+            <span class="coche">✓</span>
+            <p class="h2">C'est fait</p>
+            <p class="sous">
+              <span class="m3">M. Martins ne devra plus que 1 140,00 €.</span>
+              <span class="mt">M. Martins ne doit plus rien.</span><br>
+              Son document est prêt à partir.</p>
+            <span class="gros-bouton">Le lui envoyer</span>
+            <span class="lien-discret">Plus tard</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="legende">
+      <span class="t">Ce que ça donne</span>
+      <p><b>Un lien discret sur la facture</b>, sous le bouton qui sert tous les
+        jours. Il ne gêne personne et se trouve quand on en a besoin.</p>
+      <p><b>Une question, deux réponses.</b> Pas de mot de comptable, pas de
+        choix de forme, pas de tableau.</p>
+      <p><b>Une case, un chiffre.</b> Vous voyez tout de suite ce qu'il devra.</p>
+
+      <span class="t" style="margin-top:22px">Pourquoi deux réponses et pas une</span>
+      <p>Elles font l'inverse l'une de l'autre. <b>Enlever une somme, c'est y
+        renoncer</b> — vous ne pourrez plus jamais la réclamer. <b>Dire qu'il ne
+        paiera pas</b> garde la facture entière et votre droit avec.</p>
+      <p>N'en garder qu'une serait plus simple d'un cran, et la seule qui
+        resterait est celle qui vous désarme. <b>Une ligne chacune</b>, c'est
+        aussi court que ça peut l'être sans vous coûter de l'argent.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui a été retiré depuis les planches d'avant</span>
+    Le mot « avoir » — c'est du vocabulaire de comptable, et le document le
+    portera de toute façon quand il partira. Le choix entre trois formes de
+    document : Atlas prend la bonne. Les explications de TVA : la vôtre ne bouge
+    pas, vous la payez quand le client paie — ce qui ne bouge pas n'a rien à
+    faire à l'écran.
+    <br><br>
+    Le raisonnement complet reste lisible dans
+    <a href="79-il-ne-paie-pas.html">79</a> et
+    <a href="80-l-avoir.html">80</a>, si un jour la question se repose.
+  </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m57">
+    <div class="etape-tete">
+      <span class="etape-no">57</span>
+      <h2>Il ne paie pas</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s57">
+<input type="radio" name="v" id="s57-v-a" class="etat" checked>
+<input type="radio" name="v" id="s57-v-b" class="etat">
+<input type="radio" name="v" id="s57-v-c" class="etat">
+<input type="radio" name="p" id="s57-p-r" class="etat" checked>
+<input type="radio" name="p" id="s57-p-f" class="etat">
+
+<div class="dedans">
+  <h1>Il ne paie pas</h1>
+  <p class="intro">
+    Trois arrangements pour la même situation : <b>M. Martins doit 1 440 € depuis
+    37 jours</b>. Touchez les pastilles — la planche change vraiment.
+  </p>
+
+  <p class="dit">
+    « Si jamais on facture un client et qui décide de ne pas nous payer, il faut
+    avoir la possibilité de <b>créer un avoir</b>. »
+  </p>
+
+  <div class="attention">
+    <span class="t">Avant de choisir — ce ne sont pas des mots</span>
+    <b>Un avoir dit que la somme n'est plus due.</b> En le faisant, vous
+    renoncez à réclamer l'argent : plus de relance, plus de recouvrement, plus
+    de procédure possible. C'est ce qu'il faut quand <b>vous</b> voulez annuler
+    (erreur, geste commercial).<br><br>
+    <b>Quand c'est LUI qui refuse de payer</b>, ce n'est pas un avoir qu'il vous
+    faut : c'est de dire que la facture est <b>perdue</b>. Elle reste entière,
+    le rappel se tait, et vous gardez le droit de la réclamer — même dans deux
+    ans.<br><br>
+    <b>Votre TVA, elle, ne bouge pas.</b> Vous la payez quand le client paie
+    (réglé le 16 août) : une facture jamais payée n'est jamais entrée dans votre
+    relevé. Vous n'avez <b>rien à récupérer et aucune démarche à faire</b>.
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Ce que l'application vous propose</span>
+    <div class="segments">
+      <label for="s57-v-a">A · Trois portes</label>
+      <label for="s57-v-b">B · Un avoir, un montant</label>
+      <label for="s57-v-c">C · Deux portes</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">D'où vous y arrivez</span>
+    <div class="segments">
+      <label for="s57-p-r">Depuis le rappel</label>
+      <label for="s57-p-f">Depuis la facture</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="feuille">
+
+        <div class="d-rappel">
+          <span class="sur">Aujourd'hui</span>
+          <p class="h2">Ce qui vous attend</p>
+          <p class="sous">Mardi 18 août</p>
+          <div class="rappel">
+            <span class="quand">37 jours de retard</span>
+            <p class="quoi">M. Martins n'a pas payé</p>
+            <p class="det">F2026-0031 · 1 440,00 € · échéance le 11 août</p>
+            <div class="boutons">
+              <span class="bt fort">J'ai reçu l'argent</span>
+              <span class="bt">Plus tard</span>
+              <span class="bt g-a">Il ne paiera pas</span>
+              <span class="bt g-b">Faire un avoir</span>
+              <span class="bt g-c">Régler autrement</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-facture">
+          <span class="sur">Facture F2026-0031</span>
+          <p class="h2">M. Martins</p>
+          <p class="sous">Émise le 12 juillet · échéance le 11 août · rien reçu</p>
+          <div class="pave">
+            <div class="tot"><span>Total HT</span><span>1 200,00 €</span></div>
+            <div class="tot"><span>TVA 20 %</span><span>240,00 €</span></div>
+            <div class="tot gros"><span>Total TTC</span><span>1 440,00 €</span></div>
+            <div class="tot rouge"><span>Reste dû</span><span>1 440,00 €</span></div>
+          </div>
+          <div class="boutons" style="margin-top:14px">
+            <span class="bt fort">Noter un règlement</span>
+            <span class="bt g-a">Cette facture pose problème</span>
+            <span class="bt g-b">Faire un avoir</span>
+            <span class="bt g-c">Régler autrement</span>
+          </div>
+        </div>
+
+        <!-- ══ A · TROIS PORTES NOMMÉES ══════════════════════════════ -->
+        <div class="g-a" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:12px">Que s'est-il passé ?</p>
+
+          <div class="porte">
+            <span class="rond">✎</span>
+            <span class="txt">
+              <span class="nom">Je me suis trompé</span>
+              <span class="det">Mauvais prix, ligne en trop, mauvais client.
+                Atlas fait un <b>avoir de 1 440,00 €</b> et prépare la facture
+                corrigée.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">–</span>
+            <span class="txt">
+              <span class="nom">Je lui fais un geste</span>
+              <span class="det">Il conteste, vous coupez la poire en deux.
+                <b>Avoir partiel</b> — vous dites combien. Le reste, il le doit
+                toujours.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">✕</span>
+            <span class="txt">
+              <span class="nom">Il ne paiera jamais</span>
+              <span class="det">La facture reste entière. Le rappel se tait,
+                les <b>1 440,00 € passent en « perdus »</b> — et vous gardez le
+                droit de les réclamer.</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- ══ B · UNE SEULE PORTE ═══════════════════════════════════ -->
+        <div class="g-b" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:4px">Faire un avoir</p>
+          <p class="sous">Sur la facture F2026-0031 — 1 440,00 €</p>
+          <div class="pave" style="border-top:0;padding-top:0">
+            <div class="porte"><span class="rond">€</span><span class="txt">
+              <span class="nom">Montant de l'avoir</span>
+              <span class="det">Vous tapez ce que vous retirez. Tout, ou une
+                partie.</span></span></div>
+            <div class="porte"><span class="rond">✎</span><span class="txt">
+              <span class="nom">Motif</span>
+              <span class="det">Une ligne libre, portée sur le document.</span></span></div>
+          </div>
+          <div class="boutons" style="margin-top:14px">
+            <span class="bt fort">Établir l'avoir</span>
+          </div>
+        </div>
+
+        <!-- ══ C · DEUX PORTES ═══════════════════════════════════════ -->
+        <div class="g-c" style="margin-top:18px">
+          <span class="sur">Ce qui s'ouvre</span>
+          <p class="h2" style="margin-bottom:12px">Régler autrement</p>
+
+          <div class="porte">
+            <span class="rond">€</span>
+            <span class="txt">
+              <span class="nom">Faire un avoir</span>
+              <span class="det">Vous annulez tout ou partie de la facture —
+                erreur de votre part, ou geste que vous lui accordez. Vous dites
+                combien.</span>
+            </span>
+          </div>
+
+          <div class="porte">
+            <span class="rond">✕</span>
+            <span class="txt">
+              <span class="nom">Facture perdue</span>
+              <span class="det">Il ne paiera pas. La facture reste entière, le
+                rappel se tait, et vous gardez le droit de réclamer.</span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Trois portes nommées</span>
+        L'application ne demande pas un mot de comptable : elle demande
+        <b>ce qui s'est passé</b>, dans les mots où vous le diriez. Chaque porte
+        fait autre chose, et c'est elle qui sait laquelle est la bonne.
+        <span class="cout">
+          <span class="ok">Ce que ça vous évite</span> — de faire un avoir sur un
+          client qui refuse de payer, et de perdre ainsi le droit de le
+          réclamer. C'est le seul vrai piège de tout ce sujet, et il est
+          irréversible.<br><br>
+          <span class="e">Ce que ça coûte</span> — trois chemins à bâtir au lieu
+          d'un, et trois écrans à tenir.
+        </span>
+      </div>
+
+      <div class="l-b">
+        <span class="t">B · Un avoir, un montant</span>
+        Le plus court à faire et le plus simple à lire : une porte, une somme,
+        un document. C'est exactement ce que vous avez demandé.
+        <span class="cout">
+          <span class="e">Ce que ça coûte, et ce n'est pas petit</span> — quand
+          c'est le client qui refuse de payer, faire un avoir <b>éteint la
+          dette</b>. Vous ne pouvez plus rien réclamer, et rien à l'écran ne
+          vous aura prévenu. Le geste le plus simple est ici le plus
+          dangereux.<br><br>
+          Il resterait juste dans deux cas sur trois : votre erreur, votre
+          geste. C'est le troisième qui manque — et c'est celui que vous
+          décriviez.
+        </span>
+      </div>
+
+      <div class="l-c">
+        <span class="t">C · Deux portes</span>
+        Le compromis : la distinction qui compte est faite — annuler d'un côté,
+        constater une perte de l'autre — sans multiplier les écrans. L'erreur et
+        le geste se rejoignent, puisqu'ils produisent le même document.
+        <span class="cout">
+          <span class="ok">Ce que ça vous évite</span> — la même chose que A :
+          l'avoir posé par erreur sur un mauvais payeur.<br><br>
+          <span class="e">Ce que ça coûte</span> — « faire un avoir » reste un
+          mot de comptable, et il faut savoir si l'on est dedans avant
+          d'appuyer. A, lui, pose la question à votre place.
+        </span>
+      </div>
+
+      <table>
+        <tr><th>Ce qui arrive</th><th>Avoir</th><th>Facture perdue</th></tr>
+        <tr><td>La facture</td><td>annulée, en tout ou partie</td><td><b>intacte</b></td></tr>
+        <tr><td>Vous pouvez encore réclamer</td><td><b>non, jamais</b></td><td><b>oui</b></td></tr>
+        <tr><td>Un document part au client</td><td>oui, l'avoir</td><td>non</td></tr>
+        <tr><td>Le rappel</td><td>se tait</td><td>se tait</td></tr>
+        <tr><td>Votre relevé de TVA</td><td colspan="2"><b>ne bouge pas</b> — rien n'a été encaissé, donc rien n'y était entré</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que cette planche ne tranche pas</span>
+    <ul>
+      <li><b>À quoi ressemble l'avoir lui-même</b> — le document, son numéro, et
+        ce que deviennent les chiffres. C'est la planche suivante.</li>
+      <li><b>Faut-il relancer avant de renoncer ?</b> Une mise en demeure se
+        rédige, s'envoie en recommandé, et c'est elle qui ouvre la suite. Atlas
+        pourrait la préparer — dites si ça vous servirait.</li>
+      <li><b>Et si le client paie APRÈS</b> qu'on l'a déclarée perdue ? Le
+        règlement se note normalement et tout se remet en place. Rien n'est
+        définitif de ce côté-là.</li>
+    </ul>
+  </div>
+
+  <p class="suite">Suite : <a href="80-l-avoir.html">80 · L'avoir</a> — le document, et ce que les chiffres deviennent.</p>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m58">
+    <div class="etape-tete">
+      <span class="etape-no">58</span>
+      <h2>L’avoir</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s58">
+<input type="radio" name="v" id="s58-v-a" class="etat" checked>
+<input type="radio" name="v" id="s58-v-b" class="etat">
+<input type="radio" name="v" id="s58-v-c" class="etat">
+<input type="radio" name="m" id="s58-m-2" class="etat">
+<input type="radio" name="m" id="s58-m-3" class="etat" checked>
+<input type="radio" name="m" id="s58-m-t" class="etat">
+
+<div class="dedans">
+  <h1>L'avoir</h1>
+  <p class="intro">
+    La décision est prise : on annule tout ou partie de la facture
+    <b>F2026-0031 — M. Martins — 1 440,00 €</b>. Reste à savoir sous quelle
+    forme. Changez le montant, changez la forme : tout se recalcule.
+  </p>
+
+  <div class="reglage">
+    <span class="quoi">Sous quelle forme</span>
+    <div class="segments">
+      <label for="s58-v-a">A · Un document à part</label>
+      <label for="s58-v-b">B · Une mention sur la facture</label>
+      <label for="s58-v-c">C · Une facture refaite</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">Combien vous retirez</span>
+    <div class="segments">
+      <label for="s58-m-2">200 €</label>
+      <label for="s58-m-3">300 €</label>
+      <label for="s58-m-t">Tout — 1 440 €</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+
+      <!-- ══ A · UN DOCUMENT À PART ═══════════════════════════════════ -->
+      <div class="v-a">
+        <div class="feuille">
+          <p class="titre-doc">AVOIR</p>
+          <p class="sous-doc">A2026-0001 · 18 août 2026</p>
+          <p class="renvoi">sur la facture F2026-0031 du 12 juillet 2026</p>
+
+          <div class="bloc-id">
+            <div><b>Gunzi Élagage</b>12 route des Pins<br>33240 Saint-André<br>SIRET 813 204 559 00021</div>
+            <div><b>M. Martins</b>3 rue des Lilas<br>33240 Saint-André</div>
+          </div>
+
+          <div class="lg neg">
+            <span class="m2">Geste commercial</span>
+            <span class="m3">Geste commercial</span>
+            <span class="mt">Annulation de la facture</span>
+            <span class="prix">
+              <span class="m2">−166,67 €</span><span class="m3">−250,00 €</span><span class="mt">−1 200,00 €</span>
+            </span>
+          </div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>
+              <span class="m2">−166,67 €</span><span class="m3">−250,00 €</span><span class="mt">−1 200,00 €</span></span></div>
+            <div class="tot"><span>TVA 20 %</span><span>
+              <span class="m2">−33,33 €</span><span class="m3">−50,00 €</span><span class="mt">−240,00 €</span></span></div>
+            <div class="tot gros rouge"><span>Total TTC</span><span>
+              <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+          </div>
+
+          <p class="mention">Avoir émis en annulation partielle de la facture
+            F2026-0031. TVA sur les encaissements.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">La facture, après</span>
+          <div class="lgn"><span>F2026-0031 · Total TTC</span><span>1 440,00 €</span></div>
+          <div class="lgn"><span>Avoir A2026-0001</span><span>
+            <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+          <div class="lgn fort"><span>Reste dû</span><span>
+            <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+        </div>
+      </div>
+
+      <!-- ══ B · UNE MENTION SUR LA FACTURE ═══════════════════════════ -->
+      <div class="v-b">
+        <div class="feuille">
+          <p class="titre-doc">FACTURE</p>
+          <p class="sous-doc">F2026-0031 · 12 juillet 2026</p>
+          <p class="renvoi">M. Martins</p>
+
+          <div class="lg"><span>Abattage de chêne — démontage</span><span class="prix">850,00 €</span></div>
+          <div class="lg"><span>Enlèvement des grumes</span><span class="prix">350,00 €</span></div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>1 200,00 €</span></div>
+            <div class="tot"><span>TVA 20 %</span><span>240,00 €</span></div>
+            <div class="tot gros"><span>Total TTC</span><span>1 440,00 €</span></div>
+            <div class="tot or"><span>Avoir accordé le 18 août</span><span>
+              <span class="m2">−200,00 €</span><span class="m3">−300,00 €</span><span class="mt">−1 440,00 €</span></span></div>
+            <div class="tot rouge"><span>Reste dû</span><span>
+              <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+          </div>
+
+          <p class="mention">Aucun second document. La mention vit sur la
+            facture, et sur elle seule.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">Ce que le client reçoit</span>
+          <div class="lgn"><span>Un document</span><span>aucun</span></div>
+          <div class="lgn"><span>Une pièce pour son comptable</span><span>aucune</span></div>
+        </div>
+      </div>
+
+      <!-- ══ C · UNE FACTURE REFAITE ══════════════════════════════════ -->
+      <div class="v-c">
+        <div class="feuille">
+          <p class="titre-doc">FACTURE</p>
+          <p class="sous-doc">F2026-0034 · 18 août 2026</p>
+          <p class="renvoi">annule et remplace la facture F2026-0031</p>
+
+          <div class="bloc-id">
+            <div><b>Gunzi Élagage</b>12 route des Pins<br>33240 Saint-André</div>
+            <div><b>M. Martins</b>3 rue des Lilas<br>33240 Saint-André</div>
+          </div>
+
+          <div class="lg"><span>Abattage de chêne — démontage</span><span class="prix">
+            <span class="m2">683,33 €</span><span class="m3">600,00 €</span><span class="mt">0,00 €</span></span></div>
+          <div class="lg"><span>Enlèvement des grumes</span><span class="prix">
+            <span class="m2">350,00 €</span><span class="m3">350,00 €</span><span class="mt">0,00 €</span></span></div>
+
+          <div class="totaux">
+            <div class="tot"><span>Total HT</span><span>
+              <span class="m2">1 033,33 €</span><span class="m3">950,00 €</span><span class="mt">0,00 €</span></span></div>
+            <div class="tot"><span>TVA 20 %</span><span>
+              <span class="m2">206,67 €</span><span class="m3">190,00 €</span><span class="mt">0,00 €</span></span></div>
+            <div class="tot gros"><span>Total TTC</span><span>
+              <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+          </div>
+
+          <p class="mention">La première facture reste au dossier, marquée
+            « remplacée ». Un avoir de son montant total l'accompagne.</p>
+        </div>
+
+        <div class="apres">
+          <span class="t">Ce que ça produit</span>
+          <div class="lgn"><span>F2026-0031</span><span class="barre">1 440,00 €</span></div>
+          <div class="lgn"><span>Avoir A2026-0001</span><span>−1 440,00 €</span></div>
+          <div class="lgn fort"><span>F2026-0034 · reste dû</span><span>
+            <span class="m2">1 240,00 €</span><span class="m3">1 140,00 €</span><span class="mt">0,00 €</span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legende">
+      <div class="l-a">
+        <span class="t">A · Un document à part</span>
+        L'avoir est une pièce, comme la facture : son numéro, sa date, son PDF,
+        et il part au client par le même chemin. <b>La facture ne bouge pas</b> —
+        c'est la règle qui fonde tout : une facture émise ne se corrige jamais,
+        on lui ajoute une pièce par-dessus.
+        <span class="cout">
+          <span class="ok">Ce que ça vous donne</span> — quelque chose à envoyer
+          au client, et quelque chose à donner à votre comptable. Les deux se
+          rapprochent tout seuls par le numéro.<br><br>
+          <span class="e">Ce que ça coûte</span> — une deuxième série de numéros
+          à tenir, et un second document dans l'application.
+        </span>
+      </div>
+
+      <div class="l-b">
+        <span class="t">B · Une mention sur la facture</span>
+        Rien de neuf : une ligne de plus sous le total, et le reste dû tombe.
+        C'est de loin le plus court à faire, et le plus simple à lire sur un
+        téléphone.
+        <span class="cout">
+          <span class="e">Ce que ça coûte, et c'est rédhibitoire</span> — il n'y
+          a <b>aucune pièce</b>. Votre client n'a rien à classer, votre
+          comptable n'a rien à joindre, et si l'administration demande pourquoi
+          1 440 € facturés sont devenus 1 140 €, la réponse est une ligne dans
+          une application.<br><br>
+          Pire : la facture affichée ne dit plus la même chose que celle que le
+          client a déjà reçue en PDF.
+        </span>
+      </div>
+
+      <div class="l-c">
+        <span class="t">C · Une facture refaite</span>
+        La façon « propre » quand la première facture était <b>fausse</b> : on
+        annule tout par un avoir, et on réémet la bonne. C'est ce qu'on fait
+        pour une erreur de prix ou de client.
+        <span class="cout">
+          <span class="ok">Ce que ça vous donne</span> — un dossier limpide
+          quand vous vous êtes trompé : une facture juste, et la trace de la
+          fausse.<br><br>
+          <span class="e">Ce que ça coûte</span> — trois documents pour un
+          chantier, un numéro de facture qui change (votre client cherchera
+          l'ancien), et c'est <b>trop lourd pour un simple geste commercial</b>.
+        </span>
+      </div>
+
+      <table>
+        <tr><th>Vous retirez</th><th class="num">HT</th><th class="num">TVA</th><th class="num">TTC</th><th class="num">Reste</th></tr>
+        <tr><td>200 €</td><td class="num">166,67</td><td class="num">33,33</td><td class="num">200,00</td><td class="num"><b>1 240,00</b></td></tr>
+        <tr><td>300 €</td><td class="num">250,00</td><td class="num">50,00</td><td class="num">300,00</td><td class="num"><b>1 140,00</b></td></tr>
+        <tr><td>Tout</td><td class="num">1 200,00</td><td class="num">240,00</td><td class="num">1 440,00</td><td class="num"><b>0,00</b></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que ça touche ailleurs, et qu'on ne voit pas ici</span>
+    <ul>
+      <li><b>Votre relevé de TVA ne bouge pas.</b> Vous payez la TVA quand le
+        client paie : rien n'a été encaissé sur cette facture, donc rien n'y
+        était entré. S'il vous avait versé un acompte, la part reçue reste
+        déclarée — elle a bien été reçue.</li>
+      <li><b>La fiche du client.</b> Son « reste dû » doit tomber, sans quoi
+        elle réclamera une somme annulée. Et ce qu'il vous a rapporté doit
+        baisser d'autant.</li>
+      <li><b>Le rappel « facture impayée » se tait</b> dès que le reste dû
+        atteint zéro — c'est déjà ainsi qu'il s'éteint quand on note un
+        règlement.</li>
+      <li><b>Ce que l'application ne sait pas faire aujourd'hui :</b> elle ne
+        tient qu'<b>une facture par chantier</b> et une seule série de numéros.
+        Un avoir demande sa place et son compteur. Ce n'est pas un obstacle,
+        c'est ce qu'il y a à bâtir.</li>
+    </ul>
+  </div>
+
+  <p class="retour">Avant : <a href="79-il-ne-paie-pas.html">79 · Il ne paie pas</a> — quelle situation, et ce que chacune déclenche.</p>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m59">
+    <div class="etape-tete">
+      <span class="etape-no">59</span>
+      <h2>Le cinquième onglet</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s59">
 <div class="dedans">
   <h1>Le cinquième onglet</h1>
   <p class="intro">Votre choix : <b>un onglet « Outils »</b>, pour l'arrosage
@@ -22428,13 +23384,13 @@
     </div>
   </section>
 
-  <section class="etape" id="m57">
+  <section class="etape" id="m60">
     <div class="etape-tete">
-      <span class="etape-no">57</span>
+      <span class="etape-no">60</span>
       <h2>Le plan comme le sien</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s57">
+    <div class="cadre" id="s60">
 <div class="dedans">
   <h1>Le plan comme le sien</h1>
   <p class="intro">Votre plan du 17 août, refait <b>en couleur, un réseau par
@@ -22627,13 +23583,13 @@
     </div>
   </section>
 
-  <section class="etape" id="m58">
+  <section class="etape" id="m61">
     <div class="etape-tete">
-      <span class="etape-no">58</span>
+      <span class="etape-no">61</span>
       <h2>Où sont les tés</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s58">
+    <div class="cadre" id="s61">
 <div class="dedans">
   <h1>Où sont les tés</h1>
   <p class="intro">Votre tracé du 17 août, redessiné, avec <b>les cinq tés en
@@ -22763,16 +23719,16 @@
     </div>
   </section>
 
-  <section class="etape" id="m59">
+  <section class="etape" id="m62">
     <div class="etape-tete">
-      <span class="etape-no">59</span>
+      <span class="etape-no">62</span>
       <h2>Mes mots au catalogue</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s59">
-<input type="radio" name="v" id="s59-v-a" class="etat">
-<input type="radio" name="v" id="s59-v-b" class="etat" checked>
-<input type="radio" name="v" id="s59-v-c" class="etat">
+    <div class="cadre" id="s62">
+<input type="radio" name="v" id="s62-v-a" class="etat">
+<input type="radio" name="v" id="s62-v-b" class="etat" checked>
+<input type="radio" name="v" id="s62-v-c" class="etat">
 
 <div class="dedans">
   <h1>Mes mots au catalogue</h1>
@@ -22786,9 +23742,9 @@
     toutes les entreprises</b> — d’où la question : où mettre <b>les vôtres</b> ?</p>
 
   <div class="segments">
-    <label for="s59-v-a">A · Mes mots à part</label>
-    <label for="s59-v-b">B · Mes mots par-dessus</label>
-    <label for="s59-v-c">C · Une seule liste</label>
+    <label for="s62-v-a">A · Mes mots à part</label>
+    <label for="s62-v-b">B · Mes mots par-dessus</label>
+    <label for="s62-v-c">C · Une seule liste</label>
   </div>
 
   <div class="rangee">

@@ -380,6 +380,24 @@ const MAQUETTES = [
     quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.",
   },
   {
+    fichier: "81-simple-il-ne-paie-pas.html",
+    titre: "Simple : il ne paie pas",
+    famille: "L’argent qui ne rentre pas",
+    quoi: "Refait après sa correction « c’est trop compliqué » : un lien, une question, deux réponses. Quatre écrans.",
+  },
+  {
+    fichier: "79-il-ne-paie-pas.html",
+    titre: "Il ne paie pas",
+    famille: "L’argent qui ne rentre pas",
+    quoi: "Un avoir éteint la dette et interdit de réclamer ; une facture déclarée perdue reste réclamable. Trois arrangements.",
+  },
+  {
+    fichier: "80-l-avoir.html",
+    titre: "L’avoir",
+    famille: "L’argent qui ne rentre pas",
+    quoi: "La forme du document : à part, en mention, ou facture refaite. Trois montants essayables, tous recalculés.",
+  },
+  {
     fichier: "76-le-cinquieme-onglet.html",
     titre: "Le cinquième onglet",
     famille: "L’arrosage automatique",

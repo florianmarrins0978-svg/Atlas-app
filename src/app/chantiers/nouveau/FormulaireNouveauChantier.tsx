@@ -232,19 +232,26 @@ export default function FormulaireNouveauChantier({
           )}
         </div>
 
-        <div className="flex items-start justify-between gap-4 px-6 pt-5">
+        {/* **`items-center` et non plus `items-start`.** Sans le surtitre, le
+            bloc de gauche n'a plus qu'une ligne : le micro aligné par le haut
+            se posait au-dessus du titre au lieu d'en face. Mesuré à l'écran —
+            les deux centres tombent maintenant sur le même pixel. */}
+        <div className="flex items-center justify-between gap-4 px-6 pt-5">
           <div>
-            {/* **« NOUVEAU » DEVIENDRAIT FAUX, et c'est l'un des deux seuls
-                mots que la reprise oblige à changer** (planche du 17 août 2026,
-                `maquettes/atlas-fiche-client.html`). Un écran qui annonce
-                « nouveau » au-dessus d'un chantier ouvert trois jours plus tôt
-                fait douter d'avoir cliqué au bon endroit — et le geste qu'il
-                venait faire est justement de CORRIGER, pas de recommencer. */}
-            <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-              {reprise ? "Les coordonnées" : "Nouveau"}
-            </p>
+            {/* **« Fiche client », et plus de surtitre du tout.** Sa demande du
+                16 août 2026, capture à l'appui : *« Enlève nouveau un chantier
+                et remplace par fiche client. »*
+
+                **Le surtitre disparaît avec le mot qui le justifiait.** Il
+                portait « Nouveau » — que le titre ne reprend plus — et « Les
+                coordonnées » en reprise, écrit la veille pour la seule raison
+                que « nouveau » aurait été faux au-dessus d'un chantier ouvert
+                trois jours plus tôt. Ce contre-mot n'a plus rien à contrer :
+                « Fiche client » est vrai dans les deux cas, à la création
+                comme à la reprise. Lui garder une ligne au-dessus obligerait
+                à inventer un mot qu'il n'a pas demandé (`CLAUDE.md` §4). */}
             <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-              Un chantier
+              Fiche client
             </h1>
           </div>
           {/* Le raccourci pour qui a les mains prises — jamais l'action

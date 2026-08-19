@@ -55,80 +55,21 @@ n'aurait pas survécu au prochain changement de mot.
 
 ---
 
-## En attente d'une réponse — le quinconce
+## ~~Le quinconce~~ — **FAIT le 18 août 2026**
 
-### Sa règle du 18 août, et la planche 78
+Sa règle, puis son croquis : un couloir à **14** arroseurs alignés se pose à
+**7** en quinconce. Le code n'en posait aucun — il ne décalait que les rangées
+intérieures, et un couloir n'a que deux rangées de bord.
 
-*« Dans les couloirs, le but c'est de poser les tuyères en quinconce, car le
-but c'est que celle de gauche recouvre quasi 100 % jusqu'à celle de droite,
-donc le quinconce est optimal. »* Puis : *« pour les espaces plus grands, si
-les arroseurs 3500 le permettent, l'idée est de faire la même — un quinconce
-avec les arroseurs de droite qui recouvrent jusqu'à ceux de gauche. »*
+**Fait :** le quinconce est un damier (i + j pair), et `couvreTout` mesure qu'il
+arrose encore tout ; `poser` resserre tant que ce n'est pas vrai. Son couloir
+tombe sur 7. Détail et conséquences sur les contrôles : `ARCHITECTURE.md` §127.
 
-**Ce que l'outil fait de travers aujourd'hui.** `pointsDeLaPose` ne décale que
-les rangées INTÉRIEURES (`bordRangee` exclu) : un couloir n'a que deux rangées,
-toutes deux en bord, donc **aucun quinconce** — c'est la grille alignée qu'il a
-vue à l'écran. Et surtout, `poser` mesure l'écart le long d'une rangée ET
-l'écart entre rangées **séparément**, alors que ce qui compte en quinconce est
-la **diagonale** : √(pas² + largeur²) ≤ portée. D'où beaucoup trop d'arroseurs.
-
-**Ce que ça change, sur son couloir de 10 × 2 m** (`docs/maquettes/78`) :
-
-| Pose | Buse | Écart | Tuyères | Eau à côté |
-|---|---|---|---|---|
-| aujourd'hui, aligné | 6-VAN (1,80 m) | 2,00 m | **12** | — |
-| quinconce | 12-VAN (3,60 m) | 2,50 m | **5** | 1,60 m |
-| quinconce | 18-VAN (5,40 m) | 5,00 m | **3** | 3,40 m |
-
-**Pourquoi on attend au lieu de coder.** Ce n'est pas un choix d'affichage :
-c'est ce qu'il commande chez son fournisseur, et l'écart va de 12 pièces à 3.
-La géométrie du quinconce se calcule, mais **la tolérance ne se devine pas** :
-plus la buse porte loin, moins il faut de têtes, et plus il en tombe à côté —
-sur un massif, une terrasse ou chez le voisin. L'outil ne sait pas ce qu'il y a
-le long du couloir.
-
-**SA RÉPONSE, 18 août : « jamais plus que la largeur »** — et elle entre en
-conflit avec sa règle du 17 août. **Ne pas coder avant d'avoir tranché ce
-conflit.**
-
-Sa règle du 17 août veut un écart ≤ **1,20 × la portée** (« portée 5 m :
-5,50 m, 6 m max »). Sur un couloir de 2 m, la LARGEUR consomme déjà presque
-tout ce budget : la diagonale d'un quinconce vaut √((écart/2)² + 2²), et elle
-dépasse 1,20 × portée avant même que l'écart ne serve à quoi que ce soit.
-
-| Buse | Portée | Aligné | Quinconce |
-|---|---|---|---|
-| 6-VAN | 1,80 m | **12** | **15** |
-| 8-VAN | 2,30 m ⚠ dépasse la largeur | 10 | 7 |
-| 12-VAN | 3,60 m ⚠ dépasse la largeur | 8 | 5 |
-
-**Le quinconce ne gagne QUE si la portée dépasse la largeur** — ce qu'il vient
-d'exclure. Avec sa règle des 80 % et une portée bornée à la largeur, il coûte
-trois tuyères de PLUS, pas de moins. Sa phrase « le quinconce est optimal »
-reste vraie ; c'est la borne sur la portée qui la neutralise dans un couloir
-étroit.
-
-**Une troisième piste, à lui soumettre, et qui n'avait pas été regardée :** une
-SEULE rangée au MILIEU du couloir, en 360°. Vérifié numériquement — 6-VAN,
-6 tuyères, écart 2,00 m, couverture complète, 0,80 m d'eau de chaque côté.
-**Six au lieu de douze**, sans jamais monter en buse. C'est peut-être ce qu'il
-fait déjà en vrai, et ni la planche ni moi ne l'avions envisagé.
-
-**Ce qui reste à trancher, en une phrase :** dans un couloir, pose-t-il deux
-rangées sur les bords, ou une rangée au milieu ?
-
-**Un second point, mineur, à confirmer avec :** sa règle du 17 août veut les
-derniers arroseurs dans les coins. En quinconce, les deux bouts de la chaîne
-tombent dans deux coins ; les deux autres sont couverts par la portée mais sans
-tête. S'il les veut équipés, c'est deux tuyères de plus.
-
-**Et un défaut du DESSIN, trouvé sur la capture et pas autrement** (§5) : la
-première version de la planche traçait des disques ENTIERS. Une tête contre un
-bord est en 180° — sa règle — et n'envoie rien derrière elle : la planche
-montrait de l'eau là où il n'en tombe pas, et faisait paraître le quinconce
-bien pire qu'il n'est. Le sens de balayage de l'arc SVG était faux par-dessus
-le marché (l'axe y descend). Deux erreurs invisibles dans le code, évidentes
-sur l'image.
+**Ce qui reste ouvert, et qu'il faudra lui demander un jour :** sa décision
+« la portée ne dépasse jamais la largeur » n'a PAS été câblée. Elle n'a pas été
+nécessaire — le damier suffit à retrouver son 7 sans monter en buse —, mais le
+choix de buse reste celui d'avant. Si un jour une pose choisit une buse qui
+arrose largement à côté, c'est là qu'il faudra la brancher.
 
 ---
 
@@ -161,6 +102,55 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 ---
 
 ## Ce que je peux faire seul
+
+### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
+
+Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
+payer, il faut avoir la possibilité de créer un avoir »*.
+
+**LA PLANCHE À REGARDER EST LA 81**, `docs/maquettes/81-simple-il-ne-paie-pas.html`
+— un lien sur la facture, une question, deux réponses, quatre écrans. Les 79 et
+80 ont été **jugées trop compliquées par lui** (*« l'utilisateur a besoin d'aller
+à l'essentiel constamment »*) : elles restent comme raisonnement, pas comme
+proposition. Rien dans `src/`.
+
+**CE QU'IL FAUT AVOIR COMPRIS AVANT DE CODER QUOI QUE CE SOIT.** Un avoir et un
+impayé ne sont pas la même chose :
+
+| | Ce que ça fait | Peut-il encore réclamer ? |
+|---|---|---|
+| **Avoir** | annule tout ou partie de la facture | **non, plus jamais** |
+| **Facture perdue** (créance irrécouvrable) | la facture reste entière, le rappel se tait | **oui** |
+
+Ce qu'il a décrit — un client qui refuse de payer — relève du **second**. Bâtir
+seulement l'avoir, c'est lui donner un geste qui le désarme, sans avertissement.
+
+**Une seule réponse à attendre de lui : la 81 lui va-t-elle ?** Le choix
+d'arrangement et le choix de forme ont été retirés — c'était précisément la
+complication qu'il a refusée. Si elle lui va, la forme du document est celle de
+la 80-A : une pièce à part, avec sa propre série de numéros.
+
+**Ce que le code devra lever, et ce n'est pas anodin :**
+
+- `factures_chantier_uk` n'accepte **qu'une facture par chantier** — un avoir
+  demande sa table, ou la levée de cette contrainte ;
+- `attribuerNumeroFacture` n'a **qu'un compteur**
+  (`entreprise_compteurs.prochain_numero_facture`) : une série d'avoirs demande
+  le sien, sinon la suite des factures aura des trous ;
+- `resteDu` (`src/lib/exigibilite-tva.ts`) ne connaît que les règlements. Tant
+  qu'il ignore les avoirs, la fiche client et le rappel d'impayé réclameront une
+  somme annulée ;
+- une facture émise **ne se modifie jamais** : la correction est toujours une
+  seconde pièce.
+
+**Ce qui NE bouge pas, et qu'il est inutile de bâtir :** son relevé de TVA. Elle
+est exigible au paiement (§110) — une facture jamais payée n'y est jamais
+entrée. Aucune récupération, aucune démarche.
+
+**Deux questions posées sur la planche, sans réponse :** faut-il qu'Atlas
+prépare une **mise en demeure** avant de renoncer ? et le cas du client qui
+**paie après** qu'on a déclaré la facture perdue (le règlement se note
+normalement, rien n'est définitif — mais ça reste à confirmer avec lui).
 
 ### ~~0 quadragies bis. « Adresse non renseignée » ouvre l'écran du chantier~~ — **FAIT le 17 août 2026**
 
