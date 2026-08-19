@@ -128,7 +128,12 @@ async function main() {
   );
   await page.setViewportSize({ width: 390, height: 844 });
 
-  const feuille = page.locator('div[role="dialog"][aria-label="Nouveau chantier"]');
+  // **La feuille s'appelle « Créer un devis » depuis le 18 août 2026**, quand
+  // le bouton de l'accueil a été renommé (`EcranChantiers.tsx`). Cette suite
+  // visait encore « Nouveau chantier » et rougissait sur `main` : c'est le
+  // geste qui est éprouvé ici — la demi-seconde du signe qui tourne —, pas le
+  // mot porté par l'étiquette.
+  const feuille = page.locator('div[role="dialog"][aria-label="Créer un devis"]');
   assert.equal(await feuille.isVisible(), false, "La feuille est fermée au départ");
 
   // **Le clic est envoyé au nœud lui-même.** Le geste déplace ce qu'il y a
@@ -162,7 +167,7 @@ async function main() {
     `La feuille est montée en ${attente} ms : le geste doit durer environ une demi-seconde`,
   );
   assert.equal(
-    await page.locator('div[role="dialog"][aria-label="Nouveau chantier"]').count(),
+    await page.locator('div[role="dialog"][aria-label="Créer un devis"]').count(),
     1,
     "Deux appuis pendant le geste ne doivent pas ouvrir deux feuilles",
   );
@@ -178,7 +183,7 @@ async function main() {
   await pageCalme.waitForTimeout(120);
   assert.equal(
     await pageCalme
-      .locator('div[role="dialog"][aria-label="Nouveau chantier"]')
+      .locator('div[role="dialog"][aria-label="Créer un devis"]')
       .isVisible(),
     true,
     "Sous « mouvement réduit », la feuille doit monter tout de suite — attendre " +
