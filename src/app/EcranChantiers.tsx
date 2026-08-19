@@ -272,7 +272,7 @@ export default function EcranChantiers({
             }}
             className="atlas-geste-nouveau"
           >
-            <span className="atlas-mot">Nouveau chantier</span>
+            <span className="atlas-mot">Créer un devis</span>
             <span className="atlas-rond">
               <span className="atlas-pouls" aria-hidden="true" />
               <span className="atlas-cerne" aria-hidden="true" />
@@ -379,7 +379,7 @@ export default function EcranChantiers({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Nouveau chantier"
+        aria-label="Créer un devis"
         // `fixed`, et non `absolute` : la feuille doit RECOUVRIR le bandeau du
         // bas et la bulle de l'assistant, qui sont fixés au-dessus de l'écran.
         // En absolu elle passait dessous, et sa dernière ligne — celle qui

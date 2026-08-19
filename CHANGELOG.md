@@ -7,6 +7,23 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-18
+
+### Le bouton de l'accueil dit « Créer un devis »
+
+**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
+d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
+
+Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
+feuille au-dessus.
+
+**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
+demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
+titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
+à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
+client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
+remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
+
 ## 2026-08-16
 
 ### L'écran de création s'appelle « Fiche client »
