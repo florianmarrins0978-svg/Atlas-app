@@ -870,7 +870,7 @@ reviendra à la prochaine page supprimée.
 
 **« IL PEUT PROPOSER UNE AUTRE DATE » (17 août, au soir).** Un interrupteur sous
 les dates, avant le bouton d'envoi : le patron décide, envoi par envoi, si le
-client peut sortir des dates offertes. `ARCHITECTURE.md` §132, migration 0054.
+client peut sortir des dates offertes. `ARCHITECTURE.md` §132, migration 0055.
 
 **Trois choses à ne pas défaire :**
 
@@ -1427,9 +1427,28 @@ automatique »*. Terrain neuf — rien dans le produit ne parlait d'arrosage.
 - **L'arrosage rejoint la fiche d'entretien** (mise en route, hivernage) : deux
   lignes de modèle, pas un quatrième parcours.
 
-**DEUX MAQUETTES POUR LA FICHE D'ENTRETIEN (16 août) — RIEN N'EST CODÉ.** Il a
-demandé de recréer les fiches de chantier d'une autre application (paysagistes
-en contrat d'entretien : cocher ce qui a été fait, envoyer au client).
+**LA FICHE DE CHANTIER TOURNE (18 août) — le parcours entier est codé.** Il a
+demandé le 16 août de recréer les fiches de chantier d'une autre application
+(paysagistes en contrat d'entretien : cocher ce qui a été fait, envoyer au
+client). Le modèle, l'écran des réglages, le passage et le rapport du client
+existent. Le détail, et les deux versions du repli qui ont été refusées par leur
+propre contrôle, sont dans `ARCHITECTURE.md` §128.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **le repli lit TOUT l'historique envoyé du client**, pas son dernier passage.
+  Ne pas « simplifier » vers le dernier passage : une taille de haie d'automne
+  disparaîtrait dès le passage de mars, et il ne pourrait plus la cocher en
+  octobre ;
+- **les lignes d'un passage sont une COPIE du modèle**, le nom du client aussi
+  (recopié à l'envoi). Une jointure serait plus courte et fausse au premier
+  retrait ;
+- **le tri « seulement ce qui a été fait » est en BASE**, pas à l'affichage. Le
+  faire à l'écran laisserait les dix-sept autres lignes dans le HTML du client ;
+- **il reste deux conforts non faits** : le PDF du rapport, et le « J'ai bien
+  reçu » horodaté sur la page du client (`TODO.md` § « La fiche d'entretien »).
+
+Ce qui suit décrit l'état du 16 août et reste vrai sur les décisions :
 
 - **LE MODÈLE EST EN BASE depuis le 16 août** (migration `0051`). Un seul par
   entreprise, aucune fiche rangée par client. Il ne se sème PAS tout seul à

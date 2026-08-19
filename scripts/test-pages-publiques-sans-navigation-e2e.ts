@@ -59,6 +59,15 @@ async function adressesPubliques(): Promise<Array<[string, string]>> {
     liste.push(["la facture vue par le client", `/factures/${facture.rows[0].jeton}`]);
   }
 
+  // Le compte rendu d'entretien (18 août 2026) : troisième page que le client
+  // de l'artisan reçoit, et elle arrive par SMS comme les deux autres.
+  const passage = await pool.query(
+    `select jeton from passages_entretien where jeton is not null limit 1`
+  );
+  if (passage.rows[0]) {
+    liste.push(["le compte rendu vu par le client", `/entretien/${passage.rows[0].jeton}`]);
+  }
+
   return liste;
 }
 
@@ -169,7 +178,15 @@ async function main() {
     // Un garde-fou contre le contrôle qui vieillit : si quelqu'un déclare un
     // nouveau chemin public sans l'ajouter ci-dessus, ce balayage continuerait
     // de passer au vert en ne regardant que les anciens.
-    const couverts = ["/login", "/devis", "/factures", "/api/auth", "/api/cron", "/api/session-perimee"];
+    const couverts = [
+      "/login",
+      "/devis",
+      "/factures",
+      "/entretien",
+      "/api/auth",
+      "/api/cron",
+      "/api/session-perimee",
+    ];
     const oublies = CHEMINS_PUBLICS.filter((p) => !couverts.includes(p));
     if (oublies.length > 0) {
       throw new Error(

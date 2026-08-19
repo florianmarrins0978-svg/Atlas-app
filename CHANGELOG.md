@@ -65,7 +65,7 @@ phrase récapitulative le suit : « Le client choisira entre ces deux dates, et
 rien d'autre ». **Ouvert par défaut** — un défaut fermé changerait sans un mot
 ce qu'il croit envoyer, et ce que les liens déjà partis promettent.
 
-**Le choix est FIGÉ dans l'envoi** (migration 0054), jamais relu dans un
+**Le choix est FIGÉ dans l'envoi** (migration 0055), jamais relu dans un
 réglage : l'écran du client doit dire demain ce qu'il disait aujourd'hui, comme
 les dates proposées et la fenêtre (migration 0027).
 
@@ -83,6 +83,58 @@ sans compte. `ARCHITECTURE.md` §132.
 ---
 
 ## 2026-08-18
+
+### La fiche de chantier se remplit, et le rapport part chez le client
+
+**Sa décision du 17 août : « Fait la C ».** La fiche s'ouvre nue depuis
+« Paysage », se coche au doigt, et une ligne discrète — « c'est pour quel
+client ? » — se touche à tout moment. Dès qu'un client est nommé, la fiche se
+replie sur ses prestations **sans perdre une seule coche**.
+
+**Ce que ça évite :** deux de ses décisions se contredisaient en apparence — le
+pré-remplissage par client (16 août) et l'outil qui s'ouvre sans client (17). Le
+repli à la demande les fait tenir ensemble. Sans lui, il fallait sacrifier l'une
+des deux : soit un outil qui exige un client en visite, soit vingt lignes à
+retrier au douzième passage chez le même.
+
+**Deux versions du repli ont été refusées par leur propre contrôle**, avant
+d'atteindre le patron. Regarder les lignes *présentes* du dernier passage ne
+replie jamais rien ; regarder les lignes *cochées* du seul dernier passage fait
+disparaître une taille de haie d'automne dès le passage de mars. Le repli lit
+donc **tout l'historique envoyé** du client. `ARCHITECTURE.md` §128.
+
+**Le rapport parti ne change plus jamais.** Les lignes sont copiées, pas lues
+dans le modèle ; le nom du client aussi. Retirer une prestation des réglages en
+octobre ne réécrit pas le rapport de juillet — c'est ce qui en fait une preuve
+de passage, à la place des signatures qu'il a écartées le 16 août (il n'est pas
+là quand on tond).
+
+**Le client reçoit ce qui a été FAIT, et rien d'autre** — le tri est en base, pas
+à l'affichage : une page qui filtrerait à l'écran laisserait les dix-sept autres
+lignes dans le HTML. La page `/entretien/[jeton]` rejoint le devis et la facture
+dans les chemins publics **et** les pages du client, sans quoi son client verrait
+les onglets de son outil de travail au bas du rapport.
+
+**Le temps se pose à la molette du téléphone** (sa décision : « la A »), par pas
+de cinq minutes. Le message part de SA messagerie, comme le devis.
+
+**Éprouvé du premier geste au dernier**, page du client comprise, dans un
+contexte sans session : `test-passage-entretien.ts` (19 cas) et
+`test-fiche-chantier-e2e.ts` (10 cas, captures en passant).
+
+**Deux gardes ont attrapé ce lot, et une troisième était déjà tombée :**
+
+- la garde des pages publiques a refusé `/entretien` tant qu'il n'était pas
+  réellement ouvert par un visiteur sans compte — elle voulait la page, pas la
+  déclaration. Le rapport envoyé par la suite de la fiche lui sert désormais de
+  matière, comme le devis et la facture le font pour elle depuis toujours ;
+- la garde du préchauffage a réclamé les nouveaux écrans avant qu'ils ne
+  manquent chez lui ;
+- **`test-fiche-client-e2e` comptait quatre onglets et la barre en porte cinq
+  depuis « Paysage »** : ce contrôle était rouge sur `main` avant ce lot. Une
+  autre session l'a corrigé le même jour, et mieux — elle compare la barre aux
+  onglets décidés au lieu d'attendre un nombre. Sa version a été gardée à la
+  fusion, la mienne écartée.
 
 ### La fiche de chantier rejoint Paysage — et le pont vers le client
 

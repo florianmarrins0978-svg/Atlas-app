@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-17 · branche `main`
-· dernière migration `drizzle/0049_coordonnees_chantier.sql`
+**Dernière mise à jour :** 2026-08-18 · branche `main`
+· dernière migration `drizzle/0055_passage_entretien.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -56,6 +56,32 @@ du prix, devis PDF, planning, catalogue, réglages tarifs. Authentification
 (Auth.js), isolation par entreprise (RLS `FORCE`), stockage de fichiers,
 limitation de débit, purge planifiée, journalisation. Assistant IA en lecture
 seule avec quinze outils.
+
+### Le parcours entretien : modèle → passage → rapport
+
+Le troisième parcours du produit, à côté de devis → facture. Demandé le 16 août
+2026, arbitré sur maquettes, codé les 16 et 18. Le récit complet, les décisions
+et ce qui a été écarté : `ARCHITECTURE.md` §128.
+
+| Brique | Où c'est |
+|---|---|
+| Le modèle de fiche — **un seul par entreprise**, jamais rangé par client | `src/server/repositories/prestations-entretien.ts` (migration `0051`) |
+| L'écran où il le compose, retrait réversible | `src/app/reglages/fiche-entretien/` |
+| Les règles pures du passage — repli sur le client, temps, empêchements d'envoi | `src/lib/passage-entretien.ts` |
+| Le passage et ses lignes **copiées** du modèle | `src/server/repositories/passages-entretien.ts` (migration `0055`) |
+| L'outil, dans l'onglet Paysage : ouvrir, cocher, nommer le client, envoyer | `src/app/paysage/fiche/` |
+| La page que le client reçoit, lue par jeton sans session | `src/app/entretien/[jeton]/` |
+
+**Trois invariants à ne pas rouvrir :**
+
+- **un rapport parti ne change plus jamais** — les lignes et le nom du client
+  sont copiés, pas relus. C'est ce qui en fait une preuve de passage ;
+- **le client ne lit que ce qui a été fait**, et le tri est en base ;
+- **rien ne part tout seul** : le message se prépare, il l'envoie de sa
+  messagerie (`docs/A-FAIRE.md` §5).
+
+**Ce qui n'est PAS fait, et qu'il ne faut pas annoncer** : le PDF du rapport, et
+le bouton « J'ai bien reçu » horodaté sur la page du client.
 
 ### Le parcours devis → facture
 

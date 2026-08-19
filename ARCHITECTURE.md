@@ -11107,7 +11107,7 @@ l'interrupteur** — « Le client choisira entre ces deux dates, et rien d'autre
 ### Ce qui est FIGÉ, et ce qui ne l'est pas
 
 Le choix est écrit dans l'envoi (`envois_devis.autre_date_autorisee`,
-migration 0054), **pas lu dans un réglage**. Même raison que les dates proposées
+migration 0055), **pas lu dans un réglage**. Même raison que les dates proposées
 et la fenêtre du client (migration 0027) : l'écran du client doit dire demain ce
 qu'il disait aujourd'hui. Un réglage relu à l'ouverture changerait après coup la
 promesse faite à quelqu'un qui a le lien ouvert.
@@ -11135,3 +11135,135 @@ porte est fermée pour de bon.
 c'est ce qu'il a demandé. Si l'habitude s'installe — toujours ouvert, ou
 toujours fermé —, un réglage « Devis & factures » pourra porter la position de
 départ ; il n'y a rien à décider tant qu'il ne l'a pas dit.
+
+---
+
+## §128. La fiche de chantier : ce qui a été fait, un jour, chez quelqu'un
+
+*Sa demande du 16 août 2026, capture d'une application concurrente à l'appui :
+« une fiche où ils cochent ce qu'ils ont fait ou non sur le chantier et ensuite
+qu'ils peuvent enregistrer et envoyer directement au client ». Puis, le 17,
+après quatre planches et six arbitrages : **« Fait la C ».***
+
+### Ce que « C » veut dire, et pourquoi les deux autres ont été écartées
+
+Deux de ses décisions se rencontraient sur un même point et paraissaient se
+contredire :
+
+- **16 août** — *« chaque client aura sa fiche »* : le passage suivant chez le
+  même client doit retrouver son ajustement, sinon il retrie vingt lignes douze
+  fois par an. Pré-remplir exige donc de savoir QUI, tôt.
+- **17 août** — l'outil vit dans « Paysage », à côté de l'arrosage, donc il
+  s'ouvre **sans client** : un outil qui exige un client ne sert pas en visite,
+  chez quelqu'un qui n'existe pas encore dans Atlas.
+
+| | Quand le client est nommé | Ce que ça coûte |
+|---|---|---|
+| A | À l'ouverture | L'outil ne s'ouvre plus sans client — **exactement ce qu'il avait refusé le matin même** pour l'arrosage |
+| B | À la fin, pour envoyer | Plus de pré-remplissage : la fiche repart des vingt lignes du modèle au douzième passage chez le même client |
+| **C** | **Quand il veut** | **Un état de plus à tenir** : la fiche doit se recomposer en cours de route sans effacer ce qui vient d'être coché |
+
+Elles ne se contredisent pas : elles se rencontrent sur le **moment**. C'est ce
+que fait `recomposerPourClient` (`src/lib/passage-entretien.ts`), et c'est la
+clause « sans effacer » qui porte tout le travail — perdre trois coches parce
+qu'on a nommé le client au milieu serait pire que ne rien pré-remplir du tout.
+
+### Le repli regarde TOUT l'historique du client, pas son dernier passage
+
+**Écrit après que le contrôle a refusé les deux premières versions**, avant
+qu'elles n'atteignent le patron. Les deux se trompaient, en sens inverse :
+
+| Ce qu'on regardait | Le défaut |
+|---|---|
+| Les lignes **présentes** du dernier passage | Ne converge jamais : au premier passage la fiche porte le modèle entier, donc le second le reprend entier, et ainsi de suite. Le repli ne replie rien |
+| Les lignes **cochées** du seul dernier passage | Replie trop fort : une taille de haie d'automne se fait une fois l'an. Au passage de mars elle n'aurait pas été cochée en février, elle disparaîtrait — et il ne pourrait plus la cocher en octobre, faute de ligne |
+
+D'où **ce que ce client a déjà pris au moins une fois**, tous rapports envoyés
+confondus. Il se construit tout seul, garde les gestes saisonniers, et ne rend
+jamais une fiche plus longue que le modèle du jour. Le prix assumé : une
+prestation cochée par erreur chez un client y reste proposée. Une ligne de trop
+se saute des yeux ; une ligne manquante bloque le geste sur un chantier.
+
+**Envoyés seulement** : un brouillon ouvert par erreur puis abandonné ne dit
+rien de ce que ce client prend.
+
+### Les lignes sont COPIÉES, jamais lues dans le modèle
+
+C'est l'invariant qu'il a posé le 16 août, et celui qui ne se rattrape pas s'il
+est manqué : **un rapport déjà envoyé ne change plus jamais.** Retirer
+« Scarification » du modèle en octobre ne doit rien changer au rapport de
+juillet, qui est parti chez le client et fait preuve de passage.
+
+Une jointure vers `prestations_entretien` aurait été plus courte à écrire et
+fausse au premier retrait. Les lignes sont donc copiées à l'ouverture du
+passage — libellé **et** famille, parce qu'un renommage doit lui aussi rester
+sans effet sur le passé. Le nom du client suit la même règle : il est recopié
+**à l'envoi**, pas relu à la lecture (`client_nom`, migration 0055).
+
+### Pas de signature — l'horodatage et l'empreinte à la place
+
+*Sa question du 16 août : « pour les signatures, on peut faire des signatures
+électroniques ? »* Puis son propre constat : *« s'il n'est pas là, on ne peut
+pas le faire signer »*. C'est le cas ordinaire d'un entretien : on tond pendant
+que le client est au travail.
+
+La preuve est donc la date, l'heure et l'**empreinte SHA-256 du contenu exact**
+— la même mécanique que l'acceptation d'un devis. Plus solide qu'un trait au
+doigt, et qui n'exige personne sur place.
+
+### Ce que le client reçoit, et ce qu'il ne reçoit pas
+
+**Seules les prestations FAITES**, sa décision « B » du 16 août. Et le tri se
+fait **en base**, pas à l'affichage : une page qui recevrait tout et n'en
+montrerait qu'une part laisserait le reste dans le HTML, à portée d'un clic
+droit. La suite navigateur le vérifie sur le HTML servi, pas sur ce qui se voit.
+
+La page `/entretien/[jeton]` rejoint `/devis` et `/factures` dans
+`CHEMINS_PUBLICS` **et** `CHEMINS_DU_CLIENT` — sans quoi son client verrait les
+onglets de l'outil de travail de son artisan au bas du rapport (sa remarque du
+12 août, §68).
+
+**Aucun fournisseur d'envoi, et c'est un choix** (`docs/A-FAIRE.md` §5) : le
+rapport se fige, puis l'écran ouvre le SMS ou le courriel de SA messagerie, avec
+le lien dedans.
+
+### Le temps passé : la molette du téléphone
+
+*« Ce serait bien de ne pas avoir à l'écrire, mais d'avoir une petite molette ou
+un truc sympa […] je veux une application ultra luxe et moderne. »* Trois
+propositions lui ont été montrées (`docs/maquettes/65-choisir-l-heure.html`) ; il
+a retenu **la A**, deux listes natives.
+
+C'est le bon choix, et meilleur que la molette dessinée qui lui était proposée à
+côté : sur son iPhone, une liste native **est** la molette qu'il connaît — celle
+du réveil, celle de l'agenda. Aucune imitation ne rendra la friction d'un vrai
+tambour, et une molette faite par nous serait une molette de plus à apprendre.
+Le pas est de cinq minutes : personne ne facture un entretien à la minute, et à
+la minute près la molette ferait deux cent quarante crans pour quatre heures.
+
+**Une molette ne peut produire qu'une valeur juste** : il n'y a rien à refuser,
+donc rien à expliquer. C'est ce qui la sépare d'un champ de saisie — et le
+dépôt refuse quand même les valeurs aberrantes côté serveur, parce qu'une action
+serveur s'appelle sans écran.
+
+### Deux jardins dans la même journée font deux fiches
+
+La reprise d'un brouillon existe pour ne pas empiler des fiches vides : il
+appuie sur « Ouvrir », rien ne semble répondre, il rappuie. La première version
+rendait **le brouillon du jour**, quel qu'il soit — et **il fait quatre ou cinq
+jardins dans une journée**. Au deuxième, l'écran lui aurait rendu la fiche du
+premier, client nommé et cases cochées : il aurait envoyé chez Martin ce qu'il a
+fait chez Durand.
+
+Seule une fiche **que personne n'a touchée** se reprend : ni client, ni coche,
+ni temps, ni observation. Dès qu'elle porte une trace, elle appartient à son
+chantier.
+
+### Ce qui a été mesuré plutôt que supposé
+
+L'écran a été parcouru en entier, du geste des réglages jusqu'à la page du
+client ouverte **dans un contexte sans session** — `test-fiche-chantier-e2e.ts`,
+qui prend ses captures en passant (`ATLAS_CAPTURES`). C'est là qu'on voit ce
+qu'aucune suite base ne peut voir : que l'écran appelle bien les règles, et que
+le client ne reçoit pas les dix-sept lignes qu'il n'a pas payées.
+

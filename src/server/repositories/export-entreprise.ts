@@ -17,6 +17,8 @@ import {
   agendasExternes,
   equipes,
   prestationsEntretien,
+  passagesEntretien,
+  lignesPassage,
   naturesGrille,
   paiementsFacture,
   tranchesGrille,
@@ -135,6 +137,8 @@ export async function exporterEntreprise(
       sesNatures,
       lesReglements,
       sonModeleEntretien,
+      sesPassages,
+      sesLignesPassage,
       sesMotsCatalogue,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
@@ -223,6 +227,15 @@ export async function exporterEntreprise(
         .select()
         .from(prestationsEntretien)
         .where(eq(prestationsEntretien.entrepriseId, e)),
+      // Les passages d'entretien et leurs lignes (migration 0055). Ce sont les
+      // rapports partis chez ses clients — avec leur horodatage et leur
+      // empreinte, qui font la preuve du passage depuis qu'il a écarté les
+      // signatures (16 août 2026). Rien ne les reconstitue : les lignes sont
+      // une COPIE du modèle au jour dit, et le modèle a bougé depuis. Une
+      // sauvegarde qui les oublierait perdrait exactement ce dont il aurait
+      // besoin le jour où un client conteste.
+      tx.select().from(passagesEntretien).where(eq(passagesEntretien.entrepriseId, e)),
+      tx.select().from(lignesPassage).where(eq(lignesPassage.entrepriseId, e)),
       // Les mots qu'il a ajoutés au catalogue (migration 0052). C'est SA
       // saisie, et rien ne la reconstitue : le vocabulaire d'Atlas, lui, se
       // retrouve tout seul — ses mots à lui, non. Une sauvegarde qui les
@@ -286,6 +299,8 @@ export async function exporterEntreprise(
       absences_equipe: sesAbsences,
       // Le modèle de fiche d'entretien : ses prestations, ses familles, son ordre.
       prestations_entretien: sonModeleEntretien,
+      passages_entretien: sesPassages,
+      lignes_passage: sesLignesPassage,
       mots_catalogue: sesMotsCatalogue,
     };
 
