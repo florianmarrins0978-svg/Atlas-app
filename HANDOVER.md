@@ -30,11 +30,12 @@ planche avant/après à REGARDER. **Une maquette, ici, est un bout d'application
 qui marche**, pas une présentation de ce qu'elle serait. Les autres essayables
 de `appli/` le sont déjà : s'en inspirer.
 
-**⚠ RIEN N'EST FUSIONNÉ, ET IL L'A VOULU AINSI.** Le lot est poussé sur
-`claude/app-complexity-ux-ug3k5o`. À la question « je fusionne pour que tu
-puisses l'ouvrir ? », il a répondu **« non, pas encore »**. Tant que c'est là,
-`pages.yml` ne publie rien : **il n'a pas vu la maquette**, et son silence ne
-vaut pas refus (`CLAUDE.md` §6).
+**Fusionné sur `main` le 19 août 2026.** Il avait d'abord répondu non, puis
+demandé : *« si tu fusionnes, l'application actuelle ne sera plus ? »*. **Poser
+la question de la fusion sans dire ce qu'elle change chez lui, c'est lui faire
+porter un risque qu'il ne peut pas évaluer.** La réponse — zéro fichier de
+`src/` touché, une page de plus dans `appli/` — a suffi. À dire d'emblée la
+prochaine fois.
 
 **CE QU'ON ATTEND DE LUI, et rien ne se code avant :** la planche 82 lui
 va-t-elle ? (`CLAUDE.md` §3 bis.)

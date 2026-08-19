@@ -96,11 +96,17 @@ qu'elle serait. Les autres essayables de `appli/` le sont déjà
 (`clients-recherche.html`, `arrosage.html`) : s'en inspirer plutôt que de
 réinventer une planche.
 
-**⚠ RIEN N'EST FUSIONNÉ, ET IL L'A VOULU AINSI.** À la question « je fusionne
-pour que tu puisses l'ouvrir ? », il a répondu **« non, pas encore »** le
-19 août 2026. Tant que c'est sur la branche, `pages.yml` ne publie rien : **il
-n'a pas vu la maquette**, et son silence ne vaut pas refus. Ne pas fusionner
-sans un nouveau mot de lui (`CLAUDE.md` §6).
+**Fusionné sur `main` le 19 août 2026, à sa demande** — il a d'abord dit non,
+puis a demandé ce que la fusion changerait à son application. La réponse tenait
+en une ligne et vaut d'être gardée : **zéro fichier de `src/` touché**. La
+maquette est une page de plus dans `appli/`, à côté du plan d'arrosage et de
+« Vos clients » ; son Atlas n'a pas bougé d'un pixel.
+
+**La leçon, et elle vaut pour la prochaine fois :** il n'a pas refusé la fusion,
+il ne savait pas ce qu'elle emportait. Annoncer « je fusionne ? » sans dire **ce
+que ça change chez lui** lui fait porter un risque qu'il n'a pas les moyens
+d'évaluer — et il répond non, ce qui est la bonne réponse à une question mal
+posée.
 
 **CE QUI RESTE, ET QUI EST À LUI :** ces trois écrans lui vont-ils ? Rien dans
 `src/` tant qu'il n'a pas répondu (`CLAUDE.md` §3 bis).
