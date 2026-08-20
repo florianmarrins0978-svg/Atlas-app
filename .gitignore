@@ -62,6 +62,16 @@ next-env.d.ts
 # dossier n'y était pas, et trois PNG se sont retrouvés dans l'index.
 /captures/
 
+# Le TEXTE des documents phytosanitaires récoltés chez leurs organismes.
+#
+# Il vit sur la branche de récolte (`.github/workflows/recolter-sources-phyto.yml`,
+# qui l'ajoute en forçant), **pas sur `main`** : ce sont des documents de tiers,
+# rapatriés pour être lus au moment de la saisie, et il n'y a aucune raison de
+# les traîner dans l'historique du produit. Ce qui reste sur `main`, c'est
+# `sources.json` — la liste de ce qu'on va chercher — et les fiches qu'on en
+# tire, qui sont notre travail.
+/donnees/phyto/sources/
+
 # Scripts jetables de vérification, écrits pendant une session pour regarder un
 # écran dans un navigateur. Ils vivent à la racine parce que Playwright doit s'y
 # résoudre, mais ils ne décrivent aucun comportement du produit : ce qui mérite

@@ -57,7 +57,7 @@ pas : ce sont des données à recopier de sources officielles.
 
 | | Ce qui reste | Qui peut le faire |
 |---|---|---|
-| 1 | **Constituer le premier lot d'environ 50 fiches** — champignons lignivores, maladies courantes, ravageurs, carences pertinentes, stress abiotiques souvent confondus avec une maladie. Sources : DSF/ministère de l'Agriculture, INRAE, FREDON, Plante & Cité, ONF, BSV. Format et contrôles : `donnees/phyto/LISEZ-MOI.md` | moi, à partir des documents publics, avec relecture avant passage en `validee` |
+| 1 | **Lancer la récolte des sources** (Actions → « Récolter les sources phytosanitaires »), puis **constituer le premier lot d'environ 50 fiches** À PARTIR des textes récoltés. **Aucune source n'est joignable depuis l'environnement de développement** — vérifié le 20 août, `403` du mandataire sur les six domaines. La recherche web passe mais ne rend qu'un résumé : s'en servir pour écrire une fiche « validée » serait blanchir une paraphrase en donnée sourcée (`ARCHITECTURE.md` §135.12) | moi, à partir des documents publics, avec relecture avant passage en `validee` |
 | 2 | **Éprouver l'appel réel de vision sur le banc**, avec de vraies photos. Non vérifiable ici : aucune clé d'IA dans cet environnement | le patron pose sa clé, je regarde le résultat |
 | 3 | Renseigner les `confusions_phyto` entre fiches proches — c'est **elles** qui permettent la demande de photo complémentaire. Sans elles, deux hypothèses proches donnent un refus au lieu d'une relance | avec le lot de fiches |
 | 4 | Régler les seuils (`SEUIL_PLANCHER`, `ECART_NET`, plafonds de confiance) sur de vraies photos et de vraies fiches. Les valeurs actuelles sont un point de départ **assumé**, nommé et éprouvé — pas mesuré | après le premier lot |

@@ -1,0 +1,5 @@
+Ce dossier accueille les LOTS DE FICHES RÉELLES, en JSON.
+
+Il est vide aujourd'hui, et c'est une règle du patron, pas un oubli :
+« ne remplis pas artificiellement la base avec de fausses données pour faire
+fonctionner la démonstration ». Voir ../LISEZ-MOI.md.

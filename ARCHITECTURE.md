@@ -11850,3 +11850,43 @@ ENSEMBLE — séparée, la seconde perdrait le contexte de la première) et un m
 réglable. `lireImage` en est désormais un raccourci : les deux portaient la même
 requête à un tableau près.
 
+### 135.12 Les sources sont hors d'atteinte d'ici — et ce qu'on en fait
+
+**Constaté le 20 août 2026, en cherchant à écrire les premières fiches.** Aucune
+des sources que le patron a nommées n'est joignable depuis l'environnement de
+développement : `agriculture.gouv.fr`, `inrae.fr`, `fredon-france.org`,
+`onf.fr`, `plante-et-cite.fr` et `ephy.anses.fr` répondent tous
+`403 à CONNECT — policy denial` au mandataire.
+
+**La recherche web, elle, passe.** Et c'est précisément le piège : elle rend un
+RÉSUMÉ écrit par un modèle, pas la page. Écrire une fiche « validée » d'après un
+résumé aurait produit quelque chose qui a l'apparence d'une donnée sourcée — un
+organisme, un titre, une adresse, une date de consultation — sans que personne
+ait lu le document. **C'est pire qu'une fiche vide** : une fiche vide se voit,
+une fiche mal sourcée se croit.
+
+**La sortie est celle que le dépôt emploie déjà**, et elle est écrite dans
+`CLAUDE.md` §5 : ce qui ne peut pas être fait ici se fait ailleurs. Le workflow
+`recolter-sources-phyto.yml` va chercher les documents depuis une machine qui a
+le réseau, en extrait le texte, et le dépose sur une branche à lui — jamais sur
+`main`. La saisie se fait ensuite, sur des documents qu'on a réellement sous les
+yeux. Même famille que `pages.yml`, `relever-palette.yml` et `banc-essai.yml`.
+
+**Deux garde-fous sont posés en même temps, et ils comptent plus que le
+workflow :**
+
+- **rien n'est rapatrié sans licence déclarée.** Une source en `a_verifier`
+  garde son adresse et rien d'autre. Recopier un document sans savoir s'il peut
+  l'être est un risque qui ne se voit qu'à la mise en demeure ;
+- **la CI contrôle `donnees/phyto/fiches` à chaque poussée**
+  (`importer-fiches-phyto.ts --verifier`). Les fiches arrivent par des fichiers
+  de données, pas par du code : sans ce contrôle, une fiche validée sans source
+  entrerait sur `main` sans que rien ne s'y oppose. Le contrôle a été confronté
+  à une fiche volontairement fautive avant d'être branché — il rougit, et il
+  nomme le champ en cause.
+
+**Ce que cela veut dire pour la suite :** le module est prêt, le blocage n'est
+pas technique. Il faut soit lancer la récolte, soit que le patron fournisse les
+documents. Tant que ni l'un ni l'autre n'est fait, la base reste vide — et
+Atlas le dit.
+

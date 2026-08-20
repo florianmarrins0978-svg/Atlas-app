@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### Les sources phytosanitaires sont hors d'atteinte d'ici — la récolte part ailleurs
+
+**Constaté en cherchant à écrire les premières fiches.** Les six domaines que le
+patron a nommés — `agriculture.gouv.fr`, `inrae.fr`, `fredon-france.org`,
+`onf.fr`, `plante-et-cite.fr`, `ephy.anses.fr` — répondent tous `403 à CONNECT`
+au mandataire réseau. La recherche web passe, mais elle rend un **résumé écrit
+par un modèle**, pas la page.
+
+**Ce qui a été écarté, et c'est le vrai sujet de ce lot :** écrire les fiches
+d'après ces résumés. Le résultat aurait eu toutes les apparences d'une donnée
+sourcée — organisme, titre, adresse, date de consultation — sans que personne
+ait lu le document. **Une fiche vide se voit ; une fiche mal sourcée se croit.**
+
+`.github/workflows/recolter-sources-phyto.yml` va donc chercher les documents
+depuis une machine qui a le réseau, en extrait le texte et le dépose sur une
+branche à lui — jamais sur `main`. Même famille que `pages.yml`,
+`relever-palette.yml` et `banc-essai.yml`.
+
+**Deux garde-fous posés en même temps, et ils comptent plus que le workflow :**
+rien n'est rapatrié sans **licence déclarée** (une source en `a_verifier` garde
+son adresse et rien d'autre) ; et la **CI contrôle `donnees/phyto/fiches` à
+chaque poussée** — les fiches arrivent par des fichiers de données, pas par du
+code, et sans ce contrôle une fiche validée sans source entrerait sur `main`
+sans que rien ne s'y oppose. Le contrôle a été confronté à une fiche
+volontairement fautive avant d'être branché.
+
+
 ### La batterie ne bâtissait plus — et son rouge était devenu du décor
 
 **Trouvé en jouant `npm run verifier:avant-livraison` le 20 août :** l'étape

@@ -16,9 +16,9 @@
  *
  * ── Usage ──────────────────────────────────────────────────────────────────
  *
- *     DATABASE_URL="$DATABASE_ADMIN_URL" npx tsx scripts/importer-fiches-phyto.ts donnees/phyto
+ *     DATABASE_URL="$DATABASE_ADMIN_URL" npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fiches
  *     npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fixtures --fixtures
- *     npx tsx scripts/importer-fiches-phyto.ts donnees/phyto --verifier   (ne écrit rien)
+ *     npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fiches --verifier   (ne écrit rien)
  *
  * **Le rôle PROPRIÉTAIRE est obligatoire**, et le script le vérifie avant
  * d'écrire quoi que ce soit. `atlas_app` n'a que `SELECT` sur ces tables
@@ -30,7 +30,7 @@
  * fautif au milieu n'a jamais laissé la base à moitié à jour.
  */
 
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { Pool, type PoolClient } from "pg";
 import { validerLot, type FicheImportee, type LotImporte } from "../src/lib/import-fiches-phyto";
@@ -103,7 +103,20 @@ async function main() {
   console.log(`\n✅ ${total} fiche(s) ${verifierSeulement ? "vérifiées" : "importées"}.`);
 }
 
+/**
+ * Les fichiers de lot d'un dossier — ou du fichier désigné.
+ *
+ * **Un dossier absent n'est pas une erreur**, et c'est délibéré : la CI
+ * contrôle `donnees/phyto/fiches` à chaque poussée, y compris tant qu'il est
+ * vide. Échouer là-dessus rendrait rouge un dépôt parfaitement sain, et l'on
+ * apprendrait à ignorer ce rouge — on perdrait alors le garde-fou sans s'en
+ * apercevoir.
+ */
 function listerFichiers(cible: string): string[] {
+  if (!existsSync(cible)) {
+    console.log(`${cible} n’existe pas encore. Rien à importer.`);
+    return [];
+  }
   const info = statSync(cible);
   if (info.isFile()) return cible.endsWith(".json") ? [cible] : [];
   return readdirSync(cible)
