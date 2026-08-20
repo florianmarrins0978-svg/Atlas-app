@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### L'écran ne promet plus une version rapide que personne ne construit
+
+**Sa soirée du 20 août :** *« L'application est lente, corrige ça. »* Puis, en
+regardant Réglages : *« Si il y a marqué version lente. »* L'écran disait donc
+vrai — son banc servait bien la version lente, celle où chaque écran se compile
+à l'ouverture.
+
+**Mais il terminait par une promesse fausse :** *« La version rapide prend le
+relais dès que la construction aboutit. »* Cette nuit-là elle n'aboutissait pas,
+et n'allait jamais aboutir — **son veilleur était tombé, et c'est lui qui
+construit**. Le panneau lui demandait d'attendre quelque chose qui n'arriverait
+pas ; il a attendu, puis il a redemandé.
+
+Le panneau dit maintenant ce qu'il constate : personne ne construit → « éteignez
+puis rouvrez votre espace de travail » ; une construction tombée mais un
+veilleur en place → il retente seul, et rallumer répare plus vite ; tout va bien
+→ la phrase d'avant, qui redevient vraie. La règle vit dans
+`src/lib/version-lente.ts`, éprouvée sans banc ni serveur ; confrontée à
+l'ancienne phrase, sa suite rend trois rouges.
+
+**Et le produit, lui, n'est pas lent** — mesuré le même soir sur le code du
+jour, version bâtie : connexion à l'accueil en 890 ms, chaque écran entre 0,6 et
+1,1 seconde. `TODO.md` porte le relevé.
+
+
 ### « Il faut absolument mettre des photos » — l'écran en montre une, et d'où elle vient
 
 **Sa demande du 20 août 2026 :** *« L'utilisateur a besoin de comparer avec une
