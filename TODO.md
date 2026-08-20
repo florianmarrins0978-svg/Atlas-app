@@ -275,7 +275,7 @@ dessous. Et je ne veux pas de flèche. »*
 Planche : `docs/maquettes/82-choisir-la-date.html`.
 
 **Ce qui est vérifié dans le code, et qui rend la chose petite :** le calendrier
-vit dans une FEUILLE (`export/EnvoiAuClient.tsx`), pas dans une page — elle
+vit dans une FEUILLE (`src/app/chantiers/[id]/export/EnvoiAuClient.tsx`), pas dans une page — elle
 s'ouvre par-dessus l'écran récapitulatif. La monter sur le devis, c'est l'ouvrir
 plus tôt : elle ne demande que `chantierId`, `devisId` et `clientNom`, tous trois
 présents sur `devis-complet`.
