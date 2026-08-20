@@ -11906,3 +11906,56 @@ pas technique. Il faut soit lancer la récolte, soit que le patron fournisse les
 documents. Tant que ni l'un ni l'autre n'est fait, la base reste vide — et
 Atlas le dit.
 
+
+---
+
+## 136. Une confusion relie deux fiches, pas deux lignes d'un même fichier
+
+**Écrit le 20 août 2026, en écrivant la troisième fiche réelle.**
+
+C'est la confusion (`confusions_phyto`) qui autorise la demande de photo
+complémentaire : sans elle, deux hypothèses au coude à coude donnent un refus,
+et le module perd la moitié de ce qu'il sait faire. Or les fiches qui se
+confondent sont précisément celles qu'on écrit **à des moments différents** :
+l'anthracnose du platane vient d'une page d'Ephytia lue un jour, celle du chêne
+et du hêtre d'une autre page lue le lendemain. Deux lots, deux fichiers.
+
+**Deux obstacles se tenaient l'un derrière l'autre, et le second était muet.**
+
+1. **Le contrôle** (`validerLot`) refusait tout renvoi vers une fiche absente du
+   fichier courant. Il accepte désormais un jeu de `codesConnus` — tous les
+   codes déclarés par l'import en cours, relevés avant la moindre validation. Le
+   contrôle ne disparaît pas : il porte sur l'ensemble au lieu d'un fichier, et
+   un renvoi vers un code qu'aucun lot ne déclare reste refusé.
+
+2. **L'écriture se perdait en silence.** Le lien était posé en
+   `INSERT … SELECT … FROM fiches_phyto WHERE code = $2` : sur une fiche pas
+   encore écrite, cette requête n'insère **rien**, sans erreur ni message.
+   L'ordre alphabétique des fichiers décidait donc de ce qui marchait — un
+   renvoi vers un lot écrit *plus tard* disparaissait, et on ne l'aurait
+   découvert que sur un chantier, devant une relance photo qui ne vient pas.
+   Ce cas n'était pas atteignable avant le point 1 : c'est l'élargissement qui
+   l'a ouvert.
+
+   L'import garde donc une file des confusions non posées et les **raccorde à la
+   fin**, tous les lots écrits. Ce qui échoue encore là fait tomber l'import :
+   la validation ayant déjà refusé les codes inconnus, un lien manquant à ce
+   stade est une faute d'écriture, et un import « réussi » à qui il manque une
+   relance est pire qu'un import rouge.
+
+**Le contrôle a été vu rouge avant d'être cru** (`CLAUDE.md` §5) :
+`test-diagnostic-base.ts` monte deux lots temporaires — l'un renvoyant vers
+l'autre, écrit plus tard — et, l'ancienne écriture rétablie, il rougit en disant
+« il s'est perdu en silence ».
+
+**Ce que cela a coûté par ailleurs**, et qui est instructif : un cas voisin
+affirmait `base.confusions.length === 1`. C'était vrai **par accident**, la base
+ne portant que les fixtures. La première fiche réelle qui déclare une confusion
+l'a fait rougir sur du code juste — le défaut du §5 bis de `CLAUDE.md`, à
+nouveau. Il vérifie maintenant la règle : la confusion d'alpha existe et nomme
+la photo qui tranche, quoi que la base porte d'autre.
+
+**Et une duplication a été retirée dans la foulée.** La suite navigateur
+recopiait à la main le `resultat` qu'affiche l'écran de diagnostic, champ par
+champ — la règle dupliquée entre l'affichage et la vérification qu'interdit
+`CLAUDE.md` §3. `composerResultat` est désormais exportée, et la suite l'appelle.

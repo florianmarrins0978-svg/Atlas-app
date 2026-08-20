@@ -69,9 +69,24 @@ async function main() {
   let total = 0;
   let echecs = 0;
 
+  // **Tous les codes de fiches sont relevés AVANT de valider quoi que ce soit.**
+  // Une confusion doit pouvoir relier deux fiches écrites dans deux fichiers
+  // différents — et ce sont justement celles-là qui se confondent, puisqu'on les
+  // écrit à des moments différents, à partir de sources différentes.
+  const codesConnus = new Set<string>();
+  for (const fichier of fichiers) {
+    try {
+      const brut = JSON.parse(readFileSync(fichier, "utf-8")) as { fiches?: { code?: string }[] };
+      for (const f of brut.fiches ?? []) if (f.code) codesConnus.add(f.code);
+    } catch {
+      // Un fichier illisible sera signalé par sa propre validation, avec un
+      // message qui désigne le bon coupable. Ici, on l'ignore.
+    }
+  }
+
   for (const fichier of fichiers) {
     const brut = JSON.parse(readFileSync(fichier, "utf-8"));
-    const verdict = validerLot(brut, { autoriserFixtures });
+    const verdict = validerLot(brut, { autoriserFixtures, codesConnus });
 
     for (const a of verdict.avertissements) {
       console.warn(`  ⚠ ${path.basename(fichier)}${a.fiche ? ` [${a.fiche}]` : ""} : ${a.message}`);
@@ -100,6 +115,8 @@ async function main() {
     console.error(`\n❌ ${echecs} fichier(s) refusé(s). Rien n’a été écrit pour eux.`);
     process.exit(1);
   }
+
+  await raccorderConfusions();
   console.log(`\n✅ ${total} fiche(s) ${verifierSeulement ? "vérifiées" : "importées"}.`);
 }
 
@@ -242,6 +259,69 @@ async function ecrireFiche(client: PoolClient, f: FicheImportee) {
   );
 }
 
+/**
+ * Les confusions dont la cible n'existait pas encore quand on a écrit leur lot.
+ *
+ * Elles sont reposées à la fin, une fois tous les lots écrits. Sans cette file,
+ * l'ordre alphabétique des fichiers déciderait de ce qui marche : une fiche du
+ * lot 003 peut se confondre avec une du lot 002 — l'inverse serait perdu.
+ */
+const aRaccorder: { ficheCode: string; confusion: FicheImportee["confusions"][number] }[] = [];
+
+/** Pose une confusion. Rend `false` si la fiche visée n'est pas (encore) en base. */
+async function poserConfusion(
+  client: PoolClient,
+  ficheId: string,
+  c: FicheImportee["confusions"][number]
+): Promise<boolean> {
+  const r = await client.query(
+    `INSERT INTO confusions_phyto (fiche_id, fiche_confondue_id, critere_differenciant, photo_qui_tranche, partie_qui_tranche)
+     SELECT $1, id, $3, $4, $5 FROM fiches_phyto WHERE code = $2
+     ON CONFLICT (fiche_id, fiche_confondue_id) DO UPDATE SET
+       critere_differenciant = EXCLUDED.critere_differenciant,
+       photo_qui_tranche = EXCLUDED.photo_qui_tranche,
+       partie_qui_tranche = EXCLUDED.partie_qui_tranche`,
+    [ficheId, c.fiche, c.critereDifferenciant, c.photoQuiTranche, c.partieQuiTranche]
+  );
+  return (r.rowCount ?? 0) > 0;
+}
+
+/**
+ * Reposer les confusions restées en attente, tous les lots étant écrits.
+ *
+ * **Ce qui échoue ici est une vraie erreur, et fait tomber l'import.** La
+ * validation a déjà refusé toute confusion vers un code qu'aucun lot ne
+ * déclare ; si le lien manque encore à ce stade, c'est l'écriture qui a fauté,
+ * et un import « réussi » à qui il manque une relance photo est pire qu'un
+ * import rouge — on le découvrirait sur un chantier.
+ */
+async function raccorderConfusions(): Promise<void> {
+  if (aRaccorder.length === 0) return;
+  const client = await getPool().connect();
+  try {
+    await client.query("BEGIN");
+    const orphelines: string[] = [];
+    for (const { ficheCode, confusion } of aRaccorder) {
+      const { rows } = await client.query("SELECT id FROM fiches_phyto WHERE code = $1", [ficheCode]);
+      const ficheId = rows[0]?.id as string | undefined;
+      if (!ficheId || !(await poserConfusion(client, ficheId, confusion))) {
+        orphelines.push(`${ficheCode} → ${confusion.fiche}`);
+      }
+    }
+    if (orphelines.length > 0) {
+      await client.query("ROLLBACK");
+      throw new Error(
+        `Confusion(s) impossibles à raccorder : ${orphelines.join(", ")}. ` +
+          "La fiche visée n’est pas en base — l’import est incomplet."
+      );
+    }
+    await client.query("COMMIT");
+    console.log(`  ↔ ${aRaccorder.length} confusion(s) raccordée(s) entre lots.`);
+  } finally {
+    client.release();
+  }
+}
+
 async function ecrireLiens(client: PoolClient, f: FicheImportee) {
   const { rows } = await client.query("SELECT id FROM fiches_phyto WHERE code = $1", [f.code]);
   const ficheId = rows[0].id as string;
@@ -267,15 +347,15 @@ async function ecrireLiens(client: PoolClient, f: FicheImportee) {
   }
 
   for (const c of f.confusions) {
-    await client.query(
-      `INSERT INTO confusions_phyto (fiche_id, fiche_confondue_id, critere_differenciant, photo_qui_tranche, partie_qui_tranche)
-       SELECT $1, id, $3, $4, $5 FROM fiches_phyto WHERE code = $2
-       ON CONFLICT (fiche_id, fiche_confondue_id) DO UPDATE SET
-         critere_differenciant = EXCLUDED.critere_differenciant,
-         photo_qui_tranche = EXCLUDED.photo_qui_tranche,
-         partie_qui_tranche = EXCLUDED.partie_qui_tranche`,
-      [ficheId, c.fiche, c.critereDifferenciant, c.photoQuiTranche, c.partieQuiTranche]
-    );
+    const pose = await poserConfusion(client, ficheId, c);
+    // **Une confusion qui ne se pose pas ne dit rien, et c'est le piège.**
+    // `INSERT … SELECT … WHERE code = $2` sur une fiche absente n'écrit
+    // simplement aucune ligne : pas d'erreur, pas de message, et la relance
+    // photo disparaît de l'écran sans que personne ne l'apprenne. Le cas est
+    // devenu atteignable le jour où les confusions ont pu franchir les
+    // fichiers : la cible peut être dans un lot qu'on n'a pas encore écrit.
+    // On le note plutôt que de le taire — le raccordement final s'en occupe.
+    if (!pose) aRaccorder.push({ ficheCode: f.code, confusion: c });
   }
 
   for (const s of f.sources) {

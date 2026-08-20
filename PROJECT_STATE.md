@@ -28,7 +28,7 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 | Rattachement facultatif à un chantier | **fait** |
 | Import de fiches : schéma, six refus, traçabilité | **fait**, éprouvé contre des fiches fautives |
 | Classement sémantique | **pas fait** — l'interface et son verrou existent, l'implémentation non |
-| **Fiches phytosanitaires réelles** | **2 sur ~50** — fomès des résineux (DSF, 2013) et anthracnose du platane (Ephytia/DSF, 2024) |
+| **Fiches phytosanitaires réelles** | **3 sur ~50** — fomès des résineux (DSF, 2013), anthracnose du platane et anthracnose du chêne et du hêtre (Ephytia/DSF, 2024) |
 
 **La dernière ligne est le seul vrai reste, et elle n'est pas du code.**
 
@@ -36,6 +36,15 @@ La chaîne entière est éprouvée de bout en bout sur une donnée RÉELLE : ré
 du document officiel → lecture → saisie → contrôles → import → rapprochement →
 conclusion (« Fomès des résineux · confiance probable », le plafond venant de la
 fiche elle-même, qui déclare qu'une photo ne fait qu'orienter).
+
+**Et la relance photo est éprouvée sur des fiches RÉELLES depuis le 20 août.**
+Les deux anthracnoses donnent la même nécrose brune sur une feuille ; sans
+l'essence, le moteur ne tranche pas et demande *« Photographiez une feuille
+entière, posée à plat. »* — puis conclut à la seconde photo, l'invariant « une
+seule relance » tenant. C'est le premier usage réel du mécanisme, et il a fallu
+lever deux limites pour l'atteindre : une confusion ne pouvait relier que deux
+fiches d'un **même fichier**, et son écriture se perdait **en silence** quand la
+fiche visée n'était pas encore en base (`ARCHITECTURE.md` §135).
 
 **Ce qui limite le rythme n'est pas la saisie mais le TYPE de document.** Les
 bilans régionaux nomment les problèmes sans décrire les symptômes assez

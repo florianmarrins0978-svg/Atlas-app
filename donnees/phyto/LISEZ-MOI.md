@@ -4,12 +4,12 @@
 
 | | |
 |---|---|
-| `fiches/` | Les **lots de fiches réelles**, en JSON. **Deux fiches au 20 août 2026** : le fomès des résineux (document du DSF récolté) et l'anthracnose du platane (page Ephytia transmise par le patron). Toutes deux écrites d'une source lue en entier. |
+| `fiches/` | Les **lots de fiches réelles**, en JSON. **Trois fiches au 20 août 2026** : le fomès des résineux (document du DSF récolté), l'anthracnose du platane et l'anthracnose du chêne et du hêtre (pages Ephytia transmises par le patron). Toutes écrites d'une source lue en entier. |
 | `fixtures/` | Des données d'**essai**, qui ne décrivent aucun végétal réel. |
 | `sources.json` | La **liste des documents** à aller chercher chez leurs organismes. Aucune donnée phytosanitaire dedans : seulement des adresses et des licences. |
 | `sources/` | Le **texte** des documents récoltés. Hors de `main` (voir `.gitignore`) : il vit sur la branche de récolte. |
 
-## Pourquoi il n'y en a que deux
+## Pourquoi il n'y en a que trois
 
 Règle du patron, le 20 août 2026 :
 
@@ -203,6 +203,24 @@ proches, deux hypothèses au coude à coude donnent un refus.
 
 Une confusion se renseigne **une seule fois**, sur l'une des deux fiches : la
 lecture est symétrique.
+
+**Elle peut viser une fiche d'un AUTRE fichier**, et c'est le cas courant : les
+fiches qui se confondent s'écrivent à des jours d'écart, depuis des sources
+différentes. Les deux anthracnoses en sont l'exemple — même nécrose brune sur
+feuille, hôtes disjoints, deux lots. Le code de la fiche visée doit simplement
+être déclaré par **l'un des fichiers de l'import**.
+
+**Ce qui se passe si la fiche visée est écrite plus tard dans l'import** : rien
+de spécial. Les liens en attente sont raccordés à la fin, une fois tous les lots
+écrits, et l'import tombe si l'un ne se raccorde toujours pas. Ce n'était pas le
+cas avant le 20 août : le lien se perdait sans un mot (`ARCHITECTURE.md` §136).
+
+**Ce qu'une confusion ne doit PAS promettre.** Si aucune photo ne peut trancher
+— parce que la source dit elle-même qu'un laboratoire est nécessaire —
+`photoQuiTranche` reste **nulle**. Atlas refuse alors de conclure, au lieu de
+réclamer une photo qui ne prouverait rien. C'est le cas des quatre confusions que
+la page d'Ephytia nomme pour l'anthracnose du chêne : elles seront écrites quand
+les fiches correspondantes existeront, et sans photo qui tranche.
 
 ## `fixtures/` — des données d'ESSAI, et rien d'autre
 

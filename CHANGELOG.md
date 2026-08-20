@@ -9,6 +9,41 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### Anthracnose du chêne et du hêtre — et la relance photo, enfin sur du réel
+
+Troisième fiche réelle, écrite depuis la page Ephytia (INRAE, auteur DSF) que le
+patron a transmise et relue champ par champ. La source commande deux choses que
+la fiche recopie sans les adoucir : la confirmation **exige un laboratoire**
+(d'où `diagnosticPhoto: "indicatif"`, qui plafonne la confiance à « probable »
+quel que soit le score), et les chancres **fragilisent les branches** (d'où
+`impactMecanique: "possible"`, qui fait apparaître la mention de sécurité). Les
+quatre confusions que la page nomme — *Septoria quercicola*, gel, phytotoxicités,
+carences aiguës — ne sont **pas** écrites : une confusion doit désigner une fiche
+qui existe, et aucune de ces quatre n'existe encore.
+
+**Ce qui a été débloqué pour l'écrire**, et qui vaut pour toutes les fiches à
+venir (`ARCHITECTURE.md` §136) :
+
+- une confusion ne pouvait relier que deux fiches d'un **même fichier**. Or les
+  fiches qui se confondent sont celles qu'on écrit à deux jours d'écart, depuis
+  deux pages différentes. Le contrôle porte désormais sur l'import entier ;
+- et son écriture **se perdait en silence** quand la fiche visée n'était pas
+  encore en base : `INSERT … SELECT` n'insère rien sans se plaindre. L'ordre
+  alphabétique des fichiers décidait de ce qui marchait. Les liens en attente
+  sont maintenant raccordés à la fin, et ce qui manque encore fait tomber
+  l'import.
+
+Résultat, éprouvé : une nécrose brune sur feuille **sans essence identifiée** ne
+conclut plus au hasard entre les deux anthracnoses — elle demande *« Photographiez
+une feuille entière, posée à plat »*, puis conclut à la seconde photo. C'est le
+premier usage réel du mécanisme de photo complémentaire.
+
+Deux contrôles corrigés au passage : l'un comptait les confusions de la base
+entière, ce qui n'était vrai que tant qu'elle ne portait que des fixtures ; la
+suite navigateur recopiait à la main le résultat qu'affiche l'écran, au lieu de
+le composer comme le fait le produit.
+
+
 ### « Il faut absolument mettre des photos » — l'écran en montre une, et d'où elle vient
 
 **Sa demande du 20 août 2026 :** *« L'utilisateur a besoin de comparer avec une

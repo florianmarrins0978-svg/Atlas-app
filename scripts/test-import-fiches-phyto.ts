@@ -325,7 +325,7 @@ cas("une image en règle passe", () => {
 
 console.log("\n=== Renvois et cohérence ===");
 
-cas("une confusion vers une fiche absente du lot est refusée", () => {
+cas("une confusion vers une fiche qu’aucun lot ne déclare est refusée", () => {
   refus(
     lot({
       fiches: [
@@ -334,8 +334,46 @@ cas("une confusion vers une fiche absente du lot est refusée", () => {
         }),
       ],
     }),
-    /pas dans ce lot/
+    /n’existe dans aucun lot/
   );
+});
+
+/**
+ * **Les fiches qui se confondent vivent rarement dans le même fichier.**
+ *
+ * L'anthracnose du platane et celle du chêne donnent la même nécrose brune sur
+ * une feuille ; elles ont été écrites à deux jours d'écart, à partir de deux
+ * pages de source différentes, donc dans deux lots. Tant que le contrôle
+ * n'admettait que les renvois internes à un fichier, déclarer cette confusion
+ * était impossible — et sans confusion, pas de demande de photo complémentaire,
+ * c'est-à-dire la moitié de ce que le module sait faire.
+ */
+cas("une confusion vers une fiche d’un AUTRE lot est admise", () => {
+  const verdict = validerLot(
+    lot({
+      fiches: [
+        ficheValide({
+          confusions: [{ fiche: "fiche-de-lautre-lot", critereDifferenciant: "un critère quelconque" }],
+        }),
+      ],
+    }),
+    { autoriserFixtures: false, codesConnus: new Set(["fiche-de-lautre-lot"]) }
+  );
+  assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
+});
+
+cas("le renvoi hors lot reste refusé si AUCUN lot ne porte ce code", () => {
+  const verdict = validerLot(
+    lot({
+      fiches: [
+        ficheValide({
+          confusions: [{ fiche: "fantome", critereDifferenciant: "un critère quelconque" }],
+        }),
+      ],
+    }),
+    { autoriserFixtures: false, codesConnus: new Set(["un-autre-code-encore"]) }
+  );
+  assert.equal(verdict.ok, false, "le contrôle a disparu au lieu de s’élargir");
 });
 
 cas("une fiche ne se confond pas avec elle-même", () => {

@@ -23,10 +23,12 @@ l'adresse, donc de n'importe qui.
 
 ## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026)
 
-**Le module est complet ; sa base est vide, et c'est le bon état.** Si vous
-ouvrez `/paysage/diagnostic` et qu'il répond « la base ne contient encore aucune
-fiche validée », **rien n'est cassé** : aucune fiche réelle n'a été écrite, et
-c'est une règle du patron, pas un oubli (`ARCHITECTURE.md` §135.10).
+**Le module est complet ; sa base est presque vide, et c'est le bon état.**
+Trois fiches réelles au 20 août 2026 (fomès des résineux, les deux anthracnoses)
+sur ~50 visées. Hors de ce périmètre, l'écran répond « je ne peux pas
+confirmer » — **rien n'est cassé** : les fiches se recopient de sources
+officielles, jamais inventées, et c'est une règle du patron
+(`ARCHITECTURE.md` §135.10).
 
 **Pour voir le parcours fonctionner ici**, chargez les fixtures d'essai :
 
@@ -39,7 +41,7 @@ Elles ne sortiront **que** si `ATLAS_FIXTURES_PHYTO=1` est posé dans le
 processus qui lit — c'est une double garde délibérée. Sans elle, la lecture les
 filtre, exactement comme en production.
 
-**Trois pièges, dans l'ordre où on les rencontre :**
+**Quatre pièges, dans l'ordre où on les rencontre :**
 
 1. **L'import exige le rôle PROPRIÉTAIRE.** `atlas_app` n'a que `SELECT` sur la
    base phytosanitaire (migration 0056). Le script le vérifie et le dit ; sans
@@ -49,7 +51,13 @@ filtre, exactement comme en production.
    d'être corrigés : ils lisaient `0` et concluaient « rien n'a été écrit » alors
    que tout l'était. Employez `withEntreprise`, ou `set_config(..., true)` dans
    une transaction — jamais `pool.query` nu.
-3. **Le vocabulaire est PARTAGÉ** entre les fiches et la consigne du modèle
+3. **Une confusion peut viser une fiche d'un AUTRE fichier**, et c'est le cas
+   courant — voir `ARCHITECTURE.md` §136. Deux choses en découlent : le contrôle
+   d'import relève les codes de **tous** les lots avant de valider, et les liens
+   qui n'ont pas pu être posés sont raccordés à la fin. Ne pas revenir à un
+   `INSERT … SELECT` posé dans la foulée : sur une fiche pas encore écrite, il
+   n'insère rien **sans se plaindre**, et la relance photo disparaît de l'écran.
+4. **Le vocabulaire est PARTAGÉ** entre les fiches et la consigne du modèle
    (`src/lib/diagnostic-vegetal.ts`). Ajouter un mot d'un seul côté ne produit
    aucune erreur : simplement une fiche qui ne sort plus jamais. Deux contrôles
    l'attrapent — `verifierVocabulaire()` à l'import, et une suite qui vérifie

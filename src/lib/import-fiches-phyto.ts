@@ -233,7 +233,29 @@ export type VerdictImport =
  * qui ne doit jamais passer, c'est une fiche `validee` incomplète — parce que
  * celle-là sera servie à un chantier.
  */
-export function validerLot(brut: unknown, options: { autoriserFixtures: boolean }): VerdictImport {
+export function validerLot(
+  brut: unknown,
+  options: {
+    autoriserFixtures: boolean;
+    /**
+     * Les codes de fiches déclarés par les AUTRES lots du même import.
+     *
+     * **Sans cela, une confusion ne pouvait relier que deux fiches du même
+     * fichier** — et les fiches qui se confondent sont précisément celles qu'on
+     * écrit à des moments différents, à partir de sources différentes.
+     * L'anthracnose du platane et celle du chêne se ressemblent sur une photo
+     * de feuille ; elles vivent dans deux lots, écrits à deux jours d'écart.
+     * La contrainte aurait forcé un fichier unique et géant, ou fait renoncer
+     * aux confusions — c'est-à-dire à la demande de photo complémentaire, donc
+     * à la moitié de ce que ce module sait faire.
+     *
+     * Le contrôle ne disparaît pas : il porte sur l'ensemble de l'import au
+     * lieu d'un fichier. Une confusion vers une fiche qui n'existe nulle part
+     * reste refusée.
+     */
+    codesConnus?: Set<string>;
+  }
+): VerdictImport {
   const analyse = LotSchema.safeParse(brut);
   if (!analyse.success) {
     return {
@@ -252,7 +274,7 @@ export function validerLot(brut: unknown, options: { autoriserFixtures: boolean 
 
   const codesSources = new Set(lot.sources.map((s) => s.code));
   const codesTaxons = new Set(lot.taxons.map((t) => t.code));
-  const codesFiches = new Set(lot.fiches.map((f) => f.code));
+  const codesFiches = new Set([...lot.fiches.map((f) => f.code), ...(options.codesConnus ?? [])]);
   const naturesSources = new Map(lot.sources.map((s) => [s.code, s.nature]));
 
   // Doublons — une même fiche deux fois dans un lot laisserait la dernière
@@ -300,7 +322,7 @@ export function validerLot(brut: unknown, options: { autoriserFixtures: boolean 
     }
     for (const confusion of fiche.confusions) {
       if (!codesFiches.has(confusion.fiche)) {
-        problemes.push(ici(`confusion avec « ${confusion.fiche} », qui n’est pas dans ce lot`));
+        problemes.push(ici(`confusion avec « ${confusion.fiche} », qui n’existe dans aucun lot`));
       }
       if (confusion.fiche === fiche.code) problemes.push(ici("une fiche ne se confond pas avec elle-même"));
       // ── 6. Une relance doit dire QUOI photographier ──────────────────────
