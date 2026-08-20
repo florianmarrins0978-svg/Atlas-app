@@ -1,7 +1,6 @@
 {
   "_lisez_moi": "DONNÉES D'ESSAI — ne décrivent AUCUN végétal réel. Noms fictifs, aucun nom scientifique, aucune conduite applicable. Elles existent pour éprouver le moteur de rapprochement, l'arbitrage et l'isolation. Voir donnees/phyto/LISEZ-MOI.md.",
   "version": "fixtures-1",
-
   "sources": [
     {
       "code": "zz-test-source-technique",
@@ -13,13 +12,14 @@
       "consulteeLe": "2026-08-20"
     }
   ],
-
   "taxons": [
     {
       "code": "zz-test-essence-alpha",
       "nomScientifique": null,
       "nomCommun": "Essence d'essai alpha",
-      "synonymes": ["alpha d'essai"],
+      "synonymes": [
+        "alpha d'essai"
+      ],
       "rang": "espece",
       "port": "feuillu"
     },
@@ -32,7 +32,6 @@
       "port": "conifere"
     }
   ],
-
   "fiches": [
     {
       "_role": "Cas « deux hypothèses au coude à coude » : symptômes presque identiques à ceux de beta, et une confusion qui nomme la photo qui tranche.",
@@ -42,7 +41,9 @@
       "categorie": "maladie",
       "agentCausal": null,
       "agentType": "inconnu",
-      "partiesAtteintes": ["feuille"],
+      "partiesAtteintes": [
+        "feuille"
+      ],
       "periodeDebutMois": 1,
       "periodeFinMois": 12,
       "explicationCourte": "Donnée d'essai. Ne décrit aucun problème réel.",
@@ -51,17 +52,44 @@
       "risqueHumainAnimal": "aucun",
       "statutReglementaire": "aucun",
       "diagnosticPhoto": "possible",
-      "photosUtiles": ["feuille"],
+      "photosUtiles": [
+        "feuille"
+      ],
       "conduiteRecommandee": "Donnée d'essai. Aucune conduite réelle n'est décrite ici.",
       "niveauValidation": "validee",
       "origine": "fixture_test",
       "version": 1,
       "sourcesAJourLe": "2026-08-20",
       "symptomes": [
-        { "nature": "symptome", "partie": "feuille", "motif": "tache", "couleurs": ["brun"], "localisations": ["face_superieure"], "poids": "cardinal" },
-        { "nature": "symptome", "partie": "feuille", "motif": "decoloration", "couleurs": ["jaune"], "localisations": [], "poids": "frequent" }
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "face_superieure"
+          ],
+          "poids": "cardinal"
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent"
+        }
       ],
-      "hotes": [{ "taxon": "zz-test-essence-alpha", "specificite": "frequent" }],
+      "hotes": [
+        {
+          "taxon": "zz-test-essence-alpha",
+          "specificite": "frequent"
+        }
+      ],
       "confusions": [
         {
           "fiche": "zz-test-probleme-beta",
@@ -71,11 +99,16 @@
         }
       ],
       "sources": [
-        { "source": "zz-test-source-technique", "champs": ["conduite_recommandee", "gravite"] }
+        {
+          "source": "zz-test-source-technique",
+          "champs": [
+            "conduite_recommandee",
+            "gravite"
+          ]
+        }
       ],
       "images": []
     },
-
     {
       "_role": "Le jumeau d'alpha — même motif cardinal, pour que l'écart reste sous le seuil et déclenche la demande de photo complémentaire.",
       "code": "zz-test-probleme-beta",
@@ -84,7 +117,9 @@
       "categorie": "maladie",
       "agentCausal": null,
       "agentType": "inconnu",
-      "partiesAtteintes": ["feuille"],
+      "partiesAtteintes": [
+        "feuille"
+      ],
       "periodeDebutMois": 1,
       "periodeFinMois": 12,
       "explicationCourte": "Donnée d'essai. Ne décrit aucun problème réel.",
@@ -93,24 +128,56 @@
       "risqueHumainAnimal": "aucun",
       "statutReglementaire": "aucun",
       "diagnosticPhoto": "possible",
-      "photosUtiles": ["feuille"],
+      "photosUtiles": [
+        "feuille"
+      ],
       "conduiteRecommandee": "Donnée d'essai. Aucune conduite réelle n'est décrite ici.",
       "niveauValidation": "validee",
       "origine": "fixture_test",
       "version": 1,
       "sourcesAJourLe": "2026-08-20",
       "symptomes": [
-        { "nature": "symptome", "partie": "feuille", "motif": "tache", "couleurs": ["brun"], "localisations": ["face_superieure"], "poids": "cardinal" },
-        { "nature": "symptome", "partie": "feuille", "motif": "decoloration", "couleurs": ["jaune"], "localisations": [], "poids": "frequent" }
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "face_superieure"
+          ],
+          "poids": "cardinal"
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent"
+        }
       ],
-      "hotes": [{ "taxon": "zz-test-essence-alpha", "specificite": "frequent" }],
+      "hotes": [
+        {
+          "taxon": "zz-test-essence-alpha",
+          "specificite": "frequent"
+        }
+      ],
       "confusions": [],
       "sources": [
-        { "source": "zz-test-source-technique", "champs": ["conduite_recommandee", "gravite"] }
+        {
+          "source": "zz-test-source-technique",
+          "champs": [
+            "conduite_recommandee",
+            "gravite"
+          ]
+        }
       ],
       "images": []
     },
-
     {
       "_role": "Cas « conclusion nette + mention mécanique » : un SIGNE cardinal sur le tronc, et impactMecanique avéré.",
       "code": "zz-test-probleme-gamma",
@@ -119,7 +186,10 @@
       "categorie": "champignon_lignivore",
       "agentCausal": null,
       "agentType": "champignon",
-      "partiesAtteintes": ["tronc", "champignon_sur_bois"],
+      "partiesAtteintes": [
+        "tronc",
+        "champignon_sur_bois"
+      ],
       "periodeDebutMois": 9,
       "periodeFinMois": 3,
       "explicationCourte": "Donnée d'essai. Ne décrit aucun problème réel.",
@@ -129,24 +199,60 @@
       "risqueHumainAnimal": "aucun",
       "statutReglementaire": "aucun",
       "diagnosticPhoto": "possible",
-      "photosUtiles": ["tronc", "champignon_sur_bois"],
+      "photosUtiles": [
+        "tronc",
+        "champignon_sur_bois"
+      ],
       "conduiteRecommandee": "Donnée d'essai. Aucune conduite réelle n'est décrite ici.",
       "niveauValidation": "validee",
       "origine": "fixture_test",
       "version": 1,
       "sourcesAJourLe": "2026-08-20",
       "symptomes": [
-        { "nature": "signe", "partie": "tronc", "motif": "carpophore", "couleurs": ["brun"], "localisations": ["base"], "poids": "cardinal" },
-        { "nature": "symptome", "partie": "tronc", "motif": "pourriture_bois", "couleurs": [], "localisations": ["base"], "poids": "frequent" }
+        {
+          "nature": "signe",
+          "partie": "tronc",
+          "motif": "carpophore",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "cardinal"
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "pourriture_bois",
+          "couleurs": [],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent"
+        }
       ],
       "hotes": [],
       "confusions": [],
       "sources": [
-        { "source": "zz-test-source-technique", "champs": ["conduite_recommandee", "gravite"] }
+        {
+          "source": "zz-test-source-technique",
+          "champs": [
+            "conduite_recommandee",
+            "gravite"
+          ]
+        }
       ],
-      "images": []
+      "images": [
+        {
+          "fichier": "donnees/phyto/fixtures/images/zz-test-damier.png",
+          "licence": "donnée d'essai — image générée, aucun droit de tiers",
+          "credit": "Atlas (image d'essai)",
+          "partie": "tronc",
+          "legende": "Image d'essai. Ne représente aucun végétal."
+        }
+      ]
     },
-
     {
       "_role": "Cas « une photo ne peut pas trancher » : diagnosticPhoto impossible. Elle ne doit JAMAIS être rendue comme conclusion, même seule en tête.",
       "code": "zz-test-probleme-delta",
@@ -155,7 +261,9 @@
       "categorie": "stress_abiotique",
       "agentCausal": null,
       "agentType": "abiotique",
-      "partiesAtteintes": ["racine"],
+      "partiesAtteintes": [
+        "racine"
+      ],
       "periodeDebutMois": null,
       "periodeFinMois": null,
       "explicationCourte": "Donnée d'essai. Ne décrit aucun problème réel.",
@@ -171,12 +279,27 @@
       "version": 1,
       "sourcesAJourLe": "2026-08-20",
       "symptomes": [
-        { "nature": "symptome", "partie": "racine", "motif": "necrose", "couleurs": ["noir"], "localisations": [], "poids": "cardinal" }
+        {
+          "nature": "symptome",
+          "partie": "racine",
+          "motif": "necrose",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal"
+        }
       ],
       "hotes": [],
       "confusions": [],
       "sources": [
-        { "source": "zz-test-source-technique", "champs": ["conduite_recommandee", "gravite"] }
+        {
+          "source": "zz-test-source-technique",
+          "champs": [
+            "conduite_recommandee",
+            "gravite"
+          ]
+        }
       ],
       "images": []
     }

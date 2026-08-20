@@ -62,7 +62,11 @@ passer à l'échelle.
 >    formulation exacte importe — un critère qui distingue deux problèmes voisins,
 >    par exemple ;
 > 3. utiliser certaines de vos photographies, à titre illustratif, avec le crédit
->    correspondant.
+>    correspondant. Je note que plusieurs d'entre elles portent un crédit
+>    nominatif — j'ai par exemple relevé, sur la fiche de l'anthracnose du
+>    platane : CHAMONT S. (INRA), Arnaud Giraudel et Jean-Pierre Henry. Si
+>    l'accord de chaque auteur est nécessaire, je comprendrai tout à fait que ce
+>    point soit écarté.
 >
 > Je précise le contexte, car il compte pour votre réponse : Atlas est un outil
 > professionnel, destiné à être diffusé auprès d'autres artisans, et donc à usage
@@ -99,3 +103,11 @@ Trois choix, au cas où la réponse demanderait de le reprendre :
 - **Il annonce le principe du produit** : aucun diagnostic inventé, toute
   affirmation reliée à sa source. C'est ce qui distingue cette demande de
   l'aspiration d'une base, et c'est probablement ce qui la fera accepter.
+
+**Et il donne d'avance une porte de sortie sur les images**, en nommant les
+crédits relevés et en disant qu'un refus se comprendrait. Ce n'est pas de la
+politesse : les photographies sont la partie la plus verrouillée de la demande —
+un « © » suivi d'un nom de personne est une réserve de droits explicite, et
+l'INRAE lui-même n'a peut-être pas la main dessus. Les lier au reste ferait
+risquer un refus global pour la partie la moins nécessaire. **Le module
+fonctionne sans aucune image.**

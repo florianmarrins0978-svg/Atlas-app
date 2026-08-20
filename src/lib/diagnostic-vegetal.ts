@@ -703,6 +703,9 @@ const TEXTE_REGLEMENTAIRE: Record<string, string> = {
 };
 
 export type ChampsSecurite = {
+  /** La gravité de la fiche : elle pèse sur la mention mécanique quand
+   *  l'impact est « inconnu ». Voir `mentionsDeSecurite`. */
+  gravite: Gravite;
   impactMecanique: "aucun" | "possible" | "avere" | "inconnu";
   impactMecaniqueNote: string | null;
   risqueHumainAnimal: "aucun" | "irritant" | "toxique" | "allergisant" | "inconnu";
@@ -712,15 +715,51 @@ export type ChampsSecurite = {
 };
 
 /**
- * **`inconnu` déclenche la mention, comme `possible` et `avere`.** C'est
- * volontaire, et c'est l'inverse du réflexe : une fiche qui ne sait pas dire si
- * l'arbre risque de casser est exactement celle sur laquelle il ne faut pas
- * laisser croire que la question a été tranchée.
+ * Quand la phrase sur la stabilité s'affiche — et quand elle se tait.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **La règle a été corrigée le 20 août 2026, en REGARDANT le résultat.**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La première version affichait la mention dès que `impactMecanique` n'était pas
+ * « aucun » — donc aussi sur `inconnu`. L'intention était bonne : une fiche qui
+ * ne sait pas dire si l'arbre risque de casser ne doit pas laisser croire que la
+ * question a été tranchée.
+ *
+ * **Puis la deuxième fiche réelle est arrivée, et le défaut a sauté aux yeux.**
+ * L'anthracnose du platane : une maladie du feuillage, que sa source qualifie de
+ * « spectaculaire mais rarement grave », donc `gravite: faible`. Sa page ne parle
+ * pas de stabilité — `inconnu` — et Atlas affichait, sous « Surveiller
+ * l'évolution » : *« Une photo ne permet pas de juger la solidité de l'arbre. »*
+ *
+ * C'est exactement le travers que `CLAUDE.md` nomme à propos du rappel de panne :
+ * **un avertissement qui parle à tort s'apprend à être ignoré, et l'on perd
+ * alors le garde-fou sans s'en apercevoir.** Le jour où la mention compte
+ * vraiment — un lignivore au collet —, elle serait devenue du décor.
+ *
+ * **La règle retenue, et son raisonnement :**
+ *
+ *  - `avere` ou `possible` → la mention, **toujours**. La source a vu quelque
+ *    chose ; on ne la relativise pas.
+ *  - `inconnu` **et** gravité `vigilance` ou `importante` → la mention. On ne
+ *    sait pas, et ça compte.
+ *  - `inconnu` **et** gravité `faible` → **silence**. Ce n'est pas un oubli de
+ *    la source : c'est un jugement. Elle a regardé le problème, l'a trouvé
+ *    mineur, et n'a pas soulevé la question de la structure. Ajouter la phrase
+ *    ici, c'est contredire la fiche qu'on vient d'afficher.
+ *
+ * Ce qui n'est PAS relâché : `avere` et `possible` restent inconditionnels, et
+ * une fiche `importante` dont la stabilité est inconnue continue de le dire.
  */
 export function mentionsDeSecurite(champs: ChampsSecurite): Mention[] {
   const mentions: Mention[] = [];
 
-  if (champs.impactMecanique !== "aucun") {
+  const stabiliteEnJeu =
+    champs.impactMecanique === "avere" ||
+    champs.impactMecanique === "possible" ||
+    (champs.impactMecanique === "inconnu" && champs.gravite !== "faible");
+
+  if (stabiliteEnJeu) {
     mentions.push({ type: "mecanique", texte: MENTION_MECANIQUE, note: champs.impactMecaniqueNote });
   }
   const texteRisque = TEXTE_RISQUE[champs.risqueHumainAnimal];

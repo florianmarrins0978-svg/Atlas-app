@@ -287,12 +287,51 @@ async function ecrireLiens(client: PoolClient, f: FicheImportee) {
   }
 
   for (const [i, img] of f.images.entries()) {
+    // Un fichier du dépôt est RANGÉ dans le stockage au moment de l'import ;
+    // une adresse distante reste telle quelle.
+    const cle = img.fichier ? await rangerImage(img.fichier) : img.storageKey;
     await client.query(
       `INSERT INTO images_phyto (fiche_id, storage_key, url, licence, credit, partie, legende, ordre)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-      [ficheId, img.storageKey, img.url, img.licence, img.credit, img.partie, img.legende, i]
+      [ficheId, cle, img.url, img.licence, img.credit, img.partie, img.legende, i]
     );
   }
+}
+
+/**
+ * Ranger une image de référence dans le stockage, et rendre sa clé.
+ *
+ * **Le plafond de taille n'est pas une pinaillerie de dépôt.** Ces photos sont
+ * versionnées dans Git, où rien ne s'efface jamais : cinquante fiches à deux
+ * photos de trois mégaoctets alourdiraient le dépôt de trois cents mégaoctets,
+ * pour toujours, et chaque clone les porterait. Elles sont surtout AFFICHÉES sur
+ * un téléphone, souvent au bord d'une route — une photo de trois mégaoctets s'y
+ * charge mal, et le patron regarde un cadre vide au moment où il compare.
+ *
+ * Le refus dit quoi faire plutôt que de constater : redimensionner. C'est un
+ * geste de dix secondes, et la photo n'y perd rien de ce qui sert au diagnostic.
+ */
+const IMAGE_MAX_OCTETS = 500 * 1024;
+
+async function rangerImage(chemin: string): Promise<string> {
+  if (!existsSync(chemin)) {
+    throw new Error(`Image introuvable : ${chemin} (chemin relatif à la racine du dépôt).`);
+  }
+  const octets = readFileSync(chemin);
+  if (octets.length > IMAGE_MAX_OCTETS) {
+    const ko = Math.round(octets.length / 1024);
+    throw new Error(
+      `${chemin} pèse ${ko} Ko, au-delà des ${IMAGE_MAX_OCTETS / 1024} Ko admis. ` +
+        `Redimensionnez-la (1200 px de large suffisent largement) : elle sera affichée sur un téléphone.`
+    );
+  }
+  const extension = path.extname(chemin).toLowerCase();
+  if (![".jpg", ".jpeg", ".png", ".webp"].includes(extension)) {
+    throw new Error(`${chemin} : seuls .jpg, .png et .webp sont acceptés (reçu « ${extension} »).`);
+  }
+  const { enregistrerObjet } = await import("../src/server/storage");
+  const objet = await enregistrerObjet("phyto/images", octets, extension === ".jpeg" ? ".jpg" : extension);
+  return objet.storageKey;
 }
 
 main()

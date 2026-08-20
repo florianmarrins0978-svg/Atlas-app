@@ -11778,10 +11778,26 @@ humain/animal, risque réglementaire. Chacun a sa colonne et sa mention.
 règle générale de sécurité ne doit pas pouvoir manquer parce qu'une fiche est
 mal remplie : c'est la fiche bâclée qui en a le plus besoin.
 
-**Et elle s'affiche AUSSI quand `impact_mecanique` vaut `inconnu`.** C'est
-l'inverse du réflexe, et c'est le point : une fiche qui ne sait pas dire si
-l'arbre risque de casser est précisément celle sur laquelle il ne faut pas
-laisser croire que la question a été tranchée.
+**Quand `impact_mecanique` vaut `inconnu`, elle dépend de la gravité — et cette
+règle a été CORRIGÉE le 20 août 2026, en regardant le résultat.**
+
+La première version l'affichait dès que l'impact n'était pas « aucun », donc
+aussi sur `inconnu`. Puis la deuxième fiche réelle est arrivée : l'anthracnose du
+platane, maladie du feuillage que sa source qualifie de « spectaculaire mais
+rarement grave ». Sous « Surveiller l'évolution », Atlas affichait *« Une photo
+ne permet pas de juger la solidité de l'arbre. »*
+
+C'est le travers que `CLAUDE.md` nomme à propos du rappel de panne : **un
+avertissement qui parle à tort s'apprend à être ignoré**, et le garde-fou se
+perd sans qu'on s'en aperçoive. Le jour où la mention compte — un lignivore au
+collet —, elle serait devenue du décor.
+
+| `impact_mecanique` | Gravité | La mention |
+|---|---|---|
+| `avere` ou `possible` | n'importe laquelle | **s'affiche** — la source a vu quelque chose, on ne la relativise pas |
+| `inconnu` | `vigilance` ou `importante` | **s'affiche** — on ne sait pas, et ça compte |
+| `inconnu` | `faible` | **se tait** — ce n'est pas un oubli de la source, c'est un jugement : elle a regardé le problème, l'a trouvé mineur, et n'a pas soulevé la structure |
+| `aucun` | n'importe laquelle | se tait |
 
 ### 135.8 La porte du classement sémantique, et son verrou
 

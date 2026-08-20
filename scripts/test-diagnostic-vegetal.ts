@@ -403,6 +403,7 @@ cas("un score aberrant est borné à [0, 1]", () => {
 console.log("\n=== Mentions de sécurité : quatre risques, jamais confondus ===");
 
 const SANS_RISQUE = {
+  gravite: "faible" as const,
   impactMecanique: "aucun" as const,
   impactMecaniqueNote: null,
   risqueHumainAnimal: "aucun" as const,
@@ -421,14 +422,35 @@ cas("impact mécanique AVÉRÉ : la phrase sur la stabilité s'affiche", () => {
   assert.equal(mentions[0].texte, MENTION_MECANIQUE);
 });
 
-cas("impact mécanique INCONNU : la phrase s'affiche AUSSI — c'est le cœur de la règle", () => {
-  const mentions = mentionsDeSecurite({ ...SANS_RISQUE, impactMecanique: "inconnu" });
-  assert.equal(mentions.length, 1, "une fiche qui ne sait pas doit le dire, pas se taire");
+cas("impact INCONNU sur une fiche GRAVE : la phrase s'affiche — on ne sait pas, et ça compte", () => {
+  const mentions = mentionsDeSecurite({ ...SANS_RISQUE, gravite: "importante", impactMecanique: "inconnu" });
+  assert.equal(mentions.length, 1, "une fiche grave qui ne sait pas doit le dire, pas se taire");
   assert.equal(mentions[0].type, "mecanique");
+});
+
+cas("impact INCONNU sur une fiche FAIBLE : la phrase se TAIT — corrigé le 20 août", () => {
+  // Le défaut trouvé en REGARDANT le résultat de la deuxième fiche réelle :
+  // l'anthracnose du platane, « spectaculaire mais rarement grave », affichait
+  // un avertissement sur la solidité de l'arbre sous « Surveiller l'évolution ».
+  // Un avertissement qui parle à tort s'apprend à être ignoré — et il ne serait
+  // plus lu le jour où il compte.
+  const mentions = mentionsDeSecurite({ ...SANS_RISQUE, gravite: "faible", impactMecanique: "inconnu" });
+  assert.deepEqual(mentions, [], "une source qui juge le dégât mineur n’est pas une source silencieuse");
+});
+
+cas("mais « possible » reste inconditionnel, même sur une fiche faible", () => {
+  const mentions = mentionsDeSecurite({ ...SANS_RISQUE, gravite: "faible", impactMecanique: "possible" });
+  assert.equal(mentions.length, 1, "la source a vu quelque chose : on ne la relativise pas");
+});
+
+cas("« avéré » aussi, même sur une fiche faible", () => {
+  const mentions = mentionsDeSecurite({ ...SANS_RISQUE, gravite: "faible", impactMecanique: "avere" });
+  assert.equal(mentions.length, 1);
 });
 
 cas("les quatre risques restent DISTINCTS et cumulables", () => {
   const mentions = mentionsDeSecurite({
+    gravite: "importante",
     impactMecanique: "possible",
     impactMecaniqueNote: "note mécanique",
     risqueHumainAnimal: "toxique",

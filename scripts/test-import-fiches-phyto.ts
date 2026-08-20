@@ -235,6 +235,94 @@ cas("une confusion avec photo mais sans partie : signalée", () => {
   assert.ok(verdict.ok && verdict.avertissements.some((a) => /de quelle partie/.test(a.message)));
 });
 
+console.log("\n=== Refus 7 : une image sans origine, ou dont la licence est un aveu ===");
+
+cas("une licence « à vérifier » est refusée — ce n'est pas une licence", () => {
+  // `licence` est NOT NULL en base, mais rien n'empêchait d'y écrire n'importe
+  // quoi : le champ obligatoire aurait servi à rassurer plutôt qu'à protéger.
+  refus(
+    lot({
+      fiches: [
+        ficheValide({
+          images: [{ fichier: "donnees/phyto/images/x.jpg", licence: "à vérifier", credit: "Quelqu'un" }],
+        }),
+      ],
+    }),
+    /c’est un aveu/
+  );
+});
+
+for (const aveu of ["licence inconnue", "droits ?", "à définir"]) {
+  cas(`« ${aveu} » est refusé aussi`, () => {
+    refus(
+      lot({
+        fiches: [
+          ficheValide({ images: [{ fichier: "x/y.jpg", licence: aveu, credit: "Quelqu'un" }] }),
+        ],
+      }),
+      /aveu/
+    );
+  });
+}
+
+for (const copyright of ["© GIRAUDEL Arnaud", "(c) Jean-Pierre Henry", "Tous droits réservés", "All rights reserved"]) {
+  cas(`« ${copyright} » est refusé : c'est un copyright, pas une licence`, () => {
+    // Le cas réel du 20 août : les figures d'Ephytia portent des crédits
+    // nominatifs. Écrite dans `licence`, une telle mention passerait tous les
+    // contrôles en affirmant précisément ce qui INTERDIT l'usage.
+    refus(
+      lot({
+        fiches: [
+          ficheValide({ images: [{ fichier: "x/y.jpg", licence: copyright, credit: "Quelqu'un" }] }),
+        ],
+      }),
+      /mention de copyright, pas une licence/
+    );
+  });
+}
+
+cas("mais un « © » dans le CRÉDIT reste normal — c'est sa forme habituelle", () => {
+  const verdict = validerLot(
+    lot({
+      fiches: [
+        ficheValide({
+          images: [{ fichier: "x/y.jpg", licence: "CC BY-SA 4.0", credit: "© Prénom Nom" }],
+        }),
+      ],
+    }),
+    { autoriserFixtures: false }
+  );
+  assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
+});
+
+cas("une image qui ne désigne ni fichier ni adresse est refusée", () => {
+  refus(
+    lot({ fiches: [ficheValide({ images: [{ licence: "CC-BY 4.0", credit: "Quelqu'un" }] })] }),
+    /ne désigne rien/
+  );
+});
+
+cas("une image en règle passe", () => {
+  const verdict = validerLot(
+    lot({
+      fiches: [
+        ficheValide({
+          images: [
+            {
+              fichier: "donnees/phyto/images/x.jpg",
+              licence: "CC BY-SA 4.0",
+              credit: "Prénom Nom",
+              legende: "Une légende",
+            },
+          ],
+        }),
+      ],
+    }),
+    { autoriserFixtures: false }
+  );
+  assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
+});
+
 console.log("\n=== Renvois et cohérence ===");
 
 cas("une confusion vers une fiche absente du lot est refusée", () => {

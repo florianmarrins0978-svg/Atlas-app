@@ -51,6 +51,28 @@ demandait. Le défaut était dans ce que la suite lui demandait.
 
 ---
 
+## ⏳ `test-fiche-pendant-relance.ts` tombe quand la machine est chargée
+
+**Le 20 août 2026.** La suite rend :
+
+    ✗ le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien
+      le veilleur n'a jamais tenté de relance : le montage ne reproduit pas le cas réel
+
+**Ce n'est pas le produit qui tombe, c'est le MONTAGE de la suite** — et elle le
+dit elle-même, ce qui est à son honneur : elle refuse de conclure au vert sur un
+cas qu'elle n'a pas su reproduire. Elle lance un vrai serveur et attend qu'un
+veilleur le relance ; sur une machine occupée, la fenêtre ne s'ouvre pas.
+
+Vérifié : elle tombe **aussi sans le lot du diagnostic végétal** (travail mis de
+côté, suite rejouée), et elle était **verte** dans la batterie complète jouée une
+heure plus tôt sur le même arbre. C'est donc la charge, pas le code.
+
+**À faire quand on y reviendra :** lui donner plus de temps, ou lui faire
+attendre un signal du veilleur plutôt qu'un délai. Un contrôle qui dépend de la
+charge de la machine finit par être ignoré.
+
+---
+
 ## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
 
 **Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
@@ -370,6 +392,100 @@ aurait tranché une question qui n'était pas la nôtre.
 repartie au vert (102/102 suites navigateur). La ligne reste ici parce que la
 conduite, elle, se garde : devant une suite rouge qu'on n'a pas cassée, on
 vérifie sur `main` seul, on l'écrit, et on laisse la main à qui tient le lot.
+
+---
+
+## 🔴 SA PAGE DE CONNEXION NE SURVIT PAS À SON BANC — reproduit le 20 août 2026
+
+**Sa plainte, au soir :** *« Je ne peux plus me connecter à l'application. »*
+Sa fiche d'état était pourtant intégralement au vert — espace allumé, serveur
+qui répond, code servi à jour (`9de6153`) — et `npm run verifier:connexion` se
+connectait sans broncher sur ce commit exact, derrière une origine étrangère.
+
+**Ce qui manquait à tous ces contrôles, c'est le TEMPS.** Ils ouvrent la page et
+appuient dans la seconde. `scripts/eprouver-connexion-page-vieillie.mts` rejoue
+sa séquence — ouvrir `/login`, taper ses identifiants, **laisser le banc se
+reconstruire**, puis appuyer — et rend son écran :
+
+```
+(aucun POST — le formulaire n'a rien envoyé)
+ÉCRAN : ATLAS · Une erreur · Cette page n'a pas pu s'afficher. · Réessayer
+```
+
+**Pourquoi cela lui arrive plusieurs fois par soirée.** `scripts/banc.mjs` sert
+d'abord `next dev` pour qu'il ait un écran tout de suite, puis **bascule sur la
+version bâtie** quand la construction finit — sans compter les mises à jour et
+le veilleur. À chaque bascule, les morceaux de code changent de nom. Son onglet,
+lui, reste ouvert. La porte d'entrée est l'écran où il stationne le plus
+longtemps avant d'agir : c'est celui qui encaisse la bascule.
+
+**Et le rattrapage de `reprise-erreur.ts` ne s'est PAS déclenché.** L'écran a
+montré « Cette page n'a pas pu s'afficher », c'est-à-dire la phrase des pannes
+ordinaires — pas « la page se recharge ». La reconnaissance se fait sur le
+MESSAGE de l'erreur (`estMorceauIntrouvable`), or **en version bâtie React ne
+transmet pas ce message** : le rattrapage écrit le 11 août tient en
+développement et lâche exactement là où le patron vit.
+
+### Ce qu'il faut faire, et ce qu'il ne faut pas faire
+
+**Ne pas rallonger la liste des motifs** de `reprise-erreur.ts` : on ne peut pas
+reconnaître un message qui n'arrive pas. Le remède doit tenir sans message.
+
+**La piste, à éprouver :** l'écran d'erreur demande au serveur **quelle version
+il sert** (`src/server/version-executee.ts` la connaît déjà, l'écran Réglages
+l'affiche) et la compare à celle inscrite dans la page. Différentes = la page a
+vieilli, on recharge une fois ; identiques = c'est une vraie panne, on garde le
+message actuel. Cela ne dépend d'aucune formulation de navigateur, et la garde
+des cinq minutes reste en place contre la boucle.
+
+**En attendant, ce qu'il doit faire quand ça lui arrive :** recharger la page à
+fond, ou fermer l'onglet et rouvrir l'adresse. Ce n'est pas son mot de passe, et
+ce n'est pas son espace.
+
+---
+
+## ⏳ « L'application est lente » — 20 août 2026 au soir : ce n'est PAS le produit
+
+**Mesuré, pas supposé.** Sur le code du jour (`71be6d9`), version bâtie, banc
+monté comme le sien (`npm run banc`), un navigateur qui se connecte pour de
+vrai :
+
+| | |
+|---|---|
+| connexion → accueil | 890 ms |
+| accueil, planning, terminés, réglages, clients, paysage | 670 – 1 110 ms |
+| fiche chantier, devis complet | 595 – 690 ms |
+
+La construction de la version rapide a abouti en une minute. **Il n'y a rien à
+corriger dans le produit** : ces chiffres sont ceux d'une application rapide.
+
+**Ce que disait sa fiche d'état au même moment**, et c'est là qu'est la panne :
+
+- dernière publication **20:09**, plus rien pendant plus d'une heure. Le publieur
+  est un processus séparé qui ne meurt qu'avec le veilleur (`veiller.sh`) : une
+  fiche muette une heure dit donc que **le veilleur n'est plus là** ;
+- `Code SERVI : 9de6153`, **7 versions de retard** sur `origin/main`.
+
+**L'enchaînement le plus probable**, et il se tient de bout en bout : il touche
+« Chercher les dernières corrections » ; sur version bâtie AVEC veilleur, la
+règle coupe le serveur pour que le code neuf soit servi
+(`src/lib/issue-mise-a-jour.ts`) ; le veilleur relance `npm run banc`, qui sert
+`next dev` le temps de bâtir — **c'est là qu'un écran met des dizaines de
+secondes à s'ouvrir** (`src/server/etat-banc.ts`, mesuré le 14 août) ; puis le
+veilleur meurt, et plus personne ne finit la construction ni ne publie la fiche.
+Il reste donc en mode développement, lentement, indéfiniment.
+
+**Le geste qui répare : rallumer l'espace.** Il reconstruit la version rapide et
+remet un veilleur.
+
+**Ce qui reste ouvert, et qu'on ne peut pas trancher d'ici :** POURQUOI le
+veilleur meurt. Le journal de démarrage n'est délibérément pas publié (dépôt
+public), et la fiche ne peut rien dire quand c'est le veilleur qui tombe. La
+mémoire relevée à 20:09 — 219 Mo libres, 5,7 Go en cache — n'exclut pas un
+manque de mémoire pendant la construction, qui est le moment le plus gourmand.
+**Piste à éprouver avant d'y toucher :** faire écrire au veilleur une trace
+d'agonie (`trap`), et la publier avec la fiche à l'allumage suivant — sans quoi
+la prochaine fois se rediagnostiquera de zéro, exactement comme celle-ci.
 
 ---
 
