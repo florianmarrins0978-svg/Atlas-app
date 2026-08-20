@@ -38,52 +38,39 @@ export function marquerDepartMessagerie(quoi: "devis" | "facture", client: strin
   }
 }
 
-/**
- * Retient le départ **seulement si l'on part vraiment**.
+/*
+ * ─── CE QUI A ÉTÉ ESSAYÉ, ET POURQUOI IL N'EN RESTE RIEN ─────────────────────
  *
- * ─── POURQUOI CELLE-CI EXISTE, À CÔTÉ DE LA PRÉCÉDENTE ───────────────────────
- * `marquerDepartMessagerie` écrit tout de suite, et c'est juste là où elle est
- * employée : sous le doigt, sur un lien que le téléphone ouvre à coup sûr.
+ * Le 18 août 2026, l'appui sur « Envoyer le devis » s'est mis à ouvrir la
+ * messagerie tout de suite (`ExportClient.ouvrirLaMessagerie`). L'ouverture y
+ * suit la réponse du serveur, et un navigateur peut la refuser sans un mot :
+ * marquer le départ à l'appui, comme on le fait sur le bouton d'à côté, ferait
+ * accueillir le patron par « Devis transmis à M. Martins » alors que rien ne
+ * serait parti.
  *
- * Depuis le 18 août 2026, l'appui sur « Envoyer le devis » ouvre la messagerie
- * **après** la réponse du serveur (`ExportClient.ouvrirLaMessagerie`) — et un
- * navigateur peut refuser cette navigation-là sans un mot. Marquer le départ
- * d'avance ferait alors accueillir le patron par « Votre devis est parti chez
- * M. Martins » alors que rien n'est parti. C'est exactement le genre de phrase
- * que ce dépôt refuse : une annonce qui affirme ce qui n'a pas eu lieu.
+ * Une garde a donc été écrite pour n'armer le bandeau que si l'on partait pour
+ * de bon. Elle a été **retirée après mesure**, et la mesure vaut d'être gardée :
  *
- * On attend donc que la page s'efface pour de bon. Si Messages s'ouvre, elle
- * s'efface et la marque est posée ; sinon rien n'est écrit, et l'accueil ne
- * raconte rien. Le délai borne l'attente : au-delà, il est resté sur l'écran,
- * et le geste suivant ne doit pas hériter de celui-ci.
+ *     navigation ordinaire dans l'application (`page.goto`)
+ *       → pagehide            : oui
+ *       → visibilitychange    : hidden
+ *
+ * C'est-à-dire **exactement la même signature** qu'un passage vers Messages.
+ * Aucun des deux événements ne distingue « l'application n'est plus au premier
+ * plan » de « cette page s'en va » — et sans cette distinction, toute marque
+ * posée d'avance finit par annoncer un envoi qui n'a pas eu lieu.
+ *
+ * **On ne marque donc plus rien à l'appui.** Le bandeau reste armé par le
+ * bouton de l'écran « Devis prêt », où le geste EST le départ. Ce qu'on perd :
+ * au retour de Messages après une ouverture directe, le patron revient sur
+ * l'écran du devis — qui lui dit déjà « Devis prêt pour … » — au lieu d'être
+ * ramené à l'accueil. C'est peu, et c'est vrai.
+ *
+ * Ne pas rouvrir avec un délai (« si la page revient en moins de deux
+ * secondes, c'était une navigation ») : ce serait deviner, et une annonce
+ * devinée juste neuf fois sur dix reste une annonce fausse une fois sur dix.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-export function marquerDepartSiLOnPart(
-  quoi: "devis" | "facture",
-  client: string,
-  attenteMs = 5_000
-): void {
-  if (typeof document === "undefined") return;
-
-  let fini = false;
-  const oublier = () => {
-    if (fini) return;
-    fini = true;
-    document.removeEventListener("visibilitychange", auDepart);
-    window.removeEventListener("pagehide", auDepart);
-  };
-  function auDepart() {
-    // `pagehide` n'a pas de `visibilityState` à consulter : on ne pose la
-    // question qu'à `visibilitychange`.
-    if (document.visibilityState === "visible") return;
-    marquerDepartMessagerie(quoi, client);
-    oublier();
-  }
-
-  document.addEventListener("visibilitychange", auDepart);
-  window.addEventListener("pagehide", auDepart);
-  setTimeout(oublier, attenteMs);
-}
 
 /**
  * Ramène à l'accueil au retour de la messagerie — une seule fois.

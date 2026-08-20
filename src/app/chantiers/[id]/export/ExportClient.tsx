@@ -11,7 +11,6 @@ import EnvoiAuClient from "./EnvoiAuClient";
 import { enEuros } from "@/lib/euros";
 import { avecCivilite, type Civilite } from "@/lib/civilite";
 import { composerMessageClient, lienTransmission } from "@/lib/message-client";
-import { marquerDepartSiLOnPart } from "@/lib/depart-messagerie";
 
 
 export default function ExportClient({
@@ -129,12 +128,13 @@ export default function ExportClient({
       entrepriseNom,
       lien: lienComplet(chemin),
     });
-    // **Le bandeau du retour n'est armé que si l'on part POUR DE BON.** Ici
-    // l'ouverture suit la réponse du serveur, et un navigateur peut la refuser
-    // sans un mot : marquer le départ d'avance ferait accueillir le patron par
-    // « Votre devis est parti chez M. Martins » alors que rien n'est parti.
-    // C'est le contrôle de suivi qui l'a montré, avant lui.
-    marquerDepartSiLOnPart("devis", clientNom);
+    // **Aucune marque de départ ici, et c'est mesuré, pas supposé.** Le bandeau
+    // « Devis transmis à … » s'arme sur le bouton de l'écran suivant, où le
+    // geste EST le départ. Ici l'ouverture peut être refusée sans un mot, et
+    // aucun événement du navigateur ne distingue « parti vers Messages » de
+    // « changé d'écran » — le détail de la mesure est dans
+    // `src/lib/depart-messagerie.ts`. Annoncer un envoi qui n'a pas eu lieu
+    // serait pire que ne rien annoncer.
 
     // **Un vrai lien qu'on touche pour lui, et non `location.assign`.** Deux
     // raisons, et la seconde suffirait :
