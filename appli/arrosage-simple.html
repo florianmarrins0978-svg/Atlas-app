@@ -99,6 +99,20 @@
          background-position:calc(100% - 20px) 23px,calc(100% - 14px) 23px;
          background-size:6px 6px,6px 6px;background-repeat:no-repeat}
 
+  /* ── La mesure au seau, remise le 20 août au soir ──────────────────────
+     *Sa consigne :* « remets la mesure du débit, mais minimaliste, sans mots
+     qui servent à rien comme on vient de faire ». Trois cases, trois unités,
+     un résultat. Les paragraphes qui l'entouraient ne reviennent pas. */
+  .seau{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+  .seau label{display:block;font-size:9px;font-weight:500;letter-spacing:.16em;
+              text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  /* 16 px au moins : en dessous, iOS agrandit la page à la mise au point. */
+  .seau input{width:100%;min-width:0;font-size:16px;font-family:inherit;text-align:center;
+              color:var(--charcoal);background:var(--bone);border:0;border-radius:10px;
+              padding:13px 6px;box-shadow:inset 0 0 0 1px var(--line);min-height:48px}
+  .debit{margin:12px 0 0;font-size:15px;color:var(--charcoal)}
+  .debit b{font-family:Georgia,serif;font-weight:400;font-size:22px}
+
   /* Le geste de la photo : 64 px de haut, c'est un bouton qu'on touche dehors. */
   .photo{display:flex;align-items:center;justify-content:center;gap:10px;
          margin-top:0;min-height:64px;border-radius:12px;
@@ -163,30 +177,36 @@
 <section class="ecran" id="lecture">
   <a class="retour" href="#plan"><span class="chev-g"></span>Le plan</a>
   <h1>Lire un croquis</h1>
-  <p class="chapo">Ce que la page vient de faire, et ce qu’elle ne sait pas encore faire.</p>
+  <p class="chapo">Ce qui reste à écrire, et ce qui est déjà là.</p>
 
-  <div class="note"><span class="t">À lire avant de juger le plan</span>
-    Le plan de l’écran précédent est <b>dessiné à la main</b>, pas déduit d’une
-    photo. <b>Atlas ne sait pas encore lire un croquis</b> : reconnaître un
-    contour de pelouse tracé au crayon, retrouver « 12 m » écrit en travers, en
-    déduire une surface — cela demande une intelligence qui regarde une image.<br><br>
-    Le raccordement est écrit dans l’application ; il attend un contrat avec un
-    fournisseur. <b>Sans lui, rien n’est lu et rien n’est inventé.</b>
+  <div class="note"><span class="t">Corrigé, contre ce que j’avais dit</span>
+    J’ai écrit ce matin qu’Atlas ne pouvait pas lire une photo. <b>C’était
+    faux.</b> L’application fait déjà lire des <b>tickets de caisse
+    photographiés</b> à l’IA — Anthropic ou OpenAI, au choix — et en tire le
+    fournisseur, la date, le montant et la TVA.<br><br>
+    Lire un croquis, <b>c’est le même travail</b> : une photo, une consigne, une
+    réponse à relire. Ce n’est pas un mur, c’est une pièce à écrire.
   </div>
 
-  <div class="note"><span class="t">Ce qu’on peut faire d’ici là</span>
-    <b>Le croquis reste utile même non lu</b> : il s’attache au chantier, part
-    avec lui, et vous l’avez sous les yeux pendant que vous travaillez.<br><br>
-    Et si la lecture automatique se fait attendre, il reste un chemin court :
-    vous <b>dictez</b> les mesures — « pelouse devant douze mètres sur huit » —
-    au lieu de les taper. Atlas sait déjà transcrire ce que vous dites.
+  <div class="note"><span class="t">Ce que la lecture rendra</span>
+    Trois choses : les <b>surfaces</b> de chaque partie du jardin, les
+    <b>longueurs</b> de haie et de massif, et <b>où se trouve le point d’eau</b>.
+    Le découpage en réseaux et la liste des pièces se déduisent de là — et ce
+    calcul-là est déjà écrit.
   </div>
 
-  <div class="note"><span class="t">Ce que la lecture devra rendre</span>
-    Trois choses, et rien de plus : <b>les surfaces</b> de chaque partie du
-    jardin, <b>les longueurs</b> de haie et de massif, et <b>où se trouve le
-    point d’eau</b>. Le découpage en réseaux et la liste des pièces se
-    déduisent de là — c’est du calcul, et le calcul, lui, est déjà écrit.
+  <div class="note"><span class="t">Ce qui ne changera pas</span>
+    <b>Rien ne sera pris pour argent comptant.</b> Un croquis au crayon sur un
+    coin de table se lit mal ; la lecture se trompera. Elle rendra donc une
+    <b>proposition</b> que vous corrigez, comme pour les tickets — jamais un plan
+    posé dans votre dos.<br><br>
+    Et ce qu’elle n’a pas su lire <b>reste vide et signalé</b>, jamais deviné.
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page-ci ne fait pas</span>
+    Le plan de l’écran précédent est un <b>exemple dessiné</b> : cette page est
+    une maquette, elle n’appelle aucune IA. Le débit, lui, ne se recalcule pas
+    ici quand vous changez les cases — dans l’application, il se recalculera.
   </div>
 </section>
 
@@ -347,7 +367,7 @@
   </div>
 
   <div class="note"><span class="t">Deux choses à savoir</span>
-    <b>1 ·</b> Ce plan est <b>dessiné</b>, pas lu sur votre photo.
+    <b>1 ·</b> Ce plan est un <b>exemple dessiné</b>, pas lu sur votre photo.
     <a href="#lecture">pourquoi, et ce qui manque →</a><br>
     <b>2 ·</b> Cinq choses ont disparu de cette page.
     <a href="#avant">voir lesquelles →</a>
@@ -387,6 +407,13 @@
       <option value="ailleurs">Ailleurs (robinet de jardin, nourrice existante…)</option>
       <option value="puits">Sur un puits ou une cuve</option>
     </select>
+
+    <div class="seau">
+      <div><label for="litres">Litres</label><input id="litres" type="number" inputmode="decimal" value="10"></div>
+      <div><label for="secondes">Secondes</label><input id="secondes" type="number" inputmode="decimal" value="20"></div>
+      <div><label for="bar">Bar</label><input id="bar" type="number" inputmode="decimal" step="0.1" value="3"></div>
+    </div>
+    <p class="debit"><b>1,80</b> m³/h</p>
   </div>
 
   <div class="bloc">

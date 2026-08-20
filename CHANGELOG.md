@@ -34,6 +34,39 @@ le reste retombe sur la liste des clients, sans erreur ni écran vide.
 — celle sans navigateur sur « c'est exactement le double saut qu'il a signalé »,
 celle au navigateur sur les trois chemins.
 
+### La mesure du débit revient, et l'IA sait lire une image
+
+**Ses deux décisions du 20 août au soir :** *« Remets la mesure du débit, mais
+minimaliste, sans mots qui servent à rien, comme on vient de faire. Et pour la
+lecture du croquis, tu peux le faire — il y a déjà l'IA dans l'application,
+Anthropic et OpenAI. »*
+
+**Le débit, en trois cases.** Litres, secondes, bar — sous le déroulant du
+piquage —, puis le résultat. Les deux paragraphes d'explication qui
+l'entouraient ne reviennent pas. L'écran passe de 21 à 26 mots ; le plafond du
+contrôle passe de 22 à 28.
+
+**LA CORRECTION QUI COMPTE : j'avais dit à tort qu'Atlas ne savait pas lire une
+image.** `src/server/ai/services/lire-ticket.ts` fait **déjà** lire un ticket de
+caisse photographié — consigne système, image envoyée au fournisseur, réponse
+JSON, fonction pure qui la relit et refuse ce qu'elle ne comprend pas, éprouvée
+sans clé. Lire un croquis est le même patron.
+
+Ce n'était donc pas un mur mais une pièce à écrire, et la réponse inverse aurait
+enterré une fonctionnalité faisable. D'où **`CLAUDE.md` §5 ter** : avant de dire
+« l'application ne sait pas faire ça », chercher qui, dans le dépôt, fait déjà
+quelque chose d'approchant. Un `grep` de trente secondes sur `image` l'aurait
+donné.
+
+**Deux contrôles ont changé de sens, et c'est normal.** Celui qui exigeait
+l'aveu « Atlas ne sait pas lire » visait désormais le mensonge : il vérifie à
+présent que la page dit seulement que **son** plan est un exemple dessiné.
+Celui qui interdisait tout champ avant le plan en accepte trois — ceux du seau —
+et rougit au quatrième (`CLAUDE.md` §5 bis). **Un contrôle neuf s'y ajoute** :
+le débit affiché doit tomber juste, 10 L en 20 s font 1,80 m³/h — un écran qui
+montre une mesure et un résultat qui ne se suivent pas apprend à douter de tous
+ses chiffres.
+
 ### L'arrosage en deux gestes — dessiné, pas codé
 
 **Sa demande du 20 août 2026**, capture d'`arrosage.html` à l'appui : *« on va

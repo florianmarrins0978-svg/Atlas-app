@@ -195,8 +195,8 @@ le croquis. **Rien n'est codé** ; `appli/arrosage.html` n'a pas été touchée.
 
 | | La question | Pourquoi elle ne se tranche pas sans lui |
 |---|---|---|
-| 1 | **Le débit, mesuré ou supposé ?** | La mesure au seau est partie avec le reste. Or c'est elle qui décide du nombre d'arroseurs par réseau. Deux façons de vivre avec : le supposer d'après le piquage **et l'écrire** (« estimé, à vérifier au seau »), ou le demander **une seule fois, à la fin**, quand le plan est déjà à l'écran |
-| 2 | **La lecture du croquis** | Elle n'existe pas et demande une IA qui regarde une image — donc un **contrat fournisseur**, qui est à lui (`docs/A-FAIRE.md`). D'ici là, le plan ne peut pas sortir d'une photo. Un chemin court existe : **dicter** les mesures, ce qu'Atlas sait déjà transcrire |
+| 1 | ~~Le débit, mesuré ou supposé ?~~ — **TRANCHÉ le 20 août : mesuré** | *« Remets la mesure du débit, mais minimaliste, sans mots qui servent à rien. »* Trois cases — litres, secondes, bar — sous le déroulant du piquage, et le résultat en dessous. Les paragraphes qui l'entouraient ne reviennent pas |
+| 2 | ~~La lecture du croquis~~ — **TRANCHÉ le 20 août : on la code** | Il a rappelé que l'IA est là, et il avait raison : `src/server/ai/services/lire-ticket.ts` fait déjà lire un ticket photographié (Anthropic ou OpenAI). **Même patron à reprendre** : consigne système, image, réponse JSON, fonction pure qui la relit et refuse ce qu'elle ne comprend pas. Elle rendra une **proposition** qu'il corrige — jamais un plan posé dans son dos —, et ce qu'elle n'a pas lu **reste vide et signalé**. À rendre : les surfaces, les longueurs, et où est le point d'eau ; le reste se calcule déjà |
 
 **Ce que la lecture devra rendre, le jour venu :** les surfaces de chaque partie
 du jardin, les longueurs de haie et de massif, et où se trouve le point d'eau.

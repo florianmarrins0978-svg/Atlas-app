@@ -434,6 +434,27 @@ qu'il a demandé, on **adapte le contrôle**, on ne remet pas le libellé. Écri
 une suite qui réclame ce qu'il a fait enlever, c'est rendre son écran impossible
 à changer.
 
+## 5 ter. Avant de dire « l'application ne sait pas faire ça », chercher
+
+**Payé le 20 août 2026, et cela a failli coûter une fonctionnalité.** Devant
+« lire les métrés sur une photo de croquis », il a été répondu au patron que
+c'était impossible : *« cela demande une IA qui regarde une image, et aucun
+contrat n'est signé »*. Il a corrigé — *« tu peux le faire, il y a déjà l'IA
+dans l'application, Anthropic et OpenAI »* —, et il avait raison.
+
+`src/server/ai/services/lire-ticket.ts` fait **déjà** lire un ticket de caisse
+photographié : consigne système, image envoyée au fournisseur, réponse JSON,
+fonction pure qui la relit, éprouvée sans clé. Lire un croquis, c'est le même
+patron. Ce n'était pas un mur, c'était une pièce à écrire.
+
+**La question à se poser n'est jamais « est-ce possible ? » mais « qui, dans ce
+dépôt, fait déjà quelque chose d'approchant ? »** Un `grep` de trente secondes
+sur `image`, `vision`, `base64` l'aurait donné.
+
+C'est la même faute que la planche 56, dans l'autre sens : celle-là décrivait un
+écran déjà fait, celle-ci déclarait impossible un travail déjà à moitié fait.
+**Chercher avant d'affirmer, dans les deux sens.**
+
 ## 6. Git
 
 - Branche de développement : celle que la conversation désigne. Elle change à

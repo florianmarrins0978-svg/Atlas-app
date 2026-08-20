@@ -100,9 +100,15 @@ dire(
   saisies.selects.length === 1 && saisies.selects[0] === "piquage",
   `un seul menu déroulant sur l'écran d'entrée, celui du piquage (lus : ${saisies.selects.join(", ") || "aucun"})`,
 );
+// **TROIS champs, et trois seulement** — la mesure au seau, remise le 20 août
+// au soir : *« remets la mesure du débit, mais minimaliste »*. Le contrôle
+// exigeait AUCUN champ ; il a rougi sur une demande exaucée. C'est le cas que
+// `CLAUDE.md` §5 bis décrit : on adapte le contrôle, on ne remet pas l'état
+// d'avant. Ce qu'il garde désormais, c'est le PLAFOND : un quatrième champ,
+// et il rougit.
 dire(
-  saisies.autres.length === 0,
-  `aucun champ à remplir avant le plan${saisies.autres.length ? ` — ${saisies.autres.join(", ")}` : ""}`,
+  saisies.autres.length === 3 && saisies.autres.every((c) => c === "input[number]"),
+  `trois cases à remplir avant le plan, celles du seau (lues : ${saisies.autres.join(", ") || "aucune"})`,
 );
 dire(
   saisies.blocs === 2,
@@ -134,7 +140,7 @@ dire(numerotes.length === 0, `aucun titre numéroté${numerotes.length ? ` — $
 // tant qu'il ne l'ouvre pas : elle accusait l'écran de porter 33 mots quand il
 // n'en montre que 20. Un contrôle qui accuse à tort coûte plus cher que pas de
 // contrôle (`CLAUDE.md` §5).
-const PLAFOND_MOTS = 22;
+const PLAFOND_MOTS = 28;
 const mots = await page.evaluate(() => {
   const ecran = document.querySelector("#depart");
   if (!ecran) return 999;
@@ -161,11 +167,24 @@ dire(
   `le menu du piquage porte ses choix (${options.length}) et commence par le compteur`,
 );
 
+// **Et le débit affiché doit tomber juste.** 10 L en 20 s font 0,5 L/s, donc
+// 1,80 m³/h. Un écran qui montre une mesure et un résultat qui ne se suivent pas
+// apprend à douter de tous les autres chiffres de la page.
+const mesure = await page.evaluate(() => ({
+  litres: Number(document.querySelector("#litres")?.value),
+  secondes: Number(document.querySelector("#secondes")?.value),
+  affiche: (document.querySelector("#depart .debit")?.textContent ?? "").trim(),
+}));
+const attendu = (mesure.litres / mesure.secondes) * 3.6;
+const lu = Number((mesure.affiche.match(/([\d]+,[\d]+)/)?.[1] ?? "0").replace(",", "."));
+dire(
+  Math.abs(lu - attendu) < 0.01,
+  `${mesure.litres} L en ${mesure.secondes} s font ${attendu.toFixed(2)} m³/h, la page affiche ${lu}`,
+);
+
 // ── 3. Ce qui a été retiré n'est pas revenu ─────────────────────────────────
 const texteDepart = (await page.locator("#depart").innerText()).toLowerCase();
 for (const [mot, quoi] of [
-  ["seau", "la mesure au seau"],
-  ["pression", "la saisie de la pression"],
   ["débit disponible", "le débit affiché en cours de route"],
   ["marque des arroseurs", "le choix de la marque"],
   ["sonde de pluie", "la sonde de pluie à cocher"],
@@ -378,9 +397,17 @@ dire(
 
 // ── 6. La page dit qu'elle ne LIT pas la photo ──────────────────────────────
 const toute = (await page.locator("body").innerText()).toLowerCase();
+// **CE CONTRÔLE A CHANGÉ DE SENS LE 20 AOÛT AU SOIR.** Il exigeait que la page
+// avoue qu'Atlas « ne sait pas lire une photo ». Le patron a rappelé que l'IA
+// est là — et il avait raison : `src/server/ai/services/lire-ticket.ts` fait
+// déjà lire un ticket photographié. L'aveu était devenu le mensonge.
+//
+// Ce que le contrôle garde, c'est la même chose sous un autre angle : la page ne
+// doit pas laisser croire que CETTE page-ci lit quoi que ce soit. Le plan qu'elle
+// montre est un exemple dessiné.
 dire(
-  /ne (sait pas encore )?lire|dessiné, pas lu|ne lit pas/.test(toute),
-  "la page dit qu'elle ne lit pas encore le croquis — sans quoi elle promettrait une lecture qui n'existe pas",
+  /exemple dessiné/.test(toute) && !/ne sait pas (encore )?lire/.test(toute),
+  "la page doit dire que son plan est un exemple dessiné, sans prétendre qu'Atlas ne sait pas lire une image",
 );
 
 // ── 7. Rien ne déborde, aucun lien mort, rien de trop petit ─────────────────
