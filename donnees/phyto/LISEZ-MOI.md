@@ -160,6 +160,7 @@ le même jour, l'une passée, l'autre refusée :
 | **Organisme public français** — DSF, DRAAF, ministère | Licence Ouverte 2.0 | **Oui**, en citant la source et sa date |
 | **INRAE, CNPF, sociétés savantes** | Non établi, et les photos portent souvent un crédit nominatif | **Non**, sans accord |
 | **Un « © » suivi d'un nom** | Réserve de droits explicite | **Non** |
+| **Photographier les photos d'un LIVRE acheté** | Acheter un exemplaire donne le droit de le lire, pas de le reproduire. Rephotographier une photo n'en fait pas une œuvre nouvelle : c'est une reproduction | **Non** — et c'est le cas le plus net de tous, puisque la diffusion serait commerciale |
 
 **Le piège est la confusion « public » / « libre ».** Une page en libre accès,
 publiée par une institution publique, financée par de l'argent public — rien de
