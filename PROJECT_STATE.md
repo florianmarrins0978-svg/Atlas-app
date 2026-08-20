@@ -28,14 +28,20 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 | Rattachement facultatif à un chantier | **fait** |
 | Import de fiches : schéma, six refus, traçabilité | **fait**, éprouvé contre des fiches fautives |
 | Classement sémantique | **pas fait** — l'interface et son verrou existent, l'implémentation non |
-| **Fiches phytosanitaires réelles** | **AUCUNE** |
+| **Fiches phytosanitaires réelles** | **1 sur ~50** — le fomès des résineux (DSF, 2013), écrite d'un document récolté et lu en entier |
 
-**La dernière ligne est le seul vrai reste, et elle n'est pas du code.** Sa
-règle : *« tu ne dois inventer aucune fiche phytosanitaire »*. Tant que la base
-est vide, le module répond honnêtement « la base ne contient encore aucune fiche
-validée » — à chaque photo. Le premier lot d'environ cinquante fiches doit être
-constitué à partir du DSF, de l'INRAE, de la FREDON, de Plante & Cité, de l'ONF
-et des BSV. La marche à suivre est dans `donnees/phyto/LISEZ-MOI.md`.
+**La dernière ligne est le seul vrai reste, et elle n'est pas du code.**
+
+La chaîne entière est éprouvée de bout en bout sur une donnée RÉELLE : récolte
+du document officiel → lecture → saisie → contrôles → import → rapprochement →
+conclusion (« Fomès des résineux · confiance probable », le plafond venant de la
+fiche elle-même, qui déclare qu'une photo ne fait qu'orienter).
+
+**Ce qui limite le rythme n'est pas la saisie mais le TYPE de document.** Les
+bilans régionaux nomment les problèmes sans décrire les symptômes assez
+précisément ; les **fiches-type** le font, et une seule a suffi pour une fiche
+complète. INRAE (Ephytia) en contient beaucoup — **sa licence de réutilisation
+est le vrai point bloquant**, et c'est une décision, pas du code.
 
 ---
 

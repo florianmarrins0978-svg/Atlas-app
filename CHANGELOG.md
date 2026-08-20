@@ -9,6 +9,44 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### La première fiche phytosanitaire RÉELLE — et la chaîne éprouvée de bout en bout
+
+**Le fomès des résineux**, écrit à partir de la plaquette du Département de la
+santé des forêts (juillet 2013), récoltée par le workflow puis **lue en
+entier** — jamais de mémoire.
+
+Le parcours complet fonctionne sur une donnée réelle : document officiel récolté
+→ lu → saisi → six contrôles → importé → rapproché → conclu. Devant un
+sporophore au collet d'un épicéa, Atlas répond **« Fomès des résineux ·
+confiance probable »**. Le plafond de confiance vient de la fiche elle-même :
+elle déclare `diagnostic_photo: indicatif`, parce que le document dit en toutes
+lettres que chez l'épicéa « aucun symptôme extérieur n'est visible » et que les
+carpophores « sont souvent peu visibles ». **La source borne ce qu'Atlas ose
+affirmer** — c'est exactement ce que le module devait faire.
+
+**Ce que la fiche NE dit pas, et pourquoi c'est écrit dedans.** L'impact
+mécanique est « possible » et non « avéré » : le document décrit une pourriture
+du bois de cœur, mais ne se prononce nulle part sur la stabilité de l'arbre —
+c'est un document de gestion forestière. Aucun feuillu n'est listé comme hôte,
+le document précisant que le fomès s'y rencontre « de manière anecdotique ». Les
+deux confusions réelles qu'il nomme (armillaire, rhizina) ne sont pas écrites :
+une confusion doit désigner une fiche existante, et ces deux-là n'ont pas encore
+de source lue. Chaque vide porte sa raison, dans un champ `_source_*`.
+
+**Ce qui limite le rythme n'est pas la saisie, c'est le TYPE de document.** Neuf
+documents ont été récoltés ; un seul était une fiche-type, et il a suffi. Les
+bilans régionaux nomment les problèmes et donnent des niveaux d'impact, mais
+décrivent rarement les symptômes assez précisément pour les écrire dans le
+vocabulaire fermé. **INRAE (Ephytia) en contient beaucoup — sa licence de
+réutilisation est le vrai point bloquant**, et c'est une décision, pas du code.
+
+**Une suite a rougi sur du code juste, et sa correction vaut la règle** : un cas
+affirmait « la base est vue comme vide » sans la garde des fixtures. C'était vrai
+par ACCIDENT — il n'y avait alors aucune fiche réelle. Il affirme désormais ce
+qu'il devait affirmer : *aucune fixture ne sort*. Ce que la base contient par
+ailleurs ne le regarde pas (`CLAUDE.md` §5 bis).
+
+
 ### Les sources phytosanitaires sont hors d'atteinte d'ici — la récolte part ailleurs
 
 **Constaté en cherchant à écrire les premières fiches.** Les six domaines que le

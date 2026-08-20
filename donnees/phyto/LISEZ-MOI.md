@@ -4,12 +4,12 @@
 
 | | |
 |---|---|
-| `fiches/` | Les **lots de fiches réelles**, en JSON. **Vide aujourd'hui**, et c'est voulu. |
+| `fiches/` | Les **lots de fiches réelles**, en JSON. **Une fiche au 20 août 2026** : le fomès des résineux, écrite à partir du document du DSF récolté et lu en entier. |
 | `fixtures/` | Des données d'**essai**, qui ne décrivent aucun végétal réel. |
 | `sources.json` | La **liste des documents** à aller chercher chez leurs organismes. Aucune donnée phytosanitaire dedans : seulement des adresses et des licences. |
 | `sources/` | Le **texte** des documents récoltés. Hors de `main` (voir `.gitignore`) : il vit sur la branche de récolte. |
 
-## Pourquoi `fiches/` est vide
+## Pourquoi il n'y a qu'une fiche
 
 Règle du patron, le 20 août 2026 :
 
@@ -21,9 +21,18 @@ Règle du patron, le 20 août 2026 :
 Et : *« ne remplis pas artificiellement la base avec de fausses données pour
 faire fonctionner la démonstration »*.
 
-Le module fonctionne parfaitement avec une base vide : il répond **« la base ne
-contient encore aucune fiche validée »**, ce qui est vrai, plutôt qu'un
-diagnostic qui ne l'est pas.
+Le module fonctionne parfaitement avec une base presque vide : hors du périmètre
+couvert, il répond **« je ne peux pas confirmer »**, ce qui est vrai, plutôt
+qu'un diagnostic qui ne l'est pas.
+
+**Ce qui limite le rythme n'est pas la saisie, c'est le TYPE de document.** Les
+bilans régionaux des DRAAF nomment les problèmes et donnent des niveaux
+d'impact, mais décrivent rarement les symptômes assez précisément pour les
+écrire dans le vocabulaire fermé. Les documents qui le font sont les
+**fiches-type** : la plaquette « Le fomes des résineux » en est une, et elle a
+suffi à écrire une fiche complète en une lecture. La base d'INRAE (Ephytia) en
+contient beaucoup — d'où la question de sa licence, qui est le vrai point
+bloquant.
 
 ## Le blocage à connaître avant de se lancer
 

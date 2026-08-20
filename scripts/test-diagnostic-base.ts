@@ -166,12 +166,18 @@ async function main() {
     assert.ok(codes.includes("zz-test-probleme-gamma"));
   });
 
-  await cas("SANS la garde, la base est vue comme VIDE — c'est le cas de production", async () => {
+  await cas("SANS la garde, AUCUNE fixture ne sort — c'est le cas de production", async () => {
+    // **Ce cas affirmait « la base est vide », et c'était vrai par ACCIDENT :
+    // il n'y avait alors aucune fiche réelle.** La première fiche réelle
+    // (`donnees/phyto/fiches/`) l'a fait rougir sur du code juste — le travers
+    // que `CLAUDE.md` §5 bis nomme : une suite doit fixer la RÈGLE, pas l'état
+    // du moment. La règle, ici, est que les fixtures ne sortent pas ; ce que la
+    // base contient par ailleurs ne la regarde pas.
     delete process.env.ATLAS_FIXTURES_PHYTO;
     try {
       const base = await lireBasePourMoteur();
-      assert.equal(base.vide, true, "une fixture ne doit jamais atteindre un vrai diagnostic");
-      assert.equal(base.fiches.length, 0);
+      const fixtures = base.fiches.filter((f) => f.code.startsWith("zz-test-"));
+      assert.deepEqual(fixtures, [], "une fixture ne doit jamais atteindre un vrai diagnostic");
     } finally {
       process.env.ATLAS_FIXTURES_PHYTO = "1";
     }
