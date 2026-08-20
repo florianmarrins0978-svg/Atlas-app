@@ -1,25 +1,43 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
+import {
+  terminerChantier,
+  emettreFacture,
+  getFacturePourChantier,
+} from "../src/server/repositories/factures";
+import { ajouterPrestation } from "../src/server/repositories/prestations";
+import { creerChantier } from "../src/server/repositories/chantiers";
+import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
+import { withEntreprise } from "../src/server/db/with-entreprise";
+import { devis } from "../src/server/db/schema";
+import { eq } from "drizzle-orm";
 
 // La fiche du client, telle qu'il l'atteint.
 //
-// *Arrangement B de `docs/maquettes/66`, retenu le 16 août 2026.*
+// *Arrangement B de `docs/maquettes/66`, retenu le 16 août 2026, **refondu le
+// 20 août 2026** — `appli/fiche-client.html`.*
 //
 // **CE QUE CETTE SUITE TIENT, ET QU'AUCUNE SUITE BASE NE VERRAIT :**
 //
 //   1. **le chemin existe.** La règle est éprouvée à part
-//      (`test-fiche-client.ts`, `test-fiche-client-db.ts`) et serait verte même
-//      si aucune porte ne menait à cet écran — c'est le raccord qui casse,
+//      (`test-fiche-client.ts`, `test-documents-du-client.ts`) et serait verte
+//      même si aucune porte ne menait à cet écran — c'est le raccord qui casse,
 //      jamais la formule ;
 //   2. **la porte n'existe pas sans client.** Un chantier sans client ouvrirait
 //      une fiche de personne ;
-//   3. les trois chiffres s'affichent, et « — » quand il n'y a rien à compter.
-//      **« 0 € » se lirait comme un mauvais client** ;
-//   4. **rien ne se casse en deux lignes** dans les trois cases à 390 px. C'est
-//      le défaut vu à la capture sur « encore dus », et la seule façon de
-//      l'empêcher de revenir ;
-//   5. depuis la fiche, ses chantiers se rouvrent.
+//   3. **la dernière prestation est en titre NOIR GRAS**, avec ce qu'elle
+//      comprend — sa demande, en toutes lettres ;
+//   4. **trois colonnes de PDF**, du plus récent au plus ancien. L'ordre est la
+//      demande elle-même, dite deux fois : une colonne qui remonte le temps
+//      l'obligerait à ouvrir chaque document pour trouver le bon ;
+//   5. **rien ne se casse ni ne déborde à 390 px.** Trois colonnes sur la
+//      largeur de son téléphone, c'est là que ça casse — et cela ne se voit
+//      qu'en mesurant ;
+//   6. **CE QUI A ÉTÉ RETIRÉ NE REVIENT PAS.** Un retrait ne se vérifie que par
+//      l'absence : sans ce contrôle, les trois cases et les deux listes
+//      pourraient reparaître au premier rebasage sans que rien ne rougisse.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const BASE = "http://localhost:3000";
@@ -76,6 +94,88 @@ async function main() {
     await page.waitForTimeout(400);
   }
 
+  // ── La scène : deux devis partis, un chantier terminé, une facture émise ──
+  //
+  // **Sans elle, les trois colonnes seraient vides** et l'ordre — le cœur de sa
+  // demande — ne se vérifierait pas.
+  //
+  // **Par le VRAI chemin, et non par des `INSERT`.** La première version posait
+  // la scène en SQL : elle est tombée deux fois sur des colonnes obligatoires
+  // qu'elle ne connaissait pas (`entreprise_nom`, `devis_id`), et chaque échec
+  // accusait l'écran au lieu du montage. Les fonctions du dépôt, elles, savent
+  // ce qu'une pièce doit porter — et si elles changent, cette suite change avec
+  // elles au lieu de dériver en silence (leçon de `capture-rang-du-rappel.mts`).
+  const { rows: ctxRows } = await pool.query(
+    `SELECT me.utilisateur_id AS u, me.entreprise_id AS e
+       FROM membres_entreprise me
+       JOIN chantiers c ON c.entreprise_id = me.entreprise_id
+      WHERE c.id = $1
+      ORDER BY me.role = 'proprietaire' DESC
+      LIMIT 1`,
+    [chantierId]
+  );
+  const ctx = { utilisateurId: ctxRows[0].u as string, entrepriseId: ctxRows[0].e as string };
+
+  /**
+   * Un devis daté, puis envoyé, sur le chantier donné.
+   *
+   * **La date se pose AVANT l'envoi**, jamais après : un devis envoyé est
+   * immuable (`trg_devis_immuable`, migration 0001) et PostgreSQL refuse
+   * l'écriture. `envoyerDevis` garde la date du brouillon — c'est donc le
+   * chemin réel, et non un contournement.
+   */
+  async function devisDate(surChantier: string, jour: string) {
+    const d = await getOuCreerDevisBrouillon(ctx, surChantier);
+    const pose = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+      tx.update(devis).set({ dateEmission: jour }).where(eq(devis.id, d.id)).returning({ id: devis.id })
+    );
+    assert.equal(pose.length, 1, `la date ${jour} n'a pas été posée sur le devis`);
+    await envoyerDevis(ctx, d.id);
+    return d.id;
+  }
+
+  // **Deux devis, sur DEUX chantiers — et c'est le montage qui l'a appris.**
+  // Deux appels sur le même chantier produisent deux VERSIONS du même devis :
+  // elles partagent leur numéro commercial, et l'écran n'en montre que la
+  // dernière (à raison — deux lignes identiques seraient inutilisables). Le
+  // client a donc un second chantier, comme dans la vraie vie.
+  await devisDate(chantierId, "2026-05-14");
+
+  const secondChantier = await creerChantier(ctx, {
+    nom: "Taille de haie",
+    clientId: (await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [chantierId])).rows[0]
+      .client_id as string,
+  });
+  await ajouterLignePrix(ctx, secondChantier.id, "Taille de haie de laurier", "340.00");
+  await devisDate(secondChantier.id, "2026-07-28");
+
+  // « Ce qu'elle comprend » se lit dans les PRESTATIONS du chantier, pas dans
+  // les lignes de prix. Sans elles, le contrôle accusait l'écran de ne rien
+  // afficher alors qu'il n'y avait rien à afficher.
+  await ajouterPrestation(ctx, chantierId, "Démontage en tête de chat");
+  await ajouterPrestation(ctx, chantierId, "Broyage des branches sur place");
+
+  // Le chantier se termine, la facture s'émet — le parcours jusqu'au bout.
+  await terminerChantier(ctx, chantierId);
+  const facture = await getFacturePourChantier(ctx, chantierId);
+  await emettreFacture(ctx, facture!.facture.id);
+
+  // **On compte les devis DU CLIENT, pas ceux d'un chantier.** Ce garde-fou
+  // visait `chantier_id` et a accusé le montage à tort dès que le second devis
+  // est passé sur un second chantier — un contrôle qui accuse à tort coûte plus
+  // cher que pas de contrôle (`CLAUDE.md` §5).
+  const { rowCount: partis } = await pool.query(
+    `SELECT 1 FROM devis d
+       JOIN chantiers c ON c.id = d.chantier_id
+      WHERE c.client_id = (SELECT client_id FROM chantiers WHERE id = $1)
+        AND d.statut = 'envoye'`,
+    [chantierId]
+  );
+  assert.ok(
+    partis !== null && partis >= 2,
+    `le montage n'a produit que ${partis} devis envoyé(s) chez ce client : l'ordre ne se vérifierait pas`
+  );
+
   await cas("depuis la fiche du chantier, une porte mène au client", async () => {
     await page.goto(chantierUrl, { waitUntil: "networkidle" });
     await page.waitForTimeout(700);
@@ -88,70 +188,227 @@ async function main() {
     await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
   });
 
-  await cas("elle porte son nom, et les trois chiffres", async () => {
+  await cas("elle porte son nom, et les informations sous le nom", async () => {
     const texte = await page.locator("body").innerText();
     assert.ok(texte.includes(nomClient), `le nom du client manque :\n${texte.slice(0, 300)}`);
-    for (const mot of ["CHANTIER", "FACTURÉS", "RESTE DÛ"]) {
-      assert.ok(texte.toUpperCase().includes(mot), `« ${mot} » manque à la fiche`);
-    }
   });
 
-  await cas("sans facture, elle dit « — » ET pourquoi — jamais « 0 € »", async () => {
-    const texte = await page.locator("body").innerText();
-    assert.ok(
-      /Aucune facture émise/.test(texte),
-      "les tirets ne sont pas expliqués : ils se lisent comme une donnée perdue"
-    );
-    // **La borne de gauche n'est pas un détail : « 0,00 € » est un morceau de
-    // « 45<b>0,00 €</b> ».** Sans elle, le contrôle accusait la fiche d'afficher
-    // un zéro chaque fois qu'une prestation coûtait un compte rond — et une
-    // erreur qui accuse à tort coûte plus cher que pas de contrôle
-    // (`CLAUDE.md` §5). On exige donc qu'aucun chiffre ne précède le zéro.
-    assert.doesNotMatch(
-      texte,
-      /(^|[^\d])0,00\s?€/m,
-      "« 0,00 € » s'affiche : ce client se lirait comme un mauvais payeur alors que rien n'est facturé"
-    );
-  });
-
-  // **Le défaut trouvé à la capture.** « ENCORE DUS » se cassait en deux lignes
-  // dans sa case. Mesuré, pas regardé — et on refuse de conclure sur une boîte
-  // de zéro pixel (`CLAUDE.md` §5).
-  await cas("aucun libellé ne se casse en deux lignes dans les trois cases", async () => {
-    const mesures = await page.evaluate(() => {
-      const boites = [...document.querySelectorAll("span")].filter((e) =>
-        /CHANTIER|FACTUR|RESTE/i.test(e.textContent ?? "") && e.children.length === 0
-      );
-      return boites.map((e) => {
-        const s = getComputedStyle(e);
-        return {
-          texte: e.textContent ?? "",
-          hauteur: e.getBoundingClientRect().height,
-          ligne: parseFloat(s.lineHeight) || parseFloat(s.fontSize) * 1.2,
-        };
-      });
+  // ── Sa demande, mot pour mot : « en titre noir gras » ──────────────────────
+  //
+  // **Le noir et le gras se MESURENT, ils ne se relisent pas.** Un `text-black`
+  // oublié dans une refonte laisserait le titre en gris parmi les coordonnées —
+  // et c'est la première chose qu'il cherche en ouvrant cet écran.
+  await cas("la dernière prestation est en titre noir gras, sous l'adresse", async () => {
+    const vu = await page.evaluate(() => {
+      const h2 = document.querySelector("h2");
+      if (!h2) return null;
+      const style = getComputedStyle(h2);
+      const coord = h2.closest("div")?.previousElementSibling?.textContent ?? "";
+      return {
+        texte: (h2.textContent ?? "").trim(),
+        graisse: Number(style.fontWeight),
+        couleur: style.color,
+        taille: parseFloat(style.fontSize),
+        hautTitre: h2.getBoundingClientRect().top,
+        coord,
+        puces: document.querySelectorAll("h2 ~ ul li").length,
+      };
     });
-    assert.ok(mesures.length >= 3, `il faut trois libellés à mesurer, ${mesures.length} trouvés`);
-    for (const m of mesures) {
-      assert.ok(m.hauteur > 0 && m.ligne > 0, `« ${m.texte} » ne se mesure pas : rien à conclure`);
-      assert.ok(
-        m.hauteur < m.ligne * 1.6,
-        `« ${m.texte} » tient sur ${Math.round(m.hauteur / m.ligne)} lignes dans sa case`
-      );
+    assert.ok(vu, "aucun titre de dernière prestation sur l'écran");
+    assert.ok(vu!.texte.length > 0, "le titre de la dernière prestation est vide");
+    assert.ok(vu!.graisse >= 700, `le titre n'est pas gras (graisse lue : ${vu!.graisse})`);
+    assert.equal(vu!.couleur, "rgb(0, 0, 0)", `le titre n'est pas noir (couleur lue : ${vu!.couleur})`);
+    assert.ok(vu!.taille >= 20, `le titre fait ${vu!.taille} px — il ne domine pas les coordonnées`);
+    assert.ok(vu!.puces >= 1, "« ce qu'elle comprend » n'affiche aucune ligne");
+  });
+
+  // ── Les trois colonnes, et l'ordre — le cœur de sa demande ─────────────────
+  await cas("trois colonnes : Devis, Fiche chantier, Facture", async () => {
+    const titres = await page.evaluate(() =>
+      [...document.querySelectorAll("h3")].map((e) => (e.textContent ?? "").trim().toUpperCase())
+    );
+    assert.deepEqual(
+      titres,
+      ["DEVIS", "FICHE CHANTIER", "FACTURE"],
+      `les colonnes lues sont : ${titres.join(" | ")}`
+    );
+  });
+
+  await cas("chaque colonne porte ses PDF, du plus récent au plus ancien", async () => {
+    const colonnes = await page.evaluate(() =>
+      [...document.querySelectorAll("h3")].map((h3) => {
+        const boite = h3.parentElement!;
+        return {
+          titre: (h3.textContent ?? "").trim(),
+          liens: [...boite.querySelectorAll("a")].map((a) => ({
+            href: a.getAttribute("href") ?? "",
+            texte: (a.textContent ?? "").replace(/\s+/g, " ").trim(),
+            haut: a.getBoundingClientRect().top,
+          })),
+        };
+      })
+    );
+
+    const attendus: Record<string, RegExp> = {
+      Devis: /^\/api\/devis\//,
+      "Fiche chantier": /^\/api\/chantiers\/[0-9a-f-]{36}\/fiche\/pdf$/,
+      Facture: /^\/api\/factures\//,
+    };
+    for (const colonne of colonnes) {
+      assert.ok(colonne.liens.length >= 1, `la colonne « ${colonne.titre} » est vide`);
+      for (const lien of colonne.liens) {
+        assert.match(
+          lien.href,
+          attendus[colonne.titre],
+          `« ${colonne.titre} » pointe sur ${lien.href}, qui n'est pas son PDF`
+        );
+      }
     }
+
+    // **L'ordre se lit sur l'ÉCRAN, pas sur les données.** Un tri juste dans le
+    // dépôt et un rendu qui les repose dans l'ordre d'arrivée donneraient un
+    // contrôle vert sur une colonne fausse.
+    const sesDevis = colonnes.find((c) => c.titre === "Devis")!;
+    assert.ok(
+      sesDevis.liens.length >= 2,
+      `il faut deux devis pour juger d'un ordre, ${sesDevis.liens.length} trouvé(s)`
+    );
+    // **L'ordre se lit sur la DATE AFFICHÉE**, celle qu'il a sous les yeux —
+    // pas sur un numéro que le montage aurait cru connaître. La première
+    // version cherchait « 2026-0031 », un numéro qu'aucun devis ne portait :
+    // elle accusait la colonne d'être vide alors qu'elle était juste.
+    const rangJuillet = sesDevis.liens.findIndex((l) => /juil\./.test(l.texte));
+    assert.ok(
+      rangJuillet >= 0,
+      `aucun devis de juillet à l'écran : ${sesDevis.liens.map((l) => l.texte).join(" / ")}`
+    );
+    assert.equal(
+      rangJuillet,
+      0,
+      `le devis le plus récent est en position ${rangJuillet + 1} : la colonne remonte le temps`
+    );
+    // Et il est bien PLUS HAUT à l'écran, ce qui est la seule chose qu'il voit.
+    assert.ok(
+      sesDevis.liens[0].haut < sesDevis.liens[1].haut,
+      "le premier document de la colonne n'est pas le plus haut sur l'écran"
+    );
+    // **Deux lignes identiques valent une colonne inutilisable.** C'est ce qui
+    // arrivait quand deux versions du même devis y figuraient toutes deux.
+    const vus = sesDevis.liens.map((l) => l.texte);
+    assert.equal(
+      new Set(vus).size,
+      vus.length,
+      `deux pièces identiques dans la colonne Devis : ${vus.join(" / ")}`
+    );
   });
 
-  await cas("les prestations du devis remontent sur la fiche", async () => {
+  // ── Une seule façon d'écrire une date sur cet écran ──────────────────────
+  //
+  // **Vu à la capture, pas au test.** L'écran portait « 12/08/2026 » au-dessus
+  // de la dernière prestation et « 12 août 2026 » dans les colonnes, à trois
+  // centimètres l'un de l'autre. Deux formats côte à côte font hésiter — est-ce
+  // la même date ? — sur un écran ouvert vingt fois par jour.
+  await cas("les dates s'écrivent toutes de la même façon", async () => {
     const texte = await page.locator("body").innerText();
-    assert.ok(texte.includes("Élagage"), `la prestation dictée ne remonte pas :\n${texte.slice(0, 400)}`);
-    assert.ok(/1 fois/.test(texte), "le nombre de fois manque");
+    const enChiffres = texte.match(/\b\d{2}\/\d{2}\/\d{4}\b/g) ?? [];
+    assert.deepEqual(
+      enChiffres,
+      [],
+      `des dates en chiffres cohabitent avec les dates en toutes lettres : ${enChiffres.join(", ")}`
+    );
+    assert.match(
+      texte,
+      /\d{1,2} (janv\.|févr\.|mars|avr\.|mai|juin|juil\.|août|sept\.|oct\.|nov\.|déc\.) \d{4}/,
+      "aucune date en toutes lettres : le contrôle ne vérifierait rien"
+    );
   });
 
-  await cas("ses chantiers se rouvrent depuis sa fiche", async () => {
-    const lien = page.locator(`a[href="/chantiers/${chantierId}"]`);
-    assert.ok((await lien.count()) >= 1, "le chantier n'est pas cliquable depuis la fiche du client");
-    await lien.first().click();
-    await page.waitForURL(new RegExp(`/chantiers/${chantierId}$`), { timeout: 15_000 });
+  // ── Ce qui a été retiré ne revient pas ────────────────────────────────────
+  //
+  // **Un retrait ne se vérifie que par l'absence.** C'est l'essentiel de sa
+  // demande — « tout le reste, tu enlèves, c'est du trop » — et rien d'autre ne
+  // rougirait si les trois cases reparaissaient à un rebasage.
+  await cas("les quatre choses retirées ne sont pas revenues", async () => {
+    const texte = (await page.locator("body").innerText()).toUpperCase();
+    for (const [mot, quoi] of [
+      ["RESTE DÛ", "la case « reste dû »"],
+      ["SES CHANTIERS", "la liste « Ses chantiers »"],
+      ["COMBIEN DE FOIS", "la liste des prestations récurrentes"],
+      ["AUCUNE FACTURE ÉMISE POUR", "la phrase d'excuse sur les factures"],
+    ] as const) {
+      assert.ok(!texte.includes(mot), `${quoi} est revenue sur l'écran`);
+    }
+    assert.equal(
+      await page.locator(`a[href="/chantiers/${chantierId}"]`).count(),
+      0,
+      "un lien vers le chantier subsiste : la liste « Ses chantiers » n'a pas été retirée"
+    );
+  });
+
+  // ── Trois colonnes sur 390 px : c'est là que ça casse ─────────────────────
+  await cas("rien ne déborde ni ne se coupe sur la largeur de son téléphone", async () => {
+    const mesures = await page.evaluate(() => ({
+      page: document.documentElement.scrollWidth,
+      vue: window.innerWidth,
+      colonnes: [...document.querySelectorAll("h3")].map((h3) => {
+        const boite = h3.parentElement!;
+        return { largeur: boite.getBoundingClientRect().width, haut: boite.getBoundingClientRect().top };
+      }),
+      // **On mesure les TITRES, pas les précisions.** Un nom de chantier long
+      // s'abrège légitimement avec des points de suspension ; un numéro de
+      // devis abrégé, lui, ne désigne plus rien. La première version mesurait
+      // les deux et accusait l'écran pour une troncature voulue.
+      coupes: [...document.querySelectorAll('h3, [data-atlas="piece-titre"]')]
+        .filter((e) => e.scrollWidth > e.clientWidth + 1)
+        .map((e) => `${(e.textContent ?? "").trim()} (${e.scrollWidth} px dans ${e.clientWidth})`),
+      petits: [...document.querySelectorAll("h3 ~ a")]
+        .map((a) => a.getBoundingClientRect().height)
+        .filter((h) => h < 28).length,
+    }));
+
+    assert.ok(
+      mesures.page <= mesures.vue + 1,
+      `l'écran déborde de ${mesures.page - mesures.vue} px : il faut le glisser de côté pour tout lire`
+    );
+    assert.equal(mesures.colonnes.length, 3, "il faut trois colonnes à mesurer");
+    const plusEtroite = Math.min(...mesures.colonnes.map((c) => c.largeur));
+    assert.ok(plusEtroite >= 100, `la colonne la plus étroite fait ${Math.round(plusEtroite)} px — sous 100, les numéros se coupent`);
+    const ecart = Math.max(...mesures.colonnes.map((c) => c.haut)) - Math.min(...mesures.colonnes.map((c) => c.haut));
+    assert.ok(ecart < 2, `les colonnes ne sont pas côte à côte : ${Math.round(ecart)} px d'écart en hauteur`);
+    assert.deepEqual(mesures.coupes, [], `des libellés sont coupés : ${mesures.coupes.join(" ; ")}`);
+    assert.equal(mesures.petits, 0, `${mesures.petits} lien(s) de moins de 28 px de haut : on les rate au doigt`);
+  });
+
+  // ── Le PDF de fiche chantier, le troisième document ───────────────────────
+  //
+  // **Ouvert POUR DE BON, pas seulement listé.** Un lien qui rend une erreur 500
+  // ou une page HTML se voit exactement pareil dans le DOM ; c'est en le
+  // suivant qu'on l'apprend.
+  await cas("la fiche de chantier s'ouvre vraiment, et c'est un PDF", async () => {
+    const href = await page
+      .locator(`a[href="/api/chantiers/${chantierId}/fiche/pdf"]`)
+      .first()
+      .getAttribute("href");
+    assert.ok(href, "aucun lien vers la fiche de chantier en PDF");
+    const reponse = await page.request.get(`${BASE}${href}`);
+    assert.equal(reponse.status(), 200, `la fiche de chantier répond ${reponse.status()}`);
+    assert.match(
+      reponse.headers()["content-type"] ?? "",
+      /application\/pdf/,
+      `la fiche n'est pas servie en PDF : ${reponse.headers()["content-type"]}`
+    );
+    const octets = await reponse.body();
+    assert.equal(
+      octets.subarray(0, 5).toString("latin1"),
+      "%PDF-",
+      "le fichier servi ne commence pas par %PDF-"
+    );
+    // **Aucun prix sur une fiche de chantier.** Elle se donne à un locataire, à
+    // un syndic, à l'assurance d'un voisin : un montant imprimé ici divulgue ce
+    // que le propriétaire a payé. La mise en page l'éprouve déjà
+    // (`test-fiche-chantier-pdf.ts`) ; ici on éprouve que c'est bien CE
+    // document-là qui est servi.
+    assert.ok(octets.length > 2000, `la fiche pèse ${octets.length} octets — elle est probablement vide`);
   });
 
   await cas("un chantier SANS client n'ouvre aucune porte sur du vide", async () => {
