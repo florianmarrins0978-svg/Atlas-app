@@ -347,6 +347,55 @@ vérifie sur `main` seul, on l'écrit, et on laisse la main à qui tient le lot.
 
 ---
 
+## 🔴 SA PAGE DE CONNEXION NE SURVIT PAS À SON BANC — reproduit le 20 août 2026
+
+**Sa plainte, au soir :** *« Je ne peux plus me connecter à l'application. »*
+Sa fiche d'état était pourtant intégralement au vert — espace allumé, serveur
+qui répond, code servi à jour (`9de6153`) — et `npm run verifier:connexion` se
+connectait sans broncher sur ce commit exact, derrière une origine étrangère.
+
+**Ce qui manquait à tous ces contrôles, c'est le TEMPS.** Ils ouvrent la page et
+appuient dans la seconde. `scripts/eprouver-connexion-page-vieillie.mts` rejoue
+sa séquence — ouvrir `/login`, taper ses identifiants, **laisser le banc se
+reconstruire**, puis appuyer — et rend son écran :
+
+```
+(aucun POST — le formulaire n'a rien envoyé)
+ÉCRAN : ATLAS · Une erreur · Cette page n'a pas pu s'afficher. · Réessayer
+```
+
+**Pourquoi cela lui arrive plusieurs fois par soirée.** `scripts/banc.mjs` sert
+d'abord `next dev` pour qu'il ait un écran tout de suite, puis **bascule sur la
+version bâtie** quand la construction finit — sans compter les mises à jour et
+le veilleur. À chaque bascule, les morceaux de code changent de nom. Son onglet,
+lui, reste ouvert. La porte d'entrée est l'écran où il stationne le plus
+longtemps avant d'agir : c'est celui qui encaisse la bascule.
+
+**Et le rattrapage de `reprise-erreur.ts` ne s'est PAS déclenché.** L'écran a
+montré « Cette page n'a pas pu s'afficher », c'est-à-dire la phrase des pannes
+ordinaires — pas « la page se recharge ». La reconnaissance se fait sur le
+MESSAGE de l'erreur (`estMorceauIntrouvable`), or **en version bâtie React ne
+transmet pas ce message** : le rattrapage écrit le 11 août tient en
+développement et lâche exactement là où le patron vit.
+
+### Ce qu'il faut faire, et ce qu'il ne faut pas faire
+
+**Ne pas rallonger la liste des motifs** de `reprise-erreur.ts` : on ne peut pas
+reconnaître un message qui n'arrive pas. Le remède doit tenir sans message.
+
+**La piste, à éprouver :** l'écran d'erreur demande au serveur **quelle version
+il sert** (`src/server/version-executee.ts` la connaît déjà, l'écran Réglages
+l'affiche) et la compare à celle inscrite dans la page. Différentes = la page a
+vieilli, on recharge une fois ; identiques = c'est une vraie panne, on garde le
+message actuel. Cela ne dépend d'aucune formulation de navigateur, et la garde
+des cinq minutes reste en place contre la boucle.
+
+**En attendant, ce qu'il doit faire quand ça lui arrive :** recharger la page à
+fond, ou fermer l'onglet et rouvrir l'adresse. Ce n'est pas son mot de passe, et
+ce n'est pas son espace.
+
+---
+
 ## À surveiller — non reproduit
 
 ### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août
