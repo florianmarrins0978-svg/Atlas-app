@@ -147,6 +147,28 @@ L'import refuse d'ailleurs une mention de copyright écrite dans le champ
 `licence` : elle passerait sinon tous les contrôles en affirmant précisément ce
 qui interdit l'usage.
 
+### Quelle ORIGINE passe, et laquelle ne passe pas
+
+La règle qui trompe le plus — apprise le 20 août 2026 sur deux photos envoyées
+le même jour, l'une passée, l'autre refusée :
+
+| Origine | Régime | Utilisable ? |
+|---|---|---|
+| **Agence fédérale des États-Unis** — USDA, USFS, NPS… | Domaine public par la loi : le travail d'un agent fédéral dans ses fonctions n'est pas protégé | **Oui** |
+| **Wikimedia Commons**, avec une licence affichée (CC BY, CC BY-SA, PD) | Ce que la page du fichier déclare | **Oui**, en affichant auteur et licence |
+| **Université d'État américaine** — Oklahoma State, Purdue, extensions agricoles | **Protégé.** Une université d'État N'EST PAS l'État fédéral, et son travail n'est pas dans le domaine public | **Non**, sauf mention contraire écrite |
+| **Organisme public français** — DSF, DRAAF, ministère | Licence Ouverte 2.0 | **Oui**, en citant la source et sa date |
+| **INRAE, CNPF, sociétés savantes** | Non établi, et les photos portent souvent un crédit nominatif | **Non**, sans accord |
+| **Un « © » suivi d'un nom** | Réserve de droits explicite | **Non** |
+| **Photographier les photos d'un LIVRE acheté** | Acheter un exemplaire donne le droit de le lire, pas de le reproduire. Rephotographier une photo n'en fait pas une œuvre nouvelle : c'est une reproduction | **Non** — et c'est le cas le plus net de tous, puisque la diffusion serait commerciale |
+
+**Le piège est la confusion « public » / « libre ».** Une page en libre accès,
+publiée par une institution publique, financée par de l'argent public — rien de
+tout cela ne dit que l'image est réutilisable. Seule la mention écrite le dit.
+
+**Et le raccourci qui marche toujours :** sa propre photo. Aucune question à
+poser à personne, et plus proche de ce que l'utilisateur verra.
+
 ### Verser une photo
 
 Le fichier va dans `donnees/phyto/images/`, et la fiche le désigne :
