@@ -94,7 +94,7 @@ const saisies = await page.evaluate(() => ({
   autres: [...document.querySelectorAll("#depart input, #depart textarea")].map(
     (e) => `${e.tagName.toLowerCase()}[${e.getAttribute("type") ?? ""}]`
   ),
-  titres: [...document.querySelectorAll("#depart .bloc h2")].map((h) => (h.textContent ?? "").trim()),
+  blocs: document.querySelectorAll("#depart .bloc").length,
 }));
 dire(
   saisies.selects.length === 1 && saisies.selects[0] === "piquage",
@@ -105,8 +105,52 @@ dire(
   `aucun champ à remplir avant le plan${saisies.autres.length ? ` — ${saisies.autres.join(", ")}` : ""}`,
 );
 dire(
-  saisies.titres.length === 2,
-  `deux blocs seulement, et il en a demandé deux (lus : ${saisies.titres.join(" | ")})`,
+  saisies.blocs === 2,
+  `deux blocs seulement, et il en a demandé deux (lus : ${saisies.blocs})`,
+);
+
+// **AUCUN NUMÉRO.** *« Je ne veux pas qu'il y ait marqué un et deux sur les deux
+// machins »* — sa consigne du 20 août au soir, en toutes lettres.
+const numerotes = await page.evaluate(() =>
+  [...document.querySelectorAll("#depart h1, #depart h2, #depart .et")]
+    .map((e) => (e.textContent ?? "").trim())
+    .filter((t) => /^\s*\d+\s*[·.)-]/.test(t))
+);
+dire(numerotes.length === 0, `aucun titre numéroté${numerotes.length ? ` — ${numerotes.join(" ; ")}` : ""}`);
+
+// ── L'ÉCRAN D'ENTRÉE NE GAGNE PLUS DE MOTS ─────────────────────────────────
+//
+// **C'est sa plainte, la cinquième en dix jours** — « il y a beaucoup trop de
+// mots dans tous les sens » — et le 20 août au soir, appliquée à cet écran :
+// *« tous les autres mots, tu me les supprimes »*.
+//
+// **Corriger un écran de plus ne règle rien** ; ce qui manquait, c'est un
+// contrôle qui rougit quand un écran REGAGNE des mots (`HANDOVER.md`). Le voici,
+// pour celui-ci. Le plafond n'est pas une cible : c'est ce que l'écran pèse
+// aujourd'hui, plus une marge de deux mots pour ne pas rougir sur une virgule.
+//
+// **On compte ce qu'il LIT, pas ce que le document contient.** La première
+// version comptait les trois options du déroulant, dont deux sont invisibles
+// tant qu'il ne l'ouvre pas : elle accusait l'écran de porter 33 mots quand il
+// n'en montre que 20. Un contrôle qui accuse à tort coûte plus cher que pas de
+// contrôle (`CLAUDE.md` §5).
+const PLAFOND_MOTS = 22;
+const mots = await page.evaluate(() => {
+  const ecran = document.querySelector("#depart");
+  if (!ecran) return 999;
+  const clone = ecran.cloneNode(true);
+  // D'un menu fermé, seule l'option retenue se voit.
+  for (const sel of clone.querySelectorAll("select")) {
+    const choisie = sel.querySelector("option[selected]") ?? sel.querySelector("option");
+    sel.replaceWith(document.createTextNode(choisie?.textContent ?? ""));
+  }
+  return (clone.textContent ?? "").split(/\s+/).filter((m) => /[\p{L}\p{N}]/u.test(m)).length;
+});
+dire(
+  mots <= PLAFOND_MOTS,
+  mots <= PLAFOND_MOTS
+    ? `l'écran d'entrée tient en ${mots} mots (plafond ${PLAFOND_MOTS})`
+    : `l'écran d'entrée porte ${mots} mots pour un plafond de ${PLAFOND_MOTS} : il en a regagné ${mots - PLAFOND_MOTS}`,
 );
 
 // **Le déroulant s'ouvre pour de vrai**, sans script — c'est ce qu'il a demandé

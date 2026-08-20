@@ -83,11 +83,11 @@
 
   .bloc{margin:20px 22px 0;background:var(--cream);border-radius:14px;padding:18px 17px;
         box-shadow:inset 0 0 0 1px var(--line-soft)}
-  .bloc h2{margin:0;font-family:Georgia,serif;font-weight:400;font-size:21px;line-height:1.2}
+  .bloc h2{margin:0 0 14px;font-family:Georgia,serif;font-weight:400;font-size:21px;line-height:1.2}
   .bloc .aide{margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--charcoal-soft)}
   .bloc .aide b{color:var(--charcoal)}
 
-  label.et{display:block;margin:16px 0 7px;font-size:9.5px;font-weight:500;
+  label.et{display:block;margin:0 0 7px;font-size:9.5px;font-weight:500;
            letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
   /* 16 px au moins : en dessous, iOS agrandit la page à la mise au point. */
   select{width:100%;font-size:16px;font-family:inherit;color:var(--charcoal);
@@ -101,7 +101,7 @@
 
   /* Le geste de la photo : 64 px de haut, c'est un bouton qu'on touche dehors. */
   .photo{display:flex;align-items:center;justify-content:center;gap:10px;
-         margin-top:14px;min-height:64px;border-radius:12px;
+         margin-top:0;min-height:64px;border-radius:12px;
          border:1.5px dashed var(--line);background:var(--bone);
          font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
          color:var(--charcoal-soft)}
@@ -355,16 +355,32 @@
 </section>
 
 <!-- ══ LE DÉPART — l'écran d'entrée (écrit en dernier, cf. la règle) ═════ -->
+<!--
+  **DÉPOUILLÉ UNE SECONDE FOIS, le 20 août 2026 au soir.** Sa consigne, après
+  avoir vu la première version :
+
+    « Le titre plan d'arrosage, et en dessous le piquage se fait avec le
+      bandeau déroulant — tout ce qu'il y a entre les deux, tu me le supprimes.
+      Ensuite en dessous, le croquis et ses métrés avec la possibilité de mettre
+      la photo, et tout le reste tu me le supprimes. Tous les autres mots, tu me
+      les supprimes. Et je ne veux pas qu'il y ait marqué un et deux sur les
+      deux machins. »
+
+  Sont donc partis : le surtitre « Atlas · Paysage », la phrase d'introduction,
+  les numéros « 1 · » et « 2 · », le titre « D'où part l'eau » (le libellé du
+  déroulant le dit déjà), les deux paragraphes d'aide, et les deux encarts du
+  bas. **Il reste trois choses : un titre, un déroulant, un bouton.**
+
+  **Ce que les encarts portaient n'est pas perdu** : les deux écrans qu'ils
+  ouvraient — pourquoi la photo n'est pas lue, et ce qui a disparu de la page —
+  restent atteignables depuis le plan, une fois la photo posée. Les laisser sans
+  aucune porte en aurait fait des écrans morts, la faute des huit planches
+  introuvables.
+-->
 <section class="ecran" id="depart">
-  <p class="sur">Atlas · Paysage</p>
   <h1>Plan d’arrosage</h1>
-  <p class="chapo">Deux choses, et le plan sort. <b>D’où part l’eau</b>, et <b>le croquis du client</b>.</p>
 
   <div class="bloc">
-    <h2>1 · D’où part l’eau</h2>
-    <p class="aide">C’est la seule chose que l’outil ne peut pas deviner — et
-      c’est elle qui décide de tout le reste.</p>
-
     <label class="et" for="piquage">Le piquage se fait…</label>
     <select id="piquage">
       <option value="compteur">Juste après le compteur d’eau</option>
@@ -374,24 +390,8 @@
   </div>
 
   <div class="bloc">
-    <h2>2 · Le croquis et ses métrés</h2>
-    <p class="aide">Photographiez le croquis du client, <b>avec ses mesures
-      écrites dessus</b>. Il reste attaché au chantier et part avec lui.</p>
-
+    <h2>Le croquis et ses métrés</h2>
     <a class="photo" href="#plan"><span class="appareil"></span>Ajouter la photo du croquis</a>
-  </div>
-
-  <div class="note"><span class="t">À essayer</span>
-    Touchez <b>« Ajouter la photo du croquis »</b> : le plan et le détail des
-    pièces apparaissent, et rien d’autre ne vous est demandé entre les deux.<br><br>
-    Le menu déroulant s’ouvre pour de vrai — c’est le seul réglage qui reste.
-  </div>
-
-  <div class="note"><span class="t">Ce que cette page ne fait pas</span>
-    Elle ne <b>lit</b> pas votre photo : ce qui apparaît ensuite est un exemple
-    dessiné. <a href="#lecture">pourquoi →</a><br><br>
-    Et <b>cinq choses ont disparu</b> de la page d’aujourd’hui, dont une qui
-    comptait. <a href="#avant">voir lesquelles →</a>
   </div>
 </section>
 

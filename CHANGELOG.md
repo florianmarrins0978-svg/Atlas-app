@@ -57,6 +57,36 @@ dans Atlas app essai »*. Elle se donne par son adresse directe, et figure
 nommément dans la liste vérifiée après déploiement : une adresse transmise sans
 preuve qu'elle répond n'est pas une adresse.
 
+### L'écran d'arrosage dépouillé une seconde fois : vingt et un mots
+
+**Sa consigne du 20 août au soir**, après avoir vu la première version : *« le
+titre plan d'arrosage, et en dessous le piquage se fait avec le bandeau
+déroulant — tout ce qu'il y a entre les deux, tu me le supprimes. Ensuite le
+croquis et ses métrés avec la possibilité de mettre la photo, et tout le reste
+tu me le supprimes. Tous les autres mots, tu me les supprimes. Et je ne veux pas
+qu'il y ait marqué un et deux sur les deux machins. »*
+
+Sont partis : le surtitre, la phrase d'introduction, les numéros « 1 · » et
+« 2 · », le titre « D'où part l'eau » (le libellé du déroulant le dit déjà), les
+deux paragraphes d'aide et les deux encarts du bas. **Il reste un titre, un
+déroulant, un bouton — vingt et un mots.**
+
+**Ce que les encarts portaient n'est pas perdu** : les deux écrans qu'ils
+ouvraient restent atteignables depuis le plan. Sans aucune porte, ils seraient
+devenus des écrans morts — la faute des huit planches introuvables.
+
+**LE CONTRÔLE QUI MANQUAIT DEPUIS QUATRE PLAINTES.** `HANDOVER.md` le réclamait
+en toutes lettres : *« ce qui manque, c'est un contrôle qui compte les mots de
+chaque écran et rougit quand un écran en gagne ; sans lui, l'application
+regrossira, parce que chaque décision juste ajoute une ligne et que personne
+n'en retire jamais »*. Il existe désormais pour cet écran : **plafond 22 mots**,
+et aucun titre numéroté.
+
+**Il compte ce qu'il LIT, pas ce que le document contient** : la première
+version additionnait les trois options du déroulant, dont deux sont invisibles
+tant qu'il ne l'ouvre pas, et accusait l'écran de porter 33 mots quand il n'en
+montre que 21.
+
 ### Les pièces de la maquette d'arrosage venaient de nulle part
 
 **Sa question, et elle valait mieux qu'une réponse rassurante :** *« les pièces
