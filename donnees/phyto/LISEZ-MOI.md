@@ -4,12 +4,12 @@
 
 | | |
 |---|---|
-| `fiches/` | Les **lots de fiches réelles**, en JSON. **Une fiche au 20 août 2026** : le fomès des résineux, écrite à partir du document du DSF récolté et lu en entier. |
+| `fiches/` | Les **lots de fiches réelles**, en JSON. **Deux fiches au 20 août 2026** : le fomès des résineux (document du DSF récolté) et l'anthracnose du platane (page Ephytia transmise par le patron). Toutes deux écrites d'une source lue en entier. |
 | `fixtures/` | Des données d'**essai**, qui ne décrivent aucun végétal réel. |
 | `sources.json` | La **liste des documents** à aller chercher chez leurs organismes. Aucune donnée phytosanitaire dedans : seulement des adresses et des licences. |
 | `sources/` | Le **texte** des documents récoltés. Hors de `main` (voir `.gitignore`) : il vit sur la branche de récolte. |
 
-## Pourquoi il n'y a qu'une fiche
+## Pourquoi il n'y en a que deux
 
 Règle du patron, le 20 août 2026 :
 

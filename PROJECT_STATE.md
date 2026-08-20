@@ -28,7 +28,7 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 | Rattachement facultatif à un chantier | **fait** |
 | Import de fiches : schéma, six refus, traçabilité | **fait**, éprouvé contre des fiches fautives |
 | Classement sémantique | **pas fait** — l'interface et son verrou existent, l'implémentation non |
-| **Fiches phytosanitaires réelles** | **1 sur ~50** — le fomès des résineux (DSF, 2013), écrite d'un document récolté et lu en entier |
+| **Fiches phytosanitaires réelles** | **2 sur ~50** — fomès des résineux (DSF, 2013) et anthracnose du platane (Ephytia/DSF, 2024) |
 
 **La dernière ligne est le seul vrai reste, et elle n'est pas du code.**
 

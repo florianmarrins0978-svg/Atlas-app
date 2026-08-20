@@ -1,0 +1,165 @@
+{
+  "_lisez_moi": "Écrite le 20 août 2026 à partir de la fiche Ephytia (INRAE) transmise par le patron, lue en entier. Aucune donnée n'est ajoutée à ce que la page dit ; ce qu'elle ne dit pas reste vide, et chaque vide porte sa raison dans un champ _source_*.",
+
+  "_sur_la_licence": "La page est hébergée par l'INRAE (Ephytia) mais porte « Auteur : D.S.F. (Département de la Santé des Forêts) » — un service de l'État. Le CONTENU relève donc du même régime que les autres documents du DSF. Par prudence, le texte de la page n'est pas recopié dans le dépôt : cette fiche est rédigée à partir des faits, et les rares formulations reprises le sont en citation courte, dans les libellés. La question de fond est dans docs/QUESTIONS.md §24 et le courriel à l'INRAE dans docs/courriel-inrae.md.",
+
+  "version": "ephytia-2026-08-20",
+
+  "sources": [
+    {
+      "code": "ephytia-anthracnose-platane",
+      "organisme": "INRAE — Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Forêts — L'anthracnose du platane (Apiognomonia veneta)",
+      "url": "https://ephytia.inrae.fr/fr/C/20409/Forets-Anthracnose-du-platane",
+      "nature": "officielle",
+      "publieeLe": "2024-08-08",
+      "consulteeLe": "2026-08-20"
+    }
+  ],
+
+  "taxons": [
+    {
+      "code": "platanus",
+      "nomScientifique": "Platanus",
+      "nomCommun": "Platane",
+      "synonymes": ["platanes", "platane commun", "platane à feuilles d'érable"],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+
+  "fiches": [
+    {
+      "code": "anthracnose-platane",
+      "nomCommun": "Anthracnose du platane",
+      "nomScientifique": "Apiognomonia veneta",
+      "categorie": "maladie",
+      "agentCausal": "Apiognomonia veneta (forme sexuée) ; Discula platani (forme asexuée). Ascomycète, ordre des Diaporthales.",
+      "agentType": "champignon",
+
+      "_source_parties": "La page donne « Localisation sur l'hôte : Bourgeons, feuilles, rameaux ». La branche s'y ajoute, la page décrivant des « nécroses sur branches » ; le houppier aussi, pour la défoliation précoce qu'elle mentionne.",
+      "partiesAtteintes": ["bourgeon", "feuille", "rameau", "branche", "houppier"],
+
+      "_source_periode": "La page écrit « essentiellement au printemps », sans donner de mois. Mars à juin est la LECTURE de ce mot, pas une donnée de la source — le moteur a besoin de mois, et cette traduction-là n'affirme rien de phytosanitaire. Bornes larges à dessein : un printemps précoce ou tardif ne doit pas écarter la fiche.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 6,
+
+      "explicationCourte": "Maladie fongique du platane. Nécroses brunes le long des nervures des feuilles au printemps, flétrissement de pousses et chute précoce des feuilles.",
+
+      "_source_gravite": "La page conclut, sur les dégâts : « le dégât est spectaculaire, mais rarement grave ». « faible » est donc écrit, malgré une apparence impressionnante — et c'est exactement ce que le patron doit lire devant un platane qui perd ses feuilles en mai.",
+      "gravite": "faible",
+
+      "_source_impact_mecanique": "La page ne traite NULLE PART de la stabilité mécanique de l'arbre. « inconnu », donc — et non « aucun », qui serait une déduction. Conséquence assumée : le résultat portera la phrase générale sur la stabilité, alors que rien n'indique un risque de rupture. Mieux vaut cette ligne de trop qu'une fiche qui laisse croire que la question a été tranchée.",
+      "impactMecanique": "inconnu",
+
+      "_source_risque_humain": "Non traité par la page.",
+      "risqueHumainAnimal": "inconnu",
+
+      "_source_reglementaire": "La page ne mentionne aucun statut réglementaire.",
+      "statutReglementaire": "aucun",
+
+      "_source_diagnostic_photo": "« possible ». La page consacre une section aux « Symptômes et éléments de diagnostic », et les deux critères qu'elle y donne sont VISUELS et sur le feuillage — exactement ce qu'une photo montre.",
+      "diagnosticPhoto": "possible",
+
+      "photosUtiles": ["feuille", "rameau", "houppier"],
+
+      "_source_conduite": "La page ne donne ni traitement ni méthode de lutte. La conduite est donc bâtie sur les deux seules choses qu'elle affirme : le dégât est rarement grave, et la maladie cesse d'évoluer au retour du temps sec, le platane refaisant ses feuilles. Rien d'autre n'est ajouté.",
+      "conduiteRecommandee": "Surveiller l’évolution. Le dégât est spectaculaire mais rarement grave : dès que les conditions climatiques redeviennent sèches, la maladie cesse d’évoluer et le platane reforme de nouvelles feuilles.",
+
+      "prevention": null,
+
+      "gestion": "Le champignon hiverne dans les petites nécroses corticales des rameaux et sur les feuilles tombées au sol. Au printemps, des fructifications apparaissent dans la litière et sur les nécroses, et libèrent des spores disséminées par le vent. L’infection est favorisée par une humidité suffisante et une température relativement fraîche ; un printemps très humide peut conduire à des chutes de feuilles importantes.",
+
+      "_source_traitement": "Aucun traitement n'est mentionné par la page. Le champ reste VIDE — il n'est pas complété par supposition.",
+      "traitement": null,
+
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "necrose",
+          "couleurs": ["brun", "noir"],
+          "localisations": ["nervure"],
+          "poids": "cardinal",
+          "libelle": "Plages nécrotiques brunes périnervaires sur les feuilles, essentiellement au printemps. La page les décrit aussi comme de « larges nécroses noirâtres le long des nervures principales »."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Flétrissement de pousses, rapide au débourrement sur les rameaux contaminés l’année précédente."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Nécroses sur branches."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Petites lésions sur les jeunes rameaux, pouvant conduire à l’annélation du rameau."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Chute prématurée des feuilles, les nécroses pouvant s’étendre aux pétioles. Défoliation précoce."
+        },
+        {
+          "nature": "symptome",
+          "partie": "bourgeon",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Mort de l’écorce autour des bourgeons, après réactivation des lésions lors de périodes douces pendant la dormance."
+        }
+      ],
+
+      "_source_hotes": "La page donne « Hôtes habituels : Platanes », sans distinguer d'espèce. Le taxon est donc le GENRE, et sa spécificité « strict » : c'est ce que la page affirme, et cela évitera de proposer cette fiche sur un autre arbre.",
+      "hotes": [{ "taxon": "platanus", "specificite": "strict" }],
+
+      "_source_confusions": "La page ne nomme aucune confusion possible. Aucune n'est inventée. À renseigner le jour où une autre fiche du platane existera — c'est ce qui permettra à Atlas de demander une seconde photo au lieu de refuser.",
+      "confusions": [],
+
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-08",
+
+      "sources": [
+        {
+          "source": "ephytia-anthracnose-platane",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes"
+          ]
+        }
+      ],
+
+      "_source_images": "La page porte trois figures. Elles ne sont pas reprises : une image sans licence établie ne s'affiche pas (contrainte NOT NULL sur `licence` et `credit`). Le patron a annoncé les envoyer — elles s'ajouteront ici quand leur réutilisation sera établie.",
+      "images": []
+    }
+  ]
+}

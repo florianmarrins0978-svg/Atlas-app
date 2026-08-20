@@ -55,6 +55,28 @@ rouge est celui-ci.
 
 ---
 
+## ⏳ `test-fiche-pendant-relance.ts` tombe quand la machine est chargée
+
+**Le 20 août 2026.** La suite rend :
+
+    ✗ le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien
+      le veilleur n'a jamais tenté de relance : le montage ne reproduit pas le cas réel
+
+**Ce n'est pas le produit qui tombe, c'est le MONTAGE de la suite** — et elle le
+dit elle-même, ce qui est à son honneur : elle refuse de conclure au vert sur un
+cas qu'elle n'a pas su reproduire. Elle lance un vrai serveur et attend qu'un
+veilleur le relance ; sur une machine occupée, la fenêtre ne s'ouvre pas.
+
+Vérifié : elle tombe **aussi sans le lot du diagnostic végétal** (travail mis de
+côté, suite rejouée), et elle était **verte** dans la batterie complète jouée une
+heure plus tôt sur le même arbre. C'est donc la charge, pas le code.
+
+**À faire quand on y reviendra :** lui donner plus de temps, ou lui faire
+attendre un signal du veilleur plutôt qu'un délai. Un contrôle qui dépend de la
+charge de la machine finit par être ignoré.
+
+---
+
 ## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
 
 **Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de

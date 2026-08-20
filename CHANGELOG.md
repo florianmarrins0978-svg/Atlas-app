@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### Deuxième fiche réelle — et un avertissement qui parlait à tort
+
+**L'anthracnose du platane**, écrite à partir de la page Ephytia (INRAE, auteur
+Département de la santé des forêts) que le patron a transmise, faute de pouvoir
+l'atteindre depuis ici.
+
+**Le vrai apport de ce lot n'est pas la fiche : c'est le défaut qu'elle a
+révélé, et il n'est sorti d'aucun test.** Devant une feuille de platane, Atlas
+affichait, sous « Surveiller l'évolution » et une gravité « Faible » :
+
+    ⚠ Une photo ne permet pas de juger la solidité de l'arbre.
+
+La fiche déclare `impact_mecanique: inconnu` — sa source ne parle pas de
+stabilité —, et la règle affichait la mention dès que l'impact n'était pas
+« aucun ». C'est exactement le travers que `CLAUDE.md` nomme à propos du rappel
+de panne : **un avertissement qui parle à tort s'apprend à être ignoré**, et le
+jour où il compte, il est devenu du décor.
+
+La règle tient désormais compte de la gravité quand l'impact est inconnu : une
+source qui a jugé le dégât mineur n'est pas une source silencieuse. `possible` et
+`avere` restent inconditionnels, et une fiche grave dont la stabilité est
+inconnue continue de le dire.
+
+**Vérifié en regardant les trois écrans** : platane → pas de mention ; sporophore
+au collet d'un épicéa → « Fomès des résineux · confiance probable » avec la
+mention ; photo floue → refus.
+
+**Et la fiche dit ce que sa source NE dit pas.** Aucun traitement — la page n'en
+donne aucun, le champ reste vide. Aucune confusion — la page n'en nomme aucune.
+Les trois figures ne sont pas reprises : une image sans licence ne s'affiche pas.
+
+
 ### Le plan d'arrosage entre DANS l'application, et le croquis se lit
 
 **Sa demande, en trois mots :** *« Code le tout dans l'appli »* — après *« pour
