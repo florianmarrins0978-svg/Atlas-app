@@ -105,7 +105,7 @@ async function main() {
     // et c'est celui de sa capture.
     // **Sur `/export`, et c'est justement là que cet écran vit encore.** Le
     // raccourci du 20 août 2026 a supprimé la face AVANT l'envoi de cette
-    // adresse (`ARCHITECTURE.md` §135) ; celle d'après — le signet d'or — est
+    // adresse (`ARCHITECTURE.md` §136) ; celle d'après — le signet d'or — est
     // exactement l'écran de sa capture, et ne bouge pas.
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.waitForSelector("text=En attente de réponse", { timeout: 20_000 });

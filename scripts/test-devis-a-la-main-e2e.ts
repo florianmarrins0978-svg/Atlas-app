@@ -94,7 +94,7 @@ async function main() {
 
   // **Relu sur le DEVIS, et son libellé dans le CHAMP.** La synthèse d'avant
   // l'envoi — qui écrivait les libellés en toutes lettres — a disparu le 20 août
-  // 2026 (`ARCHITECTURE.md` §135). Sur le devis, une ligne est un champ : son
+  // 2026 (`ARCHITECTURE.md` §136). Sur le devis, une ligne est un champ : son
   // libellé n'est pas dans le texte de la page, et le chercher là ferait rougir
   // un écran parfaitement juste.
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });

@@ -104,7 +104,7 @@ async function main() {
   await cas("SA SÉQUENCE : retour par mégarde, puis la ligne le ramène à l'envoi", async () => {
     // Il était allé jusqu'à l'écran d'envoi — le devis lui-même depuis le
     // 20 août 2026, où « Choisir la date » ouvre le calendrier
-    // (`ARCHITECTURE.md` §135). L'ancienne adresse `/export` n'est plus qu'un
+    // (`ARCHITECTURE.md` §136). L'ancienne adresse `/export` n'est plus qu'un
     // renvoi tant que le devis n'est pas parti.
     await page.goto(`${fiche}/devis-complet`, { waitUntil: "networkidle" });
     // « J'ai fait retour sans faire exprès. »

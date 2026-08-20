@@ -110,6 +110,7 @@ export default function ExportClient({
     return `${origine}${chemin}`;
   }
 
+
   // Déduit des props, jamais gardé en état : une reprise de devis rafraîchit
   // l'écran, et un état figé à l'ouverture continuerait d'annoncer un devis
   // parti alors qu'une nouvelle version attend d'être envoyée.
@@ -254,10 +255,15 @@ export default function ExportClient({
         onConfirmer={modifierLeDevis}
       />
 
-      {/* **La feuille d'envoi n'est plus ici** — elle vit sur le devis depuis le
+{/* **La feuille d'envoi n'est plus ici** — elle vit sur le devis depuis le
           20 août 2026 (`docs/maquettes/82`). La garder montée sur cet écran
           aurait donné deux portes vers la même pièce, et deux calendriers à
-          tenir d'accord. */}
+          tenir d'accord.
+
+          **Et ce qui suivait l'envoi l'a suivie** : l'ouverture de sa
+          messagerie, arrivée sur `main` le 18 août, part désormais du devis
+          elle aussi (`src/lib/ouvrir-messagerie.ts`). Elle n'est pas recopiée —
+          elle a été SORTIE d'ici, pour n'exister qu'une fois. */}
     </>
   );
 }

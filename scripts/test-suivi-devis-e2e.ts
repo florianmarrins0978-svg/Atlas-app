@@ -213,7 +213,7 @@ async function main() {
     await clientRefuse(browser, jeton);
 
     // **Sur `/export` : l'écran d'APRÈS l'envoi.** Le raccourci du 20 août 2026
-    // n'a supprimé que sa face d'avant (`ARCHITECTURE.md` §135) ; c'est celle-ci
+    // n'a supprimé que sa face d'avant (`ARCHITECTURE.md` §136) ; c'est celle-ci
     // qui porte la réponse du client et la reprise.
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     assert.ok(

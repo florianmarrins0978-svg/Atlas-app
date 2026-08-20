@@ -233,7 +233,7 @@ cas("SON CAS : la liste mène à l'écran d'ENVOI, pas à la fiche", () => {
   //
   // **L'écran d'envoi a changé d'adresse le 20 août 2026, pas de nature.** Le
   // geste s'appelle « Choisir la date » et vit désormais sur le devis lui-même
-  // (`ARCHITECTURE.md` §135) ; `/export` n'existe plus avant l'envoi et renvoie
+  // (`ARCHITECTURE.md` §136) ; `/export` n'existe plus avant l'envoi et renvoie
   // vers `devis-complet`. Continuer à l'attendre ici le ferait arriver au même
   // endroit, mais par un rebond — et masquerait qu'un des deux chemins a bougé
   // sans l'autre.

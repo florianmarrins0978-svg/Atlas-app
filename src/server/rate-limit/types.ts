@@ -15,6 +15,11 @@ export const LIMITES = {
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },
+  // Le diagnostic végétal : un appel de vision par photo, et une photo pèse.
+  // Plus serré que le téléversement ordinaire parce que ce seuil-là ne protège
+  // pas seulement le service — **il borne une facture**. Reste très au-dessus
+  // d'un usage réel : personne ne diagnostique dix arbres en une minute.
+  diagnosticVegetal: { max: 10, fenetreMs: 60 * 1000 },
   // L'aide à la saisie d'adresse part à chaque pause dans la frappe : une
   // adresse entière en consomme cinq ou six. Large à dessein — ce seuil ne
   // protège pas Atlas, il évite que l'adresse publique du banc d'essai serve de

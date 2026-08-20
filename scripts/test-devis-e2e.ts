@@ -36,7 +36,7 @@ async function main() {
 
   // --- Écran Devis : aperçu PDF avant envoi ---
   // L'adresse `/export` renvoie au devis tant que rien n'est parti (20 août
-  // 2026, `ARCHITECTURE.md` §135) : on y va donc directement.
+  // 2026, `ARCHITECTURE.md` §136) : on y va donc directement.
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Aperçu du PDF").isVisible());
 

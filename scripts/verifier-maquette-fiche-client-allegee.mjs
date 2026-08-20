@@ -103,13 +103,16 @@ await page.goto(`file://${CIBLE}`, { waitUntil: "load" });
 const colonnes = await page.locator("#fiche .deux .col").count();
 dire(colonnes === 3, `l'écran porte ${colonnes} encadré(s) — il en a demandé trois`);
 
+// **L'ordre : Devis, Facture, Fiche chantier.** Il l'a fixé le 20 août 2026 —
+// la facture avant la fiche. C'est un ordre, pas un décor : le vérifier ici
+// empêche qu'une refonte le rebrouille sans qu'on s'en aperçoive.
 const titres = await page.locator("#fiche .deux .col > h3").allInnerTexts();
 dire(
   titres.length === 3 &&
     /devis/i.test(titres[0]) &&
-    /fiche chantier/i.test(titres[1]) &&
-    /facture/i.test(titres[2]),
-  `les encadrés doivent s'appeler « Devis », « Fiche chantier », « Facture » (lus : ${titres.join(" | ")})`,
+    /facture/i.test(titres[1]) &&
+    /fiche chantier/i.test(titres[2]),
+  `les encadrés doivent s'appeler « Devis », « Facture », « Fiche chantier » (lus : ${titres.join(" | ")})`,
 );
 
 // **Deux colonnes CÔTE À CÔTE, pas l'une sous l'autre.** Une grille qui
@@ -148,7 +151,7 @@ const coupes = await page.evaluate(() =>
 dire(coupes.length === 0, `aucun libellé de colonne n'est coupé${coupes.length ? ` — ${coupes.join(" ; ")}` : ""}`);
 
 // ── 3. Chaque colonne descend dans le temps ─────────────────────────────────
-for (const [rang, quoi] of [[1, "Devis"], [2, "Fiche chantier"], [3, "Facture"]]) {
+for (const [rang, quoi] of [[1, "Devis"], [2, "Facture"], [3, "Fiche chantier"]]) {
   const lignes = await page.locator(`#fiche .deux .col:nth-child(${rang}) .doc`).allInnerTexts();
   const jours = lignes.map((t) => ({ t: t.replace(/\s+/g, " ").trim(), j: enJour(t) }));
   const illisibles = jours.filter((d) => d.j === null);
@@ -182,35 +185,40 @@ for (const [rang, quoi] of [[1, "Devis"], [2, "Fiche chantier"], [3, "Facture"]]
 }
 
 // ── 4. La dernière prestation : noire, grasse, et détaillée ─────────────────
+//
+// **Le titre EST « Dernière prestation », depuis le 20 août 2026.** Le nom qui
+// suivait répétait le nom du client en tête — il l'a retiré. C'est donc la ligne
+// « Dernière prestation · date » (`.quand`) qui porte le noir gras, et c'est
+// elle qu'on éprouve ici. On ne mesure plus une « domination » de taille : ce
+// n'est plus un grand titre serif mais une ligne d'en-tête, noire et grasse.
 const derniere = await page.evaluate(() => {
-  const h2 = document.querySelector("#fiche .derniere h2");
+  const titre = document.querySelector("#fiche .derniere .quand");
+  const nom = document.querySelector("#fiche .derniere h2");
   const coord = document.querySelector("#fiche .coord");
-  if (!h2 || !coord) return null;
-  const s = getComputedStyle(h2);
-  const c = getComputedStyle(coord);
+  if (!titre || !coord) return null;
+  const s = getComputedStyle(titre);
   return {
-    texte: h2.textContent.trim(),
     graisse: Number(s.fontWeight),
-    taille: parseFloat(s.fontSize),
     couleur: s.color,
-    tailleCoord: parseFloat(c.fontSize),
+    // Le nom NE DOIT PLUS être là : le laisser reviendrait à répéter le client.
+    nomPresent: nom !== null,
     comprend: document.querySelectorAll("#fiche .comprend li").length,
     // Sous l'adresse : le haut du titre doit venir APRÈS celui des coordonnées.
-    sousAdresse: h2.getBoundingClientRect().top > coord.getBoundingClientRect().top,
+    sousAdresse: titre.getBoundingClientRect().top > coord.getBoundingClientRect().top,
   };
 });
 if (!derniere) {
   dire(false, "la dernière prestation est absente de l'écran — c'est le premier point de sa demande");
 } else {
   dire(derniere.sousAdresse, "la dernière prestation se place sous l'adresse, comme il l'a demandé");
-  dire(derniere.graisse >= 700, `son titre est gras (graisse lue : ${derniere.graisse})`);
+  dire(derniere.graisse >= 700, `« Dernière prestation » est en gras (graisse lue : ${derniere.graisse})`);
   dire(
     derniere.couleur === "rgb(0, 0, 0)",
-    `son titre est noir, et non gris (couleur lue : ${derniere.couleur})`,
+    `« Dernière prestation » est en noir, et non gris (couleur lue : ${derniere.couleur})`,
   );
   dire(
-    derniere.taille >= derniere.tailleCoord * 1.4,
-    `son titre domine les coordonnées (${derniere.taille} px contre ${derniere.tailleCoord} px)`,
+    !derniere.nomPresent,
+    "le nom sous « Dernière prestation » a bien été retiré — il répétait le nom du client",
   );
   dire(
     derniere.comprend >= 3,

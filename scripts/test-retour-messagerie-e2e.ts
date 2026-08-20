@@ -60,7 +60,7 @@ async function main() {
   const chantierId = await chantierAvecDevisPret(page);
   // **Sur `/export` : c'est là que vit le lien de transmission**, et donc le
   // mécanisme du retour. Le raccourci du 20 août 2026 a supprimé la face AVANT
-  // l'envoi de cette adresse (`ARCHITECTURE.md` §135), pas celle d'après — et
+  // l'envoi de cette adresse (`ARCHITECTURE.md` §136), pas celle d'après — et
   // le devis vient précisément de partir.
   await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);

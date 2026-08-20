@@ -124,6 +124,25 @@ jobs:
       # TRUNCATE — pour que les tests « fail-closed » et NOBYPASSRLS aient un
       # sens. Seul le nettoyage entre suites, opération de banc d'essai, emprunte
       # le rôle propriétaire via DATABASE_ADMIN_URL (cf. scripts/_test-db.ts).
+      # ═══════════════════════════════════════════════════════════════════
+      # La base phytosanitaire ne reçoit RIEN qui ne soit sourcé.
+      # ═══════════════════════════════════════════════════════════════════
+      #
+      # Ajouté le 20 août 2026 avec le module de diagnostic végétal. Les fiches
+      # arrivent par des fichiers de données, pas par du code : sans ce
+      # contrôle, une fiche « validée » sans source, ou employant un mot hors
+      # vocabulaire, entrerait sur `main` sans que rien ne s'y oppose — et le
+      # second défaut est SILENCIEUX (la fiche ne sortirait jamais, sans la
+      # moindre erreur).
+      #
+      # `--verifier` n'écrit rien : il lit, valide et refuse. Aucune base n'est
+      # nécessaire, aucun secret non plus.
+      - name: Contrôler les fiches phytosanitaires
+        run: npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fiches --verifier
+
+      - name: Contrôler les fixtures d'essai du diagnostic
+        run: npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fixtures --fixtures --verifier
+
       - name: Suite de tests (base de données)
         env:
           DATABASE_URL: postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test

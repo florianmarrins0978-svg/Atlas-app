@@ -131,7 +131,7 @@ async function main() {
   // --- Validation humaine explicite ---
   await page.click("text=Préparer le devis");
   // Vers le DEVIS, et non plus vers la synthèse d'avant l'envoi : celle-ci a été
-  // supprimée le 20 août 2026 (`ARCHITECTURE.md` §135).
+  // supprimée le 20 août 2026 (`ARCHITECTURE.md` §136).
   await page.waitForURL(/\/devis-complet$/, { timeout: 10000 });
   // L'écran Devis crée le brouillon et horodate devis_genere_at pendant son
   // rendu : lire les jalons avant la fin de ce rendu donnerait un état périmé.

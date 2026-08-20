@@ -187,8 +187,16 @@ jobs:
           # patron ne peut pas les ouvrir depuis la seule adresse qu'on lui a
           # donnée. Ouvert dans `TODO.md` ; à retirer d'ici le jour où elles y
           # seront liées.
+          #
+          # `arrosage-simple.html` s'y ajoute pour une raison différente, et
+          # voulue : le patron a demandé le 20 août de **ne plus la mettre dans
+          # `essais.html`** — *« arrête de me le mettre dans Atlas app essai »*.
+          # Elle se donne par son adresse directe. Sans cette ligne, la liste
+          # déduite ne la verrait pas, et on lui transmettrait une adresse dont
+          # rien ne prouve qu'elle répond.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
-                   deux-boutons-devis.html en-cours-le-chiffre.html $LIES; do
+                   deux-boutons-devis.html en-cours-le-chiffre.html \
+                   arrosage-simple.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

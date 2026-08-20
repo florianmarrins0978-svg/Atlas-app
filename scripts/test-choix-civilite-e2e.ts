@@ -154,7 +154,7 @@ async function main() {
 
   await cas("le devis la nomme « Mme … » — le mot devant le nom", async () => {
     // **Relu sur le devis, et non plus sur la synthèse d'avant l'envoi.** Cette
-    // synthèse a été supprimée le 20 août 2026 (`ARCHITECTURE.md` §135) : c'est
+    // synthèse a été supprimée le 20 août 2026 (`ARCHITECTURE.md` §136) : c'est
     // désormais le devis lui-même qu'il a sous les yeux au moment d'envoyer.
     //
     // Le mot n'est pas dans le champ — il serait alors recopié dans le nom, et

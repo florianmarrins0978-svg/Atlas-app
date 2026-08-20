@@ -17,6 +17,7 @@ import { LIBELLE_REDUCTION, pourcentValide, totauxAvecReduction } from "@/lib/re
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import EnvoiAuClient from "../export/EnvoiAuClient";
+import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
 import {
   appliquerRetouchesAction,
   majEmetteurAction,
@@ -73,6 +74,17 @@ type Props = {
   emetteur: { nom: string; adresse: string; siret: string; telephone: string; email: string; iban: string };
   clientId: string | null;
   client: { nom: string; civilite: Civilite | null; adresse: string; telephone: string; email: string };
+  /**
+   * Par où l'on écrit au client, et depuis quelle adresse.
+   *
+   * Les deux ne servent qu'à ouvrir sa messagerie au moment de l'envoi — ce
+   * geste vit sur cet écran depuis le 20 août 2026. Le canal est un accord avec
+   * la PERSONNE, pas une caractéristique du document : il se lit sur la fiche
+   * du client, jamais sur le devis. L'origine, elle, est bâtie côté serveur —
+   * composée dans le navigateur, elle diffèrerait de ce que le serveur a rendu.
+   */
+  canalClient: "sms" | "email";
+  origine: string;
   adresseChantier: string;
   lignesInitiales: Ligne[];
   tauxTva: string;
@@ -785,8 +797,27 @@ export default function DevisCompletClient(props: Props) {
         clientNom={client.nom}
         ouvert={feuilleOuverte}
         onFermer={() => setFeuilleOuverte(false)}
-        onEnvoye={() => {
+        onEnvoye={(lien) => {
           setFeuilleOuverte(false);
+          // **Sa messagerie s'ouvre ICI, dans la foulée du doigt.** Sa demande
+          // du 18 août 2026 : *« quand je clique sur le bouton envoyer le devis,
+          // tout de suite ça m'ouvre l'application, soit SMS soit email »*. Le
+          // départ ayant changé d'écran le 20 août, l'ouverture l'a suivi — sans
+          // être recopiée (`src/lib/ouvrir-messagerie.ts`).
+          //
+          // AVANT la navigation : un navigateur peut refuser une ouverture de
+          // `sms:` qui ne suit pas le geste d'assez près, et sur iOS il la
+          // refuse sans un mot.
+          ouvrirLaMessagerie({
+            chemin: lien,
+            origine: props.origine,
+            canalClient: props.canalClient,
+            clientTelephone: client.telephone,
+            clientEmail: client.email,
+            clientNom: client.nom,
+            clientCivilite: client.civilite,
+            entrepriseNom: emetteur.nom,
+          });
           // `?envoye=1` : l'écran d'arrivée dira « Devis prêt pour … » plutôt
           // que « en attente de réponse ». Il vient d'appuyer — c'est le seul
           // moment où cette phrase-là est vraie.

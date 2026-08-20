@@ -189,7 +189,7 @@ async function main() {
   // gardait tout dans le navigateur.
   // **Le devis se relit chez lui.** L'écran de synthèse d'avant l'envoi, qui
   // écrivait les libellés en toutes lettres, a disparu le 20 août 2026
-  // (`ARCHITECTURE.md` §135) : sur le devis, un libellé vit dans son champ, et
+  // (`ARCHITECTURE.md` §136) : sur le devis, un libellé vit dans son champ, et
   // le chercher dans le texte de la page ferait rougir un écran juste. Les
   // totaux, eux, restent du texte — c'est bien ce qu'on lit.
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });

@@ -199,37 +199,61 @@ async function main() {
   // oublié dans une refonte laisserait le titre en gris parmi les coordonnées —
   // et c'est la première chose qu'il cherche en ouvrant cet écran.
   await cas("la dernière prestation est en titre noir gras, sous l'adresse", async () => {
+    // **CE CONTRÔLE A CHANGÉ DE CIBLE LE 20 AOÛT AU SOIR, ET SON OBJET TIENT.**
+    // Il visait un `h2` portant le NOM du chantier. Le patron l'a fait retirer —
+    // ce nom répétait celui du client, déjà en tête d'écran — et c'est la ligne
+    // « Dernière prestation · date » qui porte désormais le noir gras. On suit
+    // sa décision au lieu de réclamer ce qu'il a enlevé (`CLAUDE.md` §5 bis).
     const vu = await page.evaluate(() => {
-      const h2 = document.querySelector("h2");
-      if (!h2) return null;
-      const style = getComputedStyle(h2);
-      const coord = h2.closest("div")?.previousElementSibling?.textContent ?? "";
+      const ligne = [...document.querySelectorAll("p")].find((p) =>
+        /^Dernière prestation/i.test((p.textContent ?? "").trim())
+      );
+      if (!ligne) return null;
+      const style = getComputedStyle(ligne);
+      const coord = document.querySelector("h1")?.nextElementSibling;
       return {
-        texte: (h2.textContent ?? "").trim(),
+        texte: (ligne.textContent ?? "").trim(),
         graisse: Number(style.fontWeight),
         couleur: style.color,
-        taille: parseFloat(style.fontSize),
-        hautTitre: h2.getBoundingClientRect().top,
-        coord,
-        puces: document.querySelectorAll("h2 ~ ul li").length,
+        sousLeNom: ligne.getBoundingClientRect().top > (coord?.getBoundingClientRect().top ?? 0),
+        puces: document.querySelectorAll("ul li").length,
       };
     });
-    assert.ok(vu, "aucun titre de dernière prestation sur l'écran");
-    assert.ok(vu!.texte.length > 0, "le titre de la dernière prestation est vide");
-    assert.ok(vu!.graisse >= 700, `le titre n'est pas gras (graisse lue : ${vu!.graisse})`);
-    assert.equal(vu!.couleur, "rgb(0, 0, 0)", `le titre n'est pas noir (couleur lue : ${vu!.couleur})`);
-    assert.ok(vu!.taille >= 20, `le titre fait ${vu!.taille} px — il ne domine pas les coordonnées`);
+    assert.ok(vu, "aucune ligne « Dernière prestation » sur l'écran");
+    assert.ok(vu!.graisse >= 700, `la ligne n'est pas grasse (graisse lue : ${vu!.graisse})`);
+    assert.equal(vu!.couleur, "rgb(0, 0, 0)", `la ligne n'est pas noire (couleur lue : ${vu!.couleur})`);
+    assert.ok(vu!.sousLeNom, "la dernière prestation ne se place pas sous le nom du client");
+    // **Les mois en toutes lettres, pas `\w`.** En JavaScript, `\w` ne couvre
+    // que l'ASCII : « 20 août 2026 » ne correspondait pas à cause du « û », et
+    // le contrôle accusait l'écran de ne pas porter sa date alors qu'elle y
+    // était. Un contrôle qui accuse à tort coûte plus cher que pas de contrôle
+    // (`CLAUDE.md` §5). On vise donc la même liste de mois que le contrôle du
+    // format, juste en dessous — une seule façon de reconnaître une date.
+    assert.match(
+      vu!.texte,
+      /\d{1,2} (janv\.|févr\.|mars|avr\.|mai|juin|juil\.|août|sept\.|oct\.|nov\.|déc\.) \d{4}/,
+      `elle ne porte pas sa date : « ${vu!.texte} »`
+    );
     assert.ok(vu!.puces >= 1, "« ce qu'elle comprend » n'affiche aucune ligne");
+
+    // **Et le nom du chantier ne revient pas.** C'est ce qu'il a fait retirer :
+    // sans ce contrôle, un rebasage le remettrait sans que rien ne rougisse.
+    const titres = await page.evaluate(() =>
+      [...document.querySelectorAll("h2")].map((h) => (h.textContent ?? "").trim())
+    );
+    assert.deepEqual(titres, [], `un titre est revenu sous l'adresse : ${titres.join(" | ")}`);
   });
 
   // ── Les trois colonnes, et l'ordre — le cœur de sa demande ─────────────────
-  await cas("trois colonnes : Devis, Fiche chantier, Facture", async () => {
+  await cas("trois colonnes : Devis, Facture, Fiche chantier", async () => {
     const titres = await page.evaluate(() =>
       [...document.querySelectorAll("h3")].map((e) => (e.textContent ?? "").trim().toUpperCase())
     );
+    // **Devis · Facture · Fiche chantier**, et l'ordre a changé le 20 août au
+    // soir sur sa décision. On fige ce qu'il a demandé, pas ce qui existait.
     assert.deepEqual(
       titres,
-      ["DEVIS", "FICHE CHANTIER", "FACTURE"],
+      ["DEVIS", "FACTURE", "FICHE CHANTIER"],
       `les colonnes lues sont : ${titres.join(" | ")}`
     );
   });
@@ -251,8 +275,8 @@ async function main() {
 
     const attendus: Record<string, RegExp> = {
       Devis: /^\/api\/devis\//,
-      "Fiche chantier": /^\/api\/chantiers\/[0-9a-f-]{36}\/fiche\/pdf$/,
       Facture: /^\/api\/factures\//,
+      "Fiche chantier": /^\/api\/chantiers\/[0-9a-f-]{36}\/fiche\/pdf$/,
     };
     for (const colonne of colonnes) {
       assert.ok(colonne.liens.length >= 1, `la colonne « ${colonne.titre} » est vide`);
@@ -338,10 +362,16 @@ async function main() {
     ] as const) {
       assert.ok(!texte.includes(mot), `${quoi} est revenue sur l'écran`);
     }
+    // **La flèche de retour ne compte pas, et c'est délibéré.** Depuis le
+    // 20 août 2026, elle ramène AU CHANTIER quand on vient de là
+    // (`ARCHITECTURE.md` §135) : son adresse est donc bien celle d'un chantier,
+    // sans que la liste « Ses chantiers » soit revenue pour autant. Compter
+    // tous les liens sans distinction accuserait la sortie de secours à la
+    // place de ce qu'on cherche.
     assert.equal(
-      await page.locator(`a[href="/chantiers/${chantierId}"]`).count(),
+      await page.locator(`a[href^="/chantiers/${chantierId}"]:not([aria-label^="Retour"])`).count(),
       0,
-      "un lien vers le chantier subsiste : la liste « Ses chantiers » n'a pas été retirée"
+      "un lien vers le chantier subsiste dans le CORPS : la liste « Ses chantiers » n'a pas été retirée"
     );
   });
 

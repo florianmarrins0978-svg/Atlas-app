@@ -7,6 +7,7 @@ import {
   getSecondarySteps,
 } from "@/lib/chantier-etat";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { versFicheClient } from "@/lib/retour-fiche-client";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantierPourHub } from "@/server/repositories/chantiers";
@@ -247,7 +248,9 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
                   // dans la base ne dit lequel.
                   meta: "Ce qu'on sait de ce client",
                   done: false,
-                  href: `/clients/${chantier.clientId}`,
+                  // On dit d'où l'on part : la flèche de la fiche ramènera ICI,
+                  // et non chez les clients — d'où il ne venait pas.
+                  href: versFicheClient(chantier.clientId, `/chantiers/${id}`),
                 },
               ]
             : []),

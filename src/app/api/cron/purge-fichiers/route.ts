@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { purgerFichiersEnAttente } from "@/server/repositories/fichiers";
-import { purgerAudiosTranscrits } from "@/server/repositories/retention";
+import { purgerAudiosTranscrits, purgerPhotosDiagnostic } from "@/server/repositories/retention";
 import { getEnv } from "@/server/env";
 import { logger } from "@/server/logger";
 import { idRequeteValideOuGenere, executerAvecContexte } from "@/server/request-context";
@@ -41,9 +41,13 @@ export async function POST(request: Request) {
       // attendraient un tour de planificateur de plus — soit un jour de
       // conservation en trop, à chaque exécution.
       const { audiosPurges } = await purgerAudiosTranscrits();
+      // Même raisonnement, et même place dans l'ordre : les photos de
+      // diagnostic échues entrent en file AVANT qu'on la vide, sinon elles
+      // attendent une exécution de plus.
+      const { photosPurgees } = await purgerPhotosDiagnostic();
       const nombrePurges = await purgerFichiersEnAttente();
-      logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges });
-      return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges });
+      logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees });
+      return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees });
     } catch (err) {
       logger.error("Échec de la purge planifiée des fichiers", { erreur: err });
       return NextResponse.json({ erreur: "Échec de la purge." }, { status: 500 });
