@@ -25,6 +25,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
+
+**Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
+cette suite sont tombés ensemble :
+
+    ✗ chaque colonne porte ses PDF, du plus récent au plus ancien
+    ✗ les dates s'écrivent toutes de la même façon
+    ✗ rien ne déborde — la colonne la plus étroite fait 0 px
+
+**« 0 px » est le tell : les colonnes étaient VIDES.** La fiche n'avait aucun
+document à montrer, et les trois contrôles se sont plaints chacun à sa façon de
+la même absence. Jouée seule, et rejouée en batterie ensuite, la suite est
+verte : la cause est donc dans **ce que les suites précédentes laissent en
+base**, pas dans l'écran.
+
+**Pourquoi ça compte plus qu'un rouge de passage.** Un contrôle qui échoue au
+hasard apprend à ignorer le rouge, et l'on perd alors tout ce qu'il surveille.
+Celui-ci est neuf (posé le même jour, par une autre conversation) et il garde la
+refonte que le patron vient de demander.
+
+**Ce qu'il faudrait :** que la suite crée elle-même les documents dont elle a
+besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'elle
+refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
+(`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
+
 ## ⏳ POURQUOI deux constructions se marchent dessus — non reproduit
 
 **Le 20 août 2026 à 6 h 10**, la construction du banc tombe sur « Another next
