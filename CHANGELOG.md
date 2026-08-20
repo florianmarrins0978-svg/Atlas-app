@@ -57,6 +57,70 @@ que l'outil est entré — corrigé dans le même commit que le code.
 mots et rougit dès qu'il en regagne. C'est ce que le dépôt réclamait depuis
 quatre plaintes sur la même chose.
 
+### La première fiche phytosanitaire RÉELLE — et la chaîne éprouvée de bout en bout
+
+**Le fomès des résineux**, écrit à partir de la plaquette du Département de la
+santé des forêts (juillet 2013), récoltée par le workflow puis **lue en
+entier** — jamais de mémoire.
+
+Le parcours complet fonctionne sur une donnée réelle : document officiel récolté
+→ lu → saisi → six contrôles → importé → rapproché → conclu. Devant un
+sporophore au collet d'un épicéa, Atlas répond **« Fomès des résineux ·
+confiance probable »**. Le plafond de confiance vient de la fiche elle-même :
+elle déclare `diagnostic_photo: indicatif`, parce que le document dit en toutes
+lettres que chez l'épicéa « aucun symptôme extérieur n'est visible » et que les
+carpophores « sont souvent peu visibles ». **La source borne ce qu'Atlas ose
+affirmer** — c'est exactement ce que le module devait faire.
+
+**Ce que la fiche NE dit pas, et pourquoi c'est écrit dedans.** L'impact
+mécanique est « possible » et non « avéré » : le document décrit une pourriture
+du bois de cœur, mais ne se prononce nulle part sur la stabilité de l'arbre —
+c'est un document de gestion forestière. Aucun feuillu n'est listé comme hôte,
+le document précisant que le fomès s'y rencontre « de manière anecdotique ». Les
+deux confusions réelles qu'il nomme (armillaire, rhizina) ne sont pas écrites :
+une confusion doit désigner une fiche existante, et ces deux-là n'ont pas encore
+de source lue. Chaque vide porte sa raison, dans un champ `_source_*`.
+
+**Ce qui limite le rythme n'est pas la saisie, c'est le TYPE de document.** Neuf
+documents ont été récoltés ; un seul était une fiche-type, et il a suffi. Les
+bilans régionaux nomment les problèmes et donnent des niveaux d'impact, mais
+décrivent rarement les symptômes assez précisément pour les écrire dans le
+vocabulaire fermé. **INRAE (Ephytia) en contient beaucoup — sa licence de
+réutilisation est le vrai point bloquant**, et c'est une décision, pas du code.
+
+**Une suite a rougi sur du code juste, et sa correction vaut la règle** : un cas
+affirmait « la base est vue comme vide » sans la garde des fixtures. C'était vrai
+par ACCIDENT — il n'y avait alors aucune fiche réelle. Il affirme désormais ce
+qu'il devait affirmer : *aucune fixture ne sort*. Ce que la base contient par
+ailleurs ne le regarde pas (`CLAUDE.md` §5 bis).
+
+
+### Les sources phytosanitaires sont hors d'atteinte d'ici — la récolte part ailleurs
+
+**Constaté en cherchant à écrire les premières fiches.** Les six domaines que le
+patron a nommés — `agriculture.gouv.fr`, `inrae.fr`, `fredon-france.org`,
+`onf.fr`, `plante-et-cite.fr`, `ephy.anses.fr` — répondent tous `403 à CONNECT`
+au mandataire réseau. La recherche web passe, mais elle rend un **résumé écrit
+par un modèle**, pas la page.
+
+**Ce qui a été écarté, et c'est le vrai sujet de ce lot :** écrire les fiches
+d'après ces résumés. Le résultat aurait eu toutes les apparences d'une donnée
+sourcée — organisme, titre, adresse, date de consultation — sans que personne
+ait lu le document. **Une fiche vide se voit ; une fiche mal sourcée se croit.**
+
+`.github/workflows/recolter-sources-phyto.yml` va donc chercher les documents
+depuis une machine qui a le réseau, en extrait le texte et le dépose sur une
+branche à lui — jamais sur `main`. Même famille que `pages.yml`,
+`relever-palette.yml` et `banc-essai.yml`.
+
+**Deux garde-fous posés en même temps, et ils comptent plus que le workflow :**
+rien n'est rapatrié sans **licence déclarée** (une source en `a_verifier` garde
+son adresse et rien d'autre) ; et la **CI contrôle `donnees/phyto/fiches` à
+chaque poussée** — les fiches arrivent par des fichiers de données, pas par du
+code, et sans ce contrôle une fiche validée sans source entrerait sur `main`
+sans que rien ne s'y oppose. Le contrôle a été confronté à une fiche
+volontairement fautive avant d'être branché.
+
 ### La batterie ne bâtissait plus — et son rouge était devenu du décor
 
 **Trouvé en jouant `npm run verifier:avant-livraison` le 20 août :** l'étape
@@ -171,6 +235,83 @@ et rougit au quatrième (`CLAUDE.md` §5 bis). **Un contrôle neuf s'y ajoute** 
 le débit affiché doit tomber juste, 10 L en 20 s font 1,80 m³/h — un écran qui
 montre une mesure et un résultat qui ne se suivent pas apprend à douter de tous
 ses chiffres.
+
+### Diagnostic végétal — le troisième outil de Paysage, et sa base commence vide
+
+**Sa demande du 20 août 2026 :** *« un professionnel prend en photo une feuille,
+une branche, une écorce, un champignon, un arbre ou un arbuste présentant une
+anomalie, puis obtient automatiquement un diagnostic probable et une conduite à
+tenir »*, avec un parcours en quatre gestes : ouvrir, photographier, attendre,
+lire.
+
+**Migration `0056_diagnostic_vegetal.sql`** — douze tables, en deux mondes qui
+ne se mélangent jamais : la base phytosanitaire (commune, `GRANT SELECT` seul,
+sans RLS, comme `catalogue_prestations`) et les diagnostics (isolés par RLS,
+comme tout le reste).
+
+**Le principe qui commande tout : le modèle OBSERVE, la base DÉCIDE.** Un modèle
+à qui l'on demande de nommer une maladie en nommera toujours une. On ne lui
+demande donc jamais de nommer quoi que ce soit : il décrit ce qu'il voit dans un
+**vocabulaire fermé** (14 parties, 25 motifs, 10 couleurs, 12 localisations),
+et c'est du code déterministe qui confronte cette description aux fiches.
+**Tout texte affiché sort d'une colonne de `fiches_phyto`** — une maladie, une
+gravité ou un traitement inventés sont impossibles par construction, pas par
+consigne écrite dans un prompt.
+
+**Ce que ça évite, concrètement :** un artisan qui taille un arbre d'après une
+recommandation qu'aucune source n'a écrite.
+
+**La base est VIDE, et c'est voulu.** Sa règle : *« ne remplis pas
+artificiellement la base avec de fausses données »*. Le module répond alors
+« la base ne contient encore aucune fiche validée » — ce qui est vrai. Les
+seules données livrées sont quatre fixtures d'essai (`donnees/phyto/fixtures/`),
+qui ne décrivent aucun végétal réel et que **trois barrières** empêchent
+d'atteindre une production : l'import les refuse si `NODE_ENV=production`, la
+lecture les filtre sur `origine = 'reelle'`, et une contrainte CHECK lie
+l'origine au préfixe `zz-test-` **dans les deux sens**.
+
+**Les quatre issues d'une analyse, et les trois dernières comptent autant que la
+première :** un résultat ; **une seule** demande de photo complémentaire, dont
+la consigne est recopiée mot pour mot de `confusions_phyto` (jamais improvisée) ;
+« je ne peux pas confirmer » ; ou « personne n'a regardé » quand aucun
+fournisseur n'est branché — deux refus distincts, parce qu'ils ne se réparent
+pas au même endroit.
+
+**La confiance tient en TROIS MOTS, jamais un pourcentage** — aucun modèle
+employé ici ne fournit de probabilité calibrée. Trois plafonds l'abaissent
+d'office : photo floue, fiche qui se déclare seulement « indicative », essence
+non reconnue. Sans eux, la confiance affichée mentirait exactement dans les cas
+où elle compte le plus.
+
+**Une fiche `diagnostic_photo: impossible` n'est JAMAIS rendue**, même seule en
+tête avec un score parfait : c'est ce qui empêche d'affirmer sur photo ce qu'une
+photo ne montre pas. Et dès que `impact_mecanique` n'est pas « aucun » — *y
+compris quand il vaut « inconnu »** —, le résultat porte la phrase qui dit
+qu'une photo ne juge pas la solidité d'un arbre.
+
+**Les métadonnées EXIF sont retirées avant tout** (`src/lib/exif.ts`, JPEG/PNG/
+WebP, sans réencodage) : une photo de jardin porte les coordonnées GPS du
+domicile du client. Un fichier qu'on n'a pas su nettoyer est **refusé**, jamais
+rangé — la colonne `exif_retire` affirmerait sinon quelque chose de faux.
+
+**La conservation des photos est CONFIGURABLE**, jamais gravée : 90 jours pour
+une photo libre, aucune échéance pour une photo versée au dossier d'un chantier
+(`PHOTOS_DIAGNOSTIC_RETENTION_JOURS`). Le rattachement à un chantier **recalcule**
+l'échéance — sans quoi la pièce d'un dossier en cours disparaîtrait au bout de
+trois mois sans que personne l'ait demandé.
+
+**Le classement sémantique n'existe pas encore ; son verrou, si.** Sa demande :
+ne pas empêcher l'ajout ultérieur d'un classement sémantique ou visuel, mais
+*« le modèle ne devra jamais pouvoir créer une maladie absente de la base »*.
+`appliquerClassement` n'accepte d'un classeur que des fiches déjà présentes,
+reprend la fiche d'ORIGINE (pas celle qu'il rend, dont le contenu pourrait être
+falsifié), refuse les doublons et borne le score. Éprouvé contre un classeur
+volontairement malveillant.
+
+**Ce qui n'est PAS vérifié, et doit s'écrire :** l'appel réel au fournisseur de
+vision. Aucune clé d'IA dans cet environnement — comme pour la lecture des
+tickets. Il devra l'être sur le banc, avec de vraies photos.
+
 
 ### L'arrosage en deux gestes — dessiné, pas codé
 

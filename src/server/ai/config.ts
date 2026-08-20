@@ -15,5 +15,10 @@ export function getConfigIA() {
     googleApiKey: env.googleApiKey,
     anthropicBaseUrl: env.anthropicBaseUrl,
     openaiBaseUrl: env.openaiBaseUrl,
+    // Qui REGARDE les photos, et avec quel modèle — distinct de qui rédige.
+    // Voir `src/server/env.ts` : sans valeur, c'est le fournisseur de
+    // raisonnement, donc rien ne change pour une installation existante.
+    visionProvider: env.visionProvider,
+    visionModele: env.visionModele,
   } as const;
 }

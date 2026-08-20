@@ -52,6 +52,42 @@ export type ImagePourLecture = {
   mimeType: string;
 };
 
+/**
+ * Ce qu'on peut régler sur une lecture d'image — et pourquoi ça se règle.
+ *
+ * **`modele` existe parce qu'il était écrit EN DUR.** `claude-sonnet-4-6`
+ * vivait dans le fournisseur Anthropic, ce qui obligeait à rebâtir
+ * l'application pour changer de modèle. Absent, le fournisseur garde son
+ * défaut : rien ne change pour la lecture des tickets.
+ *
+ * **`maxTokens` se règle parce qu'un ticket et une observation ne pèsent pas
+ * pareil.** 512 suffit à cinq champs de ticket ; une observation de diagnostic
+ * porte une liste de signes, et un plafond trop bas la tronque au milieu d'un
+ * JSON — qui devient alors illisible, sans que rien ne dise pourquoi.
+ */
+export type OptionsVision = {
+  maxTokens?: number;
+  modele?: string;
+};
+
 export interface FournisseurVision {
   lireImage?(systeme: string, consigne: string, image: ImagePourLecture): Promise<ResultatLLM>;
+
+  // --- Extension additive (20 août 2026) : PLUSIEURS images ----------------
+  //
+  // **Pourquoi elle est arrivée après `lireImage`.** Le diagnostic végétal peut
+  // demander UNE photo complémentaire — « photographiez le dessous de la
+  // feuille » — et doit alors présenter les deux ensemble : séparées, la
+  // seconde perdrait le contexte de la première, et c'est justement leur
+  // rapprochement qui départage deux hypothèses.
+  //
+  // Optionnelle, comme les autres : un fournisseur qui ne la porte pas reste
+  // valide, et l'écran annonce que l'analyse automatique n'est pas disponible
+  // plutôt que de faire semblant.
+  lireImages?(
+    systeme: string,
+    consigne: string,
+    images: ImagePourLecture[],
+    options?: OptionsVision
+  ): Promise<ResultatLLM>;
 }

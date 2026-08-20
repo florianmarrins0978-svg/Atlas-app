@@ -5,6 +5,7 @@ import type {
   MessageConversation,
   DefinitionOutil,
   ImagePourLecture,
+  OptionsVision,
 } from "./interface";
 import { erreurIA, type ErreurIA } from "../../errors";
 import { getConfigIA } from "../../config";
@@ -109,17 +110,40 @@ export const fournisseurLLMOpenAI: FournisseurLLM = {
   /**
    * Lire une image — un ticket de caisse.
    *
-   * **`temperature: 0`** : lire un chiffre n'est pas une tâche créative. Deux
-   * lectures du même ticket doivent donner le même montant, sans quoi le patron
-   * verrait le total changer en rescannant.
-   *
-   * L'image part en `data:` URL, format attendu par cette API — d'où le
-   * préfixe recollé ici, alors qu'Anthropic veut les octets nus. C'est
-   * exactement le genre d'écart que l'interface commune existe pour cacher.
+   * **Un raccourci vers `lireImages`, comme chez Anthropic.** Les deux
+   * portaient la même requête à un tableau près, et deux copies de la même
+   * règle finissent toujours par diverger (`CLAUDE.md` §3). Le plafond de 512
+   * jetons reste ici : il appartient au ticket, pas à la lecture d'image.
    */
   async lireImage(systeme: string, consigne: string, image: ImagePourLecture): Promise<ResultatLLM> {
+    return this.lireImages!(systeme, consigne, [image], { maxTokens: 512 });
+  },
+
+  /**
+   * Lire une ou plusieurs images.
+   *
+   * **`temperature: 0`** : décrire une tache n'est pas une tâche créative. Deux
+   * lectures de la même photo doivent rendre la même description, sans quoi le
+   * diagnostic changerait en rescannant et rien ne dirait laquelle croire.
+   *
+   * Les images partent en `data:` URL, format attendu par cette API — là où
+   * Anthropic veut les octets nus. C'est exactement le genre d'écart que
+   * l'interface commune existe pour cacher.
+   */
+  async lireImages(
+    systeme: string,
+    consigne: string,
+    images: ImagePourLecture[],
+    options?: OptionsVision
+  ): Promise<ResultatLLM> {
+    if (images.length === 0) {
+      return { succes: false, erreur: erreurIA("reponse_invalide", "Aucune image à lire.") };
+    }
     const resultat = await appeler({
-      max_tokens: 512,
+      ...(options?.modele || getConfigIA().visionModele
+        ? { model: options?.modele ?? getConfigIA().visionModele }
+        : {}),
+      max_tokens: options?.maxTokens ?? 1024,
       temperature: 0,
       messages: [
         { role: "system", content: systeme },
@@ -127,7 +151,10 @@ export const fournisseurLLMOpenAI: FournisseurLLM = {
           role: "user",
           content: [
             { type: "text", text: consigne },
-            { type: "image_url", image_url: { url: `data:${image.mimeType};base64,${image.base64}` } },
+            ...images.map((image) => ({
+              type: "image_url",
+              image_url: { url: `data:${image.mimeType};base64,${image.base64}` },
+            })),
           ],
         },
       ],

@@ -50,6 +50,27 @@ besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'el
 refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
 (`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
 
+## 🌿 Diagnostic végétal — le module tourne, il lui manque des FICHES
+
+Le code est fait et éprouvé (`ARCHITECTURE.md` §135). Ce qui reste ne se code
+pas : ce sont des données à recopier de sources officielles.
+
+| | Ce qui reste | Qui peut le faire |
+|---|---|---|
+| 1 | ~~**Lancer la récolte des sources**~~ — fait le 20 août : 9 documents récoltés, 1 fiche réelle écrite (fomès des résineux), chaîne éprouvée de bout en bout. **Reste ~49 fiches.** Ce qui limite n'est pas la saisie mais le TYPE de document : il faut des **fiches-type**, pas des bilans régionaux | moi, à partir des documents publics, avec relecture avant passage en `validee` |
+| 1 bis | **TRANCHER LA LICENCE D'INRAE (Ephytia)** — `http://ephytia.inra.fr`. C'est la source la plus riche en descriptions de symptômes, donc celle qui permettrait d'écrire vite. Son texte n'est pas rapatrié tant que sa réutilisation n'est pas établie : recopier sans licence est un risque qui ne se voit qu'à la mise en demeure. Même question pour le CNPF | le patron, ou un courriel à l'organisme |
+| 2 | **Éprouver l'appel réel de vision sur le banc**, avec de vraies photos. Non vérifiable ici : aucune clé d'IA dans cet environnement | le patron pose sa clé, je regarde le résultat |
+| 3 | Renseigner les `confusions_phyto` entre fiches proches — c'est **elles** qui permettent la demande de photo complémentaire. Sans elles, deux hypothèses proches donnent un refus au lieu d'une relance | avec le lot de fiches |
+| 4 | Régler les seuils (`SEUIL_PLANCHER`, `ECART_NET`, plafonds de confiance) sur de vraies photos et de vraies fiches. Les valeurs actuelles sont un point de départ **assumé**, nommé et éprouvé — pas mesuré | après le premier lot |
+| 5 | Ajouter le fournisseur de vision au registre des sous-traitants (`docs/RGPD.md` §3), et décider de la durée de conservation des photos | le patron |
+| 6 | Brancher un classement sémantique quand la base dépassera quelques centaines de fiches. L'interface (`ClasseurCandidats`) et son verrou (`appliquerClassement`) existent déjà et sont éprouvés | plus tard, et seulement si le déterministe montre ses limites |
+
+**Ce qui n'est PAS à faire :** inventer des fiches pour que la démonstration
+tourne. Le module dit « la base ne contient encore aucune fiche validée », ce
+qui est vrai, et c'est le bon état tant que les vraies données ne sont pas là.
+
+---
+
 ## ⏳ POURQUOI deux constructions se marchent dessus — non reproduit
 
 **Le 20 août 2026 à 6 h 10**, la construction du banc tombe sur « Another next
