@@ -186,22 +186,22 @@ veille.
 
 ---
 
-## ⏸ L'arrosage simplifié — **dessiné le 20 août, il tranche avant qu'on code**
+## ~~L'arrosage simplifié~~ — **CODÉ le 20 août 2026**
 
-`appli/arrosage-simple.html` — huit questions ramenées à deux : le piquage, et
-le croquis. **Rien n'est codé** ; `appli/arrosage.html` n'a pas été touchée.
+`/paysage/arrosage` dans l'application : le piquage, la mesure au seau remise
+sur sa décision, le croquis photographié et **lu par l'IA**, puis le plan et le
+détail des pièces. Voir `CHANGELOG.md` et `PROJECT_STATE.md`.
 
-**Ce qui attend sa réponse :**
+**Ce qui reste à coder, et qui n'attend personne :**
 
-| | La question | Pourquoi elle ne se tranche pas sans lui |
-|---|---|---|
-| 1 | ~~Le débit, mesuré ou supposé ?~~ — **TRANCHÉ le 20 août : mesuré** | *« Remets la mesure du débit, mais minimaliste, sans mots qui servent à rien. »* Trois cases — litres, secondes, bar — sous le déroulant du piquage, et le résultat en dessous. Les paragraphes qui l'entouraient ne reviennent pas |
-| 2 | ~~La lecture du croquis~~ — **TRANCHÉ le 20 août : on la code** | Il a rappelé que l'IA est là, et il avait raison : `src/server/ai/services/lire-ticket.ts` fait déjà lire un ticket photographié (Anthropic ou OpenAI). **Même patron à reprendre** : consigne système, image, réponse JSON, fonction pure qui la relit et refuse ce qu'elle ne comprend pas. Elle rendra une **proposition** qu'il corrige — jamais un plan posé dans son dos —, et ce qu'elle n'a pas lu **reste vide et signalé**. À rendre : les surfaces, les longueurs, et où est le point d'eau ; le reste se calcule déjà |
-
-**Ce que la lecture devra rendre, le jour venu :** les surfaces de chaque partie
-du jardin, les longueurs de haie et de massif, et où se trouve le point d'eau.
-Le découpage en réseaux et la liste des pièces se déduisent de là — c'est du
-calcul, et `appli/arrosage-calcul.js` le porte déjà.
+- **Rattacher un plan à un chantier.** Rien n'est enregistré aujourd'hui : un
+  plan se refait à chaque client, comme un devis. Le jour où il voudra le
+  retrouver, ce sera une décision — et une table.
+- **Le plan DESSINÉ.** L'écran rend les réseaux et les pièces en listes ; la
+  maquette montrait un plan du jardin avec les couleurs et les métrés. C'est ce
+  qui manque pour que les deux se ressemblent vraiment.
+- **Les photos** : compression à l'envoi et conservation deux ans, décidées le
+  17 août, **toujours pas codées**.
 
 ---
 

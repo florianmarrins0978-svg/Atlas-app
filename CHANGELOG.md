@@ -9,6 +9,54 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### Le plan d'arrosage entre DANS l'application, et le croquis se lit
+
+**Sa demande, en trois mots :** *« Code le tout dans l'appli »* — après *« pour
+la lecture du croquis tu peux le faire, il y a déjà l'IA dans l'application,
+Anthropic et OpenAI »*, puis *« les clés sont présentes également ! »*.
+
+**J'avais dit le contraire, et il avait raison.** J'avais annoncé que lire une
+image demandait un contrat qui n'existait pas. Le raccordement des deux
+fournisseurs est écrit depuis le 6 août, et l'un comme l'autre sait regarder une
+photo. Corrigé dans le dépôt (`d0975ca`) avant d'écrire une ligne.
+
+**Trois morceaux :**
+
+| | Où | Ce qu'il porte |
+|---|---|---|
+| Le calcul | `src/lib/arrosage/` | le débit au seau, le découpage en réseaux qui tiennent dans ce débit, la liste des pièces prise dans le catalogue |
+| La lecture | `src/server/ai/services/lire-croquis.ts` | la photo part au fournisseur, ce qui revient est relu par une fonction pure qui **refuse ce qu'elle ne comprend pas** |
+| L'écran | `src/app/paysage/arrosage/` | un titre, un déroulant, trois cases, un bouton |
+
+**UNE SEULE SOURCE POUR LE CALCUL, et un contrôle qui l'impose.** Le calcul et
+le catalogue existaient déjà dans `appli/`, éprouvés depuis des jours. Les
+réécrire en TypeScript aurait produit **deux calculs qui finissent par ne plus
+dire la même chose** (`CLAUDE.md` §3) — et c'est le paysagiste qui aurait vu la
+différence entre la page qu'il essaie et l'application qu'il utilise. Les deux
+copies sont donc **identiques octet pour octet**, et
+`scripts/verifier-arrosage-une-seule-source.mjs` refuse qu'elles divergent. Le
+prix : la copie serveur porte des fonctions de navigateur que rien n'appelle,
+et un silence de lint qui l'explique.
+
+**Rien ne s'invente, et ce qui manque se dit :**
+
+- une zone sans cote lisible **ne part pas au calcul** — la compter pour zéro
+  donnerait un plan qui l'oublie en silence ;
+- un croquis dont aucune zone n'est mesurable est **refusé**, avec sa raison ;
+- ce que la lecture n'a pas su lire s'affiche en **réserves**, sous le plan ;
+- une pièce sans référence n'en reçoit pas une inventée — c'est une ligne à
+  mesurer ou à assembler, et le typage l'a imposé ;
+- **sans clé d'IA, l'écran le dit AVANT le geste.** Le laisser photographier
+  pour rien serait le troisième bouton qui ne répond pas.
+
+**L'écran Paysage cesse de mentir.** Il ouvrait une page publiée hors d'Atlas,
+et son commentaire l'expliquait ; le commentaire décrivait un monde disparu dès
+que l'outil est entré — corrigé dans le même commit que le code.
+
+**Le plafond de mots suit l'écran dans l'application** : la suite compte les
+mots et rougit dès qu'il en regagne. C'est ce que le dépôt réclamait depuis
+quatre plaintes sur la même chose.
+
 ### La batterie ne bâtissait plus — et son rouge était devenu du décor
 
 **Trouvé en jouant `npm run verifier:avant-livraison` le 20 août :** l'étape
