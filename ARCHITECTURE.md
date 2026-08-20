@@ -11079,6 +11079,37 @@ constructions se marchaient dessus à 6 h 10. La mémoire était encore ample à
 instant (4,3 Gio disponibles) : ce n'est donc pas la saturation du 17 août. La
 cause n'a pas été reproduite ici, et elle reste ouverte dans `TODO.md`.
 
+## 135. Un écran atteint depuis deux endroits ne peut pas avoir un retour fixe
+
+**Sa remarque du 20 août 2026 :** *« quand j'appuie sur retour, ça ne me fait pas
+un retour, mais deux retours »*. La fiche d'un client renvoyait à l'accueil, quel
+que soit l'endroit d'où on l'avait ouverte.
+
+**Le réflexe qu'il faut éviter : « mettons `/clients` à la place ».** Ce serait
+juste pour lui aujourd'hui et faux dès demain — la fiche s'ouvre AUSSI depuis le
+tiroir d'un chantier, et l'on ferait alors sortir du chantier celui qui y était.
+Un retour fixe se trompe forcément pour l'un des deux appelants.
+
+**L'origine voyage donc dans l'adresse** (`?de=/chantiers/<id>`), et
+`src/lib/retour-fiche-client.ts` la traduit en un couple `{href, libelle}`. Les
+deux appelants la posent ou l'omettent ; l'écran, lui, ne décide de rien.
+
+### Le filtre n'est pas une précaution de principe
+
+Cette valeur vient de l'adresse — donc de n'importe qui. Sans filtre,
+`?de=https://ailleurs.example` ferait de la flèche « retour » une sortie vers un
+site étranger, et `?de=javascript:…` pire encore. On n'accepte donc **qu'une
+forme connue** — un chemin de chantier — et tout le reste retombe sur la liste
+des clients. Jamais une erreur, jamais un écran vide : une sortie de secours qui
+casse est pire que pas de sortie.
+
+### La flèche reste un vrai lien, et c'est ce qui la sauve
+
+`EnTeteEcran` rend un `<a href>`. Elle fonctionne donc **même sur une page qui
+ne s'est pas animée** — le navigateur suit le lien tout seul. C'est exactement ce
+qu'on veut d'une sortie de secours, et c'est pourquoi sa suite navigateur tient
+là où celle de la recherche doit s'abstenir (§134).
+
 ## 134. Chercher un client : la règle vit hors de l'écran, et la croix aussi
 
 **Sa demande du 20 août 2026, capture à l'appui :** *« Il faut une barre de

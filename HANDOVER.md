@@ -9,6 +9,18 @@ sert.
 
 ---
 
+## Le retour de la fiche client dépend d'où l'on vient (20 août 2026)
+
+*« Ça ne me fait pas un retour, mais deux retours. »* La fiche renvoyait à
+l'accueil ; elle renvoie maintenant à la liste des clients, ou **au chantier**
+quand on vient de là. L'origine voyage dans `?de=`, traduite par
+`src/lib/retour-fiche-client.ts`.
+
+**Ne pas « simplifier » en remettant un lien fixe** : la fiche s'ouvre depuis
+deux endroits, et un retour fixe se trompe pour l'un des deux
+(`ARCHITECTURE.md` §135). Et **ne pas retirer le filtre** : la valeur vient de
+l'adresse, donc de n'importe qui.
+
 ## La recherche de clients est CODÉE (20 août 2026)
 
 Sa demande du matin : *« il faut une barre de recherche où je peux taper le nom

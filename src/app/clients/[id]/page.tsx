@@ -6,6 +6,7 @@ import { jourNumerique } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { chargerFicheClient } from "@/server/repositories/fiche-client";
+import { retourFicheClient } from "@/lib/retour-fiche-client";
 
 // **Ce que l'application sait déjà d'un client, enfin montré.**
 //
@@ -26,8 +27,19 @@ import { chargerFicheClient } from "@/server/repositories/fiche-client";
 // « 0 € » se lirait comme un mauvais client (`CLAUDE.md` §4).
 export const dynamic = "force-dynamic";
 
-export default async function FicheClientPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function FicheClientPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  // **D'où l'on vient décide où la flèche ramène** — sa remarque du 20 août
+  // 2026 : « ça ne me fait pas un retour, mais deux ». La règle vit dans
+  // `src/lib/retour-fiche-client.ts`, et l'écran ne la refait pas.
+  const de = (await searchParams).de;
+  const retour = retourFicheClient(Array.isArray(de) ? de[0] : de);
   const ctx = await getCurrentCtx();
   const fiche = await chargerFicheClient(ctx, id);
   if (!fiche) notFound();
@@ -37,7 +49,7 @@ export default async function FicheClientPage({ params }: { params: Promise<{ id
   return (
     <div className="pb-[86px]">
       <EnTeteEcran
-        retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
+        retour={retour}
         surtitre="Client"
         titre={fiche.client.nom}
         precision={coordonnees || undefined}
