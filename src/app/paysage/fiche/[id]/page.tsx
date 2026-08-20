@@ -60,6 +60,7 @@ export default async function FichePage({ params }: { params: Promise<{ id: stri
           clientTelephone: passage.clientTelephone,
           clientEmail: passage.clientEmail,
           clientCivilite: passage.clientCivilite,
+          clientCanal: passage.clientCanal,
           minutes: passage.minutes,
           observations: passage.observations,
           envoyeLe: passage.envoyeLe ? passage.envoyeLe.toISOString() : null,
@@ -68,10 +69,17 @@ export default async function FichePage({ params }: { params: Promise<{ id: stri
         }}
         origine={origine}
         entrepriseNom={entrepriseNom}
+        // **Les coordonnées partent avec la liste, et ce n'est pas du confort.**
+        // La fiche s'ouvre sans client : celles du passage sont donc vides, et
+        // le rester après qu'il a nommé quelqu'un ferait ouvrir un message SANS
+        // destinataire. C'est le contrôle qui l'a trouvé, avant lui.
         clients={clients.map((c) => ({
           id: c.id,
           nom: c.nom,
           adresse: c.adresse ?? null,
+          telephone: c.telephone ?? null,
+          email: c.email ?? null,
+          canal: c.canalCommunication ?? null,
         }))}
       />
     </main>

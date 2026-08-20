@@ -82,11 +82,15 @@ export const ECRAN_DU_PATRON = devices["iPhone 13"];
  * code.
  */
 const RETENIR_LE_SAUT_VERS_LA_MESSAGERIE = `
+  window.__ouvertures = [];
   document.addEventListener("click", function (e) {
     var cible = e.target && e.target.closest
       ? e.target.closest("a[href^='sms:'],a[href^='mailto:']")
       : null;
-    if (cible) e.preventDefault();
+    if (!cible) return;
+    // Ce que l'application a tenté d'ouvrir se garde ICI, pour les contrôles.
+    window.__ouvertures.push(cible.getAttribute("href"));
+    e.preventDefault();
   }, true);
 `;
 

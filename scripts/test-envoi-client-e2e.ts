@@ -183,6 +183,31 @@ async function main() {
 
     // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
     // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
+    // suite ça m'ouvre l'application […] supprime les étapes qu'il y a
+    // entre »*. Le lanceur des suites retient le saut et note ce qui a été
+    // ouvert (`scripts/e2e-browser.ts`).
+    //
+    // **Ce que ce contrôle ne prouve PAS, et il faut le dire :** qu'iOS honore
+    // cette ouverture quand elle suit une réponse du serveur plutôt que le
+    // doigt. Aucun navigateur d'ici ne répond pour Safari — d'où l'écran
+    // « Devis prêt » et son bouton, qui restent en place derrière.
+    const ouvertes = (await page.evaluate(`window.__ouvertures || []`)) as string[];
+    const ouverte = ouvertes.find((u) => u.startsWith("sms:") || u.startsWith("mailto:"));
+    assert.ok(
+      ouverte,
+      "l'appui sur « Envoyer le devis » n'a ouvert aucune messagerie — " +
+        `adresses vues : ${JSON.stringify(ouvertes)}`
+    );
+    // Le numéro sans ses espaces, sinon l'application ouvre un message SANS
+    // destinataire et le patron ne le découvre que dans Messages.
+    assert.match(ouverte!, /^sms:\d+\?/, `destinataire mal formé : ${ouverte!.slice(0, 60)}`);
+    assert.ok(
+      decodeURIComponent(ouverte!).includes("/devis/"),
+      "le message ouvert ne porte pas le lien du devis"
+    );
+
+    // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
+    // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
     // suite ça m'ouvre l'application, soit SMS soit email […] supprime les
     // étapes qu'il y a entre »*.
     //

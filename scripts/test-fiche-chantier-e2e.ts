@@ -152,7 +152,7 @@ async function main() {
     await page.waitForURL(/\/paysage\/fiche\/[0-9a-f-]{36}/, { timeout: 30_000 });
     await capturer(page, "03-fiche-nue");
 
-    const cases = page.locator('[data-atlas="fiche-chantier"] button[aria-pressed]');
+    const cases = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]');
     assert.ok(
       (await cases.count()) > 0,
       "la fiche s'est ouverte sans une seule prestation à cocher"
@@ -160,7 +160,7 @@ async function main() {
   });
 
   await test("Cocher tient : l'écran ET la base", async () => {
-    const cases = page.locator('[data-atlas="fiche-chantier"] button[aria-pressed]');
+    const cases = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]');
     for (const i of [0, 1, 5]) await cases.nth(i).click();
     await page.waitForTimeout(900);
     await capturer(page, "04-fiche-cochee");
@@ -179,7 +179,7 @@ async function main() {
 
   await test("Nommer le client replie la fiche — et ne perd aucune coche", async () => {
     const avant = await page
-      .locator('[data-atlas="fiche-chantier"] button[aria-pressed="true"]')
+      .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
       .count();
 
     await page.locator('[data-atlas="pont-client"]').click();
@@ -189,7 +189,7 @@ async function main() {
     await capturer(page, "06-fiche-repliee");
 
     const apres = await page
-      .locator('[data-atlas="fiche-chantier"] button[aria-pressed="true"]')
+      .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
       .count();
     assert.equal(apres, avant, "nommer le client a effacé une coche déjà posée");
 
@@ -219,10 +219,62 @@ async function main() {
     assert.match(rows[0].observations ?? "", /haie du fond/);
   });
 
-  await test("Envoyer fige le rapport, et prépare le SMS de SA messagerie", async () => {
+  await test("« Envoyé par » se choisit sous le nom du client", async () => {
+    // Sa demande du 20 août 2026 : *« sous le nom du client, il doit y avoir la
+    // mention envoyé par avec le choix soit SMS, soit par email »*.
+    const choix = page.locator('[data-atlas="choix-du-canal"]');
+    await choix.waitFor({ state: "visible", timeout: 15_000 });
+    assert.match(await choix.innerText(), /envoyé par/i);
+
+    // Le défaut vient de la fiche du client — ici un téléphone, pas d'e-mail.
+    assert.equal(
+      await choix.locator('[data-canal="sms"]').getAttribute("aria-pressed"),
+      "true",
+      "le canal proposé n'est pas celui de la fiche du client"
+    );
+    // Et le canal sans coordonnée le DIT, au lieu d'être caché.
+    assert.match(await choix.locator('[data-canal="email"]').innerText(), /absent/i);
+
+    // Le choisir éteint le bouton d'envoi, avec sa raison.
+    await choix.locator('[data-canal="email"]').click();
+    await page.waitForTimeout(400);
+    const texte = await page.locator('[data-atlas="fiche-chantier"]').innerText();
+    assert.match(texte, /pas d'e-mail dans sa fiche/i, "le refus ne nomme pas ce qui manque");
+
+    // On revient au SMS pour la suite.
+    await choix.locator('[data-canal="sms"]').click();
+    await page.waitForTimeout(400);
+  });
+
+  await test("Envoyer fige le rapport, et ouvre SA messagerie tout de suite", async () => {
+    // **L'ouverture doit suivre l'appui, sans écran entre les deux** — sa
+    // demande du 20 août : *« pas comme là où ça nous ouvre d'abord une autre
+    // page avant de pouvoir envoyer »*. Le lanceur des suites retient le saut
+    // et note ce qui a été ouvert (`scripts/e2e-browser.ts`) : c'est notre côté
+    // du contrat, et le seul éprouvable ici. Qu'iOS l'honore après une réponse
+    // du serveur ne se prouve pas depuis Chromium — d'où l'écran figé qui reste
+    // derrière, avec son bouton.
     await page.locator('[data-atlas="envoyer-fiche"]').click();
     await page.waitForTimeout(1500);
     await capturer(page, "08-rapport-fige");
+
+    const ouvertures = (await page.evaluate(`window.__ouvertures || []`)) as string[];
+    const ouverte = ouvertures.find((u) => u.startsWith("sms:") || u.startsWith("mailto:"));
+    assert.ok(
+      ouverte,
+      "« Enregistrer et envoyer » n'a ouvert aucune messagerie — " +
+        `adresses vues : ${JSON.stringify(ouvertures)}`
+    );
+    // Le numéro sans ses espaces, sinon l'application ouvre un message SANS
+    // destinataire et il ne le découvre que dans Messages.
+    assert.ok(
+      ouverte!.startsWith("sms:0612345678"),
+      `destinataire mal formé : ${ouverte!.slice(0, 60)}`
+    );
+    assert.ok(
+      decodeURIComponent(ouverte!).includes("/entretien/"),
+      "le message ouvert ne porte pas le lien du rapport"
+    );
 
     const { rows } = await pool.query(
       `SELECT p.envoye_le, p.empreinte, p.jeton, p.client_nom
@@ -318,7 +370,7 @@ async function main() {
     await page.locator('[data-atlas="ouvrir-fiche-chantier"]').click();
     await page.waitForURL(/\/paysage\/fiche\/[0-9a-f-]{36}/, { timeout: 30_000 });
 
-    const cases = page.locator('[data-atlas="fiche-chantier"] button[aria-pressed]');
+    const cases = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]');
     const entier = await cases.count();
     assert.ok(entier > 5, `la fiche ne s'ouvre pas sur le modèle entier (${entier} lignes)`);
 
@@ -343,7 +395,7 @@ async function main() {
 
     // Et elles reviennent DÉCOCHÉES : c'est un nouveau passage, pas une copie.
     const cochees = await page
-      .locator('[data-atlas="fiche-chantier"] button[aria-pressed="true"]')
+      .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
       .count();
     assert.equal(cochees, 0, "le passage suivant arrive avec des coches déjà posées");
 
@@ -359,7 +411,7 @@ async function main() {
       [CLIENT]
     );
     await page.goto(`${BASE}/paysage/fiche/${rows[0].id}`, { waitUntil: "domcontentloaded" });
-    const cases = page.locator('[data-atlas="fiche-chantier"] button[aria-pressed]');
+    const cases = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]');
     await assert.rejects(
       () => cases.first().click({ timeout: 3_000 }),
       "une case reste cliquable sur un rapport déjà parti"

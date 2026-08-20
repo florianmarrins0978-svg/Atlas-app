@@ -11,6 +11,7 @@ import EnvoiAuClient from "./EnvoiAuClient";
 import { enEuros } from "@/lib/euros";
 import { avecCivilite, type Civilite } from "@/lib/civilite";
 import { composerMessageClient, lienTransmission } from "@/lib/message-client";
+import { ouvrirMessagerie } from "@/lib/ouvrir-messagerie";
 
 
 export default function ExportClient({

@@ -195,6 +195,24 @@ async function main() {
       }) ?? "",
       /déjà parti/i
     );
+
+    // **Un canal sans coordonnée ouvrirait un message SANS destinataire**, et il
+    // ne le découvrirait que dans Messages — trop tard. Le bouton s'éteint et
+    // nomme l'autre canal, plutôt que de laisser partir un envoi borgne.
+    const prete = { clientId: "c", lignes: [{ ...lignes[0], faite: true }], envoyeLe: null };
+    assert.match(
+      empechementEnvoi({ ...prete, canal: "sms", telephone: null, email: "a@b.c" }) ?? "",
+      /téléphone/i
+    );
+    assert.match(
+      empechementEnvoi({ ...prete, canal: "email", telephone: "0612345678", email: "  " }) ?? "",
+      /e-mail/i
+    );
+    // Et le canal qui a sa coordonnée passe.
+    assert.equal(
+      empechementEnvoi({ ...prete, canal: "sms", telephone: "0612345678", email: null }),
+      null
+    );
   });
 
   await cas("une fiche s'ouvre COPIÉE du modèle, et refuse si le modèle est vide", async () => {

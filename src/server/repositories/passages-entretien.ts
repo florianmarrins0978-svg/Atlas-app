@@ -30,6 +30,8 @@ export type Passage = {
   clientEmail: string | null;
   /** Sert au « Bonjour Mr. Martins » du message — la même que sur son devis. */
   clientCivilite: string | null;
+  /** Le canal convenu sur SA fiche — un défaut proposé, jamais une contrainte. */
+  clientCanal: "sms" | "email" | null;
   jour: string;
   minutes: number | null;
   observations: string | null;
@@ -92,6 +94,7 @@ export async function lirePassage(ctx: Ctx, id: string): Promise<Passage | null>
         clientTelephone: clients.telephone,
         clientEmail: clients.email,
         clientCivilite: clients.civilite,
+        clientCanal: clients.canalCommunication,
       })
       .from(passagesEntretien)
       .leftJoin(clients, eq(clients.id, passagesEntretien.clientId))
@@ -122,6 +125,7 @@ export async function lirePassage(ctx: Ctx, id: string): Promise<Passage | null>
       clientTelephone: p.clientTelephone ?? null,
       clientEmail: p.clientEmail ?? null,
       clientCivilite: p.clientCivilite ?? null,
+      clientCanal: p.clientCanal ?? null,
       lignes,
     };
   });
