@@ -58,6 +58,70 @@ contrôle qui compte les mots de chaque écran et rougit quand un écran en
 gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
 ajoute une ligne et que personne n'en retire jamais.
 
+## La fiche client est refondue, et le troisième PDF existe — 20 août 2026
+
+**Ses trois décisions, le 20 août :** une **colonne Facture** en plus des deux
+premières, le **PDF de fiche de chantier** fabriqué pour de bon, et *« on va
+modifier la vraie application »* — le feu vert pour coder.
+
+**Ce qui est fait et poussé :** `src/app/clients/[id]/page.tsx` (dernière
+prestation en titre noir gras, trois colonnes de PDF du plus récent au plus
+ancien, le reste retiré), `src/server/pdf/fiche-chantier-pdf.ts`,
+`/api/chantiers/[chantierId]/fiche/pdf`, `src/lib/documents-du-client.ts` (la
+règle de tri, une seule pour les trois colonnes).
+
+**Ce qui reste ouvert, et qui est à lui :**
+
+- **Le reste dû ne figure plus sur la fiche d'un client.** Il se regarde dans
+  Terminés → En attente de paiement. La maquette lui demande s'il le veut ici
+  aussi ; il n'a pas répondu.
+- **On n'ouvre plus un chantier depuis un client** — on ouvre sa fiche en PDF.
+  Il a été prévenu et a tranché, mais c'est le genre de perte qui se sent à
+  l'usage, pas à la lecture.
+- **La fiche de chantier ne s'ENVOIE pas encore.** Elle se télécharge. Le jour
+  où elle partira chez un client, il faudra la **figer** comme le devis et la
+  facture : ce qui est parti ne se réécrit pas. C'est écrit dans la route.
+
+**Et il ne veut plus passer par `essais.html` pour ses maquettes** — lui donner
+l'adresse directe de la page.
+
+## ⏸ « TROP DE MOTS » — mesuré le 19 août, il n'a pas encore répondu
+
+**Sa plainte, et c'est la troisième :** *« il y a beaucoup trop de mots dans
+tous les sens […] des entrepreneurs qui n'ont pas de temps […] il y a des
+boomers dessus »*. Le 11 et le 17 août, la même chose avait été dite et un écran
+avait été corrigé au jugé ; la gêne est revenue ailleurs à chaque fois.
+
+**Ce qui existe :** `appli/moins-de-mots.html` — **Atlas dépouillé, qui se
+sert** : la barre du bas marche, « Créer un devis » ouvre la fiche, les champs
+se remplissent au clavier, le devis part. Un bouton « Avant » remet l'écran
+d'aujourd'hui. Sans une ligne de JavaScript. Liée depuis `appli/essais.html`.
+`docs/QUESTIONS.md` §23.
+
+**⚠ DEUX VERSIONS ONT ÉTÉ REFUSÉES AVANT CELLE-LÀ.** *« Je t'ai dit de rien
+coder »* — la première portait deux scripts autour de la maquette ; une demande
+de maquette n'autorise pas l'outillage qui va avec, même hors de `src/`. Puis
+*« une maquette dynamique QUE JE PUISSE UTILISER »* — la deuxième était une
+planche avant/après à REGARDER. **Une maquette, ici, est un bout d'application
+qui marche**, pas une présentation de ce qu'elle serait. Les autres essayables
+de `appli/` le sont déjà : s'en inspirer.
+
+**Fusionné sur `main` le 19 août 2026.** Il avait d'abord répondu non, puis
+demandé : *« si tu fusionnes, l'application actuelle ne sera plus ? »*. **Poser
+la question de la fusion sans dire ce qu'elle change chez lui, c'est lui faire
+porter un risque qu'il ne peut pas évaluer.** La réponse — zéro fichier de
+`src/` touché, une page de plus dans `appli/` — a suffi. À dire d'emblée la
+prochaine fois.
+
+**CE QU'ON ATTEND DE LUI, et rien ne se code avant :** la planche 82 lui
+va-t-elle ? (`CLAUDE.md` §3 bis.)
+
+**LA CHOSE À NE PAS OUBLIER SI L'ON REPREND CE SUJET.** Corriger trois écrans de
+plus ne réglera rien — ce serait la quatrième fois. Ce qui manque, c'est **un
+contrôle qui compte les mots de chaque écran et rougit quand un écran en
+gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
+ajoute une ligne et que personne n'en retire jamais.
+
 ## ⏸ La fiche client allégée — dessinée le 20 août, il tranche avant qu'on code
 
 **Une réponse à trois questions**, posées dans la maquette

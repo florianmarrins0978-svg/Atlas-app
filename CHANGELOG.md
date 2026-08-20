@@ -9,6 +9,92 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### La fiche client refondue, et un TROISIÈME document en PDF
+
+**Ses trois décisions du 20 août 2026 :** *« Tu peux rajouter une colonne
+facture et ranger les factures dans le même ordre. Sous format PDF, et donc
+faire en sorte que les fiches chantiers soient au format PDF maintenant. […] On
+va modifier la vraie application. »*
+
+**LE PDF DE FICHE DE CHANTIER — `src/server/pdf/fiche-chantier-pdf.ts`.**
+Atlas ne fabriquait que deux documents : le devis et la facture. Ce qu'il
+appelait « fiche chantier » était un ÉCRAN. La fiche dit ce qui a été fait, avec
+quoi, et ce qu'on a observé — **jamais un prix**. C'est ce qui la rend
+transmissible : on peut la donner à un locataire, à un syndic, à l'assurance
+d'un voisin, sans divulguer ce que le propriétaire a payé.
+
+**Une option dans le moteur commun, et non un troisième moteur** (`CLAUDE.md`
+§3). `sansChiffrage` retire le tableau de prix, les totaux, la TVA, l'IBAN ; les
+trois pièces gardent la même feuille, parce qu'elles sortent du même artisan.
+`blocsTexte` s'y ajoute pour le matériel et les photos — le premier réflexe
+avait été de les entasser dans le `rappel` de l'en-tête, qui s'écrit d'un seul
+trait : les trois lignes se seraient imprimées bout à bout.
+
+**Ce qui garde le devis et la facture : une EMPREINTE de leur trace**, relevée
+avant la première ligne de `sansChiffrage` — chaque texte, sa position au
+centième de point, sa taille, sa couleur, sa page. Éprouvée rouge en décalant le
+moteur d'un seul point. Sans elle, un `if` mal placé aurait décalé un total sans
+que personne le voie avant l'impression.
+
+**Un point corrigé AVANT d'écrire une ligne :** la maquette annonçait
+« 8 h 30 → 16 h 00 · 2 personnes ». **Ces horaires n'existent nulle part** — la
+base retient le créneau (matin / après-midi), le nombre de demi-journées et
+l'équipe. Le document aurait promis ce qu'il ne pouvait pas remplir.
+
+**L'ÉCRAN — `src/app/clients/[id]/page.tsx`.** La dernière prestation en titre
+noir gras avec ce qu'elle comprend, puis trois colonnes de PDF — Devis, Fiche
+chantier, Facture —, chacune du plus récent au plus ancien. Le nom et les
+informations sous le nom restent ; **les trois cases, « Ce qu'on lui fait et
+combien de fois », « Ses chantiers » et la phrase sur les factures sont
+parties**.
+
+**Une seule règle de tri pour les trois colonnes**
+(`src/lib/documents-du-client.ts`). Il a dit « le même ordre » : trois tris
+écrits séparément auraient fini par diverger, et c'est lui qui aurait vu une
+colonne remonter le temps. Une pièce sans date passe en dernier — jamais en
+premier, ce qui la ferait passer pour la plus récente.
+
+**Ce que les colonnes ne montrent pas, et pourquoi :** les devis en brouillon
+(le client ne les a jamais reçus, leur version peut encore changer), les
+factures non émises, et les fiches des chantiers non terminés (elles
+imprimeraient une feuille vide).
+
+**Ce que le retrait coûte, et qu'il a accepté :** on n'ouvre plus un chantier
+depuis un client — on ouvre sa fiche en PDF. Un document se lit, un écran se
+modifie. Le reste dû se regarde dans Terminés → En attente de paiement.
+
+**Deux défauts d'écran trouvés par la suite navigateur, invisibles à la
+lecture :**
+
+- **Deux devis portaient le même numéro.** Le numéro commercial est *stable à
+  travers les versions* : un devis révisé puis renvoyé produisait deux lignes
+  « n° 2026-0003 », à la même date, indistinguables — il aurait fallu ouvrir les
+  deux pour savoir laquelle on tenait. **Seule la dernière version envoyée est
+  montrée** ; les révisions restent en base et sur l'écran du chantier.
+- **Un chantier ouvert le matin même passait pour la dernière prestation.** Il
+  se lisait sur « les chantiers dont la date est passée » — or un chantier créé
+  le jour même, sans devis ni date posée, porte la date du jour. L'écran
+  annonçait un travail qui n'avait pas eu lieu. Elle se lit désormais sur les
+  chantiers **terminés**, ce qui l'aligne sur la colonne « Fiche chantier ».
+- **Le nom du chantier se coupait à 97 px.** « Rénovation de la salle de bain »
+  devenait « Rénovation de… » et n'apprenait rien. Sous un devis et une facture,
+  c'est désormais **la date**, qui tient en entier — et c'est par elle qu'il
+  cherche.
+
+**Trois pièges de montage, chacun payé une fois, chacun consigné :**
+
+| Ce qui échouait | Ce que ça a appris |
+|---|---|
+| Le serveur entier ne démarrait plus | La route était sous `[id]`, le dossier voisin emploie `[chantierId]`. Next.js refuse — et cinq écrans échouaient au préchauffage, la suite accusant un bouton trois écrans plus loin |
+| Les dates ne se décalaient pas | Un `UPDATE` par `pool` ne touche **aucune ligne** sous RLS, et ne dit rien. Le tri paraissait « remonter le temps » entre deux dates identiques |
+| Le décalage était refusé | Un devis envoyé est **immuable** (`trg_devis_immuable`). La date se pose sur le brouillon — `envoyerDevis` la garde, c'est donc le chemin réel |
+
+**La maquette essayable** (`appli/fiche-client.html`) porte les trois colonnes,
+et le contrôle mesure ce qui casse vraiment à 390 px : la colonne la plus
+étroite, et tout libellé qui dépasse sa boîte. **Un commentaire faux y a été
+corrigé contre la mesure** — il affirmait que rien ne tenait à 107 px de
+colonne ; rien n'y était coupé.
+
 ### Une barre de recherche sur la liste des clients
 
 **Sa demande, capture à l'appui :** *« Il faut une barre de recherche où je peux

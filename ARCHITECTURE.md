@@ -11431,3 +11431,83 @@ qui prend ses captures en passant (`ATLAS_CAPTURES`). C'est là qu'on voit ce
 qu'aucune suite base ne peut voir : que l'écran appelle bien les règles, et que
 le client ne reçoit pas les dix-sept lignes qu'il n'a pas payées.
 
+
+## 134. Le troisième document : une option dans le moteur, pas un moteur de plus
+
+*Sa demande du 20 août 2026 : « fais en sorte que les fiches chantiers soient au
+format PDF maintenant ».*
+
+### Le vocabulaire d'abord, parce qu'il trompe — y compris ce fichier
+
+**Quatre choses de ce dépôt s'appellent « fiche ».** Les confondre fait dessiner
+un document qui existe déjà, ou en coder un qui n'existera jamais.
+
+| Le mot | Ce que c'est | Où |
+|---|---|---|
+| **fiche de chantier (PDF)** | le document décrit ici, né le 20 août 2026 | `src/server/pdf/fiche-chantier-pdf.ts` |
+| **fiche chantier (écran)** | l'écran d'un chantier — photos, note vocale, étapes | `src/app/chantiers/[id]/` |
+| **fiche d'entretien** | un MODÈLE de prestations à cocher, un par entreprise | `reglages/fiche-entretien`, migration 0051 |
+| **fiche de passage** | ce qui a été coché un jour chez quelqu'un, envoyé au client | **§128**, `src/lib/passage-entretien.ts` |
+
+**§128 s'intitule « La fiche de chantier » et parle de la QUATRIÈME.** Le titre
+est resté ; il désigne le passage d'entretien, pas ce document-ci. Ne pas les
+rapprocher : l'un rend compte de travaux et ne s'envoie pas encore, l'autre est
+un rapport de passage envoyé au client depuis « Paysage ».
+
+### Pourquoi une option, et non un troisième fichier
+
+Le devis et la facture partagent déjà une seule feuille (`document-commun.ts`) :
+même papier, même en-tête, même bloc émetteur/client, même pied. La fiche ne
+diffère que par ce qu'elle **ne porte pas**.
+
+Un troisième moteur aurait produit une troisième mise en page, qui aurait dérivé
+des deux autres au premier changement d'identité — et c'est le client qui aurait
+vu la différence entre les feuilles d'un même artisan (`CLAUDE.md` §3).
+
+`sansChiffrage` retire donc le tableau de prix, les totaux, la TVA, les
+modalités de paiement et l'IBAN. `blocsTexte` ajoute les intertitres dont elle a
+besoin. Les deux sont **additifs** : absents, le devis et la facture sont
+exactement ce qu'ils étaient.
+
+### Ce que « sans prix » achète, et ce n'est pas de la place
+
+**La fiche est transmissible.** Un locataire, un syndic, l'assurance d'un
+voisin peuvent la recevoir sans apprendre ce que le propriétaire a payé. Un
+montant imprimé là-dessus rendrait le document indonnable — et c'est justement
+celui qu'on ressort deux ans après, quand quelqu'un rappelle.
+
+C'est aussi pourquoi la mention du pied ne promet rien : *« ne vaut ni devis ni
+facture, et n'appelle aucun paiement »*. Lui prêter la force de l'un des deux
+tromperait celui qui la reçoit.
+
+### Ce qui garde les deux pièces qui portent l'argent
+
+**Une empreinte de leur trace entière**, figée dans
+`scripts/test-fiche-chantier-pdf.ts` : chaque texte, sa position au centième de
+point, sa taille, sa couleur, sa page. Relevée **avant** la première ligne de
+`sansChiffrage`, et éprouvée rouge en décalant le moteur d'un seul point.
+
+Sans elle, un `if` mal placé aurait décalé un total sans que personne le voie
+avant l'impression — et c'est ce que le client paie.
+
+### Régénérée à chaque ouverture, et il faudra que ça change
+
+Le devis et la facture servent le fichier **figé au moment de l'envoi** : ce sont
+des engagements. La fiche, elle, est recomposée à chaque demande — si le patron
+ajoute une prestation oubliée, c'est la version corrigée qu'il veut imprimer.
+
+**Le jour où elle s'ENVERRA à un client, il faudra la figer comme les deux
+autres.** Ce qui est parti ne se réécrit pas. C'est écrit dans la route, et
+ouvert dans `TODO.md`.
+
+### Le piège de Next.js, payé une heure
+
+La route a d'abord été écrite sous `/api/chantiers/[id]/`, alors que le dossier
+voisin emploie `[chantierId]`. Next.js refuse deux noms pour le même segment
+dynamique — et **le serveur entier ne démarre plus**. Cinq écrans échouaient au
+préchauffage, et la suite accusait un bouton introuvable trois écrans plus loin.
+
+Le message du serveur, lui, disait exactement : *« You cannot use different slug
+names for the same dynamic path ('id' !== 'chantierId') »*. **Aller le lire a
+pris trente secondes.** C'est la règle d'`AGENTS.md` : reproduire le message du
+serveur, jamais l'idée qu'on s'en fait.
