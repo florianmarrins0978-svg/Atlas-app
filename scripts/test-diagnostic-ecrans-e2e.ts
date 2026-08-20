@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdirSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 
 /**
@@ -155,7 +157,60 @@ async function main() {
     await page.waitForURL(`${BASE}/paysage/diagnostic`, { timeout: 10000 });
   });
 
+  console.log("\n=== La photo de référence : sa DEMANDE du 20 août ===");
+
+  // *« Il faut absolument mettre des photos. L'utilisateur a besoin de comparer
+  // avec une vraie photo qui comporte la maladie. »* Sans ce contrôle,
+  // l'affichage peut disparaître sans bruit — et le geste qu'il a demandé avec.
+  const diagnosticId = await preparerDiagnosticRendu();
+
+  await cas("l'écran de résultat MONTRE la photo de référence", async () => {
+    await page.goto(`${BASE}/paysage/diagnostic/${diagnosticId}`, { waitUntil: "networkidle" });
+    const photo = page.locator('[data-atlas="diagnostic-photos-reference"] img').first();
+    await photo.waitFor({ state: "visible", timeout: 10000 });
+
+    // **Une image de 0 px ne prouve rien.** C'est le défaut du 15 août 2026 :
+    // une suite avait comparé deux largeurs valant toutes deux zéro et conclu
+    // au vert sur un écran cassé. On refuse de conclure sur une boîte vide.
+    const boite = await photo.boundingBox();
+    assert.ok(boite && boite.width > 100 && boite.height > 100, `photo rendue en ${boite?.width}×${boite?.height}`);
+
+    // Et elle doit être SERVIE, pas seulement présente dans le HTML : un
+    // `<img>` dont la source répond 404 occupe sa place et n'affiche rien.
+    const src = await photo.getAttribute("src");
+    assert.match(src ?? "", /^\/api\/phyto\/image\//);
+    const reponse = await page.request.get(`${BASE}${src}`);
+    assert.equal(reponse.status(), 200, "la route qui sert l’image doit répondre");
+    assert.match(reponse.headers()["content-type"] ?? "", /^image\//);
+  });
+
+  await cas("le crédit et la licence sont AFFICHÉS sous la photo", async () => {
+    // La plupart des licences libres l'exigent : une photo sous CC-BY sans son
+    // auteur visible est une photo employée hors licence.
+    const legende = page.locator('[data-atlas="diagnostic-photos-reference"] figcaption').first();
+    const texte = await legende.innerText();
+    assert.ok(texte.trim().length > 5, "la légende ne doit pas être vide");
+    assert.match(texte, /·/, "le crédit et la licence sont séparés par un point médian");
+  });
+
+  await cas("la photo est AVANT « Que faire ? » — comparer suppose de voir les deux", async () => {
+    const photo = await page.locator('[data-atlas="diagnostic-photos-reference"]').boundingBox();
+    const conduite = await page.locator('[data-atlas="diagnostic-conduite"]').boundingBox();
+    assert.ok(photo && conduite && photo.y < conduite.y, "la photo doit précéder la conduite à tenir");
+  });
+
+  await cas("rien n'est caché derrière la barre du bas", async () => {
+    // Le dépôt a déjà payé ce défaut : une pile de notifications repoussait le
+    // contenu hors de l'écran. Une page allongée par une photo est exactement
+    // le cas où il revient.
+    const dernier = page.locator('[data-atlas="diagnostic-details"]');
+    await dernier.scrollIntoViewIfNeeded();
+    await dernier.click({ timeout: 5000 });
+    assert.ok(await page.locator('[data-atlas="diagnostic-details"][open]').count() > 0);
+  });
+
   await browser.close();
+  await fermerPool();
   console.log(
     echecs === 0
       ? `\n✅ Écrans du diagnostic — 0 échec(s). Captures dans ${CAPTURES}/.`
@@ -168,3 +223,83 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+// ── Le montage de la photo de référence ────────────────────────────────────
+//
+// Les fixtures sont chargées ICI plutôt que supposées présentes : le lanceur
+// des suites navigateur réamorce la base avant de commencer, ce qui efface les
+// fiches. Une suite qui compterait dessus rougirait un jour sur deux, et pour
+// une raison qui n'a rien à voir avec ce qu'elle vérifie.
+
+let pool: Pool | null = null;
+function getPool(): Pool {
+  if (!pool) {
+    pool = new Pool({
+      connectionString:
+        process.env.DATABASE_URL ?? "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test",
+    });
+  }
+  return pool;
+}
+async function fermerPool() {
+  await pool?.end();
+  pool = null;
+}
+
+/** Un diagnostic RENDU sur la fixture qui porte une image. */
+async function preparerDiagnosticRendu(): Promise<string> {
+  execSync("npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fixtures --fixtures", {
+    stdio: "pipe",
+    env: {
+      ...process.env,
+      NODE_ENV: "test",
+      STORAGE_PROVIDER: "local",
+      DATABASE_URL:
+        process.env.DATABASE_ADMIN_URL ??
+        "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test",
+    },
+  });
+
+  const c = await getPool().connect();
+  try {
+    const { rows: f } = await c.query("SELECT id FROM fiches_phyto WHERE code = 'zz-test-probleme-gamma'");
+    const { rows: e } = await c.query(
+      "SELECT e.id AS entreprise FROM entreprises e JOIN membres_entreprise m ON m.entreprise_id = e.id LIMIT 1"
+    );
+    const resultat = {
+      ficheCode: "zz-test-probleme-gamma",
+      nom: "Problème d'essai gamma",
+      nomScientifique: null,
+      confiance: "probable",
+      confianceLibelle: "Confiance probable",
+      explication: "Donnée d'essai.",
+      gravite: "importante",
+      graviteLibelle: "Importante",
+      conduite: "Donnée d'essai.",
+      mentions: [],
+      details: {
+        categorie: "champignon_lignivore",
+        agentCausal: null,
+        agentType: "champignon",
+        partiesAtteintes: [],
+        prevention: null,
+        gestion: null,
+        traitement: null,
+        sources: [],
+        versionFiche: 1,
+        sourcesAJourLe: null,
+      },
+    };
+    await c.query("BEGIN");
+    await c.query("SELECT set_config('app.entreprise_id', $1, true)", [e[0].entreprise]);
+    const { rows } = await c.query(
+      `INSERT INTO diagnostics (entreprise_id, statut, fiche_id, confiance, resultat, moteur, modele, version_base, rendu_at)
+       VALUES ($1,'rendu',$2,'probable',$3,'suite','suite','suite', now()) RETURNING id`,
+      [e[0].entreprise, f[0].id, resultat]
+    );
+    await c.query("COMMIT");
+    return rows[0].id as string;
+  } finally {
+    c.release();
+  }
+}

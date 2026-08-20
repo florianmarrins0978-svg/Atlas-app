@@ -99,6 +99,80 @@ L'import refuse tout le reste (`src/lib/import-fiches-phyto.ts`, six refus) :
 5. une période d'observation entière, ou aucune ;
 6. une confusion qui promet une photo doit dire **laquelle**.
 
+## Les photos de référence — d'où elles viennent
+
+**Sa demande du 20 août 2026 :** *« Il faut absolument mettre des photos.
+L'utilisateur a besoin de comparer avec une vraie photo qui comporte la
+maladie. »* L'écran de résultat les affiche donc **sur l'écran principal**, sous
+« À quoi ça ressemble », avant la conduite à tenir — comparer suppose de voir
+les deux ensemble.
+
+**Le seul point dur, c'est leur provenance.** Les photos des organismes portent
+presque toutes un crédit nominatif — sur la seule fiche de l'anthracnose du
+platane : *CHAMONT S. (INRA)*, *© GIRAUDEL Arnaud*, *© Jean-Pierre Henry*. Un
+« © » suivi d'un nom de personne est la réserve de droits la plus explicite qui
+soit, et aucune licence publique ne la couvre.
+
+**Trois sources propres, par ordre de facilité :**
+
+| Source | Ce qu'elle vaut |
+|---|---|
+| **Les photos du patron** | Aucune question de droits, et **les meilleures** : prises au téléphone, dans les conditions réelles — exactement ce que l'utilisateur photographiera |
+| **Les banques sous licence libre** | Creative Commons, domaine public. Utilisables, à condition d'inscrire l'auteur et la licence — ce que l'écran affiche |
+| **Demander aux auteurs** | Lent, et nécessaire seulement pour une photo qu'on ne peut pas remplacer |
+
+### Ce qu'il faut fournir AVEC chaque photo
+
+**La ligne de crédit telle qu'elle est écrite sous la figure**, sur la page
+d'origine. Pas un avis, pas un résumé : le texte imprimé.
+
+C'est le seul moyen de savoir. Sur la fiche de l'anthracnose du platane, les
+trois figures portent respectivement *CHAMONT S. (INRA)*, *© GIRAUDEL Arnaud* et
+*© Jean-Pierre Henry* — les deux dernières sont des réserves de droits
+explicites, sur une page pourtant en libre accès. **Libre d'accès ne veut pas
+dire libre de droits**, et c'est précisément la confusion qui coûte cher.
+
+**Un modèle de langage ne peut pas trancher cette question.** Il ne voit pas les
+métadonnées de l'image, ne lit pas les conditions générales du site, et répondra
+avec assurance dans tous les cas. Ce qui tranche, c'est la mention écrite à
+côté de la photo.
+
+| Ce qui est écrit sous la photo | Utilisable ? |
+|---|---|
+| « CC BY 4.0 », « CC BY-SA 4.0 », « domaine public », « Licence Ouverte » | **Oui**, en affichant l'auteur et la licence |
+| « © Prénom Nom », « Tous droits réservés » | **Non** — c'est l'inverse d'une licence |
+| Un nom seul, sans mention de licence | **À demander.** Un crédit n'est pas une autorisation |
+
+L'import refuse d'ailleurs une mention de copyright écrite dans le champ
+`licence` : elle passerait sinon tous les contrôles en affirmant précisément ce
+qui interdit l'usage.
+
+### Verser une photo
+
+Le fichier va dans `donnees/phyto/images/`, et la fiche le désigne :
+
+```json
+"images": [
+  {
+    "fichier": "donnees/phyto/images/fomes-carpophore.jpg",
+    "licence": "CC BY-SA 4.0",
+    "credit": "Prénom Nom",
+    "partie": "collet",
+    "legende": "Sporophore au collet d'un épicéa"
+  }
+]
+```
+
+L'import range le fichier dans le stockage et refuse :
+
+- **une image de plus de 500 Ko** — elle est versionnée dans Git, où rien ne
+  s'efface, et affichée sur un téléphone au bord d'une route. Redimensionner à
+  1200 px de large suffit largement ;
+- **une licence qui est un aveu** — « à vérifier », « inconnue », « ? ». Le champ
+  est obligatoire en base, mais rien n'empêchait d'y écrire n'importe quoi : le
+  contrôle existe pour que l'obligation protège au lieu de rassurer ;
+- **une image qui ne désigne ni fichier ni adresse.**
+
 ## Les confusions : ce qu'on oublie, et qui coûte le plus
 
 `confusions_phyto` est ce qui permet à Atlas de demander **une** photo
