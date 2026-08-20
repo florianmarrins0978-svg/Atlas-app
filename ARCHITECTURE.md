@@ -5879,11 +5879,18 @@ toute façon sur deux lignes, mais **au mauvais endroit** : la coupure tombait a
 milieu de l'adresse, jamais entre le nom et elle. Un contrôle qui aurait compté
 les lignes serait passé au vert sur ce défaut.
 
-`Row` (`ExportClient.tsx`) rend donc **deux paragraphes** — le nom, puis le
-détail — et non un texte à retour à la ligne : la coupure ne doit pas dépendre
-de la largeur. `scripts/test-synthese-devis-e2e.ts` **mesure les rectangles**
-(le détail sous le nom, même marge à un pixel près), et
-`scripts/capture-synthese-devis.mts` rend l'image sur son iPhone.
+`Row` (`ExportClient.tsx`) rendait donc **deux paragraphes** — le nom, puis le
+détail — et non un texte à retour à la ligne : la coupure ne devait pas dépendre
+de la largeur. Sa suite mesurait les rectangles, au pixel près.
+
+> **CADUC depuis le 20 août 2026 (§135).** L'écran de synthèse d'avant l'envoi a
+> été supprimé, et `Row` avec lui : le patron voit désormais le devis entier, où
+> le client est une pile de champs. La suite qui mesurait cette géométrie a été
+> supprimée aussi — elle n'avait plus de sujet. Ce qui reste vivant de cette
+> décision est éprouvé ailleurs : la règle de nommage sans navigateur
+> (`scripts/test-civilite.ts`, `scripts/test-nom-chantier.ts`), le mot devant le
+> nom sur le devis (`scripts/test-choix-civilite-e2e.ts`), et le non-débordement
+> sur son téléphone (`scripts/test-choisir-la-date-e2e.ts`).
 
 ### Le message qui part chez le client, et l'encart qui n'invitait pas
 
@@ -8321,8 +8328,14 @@ devis est parfait, code celui-là »*. C'est la B.
 L'action passe par `EnTeteEcran` (`action`, `actionPlacee="titre"`), qui
 existait déjà. Mais cet en-tête aligne ses enfants **par le haut**, où se trouve
 le surtitre : sans `self-end`, le mot se poserait à côté de « MME FÉLICIE » et
-non sur la ligne d'écriture du titre. Rien ne rougirait — c'est pourquoi
-`test-modifier-avant-envoi-e2e` **mesure** les deux rectangles.
+non sur la ligne d'écriture du titre. Rien ne rougirait — c'est pourquoi sa
+suite **mesurait** les deux rectangles.
+
+> **CADUC depuis le 20 août 2026 (§135).** Ce lien ne s'affichait que sur un
+> devis NON parti ; or cet écran n'est plus atteignable dans ce cas — il renvoie
+> au devis. Le lien a donc été retiré, et sa suite supprimée. Le trou qu'il
+> bouchait ne peut plus se rouvrir : avant l'envoi, l'écran EST le devis
+> modifiable.
 
 ### Et la règle qui compte plus que la place du mot
 
@@ -11601,5 +11614,68 @@ devis. Confronté au défaut — la redirection retirée — il rougit en le nom
 **Vingt-six suites ont dû suivre** : elles passaient toutes par `/export` pour
 cliquer « Envoyer au client ». C'est le coût réel d'un raccourci sur un parcours
 central, et il se paie une fois.
+
+### Et une vingt-septième, que la batterie seule a trouvée
+
+`lienDeReprise` — la règle qui décide où mène la ligne d'un chantier dans la
+liste (§77 bis) — pointait encore sur `/export` pour un devis préparé mais non
+parti. **Rien ne cassait à l'écran** : l'adresse existe toujours et renvoie au
+devis. Il serait simplement arrivé au bon endroit par un rebond, et la
+divergence serait restée invisible jusqu'à ce qu'un des deux chemins bouge sans
+l'autre.
+
+Ce sont les deux suites de la reprise — la pure et sa jumelle navigateur — qui
+l'ont dit. Elles portent maintenant `devis-complet`, et leur commentaire
+explique **pourquoi l'attente a changé** : ce n'est pas un contrôle plié au
+code, c'est l'écran d'envoi qui a déménagé.
+
+**Au passage, une attente fixe de trop.** `test-reprise-chantier-e2e.ts`
+attendait 900 ms après avoir saisi le prix, puis naviguait. Jouée seule elle
+gagnait ; enchaînée, la navigation avortait l'enregistrement en vol, le devis
+s'ouvrait sur une ligne vide, et le rouge accusait l'écran d'arrivée — *« le
+total n'est pas montré avant l'envoi »* — alors que c'est le montant qui n'était
+jamais arrivé. Elle **relit jusqu'à voir le prix persisté**, comme
+`test-prix-e2e.ts` : attendre ce qu'on affirme, jamais une durée.
+
+### Ce que la batterie complète a corrigé, et que onze suites vertes cachaient
+
+Le lot a d'abord été annoncé prêt sur la foi de **deux** suites jouées seules.
+La batterie entière en a fait rougir **onze**, et trois d'entre elles disaient
+quelque chose de vrai sur le produit, pas sur elles-mêmes. C'est la démonstration
+la plus nette qu'on ait de la règle d'`AGENTS.md` : jouer ce qu'on transmet, en
+entier, avant de le transmettre.
+
+**1 · « Devis prêt pour … » revenait à chaque rechargement.** Le moment de
+l'envoi voyage dans l'adresse (`?envoye=1`) — et une adresse, contrairement à un
+état de navigateur, **survit au rechargement**. Le commentaire du code affirmait
+le contraire, et `test-devis-e2e.ts` a montré qu'il se trompait. Le drapeau se
+**consomme** donc à l'arrivée : la mention reste pour cette visite-là, puis
+`replaceState` nettoie l'adresse derrière elle. Un signet rouvert le lendemain
+tombe sur l'état réel du devis parti.
+
+**2 · Un « Modifier » en or devenu inatteignable.** Il ne s'affichait que sur un
+devis NON parti ; or ce cas ne peut plus atteindre cet écran. Le ternaire ne
+rendait donc plus jamais rien. Retiré, comme les 110 lignes de JSX : un code mort
+trompe la session suivante. Le trou qu'il bouchait — *« si je veux modifier mon
+devis avant de l'envoyer, je peux pas »* — ne peut plus se rouvrir, puisque
+l'écran d'avant l'envoi EST le devis modifiable.
+
+**3 · Une adresse renommée trop largement.** Le remplacement en masse de
+`/export` par `/devis-complet` a emporté des navigations qui visaient l'écran
+d'APRÈS l'envoi — le signet d'or, le retour de la messagerie, la réponse du
+client. Ces trois-là ne bougent pas : seule la face d'avant a disparu. **La règle
+à retenir : sur cette adresse, se demander de quel côté de l'envoi on se
+trouve**, jamais remplacer au fil du texte.
+
+**Deux suites ont été supprimées, et c'est le bon geste.**
+`test-synthese-devis-e2e.ts` mesurait la géométrie de l'écran supprimé ;
+`test-modifier-avant-envoi-e2e.ts` gardait le lien devenu impossible. Ce qu'elles
+tenaient encore de vivant ne se perd pas : la règle de nommage
+(« Mr. Martins », jamais « Chez Martins ») est éprouvée sans navigateur par
+`test-civilite.ts` et `test-nom-chantier.ts` ; le mot devant le nom se relit
+maintenant sur le devis (`test-choix-civilite-e2e.ts`) ; et la garde de
+débordement sur son téléphone a **changé de sujet plutôt que de disparaître** —
+elle vit dans `test-choisir-la-date-e2e.ts`, sur le dernier écran qu'il voit
+avant d'envoyer.
 
 ---

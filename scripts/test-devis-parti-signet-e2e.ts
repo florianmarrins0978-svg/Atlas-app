@@ -103,7 +103,11 @@ async function main() {
     // vient du navigateur. Rechargé, il vient du serveur et dit « En attente de
     // réponse » : c'est cet écran-là que le patron retrouve les jours suivants,
     // et c'est celui de sa capture.
-    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    // **Sur `/export`, et c'est justement là que cet écran vit encore.** Le
+    // raccourci du 20 août 2026 a supprimé la face AVANT l'envoi de cette
+    // adresse (`ARCHITECTURE.md` §135) ; celle d'après — le signet d'or — est
+    // exactement l'écran de sa capture, et ne bouge pas.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.waitForSelector("text=En attente de réponse", { timeout: 20_000 });
 
     // ── 1 · Les lignes ne sont plus là ────────────────────────────────────

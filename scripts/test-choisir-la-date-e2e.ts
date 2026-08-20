@@ -1,7 +1,6 @@
 import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
-import { pool } from "../src/server/db/client";
 
 /**
  * Le raccourci vers les dates : trois écrans devenus deux.
@@ -55,15 +54,31 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
 }
 
 async function main() {
-  const { rows } = await pool.query(
-    `SELECT id FROM chantiers WHERE deleted_at IS NULL AND devis_envoye_at IS NULL LIMIT 1`
-  );
-  const chantierId = rows[0]?.id as string | undefined;
-  if (!chantierId) throw new Error("aucun chantier sans devis parti dans le jeu de démonstration");
-
   const browser = await lancerNavigateur();
   const context = await browser.newContext();
   const page = await seConnecter(context);
+
+  // **Son propre chantier, et non le premier venu.** Le premier jet prenait
+  // `… WHERE devis_envoye_at IS NULL LIMIT 1` — sans ordre, et dans une base que
+  // quatre-vingts suites remplissent au fur et à mesure. Jouée seule elle
+  // gagnait ; jouée dans la batterie, elle tombait sur le chantier d'une autre
+  // suite dont le devis venait de partir, `/export` ne renvoyait donc plus, et
+  // le rouge accusait le raccourci — qui n'y était pour rien.
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+  await page.getByLabel(/Nom du client/i).fill(`Choisir la date ${Date.now()}`);
+  await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
+  await page.click('[data-atlas="action-dicter"]');
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 40_000 });
+  const chantierId = page.url().split("/").pop()!.split("?")[0];
+
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.waitForSelector("text=Total TTC", { timeout: 60_000 });
+  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
+  await page.waitForTimeout(900);
+  await page.getByLabel("Description 1").fill("Abattage d'un chêne");
+  await page.getByLabel("Prix unitaire 1").fill("1200");
+  await page.getByLabel("Description 1").click();
+  await page.waitForTimeout(1200);
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("text=Aperçu du PDF", { timeout: 60_000 });
@@ -123,13 +138,33 @@ async function main() {
   });
 
   await test("L'ancienne adresse ne s'ouvre plus avant l'envoi : elle renvoie au devis", async () => {
+    // **On ATTEND l'arrivée, on ne compte pas 600 ms.** Le renvoi est posé côté
+    // serveur, mais l'écran d'arrivée se compile à la demande : sous la
+    // batterie, six cents millisecondes ne suffisaient pas et l'adresse lue
+    // était encore l'ancienne. Le contrôle accusait alors le renvoi — qui
+    // fonctionnait parfaitement. Deuxième fois que cette même faute se paie
+    // dans ce lot ; c'est la dernière.
     await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(600);
+    await page
+      .waitForURL(new RegExp(`/chantiers/${chantierId}/devis-complet$`), { timeout: 30_000 })
+      .catch(() => undefined);
     assert.match(
       page.url(),
       new RegExp(`/chantiers/${chantierId}/devis-complet$`),
       `on reste sur « ${page.url().replace(BASE, "")} » : l'écran du milieu existe encore`
     );
+  });
+
+  await test("Rien ne déborde de son écran — c'est le dernier qu'il voit avant d'envoyer", async () => {
+    // **Repris de `test-synthese-devis-e2e.ts`, supprimée avec l'écran qu'elle
+    // mesurait.** Cette garde-là, elle, a changé de sujet plutôt que de
+    // disparaître : le devis est désormais le dernier écran avant l'envoi, et
+    // c'est sur lui qu'un débordement en largeur se paierait.
+    await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+    const debord = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    assert.ok(debord <= 1, `la page déborde de ${debord} px en largeur`);
   });
 
   await test("Et cet écran-là ne propose plus d'envoyer : le geste vit sur le devis", async () => {
@@ -143,12 +178,10 @@ async function main() {
   await context.close();
   await browser.close();
   console.log(`\n${passed} réussis, ${failed} échoués`);
-  await pool.end();
   if (failed > 0) process.exit(1);
 }
 
-main().catch(async (err) => {
+main().catch((err) => {
   console.error(err);
-  await pool.end();
   process.exit(1);
 });

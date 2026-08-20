@@ -58,7 +58,11 @@ async function main() {
   // pas le mécanisme — et concluait que le mécanisme ne marchait pas. Le
   // patron, lui, part TOUJOURS de l'écran où se trouve le bouton.
   const chantierId = await chantierAvecDevisPret(page);
-  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  // **Sur `/export` : c'est là que vit le lien de transmission**, et donc le
+  // mécanisme du retour. Le raccourci du 20 août 2026 a supprimé la face AVANT
+  // l'envoi de cette adresse (`ARCHITECTURE.md` §135), pas celle d'après — et
+  // le devis vient précisément de partir.
+  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);
 
   // On pose la marque exactement comme le fait le lien de transmission — le

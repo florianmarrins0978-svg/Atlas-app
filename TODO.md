@@ -286,7 +286,10 @@ n'est parti, et sa face récapitulative est supprimée pour de bon.
 
 **FAIT.** Le geste vit sur `devis-complet` ; `/export` ne rend plus que l'écran
 du devis parti. Éprouvé par `scripts/test-choisir-la-date-e2e.ts`, vu rouge en
-réintercalant l'écran du milieu. Vingt-six suites ont dû suivre.
+réintercalant l'écran du milieu. Vingt-six suites ont dû suivre — puis onze de
+plus, que la batterie complète a fait rougir alors que deux suites jouées seules
+étaient vertes. L'une d'elles a trouvé un vrai défaut : rechargé, l'écran d'après
+l'envoi reprenait « Devis prêt pour … » indéfiniment. Corrigé.
 `ARCHITECTURE.md` §135.
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**

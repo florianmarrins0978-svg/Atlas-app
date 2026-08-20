@@ -81,11 +81,32 @@ async function main() {
   await champs.nth(0).fill("Abattage d'un chêne");
   await champs.nth(1).fill("1200.00");
   await champs.nth(1).blur();
-  await page.waitForTimeout(900);
+
+  // **On RELIT jusqu'à ce que la base ait reçu, au lieu d'attendre 900 ms.**
+  // L'écran des prix rend la main dès le doigt levé et laisse l'enregistrement
+  // partir derrière lui. Neuf cents millisecondes suffisent quand cette suite
+  // est jouée seule ; enchaînée aux autres, la navigation suivante avorte
+  // l'appel en vol, le devis s'ouvre sur une ligne vide, et le contrôle accuse
+  // l'écran d'arrivée — « le total n'est pas montré avant l'envoi », alors que
+  // c'est le montant qui n'était jamais arrivé. Même remède que
+  // `test-prix-e2e.ts` : **attendre ce qu'on affirme, jamais une durée.**
+  for (const essai of [1, 2, 3, 4]) {
+    await page.reload({ waitUntil: "networkidle" });
+    const persiste = await page
+      .locator("form input")
+      .nth(1)
+      .inputValue()
+      .catch(() => "");
+    if (persiste === "1200.00") break;
+    await page.waitForTimeout(essai * 400);
+  }
 
   await cas("SA SÉQUENCE : retour par mégarde, puis la ligne le ramène à l'envoi", async () => {
-    // Il était allé jusqu'à l'écran d'envoi.
-    await page.goto(`${fiche}/export`, { waitUntil: "networkidle" });
+    // Il était allé jusqu'à l'écran d'envoi — le devis lui-même depuis le
+    // 20 août 2026, où « Choisir la date » ouvre le calendrier
+    // (`ARCHITECTURE.md` §135). L'ancienne adresse `/export` n'est plus qu'un
+    // renvoi tant que le devis n'est pas parti.
+    await page.goto(`${fiche}/devis-complet`, { waitUntil: "networkidle" });
     // « J'ai fait retour sans faire exprès. »
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
 
@@ -93,12 +114,12 @@ async function main() {
     await lien.waitFor({ state: "visible", timeout: 20000 });
     assert.equal(
       await lien.getAttribute("href"),
-      `/chantiers/${id}/export`,
+      `/chantiers/${id}/devis-complet`,
       "la ligne ramène à la fiche : il devra refaire les étapes une à une"
     );
 
     await lien.click();
-    await page.waitForURL(new RegExp(`/chantiers/${id}/export`), { timeout: 20000 });
+    await page.waitForURL(new RegExp(`/chantiers/${id}/devis-complet`), { timeout: 20000 });
   });
 
   await cas("et l'écran d'arrivée offre l'envoi, sans étape de plus", async () => {

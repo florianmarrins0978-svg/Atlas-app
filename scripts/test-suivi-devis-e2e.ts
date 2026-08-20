@@ -212,7 +212,10 @@ async function main() {
     const { chantierId, url, jeton } = await devisParti(page, "reprise");
     await clientRefuse(browser, jeton);
 
-    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    // **Sur `/export` : l'écran d'APRÈS l'envoi.** Le raccourci du 20 août 2026
+    // n'a supprimé que sa face d'avant (`ARCHITECTURE.md` §135) ; c'est celle-ci
+    // qui porte la réponse du client et la reprise.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     assert.ok(
       await page.locator("text=Le client n'a pas donné suite").isVisible(),
       "l'écran devis ne dit pas que le client a refusé"
@@ -283,7 +286,8 @@ async function main() {
     const { url, jeton } = await devisParti(page, "relance");
 
     await page.reload({ waitUntil: "networkidle" });
-    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    // Voir ci-dessus : l'attente d'une réponse se lit sur l'écran d'après l'envoi.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
     // Sélecteur restreint au paragraphe : en mode développement, une erreur
     // afficherait le code source de l'écran, où cette phrase figure aussi.

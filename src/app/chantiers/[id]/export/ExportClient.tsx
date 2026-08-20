@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import TransmettreAuClient from "./TransmettreAuClient";
@@ -72,10 +72,26 @@ export default function ExportClient({
    * et c'est froid : il vient d'appuyer, il veut savoir que c'est parti.
    *
    * Porté par l'adresse plutôt que par un état : une navigation ne transporte
-   * rien d'autre, et un rechargement de la page doit précisément le perdre —
-   * la deuxième fois, ce n'est plus « à l'instant ».
+   * rien d'autre. Mais l'adresse, elle, SURVIT au rechargement — et c'est ce
+   * qu'a attrapé `test-devis-e2e.ts` : rechargée, la page reprenait « Devis
+   * prêt pour … » alors que la deuxième fois, ce n'est plus « à l'instant ».
+   *
+   * Le drapeau se CONSOMME donc dès l'arrivée : la mention reste pour cette
+   * visite-ci, et l'adresse est nettoyée derrière elle. Un rechargement, un
+   * retour par l'historique, un signet rouvert plus tard tombent alors sur
+   * l'état réel du devis parti.
    */
   const lienClient = vientDEtreEnvoye ? lienEnvoi : null;
+
+  // `replaceState` et non `router.replace` : ce dernier rejouerait le rendu
+  // serveur, et la mention disparaîtrait sous ses yeux à l'instant même où il
+  // vient de la lire. On ne touche qu'à la barre d'adresse.
+  useEffect(() => {
+    if (!vientDEtreEnvoye) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("envoye");
+    window.history.replaceState(null, "", url.toString());
+  }, [vientDEtreEnvoye]);
   // **L'avertissement avant de rouvrir un devis que le client a en main.**
   //
   // Vérifié dans le dépôt avant d'écrire cet écran, et ce n'est pas une

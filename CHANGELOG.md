@@ -35,8 +35,17 @@ réponse » une seconde après l'appui — vrai, et froid ; le moment voyage
 maintenant dans l'adresse. Et deux boutons « Annuler » cohabitaient sur le même
 écran sans se distinguer à l'oreille.
 
+**Un défaut corrigé au passage, et qui se voyait à l'œil nu :** rechargé, l'écran
+d'après l'envoi reprenait « Devis prêt pour … » comme si le devis venait de
+partir — même trois jours plus tard. Il dit maintenant où en est vraiment le
+devis, et ne garde la phrase du moment que pour la visite où elle est vraie.
+
 **Ce que ça coûte, dit franchement :** vingt-six suites passaient par l'ancien
-chemin et ont dû suivre. `ARCHITECTURE.md` §135, `docs/maquettes/82`.
+chemin et ont dû suivre. La batterie complète en a fait rougir onze de plus, que
+deux suites jouées seules n'avaient pas vues — dont celle qui a trouvé le défaut
+ci-dessus. Deux suites ont été supprimées avec l'écran qu'elles mesuraient, sans
+rien perdre de ce qu'elles gardaient encore de vivant.
+`ARCHITECTURE.md` §135, `docs/maquettes/82`.
 
 ---
 

@@ -172,10 +172,19 @@ async function main() {
   // --- 3. Le devis reste dans Atlas : la chaîne tient ---------------------
   // C'est la raison d'être de cet écran plutôt que du fichier d'origine, qui
   // gardait tout dans le navigateur.
-  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
+  // **Le devis se relit chez lui.** L'écran de synthèse d'avant l'envoi, qui
+  // écrivait les libellés en toutes lettres, a disparu le 20 août 2026
+  // (`ARCHITECTURE.md` §135) : sur le devis, un libellé vit dans son champ, et
+  // le chercher dans le texte de la page ferait rougir un écran juste. Les
+  // totaux, eux, restent du texte — c'est bien ce qu'on lit.
+  await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
+  const libelleRelu = await page.getByLabel("Description 1").inputValue();
+  assert.ok(
+    /tilleul/i.test(libelleRelu),
+    `L'écran Devis ignore ce qui a été écrit à la main : le champ dit « ${libelleRelu} ».`
+  );
   const ecranDevis = await page.locator("body").innerText();
-  assert.ok(/tilleul/i.test(ecranDevis), "L'écran Devis ignore ce qui a été écrit à la main.");
   assert.ok(/825,00/.test(ecranDevis), `Le total TTC ne suit pas : ${ecranDevis.slice(0, 300)}`);
   console.log("  ✓ ce qui est écrit à la main devient le devis d'Atlas");
 

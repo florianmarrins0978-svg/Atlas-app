@@ -35,7 +35,9 @@ async function main() {
   await page.waitForTimeout(400);
 
   // --- Écran Devis : aperçu PDF avant envoi ---
-  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
+  // L'adresse `/export` renvoie au devis tant que rien n'est parti (20 août
+  // 2026, `ARCHITECTURE.md` §135) : on y va donc directement.
+  await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Aperçu du PDF").isVisible());
 
   const apercuHref = await page.locator("text=Aperçu du PDF").getAttribute("href");

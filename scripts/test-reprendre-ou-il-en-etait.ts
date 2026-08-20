@@ -230,9 +230,16 @@ const CHANTIER = "3f2a5b7c-1111-2222-3333-444455556666";
 
 cas("SON CAS : la liste mène à l'écran d'ENVOI, pas à la fiche", () => {
   // C'est là qu'il s'était arrêté : « la page où je devais ouvrir le SMS ».
+  //
+  // **L'écran d'envoi a changé d'adresse le 20 août 2026, pas de nature.** Le
+  // geste s'appelle « Choisir la date » et vit désormais sur le devis lui-même
+  // (`ARCHITECTURE.md` §135) ; `/export` n'existe plus avant l'envoi et renvoie
+  // vers `devis-complet`. Continuer à l'attendre ici le ferait arriver au même
+  // endroit, mais par un rebond — et masquerait qu'un des deux chemins a bougé
+  // sans l'autre.
   assert.equal(
     lienDeReprise(CHANTIER, { ...NEUF, prixValideAt: JADIS, devisGenereAt: JADIS }),
-    `/chantiers/${CHANTIER}/export`
+    `/chantiers/${CHANTIER}/devis-complet`
   );
 });
 
@@ -246,8 +253,9 @@ cas("chaque arrêt a son écran de reprise, et « ainsi de suite »", () => {
     [{ photosCount: 2 }, ""],
     [{ aUneNoteVocale: true }, "/informations"],
     [{ informationsVerifieesAt: JADIS }, "/prix"],
-    [{ prixValideAt: JADIS }, "/export"],
-    [{ devisGenereAt: JADIS }, "/export"],
+    // Voir ci-dessus : l'écran qui porte l'envoi est le devis depuis le 20 août.
+    [{ prixValideAt: JADIS }, "/devis-complet"],
+    [{ devisGenereAt: JADIS }, "/devis-complet"],
   ];
   for (const [jalon, suffixe] of attendus) {
     assert.equal(
