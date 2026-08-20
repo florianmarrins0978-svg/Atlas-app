@@ -34,6 +34,54 @@ le reste retombe sur la liste des clients, sans erreur ni écran vide.
 — celle sans navigateur sur « c'est exactement le double saut qu'il a signalé »,
 celle au navigateur sur les trois chemins.
 
+### L'arrosage en deux gestes — dessiné, pas codé
+
+**Sa demande du 20 août 2026**, capture d'`arrosage.html` à l'appui : *« on va
+simplifier cette page également. Garde le piquage se fait… avec le bandeau
+déroulant. Ensuite : le croquis et ses métrés, avec la possibilité de mettre la
+photo. Je veux rien d'autre. Ensuite […] tu fais apparaître un plan avec les
+différents réseaux et le détail des pièces. »*
+
+**`appli/arrosage-simple.html`** — sans script ni photo. **Rien n'est codé**
+(`CLAUDE.md` §3 bis) : `appli/arrosage.html` n'a pas été touchée.
+
+**La page passait de huit questions à deux.** Partent : le seau, le temps de
+remplissage, la pression, le débit affiché en cours de route, la règle de
+recouvrement, la marque des arroseurs, le corps d'arroseur, la saisie des zones
+une par une, la sonde de pluie, et les boutons copier / envoyer / imprimer.
+Restent le piquage et le croquis.
+
+**Ce que la page DIT plutôt que de faire semblant : Atlas ne sait pas lire un
+croquis.** Reconnaître un contour tracé au crayon et retrouver « 12 m » écrit en
+travers demande une IA qui regarde une image ; le raccordement est écrit
+(`ARCHITECTURE.md` §26) mais aucun contrat n'est signé. Le plan montré après la
+photo est donc **dessiné**, et un écran de la maquette l'explique — avec ce que
+la lecture devra rendre le jour venu : les surfaces, les longueurs, et où est le
+point d'eau. Le reste est du calcul, et le calcul est déjà écrit.
+
+**Ce que le retrait coûte, et il est réel :** le débit mesuré au seau décidait
+du nombre d'arroseurs par réseau. Sans mesure, il faut le supposer d'après le
+piquage — et ce sera parfois faux. Deux façons de vivre avec sont posées dans la
+maquette, **et il tranche**.
+
+**Le contrôle recalcule le plan** (`scripts/verifier-maquette-arrosage-simple.mjs`,
+dans `npm run verifier:maquette`) : les arroseurs dessinés doivent être ceux du
+détail — **et par couleur**, sinon deux réseaux faux se compensent ; une
+électrovanne par réseau ; le programmateur assez de voies ; aucun réseau
+au-dessus du débit disponible ; et **la somme des réseaux au-dessus** de ce
+débit, sans quoi un seul aurait suffi et le découpage ne servirait à rien. Il
+refuse aussi tout champ de saisie remis avant le plan. Éprouvé rouge sur cinq
+états dégradés.
+
+**Deux défauts trouvés à l'image, aucun par un test :** « amenée 18 m » passait
+sous le cadre du compteur, et les massifs portaient leur mesure au-dessus de
+leur nom quand la haie faisait l'inverse.
+
+**Elle n'est PAS dans `essais.html`**, à sa demande — *« arrête de me le mettre
+dans Atlas app essai »*. Elle se donne par son adresse directe, et figure
+nommément dans la liste vérifiée après déploiement : une adresse transmise sans
+preuve qu'elle répond n'est pas une adresse.
+
 ### La fiche client refondue, et un TROISIÈME document en PDF
 
 **Ses trois décisions du 20 août 2026 :** *« Tu peux rajouter une colonne

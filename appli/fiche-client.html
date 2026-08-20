@@ -91,10 +91,11 @@
      dernière fois. Le gras et le noir la séparent du gris des coordonnées —
      sans quoi elle se lirait comme une ligne d'information de plus. */
   .derniere{margin:20px 26px 0}
-  .derniere .quand{display:block;font-size:9.5px;font-weight:500;letter-spacing:.28em;
-                   text-transform:uppercase;color:var(--muted)}
-  .derniere h2{margin:7px 0 0;font-family:Georgia,serif;font-weight:700;
-               font-size:22px;line-height:1.16;color:#000;letter-spacing:-.01em}
+  /* Le titre EST « Dernière prestation », en noir gras : le nom qui suivait
+     répétait le nom du client en tête (le chantier en porte le nom). Retiré le
+     20 août 2026 — « je veux plus voir le nom en dessous ». */
+  .derniere .quand{display:block;font-size:9.5px;font-weight:700;letter-spacing:.28em;
+                   text-transform:uppercase;color:#000}
   .comprend{margin:11px 0 0;padding:0;list-style:none}
   .comprend li{position:relative;padding:0 0 0 15px;margin-top:6px;
                font-size:14px;line-height:1.45;color:var(--charcoal-soft)}
@@ -322,7 +323,6 @@
 
   <div class="derniere">
     <span class="quand">Dernière prestation · 12 août 2026</span>
-    <h2>Élagage de trois chênes</h2>
     <ul class="comprend">
       <li>Démontage en tête de chat, trois sujets</li>
       <li>Broyage des branches sur place</li>
@@ -341,17 +341,17 @@
     </div>
 
     <div class="col">
-      <h3>Fiche chantier</h3>
-      <span class="compte">2 pièces</span>
-      <a class="doc" href="#fiche-chantier"><span class="pdf">PDF</span><span class="titre">12 août 2026</span><span class="jour">Élagage 3 chênes</span></a>
-      <a class="doc" href="#fiche-chantier"><span class="pdf">PDF</span><span class="titre">2 oct. 2025</span><span class="jour">Taille de haie</span></a>
-    </div>
-
-    <div class="col">
       <h3>Facture</h3>
       <span class="compte">2 pièces</span>
       <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2026-014</span><span class="jour">12 août 2026</span></a>
       <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2025-089</span><span class="jour">3 oct. 2025</span></a>
+    </div>
+
+    <div class="col">
+      <h3>Fiche chantier</h3>
+      <span class="compte">2 pièces</span>
+      <a class="doc" href="#fiche-chantier"><span class="pdf">PDF</span><span class="titre">12 août 2026</span><span class="jour">Élagage 3 chênes</span></a>
+      <a class="doc" href="#fiche-chantier"><span class="pdf">PDF</span><span class="titre">2 oct. 2025</span><span class="jour">Taille de haie</span></a>
     </div>
   </div>
 

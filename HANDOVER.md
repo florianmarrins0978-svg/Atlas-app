@@ -70,6 +70,22 @@ contrôle qui compte les mots de chaque écran et rougit quand un écran en
 gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
 ajoute une ligne et que personne n'en retire jamais.
 
+## Deux maquettes attendent sa réponse — 20 août 2026
+
+- **`appli/arrosage-simple.html`** : la page d'arrosage ramenée de huit
+  questions à deux. Il doit trancher **le débit** (mesuré ou supposé) — voir
+  `TODO.md`. `appli/arrosage.html` n'a pas été touchée.
+- **`appli/fiche-client.html`** : la fiche client refondue, **déjà codée**.
+  Reste ouvert : le **reste dû** revient-il sur cet écran ?
+
+**Il ne veut plus passer par `essais.html`** — *« arrête de me le mettre dans
+Atlas app essai »*. Lui donner **l'adresse directe** de la page :
+`https://florianmarrins0978-svg.github.io/Atlas-app/<page>.html`
+
+`arrosage-simple.html` n'est donc liée nulle part : elle figure **nommément**
+dans la liste vérifiée de `pages.yml`, sans quoi la liste déduite d'`essais.html`
+ne la verrait pas et on lui donnerait une adresse non éprouvée.
+
 ## La fiche client est refondue, et le troisième PDF existe — 20 août 2026
 
 **Ses trois décisions, le 20 août :** une **colonne Facture** en plus des deux
