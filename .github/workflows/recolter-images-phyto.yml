@@ -50,6 +50,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
+
+      # **Oublié à la première exécution, et le workflow est tombé dessus.**
+      # `npx tsx` n'existe pas sur un runner nu : le contrôle des fiches
+      # échouait après avoir téléchargé la photo, donc rien n'était déposé —
+      # une récolte réussie perdue sur une dépendance manquante.
+      - name: Installer les dépendances
+        run: npm ci
 
       - name: Récolter
         run: node scripts/recolter-images-phyto.mjs
