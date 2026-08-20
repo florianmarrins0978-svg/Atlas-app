@@ -310,30 +310,19 @@ mentirait sur ce qu'il a vraiment compris.
 
 ---
 
-## 🔴 `test-fiche-client-e2e.ts` est ROUGE SUR `main` — constaté le 20 août 2026
+## ~~`test-fiche-client-e2e.ts` rouge sur `main`~~ — **réglé le 20 août 2026, par une autre session**
 
-**Ce n'est pas un doute, c'est vérifié :** la suite a été jouée seule sur
-`origin/main` (commit `d8737ae`), dans un espace de travail à part, **sans
-aucune modification** — deux cas rouges, exactement les mêmes qu'au sein d'une
-batterie. Le lot de la dictée dans le devis n'y est pour rien : il ne touche ni
-la fiche du client, ni les documents, ni leurs colonnes.
+Constaté en fin d'après-midi : deux cas rouges (l'ordre des colonnes, et le
+titre de la dernière prestation), **vérifiés rouges sur `origin/main` seul**,
+dans un espace de travail à part et sans la moindre modification. Écrit ici
+plutôt que corrigé, délibérément : c'était le lot d'une autre session, sans
+doute encore en cours, et réécrire son attente pendant qu'elle travaille dessus
+aurait tranché une question qui n'était pas la nôtre.
 
-| Cas rouge | Ce que la suite attend | Ce que l'écran rend |
-|---|---|---|
-| « trois colonnes : Devis, Fiche chantier, Facture » | `DEVIS \| FICHE CHANTIER \| FACTURE` | `DEVIS \| FACTURE \| FICHE CHANTIER` |
-| « la dernière prestation est en titre noir gras » | un titre sous l'adresse | aucun titre sur l'écran |
-
-**La première ressemble à une attente restée en arrière** : le commit qui l'a
-amenée s'intitule « factures avant fiches », c'est-à-dire l'ordre que l'écran
-rend bel et bien. La seconde, elle, décrit quelque chose qui **n'existe pas
-encore à l'écran**.
-
-**Non corrigée ici, délibérément.** C'est le lot d'une autre session, et il a
-toutes les chances d'être encore en cours (`CLAUDE.md` §6) : réécrire son
-attente pendant qu'elle travaille dessus reviendrait à trancher une question qui
-n'est pas la nôtre, et à effacer peut-être un écran qu'elle est en train
-d'écrire. **À reprendre par la session qui tient la fiche client** — ou par la
-prochaine, si personne ne la revendique.
+**Elle l'a réglé quelques heures plus tard**, et la batterie suivante est
+repartie au vert (102/102 suites navigateur). La ligne reste ici parce que la
+conduite, elle, se garde : devant une suite rouge qu'on n'a pas cassée, on
+vérifie sur `main` seul, on l'écrit, et on laisse la main à qui tient le lot.
 
 ---
 
