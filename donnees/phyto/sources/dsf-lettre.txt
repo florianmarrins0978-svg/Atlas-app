@@ -1,0 +1,691 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : dsf-lettre
+# organisme   : Département de la santé des forêts — ministère de l'Agriculture
+# titre       : La lettre du DSF
+# url         : https://agriculture.gouv.fr/telecharger/151462
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+                                     Direction Générale de l’Alimentation
+                                     Sous-Direction de la Santé et de la Protection des Végétaux
+
+
+
+
+Département de la santé des forêts
+
+                                                      LA LETTRE DU DSF
+                                                      N° 63 – AOUT 2025
+                                                      Le Département de la santé des forêts participe au quotidien à de nombreux projets, études,
+                                                      thèses pour mieux comprendre ou suivre la santé des forêts. Il accompagne ses partenaires de
+                                                      différentes façons : financements, expertise, observations et relevés de terrain, base de
+                                                      données… Chaque année, de nouveaux éléments de compréhension ou de surveillance sont
+                                                      ainsi disponibles. Cette Lettre fait un résumé des derniers résultats disponibles.
+SOMMAIRE                                                                                              CRYPTIC : Conditions d’émergence d’un pathogène invasif, Cryptostroma corticale sur l’érable
+TRONSAVE et EXTRONSAVE : Point d’étape .................... 3                                         sycomore (2022-2025)............................................................. 9
+MASSIF : Résumé du projet .................................................... 4                      PIQURES sur chênes : comprehension et detection .............. 10
+SORE - Résultats des piégeages « large spectre » 2024 menÉs                                           FOMES : amélioration de la détection et du suivi des mortalités associées aux Heterobasidion spp. et
+dans les principaux sites d’importation de vÉgÉtaux en France                                         Coniferiporia sulphurascens en forêt de résineux (2024-2025)10
+................................................................................................. 5   ARMIPISTAGE : détéction et suivi des mortalités associées aux Armillaires en forét de résineux (2022-
+PIÉGÉAGE MONOCHAMUS : identification des coléoptères                                                  2025) ...................................................................................... 11
+capturés .................................................................................... 7       PINIPOP : suivi des populations de Cronartium pini dans les Landes (2023-2024)         12
+DEBUSC : Détection et étude de la distribution de                                                     TÉLÉDÉTÉCTION : Suivi de la santÉ des forÊts à l’aide de la télédétéction dans le cadre du projet ciblé
+Bursaphelenchus xylophilus dans les arbres (2024-2027) ....... 8                                      MONITOR du PEPR FORESTT ........................................... 13
+INVASIF : Quelles sont les conséquences écologiques de                                                ROUILLE DU PEUPLIER : Suivi des espèces, virulences et gourpes génétiques              14
+l’introduction de la punaise réticulée du chêne, Corythucha
+arcuata, dans les forêts françaises ? ........................................ 8
+
+
+
+
+          La Lettre du DSF est destinée principalement aux correspondants-observateurs et aux partenaires du Département de la santé des forêts. Elle diffuse des informations brèves à
+          caractère technique et scientifique sur les problèmes phytosanitaires forestiers au sens large, qu’ils soient nationaux ou internationaux, et se fait l’écho des activités et informations
+          propres au DSF. À parution régulière, elle est ouverte aux suggestions de chacun, et peut publier des textes courts.
+          La Lettre du DSF est également accessible sur Internet à l’adresse :
+          http://agriculture.gouv.fr/suivi-de-la-sante-des-forets
+          Il est également possible de s’abonner à la version électronique de la Lettre du DSF à partir de cette adresse.
+
+
+          Rédacteurs : Marie-Anne Auger-Rozenberg, Tom Barlier, Thierry Bélouard, Jean-Baptiste Daubrée, Morgane Goudet, Claude Husson, Carole Kerdelhué, François-Xavier Saintonge,
+          Aurélien Sallé, Kadiatou Schiffer Forsyth,
+
+
+
+          Département de la santé des forêts - 251 rue de Vaugirard 75732 Paris cedex 15
+          Tél. : 01 49 57 51 95
+          Mél : sdspv.dgal@agriculture.gouv.fr
+TRONSAVE ET EXTRONSAVE : POINT D’ETAPE
+Projet porté par INRAE de Clermont-Ferrand
+
+
+Dans un contexte d’augmentation de la fréquence et de l’intensité des sécheresses, les dépérissements
+de chêne sessile se multiplient. Le rôle des températures extrêmes (42°C dans le Centre de la France
+en 2019) a conduit à la notion de sécheresse caniculaire, qui résulte de la conjonction de ces deux
+facteurs.
+Le microclimat forestier, qui est modifié par l’ouverture des peuplements, joue certainement un rôle
+important dans la résistance des peuplements. Certes, diminuer la densité des arbres réduit leur la
+concurrence pour l’accès à la ressource en eau et limite l’évapotranspiration globale de la strate
+arborée, mais cela peut augmenter l’évapotranspiration d’autres strates (arbustives, herbacées). Par
+ailleurs, une forte ouverture du peuplement augmente le rayonnement dans celui-ci, ce qui accroît la
+température maximale et réduit l’humidité relative de l’air. L’ensemble conduit donc à l’augmentation de
+l’évaporation de l’eau du sol et de la transpiration de la végétation.
+
+Les dispositifs TRONSAVE (sur le Massif de Tronçais) et EX-TRONSAVE (sur les massifs de Grésigne
+dans le Tarn et de Réno Valdieu dans l’Orne) vont permettre d’étudier ce phénomène à partir de deux
+dispositifs répliqués dans ces trois chênaies sessiliflores situées dans des situations très
+différentes. Le premier dispositif s’appuie sur des placettes avec des densités contrôlées (GIS COOP),
+comprenant la densité maximale (auto-éclaircie naturelle), la moitié et le quart de cette densité. Le
+deuxième dispositif est dynamique et consiste en la simulation d’une éclaircie, avec une prise de
+données avant et après l’éclaircie à plusieurs intensités.
+
+Mise en place par INRAE de Clermont-Ferrand, UMR PIAF, les sites ont été équipés de dendromètres
+automatiques, qui mesurent l’accroissement des arbres en microns et la température, de capteurs
+d’humidité qui enregistrent l’humidité et la température à différentes profondeurs, de sondes TDR qui
+permettent de connaître la hauteur de la nappe, et enfin de stations météo.
+
+Commencé en 2023, TRONSAVE, situé en forêt de Tronçais, a déjà donné des résultats intéressants,
+notamment, l’impact de la densité du peuplement sur la croissance significatif pour les très
+faibles densités, avec un stress hydrique marqué en 2023 et l’absence de stress en 2024,. L’effet
+limité de la densité sur la contraction des arbres due au gel montre que ces derniers récupèrent en
+moyenne 50 % de cette contraction. Il existe toujours une forte disparité entre les arbres. La
+croissance en diamètre des arbres montre des variations journalières importantes lors de stress
+hydrique lorsque la densité augmente.
+
+Dans le sol, chaque pluie permet une recharge temporaire de la partie supérieure. La densité du
+peuplement influe peu sur les 40 premiers centimètres, mais son influence est nette entre 60 et 80 cm,
+où la réhydratation est nettement plus lente dans le peuplement le plus dense. À 50 centimètres de
+profondeur, les écarts de température entre la modalité la plus ouverte et la plus dense peuvent
+atteindre 1,6 °C. Le niveau de la nappe a été élevé en 2024, mais il est très variable selon les points
+de mesure et globalement plus faible au niveau du peuplement le plus dense. L’augmentation de la
+température après l’éclaircie est nettement visible, avec une différence de 1,6 °C à 50 cm de profondeur
+dans le sol. L’absence de stress hydrique en 2024 a limité l’impact de l’ouverture du peuplement.
+
+De nombreux résultats sont attendus fin 2025 avec la finalisation du projet TRONSAVE, mais aussi
+avec les premiers résultats des autres dispositifs. Ils nous permettront, à terme, de mieux gérer les
+chênaies en situation de dépérissement.
+MASSIF : RESUME DU PROJET
+Projet porté par INRAE, CNRS, Université Sorbonne, Institut polytechnique de Toulouse, MNHN –
+Coordinatrice du projet : CAROLE KERDELHUE
+
+
+
+Le projet MASSIF (Monitoring Automatisé et Systèmes de Surveillance Intelligents de la biodiversité
+des insectes dans les écosystèmes Forestiers français) a été retenu récemment pour un financement
+de 4 ans (2025-2029) dans le cadre du PEPR FORESTT, à hauteur de 1,2 millions d'euros. Regroupant
+9 Unités partenaires de INRAE, de l'INP-Toulouse, du CNRS, du MNHN, de Sorbonne-Université et de
+l'ONF, ce projet a pour ambition de lever les verrous du suivi à large échelle des insectes en forêt,
+en explorant et en calibrant des solutions basées sur les développements technologiques récents
+des outils d'identification basés sur l'ADN (barcoding et ADN environnemental) et sur l'analyse d'images
+grâce à l'intelligence artificielle.
+
+Le projet cible différents groupes d'insectes incluant des taxons auxiliaires et/ou patrimoniaux, dont la
+diversité doit être protégée, et des ravageurs, dont l’occurrence et l’abondance doivent être suivies. Les
+taxa considérés regroupent plusieurs familles d'Hyménoptères, de Diptères et de Lépidoptères
+nocturnes impliqués dans le service écosystémique de pollinisation; des xylophages et
+saproxylophages importants pour le service de recyclage de la matière organique; ainsi que des
+xylophages, cambiophages et des coléoptères à Ambrosia qui sont des ravageurs potentiellement
+dommageables pour les forêts. Au sein des ravageurs, la détection d’espèces invasives et les
+fluctuations de taille de population d’espèces indigènes en expansion pourront faire l'objet de
+signalement.
+
+Le projet MASSIF produira des bases de données expertes couvrant l’ensemble de ces groupes
+taxonomiques, en combinant identification morphologique, séquençage du fragment barcode et de
+marqueurs ADN complémentaires, et collections de photographies pour l'entrainement des algorithmes
+d'intelligence artificielle. Ces ressources seront utiles pour le développement des outils de piégeage
+intelligents prévus dans le projet, mais aussi pour massifier, accélérer et automatiser l'identification de
+spécimens à tout stade de développement, qui seraient prélevés dans le cadre des missions de nos
+partenaires non-académiques (DSF, OPIE, associations de préservation de la biodiversité). L'objectif
+sera de mettre à disposition gratuitement ces ressources de haute qualité, ainsi que des outils
+accessibles au plus grand nombre.
+
+Au-delà des bases de données, et grâce à la collaboration de partenaires ayant des compétences
+complémentaires (entomologistes, écologues, informaticiens, spécialistes de l'intelligence artificielle,
+opto-électroniciens, modélisateurs...), le projet vise également à mettre au point des pièges non
+létaux et connectés, afin de réaliser à terme des suivis continus, à distance et à large échelle. MASSIF
+permettra le développement de systèmes automatisés de prise d'image et de capture d'ADN
+environnemental adaptés aux pièges Malaise pour les pollinisateurs et aux pièges Lindgren pour les
+lignicoles. Au cours du projet, les prototypes seront développés à petite échelle dans les environs des
+laboratoires et testés à moyenne échelle (sur 10 sites pilotes nationaux). Les performances
+d'identification et de comptage obtenues à partir de l'ADN et des images seront comparées aux résultats
+obtenus par les procédures traditionnelles appliquées par les entomologistes experts. Des métriques
+seront produites à partir des données obtenues, pour suivre l'évolution de la biodiversité mais aussi
+pour réaliser la surveillance des ravageurs potentiels, natifs et invasifs. Ces données et ces analyses
+seront couplées à des outils de visualisation et d'alerte, à la fois à destination des scientifiques, des
+partenaires de terrain, et du grand public.
+SORE - RÉSULTATS DES PIÉGEAGES « LARGE SPECTRE » 2024
+  MENÉS DANS LES PRINCIPAUX SITES D’IMPORTATION DE
+     VÉGÉTAUX EN FRANCE
+Projet porté par INRAE, UMR URZF, ORLEANS et le laboratoire LNEF-ONF, QUILLAN, en lien
+opérationnel avec le Bureau de la Santé des Végétaux de la DGAL et les SRAL.
+
+Depuis 2021, un dispositif de pièges à large spectre (appâtés par des attractifs à vocation générique)
+est déployé en France dans le cadre de la surveillance au niveau des sites d’entrée potentiels (ports,
+aéroports, marchés d’intérêt national) des organismes réglementés et émergents (SORE). Il s’agit d’une
+action transversale commune aux filières forêts, jardins et espaces verts et infrastructures (JEVI) ainsi
+qu’à l’arboriculture fruitière. Ce dispositif cible majoritairement les insectes coléoptères s’attaquant aux
+ligneux (Cérambycides, Scolytes, Buprestides), avec des pièges de couleur noire principalement
+destinés aux cérambycides et scolytes, et des pièges de couleur verte ciblant les buprestes. Les
+attractifs génériques sont constitués d’un mélange de 10 phéromones de cérambycides et de
+substances d’origine végétale pour les scolytes. Ce dispositif de surveillance s’est appuyé sur les
+résultats d’un programme mondial de piégeage utilisant les mêmes composés attractifs, qui a permis
+de recenser plus de 400 espèces de cérambycides pouvant être capturées par ces pièges à l’arrivée
+en France.
+
+Détail du dispositif
+
+En 2024, le dispositif a concerné 29
+sites de piégeage couvrant la
+majeure partie du pays (figure ci-
+contre). Sur chaque site, un jeu de 2
+pièges a été déployé : un noir et un
+vert, à l’intérieur du site d’entrée, et
+un autre jeu de 2 pièges, noir et vert,
+dans un espace boisé situé dans un
+rayon proche du port afin d’apprécier
+si des insectes exotiques se sont déjà
+dispersés après leur arrivée.
+
+
+
+
+                                                  Dispositif de piégeage sur le Marché d’Intérêt
+                                                  National de Rungis Les pièges sont mis en place à
+                                                  partir d’Avril à Novembre.
+
+
+                                                  Résultats 2024
+
+                                                  Au total, 777 échantillons ont été analysés. Plus de
+                                                  20 000 coléoptères ont été capturés. Les scolytes
+                                                  sont largement majoritaires, avec plus de 17 000
+                                                  individus, et 1215 cérambycides ont aussi été capturés.
+                                                  Sur cet ensemble, 18 espèces étaient d’origine
+                                                  exotique pour un total de 1503 individus : cinq
+                                                  cérambycidés, sept scolytes, un bostryche, un
+                                                  anthribide et deux charançons Dryophthoridae. Aucune
+                                                  espèce de quarantaine prioritaire (OQP) n’a été piégée.
+Captures totales d’espèces natives et exotiques dans les sites d’entrée en 2024
+
+
+
+
+Détail des captures d’espèces exotiques
+
+Les espèces exotiques capturées correspondent à
+cinq cérambycidés, sept scolytes, un bostryche,
+un      anthribide       et    deux      charançons
+Dryophthoridae. S’y ajoutent la coccinelle asiatique,
+Harmonia axyridis, et la punaise nord-américaine des
+graines de pins, Leptoglossus occidentalis. La
+majorité des captures d’insectes exotiques
+correspondent à des scolytes à ambroisie du genre
+Xylosandrus originaires du sud-est asiatique mais
+établis en France de longue date (X. germanus) ou
+plus récemment (X. compactus et X. crassiusculus),
+et au cérambycidé asiatique Xylotrechus stebbingi,
+lui aussi établi depuis au moins 30 ans dans le bassin
+méditerranéen mais qui progresse de manière
+continue vers le nord. Cependant, trois nouvelles
+espèces exotiques ont été interceptées, deux
+cérambycidés, Olenecamptus bilobus et Urachea
+augusta, et un scolyte, Eidophelus jalappae.
+
+          Nombre d’insectes exotiques capturés par
+                             site d’entrée en 2024.
+
+
+Zoom sur les Cérambycides exotiques
+
+1) Xylotrechus stebbingi : vraisemblablement originaire des contreforts himalayens de l’Inde, cette
+espèce polyphage sur feuillus (chêne, figuiers, micocouliers, etc…) est désormais présente sur
+l’ensemble du sud de la France.
+
+2) Olenecamptus bilobus : un individu a été intercepté le 16 Juillet à l’intérieur du marché de
+Perpignan. Cette espèce est largement distribuée dans les régions d’Asie du sud-est et d’Australasie
+ainsi qu’à Madagascar. Très polyphage, elle apparaît cependant préférer les Moracées, Ficus et Morus.
+
+3) Uraecha augusta : un insecte a été intercepté à l’intérieur du MIN de Rungis. D’origine chinoise, il
+est assez polyphage, s’attaquant au camphrier (Cinnamomum camphora) mais aussi à des pins (Pinus
+armandii).
+Zoom sur quelques Scolytes exotiques
+
+1) Xylosandrus crassiusculus : Ce scolyte à ambrosie, originaire d’Asie subtropicale, est déjà
+   présent dans le bassin méditerranéen. Bien que signalé comme très polyphage sur d’autres
+   continents envahis, en Europe il semble attaquer principalement le caroubier (Ceratonia siliqua),
+   l’arbre de Judée (Cercis siliquastrum) et le lilas des Indes (Laegerstromia indica), mais il a aussi été
+   fortement piégé en chênaies dans les Pyrénées atlantiques.
+
+2) Xylosandrus compactus : originaire d’Asie subtropicale, très polyphage s’attaquant aux pousses
+   de nombreux ligneux (lauriers, chênes, arbousiers, etc..) a largement colonisé le sud-est.
+
+3) Xylosandrus germanus : autre scolyte à ambroisie originaire d’Asie, introduit en France depuis les
+   années 1980. Très polyphage sur feuillus (Fagus, Castanea, Quercus, …) et conifères (Pinus,
+   Picea)
+
+4) Hypothenemus eruditus : originaire des régions tropicales et subtropicales des Amériques,
+   l’espèce a été observée dans la plupart des pays du pourtour méditerranéen. Un nombre
+   considérable de plantes-hôtes est signalé, incluant notamment des Anacardiacées, des
+   Cupressacées, des Fabacées, des Juglandacées, des Moracées (dont Ficus carica), des Pinacées,
+   etc… (Marchioro et al., 2024). Selon Bouget et al. (2019) en France, l’insecte peut se développer
+   sur Ficus, Platanus, Fagus, Alnus, Castanea, Pyrus et Fraxinus.
+
+Sources : Rapport PROJET SORE 2024 - Résultats des piégeages « large spectre » menés dans les
+principaux sites d’importation de végétaux en France, INRAE URZF Orléans & LNEF-ONF Quillan
+
+
+
+PIÉGÉAGE MONOCHAMUS : IDENTIFICATION DES
+     COLÉOPTERES CAPTURÉS
+Porté par le Laboratoire national d’Entomologie forestière de l’ONF
+
+
+Dans le cadre du plan de surveillance du nématode du pin, des pièges sont installés sur tout le territoire.
+L’ensemble des Coléoptères piégés, autres que les espèces cibles du genre Monochamus
+(Cerambycidae) sont déterminés par le Laboratoire national d’Entomologie forestière de l’Office
+National des Forêts. Ces identifications représentent entre 40 000 à 50 000 individus chaque année et
+permettent indirectement d’effectuer une veille de niveau national. En effet, les pièges Crosstraps
+utilisés, amorcés avec des phéromones de Galloprotect, sont disposés sur l’ensemble du territoire,
+parfois dans des zones portuaires et des scieries.
+
+Bilan du piègeage 2024
+Au total, 41 129 individus de 375 espèces ont été identifiés, appartenant à 52 familles.
+On dénombre 13 espèces introduites, toutes considérées actuellement naturalisées en France. Si la
+plupart ont été introduites il y a plus de 10 ans voire plus d’un siècle, on pourra toutefois mentionner
+des introductions plus récentes : Dryophthorus americanus (Dryophthoridae) (2023) et Xylosandrus
+crassiusculus (Scolytinae) (2014).
+On compte également 43 espèces sont considérées comme remarquables à divers titres, soit 11,5 %
+de la diversité spécifique dont des espèces remarquables : 40 espèces saproxyliques ayant un indice
+patrimonial national fort ou très fort (IP3, IP4) selon les critères utilisés par Bouget et al. (2019)
+(Plegaderus discisus (Histeridae), Alphitophagus obtusangulus, Corticeus fraxini, C. suberis et
+Tribolium madens (Tenebrionidae)….) et 71 espèces menacées à l’échelle européenne d’après
+l’UICN : Clamoris crenata, Corticeus fraxini, C. suberis, C. vanmeeri et Hymenorus doublieri.
+Rhizophagus atticus, probable prédateur de scolytes, vient d’être signalé pour la première fois en
+France (Barnouin et al., sous presse).
+
+Source : Soldati et al. 2025. Coléoptères identifiés dans le cadre du plan national de surveillance
+Nématode du Pin . Résultats de la campagne de piégeage 2024.
+DEBUSC : DÉTECTION ET ÉTUDE DE LA DISTRIBUTION DE
+  BURSAPHELENCHUS XYLOPHILUS DANS LES ARBRES (2024-
+  2027)
+Projet par INRAE, UMR Biodiversité, Gènes et Ecosystèmes, Bordeaux
+
+
+Le nématode du pin Bursaphelenchus xylophilus est une espèce pathogène provoquant la maladie du
+flétrissement du pin. Il est originaire d’Amérique du nord et introduit et invasif en Asie de l’est et au
+Portugal. Il est transmis par un coléoptère (Monochamus sp.) lors de son repas de maturation puis migre
+du houppier vers la base du tronc entraînant un flétrissement et parfois la mort de l’hôte.
+
+Absent en France et classé organisme de quarantaine prioritaire, B. xylophilus fait l’objet d’une
+surveillance soutenue, à la fois sur son insecte vecteur, sur arbres sur pied et sur les produits végétaux
+(bois) importés, pour le détecter précocement en cas d’introduction. Bursaphelenchus mucronatus est
+une espèce qui occupe la même niche écologique que B. xylophilus mais elle est indigène en France
+et non pathogène. La migration de ces deux nématodes dans les vaisseaux du bois de l’arbre reste mal
+connue et pourrait dépendre des communautés fongiques associées.
+
+L’échantillonnage a porté sur 39 pins maritimes (Pinus pinaster) en Gironde (France) où la
+fréquence d’hôtes sensibles est très élevée et sur 27 pins au Portugal où B. xylophilus est établi depuis
+2009. Des prélèvements de copeaux de bois ont été réalisés à trois hauteurs différentes de chaque
+arbre : sur tronc à 0,5 m et à 1,5 m du sol ainsi qu’au niveau d’une branche basse du houppier. Les
+nématodes ont été extraits du bois en utilisant la méthode de Baermann améliorée. Elle consiste à faire
+migrer les nématodes hors du bois dans de l’eau et à les compter sous loupe binoculaire. Elle demande
+quelques jours de manipulation. Les résultats montrent que B. mucronatus est davantage présent dans
+le houppier que dans la base du tronc. A l’inverse, B. xylophilus est beaucoup plus présent sur le tronc
+que dans le houppier et avec des densités (nombre d’individus) plus importantes que B. mucronatus.
+Par ailleurs, La méthode LAMP (Loop-mediated isothermal amplification) a été testée au Portugal pour
+la détection de B. xylophilus. Il s’agit d’une méthode moléculaire isotherme applicable sur le terrain via
+un appareillage spécifique et qui fournit un résultat en 2 heures. 35% des arbres infectés d’après la
+méthode de Baermann ont été positifs via la méthode LAMP. Aucun faux positif n’a été signalé. Ces
+premiers résultats fournissent des éléments importants (méthodes de prélèvement et d’analyse) pour
+la détection précoce de B. xylophilus en cas d’arrivée sur le territoire. Ils seront complétés par de
+nouvelles expérimentations pour améliorer le taux de détection et par une caractérisation des
+communautés fongiques associées aux nématodes par metabarcoding.
+
+Source : Clavier Y. 2025. Rapport de Master 2 Biodiversité Ecologie et Evolution, Univ. de Bordeaux
+
+
+
+
+INVASIF : QUELLES SONT LES CONSEQUENCES ECOLOGIQUES DE
+   L’INTRODUCTION DE LA PUNAISE RETICULEE DU CHENE,
+   CORYTHUCHA ARCUATA, DANS LES FORETS FRANÇAISES ?
+Thèse de Tom Barlier, INRAe, UMR Biogeco, Bordeaux
+
+
+Les forêts de chênes jouent un rôle économique et écologique majeur en France, mais les changements
+globaux, et notamment l’intensification des sécheresses et l’émergence de nouveaux bioagresseurs
+menacent la vitalité des arbres à moyen et long terme. L’introduction d’un insecte exotique ravageur tel
+que Corythucha arcuata, la punaise réticulée du chêne (PRC), rend nécessaire l’évaluation de son
+impact sur les forêts et leur capacité de régénération. Ce projet de recherche vise à mieux comprendre
+les dynamiques de réponse des forêts aux stress biotiques et abiotiques combinés en explorant l’impact
+potentiel de C. arcuata sur la vitalité des chênes.
+
+Un premier volet étudie les réponses physiologiques des jeunes chênes et celles de leurs
+communautés fongiques endophytiques. Une expérimentation, croisant deux niveaux de stress
+hydrique et trois niveaux d’infestation par la punaise, a été réalisée en condition contrôlée sur 4 espèces
+de chênes : Quercus cerris, Quercus robur, Quercus petraea et Quercus pubescens. Les premiers
+résultats révèlent que les décolorations foliaires caractéristiques de la punaise entraînent une
+modification de l'activité photosynthétique mais en revanche n’altèrent pas la croissance, la
+mise en réserve des sucres ou la vulnérabilité aux pathogènes endophytiques fongiques.
+
+Un second volet s’intéresse aux interactions biotiques entre la PRC, les défoliateurs et les
+champignons pathogènes, en testant les performances de la chenille Lymantria dispar face à des
+feuilles décolorées par la punaise, ainsi que celles de la PRC sur des feuilles préalablement défoliées
+ou infestées par l’oïdium.
+
+Enfin, un dernier axe se concentre sur la croissance secondaire des chênes adultes, à travers une
+approche dendrochronologique permettant de caractériser les effets à moyen terme du stress hydrique
+et de l’infestation par C. arcuata sur l’anatomie du bois et les performances de croissance.
+
+
+
+
+CRYPTIC : CONDITIONS D’EMERGENCE D’UN PATHOGENE INVASIF,
+  CRYPTOSTROMA CORTICALE SUR L’ERABLE SYCOMORE (2022-
+  2025)
+Projet porté par INRAE, UMR Interactions Arbres-Microorganismes, Nancy
+
+Les épisodes de sécheresse de plus en plus fréquents peuvent favoriser l’émergence de maladies
+forestières. La maladie de la suie de l’érable sycomore (Acer pseudoplatanus) en est un bon exemple.
+Depuis les années 2000, les signalements de son agent causal, Cryptostroma corticale, un organisme
+invasif en Europe, se sont multipliés en Europe centrale et méridionale. Le pathogène est présent
+de manière asymptomatique dans les tissus de son hôte et adopte un comportement pathogène après
+un stress abiotique. Cette phase latente rend difficile la détection précoce du pathogène.
+
+Dans cette étude, la prévalence de C. corticale dans des arbres asymptomatiques a été évaluée.
+Cette étude a couvert six régions, chacune incluant une ville ainsi que ses écosystèmes périurbains et
+forestiers avoisinants, reflétant ainsi un gradient d’anthropisation ville-forêt. Trois régions présentaient
+un grand nombre de signalements de la maladie, tandis que les trois autres en comptaient peu.
+
+La présence du pathogène a été évaluée par PCR en temps réel sur 540 échantillons de bois prélevés
+sur des érables sycomores asymptomatiques. La prévalence moyenne était de 13,6 %, tous types de
+parcelles confondus. Le pathogène semble donc largement répandu dans les peuplements
+naturels d’érable sycomore en France, augmentant ainsi le risque de développement de la maladie
+en cas de futures sécheresses. La densité des hôtes et le déficit hydrique cumulé sur trois ans
+expliquent le mieux la détection de C. corticale dans les érables sycomores asymptomatiques.
+Cependant, la détection du champignon n’était pas liée au niveau d’anthropisation, aucune différence
+significative n’ayant été observée le long du gradient urbain-forestier. En outre, Cryptostroma corticale
+a été détecté chez des hôtes asymptomatiques y compris dans des régions avec peu ou pas de
+signalements récents de maladie de la suie. L’absence de signalements d’arbres atteints par la maladie
+dans un secteur géographique ne reflète donc pas nécessairement l’absence du pathogène.
+
+Source : Muller et al. 2025. Soumis à Plant Pathology
+PIQURES SUR CHENES : COMPREHENSION ET DETECTION
+Projet mené par l’Université d’Orléans
+
+
+Le dépérissement de certaines chênaies favorise actuellement le développement de bioagresseurs
+opportunistes. Parmi ceux-ci on observe notamment une recrudescence d’attaques d’agents de
+piqûre sur les grumes mais aussi sur arbres sur pied, avec des conséquences économiques
+importantes pour la filière forêt-bois.
+
+Deux projets coordonnés par l’Université d’Orléans, en partenariat avec INRAE, le CIRAD, le FCBA et
+l’ONF, sont menés en parallèle sur le sujet : le projet DEPRECIATEUR (Fonds de dotation ONF)
+s’intéresse à la compréhension des phénomènes de piqûre en forêt, et le projet PIQPAG (Ministère
+de l’Agriculture) se focalise sur les problématiques de détection, conservation et débouchés des
+bois piqués pour la partie aval de la filière.
+
+Des inventaires sont menés actuellement en forêt et parcs à grumes afin d’identifier les espèces
+circulantes et attaquantes, leurs périodes d’activité et les facteurs climatiques et stationnels qui les
+conditionnent. Les premiers résultats montrent que la communauté des agents de piqûre dans les
+forêts et parcs à grumes est diversifiée, essentiellement composée d’espèces indigènes
+(xylébores et platype), dont la période d’activité pour toutes les espèces cumulées s’étale du début du
+printemps à la fin de l’automne. La mise sous nasse d’arbres sains et dépérissants confirme l’infestation
+des arbres sur pied par ces mêmes espèces et met en évidence la colonisation d’arbres
+apparemment sains.
+
+En parallèle différentes méthodes de détection et quantification des dégâts de piqûre sont testées,
+les plus prometteuses étant l’analyse de la sciure produite par les insectes, les méthodes de détection
+acoustique et la tomographie par rayons X. Enfin des tests de résistance mécanique et des effets de
+pollution de l’air seront menés prochainement sur les bois piqués pour évaluer leurs débouchés
+potentiels.
+
+
+FOMES : AMELIORATION DE LA DETECTION ET DU SUIVI DES
+  MORTALITES ASSOCIEES AUX HETEROBASIDION SPP. ET
+  CONIFERIPORIA SULPHURASCENS EN FORET DE RESINEUX
+  (2024-2025)
+Projet porté par Anses, Laboratoire de santé des végétaux, Unité de Mycologie, Malzéville
+
+
+Le fomès ou Heterobasidion sp. est un pourridié racinaire de résineux. Il est responsable d’une des
+maladies forestières les plus dommageables dans l’hémisphère nord. En France, 3 espèces sont
+présentes : H. annosum, H. abietinum et H. parviporum. Une 4ème espèce, H. irregulare, originaire
+d’Amérique du nord, est présente en Italie. La localisation géographique, la gamme d’hôte et la
+pathogénicité diffèrent selon les espèces et il est donc important de pouvoir les identifier pour affiner
+le diagnostic sanitaire.
+
+Des tests moléculaires fiables et robustes ont été développés pour les distinguer (Ioos et al. 2019).
+Cependant, la prise d’échantillons sur le terrain pour conforter le diagnostic au laboratoire est
+malaisée : les sporophores ne sont pas facilement repérables au pied des arbres ou sur souches et le
+mycélium ainsi que les symptômes sur bois (coloration, pourriture) peuvent être confondus avec
+d’autres agents ou causes d’altération. Enfin, il est difficile de réaliser des observations de racines et
+bois au collet en raison de leur accessibilité.
+Quatre méthodes de prélèvement ont été testées sur le terrain pour comparer leur opérationnalité et
+leur efficacité pour détecter le pathogène : carotte prélevée au collet avec une tarière de Pressler,
+copeaux de bois (foret de 20 mm) et sciure (forêt de 8 mm) prélevés avec une perceuse sur racines
+maitresses, mycélium blanc prélevé sous écorce. L’échantillonnage a été réalisé sur environ 70 arbres,
+qui étaient majoritairement du douglas et du sapin pectiné. Les méthodes ont été déployées dans des
+peuplements où la présence de fomès a été attestée auparavant lors de veilles sanitaires ou est
+fortement suspectée. Tous les échantillons ont été analysés au laboratoire avec des méthodes
+d’extraction d’ADN et de PCR identiques.
+
+Le mycélium s’avère le meilleur type d’échantillon à la fois pour extraire un ADN de qualité et
+détecter Heterobasidion sp. (48 % d’échantillons positifs). Par contre, le mycélium n’a pu être repéré et
+prélevé que dans 40 % des arbres échantillonnés. Pour comparer les méthodes de prélèvement de
+bois, seuls les arbres ayant été échantillonnés avec les 3 méthodes ont été retenus Le prélèvement
+de petits échantillons de bois donne de bons résultats avec 39 % d’échantillons positifs pour la
+sciure, 36 % pour les copeaux et 30 % pour les carottes. Il est probable qu’un prélèvement sur racines
+(sciure ou copeaux) améliorent les chances de détection en raison du mode de développement du
+fomès dans l’arbre.
+
+Par ailleurs, les copeaux et carottes ont été mis en chambre humide pour produire des fructifications de
+fomès (conidiophores). Les résultats sont assez satisfaisants mais, en comparaison avec les résultats
+de PCR, ont probablement généré beaucoup de faux positifs (confusion avec d’autres fructifications de
+champignons), ce qui biaisent le diagnostic.
+
+Heterobasidion abietinum a été très majoritairement détecté, ce qui est conforme à la gamme d’hôtes
+connus de cette espèce (sapin et douglas). H. parviporum et H. irregulare n’ont pas été détecté. Enfin,
+les organismes de quarantaine Coniferiporia sulphurascens et C. weirii qui ont la même niche
+écologique ont été recherchés sur 29 sites mais non détectés. Cette étude fournit des pistes pour
+améliorer le diagnostic lors de la veille sanitaire et lors d’enquêtes à large amplitude sur la présence et
+l’impact du fomès.
+
+
+
+
+ARMIPISTAGE : DÉTÉCTION ET SUIVI DES MORTALITÉS
+  ASSOCIÉES AUX ARMILLAIRES EN FORÊT DE RÉSINEUX (2022-
+     2025)
+Projet porté par Anses, Laboratoire de santé des végétaux, Unité de Mycologie, Malzéville et par
+INRAE, UMR Biodiversité, Gènes et Ecosystèmes, Bordeaux
+
+
+Les pourridiés racinaires des genres Armillaria et Desarmillaria affectent de nombreuses cultures
+agronomiques et essences forestières dans le monde entier. En Europe, sept espèces ont été décrites :
+Armillaria mellea, A. ostoyae, A. gallica, A. borealis, A. cepistipes, Desarmillaria ectypa et D. tabescens.
+Chez les arbres, ces espèces peuvent envahir la base du tronc (écorce et bois) ainsi que les racines.
+Les échantillons dégradés peuvent compromettre un diagnostic fiable des espèces d’Armillaria et de
+Desarmillaria. En effet, à mesure que la maladie progresse, l’isolement du champignon peut devenir
+impossible en raison de la présence massive de champignons saprophytes et de bactéries. La réaction
+de polymérisation en chaîne (PCR) en temps réel est devenue la technique de référence pour le
+diagnostic des agents pathogènes des plantes, car elle est rapide, spécifique et peut être appliquée à
+différents types de substrats, même très dégradés.
+Cette étude visait à développer sept tests spécifiques ciblant chacune des espèces européennes
+d’Armillaria et de Desarmillaria, ainsi qu’un test générique pour les genres Armillaria/Desarmillaria. Deux
+gènes de ménage et quatre autres gènes à copie unique issus de ressources génomiques publiques
+ont été utilisés pour concevoir des oligonucléotides spécifiques à la PCR en temps réel. Pour faciliter
+l'application pratique des tests, les analyses spécifiques à chaque espèce ont été regroupées en deux
+tests multiplexes, en fonction de la fréquence d’apparition des espèces en Europe, sans compromettre
+la spécificité ni la sensibilité des tests.
+Les nouvelles méthodes de diagnostic ont été évaluées sur des échantillons environnementaux
+prélevés par le DSF et son réseau de correspondants-observateurs dans des forêts françaises
+suspectées d’infections à Armillaria/Desarmillaria. Elles ont démontré avec succès leur efficacité pour
+détecter les différentes espèces responsables de la pourriture racinaire à Armillaria. Étant donné
+que le comportement pathogène (primaires ou opportunistes) dépend de l’espèce d’armillaire et de son
+hôte, ces outils présentent un grand intérêt pour améliorer les suivis sanitaires et les diagnostics en
+forêt.
+Source : Aguayo et al. 2025. A soumettre
+
+
+
+PINIPOP : SUIVI DES POPULATIONS DE CRONARTIUM PINI DANS
+   LES LANDES (2023-2024)
+Projet porté par Anses, Laboratoire de santé des végétaux, Unité de Mycologie, Malzéville
+
+
+La rouille vésiculeuse des pins à deux aiguilles est causée par Cronartium pini, un champignon qui
+peut se présenter sous deux formes. L'une nécessite un hôte alternant pour accomplir sa
+reproduction sexuée et ainsi achever son cycle de vie (hétéroïque), tandis que l'autre est capable de se
+maintenir de manière clonale sur les pins (autoïque).
+Cette rouille est largement distribuée à travers l'Eurasie et peut provoquer des dommages
+significatifs dans les forêts naturelles et les plantations. En France, le champignon peut causer des
+dommages sporadiques et locaux dans les plantations sous certaines conditions environnementales,
+telles que la présence d’alternants sauvages à proximité des pins d'hôtes et des conditions climatiques
+particulières.
+Une épidémie récente de cette maladie a été observée sur des jeunes peuplements de pins dans la
+forêt des Landes, dans le sud-ouest de la France, avec des niveaux de prévalence atteignant jusqu'à
+80 % dans certains peuplements. Cette épidémie est apparue en même temps que la plantation d'un
+grand champ de pivoines au milieu de jeunes plantations de pins. Les pivoines étant l'un des nombreux
+hôtes alternants de C. pini, cette étude visait à déterminer si l’agent pathogène se présentait sous sa
+forme hétéroïque ou autoïque et à étudier la relation entre les populations fongiques attaquant à la
+fois les pins et les pivoines.
+Un total de 522 échantillons d’écidies sur pins et 108 échantillons d'urédies sur pivoines ont été
+génotypés en 2021 et 2022 en étudiant sept loci microsatellites. Les résultats ont montré que la forme
+hétéroïque de C. pini prédominait largement dans les populations des deux sites échantillonnés dans
+la forêt des Landes et dans les deux sites plus éloignés. De plus, les populations échantillonnées sur
+pivoines ne différaient pas génétiquement de celles échantillonnées dans les parcelles de pins les
+entourant, ce qui suggère que les pivoines participent amplement à l’accomplissement du cycle
+biologique de C. pini sur ces sites. En revanche, les populations des Landes diffèrent des populations
+des sites plus éloignés en France. Cette étude démontre que l'établissement d'hôtes naturels sous
+forme de cultures de pivoines au milieu des plantations de pins a permis au champignon de se multiplier
+sous sa forme hétéroïque, d'augmenter la pression de la maladie et, par conséquent, la gravité des
+dommages aux jeunes plants de pins. L'élimination complète des parcelles de pivoines fin 2023 devrait
+contribuer à réduire l'intensité de la maladie dans les années à venir.
+
+Source : Ioos et al. 2025. Forest Pathology, https://doi.org/10.1111/efp.70028
+TÉLÉDÉTÉCTION : SUIVI DE LA SANTÉ DES FORÊTS A L’AIDE DE
+     LA TÉLÉDÉTÉCTION DANS LE CADRE DU PROJET CIBLE MONITOR
+     DU PEPR FORESTT
+
+Le programme de recherche FORESTT sur la résilience des forêts françaises (https://www.pepr-
+forestt.org/) comporte plusieurs projets ciblés dont le projet MONITOR qui a pour objectif le
+développement d’un système agile de monitoring écologique des forêts. Un des axes du projet
+MONITOR est le développement et l’amélioration des méthodes de télédétection satellitaire de suivi
+des écosystèmes forestiers dans ses diverses composantes. Sont ainsi considérées les ressources
+ligneuses, la biodiversité et la santé des forêts pour laquelle le DSF est associé à des partenaires
+scientifiques et opérationnels dans le cadre d’une tâche spécifique.
+
+L'objectif principal de cette tâche est d'utiliser des méthodes de télédétection pour surveiller l'état
+sanitaire des forêts. Cela concerne la mortalité, les dépérissements, les incendies et les impacts
+du climat et de son changement (accidents climatiques, sécheresse…). Cette tâche va s’appuyer sur
+trois piliers : 1. Des observations de terrain pour construire les modèles et les valider ; 2. Des méthodes
+de traitement des images satellitaires et 3. Une infrastructure informatique cloud qui facilitera l’accès
+aux images et aux informations qui en découlent (exemple : indices de végétation) et qui permettra
+d’utiliser les méthodes. Cette infrastructure est rendue nécessaire du fait du volume très important des
+données (images, indices de végétation…), de la complexité des méthodes et de la production de
+résultats à l’échelle nationale.
+
+Pour la réussite du projet, la mobilisation des données de références est essentielle pour la
+calibration et la validation des modèles afin que ceux-ci soient précis et pertinents. D’une part,
+plusieurs sources de données existantes seront consolidées, améliorées et mobilisées à cette fin. Ce
+sera notamment le cas de suivis spécifiques et géolocalisés du DSF (dépérissements du châtaignier,
+des chênes à feuilles caduques, d’épicéas, etc.), des placettes fortement instrumentées du réseau
+RENECOFOR de l’ONF ainsi que des suivis de santé de forêts particulières réalisés également par
+l’ONF (chênes, sapin). D’autre part, le réseau systématique de suivi des dommages forestiers fera
+l’objet d’une opération spécifique. Tous les arbres des placettes de ce réseau (environ 550), déployé à
+travers toute la France métropolitaine, seront géoréférencés précisément afin que les observations
+sylvosanitaires de ces placettes puissent être mises en relation avec les données des images
+satellitaires et leur évolution dans le temps. 20 arbres dominants sont observés tous les ans sur ces
+placettes permanentes ce qui rend particulièrement intéressante l’opération. Cette géolocalisation sera
+réalisée au cours des années 2025 et 2026 afin que les observations des correspondants-observateurs
+du DSF puissent être exploitées rapidement au cours du projet MONITOR et même au-delà de celui-ci.
+
+Plusieurs méthodes de suivi de la santé des forêts par télédétection ont récemment été mises au point
+et seront mobilisées dans le cadre du projet. Il s’agit tout d’abord de la méthode FORDEAD pour la
+détection des anomalies de végétation à partir des séries temporelles des images Sentinel-2 ; la
+méthode FORDEAD est utilisée aujourd’hui pour le suivi des dégâts dus aux scolytes dans les
+peuplements d’épicéas. La méthode RECONFORT ensuite s’appuie sur une classification supervisée
+de séries des mêmes images Sentinel-2 pour la détection des dépérissements du chêne, du châtaignier
+et du pin. La méthode DEPCAST enfin permet elle-aussi de cartographier les dépérissements du
+châtaignier toujours à partir des images Sentinel-2. Au-delà des méthodes existantes, il est également
+prévu le développement de nouvelles. En particulier, les possibilités offertes par les méthodes
+d’intelligence artificielle comme l'apprentissage profond (‘deep learning’) seront explorées. En aval de
+ces productions, le croisement des cartographies des dépérissements et de la mortalité avec d’autres
+sources (exemple : données climatiques) et l’analyse spatio-temporelle des résultats viendront enrichir
+l’épidémiologie des problèmes sylvosanitaires. Les porteurs de ce projet ambitionnent donc de
+démontrer le fort intérêt de la télédétection pour le suivi de la santé des forêts françaises et ainsi
+améliorer leur gestion et leur résilience.
+
+Figure : géolocalisation d’une placette du réseau systématique de suivi des dommages forestiers
+ROUILLE DU PEUPLIER : SUIVI DES ESPÈCES, VIRULENCES ET
+     GROUPES GÉNÉTIQUES
+Projet porté par INRAE, UMR Interactions Arbres-Microorganismes, Nancy
+
+La rouille du peuplier est une maladie foliaire qui se développe aussi bien sur peupliers noirs
+présents en ripisylve que sur peuplier cultivé, mais c’est sur ces derniers que l’impact de la rouille
+est le plus important avec des réductions de croissance et des pertes de rendement associés. Les
+cultivars de peupliers hybrides portent le plus souvent des résistances totales (dites qualitatives) qui
+sont un moyen de lutte efficace. Hélas, le pathogène est capable d’acquérir par mutation les virulences
+lui permettant d'infecter ces cultivars. Un exemple connu est le contournement en 1994 de la résistance
+RMlp7, portée notamment par le cultivar 'Beaupré' qui a mené à des épidémies drastiques de rouilles
+quelques années plus tard. A l’inverse les peupliers noirs ne possèdent pas de résistance qualitative,
+mais ils peuvent exercer le rôle de réservoir en abritant des génotypes virulents de rouille.
+
+Afin de dresser une cartographie de ces réservoirs de virulence à l’échelle nationale et de suivre
+l’évolution des populations de rouille au cours du temps, une campagne de collecte de feuilles de
+peuplier infectées a été réalisée avec l’aide d’un grand nombre de correspondants observateurs du
+Département Santé des Forêts qui se sont mobilisés entre septembre et novembre 2024. Cette
+campagne fait suite à une campagne d’échantillonnage similaire réalisée en 2011. Sur 66 sites à
+travers la France, 100 feuilles infectées par la rouille ont été prélevées sur des peuplements de
+peuplier noir sauvage (Populus nigra) en ripisylve ou de peuplier d’Italie (P. nigra ‘Italica’).
+
+Les échantillons de rouille ont été analysés avec une méthode de PCR quantitative espèce-spécifique
+afin de cartographier la présence de trois espèces : les deux espèces indigènes Melampsora larici-
+populina et M. allii-populina et l'espèce d’origine Nord-Américaine M. medusae f. sp. deltoidae. Les deux
+espèces indigènes co-existent dans 54 des 60 sites analysés, avec M. larici-populina très majoritaire
+dans la majorité des échantillons. L’espèce introduite, M. medusae f. sp. deltoidae n'a été détectée
+sur aucun des sites, suggérant que cette espèce est très rare ou qu’elle a disparu du territoire français.
+
+Sur les isolats de M. larici-populina obtenus, le profil de virulences a été déterminé, et l'évolution récente
+du pathogène mise en lumière à l'aide de marqueurs génétiques de type microsatellites. L’apparition de
+la virulence 7 en 1994 et l’épidémie qui s’en est suivie a permis à cette virulence de se répandre à
+travers presque toute la France, y compris dans le réservoir constitué par le peuplier noir, à l’exception
+de la côte méditerranéenne. L'échantillonnage de 2011 montre que la virulence 7 était très présente
+(62% des isolats), avec une fréquence diminuant vers le sud. En 2024, la virulence 7 n’est plus
+  présente que dans 35% des isolats, ce qui pourrait être dû à un changement du paysage populicole
+  avec une diversification des cultivars qui ne portent pas la résistance 7 et la commercialisation de
+  cultivars porteurs de résistance quantitative.
+
+  Un autre objectif était l’étude des isolats de M. larici-populina appartenant à des lignées asexuées, qui
+  n’effectuent pas de reproduction sexuée sur mélèze et survivent d’année en année sans brassage
+  génétique. Ainsi, les mêmes génotypes sont trouvés sur plusieurs années. Ce groupe asexué était décrit
+  à partir de données collectées en 2009 par l'INRAE (Xhaard et al., 2011) et représentait alors 17.8%
+  des isolats. En 2024 le groupe asexué représente 25.7% des isolats, et est surtout répandu dans le
+  Sud. Cette variation du cycle biologique de M. larici-populina reste une énigme, mais il semble probable
+  que des hivers doux au sud de la France, qui sont de plus en plus fréquents, permettent aux
+  urédospores de se maintenir sur des feuilles de peuplier jusqu'au début de l'année suivante, leur
+  permettant d'infecter directement de nouvelles feuilles au printemps.
+
+
+
+
+                                                                        Présence de M. larici-populina et M.
+                                                                        allii-populina en 2024 sur les 60 sites
+                                                                        analysés
+
+
+
+
+               .
+
+
+
+Proportions des isolats virulents 7 (noir) et avirulents 7 (gris) de M. larici-populina en 2011 (gauche) et en 2024
+(droite).
+

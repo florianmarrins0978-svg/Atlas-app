@@ -1,0 +1,277 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : draaf-bilan-normandie-2024
+# organisme   : DRAAF Normandie — ministère de l'Agriculture
+# titre       : Bilan de la santé des forêts en Normandie — 2024
+# url         : https://draaf.normandie.agriculture.gouv.fr/IMG/pdf/20250218-bilan_2024_normandie_version_open_v4.pdf
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+                    Bilan de la santé des forêts - Normandie
+                                                     Année 2024
+
+Faits marquants
+➔ Une pluviométrie excédentaire qui a contraint la mise en œuvre des coupes et travaux.
+➔ Des gelées fin avril touchent l’ensemble de la région. Dans les jeunes plantations, les dégâts sont
+variables mais généralement compensés par une nouvelle pousse.
+➔ Comme pressenti fin 2023, la maladie des bandes rouges sur pin laricio a été très présente. Cet été
+2024, encore humide, présage du maintien de sa forte présence pour 2025.
+➔ L’oïdium du chêne a également été favorisé, très visible en fin d’été sur les pousses d’août très atteintes.
+➔ Les dépérissements observés, suite aux années à déficits hydriques (2017 à 2020 et 2022), ne sont pas
+enrayés pour autant. Les dépérissements du sapin de l’Aigle se poursuivent alors que quelques cas sur
+douglas sont signalés sur station séchante.
+➔ De nouveaux cas de maladie de la suie de l’érable sont détectés et la chenille processionnaire du chêne
+refait parler d'elle en vallée de Seine (76, 27).
+
+
+Indicateurs de la santé des principales essences
+
+      Santé des essences                     Principaux problèmes et niveau d’impact
+
+      Chênes                                 Oïdium
+                                             Processionnaire du chêne
+
+      Chêne pédonculé                        Dépérissement
+
+      Hêtre                                  Dépérissement                                               État de santé :
+                                                                                                            Bon
+      Frêne                                  Chalarose                                                      Moyen
+                                                                                                            Médiocre
+      Châtaignier                            Chancre / Javart
+                                             Encre
+                                                                                                         Niveau d’impact
+      Erable sycomore                        Maladie de la suie
+                                                                                                         des problèmes :
+      Pin sylvestre                          Sphaeropsis                                                   Faible
+                                                                                                           Moyen
+      Pin laricio                            Processionnaire des pins                                      Fort
+                                             Maladie des bandes rouges
+
+      Douglas                                Cécidomyie
+
+      Epicea commun                          Dépérissement
+
+      Epicea de Sitka                        Puceron vert de l’epicea
+
+      Sapin pectiné                          Dépérissement
+
+
+
+
+     Toute l’information nationale sur la santé des forêts à l’adresse suivante : agriculture.gouv.fr/la-sante-des-forets
+   Document piloté par le Pôle interrégional Nord-Ouest de la santé des forêts de la DRAAF Centre-Val de Loire (SRAL)
+                    Tél. : 02 38 77 41 07 / E-mail : dsf-no.draaf-centre-val-de-loire@agriculture.gouv.fr
+                                      Essences             Problèmes observés                    2020       2021      2022     2023      2024
+Suivi des                                                  Sécheresse printanière
+principaux                            Toutes essences
+                                                           Sécheresse estivale
+
+problèmes                                                  Défoliateurs
+                                                           Processionnaire du chêne
+                                      Feuillus
+                                                           Oïdium du chêne
+   Problème absent ou
+                                                           Chalarose du frêne
+   à un niveau faible
+                                                           Maladie de la suie Erable
+   Problème nettement
+                                                           Encre du châtaignier
+   présent, impact modéré
+                                                           Scolytes
+   Problème très présent,             Résineux
+   impact fort                                             Maladie des bandes rouges                                                     P.L.
+                                                                                                                                         Corse
+
+
+
+
+Événements climatiques
+
+                     Hiver 2023-2024               Printemps 2024                        Été 2024                    Automne 2024
+                         (Déc. Jan. Fév.)               (Mars Avr. Mai)               (Juin Juil. Août)               (Sept. Oct. Nov.)
+
+                        Exceptionnellement                                          Fraîches jusqu'au 20             Fraîches en septembre
+                              douces              Douces ponctuellement
+                                                                                           juillet                     Moyenne Maxi –1°C
+                     Moyenne +1.5°C à + 3°C              chaudes
+                                                                                    Déficit jusqu'à -3°C             Excédentaire jusqu'au
+                     Froides du 6 au 21 janvier      Moyenne + 1,5°C
+                                                                                   Excédentaire en août                   19 novembre
+Températures                  (-11°C)             Gelées 21-23 avril (-2°C)
+                                                                                   +1,5°C (37°C à Rouen)             Moyenne +0.5°C à 1°C
+
+                            Contrastée :
+                                                  Excédentaire sur l’Est de       Très contrastée (orages)          Excédentaire surtout en
+                    Début d’hiver déficitaire
+                                                       la Normandie              Grêle localisée (14 sud, 27, 61)    septembre +10 à 130 %
+                    Février très excédentaire
+                                                     Très excédentaire           Globalement excédentaire           Légèrement déficitaire en
+                             + 30 à 80 %
+                                                     partout ailleurs et           Forte humidité des sols                 novembre.
+                     8 j. cumulés de neige en
+                                                      orageux en mai             jusqu'en juin surtout dans          Épisode de neige le 21
+Pluviométrie          janvier, 2 à 10 cm, sauf
+                                                                                            27 et 61                       novembre
+                        50, Bessin et Sud 61
+
+                         Quelques coups de                                                                              Vents modérés
+                                                                                       Vents modérés
+                           vent autour de                                                                             Vent fort associé à la
+                                                         Vents modérés               Bourrasques locales
+                          100km/h dans les                                                                                  neige du
+                                                                                          (orages)
+                              terres                                                                                     21 novembre
+Vent
+
+                            Excédentaire                                                                            Déficitaire en septembre
+                                                         Déficitaire                Excédentaire en juin
+                        en janvier + 30 à 50 %                                                                           de - 15 à – 40 %
+                                                    en avril-mai Jusqu’à –               et août,
+                        Déficitaire en février-                                                                     Plus généreux sur le nord-
+                                                             25 %                   Déficitaire en juillet
+Ensoleillement                   50 %                                                                                   ouest en octobre
+
+
+
+
+                                                    Gel sur plantations                                                Forts cumuls d’eau
+                         Sols gorgés d’eau                                           Oïdium sur chêne
+                                                   Plantations reportées                                                   pénalisant
+                        entravant coupes et                                          Fructification très
+                                                    pour cause d’excès                                                     les travaux.
+                              travaux                                                   hétérogène
+Conséquences                                               d’eau                                                          Neige lourde
+
+sur la forêt
+
+BILAN
+                     Les précipitations élevées ont été favorables à la végétation mais ont aussi permis le
+                     développement de champignons pathogènes. Les travaux d’exploitation ou de
+                     préparation de sols avant plantation ont été fortement perturbés cette année par
+                     l’humidité des sols. Des gelées fin avril touchent l’ensemble de la région avec des
+                     dégâts variables dans les jeunes plantations.
+ Notations des plantations de l’année 2023-2024
+ 34 plantations observées au printemps et à l'automne dont principalement :
+ Chêne rouvre (10), Douglas (7), Chêne pubescent (4), Chêne rouge (2), Mélèze hybride (2).
+ Principaux problèmes observés :
+ • Dégâts dû au gel de printemps : l’intensité des dégâts varie en fonction du stade de
+ débourrement fin avril. Les essences plus touchées ont été le chêne pubescent, chêne rouvre
+ et le châtaignier.
+ • Oïdium du chêne sur 25 à 100 % des plants (chênes rouvre et pubescent).
+ • Dégâts d'hylobe ponctuels surtout à l'automne, de 25 à 80 % des plants atteints (douglas,
+ épicéa de Sitka, pin maritime).                                                               Dégât de gel
+ • Engorgement : quelques plantations de chêne rouvre et douglas                              sur chêne (76)
+ • Concurrence adventices : la végétation concurrente a ponctuellement impacté le développement des plants.
+
+
+ Bilan des observations du réseau systématique (2015-2024)
+  Depuis 2005, un suivi systématique de l’état sanitaire des arbres est réalisé sur le territoire européen selon une
+ maille de 16x16 km. Sur l’ensemble de la Normandie, sont ainsi notés chaque année, sur des placettes fixes, 286
+ arbres représentant près de 16 essences, selon différents paramètres (déficit foliaire, mortalité de branches,...).
+ Sur la période de 2015 à 2024, les trois essences principales chêne sessile (87 arbres observés par an) , chêne
+ pédonculé (73 arbres), hêtre (25 arbres) ont donné lieu aux observations suivantes.
+
+
+
+
+ NB: Ces chiffres sont à relativiser par la taille réduite de l’échantillon notamment pour le hêtre et le vieillissement des arbres du réseau.
+ Ils ne représentent que l’évolution sanitaire en dynamique des arbres de ce réseau et non l’évolution moyenne globale de l’essence concernée.
+
+ Sur la dernière décennie (2015 à 2024), la Normandie, comme une bonne partie de la France, a été touchée par
+ de très fortes périodes de sécheresse notamment estivales sur 2015, 2018, 2020 et 2022. Les trois dernières se
+ révèlent être parmi les 5 années les plus stressantes du point de vue de la disponibilité en eau depuis 1959.
+ De manière générale, l’enchaînement rapproché et cumulé de ces événements stressants ont pu alors
+ fortement affaiblir les arbres et influer sur les paramètres observés notamment le déficit foliaire qui a
+ globalement doublé sur cette période et la mortalité de branches, en fort accroissement depuis 2021
+ notamment pour le hêtre. Les années de répit, 2023 et 2024, plus favorables à la végétation, n’ont donc pas pu
+ être profitables de manière encore visible aux arbres. Un décalage de plusieurs années entre le ou les
+ événements stressants et la réaction de l’arbre peut être observé.
+
+ Fortes attaques d’Oïdium sur chênes
+L’oïdium est un pathogène exotique introduit au début du XXe siècle, probablement originaire d'Asie.
+Maladie forestière très commune, sa sévérité est très variable selon les années. Les gelées tardives, le printemps et
+l’été humides sont autant de facteurs météorologiques qui ont été très favorables à son développement en 2024.
+Il s’agit en fait d’un complexe de plusieurs espèces de champignons qui s’alimentent des tissus vivants et hivernent
+principalement dans les bourgeons de la pousse d’août. La maladie provoque un feutrage blanc sur les feuilles qui
+se nécrosent et tombent prématurément. Il impacte la photosynthèse, la croissance de l’arbre et potentiellement
+la mise en réserve. Agent de mortalité des jeunes semis, il peut également influer sur la santé des chênes adultes
+lorsqu’il intervient intensément après une défoliation occasionnée par des insectes ou des gelées. Les chênes
+pédonculés, pubescents et tauzins sont les plus sensibles.
+Cette année les pousses d’août ont été fortement colonisées, ce qui pourra occasionner des mortalités de
+rameaux, voire causer des déformations apicales sur les jeunes arbres. La croissance en hauteur des régénérations
+naturelles est impactée. Les conséquences de ces fortes attaques seront mieux évaluées en 2025.
+Les brèves
+➔ La maladie des bandes rouges, normalement observée au printemps, fut présente sur les pins Laricio dès
+   l’hiver 2023/2024 avec des défoliations sur les peuplements de 25 % à 75 %.
+➔ Cécidomyie : la mouche défoliatrice du douglas a été observée en FD de Brotonne et de La Londe/Rouvray sur
+   plantations de moins de 10 ans. Elle a colonisé toute la Seine-Maritime et progresse vers le Sud de l'Eure
+   (Conches). A part un cas dans le 14, elle n'est pas détectée à ce jour en Basse-Normandie.
+➔ Phytophthora ramorum sur mélèze : Cet organisme de quarantaine fait toujours l'objet de surveillance ; toutes
+   les analyses d'échantillons en 2024 se sont avérées négatives. Des jaunissements d'aiguilles, observés en
+   début d'été, ont été imputés à différents champignons foliaires secondaires favorisés par le printemps
+   humide et doux.
+➔ Punaise réticulée du chêne : Espèce invasive originaire d'Amérique
+   détectée dans le Sud-Ouest en 2017 puis dans la vallée du Rhône
+   et en Bourgogne-Franche-Comté en 2024, le long des axes de
+   circulation. Elle Provoque des jaunissements et la chute
+   prématurée des feuilles (pontes et consommations). Facteur
+   potentiel d'affaiblissement en cas de pullulation. Les
+   prospections normandes en 2024 sont négatives.
+                                                                                                                Punaise réticulée
+
+➔ Des vols de hannetons communs ont été observés en FD de Brotonne mi-avril, soit un mois plus tôt
+   qu’habituellement. Les adultes consomment le feuillage des chênes et se reproduisent. Cette
+   consommation a peu d’impact sur les peuplements, sauf si d’autres facteurs viennent s’ajouter à ce
+   problème.
+➔ Processionnaire du chêne : Après 2 ans d'accalmie (2022 et 2023), retour de signalements ponctuels à l'Est de
+   Rouen (76) et vallée de l'Andelle (27 et 76). Sur le reste de la Normandie le niveau de population reste très
+   faible.
+➔ Dépérissement de douglas adultes : quelques cas signalés dans le 14 et le 27 sur sol caillouteux ou zone à
+   pluviométrie inférieure à 700 mm. Ces peuplements d'une quarantaine d'années, de croissance normale
+   jusqu'ici, s'avèrent en limite de station lors d'épisodes secs. Aucun parasite ou pathogène n'a été détecté
+   mais seul un dessèchement des arbres, s'accompagnant parfois de nécroses cambiales, a été observé.
+
+
+Vos interlocuteurs en 2025
+           Forêts privées                                                                                          Forêts publiques
+                                                                                                                   Eure
+Eure                                  Orne                                  Calvados, Manche ;
+                                                                                                                   TOURNEBOEUF Olivier
+BUTTENAERE Christophe                 GOMANT Jean-Sebastien                 JOSEPH Cristel
+                                                                                                                   olivier.tourneboeuf@onf.fr
+christophe.buttenaere@cnpf.fr         jean-sebastien.gomant@orne.gouv.fr    cristel.joseph@cnpf.fr
+                                                                                                                   06.23.97.73.10
+06.07.97.21.25                        06.82.56.69.72                        06.07.97.21.57
+                                                                                                                   Seine-Maritime
+                                      LACOSTE Béatrice                      Normandie                              RIQUIER Christophe
+Seine-Maritime
+                                      beatrice.lacoste@cnpf.fr              ANGOT Lysiane                          christophe.riquier@onf.fr
+RETOUT Cyril
+                                      06.07.97.21.19                        lysiane.angot@agriculture.gouv.fr      06.24.98.06.82
+cyril.retout@cnpf.fr
+                                                                            07.62.46.39.79                         Calvados, Manche, Orne
+06.79.45.33.40
+                                                                                                                   BOURRE Matthieu
+                                                                                                                   Matthieu.bourre@onf.fr
+                                                                                                                   06.19.45.24.93
+
+
+
+         Le présent document est le fruit des observations des correspondants-observateurs, qui détectent, diagnostiquent et surveillent
+         les problèmes sylvosanitaires et les écosystèmes forestiers. Ils appartiennent aux administrations et organismes forestiers et sont
+         sous le pilotage du Pôle interrégional Nord-Ouest de la Santé des Forêts.
+         ➔ En savoir plus sur les correspondants-observateurs
+                                                                                                                                  ephytia.inra.fr
+
+Le Département de la Santé des Forêts (DSF) édite un bilan technique annuel des actualités phytosanitaires marquantes de la région.
+Consultez sur le lien suivant : agriculture.gouv.fr/suivi-de-la-sante-des-forets
+
+       Toute l’information nationale sur la santé des forêts à l’adresse suivante : agriculture.gouv.fr/la-sante-des-forets
+     Document piloté par le Pôle interrégional Nord-Ouest de la santé des forêts de la DRAAF Centre-Val de Loire (SRAL)
+                      Tél. : 02 38 77 41 07 / E-mail : dsf-no.draaf-centre-val-de-loire@agriculture.gouv.fr
+

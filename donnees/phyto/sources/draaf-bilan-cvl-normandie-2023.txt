@@ -1,0 +1,259 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : draaf-bilan-cvl-normandie-2023
+# organisme   : DRAAF Centre-Val de Loire — ministère de l'Agriculture
+# titre       : Bilan phytosanitaire — 2023
+# url         : https://draaf.centre-val-de-loire.agriculture.gouv.fr/IMG/pdf/bilan_phytosanitaire_normandie_2023.pdf
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+                            Bilan de la santé des forêts
+                                    Normandie
+                                      - 2023 -                                                                     Département de la
+                                                                                                                     santé des forêts
+
+
+     Faits marquants
+       • Une année sans déficit hydrique mais avec des températures supérieures aux normales et des chaleurs records en
+       automne (voir bilan météo page 2).
+
+       • Notation de l’état de santé des hêtraies dans les forêts domaniales de Seine-Maritime et de l’Eure. 30% des placettes
+       inventoriées présentent des signes de dépérissement (voir article page 3).
+
+       • Premier signalement en Normandie de cécidomyie sur douglas (voir article page 3).
+
+       • Evolution des signalements de dépérissement sur châtaignier, l’encre du châtaignier est la principale cause incriminée
+       (voir brèves page 4).
+
+       • Observations de différentes manifestations de pathogènes, ravageurs et réactions physiologiques des arbres, en
+       réponse à la sècheresse estivale de 2022 (voir brèves page 4).
+
+
+
+
+     Indicateurs de la santé des principales essences
+
+                                                                                                  Principaux problèmes
+                                                              Santé des essences
+                                                                                                    et niveau d’impact
+                                                                                                Oïdium
+                                                          Chêne rouvre ou sessile
+                                                                                                Processionnaire du chêne
+                                                                                                Oïdium
+                                                          Chêne pédonculé                      Processionnaire du chêne
+                                                                                                Dépérissement
+                                                                                                Orcheste du hêtre
+                                                          Hêtre
+                                                                                                Dépérissement
+                                                          Frêne                                Chalarose
+                                                                                                Cynips, chancre
+                                                          Châtaignier
+                                                                                                Encre
+                                                          Pin sylvestre                        Sphaeropsis
+                                                                                                Processionnaire du pin
+                                                          Pin laricio
+                                                                                                Maladie des bandes rouges
+                                                                                                Rouille suisse
+                                                          Douglas
+                                                                                                Cécidomyie
+                                                          Epicéa commun                        Dépérissement
+                                                          Epicéa de Sitka                      Puceron vert de l’épicéa
+                                                          Mélèzes                              Chancre
+                                                         Etat de santé :  = bon ;  = moyen ;  = médiocre
+                                                         Niveau d’impact des problèmes :  = faible ; = moyen ; = fort
+
+
+
+       Toute l’information nationale sur la santé des forêts à l’adresse suivante : http://agriculture.gouv.fr/la-sante-des-forets
+                      Document piloté par le Pôle interrégional Nord-Ouest de la santé des forêts de la DRAAF
+Site de Rouen Tél. : 02.32.18.94.56 - Site d’Orléans Tél : 02.38.77.41.07 - E-mail : dsf-no.draaf-centre-val-de-loire@agriculture.gouv.fr
+Suivi des principaux problèmes
+                                                      2019       2020       2021       2022         2023
+                    Sécheresse printanière
+Toutes essences
+                    Sécheresse estivale
+                    Défoliateurs
+                                                                                                                 Problème absent ou à un
+                    Processionnaire du chêne                                                                     niveau faible
+                    Oïdium du chêne                                                                              Problème nettement
+Feuillus                                                                                                         présent, impact modéré
+                    Chalarose du frêne                                                                           Problème très présent,
+                    Problèmes du châtaignier                                                                     impact fort
+
+                    Scolytes des résineux
+                    Maladie des bandes rouges
+Résineux
+                    Dendroctone
+
+
+
+Evénements climatiques de 2023
+                     Hiver 2022-2023             Printemps 2023                     Eté 2023                    Automne 2023
+                     (Déc. Jan. Fév.)            (Mars Avr. Mai)                (Juin Juil. Août)              (Sept. Oct. Nov.)
+                         Fluctuantes                Légèrement                      Au-dessus               Au-dessus des normales
+                       Moyenne + 0,5°C               au-dessus                    des normales                      + 3 à 5°C
+   Températures     Alternance douceur et          des normales             sauf période plus fraiche          Records de chaleur
+                   gelées fin janvier/début      Maxi + 1°C Perche                 du 19 juillet               jusqu’à mi-octobre
+                            février             Gelées locales 16 mai              au 10 août                36°C à Rouen le 9 sept.
+
+                                                      Normale                                               Forts contrastes locaux
+                          Déficitaire                                           Très excédentaire
+                                                   à excédentaire                                           Rapport à la normale va-
+                      surtout en février                                       + 50% en moyenne
+   Pluviométrie                                    + 30 à 40% sur                                            riant de - 25% à + 70%
+                   - 50% du Perche au Sud                                   Plusieurs épisodes pluvio-
+                                                Manche et Seine-M.                                                Excédentaire
+                           de l’Eure                                                 orageux
+                                               puis déficitaire fin mai                                           en novembre
+
+                      Episodes venteux         Episodes tempétueux en        Episodes de vents forts
+                   en décembre et janvier            mars et avril          associés aux dépressions          « Tempête Ciarán »
+       Vent
+                   Vent sec de nord-est fin   Vent sec de nord-nord-est     Orages violents (foudre)           1er et 2 novembre
+                           février                   en avril-mai                 10 au 18 juin
+
+                        Excédentaire                Excédentaire              Excédentaire en juin,
+                                                                                                                 Excédentaire
+  Ensoleillement          en février                 en avril-mai                  déficitaire
+                                                                                                               + 15% en octobre
+                         + 20 à 50 %                 + 30 à 50%                  en juillet -août
+
+                                                                                                           Allongement de la période
+                      Sol sec en février         Gel sur plantations           Oïdium sur chêne               de végétation, parfois
+   Conséquences
+                         facilitant les       Feuillages «brûlés » par le     Saison de végétation          3ème pousse sur feuillus
+    sur la forêt
+                      travaux forestiers              vent d’est                   profitable              Maladie des bandes rouges
+                                                                                                                    précoce
+
+
+
+
+Passage de la tempête Ciarán
+Dans la nuit du 1er novembre et la matinée du 2 novembre 2023, les rafales
+atteignent 167 km/h sur la côte de Barneville-Carteret (50), 179 km/h à Fécamp
+(76) et jusqu’à 145 km/h dans les terres en Centre Manche.
+Des dégâts importants sont à déplorer dans les massifs forestiers du Sud Cotentin.
+Les peuplements d’épicéas, de châtaigniers et de pins ont été les plus durement
+touchés, plusieurs dizaines d’hectares devront être reconstitués.
+Les chênes encore en feuilles ont subi des chablis épars et d’importants bris de
+branches.
+                                                      Légende des dégâts :
+                                                       Fort Moyen Diffus
+Etat sanitaire du hêtre
+ Depuis 2020, des hêtres à l’état de santé dégradé
+ sont observés sur toute la région. La succession
+ d’années sèches, depuis 2018, couplée
+ localement, depuis 2015, à des défoliations
+ répétées du charançon sauteur ou orcheste du
+ hêtre sont les principales causes incriminées. En
+ 2023, les attaques d’orcheste sont globalement de
+ moindre intensité mais les signes de
+ dépérissements du hêtre se confirment. Ils sont
+ caractérisés par des déficits foliaires, des
+ fructifications anormalement abondantes, jusqu’à
+ de fortes dégradations de houppier.
+ A l’image de l’enquête DEPERIS réalisée en 2021
+ dans les Forêts Domaniales (FD) de l’Orne et du
+ Calvados-Manche (voir le bilan de la santé des forêts 2021), ce protocole a été mis en place en mars 2023, pour les
+ FD de l’Eure et de la Seine-Maritime, dans des peuplements en amélioration constitués à plus de 70% de hêtre.
+ La notation portait sur 5100 hêtres, répartis sur 255 placettes aléatoires de 20 arbres supérieurs à 25 cm de
+ diamètre. La mortalité de branche et le manque de ramification ont été appréciés sur chaque arbre pour attribuer
+ une note DEPERIS ; les notes vont de A à F (voir fiche de notation DEPERIS hêtre hiver).
+ Les résultats par arbre (5100) confirment un état sanitaire affecté de l’essence :
+ 33 % sont sains (notes A et B), 48 % ont un état moyen (note C) et 19 % sont dépérissants (notes D, E et F).
+ Les résultats à l’échelle de la placette (255) mettent en avant la répartition éparse des hêtres dépérissants :
+ * 7 % ont des peuplements dépérissants (notes D, E, F > 50 %)
+ * 23 % ont des peuplements avec des signes de dépérissement (20% < notes D, E, F < 50 %)
+ * 70 % des placettes ont des peuplements considérés sains (notes D, E, F < 20 %).
+ Excepté le massif d’Eawy, où plus de 50 % des placettes présentent des signes de dépérissements, la majorité des
+ massifs est dans un état sanitaire convenable. Des analyses complémentaires sont en cours sur Eawy. Ces
+ observations serviront de point de référence pour apprécier l’évolution lors de prochaines notations.
+
+
+Premiers signalements de la cécidomyie du douglas
+ La cécidomyie des aiguilles du douglas (Contarinia sp.) est une petite mouche (insecte diptère) originaire d’Amérique
+ du Nord. Détectée en Belgique en 2015, elle a ensuite été signalée dans le Grand-Est, en Bourgogne et dans les
+ Hauts-de-France. Elle a été découverte en 2023 en Normandie dans le secteur de Lyons-la-Forêt (27), puis à l’Est de
+ l’axe Rouen-Dieppe (76), ainsi que dans le secteur d’Elbeuf et de Bourgtheroulde (27).
+                                                                           Photo : C. Retout - CNPF
+
+
+
+
+ Les adultes pondent lors du débourrement des bourgeons et les larves pénètrent ensuite dans les aiguilles de
+ l’année. Les symptômes sont la présence de galles, souvent à la base des aiguilles, occasionnant leur courbure ainsi
+ qu’une coloration jaunâtre ou brun-violacé. La conséquence est une chute prématurée des aiguilles d’intensité
+ variable, avec une baisse de la croissance des plants. A noter que la pousse d’août n’est pas impactée.
+ Les premières observations en France montrent qu’aucune mortalité d’arbres adultes ou de jeunes plants n’a été
+ attribuée jusqu’à présent à la cécidomyie du douglas. Un suivi spécifique sur cette problématique est en cours,
+ notamment dans l’Aisne, dans le but d’évaluer l’impact de l’insecte sur la croissance et la vitalité des douglas.
+ Aucune lutte n’est possible sur une population installée et la diversification des essences à l’échelle d’un massif
+ forestier est la seule réponse de long terme.
+     Les brèves
+                                                  Dépérissements de châtaignier : Depuis 2019, les signalements sur châtaignier sont
+        Signalements DSF d’encre du
+        châtaignier en Normandie de               réguliers et placent cette essence en état sanitaire moyen à l’échelle de la Normandie.
+                2019 à 2023                       En 2023, de nouveaux cas d’encre du châtaignier sont signalés dans différentes forêts
+                                                  normandes. Il est à noter une augmentation de la sévérité, avec certains cas présentant
+                                                  un taux de mortalité de 30 à 70 % sur des surfaces significatives (20 ha et plus).
+                                                  Rappelons que les hivers doux et humides sont propices aux développement de l’encre
+                                                  du châtaignier ; les exploitations doivent strictement s’effectuer sur sol ressuyé, pour
+                                                  éviter les tassements.
+                                                  Collybie à pied en fuseau : Ce champignon, agent de dégradation du système
+                                                  racinaire, a fait l’objet de 2 signalements dans l’Eure sur chêne sessile et châtaignier,
+                                                  hôtes réputés moins sensibles que le chêne rouge et le chêne pédonculé. La collybie est
+                                                  un parasite primaire qui affectionne les sols filtrants, dont le développement est
+                                                  favorisé par les épisodes de stress hydrique. A signaler que le chêne rouge est
+                                                  particulièrement sensible et ne doit ne pas être implanté sur des sols trop secs en été.
+    Maladie de la suie sur érable sycomore : De nouveaux cas sont signalés en Seine-Maritime. Plus largement, l'unité de pathologie de
+    l'INRAE à Nancy démarre des travaux de recherche importants sur le champignon pathogène responsable de cette maladie, dans
+    l'objectif de mieux comprendre sa biologie.
+    Production anormale de samares sur les charmes, constatée un peu partout en Normandie. Les charmes recouverts de fruits au
+    détriment des feuilles, ont bruni rapidement dès la fin août.
+    Pissode du pin / Bupreste bleu : Les pins laricio, sylvestre et maritime de notre région présentent cette année des attaques de
+    pissodes ou de buprestes bleus de manière sporadique. Ces coléoptères creusent des galeries entre l’écorce et le bois des arbres en
+    état de faiblesse et provoquent la mort de l’arbre. Le bupreste est une espèce méridionale qui progresse vers le nord à la faveur de
+    l’évolution du climat. Les causes d’affaiblissement des arbres à l’origine des attaques par ces insectes sont les stress hydriques et les
+    fortes chaleurs estivales pour le pin sylvestre, les dégâts de grêle pour le pin laricio. Le cas sur pin maritime semble lié à un mauvais
+    développement racinaire. Ce phénomène est ponctuel mais l’évolution est à surveiller.
+    Mortalités de sapin pectiné et sapin de Vancouver (grandis) : Les dépérissements de sapins signalés notamment sur pectiné en
+    2020 se sont accentués, en particulier sur le secteur de l’Aigle et en FD d’Ecouves (61). Quelques cas dans le Calvados sont
+    également signalés. La FD d’Ecouves, comptant 15% de sapin pectiné, fera l’objet d’analyses complémentaires.
+    Les épicéas de Sitka fortement impactés en 2022 par les attaques de puceron vert, ont récupéré un houppier fonctionnel.
+
+
+
+
+     Vos interlocuteurs en 2024
+                                                                           Cette contribution est le fruit des observations des
+                                                                           correspondants-observateurs de Normandie. Appartenant
+                                                                           aux administrations et organismes forestiers et sous le
+                                                                           pilotage du Pôle interrégional Nord-Ouest de la Santé des
+                                                                           Forêts, ils ont pour principales missions la détection et le
+                                                                           diagnostic des problèmes phytosanitaires, le conseil à
+                                                                           l’intervention et la surveillance des écosystèmes forestiers.
+
+                                                                           Les observations sont organisées pour partie à l’initiative des
+                                                                           correspondants-observateurs lors de leur travail quotidien
+                                                                           ou suite à des sollicitations de gestionnaires et pour autre
+                                                                           partie dans le cadre de protocoles organisés pour les plus
+                                                                           importants problèmes à l’échelle nationale. L’ensemble des
+                                                                           observations est compilé dans un système d’information
+                                                                           aujourd’hui riche de 35 années de données sylvosanitaires.
+
+                         Forêts publiques   Forêts privées
+
+
+
+
+      Toute l’information nationale sur la santé des forêts à l’adresse suivante : http://agriculture.gouv.fr/la-sante-des-forets
+
+                      Document piloté par le Pôle interrégional Nord-Ouest de la santé des forêts de la DRAAF
+Site de Rouen Tél. : 02.32.18.94.56 - Site d’Orléans Tél : 02.38.77.41.07 - E-mail : dsf-no.draaf-centre-val-de-loire@agriculture.gouv.fr
+

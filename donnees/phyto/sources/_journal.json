@@ -1,0 +1,80 @@
+{
+  "recolteLe": "2026-08-20T18:21:49.030Z",
+  "journal": [
+    {
+      "code": "dsf-portail",
+      "statut": "recolte",
+      "url": "https://agriculture.gouv.fr/sante-des-forets-ressources-et-publications-0",
+      "caracteres": 25197
+    },
+    {
+      "code": "dsf-oidium-chenes",
+      "statut": "recolte",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/Oidium_des_chenes.pdf",
+      "caracteres": 5853
+    },
+    {
+      "code": "dsf-fomes-plaquette",
+      "statut": "recolte",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/Plaquette_Fomes_2013-1_cle0d148e.pdf",
+      "caracteres": 19473
+    },
+    {
+      "code": "dsf-lettre",
+      "statut": "recolte",
+      "url": "https://agriculture.gouv.fr/telecharger/151462",
+      "caracteres": 48208
+    },
+    {
+      "code": "dsf-bilan-sud-est",
+      "statut": "recolte",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/2-_Rhone_Alpes-PACA-_Languedoc_Roussilon_cle0eb88a.pdf",
+      "caracteres": 77869
+    },
+    {
+      "code": "dsf-bilan-idf",
+      "statut": "recolte",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/Ile_de_France_4Pages_2013_cle0b9899.pdf",
+      "caracteres": 15040
+    },
+    {
+      "code": "draaf-bilan-normandie-2024",
+      "statut": "recolte",
+      "url": "https://draaf.normandie.agriculture.gouv.fr/IMG/pdf/20250218-bilan_2024_normandie_version_open_v4.pdf",
+      "caracteres": 19945
+    },
+    {
+      "code": "draaf-bilan-hdf-2023",
+      "statut": "recolte",
+      "url": "https://draaf.hauts-de-france.agriculture.gouv.fr/IMG/pdf/20230110-bilan_phytosanitaire_hdf_2023_v7-3.pdf",
+      "caracteres": 21110
+    },
+    {
+      "code": "draaf-bilan-cvl-normandie-2023",
+      "statut": "recolte",
+      "url": "https://draaf.centre-val-de-loire.agriculture.gouv.fr/IMG/pdf/bilan_phytosanitaire_normandie_2023.pdf",
+      "caracteres": 19794
+    },
+    {
+      "code": "draaf-bilan-ardeche-2019",
+      "statut": "recolte",
+      "url": "https://draaf.auvergne-rhone-alpes.agriculture.gouv.fr/IMG/pdf/Bilan_Ardeche_DSF_2019_cle0d1685.pdf",
+      "caracteres": 13772
+    },
+    {
+      "code": "draaf-processionnaire-pin",
+      "statut": "extraction_vide",
+      "url": "https://draaf.auvergne-rhone-alpes.agriculture.gouv.fr/La-chenille-processionnaire-du-pin"
+    },
+    {
+      "code": "inrae-ephytia-forets",
+      "statut": "ecarte_licence",
+      "url": "http://ephytia.inra.fr/fr/C/19061/Forets-Oidium-du-chene"
+    },
+    {
+      "code": "cnpf-bilan-bretagne-pdl-2021",
+      "statut": "ecarte_licence",
+      "url": "https://bretagne-paysdelaloire.cnpf.fr/sites/bretagne-paysdelaloire/files/2022-02/Bilan%20phytosanitaire%20Pays%20de%20Loire%202021_VF.pdf"
+    }
+  ]
+}

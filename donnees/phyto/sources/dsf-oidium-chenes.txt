@@ -1,0 +1,91 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : dsf-oidium-chenes
+# organisme   : Département de la santé des forêts — ministère de l'Agriculture
+# titre       : Oïdium des chênes : une maladie, plusieurs agents pathogènes
+# url         : https://agriculture.gouv.fr/sites/default/files/documents/pdf/Oidium_des_chenes.pdf
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+                             Oïdium des chênes:
+                    une maladie, plusieurs agents pathogènes
+                            M.-L. Desprez-Loustau, A. Mougou, N. Feau et C. Dutech
+
+
+¾ Histoire de la maladie en Europe
+Avant 1907: observations très sporadiques de symptômes d’oïdium sur
+chênes; description par Mérat (1847) de Erysiphe quercus attribué depuis à
+Phyllactinia sp.
+1907: premières observations de foyers épidémiques en Europe (France)                                            Formes sexuées de
+1911: première observation de la forme sexuée dans le Gard → description                                         type Microsphaera
+de Microsphaera alphitoïdes (renommée Erysiphe alphitoides)
+1908 – 1930: forte extension et dégâts importants; controverse sur l’origine
+et la taxinomie du champignon
+1950-1970: description en Europe du Nord d’une nouvelle espèce,
+Microsphaera hypophylla (= Erysiphe hypophylla)
+Depuis : une maladie chronique avec des pics épidémiques ; problèmes en
+régénération et dépérissements; principalement attribuée à E. alphitoides                                        Formes sexuées de
+                                                                                                                 type Phyllactinia
+
+¾ Identification de différentes espèces par l’ITS
+                                           Le développement récent d’outils moléculaires permet de disposer de nouveaux
+                    Noyau
+                               Génome
+                              Chromosome
+                           (Chromosomes)   caractères pour la distinction des espèces, plus résolutifs et plus faciles à utiliser
+                     Noyau
+                                           que les caractères morphologiques, en particulier pour les organismes
+                                           microscopiques.
+                                           Chez les champignons, la région du génome la plus utilisée est l’ITS (= Internal
+                                           Transcribed Spacer). Schématiquement, à chaque séquence différente d’ITS
+          Cellule
+                                           correspond une espèce.
+                                                                                                 Nous avons utilisé cette
+                                                                                                 approche pour éclaircir la
+                                               Espèces              Séquences ITS
+                                                                                                 taxinomie de l’oïdium des
+ ADN (région ITS)
+                                               E. alphitoides TTTTCTACTTCGCGTC…                  chênes en Europe. Nous
+                                                                                                 avons trouvé 4 séquences
+                                               E. quercicola* CACTTTACTCCGCGTT…
+                                                                                                 différentes, chacune d’elle
+                CATTACTGA
+                                               E. hypophylla CTTCCACTATTATACC…                   étant attribuable à une
+                                               Phyllactinia sp. CGCT- - CTAGCGGGGG…              espèce d’Erysiphe ou de
+                                                                                                 Phyllactinia distincte.
+                                             *Erysiphe quercicola, espèce décrite en Asie
+                                             (Takamatsu et al. 2007) mais pas encore identifiée en Europe
+
+
+¾ Quelle répartition en France?
+Résultats enquête DSF 2007
++ observations INRA
+                                                                                      ¾ Perspectives
+                                                                                    confirmation de la présence
+                                                                                   effective de l’espèce E. quercicola
+                                                                                   (en utilisant d’autres régions du génome
+                                                                                   que l’ITS)
+                                                                                    étude biologique des différentes
+      E. alphitoides 83%                                                           espèces:
+      E. quercicola        14%                                                      - formes de survie hivernale (enquête
+                                                                                         «drapeau »DSF en cours)
+      E. hypophylla   3%                                                            - réponse à la température, UV, etc…
+      Phyllactinia sp. 1%                                                           - pouvoir pathogène sur différentes
+                                                                                   espèces de chênes
+
+                                                                                   → différences d’épidémiologie?
+
+
+                                                                        Références
+                                                                        Mougou et al 2008 Forest Pathology 38:275-287.
+                                                                        Mougou et al 2009 Annals of Forest Science (soumis)
+                                                                        Takamatsu et al 2007 Mycol. Res. 111: 809–826.
+
+                             Santé des forêts - 20 ans d’expérience, un défi pour l’avenir
+                              10 et 11 mars 2009 - Colloque DSF à Beaune (Côte d’Or)
+

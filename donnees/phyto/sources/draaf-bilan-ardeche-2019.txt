@@ -1,0 +1,270 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : draaf-bilan-ardeche-2019
+# organisme   : DRAAF Auvergne-Rhône-Alpes — ministère de l'Agriculture
+# titre       : Bilan DSF Ardèche — 2019
+# url         : https://draaf.auvergne-rhone-alpes.agriculture.gouv.fr/IMG/pdf/Bilan_Ardeche_DSF_2019_cle0d1685.pdf
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+           Bilan de la santé des forêts
+                     Ardèche
+                     - 2019 -
+Faits marquants
+
+ Pour le département de l'Ardèche, les faits les plus marquants en 2019 sont les sui-
+ vants :
+     La présence du Bombyx disparate pour sa troisième année de pullulation dans les
+      Gorges de l'Ardèche, défoliant sur certains secteurs de vastes surfaces de chê-
+      naies.
+     L'extension des zones concernées par le dépérissement du châtaignier en pré-
+      sence d’encre. Ce phénomène s'aggrave tant en intensité qu'en surface.
+     La présence importante du Sphaeropsis du pin sur toute la partie impactée par
+      l'orage de grêle du 15 juin. A l'inverse, ce pathogène s'est fait très discret dans les
+      peuplements affectés les années précédentes.
+     Une attaque importante de la pyrale du buis au printemps, affectant les dernières
+      zones indemnes au sud du département.
+
+
+
+
+                                                            Indicateurs de la santé
+
+
+                         Etat de santé des
+                                                            Principaux problèmes
+                             essences
+                                                Sécheresse, encre, chancre du châtaignier, dépé-
+                         Châtaignier
+                                                rissements
+
+                         Frêne                  Chalarose
+
+                         Douglas                Sécheresse
+
+                         Epicéa                 Sécheresse, fomès
+
+                                                Processionnaire du pin, Sphaeropsis du pin, sé-
+                         Pins
+                                                cheresse
+
+                         Sapins                 Pissode
+
+                         Cèdres                 Sécheresse, dépérissement
+
+                         Mélèzes                Chancre du mélèze
+
+
+
+                            Etat de santé :      = bon          = moyen            = médiocre
+
+
+                                                                                                   1
+Suivi des principaux problèmes
+                                                        2015 2016 2017 2018 2019
+
+     Toutes      Sécheresse estivale
+    essences     Dégâts de gel tardif au printemps                                            Problème
+                                                                                             absent ou à
+                                                                                              un niveau
+                 Défoliateurs précoces du chêne                                                 faible
+    Feuillus     Bombyx disparate
+                 Oïdium du chêne
+                 Processionnaire du pin
+                 Typographe de l’épicéa                                                      Problème
+                                                                                             nettement
+                 Maladie des bandes rouges                                                    présent,
+    Résineux                                                                                   impact
+                 Rougissement printanier                                                      modéré
+
+                 Sphaeropsis des pins
+                 Tordeuse grise du mélèze
+                 Rouilles des peupliers
+    Peupliers                                                                               Problème très
+                 Puceron lanigère                                                              présent,
+                                                                                             impact fort
+                 Chalarose du frêne
+    Invasifs
+                 Pyrale du buis
+
+
+
+
+                                                        Evénements climatiques de 2019
+  Trois faits marquants en 2019 :
+                                                         3.     Un épisode de neige lourde, le jeudi 14
+                                                               novembre sur la moitié nord du départe-
+  1.   Une sécheresse et canicule très impor-
+       tante durant tout l’été.
+                                                         ment ainsi que sur la vallée du Rhône. Les dé-
+                                                         gâts ont été nombreux, tant sur les arbres isolés
+  Cet épisode climatique s’est fait remarquer tant       que sur les peuplements forestiers : quelques
+  par sa longévité (de début juin à mi-octobre) que      chablis et volis, mais principalement des
+  par son intensité (une température supérieure à        branches cassées sur feuillus. Les résineux ont
+  35°C durant plusieurs semaines et de nombreux          été très peu impactés.
+  jours à plus de 40°C)
+  Cette nouvelle sécheresse a provoqué un affai-
+  blissement de la plupart des essences avec des
+  effets visibles plus ou moins marqués selon
+  celles-ci.
+
+  2.    Un épisode de grêle survenu le 15 juin qui
+        a parcouru le département d’Ouest en Est,
+  du Tanargue à la vallée du Rhône en direction
+  de Romans, et ce sur une bande relativement
+  étroite. Cet épisode a provoqué des dégâts di-
+  rects (défoliations, blessures) et indirects par un
+  rougissement important des pins liés au déve-
+  loppement du Sphaeropsis des pins suite aux
+  impacts de grêle. Des douglas ont également
+  été affectés par ce pathogène mais à des de-
+  grés moindres.
+
+
+                                                                   Feuillus grêlés — Gérard TESTON
+
+
+
+
+                                                                                                             2
+Bombyx disparate : 3e année de pullulation
+                                                     pas tombés dans le catastrophisme comme il
+  Le bombyx disparate est un défoliateur des
+                                                     y a 10 ans.
+  chênes qui surgit en Ardèche tous les 10-12
+  ans, de façon très régulière.                      Si le Bombyx se comporte comme par le pas-
+                                                     sé, c’est-à-dire : une présence durant trois ans
+  L’attaque de 2005 à 2007 avait été très impor-
+                                                     avant de disparaitre pour une décennie, nous
+  tante et avait provoqué la fermeture de plu-
+                                                     ne devrions pas avoir d’attaques de bombyx
+  sieurs infrastructures touristiques.
+                                                     en 2020, ou avoir une population en forte
+  Présentes de nouveau en 2017 dans les              baisse.
+  Gorges de l’Ardèche au sens large, les popu-
+  lations de chenilles ont été toutefois moins
+  importantes que par le passé. Des pluies
+  abondantes au mois de juin 2018 avaient per-
+  mis de limiter fortement les défoliations.
+  Les chenilles ont été beaucoup plus nom-
+  breuses en 2019. Elles ont provoqué des dé-
+  gâts importants sur cette même région des
+  Gorges, mais de façon un peu irrégulière, es-
+  sentiellement concentrées dans la moitié
+  basse des Gorges.
+  Largement informés par les médias au prin-
+  temps, les élus autant que le public ne sont       Chênes verts défoliés par le bombyx — Vincent DIDIER
+
+
+
+
+                                                                  Le Sphaeropsis des pins
+  Le sphaeropsis des pins (Diplodia sapinea) est     Une exception cependant : le développement
+  un champignon endophyte présent en Ardèche         important du sphaeropsis consécutifs aux bles-
+  depuis une quinzaine d’années. Il se manifeste     sures de grêle de juin 2019 sur toute la partie
+  de façon assez régulière tous les 4 à 7 ans. Il    concernée par l’orage. Les communes les plus
+  peut devenir pathogène sur les pins stressés       touchées sont Jaujac, St Joseph des Bancs, St
+  (grêle, sécheresse...). et provoque le bleuisse-   Sauveur de Cruzières, Pranles, St Etienne de
+  ment de leur bois puis le dessèchement des par-    Serre et Gluiras.
+  ties aériennes.
+
+  La dernière vague de 2017 – 2018 a été particu-
+  lièrement importante, tant par son ampleur que
+  par son intensité, et a provoqué de nombreuses
+  coupes sanitaires dans la région du Bas-
+  Vivarais.
+
+  L’impact très fort du dépérissement, tant sur le
+  plan sylvicole que paysager, avait provoqué une
+  grande inquiétude du public et de nombreuses
+  tournées techniques au sein des différents ser-
+  vices forestiers. Les médias avaient largement
+  relayé le phénomène.
+
+  Après ces deux années difficiles, le retour à la
+  normale est constaté en 2019. Hormis quelques        Rougissement de pins suite à l’orage de grêle de juin
+  taches disséminées assez marginales, aucun                                              Gérard TESTON
+  nouveau dégât n’a été constaté malgré une sé-
+  cheresse marquante.
+
+
+
+
+                                                                                                               3
+Dépérissement du châtaignier
+ Le dépérissement des châtaigneraies a été ob-          Nous constatons aujourd’hui l’apparition d’un
+ servé de façon nette en 2015, surtout sur les          sous-bois dans les châtaigneraies mortes ou
+ versants des vallées de l'Ardèche et de la Fon-        dépérissantes, constitué de divers feuillus :
+ taulière.                                              chênes, alisiers, frênes…
+ L’étude précise du phénomène conduite en               A noter la réalisation d'un reportage de TF1, le
+ 2017 a permis de confirmer que ces dépérisse-          24 octobre sur ce sujet, avec la participation de
+ ments sont dus à l’encre du châtaignier causé          Gérard TESTON et d'Olivier BAUBET (DSF).
+ par un phytophtora.
+ Les peuplements sont également affectés par
+ le chancre du châtaignier (Cryphonectria para-
+ satica) malgré la présence importante de la
+ souche hypovirulente.
+ Les sécheresses consécutives, très sévères
+ depuis 2017, amplifient nettement le phéno-
+ mène de dépérissement. Il s’est étendu aux
+ zones périphériques en 2019, et maintient
+ l’inquiétude des CO et des gestionnaires.
+                                                           Mortalités de châtaigniers liés à l’encre — DSF
+
+
+
+                                                                                  La pyrale du buis
+ La pyrale du buis est présente en Ardèche de-          servé qu’une seule génération : celle hiver-
+ puis 2015 où les premiers dégâts dans le mi-           nante sortie tardivement, en avril et mai.
+ lieu naturel ont été constatés sur la vallée du
+                                                        Cette génération a néanmoins été très virulente
+ Rhône, notamment sur le site de Crussol à
+                                                        en investissant de façon importante les
+ Saint-Péray. Le phénomène s’est ensuite éten-
+                                                        quelques zones encore indemnes du départe-
+ du par les vallées perpendiculaires au Rhône.
+                                                        ment, notamment dans la région des gorges.
+ En 2017 et 2018, la pyrale s’est développée
+                                                        A signaler que nous avons constaté pour la
+ très largement dans le département, avec des
+                                                        première fois en 2019 des mortalités significa-
+ défoliations totales sur de vastes surfaces et
+                                                        tives sur les placettes du réseau pyrale, alors
+ couvrant peu à peu l'essentiel des buxaies du
+                                                        qu'elles n'avaient pas été touchées en 2019
+ département.
+                                                        par l'insecte. Ces mortalités sont donc liées aux
+ 2019 est une année un peu particulière pour la         attaques massives et répétées des années
+ pyrale en Ardèche puisque nous n’avons ob-             passées.
+
+
+
+
+                                                                  Vos interlocuteurs en 2020
+            vincent.didier@onf.fr             04 75 94 80 69                  Pôle Santé des Forêts
+                                                                              Auvergne-Rhône-Alpes
+            bruno.pasturel@crpf.fr            04 75 65 21 66
+                                                                     Direction Régionale de l’Alimentation, de
+                                                                             l’Agriculture et de la Forêt
+            gerard.teston@ardeche.gouv.fr     04 75 66 70 77
+                                                                        Service Régional de l’Alimentation
+                                                                                16b, rue Aimé Rudel
+                                                                                 63370 LEMPDES
+                                            Pour en découvrir                   Tél : 04.73.42.14.97
+                                            d’avantage, cliquer
+       Cliquez sur l’image                      sur le logo
+      pour retrouver toutes
+       les actualités de la                                            Document rédigé conjointement par les
+             région                                                       correspondants-observateurs du
+                                                                       département et le pôle Santé des Forêts
+                                                                              Auvergne-Rhône-Alpes
+
+
+
+                                                                                                                 4
+

@@ -1,0 +1,1112 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : dsf-bilan-sud-est
+# organisme   : Département de la santé des forêts — ministère de l'Agriculture
+# titre       : Bilan de la santé des forêts — Rhône-Alpes, PACA, Languedoc-Roussillon
+# url         : https://agriculture.gouv.fr/sites/default/files/documents/pdf/2-_Rhone_Alpes-PACA-_Languedoc_Roussilon_cle0eb88a.pdf
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+                            Pôle interrégional Sud-Est                                          Information technique N° 73
+                            de la santé des forêts                                                               Avril 2012
+ D.R.A.A.F de la
+Région P.A.C.A.
+Service Régional
+de l'Alimentation
+                                  Régions Rhône-Alpes, Provence-Alpes-Côte d'azur,
+                                                   Corse et Languedoc-Roussillon
+
+                                            BILAN DE LA SANTÉ DES FORÊTS EN 2011
+
+                                                                                   EN BREF …
+             SOMMAIRE                             Le printemps chaud et sec a fait craindre l'apparition des dégâts en forêt : chute
+                                                  précoce du feuillage, mortalités, dépérissements... Quelques plantations,
+                                                  notamment de douglas, ont souffert à la reprise mais l'été, frais et humide, a été
+- Le bilan climatique ….............. 1           plutôt favorable à la végétation forestière et... aux maladies foliaires : rouille à
+                                                  Melampsora sur peuplier, maladies des aiguilles sur conifères (épicéa commun,
+- Les problèmes liés aux                          mélèze d'Europe...).
+accidents climatiques …........... 3
+                                                  Les défoliateurs des feuillus (bombyx cul-brun et disparate, processionnaire du
+                                                  chêne...) et la processionnaire du pin sont à un niveau endémique.
+- Les problèmes des résineux.. 3                  Les scolytes des conifères (l'hylésine, le curvidenté, le dendroctone...) sont
+                                                  toujours localement présents ainsi que le pathogène Sphaeropsis sapinea sur
+- Les problèmes des feuillus .. 10                les pins.
+                                                  Sur pin maritime en Corse, le foyer de présence de la cochenille du tronc,
+- Evolution sur 10 ans de                         Matsucoccus feytaudi s'est étendu vers le nord-ouest et le sud-est.
+quelques indicateurs de la santé                  Des dépérissements localisés perdurent en zone méditerranéenne sur
+des forêts …............................. 16      différentes essences : pin sylvestre, sapin pectiné, chêne liège, hêtre...
+                                                  La présence accrue du fomès sur le douglas et du chancre sur les plantations
+- Coordonnées des                                 de mélèze d'Europe sont des sujets préoccupants les gestionnaires.
+correspondants-observateurs 17                    La propagation des organismes envahissants a également marqué cette année :
+                                                  la chalarose du frêne, détecté dans l'Ain en 2010 a progressé : la Haute-Savoie,
+- Le département de la santé des
+                                                  le Rhône et la Drôme sont touchés. Le cynips du châtaignier, qui avait fortement
+forêts ….................................... 18
+                                                  progressé en 2010, a été détecté en Languedoc- Roussillon. Le nématode du
+                                                  pin reste toujours non détecté en France.
+- Les informations techniques
+du pôle Sud-est …................... 20
+
+                                                            2011 : encore une année chaude et bien ensoleillée
+   Une nouvelle présentation                                   malgré un mois de juillet « frais » et humide*
+      pour ce bilan 2011
+                                                  Avec une anomalie de température de 1,3°C au-dessus de la normale 1971-
+ Les années précédentes, ce                       2000, 2011 se révèle sur le Sud-est l'année la plus chaude, avec 2003, depuis
+ bilan annuel était présenté par                  1900 (cf. graphique page suivante).
+ région administrative ou sous
+ forme de 2 documents : région                    Malgré un été relativement frais, cet excédent est le résultat d'un printemps et
+ Rhône-Alpes        et    région                  d'un automne exceptionnellement chauds. En effet, le printemps (+2,2°C) se
+ méditerranéenne.                                 positionne au 2ème rang les plus chauds après 2007 et l'automne (+2,3°C) au
+                                                  2ème rang les plus chauds après 2006.
+ Cette année, le bilan est
+                                                  2011 a connu un ensoleillement annuel excédentaire sur l'ensemble de
+ présenté au niveau de                            l'interrégion et bat les records depuis 1970 à Marignane, St Auban, Embrun,
+ l'interrégion Sud-est et par                     Bastia et Ajaccio.
+ essence.
+ Afin de pouvoir hiérarchiser                     Le cumul annuel de pluie se situe entre les ¾ et la normale sur une grande part
+ l'information, les problèmes                     de l'interrégion (notamment en Rhône-Alpes). Quelques secteurs sont au delà de
+ principaux font l'objet de                       la normale (150 % et plus) : de Cerbère à Durban dans le Languedoc-Roussillon,
+ graphiques, d'encarts ou de                      d'autres en deçà (moins de 75 %) : le sud de Rhône-Alpes, du Ventoux au
+ photographies.                                   Bochaine et en Corse : de la Balagne à Ajaccio.
+                                                                                 (*) : source : bilan climatique 2011 - Météo-France
+
+
+                                                                                                page 1
+                                  Ecart à la normale (1971-2000) de la température moyenne
+                                             annuelle sur le Sud-est de 1900 à 2011
+
+                                         Les principaux accidents climatiques
+
+Cette année 2011 a été marquée par :                                     - le Var a connu 3 tornades dans l'année : à Rians, le
+     - un épisode neigeux à partir de 400 mètres d'altitude              9 juillet, une autre le 4 septembre, autour de
+     sur l'est de la Corse, les 21 et 22 janvier : 90 cm                 Draguignan et une (trombe marine) le 25 octobre à
+     d'épaisseur sont observés à 900 m d'altitude,                       Sanary,
+                                                                         - Un orage de grêle, le 5 août dans les Aspres (PO)
+     - un fort épisode pluvieux du 12 au 16 mars sur le                  et une tornade le 19 octobre à Nice complètent ce
+     Languedoc-Roussillon. Les cumuls de pluie varient                   panorama des phénomènes locaux violents,
+     de 250 mm à plus de 500 mm sur le nord de
+     l'Hérault, les Cévennes notamment et 100 à 250 mm                   - un épisode de chaleurs tardives, la dernière
+     sur le reste du Languedoc-Roussillon (sauf le nord de               semaine de septembre dans le Sud-est : les
+     la Lozère),                                                         températures maximales atteignent 28°C à 31°C soit
+                                                                         5°C à 7°C au dessus de la normale (dernier épisode
+     - des orages de pluie et de grêle à la fin du mois                  similaire observé en 1985),
+     d'avril, de manière disséminée sur l'ensemble de la
+     région méditerranéenne,                                             - des orages violents au début du mois de novembre,
+                                                                         observés en Languedoc-Roussillon et PACA, qui ont
+     - des orages violents au début du mois de juin, après               provoqué de nombreuses inondations et dégâts
+     2 mois de calme anticyclonique. Du 1er au 5 juin, en                matériels et humains,
+     région PACA, ces orages, accompagnés de grêle,
+     foudre, rafales de vent, ont entraîné des dégâts             - la tempête Joachim (15 et 16 décembre) qui a
+     autour de Cavaillon et dans le Var,                          balayé le nord de la région Rhône-Alpes.
+                                              CONSÉQUENCES AU NIVEAU PHY
+                                                           TOSANITAIRE
+                               Conséquences au niveau de la végétation forestière
+Après un hiver frais et sec, la période de végétation s'est               précoce et des mortalités sur les massifs d'essences
+déroulée de manière différente entre une partie de la                     dépérissantes (chênes lièges dans les Maures,
+région méditerranéenne et le reste du sud-est.                            sapins pectinés dans les vallées des Alpes-
+                                                                          Maritimes...).
+Pour une grande partie de l'interrégion, trois périodes sont      Cette coupure est moins nette pour une autre partie de
+observées, comme pour le reste du territoire français :           l'interrégion située en zone méditerranéenne : si l'été a été
+    - une période chaude et sèche : du mois d'avril à la mi-      plus frais et pluvieux que la normale, les orages du
+    juin, cette longue période de sécheresse et de chaleur        printemps (début mars, avril, et début juin) ont permis
+    laissait craindre des dégâts en forêt (plantations de         d'aborder l'été sans déficit hydrique notable. Cette zone
+    l'année, dépérissement, pullulation de scolytes...), ce       concerne les Pyrénées-Orientales (sauf le Capcir), l'est de
+    qui a certainement été le cas pour le sapin pectiné en        l'Aude, l'Hérault, l'ouest du Gard pour le Languedoc-
+    zone méditerranéenne. Seules certaines plantations            Roussillon et pour PACA : la région autour de Castellane
+    de l'année ont souffert de manière directe (mortalité)        et de Cannes ainsi que l'ouest de la Corse.
+    de cette période de stress hydrique.
+    - une période fraîche et pluvieuse : de la mi-juin à la fin   Les pluies, de retour de manière parfois violente à la fin du
+    du mois d'août : cette période a été favorable à la           mois d'octobre et début novembre, ont permis aux sols de
+    végétation forestière et … aux pathogènes foliaires           commencer à se recharger au niveau de leur réserve
+    (rouille des peupliers, maladies foliaires des                hydrique avant l'hiver.
+    mélèzes...).
+       - une fin de saison chaude et sèche (septembre et          La tempête Joachim (15-16 décembre) a entraîné des
+       octobre), pouvant entraîner des chutes de feuillage        chablis dans le Beaujolais.
+
+                                                                                         page 2
+                        LES PROBLEMES LIES A DES ACCIDENTS CLIMATIQUES
+
+
+                   Dégâts dus à la neige                                            Dégâts dus au vent
+
+Deux secteurs ont été affectés de manière significative par      Les orages d'été en Rhône-Alpes, localement
+des dégâts de neige :                                            accompagnés de fortes rafales de vent, ont entraîné des
+                                                                 chablis sur épicéa commun, peuplier I214 et noyer
+  - La Corse : suite aux chutes de neige lourde des 21 et        commun, observés en Isère.
+  22 janvier, des bris de cimes sont observés sur la
+  plupart des essences : chêne vert, chêne liège,                Lors des orages cévenols de début novembre (du 2 au 6),
+  châtaignier, pin laricio de Corse et Pin maritime. La          les rafales de vent ont causé des chablis sur épicéa
+  Castagniccia (Haute-Corse) est la région la plus               commun, observés dans le Nord-Languedoc.
+  touchée. Lors de cet épisode, la Corse du Sud (massifs         Enfin, les rafales de vent du 15 décembre (tempête
+  d'Ospédale et de Bavella) a subi quelques dégâts               Joachim) ont entraîné quelques chablis dans le Rhône (sur
+  observés sur pin maritime,                                     douglas et sapins pectinés dans le Beaujolais).
+  - Le Nord-Languedoc (Région de la Salvetat, Hérault) :
+  les chutes des 29 et 30 janvier ont entraîné des bris et
+  chablis sur épicéa commun, douglas et hêtre.                                     Dégâts dus à la grêle
+
+                   Dégâts dus aux gels                           Quelques cas de dégâts de grêle ont été notés sur pin
+                                                                 laricio de Corse dans l'Aude (orages des 12 et 13 juillet) et
+Des dégâts de gel tardif (au mois de juin 2011 notamment)        sur châtaignier en Savoie (orage du 2 juillet).
+se traduisant par le rougissement des pousses ont été
+observés sur hêtre (Hérault et Gard), sur sapin pectiné                            Dégâts dus à la foudre
+(Lozère) et sapin de Nordmann (Alpes de Haute-
+Provence).                                                       Des symptômes de dégâts de foudre (arbres isolés ou
+Des dégâts dus au froid hivernal, accentué par le vent du        taches de mortalité) ont été observés en Corse du Sud, sur
+Nord (pousses rouges sur les pins sensibles) ont été             pins maritime et laricio de Corse, dans les Alpes de Haute-
+observées sur pin maritime dans les Pyrénées-orientales          Provence sur pin noir d'Autriche et sur douglas dans la
+et sur Pin pignon dans la vallée du Rhône (Vaucluse).            Loire et en Lozère.
+
+
+
+
+                    LES PROBLEMES SANITAIRES OBSERVES SUR LES RESINEUX
+
+
+
+                                                          LES PINS
+
+                               La chenille processionnaire du pin (hiver 2010-2011)
+
+Le niveau de population, observé au niveau des placettes         En PACA
+permanentes (nombre de nids notamment) et les                          - les Alpes-Maritimes (2), dans la vallée de la
+défoliations, notées sur des quadrats de 16 km par 16 km               Vésubie : St Martin et Lantosque.
+sont au plus bas dans le grand sud-est.
+
+Sur 273 quadrats observés, seuls 21 (soit 8 % environ)
+présentent des dégâts significatifs (lisières défoliées à plus   En Languedoc-Roussillon :
+de 50% par la chenille). Ces quadrats sont situés :                    - l'Aude (1) : Payra sur l'Hers,
+                                                                       - le Gard (1) : Alson,
+En Rhône-Alpes :                                                       - l'Hérault (3) : Fondamente, St Maurice de
+                                                                       Navacelles et Olargues,
+       - l'Ardèche (2) : Sablières et Rochemaure,                      - les Pyrénées-Orientales (6), département le plus
+       - la Drôme (2) : Montélimar et Pierrelatte,                     touché par la chenille : Amélie les Bains, Canet de
+       - la Loire (4) : St Germain-Laval, St Georges en                Roussillon, La Tour de France, Prades, St Paul de
+       Couzan, Montbrison et St Anthème.                               Fenouillet et Sournia.
+
+
+
+
+                                                                                       page 3
+                                                                                           Pourcentage de lisières défoliées
+                                                                                                 à plus de 50 % par la
+                                                                                            processionnaire du pin en 2010-
+                                                                                            2011 sur les quadrats de 16 km
+                                                                                                       par 16 km
+
+
+
+
+                                                                                                         %
+                                                                                                         %
+                                                                                                          %
+                                                                                                          %
+                                                                                                          %
+
+
+
+
+Au cours de cet hiver 2010-2011, il a été demandé aux correspondants-observateurs d'enregistrer le «niveau
+altitudinal » haut de la présence de la processionnaire du pin dans les vallées de montagne. Les observations sont
+transmises à INRA Orléans pour synthèse.
+Quelques données parmi les 20 sites : en Lozère, à 985 m sur pin sylvestre (Gabrias) ; sur le Mont-Ventoux (84) : 1
+450 m sur pin noir d'Autriche ; dans les Pyrénées-Orientales : 1 570 m., sur pin sylvestre (Estavar) ; dans les Alpes
+du Sud : 1 690 m sur pin sylvestre (06 – Ilonse) et 1 840 m sur pin à crochets (04 – Thorame).
+
+                               Le nématode des pins (Bursaphelencus xylophylus)
+
+La recherche du nématode du pin : Bursaphelencus                   Pour des compléments d'information sur le nématode
+xylophylus sur une centaine de points dans l'interrégion          du pin, notamment le bilan par régions de la campagne de
+s'est révélée négative comme sur le reste du territoire           prospection 2011, se reporter à l'information technique
+national.                                                         n° 72 du DSF Sud-Est de décembre 2011.
+
+                                            OOOOOOOOOOOOOOOOOOOOOO
+
+1 - Le pin d’Alep                                                 L'hylésine destructeur (Tomicus destruens) est toujours
+                                                                  présent localement dans les Bouches-du-Rhône, le Var, le
+L'année a été marquée par des attaques d'Haematoloma              Vaucluse et dans l'Aude, l'Hérault et les Pyrénées-
+dorsata, la ciccadelle des aiguilles des pins, très visibles le   Orientales, entrainant des mortalités disséminées.
+long de l'A7 dans la vallée du Rhône : départements du
+Vaucluse et des Bouches-du-Rhône cf. photo ci-dessous.            Un cas de pyrale du tronc (Dioryctria sylvestrella),
+                                                                  repérable à la présence de pralines de résine sur le tronc,
+                                                                  est noté dans l'Aude.
+
+                                                                  Comme en 2010, Crumenulopsis sororia, agent de la
+                                                                  maladie chancreuse du pin d'Alep a été noté dans le Var,
+                                                                  les Alpes-Maritimes (nombreux signalements dans ces
+                                                                  départements), le Vaucluse et l'Hérault où il entraîne la
+                                                                  formation de nombreux chancres sur rameaux et des
+                                                                  rougissements importants dans le bas des houppiers en
+                                                                  cas de forte présence.
+
+                                                                  Sphaeropis sapinea, pathogène des rameaux et des
+                                                                  aiguilles, est souvent détecté au laboratoire sur ces sujets
+                                                                  atteints par la maladie chancreuse (Alpes-Maritimes,
+                                                                  Vaucluse).
+
+                                                                  Les champignons agents de pourriture du bois, Phellinus
+                                                                  pini et Fomitopsis pinicola, repérables à leurs sporophores
+            Aspect d'un pin d'Alep touché par                     sur le tronc et au bris qu'ils provoquent, ont été observés
+           la ciccadelle des aiguilles (DSF SE)                   dans l'Aude (La Clape).
+
+                                                                                        page 4
+Enfin, des dégâts foliaires sur plusieurs sites, attribués aux   l'altitude), cette mortalité est restée stable entre 2010 et
+embruns ont été signalés sur le littoral des Bouches-du-         2011 sur les placettes de suivi.
+Rhône.
+                                                                 Ce complexe cochenille-pyrale-scolytes est également
+                                                                 signalé dans le Var et les Alpes-maritimes sur les pins
+2 - Le pin maritime                                              mésogéens.
+
+Le foyer de dépérissement du pin maritime du à la                Les dégâts de l’hylésine destructeur, ont été également
+cochenille du tronc (Matsucoccus feytaudi) découvert en          notés dans les Bouches-du-Rhône. Des dégâts d'un autre
+1994 en Haute Corse est toujours en progression. Des             scolyte, le sténographe (Ips sexdentatus) sont observés en
+piégeages phéromonaux ont confirmé son extension vers            Ardèche et en Corse-du-Sud.
+le Nord-ouest (Calvi), le Sud-est (Pinia) et son arrivée         La cochenille moule des aiguilles (Leucaspis sp.) est
+récente en Corse du Sud (Forêt de Pastricciola) : cf. carte      observée en Corse (2A et 2B).
+ci-dessous.
+                                                                 Au niveau pathologique, des sporophores et des
+La mortalité des arbres est observée après la colonisation       pourritures de bois dus à Phellinus pini, champignon
+par la pyrale du tronc (Dioryctria sylvestrella) et les          lignivore, sont notés en Corse et dans les Bouches-du-
+scolytes (hylésine destructeur ou hylésine du pin, selon         Rhône.
+
+
+
+
+3 - Le pin pignon
+
+L’hylésine destructeur a également occasionné des dégâts         Le vent du nord (Mistral...) accompagné du froid hivernal, a
+ponctuels sur cette essence dans l'Aude et en Haute-             entraîné des rougissements de pousses du pin pignon,
+Corse ainsi que la cochenille-moule sur aiguilles dans le        visibles dès le mois de décembre 2010 sur les arbres
+Vaucluse.                                                        isolés et dans les espaces verts de la Vallée du Rhône
+                                                                 (Vaucluse, Bouches du Rhône et Gard).
+
+
+                                                                                       page 5
+4 - Le pin noir d’Autriche                                    notés. La cochenille-moule blanche des aiguilles
+                                                              (Leucaspis sp.) est très visible en Corse (peuplements
+Les mortalités partielles ou totales de houppiers d'origine   gris-blanchâtres en vue de loin), elle est également
+abiotique sont observées en 2011 mais à un niveau             présente dans les Alpes-Maritimes.
+moindre qu'en 2008 et 2010. Diverses régions : Ardèche,
+Drôme, Aude et Hérault, sont concernées, les mortalités       Les dégâts de Sphaeropsis sapinea sont observés sur
+sont associées ou non à Sphaeropsis sapinea.                  cette essence en Ardèche, l'Aude et le Gard ;
+                                                              Sclerophoma pityophylla, qui fait des symptômes
+Des scolytes ont été notés sur cette essence : les            identiques en Lozère.
+hylésines (Tomicus piniperda et Tomicus destruens) dans
+les Hautes-Alpes, l'Aude et la Lozère et les foyers de        Le gui (Viscum album) est parfois très présent dans les
+sténographes sont en recrudescence dans les Alpes-de-         pinèdes de Corse (Corse du Sud).
+Haute-Provence.
+                                                              6 - Le pin sylvestre
+Comme en 2010, la ciccadelle des pins (Haematoloma
+dorsata), agent de piqure des aiguilles, a été notée en fin   Le dépérissement des pins sylvestres, apparu suite à la
+de printemps en Ardèche et dans le Gard.                      canicule – sécheresse de 2003 et les sécheresses
+                                                              ultérieures, dans les Préalpes de Provence (Alpes-de
+5 - Le pin laricio de Corse                                   Haute-Provence, Hautes-Alpes, Alpes Maritimes et Var)
+                                                              perdure, notamment dans des peuplements porteurs de
+Au niveau entomologique, le pissode du pin en Ardèche et      gui (Viscum album) et situés en conditions stationnelles
+l'hylésine du pin en Corse (les 2 départements) ont été       difficiles.
+
+
+
+
+   Pin sylvestre dépérissant porteur de    Pin sylvestre en cours de mortalité   Coloration du bois due au champignon
+            gui, Viscum album                                                    Sphaeropsis sapinea, souvent présent
+                                                 Photos DSF – 2010 - 66           dans les pins en cours de mortalité.
+
+Le gui est également observé (nombreux sites) dans la         Des cas de mortalité de pins sylvestres sont observés en
+Drôme, dans des peuplements situés dans la continuité         Ardèche et dans l'Aude, en liaison avec la présence de
+des massifs des Hautes-Alpes.                                 Sphaeropsis sapinea dans ces 2 départements.
+
+Des foyers limités d'hylésine du pin ont été observés, en     En Lozère, les peuplements de pins adultes présentent
+augmentation, dans les Alpes de Haute-Provence et en          encore des cimes sèches suite à la formation de chancres
+Lozère.                                                       sur le tronc dus à la rouille vésiculeuse du tronc
+Le sténographe, quelquefois accompagné de petits              (Cronartium flaccidium ou Endocronartium=Peridernium
+scolytes du genre Orthotomicus, ont fait quelques dégâts      pini).
+dans les Alpes-de-Haute-Provence et les Alpes-Maritimes.
+La présence de galles résineuses sur les rameaux, due à       Enfin, des symptômes de dégâts dus à l'ozone, au niveau
+Petrova resinella, la tordeuse des galles des pins, est       d'un col, dans les Alpes de Haute-Provence sont notés.
+observée dans les Alpes de Haute Provence.
+
+
+                                                                                   page 6
+7 - Le pin à crochets                                            8 - Les autres pins
+
+Divers problèmes entomologiques ont été notés : dégâts           La présence de Sphaeropsis sapinea (pousses rouges) est
+de pissode du pin (Pissodes notatus) en Isère, d'hylésine        observée sur Pinus radiata dans les Alpes-Maritimes, les
+du pin accompagné de petits scolytes (Pityogenes                 aiguilles des arbres atteints sont également colonisées par
+bistridentatus) dans les Alpes de Haute-Provence et d'un         la cochenille-moule des aiguilles.
+charançon phyllopage (Braconyx pineti certainement) dans
+ce département.                                                  La présence d'Haematoloma dorsata, la ciccadelle des
+                                                                 aiguilles des pins a été observée sur une jeune plantation
+Sphaeropsis sapinea au niveau des rameaux en Lozère et           de Pinus taeda.
+Phellinus pini, au niveau du tronc et du bois, sont les
+2 pathogènes cités en 2011.                                      Les dégâts de Sphaeropsis sapinea (nécroses
+                                                                 chancreuses sur rameaux entraînant le jaunissement des
+Enfin, des symptômes de dégâts dus à l'ozone, au niveau          aiguilles) sont observés sur Pin Weymouth dans l'Ain et
+d'un col, dans les Alpes de Haute-Provence sont notés.           sur un autre site, des dégâts de pissode du pin (larves
+                                                                 sous-corticales) ont été notés.
+
+
+
+
+                                                      LES EPICEAS
+
+
+Quelques foyers ponctuels de typographe (Ips                     Des lâchers de Rhizophagus grandis, utilisés pour la lutte
+typographus), sont observés dans la plupart des                  biologique contre ce scolyte ,ont été effectués en 2011 en
+départements où l'épicéa commun est présent : en Rhône-          Lozère (2 250 insectes lâchés).
+Alpes (Loire et Ain) et en Languedoc-Roussillon (Aude et
+Lozère). Il a été localement accompagné par le                   La présence discrète de la tordeuse des aiguilles de
+chalcographe (Pityogenes chalcographus).                         l'épicea, Epinotia tedella, aux dégâts caractéristiques, est
+                                                                 à noter en Isère sur épicéa commun.
+
+Le dendroctone (Dendroctonus micans), est toujours               Des attaques de rouille des aiguilles de l’épicéa commun
+implanté de manière importante sur l'épicéa de Sitka, dans       (Chrysomyxa rhododendri essentiellement : cf. photos ci-
+les massifs du nord-Hérault qui forment le front de              dessous), aussi importantes qu'en 2010, ont été observées
+progression «sud » de l'insecte au niveau national.              dans les pessières d’altitude dans les Alpes : Alpes-de-
+                                                                 Haute-Provence, Alpes-Maritimes, Isère et Savoie et les
+Il est à l'origine de l'affaiblissement des arbres favorable à   Pyrénées : Aude et Pyrénées-orientales.
+la colonisation par le typographe. Ce scolyte est également
+observé de manière active dans des peuplements isolés            Un peuplement d'épicéa commun fortement atteint par le
+en Lozère.                                                       fomès (pourriture de coeur au niveau des souches
+                                                                 fraîchement coupées) a été signalé dans le Gard.
+
+
+
+
+        Rouille annulaire à Chrysomyxa abietis : bandes          Rouille vésiculeuse à Chrysomyxa rhododendri :
+          orangées alternant avec des bandes vertes              pustules blanches contenant les spores orangées
+                       (L MICAS ONF 04)                                             (DSF SE)
+
+Un cas très rare de balai de sorcière sur épicéa commun          Des mortalités attribuées à la sécheresse du printemps
+en Savoie est noté. L'origine est inconnue mais elle n'est       2011 ont été observées dans des plantations de l'année
+due ni à la rouille à Chrysomyxa arctospaphyli ni au faux-       dans l'Ain et des fentes dues à des sécheresses
+gui Arceuthobium pusillum (diagnostic : INRA Bordeaux).          antérieures ont été notées sur le troncs d'épicéas
+                                                                 communs en Isère.
+
+
+                                                                                       page 7
+                                                     LES SAPINS
+
+
+1 – le sapin pectiné                                           où des mortalités sont observées depuis la fin de l'été,
+                                                               suite aux attaques de scolytes et au printemps chaud et
+Comme en 2010, le dépérissement en cours dans l'Aude           sec.
+(Plateau de Sault) a évolué vers des mortalités, en lien       D'autres massifs présentent des cas de dépérissements
+avec les attaques de scolytes (Pityokteines sp et              localisés, avec la présence de scolyte sur les arbres en
+Cryphalus sp.) et le climat peu favorable du printemps. Il     cours de mortalité, dans les Alpes-de-Haute-Provence,
+en est de même dans les Alpes-Maritimes (Alpes niçoises)       l'Ardèche et la Corse du Sud.
+
+
+
+
+                                 Mortalités de sapin pectiné sur un versant (ONF - 06)
+
+
+
+Le gui (Viscum album) est toujours signalé dans ces            2 - les autres sapins
+peuplements dépérissants et ailleurs dans l'interrégion
+(Savoie).                                                      Le sapin de Nordmann : des dégâts attribués à des
+                                                               charançons sur les aiguilles et sur les rameaux (morsures)
+Le chermès des rameaux (Dreyfusia nussliini) a provoqué        ont été observés dans le Gard et dans les Alpes-de-Haute-
+des dégâts localisés sur des régénérations dans les Alpes-     Provence.
+de-Haute-Provence et la Loire.
+Le pissode du sapin (Pissodes piceae) est noté sur les cas     Le sapin de Vancouver : des mortalités localisées dues à
+de mortalité de sapins dans l'Ain, l'Hérault et la Lozère.     l’armillaire (Armillaria sp.) associée au pissode ont été
+                                                               repérées en Ardèche.
+Au niveau pathologique, la présence de fomes                   Des dégâts de scolyte (Pityokteines sp.) dans le Gard et
+(Heterobasidion sp.) est observée sur des souches dans         en Savoie et quelques cas de dépérissements évoluant
+l'Aude et des chancres (chaudron) sur tronc dus à la rouille   vers des mortalités dues à la sécheresse dans l'Aude et en
+à Melampsora caryophyllacearum dans le Rhône.                  Lozère complètent ce panorama.
+
+
+
+
+                                                     LE DOUGLAS
+
+
+Cette essence présente des dégâts dus au fomes                     une coupe rase de sapin de Vancouver, touchée par le
+(Heterobasidion sp.), en recrudescence au cours des                fomès (Loire) cf.photo ci-après.
+dernières années.
+Les trois espèces de ce pathogène racinaire ont été
+déterminées sur des échantillons prélevés en 2011 :                - Heterobasidion parviporum, (sporophores au collet)
+                                                                   sur une très jeune plantation, présentant des sujets
+    - Heterobasidion annosum sensus stricto sur deux cas           avec des systèmes racinaires déficients, installés
+    de mortalités d'arbres adultes (et bois coloré au niveau       après une coupe rase d'épicéa de Sitka (Hérault).
+    des souches) dans la Loire et en Lozère,
+                                                               La présence d'armillaire (Armillaria sp.), sur des sujets en
+    - Heterobasion abietinum (sporophores au collet et         cours de mortalité, est notée dans l'Hérault et la Lozère.
+    mortalités) sur des douglas de 7 ans, installés après
+
+
+                                                                                         page 8
+                               Sporophores d'Heterobasidion abietinum, au collet d'un
+                                 douglas de 7 ans dont les racines sont atteintes de
+                                          pourriture (photo DSF SE - 2011)
+
+
+
+L’hylobe (Hylobius abietis), reste, avec les causes           Des symptômes de nécroses cambiales (l'origine précise
+abiotiques, le principal ravageur des plantations (quelques   de ces nécroses n'est pas complètement déterminée) ont
+cas dans des plantations non traitées dans la zone de         été observées dans l'Hérault sur des jeunes peuplements
+production du douglas).                                       généralement éclaircis.
+La processionnaire du pin est présente sur le douglas (une
+observation dans le Gard). Le chermes du douglas              Ce phénomène, observé récemment dans le Languedoc,
+(Gillettella cooleyii) a été noté dans le Gard et la Loire.   est connu depuis quelques années dans le Massif central
+                                                              et en Bourgogne. Il a fait l'objet d'une étude en 2011 de la
+Des mortalités attribuées à la sécheresse du printemps        part du Département de la santé des forêts (analyse et
+2011 ont été observées dans des jeunes plantations dans       résultats en cours) afin de mieux le quantifier, le
+l'Ain, le Gard et l'Hérault.                                  caractériser et d'en connaître les causes possibles.
+
+                                                    LES MELEZES
+
+1 - Le mélèze d'Europe
+Les pathogènes foliaires ont été présents mais à une          Meria laricis est noté dans les Hautes-Alpes, l'Isère et la
+intensité moindre qu'en 2010 dans les Hautes-Alpes, les       Savoie. Deux autres champignons, proches du précédent :
+pluies étant apparues plus tardivement.                       Hypodermella laricis (Hautes-Alpes : cf. photo) et
+                                                              Mycosphaerella laricis dans l'Aude sont notés.
+
+
+
+
+                                                              Aiguilles de mélèze d'Europe minées par le
+                                                                   Coléophore du mélèze (DSF SE)
+
+
+
+
+       Chancre du mélèze avec fructifications (pézizes)   Dégâts typiques d'Hypodermella laricis, une des
+            de Lachnellulla willkommii (DSF SE)            maladies foliaires du mélèze (R. Chappa, 05)
+
+                                                                                     page 9
+Une campagne de prélèvement de chancres du mélèze,             Des dégâts dus au scolyte du mélèze, Ips cembrae ont été
+du à Lachnellulla willkommii, a été effectuée en 2011 dans     repérés sur quelques foyers, toujours en augmentation
+un but de recherche. Des mortalités importantes dues à         significative depuis 2008, dans les Hautes-Alpes.
+ce chancre, inhabituelles sur les provenances Sudètes,         Une attaque de sténographe (Ips sexdentatus),
+sont observées dans le Massif-central depuis 2 à 3 ans         accompagné du scolyte acuminé (Ips acuminatus) et
+(dont des sites en Lozère et en Ardèche). Ces                  Orthotomicus longicolis a été rapportée sur des jeunes
+prélèvements effectués dans les Hautes-Alpes, la Savoie,       sujets, en mélange avec des pins sylvestres, également
+l'Ardèche, la Drôme et la Lozère ont permis de confirmer       affectés, dans les Alpes de Haute Provence.
+l'espèce en cause : Lachnellulla willkommii (cf. photo).
+                                                               Des dégâts de petits rongeurs (Campagnol roussâtre) ont
+Le coléophore du mélèze (Coleophora laricella) : les           été notés sur une jeune plantation dans la Loire.
+dégâts de cette chenille mineuse des aiguilles sont visibles
+de mai à juin. Plusieurs sites importants en surface ont été   Enfin des jaunissements foliaires attribués à une toxicité
+notés en 2011 dans les Alpes du Sud :                          due aux sels de déneigement, observés sur des sujets
+      - dans les Alpes de Haute Provence : 4 foyers variant    situés en contrebas d'une route, ont été notés dans les
+      de 40 à 140 ha,                                          Alpes-Maritimes.
+      - dans les Hautes-Alpes : dans le Queyras et le
+      Dévoluy, dont un site de 250 ha (Laye) actif depuis
+      de nombreuses années.                                    2 - Le mélèze hybride :
+Un site dans la Loire, sur quelques arbres, est également
+signalé.                                                       Le fomes, Heterobasidion annosum sensus stricto a été
+Divers chermès des aiguilles (Adelges sp. et Sacciphantes      détecté sur une rondelle de bois colorée, issue d'une
+sp.) ont été observés dans les Alpes-de-Haute-Provence,        souche de dépressage, dans une plantation de 10 ans
+en Ardèche, dans la Drôme, en Isère et en Lozère.              dans la Loire.
+
+
+
+
+                                                LE CEDRE DE L’ATLAS
+
+                                                                                  DERNIERE MINUTE
+Des dessèchements de cimes dus à une attaque de                 La détection d'une cochenille sur les aiguilles de cèdre de
+scolyte curvidenté, Pityokteines sp., dans un peuplement        l'Atlas (cf. photo ci-dessous) jusqu'alors non signalée en
+situé à proximité de sapins pectinés, également atteints        France, est à noter en ce début d'année 2012, dans les
+par ce scolyte sont observés dans l'Aude (Plateau de            Hautes-Alpes (commune d'Antonaves).
+Sault).
+                                                                Il s'agit de Dynaspidiotus regnieri (Hémiptère de la famille
+                                                                des Diaspididés), originaire du Maroc et présente en
+                                                                Espagne depuis les années 1980.
+
+
+
+
+                           Une nouvelle cochenille sur les aiguilles du cèdre en France :
+                                 Dynaspidiotus regnieri (photo INRA A. CHALON)
+
+
+
+Depuis cette détection, elle a également été repérée dans les Alpes-de-Haute-Provence, dans le Ventoux et le Luberon
+(Vaucluse) où elle semble présente depuis quelques années.
+
+
+
+
+                                                                                      page 10
+                               LES PROBLEMES SANITAIRES SUR FEUILLUS
+
+
+                                                        LES CHENES
+
+1 - Les défoliateurs (toutes espèces de chênes)
+
+
+
+
+      Papillons de tordeuse verte                                                     Chenille de Géométride de l'espèce
+          photo archives DSF                                                            Hibernie - photo archives DSF
+
+
+
+                                           Femelles de bombyx disparate en cours
+                                                 de ponte (DSF – Var 2009)
+
+Les défoliateurs des chênes ont vu leur activité en baisse       - En Rhône-Alpes, la présence de cette chenille a été
+par   rapport     à   2010,   notamment       en    région       notée sur chênes sessiles dans l'Ain et peuplier I214 en
+méditerranéenne.                                                 Isère.
+
+- les défoliateurs précoces : essentiellement la tordeuse        - les autres défoliateurs des chênes :
+verte (Tortrix viridana), les Archips et autres tortricidés et
+les géométrides : la cheimatobie (Operophtera brumata),          - l'altise du chêne (chrysomélidés du genre Altisa), a
+l'hibernie (Erannis defoliaria), Agriopis sp…                    provoqué, comme en 2009 et 2010, des jaunissements
+                                                                 foliaires importants dus au décapage des feuilles par les
+Les défoliations significatives de la tordeuse verte (plus de    larves en Corse, sur chêne pubescent.
+50 % du feuillage consommé) ont été notées en Rhône-
+Alpes : 6 quadrats dans l'Ain, sur chênes sessiles et            - des dégâts de charançons défoliateurs du genre
+pédonculé.                                                       Phyllobius ont été observés sur une plantation de chênes
+Des défoliations ponctuelles de tordeuse verte ont été           truffiers (verts et pubescents) en Lozère.
+notées en Ardèche et Drôme sur chêne pubescent et de
+cheimatobie dans le Rhône sur chêne sessile.                      Pour des compléments d'information sur les
+                                                                 défoliateurs au niveau national, se reporter à
+- le bombyx cul-brun : ce lépidoptère est revenu à               l'information technique nationale sur le site internet :
+l'endémie sur chêne pubescent sur les contreforts du             http://agriculture.gouv.fr/IMG/pdf/Defoliateurs_feuillus_20
+Ventoux (Vaucluse et Alpes de Haute-Provence). Il a été          11.pdf
+observé dans la Drôme en 2011.
+
+- la processionnaire du chêne : Cette chenille,
+problématique dans le Nord-est de la France en 2011, a
+                                                                 2 – les chênes sessile, pédonculé et pubescent
+été observée à l'état isolé dans le Gard.
+                                                                 La plupart des signalements concernent le bupreste du
+- le bombyx disparate :                                          chêne (Coroebus bifasciatus), dans les houppiers de
+- Dans le Var : 3000 à 4000 hectares de chêne liège              chêne pubescent : Loire (sessile et pédonculé également),
+avaient été défoliés de manière spectaculaire dans le            Drôme et Ardèche où le nombre de signalements est en
+Massif des Maures en 2009 et 2010. Cette année,                  augmentation en Rhône-Alpes ; Alpes de Haute-Provence,
+quelques défoliations légères et des pontes éparses ont          Alpes-Maritimes, Var, Vaucluse en PACA et Aude et Gard
+été observées en périphérie des zones atteintes les              en Languedoc-Roussillon.
+années antérieures.                                              Divers dégâts minimes dus à des galles de cynipidés :
+Le châtaignier a également été atteint dans ce secteur, de       Andricus sp., Neuroterus sp... ont été observés dans les
+manière encore plus discrète.                                    Alpes-de-Haute-Provence.
+
+- Des attaques ponctuelles ont été observées en                  Au niveau pathogène, quelques attaques foliaires tardives
+Languedoc-Roussillon : Aude, Gard et Hérault.                    d'oïdium du chêne (Microsphaera alphitoides) ont été
+                                                                 notées sur les deux chênes dans l'Ain.
+                                                                                      page 11
+3 – le chêne vert                                              4 – le chêne liège
+
+Les cas de mortalité d'origine abiotique (sécheresses          Le dépérissement des suberaies des Maures (Var) et en
+successives, âge, concurrence au sein du taillis...) ont été   Corse est toujours d'actualité. Des mortalités peu
+peu observés par rapport à l'année 2010 : seules quelques      habituelles ont été observées cet automne sur les stations
+parcelles ont été signalées dans les Alpes-Maritimes.          les plus sèches des Maures (cf. photo). Les arbres atteints
+                                                               étaient fortement colonisés par le charbon de la mère
+Comme pour les chênes à feuilles caduques, des dégâts          (Hypoxylon mediterraneum).
+dus au bupreste du chêne dans les houppiers sont               D’autres parasites sont observés sur les arbres en cours
+observés dans les Alpes-Maritimes, les Bouches-du-             de mortalité dans les suberaies du Var et de Corse : le
+Rhône, le Var, le Vaucluse, l'Ardèche, la Drôme, l'Aude, le    platype (Platypus cylindrus) et le charbon de la mère.
+Gard et l'Hérault.                                             Malgré les symptômes observés, le pathogène racinaire
+                                                               Phytophtora sp. (cinnamomi notamment) n'a pas été
+Les cochenilles « kermès » sur tiges et rameaux,               détecté.
+Kermococcus vermilio et Kermococcus ilicis (cochenilles
+teinturières) ont été observées dans les Pyrénées-             5 – le chêne rouge d'Amérique
+Orientales.
+                                                               Un signalement de carpophores et de dégâts de Collybie
+L'acarien à l’origine de l’érinose du chêne vert sur les       en pied en fuseau (Collybia fusipes) : pourriture des
+feuilles : Eriophyies ilicis a été noté dans les Alpes-        racines entraînant des chablis a été fait sur des chênes
+maritimes et l'Hérault.                                        rouges âgés dans le Gard (arboretum forestier).
+
+
+
+
+  Chênes lièges en cours de mortalité sur une station sèche     Aspect caractéristique du dépérissement observé dans le
+      et chaude du massif des Maures (DSF SE-2011)             Haut-Var : la mortalité des cimes au dessus du couvert (DSF)
+
+
+
+
+                                                        LE HETRE
+
+
+Un cas de dépérissement de taillis sur 1 000 hectares          et Savoie et Mikiola fagi (galles pointues rouges sur
+environ, observé depuis une vingtaine d'années et un           feuilles) dans les Alpes-de-Haute-Provence et dans la
+autre sur 200 hectares ont été signalé dans le Haut-Var        Drôme sont observés en 2011.
+(Canjuers, Comps-sur-Artuby).
+Les facteurs explicatifs du dépérissement sont
+essentiellement liés à la station (calcaire superficiel,       Un cas assez rare d'oïdium (Phyllactinia sp.) a été observé
+versant chaud..).                                              dans les Alpes-de-Haute-Provence.
+La mortalité d'arbres est observée depuis 2 à 3 ans. Un
+peuplement avec des symptômes de dépérissement a               Dans ce département, un site touché par des symptômes
+également été observé dans les Alpes-Maritimes.                de dégâts d'ozone et des dégâts foliaires attribués à une
+                                                               toxicité due aux sels de déneigement (résidus de tas de
+Les deux insectes habituels : le charançon sauteur du          sels stocké au pied de l'arbre concerné) sont à noter.
+hêtre (Orchestes fagi) dans les Alpes-de-Haute-Provence
+
+
+                                                                                     page 12
+                                                     LES PEUPLIERS
+
+
+
+
+  La rouille à Melampsora larici-
+  populina sur peuplier Beaupré     Présence de puceron lanigère sur   Cryptorrhynchus lapathi sur peuplier : dégâts, larve
+          (photo DSF SE)             le tronc de I214 (photo DSF SE)         et adulte (photo R.PROVOST CRPF 38).
+
+
+
+Des attaques de la rouille foliaire à Melampsora larici-        euraméricains, sans que les dégâts soient importants
+populina sur Beaupré (famille des interaméricains), ont été     (Isère, Savoie).
+observées dans la plupart des peupleraies de la région
+Rhône-Alpes.                                                    Le puceron lanigère du peuplier (Phloemyzus passerinii)
+Ces attaques ont été plus tardives qu'en 2010, en raison        avait entraîné des mortalités importantes de I 214 adultes
+de la pluviosité qui est apparue seulement à la mi-juin. Des    au printemps 2008. Des pucerons et des attaques ont été
+attaques sur le clone Raspalje sont également observées         observés en Bourgogne dès le mois de mai, en vallée de
+sur les placettes permanentes de suivi des pathogènes           la Saône, laissant craindre l'apparition des dégâts estivaux
+foliaires (Ain et Isère), mais à un niveau moindre que sur le   significatifs. Les pluies de l'été semblent avoir mis fin à
+Beaupré.                                                        cette pullulation et les 5 placettes de surveillance dans
+                                                                l'Ain et en Isère n'ont pas connu d'attaques en 2011.
+Une enquête spécifique concernant cette rouille a été
+mise en place en 2011 à la demande de l'INRA de Nancy.          Divers insectes xylophages sont observés : le charançon
+Afin de connaître les différentes virulences du                 de la patience (Cryptorrhynchus lapathi) sur Alcinde,
+champignon en France, des prélèvements, à raison d'un           Polargo et I214 en Isère, la grande saperde (Saperda
+échantillon (100 feuilles atteintes) par département sur        carcharias) sur I214 en Isère et la grande sésie (Aegeria
+peuplier noir sauvage (Populus nigra) ont été effectués à       apifomis) sur Raspalje également dans ce département.
+l'automne. Les échantillons sont en cours d'analyse au          Des dégâts caractéristiques du charançon cigarier, le
+laboratoire à NANCY)                                            rhynchite du peuplier, Bysticus populi, ont été notés en
+                                                                Savoie.
+La présence de la brunissure des feuilles, Marssonnina
+brunnea, est observée sur le I214 et d'autres clones            Le castor a causé des dégâts importants (50% des tiges
+                                                                atteintes) dans une plantation de Dorskamp dans l'Ain.
+
+
+                                                    LE CHATAIGNIER
+
+En 2011, l'actualité concerne encore le cynips du               été faite en Suisse (Tessin) et en France (Savoie et Haute-
+châtaignier (Dryokosmus kuriphilus) : son extension se          Savoie).
+poursuit dans les Alpes-Maritimes, le Var, la Corse et en
+Rhône-Alpes (seule la Loire n'est pas atteinte). Il a été       Le bombyx disparate, très discret par rapport à 2009 et
+découvert dans des sites éloignés de l'Ardèche et en            2010, a défolié cette essence dans le Var, avec le chêne
+Languedoc-Roussillon : Gard (1 site) et Hérault (au moins       liège.
+2 sites).                                                       Des dégâts de charançon cigarier (Atellabus nitens) ont
+Il est important d'indiquer que la présence du cynips du        été observés dans l'Aude, l'Ardèche et en Lozère.
+châtaignier semble favorable à l'implantation du chancre, à
+partir des galles sèches de l'insecte (cf. photo). Cette        Le chancre du châtaignier (Cryphonectria parasitica) est
+observation, confirmée par des analyses de laboratoire, a       toujours observé dans la plupart des châtaigneraies de
+
+                                                                                     page 13
+l'interrégion ; il est plutôt actif en région Rhône-Alpes : Ain,   La présence de septoriose du châtaignier (Septoria
+Ardèche, Drôme, Isère, Loire, Haute-Savoie pouvant                 castanicola) sur feuilles, favorisée par les pluies estivales,
+entraîner localement des dépérissements de cimes. Il est           a été observée en fin de saison en Isère et en Savoie.
+également observé dans le Gard.
+
+
+
+
+                 Larve de cynips dans sa galle
+                      (DSF, 2011, Savoie)
+
+
+
+ Pour des compléments d'information sur le cynips du                   Rameau sec colonisé par Endothia
+châtaignier, notamment la carte des résultats des                       parasitica, qui a pénétré par une galle
+prospections 2011, se reporter à l'information technique                sèche de cynips du châtaignier (DSF,
+n° 72 du DSF Sud-Est de décembre 2011 .                                 2011, Savoie)
+
+
+
+
+                                                        LES ERABLES
+
+Les érables ont été concernés par quelques problèmes                   - des maladies foliaires : la maladie des croûtes noires
+sanitaires en 2011 :                                                   (Rhytisma acerinum) dans les Alpes de Haute-
+    - des symptômes de mortalité de branches ou de                     Provence et l'Aude sur érables sycomore et plane, de
+    rameaux, semblables aux attaques du bupreste                       l'anthracnose (Drôme et Isère) sur sycomore et de
+    Coreobus bifasciatus sur chênes, dus à Agrilus sp.                 l'oïdium (Uncinula aceris) sur érable plane (Alpes de
+    ont été observées sur érable plane (Alpes de Haute-                Haute-Provence).
+    Provence et Alpes-Maritimes), érable champêtre
+    (Alpes-Maritimes, Aude et Drôme), de Montpellier                   - des symptômes de dégâts dus à l'ozone, au niveau
+    (Alpes de Haute-Provence et Aude) et érable à feuilles             d'un col, dans les Alpes de Haute-Provence.
+    d'obier dans les Alpes-maritimes.
+
+
+
+                                                        LES FRENES
+
+Le frêne commun :
+
+Le problème le plus préoccupant sur les frênes est la              Des dégâts d'insectes ont été notés : le scolyte
+chalarose. Détectée en 2010 dans l'Ain, les dégâts de              Leperesinus fraxini en Isère, le puceron Proxiphylus fraxini
+Chalara fraxinea, pathogène agent de flétrissement des             dans le Rhône, Stereonychus fraxini, charançon dont la
+rameaux, se sont étendus dans le département de l'Ain              larve défoliatrice laisse les feuilles sous forme de dentelle,
+(nombreux quadrats concernés, jusqu'à la plaine de                 dans l'Hérault.
+Saône) débordant sur la Haute-Savoie.
+                                                                   La présence de galles sur rameaux dues à des acariens
+Deux cas ont été également repérés dans le Rhône (Nord-            du genre Eriophyes a été observée dans la Drôme et des
+Beaujolais) et un site isolé dans le Vercors (Drôme). Les          symptômes de dégâts dus à l'ozone, au niveau d'un col,
+prospections en Savoie et en Isère se sont révélées                dans les Alpes de Haute-Provence.
+négatives à ce jour.
+
+                                                                                         page 14
+                                                             Le frêne oxyphylle :
+
+                                                             Deux défoliateurs ont été observés de manière discrète :
+                                                             Archips rosana, dans un peuplement avec des chênes
+                                                             pubescents non touchés, dans le Var et une chenille
+                                                             arpenteuse : Abraxas pantaria, la zérène du frêne, dans
+                                                             les Bouches-du-Rhône.
+
+
+
+
+                                                               Pour des compléments d'information sur la chalarose
+                                                              du frêne, notamment la carte des résultats des
+                                                              prospections 2011, se reporter à l'information
+                                                              technique n° 72 du DSF Sud-Est de décembre 2011.
+                 Nécrose typique au niveau d'un
+                  rameau, due au champignon
+                  Chalara fraxinea (photo LMN)
+
+
+
+                                                    LES ORMES
+
+Comme en 2010, les ormes ont été affectés par                      - La galéruque de l’orme (Xanthogaleruca luteola),
+2 problèmes principaux :                                           coléoptère chrysomélidé laissant seulement les
+      - La graphiose de l’orme (Ophiostoma novi-ulmi) :            nervures sur les feuilles atteintes a été moins
+      sur les ormes champêtres situés dans les haies et            présente qu'en 2010, des observations ont été
+      alignements, avec une intensité variable selon les           seulement faites dans la Drôme.
+      départements : Alpes-Maritimes, Bouches-du-Rhône
+      et Vaucluse en PACA, Gard et Hérault en                Des galles sur feuilles et rameaux, dues au puceron
+      Languedoc-Roussillon ; Ain et Loire en Rhône-          Eriosoma ulmi, observées dans la Drôme, complète ce
+      Alpes.                                                 panorama en 2011.
+
+
+
+
+                                             LES AUTRES FEUILLUS
+
+
+
+- Aulne vert : Des cas de dépérissement et de mortalité      - Cerisier à grappes : des dégâts de chenilles
+des rameaux ont été observés, comme les années               d'Yponomeuthes, tissant des toiles spectaculaires, sont
+précédentes sur cette essence en Savoie (à la limite de la   notés en Savoie.
+végétation forestière).
+                                                             - Cerisier de Sainte-Lucie : des dégâts de chenilles
+- Aulne glutineux : des défoliations dues à la chrysomèle    d'Yponomeuthes, tissant des toiles spectaculaires, sont
+Agelastica alni ont été observées en Haute-Corse et un       notés en Ardèche, sur des arbres d'alignement dont
+cas de dépérissement impliquant Phytophtora alni             certains étaient porteurs de gui (Viscum album).
+(détermination confirmée par INRA Nancy) a été noté dans
+la Loire (dans une zone humide, en bordure du fleuve).       - Merisier : dans l'Ain, l'Isère et le Rhône, des attaques
+                                                             ponctuelles     de     cylindrosporiose     sur     feuilles
+- Alisier blanc : des attaques de charançons phyllophages    (Phloeosporella padi) ont été observées. Le puceron
+dans un taillis et des symptômes de dégâts d'ozone (au       Myzus cerasi dans les Alpes-de-Haute-Provence est
+niveau d'un col) sont observés dans les Alpes de Haute       toujours présent, comme en 2010.
+Provence. Un cas de gui (Viscum album) dans le Gard est
+à noter.                                                     - Tilleul à grandes feuilles : des dégâts de zeuzère
+                                                             (chenille xylophage entraînant dessèchements et bris de
+- Eucalyptus : des dégâts foliaires attribués aux embruns    rameaux) sont notés dans une plantation de 15 ans dans
+ont été observés sur le littoral Corse (2A et 2B).           l'Aude.
+
+
+
+
+                                                                                  page 15
+            Évolution sur 10 ans de quelques indicateurs de la santé des forêts
+
+Chaque année depuis 1989, une notation synthétique de 10 grands problèmes nationaux est élaborée, à dire d'expert,
+dans chacune des 5 interrégions DSF.
+
+L'intensité du problème est évaluée selon une grille à trois niveaux symbolisés par des couleurs :
+
+         - le problème est absent ou présent seulement à l'état de traces ; pour les dégâts, l'intensité est nulle ou légère ;
+         pour les insectes, le niveau de population est endémique.
+
+         - le problème est bien présent ; les dégâts sont modérés.
+
+         - la présence et l'intensité du problème sont fortes ; les dégâts sont importants ; pour les insectes, le niveau de
+         population est épidémique (pullulation).
+
+Pour la mortalité des tiges observée sur le réseau systématique de suivi des dommages forestiers (RSSDF), le taux de
+0 % à 0,4 % est considéré comme «faible», de 0,4 % à 0,8 % comme «modéré», au dessus de
+0,8 % comme «fort».
+
+
+Les 2 tableaux ci-dessous présentent une synthèse sur les 10 dernières années de l'intensité de ces problèmes
+(E) = problème entomologique, (P) = problème pathologique, (A) = problème abiotique
+
+
+1 - en région méditerranéenne (régions PACA, Corse, Languedoc-Roussillon) :
+
+                                     Années  2002   2003    2004    2005   2006   2007   2008    2009   2010    2011
+              Processionnaire du pin (E)
+              Défoliateurs précoces (E)
+                Bombyx disparate (E)                                                       (1)     (2)     (3)
+
+               Scolytes de l'épicéa (E)
+               Sphaeropsis sapinea (P)
+            Dégâts de gel de printemps (A)
+               Sécheresse estivale (A)
+        Mortalité de tiges sur RSSDF (A)
+      (1)     : jaune en Corse
+      (2)     : rouge en Corse et dans le Var
+      (3)     : rouge dans le Var
+
+
+
+
+2 - en région Rhône-Alpes
+
+                                    Années  2002    2003    2004    2005   2006   2007   2008    2009   2010    2011
+              Processionnaire du pin (E)
+              Défoliateurs précoces (E)
+                Bombyx disparate (E)
+              Typographe de l'épicéa (E)
+               Rouille des peupliers (P)
+                 Oïdium du chêne (P)
+               Sphaeropsis sapinea (P)
+            Dégâts de gel de printemps (A)
+               Sécheresse estivale (A)
+        Mortalité de tiges sur RSSDF (A)
+
+
+
+                                                                                      page 16
+          Pour tout problème phytosanitaire en forêt : les coordonnées des
+              53 correspondants-observateurs de l'interrégion Sud-est
+
+                       Forêt publique                                               Forêt privée
+    Dpt
+                  Office National des Forêts                Centre Régional de               Services de l'Etat chargés des forêts
+                                                          la Propriété Forestière                  en DRAAF, DDT, DDTM...
+    04                  Lilian MICAS                                                                    Pierre RAYMOND
+                       04-92-89-07-07                                                                    04-92-30-55-25
+    05                 Rémi CHAPPA                           Gilles BOSSUET                              Marc PETITEAU
+P                      04-92-53-49-19                         04-92-52-53-30                             04-92-51-88-52
+A
+    06    Stéphane LEVEQUE       Emmanuel JOYEUX              Pierre FAURY
+C            06-12-91-33-99        06-26-64-83-03             06-75-69-61-74
+A
+    13                Christine MERLE                                                                    Alain CLEMENT
+                       04-42-17-57-44                                                                    04-13-59-36-57
+    83                  Guy LEROY                   J. Marc CORTI       Stéphane NALIN
+                       04-98-01-32-64               04-94-50-11-51       04-94-50-11-52
+    84                  Eric JENSEL
+                       04-90-65-24-53
+
+
+
+                  Office National des Forêts               Centre Régional de                Services de l'Etat en DRAAF, DDTM,
+    Dpt                                                  la Propriété Forestière                          DDCSPP...
+C
+O   2A               Laurent DELANNOY                                                                   Marc AUDIBERT
+R                      04-95-24-25-41                        Orso CERATI                                 04-95-51-86-12
+                                                             04-95-23-84-24
+S   2B                Jacques LECOQ                                                           Luc TASTEVIN        Damien CAZAUX
+E                      04-95-30-71-69                                                         04-95-58-92-51       04-95-32-84-35
+
+
+
+                  Office National des Forêts               Centre Régional de                Services de l'Etat chargés des forêts
+L   Dpt                                                  la Propriété Forestière                   en DRAAF, DDT, DDTM...
+A   11        Dominique            Jean-Luc FIOL      Jean-Christophe CHABALIER
+N            JEANMAIRE             04-68-20-98-49           04-68-47-64-25
+G           04-68-11-40-17
+U   30                Claude RULLIERE                       Christine BOYER
+E                       04-67-81-00-83                       04-66-60-92-93
+D   34              Rémi DECOURSIERE                     Jean-Michel D'ORAZIO                             Serge GASC
+                      04-67-95-41-37                         04-67-95-40-76                              04-67-97-30-01
+R   48                Laurent TOIRON                      Jean-Yves MAGAUD
+O                      04-66-65-63-11                        04-66-65-26-79
+U   66             Jean-Philippe HAMELIN                    Bruno MARITON
+S                      04-68-05-70-78                        04-68-55-88-02
+S
+
+
+                  Office National des Forêts         Centre Régional de la Propriété                Services de l'État chargés
+    Dpt                                                        Forestière                          des forêts en DRAAF, DDT...
+    01               Stéphane DUMAS                            Éric HELL                            Maxime GUICHARDANT
+                       04-74-36-53-98                        04-79-81-42-74                             04-74-50-67-37
+R   07                Vincent DIDIER                      Jacques DEGENEVE                              Gérard TESTON
+H                     04-75-94-80-69                         04-75-35-40-26                             04-75-66-70-77
+O   26                 Gaël GAUTIER                        Pierre TABOURET                            Stéphane OLAGNON
+N                      04-75-48-26-60                        04-75-21-26-64                              04-81-66-81-71
+E   38           David DE YPARRAGUIRRE                     Romain PROVOST                               Michel COLLIN
+S                      04-76-45-73-86                       04-37-06-15-59                              04-56-59-42-35
+    42               Michel GAUBERT                         Alain CSAKVARY                             Philippe LACROIX
+A                     04-77-70-28-32                         04-77-58-02-98                             04-77-43-80-46
+L   69                                                        Yves BRULÉ                                Frédéric GILLET
+P                                                            04-74-04-74-43                              04-78-63-13-45
+E   73              Jean-Pierre HENRY                       Pascal GUILLET
+S                     04-79-83-12-11                         04-79-60-49-12
+    74            Jean-Charles LAZARETH                                                               Claude GEMIGNANI
+                       04-50-71-20-35                                                                   04-56-20-90-37
+
+
+
+                                                                                       page 17
+                            Le Département de la santé des forêts
+
+
+Missions
+Le Département de la santé des forêts a trois principales missions :
+
+1 - La surveillance sanitaire des forêts : inventaire des dommages phytosanitaires, évaluation des
+risques, suivi de l’évolution éventuelle dans le contexte de changements climatiques et globaux,
+2 - Le diagnostic-conseil auprès des propriétaires et gestionnaires forestiers privés ou publics,
+3 - L’élaboration de l’information dans le domaine de la santé des forêts.
+
+
+Historique
+
+                                            Le DSF a été créé en 1989. Des problèmes sanitaires très
+                                            médiatisés rencontrés dans les années 1980 comme les
+                                            dépérissements de chênes en forêt de Tronçais ou les
+                                            dépérissements de résineux attribués aux pollutions
+                                            atmosphériques ont fait émerger la nécessité de mettre en
+                                            place un dispositif solide de surveillance de la santé des
+                                            forêts.
+
+
+
+Organisation
+Le dispositif de surveillance de la santé des forêts est
+représenté par le Département de la santé des forêts,
+service technique du Ministère de l’Alimentation, de
+l’Agriculture et de la Pêche (direction générale de
+l'alimentation, sous-direction de la qualité et de la protection
+des végétaux) et par cinq pôles interrégionaux rattachés aux
+DRAAF des régions qui les hébergent.
+
+
+
+                                             25 permanents répartis le territoire
+                                             Le Département de la Santé des forêts bénéficie de
+                 4
+                         Metz                personnel formé et spécialisé dans le domaine de la
+                                             santé des forêts.
+                                             Il est implanté à l'administration centrale du MAAPRAT
+                                             (Paris, 4 personnes, en rouge sur la carte jointe), dans les
+                                             DRAAF d'accueil des 5 pôles de la santé des forêts (18
+                                             personnes à Metz, Orléans, Bordeaux, Clermont-Ferrand
+                                             et Avignon), 3 experts référents-nationaux (Nancy,
+                 1              1            Bordeaux et Avignon, en rouge sur la carte) complètent le
+                                             dispositif des permanents.
+
+
+
+
+                                                                        page 18
+Un réseau de 220 observateurs
+
+
+                                                 Le DSF gère un dispositif de surveillance, de diagnostic et de
+                                                 conseil phytosanitaire pour la forêt. Il s'appuie sur un réseau
+                                                 de 220 forestiers de terrain appelés correspondants-
+                                                 observateurs qui travaillent dans différents organismes (ONF,
+                                                 CRPF ou services déconcentrés du MAAPRAT). Ces
+                                                 forestiers reçoivent des formations spécifiques.
+
+        Equipe DSF en forêt
+
+
+
+
+Une nouvelle stratégie de surveillance
+
+En 2007, le DSF a revu sa stratégie. Elle est définie selon
+trois axes : la veille sanitaire, la surveillance du
+territoire (notamment par rapport à des organismes
+envahissants : le cynips du châtaignier, le nématode du
+pin…) et la surveillance spécifique (des problèmes
+phytosanitaires les plus répandus : la processionnaire du
+pin, les défoliateurs des chênes, les dépérissements, la
+réussite des plantations de l’année,…)
+                                                                             L'impact du bombyx disparate est visible
+                                                                                sur les chênes à gauche du massif.
+
+
+
+
+                                                         Partenariat
+
+                                                         Le DSF a développé de nombreux partenariats,
+                                                         notamment avec la recherche (INRA, Cemagref,
+                                                         Universités), et avec l'Inventaire forestier national.
+                                                         Il a établi des coopérations internationales
+                                                         (Allemagne, Suisse, Belgique, Maroc...).
+
+Les services déconcentrés de l’Etat, les CRPF et l’ONF
+participent au réseau des correspondants-observateurs
+
+
+
+
+     Le site internet national du Département de la santé des forêts :
+
+                          http://agriculture.gouv.fr/sante-des-forets
+
+
+                                                                                page 19
+        Les informations techniques du pôle Sud-est de la santé des forêts
+
+
+
+Année       Mois          N°                                          Sujet
+            mars          53                          Bilan de la santé des forêts en 2006
+                                                             Région Rhône-Alpes
+             avril        54                        Méthodes de lutte contre le typographe
+                                                           dans les Alpes du Nord
+2007
+             avril        55                  Lutte contre les scolytes dans le Haut-Languedoc
+             mai          56                         Découverte du cynips du châtaignier
+                                                          dans les Alpes-maritimes
+           octobre        57                 Méthodes de lutte contre la processionnaire du pin
+             juin         58                        L'hylésine destructeur sur le pin d'Alep :
+                                                          diagnostic, prévention et lutte
+             août         59                            Bilan de la santé des forêts 2007
+2008                                                        Région méditerranéenne
+           octobre        60                 Méthodes de lutte contre la processionnaire du pin
+          décembre        61                             Organismes invasifs en forêt :
+                                                      bilan des plans de surveillance 2008
+                                  Après les bris de neige de cet hiver et la tempête du 24 janvier... limiter la
+            février       62            dépréciation des bois et les risques phytosanitaires en forêt
+
+             avril        63                          Bilan de la santé des forêts en 2008
+                                                             Région Rhône-Alpes
+2009
+            juillet       64          Augmentation de l'activité des défoliateurs en forêt ce printemps,
+                                                 notamment en région méditerranéenne
+          décembre        65                          Organismes envahissants en forêt :
+                                                      bilan des plans de surveillance 2009
+                                                Santé des forêts en 2009 : que faut-il retenir ?
+         février-mars     66                  Régions PACA (66A), Languedoc-Roussillon (66B),
+                                              Corse (66C), Rhône-Alpes (66D), Méditerranée (66E)
+2010         juin         67      Vers une deuxième année de défoliation des chênes-lièges par le bombyx
+                                                  disparate dans le massif des Maures
+          septembre       68               Le cynips du châtaignier investit le Sud-est de la France
+
+            mars          69                     Santé des forêts en 2010 : que faut-il retenir ?
+                                                             Région Rhône- Alpes
+             avril        70                   Santé des forêts en 2010 : que faut-il retenir ?
+                                        Région méditerranéenne (PACA, Corse et Languedoc-Roussillon)
+2011
+            juillet       71                     Des attaques de puceron lanigère observées
+                                                    dans des peupleraies proches de l'Ain
+          décembre        72                          Organismes envahissants en forêt :
+                                                      bilan des plans de surveillance 2011
+
+
+
+
+        Rédaction : DRAAF PACA – SRAL                       mél : dsf-se.draaf-paca@agriculture.gouv.fr
+Pôle interrégional Sud-Est de la santé des forêts            site : http://draaf.paca.agriculture.gouv.fr/
+      BP 95 – 84 143 MONTFAVET CEDEX                                 rubrique : forêt-bois-énergie
+
+   Tél : 04-90-81-11-20 - Fax : 04-90-81-11-29                                AVRIL 2012
+
+
+                                                                           page 20
+

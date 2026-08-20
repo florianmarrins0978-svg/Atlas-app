@@ -1,0 +1,233 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : dsf-bilan-idf
+# organisme   : Département de la santé des forêts — ministère de l'Agriculture
+# titre       : Bilan de la santé des forêts — Île-de-France
+# url         : https://agriculture.gouv.fr/sites/default/files/documents/pdf/Ile_de_France_4Pages_2013_cle0b9899.pdf
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+                                                                                                        Pôle interrégional Nord-Ouest
+ MINISTĒRE DE L’AGRICULTURE,
+ DE L’AGROALIMENTAIRE ET DE LA FORET                                                                         de la santé des forêts
+
+
+                                                         Bilan 2013 de la santé
+                                                      de la forêt en Ile-de-France
+  Les faits marquant la santé des forêts en 2013 sont les suivants :
+
+ L’année 2013 se distingue par son climat doux et humide qui a favorisé l’état de santé des arbres. La pluviométrie
+ abondante durant la période de végétation a notamment permis aux chênes et châtaigniers de récupérer des
+ sécheresses passées, hors processus de dépérissement enclenché sur station difficile.
+
+ La chalarose du frêne continue sa progression vers le sud de la région. Seuls les départements de la Seine-et-Marne et
+ des Yvelines conservent des secteurs considérés comme non contaminés par la maladie.
+ Détecté en 2012 dans la région, le cynips du châtaignier étend également son aire de présence depuis les différents
+ foyers historiques.
+ Le puceron lanigère du peuplier a été observé en Seine-et-Marne et dans les Yvelines. Les populations de puceron ont
+ augmenté pour se situer à un niveau qu’il est important de surveiller. Il convient d’être vigilant au débourrement de
+ vos peupliers ce printemps (p 4).
+ Une attaque remarquable de rouille courbeuse a été observée sur pins dans la forêt domaniale de Fontainebleau et des
+ Trois Pignons (p 3).
+
+  L’état de santé des principales essences forestières de la région peut être résumé ainsi :
+
+                                                Surface forestière totale (SFT) : 278 000 ha
+
+                                               Principales essences Proportion             Etat de Principaux problèmes        Article
+           principales essences de la région
+
+
+
+
+                                                  dans la région    par rapport           santé de et niveau de l’enjeu        dans ce
+              Indicateurs de la santé des
+
+
+
+
+                                                                     à la SFT             l’essence                             bilan
+                                               chêne rouvre                   32 %                 défoliateur
+                                                                                                   vieillissement
+                                               chêne pédonculé                12 %                 défoliateur
+                                                                                                   vieillissement-station
+                                               châtaignier                    12 %                 chancre - encre - station
+                                                                                                   vieillissement
+                                               frêne                           7%                  chalarose
+                                               peuplier                        3%                  puceron - rouille            p. 4
+                                               robinier                        2%                  station - vieillissement
+                                               pin sylvestre                   6%                  rouille courbeuse            p. 3
+                                               pin laricio                     2%                  maladie bandes rouges
+
+                                                                       Etat de santé     Niveau de l’enjeu de
+                                                                       de l’essence       chaque problème
+                                                                       médiocre          fort
+                                                                       moyen             moyen
+                                                                       bon               faible
+
+
+
+
+Document validé et diffusé par le Pôle interrégional Nord-Ouest de la santé des forêts de la DRAAF – SRAl Centre
+Tél. : 02.38.77.41.07                                               E mail : dsf-no.draaf-centre@agriculture.gouv.fr
+           L’évaluation de l’intensité des principaux problèmes phytosanitaires forestiers depuis 5 ans
+
+
+                                                                     2009     2010     2011      2012     2013
+             Toutes essences La sécheresse estivale
+                             Les défoliateurs
+             Feuillus        L’oïdium des chênes
+                             Le bombyx disparate
+                             Les dépérissements de chêne
+                             Les dépérissements de chataigniers
+                             Le cynips du châtaignier
+                             La chalarose du frêne
+             Peupliers       Les rouilles du peuplier
+                             La processionnaire du pin
+             Résineux        Les scolytes des pins
+
+                                       Problème absent ou à un niveau faible
+                                       Problème nettement présent, impact modéré
+                                       Problème très présent, impact fort
+
+
+
+
+        Les évènements climatiques de 2013 : peu de soleil et beaucoup d’eau
+
+En 2013, le climat a été marqué par une pluviométrie importante, des températures fraîches et peu d’ensoleillement.
+Quelques faits marquants qui méritent d’être mentionnés :
+    •    température inférieure à la normale au cours des 6 premiers mois de l'année, particulièrement en mai (mois le
+         plus froid depuis 1950 après 1984),
+    •    moyenne mensuelle du second semestre supérieure à la normale, excepté au mois de novembre (octobre
+         6ème mois le plus chaud depuis 1900),
+    •    pluviométrie excédentaire sur l’ensemble de la région ; 911 mm à Melun dont 160 en juin ; 726 mm dans
+         l’Essonne dont 129 en juin,
+    •    ensoleillement légèrement déficitaire sur l’ensemble de la région.
+Ce qui fait de l’année 2013 une année favorable à la forêt grâce aux précipitations abondantes et régulièrement
+réparties tout au long de la période de végétation.
+En conséquence, les problèmes phytosanitaires ont été très discrets et ont davantage concerné la progression des
+nouveaux ravageurs tels la chalarose du frêne et le cynips du châtaignier dont la biologie est peu impactée par le
+climat. La pluviométrie importante a parfois compromis la réussite des plantations de l’hiver sur les stations les plus
+humides.
+
+
+
+
+                Coloration d’un rameau de frêne                         Galles de cynips du châtaignier
+                    atteint par la chalarose
+              Plantations : quelques échecs pourraient encore être évités
+Le printemps particulièrement pluvieux de 2013 n’a pas été sans conséquence sur la reprise des plantations, puisque
+l’engorgement des sols apparaît comme l’une des principales causes de mortalité décelée sur les jeunes plants, surtout
+pour des essences déjà en limite de station.
+Le gel tardif fut également une forte cause abiotique de mortalité de plants.
+
+Si l’importante pluviométrie printanière 2013 semble être un phénomène exceptionnel, il est néanmoins
+indispensable de choisir les essences de boisement ou reboisement en tenant compte des critères stationnels locaux
+afin d’assurer un taux de reprise et des croissances optimales.
+De plus, le bon entretien du réseau de fossés permet d’assurer un drainage des parcelles, limitant ainsi les excès
+d’eau. Le travail préparatoire du sol est important, mais doit éviter de former des effets cuvettes qui retiendraient
+l’eau autour du plant.
+
+La réception des plants au moment de la plantation est importante, afin de détecter les éventuels problèmes de
+chignon racinaire (déformation racinaire des plants en godets en pépinière) et de vérifier que le diamètre du collet des
+plants est conforme aux normes.
+
+La qualité de l’installation des plants est également à surveiller puisque des déformations racinaires (photos ci-dessous)
+sont régulièrement détectées, ainsi que le non-respect des exigences relatives à chaque essence sur l’enterrement du
+collet.
+En résulte : de graves problèmes de stabilité, des ralentissements de croissance voire, dans les cas les plus extrêmes,
+des mortalités. Ces dommages compromettent non seulement la reprise correcte des plants, mais également la qualité
+future du boisement.
+
+Ce constat s’inscrit dans le suivi des plantations de l’année effectué depuis 2007 par les correspondants-observateurs
+de la région.
+
+
+
+
+                                                                                               Hydromorphie       marquée
+                                                                                               suite à un travail du sol
+                                                                                               inapproprié sur la ligne de
+                                                                                               plantation
+               Système racinaire déformé
+
+
+                                 La rouille courbeuse du pin sylvestre
+Au cours de ce printemps, un champignon, la rouille courbeuse s’est
+particulièrement développée sur les jeunes tiges de pins sylvestres en
+forêt domaniale de Fontainebleau et des Trois Pignons.
+Dans certaines parcelles, jusqu’à 20 % des tiges de moins de
+4 mètres ont été infectées.
+L’infection des tiges se fait au cours de l’élongation des pousses.
+On observe une nécrose qui en général n’affecte qu’un seul coté de la
+tige ; celle-ci se courbe alors au milieu de la pousse.
+La nécrose peut être une porte d’entrée à d’autres champignons qui
+provoquent la mortalité des pousses, formant ainsi des houppiers
+anarchiques.
+A la fin du printemps, des spores sont libérées et vont coloniser les
+feuilles des trembles qui servent d’hôte alternant. Au printemps
+suivant, les spores développées sur les feuilles des trembles tombées
+au sol sont dispersées par le vent vers les nouvelles pousses de pin.      Plant déformé suite à une attaque de rouille courbeuse
+Une confusion peut être faite avec un insecte, la tordeuse des pousses
+du pin. Cet insecte déforme également la tige ; la courbure part alors
+de la base de l’élongation au niveau du bourgeon.
+                                      Puceron lanigère dans les peupleraies
+     Après un premier signalement de dégâts sur peuplier dans le secteur d’Houdan en 2008, des symptômes d’anciennes
+     attaques de puceron lanigère ont été détectées dans l’est de l’Ile-de-France en 2013. Ces attaques correspondent
+     certainement à la phase de pullulation précédente en 2011. Les dégâts observés sont relativement limités et
+     correspondent à environ 1 % de mortalités sur 25 % des peupleraies visitées.
+
+     Présent dans la région, depuis plus d’un siècle d’après la littérature, ces observations montrent bien la discrétion de
+     cet insecte qui peut malgré tout avoir une incidence forte en créant des mortalités dans les peuplements fortement
+     colonisés.
+
+
+
+
+                      Cire blanche : un des premiers symptômes          Couche noirâtre en hauteur : l’attaque est passée
+
+     Plusieurs indices de présence et symptômes de dégâts sont identifiables. De la cire blanche est produite par le
+     puceron sur l’écorce et témoigne de sa présence dans la peupleraie. En période de pullulation, la population de
+     pucerons augmente et la cire blanche se densifie pour donner un manchon blanchâtre qui témoigne de la présence
+     d’une colonie de pucerons. A ce stade, si le manchon représente plus de 30 % de la hauteur de l’arbre, il y a risque de
+     mortalité.
+
+     L’observation d’une couche noirâtre sur l’écorce indique une ancienne attaque de puceron lanigère.
+
+     En 2013, quelques peupleraies portant des colonies actives de puceron lanigère ont été signalées en Ile-de-France. Il
+     convient d’être vigilant à l’impact de ces attaques sur les arbres et notamment veiller attentivement au débourrement
+     ce printemps 2014 dans les peupleraies concernées.
+
+     Les plantations de I214, Triplo et Dorskamp qui sont les plus touchées doivent être surveiller régulièrement. Il est
+     important de contacter votre correspondant-observateur local si vous observez un de ces symptômes. Selon la
+     maturité des bois et l’intensité de l’attaque, il pourra être opportun d’anticiper une commercialisation. A des fins
+     préventives, la diversification des cultivars reste une nécessité.
+
+
+                Les 5 correspondants-observateurs (C.O.) de la Région Ile-de-France ont élaboré ce bilan.
+               Appartenant aux administrations et organismes forestiers d’Ile-de-France et sous le pilotage du Pôle
+                      interrégional Nord-Ouest de la Santé des Forêts, ils ont pour principales missions
+                      la détection et le diagnostic des problèmes phytosanitaires, le conseil à l’intervention
+                                            et la surveillance des écosystèmes forestiers.
+
+                              Pour joindre les correspondants-observateurs d’Ile-de-France en activité en 2014
+Départements               Mel                      tél.         Départements            Mel                             tél.
+               gilles.carteret@onf.fr      Tél. 01.64.04.22.09              didier.desseaux@onf.fr              Tél. 01.64.59.90.09
+SEINE-ET-      ONF                              06.03.42.97.08   ESSONNE    ONF                                      06.85.89.52.44
+MARNE          raphael.trembleau@crpf.fr   Tél. 01.64.78.75.61              virginie.lemesle@crpf.fr            Tél. 01.39.54.46.71
+               CRPF                             06.03.71.89.92              CRPF                                     06.14.52.88.55
+               laurent.goudet@onf.fr       Tél. 01.60.72.64.63              raphael.trembleau@crpf.fr           Tél. 01.64.78.75.61
+               ONF                              06.29.46.00.42              CRPF                                     06.03.71.89.92
+               didier.desseaux@onf.fr      Tél. 01.64.59.90.09   VAL-DE-    gilles.carteret@onf.fr              Tél. 01.64.04.22.09
+YVELINES       ONF                              06.85.89.52.44   MARNE      ONF                                      06.03.42.97.08
+               virginie.lemesle@crpf.fr    Tél. 01.39.54.46.71              didier.desseaux@onf.fr              Tél. 01.64.59.90.09
+               CRPF                             06.14.52.88.55   VAL-D’OISE ONF                                      06.85.89.52.44
+HAUTS-DE-      didier.desseaux@onf.fr      Tél. 01.64.59.90.09              virginie.lemesle@crpf.fr            Tél. 01.39.54.46.71
+SEINE          ONF                              06.85.89.52.44              CRPF                                     06.14.52.88.55
+

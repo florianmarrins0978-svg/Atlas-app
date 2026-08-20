@@ -1,0 +1,339 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : dsf-fomes-plaquette
+# organisme   : Département de la santé des forêts — ministère de l'Agriculture
+# titre       : Plaquette Fomès (Heterobasidion annosum)
+# url         : https://agriculture.gouv.fr/sites/default/files/documents/pdf/Plaquette_Fomes_2013-1_cle0d148e.pdf
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+              Département de la santé des forêts                                                        juillet 2013
+
+
+
+
+                                                                           INFORMATION SANTE DES FORETS
+
+
+                               Le Fomes des résineux
+
+Le fomes est un champignon racinaire qui est capable de provoquer d’importantes pourritures du
+bois de cœur surtout chez les épicéas, et des mortalités disséminées ou en rond chez tous les ré-
+sineux. Les pourritures sont ainsi à l’origine de pertes économiques importantes, particulièrement
+en pessières, et les mortalités engendrent des troubles de gestion dans les parcelles mitées par la
+maladie.
+La contamination des peuplements indemnes s’effectue à la suite de la germination des spores sur
+les souches fraîches (notamment lors des éclaircies), et le mycélium du champignon se transmet
+ensuite aux arbres voisins par contacts racinaires.
+La lutte contre le fomes est essentiellement préventive, et se fait par badigeonnage ou pulvérisa-
+tion d’un produit antagoniste à la surface des souches des arbres fraîchement exploités, afin
+d’empêcher leur infection.
+                                             Photo L.-M. Nageleisen, DSF
+
+
+
+
+                                                                           Pourriture de cœur sur épicéa commun
+            Dépérissement sur pin mari-
+            time
+
+
+
+
+                                                                                              page 1
+                       Biologie
+
+                                                                        Le fomes (Heterobasidion annosum (Fr.) Bref., au
+                                                                        sens large) est un champignon largement répandu
+                                                                        dans l’hémisphère Nord, principalement sur conifè-
+                                                                        res. S'il est présent en forêt naturelle, les dégâts
+                                                                        les plus importants sont observés en forêts rési-
+                                                                        neuses gérées, dans lesquelles sont réalisées des
+                                                                        coupes régulières. Il s’agit en fait d’un complexe de
+                                                                        trois espèces distinctes :
+Photo B. Boutte, DSF
+
+
+
+
+                                                                           •   Heterobasidion annosum (Fr.) Bref. au sens
+                                                                               strict ; infecte principalement les forêts de
+                                                                               pins mais cette espèce se développe sou-
+                                                                               vent sur d'autres résineux (épicéa, dou-
+                                                                               glas…) et occasionnellement sur certains
+                              Sporophore de fomes, face inférieure             feuillus (bouleau notamment), elle semble
+                                                                               majoritaire en France ;
+                                                                            • Heterobasidion abietinum Niemelä & Kor-
+                              honen ; initialement décrite sur sapin, elle est rencontrée en France, sur divers résineux no-
+                              tamment les sapins et le douglas,
+                          •   Heterobasidion parviporum Niemelä &
+                              Korhonen ; initialement décrite sur
+                              épicéa, elle semble moins fréquente
+                              dans notre pays.
+
+
+                       En l’état actuel des connaissances, les trois
+
+
+
+
+                                                                                                                                Photo B. Boutte, DSF
+                       espèces de fomes ont une biologie très com-
+                       parable et sont capables de dégâts tout à fait
+                       similaires.
+
+
+                       Le fomes se reproduit de manière asexuée en
+                       émettant des spores végétatives appelées
+                       conidies ; l’anamorphe (ou forme asexuée) de              Sporophore de fomes, face supérieure
+                       H. annosum est alors nommé Spiniger mei-
+                       neckellus (A. J. Olson) Stalpers.
+
+
+                       Les fructifications sexuées du fomes, ou sporophores sont généralement pérennes (1-3 ans). Elles
+                       se développent surtout au collet des arbres ou sur les souches sous la forme de consoles apla-
+                       ties ; leur surface supérieure est de couleur acajou à brun-noir, tandis que leur surface inférieure,
+                       porée et de couleur blanc-crème, laisse échapper des basidiospores pratiquement tout au long de
+                       l’année en plaine, sauf en période de gel ou de fortes chaleurs. La taille d’un carpophore peut être
+                       très variable : de quelques millimètres à l’état d’ébauche, pour atteindre de quelques centimètres à
+                       quelques décimètres lors de son plein développement ; ces carpophores sont souvent peu visi-
+                       bles, car dissimulés par l’accumulation de feuilles mortes ou par la végétation herbacée.
+
+
+                       Les spores peuvent être dispersées à longue distance (plusieurs dizaines voire centaines de km)
+                       par le vent. Certaines se déposent au hasard à la surface des souches fraîches qui sont très ré-
+                       ceptives dans 1-3 jours qui suivent la coupe d'un arbre. Cette réceptivité diminue rapidement et
+                       devient quasi nulle au-delà de 3-4 semaines. Ces spores germent en donnant un mycélium qui va
+                       envahir la souche et son système racinaire. Le mycélium pourra ensuite passer dans les racines
+                       des arbres voisins à la faveur des contacts racinaires entre des arbres sains et la souche infectée.
+                       Selon les essences, le mycélium du champignon colonisera le bois du cœur de l’arbre en provo-
+                       quant une pourriture, ou alors les tissus sous-corticaux et l’aubier en entraînant la mort de l’arbre.
+
+                                                                                                       page 2
+                       Cycle infectieux et modes de propagation du fomes
+
+
+
+Le fomes peut donc se propager de deux manières : sur de longues distances grâce aux basidios-
+pores qui sont à l’origine de nouveaux foyers d’infection, et de proche en proche grâce aux
+contacts racinaires qui permettent l’extension des foyers de la maladie.
+
+
+Les souches jouent, d’une part, le rôle de porte d’entrée du champignon dans les peuplements in-
+demnes, et, d’autre part, le rôle de réservoir d’inoculum dans les peuplements contaminés.
+
+
+Enfin, les blessures d’exploitation forestière aux racines et à l’empattement des arbres sont aussi
+une porte d’entrée possible du fomes dans les peuplements, mais probablement moins efficaces
+que les souches fraîches.
+
+
+
+
+Dégâts
+
+La sensibilité des essences résineuses est très variée. La vulnérabilité des peuplements dépend
+aussi des conditions du milieu et du contexte sylvicole.
+Les essences suivantes sont particulièrement sensibles au fomes :
+   •   chez les épicéas, le fomes pro-
+       voque dans un premier temps
+       une coloration du bois du cœur,
+       qui peut remonter depuis le col-
+       let jusqu'à plusieurs mètres de
+       hauteur : c’est le « cœur rouge
+       de l’épicéa », qui évolue ensuite
+       vers une pourriture fibreuse
+       blanche, qui est purgé sur
+       coupe, et représente
+       d’importantes pertes économi-
+       ques ; très généralement, la vie
+       de l’arbre n’est cependant pas
+       compromise et aucun symptôme
+       extérieur n'est visible ;                        Pourriture de cœur sur épicéa commun
+
+                                                                             page 3
+      •    chez le pin maritime dans les Landes de Gascogne, le fomes provoque des mortalités
+           d’arbres mais sans pourriture du cœur ; les mortalités se propagent de proche en proche
+           par contacts racinaires, et forment des taches de dépérissement qui s’étendent progressi-
+           vement de manière concentrique ; le fomes est ainsi, avec l’armillaire (Armillaria ostoyae
+           (Romagn.) Herink) et le rhizina (Rhizina undulata Fr.), l’un des agents de la « maladie du
+           rond » qui affecte ces pineraies ;
+
+
+      •    chez le douglas, les cas de mortalités disséminées ou
+           groupées sont souvent liés à un affaiblissement préala-
+           ble des arbres, et parfois à des impacts de foudre ; chez
+           les douglas adultes, le fomes peut aussi causer des ta-
+           ches d’altération dans le bois au niveau du collet, à la li-
+           mite du bois de cœur et de l’aubier.
+
+  Chez d’autres essences comme les sapin pectiné ou de Van-
+  couver, le pin weymouth et le mélèze, le fomes peut provoquer
+  ponctuellement des pourritures du cœur de l’arbre avec ou sans
+  mortalité. Enfin, chez les autres pins, le fomes peut provoquer
+
+
+
+
+                                                                                              Photo Ph. Legrand, DSF
+  des mortalités localisées parfois importantes, sans pourriture de
+  cœur.
+
+
+  D’une manière plus générale, le fomes peut provoquer des mor-
+  talités disséminées ou en rond chez tous les résineux ; les jeu-
+  nes arbres en plantation, affectés de malformations racinaires
+                                            (chignon,     crosse)        Tâches d’altération dans le bois
+                                                                         causées par le fomes, au collet
+                                            dues à une mau-               d’un douglas âgé de 40 ans.
+                                            vaise technique de
+                                            plantation, peuvent
+                                            subir des dégâts importants.
+
+
+                                                                      Enfin, chez les feuillus, le fomes se rencontre de ma-
+                                                                      nière plus anecdotique, sans dégâts notables.
+
+                                                                      Lutte
+                                               Photo B. Boutte, DSF
+
+
+
+
+                                                                      Dans les peuplements indemnes de fomes, il
+                                                                      convient de mener une action de lutte préventive des-
+                                                                      tinée à empêcher l’implantation du champignon au ni-
+                                                                      veau des souches fraîchement coupées.
+
+
+ Carpophore de fomes au collet d’un douglas
+de 8 ans présentant un système racinaire malLa lutte préventive consiste en une application locali-
+                   formé                    sée sur les souches fraîchement coupées d'une solu-
+                                            tion aqueuse contenant des spores d'un champignon
+  antagoniste du fomes : Phlebiopsis gigantea (Fr.) Jülich.
+  Un seul produit est homologué pour cet usage : le ROTSTOP® (AMM d'octobre 2012). Il contient
+  100 g/kg de spores et mycélium de la souche naturelle VRA 1835 de Phlebiopsis gigantea. La
+  dose autorisée est de 1 g/m2 de souche, dans la limite de 68 g/ha. La dose d'emploi est de 1 g
+  /litre d'eau/m2 de souche, soit 8 à 16 litres/ha (coupe d'éclaircie) ou 32 à 68 litres/ha (coupe rase).
+  L'application doit se faire dans les 3 heures qui suivent l'abattage, par badigeonnage, pulvérisation
+  manuelle ou mécanisée (à partir d'un dispositif adapté sur les abatteuses). Afin de vérifier la mise
+  en œuvre du traitement, il est conseillé d'utiliser un colorant compatible.
+                                                                                                                       page 4
+Le ROTSTOP® est un produit phytopharmaceutique à usage professionnel. Il convient donc de le
+mettre en œuvre selon la réglementation existante, notamment en terme de formation des utilisa-
+teurs (ils doivent être titulaires du certificat individuel dit CERTIPHYTO) et d'agrément des entre-
+prises. Les entreprises intervenant en prestation de service pour l'exploitation des bois (abattage
+manuel ou abattage mécanisé) doivent être agréées comme « applicateur en prestation de service
+de produits phytopharmaceutiques » (au sens du Code Rural et des Pêches Maritimes, article L
+254-1 et suivants) ».
+
+                                                                    Toutes les essences résineuses sont justifiables d’un
+                                                                    traitement préventif contre le fomes, bien que leur sensi-
+                                                                    bilité soit très variée et que les risques de maladie dé-
+                                                                    pendent aussi des conditions du milieu. Cette lutte pré-
+                                                                    ventive est impérative pour les essences particulière-
+                                                                    ment sensibles au fomes : les épicéas commun et de
+                                                                    Sitka, et le pin maritime dans le massif des Landes de
+                                                                    Gascogne. Elle est également particulièrement recom-
+                                                                    mandée pour tous les boisements résineux sur
+                                                                    d’anciennes terres agricoles ; conditions qui semblent
+                                                                    favoriser le développement rapide du fomes faute sem-
+                                                                    ble-t-il de champignons antagonistes naturellement peu
+                                    J.R. Liarçou - CRPF Aquitaine
+
+
+
+
+                                                                    présents. Le traitement doit être effectué à chaque
+                                                                    éclaircie et ce dès la première, sur toutes les souches et
+                                                                    immédiatement après abattage de l’arbre, y compris lors
+                                                                    de la coupe définitive si celle-ci doit être suivie d’un re-
+                                                                    boisement résineux sans dessouchage.
+
+                                          Dans les peuplements contaminés par le fomes, tout
+                                          reboisement résineux devient hasardeux. En effet, le
+                                          champignon est
+      Traitement préventif mécanisé       capable de se
+                                          maintenir     plu-
+                                          sieurs dizaines
+d’années dans les souches, et peut ainsi contaminer les
+arbres nouvellement plantés. Dans ce cas, il faut envisa-
+ger un reboisement avec une essence feuillue, ou sinon
+dessoucher avant de reboiser avec une essence rési-
+neuse peu sensible au fomes. Lors du reboisement d’une
+station contaminée par le fomes, il faut ainsi proscrire les
+épicéas, éviter les pins, et préférer des feuillus chaque
+fois que possible.                                                                                                                 J.R. Liarçou - CRPF Aquitaine
+
+
+
+Dans les peuplements contaminés par le fomes, les trai-
+tements préventifs des souches ne permettent pas
+d’éliminer le champignon déjà installé ; ils ont cependant
+l’avantage de ne pas permettre de nouvelles infections de
+souches par les spores, qui accroîtraient encore
+l’importance de la maladie.
+                                                                                                "Traitement préventif manuel
+
+
+
+Recommandations selon les types de peuplement :
+
+En boisement de terres agricoles, la maladie débute généralement dans les souches d’éclaircie,
+et la fréquence des pourritures augmente rapidement au cours de la croissance du peuplement.
+Les recommandations suivantes peuvent être adoptées :
+
+
+                                                                                                        page 5
+   •   si possible, utiliser des feuillus, ou des conifères peu sensibles ou mélangés au départ
+       avec une grande proportion de feuillus ;
+   •   utiliser des densités aussi faibles que possible ;
+   •   choisir une sylviculture adaptée qui permette de diminuer le nombre des éclaircies ou de
+       les retarder ;
+   •   effectuer un traitement préventif de protection des souches lors des coupes ;
+   •   éviter les blessures d’abattage ;
+   •   réduire l’âge d’exploitabilité dans les peuplements infectés.
+
+
+En première génération de conifères après une génération de feuillus, la maladie débute gé-
+néralement dans les souches d’éclaircie, et la fréquence des pourritures augmente au cours de la
+croissance du peuplement plus lentement que sur terres agricoles. Les recommandations suivan-
+tes peuvent être adoptées :
+   •   cultiver si possible les essences les moins sensibles au fomes ;
+   •   choisir une sylviculture adaptée qui permette de diminuer le nombre des éclaircies ou de
+       les retarder ;
+   •   effectuer un traitement préventif de protection des souches lors des coupes ;
+   •   éviter les blessures d’abattage ;
+   •   réduire l’âge d’exploitabilité dans les peuplements infectés.
+
+
+En seconde génération de conifères, ou en ancienne station à conifères, les souches
+d’éclaircie ont généralement un rôle moins important dans l’infection (sauf dans les stations in-
+demnes de fomes) ; la propagation de la maladie s’effectue plutôt par contacts racinaires avec les
+vieilles souches ou les arbres malades, et la fréquence des pourritures augmente relativement len-
+tement au cours de la croissance du peuplement. Les recommandations suivantes peuvent être
+adoptées :
+
+
+   •   en fonction du degré d’infection dans la station, envisager un changement d’essence ;
+   •   dans les stations fortement infestées, envisager un dessouchage ;
+   •   effectuer un traitement préventif de protection des souches lors des coupes dans les zones
+       où la fréquence du fomes est faible bien que le champignon soit répandu dans les forêts
+       avoisinantes ;
+   •   éviter les blessures d’abattage ;
+   •   réduire l’âge d’exploitabilité dans les peuplements infectés.
+
+
+Des renseignements complémentaires peuvent être obtenus auprès du Département de la santé
+des forêts.
+
+
+
+
+                                                                            page 6
+

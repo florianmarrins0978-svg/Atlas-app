@@ -1,0 +1,291 @@
+# Document récolté automatiquement — NE PAS MODIFIER À LA MAIN
+#
+# code        : draaf-bilan-hdf-2023
+# organisme   : DRAAF Hauts-de-France — ministère de l'Agriculture
+# titre       : Bilan de la santé des forêts Hauts-de-France — 2023
+# url         : https://draaf.hauts-de-france.agriculture.gouv.fr/IMG/pdf/20230110-bilan_phytosanitaire_hdf_2023_v7-3.pdf
+# nature      : officielle
+# licence     : licence-ouverte-2.0
+# consulté le : 2026-08-20
+#
+# Le texte ci-dessous est celui du document d'origine. Les fiches se
+# saisissent À PARTIR de lui, jamais de mémoire — et chaque champ qui
+# engage doit citer ce code de source dans donnees/phyto/*.json.
+
+                                Bilan de la santé des forêts
+                                     Hauts-de-France
+                                          - 2023 -                                                                                                        Département de la
+                                                                                                                                                           santé des forêts
+
+
+       Faits marquants
+          Ce sont les conditions météorologiques qui deviennent la principale cause des problèmes en forêt, soit directement
+          en affaiblissant les arbres, soit indirectement en favorisant leurs bio-agresseurs.
+          Au gré des observations réalisées par les Correspondants-Observateurs, voici les faits marquants de cette année :
+             Allongement de la saison de végétation, avec des extrêmes climatiques.
+             Sécheresse accentuée par des vents secs en début de saison de végétation et fortes pluies en automne et en hiver
+             Fructification anormale des charmes.
+             Effet des sécheresses des années précédentes.
+
+
+
+        Indicateurs de la santé des principales essences
+
+
+                                                                                      Etat de santé                           Principaux problèmes rencontrés et
+                                                                                      des essences                         niveau d’impact sur la santé de l’essence
+
+
+                                                                                         Feuillus                                Hanneton (sur sables)
+
+
+                                                                                                                                   Dépérissements (localement)
+                                                                                         Chêne pédonculé                         Processionnaire du chêne
+
+
+                                                                                                                           
+                                                         Indicateurs de la santé des principales
+
+
+
+
+                                                                                          Hêtre                                    Sécheresse – chaleur
+
+
+                                                                                                                                  Chalarose
+                                                       
+                                                                 essences de la région
+
+
+
+
+                                                                                          Frêne
+                                                                                                                                  Sécheresse
+
+                                                                                                                                  Rouille à Melampsora
+                                                                                         Peuplier
+                                                                                                                                  Puceron lanigère
+
+                                                                                                                                  Chancre
+                                                                                         Châtaignier
+                                                                                                                                  Encre (localement)
+
+
+                                                                                         Erable sycomore                         Maladie de la suie
+
+
+                                                                                                                                  Scolytes (épicéas)
+                                                                                         Résineux
+                                                                                                                                  Puceron vert (épicéas)
+
+                                                                                         Douglas                                 Cécidomyie
+
+                                                                                         Pins                                    Processionnaire du pin
+
+
+
+                                                                                                   Etat de santé :    = bon ;  = moyen ;  = médiocre
+                                                                            Niveau d’impact des problèmes :  = faible ;  = moyen ;  = fort
+
+
+
+
+        Toute l’information nationale sur la santé des forêts à l’adresse suivante : https://agriculture.gouv.fr/la-sante-des-forets
+                         Document piloté par le Pôle interrégional Nord-Ouest de la santé des forêts de la DRAAF
+Site de Rouen Tél. : 02.32.18.94.56 – Site d’Orléans Tél. : 02.38.77.41.07 – E-mail : dsf-no.draaf-centre-val-de-loire@agriculture.gouv.fr
+Suivi des principaux problèmes
+                                                                                       2019           2020          2021          2022           2023
+                                 Sécheresse                                                                                                   Printemps
+ Toutes essences                 Dégâts de gel
+                                 Canicule
+                                 Les défoliateurs
+                                 Oïdium du chêne
+ Feuillus                        Chalarose du frêne
+                                 Processionnaire du chêne                                            Localisé
+                                 Dépérissement des chênes
+                                 Les rouilles du peuplier
+ Peupliers
+                                 Puceron lanigère                                                    Localisé
+                                 Les scolytes                                                         Epicéa        Epicéa                       Epicéa
+ Résineux                        Processionnaire du pin
+                                 Pathogènes foliaires
+                                          Problème absent ou à un niveau faible
+                                          Problème nettement présent, impact modéré
+                                          Problème très présent, impact fort
+
+
+Evènements climatiques de 2023
+                         Hiver 2022-2023                      Printemps 2023                           Eté 2023                     Automne 2023
+                                                                                              Juillet et août conformes aux
+                                                         Avril et mai conformes aux                                                      Doux
+                        Globalement doux                                                                  normales
+                                                                  normales                                                         +2.3°C en octobre
+  Température       +1 à +2°C suivant les régions                                             Le mois de septembre est le
+                                                         Le mois de juin est le plus                                               Apparition tardive
+                      au-dessus des normales                                                  plus chaud jamais enregistré
+                                                          doux jamais enregistré                                                  des premières gelées
+                                                                                                   (+3.7°C sur la région)
+                                                                                                                                    Très excédentaire
+                           Dans la normale                  Avril excédentaire,                                                   Inondations historiques
+  Pluviométrie     déficitaire en janvier et février     mai et juin très déficitaires        Excédentaire en juillet-août          dans le Pas-de-Calais
+                     puis excédentaire en mars            Sols secs en mai et juin                                                Record mensuel battu à
+                                                                                                                                    Boulogne (580 mm)
+                                                       Flux continu et desséchant de
+                                                                                                    Peu marqué                      Tempête Ciarán
+      Vent                  Peu marqué                            nord-est
+                                                                                                Tempête Poly le 5 juillet             le 2 novembre
+                                                         Tempête Mathis le 31 mars
+                                                        Mai excédentaire de 15 à 30%
+  Ensoleillement         déficitaire en mars                                                            Normal                   Octobre excédentaire
+                                                       et juin excédentaire de 40 à 60%
+
+                                                       L’absence de précipitations à partir                                    Allongement de la saison de
+                     La saison de recharge des            de mi-mai ,ainsi que les vents du   Les pluies excédentaires de                végétation.
+     Impact            nappes phréatiques est              nord-est, provoquent un assè-       juillet et août ont permis de   Faibles dégâts dus à la tem-
+    forestier         déficitaire de septembre à            chement progressif des sols.        reconstituer la réserve en         pête Ciarán sur toute la
+                                  mars                   Les orages de fin juin ont com-                eau des sols.             région sauf le secteur du
+                                                           mencé à inverser la tendance                                                 Montreuillois
+
+
+
+
+Mesurer l’impact de la cécidomyie sur la croissance du douglas
+ La cécidomyie du douglas (Contarinia pseudotsugae) est une petite
+ mouche observée en France depuis 2015. Elle pond à la base des
+ bourgeons et ses larves se développent dans les aiguilles,
+ entraînant leur chute. A ce jour, cet insecte n’entraine pas de
+ mortalités et, son impact sur la croissance des arbres est difficile
+ à quantifier. Pour observer cet effet, le DSF mène, à l’échelon
+ national, depuis 5 ans, un suivi sur des peuplements aussi bien
+ jeunes qu’adultes.
+ Pour compléter ces données, deux dispositifs ont été installés, en
+ 2023, dans le nord de l’Aisne.
+ Le premier essai consistait à protéger physiquement des jeunes                                Symptôme de contarinia sur         Expérimentation 2023
+ plants de la piqûre de l’insecte par des filets.                                                une pousse de l’année            emballage d’un plant
+  Ces filets ont été mis en place durant la période de ponte des adultes (au moment du débourrement), sur une durée
+  d’un mois, puis retirés pour ne pas entraver l’élongation des pousses. Les mesures comparées de croissance sont
+  encore en cours d’analyse, mais l’efficacité des filets montre une différence significative du taux d’attaque entre les
+  plants protégés et non protégés.
+  Le second dispositif étudie la sensibilité des provenances (région d’origine des plants) à cet insecte. La provenance
+  conditionnant fortement la date de débourrement des douglas, celle-ci pourrait donc influer les dégâts de cécidomyie
+  par la synchronisation ou non de la ponte avec le débourrement. Deux provenances à débourrement contrasté
+  (Luzette et Californie) seront suivies pendant 3 ans en forêt domaniale d’Andigny (02). Les mesures seront réalisées
+  conjointement entre l’INRAE et le DSF.
+
+
+
+Faible taux de reprise dans les plantations : Le Climat, seul coupable ?
+  Même si le climat est déterminant pour la
+  réussite des plantations, des travaux
+  préparatoires adaptés, associés à des plants
+  de qualité, permettent de garantir un
+  meilleur taux de reprise et une meilleure
+  croissance les premières années.
+  La récurrence des stress hydriques et
+  thermiques nous rappelle qu’il convient
+  d’être absolument rigoureux sur les facteurs
+  sur lesquels nous avons la possibilité
+  d’intervenir.
+  Dans un contexte général de tension sur les
+  approvisionnements en plants, cette
+  vigilance sur la qualité des plants doit être               Plants morts dans la raie        Système racinaire de mauvaise
+  accentuée.                                                       de sous-solage                qualité qui doit être refusé.
+  Le sérieux dans le respect des délais de
+  toutes les étapes du reboisement est essentiel. Par exemple, pour les travaux préparatoires, un délai de repos du
+  sol optimal de 3 mois entre la préparation et la mise en terre des plants est indispensable.
+  De même, à la livraison, les plants doivent être stockés dans des conditions optimales de conservation à adapter
+  suivant la quantité et le type de plants. Avec les incertitudes climatiques, il est nécessaire de sécuriser ces travaux qui
+  représentent un gros investissement. La réussite d’une plantation est du ressort de tous les acteurs concernés.
+  Sur les 46 plantations suivies dans les Hauts-de-France en 2023, seulement la moitié ont un taux de reprise supérieur
+  à 80 % (reprise allant de 25 à 100 %).
+
+
+Effets retards des sécheresses
+Les épisodes climatiques exceptionnels de ces dernières années ont très fortement
+stressé les peuplements forestiers. Les conséquences de ces stress ne se révèlent
+souvent que plusieurs années plus tard. En 2023, ce sont 3 essences qui ont exprimé
+des symptômes liés à ces stress.
+L’ERABLE SYCOMORE AVEC LA MALADIE DE LA SUIE
+Cette maladie bien répandue dans notre région est très souvent déclenchée par des
+épisodes de stress hydrique. Ce sont les peuplements dans les stations forestières
+habituellement bien alimentées en eau qui ont le plus subi le développement de cette
+maladie. La maladie de la suie (Cryptostroma corticale) impacte tout ou partie des
+peuplements quels que soit leurs âges.
+On remarque tout d’abord une perte de feuillage puis des taches de couleur noire sur
+l’écorce suivies par son décollement complet et la mort de l’arbre. Sous l’écorce, on
+trouve une abondante poudre noire. Ce champignon se propage également dans le bois
+où il crée des colorations anormales.                                                           Fructifications noire de la maladie
+L’inhalation des spores en grande quantité comporte un risque allergisant pour la santé                      de la suie
+humaine : il vaut mieux laisser passer un délai (pluie de lavage des troncs) pour
+exploiter les bois. Il n’existe pas de moyen de lutte curative connu.
+FRUCTIFICATION ANORMALE DES CHARMES
+Pour cette essence, le stress s’est exprimé par une fructification abondante et la perte de feuilles sur les rameaux. En août,
+avec la maturité des fruits de couleur rousse, les charmes semblaient avoir pris leurs couleurs d’automne dès le milieu de
+l’été. Ce phénomène, habituel sur des charmes stressés, a été visible sur l’ensemble du territoire et a pu inquiéter.
+Les conséquences pour le charme ne sont pas connues à ce jour mais une veille sera tenue au printemps 2024.
+       DEPERISSEMENT LOCALISE DE CHENES
+       Aux dépérissements déjà entamés sur les stations les plus sèches, viennent s’ajouter des dépérissements plus locaux mais plus
+       rapides sur des sols moins séchants. Effectivement, dans les chênaies bien alimentées en eau ayant subi plusieurs années de
+       fortes défoliations par la processionnaire du chêne, les peuplements subissent une dégradation sanitaire avec des mortalités
+       ponctuelles sur 500 ha en forêt domaniale de Saint-Gobain (massif de Coucy-Basse (02)). L’historique des bilans hydriques
+       journaliers montre que les peuplements ont subi 3 années (2018, 2020,2022) les plus stressantes du point vu de la
+       disponibilité en eau depuis 1959. Les bois mourant seront exploités au cours de l’hiver.
+
+
+
+       Brèves
+       Tigre du chêne
+       Ce petit insecte est une punaise qui mesure 3,5 mm de longueur. Il est apparu en
+       France en 2017 dans la région de Toulouse. Aujourd’hui, l’ensemble du sud-ouest
+       de la France est contaminé jusqu’à la Dordogne et un autre foyer se forme en
+       Isère. Dans son aire d’origine (Amérique du Nord), elle est un facteur
+       d’affaiblissement des chênes. Le symptôme principal est une coloration brun-
+       bronze due à la dépigmentation du feuillage (similaire à couleur de la rouille du
+       peuplier) dès le mois d’août.
+       Etant donné l’enjeu que représentent les chênes pour la région et la progression             Adulte de tigre du chêne et symptômes
+       de cet insecte, la vigilance est de mise.
+
+       Forêt domaniale de Compiègne - Cartographie du dépérissement
+       Après les chênes en 2020, ce sont les hêtres de la forêt domaniale de Compiègne, qui ont fait l’objet d’une étude en 2023
+       visant à caractériser l’état du dépérissement du massif. Ces données complètent l’enquête nationale sur les hêtres de 2022.
+       Cette connaissance de l’état des peuplements doit être régulièrement réactualisée et constitue un élément important dans la
+       prise de décision visant à fixer les orientations de gestion des peuplements.
+
+       Du mouvement dans l’équipe des Correspondants Observateurs !
+       Après 20 ans au sein du DSF, Benjamin CANO, Correspondant-Observateur dans la Somme, nous quitte suite à sa mutation
+       pour l’Institut pour le Développement Forestier (IDF) en tant que chef de projet « risque sylvosanitaire ». Coordinateur
+       régional, Benjamin a notamment travaillé sur de gros projets tels que l’Observatoire Régional des Écosystèmes Forestiers
+       (OREF), et bien sûr, l’impact de la chalarose (CHALFRAX).
+       Le réseau accueille Aubin VALANCHER, technicien de secteur CNPF pour la Somme.
+       Noémi HAVET, ingénieure expérimentation et changement climatique CNPF, arrive en renfort sur les départements du Nord
+       et du Pas-de-Calais et pilotera la campagne de mesure OREF. La partie coordination régionale est reprise par
+       Stéphane BRAULT, technicien forestier assistant de recherche et développement à l’ONF.
+
+
+
+       Vos interlocuteurs en 2024
+                                                                   Cette contribution est le fruit des observations des correspondants-
+                                                                   observateurs des Hauts-de-France. Appartenant aux administrations et
+                                                                   organismes forestiers et sous le pilotage du Pôle interrégional Nord-
+                                                                   Ouest de la Santé des Forêts, ils ont pour principales missions la détec-
+                                                                   tion et le diagnostic des problèmes phytosanitaires, le conseil à l’inter-
+                                                                   vention et la surveillance des écosystèmes forestiers.
+                                                                   Les observations sont organisées pour partie à l’initiative des correspon-
+                                                                   dants observateurs lors de leur travail quotidien ou suite à des sollicita-
+                                                                   tions de gestionnaires et pour autre partie dans le cadre de protocoles
+                                                                   organisés pour les plus importants problèmes à l’échelle nationale. L’en-
+                                                                   semble des observations est compilé dans un système d’information
+                                                                   aujourd’hui riche de 35 ans de données sylvosanitaires.
+
+
+
+
+                  Forêts publiques   Forêts privées
+
+
+
+
+        Toute l’information nationale sur la santé des forêts à l’adresse suivante : https://agriculture.gouv.fr/la-sante-des-forets
+                         Document piloté par le Pôle interrégional Nord-Ouest de la santé des forêts de la DRAAF
+Site de Rouen Tél. : 02.32.18.94.56 – Site d’Orléans Tél. : 02.38.77.41.07 – E-mail : dsf-no.draaf-centre-val-de-loire@agriculture.gouv.fr
+
