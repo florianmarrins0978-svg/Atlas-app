@@ -448,6 +448,51 @@ ce n'est pas son espace.
 
 ---
 
+## ⏳ « L'application est lente » — 20 août 2026 au soir : ce n'est PAS le produit
+
+**Mesuré, pas supposé.** Sur le code du jour (`71be6d9`), version bâtie, banc
+monté comme le sien (`npm run banc`), un navigateur qui se connecte pour de
+vrai :
+
+| | |
+|---|---|
+| connexion → accueil | 890 ms |
+| accueil, planning, terminés, réglages, clients, paysage | 670 – 1 110 ms |
+| fiche chantier, devis complet | 595 – 690 ms |
+
+La construction de la version rapide a abouti en une minute. **Il n'y a rien à
+corriger dans le produit** : ces chiffres sont ceux d'une application rapide.
+
+**Ce que disait sa fiche d'état au même moment**, et c'est là qu'est la panne :
+
+- dernière publication **20:09**, plus rien pendant plus d'une heure. Le publieur
+  est un processus séparé qui ne meurt qu'avec le veilleur (`veiller.sh`) : une
+  fiche muette une heure dit donc que **le veilleur n'est plus là** ;
+- `Code SERVI : 9de6153`, **7 versions de retard** sur `origin/main`.
+
+**L'enchaînement le plus probable**, et il se tient de bout en bout : il touche
+« Chercher les dernières corrections » ; sur version bâtie AVEC veilleur, la
+règle coupe le serveur pour que le code neuf soit servi
+(`src/lib/issue-mise-a-jour.ts`) ; le veilleur relance `npm run banc`, qui sert
+`next dev` le temps de bâtir — **c'est là qu'un écran met des dizaines de
+secondes à s'ouvrir** (`src/server/etat-banc.ts`, mesuré le 14 août) ; puis le
+veilleur meurt, et plus personne ne finit la construction ni ne publie la fiche.
+Il reste donc en mode développement, lentement, indéfiniment.
+
+**Le geste qui répare : rallumer l'espace.** Il reconstruit la version rapide et
+remet un veilleur.
+
+**Ce qui reste ouvert, et qu'on ne peut pas trancher d'ici :** POURQUOI le
+veilleur meurt. Le journal de démarrage n'est délibérément pas publié (dépôt
+public), et la fiche ne peut rien dire quand c'est le veilleur qui tombe. La
+mémoire relevée à 20:09 — 219 Mo libres, 5,7 Go en cache — n'exclut pas un
+manque de mémoire pendant la construction, qui est le moment le plus gourmand.
+**Piste à éprouver avant d'y toucher :** faire écrire au veilleur une trace
+d'agonie (`trap`), et la publier avec la fiche à l'allumage suivant — sans quoi
+la prochaine fois se rediagnostiquera de zéro, exactement comme celle-ci.
+
+---
+
 ## À surveiller — non reproduit
 
 ### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août
