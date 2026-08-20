@@ -49,6 +49,12 @@ c'est le document de référence du produit.
 
 ## Terminé et vérifié
 
+**Chercher un client (20 août 2026).** La liste des clients porte une barre de
+recherche : il tape un nom, la liste se réduit à chaque frappe. Sans accents,
+sans casse, sans ponctuation, et dans n'importe quel ordre de mots. Règle pure
+dans `src/lib/recherche-client.ts` (`ARCHITECTURE.md` §134), éprouvée sans
+navigateur **et** au navigateur.
+
 ### Le socle (antérieur à cette série de travaux)
 
 Chantiers, photos, note vocale, transcription, informations structurées, calcul

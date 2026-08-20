@@ -95,6 +95,32 @@ et le contrôle mesure ce qui casse vraiment à 390 px : la colonne la plus
 corrigé contre la mesure** — il affirmait que rien ne tenait à 107 px de
 colonne ; rien n'y était coupé.
 
+### Une barre de recherche sur la liste des clients
+
+**Sa demande, capture à l'appui :** *« Il faut une barre de recherche où je peux
+taper le nom d'un client pour le retrouver plus facilement »* — vingt et un
+noms à l'écran, dont **quatre Martins**, et le sien perdu au milieu. Elle avait
+été dessinée le 17 août (`appli/clients-recherche.html`, proposition B).
+
+La règle vit dans `src/lib/recherche-client.ts`, hors de tout écran : sans
+accents, sans casse, sans ponctuation, et chaque mot cherché n'importe où dans
+le nom. Il tape « moreau » et trouve « Moréau » ; « renard » et trouve
+« Mme Renard » ; « dupont » et trouve « M. Dupont » comme « Mr. Dupont ».
+L'ordre des mots ne compte pas.
+
+**Le filtrage se fait dans le navigateur**, sur la liste déjà chargée : un
+aller-retour réseau par lettre tapée, en 5G au bord d'un chantier, se sentirait.
+
+**Ce que la capture a montré et qu'aucune suite n'aurait vu :** `type="search"`
+fait poser au navigateur sa propre croix d'effacement, **d'un bleu vif** — la
+seule tache de couleur de l'écran, sur une page de crème et de bronze. Elle est
+remplacée par la nôtre, dans la couleur de l'application, présente seulement
+quand il y a quelque chose à effacer. Une suite tient désormais les deux.
+
+**Le champ est toujours affiché**, même avec trois clients : une barre qui
+apparaît au-delà d'un certain nombre est une règle de plus à deviner, et le
+jour où il en a quatre il la croirait retirée.
+
 ### La fiche client, allégée — dessinée, pas codée
 
 **Sa demande, capture de l'écran « Martins » à l'appui :** *« En dessous de
@@ -137,7 +163,6 @@ retour « Vos clients » pointait sur l'écran qu'on regardait — il mène dés
 à `clients-recherche.html#liste`, qui existe ; une case cochée ne se distinguait
 d'une case vide que par sa couleur ; une conclusion collée à sa liste ; un
 espace de trop.
-
 
 ### Le veilleur ne renonce plus : la version rapide se retente jusqu'à passer
 
