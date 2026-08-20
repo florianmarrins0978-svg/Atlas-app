@@ -271,6 +271,33 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 
 ## Ce que je peux faire seul
 
+### 0 duotricies. « Choisir la date » — DESSINÉE le 20 août 2026, en attente de son choix
+
+**Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
+me le modifier par Choisir la date […] sous forme de bouton vert comme tous les
+autres […] j'arrive directement sur la page où je peux choisir la date […] on
+supprime la page qui est entre les deux […] et l'aperçu en PDF, tu me le mets en
+dessous. Et je ne veux pas de flèche. »*
+
+Planche : `docs/maquettes/82-choisir-la-date.html`.
+
+**Ce qui est vérifié dans le code, et qui rend la chose petite :** le calendrier
+vit dans une FEUILLE (`export/EnvoiAuClient.tsx`), pas dans une page — elle
+s'ouvre par-dessus l'écran récapitulatif. La monter sur le devis, c'est l'ouvrir
+plus tôt : elle ne demande que `chantierId`, `devisId` et `clientNom`, tous trois
+présents sur `devis-complet`.
+
+**Deux choses à trancher par lui**, et rien ne se code avant :
+
+1. **A ou B** — l'aperçu du PDF reste un lien discret (A, recommandé) ou devient
+   une pastille creuse (B).
+2. **Ce que devient l'écran du milieu APRÈS l'envoi.** Il porte aujourd'hui le
+   lien à transmettre au client et « Reprendre le devis ». **Option 1
+   (recommandée)** : il reste, mais on n'y arrive plus qu'une fois le devis
+   parti. **Option 2** : il disparaît, et il faut reloger ces deux gestes
+   ailleurs — ce qui touche les autres chemins qui y mènent
+   (`src/lib/chantier-etat.ts`, le planning, la liste des chantiers).
+
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous

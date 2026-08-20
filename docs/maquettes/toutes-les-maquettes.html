@@ -6806,6 +6806,97 @@
 #s62 .note li{margin-bottom:6px}
 
 
+/* 63 — Choisir la date, sans l’écran du milieu */
+#s63{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --pin:#2f3b2f; --papier:#ece9e1;
+    --trait:rgba(28,28,26,.12); --traitdoux:rgba(28,28,26,.07);
+  }
+@media (prefers-color-scheme: dark){
+#s63:not([data-theme="light"]){
+      --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
+      --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
+      --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
+    }
+
+  
+}
+#s63[data-theme="dark"]{
+    --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
+    --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
+    --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
+  }
+#s63, #s63 *{box-sizing:border-box}
+#s63{
+    margin:0;background:var(--fond);color:var(--encre);
+    font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:36px 18px 80px;
+  }
+#s63 .chapo{max-width:780px;margin:0 auto 40px}
+#s63 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
+#s63 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+#s63 .chapo b{color:var(--encre);font-weight:500}
+#s63 .fil{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    max-width:780px;margin:0 auto 40px;font-size:13px;
+  }
+#s63 .etape{
+    padding:8px 14px;border-radius:999px;border:1px solid var(--trait);
+    background:var(--carte);color:var(--encre);
+  }
+#s63 .etape.saute{
+    text-decoration:line-through;color:var(--gris);
+    border-style:dashed;background:transparent;
+  }
+#s63 .fleche{color:var(--gris)}
+#s63 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
+#s63 .colonne{width:390px;max-width:100%}
+#s63 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+#s63 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
+#s63 .note b{color:var(--encre);font-weight:500}
+#s63 .tel{
+    width:390px;max-width:100%;height:560px;overflow:hidden;background:var(--fond);
+    border:1px solid var(--trait);border-radius:22px;display:flex;flex-direction:column;
+  }
+#s63 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
+#s63 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s63 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
+#s63 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
+#s63 .bloc{margin-top:18px}
+#s63 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s63 .signature{
+    margin-top:18px;height:76px;border:1px dashed var(--trait);border-radius:8px;
+  }
+#s63 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
+#s63 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
+#s63 .vert{
+    display:block;width:100%;padding:15px;border-radius:999px;text-align:center;
+    background:var(--pin);color:#f5f3ee;font-size:16px;
+    font-family:ui-serif,Georgia,"Times New Roman",serif;
+  }
+#s63 .lien{
+    display:block;width:100%;margin-top:12px;text-align:center;
+    font-size:14px;font-weight:500;color:var(--pin);
+  }
+#s63 .creux{
+    display:block;width:100%;margin-top:10px;padding:13px;border-radius:999px;
+    text-align:center;border:1px solid var(--trait);color:var(--pin);font-size:14.5px;
+  }
+#s63 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
+#s63 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
+#s63 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+#s63 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+#s63 .apres b{color:var(--encre);font-weight:500}
+#s63 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
+#s63 .apres th,#s63 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
+#s63 .apres th{color:var(--encre);font-weight:500}
+#s63 .question{
+    border-left:3px solid var(--or);background:rgba(185,139,71,.08);
+    padding:14px 16px;border-radius:0 10px 10px 0;margin:0 0 18px;
+  }
+#s63 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
+
+
 </style>
 
 <div class="enveloppe">
@@ -7089,6 +7180,11 @@
       <a class="item" href="#m62">
         <span class="no">62</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
         <span class="quoi">« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.</span>
+      </a>
+      <p class="famille">Le devis avant l’envoi</p>
+      <a class="item" href="#m63">
+        <span class="no">63</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
+        <span class="quoi">« Envoyer au client » devient « Choisir la date », en vert et sans flèche, et mène droit au calendrier. L’écran du milieu, qui redit le devis qu’on vient de fermer, saute. Trois écrans deviennent deux.</span>
       </a>
     <p class="note">
       <b>Ce qui n’est pas ici.</b> « Le calme » en Nuit, Pierre et Brume — celle que vous n’aimiez pas.
@@ -23924,6 +24020,135 @@
         n’invente rien.</li>
     </ul>
   </div>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m63">
+    <div class="etape-tete">
+      <span class="etape-no">63</span>
+      <h2>Choisir la date, sans l’écran du milieu</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s63">
+<div class="chapo">
+  <h1>Choisir la date, sans l’écran du milieu</h1>
+  <p>
+    Aujourd’hui, envoyer un devis coûte <b>trois écrans</b>. Celui du milieu
+    redit ce que le devis vient de montrer en entier — client, lignes, total —
+    avant de proposer le même geste. On ne relit pas un devis qu’on vient de
+    fermer.
+  </p>
+</div>
+
+<div class="fil">
+  <span class="etape">Le devis</span>
+  <span class="fleche">→</span>
+  <span class="etape saute">Le récapitulatif</span>
+  <span class="fleche">→</span>
+  <span class="etape">Le calendrier</span>
+  <span class="fleche" style="margin-left:8px">soit</span>
+  <span class="etape" style="border-color:var(--or);color:var(--or)">deux écrans au lieu de trois</span>
+</div>
+
+<div class="grille">
+
+  <!-- ══ A ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition A · l’aperçu reste un lien</p>
+    <p class="note">
+      Exactement ce qu’il a décrit : <b>« Choisir la date » en vert, en
+      premier, sans flèche</b> ; l’aperçu en dessous, discret. Un seul geste
+      saute aux yeux — c’est celui qu’on fait neuf fois sur dix. L’aperçu reste
+      ce qu’il est : une vérification, pas une action.
+    </p>
+    <div class="tel">
+      <div class="ecran">
+        <div class="rang"><span>Total HT</span><span>50,00 €</span></div>
+        <div class="rang"><span>TVA (20 %)</span><span>10,00 €</span></div>
+        <div class="rang fort"><span>Total TTC</span><span>60,00 €</span></div>
+        <div class="bloc">
+          <span class="lib">Modalités de paiement</span>
+          <p>Paiement par virement bancaire<br>FR76 3000 1000 0000 0000 0000 000</p>
+        </div>
+        <div class="signature"></div>
+        <p class="sous-sig">Bon pour accord — signature du client</p>
+
+        <div class="actions">
+          <span class="vert">Choisir la date</span>
+          <span class="lien">Aperçu du PDF</span>
+          <p class="pied">Tout s’enregistre au fur et à mesure.<br>Rien ne part avant que vous ne le décidiez.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ B ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition B · deux boutons, deux poids</p>
+    <p class="note">
+      Le même ordre, mais l’aperçu devient une <b>pastille creuse</b>. Plus
+      facile à viser du pouce qu’un lien de 14 px — et la hiérarchie tient
+      quand même : le plein passe avant le creux. Le défaut : deux boutons
+      côte à côte se ressemblent plus que deux formes différentes.
+    </p>
+    <div class="tel">
+      <div class="ecran">
+        <div class="rang"><span>Total HT</span><span>50,00 €</span></div>
+        <div class="rang"><span>TVA (20 %)</span><span>10,00 €</span></div>
+        <div class="rang fort"><span>Total TTC</span><span>60,00 €</span></div>
+        <div class="bloc">
+          <span class="lib">Modalités de paiement</span>
+          <p>Paiement par virement bancaire<br>FR76 3000 1000 0000 0000 0000 000</p>
+        </div>
+        <div class="signature"></div>
+        <p class="sous-sig">Bon pour accord — signature du client</p>
+
+        <div class="actions">
+          <span class="vert">Choisir la date</span>
+          <span class="creux">Aperçu du PDF</span>
+          <p class="pied">Tout s’enregistre au fur et à mesure.<br>Rien ne part avant que vous ne le décidiez.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="apres">
+  <h2>Une question que votre demande ne tranche pas</h2>
+  <div class="question">
+    <p>
+      <b>L’écran du milieu disparaît AVANT l’envoi — mais que fait-on APRÈS ?</b>
+      C’est lui qui porte aujourd’hui le lien à transmettre au client une fois
+      le devis parti, et le bouton « Reprendre le devis » quand le client
+      demande une correction.
+    </p>
+  </div>
+  <table>
+    <tr><th>Ce qu’on peut faire</th><th>Ce que ça donne</th></tr>
+    <tr>
+      <td><b>1 · Il reste, mais seulement après</b><br>On y arrive une fois le devis envoyé</td>
+      <td>Le chemin raccourcit là où vous le vouliez, et rien ne se perd. L’écran garde son seul vrai travail : ce qui se passe une fois parti</td>
+    </tr>
+    <tr>
+      <td><b>2 · Il disparaît complètement</b></td>
+      <td>Il faut alors reloger le lien du client et la reprise ailleurs — sur la fiche du chantier, probablement. Plus gros, et ça touche d’autres chemins qui y mènent (le planning, la liste des chantiers)</td>
+    </tr>
+  </table>
+  <p>
+    <b>Je recommande la 1.</b> Elle fait exactement ce que vous demandez — deux
+    écrans au lieu de trois pour envoyer — sans déplacer un travail que rien
+    n’oblige à bouger. Dites-moi si vous voulez la 2 : c’est faisable, mais
+    c’est un autre lot.
+  </p>
+
+  <h2>Ce qui ne change pas</h2>
+  <p>
+    Le calendrier, l’interrupteur « il peut proposer une autre date » et le
+    bouton « Envoyer le devis » sont <b>exactement les mêmes</b> — c’est la même
+    feuille, ouverte plus tôt. Et rien ne part toujours sans votre geste.
+  </p>
 </div>
     </div>
   </section>

@@ -421,6 +421,12 @@ const MAQUETTES = [
     famille: "Les réglages",
     quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
   },
+  {
+    fichier: "82-choisir-la-date.html",
+    titre: "Choisir la date, sans l’écran du milieu",
+    famille: "Le devis avant l’envoi",
+    quoi: "« Envoyer au client » devient « Choisir la date », en vert et sans flèche, et mène droit au calendrier. L’écran du milieu, qui redit le devis qu’on vient de fermer, saute. Trois écrans deviennent deux.",
+  },
 ];
 
 /* ————————————————————————————————————————————————————————————————
