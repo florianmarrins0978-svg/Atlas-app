@@ -210,6 +210,7 @@ async function composerResultat(candidat: Candidat, confiance: Confiance): Promi
     graviteLibelle: LIBELLE_GRAVITE[fiche.gravite],
     conduite: fiche.conduiteRecommandee,
     mentions: mentionsDeSecurite({
+      gravite: fiche.gravite,
       impactMecanique: fiche.impactMecanique,
       impactMecaniqueNote: fiche.impactMecaniqueNote,
       risqueHumainAnimal: fiche.risqueHumainAnimal,

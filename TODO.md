@@ -25,6 +25,58 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## 🔴 `test-reduction-devis-e2e.ts` est ROUGE SUR `main` — pas une intermittence
+
+**Le 20 août 2026 au soir.** La suite du prix accordé au client tombe : selon
+l'exécution, une à huit vérifications, dont *« un appui rend le prix plein TOUT
+DE SUITE, avant toute écriture »* et *« écrire 0 % la retire pour de bon, à
+l'écran comme en base »*.
+
+**Ce n'est pas une intermittence, et c'est pour cela que ce point est ici et non
+dans les « non reproduits ».** Vérifié sur `origin/main` en tête, **serveur
+réchauffé, suite jouée seule** : cinq vérifications tombent. Le lot du
+diagnostic végétal n'y est pour rien — il a été mis de côté pour l'éprouver, et
+la suite tombe sans lui.
+
+Un des symptômes relevés dans le journal :
+
+    Expected values to be strictly equal:
+    '180.00' !== '870.00'
+
+**Ce qu'il faut faire, et dans cet ordre** — c'est le protocole du dépôt, pas
+une préférence : d'abord aller chercher **ce que le serveur écrit vraiment**
+(`/tmp/atlas-serveur-e2e.log`), avant de formuler la moindre hypothèse. Trois
+correctifs de suite sont déjà passés au vert dans ce dépôt en réparant une panne
+*imaginée* (`AGENTS.md`).
+
+**Ce que ça bloque :** la batterie complète ne peut plus être annoncée au vert.
+Elle rend aujourd'hui 186/186 en base et 103/104 en navigateur, et l'unique
+rouge est celui-ci.
+
+---
+
+## ⏳ `test-fiche-pendant-relance.ts` tombe quand la machine est chargée
+
+**Le 20 août 2026.** La suite rend :
+
+    ✗ le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien
+      le veilleur n'a jamais tenté de relance : le montage ne reproduit pas le cas réel
+
+**Ce n'est pas le produit qui tombe, c'est le MONTAGE de la suite** — et elle le
+dit elle-même, ce qui est à son honneur : elle refuse de conclure au vert sur un
+cas qu'elle n'a pas su reproduire. Elle lance un vrai serveur et attend qu'un
+veilleur le relance ; sur une machine occupée, la fenêtre ne s'ouvre pas.
+
+Vérifié : elle tombe **aussi sans le lot du diagnostic végétal** (travail mis de
+côté, suite rejouée), et elle était **verte** dans la batterie complète jouée une
+heure plus tôt sur le même arbre. C'est donc la charge, pas le code.
+
+**À faire quand on y reviendra :** lui donner plus de temps, ou lui faire
+attendre un signal du veilleur plutôt qu'un délai. Un contrôle qui dépend de la
+charge de la machine finit par être ignoré.
+
+---
+
 ## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
 
 **Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
