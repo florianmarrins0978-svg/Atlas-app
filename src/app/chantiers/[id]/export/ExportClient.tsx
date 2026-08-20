@@ -10,6 +10,7 @@ import { reprendreDevisAction } from "./actions";
 import EnvoiAuClient from "./EnvoiAuClient";
 import { enEuros } from "@/lib/euros";
 import { avecCivilite, type Civilite } from "@/lib/civilite";
+import { composerMessageClient, lienTransmission } from "@/lib/message-client";
 
 
 export default function ExportClient({
@@ -85,6 +86,76 @@ export default function ExportClient({
 
   function lienComplet(chemin: string) {
     return `${origine}${chemin}`;
+  }
+
+  /**
+   * Ouvrir SA messagerie **dès l'appui sur « Envoyer le devis »**.
+   *
+   * *Sa demande du 18 août 2026 : « quand je clique sur le bouton envoyer le
+   * devis, tout de suite ça m'ouvre l'application, soit SMS soit email […]
+   * supprime les étapes qu'il y a entre ».* Il avait raison de la faire : le
+   * devis était prêt, le message était prêt, et il fallait encore viser un
+   * second bouton sur l'écran suivant.
+   *
+   * **Le message et l'adresse viennent du module commun** — les refaire ici
+   * donnerait deux façons d'écrire au client, et c'est là que se logent les
+   * défauts payés : un numéro espacé qui ouvre un SMS sans destinataire, un
+   * lien collé au texte qui n'est pas cliquable (`src/lib/message-client.ts`).
+   *
+   * ─── CE QUI RESTE DERRIÈRE, ET POURQUOI ON NE L'A PAS RETIRÉ ───────────────
+   * L'ouverture part d'une continuation asynchrone : l'envoi doit d'abord
+   * aboutir en base pour qu'un lien existe. Or un navigateur peut refuser une
+   * navigation vers `sms:` qui ne suit pas immédiatement le doigt — et sur
+   * iOS, il la refuse **sans un mot**.
+   *
+   * L'écran « Devis prêt » reste donc en place, avec son bouton. S'il s'ouvre,
+   * le patron ne le voit qu'au retour de Messages — c'est là qu'il doit être
+   * de toute façon. S'il ne s'ouvre pas, il retrouve exactement l'écran
+   * d'aujourd'hui, et rien n'est perdu. Le contraire — retirer le bouton en
+   * pariant sur l'ouverture — serait la quatrième fois qu'il appuie sur
+   * quelque chose qui ne répond pas.
+   * ──────────────────────────────────────────────────────────────────────────
+   */
+  function ouvrirLaMessagerie(chemin: string) {
+    const destinataire = canalClient === "sms" ? clientTelephone : clientEmail;
+    // Sans coordonnée, il n'y a rien à ouvrir — l'écran de repli la demande.
+    // (L'envoi est d'ailleurs déjà bloqué en amont dans ce cas.)
+    if (!destinataire.trim()) return;
+
+    const message = composerMessageClient({
+      clientNom,
+      clientCivilite,
+      entrepriseNom,
+      lien: lienComplet(chemin),
+    });
+    // **Aucune marque de départ ici, et c'est mesuré, pas supposé.** Le bandeau
+    // « Devis transmis à … » s'arme sur le bouton de l'écran suivant, où le
+    // geste EST le départ. Ici l'ouverture peut être refusée sans un mot, et
+    // aucun événement du navigateur ne distingue « parti vers Messages » de
+    // « changé d'écran » — le détail de la mesure est dans
+    // `src/lib/depart-messagerie.ts`. Annoncer un envoi qui n'a pas eu lieu
+    // serait pire que ne rien annoncer.
+
+    // **Un vrai lien qu'on touche pour lui, et non `location.assign`.** Deux
+    // raisons, et la seconde suffirait :
+    //   · c'est EXACTEMENT le mécanisme du bouton de l'écran suivant, celui qui
+    //     fonctionne sur son téléphone depuis le 4 août. Ouvrir la messagerie
+    //     par un autre chemin, c'est se donner un second comportement à
+    //     éprouver — et un seul des deux le serait ;
+    //   · l'adresse devient LISIBLE dans la page, donc vérifiable. Le défaut
+    //     d'hier — un message ouvert sans destinataire — ne se voyait nulle
+    //     part ailleurs que dans sa messagerie, c'est-à-dire trop tard
+    //     (`TransmettreAuClient`, même argument).
+    //
+    // Le lien reste dans le document après l'appui : le retirer aussitôt
+    // annulerait la navigation sur certains navigateurs, et priverait le
+    // contrôle de la seule trace qu'il puisse lire.
+    const porte = document.createElement("a");
+    porte.href = lienTransmission({ canal: canalClient, destinataire, message });
+    porte.setAttribute("data-transmission-directe", canalClient);
+    porte.style.display = "none";
+    document.body.appendChild(porte);
+    porte.click();
   }
 
   // Déduit des props, jamais gardé en état : une reprise de devis rafraîchit
@@ -349,6 +420,9 @@ export default function ExportClient({
         onEnvoye={(lien) => {
           setConfirmationVisible(false);
           setLienClient(lien);
+          // **Sa messagerie s'ouvre ICI, pas un écran plus loin.** Voir
+          // `ouvrirLaMessagerie` pour ce qui reste derrière, et pourquoi.
+          ouvrirLaMessagerie(lien);
           // **Et l'on relit le serveur.** Sans cela, `etatEnvoi` reste celui de
           // l'ouverture — « correction demandée » — alors qu'une version vient
           // de partir. `!lienClient` masque déjà le bouton de reprise tout de
