@@ -9,6 +9,59 @@ sert.
 
 ---
 
+## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026)
+
+**Le module est complet ; sa base est vide, et c'est le bon état.** Si vous
+ouvrez `/paysage/diagnostic` et qu'il répond « la base ne contient encore aucune
+fiche validée », **rien n'est cassé** : aucune fiche réelle n'a été écrite, et
+c'est une règle du patron, pas un oubli (`ARCHITECTURE.md` §135.10).
+
+**Pour voir le parcours fonctionner ici**, chargez les fixtures d'essai :
+
+```bash
+source scripts/monter-base-locale.sh
+DATABASE_URL="$DATABASE_ADMIN_URL" npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fixtures --fixtures
+```
+
+Elles ne sortiront **que** si `ATLAS_FIXTURES_PHYTO=1` est posé dans le
+processus qui lit — c'est une double garde délibérée. Sans elle, la lecture les
+filtre, exactement comme en production.
+
+**Trois pièges, dans l'ordre où on les rencontre :**
+
+1. **L'import exige le rôle PROPRIÉTAIRE.** `atlas_app` n'a que `SELECT` sur la
+   base phytosanitaire (migration 0056). Le script le vérifie et le dit ; sans
+   ce contrôle, l'erreur tomberait au milieu de l'import.
+2. **Une lecture SQL brute d'une table à RLS rend ZÉRO ligne sans contexte**, et
+   *silencieusement*. Trois cas de `test-diagnostic-base.ts` en sont morts avant
+   d'être corrigés : ils lisaient `0` et concluaient « rien n'a été écrit » alors
+   que tout l'était. Employez `withEntreprise`, ou `set_config(..., true)` dans
+   une transaction — jamais `pool.query` nu.
+3. **Le vocabulaire est PARTAGÉ** entre les fiches et la consigne du modèle
+   (`src/lib/diagnostic-vegetal.ts`). Ajouter un mot d'un seul côté ne produit
+   aucune erreur : simplement une fiche qui ne sort plus jamais. Deux contrôles
+   l'attrapent — `verifierVocabulaire()` à l'import, et une suite qui vérifie
+   que chaque mot figure bien dans la consigne.
+
+**Où sont les choses :**
+
+| | |
+|---|---|
+| Règles pures (score, arbitrage, confiance, mentions) | `src/lib/diagnostic-vegetal.ts` |
+| Appel au modèle + lecture de sa réponse | `src/server/diagnostic/observation.ts` |
+| Orchestration | `src/server/diagnostic/moteur.ts` |
+| Base commune (lecture seule) | `src/server/repositories/fiches-phyto.ts` |
+| Diagnostics (RLS) | `src/server/repositories/diagnostics.ts` |
+| EXIF, conservation, import | `src/lib/exif.ts`, `retention-diagnostic.ts`, `import-fiches-phyto.ts` |
+| Écrans | `src/app/paysage/diagnostic/` |
+
+**Ce qui n'a PAS été vérifié, et doit s'écrire ainsi :** l'appel réel au
+fournisseur de vision. Aucune clé d'IA dans cet environnement — comme pour la
+lecture des tickets de gazole. Tout le reste l'a été.
+
+---
+
+
 ## La recherche de clients est CODÉE (20 août 2026)
 
 Sa demande du matin : *« il faut une barre de recherche où je peux taper le nom

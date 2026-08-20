@@ -25,6 +25,26 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## 🌿 Diagnostic végétal — le module tourne, il lui manque des FICHES
+
+Le code est fait et éprouvé (`ARCHITECTURE.md` §135). Ce qui reste ne se code
+pas : ce sont des données à recopier de sources officielles.
+
+| | Ce qui reste | Qui peut le faire |
+|---|---|---|
+| 1 | **Constituer le premier lot d'environ 50 fiches** — champignons lignivores, maladies courantes, ravageurs, carences pertinentes, stress abiotiques souvent confondus avec une maladie. Sources : DSF/ministère de l'Agriculture, INRAE, FREDON, Plante & Cité, ONF, BSV. Format et contrôles : `donnees/phyto/LISEZ-MOI.md` | moi, à partir des documents publics, avec relecture avant passage en `validee` |
+| 2 | **Éprouver l'appel réel de vision sur le banc**, avec de vraies photos. Non vérifiable ici : aucune clé d'IA dans cet environnement | le patron pose sa clé, je regarde le résultat |
+| 3 | Renseigner les `confusions_phyto` entre fiches proches — c'est **elles** qui permettent la demande de photo complémentaire. Sans elles, deux hypothèses proches donnent un refus au lieu d'une relance | avec le lot de fiches |
+| 4 | Régler les seuils (`SEUIL_PLANCHER`, `ECART_NET`, plafonds de confiance) sur de vraies photos et de vraies fiches. Les valeurs actuelles sont un point de départ **assumé**, nommé et éprouvé — pas mesuré | après le premier lot |
+| 5 | Ajouter le fournisseur de vision au registre des sous-traitants (`docs/RGPD.md` §3), et décider de la durée de conservation des photos | le patron |
+| 6 | Brancher un classement sémantique quand la base dépassera quelques centaines de fiches. L'interface (`ClasseurCandidats`) et son verrou (`appliquerClassement`) existent déjà et sont éprouvés | plus tard, et seulement si le déterministe montre ses limites |
+
+**Ce qui n'est PAS à faire :** inventer des fiches pour que la démonstration
+tourne. Le module dit « la base ne contient encore aucune fiche validée », ce
+qui est vrai, et c'est le bon état tant que les vraies données ne sont pas là.
+
+---
+
 ## ⏳ POURQUOI deux constructions se marchent dessus — non reproduit
 
 **Le 20 août 2026 à 6 h 10**, la construction du banc tombe sur « Another next

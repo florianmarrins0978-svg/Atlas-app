@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-20 · branche `main`
-· dernière migration `drizzle/0055_passage_entretien.sql`
+· dernière migration `drizzle/0056_diagnostic_vegetal.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -9,6 +9,33 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Diagnostic végétal — le module est prêt, **sa base est vide**
+
+**Posé le 20 août 2026.** Troisième outil de l'onglet Paysage
+(`/paysage/diagnostic`), après l'arrosage et la fiche de chantier.
+
+| | État |
+|---|---|
+| Schéma (12 tables, migration 0056) | **fait** |
+| Moteur déterministe : rapprochement, arbitrage, confiance | **fait**, éprouvé sans base ni réseau |
+| Observation par un modèle de vision, vocabulaire fermé | **fait** — l'appel réel **non vérifié** ici, faute de clé |
+| Écrans : prise de photo, résultat, relance, refus | **faits** |
+| Retrait des métadonnées EXIF (JPEG/PNG/WebP) | **fait**, éprouvé sur l'octet |
+| Conservation configurable + purge planifiée | **fait** |
+| Rattachement facultatif à un chantier | **fait** |
+| Import de fiches : schéma, six refus, traçabilité | **fait**, éprouvé contre des fiches fautives |
+| Classement sémantique | **pas fait** — l'interface et son verrou existent, l'implémentation non |
+| **Fiches phytosanitaires réelles** | **AUCUNE** |
+
+**La dernière ligne est le seul vrai reste, et elle n'est pas du code.** Sa
+règle : *« tu ne dois inventer aucune fiche phytosanitaire »*. Tant que la base
+est vide, le module répond honnêtement « la base ne contient encore aucune fiche
+validée » — à chaque photo. Le premier lot d'environ cinquante fiches doit être
+constitué à partir du DSF, de l'INRAE, de la FREDON, de Plante & Cité, de l'ONF
+et des BSV. La marche à suivre est dans `donnees/phyto/LISEZ-MOI.md`.
 
 ---
 

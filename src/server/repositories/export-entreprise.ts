@@ -33,6 +33,10 @@ import {
   membresEntreprise,
   achatsTva,
   notesVocales,
+  diagnostics,
+  photosDiagnostic,
+  photosDiagnosticAPurger,
+  hypothesesDiagnostic,
   parametresChiffrage,
   photos,
   precisionsChantier,
@@ -140,6 +144,10 @@ export async function exporterEntreprise(
       sesPassages,
       sesLignesPassage,
       sesMotsCatalogue,
+      sesDiagnostics,
+      sesPhotosDiagnostic,
+      sesHypotheses,
+      sesPhotosAPurger,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -242,6 +250,19 @@ export async function exporterEntreprise(
       // oublierait rendrait une dictée qui ne comprend plus ce qu'elle
       // comprenait la veille, sans que rien ne dise pourquoi.
       tx.select().from(motsCatalogue).where(eq(motsCatalogue.entrepriseId, e)),
+      // Les diagnostics végétaux et leurs photos. **Ils partent avec le reste**,
+      // et le contrôle d'exhaustivité les a réclamés le jour même où les tables
+      // sont nées — avant qu'on y pense. Ce sont des données personnelles à part
+      // entière : une photo de diagnostic est prise chez quelqu'un, et le
+      // diagnostic dit ce qu'on a trouvé dans son jardin.
+      tx.select().from(diagnostics).where(eq(diagnostics.entrepriseId, e)),
+      tx.select().from(photosDiagnostic).where(eq(photosDiagnostic.entrepriseId, e)),
+      tx.select().from(hypothesesDiagnostic).where(eq(hypothesesDiagnostic.entrepriseId, e)),
+      // La file de purge part aussi, comme `audios_a_purger` : elle dit à
+      // quelle date chaque photo doit disparaître, ce qui est une information
+      // sur SES données. Exporter l'une sans l'autre aurait été une divergence
+      // sans raison.
+      tx.select().from(photosDiagnosticAPurger).where(eq(photosDiagnosticAPurger.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -302,6 +323,13 @@ export async function exporterEntreprise(
       passages_entretien: sesPassages,
       lignes_passage: sesLignesPassage,
       mots_catalogue: sesMotsCatalogue,
+      diagnostics: sesDiagnostics,
+      photos_diagnostic: sesPhotosDiagnostic,
+      // Les hypothèses internes du moteur. Jamais affichées, mais elles sont à
+      // lui : elles disent POURQUOI un diagnostic a conclu ce qu'il a conclu,
+      // et c'est exactement ce qu'on veut relire le jour où il est contesté.
+      hypotheses_diagnostic: sesHypotheses,
+      photos_diagnostic_a_purger: sesPhotosAPurger,
     };
 
     const compte: Record<string, number> = {};
@@ -321,6 +349,11 @@ export async function exporterEntreprise(
     for (const n of lesNotes) ajouter(n.storageKey as string | null, "note-vocale");
     for (const d of lesDevis) ajouter(d.pdfStorageKey as string | null, "devis-pdf");
     for (const f of lesFactures) ajouter(f.pdfStorageKey as string | null, "facture-pdf");
+    // Les photos de diagnostic partent avec le reste. Celles déjà purgées ont
+    // une clé nulle : `ajouter` les ignore, plutôt que de faire échouer
+    // l'archive sur un objet qui n'existe plus (c'est le cas normal après
+    // 90 jours, pas une anomalie).
+    for (const p of sesPhotosDiagnostic) ajouter(p.storageKey as string | null, "photo");
 
     return {
       versionFormat: VERSION_FORMAT_EXPORT,

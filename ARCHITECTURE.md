@@ -11511,3 +11511,226 @@ Le message du serveur, lui, disait exactement : *« You cannot use different slu
 names for the same dynamic path ('id' !== 'chantierId') »*. **Aller le lire a
 pris trente secondes.** C'est la règle d'`AGENTS.md` : reproduire le message du
 serveur, jamais l'idée qu'on s'en fait.
+
+---
+
+## 135. Le diagnostic végétal : le modèle observe, la base décide
+
+**Sa demande du 20 août 2026 :** photographier une anomalie sur un végétal et
+obtenir un diagnostic probable avec une conduite à tenir, en quatre gestes —
+ouvrir, photographier, attendre, lire. Sa règle produit : *« 1 photo → 1 résultat
+principal → 3 informations essentielles → 1 action recommandée. La complexité
+doit être dans le moteur et la base de données, jamais dans l'interface. »*
+
+### 135.1 La décision qui commande tout le reste
+
+**Un modèle à qui l'on demande de nommer une maladie en nommera toujours une.**
+C'est ce qu'il sait faire, et c'est précisément ce qu'il ne faut pas : sa
+consigne était *« Atlas ne doit JAMAIS inventer un diagnostic »*.
+
+Une consigne écrite dans un prompt n'aurait pas suffi. Le pipeline ne demande
+donc jamais au modèle de nommer quoi que ce soit — **il lui demande ce qu'il
+voit**, et c'est du code déterministe qui conclut.
+
+Trois barrières, et il faut les trois :
+
+1. **Le schéma de sortie ne comporte AUCUN champ où nommer un problème.** Pas
+   de « diagnostic », pas d'« hypothèse ». Un modèle ne peut pas conclure dans
+   un formulaire qui n'a pas de case pour ça. C'est la seule des trois qui soit
+   vraiment structurelle.
+2. **Le vocabulaire est fermé et PARTAGÉ** entre l'observation et les fiches :
+   les mêmes mots décrivent ce que le modèle voit et ce que la fiche annonce.
+   « feutrage_blanc » se constate, « oïdium » se conclut — et le second n'est
+   pas dans la liste. Deux vocabulaires auraient exigé une traduction entre les
+   deux, donc une interprétation, donc un endroit où se tromper.
+3. **Tout texte affiché sort d'une colonne de `fiches_phyto`.** Aucune chaîne
+   rendue par un modèle n'atteint l'écran.
+
+**Conséquence :** une maladie, une gravité ou un traitement inventés sont
+impossibles **par construction**.
+
+### 135.2 Le partage du vocabulaire, et le défaut qu'il rend visible
+
+Le vocabulaire vit dans `src/lib/diagnostic-vegetal.ts`, et il est **injecté**
+dans la consigne du modèle — jamais recopié.
+
+**Recopié, il aurait divergé au premier mot ajouté, et la divergence aurait été
+SILENCIEUSE.** Une fiche écrivant « moisissure » là où le modèle rend
+« feutrage_blanc » ne remonterait jamais : aucune erreur, aucun message,
+simplement une fiche qui ne sort plus. C'est le défaut le plus cher de cette
+architecture, et deux contrôles le rendent détectable : `verifierVocabulaire()`
+à l'import, et une suite qui vérifie que **chaque** mot du vocabulaire figure
+bien dans la consigne.
+
+### 135.3 Deux mondes de données, qui ne se mélangent jamais
+
+| | La base phytosanitaire | Les diagnostics |
+|---|---|---|
+| Appartient à | personne — c'est un savoir commun | une entreprise |
+| RLS | **aucune** | activée et forcée |
+| Droits d'`atlas_app` | `SELECT` seul | lecture et écriture |
+| Écrite par | l'import, sous le rôle propriétaire | le produit |
+| Précédent | `catalogue_prestations` (0007), `documents_legaux` (0014) | `notes_vocales`, `audios_a_purger` |
+
+**`GRANT SELECT` seul est un point de sécurité, pas une commodité :** une faille
+dans l'application ne peut pas écrire une maladie inventée dans la base commune
+de tout le monde, parce qu'il n'y a aucun droit d'écriture à voler.
+
+### 135.4 Le score, et pourquoi il croise DEUX couvertures
+
+`rapprocher()` calcule, pour chaque fiche :
+
+- **la couverture de la fiche** — ce qu'elle annonce est-il visible ? Seule,
+  elle favorise les fiches maigres : une fiche à un seul symptôme banal
+  sortirait toujours première ;
+- **la couverture de l'observation** — ce qu'on voit, la fiche l'explique-t-il ?
+  Seule, elle favorise les fiches fourre-tout, qui couvrent tout parce qu'elles
+  annoncent tout.
+
+Chacune prise isolément produit un classement faux d'une manière différente ;
+ensemble, elles se corrigent. La formule est
+`0,55 × couvertureFiche + 0,35 × couvertureObservation + 0,10 si un SIGNE est reconnu`.
+
+**Les trois parts font exactement 1, et c'est ce qui rend le signe décisif.**
+Une première version ajoutait le bonus APRÈS coup (`min(1, score + 0,15)`) : sur
+deux fiches également bien couvertes, il était avalé par le plafond et ne
+départageait plus rien — c'est-à-dire précisément dans le cas où il sert. Une
+fiche sans aucun signe plafonne donc à 0,90, et c'est voulu : elle ne repose que
+sur des symptômes, qui se partagent entre dix causes.
+
+**Une exclusion n'est pas un score bas.** Partie non concernée, hôte `strict`
+d'une autre essence : la fiche sort du jeu. La confondre avec un malus la
+laisserait remonter le jour où tout le reste est faible.
+
+### 135.5 Quatre issues, et les trois dernières comptent autant que la première
+
+| Issue | Quand | Ce qui l'écrit |
+|---|---|---|
+| **Résultat** | une candidate nettement devant, dont la fiche n'interdit pas le diagnostic photo | recopie de la fiche |
+| **Une photo de plus** | deux candidates au coude à coude, **et** une ligne `confusions_phyto` qui les relie | la consigne est recopiée mot pour mot de `photo_qui_tranche` |
+| **« Je ne peux pas confirmer »** | rien de reconnu, trop faible, trop proches sans confusion, ou fiche `diagnostic_photo: impossible` | liste fermée de phrases, dans le code |
+| **« Personne n'a regardé »** | aucun fournisseur de vision branché, ou en panne | le message du fournisseur |
+
+**Les deux derniers ne se confondent pas** : le premier dit « la base ne sait
+pas », le second « personne n'a regardé ». Les mêler enverrait chercher un
+défaut dans les fiches alors qu'il est dans la configuration.
+
+**Une seule relance, jamais deux.** L'invariant vit à trois endroits : le code
+(`complementDejaDemande`, lu depuis la BASE et jamais depuis l'écran — le
+laisser décider par le navigateur permettrait de le remettre à zéro en
+rechargeant), une contrainte `CHECK (complements_demandes <= 1)`, et l'écran qui
+ne propose plus la relance.
+
+**Sans ligne de confusion, pas de relance.** On refuse plutôt qu'improviser une
+consigne : une consigne inventée enverrait photographier ce qui ne tranche rien.
+
+### 135.6 La confiance : trois mots, et trois plafonds
+
+Sa règle : *« ne pas afficher de faux pourcentages du type 93 % si le modèle
+utilisé ne fournit pas une probabilité réellement calibrée »*. Aucun modèle
+employé ici n'en fournit — et le score interne n'en est pas une non plus : c'est
+une somme pondérée d'indices, ce qui n'a rien à voir.
+
+Les plafonds sont le cœur de `confiancePour()` : une **photo floue**, une fiche
+qui se déclare seulement **« indicative »**, une **essence non reconnue** —
+chacun abaisse d'office, quel que soit le score. Sans eux, la confiance affichée
+serait un mensonge exactement dans les cas où elle compte le plus.
+
+Le score interne est rangé en **millièmes entiers** dans
+`hypotheses_diagnostic` : une échelle inhabituelle, délibérément choisie pour
+décourager de l'afficher comme un pourcentage.
+
+### 135.7 Quatre risques, jamais confondus
+
+Sa consigne distinguait : santé du végétal, risque mécanique de l'arbre, risque
+humain/animal, risque réglementaire. Chacun a sa colonne et sa mention.
+
+**La phrase sur la stabilité mécanique vient du CODE, pas de la fiche** — une
+règle générale de sécurité ne doit pas pouvoir manquer parce qu'une fiche est
+mal remplie : c'est la fiche bâclée qui en a le plus besoin.
+
+**Et elle s'affiche AUSSI quand `impact_mecanique` vaut `inconnu`.** C'est
+l'inverse du réflexe, et c'est le point : une fiche qui ne sait pas dire si
+l'arbre risque de casser est précisément celle sur laquelle il ne faut pas
+laisser croire que la question a été tranchée.
+
+### 135.8 La porte du classement sémantique, et son verrou
+
+Sa demande : ne pas empêcher l'ajout ultérieur d'un classement sémantique ou
+visuel des candidates — mais *« le modèle ne devra jamais pouvoir créer une
+maladie ou une recommandation absente de la base »*.
+
+`ClasseurCandidats` est l'interface ; `classeurDeterministe` (qui ne fait rien)
+est l'implémentation d'aujourd'hui. **Le verrou est `appliquerClassement`**, et
+c'est la moitié importante : il ne garde d'un classement que des fiches déjà
+entrées, **reprend la fiche d'ORIGINE** — jamais celle rendue par le classeur,
+dont le contenu pourrait être falsifié sous un identifiant valide —, refuse les
+doublons, borne le score à [0, 1], et **remet en fin de liste** ce qu'un
+classeur aurait tronqué. Une consigne dans un prompt aurait été une prière ;
+ceci est une garantie, éprouvée contre un classeur volontairement malveillant.
+
+### 135.9 Les photos : EXIF, conservation, rattachement
+
+**Les métadonnées sont retirées AVANT tout** — avant le rangement, avant l'envoi
+au fournisseur. Une photo de jardin porte les coordonnées GPS du domicile du
+client, l'horodatage, parfois une vignette ayant survécu à un recadrage.
+
+`src/lib/exif.ts` nettoie JPEG, PNG et WebP **sans réencoder** : pas de
+dépendance de plus, pas de perte de qualité au moment où le détail compte (une
+pustule fait deux millimètres). Deux subtilités qui coûtent cher si on les
+manque — APP0 (JFIF) et APP14 (Adobe) **survivent** chez JPEG, faute de quoi les
+couleurs d'une image CMJN se décodent faux ; et chez WebP, les **drapeaux VP8X**
+doivent être éteints en même temps que les blocs, sinon un décodeur peut refuser
+l'image entière.
+
+**Un fichier qu'on n'a pas su nettoyer est REFUSÉ, jamais rangé** : le laisser
+passer conserverait des métadonnées en croyant les avoir retirées, et la colonne
+`exif_retire` affirmerait alors quelque chose de faux.
+
+**La conservation est configurable**, jamais gravée (sa consigne). 90 jours pour
+une photo libre, aucune échéance pour une photo versée au dossier d'un chantier
+— et le rattachement **recalcule** l'échéance, sans quoi la pièce d'un dossier
+en cours disparaîtrait au bout de trois mois sans que personne l'ait demandé.
+
+**Le diagnostic survit à sa photo**, comme une note vocale survit à son audio :
+il garde son nom de problème, sa date, sa fiche et sa traçabilité.
+
+### 135.10 Ce qui reste vide, et pourquoi c'est le bon état
+
+**La base phytosanitaire ne contient aucune fiche réelle.** Sa règle : *« ne
+constitue pas toi-même une liste fictive de maladies pour remplir la base »* et
+*« ne remplis pas artificiellement la base avec de fausses données pour faire
+fonctionner la démonstration »*.
+
+Le module fonctionne parfaitement dans cet état : il répond « la base ne contient
+encore aucune fiche validée », ce qui est vrai — plutôt qu'un diagnostic qui ne
+l'est pas.
+
+Ce qu'il faut pour l'alimenter est prêt et éprouvé : le schéma d'import avec ses
+six refus, les contrôles de sources champ par champ, le versionnement, la
+traçabilité. Le détail est dans `donnees/phyto/LISEZ-MOI.md`.
+
+**Les fixtures d'essai** (`donnees/phyto/fixtures/`) ne décrivent aucun végétal
+réel et sont tenues à l'écart par **trois barrières**, chacune sur un chemin
+différent : l'import les refuse en production, la lecture les filtre sur
+`origine = 'reelle'` (double garde `NODE_ENV` + variable posée par la suite), et
+une contrainte CHECK lie l'origine au préfixe `zz-test-` **dans les deux sens**.
+
+### 135.11 Ne pas s'enfermer chez un fournisseur
+
+`VISION_PROVIDER` et `VISION_MODELE` — le second existe parce que le nom du
+modèle était **écrit en dur** dans le fournisseur Anthropic, ce qui obligeait à
+rebâtir l'application pour en changer. Sans valeur, les deux retombent sur la
+configuration existante : rien ne change pour une installation en place.
+
+`VISION_PROVIDER` est validé en production comme les deux autres — sans quoi
+`VISION_PROVIDER=dev` y serait passé pendant que `LLM_PROVIDER=dev` était
+refusé, et le diagnostic aurait rendu des observations fabriquées sur de vraies
+photos.
+
+`lireImages` est une extension **additive** de l'interface, comme `lireImage`
+l'avait été : plusieurs images (la photo initiale et son complément partent
+ENSEMBLE — séparée, la seconde perdrait le contexte de la première) et un modèle
+réglable. `lireImage` en est désormais un raccourci : les deux portaient la même
+requête à un tableau près.
+

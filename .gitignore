@@ -57,6 +57,10 @@ next-env.d.ts
 # de construction, pas du code source ; ne doivent jamais gonfler l'historique
 # du dépôt
 /artifacts/
+# Même raison. `captures/` a été ajouté le 20 août 2026, quand la suite des
+# écrans du diagnostic végétal a commencé à en déposer : la règle existait, le
+# dossier n'y était pas, et trois PNG se sont retrouvés dans l'index.
+/captures/
 
 # Scripts jetables de vérification, écrits pendant une session pour regarder un
 # écran dans un navigateur. Ils vivent à la racine parce que Playwright doit s'y
