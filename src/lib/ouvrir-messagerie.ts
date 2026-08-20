@@ -100,9 +100,26 @@ export function ouvrirLaMessagerie({
   // Le lien reste dans le document après l'appui : le retirer aussitôt
   // annulerait la navigation sur certains navigateurs, et priverait le
   // contrôle de la seule trace qu'il puisse lire.
+  ouvrirAdresse(lienTransmission({ canal: canalClient, destinataire, message }), canalClient);
+}
+
+/**
+ * La mécanique nue : toucher pour lui un lien `sms:` ou `mailto:`.
+ *
+ * **Extraite le 20 août 2026**, quand la fiche de chantier a eu besoin du même
+ * geste pour son compte rendu (`FicheChantierClient`). Le message, lui, n'est
+ * pas le même — un devis n'est pas un compte rendu de passage —, mais la façon
+ * d'ouvrir doit l'être : deux mécaniques d'ouverture, ce serait deux
+ * comportements à éprouver sur son téléphone, et un seul le serait.
+ *
+ * Le raisonnement complet — pourquoi un lien plutôt que `location.assign`, et
+ * pourquoi il reste dans le document — est juste au-dessus.
+ */
+export function ouvrirAdresse(adresse: string, canal: "sms" | "email"): void {
+  if (typeof document === "undefined") return;
   const porte = document.createElement("a");
-  porte.href = lienTransmission({ canal: canalClient, destinataire, message });
-  porte.setAttribute("data-transmission-directe", canalClient);
+  porte.href = adresse;
+  porte.setAttribute("data-transmission-directe", canal);
   porte.style.display = "none";
   document.body.appendChild(porte);
   porte.click();
