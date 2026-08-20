@@ -9,6 +9,63 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### La batterie ne bâtissait plus — et son rouge était devenu du décor
+
+**Trouvé en jouant `npm run verifier:avant-livraison` le 20 août :** l'étape
+« Construction » échouait sur *« Variable d'environnement obligatoire
+manquante : DATABASE_URL »*, en accusant une route d'agenda Google qui n'y est
+pour rien. Vérifié sur `main` sans aucune modification : **elle échouait déjà**.
+
+La construction collecte les données de page, ce qui instancie la configuration
+du serveur. La CI pose `DATABASE_URL` au niveau du job et bâtit donc sans
+broncher ; l'étape locale ne la posait pas. **La batterie ne jouait pas ce que
+la CI joue** — et une étape rouge en permanence s'apprend à être ignorée, ce qui
+fait perdre le seul contrôle qui protège le banc du mode lent (`CHANGELOG` du
+16 août : *« l'appli est vraiment très lente, mais vraiment »*).
+
+L'adresse est simplement lisible : aucune requête n'est faite pendant une
+construction.
+
+### Dicter le chantier dans le devis, et le retrouver rédigé
+
+**Sa demande :** *« Il existe un petit logiciel que des étudiants posent sur
+leur table pendant le cours : ils parlent, ça enregistre, et ensuite ça
+synthétise. Sur la page du devis, j'aimerais la même chose — qu'il appuie sur la
+note vocale, qu'il parle en expliquant les tâches à faire, et que
+l'intelligence artificielle comprenne et rédige ça sous forme de belles
+phrases. »*
+
+Le micro du devis existait depuis le 15 août, mais il n'écoutait qu'un artisan
+qui **corrige** des lignes déjà écrites. Il écoute désormais aussi celui qui
+**raconte** son chantier — les deux dans la même dictée, avec le même micro et
+sans rien changer à l'écran.
+
+Sur son exemple — *« j'aimerais tailler ma haie, enfin je ne sais plus, je crois
+que c'est quelque chose comme vingt mètres linéaires […] couper les
+inflorescences des hortensias, et tondre la pelouse »* — il obtient trois lignes
+proposées, à cocher : **Taille de haie** (20 ml), **Taille des inflorescences
+d'hortensias**, **Tonte de la pelouse**. Ses hésitations, ses commentaires et le
+récit de ce que son client lui a dit ne deviennent aucune ligne.
+
+**Aucun prix n'est inventé pour autant, et c'est délibéré** : il n'en a annoncé
+aucun, les trois lignes arrivent donc à chiffrer, signalées en rouge. Une ligne
+bien rédigée est plus crédible qu'une ligne bancale — raison de plus pour que
+les gardes sur le prix ne bougent pas.
+
+**Les mesures traversent jusqu'au document**, unité comprise : « vingt mètres
+linéaires » devient 20 ml, la graphie que le moteur de prix reconnaît. Une unité
+sans quantité est refusée (« 1 ml » serait un chiffre que personne n'a dit), une
+quantité recopiée dans l'unité aussi (« 20 × 20 mètres » aurait doublé sa haie).
+Le stère et l'arbre, eux, restent écrits tels qu'il les dit.
+
+**Ce qui n'a pas pu être vérifié ici, et qui l'est ailleurs.** La rédaction
+dépend d'un modèle de langage : cet environnement n'a aucune clé, la CI non
+plus. `npm run verifier:dictee` envoie sa dictée entière au vrai modèle et
+vérifie les trois lignes, la mesure et l'absence de prix — **il refuse de rendre
+un vert sans clé** plutôt que de laisser croire à un contrôle qui n'a pas eu
+lieu. Il reste à le jouer depuis son espace. La règle de rédaction, elle, est
+éprouvée ici et sait rougir : ses propres phrases recopiées doivent être
+refusées (`src/lib/redaction-lignes.ts`).
 ### La flèche de la fiche client ramène d'où l'on vient
 
 **Sa remarque, capture à l'appui :** *« Quand j'appuie sur retour, ça ne me fait

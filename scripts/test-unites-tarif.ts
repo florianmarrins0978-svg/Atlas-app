@@ -4,6 +4,7 @@ import {
   estUniteLibre,
   normaliserUnite,
   uniteProposee,
+  uniteDictee,
 } from "../src/lib/unites-tarif";
 import { chiffrerMainOeuvre } from "../src/lib/tarif-main-oeuvre";
 
@@ -123,6 +124,45 @@ cas("une unité vide n'est pas une unité libre", () => {
 
 cas("une unité de la liste n'est pas comptée comme libre", () => {
   assert.equal(estUniteLibre("m²"), false);
+});
+
+console.log("\n— L'unité telle qu'il la PRONONCE —");
+
+// Sa dictée du 20 août 2026 : *« une haie qui fait quelque chose comme vingt
+// mètres linéaires »*. Personne ne dit « ml » à voix haute, et l'écart entre ce
+// qu'il prononce et ce que le moteur de prix reconnaît se paye en silence.
+
+cas("« mètres linéaires » devient l'unité que le moteur reconnaît", () => {
+  for (const dit of ["mètres linéaires", "metres lineaires", "mètre linéaire", "ML", "ml"]) {
+    assert.equal(uniteDictee(dit), "ml", `« ${dit} » n'est pas arrivé en ml`);
+  }
+});
+
+cas("les cinq autres unités de la liste se retrouvent aussi à l'oral", () => {
+  assert.equal(uniteDictee("mètres carrés"), "m²");
+  assert.equal(uniteDictee("m2"), "m²");
+  assert.equal(uniteDictee("heures"), "heure");
+  // La graphie exacte de la main d'œuvre : « jours homme » enregistré tel quel
+  // ferait disparaître le tarif correspondant, sans une erreur.
+  assert.equal(uniteDictee("jours homme"), "jour/homme");
+  assert.equal(uniteDictee("journée homme"), "jour/homme");
+  assert.equal(uniteDictee("au forfait"), "forfait");
+  assert.equal(uniteDictee("tonnes"), "tonne");
+});
+
+cas("une unité que la liste ignore reste la sienne", () => {
+  assert.equal(uniteDictee("stère"), "stère");
+  assert.equal(uniteDictee("arbre"), "arbre");
+});
+
+cas("ce qui n'est pas une unité ne devient pas une unité", () => {
+  assert.equal(uniteDictee(""), null);
+  assert.equal(uniteDictee("   "), null);
+  assert.equal(uniteDictee(null), null);
+  assert.equal(uniteDictee(20), null);
+  // Une quantité recopiée dans l'unité écrirait « 20 × 20 mètres » sur le devis.
+  assert.equal(uniteDictee("20 mètres"), null);
+  assert.equal(uniteDictee("des mètres linéaires de haie côté rue"), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);
