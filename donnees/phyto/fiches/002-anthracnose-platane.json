@@ -158,7 +158,7 @@
         }
       ],
 
-      "_source_images": "La page porte trois figures. Elles ne sont pas reprises : une image sans licence établie ne s'affiche pas (contrainte NOT NULL sur `licence` et `credit`). Le patron a annoncé les envoyer — elles s'ajouteront ici quand leur réutilisation sera établie.",
+      "_source_images": "La page porte trois figures, dont les crédits sont désormais connus — relevés le 20 août 2026 sur les images transmises par le patron : (1) CHAMONT S. (INRA) ; (2) © GIRAUDEL Arnaud ; (3) © Jean-Pierre Henry. **Elles ne sont pas reprises, et les deux dernières sont les plus verrouillées** : un © suivi d'un nom de personne est la réserve de droits la plus explicite qui soit, et aucune Licence Ouverte ne la couvre — ce sont des œuvres personnelles, pas des documents de service. La première, signée d'un agent de l'INRA, demande la même vérification. Ces crédits sont notés ici pour que la demande puisse les NOMMER plutôt que de parler d'images en général. Rappel : les images ne sont pas nécessaires au module — `images_phyto` est facultative, et le diagnostic fonctionne sans.",
       "images": []
     }
   ]
