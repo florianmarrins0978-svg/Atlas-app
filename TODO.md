@@ -292,6 +292,31 @@ plus, que la batterie complète a fait rougir alors que deux suites jouées seul
 l'envoi reprenait « Devis prêt pour … » indéfiniment. Corrigé.
 `ARCHITECTURE.md` §135.
 
+### 0 duotricies bis. `test-fiche-pendant-relance` est ROUGE, et ce n'est pas ce lot
+
+Constaté le 20 août 2026 en passant la batterie complète. Un cas sur trois échoue :
+
+> `le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien`
+> `le veilleur n'a jamais tenté de relance : le montage ne reproduit pas le cas réel`
+
+**Vérifié plutôt que supposé :** la suite a été rejouée sur son PROPRE commit
+d'introduction (`2adb19f`, « Faire publier la fiche du banc À CÔTÉ de la
+surveillance »), sans rien de ce lot autour. **Elle y échoue déjà.** Ce n'est
+donc ni le raccourci du devis ni une rupture récente : ou bien cet
+environnement ne sait pas monter ce qu'elle met en scène, ou bien elle est
+partie rouge.
+
+Le message accuse d'ailleurs son propre montage, pas le produit — c'est un
+point pour elle : il envoie chercher au bon endroit.
+
+**Qui peut le faire :** la session qui tient le banc d'essai. Deux issues
+acceptables, et une seule inacceptable :
+- la réparer pour qu'elle éprouve pour de bon la relance ;
+- ou constater qu'elle ne peut pas tourner ici et la déplacer sur une machine
+  (c'est ce que font `pages.yml` et `banc-essai.yml`) ;
+- **la laisser rouge sans le dire** : non — la batterie devient alors un
+  voyant qu'on apprend à ignorer, et c'est ainsi qu'on rate le suivant.
+
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
