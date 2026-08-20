@@ -25,33 +25,29 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
-## 🔴 `test-reduction-devis-e2e.ts` est ROUGE SUR `main` — pas une intermittence
+## ~~🔴 `test-reduction-devis-e2e.ts` est ROUGE SUR `main`~~ — **TROUVÉ le 20 août 2026**
 
-**Le 20 août 2026 au soir.** La suite du prix accordé au client tombe : selon
-l'exécution, une à huit vérifications, dont *« un appui rend le prix plein TOUT
-DE SUITE, avant toute écriture »* et *« écrire 0 % la retire pour de bon, à
-l'écran comme en base »*.
+**La cause n'était pas dans l'affichage de la remise, mais dans la SAISIE des
+lignes** — c'est-à-dire dans le montage de la suite, et non dans le produit.
 
-**Ce n'est pas une intermittence, et c'est pour cela que ce point est ici et non
-dans les « non reproduits ».** Vérifié sur `origin/main` en tête, **serveur
-réchauffé, suite jouée seule** : cinq vérifications tombent. Le lot du
-diagnostic végétal n'y est pour rien — il a été mis de côté pour l'éprouver, et
-la suite tombe sans lui.
+La boucle qui écrit les trois lignes du devis comptait 500 ms après avoir
+demandé une ligne neuve, puis visait `nth(count - 1)`. Sous charge, la ligne
+n'était pas encore rendue : `count - 1` désignait alors la **précédente**, et
+l'écrasait. Une ligne disparaissait du devis, le total tombait de 870 à 180 ou
+420 selon celle qui sautait — d'où le `'180.00' !== '870.00'` relevé, et d'où
+le nombre variable de cas qui tombaient.
 
-Un des symptômes relevés dans le journal :
+Le contrôle accusait donc la remise, qui n'y était pour rien.
 
-    Expected values to be strictly equal:
-    '180.00' !== '870.00'
+**Le remède, déjà employé quatre fois dans ce lot :** attendre que la ligne
+EXISTE, puis relire jusqu'à voir le devis complet — **attendre ce qu'on affirme,
+jamais une durée** (`test-prix-e2e.ts`, même motif).
 
-**Ce qu'il faut faire, et dans cet ordre** — c'est le protocole du dépôt, pas
-une préférence : d'abord aller chercher **ce que le serveur écrit vraiment**
-(`/tmp/atlas-serveur-e2e.log`), avant de formuler la moindre hypothèse. Trois
-correctifs de suite sont déjà passés au vert dans ce dépôt en réparant une panne
-*imaginée* (`AGENTS.md`).
+Rejouée sur l'arbre fusionné, serveur réchauffé : **11 cas sur 11 au vert.**
 
-**Ce que ça bloque :** la batterie complète ne peut plus être annoncée au vert.
-Elle rend aujourd'hui 186/186 en base et 103/104 en navigateur, et l'unique
-rouge est celui-ci.
+**Ce qu'il faut en retenir, et qui vaut plus que le correctif :** le journal du
+serveur n'aurait rien dit ici — le serveur faisait exactement ce qu'on lui
+demandait. Le défaut était dans ce que la suite lui demandait.
 
 ---
 
@@ -536,7 +532,7 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 
 ## Ce que je peux faire seul
 
-### 0 duotricies. « Choisir la date » — DESSINÉE le 20 août 2026, en attente de son choix
+### 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
 
 **Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
 me le modifier par Choisir la date […] sous forme de bouton vert comme tous les
@@ -552,16 +548,46 @@ s'ouvre par-dessus l'écran récapitulatif. La monter sur le devis, c'est l'ouvr
 plus tôt : elle ne demande que `chantierId`, `devisId` et `clientNom`, tous trois
 présents sur `devis-complet`.
 
-**Deux choses à trancher par lui**, et rien ne se code avant :
+**Il a tranché : « A et la 2 ».** L'aperçu reste un lien discret ; l'écran du
+milieu ne s'ouvre plus avant l'envoi — l'adresse renvoie au devis tant que rien
+n'est parti, et sa face récapitulative est supprimée pour de bon.
 
-1. **A ou B** — l'aperçu du PDF reste un lien discret (A, recommandé) ou devient
-   une pastille creuse (B).
-2. **Ce que devient l'écran du milieu APRÈS l'envoi.** Il porte aujourd'hui le
-   lien à transmettre au client et « Reprendre le devis ». **Option 1
-   (recommandée)** : il reste, mais on n'y arrive plus qu'une fois le devis
-   parti. **Option 2** : il disparaît, et il faut reloger ces deux gestes
-   ailleurs — ce qui touche les autres chemins qui y mènent
-   (`src/lib/chantier-etat.ts`, le planning, la liste des chantiers).
+**FAIT.** Le geste vit sur `devis-complet` ; `/export` ne rend plus que l'écran
+du devis parti. Éprouvé par `scripts/test-choisir-la-date-e2e.ts`, vu rouge en
+réintercalant l'écran du milieu. Vingt-six suites ont dû suivre — puis onze de
+plus, que la batterie complète a fait rougir alors que deux suites jouées seules
+étaient vertes. L'une d'elles a trouvé un vrai défaut : rechargé, l'écran d'après
+l'envoi reprenait « Devis prêt pour … » indéfiniment. Corrigé.
+`ARCHITECTURE.md` §136.
+
+### ~~0 duotricies bis. `test-fiche-pendant-relance` est ROUGE~~ — **C'ÉTAIT MOI**
+
+**Écrit le 20 août 2026, et faux dès la première ligne.** J'avais consigné cette
+suite comme « rouge indépendamment du lot », avec pour preuve qu'elle échouait
+aussi sur son propre commit d'introduction. La conclusion était fausse, et le
+dépôt portait déjà la bonne explication : **`TODO.md` 0 trigies quater**, écrite
+le 17 août par une autre session, qui décrit exactement ce piège.
+
+`veiller.sh` ne se déclare « serveur mort » que si
+`pgrep -f '[n]ext(-server| dev| start)'` ne trouve rien. Or `pgrep -f` compare la
+**ligne de commande entière de tout processus de la machine**. J'ai lancé mes
+batteries par une commande qui commençait par
+`pgrep -af "next dev|next-server" … | xargs kill` — un ménage des serveurs
+orphelins. **Ce shell-là vit pendant toute la batterie, et sa ligne de commande
+contient littéralement les motifs surveillés.** Le veilleur voyait donc un
+serveur, prenait l'autre branche, et n'écrivait jamais le message attendu.
+
+**La preuve :** rejouée depuis un script qui ne nomme aucun de ces motifs, et
+sans serveur orphelin vivant, la suite rend **3 cas sur 3 au vert**.
+
+**Ce que ça coûte, et pourquoi ce point reste écrit plutôt que supprimé :**
+j'ai consigné une hypothèse comme un fait, et je l'ai dite au patron. Une
+hypothèse rangée dans les tâches se relit ensuite comme un constat — c'est
+précisément l'avertissement que porte 0 trigies quater, et je ne l'avais pas lu
+avant d'écrire.
+
+**Faire le ménage des serveurs dans un appel SÉPARÉ**, qui se termine avant la
+batterie. C'est la seule chose à retenir pour la prochaine fois.
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 

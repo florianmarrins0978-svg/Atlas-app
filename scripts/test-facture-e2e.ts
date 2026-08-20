@@ -88,8 +88,8 @@ async function chantierRealise(page: Page, suffixe: string) {
   await champs.nth(1).blur();
   await page.waitForTimeout(500);
 
-  await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-  await page.click("text=Envoyer au client");
+  await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+  await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });

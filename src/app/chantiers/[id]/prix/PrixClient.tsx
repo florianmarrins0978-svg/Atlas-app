@@ -96,7 +96,9 @@ export default function PrixClient({
     setErreurValidation(null);
     try {
       await validerPrixAction(chantierId);
-      router.push(`/chantiers/${chantierId}/export`);
+      // Vers le devis, et non plus vers l'écran récapitulatif : celui-ci
+      // n'existe plus avant l'envoi (20 août 2026, `ARCHITECTURE.md`).
+      router.push(`/chantiers/${chantierId}/devis-complet`);
     } catch {
       // Sans ce message, un refus du serveur ne laissait rien à l'écran : le
       // bouton se réactivait, la page ne bougeait pas, et le patron ne pouvait

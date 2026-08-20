@@ -76,8 +76,8 @@ async function devisParti(page: Page, suffixe: string) {
   await champs.nth(1).blur();
   await page.waitForTimeout(500);
 
-  await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-  await page.click("text=Envoyer au client");
+  await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+  await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
@@ -212,6 +212,9 @@ async function main() {
     const { chantierId, url, jeton } = await devisParti(page, "reprise");
     await clientRefuse(browser, jeton);
 
+    // **Sur `/export` : l'écran d'APRÈS l'envoi.** Le raccourci du 20 août 2026
+    // n'a supprimé que sa face d'avant (`ARCHITECTURE.md` §136) ; c'est celle-ci
+    // qui porte la réponse du client et la reprise.
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     assert.ok(
       await page.locator("text=Le client n'a pas donné suite").isVisible(),
@@ -219,7 +222,7 @@ async function main() {
     );
 
     await page.click("text=Reprendre le devis");
-    await page.waitForSelector("text=Envoyer au client", { timeout: 15000 });
+    await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
 
     // Une nouvelle version, pas une modification de celle qui est partie : le
     // devis refusé reste la trace de ce qui avait été proposé.
@@ -232,7 +235,7 @@ async function main() {
     assert.strictEqual(rows[1].statut, "brouillon");
 
     // Et elle repart réellement : c'est tout l'objet de la reprise.
-    await page.click("text=Envoyer au client");
+    await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     try {
@@ -283,6 +286,7 @@ async function main() {
     const { url, jeton } = await devisParti(page, "relance");
 
     await page.reload({ waitUntil: "networkidle" });
+    // Voir ci-dessus : l'attente d'une réponse se lit sur l'écran d'après l'envoi.
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
     // Sélecteur restreint au paragraphe : en mode développement, une erreur

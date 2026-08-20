@@ -33,6 +33,43 @@ l'ancienne phrase, sa suite rend trois rouges.
 jour, version bâtie : connexion à l'accueil en 890 ms, chaque écran entre 0,6 et
 1,1 seconde. `TODO.md` porte le relevé.
 
+### « Choisir la date » : envoyer un devis coûte deux écrans au lieu de trois
+
+**Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
+me le modifier par "Choisir la date" […] j'arrive directement sur la page où je
+peux choisir la date […] on supprime la page qui est entre les deux. On va
+raccourcir les étapes. »* Puis son choix devant la planche : *« A et la 2 »*.
+
+**Le doublon était réel.** L'écran du milieu redisait le client, les lignes et le
+total que le devis venait d'afficher en entier — pour proposer le même geste. On
+ne relit pas un devis qu'on vient de fermer.
+
+**Ce qui change :** sur le devis, un bouton plein **« Choisir la date »**, sans
+flèche, au-dessus de l'aperçu du PDF. Un appui ouvre le calendrier **sans
+changer d'écran**. L'ancienne adresse renvoie au devis tant que rien n'est parti.
+
+**Ce qui ne change pas :** le calendrier, l'interrupteur « il peut proposer une
+autre date » et « Envoyer le devis » sont la MÊME feuille, ouverte plus tôt. Et
+l'écran du devis parti — le « signet d'or » qu'il avait retenu — garde son
+travail : le lien à transmettre, la reprise.
+
+**Deux effets que seul le navigateur a montrés.** La phrase « Devis prêt pour
+Mr. Martins. » se perdait après l'envoi, l'écran annonçant « en attente de
+réponse » une seconde après l'appui — vrai, et froid ; le moment voyage
+maintenant dans l'adresse. Et deux boutons « Annuler » cohabitaient sur le même
+écran sans se distinguer à l'oreille.
+
+**Un défaut corrigé au passage, et qui se voyait à l'œil nu :** rechargé, l'écran
+d'après l'envoi reprenait « Devis prêt pour … » comme si le devis venait de
+partir — même trois jours plus tard. Il dit maintenant où en est vraiment le
+devis, et ne garde la phrase du moment que pour la visite où elle est vraie.
+
+**Ce que ça coûte, dit franchement :** vingt-six suites passaient par l'ancien
+chemin et ont dû suivre. La batterie complète en a fait rougir onze de plus, que
+deux suites jouées seules n'avaient pas vues — dont celle qui a trouvé le défaut
+ci-dessus. Deux suites ont été supprimées avec l'écran qu'elles mesuraient, sans
+rien perdre de ce qu'elles gardaient encore de vivant.
+`ARCHITECTURE.md` §136, `docs/maquettes/82`.
 
 ### « Il faut absolument mettre des photos » — l'écran en montre une, et d'où elle vient
 

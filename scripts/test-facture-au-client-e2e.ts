@@ -59,8 +59,8 @@ async function main() {
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1200);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
-  await page.click("text=Envoyer au client");
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.click("text=Choisir la date");
   await page.waitForTimeout(800);
   await page.locator("button[aria-pressed]").nth(1).click();
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
