@@ -1673,3 +1673,416 @@ export const achatsTva = pgTable("achats_tva", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdBy: uuid("created_by").references(() => users.id),
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Diagnostic végétal (migration 0056) — deux mondes qui ne se mélangent jamais
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// **A. La base phytosanitaire : commune, en lecture seule, SANS RLS.** Un fait
+// phytosanitaire n'appartient à aucune entreprise. Même modèle que
+// `cataloguePrestations` et `documentsLegaux` : aucun `entrepriseId`, et
+// `GRANT SELECT` seul côté base — l'import tourne sous le rôle propriétaire.
+// Une faille applicative ne peut donc pas écrire une maladie inventée dans la
+// base commune de tout le monde : il n'y a pas de droit d'écriture à voler.
+//
+// **B. Les diagnostics : ses données, isolées par RLS**, comme tout le reste.
+//
+// Le raisonnement complet — et les trois colonnes qui portent la sécurité du
+// module — est en tête de `drizzle/0056_diagnostic_vegetal.sql`.
+
+export const sourcesPhyto = pgTable("sources_phyto", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: text("code").notNull().unique(),
+  organisme: text("organisme").notNull(),
+  titre: text("titre").notNull(),
+  url: text("url"),
+  nature: text("nature", { enum: ["officielle", "scientifique", "technique", "reglementaire"] }).notNull(),
+  publieeLe: date("publiee_le"),
+  /** Quand on a LU la source — distinct de sa date de publication. Une page
+   *  d'organisme qui bouge sans changer d'adresse ne se détecte qu'avec les deux. */
+  consulteeLe: date("consultee_le").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const taxons = pgTable(
+  "taxons",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    code: text("code").notNull().unique(),
+    nomScientifique: text("nom_scientifique"),
+    nomCommun: text("nom_commun").notNull(),
+    synonymes: text("synonymes").array().notNull().default(sql`'{}'::text[]`),
+    /** Beaucoup de fiches disent « les chênes » sans préciser l'espèce ; forcer
+     *  une espèce là où la source n'en donne pas serait inventer. */
+    rang: text("rang", { enum: ["genre", "espece", "famille", "groupe"] }).notNull().default("espece"),
+    /** Sert au rapprochement quand l'essence exacte n'est pas reconnaissable. */
+    port: text("port", { enum: ["feuillu", "conifere", "arbuste", "palmier", "autre"] }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("taxons_nom_commun_idx").on(t.nomCommun)]
+);
+
+export const fichesPhyto = pgTable("fiches_phyto", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: text("code").notNull().unique(),
+  nomCommun: text("nom_commun").notNull(),
+  /** Nul assumé : un stress abiotique n'a pas de nom scientifique. */
+  nomScientifique: text("nom_scientifique"),
+  categorie: text("categorie", {
+    enum: [
+      "maladie",
+      "champignon_lignivore",
+      "champignon_autre",
+      "ravageur",
+      "carence",
+      "stress_abiotique",
+      "degat_mecanique",
+    ],
+  }).notNull(),
+  agentCausal: text("agent_causal"),
+  agentType: text("agent_type", {
+    enum: ["champignon", "bacterie", "virus", "insecte", "acarien", "nematode", "abiotique", "inconnu"],
+  })
+    .notNull()
+    .default("inconnu"),
+  /** Vocabulaire fermé, partagé MOT POUR MOT avec l'observation rendue par le
+   *  modèle (`src/lib/diagnostic-vegetal.ts`). C'est ce partage qui rend le
+   *  rapprochement déterministe possible : deux vocabulaires auraient demandé
+   *  une traduction, donc une interprétation. */
+  partiesAtteintes: text("parties_atteintes").array().notNull().default(sql`'{}'::text[]`),
+  periodeDebutMois: integer("periode_debut_mois"),
+  periodeFinMois: integer("periode_fin_mois"),
+  /** La phrase du résultat, recopiée telle quelle. Jamais reformulée. */
+  explicationCourte: text("explication_courte").notNull(),
+  gravite: text("gravite", { enum: ["faible", "vigilance", "importante"] }).notNull(),
+  /** Dès que ce n'est pas « aucun », le résultat porte la phrase qui dit qu'une
+   *  photo ne juge pas la solidité d'un arbre — phrase qui vient du CODE et non
+   *  de la fiche, pour qu'elle ne puisse pas manquer si une fiche est mal remplie. */
+  impactMecanique: text("impact_mecanique", { enum: ["aucun", "possible", "avere", "inconnu"] })
+    .notNull()
+    .default("inconnu"),
+  impactMecaniqueNote: text("impact_mecanique_note"),
+  risqueHumainAnimal: text("risque_humain_animal", {
+    enum: ["aucun", "irritant", "toxique", "allergisant", "inconnu"],
+  })
+    .notNull()
+    .default("inconnu"),
+  risqueHumainAnimalNote: text("risque_humain_animal_note"),
+  statutReglementaire: text("statut_reglementaire", {
+    enum: ["aucun", "quarantaine", "lutte_obligatoire", "liste_alerte"],
+  })
+    .notNull()
+    .default("aucun"),
+  referenceReglementaire: text("reference_reglementaire"),
+  /** Une fiche « impossible » ne sera JAMAIS rendue comme conclusion, quel que
+   *  soit son score : c'est ce qui empêche d'affirmer depuis une photo ce
+   *  qu'une photo ne montre pas. */
+  diagnosticPhoto: text("diagnostic_photo", { enum: ["possible", "indicatif", "impossible"] }).notNull(),
+  photosUtiles: text("photos_utiles").array().notNull().default(sql`'{}'::text[]`),
+  conduiteRecommandee: text("conduite_recommandee").notNull(),
+  prevention: text("prevention"),
+  gestion: text("gestion"),
+  /** Ne s'affiche que dans les détails, avec sa source : recommander un produit
+   *  phytosanitaire engage, et l'IA n'en improvise aucun. */
+  traitement: text("traitement"),
+  /** **Seule « validee » est servie.** Une fiche en cours de saisie n'atteint
+   *  jamais un chantier. */
+  niveauValidation: text("niveau_validation", { enum: ["brouillon", "en_revue", "validee"] })
+    .notNull()
+    .default("brouillon"),
+  /** Une fixture de test porte obligatoirement un code préfixé `zz-test-`, et
+   *  réciproquement — contrainte CHECK dans la migration, dans les DEUX sens.
+   *  Le chemin de lecture applicatif écarte les fixtures par défaut. */
+  origine: text("origine", { enum: ["reelle", "fixture_test"] }).notNull().default("reelle"),
+  version: integer("version").notNull().default(1),
+  sourcesAJourLe: date("sources_a_jour_le"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Une ligne par symptôme, et non un bloc de texte.
+ *
+ * C'est sur ces lignes que le rapprochement filtre et score. Noyées dans une
+ * prose, elles auraient demandé qu'un modèle les relise à chaque diagnostic —
+ * donc qu'il interprète, donc qu'il puisse se tromper au pire endroit.
+ *
+ * La distinction symptôme/signe compte pour le score : un symptôme est ce que
+ * le végétal SUBIT, un signe est l'agent LUI-MÊME rendu visible. Un signe vaut
+ * bien plus, parce qu'un symptôme se partage entre dix causes.
+ */
+export const symptomesPhyto = pgTable(
+  "symptomes_phyto",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ficheId: uuid("fiche_id")
+      .notNull()
+      .references(() => fichesPhyto.id, { onDelete: "cascade" }),
+    nature: text("nature", { enum: ["symptome", "signe"] }).notNull(),
+    partie: text("partie").notNull(),
+    motif: text("motif").notNull(),
+    couleurs: text("couleurs").array().notNull().default(sql`'{}'::text[]`),
+    localisations: text("localisations").array().notNull().default(sql`'{}'::text[]`),
+    /** Un RANG, pas une probabilité — et le code ne le présente jamais comme
+     *  un pourcentage. */
+    poids: text("poids", { enum: ["cardinal", "frequent", "possible"] }).notNull().default("frequent"),
+    libelle: text("libelle"),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [index("symptomes_phyto_fiche_idx").on(t.ficheId)]
+);
+
+export const hotesPhyto = pgTable(
+  "hotes_phyto",
+  {
+    ficheId: uuid("fiche_id")
+      .notNull()
+      .references(() => fichesPhyto.id, { onDelete: "cascade" }),
+    taxonId: uuid("taxon_id")
+      .notNull()
+      .references(() => taxons.id, { onDelete: "restrict" }),
+    /** `strict` est une EXCLUSION, pas un malus : la fiche ne peut pas concerner
+     *  un autre hôte. C'est ce qui évite de proposer une maladie du platane sur
+     *  un chêne. */
+    specificite: text("specificite", { enum: ["strict", "frequent", "occasionnel"] })
+      .notNull()
+      .default("frequent"),
+  },
+  (t) => [primaryKey({ columns: [t.ficheId, t.taxonId] })]
+);
+
+/**
+ * La table qui commande la demande de photo complémentaire.
+ *
+ * Quand deux hypothèses arrivent au coude à coude, l'écran n'invente pas de
+ * consigne : il lit `photoQuiTranche` sur la ligne qui relie les deux fiches et
+ * l'affiche mot pour mot. Sans ligne, pas de relance — on refuse de conclure
+ * plutôt que d'improviser.
+ */
+export const confusionsPhyto = pgTable(
+  "confusions_phyto",
+  {
+    ficheId: uuid("fiche_id")
+      .notNull()
+      .references(() => fichesPhyto.id, { onDelete: "cascade" }),
+    ficheConfondueId: uuid("fiche_confondue_id")
+      .notNull()
+      .references(() => fichesPhyto.id, { onDelete: "cascade" }),
+    critereDifferenciant: text("critere_differenciant").notNull(),
+    /** Nulle = aucune photo ne tranche, et alors on ne relance pas. */
+    photoQuiTranche: text("photo_qui_tranche"),
+    partieQuiTranche: text("partie_qui_tranche"),
+  },
+  (t) => [primaryKey({ columns: [t.ficheId, t.ficheConfondueId] })]
+);
+
+export const fichesSources = pgTable(
+  "fiches_sources",
+  {
+    ficheId: uuid("fiche_id")
+      .notNull()
+      .references(() => fichesPhyto.id, { onDelete: "cascade" }),
+    sourceId: uuid("source_id")
+      .notNull()
+      .references(() => sourcesPhyto.id, { onDelete: "restrict" }),
+    /** **La colonne qui fait tout l'intérêt de cette table.** Une fiche reliée
+     *  « en gros » à trois organismes ne dit pas QUI affirme quoi : le jour où
+     *  la conduite recommandée est contestée, il faut pouvoir désigner la source
+     *  de CETTE ligne-là, pas la bibliographie entière. */
+    champs: text("champs").array().notNull().default(sql`'{}'::text[]`),
+  },
+  (t) => [primaryKey({ columns: [t.ficheId, t.sourceId] })]
+);
+
+export const imagesPhyto = pgTable(
+  "images_phyto",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ficheId: uuid("fiche_id")
+      .notNull()
+      .references(() => fichesPhyto.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key"),
+    url: text("url"),
+    /** NOT NULL, et c'est le garde-fou : une photo d'organisme reprise sans
+     *  droit sur l'écran d'un artisan est un risque qui ne se voit qu'une fois
+     *  la mise en demeure reçue. */
+    licence: text("licence").notNull(),
+    credit: text("credit").notNull(),
+    partie: text("partie"),
+    legende: text("legende"),
+    ordre: integer("ordre").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("images_phyto_fiche_idx").on(t.ficheId, t.ordre)]
+);
+
+// --- B. Ses diagnostics, isolés par RLS ------------------------------------
+
+/**
+ * Une demande de diagnostic.
+ *
+ * **`chantierId` est NULLABLE, et c'est une décision produit.** Sa règle du
+ * 20 août 2026 : « le diagnostic doit fonctionner de manière totalement
+ * autonome ; aucun chantier ne doit être nécessaire. » Même objection que pour
+ * le plan d'arrosage (`ARCHITECTURE.md` §125) : un outil qui exige un chantier
+ * ne sert pas en visite de devis. Le rattachement vient après, s'il le veut.
+ *
+ * **`resultat` est FIGÉ.** Ce qu'il a lu ce jour-là ne change pas parce qu'une
+ * fiche a été corrigée depuis — sans quoi un diagnostic contesté six mois plus
+ * tard deviendrait impossible à relire, au moment précis où on en a besoin.
+ *
+ * **`moteur`, `modele`, `versionBase` :** trois colonnes qui ne servent jamais
+ * à l'écran et qui sauvent une enquête.
+ */
+export const diagnostics = pgTable(
+  "diagnostics",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id"),
+    statut: text("statut", {
+      enum: ["en_analyse", "complement_demande", "rendu", "inconclusif", "echoue"],
+    })
+      .notNull()
+      .default("en_analyse"),
+    ficheId: uuid("fiche_id").references(() => fichesPhyto.id, { onDelete: "restrict" }),
+    /** TROIS MOTS, jamais un pourcentage. Aucun modèle employé ici ne fournit
+     *  de probabilité calibrée ; en afficher une serait mentir. */
+    confiance: text("confiance", { enum: ["elevee", "probable", "incertaine"] }),
+    taxonId: uuid("taxon_id").references(() => taxons.id, { onDelete: "set null" }),
+    essenceConfiance: text("essence_confiance"),
+    /** L'observation structurée rendue par le modèle. Aucune prose affichée
+     *  n'en sort : elle sert au rapprochement et au diagnostic d'un diagnostic
+     *  raté. */
+    observation: jsonb("observation"),
+    resultat: jsonb("resultat"),
+    complementConsigne: text("complement_consigne"),
+    complementPartie: text("complement_partie"),
+    /** **Une seule relance, jamais deux** — l'invariant est aussi en base
+     *  (CHECK 0..1), pour qu'il ne dépende pas du seul code. */
+    complementsDemandes: integer("complements_demandes").notNull().default(0),
+    moteur: text("moteur"),
+    modele: text("modele"),
+    versionBase: text("version_base"),
+    /** Vient d'une liste fermée du code — jamais d'un modèle. */
+    motifRefus: text("motif_refus"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    renduAt: timestamp("rendu_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("diagnostics_entreprise_idx").on(t.entrepriseId, t.createdAt),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "diagnostics_chantier_entreprise_fk",
+    }),
+  ]
+);
+
+/**
+ * Les photos d'un diagnostic.
+ *
+ * **`storageKey` est ANNULABLE**, comme sur `notesVocales` : la photo se purge
+ * et le diagnostic lui survit — il garde son résultat, sa date et sa fiche,
+ * sans garder l'image d'un jardin.
+ *
+ * **`exifRetire` n'est pas décoratif** : une photo de jardin porte une maison,
+ * parfois un visage, et les coordonnées GPS de chez le client. La colonne
+ * PROUVE le nettoyage ligne par ligne, ce qui rend le contrôle possible après
+ * coup plutôt que sur parole.
+ */
+export const photosDiagnostic = pgTable(
+  "photos_diagnostic",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    diagnosticId: uuid("diagnostic_id")
+      .notNull()
+      .references(() => diagnostics.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key"),
+    mimeType: text("mime_type").notNull(),
+    tailleOctets: integer("taille_octets").notNull(),
+    checksum: text("checksum").notNull(),
+    role: text("role", { enum: ["initiale", "complement"] }).notNull().default("initiale"),
+    partieDemandee: text("partie_demandee"),
+    exifRetire: boolean("exif_retire").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    purgeeLe: timestamp("purgee_le", { withTimezone: true }),
+  },
+  (t) => [index("photos_diagnostic_diagnostic_idx").on(t.entrepriseId, t.diagnosticId)]
+);
+
+/**
+ * Ce que le moteur a envisagé, avec son score et ce qui a compté.
+ *
+ * **Jamais affiché.** Sa règle : « le système doit pouvoir produire plusieurs
+ * hypothèses en interne, mais ne pas surcharger l'utilisateur. » Elles existent
+ * pour une seule raison : le jour où un diagnostic se trompe, savoir POURQUOI.
+ * Sans elles il ne resterait que le résultat — c'est-à-dire ce qui est faux,
+ * sans rien pour remonter au critère fautif.
+ */
+export const hypothesesDiagnostic = pgTable(
+  "hypotheses_diagnostic",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    diagnosticId: uuid("diagnostic_id")
+      .notNull()
+      .references(() => diagnostics.id, { onDelete: "cascade" }),
+    ficheId: uuid("fiche_id")
+      .notNull()
+      .references(() => fichesPhyto.id, { onDelete: "cascade" }),
+    rang: integer("rang").notNull(),
+    /** Entre 0 et 1000 pour rester entier. **Ce n'est PAS une probabilité**, et
+     *  il ne sort jamais à l'écran — d'où l'échelle inhabituelle, qui décourage
+     *  de l'afficher comme un pourcentage. */
+    score: integer("score").notNull(),
+    motifs: jsonb("motifs").notNull().default(sql`'[]'::jsonb`),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("hypotheses_diagnostic_uk").on(t.diagnosticId, t.ficheId),
+    index("hypotheses_diagnostic_idx").on(t.entrepriseId, t.diagnosticId, t.rang),
+  ]
+);
+
+/**
+ * La file de purge des photos de diagnostic.
+ *
+ * Copie conforme d'`audiosAPurger`, pour la raison qui l'avait fait naître :
+ * une opération de maintenance sans contexte d'entreprise passe par une file
+ * qui PORTE l'entreprise, jamais par un contournement de la RLS
+ * (`CLAUDE.md` §4).
+ *
+ * `purgerLe` est calculé à l'écriture depuis une politique CONFIGURABLE
+ * (`src/lib/retention-diagnostic.ts`) : aucune durée arbitraire gravée dans le
+ * code.
+ */
+export const photosDiagnosticAPurger = pgTable(
+  "photos_diagnostic_a_purger",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    photoId: uuid("photo_id")
+      .notNull()
+      .references(() => photosDiagnostic.id, { onDelete: "cascade" }),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key").notNull(),
+    purgerLe: timestamp("purger_le", { withTimezone: true }).notNull(),
+    misEnFileLe: timestamp("mis_en_file_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("photos_diagnostic_a_purger_uk").on(t.photoId),
+    index("photos_diagnostic_a_purger_echeance_idx").on(t.purgerLe),
+  ]
+);

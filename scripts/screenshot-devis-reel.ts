@@ -37,7 +37,7 @@ async function main() {
   const reponse = await page.request.get(`http://localhost:3000${apercuHref}`);
   writeFileSync(`${OUT}/apercu-devis.pdf`, await reponse.body());
 
-  await page.click("text=Envoyer au client");
+  await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?");
   await page.screenshot({ path: `${OUT}/02-confirmation-envoi.png`, fullPage: true });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();

@@ -5,6 +5,7 @@ import type {
   MessageConversation,
   DefinitionOutil,
   ImagePourLecture,
+  OptionsVision,
 } from "./interface";
 import { erreurIA } from "../../errors";
 import { getConfigIA } from "../../config";
@@ -37,6 +38,16 @@ function construireMessagesAnthropic(historique: MessageConversation[]): { role:
   return messages;
 }
 
+/**
+ * Le modèle employé quand rien n'est réglé.
+ *
+ * **Il était recopié à trois endroits de ce fichier.** Nommé ici, il se change
+ * en un point — et `VISION_MODELE` permet d'en changer sans rebâtir
+ * l'application, ce qui était impossible tant qu'il vivait au milieu d'une
+ * requête.
+ */
+const MODELE_PAR_DEFAUT = "claude-sonnet-4-6";
+
 // Fournisseur réel, avec usage d'outils. Domaine accessible depuis ce
 // sandbox, mais aucune clé n'y est configurée (voir rapport du lot IA-01) —
 // fonctionnera normalement une fois ANTHROPIC_API_KEY définie.
@@ -45,23 +56,48 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
   /**
    * Lire une image — un ticket de caisse, en l'occurrence.
    *
-   * **`max_tokens` reste petit (512) exprès.** On attend un objet de cinq
-   * champs, pas un commentaire sur la photo. Un plafond large invite le modèle
-   * à broder, et il faut ensuite deviner où finit la donnée.
-   *
-   * **`temperature: 0`** : lire un chiffre n'est pas une tâche créative. Deux
-   * lectures du même ticket doivent donner le même montant, sans quoi le patron
-   * verrait le total changer en rescannant.
+   * **Ce n'est plus qu'un raccourci vers `lireImages`, et c'est délibéré.** Les
+   * deux portaient la même requête, à un tableau près : deux copies de la même
+   * règle finissent toujours par diverger (`CLAUDE.md` §3), et la divergence se
+   * serait manifestée le jour où l'une gagne un correctif que l'autre n'a pas —
+   * un délai, un code d'erreur, un en-tête d'API. Le plafond de 512 jetons
+   * reste ici, parce qu'il appartient au ticket : on attend un objet de cinq
+   * champs, pas un commentaire sur la photo.
    */
   async lireImage(systeme: string, consigne: string, image: ImagePourLecture): Promise<ResultatLLM> {
+    return this.lireImages!(systeme, consigne, [image], { maxTokens: 512 });
+  },
+
+  /**
+   * Lire une ou plusieurs images.
+   *
+   * **`temperature: 0`** : lire un chiffre ou décrire une tache n'est pas une
+   * tâche créative. Deux lectures de la même photo doivent donner la même
+   * description, sans quoi le patron verrait le diagnostic changer en
+   * rescannant — et n'aurait aucun moyen de savoir laquelle croire.
+   *
+   * **Les images passent AVANT la consigne**, et l'ordre n'est pas indifférent :
+   * c'est la disposition recommandée par Anthropic pour les questions portant
+   * sur des images, et elle donne de meilleurs résultats qu'une consigne posée
+   * en tête.
+   */
+  async lireImages(
+    systeme: string,
+    consigne: string,
+    images: ImagePourLecture[],
+    options?: OptionsVision
+  ): Promise<ResultatLLM> {
     const cle = getConfigIA().anthropicApiKey;
     if (!cle) {
       return { succes: false, erreur: erreurIA("cle_api_absente", "ANTHROPIC_API_KEY n'est pas configurée.") };
     }
+    if (images.length === 0) {
+      return { succes: false, erreur: erreurIA("reponse_invalide", "Aucune image à lire.") };
+    }
     try {
       const controller = new AbortController();
-      // Plus long que pour du texte : une photo de ticket pèse, et le patron
-      // est souvent sur le réseau du bord de route.
+      // Plus long que pour du texte : une photo pèse, et le patron est souvent
+      // sur le réseau du bord de route.
       const timeout = setTimeout(() => controller.abort(), 45_000);
       const reponse = await fetch(`${getConfigIA().anthropicBaseUrl}/v1/messages`, {
         method: "POST",
@@ -71,15 +107,18 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 512,
+          model: options?.modele ?? getConfigIA().visionModele ?? MODELE_PAR_DEFAUT,
+          max_tokens: options?.maxTokens ?? 1024,
           temperature: 0,
           system: systeme,
           messages: [
             {
               role: "user",
               content: [
-                { type: "image", source: { type: "base64", media_type: image.mimeType, data: image.base64 } },
+                ...images.map((image) => ({
+                  type: "image",
+                  source: { type: "base64", media_type: image.mimeType, data: image.base64 },
+                })),
                 { type: "text", text: consigne },
               ],
             },
@@ -135,7 +174,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6",
+          model: MODELE_PAR_DEFAUT,
           max_tokens: 1024,
           system: systeme,
           messages: [{ role: "user", content: message }],
@@ -197,7 +236,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6",
+          model: MODELE_PAR_DEFAUT,
           max_tokens: 1024,
           system: systeme,
           messages: construireMessagesAnthropic(historique),

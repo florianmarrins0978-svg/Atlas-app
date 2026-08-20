@@ -105,6 +105,13 @@ async function main() {
   await large.close();
   console.log("  ✓ le tableau porte ses colonnes, comme sur le papier");
 
+  const lireEntreprise = () =>
+    pool.query(
+      `SELECT e.iban, e.siret FROM entreprises e
+       JOIN chantiers c ON c.entreprise_id = e.id WHERE c.id = $1`,
+      [chantierId]
+    );
+
   // --- 2. Ce qui s'y écrit part vers la bonne source ----------------------
   // L'IBAN : sans lui, le client reçoit un devis qu'il ne peut pas payer, et
   // aucun autre écran ne le demandait.
@@ -118,11 +125,19 @@ async function main() {
   await siret.blur();
   await page.waitForTimeout(800);
 
-  const entreprise = await pool.query(
-    `SELECT e.iban, e.siret FROM entreprises e
-     JOIN chantiers c ON c.entreprise_id = e.id WHERE c.id = $1`,
-    [chantierId]
-  );
+  // **On RELIT la base jusqu'à ce qu'elle ait reçu, au lieu d'attendre 800 ms.**
+  // Le champ rend la main dès le doigt levé et laisse l'enregistrement partir
+  // derrière lui. Huit cents millisecondes suffisent quand cette suite est jouée
+  // seule ; sous la batterie, la lecture arrivait avant l'écriture et trouvait
+  // l'IBAN du jeu de démonstration — le contrôle accusait alors l'en-tête de
+  // l'entreprise, qui n'y était pour rien. Attendre ce qu'on affirme, jamais une
+  // durée (`test-prix-e2e.ts`, même remède).
+  let entreprise = await lireEntreprise();
+  for (const essai of [1, 2, 3, 4]) {
+    if (entreprise.rows[0]?.iban === "FR76 3000 1000 0100 0000 0000 123") break;
+    await page.waitForTimeout(essai * 400);
+    entreprise = await lireEntreprise();
+  }
   assert.equal(entreprise.rows[0].iban, "FR76 3000 1000 0100 0000 0000 123", "L'IBAN n'a pas été enregistré.");
   assert.equal(entreprise.rows[0].siret, "123 456 789 00012", "Le SIRET n'a pas été enregistré.");
   console.log("  ✓ l'en-tête de l'entreprise s'enregistre — IBAN compris");
@@ -172,10 +187,19 @@ async function main() {
   // --- 3. Le devis reste dans Atlas : la chaîne tient ---------------------
   // C'est la raison d'être de cet écran plutôt que du fichier d'origine, qui
   // gardait tout dans le navigateur.
-  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Envoyer au client", { timeout: 15000 });
+  // **Le devis se relit chez lui.** L'écran de synthèse d'avant l'envoi, qui
+  // écrivait les libellés en toutes lettres, a disparu le 20 août 2026
+  // (`ARCHITECTURE.md` §136) : sur le devis, un libellé vit dans son champ, et
+  // le chercher dans le texte de la page ferait rougir un écran juste. Les
+  // totaux, eux, restent du texte — c'est bien ce qu'on lit.
+  await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
+  await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
+  const libelleRelu = await page.getByLabel("Description 1").inputValue();
+  assert.ok(
+    /tilleul/i.test(libelleRelu),
+    `L'écran Devis ignore ce qui a été écrit à la main : le champ dit « ${libelleRelu} ».`
+  );
   const ecranDevis = await page.locator("body").innerText();
-  assert.ok(/tilleul/i.test(ecranDevis), "L'écran Devis ignore ce qui a été écrit à la main.");
   assert.ok(/825,00/.test(ecranDevis), `Le total TTC ne suit pas : ${ecranDevis.slice(0, 300)}`);
   console.log("  ✓ ce qui est écrit à la main devient le devis d'Atlas");
 

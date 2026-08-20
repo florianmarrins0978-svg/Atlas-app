@@ -55,8 +55,8 @@ async function chantierAvecDevisEnvoye(page: Page, nom: string) {
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1400);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
-  await page.click("text=Envoyer au client");
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.click("text=Choisir la date");
   await page.getByRole("button", { name: /Envoyer le devis/i }).click();
 
   // **Attendre l'ÉTAT, jamais un délai fixe.** Trois secondes et demie tiennent

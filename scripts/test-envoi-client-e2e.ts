@@ -104,8 +104,8 @@ async function main() {
   await test("sans canal convenu, l'envoi est refusé et la marche à suivre est offerte ici", async () => {
     // Client nommé mais sans aucune coordonnée : le patron n'a rien convenu.
     const url = await creerChantierFacturable(page, "sanscanal", { nom: "M. Sans-Contact" });
-    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-    await page.click("text=Envoyer au client");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
 
     await page.waitForSelector("text=Comment joindre ce client", { timeout: DELAI_ECRAN_MS });
     for (const canal of ["Par SMS", "Par e-mail"]) {
@@ -120,7 +120,7 @@ async function main() {
       true,
       "l'envoi reste proposé alors qu'il est impossible"
     );
-    await page.click('button:has-text("Annuler")');
+    await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
   await test("le canal se déduit de la seule coordonnée renseignée", async () => {
@@ -128,21 +128,21 @@ async function main() {
       nom: "Mme Dupuis",
       email: "dupuis@exemple.fr",
     });
-    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-    await page.click("text=Envoyer au client");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     assert.ok(
       await page.locator("text=Par e-mail au dupuis@exemple.fr").isVisible(),
       "le canal déduit n'est pas celui de la coordonnée saisie"
     );
-    await page.click('button:has-text("Annuler")');
+    await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
   await test("le patron ne propose jamais plus de deux dates", async () => {
     const url = await creerChantierFacturable(page, "deuxmax");
-    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-    await page.click("text=Envoyer au client");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     const jours = page.locator('button[aria-pressed]');
@@ -167,44 +167,19 @@ async function main() {
       .filter({ hasText: /proposée/ })
       .count();
     assert.strictEqual(selectionnes, 2, `${selectionnes} dates retenues au lieu de 2`);
-    await page.click('button:has-text("Annuler")');
+    await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
   await test("l'envoi produit un lien que le client peut ouvrir seul", async () => {
     const url = await creerChantierFacturable(page, "cycle");
-    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-    await page.click("text=Envoyer au client");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     // Deux dates : c'est le cas qui laisse le client choisir.
     await page.locator('button[aria-pressed]').nth(1).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
-
-    // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
-    // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
-    // suite ça m'ouvre l'application […] supprime les étapes qu'il y a
-    // entre »*. Le lanceur des suites retient le saut et note ce qui a été
-    // ouvert (`scripts/e2e-browser.ts`).
-    //
-    // **Ce que ce contrôle ne prouve PAS, et il faut le dire :** qu'iOS honore
-    // cette ouverture quand elle suit une réponse du serveur plutôt que le
-    // doigt. Aucun navigateur d'ici ne répond pour Safari — d'où l'écran
-    // « Devis prêt » et son bouton, qui restent en place derrière.
-    const ouvertes = (await page.evaluate(`window.__ouvertures || []`)) as string[];
-    const ouverte = ouvertes.find((u) => u.startsWith("sms:") || u.startsWith("mailto:"));
-    assert.ok(
-      ouverte,
-      "l'appui sur « Envoyer le devis » n'a ouvert aucune messagerie — " +
-        `adresses vues : ${JSON.stringify(ouvertes)}`
-    );
-    // Le numéro sans ses espaces, sinon l'application ouvre un message SANS
-    // destinataire et le patron ne le découvre que dans Messages.
-    assert.match(ouverte!, /^sms:\d+\?/, `destinataire mal formé : ${ouverte!.slice(0, 60)}`);
-    assert.ok(
-      decodeURIComponent(ouverte!).includes("/devis/"),
-      "le message ouvert ne porte pas le lien du devis"
-    );
 
     // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
     // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
@@ -327,15 +302,15 @@ async function main() {
 
   await test("le devis envoyé ne peut plus repartir deux fois", async () => {
     const url = await creerChantierFacturable(page, "rejoue");
-    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-    await page.click("text=Envoyer au client");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
 
     await page.reload({ waitUntil: "networkidle" });
     assert.strictEqual(
-      await page.locator("text=Envoyer au client").count(),
+      await page.locator("text=Choisir la date").count(),
       0,
       "l'envoi est reproposé après rechargement"
     );
@@ -351,8 +326,8 @@ async function main() {
 
   await test("l'interrupteur est ouvert par défaut, et le dit", async () => {
     const url = await creerChantierFacturable(page, "porte-ouverte");
-    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-    await page.click("text=Envoyer au client");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     const bascule = page.getByRole("switch", { name: /autre date/i });
@@ -380,13 +355,13 @@ async function main() {
       /ne pourra pas en proposer une autre|et rien d'autre/,
       `la phrase ne suit pas l'interrupteur. L'écran dit : ${JSON.stringify(texte.slice(0, 220))}`
     );
-    await page.click('button:has-text("Annuler")');
+    await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
   await test("refusé, le client ne voit AUCUN calendrier sur son lien", async () => {
     const url = await creerChantierFacturable(page, "sans-calendrier");
-    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-    await page.click("text=Envoyer au client");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     await page.getByRole("switch", { name: /autre date/i }).click();

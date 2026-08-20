@@ -5879,11 +5879,18 @@ toute façon sur deux lignes, mais **au mauvais endroit** : la coupure tombait a
 milieu de l'adresse, jamais entre le nom et elle. Un contrôle qui aurait compté
 les lignes serait passé au vert sur ce défaut.
 
-`Row` (`ExportClient.tsx`) rend donc **deux paragraphes** — le nom, puis le
-détail — et non un texte à retour à la ligne : la coupure ne doit pas dépendre
-de la largeur. `scripts/test-synthese-devis-e2e.ts` **mesure les rectangles**
-(le détail sous le nom, même marge à un pixel près), et
-`scripts/capture-synthese-devis.mts` rend l'image sur son iPhone.
+`Row` (`ExportClient.tsx`) rendait donc **deux paragraphes** — le nom, puis le
+détail — et non un texte à retour à la ligne : la coupure ne devait pas dépendre
+de la largeur. Sa suite mesurait les rectangles, au pixel près.
+
+> **CADUC depuis le 20 août 2026 (§136).** L'écran de synthèse d'avant l'envoi a
+> été supprimé, et `Row` avec lui : le patron voit désormais le devis entier, où
+> le client est une pile de champs. La suite qui mesurait cette géométrie a été
+> supprimée aussi — elle n'avait plus de sujet. Ce qui reste vivant de cette
+> décision est éprouvé ailleurs : la règle de nommage sans navigateur
+> (`scripts/test-civilite.ts`, `scripts/test-nom-chantier.ts`), le mot devant le
+> nom sur le devis (`scripts/test-choix-civilite-e2e.ts`), et le non-débordement
+> sur son téléphone (`scripts/test-choisir-la-date-e2e.ts`).
 
 ### Le message qui part chez le client, et l'encart qui n'invitait pas
 
@@ -8321,8 +8328,14 @@ devis est parfait, code celui-là »*. C'est la B.
 L'action passe par `EnTeteEcran` (`action`, `actionPlacee="titre"`), qui
 existait déjà. Mais cet en-tête aligne ses enfants **par le haut**, où se trouve
 le surtitre : sans `self-end`, le mot se poserait à côté de « MME FÉLICIE » et
-non sur la ligne d'écriture du titre. Rien ne rougirait — c'est pourquoi
-`test-modifier-avant-envoi-e2e` **mesure** les deux rectangles.
+non sur la ligne d'écriture du titre. Rien ne rougirait — c'est pourquoi sa
+suite **mesurait** les deux rectangles.
+
+> **CADUC depuis le 20 août 2026 (§136).** Ce lien ne s'affichait que sur un
+> devis NON parti ; or cet écran n'est plus atteignable dans ce cas — il renvoie
+> au devis. Le lien a donc été retiré, et sa suite supprimée. Le trou qu'il
+> bouchait ne peut plus se rouvrir : avant l'envoi, l'écran EST le devis
+> modifiable.
 
 ### Et la règle qui compte plus que la place du mot
 
@@ -9294,6 +9307,77 @@ Faute de transcription, l'écran ne fait pas semblant : il dit « Aucun service 
 transcription n'est branché sur cette installation ». Montrer le texte de
 remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
 que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
+
+### Le 20 août 2026 : il ne corrige plus, il DICTE le chantier
+
+**Sa demande, devant un devis vide :** *« Je sais qu'il existe un petit logiciel
+que certains étudiants utilisent pour les cours, doté d'une intelligence
+artificielle. Ils le posent sur leur table, ils parlent, ça enregistre et
+ensuite ça synthétise. Sur la page du devis, j'aimerais que ça soit un peu la
+même chose : que l'utilisateur appuie sur la note vocale, qu'il se mette à
+parler en expliquant les différentes tâches à faire, que l'intelligence
+artificielle comprenne et rédige ça sous forme de belles phrases. »* Avec son
+exemple, hésitations comprises :
+
+> « j'aimerais tailler ma haie, c'est une haie qui fait, enfin je ne sais plus,
+> mais je crois que c'est quelque chose comme vingt mètres linéaires. Alors mon
+> client, qu'est-ce qu'il me disait déjà ? […] il y avait également couper les
+> inflorescences des hortensias, et tondre la pelouse, je crois, mais je ne suis
+> plus sûr. »
+
+Trois travaux noyés dans une réflexion à voix haute, un seul portant une mesure,
+aucun portant de prix. Ce qu'il attend au bout : **trois lignes de devis
+rédigées**, pas trois phrases recopiées.
+
+**Le même micro, pas un second.** Ces deux façons de parler — corriger et
+raconter — arrivent mêlées dans la même dictée (« rajoute la tonte de la
+pelouse, et supprime-moi la deuxième ligne »). Deux micros côte à côte
+l'auraient obligé à choisir lequel toucher *avant* de savoir ce qu'il allait
+dire. L'invite du modèle porte donc les deux cas, et rien n'a bougé à l'écran.
+
+**Ce que la rédaction n'autorise pas pour autant.** Une ligne bien écrite est
+plus crédible qu'une ligne bancale — c'est exactement pourquoi les deux gardes
+sur le prix ne bougent pas d'un pouce : une dictée sans montant donne des lignes
+**à chiffrer**, jamais des lignes chiffrées au jugé. Un devis en belles phrases
+mais faux est plus dangereux qu'un devis vide.
+
+**Les mesures traversent, l'unité comprise.** « Vingt mètres linéaires » arrive
+en `quantite: "20"`, `unite: "ml"` jusqu'à la ligne du devis. Le passage par
+`uniteDictee` (`src/lib/unites-tarif.ts`) n'est pas cosmétique : le moteur de
+prix reconnaît « jour/homme » **à la lettre près**, et enregistrer « jours
+homme » parce qu'il l'a dit au pluriel ferait cesser une multiplication en
+silence. Ce que la liste ignore — le stère, l'arbre — reste écrit tel quel : la
+liste ne ferme rien.
+
+**Une unité ne s'écrit jamais sans sa quantité.** « Des mètres linéaires » sans
+nombre donnerait « 1 ml » sur le devis, c'est-à-dire un chiffre que personne n'a
+prononcé. Et une quantité recopiée dans l'unité (« 20 mètres ») est refusée
+plutôt que gardée : elle aurait doublé sa haie.
+
+**Une mesure hésitante se garde ; un prix hésitant, non.** Asymétrie voulue :
+« je crois que ça fait vingt mètres » est un chiffre qu'il ira vérifier sur
+place, et le lui redemander ne lui apprend rien. Un prix approximatif, lui, part
+chez le client.
+
+### Prouver « les belles phrases » sans clé : la règle d'un côté, le modèle de l'autre
+
+La rédaction est faite par un modèle de langage. Elle ne peut donc être mesurée
+ni ici, ni en CI (`ci.yml` pose une clé de remplacement) — et **un contrôle qui
+mesure zéro est pire qu'absent** (`CLAUDE.md` §5). Le contrôle est donc coupé en
+deux :
+
+| | Où | Ce que ça prouve |
+|---|---|---|
+| La **règle** | `src/lib/redaction-lignes.ts`, jouée par `scripts/test-retouches-devis.ts` | Ce qui trahit une phrase recopiée : première personne, verbe de la demande, hésitation, ponctuation de phrase, minuscule initiale, longueur. **Confrontée à ses propres phrases**, qui doivent la faire rougir |
+| Le **modèle** | `npm run verifier:dictee` (`scripts/verifier-dictee-devis.mts`) | Sa dictée entière envoyée au vrai modèle : trois lignes, rédigées, la mesure retenue, aucun prix inventé — et ses corrections du 15 août toujours comprises |
+
+`verifier:dictee` **refuse de rendre un vert sans clé** : il sort en erreur en
+disant qu'il n'a rien vérifié. C'est la seule façon d'éviter qu'une commande
+verte fasse croire à une vérification qui n'a jamais eu lieu.
+
+**Au 20 août 2026, il n'a donc pas encore été joué** : cet environnement n'a
+aucune clé. Ce qui est éprouvé ici, c'est tout ce que le dépôt fait de la
+réponse du modèle ; ce qui ne l'est pas, c'est la réponse elle-même.
 
 ---
 
@@ -11556,3 +11640,436 @@ Le message du serveur, lui, disait exactement : *« You cannot use different slu
 names for the same dynamic path ('id' !== 'chantierId') »*. **Aller le lire a
 pris trente secondes.** C'est la règle d'`AGENTS.md` : reproduire le message du
 serveur, jamais l'idée qu'on s'en fait.
+
+---
+
+## 135. Le diagnostic végétal : le modèle observe, la base décide
+
+**Sa demande du 20 août 2026 :** photographier une anomalie sur un végétal et
+obtenir un diagnostic probable avec une conduite à tenir, en quatre gestes —
+ouvrir, photographier, attendre, lire. Sa règle produit : *« 1 photo → 1 résultat
+principal → 3 informations essentielles → 1 action recommandée. La complexité
+doit être dans le moteur et la base de données, jamais dans l'interface. »*
+
+### 135.1 La décision qui commande tout le reste
+
+**Un modèle à qui l'on demande de nommer une maladie en nommera toujours une.**
+C'est ce qu'il sait faire, et c'est précisément ce qu'il ne faut pas : sa
+consigne était *« Atlas ne doit JAMAIS inventer un diagnostic »*.
+
+Une consigne écrite dans un prompt n'aurait pas suffi. Le pipeline ne demande
+donc jamais au modèle de nommer quoi que ce soit — **il lui demande ce qu'il
+voit**, et c'est du code déterministe qui conclut.
+
+Trois barrières, et il faut les trois :
+
+1. **Le schéma de sortie ne comporte AUCUN champ où nommer un problème.** Pas
+   de « diagnostic », pas d'« hypothèse ». Un modèle ne peut pas conclure dans
+   un formulaire qui n'a pas de case pour ça. C'est la seule des trois qui soit
+   vraiment structurelle.
+2. **Le vocabulaire est fermé et PARTAGÉ** entre l'observation et les fiches :
+   les mêmes mots décrivent ce que le modèle voit et ce que la fiche annonce.
+   « feutrage_blanc » se constate, « oïdium » se conclut — et le second n'est
+   pas dans la liste. Deux vocabulaires auraient exigé une traduction entre les
+   deux, donc une interprétation, donc un endroit où se tromper.
+3. **Tout texte affiché sort d'une colonne de `fiches_phyto`.** Aucune chaîne
+   rendue par un modèle n'atteint l'écran.
+
+**Conséquence :** une maladie, une gravité ou un traitement inventés sont
+impossibles **par construction**.
+
+### 135.2 Le partage du vocabulaire, et le défaut qu'il rend visible
+
+Le vocabulaire vit dans `src/lib/diagnostic-vegetal.ts`, et il est **injecté**
+dans la consigne du modèle — jamais recopié.
+
+**Recopié, il aurait divergé au premier mot ajouté, et la divergence aurait été
+SILENCIEUSE.** Une fiche écrivant « moisissure » là où le modèle rend
+« feutrage_blanc » ne remonterait jamais : aucune erreur, aucun message,
+simplement une fiche qui ne sort plus. C'est le défaut le plus cher de cette
+architecture, et deux contrôles le rendent détectable : `verifierVocabulaire()`
+à l'import, et une suite qui vérifie que **chaque** mot du vocabulaire figure
+bien dans la consigne.
+
+### 135.3 Deux mondes de données, qui ne se mélangent jamais
+
+| | La base phytosanitaire | Les diagnostics |
+|---|---|---|
+| Appartient à | personne — c'est un savoir commun | une entreprise |
+| RLS | **aucune** | activée et forcée |
+| Droits d'`atlas_app` | `SELECT` seul | lecture et écriture |
+| Écrite par | l'import, sous le rôle propriétaire | le produit |
+| Précédent | `catalogue_prestations` (0007), `documents_legaux` (0014) | `notes_vocales`, `audios_a_purger` |
+
+**`GRANT SELECT` seul est un point de sécurité, pas une commodité :** une faille
+dans l'application ne peut pas écrire une maladie inventée dans la base commune
+de tout le monde, parce qu'il n'y a aucun droit d'écriture à voler.
+
+### 135.4 Le score, et pourquoi il croise DEUX couvertures
+
+`rapprocher()` calcule, pour chaque fiche :
+
+- **la couverture de la fiche** — ce qu'elle annonce est-il visible ? Seule,
+  elle favorise les fiches maigres : une fiche à un seul symptôme banal
+  sortirait toujours première ;
+- **la couverture de l'observation** — ce qu'on voit, la fiche l'explique-t-il ?
+  Seule, elle favorise les fiches fourre-tout, qui couvrent tout parce qu'elles
+  annoncent tout.
+
+Chacune prise isolément produit un classement faux d'une manière différente ;
+ensemble, elles se corrigent. La formule est
+`0,55 × couvertureFiche + 0,35 × couvertureObservation + 0,10 si un SIGNE est reconnu`.
+
+**Les trois parts font exactement 1, et c'est ce qui rend le signe décisif.**
+Une première version ajoutait le bonus APRÈS coup (`min(1, score + 0,15)`) : sur
+deux fiches également bien couvertes, il était avalé par le plafond et ne
+départageait plus rien — c'est-à-dire précisément dans le cas où il sert. Une
+fiche sans aucun signe plafonne donc à 0,90, et c'est voulu : elle ne repose que
+sur des symptômes, qui se partagent entre dix causes.
+
+**Une exclusion n'est pas un score bas.** Partie non concernée, hôte `strict`
+d'une autre essence : la fiche sort du jeu. La confondre avec un malus la
+laisserait remonter le jour où tout le reste est faible.
+
+### 135.5 Quatre issues, et les trois dernières comptent autant que la première
+
+| Issue | Quand | Ce qui l'écrit |
+|---|---|---|
+| **Résultat** | une candidate nettement devant, dont la fiche n'interdit pas le diagnostic photo | recopie de la fiche |
+| **Une photo de plus** | deux candidates au coude à coude, **et** une ligne `confusions_phyto` qui les relie | la consigne est recopiée mot pour mot de `photo_qui_tranche` |
+| **« Je ne peux pas confirmer »** | rien de reconnu, trop faible, trop proches sans confusion, ou fiche `diagnostic_photo: impossible` | liste fermée de phrases, dans le code |
+| **« Personne n'a regardé »** | aucun fournisseur de vision branché, ou en panne | le message du fournisseur |
+
+**Les deux derniers ne se confondent pas** : le premier dit « la base ne sait
+pas », le second « personne n'a regardé ». Les mêler enverrait chercher un
+défaut dans les fiches alors qu'il est dans la configuration.
+
+**Une seule relance, jamais deux.** L'invariant vit à trois endroits : le code
+(`complementDejaDemande`, lu depuis la BASE et jamais depuis l'écran — le
+laisser décider par le navigateur permettrait de le remettre à zéro en
+rechargeant), une contrainte `CHECK (complements_demandes <= 1)`, et l'écran qui
+ne propose plus la relance.
+
+**Sans ligne de confusion, pas de relance.** On refuse plutôt qu'improviser une
+consigne : une consigne inventée enverrait photographier ce qui ne tranche rien.
+
+### 135.6 La confiance : trois mots, et trois plafonds
+
+Sa règle : *« ne pas afficher de faux pourcentages du type 93 % si le modèle
+utilisé ne fournit pas une probabilité réellement calibrée »*. Aucun modèle
+employé ici n'en fournit — et le score interne n'en est pas une non plus : c'est
+une somme pondérée d'indices, ce qui n'a rien à voir.
+
+Les plafonds sont le cœur de `confiancePour()` : une **photo floue**, une fiche
+qui se déclare seulement **« indicative »**, une **essence non reconnue** —
+chacun abaisse d'office, quel que soit le score. Sans eux, la confiance affichée
+serait un mensonge exactement dans les cas où elle compte le plus.
+
+Le score interne est rangé en **millièmes entiers** dans
+`hypotheses_diagnostic` : une échelle inhabituelle, délibérément choisie pour
+décourager de l'afficher comme un pourcentage.
+
+### 135.7 Quatre risques, jamais confondus
+
+Sa consigne distinguait : santé du végétal, risque mécanique de l'arbre, risque
+humain/animal, risque réglementaire. Chacun a sa colonne et sa mention.
+
+**La phrase sur la stabilité mécanique vient du CODE, pas de la fiche** — une
+règle générale de sécurité ne doit pas pouvoir manquer parce qu'une fiche est
+mal remplie : c'est la fiche bâclée qui en a le plus besoin.
+
+**Quand `impact_mecanique` vaut `inconnu`, elle dépend de la gravité — et cette
+règle a été CORRIGÉE le 20 août 2026, en regardant le résultat.**
+
+La première version l'affichait dès que l'impact n'était pas « aucun », donc
+aussi sur `inconnu`. Puis la deuxième fiche réelle est arrivée : l'anthracnose du
+platane, maladie du feuillage que sa source qualifie de « spectaculaire mais
+rarement grave ». Sous « Surveiller l'évolution », Atlas affichait *« Une photo
+ne permet pas de juger la solidité de l'arbre. »*
+
+C'est le travers que `CLAUDE.md` nomme à propos du rappel de panne : **un
+avertissement qui parle à tort s'apprend à être ignoré**, et le garde-fou se
+perd sans qu'on s'en aperçoive. Le jour où la mention compte — un lignivore au
+collet —, elle serait devenue du décor.
+
+| `impact_mecanique` | Gravité | La mention |
+|---|---|---|
+| `avere` ou `possible` | n'importe laquelle | **s'affiche** — la source a vu quelque chose, on ne la relativise pas |
+| `inconnu` | `vigilance` ou `importante` | **s'affiche** — on ne sait pas, et ça compte |
+| `inconnu` | `faible` | **se tait** — ce n'est pas un oubli de la source, c'est un jugement : elle a regardé le problème, l'a trouvé mineur, et n'a pas soulevé la structure |
+| `aucun` | n'importe laquelle | se tait |
+
+### 135.8 La porte du classement sémantique, et son verrou
+
+Sa demande : ne pas empêcher l'ajout ultérieur d'un classement sémantique ou
+visuel des candidates — mais *« le modèle ne devra jamais pouvoir créer une
+maladie ou une recommandation absente de la base »*.
+
+`ClasseurCandidats` est l'interface ; `classeurDeterministe` (qui ne fait rien)
+est l'implémentation d'aujourd'hui. **Le verrou est `appliquerClassement`**, et
+c'est la moitié importante : il ne garde d'un classement que des fiches déjà
+entrées, **reprend la fiche d'ORIGINE** — jamais celle rendue par le classeur,
+dont le contenu pourrait être falsifié sous un identifiant valide —, refuse les
+doublons, borne le score à [0, 1], et **remet en fin de liste** ce qu'un
+classeur aurait tronqué. Une consigne dans un prompt aurait été une prière ;
+ceci est une garantie, éprouvée contre un classeur volontairement malveillant.
+
+### 135.9 Les photos : EXIF, conservation, rattachement
+
+**Les métadonnées sont retirées AVANT tout** — avant le rangement, avant l'envoi
+au fournisseur. Une photo de jardin porte les coordonnées GPS du domicile du
+client, l'horodatage, parfois une vignette ayant survécu à un recadrage.
+
+`src/lib/exif.ts` nettoie JPEG, PNG et WebP **sans réencoder** : pas de
+dépendance de plus, pas de perte de qualité au moment où le détail compte (une
+pustule fait deux millimètres). Deux subtilités qui coûtent cher si on les
+manque — APP0 (JFIF) et APP14 (Adobe) **survivent** chez JPEG, faute de quoi les
+couleurs d'une image CMJN se décodent faux ; et chez WebP, les **drapeaux VP8X**
+doivent être éteints en même temps que les blocs, sinon un décodeur peut refuser
+l'image entière.
+
+**Un fichier qu'on n'a pas su nettoyer est REFUSÉ, jamais rangé** : le laisser
+passer conserverait des métadonnées en croyant les avoir retirées, et la colonne
+`exif_retire` affirmerait alors quelque chose de faux.
+
+**La conservation est configurable**, jamais gravée (sa consigne). 90 jours pour
+une photo libre, aucune échéance pour une photo versée au dossier d'un chantier
+— et le rattachement **recalcule** l'échéance, sans quoi la pièce d'un dossier
+en cours disparaîtrait au bout de trois mois sans que personne l'ait demandé.
+
+**Le diagnostic survit à sa photo**, comme une note vocale survit à son audio :
+il garde son nom de problème, sa date, sa fiche et sa traçabilité.
+
+### 135.10 Ce qui reste vide, et pourquoi c'est le bon état
+
+**La base phytosanitaire ne contient aucune fiche réelle.** Sa règle : *« ne
+constitue pas toi-même une liste fictive de maladies pour remplir la base »* et
+*« ne remplis pas artificiellement la base avec de fausses données pour faire
+fonctionner la démonstration »*.
+
+Le module fonctionne parfaitement dans cet état : il répond « la base ne contient
+encore aucune fiche validée », ce qui est vrai — plutôt qu'un diagnostic qui ne
+l'est pas.
+
+Ce qu'il faut pour l'alimenter est prêt et éprouvé : le schéma d'import avec ses
+six refus, les contrôles de sources champ par champ, le versionnement, la
+traçabilité. Le détail est dans `donnees/phyto/LISEZ-MOI.md`.
+
+**Les fixtures d'essai** (`donnees/phyto/fixtures/`) ne décrivent aucun végétal
+réel et sont tenues à l'écart par **trois barrières**, chacune sur un chemin
+différent : l'import les refuse en production, la lecture les filtre sur
+`origine = 'reelle'` (double garde `NODE_ENV` + variable posée par la suite), et
+une contrainte CHECK lie l'origine au préfixe `zz-test-` **dans les deux sens**.
+
+### 135.11 Ne pas s'enfermer chez un fournisseur
+
+`VISION_PROVIDER` et `VISION_MODELE` — le second existe parce que le nom du
+modèle était **écrit en dur** dans le fournisseur Anthropic, ce qui obligeait à
+rebâtir l'application pour en changer. Sans valeur, les deux retombent sur la
+configuration existante : rien ne change pour une installation en place.
+
+`VISION_PROVIDER` est validé en production comme les deux autres — sans quoi
+`VISION_PROVIDER=dev` y serait passé pendant que `LLM_PROVIDER=dev` était
+refusé, et le diagnostic aurait rendu des observations fabriquées sur de vraies
+photos.
+
+`lireImages` est une extension **additive** de l'interface, comme `lireImage`
+l'avait été : plusieurs images (la photo initiale et son complément partent
+ENSEMBLE — séparée, la seconde perdrait le contexte de la première) et un modèle
+réglable. `lireImage` en est désormais un raccourci : les deux portaient la même
+requête à un tableau près.
+
+### 135.12 Les sources sont hors d'atteinte d'ici — et ce qu'on en fait
+
+**Constaté le 20 août 2026, en cherchant à écrire les premières fiches.** Aucune
+des sources que le patron a nommées n'est joignable depuis l'environnement de
+développement : `agriculture.gouv.fr`, `inrae.fr`, `fredon-france.org`,
+`onf.fr`, `plante-et-cite.fr` et `ephy.anses.fr` répondent tous
+`403 à CONNECT — policy denial` au mandataire.
+
+**La recherche web, elle, passe.** Et c'est précisément le piège : elle rend un
+RÉSUMÉ écrit par un modèle, pas la page. Écrire une fiche « validée » d'après un
+résumé aurait produit quelque chose qui a l'apparence d'une donnée sourcée — un
+organisme, un titre, une adresse, une date de consultation — sans que personne
+ait lu le document. **C'est pire qu'une fiche vide** : une fiche vide se voit,
+une fiche mal sourcée se croit.
+
+**La sortie est celle que le dépôt emploie déjà**, et elle est écrite dans
+`CLAUDE.md` §5 : ce qui ne peut pas être fait ici se fait ailleurs. Le workflow
+`recolter-sources-phyto.yml` va chercher les documents depuis une machine qui a
+le réseau, en extrait le texte, et le dépose sur une branche à lui — jamais sur
+`main`. La saisie se fait ensuite, sur des documents qu'on a réellement sous les
+yeux. Même famille que `pages.yml`, `relever-palette.yml` et `banc-essai.yml`.
+
+**Deux garde-fous sont posés en même temps, et ils comptent plus que le
+workflow :**
+
+- **rien n'est rapatrié sans licence déclarée.** Une source en `a_verifier`
+  garde son adresse et rien d'autre. Recopier un document sans savoir s'il peut
+  l'être est un risque qui ne se voit qu'à la mise en demeure ;
+- **la CI contrôle `donnees/phyto/fiches` à chaque poussée**
+  (`importer-fiches-phyto.ts --verifier`). Les fiches arrivent par des fichiers
+  de données, pas par du code : sans ce contrôle, une fiche validée sans source
+  entrerait sur `main` sans que rien ne s'y oppose. Le contrôle a été confronté
+  à une fiche volontairement fautive avant d'être branché — il rougit, et il
+  nomme le champ en cause.
+
+**Ce que cela veut dire pour la suite :** le module est prêt, le blocage n'est
+pas technique. Il faut soit lancer la récolte, soit que le patron fournisse les
+documents. Tant que ni l'un ni l'autre n'est fait, la base reste vide — et
+Atlas le dit.
+
+---
+
+## 136. « Choisir la date » : l'écran du milieu disparaît, trois deviennent deux
+
+**Le patron, le 20 août 2026, trois captures à l'appui :**
+
+> *« Le bouton envoyer au client, tu vas me le modifier par "Choisir la date"
+> […] sous forme de bouton vert comme tous les autres […] j'arrive directement
+> sur la page où je peux choisir la date pour envoyer au client […] on supprime
+> la page qui est entre les deux. On va raccourcir les étapes. […] Et je ne veux
+> pas de flèche. »*
+
+Retenu sur planche (`docs/maquettes/82-choisir-la-date.html`, **proposition A**),
+puis sa réponse : *« A et la 2 »*.
+
+### Le doublon qu'il a vu, et qui était réel
+
+Envoyer un devis coûtait **trois écrans** :
+
+| | Écran | Ce qu'il montrait |
+|---|---|---|
+| 1 | `/devis-complet` | le devis entier — client, lignes, totaux, conditions |
+| 2 | `/export` | **le même devis, résumé** : client, lignes, total |
+| 3 | la feuille | le calendrier, l'interrupteur, « Envoyer le devis » |
+
+**Le deuxième redisait ce que le premier venait d'afficher en entier.** On ne
+relit pas un devis qu'on vient de fermer. Il en reste deux.
+
+### La découverte qui a rendu la chose petite
+
+Le calendrier de sa capture n'est pas une page : c'est une **feuille**
+(`EnvoiAuClient`), qui s'ouvrait par-dessus l'écran 2. La monter sur le devis,
+c'est l'ouvrir plus tôt — elle ne demande que `chantierId`, `devisId` et
+`clientNom`, tous trois présents là. **La copier aurait donné deux calendriers à
+tenir d'accord** (`CLAUDE.md` §3).
+
+### Une adresse, deux écrans — et c'est ce qui a décidé de la condition
+
+`/export` n'était pas un écran mais **deux, sous la même adresse** :
+
+- **avant l'envoi**, la synthèse et son bouton — c'est elle qu'il supprime ;
+- **après l'envoi**, `EcranDevisParti`, le « signet d'or » qu'il a lui-même
+  retenu sur planche (`docs/maquettes/34`) : l'état, le montant, le message du
+  client, le lien à transmettre, la reprise.
+
+Le premier jet renvoyait sur `!envoi && statut !== "envoye"`. **Faux après une
+reprise** : l'envoi existe encore et le devis est redevenu brouillon — l'écran se
+serait rendu sur sa face supprimée, bouton d'envoi compris. La condition suit
+donc ce que l'écran sait rendre : `statut !== "envoye"` renvoie au devis, un
+point c'est tout.
+
+### Ce que la suppression a emporté, et ce qu'elle a révélé
+
+Le code devenu inatteignable est **retiré, pas laissé** : 110 lignes de JSX,
+quatre entrées du composant, la fonction `Row`, deux requêtes de la page. Un code
+mort qui ne peut plus s'exécuter trompe la session suivante, qui le corrigera ou
+s'interrogera.
+
+**Deux effets qu'aucun raisonnement n'avait prévus, et que le navigateur a
+montrés :**
+
+1. **La phrase du moment se perdait.** « Devis prêt pour Mr. Martins. » venait
+   d'un état local posé par l'envoi *sur cet écran*. L'envoi partant d'ailleurs,
+   on arrivait par une navigation et l'état était vide : l'écran annonçait
+   « en attente de réponse » une seconde après l'appui. Vrai, et froid. Le
+   moment voyage désormais dans l'adresse (`?envoye=1`) — et un rechargement le
+   perd, ce qui est juste : la deuxième fois, ce n'est plus « à l'instant ».
+2. **Deux « Annuler » sur le même écran.** Le devis en portait déjà un — celui
+   qui reprend le retrait d'une ligne. La feuille en a apporté un second, sans
+   nom qui les distingue : un lecteur d'écran annonce deux fois la même chose, et
+   une suite vise le mauvais des deux. Le mot affiché ne bouge pas ; l'étiquette
+   accessible dit « Annuler l'envoi ».
+
+### Ce que le contrôle garde, et qu'aucun autre ne voyait
+
+Les suites d'envoi éprouvent ce que fait la feuille **une fois ouverte**. Elles
+resteraient toutes vertes si l'écran du milieu se réintercalait : elles y
+passeraient, cliqueraient, et le parcours redeviendrait long sans que rien ne
+rougisse — jusqu'à ce que lui le remarque.
+
+`scripts/test-choisir-la-date-e2e.ts` garde donc **le raccourci lui-même** : le
+bouton plein et sans flèche, son ordre au-dessus de l'aperçu, l'ouverture de la
+feuille **sans changer d'adresse**, et le fait que l'ancienne adresse renvoie au
+devis. Confronté au défaut — la redirection retirée — il rougit en le nommant :
+*« l'écran du milieu existe encore »*.
+
+**Vingt-six suites ont dû suivre** : elles passaient toutes par `/export` pour
+cliquer « Envoyer au client ». C'est le coût réel d'un raccourci sur un parcours
+central, et il se paie une fois.
+
+### Et une vingt-septième, que la batterie seule a trouvée
+
+`lienDeReprise` — la règle qui décide où mène la ligne d'un chantier dans la
+liste (§77 bis) — pointait encore sur `/export` pour un devis préparé mais non
+parti. **Rien ne cassait à l'écran** : l'adresse existe toujours et renvoie au
+devis. Il serait simplement arrivé au bon endroit par un rebond, et la
+divergence serait restée invisible jusqu'à ce qu'un des deux chemins bouge sans
+l'autre.
+
+Ce sont les deux suites de la reprise — la pure et sa jumelle navigateur — qui
+l'ont dit. Elles portent maintenant `devis-complet`, et leur commentaire
+explique **pourquoi l'attente a changé** : ce n'est pas un contrôle plié au
+code, c'est l'écran d'envoi qui a déménagé.
+
+**Au passage, une attente fixe de trop.** `test-reprise-chantier-e2e.ts`
+attendait 900 ms après avoir saisi le prix, puis naviguait. Jouée seule elle
+gagnait ; enchaînée, la navigation avortait l'enregistrement en vol, le devis
+s'ouvrait sur une ligne vide, et le rouge accusait l'écran d'arrivée — *« le
+total n'est pas montré avant l'envoi »* — alors que c'est le montant qui n'était
+jamais arrivé. Elle **relit jusqu'à voir le prix persisté**, comme
+`test-prix-e2e.ts` : attendre ce qu'on affirme, jamais une durée.
+
+### Ce que la batterie complète a corrigé, et que onze suites vertes cachaient
+
+Le lot a d'abord été annoncé prêt sur la foi de **deux** suites jouées seules.
+La batterie entière en a fait rougir **onze**, et trois d'entre elles disaient
+quelque chose de vrai sur le produit, pas sur elles-mêmes. C'est la démonstration
+la plus nette qu'on ait de la règle d'`AGENTS.md` : jouer ce qu'on transmet, en
+entier, avant de le transmettre.
+
+**1 · « Devis prêt pour … » revenait à chaque rechargement.** Le moment de
+l'envoi voyage dans l'adresse (`?envoye=1`) — et une adresse, contrairement à un
+état de navigateur, **survit au rechargement**. Le commentaire du code affirmait
+le contraire, et `test-devis-e2e.ts` a montré qu'il se trompait. Le drapeau se
+**consomme** donc à l'arrivée : la mention reste pour cette visite-là, puis
+`replaceState` nettoie l'adresse derrière elle. Un signet rouvert le lendemain
+tombe sur l'état réel du devis parti.
+
+**2 · Un « Modifier » en or devenu inatteignable.** Il ne s'affichait que sur un
+devis NON parti ; or ce cas ne peut plus atteindre cet écran. Le ternaire ne
+rendait donc plus jamais rien. Retiré, comme les 110 lignes de JSX : un code mort
+trompe la session suivante. Le trou qu'il bouchait — *« si je veux modifier mon
+devis avant de l'envoyer, je peux pas »* — ne peut plus se rouvrir, puisque
+l'écran d'avant l'envoi EST le devis modifiable.
+
+**3 · Une adresse renommée trop largement.** Le remplacement en masse de
+`/export` par `/devis-complet` a emporté des navigations qui visaient l'écran
+d'APRÈS l'envoi — le signet d'or, le retour de la messagerie, la réponse du
+client. Ces trois-là ne bougent pas : seule la face d'avant a disparu. **La règle
+à retenir : sur cette adresse, se demander de quel côté de l'envoi on se
+trouve**, jamais remplacer au fil du texte.
+
+**Deux suites ont été supprimées, et c'est le bon geste.**
+`test-synthese-devis-e2e.ts` mesurait la géométrie de l'écran supprimé ;
+`test-modifier-avant-envoi-e2e.ts` gardait le lien devenu impossible. Ce qu'elles
+tenaient encore de vivant ne se perd pas : la règle de nommage
+(« Mr. Martins », jamais « Chez Martins ») est éprouvée sans navigateur par
+`test-civilite.ts` et `test-nom-chantier.ts` ; le mot devant le nom se relit
+maintenant sur le devis (`test-choix-civilite-e2e.ts`) ; et la garde de
+débordement sur son téléphone a **changé de sujet plutôt que de disparaître** —
+elle vit dans `test-choisir-la-date-e2e.ts`, sur le dernier écran qu'il voit
+avant d'envoyer.
+
+---

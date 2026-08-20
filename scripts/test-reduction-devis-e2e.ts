@@ -58,22 +58,37 @@ async function main() {
 
   // Le devis de la maquette 61, aux mêmes chiffres : 870,00 € HT.
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
-  for (const [libelle, prix] of [
+  const lignesVoulues = [
     ["Élagage — 3 chênes", "450"],
     ["Broyage des branches", "180"],
     ["Évacuation des déchets verts", "240"],
-  ]) {
+  ];
+  for (const [rang, [libelle, prix]] of lignesVoulues.entries()) {
     await page.click('button:has-text("Ajouter une ligne")');
-    await page.waitForTimeout(500);
     const zones = page.locator('textarea[aria-label*="escription"]');
-    await zones.nth((await zones.count()) - 1).fill(libelle);
+    // **On attend que la ligne EXISTE, on ne compte pas 500 ms.** Sous la
+    // batterie, la nouvelle ligne n'était pas encore rendue : `nth(count - 1)`
+    // désignait alors la PRÉCÉDENTE, et l'écrasait. Une ligne disparaissait
+    // ainsi du devis, le total tombait de 870 à 420, et le rouge accusait
+    // l'affichage de la remise — qui n'y était pour rien.
+    for (const essai of [1, 2, 3, 4, 5]) {
+      if ((await zones.count()) > rang) break;
+      await page.waitForTimeout(essai * 300);
+    }
+    await zones.nth(rang).fill(libelle);
     const prixs = page.locator('input[aria-label*="Prix unitaire"]');
-    await prixs.nth((await prixs.count()) - 1).fill(prix);
+    await prixs.nth(rang).fill(prix);
     await page.keyboard.press("Tab");
     await page.waitForTimeout(400);
   }
-  await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(600);
+
+  // Et l'on relit jusqu'à voir le devis complet : l'écran rend la main avant que
+  // l'enregistrement soit arrivé, et tout ce qui suit en dépend.
+  for (const essai of [1, 2, 3, 4]) {
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    if ((await page.locator("body").innerText()).includes("870,00")) break;
+    await page.waitForTimeout(essai * 500);
+  }
 
   const totaux = () => page.locator("section").filter({ hasText: "Total TTC" }).last();
 

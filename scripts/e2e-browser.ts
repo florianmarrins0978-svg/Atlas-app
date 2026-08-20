@@ -67,10 +67,10 @@ export const ECRAN_DU_PATRON = devices["iPhone 13"];
  * très bien. Vingt et une suites appuient sur ce bouton : le défaut aurait
  * frappé partout, avec vingt et un messages qui désignent le mauvais coupable.
  *
- * On annule donc le SAUT, jamais le geste : le lien est bien créé et touché, et
- * c'est lui que les contrôles lisent (`a[data-transmission-directe]`). Ce
- * qu'aucun navigateur d'ici ne peut faire — ouvrir Messages —, on ne prétend
- * pas le faire.
+ * On annule donc le SAUT, jamais le geste : le lien est bien créé, touché, et
+ * laissé dans le document — c'est lui que les contrôles lisent
+ * (`a[data-transmission-directe]`). Ce qu'aucun navigateur d'ici ne peut faire
+ * — ouvrir Messages —, on ne prétend pas le faire.
  *
  * **Posé ICI plutôt que dans chaque suite**, pour la raison qui vaut déjà pour
  * le délai et l'écran : une garde écrite dans la première suite est une garde
@@ -82,15 +82,11 @@ export const ECRAN_DU_PATRON = devices["iPhone 13"];
  * code.
  */
 const RETENIR_LE_SAUT_VERS_LA_MESSAGERIE = `
-  window.__ouvertures = [];
   document.addEventListener("click", function (e) {
     var cible = e.target && e.target.closest
       ? e.target.closest("a[href^='sms:'],a[href^='mailto:']")
       : null;
-    if (!cible) return;
-    // Ce que l'application a tenté d'ouvrir se garde ICI, pour les contrôles.
-    window.__ouvertures.push(cible.getAttribute("href"));
-    e.preventDefault();
+    if (cible) e.preventDefault();
   }, true);
 `;
 

@@ -28,17 +28,18 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
  * renommer au second, et un onglet qui change de nom fait perdre le repère de
  * celui qui l'ouvre vingt fois par jour.
  *
- * **CE QUI EST DIT ICI EST VRAI, ET C'EST TOUT LE SUJET DE CET ÉCRAN.** L'outil
- * d'arrosage n'est PAS dans l'application : c'est une page publiée à part, qu'il
- * éprouve depuis son téléphone. L'écran le dit et ouvre la page hors de
- * l'application, au lieu de faire croire à une intégration qui n'existe pas.
- * Une ligne qui promettrait un écran interne serait la troisième fois qu'il
- * appuie sur quelque chose qui ne répond pas (`reglages/Sommaire.tsx`).
+ * **CE QUI EST DIT ICI EST VRAI, ET C'EST TOUT LE SUJET DE CET ÉCRAN.** Un
+ * outil « à venir » n'ouvre AUCUN lien et l'annonce : une ligne qui promettrait
+ * un écran inexistant serait la troisième fois qu'il appuie sur quelque chose
+ * qui ne répond pas (`reglages/Sommaire.tsx`).
+ *
+ * **L'arrosage est entré dans l'application le 20 août 2026** — *« code le tout
+ * dans l'appli »*. Jusque-là, cet écran ouvrait une page publiée à côté, hors
+ * d'Atlas, et le disait. Ce commentaire décrivait donc un monde disparu : il est
+ * corrigé dans le même commit que le code, comme le dépôt l'exige.
  */
 export const metadata = { title: "Paysage — Atlas" };
 
-/** L'adresse de la maquette essayable, publiée avec `appli/` (`pages.yml`). */
-const ARROSAGE = "https://florianmarrins0978-svg.github.io/Atlas-app/arrosage.html";
 
 type Outil = {
   nom: string;
@@ -51,10 +52,11 @@ type Outil = {
 
 const OUTILS: Outil[] = [
   {
+    // **DANS l'application depuis le 20 août 2026** — *« code le tout dans
+    // l'appli »*. Il ouvrait jusque-là une page publiée à côté, hors d'Atlas.
     nom: "Plan d'arrosage automatique",
-    dit: "Les zones, les arroseurs, les secteurs, et la liste à envoyer au fournisseur.",
-    href: ARROSAGE,
-    dehors: true,
+    dit: "Le piquage, le croquis photographié — et le plan sort.",
+    href: "/paysage/arrosage",
   },
   {
     // **Le premier outil qui vit DANS Atlas.** L'arrosage est une page publiée
@@ -64,6 +66,21 @@ const OUTILS: Outil[] = [
     nom: "Fiche de chantier",
     dit: "Cocher ce qui a été fait, puis l'envoyer au client.",
     href: "/paysage/fiche",
+  },
+  {
+    // **Le troisième outil, et le premier qui APPELLE un modèle.** Sa demande du
+    // 20 août 2026 : une photo, un diagnostic probable, une conduite à tenir.
+    // Le principe qui le gouverne — « le modèle observe, la base décide » — est
+    // en tête de `drizzle/0056_diagnostic_vegetal.sql`.
+    //
+    // **Il s'ouvre même quand la base est vide**, et c'est délibéré : l'écran
+    // dit alors qu'aucune fiche validée n'existe encore. Le griser aurait donné
+    // une quatrième ligne « Bientôt » sans qu'on puisse voir le parcours, et
+    // c'est précisément le parcours qu'il faut éprouver avant d'y verser des
+    // fiches.
+    nom: "Diagnostic végétal",
+    dit: "Photographier une anomalie, et savoir quoi faire.",
+    href: "/paysage/diagnostic",
   },
   {
     nom: "Terrasse bois",

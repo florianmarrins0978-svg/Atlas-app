@@ -4,6 +4,8 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
 import { rubriquesReglages, surtitreReglages } from "@/lib/rubriques-reglages";
 import { versionExecutee } from "@/server/version-executee";
+import { etatVersionLente } from "@/server/etat-banc";
+import { panneauVersionLente } from "@/lib/version-lente";
 import BoutonMiseAJour from "./BoutonMiseAJour";
 import Sommaire from "./Sommaire";
 import { derniereIssueMiseAJour } from "./actions";
@@ -105,13 +107,19 @@ export default async function ReglagesPage() {
               commence par `.next/dev` : son banc servait la version lente, où
               chaque écran se compile au premier appel pendant que le relais de
               GitHub abandonne au bout d'une minute. Ce panneau était donc le
-              symptôme de cet état-là, que rien à l'écran n'annonçait. */}
+              symptôme de cet état-là, que rien à l'écran n'annonçait.
+
+              **Et il promettait de trop — corrigé le 20 août 2026.** Sa phrase
+              se terminait par « la version rapide prend le relais dès que la
+              construction aboutit ». Ce soir-là, elle n'aboutissait pas et
+              n'allait jamais aboutir : son veilleur était tombé, et c'est lui
+              qui construit. Le panneau lui demandait d'attendre quelque chose
+              qui n'arriverait pas. Ce qu'il a le droit de promettre vit
+              désormais dans `src/lib/version-lente.ts`. */}
           {process.env.ATLAS_BANC_ESSAI === "1" && process.env.NODE_ENV !== "production" && (
             <p className="mt-3 text-[12px] leading-snug" style={{ color: colors.alert }}>
-              Vous êtes sur la <b>version lente</b>, celle qui se construit encore. Chaque écran
-              peut mettre jusqu&apos;à une minute la première fois, et l&apos;adresse de GitHub
-              abandonne avant — c&apos;est ce qui fait apparaître « une réponse inattendue du
-              serveur ». La version rapide prend le relais dès que la construction aboutit.
+              Vous êtes sur la <b>version lente</b>, celle qui se construit encore.{" "}
+              {panneauVersionLente(etatVersionLente()).phrase}
             </p>
           )}
 

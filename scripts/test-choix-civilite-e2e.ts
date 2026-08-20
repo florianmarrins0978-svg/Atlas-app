@@ -149,15 +149,25 @@ async function main() {
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1400);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
-  await page.waitForSelector('[data-atlas="ligne-client"]', { timeout: 30_000 });
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.waitForSelector("text=Total TTC", { timeout: 30_000 });
 
-  await cas("la synthèse du devis la nomme « Mme … »", async () => {
-    const nom = (await page.locator('[data-atlas="ligne-client-nom"]').innerText()).trim();
-    if (nom !== `Mme ${CLIENTE}`) throw new Error(`la ligne dit « ${nom} »`);
+  await cas("le devis la nomme « Mme … » — le mot devant le nom", async () => {
+    // **Relu sur le devis, et non plus sur la synthèse d'avant l'envoi.** Cette
+    // synthèse a été supprimée le 20 août 2026 (`ARCHITECTURE.md` §136) : c'est
+    // désormais le devis lui-même qu'il a sous les yeux au moment d'envoyer.
+    //
+    // Le mot n'est pas dans le champ — il serait alors recopié dans le nom, et
+    // le document suivant porterait « Mme Mme Roux ». Il vit à côté, dans le
+    // même bloc : on lit donc les deux ensemble, comme elle les lira.
+    const champ = page.getByLabel("Nom du client");
+    const mot = (await champ.locator("xpath=..").innerText()).trim();
+    if (mot !== "Mme") throw new Error(`le devis écrit « ${mot} » devant le nom`);
+    const saisi = await champ.inputValue();
+    if (saisi !== CLIENTE) throw new Error(`le champ du nom porte « ${saisi} »`);
   });
 
-  await page.click("text=Envoyer au client");
+  await page.click("text=Choisir la date");
   await page.getByRole("button", { name: /Envoyer le devis/i }).click();
   await page.waitForTimeout(3500);
 

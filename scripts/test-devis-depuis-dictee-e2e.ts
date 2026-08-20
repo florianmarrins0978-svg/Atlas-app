@@ -165,7 +165,7 @@ async function main() {
 
   // --- Le devis, tel qu'il partira au client ------------------------------
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Envoyer au client", { timeout: 15000 });
+  await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
   const ecranDevis = await page.locator("body").innerText();
   assert.ok(/taille de haie/i.test(ecranDevis), "Le devis ne porte pas la prestation dictée.");
   assert.ok(

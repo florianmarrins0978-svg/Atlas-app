@@ -12,7 +12,7 @@ import {
   libelleMinutes,
 } from "@/lib/passage-entretien";
 import { composerMessageEntretien, lienTransmission } from "@/lib/message-client";
-import { ouvrirMessagerie } from "@/lib/ouvrir-messagerie";
+import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
 import type { CiviliteChoisie } from "@/lib/civilite";
 import {
   cocherLigneAction,
@@ -202,7 +202,7 @@ export default function FicheChantierClient({
       entrepriseNom,
       lien: `${origine}/entretien/${jetonNeuf}`,
     });
-    ouvrirMessagerie(lienTransmission({ canal, destinataire, message }));
+    ouvrirAdresse(lienTransmission({ canal, destinataire, message }), canal);
   }
 
   const clientsFiltres = clients.filter((c) =>

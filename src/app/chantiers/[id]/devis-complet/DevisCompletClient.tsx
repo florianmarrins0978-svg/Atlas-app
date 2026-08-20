@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
@@ -14,6 +15,9 @@ import { CIVILITES, type Civilite } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
 import { LIBELLE_REDUCTION, pourcentValide, totauxAvecReduction } from "@/lib/reduction-devis";
 import DicterDansLeDevis from "./DicterDansLeDevis";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
+import EnvoiAuClient from "../export/EnvoiAuClient";
+import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
 import {
   appliquerRetouchesAction,
   majEmetteurAction,
@@ -70,6 +74,17 @@ type Props = {
   emetteur: { nom: string; adresse: string; siret: string; telephone: string; email: string; iban: string };
   clientId: string | null;
   client: { nom: string; civilite: Civilite | null; adresse: string; telephone: string; email: string };
+  /**
+   * Par où l'on écrit au client, et depuis quelle adresse.
+   *
+   * Les deux ne servent qu'à ouvrir sa messagerie au moment de l'envoi — ce
+   * geste vit sur cet écran depuis le 20 août 2026. Le canal est un accord avec
+   * la PERSONNE, pas une caractéristique du document : il se lit sur la fiche
+   * du client, jamais sur le devis. L'origine, elle, est bâtie côté serveur —
+   * composée dans le navigateur, elle diffèrerait de ce que le serveur a rendu.
+   */
+  canalClient: "sms" | "email";
+  origine: string;
   adresseChantier: string;
   lignesInitiales: Ligne[];
   tauxTva: string;
@@ -93,6 +108,26 @@ type Props = {
 
 export default function DevisCompletClient(props: Props) {
   const fige = props.statut === "envoye";
+  const router = useRouter();
+
+  /**
+   * La feuille des dates, ouverte ICI et non deux écrans plus loin.
+   *
+   * *Sa demande du 20 août 2026, trois captures à l'appui :* **« le bouton
+   * envoyer au client, tu vas me le modifier par Choisir la date […] j'arrive
+   * directement sur la page où je peux choisir la date […] on supprime la page
+   * qui est entre les deux. On va raccourcir les étapes. »**
+   *
+   * **Il avait raison sur le doublon.** L'écran qu'on saute redisait le client,
+   * les lignes et le total que ce devis-ci vient d'afficher en entier. On ne
+   * relit pas un devis qu'on vient de fermer.
+   *
+   * **C'est la MÊME feuille**, pas une copie : `EnvoiAuClient` ne demande que le
+   * chantier, le devis et le nom du client, tous trois présents ici. La copier
+   * aurait donné deux calendriers à tenir d'accord — et c'est exactement ce que
+   * `CLAUDE.md` §3 interdit.
+   */
+  const [feuilleOuverte, setFeuilleOuverte] = useState(false);
 
   const [emetteur, setEmetteur] = useState(props.emetteur);
   const [client, setClient] = useState(props.client);
@@ -724,27 +759,71 @@ export default function DevisCompletClient(props: Props) {
 
       {/* Les seules actions de la page, discrètes, sous le document. */}
       <div className="mt-10 flex flex-col items-center gap-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
+        {/* **« Choisir la date » EN PREMIER, et l'aperçu en dessous** — sa
+            demande du 20 août 2026, planche `docs/maquettes/82`, proposition A.
+            Un seul geste saute aux yeux : c'est celui qu'il fait neuf fois sur
+            dix. L'aperçu reste un lien parce que ce n'est pas une action, c'est
+            une vérification.
+
+            **Sans flèche**, il l'a dit en toutes lettres. La flèche annonçait
+            un écran de plus ; il n'y en a justement plus. */}
+        {!fige && (
+          <div className="w-full px-6 pt-6">
+            <PrimaryButton onClick={() => setFeuilleOuverte(true)}>Choisir la date</PrimaryButton>
+          </div>
+        )}
         <a
           href={`/api/devis/${props.devisId}/pdf`}
           target="_blank"
           rel="noopener noreferrer"
-          className="pt-6 text-[14px] font-medium"
+          className={`${fige ? "pt-6" : "pt-3"} text-[14px] font-medium`}
           style={{ color: colors.rust }}
         >
           Aperçu du PDF
-        </a>
-        <a
-          href={`/chantiers/${props.chantierId}/export`}
-          className="text-[14px] font-medium"
-          style={{ color: colors.rust }}
-        >
-          Envoyer au client →
         </a>
         <p className="pb-1 text-center text-[12px]" style={{ color: colors.muted }}>
           Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
         </p>
       </div>
       </article>
+
+      {/* **La feuille des dates, montée ici.** Elle vivait sur l'écran
+          récapitulatif ; c'est le même composant, ouvert plus tôt. Après
+          l'envoi, on mène à l'écran du devis parti — c'est lui qui porte le
+          lien à transmettre au client, et il n'a pas bougé. */}
+      <EnvoiAuClient
+        chantierId={props.chantierId}
+        devisId={props.devisId}
+        clientNom={client.nom}
+        ouvert={feuilleOuverte}
+        onFermer={() => setFeuilleOuverte(false)}
+        onEnvoye={(lien) => {
+          setFeuilleOuverte(false);
+          // **Sa messagerie s'ouvre ICI, dans la foulée du doigt.** Sa demande
+          // du 18 août 2026 : *« quand je clique sur le bouton envoyer le devis,
+          // tout de suite ça m'ouvre l'application, soit SMS soit email »*. Le
+          // départ ayant changé d'écran le 20 août, l'ouverture l'a suivi — sans
+          // être recopiée (`src/lib/ouvrir-messagerie.ts`).
+          //
+          // AVANT la navigation : un navigateur peut refuser une ouverture de
+          // `sms:` qui ne suit pas le geste d'assez près, et sur iOS il la
+          // refuse sans un mot.
+          ouvrirLaMessagerie({
+            chemin: lien,
+            origine: props.origine,
+            canalClient: props.canalClient,
+            clientTelephone: client.telephone,
+            clientEmail: client.email,
+            clientNom: client.nom,
+            clientCivilite: client.civilite,
+            entrepriseNom: emetteur.nom,
+          });
+          // `?envoye=1` : l'écran d'arrivée dira « Devis prêt pour … » plutôt
+          // que « en attente de réponse ». Il vient d'appuyer — c'est le seul
+          // moment où cette phrase-là est vraie.
+          router.push(`/chantiers/${props.chantierId}/export?envoye=1`);
+        }}
+      />
     </>
   );
 }

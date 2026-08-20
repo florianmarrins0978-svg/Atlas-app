@@ -2,6 +2,7 @@
 
 import { PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { veilleurEnVie } from "@/server/etat-banc";
 import { creerTarif, listerTarifs, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
 import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
 import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@/lib/import-tarifs";
@@ -332,7 +333,7 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
       // c'est écrit dans `demarrer.sh`.
       const issue = issueApresMiseAJour({
         versionBatie: process.env.NODE_ENV === "production",
-        veilleurPresent: await veilleurEnVie(),
+        veilleurPresent: veilleurEnVie(),
         suffixeVersion: await suffixeVersion(),
       });
       if (issue.couperLeServeur) programmerReconstruction();
@@ -368,25 +369,6 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
  * suivantes en disant « des modifications non enregistrées sont présentes ».
  * Le remède aurait créé la panne, définitivement.
  */
-/**
- * Le veilleur est-il là pour relever le serveur qu'on s'apprête à couper ?
- *
- * Son verrou porte un identifiant de processus, précisément pour qu'un fichier
- * resté d'un conteneur précédent ne mente pas (`veiller.sh`). On vérifie donc
- * que le processus vit, pas que le fichier existe.
- */
-async function veilleurEnVie(): Promise<boolean> {
-  try {
-    const { readFile } = await import("node:fs/promises");
-    const pid = Number((await readFile("/tmp/atlas-veilleur.pid", "utf8")).trim());
-    if (!Number.isInteger(pid) || pid <= 0) return false;
-    process.kill(pid, 0); // Ne tue rien : demande seulement s'il existe.
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Coupe le serveur bâti — après avoir rendu sa réponse.
  *

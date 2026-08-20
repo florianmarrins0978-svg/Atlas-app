@@ -249,30 +249,32 @@ async function main() {
   await test("Envoyer fige le rapport, et ouvre SA messagerie tout de suite", async () => {
     // **L'ouverture doit suivre l'appui, sans écran entre les deux** — sa
     // demande du 20 août : *« pas comme là où ça nous ouvre d'abord une autre
-    // page avant de pouvoir envoyer »*. Le lanceur des suites retient le saut
-    // et note ce qui a été ouvert (`scripts/e2e-browser.ts`) : c'est notre côté
-    // du contrat, et le seul éprouvable ici. Qu'iOS l'honore après une réponse
-    // du serveur ne se prouve pas depuis Chromium — d'où l'écran figé qui reste
-    // derrière, avec son bouton.
+    // page avant de pouvoir envoyer »*.
+    //
+    // **Ce que ce contrôle ne prouve PAS, et il faut le dire :** qu'iOS honore
+    // cette ouverture quand elle suit une réponse du serveur plutôt que le
+    // doigt. Aucun navigateur d'ici ne répond pour Safari — d'où l'écran figé
+    // qui reste derrière, avec son bouton.
     await page.locator('[data-atlas="envoyer-fiche"]').click();
     await page.waitForTimeout(1500);
     await capturer(page, "08-rapport-fige");
 
-    const ouvertures = (await page.evaluate(`window.__ouvertures || []`)) as string[];
-    const ouverte = ouvertures.find((u) => u.startsWith("sms:") || u.startsWith("mailto:"));
-    assert.ok(
-      ouverte,
-      "« Enregistrer et envoyer » n'a ouvert aucune messagerie — " +
-        `adresses vues : ${JSON.stringify(ouvertures)}`
+    // L'écran touche pour lui un vrai lien, qu'il laisse dans le document :
+    // c'est ce qui rend l'adresse lisible ici (`src/lib/ouvrir-messagerie.ts`),
+    // et c'est le même mécanisme que l'envoi du devis — un seul comportement à
+    // éprouver sur son téléphone, pas deux.
+    const porte = page.locator("a[data-transmission-directe]");
+    assert.equal(
+      await porte.count(),
+      1,
+      "« Enregistrer et envoyer » n'a ouvert aucune messagerie"
     );
+    const adresse = (await porte.getAttribute("href")) ?? "";
     // Le numéro sans ses espaces, sinon l'application ouvre un message SANS
     // destinataire et il ne le découvre que dans Messages.
+    assert.match(adresse, /^sms:\d+\?/, `destinataire mal formé : ${adresse.slice(0, 60)}`);
     assert.ok(
-      ouverte!.startsWith("sms:0612345678"),
-      `destinataire mal formé : ${ouverte!.slice(0, 60)}`
-    );
-    assert.ok(
-      decodeURIComponent(ouverte!).includes("/entretien/"),
+      decodeURIComponent(adresse).includes("/entretien/"),
       "le message ouvert ne porte pas le lien du rapport"
     );
 

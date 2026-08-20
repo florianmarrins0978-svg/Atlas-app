@@ -1,0 +1,158 @@
+{
+  "_lisez_moi": "PREMIÈRE FICHE RÉELLE. Écrite le 20 août 2026 à partir du document du Département de la santé des forêts récolté par .github/workflows/recolter-sources-phyto.yml et lu en entier — jamais de mémoire. Chaque champ qui engage cite la source. Ce qui n'est pas dans le document reste vide : voir les notes _source ci-dessous.",
+
+  "_sur_les_taxons": "Les noms scientifiques des essences hôtes sont de la NOMENCLATURE botanique, pas une affirmation phytosanitaire : le document nomme les essences en français (« épicéa commun », « pin maritime »), et le binôme latin sert seulement à ce que le moteur reconnaisse l'essence que le modèle lit sur la photo. Aucun hôte n'est ajouté à la liste du document.",
+
+  "version": "dsf-2026-08-20",
+
+  "sources": [
+    {
+      "code": "dsf-fomes-2013",
+      "organisme": "Département de la santé des forêts — ministère de l'Agriculture",
+      "titre": "Information santé des forêts — Le fomes des résineux",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/Plaquette_Fomes_2013-1_cle0d148e.pdf",
+      "nature": "officielle",
+      "publieeLe": "2013-07-01",
+      "consulteeLe": "2026-08-20"
+    }
+  ],
+
+  "taxons": [
+    { "code": "picea-abies", "nomScientifique": "Picea abies", "nomCommun": "Épicéa commun", "synonymes": ["épicéa"], "rang": "espece", "port": "conifere" },
+    { "code": "picea-sitchensis", "nomScientifique": "Picea sitchensis", "nomCommun": "Épicéa de Sitka", "synonymes": [], "rang": "espece", "port": "conifere" },
+    { "code": "pinus-pinaster", "nomScientifique": "Pinus pinaster", "nomCommun": "Pin maritime", "synonymes": [], "rang": "espece", "port": "conifere" },
+    { "code": "pseudotsuga-menziesii", "nomScientifique": "Pseudotsuga menziesii", "nomCommun": "Douglas", "synonymes": ["sapin de Douglas"], "rang": "espece", "port": "conifere" },
+    { "code": "abies-alba", "nomScientifique": "Abies alba", "nomCommun": "Sapin pectiné", "synonymes": [], "rang": "espece", "port": "conifere" },
+    { "code": "abies-grandis", "nomScientifique": "Abies grandis", "nomCommun": "Sapin de Vancouver", "synonymes": ["sapin grandissime"], "rang": "espece", "port": "conifere" },
+    { "code": "pinus-strobus", "nomScientifique": "Pinus strobus", "nomCommun": "Pin weymouth", "synonymes": [], "rang": "espece", "port": "conifere" },
+    { "code": "larix", "nomScientifique": "Larix", "nomCommun": "Mélèze", "synonymes": [], "rang": "genre", "port": "conifere" },
+    { "code": "pinus", "nomScientifique": "Pinus", "nomCommun": "Pin", "synonymes": ["pins"], "rang": "genre", "port": "conifere" }
+  ],
+
+  "fiches": [
+    {
+      "code": "fomes-resineux",
+      "nomCommun": "Fomès des résineux",
+      "nomScientifique": "Heterobasidion annosum",
+      "categorie": "champignon_lignivore",
+      "agentCausal": "Heterobasidion annosum (Fr.) Bref., au sens large — complexe de trois espèces : H. annosum au sens strict, H. abietinum et H. parviporum",
+      "agentType": "champignon",
+
+      "partiesAtteintes": ["racine", "collet", "tronc", "champignon_sur_bois", "houppier"],
+
+      "_source_periode": "Le document ne borne aucune période d'observation. Les sporophores sont « généralement pérennes (1-3 ans) » et libèrent des spores « pratiquement tout au long de l'année en plaine, sauf en période de gel ou de fortes chaleurs ». Une période reste donc VIDE plutôt que déduite.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+
+      "explicationCourte": "Champignon racinaire des résineux. Il provoque des pourritures du bois de cœur, surtout chez les épicéas, et des mortalités disséminées ou en rond chez tous les résineux.",
+
+      "gravite": "importante",
+
+      "_source_impact_mecanique": "Le document décrit une pourriture du bois de cœur pouvant remonter « depuis le collet jusqu'à plusieurs mètres de hauteur ». Il ne traite NULLE PART de la stabilité mécanique ni du risque de rupture : c'est un document de gestion forestière. « possible » plutôt qu'« avéré », et la note le dit.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "Le document décrit une pourriture du bois de cœur remontant du collet jusqu’à plusieurs mètres. Il ne se prononce pas sur la stabilité de l’arbre.",
+
+      "_source_risque_humain": "Non traité par le document.",
+      "risqueHumainAnimal": "inconnu",
+
+      "_source_reglementaire": "Le document ne mentionne aucun statut de quarantaine ni de lutte obligatoire pour le fomès lui-même. La réglementation qu'il cite porte sur l'APPLICATEUR du produit de traitement (Certiphyto, agrément), pas sur l'organisme — elle est donc dans « traitement », pas ici.",
+      "statutReglementaire": "aucun",
+
+      "_source_diagnostic_photo": "« indicatif », et non « possible ». Deux phrases du document le commandent : chez l'épicéa, « très généralement, la vie de l'arbre n'est cependant pas compromise et aucun symptôme extérieur n'est visible » — la pourriture ne se voit donc pas ; et les carpophores « sont souvent peu visibles, car dissimulés par l'accumulation de feuilles mortes ou par la végétation herbacée ». Une photo oriente, elle ne conclut pas.",
+      "diagnosticPhoto": "indicatif",
+
+      "photosUtiles": ["collet", "champignon_sur_bois", "tronc", "ensemble"],
+
+      "conduiteRecommandee": "La lutte est essentiellement préventive et porte sur les souches, pas sur l’arbre atteint : traiter toute souche fraîchement coupée dans les 3 heures qui suivent l’abattage. Dans un peuplement déjà contaminé, tout reboisement résineux devient hasardeux.",
+
+      "prevention": "Application localisée, sur les souches fraîchement coupées, d’une solution aqueuse contenant les spores d’un champignon antagoniste. Le traitement doit être effectué à chaque éclaircie et dès la première, sur toutes les souches et immédiatement après abattage — y compris lors de la coupe définitive si elle doit être suivie d’un reboisement résineux sans dessouchage. Impératif pour les épicéas commun et de Sitka, et pour le pin maritime dans le massif des Landes de Gascogne ; particulièrement recommandé pour tous les boisements résineux sur d’anciennes terres agricoles.",
+
+      "gestion": "La contamination se fait par germination des spores sur les souches fraîches, notamment lors des éclaircies ; le mycélium se transmet ensuite aux arbres voisins par contacts racinaires. Les blessures d’exploitation aux racines et à l’empattement sont une autre porte d’entrée possible. Les jeunes arbres en plantation présentant des malformations racinaires (chignon, crosse) dues à une mauvaise technique de plantation peuvent subir des dégâts importants.",
+
+      "_source_traitement": "Recopié du document, y compris le cadre réglementaire de l'applicateur — c'est précisément ce qu'un artisan doit savoir avant d'y toucher. La date d'AMM citée est celle du document (2013) : elle doit être revérifiée dans le registre officiel avant tout emploi, et la phrase le dit.",
+      "traitement": "Un seul produit est homologué pour cet usage d’après le document : le ROTSTOP®, contenant 100 g/kg de spores et mycélium de la souche naturelle VRA 1835 de Phlebiopsis gigantea (AMM d’octobre 2012). Dose autorisée : 1 g/m² de souche, dans la limite de 68 g/ha. Application dans les 3 heures suivant l’abattage, par badigeonnage ou pulvérisation. C’est un produit phytopharmaceutique à usage professionnel : l’utilisateur doit être titulaire du Certiphyto, et l’entreprise agréée comme applicateur en prestation de service. L’homologation date de 2012 : la vérifier au registre officiel avant tout emploi.",
+
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "collet",
+          "motif": "carpophore",
+          "couleurs": ["brun", "noir"],
+          "localisations": ["au_collet", "base"],
+          "poids": "cardinal",
+          "libelle": "Sporophores en consoles aplaties, au collet des arbres ou sur les souches. Surface supérieure acajou à brun-noir."
+        },
+        {
+          "nature": "signe",
+          "partie": "champignon_sur_bois",
+          "motif": "carpophore",
+          "couleurs": ["blanc"],
+          "localisations": ["base"],
+          "poids": "cardinal",
+          "libelle": "Face inférieure du sporophore : porée, de couleur blanc-crème."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "pourriture_bois",
+          "couleurs": ["blanc", "rouge"],
+          "localisations": ["base"],
+          "poids": "frequent",
+          "libelle": "Chez les épicéas : coloration du bois de cœur remontant du collet — le « cœur rouge de l’épicéa » —, évoluant vers une pourriture fibreuse blanche. Non visible de l’extérieur."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Mortalités disséminées ou en rond, formant des taches de dépérissement qui s’étendent de manière concentrique."
+        }
+      ],
+
+      "_source_hotes": "Exactement les essences que le document nomme, avec la spécificité qu'il leur donne. Il précise que « chez les feuillus, le fomes se rencontre de manière plus anecdotique, sans dégâts notables » : aucun feuillu n'est donc listé.",
+      "hotes": [
+        { "taxon": "picea-abies", "specificite": "frequent" },
+        { "taxon": "picea-sitchensis", "specificite": "frequent" },
+        { "taxon": "pinus-pinaster", "specificite": "frequent" },
+        { "taxon": "pseudotsuga-menziesii", "specificite": "frequent" },
+        { "taxon": "abies-alba", "specificite": "occasionnel" },
+        { "taxon": "abies-grandis", "specificite": "occasionnel" },
+        { "taxon": "pinus-strobus", "specificite": "occasionnel" },
+        { "taxon": "larix", "specificite": "occasionnel" },
+        { "taxon": "pinus", "specificite": "occasionnel" }
+      ],
+
+      "_source_confusions": "Le document nomme l'armillaire (Armillaria ostoyae) et le rhizina (Rhizina undulata) comme les deux autres agents de la « maladie du rond » des pineraies — donc deux confusions réelles. Elles ne sont PAS écrites ici : une confusion doit désigner une fiche EXISTANTE, et ces deux-là n'ont pas encore de source lue. Les ajouter le jour où elles en auront une.",
+      "confusions": [],
+
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2026-08-20",
+
+      "sources": [
+        {
+          "source": "dsf-fomes-2013",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "traitement",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "prevention",
+            "gestion",
+            "agent_causal",
+            "impact_mecanique"
+          ]
+        }
+      ],
+
+      "_source_images": "Le document porte des photographies (L.-M. Nageleisen, B. Boutte, Ph. Legrand, DSF ; J.R. Liarçou, CRPF Aquitaine). Elles ne sont PAS reprises : la Licence Ouverte couvre le texte du document, et les crédits photographiques nominatifs demandent une vérification à part. Une image sans licence établie ne s'affiche pas.",
+      "images": []
+    }
+  ]
+}
