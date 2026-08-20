@@ -76,29 +76,31 @@ async function main() {
   // Il pose son prix — « j'ai enregistré le nouveau prix ».
   await page.goto(`${fiche}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");
-  await page.waitForTimeout(400);
+
+  // **On attend que la ligne EXISTE, on ne compte pas 400 ms.** L'écran des prix
+  // porte d'autres champs que ceux de la ligne — la proposition de prix en a —,
+  // si bien qu'un `nth(0)`/`nth(1)` lancé trop tôt visait à côté : le libellé
+  // arrivait, le montant non. Le devis s'ouvrait alors sur une ligne à zéro, et
+  // le rouge accusait l'écran d'arrivée, qui n'y était pour rien.
   const champs = page.locator("form input");
+  for (const essai of [1, 2, 3, 4, 5]) {
+    if ((await champs.count()) >= 2) break;
+    await page.waitForTimeout(essai * 300);
+  }
   await champs.nth(0).fill("Abattage d'un chêne");
   await champs.nth(1).fill("1200.00");
   await champs.nth(1).blur();
 
-  // **On RELIT jusqu'à ce que la base ait reçu, au lieu d'attendre 900 ms.**
-  // L'écran des prix rend la main dès le doigt levé et laisse l'enregistrement
-  // partir derrière lui. Neuf cents millisecondes suffisent quand cette suite
-  // est jouée seule ; enchaînée aux autres, la navigation suivante avorte
-  // l'appel en vol, le devis s'ouvre sur une ligne vide, et le contrôle accuse
-  // l'écran d'arrivée — « le total n'est pas montré avant l'envoi », alors que
-  // c'est le montant qui n'était jamais arrivé. Même remède que
-  // `test-prix-e2e.ts` : **attendre ce qu'on affirme, jamais une durée.**
+  // **Puis on RELIT le TOTAL, qui est ce que l'écran garantit.** Relire un champ
+  // par son rang, c'est se fier au même repère qui vient de nous tromper ; le
+  // total, lui, ne peut afficher 1 200,00 € que si le montant est arrivé.
+  // Même remède que `test-prix-e2e.ts` : attendre ce qu'on affirme, jamais une
+  // durée.
   for (const essai of [1, 2, 3, 4]) {
     await page.reload({ waitUntil: "networkidle" });
-    const persiste = await page
-      .locator("form input")
-      .nth(1)
-      .inputValue()
-      .catch(() => "");
-    if (persiste === "1200.00") break;
-    await page.waitForTimeout(essai * 400);
+    const total = await page.locator("p", { hasText: "€" }).first().innerText().catch(() => "");
+    if (/1[\s\u202f\u00a0]?200,00/.test(total)) break;
+    await page.waitForTimeout(essai * 500);
   }
 
   await cas("SA SÉQUENCE : retour par mégarde, puis la ligne le ramène à l'envoi", async () => {

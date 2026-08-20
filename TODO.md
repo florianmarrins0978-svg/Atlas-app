@@ -444,30 +444,34 @@ plus, que la batterie complète a fait rougir alors que deux suites jouées seul
 l'envoi reprenait « Devis prêt pour … » indéfiniment. Corrigé.
 `ARCHITECTURE.md` §136.
 
-### 0 duotricies bis. `test-fiche-pendant-relance` est ROUGE, et ce n'est pas ce lot
+### ~~0 duotricies bis. `test-fiche-pendant-relance` est ROUGE~~ — **C'ÉTAIT MOI**
 
-Constaté le 20 août 2026 en passant la batterie complète. Un cas sur trois échoue :
+**Écrit le 20 août 2026, et faux dès la première ligne.** J'avais consigné cette
+suite comme « rouge indépendamment du lot », avec pour preuve qu'elle échouait
+aussi sur son propre commit d'introduction. La conclusion était fausse, et le
+dépôt portait déjà la bonne explication : **`TODO.md` 0 trigies quater**, écrite
+le 17 août par une autre session, qui décrit exactement ce piège.
 
-> `le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien`
-> `le veilleur n'a jamais tenté de relance : le montage ne reproduit pas le cas réel`
+`veiller.sh` ne se déclare « serveur mort » que si
+`pgrep -f '[n]ext(-server| dev| start)'` ne trouve rien. Or `pgrep -f` compare la
+**ligne de commande entière de tout processus de la machine**. J'ai lancé mes
+batteries par une commande qui commençait par
+`pgrep -af "next dev|next-server" … | xargs kill` — un ménage des serveurs
+orphelins. **Ce shell-là vit pendant toute la batterie, et sa ligne de commande
+contient littéralement les motifs surveillés.** Le veilleur voyait donc un
+serveur, prenait l'autre branche, et n'écrivait jamais le message attendu.
 
-**Vérifié plutôt que supposé :** la suite a été rejouée sur son PROPRE commit
-d'introduction (`2adb19f`, « Faire publier la fiche du banc À CÔTÉ de la
-surveillance »), sans rien de ce lot autour. **Elle y échoue déjà.** Ce n'est
-donc ni le raccourci du devis ni une rupture récente : ou bien cet
-environnement ne sait pas monter ce qu'elle met en scène, ou bien elle est
-partie rouge.
+**La preuve :** rejouée depuis un script qui ne nomme aucun de ces motifs, et
+sans serveur orphelin vivant, la suite rend **3 cas sur 3 au vert**.
 
-Le message accuse d'ailleurs son propre montage, pas le produit — c'est un
-point pour elle : il envoie chercher au bon endroit.
+**Ce que ça coûte, et pourquoi ce point reste écrit plutôt que supprimé :**
+j'ai consigné une hypothèse comme un fait, et je l'ai dite au patron. Une
+hypothèse rangée dans les tâches se relit ensuite comme un constat — c'est
+précisément l'avertissement que porte 0 trigies quater, et je ne l'avais pas lu
+avant d'écrire.
 
-**Qui peut le faire :** la session qui tient le banc d'essai. Deux issues
-acceptables, et une seule inacceptable :
-- la réparer pour qu'elle éprouve pour de bon la relance ;
-- ou constater qu'elle ne peut pas tourner ici et la déplacer sur une machine
-  (c'est ce que font `pages.yml` et `banc-essai.yml`) ;
-- **la laisser rouge sans le dire** : non — la batterie devient alors un
-  voyant qu'on apprend à ignorer, et c'est ainsi qu'on rate le suivant.
+**Faire le ménage des serveurs dans un appel SÉPARÉ**, qui se termine avant la
+batterie. C'est la seule chose à retenir pour la prochaine fois.
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 
