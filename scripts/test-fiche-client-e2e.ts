@@ -362,10 +362,16 @@ async function main() {
     ] as const) {
       assert.ok(!texte.includes(mot), `${quoi} est revenue sur l'écran`);
     }
+    // **La flèche de retour ne compte pas, et c'est délibéré.** Depuis le
+    // 20 août 2026, elle ramène AU CHANTIER quand on vient de là
+    // (`ARCHITECTURE.md` §135) : son adresse est donc bien celle d'un chantier,
+    // sans que la liste « Ses chantiers » soit revenue pour autant. Compter
+    // tous les liens sans distinction accuserait la sortie de secours à la
+    // place de ce qu'on cherche.
     assert.equal(
-      await page.locator(`a[href="/chantiers/${chantierId}"]`).count(),
+      await page.locator(`a[href^="/chantiers/${chantierId}"]:not([aria-label^="Retour"])`).count(),
       0,
-      "un lien vers le chantier subsiste : la liste « Ses chantiers » n'a pas été retirée"
+      "un lien vers le chantier subsiste dans le CORPS : la liste « Ses chantiers » n'a pas été retirée"
     );
   });
 

@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### La flèche de la fiche client ramène d'où l'on vient
+
+**Sa remarque, capture à l'appui :** *« Quand j'appuie sur retour, ça ne me fait
+pas un retour, mais deux retours. Je reviens directement à la page vos
+chantiers. Or, je devrais rester dans la catégorie mes clients. »*
+
+Il avait raison, et c'était écrit en toutes lettres : la fiche renvoyait
+toujours à l'accueil (`href: "/"`), quel que soit l'écran d'où l'on venait.
+Depuis la liste des clients, un seul appui sautait donc **deux** écrans.
+
+**Un lien fixe se serait trompé de toute façon**, parce que la fiche s'ouvre
+depuis DEUX endroits : la liste des clients, et le tiroir d'un chantier. Renvoyer
+toujours vers les clients ferait sortir du chantier celui qui y était. L'origine
+voyage donc dans l'adresse, et `src/lib/retour-fiche-client.ts` la traduit — une
+seule fois, hors de tout écran.
+
+**Cette valeur vient de l'adresse, donc de n'importe qui.** Sans filtre,
+`?de=https://ailleurs.example` ferait de la flèche « retour » une porte de sortie
+vers un site étranger. Seule la forme d'un chemin de chantier est acceptée ; tout
+le reste retombe sur la liste des clients, sans erreur ni écran vide.
+
+Éprouvé dans les deux sens : en remettant `href: "/"`, les deux suites rougissent
+— celle sans navigateur sur « c'est exactement le double saut qu'il a signalé »,
+celle au navigateur sur les trois chemins.
+
 ### L'arrosage en deux gestes — dessiné, pas codé
 
 **Sa demande du 20 août 2026**, capture d'`arrosage.html` à l'appui : *« on va
