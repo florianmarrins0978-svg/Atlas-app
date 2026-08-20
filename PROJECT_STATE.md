@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-19 · branche `main`
+**Dernière mise à jour :** 2026-08-20 · branche `main`
 · dernière migration `drizzle/0055_passage_entretien.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -572,6 +572,49 @@ demande aucune décision, aucun compte et aucun budget ; seule la mise en
 production les demande.
 
 ---
+
+## Les maquettes essayables : une seule adresse, et `appli/` en est la racine
+
+**Ce qu'on lui donne, et rien d'autre :**
+`https://florianmarrins0978-svg.github.io/Atlas-app/essais.html`
+
+`.github/workflows/pages.yml` publie **`appli/` comme racine du site** — tout ce
+qui y est déposé part en ligne, et rien d'autre du dépôt. `appli/essais.html`
+est la page d'entrée : elle liste toutes les maquettes manipulables, chacune sur
+un pavé d'au moins 64 px.
+
+**Deux règles payées cher :**
+
+- **Une adresse se donne entière, jamais avec des points de suspension.** Le
+  18 août 2026 il a répondu : *« quand je fais pour cliquer, je ne peux pas
+  cliquer »*. Un lien tronqué n'est pas un lien.
+- **Toute maquette neuve s'inscrit à trois endroits, sans quoi elle n'existe
+  pas :** `appli/essais.html` (le patron y arrive), la liste vérifiée après
+  déploiement dans `pages.yml` (elle répond vraiment), et
+  `npm run verifier:maquette` (elle tient ce qu'elle promet). C'est la même
+  leçon que les huit planches introuvables trouvées par
+  `scripts/fusionner-maquettes.mjs`.
+
+## Atlas ne fabrique que DEUX documents en PDF
+
+**Vérifié le 20 août 2026, contre ce qu'on pourrait croire du vocabulaire du
+dépôt.** Les seuls PDF engendrés sont le **devis**
+(`src/server/pdf/devis-pdf.ts`, servi par `/api/devis/[id]/pdf`) et la
+**facture** (`facture-pdf.ts`, `/api/factures/[id]/pdf`), tous deux bâtis sur
+`src/server/pdf/document-commun.ts`.
+
+**Trois mots proches désignent des choses différentes**, et les confondre fait
+dessiner un document qui n'existe pas :
+
+| Le mot | Ce que c'est vraiment |
+|---|---|
+| **fiche chantier** | un ÉCRAN (`src/app/chantiers/[id]/`) — photos, note vocale, étapes. Pas une feuille qu'on envoie |
+| **fiche d'entretien** | un MODÈLE de prestations à cocher, un par entreprise (`reglages/fiche-entretien`, migration 0051) |
+| **fiche client** | un ÉCRAN (`src/app/clients/[id]/`) — ce qu'Atlas sait d'un client |
+
+Le patron a demandé une colonne de « fiches chantier en PDF » : ce
+document **reste à fabriquer**, et la maquette `appli/fiche-client.html` le dit
+plutôt que de le dessiner comme s'il était là.
 
 ## Le lecteur du patron n'exécute pas JavaScript — les maquettes doivent s'en passer
 

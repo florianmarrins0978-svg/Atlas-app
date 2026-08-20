@@ -35,6 +35,49 @@ quand il y a quelque chose à effacer. Une suite tient désormais les deux.
 apparaît au-delà d'un certain nombre est une règle de plus à deviner, et le
 jour où il en a quatre il la croirait retirée.
 
+### La fiche client, allégée — dessinée, pas codée
+
+**Sa demande, capture de l'écran « Martins » à l'appui :** *« En dessous de
+l'adresse, en titre noir gras, dernière prestation avec ce qu'elle comprend.
+Ensuite : pas trois encadrés, seulement deux. Un contenant devis, et l'autre
+fiche chantier… en deux colonnes… trié par date, de la plus récente à la moins
+récente. On garde le nom et les informations sous le nom. Tout le reste, tu
+enlèves. C'est du trop. »*
+
+**`appli/fiche-client.html`** — essayable, sans script ni photo, atteignable
+depuis `appli/essais.html`. **Rien n'est codé** : `CLAUDE.md` §3 bis, une
+demande d'apparence se dessine avant de se coder.
+
+**Ce que la maquette DIT plutôt que de le dessiner en silence : le PDF « fiche
+chantier » n'existe pas.** Vérifié dans le dépôt — Atlas ne fabrique que deux
+documents en PDF, le devis (`src/server/pdf/devis-pdf.ts`) et la facture
+(`facture-pdf.ts`). Ce que le code appelle « fiche chantier » est un **écran** ;
+la « fiche d'entretien » est un **modèle de prestations** dans les réglages. La
+deuxième colonne serait donc vide aujourd'hui. Un écran de la maquette montre ce
+que ce document contiendrait — dessiner un document inexistant comme s'il était
+là est la faute que la planche 56 a commise deux fois.
+
+**Et deux questions posées plutôt que tranchées à sa place :** où vont les
+**factures**, qui n'ont plus d'encadré (trois réponses proposées, dont une qui
+ne casse pas sa règle des deux encadrés) ; et le fait que « Ses chantiers »
+était le seul **chemin** d'un client vers un chantier.
+
+**Le contrôle** (`scripts/verifier-maquette-fiche-client-allegee.mjs`, dans
+`npm run verifier:maquette`) relit les dates **telles qu'elles s'affichent, en
+français**, et refuse une colonne qui remonte le temps — c'est le cœur de sa
+demande, dite deux fois. Il refuse aussi un troisième encadré, une colonne qui
+retombe sous l'autre à 390 px, un titre qui ne serait ni noir ni gras, le retour
+d'une des quatre choses retirées, la disparition de l'aveu sur la fiche
+chantier, et **tout lien qui ne mène nulle part** — sa colère du 18 août :
+*« quand je fais pour cliquer, je ne peux pas cliquer »*. Éprouvé rouge sur sept
+états dégradés.
+
+**Quatre défauts trouvés à l'œil, aucun par un test vert** (`CLAUDE.md` §5) : le
+retour « Vos clients » pointait sur l'écran qu'on regardait — il mène désormais
+à `clients-recherche.html#liste`, qui existe ; une case cochée ne se distinguait
+d'une case vide que par sa couleur ; une conclusion collée à sa liste ; un
+espace de trop.
+
 ### Le veilleur ne renonce plus : la version rapide se retente jusqu'à passer
 
 **Sa plainte, à 6 h 40 :** *« l'application est lente corrige ça »*. Sa fiche le
@@ -67,6 +110,33 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 ---
 
 ## 2026-08-19
+
+### Le compte des chantiers ne se dit plus qu'une fois, et en chiffre
+
+**Sa demande, capture à l'appui :** *« la mention en cours qui se trouve sous
+Vos chantiers, supprime-la. Le "Un" qui est à droite, en lettres, je le
+supprime. Et le "en cours" au-dessus de la date, à côté je veux le chiffre du
+nombre de chantiers en cours, en gras. »*
+
+**Ce que ça corrigeait :** le même nombre était écrit **trois fois** sur le même
+écran — « Un en cours » sous le titre, « En cours » à gauche de la rubrique,
+« Un » à sa droite. Deux fois en lettres, à deux endroits, pour une seule
+information.
+
+Il reste **« EN COURS 4 »** : le mot, puis le chiffre collé à lui. Le chiffre
+est le seul élément en gras de la ligne — c'est lui qu'on vient lire.
+
+**Le mot passe au gris du second plan** : `inkSoft` au lieu de `muted`. Trois
+gris lui ont été montrés (`appli/en-cours-le-chiffre.html`), **il a pris le
+C** — le plus foncé des trois. Jamais une couleur écrite en clair : elle aurait
+été juste sur « Origine » et fausse sur les deux chartes sombres, et `inkSoft`
+se dérive pour les sept.
+
+**Le repère `data-atlas="compteur"` a suivi le compte** sur la rubrique. Le
+laisser sur la ligne supprimée aurait rendu `test-dashboard` muet — et cette
+suite lit le nombre en ATTRIBUT depuis le 10 août précisément pour survivre aux
+refontes de libellé. Elle vérifie désormais aussi que le nombre **se lit en
+chiffre à l'écran** : l'attribut seul resterait vert sur un retour aux lettres.
 
 ### Atlas dépouillé, utilisable, pour la plainte « trop de mots »
 
@@ -135,23 +205,6 @@ n'est peut-être pas un refus.
 
 ---
 
-## 2026-08-18
-
-### Le bouton de l'accueil dit « Créer un devis »
-
-**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
-d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
-
-Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
-feuille au-dessus.
-
-**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
-demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
-titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
-à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
-client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
-remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
-
 ## 2026-08-16
 
 ### L'écran de création s'appelle « Fiche client »
@@ -176,6 +229,21 @@ deux centres tombent sur le même pixel. `ARCHITECTURE.md` §124.
 ---
 
 ## 2026-08-18
+
+### Le bouton de l'accueil dit « Créer un devis »
+
+**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
+d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
+
+Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
+feuille au-dessus.
+
+**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
+demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
+titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
+à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
+client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
+remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
 
 ### Deux boutons à la place de la bascule, sur l'écran de création
 

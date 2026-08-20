@@ -141,6 +141,58 @@ jugé, et c'est l'erreur qu'on cherche à arrêter. Et il faudra se souvenir que
 corriger trois écrans de plus ne suffira pas : c'est déjà la troisième fois, et
 rien n'empêche l'application de regrossir.
 
+## Deux maquettes que le patron ne peut pas ouvrir — constaté le 20 août 2026
+
+`appli/deux-boutons-devis.html` et `appli/en-cours-le-chiffre.html` existent,
+sont publiées, sont vérifiées après déploiement — et **aucun lien d'`essais.html`
+ne les atteint**. Or `essais.html` est la seule adresse qu'on lui ait donnée :
+autant dire qu'elles n'existent pas pour lui. C'est le même défaut que les huit
+planches introuvables trouvées par `scripts/fusionner-maquettes.mjs`.
+
+**À faire, par qui reprend leur sujet :** les inscrire dans `appli/essais.html`
+si elles ont encore une question ouverte, ou les retirer si leur question est
+tranchée. Puis retirer leur mention en dur de `.github/workflows/pages.yml`,
+où elles ne sont gardées que pour ne pas perdre une vérification existante.
+
+**Ce qui ne se reproduira plus :** depuis le 20 août, la liste vérifiée après
+déploiement **se déduit des liens d'`essais.html`** au lieu d'être tenue à la
+main. Deux pages y manquaient ce jour-là, dont `moins-de-mots.html`, écrite la
+veille.
+
+---
+
+## ⏸ La fiche client allégée — **dessinée le 20 août, il tranche avant qu'on code**
+
+**Sa demande, capture de l'écran « Martins » à l'appui :** *« En dessous de
+l'adresse, en titre noir gras, dernière prestation avec ce qu'elle comprend…
+pas trois encadrés, seulement deux… en deux colonnes… trié par date, de la plus
+récente à la moins récente. On garde le nom et les informations sous le nom.
+Tout le reste, tu enlèves. C'est du trop. »*
+
+**La maquette est là :** `appli/fiche-client.html`, atteignable depuis
+`appli/essais.html`. **Rien n'est codé** (`CLAUDE.md` §3 bis).
+
+**Trois réponses attendues de lui avant de toucher à `src/app/clients/[id]/`
+et à `src/server/repositories/fiche-client.ts` :**
+
+| | Ce qui attend | Pourquoi on ne peut pas trancher à sa place |
+|---|---|---|
+| 1 | **Le PDF « fiche chantier »** — le fabrique-t-on ? | **Il n'existe pas.** Atlas ne fabrique que deux PDF : le devis (`src/server/pdf/devis-pdf.ts`) et la facture (`facture-pdf.ts`). Ce que le code appelle « fiche chantier » est un ÉCRAN, et la « fiche d'entretien » un modèle de prestations. **La deuxième colonne serait vide.** L'écran `#fiche-chantier` de la maquette montre ce que le document contiendrait — les données sont toutes en base (prestations cochées, heures, photos, note vocale) : il reste à en faire une feuille |
+| 2 | **Où vont les factures ?** | Deux encadrés seulement, donc elles n'en ont plus. Trois réponses sont proposées dans l'écran `#factures` — dont une ligne grise sous le numéro du devis, qui ne casse pas sa règle |
+| 3 | **Perd-on le chemin vers un chantier ?** | « Ses chantiers » était le seul lien d'un client vers un chantier. En le retirant, on n'ouvre plus un chantier depuis ici. À lui de dire s'il s'en sert |
+
+**Ce qui est déjà en base, et ne demande rien :** la dernière prestation et ce
+qu'elle comprend se lisent dans `lignes_prix` et `prestations` du chantier le
+plus récent — `chargerFicheClient` charge déjà les deux.
+
+**Ce que le contrôle garde** (`npm run verifier:maquette`) :
+`scripts/verifier-maquette-fiche-client-allegee.mjs`. Il relit les dates telles
+qu'elles s'affichent et refuse une colonne qui remonte le temps ; il refuse un
+troisième encadré, une colonne qui retombe sous l'autre à 390 px, le retour
+d'une des quatre choses retirées, et tout lien mort.
+
+---
+
 ## ~~Les deux boutons du devis~~ — **tranché et codé le 18 août 2026**
 
 Sa demande : *« supprime "je dicterai" et "je l'écris", remplace par un bouton

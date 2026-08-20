@@ -165,11 +165,30 @@ jobs:
           # tout le reste est inutile. Ajoutée le 18 août 2026 après qu'il a
           # écrit « quand je fais pour cliquer, je ne peux pas cliquer » — une
           # adresse transmise sans preuve qu'elle répond n'est pas une adresse.
-          for f in index.html app.html essais.html clients.html clients-recherche.html \
-                   devis-vocal.html devis-modele.html \
-                   facture-modele.html tva-modele.html mes-tarifs.html \
-                   arrosage.html arrosage-tarifs.html arrosage-catalogue.js \
-                   deux-boutons-devis.html nav.js; do
+          #
+          # **LA LISTE SE DÉDUIT D'`essais.html`, elle ne se tient plus à la
+          # main.** Le 20 août 2026, deux pages liées depuis l'entrée du patron
+          # n'y figuraient pas — dont `moins-de-mots.html`, écrite la veille
+          # pour sa plainte « trop de mots ». Une liste tenue à la main
+          # s'oublie à chaque page neuve, et l'oubli ne se voit pas : le flux
+          # passe au vert en ayant vérifié les autres. Ce qu'on lui donne à
+          # cliquer est donc exactement ce qu'on vérifie.
+          LIES=$(grep -o 'href="[^"#:]*\.\(html\|js\)"' appli/essais.html \
+                 | sed 's/href="//; s/"$//' | sort -u)
+          echo "Pages liées depuis essais.html :"; echo "$LIES"
+          # Ceux-là ne sont liés de nulle part et doivent répondre quand même :
+          # la racine du site, l'entrée elle-même, et les deux scripts que les
+          # pages chargent.
+          #
+          # `deux-boutons-devis.html` et `en-cours-le-chiffre.html` s'y ajoutent
+          # à contrecœur : elles étaient vérifiées avant ce changement, et
+          # cesser de les vérifier serait perdre du terrain. Mais **elles ne
+          # sont atteignables depuis `essais.html` par aucun lien** — donc le
+          # patron ne peut pas les ouvrir depuis la seule adresse qu'on lui a
+          # donnée. Ouvert dans `TODO.md` ; à retirer d'ici le jour où elles y
+          # seront liées.
+          for f in index.html essais.html nav.js arrosage-catalogue.js \
+                   deux-boutons-devis.html en-cours-le-chiffre.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }
