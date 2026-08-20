@@ -161,35 +161,47 @@ veille.
 
 ---
 
-## ⏸ La fiche client allégée — **dessinée le 20 août, il tranche avant qu'on code**
+## ⏸ L'arrosage simplifié — **dessiné le 20 août, il tranche avant qu'on code**
 
-**Sa demande, capture de l'écran « Martins » à l'appui :** *« En dessous de
-l'adresse, en titre noir gras, dernière prestation avec ce qu'elle comprend…
-pas trois encadrés, seulement deux… en deux colonnes… trié par date, de la plus
-récente à la moins récente. On garde le nom et les informations sous le nom.
-Tout le reste, tu enlèves. C'est du trop. »*
+`appli/arrosage-simple.html` — huit questions ramenées à deux : le piquage, et
+le croquis. **Rien n'est codé** ; `appli/arrosage.html` n'a pas été touchée.
 
-**La maquette est là :** `appli/fiche-client.html`, atteignable depuis
-`appli/essais.html`. **Rien n'est codé** (`CLAUDE.md` §3 bis).
+**Ce qui attend sa réponse :**
 
-**Trois réponses attendues de lui avant de toucher à `src/app/clients/[id]/`
-et à `src/server/repositories/fiche-client.ts` :**
-
-| | Ce qui attend | Pourquoi on ne peut pas trancher à sa place |
+| | La question | Pourquoi elle ne se tranche pas sans lui |
 |---|---|---|
-| 1 | **Le PDF « fiche chantier »** — le fabrique-t-on ? | **Il n'existe pas.** Atlas ne fabrique que deux PDF : le devis (`src/server/pdf/devis-pdf.ts`) et la facture (`facture-pdf.ts`). Ce que le code appelle « fiche chantier » est un ÉCRAN, et la « fiche d'entretien » un modèle de prestations. **La deuxième colonne serait vide.** L'écran `#fiche-chantier` de la maquette montre ce que le document contiendrait — les données sont toutes en base (prestations cochées, heures, photos, note vocale) : il reste à en faire une feuille |
-| 2 | **Où vont les factures ?** | Deux encadrés seulement, donc elles n'en ont plus. Trois réponses sont proposées dans l'écran `#factures` — dont une ligne grise sous le numéro du devis, qui ne casse pas sa règle |
-| 3 | **Perd-on le chemin vers un chantier ?** | « Ses chantiers » était le seul lien d'un client vers un chantier. En le retirant, on n'ouvre plus un chantier depuis ici. À lui de dire s'il s'en sert |
+| 1 | **Le débit, mesuré ou supposé ?** | La mesure au seau est partie avec le reste. Or c'est elle qui décide du nombre d'arroseurs par réseau. Deux façons de vivre avec : le supposer d'après le piquage **et l'écrire** (« estimé, à vérifier au seau »), ou le demander **une seule fois, à la fin**, quand le plan est déjà à l'écran |
+| 2 | **La lecture du croquis** | Elle n'existe pas et demande une IA qui regarde une image — donc un **contrat fournisseur**, qui est à lui (`docs/A-FAIRE.md`). D'ici là, le plan ne peut pas sortir d'une photo. Un chemin court existe : **dicter** les mesures, ce qu'Atlas sait déjà transcrire |
 
-**Ce qui est déjà en base, et ne demande rien :** la dernière prestation et ce
-qu'elle comprend se lisent dans `lignes_prix` et `prestations` du chantier le
-plus récent — `chargerFicheClient` charge déjà les deux.
+**Ce que la lecture devra rendre, le jour venu :** les surfaces de chaque partie
+du jardin, les longueurs de haie et de massif, et où se trouve le point d'eau.
+Le découpage en réseaux et la liste des pièces se déduisent de là — c'est du
+calcul, et `appli/arrosage-calcul.js` le porte déjà.
 
-**Ce que le contrôle garde** (`npm run verifier:maquette`) :
-`scripts/verifier-maquette-fiche-client-allegee.mjs`. Il relit les dates telles
-qu'elles s'affichent et refuse une colonne qui remonte le temps ; il refuse un
-troisième encadré, une colonne qui retombe sous l'autre à 390 px, le retour
-d'une des quatre choses retirées, et tout lien mort.
+---
+
+## ~~La fiche client allégée~~ — **TRANCHÉE ET CODÉE le 20 août 2026**
+
+Trois colonnes (Devis · Fiche chantier · Facture), la dernière prestation en
+titre noir gras, le reste retiré. Le PDF de fiche de chantier existe.
+Voir `CHANGELOG.md` et `PROJECT_STATE.md` §« Atlas fabrique TROIS documents ».
+
+**Ce qui reste ouvert, et qui est à LUI :**
+
+| | Ce qui attend | Pourquoi on ne tranche pas à sa place |
+|---|---|---|
+| 1 | **Le reste dû revient-il sur la fiche ?** | Il a dit « tout le reste, tu enlèves ». Le reste dû est parti avec, et se regarde dans Terminés → En attente de paiement. Depuis la fiche d'un client, on ne sait donc plus s'il doit de l'argent |
+| 2 | **Le chemin vers un chantier** | « Ses chantiers » était le seul lien d'un client vers un chantier. On ouvre désormais sa fiche en PDF : un document se lit, un écran se modifie |
+
+**Ce qui reste à coder, et qui n'attend personne :**
+
+- **Figer la fiche de chantier le jour où elle s'ENVERRA.** Elle se télécharge
+  aujourd'hui, et se régénère à chaque ouverture — c'est voulu : si le patron
+  corrige une observation, c'est la version corrigée qu'il veut. Mais ce qui
+  part chez un client ne se réécrit pas : il faudra la stocker à l'envoi, comme
+  le devis et la facture. C'est écrit dans la route.
+- **Les photos** : compression à l'envoi et conservation deux ans, décidées par
+  lui le 17 août, **dessinées et non codées** (`appli/clients-recherche.html`).
 
 ---
 
@@ -315,6 +327,33 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 ---
 
 ## Ce que je peux faire seul
+
+### 0 duotricies. « Choisir la date » — DESSINÉE le 20 août 2026, en attente de son choix
+
+**Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
+me le modifier par Choisir la date […] sous forme de bouton vert comme tous les
+autres […] j'arrive directement sur la page où je peux choisir la date […] on
+supprime la page qui est entre les deux […] et l'aperçu en PDF, tu me le mets en
+dessous. Et je ne veux pas de flèche. »*
+
+Planche : `docs/maquettes/82-choisir-la-date.html`.
+
+**Ce qui est vérifié dans le code, et qui rend la chose petite :** le calendrier
+vit dans une FEUILLE (`src/app/chantiers/[id]/export/EnvoiAuClient.tsx`), pas dans une page — elle
+s'ouvre par-dessus l'écran récapitulatif. La monter sur le devis, c'est l'ouvrir
+plus tôt : elle ne demande que `chantierId`, `devisId` et `clientNom`, tous trois
+présents sur `devis-complet`.
+
+**Deux choses à trancher par lui**, et rien ne se code avant :
+
+1. **A ou B** — l'aperçu du PDF reste un lien discret (A, recommandé) ou devient
+   une pastille creuse (B).
+2. **Ce que devient l'écran du milieu APRÈS l'envoi.** Il porte aujourd'hui le
+   lien à transmettre au client et « Reprendre le devis ». **Option 1
+   (recommandée)** : il reste, mais on n'y arrive plus qu'une fois le devis
+   parti. **Option 2** : il disparaît, et il faut reloger ces deux gestes
+   ailleurs — ce qui touche les autres chemins qui y mènent
+   (`src/lib/chantier-etat.ts`, le planning, la liste des chantiers).
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 

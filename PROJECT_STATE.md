@@ -596,26 +596,52 @@ un pavé d'au moins 64 px.
   leçon que les huit planches introuvables trouvées par
   `scripts/fusionner-maquettes.mjs`.
 
-## Atlas ne fabrique que DEUX documents en PDF
+## Atlas fabrique TROIS documents en PDF
 
-**Vérifié le 20 août 2026, contre ce qu'on pourrait croire du vocabulaire du
-dépôt.** Les seuls PDF engendrés sont le **devis**
-(`src/server/pdf/devis-pdf.ts`, servi par `/api/devis/[id]/pdf`) et la
-**facture** (`facture-pdf.ts`, `/api/factures/[id]/pdf`), tous deux bâtis sur
-`src/server/pdf/document-commun.ts`.
+**Le troisième est né le 20 août 2026**, sur sa demande : *« fais en sorte que
+les fiches chantiers soient au format PDF maintenant »*. Jusque-là il n'y en
+avait que deux, et le vocabulaire du dépôt trompait.
 
-**Trois mots proches désignent des choses différentes**, et les confondre fait
-dessiner un document qui n'existe pas :
+| Le document | Où il vit | Ce qu'il porte |
+|---|---|---|
+| **Devis** | `src/server/pdf/devis-pdf.ts`, `/api/devis/[id]/pdf` | prix, totaux, TVA, **cadre de signature** |
+| **Facture** | `facture-pdf.ts`, `/api/factures/[id]/pdf` | prix, totaux, TVA, mention légale, **pas de signature** |
+| **Fiche de chantier** | `fiche-chantier-pdf.ts`, `/api/chantiers/[chantierId]/fiche/pdf` | ce qui a été fait, le matériel, les observations, les photos — **aucun prix** |
 
-| Le mot | Ce que c'est vraiment |
+Les trois sortent du **même moteur** (`document-commun.ts`) : même papier, même
+en-tête, même bloc émetteur/client, même pied. Trois moteurs auraient produit
+trois mises en page qui divergent, et c'est le client qui verrait la différence
+entre les feuilles d'un même artisan.
+
+**Ce qui distingue la fiche : `sansChiffrage`.** Ni colonnes de prix, ni totaux,
+ni TVA, ni IBAN, ni signature. Ce n'est pas une économie de place — c'est ce qui
+la rend **transmissible** : on peut la donner à un locataire, à un syndic, à
+l'assurance d'un voisin, sans divulguer ce que le propriétaire a payé.
+
+**AVANT DE TOUCHER À `document-commun.ts`, LIRE CECI.** Le devis et la facture
+sont les pièces que le client reçoit, et l'une est ce qu'il paie. Un `if` mal
+placé y décalerait un total sans que personne le voie avant l'impression. Une
+**empreinte de leur trace entière** — chaque texte, sa position au centième de
+point, sa taille, sa couleur, sa page — est figée dans
+`scripts/test-fiche-chantier-pdf.ts` et refuse le moindre écart. Elle a été
+relevée avant la première ligne de `sansChiffrage`, et éprouvée rouge en
+décalant le moteur d'un seul point.
+
+**Trois mots proches désignent encore trois choses différentes :**
+
+| Le mot | Ce que c'est |
 |---|---|
-| **fiche chantier** | un ÉCRAN (`src/app/chantiers/[id]/`) — photos, note vocale, étapes. Pas une feuille qu'on envoie |
-| **fiche d'entretien** | un MODÈLE de prestations à cocher, un par entreprise (`reglages/fiche-entretien`, migration 0051) |
-| **fiche client** | un ÉCRAN (`src/app/clients/[id]/`) — ce qu'Atlas sait d'un client |
+| **fiche de chantier (PDF)** | le document ci-dessus, depuis le 20 août 2026 |
+| **fiche chantier (écran)** | `src/app/chantiers/[id]/` — photos, note vocale, étapes |
+| **fiche d'entretien** | un MODÈLE de prestations à cocher, un par entreprise (migration 0051) |
 
-Le patron a demandé une colonne de « fiches chantier en PDF » : ce
-document **reste à fabriquer**, et la maquette `appli/fiche-client.html` le dit
-plutôt que de le dessiner comme s'il était là.
+**Un piège de Next.js payé le 20 août :** la route a d'abord été écrite sous
+`/api/chantiers/[id]/`, alors que le dossier voisin emploie `[chantierId]`.
+Next.js refuse deux noms pour le même segment dynamique — et **le serveur entier
+ne démarre plus**. Cinq écrans échouaient au préchauffage, et la suite accusait
+un bouton introuvable trois écrans plus loin. Le message du serveur, lui, disait
+juste : *« You cannot use different slug names for the same dynamic path »*.
+Aller le lire a pris trente secondes ; le deviner aurait pris une heure.
 
 ## Le lecteur du patron n'exécute pas JavaScript — les maquettes doivent s'en passer
 
