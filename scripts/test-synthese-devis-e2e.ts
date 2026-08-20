@@ -81,7 +81,7 @@ async function main() {
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1400);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector('[data-atlas="ligne-chantier"]', { timeout: 30_000 });
 
   await cas("l'en-tête porte la civilité, plus jamais « Chez … »", async () => {

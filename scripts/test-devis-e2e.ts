@@ -50,7 +50,7 @@ async function main() {
   assert.ok(await page.locator("text=/1\\s?200,00\\s?€/").isVisible(), "Le total TTC doit être exact (1 200,00 €)");
 
   // --- Envoi au client ---
-  await page.click("text=Envoyer au client");
+  await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 10000 });
@@ -64,7 +64,7 @@ async function main() {
     "L'état envoyé doit persister après rechargement"
   );
   assert.ok(await page.locator("text=Télécharger le PDF").isVisible());
-  assert.ok(!(await page.locator("text=Envoyer au client").isVisible()));
+  assert.ok(!(await page.locator("text=Choisir la date").isVisible()));
 
   // --- Le PDF téléchargé (envoyé) est un vrai PDF avec les bonnes données ---
   const telechargementHref = await page.locator("text=Télécharger le PDF").getAttribute("href");

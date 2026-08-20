@@ -173,7 +173,7 @@ async function main() {
   // C'est la raison d'être de cet écran plutôt que du fichier d'origine, qui
   // gardait tout dans le navigateur.
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Envoyer au client", { timeout: 15000 });
+  await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
   const ecranDevis = await page.locator("body").innerText();
   assert.ok(/tilleul/i.test(ecranDevis), "L'écran Devis ignore ce qui a été écrit à la main.");
   assert.ok(/825,00/.test(ecranDevis), `Le total TTC ne suit pas : ${ecranDevis.slice(0, 300)}`);

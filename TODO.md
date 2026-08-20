@@ -264,7 +264,7 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 
 ## Ce que je peux faire seul
 
-### 0 duotricies. « Choisir la date » — DESSINÉE le 20 août 2026, en attente de son choix
+### 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
 
 **Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
 me le modifier par Choisir la date […] sous forme de bouton vert comme tous les
@@ -280,16 +280,14 @@ s'ouvre par-dessus l'écran récapitulatif. La monter sur le devis, c'est l'ouvr
 plus tôt : elle ne demande que `chantierId`, `devisId` et `clientNom`, tous trois
 présents sur `devis-complet`.
 
-**Deux choses à trancher par lui**, et rien ne se code avant :
+**Il a tranché : « A et la 2 ».** L'aperçu reste un lien discret ; l'écran du
+milieu ne s'ouvre plus avant l'envoi — l'adresse renvoie au devis tant que rien
+n'est parti, et sa face récapitulative est supprimée pour de bon.
 
-1. **A ou B** — l'aperçu du PDF reste un lien discret (A, recommandé) ou devient
-   une pastille creuse (B).
-2. **Ce que devient l'écran du milieu APRÈS l'envoi.** Il porte aujourd'hui le
-   lien à transmettre au client et « Reprendre le devis ». **Option 1
-   (recommandée)** : il reste, mais on n'y arrive plus qu'une fois le devis
-   parti. **Option 2** : il disparaît, et il faut reloger ces deux gestes
-   ailleurs — ce qui touche les autres chemins qui y mènent
-   (`src/lib/chantier-etat.ts`, le planning, la liste des chantiers).
+**FAIT.** Le geste vit sur `devis-complet` ; `/export` ne rend plus que l'écran
+du devis parti. Éprouvé par `scripts/test-choisir-la-date-e2e.ts`, vu rouge en
+réintercalant l'écran du milieu. Vingt-six suites ont dû suivre.
+`ARCHITECTURE.md` §135.
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 

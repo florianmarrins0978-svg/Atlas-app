@@ -105,9 +105,12 @@ async function main() {
     // `waitForURL` se résout dès que l'adresse change : le rendu, lui, arrive
     // après. Lire le texte tout de suite mesurait un écran encore vide, et le
     // rouge accusait l'envoi — qui n'y était pour rien.
-    await page.waitForSelector("text=Envoyer au client", { timeout: 20000 });
+    await page.waitForSelector("text=Choisir la date", { timeout: 20000 });
     const texte = await page.locator("body").innerText();
-    assert.match(texte, /Envoyer au client/, "le geste qui restait n'est pas offert ici");
+    // Le geste s'appelle « Choisir la date » depuis le 20 août 2026, et il ne
+    // vit plus sur l'écran récapitulatif mais sur le devis lui-même : c'est le
+    // raccourci qu'il a demandé, trois écrans devenus deux.
+    assert.match(texte, /Choisir la date/, "le geste qui restait n'est pas offert ici");
     // Le montant est sous ses yeux : c'est ce qu'il était venu corriger.
     // **Toute espace, pas l'espace ordinaire.** Le format français pose une
     // espace fine insécable (U+202F) entre les milliers : `/1 440/` ne trouvait

@@ -61,8 +61,8 @@ async function chantierAvecDevis(page: Page, envoyer: boolean): Promise<string> 
   await page.waitForTimeout(600);
 
   if (envoyer) {
-    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-    await page.click("text=Envoyer au client");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 30_000 });
@@ -110,7 +110,7 @@ async function main() {
 
     // ── Et la porte s'ouvre pour de bon ──────────────────────────────────
     await porte.click();
-    await page.waitForURL(`${BASE}/chantiers/${chantierId}/export`, { timeout: 30_000 });
+    await page.waitForURL(`${BASE}/chantiers/${chantierId}/devis-complet`, { timeout: 30_000 });
     console.log("  ✓ elle s'ouvre : on arrive sur l'écran Devis");
 
     // ── Le devis PAS ENCORE parti : rien de tout cela ────────────────────

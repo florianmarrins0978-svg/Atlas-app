@@ -11511,3 +11511,95 @@ Le message du serveur, lui, disait exactement : *« You cannot use different slu
 names for the same dynamic path ('id' !== 'chantierId') »*. **Aller le lire a
 pris trente secondes.** C'est la règle d'`AGENTS.md` : reproduire le message du
 serveur, jamais l'idée qu'on s'en fait.
+
+---
+
+## 135. « Choisir la date » : l'écran du milieu disparaît, trois deviennent deux
+
+**Le patron, le 20 août 2026, trois captures à l'appui :**
+
+> *« Le bouton envoyer au client, tu vas me le modifier par "Choisir la date"
+> […] sous forme de bouton vert comme tous les autres […] j'arrive directement
+> sur la page où je peux choisir la date pour envoyer au client […] on supprime
+> la page qui est entre les deux. On va raccourcir les étapes. […] Et je ne veux
+> pas de flèche. »*
+
+Retenu sur planche (`docs/maquettes/82-choisir-la-date.html`, **proposition A**),
+puis sa réponse : *« A et la 2 »*.
+
+### Le doublon qu'il a vu, et qui était réel
+
+Envoyer un devis coûtait **trois écrans** :
+
+| | Écran | Ce qu'il montrait |
+|---|---|---|
+| 1 | `/devis-complet` | le devis entier — client, lignes, totaux, conditions |
+| 2 | `/export` | **le même devis, résumé** : client, lignes, total |
+| 3 | la feuille | le calendrier, l'interrupteur, « Envoyer le devis » |
+
+**Le deuxième redisait ce que le premier venait d'afficher en entier.** On ne
+relit pas un devis qu'on vient de fermer. Il en reste deux.
+
+### La découverte qui a rendu la chose petite
+
+Le calendrier de sa capture n'est pas une page : c'est une **feuille**
+(`EnvoiAuClient`), qui s'ouvrait par-dessus l'écran 2. La monter sur le devis,
+c'est l'ouvrir plus tôt — elle ne demande que `chantierId`, `devisId` et
+`clientNom`, tous trois présents là. **La copier aurait donné deux calendriers à
+tenir d'accord** (`CLAUDE.md` §3).
+
+### Une adresse, deux écrans — et c'est ce qui a décidé de la condition
+
+`/export` n'était pas un écran mais **deux, sous la même adresse** :
+
+- **avant l'envoi**, la synthèse et son bouton — c'est elle qu'il supprime ;
+- **après l'envoi**, `EcranDevisParti`, le « signet d'or » qu'il a lui-même
+  retenu sur planche (`docs/maquettes/34`) : l'état, le montant, le message du
+  client, le lien à transmettre, la reprise.
+
+Le premier jet renvoyait sur `!envoi && statut !== "envoye"`. **Faux après une
+reprise** : l'envoi existe encore et le devis est redevenu brouillon — l'écran se
+serait rendu sur sa face supprimée, bouton d'envoi compris. La condition suit
+donc ce que l'écran sait rendre : `statut !== "envoye"` renvoie au devis, un
+point c'est tout.
+
+### Ce que la suppression a emporté, et ce qu'elle a révélé
+
+Le code devenu inatteignable est **retiré, pas laissé** : 110 lignes de JSX,
+quatre entrées du composant, la fonction `Row`, deux requêtes de la page. Un code
+mort qui ne peut plus s'exécuter trompe la session suivante, qui le corrigera ou
+s'interrogera.
+
+**Deux effets qu'aucun raisonnement n'avait prévus, et que le navigateur a
+montrés :**
+
+1. **La phrase du moment se perdait.** « Devis prêt pour Mr. Martins. » venait
+   d'un état local posé par l'envoi *sur cet écran*. L'envoi partant d'ailleurs,
+   on arrivait par une navigation et l'état était vide : l'écran annonçait
+   « en attente de réponse » une seconde après l'appui. Vrai, et froid. Le
+   moment voyage désormais dans l'adresse (`?envoye=1`) — et un rechargement le
+   perd, ce qui est juste : la deuxième fois, ce n'est plus « à l'instant ».
+2. **Deux « Annuler » sur le même écran.** Le devis en portait déjà un — celui
+   qui reprend le retrait d'une ligne. La feuille en a apporté un second, sans
+   nom qui les distingue : un lecteur d'écran annonce deux fois la même chose, et
+   une suite vise le mauvais des deux. Le mot affiché ne bouge pas ; l'étiquette
+   accessible dit « Annuler l'envoi ».
+
+### Ce que le contrôle garde, et qu'aucun autre ne voyait
+
+Les suites d'envoi éprouvent ce que fait la feuille **une fois ouverte**. Elles
+resteraient toutes vertes si l'écran du milieu se réintercalait : elles y
+passeraient, cliqueraient, et le parcours redeviendrait long sans que rien ne
+rougisse — jusqu'à ce que lui le remarque.
+
+`scripts/test-choisir-la-date-e2e.ts` garde donc **le raccourci lui-même** : le
+bouton plein et sans flèche, son ordre au-dessus de l'aperçu, l'ouverture de la
+feuille **sans changer d'adresse**, et le fait que l'ancienne adresse renvoie au
+devis. Confronté au défaut — la redirection retirée — il rougit en le nommant :
+*« l'écran du milieu existe encore »*.
+
+**Vingt-six suites ont dû suivre** : elles passaient toutes par `/export` pour
+cliquer « Envoyer au client ». C'est le coût réel d'un raccourci sur un parcours
+central, et il se paie une fois.
+
+---

@@ -227,9 +227,16 @@ export function getNextActionHref(id: string, action: NextAction): string {
       return `/chantiers/${id}/informations`;
     case "prix":
       return `/chantiers/${id}/prix`;
+    // **Les deux mènent au DEVIS lui-même depuis le 20 août 2026.**
+    //
+    // *« On supprime la page qui est entre les deux. On va raccourcir les
+    // étapes. »* L'écran `/export` n'existe plus avant l'envoi : le choix des
+    // dates se fait sur le devis, par « Choisir la date ». L'y envoyer quand
+    // même le ferait rebondir — la page renvoie désormais ici d'elle-même, et
+    // deux redirections en cascade se voient à l'œil.
     case "devis-preparer":
     case "devis-consulter":
-      return `/chantiers/${id}/export`;
+      return `/chantiers/${id}/devis-complet`;
     case "planifier":
       return `/planning`;
   }
@@ -304,7 +311,12 @@ export function getSecondarySteps(
             ? "À préparer"
             : "À préparer une fois le prix posé",
       done: !!c.devisEnvoyeAt,
-      href: `/chantiers/${id}/export`,
+      // **Deux destinations, selon que le devis est parti ou non** — depuis le
+      // 20 août 2026. Avant l'envoi, `/export` n'existe plus : il renvoie de
+      // lui-même vers le devis, et une redirection en cascade se voit à l'œil.
+      // Après l'envoi, c'est bien lui qu'il faut — il porte le lien du client
+      // et la reprise.
+      href: c.devisEnvoyeAt ? `/chantiers/${id}/export` : `/chantiers/${id}/devis-complet`,
     },
   ];
 

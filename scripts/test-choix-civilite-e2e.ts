@@ -149,7 +149,7 @@ async function main() {
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1400);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector('[data-atlas="ligne-client"]', { timeout: 30_000 });
 
   await cas("la synthèse du devis la nomme « Mme … »", async () => {
@@ -157,7 +157,7 @@ async function main() {
     if (nom !== `Mme ${CLIENTE}`) throw new Error(`la ligne dit « ${nom} »`);
   });
 
-  await page.click("text=Envoyer au client");
+  await page.click("text=Choisir la date");
   await page.getByRole("button", { name: /Envoyer le devis/i }).click();
   await page.waitForTimeout(3500);
 

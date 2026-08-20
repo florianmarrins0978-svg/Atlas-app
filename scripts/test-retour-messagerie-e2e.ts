@@ -58,7 +58,7 @@ async function main() {
   // pas le mécanisme — et concluait que le mécanisme ne marchait pas. Le
   // patron, lui, part TOUJOURS de l'écran où se trouve le bouton.
   const chantierId = await chantierAvecDevisPret(page);
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);
 
   // On pose la marque exactement comme le fait le lien de transmission — le
@@ -143,8 +143,8 @@ async function chantierAvecDevisPret(page: import("playwright").Page): Promise<s
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1200);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
-  await page.getByText("Envoyer au client", { exact: false }).first().click();
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.getByText("Choisir la date", { exact: false }).first().click();
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 30_000 });

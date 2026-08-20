@@ -62,7 +62,7 @@ async function main() {
   await page.waitForTimeout(800);
 
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
-  await page.click("text=Envoyer au client");
+  await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 15000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });

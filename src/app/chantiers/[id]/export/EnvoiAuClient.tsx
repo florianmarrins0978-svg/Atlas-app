@@ -609,7 +609,16 @@ function Contenu({
         >
           {enCours ? "Envoi…" : "Envoyer le devis"}
         </PrimaryButton>
+        {/* **Un nom qui le distingue, depuis que la feuille vit sur le devis**
+            (20 août 2026). L'écran du devis porte déjà un « Annuler » — celui
+            qui reprend le retrait d'une ligne. Deux boutons du même nom sur le
+            même écran, c'est un lecteur d'écran qui annonce deux fois la même
+            chose sans dire quoi, et une suite qui vise le mauvais des deux.
+            Le mot affiché ne bouge pas : il est clair sous les yeux, il ne
+            l'était plus à l'oreille. */}
         <button
+          type="button"
+          aria-label="Annuler l’envoi"
           onClick={onFermer}
           className="rounded-full py-3.5 text-[15px] font-medium"
           style={{ color: colors.muted }}

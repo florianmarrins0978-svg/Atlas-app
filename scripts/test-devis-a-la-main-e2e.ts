@@ -93,7 +93,7 @@ async function main() {
   console.log("  ✓ une ligne écrite à la main est enregistrée avec son montant");
 
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Envoyer au client", { timeout: 15000 });
+  await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
   const devis = await page.locator("body").innerText();
   assert.ok(/chêne mort/i.test(devis), "Le devis ne porte pas la ligne écrite à la main.");
   assert.ok(!/TOTAL\s*0,00\s*€/i.test(devis), `Le devis reste à zéro : ${devis.slice(0, 300)}`);

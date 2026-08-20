@@ -73,7 +73,7 @@ async function main() {
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1400);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector('[data-atlas="ligne-client"]', { timeout: 30_000 });
 
   await cas("avant l'envoi, « Modifier » est en face du titre", async () => {
@@ -118,7 +118,7 @@ async function main() {
   });
 
   // --- Une fois le devis parti -------------------------------------------
-  await page.click("text=Envoyer au client");
+  await page.click("text=Choisir la date");
   await page.getByRole("button", { name: /Envoyer le devis/i }).click();
   await page.waitForTimeout(3500);
 

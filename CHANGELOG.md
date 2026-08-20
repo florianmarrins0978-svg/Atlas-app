@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### « Choisir la date » : envoyer un devis coûte deux écrans au lieu de trois
+
+**Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
+me le modifier par "Choisir la date" […] j'arrive directement sur la page où je
+peux choisir la date […] on supprime la page qui est entre les deux. On va
+raccourcir les étapes. »* Puis son choix devant la planche : *« A et la 2 »*.
+
+**Le doublon était réel.** L'écran du milieu redisait le client, les lignes et le
+total que le devis venait d'afficher en entier — pour proposer le même geste. On
+ne relit pas un devis qu'on vient de fermer.
+
+**Ce qui change :** sur le devis, un bouton plein **« Choisir la date »**, sans
+flèche, au-dessus de l'aperçu du PDF. Un appui ouvre le calendrier **sans
+changer d'écran**. L'ancienne adresse renvoie au devis tant que rien n'est parti.
+
+**Ce qui ne change pas :** le calendrier, l'interrupteur « il peut proposer une
+autre date » et « Envoyer le devis » sont la MÊME feuille, ouverte plus tôt. Et
+l'écran du devis parti — le « signet d'or » qu'il avait retenu — garde son
+travail : le lien à transmettre, la reprise.
+
+**Deux effets que seul le navigateur a montrés.** La phrase « Devis prêt pour
+Mr. Martins. » se perdait après l'envoi, l'écran annonçant « en attente de
+réponse » une seconde après l'appui — vrai, et froid ; le moment voyage
+maintenant dans l'adresse. Et deux boutons « Annuler » cohabitaient sur le même
+écran sans se distinguer à l'oreille.
+
+**Ce que ça coûte, dit franchement :** vingt-six suites passaient par l'ancien
+chemin et ont dû suivre. `ARCHITECTURE.md` §135, `docs/maquettes/82`.
+
+---
+
+## 2026-08-20
+
 ### La fiche client refondue, et un TROISIÈME document en PDF
 
 **Ses trois décisions du 20 août 2026 :** *« Tu peux rajouter une colonne
