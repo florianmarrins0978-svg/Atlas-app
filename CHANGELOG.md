@@ -24,11 +24,11 @@ information.
 Il reste **« EN COURS 4 »** : le mot, puis le chiffre collé à lui. Le chiffre
 est le seul élément en gras de la ligne — c'est lui qu'on vient lire.
 
-**Le mot fonce d'un cran**, et pas d'une valeur écrite en clair : `inkSoft` au
-lieu de `muted`. C'est le seul pas que la charte propose entre les deux, et il
-vaut pour les sept — une couleur en dur ici aurait été juste sur « Origine » et
-fausse sur les deux chartes sombres. Trois gris lui ont été montrés
-(`appli/en-cours-le-chiffre.html`).
+**Le mot passe au gris du second plan** : `inkSoft` au lieu de `muted`. Trois
+gris lui ont été montrés (`appli/en-cours-le-chiffre.html`), **il a pris le
+C** — le plus foncé des trois. Jamais une couleur écrite en clair : elle aurait
+été juste sur « Origine » et fausse sur les deux chartes sombres, et `inkSoft`
+se dérive pour les sept.
 
 **Le repère `data-atlas="compteur"` a suivi le compte** sur la rubrique. Le
 laisser sur la ligne supprimée aurait rendu `test-dashboard` muet — et cette

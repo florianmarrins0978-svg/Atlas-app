@@ -301,10 +301,13 @@ export default function EcranChantiers({
                de la ligne se lisait comme un mot de plus, pas comme un compte ;
             2. **le chiffre est le seul élément en gras** : c'est lui qu'on
                vient lire, le mot ne fait que le nommer ;
-            3. **le mot fonce d'un cran** — `inkSoft` au lieu de `muted`. C'est
-               le seul pas que la charte propose entre les deux, et il vaut pour
-               les sept : une valeur écrite en clair ici aurait été juste sur
-               « Origine » et fausse sur les deux chartes sombres. */}
+            3. **le mot passe au gris du second plan** — `inkSoft` au lieu de
+               `muted`. C'est le **C** de la planche
+               (`appli/en-cours-le-chiffre.html`), qu'il a choisi entre trois
+               gris ; le B, plus court d'un demi-ton, aurait demandé un jeton de
+               plus dans les sept chartes. Jamais une valeur écrite en clair
+               ici : elle serait juste sur « Origine » et fausse sur les deux
+               chartes sombres. */}
         <div
           data-atlas="compteur"
           data-compte={compte}
