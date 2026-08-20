@@ -11011,6 +11011,215 @@ témoin, lui, reste vert : la différence porte bien sur ce qu'on a changé.
 
 ---
 
+## 133. « Il est LENT, et le restera » — la phrase qui était vraie, et le trou qu'elle avouait
+
+**Le 20 août 2026 à 6 h 40, le patron écrit : *« l'application est lente corrige
+ça »*.** Sa fiche disait tout, et sans qu'il ait rien à recopier :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (06:10:13Z)
+dit: ⨯ Another next build process is already running.
+Serveur    : répond sur le port 3000
+Mémoire    : 8,3 G au total, 7,3 G pris, 980 M disponibles
+```
+
+Le serveur répondait — c'est le mode développement, qui répond très bien et
+compile chaque écran à l'ouverture. **L'application n'était donc pas en panne :
+elle était lente, et c'est pire, parce que rien n'a l'air cassé.**
+
+### Ce qui était déjà réparé, et qui ne suffisait pas
+
+Tout le mécanisme existait (§126, §131) : la construction orpheline est délogée
+avant de bâtir, le verrou de banc est exclusif, une seconde tentative part quand
+c'est le verrou qui a parlé, et le veilleur relance la construction même quand le
+serveur répond.
+
+**Le trou était dans le mot « borné ».** Le veilleur s'arrêtait après **trois**
+tentatives espacées de dix minutes. Passé une demi-heure, plus rien au monde ne
+retentait quoi que ce soit — et la fiche l'écrivait noir sur blanc : *« il est
+LENT, et le restera »*. Le seul remède était que le patron rallume son espace,
+un geste que personne ne lui avait demandé, pour une panne qu'il ne pouvait pas
+voir.
+
+Trente minutes de patience, c'était le bon ordre de grandeur pour la cause qu'on
+avait en tête le 18 août : une mémoire saturée qui se libère. Ce n'est pas le
+bon ordre de grandeur pour **une journée de travail** : la machine a 8 Go, il
+l'occupe du matin au soir, et la fenêtre où une construction peut passer arrive
+quand elle arrive.
+
+### Ce qui a changé : c'est le RYTHME qui est borné, plus le nombre
+
+Après la salve rapide — trois tentatives à dix minutes —, le veilleur continue
+**indéfiniment, une par demi-heure**. Deux ou trois minutes de processeur toutes
+les trente minutes ne maintiennent personne à genoux, et l'on finit par tomber
+sur le moment où la machine peut faire passer la construction.
+
+Ce qui reste interdit n'a pas bougé : **jamais deux constructions à la fois**
+(`pgrep -f '[n]ext build'` avant chaque tentative), et jamais avant que le délai
+soit écoulé.
+
+### Et la fiche a cessé de mentir
+
+« Il est LENT, et le restera » était exact tant que le veilleur renonçait. Le
+laisser après le correctif ferait conclure qu'il n'y a rien à attendre, et
+enverrait rallumer un espace en train de se réparer tout seul — une consigne qui
+accuse à tort coûte plus cher que pas de consigne du tout (`CLAUDE.md` §5). Elle
+dit maintenant que le veilleur retente, à quel rythme, et que rallumer reste le
+geste le plus rapide.
+
+### Le contrôle, et il sait rougir
+
+`scripts/test-relance-construction.ts` gagne un cas : pas lent à zéro, salve d'une
+seule tentative, et l'on exige **plus d'une** relance. Confronté à l'ancienne
+borne, il rend « 1 tentative(s) : le veilleur s'est arrêté après la salve » —
+vérifié dans les deux sens avant d'écrire ces lignes.
+
+**Ce qui n'est PAS réglé, et qu'il ne faut pas croire acquis :** *pourquoi* deux
+constructions se marchaient dessus à 6 h 10. La mémoire était encore ample à cet
+instant (4,3 Gio disponibles) : ce n'est donc pas la saturation du 17 août. La
+cause n'a pas été reproduite ici, et elle reste ouverte dans `TODO.md`.
+
+## 135. Un écran atteint depuis deux endroits ne peut pas avoir un retour fixe
+
+**Sa remarque du 20 août 2026 :** *« quand j'appuie sur retour, ça ne me fait pas
+un retour, mais deux retours »*. La fiche d'un client renvoyait à l'accueil, quel
+que soit l'endroit d'où on l'avait ouverte.
+
+**Le réflexe qu'il faut éviter : « mettons `/clients` à la place ».** Ce serait
+juste pour lui aujourd'hui et faux dès demain — la fiche s'ouvre AUSSI depuis le
+tiroir d'un chantier, et l'on ferait alors sortir du chantier celui qui y était.
+Un retour fixe se trompe forcément pour l'un des deux appelants.
+
+**L'origine voyage donc dans l'adresse** (`?de=/chantiers/<id>`), et
+`src/lib/retour-fiche-client.ts` la traduit en un couple `{href, libelle}`. Les
+deux appelants la posent ou l'omettent ; l'écran, lui, ne décide de rien.
+
+### Le filtre n'est pas une précaution de principe
+
+Cette valeur vient de l'adresse — donc de n'importe qui. Sans filtre,
+`?de=https://ailleurs.example` ferait de la flèche « retour » une sortie vers un
+site étranger, et `?de=javascript:…` pire encore. On n'accepte donc **qu'une
+forme connue** — un chemin de chantier — et tout le reste retombe sur la liste
+des clients. Jamais une erreur, jamais un écran vide : une sortie de secours qui
+casse est pire que pas de sortie.
+
+### Deux sessions ont corrigé ce défaut le même jour, et pas de la même façon
+
+**À savoir avant de « simplifier ».** Le 20 août 2026, une autre conversation a
+posé `retour={{ href: "/clients", … }}` — un lien fixe — pendant que celle-ci
+posait l'origine dans l'adresse. À la fusion, c'est **la version qui sait d'où
+l'on vient** qui a été gardée, et ce n'est pas une préférence de style : le lien
+fixe est juste depuis la liste des clients et faux depuis le tiroir d'un
+chantier, où il fait sortir du chantier celui qui y était.
+
+Le lien fixe reviendra sous les doigts de quelqu'un qui trouvera le paramètre
+`?de=` inutilement compliqué. Il ne l'est pas — il est le seul moyen de ne pas
+se tromper pour l'un des deux appelants. La suite sans navigateur refuse
+d'ailleurs de voir revenir un retour en dur dans cet écran.
+
+### La flèche reste un vrai lien, et c'est ce qui la sauve
+
+`EnTeteEcran` rend un `<a href>`. Elle fonctionne donc **même sur une page qui
+ne s'est pas animée** — le navigateur suit le lien tout seul. C'est exactement ce
+qu'on veut d'une sortie de secours, et c'est pourquoi sa suite navigateur tient
+là où celle de la recherche doit s'abstenir (§134).
+
+## 134. Chercher un client : la règle vit hors de l'écran, et la croix aussi
+
+**Sa demande du 20 août 2026, capture à l'appui :** *« Il faut une barre de
+recherche où je peux taper le nom d'un client pour le retrouver plus
+facilement. »* Sur sa capture : **vingt et un clients**, dont **quatre
+Martins**, et le sien quelque part au milieu. La chose avait été dessinée le
+17 août — `appli/clients-recherche.html`, proposition B, « la recherche par
+frappe ».
+
+### Où vit la règle, et pourquoi pas dans l'écran
+
+`src/lib/recherche-client.ts` — fonction pure, éprouvable sans base ni
+navigateur (`CLAUDE.md` §3). L'écran l'appelle, il ne la refait pas.
+
+Ce qu'elle tient, et chaque point vient de SA liste :
+
+| Il tape | Il doit trouver | Pourquoi |
+|---|---|---|
+| `martins` | `Martins`, `Monsieur Martins` | la casse ne décide de rien |
+| `renard` | `Mme Renard (test)` | le nom cherché n'est presque jamais au début |
+| `moreau` | `Moréau` | il ne maintient pas la touche « e » de son téléphone |
+| `dupont` | `M. Dupont`, `Mr. Dupont` | le point et l'apostrophe ne séparent rien |
+| `martins monsieur` | `Monsieur Martins` | l'ordre des mots est le sien, pas le nôtre |
+
+**Une saisie vide rend TOUT**, et ce n'est pas un détail : l'écran s'ouvre sur
+le champ vide, et rendre zéro lui ferait croire qu'il a perdu ses clients.
+
+**Un contrôle interdit à l'écran de refaire la règle.** `test-recherche-client.ts`
+lit `ListeClients.tsx` et refuse d'y voir un `.toLowerCase().includes(...)` : le
+jour où quelqu'un en remet un, « moreau » cesserait de trouver « Moréau » sans
+qu'aucune autre suite ne le voie.
+
+### Le filtrage se fait dans le NAVIGATEUR
+
+Vingt et un noms tiennent dans une page. Les faire chercher au serveur à chaque
+lettre, c'est un aller-retour réseau par frappe, en 5G au bord d'un chantier. Le
+jour où un artisan en aura deux mille, ce choix se révisera — et la règle ne
+bougera pas, elle est déjà hors de l'écran.
+
+### La croix bleue : trouvée sur une capture, par aucune suite
+
+**`type="search"` fait poser au navigateur sa propre croix d'effacement, et elle
+est d'un BLEU VIF.** Sur une page de crème et de bronze, c'était la seule tache
+de couleur de l'écran — et la cinquième fois dans ce dépôt qu'un défaut sort
+d'une image et d'aucun test (`CLAUDE.md` §5).
+
+Le champ est donc un `type="text"` avec `inputMode="search"`, et la croix est la
+nôtre : couleur `muted`, 46 px de large sur toute la hauteur du champ, et
+**présente seulement quand il y a quelque chose à effacer** — un bouton qui ne
+fait rien est un bouton de trop. `test-recherche-client-e2e.ts` tient les trois :
+le type, la taille de la cible, et le fait qu'elle efface pour de bon.
+
+### Sur CETTE machine, aucune page ne s'anime en mode développement
+
+**Découvert en éprouvant la recherche, et c'est plus large qu'elle.** La suite
+navigateur passait seule et tombait en batterie, sur « la liste n'a pas été
+réduite (71 sur 71) ». Le message accusait la recherche.
+
+Elle n'y était pour rien. Les suites navigateur démarrent un `npm run dev`
+(`run-e2e-tests.ts`), et sur cette machine **React ne s'attache à aucune page**
+en mode développement — l'accueil non plus, vérifié en cherchant les fibres
+React sur `document.body.firstElementChild`. La liaison permanente que Next
+ouvre en développement (`webpack-hmr`) est refusée par le mandataire réseau :
+`ERR_INVALID_HTTP_RESPONSE`. Le HTML s'affiche, rien ne l'écoute.
+
+Ce n'est donc pas un défaut du produit : **contre un serveur bâti
+(`next start`), les huit contrôles passent**, et c'est ce que le banc du patron
+sert. La suite pose la question avant d'accuser, et le dit quand la page est
+morte.
+
+**L'échappatoire est étroite, et c'est ce qui la rend acceptable :** elle ne
+s'ouvre que si React n'est attaché nulle part. Un vrai défaut de la recherche
+laisse la page vivante, et la suite reste rouge — éprouvé en débranchant le
+filtre pour de bon (`filtrerClientsParNom(clients, "")`) : deux contrôles au
+rouge, avec le bon message.
+
+**Et deux pièges d'outillage, payés là :**
+
+- **`waitUntil: "networkidle"` n'arrive JAMAIS contre un serveur de
+  développement** : la liaison de rechargement à chaud garde le réseau occupé,
+  et l'attente expire sur une page pourtant affichée. On attend un élément, pas
+  un silence ;
+- **une sabotage qui ne s'applique pas fait croire à un contrôle faible.** La
+  première tentative visait une ligne que Prettier avait reformatée sur trois
+  lignes : `replace` n'a rien remplacé, en silence, et la suite est passée au
+  vert sur un code prétendument cassé. Toute substitution de vérification doit
+  être suivie d'une assertion qu'elle a bien eu lieu.
+
+### Le champ est toujours affiché, et c'est un choix
+
+Une première version ne le montrait qu'à partir de cinq clients — moins de
+meuble sur un écran presque vide. Mais **une barre qui apparaît et disparaît est
+une règle de plus à deviner** : le jour où il en a quatre, il la cherche et
+conclut qu'elle a été retirée. Un champ vide ne coûte rien à lire ; une règle
+invisible coûte un message.
+
 ## §127. Le quinconce est un damier, et il se vérifie au lieu de se supposer
 
 **Son croquis du 18 août 2026**, deux couloirs superposés sur du papier
@@ -11267,3 +11476,83 @@ qui prend ses captures en passant (`ATLAS_CAPTURES`). C'est là qu'on voit ce
 qu'aucune suite base ne peut voir : que l'écran appelle bien les règles, et que
 le client ne reçoit pas les dix-sept lignes qu'il n'a pas payées.
 
+
+## 134. Le troisième document : une option dans le moteur, pas un moteur de plus
+
+*Sa demande du 20 août 2026 : « fais en sorte que les fiches chantiers soient au
+format PDF maintenant ».*
+
+### Le vocabulaire d'abord, parce qu'il trompe — y compris ce fichier
+
+**Quatre choses de ce dépôt s'appellent « fiche ».** Les confondre fait dessiner
+un document qui existe déjà, ou en coder un qui n'existera jamais.
+
+| Le mot | Ce que c'est | Où |
+|---|---|---|
+| **fiche de chantier (PDF)** | le document décrit ici, né le 20 août 2026 | `src/server/pdf/fiche-chantier-pdf.ts` |
+| **fiche chantier (écran)** | l'écran d'un chantier — photos, note vocale, étapes | `src/app/chantiers/[id]/` |
+| **fiche d'entretien** | un MODÈLE de prestations à cocher, un par entreprise | `reglages/fiche-entretien`, migration 0051 |
+| **fiche de passage** | ce qui a été coché un jour chez quelqu'un, envoyé au client | **§128**, `src/lib/passage-entretien.ts` |
+
+**§128 s'intitule « La fiche de chantier » et parle de la QUATRIÈME.** Le titre
+est resté ; il désigne le passage d'entretien, pas ce document-ci. Ne pas les
+rapprocher : l'un rend compte de travaux et ne s'envoie pas encore, l'autre est
+un rapport de passage envoyé au client depuis « Paysage ».
+
+### Pourquoi une option, et non un troisième fichier
+
+Le devis et la facture partagent déjà une seule feuille (`document-commun.ts`) :
+même papier, même en-tête, même bloc émetteur/client, même pied. La fiche ne
+diffère que par ce qu'elle **ne porte pas**.
+
+Un troisième moteur aurait produit une troisième mise en page, qui aurait dérivé
+des deux autres au premier changement d'identité — et c'est le client qui aurait
+vu la différence entre les feuilles d'un même artisan (`CLAUDE.md` §3).
+
+`sansChiffrage` retire donc le tableau de prix, les totaux, la TVA, les
+modalités de paiement et l'IBAN. `blocsTexte` ajoute les intertitres dont elle a
+besoin. Les deux sont **additifs** : absents, le devis et la facture sont
+exactement ce qu'ils étaient.
+
+### Ce que « sans prix » achète, et ce n'est pas de la place
+
+**La fiche est transmissible.** Un locataire, un syndic, l'assurance d'un
+voisin peuvent la recevoir sans apprendre ce que le propriétaire a payé. Un
+montant imprimé là-dessus rendrait le document indonnable — et c'est justement
+celui qu'on ressort deux ans après, quand quelqu'un rappelle.
+
+C'est aussi pourquoi la mention du pied ne promet rien : *« ne vaut ni devis ni
+facture, et n'appelle aucun paiement »*. Lui prêter la force de l'un des deux
+tromperait celui qui la reçoit.
+
+### Ce qui garde les deux pièces qui portent l'argent
+
+**Une empreinte de leur trace entière**, figée dans
+`scripts/test-fiche-chantier-pdf.ts` : chaque texte, sa position au centième de
+point, sa taille, sa couleur, sa page. Relevée **avant** la première ligne de
+`sansChiffrage`, et éprouvée rouge en décalant le moteur d'un seul point.
+
+Sans elle, un `if` mal placé aurait décalé un total sans que personne le voie
+avant l'impression — et c'est ce que le client paie.
+
+### Régénérée à chaque ouverture, et il faudra que ça change
+
+Le devis et la facture servent le fichier **figé au moment de l'envoi** : ce sont
+des engagements. La fiche, elle, est recomposée à chaque demande — si le patron
+ajoute une prestation oubliée, c'est la version corrigée qu'il veut imprimer.
+
+**Le jour où elle s'ENVERRA à un client, il faudra la figer comme les deux
+autres.** Ce qui est parti ne se réécrit pas. C'est écrit dans la route, et
+ouvert dans `TODO.md`.
+
+### Le piège de Next.js, payé une heure
+
+La route a d'abord été écrite sous `/api/chantiers/[id]/`, alors que le dossier
+voisin emploie `[chantierId]`. Next.js refuse deux noms pour le même segment
+dynamique — et **le serveur entier ne démarre plus**. Cinq écrans échouaient au
+préchauffage, et la suite accusait un bouton introuvable trois écrans plus loin.
+
+Le message du serveur, lui, disait exactement : *« You cannot use different slug
+names for the same dynamic path ('id' !== 'chantierId') »*. **Aller le lire a
+pris trente secondes.** C'est la règle d'`AGENTS.md` : reproduire le message du
+serveur, jamais l'idée qu'on s'en fait.

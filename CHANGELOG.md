@@ -7,22 +7,362 @@ Format : le plus récent en tête.
 
 ---
 
-## 2026-08-18
+## 2026-08-20
 
-### Le bouton de l'accueil dit « Créer un devis »
+### La flèche de la fiche client ramène d'où l'on vient
 
-**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
-d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
+**Sa remarque, capture à l'appui :** *« Quand j'appuie sur retour, ça ne me fait
+pas un retour, mais deux retours. Je reviens directement à la page vos
+chantiers. Or, je devrais rester dans la catégorie mes clients. »*
 
-Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
-feuille au-dessus.
+Il avait raison, et c'était écrit en toutes lettres : la fiche renvoyait
+toujours à l'accueil (`href: "/"`), quel que soit l'écran d'où l'on venait.
+Depuis la liste des clients, un seul appui sautait donc **deux** écrans.
 
-**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
-demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
-titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
-à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
-client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
-remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
+**Un lien fixe se serait trompé de toute façon**, parce que la fiche s'ouvre
+depuis DEUX endroits : la liste des clients, et le tiroir d'un chantier. Renvoyer
+toujours vers les clients ferait sortir du chantier celui qui y était. L'origine
+voyage donc dans l'adresse, et `src/lib/retour-fiche-client.ts` la traduit — une
+seule fois, hors de tout écran.
+
+**Cette valeur vient de l'adresse, donc de n'importe qui.** Sans filtre,
+`?de=https://ailleurs.example` ferait de la flèche « retour » une porte de sortie
+vers un site étranger. Seule la forme d'un chemin de chantier est acceptée ; tout
+le reste retombe sur la liste des clients, sans erreur ni écran vide.
+
+Éprouvé dans les deux sens : en remettant `href: "/"`, les deux suites rougissent
+— celle sans navigateur sur « c'est exactement le double saut qu'il a signalé »,
+celle au navigateur sur les trois chemins.
+
+### L'arrosage en deux gestes — dessiné, pas codé
+
+**Sa demande du 20 août 2026**, capture d'`arrosage.html` à l'appui : *« on va
+simplifier cette page également. Garde le piquage se fait… avec le bandeau
+déroulant. Ensuite : le croquis et ses métrés, avec la possibilité de mettre la
+photo. Je veux rien d'autre. Ensuite […] tu fais apparaître un plan avec les
+différents réseaux et le détail des pièces. »*
+
+**`appli/arrosage-simple.html`** — sans script ni photo. **Rien n'est codé**
+(`CLAUDE.md` §3 bis) : `appli/arrosage.html` n'a pas été touchée.
+
+**La page passait de huit questions à deux.** Partent : le seau, le temps de
+remplissage, la pression, le débit affiché en cours de route, la règle de
+recouvrement, la marque des arroseurs, le corps d'arroseur, la saisie des zones
+une par une, la sonde de pluie, et les boutons copier / envoyer / imprimer.
+Restent le piquage et le croquis.
+
+**Ce que la page DIT plutôt que de faire semblant : Atlas ne sait pas lire un
+croquis.** Reconnaître un contour tracé au crayon et retrouver « 12 m » écrit en
+travers demande une IA qui regarde une image ; le raccordement est écrit
+(`ARCHITECTURE.md` §26) mais aucun contrat n'est signé. Le plan montré après la
+photo est donc **dessiné**, et un écran de la maquette l'explique — avec ce que
+la lecture devra rendre le jour venu : les surfaces, les longueurs, et où est le
+point d'eau. Le reste est du calcul, et le calcul est déjà écrit.
+
+**Ce que le retrait coûte, et il est réel :** le débit mesuré au seau décidait
+du nombre d'arroseurs par réseau. Sans mesure, il faut le supposer d'après le
+piquage — et ce sera parfois faux. Deux façons de vivre avec sont posées dans la
+maquette, **et il tranche**.
+
+**Le contrôle recalcule le plan** (`scripts/verifier-maquette-arrosage-simple.mjs`,
+dans `npm run verifier:maquette`) : les arroseurs dessinés doivent être ceux du
+détail — **et par couleur**, sinon deux réseaux faux se compensent ; une
+électrovanne par réseau ; le programmateur assez de voies ; aucun réseau
+au-dessus du débit disponible ; et **la somme des réseaux au-dessus** de ce
+débit, sans quoi un seul aurait suffi et le découpage ne servirait à rien. Il
+refuse aussi tout champ de saisie remis avant le plan. Éprouvé rouge sur cinq
+états dégradés.
+
+**Deux défauts trouvés à l'image, aucun par un test :** « amenée 18 m » passait
+sous le cadre du compteur, et les massifs portaient leur mesure au-dessus de
+leur nom quand la haie faisait l'inverse.
+
+**Elle n'est PAS dans `essais.html`**, à sa demande — *« arrête de me le mettre
+dans Atlas app essai »*. Elle se donne par son adresse directe, et figure
+nommément dans la liste vérifiée après déploiement : une adresse transmise sans
+preuve qu'elle répond n'est pas une adresse.
+
+### La fiche client refondue, et un TROISIÈME document en PDF
+
+**Ses trois décisions du 20 août 2026 :** *« Tu peux rajouter une colonne
+facture et ranger les factures dans le même ordre. Sous format PDF, et donc
+faire en sorte que les fiches chantiers soient au format PDF maintenant. […] On
+va modifier la vraie application. »*
+
+**LE PDF DE FICHE DE CHANTIER — `src/server/pdf/fiche-chantier-pdf.ts`.**
+Atlas ne fabriquait que deux documents : le devis et la facture. Ce qu'il
+appelait « fiche chantier » était un ÉCRAN. La fiche dit ce qui a été fait, avec
+quoi, et ce qu'on a observé — **jamais un prix**. C'est ce qui la rend
+transmissible : on peut la donner à un locataire, à un syndic, à l'assurance
+d'un voisin, sans divulguer ce que le propriétaire a payé.
+
+**Une option dans le moteur commun, et non un troisième moteur** (`CLAUDE.md`
+§3). `sansChiffrage` retire le tableau de prix, les totaux, la TVA, l'IBAN ; les
+trois pièces gardent la même feuille, parce qu'elles sortent du même artisan.
+`blocsTexte` s'y ajoute pour le matériel et les photos — le premier réflexe
+avait été de les entasser dans le `rappel` de l'en-tête, qui s'écrit d'un seul
+trait : les trois lignes se seraient imprimées bout à bout.
+
+**Ce qui garde le devis et la facture : une EMPREINTE de leur trace**, relevée
+avant la première ligne de `sansChiffrage` — chaque texte, sa position au
+centième de point, sa taille, sa couleur, sa page. Éprouvée rouge en décalant le
+moteur d'un seul point. Sans elle, un `if` mal placé aurait décalé un total sans
+que personne le voie avant l'impression.
+
+**Un point corrigé AVANT d'écrire une ligne :** la maquette annonçait
+« 8 h 30 → 16 h 00 · 2 personnes ». **Ces horaires n'existent nulle part** — la
+base retient le créneau (matin / après-midi), le nombre de demi-journées et
+l'équipe. Le document aurait promis ce qu'il ne pouvait pas remplir.
+
+**L'ÉCRAN — `src/app/clients/[id]/page.tsx`.** La dernière prestation en titre
+noir gras avec ce qu'elle comprend, puis trois colonnes de PDF — Devis, Fiche
+chantier, Facture —, chacune du plus récent au plus ancien. Le nom et les
+informations sous le nom restent ; **les trois cases, « Ce qu'on lui fait et
+combien de fois », « Ses chantiers » et la phrase sur les factures sont
+parties**.
+
+**Une seule règle de tri pour les trois colonnes**
+(`src/lib/documents-du-client.ts`). Il a dit « le même ordre » : trois tris
+écrits séparément auraient fini par diverger, et c'est lui qui aurait vu une
+colonne remonter le temps. Une pièce sans date passe en dernier — jamais en
+premier, ce qui la ferait passer pour la plus récente.
+
+**Ce que les colonnes ne montrent pas, et pourquoi :** les devis en brouillon
+(le client ne les a jamais reçus, leur version peut encore changer), les
+factures non émises, et les fiches des chantiers non terminés (elles
+imprimeraient une feuille vide).
+
+**Ce que le retrait coûte, et qu'il a accepté :** on n'ouvre plus un chantier
+depuis un client — on ouvre sa fiche en PDF. Un document se lit, un écran se
+modifie. Le reste dû se regarde dans Terminés → En attente de paiement.
+
+**Deux défauts d'écran trouvés par la suite navigateur, invisibles à la
+lecture :**
+
+- **Deux devis portaient le même numéro.** Le numéro commercial est *stable à
+  travers les versions* : un devis révisé puis renvoyé produisait deux lignes
+  « n° 2026-0003 », à la même date, indistinguables — il aurait fallu ouvrir les
+  deux pour savoir laquelle on tenait. **Seule la dernière version envoyée est
+  montrée** ; les révisions restent en base et sur l'écran du chantier.
+- **Un chantier ouvert le matin même passait pour la dernière prestation.** Il
+  se lisait sur « les chantiers dont la date est passée » — or un chantier créé
+  le jour même, sans devis ni date posée, porte la date du jour. L'écran
+  annonçait un travail qui n'avait pas eu lieu. Elle se lit désormais sur les
+  chantiers **terminés**, ce qui l'aligne sur la colonne « Fiche chantier ».
+- **Le nom du chantier se coupait à 97 px.** « Rénovation de la salle de bain »
+  devenait « Rénovation de… » et n'apprenait rien. Sous un devis et une facture,
+  c'est désormais **la date**, qui tient en entier — et c'est par elle qu'il
+  cherche.
+
+**Trois pièges de montage, chacun payé une fois, chacun consigné :**
+
+| Ce qui échouait | Ce que ça a appris |
+|---|---|
+| Le serveur entier ne démarrait plus | La route était sous `[id]`, le dossier voisin emploie `[chantierId]`. Next.js refuse — et cinq écrans échouaient au préchauffage, la suite accusant un bouton trois écrans plus loin |
+| Les dates ne se décalaient pas | Un `UPDATE` par `pool` ne touche **aucune ligne** sous RLS, et ne dit rien. Le tri paraissait « remonter le temps » entre deux dates identiques |
+| Le décalage était refusé | Un devis envoyé est **immuable** (`trg_devis_immuable`). La date se pose sur le brouillon — `envoyerDevis` la garde, c'est donc le chemin réel |
+
+**La maquette essayable** (`appli/fiche-client.html`) porte les trois colonnes,
+et le contrôle mesure ce qui casse vraiment à 390 px : la colonne la plus
+étroite, et tout libellé qui dépasse sa boîte. **Un commentaire faux y a été
+corrigé contre la mesure** — il affirmait que rien ne tenait à 107 px de
+colonne ; rien n'y était coupé.
+
+### Une barre de recherche sur la liste des clients
+
+**Sa demande, capture à l'appui :** *« Il faut une barre de recherche où je peux
+taper le nom d'un client pour le retrouver plus facilement »* — vingt et un
+noms à l'écran, dont **quatre Martins**, et le sien perdu au milieu. Elle avait
+été dessinée le 17 août (`appli/clients-recherche.html`, proposition B).
+
+La règle vit dans `src/lib/recherche-client.ts`, hors de tout écran : sans
+accents, sans casse, sans ponctuation, et chaque mot cherché n'importe où dans
+le nom. Il tape « moreau » et trouve « Moréau » ; « renard » et trouve
+« Mme Renard » ; « dupont » et trouve « M. Dupont » comme « Mr. Dupont ».
+L'ordre des mots ne compte pas.
+
+**Le filtrage se fait dans le navigateur**, sur la liste déjà chargée : un
+aller-retour réseau par lettre tapée, en 5G au bord d'un chantier, se sentirait.
+
+**Ce que la capture a montré et qu'aucune suite n'aurait vu :** `type="search"`
+fait poser au navigateur sa propre croix d'effacement, **d'un bleu vif** — la
+seule tache de couleur de l'écran, sur une page de crème et de bronze. Elle est
+remplacée par la nôtre, dans la couleur de l'application, présente seulement
+quand il y a quelque chose à effacer. Une suite tient désormais les deux.
+
+**Le champ est toujours affiché**, même avec trois clients : une barre qui
+apparaît au-delà d'un certain nombre est une règle de plus à deviner, et le
+jour où il en a quatre il la croirait retirée.
+
+### La fiche client, allégée — dessinée, pas codée
+
+**Sa demande, capture de l'écran « Martins » à l'appui :** *« En dessous de
+l'adresse, en titre noir gras, dernière prestation avec ce qu'elle comprend.
+Ensuite : pas trois encadrés, seulement deux. Un contenant devis, et l'autre
+fiche chantier… en deux colonnes… trié par date, de la plus récente à la moins
+récente. On garde le nom et les informations sous le nom. Tout le reste, tu
+enlèves. C'est du trop. »*
+
+**`appli/fiche-client.html`** — essayable, sans script ni photo, atteignable
+depuis `appli/essais.html`. **Rien n'est codé** : `CLAUDE.md` §3 bis, une
+demande d'apparence se dessine avant de se coder.
+
+**Ce que la maquette DIT plutôt que de le dessiner en silence : le PDF « fiche
+chantier » n'existe pas.** Vérifié dans le dépôt — Atlas ne fabrique que deux
+documents en PDF, le devis (`src/server/pdf/devis-pdf.ts`) et la facture
+(`facture-pdf.ts`). Ce que le code appelle « fiche chantier » est un **écran** ;
+la « fiche d'entretien » est un **modèle de prestations** dans les réglages. La
+deuxième colonne serait donc vide aujourd'hui. Un écran de la maquette montre ce
+que ce document contiendrait — dessiner un document inexistant comme s'il était
+là est la faute que la planche 56 a commise deux fois.
+
+**Et deux questions posées plutôt que tranchées à sa place :** où vont les
+**factures**, qui n'ont plus d'encadré (trois réponses proposées, dont une qui
+ne casse pas sa règle des deux encadrés) ; et le fait que « Ses chantiers »
+était le seul **chemin** d'un client vers un chantier.
+
+**Le contrôle** (`scripts/verifier-maquette-fiche-client-allegee.mjs`, dans
+`npm run verifier:maquette`) relit les dates **telles qu'elles s'affichent, en
+français**, et refuse une colonne qui remonte le temps — c'est le cœur de sa
+demande, dite deux fois. Il refuse aussi un troisième encadré, une colonne qui
+retombe sous l'autre à 390 px, un titre qui ne serait ni noir ni gras, le retour
+d'une des quatre choses retirées, la disparition de l'aveu sur la fiche
+chantier, et **tout lien qui ne mène nulle part** — sa colère du 18 août :
+*« quand je fais pour cliquer, je ne peux pas cliquer »*. Éprouvé rouge sur sept
+états dégradés.
+
+**Quatre défauts trouvés à l'œil, aucun par un test vert** (`CLAUDE.md` §5) : le
+retour « Vos clients » pointait sur l'écran qu'on regardait — il mène désormais
+à `clients-recherche.html#liste`, qui existe ; une case cochée ne se distinguait
+d'une case vide que par sa couleur ; une conclusion collée à sa liste ; un
+espace de trop.
+
+### Le veilleur ne renonce plus : la version rapide se retente jusqu'à passer
+
+**Sa plainte, à 6 h 40 :** *« l'application est lente corrige ça »*. Sa fiche le
+disait déjà : la construction avait échoué à 6 h 10 sur « Another next build
+process is already running », et le banc servait le mode développement — celui
+qui compile chaque écran à l'ouverture.
+
+Le mécanisme de relance existait (§131) mais **s'arrêtait après trois
+tentatives**, soit une demi-heure. Passé ce délai, plus rien ne retentait, et la
+fiche l'écrivait : *« il est LENT, et le restera »*. Le seul remède était qu'il
+rallume son espace — pour une panne qu'il ne pouvait pas voir.
+
+**Ce qui change :** après la salve rapide (trois fois, à dix minutes), le
+veilleur continue **indéfiniment, une tentative par demi-heure**. C'est le
+rythme qui est borné, plus le nombre. Jamais deux constructions à la fois, et
+jamais avant le délai — ces deux garde-fous n'ont pas bougé.
+
+**Ce que ça évite :** une journée entière sur la version lente parce que la
+fenêtre où la machine pouvait bâtir est arrivée trente-cinq minutes trop tard.
+
+**Et la fiche a cessé de mentir.** « Il restera lent » était vrai tant que le
+veilleur renonçait ; le laisser enverrait rallumer un espace en train de se
+réparer tout seul. Elle dit maintenant le rythme des tentatives.
+
+**Ce qui n'est PAS réglé :** pourquoi deux constructions se marchaient dessus à
+6 h 10. La mémoire était encore ample à cet instant — ce n'est donc pas la
+saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
+`TODO.md`.
+
+---
+
+## 2026-08-19
+
+### Le compte des chantiers ne se dit plus qu'une fois, et en chiffre
+
+**Sa demande, capture à l'appui :** *« la mention en cours qui se trouve sous
+Vos chantiers, supprime-la. Le "Un" qui est à droite, en lettres, je le
+supprime. Et le "en cours" au-dessus de la date, à côté je veux le chiffre du
+nombre de chantiers en cours, en gras. »*
+
+**Ce que ça corrigeait :** le même nombre était écrit **trois fois** sur le même
+écran — « Un en cours » sous le titre, « En cours » à gauche de la rubrique,
+« Un » à sa droite. Deux fois en lettres, à deux endroits, pour une seule
+information.
+
+Il reste **« EN COURS 4 »** : le mot, puis le chiffre collé à lui. Le chiffre
+est le seul élément en gras de la ligne — c'est lui qu'on vient lire.
+
+**Le mot passe au gris du second plan** : `inkSoft` au lieu de `muted`. Trois
+gris lui ont été montrés (`appli/en-cours-le-chiffre.html`), **il a pris le
+C** — le plus foncé des trois. Jamais une couleur écrite en clair : elle aurait
+été juste sur « Origine » et fausse sur les deux chartes sombres, et `inkSoft`
+se dérive pour les sept.
+
+**Le repère `data-atlas="compteur"` a suivi le compte** sur la rubrique. Le
+laisser sur la ligne supprimée aurait rendu `test-dashboard` muet — et cette
+suite lit le nombre en ATTRIBUT depuis le 10 août précisément pour survivre aux
+refontes de libellé. Elle vérifie désormais aussi que le nombre **se lit en
+chiffre à l'écran** : l'attribut seul resterait vert sur un retour aux lettres.
+
+### Atlas dépouillé, utilisable, pour la plainte « trop de mots »
+
+**Sa plainte, la troisième :** *« il y a beaucoup trop de mots dans tous les
+sens […] s'ils passent quinze minutes à essayer de comprendre comment elle
+marche, ils ne vont juste pas l'utiliser »*. Le 11 et le 17 août, la même chose
+avait été dite et un écran avait été corrigé au jugé ; la gêne est revenue
+ailleurs à chaque fois.
+
+`appli/moins-de-mots.html` n'est pas une planche : c'est **l'application
+dépouillée, dont on se sert**. La barre du bas fonctionne, « Créer un devis »
+ouvre la fiche client, les champs se remplissent au clavier, le devis s'envoie,
+« Mes prix » s'ouvre. Un bouton « Avant » remet l'écran d'aujourd'hui sur les
+trois écrans qui changent. Boutons radio et `:checked` : pas une ligne de
+JavaScript, donc ouvrable depuis son téléphone, hors ligne.
+
+**Ce que ça évite :** lui demander de juger une application sur une capture. On
+ne sait pas si un écran est plus simple en le regardant — on le sait en s'en
+servant.
+
+**Rien dans `src/`** — `CLAUDE.md` §3 bis : il choisit avant qu'on code.
+
+### Deux versions refusées avant celle-là, et ce qu'elles apprennent
+
+**« Je t'ai dit de rien coder, seulement une maquette dynamique. »** La première
+arrivait entourée de deux scripts — un qui mesurait l'application, un qui
+recomptait ses nombres. Utiles, hors de `src/`, et **hors sujet** : une demande
+de maquette n'autorise pas l'outillage qui va avec. Retirés.
+
+**« Une maquette dynamique QUE JE PUISSE UTILISER. »** La deuxième était une
+planche avant/après à regarder — des écrans côte à côte, des comptes de mots,
+des flèches. **Une maquette, dans ce dépôt, est un bout d'application qui
+marche**, pas une présentation de ce qu'elle serait. Les autres essayables de
+`appli/` l'étaient déjà ; il aurait fallu s'en inspirer dès le départ.
+
+### Une maquette qu'il doit ouvrir vit dans `appli/`, pas dans `docs/maquettes/`
+
+**Trouvé en essayant de lui transmettre la planche.** `pages.yml` ne publie
+**que** le dossier `appli/` : une planche déposée dans `docs/maquettes/` n'a
+aucune adresse, et il ne peut pas l'ouvrir depuis son téléphone. On attendrait
+alors un choix qu'il n'a pas les moyens de faire — et l'on conclurait qu'il ne
+répond pas.
+
+La planche est donc dans `appli/`, liée depuis `appli/essais.html` — l'adresse
+qu'on lui donne —, et son nom est entré dans la liste que `pages.yml` interroge
+sur le site publié. Le chemin a été parcouru en entier, du lien à la planche, à
+la taille de son téléphone. La règle est écrite dans `CLAUDE.md` §3 bis.
+
+**À vérifier avant de conclure quoi que ce soit :** la planche 81, posée le
+17 août et toujours sans réponse, est restée dans `docs/maquettes/`. Son silence
+n'est peut-être pas un refus.
+
+### Trois pièges de mesure, trouvés en la fabriquant
+
+- **une feuille qui monte ne retire pas l'écran de dessous du document.**
+  `body.innerText` additionnait les deux : la fiche client paraissait peser
+  190 mots, dont 151 étaient l'accueil derrière elle. Faux dans le sens qui
+  arrange ;
+- **un script qui crée une donnée fausse ses propres mesures.** Trois passages
+  ont fait passer l'accueil de 135 à 167 mots sans qu'une ligne de produit ait
+  bougé, parce que `db:seed` ne retire pas les chantiers créés par le parcours.
+  Le script refuse désormais de mesurer sur un jeu de démonstration usagé ;
+- **le refus de la limitation de débit à la connexion est muet côté
+  navigateur.** La suite expire sur l'attente de redirection et accuse la page ;
+  la ligne qui tranche n'est que dans le journal du serveur.
+
+---
 
 ## 2026-08-16
 
@@ -48,6 +388,83 @@ deux centres tombent sur le même pixel. `ARCHITECTURE.md` §124.
 ---
 
 ## 2026-08-18
+
+### Le bouton de l'accueil dit « Créer un devis »
+
+**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
+d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
+
+Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
+feuille au-dessus.
+
+**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
+demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
+titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
+à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
+client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
+remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
+
+### Deux boutons à la place de la bascule, sur l'écran de création
+
+**Sa demande, puis sa réponse devant la planche :** *« supprime "je dicterai"
+et "je l'écris", remplace par un bouton cliquable "je dicte mon devis" et un
+autre "j'écris mon devis" »*, puis *« la 5, mais sans les flèches »*.
+
+L'écran de création porte désormais **deux capsules vertes empilées, à
+égalité** — « Je dicte mon devis », « J'écris mon devis ». La bascule et le
+bouton dont le libellé la suivait sont retirés : chaque bouton porte sa
+destination, et le geste passe de deux temps à un seul.
+
+**Ce que ça évite** : deux gestes pour qui savait déjà qu'il écrirait son devis
+lui-même — toucher un onglet, puis un bouton dont le mot venait de changer sous
+ses yeux.
+
+**Deux conséquences assumées :**
+
+- **« Créer le chantier » disparaît de l'écran.** C'était le seul endroit qui
+  annonçait la création ; les deux boutons créent le chantier avant d'aller où
+  ils disent, sans quoi le devis serait orphelin (`creerPuisAller`). La ligne
+  qui l'aurait redit lui a été proposée, il ne l'a pas retenue ;
+- **en reprise, un seul bouton « Enregistrer »**, comme avant : cet écran sert
+  alors à corriger des coordonnées, pas à faire un devis.
+
+**« Entrée » mène à la dictée**, et non plus au dernier choix : il n'y a plus
+de choix à suivre, et tomber dans le devis à la main sans l'avoir demandé est
+le plus coûteux des deux défauts.
+
+**Les suites visent des repères, pas des mots.** Soixante-treize d'entre elles
+créaient leur chantier d'essai en cliquant « Créer le chantier » ; elles visent
+maintenant `[data-atlas="action-dicter"]`. Un libellé ne survit pas au
+changement suivant — celui-ci vient d'en faire la démonstration.
+
+### Dessiner les deux boutons du devis avant de retirer la bascule
+
+**Sa demande :** *« supprime "je dicterai" et "je l'écris", remplace par un
+bouton cliquable "je dicte mon devis" et un autre "j'écris mon devis", en
+gardant le chemin »*.
+
+**Rien n'est codé, et c'est la règle** (`CLAUDE.md` §3 bis) : une demande
+d'apparence se dessine, se montre, et ne touche à `src/` qu'une fois choisie.
+`appli/deux-boutons-devis.html` pose cinq façons de le faire,
+sur un écran de 390 px, sans une ligne de JavaScript.
+
+**Ce que le dessin a fait apparaître, et que la demande ne pouvait pas dire.**
+Deux choses, toutes deux dans `TODO.md` :
+
+- **« Créer le chantier » disparaît de l'écran.** C'est le libellé actuel du
+  bouton, et le seul endroit qui annonce que le chantier se crée. Deux boutons
+  nommés d'après le devis l'effacent en silence.
+- **Côte à côte, ça ne rentre pas.** Mesuré plutôt qu'estimé
+  (`scripts/mesurer-maquette-deux-boutons.mjs`, joué dans `verifier:maquette`) :
+  à 390 px chaque moitié fait 166 px, « Je dicte mon devis → » en demande 156 de
+  texte et casse sur deux lignes, quand « J'écris mon devis → » tient à 1,5 px
+  près. Les capsules montent alors à 73 px et redeviennent les pavés qu'il avait
+  fait retirer le 11 août.
+
+Le contrôle **refuse de conclure sur une boîte de zéro pixel** plutôt que de
+rendre un vert : c'est la leçon du 15 août 2026, où `0 − 0 = 0` avait certifié
+« rien n'est coupé » sur un écran où trois noms l'étaient.
+
 
 ### « Il peut proposer une autre date » : un interrupteur avant l'envoi
 

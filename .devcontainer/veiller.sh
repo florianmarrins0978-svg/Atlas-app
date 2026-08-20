@@ -61,13 +61,33 @@ INTERVALLE_RAPPORT="${ATLAS_INTERVALLE_RAPPORT:-900}"
 # la même construction passe. C'est exactement le cas où réessayer coûte
 # quelques minutes de processeur et rapporte une soirée entière.
 #
-# **Borné, et il faut qu'il le soit.** Une erreur de types ne se répare pas en
-# insistant : trois tentatives espacées, puis on se tait et la fiche porte
-# l'échec. Réessayer sans fin sur une machine qui manque de mémoire, ce serait
-# la maintenir à genoux — le remède qui tue, que ce dépôt a déjà payé deux fois.
+# **C'est le RYTHME qui est borné, plus le nombre — corrigé le 20 août 2026.**
+#
+# Ce compteur s'arrêtait à trois, et la fiche du patron disait alors, mot pour
+# mot : *« il est LENT, et le restera »*. Ce matin-là, à 06 h 10, la
+# construction tombe sur le verrou ; à 06 h 40 il écrit *« l'application est
+# lente corrige ça »*. Les trois tentatives étaient passées, et **plus rien au
+# monde n'allait retenter quoi que ce soit** avant qu'il rallume son espace —
+# un geste que personne ne lui avait demandé, pour une panne qu'il ne pouvait
+# pas voir.
+#
+# Trois tentatives, c'est le bon rythme pour une panne passagère : sa mémoire
+# se libère en dix minutes, et la construction repasse. Mais la cause peut
+# durer plus longtemps que trente minutes — un autre banc qui bâtit, une
+# journée de travail qui occupe les 8 Go —, et une demi-heure de patience ne
+# doit pas condamner la journée entière.
+#
+# **Donc : après la salve rapide, on continue AU RALENTI.** Une construction
+# toutes les demi-heures ne maintient personne à genoux — c'est deux ou trois
+# minutes de processeur par demi-heure —, et elle finit par tomber sur le
+# moment où la machine peut la faire passer. Ce qui reste interdit est
+# inchangé : jamais deux constructions à la fois, et jamais avant que le délai
+# soit écoulé.
 TEMOIN_ECHEC="${ATLAS_TEMOIN_ECHEC:-/tmp/atlas-construction-echouee.txt}"
 RELANCE_APRES="${ATLAS_RELANCE_CONSTRUCTION_S:-600}"
 RELANCES_MAX="${ATLAS_RELANCES_CONSTRUCTION_MAX:-3}"
+# Le pas lent, une fois la salve rapide épuisée.
+RELANCE_LENTE="${ATLAS_RELANCE_LENTE_S:-1800}"
 RELANCES=0
 PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
 
@@ -184,8 +204,7 @@ while true; do
     # veut donc dire « la dernière tentative a échoué, et nous sommes lents ».
     # C'est le seul signal qui distingue un banc rapide d'un banc lent, et les
     # deux répondent pareil à la santé.
-    if [ -f "$TEMOIN_ECHEC" ] && [ "$RELANCES" -lt "$RELANCES_MAX" ] \
-       && [ "$(date +%s)" -ge "$PROCHAINE_RELANCE" ]; then
+    if [ -f "$TEMOIN_ECHEC" ] && [ "$(date +%s)" -ge "$PROCHAINE_RELANCE" ]; then
       # **Jamais deux constructions à la fois.** C'est la panne d'origine : une
       # seconde construction lancée à côté d'une première tombe sur son verrou,
       # et les deux échouent. Si une construction tourne déjà — la nôtre de tout
@@ -199,9 +218,17 @@ while true; do
         npm run banc >> "$JOURNAL" 2>&1
         echo "$(date '+%d/%m %H:%M:%S') — le serveur s'est arrêté" >> "$JOURNAL"
       fi
-      PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
-      if [ "$RELANCES" -ge "$RELANCES_MAX" ]; then
-        echo "$(date '+%d/%m %H:%M:%S') — ${RELANCES_MAX} tentatives de construction ont échoué : on n'insiste plus, la fiche porte la cause" >> "$JOURNAL"
+      # La salve rapide d'abord — une panne passagère se répare là. Puis le pas
+      # lent, indéfiniment : ce qui a échoué trois fois de suite peut très bien
+      # passer dans une heure, et la journée du patron ne doit pas dépendre de
+      # ce qu'il pense à rallumer son espace.
+      if [ "$RELANCES" -lt "$RELANCES_MAX" ]; then
+        PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
+      else
+        PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_LENTE ))
+        if [ "$RELANCES" -eq "$RELANCES_MAX" ]; then
+          echo "$(date '+%d/%m %H:%M:%S') — ${RELANCES_MAX} tentatives rapprochées ont échoué : on continue, une toutes les ${RELANCE_LENTE} s" >> "$JOURNAL"
+        fi
       fi
     fi
   fi

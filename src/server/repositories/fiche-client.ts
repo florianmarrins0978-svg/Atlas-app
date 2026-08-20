@@ -1,9 +1,24 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, clients, factures, lignesPrix, paiementsFacture } from "../db/schema";
+import {
+  chantiers,
+  clients,
+  devis,
+  factures,
+  lignesPrix,
+  paiementsFacture,
+  prestations,
+} from "../db/schema";
 import type { Ctx } from "./context";
 import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
 import { resteDu, type FacturePourTva } from "@/lib/exigibilite-tva";
+import {
+  dernierePrestation,
+  jourCourt,
+  rangerDuPlusRecent,
+  type DerniereePrestation,
+  type PieceDuClient,
+} from "@/lib/documents-du-client";
 
 /**
  * Tout ce que l'application sait d'un client, en une lecture.
@@ -23,7 +38,26 @@ import { resteDu, type FacturePourTva } from "@/lib/exigibilite-tva";
  */
 export type FicheClientComplete = FicheClient & {
   client: { id: string; nom: string; adresse: string | null; telephone: string | null; email: string | null };
+  /**
+   * La dernière chose qu'on a faite chez lui, et ce qu'elle comprenait.
+   *
+   * *Sa demande du 20 août 2026 :* « en dessous de l'adresse, en titre noir
+   * gras, dernière prestation avec ce qu'elle comprend ».
+   */
+  derniere: DerniereePrestation | null;
+  /**
+   * Les trois colonnes de PDF — devis, fiches de chantier, factures —, chacune
+   * du plus récent au plus ancien.
+   *
+   * *Le 20 août 2026 :* « pas trois encadrés, seulement deux », puis, le même
+   * jour : « tu peux rajouter une colonne facture et ranger les factures dans
+   * le même ordre ».
+   */
+  pieces: { devis: PieceDuClient[]; fiches: PieceDuClient[]; factures: PieceDuClient[] };
 };
+
+/** Les trois colonnes vides — un client sans aucun chantier. */
+const AUCUNE_PIECE = { devis: [], fiches: [], factures: [] };
 
 export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<FicheClientComplete | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -38,6 +72,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         id: chantiers.id,
         nom: chantiers.nom,
         datePlanifiee: chantiers.datePlanifiee,
+        termineAt: chantiers.termineAt,
         creeLe: chantiers.createdAt,
       })
       .from(chantiers)
@@ -53,6 +88,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           telephone: client.telephone,
           email: client.email,
         },
+        derniere: null,
+        pieces: AUCUNE_PIECE,
       };
     }
 
@@ -61,11 +98,12 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
     // **Seules les factures ÉMISES comptent.** Un brouillon n'a pas été envoyé :
     // le compter dans « facturé » annoncerait de l'argent que le client ne sait
     // pas encore devoir.
-    const [sesFactures, sesLignes] = await Promise.all([
+    const [sesFactures, sesLignes, sesDevis] = await Promise.all([
       tx
         .select({
           id: factures.id,
           chantierId: factures.chantierId,
+          numeroCommercial: factures.numeroCommercial,
           dateEmission: factures.dateEmission,
           totalHt: factures.totalHt,
           totalTva: factures.totalTva,
@@ -77,6 +115,20 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         .select({ chantierId: lignesPrix.chantierId, libelle: lignesPrix.libelle, montant: lignesPrix.montant })
         .from(lignesPrix)
         .where(inArray(lignesPrix.chantierId, ids)),
+      // **Seuls les devis ENVOYÉS entrent dans la colonne.** Un brouillon n'est
+      // pas une pièce : le client ne l'a jamais reçu, son numéro peut encore
+      // changer de version, et le patron chercherait dans sa colonne un
+      // document que personne n'a. Même raison que pour les factures émises.
+      tx
+        .select({
+          id: devis.id,
+          chantierId: devis.chantierId,
+          numero: devis.numeroCommercial,
+          version: devis.numeroVersion,
+          jour: devis.dateEmission,
+        })
+        .from(devis)
+        .where(and(inArray(devis.chantierId, ids), eq(devis.statut, "envoye"))),
     ]);
 
     const paiements = sesFactures.length
@@ -124,6 +176,104 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       };
     });
 
+    // ─── Les trois colonnes de pièces ────────────────────────────────────
+    //
+    // Les trois passent par `rangerDuPlusRecent` — une seule règle de tri, pas
+    // trois. Il a dit « le même ordre » : trois tris écrits séparément
+    // finiraient par diverger, et c'est lui qui verrait une colonne remonter le
+    // temps pendant que les deux autres la descendent (`CLAUDE.md` §3).
+    // **UNE pièce par devis, sa dernière version envoyée.**
+    //
+    // Trouvé par `test-fiche-client-e2e.ts`, et invisible à la lecture : le
+    // numéro commercial est STABLE à travers les versions (`schema.ts`). Un
+    // devis révisé puis renvoyé produisait donc deux lignes portant le même
+    // « n° 2026-0003 », à la même date, impossibles à distinguer — le patron
+    // aurait dû ouvrir les deux pour savoir laquelle il tenait.
+    //
+    // La dernière version est celle qui vaut : c'est le devis, pour lui comme
+    // pour son client. Les révisions restent en base, et l'écran du chantier
+    // les porte.
+    const dernierParNumero = new Map<string, (typeof sesDevis)[number]>();
+    for (const d of sesDevis) {
+      const connu = dernierParNumero.get(d.numero);
+      if (!connu || d.version > connu.version) dernierParNumero.set(d.numero, d);
+    }
+
+    const piecesDevis = rangerDuPlusRecent(
+      [...dernierParNumero.values()].map((d) => ({
+        id: d.id,
+        titre: `n° ${d.numero}`,
+        // **La date, et non le nom du chantier.** Sur 97 px de colonne, un
+        // « Rénovation de la salle de bain » se coupe à « Rénovation de… » et
+        // n'apprend rien ; la date, elle, tient en entier et c'est par elle
+        // qu'il cherche. Le nom du chantier reste sur la fiche de chantier,
+        // dont la colonne porte déjà la date en titre.
+        precision: jourCourt(d.jour),
+        jour: d.jour,
+        href: `/api/devis/${d.id}/pdf`,
+      }))
+    );
+
+    const piecesFactures = rangerDuPlusRecent(
+      sesFactures.map((f) => ({
+        id: f.id,
+        titre: `n° ${f.numeroCommercial}`,
+        precision: jourCourt(f.dateEmission),
+        jour: f.dateEmission,
+        href: `/api/factures/${f.id}/pdf`,
+      }))
+    );
+
+    // **Une fiche de chantier n'existe que pour un chantier TERMINÉ.** Elle rend
+    // compte de travaux faits : en proposer une pour un chantier qui n'a pas
+    // commencé imprimerait une feuille vide, et le patron l'ouvrirait pour
+    // découvrir qu'il n'y avait rien à lire.
+    const piecesFiches = rangerDuPlusRecent(
+      sesChantiers
+        .filter((c) => c.termineAt !== null)
+        .map((c) => {
+          const jour = c.termineAt!.toISOString().slice(0, 10);
+          return {
+            id: c.id,
+            // Le jour en titre, le chantier en dessous : à l'inverse des devis
+            // et des factures, une fiche n'a pas de numéro — c'est sa date qui
+            // la désigne, et c'est par elle qu'on la cherche.
+            titre: jourCourt(jour),
+            jour,
+            precision: c.nom,
+            href: `/api/chantiers/${c.id}/fiche/pdf`,
+          };
+        })
+    );
+
+    // ─── La dernière prestation ──────────────────────────────────────────
+    //
+    // **Seuls les chantiers TERMINÉS comptent**, et cela s'est appris à
+    // l'écran. La première version prenait les chantiers « dont la date est
+    // passée » — or un chantier créé le matin même, sans devis ni date posée,
+    // porte la date du jour : il devenait « la dernière prestation » alors que
+    // personne n'y était encore allé, et l'écran annonçait un travail qui
+    // n'avait pas eu lieu (`CLAUDE.md` §4). Trouvé par
+    // `test-fiche-client-e2e.ts`, invisible à la lecture.
+    //
+    // C'est aussi ce qui aligne cet endroit sur la colonne « Fiche chantier »,
+    // qui n'existe que pour les chantiers terminés : les deux disent la même
+    // chose du même chantier.
+    const termines = new Set(
+      sesChantiers.filter((c) => c.termineAt !== null).map((c) => c.id)
+    );
+    const faits = composables.filter((c) => termines.has(c.id));
+    const idDernier = rangerDuPlusRecent(faits)[0]?.id;
+    // Les prestations du SEUL dernier chantier : les charger toutes ferait
+    // voyager la liste entière d'un client fidèle pour n'en afficher que trois.
+    const prestationsDuDernier = idDernier
+      ? await tx
+          .select({ libelle: prestations.libelle })
+          .from(prestations)
+          .where(eq(prestations.chantierId, idDernier))
+          .orderBy(asc(prestations.ordre))
+      : [];
+
     return {
       ...composerFicheClient(composables, sesLignes),
       client: {
@@ -133,9 +283,15 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         telephone: client.telephone,
         email: client.email,
       },
+      derniere: dernierePrestation(
+        faits,
+        new Map(idDernier ? [[idDernier, prestationsDuDernier.map((p) => p.libelle)]] : [])
+      ),
+      pieces: { devis: piecesDevis, fiches: piecesFiches, factures: piecesFactures },
     };
   });
 }
+
 
 /** Ce que la liste des clients montre de chacun : son nom, et deux chiffres. */
 export type ClientEnListe = {

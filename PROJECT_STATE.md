@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-18 · branche `main`
+**Dernière mise à jour :** 2026-08-20 · branche `main`
 · dernière migration `drizzle/0055_passage_entretien.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -48,6 +48,12 @@ c'est le document de référence du produit.
 ---
 
 ## Terminé et vérifié
+
+**Chercher un client (20 août 2026).** La liste des clients porte une barre de
+recherche : il tape un nom, la liste se réduit à chaque frappe. Sans accents,
+sans casse, sans ponctuation, et dans n'importe quel ordre de mots. Règle pure
+dans `src/lib/recherche-client.ts` (`ARCHITECTURE.md` §134), éprouvée sans
+navigateur **et** au navigateur.
 
 ### Le socle (antérieur à cette série de travaux)
 
@@ -567,6 +573,75 @@ production les demande.
 
 ---
 
+## Les maquettes essayables : une seule adresse, et `appli/` en est la racine
+
+**Ce qu'on lui donne, et rien d'autre :**
+`https://florianmarrins0978-svg.github.io/Atlas-app/essais.html`
+
+`.github/workflows/pages.yml` publie **`appli/` comme racine du site** — tout ce
+qui y est déposé part en ligne, et rien d'autre du dépôt. `appli/essais.html`
+est la page d'entrée : elle liste toutes les maquettes manipulables, chacune sur
+un pavé d'au moins 64 px.
+
+**Deux règles payées cher :**
+
+- **Une adresse se donne entière, jamais avec des points de suspension.** Le
+  18 août 2026 il a répondu : *« quand je fais pour cliquer, je ne peux pas
+  cliquer »*. Un lien tronqué n'est pas un lien.
+- **Toute maquette neuve s'inscrit à trois endroits, sans quoi elle n'existe
+  pas :** `appli/essais.html` (le patron y arrive), la liste vérifiée après
+  déploiement dans `pages.yml` (elle répond vraiment), et
+  `npm run verifier:maquette` (elle tient ce qu'elle promet). C'est la même
+  leçon que les huit planches introuvables trouvées par
+  `scripts/fusionner-maquettes.mjs`.
+
+## Atlas fabrique TROIS documents en PDF
+
+**Le troisième est né le 20 août 2026**, sur sa demande : *« fais en sorte que
+les fiches chantiers soient au format PDF maintenant »*. Jusque-là il n'y en
+avait que deux, et le vocabulaire du dépôt trompait.
+
+| Le document | Où il vit | Ce qu'il porte |
+|---|---|---|
+| **Devis** | `src/server/pdf/devis-pdf.ts`, `/api/devis/[id]/pdf` | prix, totaux, TVA, **cadre de signature** |
+| **Facture** | `facture-pdf.ts`, `/api/factures/[id]/pdf` | prix, totaux, TVA, mention légale, **pas de signature** |
+| **Fiche de chantier** | `fiche-chantier-pdf.ts`, `/api/chantiers/[chantierId]/fiche/pdf` | ce qui a été fait, le matériel, les observations, les photos — **aucun prix** |
+
+Les trois sortent du **même moteur** (`document-commun.ts`) : même papier, même
+en-tête, même bloc émetteur/client, même pied. Trois moteurs auraient produit
+trois mises en page qui divergent, et c'est le client qui verrait la différence
+entre les feuilles d'un même artisan.
+
+**Ce qui distingue la fiche : `sansChiffrage`.** Ni colonnes de prix, ni totaux,
+ni TVA, ni IBAN, ni signature. Ce n'est pas une économie de place — c'est ce qui
+la rend **transmissible** : on peut la donner à un locataire, à un syndic, à
+l'assurance d'un voisin, sans divulguer ce que le propriétaire a payé.
+
+**AVANT DE TOUCHER À `document-commun.ts`, LIRE CECI.** Le devis et la facture
+sont les pièces que le client reçoit, et l'une est ce qu'il paie. Un `if` mal
+placé y décalerait un total sans que personne le voie avant l'impression. Une
+**empreinte de leur trace entière** — chaque texte, sa position au centième de
+point, sa taille, sa couleur, sa page — est figée dans
+`scripts/test-fiche-chantier-pdf.ts` et refuse le moindre écart. Elle a été
+relevée avant la première ligne de `sansChiffrage`, et éprouvée rouge en
+décalant le moteur d'un seul point.
+
+**Trois mots proches désignent encore trois choses différentes :**
+
+| Le mot | Ce que c'est |
+|---|---|
+| **fiche de chantier (PDF)** | le document ci-dessus, depuis le 20 août 2026 |
+| **fiche chantier (écran)** | `src/app/chantiers/[id]/` — photos, note vocale, étapes |
+| **fiche d'entretien** | un MODÈLE de prestations à cocher, un par entreprise (migration 0051) |
+
+**Un piège de Next.js payé le 20 août :** la route a d'abord été écrite sous
+`/api/chantiers/[id]/`, alors que le dossier voisin emploie `[chantierId]`.
+Next.js refuse deux noms pour le même segment dynamique — et **le serveur entier
+ne démarre plus**. Cinq écrans échouaient au préchauffage, et la suite accusait
+un bouton introuvable trois écrans plus loin. Le message du serveur, lui, disait
+juste : *« You cannot use different slug names for the same dynamic path »*.
+Aller le lire a pris trente secondes ; le deviner aurait pris une heure.
+
 ## Le lecteur du patron n'exécute pas JavaScript — les maquettes doivent s'en passer
 
 **Constaté le 2026-08-10, et payé une fois.** Trois bancs d'essai lui ont été
@@ -857,6 +932,29 @@ Voir `TODO.md` pour le détail et l'ordre.
   messagerie du patron comme l'envoi.
 
 ---
+
+## L'application est jugée trop chargée — mesuré, pas encore tranché (19 août)
+
+**Sa plainte, la troisième** (11, 17 puis 19 août) : *« beaucoup trop de mots
+dans tous les sens »*. Trois écrans ont été regardés à la taille de son
+téléphone et leurs mots comptés :
+
+| Écran | Aujourd'hui | Proposé |
+|---|---|---|
+| Fiche client | 39 mots | 19 |
+| Accueil | 35 mots | 21 |
+| Réglages | 89 mots | 26 |
+
+**Proposé, pas codé** — `appli/moins-de-mots.html` est **Atlas dépouillé et
+utilisable** : la barre du bas marche, « Créer un devis » ouvre la fiche, les
+champs se remplissent, le devis part ; un bouton « Avant » remet l'écran
+d'aujourd'hui. Sans JavaScript. Liée depuis `appli/essais.html` — la seule
+adresse qu'il puisse ouvrir. Et `docs/QUESTIONS.md` §23. **Rien dans `src/`**
+tant qu'il n'a pas choisi (`CLAUDE.md` §3 bis).
+
+Ce qui compte le plus n'est pas les trois écrans : c'est que **rien n'empêche
+l'application de regrossir**. Les deux fois précédentes, un écran a été corrigé
+et la gêne est revenue ailleurs.
 
 ## Ce qui bloque, et qui n'avancera pas en codant
 

@@ -46,7 +46,7 @@ await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
 await page.fill('input[placeholder="Bernard"]', CLIENT);
 await page.fill('input[placeholder="06 12 34 56 78"]', "0679984514");
 await page.getByPlaceholder("12 rue des Lilas, Nantes").fill(ADRESSE);
-await page.click('button:has-text("Créer le chantier")');
+await page.click('[data-atlas="action-dicter"]');
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
 const chantierId = page.url().split("/").pop()!.split("?")[0];
 

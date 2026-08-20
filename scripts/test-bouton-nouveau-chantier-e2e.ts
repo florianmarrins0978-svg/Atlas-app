@@ -4,11 +4,6 @@ import assert from "node:assert";
 /**
  * Le bouton de l'accueil : le geste, et sa demi-seconde.
  *
- * **Il s'appelle « Créer un devis » depuis le 18 août 2026** — sa décision, une
- * autre session. Ce contrôle visait encore « Nouveau chantier » : il a rougi
- * sur du code juste, et son message accusait la feuille de ne pas s'ouvrir
- * alors qu'elle s'ouvrait très bien sous un autre nom.
- *
  * **Pourquoi cette suite existe.** Le patron a arrêté ce bouton après onze
  * maquettes, en réglant lui-même l'onde, la taille du rond et le nombre de
  * grains (`docs/maquettes/24-le-bouton-retenu.html`). Le délai de 520 ms est
@@ -133,6 +128,11 @@ async function main() {
   );
   await page.setViewportSize({ width: 390, height: 844 });
 
+  // **La feuille s'appelle « Créer un devis » depuis le 18 août 2026**, quand
+  // le bouton de l'accueil a été renommé (`EcranChantiers.tsx`). Cette suite
+  // visait encore « Nouveau chantier » et rougissait sur `main` : c'est le
+  // geste qui est éprouvé ici — la demi-seconde du signe qui tourne —, pas le
+  // mot porté par l'étiquette.
   const feuille = page.locator('div[role="dialog"][aria-label="Créer un devis"]');
   assert.equal(await feuille.isVisible(), false, "La feuille est fermée au départ");
 

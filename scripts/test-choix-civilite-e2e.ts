@@ -92,7 +92,7 @@ async function main() {
   await page.locator('[data-atlas="civilite-mme"]').click();
   await page.locator('input[placeholder="Bernard"]').fill(CLIENTE);
   await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
-  await page.click('button:has-text("Créer le chantier")');
+  await page.click('[data-atlas="action-dicter"]');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantierId = page.url().split("/").pop()!.split("?")[0];
 
@@ -204,7 +204,7 @@ async function main() {
     const sansChoix = `Martins ${Date.now()}`;
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.locator('input[placeholder="Bernard"]').fill(sansChoix);
-    await page.click('button:has-text("Créer le chantier")');
+    await page.click('[data-atlas="action-dicter"]');
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
     const id = page.url().split("/").pop()!.split("?")[0];
     const { rows } = await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [id]);

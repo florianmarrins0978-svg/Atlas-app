@@ -43,7 +43,7 @@ async function main() {
   await page.fill('input[placeholder="06 12 34 56 78"]', "0660060265");
   await page.fill('input[placeholder="bernard@exemple.fr"]', "client@exemple.net");
   await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', ADRESSE);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.click('[data-atlas="action-dicter"]');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15000 });
   const chantierId = page.url().split("/").pop()!;
 

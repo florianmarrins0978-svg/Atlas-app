@@ -25,6 +25,241 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
+
+**Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
+cette suite sont tombés ensemble :
+
+    ✗ chaque colonne porte ses PDF, du plus récent au plus ancien
+    ✗ les dates s'écrivent toutes de la même façon
+    ✗ rien ne déborde — la colonne la plus étroite fait 0 px
+
+**« 0 px » est le tell : les colonnes étaient VIDES.** La fiche n'avait aucun
+document à montrer, et les trois contrôles se sont plaints chacun à sa façon de
+la même absence. Jouée seule, et rejouée en batterie ensuite, la suite est
+verte : la cause est donc dans **ce que les suites précédentes laissent en
+base**, pas dans l'écran.
+
+**Pourquoi ça compte plus qu'un rouge de passage.** Un contrôle qui échoue au
+hasard apprend à ignorer le rouge, et l'on perd alors tout ce qu'il surveille.
+Celui-ci est neuf (posé le même jour, par une autre conversation) et il garde la
+refonte que le patron vient de demander.
+
+**Ce qu'il faudrait :** que la suite crée elle-même les documents dont elle a
+besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'elle
+refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
+(`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
+
+## ⏳ POURQUOI deux constructions se marchent dessus — non reproduit
+
+**Le 20 août 2026 à 6 h 10**, la construction du banc tombe sur « Another next
+build process is already running », et le patron passe la matinée sur la version
+lente. La relance a été réparée (`ARCHITECTURE.md` §133) : **le symptôme ne dure
+plus, la cause n'est pas trouvée.**
+
+**Ce qui a été écarté, mesure à l'appui.** Ce n'est pas la saturation mémoire du
+17 août : au moment de l'échec, sa fiche portait **4,3 Gio disponibles**. Et ce
+n'est pas un verrou périmé — éprouvé ici le 20 août, le processus qui tient
+`<dist>/lock` est bien `node …/next build`, vivant, et
+`delogerConstructionsOrphelines()` le déloge correctement (trois processus,
+zéro restant).
+
+**La piste qui reste, et personne ne l'a suivie :** `veiller.sh` ne vérifie
+qu'aucune construction ne tourne **que dans la branche de relance**. La branche
+« plus rien ne répond sur le port » lance `npm run banc` sans ce contrôle. Deux
+bancs peuvent alors se déloger mutuellement leur construction — chacun croyant
+retirer une orpheline. À reproduire avant de corriger : ce dépôt a déjà payé
+trois correctifs écrits contre une panne imaginée (`AGENTS.md`).
+
+**Ce qu'il faudrait pour trancher :** que le témoin d'échec porte **qui** tenait
+le verrou (la ligne de commande du processus, son pid, son père). Aujourd'hui il
+ne porte que le message de Next, et l'on ne peut que supposer.
+
+## ⏸ « Trop compliquée » — sa plainte du 19 août 2026, RIEN n'est tranché
+
+**Ses mots, qui valent mieux qu'un résumé :** *« l'application va être trop
+compliquée à utiliser, il y a beaucoup trop de mots dans tous les sens. Ce n'est
+pas ludique, ce n'est pas pratique, ce n'est pas facile. J'ai voulu créer une
+application luxe, mais au final j'ai l'impression que je me suis perdu (…) des
+entrepreneurs qui n'ont pas de temps, s'ils passent quinze minutes à essayer de
+comprendre comment elle marche, ils ne vont juste pas l'utiliser. Il ne faut pas
+oublier qu'il y a des boomers dessus qui ont déjà du mal à utiliser leur
+téléphone. »*
+
+**Ce n'est pas la première fois, et c'est ÇA le fait important.** La même chose
+a été dite trois fois, chaque fois sur un écran différent, chaque fois traitée
+localement :
+
+| Quand | Ses mots | Ce qu'on a fait |
+|---|---|---|
+| 11 août | *« informations, prix, devis peuvent disparaître »* | trois étapes retirées du tiroir de la fiche |
+| 17 août | *« l'utilisateur a besoin d'aller à l'essentiel constamment »* | planches 79 et 80 de l'avoir jetées, la 81 refaite |
+| 19 août | ci-dessus | **rien encore** |
+
+Trois corrections ponctuelles, et la plainte revient. Donc le défaut n'est pas
+dans un écran : **il est dans le fait que rien n'empêche l'application de
+regrossir.** Chaque décision juste ajoute une ligne, un écran, une phrase
+d'explication — et personne n'en retire jamais.
+
+**L'état mesuré au 19 août 2026**, à confronter avant de proposer quoi que ce
+soit : **54 écrans** (`find src/app -name page.tsx`), **18 rubriques de
+réglages**, **5 onglets** en bas.
+
+**Le contresens à ne pas commettre.** Il dit « j'ai voulu faire luxe et je me
+suis perdu ». Le luxe n'est pas la cause : le luxe, c'est le vide. Ce qui
+encombre l'écran, ce sont les **phrases qui expliquent** — un écran qui a besoin
+de se justifier est un écran qui n'est pas clair. Retirer le soin apporté au
+dessin ne règlerait rien et coûterait ce qui a été gagné.
+
+**CE QUI EST FAIT : une maquette qui SE SERT.** `appli/moins-de-mots.html` —
+Atlas dépouillé, utilisable au pouce : la barre du bas marche, « Créer un
+devis » ouvre la fiche client, les champs se remplissent au clavier, le devis
+part, « Mes prix » s'ouvre. Un bouton **« Avant »** en haut remet l'écran
+d'aujourd'hui sur les trois écrans qui changent. Sans une ligne de JavaScript
+(boutons radio et `:checked`), donc ouvrable au téléphone hors ligne. Liée
+depuis `appli/essais.html`. `docs/QUESTIONS.md` §23.
+
+Ce qui est retiré, écran par écran :
+
+| Écran | Ce qui part |
+|---|---|
+| Fiche client | « facultatif » ×5 — **tous** les champs le sont ; la question du canal d'envoi, que l'application devine déjà ; la civilité, qui rentre dans le nom |
+| Accueil | le nombre de chantiers et l'ancienneté du devis, écrits **deux fois chacun** ; « Faire le devis », alors que toucher la ligne le fait |
+| Réglages | les **treize** phrases d'explication sous les treize titres ; « Intégrations », qui est un mot d'informaticien |
+| Le devis | le document entier passe derrière « Voir le document » — il faisait **2,6 hauteurs d'écran** avant d'atteindre « Envoyer » |
+
+**⚠ DEUX VERSIONS ONT RATÉ LA DEMANDE. Ne pas refaire la même erreur.**
+
+1. *« Je t'ai dit de rien coder, seulement une maquette dynamique. »* La
+   première arrivait entourée de deux scripts — un qui mesurait l'application,
+   un qui recomptait ses nombres. Utiles, hors de `src/`, et **hors sujet** :
+   une demande de maquette n'autorise pas l'outillage qui va avec ;
+2. *« Une maquette dynamique QUE JE PUISSE UTILISER. »* La deuxième était une
+   **planche à regarder** — des écrans avant/après, des flèches, des comptes de
+   mots. **Ce n'est pas ça qu'il demande.** Il veut poser le pouce dessus et
+   sentir si c'est plus simple. On ne juge pas une application sur une capture ;
+   on la juge en s'en servant.
+
+**La règle qui en sort, et qui vaut pour toutes les maquettes :** une maquette,
+ici, est un **bout d'application qui marche** — pas une présentation de ce
+qu'elle serait. Les autres essayables de `appli/` le sont déjà
+(`clients-recherche.html`, `arrosage.html`) : s'en inspirer plutôt que de
+réinventer une planche.
+
+**Fusionné sur `main` le 19 août 2026, à sa demande** — il a d'abord dit non,
+puis a demandé ce que la fusion changerait à son application. La réponse tenait
+en une ligne et vaut d'être gardée : **zéro fichier de `src/` touché**. La
+maquette est une page de plus dans `appli/`, à côté du plan d'arrosage et de
+« Vos clients » ; son Atlas n'a pas bougé d'un pixel.
+
+**La leçon, et elle vaut pour la prochaine fois :** il n'a pas refusé la fusion,
+il ne savait pas ce qu'elle emportait. Annoncer « je fusionne ? » sans dire **ce
+que ça change chez lui** lui fait porter un risque qu'il n'a pas les moyens
+d'évaluer — et il répond non, ce qui est la bonne réponse à une question mal
+posée.
+
+**CE QUI RESTE, ET QUI EST À LUI :** ces trois écrans lui vont-ils ? Rien dans
+`src/` tant qu'il n'a pas répondu (`CLAUDE.md` §3 bis).
+
+**CE QUI N'EST PAS PROPOSÉ, EXPRÈS :** relire les autres écrans. Ce serait au
+jugé, et c'est l'erreur qu'on cherche à arrêter. Et il faudra se souvenir que
+corriger trois écrans de plus ne suffira pas : c'est déjà la troisième fois, et
+rien n'empêche l'application de regrossir.
+
+## Deux maquettes que le patron ne peut pas ouvrir — constaté le 20 août 2026
+
+`appli/deux-boutons-devis.html` et `appli/en-cours-le-chiffre.html` existent,
+sont publiées, sont vérifiées après déploiement — et **aucun lien d'`essais.html`
+ne les atteint**. Or `essais.html` est la seule adresse qu'on lui ait donnée :
+autant dire qu'elles n'existent pas pour lui. C'est le même défaut que les huit
+planches introuvables trouvées par `scripts/fusionner-maquettes.mjs`.
+
+**À faire, par qui reprend leur sujet :** les inscrire dans `appli/essais.html`
+si elles ont encore une question ouverte, ou les retirer si leur question est
+tranchée. Puis retirer leur mention en dur de `.github/workflows/pages.yml`,
+où elles ne sont gardées que pour ne pas perdre une vérification existante.
+
+**Ce qui ne se reproduira plus :** depuis le 20 août, la liste vérifiée après
+déploiement **se déduit des liens d'`essais.html`** au lieu d'être tenue à la
+main. Deux pages y manquaient ce jour-là, dont `moins-de-mots.html`, écrite la
+veille.
+
+---
+
+## ⏸ L'arrosage simplifié — **dessiné le 20 août, il tranche avant qu'on code**
+
+`appli/arrosage-simple.html` — huit questions ramenées à deux : le piquage, et
+le croquis. **Rien n'est codé** ; `appli/arrosage.html` n'a pas été touchée.
+
+**Ce qui attend sa réponse :**
+
+| | La question | Pourquoi elle ne se tranche pas sans lui |
+|---|---|---|
+| 1 | **Le débit, mesuré ou supposé ?** | La mesure au seau est partie avec le reste. Or c'est elle qui décide du nombre d'arroseurs par réseau. Deux façons de vivre avec : le supposer d'après le piquage **et l'écrire** (« estimé, à vérifier au seau »), ou le demander **une seule fois, à la fin**, quand le plan est déjà à l'écran |
+| 2 | **La lecture du croquis** | Elle n'existe pas et demande une IA qui regarde une image — donc un **contrat fournisseur**, qui est à lui (`docs/A-FAIRE.md`). D'ici là, le plan ne peut pas sortir d'une photo. Un chemin court existe : **dicter** les mesures, ce qu'Atlas sait déjà transcrire |
+
+**Ce que la lecture devra rendre, le jour venu :** les surfaces de chaque partie
+du jardin, les longueurs de haie et de massif, et où se trouve le point d'eau.
+Le découpage en réseaux et la liste des pièces se déduisent de là — c'est du
+calcul, et `appli/arrosage-calcul.js` le porte déjà.
+
+---
+
+## ~~La fiche client allégée~~ — **TRANCHÉE ET CODÉE le 20 août 2026**
+
+Trois colonnes (Devis · Fiche chantier · Facture), la dernière prestation en
+titre noir gras, le reste retiré. Le PDF de fiche de chantier existe.
+Voir `CHANGELOG.md` et `PROJECT_STATE.md` §« Atlas fabrique TROIS documents ».
+
+**Ce qui reste ouvert, et qui est à LUI :**
+
+| | Ce qui attend | Pourquoi on ne tranche pas à sa place |
+|---|---|---|
+| 1 | **Le reste dû revient-il sur la fiche ?** | Il a dit « tout le reste, tu enlèves ». Le reste dû est parti avec, et se regarde dans Terminés → En attente de paiement. Depuis la fiche d'un client, on ne sait donc plus s'il doit de l'argent |
+| 2 | **Le chemin vers un chantier** | « Ses chantiers » était le seul lien d'un client vers un chantier. On ouvre désormais sa fiche en PDF : un document se lit, un écran se modifie |
+
+**Ce qui reste à coder, et qui n'attend personne :**
+
+- **Figer la fiche de chantier le jour où elle s'ENVERRA.** Elle se télécharge
+  aujourd'hui, et se régénère à chaque ouverture — c'est voulu : si le patron
+  corrige une observation, c'est la version corrigée qu'il veut. Mais ce qui
+  part chez un client ne se réécrit pas : il faudra la stocker à l'envoi, comme
+  le devis et la facture. C'est écrit dans la route.
+- **Les photos** : compression à l'envoi et conservation deux ans, décidées par
+  lui le 17 août, **dessinées et non codées** (`appli/clients-recherche.html`).
+
+---
+
+## ~~Les deux boutons du devis~~ — **tranché et codé le 18 août 2026**
+
+Sa demande : *« supprime "je dicterai" et "je l'écris", remplace par un bouton
+cliquable "je dicte mon devis" et un autre "j'écris mon devis", en gardant le
+chemin »*. Cinq façons lui ont été montrées (`appli/deux-boutons-devis.html`),
+**il a retenu la 5, sans les flèches** : deux capsules vertes empilées, à
+égalité, « Je dicte mon devis » et « J'écris mon devis ».
+
+**Ce qui a changé dans le produit** (`FormulaireNouveauChantier.tsx`) : la
+bascule `BasculePorte` et le bouton `LibelleDeLaPorte` sont retirés ; chaque
+bouton porte sa destination. Le geste passe de deux temps (choisir, puis agir)
+à un seul.
+
+**Deux conséquences assumées, pas des oublis :**
+
+- **« Créer le chantier » a disparu de l'écran.** C'était le seul endroit qui
+  annonçait la création. Les deux boutons créent le chantier avant d'aller où
+  ils disent — sinon le devis serait orphelin. Il n'a pas voulu de la ligne qui
+  le redisait (proposition 2) ;
+- **en reprise, un seul bouton « Enregistrer »**, comme avant. Cet écran sert
+  alors à corriger des coordonnées (« RIEN DE PLUS, RIEN DE MOINS », 17 août) :
+  lui proposer deux devis pour changer une adresse serait lui poser une question
+  qu'il n'a pas. **À revoir s'il dit le contraire.**
+
+**Les 73 suites qui créaient un chantier en cliquant « Créer le chantier »**
+visent désormais le repère `[data-atlas="action-dicter"]` — un libellé
+n'aurait pas survécu au prochain changement de mot.
+
+---
+
 ## ~~Le quinconce~~ — **FAIT le 18 août 2026**
 
 Sa règle, puis son croquis : un couloir à **14** arroseurs alignés se pose à
@@ -72,6 +307,33 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 ---
 
 ## Ce que je peux faire seul
+
+### 0 duotricies. « Choisir la date » — DESSINÉE le 20 août 2026, en attente de son choix
+
+**Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
+me le modifier par Choisir la date […] sous forme de bouton vert comme tous les
+autres […] j'arrive directement sur la page où je peux choisir la date […] on
+supprime la page qui est entre les deux […] et l'aperçu en PDF, tu me le mets en
+dessous. Et je ne veux pas de flèche. »*
+
+Planche : `docs/maquettes/82-choisir-la-date.html`.
+
+**Ce qui est vérifié dans le code, et qui rend la chose petite :** le calendrier
+vit dans une FEUILLE (`src/app/chantiers/[id]/export/EnvoiAuClient.tsx`), pas dans une page — elle
+s'ouvre par-dessus l'écran récapitulatif. La monter sur le devis, c'est l'ouvrir
+plus tôt : elle ne demande que `chantierId`, `devisId` et `clientNom`, tous trois
+présents sur `devis-complet`.
+
+**Deux choses à trancher par lui**, et rien ne se code avant :
+
+1. **A ou B** — l'aperçu du PDF reste un lien discret (A, recommandé) ou devient
+   une pastille creuse (B).
+2. **Ce que devient l'écran du milieu APRÈS l'envoi.** Il porte aujourd'hui le
+   lien à transmettre au client et « Reprendre le devis ». **Option 1
+   (recommandée)** : il reste, mais on n'y arrive plus qu'une fois le devis
+   parti. **Option 2** : il disparaît, et il faut reloger ces deux gestes
+   ailleurs — ce qui touche les autres chemins qui y mènent
+   (`src/lib/chantier-etat.ts`, le planning, la liste des chantiers).
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 

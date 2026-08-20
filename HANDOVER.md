@@ -4,10 +4,165 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-17 · `main`
+**Point de reprise :** 2026-08-18 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+
+## Le retour de la fiche client dépend d'où l'on vient (20 août 2026)
+
+*« Ça ne me fait pas un retour, mais deux retours. »* La fiche renvoyait à
+l'accueil ; elle renvoie maintenant à la liste des clients, ou **au chantier**
+quand on vient de là. L'origine voyage dans `?de=`, traduite par
+`src/lib/retour-fiche-client.ts`.
+
+**Ne pas « simplifier » en remettant un lien fixe** : la fiche s'ouvre depuis
+deux endroits, et un retour fixe se trompe pour l'un des deux
+(`ARCHITECTURE.md` §135). Et **ne pas retirer le filtre** : la valeur vient de
+l'adresse, donc de n'importe qui.
+
+## La recherche de clients est CODÉE (20 août 2026)
+
+Sa demande du matin : *« il faut une barre de recherche où je peux taper le nom
+d'un client »*. Faite, éprouvée, sur `main`. La règle est dans
+`src/lib/recherche-client.ts` et l'écran ne la refait pas — un contrôle le
+vérifie en lisant le fichier de l'écran.
+
+**Le piège, et il ressort d'une capture, pas d'une suite :** `type="search"`
+fait poser au navigateur une croix d'effacement **bleu vif**, seule tache de
+couleur de l'écran. Ne pas remettre `type="search"` en croyant bien faire —
+`ARCHITECTURE.md` §134.
+
+## ⏸ « TROP DE MOTS » — mesuré le 19 août, il n'a pas encore répondu
+
+**Sa plainte, et c'est la troisième :** *« il y a beaucoup trop de mots dans
+tous les sens […] des entrepreneurs qui n'ont pas de temps […] il y a des
+boomers dessus »*. Le 11 et le 17 août, la même chose avait été dite et un écran
+avait été corrigé au jugé ; la gêne est revenue ailleurs à chaque fois.
+
+**Ce qui existe :** `appli/moins-de-mots.html` — **Atlas dépouillé, qui se
+sert** : la barre du bas marche, « Créer un devis » ouvre la fiche, les champs
+se remplissent au clavier, le devis part. Un bouton « Avant » remet l'écran
+d'aujourd'hui. Sans une ligne de JavaScript. Liée depuis `appli/essais.html`.
+`docs/QUESTIONS.md` §23.
+
+**⚠ DEUX VERSIONS ONT ÉTÉ REFUSÉES AVANT CELLE-LÀ.** *« Je t'ai dit de rien
+coder »* — la première portait deux scripts autour de la maquette ; une demande
+de maquette n'autorise pas l'outillage qui va avec, même hors de `src/`. Puis
+*« une maquette dynamique QUE JE PUISSE UTILISER »* — la deuxième était une
+planche avant/après à REGARDER. **Une maquette, ici, est un bout d'application
+qui marche**, pas une présentation de ce qu'elle serait. Les autres essayables
+de `appli/` le sont déjà : s'en inspirer.
+
+**Fusionné sur `main` le 19 août 2026.** Il avait d'abord répondu non, puis
+demandé : *« si tu fusionnes, l'application actuelle ne sera plus ? »*. **Poser
+la question de la fusion sans dire ce qu'elle change chez lui, c'est lui faire
+porter un risque qu'il ne peut pas évaluer.** La réponse — zéro fichier de
+`src/` touché, une page de plus dans `appli/` — a suffi. À dire d'emblée la
+prochaine fois.
+
+**CE QU'ON ATTEND DE LUI, et rien ne se code avant :** la planche 82 lui
+va-t-elle ? (`CLAUDE.md` §3 bis.)
+
+**LA CHOSE À NE PAS OUBLIER SI L'ON REPREND CE SUJET.** Corriger trois écrans de
+plus ne réglera rien — ce serait la quatrième fois. Ce qui manque, c'est **un
+contrôle qui compte les mots de chaque écran et rougit quand un écran en
+gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
+ajoute une ligne et que personne n'en retire jamais.
+
+## Deux maquettes attendent sa réponse — 20 août 2026
+
+- **`appli/arrosage-simple.html`** : la page d'arrosage ramenée de huit
+  questions à deux. Il doit trancher **le débit** (mesuré ou supposé) — voir
+  `TODO.md`. `appli/arrosage.html` n'a pas été touchée.
+- **`appli/fiche-client.html`** : la fiche client refondue, **déjà codée**.
+  Reste ouvert : le **reste dû** revient-il sur cet écran ?
+
+**Il ne veut plus passer par `essais.html`** — *« arrête de me le mettre dans
+Atlas app essai »*. Lui donner **l'adresse directe** de la page :
+`https://florianmarrins0978-svg.github.io/Atlas-app/<page>.html`
+
+`arrosage-simple.html` n'est donc liée nulle part : elle figure **nommément**
+dans la liste vérifiée de `pages.yml`, sans quoi la liste déduite d'`essais.html`
+ne la verrait pas et on lui donnerait une adresse non éprouvée.
+
+## La fiche client est refondue, et le troisième PDF existe — 20 août 2026
+
+**Ses trois décisions, le 20 août :** une **colonne Facture** en plus des deux
+premières, le **PDF de fiche de chantier** fabriqué pour de bon, et *« on va
+modifier la vraie application »* — le feu vert pour coder.
+
+**Ce qui est fait et poussé :** `src/app/clients/[id]/page.tsx` (dernière
+prestation en titre noir gras, trois colonnes de PDF du plus récent au plus
+ancien, le reste retiré), `src/server/pdf/fiche-chantier-pdf.ts`,
+`/api/chantiers/[chantierId]/fiche/pdf`, `src/lib/documents-du-client.ts` (la
+règle de tri, une seule pour les trois colonnes).
+
+**Ce qui reste ouvert, et qui est à lui :**
+
+- **Le reste dû ne figure plus sur la fiche d'un client.** Il se regarde dans
+  Terminés → En attente de paiement. La maquette lui demande s'il le veut ici
+  aussi ; il n'a pas répondu.
+- **On n'ouvre plus un chantier depuis un client** — on ouvre sa fiche en PDF.
+  Il a été prévenu et a tranché, mais c'est le genre de perte qui se sent à
+  l'usage, pas à la lecture.
+- **La fiche de chantier ne s'ENVOIE pas encore.** Elle se télécharge. Le jour
+  où elle partira chez un client, il faudra la **figer** comme le devis et la
+  facture : ce qui est parti ne se réécrit pas. C'est écrit dans la route.
+
+**Et il ne veut plus passer par `essais.html` pour ses maquettes** — lui donner
+l'adresse directe de la page.
+
+## ⏸ « TROP DE MOTS » — mesuré le 19 août, il n'a pas encore répondu
+
+**Sa plainte, et c'est la troisième :** *« il y a beaucoup trop de mots dans
+tous les sens […] des entrepreneurs qui n'ont pas de temps […] il y a des
+boomers dessus »*. Le 11 et le 17 août, la même chose avait été dite et un écran
+avait été corrigé au jugé ; la gêne est revenue ailleurs à chaque fois.
+
+**Ce qui existe :** `appli/moins-de-mots.html` — **Atlas dépouillé, qui se
+sert** : la barre du bas marche, « Créer un devis » ouvre la fiche, les champs
+se remplissent au clavier, le devis part. Un bouton « Avant » remet l'écran
+d'aujourd'hui. Sans une ligne de JavaScript. Liée depuis `appli/essais.html`.
+`docs/QUESTIONS.md` §23.
+
+**⚠ DEUX VERSIONS ONT ÉTÉ REFUSÉES AVANT CELLE-LÀ.** *« Je t'ai dit de rien
+coder »* — la première portait deux scripts autour de la maquette ; une demande
+de maquette n'autorise pas l'outillage qui va avec, même hors de `src/`. Puis
+*« une maquette dynamique QUE JE PUISSE UTILISER »* — la deuxième était une
+planche avant/après à REGARDER. **Une maquette, ici, est un bout d'application
+qui marche**, pas une présentation de ce qu'elle serait. Les autres essayables
+de `appli/` le sont déjà : s'en inspirer.
+
+**Fusionné sur `main` le 19 août 2026.** Il avait d'abord répondu non, puis
+demandé : *« si tu fusionnes, l'application actuelle ne sera plus ? »*. **Poser
+la question de la fusion sans dire ce qu'elle change chez lui, c'est lui faire
+porter un risque qu'il ne peut pas évaluer.** La réponse — zéro fichier de
+`src/` touché, une page de plus dans `appli/` — a suffi. À dire d'emblée la
+prochaine fois.
+
+**CE QU'ON ATTEND DE LUI, et rien ne se code avant :** la planche 82 lui
+va-t-elle ? (`CLAUDE.md` §3 bis.)
+
+**LA CHOSE À NE PAS OUBLIER SI L'ON REPREND CE SUJET.** Corriger trois écrans de
+plus ne réglera rien — ce serait la quatrième fois. Ce qui manque, c'est **un
+contrôle qui compte les mots de chaque écran et rougit quand un écran en
+gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
+ajoute une ligne et que personne n'en retire jamais.
+
+## ⏸ La fiche client allégée — dessinée le 20 août, il tranche avant qu'on code
+
+**Une réponse à trois questions**, posées dans la maquette
+`appli/fiche-client.html` et détaillées en tête de `TODO.md` : fabrique-t-on le
+PDF « fiche chantier » (il n'existe pas), où vont les **factures** qui n'ont
+plus d'encadré, et perd-on le chemin d'un client vers un chantier.
+
+**Ne rien coder de la fiche client avant sa réponse** (`CLAUDE.md` §3 bis).
+
+**L'adresse qu'on lui a donnée**, et la seule :
+`https://florianmarrins0978-svg.github.io/Atlas-app/essais.html`
+Toute maquette neuve s'y inscrit — voir `PROJECT_STATE.md`, « Les maquettes
+essayables ».
 
 ## Ne JAMAIS attendre une publication en interrogeant `github.io`
 

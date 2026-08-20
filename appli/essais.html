@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — les maquettes à essayer</title>
+<style>
+  /*
+    LES MAQUETTES À ESSAYER — une seule adresse, et tout est derrière.
+
+    Sa demande, répétée trois fois entre le 17 et le 18 août 2026 : « fais-moi
+    des maquettes dynamiques, pas de photo, que je puisse essayer ».
+
+    **POURQUOI CETTE PAGE EXISTE, ET C'ÉTAIT LE VRAI PROBLÈME.** Les maquettes
+    essayables existaient déjà — dix — mais AUCUNE page ne les rassemblait :
+    `appli/index.html` renvoie droit à l'application, et le sommaire des
+    planches vit dans `docs/`, que le site publié ne sert pas au même endroit.
+    Il fallait connaître chaque nom de fichier. Autant dire qu'elles n'existaient
+    pas.
+
+    Une seule adresse à retenir désormais : **…github.io/Atlas-app/essais.html**
+
+    **AUCUN SCRIPT ICI.** Des liens, rien d'autre — la page s'ouvre hors ligne,
+    dans un onglet laissé ouvert, sur un téléphone qui n'exécute rien.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+           --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+           --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:34px 0 60px;-webkit-text-size-adjust:100%}
+  .page{max-width:460px;margin:0 auto;padding:0 22px}
+  .sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+       text-transform:uppercase;color:var(--or)}
+  h1{margin:12px 0 0;font-family:Georgia,serif;font-weight:400;font-size:33px;
+     line-height:1.06;letter-spacing:-.018em}
+  .chapo{margin:12px 0 0;font-size:14.5px;color:var(--charcoal-soft);line-height:1.6}
+  .chapo b{color:var(--charcoal)}
+  .famille{margin:32px 0 10px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+           text-transform:uppercase;color:var(--muted)}
+
+  /* 64 px de haut au moins : c'est une liste qu'on touche avec le pouce, sur un
+     chantier, parfois avec des gants. */
+  a.essai{display:block;background:var(--cream);border-radius:13px;padding:16px 18px;
+          margin-bottom:9px;text-decoration:none;color:inherit;min-height:64px;
+          box-shadow:inset 0 0 0 1px var(--line)}
+  a.essai .titre{display:block;font-family:Georgia,serif;font-size:19px;line-height:1.2}
+  a.essai .quoi{display:block;margin-top:6px;font-size:13px;color:var(--muted);line-height:1.55}
+  a.essai .quoi b{color:var(--charcoal-soft)}
+  a.essai .neuf{display:inline-block;margin-left:8px;font-size:9px;font-weight:600;
+                letter-spacing:.18em;text-transform:uppercase;color:var(--or);
+                vertical-align:2px}
+
+  .note{margin-top:30px;padding:16px 18px;background:var(--cream);border-radius:13px;
+        font-size:13px;line-height:1.65;color:var(--charcoal-soft)}
+  .note b{color:var(--charcoal)}
+  .note .t{display:block;margin-bottom:8px;font-size:9.5px;font-weight:500;
+           letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Atlas</p>
+  <h1>À essayer</h1>
+  <p class="chapo">Tout ce qui se manipule, sur une seule page. <b>Rien à installer, rien à télécharger</b> — ça marche hors ligne, et vous pouvez laisser cet onglet ouvert.</p>
+
+  <p class="famille">Trop de mots</p>
+
+  <a class="essai" href="moins-de-mots.html">
+    <span class="titre">Moins de mots<span class="neuf">nouveau</span></span>
+    <span class="quoi">Votre remarque du 19 août. <b>C’est Atlas dépouillé, et ça se sert :</b> appuyez sur « Créer un devis », tapez le nom de votre client, arrivez au devis, envoyez-le. Les cinq onglets marchent, les champs se remplissent. Un bouton <b>« Avant »</b> en haut remet l’écran d’aujourd’hui, pour comparer dans le même geste. <b>Rien n’est codé</b> : l’application n’a pas bougé.</span>
+  </a>
+
+  <p class="famille">Vos clients</p>
+
+  <a class="essai" href="fiche-client.html">
+    <span class="titre">La fiche client, allégée<span class="neuf">nouveau</span></span>
+    <span class="quoi">Ce que vous avez demandé le 18 août : la <b>dernière prestation en titre noir gras</b> avec ce qu’elle comprend, puis <b>deux encadrés seulement</b> — devis d’un côté, fiche chantier de l’autre, en PDF, du plus récent au plus ancien. <b>Trois choses à me dire</b> y sont posées, dont une : la fiche chantier en PDF <b>n’existe pas encore</b>.</span>
+  </a>
+
+  <a class="essai" href="clients-recherche.html">
+    <span class="titre">Chercher un client<span class="neuf">nouveau</span></span>
+    <span class="quoi">Touchez la lettre <b>M</b>, puis tapez <b>« ar »</b> : deux noms sur quarante-sept. Ouvrez <b>Martins</b> — ses devis et ses factures <b>rangés par année</b>. Et le réglage des <b>photos</b> : deux ans, et la réduction à l’envoi.</span>
+  </a>
+
+  <a class="essai" href="clients.html">
+    <span class="titre">Vos clients, depuis l’accueil</span>
+    <span class="quoi">Le chemin entier : l’accueil, le lien <b>« Vos clients » en or</b> sous le nombre de chantiers, la liste, la fiche, et le retour <b>depuis un chantier</b>.</span>
+  </a>
+
+  <p class="famille">L’arrosage automatique</p>
+
+  <a class="essai" href="arrosage.html">
+    <span class="titre">Le plan d’arrosage</span>
+    <span class="quoi">Elle <b>calcule pour de bon</b> : entrez votre jardin, et le découpage, les durées, le plan et la liste du matériel se refont à chaque frappe.</span>
+  </a>
+
+  <a class="essai" href="arrosage-croquis.html">
+    <span class="titre">Du croquis au plan</span>
+    <span class="quoi">On dessine le terrain à main levée, Atlas en tire les secteurs.</span>
+  </a>
+
+  <a class="essai" href="arrosage-tarifs.html">
+    <span class="titre">Mes prix fournisseur</span>
+    <span class="quoi">Les prix du matériel d’arrosage, à remplir. <b>Ce qui manque part vide et signalé</b> — aucun prix n’est inventé.</span>
+  </a>
+
+  <p class="famille">Les documents</p>
+
+  <a class="essai" href="devis-vocal.html">
+    <span class="titre">Le devis dicté</span>
+    <span class="quoi">On parle, le devis se remplit. Le geste du micro et l’attente, tels qu’ils sont.</span>
+  </a>
+
+  <a class="essai" href="devis-modele.html">
+    <span class="titre">Le devis</span>
+    <span class="quoi">Le document entier — émetteur, client, lignes, TVA, conditions.</span>
+  </a>
+
+  <a class="essai" href="facture-modele.html">
+    <span class="titre">La facture</span>
+    <span class="quoi">Ce que le client reçoit, et ce qui part au relevé de TVA.</span>
+  </a>
+
+  <a class="essai" href="tva-modele.html">
+    <span class="titre">La TVA</span>
+    <span class="quoi">Collectée, déductible, reste à payer. Les achats s’ajoutent et le total se refait. <b>Corrigé le 18 août :</b> la saisie débordait de 141 px sur un téléphone — il fallait glisser l’écran de côté.</span>
+  </a>
+
+  <a class="essai" href="mes-tarifs.html">
+    <span class="titre">Mes tarifs</span>
+    <span class="quoi">Les prix de la main d’œuvre et des prestations, qu’Atlas emploie pour chiffrer.</span>
+  </a>
+
+  <p class="famille">L’application</p>
+
+  <a class="essai" href="app.html">
+    <span class="titre">L’espace pro</span>
+    <span class="quoi">L’application elle-même, telle qu’elle est aujourd’hui.</span>
+  </a>
+
+  <div class="note"><span class="t">Ce que ces pages ne font pas</span>
+    Elles ne touchent <b>ni à vos données ni à l’application</b> : ce sont des
+    maquettes. Ce que vous y tapez ne part nulle part et disparaît en fermant.
+    <br><br>
+    Et là où une vraie frappe demanderait du JavaScript — la recherche d’un
+    client, par exemple —, <b>c’est écrit sur la page</b> plutôt que maquillé.
+  </div>
+</div>
+</body>
+</html>

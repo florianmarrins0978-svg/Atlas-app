@@ -59,7 +59,7 @@ async function main() {
   // moins souvent qu'un exemple, et elle dit ce que le champ EST.
   await page.getByLabel(/Nom du client/i).fill(client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('button:has-text("Créer le chantier")');
+  await page.click('[data-atlas="action-dicter"]');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30000 });
   const fiche = page.url();
   const id = fiche.split("/").pop()!;
