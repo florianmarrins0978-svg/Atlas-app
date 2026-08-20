@@ -178,8 +178,52 @@ async function main() {
 
     // Deux dates : c'est le cas qui laisse le client choisir.
     await page.locator('button[aria-pressed]').nth(1).click();
+    // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
+    // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
+    // suite ça m'ouvre l'application […] supprime les étapes qu'il y a
+    // entre »*. On observe la navigation vers `sms:` en remplaçant
+    // `location.assign` avant l'appui : c'est notre côté du contrat, et c'est
+    // le seul qui soit éprouvable ici.
+    //
+    // **Ce que ce contrôle ne prouve PAS, et il faut le dire :** qu'iOS honore
+    // cette navigation quand elle suit une réponse du serveur plutôt que le
+    // doigt. Aucun navigateur d'ici ne répond pour Safari. C'est pourquoi
+    // l'écran « Devis prêt » et son bouton restent en place derrière
+    // (`ExportClient.ouvrirLaMessagerie`) : si l'ouverture est refusée, le
+    // patron retrouve exactement l'écran d'avant.
+    // Le stub est passé en CHAÎNE, et non en fonction : `tsx` renomme les
+    // fonctions à la compilation (`__name`), et le helper n'existe pas dans la
+    // page — l'évaluation tombe alors sur « __name is not defined », une erreur
+    // qui accuse le test au lieu du code.
+    await page.evaluate(`
+      window.__ouvertures = [];
+      const vrai = window.location.assign.bind(window.location);
+      Object.defineProperty(window.location, "assign", {
+        configurable: true,
+        value: function (url) {
+          window.__ouvertures.push(String(url));
+          if (!String(url).startsWith("sms:") && !String(url).startsWith("mailto:")) vrai(url);
+        },
+      });
+    `);
+
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+
+    const ouvertures = (await page.evaluate(`window.__ouvertures || []`)) as string[];
+    const ouverte = ouvertures.find((u) => u.startsWith("sms:") || u.startsWith("mailto:"));
+    assert.ok(
+      ouverte,
+      "l'appui sur « Envoyer le devis » n'a ouvert aucune messagerie — " +
+        `adresses vues : ${JSON.stringify(ouvertures)}`
+    );
+    // Le numéro sans ses espaces, sinon l'application ouvre un message SANS
+    // destinataire et le patron ne le découvre que dans Messages.
+    assert.match(ouverte!, /^sms:\d+\?/, `destinataire mal formé : ${ouverte!.slice(0, 60)}`);
+    assert.ok(
+      decodeURIComponent(ouverte!).includes("/devis/"),
+      "le message ouvert ne porte pas le lien du devis"
+    );
 
     // Le dernier mètre : sans ce bouton, le lien reste à recopier à la main
     // dans un SMS. C'est le geste que l'application doit épargner, et il a
@@ -271,8 +315,52 @@ async function main() {
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.click("text=Envoyer au client");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
+    // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
+    // suite ça m'ouvre l'application […] supprime les étapes qu'il y a
+    // entre »*. On observe la navigation vers `sms:` en remplaçant
+    // `location.assign` avant l'appui : c'est notre côté du contrat, et c'est
+    // le seul qui soit éprouvable ici.
+    //
+    // **Ce que ce contrôle ne prouve PAS, et il faut le dire :** qu'iOS honore
+    // cette navigation quand elle suit une réponse du serveur plutôt que le
+    // doigt. Aucun navigateur d'ici ne répond pour Safari. C'est pourquoi
+    // l'écran « Devis prêt » et son bouton restent en place derrière
+    // (`ExportClient.ouvrirLaMessagerie`) : si l'ouverture est refusée, le
+    // patron retrouve exactement l'écran d'avant.
+    // Le stub est passé en CHAÎNE, et non en fonction : `tsx` renomme les
+    // fonctions à la compilation (`__name`), et le helper n'existe pas dans la
+    // page — l'évaluation tombe alors sur « __name is not defined », une erreur
+    // qui accuse le test au lieu du code.
+    await page.evaluate(`
+      window.__ouvertures = [];
+      const vrai = window.location.assign.bind(window.location);
+      Object.defineProperty(window.location, "assign", {
+        configurable: true,
+        value: function (url) {
+          window.__ouvertures.push(String(url));
+          if (!String(url).startsWith("sms:") && !String(url).startsWith("mailto:")) vrai(url);
+        },
+      });
+    `);
+
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+
+    const ouvertures = (await page.evaluate(`window.__ouvertures || []`)) as string[];
+    const ouverte = ouvertures.find((u) => u.startsWith("sms:") || u.startsWith("mailto:"));
+    assert.ok(
+      ouverte,
+      "l'appui sur « Envoyer le devis » n'a ouvert aucune messagerie — " +
+        `adresses vues : ${JSON.stringify(ouvertures)}`
+    );
+    // Le numéro sans ses espaces, sinon l'application ouvre un message SANS
+    // destinataire et le patron ne le découvre que dans Messages.
+    assert.match(ouverte!, /^sms:\d+\?/, `destinataire mal formé : ${ouverte!.slice(0, 60)}`);
+    assert.ok(
+      decodeURIComponent(ouverte!).includes("/devis/"),
+      "le message ouvert ne porte pas le lien du devis"
+    );
 
     await page.reload({ waitUntil: "networkidle" });
     assert.strictEqual(
@@ -331,8 +419,52 @@ async function main() {
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
 
     await page.getByRole("switch", { name: /autre date/i }).click();
+    // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
+    // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
+    // suite ça m'ouvre l'application […] supprime les étapes qu'il y a
+    // entre »*. On observe la navigation vers `sms:` en remplaçant
+    // `location.assign` avant l'appui : c'est notre côté du contrat, et c'est
+    // le seul qui soit éprouvable ici.
+    //
+    // **Ce que ce contrôle ne prouve PAS, et il faut le dire :** qu'iOS honore
+    // cette navigation quand elle suit une réponse du serveur plutôt que le
+    // doigt. Aucun navigateur d'ici ne répond pour Safari. C'est pourquoi
+    // l'écran « Devis prêt » et son bouton restent en place derrière
+    // (`ExportClient.ouvrirLaMessagerie`) : si l'ouverture est refusée, le
+    // patron retrouve exactement l'écran d'avant.
+    // Le stub est passé en CHAÎNE, et non en fonction : `tsx` renomme les
+    // fonctions à la compilation (`__name`), et le helper n'existe pas dans la
+    // page — l'évaluation tombe alors sur « __name is not defined », une erreur
+    // qui accuse le test au lieu du code.
+    await page.evaluate(`
+      window.__ouvertures = [];
+      const vrai = window.location.assign.bind(window.location);
+      Object.defineProperty(window.location, "assign", {
+        configurable: true,
+        value: function (url) {
+          window.__ouvertures.push(String(url));
+          if (!String(url).startsWith("sms:") && !String(url).startsWith("mailto:")) vrai(url);
+        },
+      });
+    `);
+
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+
+    const ouvertures = (await page.evaluate(`window.__ouvertures || []`)) as string[];
+    const ouverte = ouvertures.find((u) => u.startsWith("sms:") || u.startsWith("mailto:"));
+    assert.ok(
+      ouverte,
+      "l'appui sur « Envoyer le devis » n'a ouvert aucune messagerie — " +
+        `adresses vues : ${JSON.stringify(ouvertures)}`
+    );
+    // Le numéro sans ses espaces, sinon l'application ouvre un message SANS
+    // destinataire et le patron ne le découvre que dans Messages.
+    assert.match(ouverte!, /^sms:\d+\?/, `destinataire mal formé : ${ouverte!.slice(0, 60)}`);
+    assert.ok(
+      decodeURIComponent(ouverte!).includes("/devis/"),
+      "le message ouvert ne porte pas le lien du devis"
+    );
 
     // **Décodé d'abord** : le lien voyage dans le corps d'un `sms:`, donc
     // encodé (`%2Fdevis%2F`). Cherché tel quel, on ne le trouve jamais — et le
