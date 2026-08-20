@@ -54,6 +54,43 @@ export const DELAI_PAR_DEFAUT_MS = 45_000;
 export const ECRAN_DU_PATRON = devices["iPhone 13"];
 
 /**
+ * **Retenir le saut vers Messages, sans jamais annuler le geste.**
+ *
+ * Depuis le 18 août 2026, l'appui sur « Envoyer le devis » touche pour le
+ * patron un lien `sms:` ou `mailto:` (`ExportClient.ouvrirLaMessagerie`) : sa
+ * demande, *« tout de suite ça m'ouvre l'application […] supprime les étapes
+ * qu'il y a entre »*.
+ *
+ * **Chromium ne sait pas ouvrir ces schémas.** Il laisse une navigation en
+ * suspens, et le `page.reload()` du contrôle suivant n'atteint plus jamais son
+ * `load` — un dépassement de délai qui accuse le rechargement alors qu'il va
+ * très bien. Vingt et une suites appuient sur ce bouton : le défaut aurait
+ * frappé partout, avec vingt et un messages qui désignent le mauvais coupable.
+ *
+ * On annule donc le SAUT, jamais le geste : le lien est bien créé et touché, et
+ * c'est lui que les contrôles lisent (`a[data-transmission-directe]`). Ce
+ * qu'aucun navigateur d'ici ne peut faire — ouvrir Messages —, on ne prétend
+ * pas le faire.
+ *
+ * **Posé ICI plutôt que dans chaque suite**, pour la raison qui vaut déjà pour
+ * le délai et l'écran : une garde écrite dans la première suite est une garde
+ * oubliée dans les vingt suivantes.
+ *
+ * En chaîne, et non en fonction : `tsx` renomme les fonctions à la compilation
+ * (`__name`), et le helper n'existe pas dans la page — l'évaluation tombe alors
+ * sur « __name is not defined », une erreur qui accuse le contrôle au lieu du
+ * code.
+ */
+const RETENIR_LE_SAUT_VERS_LA_MESSAGERIE = `
+  document.addEventListener("click", function (e) {
+    var cible = e.target && e.target.closest
+      ? e.target.closest("a[href^='sms:'],a[href^='mailto:']")
+      : null;
+    if (cible) e.preventDefault();
+  }, true);
+`;
+
+/**
  * Le navigateur des suites, dont chaque contexte naît déjà patient — et déjà
  * à la taille du téléphone du patron.
  *
@@ -81,6 +118,7 @@ export async function lancerNavigateur(optionsSupplementaires: Omit<LaunchOption
     );
     contexte.setDefaultNavigationTimeout(DELAI_PAR_DEFAUT_MS);
     contexte.setDefaultTimeout(DELAI_PAR_DEFAUT_MS);
+    await contexte.addInitScript(RETENIR_LE_SAUT_VERS_LA_MESSAGERIE);
     return contexte;
   };
 

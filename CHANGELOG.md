@@ -66,6 +66,30 @@ un vert sans clé** plutôt que de laisser croire à un contrôle qui n'a pas eu
 lieu. Il reste à le jouer depuis son espace. La règle de rédaction, elle, est
 éprouvée ici et sait rougir : ses propres phrases recopiées doivent être
 refusées (`src/lib/redaction-lignes.ts`).
+### La flèche de la fiche client ramène d'où l'on vient
+
+**Sa remarque, capture à l'appui :** *« Quand j'appuie sur retour, ça ne me fait
+pas un retour, mais deux retours. Je reviens directement à la page vos
+chantiers. Or, je devrais rester dans la catégorie mes clients. »*
+
+Il avait raison, et c'était écrit en toutes lettres : la fiche renvoyait
+toujours à l'accueil (`href: "/"`), quel que soit l'écran d'où l'on venait.
+Depuis la liste des clients, un seul appui sautait donc **deux** écrans.
+
+**Un lien fixe se serait trompé de toute façon**, parce que la fiche s'ouvre
+depuis DEUX endroits : la liste des clients, et le tiroir d'un chantier. Renvoyer
+toujours vers les clients ferait sortir du chantier celui qui y était. L'origine
+voyage donc dans l'adresse, et `src/lib/retour-fiche-client.ts` la traduit — une
+seule fois, hors de tout écran.
+
+**Cette valeur vient de l'adresse, donc de n'importe qui.** Sans filtre,
+`?de=https://ailleurs.example` ferait de la flèche « retour » une porte de sortie
+vers un site étranger. Seule la forme d'un chemin de chantier est acceptée ; tout
+le reste retombe sur la liste des clients, sans erreur ni écran vide.
+
+Éprouvé dans les deux sens : en remettant `href: "/"`, les deux suites rougissent
+— celle sans navigateur sur « c'est exactement le double saut qu'il a signalé »,
+celle au navigateur sur les trois chemins.
 
 ### L'arrosage en deux gestes — dessiné, pas codé
 
@@ -114,6 +138,75 @@ leur nom quand la haie faisait l'inverse.
 dans Atlas app essai »*. Elle se donne par son adresse directe, et figure
 nommément dans la liste vérifiée après déploiement : une adresse transmise sans
 preuve qu'elle répond n'est pas une adresse.
+
+### L'écran d'arrosage dépouillé une seconde fois : vingt et un mots
+
+**Sa consigne du 20 août au soir**, après avoir vu la première version : *« le
+titre plan d'arrosage, et en dessous le piquage se fait avec le bandeau
+déroulant — tout ce qu'il y a entre les deux, tu me le supprimes. Ensuite le
+croquis et ses métrés avec la possibilité de mettre la photo, et tout le reste
+tu me le supprimes. Tous les autres mots, tu me les supprimes. Et je ne veux pas
+qu'il y ait marqué un et deux sur les deux machins. »*
+
+Sont partis : le surtitre, la phrase d'introduction, les numéros « 1 · » et
+« 2 · », le titre « D'où part l'eau » (le libellé du déroulant le dit déjà), les
+deux paragraphes d'aide et les deux encarts du bas. **Il reste un titre, un
+déroulant, un bouton — vingt et un mots.**
+
+**Ce que les encarts portaient n'est pas perdu** : les deux écrans qu'ils
+ouvraient restent atteignables depuis le plan. Sans aucune porte, ils seraient
+devenus des écrans morts — la faute des huit planches introuvables.
+
+**LE CONTRÔLE QUI MANQUAIT DEPUIS QUATRE PLAINTES.** `HANDOVER.md` le réclamait
+en toutes lettres : *« ce qui manque, c'est un contrôle qui compte les mots de
+chaque écran et rougit quand un écran en gagne ; sans lui, l'application
+regrossira, parce que chaque décision juste ajoute une ligne et que personne
+n'en retire jamais »*. Il existe désormais pour cet écran : **plafond 22 mots**,
+et aucun titre numéroté.
+
+**Il compte ce qu'il LIT, pas ce que le document contient** : la première
+version additionnait les trois options du déroulant, dont deux sont invisibles
+tant qu'il ne l'ouvre pas, et accusait l'écran de porter 33 mots quand il n'en
+montre que 21.
+
+### Les pièces de la maquette d'arrosage venaient de nulle part
+
+**Sa question, et elle valait mieux qu'une réponse rassurante :** *« les pièces
+que tu as utilisées pour l'exemple sont choisies au hasard ? »*
+
+**Oui, en partie.** « Turbines, portée 5 m · 0,30 m³/h » ne correspondait à
+aucune référence ; « colliers de prise en charge », « filtre à tamis » et
+« clapet anti-retour » n'existent nulle part. Les longueurs de tuyau — 28 m,
+34 m, 18 m — étaient écrites de mémoire.
+
+**Ce que le dépôt avait déjà, et que la maquette ignorait :**
+`appli/arrosage-catalogue.js`, où chaque entrée porte sa **source** — relevée de
+ses photos (`patron`, « Aqua Plus 2026, p. 11 ») ou `provisoire` —, et
+`appli/arrosage-calcul.js`, qui choisit les buses, l'écart, le recouvrement et
+la répartition en secteurs.
+
+**Le calcul a donc été joué pour de bon** (Playwright sur `arrosage.html`, le
+jardin de l'exemple saisi dans ses champs), et la maquette porte désormais ce
+qu'il rend : 6 turbines *3504 · buse 0,75* à 0,96 m³/h, un arroseur tous les
+5,33 m, recouvrement 98 % — **avec son avertissement** « la buse est un peu
+grande ici : l'écart tombe sous la portée », que la maquette taisait. Les
+électrovannes *100 DV 1" MM 9V*, la *Clarinette taraudée 1"*, le *Programmateur
+BL-IP 4 stations*, les *Coudes SBE 050 et 075* remplacent les pièces inventées.
+Et les longueurs de tuyau affichent **« à mesurer »**, comme le calcul le fait.
+
+**Deux incohérences trouvées à la capture, aucune par un test :** la page
+expliquait un total de 2,46 m³/h quand la somme des réseaux en fait 2,70 ; et le
+plan portait « amenée 18 m » quand la liste répondait « à mesurer » pour cette
+même amenée.
+
+**Trois gardes neuves**, chacune éprouvée rouge : chaque libellé doit être **à
+l'identique** un nom du catalogue, le total écrit doit être la somme des
+réseaux, et le plan ne doit pas chiffrer ce que la liste dit ignorer. **La
+première version de la garde du catalogue ne prouvait rien** — elle acceptait une
+inclusion, et « Turbine portée 5 m » passait grâce à l'entrée générique
+« Turbine ». Trouvé en la confrontant à l'invention qu'elle devait bannir.
+
+La règle est écrite dans `CLAUDE.md` §4 bis.
 
 ### La fiche client refondue, et un TROISIÈME document en PDF
 

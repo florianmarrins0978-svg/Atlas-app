@@ -2,7 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 
 /**
- * Le bouton « Nouveau chantier » : le geste, et sa demi-seconde.
+ * Le bouton de l'accueil : le geste, et sa demi-seconde.
  *
  * **Pourquoi cette suite existe.** Le patron a arrêté ce bouton après onze
  * maquettes, en réglant lui-même l'onde, la taille du rond et le nombre de
@@ -116,7 +116,7 @@ async function main() {
     "Le mot ne se mesure pas à 360 px — rien n'a été éprouvé",
   );
   const coupe = await mot.evaluate((n) => n.scrollWidth > n.clientWidth + 1);
-  assert.ok(!coupe, "À 360 px, « Nouveau chantier » est coupé : le mot est trop gros");
+  assert.ok(!coupe, "À 360 px, le libellé du bouton est coupé : le mot est trop gros");
   const debordement = await bouton.evaluate((n) => {
     const b = n.getBoundingClientRect();
     return { gauche: b.left, droite: window.innerWidth - b.right };

@@ -103,7 +103,13 @@ async function main() {
       assert.ok((await porte.count()) >= 1, `aucune porte vers le client depuis ${id.slice(0, 8)}`);
       await porte.first().click();
       await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
-      adresses.push(page.url());
+      // **Le CHEMIN, pas l'adresse entière.** Depuis le 20 août 2026, la porte
+      // vers la fiche transporte d'où l'on vient (`?de=/chantiers/<id>`) pour
+      // que la flèche ramène au bon écran (`ARCHITECTURE.md` §135) : les deux
+      // adresses diffèrent donc forcément, et par construction. Ce que ce
+      // contrôle doit prouver est ailleurs — que les deux chantiers ouvrent la
+      // fiche du MÊME client.
+      adresses.push(new URL(page.url()).pathname);
     }
     assert.equal(
       adresses[0],

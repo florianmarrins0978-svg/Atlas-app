@@ -38,6 +38,40 @@ export function marquerDepartMessagerie(quoi: "devis" | "facture", client: strin
   }
 }
 
+/*
+ * ─── CE QUI A ÉTÉ ESSAYÉ, ET POURQUOI IL N'EN RESTE RIEN ─────────────────────
+ *
+ * Le 18 août 2026, l'appui sur « Envoyer le devis » s'est mis à ouvrir la
+ * messagerie tout de suite (`ExportClient.ouvrirLaMessagerie`). L'ouverture y
+ * suit la réponse du serveur, et un navigateur peut la refuser sans un mot :
+ * marquer le départ à l'appui, comme on le fait sur le bouton d'à côté, ferait
+ * accueillir le patron par « Devis transmis à M. Martins » alors que rien ne
+ * serait parti.
+ *
+ * Une garde a donc été écrite pour n'armer le bandeau que si l'on partait pour
+ * de bon. Elle a été **retirée après mesure**, et la mesure vaut d'être gardée :
+ *
+ *     navigation ordinaire dans l'application (`page.goto`)
+ *       → pagehide            : oui
+ *       → visibilitychange    : hidden
+ *
+ * C'est-à-dire **exactement la même signature** qu'un passage vers Messages.
+ * Aucun des deux événements ne distingue « l'application n'est plus au premier
+ * plan » de « cette page s'en va » — et sans cette distinction, toute marque
+ * posée d'avance finit par annoncer un envoi qui n'a pas eu lieu.
+ *
+ * **On ne marque donc plus rien à l'appui.** Le bandeau reste armé par le
+ * bouton de l'écran « Devis prêt », où le geste EST le départ. Ce qu'on perd :
+ * au retour de Messages après une ouverture directe, le patron revient sur
+ * l'écran du devis — qui lui dit déjà « Devis prêt pour … » — au lieu d'être
+ * ramené à l'accueil. C'est peu, et c'est vrai.
+ *
+ * Ne pas rouvrir avec un délai (« si la page revient en moins de deux
+ * secondes, c'était une navigation ») : ce serait deviner, et une annonce
+ * devinée juste neuf fois sur dix reste une annonce fausse une fois sur dix.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
 /**
  * Ramène à l'accueil au retour de la messagerie — une seule fois.
  *
