@@ -123,11 +123,32 @@ contrôle qui compte les mots de chaque écran et rougit quand un écran en
 gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
 ajoute une ligne et que personne n'en retire jamais.
 
+## L'arrosage est DANS l'application — 20 août 2026 au soir
+
+*« Code le tout dans l'appli. »* `/paysage/arrosage` : le piquage, la mesure au
+seau, le croquis photographié — puis le plan et le détail des pièces. L'écran
+Paysage n'ouvre plus de page extérieure.
+
+**TROIS PIÈGES À CONNAÎTRE AVANT D'Y TOUCHER :**
+
+1. **`src/lib/arrosage/calcul.js` est une copie octet pour octet de
+   `appli/arrosage-calcul.js`.** Une correction se porte **des deux côtés** —
+   `scripts/verifier-arrosage-une-seule-source.mjs` refuse qu'elles divergent.
+2. **Aucune fonction NOMMÉE dans un `page.evaluate`.** Le compilateur y injecte
+   un helper `__name` qui n'existe pas dans le navigateur : l'évaluation tombe
+   sur « __name is not defined », et la panne n'a rien à voir avec l'écran.
+3. **`innerText`, jamais `textContent`, pour compter ce qui est à l'écran.** Le
+   second rend tout le document, menus repliés compris : il annonçait 270 mots
+   là où l'écran en montre 21.
+
+**Ce qui est à lui, et qui reste ouvert :** le **reste dû** revient-il sur la
+fiche d'un client ? Il est parti avec « tout le reste » le 20 août.
+
 ## Deux maquettes attendent sa réponse — 20 août 2026
 
-- **`appli/arrosage-simple.html`** : la page d'arrosage ramenée de huit
-  questions à deux. Il doit trancher **le débit** (mesuré ou supposé) — voir
-  `TODO.md`. `appli/arrosage.html` n'a pas été touchée.
+- **`appli/arrosage-simple.html`** : la maquette qui a servi à l'arrêter.
+  **Codée depuis** — voir la section ci-dessus. Le débit a été remis, sur sa
+  décision. `appli/arrosage.html` (l'ancienne page) n'a pas été touchée.
 - **`appli/fiche-client.html`** : la fiche client refondue, **déjà codée**.
   Reste ouvert : le **reste dû** revient-il sur cet écran ?
 

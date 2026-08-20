@@ -629,6 +629,41 @@ un pavé d'au moins 64 px.
   leçon que les huit planches introuvables trouvées par
   `scripts/fusionner-maquettes.mjs`.
 
+## Le plan d'arrosage vit DANS l'application — 20 août 2026
+
+**Où il est :** `/paysage/arrosage`. L'écran Paysage n'ouvre plus de page
+extérieure.
+
+| Le morceau | Le fichier |
+|---|---|
+| Le calcul | `src/lib/arrosage/calcul.js` et `catalogue.js` |
+| La lecture du croquis | `src/server/ai/services/lire-croquis.ts` |
+| Le geste | `src/app/paysage/arrosage/actions.ts` |
+| L'écran | `src/app/paysage/arrosage/ArrosageClient.tsx` |
+
+**AVANT DE TOUCHER AU CALCUL, LIRE CECI.** `src/lib/arrosage/calcul.js` est une
+copie **octet pour octet** de `appli/arrosage-calcul.js`, et
+`scripts/verifier-arrosage-une-seule-source.mjs` refuse qu'elles divergent. Une
+correction se porte donc **des deux côtés**, jamais d'un seul. C'est le prix
+payé pour n'avoir qu'un seul calcul : deux versions finiraient par ne plus dire
+la même chose, et c'est le paysagiste qui verrait l'écart entre la page qu'il
+essaie et l'application qu'il utilise (`CLAUDE.md` §3).
+
+Conséquence assumée : la copie serveur porte des fonctions de navigateur que
+rien n'appelle, et un silence de lint en tête du fichier l'explique.
+
+**L'IA lit le croquis, et il fallait le vérifier plutôt que de l'affirmer.** Il
+avait été dit ici que cela demandait un contrat inexistant — **c'était faux**.
+Le raccordement Anthropic et OpenAI est écrit depuis le 6 août, les deux savent
+regarder une image, et le patron a confirmé le 20 août que **les clés sont
+posées**. Sans clé, l'écran le dit avant le geste au lieu de faire photographier
+pour rien.
+
+**Ce que la lecture rend, et ce qu'elle ne rend pas :** des surfaces, des
+longueurs, un point d'eau — en **proposition**. Une zone sans cote ne part pas
+au calcul, un croquis illisible est refusé avec sa raison, et ce qui n'a pas été
+lu s'affiche en réserves sous le plan.
+
 ## Atlas fabrique TROIS documents en PDF
 
 **Le troisième est né le 20 août 2026**, sur sa demande : *« fais en sorte que
