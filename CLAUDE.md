@@ -178,6 +178,23 @@ Ce qui ne compte PAS comme une exception : « c'est tout petit », « ça se
 défait facilement », « il pourra ainsi l'essayer en vrai ». S'il veut l'essayer
 en vrai, il le dira.
 
+**Et une maquette qu'il doit REGARDER vit dans `appli/`, jamais seulement dans
+`docs/maquettes/`.** Trouvé le 19 août 2026 : `.github/workflows/pages.yml` ne
+publie **que** le dossier `appli/`. Une planche laissée dans `docs/maquettes/`
+n'a donc aucune adresse — il ne peut pas l'ouvrir depuis son téléphone, et l'on
+attend une réponse qu'il n'a pas les moyens de donner. *(La planche 81, posée le
+17 août et toujours sans réponse, est dans ce cas : à vérifier avant de conclure
+qu'il ne s'est pas prononcé.)*
+
+Concrètement, pour toute planche dont on attend un choix :
+
+1. le fichier va dans **`appli/`** ;
+2. un lien l'ajoute à **`appli/essais.html`** — c'est l'adresse qu'on lui donne ;
+3. son nom entre dans la **liste vérifiée en ligne** de `pages.yml`, sans quoi
+   rien ne prouve qu'elle répond ;
+4. `docs/maquettes/index.html` la référence par `../../appli/…`, comme les
+   autres essayables.
+
 ## 4. Ce qu'on ne fait jamais
 
 - **Affaiblir la RLS pour se simplifier la vie.** Une opération de maintenance

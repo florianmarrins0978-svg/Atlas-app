@@ -7,7 +7,7 @@ Format : le plus récent en tête.
 
 ---
 
-## 2026-08-18
+## 2026-08-20
 
 ### La fiche client, allégée — dessinée, pas codée
 
@@ -53,20 +53,132 @@ d'une case vide que par sa couleur ; une conclusion collée à sa liste ; un
 espace de trop.
 
 
-### Le bouton de l'accueil dit « Créer un devis »
+### Le veilleur ne renonce plus : la version rapide se retente jusqu'à passer
 
-**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
-d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
+**Sa plainte, à 6 h 40 :** *« l'application est lente corrige ça »*. Sa fiche le
+disait déjà : la construction avait échoué à 6 h 10 sur « Another next build
+process is already running », et le banc servait le mode développement — celui
+qui compile chaque écran à l'ouverture.
 
-Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
-feuille au-dessus.
+Le mécanisme de relance existait (§131) mais **s'arrêtait après trois
+tentatives**, soit une demi-heure. Passé ce délai, plus rien ne retentait, et la
+fiche l'écrivait : *« il est LENT, et le restera »*. Le seul remède était qu'il
+rallume son espace — pour une panne qu'il ne pouvait pas voir.
 
-**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
-demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
-titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
-à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
-client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
-remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
+**Ce qui change :** après la salve rapide (trois fois, à dix minutes), le
+veilleur continue **indéfiniment, une tentative par demi-heure**. C'est le
+rythme qui est borné, plus le nombre. Jamais deux constructions à la fois, et
+jamais avant le délai — ces deux garde-fous n'ont pas bougé.
+
+**Ce que ça évite :** une journée entière sur la version lente parce que la
+fenêtre où la machine pouvait bâtir est arrivée trente-cinq minutes trop tard.
+
+**Et la fiche a cessé de mentir.** « Il restera lent » était vrai tant que le
+veilleur renonçait ; le laisser enverrait rallumer un espace en train de se
+réparer tout seul. Elle dit maintenant le rythme des tentatives.
+
+**Ce qui n'est PAS réglé :** pourquoi deux constructions se marchaient dessus à
+6 h 10. La mémoire était encore ample à cet instant — ce n'est donc pas la
+saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
+`TODO.md`.
+
+---
+
+## 2026-08-19
+
+### Le compte des chantiers ne se dit plus qu'une fois, et en chiffre
+
+**Sa demande, capture à l'appui :** *« la mention en cours qui se trouve sous
+Vos chantiers, supprime-la. Le "Un" qui est à droite, en lettres, je le
+supprime. Et le "en cours" au-dessus de la date, à côté je veux le chiffre du
+nombre de chantiers en cours, en gras. »*
+
+**Ce que ça corrigeait :** le même nombre était écrit **trois fois** sur le même
+écran — « Un en cours » sous le titre, « En cours » à gauche de la rubrique,
+« Un » à sa droite. Deux fois en lettres, à deux endroits, pour une seule
+information.
+
+Il reste **« EN COURS 4 »** : le mot, puis le chiffre collé à lui. Le chiffre
+est le seul élément en gras de la ligne — c'est lui qu'on vient lire.
+
+**Le mot passe au gris du second plan** : `inkSoft` au lieu de `muted`. Trois
+gris lui ont été montrés (`appli/en-cours-le-chiffre.html`), **il a pris le
+C** — le plus foncé des trois. Jamais une couleur écrite en clair : elle aurait
+été juste sur « Origine » et fausse sur les deux chartes sombres, et `inkSoft`
+se dérive pour les sept.
+
+**Le repère `data-atlas="compteur"` a suivi le compte** sur la rubrique. Le
+laisser sur la ligne supprimée aurait rendu `test-dashboard` muet — et cette
+suite lit le nombre en ATTRIBUT depuis le 10 août précisément pour survivre aux
+refontes de libellé. Elle vérifie désormais aussi que le nombre **se lit en
+chiffre à l'écran** : l'attribut seul resterait vert sur un retour aux lettres.
+
+### Atlas dépouillé, utilisable, pour la plainte « trop de mots »
+
+**Sa plainte, la troisième :** *« il y a beaucoup trop de mots dans tous les
+sens […] s'ils passent quinze minutes à essayer de comprendre comment elle
+marche, ils ne vont juste pas l'utiliser »*. Le 11 et le 17 août, la même chose
+avait été dite et un écran avait été corrigé au jugé ; la gêne est revenue
+ailleurs à chaque fois.
+
+`appli/moins-de-mots.html` n'est pas une planche : c'est **l'application
+dépouillée, dont on se sert**. La barre du bas fonctionne, « Créer un devis »
+ouvre la fiche client, les champs se remplissent au clavier, le devis s'envoie,
+« Mes prix » s'ouvre. Un bouton « Avant » remet l'écran d'aujourd'hui sur les
+trois écrans qui changent. Boutons radio et `:checked` : pas une ligne de
+JavaScript, donc ouvrable depuis son téléphone, hors ligne.
+
+**Ce que ça évite :** lui demander de juger une application sur une capture. On
+ne sait pas si un écran est plus simple en le regardant — on le sait en s'en
+servant.
+
+**Rien dans `src/`** — `CLAUDE.md` §3 bis : il choisit avant qu'on code.
+
+### Deux versions refusées avant celle-là, et ce qu'elles apprennent
+
+**« Je t'ai dit de rien coder, seulement une maquette dynamique. »** La première
+arrivait entourée de deux scripts — un qui mesurait l'application, un qui
+recomptait ses nombres. Utiles, hors de `src/`, et **hors sujet** : une demande
+de maquette n'autorise pas l'outillage qui va avec. Retirés.
+
+**« Une maquette dynamique QUE JE PUISSE UTILISER. »** La deuxième était une
+planche avant/après à regarder — des écrans côte à côte, des comptes de mots,
+des flèches. **Une maquette, dans ce dépôt, est un bout d'application qui
+marche**, pas une présentation de ce qu'elle serait. Les autres essayables de
+`appli/` l'étaient déjà ; il aurait fallu s'en inspirer dès le départ.
+
+### Une maquette qu'il doit ouvrir vit dans `appli/`, pas dans `docs/maquettes/`
+
+**Trouvé en essayant de lui transmettre la planche.** `pages.yml` ne publie
+**que** le dossier `appli/` : une planche déposée dans `docs/maquettes/` n'a
+aucune adresse, et il ne peut pas l'ouvrir depuis son téléphone. On attendrait
+alors un choix qu'il n'a pas les moyens de faire — et l'on conclurait qu'il ne
+répond pas.
+
+La planche est donc dans `appli/`, liée depuis `appli/essais.html` — l'adresse
+qu'on lui donne —, et son nom est entré dans la liste que `pages.yml` interroge
+sur le site publié. Le chemin a été parcouru en entier, du lien à la planche, à
+la taille de son téléphone. La règle est écrite dans `CLAUDE.md` §3 bis.
+
+**À vérifier avant de conclure quoi que ce soit :** la planche 81, posée le
+17 août et toujours sans réponse, est restée dans `docs/maquettes/`. Son silence
+n'est peut-être pas un refus.
+
+### Trois pièges de mesure, trouvés en la fabriquant
+
+- **une feuille qui monte ne retire pas l'écran de dessous du document.**
+  `body.innerText` additionnait les deux : la fiche client paraissait peser
+  190 mots, dont 151 étaient l'accueil derrière elle. Faux dans le sens qui
+  arrange ;
+- **un script qui crée une donnée fausse ses propres mesures.** Trois passages
+  ont fait passer l'accueil de 135 à 167 mots sans qu'une ligne de produit ait
+  bougé, parce que `db:seed` ne retire pas les chantiers créés par le parcours.
+  Le script refuse désormais de mesurer sur un jeu de démonstration usagé ;
+- **le refus de la limitation de débit à la connexion est muet côté
+  navigateur.** La suite expire sur l'attente de redirection et accuse la page ;
+  la ligne qui tranche n'est que dans le journal du serveur.
+
+---
 
 ## 2026-08-16
 
@@ -92,6 +204,21 @@ deux centres tombent sur le même pixel. `ARCHITECTURE.md` §124.
 ---
 
 ## 2026-08-18
+
+### Le bouton de l'accueil dit « Créer un devis »
+
+**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
+d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
+
+Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
+feuille au-dessus.
+
+**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
+demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
+titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
+à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
+client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
+remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
 
 ### Deux boutons à la place de la bascule, sur l'écran de création
 
