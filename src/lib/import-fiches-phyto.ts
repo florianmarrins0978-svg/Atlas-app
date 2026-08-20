@@ -329,6 +329,24 @@ export function validerLot(brut: unknown, options: { autoriserFixtures: boolean 
           )
         );
       }
+      // **Une mention de copyright n'est pas une licence — c'est son
+      // contraire.** Écrite dans `licence`, elle passerait tous les contrôles
+      // en affirmant précisément ce qui interdit l'usage. Le cas s'est présenté
+      // le 20 août 2026 : les figures des fiches Ephytia portent « © GIRAUDEL
+      // Arnaud », « © Jean-Pierre Henry » — la réserve de droits la plus
+      // explicite qui soit, sur une page par ailleurs publique.
+      //
+      // Le contrôle ne porte QUE sur `licence` : `credit` a tout à fait le droit
+      // de contenir un « © », c'est même sa forme habituelle.
+      if (/©|\(c\)|tous droits réservés|droits réservés|all rights reserved/i.test(img.licence)) {
+        problemes.push(
+          ici(
+            `image ${i + 1} : « ${img.licence} » est une mention de copyright, pas une licence — ` +
+              `elle dit l’inverse de ce qu’on lui fait dire. Nommez la licence qui AUTORISE l’usage ` +
+              `(CC BY 4.0, CC BY-SA 4.0, domaine public, Licence Ouverte 2.0…), ou n’affichez pas l’image`
+          )
+        );
+      }
     }
 
     // Une période se donne entière ou pas du tout : un début sans fin ne se lit

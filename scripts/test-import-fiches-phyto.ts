@@ -265,6 +265,36 @@ for (const aveu of ["licence inconnue", "droits ?", "à définir"]) {
   });
 }
 
+for (const copyright of ["© GIRAUDEL Arnaud", "(c) Jean-Pierre Henry", "Tous droits réservés", "All rights reserved"]) {
+  cas(`« ${copyright} » est refusé : c'est un copyright, pas une licence`, () => {
+    // Le cas réel du 20 août : les figures d'Ephytia portent des crédits
+    // nominatifs. Écrite dans `licence`, une telle mention passerait tous les
+    // contrôles en affirmant précisément ce qui INTERDIT l'usage.
+    refus(
+      lot({
+        fiches: [
+          ficheValide({ images: [{ fichier: "x/y.jpg", licence: copyright, credit: "Quelqu'un" }] }),
+        ],
+      }),
+      /mention de copyright, pas une licence/
+    );
+  });
+}
+
+cas("mais un « © » dans le CRÉDIT reste normal — c'est sa forme habituelle", () => {
+  const verdict = validerLot(
+    lot({
+      fiches: [
+        ficheValide({
+          images: [{ fichier: "x/y.jpg", licence: "CC BY-SA 4.0", credit: "© Prénom Nom" }],
+        }),
+      ],
+    }),
+    { autoriserFixtures: false }
+  );
+  assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
+});
+
 cas("une image qui ne désigne ni fichier ni adresse est refusée", () => {
   refus(
     lot({ fiches: [ficheValide({ images: [{ licence: "CC-BY 4.0", credit: "Quelqu'un" }] })] }),

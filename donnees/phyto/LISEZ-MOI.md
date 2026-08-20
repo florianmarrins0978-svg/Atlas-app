@@ -121,6 +121,32 @@ soit, et aucune licence publique ne la couvre.
 | **Les banques sous licence libre** | Creative Commons, domaine public. Utilisables, à condition d'inscrire l'auteur et la licence — ce que l'écran affiche |
 | **Demander aux auteurs** | Lent, et nécessaire seulement pour une photo qu'on ne peut pas remplacer |
 
+### Ce qu'il faut fournir AVEC chaque photo
+
+**La ligne de crédit telle qu'elle est écrite sous la figure**, sur la page
+d'origine. Pas un avis, pas un résumé : le texte imprimé.
+
+C'est le seul moyen de savoir. Sur la fiche de l'anthracnose du platane, les
+trois figures portent respectivement *CHAMONT S. (INRA)*, *© GIRAUDEL Arnaud* et
+*© Jean-Pierre Henry* — les deux dernières sont des réserves de droits
+explicites, sur une page pourtant en libre accès. **Libre d'accès ne veut pas
+dire libre de droits**, et c'est précisément la confusion qui coûte cher.
+
+**Un modèle de langage ne peut pas trancher cette question.** Il ne voit pas les
+métadonnées de l'image, ne lit pas les conditions générales du site, et répondra
+avec assurance dans tous les cas. Ce qui tranche, c'est la mention écrite à
+côté de la photo.
+
+| Ce qui est écrit sous la photo | Utilisable ? |
+|---|---|
+| « CC BY 4.0 », « CC BY-SA 4.0 », « domaine public », « Licence Ouverte » | **Oui**, en affichant l'auteur et la licence |
+| « © Prénom Nom », « Tous droits réservés » | **Non** — c'est l'inverse d'une licence |
+| Un nom seul, sans mention de licence | **À demander.** Un crédit n'est pas une autorisation |
+
+L'import refuse d'ailleurs une mention de copyright écrite dans le champ
+`licence` : elle passerait sinon tous les contrôles en affirmant précisément ce
+qui interdit l'usage.
+
 ### Verser une photo
 
 Le fichier va dans `donnees/phyto/images/`, et la fiche le désigne :
