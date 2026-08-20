@@ -89,25 +89,6 @@ async function creerChantierFacturable(
 async function main() {
   const browser = await lancerNavigateur();
   const context = await browser.newContext();
-
-  // **Retenir le saut vers Messages, sans empêcher l'écran de le tenter.**
-  //
-  // Depuis le 18 août, l'appui sur « Envoyer le devis » touche pour le patron
-  // un lien `sms:` (`ExportClient.ouvrirLaMessagerie`). Chromium ne sait pas
-  // ouvrir ce schéma : il laisse une navigation en suspens, et le
-  // `page.reload()` du contrôle suivant n'atteint plus jamais son `load` — un
-  // dépassement de délai qui accuse le rechargement alors qu'il va très bien.
-  //
-  // On annule donc le SAUT, jamais le geste : le lien est bien créé et touché,
-  // et c'est lui que les contrôles lisent. Ce qu'aucun navigateur d'ici ne peut
-  // faire — ouvrir Messages —, on ne prétend pas le faire.
-  await context.addInitScript(`
-    document.addEventListener("click", function (e) {
-      const cible = e.target && e.target.closest && e.target.closest("a[href^='sms:'],a[href^='mailto:']");
-      if (cible) e.preventDefault();
-    }, true);
-  `);
-
   const page = await seConnecter(context);
 
   // **L'intention de ce cas n'a pas bougé, sa marche à suivre si** (11 août
