@@ -98,6 +98,33 @@ besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'el
 refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
 (`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
 
+---
+
+## ⏳ `test-lecons-prix-e2e.ts` a tenu 30 s puis lâché — une seule fois
+
+**Le 20 août 2026**, dans une batterie complète jouée juste après une fusion de
+`main` :
+
+    ❌ page.waitForResponse: Timeout 30000ms exceeded while waiting for event "response"
+
+**Vérifié avant de conclure**, et c'est ce qui compte ici :
+
+- elle était **verte** dans la batterie complète jouée une heure plus tôt, sur le
+  même lot, avant la fusion ;
+- **ni la suite ni le code qu'elle éprouve** ne figurent dans ce que `main` a
+  apporté (`git diff --name-only`, aucun fichier `lecon`) ;
+- **rejouée seule** sur l'arbre fusionné, elle est verte.
+
+Le faisceau désigne donc la charge — cent trois suites sur un seul serveur de
+développement — et non une régression. **Mais c'est le troisième contrôle de ce
+dépôt qui dépend de la charge de la machine**, et c'est cela le vrai sujet : un
+rouge qui tombe au hasard apprend à ignorer le rouge, et l'on perd tout ce qu'il
+surveille.
+
+**Ce qu'il faudrait :** attendre la réponse sur un signal plutôt qu'un délai
+fixe, ou porter ce délai bien au-delà de ce qu'une machine chargée demande. Le
+délai de 30 s est celui de Playwright par défaut, jamais choisi.
+
 ## 🌿 Diagnostic végétal — le module tourne, il lui manque des FICHES
 
 Le code est fait et éprouvé (`ARCHITECTURE.md` §135). Ce qui reste ne se code
