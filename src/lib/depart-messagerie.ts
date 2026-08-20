@@ -39,6 +39,53 @@ export function marquerDepartMessagerie(quoi: "devis" | "facture", client: strin
 }
 
 /**
+ * Retient le départ **seulement si l'on part vraiment**.
+ *
+ * ─── POURQUOI CELLE-CI EXISTE, À CÔTÉ DE LA PRÉCÉDENTE ───────────────────────
+ * `marquerDepartMessagerie` écrit tout de suite, et c'est juste là où elle est
+ * employée : sous le doigt, sur un lien que le téléphone ouvre à coup sûr.
+ *
+ * Depuis le 18 août 2026, l'appui sur « Envoyer le devis » ouvre la messagerie
+ * **après** la réponse du serveur (`ExportClient.ouvrirLaMessagerie`) — et un
+ * navigateur peut refuser cette navigation-là sans un mot. Marquer le départ
+ * d'avance ferait alors accueillir le patron par « Votre devis est parti chez
+ * M. Martins » alors que rien n'est parti. C'est exactement le genre de phrase
+ * que ce dépôt refuse : une annonce qui affirme ce qui n'a pas eu lieu.
+ *
+ * On attend donc que la page s'efface pour de bon. Si Messages s'ouvre, elle
+ * s'efface et la marque est posée ; sinon rien n'est écrit, et l'accueil ne
+ * raconte rien. Le délai borne l'attente : au-delà, il est resté sur l'écran,
+ * et le geste suivant ne doit pas hériter de celui-ci.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export function marquerDepartSiLOnPart(
+  quoi: "devis" | "facture",
+  client: string,
+  attenteMs = 5_000
+): void {
+  if (typeof document === "undefined") return;
+
+  let fini = false;
+  const oublier = () => {
+    if (fini) return;
+    fini = true;
+    document.removeEventListener("visibilitychange", auDepart);
+    window.removeEventListener("pagehide", auDepart);
+  };
+  function auDepart() {
+    // `pagehide` n'a pas de `visibilityState` à consulter : on ne pose la
+    // question qu'à `visibilitychange`.
+    if (document.visibilityState === "visible") return;
+    marquerDepartMessagerie(quoi, client);
+    oublier();
+  }
+
+  document.addEventListener("visibilitychange", auDepart);
+  window.addEventListener("pagehide", auDepart);
+  setTimeout(oublier, attenteMs);
+}
+
+/**
  * Ramène à l'accueil au retour de la messagerie — une seule fois.
  *
  * **Par `visibilitychange`, et pas autrement.** iOS ne recharge pas la page

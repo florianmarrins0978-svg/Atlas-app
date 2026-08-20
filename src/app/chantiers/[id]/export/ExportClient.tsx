@@ -11,7 +11,7 @@ import EnvoiAuClient from "./EnvoiAuClient";
 import { enEuros } from "@/lib/euros";
 import { avecCivilite, type Civilite } from "@/lib/civilite";
 import { composerMessageClient, lienTransmission } from "@/lib/message-client";
-import { marquerDepartMessagerie } from "@/lib/depart-messagerie";
+import { marquerDepartSiLOnPart } from "@/lib/depart-messagerie";
 
 
 export default function ExportClient({
@@ -129,9 +129,12 @@ export default function ExportClient({
       entrepriseNom,
       lien: lienComplet(chemin),
     });
-    // Le bandeau du retour, comme sur le bouton de l'écran suivant : sans lui,
-    // revenir de Messages ne dirait rien de ce qui vient de se passer.
-    marquerDepartMessagerie("devis", clientNom);
+    // **Le bandeau du retour n'est armé que si l'on part POUR DE BON.** Ici
+    // l'ouverture suit la réponse du serveur, et un navigateur peut la refuser
+    // sans un mot : marquer le départ d'avance ferait accueillir le patron par
+    // « Votre devis est parti chez M. Martins » alors que rien n'est parti.
+    // C'est le contrôle de suivi qui l'a montré, avant lui.
+    marquerDepartSiLOnPart("devis", clientNom);
 
     // **Un vrai lien qu'on touche pour lui, et non `location.assign`.** Deux
     // raisons, et la seconde suffirait :
