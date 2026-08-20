@@ -373,6 +373,29 @@ Deux précédents, à imiter plutôt qu'à réinventer :
 Quand ni l'un ni l'autre n'est possible, **le dire** plutôt que de laisser croire
 à une vérification qui n'a pas eu lieu.
 
+## 5 bis. Un contrôle ne doit pas réclamer ce que le patron a fait retirer
+
+**Payé le 20 août 2026.** Il a demandé de vider la fiche d'un client — *« tout
+le reste, tu enlèves, c'est du trop »*. Une suite d'un autre lot lisait le
+compte « 2 chantiers » sur cet écran pour prouver que deux chantiers avaient été
+rapprochés sous un seul client. Le compte parti, elle a rougi — sur du code
+juste, et pour une demande exaucée.
+
+**Ce qu'une suite doit fixer, c'est la RÈGLE, pas la façon dont un écran la
+montre.** Le rapprochement se prouve aussi bien — mieux — en vérifiant que les
+deux chantiers ouvrent la MÊME adresse de fiche : cela ne dépend d'aucun libellé
+et survivra au prochain remaniement.
+
+Avant d'écrire une assertion sur un texte d'écran, se demander : *si le patron
+faisait retirer ce mot demain, ce contrôle défendrait-il encore quelque chose ?*
+Si la réponse est non, viser plus profond — une adresse, un identifiant, un
+compte en base.
+
+**Et la réciproque, qui vaut autant :** quand une suite rougit après un retrait
+qu'il a demandé, on **adapte le contrôle**, on ne remet pas le libellé. Écrire
+une suite qui réclame ce qu'il a fait enlever, c'est rendre son écran impossible
+à changer.
+
 ## 6. Git
 
 - Branche de développement : celle que la conversation désigne. Elle change à

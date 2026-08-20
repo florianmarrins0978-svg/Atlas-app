@@ -101,32 +101,51 @@
   .comprend li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;
                        border-radius:50%;background:var(--or)}
 
-  /* ── Les deux encadrés, en deux colonnes ──────────────────────────────── */
-  /* `min-width:0` sur les colonnes : sans lui, un enfant de grille prend la
-     largeur de son contenu le plus long et pousse la page de côté. C'est
-     exactement le défaut qui a fait déborder la page TVA de 141 px, trouvé à
-     l'œil et non au test (18 août 2026). */
-  .deux{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 26px 0}
-  .col{min-width:0;background:var(--cream);border-radius:13px;padding:14px 12px 12px;
-       box-shadow:inset 0 0 0 1px var(--line-soft)}
-  .col > h3{margin:0;font-size:9.5px;font-weight:600;letter-spacing:.24em;
-            text-transform:uppercase;color:var(--charcoal)}
-  .col > .compte{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+  /* ── Les TROIS encadrés, en trois colonnes ────────────────────────────── */
+  /*
+    **Il a ajouté la colonne Facture le 20 août 2026** — il avait d'abord dit
+    deux encadrés, puis : « tu peux rajouter une colonne facture et ranger les
+    factures dans le même ordre ».
 
-  /* Une pièce jointe. 56 px de haut au moins : c'est un lien qu'on touche
-     d'une main, dehors, parfois avec des gants. */
-  .doc{display:grid;grid-template-columns:26px 1fr;gap:0 9px;align-items:center;
-       min-height:56px;margin-top:9px;padding:8px 0 8px 0;
-       border-top:1px solid var(--line-soft)}
-  .col .doc:first-of-type{border-top:0;margin-top:6px}
-  .doc .pdf{grid-row:1 / span 2;width:26px;height:32px;border-radius:3px;
+    **Trois colonnes sur 390 px, c'est le vrai sujet de cet écran.** Deux
+    changements le rendent possible :
+
+      · la vignette monte AU-DESSUS du numéro au lieu d'être à sa gauche —
+        sans quoi il ne reste que ~79 px de texte, et « nº 2026-031 » se coupe ;
+      · les marges passent de 26 à 16 px, ce qui donne 115 px par colonne.
+
+    **Mesuré, contre ce que ce commentaire affirmait d'abord :** à 26 px de
+    marges (108 px par colonne) rien n'est encore coupé. La réduction n'est
+    donc pas ce qui sauve l'écran — c'est la vignette au-dessus. Les 16 px sont
+    une réserve, pour un nom plus long ou une police système différente. Le
+    contrôle mesure les deux : il rougit sous 100 px de colonne, et dès qu'un
+    libellé dépasse sa boîte.
+
+    `min-width:0` reste indispensable : sans lui, un enfant de grille prend la
+    largeur de son plus long contenu et pousse la page de côté — le défaut qui
+    a fait déborder la page TVA de 141 px, trouvé à l'œil et non au test.
+  */
+  .deux{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:24px 16px 0}
+  .col{min-width:0;background:var(--cream);border-radius:12px;padding:12px 9px 10px;
+       box-shadow:inset 0 0 0 1px var(--line-soft)}
+  .col > h3{margin:0;font-size:9px;font-weight:600;letter-spacing:.12em;
+            text-transform:uppercase;color:var(--charcoal);line-height:1.3}
+  .col > .compte{display:block;margin-top:3px;font-size:10.5px;color:var(--muted)}
+
+  /* Une pièce jointe : la vignette au-dessus, le numéro, puis la date. 56 px de
+     haut au moins — c'est un lien qu'on touche d'une main, dehors, parfois avec
+     des gants. */
+  .doc{display:block;min-height:56px;margin-top:8px;padding:8px 0 2px;
+       border-top:1px solid var(--line-soft);text-align:center}
+  .col .doc:first-of-type{border-top:0;margin-top:5px}
+  .doc .pdf{display:flex;width:24px;height:29px;margin:0 auto;border-radius:3px;
             background:#fff;box-shadow:inset 0 0 0 1px rgba(156,59,46,.35);
-            display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;
-            font-size:7px;font-weight:700;letter-spacing:.06em;color:var(--alerte)}
-  .doc .titre{min-width:0;font-size:14px;line-height:1.25;overflow:hidden;
-              text-overflow:ellipsis;white-space:nowrap}
-  .doc .jour{min-width:0;margin-top:3px;font-size:11.5px;color:var(--muted);
-             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            align-items:flex-end;justify-content:center;padding-bottom:3px;
+            font-size:6.5px;font-weight:700;letter-spacing:.06em;color:var(--alerte)}
+  .doc .titre{display:block;margin-top:5px;font-size:12.5px;line-height:1.2;
+              overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .doc .jour{display:block;margin-top:2px;font-size:10.5px;color:var(--muted);
+             line-height:1.25}
 
   .vide{margin-top:10px;font-size:12.5px;line-height:1.5;color:var(--muted)}
   .vide a{color:var(--or);font-weight:600}
@@ -190,18 +209,17 @@
 <section class="ecran" id="fiche-chantier">
   <a class="retour" href="#fiche"><span class="chev-g"></span>Fiche client</a>
   <h1>La fiche chantier</h1>
-  <span class="coord">Ce document n’existe pas encore</span>
+  <span class="coord">Le troisième document d’Atlas</span>
   <div class="filet"></div>
 
-  <div class="note"><span class="t">À lire avant de juger le dessin</span>
-    Atlas fabrique aujourd’hui <b>deux documents en PDF</b> : le <b>devis</b> et
-    la <b>facture</b>. Il n’en fabrique pas de troisième.<br><br>
-    Ce que l’application appelle « fiche chantier » est un <b>écran</b> — celui
-    où vous voyez les photos, la note vocale, les étapes. Ce n’est pas une
-    feuille qu’on envoie. La deuxième colonne serait donc <b>vide</b> tant que
-    ce document n’est pas fabriqué.<br><br>
-    Voici ce qu’il contiendrait. <b>Dites-moi si c’est bien ça</b>, et ce qu’il
-    manque.
+  <div class="note"><span class="t">Elle existe</span>
+    Atlas ne fabriquait que <b>deux documents en PDF</b> : le <b>devis</b> et la
+    <b>facture</b>. Ce qu’il appelait « fiche chantier » était un <b>écran</b> —
+    celui où vous voyez les photos, la note vocale, les étapes —, pas une
+    feuille qu’on envoie.<br><br>
+    <b>Vous avez demandé qu’elle devienne un vrai PDF</b> : c’est fait, dans la
+    vraie application. Voici ce qu’elle contient. <b>Dites-moi ce qu’il
+    manque</b> — c’est plus facile à corriger maintenant qu’après cent fiches.
   </div>
 
   <div class="feuille">
@@ -210,7 +228,7 @@
       <dt>Client</dt><dd>Mr. Martins — 10 rue d’Enfer, Nantes</dd>
       <dt>Chantier</dt><dd>Élagage de trois chênes</dd>
       <dt>Devis</dt><dd>nº 2026-031 · 1 620 €</dd>
-      <dt>Sur place</dt><dd>8 h 30 → 16 h 00 · 2 personnes</dd>
+      <dt>Intervention</dt><dd>Matin · 2 demi-journées · équipe Nord</dd>
     </dl>
 
     <p class="titre-bloc">Ce qui a été fait</p>
@@ -225,56 +243,28 @@
       à l’automne prochain.
     </p>
 
+    <p class="titre-bloc">Matériel employé</p>
+    <p style="margin:7px 0 0;font-size:13.5px">Nacelle 16 m · broyeur de branches · benne 12 m³</p>
+
     <p class="titre-bloc">Photos</p>
     <p style="margin:7px 0 0;font-size:13.5px;color:#8a8578">6 photos jointes — avant, pendant, après.</p>
   </div>
 
-  <div class="note"><span class="t">Ce que ça demanderait</span>
-    Tout est déjà en base : les prestations cochées, la note vocale, les
-    photos, les heures. <b>Il reste à en faire une feuille</b> — le même
-    travail que pour le devis et la facture, qui existent déjà.<br><br>
-    C’est le document que le client garde, et celui que vous ressortez deux ans
-    après quand il rappelle.
-  </div>
-</section>
-
-<!-- ══ La question des factures ═════════════════════════════════════════ -->
-<section class="ecran" id="factures">
-  <a class="retour" href="#fiche"><span class="chev-g"></span>Fiche client</a>
-  <h1>Et les factures ?</h1>
-  <span class="coord">Une question, pas une proposition de plus</span>
-  <div class="filet"></div>
-
-  <div class="note"><span class="t">Ce que le retrait emporte</span>
-    Vous avez dit <b>deux encadrés</b> : devis, et fiche chantier. Les
-    <b>factures</b> n’ont donc plus de place — ni ce qui reste dû.<br><br>
-    Ce n’est peut-être pas grave : l’argent se voit ailleurs, dans
-    <b>Terminés → En attente de paiement</b>. Mais depuis la fiche d’un client,
-    on ne saurait plus s’il vous doit quelque chose.
-  </div>
-
-  <div class="avant"><span class="t">Sans ajouter d’encadré</span>
-    <p style="margin:0;font-size:14px;line-height:1.55;color:#4a4a44">
-      Le devis porterait lui-même sa suite, en une ligne grise sous son numéro :
-    </p>
-    <div class="col" style="margin-top:12px;box-shadow:inset 0 0 0 1px rgba(28,28,26,.07)">
-      <h3>Devis</h3>
-      <span class="compte">3 documents</span>
-      <span class="doc"><span class="pdf">PDF</span><span class="titre">nº 2026-031</span><span class="jour">28 juil. 2026 · 1 620 € · <b style="color:#2f3b2f">facturé</b></span></span>
-      <span class="doc"><span class="pdf">PDF</span><span class="titre">nº 2026-022</span><span class="jour">14 mai 2026 · 740 € · refusé</span></span>
-    </div>
-    <p style="margin:12px 0 0;font-size:13px;line-height:1.55;color:#8a8578">
-      Toujours deux encadrés. Et le mot « facturé » ouvre la facture.
-    </p>
-  </div>
-
-  <div class="note"><span class="t">Trois réponses possibles</span>
-    <ul>
-      <li><b>On laisse tomber</b> — l’argent se regarde dans Terminés.</li>
-      <li><b>La ligne grise</b> ci-dessus, sans encadré de plus.</li>
-      <li><b>Un troisième encadré</b> Factures, malgré ce que vous avez dit.</li>
-    </ul>
-    Dites-moi laquelle, et je la code.
+  <div class="note"><span class="t">Ce qu’elle ne porte pas, et pourquoi</span>
+    <b>Aucun prix.</b> Ce n’est pas un oubli : c’est ce qui la rend
+    <b>donnable</b>. Vous pouvez la remettre à un locataire, à un syndic, à
+    l’assurance d’un voisin — sans que personne apprenne ce que le propriétaire
+    a payé.<br><br>
+    <b>Corrigé avant d'écrire une ligne :</b> ce dessin annonçait
+    « 8 h 30 → 16 h 00 · 2 personnes ». <b>Ces heures n’existent nulle part</b> —
+    Atlas retient le moment (matin ou après-midi), le nombre de demi-journées et
+    l’équipe, pas des horaires. Le document dirait donc une chose qu’il ne peut
+    pas remplir.<br><br>
+    Un point de mise en page à trancher, et il vaut mieux le dire maintenant :
+    le moteur qui fabrique le devis et la facture <b>porte un tableau de prix,
+    des totaux et un cadre de signature</b>. La fiche chantier n’a rien de tout
+    ça. Elle est donc écrite <b>sans prix</b>, pour ne pas ressembler à une
+    facture — et pour ne rien changer aux deux documents qui portent l’argent.
   </div>
 </section>
 
@@ -300,13 +290,24 @@
 
   <div class="avant"><span class="t">Ajouté</span>
     <p class="parti"><span class="garde">+</span><span>La <b>dernière prestation</b> en titre noir gras, et ce qu’elle comprend</span></p>
-    <p class="parti"><span class="garde">+</span><span>Deux colonnes de <b>documents PDF</b>, du plus récent au plus ancien</span></p>
+    <p class="parti"><span class="garde">+</span><span><b>Trois colonnes</b> de documents PDF, du plus récent au plus ancien</span></p>
+    <p class="parti"><span class="garde">+</span><span>La <b>fiche chantier en PDF</b>, qui n’existait pas</span></p>
   </div>
 
-  <div class="note"><span class="t">La seule chose qui m’inquiète</span>
+  <div class="note"><span class="t">Ce que la colonne Facture ramène</span>
+    Vous l’avez ajoutée le 20 août, après avoir dit deux encadrés. C’est elle
+    qui remet l’<b>argent</b> sur la fiche du client : sans elle, on ne voyait
+    plus depuis ici ce qu’il vous a payé.<br><br>
+    <b>Ce qui n’y revient pas</b> : le total facturé et le <b>reste dû</b>. Ils
+    se regardent dans <b>Terminés → En attente de paiement</b>. Dites-le si vous
+    les voulez ici aussi.
+  </div>
+
+  <div class="note"><span class="t">La seule chose qui m’inquiète encore</span>
     « Ses chantiers » était le <b>chemin</b> vers un chantier depuis un client.
-    En le retirant, on n’ouvre plus un chantier depuis ici — sauf par sa fiche
-    chantier en PDF, qui n’est pas la même chose.<br><br>
+    En le retirant, on n’ouvre plus un chantier depuis ici — on ouvre sa
+    <b>fiche chantier en PDF</b>, ce qui n’est pas la même chose : un document
+    se lit, un écran se modifie.<br><br>
     Si vous ouvrez rarement un chantier depuis un client, ce n’est pas une
     perte. <b>Vous le savez mieux que moi.</b>
   </div>
@@ -333,7 +334,7 @@
   <div class="deux">
     <div class="col">
       <h3>Devis</h3>
-      <span class="compte">3 documents</span>
+      <span class="compte">3 pièces</span>
       <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2026-031</span><span class="jour">28 juil. 2026</span></a>
       <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2026-022</span><span class="jour">14 mai 2026</span></a>
       <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2025-102</span><span class="jour">21 sept. 2025</span></a>
@@ -341,19 +342,35 @@
 
     <div class="col">
       <h3>Fiche chantier</h3>
-      <span class="compte">2 documents</span>
+      <span class="compte">2 pièces</span>
       <a class="doc" href="#fiche-chantier"><span class="pdf">PDF</span><span class="titre">12 août 2026</span><span class="jour">Élagage 3 chênes</span></a>
       <a class="doc" href="#fiche-chantier"><span class="pdf">PDF</span><span class="titre">2 oct. 2025</span><span class="jour">Taille de haie</span></a>
     </div>
+
+    <div class="col">
+      <h3>Facture</h3>
+      <span class="compte">2 pièces</span>
+      <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2026-014</span><span class="jour">12 août 2026</span></a>
+      <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2025-089</span><span class="jour">3 oct. 2025</span></a>
+    </div>
   </div>
 
-  <div class="note"><span class="t">Trois choses à me dire</span>
-    <b>1 ·</b> La fiche chantier en PDF <b>n’existe pas encore</b> dans Atlas.
-    <a href="#fiche-chantier">voir ce qu’elle contiendrait →</a><br>
-    <b>2 ·</b> Les <b>factures</b> n’ont plus d’encadré.
-    <a href="#factures">où les met-on ? →</a><br>
+  <div class="note"><span class="t">C’est codé — dans la vraie application</span>
+    <b>1 ·</b> La <b>fiche chantier en PDF</b> existe maintenant.
+    <a href="#fiche-chantier">voir ce qu’elle contient →</a><br>
+    <b>2 ·</b> La colonne <b>Facture</b> est là, même rangement.<br>
     <b>3 ·</b> Quatre choses ont disparu de cet écran.
     <a href="#avant">voir lesquelles →</a>
+  </div>
+
+  <div class="note"><span class="t">Deux détails décidés en codant</span>
+    <b>Un devis révisé ne compte qu’une fois.</b> Quand vous corrigez un devis
+    et le renvoyez, la nouvelle version garde le même numéro. Les deux
+    s’affichaient l’une sous l’autre, identiques — impossible de savoir laquelle
+    on ouvrait. <b>Seule la dernière est montrée.</b><br><br>
+    <b>Sous le numéro, la date — pas le nom du chantier.</b> Sur une colonne de
+    97 px, « Rénovation de la salle de bain » se coupe à « Rénovation de… » et
+    n’apprend rien. La date, elle, tient en entier.
   </div>
 </section>
 
