@@ -128,6 +128,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
 | Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
+| **Et DICTER le chantier dans le devis** (20 août) — il raconte les travaux, hésitations comprises, et obtient des lignes rédigées avec leurs mesures. Aucun prix inventé. La rédaction dépend d'un modèle : `npm run verifier:dictee` la vérifie **là où il y a une clé**, et refuse de rendre un vert sans (`ARCHITECTURE.md` §113) | `src/lib/redaction-lignes.ts`, `src/lib/unites-tarif.ts`, `scripts/verifier-dictee-devis.mts` |
 | Le prix accordé au client — remise en % sous le total, jusqu'à la facture (16 août) | `src/lib/reduction-devis.ts`, migration `0048` |
 | La fiche d'un client — ses chantiers, ce qu'il doit, ce qu'on lui fait (16 août) | `src/lib/fiche-client.ts`, `src/app/clients/[id]/page.tsx` |
 | **Un client est RETROUVÉ, plus recréé** à chaque chantier — rapprochement automatique, refusé si une coordonnée contredit (17 août) | `src/lib/rapprochement-client.ts`, `trouverOuCreerClient` |

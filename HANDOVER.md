@@ -9,6 +9,18 @@ sert.
 
 ---
 
+## Le retour de la fiche client dépend d'où l'on vient (20 août 2026)
+
+*« Ça ne me fait pas un retour, mais deux retours. »* La fiche renvoyait à
+l'accueil ; elle renvoie maintenant à la liste des clients, ou **au chantier**
+quand on vient de là. L'origine voyage dans `?de=`, traduite par
+`src/lib/retour-fiche-client.ts`.
+
+**Ne pas « simplifier » en remettant un lien fixe** : la fiche s'ouvre depuis
+deux endroits, et un retour fixe se trompe pour l'un des deux
+(`ARCHITECTURE.md` §135). Et **ne pas retirer le filtre** : la valeur vient de
+l'adresse, donc de n'importe qui.
+
 ## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026)
 
 **Le module est complet ; sa base est vide, et c'est le bon état.** Si vous
@@ -1770,6 +1782,26 @@ de chercher dans la règle.
 Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
 deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
 ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §113.
+
+**ET DEPUIS LE 20 AOÛT, LE MÊME MICRO PREND LE CHANTIER ENTIER.** Sa demande :
+*« qu'il appuie sur la note vocale, qu'il parle en expliquant les tâches à
+faire, et que l'intelligence artificielle comprenne et rédige ça sous forme de
+belles phrases »*. Il raconte — « j'aimerais tailler ma haie, enfin je ne sais
+plus, je crois vingt mètres linéaires […] couper les inflorescences des
+hortensias, et tondre la pelouse » — et il obtient trois lignes à cocher :
+**Taille de haie** (20 ml), **Taille des inflorescences d'hortensias**, **Tonte
+de la pelouse**. Rien n'a changé à l'écran : c'est l'invite du modèle qui tient
+les deux façons de parler, parce qu'elles arrivent mêlées dans la même dictée.
+
+**⚠ ET LE MÊME PIÈGE, EN PIRE.** « Belles phrases » est une promesse tenue par
+un modèle de langage, et **rien ici ne peut la mesurer** — ni cet environnement,
+ni la CI, qui pose une clé de remplacement. `npm run verifier:dictee` envoie sa
+dictée entière au vrai modèle et vérifie les trois lignes, la mesure retenue et
+l'absence de prix inventé ; **il n'a pas encore été joué**, faute de clé, et il
+sort en erreur plutôt que de rendre un vert vide. À jouer depuis son espace
+avant de considérer la promesse tenue. Ce qui EST éprouvé ici : tout ce que le
+dépôt fait de la réponse du modèle, et la règle qui dit ce qui trahit une phrase
+recopiée (`src/lib/redaction-lignes.ts`, confrontée à ses propres phrases).
 
 **LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
 « 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le

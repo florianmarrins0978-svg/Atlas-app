@@ -181,6 +181,40 @@ async function main() {
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
 
+    // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
+    // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
+    // suite ça m'ouvre l'application, soit SMS soit email […] supprime les
+    // étapes qu'il y a entre »*.
+    //
+    // L'écran touche pour lui un vrai lien, qu'il laisse dans le document :
+    // c'est ce qui rend l'adresse LISIBLE ici (`ExportClient.ouvrirLaMessagerie`).
+    // Le défaut d'hier — un message ouvert sans destinataire — ne se voyait
+    // nulle part ailleurs que dans sa messagerie, c'est-à-dire trop tard.
+    //
+    // **Ce que ce contrôle ne prouve PAS, et il faut le dire :** qu'iOS honore
+    // cette ouverture quand elle suit une réponse du serveur plutôt que le
+    // doigt. Aucun navigateur d'ici ne répond pour Safari. C'est pourquoi le
+    // bouton de l'écran « Devis prêt » reste en place derrière : si l'ouverture
+    // est refusée, le patron retrouve exactement l'écran d'avant.
+    const porteDirecte = page.locator("a[data-transmission-directe]");
+    assert.equal(
+      await porteDirecte.count(),
+      1,
+      "l'appui sur « Envoyer le devis » n'a ouvert aucune messagerie"
+    );
+    const adresseDirecte = (await porteDirecte.getAttribute("href")) ?? "";
+    // Le numéro sans ses espaces, sinon l'application ouvre un message SANS
+    // destinataire et le patron ne le découvre que dans Messages.
+    assert.match(
+      adresseDirecte,
+      /^sms:\d+\?/,
+      `destinataire mal formé : ${adresseDirecte.slice(0, 60)}`
+    );
+    assert.ok(
+      decodeURIComponent(adresseDirecte).includes("/devis/"),
+      "le message ouvert par l'appui ne porte pas le lien du devis"
+    );
+
     // Le dernier mètre : sans ce bouton, le lien reste à recopier à la main
     // dans un SMS. C'est le geste que l'application doit épargner, et il a
     // manqué jusqu'ici (docs/A-FAIRE.md §5).

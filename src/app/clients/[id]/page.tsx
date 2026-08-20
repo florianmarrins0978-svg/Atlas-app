@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, libelleCaps } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { chargerFicheClient } from "@/server/repositories/fiche-client";
+import { retourFicheClient } from "@/lib/retour-fiche-client";
 import { jourCourt, type PieceDuClient } from "@/lib/documents-du-client";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
@@ -18,6 +19,13 @@ import { jourCourt, type PieceDuClient } from "@/lib/documents-du-client";
 //
 // Puis, le même jour : « tu peux rajouter une colonne facture et ranger les
 // factures dans le même ordre ».
+//
+// **Puis, toujours le 20 août, deux corrections sur capture :** le « nom » sous
+// « Dernière prestation » répétait le nom du client déjà en tête (un chantier
+// porte le nom de son client) — « je veux plus voir le nom en dessous ». Il est
+// retiré, et c'est la ligne « Dernière prestation · date » elle-même qui passe
+// en noir gras. Et l'ordre des colonnes devient **Devis · Facture · Fiche
+// chantier** — la facture avant la fiche.
 //
 // **CE QUI A ÉTÉ RETIRÉ, et c'était l'essentiel de la demande** : les trois
 // cases (chantiers · facturés · reste dû), la liste « Ce qu'on lui fait, et
@@ -36,8 +44,19 @@ import { jourCourt, type PieceDuClient } from "@/lib/documents-du-client";
 // Dessiné avant d'être codé : `appli/fiche-client.html` (`CLAUDE.md` §3 bis).
 export const dynamic = "force-dynamic";
 
-export default async function FicheClientPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function FicheClientPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  // **D'où l'on vient décide où la flèche ramène** — sa remarque du 20 août
+  // 2026 : « ça ne me fait pas un retour, mais deux ». La règle vit dans
+  // `src/lib/retour-fiche-client.ts`, et l'écran ne la refait pas.
+  const de = (await searchParams).de;
+  const retour = retourFicheClient(Array.isArray(de) ? de[0] : de);
   const ctx = await getCurrentCtx();
   const fiche = await chargerFicheClient(ctx, id);
   if (!fiche) notFound();
@@ -49,7 +68,7 @@ export default async function FicheClientPage({ params }: { params: Promise<{ id
   return (
     <div className="pb-[86px]">
       <EnTeteEcran
-        retour={{ href: "/clients", libelle: "Retour à la liste des clients" }}
+        retour={retour}
         surtitre="Client"
         titre={fiche.client.nom}
         precision={coordonnees || undefined}
@@ -63,16 +82,15 @@ export default async function FicheClientPage({ params }: { params: Promise<{ id
           de plus. */}
       {fiche.derniere && (
         <div className="px-[26px] pt-5">
-          <p className={libelleCaps} style={{ color: colors.muted }}>
+          {/* **Le titre EST « Dernière prestation », en noir gras.** Sa demande
+              du 20 août 2026 : le nom qui suivait (le nom du chantier) répétait
+              le nom du client en tête d'écran — « je veux plus voir le nom en
+              dessous ». On l'a retiré, et c'est cette ligne-ci qui porte le noir
+              gras, avec la date. Le détail vit dans les puces en dessous. */}
+          <p className={libelleCaps} style={{ color: "#000", fontWeight: 700 }}>
             Dernière prestation
             {fiche.derniere.jour ? ` · ${jourCourt(fiche.derniere.jour)}` : ""}
           </p>
-          <h2
-            className="mt-[7px]"
-            style={{ fontFamily: font.display, fontWeight: 700, fontSize: 22, lineHeight: 1.16, color: "#000" }}
-          >
-            {fiche.derniere.nom}
-          </h2>
           {fiche.derniere.comprend.length > 0 && (
             <ul className="mt-[11px] list-none p-0">
               {fiche.derniere.comprend.map((quoi, rang) => (
@@ -98,8 +116,8 @@ export default async function FicheClientPage({ params }: { params: Promise<{ id
           largeur de son plus long contenu et pousse la page de côté. */}
       <div className="mt-6 grid grid-cols-3 gap-[7px] px-4">
         <Colonne titre="Devis" pieces={devis} rien="Aucun devis parti" />
-        <Colonne titre="Fiche chantier" pieces={fiches} rien="Aucun chantier terminé" />
         <Colonne titre="Facture" pieces={factures} rien="Aucune facture émise" />
+        <Colonne titre="Fiche chantier" pieces={fiches} rien="Aucun chantier terminé" />
       </div>
 
       {/* Trois colonnes vides sans un mot laisseraient croire à un écran cassé.

@@ -9,6 +9,121 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### La batterie ne bâtissait plus — et son rouge était devenu du décor
+
+**Trouvé en jouant `npm run verifier:avant-livraison` le 20 août :** l'étape
+« Construction » échouait sur *« Variable d'environnement obligatoire
+manquante : DATABASE_URL »*, en accusant une route d'agenda Google qui n'y est
+pour rien. Vérifié sur `main` sans aucune modification : **elle échouait déjà**.
+
+La construction collecte les données de page, ce qui instancie la configuration
+du serveur. La CI pose `DATABASE_URL` au niveau du job et bâtit donc sans
+broncher ; l'étape locale ne la posait pas. **La batterie ne jouait pas ce que
+la CI joue** — et une étape rouge en permanence s'apprend à être ignorée, ce qui
+fait perdre le seul contrôle qui protège le banc du mode lent (`CHANGELOG` du
+16 août : *« l'appli est vraiment très lente, mais vraiment »*).
+
+L'adresse est simplement lisible : aucune requête n'est faite pendant une
+construction.
+
+### Dicter le chantier dans le devis, et le retrouver rédigé
+
+**Sa demande :** *« Il existe un petit logiciel que des étudiants posent sur
+leur table pendant le cours : ils parlent, ça enregistre, et ensuite ça
+synthétise. Sur la page du devis, j'aimerais la même chose — qu'il appuie sur la
+note vocale, qu'il parle en expliquant les tâches à faire, et que
+l'intelligence artificielle comprenne et rédige ça sous forme de belles
+phrases. »*
+
+Le micro du devis existait depuis le 15 août, mais il n'écoutait qu'un artisan
+qui **corrige** des lignes déjà écrites. Il écoute désormais aussi celui qui
+**raconte** son chantier — les deux dans la même dictée, avec le même micro et
+sans rien changer à l'écran.
+
+Sur son exemple — *« j'aimerais tailler ma haie, enfin je ne sais plus, je crois
+que c'est quelque chose comme vingt mètres linéaires […] couper les
+inflorescences des hortensias, et tondre la pelouse »* — il obtient trois lignes
+proposées, à cocher : **Taille de haie** (20 ml), **Taille des inflorescences
+d'hortensias**, **Tonte de la pelouse**. Ses hésitations, ses commentaires et le
+récit de ce que son client lui a dit ne deviennent aucune ligne.
+
+**Aucun prix n'est inventé pour autant, et c'est délibéré** : il n'en a annoncé
+aucun, les trois lignes arrivent donc à chiffrer, signalées en rouge. Une ligne
+bien rédigée est plus crédible qu'une ligne bancale — raison de plus pour que
+les gardes sur le prix ne bougent pas.
+
+**Les mesures traversent jusqu'au document**, unité comprise : « vingt mètres
+linéaires » devient 20 ml, la graphie que le moteur de prix reconnaît. Une unité
+sans quantité est refusée (« 1 ml » serait un chiffre que personne n'a dit), une
+quantité recopiée dans l'unité aussi (« 20 × 20 mètres » aurait doublé sa haie).
+Le stère et l'arbre, eux, restent écrits tels qu'il les dit.
+
+**Ce qui n'a pas pu être vérifié ici, et qui l'est ailleurs.** La rédaction
+dépend d'un modèle de langage : cet environnement n'a aucune clé, la CI non
+plus. `npm run verifier:dictee` envoie sa dictée entière au vrai modèle et
+vérifie les trois lignes, la mesure et l'absence de prix — **il refuse de rendre
+un vert sans clé** plutôt que de laisser croire à un contrôle qui n'a pas eu
+lieu. Il reste à le jouer depuis son espace. La règle de rédaction, elle, est
+éprouvée ici et sait rougir : ses propres phrases recopiées doivent être
+refusées (`src/lib/redaction-lignes.ts`).
+### La flèche de la fiche client ramène d'où l'on vient
+
+**Sa remarque, capture à l'appui :** *« Quand j'appuie sur retour, ça ne me fait
+pas un retour, mais deux retours. Je reviens directement à la page vos
+chantiers. Or, je devrais rester dans la catégorie mes clients. »*
+
+Il avait raison, et c'était écrit en toutes lettres : la fiche renvoyait
+toujours à l'accueil (`href: "/"`), quel que soit l'écran d'où l'on venait.
+Depuis la liste des clients, un seul appui sautait donc **deux** écrans.
+
+**Un lien fixe se serait trompé de toute façon**, parce que la fiche s'ouvre
+depuis DEUX endroits : la liste des clients, et le tiroir d'un chantier. Renvoyer
+toujours vers les clients ferait sortir du chantier celui qui y était. L'origine
+voyage donc dans l'adresse, et `src/lib/retour-fiche-client.ts` la traduit — une
+seule fois, hors de tout écran.
+
+**Cette valeur vient de l'adresse, donc de n'importe qui.** Sans filtre,
+`?de=https://ailleurs.example` ferait de la flèche « retour » une porte de sortie
+vers un site étranger. Seule la forme d'un chemin de chantier est acceptée ; tout
+le reste retombe sur la liste des clients, sans erreur ni écran vide.
+
+Éprouvé dans les deux sens : en remettant `href: "/"`, les deux suites rougissent
+— celle sans navigateur sur « c'est exactement le double saut qu'il a signalé »,
+celle au navigateur sur les trois chemins.
+
+### La mesure du débit revient, et l'IA sait lire une image
+
+**Ses deux décisions du 20 août au soir :** *« Remets la mesure du débit, mais
+minimaliste, sans mots qui servent à rien, comme on vient de faire. Et pour la
+lecture du croquis, tu peux le faire — il y a déjà l'IA dans l'application,
+Anthropic et OpenAI. »*
+
+**Le débit, en trois cases.** Litres, secondes, bar — sous le déroulant du
+piquage —, puis le résultat. Les deux paragraphes d'explication qui
+l'entouraient ne reviennent pas. L'écran passe de 21 à 26 mots ; le plafond du
+contrôle passe de 22 à 28.
+
+**LA CORRECTION QUI COMPTE : j'avais dit à tort qu'Atlas ne savait pas lire une
+image.** `src/server/ai/services/lire-ticket.ts` fait **déjà** lire un ticket de
+caisse photographié — consigne système, image envoyée au fournisseur, réponse
+JSON, fonction pure qui la relit et refuse ce qu'elle ne comprend pas, éprouvée
+sans clé. Lire un croquis est le même patron.
+
+Ce n'était donc pas un mur mais une pièce à écrire, et la réponse inverse aurait
+enterré une fonctionnalité faisable. D'où **`CLAUDE.md` §5 ter** : avant de dire
+« l'application ne sait pas faire ça », chercher qui, dans le dépôt, fait déjà
+quelque chose d'approchant. Un `grep` de trente secondes sur `image` l'aurait
+donné.
+
+**Deux contrôles ont changé de sens, et c'est normal.** Celui qui exigeait
+l'aveu « Atlas ne sait pas lire » visait désormais le mensonge : il vérifie à
+présent que la page dit seulement que **son** plan est un exemple dessiné.
+Celui qui interdisait tout champ avant le plan en accepte trois — ceux du seau —
+et rougit au quatrième (`CLAUDE.md` §5 bis). **Un contrôle neuf s'y ajoute** :
+le débit affiché doit tomber juste, 10 L en 20 s font 1,80 m³/h — un écran qui
+montre une mesure et un résultat qui ne se suivent pas apprend à douter de tous
+ses chiffres.
+
 ### Diagnostic végétal — le troisième outil de Paysage, et sa base commence vide
 
 **Sa demande du 20 août 2026 :** *« un professionnel prend en photo une feuille,
@@ -133,6 +248,75 @@ leur nom quand la haie faisait l'inverse.
 dans Atlas app essai »*. Elle se donne par son adresse directe, et figure
 nommément dans la liste vérifiée après déploiement : une adresse transmise sans
 preuve qu'elle répond n'est pas une adresse.
+
+### L'écran d'arrosage dépouillé une seconde fois : vingt et un mots
+
+**Sa consigne du 20 août au soir**, après avoir vu la première version : *« le
+titre plan d'arrosage, et en dessous le piquage se fait avec le bandeau
+déroulant — tout ce qu'il y a entre les deux, tu me le supprimes. Ensuite le
+croquis et ses métrés avec la possibilité de mettre la photo, et tout le reste
+tu me le supprimes. Tous les autres mots, tu me les supprimes. Et je ne veux pas
+qu'il y ait marqué un et deux sur les deux machins. »*
+
+Sont partis : le surtitre, la phrase d'introduction, les numéros « 1 · » et
+« 2 · », le titre « D'où part l'eau » (le libellé du déroulant le dit déjà), les
+deux paragraphes d'aide et les deux encarts du bas. **Il reste un titre, un
+déroulant, un bouton — vingt et un mots.**
+
+**Ce que les encarts portaient n'est pas perdu** : les deux écrans qu'ils
+ouvraient restent atteignables depuis le plan. Sans aucune porte, ils seraient
+devenus des écrans morts — la faute des huit planches introuvables.
+
+**LE CONTRÔLE QUI MANQUAIT DEPUIS QUATRE PLAINTES.** `HANDOVER.md` le réclamait
+en toutes lettres : *« ce qui manque, c'est un contrôle qui compte les mots de
+chaque écran et rougit quand un écran en gagne ; sans lui, l'application
+regrossira, parce que chaque décision juste ajoute une ligne et que personne
+n'en retire jamais »*. Il existe désormais pour cet écran : **plafond 22 mots**,
+et aucun titre numéroté.
+
+**Il compte ce qu'il LIT, pas ce que le document contient** : la première
+version additionnait les trois options du déroulant, dont deux sont invisibles
+tant qu'il ne l'ouvre pas, et accusait l'écran de porter 33 mots quand il n'en
+montre que 21.
+
+### Les pièces de la maquette d'arrosage venaient de nulle part
+
+**Sa question, et elle valait mieux qu'une réponse rassurante :** *« les pièces
+que tu as utilisées pour l'exemple sont choisies au hasard ? »*
+
+**Oui, en partie.** « Turbines, portée 5 m · 0,30 m³/h » ne correspondait à
+aucune référence ; « colliers de prise en charge », « filtre à tamis » et
+« clapet anti-retour » n'existent nulle part. Les longueurs de tuyau — 28 m,
+34 m, 18 m — étaient écrites de mémoire.
+
+**Ce que le dépôt avait déjà, et que la maquette ignorait :**
+`appli/arrosage-catalogue.js`, où chaque entrée porte sa **source** — relevée de
+ses photos (`patron`, « Aqua Plus 2026, p. 11 ») ou `provisoire` —, et
+`appli/arrosage-calcul.js`, qui choisit les buses, l'écart, le recouvrement et
+la répartition en secteurs.
+
+**Le calcul a donc été joué pour de bon** (Playwright sur `arrosage.html`, le
+jardin de l'exemple saisi dans ses champs), et la maquette porte désormais ce
+qu'il rend : 6 turbines *3504 · buse 0,75* à 0,96 m³/h, un arroseur tous les
+5,33 m, recouvrement 98 % — **avec son avertissement** « la buse est un peu
+grande ici : l'écart tombe sous la portée », que la maquette taisait. Les
+électrovannes *100 DV 1" MM 9V*, la *Clarinette taraudée 1"*, le *Programmateur
+BL-IP 4 stations*, les *Coudes SBE 050 et 075* remplacent les pièces inventées.
+Et les longueurs de tuyau affichent **« à mesurer »**, comme le calcul le fait.
+
+**Deux incohérences trouvées à la capture, aucune par un test :** la page
+expliquait un total de 2,46 m³/h quand la somme des réseaux en fait 2,70 ; et le
+plan portait « amenée 18 m » quand la liste répondait « à mesurer » pour cette
+même amenée.
+
+**Trois gardes neuves**, chacune éprouvée rouge : chaque libellé doit être **à
+l'identique** un nom du catalogue, le total écrit doit être la somme des
+réseaux, et le plan ne doit pas chiffrer ce que la liste dit ignorer. **La
+première version de la garde du catalogue ne prouvait rien** — elle acceptait une
+inclusion, et « Turbine portée 5 m » passait grâce à l'entrée générique
+« Turbine ». Trouvé en la confrontant à l'invention qu'elle devait bannir.
+
+La règle est écrite dans `CLAUDE.md` §4 bis.
 
 ### La fiche client refondue, et un TROISIÈME document en PDF
 

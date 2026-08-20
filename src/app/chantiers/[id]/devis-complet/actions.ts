@@ -210,6 +210,10 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
         await ajouterLignePrix(ctx, chantierId, c.libelle, montantDeLaLigne(quantite, prix), {
           quantite,
           prixUnitaire: prix,
+          // **L'unité dictée suit la quantité jusqu'au document.** « vingt
+          // mètres linéaires » écrit sans elle donnerait une ligne « 20 × … »
+          // qui ne dit pas vingt de quoi — et c'est le client qui la lit.
+          unite: c.unite ?? undefined,
         });
         break;
       }

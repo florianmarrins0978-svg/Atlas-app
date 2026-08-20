@@ -25,6 +25,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
+
+**Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
+cette suite sont tombés ensemble :
+
+    ✗ chaque colonne porte ses PDF, du plus récent au plus ancien
+    ✗ les dates s'écrivent toutes de la même façon
+    ✗ rien ne déborde — la colonne la plus étroite fait 0 px
+
+**« 0 px » est le tell : les colonnes étaient VIDES.** La fiche n'avait aucun
+document à montrer, et les trois contrôles se sont plaints chacun à sa façon de
+la même absence. Jouée seule, et rejouée en batterie ensuite, la suite est
+verte : la cause est donc dans **ce que les suites précédentes laissent en
+base**, pas dans l'écran.
+
+**Pourquoi ça compte plus qu'un rouge de passage.** Un contrôle qui échoue au
+hasard apprend à ignorer le rouge, et l'on perd alors tout ce qu'il surveille.
+Celui-ci est neuf (posé le même jour, par une autre conversation) et il garde la
+refonte que le patron vient de demander.
+
+**Ce qu'il faudrait :** que la suite crée elle-même les documents dont elle a
+besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'elle
+refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
+(`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
+
 ## 🌿 Diagnostic végétal — le module tourne, il lui manque des FICHES
 
 Le code est fait et éprouvé (`ARCHITECTURE.md` §135). Ce qui reste ne se code
@@ -190,8 +215,8 @@ le croquis. **Rien n'est codé** ; `appli/arrosage.html` n'a pas été touchée.
 
 | | La question | Pourquoi elle ne se tranche pas sans lui |
 |---|---|---|
-| 1 | **Le débit, mesuré ou supposé ?** | La mesure au seau est partie avec le reste. Or c'est elle qui décide du nombre d'arroseurs par réseau. Deux façons de vivre avec : le supposer d'après le piquage **et l'écrire** (« estimé, à vérifier au seau »), ou le demander **une seule fois, à la fin**, quand le plan est déjà à l'écran |
-| 2 | **La lecture du croquis** | Elle n'existe pas et demande une IA qui regarde une image — donc un **contrat fournisseur**, qui est à lui (`docs/A-FAIRE.md`). D'ici là, le plan ne peut pas sortir d'une photo. Un chemin court existe : **dicter** les mesures, ce qu'Atlas sait déjà transcrire |
+| 1 | ~~Le débit, mesuré ou supposé ?~~ — **TRANCHÉ le 20 août : mesuré** | *« Remets la mesure du débit, mais minimaliste, sans mots qui servent à rien. »* Trois cases — litres, secondes, bar — sous le déroulant du piquage, et le résultat en dessous. Les paragraphes qui l'entouraient ne reviennent pas |
+| 2 | ~~La lecture du croquis~~ — **TRANCHÉ le 20 août : on la code** | Il a rappelé que l'IA est là, et il avait raison : `src/server/ai/services/lire-ticket.ts` fait déjà lire un ticket photographié (Anthropic ou OpenAI). **Même patron à reprendre** : consigne système, image, réponse JSON, fonction pure qui la relit et refuse ce qu'elle ne comprend pas. Elle rendra une **proposition** qu'il corrige — jamais un plan posé dans son dos —, et ce qu'elle n'a pas lu **reste vide et signalé**. À rendre : les surfaces, les longueurs, et où est le point d'eau ; le reste se calcule déjà |
 
 **Ce que la lecture devra rendre, le jour venu :** les surfaces de chaque partie
 du jardin, les longueurs de haie et de massif, et où se trouve le point d'eau.
@@ -273,7 +298,68 @@ arrose largement à côté, c'est là qu'il faudra la brancher.
 
 ---
 
+## ⏳ « Les belles phrases » ne sont pas encore prouvées — 20 août 2026
+
+**Le code est fait, le contrôle est écrit, il n'a pas pu être joué.** Le micro
+du devis accepte désormais qu'il RACONTE son chantier plutôt que de corriger des
+lignes (`ARCHITECTURE.md` §113, section du 20 août). Mais la rédaction elle-même
+est faite par un modèle de langage : ni cet environnement ni la CI n'ont de clé,
+et **un contrôle qui mesure zéro est pire qu'absent**.
+
+```bash
+npm run verifier:dictee     # depuis son espace, où ses clés sont posées
+```
+
+Il envoie sa dictée entière au vrai modèle et vérifie : trois lignes et pas une
+de plus, chacune rédigée (pas de « je », pas d'hésitation recopiée), les vingt
+mètres linéaires retenus en 20 ml sur la ligne de la haie, aucun prix inventé —
+et, en second passage, que ses corrections du 15 août sont toujours comprises.
+**Sans clé, il sort en erreur** plutôt que de rendre un vert vide.
+
+**Tant qu'il n'a pas été joué au vert, ne pas écrire ailleurs que la promesse
+est tenue.** Ce qui est éprouvé ici, c'est tout ce que le dépôt fait de la
+réponse du modèle (mesures, unités, refus d'inventer un prix) et la règle qui
+dit ce qui trahit une phrase recopiée — pas la réponse elle-même.
+
+**Si le modèle rend autre chose que trois lignes propres**, l'invite est le seul
+endroit à toucher : `systeme()` dans
+`src/server/ai/services/retouches-devis-service.ts`, section « Rédiger les
+libellés ». Ne pas déplacer la règle vers du code : ce qui décide de « belle
+phrase », c'est le modèle, et un nettoyage par expressions régulières après coup
+mentirait sur ce qu'il a vraiment compris.
+
+---
+
+## ~~`test-fiche-client-e2e.ts` rouge sur `main`~~ — **réglé le 20 août 2026, par une autre session**
+
+Constaté en fin d'après-midi : deux cas rouges (l'ordre des colonnes, et le
+titre de la dernière prestation), **vérifiés rouges sur `origin/main` seul**,
+dans un espace de travail à part et sans la moindre modification. Écrit ici
+plutôt que corrigé, délibérément : c'était le lot d'une autre session, sans
+doute encore en cours, et réécrire son attente pendant qu'elle travaille dessus
+aurait tranché une question qui n'était pas la nôtre.
+
+**Elle l'a réglé quelques heures plus tard**, et la batterie suivante est
+repartie au vert (102/102 suites navigateur). La ligne reste ici parce que la
+conduite, elle, se garde : devant une suite rouge qu'on n'a pas cassée, on
+vérifie sur `main` seul, on l'écrit, et on laisse la main à qui tient le lot.
+
+---
+
 ## À surveiller — non reproduit
+
+### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août
+
+Pendant la batterie du 20 août, un seul cas rouge : *« Depuis la feuille du
+chevron aussi, l'équipe se retire »*. **Rejouée seule sur la même base : les
+neuf cas passent.** Rien n'a été corrigé, parce que rien de reproductible n'a
+été trouvé — et le lot en cours ne touche ni au planning ni aux équipes.
+
+Même piste que la suite du 18 août ci-dessous : les suites navigateur partagent
+une base semée une seule fois. Si elle retombe, chercher quelle suite touche aux
+équipes de démonstration avant elle, plutôt que de la rejouer en croyant que ça
+suffit.
+
 
 ### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
 

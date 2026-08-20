@@ -9295,6 +9295,77 @@ transcription n'est branché sur cette installation ». Montrer le texte de
 remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
 que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
 
+### Le 20 août 2026 : il ne corrige plus, il DICTE le chantier
+
+**Sa demande, devant un devis vide :** *« Je sais qu'il existe un petit logiciel
+que certains étudiants utilisent pour les cours, doté d'une intelligence
+artificielle. Ils le posent sur leur table, ils parlent, ça enregistre et
+ensuite ça synthétise. Sur la page du devis, j'aimerais que ça soit un peu la
+même chose : que l'utilisateur appuie sur la note vocale, qu'il se mette à
+parler en expliquant les différentes tâches à faire, que l'intelligence
+artificielle comprenne et rédige ça sous forme de belles phrases. »* Avec son
+exemple, hésitations comprises :
+
+> « j'aimerais tailler ma haie, c'est une haie qui fait, enfin je ne sais plus,
+> mais je crois que c'est quelque chose comme vingt mètres linéaires. Alors mon
+> client, qu'est-ce qu'il me disait déjà ? […] il y avait également couper les
+> inflorescences des hortensias, et tondre la pelouse, je crois, mais je ne suis
+> plus sûr. »
+
+Trois travaux noyés dans une réflexion à voix haute, un seul portant une mesure,
+aucun portant de prix. Ce qu'il attend au bout : **trois lignes de devis
+rédigées**, pas trois phrases recopiées.
+
+**Le même micro, pas un second.** Ces deux façons de parler — corriger et
+raconter — arrivent mêlées dans la même dictée (« rajoute la tonte de la
+pelouse, et supprime-moi la deuxième ligne »). Deux micros côte à côte
+l'auraient obligé à choisir lequel toucher *avant* de savoir ce qu'il allait
+dire. L'invite du modèle porte donc les deux cas, et rien n'a bougé à l'écran.
+
+**Ce que la rédaction n'autorise pas pour autant.** Une ligne bien écrite est
+plus crédible qu'une ligne bancale — c'est exactement pourquoi les deux gardes
+sur le prix ne bougent pas d'un pouce : une dictée sans montant donne des lignes
+**à chiffrer**, jamais des lignes chiffrées au jugé. Un devis en belles phrases
+mais faux est plus dangereux qu'un devis vide.
+
+**Les mesures traversent, l'unité comprise.** « Vingt mètres linéaires » arrive
+en `quantite: "20"`, `unite: "ml"` jusqu'à la ligne du devis. Le passage par
+`uniteDictee` (`src/lib/unites-tarif.ts`) n'est pas cosmétique : le moteur de
+prix reconnaît « jour/homme » **à la lettre près**, et enregistrer « jours
+homme » parce qu'il l'a dit au pluriel ferait cesser une multiplication en
+silence. Ce que la liste ignore — le stère, l'arbre — reste écrit tel quel : la
+liste ne ferme rien.
+
+**Une unité ne s'écrit jamais sans sa quantité.** « Des mètres linéaires » sans
+nombre donnerait « 1 ml » sur le devis, c'est-à-dire un chiffre que personne n'a
+prononcé. Et une quantité recopiée dans l'unité (« 20 mètres ») est refusée
+plutôt que gardée : elle aurait doublé sa haie.
+
+**Une mesure hésitante se garde ; un prix hésitant, non.** Asymétrie voulue :
+« je crois que ça fait vingt mètres » est un chiffre qu'il ira vérifier sur
+place, et le lui redemander ne lui apprend rien. Un prix approximatif, lui, part
+chez le client.
+
+### Prouver « les belles phrases » sans clé : la règle d'un côté, le modèle de l'autre
+
+La rédaction est faite par un modèle de langage. Elle ne peut donc être mesurée
+ni ici, ni en CI (`ci.yml` pose une clé de remplacement) — et **un contrôle qui
+mesure zéro est pire qu'absent** (`CLAUDE.md` §5). Le contrôle est donc coupé en
+deux :
+
+| | Où | Ce que ça prouve |
+|---|---|---|
+| La **règle** | `src/lib/redaction-lignes.ts`, jouée par `scripts/test-retouches-devis.ts` | Ce qui trahit une phrase recopiée : première personne, verbe de la demande, hésitation, ponctuation de phrase, minuscule initiale, longueur. **Confrontée à ses propres phrases**, qui doivent la faire rougir |
+| Le **modèle** | `npm run verifier:dictee` (`scripts/verifier-dictee-devis.mts`) | Sa dictée entière envoyée au vrai modèle : trois lignes, rédigées, la mesure retenue, aucun prix inventé — et ses corrections du 15 août toujours comprises |
+
+`verifier:dictee` **refuse de rendre un vert sans clé** : il sort en erreur en
+disant qu'il n'a rien vérifié. C'est la seule façon d'éviter qu'une commande
+verte fasse croire à une vérification qui n'a jamais eu lieu.
+
+**Au 20 août 2026, il n'a donc pas encore été joué** : cet environnement n'a
+aucune clé. Ce qui est éprouvé ici, c'est tout ce que le dépôt fait de la
+réponse du modèle ; ce qui ne l'est pas, c'est la réponse elle-même.
+
 ---
 
 ---
@@ -11078,6 +11149,51 @@ vérifié dans les deux sens avant d'écrire ces lignes.
 constructions se marchaient dessus à 6 h 10. La mémoire était encore ample à cet
 instant (4,3 Gio disponibles) : ce n'est donc pas la saturation du 17 août. La
 cause n'a pas été reproduite ici, et elle reste ouverte dans `TODO.md`.
+
+## 135. Un écran atteint depuis deux endroits ne peut pas avoir un retour fixe
+
+**Sa remarque du 20 août 2026 :** *« quand j'appuie sur retour, ça ne me fait pas
+un retour, mais deux retours »*. La fiche d'un client renvoyait à l'accueil, quel
+que soit l'endroit d'où on l'avait ouverte.
+
+**Le réflexe qu'il faut éviter : « mettons `/clients` à la place ».** Ce serait
+juste pour lui aujourd'hui et faux dès demain — la fiche s'ouvre AUSSI depuis le
+tiroir d'un chantier, et l'on ferait alors sortir du chantier celui qui y était.
+Un retour fixe se trompe forcément pour l'un des deux appelants.
+
+**L'origine voyage donc dans l'adresse** (`?de=/chantiers/<id>`), et
+`src/lib/retour-fiche-client.ts` la traduit en un couple `{href, libelle}`. Les
+deux appelants la posent ou l'omettent ; l'écran, lui, ne décide de rien.
+
+### Le filtre n'est pas une précaution de principe
+
+Cette valeur vient de l'adresse — donc de n'importe qui. Sans filtre,
+`?de=https://ailleurs.example` ferait de la flèche « retour » une sortie vers un
+site étranger, et `?de=javascript:…` pire encore. On n'accepte donc **qu'une
+forme connue** — un chemin de chantier — et tout le reste retombe sur la liste
+des clients. Jamais une erreur, jamais un écran vide : une sortie de secours qui
+casse est pire que pas de sortie.
+
+### Deux sessions ont corrigé ce défaut le même jour, et pas de la même façon
+
+**À savoir avant de « simplifier ».** Le 20 août 2026, une autre conversation a
+posé `retour={{ href: "/clients", … }}` — un lien fixe — pendant que celle-ci
+posait l'origine dans l'adresse. À la fusion, c'est **la version qui sait d'où
+l'on vient** qui a été gardée, et ce n'est pas une préférence de style : le lien
+fixe est juste depuis la liste des clients et faux depuis le tiroir d'un
+chantier, où il fait sortir du chantier celui qui y était.
+
+Le lien fixe reviendra sous les doigts de quelqu'un qui trouvera le paramètre
+`?de=` inutilement compliqué. Il ne l'est pas — il est le seul moyen de ne pas
+se tromper pour l'un des deux appelants. La suite sans navigateur refuse
+d'ailleurs de voir revenir un retour en dur dans cet écran.
+
+### La flèche reste un vrai lien, et c'est ce qui la sauve
+
+`EnTeteEcran` rend un `<a href>`. Elle fonctionne donc **même sur une page qui
+ne s'est pas animée** — le navigateur suit le lien tout seul. C'est exactement ce
+qu'on veut d'une sortie de secours, et c'est pourquoi sa suite navigateur tient
+là où celle de la recherche doit s'abstenir (§134).
 
 ## 134. Chercher un client : la règle vit hors de l'écran, et la croix aussi
 
