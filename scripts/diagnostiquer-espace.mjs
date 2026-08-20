@@ -121,7 +121,13 @@ function ligneCodeServi() {
   if (bati) return court(bati);
   if (echecBati) {
     const quand = (echecBati.match(/^quand: (.+)$/m) ?? [])[1] ?? "?";
-    return `AUCUNE — la construction a ÉCHOUÉ (${quand}). Le banc compile chaque écran à l'ouverture : il est LENT, et le restera.`;
+    // **« et le restera » était vrai, et ne l'est plus — 20 août 2026.** Le
+    // veilleur s'arrêtait après trois tentatives ; il continue désormais au
+    // ralenti, une par demi-heure. Laisser la phrase d'avant ferait conclure
+    // qu'il n'y a rien à attendre, et enverrait rallumer un espace qui est en
+    // train de se réparer tout seul — une consigne qui accuse à tort coûte
+    // plus cher que pas de consigne du tout (`CLAUDE.md` §5).
+    return `AUCUNE — la construction a ÉCHOUÉ (${quand}). Le banc compile chaque écran à l'ouverture : il est LENT en attendant, et le veilleur retente.`;
   }
   return "aucune version bâtie — construction en cours, ou pas encore lancée (le banc est lent en attendant)";
 }
@@ -163,9 +169,12 @@ if (echecBati) {
   soucis.push(
     "LA CONSTRUCTION A ÉCHOUÉ : le banc reste en mode développement, où chaque\n" +
       "     écran met jusqu'à une minute à s'ouvrir la PREMIÈRE fois. C'est la cause\n" +
-      "     d'une application « très lente », et elle ne se corrige pas toute seule.\n" +
+      "     d'une application « très lente ». Le veilleur retente — trois fois de\n" +
+      "     suite à dix minutes, puis une fois par demi-heure, indéfiniment : le\n" +
+      "     banc peut donc redevenir rapide sans que personne y touche.\n" +
       "     Les relevés de disque et de mémoire ci-dessus sont pris à l'instant de\n" +
-      "     l'échec : c'est là qu'il faut regarder en premier."
+      "     l'échec : c'est là qu'il faut regarder pour savoir POURQUOI elle tombe.\n" +
+      "     Rallumer l'espace reste le geste qui répare le plus vite."
   );
 }
 

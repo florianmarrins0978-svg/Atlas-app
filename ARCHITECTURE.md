@@ -11011,6 +11011,74 @@ témoin, lui, reste vert : la différence porte bien sur ce qu'on a changé.
 
 ---
 
+## 133. « Il est LENT, et le restera » — la phrase qui était vraie, et le trou qu'elle avouait
+
+**Le 20 août 2026 à 6 h 40, le patron écrit : *« l'application est lente corrige
+ça »*.** Sa fiche disait tout, et sans qu'il ait rien à recopier :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (06:10:13Z)
+dit: ⨯ Another next build process is already running.
+Serveur    : répond sur le port 3000
+Mémoire    : 8,3 G au total, 7,3 G pris, 980 M disponibles
+```
+
+Le serveur répondait — c'est le mode développement, qui répond très bien et
+compile chaque écran à l'ouverture. **L'application n'était donc pas en panne :
+elle était lente, et c'est pire, parce que rien n'a l'air cassé.**
+
+### Ce qui était déjà réparé, et qui ne suffisait pas
+
+Tout le mécanisme existait (§126, §131) : la construction orpheline est délogée
+avant de bâtir, le verrou de banc est exclusif, une seconde tentative part quand
+c'est le verrou qui a parlé, et le veilleur relance la construction même quand le
+serveur répond.
+
+**Le trou était dans le mot « borné ».** Le veilleur s'arrêtait après **trois**
+tentatives espacées de dix minutes. Passé une demi-heure, plus rien au monde ne
+retentait quoi que ce soit — et la fiche l'écrivait noir sur blanc : *« il est
+LENT, et le restera »*. Le seul remède était que le patron rallume son espace,
+un geste que personne ne lui avait demandé, pour une panne qu'il ne pouvait pas
+voir.
+
+Trente minutes de patience, c'était le bon ordre de grandeur pour la cause qu'on
+avait en tête le 18 août : une mémoire saturée qui se libère. Ce n'est pas le
+bon ordre de grandeur pour **une journée de travail** : la machine a 8 Go, il
+l'occupe du matin au soir, et la fenêtre où une construction peut passer arrive
+quand elle arrive.
+
+### Ce qui a changé : c'est le RYTHME qui est borné, plus le nombre
+
+Après la salve rapide — trois tentatives à dix minutes —, le veilleur continue
+**indéfiniment, une par demi-heure**. Deux ou trois minutes de processeur toutes
+les trente minutes ne maintiennent personne à genoux, et l'on finit par tomber
+sur le moment où la machine peut faire passer la construction.
+
+Ce qui reste interdit n'a pas bougé : **jamais deux constructions à la fois**
+(`pgrep -f '[n]ext build'` avant chaque tentative), et jamais avant que le délai
+soit écoulé.
+
+### Et la fiche a cessé de mentir
+
+« Il est LENT, et le restera » était exact tant que le veilleur renonçait. Le
+laisser après le correctif ferait conclure qu'il n'y a rien à attendre, et
+enverrait rallumer un espace en train de se réparer tout seul — une consigne qui
+accuse à tort coûte plus cher que pas de consigne du tout (`CLAUDE.md` §5). Elle
+dit maintenant que le veilleur retente, à quel rythme, et que rallumer reste le
+geste le plus rapide.
+
+### Le contrôle, et il sait rougir
+
+`scripts/test-relance-construction.ts` gagne un cas : pas lent à zéro, salve d'une
+seule tentative, et l'on exige **plus d'une** relance. Confronté à l'ancienne
+borne, il rend « 1 tentative(s) : le veilleur s'est arrêté après la salve » —
+vérifié dans les deux sens avant d'écrire ces lignes.
+
+**Ce qui n'est PAS réglé, et qu'il ne faut pas croire acquis :** *pourquoi* deux
+constructions se marchaient dessus à 6 h 10. La mémoire était encore ample à cet
+instant (4,3 Gio disponibles) : ce n'est donc pas la saturation du 17 août. La
+cause n'a pas été reproduite ici, et elle reste ouverte dans `TODO.md`.
+
 ## §127. Le quinconce est un damier, et il se vérifie au lieu de se supposer
 
 **Son croquis du 18 août 2026**, deux couloirs superposés sur du papier
