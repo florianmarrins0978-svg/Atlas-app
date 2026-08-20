@@ -241,7 +241,52 @@ arrose largement à côté, c'est là qu'il faudra la brancher.
 
 ---
 
+## ⏳ « Les belles phrases » ne sont pas encore prouvées — 20 août 2026
+
+**Le code est fait, le contrôle est écrit, il n'a pas pu être joué.** Le micro
+du devis accepte désormais qu'il RACONTE son chantier plutôt que de corriger des
+lignes (`ARCHITECTURE.md` §113, section du 20 août). Mais la rédaction elle-même
+est faite par un modèle de langage : ni cet environnement ni la CI n'ont de clé,
+et **un contrôle qui mesure zéro est pire qu'absent**.
+
+```bash
+npm run verifier:dictee     # depuis son espace, où ses clés sont posées
+```
+
+Il envoie sa dictée entière au vrai modèle et vérifie : trois lignes et pas une
+de plus, chacune rédigée (pas de « je », pas d'hésitation recopiée), les vingt
+mètres linéaires retenus en 20 ml sur la ligne de la haie, aucun prix inventé —
+et, en second passage, que ses corrections du 15 août sont toujours comprises.
+**Sans clé, il sort en erreur** plutôt que de rendre un vert vide.
+
+**Tant qu'il n'a pas été joué au vert, ne pas écrire ailleurs que la promesse
+est tenue.** Ce qui est éprouvé ici, c'est tout ce que le dépôt fait de la
+réponse du modèle (mesures, unités, refus d'inventer un prix) et la règle qui
+dit ce qui trahit une phrase recopiée — pas la réponse elle-même.
+
+**Si le modèle rend autre chose que trois lignes propres**, l'invite est le seul
+endroit à toucher : `systeme()` dans
+`src/server/ai/services/retouches-devis-service.ts`, section « Rédiger les
+libellés ». Ne pas déplacer la règle vers du code : ce qui décide de « belle
+phrase », c'est le modèle, et un nettoyage par expressions régulières après coup
+mentirait sur ce qu'il a vraiment compris.
+
+---
+
 ## À surveiller — non reproduit
+
+### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août
+
+Pendant la batterie du 20 août, un seul cas rouge : *« Depuis la feuille du
+chevron aussi, l'équipe se retire »*. **Rejouée seule sur la même base : les
+neuf cas passent.** Rien n'a été corrigé, parce que rien de reproductible n'a
+été trouvé — et le lot en cours ne touche ni au planning ni aux équipes.
+
+Même piste que la suite du 18 août ci-dessous : les suites navigateur partagent
+une base semée une seule fois. Si elle retombe, chercher quelle suite touche aux
+équipes de démonstration avant elle, plutôt que de la rejouer en croyant que ça
+suffit.
+
 
 ### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
 

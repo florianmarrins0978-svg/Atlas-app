@@ -9295,6 +9295,77 @@ transcription n'est branché sur cette installation ». Montrer le texte de
 remplacement comme une dictée reviendrait à corriger un devis d'après une phrase
 que personne n'a prononcée (`src/server/ai/providers/transcription/dev.ts`).
 
+### Le 20 août 2026 : il ne corrige plus, il DICTE le chantier
+
+**Sa demande, devant un devis vide :** *« Je sais qu'il existe un petit logiciel
+que certains étudiants utilisent pour les cours, doté d'une intelligence
+artificielle. Ils le posent sur leur table, ils parlent, ça enregistre et
+ensuite ça synthétise. Sur la page du devis, j'aimerais que ça soit un peu la
+même chose : que l'utilisateur appuie sur la note vocale, qu'il se mette à
+parler en expliquant les différentes tâches à faire, que l'intelligence
+artificielle comprenne et rédige ça sous forme de belles phrases. »* Avec son
+exemple, hésitations comprises :
+
+> « j'aimerais tailler ma haie, c'est une haie qui fait, enfin je ne sais plus,
+> mais je crois que c'est quelque chose comme vingt mètres linéaires. Alors mon
+> client, qu'est-ce qu'il me disait déjà ? […] il y avait également couper les
+> inflorescences des hortensias, et tondre la pelouse, je crois, mais je ne suis
+> plus sûr. »
+
+Trois travaux noyés dans une réflexion à voix haute, un seul portant une mesure,
+aucun portant de prix. Ce qu'il attend au bout : **trois lignes de devis
+rédigées**, pas trois phrases recopiées.
+
+**Le même micro, pas un second.** Ces deux façons de parler — corriger et
+raconter — arrivent mêlées dans la même dictée (« rajoute la tonte de la
+pelouse, et supprime-moi la deuxième ligne »). Deux micros côte à côte
+l'auraient obligé à choisir lequel toucher *avant* de savoir ce qu'il allait
+dire. L'invite du modèle porte donc les deux cas, et rien n'a bougé à l'écran.
+
+**Ce que la rédaction n'autorise pas pour autant.** Une ligne bien écrite est
+plus crédible qu'une ligne bancale — c'est exactement pourquoi les deux gardes
+sur le prix ne bougent pas d'un pouce : une dictée sans montant donne des lignes
+**à chiffrer**, jamais des lignes chiffrées au jugé. Un devis en belles phrases
+mais faux est plus dangereux qu'un devis vide.
+
+**Les mesures traversent, l'unité comprise.** « Vingt mètres linéaires » arrive
+en `quantite: "20"`, `unite: "ml"` jusqu'à la ligne du devis. Le passage par
+`uniteDictee` (`src/lib/unites-tarif.ts`) n'est pas cosmétique : le moteur de
+prix reconnaît « jour/homme » **à la lettre près**, et enregistrer « jours
+homme » parce qu'il l'a dit au pluriel ferait cesser une multiplication en
+silence. Ce que la liste ignore — le stère, l'arbre — reste écrit tel quel : la
+liste ne ferme rien.
+
+**Une unité ne s'écrit jamais sans sa quantité.** « Des mètres linéaires » sans
+nombre donnerait « 1 ml » sur le devis, c'est-à-dire un chiffre que personne n'a
+prononcé. Et une quantité recopiée dans l'unité (« 20 mètres ») est refusée
+plutôt que gardée : elle aurait doublé sa haie.
+
+**Une mesure hésitante se garde ; un prix hésitant, non.** Asymétrie voulue :
+« je crois que ça fait vingt mètres » est un chiffre qu'il ira vérifier sur
+place, et le lui redemander ne lui apprend rien. Un prix approximatif, lui, part
+chez le client.
+
+### Prouver « les belles phrases » sans clé : la règle d'un côté, le modèle de l'autre
+
+La rédaction est faite par un modèle de langage. Elle ne peut donc être mesurée
+ni ici, ni en CI (`ci.yml` pose une clé de remplacement) — et **un contrôle qui
+mesure zéro est pire qu'absent** (`CLAUDE.md` §5). Le contrôle est donc coupé en
+deux :
+
+| | Où | Ce que ça prouve |
+|---|---|---|
+| La **règle** | `src/lib/redaction-lignes.ts`, jouée par `scripts/test-retouches-devis.ts` | Ce qui trahit une phrase recopiée : première personne, verbe de la demande, hésitation, ponctuation de phrase, minuscule initiale, longueur. **Confrontée à ses propres phrases**, qui doivent la faire rougir |
+| Le **modèle** | `npm run verifier:dictee` (`scripts/verifier-dictee-devis.mts`) | Sa dictée entière envoyée au vrai modèle : trois lignes, rédigées, la mesure retenue, aucun prix inventé — et ses corrections du 15 août toujours comprises |
+
+`verifier:dictee` **refuse de rendre un vert sans clé** : il sort en erreur en
+disant qu'il n'a rien vérifié. C'est la seule façon d'éviter qu'une commande
+verte fasse croire à une vérification qui n'a jamais eu lieu.
+
+**Au 20 août 2026, il n'a donc pas encore été joué** : cet environnement n'a
+aucune clé. Ce qui est éprouvé ici, c'est tout ce que le dépôt fait de la
+réponse du modèle ; ce qui ne l'est pas, c'est la réponse elle-même.
+
 ---
 
 ---

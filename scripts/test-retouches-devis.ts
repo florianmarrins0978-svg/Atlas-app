@@ -13,6 +13,7 @@ import {
   type Retouche,
   type RetoucheResolue,
 } from "../src/lib/retouches-devis";
+import { defautsDeRedaction } from "../src/lib/redaction-lignes";
 
 // Retoucher un devis à la voix : que ce qu'il DIT tombe sur la bonne ligne.
 //
@@ -81,7 +82,7 @@ cas("« le prix de la taille de haie » retrouve « Taille de haie — 12 m »",
 // « rajoute-moi une ligne, broyage des branches, et tu mets cinq cents euros »
 cas("« rajoute broyage des branches à 500 » ajoute sans toucher au reste", () => {
   const [r] = resoudreRetouches(DEVIS, [
-    { type: "ajouter", libelle: "Broyage des branches", quantite: "1", prixUnitaire: "500" },
+    { type: "ajouter", libelle: "Broyage des branches", quantite: "1", unite: null, prixUnitaire: "500" },
   ]);
   assert.equal(r.etat, "ok");
   assert.equal(r.ligne, null, "un ajout ne tombe sur aucune ligne existante");
@@ -125,7 +126,7 @@ cas("une correction d'orthographe se dit sur le libellé, sans toucher au prix",
 // avec un chiffre que personne n'a dit.
 cas("un ajout sans montant arrive VIDE, et le dit", () => {
   const [r] = resoudreRetouches(DEVIS, [
-    { type: "ajouter", libelle: "Broyage des branches", quantite: null, prixUnitaire: null },
+    { type: "ajouter", libelle: "Broyage des branches", quantite: null, unite: null, prixUnitaire: null },
   ]);
   assert.equal(r.retouche.type === "ajouter" && r.retouche.prixUnitaire, null);
   assert.match(direRetouche(r).detail, /Aucun prix dicté/);
@@ -197,7 +198,7 @@ cas("« supprime la deuxième, change la troisième » ne décale pas les rangs"
 cas("chaque retouche dite rend exactement une retouche résolue, dans l'ordre", () => {
   const dictees: Retouche[] = [
     { type: "retirer", cible: { rang: 2 } },
-    { type: "ajouter", libelle: "Broyage", quantite: null, prixUnitaire: "500" },
+    { type: "ajouter", libelle: "Broyage", quantite: null, unite: null, prixUnitaire: "500" },
     { type: "quantite", cible: { libelle: "taille de haie" }, quantite: "18" },
   ];
   const rs = resoudreRetouches(DEVIS, dictees);
@@ -310,12 +311,13 @@ cas("un changement applicable porte l'identifiant de la ligne, pas son rang", ()
 
 cas("un ajout reste applicable sans prix, et le prix reste nul", () => {
   const [r] = resoudreRetouches(DEVIS, [
-    { type: "ajouter", libelle: "Broyage des branches", quantite: null, prixUnitaire: null },
+    { type: "ajouter", libelle: "Broyage des branches", quantite: null, unite: null, prixUnitaire: null },
   ]);
   assert.deepEqual(changementApplicable(r), {
     type: "ajouter",
     libelle: "Broyage des branches",
     quantite: null,
+    unite: null,
     prixUnitaire: null,
   });
 });
@@ -357,6 +359,127 @@ cas("le modèle sait rendre une réduction, et ses bornes sont celles du devis",
     { type: "reduction", pourcent: "100" },
     { type: "reduction", pourcent: null },
   ]);
+});
+
+// ── Sa dictée du 20 août 2026 : il RACONTE le chantier ──────────────────────
+//
+// *« qu'il appuie sur la note vocale, qu'il se mette à parler en expliquant les
+// tâches à faire, que l'intelligence artificielle comprenne et rédige ça sous
+// forme de belles phrases »* — et son exemple, hésitations comprises :
+//
+//   « j'aimerais tailler ma haie, c'est une haie qui fait, enfin je ne sais
+//   plus, mais je crois que c'est quelque chose comme vingt mètres linéaires
+//   […] couper les inflorescences des hortensias, et tondre la pelouse, je
+//   crois, mais je ne suis plus sûr. »
+//
+// **Ce que ces cas éprouvent, et ce qu'ils n'éprouvent pas.** Ce qui est joué
+// ici, c'est ce que le dépôt fait de la réponse du modèle : les mesures, les
+// unités, le refus d'inventer un prix, et la RÈGLE de rédaction — confrontée à
+// ses propres phrases, qui doivent la faire rougir. La rédaction elle-même
+// dépend d'un modèle et se vérifie là où il y a une clé
+// (`scripts/verifier-dictee-devis.mts`).
+
+console.log("\n— Sa dictée du chantier, telle que le modèle la rend —");
+
+/** Ce qu'un modèle correct répond à sa dictée du 20 août 2026. */
+const SA_DICTEE = {
+  retouches: [
+    { type: "ajouter", libelle: "Taille de haie", quantite: "20", unite: "mètres linéaires", prixUnitaire: null },
+    { type: "ajouter", libelle: "Taille des inflorescences d'hortensias", quantite: null, unite: null, prixUnitaire: null },
+    { type: "ajouter", libelle: "Tonte de la pelouse", quantite: null, unite: null, prixUnitaire: null },
+  ],
+};
+
+cas("ses trois travaux deviennent trois lignes, dans l'ordre où il les dit", () => {
+  const r = lireRetouchesDuModele(SA_DICTEE);
+  assert.equal(r.length, 3, "un travail dicté = une ligne, ni fondue ni découpée");
+  assert.deepEqual(
+    r.map((x) => (x.type === "ajouter" ? x.libelle : x.type)),
+    ["Taille de haie", "Taille des inflorescences d'hortensias", "Tonte de la pelouse"]
+  );
+});
+
+cas("« vingt mètres linéaires » arrive en 20 ml, pas en toutes lettres", () => {
+  const [haie] = lireRetouchesDuModele(SA_DICTEE);
+  assert.equal(haie.type === "ajouter" && haie.quantite, "20");
+  // « mètres linéaires » est ce qu'il PRONONCE ; « ml » est ce que le moteur de
+  // prix reconnaît, à la lettre près (`unites-tarif.ts`).
+  assert.equal(haie.type === "ajouter" && haie.unite, "ml");
+});
+
+cas("une dictée sans montant ne chiffre RIEN, même bien rédigée", () => {
+  const r = lireRetouchesDuModele(SA_DICTEE);
+  for (const x of r) {
+    assert.equal(x.type === "ajouter" && x.prixUnitaire, null, `${JSON.stringify(x)} porte un prix que personne n'a dit`);
+  }
+  const [haie] = resoudreRetouches([], r);
+  // Sa mesure se lit AVANT le prix manquant : c'est elle qu'il relit en premier.
+  assert.equal(direRetouche(haie).detail, "20 ml — aucun prix dicté, à vous de la chiffrer");
+});
+
+cas("une unité sans quantité ne s'écrit pas : « 1 ml » serait un chiffre inventé", () => {
+  const [r] = lireRetouchesDuModele({
+    retouches: [{ type: "ajouter", libelle: "Taille de haie", quantite: null, unite: "mètres linéaires", prixUnitaire: null }],
+  });
+  assert.equal(r.type === "ajouter" && r.unite, null);
+  assert.match(direRetouche(resoudreRetouches([], [r])[0]).detail, /Aucun prix dicté/);
+});
+
+cas("une quantité recopiée dans l'unité (« 20 mètres ») est refusée, pas gardée", () => {
+  const [r] = lireRetouchesDuModele({
+    retouches: [{ type: "ajouter", libelle: "Taille de haie", quantite: "20", unite: "20 mètres", prixUnitaire: null }],
+  });
+  assert.equal(r.type === "ajouter" && r.unite, null, "« 20 × 20 mètres » aurait doublé sa haie");
+});
+
+cas("une unité de son métier que la liste ignore reste écrite telle quelle", () => {
+  const [r] = lireRetouchesDuModele({
+    retouches: [{ type: "ajouter", libelle: "Bois de chauffage fendu", quantite: "6", unite: "stère", prixUnitaire: null }],
+  });
+  assert.equal(r.type === "ajouter" && r.unite, "stère");
+});
+
+cas("l'unité dictée va jusqu'au changement appliqué, sinon elle se perd en route", () => {
+  const [haie] = resoudreRetouches([], lireRetouchesDuModele(SA_DICTEE));
+  assert.deepEqual(changementApplicable(haie), {
+    type: "ajouter",
+    libelle: "Taille de haie",
+    quantite: "20",
+    unite: "ml",
+    prixUnitaire: null,
+  });
+});
+
+// ── La règle de rédaction, confrontée à ses propres phrases ─────────────────
+//
+// **Ce contrôle doit savoir rougir** (`AGENTS.md`) : ce sont ses phrases à lui,
+// telles qu'un modèle paresseux les recopierait, et chacune doit être refusée.
+
+console.log("\n— Une ligne de devis, ou une phrase recopiée ? —");
+
+cas("les libellés qu'il attend passent sans reproche", () => {
+  for (const libelle of ["Taille de haie", "Taille des inflorescences d'hortensias", "Tonte de la pelouse"]) {
+    assert.deepEqual(defautsDeRedaction(libelle), [], `« ${libelle} » a été refusé à tort`);
+  }
+});
+
+cas("ses phrases recopiées mot à mot sont refusées, une par une", () => {
+  const recopiees = [
+    "j'aimerais tailler ma haie",
+    "il veut tailler sa haie",
+    "tondre la pelouse, je crois, mais je ne suis plus sûr",
+    "quelque chose comme vingt mètres linéaires",
+    "Tonte de la pelouse.",
+  ];
+  for (const phrase of recopiees) {
+    const defauts = defautsDeRedaction(phrase);
+    assert.ok(defauts.length > 0, `« ${phrase} » est passée pour une ligne de devis`);
+  }
+});
+
+cas("un libellé vide, ou long comme une phrase, ne passe pas non plus", () => {
+  assert.deepEqual(defautsDeRedaction("   "), ["est vide"]);
+  assert.ok(defautsDeRedaction("Taille de haie ".repeat(8)).length > 0);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s).`);
