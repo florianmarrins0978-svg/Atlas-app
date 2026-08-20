@@ -373,6 +373,44 @@ Deux précédents, à imiter plutôt qu'à réinventer :
 Quand ni l'un ni l'autre n'est possible, **le dire** plutôt que de laisser croire
 à une vérification qui n'a pas eu lieu.
 
+## 4 bis. Une maquette qui montre du matériel le prend dans le catalogue
+
+**Payé le 20 août 2026, sur sa question :** *« les pièces que tu as utilisées
+pour l'exemple sont choisies au hasard ? »* — et la réponse était **oui** pour
+une partie d'entre elles. La maquette d'arrosage annonçait « Turbines, portée
+5 m · 0,30 m³/h », des « colliers de prise en charge », un « filtre à tamis » et
+un « clapet anti-retour ». Aucune de ces pièces n'existe.
+
+Le dépôt tient pourtant `appli/arrosage-catalogue.js`, où **chaque entrée porte
+sa source** — `'patron'` (relevée de ses photos, de ses devis Aqua Plus) ou
+`'provisoire'`. Un arroseur dont on croit la portée fausse fait acheter le
+mauvais nombre d'arroseurs, et c'est le paysagiste qui revient poser les
+manquants.
+
+**La règle, donc :**
+
+- **Aucun matériel inventé dans une maquette.** Les libellés se recopient
+  **mot pour mot** du catalogue : c'est ce qu'il portera chez son fournisseur, et
+  une virgule de plus rend la référence introuvable.
+- **Les chiffres viennent du calcul, pas de la tête.** `appli/arrosage-calcul.js`
+  existe et tourne : on le pilote (Playwright suffit) et on écrit ce qu'il rend.
+  Refaire le calcul à la main dans une maquette, c'est une seconde
+  implémentation qui divergera (§3).
+- **Ce qui ne se devine pas reste vide et le dit.** Les longueurs de tuyau
+  dépendent du chemin réel dans le jardin : le calcul répond « à mesurer », et la
+  maquette doit répondre pareil. Un plan qui chiffre ce que la liste dit ignorer
+  se contredit lui-même — et c'est le chiffre du plan qu'on recopie sur un devis.
+- **La source se montre.** Ce qui est encore `provisoire` est signalé comme tel,
+  jamais présenté comme acquis.
+
+**Le contrôle qui tient tout ça**
+(`scripts/verifier-maquette-arrosage-simple.mjs`) compare chaque libellé au
+catalogue **à l'identique**. Sa première version acceptait une inclusion : le
+catalogue portant une entrée générique nommée « Turbine », l'invention
+« Turbine portée 5 m » la contenait et passait au vert. **Un contrôle trop
+tolérant ne prouve rien** — celui-là a été trouvé en le confrontant à
+l'invention même qu'il devait bannir.
+
 ## 5 bis. Un contrôle ne doit pas réclamer ce que le patron a fait retirer
 
 **Payé le 20 août 2026.** Il a demandé de vider la fiche d'un client — *« tout

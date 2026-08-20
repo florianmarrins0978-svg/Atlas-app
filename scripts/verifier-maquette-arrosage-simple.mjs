@@ -143,12 +143,21 @@ dire(hauteurGeste >= 56, `ce geste fait ${Math.round(hauteurGeste)} px de haut �
 await page.goto(`file://${CIBLE}#plan`, { waitUntil: "load" });
 
 const compte = await page.evaluate(() => {
-  const reseaux = [...document.querySelectorAll("#plan .reseau")].map((r) => ({
+  // **Les SECTEURS seulement.** Les blocs communs — corps d'arroseurs,
+  // nourrice, tuyau — portent eux aussi des nombres, et les compter comme des
+  // arroseurs de secteur doublait le total. Un repère explicite vaut mieux
+  // qu'une couleur, qui se réutilise.
+  const reseaux = [...document.querySelectorAll('#plan .reseau[data-atlas="secteur"]')].map((r) => ({
     titre: (r.querySelector(".tete b")?.textContent ?? "").trim(),
     lignes: [...r.querySelectorAll(".piece")].map((p) => ({
       nombre: (p.querySelector(".n")?.textContent ?? "").trim(),
       quoi: (p.childNodes[1]?.textContent ?? "").trim(),
       precision: (p.querySelector(".q")?.textContent ?? "").trim(),
+      // **Un repère, et non le mot « turbine ».** Les libellés viennent du
+      // catalogue et n'en portent pas toujours le nom : « 3504 · buse 0,75 »
+      // EST une turbine. Chercher le mot ramenait zéro et faisait accuser le
+      // plan d'annoncer moins d'arroseurs qu'il n'en dessine.
+      estArroseur: p.getAttribute("data-atlas") === "arroseur",
     })),
   }));
   // Les arroseurs DESSINÉS : un cercle plein par arroseur sur le plan.
@@ -160,7 +169,7 @@ const compte = await page.evaluate(() => {
 
 const arroseursAnnonces = compte.reseaux
   .flatMap((r) => r.lignes)
-  .filter((l) => /turbine/i.test(l.quoi))
+  .filter((l) => l.estArroseur)
   .reduce((s, l) => s + Number(l.nombre), 0);
 
 dire(
@@ -173,12 +182,12 @@ dire(
 const parCouleur = {};
 for (const c of compte.dessines) parCouleur[c] = (parCouleur[c] ?? 0) + 1;
 const couleursReseaux = await page.evaluate(() =>
-  [...document.querySelectorAll("#plan .reseau .tete .pastille")].map(
+  [...document.querySelectorAll('#plan .reseau[data-atlas="secteur"] .tete .pastille')].map(
     (p) => p.getAttribute("style")?.match(/background:\s*(#[0-9a-f]{6})/i)?.[1] ?? ""
   )
 );
 compte.reseaux.forEach((r, i) => {
-  const turbines = r.lignes.filter((l) => /turbine/i.test(l.quoi)).reduce((s, l) => s + Number(l.nombre), 0);
+  const turbines = r.lignes.filter((l) => l.estArroseur).reduce((s, l) => s + Number(l.nombre), 0);
   if (turbines === 0) return; // le goutte-à-goutte et le commun n'ont pas d'arroseur
   const dessinees = parCouleur[couleursReseaux[i]] ?? 0;
   dire(
@@ -200,7 +209,9 @@ dire(
 
 // Le programmateur doit avoir assez de voies pour les réseaux.
 const texteePlan = await page.locator("#plan").innerText();
-const voies = Number(texteePlan.match(/Programmateur (\d+) voies/)?.[1] ?? 0);
+// Le libellé vient du catalogue — « Programmateur BL-IP 4 stations 9V » —,
+// et non d'une formule écrite ici. On lit donc les stations, pas des « voies ».
+const voies = Number(texteePlan.match(/Programmateur[^\n]*?(\d+)\s*(?:stations?|voies?)/i)?.[1] ?? 0);
 dire(
   voies >= avecVanne.length,
   `le programmateur porte ${voies} voie(s) pour ${avecVanne.length} réseau(x)`,
@@ -224,7 +235,102 @@ if (dispo !== null && debits.length > 0) {
     `les ${debits.length} réseaux demandent ${somme.toFixed(2)} m³/h en tout : ` +
       `au-dessus des ${dispo} disponibles, donc le découpage sert à quelque chose`,
   );
+
+  // **ET LE TOTAL ÉCRIT DANS LA PHRASE DOIT ÊTRE CELUI-LÀ.**
+  //
+  // Vu à la capture, pas au test : la page expliquait « les onze arroseurs
+  // ensemble demanderaient 2,46 m³/h » quand la somme des trois réseaux en fait
+  // 2,70. Le contrôle calculait bien, mais ne regardait pas ce qui était écrit —
+  // et c'est la phrase que le patron lit. Une explication qui ne tombe pas juste
+  // apprend à douter de tout le reste de la page.
+  const annonce = enDebit(texteePlan.match(/demanderaient ([\d,]+ m³\/h)/)?.[1] ?? "");
+  dire(
+    annonce !== null && Math.abs(annonce - somme) < 0.02,
+    `la phrase annonce ${annonce ?? "aucun"} m³/h au total, la somme des réseaux en fait ${somme.toFixed(2)}`,
+  );
 }
+
+// ── 5 bis. AUCUNE PIÈCE INVENTÉE ───────────────────────────────────────────
+//
+// **C'est la question qu'il a posée le 20 août :** *« les pièces que tu as
+// utilisées pour l'exemple sont choisies au hasard ? »* — et la réponse était
+// oui pour une partie d'entre elles. « Filtre à tamis », « clapet
+// anti-retour », « colliers de prise en charge » n'existaient nulle part ; les
+// turbines annoncées « portée 5 m · 0,30 m³/h » ne correspondaient à aucune
+// référence.
+//
+// Le dépôt tient un catalogue où chaque entrée porte sa SOURCE — relevée de ses
+// photos, ou provisoire (`appli/arrosage-catalogue.js`). Un arroseur dont on
+// croit la portée fausse fait acheter le mauvais nombre d'arroseurs, et c'est
+// le paysagiste qui revient poser les manquants.
+//
+// Ce contrôle refuse donc toute pièce que le catalogue ne connaît pas.
+const { readFileSync } = await import("node:fs");
+const catalogue = readFileSync(join(RACINE, "appli", "arrosage-catalogue.js"), "utf8");
+/**
+ * Le libellé doit être EXACTEMENT un nom du catalogue.
+ *
+ * **La première version acceptait une simple inclusion, et elle ne prouvait
+ * rien.** Le catalogue porte une entrée générique nommée « Turbine » : dès
+ * lors, « Turbine portée 5 m · 0,30 m³/h » — l'invention même qu'on cherche à
+ * bannir — la contenait et passait au vert. Éprouvé, et c'est ainsi que le trou
+ * a été trouvé.
+ *
+ * On compare donc à l'identique, après avoir normalisé les espaces et la casse.
+ * Le libellé peut porter un complément après un tiret cadratin (« Coude SBE 050
+ * — 16 x 1/2" coudé ») : on essaie alors la partie qui précède, qui doit elle
+ * aussi être un nom entier.
+ */
+const normaliser = (t) =>
+  t.toLowerCase().replace(/\s+/g, " ").replace(/[×x]/g, "x").trim();
+const nomsCatalogue = new Set(
+  [...catalogue.matchAll(/nom:'([^']+)'/g)].map((m) => normaliser(m[1]))
+);
+const connu = (libelle) => {
+  const l = normaliser(libelle);
+  if (nomsCatalogue.has(l)) return true;
+  const avantTiret = normaliser(l.split("—")[0]);
+  return avantTiret.length > 0 && nomsCatalogue.has(avantTiret);
+};
+// Les longueurs à relever ne sont pas des références : elles portent leur
+// propre repère, et n'ont rien à chercher dans le catalogue.
+const inventees = await page.evaluate(() =>
+  [...document.querySelectorAll('#plan .piece:not([data-atlas="a-mesurer"])')]
+    .map((p) => (p.childNodes[1]?.textContent ?? "").trim())
+    .filter((t) => t.length > 0)
+);
+const hors = inventees.filter((t) => !connu(t));
+dire(
+  hors.length === 0,
+  `chaque pièce vient du catalogue${hors.length ? ` — inconnues : ${hors.join(" ; ")}` : ` (${inventees.length} lignes)`}`,
+);
+
+// Et la page doit DIRE d'où viennent ses références, sans quoi il ne peut pas
+// distinguer ce qui est relevé chez lui de ce qui reste provisoire.
+dire(
+  /provisoire/i.test(await page.locator("#plan").innerText()),
+  "la page signale ce qui est encore provisoire — la règle du catalogue",
+);
+
+// ── 5 ter. Le plan ne chiffre pas ce que la liste dit ignorer ──────────────
+//
+// Vu à la capture : le plan portait « amenée 18 m » tandis que la liste
+// répondait « à mesurer » pour cette même amenée. Les deux ne peuvent pas être
+// vrais, et c'est le chiffre du plan qu'on recopie sur un devis.
+const aMesurer = await page.evaluate(() =>
+  [...document.querySelectorAll('#plan .piece[data-atlas="a-mesurer"]')]
+    .map((p) => (p.childNodes[1]?.textContent ?? "").trim())
+);
+const surLePlan = await page.evaluate(() =>
+  [...document.querySelectorAll("#plan svg text")].map((t) => (t.textContent ?? "").trim())
+);
+const contradictions = aMesurer
+  .filter((quoi) => /compteur|amenée/i.test(quoi))
+  .flatMap(() => surLePlan.filter((t) => /amenée/i.test(t) && /\d+\s*m\b/.test(t)));
+dire(
+  contradictions.length === 0,
+  `le plan chiffre une longueur que la liste dit ignorer${contradictions.length ? ` — « ${contradictions.join(" ; ")} »` : ""}`,
+);
 
 // ── 6. La page dit qu'elle ne LIT pas la photo ──────────────────────────────
 const toute = (await page.locator("body").innerText()).toLowerCase();

@@ -57,6 +57,45 @@ dans Atlas app essai »*. Elle se donne par son adresse directe, et figure
 nommément dans la liste vérifiée après déploiement : une adresse transmise sans
 preuve qu'elle répond n'est pas une adresse.
 
+### Les pièces de la maquette d'arrosage venaient de nulle part
+
+**Sa question, et elle valait mieux qu'une réponse rassurante :** *« les pièces
+que tu as utilisées pour l'exemple sont choisies au hasard ? »*
+
+**Oui, en partie.** « Turbines, portée 5 m · 0,30 m³/h » ne correspondait à
+aucune référence ; « colliers de prise en charge », « filtre à tamis » et
+« clapet anti-retour » n'existent nulle part. Les longueurs de tuyau — 28 m,
+34 m, 18 m — étaient écrites de mémoire.
+
+**Ce que le dépôt avait déjà, et que la maquette ignorait :**
+`appli/arrosage-catalogue.js`, où chaque entrée porte sa **source** — relevée de
+ses photos (`patron`, « Aqua Plus 2026, p. 11 ») ou `provisoire` —, et
+`appli/arrosage-calcul.js`, qui choisit les buses, l'écart, le recouvrement et
+la répartition en secteurs.
+
+**Le calcul a donc été joué pour de bon** (Playwright sur `arrosage.html`, le
+jardin de l'exemple saisi dans ses champs), et la maquette porte désormais ce
+qu'il rend : 6 turbines *3504 · buse 0,75* à 0,96 m³/h, un arroseur tous les
+5,33 m, recouvrement 98 % — **avec son avertissement** « la buse est un peu
+grande ici : l'écart tombe sous la portée », que la maquette taisait. Les
+électrovannes *100 DV 1" MM 9V*, la *Clarinette taraudée 1"*, le *Programmateur
+BL-IP 4 stations*, les *Coudes SBE 050 et 075* remplacent les pièces inventées.
+Et les longueurs de tuyau affichent **« à mesurer »**, comme le calcul le fait.
+
+**Deux incohérences trouvées à la capture, aucune par un test :** la page
+expliquait un total de 2,46 m³/h quand la somme des réseaux en fait 2,70 ; et le
+plan portait « amenée 18 m » quand la liste répondait « à mesurer » pour cette
+même amenée.
+
+**Trois gardes neuves**, chacune éprouvée rouge : chaque libellé doit être **à
+l'identique** un nom du catalogue, le total écrit doit être la somme des
+réseaux, et le plan ne doit pas chiffrer ce que la liste dit ignorer. **La
+première version de la garde du catalogue ne prouvait rien** — elle acceptait une
+inclusion, et « Turbine portée 5 m » passait grâce à l'entrée générique
+« Turbine ». Trouvé en la confrontant à l'invention qu'elle devait bannir.
+
+La règle est écrite dans `CLAUDE.md` §4 bis.
+
 ### La fiche client refondue, et un TROISIÈME document en PDF
 
 **Ses trois décisions du 20 août 2026 :** *« Tu peux rajouter une colonne
