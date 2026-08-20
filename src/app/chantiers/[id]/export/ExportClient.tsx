@@ -132,7 +132,27 @@ export default function ExportClient({
     // Le bandeau du retour, comme sur le bouton de l'écran suivant : sans lui,
     // revenir de Messages ne dirait rien de ce qui vient de se passer.
     marquerDepartMessagerie("devis", clientNom);
-    window.location.assign(lienTransmission({ canal: canalClient, destinataire, message }));
+
+    // **Un vrai lien qu'on touche pour lui, et non `location.assign`.** Deux
+    // raisons, et la seconde suffirait :
+    //   · c'est EXACTEMENT le mécanisme du bouton de l'écran suivant, celui qui
+    //     fonctionne sur son téléphone depuis le 4 août. Ouvrir la messagerie
+    //     par un autre chemin, c'est se donner un second comportement à
+    //     éprouver — et un seul des deux le serait ;
+    //   · l'adresse devient LISIBLE dans la page, donc vérifiable. Le défaut
+    //     d'hier — un message ouvert sans destinataire — ne se voyait nulle
+    //     part ailleurs que dans sa messagerie, c'est-à-dire trop tard
+    //     (`TransmettreAuClient`, même argument).
+    //
+    // Le lien reste dans le document après l'appui : le retirer aussitôt
+    // annulerait la navigation sur certains navigateurs, et priverait le
+    // contrôle de la seule trace qu'il puisse lire.
+    const porte = document.createElement("a");
+    porte.href = lienTransmission({ canal: canalClient, destinataire, message });
+    porte.setAttribute("data-transmission-directe", canalClient);
+    porte.style.display = "none";
+    document.body.appendChild(porte);
+    porte.click();
   }
 
   // Déduit des props, jamais gardé en état : une reprise de devis rafraîchit
