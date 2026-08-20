@@ -46,6 +46,7 @@ relues à chaque session) :
 21. [Quelle est la différence entre « Planning » et « Équipe » dans les réglages ?](#21-quelle-est-la-différence-entre--planning--et--équipe--dans-les-réglages-)
 22. [Mes outils de calcul, on les range où dans l'application ?](#22-mes-outils-de-calcul-on-les-range-où-dans-lapplication-)
 23. [L'application est-elle trop compliquée pour un artisan pressé ?](#23-lapplication-est-elle-trop-compliquée-pour-un-artisan-pressé-)
+24. [Faut-il une licence pour se servir des données de l'INRAE ?](#24-faut-il-une-licence-pour-se-servir-des-données-de-linrae-)
 
 ---
 
@@ -1508,3 +1509,54 @@ depuis votre page habituelle, **« À essayer »** — c'est le premier lien.
 
 **La seule chose à me dire : ces trois écrans vous vont-ils ?** Si un seul vous
 va, on ne fait que celui-là.
+
+---
+
+## 24. Faut-il une licence pour se servir des données de l'INRAE ?
+
+**Votre question, le 20 août 2026 :** *« On a besoin d'une licence pour utiliser
+leur donnée ? »* — à propos d'Ephytia, la base de l'INRAE sur les maladies des
+arbres, dont Atlas a besoin pour son module de diagnostic végétal.
+
+### La réponse courte
+
+**Ça dépend de ce qu'on en fait.** Trois cas, et un seul pose vraiment question.
+
+| Ce qu'on fait | Licence nécessaire ? |
+|---|---|
+| Recopier leur texte dans le dépôt d'Atlas | **Oui.** C'est pour cela que ça n'a pas été fait : leur texte n'est pas rapatrié tant que la licence n'est pas établie |
+| Écrire **nos** fiches à partir des faits, en citant l'INRAE et l'adresse consultée | **Non.** Un fait — « feutrage blanc sur la feuille » — n'appartient à personne |
+| Refaire **toute leur base** de cette façon, des centaines de fiches | **À demander.** Le droit protège aussi les bases de données contre l'extraction massive, même quand chaque fait pris isolément est libre |
+
+### Ce que ça veut dire concrètement
+
+Pour **quelques dizaines de fiches** écrites de notre côté, avec la source citée :
+rien à demander. C'est ce que fait n'importe quel professionnel qui consulte une
+référence puis écrit sa propre note.
+
+Pour aller vers **plusieurs centaines** en s'appuyant surtout sur eux : oui, il
+faut leur écrire. Ce n'est pas une formalité coûteuse — l'INRAE est un institut
+de recherche public, et le courriel est prêt dans `docs/courriel-inrae.md`.
+
+### Les documents de l'État ne posent, eux, aucune question
+
+Tout ce que publient le **ministère de l'Agriculture**, le **Département de la
+santé des forêts** et les **DRAAF** est sous *Licence Ouverte 2.0* : réutilisation
+libre, **y compris commerciale**, à condition de citer la source et sa date de
+mise à jour.
+
+C'est de là que vient la première fiche d'Atlas — le fomès des résineux, écrite
+d'après une plaquette du DSF de 2013. Aucune autorisation n'a été nécessaire.
+
+**La limite de ces documents-là**, et c'est pour cela qu'on regarde du côté de
+l'INRAE : ce sont surtout des bilans régionaux. Ils nomment les problèmes et
+disent leur importance, mais décrivent rarement les symptômes assez précisément
+pour qu'Atlas puisse les reconnaître sur une photo. Ephytia, lui, est fait de
+fiches descriptives — exactement ce qu'il faut.
+
+### Ce qui n'est pas de l'avis d'un juriste
+
+Ce qui précède est une lecture raisonnable du droit français et européen, pas
+une consultation. Si le module devient un argument commercial d'Atlas, la
+question mérite d'être posée une fois à un professionnel — en même temps que le
+contrat de sous-traitance, qui attend déjà (`docs/A-FAIRE.md`).
