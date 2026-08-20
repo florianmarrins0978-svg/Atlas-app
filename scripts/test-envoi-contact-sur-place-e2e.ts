@@ -91,9 +91,9 @@ async function main() {
     }
   });
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);
-  await page.getByRole("button", { name: /Envoyer au client/i }).click();
+  await page.getByRole("button", { name: /Choisir la date/i }).click();
   await page.waitForTimeout(2500);
 
   await cas("la feuille propose les deux canaux, au lieu de renvoyer sur une fiche", async () => {

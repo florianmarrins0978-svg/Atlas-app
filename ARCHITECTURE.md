@@ -5879,11 +5879,18 @@ toute façon sur deux lignes, mais **au mauvais endroit** : la coupure tombait a
 milieu de l'adresse, jamais entre le nom et elle. Un contrôle qui aurait compté
 les lignes serait passé au vert sur ce défaut.
 
-`Row` (`ExportClient.tsx`) rend donc **deux paragraphes** — le nom, puis le
-détail — et non un texte à retour à la ligne : la coupure ne doit pas dépendre
-de la largeur. `scripts/test-synthese-devis-e2e.ts` **mesure les rectangles**
-(le détail sous le nom, même marge à un pixel près), et
-`scripts/capture-synthese-devis.mts` rend l'image sur son iPhone.
+`Row` (`ExportClient.tsx`) rendait donc **deux paragraphes** — le nom, puis le
+détail — et non un texte à retour à la ligne : la coupure ne devait pas dépendre
+de la largeur. Sa suite mesurait les rectangles, au pixel près.
+
+> **CADUC depuis le 20 août 2026 (§136).** L'écran de synthèse d'avant l'envoi a
+> été supprimé, et `Row` avec lui : le patron voit désormais le devis entier, où
+> le client est une pile de champs. La suite qui mesurait cette géométrie a été
+> supprimée aussi — elle n'avait plus de sujet. Ce qui reste vivant de cette
+> décision est éprouvé ailleurs : la règle de nommage sans navigateur
+> (`scripts/test-civilite.ts`, `scripts/test-nom-chantier.ts`), le mot devant le
+> nom sur le devis (`scripts/test-choix-civilite-e2e.ts`), et le non-débordement
+> sur son téléphone (`scripts/test-choisir-la-date-e2e.ts`).
 
 ### Le message qui part chez le client, et l'encart qui n'invitait pas
 
@@ -8321,8 +8328,14 @@ devis est parfait, code celui-là »*. C'est la B.
 L'action passe par `EnTeteEcran` (`action`, `actionPlacee="titre"`), qui
 existait déjà. Mais cet en-tête aligne ses enfants **par le haut**, où se trouve
 le surtitre : sans `self-end`, le mot se poserait à côté de « MME FÉLICIE » et
-non sur la ligne d'écriture du titre. Rien ne rougirait — c'est pourquoi
-`test-modifier-avant-envoi-e2e` **mesure** les deux rectangles.
+non sur la ligne d'écriture du titre. Rien ne rougirait — c'est pourquoi sa
+suite **mesurait** les deux rectangles.
+
+> **CADUC depuis le 20 août 2026 (§136).** Ce lien ne s'affichait que sur un
+> devis NON parti ; or cet écran n'est plus atteignable dans ce cas — il renvoie
+> au devis. Le lien a donc été retiré, et sa suite supprimée. Le trou qu'il
+> bouchait ne peut plus se rouvrir : avant l'envoi, l'écran EST le devis
+> modifiable.
 
 ### Et la règle qui compte plus que la place du mot
 
@@ -11906,10 +11919,164 @@ pas technique. Il faut soit lancer la récolte, soit que le patron fournisse les
 documents. Tant que ni l'un ni l'autre n'est fait, la base reste vide — et
 Atlas le dit.
 
+---
+
+## 136. « Choisir la date » : l'écran du milieu disparaît, trois deviennent deux
+
+**Le patron, le 20 août 2026, trois captures à l'appui :**
+
+> *« Le bouton envoyer au client, tu vas me le modifier par "Choisir la date"
+> […] sous forme de bouton vert comme tous les autres […] j'arrive directement
+> sur la page où je peux choisir la date pour envoyer au client […] on supprime
+> la page qui est entre les deux. On va raccourcir les étapes. […] Et je ne veux
+> pas de flèche. »*
+
+Retenu sur planche (`docs/maquettes/82-choisir-la-date.html`, **proposition A**),
+puis sa réponse : *« A et la 2 »*.
+
+### Le doublon qu'il a vu, et qui était réel
+
+Envoyer un devis coûtait **trois écrans** :
+
+| | Écran | Ce qu'il montrait |
+|---|---|---|
+| 1 | `/devis-complet` | le devis entier — client, lignes, totaux, conditions |
+| 2 | `/export` | **le même devis, résumé** : client, lignes, total |
+| 3 | la feuille | le calendrier, l'interrupteur, « Envoyer le devis » |
+
+**Le deuxième redisait ce que le premier venait d'afficher en entier.** On ne
+relit pas un devis qu'on vient de fermer. Il en reste deux.
+
+### La découverte qui a rendu la chose petite
+
+Le calendrier de sa capture n'est pas une page : c'est une **feuille**
+(`EnvoiAuClient`), qui s'ouvrait par-dessus l'écran 2. La monter sur le devis,
+c'est l'ouvrir plus tôt — elle ne demande que `chantierId`, `devisId` et
+`clientNom`, tous trois présents là. **La copier aurait donné deux calendriers à
+tenir d'accord** (`CLAUDE.md` §3).
+
+### Une adresse, deux écrans — et c'est ce qui a décidé de la condition
+
+`/export` n'était pas un écran mais **deux, sous la même adresse** :
+
+- **avant l'envoi**, la synthèse et son bouton — c'est elle qu'il supprime ;
+- **après l'envoi**, `EcranDevisParti`, le « signet d'or » qu'il a lui-même
+  retenu sur planche (`docs/maquettes/34`) : l'état, le montant, le message du
+  client, le lien à transmettre, la reprise.
+
+Le premier jet renvoyait sur `!envoi && statut !== "envoye"`. **Faux après une
+reprise** : l'envoi existe encore et le devis est redevenu brouillon — l'écran se
+serait rendu sur sa face supprimée, bouton d'envoi compris. La condition suit
+donc ce que l'écran sait rendre : `statut !== "envoye"` renvoie au devis, un
+point c'est tout.
+
+### Ce que la suppression a emporté, et ce qu'elle a révélé
+
+Le code devenu inatteignable est **retiré, pas laissé** : 110 lignes de JSX,
+quatre entrées du composant, la fonction `Row`, deux requêtes de la page. Un code
+mort qui ne peut plus s'exécuter trompe la session suivante, qui le corrigera ou
+s'interrogera.
+
+**Deux effets qu'aucun raisonnement n'avait prévus, et que le navigateur a
+montrés :**
+
+1. **La phrase du moment se perdait.** « Devis prêt pour Mr. Martins. » venait
+   d'un état local posé par l'envoi *sur cet écran*. L'envoi partant d'ailleurs,
+   on arrivait par une navigation et l'état était vide : l'écran annonçait
+   « en attente de réponse » une seconde après l'appui. Vrai, et froid. Le
+   moment voyage désormais dans l'adresse (`?envoye=1`) — et un rechargement le
+   perd, ce qui est juste : la deuxième fois, ce n'est plus « à l'instant ».
+2. **Deux « Annuler » sur le même écran.** Le devis en portait déjà un — celui
+   qui reprend le retrait d'une ligne. La feuille en a apporté un second, sans
+   nom qui les distingue : un lecteur d'écran annonce deux fois la même chose, et
+   une suite vise le mauvais des deux. Le mot affiché ne bouge pas ; l'étiquette
+   accessible dit « Annuler l'envoi ».
+
+### Ce que le contrôle garde, et qu'aucun autre ne voyait
+
+Les suites d'envoi éprouvent ce que fait la feuille **une fois ouverte**. Elles
+resteraient toutes vertes si l'écran du milieu se réintercalait : elles y
+passeraient, cliqueraient, et le parcours redeviendrait long sans que rien ne
+rougisse — jusqu'à ce que lui le remarque.
+
+`scripts/test-choisir-la-date-e2e.ts` garde donc **le raccourci lui-même** : le
+bouton plein et sans flèche, son ordre au-dessus de l'aperçu, l'ouverture de la
+feuille **sans changer d'adresse**, et le fait que l'ancienne adresse renvoie au
+devis. Confronté au défaut — la redirection retirée — il rougit en le nommant :
+*« l'écran du milieu existe encore »*.
+
+**Vingt-six suites ont dû suivre** : elles passaient toutes par `/export` pour
+cliquer « Envoyer au client ». C'est le coût réel d'un raccourci sur un parcours
+central, et il se paie une fois.
+
+### Et une vingt-septième, que la batterie seule a trouvée
+
+`lienDeReprise` — la règle qui décide où mène la ligne d'un chantier dans la
+liste (§77 bis) — pointait encore sur `/export` pour un devis préparé mais non
+parti. **Rien ne cassait à l'écran** : l'adresse existe toujours et renvoie au
+devis. Il serait simplement arrivé au bon endroit par un rebond, et la
+divergence serait restée invisible jusqu'à ce qu'un des deux chemins bouge sans
+l'autre.
+
+Ce sont les deux suites de la reprise — la pure et sa jumelle navigateur — qui
+l'ont dit. Elles portent maintenant `devis-complet`, et leur commentaire
+explique **pourquoi l'attente a changé** : ce n'est pas un contrôle plié au
+code, c'est l'écran d'envoi qui a déménagé.
+
+**Au passage, une attente fixe de trop.** `test-reprise-chantier-e2e.ts`
+attendait 900 ms après avoir saisi le prix, puis naviguait. Jouée seule elle
+gagnait ; enchaînée, la navigation avortait l'enregistrement en vol, le devis
+s'ouvrait sur une ligne vide, et le rouge accusait l'écran d'arrivée — *« le
+total n'est pas montré avant l'envoi »* — alors que c'est le montant qui n'était
+jamais arrivé. Elle **relit jusqu'à voir le prix persisté**, comme
+`test-prix-e2e.ts` : attendre ce qu'on affirme, jamais une durée.
+
+### Ce que la batterie complète a corrigé, et que onze suites vertes cachaient
+
+Le lot a d'abord été annoncé prêt sur la foi de **deux** suites jouées seules.
+La batterie entière en a fait rougir **onze**, et trois d'entre elles disaient
+quelque chose de vrai sur le produit, pas sur elles-mêmes. C'est la démonstration
+la plus nette qu'on ait de la règle d'`AGENTS.md` : jouer ce qu'on transmet, en
+entier, avant de le transmettre.
+
+**1 · « Devis prêt pour … » revenait à chaque rechargement.** Le moment de
+l'envoi voyage dans l'adresse (`?envoye=1`) — et une adresse, contrairement à un
+état de navigateur, **survit au rechargement**. Le commentaire du code affirmait
+le contraire, et `test-devis-e2e.ts` a montré qu'il se trompait. Le drapeau se
+**consomme** donc à l'arrivée : la mention reste pour cette visite-là, puis
+`replaceState` nettoie l'adresse derrière elle. Un signet rouvert le lendemain
+tombe sur l'état réel du devis parti.
+
+**2 · Un « Modifier » en or devenu inatteignable.** Il ne s'affichait que sur un
+devis NON parti ; or ce cas ne peut plus atteindre cet écran. Le ternaire ne
+rendait donc plus jamais rien. Retiré, comme les 110 lignes de JSX : un code mort
+trompe la session suivante. Le trou qu'il bouchait — *« si je veux modifier mon
+devis avant de l'envoyer, je peux pas »* — ne peut plus se rouvrir, puisque
+l'écran d'avant l'envoi EST le devis modifiable.
+
+**3 · Une adresse renommée trop largement.** Le remplacement en masse de
+`/export` par `/devis-complet` a emporté des navigations qui visaient l'écran
+d'APRÈS l'envoi — le signet d'or, le retour de la messagerie, la réponse du
+client. Ces trois-là ne bougent pas : seule la face d'avant a disparu. **La règle
+à retenir : sur cette adresse, se demander de quel côté de l'envoi on se
+trouve**, jamais remplacer au fil du texte.
+
+**Deux suites ont été supprimées, et c'est le bon geste.**
+`test-synthese-devis-e2e.ts` mesurait la géométrie de l'écran supprimé ;
+`test-modifier-avant-envoi-e2e.ts` gardait le lien devenu impossible. Ce qu'elles
+tenaient encore de vivant ne se perd pas : la règle de nommage
+(« Mr. Martins », jamais « Chez Martins ») est éprouvée sans navigateur par
+`test-civilite.ts` et `test-nom-chantier.ts` ; le mot devant le nom se relit
+maintenant sur le devis (`test-choix-civilite-e2e.ts`) ; et la garde de
+débordement sur son téléphone a **changé de sujet plutôt que de disparaître** —
+elle vit dans `test-choisir-la-date-e2e.ts`, sur le dernier écran qu'il voit
+avant d'envoyer.
 
 ---
 
-## 136. Une confusion relie deux fiches, pas deux lignes d'un même fichier
+---
+
+## 137. Une confusion relie deux fiches, pas deux lignes d'un même fichier
 
 **Écrit le 20 août 2026, en écrivant la troisième fiche réelle.**
 
@@ -11959,3 +12126,4 @@ la photo qui tranche, quoi que la base porte d'autre.
 recopiait à la main le `resultat` qu'affiche l'écran de diagnostic, champ par
 champ — la règle dupliquée entre l'affichage et la vérification qu'interdit
 `CLAUDE.md` §3. `composerResultat` est désormais exportée, et la suite l'appelle.
+

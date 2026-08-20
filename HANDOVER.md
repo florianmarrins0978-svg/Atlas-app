@@ -9,6 +9,31 @@ sert.
 
 ---
 
+## « L'application est lente » : REGARDER QUI CONSTRUIT (20 août 2026)
+
+**Le produit n'est pas lent** — mesuré ce soir-là sur le code du jour, version
+bâtie : connexion à l'accueil 890 ms, chaque écran entre 0,6 et 1,1 s. Devant
+cette plainte, ne pas partir chercher une requête coûteuse.
+
+**Ce qui est lent, c'est son banc quand il sert la VERSION LENTE** — le mode
+développement, où chaque écran se compile à l'ouverture. Trois questions, dans
+cet ordre :
+
+1. **sa fiche d'état est-elle encore écrite ?** Le publieur meurt avec le
+   veilleur (`veiller.sh`) : une fiche muette plus de vingt minutes dit que **le
+   veilleur est tombé** — donc que plus personne ne construit la version rapide,
+   et qu'il restera lent indéfiniment. Le geste : rallumer l'espace ;
+2. `Code SERVI` sur la fiche : un commit = version rapide en place ; « aucune
+   version bâtie » = construction en cours ou échouée, la fiche le distingue ;
+3. l'écran **Réglages** le dit maintenant lui-même, et sans mentir
+   (`src/lib/version-lente.ts`) : il n'annonce « ça vient tout seul » que si
+   quelqu'un construit vraiment, sinon il l'envoie rallumer.
+
+**Ce qui reste ouvert :** pourquoi son veilleur meurt. Le journal de démarrage
+n'est délibérément pas publié, et la fiche ne peut rien dire quand c'est le
+veilleur qui tombe. La piste — une trace d'agonie publiée à l'allumage suivant —
+est dans `TODO.md`.
+
 ## Le retour de la fiche client dépend d'où l'on vient (20 août 2026)
 
 *« Ça ne me fait pas un retour, mais deux retours. »* La fiche renvoyait à

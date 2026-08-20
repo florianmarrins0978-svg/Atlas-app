@@ -22,7 +22,7 @@ carences aiguës — ne sont **pas** écrites : une confusion doit désigner une
 qui existe, et aucune de ces quatre n'existe encore.
 
 **Ce qui a été débloqué pour l'écrire**, et qui vaut pour toutes les fiches à
-venir (`ARCHITECTURE.md` §136) :
+venir (`ARCHITECTURE.md` §137) :
 
 - une confusion ne pouvait relier que deux fiches d'un **même fichier**. Or les
   fiches qui se confondent sont celles qu'on écrit à deux jours d'écart, depuis
@@ -43,6 +43,67 @@ entière, ce qui n'était vrai que tant qu'elle ne portait que des fixtures ; la
 suite navigateur recopiait à la main le résultat qu'affiche l'écran, au lieu de
 le composer comme le fait le produit.
 
+### L'écran ne promet plus une version rapide que personne ne construit
+
+**Sa soirée du 20 août :** *« L'application est lente, corrige ça. »* Puis, en
+regardant Réglages : *« Si il y a marqué version lente. »* L'écran disait donc
+vrai — son banc servait bien la version lente, celle où chaque écran se compile
+à l'ouverture.
+
+**Mais il terminait par une promesse fausse :** *« La version rapide prend le
+relais dès que la construction aboutit. »* Cette nuit-là elle n'aboutissait pas,
+et n'allait jamais aboutir — **son veilleur était tombé, et c'est lui qui
+construit**. Le panneau lui demandait d'attendre quelque chose qui n'arriverait
+pas ; il a attendu, puis il a redemandé.
+
+Le panneau dit maintenant ce qu'il constate : personne ne construit → « éteignez
+puis rouvrez votre espace de travail » ; une construction tombée mais un
+veilleur en place → il retente seul, et rallumer répare plus vite ; tout va bien
+→ la phrase d'avant, qui redevient vraie. La règle vit dans
+`src/lib/version-lente.ts`, éprouvée sans banc ni serveur ; confrontée à
+l'ancienne phrase, sa suite rend trois rouges.
+
+**Et le produit, lui, n'est pas lent** — mesuré le même soir sur le code du
+jour, version bâtie : connexion à l'accueil en 890 ms, chaque écran entre 0,6 et
+1,1 seconde. `TODO.md` porte le relevé.
+
+### « Choisir la date » : envoyer un devis coûte deux écrans au lieu de trois
+
+**Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
+me le modifier par "Choisir la date" […] j'arrive directement sur la page où je
+peux choisir la date […] on supprime la page qui est entre les deux. On va
+raccourcir les étapes. »* Puis son choix devant la planche : *« A et la 2 »*.
+
+**Le doublon était réel.** L'écran du milieu redisait le client, les lignes et le
+total que le devis venait d'afficher en entier — pour proposer le même geste. On
+ne relit pas un devis qu'on vient de fermer.
+
+**Ce qui change :** sur le devis, un bouton plein **« Choisir la date »**, sans
+flèche, au-dessus de l'aperçu du PDF. Un appui ouvre le calendrier **sans
+changer d'écran**. L'ancienne adresse renvoie au devis tant que rien n'est parti.
+
+**Ce qui ne change pas :** le calendrier, l'interrupteur « il peut proposer une
+autre date » et « Envoyer le devis » sont la MÊME feuille, ouverte plus tôt. Et
+l'écran du devis parti — le « signet d'or » qu'il avait retenu — garde son
+travail : le lien à transmettre, la reprise.
+
+**Deux effets que seul le navigateur a montrés.** La phrase « Devis prêt pour
+Mr. Martins. » se perdait après l'envoi, l'écran annonçant « en attente de
+réponse » une seconde après l'appui — vrai, et froid ; le moment voyage
+maintenant dans l'adresse. Et deux boutons « Annuler » cohabitaient sur le même
+écran sans se distinguer à l'oreille.
+
+**Un défaut corrigé au passage, et qui se voyait à l'œil nu :** rechargé, l'écran
+d'après l'envoi reprenait « Devis prêt pour … » comme si le devis venait de
+partir — même trois jours plus tard. Il dit maintenant où en est vraiment le
+devis, et ne garde la phrase du moment que pour la visite où elle est vraie.
+
+**Ce que ça coûte, dit franchement :** vingt-six suites passaient par l'ancien
+chemin et ont dû suivre. La batterie complète en a fait rougir onze de plus, que
+deux suites jouées seules n'avaient pas vues — dont celle qui a trouvé le défaut
+ci-dessus. Deux suites ont été supprimées avec l'écran qu'elles mesuraient, sans
+rien perdre de ce qu'elles gardaient encore de vivant.
+`ARCHITECTURE.md` §136, `docs/maquettes/82`.
 
 ### « Il faut absolument mettre des photos » — l'écran en montre une, et d'où elle vient
 

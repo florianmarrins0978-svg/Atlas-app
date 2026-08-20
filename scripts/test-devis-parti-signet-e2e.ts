@@ -71,8 +71,8 @@ async function devisParti(page: Page): Promise<{ chantierId: string; url: string
   await champs.nth(1).blur();
   await page.waitForTimeout(600);
 
-  await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-  await page.click("text=Envoyer au client");
+  await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+  await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 20_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 20_000 });
@@ -103,6 +103,10 @@ async function main() {
     // vient du navigateur. Rechargé, il vient du serveur et dit « En attente de
     // réponse » : c'est cet écran-là que le patron retrouve les jours suivants,
     // et c'est celui de sa capture.
+    // **Sur `/export`, et c'est justement là que cet écran vit encore.** Le
+    // raccourci du 20 août 2026 a supprimé la face AVANT l'envoi de cette
+    // adresse (`ARCHITECTURE.md` §136) ; celle d'après — le signet d'or — est
+    // exactement l'écran de sa capture, et ne bouge pas.
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     await page.waitForSelector("text=En attente de réponse", { timeout: 20_000 });
 

@@ -58,6 +58,10 @@ async function main() {
   // pas le mécanisme — et concluait que le mécanisme ne marchait pas. Le
   // patron, lui, part TOUJOURS de l'écran où se trouve le bouton.
   const chantierId = await chantierAvecDevisPret(page);
+  // **Sur `/export` : c'est là que vit le lien de transmission**, et donc le
+  // mécanisme du retour. Le raccourci du 20 août 2026 a supprimé la face AVANT
+  // l'envoi de cette adresse (`ARCHITECTURE.md` §136), pas celle d'après — et
+  // le devis vient précisément de partir.
   await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);
 
@@ -143,8 +147,8 @@ async function chantierAvecDevisPret(page: import("playwright").Page): Promise<s
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1200);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
-  await page.getByText("Envoyer au client", { exact: false }).first().click();
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.getByText("Choisir la date", { exact: false }).first().click();
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForSelector("text=Devis prêt pour", { timeout: 30_000 });

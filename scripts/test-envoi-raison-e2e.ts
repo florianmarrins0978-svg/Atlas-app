@@ -54,13 +54,13 @@ async function main() {
   // dont le premier a abouti sans qu'il le voie.
   await pool.query(`UPDATE devis SET statut = 'envoye', envoye_le = now() WHERE chantier_id = $1`, [chantierId]);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1000);
 
   // L'écran d'un devis déjà parti ne propose normalement plus de l'envoyer. S'il
   // le propose encore, c'est justement le chemin sur lequel le patron s'est
   // trouvé — et il doit alors dire la vérité.
-  const ouvrir = page.getByText("Envoyer au client", { exact: false });
+  const ouvrir = page.getByText("Choisir la date", { exact: false });
   if ((await ouvrir.count()) === 0) {
     console.log("  ✓ un devis déjà parti ne propose plus de repartir");
     await pool.end();

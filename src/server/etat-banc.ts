@@ -1,5 +1,6 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { estBancDEssai } from "@/profil-banc";
+import type { EtatVersionLente } from "@/lib/version-lente";
 
 /**
  * Où en est la construction de la version rapide — dit à l'écran, pas au terminal.
@@ -125,4 +126,42 @@ export function etatConstructionBanc(): EtatConstructionBanc | null {
     // information, pas une panne.
   }
   return lireEtatConstruction(brut);
+}
+
+/** Le verrou du veilleur, tel que `.devcontainer/veiller.sh` le pose. */
+const VERROU_VEILLEUR = "/tmp/atlas-veilleur.pid";
+
+/** Le témoin qu'une construction est tombée (`scripts/banc.mjs`). */
+const TEMOIN_ECHEC = process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
+
+/**
+ * Le veilleur est-il là ?
+ *
+ * **Son verrou porte un identifiant de processus**, précisément pour qu'un
+ * fichier resté d'un conteneur précédent ne mente pas (`veiller.sh`). On vérifie
+ * donc que le processus vit, pas que le fichier existe.
+ *
+ * **Écrit ici plutôt que dans l'écran des réglages**, où il vivait seul : deux
+ * endroits ont désormais besoin de cette réponse — la mise à jour, qui ne coupe
+ * le serveur que si quelqu'un peut le relever, et le panneau « version lente »,
+ * qui ne promet une version rapide que si quelqu'un la construit. Deux copies
+ * auraient fini par diverger (`CLAUDE.md` §3).
+ */
+export function veilleurEnVie(): boolean {
+  try {
+    const pid = Number(readFileSync(VERROU_VEILLEUR, "utf8").trim());
+    if (!Number.isInteger(pid) || pid <= 0) return false;
+    process.kill(pid, 0); // Ne tue rien : demande seulement s'il existe.
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Ce que l'écran doit savoir pour ne rien promettre qui n'arrivera pas. */
+export function etatVersionLente(): EtatVersionLente {
+  return {
+    veilleurPresent: veilleurEnVie(),
+    constructionEchouee: existsSync(TEMOIN_ECHEC),
+  };
 }

@@ -1,32 +1,25 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import TransmettreAuClient from "./TransmettreAuClient";
-import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
 import { reprendreDevisAction } from "./actions";
-import EnvoiAuClient from "./EnvoiAuClient";
 import { enEuros } from "@/lib/euros";
 import { avecCivilite, type Civilite } from "@/lib/civilite";
-import { composerMessageClient, lienTransmission } from "@/lib/message-client";
 
 
 export default function ExportClient({
   chantierId,
   devisId,
   clientId,
-  chantierNom,
-  adresseChantier,
   clientNom,
   clientCivilite,
   clientTelephone,
   clientEmail,
   entrepriseNom,
   canalClient,
-  prestations,
-  lignes,
   totalTtc,
   numeroDevis,
   initialEnvoye,
@@ -34,13 +27,12 @@ export default function ExportClient({
   messageClient,
   lienEnvoi,
   origine,
+  vientDEtreEnvoye = false,
 }: {
   chantierId: string;
   devisId: string;
   /** Nécessaire pour compléter une coordonnée manquante depuis cet écran. */
   clientId: string | null;
-  chantierNom: string;
-  adresseChantier: string;
   clientNom: string;
   /** Ce qu'il a choisi au-dessus du nom, recopié sur le devis. */
   clientCivilite: Civilite | null;
@@ -48,9 +40,6 @@ export default function ExportClient({
   clientEmail: string;
   entrepriseNom: string;
   canalClient: "sms" | "email";
-  prestations: string[];
-  /** Les lignes du devis lui-même : libellé et montant, telles qu'imprimées. */
-  lignes: { libelle: string; montant: string }[];
   totalTtc: string;
   /** Le numéro commercial, pour nommer le fichier téléchargé. */
   numeroDevis: string;
@@ -62,14 +51,47 @@ export default function ExportClient({
   lienEnvoi: string | null;
   /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
   origine: string;
+  /** On arrive d'un envoi qui vient d'aboutir. Voir `lienClient` plus bas. */
+  vientDEtreEnvoye?: boolean;
 }) {
   const router = useRouter();
-  const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [reprise, setReprise] = useState(false);
   // Aucun fournisseur de SMS ni d'e-mail n'étant branché (docs/AGENT.md §5), le
   // lien est rendu au patron pour qu'il le transmette lui-même — ce qui vaut
   // mieux qu'un envoi qui échouerait en silence.
-  const [lienClient, setLienClient] = useState<string | null>(null);
+  /**
+   * **« Ça vient de partir » — un état que le serveur ne peut pas deviner.**
+   *
+   * Jusqu'au 20 août 2026, l'envoi avait lieu SUR cet écran : le lien revenait
+   * dans un état local, et sa présence disait « à l'instant ». L'envoi part
+   * désormais du devis (`docs/maquettes/82`), et l'on arrive ici par une
+   * navigation — l'état local est donc vide, quoi qu'il vienne de se passer.
+   *
+   * Sans ce drapeau, l'écran annoncerait « En attente de réponse » une seconde
+   * après l'envoi, là où il disait « Devis prêt pour Mr. Martins. ». C'est vrai,
+   * et c'est froid : il vient d'appuyer, il veut savoir que c'est parti.
+   *
+   * Porté par l'adresse plutôt que par un état : une navigation ne transporte
+   * rien d'autre. Mais l'adresse, elle, SURVIT au rechargement — et c'est ce
+   * qu'a attrapé `test-devis-e2e.ts` : rechargée, la page reprenait « Devis
+   * prêt pour … » alors que la deuxième fois, ce n'est plus « à l'instant ».
+   *
+   * Le drapeau se CONSOMME donc dès l'arrivée : la mention reste pour cette
+   * visite-ci, et l'adresse est nettoyée derrière elle. Un rechargement, un
+   * retour par l'historique, un signet rouvert plus tard tombent alors sur
+   * l'état réel du devis parti.
+   */
+  const lienClient = vientDEtreEnvoye ? lienEnvoi : null;
+
+  // `replaceState` et non `router.replace` : ce dernier rejouerait le rendu
+  // serveur, et la mention disparaîtrait sous ses yeux à l'instant même où il
+  // vient de la lire. On ne touche qu'à la barre d'adresse.
+  useEffect(() => {
+    if (!vientDEtreEnvoye) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("envoye");
+    window.history.replaceState(null, "", url.toString());
+  }, [vientDEtreEnvoye]);
   // **L'avertissement avant de rouvrir un devis que le client a en main.**
   //
   // Vérifié dans le dépôt avant d'écrire cet écran, et ce n'est pas une
@@ -88,75 +110,6 @@ export default function ExportClient({
     return `${origine}${chemin}`;
   }
 
-  /**
-   * Ouvrir SA messagerie **dès l'appui sur « Envoyer le devis »**.
-   *
-   * *Sa demande du 18 août 2026 : « quand je clique sur le bouton envoyer le
-   * devis, tout de suite ça m'ouvre l'application, soit SMS soit email […]
-   * supprime les étapes qu'il y a entre ».* Il avait raison de la faire : le
-   * devis était prêt, le message était prêt, et il fallait encore viser un
-   * second bouton sur l'écran suivant.
-   *
-   * **Le message et l'adresse viennent du module commun** — les refaire ici
-   * donnerait deux façons d'écrire au client, et c'est là que se logent les
-   * défauts payés : un numéro espacé qui ouvre un SMS sans destinataire, un
-   * lien collé au texte qui n'est pas cliquable (`src/lib/message-client.ts`).
-   *
-   * ─── CE QUI RESTE DERRIÈRE, ET POURQUOI ON NE L'A PAS RETIRÉ ───────────────
-   * L'ouverture part d'une continuation asynchrone : l'envoi doit d'abord
-   * aboutir en base pour qu'un lien existe. Or un navigateur peut refuser une
-   * navigation vers `sms:` qui ne suit pas immédiatement le doigt — et sur
-   * iOS, il la refuse **sans un mot**.
-   *
-   * L'écran « Devis prêt » reste donc en place, avec son bouton. S'il s'ouvre,
-   * le patron ne le voit qu'au retour de Messages — c'est là qu'il doit être
-   * de toute façon. S'il ne s'ouvre pas, il retrouve exactement l'écran
-   * d'aujourd'hui, et rien n'est perdu. Le contraire — retirer le bouton en
-   * pariant sur l'ouverture — serait la quatrième fois qu'il appuie sur
-   * quelque chose qui ne répond pas.
-   * ──────────────────────────────────────────────────────────────────────────
-   */
-  function ouvrirLaMessagerie(chemin: string) {
-    const destinataire = canalClient === "sms" ? clientTelephone : clientEmail;
-    // Sans coordonnée, il n'y a rien à ouvrir — l'écran de repli la demande.
-    // (L'envoi est d'ailleurs déjà bloqué en amont dans ce cas.)
-    if (!destinataire.trim()) return;
-
-    const message = composerMessageClient({
-      clientNom,
-      clientCivilite,
-      entrepriseNom,
-      lien: lienComplet(chemin),
-    });
-    // **Aucune marque de départ ici, et c'est mesuré, pas supposé.** Le bandeau
-    // « Devis transmis à … » s'arme sur le bouton de l'écran suivant, où le
-    // geste EST le départ. Ici l'ouverture peut être refusée sans un mot, et
-    // aucun événement du navigateur ne distingue « parti vers Messages » de
-    // « changé d'écran » — le détail de la mesure est dans
-    // `src/lib/depart-messagerie.ts`. Annoncer un envoi qui n'a pas eu lieu
-    // serait pire que ne rien annoncer.
-
-    // **Un vrai lien qu'on touche pour lui, et non `location.assign`.** Deux
-    // raisons, et la seconde suffirait :
-    //   · c'est EXACTEMENT le mécanisme du bouton de l'écran suivant, celui qui
-    //     fonctionne sur son téléphone depuis le 4 août. Ouvrir la messagerie
-    //     par un autre chemin, c'est se donner un second comportement à
-    //     éprouver — et un seul des deux le serait ;
-    //   · l'adresse devient LISIBLE dans la page, donc vérifiable. Le défaut
-    //     d'hier — un message ouvert sans destinataire — ne se voyait nulle
-    //     part ailleurs que dans sa messagerie, c'est-à-dire trop tard
-    //     (`TransmettreAuClient`, même argument).
-    //
-    // Le lien reste dans le document après l'appui : le retirer aussitôt
-    // annulerait la navigation sur certains navigateurs, et priverait le
-    // contrôle de la seule trace qu'il puisse lire.
-    const porte = document.createElement("a");
-    porte.href = lienTransmission({ canal: canalClient, destinataire, message });
-    porte.setAttribute("data-transmission-directe", canalClient);
-    porte.style.display = "none";
-    document.body.appendChild(porte);
-    porte.click();
-  }
 
   // Déduit des props, jamais gardé en état : une reprise de devis rafraîchit
   // l'écran, et un état figé à l'ouverture continuerait d'annoncer un devis
@@ -289,116 +242,7 @@ export default function ExportClient({
             ) : null
           }
         />
-      ) : (
-        // Cette branche-là défile : avant l'envoi, l'écran porte les lignes, le
-        // total et l'aperçu, et il peut légitimement dépasser. `atlas-ecran`
-        // ayant `overflow: hidden`, sans colonne qui défile le bas serait
-        // simplement coupé — et le bouton d'envoi avec lui.
-        <div className="atlas-colonne-defile flex flex-col gap-4 px-6 pb-6 pt-6">
-          {/* Synthèse — lecture seule, aucune édition sur cet écran */}
-          <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-            {/* **La civilité vient de `src/lib/civilite.ts`, jamais d'ici.** Le
-                nom du chantier la porte déjà — il est fabriqué à la création
-                (`nomDuChantier`) — mais le nom du client, lui, est brut. La
-                poser à l'affichage sur le second seulement garderait les deux
-                lignes d'accord ; l'écrire à la main les ferait diverger au
-                premier changement (`CLAUDE.md` §3). */}
-            <Row label="Chantier" nom={chantierNom} detail={adresseChantier} repere="ligne-chantier" />
-            <Row
-              label="Client"
-              nom={avecCivilite(clientNom, clientCivilite)}
-              detail={clientTelephone}
-              repere="ligne-client"
-              last
-            />
-          </div>
-
-          {/* Le devis lui-même : ce qui sera imprimé, avec les montants.
-              L'écran ne montrait que les *prestations* du chantier — un devis
-              écrit entièrement à la main n'en a aucune, et le patron n'y voyait
-              qu'un total, sans savoir ce qui partirait chez son client.
-
-              **Elles restent AVANT l'envoi, et disparaissent après**, à sa
-              demande du 12 août : c'est avant d'envoyer qu'on vérifie ce qui
-              part, pas après. */}
-          {lignes.length > 0 && (
-            <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-              <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
-                Lignes du devis
-              </p>
-              <ul className="flex flex-col gap-2">
-                {lignes.map((l, i) => (
-                  <li
-                    key={i}
-                    className="flex items-baseline justify-between gap-3 text-[15px]"
-                    style={{ color: colors.ink }}
-                  >
-                    {/* `whitespace-pre-line` : une ligne réunit plusieurs travaux,
-                        un par ligne. Sans cela, ils se recolleraient en une phrase
-                        — le défaut même qu'on vient de réparer. */}
-                    <span className="min-w-0 flex-1 whitespace-pre-line">{l.libelle || "Ligne sans libellé"}</span>
-                    <span style={{ color: colors.muted }}>{enEuros(l.montant)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* **Les prestations ne sont affichées QUE s'il n'y a pas de lignes.**
-              Retiré le 7 août 2026 : « supprime la ligne prestation sur cette
-              page, pas besoin de se répéter, la ligne devis dit la même chose
-              avec le prix en plus ». Il avait raison — sur sa capture, les deux
-              blocs portaient mot pour mot « Taille de cohabitation d'un charme /
-              Broyage sur place ».
-
-              Elles restent le filet quand aucune ligne n'existe encore : un écran
-              qui n'annoncerait qu'un total, sans dire de quoi il est fait, serait
-              un recul. */}
-          {lignes.length === 0 && prestations.length > 0 && (
-            <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-              <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
-                Prestations
-              </p>
-              <ul className="flex flex-col gap-1.5">
-                {prestations.map((p, i) => (
-                  <li key={i} className="text-[15px]" style={{ color: colors.ink }}>
-                    {p}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="rounded-[4px] px-5 py-5 text-center" style={{ backgroundColor: colors.card }}>
-            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
-              Total
-            </p>
-            <p
-              className="text-[32px] font-semibold leading-none"
-              style={{ fontFamily: font.display, color: colors.rust }}
-            >
-              {enEuros(totalTtc)}
-            </p>
-          </div>
-
-          {/* Avant l'envoi, on RELIT le document : un onglet neuf est exactement
-              ce qu'on veut. Le téléchargement, lui, vit sur l'écran d'attente —
-              c'est là qu'on veut déposer le PDF sur son téléphone. */}
-          <a
-            href={`/api/devis/${devisId}/pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block text-center text-[14px] font-medium"
-            style={{ color: colors.rust }}
-          >
-            Aperçu du PDF
-          </a>
-
-          <PrimaryButton onClick={() => setConfirmationVisible(true)}>
-            Envoyer au client →
-          </PrimaryButton>
-        </div>
-      )}
+      ) : null}
 
       {/* **L'avertissement, une seule fois, au moment du clic.**
           Ce qu'il dit est vérifié dans le dépôt, pas supposé : la page publique
@@ -411,27 +255,15 @@ export default function ExportClient({
         onConfirmer={modifierLeDevis}
       />
 
-      <EnvoiAuClient
-        chantierId={chantierId}
-        devisId={devisId}
-        clientNom={clientNom}
-        ouvert={confirmationVisible}
-        onFermer={() => setConfirmationVisible(false)}
-        onEnvoye={(lien) => {
-          setConfirmationVisible(false);
-          setLienClient(lien);
-          // **Sa messagerie s'ouvre ICI, pas un écran plus loin.** Voir
-          // `ouvrirLaMessagerie` pour ce qui reste derrière, et pourquoi.
-          ouvrirLaMessagerie(lien);
-          // **Et l'on relit le serveur.** Sans cela, `etatEnvoi` reste celui de
-          // l'ouverture — « correction demandée » — alors qu'une version vient
-          // de partir. `!lienClient` masque déjà le bouton de reprise tout de
-          // suite ; ce rafraîchissement remet le RESTE de l'écran d'accord avec
-          // la base (l'état annoncé, le lien en cours), au lieu de laisser deux
-          // vérités cohabiter jusqu'au prochain chargement.
-          router.refresh();
-        }}
-      />
+{/* **La feuille d'envoi n'est plus ici** — elle vit sur le devis depuis le
+          20 août 2026 (`docs/maquettes/82`). La garder montée sur cet écran
+          aurait donné deux portes vers la même pièce, et deux calendriers à
+          tenir d'accord.
+
+          **Et ce qui suivait l'envoi l'a suivie** : l'ouverture de sa
+          messagerie, arrivée sur `main` le 18 août, part désormais du devis
+          elle aussi (`src/lib/ouvrir-messagerie.ts`). Elle n'est pas recopiée —
+          elle a été SORTIE d'ici, pour n'exister qu'une fois. */}
     </>
   );
 }
@@ -641,58 +473,3 @@ function EcranDevisParti({
   );
 }
 
-/**
- * Une ligne de la synthèse : son intitulé, puis **le nom, puis le détail à la
- * ligne**.
- *
- * **Le patron, le 13 août 2026, capture à l'appui :** *« tu me retires le tiret
- * entre le nom et l'adresse et il faut qu'il soit l'un au-dessus de l'autre.
- * D'abord le nom, ensuite à la ligne l'adresse. Pour le client, c'est pareil. »*
- *
- * Le tiret cadratin réunissait deux choses de nature différente — qui, et où —
- * en une phrase qui n'en est pas une. Sur son écran de 390 px, « Chez Martins —
- * 10 rues d'enfer rocheux ros 78 200 nantes la jolie » se repliait sur deux
- * lignes de toute façon, mais **au mauvais endroit** : la coupure tombait au
- * milieu de l'adresse, jamais entre le nom et elle.
- *
- * Deux paragraphes plutôt qu'un `\n` : la coupure ne doit pas dépendre de la
- * largeur, et le nom porte son propre poids visuel.
- */
-function Row({
-  label,
-  nom,
-  detail,
-  repere,
-  last = false,
-}: {
-  label: string;
-  nom: string;
-  /** Adresse, téléphone : ce qui se lit sous le nom. Vide : rien ne s'affiche. */
-  detail: string;
-  /** Repère de suite, posé en `data-atlas`. Jamais lu par le produit. */
-  repere: string;
-  last?: boolean;
-}) {
-  return (
-    <div
-      data-atlas={repere}
-      className={last ? "" : "mb-3 border-b pb-3"}
-      style={{ borderColor: colors.line }}
-    >
-      <p className={smallCaps} style={{ color: colors.muted, marginBottom: 4 }}>
-        {label}
-      </p>
-      <p data-atlas={`${repere}-nom`} className="text-[15px]" style={{ color: colors.ink }}>
-        {nom}
-      </p>
-      {/* Une seconde ligne vide vaudrait un blanc inexpliqué sous le nom : un
-          chantier sans adresse ni un client sans téléphone ne doivent pas
-          creuser un trou dans la carte. */}
-      {detail.trim() !== "" && (
-        <p data-atlas={`${repere}-detail`} className="mt-1 text-[15px]" style={{ color: colors.muted }}>
-          {detail}
-        </p>
-      )}
-    </div>
-  );
-}
