@@ -161,6 +161,25 @@ veille.
 
 ---
 
+## ⏸ L'arrosage simplifié — **dessiné le 20 août, il tranche avant qu'on code**
+
+`appli/arrosage-simple.html` — huit questions ramenées à deux : le piquage, et
+le croquis. **Rien n'est codé** ; `appli/arrosage.html` n'a pas été touchée.
+
+**Ce qui attend sa réponse :**
+
+| | La question | Pourquoi elle ne se tranche pas sans lui |
+|---|---|---|
+| 1 | **Le débit, mesuré ou supposé ?** | La mesure au seau est partie avec le reste. Or c'est elle qui décide du nombre d'arroseurs par réseau. Deux façons de vivre avec : le supposer d'après le piquage **et l'écrire** (« estimé, à vérifier au seau »), ou le demander **une seule fois, à la fin**, quand le plan est déjà à l'écran |
+| 2 | **La lecture du croquis** | Elle n'existe pas et demande une IA qui regarde une image — donc un **contrat fournisseur**, qui est à lui (`docs/A-FAIRE.md`). D'ici là, le plan ne peut pas sortir d'une photo. Un chemin court existe : **dicter** les mesures, ce qu'Atlas sait déjà transcrire |
+
+**Ce que la lecture devra rendre, le jour venu :** les surfaces de chaque partie
+du jardin, les longueurs de haie et de massif, et où se trouve le point d'eau.
+Le découpage en réseaux et la liste des pièces se déduisent de là — c'est du
+calcul, et `appli/arrosage-calcul.js` le porte déjà.
+
+---
+
 ## ~~La fiche client allégée~~ — **TRANCHÉE ET CODÉE le 20 août 2026**
 
 Trois colonnes (Devis · Fiche chantier · Facture), la dernière prestation en
