@@ -169,7 +169,7 @@ jobs:
                    devis-vocal.html devis-modele.html \
                    facture-modele.html tva-modele.html mes-tarifs.html \
                    arrosage.html arrosage-tarifs.html arrosage-catalogue.js \
-                   deux-boutons-devis.html nav.js; do
+                   deux-boutons-devis.html en-cours-le-chiffre.html nav.js; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

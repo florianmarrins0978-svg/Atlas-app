@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, texteSituation } from "@/lib/design-tokens";
-import { nombreEnLettres } from "@/lib/nombre-en-lettres";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -121,13 +120,12 @@ export default function EcranChantiers({
     },
   });
 
-  // **Le décompte suit ce qui reste, sans attendre le serveur.** « Huit en
-  // cours » au-dessus de sept lignes ferait douter que le retrait ait eu lieu.
+  // **Le décompte suit ce qui reste, sans attendre le serveur.** Un « 8 »
+  // au-dessus de sept lignes ferait douter que le retrait ait eu lieu.
   // Tous les chantiers de la liste n'y entrent pas : `enCours` le dit ligne par
   // ligne, et c'est la seule façon de recompter juste ici.
   const restants = chantiers.filter((c) => !retraits.estRetire(c.id));
   const compte = restants.filter((c) => c.enCours).length;
-  const compteEnLettres = nombreEnLettres(compte);
 
   // Échapper referme, comme partout ailleurs. Sans cela, une personne au
   // clavier se retrouve enfermée dans la feuille.
@@ -197,18 +195,16 @@ export default function EcranChantiers({
               <BoutonAssistant />
             </div>
           </div>
-          {/* Le compteur, en lettres : un chiffre isolé dans un bandeau de
-              capitales se lit comme une donnée de tableau de bord. L'attribut
-              sert aux suites de bout en bout — un libellé se réécrit, une
-              étiquette de code non. */}
-          <p
-            data-atlas="compteur"
-            data-compte={compte}
-            className="mt-3.5 text-[9.5px] font-medium uppercase"
-            style={{ color: colors.muted, letterSpacing: "0.28em" }}
-          >
-            {compteEnLettres} en cours
-          </p>
+          {/* **Le compte ne se dit plus ici, et il ne se dit plus qu'UNE fois.**
+              Sa demande du 19 août 2026, capture à l'appui : il lisait le même
+              nombre trois fois sur le même écran — « Un en cours » sous le
+              titre, « En cours » à gauche de la rubrique, « Un » à sa droite.
+              Il reste la rubrique, avec le chiffre collé au mot.
+
+              Le repère `data-atlas="compteur"` a suivi le compte : il vit
+              maintenant sur la rubrique (`test-dashboard` le lit pour savoir
+              combien de chantiers sont en cours). Le laisser sur une ligne
+              supprimée aurait rendu la suite muette. */}
 
           {/* **« La catégorie client n'a pas été créée » — 17 août 2026, au
               soir.** La fiche d'un client existait depuis la veille, mais elle
@@ -298,12 +294,30 @@ export default function EcranChantiers({
           </Link>
         </div>
 
+        {/* **Le mot, puis le chiffre — et plus rien à droite.** Sa demande du
+            19 août 2026. Trois choix, tous les trois de lui :
+
+            1. **le nombre en CHIFFRE**, plus en lettres. « Un » à l'autre bout
+               de la ligne se lisait comme un mot de plus, pas comme un compte ;
+            2. **le chiffre est le seul élément en gras** : c'est lui qu'on
+               vient lire, le mot ne fait que le nommer ;
+            3. **le mot fonce d'un cran** — `inkSoft` au lieu de `muted`. C'est
+               le seul pas que la charte propose entre les deux, et il vaut pour
+               les sept : une valeur écrite en clair ici aurait été juste sur
+               « Origine » et fausse sur les deux chartes sombres. */}
         <div
-          className="mx-[26px] mb-1 mt-[30px] flex justify-between text-[9.5px] font-medium uppercase"
-          style={{ color: colors.muted, letterSpacing: "0.28em" }}
+          data-atlas="compteur"
+          data-compte={compte}
+          className="mx-[26px] mb-1 mt-[30px] flex items-baseline gap-[10px] text-[9.5px] font-medium uppercase"
+          style={{ color: colors.inkSoft, letterSpacing: "0.28em" }}
         >
           <span>En cours</span>
-          <span style={{ fontVariantNumeric: "tabular-nums" }}>{compteEnLettres}</span>
+          <span
+            className="text-[12px] font-bold"
+            style={{ color: colors.ink, letterSpacing: "0.06em", fontVariantNumeric: "tabular-nums" }}
+          >
+            {compte}
+          </span>
         </div>
 
         {restants.length === 0 ? (

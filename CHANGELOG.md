@@ -7,6 +7,35 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-19
+
+### Le compte des chantiers ne se dit plus qu'une fois, et en chiffre
+
+**Sa demande, capture à l'appui :** *« la mention en cours qui se trouve sous
+Vos chantiers, supprime-la. Le "Un" qui est à droite, en lettres, je le
+supprime. Et le "en cours" au-dessus de la date, à côté je veux le chiffre du
+nombre de chantiers en cours, en gras. »*
+
+**Ce que ça corrigeait :** le même nombre était écrit **trois fois** sur le même
+écran — « Un en cours » sous le titre, « En cours » à gauche de la rubrique,
+« Un » à sa droite. Deux fois en lettres, à deux endroits, pour une seule
+information.
+
+Il reste **« EN COURS 4 »** : le mot, puis le chiffre collé à lui. Le chiffre
+est le seul élément en gras de la ligne — c'est lui qu'on vient lire.
+
+**Le mot fonce d'un cran**, et pas d'une valeur écrite en clair : `inkSoft` au
+lieu de `muted`. C'est le seul pas que la charte propose entre les deux, et il
+vaut pour les sept — une couleur en dur ici aurait été juste sur « Origine » et
+fausse sur les deux chartes sombres. Trois gris lui ont été montrés
+(`appli/en-cours-le-chiffre.html`).
+
+**Le repère `data-atlas="compteur"` a suivi le compte** sur la rubrique. Le
+laisser sur la ligne supprimée aurait rendu `test-dashboard` muet — et cette
+suite lit le nombre en ATTRIBUT depuis le 10 août précisément pour survivre aux
+refontes de libellé. Elle vérifie désormais aussi que le nombre **se lit en
+chiffre à l'écran** : l'attribut seul resterait vert sur un retour aux lettres.
+
 ## 2026-08-18
 
 ### Le bouton de l'accueil dit « Créer un devis »

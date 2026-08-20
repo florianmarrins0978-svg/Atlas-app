@@ -26,14 +26,23 @@ async function main() {
   const compterChantiersAffiches = () => page.locator("a.atlas-brin").count();
   const nbAvant = await compterChantiersAffiches();
 
-  // Le compteur s'écrit en toutes lettres depuis le 10 août 2026 (« HUIT EN
-  // COURS ») : on ne peut plus le lire au `parseInt`. Il porte donc son nombre
-  // en attribut — un libellé se réécrit à chaque maquette, une étiquette de
-  // code non, et un contrôle accroché au libellé casse à la refonte suivante
-  // sans qu'aucun défaut n'existe.
-  const lireCompteur = async () =>
-    Number(await page.locator('[data-atlas="compteur"]').getAttribute("data-compte"));
+  // Le compteur porte son nombre en ATTRIBUT, et c'est ce qu'on lit : un
+  // libellé se réécrit à chaque maquette, une étiquette de code non. Il l'a
+  // porté en toutes lettres (« HUIT EN COURS », 10 août 2026), puis en chiffre
+  // à côté du mot (19 août) ; l'attribut, lui, n'a pas bougé — et aucune de ces
+  // deux refontes n'a cassé ce contrôle, ce qui est exactement l'intention.
+  const compteur = page.locator('[data-atlas="compteur"]');
+  const lireCompteur = async () => Number(await compteur.getAttribute("data-compte"));
   const nombreAvant = await lireCompteur();
+
+  // **Et ce qu'on LIT à l'écran doit être le chiffre.** Sa demande du 19 août.
+  // L'attribut seul ne dirait rien d'un retour aux lettres : le contrôle
+  // resterait vert sur un écran qui n'est plus le sien.
+  const ditALEcran = (await compteur.innerText()).replace(/\s+/g, " ").trim();
+  assert.ok(
+    new RegExp(`\\b${nombreAvant}\\b`).test(ditALEcran),
+    `La rubrique dit « ${ditALEcran} » : le nombre doit s'y lire en chiffre`
+  );
   assert.equal(nombreAvant, nbAvant, "L'indicateur affiché doit correspondre au nombre réel de cartes chantier");
 
   // --- Crée un nouveau chantier réel et vérifie que l'indicateur se met à jour ---
