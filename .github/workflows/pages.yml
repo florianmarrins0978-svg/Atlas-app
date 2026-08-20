@@ -166,6 +166,7 @@ jobs:
           # écrit « quand je fais pour cliquer, je ne peux pas cliquer » — une
           # adresse transmise sans preuve qu'elle répond n'est pas une adresse.
           for f in index.html app.html essais.html clients.html clients-recherche.html \
+                   fiche-client.html \
                    devis-vocal.html devis-modele.html \
                    facture-modele.html tva-modele.html mes-tarifs.html \
                    arrosage.html arrosage-tarifs.html arrosage-catalogue.js nav.js; do

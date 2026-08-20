@@ -4,10 +4,24 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-17 · `main`
+**Point de reprise :** 2026-08-18 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+
+## Ce qu'il attend de moi, au 18 août 2026 au soir
+
+**Une réponse à trois questions**, posées dans la maquette
+`appli/fiche-client.html` et détaillées en tête de `TODO.md` : fabrique-t-on le
+PDF « fiche chantier » (il n'existe pas), où vont les **factures** qui n'ont
+plus d'encadré, et perd-on le chemin d'un client vers un chantier.
+
+**Ne rien coder de la fiche client avant sa réponse** (`CLAUDE.md` §3 bis).
+
+**L'adresse qu'on lui a donnée**, et la seule :
+`https://florianmarrins0978-svg.github.io/Atlas-app/essais.html`
+Toute maquette neuve s'y inscrit — voir `PROJECT_STATE.md`, « Les maquettes
+essayables ».
 
 ## Ne JAMAIS attendre une publication en interrogeant `github.io`
 

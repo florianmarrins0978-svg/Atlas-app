@@ -9,6 +9,50 @@ Format : le plus récent en tête.
 
 ## 2026-08-18
 
+### La fiche client, allégée — dessinée, pas codée
+
+**Sa demande, capture de l'écran « Martins » à l'appui :** *« En dessous de
+l'adresse, en titre noir gras, dernière prestation avec ce qu'elle comprend.
+Ensuite : pas trois encadrés, seulement deux. Un contenant devis, et l'autre
+fiche chantier… en deux colonnes… trié par date, de la plus récente à la moins
+récente. On garde le nom et les informations sous le nom. Tout le reste, tu
+enlèves. C'est du trop. »*
+
+**`appli/fiche-client.html`** — essayable, sans script ni photo, atteignable
+depuis `appli/essais.html`. **Rien n'est codé** : `CLAUDE.md` §3 bis, une
+demande d'apparence se dessine avant de se coder.
+
+**Ce que la maquette DIT plutôt que de le dessiner en silence : le PDF « fiche
+chantier » n'existe pas.** Vérifié dans le dépôt — Atlas ne fabrique que deux
+documents en PDF, le devis (`src/server/pdf/devis-pdf.ts`) et la facture
+(`facture-pdf.ts`). Ce que le code appelle « fiche chantier » est un **écran** ;
+la « fiche d'entretien » est un **modèle de prestations** dans les réglages. La
+deuxième colonne serait donc vide aujourd'hui. Un écran de la maquette montre ce
+que ce document contiendrait — dessiner un document inexistant comme s'il était
+là est la faute que la planche 56 a commise deux fois.
+
+**Et deux questions posées plutôt que tranchées à sa place :** où vont les
+**factures**, qui n'ont plus d'encadré (trois réponses proposées, dont une qui
+ne casse pas sa règle des deux encadrés) ; et le fait que « Ses chantiers »
+était le seul **chemin** d'un client vers un chantier.
+
+**Le contrôle** (`scripts/verifier-maquette-fiche-client-allegee.mjs`, dans
+`npm run verifier:maquette`) relit les dates **telles qu'elles s'affichent, en
+français**, et refuse une colonne qui remonte le temps — c'est le cœur de sa
+demande, dite deux fois. Il refuse aussi un troisième encadré, une colonne qui
+retombe sous l'autre à 390 px, un titre qui ne serait ni noir ni gras, le retour
+d'une des quatre choses retirées, la disparition de l'aveu sur la fiche
+chantier, et **tout lien qui ne mène nulle part** — sa colère du 18 août :
+*« quand je fais pour cliquer, je ne peux pas cliquer »*. Éprouvé rouge sur sept
+états dégradés.
+
+**Quatre défauts trouvés à l'œil, aucun par un test vert** (`CLAUDE.md` §5) : le
+retour « Vos clients » pointait sur l'écran qu'on regardait — il mène désormais
+à `clients-recherche.html#liste`, qui existe ; une case cochée ne se distinguait
+d'une case vide que par sa couleur ; une conclusion collée à sa liste ; un
+espace de trop.
+
+
 ### Le bouton de l'accueil dit « Créer un devis »
 
 **Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran

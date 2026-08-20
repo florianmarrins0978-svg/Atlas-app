@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la fiche client, allégée</title>
+<style>
+  /*
+    LA FICHE CLIENT, ALLÉGÉE — sa demande du 18 août 2026, capture de l'écran
+    « Martins » à l'appui :
+
+      « En dessous de l'adresse, en titre noir gras, dernière prestation avec ce
+        qu'elle comprend. Ensuite : pas trois encadrés, seulement deux. Un
+        contenant devis, et l'autre fiche chantier. Avec les devis rangés sous
+        l'encadré devis au format PDF, trié par date, de la plus récente à la
+        moins récente. Tu me les mets sous forme de deux colonnes, et dans la
+        deuxième colonne fiche chantier on rangera, s'il y en a, les fiches
+        chantier en format PDF. Pareil, trié par date. On garde le nom et les
+        informations sous le nom. Tout le reste, tu enlèves. C'est du trop. »
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI DISPARAÎT, ET C'EST L'ESSENTIEL DE LA DEMANDE.
+
+    L'écran d'aujourd'hui porte trois cases (chantiers · facturés · reste dû),
+    la liste « Ce qu'on lui fait, et combien de fois », la liste « Ses
+    chantiers », et une phrase d'excuse quand rien n'est facturé. Tout part.
+    L'écran `#avant` les remet côte à côte pour qu'il voie ce qu'il perd — un
+    retrait se juge sur ce qu'on ne voit plus, pas sur ce qui reste.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QU'IL FAUT DIRE PLUTÔT QUE DE LE DESSINER EN SILENCE.
+
+    **Le PDF « fiche chantier » n'existe pas dans Atlas.** Vérifié dans le
+    dépôt : deux documents seulement sont fabriqués en PDF, le devis
+    (`src/server/pdf/devis-pdf.ts`) et la facture (`facture-pdf.ts`). Ce que le
+    dépôt appelle « fiche chantier » est un ÉCRAN, pas un document ; et la
+    « fiche d'entretien » est un modèle de prestations à cocher, dans les
+    réglages.
+
+    La deuxième colonne serait donc **vide aujourd'hui**. Plutôt que de la
+    remplir de faux, l'écran `#fiche-chantier` montre ce que ce document
+    contiendrait, et dit qu'il reste à fabriquer. Dessiner un document
+    inexistant comme s'il était là, c'est la faute que la planche 56 a commise
+    deux fois (`CLAUDE.md` §5).
+
+    **Et les factures ?** Elles étaient dans la fiche, elles n'ont plus
+    d'encadré. L'écran `#factures` pose la question sans casser sa règle des
+    deux encadrés.
+
+    ─────────────────────────────────────────────────────────────────────────
+    AUCUN SCRIPT. Navigation par ancre `:target` : son lecteur n'exécute pas
+    toujours le JavaScript, et une maquette qui s'ouvre blanche ne prouve rien.
+    L'écran d'entrée est écrit EN DERNIER — `~` ne voit que les frères qui
+    suivent, et `:has()` manque encore sur les téléphones anciens.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%}
+  a{color:inherit;text-decoration:none}
+  .tel{max-width:414px;margin:0 auto;min-height:100vh;background:var(--bone);
+       padding-bottom:96px;overflow-x:hidden}
+
+  .ecran{display:none;padding:24px 0 0}
+  .ecran:target{display:block}
+  #fiche{display:block}
+  .ecran:target ~ #fiche{display:none}
+
+  /* ── L'en-tête : le nom, et les informations sous le nom ──────────────── */
+  .retour{display:inline-flex;align-items:center;gap:7px;margin:0 26px;padding:8px 0;
+          font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;
+          color:var(--muted)}
+  .chev-g{width:5px;height:5px;transform:rotate(-135deg);
+          border-right:1.5px solid currentColor;border-top:1.5px solid currentColor}
+  .surtitre{display:block;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--or);padding:0 26px}
+  h1{margin:10px 0 0;padding:0 26px;font-family:Georgia,serif;font-weight:400;
+     font-size:33px;line-height:1.04;letter-spacing:-.018em}
+  .coord{display:block;margin-top:9px;padding:0 26px;font-size:13px;color:var(--muted)}
+  .filet{height:1px;background:var(--line);margin:18px 26px 0}
+
+  /* ── La dernière prestation : titre NOIR GRAS, et ce qu'elle comprend ───
+     Il l'a demandé en toutes lettres. C'est la première chose qu'il cherche en
+     ouvrant la fiche d'un client au téléphone : ce qu'on lui a fait la
+     dernière fois. Le gras et le noir la séparent du gris des coordonnées —
+     sans quoi elle se lirait comme une ligne d'information de plus. */
+  .derniere{margin:20px 26px 0}
+  .derniere .quand{display:block;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+                   text-transform:uppercase;color:var(--muted)}
+  .derniere h2{margin:7px 0 0;font-family:Georgia,serif;font-weight:700;
+               font-size:22px;line-height:1.16;color:#000;letter-spacing:-.01em}
+  .comprend{margin:11px 0 0;padding:0;list-style:none}
+  .comprend li{position:relative;padding:0 0 0 15px;margin-top:6px;
+               font-size:14px;line-height:1.45;color:var(--charcoal-soft)}
+  .comprend li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;
+                       border-radius:50%;background:var(--or)}
+
+  /* ── Les deux encadrés, en deux colonnes ──────────────────────────────── */
+  /* `min-width:0` sur les colonnes : sans lui, un enfant de grille prend la
+     largeur de son contenu le plus long et pousse la page de côté. C'est
+     exactement le défaut qui a fait déborder la page TVA de 141 px, trouvé à
+     l'œil et non au test (18 août 2026). */
+  .deux{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 26px 0}
+  .col{min-width:0;background:var(--cream);border-radius:13px;padding:14px 12px 12px;
+       box-shadow:inset 0 0 0 1px var(--line-soft)}
+  .col > h3{margin:0;font-size:9.5px;font-weight:600;letter-spacing:.24em;
+            text-transform:uppercase;color:var(--charcoal)}
+  .col > .compte{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+
+  /* Une pièce jointe. 56 px de haut au moins : c'est un lien qu'on touche
+     d'une main, dehors, parfois avec des gants. */
+  .doc{display:grid;grid-template-columns:26px 1fr;gap:0 9px;align-items:center;
+       min-height:56px;margin-top:9px;padding:8px 0 8px 0;
+       border-top:1px solid var(--line-soft)}
+  .col .doc:first-of-type{border-top:0;margin-top:6px}
+  .doc .pdf{grid-row:1 / span 2;width:26px;height:32px;border-radius:3px;
+            background:#fff;box-shadow:inset 0 0 0 1px rgba(156,59,46,.35);
+            display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;
+            font-size:7px;font-weight:700;letter-spacing:.06em;color:var(--alerte)}
+  .doc .titre{min-width:0;font-size:14px;line-height:1.25;overflow:hidden;
+              text-overflow:ellipsis;white-space:nowrap}
+  .doc .jour{min-width:0;margin-top:3px;font-size:11.5px;color:var(--muted);
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .vide{margin-top:10px;font-size:12.5px;line-height:1.5;color:var(--muted)}
+  .vide a{color:var(--or);font-weight:600}
+
+  .note{margin:24px 26px 0;padding:15px 17px;background:var(--cream);border-radius:11px;
+        font-size:13px;line-height:1.6;color:var(--charcoal-soft)}
+  .note b{color:var(--charcoal)}
+  .note .t{display:block;margin-bottom:7px;font-size:9.5px;font-weight:500;
+           letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .note a{display:inline-block;padding:7px 0;font-weight:600;color:var(--or)}
+  .note ul{margin:8px 0 0;padding-left:18px}
+  .note li{margin-top:4px}
+  .note ul + *{margin-top:10px}
+
+  /* ── Le document tel qu'il serait ─────────────────────────────────────── */
+  .feuille{margin:18px 26px 0;background:#fff;border-radius:6px;padding:20px 18px;
+           box-shadow:0 1px 3px rgba(28,28,26,.14)}
+  .feuille .ent{display:flex;justify-content:space-between;align-items:baseline;
+                border-bottom:1px solid var(--line);padding-bottom:10px}
+  .feuille .ent b{font-family:Georgia,serif;font-weight:400;font-size:17px}
+  .feuille .ent span{font-size:11px;color:var(--muted)}
+  .feuille dl{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;
+              font-size:13px}
+  .feuille dt{font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+              color:var(--muted);align-self:center}
+  .feuille dd{margin:0;min-width:0}
+  .feuille .titre-bloc{margin:16px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.24em;
+                       text-transform:uppercase;color:var(--muted)}
+  .feuille .coche{display:flex;align-items:flex-start;gap:9px;margin-top:8px;font-size:13.5px}
+  .feuille .case{flex:none;width:13px;height:13px;border-radius:3px;margin-top:2px;
+                 box-shadow:inset 0 0 0 1.4px var(--line)}
+  .feuille .case.faite{background:var(--pine);box-shadow:none;position:relative}
+  /* La coche elle-même : sans elle, « fait » et « pas fait » ne se
+     distinguent que par une nuance de couleur — illisible au soleil, sur un
+     chantier, et invisible pour qui distingue mal le vert. */
+  .feuille .case.faite::after{content:"";position:absolute;left:4px;top:1.5px;
+                              width:3.5px;height:7px;transform:rotate(42deg);
+                              border-right:1.6px solid #fff;border-bottom:1.6px solid #fff}
+
+  /* ── L'avant / après ──────────────────────────────────────────────────── */
+  .avant{margin:16px 26px 0;background:var(--cream);border-radius:11px;padding:15px 17px}
+  .avant .t{display:block;margin-bottom:9px;font-size:9.5px;font-weight:500;
+            letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .parti{display:flex;align-items:baseline;gap:9px;margin-top:9px;font-size:14px;
+          color:var(--charcoal-soft)}
+  .parti .croix{flex:none;font-size:12px;color:var(--alerte);width:12px}
+  .parti .garde{flex:none;font-size:12px;color:var(--pine);width:12px}
+
+  .barre{position:fixed;left:0;right:0;bottom:0;max-width:414px;margin:0 auto;
+         display:flex;justify-content:space-between;padding:13px 26px 26px;
+         background:var(--bone);border-top:1px solid var(--line);
+         font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+         color:var(--muted)}
+  .barre .actif{color:var(--charcoal)}
+</style>
+</head>
+<body>
+<div class="tel">
+
+<!-- ══ Ce que serait le PDF « fiche chantier » — il n'existe pas ═════════ -->
+<section class="ecran" id="fiche-chantier">
+  <a class="retour" href="#fiche"><span class="chev-g"></span>Fiche client</a>
+  <h1>La fiche chantier</h1>
+  <span class="coord">Ce document n’existe pas encore</span>
+  <div class="filet"></div>
+
+  <div class="note"><span class="t">À lire avant de juger le dessin</span>
+    Atlas fabrique aujourd’hui <b>deux documents en PDF</b> : le <b>devis</b> et
+    la <b>facture</b>. Il n’en fabrique pas de troisième.<br><br>
+    Ce que l’application appelle « fiche chantier » est un <b>écran</b> — celui
+    où vous voyez les photos, la note vocale, les étapes. Ce n’est pas une
+    feuille qu’on envoie. La deuxième colonne serait donc <b>vide</b> tant que
+    ce document n’est pas fabriqué.<br><br>
+    Voici ce qu’il contiendrait. <b>Dites-moi si c’est bien ça</b>, et ce qu’il
+    manque.
+  </div>
+
+  <div class="feuille">
+    <div class="ent"><b>Fiche de chantier</b><span>12 août 2026</span></div>
+    <dl>
+      <dt>Client</dt><dd>Mr. Martins — 10 rue d’Enfer, Nantes</dd>
+      <dt>Chantier</dt><dd>Élagage de trois chênes</dd>
+      <dt>Devis</dt><dd>nº 2026-031 · 1 620 €</dd>
+      <dt>Sur place</dt><dd>8 h 30 → 16 h 00 · 2 personnes</dd>
+    </dl>
+
+    <p class="titre-bloc">Ce qui a été fait</p>
+    <p class="coche"><span class="case faite"></span>Démontage de trois chênes en tête de chat</p>
+    <p class="coche"><span class="case faite"></span>Broyage des branches sur place</p>
+    <p class="coche"><span class="case faite"></span>Évacuation des gravats</p>
+    <p class="coche"><span class="case"></span>Remise en état de la pelouse — <i>reporté</i></p>
+
+    <p class="titre-bloc">Observations</p>
+    <p style="margin:7px 0 0;font-size:13.5px;line-height:1.5">
+      Le troisième chêne présente un départ de pourriture au collet. À revoir
+      à l’automne prochain.
+    </p>
+
+    <p class="titre-bloc">Photos</p>
+    <p style="margin:7px 0 0;font-size:13.5px;color:#8a8578">6 photos jointes — avant, pendant, après.</p>
+  </div>
+
+  <div class="note"><span class="t">Ce que ça demanderait</span>
+    Tout est déjà en base : les prestations cochées, la note vocale, les
+    photos, les heures. <b>Il reste à en faire une feuille</b> — le même
+    travail que pour le devis et la facture, qui existent déjà.<br><br>
+    C’est le document que le client garde, et celui que vous ressortez deux ans
+    après quand il rappelle.
+  </div>
+</section>
+
+<!-- ══ La question des factures ═════════════════════════════════════════ -->
+<section class="ecran" id="factures">
+  <a class="retour" href="#fiche"><span class="chev-g"></span>Fiche client</a>
+  <h1>Et les factures ?</h1>
+  <span class="coord">Une question, pas une proposition de plus</span>
+  <div class="filet"></div>
+
+  <div class="note"><span class="t">Ce que le retrait emporte</span>
+    Vous avez dit <b>deux encadrés</b> : devis, et fiche chantier. Les
+    <b>factures</b> n’ont donc plus de place — ni ce qui reste dû.<br><br>
+    Ce n’est peut-être pas grave : l’argent se voit ailleurs, dans
+    <b>Terminés → En attente de paiement</b>. Mais depuis la fiche d’un client,
+    on ne saurait plus s’il vous doit quelque chose.
+  </div>
+
+  <div class="avant"><span class="t">Sans ajouter d’encadré</span>
+    <p style="margin:0;font-size:14px;line-height:1.55;color:#4a4a44">
+      Le devis porterait lui-même sa suite, en une ligne grise sous son numéro :
+    </p>
+    <div class="col" style="margin-top:12px;box-shadow:inset 0 0 0 1px rgba(28,28,26,.07)">
+      <h3>Devis</h3>
+      <span class="compte">3 documents</span>
+      <span class="doc"><span class="pdf">PDF</span><span class="titre">nº 2026-031</span><span class="jour">28 juil. 2026 · 1 620 € · <b style="color:#2f3b2f">facturé</b></span></span>
+      <span class="doc"><span class="pdf">PDF</span><span class="titre">nº 2026-022</span><span class="jour">14 mai 2026 · 740 € · refusé</span></span>
+    </div>
+    <p style="margin:12px 0 0;font-size:13px;line-height:1.55;color:#8a8578">
+      Toujours deux encadrés. Et le mot « facturé » ouvre la facture.
+    </p>
+  </div>
+
+  <div class="note"><span class="t">Trois réponses possibles</span>
+    <ul>
+      <li><b>On laisse tomber</b> — l’argent se regarde dans Terminés.</li>
+      <li><b>La ligne grise</b> ci-dessus, sans encadré de plus.</li>
+      <li><b>Un troisième encadré</b> Factures, malgré ce que vous avez dit.</li>
+    </ul>
+    Dites-moi laquelle, et je la code.
+  </div>
+</section>
+
+<!-- ══ Ce qui disparaît ═════════════════════════════════════════════════ -->
+<section class="ecran" id="avant">
+  <a class="retour" href="#fiche"><span class="chev-g"></span>Fiche client</a>
+  <h1>Ce qui part</h1>
+  <span class="coord">L’écran d’aujourd’hui, ligne par ligne</span>
+  <div class="filet"></div>
+
+  <div class="avant"><span class="t">Gardé</span>
+    <p class="parti"><span class="garde">✓</span>Le nom du client — <b>Mr. Martins</b></p>
+    <p class="parti"><span class="garde">✓</span>Les informations sous le nom — adresse, téléphone</p>
+    <p class="parti"><span class="garde">✓</span>Le retour vers la liste des clients</p>
+  </div>
+
+  <div class="avant"><span class="t">Retiré</span>
+    <p class="parti"><span class="croix">✕</span><span>Les <b>trois cases</b> : 1 chantier · facturés · reste dû</span></p>
+    <p class="parti"><span class="croix">✕</span><span>« <b>Ce qu’on lui fait, et combien de fois</b> » — la liste des prestations récurrentes</span></p>
+    <p class="parti"><span class="croix">✕</span><span>« <b>Ses chantiers</b> » — la liste des chantiers avec leurs dates</span></p>
+    <p class="parti"><span class="croix">✕</span><span>La phrase « Aucune facture émise pour l’instant »</span></p>
+  </div>
+
+  <div class="avant"><span class="t">Ajouté</span>
+    <p class="parti"><span class="garde">+</span><span>La <b>dernière prestation</b> en titre noir gras, et ce qu’elle comprend</span></p>
+    <p class="parti"><span class="garde">+</span><span>Deux colonnes de <b>documents PDF</b>, du plus récent au plus ancien</span></p>
+  </div>
+
+  <div class="note"><span class="t">La seule chose qui m’inquiète</span>
+    « Ses chantiers » était le <b>chemin</b> vers un chantier depuis un client.
+    En le retirant, on n’ouvre plus un chantier depuis ici — sauf par sa fiche
+    chantier en PDF, qui n’est pas la même chose.<br><br>
+    Si vous ouvrez rarement un chantier depuis un client, ce n’est pas une
+    perte. <b>Vous le savez mieux que moi.</b>
+  </div>
+</section>
+
+<!-- ══ LA FICHE — l'écran d'entrée (écrit en dernier, cf. la règle) ══════ -->
+<section class="ecran" id="fiche">
+  <a class="retour" href="clients-recherche.html#liste"><span class="chev-g"></span>Vos clients</a>
+  <span class="surtitre">Client</span>
+  <h1>Mr. Martins</h1>
+  <span class="coord">10 rue d’Enfer, Nantes · 06 79 98 45 14</span>
+
+  <div class="derniere">
+    <span class="quand">Dernière prestation · 12 août 2026</span>
+    <h2>Élagage de trois chênes</h2>
+    <ul class="comprend">
+      <li>Démontage en tête de chat, trois sujets</li>
+      <li>Broyage des branches sur place</li>
+      <li>Évacuation des gravats</li>
+      <li>Remise en état de la pelouse</li>
+    </ul>
+  </div>
+
+  <div class="deux">
+    <div class="col">
+      <h3>Devis</h3>
+      <span class="compte">3 documents</span>
+      <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2026-031</span><span class="jour">28 juil. 2026</span></a>
+      <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2026-022</span><span class="jour">14 mai 2026</span></a>
+      <a class="doc" href="#fiche"><span class="pdf">PDF</span><span class="titre">nº 2025-102</span><span class="jour">21 sept. 2025</span></a>
+    </div>
+
+    <div class="col">
+      <h3>Fiche chantier</h3>
+      <span class="compte">2 documents</span>
+      <a class="doc" href="#fiche-chantier"><span class="pdf">PDF</span><span class="titre">12 août 2026</span><span class="jour">Élagage 3 chênes</span></a>
+      <a class="doc" href="#fiche-chantier"><span class="pdf">PDF</span><span class="titre">2 oct. 2025</span><span class="jour">Taille de haie</span></a>
+    </div>
+  </div>
+
+  <div class="note"><span class="t">Trois choses à me dire</span>
+    <b>1 ·</b> La fiche chantier en PDF <b>n’existe pas encore</b> dans Atlas.
+    <a href="#fiche-chantier">voir ce qu’elle contiendrait →</a><br>
+    <b>2 ·</b> Les <b>factures</b> n’ont plus d’encadré.
+    <a href="#factures">où les met-on ? →</a><br>
+    <b>3 ·</b> Quatre choses ont disparu de cet écran.
+    <a href="#avant">voir lesquelles →</a>
+  </div>
+</section>
+
+<div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+</div>
+</body>
+</html>
