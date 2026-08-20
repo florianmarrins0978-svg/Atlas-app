@@ -25,6 +25,31 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
+## ⏳ POURQUOI deux constructions se marchent dessus — non reproduit
+
+**Le 20 août 2026 à 6 h 10**, la construction du banc tombe sur « Another next
+build process is already running », et le patron passe la matinée sur la version
+lente. La relance a été réparée (`ARCHITECTURE.md` §133) : **le symptôme ne dure
+plus, la cause n'est pas trouvée.**
+
+**Ce qui a été écarté, mesure à l'appui.** Ce n'est pas la saturation mémoire du
+17 août : au moment de l'échec, sa fiche portait **4,3 Gio disponibles**. Et ce
+n'est pas un verrou périmé — éprouvé ici le 20 août, le processus qui tient
+`<dist>/lock` est bien `node …/next build`, vivant, et
+`delogerConstructionsOrphelines()` le déloge correctement (trois processus,
+zéro restant).
+
+**La piste qui reste, et personne ne l'a suivie :** `veiller.sh` ne vérifie
+qu'aucune construction ne tourne **que dans la branche de relance**. La branche
+« plus rien ne répond sur le port » lance `npm run banc` sans ce contrôle. Deux
+bancs peuvent alors se déloger mutuellement leur construction — chacun croyant
+retirer une orpheline. À reproduire avant de corriger : ce dépôt a déjà payé
+trois correctifs écrits contre une panne imaginée (`AGENTS.md`).
+
+**Ce qu'il faudrait pour trancher :** que le témoin d'échec porte **qui** tenait
+le verrou (la ligne de commande du processus, son pid, son père). Aujourd'hui il
+ne porte que le message de Next, et l'on ne peut que supposer.
+
 ## ⏸ « Trop compliquée » — sa plainte du 19 août 2026, RIEN n'est tranché
 
 **Ses mots, qui valent mieux qu'un résumé :** *« l'application va être trop

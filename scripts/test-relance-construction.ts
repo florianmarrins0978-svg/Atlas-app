@@ -58,6 +58,7 @@ async function veillerDevantUnServeurVivant(opts: {
   constructionEnCours?: boolean;
   duree?: number;
   relancesMax?: string;
+  relanceLente?: string;
 }): Promise<{ appels: string[]; journal: string }> {
   const dossier = mkdtempSync(path.join(tmpdir(), "atlas-relance-"));
   const traces = path.join(dossier, "appels.txt");
@@ -96,6 +97,9 @@ async function veillerDevantUnServeurVivant(opts: {
       ATLAS_INTERVALLE_RAPPORT: "9999",
       ATLAS_RELANCE_CONSTRUCTION_S: "0",
       ATLAS_RELANCES_CONSTRUCTION_MAX: opts.relancesMax ?? "3",
+      // Le pas lent, une fois la salve épuisée. Très grand par défaut : la
+      // plupart des cas veulent mesurer la SALVE, pas ce qui vient après.
+      ATLAS_RELANCE_LENTE_S: opts.relanceLente ?? "9999",
       // Un verrou À NOUS : le vrai vit dans /tmp et un veilleur réel qui
       // tournerait à côté ferait sortir celui-ci sans rien mesurer.
       PATH: `${faussesCommandes}:${process.env.PATH}`,
@@ -129,7 +133,7 @@ async function veillerDevantUnServeurVivant(opts: {
 }
 
 async function principal() {
-  console.log("=== La construction échouée se retente, et pas indéfiniment ===\n");
+  console.log("=== La construction échouée se retente, sans jamais renoncer ni s'emballer ===\n");
 
   // Le verrou du veilleur est un fichier unique : on le retire entre deux cas,
   // sans quoi le second veilleur sortirait en disant « déjà en place » et le
@@ -157,18 +161,42 @@ async function principal() {
   });
 
   libererLeVerrou();
-  await cas("le nombre de tentatives est borné, et l'abandon se dit", async () => {
+  await cas("la salve rapide est bornée, et le passage au ralenti se dit", async () => {
+    // Le pas lent est hors de portée du cas : ce qu'on mesure ici, c'est que la
+    // salve RAPIDE s'arrête bien à deux et ne dégénère pas en boucle serrée.
     const { appels, journal } = await veillerDevantUnServeurVivant({
       avecTemoinDEchec: true,
       relancesMax: "2",
+      relanceLente: "9999",
       duree: 6000,
     });
     assert.ok(appels.length > 0, "aucune tentative : le contrôle ne mesure rien");
     assert.ok(
       appels.length <= 2,
-      `${appels.length} tentatives alors que deux étaient permises — l'espace serait maintenu à genoux`
+      `${appels.length} tentatives rapprochées alors que deux étaient permises — l'espace serait maintenu à genoux`
     );
-    assert.match(journal, /on n'insiste plus/);
+    assert.match(journal, /on continue, une toutes les/);
+  });
+
+  libererLeVerrou();
+  await cas("APRÈS la salve, on retente encore — le banc ne reste pas lent pour la journée", async () => {
+    // **Le défaut du 20 août 2026, et c'est celui-ci qui compte.** Le compteur
+    // s'arrêtait à trois : passé la salve, plus rien ne retentait jamais, et la
+    // fiche disait « il est LENT, et le restera ». Le patron a écrit
+    // « l'application est lente corrige ça » une demi-heure après l'échec,
+    // alors que sa machine avait renoncé.
+    //
+    // Ici, le pas lent vaut zéro : le veilleur doit donc dépasser la salve.
+    const { appels } = await veillerDevantUnServeurVivant({
+      avecTemoinDEchec: true,
+      relancesMax: "1",
+      relanceLente: "0",
+      duree: 6000,
+    });
+    assert.ok(
+      appels.length > 1,
+      `${appels.length} tentative(s) : le veilleur s'est arrêté après la salve — le banc resterait lent toute la journée`
+    );
   });
 
   libererLeVerrou();

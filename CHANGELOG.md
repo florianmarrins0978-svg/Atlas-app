@@ -7,6 +7,39 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-20
+
+### Le veilleur ne renonce plus : la version rapide se retente jusqu'à passer
+
+**Sa plainte, à 6 h 40 :** *« l'application est lente corrige ça »*. Sa fiche le
+disait déjà : la construction avait échoué à 6 h 10 sur « Another next build
+process is already running », et le banc servait le mode développement — celui
+qui compile chaque écran à l'ouverture.
+
+Le mécanisme de relance existait (§131) mais **s'arrêtait après trois
+tentatives**, soit une demi-heure. Passé ce délai, plus rien ne retentait, et la
+fiche l'écrivait : *« il est LENT, et le restera »*. Le seul remède était qu'il
+rallume son espace — pour une panne qu'il ne pouvait pas voir.
+
+**Ce qui change :** après la salve rapide (trois fois, à dix minutes), le
+veilleur continue **indéfiniment, une tentative par demi-heure**. C'est le
+rythme qui est borné, plus le nombre. Jamais deux constructions à la fois, et
+jamais avant le délai — ces deux garde-fous n'ont pas bougé.
+
+**Ce que ça évite :** une journée entière sur la version lente parce que la
+fenêtre où la machine pouvait bâtir est arrivée trente-cinq minutes trop tard.
+
+**Et la fiche a cessé de mentir.** « Il restera lent » était vrai tant que le
+veilleur renonçait ; le laisser enverrait rallumer un espace en train de se
+réparer tout seul. Elle dit maintenant le rythme des tentatives.
+
+**Ce qui n'est PAS réglé :** pourquoi deux constructions se marchaient dessus à
+6 h 10. La mémoire était encore ample à cet instant — ce n'est donc pas la
+saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
+`TODO.md`.
+
+---
+
 ## 2026-08-19
 
 ### Atlas dépouillé, utilisable, pour la plainte « trop de mots »
