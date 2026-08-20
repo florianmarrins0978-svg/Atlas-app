@@ -9,6 +9,18 @@ sert.
 
 ---
 
+## La recherche de clients est CODÉE (20 août 2026)
+
+Sa demande du matin : *« il faut une barre de recherche où je peux taper le nom
+d'un client »*. Faite, éprouvée, sur `main`. La règle est dans
+`src/lib/recherche-client.ts` et l'écran ne la refait pas — un contrôle le
+vérifie en lisant le fichier de l'écran.
+
+**Le piège, et il ressort d'une capture, pas d'une suite :** `type="search"`
+fait poser au navigateur une croix d'effacement **bleu vif**, seule tache de
+couleur de l'écran. Ne pas remettre `type="search"` en croyant bien faire —
+`ARCHITECTURE.md` §134.
+
 ## ⏸ « TROP DE MOTS » — mesuré le 19 août, il n'a pas encore répondu
 
 **Sa plainte, et c'est la troisième :** *« il y a beaucoup trop de mots dans

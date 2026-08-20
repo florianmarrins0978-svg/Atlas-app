@@ -11079,6 +11079,102 @@ constructions se marchaient dessus à 6 h 10. La mémoire était encore ample à
 instant (4,3 Gio disponibles) : ce n'est donc pas la saturation du 17 août. La
 cause n'a pas été reproduite ici, et elle reste ouverte dans `TODO.md`.
 
+## 134. Chercher un client : la règle vit hors de l'écran, et la croix aussi
+
+**Sa demande du 20 août 2026, capture à l'appui :** *« Il faut une barre de
+recherche où je peux taper le nom d'un client pour le retrouver plus
+facilement. »* Sur sa capture : **vingt et un clients**, dont **quatre
+Martins**, et le sien quelque part au milieu. La chose avait été dessinée le
+17 août — `appli/clients-recherche.html`, proposition B, « la recherche par
+frappe ».
+
+### Où vit la règle, et pourquoi pas dans l'écran
+
+`src/lib/recherche-client.ts` — fonction pure, éprouvable sans base ni
+navigateur (`CLAUDE.md` §3). L'écran l'appelle, il ne la refait pas.
+
+Ce qu'elle tient, et chaque point vient de SA liste :
+
+| Il tape | Il doit trouver | Pourquoi |
+|---|---|---|
+| `martins` | `Martins`, `Monsieur Martins` | la casse ne décide de rien |
+| `renard` | `Mme Renard (test)` | le nom cherché n'est presque jamais au début |
+| `moreau` | `Moréau` | il ne maintient pas la touche « e » de son téléphone |
+| `dupont` | `M. Dupont`, `Mr. Dupont` | le point et l'apostrophe ne séparent rien |
+| `martins monsieur` | `Monsieur Martins` | l'ordre des mots est le sien, pas le nôtre |
+
+**Une saisie vide rend TOUT**, et ce n'est pas un détail : l'écran s'ouvre sur
+le champ vide, et rendre zéro lui ferait croire qu'il a perdu ses clients.
+
+**Un contrôle interdit à l'écran de refaire la règle.** `test-recherche-client.ts`
+lit `ListeClients.tsx` et refuse d'y voir un `.toLowerCase().includes(...)` : le
+jour où quelqu'un en remet un, « moreau » cesserait de trouver « Moréau » sans
+qu'aucune autre suite ne le voie.
+
+### Le filtrage se fait dans le NAVIGATEUR
+
+Vingt et un noms tiennent dans une page. Les faire chercher au serveur à chaque
+lettre, c'est un aller-retour réseau par frappe, en 5G au bord d'un chantier. Le
+jour où un artisan en aura deux mille, ce choix se révisera — et la règle ne
+bougera pas, elle est déjà hors de l'écran.
+
+### La croix bleue : trouvée sur une capture, par aucune suite
+
+**`type="search"` fait poser au navigateur sa propre croix d'effacement, et elle
+est d'un BLEU VIF.** Sur une page de crème et de bronze, c'était la seule tache
+de couleur de l'écran — et la cinquième fois dans ce dépôt qu'un défaut sort
+d'une image et d'aucun test (`CLAUDE.md` §5).
+
+Le champ est donc un `type="text"` avec `inputMode="search"`, et la croix est la
+nôtre : couleur `muted`, 46 px de large sur toute la hauteur du champ, et
+**présente seulement quand il y a quelque chose à effacer** — un bouton qui ne
+fait rien est un bouton de trop. `test-recherche-client-e2e.ts` tient les trois :
+le type, la taille de la cible, et le fait qu'elle efface pour de bon.
+
+### Sur CETTE machine, aucune page ne s'anime en mode développement
+
+**Découvert en éprouvant la recherche, et c'est plus large qu'elle.** La suite
+navigateur passait seule et tombait en batterie, sur « la liste n'a pas été
+réduite (71 sur 71) ». Le message accusait la recherche.
+
+Elle n'y était pour rien. Les suites navigateur démarrent un `npm run dev`
+(`run-e2e-tests.ts`), et sur cette machine **React ne s'attache à aucune page**
+en mode développement — l'accueil non plus, vérifié en cherchant les fibres
+React sur `document.body.firstElementChild`. La liaison permanente que Next
+ouvre en développement (`webpack-hmr`) est refusée par le mandataire réseau :
+`ERR_INVALID_HTTP_RESPONSE`. Le HTML s'affiche, rien ne l'écoute.
+
+Ce n'est donc pas un défaut du produit : **contre un serveur bâti
+(`next start`), les huit contrôles passent**, et c'est ce que le banc du patron
+sert. La suite pose la question avant d'accuser, et le dit quand la page est
+morte.
+
+**L'échappatoire est étroite, et c'est ce qui la rend acceptable :** elle ne
+s'ouvre que si React n'est attaché nulle part. Un vrai défaut de la recherche
+laisse la page vivante, et la suite reste rouge — éprouvé en débranchant le
+filtre pour de bon (`filtrerClientsParNom(clients, "")`) : deux contrôles au
+rouge, avec le bon message.
+
+**Et deux pièges d'outillage, payés là :**
+
+- **`waitUntil: "networkidle"` n'arrive JAMAIS contre un serveur de
+  développement** : la liaison de rechargement à chaud garde le réseau occupé,
+  et l'attente expire sur une page pourtant affichée. On attend un élément, pas
+  un silence ;
+- **une sabotage qui ne s'applique pas fait croire à un contrôle faible.** La
+  première tentative visait une ligne que Prettier avait reformatée sur trois
+  lignes : `replace` n'a rien remplacé, en silence, et la suite est passée au
+  vert sur un code prétendument cassé. Toute substitution de vérification doit
+  être suivie d'une assertion qu'elle a bien eu lieu.
+
+### Le champ est toujours affiché, et c'est un choix
+
+Une première version ne le montrait qu'à partir de cinq clients — moins de
+meuble sur un écran presque vide. Mais **une barre qui apparaît et disparaît est
+une règle de plus à deviner** : le jour où il en a quatre, il la cherche et
+conclut qu'elle a été retirée. Un champ vide ne coûte rien à lire ; une règle
+invisible coûte un message.
+
 ## §127. Le quinconce est un damier, et il se vérifie au lieu de se supposer
 
 **Son croquis du 18 août 2026**, deux couloirs superposés sur du papier
