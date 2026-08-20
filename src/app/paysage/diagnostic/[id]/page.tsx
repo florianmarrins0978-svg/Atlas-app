@@ -4,6 +4,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireDiagnostic } from "@/server/repositories/diagnostics";
+import { lireImagesFiche } from "@/server/repositories/fiches-phyto";
 import { listerChantiers } from "@/server/repositories/chantiers";
 import type { Mention, ResultatFige } from "@/lib/diagnostic-vegetal";
 import PrendreUnePhoto from "../PrendreUnePhoto";
@@ -61,7 +62,7 @@ export default async function ResultatPage({ params }: { params: Promise<{ id: s
 
         <section className="mx-[26px] mt-[24px]">
           {diagnostic.statut === "rendu" && resultat ? (
-            <Rendu resultat={resultat} />
+            <Rendu resultat={resultat} ficheId={diagnostic.ficheId} />
           ) : diagnostic.statut === "complement_demande" ? (
             <Complement consigne={diagnostic.complementConsigne} diagnosticId={id} />
           ) : (
@@ -104,7 +105,15 @@ function titrePour(statut: string, resultat: ResultatFige | null): string {
 
 // ── L'état principal : le résultat ──────────────────────────────────────────
 
-function Rendu({ resultat }: { resultat: ResultatFige }) {
+async function Rendu({ resultat, ficheId }: { resultat: ResultatFige; ficheId: string | null }) {
+  // **Les images sont lues EN DIRECT, pas figées dans le résultat.** Le
+  // diagnostic est figé — le nom, la gravité, la conduite, c'est-à-dire ce sur
+  // quoi il a agi. La photo de référence, elle, est une aide à l'œil : la geler
+  // par identifiant la casserait au premier réimport de la fiche (les images
+  // sont remplacées, donc renumérotées), et une image morte est pire qu'une
+  // image un peu différente.
+  const images = ficheId ? await lireImagesFiche(ficheId) : [];
+
   return (
     <div data-atlas="diagnostic-rendu">
       {/* La confiance en TROIS MOTS, jamais un pourcentage — aucun modèle
@@ -116,6 +125,13 @@ function Rendu({ resultat }: { resultat: ResultatFige }) {
       <p className="mt-[14px] text-[15px] leading-[1.6]" style={{ color: colors.inkSoft }}>
         {resultat.explication}
       </p>
+
+      {/* **La photo de référence est sur l'écran PRINCIPAL, et c'est sa
+          demande du 20 août 2026 :** « il faut absolument mettre des photos,
+          l'utilisateur a besoin de comparer avec une vraie photo qui comporte
+          la maladie ». Comparer suppose de voir les deux ensemble — la reléguer
+          derrière « Voir les détails » aurait vidé le geste de son sens. */}
+      {images.length > 0 && <PhotosDeReference images={images} />}
 
       <Bloc cle="Gravité" repere="diagnostic-gravite">
         {resultat.graviteLibelle}
@@ -131,6 +147,51 @@ function Rendu({ resultat }: { resultat: ResultatFige }) {
       {resultat.mentions.map((mention, i) => (
         <MentionAffichee key={i} mention={mention} />
       ))}
+    </div>
+  );
+}
+
+/**
+ * À quoi ça ressemble vraiment.
+ *
+ * **Le crédit et la licence sont AFFICHÉS, pas rangés dans un coin.** La plupart
+ * des licences libres l'exigent — une photo sous CC-BY sans son auteur visible
+ * est une photo employée hors licence —, et c'est de toute façon la moindre des
+ * choses envers celui qui l'a prise. C'est aussi ce qui permet de vérifier d'un
+ * coup d'œil qu'aucune image n'est arrivée là sans qu'on sache d'où.
+ */
+function PhotosDeReference({
+  images,
+}: {
+  images: { id: string; legende: string | null; credit: string; licence: string; partie: string | null }[];
+}) {
+  return (
+    <div className="mt-[20px]" data-atlas="diagnostic-photos-reference">
+      <p className={libelleCaps} style={{ color: colors.muted }}>
+        À quoi ça ressemble
+      </p>
+      <div className="mt-[10px] flex flex-col gap-[14px]">
+        {images.map((image) => (
+          <figure key={image.id} className="m-0">
+            {/* `img` et non `next/image` : ces photos sortent d'une route
+                authentifiée, et l'optimiseur de Next ne sait pas s'y
+                authentifier. Le poids est borné à l'import (500 Ko), ce qui est
+                la vraie raison pour laquelle on peut s'en passer. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/phyto/image/${image.id}`}
+              alt={image.legende ?? "Photo de référence"}
+              loading="lazy"
+              className="block w-full rounded-[4px]"
+              style={{ border: `1px solid ${colors.line}` }}
+            />
+            <figcaption className="mt-[6px] text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
+              {image.legende && <span style={{ color: colors.inkSoft }}>{image.legende} — </span>}
+              {image.credit} · {image.licence}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
     </div>
   );
 }

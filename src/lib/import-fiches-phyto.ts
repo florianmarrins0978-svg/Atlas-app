@@ -168,10 +168,23 @@ export const FicheSchema = z.object({
   images: z
     .array(
       z.object({
+        /**
+         * Le chemin d'un fichier du dépôt, relatif à la racine — typiquement
+         * `donnees/phyto/images/…`.
+         *
+         * **C'est la voie normale**, et elle existe pour une raison : l'écran de
+         * résultat MONTRE une photo de référence, pour que le patron compare la
+         * sienne avec elle. Une adresse distante n'aurait pas fait l'affaire —
+         * elle meurt, elle est lente sur un réseau de bord de route, et elle
+         * fait dépendre son écran d'un serveur qui n'est pas le nôtre.
+         */
+        fichier: z.string().min(3).nullable().default(null),
         url: z.string().url().nullable().default(null),
         storageKey: z.string().nullable().default(null),
-        /** NOT NULL en base : une image d'organisme reprise sans droit est un
-         *  risque qui ne se voit qu'à la mise en demeure. */
+        /** NOT NULL en base : une image reprise sans droit est un risque qui ne
+         *  se voit qu'à la mise en demeure. Le crédit est AFFICHÉ sous la
+         *  photo — la plupart des licences libres l'exigent, et c'est de toute
+         *  façon la moindre des choses. */
         licence: z.string().min(2),
         credit: z.string().min(2),
         partie: z.enum(PARTIES).nullable().default(null),
@@ -294,6 +307,26 @@ export function validerLot(brut: unknown, options: { autoriserFixtures: boolean 
       if (confusion.photoQuiTranche !== null && confusion.partieQuiTranche === null) {
         avertissements.push(
           ici(`la confusion avec « ${confusion.fiche} » demande une photo sans dire de quelle partie`)
+        );
+      }
+    }
+
+    // ── 7. Une image sans origine, ou dont la licence est un aveu ──────────
+    //
+    // **`licence` est NOT NULL en base, mais rien n'empêchait d'y écrire « à
+    // vérifier ».** Une fiche passerait alors tous les contrôles en affichant
+    // une photo dont personne n'a établi les droits — et le champ obligatoire
+    // aurait servi à rassurer plutôt qu'à protéger.
+    for (const [i, img] of fiche.images.entries()) {
+      if (!img.fichier && !img.url && !img.storageKey) {
+        problemes.push(ici(`image ${i + 1} : ni fichier, ni adresse — elle ne désigne rien`));
+      }
+      if (/vérifier|verifier|inconnu|\?|à définir|a definir/i.test(img.licence)) {
+        problemes.push(
+          ici(
+            `image ${i + 1} : licence « ${img.licence} » — ce n’est pas une licence, c’est un aveu. ` +
+              `Une image dont les droits ne sont pas établis ne s’affiche pas`
+          )
         );
       }
     }

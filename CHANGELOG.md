@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### « Il faut absolument mettre des photos » — l'écran en montre une, et d'où elle vient
+
+**Sa demande du 20 août 2026 :** *« L'utilisateur a besoin de comparer avec une
+vraie photo qui comporte la maladie. »* Il avait raison, et il manquait tout le
+chemin : `images_phyto` existait depuis la migration 0056, mais **rien ne les
+versait, rien ne les servait, rien ne les affichait**.
+
+Le chemin est complet :
+
+- **verser** — une fiche désigne un fichier du dépôt ; l'import le range dans le
+  stockage. Il refuse au-delà de **500 Ko** (ces photos sont versionnées dans
+  Git, où rien ne s'efface, et affichées sur un téléphone au bord d'une route),
+  et il refuse une **licence qui est un aveu** — « à vérifier », « inconnue »,
+  « ? ». Le champ était obligatoire en base, mais rien n'empêchait d'y écrire
+  n'importe quoi : l'obligation rassurait au lieu de protéger ;
+- **servir** — `/api/phyto/image/[id]`, une route à part. Celle des fichiers
+  vérifie la clé contre l'entreprise du contexte, ce qui protège les photos de
+  chantier ; la base phytosanitaire est commune, et l'y faire passer aurait
+  demandé d'affaiblir ce contrôle. **On sert par identifiant, jamais par clé de
+  stockage** : une route acceptant une clé arbitraire laisserait quiconque a un
+  compte lire n'importe quel objet en devinant un chemin ;
+- **afficher** — sur l'écran PRINCIPAL, sous « À quoi ça ressemble », **avant**
+  la conduite à tenir. Comparer suppose de voir les deux ensemble ; reléguer la
+  photo derrière « Voir les détails » aurait vidé le geste de son sens. Le
+  crédit et la licence sont affichés dessous : la plupart des licences libres
+  l'exigent, et une photo sous CC-BY sans son auteur visible est une photo
+  employée hors licence.
+
+**Les images sont lues en direct, pas figées dans le résultat.** Le diagnostic
+est figé — le nom, la gravité, la conduite, ce sur quoi il a agi. La photo est
+une aide à l'œil : la geler par identifiant la casserait au premier réimport de
+la fiche, et une image morte est pire qu'une image un peu différente.
+
+**Ce que ça ne règle pas, et qu'il faut dire :** aucune photo réelle n'est
+livrée. Celles des organismes portent des crédits nominatifs — sur la seule
+fiche du platane : CHAMONT S. (INRA), © GIRAUDEL Arnaud, © Jean-Pierre Henry.
+Les trois sources propres sont écrites dans `donnees/phyto/LISEZ-MOI.md`, et la
+première est la meilleure : **ses propres photos**, prises au téléphone dans les
+conditions réelles — exactement ce que l'utilisateur photographiera.
+
+**Éprouvé en regardant l'écran**, avec une image d'essai générée (aucun droit de
+tiers) : photo rendue en 338×338, servie en 200, crédit affiché, placée avant la
+conduite, et rien de caché derrière la barre du bas. Une image de zéro pixel
+aurait été refusée par le contrôle — c'est le défaut du 15 août.
+
+
 ### Deuxième fiche réelle — et un avertissement qui parlait à tort
 
 **L'anthracnose du platane**, écrite à partir de la page Ephytia (INRAE, auteur

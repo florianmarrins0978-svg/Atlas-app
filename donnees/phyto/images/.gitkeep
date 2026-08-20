@@ -1,0 +1,8 @@
+Les photos de référence affichées sur l'écran de résultat.
+
+Vide aujourd'hui : les photos des organismes portent des crédits nominatifs, et
+aucune licence publique ne les couvre. Voir ../LISEZ-MOI.md, « Les photos de
+référence — d'où elles viennent ».
+
+Plafond : 500 Ko par image (elle est versionnée dans Git et affichée sur un
+téléphone). 1200 px de large suffisent.
