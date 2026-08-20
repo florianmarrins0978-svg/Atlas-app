@@ -2,7 +2,12 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 
 /**
- * Le bouton « Nouveau chantier » : le geste, et sa demi-seconde.
+ * Le bouton de l'accueil : le geste, et sa demi-seconde.
+ *
+ * **Il s'appelle « Créer un devis » depuis le 18 août 2026** — sa décision, une
+ * autre session. Ce contrôle visait encore « Nouveau chantier » : il a rougi
+ * sur du code juste, et son message accusait la feuille de ne pas s'ouvrir
+ * alors qu'elle s'ouvrait très bien sous un autre nom.
  *
  * **Pourquoi cette suite existe.** Le patron a arrêté ce bouton après onze
  * maquettes, en réglant lui-même l'onde, la taille du rond et le nombre de
@@ -116,7 +121,7 @@ async function main() {
     "Le mot ne se mesure pas à 360 px — rien n'a été éprouvé",
   );
   const coupe = await mot.evaluate((n) => n.scrollWidth > n.clientWidth + 1);
-  assert.ok(!coupe, "À 360 px, « Nouveau chantier » est coupé : le mot est trop gros");
+  assert.ok(!coupe, "À 360 px, le libellé du bouton est coupé : le mot est trop gros");
   const debordement = await bouton.evaluate((n) => {
     const b = n.getBoundingClientRect();
     return { gauche: b.left, droite: window.innerWidth - b.right };
@@ -128,7 +133,7 @@ async function main() {
   );
   await page.setViewportSize({ width: 390, height: 844 });
 
-  const feuille = page.locator('div[role="dialog"][aria-label="Nouveau chantier"]');
+  const feuille = page.locator('div[role="dialog"][aria-label="Créer un devis"]');
   assert.equal(await feuille.isVisible(), false, "La feuille est fermée au départ");
 
   // **Le clic est envoyé au nœud lui-même.** Le geste déplace ce qu'il y a
@@ -162,7 +167,7 @@ async function main() {
     `La feuille est montée en ${attente} ms : le geste doit durer environ une demi-seconde`,
   );
   assert.equal(
-    await page.locator('div[role="dialog"][aria-label="Nouveau chantier"]').count(),
+    await page.locator('div[role="dialog"][aria-label="Créer un devis"]').count(),
     1,
     "Deux appuis pendant le geste ne doivent pas ouvrir deux feuilles",
   );
@@ -178,7 +183,7 @@ async function main() {
   await pageCalme.waitForTimeout(120);
   assert.equal(
     await pageCalme
-      .locator('div[role="dialog"][aria-label="Nouveau chantier"]')
+      .locator('div[role="dialog"][aria-label="Créer un devis"]')
       .isVisible(),
     true,
     "Sous « mouvement réduit », la feuille doit monter tout de suite — attendre " +
