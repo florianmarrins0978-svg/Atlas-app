@@ -125,6 +125,7 @@ contrat doit refléter ce choix.
 
 | Rôle | Fournisseurs possibles | Données transmises | À vérifier |
 |---|---|---|---|
+| **Vision (diagnostic végétal)** | Anthropic, OpenAI, Google Gemini — réglable séparément par `VISION_PROVIDER` | **Photographies de végétaux prises chez le client**, métadonnées EXIF retirées au préalable (`src/lib/exif.ts`) | Ajouté le 20 août 2026. Mêmes questions que ci-dessous, plus une propre à l'image : que garde le fournisseur de la photo, et combien de temps. **Réglable indépendamment du raisonnement** — on peut couper le diagnostic sans couper la dictée |
 | Raisonnement (LLM) | Anthropic, OpenAI, Google Gemini | Texte dicté, informations du chantier | Localisation, durée de rétention côté fournisseur, **non-réutilisation pour l'entraînement**, clauses contractuelles types si hors UE |
 | Transcription | Deepgram, OpenAI, Google | **Audio brut** de la note vocale | Idem |
 | Stockage de fichiers | Compatible S3 — hébergeur à choisir | Photos, audio | Choisir une région **UE** (`STORAGE_S3_REGION`, `STORAGE_S3_ENDPOINT`) |
@@ -214,7 +215,8 @@ sécurité la moins coûteuse et la plus efficace.
 | Transcriptions | **illimitée** | À supprimer avec les informations structurées validées |
 | Chantiers, devis, clients | **illimitée** | Durée de la relation + prescription commerciale |
 | Historique des prix | **illimitée** | Peut être **anonymisé** : l'intérêt est le prix, pas le client |
-| Photos | **illimitée** | Durée de la relation |
+| Photos de chantier | **illimitée** | Durée de la relation |
+| **Photos de diagnostic végétal** | **90 jours** si le diagnostic n'est rattaché à aucun chantier — implémenté et **configurable** (`PHOTOS_DIAGNOSTIC_RETENTION_JOURS`) | Inchangé. Rattachée à un chantier, la photo suit le dossier et n'a aucune échéance par défaut — le rattachement **recalcule** l'échéance |
 | Journaux techniques | non défini | 6 à 12 mois |
 | Compte supprimé | non défini | Effacement complet sous 30 jours |
 
@@ -226,6 +228,20 @@ sécurité la moins coûteuse et la plus efficace.
 Deux gestes réduisent l'exposition sans rien coûter en fonctionnalité :
 supprimer l'audio après validation de la transcription, et anonymiser
 l'historique des prix.
+
+**Un troisième a été fait le 20 août 2026, et il mérite d'être noté ici parce
+qu'il ne se voit nulle part ailleurs : les métadonnées EXIF sont retirées de
+chaque photo de diagnostic avant qu'elle soit rangée ou envoyée.** Une photo de
+jardin prise au téléphone porte, sans que personne l'ait voulu, les
+**coordonnées GPS du domicile du client**, l'horodatage exact, le modèle
+d'appareil et parfois une vignette ayant survécu à un recadrage. Rien de tout
+cela n'aide à reconnaître un champignon. Un fichier qu'on n'a pas su nettoyer
+est **refusé** plutôt que rangé : le laisser passer conserverait ces données en
+croyant les avoir retirées.
+
+Ce que cela ne fait PAS, et qu'il faut savoir : l'image reste l'image. Une
+maison, une plaque d'immatriculation ou un visage au second plan y sont
+toujours. C'est la conservation limitée qui répond à cela, pas le nettoyage.
 
 ## 5. Droits des personnes
 

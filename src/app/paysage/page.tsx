@@ -66,6 +66,21 @@ const OUTILS: Outil[] = [
     href: "/paysage/fiche",
   },
   {
+    // **Le troisième outil, et le premier qui APPELLE un modèle.** Sa demande du
+    // 20 août 2026 : une photo, un diagnostic probable, une conduite à tenir.
+    // Le principe qui le gouverne — « le modèle observe, la base décide » — est
+    // en tête de `drizzle/0056_diagnostic_vegetal.sql`.
+    //
+    // **Il s'ouvre même quand la base est vide**, et c'est délibéré : l'écran
+    // dit alors qu'aucune fiche validée n'existe encore. Le griser aurait donné
+    // une quatrième ligne « Bientôt » sans qu'on puisse voir le parcours, et
+    // c'est précisément le parcours qu'il faut éprouver avant d'y verser des
+    // fiches.
+    nom: "Diagnostic végétal",
+    dit: "Photographier une anomalie, et savoir quoi faire.",
+    href: "/paysage/diagnostic",
+  },
+  {
     nom: "Terrasse bois",
     dit: "Lambourdes, plots, visserie — le même principe, à partir des mesures.",
     href: null,

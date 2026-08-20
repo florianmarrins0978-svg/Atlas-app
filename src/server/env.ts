@@ -59,6 +59,44 @@ export type Env = {
    * application, c'est un devis d'essai envoyé à un vrai client.
    */
   bancDEssai: boolean;
+
+  // ── Diagnostic végétal (20 août 2026) ────────────────────────────────────
+  //
+  // **Trois réglages qui existent pour ne pas enfermer Atlas.** Sa règle :
+  // *« l'architecture doit rester indépendante du fournisseur afin qu'un moteur
+  // spécialisé puisse être ajouté ou remplacé ultérieurement sans reconstruire
+  // le module »*.
+
+  /**
+   * Qui REGARDE les photos — distinct de qui rédige.
+   *
+   * Sans valeur, c'est `llmProvider` : sa configuration actuelle marche donc
+   * sans qu'il ait rien à poser. Avec une valeur, le diagnostic part chez un
+   * autre fournisseur que la rédaction des devis — ce qui permet d'en changer,
+   * d'en couper un sans couper l'autre, ou de comparer les deux sur les mêmes
+   * photos.
+   */
+  visionProvider: string;
+
+  /**
+   * Le nom du modèle qui regarde.
+   *
+   * **Il était écrit EN DUR dans le fournisseur Anthropic** (`claude-sonnet-4-6`),
+   * ce qui obligeait à rebâtir l'application pour en changer. Absent ici, le
+   * fournisseur garde son défaut : rien ne change pour l'existant.
+   */
+  visionModele?: string;
+
+  /**
+   * Conservation des photos de diagnostic, en jours. `0` = ne jamais purger.
+   *
+   * Deux durées parce que les deux cas n'ont rien à voir : une photo libre n'a
+   * plus d'utilité une fois le résultat rendu, une photo versée au dossier d'un
+   * chantier est une pièce du dossier. Voir `src/lib/retention-diagnostic.ts`,
+   * qui porte la règle — ici, il n'y a que les nombres.
+   */
+  photosDiagnosticRetentionJours?: string;
+  photosDiagnosticRetentionJoursChantier?: string;
 };
 
 export class ErreurConfiguration extends Error {
@@ -216,6 +254,18 @@ function construireEnv(): Env {
     optionnel("LLM_PROVIDER")?.toLowerCase() ?? (anthropicApiKey ? "anthropic" : openaiApiKey ? "openai" : "dev");
   const transcriptionProvider = optionnel("TRANSCRIPTION_PROVIDER")?.toLowerCase() ?? (openaiApiKey ? "openai" : "dev");
 
+  // **Qui REGARDE les photos, à distinguer de qui rédige** (20 août 2026).
+  //
+  // Le repli sur `llmProvider` rend ce réglage indolore : une installation qui
+  // ne dit rien se comporte exactement comme avant. Il existe pour qu'un moteur
+  // spécialisé puisse remplacer le généraliste sans reconstruire le module —
+  // et pour qu'on puisse couper le diagnostic sans couper la dictée.
+  //
+  // Ramené en minuscules pour la même raison que les deux au-dessus :
+  // `VISION_PROVIDER=Anthropic` tomberait sinon dans le cas par défaut de la
+  // fabrique, c'est-à-dire en mode déterministe, sans un mot.
+  const visionProvider = optionnel("VISION_PROVIDER")?.toLowerCase() ?? llmProvider;
+
   // Trois façons de se retrouver en production avec l'IA simulée, et les trois
   // passaient sans un mot : laisser la valeur par défaut, écrire « dev »
   // explicitement, ou faire une faute de frappe dans le nom du fournisseur —
@@ -231,6 +281,11 @@ function construireEnv(): Env {
     for (const [variable, valeur, cles] of [
       ["LLM_PROVIDER", llmProvider, CLES_LLM],
       ["TRANSCRIPTION_PROVIDER", transcriptionProvider, CLES_TRANSCRIPTION],
+      // Sans cette ligne, `VISION_PROVIDER=dev` passerait en production alors
+      // que les deux autres sont refusés — et le diagnostic végétal rendrait
+      // silencieusement des observations fabriquées sur de vraies photos. Le
+      // trou aurait été le même que celui du 6 août, à un module près.
+      ["VISION_PROVIDER", visionProvider, CLES_LLM],
     ] as const) {
       if (valeur === "dev") {
         throw new ErreurConfiguration(
@@ -319,6 +374,10 @@ function construireEnv(): Env {
     versionAffichee: process.env.ATLAS_VERSION ?? process.env.RELEASE_VERSION,
     logLevel: process.env.LOG_LEVEL ?? (estProduction ? "info" : "debug"),
     bancDEssai,
+    visionProvider,
+    visionModele: optionnel("VISION_MODELE"),
+    photosDiagnosticRetentionJours: optionnel("PHOTOS_DIAGNOSTIC_RETENTION_JOURS"),
+    photosDiagnosticRetentionJoursChantier: optionnel("PHOTOS_DIAGNOSTIC_RETENTION_JOURS_CHANTIER"),
   };
 }
 
