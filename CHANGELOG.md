@@ -53,8 +53,9 @@ en dictant, les trois lignes arrivent donc à chiffrer (`CLAUDE.md` §4).
 **Trois corrections le même soir, sur la planche** : un seul bouton et c'est
 *« Je rédige mon devis »* ; *« Comment lui envoyer son devis ? »* descend **sous
 l'adresse** ; et *« au-dessus du numéro de téléphone, marqué numéro de
-téléphone »* — l'intitulé unique « Client » laissait deviner ce qu'était la
-seconde case, et on ne devine pas sur une fiche qu'on remplit devant le client.
+téléphone »*, puis *« enlève numéro de, laisse juste téléphone »* — l'intitulé
+unique « Client » laissait deviner ce qu'était la seconde case, et on ne devine
+pas sur une fiche qu'on remplit devant le client.
 Le contrôle vise ses mots à la lettre et l'ordre des blocs : c'est ce qui les
 défend de la réécriture suivante.
 
