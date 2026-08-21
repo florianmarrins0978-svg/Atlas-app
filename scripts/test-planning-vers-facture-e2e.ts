@@ -281,6 +281,27 @@ async function main() {
     // empile ses lignes dans une grille : viser le lien tout seul le fait
     // recouvrir par la rangée voisine, et Playwright tourne en rond jusqu'à
     // l'expiration en accusant un écran parfaitement juste.
+    //
+    // **Et le volet « À facturer » se DÉPLIE d'abord** — c'est le geste du
+    // patron, pas une commodité de contrôle. Un chantier terminé que rien ne
+    // facture encore vit dans ce volet, une grille qui passe de `0fr` à `1fr` :
+    // le lien est bien dans la page, Playwright le dit « visible », et le clic
+    // rebondit indéfiniment sur le pli. Sans ce geste, le contrôle accusait un
+    // écran parfaitement juste, quarante-cinq secondes durant.
+    const volet = page.locator('[data-atlas="encart-a-facturer"]').first();
+    await volet.waitFor({ state: "visible", timeout: 15000 });
+    if ((await volet.getAttribute("aria-expanded")) !== "true") await volet.click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-atlas="encart-a-facturer"]')?.getAttribute("aria-expanded") ===
+        "true",
+      undefined,
+      { timeout: 5000 }
+    );
+    // Le dépliage dure 0,42 s : cliquer pendant qu'il court viserait une ligne
+    // qui bouge encore.
+    await page.waitForTimeout(600);
+
     const rangee = page.locator(`[data-atlas="ligne-terminee"]:has-text("${nom}")`).first();
     await rangee.waitFor({ state: "visible", timeout: 15000 });
     const ligne = rangee.locator(`a[href="/chantiers/${chantierId}/facture"]`);

@@ -643,11 +643,34 @@ async function main() {
 
   await contexte.close();
   await navigateur.close();
-  await pool.query(`DELETE FROM chantiers WHERE id = $1`, [chantierId]);
-  await pool.end();
 
+  // **Le verdict s'écrit AVANT le nettoyage.** Une seule ligne de rangement qui
+  // jette — et il y en a eu une : le décor porte désormais un devis, que la
+  // clé étrangère de `devis` empêche de laisser derrière un chantier effacé —
+  // emportait les trente-trois résultats avec elle. On lisait une trace de
+  // PostgreSQL sur `devis_chantier_entreprise_fk` et l'on croyait l'écran
+  // cassé, alors que tout était vert.
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Le planning refait — ${reussis} réussis, ${echecs} échec(s).`);
-  process.exit(echecs === 0 ? 0 : 1);
+
+  // **Le devis d'abord, le chantier ensuite.** `devis` référence
+  // `(chantier_id, entreprise_id)` sans cascade — et c'est délibéré : une
+  // facture au relevé de TVA ne doit pas pouvoir disparaître parce qu'on efface
+  // un chantier (`supprimerChantier`).
+  let rangementRate: unknown = null;
+  try {
+    await pool.query(`DELETE FROM lignes_devis WHERE devis_id = $1`, [devisId]);
+    await pool.query(`DELETE FROM devis WHERE id = $1`, [devisId]);
+    await pool.query(`DELETE FROM chantiers WHERE id = $1`, [chantierId]);
+  } catch (e) {
+    rangementRate = e;
+  }
+  await pool.end();
+  if (rangementRate) {
+    console.error("\n❌ Le décor n'a pas pu être rangé — la base garde des restes :");
+    console.error(rangementRate);
+  }
+
+  process.exit(echecs === 0 && !rangementRate ? 0 : 1);
 }
 
 main().catch((e) => {
