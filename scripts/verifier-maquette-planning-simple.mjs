@@ -205,41 +205,49 @@ verifier(
   const dit = (await page.locator(".legende").innerText()).toLowerCase();
   verifier("la légende ne porte plus de phrase d'explication", !dit.includes("barre du haut"));
   verifier(
-    "elle dit la suite : libre, 1 équipe sur 2, les deux équipes — puis matin et après-midi",
-    ["libre", "1 équipe sur 2", "les deux équipes", "matin", "après-midi"].every((m) => dit.includes(m)),
+    "elle dit la suite : libre, 1 équipe sur 2, complet — puis matin et après-midi",
+    ["libre", "1 équipe sur 2", "complet", "matin", "après-midi"].every((m) => dit.includes(m)),
   );
-  // **Un rectangle par état, puis DEUX rectangles annotés.** Sa correction du
-  // 21 août : la version d'avant mettait deux barres partout et finissait sur
-  // deux carrés — l'inverse. On compte donc les rectangles de chaque terme, et
-  // l'on mesure que les derniers sont bien des RECTANGLES, pas des carrés.
-  const etats = await page.$$eval(".legende > span:not(.annote)", (n) =>
-    n.map((e) => [...e.querySelectorAll(".rect")].length));
+  // **Trois CARRÉS, puis les deux barres FINES du calendrier — et tout sur une
+  // seule ligne.** Sa correction du 21 août, qu'il a fallu deux essais pour
+  // entendre : « remets les carrés comme avant, et pour matin / après-midi
+  // reprends les rectangles fins, pas des épais. Et je veux tout sur la même
+  // ligne. »
+  const carres = await page.$$eval(".legende > span:not(.annote) .carre", (n) =>
+    n.map((e) => {
+      const r = e.getBoundingClientRect();
+      return { forme: Math.abs(r.width - r.height) <= 1 ? "carré" : "rectangle",
+               etat: e.className.replace("carre", "").trim() };
+    }));
   verifier(
-    `les trois états portent UN rectangle chacun (lu : ${JSON.stringify(etats)})`,
-    JSON.stringify(etats) === JSON.stringify([1, 1, 1]),
-  );
-  const couleurs = await page.$$eval(".legende > span:not(.annote) .rect", (n) =>
-    n.map((e) => e.className.replace("rect", "").trim()));
-  verifier(
-    `et ils vont du vide au plein (lu : ${JSON.stringify(couleurs)})`,
-    JSON.stringify(couleurs) === JSON.stringify(["", "pris", "plein"]),
+    `les trois états sont des CARRÉS, du vide au plein (lu : ${JSON.stringify(carres)})`,
+    carres.length === 3 && carres.every((c) => c.forme === "carré") &&
+      JSON.stringify(carres.map((c) => c.etat)) === JSON.stringify(["", "pris", "plein"]),
   );
 
-  const annote = await page.$$eval(".legende .annote .deux .rect", (n) =>
+  const fines = await page.$$eval(".legende .annote .fine", (n) =>
     n.map((e) => { const r = e.getBoundingClientRect(); return { l: Math.round(r.width), h: Math.round(r.height) }; }));
   verifier(
-    `le dernier terme porte DEUX rectangles l'un sur l'autre (lu : ${JSON.stringify(annote)})`,
-    annote.length === 2 && annote.every((r) => r.l >= r.h * 2),
+    `matin et après-midi sont dits par DEUX BARRES FINES l'une sur l'autre (lu : ${JSON.stringify(fines)})`,
+    fines.length === 2 && fines.every((r) => r.h <= 7 && r.l >= r.h * 2.5),
   );
 
   const mots = await page.$$eval(".legende .annote .mots b", (n) => n.map((e) => e.textContent.trim()));
   const hauteurs = await page.$$eval(".legende .annote .mots b", (n) =>
     n.map((e) => Math.round(e.getBoundingClientRect().top)));
   verifier(
-    `« matin » est écrit EN FACE du rectangle du haut, « après-midi » de celui du bas (lu : ${JSON.stringify(mots)})`,
+    `« matin » est en face de la barre du haut, « après-midi » de celle du bas (lu : ${JSON.stringify(mots)})`,
     JSON.stringify(mots) === JSON.stringify(["matin", "après-midi"]) && hauteurs[0] < hauteurs[1],
   );
-  verifier("et les deux mots ne se chevauchent pas", hauteurs[1] - hauteurs[0] >= 10);
+
+  // **Tout sur une seule ligne**, et cela se mesure : si les quatre termes ne
+  // partagent pas le même haut, la légende s'est repliée.
+  const hauts = await page.$$eval(".legende > span", (n) =>
+    n.map((e) => Math.round(e.getBoundingClientRect().top)));
+  verifier(
+    `de « libre » à « après-midi », tout tient sur UNE ligne (hauts lus : ${JSON.stringify(hauts)})`,
+    hauts.length === 4 && hauts.every((h) => h === hauts[0]),
+  );
 }
 
 // ── LA FEUILLE DE TRAVAIL : le devis sans un seul prix ──────────────────
@@ -375,6 +383,36 @@ await page.click('[data-jour="2026-08-20"]');
     "retirer le rend à « Sans date » au lieu de l'effacer",
     (await page.locator("#sans-date .ligne").count()) === avant + 1 &&
       (await page.locator("#sans-date").innerText()).includes("Pichon"),
+  );
+}
+
+// ── LE NOM OUVRE LA FEUILLE, DANS LA LISTE DES PLANIFIÉS AUSSI ─────────
+//
+// C'est là qu'il cliquait : « je ne peux toujours pas cliquer sur le nom du
+// client pour ouvrir la fiche prestation, avec l'adresse et le numéro pour
+// l'appeler ». La fiche du jour l'ouvrait déjà ; cette liste-là, non.
+await page.click("#retour").catch(() => {});
+await page.locator("#planifies .chantier").first().click();
+{
+  const feuille = page.locator("#feuille-liste .feuille");
+  verifier("un nom de la liste des planifiés ouvre sa feuille", (await feuille.count()) === 1);
+  // **Et elle s'ouvre SOUS la ligne touchée.** Vu sur capture : elle
+  // s'affichait au bas de la liste, trois chantiers plus bas, et l'on croyait
+  // avoir ouvert le mauvais. On mesure donc la distance entre les deux.
+  {
+    const ligne = await page.locator("#planifies .chantier").first().boundingBox();
+    const boite = await feuille.boundingBox();
+    verifier(
+      `elle s'ouvre juste sous la ligne touchée (${Math.round(boite.y - (ligne.y + ligne.height))} px plus bas)`,
+      boite.y > ligne.y && boite.y - (ligne.y + ligne.height) < 60,
+    );
+  }
+  const dit = await feuille.innerText();
+  verifier("elle porte l'adresse", /rue|chemin|impasse|boulevard|allée/i.test(dit));
+  const liens = await feuille.evaluate((f) => [...f.querySelectorAll("a")].map((a) => a.getAttribute("href")));
+  verifier(
+    `et le numéro pour appeler (lu : ${JSON.stringify(liens.filter((h) => h.startsWith("tel:")))})`,
+    liens.some((h) => h.startsWith("tel:")),
   );
 }
 

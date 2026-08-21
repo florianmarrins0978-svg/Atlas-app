@@ -115,26 +115,33 @@
      Sa demande du 21 août — « que sur le planning on comprenne tout de suite
      que le haut c'est le matin et le bas l'après-midi ». Un dessin qui porte
      son mot à côté n'a pas besoin qu'on dise où regarder. */
-  /* **Un rectangle par état, puis DEUX rectangles annotés.** Sa correction du
-     21 août, littérale : « il fallait laisser un rectangle blanc pour libre, un
-     vert clair pour une équipe sur deux, un foncé pour les deux équipes prises ;
-     et ensuite rajouter deux rectangles l'un sur l'autre — pas deux carrés —
-     avec écrit le matin et l'après-midi ». La version d'avant mettait deux
-     barres partout et finissait sur deux carrés : l'inverse de ce qu'il a
-     demandé.
+  /* **Trois carrés, puis les deux barres FINES du calendrier.** Sa correction du
+     21 août, et il a fallu deux essais pour l'entendre :
 
-     Les rectangles ont la forme des barres du calendrier — larges et plates —
-     pour qu'on les reconnaisse d'un écran à l'autre. */
-  .legende .rect{width:22px;height:7px;border-radius:2px;display:inline-block;
-                 background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .legende .rect.pris{background:var(--pale);box-shadow:none}
-  .legende .rect.plein{background:var(--pin);box-shadow:none}
-  .legende .annote{display:flex;align-items:center;gap:8px}
+       · les trois états gardent leurs CARRÉS, comme avant — blanc, vert clair,
+         foncé, avec leurs mots d'origine ;
+       · pour dire où sont le matin et l'après-midi, on reprend **les barres du
+         calendrier elles-mêmes**, fines, l'une au-dessus de l'autre. Des
+         rectangles épais inventés pour l'occasion ne renvoyaient à rien de ce
+         qu'il voit sur le mois ;
+       · **tout tient sur UNE ligne**, de « libre » à « après-midi » : c'est sa
+         demande, et c'est aussi ce qui fait lire la légende comme une phrase.
+
+     `nowrap` et non un `flex-wrap` : mesuré à 390 px, la ligne tient — et si un
+     mot venait à la faire déborder un jour, mieux vaut le voir tout de suite
+     que la laisser se replier en silence. */
+  .legende{flex-wrap:nowrap;gap:10px;font-size:10.5px}
+  .legende .carre{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
+                  background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .legende .carre.pris{background:var(--pale);box-shadow:none}
+  .legende .carre.plein{background:var(--pin);box-shadow:none}
+  .legende .annote{display:flex;align-items:center;gap:6px;flex-shrink:0}
   .legende .annote .deux{display:flex;flex-direction:column;gap:4px}
-  .legende .annote .deux .rect{width:26px;height:11px}
+  .legende .annote .fine{width:18px;height:6px;border-radius:2px;display:block;
+                         background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .legende .annote .mots{display:flex;flex-direction:column;gap:4px;line-height:1}
-  .legende .annote .mots b{height:11px;display:flex;align-items:center;font-weight:600;
-                           font-size:10.5px;color:var(--encre-douce)}
+  .legende .annote .mots b{height:6px;display:flex;align-items:center;font-weight:600;
+                           font-size:9.5px;color:var(--encre-douce);white-space:nowrap}
 
   /* Le nombre d'équipes — n'existe QUE dans la maquette, pour répondre à sa
      question en la MONTRANT plutôt qu'en l'expliquant. */
@@ -224,7 +231,8 @@
   .jour:first-of-type{border-top:0}
   .jour .quand{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
                text-transform:uppercase;color:var(--encre)}
-  .chantier{margin-top:12px;display:flex;align-items:center;gap:10px}
+  .chantier{margin-top:12px;display:flex;align-items:center;gap:10px;width:100%;
+            border:0;background:transparent;text-align:left;cursor:pointer;padding:0}
   .chantier .nom{flex:1;font:400 19px/1.2 ui-serif,Georgia,serif}
   .chantier .quand-detail{margin-top:3px;font-size:12.5px;color:var(--or)}
   .chantier .equipe{flex-shrink:0;border-radius:999px;padding:7px 13px;font-size:12.5px;
@@ -272,11 +280,11 @@
   <button type="button" id="retour" class="retour-aujourdhui" hidden>← Aujourd’hui</button>
 
   <div class="legende">
-    <span><i class="rect"></i> libre</span>
-    <span><i class="rect pris"></i> 1 équipe sur 2</span>
-    <span><i class="rect plein"></i> les deux équipes</span>
+    <span><i class="carre"></i> libre</span>
+    <span><i class="carre pris"></i> 1 équipe sur 2</span>
+    <span><i class="carre plein"></i> complet</span>
     <span class="annote">
-      <span class="deux"><i class="rect"></i><i class="rect"></i></span>
+      <span class="deux"><i class="fine"></i><i class="fine"></i></span>
       <span class="mots"><b>matin</b><b>après-midi</b></span>
     </span>
   </div>
@@ -297,6 +305,7 @@
     <button class="fleche" type="button" id="sem-apres" aria-label="Semaine suivante">›</button>
   </div>
   <div id="planifies"></div>
+  <div id="feuille-liste"></div>
 
   <p class="titre-section">Sans date</p>
   <div id="sans-date"></div>
@@ -671,8 +680,15 @@
    * portent parfois le prix DANS leur libellé (« forfait 350 € »). Il faudra le
    * dire au moment de coder — voir `TODO.md`.
    */
-  function rendreFeuille(c) {
+  function rendreFeuille(c, ou = "feuille") {
     if (!c) return;
+    // Une seule feuille ouverte à la fois : le même chantier ouvert à deux
+    // endroits de l'écran, c'est la porte ouverte à en corriger un et pas
+    // l'autre.
+    ["feuille", "feuille-liste"].forEach((id) => {
+      const b = document.getElementById(id);
+      if (b && id !== ou) b.innerHTML = "";
+    });
     // **Les gestes de la feuille « Y aller » sont repris, pas réinventés.** Sa
     // demande du 21 août : « reprends l'adresse cliquable qui ouvre Maps ou
     // Waze, la possibilité d'appeler le client et de copier l'adresse — le
@@ -686,7 +702,7 @@
     const q = encodeURIComponent(c.adresse || "");
     const tel = (c.tel || "").replace(/[^+0-9]/g, "");
 
-    document.getElementById("feuille").innerHTML = `
+    document.getElementById(ou).innerHTML = `
       <div class="feuille">
         <p class="entete">Feuille de chantier</p>
         <p class="client">${c.nom}</p>
@@ -718,7 +734,7 @@
       try { await navigator.clipboard.writeText(c.adresse || ""); copier.textContent = "Adresse copiée"; }
       catch { copier.textContent = "Copie refusée"; }
     });
-    document.getElementById("feuille").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    document.getElementById(ou).scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function rendreSemaine() {
@@ -736,12 +752,27 @@
         <div class="jour">
           <p class="quand">${titreJour(iso)}</p>
           ${duJour(iso).map((c) => `
-            <div class="chantier">
+            <button type="button" class="chantier" data-feuille-liste="${CHANTIERS.indexOf(c)}">
               <div class="nom">${c.nom}<div class="quand-detail">${ditLaDemi(c.demi)}</div></div>
               <span class="equipe ${c.equipe ? "" : "vide"}">${c.equipe || "Équipe ?"}</span>
               <span class="chevron">›</span>
-            </div>`).join("")}
+            </button>`).join("")}
         </div>`).join("");
+
+    // **Le nom d'un planifié ouvre SA feuille, ici même.** C'est dans CETTE
+    // liste qu'il cliquait — pas dans la fiche du jour —, et rien ne se
+    // passait : « je ne peux toujours pas cliquer sur le nom du client ». La
+    // feuille s'ouvre sous la liste, là où le doigt vient d'appuyer.
+    document.querySelectorAll("[data-feuille-liste]").forEach((b) =>
+      b.addEventListener("click", () => {
+        // **La feuille s'ouvre SOUS LA LIGNE touchée**, pas au bas de la liste.
+        // Vu sur capture : on appuyait sur « Mme Rocher » et la feuille
+        // s'affichait après « Monsieur Martins », trois lignes plus bas — on
+        // croyait avoir ouvert le mauvais chantier. Le réceptacle se déplace
+        // donc jusqu'au doigt.
+        b.after(document.getElementById("feuille-liste"));
+        rendreFeuille(CHANTIERS[Number(b.dataset.feuilleListe)], "feuille-liste");
+      }));
   }
 
   /**

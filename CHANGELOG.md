@@ -1068,6 +1068,35 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### La légende reprise à la lettre, et le nom cliquable là où il cliquait
+
+**Deux corrections qu'il a fallu redemander, et c'est un échec de lecture de ma
+part.**
+
+**1. La légende.** Sa demande, mot pour mot : *« remets comme c'était avant — un
+carré blanc pour libre, un carré vert clair pour une équipe sur deux, le carré
+foncé pour complet. Et les rectangles FINS que tu as utilisés pour ton code
+couleur, mets-en deux l'un au-dessus de l'autre et marque matin et après-midi.
+Pourquoi tu m'as mis deux rectangles épais ? Et je veux tout sur la même
+ligne. »*
+
+Donc : **trois carrés** (leurs mots d'origine, « complet » compris), puis **les
+barres fines du calendrier elles-mêmes**, l'une sur l'autre, annotées — et
+**tout sur une seule ligne**, mesuré à 390 px. La suite vérifie les trois
+choses : que les états sont carrés, que les deux dernières marques sont fines
+(larges au moins deux fois et demie comme elles sont hautes), et que les quatre
+termes partagent le même haut. Une légende qui se replierait passerait sinon
+inaperçue.
+
+**2. « Je ne peux toujours pas cliquer sur le nom du client. »** Le geste avait
+été ajouté — mais dans la fiche du jour, alors qu'il cliquait dans la **liste des
+planifiés**. Les deux ouvrent maintenant la feuille.
+
+**Et elle s'ouvre SOUS la ligne touchée.** Première version : elle s'affichait au
+bas de la liste — on appuyait sur « Mme Rocher » et la feuille apparaissait après
+« Monsieur Martins », trois lignes plus bas. Vu sur capture, jamais par un test ;
+la suite mesure désormais l'écart entre la ligne et la feuille.
+
 ### Deux corrections : le nom ouvre la feuille, et la légende était fausse
 
 **Ses deux remarques du 21 août, et les deux étaient justes.**
