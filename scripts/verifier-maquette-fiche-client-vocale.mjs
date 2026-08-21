@@ -200,9 +200,31 @@ dire(
 );
 
 // ── 6. Le chemin qu'il a décrit, en entier ─────────────────────────────────
+//
+// **Et avec SON nom, pas un nom d'exemple.** Sa remarque du 21 août au soir :
+// « quand je clique sur devis à terminer, je dois arriver directement sur la
+// page du devis, et les infos que j'ai dictées doivent être remplies ». Le
+// contrôle change donc le nom et l'adresse AVANT de dicter, puis vérifie qu'on
+// les retrouve à l'accueil et sur le devis — une maquette qui afficherait
+// toujours « M. Julien » passerait pour juste sans rien prouver.
+await page.click('[data-va="fiche"]');
+await page.fill("#nom", "Mme Berthier");
+await page.fill("#adresse", "3 chemin du Pré, Vertou");
+await page.click("#dicter");
+await page.waitForTimeout(300);
+await page.click("#dicter");
+await page.waitForTimeout(300);
+
 await page.click('[data-va="accueil"]');
+const carte = await page.locator("#brin-julien").innerText();
+dire(carte.includes("Mme Berthier"), "à l'accueil, la carte porte le nom QU'IL A saisi");
+dire(carte.includes("3 chemin du Pré, Vertou"), "et son adresse");
+
 await page.click("#brin-julien");
 dire(await page.locator("#devis.actif").isVisible(), "depuis l'accueil, le chantier ouvre DIRECTEMENT le devis");
+const entete = await page.locator("#devis .doc").innerText();
+dire(entete.includes("Mme Berthier"), "le devis ouvre déjà rempli à son nom");
+dire(entete.includes("3 chemin du Pré, Vertou"), "avec l'adresse du chantier");
 
 const devis = (await page.locator("#devis").innerText()).toLowerCase();
 for (const attendu of ["taille de haie", "hortensias", "tonte de la pelouse"]) {
