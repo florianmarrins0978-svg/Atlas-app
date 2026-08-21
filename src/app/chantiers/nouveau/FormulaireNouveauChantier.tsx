@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
@@ -11,7 +11,11 @@ import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { creerChantierAction } from "./actions";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
+import Pellicule from "../[id]/Pellicule";
+import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
+import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
 import type { Civilite } from "@/lib/civilite";
+import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
 
 // Intégration réelle : la création passe désormais par une Server Action
 // (creerChantierAction), qui persiste le chantier (et le client s'il est
@@ -139,6 +143,72 @@ export default function FormulaireNouveauChantier({
    * premier champ ajouté — l'un enregistrerait le téléphone, l'autre l'aurait
    * oublié.
    */
+  /**
+   * Le chantier créé par un geste de l'écran — photo ou dictée — s'il l'a été.
+   *
+   * **Il ne peut y en avoir qu'un.** Trois photos et une dictée, c'est un seul
+   * chantier : la promesse en cours est gardée pour que deux gestes simultanés
+   * n'en fabriquent pas deux (`creationEnCours`).
+   */
+  const [chantierCree, setChantierCree] = useState<string | null>(null);
+  const [dicteeFaite, setDicteeFaite] = useState(false);
+  const creationEnCours = useRef<Promise<string> | null>(null);
+
+  /**
+   * Fait exister le chantier, maintenant, avec ce qui est saisi.
+   *
+   * **Sa demande du 21 août 2026 :** il photographie et il dicte AVANT que le
+   * chantier existe — c'est le geste qui le crée, pas un bouton. *« Dès que je
+   * rappuie sur la note vocale pour stopper l'enregistrement, il faut
+   * impérativement que les infos aillent s'enregistrer »*, parce qu'il est en
+   * rendez-vous et qu'il va fermer l'application.
+   *
+   * **En reprise, il n'y a rien à créer** : le chantier est déjà là.
+   */
+  async function assurerChantier(): Promise<string> {
+    if (reprise) return reprise.id;
+    if (chantierCree) return chantierCree;
+    if (creationEnCours.current) return creationEnCours.current;
+
+    const promesse = creerChantierAction({
+      nomClient,
+      civilite: civilite ?? undefined,
+      telephone: numeroEnregistre(telephone),
+      email,
+      canal: canal ?? undefined,
+      adresseChantier,
+      adresseClient,
+    }).then(({ id }) => {
+      setChantierCree(id);
+      creationEnCours.current = null;
+      return id;
+    });
+    creationEnCours.current = promesse;
+    return promesse;
+  }
+
+  /**
+   * Reporte la saisie sur un chantier déjà créé par un geste de l'écran.
+   *
+   * **Le cas est courant, pas théorique :** il dicte d'abord — le chantier
+   * naît alors avec un nom vide —, puis il tape le nom du client avant de
+   * toucher le bouton. Sans ce report, tout ce qui a été saisi APRÈS le premier
+   * geste serait perdu, en silence.
+   */
+  async function enregistrerSurLeChantier(id: string): Promise<string> {
+    const r = await reprendreChantierAction(id, {
+      nomClient,
+      civilite: civilite ?? undefined,
+      telephone: numeroEnregistre(telephone),
+      email,
+      canal: canal ?? undefined,
+      adresseChantier,
+      adresseClient,
+    });
+    if (!r.ok) throw new Error(r.raison);
+    return id;
+  }
+
   async function creerPuisAller(vers: Destination) {
     if (enCours) return;
     setEnCoursVers(vers);
@@ -151,7 +221,8 @@ export default function FormulaireNouveauChantier({
       const r = await reprendreChantierAction(reprise.id, {
         nomClient,
         civilite: civilite ?? undefined,
-        telephone,
+        // Espacé à l'écran, en chiffres en base — voir `numeroEnregistre`.
+        telephone: numeroEnregistre(telephone),
         email,
         canal: canal ?? undefined,
         adresseChantier,
@@ -170,15 +241,12 @@ export default function FormulaireNouveauChantier({
     }
 
     try {
-      const { id } = await creerChantierAction({
-        nomClient,
-        civilite: civilite ?? undefined,
-        telephone,
-        email,
-        canal: canal ?? undefined,
-        adresseChantier,
-        adresseClient,
-      });
+      // **Un chantier déjà né d'une photo ou d'une dictée n'est pas recréé** —
+      // sinon la moitié de ce qu'il vient de faire resterait sur un chantier
+      // fantôme, et il verrait deux lignes à l'accueil pour un seul client.
+      const id = chantierCree
+        ? await enregistrerSurLeChantier(chantierCree)
+        : await assurerChantier();
       router.push(vers === "devis" ? `/chantiers/${id}/devis-complet` : `/chantiers/${id}`);
     } catch {
       setErreur("Impossible de créer le chantier pour l'instant. Réessayez.");
@@ -261,17 +329,15 @@ export default function FormulaireNouveauChantier({
         </div>
 
         <form
-          className="mt-7 flex flex-col gap-4 px-6"
+          // **Le talon du bas n'est pas décoratif** (21 août 2026, vu à la
+          // capture) : la barre d'onglets est FIXÉE au bas de l'écran, et sans
+          // lui elle coupait l'anneau en deux — le geste principal de l'écran,
+          // à moitié sous une barre. Ni les types ni les suites ne voient cela.
+          className="mt-7 flex flex-col gap-4 px-6 pb-28"
           onSubmit={(e) => {
             e.preventDefault();
-            // **« Entrée » mène à la dictée, et c'est un retour en arrière
-            // assumé.** Tant qu'une bascule portait le choix, la touche devait
-            // le suivre — l'ignorer aurait envoyé sur la fiche quelqu'un qui
-            // venait de toucher « je l'écris ». Il n'y a plus de choix à
-            // suivre : deux boutons, deux gestes distincts. Une touche ne peut
-            // pas deviner lequel, et tomber dans le devis à la main sans
-            // l'avoir demandé est le défaut le plus coûteux des deux.
-            creerPuisAller("fiche");
+            // « Entrée » fait ce que fait le bouton, et il n'y en a plus qu'un.
+            creerPuisAller("devis");
           }}
         >
           {/* 1 — Nom du client.
@@ -284,62 +350,64 @@ export default function FormulaireNouveauChantier({
               étiquette, pas une donnée sur le chantier. */}
           {/* **La civilité se choisit AU-DESSUS du nom**, comme il l'a demandé
               le 13 août 2026. Rien n'est présélectionné : son silence ne doit
-              pas devenir un choix (`src/components/atlas/ChoixCivilite.tsx`). */}
-          <ChoixCivilite valeur={civilite} onChange={setCivilite} />
+              pas devenir un choix (`src/components/atlas/ChoixCivilite.tsx`).
+
+              **Son intitulé part le 21 août 2026** : *« enlève civilité »*,
+              puis *« non, remets le Mr et Mme, je voulais juste que tu enlèves
+              le TITRE »*. Les deux pastilles se comprennent seules, et c'est
+              une ligne de petites capitales de moins en haut de l'écran. */}
+          <ChoixCivilite valeur={civilite} onChange={setCivilite} sansLegende />
+
+          {/* **Le nom et le numéro sur la MÊME ligne** — sa demande du 21 août
+              2026, qu'il avait déjà essayée lui-même en tapant le numéro dans
+              la case du nom : *« je pense que ça passe »*.
+
+              Ça passe, à une condition : que le numéro ne se comprime pas. Il
+              est donc à largeur FIXE et c'est le nom qui prend ce qui reste —
+              un nom trop long se tronque à l'affichage sans rien coûter, un
+              numéro tronqué ne se rappelle pas. La largeur est mesurée, pas
+              estimée : à 132 px, « 06 79 98 45 14 » perdait son dernier
+              chiffre, en silence.
+
+              **Le champ « Téléphone » seul a disparu** dans le même geste : le
+              numéro est ici. */}
+          <div className="flex gap-2.5">
+            <div className="min-w-0 flex-1">
+              <Field
+                label="Nom du client"
+                placeholder="Bernard"
+                big
+                value={nomClient}
+                onChange={setNomClient}
+              />
+            </div>
+            <div className="w-[148px] flex-shrink-0">
+              <Field
+                label="Téléphone"
+                placeholder="06 12 34 56 78"
+                type="tel"
+                value={telephone}
+                onChange={(v) => setTelephone(v)}
+                aLaFrappe={espacerNumero}
+                aDroite
+              />
+            </div>
+          </div>
+
           <Field
-            label="Nom du client (facultatif)"
-            placeholder="Bernard"
-            big
-            value={nomClient}
-            onChange={setNomClient}
-          />
-          {/* 3 — Téléphone : facultatif */}
-          <Field
-            label="Téléphone (facultatif)"
-            placeholder="06 12 34 56 78"
-            type="tel"
-            value={telephone}
-            onChange={setTelephone}
-          />
-          {/* 4 — E-mail : facultatif */}
-          <Field
-            label="E-mail (facultatif)"
+            label="E-mail"
             placeholder="bernard@exemple.fr"
             type="email"
             value={email}
             onChange={setEmail}
           />
 
-          {/* 5 — Canal d'envoi. N'apparaît qu'une fois une coordonnée saisie :
-              poser la question avant serait sans objet. */}
-          {(aTelephone || aEmail) && (
-            <fieldset className="flex flex-col gap-1.5">
-              <legend className={smallCaps} style={{ color: colors.muted }}>
-                Comment lui envoyer son devis ?
-              </legend>
-              <div className="flex gap-2">
-                <ChoixCanal
-                  libelle="Par SMS"
-                  actif={canal === "sms"}
-                  disponible={aTelephone}
-                  onClick={() => setCanalChoisi("sms")}
-                />
-                <ChoixCanal
-                  libelle="Par e-mail"
-                  actif={canal === "email"}
-                  disponible={aEmail}
-                  onClick={() => setCanalChoisi("email")}
-                />
-              </div>
-            </fieldset>
-          )}
-
           {/* 6 — Adresse du chantier : facultative, et proposée pendant la
               frappe. Le champ reste libre : un lieu-dit ou un chemin de
               campagne ne figure dans aucune base, et le patron y travaille
               (`src/components/atlas/ChampAdresse.tsx`). */}
           <ChampAdresse
-            label="Adresse du chantier (facultatif)"
+            label="Adresse du chantier"
             placeholder="12 rue des Lilas, Nantes"
             value={adresseChantier}
             onChange={setAdresseChantier}
@@ -357,7 +425,7 @@ export default function FormulaireNouveauChantier({
             </button>
           ) : (
             <ChampAdresse
-              label="Adresse du client (facultatif)"
+              label="Adresse du client"
               placeholder="Si différente de l'adresse du chantier"
               value={adresseClient}
               onChange={setAdresseClient}
@@ -400,6 +468,80 @@ export default function FormulaireNouveauChantier({
               alors à corriger des coordonnées (sa demande du 17 août : « RIEN
               DE PLUS, RIEN DE MOINS ») ; lui proposer deux devis pour changer
               une adresse serait lui poser une question qu'il n'a pas. */}
+          {/* **Le canal d'envoi vit SOUS l'adresse depuis le 21 août 2026** —
+              sa place, choisie par lui : *« comment lui envoyer son devis, tu
+              le mets sous l'adresse »*. Il n'apparaît toujours qu'une fois une
+              coordonnée saisie : poser la question avant serait sans objet. */}
+          {(aTelephone || aEmail) && (
+            <fieldset className="flex flex-col gap-1.5">
+              <legend className={smallCaps} style={{ color: colors.muted }}>
+                Comment lui envoyer son devis ?
+              </legend>
+              <div className="flex gap-2">
+                <ChoixCanal
+                  libelle="Par SMS"
+                  actif={canal === "sms"}
+                  disponible={aTelephone}
+                  onClick={() => setCanalChoisi("sms")}
+                />
+                <ChoixCanal
+                  libelle="Par e-mail"
+                  actif={canal === "email"}
+                  disponible={aEmail}
+                  onClick={() => setCanalChoisi("email")}
+                />
+              </div>
+            </fieldset>
+          )}
+
+          {/* **LES PHOTOS ET L'ANNEAU, sur la fiche client — 21 août 2026.**
+
+              Sa demande, capture à l'appui : *« tu vas m'ajouter la possibilité
+              de mettre des photos exactement comme il y a sur la page d'après.
+              Ensuite, avant les deux touches, le bouton de la note vocale qui
+              se trouve sur la page d'après. On appuie, on dicte les tâches à
+              effectuer, celles qu'on voit tout de suite avec le client. »*
+
+              **Les deux pièces sont celles de la fiche chantier**, pas des
+              copies : `Pellicule` et `AnneauNoteVocale`, aux mêmes fichiers.
+              Deux dessins du même geste se liraient comme deux fonctions
+              différentes — et le second aurait divergé au premier ajustement
+              (`CLAUDE.md` §3).
+
+              **Elles fonctionnent AVANT que le chantier existe** : c'est le
+              geste qui le crée (`assurerChantier`). L'ordre est celui de sa
+              maquette (`appli/fiche-client-vocale.html`), qu'il a demandé de
+              coder trait pour trait : photos, puis anneau, puis le devis. */}
+          {!reprise && (
+            <div className="flex flex-col gap-1.5">
+              <span className={smallCaps} style={{ color: colors.muted }}>
+                Photos du chantier
+              </span>
+              <Pellicule chantierId={chantierCree} assurerChantier={assurerChantier} initiales={[]} />
+            </div>
+          )}
+
+          {!reprise && (
+            <div className="mt-1">
+              <AnneauNoteVocale
+                chantierId={chantierCree}
+                assurerChantier={assurerChantier}
+                onDicte={() => setDicteeFaite(true)}
+                storageKey={null}
+                dureeSecondes={null}
+              />
+            </div>
+          )}
+
+          {/* **« Mon devis → » n'existe qu'une fois la dictée faite**, comme sur
+              la fiche chantier : avant, il n'y a rien à préparer, et un geste
+              offert d'avance est une promesse vide. */}
+          {!reprise && dicteeFaite && chantierCree && (
+            <div className="mt-1">
+              <DevisDepuisDictee chantierId={chantierCree} transcriptionDisponible variante="anneau" />
+            </div>
+          )}
+
           <div className="flex flex-col gap-3 pt-4">
             {reprise ? (
               <PrimaryButton
@@ -410,22 +552,21 @@ export default function FormulaireNouveauChantier({
                 {enCours ? "Enregistrement…" : "Enregistrer →"}
               </PrimaryButton>
             ) : (
-              <>
-                <PrimaryButton
-                  disabled={!peutCreer}
-                  onClick={() => creerPuisAller("fiche")}
-                  repere="action-dicter"
-                >
-                  {enCoursVers === "fiche" ? "Création…" : "Je dicte mon devis"}
-                </PrimaryButton>
-                <PrimaryButton
-                  disabled={!peutCreer}
-                  onClick={() => creerPuisAller("devis")}
-                  repere="action-ecrire"
-                >
-                  {enCoursVers === "devis" ? "Création…" : "J'écris mon devis"}
-                </PrimaryButton>
-              </>
+              /* **UN SEUL bouton — sa demande du 21 août 2026** : *« garde un
+                 seul bouton, garde je rédige mon devis »*.
+
+                 « Je dicte mon devis » n'a plus d'objet : la dictée se fait
+                 ICI, à l'anneau, sans quitter l'écran. Deux façons de dicter
+                 côte à côte se liraient comme deux fonctions différentes, et il
+                 faudrait choisir laquelle toucher avant de savoir ce qu'on va
+                 dire. */
+              <PrimaryButton
+                disabled={!peutCreer}
+                onClick={() => creerPuisAller("devis")}
+                repere="action-ecrire"
+              >
+                {enCoursVers === "devis" ? "Création…" : "Je rédige mon devis"}
+              </PrimaryButton>
             )}
           </div>
           {/* **Cette ligne ne parle plus que quand il y a quelque chose à dire.**
@@ -512,6 +653,8 @@ function Field({
   value,
   onChange,
   required = false,
+  aLaFrappe,
+  aDroite = false,
 }: {
   label: string;
   placeholder: string;
@@ -520,24 +663,55 @@ function Field({
   value?: string;
   onChange?: (v: string) => void;
   required?: boolean;
+  /**
+   * Remet en forme ce qui est tapé, à mesure — et rend où reposer le curseur.
+   *
+   * **Le curseur fait partie de la règle, il n'est pas un détail.** Sans lui,
+   * corriger un chiffre au milieu d'un numéro renverrait le curseur au bout à
+   * chaque touche, et la correction deviendrait impossible. La règle elle-même
+   * vit hors de cet écran (`src/lib/numero-telephone.ts`), qui l'éprouve sans
+   * navigateur.
+   */
+  aLaFrappe?: (brut: string, curseur: number) => { valeur: string; curseur: number };
+  /** Le numéro se lit aligné à droite, contre le nom qui le précède. */
+  aDroite?: boolean;
 }) {
+  const champ = useRef<HTMLInputElement>(null);
+
+  function saisie(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!onChange) return;
+    if (!aLaFrappe) {
+      onChange(e.target.value);
+      return;
+    }
+    const { valeur, curseur } = aLaFrappe(e.target.value, e.target.selectionStart ?? e.target.value.length);
+    onChange(valeur);
+    // **Après le rendu, sinon React repose le curseur à la fin.** La valeur
+    // affichée vient de l'état ; tant qu'il n'est pas rendu, écrire la sélection
+    // n'a aucun effet visible.
+    requestAnimationFrame(() => champ.current?.setSelectionRange(curseur, curseur));
+  }
+
   return (
     <label className="flex flex-col gap-1.5">
       <span className={smallCaps} style={{ color: colors.muted }}>
         {label}
       </span>
       <input
+        ref={champ}
         type={type}
         placeholder={placeholder}
         value={value}
-        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+        onChange={onChange ? saisie : undefined}
         aria-required={required || undefined}
-        className="rounded-[4px] border-0 px-4 py-3.5 outline-none"
+        // La case vient de `.atlas-case` (`globals.css`) — « la carte douce »,
+        // son choix du 21 août 2026. Ne reste ici que ce qui distingue CE
+        // champ : la police et la taille du nom, plus grandes que le reste.
+        className="atlas-case"
         style={{
-          backgroundColor: colors.card,
-          color: colors.ink,
           fontFamily: big ? font.display : font.body,
-          fontSize: big ? "20px" : "16px",
+          ...(big ? { fontSize: "20px" } : null),
+          ...(aDroite ? { textAlign: "right" as const, fontVariantNumeric: "tabular-nums" } : null),
         }}
       />
     </label>

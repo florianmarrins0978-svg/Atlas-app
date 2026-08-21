@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Revenir de sa messagerie, et retomber chez soi.**
 //
@@ -134,7 +135,7 @@ async function chantierAvecDevisPret(page: import("playwright").Page): Promise<s
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Retour messagerie ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantierId = page.url().split("/").pop()!;
 
@@ -151,7 +152,7 @@ async function chantierAvecDevisPret(page: import("playwright").Page): Promise<s
   await page.getByText("Choisir la date", { exact: false }).first().click();
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 30_000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // On vérifie que le lien est bien là AVANT de jouer le retour : sans lui,
   // l'écran ne monte pas le mécanisme, et la suite accuserait le mauvais.

@@ -1,6 +1,7 @@
 import type { Page, Locator } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 function section(page: Page, label: string): Locator {
   return page.locator("div.flex.flex-col.gap-2", { has: page.locator("span", { hasText: label }) });
@@ -22,7 +23,7 @@ async function main() {
   const nomUnique = `Chantier informations e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const infoUrl = `${page.url()}/informations`;
 

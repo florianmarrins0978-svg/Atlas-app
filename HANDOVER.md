@@ -136,8 +136,13 @@ filtre, exactement comme en production.
 | Écrans | `src/app/paysage/diagnostic/` |
 
 **Ce qui n'a PAS été vérifié, et doit s'écrire ainsi :** l'appel réel au
-fournisseur de vision. Aucune clé d'IA dans cet environnement — comme pour la
-lecture des tickets de gazole. Tout le reste l'a été.
+fournisseur de vision, **depuis cet environnement-ci** — il n'y a pas de clé sur
+le poste de l'agent, comme pour la lecture des tickets de gazole. Tout le reste
+l'a été.
+
+**Attention à ne pas en tirer la mauvaise conclusion :** chez lui, les clés sont
+posées et l'IA tourne (`CLAUDE.md` §1 ter). Ce qui manque ici est un moyen de
+mesure, pas une fonctionnalité — et cela se joue sur son espace.
 
 ---
 

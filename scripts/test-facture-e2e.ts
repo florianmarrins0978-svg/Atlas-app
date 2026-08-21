@@ -7,6 +7,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // patron a fait retirer ce mot.
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Créer la facture, l'envoyer, et le relevé de TVA — vus depuis l'écran du patron
 // (docs/AGENT.md §2.3). L'arrêt 3 est ici : rien ne part sans un appui.
@@ -74,7 +75,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;
@@ -92,7 +93,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await inspecter("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId], 1);
 

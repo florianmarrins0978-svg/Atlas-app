@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Le bandeau qui propose de compléter une demi-journée, vu à l'écran.**
 //
@@ -46,7 +47,7 @@ async function main() {
   async function creer(nom: string) {
     await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', nom);
-    await page.click('[data-atlas="action-dicter"]');
+    await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
     return page.url().split("/").pop()!;
   }

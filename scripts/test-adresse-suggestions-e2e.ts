@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Le geste que le patron a décrit, joué en entier.**
 //
@@ -122,7 +123,7 @@ async function main() {
 
   // Et le chantier se crée quand même, avec une adresse que la base ignore —
   // un chemin, un lieu-dit, « derrière la scierie ». C'est là qu'il travaille.
-  await page.locator('[data-atlas="action-dicter"]').click();
+  await creerPuisFiche(page);
   // **Généreux, et pour une raison précise.** Cette suite passe la PREMIÈRE de
   // la batterie (ordre alphabétique) : elle paie donc la toute première
   // compilation de la fiche de chantier, sur un serveur de développement qui

@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 /**
  * La ligne du planning, MESURÉE sur l'écran du patron — 390 px.
@@ -116,7 +117,7 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', "Bernard-Delacroix");
     await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
-    await page.click('[data-atlas="action-dicter"]');
+    await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
     const id = page.url().split("/").pop()!;
 

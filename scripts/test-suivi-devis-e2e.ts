@@ -7,6 +7,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // patron a fait retirer ce mot.
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Ce que devient un devis parti, vu du patron (docs/AGENT.md §2.2).
 //
@@ -62,7 +63,7 @@ async function devisParti(page: Page, suffixe: string) {
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;
@@ -80,7 +81,7 @@ async function devisParti(page: Page, suffixe: string) {
   await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // **Le jeton se lit dans la BASE, plus à l'écran.**
   //
@@ -239,7 +240,7 @@ async function main() {
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     try {
-      await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+      await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
     } catch (e) {
       // Ce contrôle a échoué une fois dans la batterie complète, jamais seul :
       // l'attente expirait sans qu'on sache pourquoi. Un délai dépassé ne
@@ -256,6 +257,11 @@ async function main() {
       chantierId,
     ]);
     assert.strictEqual(envois.rows[0].n, 2, "le second envoi n'a pas été enregistré");
+
+    // **On rouvre l'écran du devis parti.** L'envoi ramène à l'accueil depuis le
+    // 21 août 2026 : ce que ce cas inspecte — les gestes offerts APRÈS l'envoi —
+    // se lit là où il revient, par la carte du chantier.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
     // **Un seul bouton à chaque instant — sa règle du 13 août (maquette 40, B).**
     //
@@ -275,8 +281,12 @@ async function main() {
 
     // Et le geste qui reste est bien celui du moment.
     assert.ok(
-      (await page.getByRole("link", { name: /Ouvrir le (SMS|mail|message)/i }).count()) +
-        (await page.getByRole("button", { name: /Ouvrir le (SMS|mail|message)/i }).count()) >
+      // « Relancer » depuis le 21 août 2026 : cet écran ne se voit plus qu'en y
+      // REVENANT, sur un devis déjà parti — le geste est donc une relance, et le
+      // libellé le dit. Les deux formes restent acceptées : ce qu'on vérifie est
+      // qu'un geste de transmission subsiste, pas lequel.
+      (await page.getByRole("link", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) +
+        (await page.getByRole("button", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) >
         0,
       "après l'envoi, l'écran ne porte plus aucun geste : la transmission a disparu avec la reprise."
     );

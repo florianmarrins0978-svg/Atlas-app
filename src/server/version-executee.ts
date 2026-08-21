@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { getEnv } from "./env";
+import { versionServie, type VersionServie } from "@/lib/version-servie";
 
 const executer = promisify(execFile);
 
@@ -52,11 +53,33 @@ const executer = promisify(execFile);
  * (`ATLAS_VERSION`, `RELEASE_VERSION`).
  */
 export async function versionExecutee(): Promise<string | null> {
-  if (process.env.ATLAS_BANC_ESSAI === "1") {
-    const duDepot = await versionDuDepot(process.cwd());
-    if (duDepot) return duDepot;
-  }
-  return getEnv().versionAffichee ?? null;
+  return (await versionEtRetard()).ligne;
+}
+
+/**
+ * La même chose, plus ce que la ligne seule ne peut pas dire : **du code neuf
+ * attend-il d\'être construit ?**
+ *
+ * **Ajouté le 21 août 2026, après une soirée perdue.** Le patron : *« Ça n\'a
+ * pas marché, j\'ai encore l\'ancienne version. Pourtant j\'ai rechargé les mises
+ * à jour. »* Les deux étaient vrais en même temps — le disque avait avancé, le
+ * serveur bâti non — et cet écran, en lisant le disque, confirmait la mise à
+ * jour au moment précis où il aurait dû signaler qu\'elle n\'était pas servie.
+ *
+ * Le raisonnement vit dans `src/lib/version-servie.ts`, sans base ni serveur :
+ * c\'est là qu\'il est éprouvé, y compris sur le cas qu\'il a vécu.
+ */
+export async function versionEtRetard(): Promise<VersionServie> {
+  const surLeBanc = process.env.ATLAS_BANC_ESSAI === "1";
+  return versionServie({
+    // Le dépôt n\'existe que sur son banc : une application déployée n\'en a pas.
+    duDepot: surLeBanc ? await versionDuDepot(process.cwd()) : null,
+    duDemarrage: getEnv().versionAffichee ?? null,
+    // **`next start` impose `NODE_ENV=production`** : c\'est donc ce qui
+    // distingue un serveur qui compile à la demande d\'un serveur qui sert du
+    // code figé. Le mode développement, lui, EST le dépôt.
+    versionBatie: process.env.NODE_ENV === "production",
+  });
 }
 
 /**

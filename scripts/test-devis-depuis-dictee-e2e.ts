@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Le parcours que le patron réclamait : de la dictée au devis, en un geste.**
 //
@@ -41,7 +42,7 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomDuClient);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const chantierUrl = page.url();
   const chantierId = chantierUrl.split("/").pop()!;

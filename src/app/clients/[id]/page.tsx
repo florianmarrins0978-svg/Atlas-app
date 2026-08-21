@@ -5,6 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { chargerFicheClient } from "@/server/repositories/fiche-client";
 import { retourFicheClient } from "@/lib/retour-fiche-client";
 import { jourCourt, type PieceDuClient } from "@/lib/documents-du-client";
+import PieceDuDossier from "./PieceDuDossier";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
 // ses papiers.**
@@ -157,35 +158,17 @@ function Colonne({ titre, pieces, rien }: { titre: string; pieces: PieceDuClient
           {rien}
         </p>
       ) : (
+        // **Un appui ouvre trois choix, il ne télécharge plus d'office.**
+        // Sa demande du 21 août 2026, et son choix devant la planche 83 : la C.
+        // Le raisonnement — et les trois conditions de « Enregistrer » — vit
+        // dans `PieceDuDossier`.
         pieces.map((piece, rang) => (
-          <a
+          <div
             key={piece.id}
-            href={piece.href}
-            target="_blank"
-            rel="noreferrer"
-            // 56 px de haut au moins : c'est un lien qu'il touche d'une main,
-            // dehors, parfois avec des gants.
-            className="mt-2 block min-h-[56px] pb-0.5 pt-2 text-center"
             style={rang === 0 ? undefined : { borderTop: `1px solid ${colors.line}` }}
           >
-            <span
-              className="mx-auto flex h-[29px] w-[24px] items-end justify-center rounded-[3px] pb-[3px] text-[6.5px] font-bold"
-              style={{ backgroundColor: "#fff", boxShadow: `inset 0 0 0 1px ${colors.alert}59`, color: colors.alert, letterSpacing: "0.06em" }}
-            >
-              PDF
-            </span>
-            <span
-              data-atlas="piece-titre"
-              className="mt-[5px] block truncate text-[12.5px] leading-[1.2]"
-            >
-              {piece.titre}
-            </span>
-            {piece.precision && (
-              <span className="mt-0.5 block truncate text-[10.5px] leading-[1.25]" style={{ color: colors.muted }}>
-                {piece.precision}
-              </span>
-            )}
-          </a>
+            <PieceDuDossier piece={piece} />
+          </div>
         ))
       )}
     </div>

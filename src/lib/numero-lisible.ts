@@ -32,8 +32,24 @@ export function numeroLisible(valeur: string): string {
   const chiffres = brut.replace(/[\s.()\- ]/g, "");
   if (!/^0\d{9}$/.test(chiffres)) return brut;
 
+  return grouperParDeux(chiffres);
+}
+
+/**
+ * Des chiffres, deux par deux — la façon dont un numéro français s'écrit et se
+ * dicte : 06 79 98 45 14.
+ *
+ * **Exporté pour n'exister qu'une fois.** La saisie du numéro l'espace À LA
+ * FRAPPE (`src/lib/numero-telephone.ts`), c'est-à-dire sur un numéro encore
+ * incomplet — elle ne peut donc pas appeler `numeroLisible`, qui rend le texte
+ * intact tant qu'il n'y a pas dix chiffres. Mais le GROUPEMENT, lui, est le
+ * même, et deux écritures de la même règle divergent au premier ajustement
+ * (`CLAUDE.md` §3).
+ */
+export function grouperParDeux(chiffres: string): string {
   return chiffres.replace(/(\d{2})(?=\d)/g, "$1 ");
 }
+
 
 /**
  * Le destinataire tel qu'on l'écrit à l'écran, selon le canal.

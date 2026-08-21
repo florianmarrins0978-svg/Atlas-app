@@ -2,6 +2,7 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 /**
  * « Y aller » — le chevron doré du planning, et la feuille qu'il ouvre.
@@ -68,7 +69,7 @@ async function chantierPlanifie(page: Page, suffixe: string, adresse: string | n
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const chantierId = page.url().split("/").pop()!;
 

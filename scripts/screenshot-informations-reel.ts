@@ -1,5 +1,6 @@
 import { chromium, devices } from "playwright";
 import { mkdirSync } from "fs";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const OUT = "artifacts/screenshots/step-22-informations-reel";
 mkdirSync(OUT, { recursive: true });
@@ -13,7 +14,7 @@ async function main() {
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Chantier capture info ${Date.now()}`);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const infoUrl = `${page.url()}/informations`;
 
