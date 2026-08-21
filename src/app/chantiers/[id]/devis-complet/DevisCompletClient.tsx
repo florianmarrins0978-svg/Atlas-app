@@ -797,7 +797,7 @@ export default function DevisCompletClient(props: Props) {
         clientNom={client.nom}
         ouvert={feuilleOuverte}
         onFermer={() => setFeuilleOuverte(false)}
-        onEnvoye={(lien) => {
+        onEnvoye={(envoi) => {
           setFeuilleOuverte(false);
           // **Sa messagerie s'ouvre ICI, dans la foulée du doigt.** Sa demande
           // du 18 août 2026 : *« quand je clique sur le bouton envoyer le devis,
@@ -808,12 +808,25 @@ export default function DevisCompletClient(props: Props) {
           // AVANT la navigation : un navigateur peut refuser une ouverture de
           // `sms:` qui ne suit pas le geste d'assez près, et sur iOS il la
           // refuse sans un mot.
+          // **LE CANAL VIENT DU SERVEUR, jamais de la page.** Défaut signalé le
+          // 20 août 2026 : *« sur la fiche client j'ai choisi d'envoyer le devis
+          // par email […] c'est l'application SMS qui s'est ouverte »*.
+          //
+          // Deux sources décidaient du même canal, et elles divergeaient : la
+          // feuille d'envoi refuse de partir tant que la fiche du client n'en
+          // porte aucun (`preparerEnvoi`, blocage « canal_absent »), tandis que
+          // cet écran retombait sur un `?? "sms"` chargé AVEC LA PAGE. Un canal
+          // changé sur la fiche du client entre-temps — ou lu par défaut faute
+          // de mieux — ouvrait donc la mauvaise application.
+          //
+          // L'envoi rend maintenant le canal ET le destinataire qu'il vient de
+          // relire en base. Une seule source, la bonne, et rien à rafraîchir.
           ouvrirLaMessagerie({
-            chemin: lien,
+            chemin: envoi.lien,
             origine: props.origine,
-            canalClient: props.canalClient,
-            clientTelephone: client.telephone,
-            clientEmail: client.email,
+            canalClient: envoi.canal,
+            clientTelephone: envoi.canal === "sms" ? envoi.destinataire ?? "" : client.telephone,
+            clientEmail: envoi.canal === "email" ? envoi.destinataire ?? "" : client.email,
             clientNom: client.nom,
             clientCivilite: client.civilite,
             entrepriseNom: emetteur.nom,

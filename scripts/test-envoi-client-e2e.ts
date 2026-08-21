@@ -57,7 +57,7 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
 async function creerChantierFacturable(
   page: Page,
   suffixe: string,
-  client: { nom?: string; telephone?: string; email?: string } = {
+  client: { nom?: string; telephone?: string; email?: string; canal?: "sms" | "email" } = {
     nom: "M. Bernard",
     telephone: "06 12 34 56 78",
   }
@@ -66,6 +66,13 @@ async function creerChantierFacturable(
   if (client.nom) await page.fill('input[placeholder="Bernard"]', client.nom);
   if (client.telephone) await page.fill('input[placeholder="06 12 34 56 78"]', client.telephone);
   if (client.email) await page.fill('input[placeholder="bernard@exemple.fr"]', client.email);
+  // Le canal convenu avec le client, quand les deux coordonnées existent : sans
+  // lui, rien ne se devine, et c'est exactement le cas de son défaut du 20 août.
+  if (client.canal) {
+    await page
+      .getByRole("button", { name: client.canal === "sms" ? "Par SMS" : "Par e-mail" })
+      .click();
+  }
   await page.click('[data-atlas="action-dicter"]');
   // Sans délai explicite : celui du contexte s'applique (`e2e-browser.ts`).
   // Dix secondes suffisaient seule et pas en batterie — l'échec accusait alors
@@ -137,6 +144,42 @@ async function main() {
       "le canal déduit n'est pas celui de la coordonnée saisie"
     );
     await page.getByRole("button", { name: "Annuler l’envoi" }).click();
+  });
+
+  await test("LE CANAL DE LA FICHE COMMANDE L'OUVERTURE — e-mail, pas SMS", async () => {
+    // **Son défaut du 20 août 2026, reproduit ici** : *« sur la fiche client,
+    // j'ai choisi d'envoyer le devis par email. Et lorsque j'ai validé mon
+    // devis […] c'est l'application SMS qui s'est ouverte. »*
+    //
+    // Le client porte les DEUX coordonnées : c'est le cas où rien ne se devine,
+    // et où seul l'accord tranche. Deux sources décidaient alors du canal —
+    // celle du serveur, relue à l'envoi, et un `?? "sms"` chargé avec la page.
+    const url = await creerChantierFacturable(page, "canalchoisi", {
+      nom: "Mr. Julien",
+      telephone: "0679984514",
+      email: "julien@exemple.fr",
+      canal: "email",
+    });
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
+    await page.waitForSelector("text=Une date, ou deux au choix du client ?", {
+      timeout: DELAI_ECRAN_MS,
+    });
+    await page.locator('button[aria-pressed]').nth(1).click();
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+
+    const porte = page.locator("a[data-transmission-directe]");
+    assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
+    const adresse = (await porte.getAttribute("href")) ?? "";
+    assert.ok(
+      adresse.startsWith("mailto:"),
+      `le canal de la fiche est « e-mail » et c'est ${adresse.slice(0, 12)} qui s'ouvre`
+    );
+    assert.ok(
+      decodeURIComponent(adresse).includes("julien@exemple.fr"),
+      `le destinataire n'est pas celui de la fiche : ${adresse.slice(0, 80)}`
+    );
   });
 
   await test("le patron ne propose jamais plus de deux dates", async () => {

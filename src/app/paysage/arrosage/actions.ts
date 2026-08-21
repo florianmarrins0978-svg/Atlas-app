@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
+import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 
 /**
  * Les gestes de l'écran « Plan d'arrosage ».
@@ -71,16 +72,31 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     z.type === "haie" || z.type === "massif" ? z.ml !== null : z.L !== null && z.l !== null
   );
 
-  const seau = Number(formulaire.get("litres")) || 0;
-  const temps = Number(formulaire.get("secondes")) || 0;
-  const pression = Number(formulaire.get("bar")) || 0;
-  const compteur = String(formulaire.get("piquage") ?? "compteur") === "compteur" ? "oui" : "non";
+  // **D'où vient le débit, et ce qu'on en sait** — `src/lib/arrosage/mesure-debit.ts`.
+  // La pression NE DONNE PAS le débit : la règle refuse plutôt que d'inventer,
+  // et toute estimation porte sa réserve jusque sous le plan.
+  const piquage = String(formulaire.get("piquage") ?? "compteur");
+  const nombre = (cle: string) => {
+    const brut = formulaire.get(cle);
+    if (brut === null || String(brut).trim() === "") return null;
+    const n = Number(brut);
+    return Number.isFinite(n) ? n : null;
+  };
+  const mesure = debitRetenu({
+    piquage,
+    secondes: nombre("secondes"),
+    barStatique: nombre("barStatique"),
+    barDynamique: nombre("barDynamique"),
+  });
+  if (!mesure.ok) return { etat: "refus", raison: mesure.raison };
 
   const plan = calculerPlan({
-    seau,
-    temps,
-    pression,
-    compteur,
+    // Le calcul raisonne en seau et temps : on lui rend le débit retenu sous
+    // cette forme, sans repasser par la saisie — une seule source du débit.
+    seau: SEAU_LITRES,
+    temps: (SEAU_LITRES / mesure.debit) * 3.6,
+    pression: mesure.pression,
+    compteur: piquage === "compteur" ? "oui" : "non",
     zones: mesurees.map((z) => ({
       type: z.type,
       nom: z.nom ?? undefined,
@@ -91,14 +107,12 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   });
 
   const reserves = [...lu.croquis.reserves];
+  if (mesure.reserve) reserves.push(mesure.reserve);
   if (mesurees.length === 0) {
     return {
       etat: "refus",
       raison: "Aucune zone du croquis n’a de mesure lisible : le plan ne peut pas se calculer.",
     };
-  }
-  if (plan.debitDisponible <= 0) {
-    reserves.push("le débit n’a pas été mesuré : le découpage en réseaux ne tient pas compte du compteur");
   }
 
   return {

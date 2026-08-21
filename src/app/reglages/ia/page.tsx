@@ -1,7 +1,7 @@
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
-import { decrireEtatIA, aFaireIA } from "@/lib/etat-ia";
+import { decrireEtatIA, decrireVision, aFaireIA } from "@/lib/etat-ia";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { getConfigIA } from "@/server/ai/config";
@@ -43,7 +43,15 @@ export default async function IAPage() {
     config.deepgramApiKey ? "DEEPGRAM_API_KEY" : "",
     config.googleApiKey ? "GOOGLE_API_KEY" : "",
   ].filter(Boolean);
-  const etatsIA = decrireEtatIA(config.transcriptionProvider, config.llmProvider, clesPresentes);
+  // **Trois rôles, pas deux** — sa question du 21 août : « va voir ce qu'il y a
+  // de posé et dis-moi si c'est bon ou s'il faut rajouter une clé ». L'écran
+  // nommait qui écoute et qui rédige, jamais qui REGARDE — alors que c'est un
+  // réglage à part depuis `VISION_PROVIDER`, et que c'est lui qui décide si un
+  // croquis d'arrosage sera lu.
+  const etatsIA = [
+    ...decrireEtatIA(config.transcriptionProvider, config.llmProvider, clesPresentes),
+    decrireVision(config.visionProvider, clesPresentes),
+  ];
   const aFaire = aFaireIA(etatsIA);
 
   return (
@@ -92,7 +100,7 @@ export default async function IAPage() {
               servent qu'à aller CONTRE (`ARCHITECTURE.md` §26). */}
           <p className="mt-[10px] text-[12px] leading-snug" style={{ color: colors.muted }}>
             {aFaire ??
-              "Poser une clé suffit à brancher le fournisseur correspondant. Les variables TRANSCRIPTION_PROVIDER et LLM_PROVIDER ne servent qu'à forcer un autre choix — par exemple « dev » pour couper l'IA sans retirer les clés."}
+              "Poser une clé suffit à brancher le fournisseur correspondant. Les variables TRANSCRIPTION_PROVIDER, LLM_PROVIDER et VISION_PROVIDER ne servent qu'à forcer un autre choix — par exemple « dev » pour couper l'IA sans retirer les clés. Sans VISION_PROVIDER, les images vont chez celui qui rédige."}
           </p>
         </section>
 

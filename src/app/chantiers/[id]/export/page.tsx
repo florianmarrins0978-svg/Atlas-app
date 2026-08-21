@@ -5,6 +5,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
+import { canalPourJoindre } from "@/lib/message-client";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
 import { dernierEnvoi } from "@/server/repositories/envois-devis";
 import { etatEnvoi } from "@/lib/etat-envoi";
@@ -28,7 +29,16 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
   // accord avec la personne, pas une caractéristique du document. Un devis
   // repris six mois plus tard doit partir par le canal du client d'aujourd'hui.
   const client = chantier.clientId ? await getClient(ctx, chantier.clientId) : null;
-  const canalClient = client?.canalCommunication ?? "sms";
+  // **Déduit, jamais inventé** (`canalPourJoindre`, 20 août 2026) : un client
+  // qui n'a qu'une adresse e-mail ne doit pas se voir proposer un SMS vers un
+  // numéro qui n'existe pas. `"sms"` ne reste que lorsqu'on ne sait vraiment
+  // rien — et l'envoi est alors déjà bloqué en amont.
+  const canalClient =
+    canalPourJoindre({
+      canal: client?.canalCommunication ?? null,
+      telephone: client?.telephone,
+      email: client?.email,
+    }) ?? "sms";
   // **Les lignes du devis et les prestations ne sont plus lues ici** — elles
   // servaient la synthèse d'avant l'envoi, supprimée le 20 août 2026. L'écran
   // du devis parti montre le montant et le numéro, pas le détail : celui-ci se
