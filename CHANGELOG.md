@@ -1322,6 +1322,23 @@ compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 su
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
 
+### Un seul bouton d'ajout, sous la journée — et « toute la journée » retiré
+
+**Sa demande du 21 août au soir, la maquette étant par ailleurs retenue :**
+*« Le "+ Ajouter un chantier", tu le mets en dessous, un rond avec un plus ; je
+ne veux pas qu'il soit affilié à la case matin ou après-midi, ça surcharge et on
+ne comprend plus trop. Et "toute la journée" sous les noms, tu me le
+supprimes. »*
+
+**Deux boutons disaient la même chose deux fois**, et posaient la question du
+moment avant même qu'on ait choisi le client. Un seul rond, sous les deux
+demi-journées, et le moment se choisit **après** : d'abord QUI, ensuite QUAND —
+c'est le client qu'il a en tête, pas la demi-journée. Se tromper de client
+n'oblige plus à revenir en arrière.
+
+**« Toute la journée » disparaît** : le chantier apparaît déjà sous les deux
+demi-journées, la mention ne faisait que le répéter.
+
 ### Le quota qui prévient sans interdire — sa proposition, et elle est meilleure
 
 **Sa proposition du 21 août au soir**, après avoir vu les trois façons de dire

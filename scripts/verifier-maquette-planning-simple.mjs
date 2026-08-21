@@ -187,10 +187,29 @@ verifier(
 // et la couleur CHANGE.
 await page.click('[data-jour="2026-08-21"]');
 {
-  const bloc = page.locator("#jour-ouvert .demi").first();
-  verifier("un jour complet propose quand même d'ajouter", (await bloc.locator("[data-ajouter]").count()) === 1);
-  await bloc.locator("[data-ajouter]").click();
-  await bloc.locator(".choisir [data-qui]").first().click();
+  // **Un seul bouton d'ajout, sous la journée** (sa demande du 21 août au
+  // soir) : plus un par demi-journée, « ça surcharge et on ne comprend plus ».
+  verifier(
+    "un jour complet propose quand même d'ajouter, par UN seul bouton",
+    (await page.locator("#jour-ouvert [data-ajouter]").count()) === 1,
+  );
+  verifier(
+    "et il n'y a plus de bouton collé aux demi-journées",
+    (await page.locator("#jour-ouvert .demi [data-ajouter]").count()) === 0,
+  );
+
+  // D'abord QUI, ensuite QUAND : c'est le client qu'il a en tête.
+  await page.click("#jour-ouvert [data-ajouter]");
+  const qui = await page.$$eval("#jour-ouvert .choisir [data-qui]", (n) => n.map((e) => e.textContent.trim()));
+  verifier(`il demande d'abord QUI (lu : ${JSON.stringify(qui)})`, qui.length > 0);
+  await page.locator("#jour-ouvert .choisir [data-qui]").first().click();
+  const quand = await page.$$eval("#jour-ouvert .choisir [data-quand]", (n) => n.map((e) => e.textContent.trim()));
+  verifier(
+    `puis QUAND (lu : ${JSON.stringify(quand)})`,
+    JSON.stringify(quand) === JSON.stringify(["Matin", "Après-midi", "Journée"]),
+  );
+  await page.locator('#jour-ouvert .choisir [data-quand="matin"]').click();
+
   const apres = await chargeDe("2026-08-21");
   verifier(
     `le troisième chantier passe, et le matin bascule en « au-delà » (lu : ${JSON.stringify(apres)})`,
@@ -198,14 +217,20 @@ await page.click('[data-jour="2026-08-21"]');
   );
   const dit = await page.locator("#jour-ouvert .demi").first().locator(".compte").innerText();
   verifier(`et le compte le dit en clair (lu : « ${dit.trim()} »)`, /150\s*%/.test(dit));
+
+  // **« Toute la journée » ne s'écrit plus sous les noms** — sa demande du même
+  // message : le chantier apparaît déjà sous les deux demi-journées.
+  verifier(
+    "« toute la journée » a disparu des lignes",
+    !(await page.locator("#jour-ouvert").innerText()).toLowerCase().includes("toute la journée"),
+  );
 }
 
-// ── Le mot « complet » reste — mais comme un ÉTAT, jamais comme un refus ─
+// ── Rien n'est jamais refusé, même au-delà du quota ────────────────────
 {
-  const bloc = page.locator("#jour-ouvert .demi").last();
   verifier(
-    "l'après-midi, complet lui aussi, garde son « + Ajouter »",
-    (await bloc.locator("[data-ajouter]").count()) === 1,
+    "même au-delà, le bouton d'ajout est toujours là",
+    (await page.locator("#jour-ouvert [data-ajouter]").count()) === 1,
   );
 }
 
@@ -228,73 +253,28 @@ await page.click('[data-jour="2026-08-21"]');
     carres.length === 5 && carres.every(Boolean));
 }
 
-// ── AJOUTER QUELQU'UN SUR UNE DEMI-JOURNÉE QUI A DE LA PLACE ───────────
+// ── AJOUTER SUR N'IMPORTE QUEL JOUR, PAR LE MÊME GESTE ─────────────────
 //
-// Sa remarque du 21 août : « je clique sur le 19, j'ai le matin de pris,
-// l'après-midi libre, et je ne peux pas rajouter quelqu'un dessus — ce n'est
-// pas normal ». Poser depuis « Sans date », tout en bas de l'écran, ne remplace
-// pas ce geste : il regarde la demi-journée, c'est là qu'il veut ajouter.
-await page.click('[data-jour="2026-08-19"]');
-{
-  const lignes = await page.$$eval("#jour-ouvert .demi", (n) =>
-    n.map((e) => ({ dit: e.innerText.replace(/\s+/g, " ").trim().slice(0, 40), plus: !!e.querySelector("[data-ajouter]") })));
+// Sa remarque du 21 août — « pourquoi le 21 n'a pas le même visuel que le
+// 19 ? » — vient de là : « complet » supprimait le bouton. Tous les jours
+// proposent donc les mêmes gestes, quel que soit leur état.
+for (const jour of ["2026-08-19", "2026-08-21"]) {
+  await page.click(`[data-jour="${jour}"]`);
   verifier(
-    `le 19 propose d'ajouter sur ses deux demi-journées, qui ont de la place (lu : ${JSON.stringify(lignes)})`,
-    lignes.length === 2 && lignes.every((l) => l.plus),
+    `le ${jour.slice(-2)} propose le même bouton d'ajout`,
+    (await page.locator("#jour-ouvert [data-ajouter]").count()) === 1,
   );
-}
-await page.click('[data-jour="2026-08-21"]');
-{
-  // **Plus aucune demi-journée ne refuse un chantier** — sa décision du
-  // 21 août. Ce contrôle défendait l'inverse la veille : il gardait « complet »,
-  // qui interdisait d'ajouter. Le garder aurait figé une règle qu'il a retirée.
-  const plus = await page.locator("#jour-ouvert [data-ajouter]").count();
-  verifier(`le 21, déjà chargé, propose quand même d'ajouter (lu : ${plus})`, plus === 2);
 }
 await page.click('[data-jour="2026-08-19"]');
 {
   const avant = (await page.locator("#jour-ouvert").innerText()).length;
-  await page.locator('#jour-ouvert [data-ajouter="matin"]').click();
-  const noms = await page.$$eval("#jour-ouvert .choisir [data-qui]", (n) => n.map((e) => e.textContent.trim()));
-  verifier(`le bouton ouvre la liste de ceux qui attendent (lu : ${JSON.stringify(noms)})`, noms.length > 0);
-  await page.locator('#jour-ouvert .choisir [data-qui]').first().click();
+  await page.click("#jour-ouvert [data-ajouter]");
+  await page.locator("#jour-ouvert .choisir [data-qui]").first().click();
+  await page.locator('#jour-ouvert .choisir [data-quand="matin"]').click();
   verifier(
-    "et le choisir le pose pour de bon sur cette demi-journée",
+    "et le poser l'inscrit pour de bon dans la matinée",
     (await page.locator("#jour-ouvert").innerText()).length > avant &&
       (await chargeDe("2026-08-19"))[0].etat !== "libre",
-  );
-}
-
-// ── ATTRIBUER UNE ÉQUIPE À L'APRÈS-MIDI, SANS PASSER PAR « JOURNÉE » ───
-//
-// Sa remarque du 21 août : « le 21, quand je clique le matin je peux attribuer
-// une équipe, et quand je clique sur l'après-midi je ne peux rien attribuer —
-// je dois cliquer sur journée pour attribuer l'aprem ». Les chantiers vivaient
-// dans une liste unique sous les deux demi-journées : l'après-midi n'avait rien
-// à toucher.
-await page.click("#retour").catch(() => {});
-await page.click('[data-jour="2026-08-21"]');
-{
-  const blocs = await page.$$eval("#jour-ouvert .demi", (n) =>
-    n.map((e) => ({
-      titre: e.querySelector(".demi-titre").innerText.split("\n")[0].trim(),
-      places: [...e.querySelectorAll(".place")].map((p) => p.querySelector(".nom").innerText.split("\n")[0].trim()),
-      equipes: e.querySelectorAll("[data-equipe]").length,
-    })));
-  verifier(
-    `les deux demi-journées portent CHACUNE leurs chantiers et leurs pastilles (lu : ${JSON.stringify(blocs)})`,
-    // Chaque place porte SA pastille : c'est ce qui est vérifié, pas un compte
-    // figé — un contrôle plus haut a pu poser un chantier de plus.
-    blocs.length === 2 && blocs.every((b) => b.places.length >= 2 && b.equipes === b.places.length),
-  );
-
-  // Et l'on attribue depuis l'APRÈS-MIDI, sans toucher au matin.
-  const apresMidi = page.locator("#jour-ouvert .demi").last();
-  await apresMidi.locator("[data-equipe]").first().click();
-  await apresMidi.locator('.choisir [data-choix="Paul"]').click();
-  verifier(
-    "on attribue une équipe depuis l'après-midi, sans passer par « journée »",
-    (await page.locator("#jour-ouvert .demi").last().innerText()).includes("Paul"),
   );
 }
 
