@@ -9,6 +9,97 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Cinq façons de dessiner une case à remplir
+
+**Sa demande :** *« Fais-moi des photos des cases à remplir plus jolies, je peux
+plus voir ces encadrés carrés. »*
+
+**`appli/cases-a-remplir.html`** — cinq traitements du MÊME bloc (nom,
+téléphone, e-mail, adresse) : le trait, la capsule, la ligne de fiche, la carte
+douce, le creux. Le bloc ne change pas d'une proposition à l'autre, sinon il
+choisirait un contenu au lieu d'un dessin.
+
+Ce qui ne bouge pas non plus, et c'est délibéré : la charte, la place du texte
+saisi (16 px — en dessous, iOS zoome tout seul à la mise au point), et **la
+hauteur de prise, 48 px minimum**. Mesurée, pas supposée : la « ligne de fiche »
+était à 46 px et a été relevée. Une case élégante qu'on rate deux fois sur trois
+n'est pas élégante, elle est ratée.
+
+**Rien n'est codé** — il tranche.
+
+### Mr / Mme revient, son intitulé reste parti
+
+*« Non, remets le Mr et Mme, je voulais juste que tu enlèves le titre
+civilité. »* Corrigé dans la minute. Les deux boutons se comprennent seuls, et
+c'est une ligne de petites capitales de moins. Le contrôle tient désormais les
+deux moitiés : l'intitulé absent **et** les deux boutons présents — retirer le
+choix était une amputation, remettre le mot annulerait le gain de place.
+
+
+### La fiche client qui dicte le devis — dessinée, pas codée
+
+**Sa demande, capture de l'écran à l'appui :** *« J'ai envie que les
+informations prennent moins de place. Le nom et le numéro de téléphone l'un à
+côté de l'autre. Tu me retires tous les facultatifs. Tu vas m'ajouter la
+possibilité de mettre des photos exactement comme il y a sur la page d'après.
+Ensuite, avant les deux touches, le bouton de la note vocale qui se trouve sur
+la page d'après. On appuie, on dicte les tâches à effectuer, celles qu'on voit
+tout de suite avec le client. Dès qu'on rappuie pour arrêter, il faut
+impérativement que les infos aillent s'enregistrer dans le devis. »*
+
+Et le pourquoi, qui commande tout le reste : **il est en rendez-vous**. Il dicte
+ce qu'il voit, il n'a pas le temps de continuer, il ferme l'application. En
+rentrant chez lui, le chantier l'attend à l'accueil et un appui ouvre le devis
+déjà rempli.
+
+**`appli/fiche-client-vocale.html`** — essayable, quatre écrans, atteignable
+depuis `appli/essais.html`. **Rien n'est codé** (`CLAUDE.md` §3 bis).
+
+**Deux pièces sont REPRISES DU CODE, pas redessinées**, parce qu'il a dit
+« exactement comme il y a sur la page d'après » : l'anneau
+(`AnneauNoteVocale.tsx` + le bloc `.atlas-lecteur` de `globals.css` — deux
+cercles, trois traits d'or qui battent, huit barreaux par aile) et le champ de
+photos (`Pellicule.tsx` — un champ unique, `accept="image/*" multiple`, **sans
+`capture`**, sans quoi un iPhone imposerait l'appareil et retirerait l'accès à
+la pellicule).
+
+**Ce que la capture a montré et qu'aucune mesure à l'œil n'aurait vu :** à la
+première largeur essayée, le numéro s'affichait « 06 79 98 45 1 » — le dernier
+chiffre tombait, en silence, sur la seule donnée qu'on ne peut pas deviner. Le
+contrôle compare désormais la largeur du texte à celle de sa boîte, et refuse de
+conclure sur une boîte de zéro pixel.
+
+**Ce qui est posé plutôt que tranché à sa place.** Il veut supprimer la fiche
+chantier pour de bon : elle porte « Créer la facture », les étapes, la relecture
+de la note et les photos d'après-coup. Un quatrième écran, « Ce qui reste à
+reloger », montre où chacune irait — il choisit avant qu'on code.
+
+**Aucun prix n'est inventé sur le devis dessiné** : il n'a annoncé aucun montant
+en dictant, les trois lignes arrivent donc à chiffrer (`CLAUDE.md` §4).
+
+**Trois corrections le même soir, sur la planche** : un seul bouton et c'est
+*« Je rédige mon devis »* ; *« Comment lui envoyer son devis ? »* descend **sous
+l'adresse** ; et *« au-dessus du numéro de téléphone, marqué numéro de
+téléphone »*, puis *« enlève numéro de, laisse juste téléphone »* — l'intitulé
+unique « Client » laissait deviner ce qu'était la seconde case, et on ne devine
+pas sur une fiche qu'on remplit devant le client.
+Le contrôle vise ses mots à la lettre et l'ordre des blocs : c'est ce qui les
+défend de la réécriture suivante.
+
+**Et la civilité part**, dans la foulée : deux boutons sur la première ligne de
+l'écran alors qu'il écrit déjà « M. Julien » dans le nom. Le titre vient du nom
+qu'il tape. Le contrôle refuse qu'elle revienne — un retrait ne se tient que par
+ce qui ne doit plus être là.
+
+**Puis, capture de l'accueil à l'appui :** *« quand je clique sur devis à
+terminer, je dois arriver directement sur la page du devis, pas ailleurs, et les
+infos que j'ai dictées doivent être remplies »*. Le chemin y menait déjà —
+vérifié au doigt, sur un iPhone simulé. **Ce qui manquait, c'est que ce soit SON
+chantier** : la carte et le devis affichaient un nom d'exemple quoi qu'il tape.
+Le nom, le numéro et l'adresse saisis partent maintenant avec la dictée jusqu'au
+devis, et une case laissée vide se dit (« Client sans nom ») plutôt que de se
+remplacer par un exemple.
+
 ### La fiche dit enfin si le port est ouvert
 
 **« Elle ne se lance plus »**, alors que sa fiche annonçait un serveur qui
@@ -908,6 +999,76 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 ---
 
 ## 2026-08-19
+
+### Un mois qu'on lit sans l'apprendre
+
+**Sa demande, le 21 août :** *« tout en faisant un mois facile à comprendre »*.
+Quatre changements dans la planche, et aucun n'est décoratif :
+
+- **les jours des autres mois disparaissent.** Ils ne portent rien, et six
+  cases de chiffres gris se lisent quand même — du bruit payé à chaque coup
+  d'œil. Le prix, assumé : le 3 septembre ne s'atteint plus depuis la grille
+  d'août, il faut la flèche ;
+- **les cases sont carrées et espacées** : le doigt vise ses 44 px, et l'œil
+  sépare les semaines sans un seul trait ;
+- **le week-end est une colonne teintée**, pas un chiffre pâle. Une teinte se
+  voit du coin de l'œil ; un gris clair oblige à lire pour comprendre ;
+- **aujourd'hui porte un cercle d'or**, et un retour « ← Aujourd'hui »
+  apparaît **dès qu'on s'en éloigne** — sans lui on se perd à trois mois ;
+  toujours présent, il se lirait comme une action à faire.
+
+**Deux pièges payés en l'éprouvant**, tous deux du genre qui rend un contrôle
+vert sur un écran faux :
+
+- `[hidden]` ne cachait rien. `.retour-aujourdhui{display:block}` l'emporte sur
+  la règle du navigateur : le bouton restait à l'écran en prétendant être caché.
+  Il faut écrire `.retour-aujourdhui[hidden]{display:none}` ;
+- le contrôle qui vérifiait l'absence des jours voisins cherchait un « 27 »
+  dans la grille d'août — or le 27 août existe. Il accusait une page juste. Il
+  compte désormais les cases vides, et vérifie qu'elles le sont.
+
+### Le planning : le mois reste, la semaine ne sert qu'aux planifiés
+
+**Sa correction, le 21 août :** *« je veux un accès au mois ; ce dont je te
+parlais pour la semaine, c'était pour les chantiers planifiés »*. La planche de
+la veille avait remplacé le mois par une semaine — c'était trop.
+
+`appli/planning-simple.html` est refaite : **le calendrier reste au mois**, avec
+ses flèches de mois, et seule la liste du bas se déplace par semaine. Les deux
+ne se concurrencent pas — **toucher un jour du mois amène la liste sur sa
+semaine** : on vise en haut, on lit en bas. Sans ce lien, l'écran porterait deux
+navigations qui s'ignorent, et ce serait la page incompréhensible qu'il vient de
+signaler.
+
+Ce qui reste à trancher : **A, B ou C**, trois façons de marquer les
+demi-journées sur une case de mois. `src/app/planning/` n'a toujours pas bougé.
+
+### Dessiner le planning en semaines avant d'y toucher
+
+**Sa demande :** *« cette page est beaucoup trop compliquée à comprendre pour
+les utilisateurs […] fais-moi une maquette de ça, dynamique, en .html, avant de
+me coder quoi que ce soit, que je puisse essayer »*.
+
+`appli/planning-simple.html` **s'essaie pour de bon** : les flèches changent de
+semaine, les trois calendriers se comparent sur place, et tout se calcule sur
+les mêmes chantiers que la liste — un dessin figé aurait pu mentir sur le point
+même qu'il veut juger. `src/app/planning/` n'a pas bougé (`CLAUDE.md` §3 bis).
+
+**Ce que la maquette a fait apparaître, et qui n'était pas dans sa demande :**
+le calendrier actuel montre le MOIS, et c'est lui qui sert à poser une date
+lointaine. Passer à la semaine coûte huit appuis pour aller à deux mois — la
+question est posée dans `TODO.md`, pas tranchée ici.
+
+**Le contrôle joue les gestes** (`scripts/verifier-maquette-planning-simple.mjs`,
+dans `verifier:maquette`) : il change de semaine, compare ce que le calendrier
+peint à ce que les données disent — le vendredi 21 porte deux chantiers à la
+journée, donc ses deux demi-journées sont complètes —, et refuse de conclure sur
+une case de zéro pixel.
+
+**Un piège payé en l'écrivant :** le titre du jour est écrit « vendredi 21 août »
+dans la page, mais la feuille de style le met en capitales. `innerText` rend ce
+que l'ŒIL voit, pas ce que le HTML porte — le contrôle rougissait sur une page
+juste. Il lit désormais en insensible à la casse.
 
 ### Le compte des chantiers ne se dit plus qu'une fois, et en chiffre
 

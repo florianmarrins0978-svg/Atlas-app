@@ -277,12 +277,55 @@ jugé, et c'est l'erreur qu'on cherche à arrêter. Et il faudra se souvenir que
 corriger trois écrans de plus ne suffira pas : c'est déjà la troisième fois, et
 rien n'empêche l'application de regrossir.
 
-## Deux maquettes que le patron ne peut pas ouvrir — constaté le 20 août 2026
+## En attente d'une réponse — le planning
+
+### Sa demande du 19 août, et la planche 84
+
+*« Cette page est beaucoup trop compliquée à comprendre pour les utilisateurs.
+Les titres en noir, gras, centrés. Pour les planifiés, mettre les jours de la
+semaine en haut — vendredi 21 août plutôt que 21 — avec les clients dessous, et
+une flèche à droite et à gauche pour changer de semaine. Et pour le calendrier
+au-dessus, propose quelque chose de plus simple, plus visuel : qu'on voie tout
+de suite les jours pris, et ceux pris seulement le matin ou l'après-midi. »*
+
+**Rien n'est codé** : `appli/planning-simple.html` s'essaie — les flèches
+changent vraiment de semaine, et le calendrier se calcule sur les mêmes
+chantiers que la liste. `src/app/planning/` n'a pas bougé.
+
+**Ce qui n'attend pas de réponse** (sa demande est explicite) : titres noirs,
+gras, centrés ; jours nommés ; une semaine à la fois avec ses deux flèches.
+
+**Ce qu'il doit trancher : A, B ou C**, trois façons de montrer les
+demi-journées — et c'est le cœur de sa plainte, pas un détail :
+
+| | Ce qu'on voit |
+|---|---|
+| **A · deux barres** | deux barres sous le chiffre, matin dessus, après-midi dessous |
+| **B · le rond** | le chiffre dans un rond rempli par le haut, par le bas, ou entier |
+| **C · une barre** | une seule barre sous le chiffre, gauche = matin, droite = après-midi |
+
+Trois couleurs seulement, dans les trois : vide = libre, vert pâle = une équipe
+sur deux, vert plein = complet. **La phrase « Complet veut dire : vos 2 équipes
+sont prises sur cette demi-journée » disparaît** — la couleur le dit.
+
+**LA QUESTION DU MOIS EST TRANCHÉE, le 21 août :** *« je veux un accès au mois ;
+ce dont je te parlais pour la semaine, c'était pour les chantiers planifiés »*.
+Le calendrier reste donc au MOIS — c'est lui qui sert à poser une date lointaine
+(`PlanningClient.tsx`, `JourneeOuvrable`) —, et la semaine ne gouverne que la
+liste du bas. La planche a été refaite dans ce sens le jour même.
+
+**Ce que la maquette ajoute, et qu'il faudra tenir en codant :** toucher un jour
+du mois amène la liste sur SA semaine. Sans ce lien, l'écran porterait deux
+navigations qui s'ignorent — exactement le genre de page qu'il trouve
+incompréhensible.
+## ~~Deux maquettes que le patron ne peut pas ouvrir~~ — **RÉGLÉ le 20 août 2026**
 
 `appli/deux-boutons-devis.html` et `appli/en-cours-le-chiffre.html` existent,
 sont publiées, sont vérifiées après déploiement — et **aucun lien d'`essais.html`
-ne les atteint**. Or `essais.html` est la seule adresse qu'on lui ait donnée :
-autant dire qu'elles n'existent pas pour lui. C'est le même défaut que les huit
+ne les atteignait**. Or `essais.html` est la seule adresse qu'on lui ait donnée :
+autant dire qu'elles n'existaient pas pour lui. **Les deux liens sont posés**, et
+les deux pages ont donc quitté la liste tenue à la main de `pages.yml` — la
+déduction depuis `essais.html` les couvre. C'est le même défaut que les huit
 planches introuvables trouvées par `scripts/fusionner-maquettes.mjs`.
 
 **À faire, par qui reprend leur sujet :** les inscrire dans `appli/essais.html`
@@ -528,6 +571,44 @@ manque de mémoire pendant la construction, qui est le moment le plus gourmand.
 **Piste à éprouver avant d'y toucher :** faire écrire au veilleur une trace
 d'agonie (`trap`), et la publier avec la fiche à l'allumage suivant — sans quoi
 la prochaine fois se rediagnostiquera de zéro, exactement comme celle-ci.
+
+---
+
+## ⏸ La fiche client qui dicte le devis — **dessinée le 21 août, il tranche avant qu'on code**
+
+`appli/fiche-client-vocale.html` (adresse : `…github.io/Atlas-app/essais.html`).
+**Rien n'est codé**, et rien ne doit l'être avant sa réponse.
+
+Ce qu'il a déjà tranché, en répondant aux questions posées avant le dessin :
+
+| Question | Sa réponse |
+|---|---|
+| La fiche chantier (« la page d'après ») | **« On la supprime pour de bon »** |
+| Les deux boutons du bas | L'anneau remplace « Je dicte mon devis » ; reste « J'écris mon devis » |
+| Le champ téléphone isolé | Retiré. **« Comment lui envoyer son devis ? » reste** |
+| L'accueil | Ouvre l'élément là où il en est — devis si le devis est commencé, fiche client si elle est vide. C'est déjà ce que fait `lienDeReprise` |
+
+**Ce qui reste à trancher, et qui bloque le code :** la fiche chantier porte
+quatre choses sans autre maison. **La première est réglée le 21 août au soir** —
+*« la création de la facture se fera dans la catégorie planning ou terminé »* —
+et elle ne coûte rien : les deux chemins existent déjà (la feuille du chevron du
+planning depuis sa demande du 12 août, et chaque ligne du fil des terminés).
+Vérifié dans le code avant de répondre, plutôt que promis.
+
+Restent **trois** : les étapes du chantier, la relecture de la note dictée, et
+les photos ajoutées après coup. L'écran « À trancher » de la maquette propose une
+place pour chacune.
+
+**Ce que le code devra faire, et qui n'est pas qu'un déplacement d'écran :**
+
+- le chantier doit exister **avant** la première photo ou la première dictée —
+  sinon la photo n'a nulle part où aller. Aujourd'hui il est créé par les deux
+  boutons du bas (`creerPuisAller`) ;
+- `lienDeReprise` (`src/lib/chantier-etat.ts`) renvoie les étapes « photos » et
+  « note-vocale » vers `/chantiers/[id]`, c'est-à-dire vers l'écran qu'il veut
+  supprimer : à rediriger vers la fiche client ;
+- l'anneau doit **redevenir lecteur** sur la fiche client quand une note existe,
+  comme il le fait aujourd'hui sur la fiche chantier.
 
 ---
 
