@@ -105,6 +105,11 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .duo .num{flex:0 0 152px}
 .duo .num input{text-align:right;padding-left:10px;padding-right:12px;
                 font-variant-numeric:tabular-nums;letter-spacing:0}
+/* Les deux intitulés s'alignent par le BAS : « Numéro de téléphone » passe sur
+   deux lignes, et un alignement par le haut décollerait « Nom du client » de sa
+   case. */
+.duo-titres{align-items:flex-end;margin-bottom:-1px}
+.duo-titres .num{text-align:right;line-height:1.35}
 
 .canal{display:flex;gap:8px}
 .canal button{flex:1;border-radius:99px;border:1px solid var(--line);background:transparent;
@@ -265,11 +270,22 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
         </div>
       </div>
 
-      <!-- Le nom et le numéro, côte à côte. Un seul intitulé pour les deux :
-           deux petites capitales au-dessus d'une ligne de 430 px se lisent
-           comme deux blocs, ce qui annule le gain de place. -->
+      <!-- Le nom et le numéro, côte à côte, **chacun avec son intitulé** — sa
+           correction du 21 août au soir : « au-dessus du numéro de téléphone,
+           marqué numéro de téléphone ». Un seul intitulé « Client » pour les
+           deux laissait deviner ce qu'était la seconde case ; sur une fiche
+           qu'on remplit devant le client, on ne devine pas.
+
+           **L'intitulé de droite passe sur deux lignes plutôt que de se
+           couper.** « NUMÉRO DE TÉLÉPHONE » en petites capitales espacées ne
+           tient pas dans 152 px, et un intitulé tronqué (« NUMÉRO DE TÉLÉ… »)
+           est exactement le défaut qu'on vient de corriger sur le numéro
+           lui-même. Les deux cases restent alignées par le bas. -->
       <div class="champ">
-        <span class="caps">Client</span>
+        <div class="duo duo-titres">
+          <span class="nom caps">Nom du client</span>
+          <span class="num caps">Numéro de téléphone</span>
+        </div>
         <div class="duo">
           <span class="nom"><input id="nom" type="text" placeholder="M. Julien" value="M. Julien" autocomplete="off"></span>
           <span class="num"><input id="tel" type="tel" placeholder="06 12 34 56 78" value="06 79 98 45 14" autocomplete="off"></span>
@@ -281,9 +297,17 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
         <input id="email" type="email" placeholder="bernard@exemple.fr" autocomplete="off">
       </div>
 
-      <!-- Il a demandé de GARDER cette question, et de n'enlever que le champ
-           téléphone isolé. Elle n'apparaît qu'une fois une coordonnée saisie :
-           la poser avant serait sans objet. -->
+      <div class="champ">
+        <span class="caps">Adresse du chantier</span>
+        <input type="text" placeholder="12 rue des Lilas, Nantes" autocomplete="off">
+      </div>
+
+      <button class="lien-or" type="button">+ Ajouter une adresse client différente</button>
+
+      <!-- **Sous l'adresse**, sa place choisie le 21 août au soir. Il a demandé
+           de garder la question et de n'enlever que le champ téléphone isolé ;
+           elle descend simplement là où il la veut, après les coordonnées et
+           avant ce qu'on fait du chantier. -->
       <fieldset class="champ" style="border:0;margin:0;padding:0" id="bloc-canal">
         <legend class="caps" style="padding:0">Comment lui envoyer son devis ?</legend>
         <div class="canal">
@@ -291,13 +315,6 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
           <button type="button" id="par-mail" aria-pressed="false" disabled>Par e-mail</button>
         </div>
       </fieldset>
-
-      <div class="champ">
-        <span class="caps">Adresse du chantier</span>
-        <input type="text" placeholder="12 rue des Lilas, Nantes" autocomplete="off">
-      </div>
-
-      <button class="lien-or" type="button">+ Ajouter une adresse client différente</button>
 
       <!-- LA PELLICULE. Le champ est unique et SANS `capture` : sur son iPhone,
            toucher le carré ouvre le menu du système — Photothèque, Prendre une
@@ -332,7 +349,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
       </div>
 
       <div style="padding-top:4px">
-        <button class="principal" type="button" id="ecrire">J’écris mon devis</button>
+        <button class="principal" type="button" id="ecrire">Je rédige mon devis</button>
       </div>
       <p style="margin:2px 0 30px;text-align:center;font-size:12.5px;color:var(--muted)" id="mot-enregistre">&nbsp;</p>
     </form>
