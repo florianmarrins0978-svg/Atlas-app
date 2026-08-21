@@ -1225,6 +1225,92 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### « Plein » ne veut pas dire « attribué » — la hachure le dit enfin
+
+**Sa question du 21 août, et elle valait mieux qu'une réponse :** *« j'ai
+l'impression qu'il y a quelque chose qui n'est pas clair entre le code couleur
+qui fait que les jours sont pleins, parce qu'en fait les jours peuvent être
+pleins mais les équipes pas choisies. J'ai l'impression d'être un peu perdu. »*
+
+**Il n'était pas perdu : le dessin confondait deux choses.** Une barre remplie
+disait « cette demi-journée est prise », et rien d'autre — elle peignait pareil
+un chantier confié à Julien et un chantier posé sans personne dessus. Or ce sont
+deux états très différents : le premier est réglé, le second attend une décision.
+
+**Une barre est désormais faite de PLACES, une par équipe.** Chaque chantier posé
+en prend une — la journée est prise, qu'on ait nommé l'équipe ou non, et c'est
+juste. Mais une place **sans équipe est hachurée** : elle dit « reste à décider
+qui y va ». Le 21 août de la planche, complet et sans équipes, se distingue
+maintenant du 26, complet et attribué.
+
+### On CHOISIT son équipe : un appui n'en pose plus une d'office
+
+**Sa remarque, dans le même message :** *« quand je clique sur équipe, ça me met
+d'office une équipe, je n'ai pas choisi, ce n'est pas normal — je dois pouvoir
+choisir, et modifier »*.
+
+La version d'avant faisait **tourner** les noms à chaque appui. Sur deux équipes
+c'était discutable ; sur dix, il fallait neuf appuis pour atteindre la dernière,
+et l'on posait une équipe non voulue à chaque passage. La pastille ouvre donc la
+**liste des équipes**, avec **« Retirer l'équipe »** quand il y en a une :
+changer d'avis coûte le même geste que choisir. La liste est la même dans la
+fiche du jour et dans les planifiés — deux listes séparées auraient fini par
+proposer des choix différents.
+
+**Le contrôle qui vaut ici** ne compare pas deux libellés : il vérifie dans le
+CALENDRIER qu'après l'ouverture de la liste, **rien n'a été attribué** — la
+place est encore hachurée. L'ancien contrôle serait resté vert sur le défaut
+même qu'il signalait.
+
+### Ajouter quelqu'un là où il regarde, et alléger la feuille
+
+**Sa remarque du 21 août :** *« je clique sur le 19, j'ai le matin de pris,
+l'après-midi libre, et je ne peux pas rajouter quelqu'un dessus — ce n'est pas
+normal »*.
+
+Il avait raison, et le défaut était de conception : poser un chantier ne se
+faisait que depuis « Sans date », **tout en bas de l'écran**. Or il regarde la
+demi-journée, et c'est là qu'il veut ajouter. Chaque demi-journée qui a de la
+place porte donc un **+ Ajouter** ; il ouvre sur place la liste de ceux qui
+attendent un jour. Une demi-journée COMPLÈTE n'en propose aucun — le bouton
+serait un mensonge.
+
+**Et la feuille perd ce qu'il n'a pas demandé** : *« ce qu'il y a sous le nom,
+l'adresse et la date, tu peux supprimer. Tu me laisses Waze, Maps, copier,
+appeler »*. L'adresse et le numéro **servent toujours** aux quatre gestes — ils
+sont lus sans être écrits. Le bouton dit maintenant ce qu'il fait : « Ouvrir le
+PDF sans les prix », ce qui rend la ligne « Aucun prix sur cette feuille »
+inutile.
+
+### La légende reprise à la lettre, et le nom cliquable là où il cliquait
+
+**Deux corrections qu'il a fallu redemander, et c'est un échec de lecture de ma
+part.**
+
+**1. La légende.** Sa demande, mot pour mot : *« remets comme c'était avant — un
+carré blanc pour libre, un carré vert clair pour une équipe sur deux, le carré
+foncé pour complet. Et les rectangles FINS que tu as utilisés pour ton code
+couleur, mets-en deux l'un au-dessus de l'autre et marque matin et après-midi.
+Pourquoi tu m'as mis deux rectangles épais ? Et je veux tout sur la même
+ligne. »*
+
+Donc : **trois carrés** (leurs mots d'origine, « complet » compris), puis **les
+barres fines du calendrier elles-mêmes**, l'une sur l'autre, annotées — et
+**tout sur une seule ligne**, mesuré à 390 px. La suite vérifie les trois
+choses : que les états sont carrés, que les deux dernières marques sont fines
+(larges au moins deux fois et demie comme elles sont hautes), et que les quatre
+termes partagent le même haut. Une légende qui se replierait passerait sinon
+inaperçue.
+
+**2. « Je ne peux toujours pas cliquer sur le nom du client. »** Le geste avait
+été ajouté — mais dans la fiche du jour, alors qu'il cliquait dans la **liste des
+planifiés**. Les deux ouvrent maintenant la feuille.
+
+**Et elle s'ouvre SOUS la ligne touchée.** Première version : elle s'affichait au
+bas de la liste — on appuyait sur « Mme Rocher » et la feuille apparaissait après
+« Monsieur Martins », trois lignes plus bas. Vu sur capture, jamais par un test ;
+la suite mesure désormais l'écart entre la ligne et la feuille.
+
 ### Deux corrections : le nom ouvre la feuille, et la légende était fausse
 
 **Ses deux remarques du 21 août, et les deux étaient justes.**

@@ -107,34 +107,41 @@
   .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
   .marqueA i{height:6px;border-radius:2px;background:var(--plage);
              box-shadow:inset 0 0 0 1px var(--trait);position:relative;overflow:hidden}
-  .marqueA i span{position:absolute;left:0;top:0;bottom:0;background:var(--pale)}
-  .marqueA i.plein{background:var(--pin);box-shadow:none}
+  .marqueA i{display:flex}
+  .marqueA .seg{position:relative;top:0;bottom:0;height:100%}
+  .marqueA .seg.pris{background:var(--pale)}
+  .marqueA .seg.plein{background:var(--pin)}
+  /* **La place posée mais SANS équipe est hachurée.** Un aplat disait « c'est
+     pris » ; il ne pouvait pas dire « et il reste à choisir qui y va ». C'est
+     exactement ce qui le perdait le 21 août. */
+  .marqueA .seg.sans{background-image:repeating-linear-gradient(45deg,
+                     rgba(250,249,245,.85) 0 2px, transparent 2px 5px)}
   .case.we .marqueA{visibility:hidden}
 
   /* La légende ne s'explique plus par une phrase : elle MONTRE la position.
      Sa demande du 21 août — « que sur le planning on comprenne tout de suite
      que le haut c'est le matin et le bas l'après-midi ». Un dessin qui porte
      son mot à côté n'a pas besoin qu'on dise où regarder. */
-  /* **Un rectangle par état, puis DEUX rectangles annotés.** Sa correction du
-     21 août, littérale : « il fallait laisser un rectangle blanc pour libre, un
-     vert clair pour une équipe sur deux, un foncé pour les deux équipes prises ;
-     et ensuite rajouter deux rectangles l'un sur l'autre — pas deux carrés —
-     avec écrit le matin et l'après-midi ». La version d'avant mettait deux
-     barres partout et finissait sur deux carrés : l'inverse de ce qu'il a
-     demandé.
+  /* **Quatre petits carrés, tous de la même taille, sur UNE ligne.** Sa
+     correction du 21 août, à la troisième demande — et c'est la mienne, de
+     faute : trois carrés pour les états (blanc, vert clair, vert foncé), puis
+     **deux carrés de la MÊME dimension superposés** pour dire que le haut est le
+     matin et le bas l'après-midi. Pas de gros rectangle inventé pour
+     l'occasion.
 
-     Les rectangles ont la forme des barres du calendrier — larges et plates —
-     pour qu'on les reconnaisse d'un écran à l'autre. */
-  .legende .rect{width:22px;height:7px;border-radius:2px;display:inline-block;
-                 background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .legende .rect.pris{background:var(--pale);box-shadow:none}
-  .legende .rect.plein{background:var(--pin);box-shadow:none}
-  .legende .annote{display:flex;align-items:center;gap:8px}
-  .legende .annote .deux{display:flex;flex-direction:column;gap:4px}
-  .legende .annote .deux .rect{width:26px;height:11px}
-  .legende .annote .mots{display:flex;flex-direction:column;gap:4px;line-height:1}
+     Tout tient sur une ligne à 390 px, et `nowrap` l'y oblige : sa capture du
+     21 août montre la légende repliée en deux — c'est ce qu'on empêche ici. */
+  .legende{flex-wrap:nowrap;gap:9px;font-size:10px}
+  .legende > span{flex-shrink:0;white-space:nowrap}
+  .legende .carre{width:11px;height:11px;border-radius:3px;display:block;flex-shrink:0;
+                  background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .legende .carre.pris{background:var(--pale);box-shadow:none}
+  .legende .carre.plein{background:var(--pin);box-shadow:none}
+  .legende .annote{display:flex;align-items:center;gap:6px}
+  .legende .annote .deux{display:flex;flex-direction:column;gap:3px}
+  .legende .annote .mots{display:flex;flex-direction:column;gap:3px;line-height:1}
   .legende .annote .mots b{height:11px;display:flex;align-items:center;font-weight:600;
-                           font-size:10.5px;color:var(--encre-douce)}
+                           font-size:9.5px;color:var(--encre-douce)}
 
   /* Le nombre d'équipes — n'existe QUE dans la maquette, pour répondre à sa
      question en la MONTRANT plutôt qu'en l'expliquant. */
@@ -199,19 +206,21 @@
   .feuille .entete{margin:0;text-align:center;font:700 10.5px/1 ui-sans-serif,sans-serif;
                    letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
   .feuille .client{margin:10px 0 0;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
-  .feuille .adresse{display:block;margin:5px 0 0;text-align:center;font-size:13px;
-                    color:var(--pin);text-decoration:underline;text-underline-offset:3px}
+  /* L'adresse ne s'AFFICHE plus — sa demande du 21 août — mais elle sert
+     toujours : Maps, Waze et « Copier » la lisent sans la montrer. */
   .feuille .gestes{margin-top:10px;display:flex;gap:6px}
   .feuille .geste{flex:1;border:1px solid var(--trait);background:var(--plage);border-radius:8px;
                   padding:11px 6px;text-align:center;font-size:13px;color:var(--encre);
                   text-decoration:none;cursor:pointer;display:block}
   .feuille .geste.eteint{color:var(--gris);opacity:.45}
-  .feuille .quand{margin:4px 0 0;text-align:center;font-size:12px;color:var(--gris)}
   .feuille .taches{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait)}
+  .plus{margin-left:10px;border:1px solid var(--or);background:transparent;border-radius:999px;
+        padding:4px 10px;font-size:11.5px;color:var(--or);cursor:pointer}
+  .choisir{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin-top:4px}
+  .choisir .rien{margin:0;font-size:12px;color:var(--gris)}
   .feuille .taches p{margin:0 0 9px;padding-left:14px;position:relative;font-size:14.5px;line-height:1.45}
   .feuille .taches p::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;
                              border-radius:999px;background:var(--or)}
-  .feuille .sans-prix{margin:10px 0 0;text-align:center;font-size:11.5px;color:var(--gris)}
   .feuille .pdf{display:block;margin:12px auto 0;width:max-content;border-radius:999px;
                 background:var(--pin);color:#faf9f5;padding:10px 20px;font-size:13px}
 
@@ -225,6 +234,11 @@
   .jour .quand{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
                text-transform:uppercase;color:var(--encre)}
   .chantier{margin-top:12px;display:flex;align-items:center;gap:10px}
+  .chantier .nom{flex:1;border:0;background:transparent;text-align:left;cursor:pointer;padding:0;
+                 font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .chantier .equipe{border:0;cursor:pointer}
+  .chantier .chevron{border:0;background:transparent;cursor:pointer;padding:0 2px}
+  .choisir .petit.retenue{background:var(--pin);color:#faf9f5;border-color:var(--pin)}
   .chantier .nom{flex:1;font:400 19px/1.2 ui-serif,Georgia,serif}
   .chantier .quand-detail{margin-top:3px;font-size:12.5px;color:var(--or)}
   .chantier .equipe{flex-shrink:0;border-radius:999px;padding:7px 13px;font-size:12.5px;
@@ -272,11 +286,11 @@
   <button type="button" id="retour" class="retour-aujourdhui" hidden>← Aujourd’hui</button>
 
   <div class="legende">
-    <span><i class="rect"></i> libre</span>
-    <span><i class="rect pris"></i> 1 équipe sur 2</span>
-    <span><i class="rect plein"></i> les deux équipes</span>
+    <span><i class="carre"></i> libre</span>
+    <span><i class="carre pris"></i> 1 équipe sur 2</span>
+    <span><i class="carre plein"></i> complet</span>
     <span class="annote">
-      <span class="deux"><i class="rect"></i><i class="rect"></i></span>
+      <span class="deux"><i class="carre"></i><i class="carre pris"></i></span>
       <span class="mots"><b>matin</b><b>après-midi</b></span>
     </span>
   </div>
@@ -297,6 +311,7 @@
     <button class="fleche" type="button" id="sem-apres" aria-label="Semaine suivante">›</button>
   </div>
   <div id="planifies"></div>
+  <div id="feuille-liste"></div>
 
   <p class="titre-section">Sans date</p>
   <div id="sans-date"></div>
@@ -498,10 +513,29 @@
    * aplat foncé quand c'est complet : le seul état qui interdit de poser un
    * chantier ne se déduit pas d'une nuance, il se voit.
    */
+  /**
+   * Les deux barres du jour : le matin dessus, l'après-midi dessous.
+   *
+   * **Une barre est faite de PLACES, une par équipe.** Sa question du 21 août :
+   * *« j'ai l'impression qu'il y a quelque chose qui n'est pas clair entre le
+   * code couleur qui fait que les jours sont pleins — parce qu'en fait les jours
+   * peuvent être pleins, mais les équipes pas choisies »*. Il avait raison, et
+   * le dessin d'avant confondait les deux : il remplissait pareil un chantier
+   * confié à Julien et un chantier posé sans personne dessus.
+   *
+   * Chaque chantier posé prend UNE place — c'est ce qui remplit la barre, et
+   * c'est juste : la journée est prise, qu'on ait nommé l'équipe ou non. Mais
+   * une place **sans équipe** est hachurée : elle dit « il reste à décider qui
+   * y va », ce qu'un aplat ne pouvait pas dire.
+   */
   function dessinerMarque(iso) {
-    const barre = (o) => o.complet
-      ? `<i class="plein"></i>`
-      : `<i><span style="width:${Math.round(o.part * 100)}%"></span></i>`;
+    const barre = (o) => {
+      const largeur = 100 / nombreEquipes;
+      const places = o.pris.map((c) =>
+        `<span class="seg ${o.complet ? "plein" : "pris"} ${c.equipe ? "" : "sans"}"
+               style="width:${largeur}%"></span>`).join("");
+      return `<i>${places}</i>`;
+    };
     return `<span class="marqueA">${barre(occupation(iso, "matin"))}${barre(occupation(iso, "apres"))}</span>`;
   }
 
@@ -584,9 +618,18 @@
         : `${noms.slice(0, 2).join(", ")} +${noms.length - 2}`;
       const dit = pris.length === 0 ? "libre" : complet ? `Complet · ${qui}` : qui;
       const etat = pris.length === 0 ? "libre" : complet ? "plein" : "moitie";
+      // **Tant qu'il reste de la place, on peut poser quelqu'un dessus.** Sa
+      // remarque du 21 août : « le 19, j'ai le matin de pris, l'après-midi
+      // libre, et je ne peux pas rajouter quelqu'un dessus — ce n'est pas
+      // normal ». Poser depuis « Sans date » tout en bas de l'écran ne
+      // remplace pas ce geste-là : il regarde la demi-journée, c'est là qu'il
+      // veut ajouter.
+      const plus = complet
+        ? ""
+        : `<button type="button" class="plus" data-ajouter="${demi}">+ Ajouter</button>`;
       return `<div class="demi-ligne">
         <span class="quoi"><i class="pastille ${etat}"></i>${mot}</span>
-        <span class="compte">${dit}</span></div>`;
+        <span class="compte">${dit}${plus}</span></div>`;
     };
 
     // **Chaque chantier ouvre sa feuille de travail.** Sa demande du 21 août :
@@ -612,19 +655,41 @@
 
     const duJourLa = () => duJour(jourTouche);
 
+    // **Qui poser ?** La liste des chantiers en attente s'ouvre sur place. Elle
+    // dit ce qu'elle a, ou qu'elle n'a rien — un bouton qui n'ouvre rien laisse
+    // croire à une panne.
+    boite.querySelectorAll("[data-ajouter]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const demi = b.dataset.ajouter;
+        const choix = document.createElement("div");
+        choix.className = "choisir";
+        choix.innerHTML = SANS_DATE.length === 0
+          ? `<p class="rien">Aucun chantier n’attend de jour.</p>`
+          : SANS_DATE.map((c, i) => `<button type="button" class="petit" data-qui="${i}">${c.nom}</button>`).join("");
+        b.replaceWith(choix);
+        choix.querySelectorAll("[data-qui]").forEach((q) =>
+          q.addEventListener("click", () => {
+            const [c] = SANS_DATE.splice(Number(q.dataset.qui), 1);
+            CHANTIERS.push({ ...c, date: jourTouche, demi, equipe: "" });
+            lundi = lundiDe(jourTouche);
+            rendre();
+          }));
+      }));
+
     boite.querySelectorAll("[data-feuille]").forEach((b) =>
       b.addEventListener("click", () => rendreFeuille(duJourLa()[Number(b.dataset.feuille)])));
 
-    // **L'équipe tourne d'un appui.** Deux équipes, dix équipes, ou aucune :
-    // on passe à la suivante, puis on revient à « Équipe ? ». Un menu déroulant
-    // demanderait deux gestes là où le sien en demande un.
+    // **On CHOISIT son équipe, on ne la subit pas.** Sa remarque du 21 août :
+    // *« quand je clique sur équipe, ça me met d'office une équipe, je n'ai pas
+    // choisi, ce n'est pas normal — je dois pouvoir choisir, et modifier »*. La
+    // version d'avant faisait tourner les noms à chaque appui : sur dix équipes,
+    // il fallait neuf appuis pour atteindre la dernière, et l'on posait une
+    // équipe sans l'avoir voulue à chaque passage.
+    //
+    // La liste s'ouvre donc sur place, avec « Retirer l'équipe » quand il y en a
+    // une : changer d'avis doit coûter le même geste que choisir.
     boite.querySelectorAll("[data-equipe]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const c = duJourLa()[Number(b.dataset.equipe)];
-        const suivante = EQUIPES()[EQUIPES().indexOf(c.equipe) + 1];
-        c.equipe = c.equipe ? (suivante || "") : EQUIPES()[0];
-        rendre();
-      }));
+      b.addEventListener("click", () => ouvrirChoixEquipe(b, duJourLa()[Number(b.dataset.equipe)])));
 
     // Matin → après-midi → journée, et l'on recommence.
     boite.querySelectorAll("[data-demi]").forEach((b) =>
@@ -671,8 +736,15 @@
    * portent parfois le prix DANS leur libellé (« forfait 350 € »). Il faudra le
    * dire au moment de coder — voir `TODO.md`.
    */
-  function rendreFeuille(c) {
+  function rendreFeuille(c, ou = "feuille") {
     if (!c) return;
+    // Une seule feuille ouverte à la fois : le même chantier ouvert à deux
+    // endroits de l'écran, c'est la porte ouverte à en corriger un et pas
+    // l'autre.
+    ["feuille", "feuille-liste"].forEach((id) => {
+      const b = document.getElementById(id);
+      if (b && id !== ou) b.innerHTML = "";
+    });
     // **Les gestes de la feuille « Y aller » sont repris, pas réinventés.** Sa
     // demande du 21 août : « reprends l'adresse cliquable qui ouvre Maps ou
     // Waze, la possibilité d'appeler le client et de copier l'adresse — le
@@ -686,12 +758,10 @@
     const q = encodeURIComponent(c.adresse || "");
     const tel = (c.tel || "").replace(/[^+0-9]/g, "");
 
-    document.getElementById("feuille").innerHTML = `
+    document.getElementById(ou).innerHTML = `
       <div class="feuille">
         <p class="entete">Feuille de chantier</p>
         <p class="client">${c.nom}</p>
-        ${c.adresse ? `<a class="adresse" href="https://maps.apple.com/?daddr=${q}&dirflg=d">${c.adresse}</a>` : ""}
-        <p class="quand">${titreJour(c.date)} · ${ditLaDemi(c.demi)}${c.equipe ? ` · ${c.equipe}` : ""}</p>
 
         <div class="gestes">
           <a class="geste" href="https://maps.apple.com/?daddr=${q}&dirflg=d">Maps</a>
@@ -707,8 +777,7 @@
         <div class="taches">
           ${(c.taches || ["Les tâches viendront du devis."]).map((t) => `<p>${t}</p>`).join("")}
         </div>
-        <p class="sans-prix">Aucun prix sur cette feuille.</p>
-        <span class="pdf">Ouvrir le PDF</span>
+        <span class="pdf">Ouvrir le PDF sans les prix</span>
       </div>`;
 
     // Le mot qui change dit que le geste a eu lieu : sans lui, on appuie deux
@@ -718,7 +787,7 @@
       try { await navigator.clipboard.writeText(c.adresse || ""); copier.textContent = "Adresse copiée"; }
       catch { copier.textContent = "Copie refusée"; }
     });
-    document.getElementById("feuille").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    document.getElementById(ou).scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function rendreSemaine() {
@@ -737,11 +806,52 @@
           <p class="quand">${titreJour(iso)}</p>
           ${duJour(iso).map((c) => `
             <div class="chantier">
-              <div class="nom">${c.nom}<div class="quand-detail">${ditLaDemi(c.demi)}</div></div>
-              <span class="equipe ${c.equipe ? "" : "vide"}">${c.equipe || "Équipe ?"}</span>
-              <span class="chevron">›</span>
+              <button type="button" class="nom" data-feuille-liste="${CHANTIERS.indexOf(c)}">${c.nom}
+                <span class="quand-detail">${ditLaDemi(c.demi)}</span></button>
+              <button type="button" class="equipe ${c.equipe ? "" : "vide"}" data-equipe-liste="${CHANTIERS.indexOf(c)}">${c.equipe || "Équipe ?"}</button>
+              <button type="button" class="chevron" data-feuille-liste="${CHANTIERS.indexOf(c)}">›</button>
             </div>`).join("")}
         </div>`).join("");
+
+    // **Le nom d'un planifié ouvre SA feuille, ici même.** C'est dans CETTE
+    // liste qu'il cliquait — pas dans la fiche du jour —, et rien ne se
+    // passait : « je ne peux toujours pas cliquer sur le nom du client ». La
+    // feuille s'ouvre sous la liste, là où le doigt vient d'appuyer.
+    document.querySelectorAll("[data-equipe-liste]").forEach((b) =>
+      b.addEventListener("click", () => ouvrirChoixEquipe(b, CHANTIERS[Number(b.dataset.equipeListe)])));
+
+    document.querySelectorAll("[data-feuille-liste]").forEach((b) =>
+      b.addEventListener("click", () => {
+        // **La feuille s'ouvre SOUS LA LIGNE touchée**, pas au bas de la liste.
+        // Vu sur capture : on appuyait sur « Mme Rocher » et la feuille
+        // s'affichait après « Monsieur Martins », trois lignes plus bas — on
+        // croyait avoir ouvert le mauvais chantier. Le réceptacle se déplace
+        // donc jusqu'au doigt.
+        // **Après la LIGNE, pas après le bouton.** Le nom vit dans une ligne en
+        // `flex` : y glisser la feuille la posait dans la rangée, à côté de la
+        // pastille d'équipe. On sort donc jusqu'à la ligne entière.
+        (b.closest(".chantier") || b).after(document.getElementById("feuille-liste"));
+        rendreFeuille(CHANTIERS[Number(b.dataset.feuilleListe)], "feuille-liste");
+      }));
+  }
+
+  /**
+   * La liste des équipes, ouverte à la place de la pastille touchée.
+   *
+   * Elle sert aux deux endroits où une équipe s'affiche — la fiche du jour et la
+   * liste des planifiés. Deux listes écrites séparément auraient fini par
+   * proposer des choix différents.
+   */
+  function ouvrirChoixEquipe(pastille, c) {
+    if (!c) return;
+    const choix = document.createElement("div");
+    choix.className = "choisir";
+    choix.innerHTML =
+      EQUIPES().map((e) => `<button type="button" class="petit ${c.equipe === e ? "retenue" : ""}" data-choix="${e}">${e}</button>`).join("") +
+      (c.equipe ? `<button type="button" class="petit" data-choix="">Retirer l’équipe</button>` : "");
+    pastille.replaceWith(choix);
+    choix.querySelectorAll("[data-choix]").forEach((b) =>
+      b.addEventListener("click", () => { c.equipe = b.dataset.choix; rendre(); }));
   }
 
   /**
