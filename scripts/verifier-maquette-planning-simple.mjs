@@ -95,6 +95,10 @@ verifier(
   "l'abri de Pornic apparaît le mardi 25, avec sa demi-journée",
   (await litPlanifies()).includes("mardi 25 août") && (await litPlanifies()).includes("matin"),
 );
+verifier(
+  "« ½ journée » ne s'écrit plus : « matin » le dit déjà",
+  !(await litPlanifies()).includes("½ journée"),
+);
 verifier("la flèche de la semaine n'a PAS changé le mois", /août 2026/i.test(await titreMois()));
 await page.click("#sem-avant");
 verifier("la flèche gauche revient exactement où l'on était", (await titreSemaine()) === semaineDepart);
@@ -172,7 +176,9 @@ await page.click('[data-jour="2026-08-26"]');
 {
   const dit = (await page.locator("#jour-ouvert").innerText()).toLowerCase();
   verifier("la fiche du 26 dit que le matin est libre", /matin\s+libre/.test(dit));
-  verifier("elle dit « 2 équipes sur 2 — complet » l'après-midi", dit.includes("2 équipes sur 2 — complet"));
+  // Le compte a été retiré le 21 août : « juste complet et le nom des équipes ».
+  verifier("elle dit « complet » l'après-midi, sans le compte", dit.includes("complet"));
+  verifier("et elle ne dit plus « 2 équipes sur 2 »", !dit.includes("sur 2"));
   verifier("elle NOMME les deux équipes", dit.includes("julien") && dit.includes("paul"));
 }
 await page.click("[data-jour='2026-08-21']");

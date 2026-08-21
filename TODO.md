@@ -301,9 +301,13 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
-- **le compte, pas seulement la couleur.** « 1 équipe sur 2 » et « complet ·
-  2 sur 2 » ne se distinguent qu'une fois vus côte à côte — sa question était
-  « comment vous faites si l'après-midi j'ai mes deux équipes ? » ;
+- **« Complet », et les noms — jamais le compte.** Sa question était « comment
+  vous faites si l'après-midi j'ai mes deux équipes ? » ; sa correction, dans la
+  foulée : « retire deux équipes sur deux, juste complet et le nom des
+  équipes » ;
+- **rien qui répète ce qu'on sait déjà** : pas de « Cette semaine » sous une
+  semaine, pas de « Le mois » sous un mois, pas de « ½ journée » après
+  « matin » ;
 - **l'équipe se dit dans la fiche du jour**, pas seulement dans la liste du bas.
   Le même chantier ne peut pas dire deux choses selon l'endroit où on le lit.
 

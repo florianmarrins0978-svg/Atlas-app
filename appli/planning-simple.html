@@ -180,9 +180,8 @@
 </style>
 
 <div class="bandeau">
-  <b>Essayez-la.</b> Le calendrier reste au <b>mois</b> ; les flèches du bas
-  changent de <b>semaine</b> pour les planifiés. Touchez un jour du mois : la
-  liste vous y amène. Rien n’est codé dans l’application.
+  <b>Essayez-la.</b> Les flèches du haut changent de mois, celles du bas de
+  semaine. Touchez un jour. Rien n’est codé dans l’application.
 </div>
 
 <div class="tel">
@@ -191,7 +190,7 @@
 
   <div class="barre">
     <button class="fleche" type="button" id="mois-avant" aria-label="Mois précédent">‹</button>
-    <div class="quand"><b id="mois-titre">—</b><span>Le mois</span></div>
+    <div class="quand"><b id="mois-titre">—</b></div>
     <button class="fleche" type="button" id="mois-apres" aria-label="Mois suivant">›</button>
   </div>
 
@@ -202,10 +201,9 @@
 
   <div class="legende">
     <span><i class="libre"></i> libre</span>
-    <span><i class="moitie"></i> 1 équipe sur 2</span>
-    <span><i class="plein"></i> complet · 2 sur 2</span>
-    <span class="quoi">La barre du haut, c’est le matin ; celle du bas, l’après-midi.
-      <b>Touchez un jour</b> pour savoir qui y est.</span>
+    <span><i class="moitie"></i> 1 équipe</span>
+    <span><i class="plein"></i> complet</span>
+    <span class="quoi">Haut : le matin. Bas : l’après-midi.</span>
   </div>
 
   <div id="jour-ouvert"></div>
@@ -213,7 +211,7 @@
   <p class="titre-section">Planifiés</p>
   <div class="barre">
     <button class="fleche" type="button" id="sem-avant" aria-label="Semaine précédente">‹</button>
-    <div class="quand"><b id="sem-titre">—</b><span id="sem-dit">—</span></div>
+    <div class="quand"><b id="sem-titre">—</b></div>
     <button class="fleche" type="button" id="sem-apres" aria-label="Semaine suivante">›</button>
   </div>
   <div id="planifies"></div>
@@ -333,8 +331,12 @@
   }
 
   const titreJour = (iso) => `${JOURS[jourDeSemaine(iso)]} ${numero(iso)} ${MOIS[enDate(iso).getUTCMonth()]}`;
+  // **« ½ journée » ne s'écrit plus.** Sa remarque du 21 août : « il y a marqué
+  // matin, et à chaque fois demi-journée — on sait que c'est une demi-journée ».
+  // Un mot qui répète le mot d'à côté se lit quand même, et fait douter qu'il
+  // dise autre chose.
   const ditLaDemi = (demi) =>
-    demi === "journee" ? "journée" : demi === "matin" ? "matin · ½ journée" : "après-midi · ½ journée";
+    demi === "journee" ? "journée" : demi === "matin" ? "matin" : "après-midi";
 
   /** Les 42 cases du mois affiché, lundi en tête. */
   function casesDuMois() {
@@ -426,14 +428,15 @@
     const ligneDemi = (demi, mot) => {
       const pris = surLaDemi(demi);
       const etat = etatDemi(jourTouche, demi);
-      const compte = etat === "libre"
-        ? "libre"
-        : `${pris.length} équipe${pris.length > 1 ? "s" : ""} sur ${EQUIPES.length}` +
-          (etat === "plein" ? " — complet" : "");
+      // **Le compte a été retiré le 21 août**, sur sa demande : « retire deux
+      // équipes sur deux, juste complet et le nom des équipes ». Le nombre
+      // n'apprenait rien qu'il ne sache — il a deux équipes, il les connaît par
+      // leur nom. Reste ce qui décide : est-ce complet, et qui y est.
       const qui = pris.map((c) => c.equipe || "équipe à choisir").join(", ");
+      const dit = etat === "libre" ? "libre" : etat === "plein" ? `Complet · ${qui}` : qui;
       return `<div class="demi-ligne">
         <span class="quoi"><i class="pastille ${etat}"></i>${mot}</span>
-        <span class="compte">${compte}${qui ? ` · ${qui}` : ""}</span></div>`;
+        <span class="compte">${dit}</span></div>`;
     };
 
     const chantiers = duJour(jourTouche).map((c) => `
@@ -456,8 +459,6 @@
       debut.getUTCMonth() === fin.getUTCMonth()
         ? `${debut.getUTCDate()} – ${fin.getUTCDate()} ${MOIS[fin.getUTCMonth()]}`
         : `${debut.getUTCDate()} ${MOIS[debut.getUTCMonth()]} – ${fin.getUTCDate()} ${MOIS[fin.getUTCMonth()]}`;
-    document.getElementById("sem-dit").textContent =
-      lundi === lundiDe(AUJOURDHUI) ? "Cette semaine" : "La semaine";
 
     const avec = jours.filter((iso) => duJour(iso).length > 0);
     document.getElementById("planifies").innerHTML = avec.length === 0

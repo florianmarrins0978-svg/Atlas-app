@@ -1020,6 +1020,23 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Retirer du planning tout ce qui répète ce qu'on sait déjà
+
+**Ses quatre coupes du 21 août**, et le motif est le même à chaque fois : *« tu
+mets beaucoup de phrases qui ne servent à rien »*.
+
+| Retiré | Ce qu'il en dit |
+|---|---|
+| « 2 équipes sur 2 » | il a deux équipes, il les connaît par leur nom — reste « Complet · Julien, Paul » |
+| « Cette semaine » sous « 24 – 30 août » | *« on sait très bien que c'est une semaine, on n'est pas idiot à ce point-là »* |
+| « Le mois » sous « août 2026 » | même chose |
+| « ½ journée » après « matin » ou « après-midi » | le mot d'à côté le dit déjà |
+
+**Ce que ces mots coûtaient**, et qui ne se voit qu'une fois retirés : un mot qui
+répète son voisin se lit quand même — et pendant qu'on le lit, on cherche ce
+qu'il ajoute. Sur un écran qu'il parcourt entre deux chantiers, c'est le genre de
+frottement qui fait dire « c'est trop compliqué ».
+
 ### Le planning : c'est A, et deux manques qu'il a vus avant nous
 
 **Sa réponse du 21 août :** *« pour le planning du mois je veux le A »* — les
