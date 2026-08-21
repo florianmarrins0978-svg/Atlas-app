@@ -396,6 +396,18 @@ demande du 21 août) : l'adresse cliquable, **Maps et Waze — plus « Plans »*
 `src/lib/itineraire.ts` et `FeuilleYAller` plutôt que d'écrire une seconde fois
 les mêmes liens.
 
+**⚠ TROUVÉ le 21 août en vérifiant sa question, et NON TRANCHÉ : rien n'empêche
+de poser la MÊME équipe sur deux chantiers de la même demi-journée.** Paul peut
+être sur Leroy et sur Auffret le même après-midi — impossible sur le terrain, et
+le compte s'en trouve flatté : deux chantiers, une seule équipe occupée, l'écran
+dit « 1 sur 2 » et laisse croire qu'il reste de la place.
+
+Deux façons de le traiter, à lui demander : **barrer l'équipe déjà prise** dans
+la liste (elle apparaît, grisée, avec le nom du chantier où elle est), ou la
+**laisser cochable et le signaler** (certains découpent une demi-journée en deux
+interventions courtes). Ne rien faire n'est pas une option : c'est un compte
+faux.
+
 **Trois points à régler avant de coder ça, et deux ne sont pas dans sa phrase :**
 
 1. **Les prix cachés dans les libellés.** Une ligne de devis peut porter son

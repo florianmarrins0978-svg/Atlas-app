@@ -199,6 +199,13 @@
   .place .equipe{flex-shrink:0;border:0;border-radius:999px;padding:6px 12px;font-size:12.5px;
                  background:var(--pin);color:#faf9f5;white-space:nowrap;cursor:pointer}
   .place .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
+  /* **Le « ＋ » qui dit qu'on peut en ajouter un autre.** Sa remarque du
+     21 août : « l'utilisateur voit marqué Paul, mais il ne se dit pas qu'il
+     peut cliquer dessus pour ajouter un autre gars ». Un signe collé au nom
+     coûte huit pixels et se lit comme une invitation ; une phrase aurait pris
+     une ligne. */
+  .place .equipe .ajouter{margin-left:6px;opacity:.65;font-size:11px}
+  .place .equipe.vide .ajouter{display:none}
 
   .petit{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
          padding:7px 12px;font-size:12px;color:var(--encre-douce);cursor:pointer}
@@ -650,40 +657,38 @@
     return `${prises} sur ${nombreEquipes}`;
   }
 
-  function rendreJourTouche() {
-    const boite = document.getElementById("jour-ouvert");
-    if (!jourTouche) { boite.innerHTML = ""; return; }
-
-    if (estWeekEnd(jourTouche)) {
-      boite.innerHTML = `<div class="jour-ouvert">
-        <p class="titre">${titreJour(jourTouche)}</p>
-        <p class="dit">Jamais proposé.</p></div>`;
-      return;
+  /**
+   * La carte d'une journée : ses deux demi-journées, leurs chantiers, leurs
+   * équipes.
+   *
+   * **Elle est rendue à DEUX endroits** — sous le calendrier quand on touche un
+   * jour, et sous un chantier de la liste des planifiés. Sa demande du
+   * 21 août : *« quand je clique sur Monsieur Martins dans la liste, il faut
+   * que ça m'affiche le même bandeau déroulant que lorsque je clique sur un
+   * chiffre du planning du mois — le matin, l'après-midi, ajouter un chantier
+   * — et la feuille de chantier. Il faut que les deux s'affichent. »*
+   *
+   * Elle est donc écrite UNE fois et branchée deux fois : deux copies auraient
+   * fini par proposer des gestes différents selon l'endroit où l'on touche.
+   */
+  function carteDuJour(iso) {
+    if (estWeekEnd(iso)) {
+      return `<div class="jour-ouvert" data-jour-carte="${iso}">
+        <p class="titre">${titreJour(iso)}</p>
+        <p class="dit">Jamais proposé.</p></div><div class="feuille-place"></div>`;
     }
 
-    // **La journée se lit par DEMI-JOURNÉES, chacune avec ses chantiers.** Sa
-    // remarque du 21 août : *« le 21, quand je clique le matin je peux
-    // attribuer une équipe, et quand je clique sur l'après-midi je ne peux rien
-    // attribuer — je dois cliquer sur journée pour attribuer l'aprem »*.
-    //
-    // Le défaut était de structure : les chantiers vivaient dans une liste à
-    // part, sous les deux demi-journées, et leur équipe s'attachait au CHANTIER.
-    // Il regardait « Après-midi » et n'y trouvait rien à toucher. Chaque
-    // demi-journée porte donc maintenant ses propres lignes.
-    //
-    // **Un chantier à la journée apparaît sous les deux**, et le dit : c'est le
-    // même travail, la même équipe — le cacher d'un côté ferait croire que
-    // l'après-midi est libre.
     const bloc = (demi, mot) => {
-      const { pris, complet } = occupation(jourTouche, demi);
+      const { pris, complet } = occupation(iso, demi);
       const etat = pris.length === 0 ? "libre" : complet ? "plein" : "moitie";
       const lignes = pris.map((c) => {
         const i = CHANTIERS.indexOf(c);
+        const equipes = equipesDe(c, demi);
         return `<div class="place">
           <button type="button" class="nom" data-feuille="${i}">${c.nom}${
             c.demi === "journee" ? `<span class="toute">toute la journée</span>` : ""}</button>
-          <button type="button" class="equipe ${equipesDe(c, demi).length ? "" : "vide"}"
-                  data-equipe="${i}" data-pour="${demi}">${ditLesEquipes(equipesDe(c, demi))}</button>
+          <button type="button" class="equipe ${equipes.length ? "" : "vide"}"
+                  data-equipe="${i}" data-pour="${demi}">${ditLesEquipes(equipes)}<span class="ajouter">＋</span></button>
           <button type="button" class="petit" data-demi="${i}">Déplacer</button>
           <button type="button" class="petit" data-retirer="${i}">Retirer</button>
         </div>`;
@@ -691,27 +696,30 @@
 
       return `<div class="demi" data-bloc="${demi}">
         <div class="demi-titre"><i class="pastille ${etat}"></i>${mot}
-          <span class="compte">${ditLeCompte(jourTouche, demi)}</span></div>
+          <span class="compte">${ditLeCompte(iso, demi)}</span></div>
         ${lignes}
         ${complet ? "" : `<button type="button" class="plus" data-ajouter="${demi}">+ Ajouter un chantier</button>`}
       </div>`;
     };
 
-    boite.innerHTML = `<div class="jour-ouvert">
-      <p class="titre">${titreJour(jourTouche)}</p>
+    return `<div class="jour-ouvert" data-jour-carte="${iso}">
+      <p class="titre">${titreJour(iso)}</p>
       ${bloc("matin", "Matin")}
       ${bloc("apres", "Après-midi")}
       </div>
-      <div id="feuille"></div>`;
+      <div class="feuille-place"></div>`;
+  }
+
+  /** Les gestes de la carte — branchés sur la copie qu'on vient d'écrire. */
+  function brancherJour(boite, iso) {
+    const feuillePlace = () => boite.querySelector(".feuille-place");
 
     boite.querySelectorAll("[data-feuille]").forEach((b) =>
-      b.addEventListener("click", () => rendreFeuille(CHANTIERS[Number(b.dataset.feuille)])));
+      b.addEventListener("click", () => rendreFeuille(CHANTIERS[Number(b.dataset.feuille)], feuillePlace())));
 
     boite.querySelectorAll("[data-equipe]").forEach((b) =>
       b.addEventListener("click", () => ouvrirChoixEquipe(b, CHANTIERS[Number(b.dataset.equipe)], b.dataset.pour)));
 
-    // **Retirer rend le chantier à « Sans date », il ne l'efface pas.** Effacé,
-    // il serait à ressaisir ; là, il redescend dans la liste d'attente.
     // **Déplacer se CHOISIT aussi.** Même geste que pour l'équipe : une liste,
     // jamais une rotation qui déciderait à sa place.
     boite.querySelectorAll("[data-demi]").forEach((b) =>
@@ -727,12 +735,12 @@
           q.addEventListener("click", () => { c.demi = q.dataset.vers; rendre(); }));
       }));
 
+    // **Retirer rend le chantier à « Sans date », il ne l'efface pas.** Effacé,
+    // il serait à ressaisir ; là, il redescend dans la liste d'attente.
     boite.querySelectorAll("[data-retirer]").forEach((b) =>
       b.addEventListener("click", () => {
-        const i = Number(b.dataset.retirer);
-        const [parti] = CHANTIERS.splice(i, 1);
+        const [parti] = CHANTIERS.splice(Number(b.dataset.retirer), 1);
         SANS_DATE.push({ nom: parti.nom, adresse: parti.adresse, tel: parti.tel, taches: parti.taches });
-        document.getElementById("feuille").innerHTML = "";
         rendre();
       }));
 
@@ -749,24 +757,24 @@
           : SANS_DATE.map((c, i) => `<button type="button" class="petit" data-qui="${i}">${c.nom}</button>`).join("") +
             `<button type="button" class="petit" data-qui-journee="1">…à la journée</button>`;
         b.replaceWith(choix);
-        choix.querySelectorAll("[data-qui]").forEach((q) =>
-          q.addEventListener("click", () => {
-            const [c] = SANS_DATE.splice(Number(q.dataset.qui), 1);
-            CHANTIERS.push({ ...c, date: jourTouche, demi, equipes: { matin: [], apres: [] } });
-            lundi = lundiDe(jourTouche);
-            rendre();
-          }));
-        // Poser à la journée depuis une demi-journée : le geste existe, il ne
-        // doit pas obliger à poser puis à déplacer.
-        const j = choix.querySelector("[data-qui-journee]");
-        if (j) j.addEventListener("click", () => {
-          if (SANS_DATE.length === 0) return;
-          const [c] = SANS_DATE.splice(0, 1);
-          CHANTIERS.push({ ...c, date: jourTouche, demi: "journee", equipes: { matin: [], apres: [] } });
-          lundi = lundiDe(jourTouche);
+        const poser = (rang, quand) => {
+          const [c] = SANS_DATE.splice(rang, 1);
+          CHANTIERS.push({ ...c, date: iso, demi: quand, equipes: { matin: [], apres: [] } });
+          lundi = lundiDe(iso);
           rendre();
-        });
+        };
+        choix.querySelectorAll("[data-qui]").forEach((q) =>
+          q.addEventListener("click", () => poser(Number(q.dataset.qui), demi)));
+        const j = choix.querySelector("[data-qui-journee]");
+        if (j) j.addEventListener("click", () => { if (SANS_DATE.length) poser(0, "journee"); });
       }));
+  }
+
+  function rendreJourTouche() {
+    const boite = document.getElementById("jour-ouvert");
+    if (!jourTouche) { boite.innerHTML = ""; return; }
+    boite.innerHTML = carteDuJour(jourTouche);
+    brancherJour(boite, jourTouche);
   }
 
   /**
@@ -790,15 +798,13 @@
    * portent parfois le prix DANS leur libellé (« forfait 350 € »). Il faudra le
    * dire au moment de coder — voir `TODO.md`.
    */
-  function rendreFeuille(c, ou = "feuille") {
-    if (!c) return;
+  function rendreFeuille(c, boite) {
+    if (!c || !boite) return;
     // Une seule feuille ouverte à la fois : le même chantier ouvert à deux
     // endroits de l'écran, c'est la porte ouverte à en corriger un et pas
     // l'autre.
-    ["feuille", "feuille-liste"].forEach((id) => {
-      const b = document.getElementById(id);
-      if (b && id !== ou) b.innerHTML = "";
-    });
+    document.querySelectorAll(".feuille-place").forEach((b) => { if (b !== boite) b.innerHTML = ""; });
+
     // **Les gestes de la feuille « Y aller » sont repris, pas réinventés.** Sa
     // demande du 21 août : « reprends l'adresse cliquable qui ouvre Maps ou
     // Waze, la possibilité d'appeler le client et de copier l'adresse — le
@@ -812,7 +818,7 @@
     const q = encodeURIComponent(c.adresse || "");
     const tel = (c.tel || "").replace(/[^+0-9]/g, "");
 
-    document.getElementById(ou).innerHTML = `
+    boite.innerHTML = `
       <div class="feuille">
         <p class="entete">Feuille de chantier</p>
         <p class="client">${c.nom}</p>
@@ -836,12 +842,12 @@
 
     // Le mot qui change dit que le geste a eu lieu : sans lui, on appuie deux
     // fois sans savoir si la première a pris.
-    const copier = document.getElementById("copier");
+    const copier = boite.querySelector("#copier");
     if (copier) copier.addEventListener("click", async () => {
       try { await navigator.clipboard.writeText(c.adresse || ""); copier.textContent = "Adresse copiée"; }
       catch { copier.textContent = "Copie refusée"; }
     });
-    document.getElementById(ou).scrollIntoView({ behavior: "smooth", block: "nearest" });
+    boite.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function rendreSemaine() {
@@ -876,27 +882,28 @@
     // après-midi, indépendantes depuis le 21 août —, et une pastille unique ne
     // saurait pas laquelle modifier. On ouvre donc la journée, où les deux sont
     // distinctes.
-    document.querySelectorAll("[data-equipe-liste]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const c = CHANTIERS[Number(b.dataset.equipeListe)];
-        jourTouche = c.date;
-        rendre();
-        document.getElementById("jour-ouvert").scrollIntoView({ behavior: "smooth", block: "center" });
-      }));
+    // **Toucher un chantier de la liste ouvre SA JOURNÉE, puis SA FEUILLE.**
+    // Sa demande du 21 août : « il faut que les deux s'affichent » — le bandeau
+    // du jour (matin, après-midi, ajouter) et la feuille de chantier. La carte
+    // est la même que sous le calendrier : elle est écrite une fois, branchée
+    // ici aussi.
+    const ouvrirDepuisLaListe = (b, c) => {
+      const boite = document.getElementById("feuille-liste");
+      (b.closest(".chantier") || b).after(boite);
+      boite.innerHTML = carteDuJour(c.date);
+      brancherJour(boite, c.date);
+      rendreFeuille(c, boite.querySelector(".feuille-place"));
+      boite.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
 
     document.querySelectorAll("[data-feuille-liste]").forEach((b) =>
-      b.addEventListener("click", () => {
-        // **La feuille s'ouvre SOUS LA LIGNE touchée**, pas au bas de la liste.
-        // Vu sur capture : on appuyait sur « Mme Rocher » et la feuille
-        // s'affichait après « Monsieur Martins », trois lignes plus bas — on
-        // croyait avoir ouvert le mauvais chantier. Le réceptacle se déplace
-        // donc jusqu'au doigt.
-        // **Après la LIGNE, pas après le bouton.** Le nom vit dans une ligne en
-        // `flex` : y glisser la feuille la posait dans la rangée, à côté de la
-        // pastille d'équipe. On sort donc jusqu'à la ligne entière.
-        (b.closest(".chantier") || b).after(document.getElementById("feuille-liste"));
-        rendreFeuille(CHANTIERS[Number(b.dataset.feuilleListe)], "feuille-liste");
-      }));
+      b.addEventListener("click", () => ouvrirDepuisLaListe(b, CHANTIERS[Number(b.dataset.feuilleListe)])));
+
+    // La pastille d'équipe mène au même endroit : un chantier à la journée porte
+    // deux listes d'équipes, et c'est dans la carte du jour qu'elles sont
+    // distinctes.
+    document.querySelectorAll("[data-equipe-liste]").forEach((b) =>
+      b.addEventListener("click", () => ouvrirDepuisLaListe(b, CHANTIERS[Number(b.dataset.equipeListe)])));
   }
 
   /**
