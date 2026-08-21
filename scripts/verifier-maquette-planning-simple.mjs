@@ -315,6 +315,31 @@ await page.click('[data-jour="2026-08-21"]');
   );
 }
 
+// ── LE NOM D'ABORD, MÊME QUAND UNE DEMI-JOURNÉE EST LIBRE ──────────────
+//
+// *« Fais pareil pour les autres, le nom toujours en premier ! »* — sa
+// correction du 21 août au soir. Le 19 et le 26 ouvraient sur « matin — libre »,
+// et l'on lisait ce qui MANQUE avant de savoir de qui il s'agit.
+//
+// On éprouve les deux jours où le cas se pose, et l'on exige qu'une
+// demi-journée libre soit bien présente : sans elle, le contrôle passerait au
+// vert sans avoir rien mesuré.
+for (const [jour, quand] of [["2026-08-19", "le 19"], ["2026-08-26", "le 26"]]) {
+  await page.click(`[data-jour="${jour}"]`);
+  const ordre = await page.$$eval("#jour-ouvert .jour-ouvert > *", (n) =>
+    n.map((e) => e.className.split(" ")[0]));
+  const premier = ordre.indexOf("bloc-chantier");
+  const rangLibre = ordre.indexOf("demi");
+  verifier(
+    `${quand} : une demi-journée libre est bien là (lu : ${JSON.stringify(ordre)})`,
+    (await page.locator("#jour-ouvert .demi.sans-chantier").count()) >= 1,
+  );
+  verifier(
+    `${quand} : le nom passe avant elle (chantier en ${premier}, libre en ${rangLibre})`,
+    premier !== -1 && rangLibre !== -1 && premier < rangLibre,
+  );
+}
+
 // ── LA LÉGENDE : QUATRE ÉTATS + LA POSITION, SUR UNE LIGNE ─────────────
 {
   const dit = (await page.locator("#legende").innerText()).toLowerCase().replace(/\n/g, " ");

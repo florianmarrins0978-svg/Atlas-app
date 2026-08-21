@@ -191,7 +191,7 @@
      21 août : « là on a l'impression que c'est deux chantiers différents ».
      Le trait séparait ce qui, le plus souvent, est un seul chantier. */
   .bloc-chantier + .bloc-chantier,
-  .demi.sans-chantier + .bloc-chantier{margin-top:16px}
+  .bloc-chantier + .demi.sans-chantier{margin-top:16px}
   .tete{display:flex;align-items:baseline;gap:10px}
   .tete .nom{flex:1;border:0;background:transparent;text-align:left;padding:0;cursor:pointer;
              font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
@@ -777,8 +777,14 @@
     // sous l'après-midi, il n'apprenait rien la seconde fois.
     let compteEcrit = false;
     const morceaux = [];
-    DEMIS.forEach(([demi, mot]) => {
-      if (occupation(iso, demi).pris.length === 0) morceaux.push(libre(demi, mot));
+
+    // **LE NOM D'ABORD, TOUJOURS** — sa correction du 21 août au soir : *« fais
+    // pareil pour les autres, le nom toujours en premier ! »*. Une demi-journée
+    // vide ouvrait la fiche du 19 et celle du 26 : on lisait « matin — libre »
+    // avant de savoir DE QUI il s'agit, alors que c'est le client qu'il
+    // cherche. Les chantiers passent donc devant, et ce qui reste libre se dit
+    // après.
+    DEMIS.forEach(([demi]) => {
       groupes.filter((g) => g.demis[0][0] === demi).forEach((g) => {
         const i = CHANTIERS.indexOf(g.c);
         const compte = compteEcrit ? "" : `<span class="compte-jour">${ditLeCompteDuJour(iso)}</span>`;
@@ -791,6 +797,9 @@
           ${g.demis.map(([d, m]) => ligne(g.c, d, m)).join("")}
         </div>`);
       });
+    });
+    DEMIS.forEach(([demi, mot]) => {
+      if (occupation(iso, demi).pris.length === 0) morceaux.push(libre(demi, mot));
     });
 
     // **Un seul bouton d'ajout, sous la journée — sa demande du 21 août :**

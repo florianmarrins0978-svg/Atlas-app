@@ -27,8 +27,11 @@ journée à sa droite ; dessous, les moments où il a lieu, chacun gardant son
 équipe, son « Déplacer » et son « Retirer » — le matin et l'après-midi restent
 indépendants, c'est sa règle du 21 août.
 
-Une demi-journée que personne n'occupe garde sa ligne et dit « libre » : la
-cacher ferait croire que la journée entière est prise.
+Une demi-journée que personne n'occupe garde sa ligne et dit « libre » — la
+cacher ferait croire que la journée entière est prise —, mais elle passe
+**après** les chantiers : *« le nom toujours en premier ! »*. Le 19 et le 26
+ouvraient sur « matin — libre », et l'on lisait ce qui manque avant de savoir de
+qui il s'agit.
 
 Les contrôles visent la structure, pas les mots — combien de fois le nom
 paraît, combien de comptes sont écrits, quelle bordure sépare les lignes. Un
