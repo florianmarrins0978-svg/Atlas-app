@@ -111,15 +111,16 @@ for (const [quoi, champ] of [["nom", nom], ["numéro", tel]]) {
 //
 //   « Garde un seul bouton, garde je rédige mon devis. »
 //   « Comment lui envoyer son devis, tu le mets sous l'adresse. »
-//   « Au-dessus du numéro de téléphone, marqué numéro de téléphone. »
+//   « Au-dessus du numéro de téléphone, marqué numéro de téléphone » — puis,
+//   dans la foulée : « enlève numéro de, laisse juste téléphone ».
 //
 // Ce sont des demandes littérales : un contrôle qui vise l'ordre et les mots
 // exacts est le seul qui les défende contre la réécriture suivante.
 
 const titres = page.locator(".duo-titres span");
 dire(
-  (await titres.nth(1).innerText()).trim().toLowerCase() === "numéro de téléphone",
-  "« Numéro de téléphone » est écrit au-dessus de la case du numéro"
+  (await titres.nth(1).innerText()).trim().toLowerCase() === "téléphone",
+  "« Téléphone » est écrit au-dessus de la case du numéro — le mot qu'il a retenu"
 );
 for (const i of [0, 1]) {
   const { dehors } = await titres.nth(i).evaluate((el) => ({ dehors: el.scrollWidth - el.clientWidth }));
