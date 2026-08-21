@@ -228,8 +228,13 @@ async function main() {
     // `sms:` doit être portée par un attribut `href` pour être lisible dans la
     // page. Le défaut d'avant — un message ouvert sans destinataire — ne se
     // voyait que dans la messagerie du patron, c'est-à-dire trop tard.
+    //
+    // **« Relancer », et non « Ouvrir le SMS tout prêt » — et c'est juste.** Le
+    // libellé dit ce que le geste FAIT (sa règle du 13 août) : on revient ici
+    // sur un devis DÉJÀ parti, donc le geste est une relance. Depuis que l'envoi
+    // ramène à l'accueil (21 août), c'est même le seul cas où cet écran se voit.
     assert.ok(
-      await page.getByRole("link", { name: /Ouvrir le (message|SMS|e-mail) tout prêt/ }).isVisible(),
+      await page.getByRole("link", { name: /Relancer par (SMS|e-mail)/ }).isVisible(),
       "le lien qui ouvre le message tout prêt doit apparaître dès que le lien existe"
     );
     // Dire qui envoie, pour que le patron n'attende pas un départ automatique
@@ -249,7 +254,7 @@ async function main() {
     // moins la hauteur de la barre ? » Une première version amenait l'élément
     // au bord de la fenêtre — c'est-à-dire exactement sous la barre — et
     // accusait donc toujours, y compris à tort.
-    for (const texte of ["Ouvrir le SMS tout prêt", "c'est vous qui l'envoyez"]) {
+    for (const texte of ["Relancer par SMS", "c'est vous qui l'envoyez"]) {
       const cible = page.locator(`text=${texte}`).first();
       assert.ok(await cible.isVisible(), `« ${texte} » doit être présent à l'écran`);
 

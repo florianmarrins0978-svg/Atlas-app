@@ -280,8 +280,12 @@ async function main() {
 
     // Et le geste qui reste est bien celui du moment.
     assert.ok(
-      (await page.getByRole("link", { name: /Ouvrir le (SMS|mail|message)/i }).count()) +
-        (await page.getByRole("button", { name: /Ouvrir le (SMS|mail|message)/i }).count()) >
+      // « Relancer » depuis le 21 août 2026 : cet écran ne se voit plus qu'en y
+      // REVENANT, sur un devis déjà parti — le geste est donc une relance, et le
+      // libellé le dit. Les deux formes restent acceptées : ce qu'on vérifie est
+      // qu'un geste de transmission subsiste, pas lequel.
+      (await page.getByRole("link", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) +
+        (await page.getByRole("button", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) >
         0,
       "après l'envoi, l'écran ne porte plus aucun geste : la transmission a disparu avec la reprise."
     );
