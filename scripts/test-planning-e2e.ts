@@ -682,6 +682,12 @@ async function main() {
   try {
     // TOUS les devis du chantier, pas seulement celui du décor : l'écran de
     // création en pose un, et une reprise en poserait un second.
+    //
+    // **Et on les rend au brouillon d'abord.** Le même invariant qui régit le
+    // décor régit le rangement : `empecher_modification_lignes_devis_envoye`
+    // refuse d'effacer les lignes d'un devis parti. C'est juste — un document
+    // envoyé au client ne se retouche pas —, et le décor n'y échappe pas.
+    await pool.query(`UPDATE devis SET statut = 'brouillon' WHERE chantier_id = $1`, [chantierId]);
     await pool.query(
       `DELETE FROM lignes_devis WHERE devis_id IN (SELECT id FROM devis WHERE chantier_id = $1)`,
       [chantierId]
