@@ -9,6 +9,53 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le numéro s'espace tout seul, et deux questions de moins
+
+**Sa demande :** *« Il faut que je puisse taper les dix chiffres à la suite et
+qu'ils se mettent automatiquement avec les bons espaces. »* Sur un chantier,
+devant le client, on ne s'arrête pas toutes les deux touches. `0679984514`
+devient `06 79 98 45 14` à la frappe, et les points, tirets et lettres tombent.
+
+**Deux choses mesurées plutôt que supposées.** Un numéro qui commence par « + »
+n'est **pas** retouché : espacer `+33679984514` par paires rend
+`+33 67 99 84 51 4`, qui n'est le numéro de personne — un indicatif ne se découpe
+pas comme un numéro français. Et **le curseur ne saute pas à la fin** : corriger
+un chiffre au milieu est le geste le plus courant après la frappe, et un curseur
+renvoyé au bout à chaque touche rend la correction impossible.
+
+**Deux des quatre questions de l'écran « À trancher » sont réglées** : la facture
+(*« dans la catégorie planning ou terminé »* — les deux chemins existaient déjà)
+et la relecture de la note (*« on n'a pas besoin de réécouter »*). La question
+des photos ajoutées après coup était mal posée : elle est réécrite avec le cas
+concret plutôt qu'en résumé.
+
+### Cinq façons de dessiner une case à remplir
+
+**Sa demande :** *« Fais-moi des photos des cases à remplir plus jolies, je peux
+plus voir ces encadrés carrés. »*
+
+**`appli/cases-a-remplir.html`** — cinq traitements du MÊME bloc (nom,
+téléphone, e-mail, adresse) : le trait, la capsule, la ligne de fiche, la carte
+douce, le creux. Le bloc ne change pas d'une proposition à l'autre, sinon il
+choisirait un contenu au lieu d'un dessin.
+
+Ce qui ne bouge pas non plus, et c'est délibéré : la charte, la place du texte
+saisi (16 px — en dessous, iOS zoome tout seul à la mise au point), et **la
+hauteur de prise, 48 px minimum**. Mesurée, pas supposée : la « ligne de fiche »
+était à 46 px et a été relevée. Une case élégante qu'on rate deux fois sur trois
+n'est pas élégante, elle est ratée.
+
+**Rien n'est codé** — il tranche.
+
+### Mr / Mme revient, son intitulé reste parti
+
+*« Non, remets le Mr et Mme, je voulais juste que tu enlèves le titre
+civilité. »* Corrigé dans la minute. Les deux boutons se comprennent seuls, et
+c'est une ligne de petites capitales de moins. Le contrôle tient désormais les
+deux moitiés : l'intitulé absent **et** les deux boutons présents — retirer le
+choix était une amputation, remettre le mot annulerait le gain de place.
+
+
 ### La fiche client qui dicte le devis — dessinée, pas codée
 
 **Sa demande, capture de l'écran à l'appui :** *« J'ai envie que les
@@ -197,6 +244,32 @@ Deux contrôles corrigés au passage : l'un comptait les confusions de la base
 entière, ce qui n'était vrai que tant qu'elle ne portait que des fixtures ; la
 suite navigateur recopiait à la main le résultat qu'affiche l'écran, au lieu de
 le composer comme le fait le produit.
+
+### Le devis part par le canal de la fiche client, pas par celui de la page
+
+**Son défaut, capture à l'appui** : *« sur la fiche client, j'ai choisi
+d'envoyer le devis par email. Et lorsque j'ai validé mon devis […] c'est
+l'application SMS qui s'est ouverte. »*
+
+**Deux sources décidaient du même canal, et elles divergeaient.** Le serveur
+relisait la fiche du client au moment d'envoyer — et refuse d'ailleurs de partir
+tant qu'aucun canal n'y est convenu. L'écran, lui, réutilisait une valeur
+**chargée avec la page**, qui retombait sur un `?? "sms"` écrit à la main. Un
+canal changé entre-temps, ou simplement absent, ouvrait donc la mauvaise
+application — vers un numéro que le client n'a peut-être pas.
+
+**L'envoi rend maintenant le canal ET le destinataire qu'il vient de valider**,
+et c'est ce que l'écran ouvre. Une seule source, la bonne, et rien à
+rafraîchir.
+
+**Et le `?? "sms"` a disparu des écrans** au profit de `canalPourJoindre` : le
+canal convenu s'il a sa coordonnée, sinon la seule coordonnée renseignée, sinon
+`null` — on ne sait pas, et on le dit. Un client qui n'a qu'une adresse e-mail
+ne se voit plus proposer un SMS.
+
+Éprouvé en rejouant son parcours exact, client portant les deux coordonnées :
+`test-envoi-client-e2e.ts` (« le canal de la fiche commande l'ouverture »), plus
+la règle seule dans `test-message-client.ts`.
 
 ### L'écran ne promet plus une version rapide que personne ne construit
 

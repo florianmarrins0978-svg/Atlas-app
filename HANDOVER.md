@@ -9,6 +9,28 @@ sert.
 
 ---
 
+## « La page ne s'ouvre plus » : REGARDER LA PUBLICATION AVANT DE CHERCHER (21 août 2026)
+
+**Payé le 21 août au soir.** Trois corrections de maquette poussées coup sur
+coup, trois messages « c'est poussé, recharge » — et lui : *« la page ne s'ouvre
+plus »*. La maquette était juste, le dépôt était juste. **C'est la publication
+qui n'avait pas eu lieu.**
+
+`.github/workflows/pages.yml` porte `concurrency: pages` avec
+`cancel-in-progress: true` : **chaque poussée ANNULE la publication en cours.**
+Une rafale de trois poussées en cinq minutes laisse donc deux déploiements
+« cancelled » et un seul qui aboutit — et entre les deux, l'adresse ne sert rien
+de neuf, voire ne répond pas.
+
+**Donc, avant de lui dire de regarder :** attendre que la publication soit verte
+(onglet Actions → « Publication de l'appli sur GitHub Pages »). Elle interroge
+elle-même chaque page à son adresse publique après déploiement — quand elle est
+verte, la page répond pour de bon.
+
+**Et devant la plainte :** regarder la dernière exécution AVANT de chercher dans
+la page. Une maquette qu'on vient de corriger trois fois est bien plus souvent
+non publiée que cassée.
+
 ## « L'application est lente » : REGARDER QUI CONSTRUIT (20 août 2026)
 
 **Le produit n'est pas lent** — mesuré ce soir-là sur le code du jour, version
