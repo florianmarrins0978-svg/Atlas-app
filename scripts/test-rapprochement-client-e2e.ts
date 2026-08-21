@@ -81,23 +81,45 @@ async function main() {
     assert.equal(rows[0].n, 1, `${rows[0].n} fiches créées pour un seul client`);
   });
 
-  await cas("SA FICHE ANNONCE BIEN DEUX CHANTIERS", async () => {
-    await page.goto(`${BASE}/chantiers/${second}`, { waitUntil: "networkidle" });
-    await page.waitForTimeout(700);
-    const porte = page.locator('a[href^="/clients/"]');
-    assert.ok((await porte.count()) >= 1, "aucune porte vers le client");
-    await porte.first().click();
-    await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
-
-    const texte = await page.locator("body").innerText();
-    assert.ok(/\b2\b/.test(texte), `le compte de chantiers n'est pas 2 :\n${texte.slice(0, 400)}`);
-    // Et les deux chantiers s'y retrouvent, pas seulement le compteur.
+  // **CE CONTRÔLE A CHANGÉ DE FORME LE 20 AOÛT 2026, ET SON OBJET N'A PAS
+  // BOUGÉ.** Il lisait « 2 » sur la fiche du client, et vérifiait que les deux
+  // chantiers y étaient cliquables. Or le patron a fait retirer de cet écran le
+  // compte de chantiers ET la liste « Ses chantiers » : *« tout le reste, tu
+  // enlèves, c'est du trop »*. Les deux repères ont donc disparu.
+  //
+  // Ce qui reste à prouver est exactement le même : **les deux chantiers ont
+  // été rapprochés sous UNE seule fiche.** On le lit désormais là où l'écran le
+  // montre encore — la porte de chaque chantier mène à la MÊME fiche, et la
+  // base ne porte qu'un client.
+  //
+  // Écrire un contrôle qui réclame ce que le patron a fait retirer, ce serait
+  // rendre son écran impossible à changer.
+  await cas("les deux chantiers mènent à UNE seule et même fiche", async () => {
+    const adresses: string[] = [];
     for (const id of [premier, second]) {
-      assert.ok(
-        (await page.locator(`a[href="/chantiers/${id}"]`).count()) >= 1,
-        `le chantier ${id.slice(0, 8)} manque à la liste de la fiche`
-      );
+      await page.goto(`${BASE}/chantiers/${id}`, { waitUntil: "networkidle" });
+      await page.waitForTimeout(700);
+      const porte = page.locator('a[href^="/clients/"]');
+      assert.ok((await porte.count()) >= 1, `aucune porte vers le client depuis ${id.slice(0, 8)}`);
+      await porte.first().click();
+      await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
+      // **Le CHEMIN, pas l'adresse entière.** Depuis le 20 août 2026, la porte
+      // vers la fiche transporte d'où l'on vient (`?de=/chantiers/<id>`) pour
+      // que la flèche ramène au bon écran (`ARCHITECTURE.md` §135) : les deux
+      // adresses diffèrent donc forcément, et par construction. Ce que ce
+      // contrôle doit prouver est ailleurs — que les deux chantiers ouvrent la
+      // fiche du MÊME client.
+      adresses.push(new URL(page.url()).pathname);
     }
+    assert.equal(
+      adresses[0],
+      adresses[1],
+      `les deux chantiers ouvrent DEUX fiches : ${adresses.join(" ≠ ")}`
+    );
+
+    // Et la fiche est bien celle de ce client-là, pas une page d'erreur.
+    const texte = await page.locator("body").innerText();
+    assert.ok(texte.includes(nom), `la fiche ouverte ne porte pas « ${nom} » :\n${texte.slice(0, 300)}`);
   });
 
   await contexte.close();

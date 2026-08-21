@@ -1,0 +1,263 @@
+{
+  "_lisez_moi": "Écrite le 20 août 2026 à partir de la fiche Ephytia (INRAE, auteur : DSF) transmise par le patron, qui l'a lui-même relue champ par champ contre la source. Aucune information d'une autre source n'y entre. Ce que la page ne dit pas reste vide, et chaque vide porte sa raison dans un champ _source_*.",
+  "version": "ephytia-2026-08-20",
+  "sources": [
+    {
+      "code": "ephytia-anthracnose-chene-hetre",
+      "organisme": "INRAE — Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Forêts — Anthracnose du chêne et du hêtre (Apiognomonia errabunda)",
+      "url": "https://ephytia.inrae.fr/fr/C/20417/Forets-Anthracnose-du-chene-et-du-hetre",
+      "nature": "officielle",
+      "publieeLe": "2024-08-08",
+      "consulteeLe": "2026-08-20"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "anthracnose-chene-hetre",
+      "nomCommun": "Anthracnose du chêne et du hêtre",
+      "nomScientifique": "Apiognomonia errabunda",
+      "_source_agent": "La page précise qu'Apiognomonia errabunda est aujourd'hui considéré comme un COMPLEXE d'espèces très proches, et distingue l'hôte : A. errabunda sensu stricto sur le hêtre, A. quercina sur le chêne. Les deux formes asexuées sont nommées. Tout est recopié plutôt que simplifié — un nom d'espèce simplifié serait une affirmation que la source ne fait pas.",
+      "agentCausal": "Apiognomonia errabunda, considéré comme un complexe d’espèces génétiquement et morphologiquement très proches. Sur le hêtre : Apiognomonia errabunda sensu stricto (forme asexuée Discula umbrinella). Sur le chêne : Apiognomonia quercina (forme asexuée Discula quercina). Ascomycète, ordre des Diaporthales.",
+      "agentType": "champignon",
+      "categorie": "maladie",
+      "_source_parties": "La page donne « Localisation sur l'hôte : Feuilles, Rameaux ». S'y ajoutent le FRUIT — elle décrit une atteinte des glands, sur les téguments et les cotylédons — et la BRANCHE, puisqu'elle mentionne « des chancres fragilisant les branches ».",
+      "partiesAtteintes": [
+        "feuille",
+        "rameau",
+        "branche",
+        "fruit"
+      ],
+      "_source_periode": "« Les symptômes apparaissent au printemps. » Mars à juin est la lecture de ce mot, pas une donnée de la source — même traduction que pour l'anthracnose du platane, et pour la même raison : le moteur a besoin de mois.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 6,
+      "explicationCourte": "Maladie fongique du chêne et du hêtre. Taches nécrotiques brunes sur les feuilles au printemps, nécroses de l’écorce des rameaux, et chancres pouvant fragiliser les branches.",
+      "_source_gravite": "« vigilance », et non « faible ». Contrairement à l'anthracnose du platane, la page ne relativise nulle part : elle décrit une réduction de l'activité photosynthétique, le dessèchement de feuilles et de rameaux, des chancres fragilisant les branches, et « dans les situations extrêmes, des mortalités de jeunes tiges de hêtre ». Elle ne va pas non plus jusqu'à « importante » — aucune mortalité d'arbre adulte n'est décrite.",
+      "gravite": "vigilance",
+      "_source_impact_mecanique": "« possible », et c'est écrit dans la source, pas déduit : « la formation de chancres fragilisant les branches ». C'est une affirmation sur la tenue mécanique. La page ne va pas plus loin — elle ne parle ni de rupture ni de stabilité de l'arbre entier — d'où « possible » et non « avéré ».",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "La source décrit des chancres fragilisant les branches. Elle ne se prononce pas sur le risque de rupture.",
+      "_source_risque_humain": "Non traité par la page.",
+      "risqueHumainAnimal": "inconnu",
+      "_source_reglementaire": "La page ne mentionne aucun statut réglementaire.",
+      "statutReglementaire": "aucun",
+      "_source_diagnostic_photo": "« indicatif », et c'est la SOURCE qui le commande, en toutes lettres : « La détection du champignon en laboratoire est nécessaire pour confirmer avec certitude le diagnostic. » Elle donne pourtant des critères visuels précis — d'où « indicatif » et non « impossible » : une photo oriente utilement, elle ne conclut pas. La confiance affichée sera donc plafonnée à « probable », quel que soit le score.",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "feuille",
+        "rameau",
+        "branche"
+      ],
+      "_source_conduite": "La page ne donne ni traitement ni méthode de lutte. La conduite est bâtie sur deux affirmations qu'elle fait explicitement : la confirmation exige un laboratoire, et les nécroses qui se rejoignent peuvent ceinturer la pousse et la faire mourir. Rien d'autre n'est ajouté.",
+      "conduiteRecommandee": "Une observation ne suffit pas à conclure : la confirmation exige une détection du champignon en laboratoire. Surveillez les rameaux — lorsque plusieurs nécroses se rejoignent, elles peuvent ceinturer la pousse et provoquer sa mort, et les chancres fragilisent les branches.",
+      "prevention": null,
+      "gestion": "Le champignon passe l’hiver sous sa forme asexuée dans les pousses mortes et les chancres qu’il a provoqués, et sous sa forme sexuée sur les feuilles tombées au sol. Au printemps, les ascospores issues des feuilles au sol sont transportées par le vent ; les conidies présentes sur les rameaux sont dispersées par l’eau. Après germination, le mycélium pénètre les tissus : il peut rester latent sans provoquer de symptôme, ou provoquer les nécroses de l’anthracnose. L’infection d’une feuille peut gagner le pétiole puis une partie de la pousse. Le champignon peut aussi rester présent comme endophyte dans les tissus corticaux d’arbres sains ou dépérissants. Le développement est favorisé par les printemps froids et humides, et par les dégâts d’insectes défoliateurs ; sur les rameaux, le stress hydrique pourrait favoriser le passage du comportement endophyte à celui de pathogène de faiblesse chez certains chênes en zone méditerranéenne.",
+      "_source_traitement": "Aucun traitement n'est mentionné. Le champ reste VIDE.",
+      "traitement": null,
+      "_source_symptomes": "Le vocabulaire d'Atlas est fermé : deux lectures ont été faites et méritent d'être dites. « Roussâtre à brun sombre » est ramené à « brun », faute d'un mot plus juste dans la liste. La pourriture brune des cotylédons d'un gland est décrite avec « necrose », le motif « pourriture_bois » ne concernant que le bois.",
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "eparse",
+            "en_plages"
+          ],
+          "poids": "cardinal",
+          "libelle": "Petites mouchetures évoluant en taches irrégulières ou anguleuses, de couleur roussâtre à brun sombre, pouvant atteindre 15 à 20 mm. La séparation entre les tissus nécrosés bruns et les tissus sains verts est nette."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "bord"
+          ],
+          "poids": "frequent",
+          "libelle": "Taches nécrotiques brunes parfois limitées à l’extrémité du limbe."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Plus tard, les feuilles peuvent se dessécher entièrement et mourir."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Les feuilles peuvent se recroqueviller."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Taches brunâtres sur les rameaux, correspondant à des nécroses de l’écorce."
+        },
+        {
+          "nature": "signe",
+          "partie": "rameau",
+          "motif": "pustule",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Nombreuses fructifications ressemblant à de petites pustules sur les rameaux morts."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Lésions cicatrisées prenant l’aspect de petits chancres. Lorsque plusieurs nécroses se rejoignent, elles peuvent ceinturer la pousse et provoquer sa mort."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "La mortalité répétée des pousses et des rameaux peut donner au chêne un port buissonnant, en « chou-fleur », rappelant de petits balais de sorcière."
+        },
+        {
+          "nature": "symptome",
+          "partie": "fruit",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les glands : petits points noirs sur les téguments."
+        },
+        {
+          "nature": "symptome",
+          "partie": "fruit",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les glands : pourriture brune des cotylédons. La page indique que cette altération ne semble pas avoir été constatée sur les faines."
+        }
+      ],
+      "_source_hotes": "« Hôtes habituels : Chênes, Hêtre ». Les deux au rang du GENRE, la page ne nommant aucune espèce d'hôte. « frequent » et non « strict » : la page indique par ailleurs que le champignon peut rester endophyte « dans les tissus corticaux d'arbres sains ou dépérissants appartenant à de nombreuses espèces » — une exclusion serait donc plus stricte que la source.",
+      "hotes": [
+        {
+          "taxon": "quercus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "fagus",
+          "specificite": "frequent"
+        }
+      ],
+      "_source_confusions": "La page nomme quatre confusions : Septoria quercicola, les dégâts de gel, les phytotoxicités et les carences aiguës. AUCUNE n'est écrite ici — une confusion doit désigner une fiche existante, et ces quatre-là n'en ont pas encore. Elle ajoute de toute façon qu'aucune observation ne tranche : « la détection du champignon en laboratoire est nécessaire ». Le jour où ces fiches existeront, leur `photoQuiTranche` devra donc rester NULLE, et Atlas refusera de conclure plutôt que de demander une photo qui ne prouverait rien.\n\nLa confusion écrite ci-dessous est d'une autre nature : elle ne porte pas sur l'agent mais sur l'ESSENCE. Les deux anthracnoses donnent des nécroses brunes sur feuille, et leurs hôtes sont disjoints — les deux sources l'affirment chacune de son côté. Une feuille entière suffit à trancher, et c'est ce que la consigne demande.",
+      "confusions": [
+        {
+          "fiche": "anthracnose-platane",
+          "critereDifferenciant": "L’essence hôte, et elle seule : cette fiche concerne les chênes et le hêtre, l’autre le platane. Les deux sources donnent des hôtes disjoints.",
+          "photoQuiTranche": "Photographiez une feuille entière, posée à plat.",
+          "partieQuiTranche": "feuille"
+        }
+      ],
+      "_source_criteres": "Recopiés de la page, sans rien ajouter. Le premier — la nette séparation entre tissu brun et tissu vert sain — est le seul critère visuel que la page présente comme caractéristique ; les autres décrivent la forme et la taille qu'elle donne.",
+      "criteresDiscriminants": [
+        "La séparation entre les tissus nécrosés bruns et les tissus sains verts est nette.",
+        "Taches irrégulières ou anguleuses, de couleur roussâtre à brun sombre, pouvant atteindre 15 à 20 mm.",
+        "Sur les rameaux morts, de nombreuses fructifications ressemblant à de petites pustules.",
+        "Sur le chêne, la mortalité répétée des pousses donne un port buissonnant en « chou-fleur »."
+      ],
+      "_source_exclusion": "La page ne donne AUCUN critère d'exclusion : elle dit au contraire que l'observation ne tranche pas, et renvoie au laboratoire. Le champ reste VIDE plutôt que d'être meublé par déduction — un critère d'exclusion inventé écarterait le bon diagnostic.",
+      "criteresExclusion": [],
+      "_source_favorisants": "Recopiés de la section « Facteurs favorisant la maladie ». Ils ne servent pas au score — ce serait interpréter — mais s'affichent : c'est ce qui explique au paysagiste pourquoi c'est arrivé chez ce client-là.",
+      "facteursFavorisants": [
+        "Les printemps froids et humides.",
+        "Les dégâts provoqués par certains insectes consommant les feuilles.",
+        "Sur les rameaux, le stress hydrique pourrait favoriser le passage du comportement endophyte à celui de pathogène de faiblesse chez certains chênes en zone méditerranéenne."
+      ],
+      "_source_informations_requises": "Ce qu'il faudrait EN PLUS de la photo, et EN PLUS de la méthode de confirmation — laquelle a son propre champ. La première version répétait ici la phrase du laboratoire : à l'écran, elle s'affichait deux fois de suite, et une consigne répétée se lit comme deux consignes. Vu sur la capture, jamais par un test — l'import refuse désormais cette répétition.",
+      "informationsRequises": [
+        "Une photo de rameau, pour chercher les nécroses d'écorce et les petites pustules des rameaux morts.",
+        "Une photo de l'arbre entier, pour voir si le port est devenu buissonnant."
+      ],
+      "_source_methode_confirmation": "Phrase de la page, recopiée sans un mot de plus.",
+      "methodeConfirmation": "La détection du champignon en laboratoire est nécessaire pour confirmer avec certitude le diagnostic.",
+      "_source_certitude_max": "« probable », et c'est la conséquence directe de la phrase ci-dessus : la source dit qu'une observation ne confirme pas. Atlas ne pourra donc jamais afficher mieux, quel que soit son score. L'import REFUSE d'ailleurs une méthode de confirmation avec une certitude « elevee ».",
+      "certitudeMax": "probable",
+      "_source_hotes_non_exhaustifs": "vrai, et c'est écrit dans la page : le champignon peut rester endophyte « dans les tissus corticaux d'arbres sains ou dépérissants appartenant à de NOMBREUSES ESPÈCES ». La liste d'hôtes n'est donc pas close, et un chêne absent de la liste ne doit pas exclure la fiche.",
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-08",
+      "sources": [
+        {
+          "source": "ephytia-anthracnose-chene-hetre",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "impact_mecanique",
+            "confusions"
+          ]
+        }
+      ],
+      "_source_images": "La page ne fournit aucune photo réutilisable, et le patron n'en a pas transmis pour cette fiche. Le champ reste vide : l'écran n'affichera simplement pas de bloc « À quoi ça ressemble », et la photo s'ajoutera plus tard sans toucher au reste de la fiche.",
+      "images": []
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+name: Récolter les sources phytosanitaires
+
+# Va chercher les documents du DSF, de l'INRAE, de la FREDON, de l'ONF et des
+# BSV **là où on peut y accéder**, et dépose leur texte dans
+# `donnees/phyto/sources/`.
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# **Pourquoi ce workflow existe.**
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Le patron a demandé, le 20 août 2026, un premier lot d'une cinquantaine de
+# fiches phytosanitaires, constituées à partir de sources officielles — sa règle
+# étant absolue : *« tu ne dois inventer aucune fiche phytosanitaire »*.
+#
+# **Aucun de ces domaines n'est joignable depuis l'environnement de
+# développement.** Le mandataire répond `403 à CONNECT — policy denial` sur
+# `agriculture.gouv.fr`, `inrae.fr`, `fredon-france.org`, `onf.fr`,
+# `plante-et-cite.fr` et `ephy.anses.fr`. La recherche web passe, mais elle rend
+# un résumé écrit par un modèle — pas la page. Écrire une fiche « validée »
+# d'après un résumé serait blanchir une paraphrase en donnée sourcée.
+#
+# C'est exactement le cas prévu par `CLAUDE.md` §5 : ce qui ne peut pas être
+# éprouvé ici doit l'être ailleurs, et l'on déplace le travail plutôt que de
+# contourner. Même famille que `pages.yml` (le site à son adresse publique),
+# `relever-palette.yml` (les modèles chez leur hôte) et `banc-essai.yml`
+# (l'espace complet).
+#
+# ── Ce qu'il fait, et ce qu'il NE fait pas ─────────────────────────────────
+#
+# Il récolte du TEXTE. **Il n'écrit aucune fiche** : lire une source et en tirer
+# des symptômes reste un travail humain, fait ensuite, sur des documents qu'on a
+# réellement sous les yeux.
+#
+# **Il ne pousse jamais sur `main`.** Le résultat part sur une branche à lui, et
+# la fusion se demande — c'est la règle du dépôt (`CLAUDE.md` §6 : jamais de
+# poussée sur une autre branche sans accord explicite).
+
+on:
+  workflow_dispatch:
+    inputs:
+      branche:
+        description: "Branche où déposer la récolte (créée si absente)"
+        required: false
+        default: "sources-phyto"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: recolte-phyto
+  cancel-in-progress: false
+
+jobs:
+  recolter:
+    name: Récolte
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # `pdftotext` : la moitié des documents du DSF sont des PDF. Le script
+      # refuse de continuer sans lui plutôt que de déposer des fichiers vides
+      # qu'on prendrait pour des documents illisibles.
+      - name: Installer poppler-utils
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
+      - name: Récolter
+        run: node scripts/recolter-sources-phyto.mjs
+
+      # Le contrôle qui compte : ce qui vient d'être déposé doit être LISIBLE,
+      # pas seulement présent. Un fichier de trois lignes est un échec de
+      # récolte déguisé en succès.
+      - name: Vérifier que les documents sont exploitables
+        run: |
+          set -e
+          echo "— Documents récoltés —"
+          for f in donnees/phyto/sources/*.txt; do
+            [ -e "$f" ] || { echo "Aucun document récolté."; exit 1; }
+            n=$(wc -c < "$f")
+            echo "  $(basename "$f") : $n octets"
+            if [ "$n" -lt 500 ]; then
+              echo "  ❌ $(basename "$f") est trop court pour être le document."
+              exit 1
+            fi
+          done
+
+      - name: Déposer sur la branche de récolte
+        env:
+          BRANCHE: ${{ inputs.branche || 'sources-phyto' }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCHE"
+          git add -f donnees/phyto/sources
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau : les documents récoltés sont identiques aux précédents."
+            exit 0
+          fi
+          git commit -m "Récolter les sources phytosanitaires depuis leurs organismes
+
+          Texte des documents officiels, avec leur provenance et leur licence en
+          en-tête. Aucune fiche n'est écrite ici : la saisie se fait ensuite, à
+          partir de ces textes, jamais de mémoire."
+          git push -f origin "$BRANCHE"
+          echo "Déposé sur la branche $BRANCHE."
+
+      # Le texte récolté est aussi joint au run : c'est le seul moyen de le
+      # consulter sans rapatrier la branche.
+      - name: Joindre la récolte au run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sources-phyto
+          path: donnees/phyto/sources/
+          if-no-files-found: warn

@@ -25,30 +25,166 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 ---
 
-## ⏳ POURQUOI deux constructions se marchent dessus — non reproduit
+## ~~🔴 `test-reduction-devis-e2e.ts` est ROUGE SUR `main`~~ — **TROUVÉ le 20 août 2026**
 
-**Le 20 août 2026 à 6 h 10**, la construction du banc tombe sur « Another next
-build process is already running », et le patron passe la matinée sur la version
-lente. La relance a été réparée (`ARCHITECTURE.md` §133) : **le symptôme ne dure
-plus, la cause n'est pas trouvée.**
+**La cause n'était pas dans l'affichage de la remise, mais dans la SAISIE des
+lignes** — c'est-à-dire dans le montage de la suite, et non dans le produit.
 
-**Ce qui a été écarté, mesure à l'appui.** Ce n'est pas la saturation mémoire du
-17 août : au moment de l'échec, sa fiche portait **4,3 Gio disponibles**. Et ce
-n'est pas un verrou périmé — éprouvé ici le 20 août, le processus qui tient
-`<dist>/lock` est bien `node …/next build`, vivant, et
-`delogerConstructionsOrphelines()` le déloge correctement (trois processus,
-zéro restant).
+La boucle qui écrit les trois lignes du devis comptait 500 ms après avoir
+demandé une ligne neuve, puis visait `nth(count - 1)`. Sous charge, la ligne
+n'était pas encore rendue : `count - 1` désignait alors la **précédente**, et
+l'écrasait. Une ligne disparaissait du devis, le total tombait de 870 à 180 ou
+420 selon celle qui sautait — d'où le `'180.00' !== '870.00'` relevé, et d'où
+le nombre variable de cas qui tombaient.
 
-**La piste qui reste, et personne ne l'a suivie :** `veiller.sh` ne vérifie
-qu'aucune construction ne tourne **que dans la branche de relance**. La branche
-« plus rien ne répond sur le port » lance `npm run banc` sans ce contrôle. Deux
-bancs peuvent alors se déloger mutuellement leur construction — chacun croyant
-retirer une orpheline. À reproduire avant de corriger : ce dépôt a déjà payé
-trois correctifs écrits contre une panne imaginée (`AGENTS.md`).
+Le contrôle accusait donc la remise, qui n'y était pour rien.
 
-**Ce qu'il faudrait pour trancher :** que le témoin d'échec porte **qui** tenait
-le verrou (la ligne de commande du processus, son pid, son père). Aujourd'hui il
-ne porte que le message de Next, et l'on ne peut que supposer.
+**Le remède, déjà employé quatre fois dans ce lot :** attendre que la ligne
+EXISTE, puis relire jusqu'à voir le devis complet — **attendre ce qu'on affirme,
+jamais une durée** (`test-prix-e2e.ts`, même motif).
+
+Rejouée sur l'arbre fusionné, serveur réchauffé : **11 cas sur 11 au vert.**
+
+**Ce qu'il faut en retenir, et qui vaut plus que le correctif :** le journal du
+serveur n'aurait rien dit ici — le serveur faisait exactement ce qu'on lui
+demandait. Le défaut était dans ce que la suite lui demandait.
+
+---
+
+## ⏳ `test-fiche-pendant-relance.ts` tombe quand la machine est chargée
+
+**Le 20 août 2026.** La suite rend :
+
+    ✗ le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien
+      le veilleur n'a jamais tenté de relance : le montage ne reproduit pas le cas réel
+
+**Ce n'est pas le produit qui tombe, c'est le MONTAGE de la suite** — et elle le
+dit elle-même, ce qui est à son honneur : elle refuse de conclure au vert sur un
+cas qu'elle n'a pas su reproduire. Elle lance un vrai serveur et attend qu'un
+veilleur le relance ; sur une machine occupée, la fenêtre ne s'ouvre pas.
+
+Vérifié : elle tombe **aussi sans le lot du diagnostic végétal** (travail mis de
+côté, suite rejouée), et elle était **verte** dans la batterie complète jouée une
+heure plus tôt sur le même arbre. C'est donc la charge, pas le code.
+
+**À faire quand on y reviendra :** lui donner plus de temps, ou lui faire
+attendre un signal du veilleur plutôt qu'un délai. Un contrôle qui dépend de la
+charge de la machine finit par être ignoré.
+
+---
+
+## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
+
+**Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
+cette suite sont tombés ensemble :
+
+    ✗ chaque colonne porte ses PDF, du plus récent au plus ancien
+    ✗ les dates s'écrivent toutes de la même façon
+    ✗ rien ne déborde — la colonne la plus étroite fait 0 px
+
+**« 0 px » est le tell : les colonnes étaient VIDES.** La fiche n'avait aucun
+document à montrer, et les trois contrôles se sont plaints chacun à sa façon de
+la même absence. Jouée seule, et rejouée en batterie ensuite, la suite est
+verte : la cause est donc dans **ce que les suites précédentes laissent en
+base**, pas dans l'écran.
+
+**Pourquoi ça compte plus qu'un rouge de passage.** Un contrôle qui échoue au
+hasard apprend à ignorer le rouge, et l'on perd alors tout ce qu'il surveille.
+Celui-ci est neuf (posé le même jour, par une autre conversation) et il garde la
+refonte que le patron vient de demander.
+
+**Ce qu'il faudrait :** que la suite crée elle-même les documents dont elle a
+besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'elle
+refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
+(`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
+
+---
+
+## ⏳ `test-lecons-prix-e2e.ts` a tenu 30 s puis lâché — une seule fois
+
+**Le 20 août 2026**, dans une batterie complète jouée juste après une fusion de
+`main` :
+
+    ❌ page.waitForResponse: Timeout 30000ms exceeded while waiting for event "response"
+
+**Vérifié avant de conclure**, et c'est ce qui compte ici :
+
+- elle était **verte** dans la batterie complète jouée une heure plus tôt, sur le
+  même lot, avant la fusion ;
+- **ni la suite ni le code qu'elle éprouve** ne figurent dans ce que `main` a
+  apporté (`git diff --name-only`, aucun fichier `lecon`) ;
+- **rejouée seule** sur l'arbre fusionné, elle est verte.
+
+Le faisceau désigne donc la charge — cent trois suites sur un seul serveur de
+développement — et non une régression. **Mais c'est le troisième contrôle de ce
+dépôt qui dépend de la charge de la machine**, et c'est cela le vrai sujet : un
+rouge qui tombe au hasard apprend à ignorer le rouge, et l'on perd tout ce qu'il
+surveille.
+
+**Ce qu'il faudrait :** attendre la réponse sur un signal plutôt qu'un délai
+fixe, ou porter ce délai bien au-delà de ce qu'une machine chargée demande. Le
+délai de 30 s est celui de Playwright par défaut, jamais choisi.
+
+## 🌿 Diagnostic végétal — le module tourne, il lui manque des FICHES
+
+Le code est fait et éprouvé (`ARCHITECTURE.md` §135). Ce qui reste ne se code
+pas : ce sont des données à recopier de sources officielles.
+
+| | Ce qui reste | Qui peut le faire |
+|---|---|---|
+| 1 | ~~**Lancer la récolte des sources**~~ — fait le 20 août : 9 documents récoltés, **3 fiches réelles écrites** (fomès des résineux, les deux anthracnoses), chaîne éprouvée de bout en bout. **Reste ~47 fiches.** Ce qui limite n'est pas la saisie mais le TYPE de document : il faut des **fiches-type**, pas des bilans régionaux | moi, à partir des documents publics, avec relecture avant passage en `validee` |
+| 1 bis | **TRANCHER LA LICENCE D'INRAE (Ephytia)** — `http://ephytia.inra.fr`. C'est la source la plus riche en descriptions de symptômes, donc celle qui permettrait d'écrire vite. Son texte n'est pas rapatrié tant que sa réutilisation n'est pas établie : recopier sans licence est un risque qui ne se voit qu'à la mise en demeure. Même question pour le CNPF | le patron, ou un courriel à l'organisme |
+| 2 | **Éprouver l'appel réel de vision sur le banc**, avec de vraies photos. Non vérifiable ici : aucune clé d'IA dans cet environnement | le patron pose sa clé, je regarde le résultat |
+| 3 | Renseigner les `confusions_phyto` entre fiches proches — c'est **elles** qui permettent la demande de photo complémentaire. **Commencé le 20 août** : les deux anthracnoses sont reliées, et la relance photo est éprouvée sur des fiches réelles. Reste à le faire pour chaque paire proche du lot à venir | avec le lot de fiches |
+| 4 | Régler les seuils (`SEUIL_PLANCHER`, `ECART_NET`, plafonds de confiance) sur de vraies photos et de vraies fiches. Les valeurs actuelles sont un point de départ **assumé**, nommé et éprouvé — pas mesuré | après le premier lot |
+| 4 bis | **Mesurer ce que la règle « hôte d'abord » coûte en pratique** (20 août). Sans essence identifiée, Atlas ne conclut plus du tout. C'est voulu, mais personne n'a encore vu combien de photos réelles échouent à l'identification — c'est la première chose à regarder quand la clé de vision tournera sur le banc | le patron pose sa clé, je regarde |
+| 5 | Ajouter le fournisseur de vision au registre des sous-traitants (`docs/RGPD.md` §3), et décider de la durée de conservation des photos | le patron |
+| 6 | Brancher un classement sémantique quand la base dépassera quelques centaines de fiches. L'interface (`ClasseurCandidats`) et son verrou (`appliquerClassement`) existent déjà et sont éprouvés | plus tard, et seulement si le déterministe montre ses limites |
+
+**Ce qui n'est PAS à faire :** inventer des fiches pour que la démonstration
+tourne. Le module dit « la base ne contient encore aucune fiche validée », ce
+qui est vrai, et c'est le bon état tant que les vraies données ne sont pas là.
+
+---
+
+## ⏳ POURQUOI la construction du démarrage tombe sur le verrou — TOUJOURS non reproduit
+
+**Trois matinées de suite** — 19, 20 et 21 août 2026 — le patron ouvre Atlas et
+le trouve lent. Chaque fois, la même ligne sur sa fiche :
+
+    Code SERVI : AUCUNE — la construction a ÉCHOUÉ
+    dit: ⨯ Another next build process is already running.
+
+**Ce qui est réparé, et qui tient** (`ARCHITECTURE.md` §133, §136) : le veilleur
+ne renonce plus (une tentative par demi-heure, indéfiniment) ; une construction
+vivante est **attendue** au lieu d'être tuée ; le détenteur du verrou se trouve
+par le fichier `<dist>/lock` et non par un nom de processus.
+
+**CE QUI N'EST TOUJOURS PAS EXPLIQUÉ : pourquoi les deux se rencontrent au point
+d'échouer.** Le démarrage en lance deux par nature, et tout est prévu pour
+qu'elles ne se marchent pas dessus. Deux hypothèses ont été **éprouvées ici le
+21 août, et écartées** :
+
+| Hypothèse | Ce que l'épreuve a rendu |
+|---|---|
+| Le `sleep 1` de `demarrer.sh` est trop court après le `pkill` | après une seconde, **plus rien** ne tenait le verrou, et la construction suivante partait normalement |
+| Un enfant sans le nom « next build » survit et garde le verrou | le seul survivant (`jest-worker/processChild`) **ne tenait pas** le verrou ; la construction suivante partait |
+
+**CE QU'IL FAUT LIRE LA PROCHAINE FOIS, et qui existe depuis le 21 août :** le
+témoin d'échec porte désormais une section `verrou tenu par :` avec le **pid et
+la ligne de commande** du détenteur, relevés à l'instant du refus — pas plus
+tard, quand le coupable a disparu. La fiche du banc la recopie telle quelle.
+
+**Donc : à la prochaine plainte, lire cette section avant toute hypothèse.**
+Elle dira si c'est la construction du premier veilleur, celle d'un banc relancé,
+ou un processus auquel personne n'a pensé. Trois matinées ont été perdues faute
+de ce seul renseignement.
+
+**Et le piège de méthode, payé deux fois en deux jours :** `pkill -f` compare la
+ligne de commande ENTIÈRE de chaque processus, **y compris celle du shell qui
+joue la commande**. Deux épreuves se sont tuées elles-mêmes parce que le motif
+figurait dans leur propre ligne. Les crochets (`[n]ext`) protègent le motif
+contre lui-même, pas contre un `echo` qui le contient.
 
 ## ⏸ « Trop compliquée » — sa plainte du 19 août 2026, RIEN n'est tranché
 
@@ -177,6 +313,69 @@ calendrier actuel montre le MOIS entier, et c'est ce qui sert à poser une date
 lointaine (`PlanningClient.tsx`, `JourneeOuvrable`). Une vue semaine oblige à
 huit appuis pour aller à deux mois. **À lui demander** : garde-t-on un accès au
 mois pour poser une date, ou les flèches suffisent-elles ?
+## ~~Deux maquettes que le patron ne peut pas ouvrir~~ — **RÉGLÉ le 20 août 2026**
+
+`appli/deux-boutons-devis.html` et `appli/en-cours-le-chiffre.html` existent,
+sont publiées, sont vérifiées après déploiement — et **aucun lien d'`essais.html`
+ne les atteignait**. Or `essais.html` est la seule adresse qu'on lui ait donnée :
+autant dire qu'elles n'existaient pas pour lui. **Les deux liens sont posés**, et
+les deux pages ont donc quitté la liste tenue à la main de `pages.yml` — la
+déduction depuis `essais.html` les couvre. C'est le même défaut que les huit
+planches introuvables trouvées par `scripts/fusionner-maquettes.mjs`.
+
+**À faire, par qui reprend leur sujet :** les inscrire dans `appli/essais.html`
+si elles ont encore une question ouverte, ou les retirer si leur question est
+tranchée. Puis retirer leur mention en dur de `.github/workflows/pages.yml`,
+où elles ne sont gardées que pour ne pas perdre une vérification existante.
+
+**Ce qui ne se reproduira plus :** depuis le 20 août, la liste vérifiée après
+déploiement **se déduit des liens d'`essais.html`** au lieu d'être tenue à la
+main. Deux pages y manquaient ce jour-là, dont `moins-de-mots.html`, écrite la
+veille.
+
+---
+
+## ~~L'arrosage simplifié~~ — **CODÉ le 20 août 2026**
+
+`/paysage/arrosage` dans l'application : le piquage, la mesure au seau remise
+sur sa décision, le croquis photographié et **lu par l'IA**, puis le plan et le
+détail des pièces. Voir `CHANGELOG.md` et `PROJECT_STATE.md`.
+
+**Ce qui reste à coder, et qui n'attend personne :**
+
+- **Rattacher un plan à un chantier.** Rien n'est enregistré aujourd'hui : un
+  plan se refait à chaque client, comme un devis. Le jour où il voudra le
+  retrouver, ce sera une décision — et une table.
+- **Le plan DESSINÉ.** L'écran rend les réseaux et les pièces en listes ; la
+  maquette montrait un plan du jardin avec les couleurs et les métrés. C'est ce
+  qui manque pour que les deux se ressemblent vraiment.
+- **Les photos** : compression à l'envoi et conservation deux ans, décidées le
+  17 août, **toujours pas codées**.
+
+---
+
+## ~~La fiche client allégée~~ — **TRANCHÉE ET CODÉE le 20 août 2026**
+
+Trois colonnes (Devis · Fiche chantier · Facture), la dernière prestation en
+titre noir gras, le reste retiré. Le PDF de fiche de chantier existe.
+Voir `CHANGELOG.md` et `PROJECT_STATE.md` §« Atlas fabrique TROIS documents ».
+
+**Ce qui reste ouvert, et qui est à LUI :**
+
+| | Ce qui attend | Pourquoi on ne tranche pas à sa place |
+|---|---|---|
+| 1 | **Le reste dû revient-il sur la fiche ?** | Il a dit « tout le reste, tu enlèves ». Le reste dû est parti avec, et se regarde dans Terminés → En attente de paiement. Depuis la fiche d'un client, on ne sait donc plus s'il doit de l'argent |
+| 2 | **Le chemin vers un chantier** | « Ses chantiers » était le seul lien d'un client vers un chantier. On ouvre désormais sa fiche en PDF : un document se lit, un écran se modifie |
+
+**Ce qui reste à coder, et qui n'attend personne :**
+
+- **Figer la fiche de chantier le jour où elle s'ENVERRA.** Elle se télécharge
+  aujourd'hui, et se régénère à chaque ouverture — c'est voulu : si le patron
+  corrige une observation, c'est la version corrigée qu'il veut. Mais ce qui
+  part chez un client ne se réécrit pas : il faudra la stocker à l'envoi, comme
+  le devis et la facture. C'est écrit dans la route.
+- **Les photos** : compression à l'envoi et conservation deux ans, décidées par
+  lui le 17 août, **dessinées et non codées** (`appli/clients-recherche.html`).
 
 ---
 
@@ -228,7 +427,194 @@ arrose largement à côté, c'est là qu'il faudra la brancher.
 
 ---
 
+## ⏳ « Les belles phrases » ne sont pas encore prouvées — 20 août 2026
+
+**Le code est fait, le contrôle est écrit, il n'a pas pu être joué.** Le micro
+du devis accepte désormais qu'il RACONTE son chantier plutôt que de corriger des
+lignes (`ARCHITECTURE.md` §113, section du 20 août). Mais la rédaction elle-même
+est faite par un modèle de langage : ni cet environnement ni la CI n'ont de clé,
+et **un contrôle qui mesure zéro est pire qu'absent**.
+
+```bash
+npm run verifier:dictee     # depuis son espace, où ses clés sont posées
+```
+
+Il envoie sa dictée entière au vrai modèle et vérifie : trois lignes et pas une
+de plus, chacune rédigée (pas de « je », pas d'hésitation recopiée), les vingt
+mètres linéaires retenus en 20 ml sur la ligne de la haie, aucun prix inventé —
+et, en second passage, que ses corrections du 15 août sont toujours comprises.
+**Sans clé, il sort en erreur** plutôt que de rendre un vert vide.
+
+**Tant qu'il n'a pas été joué au vert, ne pas écrire ailleurs que la promesse
+est tenue.** Ce qui est éprouvé ici, c'est tout ce que le dépôt fait de la
+réponse du modèle (mesures, unités, refus d'inventer un prix) et la règle qui
+dit ce qui trahit une phrase recopiée — pas la réponse elle-même.
+
+**Si le modèle rend autre chose que trois lignes propres**, l'invite est le seul
+endroit à toucher : `systeme()` dans
+`src/server/ai/services/retouches-devis-service.ts`, section « Rédiger les
+libellés ». Ne pas déplacer la règle vers du code : ce qui décide de « belle
+phrase », c'est le modèle, et un nettoyage par expressions régulières après coup
+mentirait sur ce qu'il a vraiment compris.
+
+---
+
+## ~~`test-fiche-client-e2e.ts` rouge sur `main`~~ — **réglé le 20 août 2026, par une autre session**
+
+Constaté en fin d'après-midi : deux cas rouges (l'ordre des colonnes, et le
+titre de la dernière prestation), **vérifiés rouges sur `origin/main` seul**,
+dans un espace de travail à part et sans la moindre modification. Écrit ici
+plutôt que corrigé, délibérément : c'était le lot d'une autre session, sans
+doute encore en cours, et réécrire son attente pendant qu'elle travaille dessus
+aurait tranché une question qui n'était pas la nôtre.
+
+**Elle l'a réglé quelques heures plus tard**, et la batterie suivante est
+repartie au vert (102/102 suites navigateur). La ligne reste ici parce que la
+conduite, elle, se garde : devant une suite rouge qu'on n'a pas cassée, on
+vérifie sur `main` seul, on l'écrit, et on laisse la main à qui tient le lot.
+
+---
+
+## 🔴 SA PAGE DE CONNEXION NE SURVIT PAS À SON BANC — reproduit le 20 août 2026
+
+**Sa plainte, au soir :** *« Je ne peux plus me connecter à l'application. »*
+Sa fiche d'état était pourtant intégralement au vert — espace allumé, serveur
+qui répond, code servi à jour (`9de6153`) — et `npm run verifier:connexion` se
+connectait sans broncher sur ce commit exact, derrière une origine étrangère.
+
+**Ce qui manquait à tous ces contrôles, c'est le TEMPS.** Ils ouvrent la page et
+appuient dans la seconde. `scripts/eprouver-connexion-page-vieillie.mts` rejoue
+sa séquence — ouvrir `/login`, taper ses identifiants, **laisser le banc se
+reconstruire**, puis appuyer — et rend son écran :
+
+```
+(aucun POST — le formulaire n'a rien envoyé)
+ÉCRAN : ATLAS · Une erreur · Cette page n'a pas pu s'afficher. · Réessayer
+```
+
+**Pourquoi cela lui arrive plusieurs fois par soirée.** `scripts/banc.mjs` sert
+d'abord `next dev` pour qu'il ait un écran tout de suite, puis **bascule sur la
+version bâtie** quand la construction finit — sans compter les mises à jour et
+le veilleur. À chaque bascule, les morceaux de code changent de nom. Son onglet,
+lui, reste ouvert. La porte d'entrée est l'écran où il stationne le plus
+longtemps avant d'agir : c'est celui qui encaisse la bascule.
+
+**Et le rattrapage de `reprise-erreur.ts` ne s'est PAS déclenché.** L'écran a
+montré « Cette page n'a pas pu s'afficher », c'est-à-dire la phrase des pannes
+ordinaires — pas « la page se recharge ». La reconnaissance se fait sur le
+MESSAGE de l'erreur (`estMorceauIntrouvable`), or **en version bâtie React ne
+transmet pas ce message** : le rattrapage écrit le 11 août tient en
+développement et lâche exactement là où le patron vit.
+
+### Ce qu'il faut faire, et ce qu'il ne faut pas faire
+
+**Ne pas rallonger la liste des motifs** de `reprise-erreur.ts` : on ne peut pas
+reconnaître un message qui n'arrive pas. Le remède doit tenir sans message.
+
+**La piste, à éprouver :** l'écran d'erreur demande au serveur **quelle version
+il sert** (`src/server/version-executee.ts` la connaît déjà, l'écran Réglages
+l'affiche) et la compare à celle inscrite dans la page. Différentes = la page a
+vieilli, on recharge une fois ; identiques = c'est une vraie panne, on garde le
+message actuel. Cela ne dépend d'aucune formulation de navigateur, et la garde
+des cinq minutes reste en place contre la boucle.
+
+**En attendant, ce qu'il doit faire quand ça lui arrive :** recharger la page à
+fond, ou fermer l'onglet et rouvrir l'adresse. Ce n'est pas son mot de passe, et
+ce n'est pas son espace.
+
+---
+
+## ⏳ « L'application est lente » — 20 août 2026 au soir : ce n'est PAS le produit
+
+**Mesuré, pas supposé.** Sur le code du jour (`71be6d9`), version bâtie, banc
+monté comme le sien (`npm run banc`), un navigateur qui se connecte pour de
+vrai :
+
+| | |
+|---|---|
+| connexion → accueil | 890 ms |
+| accueil, planning, terminés, réglages, clients, paysage | 670 – 1 110 ms |
+| fiche chantier, devis complet | 595 – 690 ms |
+
+La construction de la version rapide a abouti en une minute. **Il n'y a rien à
+corriger dans le produit** : ces chiffres sont ceux d'une application rapide.
+
+**Ce que disait sa fiche d'état au même moment**, et c'est là qu'est la panne :
+
+- dernière publication **20:09**, plus rien pendant plus d'une heure. Le publieur
+  est un processus séparé qui ne meurt qu'avec le veilleur (`veiller.sh`) : une
+  fiche muette une heure dit donc que **le veilleur n'est plus là** ;
+- `Code SERVI : 9de6153`, **7 versions de retard** sur `origin/main`.
+
+**L'enchaînement le plus probable**, et il se tient de bout en bout : il touche
+« Chercher les dernières corrections » ; sur version bâtie AVEC veilleur, la
+règle coupe le serveur pour que le code neuf soit servi
+(`src/lib/issue-mise-a-jour.ts`) ; le veilleur relance `npm run banc`, qui sert
+`next dev` le temps de bâtir — **c'est là qu'un écran met des dizaines de
+secondes à s'ouvrir** (`src/server/etat-banc.ts`, mesuré le 14 août) ; puis le
+veilleur meurt, et plus personne ne finit la construction ni ne publie la fiche.
+Il reste donc en mode développement, lentement, indéfiniment.
+
+**Le geste qui répare : rallumer l'espace.** Il reconstruit la version rapide et
+remet un veilleur.
+
+**Ce qui reste ouvert, et qu'on ne peut pas trancher d'ici :** POURQUOI le
+veilleur meurt. Le journal de démarrage n'est délibérément pas publié (dépôt
+public), et la fiche ne peut rien dire quand c'est le veilleur qui tombe. La
+mémoire relevée à 20:09 — 219 Mo libres, 5,7 Go en cache — n'exclut pas un
+manque de mémoire pendant la construction, qui est le moment le plus gourmand.
+**Piste à éprouver avant d'y toucher :** faire écrire au veilleur une trace
+d'agonie (`trap`), et la publier avec la fiche à l'allumage suivant — sans quoi
+la prochaine fois se rediagnostiquera de zéro, exactement comme celle-ci.
+
+---
+
+## ⏸ La fiche client qui dicte le devis — **dessinée le 21 août, il tranche avant qu'on code**
+
+`appli/fiche-client-vocale.html` (adresse : `…github.io/Atlas-app/essais.html`).
+**Rien n'est codé**, et rien ne doit l'être avant sa réponse.
+
+Ce qu'il a déjà tranché, en répondant aux questions posées avant le dessin :
+
+| Question | Sa réponse |
+|---|---|
+| La fiche chantier (« la page d'après ») | **« On la supprime pour de bon »** |
+| Les deux boutons du bas | L'anneau remplace « Je dicte mon devis » ; reste « J'écris mon devis » |
+| Le champ téléphone isolé | Retiré. **« Comment lui envoyer son devis ? » reste** |
+| L'accueil | Ouvre l'élément là où il en est — devis si le devis est commencé, fiche client si elle est vide. C'est déjà ce que fait `lienDeReprise` |
+
+**Ce qui reste à trancher, et qui bloque le code :** la fiche chantier porte
+quatre choses sans autre maison — « Créer la facture », les étapes du chantier,
+la relecture de la note dictée, et les photos ajoutées après coup. L'écran
+« À trancher » de la maquette propose une place pour chacune.
+
+**Ce que le code devra faire, et qui n'est pas qu'un déplacement d'écran :**
+
+- le chantier doit exister **avant** la première photo ou la première dictée —
+  sinon la photo n'a nulle part où aller. Aujourd'hui il est créé par les deux
+  boutons du bas (`creerPuisAller`) ;
+- `lienDeReprise` (`src/lib/chantier-etat.ts`) renvoie les étapes « photos » et
+  « note-vocale » vers `/chantiers/[id]`, c'est-à-dire vers l'écran qu'il veut
+  supprimer : à rediriger vers la fiche client ;
+- l'anneau doit **redevenir lecteur** sur la fiche client quand une note existe,
+  comme il le fait aujourd'hui sur la fiche chantier.
+
+---
+
 ## À surveiller — non reproduit
+
+### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août
+
+Pendant la batterie du 20 août, un seul cas rouge : *« Depuis la feuille du
+chevron aussi, l'équipe se retire »*. **Rejouée seule sur la même base : les
+neuf cas passent.** Rien n'a été corrigé, parce que rien de reproductible n'a
+été trouvé — et le lot en cours ne touche ni au planning ni aux équipes.
+
+Même piste que la suite du 18 août ci-dessous : les suites navigateur partagent
+une base semée une seule fois. Si elle retombe, chercher quelle suite touche aux
+équipes de démonstration avant elle, plutôt que de la rejouer en croyant que ça
+suffit.
+
 
 ### `test-devis-doublon-e2e.ts` est tombé une fois, et une seule — 18 août
 
@@ -257,6 +643,63 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 ---
 
 ## Ce que je peux faire seul
+
+### 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
+
+**Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
+me le modifier par Choisir la date […] sous forme de bouton vert comme tous les
+autres […] j'arrive directement sur la page où je peux choisir la date […] on
+supprime la page qui est entre les deux […] et l'aperçu en PDF, tu me le mets en
+dessous. Et je ne veux pas de flèche. »*
+
+Planche : `docs/maquettes/82-choisir-la-date.html`.
+
+**Ce qui est vérifié dans le code, et qui rend la chose petite :** le calendrier
+vit dans une FEUILLE (`src/app/chantiers/[id]/export/EnvoiAuClient.tsx`), pas dans une page — elle
+s'ouvre par-dessus l'écran récapitulatif. La monter sur le devis, c'est l'ouvrir
+plus tôt : elle ne demande que `chantierId`, `devisId` et `clientNom`, tous trois
+présents sur `devis-complet`.
+
+**Il a tranché : « A et la 2 ».** L'aperçu reste un lien discret ; l'écran du
+milieu ne s'ouvre plus avant l'envoi — l'adresse renvoie au devis tant que rien
+n'est parti, et sa face récapitulative est supprimée pour de bon.
+
+**FAIT.** Le geste vit sur `devis-complet` ; `/export` ne rend plus que l'écran
+du devis parti. Éprouvé par `scripts/test-choisir-la-date-e2e.ts`, vu rouge en
+réintercalant l'écran du milieu. Vingt-six suites ont dû suivre — puis onze de
+plus, que la batterie complète a fait rougir alors que deux suites jouées seules
+étaient vertes. L'une d'elles a trouvé un vrai défaut : rechargé, l'écran d'après
+l'envoi reprenait « Devis prêt pour … » indéfiniment. Corrigé.
+`ARCHITECTURE.md` §136.
+
+### ~~0 duotricies bis. `test-fiche-pendant-relance` est ROUGE~~ — **C'ÉTAIT MOI**
+
+**Écrit le 20 août 2026, et faux dès la première ligne.** J'avais consigné cette
+suite comme « rouge indépendamment du lot », avec pour preuve qu'elle échouait
+aussi sur son propre commit d'introduction. La conclusion était fausse, et le
+dépôt portait déjà la bonne explication : **`TODO.md` 0 trigies quater**, écrite
+le 17 août par une autre session, qui décrit exactement ce piège.
+
+`veiller.sh` ne se déclare « serveur mort » que si
+`pgrep -f '[n]ext(-server| dev| start)'` ne trouve rien. Or `pgrep -f` compare la
+**ligne de commande entière de tout processus de la machine**. J'ai lancé mes
+batteries par une commande qui commençait par
+`pgrep -af "next dev|next-server" … | xargs kill` — un ménage des serveurs
+orphelins. **Ce shell-là vit pendant toute la batterie, et sa ligne de commande
+contient littéralement les motifs surveillés.** Le veilleur voyait donc un
+serveur, prenait l'autre branche, et n'écrivait jamais le message attendu.
+
+**La preuve :** rejouée depuis un script qui ne nomme aucun de ces motifs, et
+sans serveur orphelin vivant, la suite rend **3 cas sur 3 au vert**.
+
+**Ce que ça coûte, et pourquoi ce point reste écrit plutôt que supprimé :**
+j'ai consigné une hypothèse comme un fait, et je l'ai dite au patron. Une
+hypothèse rangée dans les tâches se relit ensuite comme un constat — c'est
+précisément l'avertissement que porte 0 trigies quater, et je ne l'avais pas lu
+avant d'écrire.
+
+**Faire le ménage des serveurs dans un appel SÉPARÉ**, qui se termine avant la
+batterie. C'est la seule chose à retenir pour la prochaine fois.
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 

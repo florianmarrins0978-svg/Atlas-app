@@ -1,0 +1,692 @@
+/**
+ * Le contrat d'entrée de la base phytosanitaire — et ce qu'il REFUSE.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **Ce fichier existe pour dire non.**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Sa règle du 20 août 2026 : *« Tu ne dois inventer aucune fiche
+ * phytosanitaire. Les données seront constituées séparément à partir de sources
+ * fiables et validées : DSF/ministère de l'Agriculture, INRAE, FREDON, Plante &
+ * Cité, ONF, BSV. Prépare seulement le schéma d'import, les contrôles, le
+ * versionnement et la traçabilité nécessaires. »*
+ *
+ * Le schéma seul ne suffirait pas : il dirait qu'un champ est une chaîne de
+ * caractères, pas qu'il est vrai. Les **contrôles** en dessous du schéma sont
+ * donc l'essentiel de ce fichier, et ils tiennent en une phrase : *une fiche ne
+ * devient servable que si chacune de ses affirmations qui engage est reliée à
+ * une source*.
+ *
+ * ── Les six refus, et ce que chacun évite ─────────────────────────────────
+ *
+ *  1. **Une fiche `validee` sans aucune source.** C'est le refus fondateur :
+ *     sans lui, tout le reste de ce module n'est qu'une manière élaborée
+ *     d'afficher des affirmations sans origine.
+ *  2. **Un champ qui engage, sans source qui le couvre.** La conduite
+ *     recommandée, la gravité, le traitement, le statut réglementaire. Une
+ *     bibliographie générale ne dit pas QUI affirme quoi ; le jour où une
+ *     conduite est contestée, il faut désigner la source de cette ligne-là.
+ *  3. **Un traitement sans source réglementaire ou technique.** Recommander un
+ *     produit phytosanitaire engage la responsabilité de l'artisan, et le cadre
+ *     français pour les zones non agricoles n'est pas une opinion.
+ *  4. **Un mot hors vocabulaire.** Le défaut le plus cher de cette
+ *     architecture, parce qu'il est SILENCIEUX : une fiche qui écrit
+ *     « moisissure » là où le modèle rend « feutrage_blanc » ne remonte jamais.
+ *     Aucune erreur, aucun message — simplement une fiche qui ne sort plus.
+ *  5. **Une fixture qui se fait passer pour une vraie fiche.** Sa consigne :
+ *     des données de test « explicitement identifiées et impossibles à exposer
+ *     en production ». Ici en amont, et en contrainte CHECK dans la base.
+ *  6. **Une confusion qui promet une photo sans dire laquelle.** Une relance
+ *     « prenez une autre photo » sans consigne est une impasse à l'écran.
+ *
+ * Aucun de ces contrôles ne touche au réseau ni à la base : ils sont éprouvés
+ * seuls (`scripts/test-import-fiches-phyto.ts`), y compris **contre des fiches
+ * volontairement fautives** — un contrôle qui n'a jamais échoué ne prouve rien
+ * (`CLAUDE.md` §5).
+ */
+
+import { z } from "zod";
+import {
+  COULEURS,
+  LOCALISATIONS,
+  MOTIFS,
+  PARTIES,
+  PORTS,
+  verifierVocabulaire,
+} from "./diagnostic-vegetal";
+
+/** Le préfixe qui marque une donnée d'essai. Voir la contrainte CHECK 0056. */
+export const PREFIXE_FIXTURE = "zz-test-";
+
+const jour = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "date attendue au format AAAA-MM-JJ");
+
+const code = z
+  .string()
+  .min(2)
+  .regex(/^[a-z0-9-]+$/, "un code ne contient que des minuscules, des chiffres et des tirets");
+
+export const SourceSchema = z.object({
+  code,
+  organisme: z.string().min(2),
+  titre: z.string().min(2),
+  url: z.string().url().nullable().default(null),
+  nature: z.enum(["officielle", "scientifique", "technique", "reglementaire"]),
+  publieeLe: jour.nullable().default(null),
+  /** Quand on a LU. Obligatoire : sans elle, on ne sait pas si la fiche a
+   *  vieilli, et une fiche périmée est pire qu'absente — on s'y fie encore. */
+  consulteeLe: jour,
+});
+export type SourceImportee = z.infer<typeof SourceSchema>;
+
+export const TaxonSchema = z.object({
+  code,
+  nomScientifique: z.string().min(2).nullable().default(null),
+  nomCommun: z.string().min(2),
+  synonymes: z.array(z.string().min(2)).default([]),
+  rang: z.enum(["genre", "espece", "famille", "groupe"]).default("espece"),
+  port: z.enum(PORTS).nullable().default(null),
+});
+export type TaxonImporte = z.infer<typeof TaxonSchema>;
+
+export const SymptomeSchema = z.object({
+  nature: z.enum(["symptome", "signe"]),
+  partie: z.enum(PARTIES),
+  motif: z.enum(MOTIFS),
+  couleurs: z.array(z.enum(COULEURS)).default([]),
+  localisations: z.array(z.enum(LOCALISATIONS)).default([]),
+  poids: z.enum(["cardinal", "frequent", "possible"]).default("frequent"),
+  /** Ce que la source en dit, en français. Sert aux détails, jamais au score. */
+  libelle: z.string().nullable().default(null),
+});
+
+export const ReferenceSourceSchema = z.object({
+  source: code,
+  /** Les champs de la fiche que cette source appuie. Vide = la fiche en général. */
+  champs: z.array(z.string().min(2)).default([]),
+});
+
+export const FicheSchema = z.object({
+  code,
+  nomCommun: z.string().min(2),
+  nomScientifique: z.string().min(2).nullable().default(null),
+  categorie: z.enum([
+    "maladie",
+    "champignon_lignivore",
+    "champignon_autre",
+    "ravageur",
+    "carence",
+    "stress_abiotique",
+    "degat_mecanique",
+  ]),
+  agentCausal: z.string().min(2).nullable().default(null),
+  agentType: z
+    .enum(["champignon", "bacterie", "virus", "insecte", "acarien", "nematode", "abiotique", "inconnu"])
+    .default("inconnu"),
+  partiesAtteintes: z.array(z.enum(PARTIES)).default([]),
+  periodeDebutMois: z.number().int().min(1).max(12).nullable().default(null),
+  periodeFinMois: z.number().int().min(1).max(12).nullable().default(null),
+  explicationCourte: z.string().min(10),
+  gravite: z.enum(["faible", "vigilance", "importante"]),
+  impactMecanique: z.enum(["aucun", "possible", "avere", "inconnu"]).default("inconnu"),
+  impactMecaniqueNote: z.string().nullable().default(null),
+  risqueHumainAnimal: z.enum(["aucun", "irritant", "toxique", "allergisant", "inconnu"]).default("inconnu"),
+  risqueHumainAnimalNote: z.string().nullable().default(null),
+  statutReglementaire: z.enum(["aucun", "quarantaine", "lutte_obligatoire", "liste_alerte"]).default("aucun"),
+  referenceReglementaire: z.string().nullable().default(null),
+  diagnosticPhoto: z.enum(["possible", "indicatif", "impossible"]),
+  photosUtiles: z.array(z.enum(PARTIES)).default([]),
+  conduiteRecommandee: z.string().min(10),
+  prevention: z.string().nullable().default(null),
+  gestion: z.string().nullable().default(null),
+  traitement: z.string().nullable().default(null),
+  // ── Les cinq champs de sa consigne du 20 août 2026 (migration 0057) ──────
+  //
+  // Des TABLEAUX DE PHRASES, jamais un texte suivi : c'est ce qui permet de les
+  // comparer un à un après l'import. Une prose de trois lignes se compare
+  // caractère par caractère ou pas du tout ; une liste dit exactement quelle
+  // entrée manque.
+  /** Ce qui permet de reconnaître ce problème plutôt qu'un autre. */
+  criteresDiscriminants: z.array(z.string().min(5)).default([]),
+  /** Ce qui l'écarte. Un critère négatif ferme, au lieu d'ouvrir. */
+  criteresExclusion: z.array(z.string().min(5)).default([]),
+  facteursFavorisants: z.array(z.string().min(5)).default([]),
+  /** Ce qu'il faudrait EN PLUS de la photo. Affiché quand Atlas refuse. */
+  informationsRequises: z.array(z.string().min(5)).default([]),
+  /** « La détection en laboratoire est nécessaire. » Recopié de la source. */
+  methodeConfirmation: z.string().min(5).nullable().default(null),
+  /**
+   * Le plafond de confiance que la source autorise.
+   *
+   * **`elevee` par défaut, et c'est délibéré malgré les apparences.** Un défaut
+   * prudent (`incertaine`) aurait bridé toutes les fiches déjà écrites sans que
+   * personne ne s'en aperçoive — un plafond silencieux est aussi mauvais qu'un
+   * plafond absent. Le contrôle §7 ci-dessous refuse la combinaison qui compte
+   * vraiment : une méthode de confirmation exigée avec un plafond `elevee`.
+   */
+  certitudeMax: z.enum(["elevee", "probable", "incertaine"]).default("elevee"),
+  /** La SOURCE déclare-t-elle sa liste d'hôtes non close ? */
+  hotesNonExhaustifs: z.boolean().default(false),
+  niveauValidation: z.enum(["brouillon", "en_revue", "validee"]).default("brouillon"),
+  origine: z.enum(["reelle", "fixture_test"]).default("reelle"),
+  version: z.number().int().min(1).default(1),
+  sourcesAJourLe: jour.nullable().default(null),
+  symptomes: z.array(SymptomeSchema).default([]),
+  hotes: z
+    .array(
+      z.object({
+        taxon: code,
+        specificite: z.enum(["strict", "frequent", "occasionnel"]).default("frequent"),
+      })
+    )
+    .default([]),
+  confusions: z
+    .array(
+      z.object({
+        fiche: code,
+        critereDifferenciant: z.string().min(5),
+        photoQuiTranche: z.string().min(5).nullable().default(null),
+        partieQuiTranche: z.enum(PARTIES).nullable().default(null),
+      })
+    )
+    .default([]),
+  sources: z.array(ReferenceSourceSchema).default([]),
+  images: z
+    .array(
+      z.object({
+        /**
+         * Le chemin d'un fichier du dépôt, relatif à la racine — typiquement
+         * `donnees/phyto/images/…`.
+         *
+         * **C'est la voie normale**, et elle existe pour une raison : l'écran de
+         * résultat MONTRE une photo de référence, pour que le patron compare la
+         * sienne avec elle. Une adresse distante n'aurait pas fait l'affaire —
+         * elle meurt, elle est lente sur un réseau de bord de route, et elle
+         * fait dépendre son écran d'un serveur qui n'est pas le nôtre.
+         */
+        fichier: z.string().min(3).nullable().default(null),
+        url: z.string().url().nullable().default(null),
+        storageKey: z.string().nullable().default(null),
+        /** NOT NULL en base : une image reprise sans droit est un risque qui ne
+         *  se voit qu'à la mise en demeure. Le crédit est AFFICHÉ sous la
+         *  photo — la plupart des licences libres l'exigent, et c'est de toute
+         *  façon la moindre des choses. */
+        licence: z.string().min(2),
+        credit: z.string().min(2),
+        partie: z.enum(PARTIES).nullable().default(null),
+        legende: z.string().nullable().default(null),
+      })
+    )
+    .default([]),
+});
+export type FicheImportee = z.infer<typeof FicheSchema>;
+
+export const LotSchema = z.object({
+  /** Version du lot, reportée sur les diagnostics rendus (traçabilité). */
+  version: z.string().min(1),
+  sources: z.array(SourceSchema).default([]),
+  taxons: z.array(TaxonSchema).default([]),
+  fiches: z.array(FicheSchema).default([]),
+});
+export type LotImporte = z.infer<typeof LotSchema>;
+
+/**
+ * Les champs qui ENGAGENT — ceux qu'une source doit couvrir nommément.
+ *
+ * La liste est courte à dessein : exiger une source pour chaque champ rendrait
+ * la saisie intenable et pousserait à citer n'importe quoi pour passer le
+ * contrôle — c'est-à-dire à le vider de son sens. Ces quatre-là sont ceux dont
+ * une erreur coûte de l'argent, du végétal, ou une mise en cause.
+ */
+export const CHAMPS_QUI_ENGAGENT = [
+  "conduite_recommandee",
+  "gravite",
+  "traitement",
+  "statut_reglementaire",
+] as const;
+
+export type ProblemeImport = { fiche: string | null; message: string };
+
+export type VerdictImport =
+  | { ok: true; lot: LotImporte; avertissements: ProblemeImport[] }
+  | { ok: false; problemes: ProblemeImport[]; avertissements: ProblemeImport[] };
+
+/**
+ * Valider un lot avant qu'il n'approche de la base.
+ *
+ * **Les avertissements ne bloquent pas, et c'est un choix.** Une fiche en
+ * brouillon incomplète doit pouvoir entrer : c'est ainsi qu'on la travaille. Ce
+ * qui ne doit jamais passer, c'est une fiche `validee` incomplète — parce que
+ * celle-là sera servie à un chantier.
+ */
+export function validerLot(
+  brut: unknown,
+  options: {
+    autoriserFixtures: boolean;
+    /**
+     * Les codes de fiches déclarés par les AUTRES lots du même import.
+     *
+     * **Sans cela, une confusion ne pouvait relier que deux fiches du même
+     * fichier** — et les fiches qui se confondent sont précisément celles qu'on
+     * écrit à des moments différents, à partir de sources différentes.
+     * L'anthracnose du platane et celle du chêne se ressemblent sur une photo
+     * de feuille ; elles vivent dans deux lots, écrits à deux jours d'écart.
+     * La contrainte aurait forcé un fichier unique et géant, ou fait renoncer
+     * aux confusions — c'est-à-dire à la demande de photo complémentaire, donc
+     * à la moitié de ce que ce module sait faire.
+     *
+     * Le contrôle ne disparaît pas : il porte sur l'ensemble de l'import au
+     * lieu d'un fichier. Une confusion vers une fiche qui n'existe nulle part
+     * reste refusée.
+     */
+    codesConnus?: Set<string>;
+  }
+): VerdictImport {
+  const analyse = LotSchema.safeParse(brut);
+  if (!analyse.success) {
+    return {
+      ok: false,
+      avertissements: [],
+      problemes: analyse.error.issues.map((i) => ({
+        fiche: null,
+        message: `${i.path.join(".") || "(racine)"} : ${i.message}`,
+      })),
+    };
+  }
+
+  const lot = analyse.data;
+  const problemes: ProblemeImport[] = [];
+  const avertissements: ProblemeImport[] = [];
+
+  const codesSources = new Set(lot.sources.map((s) => s.code));
+  const codesTaxons = new Set(lot.taxons.map((t) => t.code));
+  const codesFiches = new Set([...lot.fiches.map((f) => f.code), ...(options.codesConnus ?? [])]);
+  const naturesSources = new Map(lot.sources.map((s) => [s.code, s.nature]));
+
+  // Doublons — une même fiche deux fois dans un lot laisserait la dernière
+  // écraser la première sans un mot, et personne ne saurait laquelle a gagné.
+  for (const [nom, liste] of [
+    ["source", lot.sources.map((s) => s.code)],
+    ["taxon", lot.taxons.map((t) => t.code)],
+    ["fiche", lot.fiches.map((f) => f.code)],
+  ] as const) {
+    const vus = new Set<string>();
+    for (const c of liste) {
+      if (vus.has(c)) problemes.push({ fiche: null, message: `${nom} « ${c} » déclaré deux fois dans le lot` });
+      vus.add(c);
+    }
+  }
+
+  for (const fiche of lot.fiches) {
+    const ici = (message: string) => ({ fiche: fiche.code, message });
+    const estFixture = fiche.origine === "fixture_test";
+    const porteLePrefixe = fiche.code.startsWith(PREFIXE_FIXTURE);
+
+    // ── 5. Fixtures ────────────────────────────────────────────────────────
+    if (estFixture !== porteLePrefixe) {
+      problemes.push(
+        ici(
+          estFixture
+            ? `déclarée fixture de test mais son code ne commence pas par « ${PREFIXE_FIXTURE} »`
+            : `son code commence par « ${PREFIXE_FIXTURE} » mais elle se déclare réelle`
+        )
+      );
+    }
+    if (estFixture && !options.autoriserFixtures) {
+      problemes.push(ici("fixture de test refusée : cet import n’accepte que des fiches réelles"));
+    }
+
+    // ── 4. Vocabulaire ─────────────────────────────────────────────────────
+    for (const message of verifierVocabulaire(fiche.symptomes)) problemes.push(ici(message));
+
+    // ── Renvois ────────────────────────────────────────────────────────────
+    for (const hote of fiche.hotes) {
+      if (!codesTaxons.has(hote.taxon)) problemes.push(ici(`hôte « ${hote.taxon} » inconnu dans ce lot`));
+    }
+    for (const ref of fiche.sources) {
+      if (!codesSources.has(ref.source)) problemes.push(ici(`source « ${ref.source} » inconnue dans ce lot`));
+    }
+    for (const confusion of fiche.confusions) {
+      if (!codesFiches.has(confusion.fiche)) {
+        problemes.push(ici(`confusion avec « ${confusion.fiche} », qui n’existe dans aucun lot`));
+      }
+      if (confusion.fiche === fiche.code) problemes.push(ici("une fiche ne se confond pas avec elle-même"));
+      // ── 6. Une relance doit dire QUOI photographier ──────────────────────
+      if (confusion.photoQuiTranche !== null && confusion.partieQuiTranche === null) {
+        avertissements.push(
+          ici(`la confusion avec « ${confusion.fiche} » demande une photo sans dire de quelle partie`)
+        );
+      }
+    }
+
+    // ── 7. Une image sans origine, ou dont la licence est un aveu ──────────
+    //
+    // **`licence` est NOT NULL en base, mais rien n'empêchait d'y écrire « à
+    // vérifier ».** Une fiche passerait alors tous les contrôles en affichant
+    // une photo dont personne n'a établi les droits — et le champ obligatoire
+    // aurait servi à rassurer plutôt qu'à protéger.
+    for (const [i, img] of fiche.images.entries()) {
+      if (!img.fichier && !img.url && !img.storageKey) {
+        problemes.push(ici(`image ${i + 1} : ni fichier, ni adresse — elle ne désigne rien`));
+      }
+      if (/vérifier|verifier|inconnu|\?|à définir|a definir/i.test(img.licence)) {
+        problemes.push(
+          ici(
+            `image ${i + 1} : licence « ${img.licence} » — ce n’est pas une licence, c’est un aveu. ` +
+              `Une image dont les droits ne sont pas établis ne s’affiche pas`
+          )
+        );
+      }
+      // **Une mention de copyright n'est pas une licence — c'est son
+      // contraire.** Écrite dans `licence`, elle passerait tous les contrôles
+      // en affirmant précisément ce qui interdit l'usage. Le cas s'est présenté
+      // le 20 août 2026 : les figures des fiches Ephytia portent « © GIRAUDEL
+      // Arnaud », « © Jean-Pierre Henry » — la réserve de droits la plus
+      // explicite qui soit, sur une page par ailleurs publique.
+      //
+      // Le contrôle ne porte QUE sur `licence` : `credit` a tout à fait le droit
+      // de contenir un « © », c'est même sa forme habituelle.
+      if (/©|\(c\)|tous droits réservés|droits réservés|all rights reserved/i.test(img.licence)) {
+        problemes.push(
+          ici(
+            `image ${i + 1} : « ${img.licence} » est une mention de copyright, pas une licence — ` +
+              `elle dit l’inverse de ce qu’on lui fait dire. Nommez la licence qui AUTORISE l’usage ` +
+              `(CC BY 4.0, CC BY-SA 4.0, domaine public, Licence Ouverte 2.0…), ou n’affichez pas l’image`
+          )
+        );
+      }
+    }
+
+    // Une période se donne entière ou pas du tout : un début sans fin ne se lit
+    // pas, et le rapprochement l'ignorerait en silence.
+    if ((fiche.periodeDebutMois === null) !== (fiche.periodeFinMois === null)) {
+      problemes.push(ici("période d’observation incomplète : donnez le mois de début ET celui de fin, ou aucun"));
+    }
+
+    const champsCouverts = new Set(fiche.sources.flatMap((s) => s.champs));
+
+    // ── 3. Un traitement engage plus que le reste ──────────────────────────
+    if (fiche.traitement !== null) {
+      const appuis = fiche.sources.filter((s) => s.champs.includes("traitement"));
+      const naturesAppuis = appuis.map((s) => naturesSources.get(s.source));
+      if (!naturesAppuis.some((n) => n === "reglementaire" || n === "officielle" || n === "technique")) {
+        problemes.push(
+          ici(
+            "un traitement doit être appuyé par une source réglementaire, officielle ou technique — " +
+              "recommander un produit engage l’artisan, et le cadre applicable n’est pas une opinion"
+          )
+        );
+      }
+    }
+
+    // ── 1 et 2. Ce qu'une fiche SERVABLE doit prouver ──────────────────────
+    if (fiche.niveauValidation === "validee") {
+      if (fiche.sources.length === 0) {
+        problemes.push(ici("fiche validée sans aucune source — refusée"));
+      }
+      for (const champ of CHAMPS_QUI_ENGAGENT) {
+        // Un champ vide n'a rien à prouver : `statut_reglementaire = aucun` et
+        // `traitement = null` sont des non-affirmations.
+        if (champ === "traitement" && fiche.traitement === null) continue;
+        if (champ === "statut_reglementaire" && fiche.statutReglementaire === "aucun") continue;
+        if (!champsCouverts.has(champ)) {
+          problemes.push(ici(`fiche validée : le champ « ${champ} » n’est rattaché à aucune source`));
+        }
+      }
+      if (fiche.symptomes.length === 0) {
+        problemes.push(ici("fiche validée sans aucun symptôme — elle ne pourrait jamais être rapprochée d’une photo"));
+      }
+      if (fiche.sourcesAJourLe === null) {
+        avertissements.push(ici("fiche validée sans date de mise à jour des sources"));
+      }
+    } else if (fiche.sources.length === 0) {
+      avertissements.push(ici("aucune source — cette fiche ne pourra pas être validée en l’état"));
+    }
+
+    // ── 7. Une confirmation exigée, et une certitude quand même élevée ─────
+    //
+    // **Sa règle du 20 août 2026 :** *« si la source scientifique exige une
+    // analyse en laboratoire pour confirmer, Atlas ne doit jamais afficher
+    // "confirmé" »*, et *« le niveau de certitude affiché ne doit jamais
+    // dépasser celui permis par les données scientifiques »*.
+    //
+    // La contradiction se glisse sans bruit : `certitudeMax` vaut `elevee` par
+    // défaut, et une fiche qui recopie honnêtement « la détection en
+    // laboratoire est nécessaire » garderait ce plafond sans que personne ne le
+    // remarque. C'est un REFUS et non un avertissement — la fiche affirmerait à
+    // l'écran l'inverse de ce que son propre document dit.
+    if (fiche.methodeConfirmation !== null && fiche.certitudeMax === "elevee") {
+      problemes.push(
+        ici(
+          "la source exige une confirmation (« " +
+            fiche.methodeConfirmation.slice(0, 60) +
+            " ») mais la fiche autorise une certitude « elevee » : baissez `certitudeMax`"
+        )
+      );
+    }
+
+    // ── 8. La même phrase deux fois de suite à l'écran ─────────────────────
+    //
+    // **Trouvé sur une CAPTURE, pas par un test** — le cinquième défaut de ce
+    // dépôt découvert en regardant l'écran (`CLAUDE.md` §5). La méthode de
+    // confirmation s'affiche en pleine page, et juste en dessous la liste des
+    // informations requises : la même phrase y figurait deux fois. Une consigne
+    // répétée se lit comme deux consignes, et sur un chantier on cherche la
+    // différence entre les deux.
+    for (const info of fiche.informationsRequises) {
+      if (fiche.methodeConfirmation !== null && info.trim() === fiche.methodeConfirmation.trim()) {
+        problemes.push(
+          ici("`informationsRequises` répète mot pour mot `methodeConfirmation` : l’écran l’afficherait deux fois")
+        );
+      }
+    }
+
+    // Une fiche dont la photo ne peut rien prouver n'a pas à être servable :
+    // elle occuperait le classement sans jamais pouvoir conclure.
+    if (fiche.diagnosticPhoto === "impossible" && fiche.niveauValidation === "validee") {
+      avertissements.push(
+        ici("diagnostic photographique déclaré impossible : cette fiche ne sera jamais rendue comme conclusion")
+      );
+    }
+  }
+
+  if (problemes.length > 0) return { ok: false, problemes, avertissements };
+  return { ok: true, lot, avertissements };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LA COMPARAISON CHAMP PAR CHAMP — « aucune perte d'information »
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// **Sa consigne du 20 août 2026, et c'est la pièce qui manquait :**
+//
+//   > *« après chaque import, effectue automatiquement une comparaison champ
+//   >   par champ entre la fiche source et les données réellement enregistrées ;
+//   >   vérifie qu'aucune information n'a été perdue, modifiée, déplacée ou
+//   >   interprétée différemment ; si une différence, une perte d'information ou
+//   >   une ambiguïté apparaît, bloque la validation et indique précisément
+//   >   l'écart ; une fiche ne passe au statut VALIDÉE qu'après réussite de ce
+//   >   contrôle. »*
+//
+// ── Pourquoi ce contrôle n'est PAS redondant avec le schéma ────────────────
+//
+// Le schéma Zod vérifie la forme du fichier. Il ne dit rien de ce qui arrive
+// ENSUITE : une colonne oubliée dans l'`INSERT`, un `text[]` écrit dans le
+// mauvais ordre, un `null` devenu chaîne vide, un accent mangé par un encodage,
+// une valeur tronquée par une contrainte de longueur. Tous ces défauts sont
+// **silencieux** — l'import se termine en vert, et la fiche servie ne dit plus
+// tout à fait ce que le document disait.
+//
+// Ce dépôt a déjà payé exactement ce genre de silence : l'écriture des
+// confusions perdait un lien sans un mot (`ARCHITECTURE.md` §137). La leçon est
+// la même — ne pas faire confiance à l'absence d'erreur.
+//
+// ── Pourquoi c'est une fonction PURE ──────────────────────────────────────
+//
+// Elle ne connaît ni la base ni le disque : elle reçoit deux objets de la même
+// forme et rend la liste des écarts. C'est ce qui la rend éprouvable contre des
+// altérations fabriquées (`scripts/test-import-fiches-phyto.ts`), donc ce qui
+// permet de la voir ROUGE — sans quoi elle ne prouverait rien (`CLAUDE.md` §5).
+
+export type EcartIntegrite = {
+  /** Le chemin exact, dans la notation du fichier source. */
+  champ: string;
+  attendu: unknown;
+  trouve: unknown;
+};
+
+/** Rend une valeur comparable et lisible dans un message d'erreur. */
+function figer(v: unknown): string {
+  if (v === null || v === undefined) return "null";
+  if (Array.isArray(v)) return `[${v.map(figer).join(", ")}]`;
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return `{${Object.keys(o)
+      .sort()
+      .map((k) => `${k}: ${figer(o[k])}`)
+      .join(", ")}}`;
+  }
+  return JSON.stringify(v);
+}
+
+function comparer(champ: string, attendu: unknown, trouve: unknown, ecarts: EcartIntegrite[]): void {
+  if (figer(attendu) !== figer(trouve)) ecarts.push({ champ, attendu, trouve });
+}
+
+/**
+ * Les champs SCALAIRES d'une fiche, nommés un à un.
+ *
+ * **Écrits à la main plutôt que balayés par `Object.keys`, et c'est le point le
+ * plus important de ce fichier.** Un balayage automatique compare ce que les
+ * deux objets ont en commun : le jour où une colonne est ajoutée au schéma mais
+ * oubliée dans l'`INSERT`, elle est absente des DEUX côtés — et le contrôle
+ * reste vert sur une information perdue. C'est précisément le défaut qu'il
+ * existe pour attraper.
+ *
+ * Cette liste est donc le contrat, et l'ajout d'un champ oblige à l'y écrire.
+ */
+const CHAMPS_SCALAIRES = [
+  "code",
+  "nomCommun",
+  "nomScientifique",
+  "categorie",
+  "agentCausal",
+  "agentType",
+  "periodeDebutMois",
+  "periodeFinMois",
+  "explicationCourte",
+  "gravite",
+  "impactMecanique",
+  "impactMecaniqueNote",
+  "risqueHumainAnimal",
+  "risqueHumainAnimalNote",
+  "statutReglementaire",
+  "referenceReglementaire",
+  "diagnosticPhoto",
+  "conduiteRecommandee",
+  "prevention",
+  "gestion",
+  "traitement",
+  "methodeConfirmation",
+  "certitudeMax",
+  "hotesNonExhaustifs",
+  "origine",
+  "version",
+  "sourcesAJourLe",
+] as const satisfies readonly (keyof FicheImportee)[];
+
+/** Les champs LISTE de mots ou de phrases, comparés dans l'ordre. */
+const CHAMPS_LISTES = [
+  "partiesAtteintes",
+  "photosUtiles",
+  "criteresDiscriminants",
+  "criteresExclusion",
+  "facteursFavorisants",
+  "informationsRequises",
+] as const satisfies readonly (keyof FicheImportee)[];
+
+/**
+ * Comparer la fiche du FICHIER et la fiche RELUE EN BASE, champ par champ.
+ *
+ * **L'ordre des listes compte, et ce n'est pas de la rigidité mal placée.** Un
+ * symptôme cardinal déplacé en fin de liste change ce que l'écran montre en
+ * premier ; des critères discriminants réordonnés changent ce qu'on lit d'abord
+ * sur un chantier. « Déplacée » figure d'ailleurs mot pour mot dans sa
+ * consigne, à côté de « perdue » et « modifiée ».
+ *
+ * **`niveauValidation` est délibérément ABSENT de la comparaison.** C'est le
+ * seul champ que l'import a le droit de faire évoluer : la fiche est écrite
+ * `en_revue`, puis promue `validee` par ce contrôle même. Le comparer
+ * reviendrait à exiger qu'il ait déjà la valeur que le contrôle doit accorder.
+ */
+export function comparerFicheSourceEtEnregistree(
+  source: FicheImportee,
+  enregistree: FicheImportee
+): EcartIntegrite[] {
+  const ecarts: EcartIntegrite[] = [];
+
+  for (const champ of CHAMPS_SCALAIRES) comparer(champ, source[champ], enregistree[champ], ecarts);
+  for (const champ of CHAMPS_LISTES) comparer(champ, source[champ], enregistree[champ], ecarts);
+
+  // ── Les listes d'objets ────────────────────────────────────────────────
+  //
+  // Le nombre est comparé AVANT le contenu : « 10 symptômes attendus, 9
+  // trouvés » désigne le bon coupable, alors que « symptomes[9] : … vs null »
+  // envoie chercher une différence de contenu là où il y a une disparition.
+  const listes = [
+    ["symptomes", source.symptomes, enregistree.symptomes],
+    ["hotes", source.hotes, enregistree.hotes],
+    ["confusions", source.confusions, enregistree.confusions],
+    ["sources", source.sources, enregistree.sources],
+  ] as const;
+
+  for (const [nom, attendues, trouvees] of listes) {
+    if (attendues.length !== trouvees.length) {
+      ecarts.push({ champ: `${nom}.length`, attendu: attendues.length, trouve: trouvees.length });
+      continue;
+    }
+    attendues.forEach((attendu, i) => comparer(`${nom}[${i}]`, attendu, trouvees[i], ecarts));
+  }
+
+  // ── Les images : un champ DÉRIVÉ, et il faut le dire ────────────────────
+  //
+  // `storageKey` n'est pas une information de la source : la fiche déclare un
+  // `fichier` du dépôt, et l'import en tire une clé de stockage NEUVE à chaque
+  // écriture. La comparer littéralement ferait rougir le contrôle sur toutes
+  // les fiches à photo, à chaque import — et un contrôle qui rougit toujours
+  // s'apprend à être ignoré, ce qui est pire que pas de contrôle du tout.
+  //
+  // **Mais « dérivé » ne veut pas dire « non vérifié ».** Une image déclarée
+  // qui n'aurait été rangée nulle part disparaîtrait de l'écran en silence :
+  // on exige donc qu'une clé existe dès qu'un fichier était demandé. C'est la
+  // seule ligne de cette fonction qui ne compare pas mais qui EXIGE.
+  if (source.images.length !== enregistree.images.length) {
+    ecarts.push({
+      champ: "images.length",
+      attendu: source.images.length,
+      trouve: enregistree.images.length,
+    });
+  } else {
+    source.images.forEach((attendu, i) => {
+      const trouve = enregistree.images[i];
+      for (const champ of ["url", "fichier", "licence", "credit", "partie", "legende"] as const) {
+        comparer(`images[${i}].${champ}`, attendu[champ], trouve[champ], ecarts);
+      }
+      if (attendu.fichier !== null && !trouve.storageKey) {
+        ecarts.push({
+          champ: `images[${i}].storageKey`,
+          attendu: `une clé de stockage (fichier « ${attendu.fichier} » déclaré)`,
+          trouve: null,
+        });
+      }
+    });
+  }
+
+  return ecarts;
+}
+
+/** La phrase d'un écart, pour le journal de l'import et pour le patron. */
+export function decrireEcart(e: EcartIntegrite): string {
+  return `${e.champ} : le fichier dit ${figer(e.attendu)}, la base a enregistré ${figer(e.trouve)}`;
+}

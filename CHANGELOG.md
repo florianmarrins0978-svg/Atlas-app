@@ -7,7 +7,889 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-21
+
+### La fiche client qui dicte le devis — dessinée, pas codée
+
+**Sa demande, capture de l'écran à l'appui :** *« J'ai envie que les
+informations prennent moins de place. Le nom et le numéro de téléphone l'un à
+côté de l'autre. Tu me retires tous les facultatifs. Tu vas m'ajouter la
+possibilité de mettre des photos exactement comme il y a sur la page d'après.
+Ensuite, avant les deux touches, le bouton de la note vocale qui se trouve sur
+la page d'après. On appuie, on dicte les tâches à effectuer, celles qu'on voit
+tout de suite avec le client. Dès qu'on rappuie pour arrêter, il faut
+impérativement que les infos aillent s'enregistrer dans le devis. »*
+
+Et le pourquoi, qui commande tout le reste : **il est en rendez-vous**. Il dicte
+ce qu'il voit, il n'a pas le temps de continuer, il ferme l'application. En
+rentrant chez lui, le chantier l'attend à l'accueil et un appui ouvre le devis
+déjà rempli.
+
+**`appli/fiche-client-vocale.html`** — essayable, quatre écrans, atteignable
+depuis `appli/essais.html`. **Rien n'est codé** (`CLAUDE.md` §3 bis).
+
+**Deux pièces sont REPRISES DU CODE, pas redessinées**, parce qu'il a dit
+« exactement comme il y a sur la page d'après » : l'anneau
+(`AnneauNoteVocale.tsx` + le bloc `.atlas-lecteur` de `globals.css` — deux
+cercles, trois traits d'or qui battent, huit barreaux par aile) et le champ de
+photos (`Pellicule.tsx` — un champ unique, `accept="image/*" multiple`, **sans
+`capture`**, sans quoi un iPhone imposerait l'appareil et retirerait l'accès à
+la pellicule).
+
+**Ce que la capture a montré et qu'aucune mesure à l'œil n'aurait vu :** à la
+première largeur essayée, le numéro s'affichait « 06 79 98 45 1 » — le dernier
+chiffre tombait, en silence, sur la seule donnée qu'on ne peut pas deviner. Le
+contrôle compare désormais la largeur du texte à celle de sa boîte, et refuse de
+conclure sur une boîte de zéro pixel.
+
+**Ce qui est posé plutôt que tranché à sa place.** Il veut supprimer la fiche
+chantier pour de bon : elle porte « Créer la facture », les étapes, la relecture
+de la note et les photos d'après-coup. Un quatrième écran, « Ce qui reste à
+reloger », montre où chacune irait — il choisit avant qu'on code.
+
+**Aucun prix n'est inventé sur le devis dessiné** : il n'a annoncé aucun montant
+en dictant, les trois lignes arrivent donc à chiffrer (`CLAUDE.md` §4).
+
+### La fiche dit enfin si le port est ouvert
+
+**« Elle ne se lance plus »**, alors que sa fiche annonçait un serveur qui
+répond, le bon code servi, et « tout concorde ». Un port privé donne exactement
+ce symptôme : GitHub répond par sa page de connexion à la place d'Atlas, et
+depuis un téléphone non connecté à GitHub il n'y a **rien à voir**.
+
+L'état du port n'était écrit que dans le terminal du démarrage — que personne ne
+relit. Il est désormais déposé par `demarrer.sh` et publié sur la fiche, avec le
+remède en trois clics quand il est privé.
+
+**Pourquoi ça retombe en panne tout seul :** `devcontainer.json` déclare le port
+public depuis le 6 août, mais ce fichier n'est appliqué qu'à la CRÉATION de
+l'espace — et le sien est plus ancien. Le geste est rejoué à chaque allumage par
+`ouvrir-port.sh`, qui a besoin de `gh`… absent de cette image. D'où un port qui
+peut redevenir privé sans que rien ne le dise. C'est la troisième fois que ce
+piège coûte une soirée (10 août, puis 21).
+
+### Attendre la construction d'à côté au lieu de la tuer
+
+**Sa plainte du matin :** *« l'appli est hyper lente »*, pour la troisième
+matinée. Sa fiche : construction échouée sur « Another next build process is
+already running », **4,5 Gio de mémoire libres** — donc pas la saturation qu'on
+soupçonnait le 17 août.
+
+Le démarrage lance **deux constructions par nature** : un veilleur est posé
+avant la mise à jour pour que l'application réponde tout de suite, et le banc
+suivant en relance une. Quand la seconde tombait sur la première, on délogeait
+et l'on recommençait — c'est-à-dire qu'on jetait plusieurs minutes de calcul
+déjà faites, sur une machine qui n'en a pas les moyens.
+
+Elle est désormais **attendue** (dix minutes au plus, avec un signe de vie
+chaque minute), et l'on ne déloge qu'ensuite — ce qui reste alors est bien une
+orpheline.
+
+**Et le détenteur du verrou se cherche par le fichier, plus par son nom.** Une
+construction Next est faite de cinq processus, dont deux ne portent nulle part
+les mots « next build » : un survivant de cette espèce était invisible à toute
+recherche par motif. `detenteursDuVerrou()` lit `/proc/<pid>/fd` et trouve qui
+tient `<dist>/lock`, quel que soit son nom.
+
+**CE QUI N'EST PAS PROUVÉ :** la panne n'a pas été reproduite ici. Deux
+hypothèses ont été éprouvées et écartées — le `sleep 1` du démarrage, et
+l'orphelin invisible. Ce qui est livré rend le mécanisme sûr, pas la panne
+corrigée. `TODO.md` la garde ouverte.
+
+---
+
 ## 2026-08-20
+
+### « Mieux vaut refuser de conclure que produire un faux diagnostic »
+
+Sa consigne du 20 août, appliquée point par point (`ARCHITECTURE.md` §138). Ce
+qui existait déjà : le modèle n'a aucun champ pour nommer une maladie, tout ce
+qui s'affiche sort d'une colonne, l'outil sait refuser. Ce qui manquait :
+
+**L'hôte d'abord.** Atlas ne diagnostique plus sans avoir identifié l'essence.
+Sans elle, il demande la photo qui identifie un arbre — feuille entière posée à
+plat, puis l'arbre entier — et refuse au second passage. Un symptôme
+parfaitement caractéristique sur une essence non reconnue ne conclut donc plus :
+c'est le prix, et il est assumé.
+
+**La liste d'hôtes exclut, sauf si la source dit le contraire.** Une maladie du
+platane ne peut plus remonter sur un chêne. C'est la fiche qui déclare si sa
+liste est close, en recopiant ce que le document affirme — l'anthracnose du chêne
+dit « de nombreuses espèces », l'anthracnose du platane dit « Hôtes habituels :
+Platanes ».
+
+**Le plafond de la source gagne toujours.** Une fiche dont le document exige un
+laboratoire ne peut plus afficher mieux que « probable », quel que soit son
+score, et l'écran porte désormais un bloc « Ce qui reste à confirmer » avec la
+phrase exacte de la source. Les photos de référence portent leur avertissement :
+« une ressemblance n'est pas une preuve ».
+
+**Et la comparaison champ par champ après chaque import.** La fiche est relue
+depuis la base et confrontée à son fichier, ligne à ligne, dans la transaction,
+avant validation. Le moindre écart annule l'import entier et nomme le champ.
+Aucune fiche ne peut plus porter « validée » sans ce contrôle — c'est une
+contrainte de la base, pas une intention du code.
+
+**Elle a trouvé deux pertes réelles dans l'heure qui a suivi son écriture** : le
+chemin des photos, que la base jetait après en avoir tiré une clé de stockage ;
+et l'ordre des listes d'hôtes, de sources et de confusions, relues par ordre
+alphabétique au lieu de l'ordre du document. Les deux sont réparées — en gardant
+l'information, jamais en assouplissant le contrôle.
+
+Un troisième défaut est sorti d'une capture, pas d'un test : la phrase du
+laboratoire s'affichait deux fois de suite à l'écran. L'import la refuse
+maintenant.
+
+
+### Anthracnose du chêne et du hêtre — et la relance photo, enfin sur du réel
+
+Troisième fiche réelle, écrite depuis la page Ephytia (INRAE, auteur DSF) que le
+patron a transmise et relue champ par champ. La source commande deux choses que
+la fiche recopie sans les adoucir : la confirmation **exige un laboratoire**
+(d'où `diagnosticPhoto: "indicatif"`, qui plafonne la confiance à « probable »
+quel que soit le score), et les chancres **fragilisent les branches** (d'où
+`impactMecanique: "possible"`, qui fait apparaître la mention de sécurité). Les
+quatre confusions que la page nomme — *Septoria quercicola*, gel, phytotoxicités,
+carences aiguës — ne sont **pas** écrites : une confusion doit désigner une fiche
+qui existe, et aucune de ces quatre n'existe encore.
+
+**Ce qui a été débloqué pour l'écrire**, et qui vaut pour toutes les fiches à
+venir (`ARCHITECTURE.md` §137) :
+
+- une confusion ne pouvait relier que deux fiches d'un **même fichier**. Or les
+  fiches qui se confondent sont celles qu'on écrit à deux jours d'écart, depuis
+  deux pages différentes. Le contrôle porte désormais sur l'import entier ;
+- et son écriture **se perdait en silence** quand la fiche visée n'était pas
+  encore en base : `INSERT … SELECT` n'insère rien sans se plaindre. L'ordre
+  alphabétique des fichiers décidait de ce qui marchait. Les liens en attente
+  sont maintenant raccordés à la fin, et ce qui manque encore fait tomber
+  l'import.
+
+Résultat, éprouvé : une nécrose brune sur feuille **sans essence identifiée** ne
+conclut plus au hasard entre les deux anthracnoses — elle demande *« Photographiez
+une feuille entière, posée à plat »*, puis conclut à la seconde photo. C'est le
+premier usage réel du mécanisme de photo complémentaire.
+
+Deux contrôles corrigés au passage : l'un comptait les confusions de la base
+entière, ce qui n'était vrai que tant qu'elle ne portait que des fixtures ; la
+suite navigateur recopiait à la main le résultat qu'affiche l'écran, au lieu de
+le composer comme le fait le produit.
+
+### L'écran ne promet plus une version rapide que personne ne construit
+
+**Sa soirée du 20 août :** *« L'application est lente, corrige ça. »* Puis, en
+regardant Réglages : *« Si il y a marqué version lente. »* L'écran disait donc
+vrai — son banc servait bien la version lente, celle où chaque écran se compile
+à l'ouverture.
+
+**Mais il terminait par une promesse fausse :** *« La version rapide prend le
+relais dès que la construction aboutit. »* Cette nuit-là elle n'aboutissait pas,
+et n'allait jamais aboutir — **son veilleur était tombé, et c'est lui qui
+construit**. Le panneau lui demandait d'attendre quelque chose qui n'arriverait
+pas ; il a attendu, puis il a redemandé.
+
+Le panneau dit maintenant ce qu'il constate : personne ne construit → « éteignez
+puis rouvrez votre espace de travail » ; une construction tombée mais un
+veilleur en place → il retente seul, et rallumer répare plus vite ; tout va bien
+→ la phrase d'avant, qui redevient vraie. La règle vit dans
+`src/lib/version-lente.ts`, éprouvée sans banc ni serveur ; confrontée à
+l'ancienne phrase, sa suite rend trois rouges.
+
+**Et le produit, lui, n'est pas lent** — mesuré le même soir sur le code du
+jour, version bâtie : connexion à l'accueil en 890 ms, chaque écran entre 0,6 et
+1,1 seconde. `TODO.md` porte le relevé.
+
+### « Choisir la date » : envoyer un devis coûte deux écrans au lieu de trois
+
+**Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
+me le modifier par "Choisir la date" […] j'arrive directement sur la page où je
+peux choisir la date […] on supprime la page qui est entre les deux. On va
+raccourcir les étapes. »* Puis son choix devant la planche : *« A et la 2 »*.
+
+**Le doublon était réel.** L'écran du milieu redisait le client, les lignes et le
+total que le devis venait d'afficher en entier — pour proposer le même geste. On
+ne relit pas un devis qu'on vient de fermer.
+
+**Ce qui change :** sur le devis, un bouton plein **« Choisir la date »**, sans
+flèche, au-dessus de l'aperçu du PDF. Un appui ouvre le calendrier **sans
+changer d'écran**. L'ancienne adresse renvoie au devis tant que rien n'est parti.
+
+**Ce qui ne change pas :** le calendrier, l'interrupteur « il peut proposer une
+autre date » et « Envoyer le devis » sont la MÊME feuille, ouverte plus tôt. Et
+l'écran du devis parti — le « signet d'or » qu'il avait retenu — garde son
+travail : le lien à transmettre, la reprise.
+
+**Deux effets que seul le navigateur a montrés.** La phrase « Devis prêt pour
+Mr. Martins. » se perdait après l'envoi, l'écran annonçant « en attente de
+réponse » une seconde après l'appui — vrai, et froid ; le moment voyage
+maintenant dans l'adresse. Et deux boutons « Annuler » cohabitaient sur le même
+écran sans se distinguer à l'oreille.
+
+**Un défaut corrigé au passage, et qui se voyait à l'œil nu :** rechargé, l'écran
+d'après l'envoi reprenait « Devis prêt pour … » comme si le devis venait de
+partir — même trois jours plus tard. Il dit maintenant où en est vraiment le
+devis, et ne garde la phrase du moment que pour la visite où elle est vraie.
+
+**Ce que ça coûte, dit franchement :** vingt-six suites passaient par l'ancien
+chemin et ont dû suivre. La batterie complète en a fait rougir onze de plus, que
+deux suites jouées seules n'avaient pas vues — dont celle qui a trouvé le défaut
+ci-dessus. Deux suites ont été supprimées avec l'écran qu'elles mesuraient, sans
+rien perdre de ce qu'elles gardaient encore de vivant.
+`ARCHITECTURE.md` §136, `docs/maquettes/82`.
+
+### « Il faut absolument mettre des photos » — l'écran en montre une, et d'où elle vient
+
+**Sa demande du 20 août 2026 :** *« L'utilisateur a besoin de comparer avec une
+vraie photo qui comporte la maladie. »* Il avait raison, et il manquait tout le
+chemin : `images_phyto` existait depuis la migration 0056, mais **rien ne les
+versait, rien ne les servait, rien ne les affichait**.
+
+Le chemin est complet :
+
+- **verser** — une fiche désigne un fichier du dépôt ; l'import le range dans le
+  stockage. Il refuse au-delà de **500 Ko** (ces photos sont versionnées dans
+  Git, où rien ne s'efface, et affichées sur un téléphone au bord d'une route),
+  et il refuse une **licence qui est un aveu** — « à vérifier », « inconnue »,
+  « ? ». Le champ était obligatoire en base, mais rien n'empêchait d'y écrire
+  n'importe quoi : l'obligation rassurait au lieu de protéger ;
+- **servir** — `/api/phyto/image/[id]`, une route à part. Celle des fichiers
+  vérifie la clé contre l'entreprise du contexte, ce qui protège les photos de
+  chantier ; la base phytosanitaire est commune, et l'y faire passer aurait
+  demandé d'affaiblir ce contrôle. **On sert par identifiant, jamais par clé de
+  stockage** : une route acceptant une clé arbitraire laisserait quiconque a un
+  compte lire n'importe quel objet en devinant un chemin ;
+- **afficher** — sur l'écran PRINCIPAL, sous « À quoi ça ressemble », **avant**
+  la conduite à tenir. Comparer suppose de voir les deux ensemble ; reléguer la
+  photo derrière « Voir les détails » aurait vidé le geste de son sens. Le
+  crédit et la licence sont affichés dessous : la plupart des licences libres
+  l'exigent, et une photo sous CC-BY sans son auteur visible est une photo
+  employée hors licence.
+
+**Les images sont lues en direct, pas figées dans le résultat.** Le diagnostic
+est figé — le nom, la gravité, la conduite, ce sur quoi il a agi. La photo est
+une aide à l'œil : la geler par identifiant la casserait au premier réimport de
+la fiche, et une image morte est pire qu'une image un peu différente.
+
+**Ce que ça ne règle pas, et qu'il faut dire :** aucune photo réelle n'est
+livrée. Celles des organismes portent des crédits nominatifs — sur la seule
+fiche du platane : CHAMONT S. (INRA), © GIRAUDEL Arnaud, © Jean-Pierre Henry.
+Les trois sources propres sont écrites dans `donnees/phyto/LISEZ-MOI.md`, et la
+première est la meilleure : **ses propres photos**, prises au téléphone dans les
+conditions réelles — exactement ce que l'utilisateur photographiera.
+
+**Éprouvé en regardant l'écran**, avec une image d'essai générée (aucun droit de
+tiers) : photo rendue en 338×338, servie en 200, crédit affiché, placée avant la
+conduite, et rien de caché derrière la barre du bas. Une image de zéro pixel
+aurait été refusée par le contrôle — c'est le défaut du 15 août.
+
+
+### Deuxième fiche réelle — et un avertissement qui parlait à tort
+
+**L'anthracnose du platane**, écrite à partir de la page Ephytia (INRAE, auteur
+Département de la santé des forêts) que le patron a transmise, faute de pouvoir
+l'atteindre depuis ici.
+
+**Le vrai apport de ce lot n'est pas la fiche : c'est le défaut qu'elle a
+révélé, et il n'est sorti d'aucun test.** Devant une feuille de platane, Atlas
+affichait, sous « Surveiller l'évolution » et une gravité « Faible » :
+
+    ⚠ Une photo ne permet pas de juger la solidité de l'arbre.
+
+La fiche déclare `impact_mecanique: inconnu` — sa source ne parle pas de
+stabilité —, et la règle affichait la mention dès que l'impact n'était pas
+« aucun ». C'est exactement le travers que `CLAUDE.md` nomme à propos du rappel
+de panne : **un avertissement qui parle à tort s'apprend à être ignoré**, et le
+jour où il compte, il est devenu du décor.
+
+La règle tient désormais compte de la gravité quand l'impact est inconnu : une
+source qui a jugé le dégât mineur n'est pas une source silencieuse. `possible` et
+`avere` restent inconditionnels, et une fiche grave dont la stabilité est
+inconnue continue de le dire.
+
+**Vérifié en regardant les trois écrans** : platane → pas de mention ; sporophore
+au collet d'un épicéa → « Fomès des résineux · confiance probable » avec la
+mention ; photo floue → refus.
+
+**Et la fiche dit ce que sa source NE dit pas.** Aucun traitement — la page n'en
+donne aucun, le champ reste vide. Aucune confusion — la page n'en nomme aucune.
+Les trois figures ne sont pas reprises : une image sans licence ne s'affiche pas.
+
+
+### Le plan d'arrosage entre DANS l'application, et le croquis se lit
+
+**Sa demande, en trois mots :** *« Code le tout dans l'appli »* — après *« pour
+la lecture du croquis tu peux le faire, il y a déjà l'IA dans l'application,
+Anthropic et OpenAI »*, puis *« les clés sont présentes également ! »*.
+
+**J'avais dit le contraire, et il avait raison.** J'avais annoncé que lire une
+image demandait un contrat qui n'existait pas. Le raccordement des deux
+fournisseurs est écrit depuis le 6 août, et l'un comme l'autre sait regarder une
+photo. Corrigé dans le dépôt (`d0975ca`) avant d'écrire une ligne.
+
+**Trois morceaux :**
+
+| | Où | Ce qu'il porte |
+|---|---|---|
+| Le calcul | `src/lib/arrosage/` | le débit au seau, le découpage en réseaux qui tiennent dans ce débit, la liste des pièces prise dans le catalogue |
+| La lecture | `src/server/ai/services/lire-croquis.ts` | la photo part au fournisseur, ce qui revient est relu par une fonction pure qui **refuse ce qu'elle ne comprend pas** |
+| L'écran | `src/app/paysage/arrosage/` | un titre, un déroulant, trois cases, un bouton |
+
+**UNE SEULE SOURCE POUR LE CALCUL, et un contrôle qui l'impose.** Le calcul et
+le catalogue existaient déjà dans `appli/`, éprouvés depuis des jours. Les
+réécrire en TypeScript aurait produit **deux calculs qui finissent par ne plus
+dire la même chose** (`CLAUDE.md` §3) — et c'est le paysagiste qui aurait vu la
+différence entre la page qu'il essaie et l'application qu'il utilise. Les deux
+copies sont donc **identiques octet pour octet**, et
+`scripts/verifier-arrosage-une-seule-source.mjs` refuse qu'elles divergent. Le
+prix : la copie serveur porte des fonctions de navigateur que rien n'appelle,
+et un silence de lint qui l'explique.
+
+**Rien ne s'invente, et ce qui manque se dit :**
+
+- une zone sans cote lisible **ne part pas au calcul** — la compter pour zéro
+  donnerait un plan qui l'oublie en silence ;
+- un croquis dont aucune zone n'est mesurable est **refusé**, avec sa raison ;
+- ce que la lecture n'a pas su lire s'affiche en **réserves**, sous le plan ;
+- une pièce sans référence n'en reçoit pas une inventée — c'est une ligne à
+  mesurer ou à assembler, et le typage l'a imposé ;
+- **sans clé d'IA, l'écran le dit AVANT le geste.** Le laisser photographier
+  pour rien serait le troisième bouton qui ne répond pas.
+
+**L'écran Paysage cesse de mentir.** Il ouvrait une page publiée hors d'Atlas,
+et son commentaire l'expliquait ; le commentaire décrivait un monde disparu dès
+que l'outil est entré — corrigé dans le même commit que le code.
+
+**Le plafond de mots suit l'écran dans l'application** : la suite compte les
+mots et rougit dès qu'il en regagne. C'est ce que le dépôt réclamait depuis
+quatre plaintes sur la même chose.
+
+### La première fiche phytosanitaire RÉELLE — et la chaîne éprouvée de bout en bout
+
+**Le fomès des résineux**, écrit à partir de la plaquette du Département de la
+santé des forêts (juillet 2013), récoltée par le workflow puis **lue en
+entier** — jamais de mémoire.
+
+Le parcours complet fonctionne sur une donnée réelle : document officiel récolté
+→ lu → saisi → six contrôles → importé → rapproché → conclu. Devant un
+sporophore au collet d'un épicéa, Atlas répond **« Fomès des résineux ·
+confiance probable »**. Le plafond de confiance vient de la fiche elle-même :
+elle déclare `diagnostic_photo: indicatif`, parce que le document dit en toutes
+lettres que chez l'épicéa « aucun symptôme extérieur n'est visible » et que les
+carpophores « sont souvent peu visibles ». **La source borne ce qu'Atlas ose
+affirmer** — c'est exactement ce que le module devait faire.
+
+**Ce que la fiche NE dit pas, et pourquoi c'est écrit dedans.** L'impact
+mécanique est « possible » et non « avéré » : le document décrit une pourriture
+du bois de cœur, mais ne se prononce nulle part sur la stabilité de l'arbre —
+c'est un document de gestion forestière. Aucun feuillu n'est listé comme hôte,
+le document précisant que le fomès s'y rencontre « de manière anecdotique ». Les
+deux confusions réelles qu'il nomme (armillaire, rhizina) ne sont pas écrites :
+une confusion doit désigner une fiche existante, et ces deux-là n'ont pas encore
+de source lue. Chaque vide porte sa raison, dans un champ `_source_*`.
+
+**Ce qui limite le rythme n'est pas la saisie, c'est le TYPE de document.** Neuf
+documents ont été récoltés ; un seul était une fiche-type, et il a suffi. Les
+bilans régionaux nomment les problèmes et donnent des niveaux d'impact, mais
+décrivent rarement les symptômes assez précisément pour les écrire dans le
+vocabulaire fermé. **INRAE (Ephytia) en contient beaucoup — sa licence de
+réutilisation est le vrai point bloquant**, et c'est une décision, pas du code.
+
+**Une suite a rougi sur du code juste, et sa correction vaut la règle** : un cas
+affirmait « la base est vue comme vide » sans la garde des fixtures. C'était vrai
+par ACCIDENT — il n'y avait alors aucune fiche réelle. Il affirme désormais ce
+qu'il devait affirmer : *aucune fixture ne sort*. Ce que la base contient par
+ailleurs ne le regarde pas (`CLAUDE.md` §5 bis).
+
+
+### Les sources phytosanitaires sont hors d'atteinte d'ici — la récolte part ailleurs
+
+**Constaté en cherchant à écrire les premières fiches.** Les six domaines que le
+patron a nommés — `agriculture.gouv.fr`, `inrae.fr`, `fredon-france.org`,
+`onf.fr`, `plante-et-cite.fr`, `ephy.anses.fr` — répondent tous `403 à CONNECT`
+au mandataire réseau. La recherche web passe, mais elle rend un **résumé écrit
+par un modèle**, pas la page.
+
+**Ce qui a été écarté, et c'est le vrai sujet de ce lot :** écrire les fiches
+d'après ces résumés. Le résultat aurait eu toutes les apparences d'une donnée
+sourcée — organisme, titre, adresse, date de consultation — sans que personne
+ait lu le document. **Une fiche vide se voit ; une fiche mal sourcée se croit.**
+
+`.github/workflows/recolter-sources-phyto.yml` va donc chercher les documents
+depuis une machine qui a le réseau, en extrait le texte et le dépose sur une
+branche à lui — jamais sur `main`. Même famille que `pages.yml`,
+`relever-palette.yml` et `banc-essai.yml`.
+
+**Deux garde-fous posés en même temps, et ils comptent plus que le workflow :**
+rien n'est rapatrié sans **licence déclarée** (une source en `a_verifier` garde
+son adresse et rien d'autre) ; et la **CI contrôle `donnees/phyto/fiches` à
+chaque poussée** — les fiches arrivent par des fichiers de données, pas par du
+code, et sans ce contrôle une fiche validée sans source entrerait sur `main`
+sans que rien ne s'y oppose. Le contrôle a été confronté à une fiche
+volontairement fautive avant d'être branché.
+
+### La batterie ne bâtissait plus — et son rouge était devenu du décor
+
+**Trouvé en jouant `npm run verifier:avant-livraison` le 20 août :** l'étape
+« Construction » échouait sur *« Variable d'environnement obligatoire
+manquante : DATABASE_URL »*, en accusant une route d'agenda Google qui n'y est
+pour rien. Vérifié sur `main` sans aucune modification : **elle échouait déjà**.
+
+La construction collecte les données de page, ce qui instancie la configuration
+du serveur. La CI pose `DATABASE_URL` au niveau du job et bâtit donc sans
+broncher ; l'étape locale ne la posait pas. **La batterie ne jouait pas ce que
+la CI joue** — et une étape rouge en permanence s'apprend à être ignorée, ce qui
+fait perdre le seul contrôle qui protège le banc du mode lent (`CHANGELOG` du
+16 août : *« l'appli est vraiment très lente, mais vraiment »*).
+
+L'adresse est simplement lisible : aucune requête n'est faite pendant une
+construction.
+
+### Dicter le chantier dans le devis, et le retrouver rédigé
+
+**Sa demande :** *« Il existe un petit logiciel que des étudiants posent sur
+leur table pendant le cours : ils parlent, ça enregistre, et ensuite ça
+synthétise. Sur la page du devis, j'aimerais la même chose — qu'il appuie sur la
+note vocale, qu'il parle en expliquant les tâches à faire, et que
+l'intelligence artificielle comprenne et rédige ça sous forme de belles
+phrases. »*
+
+Le micro du devis existait depuis le 15 août, mais il n'écoutait qu'un artisan
+qui **corrige** des lignes déjà écrites. Il écoute désormais aussi celui qui
+**raconte** son chantier — les deux dans la même dictée, avec le même micro et
+sans rien changer à l'écran.
+
+Sur son exemple — *« j'aimerais tailler ma haie, enfin je ne sais plus, je crois
+que c'est quelque chose comme vingt mètres linéaires […] couper les
+inflorescences des hortensias, et tondre la pelouse »* — il obtient trois lignes
+proposées, à cocher : **Taille de haie** (20 ml), **Taille des inflorescences
+d'hortensias**, **Tonte de la pelouse**. Ses hésitations, ses commentaires et le
+récit de ce que son client lui a dit ne deviennent aucune ligne.
+
+**Aucun prix n'est inventé pour autant, et c'est délibéré** : il n'en a annoncé
+aucun, les trois lignes arrivent donc à chiffrer, signalées en rouge. Une ligne
+bien rédigée est plus crédible qu'une ligne bancale — raison de plus pour que
+les gardes sur le prix ne bougent pas.
+
+**Les mesures traversent jusqu'au document**, unité comprise : « vingt mètres
+linéaires » devient 20 ml, la graphie que le moteur de prix reconnaît. Une unité
+sans quantité est refusée (« 1 ml » serait un chiffre que personne n'a dit), une
+quantité recopiée dans l'unité aussi (« 20 × 20 mètres » aurait doublé sa haie).
+Le stère et l'arbre, eux, restent écrits tels qu'il les dit.
+
+**Ce qui n'a pas pu être vérifié ici, et qui l'est ailleurs.** La rédaction
+dépend d'un modèle de langage : cet environnement n'a aucune clé, la CI non
+plus. `npm run verifier:dictee` envoie sa dictée entière au vrai modèle et
+vérifie les trois lignes, la mesure et l'absence de prix — **il refuse de rendre
+un vert sans clé** plutôt que de laisser croire à un contrôle qui n'a pas eu
+lieu. Il reste à le jouer depuis son espace. La règle de rédaction, elle, est
+éprouvée ici et sait rougir : ses propres phrases recopiées doivent être
+refusées (`src/lib/redaction-lignes.ts`).
+### La flèche de la fiche client ramène d'où l'on vient
+
+**Sa remarque, capture à l'appui :** *« Quand j'appuie sur retour, ça ne me fait
+pas un retour, mais deux retours. Je reviens directement à la page vos
+chantiers. Or, je devrais rester dans la catégorie mes clients. »*
+
+Il avait raison, et c'était écrit en toutes lettres : la fiche renvoyait
+toujours à l'accueil (`href: "/"`), quel que soit l'écran d'où l'on venait.
+Depuis la liste des clients, un seul appui sautait donc **deux** écrans.
+
+**Un lien fixe se serait trompé de toute façon**, parce que la fiche s'ouvre
+depuis DEUX endroits : la liste des clients, et le tiroir d'un chantier. Renvoyer
+toujours vers les clients ferait sortir du chantier celui qui y était. L'origine
+voyage donc dans l'adresse, et `src/lib/retour-fiche-client.ts` la traduit — une
+seule fois, hors de tout écran.
+
+**Cette valeur vient de l'adresse, donc de n'importe qui.** Sans filtre,
+`?de=https://ailleurs.example` ferait de la flèche « retour » une porte de sortie
+vers un site étranger. Seule la forme d'un chemin de chantier est acceptée ; tout
+le reste retombe sur la liste des clients, sans erreur ni écran vide.
+
+Éprouvé dans les deux sens : en remettant `href: "/"`, les deux suites rougissent
+— celle sans navigateur sur « c'est exactement le double saut qu'il a signalé »,
+celle au navigateur sur les trois chemins.
+
+### La mesure du débit revient, et l'IA sait lire une image
+
+**Ses deux décisions du 20 août au soir :** *« Remets la mesure du débit, mais
+minimaliste, sans mots qui servent à rien, comme on vient de faire. Et pour la
+lecture du croquis, tu peux le faire — il y a déjà l'IA dans l'application,
+Anthropic et OpenAI. »*
+
+**Le débit, en trois cases.** Litres, secondes, bar — sous le déroulant du
+piquage —, puis le résultat. Les deux paragraphes d'explication qui
+l'entouraient ne reviennent pas. L'écran passe de 21 à 26 mots ; le plafond du
+contrôle passe de 22 à 28.
+
+**LA CORRECTION QUI COMPTE : j'avais dit à tort qu'Atlas ne savait pas lire une
+image.** `src/server/ai/services/lire-ticket.ts` fait **déjà** lire un ticket de
+caisse photographié — consigne système, image envoyée au fournisseur, réponse
+JSON, fonction pure qui la relit et refuse ce qu'elle ne comprend pas, éprouvée
+sans clé. Lire un croquis est le même patron.
+
+Ce n'était donc pas un mur mais une pièce à écrire, et la réponse inverse aurait
+enterré une fonctionnalité faisable. D'où **`CLAUDE.md` §5 ter** : avant de dire
+« l'application ne sait pas faire ça », chercher qui, dans le dépôt, fait déjà
+quelque chose d'approchant. Un `grep` de trente secondes sur `image` l'aurait
+donné.
+
+**Deux contrôles ont changé de sens, et c'est normal.** Celui qui exigeait
+l'aveu « Atlas ne sait pas lire » visait désormais le mensonge : il vérifie à
+présent que la page dit seulement que **son** plan est un exemple dessiné.
+Celui qui interdisait tout champ avant le plan en accepte trois — ceux du seau —
+et rougit au quatrième (`CLAUDE.md` §5 bis). **Un contrôle neuf s'y ajoute** :
+le débit affiché doit tomber juste, 10 L en 20 s font 1,80 m³/h — un écran qui
+montre une mesure et un résultat qui ne se suivent pas apprend à douter de tous
+ses chiffres.
+
+### Diagnostic végétal — le troisième outil de Paysage, et sa base commence vide
+
+**Sa demande du 20 août 2026 :** *« un professionnel prend en photo une feuille,
+une branche, une écorce, un champignon, un arbre ou un arbuste présentant une
+anomalie, puis obtient automatiquement un diagnostic probable et une conduite à
+tenir »*, avec un parcours en quatre gestes : ouvrir, photographier, attendre,
+lire.
+
+**Migration `0056_diagnostic_vegetal.sql`** — douze tables, en deux mondes qui
+ne se mélangent jamais : la base phytosanitaire (commune, `GRANT SELECT` seul,
+sans RLS, comme `catalogue_prestations`) et les diagnostics (isolés par RLS,
+comme tout le reste).
+
+**Le principe qui commande tout : le modèle OBSERVE, la base DÉCIDE.** Un modèle
+à qui l'on demande de nommer une maladie en nommera toujours une. On ne lui
+demande donc jamais de nommer quoi que ce soit : il décrit ce qu'il voit dans un
+**vocabulaire fermé** (14 parties, 25 motifs, 10 couleurs, 12 localisations),
+et c'est du code déterministe qui confronte cette description aux fiches.
+**Tout texte affiché sort d'une colonne de `fiches_phyto`** — une maladie, une
+gravité ou un traitement inventés sont impossibles par construction, pas par
+consigne écrite dans un prompt.
+
+**Ce que ça évite, concrètement :** un artisan qui taille un arbre d'après une
+recommandation qu'aucune source n'a écrite.
+
+**La base est VIDE, et c'est voulu.** Sa règle : *« ne remplis pas
+artificiellement la base avec de fausses données »*. Le module répond alors
+« la base ne contient encore aucune fiche validée » — ce qui est vrai. Les
+seules données livrées sont quatre fixtures d'essai (`donnees/phyto/fixtures/`),
+qui ne décrivent aucun végétal réel et que **trois barrières** empêchent
+d'atteindre une production : l'import les refuse si `NODE_ENV=production`, la
+lecture les filtre sur `origine = 'reelle'`, et une contrainte CHECK lie
+l'origine au préfixe `zz-test-` **dans les deux sens**.
+
+**Les quatre issues d'une analyse, et les trois dernières comptent autant que la
+première :** un résultat ; **une seule** demande de photo complémentaire, dont
+la consigne est recopiée mot pour mot de `confusions_phyto` (jamais improvisée) ;
+« je ne peux pas confirmer » ; ou « personne n'a regardé » quand aucun
+fournisseur n'est branché — deux refus distincts, parce qu'ils ne se réparent
+pas au même endroit.
+
+**La confiance tient en TROIS MOTS, jamais un pourcentage** — aucun modèle
+employé ici ne fournit de probabilité calibrée. Trois plafonds l'abaissent
+d'office : photo floue, fiche qui se déclare seulement « indicative », essence
+non reconnue. Sans eux, la confiance affichée mentirait exactement dans les cas
+où elle compte le plus.
+
+**Une fiche `diagnostic_photo: impossible` n'est JAMAIS rendue**, même seule en
+tête avec un score parfait : c'est ce qui empêche d'affirmer sur photo ce qu'une
+photo ne montre pas. Et dès que `impact_mecanique` n'est pas « aucun » — *y
+compris quand il vaut « inconnu »** —, le résultat porte la phrase qui dit
+qu'une photo ne juge pas la solidité d'un arbre.
+
+**Les métadonnées EXIF sont retirées avant tout** (`src/lib/exif.ts`, JPEG/PNG/
+WebP, sans réencodage) : une photo de jardin porte les coordonnées GPS du
+domicile du client. Un fichier qu'on n'a pas su nettoyer est **refusé**, jamais
+rangé — la colonne `exif_retire` affirmerait sinon quelque chose de faux.
+
+**La conservation des photos est CONFIGURABLE**, jamais gravée : 90 jours pour
+une photo libre, aucune échéance pour une photo versée au dossier d'un chantier
+(`PHOTOS_DIAGNOSTIC_RETENTION_JOURS`). Le rattachement à un chantier **recalcule**
+l'échéance — sans quoi la pièce d'un dossier en cours disparaîtrait au bout de
+trois mois sans que personne l'ait demandé.
+
+**Le classement sémantique n'existe pas encore ; son verrou, si.** Sa demande :
+ne pas empêcher l'ajout ultérieur d'un classement sémantique ou visuel, mais
+*« le modèle ne devra jamais pouvoir créer une maladie absente de la base »*.
+`appliquerClassement` n'accepte d'un classeur que des fiches déjà présentes,
+reprend la fiche d'ORIGINE (pas celle qu'il rend, dont le contenu pourrait être
+falsifié), refuse les doublons et borne le score. Éprouvé contre un classeur
+volontairement malveillant.
+
+**Ce qui n'est PAS vérifié, et doit s'écrire :** l'appel réel au fournisseur de
+vision. Aucune clé d'IA dans cet environnement — comme pour la lecture des
+tickets. Il devra l'être sur le banc, avec de vraies photos.
+
+
+### L'arrosage en deux gestes — dessiné, pas codé
+
+**Sa demande du 20 août 2026**, capture d'`arrosage.html` à l'appui : *« on va
+simplifier cette page également. Garde le piquage se fait… avec le bandeau
+déroulant. Ensuite : le croquis et ses métrés, avec la possibilité de mettre la
+photo. Je veux rien d'autre. Ensuite […] tu fais apparaître un plan avec les
+différents réseaux et le détail des pièces. »*
+
+**`appli/arrosage-simple.html`** — sans script ni photo. **Rien n'est codé**
+(`CLAUDE.md` §3 bis) : `appli/arrosage.html` n'a pas été touchée.
+
+**La page passait de huit questions à deux.** Partent : le seau, le temps de
+remplissage, la pression, le débit affiché en cours de route, la règle de
+recouvrement, la marque des arroseurs, le corps d'arroseur, la saisie des zones
+une par une, la sonde de pluie, et les boutons copier / envoyer / imprimer.
+Restent le piquage et le croquis.
+
+**Ce que la page DIT plutôt que de faire semblant : Atlas ne sait pas lire un
+croquis.** Reconnaître un contour tracé au crayon et retrouver « 12 m » écrit en
+travers demande une IA qui regarde une image ; le raccordement est écrit
+(`ARCHITECTURE.md` §26) mais aucun contrat n'est signé. Le plan montré après la
+photo est donc **dessiné**, et un écran de la maquette l'explique — avec ce que
+la lecture devra rendre le jour venu : les surfaces, les longueurs, et où est le
+point d'eau. Le reste est du calcul, et le calcul est déjà écrit.
+
+**Ce que le retrait coûte, et il est réel :** le débit mesuré au seau décidait
+du nombre d'arroseurs par réseau. Sans mesure, il faut le supposer d'après le
+piquage — et ce sera parfois faux. Deux façons de vivre avec sont posées dans la
+maquette, **et il tranche**.
+
+**Le contrôle recalcule le plan** (`scripts/verifier-maquette-arrosage-simple.mjs`,
+dans `npm run verifier:maquette`) : les arroseurs dessinés doivent être ceux du
+détail — **et par couleur**, sinon deux réseaux faux se compensent ; une
+électrovanne par réseau ; le programmateur assez de voies ; aucun réseau
+au-dessus du débit disponible ; et **la somme des réseaux au-dessus** de ce
+débit, sans quoi un seul aurait suffi et le découpage ne servirait à rien. Il
+refuse aussi tout champ de saisie remis avant le plan. Éprouvé rouge sur cinq
+états dégradés.
+
+**Deux défauts trouvés à l'image, aucun par un test :** « amenée 18 m » passait
+sous le cadre du compteur, et les massifs portaient leur mesure au-dessus de
+leur nom quand la haie faisait l'inverse.
+
+**Elle n'est PAS dans `essais.html`**, à sa demande — *« arrête de me le mettre
+dans Atlas app essai »*. Elle se donne par son adresse directe, et figure
+nommément dans la liste vérifiée après déploiement : une adresse transmise sans
+preuve qu'elle répond n'est pas une adresse.
+
+### L'écran d'arrosage dépouillé une seconde fois : vingt et un mots
+
+**Sa consigne du 20 août au soir**, après avoir vu la première version : *« le
+titre plan d'arrosage, et en dessous le piquage se fait avec le bandeau
+déroulant — tout ce qu'il y a entre les deux, tu me le supprimes. Ensuite le
+croquis et ses métrés avec la possibilité de mettre la photo, et tout le reste
+tu me le supprimes. Tous les autres mots, tu me les supprimes. Et je ne veux pas
+qu'il y ait marqué un et deux sur les deux machins. »*
+
+Sont partis : le surtitre, la phrase d'introduction, les numéros « 1 · » et
+« 2 · », le titre « D'où part l'eau » (le libellé du déroulant le dit déjà), les
+deux paragraphes d'aide et les deux encarts du bas. **Il reste un titre, un
+déroulant, un bouton — vingt et un mots.**
+
+**Ce que les encarts portaient n'est pas perdu** : les deux écrans qu'ils
+ouvraient restent atteignables depuis le plan. Sans aucune porte, ils seraient
+devenus des écrans morts — la faute des huit planches introuvables.
+
+**LE CONTRÔLE QUI MANQUAIT DEPUIS QUATRE PLAINTES.** `HANDOVER.md` le réclamait
+en toutes lettres : *« ce qui manque, c'est un contrôle qui compte les mots de
+chaque écran et rougit quand un écran en gagne ; sans lui, l'application
+regrossira, parce que chaque décision juste ajoute une ligne et que personne
+n'en retire jamais »*. Il existe désormais pour cet écran : **plafond 22 mots**,
+et aucun titre numéroté.
+
+**Il compte ce qu'il LIT, pas ce que le document contient** : la première
+version additionnait les trois options du déroulant, dont deux sont invisibles
+tant qu'il ne l'ouvre pas, et accusait l'écran de porter 33 mots quand il n'en
+montre que 21.
+
+### Les pièces de la maquette d'arrosage venaient de nulle part
+
+**Sa question, et elle valait mieux qu'une réponse rassurante :** *« les pièces
+que tu as utilisées pour l'exemple sont choisies au hasard ? »*
+
+**Oui, en partie.** « Turbines, portée 5 m · 0,30 m³/h » ne correspondait à
+aucune référence ; « colliers de prise en charge », « filtre à tamis » et
+« clapet anti-retour » n'existent nulle part. Les longueurs de tuyau — 28 m,
+34 m, 18 m — étaient écrites de mémoire.
+
+**Ce que le dépôt avait déjà, et que la maquette ignorait :**
+`appli/arrosage-catalogue.js`, où chaque entrée porte sa **source** — relevée de
+ses photos (`patron`, « Aqua Plus 2026, p. 11 ») ou `provisoire` —, et
+`appli/arrosage-calcul.js`, qui choisit les buses, l'écart, le recouvrement et
+la répartition en secteurs.
+
+**Le calcul a donc été joué pour de bon** (Playwright sur `arrosage.html`, le
+jardin de l'exemple saisi dans ses champs), et la maquette porte désormais ce
+qu'il rend : 6 turbines *3504 · buse 0,75* à 0,96 m³/h, un arroseur tous les
+5,33 m, recouvrement 98 % — **avec son avertissement** « la buse est un peu
+grande ici : l'écart tombe sous la portée », que la maquette taisait. Les
+électrovannes *100 DV 1" MM 9V*, la *Clarinette taraudée 1"*, le *Programmateur
+BL-IP 4 stations*, les *Coudes SBE 050 et 075* remplacent les pièces inventées.
+Et les longueurs de tuyau affichent **« à mesurer »**, comme le calcul le fait.
+
+**Deux incohérences trouvées à la capture, aucune par un test :** la page
+expliquait un total de 2,46 m³/h quand la somme des réseaux en fait 2,70 ; et le
+plan portait « amenée 18 m » quand la liste répondait « à mesurer » pour cette
+même amenée.
+
+**Trois gardes neuves**, chacune éprouvée rouge : chaque libellé doit être **à
+l'identique** un nom du catalogue, le total écrit doit être la somme des
+réseaux, et le plan ne doit pas chiffrer ce que la liste dit ignorer. **La
+première version de la garde du catalogue ne prouvait rien** — elle acceptait une
+inclusion, et « Turbine portée 5 m » passait grâce à l'entrée générique
+« Turbine ». Trouvé en la confrontant à l'invention qu'elle devait bannir.
+
+La règle est écrite dans `CLAUDE.md` §4 bis.
+
+### La fiche client refondue, et un TROISIÈME document en PDF
+
+**Ses trois décisions du 20 août 2026 :** *« Tu peux rajouter une colonne
+facture et ranger les factures dans le même ordre. Sous format PDF, et donc
+faire en sorte que les fiches chantiers soient au format PDF maintenant. […] On
+va modifier la vraie application. »*
+
+**LE PDF DE FICHE DE CHANTIER — `src/server/pdf/fiche-chantier-pdf.ts`.**
+Atlas ne fabriquait que deux documents : le devis et la facture. Ce qu'il
+appelait « fiche chantier » était un ÉCRAN. La fiche dit ce qui a été fait, avec
+quoi, et ce qu'on a observé — **jamais un prix**. C'est ce qui la rend
+transmissible : on peut la donner à un locataire, à un syndic, à l'assurance
+d'un voisin, sans divulguer ce que le propriétaire a payé.
+
+**Une option dans le moteur commun, et non un troisième moteur** (`CLAUDE.md`
+§3). `sansChiffrage` retire le tableau de prix, les totaux, la TVA, l'IBAN ; les
+trois pièces gardent la même feuille, parce qu'elles sortent du même artisan.
+`blocsTexte` s'y ajoute pour le matériel et les photos — le premier réflexe
+avait été de les entasser dans le `rappel` de l'en-tête, qui s'écrit d'un seul
+trait : les trois lignes se seraient imprimées bout à bout.
+
+**Ce qui garde le devis et la facture : une EMPREINTE de leur trace**, relevée
+avant la première ligne de `sansChiffrage` — chaque texte, sa position au
+centième de point, sa taille, sa couleur, sa page. Éprouvée rouge en décalant le
+moteur d'un seul point. Sans elle, un `if` mal placé aurait décalé un total sans
+que personne le voie avant l'impression.
+
+**Un point corrigé AVANT d'écrire une ligne :** la maquette annonçait
+« 8 h 30 → 16 h 00 · 2 personnes ». **Ces horaires n'existent nulle part** — la
+base retient le créneau (matin / après-midi), le nombre de demi-journées et
+l'équipe. Le document aurait promis ce qu'il ne pouvait pas remplir.
+
+**L'ÉCRAN — `src/app/clients/[id]/page.tsx`.** La dernière prestation en titre
+noir gras avec ce qu'elle comprend, puis trois colonnes de PDF — Devis, Fiche
+chantier, Facture —, chacune du plus récent au plus ancien. Le nom et les
+informations sous le nom restent ; **les trois cases, « Ce qu'on lui fait et
+combien de fois », « Ses chantiers » et la phrase sur les factures sont
+parties**.
+
+**Une seule règle de tri pour les trois colonnes**
+(`src/lib/documents-du-client.ts`). Il a dit « le même ordre » : trois tris
+écrits séparément auraient fini par diverger, et c'est lui qui aurait vu une
+colonne remonter le temps. Une pièce sans date passe en dernier — jamais en
+premier, ce qui la ferait passer pour la plus récente.
+
+**Ce que les colonnes ne montrent pas, et pourquoi :** les devis en brouillon
+(le client ne les a jamais reçus, leur version peut encore changer), les
+factures non émises, et les fiches des chantiers non terminés (elles
+imprimeraient une feuille vide).
+
+**Ce que le retrait coûte, et qu'il a accepté :** on n'ouvre plus un chantier
+depuis un client — on ouvre sa fiche en PDF. Un document se lit, un écran se
+modifie. Le reste dû se regarde dans Terminés → En attente de paiement.
+
+**Deux défauts d'écran trouvés par la suite navigateur, invisibles à la
+lecture :**
+
+- **Deux devis portaient le même numéro.** Le numéro commercial est *stable à
+  travers les versions* : un devis révisé puis renvoyé produisait deux lignes
+  « n° 2026-0003 », à la même date, indistinguables — il aurait fallu ouvrir les
+  deux pour savoir laquelle on tenait. **Seule la dernière version envoyée est
+  montrée** ; les révisions restent en base et sur l'écran du chantier.
+- **Un chantier ouvert le matin même passait pour la dernière prestation.** Il
+  se lisait sur « les chantiers dont la date est passée » — or un chantier créé
+  le jour même, sans devis ni date posée, porte la date du jour. L'écran
+  annonçait un travail qui n'avait pas eu lieu. Elle se lit désormais sur les
+  chantiers **terminés**, ce qui l'aligne sur la colonne « Fiche chantier ».
+- **Le nom du chantier se coupait à 97 px.** « Rénovation de la salle de bain »
+  devenait « Rénovation de… » et n'apprenait rien. Sous un devis et une facture,
+  c'est désormais **la date**, qui tient en entier — et c'est par elle qu'il
+  cherche.
+
+**Trois pièges de montage, chacun payé une fois, chacun consigné :**
+
+| Ce qui échouait | Ce que ça a appris |
+|---|---|
+| Le serveur entier ne démarrait plus | La route était sous `[id]`, le dossier voisin emploie `[chantierId]`. Next.js refuse — et cinq écrans échouaient au préchauffage, la suite accusant un bouton trois écrans plus loin |
+| Les dates ne se décalaient pas | Un `UPDATE` par `pool` ne touche **aucune ligne** sous RLS, et ne dit rien. Le tri paraissait « remonter le temps » entre deux dates identiques |
+| Le décalage était refusé | Un devis envoyé est **immuable** (`trg_devis_immuable`). La date se pose sur le brouillon — `envoyerDevis` la garde, c'est donc le chemin réel |
+
+**La maquette essayable** (`appli/fiche-client.html`) porte les trois colonnes,
+et le contrôle mesure ce qui casse vraiment à 390 px : la colonne la plus
+étroite, et tout libellé qui dépasse sa boîte. **Un commentaire faux y a été
+corrigé contre la mesure** — il affirmait que rien ne tenait à 107 px de
+colonne ; rien n'y était coupé.
+
+### Une barre de recherche sur la liste des clients
+
+**Sa demande, capture à l'appui :** *« Il faut une barre de recherche où je peux
+taper le nom d'un client pour le retrouver plus facilement »* — vingt et un
+noms à l'écran, dont **quatre Martins**, et le sien perdu au milieu. Elle avait
+été dessinée le 17 août (`appli/clients-recherche.html`, proposition B).
+
+La règle vit dans `src/lib/recherche-client.ts`, hors de tout écran : sans
+accents, sans casse, sans ponctuation, et chaque mot cherché n'importe où dans
+le nom. Il tape « moreau » et trouve « Moréau » ; « renard » et trouve
+« Mme Renard » ; « dupont » et trouve « M. Dupont » comme « Mr. Dupont ».
+L'ordre des mots ne compte pas.
+
+**Le filtrage se fait dans le navigateur**, sur la liste déjà chargée : un
+aller-retour réseau par lettre tapée, en 5G au bord d'un chantier, se sentirait.
+
+**Ce que la capture a montré et qu'aucune suite n'aurait vu :** `type="search"`
+fait poser au navigateur sa propre croix d'effacement, **d'un bleu vif** — la
+seule tache de couleur de l'écran, sur une page de crème et de bronze. Elle est
+remplacée par la nôtre, dans la couleur de l'application, présente seulement
+quand il y a quelque chose à effacer. Une suite tient désormais les deux.
+
+**Le champ est toujours affiché**, même avec trois clients : une barre qui
+apparaît au-delà d'un certain nombre est une règle de plus à deviner, et le
+jour où il en a quatre il la croirait retirée.
+
+### La fiche client, allégée — dessinée, pas codée
+
+**Sa demande, capture de l'écran « Martins » à l'appui :** *« En dessous de
+l'adresse, en titre noir gras, dernière prestation avec ce qu'elle comprend.
+Ensuite : pas trois encadrés, seulement deux. Un contenant devis, et l'autre
+fiche chantier… en deux colonnes… trié par date, de la plus récente à la moins
+récente. On garde le nom et les informations sous le nom. Tout le reste, tu
+enlèves. C'est du trop. »*
+
+**`appli/fiche-client.html`** — essayable, sans script ni photo, atteignable
+depuis `appli/essais.html`. **Rien n'est codé** : `CLAUDE.md` §3 bis, une
+demande d'apparence se dessine avant de se coder.
+
+**Ce que la maquette DIT plutôt que de le dessiner en silence : le PDF « fiche
+chantier » n'existe pas.** Vérifié dans le dépôt — Atlas ne fabrique que deux
+documents en PDF, le devis (`src/server/pdf/devis-pdf.ts`) et la facture
+(`facture-pdf.ts`). Ce que le code appelle « fiche chantier » est un **écran** ;
+la « fiche d'entretien » est un **modèle de prestations** dans les réglages. La
+deuxième colonne serait donc vide aujourd'hui. Un écran de la maquette montre ce
+que ce document contiendrait — dessiner un document inexistant comme s'il était
+là est la faute que la planche 56 a commise deux fois.
+
+**Et deux questions posées plutôt que tranchées à sa place :** où vont les
+**factures**, qui n'ont plus d'encadré (trois réponses proposées, dont une qui
+ne casse pas sa règle des deux encadrés) ; et le fait que « Ses chantiers »
+était le seul **chemin** d'un client vers un chantier.
+
+**Le contrôle** (`scripts/verifier-maquette-fiche-client-allegee.mjs`, dans
+`npm run verifier:maquette`) relit les dates **telles qu'elles s'affichent, en
+français**, et refuse une colonne qui remonte le temps — c'est le cœur de sa
+demande, dite deux fois. Il refuse aussi un troisième encadré, une colonne qui
+retombe sous l'autre à 390 px, un titre qui ne serait ni noir ni gras, le retour
+d'une des quatre choses retirées, la disparition de l'aveu sur la fiche
+chantier, et **tout lien qui ne mène nulle part** — sa colère du 18 août :
+*« quand je fais pour cliquer, je ne peux pas cliquer »*. Éprouvé rouge sur sept
+états dégradés.
+
+**Quatre défauts trouvés à l'œil, aucun par un test vert** (`CLAUDE.md` §5) : le
+retour « Vos clients » pointait sur l'écran qu'on regardait — il mène désormais
+à `clients-recherche.html#liste`, qui existe ; une case cochée ne se distinguait
+d'une case vide que par sa couleur ; une conclusion collée à sa liste ; un
+espace de trop.
 
 ### Le veilleur ne renonce plus : la version rapide se retente jusqu'à passer
 
@@ -163,23 +1045,6 @@ n'est peut-être pas un refus.
 
 ---
 
-## 2026-08-18
-
-### Le bouton de l'accueil dit « Créer un devis »
-
-**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
-d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
-
-Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
-feuille au-dessus.
-
-**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
-demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
-titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
-à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
-client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
-remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
-
 ## 2026-08-16
 
 ### L'écran de création s'appelle « Fiche client »
@@ -204,6 +1069,21 @@ deux centres tombent sur le même pixel. `ARCHITECTURE.md` §124.
 ---
 
 ## 2026-08-18
+
+### Le bouton de l'accueil dit « Créer un devis »
+
+**Sa demande :** *« change nouveau chantier par crée un devis »*, sur l'écran
+d'accueil. Une maquette lui a été montrée avant de toucher au code (§3 bis).
+
+Seul le bouton change — son mot et son `aria-label`. Même geste, même rond, même
+feuille au-dessus.
+
+**Ce qu'on a failli casser, et pourquoi on ne l'a pas fait.** Il avait d'abord
+demandé de renommer aussi l'écran qui s'ouvre. Or une autre session venait de le
+titrer « Fiche client » (sa propre demande du 16 août, vraie à la création comme
+à la reprise). Confronté au conflit, il a tranché : **l'écran reste « Fiche
+client »**. On ne garde donc que le bouton — et c'est le rebasage qui a fait
+remonter la collision plutôt que de l'écraser en silence (`CLAUDE.md` §6).
 
 ### Deux boutons à la place de la bascule, sur l'écran de création
 

@@ -95,7 +95,17 @@ const ETAPES: Etape[] = [
     args: ["run", "build"],
     // Dans SON dossier, comme le banc : sans quoi la construction écraserait le
     // `.next` d'un serveur de développement qui tourne peut-être à côté.
-    env: { ATLAS_DIST_DIR: ".next-verification" },
+    //
+    // **`DATABASE_URL` posée ici, et ce n'est pas une commodité (20 août 2026).**
+    // La construction *collecte les données de page*, ce qui instancie la
+    // configuration du serveur : sans elle, elle s'arrête sur « Variable
+    // d'environnement obligatoire manquante : DATABASE_URL » en accusant une
+    // route d'agenda qui n'y est pour rien. La CI, elle, la pose au niveau du
+    // job (`ci.yml`) et bâtit donc sans broncher — **l'étape locale ne jouait
+    // pas ce que la CI joue**, et son rouge permanent apprenait à ignorer le
+    // seul contrôle qui protège le banc du mode lent. Aucune requête n'est
+    // faite pendant une construction : cette adresse n'a qu'à être lisible.
+    env: { ATLAS_DIST_DIR: ".next-verification", DATABASE_URL: APP },
     ceQueCaAttrape: "une erreur qui n'existe qu'à la construction — et qui condamne le banc au mode lent",
   },
   {

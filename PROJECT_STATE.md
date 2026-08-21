@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-19 · branche `main`
-· dernière migration `drizzle/0055_passage_entretien.sql`
+**Dernière mise à jour :** 2026-08-20 · branche `main`
+· dernière migration `drizzle/0056_diagnostic_vegetal.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -9,6 +9,50 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Diagnostic végétal — le module est prêt, **sa base est vide**
+
+**Posé le 20 août 2026.** Troisième outil de l'onglet Paysage
+(`/paysage/diagnostic`), après l'arrosage et la fiche de chantier.
+
+| | État |
+|---|---|
+| Schéma (12 tables, migration 0056) | **fait** |
+| Moteur déterministe : rapprochement, arbitrage, confiance | **fait**, éprouvé sans base ni réseau |
+| Observation par un modèle de vision, vocabulaire fermé | **fait** — l'appel réel **non vérifié** ici, faute de clé |
+| Écrans : prise de photo, résultat, relance, refus | **faits** |
+| Retrait des métadonnées EXIF (JPEG/PNG/WebP) | **fait**, éprouvé sur l'octet |
+| Conservation configurable + purge planifiée | **fait** |
+| Rattachement facultatif à un chantier | **fait** |
+| Import de fiches : schéma, huit refus, traçabilité | **fait**, éprouvé contre des fiches fautives |
+| **Contrôle d'intégrité champ par champ après import** | **fait** — bloque la validation au moindre écart, et « validée » est impossible sans lui (contrainte) |
+| **L'hôte identifié AVANT la maladie** | **fait** — sans essence établie, Atlas demande une photo puis refuse |
+| Classement sémantique | **pas fait** — l'interface et son verrou existent, l'implémentation non |
+| **Fiches phytosanitaires réelles** | **3 sur ~50** — fomès des résineux (DSF, 2013), anthracnose du platane et anthracnose du chêne et du hêtre (Ephytia/DSF, 2024) |
+
+**La dernière ligne est le seul vrai reste, et elle n'est pas du code.**
+
+La chaîne entière est éprouvée de bout en bout sur une donnée RÉELLE : récolte
+du document officiel → lecture → saisie → contrôles → import → rapprochement →
+conclusion (« Fomès des résineux · confiance probable », le plafond venant de la
+fiche elle-même, qui déclare qu'une photo ne fait qu'orienter).
+
+**Et la relance photo est éprouvée sur des fiches RÉELLES depuis le 20 août.**
+Les deux anthracnoses donnent la même nécrose brune sur une feuille ; sans
+l'essence, le moteur ne tranche pas et demande *« Photographiez une feuille
+entière, posée à plat. »* — puis conclut à la seconde photo, l'invariant « une
+seule relance » tenant. C'est le premier usage réel du mécanisme, et il a fallu
+lever deux limites pour l'atteindre : une confusion ne pouvait relier que deux
+fiches d'un **même fichier**, et son écriture se perdait **en silence** quand la
+fiche visée n'était pas encore en base (`ARCHITECTURE.md` §135).
+
+**Ce qui limite le rythme n'est pas la saisie mais le TYPE de document.** Les
+bilans régionaux nomment les problèmes sans décrire les symptômes assez
+précisément ; les **fiches-type** le font, et une seule a suffi pour une fiche
+complète. INRAE (Ephytia) en contient beaucoup — **sa licence de réutilisation
+est le vrai point bloquant**, et c'est une décision, pas du code.
 
 ---
 
@@ -48,6 +92,12 @@ c'est le document de référence du produit.
 ---
 
 ## Terminé et vérifié
+
+**Chercher un client (20 août 2026).** La liste des clients porte une barre de
+recherche : il tape un nom, la liste se réduit à chaque frappe. Sans accents,
+sans casse, sans ponctuation, et dans n'importe quel ordre de mots. Règle pure
+dans `src/lib/recherche-client.ts` (`ARCHITECTURE.md` §134), éprouvée sans
+navigateur **et** au navigateur.
 
 ### Le socle (antérieur à cette série de travaux)
 
@@ -95,6 +145,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
 | Statut affiché d'un chantier, de brouillon à facturé | `src/lib/chantier-etat.ts` |
 | Retoucher le devis à la voix — elle propose, il coche (15 août) | `src/lib/retouches-devis.ts`, `src/server/ai/services/retouches-devis-service.ts`, `src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx` |
+| **Et DICTER le chantier dans le devis** (20 août) — il raconte les travaux, hésitations comprises, et obtient des lignes rédigées avec leurs mesures. Aucun prix inventé. La rédaction dépend d'un modèle : `npm run verifier:dictee` la vérifie **là où il y a une clé**, et refuse de rendre un vert sans (`ARCHITECTURE.md` §113) | `src/lib/redaction-lignes.ts`, `src/lib/unites-tarif.ts`, `scripts/verifier-dictee-devis.mts` |
 | Le prix accordé au client — remise en % sous le total, jusqu'à la facture (16 août) | `src/lib/reduction-devis.ts`, migration `0048` |
 | La fiche d'un client — ses chantiers, ce qu'il doit, ce qu'on lui fait (16 août) | `src/lib/fiche-client.ts`, `src/app/clients/[id]/page.tsx` |
 | **Un client est RETROUVÉ, plus recréé** à chaque chantier — rapprochement automatique, refusé si une coordonnée contredit (17 août) | `src/lib/rapprochement-client.ts`, `trouverOuCreerClient` |
@@ -566,6 +617,110 @@ demande aucune décision, aucun compte et aucun budget ; seule la mise en
 production les demande.
 
 ---
+
+## Les maquettes essayables : une seule adresse, et `appli/` en est la racine
+
+**Ce qu'on lui donne, et rien d'autre :**
+`https://florianmarrins0978-svg.github.io/Atlas-app/essais.html`
+
+`.github/workflows/pages.yml` publie **`appli/` comme racine du site** — tout ce
+qui y est déposé part en ligne, et rien d'autre du dépôt. `appli/essais.html`
+est la page d'entrée : elle liste toutes les maquettes manipulables, chacune sur
+un pavé d'au moins 64 px.
+
+**Deux règles payées cher :**
+
+- **Une adresse se donne entière, jamais avec des points de suspension.** Le
+  18 août 2026 il a répondu : *« quand je fais pour cliquer, je ne peux pas
+  cliquer »*. Un lien tronqué n'est pas un lien.
+- **Toute maquette neuve s'inscrit à trois endroits, sans quoi elle n'existe
+  pas :** `appli/essais.html` (le patron y arrive), la liste vérifiée après
+  déploiement dans `pages.yml` (elle répond vraiment), et
+  `npm run verifier:maquette` (elle tient ce qu'elle promet). C'est la même
+  leçon que les huit planches introuvables trouvées par
+  `scripts/fusionner-maquettes.mjs`.
+
+## Le plan d'arrosage vit DANS l'application — 20 août 2026
+
+**Où il est :** `/paysage/arrosage`. L'écran Paysage n'ouvre plus de page
+extérieure.
+
+| Le morceau | Le fichier |
+|---|---|
+| Le calcul | `src/lib/arrosage/calcul.js` et `catalogue.js` |
+| La lecture du croquis | `src/server/ai/services/lire-croquis.ts` |
+| Le geste | `src/app/paysage/arrosage/actions.ts` |
+| L'écran | `src/app/paysage/arrosage/ArrosageClient.tsx` |
+
+**AVANT DE TOUCHER AU CALCUL, LIRE CECI.** `src/lib/arrosage/calcul.js` est une
+copie **octet pour octet** de `appli/arrosage-calcul.js`, et
+`scripts/verifier-arrosage-une-seule-source.mjs` refuse qu'elles divergent. Une
+correction se porte donc **des deux côtés**, jamais d'un seul. C'est le prix
+payé pour n'avoir qu'un seul calcul : deux versions finiraient par ne plus dire
+la même chose, et c'est le paysagiste qui verrait l'écart entre la page qu'il
+essaie et l'application qu'il utilise (`CLAUDE.md` §3).
+
+Conséquence assumée : la copie serveur porte des fonctions de navigateur que
+rien n'appelle, et un silence de lint en tête du fichier l'explique.
+
+**L'IA lit le croquis, et il fallait le vérifier plutôt que de l'affirmer.** Il
+avait été dit ici que cela demandait un contrat inexistant — **c'était faux**.
+Le raccordement Anthropic et OpenAI est écrit depuis le 6 août, les deux savent
+regarder une image, et le patron a confirmé le 20 août que **les clés sont
+posées**. Sans clé, l'écran le dit avant le geste au lieu de faire photographier
+pour rien.
+
+**Ce que la lecture rend, et ce qu'elle ne rend pas :** des surfaces, des
+longueurs, un point d'eau — en **proposition**. Une zone sans cote ne part pas
+au calcul, un croquis illisible est refusé avec sa raison, et ce qui n'a pas été
+lu s'affiche en réserves sous le plan.
+
+## Atlas fabrique TROIS documents en PDF
+
+**Le troisième est né le 20 août 2026**, sur sa demande : *« fais en sorte que
+les fiches chantiers soient au format PDF maintenant »*. Jusque-là il n'y en
+avait que deux, et le vocabulaire du dépôt trompait.
+
+| Le document | Où il vit | Ce qu'il porte |
+|---|---|---|
+| **Devis** | `src/server/pdf/devis-pdf.ts`, `/api/devis/[id]/pdf` | prix, totaux, TVA, **cadre de signature** |
+| **Facture** | `facture-pdf.ts`, `/api/factures/[id]/pdf` | prix, totaux, TVA, mention légale, **pas de signature** |
+| **Fiche de chantier** | `fiche-chantier-pdf.ts`, `/api/chantiers/[chantierId]/fiche/pdf` | ce qui a été fait, le matériel, les observations, les photos — **aucun prix** |
+
+Les trois sortent du **même moteur** (`document-commun.ts`) : même papier, même
+en-tête, même bloc émetteur/client, même pied. Trois moteurs auraient produit
+trois mises en page qui divergent, et c'est le client qui verrait la différence
+entre les feuilles d'un même artisan.
+
+**Ce qui distingue la fiche : `sansChiffrage`.** Ni colonnes de prix, ni totaux,
+ni TVA, ni IBAN, ni signature. Ce n'est pas une économie de place — c'est ce qui
+la rend **transmissible** : on peut la donner à un locataire, à un syndic, à
+l'assurance d'un voisin, sans divulguer ce que le propriétaire a payé.
+
+**AVANT DE TOUCHER À `document-commun.ts`, LIRE CECI.** Le devis et la facture
+sont les pièces que le client reçoit, et l'une est ce qu'il paie. Un `if` mal
+placé y décalerait un total sans que personne le voie avant l'impression. Une
+**empreinte de leur trace entière** — chaque texte, sa position au centième de
+point, sa taille, sa couleur, sa page — est figée dans
+`scripts/test-fiche-chantier-pdf.ts` et refuse le moindre écart. Elle a été
+relevée avant la première ligne de `sansChiffrage`, et éprouvée rouge en
+décalant le moteur d'un seul point.
+
+**Trois mots proches désignent encore trois choses différentes :**
+
+| Le mot | Ce que c'est |
+|---|---|
+| **fiche de chantier (PDF)** | le document ci-dessus, depuis le 20 août 2026 |
+| **fiche chantier (écran)** | `src/app/chantiers/[id]/` — photos, note vocale, étapes |
+| **fiche d'entretien** | un MODÈLE de prestations à cocher, un par entreprise (migration 0051) |
+
+**Un piège de Next.js payé le 20 août :** la route a d'abord été écrite sous
+`/api/chantiers/[id]/`, alors que le dossier voisin emploie `[chantierId]`.
+Next.js refuse deux noms pour le même segment dynamique — et **le serveur entier
+ne démarre plus**. Cinq écrans échouaient au préchauffage, et la suite accusait
+un bouton introuvable trois écrans plus loin. Le message du serveur, lui, disait
+juste : *« You cannot use different slug names for the same dynamic path »*.
+Aller le lire a pris trente secondes ; le deviner aurait pris une heure.
 
 ## Le lecteur du patron n'exécute pas JavaScript — les maquettes doivent s'en passer
 

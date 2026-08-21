@@ -32,7 +32,11 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
-import { delogerConstructionsOrphelines } from "./verrou-construction.mjs";
+import {
+  delogerConstructionsOrphelines,
+  attendreLaConstructionEnCours,
+  detenteursDuVerrou,
+} from "./verrou-construction.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
@@ -653,10 +657,13 @@ if (raison) {
   //
   // On ne double donc pas une construction — on retire celle qui n'a plus de
   // destinataire. Le raisonnement complet est dans `verrou-construction.mjs`.
-  await delogerConstructionsOrphelines({ dire: (m) => console.log(m) });
+  await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
 
   // La construction écrit dans SON dossier : le serveur de développement garde
   // le sien, et les deux ne se marchent jamais dessus.
+  // Rempli seulement si le verrou parle : c'est la seule information qui
+  // manquait pour comprendre pourquoi deux constructions se rencontrent.
+  let quiTenaitLeVerrou = "";
   let { code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
 
   // **Une seconde tentative, et une seule, quand c'est LE verrou qui a parlé.**
@@ -667,8 +674,24 @@ if (raison) {
   // écran se compile à l'ouverture. On ne réessaie QUE sur ce refus-là : une
   // erreur de types ne se répare pas en insistant.
   if (code !== 0 && /Another next build process is already running/i.test(sortie)) {
-    console.log("\n  (Le verrou de construction était encore tenu : on déloge et on réessaie une fois.)\n");
-    await delogerConstructionsOrphelines({ dire: (m) => console.log(m) });
+    // **On ATTEND d'abord, on déloge seulement après — corrigé le 21 août
+    // 2026.** Déloger n'a de sens que contre une orpheline ; contre une
+    // construction vivante, qui fait exactement le travail qu'on s'apprête à
+    // faire, c'est jeter plusieurs minutes de calcul pour recommencer. Le
+    // démarrage en lance deux par nature (`verrou-construction.mjs`), et c'est
+    // précisément là que le patron le payait.
+    // **QUI le tient : relevé MAINTENANT, et gardé pour le témoin d'échec.**
+    // Trois matinées de suite ont été perdues faute de cette ligne : on savait
+    // qu'un verrou était tenu, jamais par qui. Plus tard, le coupable a disparu
+    // et il ne reste qu'à supposer — ce que ce dépôt s'interdit (`AGENTS.md`).
+    quiTenaitLeVerrou = detenteursDuVerrou(DIST)
+      .map(({ pid, ligne }) => `      pid ${pid} — ${ligne}`)
+      .join("\n");
+    console.log("\n  (Le verrou de construction est tenu.)\n");
+    if (quiTenaitLeVerrou) console.log(`  Il est tenu par :\n${quiTenaitLeVerrou}\n`);
+    await attendreLaConstructionEnCours({ dossierDist: DIST, dire: (m) => console.log(m) });
+    // Ce qui reste après l'attente est bien une orpheline, ou rien du tout.
+    await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
     ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
   }
 
@@ -784,6 +807,9 @@ if (raison) {
           // rendue et le coupable a disparu.
           `disque: ${mesure("df", ["-h", "--output=avail", "."])}`,
           `memoire: ${mesure("free", ["-h"])}`,
+          // **Qui tenait le verrou, s'il a parlé.** Relevé à l'instant du
+          // refus, pas maintenant : le coupable a souvent disparu depuis.
+          ...(quiTenaitLeVerrou ? ["verrou tenu par :", quiTenaitLeVerrou] : []),
           // **CE QUE LA CONSTRUCTION A DIT.** Sans ces lignes, le 16 août a été
           // passé à chercher une saturation qui n'existait pas, alors que le
           // message tenait en une phrase.

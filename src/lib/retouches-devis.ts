@@ -29,6 +29,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 import { LIBELLE_REDUCTION, libelleReduction, pourcentValide } from "./reduction-devis";
+import { uniteDictee } from "./unites-tarif";
 
 /** Une ligne du devis, telle que l'écran la tient. */
 export type LigneDevis = {
@@ -59,7 +60,22 @@ export type Retouche =
   /** Renommer, corriger une faute, remplacer un mot par un autre. */
   | { type: "libelle"; cible: Cible; libelle: string }
   | { type: "retirer"; cible: Cible }
-  | { type: "ajouter"; libelle: string; quantite: string | null; prixUnitaire: string | null }
+  /**
+   * Une ligne qui n'existe pas encore — qu'il l'ajoute à un devis déjà écrit,
+   * ou qu'il DICTE LE CHANTIER ENTIER dans un devis vide (sa demande du
+   * 20 août 2026 ; voir l'en-tête de `retouches-devis-service.ts`).
+   *
+   * `unite` accompagne la quantité et ne vit pas sans elle : « vingt mètres
+   * linéaires » donne `quantite: "20"`, `unite: "ml"`. Une unité sans quantité
+   * n'écrirait rien sur le devis, et une quantité sans unité reste lisible.
+   */
+  | {
+      type: "ajouter";
+      libelle: string;
+      quantite: string | null;
+      unite: string | null;
+      prixUnitaire: string | null;
+    }
   /**
    * Le prix accordé au client — « fais cinq pour cent sur le montant du devis ».
    *
@@ -311,10 +327,16 @@ export function lireRetouchesDuModele(brut: unknown): Retouche[] {
       case "ajouter": {
         const libelle = texte("libelle");
         if (libelle) {
+          const quantite = montantDicte(e.quantite);
           retouches.push({
             type: "ajouter",
             libelle,
-            quantite: montantDicte(e.quantite),
+            quantite,
+            // **L'unité tombe avec la quantité, jamais seule.** « des mètres
+            // linéaires » sans nombre ne dit pas combien : la porter quand
+            // même afficherait « 1 ml » sur le devis, c'est-à-dire un chiffre
+            // que personne n'a prononcé.
+            unite: quantite === null ? null : uniteDictee(e.unite),
             prixUnitaire: montantDicte(e.prixUnitaire),
           });
         }
@@ -364,7 +386,13 @@ export type Changement =
   | { type: "quantite"; ligneId: string; quantite: string }
   | { type: "libelle"; ligneId: string; libelle: string }
   | { type: "retirer"; ligneId: string }
-  | { type: "ajouter"; libelle: string; quantite: string | null; prixUnitaire: string | null };
+  | {
+      type: "ajouter";
+      libelle: string;
+      quantite: string | null;
+      unite: string | null;
+      prixUnitaire: string | null;
+    };
 
 /**
  * Ce qu'une retouche donnera si le patron la coche — ou `null` si elle ne peut
@@ -379,8 +407,8 @@ export function changementApplicable(r: RetoucheResolue): Changement | null {
   // La réduction ne tombe sur aucune ligne : elle vise le devis entier.
   if (r.retouche.type === "reduction") return { type: "reduction", pourcent: r.retouche.pourcent };
   if (r.retouche.type === "ajouter") {
-    const { libelle, quantite, prixUnitaire } = r.retouche;
-    return { type: "ajouter", libelle, quantite, prixUnitaire };
+    const { libelle, quantite, unite, prixUnitaire } = r.retouche;
+    return { type: "ajouter", libelle, quantite, unite, prixUnitaire };
   }
   if (r.etat !== "ok" || !r.ligne) return null;
 
@@ -421,13 +449,18 @@ export function direRetouche(r: RetoucheResolue): { verbe: string; quoi: string;
         };
   }
   if (t.type === "ajouter") {
+    // « 20 ml », « 20 » tout court, ou rien du tout — la quantité mesurée sur
+    // place est ce qu'il relira en premier, donc elle se lit AVANT le prix.
+    const mesure = t.quantite ? `${t.quantite}${t.unite ? ` ${t.unite}` : ""}` : null;
     return {
       verbe: "Ajouter",
       quoi: t.libelle,
       detail:
         t.prixUnitaire == null
-          ? "Aucun prix dicté — la ligne arrive vide, à vous de la chiffrer"
-          : `${t.prixUnitaire} €${t.quantite ? ` × ${t.quantite}` : ""}`,
+          ? mesure
+            ? `${mesure} — aucun prix dicté, à vous de la chiffrer`
+            : "Aucun prix dicté — la ligne arrive vide, à vous de la chiffrer"
+          : `${t.prixUnitaire} €${mesure ? ` × ${mesure}` : ""}`,
     };
   }
 

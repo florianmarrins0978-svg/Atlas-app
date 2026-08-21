@@ -48,8 +48,8 @@ async function main() {
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1200);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
-  await page.getByText("Envoyer au client", { exact: false }).first().click();
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.getByText("Choisir la date", { exact: false }).first().click();
   await page.waitForSelector("text=Une date, ou deux au choix du client ?");
 
   // --- 1. Le calendrier existe, et il va jusqu'à dix-huit mois -------------

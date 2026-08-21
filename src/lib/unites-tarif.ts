@@ -79,3 +79,51 @@ export function uniteProposee(valeur: string | null | undefined): UniteProposee 
 export function estUniteLibre(valeur: string | null | undefined): boolean {
   return normaliserUnite(valeur ?? "") !== "" && uniteProposee(valeur) === null;
 }
+
+/** Ce qu'il PRONONCE, en face de ce qu'on enregistre — voir `uniteDictee`. */
+const UNITES_DITES: readonly { dit: RegExp; valeur: string }[] = [
+  { dit: /^(m(?:e|è)tres?\s*lin(?:e|é)aires?|ml|m\s*lin(?:e|é)aire)$/i, valeur: "ml" },
+  { dit: /^(m(?:e|è)tres?\s*carr(?:e|é)s?|m2|m²)$/i, valeur: "m²" },
+  { dit: /^(heures?|h)$/i, valeur: "heure" },
+  { dit: /^(jours?\s*[\/-]?\s*hommes?|journ(?:e|é)es?\s*hommes?)$/i, valeur: "jour/homme" },
+  { dit: /^(forfaits?|au\s*forfait|prix\s*global)$/i, valeur: "forfait" },
+  { dit: /^(tonnes?|t)$/i, valeur: "tonne" },
+];
+
+/** Au-delà, ce n'est plus une unité mais un bout de phrase — on n'en garde rien. */
+const LONGUEUR_MAX_UNITE = 20;
+
+/**
+ * L'unité telle qu'il la PRONONCE, ramenée à celle qu'on enregistre.
+ *
+ * **Sa demande du 20 août 2026** : dicter le chantier dans le devis plutôt que
+ * de le taper — *« j'aimerais tailler ma haie, c'est une haie qui fait quelque
+ * chose comme vingt mètres linéaires »*. Personne ne dit « ml » à voix haute.
+ *
+ * **Pourquoi ramener au mot exact de la liste, plutôt que de garder le sien.**
+ * L'unité n'est pas décorative : « jour/homme » désigne un tarif de main
+ * d'œuvre, à la lettre près (voir en tête de ce fichier). Enregistrer « jours
+ * homme » parce qu'il l'a dit au pluriel produirait un tarif qui cesse de se
+ * multiplier, en silence, sur un devis qui part chez son client.
+ *
+ * **Mais la liste ne ferme rien, ici non plus.** Un mot qu'elle ignore — le
+ * stère, l'arbre, le sac — est gardé tel quel : c'est une vraie unité de son
+ * métier, et la refuser lui ferait perdre une quantité qu'il a bel et bien
+ * dictée. Ce qui est refusé, c'est ce qui n'est pas une unité du tout : un
+ * chiffre, une phrase, une longueur invraisemblable.
+ */
+export function uniteDictee(brut: unknown): string | null {
+  if (typeof brut !== "string") return null;
+  const dit = normaliserUnite(brut);
+  if (!dit) return null;
+
+  for (const { dit: motif, valeur } of UNITES_DITES) {
+    if (motif.test(dit)) return valeur;
+  }
+
+  // Un chiffre dans l'unité trahit une quantité recopiée au mauvais endroit
+  // (« 20 mètres ») : la garder écrirait « 20 × 20 m » sur le devis.
+  if (/\d/.test(dit)) return null;
+  if (dit.length > LONGUEUR_MAX_UNITE) return null;
+  return dit;
+}

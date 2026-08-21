@@ -4,10 +4,133 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-17 · `main`
+**Point de reprise :** 2026-08-18 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+
+## « L'application est lente » : REGARDER QUI CONSTRUIT (20 août 2026)
+
+**Le produit n'est pas lent** — mesuré ce soir-là sur le code du jour, version
+bâtie : connexion à l'accueil 890 ms, chaque écran entre 0,6 et 1,1 s. Devant
+cette plainte, ne pas partir chercher une requête coûteuse.
+
+**Ce qui est lent, c'est son banc quand il sert la VERSION LENTE** — le mode
+développement, où chaque écran se compile à l'ouverture. Trois questions, dans
+cet ordre :
+
+1. **sa fiche d'état est-elle encore écrite ?** Le publieur meurt avec le
+   veilleur (`veiller.sh`) : une fiche muette plus de vingt minutes dit que **le
+   veilleur est tombé** — donc que plus personne ne construit la version rapide,
+   et qu'il restera lent indéfiniment. Le geste : rallumer l'espace ;
+2. `Code SERVI` sur la fiche : un commit = version rapide en place ; « aucune
+   version bâtie » = construction en cours ou échouée, la fiche le distingue ;
+3. l'écran **Réglages** le dit maintenant lui-même, et sans mentir
+   (`src/lib/version-lente.ts`) : il n'annonce « ça vient tout seul » que si
+   quelqu'un construit vraiment, sinon il l'envoie rallumer.
+
+**Ce qui reste ouvert :** pourquoi son veilleur meurt. Le journal de démarrage
+n'est délibérément pas publié, et la fiche ne peut rien dire quand c'est le
+veilleur qui tombe. La piste — une trace d'agonie publiée à l'allumage suivant —
+est dans `TODO.md`.
+
+## Le retour de la fiche client dépend d'où l'on vient (20 août 2026)
+
+*« Ça ne me fait pas un retour, mais deux retours. »* La fiche renvoyait à
+l'accueil ; elle renvoie maintenant à la liste des clients, ou **au chantier**
+quand on vient de là. L'origine voyage dans `?de=`, traduite par
+`src/lib/retour-fiche-client.ts`.
+
+**Ne pas « simplifier » en remettant un lien fixe** : la fiche s'ouvre depuis
+deux endroits, et un retour fixe se trompe pour l'un des deux
+(`ARCHITECTURE.md` §135). Et **ne pas retirer le filtre** : la valeur vient de
+l'adresse, donc de n'importe qui.
+
+## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026)
+
+**Le module est complet ; sa base est presque vide, et c'est le bon état.**
+Trois fiches réelles au 20 août 2026 (fomès des résineux, les deux anthracnoses)
+sur ~50 visées. Hors de ce périmètre, l'écran répond « je ne peux pas
+confirmer » — **rien n'est cassé** : les fiches se recopient de sources
+officielles, jamais inventées, et c'est une règle du patron
+(`ARCHITECTURE.md` §135.10).
+
+**Pour voir le parcours fonctionner ici**, chargez les fixtures d'essai :
+
+```bash
+source scripts/monter-base-locale.sh
+DATABASE_URL="$DATABASE_ADMIN_URL" npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fixtures --fixtures
+```
+
+Elles ne sortiront **que** si `ATLAS_FIXTURES_PHYTO=1` est posé dans le
+processus qui lit — c'est une double garde délibérée. Sans elle, la lecture les
+filtre, exactement comme en production.
+
+**Six pièges, dans l'ordre où on les rencontre :**
+
+1. **L'import exige le rôle PROPRIÉTAIRE.** `atlas_app` n'a que `SELECT` sur la
+   base phytosanitaire (migration 0056). Le script le vérifie et le dit ; sans
+   ce contrôle, l'erreur tomberait au milieu de l'import.
+2. **Une lecture SQL brute d'une table à RLS rend ZÉRO ligne sans contexte**, et
+   *silencieusement*. Trois cas de `test-diagnostic-base.ts` en sont morts avant
+   d'être corrigés : ils lisaient `0` et concluaient « rien n'a été écrit » alors
+   que tout l'était. Employez `withEntreprise`, ou `set_config(..., true)` dans
+   une transaction — jamais `pool.query` nu.
+3. **Une confusion peut viser une fiche d'un AUTRE fichier**, et c'est le cas
+   courant — voir `ARCHITECTURE.md` §136. Deux choses en découlent : le contrôle
+   d'import relève les codes de **tous** les lots avant de valider, et les liens
+   qui n'ont pas pu être posés sont raccordés à la fin. Ne pas revenir à un
+   `INSERT … SELECT` posé dans la foulée : sur une fiche pas encore écrite, il
+   n'insère rien **sans se plaindre**, et la relance photo disparaît de l'écran.
+4. **L'import n'écrit JAMAIS « validee » directement**, et la contrainte
+   `fiches_phyto_integrite_ck` le rend impossible (migration 0057). Une fiche
+   entre `en_revue` ; seule la comparaison champ par champ, réussie dans la même
+   transaction, la promeut. Si vous ajoutez une colonne à `fiches_phyto`,
+   **écrivez-la dans `CHAMPS_SCALAIRES`** (`src/lib/import-fiches-phyto.ts`) :
+   la liste est tenue à la main précisément pour qu'un oubli d'`INSERT` ne passe
+   pas inaperçu (`ARCHITECTURE.md` §138).
+5. **Le moteur exige une essence établie avant de conclure.** Une observation
+   sans taxon reconnu, ou avec `certitude: "incertaine"`, ne rend jamais de
+   diagnostic — elle demande une photo d'identification, puis refuse. Une suite
+   qui construirait une `Observation` sans `essence` obtiendrait donc un
+   `complement` là où elle attend une conclusion, et cela n'a rien à voir avec ce
+   qu'elle croit éprouver.
+6. **Le vocabulaire est PARTAGÉ** entre les fiches et la consigne du modèle
+   (`src/lib/diagnostic-vegetal.ts`). Ajouter un mot d'un seul côté ne produit
+   aucune erreur : simplement une fiche qui ne sort plus jamais. Deux contrôles
+   l'attrapent — `verifierVocabulaire()` à l'import, et une suite qui vérifie
+   que chaque mot figure bien dans la consigne.
+
+**Où sont les choses :**
+
+| | |
+|---|---|
+| Règles pures (score, arbitrage, confiance, mentions) | `src/lib/diagnostic-vegetal.ts` |
+| Appel au modèle + lecture de sa réponse | `src/server/diagnostic/observation.ts` |
+| Orchestration | `src/server/diagnostic/moteur.ts` |
+| Base commune (lecture seule) | `src/server/repositories/fiches-phyto.ts` |
+| Diagnostics (RLS) | `src/server/repositories/diagnostics.ts` |
+| EXIF, conservation, import | `src/lib/exif.ts`, `retention-diagnostic.ts`, `import-fiches-phyto.ts` |
+| Écrans | `src/app/paysage/diagnostic/` |
+
+**Ce qui n'a PAS été vérifié, et doit s'écrire ainsi :** l'appel réel au
+fournisseur de vision. Aucune clé d'IA dans cet environnement — comme pour la
+lecture des tickets de gazole. Tout le reste l'a été.
+
+---
+
+
+## La recherche de clients est CODÉE (20 août 2026)
+
+Sa demande du matin : *« il faut une barre de recherche où je peux taper le nom
+d'un client »*. Faite, éprouvée, sur `main`. La règle est dans
+`src/lib/recherche-client.ts` et l'écran ne la refait pas — un contrôle le
+vérifie en lisant le fichier de l'écran.
+
+**Le piège, et il ressort d'une capture, pas d'une suite :** `type="search"`
+fait poser au navigateur une croix d'effacement **bleu vif**, seule tache de
+couleur de l'écran. Ne pas remettre `type="search"` en croyant bien faire —
+`ARCHITECTURE.md` §134.
 
 ## ⏸ « TROP DE MOTS » — mesuré le 19 août, il n'a pas encore répondu
 
@@ -45,6 +168,121 @@ plus ne réglera rien — ce serait la quatrième fois. Ce qui manque, c'est **u
 contrôle qui compte les mots de chaque écran et rougit quand un écran en
 gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
 ajoute une ligne et que personne n'en retire jamais.
+
+## L'arrosage est DANS l'application — 20 août 2026 au soir
+
+*« Code le tout dans l'appli. »* `/paysage/arrosage` : le piquage, la mesure au
+seau, le croquis photographié — puis le plan et le détail des pièces. L'écran
+Paysage n'ouvre plus de page extérieure.
+
+**TROIS PIÈGES À CONNAÎTRE AVANT D'Y TOUCHER :**
+
+1. **`src/lib/arrosage/calcul.js` est une copie octet pour octet de
+   `appli/arrosage-calcul.js`.** Une correction se porte **des deux côtés** —
+   `scripts/verifier-arrosage-une-seule-source.mjs` refuse qu'elles divergent.
+2. **Aucune fonction NOMMÉE dans un `page.evaluate`.** Le compilateur y injecte
+   un helper `__name` qui n'existe pas dans le navigateur : l'évaluation tombe
+   sur « __name is not defined », et la panne n'a rien à voir avec l'écran.
+3. **`innerText`, jamais `textContent`, pour compter ce qui est à l'écran.** Le
+   second rend tout le document, menus repliés compris : il annonçait 270 mots
+   là où l'écran en montre 21.
+
+**Ce qui est à lui, et qui reste ouvert :** le **reste dû** revient-il sur la
+fiche d'un client ? Il est parti avec « tout le reste » le 20 août.
+
+## Deux maquettes attendent sa réponse — 20 août 2026
+
+- **`appli/arrosage-simple.html`** : la maquette qui a servi à l'arrêter.
+  **Codée depuis** — voir la section ci-dessus. Le débit a été remis, sur sa
+  décision. `appli/arrosage.html` (l'ancienne page) n'a pas été touchée.
+- **`appli/fiche-client.html`** : la fiche client refondue, **déjà codée**.
+  Reste ouvert : le **reste dû** revient-il sur cet écran ?
+
+**Il ne veut plus passer par `essais.html`** — *« arrête de me le mettre dans
+Atlas app essai »*. Lui donner **l'adresse directe** de la page :
+`https://florianmarrins0978-svg.github.io/Atlas-app/<page>.html`
+
+`arrosage-simple.html` n'est donc liée nulle part : elle figure **nommément**
+dans la liste vérifiée de `pages.yml`, sans quoi la liste déduite d'`essais.html`
+ne la verrait pas et on lui donnerait une adresse non éprouvée.
+
+## La fiche client est refondue, et le troisième PDF existe — 20 août 2026
+
+**Ses trois décisions, le 20 août :** une **colonne Facture** en plus des deux
+premières, le **PDF de fiche de chantier** fabriqué pour de bon, et *« on va
+modifier la vraie application »* — le feu vert pour coder.
+
+**Ce qui est fait et poussé :** `src/app/clients/[id]/page.tsx` (dernière
+prestation en titre noir gras, trois colonnes de PDF du plus récent au plus
+ancien, le reste retiré), `src/server/pdf/fiche-chantier-pdf.ts`,
+`/api/chantiers/[chantierId]/fiche/pdf`, `src/lib/documents-du-client.ts` (la
+règle de tri, une seule pour les trois colonnes).
+
+**Ce qui reste ouvert, et qui est à lui :**
+
+- **Le reste dû ne figure plus sur la fiche d'un client.** Il se regarde dans
+  Terminés → En attente de paiement. La maquette lui demande s'il le veut ici
+  aussi ; il n'a pas répondu.
+- **On n'ouvre plus un chantier depuis un client** — on ouvre sa fiche en PDF.
+  Il a été prévenu et a tranché, mais c'est le genre de perte qui se sent à
+  l'usage, pas à la lecture.
+- **La fiche de chantier ne s'ENVOIE pas encore.** Elle se télécharge. Le jour
+  où elle partira chez un client, il faudra la **figer** comme le devis et la
+  facture : ce qui est parti ne se réécrit pas. C'est écrit dans la route.
+
+**Et il ne veut plus passer par `essais.html` pour ses maquettes** — lui donner
+l'adresse directe de la page.
+
+## ⏸ « TROP DE MOTS » — mesuré le 19 août, il n'a pas encore répondu
+
+**Sa plainte, et c'est la troisième :** *« il y a beaucoup trop de mots dans
+tous les sens […] des entrepreneurs qui n'ont pas de temps […] il y a des
+boomers dessus »*. Le 11 et le 17 août, la même chose avait été dite et un écran
+avait été corrigé au jugé ; la gêne est revenue ailleurs à chaque fois.
+
+**Ce qui existe :** `appli/moins-de-mots.html` — **Atlas dépouillé, qui se
+sert** : la barre du bas marche, « Créer un devis » ouvre la fiche, les champs
+se remplissent au clavier, le devis part. Un bouton « Avant » remet l'écran
+d'aujourd'hui. Sans une ligne de JavaScript. Liée depuis `appli/essais.html`.
+`docs/QUESTIONS.md` §23.
+
+**⚠ DEUX VERSIONS ONT ÉTÉ REFUSÉES AVANT CELLE-LÀ.** *« Je t'ai dit de rien
+coder »* — la première portait deux scripts autour de la maquette ; une demande
+de maquette n'autorise pas l'outillage qui va avec, même hors de `src/`. Puis
+*« une maquette dynamique QUE JE PUISSE UTILISER »* — la deuxième était une
+planche avant/après à REGARDER. **Une maquette, ici, est un bout d'application
+qui marche**, pas une présentation de ce qu'elle serait. Les autres essayables
+de `appli/` le sont déjà : s'en inspirer.
+
+**Fusionné sur `main` le 19 août 2026.** Il avait d'abord répondu non, puis
+demandé : *« si tu fusionnes, l'application actuelle ne sera plus ? »*. **Poser
+la question de la fusion sans dire ce qu'elle change chez lui, c'est lui faire
+porter un risque qu'il ne peut pas évaluer.** La réponse — zéro fichier de
+`src/` touché, une page de plus dans `appli/` — a suffi. À dire d'emblée la
+prochaine fois.
+
+**CE QU'ON ATTEND DE LUI, et rien ne se code avant :** la planche 82 lui
+va-t-elle ? (`CLAUDE.md` §3 bis.)
+
+**LA CHOSE À NE PAS OUBLIER SI L'ON REPREND CE SUJET.** Corriger trois écrans de
+plus ne réglera rien — ce serait la quatrième fois. Ce qui manque, c'est **un
+contrôle qui compte les mots de chaque écran et rougit quand un écran en
+gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
+ajoute une ligne et que personne n'en retire jamais.
+
+## ⏸ La fiche client allégée — dessinée le 20 août, il tranche avant qu'on code
+
+**Une réponse à trois questions**, posées dans la maquette
+`appli/fiche-client.html` et détaillées en tête de `TODO.md` : fabrique-t-on le
+PDF « fiche chantier » (il n'existe pas), où vont les **factures** qui n'ont
+plus d'encadré, et perd-on le chemin d'un client vers un chantier.
+
+**Ne rien coder de la fiche client avant sa réponse** (`CLAUDE.md` §3 bis).
+
+**L'adresse qu'on lui a donnée**, et la seule :
+`https://florianmarrins0978-svg.github.io/Atlas-app/essais.html`
+Toute maquette neuve s'y inscrit — voir `PROJECT_STATE.md`, « Les maquettes
+essayables ».
 
 ## Ne JAMAIS attendre une publication en interrogeant `github.io`
 
@@ -115,6 +353,22 @@ bloque rien, et devant le moindre doute il se tait : un rappel qui parle à tort
 finit ignoré, et le garde-fou se perd sans bruit.
 
 ---
+
+## ⚠ « ELLE NE SE LANCE PLUS » sur une fiche VERTE : regarder le port
+
+**Le 21 août 2026.** Sa fiche disait « le serveur répond », « tout concorde » —
+et il ne pouvait pas ouvrir l'application. Un **port privé** donne exactement ce
+symptôme : GitHub répond par sa page de connexion à la place d'Atlas, et depuis
+un téléphone non connecté il n'y a rien à voir.
+
+La fiche porte désormais une ligne `Port 3000`. **La lire avant toute
+hypothèse.** Si elle dit PRIVÉ, le remède est chez lui, en trois clics : onglet
+PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».
+
+Pourquoi ça revient : `devcontainer.json` déclare le port public, mais ce
+fichier n'est appliqué qu'à la CRÉATION de l'espace — le sien est plus ancien.
+Le geste est rejoué à chaque allumage par `ouvrir-port.sh`, qui a besoin de `gh`,
+absent de cette image.
 
 ## ⚠ « PAGE BLANCHE » : lire la ligne « Code SERVI » avant tout (16 août 2026)
 
@@ -1611,6 +1865,26 @@ de chercher dans la règle.
 Trois refus sont dans le code et ne se négocient pas : aucun prix ne s'invente,
 deux lignes qui se ressemblent rendent « à préciser », un nom reconnu nulle part
 ne se rabat pas sur le numéro de ligne. `ARCHITECTURE.md` §113.
+
+**ET DEPUIS LE 20 AOÛT, LE MÊME MICRO PREND LE CHANTIER ENTIER.** Sa demande :
+*« qu'il appuie sur la note vocale, qu'il parle en expliquant les tâches à
+faire, et que l'intelligence artificielle comprenne et rédige ça sous forme de
+belles phrases »*. Il raconte — « j'aimerais tailler ma haie, enfin je ne sais
+plus, je crois vingt mètres linéaires […] couper les inflorescences des
+hortensias, et tondre la pelouse » — et il obtient trois lignes à cocher :
+**Taille de haie** (20 ml), **Taille des inflorescences d'hortensias**, **Tonte
+de la pelouse**. Rien n'a changé à l'écran : c'est l'invite du modèle qui tient
+les deux façons de parler, parce qu'elles arrivent mêlées dans la même dictée.
+
+**⚠ ET LE MÊME PIÈGE, EN PIRE.** « Belles phrases » est une promesse tenue par
+un modèle de langage, et **rien ici ne peut la mesurer** — ni cet environnement,
+ni la CI, qui pose une clé de remplacement. `npm run verifier:dictee` envoie sa
+dictée entière au vrai modèle et vérifie les trois lignes, la mesure retenue et
+l'absence de prix inventé ; **il n'a pas encore été joué**, faute de clé, et il
+sort en erreur plutôt que de rendre un vert vide. À jouer depuis son espace
+avant de considérer la promesse tenue. Ce qui EST éprouvé ici : tout ce que le
+dépôt fait de la réponse du modèle, et la règle qui dit ce qui trahit une phrase
+recopiée (`src/lib/redaction-lignes.ts`, confrontée à ses propres phrases).
 
 **LA LIGNE DU PLANNING PORTE SES TROIS INFOS (15 août).** « 14 août · journée »,
 « 17 août · matin · ½ journée », « 21 août · matin · 3 jours » — la date, le

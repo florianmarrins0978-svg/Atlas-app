@@ -76,16 +76,39 @@ async function main() {
   // Il pose son prix — « j'ai enregistré le nouveau prix ».
   await page.goto(`${fiche}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");
-  await page.waitForTimeout(400);
+
+  // **On attend que la ligne EXISTE, on ne compte pas 400 ms.** L'écran des prix
+  // porte d'autres champs que ceux de la ligne — la proposition de prix en a —,
+  // si bien qu'un `nth(0)`/`nth(1)` lancé trop tôt visait à côté : le libellé
+  // arrivait, le montant non. Le devis s'ouvrait alors sur une ligne à zéro, et
+  // le rouge accusait l'écran d'arrivée, qui n'y était pour rien.
   const champs = page.locator("form input");
+  for (const essai of [1, 2, 3, 4, 5]) {
+    if ((await champs.count()) >= 2) break;
+    await page.waitForTimeout(essai * 300);
+  }
   await champs.nth(0).fill("Abattage d'un chêne");
   await champs.nth(1).fill("1200.00");
   await champs.nth(1).blur();
-  await page.waitForTimeout(900);
+
+  // **Puis on RELIT le TOTAL, qui est ce que l'écran garantit.** Relire un champ
+  // par son rang, c'est se fier au même repère qui vient de nous tromper ; le
+  // total, lui, ne peut afficher 1 200,00 € que si le montant est arrivé.
+  // Même remède que `test-prix-e2e.ts` : attendre ce qu'on affirme, jamais une
+  // durée.
+  for (const essai of [1, 2, 3, 4]) {
+    await page.reload({ waitUntil: "networkidle" });
+    const total = await page.locator("p", { hasText: "€" }).first().innerText().catch(() => "");
+    if (/1[\s\u202f\u00a0]?200,00/.test(total)) break;
+    await page.waitForTimeout(essai * 500);
+  }
 
   await cas("SA SÉQUENCE : retour par mégarde, puis la ligne le ramène à l'envoi", async () => {
-    // Il était allé jusqu'à l'écran d'envoi.
-    await page.goto(`${fiche}/export`, { waitUntil: "networkidle" });
+    // Il était allé jusqu'à l'écran d'envoi — le devis lui-même depuis le
+    // 20 août 2026, où « Choisir la date » ouvre le calendrier
+    // (`ARCHITECTURE.md` §136). L'ancienne adresse `/export` n'est plus qu'un
+    // renvoi tant que le devis n'est pas parti.
+    await page.goto(`${fiche}/devis-complet`, { waitUntil: "networkidle" });
     // « J'ai fait retour sans faire exprès. »
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
 
@@ -93,21 +116,24 @@ async function main() {
     await lien.waitFor({ state: "visible", timeout: 20000 });
     assert.equal(
       await lien.getAttribute("href"),
-      `/chantiers/${id}/export`,
+      `/chantiers/${id}/devis-complet`,
       "la ligne ramène à la fiche : il devra refaire les étapes une à une"
     );
 
     await lien.click();
-    await page.waitForURL(new RegExp(`/chantiers/${id}/export`), { timeout: 20000 });
+    await page.waitForURL(new RegExp(`/chantiers/${id}/devis-complet`), { timeout: 20000 });
   });
 
   await cas("et l'écran d'arrivée offre l'envoi, sans étape de plus", async () => {
     // `waitForURL` se résout dès que l'adresse change : le rendu, lui, arrive
     // après. Lire le texte tout de suite mesurait un écran encore vide, et le
     // rouge accusait l'envoi — qui n'y était pour rien.
-    await page.waitForSelector("text=Envoyer au client", { timeout: 20000 });
+    await page.waitForSelector("text=Choisir la date", { timeout: 20000 });
     const texte = await page.locator("body").innerText();
-    assert.match(texte, /Envoyer au client/, "le geste qui restait n'est pas offert ici");
+    // Le geste s'appelle « Choisir la date » depuis le 20 août 2026, et il ne
+    // vit plus sur l'écran récapitulatif mais sur le devis lui-même : c'est le
+    // raccourci qu'il a demandé, trois écrans devenus deux.
+    assert.match(texte, /Choisir la date/, "le geste qui restait n'est pas offert ici");
     // Le montant est sous ses yeux : c'est ce qu'il était venu corriger.
     // **Toute espace, pas l'espace ordinaire.** Le format français pose une
     // espace fine insécable (U+202F) entre les milliers : `/1 440/` ne trouvait

@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — l'arrosage, en deux gestes</title>
+<style>
+  /*
+    L'ARROSAGE EN DEUX GESTES — sa demande du 20 août 2026, capture de
+    `arrosage.html` à l'appui :
+
+      « Pareil, on va simplifier cette page également. Garde le piquage se
+        fait… avec le bandeau déroulant. Ensuite il faut : le croquis et ses
+        métrés, avec la possibilité de mettre la photo. Je veux rien d'autre.
+        Ensuite, une fois qu'on a mis la photo et que tu as analysé ce qu'il
+        faut, tu fais apparaître un plan avec les différents réseaux et le
+        détail des pièces. Rien de plus, rien de moins. »
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI DISPARAÎT, ET C'EST L'ESSENTIEL DE LA DEMANDE.
+
+    La page d'aujourd'hui pose HUIT questions avant de rendre quoi que ce soit :
+    le piquage, le seau, le temps de remplissage, la pression, la marque des
+    arroseurs, le corps d'arroseur, les zones une par une, la sonde de pluie.
+    Il en veut DEUX : d'où part l'eau, et le croquis du client.
+
+    Tout le reste — débit mesuré au seau, règle de recouvrement, choix de
+    marque, saisie des zones, liste fournisseur avec cases à cocher — part.
+    L'écran `#avant` les remet côte à côte : un retrait se juge sur ce qu'on ne
+    voit plus.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QU'IL FAUT DIRE PLUTÔT QUE DE LE FAIRE SEMBLANT.
+
+    **Lire les métrés sur une photo de croquis manuscrit n'existe pas dans
+    Atlas.** Cela demande une IA qui regarde une image ; le raccordement est
+    écrit (`ARCHITECTURE.md` §26) mais aucun contrat n'est signé, et sans clé
+    la dictée elle-même est recopiée mot à mot. Ce que cette page montre après
+    la photo est donc **ce qu'on veut obtenir**, pas ce qu'Atlas sait faire
+    aujourd'hui. L'écran `#lecture` le dit, et dit ce qui manque.
+
+    Dessiner une lecture automatique comme si elle marchait, c'est la faute que
+    la planche 56 a commise deux fois (`CLAUDE.md` §5).
+
+    ─────────────────────────────────────────────────────────────────────────
+    AUCUN SCRIPT. Navigation par ancre `:target`, le menu déroulant est un vrai
+    `<select>` qui s'ouvre sans JavaScript. L'écran d'entrée est écrit EN
+    DERNIER — `~` ne voit que les frères qui suivent.
+
+    LE PLAN EST UN DESSIN, PAS UNE PHOTO. Un SVG écrit à la main : il se lit à
+    n'importe quelle taille, pèse trois fois rien, et s'ouvre hors ligne.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+    --r1:#4f7a4a; --r2:#3d6b86; --r3:#a06a2c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%}
+  a{color:inherit;text-decoration:none}
+  .tel{max-width:414px;margin:0 auto;min-height:100vh;padding-bottom:60px;overflow-x:hidden}
+
+  .ecran{display:none;padding:26px 0 0}
+  .ecran:target{display:block}
+  #depart{display:block}
+  .ecran:target ~ #depart{display:none}
+
+  .sur{margin:0;padding:0 22px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+       text-transform:uppercase;color:var(--or)}
+  h1{margin:11px 0 0;padding:0 22px;font-family:Georgia,serif;font-weight:400;
+     font-size:31px;line-height:1.06;letter-spacing:-.018em}
+  .chapo{margin:11px 0 0;padding:0 22px;font-size:14px;line-height:1.6;color:var(--charcoal-soft)}
+  .chapo b{color:var(--charcoal)}
+  .retour{display:inline-flex;align-items:center;gap:7px;margin:0 22px;padding:8px 0;
+          font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;
+          color:var(--muted)}
+  .chev-g{width:5px;height:5px;transform:rotate(-135deg);
+          border-right:1.5px solid currentColor;border-top:1.5px solid currentColor}
+
+  .bloc{margin:20px 22px 0;background:var(--cream);border-radius:14px;padding:18px 17px;
+        box-shadow:inset 0 0 0 1px var(--line-soft)}
+  .bloc h2{margin:0 0 14px;font-family:Georgia,serif;font-weight:400;font-size:21px;line-height:1.2}
+  .bloc .aide{margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--charcoal-soft)}
+  .bloc .aide b{color:var(--charcoal)}
+
+  label.et{display:block;margin:0 0 7px;font-size:9.5px;font-weight:500;
+           letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+  /* 16 px au moins : en dessous, iOS agrandit la page à la mise au point. */
+  select{width:100%;font-size:16px;font-family:inherit;color:var(--charcoal);
+         background:var(--bone);border:0;border-radius:11px;padding:15px 14px;
+         box-shadow:inset 0 0 0 1px var(--line);min-height:52px;
+         -webkit-appearance:none;appearance:none;
+         background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
+                          linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+         background-position:calc(100% - 20px) 23px,calc(100% - 14px) 23px;
+         background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+
+  /* ── La mesure au seau, remise le 20 août au soir ──────────────────────
+     *Sa consigne :* « remets la mesure du débit, mais minimaliste, sans mots
+     qui servent à rien comme on vient de faire ». Trois cases, trois unités,
+     un résultat. Les paragraphes qui l'entouraient ne reviennent pas. */
+  .seau{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+  .seau label{display:block;font-size:9px;font-weight:500;letter-spacing:.16em;
+              text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  /* 16 px au moins : en dessous, iOS agrandit la page à la mise au point. */
+  .seau input{width:100%;min-width:0;font-size:16px;font-family:inherit;text-align:center;
+              color:var(--charcoal);background:var(--bone);border:0;border-radius:10px;
+              padding:13px 6px;box-shadow:inset 0 0 0 1px var(--line);min-height:48px}
+  .debit{margin:12px 0 0;font-size:15px;color:var(--charcoal)}
+  .debit b{font-family:Georgia,serif;font-weight:400;font-size:22px}
+
+  /* Le geste de la photo : 64 px de haut, c'est un bouton qu'on touche dehors. */
+  .photo{display:flex;align-items:center;justify-content:center;gap:10px;
+         margin-top:0;min-height:64px;border-radius:12px;
+         border:1.5px dashed var(--line);background:var(--bone);
+         font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+         color:var(--charcoal-soft)}
+  .appareil{width:19px;height:15px;border-radius:3px;position:relative;flex:none;
+            box-shadow:inset 0 0 0 1.4px var(--charcoal-soft)}
+  .appareil::before{content:"";position:absolute;left:6px;top:3.5px;width:7px;height:7px;
+                    border-radius:50%;box-shadow:inset 0 0 0 1.4px var(--charcoal-soft)}
+
+  .note{margin:20px 22px 0;padding:15px 17px;background:var(--cream);border-radius:12px;
+        font-size:13px;line-height:1.65;color:var(--charcoal-soft)}
+  .note b{color:var(--charcoal)}
+  .note a{display:inline-block;padding:7px 0;font-weight:600;color:var(--or)}
+  .note .t{display:block;margin-bottom:7px;font-size:9.5px;font-weight:500;
+           letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+
+  /* ── Le plan ──────────────────────────────────────────────────────────── */
+  .plan{margin:18px 22px 0;background:var(--cream);border-radius:14px;padding:14px 12px 10px;
+        box-shadow:inset 0 0 0 1px var(--line-soft)}
+  .plan svg{display:block;width:100%;height:auto}
+  .legende{display:flex;flex-wrap:wrap;gap:8px 14px;margin:12px 2px 2px}
+  .legende span{display:inline-flex;align-items:center;gap:7px;font-size:12px;
+                color:var(--charcoal-soft)}
+  .pastille{width:11px;height:11px;border-radius:3px;flex:none}
+
+  .reseau{margin:16px 22px 0;background:var(--cream);border-radius:12px;padding:14px 16px;
+          box-shadow:inset 0 0 0 1px var(--line-soft)}
+  .reseau .tete{display:flex;align-items:baseline;gap:9px}
+  .reseau .tete .pastille{align-self:center}
+  .reseau .tete b{font-family:Georgia,serif;font-weight:400;font-size:17.5px}
+  .reseau .tete .mesure{margin-left:auto;font-size:12.5px;color:var(--muted);
+                        font-variant-numeric:tabular-nums}
+  .piece{display:flex;align-items:baseline;gap:12px;padding:9px 0;
+         border-bottom:1px solid var(--line-soft);font-size:14.5px}
+  .piece:last-child{border-bottom:0;padding-bottom:0}
+  .piece .n{flex:none;width:34px;font-variant-numeric:tabular-nums;color:var(--or);
+            font-weight:600;font-size:13.5px}
+  .piece .q{margin-left:auto;flex:none;font-size:12.5px;color:var(--muted)}
+
+  .soustitre{margin:8px 22px 0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+  .soustitre b{color:var(--charcoal-soft)}
+  .reglage{margin:10px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+  .reglage b{color:var(--charcoal-soft)}
+  .alerte{color:var(--alerte)}
+  .titre-liste{margin:26px 22px 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--muted)}
+
+  /* ── L'avant / après ──────────────────────────────────────────────────── */
+  .parti{display:flex;align-items:flex-start;gap:9px;margin-top:9px;font-size:14px;
+         line-height:1.5;color:var(--charcoal-soft)}
+  .parti .croix{flex:none;font-size:12px;color:var(--alerte);width:12px;padding-top:2px}
+  .parti .garde{flex:none;font-size:12px;color:var(--pine);width:12px;padding-top:2px}
+  .parti b{color:var(--charcoal)}
+</style>
+</head>
+<body>
+<div class="tel">
+
+<!-- ══ Ce qu'Atlas ne sait pas encore lire ══════════════════════════════ -->
+<section class="ecran" id="lecture">
+  <a class="retour" href="#plan"><span class="chev-g"></span>Le plan</a>
+  <h1>Lire un croquis</h1>
+  <p class="chapo">Ce qui reste à écrire, et ce qui est déjà là.</p>
+
+  <div class="note"><span class="t">Corrigé, contre ce que j’avais dit</span>
+    J’ai écrit ce matin qu’Atlas ne pouvait pas lire une photo. <b>C’était
+    faux.</b> L’application fait déjà lire des <b>tickets de caisse
+    photographiés</b> à l’IA — Anthropic ou OpenAI, au choix — et en tire le
+    fournisseur, la date, le montant et la TVA.<br><br>
+    Lire un croquis, <b>c’est le même travail</b> : une photo, une consigne, une
+    réponse à relire. Ce n’est pas un mur, c’est une pièce à écrire.
+  </div>
+
+  <div class="note"><span class="t">Ce que la lecture rendra</span>
+    Trois choses : les <b>surfaces</b> de chaque partie du jardin, les
+    <b>longueurs</b> de haie et de massif, et <b>où se trouve le point d’eau</b>.
+    Le découpage en réseaux et la liste des pièces se déduisent de là — et ce
+    calcul-là est déjà écrit.
+  </div>
+
+  <div class="note"><span class="t">Ce qui ne changera pas</span>
+    <b>Rien ne sera pris pour argent comptant.</b> Un croquis au crayon sur un
+    coin de table se lit mal ; la lecture se trompera. Elle rendra donc une
+    <b>proposition</b> que vous corrigez, comme pour les tickets — jamais un plan
+    posé dans votre dos.<br><br>
+    Et ce qu’elle n’a pas su lire <b>reste vide et signalé</b>, jamais deviné.
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page-ci ne fait pas</span>
+    Le plan de l’écran précédent est un <b>exemple dessiné</b> : cette page est
+    une maquette, elle n’appelle aucune IA. Le débit, lui, ne se recalcule pas
+    ici quand vous changez les cases — dans l’application, il se recalculera.
+  </div>
+</section>
+
+<!-- ══ Ce qui disparaît de la page ══════════════════════════════════════ -->
+<section class="ecran" id="avant">
+  <a class="retour" href="#depart"><span class="chev-g"></span>Retour</a>
+  <h1>Ce qui part</h1>
+  <p class="chapo">La page d’aujourd’hui pose <b>huit questions</b> avant de rendre quoi que ce soit. Vous en voulez deux.</p>
+
+  <div class="bloc"><h2>Gardé</h2>
+    <p class="parti"><span class="garde">✓</span><span><b>« Le piquage se fait… »</b> et son menu déroulant</span></p>
+    <p class="parti"><span class="garde">✓</span><span><b>Le croquis du client</b> et ses métrés, avec sa photo</span></p>
+  </div>
+
+  <div class="bloc"><h2>Retiré</h2>
+    <p class="parti"><span class="croix">✕</span><span>Le <b>seau, le temps de remplissage et la pression</b> — trois cases à remplir avant de voir quoi que ce soit</span></p>
+    <p class="parti"><span class="croix">✕</span><span>Le <b>débit disponible</b> et la règle de recouvrement, deux paragraphes de calcul affichés en cours de route</span></p>
+    <p class="parti"><span class="croix">✕</span><span>La <b>marque des arroseurs</b> et le <b>corps d’arroseur</b>, deux menus de plus</span></p>
+    <p class="parti"><span class="croix">✕</span><span>La <b>saisie des zones</b> une par une, avec ses boutons « + Pelouse », « + Massif », « + Haie », « + Potager »</span></p>
+    <p class="parti"><span class="croix">✕</span><span>La <b>sonde de pluie</b> à cocher, et les boutons copier / envoyer / imprimer</span></p>
+  </div>
+
+  <div class="bloc"><h2>Ajouté</h2>
+    <p class="parti"><span class="garde">+</span><span>Un <b>plan dessiné</b> avec les réseaux, leurs couleurs et les métrés</span></p>
+  </div>
+
+  <div class="note"><span class="t">Ce que le retrait coûte, et c’est réel</span>
+    Le débit mesuré au seau n’était pas une lubie : <b>c’est lui qui décide du
+    nombre d’arroseurs par réseau</b>. Sans mesure, il faut le supposer d’après
+    le piquage — 3 bar au compteur, moins ailleurs — et ce sera parfois faux.<br><br>
+    <b>Deux façons de vivre avec :</b> le supposer et le dire (« estimé, à
+    vérifier au seau sur place »), ou le demander <b>une seule fois</b>, à la
+    fin, quand le plan est déjà à l’écran. <b>Dites-moi laquelle.</b>
+  </div>
+</section>
+
+<!-- ══ Le plan, après la photo ══════════════════════════════════════════ -->
+<section class="ecran" id="plan">
+  <a class="retour" href="#depart"><span class="chev-g"></span>Le croquis</a>
+  <p class="sur">Lu sur le croquis</p>
+  <h1>Trois réseaux</h1>
+  <p class="chapo">96 m² + 120 m² de pelouse, 34 m de massifs et de haie. Le piquage est <b>juste après le compteur</b>.</p>
+
+  <div class="plan">
+    <svg viewBox="0 0 340 250" role="img"
+         aria-label="Plan du jardin : trois réseaux d'arrosage, le compteur, la nourrice et les arroseurs.">
+      <!-- Le terrain -->
+      <rect x="8" y="8" width="324" height="234" rx="8" fill="#f2efe7" stroke="rgba(28,28,26,.16)"/>
+      <!-- La maison -->
+      <rect x="130" y="96" width="82" height="58" rx="4" fill="#e0dcd1" stroke="rgba(28,28,26,.2)"/>
+      <text x="171" y="130" text-anchor="middle" font-size="11" fill="#6b675c" font-family="Georgia,serif">Maison</text>
+
+      <!-- Réseau 1 · pelouse devant -->
+      <rect x="20" y="20" width="192" height="64" rx="5" fill="#4f7a4a" fill-opacity=".13" stroke="#4f7a4a" stroke-width="1.4"/>
+      <text x="28" y="36" font-size="10.5" fill="#3c5c38" font-weight="600">Pelouse devant</text>
+      <text x="28" y="50" font-size="10" fill="#6b675c">16 m × 6 m · 96 m²</text>
+      <!-- 6 turbines : 4 × 3 en quinconce, un tous les 5,33 m — ce que le
+           calcul d'`arrosage.html` pose pour 16 × 6 m. -->
+      <circle cx="40" cy="60" r="3.6" fill="#4f7a4a"/><circle cx="97" cy="60" r="3.6" fill="#4f7a4a"/>
+      <circle cx="154" cy="60" r="3.6" fill="#4f7a4a"/><circle cx="196" cy="60" r="3.6" fill="#4f7a4a"/>
+      <circle cx="68" cy="76" r="3.6" fill="#4f7a4a"/><circle cx="125" cy="76" r="3.6" fill="#4f7a4a"/>
+
+      <!-- Réseau 2 · pelouse derrière -->
+      <rect x="20" y="166" width="168" height="62" rx="5" fill="#3d6b86" fill-opacity=".13" stroke="#3d6b86" stroke-width="1.4"/>
+      <text x="28" y="182" font-size="10.5" fill="#2f5468" font-weight="600">Pelouse derrière</text>
+      <text x="28" y="196" font-size="10" fill="#6b675c">15 m × 8 m · 120 m²</text>
+      <!-- 5 turbines : 3 × 3 en quinconce, un tous les 7,50 m — pour 15 × 8 m. -->
+      <circle cx="42" cy="206" r="3.6" fill="#3d6b86"/><circle cx="100" cy="206" r="3.6" fill="#3d6b86"/>
+      <circle cx="158" cy="206" r="3.6" fill="#3d6b86"/>
+      <circle cx="71" cy="222" r="3.6" fill="#3d6b86"/><circle cx="129" cy="222" r="3.6" fill="#3d6b86"/>
+
+      <!-- Réseau 3 · massifs et haie, en goutte-à-goutte -->
+      <path d="M228 24 L228 228" stroke="#a06a2c" stroke-width="3" stroke-dasharray="7 5" fill="none"/>
+      <path d="M228 228 L300 228" stroke="#a06a2c" stroke-width="3" stroke-dasharray="7 5" fill="none"/>
+      <text x="238" y="40" font-size="10.5" fill="#8a5a24" font-weight="600">Haie</text>
+      <text x="238" y="54" font-size="10" fill="#6b675c">22 m</text>
+      <text x="238" y="200" font-size="10.5" fill="#8a5a24" font-weight="600">Massifs</text>
+      <text x="238" y="214" font-size="10" fill="#6b675c">12 m</text>
+
+      <!-- Le point d'eau, l'amenée et la nourrice -->
+      <rect x="286" y="96" width="38" height="26" rx="4" fill="#fff" stroke="#1c1c1a" stroke-width="1.2"/>
+      <text x="305" y="112" text-anchor="middle" font-size="9" fill="#1c1c1a" font-weight="700">EAU</text>
+      <path d="M286 109 L252 109 L252 132" stroke="#1c1c1a" stroke-width="2" fill="none"/>
+      <text x="248" y="104" text-anchor="end" font-size="9.5" fill="#6b675c">amenée · à mesurer</text>
+      <circle cx="252" cy="138" r="7" fill="#fff" stroke="#1c1c1a" stroke-width="1.4"/>
+      <text x="252" y="156" text-anchor="middle" font-size="9" fill="#6b675c">nourrice</text>
+    </svg>
+
+    <div class="legende">
+      <span><i class="pastille" style="background:#4f7a4a"></i>Réseau 1</span>
+      <span><i class="pastille" style="background:#3d6b86"></i>Réseau 2</span>
+      <span><i class="pastille" style="background:#a06a2c"></i>Réseau 3</span>
+      <span><i class="pastille" style="background:#1c1c1a"></i>Amenée</span>
+    </div>
+  </div>
+
+  <p class="titre-liste">Le détail des pièces</p>
+  <p class="soustitre">Références et débits <b>relevés dans votre catalogue Aqua Plus 2026</b>.
+    Ce qui n’en vient pas encore est marqué <i>provisoire</i>.</p>
+
+  <div class="reseau" data-atlas="secteur">
+    <p class="tete"><i class="pastille" style="background:#4f7a4a"></i><b>Réseau 1 — pelouse devant</b><span class="mesure">16 × 6 m</span></p>
+    <p class="piece" data-atlas="arroseur"><span class="n">6</span>3504 · buse 0,75<span class="q">0,96 m³/h</span></p>
+    <p class="piece"><span class="n">1</span>Électrovanne 100 DV 1" MM 9V<span class="q">Rain Bird</span></p>
+    <p class="reglage">Un arroseur tous les <b>5,33 m</b>, recouvrement 98 %, en quinconce.
+      <span class="alerte">La buse 0,75 est un peu grande ici : l’écart tombe sous la portée.</span></p>
+  </div>
+
+  <div class="reseau" data-atlas="secteur">
+    <p class="tete"><i class="pastille" style="background:#3d6b86"></i><b>Réseau 2 — pelouse derrière</b><span class="mesure">15 × 8 m</span></p>
+    <p class="piece" data-atlas="arroseur"><span class="n">5</span>3504 · buse 1,5<span class="q">1,50 m³/h</span></p>
+    <p class="piece"><span class="n">1</span>Électrovanne 100 DV 1" MM 9V<span class="q">Rain Bird</span></p>
+    <p class="reglage">Un arroseur tous les <b>7,50 m</b>, recouvrement 93 %, en quinconce.</p>
+  </div>
+
+  <div class="reseau" data-atlas="secteur">
+    <p class="tete"><i class="pastille" style="background:#a06a2c"></i><b>Réseau 3 — massifs et haie</b><span class="mesure">34 m</span></p>
+    <p class="piece"><span class="n">34 m</span>Gaine de goutteurs<span class="q">0,24 m³/h</span></p>
+    <p class="piece"><span class="n">1</span>Électrovanne 100 DV 1" MM 9V<span class="q">Rain Bird</span></p>
+    <p class="reglage"><span class="alerte">Gaine <i>provisoire</i> : modèle générique, pas encore une référence de votre catalogue.</span></p>
+  </div>
+
+  <div class="reseau">
+    <p class="tete"><i class="pastille" style="background:#1c1c1a"></i><b>Les corps et leurs raccords</b><span class="mesure">11 arroseurs</span></p>
+    <p class="piece"><span class="n">11</span>Turbine 3504<span class="q">6 buses fournies</span></p>
+    <p class="piece"><span class="n">18</span>Coude SBE 050 — 16 × 1/2" coudé<span class="q">Aqua Plus</span></p>
+    <p class="piece"><span class="n">18</span>Coude SBE 075 — 16 × 3/4" coudé<span class="q">Aqua Plus</span></p>
+    <p class="piece"><span class="n">36 m</span>PEBD rigide Ø16 (tube de reprise)<span class="q">Aqua Plus</span></p>
+  </div>
+
+  <div class="reseau">
+    <p class="tete"><i class="pastille" style="background:#1c1c1a"></i><b>La nourrice</b><span class="mesure">3 vannes</span></p>
+    <p class="piece"><span class="n">1</span>Clarinette taraudée 1" — 3 vannes<span class="q">Aqua Plus</span></p>
+    <p class="piece"><span class="n">4</span>Union droite taraudée MM 1"<span class="q">Aqua Plus</span></p>
+    <p class="piece"><span class="n">4</span>Raccord mâle 25 1"<span class="q">Aqua Plus</span></p>
+    <p class="piece"><span class="n">1</span>Vanne avec vis de purge 3/4"<span class="q">Aqua Plus</span></p>
+    <p class="piece"><span class="n">1</span>Regard rectangle 12"<span class="q">Aqua Plus</span></p>
+    <p class="piece"><span class="n">1</span>Programmateur BL-IP 4 stations 9V<span class="q">3 utilisées</span></p>
+    <p class="piece"><span class="n">1</span>Réducteur de pression<span class="q"><i>provisoire</i></span></p>
+  </div>
+
+  <div class="reseau">
+    <p class="tete"><i class="pastille" style="background:#1c1c1a"></i><b>Le tuyau</b><span class="mesure">à mesurer</span></p>
+    <p class="piece" data-atlas="a-mesurer"><span class="n">—</span>Du compteur au regard<span class="q">à mesurer</span></p>
+    <p class="piece" data-atlas="a-mesurer"><span class="n">—</span>Antennes vers les secteurs, Ø25<span class="q">à mesurer</span></p>
+    <p class="reglage"><b>Les longueurs ne se devinent pas.</b> Elles dépendent du chemin
+      réel dans le jardin — un massif à contourner, une allée à traverser. Atlas
+      les laisse vides plutôt que d’avancer un chiffre que vous corrigeriez sur place.</p>
+  </div>
+
+  <div class="note"><span class="t">Comment ces chiffres tombent</span>
+    <b>Trois réseaux, parce que le débit ne suit pas.</b> Le piquage au compteur
+    donne 1,80 m³/h, dont <b>1,53 utilisable par secteur</b>. Les trois réseaux
+    ensemble demanderaient 2,70 m³/h — bien trop. On les répartit donc en
+    groupes qui tiennent : 0,96 puis 1,50 m³/h, et la gaine à part.<br><br>
+    <b>Le goutte-à-goutte a son réseau à lui</b>, jamais mélangé aux turbines :
+    il travaille à 1,5 bar quand elles en veulent 3.
+  </div>
+
+  <div class="note"><span class="t">Deux choses à savoir</span>
+    <b>1 ·</b> Ce plan est un <b>exemple dessiné</b>, pas lu sur votre photo.
+    <a href="#lecture">pourquoi, et ce qui manque →</a><br>
+    <b>2 ·</b> Cinq choses ont disparu de cette page.
+    <a href="#avant">voir lesquelles →</a>
+  </div>
+</section>
+
+<!-- ══ LE DÉPART — l'écran d'entrée (écrit en dernier, cf. la règle) ═════ -->
+<!--
+  **DÉPOUILLÉ UNE SECONDE FOIS, le 20 août 2026 au soir.** Sa consigne, après
+  avoir vu la première version :
+
+    « Le titre plan d'arrosage, et en dessous le piquage se fait avec le
+      bandeau déroulant — tout ce qu'il y a entre les deux, tu me le supprimes.
+      Ensuite en dessous, le croquis et ses métrés avec la possibilité de mettre
+      la photo, et tout le reste tu me le supprimes. Tous les autres mots, tu me
+      les supprimes. Et je ne veux pas qu'il y ait marqué un et deux sur les
+      deux machins. »
+
+  Sont donc partis : le surtitre « Atlas · Paysage », la phrase d'introduction,
+  les numéros « 1 · » et « 2 · », le titre « D'où part l'eau » (le libellé du
+  déroulant le dit déjà), les deux paragraphes d'aide, et les deux encarts du
+  bas. **Il reste trois choses : un titre, un déroulant, un bouton.**
+
+  **Ce que les encarts portaient n'est pas perdu** : les deux écrans qu'ils
+  ouvraient — pourquoi la photo n'est pas lue, et ce qui a disparu de la page —
+  restent atteignables depuis le plan, une fois la photo posée. Les laisser sans
+  aucune porte en aurait fait des écrans morts, la faute des huit planches
+  introuvables.
+-->
+<section class="ecran" id="depart">
+  <h1>Plan d’arrosage</h1>
+
+  <div class="bloc">
+    <label class="et" for="piquage">Le piquage se fait…</label>
+    <select id="piquage">
+      <option value="compteur">Juste après le compteur d’eau</option>
+      <option value="ailleurs">Ailleurs (robinet de jardin, nourrice existante…)</option>
+      <option value="puits">Sur un puits ou une cuve</option>
+    </select>
+
+    <div class="seau">
+      <div><label for="litres">Litres</label><input id="litres" type="number" inputmode="decimal" value="10"></div>
+      <div><label for="secondes">Secondes</label><input id="secondes" type="number" inputmode="decimal" value="20"></div>
+      <div><label for="bar">Bar</label><input id="bar" type="number" inputmode="decimal" step="0.1" value="3"></div>
+    </div>
+    <p class="debit"><b>1,80</b> m³/h</p>
+  </div>
+
+  <div class="bloc">
+    <h2>Le croquis et ses métrés</h2>
+    <a class="photo" href="#plan"><span class="appareil"></span>Ajouter la photo du croquis</a>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

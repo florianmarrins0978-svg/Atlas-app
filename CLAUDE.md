@@ -373,6 +373,88 @@ Deux précédents, à imiter plutôt qu'à réinventer :
 Quand ni l'un ni l'autre n'est possible, **le dire** plutôt que de laisser croire
 à une vérification qui n'a pas eu lieu.
 
+## 4 bis. Une maquette qui montre du matériel le prend dans le catalogue
+
+**Payé le 20 août 2026, sur sa question :** *« les pièces que tu as utilisées
+pour l'exemple sont choisies au hasard ? »* — et la réponse était **oui** pour
+une partie d'entre elles. La maquette d'arrosage annonçait « Turbines, portée
+5 m · 0,30 m³/h », des « colliers de prise en charge », un « filtre à tamis » et
+un « clapet anti-retour ». Aucune de ces pièces n'existe.
+
+Le dépôt tient pourtant `appli/arrosage-catalogue.js`, où **chaque entrée porte
+sa source** — `'patron'` (relevée de ses photos, de ses devis Aqua Plus) ou
+`'provisoire'`. Un arroseur dont on croit la portée fausse fait acheter le
+mauvais nombre d'arroseurs, et c'est le paysagiste qui revient poser les
+manquants.
+
+**La règle, donc :**
+
+- **Aucun matériel inventé dans une maquette.** Les libellés se recopient
+  **mot pour mot** du catalogue : c'est ce qu'il portera chez son fournisseur, et
+  une virgule de plus rend la référence introuvable.
+- **Les chiffres viennent du calcul, pas de la tête.** `appli/arrosage-calcul.js`
+  existe et tourne : on le pilote (Playwright suffit) et on écrit ce qu'il rend.
+  Refaire le calcul à la main dans une maquette, c'est une seconde
+  implémentation qui divergera (§3).
+- **Ce qui ne se devine pas reste vide et le dit.** Les longueurs de tuyau
+  dépendent du chemin réel dans le jardin : le calcul répond « à mesurer », et la
+  maquette doit répondre pareil. Un plan qui chiffre ce que la liste dit ignorer
+  se contredit lui-même — et c'est le chiffre du plan qu'on recopie sur un devis.
+- **La source se montre.** Ce qui est encore `provisoire` est signalé comme tel,
+  jamais présenté comme acquis.
+
+**Le contrôle qui tient tout ça**
+(`scripts/verifier-maquette-arrosage-simple.mjs`) compare chaque libellé au
+catalogue **à l'identique**. Sa première version acceptait une inclusion : le
+catalogue portant une entrée générique nommée « Turbine », l'invention
+« Turbine portée 5 m » la contenait et passait au vert. **Un contrôle trop
+tolérant ne prouve rien** — celui-là a été trouvé en le confrontant à
+l'invention même qu'il devait bannir.
+
+## 5 bis. Un contrôle ne doit pas réclamer ce que le patron a fait retirer
+
+**Payé le 20 août 2026.** Il a demandé de vider la fiche d'un client — *« tout
+le reste, tu enlèves, c'est du trop »*. Une suite d'un autre lot lisait le
+compte « 2 chantiers » sur cet écran pour prouver que deux chantiers avaient été
+rapprochés sous un seul client. Le compte parti, elle a rougi — sur du code
+juste, et pour une demande exaucée.
+
+**Ce qu'une suite doit fixer, c'est la RÈGLE, pas la façon dont un écran la
+montre.** Le rapprochement se prouve aussi bien — mieux — en vérifiant que les
+deux chantiers ouvrent la MÊME adresse de fiche : cela ne dépend d'aucun libellé
+et survivra au prochain remaniement.
+
+Avant d'écrire une assertion sur un texte d'écran, se demander : *si le patron
+faisait retirer ce mot demain, ce contrôle défendrait-il encore quelque chose ?*
+Si la réponse est non, viser plus profond — une adresse, un identifiant, un
+compte en base.
+
+**Et la réciproque, qui vaut autant :** quand une suite rougit après un retrait
+qu'il a demandé, on **adapte le contrôle**, on ne remet pas le libellé. Écrire
+une suite qui réclame ce qu'il a fait enlever, c'est rendre son écran impossible
+à changer.
+
+## 5 ter. Avant de dire « l'application ne sait pas faire ça », chercher
+
+**Payé le 20 août 2026, et cela a failli coûter une fonctionnalité.** Devant
+« lire les métrés sur une photo de croquis », il a été répondu au patron que
+c'était impossible : *« cela demande une IA qui regarde une image, et aucun
+contrat n'est signé »*. Il a corrigé — *« tu peux le faire, il y a déjà l'IA
+dans l'application, Anthropic et OpenAI »* —, et il avait raison.
+
+`src/server/ai/services/lire-ticket.ts` fait **déjà** lire un ticket de caisse
+photographié : consigne système, image envoyée au fournisseur, réponse JSON,
+fonction pure qui la relit, éprouvée sans clé. Lire un croquis, c'est le même
+patron. Ce n'était pas un mur, c'était une pièce à écrire.
+
+**La question à se poser n'est jamais « est-ce possible ? » mais « qui, dans ce
+dépôt, fait déjà quelque chose d'approchant ? »** Un `grep` de trente secondes
+sur `image`, `vision`, `base64` l'aurait donné.
+
+C'est la même faute que la planche 56, dans l'autre sens : celle-là décrivait un
+écran déjà fait, celle-ci déclarait impossible un travail déjà à moitié fait.
+**Chercher avant d'affirmer, dans les deux sens.**
+
 ## 6. Git
 
 - Branche de développement : celle que la conversation désigne. Elle change à
