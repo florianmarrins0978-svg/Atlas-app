@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
@@ -12,6 +12,7 @@ import { creerChantierAction } from "./actions";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import type { Civilite } from "@/lib/civilite";
+import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
 
 // Intégration réelle : la création passe désormais par une Server Action
 // (creerChantierAction), qui persiste le chantier (et le client s'il est
@@ -151,7 +152,8 @@ export default function FormulaireNouveauChantier({
       const r = await reprendreChantierAction(reprise.id, {
         nomClient,
         civilite: civilite ?? undefined,
-        telephone,
+        // Espacé à l'écran, en chiffres en base — voir `numeroEnregistre`.
+        telephone: numeroEnregistre(telephone),
         email,
         canal: canal ?? undefined,
         adresseChantier,
@@ -173,7 +175,8 @@ export default function FormulaireNouveauChantier({
       const { id } = await creerChantierAction({
         nomClient,
         civilite: civilite ?? undefined,
-        telephone,
+        // Espacé à l'écran, en chiffres en base — voir `numeroEnregistre`.
+        telephone: numeroEnregistre(telephone),
         email,
         canal: canal ?? undefined,
         adresseChantier,
@@ -265,11 +268,8 @@ export default function FormulaireNouveauChantier({
           onSubmit={(e) => {
             e.preventDefault();
             // **« Entrée » mène à la dictée, et c'est un retour en arrière
-            // assumé.** Tant qu'une bascule portait le choix, la touche devait
-            // le suivre — l'ignorer aurait envoyé sur la fiche quelqu'un qui
-            // venait de toucher « je l'écris ». Il n'y a plus de choix à
-            // suivre : deux boutons, deux gestes distincts. Une touche ne peut
-            // pas deviner lequel, et tomber dans le devis à la main sans
+            // assumé.** Deux boutons, deux gestes distincts : une touche ne
+            // peut pas deviner lequel, et tomber dans le devis à la main sans
             // l'avoir demandé est le défaut le plus coûteux des deux.
             creerPuisAller("fiche");
           }}
@@ -284,34 +284,73 @@ export default function FormulaireNouveauChantier({
               étiquette, pas une donnée sur le chantier. */}
           {/* **La civilité se choisit AU-DESSUS du nom**, comme il l'a demandé
               le 13 août 2026. Rien n'est présélectionné : son silence ne doit
-              pas devenir un choix (`src/components/atlas/ChoixCivilite.tsx`). */}
-          <ChoixCivilite valeur={civilite} onChange={setCivilite} />
+              pas devenir un choix (`src/components/atlas/ChoixCivilite.tsx`).
+
+              **Son intitulé part le 21 août 2026** : *« enlève civilité »*,
+              puis *« non, remets le Mr et Mme, je voulais juste que tu enlèves
+              le TITRE »*. Les deux pastilles se comprennent seules, et c'est
+              une ligne de petites capitales de moins en haut de l'écran. */}
+          <ChoixCivilite valeur={civilite} onChange={setCivilite} sansLegende />
+
+          {/* **Le nom et le numéro sur la MÊME ligne** — sa demande du 21 août
+              2026, qu'il avait déjà essayée lui-même en tapant le numéro dans
+              la case du nom : *« je pense que ça passe »*.
+
+              Ça passe, à une condition : que le numéro ne se comprime pas. Il
+              est donc à largeur FIXE et c'est le nom qui prend ce qui reste —
+              un nom trop long se tronque à l'affichage sans rien coûter, un
+              numéro tronqué ne se rappelle pas. La largeur est mesurée, pas
+              estimée : à 132 px, « 06 79 98 45 14 » perdait son dernier
+              chiffre, en silence.
+
+              **Le champ « Téléphone » seul a disparu** dans le même geste : le
+              numéro est ici. */}
+          <div className="flex gap-2.5">
+            <div className="min-w-0 flex-1">
+              <Field
+                label="Nom du client"
+                placeholder="Bernard"
+                big
+                value={nomClient}
+                onChange={setNomClient}
+              />
+            </div>
+            <div className="w-[148px] flex-shrink-0">
+              <Field
+                label="Téléphone"
+                placeholder="06 12 34 56 78"
+                type="tel"
+                value={telephone}
+                onChange={(v) => setTelephone(v)}
+                aLaFrappe={espacerNumero}
+                aDroite
+              />
+            </div>
+          </div>
+
           <Field
-            label="Nom du client (facultatif)"
-            placeholder="Bernard"
-            big
-            value={nomClient}
-            onChange={setNomClient}
-          />
-          {/* 3 — Téléphone : facultatif */}
-          <Field
-            label="Téléphone (facultatif)"
-            placeholder="06 12 34 56 78"
-            type="tel"
-            value={telephone}
-            onChange={setTelephone}
-          />
-          {/* 4 — E-mail : facultatif */}
-          <Field
-            label="E-mail (facultatif)"
+            label="E-mail"
             placeholder="bernard@exemple.fr"
             type="email"
             value={email}
             onChange={setEmail}
           />
 
-          {/* 5 — Canal d'envoi. N'apparaît qu'une fois une coordonnée saisie :
-              poser la question avant serait sans objet. */}
+          {/* 6 — Adresse du chantier : facultative, et proposée pendant la
+              frappe. Le champ reste libre : un lieu-dit ou un chemin de
+              campagne ne figure dans aucune base, et le patron y travaille
+              (`src/components/atlas/ChampAdresse.tsx`). */}
+          <ChampAdresse
+            label="Adresse du chantier"
+            placeholder="12 rue des Lilas, Nantes"
+            value={adresseChantier}
+            onChange={setAdresseChantier}
+          />
+
+          {/* **Le canal d'envoi vit SOUS l'adresse depuis le 21 août 2026** —
+              sa place, choisie par lui : *« comment lui envoyer son devis, tu
+              le mets sous l'adresse »*. Il n'apparaît toujours qu'une fois une
+              coordonnée saisie : poser la question avant serait sans objet. */}
           {(aTelephone || aEmail) && (
             <fieldset className="flex flex-col gap-1.5">
               <legend className={smallCaps} style={{ color: colors.muted }}>
@@ -334,17 +373,6 @@ export default function FormulaireNouveauChantier({
             </fieldset>
           )}
 
-          {/* 6 — Adresse du chantier : facultative, et proposée pendant la
-              frappe. Le champ reste libre : un lieu-dit ou un chemin de
-              campagne ne figure dans aucune base, et le patron y travaille
-              (`src/components/atlas/ChampAdresse.tsx`). */}
-          <ChampAdresse
-            label="Adresse du chantier (facultatif)"
-            placeholder="12 rue des Lilas, Nantes"
-            value={adresseChantier}
-            onChange={setAdresseChantier}
-          />
-
           {/* 7 — Adresse client, masquée par défaut */}
           {!adresseClientVisible ? (
             <button
@@ -357,7 +385,7 @@ export default function FormulaireNouveauChantier({
             </button>
           ) : (
             <ChampAdresse
-              label="Adresse du client (facultatif)"
+              label="Adresse du client"
               placeholder="Si différente de l'adresse du chantier"
               value={adresseClient}
               onChange={setAdresseClient}
@@ -410,6 +438,14 @@ export default function FormulaireNouveauChantier({
                 {enCours ? "Enregistrement…" : "Enregistrer →"}
               </PrimaryButton>
             ) : (
+              /* **LE BOUTON UNIQUE ARRIVE AVEC L'ANNEAU, PAS AVANT — 21 août 2026.**
+                 Sa demande est claire (*« garde un seul bouton, garde je rédige
+                 mon devis »*) et elle n'a de sens qu'une fois la dictée posée
+                 sur CET écran : retirer « Je dicte mon devis » aujourd'hui
+                 laisserait l'anneau sur la fiche chantier sans aucun chemin
+                 pour y aller. Les deux partent donc ensemble, dans le lot
+                 suivant — qui déplace aussi les soixante-treize suites de bout
+                 en bout passant par ce bouton. */
               <>
                 <PrimaryButton
                   disabled={!peutCreer}
@@ -512,6 +548,8 @@ function Field({
   value,
   onChange,
   required = false,
+  aLaFrappe,
+  aDroite = false,
 }: {
   label: string;
   placeholder: string;
@@ -520,24 +558,55 @@ function Field({
   value?: string;
   onChange?: (v: string) => void;
   required?: boolean;
+  /**
+   * Remet en forme ce qui est tapé, à mesure — et rend où reposer le curseur.
+   *
+   * **Le curseur fait partie de la règle, il n'est pas un détail.** Sans lui,
+   * corriger un chiffre au milieu d'un numéro renverrait le curseur au bout à
+   * chaque touche, et la correction deviendrait impossible. La règle elle-même
+   * vit hors de cet écran (`src/lib/numero-telephone.ts`), qui l'éprouve sans
+   * navigateur.
+   */
+  aLaFrappe?: (brut: string, curseur: number) => { valeur: string; curseur: number };
+  /** Le numéro se lit aligné à droite, contre le nom qui le précède. */
+  aDroite?: boolean;
 }) {
+  const champ = useRef<HTMLInputElement>(null);
+
+  function saisie(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!onChange) return;
+    if (!aLaFrappe) {
+      onChange(e.target.value);
+      return;
+    }
+    const { valeur, curseur } = aLaFrappe(e.target.value, e.target.selectionStart ?? e.target.value.length);
+    onChange(valeur);
+    // **Après le rendu, sinon React repose le curseur à la fin.** La valeur
+    // affichée vient de l'état ; tant qu'il n'est pas rendu, écrire la sélection
+    // n'a aucun effet visible.
+    requestAnimationFrame(() => champ.current?.setSelectionRange(curseur, curseur));
+  }
+
   return (
     <label className="flex flex-col gap-1.5">
       <span className={smallCaps} style={{ color: colors.muted }}>
         {label}
       </span>
       <input
+        ref={champ}
         type={type}
         placeholder={placeholder}
         value={value}
-        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+        onChange={onChange ? saisie : undefined}
         aria-required={required || undefined}
-        className="rounded-[4px] border-0 px-4 py-3.5 outline-none"
+        // La case vient de `.atlas-case` (`globals.css`) — « la carte douce »,
+        // son choix du 21 août 2026. Ne reste ici que ce qui distingue CE
+        // champ : la police et la taille du nom, plus grandes que le reste.
+        className="atlas-case"
         style={{
-          backgroundColor: colors.card,
-          color: colors.ink,
           fontFamily: big ? font.display : font.body,
-          fontSize: big ? "20px" : "16px",
+          ...(big ? { fontSize: "20px" } : null),
+          ...(aDroite ? { textAlign: "right" as const, fontVariantNumeric: "tabular-nums" } : null),
         }}
       />
     </label>

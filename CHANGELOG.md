@@ -9,6 +9,88 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### « Il y a une clé IA » — écrit dans le dépôt, plus dans une session
+
+**Sa consigne, et il a fallu qu'il la répète :** *« il y a une clé IA, il y a
+Anthropic, elles sont connectées, les deux clés. Enregistre-le vraiment dans le
+dossier, histoire que quand j'ouvre une nouvelle session, tu sois au courant que
+la clé Anthropic est active et que tu t'en sers déjà pour faire beaucoup de
+choses, notamment pour l'arrosage automatique, analyser la photo. »*
+
+Le dépôt disait « aucune clé d'IA » à cinq endroits, sans jamais préciser **de
+quelle machine** il parlait. Une session arrivant à froid en concluait que l'IA
+n'était pas branchée — et le lui annonçait. Il l'avait déjà corrigé dans l'autre
+sens le 20 août (*« tu peux le faire, il y a déjà l'IA dans l'application »*).
+
+`CLAUDE.md` §1 ter tranche désormais, et il est lu au début de chaque
+conversation : **chez lui les clés sont posées et l'IA tourne** ; **ici, sur le
+poste de l'agent, il n'y en a aucune**. Les cinq phrases ambiguës sont
+corrigées, et la formule juste n'est plus « impossible » mais *« pas vérifiable
+ici, à jouer sur ton espace »*, avec la commande.
+
+
+### La fiche client, refaite — premier lot, celui qui se voit
+
+**Sa demande, puis son choix :** *« j'ai envie que les informations prennent
+moins de place »*, et, devant cinq dessins de cases relus sur la page entière :
+*« je choisis la 4 »* — la carte douce.
+
+Ce qui change sur `chantiers/nouveau` :
+
+| | |
+|---|---|
+| **Plus un seul « (facultatif) »** | *« je ne veux plus qu'il y ait marqué facultatif nulle part »* |
+| **Le titre « Civilité » part**, Mr / Mme reste | *« je voulais juste que tu enlèves le titre »* |
+| **Le nom et le numéro sur une ligne** | et le champ Téléphone isolé disparaît |
+| **Le numéro s'espace à la frappe** | `0679984514` → `06 79 98 45 14` |
+| **« Comment lui envoyer son devis ? » sous l'adresse** | sa place, choisie par lui |
+| **Les cases : la carte douce** | fond papier, 14 px de rayon, aucun bord, l'or au doigt posé |
+
+**La case vit dans UNE classe, `.atlas-case`** (`globals.css`). Elle était écrite
+en double — dans `Field` et dans `ChampAdresse` —, et deux écritures de la même
+case divergent au premier ajustement (`CLAUDE.md` §3). C'est aussi ce qui lui
+donne son état au doigt posé : un style en ligne ne sait pas exprimer un
+`:focus`.
+
+**La règle du numéro est une fonction pure** (`src/lib/numero-telephone.ts`),
+éprouvée sans navigateur. Deux points y sont mesurés plutôt que supposés : un
+numéro qui commence par « + » n'est pas retouché (espacé par paires,
+`+33679984514` rendrait `+33 67 99 84 51 4`, le numéro de personne), et **le
+curseur reste où l'on corrige** — sans quoi corriger un chiffre au milieu
+deviendrait impossible.
+
+**Ce qui n'est PAS dans ce lot, et pourquoi.** Le bouton unique (« Je rédige mon
+devis ») et l'anneau sur cet écran arrivent ensemble, au lot suivant : retirer
+« Je dicte mon devis » aujourd'hui laisserait la dictée sur la fiche chantier
+sans aucun chemin pour y aller — et ce sont soixante-treize suites de bout en
+bout qui passent par ce bouton.
+
+**Éprouvé dans un vrai navigateur**, pas seulement à la relecture
+(`test-nouveau-chantier-e2e.ts`) : les dix chiffres tapés d'affilée, les deux
+cases sur la même ligne, le numéro qui ne déborde pas, la question de l'envoi
+sous l'adresse, et l'absence des deux mots retirés.
+
+**Le numéro s'espace à l'ÉCRAN, pas en base.** La jolie forme est un affichage ;
+en base, le numéro est comparé, composé et envoyé. Y écrire les espaces
+obligerait chaque consommateur à savoir les retirer — le rapprochement des
+clients, le lien d'appel, l'envoi du devis — et il suffirait qu'un seul l'oublie
+pour qu'un client cesse d'être reconnu, en silence. Le groupement deux par deux,
+lui, ne s'écrit qu'une fois : il vient de `numero-lisible.ts`, qui l'employait
+déjà pour écrire un numéro sur un écran.
+
+### Le lint retombait dans le même piège, pour la quatrième fois
+
+Un serveur monté à la main avec un `ATLAS_DIST_DIR` inédit a suffi : `npm run
+lint` est passé de 4 avertissements à **1 095 erreurs**, toutes venues de code
+généré, et la batterie a rougi sur une étape sans rapport avec le lot. Les trois
+dossiers connus étaient écartés nommément — pas celui-là.
+
+`eslint.config.mjs` écarte désormais `.next-*/**`. Les trois lignes nommées
+restent, elles portent chacune leur histoire ; ce motif couvre les dossiers
+qu'on ne connaît pas encore, et c'est le seul moyen qu'il n'y ait pas de
+cinquième fois.
+
+
 ### La photo se PREND ou se CHOISIT — partout, plus seulement sur la fiche client
 
 *« Quand je clique sur ajouter une photo au croquis, il faut que soit je puisse
@@ -1301,6 +1383,141 @@ Le mot juste ne dépend donc d'aucun nombre : **« il reste de la place »**. Le
 compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 sur 5 ».
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
+
+### Un seul bouton d'ajout, sous la journée — et « toute la journée » retiré
+
+**Sa demande du 21 août au soir, la maquette étant par ailleurs retenue :**
+*« Le "+ Ajouter un chantier", tu le mets en dessous, un rond avec un plus ; je
+ne veux pas qu'il soit affilié à la case matin ou après-midi, ça surcharge et on
+ne comprend plus trop. Et "toute la journée" sous les noms, tu me le
+supprimes. »*
+
+**Deux boutons disaient la même chose deux fois**, et posaient la question du
+moment avant même qu'on ait choisi le client. Un seul rond, sous les deux
+demi-journées, et le moment se choisit **après** : d'abord QUI, ensuite QUAND —
+c'est le client qu'il a en tête, pas la demi-journée. Se tromper de client
+n'oblige plus à revenir en arrière.
+
+**« Toute la journée » disparaît** : le chantier apparaît déjà sous les deux
+demi-journées, la mention ne faisait que le répéter.
+
+### Le quota qui prévient sans interdire — sa proposition, et elle est meilleure
+
+**Sa proposition du 21 août au soir**, après avoir vu les trois façons de dire
+la charge :
+
+> *« Une fois qu'on a mis deux chantiers avec deux gars, on dit que c'est
+> complet. Et s'il en rajoute un troisième, on met une autre couleur pour lui
+> signaler qu'il a dépassé le quota — mais il peut quand même le faire. Nous, on
+> prévient juste. Au cas où il aurait fait une erreur, ou s'il se dit : ces
+> chantiers ne dureront pas vraiment la journée, donc ça passe. »*
+
+**Elle est meilleure que les trois miennes, et voici pourquoi.** « Complet »
+donnait un repère mais refusait ; « aucune limite » n'interdisait plus rien mais
+ne disait plus rien non plus. Sa règle garde le repère — une équipe, un
+chantier, une demi-journée — et le transforme en **avertissement**. Le
+dépassement se voit ; il ne se refuse pas. C'est lui qui sait qu'une taille de
+haie prend une heure.
+
+**Quatre états**, et le dernier est un signal, pas une faute :
+
+| | Ce que ça veut dire |
+|---|---|
+| vide | personne |
+| vert clair | il reste de la place |
+| vert foncé | chaque équipe a son chantier |
+| **or** | **au-delà** — plus de chantiers que d'équipes |
+
+**L'or, jamais le rouge.** Le rouge de l'application dit « erreur »
+(`colors.alert`) : l'employer ici ferait passer un choix délibéré pour un défaut.
+
+**Le pourcentage ne s'écrit que s'il dépasse** — « 3 chantiers · 150 % de vos
+équipes ». À 100 % il n'apprendrait rien de plus que « complet » ; en dessous, il
+ferait lire un calcul là où il suffit de compter.
+
+**Et sa première question du même message est réglée par là :** *« pourquoi
+quand je clique sur le 21 je n'ai pas le même visuel que sur le 19 ? »* — parce
+que « complet » supprimait le « + Ajouter ». Tous les jours proposent maintenant
+les mêmes gestes ; la suite le vérifie sur un jour complet ET sur un jour
+au-delà.
+
+**Les trois façons de dire la charge (points, équipes, chiffres) sont
+retirées** : il a tranché mieux qu'elles, et garder un dessin que plus rien
+n'emploie, c'est laisser une seconde façon de dire la même chose.
+
+### Plus de plafond, donc plus de « complet » — trois façons de dire la charge
+
+**Sa décision du 21 août 2026, et elle défait la règle de la veille :**
+
+> *« L'utilisateur ne doit pas avoir de limite d'ajout de chantier, matin ou
+> après-midi, parce que c'est lui qui sait le temps qu'il va passer. On peut
+> être deux dans la boîte et enchaîner quatre ou cinq chantiers dans la journée,
+> surtout en entretien — des chantiers où les gars restent une heure. Donc pas
+> de limite, ni de chantiers ni de gars. Par contre le code couleur libre/plein
+> ne fonctionne plus, il faudrait le repenser. »*
+
+**Ce que cela emporte.** « Complet » n'existait que parce qu'un jour avait un
+maximum : deux équipes, deux places. Sans plafond, le mot ment — et surtout il
+**interdisait d'ajouter** là où il n'y avait rien à interdire. Il a disparu de
+l'écran, et la suite vérifie qu'il n'y revient pas.
+
+**Ce qui le remplace : des faits, plus un verdict.** La fiche du jour dit
+« 3 chantiers · 2 équipes · 1 sans équipe ». Et le mois se lit de trois façons,
+à comparer dans la planche :
+
+| | Ce que la case montre | Ce qu'on y lit d'un coup |
+|---|---|---|
+| **Points** | un point par chantier, matin dessus, après-midi dessous ; creux = personne dessus | la charge du jour, sans jamais plafonner (au-delà de quatre : « +3 ») |
+| **Équipes** | une case par équipe, remplie quand elle est dehors | « me reste-t-il quelqu'un de libre ? » — le nombre de chantiers n'y entre pas |
+| **Chiffres** | le nombre de chantiers, matin puis après-midi | le plus dense, et muet sur les équipes |
+
+**La légende est écrite par le script, plus figée dans la page.** Chaque façon a
+ses mots — et un mot figé finit par mentir, comme « 1 équipe sur 2 » l'a fait la
+veille. La suite vérifie les trois : qu'elles tiennent sur une ligne, qu'elles
+disent où sont le matin et l'après-midi, et qu'aucune ne promet un « complet »
+qui n'existe plus.
+
+### Un « ＋ » sur la pastille, et la journée entière depuis la liste
+
+**Deux demandes du 21 août.**
+
+**1. « Il ne se dira pas qu'il peut cliquer dessus pour ajouter un autre gars. »**
+La pastille qui affiche « Paul » ne disait rien de ce qu'elle sait faire. Elle
+porte maintenant un **« ＋ » discret**, collé au nom : huit pixels, et le geste
+devient visible. Une phrase aurait pris une ligne, et il en a fait retirer trois
+la veille.
+
+**2. « Il faut que les deux s'affichent. »** Toucher un chantier dans la liste
+des planifiés n'ouvrait que sa feuille. Il ouvre désormais **la journée entière
+au-dessus** — matin, après-midi, « + Ajouter un chantier » — puis la feuille en
+dessous. C'est la même carte que sous le calendrier : elle est **écrite une fois
+et branchée deux fois**, sinon les deux endroits auraient fini par proposer des
+gestes différents.
+
+**Ce que ce partage a coûté**, et qui vaut d'être noté : la carte connaissait le
+jour par une variable globale (`jourTouche`). Rendue ailleurs, elle aurait posé
+les chantiers sur le mauvais jour. Elle reçoit donc sa date en argument, et le
+rafraîchissement des compteurs lit la date **sur la carte elle-même**.
+
+### Le matin et l'après-midi ne partagent plus leurs équipes
+
+**Sa remarque du 21 août :** *« sur Mr. Leroy, qui dure toute la journée, je ne
+peux pas mettre juste Paul le matin et Julien et Paul l'après-midi — si je mets
+les deux l'après-midi, ça me les met aussi le matin. Il faut que tout soit
+indépendant. »*
+
+Un chantier portait **une** liste d'équipes ; il en porte maintenant **deux**,
+matin et après-midi, qui ne se parlent pas. C'est la réalité du métier : on
+démarre à deux et l'on renforce l'après-midi.
+
+**Conséquence sur la liste des planifiés :** la pastille d'un chantier y montre
+toujours toutes ses équipes, mais **elle ouvre la journée** au lieu d'un choix.
+Une pastille unique ne saurait pas laquelle des deux moitiés modifier — et
+choisir pour lui serait exactement le défaut qu'il vient de signaler.
+
+**Le contrôle correspondant met le matin à Paul seul et l'après-midi à Julien et
+Paul**, puis vérifie que le matin n'a pas bougé — et que le calendrier peint bien
+deux moitiés différentes.
 
 ### Un chantier peut mobiliser PLUSIEURS équipes — même toutes
 

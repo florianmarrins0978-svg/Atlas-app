@@ -41,7 +41,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 
 | | Ce qui débloque | Ce que je fais alors |
 |---|---|---|
-| 1 | Deux fournisseurs d'IA retenus | **Le code n'attend plus rien pour Anthropic et OpenAI** depuis le 2026-08-06 : poser `ANTHROPIC_API_KEY` ou `OPENAI_API_KEY` suffit à brancher l'IA (`ARCHITECTURE.md` §26), et `npm run verifier:ia` dit l'état réel. Les quatre autres noms restent des coquilles vides : leur raccordement serait à écrire. Ce qui bloque n'est donc plus la technique mais le **contrat** — sans lui, seules des données inventées peuvent être dictées. Sans clé, la dictée est recopiée mot à mot (`src/server/ai/lecture-litterale.ts`) : elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille |
+| 1 | ~~Deux fournisseurs d'IA retenus~~ — **CE POINT NE BLOQUE PLUS RIEN : les clés sont posées chez lui et l'IA tourne** (le patron, 21 août 2026 ; `CLAUDE.md` §1 ter) | Il reste vrai que les quatre autres noms de fournisseurs sont des coquilles vides, et que **sans clé** — c'est-à-dire ici, sur le poste de l'agent — la dictée est recopiée mot à mot (`src/server/ai/lecture-litterale.ts`) : elle va jusqu'au devis chiffré, mais elle ignore qu'un chêne mort s'abat et qu'une haie se taille. Ce qui en dépend se vérifie donc **sur son espace**, jamais ici |
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
@@ -159,7 +159,26 @@ pas : ce sont des données à recopier de sources officielles.
 |---|---|---|
 | 1 | ~~**Lancer la récolte des sources**~~ — fait le 20 août : 9 documents récoltés, **3 fiches réelles écrites** (fomès des résineux, les deux anthracnoses), chaîne éprouvée de bout en bout. **Reste ~47 fiches.** Ce qui limite n'est pas la saisie mais le TYPE de document : il faut des **fiches-type**, pas des bilans régionaux | moi, à partir des documents publics, avec relecture avant passage en `validee` |
 | 1 bis | **TRANCHER LA LICENCE D'INRAE (Ephytia)** — `http://ephytia.inra.fr`. C'est la source la plus riche en descriptions de symptômes, donc celle qui permettrait d'écrire vite. Son texte n'est pas rapatrié tant que sa réutilisation n'est pas établie : recopier sans licence est un risque qui ne se voit qu'à la mise en demeure. Même question pour le CNPF | le patron, ou un courriel à l'organisme |
-| 2 | **Éprouver l'appel réel de vision sur le banc**, avec de vraies photos. Non vérifiable ici : aucune clé d'IA dans cet environnement | le patron pose sa clé, je regarde le résultat |
+| 2 | **Éprouver l'appel réel de vision sur le banc**, avec de vraies photos. Non vérifiable **ici** — le poste de l'agent n'a pas de clé ; **chez lui, elles sont posées et l'IA tourne** (`CLAUDE.md` §1 ter) | à jouer sur son espace ; il envoie une capture du résultat |
+
+**IL L'A CONFIRMÉ LE 21 AOÛT 2026, et cela déplace la priorité de ce lot.**
+Après avoir fait écrire que ses clés sont posées, il ajoute : *« également, tu
+vas t'en servir pour les maladies »*. Le diagnostic végétal n'est donc pas une
+piste à explorer : **c'est un usage qu'il attend**, au même titre que l'arrosage
+et le ticket de caisse.
+
+Ce qui en découle, et qui ne demande aucune décision de sa part :
+
+- **l'écran existe et la chaîne est branchée** (`src/app/paysage/diagnostic/`,
+  `src/lib/diagnostic-vegetal.ts`). `VISION_PROVIDER` retombe sur le fournisseur
+  de rédaction quand il n'est pas posé : sa clé Anthropic suffit donc, sans
+  réglage de plus ;
+- **ce qui manque est la BIBLIOTHÈQUE, pas le moteur** : trois fiches réelles
+  sur la cinquantaine visée (point 1 ci-dessus). Un diagnostic ne peut rien
+  reconnaître qui n'y figure pas — et c'est ce qui limite l'usage réel, pas le
+  modèle ;
+- **et personne n'a encore vu le résultat sur une vraie photo.** C'est le point
+  2, et il ne se joue que chez lui.
 | 3 | Renseigner les `confusions_phyto` entre fiches proches — c'est **elles** qui permettent la demande de photo complémentaire. **Commencé le 20 août** : les deux anthracnoses sont reliées, et la relance photo est éprouvée sur des fiches réelles. Reste à le faire pour chaque paire proche du lot à venir | avec le lot de fiches |
 | 4 | Régler les seuils (`SEUIL_PLANCHER`, `ECART_NET`, plafonds de confiance) sur de vraies photos et de vraies fiches. Les valeurs actuelles sont un point de départ **assumé**, nommé et éprouvé — pas mesuré | après le premier lot |
 | 4 bis | **Mesurer ce que la règle « hôte d'abord » coûte en pratique** (20 août). Sans essence identifiée, Atlas ne conclut plus du tout. C'est voulu, mais personne n'a encore vu combien de photos réelles échouent à l'identification — c'est la première chose à regarder quand la clé de vision tournera sur le banc | le patron pose sa clé, je regarde |
@@ -326,6 +345,10 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
+- **LE MATIN ET L'APRÈS-MIDI SONT INDÉPENDANTS** — sa remarque du 21 août : sur
+  un chantier à la journée, « juste Paul le matin, Julien et Paul l'après-midi ».
+  La table de liaison porte donc bien la DEMI-JOURNÉE, et jamais une équipe
+  attachée au chantier seul ;
 - **UN CHANTIER PORTE PLUSIEURS ÉQUIPES** — sa demande du 21 août : « je dois
   pouvoir mettre tout le monde le matin, puis tout le monde l'aprem ». En base,
   ce n'est donc pas une colonne `equipe_id` sur le chantier mais une TABLE DE
@@ -391,6 +414,35 @@ demande du 21 août) : l'adresse cliquable, **Maps et Waze — plus « Plans »*
 « Appeler le client », « Copier l'adresse ». Rien d'autre. Le code réutilisera
 `src/lib/itineraire.ts` et `FeuilleYAller` plutôt que d'écrire une seconde fois
 les mêmes liens.
+
+**LE QUOTA QUI PRÉVIENT SANS INTERDIRE — sa règle du 21 août au soir, et c'est
+elle qui tient.** Une équipe = un chantier = une demi-journée. En dessous : « il
+reste de la place ». À égalité : « complet ». **Au-delà : une troisième couleur
+(l'or), et l'ajout PASSE quand même** — « nous, on prévient juste ». Le
+pourcentage ne s'écrit que s'il dépasse. Le code ne devra donc **jamais refuser
+un ajout**, et **jamais employer le rouge** pour ça : le rouge dit « erreur »,
+pas « regarde ».
+
+**Ce qui précède sur « aucun plafond » reste vrai dans son esprit :** Pas de limite au nombre de chantiers par demi-journée, ni au
+nombre d'équipes : « en entretien, les gars restent une heure et enchaînent
+quatre ou cinq chantiers ». Le code ne devra donc **jamais refuser un ajout** ni
+qualifier un jour de plein. **Reste à choisir comment le mois dit la charge** :
+points, équipes dehors, ou chiffres (les trois se comparent dans la planche).
+
+**⚠ Et la question de la même équipe posée deux fois tombe avec le plafond :**
+rien n'empêche de poser Paul sur deux chantiers de la même demi-journée, et
+c'est désormais ASSUMÉ — deux interventions d'une heure s'enchaînent. Ce qui
+reste à trancher est plus petit : faut-il le SIGNALER (« Paul est déjà sur
+Auffret ce matin ») ? Paul peut
+être sur Leroy et sur Auffret le même après-midi — impossible sur le terrain, et
+le compte s'en trouve flatté : deux chantiers, une seule équipe occupée, l'écran
+dit « 1 sur 2 » et laisse croire qu'il reste de la place.
+
+Deux façons de le traiter, à lui demander : **barrer l'équipe déjà prise** dans
+la liste (elle apparaît, grisée, avec le nom du chantier où elle est), ou la
+**laisser cochable et le signaler** (certains découpent une demi-journée en deux
+interventions courtes). Ne rien faire n'est pas une option : c'est un compte
+faux.
 
 **Trois points à régler avant de coder ça, et deux ne sont pas dans sa phrase :**
 
@@ -710,11 +762,21 @@ plutôt que supposé : chacune a son propre écran (`/informations`, `/prix`,
 `/devis-complet`, `/note-vocale`), et la fiche chantier n'en était que la LISTE.
 L'accueil mène déjà à la prochaine (`lienDeReprise`).
 
-**Les quatre questions sont donc réglées, et le code peut commencer.** Ce qu'il
-reste à faire tient en une liste :
+**Les quatre questions sont réglées, et le code a commencé.**
+
+**Lot 1 — FAIT le 21 août 2026** : la fiche client refaite (plus un seul
+« facultatif », le titre « Civilité » retiré, le nom et le numéro sur une ligne,
+le numéro qui s'espace à la frappe, l'envoi sous l'adresse, et les cases en
+« carte douce » — son choix parmi cinq). Éprouvé au navigateur.
+
+**Ce qu'il reste, dans l'ordre :**
 
 1. porter l'anneau et la pellicule sur `chantiers/nouveau` (le chantier doit
-   exister avant la première photo ou la première dictée) ;
+   exister avant la première photo ou la première dictée) — **et c'est avec ce
+   lot que part le bouton « Je dicte mon devis »**, pas avant : le retirer
+   maintenant laisserait la dictée sur la fiche chantier sans chemin pour y
+   aller, et il faut reprendre au passage les **73 suites** qui cliquent
+   `action-dicter` ;
 2. au second appui de l'anneau : lancer la chaîne du devis et **enregistrer**,
    sans attendre un geste de plus — il ferme l'application juste après ;
 3. `lienDeReprise` : les étapes « photos » et « note-vocale » ne doivent plus
@@ -741,6 +803,35 @@ numéro.
 ---
 
 ## À surveiller — non reproduit
+
+### Cinq suites navigateur tombent sur `/prix` — 21 août 2026, PAS le lot en cours
+
+**Ce qui tombe :** `test-brouillon-e2e`, `test-calcul-prix-e2e`,
+`test-anneau-vers-devis-e2e`, `test-choisir-la-date-e2e` et quelques voisines,
+toutes sur la même marche — une navigation vers `/chantiers/[id]/prix` qui
+n'arrive jamais (`page.goto` ou `waitForURL` qui expire).
+
+**Ce n'est pas le lot de la fiche client, et c'est VÉRIFIÉ, pas supposé :** la
+même suite a été rejouée seule après `git stash` de toutes les modifications —
+elle tombe à l'identique sur le code d'avant.
+
+**Et l'écran, lui, va bien.** Interrogé directement avec une vraie session, sur
+un serveur monté à part : `/prix` répond **200 en 107 ms**. Le journal du
+serveur d'essai montre par ailleurs `validerInformationsAction` qui **réussit**
+(200 en 22 ms) — puis plus aucune requête vers `/prix`. La navigation se perd
+donc côté navigateur, pas côté serveur.
+
+**La piste la plus probable, et elle se mesure :** le préchauffage du serveur
+d'essai annonce « 2 écran(s) en échec » et met **376 s** au lieu des 86 s
+habituelles. Un écran non préchauffé se compile à la première ouverture, en mode
+développement, sur une machine chargée — et dépasse le délai de la suite.
+
+**À reprendre ainsi :** faire dire au préchauffage QUELS écrans échouent (il ne
+donne aujourd'hui qu'un compte), plutôt que d'allonger les délais des suites —
+un délai qu'on allonge cache la lenteur au lieu de la montrer.
+
+---
+
 
 ### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août
 

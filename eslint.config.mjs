@@ -73,6 +73,17 @@ const eslintConfig = defineConfig([
     // maintenant que tout dossier de construction employé par la batterie est
     // écarté ici, pour qu'il n'y ait pas de quatrième.
     ".next-verification/**",
+    // **Et une QUATRIÈME fois, le 21 août 2026 — d'où ce motif.** Un serveur
+    // monté à la main avec un `ATLAS_DIST_DIR` inédit (`.next-vue`) a suffi :
+    // le lint est passé de 4 avertissements à 1 095 erreurs, toutes venues de
+    // code généré, et la batterie a rougi sur une étape qui n'avait rien à
+    // voir avec le lot en cours.
+    //
+    // Les trois lignes ci-dessus restent — elles portent chacune leur
+    // histoire —, mais elles ne suffisaient pas : elles nomment les dossiers
+    // qu'on connaissait. Ce motif-ci couvre ceux qu'on ne connaît pas encore,
+    // et c'est le seul moyen qu'il n'y ait pas de cinquième fois.
+    ".next-*/**",
     // appli/ est un projet distinct (HTML/JS statique navigateur + scripts
     // Node, sans React ni TypeScript) : les règles Next.js n'y ont pas de sens
     // et rejetteraient par exemple le `require()` de sa batterie de tests.
