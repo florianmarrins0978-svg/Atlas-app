@@ -94,10 +94,32 @@ const vu = await page.evaluate(() => {
     sous: li.querySelector(".sous").textContent,
   }));
 
+  const nourrice = document.querySelector("#nourrice");
+  const boite = nourrice && {
+    x1: Number(nourrice.getAttribute("x")), y1: Number(nourrice.getAttribute("y")),
+    x2: Number(nourrice.getAttribute("x")) + Number(nourrice.getAttribute("width")),
+    y2: Number(nourrice.getAttribute("y")) + Number(nourrice.getAttribute("height")),
+  };
+
+  const pieces = [...document.querySelectorAll("table tr")].map((tr) => ({
+    q: Number(tr.querySelector(".q").textContent.match(/[\d.]+/)[0]),
+    nom: tr.children[1].textContent.trim(),
+  }));
+
+  const marque = document.querySelector("select[name=marque]");
+  const marques = marque && {
+    defaut: marque.options[marque.selectedIndex].textContent.trim(),
+    tous: [...marque.options].map((o) => o.textContent.trim()),
+    hauteur: marque.getBoundingClientRect().height,
+  };
+
   return {
     contour,
     reseaux,
     cartes,
+    boite,
+    pieces,
+    marques,
     texte: document.body.innerText,
     deborde: document.documentElement.scrollWidth > 390,
     photo: Boolean(document.querySelector("img[src^='data:image']")),
@@ -201,6 +223,98 @@ cas("aucun nom de réseau répété ni coupé", () => {
   }
   const coupe = vu.cartes.find((c) => c.coupe || /…|\.\.\./.test(c.nom));
   if (coupe) throw new Error(`« ${coupe.nom} » ne se lit pas en entier`);
+});
+
+// ── 7. TOUT PART DE LA NOURRICE — sa règle indiscutable du 21 août 2026 ────
+//
+// *« Tous les réseaux doivent partir de la nourrice, règle indiscutable ! Or
+// sur ton plan on voit le compteur d'eau mais pas de nourrice. Je suppose que
+// le réseau jaune partirait du compteur d'eau, mais le bleu et le vert, on ne
+// sait pas d'où. »*
+//
+// Deux exigences, et la seconde est celle qui compte : la nourrice se VOIT, et
+// aucune ligne ne commence ailleurs. Un tracé qui démarre dans le vide n'est
+// pas un plan — c'est un dessin qu'on ne peut pas poser sur le terrain.
+cas("la nourrice est dessinée", () => {
+  if (!vu.boite) throw new Error("aucune nourrice sur le plan : on ne sait pas d'où partent les réseaux");
+});
+
+cas("les trois réseaux partent de la nourrice", () => {
+  const b = vu.boite;
+  if (!b) return;
+  for (const [n, r] of Object.entries(vu.reseaux)) {
+    for (const poly of r.tuyaux) {
+      const [x, y] = poly[0];
+      // Le départ touche la nourrice, à un demi-mètre près (l'épaisseur du
+      // regard et celle du trait ne doivent pas faire rougir pour rien).
+      const proche = x >= b.x1 - 0.5 && x <= b.x2 + 0.5 && y >= b.y1 - 0.5 && y <= b.y2 + 0.5;
+      if (!proche) {
+        throw new Error(`une ligne du réseau ${n} commence en ${x},${y} — pas à la nourrice : sur le terrain, on ne saurait pas où la brancher`);
+      }
+    }
+  }
+});
+
+// ── 8. LES RACCORDS : SA PLANCHE DU 17 AOÛT, APPLIQUÉE AU CHIFFRE PRÈS ──────
+//
+// *« Les tés taraudés, qui correspondent à tous les milieux, il n'y en a pas
+// douze, il y en a quatre. Ensuite il manque les fins de ligne, c'est les
+// coudes taraudés. […] Il y a quatre arroseurs qui ne sont pas alimentés. »*
+//
+// Sa règle, déjà écrite dans `appli/arrosage-catalogue.js` :
+//   · départ et milieu de ligne → té 90° taraudé 25×3/4"×25
+//   · fin de ligne              → coude 90° taraudé 25×3/4"
+//
+// D'où le contrôle qu'aucune version ne tenait, et qui aurait attrapé le
+// défaut : **tés + coudes = arroseurs**. En dessous, des arroseurs ne sont
+// raccordés à rien — et cela ne se voit qu'au moment de poser.
+cas("chaque arroseur a SON raccord : tés + coudes = arroseurs", () => {
+  const q = (motif) => vu.pieces.filter((p) => motif.test(p.nom)).reduce((t, p) => t + p.q, 0);
+  const tes = q(/Té .*taraudé/i);
+  const coudes = q(/Coude .*taraudé/i);
+  const arroseurs = Object.values(vu.reseaux).reduce((t, r) => t + r.tetes.length, 0);
+  if (tes + coudes !== arroseurs) {
+    const manque = arroseurs - tes - coudes;
+    throw new Error(
+      `${tes} tés + ${coudes} coudes = ${tes + coudes} raccords pour ${arroseurs} arroseurs — ` +
+      (manque > 0 ? `${manque} arroseur(s) ne sont alimentés par rien` : `${-manque} raccord(s) de trop, achetés pour rien`)
+    );
+  }
+});
+
+// **Une fin de ligne par ligne, pas une de plus.** Un coude en trop veut dire
+// qu'une ligne a été coupée quelque part, donc qu'un arroseur pend au bout de
+// rien ; un coude en moins, qu'une ligne se termine par un té ouvert.
+cas("une fin de ligne — donc un coude — par ligne dessinée", () => {
+  const q = (motif) => vu.pieces.filter((p) => motif.test(p.nom)).reduce((t, p) => t + p.q, 0);
+  const coudes = q(/Coude .*taraudé/i);
+  const lignes = Object.values(vu.reseaux).reduce((t, r) => t + r.tuyaux.length, 0);
+  if (coudes !== lignes) {
+    throw new Error(`${coudes} coudes taraudés pour ${lignes} lignes tracées : chaque ligne finit une fois, et une seule`);
+  }
+});
+
+// ── 9. LE CHOIX DE LA MARQUE — sa demande, deux fois ────────────────────────
+//
+// Le 17 août : *« de base on met du Rain Bird, mais s'il veut, un petit bandeau
+// déroulant avec le choix de la marque »*. Le 21 : *« il faut aussi que tu
+// rajoutes le bandeau déroulant avec les trois marques »*. Il était écrit dans
+// le catalogue depuis quatre jours et n'était jamais monté à l'écran.
+cas("les trois marques se choisissent, Rain Bird par défaut", () => {
+  if (!vu.marques) throw new Error("aucun choix de marque à l'écran");
+  if (!/rain\s?bird/i.test(vu.marques.defaut)) {
+    throw new Error(`la marque par défaut est « ${vu.marques.defaut} » et non Rain Bird`);
+  }
+  for (const attendue of [/rain\s?bird/i, /toro/i, /hunter/i]) {
+    if (!vu.marques.tous.some((n) => attendue.test(n))) {
+      throw new Error(`une marque manque dans le menu : ${vu.marques.tous.join(" | ")}`);
+    }
+  }
+  // Un menu qu'on rate du doigt ne se choisit pas : 44 px est le minimum tenu
+  // partout dans ce dépôt.
+  if (vu.marques.hauteur < 44) {
+    throw new Error(`le menu des marques fait ${Math.round(vu.marques.hauteur)} px de haut : trop petit pour le doigt`);
+  }
 });
 
 // ── 6. Son téléphone ────────────────────────────────────────────────────────

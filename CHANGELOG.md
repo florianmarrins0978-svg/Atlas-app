@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le plan repris sur ses trois corrections — la nourrice, les raccords, les marques
+
+**« Tous les réseaux doivent partir de la nourrice — règle indiscutable ! »**
+La première version montrait le compteur et trois traits qui commençaient dans
+le vide : *« je suppose que le réseau jaune partirait du compteur, mais le bleu
+et le vert, on ne sait pas d'où »*. La nourrice est dessinée, avec ses trois
+vannes, et un contrôle refuse une ligne qui démarre ailleurs.
+
+**Le comptage des raccords était faux, et il l'a vu au chiffre près.** La liste
+portait « un collier de prise en charge par arroseur » — une pièce qui n'existe
+pas dans sa règle. Sa planche du 17 août, écrite dans le catalogue depuis
+quatre jours, dit : **départ et milieu de ligne → té taraudé ; fin de ligne →
+coude taraudé**. D'où l'égalité qu'aucune version ne tenait :
+
+> **tés + coudes = nombre d'arroseurs**, et **coudes = nombre de lignes**
+
+En dessous, des arroseurs ne sont raccordés à rien. C'est exactement ce qu'il a
+relevé — *« il y a quatre arroseurs qui ne sont pas alimentés »* — sur un plan
+qui paraissait juste. Aucun test ne le voyait, parce qu'aucun ne confrontait la
+liste des pièces au tracé. Le contrôle le fait maintenant, et il chiffre le
+manque : « 4 tés + 0 coudes = 4 raccords pour 13 arroseurs — 9 arroseurs ne sont
+alimentés par rien ».
+
+**Une conséquence de forme, et elle vaut d'être notée :** un réseau est
+désormais **une ligne continue**. C'est ce qui rend le compte sûr d'un coup
+d'œil — une ligne a exactement une fin, donc un coude, et tout le reste est un
+té. Une ligne qui se ramifie demanderait un té de jonction non taraudé, et le
+compte ne se vérifierait plus à vue.
+
+**Le bandeau des marques est enfin à l'écran** — Rain Bird par défaut, Toro,
+Hunter. Il l'avait demandé le 17 août ; c'était écrit dans le catalogue et
+n'était jamais monté jusqu'à un écran.
+
+**Et la règle vaut pour TOUS les schémas**, à sa demande : elle est écrite dans
+`CLAUDE.md` §4 bis, plus seulement dans un commentaire de catalogue.
+
 ### Le plan d'arrosage se DESSINE — maquette, rien n'est codé
 
 *Sa demande, capture à l'appui :* **« il manque la photo, le schéma avec les
