@@ -9,6 +9,27 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Les quatre questions de la fiche chantier sont réglées
+
+*« Fais ça pour le rajout de la 4e photo du jeudi. »* La dernière réponse
+attendue. Bilan des quatre choses que portait la fiche chantier, qu'il veut
+supprimer :
+
+| | |
+|---|---|
+| Créer la facture | **Existe déjà** — la feuille du chevron du planning, et le fil des terminés |
+| Les étapes du chantier | **Rien à déplacer** — chacune a son écran, la fiche n'en était que la liste, et l'accueil mène déjà à la prochaine |
+| Réécouter la note dictée | **Retiré** — « on n'a pas besoin » |
+| Une photo ajoutée plus tard | **Sur la fiche client**, où l'on revient par la flèche de retour du devis |
+
+**Deux de ces quatre réponses ont été cherchées dans le code avant d'être
+posées**, plutôt que soumises en question : c'est ce que `CLAUDE.md` §5 ter
+demande, et cela lui a épargné deux allers-retours.
+
+**Le parcours est donc tranché ; le code peut commencer**, et `TODO.md` porte la
+liste de ce qu'il faudra toucher. Ce qui reste ouvert n'est plus le parcours
+mais le **dessin des cases**, et il n'empêche rien.
+
 ### La page entière, cinq fois — pour choisir en la voyant
 
 **Sa demande :** *« Fais-moi une maquette dynamique, pas de photos, que je puisse

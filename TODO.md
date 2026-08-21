@@ -643,10 +643,33 @@ Vérifié dans le code avant de répondre, plutôt que promis.
 de réécouter la note dictée »*. L'anneau reste un micro, et rien d'autre — une
 pièce de moins à porter.
 
-Restent **deux** : les étapes du chantier, et les photos ajoutées après coup
-(mardi il photographie chez le client, jeudi il repasse et en prend une
-quatrième : où l'ajoute-t-il, une fois la fiche chantier partie ?). L'écran
-« À trancher » de la maquette propose une place pour chacune.
+**Les photos d'après coup sont réglées** le même soir : *« fais ça pour le rajout
+de la 4e photo du jeudi »* — le carré « + » reste sur la fiche client, et l'on y
+revient par **la flèche de retour du devis**, qui mène aujourd'hui à la fiche
+chantier (`DevisCompletClient.tsx`, ligne du `<a href={/chantiers/${'{'}id{'}'}}>`) et
+devra mener à la fiche client. Aucun geste nouveau.
+
+**Les étapes du chantier ne demandent rien non plus**, vérifié dans le code
+plutôt que supposé : chacune a son propre écran (`/informations`, `/prix`,
+`/devis-complet`, `/note-vocale`), et la fiche chantier n'en était que la LISTE.
+L'accueil mène déjà à la prochaine (`lienDeReprise`).
+
+**Les quatre questions sont donc réglées, et le code peut commencer.** Ce qu'il
+reste à faire tient en une liste :
+
+1. porter l'anneau et la pellicule sur `chantiers/nouveau` (le chantier doit
+   exister avant la première photo ou la première dictée) ;
+2. au second appui de l'anneau : lancer la chaîne du devis et **enregistrer**,
+   sans attendre un geste de plus — il ferme l'application juste après ;
+3. `lienDeReprise` : les étapes « photos » et « note-vocale » ne doivent plus
+   viser `/chantiers/[id]` mais la fiche client ;
+4. la flèche de retour du devis (`DevisCompletClient.tsx`) : même chose ;
+5. retirer l'écran `/chantiers/[id]` et ce qui n'y sert plus.
+
+**Une seule chose reste ouverte, et c'est le DESSIN, pas le parcours :** le choix
+des cases (`appli/cases-page-entiere.html`). Il n'empêche rien — les cases de
+`fiche-client-vocale.html` restent en l'état tant qu'il n'a pas donné son
+numéro.
 
 **Ce que le code devra faire, et qui n'est pas qu'un déplacement d'écran :**
 
