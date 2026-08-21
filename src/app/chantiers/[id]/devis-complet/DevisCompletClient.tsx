@@ -818,10 +818,19 @@ export default function DevisCompletClient(props: Props) {
             clientCivilite: client.civilite,
             entrepriseNom: emetteur.nom,
           });
-          // `?envoye=1` : l'écran d'arrivée dira « Devis prêt pour … » plutôt
-          // que « en attente de réponse ». Il vient d'appuyer — c'est le seul
-          // moment où cette phrase-là est vraie.
-          router.push(`/chantiers/${props.chantierId}/export?envoye=1`);
+          // **DROIT À L'ACCUEIL — sa demande du 21 août 2026**, capture à
+          // l'appui : *« juste derrière, il y a cette page-là qui s'affiche et je
+          // n'ai pas besoin qu'elle s'affiche […] il faut qu'une fois que le devis
+          // est envoyé, on retourne directement sur la première page, l'accueil. »*
+          //
+          // Elle ne lui apprenait rien qu'il ne sache : il venait d'appuyer, et sa
+          // messagerie s'était ouverte par-dessus. Au retour de Messages, il
+          // tombait sur un récapitulatif à refermer avant de reprendre son
+          // travail — un écran de plus entre lui et le chantier suivant.
+          //
+          // L'accueil, lui, porte l'état du chantier : c'est là que « devis parti,
+          // en attente de réponse » se lit, au milieu des autres.
+          router.push("/");
         }}
       />
     </>

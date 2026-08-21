@@ -179,7 +179,7 @@ async function main() {
     // Deux dates : c'est le cas qui laisse le client choisir.
     await page.locator('button[aria-pressed]').nth(1).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
     // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
     // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
@@ -214,6 +214,11 @@ async function main() {
       decodeURIComponent(adresseDirecte).includes("/devis/"),
       "le message ouvert par l'appui ne porte pas le lien du devis"
     );
+
+    // **On rouvre l'écran du devis parti pour la suite de ce cas.** L'envoi
+    // ramène à l'accueil depuis le 21 août 2026 ; le message tout prêt, lui,
+    // vit toujours là-bas, et c'est par la carte du chantier qu'il y revient.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
     // Le dernier mètre : sans ce bouton, le lien reste à recopier à la main
     // dans un SMS. C'est le geste que l'application doit épargner, et il a
@@ -306,9 +311,11 @@ async function main() {
     await page.click("text=Choisir la date");
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
-    await page.reload({ waitUntil: "networkidle" });
+    // On rouvre le DEVIS : c'est là que se poserait de nouveau « Choisir la
+    // date », et c'est donc là qu'il faut vérifier qu'il ne s'y pose plus.
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     assert.strictEqual(
       await page.locator("text=Choisir la date").count(),
       0,
@@ -366,7 +373,11 @@ async function main() {
 
     await page.getByRole("switch", { name: /autre date/i }).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+
+    // On revient sur l'écran du devis parti, comme par la carte du chantier :
+    // c'est lui qui porte le message tout prêt, et il ne s'affiche plus seul.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
     // **Décodé d'abord** : le lien voyage dans le corps d'un `sms:`, donc
     // encodé (`%2Fdevis%2F`). Cherché tel quel, on ne le trouve jamais — et le

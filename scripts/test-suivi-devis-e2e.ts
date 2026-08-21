@@ -80,7 +80,7 @@ async function devisParti(page: Page, suffixe: string) {
   await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // **Le jeton se lit dans la BASE, plus à l'écran.**
   //
@@ -239,7 +239,7 @@ async function main() {
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     try {
-      await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+      await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
     } catch (e) {
       // Ce contrôle a échoué une fois dans la batterie complète, jamais seul :
       // l'attente expirait sans qu'on sache pourquoi. Un délai dépassé ne
@@ -256,6 +256,11 @@ async function main() {
       chantierId,
     ]);
     assert.strictEqual(envois.rows[0].n, 2, "le second envoi n'a pas été enregistré");
+
+    // **On rouvre l'écran du devis parti.** L'envoi ramène à l'accueil depuis le
+    // 21 août 2026 : ce que ce cas inspecte — les gestes offerts APRÈS l'envoi —
+    // se lit là où il revient, par la carte du chantier.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
     // **Un seul bouton à chaque instant — sa règle du 13 août (maquette 40, B).**
     //
