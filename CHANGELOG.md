@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### « Il y a une clé IA » — écrit dans le dépôt, plus dans une session
+
+**Sa consigne, et il a fallu qu'il la répète :** *« il y a une clé IA, il y a
+Anthropic, elles sont connectées, les deux clés. Enregistre-le vraiment dans le
+dossier, histoire que quand j'ouvre une nouvelle session, tu sois au courant que
+la clé Anthropic est active et que tu t'en sers déjà pour faire beaucoup de
+choses, notamment pour l'arrosage automatique, analyser la photo. »*
+
+Le dépôt disait « aucune clé d'IA » à cinq endroits, sans jamais préciser **de
+quelle machine** il parlait. Une session arrivant à froid en concluait que l'IA
+n'était pas branchée — et le lui annonçait. Il l'avait déjà corrigé dans l'autre
+sens le 20 août (*« tu peux le faire, il y a déjà l'IA dans l'application »*).
+
+`CLAUDE.md` §1 ter tranche désormais, et il est lu au début de chaque
+conversation : **chez lui les clés sont posées et l'IA tourne** ; **ici, sur le
+poste de l'agent, il n'y en a aucune**. Les cinq phrases ambiguës sont
+corrigées, et la formule juste n'est plus « impossible » mais *« pas vérifiable
+ici, à jouer sur ton espace »*, avec la commande.
+
+
 ### La fiche client, refaite — premier lot, celui qui se voit
 
 **Sa demande, puis son choix :** *« j'ai envie que les informations prennent
