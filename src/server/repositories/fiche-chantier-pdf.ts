@@ -6,6 +6,7 @@ import {
   devis,
   entreprises,
   equipes,
+  equipesDuChantier,
   materiel,
   notesVocales,
   photos,
@@ -13,6 +14,8 @@ import {
 } from "../db/schema";
 import type { Ctx } from "./context";
 import type { FicheChantierPdfData } from "../pdf/fiche-chantier-pdf";
+import { libelleEquipe } from "../../lib/equipes";
+import { ditLesEquipes } from "../../lib/planning-jour";
 
 /**
  * Tout ce qu'il faut pour imprimer la fiche d'un chantier, en une lecture.
@@ -54,9 +57,17 @@ export async function chargerFicheChantierPourPdf(
       ? (await tx.select().from(clients).where(eq(clients.id, chantier.clientId)).limit(1))[0]
       : null;
 
-    const equipe = chantier.equipeId
-      ? (await tx.select().from(equipes).where(eq(equipes.id, chantier.equipeId)).limit(1))[0]
-      : null;
+    // **Toutes les équipes du chantier, matin et après-midi confondus.** Depuis
+    // la migration 0058, un chantier peut en porter plusieurs, et différentes
+    // selon la demi-journée : la fiche, elle, couvre le chantier entier — y
+    // écrire la seule équipe du matin ferait croire que l'après-midi n'a
+    // personne. `ditLesEquipes` compte au-delà de deux noms, comme le planning.
+    const sesEquipes = await tx
+      .selectDistinct({ rang: equipes.rang, nom: equipes.nom })
+      .from(equipesDuChantier)
+      .innerJoin(equipes, eq(equipesDuChantier.equipeId, equipes.id))
+      .where(eq(equipesDuChantier.chantierId, chantierId))
+      .orderBy(asc(equipes.rang));
 
     const [sesPrestations, sonMateriel, sesPhotos, saNote, sonDevis] = await Promise.all([
       tx
@@ -112,7 +123,15 @@ export async function chargerFicheChantierPourPdf(
         : (chantier.datePlanifiee ?? null),
       creneau: chantier.creneauDebut,
       demiJournees: chantier.dureeDemiJournees,
-      equipe: equipe?.nom ?? null,
+      // `libelleEquipe` rend `null` à une seule équipe : il n'y a personne à
+      // distinguer, et écrire « Équipe A » ferait exactement ce que le patron a
+      // interdit le 10 août (`src/lib/equipes.ts`).
+      equipe: ((): string | null => {
+        const nommees = sesEquipes
+          .map((e) => libelleEquipe(e, entreprise?.nombreEquipes ?? 1))
+          .filter((n): n is string => Boolean(n));
+        return nommees.length === 0 ? null : ditLesEquipes(nommees);
+      })(),
       numeroDevis: sonDevis[0]?.numero ?? null,
 
       entrepriseNom: entreprise?.nom ?? "",

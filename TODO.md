@@ -9,28 +9,75 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ CONSIGNE EN COURS — le planning : MAQUETTE SEULEMENT
+## ~~⚠ CONSIGNE — le planning : MAQUETTE SEULEMENT~~ — **LEVÉE le 21 août 2026**
 
-**Sa consigne du 21 août 2026, à lire avant de toucher à `src/app/planning/` :**
+Sa consigne du 21 août au matin — *« ne code rien, je veux qu'on finisse toute
+la page ensemble en maquette dynamique [...] une fois que tout est validé, je te
+dirai c'est bon, tu peux coder »* — **a été levée le soir même** :
 
-> *« Attends, attends, ne code rien. Je veux qu'on finisse toute la page
-> ensemble en maquette dynamique, pour que je puisse essayer : il faut que
-> j'aille cliquer, pouvoir modifier, changer, voir ce que ça donne. Une fois que
-> tout est validé, tout est bon, dans ce cas-là je te dirai "c'est bon, tu peux
-> coder". En attendant, tu ne codes rien. Tu ne me fais que des maquettes
-> dynamiques, c'est tout. »*
+> *« Maintenant tu peux coder cette version de la maquette ! Ne modifie rien !
+> Ne change rien ! Code trait pour trait cette maquette. Prends le temps qu'il
+> faut, je veux aucune erreur, aucun défaut ! »*
 
-**Ce que cela veut dire, littéralement :** tant qu'il n'a pas dit « c'est bon,
-tu peux coder », **aucune ligne de `src/` ne change pour le planning**. Pas même
-« un petit bout pour qu'il essaie en vrai » — il essaie sur la maquette, c'est
-tout l'objet de la consigne.
+La planche retenue est `appli/planning-simple.html` (planche 84), essayée deux
+soirées durant et corrigée neuf fois. Ce qu'elle a coûté et ce qu'elle a
+changé — jusqu'à une migration — est dans `CHANGELOG.md` du 21 août.
 
-**Et la maquette doit se MANIPULER**, pas seulement se regarder : il veut poser
-un chantier, changer une équipe, déplacer, retirer, et voir ce que ça donne. Une
-planche qui se contente d'afficher un état ne répond pas à la demande.
+**Ce qui reste vrai après coup :** un écran du planning se dessine toujours
+avant de se coder (`CLAUDE.md` §3 bis), et la planche 84 reste la référence.
+Toute correction du planning se porte D'ABORD sur elle, sinon les deux
+divergent — et c'est elle qu'il ouvre sur son téléphone.
 
-Le point de validation, quand il viendra, se consigne ici même — et c'est ce
-jour-là seulement que `src/app/planning/` s'ouvre.
+---
+
+## Le planning codé : trois choses que la planche ne portait pas
+
+Elles existaient sur l'écran d'avant et **ne figurent pas** sur la planche qu'il
+a validée. Elles ont donc été retirées de l'écran — « trait pour trait » — mais
+elles ne sont pas perdues : le code serveur est là, et il suffit de le
+rebrancher s'il les redemande.
+
+| Ce qui a quitté l'écran | Ce qui reste en place | Ce qu'il faut savoir |
+|---|---|---|
+| **« Créer la facture »**, dans la feuille du chevron (sa demande du 12 août) | La route et l'écran de facture | Le chemin du planning vers la facture est fermé. **L'autre chemin reste ouvert** : chaque ligne du fil des « Terminés » y mène. Ce n'est donc pas le cul-de-sac du 8 août, mais c'est un appui de plus |
+| **« Dans mon agenda »**, la liste de ses rendez-vous extérieurs (9 août) | `periodesOccupeesExterieures`, et l'agenda continue de commander les dates proposées au client | Il ne les LIT plus sur cet écran. Le bandeau qui prévient d'un agenda en panne, lui, est resté |
+| **La proposition de chantier voisin** pour combler une demi-journée (13 août) | `src/server/planning/appariement.ts`, intact et toujours éprouvé (`scripts/test-appariement-chantiers.ts`, `scripts/test-appariement-demi-journees.ts`) | Le calcul de distance existe toujours ; seul le bandeau qui l'affichait a été retiré, l'écran retenu n'en portant pas |
+
+**À lui demander**, sans le noyer : veut-il les revoir, et où ? Rien ne presse —
+il vient de choisir un écran plus simple, et les remettre sans qu'il le demande
+serait défaire ce qu'il a validé.
+
+---
+
+## 🔴 TROIS MIGRATIONS PASSÉES N'ONT RIEN REPRIS — trouvé le 21 août 2026
+
+**Comment on l'a su.** En écrivant la migration 0058, sa reprise de données a
+été rejouée sur une base à l'état d'avant, **avec des données dedans**. Elle
+recopiait **zéro ligne, sans la moindre erreur** : `chantiers` porte `FORCE ROW
+LEVEL SECURITY`, la politique s'applique **même au propriétaire**, et les
+migrations tournent sous `atlas_owner` — partout, chez lui comme en CI. Sans
+`app.entreprise_id`, une migration ne voit RIEN.
+
+0058 est corrigée (elle boucle par entreprise, comme 0036 et 0037) et
+`scripts/test-migrations-sous-rls.ts` garde la porte pour les suivantes.
+
+**Mais le contrôle en a trouvé trois autres, déjà appliquées** — elles ne se
+rejoueront jamais, `_migrations` les a enregistrées :
+
+| Migration | Ce qui n'a rien fait | Ce que ça coûte |
+|---|---|---|
+| `0040_conditions_documents.sql` | `UPDATE devis SET validite_jours = 30` | **Borné.** La ligne « Validité » ne s'imprime pas sur les anciens devis — et ceux qui sont partis sont figés de toute façon |
+| `0039_identite_entreprise.sql` | `UPDATE factures SET entreprise_regime_tva = …` | **Borné.** Le PDF se rabat sur le taux, ce que le fichier annonçait déjà. **Et la réparation buterait sur `trg_facture_immuable`**, qui refuse toute écriture sur une facture émise |
+| `0045_paiements_et_exigibilite.sql` | La reprise des paiements des factures déjà émises | **RÉEL.** Ces factures ne comptent pas au relevé de TVA **à l'encaissement**. C'est le seul des trois qui appelle une réparation |
+
+**Ce qu'il faut décider, et ce n'est pas à moi de le faire seul :** faut-il une
+migration de réparation pour 0045 ? Elle est simple — le même `INSERT`, avec la
+boucle par entreprise et un garde `WHERE NOT EXISTS` — mais elle touche à la
+COMPTABILITÉ. Une écriture comptable ne se glisse pas dans un lot d'écran.
+
+**À lui poser en une phrase**, et seulement quand il aura le planning en main :
+*« des factures émises avant une certaine date ne comptent pas dans le relevé de
+TVA à l'encaissement — je répare ? »*
 
 ---
 
@@ -2575,7 +2622,8 @@ Mesuré, pas supposé : `.github/workflows/itineraire.yml`.
 automatique au fil des ouvertures du planning, règles pures dans
 `src/lib/appariement-demi-journees.ts`, appel IGN dans
 `src/server/itineraire/geoplateforme.ts`, bandeau dans
-`src/components/atlas/BandeauAppariement.tsx`. Détail et pourquoi :
+un bandeau sous la journée dépareillée — retiré de l'écran le 21 août 2026 avec
+la refonte du planning, le calcul restant en place. Détail et pourquoi :
 `ARCHITECTURE.md` §117.
 
 **Ce qui RESTE, et n'est pas dans ce lot :**

@@ -1,4 +1,4 @@
-// La grille du mois, et les cinq marques — sans base de données.
+// La grille du mois — sans base de données.
 //
 // **Le contrôle des colonnes n'est pas une précaution de principe.** Le 1er
 // août 2026 est un SAMEDI, et une grille qui se cale mal pose quatre cases de
@@ -10,13 +10,10 @@
 import assert from "node:assert/strict";
 import {
   grilleDuMois,
-  marqueDuJour,
   estWeekEndIso,
   jourLisibleCourt,
-  repartirParEquipe,
   JOURS_COURTS,
 } from "../src/lib/mois";
-import { cleCreneau } from "../src/server/disponibilites";
 
 let echecs = 0;
 function essai(nom: string, fn: () => void) {
@@ -103,102 +100,14 @@ essai("aucun jour n'est en double, et ils se suivent", () => {
   }
 });
 
-console.log("\n=== Les cinq marques — « complet » se compte PAR ÉQUIPE ===");
+// **LES CINQ MARQUES ET LA RÉPARTITION PAR ÉQUIPE ONT QUITTÉ CE FICHIER** le
+// 21 août 2026, avec le planning refait (planche 84). Leurs contrôles n'ont pas
+// disparu : ils ont suivi les règles qui les remplacent, dans
+// `scripts/test-planning-jour.ts` — quatre états au lieu de cinq marques, une
+// barre qui se remplit à la proportion, et des blocs bâtis sur le chantier.
+//
+// Les effacer sans le dire aurait laissé croire que ce fichier n'a jamais rien
+// tenu de plus que la grille.
 
-const occ = (paires: [string, "matin" | "apres_midi", number][]) =>
-  new Map(paires.map(([jour, moment, n]) => [cleCreneau({ jour, moment }), n]));
-
-essai("rien de posé : aucune marque", () => {
-  assert.equal(marqueDuJour("2026-08-10", new Map(), 2), "libre");
-});
-
-essai("une équipe sur deux prise le matin : il RESTE de la place", () => {
-  // Le cœur du compteur de Réglages : ce jour reste proposable.
-  const o = occ([["2026-08-10", "matin", 1]]);
-  assert.equal(marqueDuJour("2026-08-10", o, 2), "reste");
-});
-
-essai("la même occupation, à UNE équipe, rend le matin complet", () => {
-  const o = occ([["2026-08-10", "matin", 1]]);
-  assert.equal(marqueDuJour("2026-08-10", o, 1), "matin");
-});
-
-essai("les deux équipes prises le matin : demi-disque haut", () => {
-  const o = occ([["2026-08-10", "matin", 2]]);
-  assert.equal(marqueDuJour("2026-08-10", o, 2), "matin");
-});
-
-essai("l'après-midi seul : demi-disque bas", () => {
-  const o = occ([["2026-08-10", "apres_midi", 2]]);
-  assert.equal(marqueDuJour("2026-08-10", o, 2), "apres_midi");
-});
-
-essai("les deux demi-journées complètes : disque plein", () => {
-  const o = occ([
-    ["2026-08-10", "matin", 2],
-    ["2026-08-10", "apres_midi", 2],
-  ]);
-  assert.equal(marqueDuJour("2026-08-10", o, 2), "plein");
-});
-
-essai("une demi-journée pleine et l'autre entamée : ce n'est PAS un jour plein", () => {
-  const o = occ([
-    ["2026-08-10", "matin", 2],
-    ["2026-08-10", "apres_midi", 1],
-  ]);
-  assert.equal(marqueDuJour("2026-08-10", o, 2), "matin");
-});
-
-essai("un compteur aberrant ne rend pas tout complet", () => {
-  const o = occ([["2026-08-10", "matin", 1]]);
-  assert.equal(marqueDuJour("2026-08-10", o, 0), "matin");
-  assert.equal(marqueDuJour("2026-08-10", o, Number.NaN), "matin");
-});
-
-essai("la date de la journée s'écrit en français, capitale en tête", () => {
-  assert.equal(jourLisibleCourt("2026-08-20"), "Jeudi 20 août");
-  assert.equal(jourLisibleCourt("2026-08-01"), "Samedi 1 août");
-});
-
-console.log("\n=== Qui occupe quelle équipe ===");
-
-essai("un chantier attribué garde SON rang", () => {
-  const l = repartirParEquipe([{ id: "b", rangEquipe: 2 }], 2);
-  assert.equal(l[0].occupe, null);
-  assert.equal(l[1].occupe?.id, "b");
-});
-
-essai("un chantier sans équipe prend le premier rang libre, sans qu'on lui en invente une", () => {
-  const l = repartirParEquipe([{ id: "x", rangEquipe: null }], 2);
-  assert.equal(l[0].occupe?.id, "x");
-  assert.equal(l[1].occupe, null);
-});
-
-essai("les attribués passent d'abord — un sans-équipe ne prend pas leur place", () => {
-  const l = repartirParEquipe(
-    [{ id: "aaa", rangEquipe: null }, { id: "zzz", rangEquipe: 1 }],
-    2
-  );
-  assert.equal(l[0].occupe?.id, "zzz");
-  assert.equal(l[1].occupe?.id, "aaa");
-});
-
-essai("deux rendus successifs montrent la même chose", () => {
-  const entree = [{ id: "b", rangEquipe: null }, { id: "a", rangEquipe: null }];
-  const un = repartirParEquipe(entree, 2).map((l) => l.occupe?.id);
-  const deux = repartirParEquipe([...entree].reverse(), 2).map((l) => l.occupe?.id);
-  assert.deepEqual(un, deux, "l'ordre d'entrée change l'affichage : le planning bougerait tout seul");
-});
-
-essai("un rang devenu hors bornes ne fait pas disparaître le chantier", () => {
-  // Le compteur est passé de 3 à 2 : l'équipe C n'existe plus à l'écran.
-  const l = repartirParEquipe([{ id: "c", rangEquipe: 3 }], 2);
-  assert.equal(l[0].occupe?.id, "c", "le chantier a disparu de l'écran");
-});
-
-essai("à une seule équipe, il n'y a qu'une ligne", () => {
-  assert.equal(repartirParEquipe([{ id: "a", rangEquipe: null }], 1).length, 1);
-});
-
-console.log(`\n${echecs === 0 ? "✅" : "❌"} Le mois et ses marques — ${echecs} échec(s).`);
+console.log(`\n${echecs === 0 ? "✅" : "❌"} La grille du mois — ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);

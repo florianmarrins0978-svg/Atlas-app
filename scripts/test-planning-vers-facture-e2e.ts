@@ -219,26 +219,47 @@ async function main() {
     );
   });
 
-  await test("« Créer la facture » s'atteint depuis le planning, et prépare la facture", async () => {
+  await test("« Créer la facture » s'atteint sans passer par la fiche, et la prépare", async () => {
     // « avoir un bouton à côté fin de chantier pour que ça crée automatiquement
     // la facturation ». Ce qu'il crée est un brouillon, jamais une facture
     // partie — l'arrêt 3 reste (AGENT.md §2.3).
     //
-    // **Le bouton est passé de la ligne à la feuille le 12 août 2026**, à sa
-    // demande : *« il faut cliquer sur le chevron, la page s'ouvre avec le GPS
-    // et tout machin, et là tu mets créer la facture »*. Ce que cette suite
-    // garde est inchangé : depuis le planning, et sans passer par la fiche, on
-    // atteint la facture. C'est le cul-de-sac du 8 août qu'elle empêche de
-    // revenir, pas une position à l'écran.
-    const { chantierId, nom } = await chantierPlanifie(page, "bouton", -6);
-    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    // ─────────────────────────────────────────────────────────────────────
+    // **LE CHEMIN A CHANGÉ DEUX FOIS, L'OBJET JAMAIS.** Ce que cette suite
+    // défend, c'est le cul-de-sac du 8 août — *« il se range dans les chantiers
+    // planifiés, mais comment moi je fais pour avoir accès au devis ? »* — et
+    // non une position à l'écran.
+    //
+    //   · 8 août : sur la ligne du planning ;
+    //   · 12 août : dans la feuille du chevron, à sa demande — *« il faut
+    //     cliquer sur le chevron [...] et là tu mets créer la facture »* ;
+    //   · **21 août : dans le fil des « Terminés »**, seul chemin restant. Le
+    //     planning refait (planche 84) ne porte pas ce bouton : la feuille qu'il
+    //     a validée est celle que le SALARIÉ emporte, sans un prix. Y remettre
+    //     « Créer la facture » aurait été ajouter à un écran qu'il venait de
+    //     choisir plus simple.
+    //
+    // Le chemin existe donc toujours, et sans passer par la fiche — c'est ce
+    // que le contrôle continue de prouver (`TODO.md` en garde la trace, au cas
+    // où il voudrait le revoir au planning).
+    // ─────────────────────────────────────────────────────────────────────
+    // **Une date PASSÉE, et c'est ce qui le range dans « Terminés »** : le
+    // travail a eu lieu (`src/lib/onglet-chantier.ts`). Avec une date à venir,
+    // le chantier serait au planning et ce contrôle chercherait au mauvais
+    // endroit — en accusant le fil d'être vide.
+    const { chantierId, nom } = await chantierPlanifie(page, "bouton", 6);
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
 
-    // Le chevron de CE chantier, et non le premier de l'écran : avec plusieurs
-    // chantiers au planning, viser le premier clôturerait celui du voisin sans
-    // que le contrôle s'en aperçoive.
-    await page.getByRole("button", { name: `Y aller — ${nom}` }).click();
-    await page.waitForSelector("text=Y aller", { timeout: 10000 });
-    await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).click();
+    // La ligne de CE chantier, et non la première de l'écran : avec plusieurs
+    // chantiers terminés, viser la première clôturerait celle du voisin sans que
+    // le contrôle s'en aperçoive.
+    const ligne = page.locator(`a[href="/chantiers/${chantierId}/facture"]`);
+    await ligne.first().waitFor({ state: "visible", timeout: 15000 });
+    assert.ok(
+      (await page.locator(`text=${nom}`).count()) > 0,
+      "le chantier terminé n'est pas dans le fil : le chemin vers la facture est coupé"
+    );
+    await ligne.first().click();
     await page.waitForSelector("text=Le chantier est réalisé ?", { timeout: 15000 });
 
     await page.click("text=Créer la facture");

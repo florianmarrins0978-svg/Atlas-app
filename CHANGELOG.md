@@ -9,6 +9,49 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le planning, codé trait pour trait — et une migration avec
+
+**Sa décision du 21 août au soir**, après deux soirées de maquette et neuf
+corrections : *« maintenant tu peux coder cette version de la maquette ! Ne
+modifie rien ! Ne change rien ! Code trait pour trait cette maquette. Prends le
+temps qu'il faut, je veux aucune erreur, aucun défaut ! »*
+
+L'écran est celui de `appli/planning-simple.html` : le mois refait, la fiche du
+jour bâtie sur le CHANTIER et non sur la demi-journée, les planifiés à la
+semaine, et la feuille de chantier — le devis rendu sans un seul prix.
+
+**Ce qui ne se voit pas, et qu'il a fallu poser (détail dans `ARCHITECTURE.md`
+§129) :**
+
+| | |
+|---|---|
+| **Migration 0058** | `equipes_du_chantier` remplace `chantiers.equipe_id`. Une colonne porte UNE équipe, pour le chantier ENTIER : ni « toutes les équipes sur la même demi-journée », ni « Paul le matin, Julien et Paul l'après-midi ». La colonne est retirée, pas doublée — deux vérités auraient divergé au premier retrait |
+| **Le quota prévient** | `planifierChantier` ne refuse plus un créneau, et cocher une équipe ne se refuse jamais. Le dépassement se VOIT — bordeaux, « 150 % de vos équipes » — il ne s'interdit pas. **Le chemin du CLIENT garde toutes ses limites** |
+| **Le devis sans les prix** | Une route de plus, et zéro moteur de plus : `sansChiffrage` existait depuis la fiche de chantier du 20 août. Le titre devient « FEUILLE DE CHANTIER » et le cadre de signature disparaît — sans prix, ce n'est plus un devis |
+| **Deux couleurs à la charte** | `vertPale` et `bordeaux`, fixes comme `sage` et `alert` : dérivées de chaque charte, deux des quatre états finiraient par se ressembler sur l'une des sept |
+
+**Trois choses ont quitté l'écran** parce que la planche ne les portait pas :
+« Créer la facture » dans la feuille, la liste « Dans mon agenda », et la
+proposition de chantier voisin. Le code serveur des trois est intact ;
+`TODO.md` dit où, et ce qu'il faut lui demander.
+
+**Le plus cher du lot ne se voyait pas :** la reprise de données de la migration
+recopiait **zéro ligne, sans erreur** — `chantiers` force la RLS jusque sur le
+propriétaire, et les migrations tournent sous ce rôle-là. La colonne aurait été
+retirée juste après, et toutes ses équipes auraient disparu en silence. Trouvé
+en rejouant la migration sur une base remontée à l'état d'avant, **avec des
+données dedans** ; aucune relecture ne l'aurait montré. `test-migrations-sous-rls.ts`
+garde désormais la porte — et il a trouvé **trois migrations déjà appliquées**
+qui portent le même défaut (`TODO.md`, en tête).
+
+**Deux contrôles ont été refaits plutôt que relevés**, et c'est la leçon du
+lot : `test-assistant-en-tete-e2e.ts` épinglait « la dernière case du mois finit
+au-dessus de 626 px », un nombre relevé sur l'écran d'avant ; il mesure
+désormais que le bouton de l'assistant partage la ligne du titre, ce qui était
+le vrai défaut et ne dépend d'aucun calendrier. Un contrôle qui suit l'écran ne
+le tient plus.
+
+
 ### Le planning : un chantier porte son nom UNE fois
 
 **Sa correction du soir, capture à l'appui :** *« Mr. Leroy au-dessus du carré
@@ -5117,7 +5160,9 @@ Sa cible reste à 44 px — grossir le signe ne doit pas rétrécir le geste.
 journée ENTIÈRE, pas une demi. Le test se trompait, pas le serveur ; le contrôle
 inverse a été ajouté pour que le premier ne passe pas par hasard.
 
-Nouveau : `scripts/test-changer-equipe.ts` (7 contrôles).
+Nouveau : une suite de sept contrôles sur le changement d'équipe — remplacée le
+21 août 2026 par `scripts/test-equipes-par-demi-journee.ts`, quand l'équipe est
+devenue plusieurs équipes, demi-journée par demi-journée (migration 0058).
 
 ### Les équipes reviennent sous « Équipe », et le planning s'explique
 
@@ -5955,7 +6000,7 @@ bouton mort. **Retirer ne se refuse jamais pour occupation** : libérer une plac
 n'en prend aucune, et refuser enfermerait le patron dans son erreur.
 
 **Les contrôles ont été vus rouges avant d'être livrés** : privés du retrait,
-trois cas de `test-changer-equipe.ts` tombent. Une suite navigateur
+trois cas de la suite du changement d'équipe tombent. Une suite navigateur
 (`test-pastille-equipe-e2e.ts`) parcourt le geste entier — poser, changer,
 retirer, vérifier en base — parce que la règle serveur serait verte même si le
 bouton n'était pas branché : c'est le raccord qui casse, jamais la formule.

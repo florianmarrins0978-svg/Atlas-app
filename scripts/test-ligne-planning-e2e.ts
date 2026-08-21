@@ -24,7 +24,10 @@ import { pool } from "../src/server/db/client";
  *
  * **CE QUI EST MESURÉ, ET POURQUOI CHAQUE MESURE EXISTE :**
  *
- *   1. la phrase porte la date, le moment et la durée — ce qu'il a demandé ;
+ *   1. la phrase porte le moment et la durée. **La date, elle, a quitté la
+ *      ligne le 21 août 2026** pour le titre du jour : la liste des planifiés
+ *      est groupée par jour NOMMÉ depuis la planche 84, et l'écrire sur chaque
+ *      ligne la répétait autant de fois qu'il y a de chantiers ce jour-là ;
  *   2. elle est **en or**, la couleur calculée et non le nom d'une classe :
  *      *« je veux journée et toute la ligne »* ;
  *   3. elle tient sur **une seule ligne** et **n'est pas coupée** — la mesure
@@ -35,6 +38,13 @@ import { pool } from "../src/server/db/client";
  *   5. l'équipe n'est écrite **qu'une fois** : la pastille la porte depuis le
  *      14 août, et la phrase la portait encore — « Équipe A » s'écrivait deux
  *      fois côte à côte.
+ *
+ * **Ce que la planche 84 a changé ici, le 21 août 2026 :** la ligne n'est plus
+ * un lien vers la fiche — le nom ouvre la journée et la feuille, sur place —, la
+ * date est passée au-dessus, et « ½ journée » ne s'écrit plus (*« il y a marqué
+ * matin, et à chaque fois demi-journée »*). Les mesures, elles, n'ont pas
+ * bougé : c'est le nom du client qui paie quand la phrase s'allonge, et c'est
+ * cela qu'on refuse.
  *
  * Les trois cas posés en base couvrent les trois écritures : la journée pleine,
  * la demi-journée de l'après-midi, et le chantier de trois jours.
@@ -127,7 +137,7 @@ async function main() {
       `UPDATE chantiers
           SET devis_envoye_at = now(),
               date_planifiee = date_trunc('week', CURRENT_DATE + interval '14 days')::date,
-              creneau_debut = $2, duree_demi_journees = $3, equipe_id = NULL
+              creneau_debut = $2, duree_demi_journees = $3
         WHERE id = $1`,
       [id, creneau, dureeDemiJournees]
     );
@@ -159,27 +169,61 @@ async function main() {
   };
 
   /**
+   * Amener la liste des planifiés sur la semaine où les trois cas sont posés.
+   *
+   * **La semaine ne gouverne QUE les planifiés depuis la planche 84** : le
+   * calendrier reste au mois, et la liste du bas a ses propres flèches. Les
+   * trois chantiers sont posés au lundi dans deux semaines ; on avance jusqu'à
+   * les trouver plutôt que de supposer qu'on y est.
+   */
+  async function amenerSurLaSemaineDesCas() {
+    const cible = (
+      await pool.query(`SELECT date_planifiee::text AS jour FROM chantiers WHERE id = $1`, [
+        journee.id,
+      ])
+    ).rows[0].jour as string;
+    const numero = new Date(`${cible}T12:00:00Z`).getUTCDate();
+    for (let i = 0; i < 8; i++) {
+      const titre = await page.locator('[data-atlas="semaine-titre"]').innerText();
+      if (titre.startsWith(`${numero} `)) return;
+      await page.click('button[aria-label="Semaine suivante"]');
+      await page.waitForTimeout(250);
+    }
+    throw new Error(`la liste n'atteint pas la semaine du ${cible}`);
+  }
+
+  /**
    * Ce que la ligne de CE chantier montre réellement.
    *
    * On mesure des boîtes, pas des classes. Et le débordement se lit sur l'écart
    * entre le texte et sa boîte : le DOM porte toujours la phrase entière, c'est
    * la boîte qui la rogne — un `innerText` ne le dirait jamais.
+   *
+   * **La ligne se désigne par le nom du chantier, dans SA rangée.** Depuis la
+   * planche 84, une ligne des planifiés n'est plus un lien vers la fiche : le
+   * nom ouvre la journée et la feuille, sur place. On passe donc par la base
+   * pour savoir quel nom porte cet identifiant.
    */
   async function ligneDe(id: string) {
-    const lien = page.locator(`a[href="/chantiers/${id}"]`);
-    await lien.scrollIntoViewIfNeeded();
-    const mesure = await lien.evaluate((a) => {
-      const spans = a.querySelectorAll("span");
-      const nom = spans[0] as HTMLElement;
-      const quand = spans[1] as HTMLElement;
+    const nomDuChantier = (await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [id]))
+      .rows[0].nom as string;
+    const rangee = page
+      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nomDuChantier}")`)
+      .first();
+    await rangee.scrollIntoViewIfNeeded();
+
+    const mesure = await rangee.evaluate((r) => {
+      const bouton = r.querySelector('[data-atlas="nom-planifie"]') as HTMLElement;
+      const quand = bouton.querySelector("span") as HTMLElement;
       return {
-        nom: nom.textContent ?? "",
-        debordNom: nom.scrollWidth - nom.clientWidth,
-        largeurNom: nom.clientWidth,
+        // Le nom seul : le bouton porte aussi le moment, en petit et en or.
+        nom: (bouton.childNodes[0]?.textContent ?? "").trim(),
+        debordNom: bouton.scrollWidth - bouton.clientWidth,
+        largeurNom: bouton.clientWidth,
         texte: (quand.textContent ?? "").trim(),
         debordTexte: quand.scrollWidth - quand.clientWidth,
         largeurTexte: quand.clientWidth,
-        hauteur: Math.round(quand.getBoundingClientRect().height),
+        hauteur: Math.round(bouton.getBoundingClientRect().height),
         couleur: getComputedStyle(quand).color,
       };
     });
@@ -190,7 +234,7 @@ async function main() {
     // prononcer plutôt que de rendre un vert qui ne prouve rien.
     if (mesure.largeurNom === 0 || mesure.largeurTexte === 0) {
       throw new Error(
-        `La ligne « ${mesure.nom.trim()} » mesure 0 px de large : la page n'est pas mise en ` +
+        `La ligne « ${mesure.nom} » mesure 0 px de large : la page n'est pas mise en ` +
           "page au moment de la mesure, et aucun débordement ne peut être vu. " +
           "Ce n'est pas le produit qui est en cause, c'est ce contrôle."
       );
@@ -198,8 +242,10 @@ async function main() {
     return mesure;
   }
 
-  await test("La ligne dit la date, le moment et la durée — ses trois infos", async () => {
+  await test("La ligne dit le moment, et le JOUR est écrit au-dessus", async () => {
     await allerAuPlanning();
+    await amenerSurLaSemaineDesCas();
+
     const pleine = await ligneDe(journee.id);
     const apresMidi = await ligneDe(demi.id);
     const troisJours = await ligneDe(longue.id);
@@ -207,27 +253,44 @@ async function main() {
     // La journée pleine : « journée » porte la durée à elle seule, et « matin »
     // n'a rien à y faire — c'est le défaut du 13 août.
     assert.match(pleine.texte, /journée/, `journée pleine : « ${pleine.texte} »`);
-    assert.ok(!/\bmatin\b/.test(pleine.texte), `« matin » ne doit pas s'y écrire : « ${pleine.texte} »`);
+    assert.ok(
+      !/\bmatin\b/.test(pleine.texte),
+      `« matin » ne doit pas s'y écrire : « ${pleine.texte} »`
+    );
 
-    assert.match(apresMidi.texte, /après-midi · ½ journée/, `demi-journée : « ${apresMidi.texte} »`);
-    assert.match(troisJours.texte, /matin · 3 jours/, `trois jours : « ${troisJours.texte} »`);
+    // **« ½ journée » ne s'écrit plus** — sa remarque du 21 août : « il y a
+    // marqué matin, et à chaque fois demi-journée ». Un mot qui répète son
+    // voisin se lit quand même, et fait douter qu'il dise autre chose.
+    assert.equal(apresMidi.texte, "après-midi", `demi-journée : « ${apresMidi.texte} »`);
+    assert.equal(troisJours.texte, "3 jours", `trois jours : « ${troisJours.texte} »`);
 
-    // La date, sur les trois — elle est revenue le 15 août.
-    for (const l of [pleine, apresMidi, troisJours]) {
-      assert.match(l.texte, /\d{1,2} \p{L}+/u, `la date manque sur la ligne : « ${l.texte} »`);
-    }
+    // **LA DATE A QUITTÉ LA LIGNE POUR LE TITRE DU JOUR**, et ce n'est pas une
+    // perte : la liste des planifiés est GROUPÉE par jour nommé depuis la
+    // planche 84 — *« mettre en haut les jours de la semaine [...] avec les
+    // clients dessous »*. Elle est écrite une fois pour tous les chantiers du
+    // jour, au lieu d'une fois par ligne. On vérifie qu'elle est bien là.
+    const titre = await page
+      .locator('[data-atlas="jour-planifie"]')
+      .first()
+      .locator("p")
+      .first()
+      .innerText();
+    assert.match(
+      titre,
+      /\p{L}+ \d{1,2} \p{L}+/u,
+      `le jour n'est pas nommé au-dessus des chantiers : « ${titre} »`
+    );
 
     // Et « jour » ne remplace jamais « journée » : sa correction, deux fois.
-    for (const l of [pleine, apresMidi, troisJours]) {
-      assert.ok(
-        !/\bjour\b/.test(l.texte),
-        `« jour » au lieu de « journée » — sa correction du 4 puis du 15 août : « ${l.texte} »`
-      );
-    }
+    assert.ok(
+      !/\bjour\b/.test(pleine.texte),
+      `« jour » au lieu de « journée » — sa correction du 4 puis du 15 août : « ${pleine.texte} »`
+    );
   });
 
   await test("Toute la phrase est en or, et non grise", async () => {
     await allerAuPlanning();
+    await amenerSurLaSemaineDesCas();
     for (const c of [journee, demi, longue]) {
       const l = await ligneDe(c.id);
       assert.equal(
@@ -240,6 +303,7 @@ async function main() {
 
   await test("À 390 px, rien n'est coupé et rien ne se replie", async () => {
     await allerAuPlanning();
+    await amenerSurLaSemaineDesCas();
     for (const c of [journee, demi, longue]) {
       const l = await ligneDe(c.id);
       assert.equal(
@@ -254,9 +318,11 @@ async function main() {
         `« ${l.nom.trim()} » déborde de ${l.debordNom} px sur les ${l.largeurNom} px ` +
           "de la colonne : c'est le nom du chantier qui paie la phrase"
       );
+      // Le nom est en serif de 19 px : une seule ligne en fait vingt-quatre.
+      // Repliée, elle en ferait le double.
       assert.ok(
-        l.hauteur <= 20,
-        `« ${l.texte} » fait ${l.hauteur} px de haut : elle se replie sur deux lignes`
+        l.hauteur <= 30,
+        `« ${l.nom} ${l.texte} » fait ${l.hauteur} px de haut : elle se replie sur deux lignes`
       );
     }
   });
@@ -267,35 +333,39 @@ async function main() {
         WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
       [journee.id]
     );
+    // **L'équipe se coche dans `equipes_du_chantier` depuis la migration 0058**,
+    // demi-journée par demi-journée. On la pose sur les deux moitiés : c'est ce
+    // que voulait dire l'ancienne colonne `equipe_id`.
     await pool.query(
-      `UPDATE chantiers SET equipe_id = (
-         SELECT id FROM equipes
-          WHERE entreprise_id = (SELECT entreprise_id FROM chantiers WHERE id = $1)
-            AND rang = 1 LIMIT 1)
-        WHERE id = $1`,
+      `INSERT INTO equipes_du_chantier (entreprise_id, chantier_id, demi, equipe_id)
+       SELECT c.entreprise_id, c.id, d.demi, e.id
+         FROM chantiers c
+         CROSS JOIN (VALUES ('matin'), ('apres_midi')) AS d(demi)
+         JOIN equipes e ON e.entreprise_id = c.entreprise_id AND e.rang = 1
+        WHERE c.id = $1
+       ON CONFLICT DO NOTHING`,
       [journee.id]
     );
     await allerAuPlanning();
+    await amenerSurLaSemaineDesCas();
 
     const l = await ligneDe(journee.id);
-    // La pastille porte l'équipe depuis le 14 août. Si la phrase la porte
-    // aussi, « Équipe A » s'écrit deux fois côte à côte — un doublon qu'aucune
-    // suite ne voyait, parce que chacune ne regardait que sa moitié.
+    // La pastille porte l'équipe. Si la phrase la porte aussi, le nom s'écrit
+    // deux fois côte à côte — un doublon qu'aucune suite ne voyait, parce que
+    // chacune ne regardait que sa moitié.
     assert.ok(
       !/quipe/.test(l.texte),
       `l'équipe est écrite dans la phrase ET sur la pastille : « ${l.texte} »`
     );
     // Et elle doit bien être quelque part : la retirer des deux endroits
     // laisserait la ligne muette sur qui s'en occupe.
-    //
-    // **Compté DANS LA RANGÉE, pas par le nom du chantier.** Les trois cas de
-    // cette suite portent le même client — le nom ne les distingue pas, et
-    // c'est voulu : y coller un horodatage fabriquait des noms qu'aucun client
-    // ne porte. Chercher « l'équipe — Mr. Bernard-Delacroix » en trouvait donc
-    // trois, et le contrôle accusait la pastille d'avoir disparu. Seul l'`id`
-    // du chantier désigne une ligne sans ambiguïté.
-    const rangee = page.locator(`div:has(> a[href="/chantiers/${journee.id}"])`).last();
-    const pastilles = await rangee.getByRole("button", { name: /l'équipe — / }).count();
+    const nomDuChantier = (
+      await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [journee.id])
+    ).rows[0].nom as string;
+    const rangee = page
+      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nomDuChantier}")`)
+      .first();
+    const pastilles = await rangee.locator('[data-atlas="equipe"]').count();
     assert.equal(pastilles, 1, `la ligne porte ${pastilles} pastille(s) d'équipe, une attendue`);
   });
 
@@ -305,8 +375,8 @@ async function main() {
   // l'écran. Aucun n'aurait rougi ici. Elle est prise à chaque passage, à la
   // largeur de son téléphone, et coûte une seconde.
   await allerAuPlanning();
-  const liste = page.locator('a[href^="/chantiers/"]').first();
-  await liste.scrollIntoViewIfNeeded();
+  await amenerSurLaSemaineDesCas();
+  await page.locator('[data-atlas="ligne-planifiee"]').first().scrollIntoViewIfNeeded();
   mkdirSync("artifacts/screenshots", { recursive: true });
   await page.screenshot({ path: "artifacts/screenshots/ligne-planning-390.png" });
 

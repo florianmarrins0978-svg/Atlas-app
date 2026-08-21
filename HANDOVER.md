@@ -4,10 +4,68 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-18 · `main`
+**Point de reprise :** 2026-08-21 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+
+## LE PLANNING A ÉTÉ REFAIT LE 21 AOÛT 2026 — ce qu'il faut savoir avant d'y toucher
+
+**L'écran suit `appli/planning-simple.html` (planche 84) trait pour trait**, sur
+sa consigne : *« code trait pour trait cette maquette. Ne modifie rien ! Ne
+change rien ! »*. Toute correction du planning se porte **d'abord sur la
+planche**, sinon les deux divergent — et c'est elle qu'il ouvre sur son
+téléphone.
+
+**Trois choses ont changé sous l'écran, et elles se paient si on les ignore :**
+
+1. **`chantiers.equipe_id` N'EXISTE PLUS.** Les équipes vivent dans
+   `equipes_du_chantier (chantier_id, demi, equipe_id)` — plusieurs par
+   demi-journée, et le matin indépendant de l'après-midi
+   (`drizzle/0058_equipes_par_demi_journee.sql`). Un `UPDATE chantiers SET
+   equipe_id = …` dans une suite ne compilera plus ; c'est voulu.
+2. **Le patron ne se voit plus refuser un créneau.** `CreneauIndisponible` et
+   `EquipeIndisponible` ont disparu : *« il ne doit pas y avoir de limite [...]
+   nous, on prévient juste »*. **Le chemin du CLIENT, lui, garde toutes ses
+   limites** (`jourRetenable`, `premiersJoursLibres`) — ne pas les relâcher.
+3. **Les règles sont dans `src/lib/planning-jour.ts`**, pures et éprouvées sans
+   base (`scripts/test-planning-jour.ts`). L'écran n'y décide de rien.
+
+**Ce qui a quitté l'écran**, la planche ne le portant pas : « Créer la facture »
+(le fil des « Terminés » y mène toujours), la liste « Dans mon agenda », et la
+proposition de chantier voisin. Le code serveur des trois est intact — `TODO.md`
+dit où, et ce qu'il faut lui demander.
+
+---
+
+## Les suites navigateur échouent TOUTES à la connexion : vider `.next` (21 août 2026)
+
+**Le symptôme trompe** : cent une suites tombent l'une après l'autre sur
+`page.waitForURL` après avoir soumis le formulaire de connexion. On cherche
+alors du côté de l'authentification, de la limitation de débit, du jeu de
+démonstration — trois pistes, aucune bonne.
+
+**Le vrai signe est deux lignes plus haut, dans le journal du lanceur :**
+
+```
+Préchauffage de 27 écrans (compilation à la demande)...
+Préchauffage terminé : 3 écran(s) prêts, 24 en échec — 10 s.
+```
+
+Un préchauffage sain prend **soixante à quatre-vingts secondes** et rend tous
+les écrans prêts. Dix secondes et vingt-quatre échecs veulent dire que le
+serveur ne compile plus rien dans les temps — et un écran qui met plus de trente
+secondes à se bâtir fait expirer la connexion de la première suite, puis de
+toutes les autres.
+
+**La cause, mesurée :** le cache de développement `.next/` avait enflé à
+**4,3 Go** au fil des passages. Le geste : arrêter ce qui tient le port
+(`fuser -n tcp 3000`, puis `kill -9`), `rm -rf .next .next-verification`, et
+relancer. Le premier passage est plus long ; les suivants redeviennent normaux.
+
+**Ce n'est pas un défaut du produit**, et il ne faut pas le chercher là : la
+construction (`npm run build`) et les cent quatre-vingt-onze suites base étaient
+vertes dans le même passage.
 
 ## « La page ne s'ouvre plus » : REGARDER LA PUBLICATION AVANT DE CHERCHER (21 août 2026)
 
@@ -2602,22 +2660,23 @@ longueur de l'adresse — pour qu'on ne le refasse pas.
 
 ---
 
-### « Y aller » — le chevron doré du planning (12 août 2026)
+### Les gestes de « Y aller » — désormais dans la feuille de chantier
 
-Au bout de chaque chantier planifié, un chevron doré ouvre une feuille : Plans,
-Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
+Ils sont nés le 12 août 2026 dans un panneau qu'un chevron doré faisait
+remonter : Plans, Google Maps, Waze, copier l'adresse, appeler le client.
+**Depuis le 21 août 2026 ils vivent dans la FEUILLE DE CHANTIER**, posée dans la
+page du planning refait (planche 84) — et ils ne sont plus que quatre : *« pas
+besoin d'en mettre trois »*, Google Maps est sorti.
 
 - `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
-- `src/components/atlas/FeuilleYAller.tsx` — la feuille, sur `BottomSheet`.
-- `src/app/planning/PlanningClient.tsx` — le chevron, et `libelleQuand()` écrit
-  une seule fois pour la ligne ET la feuille.
-- `src/lib/nom-chantier.ts` — `intituleDuChantier` : ne recolle le client que si
-  le nom du chantier ne le porte pas déjà, sans quoi la feuille affiche
-  « M. Bernard — Chez M. Bernard ».
+- `src/app/planning/PlanningClient.tsx` — la feuille (`FeuilleChantier`), qui
+  lit `liensItineraire` et `lienAppel` plutôt que de recomposer les adresses.
 - `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
-- Contrôles : `scripts/test-itineraire.ts` (10), `scripts/test-y-aller-e2e.ts`
-  (9), quatre de plus dans `scripts/test-nom-chantier.ts`, deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
-  confrontés au défaut qu'ils prétendent voir avant d'être retenus.
+- Contrôles : `scripts/test-itineraire.ts` (10), la section « feuille de
+  chantier » de `scripts/test-planning-e2e.ts`, quatre de plus dans
+  `scripts/test-nom-chantier.ts`, deux cas de plus dans
+  `scripts/test-planning-repo.ts`. Tous ont été confrontés au défaut qu'ils
+  prétendent voir avant d'être retenus.
 
 **Deux choses à savoir avant d'y toucher :**
 
