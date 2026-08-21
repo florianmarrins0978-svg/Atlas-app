@@ -598,6 +598,12 @@ la prochaine fois se rediagnostiquera de zéro, exactement comme celle-ci.
 `appli/fiche-client-vocale.html` (adresse : `…github.io/Atlas-app/essais.html`).
 **Rien n'est codé**, et rien ne doit l'être avant sa réponse.
 
+**Le dessin des cases est en suspens, et il l'a dit :** *« pour les cases, change
+rien, on reste comme on est là »*. Cinq dessins l'attendent sur
+`appli/cases-page-entiere.html` — la page entière, relue sous chacun. Ne pas
+toucher au dessin des cases de `fiche-client-vocale.html` tant qu'il n'a pas
+donné son numéro.
+
 Ce qu'il a déjà tranché, en répondant aux questions posées avant le dessin :
 
 | Question | Sa réponse |
