@@ -142,7 +142,9 @@ verifier(
 
 // ── La marque du jour se dessine, et rien ne mesure zéro ────────────────
 {
-  const boites = await page.$$eval(".marqueA i", (n) => n.map((e) => e.getBoundingClientRect().height));
+  // On compte celles du MOIS : la légende en porte deux de plus depuis qu'elle
+  // réemploie la même marque pour dire où sont le matin et l'après-midi.
+  const boites = await page.$$eval("#mois .marqueA i", (n) => n.map((e) => e.getBoundingClientRect().height));
   verifier(
     `les deux barres du jour se dessinent (${boites.length} barres, aucune de zéro pixel)`,
     boites.length === 62 && boites.every((h) => h >= 1),
@@ -176,7 +178,7 @@ verifier(
 verifier(
   `le mercredi 19 n'a rien le matin et de la place l'après-midi (lu : ${JSON.stringify(await chargeDe("2026-08-19"))})`,
   (await chargeDe("2026-08-19"))[0].etat === "libre" &&
-    (await chargeDe("2026-08-19"))[1].etat === "place",
+    (await chargeDe("2026-08-19"))[1].etat === "dispo",
 );
 
 // ── LE DÉPASSEMENT PRÉVIENT, IL N'INTERDIT PAS ─────────────────────────
@@ -203,12 +205,25 @@ await page.click('[data-jour="2026-08-21"]');
   const qui = await page.$$eval("#jour-ouvert .choisir [data-qui]", (n) => n.map((e) => e.textContent.trim()));
   verifier(`il demande d'abord QUI (lu : ${JSON.stringify(qui)})`, qui.length > 0);
   await page.locator("#jour-ouvert .choisir [data-qui]").first().click();
-  const quand = await page.$$eval("#jour-ouvert .choisir [data-quand]", (n) => n.map((e) => e.textContent.trim()));
+  const quand = await page.$$eval("#jour-ouvert [data-quand]", (n) => n.map((e) => e.textContent.trim()));
   verifier(
     `puis QUAND (lu : ${JSON.stringify(quand)})`,
     JSON.stringify(quand) === JSON.stringify(["Matin", "Après-midi", "Journée"]),
   );
-  await page.locator('#jour-ouvert .choisir [data-quand="matin"]').click();
+
+  // **Le nom choisi s'aligne sur les chantiers déjà posés** — sa demande du
+  // 21 août : « j'aimerais que le nom se mette au même niveau que ceux qui sont
+  // déjà sélectionnés ». On mesure le bord gauche et le corps, pas l'apparence
+  // supposée.
+  {
+    const noms = await page.$$eval("#jour-ouvert .place .nom", (n) =>
+      n.map((e) => ({ gauche: Math.round(e.getBoundingClientRect().left), corps: getComputedStyle(e).fontSize })));
+    verifier(
+      `le nom en attente est au même niveau que les autres (lu : ${JSON.stringify(noms)})`,
+      noms.length >= 2 && noms.every((x) => x.gauche === noms[0].gauche && x.corps === noms[0].corps),
+    );
+  }
+  await page.locator('#jour-ouvert [data-quand="matin"]').click();
 
   const apres = await chargeDe("2026-08-21");
   verifier(
@@ -234,23 +249,47 @@ await page.click('[data-jour="2026-08-21"]');
   );
 }
 
-// ── LA LÉGENDE DIT LES QUATRE ÉTATS, SUR UNE LIGNE ─────────────────────
+// ── LA LÉGENDE : QUATRE ÉTATS + LA POSITION, SUR UNE LIGNE ─────────────
 {
   const dit = (await page.locator("#legende").innerText()).toLowerCase().replace(/\n/g, " ");
   verifier(
-    `elle dit la place, le complet et l'au-delà (lu : « ${dit} »)`,
-    ["de la place", "complet", "au-delà", "matin", "après-midi"].every((m) => dit.includes(m)),
+    `elle dit rien, incomplet, complet, au-delà (lu : « ${dit} »)`,
+    ["rien", "incomplet", "complet", "au-delà", "matin", "après-midi"].every((m) => dit.includes(m)),
   );
   const hauts = await page.$$eval(".legende > span", (n) =>
     n.map((e) => Math.round(e.getBoundingClientRect().top)));
   verifier(
     `et tout tient sur UNE ligne (hauts lus : ${JSON.stringify(hauts)})`,
-    hauts.length === 4 && hauts.every((h) => h === hauts[0]),
+    hauts.length === 5 && hauts.every((h) => h === hauts[0]),
   );
   const carres = await page.$$eval(".legende .carre", (n) =>
     n.map((e) => { const r = e.getBoundingClientRect(); return Math.abs(r.width - r.height) <= 1; }));
-  verifier(`les cinq marques restent des carrés (lu : ${JSON.stringify(carres)})`,
-    carres.length === 5 && carres.every(Boolean));
+  verifier(`les quatre états restent des carrés (lu : ${JSON.stringify(carres)})`,
+    carres.length === 4 && carres.every(Boolean));
+
+  // **Les rectangles de matin / après-midi SONT ceux du calendrier.** Sa
+  // demande du 21 août : « exactement les mêmes, la même taille, la même
+  // largeur ». On les mesure des deux côtés — une copie « à la bonne
+  // dimension » divergerait au premier réglage.
+  const mois = await page.$eval('[data-jour="2026-08-20"] .marqueA i', (e) => {
+    const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
+  const leg = await page.$eval(".legende .annote .marqueA i", (e) => {
+    const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
+  verifier(
+    `ceux de la légende ont la taille de ceux du mois (mois ${JSON.stringify(mois)}, légende ${JSON.stringify(leg)})`,
+    JSON.stringify(mois) === JSON.stringify(leg) && mois[0] > mois[1],
+  );
+
+  // **Le dépassement n'est ni or ni rouge.** L'or sert à ce qu'on lit partout
+  // ailleurs ; le rouge dit « erreur », et dépasser est un choix.
+  // **Le bordeaux, son choix du 21 août** — après l'or, puis l'ardoise. On
+  // vérifie la teinte elle-même : « pas de l'or » laisserait revenir n'importe
+  // quoi, et il a déjà refusé deux couleurs.
+  const couleur = await page.$eval(".legende .carre.dela", (e) => getComputedStyle(e).backgroundColor);
+  verifier(`« au-delà » est en bordeaux (lu : ${couleur})`, couleur === "rgb(110, 36, 51)");
+  const surLeMois = await page.$eval(".marqueA .seg.dela, [data-jour] .seg.dela", (e) =>
+    getComputedStyle(e).backgroundColor).catch(() => null);
+  if (surLeMois) verifier(`et le mois le peint pareil (lu : ${surLeMois})`, surLeMois === couleur);
 }
 
 // ── AJOUTER SUR N'IMPORTE QUEL JOUR, PAR LE MÊME GESTE ─────────────────
@@ -270,7 +309,7 @@ await page.click('[data-jour="2026-08-19"]');
   const avant = (await page.locator("#jour-ouvert").innerText()).length;
   await page.click("#jour-ouvert [data-ajouter]");
   await page.locator("#jour-ouvert .choisir [data-qui]").first().click();
-  await page.locator('#jour-ouvert .choisir [data-quand="matin"]').click();
+  await page.locator('#jour-ouvert [data-quand="matin"]').click();
   verifier(
     "et le poser l'inscrit pour de bon dans la matinée",
     (await page.locator("#jour-ouvert").innerText()).length > avant &&
