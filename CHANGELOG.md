@@ -1225,6 +1225,30 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### La journée se lit par demi-journées, chacune avec ses chantiers
+
+**Sa remarque du 21 août :** *« le 21, quand je clique le matin je peux
+attribuer une équipe, et quand je clique sur l'après-midi je ne peux rien
+attribuer — je dois cliquer sur journée pour attribuer l'aprem »*.
+
+**Le défaut était de structure, pas d'affichage.** La fiche du jour montrait deux
+lignes d'état — Matin, Après-midi — puis, DESSOUS, une liste unique de
+chantiers ; et l'équipe s'attachait au chantier. Il regardait « Après-midi » et
+n'y trouvait rien à toucher.
+
+Chaque demi-journée porte donc maintenant **ses propres lignes**, avec leur
+pastille d'équipe, leur « Déplacer » et leur « Retirer ». **Un chantier à la
+journée apparaît sous les deux, et le dit** (« toute la journée ») : le cacher
+d'un côté ferait croire que l'après-midi est libre.
+
+**« Déplacer » ouvre une liste, comme l'équipe** — Matin, Après-midi, Journée.
+Aucune rotation qui déciderait à sa place : c'est la même règle qu'il a posée
+pour les équipes, et elle vaut partout.
+
+**Ce que la suite éprouve désormais**, et qu'elle ne pouvait pas voir avant :
+que les deux demi-journées portent chacune leurs chantiers ET leurs pastilles,
+et qu'**on attribue une équipe depuis l'après-midi sans passer par « journée »**.
+
 ### « Plein » ne veut pas dire « attribué » — la hachure le dit enfin
 
 **Sa question du 21 août, et elle valait mieux qu'une réponse :** *« j'ai
