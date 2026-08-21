@@ -95,17 +95,40 @@
   .case.we .n{color:rgba(28,28,26,.42)}
   .case.aujourdhui .n{color:var(--or);font-weight:600}
 
-  /* A — deux barres sous le chiffre : matin dessus, après-midi dessous */
+  /* A — deux barres sous le chiffre : matin dessus, après-midi dessous.
+
+     **Sa question du 21 août : « comment tu vas faire s'il y a dix équipes ? »**
+     Trois états ne tenaient pas : avec dix équipes, « il reste de la place »
+     couvre une équipe prise comme neuf, et la barre dirait la même chose dans
+     les deux cas. Elle se REMPLIT donc à la proportion — deux prises sur dix,
+     c'est un cinquième de barre. Complet reste la barre entière, en vert
+     foncé : c'est le seul état qui interdit de poser un chantier, il ne se
+     déduit pas d'une nuance. */
   .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
-  .marqueA i{height:6px;border-radius:2px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .marqueA i.moitie{background:var(--pale);box-shadow:none}
+  .marqueA i{height:6px;border-radius:2px;background:var(--plage);
+             box-shadow:inset 0 0 0 1px var(--trait);position:relative;overflow:hidden}
+  .marqueA i span{position:absolute;left:0;top:0;bottom:0;background:var(--pale)}
   .marqueA i.plein{background:var(--pin);box-shadow:none}
   .case.we .marqueA{visibility:hidden}
 
-  /* **`[hidden]` doit gagner sur `display:block`.** Sans cette ligne, l'attribut
-     `hidden` ne cache rien : une règle de classe l'emporte sur celle du
-     navigateur, et le bouton reste là en prétendant être caché. Payé en
-     éprouvant cette planche le 21 août 2026. */
+  /* La légende ne s'explique plus par une phrase : elle MONTRE la position.
+     Sa demande du 21 août — « que sur le planning on comprenne tout de suite
+     que le haut c'est le matin et le bas l'après-midi ». Un dessin qui porte
+     son mot à côté n'a pas besoin qu'on dise où regarder. */
+  .legende .mini{width:20px;display:flex;flex-direction:column;gap:2px}
+  .legende .mini i{height:5px;border-radius:2px;background:var(--plage);
+                   box-shadow:inset 0 0 0 1px var(--trait)}
+  .legende .mini i.pris{background:var(--pale);box-shadow:none}
+  .legende .mini i.plein{background:var(--pin);box-shadow:none}
+
+  /* Le nombre d'équipes — n'existe QUE dans la maquette, pour répondre à sa
+     question en la MONTRANT plutôt qu'en l'expliquant. */
+  .equipes{margin:14px 18px 0;display:flex;align-items:center;justify-content:center;gap:8px;
+           font-size:11.5px;color:var(--gris)}
+  .equipes button{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
+                  padding:6px 13px;font:600 11.5px/1 ui-sans-serif,sans-serif;color:var(--encre-douce);cursor:pointer}
+  .equipes button[aria-pressed="true"]{background:var(--pin);color:#faf9f5;border-color:var(--pin)}
+
   .retour-aujourdhui[hidden]{display:none}
   .retour-aujourdhui{margin:12px auto 0;display:block;border:0;background:transparent;cursor:pointer;
                      font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
@@ -118,11 +141,6 @@
   .legende i.libre{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .legende i.moitie{background:var(--pale)}
   .legende i.plein{background:var(--pin)}
-  /* **`display:block`, et ce n'est pas une coquetterie.** La règle voisine
-     `.legende span{display:flex}` attrape aussi cette ligne : ses mots
-     devenaient des colonnes, et la phrase se lisait « Touchez un / jour / pour
-     savoir qui y / est. » Trouvé sur la capture, jamais par un test. */
-  .legende .quoi{display:block;width:100%;text-align:center;font-size:11px;opacity:.85;line-height:1.5}
 
   /* ── Le jour touché, sous le calendrier ─────────────────────────────── */
   .jour-ouvert{margin:16px 18px 0;padding:14px 15px;border-radius:10px;background:var(--plage)}
@@ -200,10 +218,16 @@
   <button type="button" id="retour" class="retour-aujourdhui" hidden>← Aujourd’hui</button>
 
   <div class="legende">
-    <span><i class="libre"></i> libre</span>
-    <span><i class="moitie"></i> 1 équipe</span>
-    <span><i class="plein"></i> complet</span>
-    <span class="quoi">Haut : le matin. Bas : l’après-midi.</span>
+    <span><span class="mini"><i class="pris"></i><i></i></span> matin</span>
+    <span><span class="mini"><i></i><i class="pris"></i></span> après-midi</span>
+    <span><span class="mini"><i class="plein"></i><i class="plein"></i></span> complet</span>
+  </div>
+
+  <div class="equipes" role="group" aria-label="Nombre d'équipes">
+    <span>Vos équipes :</span>
+    <button type="button" data-equipes="2" aria-pressed="true">2</button>
+    <button type="button" data-equipes="5" aria-pressed="false">5</button>
+    <button type="button" data-equipes="10" aria-pressed="false">10</button>
   </div>
 
   <div id="jour-ouvert"></div>
@@ -255,7 +279,13 @@
 
 <script>
   // ── Les données, celles de sa capture ────────────────────────────────────
-  const EQUIPES = ["Julien", "Paul"];
+  // **Le nombre d'équipes est un RÉGLAGE, pas une constante** — sa question du
+  // 21 août : « comment tu vas faire s'il y a dix équipes ? ». Tout ce qui suit
+  // en découle, pour qu'on le VOIE au lieu de l'expliquer.
+  const NOMS = ["Julien", "Paul", "Sofiane", "Marc", "Alix",
+                "Théo", "Nadia", "Bruno", "Lena", "Yanis"];
+  let nombreEquipes = 2;
+  const EQUIPES = () => NOMS.slice(0, nombreEquipes);
   const CHANTIERS = [
     { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipe: "Julien" },
     { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipe: "Paul" },
@@ -314,20 +344,44 @@
   let lundi = lundiDe(AUJOURDHUI);
   let jourTouche = null;
 
-  const duJour = (iso) => CHANTIERS.filter((c) => c.date === iso);
+  /**
+   * Les chantiers du jour — les siens, plus ce qu'il faut pour que la question
+   * des dix équipes ait une réponse VISIBLE.
+   *
+   * Avec deux équipes, le mercredi 26 est complet l'après-midi. Avec dix, les
+   * deux mêmes chantiers n'en remplissent plus qu'un cinquième, et « complet »
+   * ne se verrait nulle part — la maquette cesserait de montrer ce qu'elle doit
+   * trancher. On complète donc ce jour-là jusqu'à la dernière équipe, et le
+   * jeudi 27 jusqu'à la moitié.
+   */
+  function duJour(iso) {
+    const siens = CHANTIERS.filter((c) => c.date === iso);
+    if (nombreEquipes <= 2) return siens;
+    const remplir = (demi, combien) => {
+      const deja = siens.filter((c) => c.demi === "journee" || c.demi === demi).length;
+      return EQUIPES().slice(deja, combien).map((nom) => ({
+        nom: `Chantier ${nom}`, date: iso, demi, equipe: nom,
+      }));
+    };
+    if (iso === "2026-08-26") return [...siens, ...remplir("apres", nombreEquipes)];
+    if (iso === "2026-08-27") return [...siens, ...remplir("matin", Math.ceil(nombreEquipes / 2))];
+    return siens;
+  }
   const estWeekEnd = (iso) => [0, 6].includes(jourDeSemaine(iso));
 
   /**
-   * Ce qu'une demi-journée vaut : "libre", "moitie" ou "plein".
+   * Ce qu'une demi-journée porte : qui y est pris, et quelle PART cela occupe.
    *
-   * C'est la règle de son application : une demi-journée est COMPLÈTE quand ses
-   * deux équipes y sont prises. Avec une équipe sur deux, il reste de la place —
-   * et c'est précisément ce que son écran actuel ne montre pas d'un coup d'œil.
+   * **On rend une proportion, plus trois mots.** Avec deux équipes, « il reste
+   * de la place » ne pouvait vouloir dire qu'une chose ; avec dix, elle en
+   * couvre neuf — une nuance unique dirait la même chose pour une équipe prise
+   * que pour neuf. C'est la question qu'il a posée le 21 août 2026, et elle
+   * change le dessin, pas seulement le texte.
    */
-  function etatDemi(iso, demi) {
-    const pris = duJour(iso).filter((c) => c.demi === "journee" || c.demi === demi).length;
-    if (pris === 0) return "libre";
-    return pris >= EQUIPES.length ? "plein" : "moitie";
+  function occupation(iso, demi) {
+    if (estWeekEnd(iso)) return { pris: [], part: 0, complet: false };
+    const pris = duJour(iso).filter((c) => c.demi === "journee" || c.demi === demi);
+    return { pris, part: pris.length / nombreEquipes, complet: pris.length >= nombreEquipes };
   }
 
   const titreJour = (iso) => `${JOURS[jourDeSemaine(iso)]} ${numero(iso)} ${MOIS[enDate(iso).getUTCMonth()]}`;
@@ -352,10 +406,19 @@
    * retirés : garder un dessin que plus rien n'emploie, c'est laisser une
    * seconde façon de dire la même chose, et l'on finit par les mélanger.
    */
+  /**
+   * Les deux barres du jour : le matin dessus, l'après-midi dessous.
+   *
+   * **C'est le dessin qu'il a retenu le 21 août** — « pour le planning du mois
+   * je veux le A ». Chaque barre se remplit à la part occupée, et devient un
+   * aplat foncé quand c'est complet : le seul état qui interdit de poser un
+   * chantier ne se déduit pas d'une nuance, il se voit.
+   */
   function dessinerMarque(iso) {
-    const m = estWeekEnd(iso) ? "libre" : etatDemi(iso, "matin");
-    const a = estWeekEnd(iso) ? "libre" : etatDemi(iso, "apres");
-    return `<span class="marqueA"><i class="${m}"></i><i class="${a}"></i></span>`;
+    const barre = (o) => o.complet
+      ? `<i class="plein"></i>`
+      : `<i><span style="width:${Math.round(o.part * 100)}%"></span></i>`;
+    return `<span class="marqueA">${barre(occupation(iso, "matin"))}${barre(occupation(iso, "apres"))}</span>`;
   }
 
   function rendreMois() {
@@ -426,14 +489,17 @@
       duJour(jourTouche).filter((c) => c.demi === "journee" || c.demi === demi);
 
     const ligneDemi = (demi, mot) => {
-      const pris = surLaDemi(demi);
-      const etat = etatDemi(jourTouche, demi);
-      // **Le compte a été retiré le 21 août**, sur sa demande : « retire deux
-      // équipes sur deux, juste complet et le nom des équipes ». Le nombre
-      // n'apprenait rien qu'il ne sache — il a deux équipes, il les connaît par
-      // leur nom. Reste ce qui décide : est-ce complet, et qui y est.
-      const qui = pris.map((c) => c.equipe || "équipe à choisir").join(", ");
-      const dit = etat === "libre" ? "libre" : etat === "plein" ? `Complet · ${qui}` : qui;
+      const { pris, complet } = occupation(jourTouche, demi);
+      // **« Complet », et les noms — jamais le compte.** Sa demande du 21 août :
+      // « retire deux équipes sur deux, juste complet et le nom des équipes ».
+      // Au-delà de trois noms la ligne déborderait : on dit alors combien il en
+      // reste, ce qui est la seule chose qu'il ait à savoir pour poser.
+      const noms = pris.map((c) => c.equipe || "équipe à choisir");
+      const qui = noms.length <= 3
+        ? noms.join(", ")
+        : `${noms.slice(0, 2).join(", ")} +${noms.length - 2}`;
+      const dit = pris.length === 0 ? "libre" : complet ? `Complet · ${qui}` : qui;
+      const etat = pris.length === 0 ? "libre" : complet ? "plein" : "moitie";
       return `<div class="demi-ligne">
         <span class="quoi"><i class="pastille ${etat}"></i>${mot}</span>
         <span class="compte">${dit}</span></div>`;
@@ -483,6 +549,13 @@
       <div class="ligne"><span class="nom">${a.nom}</span><span class="etat">${a.etat}</span></div>`).join("");
   }
 
+  document.querySelectorAll("[data-equipes]").forEach((b) =>
+    b.addEventListener("click", () => {
+      nombreEquipes = Number(b.dataset.equipes);
+      document.querySelectorAll("[data-equipes]").forEach((x) =>
+        x.setAttribute("aria-pressed", String(x === b)));
+      rendre();
+    }));
   document.getElementById("retour").addEventListener("click", () => {
     premierDuMois = plusDeMois(AUJOURDHUI, 0);
     lundi = lundiDe(AUJOURDHUI);

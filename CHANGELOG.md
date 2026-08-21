@@ -1020,6 +1020,40 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### « Et s'il y a dix équipes ? » — la barre se remplit au lieu de qualifier
+
+**Sa question du 21 août 2026**, posée devant la planche : *« comment tu vas
+faire s'il y a dix équipes ? »*. Elle casse le dessin d'avant, et pas seulement
+son texte.
+
+**Ce qui ne tenait pas.** Trois états — libre, il reste de la place, complet —
+disent tout avec deux équipes. Avec dix, « il reste de la place » couvre une
+équipe prise comme neuf : **la même nuance pour une journée presque vide et une
+journée presque pleine**. On aurait posé un chantier sur un jour saturé en
+croyant y avoir de la place.
+
+**Ce qui remplace.** Chaque barre se **remplit à la part occupée** — deux prises
+sur dix, c'est un cinquième de barre. « Complet » reste un aplat foncé, et c'est
+délibéré : le seul état qui interdit de poser ne doit pas se déduire d'une
+nuance. La planche porte un réglage **2 · 5 · 10 équipes** pour qu'il le voie au
+lieu qu'on le lui explique.
+
+**Et la fiche du jour compte les noms plutôt que les équipes** : au-delà de
+trois, elle écrit « Julien, Paul +8 ». Dix noms sur une ligne de téléphone ne se
+lisent pas.
+
+### La légende montre la position au lieu de l'écrire
+
+**Sa demande, dans le même message :** *« la barre du haut c'est le matin, la
+barre du bas l'après-midi — enlève cette phrase, mais qu'on le comprenne tout de
+suite »*.
+
+La légende porte donc **la marque elle-même** : un dessin rempli en haut à côté
+du mot « matin », un rempli en bas à côté d'« après-midi », un plein à côté de
+« complet ». Trois mots, aucune phrase — et la position s'apprend en regardant,
+pas en lisant. « Touchez un jour pour savoir qui y est » disparaît aussi : on
+touche un jour parce qu'on veut savoir, pas parce qu'on l'a lu.
+
 ### Retirer du planning tout ce qui répète ce qu'on sait déjà
 
 **Ses quatre coupes du 21 août**, et le motif est le même à chaque fois : *« tu

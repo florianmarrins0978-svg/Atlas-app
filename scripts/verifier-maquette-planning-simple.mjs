@@ -141,32 +141,72 @@ verifier(
   );
 }
 
+/** Ce qu'une case peint : "complet", ou la part remplie de chaque barre. */
+const barresDe = (jour) =>
+  page.$$eval(`[data-jour="${jour}"] .marqueA i`, (n) =>
+    n.map((e) => (e.classList.contains("plein") ? "complet" : e.firstElementChild?.style.width || "0%")));
+
 // ── Ce que le calendrier peint doit être CE QUE LES DONNÉES DISENT ───────
 //
-// Le vendredi 21 porte deux chantiers à la journée : ses deux équipes sont
-// prises, donc matin ET après-midi complets. Un calendrier joli mais faux
-// passerait tous les contrôles ci-dessus.
-const barresDu21 = await page.$$eval('[data-jour="2026-08-21"] .marqueA i', (n) => n.map((e) => e.className));
+// Le vendredi 21 porte deux chantiers à la journée : avec deux équipes, ses
+// deux demi-journées sont complètes. Un calendrier joli mais faux passerait
+// tous les contrôles ci-dessus.
 verifier(
-  `le vendredi 21 est complet matin ET après-midi (lu : ${JSON.stringify(barresDu21)})`,
-  barresDu21.length === 2 && barresDu21.every((c) => c === "plein"),
+  `le vendredi 21 est complet matin ET après-midi (lu : ${JSON.stringify(await barresDe("2026-08-21"))})`,
+  (await barresDe("2026-08-21")).every((b) => b === "complet"),
 );
-const barresDu19 = await page.$$eval('[data-jour="2026-08-19"] .marqueA i', (n) => n.map((e) => e.className));
 verifier(
-  `le mercredi 19 est libre le matin, à moitié l'après-midi (lu : ${JSON.stringify(barresDu19)})`,
-  barresDu19[0] === "libre" && barresDu19[1] === "moitie",
+  `le mercredi 19 est vide le matin, à moitié l'après-midi (lu : ${JSON.stringify(await barresDe("2026-08-19"))})`,
+  JSON.stringify(await barresDe("2026-08-19")) === JSON.stringify(["0%", "50%"]),
+);
+verifier(
+  `le mercredi 26 est complet l'après-midi sur un matin libre (lu : ${JSON.stringify(await barresDe("2026-08-26"))})`,
+  JSON.stringify(await barresDe("2026-08-26")) === JSON.stringify(["0%", "complet"]),
 );
 
-// **Sa question du 21 août : « comment vous faites si l'après-midi j'ai mes
-// deux équipes sur le coup ? »** Le mercredi 26 est ce cas exact — matin libre,
-// après-midi COMPLET. Sans une journée pareille dans les données, la différence
-// entre « 1 équipe sur 2 » et « complet » ne se voit nulle part, et la maquette
-// ne répond pas à la seule question qu'il a posée.
-const barresDu26 = await page.$$eval('[data-jour="2026-08-26"] .marqueA i', (n) => n.map((e) => e.className));
+// ── SA QUESTION DU 21 AOÛT : « et s'il y a dix équipes ? » ───────────────
+//
+// C'est le contrôle qui compte, parce que c'est le point où le dessin d'avant
+// cassait : avec trois états, une équipe prise sur dix et neuf prises sur dix
+// peignaient exactement la même chose.
+await page.click('[data-equipes="10"]');
+await page.waitForTimeout(150);
 verifier(
-  `le mercredi 26 montre un après-midi COMPLET sur un matin libre (lu : ${JSON.stringify(barresDu26)})`,
-  barresDu26[0] === "libre" && barresDu26[1] === "plein",
+  `à dix équipes, le vendredi 21 ne montre plus que deux dixièmes (lu : ${JSON.stringify(await barresDe("2026-08-21"))})`,
+  JSON.stringify(await barresDe("2026-08-21")) === JSON.stringify(["20%", "20%"]),
 );
+verifier(
+  `à dix équipes, le mercredi 19 tombe à un dixième (lu : ${JSON.stringify(await barresDe("2026-08-19"))})`,
+  JSON.stringify(await barresDe("2026-08-19")) === JSON.stringify(["0%", "10%"]),
+);
+verifier(
+  "à dix équipes, « complet » reste montrable — le 26 l'est toujours",
+  (await barresDe("2026-08-26"))[1] === "complet",
+);
+await page.click('[data-equipes="2"]');
+await page.waitForTimeout(150);
+verifier(
+  "revenir à deux équipes rend le calendrier d'avant",
+  JSON.stringify(await barresDe("2026-08-21")) === JSON.stringify(["complet", "complet"]),
+);
+
+// ── La légende MONTRE la position, elle ne l'explique plus ──────────────
+//
+// Sa demande du 21 août : retirer « la barre du haut c'est le matin », mais
+// qu'on le comprenne quand même. La légende porte donc deux marques dessinées,
+// l'une remplie en haut, l'autre en bas.
+{
+  const dit = (await page.locator(".legende").innerText()).toLowerCase();
+  verifier("la légende ne porte plus de phrase d'explication", !dit.includes("barre du haut"));
+  verifier("elle dit matin, après-midi, complet", ["matin", "après-midi", "complet"].every((m) => dit.includes(m)));
+  const minis = await page.$$eval(".legende .mini", (n) =>
+    n.map((e) => [...e.children].map((i) => i.className)));
+  verifier(
+    `la première marque est remplie EN HAUT, la seconde EN BAS (lu : ${JSON.stringify(minis)})`,
+    minis.length === 3 && minis[0][0] === "pris" && minis[0][1] === "" &&
+      minis[1][0] === "" && minis[1][1] === "pris",
+  );
+}
 
 // ── La fiche du jour dit l'ÉQUIPE, et le COMPTE ─────────────────────────
 //

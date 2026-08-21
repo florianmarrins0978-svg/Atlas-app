@@ -301,6 +301,18 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
+- **LA BARRE SE REMPLIT, elle ne qualifie pas.** Sa question du 21 août :
+  « comment tu vas faire s'il y a dix équipes ? ». Trois états ne tiennent qu'à
+  deux équipes ; à dix, « il reste de la place » couvre une prise comme neuf.
+  Chaque demi-journée se peint donc à la part occupée, et « complet » reste un
+  aplat foncé — le seul état qui interdit de poser ne se déduit pas d'une
+  nuance. **Le code devra lire le nombre réel d'équipes de l'entreprise**, pas
+  supposer deux ;
+- **la légende MONTRE la position** — une marque remplie en haut à côté de
+  « matin », une remplie en bas à côté d'« après-midi ». Aucune phrase
+  d'explication ;
+- **au-delà de trois noms, la fiche écrit « Julien, Paul +8 »** : dix noms sur
+  une ligne de téléphone ne se lisent pas ;
 - **« Complet », et les noms — jamais le compte.** Sa question était « comment
   vous faites si l'après-midi j'ai mes deux équipes ? » ; sa correction, dans la
   foulée : « retire deux équipes sur deux, juste complet et le nom des
