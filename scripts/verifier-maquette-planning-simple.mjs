@@ -277,7 +277,7 @@ await page.click('[data-jour="2026-08-26"]');
 // **On ouvre par le NOM, pas par le lien à côté.** Sa remarque du 21 août :
 // « je ne peux pas l'ouvrir en cliquant sur le nom du client ». Viser ici le
 // lien « Sa feuille » rendrait un vert sur le défaut même qu'il a signalé.
-await page.locator('#jour-ouvert .chantier-jour .nom').first().click();
+await page.locator('#jour-ouvert .place .nom').first().click();
 {
   const feuille = page.locator(".feuille");
   verifier("la feuille s'ouvre sous le jour", (await feuille.count()) === 1);
@@ -419,12 +419,21 @@ await page.click('[data-jour="2026-08-20"]');
   );
 }
 
-// 3 — la demi-journée tourne aussi, et le calendrier le voit
+// 3 — déplacer se choisit, et le calendrier le voit
 {
   const avant = await barresDe("2026-08-20");
-  await page.locator('#jour-ouvert [data-demi]').last().click();
+  // **On vise le chantier qu'on vient de poser, pas « le dernier de la liste ».**
+  // Un chantier déjà à la journée ne changerait rien en y étant remis, et le
+  // contrôle rougirait sur un écran juste.
+  await page.locator('#jour-ouvert .place', { hasText: "Pichon" }).locator("[data-demi]").click();
+  const propose = await page.$$eval("#jour-ouvert .choisir [data-vers]", (n) => n.map((e) => e.textContent.trim()));
   verifier(
-    `changer la demi-journée repeint le calendrier (${JSON.stringify(avant)} → ${JSON.stringify(await barresDe("2026-08-20"))})`,
+    `« Déplacer » ouvre les trois moments (lu : ${JSON.stringify(propose)})`,
+    JSON.stringify(propose) === JSON.stringify(["Matin", "Après-midi", "Journée"]),
+  );
+  await page.locator('#jour-ouvert .choisir [data-vers="journee"]').click();
+  verifier(
+    `déplacer à la journée repeint le calendrier (${JSON.stringify(avant)} → ${JSON.stringify(await barresDe("2026-08-20"))})`,
     JSON.stringify(avant) !== JSON.stringify(await barresDe("2026-08-20")),
   );
 }
@@ -432,7 +441,7 @@ await page.click('[data-jour="2026-08-20"]');
 // 4 — retirer rend le chantier à « Sans date », il ne l'efface pas
 {
   const avant = await page.locator("#sans-date .ligne").count();
-  await page.locator('#jour-ouvert [data-retirer]').last().click();
+  await page.locator('#jour-ouvert .place', { hasText: "Pichon" }).first().locator("[data-retirer]").click();
   verifier(
     "retirer le rend à « Sans date » au lieu de l'effacer",
     (await page.locator("#sans-date .ligne").count()) === avant + 1 &&
@@ -448,8 +457,8 @@ await page.click('[data-jour="2026-08-20"]');
 // pas ce geste : il regarde la demi-journée, c'est là qu'il veut ajouter.
 await page.click('[data-jour="2026-08-19"]');
 {
-  const lignes = await page.$$eval("#jour-ouvert .demi-ligne", (n) =>
-    n.map((e) => ({ dit: e.innerText.replace(/\s+/g, " ").trim(), plus: !!e.querySelector("[data-ajouter]") })));
+  const lignes = await page.$$eval("#jour-ouvert .demi", (n) =>
+    n.map((e) => ({ dit: e.innerText.replace(/\s+/g, " ").trim().slice(0, 40), plus: !!e.querySelector("[data-ajouter]") })));
   verifier(
     `le 19 propose d'ajouter sur ses deux demi-journées, qui ont de la place (lu : ${JSON.stringify(lignes)})`,
     lignes.length === 2 && lignes.every((l) => l.plus),
@@ -471,6 +480,37 @@ await page.click('[data-jour="2026-08-19"]');
     "et le choisir le pose pour de bon sur cette demi-journée",
     (await page.locator("#jour-ouvert").innerText()).length > avant &&
       (await barresDe("2026-08-19"))[0] !== "0%",
+  );
+}
+
+// ── ATTRIBUER UNE ÉQUIPE À L'APRÈS-MIDI, SANS PASSER PAR « JOURNÉE » ───
+//
+// Sa remarque du 21 août : « le 21, quand je clique le matin je peux attribuer
+// une équipe, et quand je clique sur l'après-midi je ne peux rien attribuer —
+// je dois cliquer sur journée pour attribuer l'aprem ». Les chantiers vivaient
+// dans une liste unique sous les deux demi-journées : l'après-midi n'avait rien
+// à toucher.
+await page.click("#retour").catch(() => {});
+await page.click('[data-jour="2026-08-21"]');
+{
+  const blocs = await page.$$eval("#jour-ouvert .demi", (n) =>
+    n.map((e) => ({
+      titre: e.querySelector(".demi-titre").innerText.split("\n")[0].trim(),
+      places: [...e.querySelectorAll(".place")].map((p) => p.querySelector(".nom").innerText.split("\n")[0].trim()),
+      equipes: e.querySelectorAll("[data-equipe]").length,
+    })));
+  verifier(
+    `les deux demi-journées portent CHACUNE leurs chantiers et leurs pastilles (lu : ${JSON.stringify(blocs)})`,
+    blocs.length === 2 && blocs.every((b) => b.places.length === 2 && b.equipes === 2),
+  );
+
+  // Et l'on attribue depuis l'APRÈS-MIDI, sans toucher au matin.
+  const apresMidi = page.locator("#jour-ouvert .demi").last();
+  await apresMidi.locator("[data-equipe]").first().click();
+  await apresMidi.locator('.choisir [data-choix="Paul"]').click();
+  verifier(
+    "on attribue une équipe depuis l'après-midi, sans passer par « journée »",
+    (await page.locator("#jour-ouvert .demi").last().innerText()).includes("Paul"),
   );
 }
 

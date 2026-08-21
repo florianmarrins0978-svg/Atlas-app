@@ -326,6 +326,11 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
+- **LA FICHE DU JOUR EST FAITE DE DEMI-JOURNÉES**, chacune portant ses
+  chantiers, leur équipe, « Déplacer » et « Retirer ». Une liste unique sous les
+  deux demi-journées ne permettait pas d'attribuer depuis l'après-midi — c'est ce
+  qu'il a signalé le 21 août. Un chantier à la journée apparaît sous les deux et
+  le dit ;
 - **UNE BARRE EST FAITE DE PLACES, UNE PAR ÉQUIPE — et une place sans équipe
   est HACHURÉE.** C'est la réponse à sa confusion du 21 août : « les jours
   peuvent être pleins mais les équipes pas choisies ». Le code devra donc porter

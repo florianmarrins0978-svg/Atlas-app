@@ -167,36 +167,30 @@
   /* ── Le jour touché, sous le calendrier ─────────────────────────────── */
   .jour-ouvert{margin:16px 18px 0;padding:14px 15px;border-radius:10px;background:var(--plage)}
   .jour-ouvert .titre{font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
-                      text-transform:uppercase;text-align:center;color:var(--encre);margin-bottom:12px}
-  .demi-ligne{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
-              padding:6px 0;font-size:13px}
-  .demi-ligne .quoi{display:flex;align-items:center;gap:8px;color:var(--encre);font-weight:600}
-  .demi-ligne .compte{color:var(--gris);text-align:right}
-  .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;
+                      text-transform:uppercase;text-align:center;color:var(--encre);margin-bottom:14px}
+  .jour-ouvert .dit{margin:0;text-align:center;font-size:13px;color:var(--gris)}
+
+  .demi + .demi{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait)}
+  .demi-titre{display:flex;align-items:center;gap:8px;font:600 11px/1 ui-sans-serif,sans-serif;
+              letter-spacing:.12em;text-transform:uppercase;color:var(--encre)}
+  .demi-titre .compte{margin-left:auto;font-weight:500;letter-spacing:0;text-transform:none;
+                      font-size:12px;color:var(--gris)}
+  .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
             background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .pastille.moitie{background:var(--pale);box-shadow:none}
   .pastille.plein{background:var(--pin);box-shadow:none}
-  .chantier-jour{display:flex;align-items:center;justify-content:space-between;gap:10px;
-                 margin-top:10px;padding-top:10px;border-top:1px solid var(--trait)}
-  .chantier-jour .nom{font:400 17px/1.2 ui-serif,Georgia,serif}
-  .chantier-jour .equipe{flex-shrink:0;border-radius:999px;padding:5px 11px;font-size:12px;
-                         background:var(--pin);color:#faf9f5;white-space:nowrap}
-  .chantier-jour .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
 
-  /* **Le nom du client EST le bouton qui ouvre sa feuille.** Sa remarque du
-     21 août : « je ne peux pas l'ouvrir en cliquant sur le nom ». Un lien à
-     côté ne suffit pas — c'est le nom qu'on touche, parce que c'est lui qu'on
-     cherche. Le « Sa feuille › » reste, pour qui ne devine pas qu'un nom se
-     touche. */
-  .chantier-jour .nom{border:0;background:transparent;padding:0;cursor:pointer;text-align:left;
-                      font:400 17px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
-  .chantier-jour .voir{border:0;background:transparent;cursor:pointer}
-  .gestes-ligne{display:flex;gap:6px;margin-top:8px}
+  .place{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .place .nom{flex:1;border:0;background:transparent;text-align:left;padding:0;cursor:pointer;
+              font:400 17px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .place .toute{display:block;margin-top:2px;font:400 11px/1 ui-sans-serif,sans-serif;color:var(--or)}
+  .place .equipe{flex-shrink:0;border:0;border-radius:999px;padding:6px 12px;font-size:12.5px;
+                 background:var(--pin);color:#faf9f5;white-space:nowrap;cursor:pointer}
+  .place .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
+
   .petit{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
          padding:7px 12px;font-size:12px;color:var(--encre-douce);cursor:pointer}
   .liste .poser{display:flex;gap:5px;flex-shrink:0}
-  .chantier-jour .equipe{border:0;cursor:pointer}
-  .chantier-jour .voir{flex-shrink:0;font-size:12px;color:var(--or);white-space:nowrap}
 
   /* La feuille de travail : le devis rendu sans ses prix. Le fond papier et le
      filet d'or disent « document » sans imiter une feuille A4, qui sur un
@@ -602,58 +596,79 @@
       return;
     }
 
-    // Combien d'équipes sont prises sur chaque demi-journée, et lesquelles.
-    const surLaDemi = (demi) =>
-      duJour(jourTouche).filter((c) => c.demi === "journee" || c.demi === demi);
-
-    const ligneDemi = (demi, mot) => {
+    // **La journée se lit par DEMI-JOURNÉES, chacune avec ses chantiers.** Sa
+    // remarque du 21 août : *« le 21, quand je clique le matin je peux
+    // attribuer une équipe, et quand je clique sur l'après-midi je ne peux rien
+    // attribuer — je dois cliquer sur journée pour attribuer l'aprem »*.
+    //
+    // Le défaut était de structure : les chantiers vivaient dans une liste à
+    // part, sous les deux demi-journées, et leur équipe s'attachait au CHANTIER.
+    // Il regardait « Après-midi » et n'y trouvait rien à toucher. Chaque
+    // demi-journée porte donc maintenant ses propres lignes.
+    //
+    // **Un chantier à la journée apparaît sous les deux**, et le dit : c'est le
+    // même travail, la même équipe — le cacher d'un côté ferait croire que
+    // l'après-midi est libre.
+    const bloc = (demi, mot) => {
       const { pris, complet } = occupation(jourTouche, demi);
-      // **« Complet », et les noms — jamais le compte.** Sa demande du 21 août :
-      // « retire deux équipes sur deux, juste complet et le nom des équipes ».
-      // Au-delà de trois noms la ligne déborderait : on dit alors combien il en
-      // reste, ce qui est la seule chose qu'il ait à savoir pour poser.
-      const noms = pris.map((c) => c.equipe || "équipe à choisir");
-      const qui = noms.length <= 3
-        ? noms.join(", ")
-        : `${noms.slice(0, 2).join(", ")} +${noms.length - 2}`;
-      const dit = pris.length === 0 ? "libre" : complet ? `Complet · ${qui}` : qui;
       const etat = pris.length === 0 ? "libre" : complet ? "plein" : "moitie";
-      // **Tant qu'il reste de la place, on peut poser quelqu'un dessus.** Sa
-      // remarque du 21 août : « le 19, j'ai le matin de pris, l'après-midi
-      // libre, et je ne peux pas rajouter quelqu'un dessus — ce n'est pas
-      // normal ». Poser depuis « Sans date » tout en bas de l'écran ne
-      // remplace pas ce geste-là : il regarde la demi-journée, c'est là qu'il
-      // veut ajouter.
-      const plus = complet
-        ? ""
-        : `<button type="button" class="plus" data-ajouter="${demi}">+ Ajouter</button>`;
-      return `<div class="demi-ligne">
-        <span class="quoi"><i class="pastille ${etat}"></i>${mot}</span>
-        <span class="compte">${dit}${plus}</span></div>`;
-    };
+      const lignes = pris.map((c) => {
+        const i = CHANTIERS.indexOf(c);
+        return `<div class="place">
+          <button type="button" class="nom" data-feuille="${i}">${c.nom}${
+            c.demi === "journee" ? `<span class="toute">toute la journée</span>` : ""}</button>
+          <button type="button" class="equipe ${c.equipe ? "" : "vide"}" data-equipe="${i}">${c.equipe || "Équipe ?"}</button>
+          <button type="button" class="petit" data-demi="${i}">Déplacer</button>
+          <button type="button" class="petit" data-retirer="${i}">Retirer</button>
+        </div>`;
+      }).join("");
 
-    // **Chaque chantier ouvre sa feuille de travail.** Sa demande du 21 août :
-    // « le salarié clique sur le jour, il voit à quel client il est affilié, et
-    // il peut cliquer sur le devis pour connaître ses tâches » — sans les prix.
-    const chantiers = duJour(jourTouche).map((c, i) => `
-      <div class="chantier-jour">
-        <button type="button" class="nom" data-feuille="${i}">${c.nom}</button>
-        <button type="button" class="equipe ${c.equipe ? "" : "vide"}" data-equipe="${i}">${c.equipe || "Équipe ?"}</button>
-        <button type="button" class="voir" data-feuille="${i}">Sa feuille ›</button>
-      </div>
-      <div class="gestes-ligne">
-        <button type="button" class="petit" data-demi="${i}">${c.demi === "journee" ? "Journée" : c.demi === "matin" ? "Matin" : "Après-midi"}</button>
-        <button type="button" class="petit" data-retirer="${i}">Retirer du planning</button>
-      </div>`).join("");
+      return `<div class="demi">
+        <div class="demi-titre"><i class="pastille ${etat}"></i>${mot}
+          <span class="compte">${pris.length === 0 ? "libre" : complet ? "complet" : `${pris.length} sur ${nombreEquipes}`}</span></div>
+        ${lignes}
+        ${complet ? "" : `<button type="button" class="plus" data-ajouter="${demi}">+ Ajouter un chantier</button>`}
+      </div>`;
+    };
 
     boite.innerHTML = `<div class="jour-ouvert">
       <p class="titre">${titreJour(jourTouche)}</p>
-      ${ligneDemi("matin", "Matin")}
-      ${ligneDemi("apres", "Après-midi")}
-      ${chantiers}</div>
+      ${bloc("matin", "Matin")}
+      ${bloc("apres", "Après-midi")}
+      </div>
       <div id="feuille"></div>`;
 
-    const duJourLa = () => duJour(jourTouche);
+    boite.querySelectorAll("[data-feuille]").forEach((b) =>
+      b.addEventListener("click", () => rendreFeuille(CHANTIERS[Number(b.dataset.feuille)])));
+
+    boite.querySelectorAll("[data-equipe]").forEach((b) =>
+      b.addEventListener("click", () => ouvrirChoixEquipe(b, CHANTIERS[Number(b.dataset.equipe)])));
+
+    // **Retirer rend le chantier à « Sans date », il ne l'efface pas.** Effacé,
+    // il serait à ressaisir ; là, il redescend dans la liste d'attente.
+    // **Déplacer se CHOISIT aussi.** Même geste que pour l'équipe : une liste,
+    // jamais une rotation qui déciderait à sa place.
+    boite.querySelectorAll("[data-demi]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const c = CHANTIERS[Number(b.dataset.demi)];
+        const choix = document.createElement("div");
+        choix.className = "choisir";
+        choix.innerHTML = [["matin", "Matin"], ["apres", "Après-midi"], ["journee", "Journée"]]
+          .map(([v, mot]) => `<button type="button" class="petit ${c.demi === v ? "retenue" : ""}" data-vers="${v}">${mot}</button>`)
+          .join("");
+        b.replaceWith(choix);
+        choix.querySelectorAll("[data-vers]").forEach((q) =>
+          q.addEventListener("click", () => { c.demi = q.dataset.vers; rendre(); }));
+      }));
+
+    boite.querySelectorAll("[data-retirer]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const i = Number(b.dataset.retirer);
+        const [parti] = CHANTIERS.splice(i, 1);
+        SANS_DATE.push({ nom: parti.nom, adresse: parti.adresse, tel: parti.tel, taches: parti.taches });
+        document.getElementById("feuille").innerHTML = "";
+        rendre();
+      }));
 
     // **Qui poser ?** La liste des chantiers en attente s'ouvre sur place. Elle
     // dit ce qu'elle a, ou qu'elle n'a rien — un bouton qui n'ouvre rien laisse
@@ -665,7 +680,8 @@
         choix.className = "choisir";
         choix.innerHTML = SANS_DATE.length === 0
           ? `<p class="rien">Aucun chantier n’attend de jour.</p>`
-          : SANS_DATE.map((c, i) => `<button type="button" class="petit" data-qui="${i}">${c.nom}</button>`).join("");
+          : SANS_DATE.map((c, i) => `<button type="button" class="petit" data-qui="${i}">${c.nom}</button>`).join("") +
+            `<button type="button" class="petit" data-qui-journee="1">…à la journée</button>`;
         b.replaceWith(choix);
         choix.querySelectorAll("[data-qui]").forEach((q) =>
           q.addEventListener("click", () => {
@@ -674,44 +690,16 @@
             lundi = lundiDe(jourTouche);
             rendre();
           }));
-      }));
-
-    boite.querySelectorAll("[data-feuille]").forEach((b) =>
-      b.addEventListener("click", () => rendreFeuille(duJourLa()[Number(b.dataset.feuille)])));
-
-    // **On CHOISIT son équipe, on ne la subit pas.** Sa remarque du 21 août :
-    // *« quand je clique sur équipe, ça me met d'office une équipe, je n'ai pas
-    // choisi, ce n'est pas normal — je dois pouvoir choisir, et modifier »*. La
-    // version d'avant faisait tourner les noms à chaque appui : sur dix équipes,
-    // il fallait neuf appuis pour atteindre la dernière, et l'on posait une
-    // équipe sans l'avoir voulue à chaque passage.
-    //
-    // La liste s'ouvre donc sur place, avec « Retirer l'équipe » quand il y en a
-    // une : changer d'avis doit coûter le même geste que choisir.
-    boite.querySelectorAll("[data-equipe]").forEach((b) =>
-      b.addEventListener("click", () => ouvrirChoixEquipe(b, duJourLa()[Number(b.dataset.equipe)])));
-
-    // Matin → après-midi → journée, et l'on recommence.
-    boite.querySelectorAll("[data-demi]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const c = duJourLa()[Number(b.dataset.demi)];
-        c.demi = c.demi === "matin" ? "apres" : c.demi === "apres" ? "journee" : "matin";
-        rendre();
-      }));
-
-    // **Retirer rend le chantier à « Sans date », il ne le supprime pas.** Un
-    // chantier effacé d'un appui serait à ressaisir ; celui-là redescend dans
-    // la liste d'attente, d'où il se repose.
-    boite.querySelectorAll("[data-retirer]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const c = duJourLa()[Number(b.dataset.retirer)];
-        const i = CHANTIERS.indexOf(c);
-        if (i >= 0) {
-          const [parti] = CHANTIERS.splice(i, 1);
-          SANS_DATE.push({ nom: parti.nom, adresse: parti.adresse, tel: parti.tel, taches: parti.taches });
-        }
-        document.getElementById("feuille").innerHTML = "";
-        rendre();
+        // Poser à la journée depuis une demi-journée : le geste existe, il ne
+        // doit pas obliger à poser puis à déplacer.
+        const j = choix.querySelector("[data-qui-journee]");
+        if (j) j.addEventListener("click", () => {
+          if (SANS_DATE.length === 0) return;
+          const [c] = SANS_DATE.splice(0, 1);
+          CHANTIERS.push({ ...c, date: jourTouche, demi: "journee", equipe: "" });
+          lundi = lundiDe(jourTouche);
+          rendre();
+        });
       }));
   }
 
