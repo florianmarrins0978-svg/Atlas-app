@@ -277,12 +277,50 @@ jugé, et c'est l'erreur qu'on cherche à arrêter. Et il faudra se souvenir que
 corriger trois écrans de plus ne suffira pas : c'est déjà la troisième fois, et
 rien n'empêche l'application de regrossir.
 
-## Deux maquettes que le patron ne peut pas ouvrir — constaté le 20 août 2026
+## En attente d'une réponse — le planning
+
+### Sa demande du 19 août, et la planche 84
+
+*« Cette page est beaucoup trop compliquée à comprendre pour les utilisateurs.
+Les titres en noir, gras, centrés. Pour les planifiés, mettre les jours de la
+semaine en haut — vendredi 21 août plutôt que 21 — avec les clients dessous, et
+une flèche à droite et à gauche pour changer de semaine. Et pour le calendrier
+au-dessus, propose quelque chose de plus simple, plus visuel : qu'on voie tout
+de suite les jours pris, et ceux pris seulement le matin ou l'après-midi. »*
+
+**Rien n'est codé** : `appli/planning-simple.html` s'essaie — les flèches
+changent vraiment de semaine, et le calendrier se calcule sur les mêmes
+chantiers que la liste. `src/app/planning/` n'a pas bougé.
+
+**Ce qui n'attend pas de réponse** (sa demande est explicite) : titres noirs,
+gras, centrés ; jours nommés ; une semaine à la fois avec ses deux flèches.
+
+**Ce qu'il doit trancher : A, B ou C**, trois façons de montrer les
+demi-journées — et c'est le cœur de sa plainte, pas un détail :
+
+| | Ce qu'on voit |
+|---|---|
+| **A · les barres** | deux barres par jour, matin dessus, après-midi dessous |
+| **B · la grille** | deux lignes nommées, MATIN et AP.-M., sur toute la semaine |
+| **C · les ronds** | un rond par jour, rempli en haut, en bas, ou entier |
+
+Trois couleurs seulement, dans les trois : vide = libre, vert pâle = une équipe
+sur deux, vert plein = complet. **La phrase « Complet veut dire : vos 2 équipes
+sont prises sur cette demi-journée » disparaît** — la couleur le dit.
+
+**Ce que le passage à la semaine coûte, et qui n'est pas dans sa phrase :** le
+calendrier actuel montre le MOIS entier, et c'est ce qui sert à poser une date
+lointaine (`PlanningClient.tsx`, `JourneeOuvrable`). Une vue semaine oblige à
+huit appuis pour aller à deux mois. **À lui demander** : garde-t-on un accès au
+mois pour poser une date, ou les flèches suffisent-elles ?
+## ~~Deux maquettes que le patron ne peut pas ouvrir~~ — **RÉGLÉ le 20 août 2026**
 
 `appli/deux-boutons-devis.html` et `appli/en-cours-le-chiffre.html` existent,
 sont publiées, sont vérifiées après déploiement — et **aucun lien d'`essais.html`
-ne les atteint**. Or `essais.html` est la seule adresse qu'on lui ait donnée :
-autant dire qu'elles n'existent pas pour lui. C'est le même défaut que les huit
+ne les atteignait**. Or `essais.html` est la seule adresse qu'on lui ait donnée :
+autant dire qu'elles n'existaient pas pour lui. **Les deux liens sont posés**, et
+les deux pages ont donc quitté la liste tenue à la main de `pages.yml` — la
+déduction depuis `essais.html` les couvre. C'est le même défaut que les huit
 planches introuvables trouvées par `scripts/fusionner-maquettes.mjs`.
 
 **À faire, par qui reprend leur sujet :** les inscrire dans `appli/essais.html`
