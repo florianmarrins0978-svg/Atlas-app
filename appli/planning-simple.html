@@ -380,40 +380,56 @@
    */
   const ditLesEquipes = (e = []) =>
     e.length === 0 ? "Équipe ?" : e.length <= 2 ? e.join(", ") : `${e[0]} +${e.length - 1}`;
+
+  /**
+   * Les équipes d'un chantier SUR UNE DEMI-JOURNÉE.
+   *
+   * **Le matin et l'après-midi sont indépendants.** Sa remarque du 21 août :
+   * *« sur Mr. Leroy, qui dure toute la journée, je ne peux pas mettre juste
+   * Paul le matin et Julien et Paul l'après-midi — si je mets les deux
+   * l'après-midi, ça me les met aussi le matin. Il faut que tout soit
+   * indépendant. »*
+   *
+   * Un chantier porte donc deux listes, pas une. C'est la réalité du métier :
+   * on renforce l'après-midi, on démarre à deux et l'on finit à quatre.
+   */
+  const equipesDe = (c, demi) => ((c.equipes || {})[demi] ||= []);
+  const toutesLesEquipes = (c) =>
+    [...new Set([...(c.equipes?.matin || []), ...(c.equipes?.apres || [])])];
   // **Modifiable, et c'est tout l'objet de la planche.** Sa consigne du
   // 21 août : « il faut que j'aille cliquer, pouvoir modifier, changer, voir ce
   // que ça donne ». Une planche qui ne ferait qu'AFFICHER un état ne répondrait
   // pas à la demande — on pose donc pour de bon dans cette liste.
   const CHANTIERS = [
-    { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipes: ["Julien"],
+    { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipes: { matin: ["Julien"], apres: ["Julien"] },
       adresse: "4 rue des Ormes, Nantes", tel: "02 40 11 22 33",
       taches: ["Taille de haie de laurier — 18 m linéaires, hauteur 2 m",
                "Évacuation des déchets verts"] },
-    { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipes: ["Paul"],
+    { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipes: { matin: ["Paul"], apres: ["Paul"] },
       adresse: "12 chemin du Moulin, Sautron", tel: "06 44 55 66 77",
       taches: ["Tonte de la pelouse — environ 900 m²",
                "Débroussaillage du talus arrière",
                "Ramassage et évacuation"] },
-    { nom: "Mr. Martins",                 date: "2026-08-21", demi: "journee", equipes: [] },
-    { nom: "Monsieur Martins",            date: "2026-08-21", demi: "journee", equipes: [] },
-    { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin",   equipes: ["Julien"] },
-    { nom: "Mme Guérin",                  date: "2026-08-27", demi: "apres",   equipes: ["Paul"] },
-    { nom: "Mr. Ollivier",                date: "2026-08-27", demi: "matin",   equipes: ["Julien"] },
+    { nom: "Mr. Martins",                 date: "2026-08-21", demi: "journee", equipes: { matin: [], apres: [] } },
+    { nom: "Monsieur Martins",            date: "2026-08-21", demi: "journee", equipes: { matin: [], apres: [] } },
+    { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin",   equipes: { matin: ["Julien"], apres: ["Julien"] } },
+    { nom: "Mme Guérin",                  date: "2026-08-27", demi: "apres",   equipes: { matin: ["Paul"], apres: ["Paul"] } },
+    { nom: "Mr. Ollivier",                date: "2026-08-27", demi: "matin",   equipes: { matin: ["Julien"], apres: ["Julien"] } },
     // **Le cas qui manquait, et qui l'a fait douter le 21 août :** un
     // après-midi où les DEUX équipes sont sur le coup, avec le matin libre. Sans
     // lui, rien à l'écran ne distinguait « une équipe sur deux » de « complet »,
     // et sa question — « comment vous faites si l'après-midi j'ai mes deux
     // équipes ? » — n'avait aucune réponse visible.
-    { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipes: ["Julien"],
+    { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipes: { matin: ["Julien"], apres: ["Julien"] },
       adresse: "7 impasse des Vignes, Orvault", tel: "06 12 34 56 78",
       taches: ["Plantation de 12 arbustes en massif",
                "Apport de terreau et paillage — 3 m³",
                "Arrosage de reprise"] },
-    { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipes: ["Paul"],
+    { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipes: { matin: ["Paul"], apres: ["Paul"] },
       adresse: "31 boulevard de la Prairie, Nantes", tel: "06 98 76 54 32",
       taches: ["Pose de bordures béton — 24 m",
                "Reprise de l'allée en gravillons"] },
-    { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipes: ["Paul"] },
+    { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipes: { matin: ["Paul"], apres: ["Paul"] } },
   ];
   // Sans date : ce qui attend un jour. C'est là qu'on prend pour poser.
   const SANS_DATE = [
@@ -480,7 +496,7 @@
     const remplir = (demi, combien) => {
       const deja = siens.filter((c) => c.demi === "journee" || c.demi === demi).length;
       return EQUIPES().slice(deja, combien).map((nom) => ({
-        nom: `Chantier ${nom}`, date: iso, demi, equipes: [nom],
+        nom: `Chantier ${nom}`, date: iso, demi, equipes: { matin: [nom], apres: [nom] },
       }));
     };
     if (iso === "2026-08-26") return [...siens, ...remplir("apres", nombreEquipes)];
@@ -504,8 +520,8 @@
   function occupation(iso, demi) {
     if (estWeekEnd(iso)) return { pris: [], occupees: [], sansEquipe: 0, part: 0, complet: false };
     const pris = duJour(iso).filter((c) => c.demi === "journee" || c.demi === demi);
-    const occupees = [...new Set(pris.flatMap((c) => c.equipes || []))];
-    const sansEquipe = pris.filter((c) => (c.equipes || []).length === 0).length;
+    const occupees = [...new Set(pris.flatMap((c) => equipesDe(c, demi)))];
+    const sansEquipe = pris.filter((c) => equipesDe(c, demi).length === 0).length;
     const prises = Math.min(occupees.length + sansEquipe, nombreEquipes);
     return { pris, occupees, sansEquipe, part: prises / nombreEquipes, complet: prises >= nombreEquipes };
   }
@@ -666,7 +682,8 @@
         return `<div class="place">
           <button type="button" class="nom" data-feuille="${i}">${c.nom}${
             c.demi === "journee" ? `<span class="toute">toute la journée</span>` : ""}</button>
-          <button type="button" class="equipe ${(c.equipes || []).length ? "" : "vide"}" data-equipe="${i}">${ditLesEquipes(c.equipes)}</button>
+          <button type="button" class="equipe ${equipesDe(c, demi).length ? "" : "vide"}"
+                  data-equipe="${i}" data-pour="${demi}">${ditLesEquipes(equipesDe(c, demi))}</button>
           <button type="button" class="petit" data-demi="${i}">Déplacer</button>
           <button type="button" class="petit" data-retirer="${i}">Retirer</button>
         </div>`;
@@ -691,7 +708,7 @@
       b.addEventListener("click", () => rendreFeuille(CHANTIERS[Number(b.dataset.feuille)])));
 
     boite.querySelectorAll("[data-equipe]").forEach((b) =>
-      b.addEventListener("click", () => ouvrirChoixEquipe(b, CHANTIERS[Number(b.dataset.equipe)])));
+      b.addEventListener("click", () => ouvrirChoixEquipe(b, CHANTIERS[Number(b.dataset.equipe)], b.dataset.pour)));
 
     // **Retirer rend le chantier à « Sans date », il ne l'efface pas.** Effacé,
     // il serait à ressaisir ; là, il redescend dans la liste d'attente.
@@ -735,7 +752,7 @@
         choix.querySelectorAll("[data-qui]").forEach((q) =>
           q.addEventListener("click", () => {
             const [c] = SANS_DATE.splice(Number(q.dataset.qui), 1);
-            CHANTIERS.push({ ...c, date: jourTouche, demi, equipes: [] });
+            CHANTIERS.push({ ...c, date: jourTouche, demi, equipes: { matin: [], apres: [] } });
             lundi = lundiDe(jourTouche);
             rendre();
           }));
@@ -745,7 +762,7 @@
         if (j) j.addEventListener("click", () => {
           if (SANS_DATE.length === 0) return;
           const [c] = SANS_DATE.splice(0, 1);
-          CHANTIERS.push({ ...c, date: jourTouche, demi: "journee", equipes: [] });
+          CHANTIERS.push({ ...c, date: jourTouche, demi: "journee", equipes: { matin: [], apres: [] } });
           lundi = lundiDe(jourTouche);
           rendre();
         });
@@ -845,7 +862,7 @@
             <div class="chantier">
               <button type="button" class="nom" data-feuille-liste="${CHANTIERS.indexOf(c)}">${c.nom}
                 <span class="quand-detail">${ditLaDemi(c.demi)}</span></button>
-              <button type="button" class="equipe ${(c.equipes || []).length ? "" : "vide"}" data-equipe-liste="${CHANTIERS.indexOf(c)}">${ditLesEquipes(c.equipes)}</button>
+              <button type="button" class="equipe ${toutesLesEquipes(c).length ? "" : "vide"}" data-equipe-liste="${CHANTIERS.indexOf(c)}">${ditLesEquipes(toutesLesEquipes(c))}</button>
               <button type="button" class="chevron" data-feuille-liste="${CHANTIERS.indexOf(c)}">›</button>
             </div>`).join("")}
         </div>`).join("");
@@ -854,8 +871,18 @@
     // liste qu'il cliquait — pas dans la fiche du jour —, et rien ne se
     // passait : « je ne peux toujours pas cliquer sur le nom du client ». La
     // feuille s'ouvre sous la liste, là où le doigt vient d'appuyer.
+    // **Depuis la liste, la pastille MÈNE AU JOUR** au lieu d'ouvrir un choix.
+    // Un chantier à la journée porte deux listes d'équipes — matin et
+    // après-midi, indépendantes depuis le 21 août —, et une pastille unique ne
+    // saurait pas laquelle modifier. On ouvre donc la journée, où les deux sont
+    // distinctes.
     document.querySelectorAll("[data-equipe-liste]").forEach((b) =>
-      b.addEventListener("click", () => ouvrirChoixEquipe(b, CHANTIERS[Number(b.dataset.equipeListe)])));
+      b.addEventListener("click", () => {
+        const c = CHANTIERS[Number(b.dataset.equipeListe)];
+        jourTouche = c.date;
+        rendre();
+        document.getElementById("jour-ouvert").scrollIntoView({ behavior: "smooth", block: "center" });
+      }));
 
     document.querySelectorAll("[data-feuille-liste]").forEach((b) =>
       b.addEventListener("click", () => {
@@ -879,9 +906,9 @@
    * liste des planifiés. Deux listes écrites séparément auraient fini par
    * proposer des choix différents.
    */
-  function ouvrirChoixEquipe(pastille, c) {
-    if (!c) return;
-    c.equipes = c.equipes || [];
+  function ouvrirChoixEquipe(pastille, c, demi) {
+    if (!c || !demi) return;
+    const liste = equipesDe(c, demi);
     const choix = document.createElement("div");
     choix.className = "choisir";
 
@@ -895,8 +922,8 @@
     // appuis rapprochés, et le second tombait sur un bouton qui n'existait
     // plus. Trouvé en éprouvant la planche, jamais en la relisant.
     const marquer = (b, e) => {
-      b.classList.toggle("retenue", c.equipes.includes(e));
-      b.textContent = (c.equipes.includes(e) ? "✓ " : "") + e;
+      b.classList.toggle("retenue", equipesDe(c, demi).includes(e));
+      b.textContent = (equipesDe(c, demi).includes(e) ? "✓ " : "") + e;
     };
 
     choix.innerHTML =
@@ -907,7 +934,9 @@
       const e = b.dataset.choix;
       marquer(b, e);
       b.addEventListener("click", () => {
-        c.equipes = c.equipes.includes(e) ? c.equipes.filter((x) => x !== e) : [...c.equipes, e];
+        c.equipes[demi] = equipesDe(c, demi).includes(e)
+          ? equipesDe(c, demi).filter((x) => x !== e)
+          : [...equipesDe(c, demi), e];
         marquer(b, e);
         rafraichirHorsJour();
       });
@@ -979,7 +1008,7 @@
     boite.querySelectorAll("[data-poser]").forEach((b) =>
       b.addEventListener("click", () => {
         const [c] = SANS_DATE.splice(Number(b.dataset.poser), 1);
-        CHANTIERS.push({ ...c, date: jourTouche, demi: b.dataset.demiPoser, equipes: [] });
+        CHANTIERS.push({ ...c, date: jourTouche, demi: b.dataset.demiPoser, equipes: { matin: [], apres: [] } });
         lundi = lundiDe(jourTouche);
         rendre();
       }));
