@@ -427,11 +427,20 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
     </div>
 
     <ul class="reloger" style="margin-top:18px">
+      <!-- **Réglé le 21 août au soir, et il n'y a rien à construire.** Sa
+           réponse : « la création de la facture se fera dans la catégorie
+           planning ou terminé ». Les deux chemins EXISTENT déjà dans Atlas —
+           vérifié dans le code avant de répondre (`CLAUDE.md` §5 ter) : la
+           feuille du chevron du planning porte « Créer la facture » depuis sa
+           demande du 12 août (`PlanningClient.tsx`), et chaque ligne du fil des
+           terminés mène à la facture (`FilTermines.tsx`). Supprimer la fiche
+           chantier ne coûte donc rien de ce côté. -->
       <li>
-        <span class="quoi">Créer la facture</span>
-        <span class="prop">Aujourd’hui en haut de la fiche chantier, une fois la date posée.
-          <b>Proposition :</b> sur la carte du chantier, à l’accueil — c’est là que vous regardez
-          quand le chantier est fait.</span>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Créer la facture</span>
+        <span class="prop"><b>Réglé — et c’est déjà en place.</b> Vous l’avez dit :
+          « dans planning ou terminé ». Les deux y sont déjà : dans <b>Planning</b>, le chevron
+          ouvre la feuille qui porte « Créer la facture » ; dans <b>Terminés</b>, chaque ligne
+          mène droit à la facture. Rien à déplacer.</span>
       </li>
       <li>
         <span class="quoi">Les étapes du chantier</span>
