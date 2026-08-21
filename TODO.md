@@ -295,14 +295,17 @@ chantiers que la liste. `src/app/planning/` n'a pas bougé.
 **Ce qui n'attend pas de réponse** (sa demande est explicite) : titres noirs,
 gras, centrés ; jours nommés ; une semaine à la fois avec ses deux flèches.
 
-**Ce qu'il doit trancher : A, B ou C**, trois façons de montrer les
-demi-journées — et c'est le cœur de sa plainte, pas un détail :
+**LE DESSIN EST CHOISI, le 21 août : c'est A** — deux barres sous le chiffre,
+matin dessus, après-midi dessous. Le rond et la barre unique sont retirés de la
+planche.
 
-| | Ce qu'on voit |
-|---|---|
-| **A · deux barres** | deux barres sous le chiffre, matin dessus, après-midi dessous |
-| **B · le rond** | le chiffre dans un rond rempli par le haut, par le bas, ou entier |
-| **C · une barre** | une seule barre sous le chiffre, gauche = matin, droite = après-midi |
+**Deux corrections venues de lui le même jour, et à tenir en codant :**
+
+- **le compte, pas seulement la couleur.** « 1 équipe sur 2 » et « complet ·
+  2 sur 2 » ne se distinguent qu'une fois vus côte à côte — sa question était
+  « comment vous faites si l'après-midi j'ai mes deux équipes ? » ;
+- **l'équipe se dit dans la fiche du jour**, pas seulement dans la liste du bas.
+  Le même chantier ne peut pas dire deux choses selon l'endroit où on le lit.
 
 Trois couleurs seulement, dans les trois : vide = libre, vert pâle = une équipe
 sur deux, vert plein = complet. **La phrase « Complet veut dire : vos 2 équipes

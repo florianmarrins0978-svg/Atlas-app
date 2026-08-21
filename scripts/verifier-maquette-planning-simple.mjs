@@ -128,14 +128,12 @@ verifier(
   (await page.locator("#jour-ouvert").innerText()).toLowerCase().includes("libre"),
 );
 
-// ── Les trois marques se dessinent, et aucune ne mesure zéro ─────────────
-for (const [lettre, selecteur] of [["A", ".marqueA i"], ["B", ".marqueB"], ["C", ".marqueC i"]]) {
-  await page.click(`[data-marque="${lettre}"]`);
-  await page.waitForTimeout(120);
-  const boites = await page.$$eval(selecteur, (n) => n.map((e) => e.getBoundingClientRect().height));
+// ── La marque retenue se dessine, et aucune barre ne mesure zéro ────────
+{
+  const boites = await page.$$eval(".marqueA i", (n) => n.map((e) => e.getBoundingClientRect().height));
   verifier(
-    `la marque ${lettre} se dessine (${boites.length} éléments, aucun de zéro pixel)`,
-    boites.length > 0 && boites.every((h) => h >= 1),
+    `les deux barres du jour se dessinent (${boites.length} barres, aucune de zéro pixel)`,
+    boites.length === 62 && boites.every((h) => h >= 1),
   );
 }
 
@@ -144,10 +142,7 @@ for (const [lettre, selecteur] of [["A", ".marqueA i"], ["B", ".marqueB"], ["C",
 // Le vendredi 21 porte deux chantiers à la journée : ses deux équipes sont
 // prises, donc matin ET après-midi complets. Un calendrier joli mais faux
 // passerait tous les contrôles ci-dessus.
-await page.click('[data-marque="A"]');
-await page.waitForTimeout(120);
-const barresDu21 = await page.$$eval('[data-jour="2026-08-21"] .marqueA i', (n) =>
-  n.map((e) => e.className));
+const barresDu21 = await page.$$eval('[data-jour="2026-08-21"] .marqueA i', (n) => n.map((e) => e.className));
 verifier(
   `le vendredi 21 est complet matin ET après-midi (lu : ${JSON.stringify(barresDu21)})`,
   barresDu21.length === 2 && barresDu21.every((c) => c === "plein"),
@@ -157,6 +152,37 @@ verifier(
   `le mercredi 19 est libre le matin, à moitié l'après-midi (lu : ${JSON.stringify(barresDu19)})`,
   barresDu19[0] === "libre" && barresDu19[1] === "moitie",
 );
+
+// **Sa question du 21 août : « comment vous faites si l'après-midi j'ai mes
+// deux équipes sur le coup ? »** Le mercredi 26 est ce cas exact — matin libre,
+// après-midi COMPLET. Sans une journée pareille dans les données, la différence
+// entre « 1 équipe sur 2 » et « complet » ne se voit nulle part, et la maquette
+// ne répond pas à la seule question qu'il a posée.
+const barresDu26 = await page.$$eval('[data-jour="2026-08-26"] .marqueA i', (n) => n.map((e) => e.className));
+verifier(
+  `le mercredi 26 montre un après-midi COMPLET sur un matin libre (lu : ${JSON.stringify(barresDu26)})`,
+  barresDu26[0] === "libre" && barresDu26[1] === "plein",
+);
+
+// ── La fiche du jour dit l'ÉQUIPE, et le COMPTE ─────────────────────────
+//
+// Son second manque du 21 août : « il y a marqué le client, la journée ou la
+// demi-journée, mais pas l'équipe qui est affiliée ».
+await page.click('[data-jour="2026-08-26"]');
+{
+  const dit = (await page.locator("#jour-ouvert").innerText()).toLowerCase();
+  verifier("la fiche du 26 dit que le matin est libre", /matin\s+libre/.test(dit));
+  verifier("elle dit « 2 équipes sur 2 — complet » l'après-midi", dit.includes("2 équipes sur 2 — complet"));
+  verifier("elle NOMME les deux équipes", dit.includes("julien") && dit.includes("paul"));
+}
+await page.click("[data-jour='2026-08-21']");
+{
+  const dit = (await page.locator("#jour-ouvert").innerText()).toLowerCase();
+  verifier(
+    "sur le 21, l'équipe qui manque se dit au lieu de rester muette",
+    dit.includes("équipe à choisir") || dit.includes("équipe ?"),
+  );
+}
 
 await navigateur.close();
 

@@ -57,13 +57,6 @@
   .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--gris);padding:18px 0 0}
   h1{margin:14px 22px 0;font:400 34px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
 
-  /* Le choix des marques — n'existe QUE dans la maquette. */
-  .choix{margin:16px 18px 0;display:flex;gap:6px;background:var(--papier);border-radius:999px;padding:4px}
-  .choix button{flex:1;border:0;background:transparent;border-radius:999px;padding:9px 3px;
-                font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;
-                color:var(--encre-douce);cursor:pointer}
-  .choix button[aria-pressed="true"]{background:var(--pin);color:#faf9f5}
-
   /* ── La barre de navigation, mois ou semaine ─────────────────────────── */
   .barre{margin:18px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
   .barre .fleche{width:42px;height:42px;border-radius:999px;border:1px solid var(--trait);
@@ -109,24 +102,6 @@
   .marqueA i.plein{background:var(--pin);box-shadow:none}
   .case.we .marqueA{visibility:hidden}
 
-  /* B — le chiffre dans un rond rempli en haut, en bas, ou entier */
-  .marqueB{position:relative;width:38px;height:38px;border-radius:999px;overflow:hidden;
-           background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
-           display:flex;align-items:center;justify-content:center}
-  .marqueB .h,.marqueB .b{position:absolute;left:0;right:0;height:50%}
-  .marqueB .h{top:0} .marqueB .b{bottom:0}
-  .marqueB .moitie{background:var(--pale)} .marqueB .plein{background:var(--pin)}
-  .marqueB .n{position:relative}
-  .marqueB .n.clair{color:#faf9f5}
-  .case.we .marqueB{background:transparent;box-shadow:none}
-
-  /* C — une seule barre coupée en deux : gauche le matin, droite l'après-midi */
-  .marqueC{width:28px;height:7px;display:flex;gap:2.5px}
-  .marqueC i{flex:1;border-radius:2px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .marqueC i.moitie{background:var(--pale);box-shadow:none}
-  .marqueC i.plein{background:var(--pin);box-shadow:none}
-  .case.we .marqueC{visibility:hidden}
-
   /* **`[hidden]` doit gagner sur `display:block`.** Sans cette ligne, l'attribut
      `hidden` ne cache rien : une règle de classe l'emporte sur celle du
      navigateur, et le bouton reste là en prétendant être caché. Payé en
@@ -143,14 +118,30 @@
   .legende i.libre{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .legende i.moitie{background:var(--pale)}
   .legende i.plein{background:var(--pin)}
-  .legende .quoi{width:100%;text-align:center;font-size:11px;opacity:.85}
+  /* **`display:block`, et ce n'est pas une coquetterie.** La règle voisine
+     `.legende span{display:flex}` attrape aussi cette ligne : ses mots
+     devenaient des colonnes, et la phrase se lisait « Touchez un / jour / pour
+     savoir qui y / est. » Trouvé sur la capture, jamais par un test. */
+  .legende .quoi{display:block;width:100%;text-align:center;font-size:11px;opacity:.85;line-height:1.5}
 
   /* ── Le jour touché, sous le calendrier ─────────────────────────────── */
-  .jour-ouvert{margin:16px 18px 0;padding:13px 15px;border-radius:10px;background:var(--plage)}
+  .jour-ouvert{margin:16px 18px 0;padding:14px 15px;border-radius:10px;background:var(--plage)}
   .jour-ouvert .titre{font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
-                      text-transform:uppercase;text-align:center;color:var(--encre)}
-  .jour-ouvert .dit{margin-top:9px;text-align:center;font-size:13px;color:var(--gris)}
-  .jour-ouvert .dit b{color:var(--encre)}
+                      text-transform:uppercase;text-align:center;color:var(--encre);margin-bottom:12px}
+  .demi-ligne{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+              padding:6px 0;font-size:13px}
+  .demi-ligne .quoi{display:flex;align-items:center;gap:8px;color:var(--encre);font-weight:600}
+  .demi-ligne .compte{color:var(--gris);text-align:right}
+  .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;
+            background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .pastille.moitie{background:var(--pale);box-shadow:none}
+  .pastille.plein{background:var(--pin);box-shadow:none}
+  .chantier-jour{display:flex;align-items:center;justify-content:space-between;gap:10px;
+                 margin-top:10px;padding-top:10px;border-top:1px solid var(--trait)}
+  .chantier-jour .nom{font:400 17px/1.2 ui-serif,Georgia,serif}
+  .chantier-jour .equipe{flex-shrink:0;border-radius:999px;padding:5px 11px;font-size:12px;
+                         background:var(--pin);color:#faf9f5;white-space:nowrap}
+  .chantier-jour .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
 
   /* ── Titres de section : noirs, gras, centrés ───────────────────────── */
   .titre-section{margin:26px 18px 0;text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;
@@ -198,12 +189,6 @@
   <p class="marque">ATLAS</p>
   <h1>Planning</h1>
 
-  <div class="choix" role="group" aria-label="Comment se voient les demi-journées">
-    <button type="button" data-marque="A" aria-pressed="true">A · deux barres</button>
-    <button type="button" data-marque="B" aria-pressed="false">B · le rond</button>
-    <button type="button" data-marque="C" aria-pressed="false">C · une barre</button>
-  </div>
-
   <div class="barre">
     <button class="fleche" type="button" id="mois-avant" aria-label="Mois précédent">‹</button>
     <div class="quand"><b id="mois-titre">—</b><span>Le mois</span></div>
@@ -217,9 +202,10 @@
 
   <div class="legende">
     <span><i class="libre"></i> libre</span>
-    <span><i class="moitie"></i> une équipe sur deux</span>
-    <span><i class="plein"></i> complet</span>
-    <span class="quoi">En haut le matin, en bas l’après-midi.</span>
+    <span><i class="moitie"></i> 1 équipe sur 2</span>
+    <span><i class="plein"></i> complet · 2 sur 2</span>
+    <span class="quoi">La barre du haut, c’est le matin ; celle du bas, l’après-midi.
+      <b>Touchez un jour</b> pour savoir qui y est.</span>
   </div>
 
   <div id="jour-ouvert"></div>
@@ -280,6 +266,13 @@
     { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin",   equipe: "Julien" },
     { nom: "Mme Guérin",                  date: "2026-08-27", demi: "apres",   equipe: "Paul" },
     { nom: "Mr. Ollivier",                date: "2026-08-27", demi: "matin",   equipe: "Julien" },
+    // **Le cas qui manquait, et qui l'a fait douter le 21 août :** un
+    // après-midi où les DEUX équipes sont sur le coup, avec le matin libre. Sans
+    // lui, rien à l'écran ne distinguait « une équipe sur deux » de « complet »,
+    // et sa question — « comment vous faites si l'après-midi j'ai mes deux
+    // équipes ? » — n'avait aucune réponse visible.
+    { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipe: "Julien" },
+    { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipe: "Paul" },
     { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipe: "Paul" },
   ];
   const ATTENTE = [
@@ -322,7 +315,6 @@
   let premierDuMois = plusDeMois(AUJOURDHUI, 0);
   let lundi = lundiDe(AUJOURDHUI);
   let jourTouche = null;
-  let marque = "A";
 
   const duJour = (iso) => CHANTIERS.filter((c) => c.date === iso);
   const estWeekEnd = (iso) => [0, 6].includes(jourDeSemaine(iso));
@@ -350,12 +342,18 @@
     return Array.from({ length: 42 }, (_, i) => plusDeJours(depart, i));
   }
 
+  /**
+   * Les deux barres du jour : le matin dessus, l'après-midi dessous.
+   *
+   * **C'est le dessin qu'il a retenu le 21 août** — « pour le planning du mois
+   * je veux le A ». Les deux autres essais (le rond, la barre unique) ont été
+   * retirés : garder un dessin que plus rien n'emploie, c'est laisser une
+   * seconde façon de dire la même chose, et l'on finit par les mélanger.
+   */
   function dessinerMarque(iso) {
     const m = estWeekEnd(iso) ? "libre" : etatDemi(iso, "matin");
     const a = estWeekEnd(iso) ? "libre" : etatDemi(iso, "apres");
-    if (marque === "A") return `<span class="marqueA"><i class="${m}"></i><i class="${a}"></i></span>`;
-    if (marque === "C") return `<span class="marqueC"><i class="${m}"></i><i class="${a}"></i></span>`;
-    return "";  // B dessine le chiffre lui-même
+    return `<span class="marqueA"><i class="${m}"></i><i class="${a}"></i></span>`;
   }
 
   function rendreMois() {
@@ -371,15 +369,6 @@
 
       const classes = ["case", estWeekEnd(iso) ? "we" : "",
                        iso === AUJOURDHUI ? "aujourdhui" : ""].filter(Boolean).join(" ");
-      if (marque === "B") {
-        const m = estWeekEnd(iso) ? "libre" : etatDemi(iso, "matin");
-        const a = estWeekEnd(iso) ? "libre" : etatDemi(iso, "apres");
-        const remplir = (e) => (e === "plein" ? "plein" : e === "moitie" ? "moitie" : "");
-        const clair = m === "plein" && a === "plein" ? "clair" : "";
-        return `<button class="${classes}" data-jour="${iso}" aria-pressed="${iso === jourTouche}">
-          <span class="marqueB"><span class="h ${remplir(m)}"></span><span class="b ${remplir(a)}"></span>
-            <span class="n ${clair}">${numero(iso)}</span></span></button>`;
-      }
       return `<button class="${classes}" data-jour="${iso}" aria-pressed="${iso === jourTouche}">
         <span class="n">${numero(iso)}</span>${dessinerMarque(iso)}</button>`;
     }).join("");
@@ -402,17 +391,62 @@
       }));
   }
 
+  /**
+   * Ce que dit la fiche du jour, sous le calendrier.
+   *
+   * **Deux manques qu'il a relevés le 21 août 2026, et ils allaient ensemble.**
+   *
+   * 1. *« Il y a marqué le client, si c'est la journée, la demi-journée, mais il
+   *    n'y a pas marqué l'équipe qui est affiliée. »* — l'équipe était sur la
+   *    liste du bas et pas ici, alors que c'est le même chantier. On la porte
+   *    des deux côtés, ou l'écran se contredit.
+   *
+   * 2. *« Comment vous faites si l'après-midi j'ai mes deux équipes sur le
+   *    coup ? »* — la couleur seule ne répondait pas : « une équipe sur deux »
+   *    et « complet » se ressemblent tant qu'on n'a pas vu les deux côte à côte.
+   *    La fiche dit donc le COMPTE, demi-journée par demi-journée : « matin :
+   *    libre », « après-midi : 2 équipes sur 2 — complet ». Le calendrier
+   *    signale ; la fiche tranche.
+   */
   function rendreJourTouche() {
     const boite = document.getElementById("jour-ouvert");
     if (!jourTouche) { boite.innerHTML = ""; return; }
-    const chantiers = duJour(jourTouche);
-    const dit = estWeekEnd(jourTouche)
-      ? "Jamais proposé."
-      : chantiers.length === 0
-        ? "<b>Libre</b> — matin et après-midi."
-        : chantiers.map((c) => `<b>${c.nom}</b> · ${ditLaDemi(c.demi)}`).join("<br>");
+
+    if (estWeekEnd(jourTouche)) {
+      boite.innerHTML = `<div class="jour-ouvert">
+        <p class="titre">${titreJour(jourTouche)}</p>
+        <p class="dit">Jamais proposé.</p></div>`;
+      return;
+    }
+
+    // Combien d'équipes sont prises sur chaque demi-journée, et lesquelles.
+    const surLaDemi = (demi) =>
+      duJour(jourTouche).filter((c) => c.demi === "journee" || c.demi === demi);
+
+    const ligneDemi = (demi, mot) => {
+      const pris = surLaDemi(demi);
+      const etat = etatDemi(jourTouche, demi);
+      const compte = etat === "libre"
+        ? "libre"
+        : `${pris.length} équipe${pris.length > 1 ? "s" : ""} sur ${EQUIPES.length}` +
+          (etat === "plein" ? " — complet" : "");
+      const qui = pris.map((c) => c.equipe || "équipe à choisir").join(", ");
+      return `<div class="demi-ligne">
+        <span class="quoi"><i class="pastille ${etat}"></i>${mot}</span>
+        <span class="compte">${compte}${qui ? ` · ${qui}` : ""}</span></div>`;
+    };
+
+    const chantiers = duJour(jourTouche).map((c) => `
+      <div class="chantier-jour">
+        <span class="nom">${c.nom}</span>
+        <span class="equipe ${c.equipe ? "" : "vide"}">${c.equipe || "Équipe ?"}</span>
+      </div>`).join("");
+
     boite.innerHTML = `<div class="jour-ouvert">
-      <p class="titre">${titreJour(jourTouche)}</p><p class="dit">${dit}</p></div>`;
+      <p class="titre">${titreJour(jourTouche)}</p>
+      ${ligneDemi("matin", "Matin")}
+      ${ligneDemi("apres", "Après-midi")}
+      ${chantiers}</div>`;
   }
 
   function rendreSemaine() {
@@ -458,12 +492,6 @@
   document.getElementById("mois-apres").addEventListener("click", () => { premierDuMois = plusDeMois(premierDuMois, 1); rendre(); });
   document.getElementById("sem-avant").addEventListener("click", () => { lundi = plusDeJours(lundi, -7); rendre(); });
   document.getElementById("sem-apres").addEventListener("click", () => { lundi = plusDeJours(lundi, 7); rendre(); });
-  document.querySelectorAll("[data-marque]").forEach((b) =>
-    b.addEventListener("click", () => {
-      marque = b.dataset.marque;
-      document.querySelectorAll("[data-marque]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-      rendre();
-    }));
 
   rendre();
 </script>

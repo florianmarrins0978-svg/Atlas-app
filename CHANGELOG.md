@@ -947,6 +947,33 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Le planning : c'est A, et deux manques qu'il a vus avant nous
+
+**Sa réponse du 21 août :** *« pour le planning du mois je veux le A »* — les
+deux barres sous le chiffre, matin dessus, après-midi dessous. Le rond et la
+barre unique sont retirés de la planche : garder un dessin que plus rien
+n'emploie, c'est laisser deux façons de dire la même chose.
+
+**Et deux manques, qu'il a trouvés en s'en servant :**
+
+- *« Comment vous faites si l'après-midi j'ai mes deux équipes sur le coup ? »*
+  La question n'avait aucune réponse visible : **aucune journée des données ne
+  montrait ce cas**. « 1 équipe sur 2 » et « complet » ne se distinguent qu'une
+  fois vus côte à côte. Le mercredi 26 est ajouté — matin libre, après-midi
+  complet —, et la légende compte au lieu de qualifier : « 1 équipe sur 2 »,
+  « complet · 2 sur 2 » ;
+- *« Il y a marqué le client, si c'est la journée ou la demi-journée, mais pas
+  l'équipe qui est affiliée. »* La fiche du jour porte désormais l'équipe, comme
+  la liste du bas — le même chantier ne peut pas dire deux choses selon l'endroit
+  où on le lit. Elle dit aussi le compte, demi-journée par demi-journée : « matin
+  libre », « après-midi : 2 équipes sur 2 — complet ». Le calendrier signale, la
+  fiche tranche.
+
+**Un défaut vu sur la capture, et par aucun test :** la phrase de la légende se
+redécoupait en colonnes — « Touchez un / jour / pour savoir qui y / est. » — parce
+que `.legende span{display:flex}` l'attrapait aussi. Cinquième fois dans ce dépôt
+qu'un défaut sort d'une image.
+
 ### Un mois qu'on lit sans l'apprendre
 
 **Sa demande, le 21 août :** *« tout en faisant un mois facile à comprendre »*.
