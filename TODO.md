@@ -595,9 +595,14 @@ et elle ne coûte rien : les deux chemins existent déjà (la feuille du chevron
 planning depuis sa demande du 12 août, et chaque ligne du fil des terminés).
 Vérifié dans le code avant de répondre, plutôt que promis.
 
-Restent **trois** : les étapes du chantier, la relecture de la note dictée, et
-les photos ajoutées après coup. L'écran « À trancher » de la maquette propose une
-place pour chacune.
+**La relecture de la note est réglée aussi**, le même soir : *« on n'a pas besoin
+de réécouter la note dictée »*. L'anneau reste un micro, et rien d'autre — une
+pièce de moins à porter.
+
+Restent **deux** : les étapes du chantier, et les photos ajoutées après coup
+(mardi il photographie chez le client, jeudi il repasse et en prend une
+quatrième : où l'ajoute-t-il, une fois la fiche chantier partie ?). L'écran
+« À trancher » de la maquette propose une place pour chacune.
 
 **Ce que le code devra faire, et qui n'est pas qu'un déplacement d'écran :**
 

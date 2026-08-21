@@ -448,15 +448,20 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
           restent où elles sont déjà — la carte de l’accueil vous mène toujours à la
           <b>prochaine étape</b>, c’est ce qu’elle fait aujourd’hui.</span>
       </li>
+      <!-- **Réglé le 21 août au soir : « on n'a pas besoin de réécouter la note
+           dictée ».** Rien à reloger, et une pièce de moins à porter. -->
       <li>
-        <span class="quoi">Réécouter ce que vous avez dicté</span>
-        <span class="prop">L’anneau sait relire une note enregistrée. <b>Proposition :</b> sur la
-          fiche client — même anneau, il redevient lecteur dès qu’il y a quelque chose à écouter.</span>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Réécouter ce que vous avez dicté</span>
+        <span class="prop"><b>Réglé — vous n’en voulez pas.</b> « On n’a pas besoin de réécouter
+          la note dictée. » L’anneau reste donc un micro, et rien d’autre.</span>
       </li>
       <li>
-        <span class="quoi">Les photos, plus tard</span>
-        <span class="prop">Vous en ajoutez une le lendemain, chantier déjà créé.
-          <b>Proposition :</b> la fiche client, au même endroit que le jour du rendez-vous.</span>
+        <span class="quoi">Une photo que vous ajoutez plus tard</span>
+        <span class="prop"><b>Le cas, en clair :</b> mardi vous êtes chez le client, vous prenez
+          trois photos et vous dictez. Jeudi, vous repassez devant le chantier et vous en prenez
+          une quatrième. <b>Où l’ajoutez-vous ?</b> Aujourd’hui c’est sur la fiche chantier —
+          celle qui disparaît. <b>Proposition :</b> vous rouvrez le chantier depuis l’accueil, et
+          le carré « + » est là, au même endroit que mardi.</span>
       </li>
     </ul>
 
@@ -495,6 +500,48 @@ function aller(id) {
   );
   window.scrollTo(0, 0);
 }
+
+/**
+ * **Dix chiffres d'affilée, et les espaces se posent tout seuls.**
+ *
+ * Sa demande du 21 août au soir : *« il faut que je puisse taper les dix
+ * chiffres à la suite et qu'ils se mettent automatiquement avec les bons
+ * espaces »*. Sur un chantier, devant le client, on tape le numéro qu'on lit ou
+ * qu'on entend — on ne s'arrête pas toutes les deux touches pour un espace.
+ *
+ * **Par PAIRES, comme un numéro français s'écrit et se dicte** : 06 79 98 45 14.
+ *
+ * **Un numéro qui commence par « + » n'est PAS retouché**, et c'est mesuré, pas
+ * supposé : espacer « +33679984514 » par paires rend « +33 67 99 84 51 4 », qui
+ * n'est le numéro de personne. Un indicatif ne se découpe pas comme un numéro
+ * français, et il y en a autant que de pays. Celui qui tape un « + » sait ce
+ * qu'il écrit : on le laisse écrire.
+ *
+ * **Et le curseur ne saute pas à la fin.** Corriger un chiffre au milieu d'un
+ * numéro déjà tapé est le geste le plus courant après la frappe elle-même ; un
+ * curseur renvoyé au bout à chaque touche rend la correction impossible. On
+ * compte donc les CHIFFRES à gauche du curseur, et on le repose au même rang
+ * une fois les espaces refaits.
+ */
+function espacerLeNumero(champ) {
+  const avant = champ.value.slice(0, champ.selectionStart ?? champ.value.length);
+  const chiffresAGauche = (avant.match(/\d/g) ?? []).length;
+
+  if (champ.value.trim().startsWith("+")) return;
+
+  const chiffres = (champ.value.match(/\d/g) ?? []).join("").slice(0, 10);
+  champ.value = chiffres.replace(/(\d{2})(?=\d)/g, "$1 ");
+
+  // Le curseur retrouve sa place : juste après le n-ième chiffre.
+  let rang = 0, vus = 0;
+  while (rang < champ.value.length && vus < chiffresAGauche) {
+    if (/\d/.test(champ.value[rang])) vus++;
+    rang++;
+  }
+  champ.setSelectionRange(rang, rang);
+}
+
+$("#tel").addEventListener("input", (e) => espacerLeNumero(e.target));
 
 /* ─── Mr / Mme — sans intitulé, mais bien là ──────────────────────────── */
 document.querySelectorAll(".civilite button").forEach((b) => {

@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le numéro s'espace tout seul, et deux questions de moins
+
+**Sa demande :** *« Il faut que je puisse taper les dix chiffres à la suite et
+qu'ils se mettent automatiquement avec les bons espaces. »* Sur un chantier,
+devant le client, on ne s'arrête pas toutes les deux touches. `0679984514`
+devient `06 79 98 45 14` à la frappe, et les points, tirets et lettres tombent.
+
+**Deux choses mesurées plutôt que supposées.** Un numéro qui commence par « + »
+n'est **pas** retouché : espacer `+33679984514` par paires rend
+`+33 67 99 84 51 4`, qui n'est le numéro de personne — un indicatif ne se découpe
+pas comme un numéro français. Et **le curseur ne saute pas à la fin** : corriger
+un chiffre au milieu est le geste le plus courant après la frappe, et un curseur
+renvoyé au bout à chaque touche rend la correction impossible.
+
+**Deux des quatre questions de l'écran « À trancher » sont réglées** : la facture
+(*« dans la catégorie planning ou terminé »* — les deux chemins existaient déjà)
+et la relecture de la note (*« on n'a pas besoin de réécouter »*). La question
+des photos ajoutées après coup était mal posée : elle est réécrite avec le cas
+concret plutôt qu'en résumé.
+
 ### Cinq façons de dessiner une case à remplir
 
 **Sa demande :** *« Fais-moi des photos des cases à remplir plus jolies, je peux
