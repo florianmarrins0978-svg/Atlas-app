@@ -247,6 +247,34 @@ Concrètement, pour toute planche dont on attend un choix :
   parcours sont décidés, pas optionnels.
 - **Marquer une tâche terminée sans l'avoir vérifiée.** Voir §5.
 
+## 4 bis. Tout schéma d'arrosage obéit à sa planche du 17 août
+
+Règle posée le 21 août 2026, et qu'il veut **valable partout** : *« sers-t'en
+pour tous les schémas, il fonctionnera partout, ça doit être la règle »*.
+
+**Tout part de la nourrice.** *« Règle indiscutable ! »* Un plan où l'on voit le
+compteur et des traits qui commencent dans le vide n'est pas un plan : il ne se
+pose pas sur le terrain. La nourrice se **dessine**, avec ses vannes, et chaque
+ligne en part.
+
+**Les raccords se comptent par POSITION, jamais par arroseur** — sa planche du
+17 août, écrite dans `appli/arrosage-catalogue.js` :
+
+| Position sur la ligne | La pièce |
+|---|---|
+| départ, milieu | Té 90° taraudé 25×3/4"×25 |
+| **fin de ligne** | Coude 90° taraudé 25×3/4" |
+| jonction sans arroseur | Té 25×25×25, non taraudé |
+
+**D'où le contrôle qui vaut pour tout schéma : `tés + coudes = arroseurs`**, et
+`coudes = nombre de lignes`. En dessous, des arroseurs ne sont raccordés à rien.
+C'est lui qui l'a relevé, au chiffre près, sur un plan qui paraissait juste :
+*« il y a quatre arroseurs qui ne sont pas alimentés »*. Aucun test ne le voyait,
+parce qu'aucun ne comparait la liste des pièces au tracé.
+
+Et **deux SBE par arroseur** : celui du bas toujours en 3/4" (sur le té ou le
+coude), celui du corps au diamètre de la famille — 3/4" turbine, 1/2" tuyère.
+
 ## 5. Vérifier : ce qui compte comme « fait »
 
 Rien n'est terminé sans **la batterie complète**, en une commande :

@@ -4,26 +4,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Plan d’arrosage — le plan dessiné</title>
 <!--
-  CE QU'IL A DEMANDÉ, LE 21 AOÛT 2026, CAPTURE À L'APPUI.
-
-  « Il manque la photo, le schéma avec les réseaux, et l'implantation des
-  arroseurs. Les différents réseaux de couleurs. » L'application rendait trois
-  listes et aucun dessin — et deux réseaux portaient le MÊME nom, tronqué :
-  « Pelouse pas de gazon à gauche … ».
-
   MAQUETTE. Rien n'est codé dans l'application tant qu'il n'a pas validé.
-  Aucun JavaScript : la sélection d'un réseau passe par des boutons radio et
-  du CSS, donc elle marche partout, hors ligne, sur son téléphone.
+  Aucun JavaScript : les onglets sont des boutons radio et du CSS, donc la page
+  marche hors ligne, sur son téléphone.
 
-  LE PLAN EST À SES COTES, relevées sur son croquis : 12 + 8 en haut, 4 à
-  droite, 8 de retour, 8 de descente, 12 en bas, 12 à gauche. 176 m².
-  Le SVG travaille EN MÈTRES (viewBox), donc ce qu'on voit est mesurable :
-  un contrôle relit le tracé et recalcule les métrés affichés.
+  ── SES TROIS CORRECTIONS DU 21 AOÛT, ET CE QU'ELLES ONT APPRIS ──────────────
 
-  LA COUVERTURE N'EST PAS DÉCORATIVE : chaque tache est un cercle de la portée
-  réelle de l'arroseur, découpé par la forme de la pelouse. Un coin ne montre
-  donc qu'un quart de cercle — c'est ce qu'il verra sur le terrain, et un trou
-  entre deux taches est un trou dans l'arrosage, pas un défaut de dessin.
+  1. « TOUS LES RÉSEAUX DOIVENT PARTIR DE LA NOURRICE — RÈGLE INDISCUTABLE. »
+     La version précédente montrait le compteur et trois traits qui commençaient
+     dans le vide : *« je suppose que le réseau jaune partirait du compteur,
+     mais le bleu et le vert, on ne sait pas d'où »*. La nourrice est maintenant
+     DESSINÉE, avec ses trois vannes, et les trois lignes en partent — un
+     contrôle refuse une ligne dont le premier point n'est pas la nourrice.
+
+  2. LE COMPTAGE DES RACCORDS ÉTAIT FAUX, ET IL L'A VU AU CHIFFRE PRÈS.
+     L'ancienne version listait un « collier de prise en charge » par arroseur —
+     une pièce qui n'existe pas dans sa règle. Sa planche du 17 août, déjà dans
+     le dépôt (`appli/arrosage-catalogue.js`), dit :
+
+       · DÉPART et MILIEU de ligne → Té 90° taraudé 25×3/4"×25
+       · FIN de ligne              → Coude 90° taraudé 25×3/4"
+
+     D'où la règle de contrôle, qu'aucune version ne tenait :
+     **tés + coudes = nombre d'arroseurs**. Sinon des arroseurs ne sont
+     raccordés à rien — c'est exactement ce qu'il a relevé : « il y a quatre
+     arroseurs qui ne sont pas alimentés ».
+
+  3. LE BANDEAU DES MARQUES manquait. Rain Bird par défaut, sa demande du
+     17 août, déjà écrite dans le catalogue et jamais montée à l'écran ici.
+
+  ── CE QUI REND CE PLAN VÉRIFIABLE ──────────────────────────────────────────
+
+  Le SVG travaille EN MÈTRES (viewBox), donc tout est mesurable : le contrôle
+  relit la forme, recalcule la surface, mesure les tracés, et maille la pelouse
+  tous les 50 cm pour vérifier qu'aucun coin ne reste sans eau.
+
+  UNE LIGNE CONTINUE PAR RÉSEAU. C'est ce qui rend le comptage sûr : une ligne
+  a exactement une fin, donc un coude, et tout le reste est un té. Une ligne qui
+  se ramifierait demanderait un té de jonction non taraudé en plus — possible,
+  mais alors le compte ne se vérifie plus d'un coup d'œil.
 -->
 <style>
   :root {
@@ -40,30 +59,34 @@
   .surtitre { margin:22px 22px 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--or); }
   .regle { height:1px; background:var(--ligne); margin:16px 22px 0; }
   .titre-bloc { margin:26px 22px 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gris); }
-
   .bloc { background:var(--carte); border-radius:12px; margin:8px 16px 0; padding:14px; }
 
-  /* Le croquis photographié — ce qu'il a envoyé, tel qu'il le retrouve. */
+  label.champ { display:block; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gris); }
+  select {
+    margin-top:5px; width:100%; min-height:48px; border:0; border-radius:10px;
+    padding:12px; font-size:16px; background:var(--creme); color:var(--encre);
+    box-shadow:inset 0 0 0 1px var(--ligne);
+  }
+  .champ + select + .champ { margin-top:14px; }
+
   .croquis { width:100%; border-radius:8px; display:block; }
   .lu { margin:10px 0 0; font-size:13px; color:var(--gris); }
   .lu b { color:var(--encre); font-weight:600; }
 
-  /* Le sélecteur de réseau : des radios, pas une ligne de script. */
-  .choix { display:flex; gap:6px; margin:10px 16px 0; }
   input[name=vue] { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+  .choix { display:flex; gap:6px; margin:10px 16px 0; }
   .choix label {
     flex:1; min-width:0; text-align:center; padding:11px 4px; border-radius:10px;
     background:var(--carte); color:var(--gris); font-size:13px; cursor:pointer;
     border:1px solid var(--ligne); min-height:44px; display:flex; align-items:center; justify-content:center;
   }
   #tout:checked ~ .choix label[for=tout],
-  #v1:checked   ~ .choix label[for=v1],
-  #v2:checked   ~ .choix label[for=v2],
-  #v3:checked   ~ .choix label[for=v3] { background:var(--encre); color:#FBFAF7; border-color:var(--encre); }
+  #v1:checked ~ .choix label[for=v1],
+  #v2:checked ~ .choix label[for=v2],
+  #v3:checked ~ .choix label[for=v3] { background:var(--encre); color:#FBFAF7; border-color:var(--encre); }
 
   /* Isoler un réseau : les autres s'effacent SANS disparaître — il doit voir
      ce qui reste à couvrir, pas croire que le jardin s'arrête là. */
-  .r { transition:opacity .12s; }
   #v1:checked ~ .plan .r2, #v1:checked ~ .plan .r3,
   #v2:checked ~ .plan .r1, #v2:checked ~ .plan .r3,
   #v3:checked ~ .plan .r1, #v3:checked ~ .plan .r2 { opacity:.10; }
@@ -73,7 +96,7 @@
 
   .plan { background:var(--carte); border-radius:12px; margin:10px 16px 0; padding:10px 8px 4px; }
   .plan svg { width:100%; height:auto; display:block; }
-  .legende { margin:6px 6px 4px; font-size:11.5px; line-height:1.45; color:var(--gris); }
+  .legende { margin:6px 6px 4px; font-size:11.5px; line-height:1.5; color:var(--gris); }
   .legende b { color:var(--encre); }
 
   ul { list-style:none; margin:8px 16px 0; padding:0; }
@@ -82,7 +105,7 @@
     display:grid; grid-template-columns:auto 1fr auto; gap:4px 10px; align-items:center;
   }
   .pastille { width:12px; height:12px; border-radius:3px; }
-  .nom { font:400 19px/1.2 Georgia,serif; min-width:0; }
+  .nom { font:400 18px/1.2 Georgia,serif; min-width:0; }
   .debit { font-size:13px; color:var(--gris); white-space:nowrap; }
   .sous { grid-column:2 / -1; font-size:12px; color:var(--gris); }
 
@@ -90,14 +113,29 @@
   td { padding:9px 0; border-top:1px solid var(--ligne); vertical-align:top; }
   tr:first-child td { border-top:0; }
   .q { width:56px; color:var(--or); font-weight:600; white-space:nowrap; }
-  .ref { text-align:right; color:var(--gris); font-size:12px; white-space:nowrap; }
-
+  .ref { text-align:right; color:var(--gris); font-size:11px; white-space:nowrap; }
+  .compte { margin:10px 0 0; font-size:12px; line-height:1.5; color:var(--gris); }
   .note { margin:18px 22px 0; font-size:12px; line-height:1.5; color:var(--gris); }
 </style>
 
 <p class="surtitre">Paysage</p>
 <h1>Plan d’arrosage</h1>
 <div class="regle"></div>
+
+<div class="bloc" style="margin-top:18px">
+  <label class="champ" for="piquage">Le piquage se fait…</label>
+  <select id="piquage" name="piquage">
+    <option selected>Juste après le compteur d’eau</option>
+    <option>Robinet de jardin</option>
+  </select>
+
+  <label class="champ" for="marque" style="margin-top:14px">Vos marques — par défaut Rain Bird</label>
+  <select id="marque" name="marque">
+    <option value="rainbird" selected>Rain Bird</option>
+    <option value="toro">Toro</option>
+    <option value="hunter">Hunter</option>
+  </select>
+</div>
 
 <p class="titre-bloc">Le croquis</p>
 <div class="bloc">
@@ -119,15 +157,11 @@
 </div>
 
 <div class="plan">
-  <svg viewBox="-4.6 -3 28.4 18.6" role="img" aria-label="Plan de la pelouse avec les trois réseaux">
-    <defs>
-      <clipPath id="pelouse"><polygon points="0,0 20,0 20,4 12,4 12,12 0,12"/></clipPath>
-    </defs>
+  <svg viewBox="-6 -3 30 19.6" role="img" aria-label="Plan de la pelouse : la nourrice et les trois réseaux">
+    <defs><clipPath id="pelouse"><polygon points="0,0 20,0 20,4 12,4 12,12 0,12"/></clipPath></defs>
 
-    <!-- La pelouse -->
     <polygon points="0,0 20,0 20,4 12,4 12,12 0,12" fill="#E9ECE0" stroke="#7C8271" stroke-width=".26"/>
 
-    <!-- Les cotes, telles qu'il les a écrites -->
     <g fill="#6E6A60" font-size="1.05" font-family="Georgia,serif" text-anchor="middle">
       <text x="6" y="-1.1">12 m</text>
       <text x="16" y="-1.1">8 m</text>
@@ -135,57 +169,62 @@
       <text x="16" y="5.9">8 m</text>
       <text x="13.1" y="8.4" text-anchor="start">8 m</text>
       <text x="6" y="13.6">12 m</text>
-      <text x="-1.3" y="7.4" text-anchor="end">12 m</text>
+      <text x="-1.6" y="9.4" text-anchor="middle">12 m</text>
     </g>
 
-    <!-- Le piquage : d'où part l'eau -->
+    <!-- Le compteur, puis LA NOURRICE : sa règle indiscutable du 21 août —
+         les trois réseaux en partent, et cela doit se VOIR. -->
     <g>
-      <rect x="-2.5" y="3.3" width="1.4" height="1.4" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".16"/>
-      <line x1="-1.1" y1="4" x2="0" y2="4" stroke="#1A1A18" stroke-width=".2"/>
-      <text x="-1.8" y="2.5" font-size=".85" font-family="Georgia,serif" fill="#6E6A60" text-anchor="middle">compteur</text>
+      <rect x="-4.3" y="3.3" width="1.4" height="1.4" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".16"/>
+      <text x="-3.6" y="2.5" font-size=".82" font-family="Georgia,serif" fill="#6E6A60" text-anchor="middle">compteur</text>
+      <line x1="-2.9" y1="4" x2="-1.5" y2="4" stroke="#1A1A18" stroke-width=".22"/>
+      <rect id="nourrice" x="-1.5" y="2.6" width="1.5" height="2.8" rx=".3" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".22"/>
+      <circle cx="-0.75" cy="3.3" r=".3" fill="#2F6FB2"/>
+      <circle cx="-0.75" cy="4" r=".3" fill="#2E7D4F"/>
+      <circle cx="-0.75" cy="4.7" r=".3" fill="#C08A2E"/>
+      <text x="-2.6" y="7.1" font-size=".82" font-family="Georgia,serif" fill="#1A1A18" text-anchor="middle">nourrice</text>
+      <line x1="0" y1="4" x2="0" y2="4" stroke="#1A1A18" stroke-width=".22"/>
     </g>
 
       <g class="r r1">
-        <circle cx="0" cy="0" r="6" fill="#2F6FB2" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="6" cy="0" r="6" fill="#2F6FB2" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="6" cy="6" r="6" fill="#2F6FB2" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="0" cy="6" r="6" fill="#2F6FB2" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="0" cy="12" r="6" fill="#2F6FB2" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 0,0 6,0 6,6" fill="none" stroke="#2F6FB2" stroke-width=".28" stroke-linejoin="round" stroke-linecap="round" data-reseau="1"/>
-        <polyline points="0,4 0,6 0,12" fill="none" stroke="#2F6FB2" stroke-width=".28" stroke-linejoin="round" stroke-linecap="round" data-reseau="1"/>
-        <circle cx="0" cy="0" r=".42" fill="#2F6FB2" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="6" cy="0" r=".42" fill="#2F6FB2" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="6" cy="6" r=".42" fill="#2F6FB2" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="0" cy="6" r=".42" fill="#2F6FB2" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="0" cy="12" r=".42" fill="#2F6FB2" stroke="#FBFAF7" stroke-width=".18"/>
+        <circle cx="0" cy="0" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="6" cy="0" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="6" cy="6" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="0" cy="6" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <polyline points="0,4 0,0 6,0 6,6 0,6" fill="none" stroke="#2F6FB2" stroke-width=".3" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="0" cy="0" r=".46" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+        <circle cx="6" cy="0" r=".46" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+        <circle cx="6" cy="6" r=".46" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+        <circle cx="0" cy="6" r=".46" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34"/>
       </g>
       <g class="r r2">
-        <circle cx="12" cy="0" r="6" fill="#2E7D4F" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="12" cy="6" r="6" fill="#2E7D4F" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="12" cy="12" r="6" fill="#2E7D4F" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="6" cy="12" r="6" fill="#2E7D4F" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 12,4 12,0" fill="none" stroke="#2E7D4F" stroke-width=".28" stroke-linejoin="round" stroke-linecap="round" data-reseau="2"/>
-        <polyline points="12,4 12,12 6,12" fill="none" stroke="#2E7D4F" stroke-width=".28" stroke-linejoin="round" stroke-linecap="round" data-reseau="2"/>
-        <circle cx="12" cy="0" r=".42" fill="#2E7D4F" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="12" cy="6" r=".42" fill="#2E7D4F" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="12" cy="12" r=".42" fill="#2E7D4F" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="6" cy="12" r=".42" fill="#2E7D4F" stroke="#FBFAF7" stroke-width=".18"/>
+        <circle cx="0" cy="12" r="6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="6" cy="12" r="6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="12" cy="12" r="6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="12" cy="6" r="6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <polyline points="0,4 0,12 6,12 12,12 12,6" fill="none" stroke="#2E7D4F" stroke-width=".3" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="0" cy="12" r=".46" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+        <circle cx="6" cy="12" r=".46" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+        <circle cx="12" cy="12" r=".46" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+        <circle cx="12" cy="6" r=".46" fill="#FBFAF7" stroke="#2E7D4F" stroke-width="0.34"/>
       </g>
       <g class="r r3">
-        <circle cx="16" cy="0" r="4" fill="#C08A2E" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="20" cy="0" r="4" fill="#C08A2E" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="16" cy="4" r="4" fill="#C08A2E" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <circle cx="20" cy="4" r="4" fill="#C08A2E" fill-opacity=".14" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 12,4 16,4 20,4" fill="none" stroke="#C08A2E" stroke-width=".28" stroke-linejoin="round" stroke-linecap="round" data-reseau="3"/>
-        <polyline points="16,4 16,0 20,0" fill="none" stroke="#C08A2E" stroke-width=".28" stroke-linejoin="round" stroke-linecap="round" data-reseau="3"/>
-        <circle cx="16" cy="0" r=".42" fill="#C08A2E" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="20" cy="0" r=".42" fill="#C08A2E" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="16" cy="4" r=".42" fill="#C08A2E" stroke="#FBFAF7" stroke-width=".18"/>
-        <circle cx="20" cy="4" r=".42" fill="#C08A2E" stroke="#FBFAF7" stroke-width=".18"/>
+        <circle cx="12" cy="0" r="6" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="16" cy="0" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="20" cy="0" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="20" cy="4" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="16" cy="4" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <polyline points="0,4 12,4 12,0 16,0 20,0 20,4 16,4" fill="none" stroke="#C08A2E" stroke-width=".3" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="12" cy="0" r=".46" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2"/>
+        <circle cx="16" cy="0" r=".46" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2"/>
+        <circle cx="20" cy="0" r=".46" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2"/>
+        <circle cx="20" cy="4" r=".46" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2"/>
+        <circle cx="16" cy="4" r=".46" fill="#FBFAF7" stroke="#C08A2E" stroke-width="0.34"/>
       </g>
   </svg>
-  <p class="legende"><b>●</b> un arroseur — la tache autour est sa portée réelle.
-     Un creux entre deux taches est un creux dans l’arrosage.</p>
+  <p class="legende"><b>●</b> arroseur en ligne — un té taraudé.
+     <b>○</b> fin de ligne — un coude taraudé.
+     La tache est la portée réelle : un creux entre deux taches est un creux dans l’arrosage.</p>
 </div>
 
 <div class="reseaux">
@@ -193,21 +232,21 @@
   <ul>
         <li class="carte c1">
           <span class="pastille" style="background:#2F6FB2"></span>
-          <span class="nom">Réseau 1 — pelouse gauche</span>
-          <span class="debit">1,70 m³/h</span>
-          <span class="sous">5 arroseurs · 24 ml de tuyau</span>
+          <span class="nom">Réseau 1 — pelouse haut-gauche</span>
+          <span class="debit">1,53 m³/h</span>
+          <span class="sous">4 arroseurs · 22 ml · 3 tés + 1 coude</span>
         </li>
         <li class="carte c2">
           <span class="pastille" style="background:#2E7D4F"></span>
-          <span class="nom">Réseau 2 — pelouse droite</span>
-          <span class="debit">1,19 m³/h</span>
-          <span class="sous">4 arroseurs · 30 ml de tuyau</span>
+          <span class="nom">Réseau 2 — pelouse bas</span>
+          <span class="debit">1,02 m³/h</span>
+          <span class="sous">4 arroseurs · 26 ml · 3 tés + 1 coude</span>
         </li>
         <li class="carte c3">
           <span class="pastille" style="background:#C08A2E"></span>
-          <span class="nom">Réseau 3 — extension</span>
-          <span class="debit">0,66 m³/h</span>
-          <span class="sous">4 arroseurs · 16 ml de tuyau</span>
+          <span class="nom">Réseau 3 — haut-droite et extension</span>
+          <span class="debit">1,00 m³/h</span>
+          <span class="sous">5 arroseurs · 32 ml · 4 tés + 1 coude</span>
         </li>
   </ul>
 </div>
@@ -216,18 +255,24 @@
 <div class="bloc">
   <table>
     <tr><td class="q">9 u</td><td>Turbine 5004 Plus — escamotable 10 cm</td><td class="ref">RA5004FC</td></tr>
-    <tr><td class="q">9 u</td><td>Buse 3.0 (portée 6 m)</td><td class="ref">RA-BUSE-30</td></tr>
+    <tr><td class="q">9 u</td><td>Buse 3.0 — portée 6 m</td><td class="ref">RA-BUSE-30</td></tr>
     <tr><td class="q">4 u</td><td>Tuyère 1800 — escamotable 10 cm</td><td class="ref">RT1804</td></tr>
-    <tr><td class="q">4 u</td><td>Buse 12-VAN (portée 4 m)</td><td class="ref">RBT636</td></tr>
+    <tr><td class="q">4 u</td><td>Buse 12-VAN — portée 4 m</td><td class="ref">RBT636</td></tr>
+    <tr><td class="q">10 u</td><td>Té 90° taraudé 25×3/4"×25 — départ et milieu de ligne</td><td class="ref">te-taraude-25-34-25</td></tr>
+    <tr><td class="q">3 u</td><td>Coude 90° taraudé 25×3/4" — fin de ligne</td><td class="ref">coude-taraude-25-34</td></tr>
+    <tr><td class="q">22 u</td><td>Coude SBE 075 — 16 × 3/4" coudé</td><td class="ref">OD502</td></tr>
+    <tr><td class="q">4 u</td><td>Coude SBE 050 — 16 × 1/2" coudé</td><td class="ref">OD501</td></tr>
+    <tr><td class="q">80 ml</td><td>PE Ø25 — lignes, depuis la nourrice</td><td class="ref">pehd25</td></tr>
+    <tr><td class="q">26 ml</td><td>PEBD rigide Ø16 — reprise vers chaque arroseur</td><td class="ref">pebd16</td></tr>
     <tr><td class="q">3 u</td><td>Électrovanne 24 V — une par réseau</td><td class="ref">RB-100-DV</td></tr>
-    <tr><td class="q">1 u</td><td>Regard de vannes 3 voies</td><td class="ref">RB-VB-3</td></tr>
+    <tr><td class="q">1 u</td><td>Nourrice : regard 3 vannes</td><td class="ref">RB-VB-3</td></tr>
     <tr><td class="q">1 u</td><td>Programmateur 3 voies</td><td class="ref">RB-ESP-RZX</td></tr>
-    <tr><td class="q">70 ml</td><td>PEHD Ø25 — conduites et antennes</td><td class="ref">pehd25</td></tr>
-    <tr><td class="q">13 u</td><td>Collier de prise en charge Ø25 × 1/2"</td><td class="ref">CPC-25-12</td></tr>
   </table>
+  <p class="compte">10 tés + 3 coudes = <b>13 raccords pour 13 arroseurs</b> :
+     aucun n’est laissé sans alimentation.</p>
 </div>
 
 <p class="note">Maquette — rien n’est codé dans l’application. Le plan est tracé à
-vos cotes ; chaque tache de couleur est la portée réelle de l’arroseur, découpée
-par la forme de la pelouse. Les métrés sont mesurés sur le tracé, pas saisis.</p>
+vos cotes ; les métrés sont mesurés sur le tracé, pas saisis ; les raccords sont
+comptés par position, selon votre planche du 17 août.</p>
 </html>

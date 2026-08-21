@@ -585,6 +585,10 @@ sa réponse :
 | 2 | **Le découpage en 3 voies** — gauche, droite, extension | Un autre découpage est possible (par exposition, par horaire). Celui-ci est le plus simple à repérer sur le terrain |
 | 3 | **Le tracé des tuyaux** — le tronçon commun traverse la pelouse | Un tracé en périphérie coûte plus de tuyau mais évite de rouvrir le gazon plus tard |
 
+**Repris le 21 août sur ses trois corrections :** la nourrice est dessinée et
+tout en part ; les raccords sont comptés par position (10 tés + 3 coudes =
+13 arroseurs) ; le choix de marque est à l'écran, Rain Bird par défaut.
+
 **Ce que la maquette a déjà corrigé de sa capture :** deux réseaux portaient le
 MÊME nom, tronqué (« Pelouse pas de gazon à gauche … »). Un contrôle refuse
 désormais un nom répété ou coupé.
