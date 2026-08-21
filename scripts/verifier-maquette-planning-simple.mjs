@@ -57,9 +57,26 @@ if (erreurs.length) console.error("   ", erreurs[0]);
 // ── LE CALENDRIER RESTE AU MOIS — sa correction du 21 août ────────────────
 verifier(`le calendrier arrive sur le mois — lu : « ${await titreMois()} »`, /août 2026/i.test(await titreMois()));
 verifier(
-  "le mois porte bien six semaines de cases (42 jours)",
-  (await page.locator("#mois [data-jour]").count()) === 42,
+  "le mois ne porte QUE ses propres jours — août en a 31",
+  (await page.locator("#mois [data-jour]").count()) === 31,
 );
+// **Compter les cases vides ne suffit pas** : il faut qu'elles soient VIDES.
+// Un « 27 » lu dans la grille d'août peut être le 27 août — le contrôle qui
+// cherchait ce chiffre accusait une page juste.
+verifier(
+  "les jours des autres mois sont des cases vides, pas des chiffres gris",
+  (await page.locator("#mois .creux").count()) === 42 - 31 &&
+    (await page.$$eval("#mois .creux", (n) => n.every((e) => e.textContent.trim() === ""))),
+);
+
+// **Le retour « Aujourd'hui » n'existe que si l'on s'est éloigné.** Sans lui on
+// se perd à trois mois ; toujours présent, il se lirait comme une action à
+// faire. Les deux états se jouent, ils ne se supposent pas.
+verifier("sur le mois courant, aucun retour « Aujourd'hui »", await page.locator("#retour").isHidden());
+await page.click("#mois-apres");
+verifier("dès qu'on change de mois, le retour apparaît", await page.locator("#retour").isVisible());
+await page.click("#retour");
+verifier("et il ramène sur le mois du jour", /août 2026/i.test(await titreMois()));
 await page.click("#mois-apres");
 verifier(`la flèche du mois avance — « ${await titreMois()} »`, /septembre 2026/i.test(await titreMois()));
 await page.click("#mois-avant");
@@ -91,6 +108,10 @@ verifier("une semaine vide le dit en toutes lettres", (await litPlanifies()).inc
 // Toucher un jour du mois doit amener la liste sur SA semaine. Sans ce lien,
 // l'écran porterait deux navigations qui s'ignorent — exactement le genre de
 // page qu'il trouve incompréhensible.
+// Le 3 septembre ne s'atteint plus depuis la grille d'août : les jours des
+// autres mois n'y sont plus écrits. C'est le prix du mois épuré, et il se paie
+// d'un appui sur la flèche — pas d'un chiffre gris qu'on lit sans le vouloir.
+await page.click("#mois-apres");
 await page.click('[data-jour="2026-09-03"]');
 verifier(
   `toucher le 3 septembre amène la liste sur sa semaine — « ${await titreSemaine()} »`,
@@ -100,6 +121,7 @@ verifier(
   "et le jour touché se dit sous le calendrier",
   (await page.locator("#jour-ouvert").innerText()).toLowerCase().includes("jeudi 3 septembre"),
 );
+await page.click("#retour");
 await page.click('[data-jour="2026-08-18"]');
 verifier(
   "un jour libre le dit, au lieu de ne rien afficher",

@@ -74,27 +74,43 @@
   .barre .quand span{display:block;margin-top:3px;font-size:10.5px;letter-spacing:.18em;
                      text-transform:uppercase;color:var(--gris)}
 
-  /* ── Le MOIS ─────────────────────────────────────────────────────────── */
-  .entete-jours{margin:14px 12px 4px;display:grid;grid-template-columns:repeat(7,1fr);
-                font:600 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+  /* ── Le MOIS, refait pour être LU ────────────────────────────────────
+     Sa demande du 21 août : « tout en faisant un mois facile à comprendre ».
+     Quatre choix, et aucun n'est décoratif :
+
+     1. **les jours des autres mois disparaissent** — ils ne portent aucune
+        information et remplissaient six cases sur quarante-deux de chiffres
+        gris qu'on lit quand même ;
+     2. **les cases sont carrées et espacées** : le doigt vise 44 px, ce
+        qu'Apple demande, et l'œil sépare les semaines sans un seul trait ;
+     3. **le week-end est une colonne teintée**, pas un chiffre pâle. La teinte
+        se voit du coin de l'œil ; un gris clair oblige à lire pour comprendre ;
+     4. **aujourd'hui porte un cercle d'or**, et un retour « Aujourd'hui »
+        apparaît dès qu'on s'en éloigne — sans lui, on se perd à trois mois. */
+  .entete-jours{margin:16px 12px 6px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;
+                font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;
                 color:var(--gris);text-align:center}
-  .mois{margin:0 12px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px 2px}
-  .case{border:0;background:transparent;padding:4px 0 5px;cursor:pointer;text-align:center;border-radius:8px}
-  .case[aria-pressed="true"]{background:var(--papier)}
-  .case .n{font:400 15px/1 ui-serif,Georgia,serif;color:var(--encre)}
-  .case.hors .n{color:var(--gris);opacity:.35}
-  .case.we .n{color:rgba(28,28,26,.3)}
+  .entete-jours .we{color:rgba(28,28,26,.3)}
+  .mois{margin:0 12px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .creux{aspect-ratio:1/1.06}
+  .case{border:0;background:transparent;padding:0;cursor:pointer;border-radius:10px;
+        aspect-ratio:1/1.06;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+  .case.we{background:rgba(28,28,26,.035)}
+  .case[aria-pressed="true"]{background:var(--papier);box-shadow:inset 0 0 0 1.5px var(--encre)}
+  .case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .case .n{font:400 17px/1 ui-serif,Georgia,serif;color:var(--encre)}
+  .case.we .n{color:rgba(28,28,26,.42)}
   .case.aujourdhui .n{color:var(--or);font-weight:600}
 
   /* A — deux barres sous le chiffre : matin dessus, après-midi dessous */
-  .marqueA{margin:5px auto 0;width:22px;display:flex;flex-direction:column;gap:2px}
-  .marqueA i{height:5px;border-radius:2px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
+  .marqueA i{height:6px;border-radius:2px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .marqueA i.moitie{background:var(--pale);box-shadow:none}
   .marqueA i.plein{background:var(--pin);box-shadow:none}
-  .case.hors .marqueA,.case.we .marqueA{visibility:hidden}
+  .case.we .marqueA{visibility:hidden}
 
   /* B — le chiffre dans un rond rempli en haut, en bas, ou entier */
-  .marqueB{position:relative;width:34px;height:34px;margin:0 auto;border-radius:999px;overflow:hidden;
+  .marqueB{position:relative;width:38px;height:38px;border-radius:999px;overflow:hidden;
            background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
            display:flex;align-items:center;justify-content:center}
   .marqueB .h,.marqueB .b{position:absolute;left:0;right:0;height:50%}
@@ -102,14 +118,23 @@
   .marqueB .moitie{background:var(--pale)} .marqueB .plein{background:var(--pin)}
   .marqueB .n{position:relative}
   .marqueB .n.clair{color:#faf9f5}
-  .case.hors .marqueB,.case.we .marqueB{background:transparent;box-shadow:none}
+  .case.we .marqueB{background:transparent;box-shadow:none}
 
-  /* C — le chiffre, et sous lui une seule barre coupée en deux */
-  .marqueC{margin:5px auto 0;width:26px;height:6px;display:flex;gap:2px}
+  /* C — une seule barre coupée en deux : gauche le matin, droite l'après-midi */
+  .marqueC{width:28px;height:7px;display:flex;gap:2.5px}
   .marqueC i{flex:1;border-radius:2px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .marqueC i.moitie{background:var(--pale);box-shadow:none}
   .marqueC i.plein{background:var(--pin);box-shadow:none}
-  .case.hors .marqueC,.case.we .marqueC{visibility:hidden}
+  .case.we .marqueC{visibility:hidden}
+
+  /* **`[hidden]` doit gagner sur `display:block`.** Sans cette ligne, l'attribut
+     `hidden` ne cache rien : une règle de classe l'emporte sur celle du
+     navigateur, et le bouton reste là en prétendant être caché. Payé en
+     éprouvant cette planche le 21 août 2026. */
+  .retour-aujourdhui[hidden]{display:none}
+  .retour-aujourdhui{margin:12px auto 0;display:block;border:0;background:transparent;cursor:pointer;
+                     font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
+                     color:var(--or)}
 
   .legende{margin:14px 18px 0;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;
            font-size:11px;color:var(--gris)}
@@ -186,8 +211,9 @@
   </div>
 
   <div class="entete-jours"><span>lun</span><span>mar</span><span>mer</span><span>jeu</span>
-    <span>ven</span><span>sam</span><span>dim</span></div>
+    <span>ven</span><span class="we">sam</span><span class="we">dim</span></div>
   <div class="mois" id="mois"></div>
+  <button type="button" id="retour" class="retour-aujourdhui" hidden>← Aujourd’hui</button>
 
   <div class="legende">
     <span><i class="libre"></i> libre</span>
@@ -338,12 +364,16 @@
       `${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 
     document.getElementById("mois").innerHTML = casesDuMois().map((iso) => {
-      const hors = enDate(iso).getUTCMonth() !== d.getUTCMonth();
-      const classes = ["case", hors ? "hors" : "", estWeekEnd(iso) ? "we" : "",
+      // **Les jours des autres mois ne s'écrivent plus du tout.** Ils ne
+      // portaient rien, et six cases de chiffres gris se lisent quand même :
+      // c'est du bruit qu'on paie à chaque coup d'œil.
+      if (enDate(iso).getUTCMonth() !== d.getUTCMonth()) return `<span class="creux"></span>`;
+
+      const classes = ["case", estWeekEnd(iso) ? "we" : "",
                        iso === AUJOURDHUI ? "aujourdhui" : ""].filter(Boolean).join(" ");
       if (marque === "B") {
-        const m = hors || estWeekEnd(iso) ? "libre" : etatDemi(iso, "matin");
-        const a = hors || estWeekEnd(iso) ? "libre" : etatDemi(iso, "apres");
+        const m = estWeekEnd(iso) ? "libre" : etatDemi(iso, "matin");
+        const a = estWeekEnd(iso) ? "libre" : etatDemi(iso, "apres");
         const remplir = (e) => (e === "plein" ? "plein" : e === "moitie" ? "moitie" : "");
         const clair = m === "plein" && a === "plein" ? "clair" : "";
         return `<button class="${classes}" data-jour="${iso}" aria-pressed="${iso === jourTouche}">
@@ -353,6 +383,13 @@
       return `<button class="${classes}" data-jour="${iso}" aria-pressed="${iso === jourTouche}">
         <span class="n">${numero(iso)}</span>${dessinerMarque(iso)}</button>`;
     }).join("");
+
+    // **Le retour n'existe QUE si l'on s'est éloigné.** Un bouton toujours là
+    // se lit comme une action à faire ; celui-ci répond à un besoin qu'on vient
+    // de se créer en changeant de mois.
+    const surLeMois = enDate(AUJOURDHUI).getUTCMonth() === d.getUTCMonth()
+      && enDate(AUJOURDHUI).getUTCFullYear() === d.getUTCFullYear();
+    document.getElementById("retour").hidden = surLeMois;
 
     document.querySelectorAll("[data-jour]").forEach((b) =>
       b.addEventListener("click", () => {
@@ -411,6 +448,12 @@
       <div class="ligne"><span class="nom">${a.nom}</span><span class="etat">${a.etat}</span></div>`).join("");
   }
 
+  document.getElementById("retour").addEventListener("click", () => {
+    premierDuMois = plusDeMois(AUJOURDHUI, 0);
+    lundi = lundiDe(AUJOURDHUI);
+    jourTouche = null;
+    rendre();
+  });
   document.getElementById("mois-avant").addEventListener("click", () => { premierDuMois = plusDeMois(premierDuMois, -1); rendre(); });
   document.getElementById("mois-apres").addEventListener("click", () => { premierDuMois = plusDeMois(premierDuMois, 1); rendre(); });
   document.getElementById("sem-avant").addEventListener("click", () => { lundi = plusDeJours(lundi, -7); rendre(); });
