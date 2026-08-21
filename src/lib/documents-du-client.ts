@@ -115,3 +115,47 @@ export function jourCourt(iso: string): string {
   if (!nom || !annee || !jour) return iso;
   return `${Number(jour)} ${nom} ${annee}`;
 }
+
+/**
+ * Le nom sous lequel une pièce doit ARRIVER dans son téléphone.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Le patron, le 21 août 2026 :** *« Alors oui, je veux pouvoir
+ * l'enregistrer »* — devant des vignettes qui ne savaient qu'ouvrir le PDF.
+ * Retenu sur planche : `docs/maquettes/83-enregistrer-le-pdf.html`,
+ * **proposition C**.
+ *
+ * **Pourquoi ce n'est pas un détail.** Un fichier enregistré sans nom prend
+ * celui de la page — c'est exactement le défaut du 7 août 2026, sur la
+ * facture : *« quand je clique sur télécharger le PDF, ça me propose pas de
+ * l'enregistrer »*. Le remède tenait à trois conditions, et le NOM en est une :
+ * sans lui, Safari nomme le fichier d'après l'écran, sans extension. Il se
+ * retrouve alors avec dix documents indistinguables dans son dossier.
+ *
+ * **La nature de la pièce se lit dans son adresse, jamais dans son titre.** Le
+ * titre est ce qu'il LIT (« n° 2026-0029 », ou un jour) ; l'adresse est ce que
+ * le serveur SERT. Deviner « c'est un devis » à partir d'un libellé, c'est se
+ * fier à un mot que la prochaine demande peut changer.
+ */
+export function nomDuFichierDeLaPiece(piece: PieceDuClient): string {
+  const genre = piece.href.includes("/api/factures/")
+    ? "facture"
+    : piece.href.includes("/api/devis/")
+      ? "devis"
+      : "fiche-chantier";
+
+  // Un numéro commercial s'écrit « n° 2026-0029 » à l'écran : on garde les
+  // chiffres et le tiret, on jette le reste. Un nom de fichier qui porterait
+  // « n° » et son espace insécable se recopie mal et se cherche encore plus mal.
+  const numero = piece.titre.replace(/^n[°o]\s*/i, "").trim();
+  const ressembleAUnNumero = /^[0-9]{4}-[0-9]+$/.test(numero);
+  if (ressembleAUnNumero) return `${genre}-${numero}.pdf`;
+
+  // Une fiche de chantier n'a pas de numéro : elle porte son JOUR, et au format
+  // de tri (AAAA-MM-JJ) plutôt que « 12 août ». Rangés dans un dossier, dix
+  // fichiers se classent alors d'eux-mêmes dans l'ordre du temps.
+  if (piece.jour) return `${genre}-${piece.jour}.pdf`;
+
+  // Ni numéro ni jour : on ne fabrique pas un nom qui ferait croire à une date.
+  return `${genre}.pdf`;
+}

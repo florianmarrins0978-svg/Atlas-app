@@ -59,6 +59,25 @@ corrigée. `TODO.md` la garde ouverte.
 
 ## 2026-08-21
 
+### Les documents d'un client s'enregistrent, au lieu de seulement s'ouvrir
+
+**Sa demande :** *« je veux pouvoir l'enregistrer, mais avant que tu codes quoi
+que ce soit, fais-moi une maquette visuelle »*. Trois façons lui ont été
+dessinées ; il a retenu **la C**.
+
+Sur la fiche d'un client, toucher un document ouvre désormais trois choix :
+**Enregistrer**, Ouvrir, Partager. Le fichier arrive sous son vrai nom —
+`devis-2026-0029.pdf` — et non sous celui de la page.
+
+**Pourquoi pas plus court.** La proposition la plus rapide enregistrait dès le
+premier appui : ouvrir la fiche d'un client pour relire un montant lui aurait
+téléchargé un fichier à chaque coup d'œil. Celle qu'il a retenue ne décide de
+rien à sa place.
+
+**« Partager » revient**, après avoir quitté l'écran d'envoi le même matin :
+c'était le seul chemin vers WhatsApp, et sa place est sur le document rangé.
+`ARCHITECTURE.md` §141.
+
 ### Le devis envoyé ramène à l'accueil, sans écran de trop
 
 **Sa demande, capture à l'appui :** *« Quand je clique sur envoyer le devis, il y

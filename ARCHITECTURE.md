@@ -12492,3 +12492,82 @@ s'y classe tout seul.
 pas de l'enregistrer — ce n'est pas le geste « télécharger » du 7 août 2026, qui
 lui, reste éprouvé sur la facture (`test-facture-au-client-e2e.ts`). Question
 posée, réponse non reçue.
+
+---
+
+## 141. Enregistrer une pièce : la feuille qui ne décide de rien
+
+**Le patron, le 21 août 2026 :** *« Alors oui, je veux pouvoir l'enregistrer,
+mais avant que tu codes quoi que ce soit, fais-moi une maquette visuelle que je
+voie exactement ce que tu veux me dire. »*
+
+Puis, devant la planche : **« La C »**
+(`docs/maquettes/83-enregistrer-le-pdf.html`).
+
+### Ce qui manquait
+
+Sa fiche client range tout ce qui le concerne en trois colonnes — devis,
+factures, fiches de chantier — et c'est lui qui l'a rappelé : *« une fois le
+devis envoyé, il doit s'enregistrer normalement en PDF dans la catégorie
+client »*. Vérifié plutôt que cru : seuls les devis au statut `envoye` y
+entrent.
+
+Mais ces vignettes **ouvraient** le document dans un onglet. Rien ne proposait
+de le garder — le défaut exact du 7 août, sur un autre écran.
+
+### Pourquoi la C, et pas la plus courte
+
+La **A** (la vignette enregistre) coûtait un geste de moins. Elle décidait à sa
+place : ouvrir la fiche d'un client pour relire un montant lui aurait téléchargé
+un fichier à chaque coup d'œil.
+
+La question lui a donc été posée telle quelle sur la planche — **vient-il
+regarder, ou garder ?** — et sa réponse est celle qui ne tranche pas pour lui :
+un appui, trois choix.
+
+**La B a été dessinée et écartée avec son coût dit :** un rond de 30 px contre
+un lien de 56 px, dans une colonne large de 118 px. Cet écran tient une règle —
+*« un lien qu'il touche d'une main, dehors, parfois avec des gants »* — et deux
+cibles voisines de tailles inégales la défont.
+
+### Les trois conditions, et aucune ne suffit seule
+
+Le remède du 7 août tient à trois choses **réunies**, et c'est ce qui rend le
+défaut si facile à faire revenir :
+
+| | Sans elle |
+|---|---|
+| `?telecharger=1` (le serveur pose `attachment`) | Chrome **affiche** le document |
+| l'attribut `download` (le NOM) | Safari le nomme d'après la page, **sans extension** |
+| **pas** de `target="_blank"` | l'onglet neuf prive Safari de sa demande d'enregistrement |
+
+« Ouvrir » veut exactement l'inverse : pas de `?telecharger=1`, et un onglet à
+part pour ne pas perdre la fiche. Si les deux gestes servaient la même adresse,
+l'un des deux mentirait — et c'est ce que le contrôle vérifie.
+
+### Le nom du fichier est une RÈGLE, pas une chaîne recopiée
+
+`nomDuFichierDeLaPiece` (`src/lib/documents-du-client.ts`), éprouvée sans base :
+
+- **la nature se lit dans l'ADRESSE, jamais dans le titre.** Le titre est ce
+  qu'il lit ; l'adresse est ce que le serveur sert. Deviner « c'est un devis »
+  à partir d'un libellé, c'est se fier à un mot que la prochaine demande peut
+  changer ;
+- le « n° » et son espace ne traversent pas — un tel nom se recopie mal et se
+  cherche encore plus mal ;
+- une fiche de chantier n'a pas de numéro : elle porte son **jour au format de
+  tri** (`AAAA-MM-JJ`), de sorte que dix fichiers se rangent d'eux-mêmes dans
+  l'ordre du temps ;
+- sans numéro ni jour, **aucune date n'est inventée**.
+
+### Le contrôle, et le fait qu'il sache échouer
+
+`scripts/test-enregistrer-piece-e2e.ts` a été confronté aux trois défauts, un
+par un — adresse sans `?telecharger=1`, lien sans nom, onglet neuf ajouté. Il
+rougit sur chacun, en nommant lequel. Une suite qui se serait contentée de
+compter les boutons serait restée verte le jour où l'une des trois saute, et
+c'est lui qui l'aurait découvert : un fichier sans nom dans son dossier.
+
+**« Partager » revient ici**, après avoir été retiré de l'écran d'envoi le même
+matin. C'était le seul chemin vers WhatsApp, et sa place est plutôt sur le
+document rangé que sur le geste d'envoi.
