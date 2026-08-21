@@ -33,6 +33,11 @@ cacher ferait croire que la journée entière est prise —, mais elle passe
 ouvraient sur « matin — libre », et l'on lisait ce qui manque avant de savoir de
 qui il s'agit.
 
+Dans la légende, les deux rectangles qui montrent la POSITION sont désormais
+vides tous les deux : *« le rectangle du matin, mets-le blanc comme celui de
+l'après-midi »*. Rempli, le premier se lisait comme un cinquième état, juste
+après « au-delà » — alors qu'il ne dit rien de la charge.
+
 Les contrôles visent la structure, pas les mots — combien de fois le nom
 paraît, combien de comptes sont écrits, quelle bordure sépare les lignes. Un
 contrôle sur « Mr. Leroy » rougirait au premier changement de client d'exemple

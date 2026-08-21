@@ -378,6 +378,16 @@ for (const [jour, quand] of [["2026-08-19", "le 19"], ["2026-08-26", "le 26"]]) 
   // quoi, et il a déjà refusé deux couleurs.
   const couleur = await page.$eval(".legende .carre.dela", (e) => getComputedStyle(e).backgroundColor);
   verifier(`« au-delà » est en bordeaux (lu : ${couleur})`, couleur === "rgb(110, 36, 51)");
+  // **Les deux rectangles de position restent VIDES** — sa correction du
+  // 21 août : « le rectangle du matin, mets-le blanc comme celui de
+  // l'après-midi ». Rempli, il se lisait comme un cinquième état, juste après
+  // « au-delà ». On compte les segments : zéro, ou il redit une charge.
+  verifier(
+    "les deux rectangles de position ne portent aucune couleur",
+    (await page.locator(".legende .annote .marqueA .seg").count()) === 0
+      && (await page.locator(".legende .annote .marqueA i").count()) === 2,
+  );
+
   const surLeMois = await page.$eval(".marqueA .seg.dela, [data-jour] .seg.dela", (e) =>
     getComputedStyle(e).backgroundColor).catch(() => null);
   if (surLeMois) verifier(`et le mois le peint pareil (lu : ${surLeMois})`, surLeMois === couleur);
