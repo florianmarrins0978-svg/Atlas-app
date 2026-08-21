@@ -83,13 +83,14 @@ dire(
   !texteEntier.includes("facultatif"),
   "« facultatif » n'apparaît nulle part — il a demandé de tous les retirer"
 );
-// Un retrait se vérifie par ce qui ne doit PLUS être là, sans quoi il revient
-// à la première réécriture. La civilité est partie le 21 août au soir : le
-// titre vient désormais du nom qu'il tape (« M. Julien »).
-dire(!texteEntier.includes("civilité"), "la civilité a bien disparu de l'écran");
+// **Le MOT part, les deux boutons restent.** Sa correction immédiate : « non,
+// remets le Mr et Mme, je voulais juste que tu enlèves le titre civilité ».
+// Les deux moitiés se tiennent — retirer les boutons était une amputation, et
+// remettre l'intitulé annulerait le gain de place.
+dire(!texteEntier.includes("civilité"), "l'intitulé « Civilité » a disparu");
 dire(
-  (await page.locator(".civilite").count()) === 0,
-  "et ses deux boutons avec elle — pas seulement son intitulé"
+  (await page.locator(".civilite button").count()) === 2,
+  "mais Mr et Mme sont bien là — c'est l'intitulé qu'il voulait retirer, pas le choix"
 );
 
 // ── 2. Le nom et le numéro sur la MÊME ligne, et rien de coupé ──────────────

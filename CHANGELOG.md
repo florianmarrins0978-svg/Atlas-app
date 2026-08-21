@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Cinq façons de dessiner une case à remplir
+
+**Sa demande :** *« Fais-moi des photos des cases à remplir plus jolies, je peux
+plus voir ces encadrés carrés. »*
+
+**`appli/cases-a-remplir.html`** — cinq traitements du MÊME bloc (nom,
+téléphone, e-mail, adresse) : le trait, la capsule, la ligne de fiche, la carte
+douce, le creux. Le bloc ne change pas d'une proposition à l'autre, sinon il
+choisirait un contenu au lieu d'un dessin.
+
+Ce qui ne bouge pas non plus, et c'est délibéré : la charte, la place du texte
+saisi (16 px — en dessous, iOS zoome tout seul à la mise au point), et **la
+hauteur de prise, 48 px minimum**. Mesurée, pas supposée : la « ligne de fiche »
+était à 46 px et a été relevée. Une case élégante qu'on rate deux fois sur trois
+n'est pas élégante, elle est ratée.
+
+**Rien n'est codé** — il tranche.
+
+### Mr / Mme revient, son intitulé reste parti
+
+*« Non, remets le Mr et Mme, je voulais juste que tu enlèves le titre
+civilité. »* Corrigé dans la minute. Les deux boutons se comprennent seuls, et
+c'est une ligne de petites capitales de moins. Le contrôle tient désormais les
+deux moitiés : l'intitulé absent **et** les deux boutons présents — retirer le
+choix était une amputation, remettre le mot annulerait le gain de place.
+
+
 ### La fiche client qui dicte le devis — dessinée, pas codée
 
 **Sa demande, capture de l'écran à l'appui :** *« J'ai envie que les
