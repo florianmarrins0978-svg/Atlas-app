@@ -42,11 +42,11 @@
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
     --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
     --or:#B98B47; --trait:rgba(28,28,26,.12);
-    /* **Le dépassement : un bleu ardoise.** Ni l'or — il sert à ce qu'on LIT
-       partout ailleurs, et il ne se distinguait plus —, ni le rouge, qui dit
-       « erreur » dans l'application alors que dépasser est un choix. Une teinte
-       froide sur un écran chaud se remarque sans crier. */
-    --ardoise:#4A5A6B;
+    /* **Le dépassement : bordeaux**, choisi par lui le 21 août après l'or (qui
+       sert partout ailleurs à ce qu'on LIT) et l'ardoise. Il reste distinct du
+       rouge d'alerte de l'application (#9C3B2E), qui dit « erreur » — ici, ce
+       n'en est pas une. */
+    --bordeaux:#6E2433;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:#e6e3dc}
@@ -137,9 +137,9 @@
   .legende > span{flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:5px}
   .legende .carre{width:10px;height:10px;border-radius:3px;display:block;flex-shrink:0;
                   background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .legende .carre.place{background:var(--pale);box-shadow:none}
+  .legende .carre.dispo{background:var(--pale);box-shadow:none}
   .legende .carre.plein{background:var(--pin);box-shadow:none}
-  .legende .carre.dela{background:var(--ardoise);box-shadow:none}
+  .legende .carre.dela{background:var(--bordeaux);box-shadow:none}
   .legende .pt{width:7px;height:7px;border-radius:999px;display:block;flex-shrink:0;background:var(--pin)}
   .legende .pt.creux{background:transparent;box-shadow:inset 0 0 0 1.5px var(--or)}
   /* **Les deux rectangles de la légende SONT ceux du calendrier.** Sa demande
@@ -157,13 +157,12 @@
                            font-size:9.5px;color:var(--encre-douce)}
 
   /* La barre du jour : quatre états, dont le dernier prévient sans interdire. */
-  .marqueA .seg.place{background:var(--pale)}
+  .marqueA .seg.dispo{background:var(--pale)}
   .marqueA .seg.plein{background:var(--pin)}
-  /* **Ni or, ni rouge.** L'or sert à ce qu'on LIT partout ailleurs — il ne
-     signalait plus rien ; le rouge dit « erreur », alors que dépasser est un
-     choix qu'il assume. Le bleu ardoise est la seule teinte froide de l'écran :
-     elle se remarque sans crier. */
-  .marqueA .seg.dela{background:var(--ardoise)}
+  /* **Bordeaux — son choix du 21 août, après l'or puis l'ardoise.** L'or sert
+     partout ailleurs à ce qu'on LIT, il ne signalait plus rien ; le rouge
+     d'alerte dit « erreur », alors que dépasser est un choix qu'il assume. */
+  .marqueA .seg.dela{background:var(--bordeaux)}
 
   /* Le nombre d'équipes — n'existe QUE dans la maquette, pour répondre à sa
      question en la MONTRANT plutôt qu'en l'expliquant. */
@@ -195,9 +194,9 @@
                       font-size:12px;color:var(--gris)}
   .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
             background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .pastille.moitie{background:var(--pale);box-shadow:none}
+  .pastille.dispo{background:var(--pale);box-shadow:none}
   .pastille.plein{background:var(--pin);box-shadow:none}
-  .pastille.dela{background:var(--ardoise);box-shadow:none}
+  .pastille.dela{background:var(--bordeaux);box-shadow:none}
 
   .place{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
   /* **La liste des équipes prend toute la largeur de la ligne.** Coincée entre
@@ -244,7 +243,10 @@
   .rond-plus{width:34px;height:34px;border-radius:999px;border:1px solid var(--or);
              background:transparent;color:var(--or);font-size:19px;line-height:1;cursor:pointer}
   .rond-plus:active{background:var(--papier)}
-  .quand-quoi{font-size:12.5px;color:var(--gris);align-self:center;margin-right:2px}
+  /* La ligne d'un chantier qu'on est en train de poser : même nom, même
+     hauteur que les autres, et les trois moments à la place de la pastille. */
+  .place.en-attente .nom{flex:1;font:400 17px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .place.en-attente .quand-choix{display:flex;gap:6px;flex-shrink:0}
   .choisir{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin-top:4px}
   .choisir .rien{margin:0;font-size:12px;color:var(--gris)}
   .feuille .taches p{margin:0 0 9px;padding-left:14px;position:relative;font-size:14.5px;line-height:1.45}
@@ -548,9 +550,18 @@
     return { pris, occupees, sansEquipe, charge: pris.length / nombreEquipes };
   }
 
-  /** L'état d'une demi-journée : rien, de la place, juste ce qu'il faut, ou trop. */
+  /**
+   * L'état d'une demi-journée : rien, incomplet, complet, ou au-delà.
+   *
+   * **`dispo` et non `place`** : `.place` est déjà le nom des lignes de
+   * chantier dans la fiche du jour. Les deux se sont rencontrés dans la
+   * légende, où le carré « incomplet » héritait du `margin-top:10px` des
+   * lignes et tombait cinq pixels plus bas que ses voisins — vu par lui, sur
+   * son téléphone, le 21 août. Deux sens pour un même mot finissent toujours
+   * par se croiser.
+   */
   const etatDe = (o) =>
-    o.pris.length === 0 ? "libre" : o.charge < 1 ? "place" : o.charge === 1 ? "plein" : "dela";
+    o.pris.length === 0 ? "libre" : o.charge < 1 ? "dispo" : o.charge === 1 ? "plein" : "dela";
 
   const titreJour = (iso) => `${JOURS[jourDeSemaine(iso)]} ${numero(iso)} ${MOIS[enDate(iso).getUTCMonth()]}`;
   // **« ½ journée » ne s'écrit plus.** Sa remarque du 21 août : « il y a marqué
@@ -683,10 +694,12 @@
     }
 
     const bloc = (demi, mot) => {
-      const { pris, occupees } = occupation(iso, demi);
-      // **Plus de verdict, un simple fait** : rien, quelqu'un dehors, ou des
-      // chantiers encore sans personne. Aucun n'interdit d'ajouter (21 août).
-      const etat = pris.length === 0 ? "libre" : occupees.length ? "plein" : "moitie";
+      const o = occupation(iso, demi);
+      const { pris } = o;
+      // La pastille lit la MÊME règle que le calendrier : rien, incomplet,
+      // complet, au-delà. Deux calculs pour la même chose finissent par ne plus
+      // dire la même chose.
+      const etat = etatDe(o);
       const lignes = pris.map((c) => {
         const i = CHANTIERS.indexOf(c);
         const equipes = equipesDe(c, demi);
@@ -784,10 +797,18 @@
         choix.querySelectorAll("[data-qui]").forEach((q) =>
           q.addEventListener("click", () => {
             const rang = Number(q.dataset.qui);
+            // **Le nom choisi prend la forme des autres lignes.** Sa demande du
+            // 21 août : « j'aimerais que le nom se mette au même niveau que ceux
+            // qui sont déjà sélectionnés ». Écrit en petit gris à côté des
+            // boutons, il se lisait comme une étiquette ; en serif, à la place
+            // d'un chantier, il se lit comme le chantier qu'il va devenir.
+            choix.className = "place en-attente";
             choix.innerHTML =
-              `<span class="quand-quoi">${SANS_DATE[rang].nom} :</span>` +
+              `<span class="nom">${SANS_DATE[rang].nom}</span>` +
+              `<span class="quand-choix">` +
               [["matin", "Matin"], ["apres", "Après-midi"], ["journee", "Journée"]]
-                .map(([v, mot]) => `<button type="button" class="petit" data-quand="${v}">${mot}</button>`).join("");
+                .map(([v, mot]) => `<button type="button" class="petit" data-quand="${v}">${mot}</button>`).join("") +
+              `</span>`;
             choix.querySelectorAll("[data-quand]").forEach((m) =>
               m.addEventListener("click", () => {
                 const [c] = SANS_DATE.splice(rang, 1);
@@ -1000,10 +1021,8 @@
     document.querySelectorAll("[data-jour-carte] .demi[data-bloc]").forEach((bloc) => {
       const demi = bloc.dataset.bloc;
       const iso = bloc.closest("[data-jour-carte]").dataset.jourCarte;
-      const { pris, occupees } = occupation(iso, demi);
       bloc.querySelector(".compte").textContent = ditLeCompte(iso, demi);
-      bloc.querySelector(".pastille").className =
-        `pastille ${pris.length === 0 ? "libre" : occupees.length ? "plein" : "moitie"}`;
+      bloc.querySelector(".pastille").className = `pastille ${etatDe(occupation(iso, demi))}`;
     });
   }
 
@@ -1060,10 +1079,10 @@
   function rendreLegende() {
     document.getElementById("legende").innerHTML = `
       <span><i class="carre"></i> rien</span>
-      <span><i class="carre place"></i> incomplet</span>
+      <span><i class="carre dispo"></i> incomplet</span>
       <span><i class="carre plein"></i> complet</span>
       <span><i class="carre dela"></i> au-delà</span>
-      <span class="annote"><span class="marqueA"><i><span class="seg place" style="width:100%"></span></i><i></i></span>
+      <span class="annote"><span class="marqueA"><i><span class="seg dispo" style="width:100%"></span></i><i></i></span>
         <span class="mots"><b>matin</b><b>après-midi</b></span></span>`;
   }
 

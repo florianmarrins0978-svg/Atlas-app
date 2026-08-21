@@ -1322,6 +1322,30 @@ compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 su
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
 
+### Bordeaux pour le dépassement, et un carré qui tombait cinq pixels trop bas
+
+**Ses trois corrections du 21 août, la maquette étant retenue :** le bordeaux
+pour « au-delà », le carré « incomplet » qui n'était pas au niveau des autres, et
+le nom d'un chantier qu'on ajoute qui doit s'aligner sur ceux déjà posés.
+
+**Le carré désaligné venait d'une collision de noms.** `.place` désignait à la
+fois l'état « il reste de la place » dans la légende ET les lignes de chantier
+de la fiche du jour — lesquelles portent `margin-top:10px`. Le carré héritait de
+la marge et tombait cinq pixels plus bas. L'état s'appelle désormais `dispo` :
+**deux sens pour un même mot finissent toujours par se croiser**, et c'est lui
+qui l'a vu, sur son téléphone.
+
+**Le nom du chantier qu'on ajoute prend la forme d'une ligne de chantier** :
+même serif, même bord gauche, les trois moments à la place de la pastille
+d'équipe. Écrit en petit gris à côté des boutons, il se lisait comme une
+étiquette ; là, il se lit comme le chantier qu'il va devenir. La suite mesure le
+bord et le corps plutôt que de juger l'apparence.
+
+**Et la pastille de la fiche du jour lit maintenant la MÊME règle que le
+calendrier** (`etatDe`) : elle avait gardé son calcul à elle, hérité de la
+version d'avant, et deux calculs pour la même chose finissent par ne plus dire
+la même chose.
+
 ### Le dépassement passe en bleu ardoise, et la légende retrouve son « rien »
 
 **Sa correction du 21 août :** *« la couleur dorée pour le dépassement, je ne
