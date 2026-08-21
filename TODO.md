@@ -299,9 +299,12 @@ veille.
 
 ## ~~L'arrosage simplifié~~ — **CODÉ le 20 août 2026**
 
-`/paysage/arrosage` dans l'application : le piquage, la mesure au seau remise
-sur sa décision, le croquis photographié et **lu par l'IA**, puis le plan et le
-détail des pièces. Voir `CHANGELOG.md` et `PROJECT_STATE.md`.
+`/paysage/arrosage` dans l'application : le piquage, le **kit de mesure
+débit / pression (buse 5)** — seau chronométré, bar statique, bar dynamique —,
+le croquis photographié et **lu par l'IA**, puis le plan et le détail des
+pièces. Au compteur, rien n'est demandé : en Ø25 on a d'office ce qu'il faut.
+Ailleurs, le seuil est **2,5 bar en dynamique**. Voir `CHANGELOG.md` et
+`PROJECT_STATE.md`.
 
 **Ce qui reste à coder, et qui n'attend personne :**
 

@@ -61,19 +61,18 @@ async function main() {
     await page.waitForURL(`${BASE}/paysage/arrosage`, { timeout: 20_000 });
   });
 
-  await cas("l'écran porte le titre, le piquage, la mesure et le croquis", async () => {
+  // **CE CONTRÔLE A CHANGÉ AVEC L'ÉCRAN, le 20 août au soir.** Il exigeait les
+  // trois cases « litres · secondes · bar » à l'ouverture. Or le patron a
+  // demandé qu'au compteur rien ne s'affiche, et que le seau vaille 10 L sans
+  // qu'on le demande — la case « litres » n'existe plus, et les deux autres
+  // n'apparaissent qu'hors compteur. Un contrôle qui réclame ce qu'il a fait
+  // retirer rend son écran impossible à changer (`CLAUDE.md` §5 bis).
+  await cas("l'écran porte le titre, le piquage et le croquis", async () => {
     await page.locator("h1").first().waitFor({ timeout: 30_000 });
     const texte = await page.locator("body").innerText();
     assert.match(texte, /Plan d.arrosage/i, `le titre manque :\n${texte.slice(0, 200)}`);
     assert.match(texte, /piquage se fait/i, "le libellé du piquage manque");
     assert.equal(await page.locator('select[name="piquage"]').count(), 1, "le déroulant du piquage manque");
-    for (const champ of ["litres", "secondes", "bar"]) {
-      assert.equal(
-        await page.locator(`input[name="${champ}"]`).count(),
-        1,
-        `la case « ${champ} » de la mesure au seau manque`
-      );
-    }
     assert.equal(
       await page.locator('input[name="croquis"]').count(),
       1,
@@ -127,6 +126,146 @@ async function main() {
     );
   });
 
+  // ── Les mesures n'apparaissent QUE hors compteur ──────────────────────────
+  //
+  // *Sa correction du 20 août au soir :* « quand je choisis le piquage, qu'il se
+  // fait après le compteur d'eau, rien ne doit s'afficher. Il ne doit pas y
+  // avoir marqué dix litres, vingt, trois bars. »
+  await cas("au compteur, aucune mesure n'est demandée", async () => {
+    await page.goto(`${BASE}/paysage/arrosage`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(500);
+    assert.equal(
+      await page.locator('[data-atlas="mesures"]').count(),
+      0,
+      "l'écran demande des mesures alors que le piquage est au compteur"
+    );
+    // Et rien n'est prérempli : un chiffre posé d'avance se prend pour une mesure.
+    const valeurs = await page.locator('input[type="number"]').all();
+    for (const v of valeurs) {
+      assert.equal(await v.inputValue(), "", "une case porte une valeur qu'il n'a pas saisie");
+    }
+  });
+
+  await cas("hors compteur, les mesures s'ouvrent", async () => {
+    await page.selectOption("#piquage", "ailleurs");
+    await page.waitForTimeout(400);
+    assert.equal(
+      await page.locator('[data-atlas="mesures"]').count(),
+      1,
+      "les mesures ne s'ouvrent pas quand le piquage est ailleurs"
+    );
+    for (const champ of ["secondes", "barStatique", "barDynamique"]) {
+      assert.equal(
+        await page.locator(`input[name="${champ}"]`).count(),
+        1,
+        `la case « ${champ} » manque`
+      );
+    }
+  });
+
+  // ── Le seau n'est PAS dans le kit ─────────────────────────────────────────
+  //
+  // *Sa correction du 21 août 2026 :* « la mesure au seau ne doit pas rentrer
+  // dans le kit débit/pression ».
+  //
+  // **Ce que ce contrôle tient est une RÈGLE, pas une mise en page**
+  // (`CLAUDE.md` §5 bis) : le seau et le kit sont deux gestes, deux outils,
+  // deux fiabilités — et l'écran ne doit jamais laisser croire qu'un chiffre
+  // tiré du seau vaut celui du manomètre. Il ne dit donc RIEN de l'ordre des
+  // deux blocs, de leurs titres exacts ni de leur allure : il exige que le
+  // champ du seau ne soit pas rangé sous le kit, et que le seau porte une
+  // réserve de précision.
+  await cas("le seau est séparé du kit, et se dédouane", async () => {
+    const seau = page.locator('[data-atlas="seau"]');
+    const kit = page.locator('[data-atlas="kit"]');
+    assert.equal(await seau.count(), 1, "l'encart du seau manque");
+    assert.equal(await kit.count(), 1, "l'encart du kit manque");
+
+    // **Le défaut qu'il a signalé se teste EN PREMIER**, sans quoi son message
+    // n'atteint jamais l'écran : une assertion qui tombe avant lui dirait « le
+    // champ n'est pas dans le seau » sans dire où il est parti, et enverrait
+    // chercher au mauvais endroit (`CLAUDE.md` §5).
+    assert.equal(
+      await kit.locator('input[name="secondes"]').count(),
+      0,
+      "le champ du seau est RANGÉ DANS le kit débit/pression — c'est précisément ce qu'il a fait retirer le 21 août"
+    );
+    // Et il est bien quelque part : chez le seau, à qui il appartient.
+    assert.equal(
+      await seau.locator('input[name="secondes"]').count(),
+      1,
+      "le champ des secondes n'est nulle part dans l'encart du seau"
+    );
+
+    // Les deux pressions appartiennent au kit.
+    for (const champ of ["barStatique", "barDynamique"]) {
+      assert.equal(
+        await kit.locator(`input[name="${champ}"]`).count(),
+        1,
+        `la case « ${champ} » n'est pas dans l'encart du kit`
+      );
+    }
+
+    // **Le seau se dédouane, et il DÉCONSEILLE.** Sa correction du 21 août :
+    // « peu précis, ordre de grandeur, ça ne va rien dire — qu'on comprenne
+    // tout de suite qu'en gros ce n'est pas une bonne idée de calculer au seau
+    // pour son arrosage automatique ». Une réserve qui se contente de qualifier
+    // le chiffre se lit comme une nuance et se franchit sans y penser.
+    //
+    // Deux exigences, aucune formule imposée — les mots restent les siens :
+    // la mention réserve le chiffre, ET elle désigne le geste à faire à la
+    // place. Un contrôle qui figerait la phrase rendrait l'écran impossible à
+    // retoucher (`CLAUDE.md` §5 bis).
+    const texteSeau = (await seau.innerText()).toLowerCase();
+    assert.ok(
+      /approximat|peu précis|pas précis|peu fiable|déconseill|à éviter|dépannage|à la louche/.test(texteSeau),
+      `le seau ne réserve pas son chiffre : ${texteSeau}`
+    );
+    assert.ok(
+      /kit|manomètre|préf[eé]r|prenez|plutôt/.test(texteSeau),
+      `le seau réserve son chiffre mais ne dit pas quoi faire à la place — une nuance se franchit sans y penser : ${texteSeau}`
+    );
+
+    // Et le kit nomme sa buse : sans elle, il relèverait la statique, robinet
+    // fermé, toujours flatteuse — la bonne grandeur au mauvais moment.
+    const texteKit = (await kit.innerText()).toLowerCase();
+    assert.match(texteKit, /buse 5/, `le kit ne nomme pas la buse : ${texteKit}`);
+  });
+
+  // **Le puits et la cuve sont retirés**, sur sa demande du 20 août au soir.
+  await cas("le piquage sur une pompe n'est plus proposé", async () => {
+    const choix = await page.locator("#piquage option").allInnerTexts();
+    assert.equal(choix.length, 2, `le menu porte ${choix.length} choix : ${choix.join(" | ")}`);
+    assert.ok(
+      !choix.some((c) => /puits|cuve|pompe/i.test(c)),
+      `un choix de pompe subsiste : ${choix.join(" | ")}`
+    );
+    // **Un choix qu'on ne peut pas lire en entier ne se choisit pas.** Vu à la
+    // capture : « Ailleurs (robinet de jardin, nourrice exista… » se coupait
+    // dans le menu natif à 390 px. Le menu fermé montre l'option retenue : on
+    // mesure donc qu'elle tient dans sa boîte.
+    await page.selectOption("#piquage", "ailleurs");
+    await page.waitForTimeout(300);
+    const coupe = await page.evaluate(() => {
+      const sel = document.querySelector("#piquage") as HTMLSelectElement | null;
+      if (!sel) return null;
+      // Le texte de l'option retenue, mesuré dans la police du menu.
+      const sonde = document.createElement("span");
+      const style = getComputedStyle(sel);
+      sonde.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font:${style.font}`;
+      sonde.textContent = sel.options[sel.selectedIndex]?.text ?? "";
+      document.body.appendChild(sonde);
+      const large = sonde.getBoundingClientRect().width;
+      sonde.remove();
+      // La flèche du menu et les marges mangent une quarantaine de pixels.
+      return { texte: sonde.textContent, large, place: sel.getBoundingClientRect().width - 44 };
+    });
+    assert.ok(
+      coupe !== null && coupe.large <= coupe.place,
+      `le choix « ${coupe?.texte} » se coupe : ${Math.round(coupe?.large ?? 0)} px pour ${Math.round(coupe?.place ?? 0)} disponibles`
+    );
+  });
+
   await cas("aucun chiffre n'est annoncé tant que rien n'est calculé", async () => {
     const texte = await page.locator("body").innerText();
     // Un « 0,00 m³/h » posé d'avance se lirait comme une mesure faite.
@@ -161,20 +300,75 @@ async function main() {
   //
   // Sur ce banc, aucune clé n'est posée : l'écran doit donc l'annoncer. Chez
   // lui, les clés existent et la phrase disparaît.
-  await cas("sans clé d'IA, l'écran le dit avant de faire photographier", async () => {
-    const texte = await page.locator("body").innerText();
-    const aLaCle = await page.evaluate(() => document.body.innerText.includes("Aucune clé"));
-    if (!aLaCle) {
-      // Une clé est posée sur ce serveur : le cas ne se produit pas ici, et le
-      // dire vaut mieux que de laisser croire à une vérification qui n'a pas eu
-      // lieu (`CLAUDE.md` §5).
-      console.log("    (une clé d'IA est posée sur ce banc : rien à vérifier)");
+  // ── LE GESTE ENTIER, ET C'EST LE CONTRÔLE QUI MANQUAIT ────────────────────
+  //
+  // **Sa plainte du 20 août au soir :** *« quand je clique sur croquis et que
+  // j'ajoute une photo, rien ne se passe »*. Il avait raison : le bouton
+  // ouvrait l'appareil, mais rien ne soumettait le formulaire ensuite.
+  //
+  // **La suite ne l'a pas vu parce qu'elle ne posait jamais de photo.** Elle
+  // vérifiait que le bouton existe et qu'il fait 64 px — jamais que le geste
+  // aboutit. C'est exactement ce qu'`AGENTS.md` interdit : parcourir en entier
+  // ce qu'on transmet, du premier geste au dernier.
+  //
+  // Ici, sans clé d'IA, la lecture ne peut pas rendre de plan — et c'est très
+  // bien : ce qu'on éprouve, c'est que l'envoi PART. Un refus affiché prouve
+  // que le serveur a été saisi ; le silence prouverait le contraire.
+  await cas("choisir une photo déclenche la lecture, sans second bouton", async () => {
+    await page.goto(`${BASE}/paysage/arrosage`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+
+    // Un vrai fichier, minuscule mais valide : un PNG d'un pixel.
+    const pixel = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "base64"
+    );
+    await page.setInputFiles("#croquis", {
+      name: "croquis.png",
+      mimeType: "image/png",
+      buffer: pixel,
+    });
+
+    // **Aucun second bouton n'est touché.** C'est tout le sujet : l'écran n'en
+    // montre pas, à sa demande.
+    const reponse = page.locator('[data-atlas="alerte"], [data-atlas="plan-arrosage"]');
+    await reponse.first().waitFor({ timeout: 30_000 });
+    const vu = (await page.locator("body").innerText()).toLowerCase();
+    assert.ok(
+      /lecture|croquis|plan|clé/.test(vu),
+      `l'écran n'a rien répondu après la photo :\n${vu.slice(0, 300)}`
+    );
+  });
+
+  // **Quand la lecture ne se fera pas, l'écran dit POURQUOI — et le motif doit
+  // désigner le bon coupable.** Corrigé le 21 août 2026 : l'écran servait
+  // « aucune clé d'IA n'est posée sur ce serveur » quelle qu'en soit la cause,
+  // ce qui est faux quand la clé est là mais que le fournisseur choisi ne sait
+  // pas lire une image — et envoie coller une clé qui ne changera rien.
+  //
+  // Le contrôle tient la RÈGLE, pas la phrase : l'écran annonce que le croquis
+  // ne sera pas lu, et il n'accuse « aucune clé » que lorsque c'est bien une clé
+  // qui manque.
+  await cas("quand la lecture ne se fera pas, l'écran dit pourquoi", async () => {
+    const alerte = page.locator('[data-atlas="alerte"]');
+    if ((await alerte.count()) === 0) {
+      // La lecture est disponible sur ce banc : le cas ne se produit pas ici, et
+      // le dire vaut mieux que de laisser croire à une vérification qui n'a pas
+      // eu lieu (`CLAUDE.md` §5).
+      console.log("    (la lecture d'image est disponible sur ce banc : rien à vérifier)");
       return;
     }
-    assert.match(
-      texte,
-      /Aucune clé d.IA[\s\S]*ne sera pas lu/,
-      "l'écran ne dit pas que le croquis ne sera pas lu"
+    const texte = await alerte.first().innerText();
+    assert.match(texte, /ne sera pas lu/, `l'écran ne dit pas que le croquis ne sera pas lu : ${texte}`);
+    // **La règle : une CAUSE, pas une formule.** Les trois causes possibles se
+    // réparent différemment — une clé à poser, un fournisseur qui ne lit pas,
+    // aucun fournisseur réglé — et l'écran doit dire laquelle. Une première
+    // version de ce contrôle exigeait « n'est pas configuré » et rougissait sur
+    // « n'est configuré » : elle accusait l'écran d'un défaut qu'il n'avait pas,
+    // ce qui coûte plus cher que pas de contrôle du tout (`CLAUDE.md` §5).
+    assert.ok(
+      /API_KEY|configur|ne sait pas|n.est pas pos/i.test(texte),
+      `l'écran dit que rien ne sera lu, sans dire pourquoi : ${texte}`
     );
   });
 

@@ -171,6 +171,62 @@ ajoute une ligne et que personne n'en retire jamais.
 
 ## L'arrosage est DANS l'application — 20 août 2026 au soir
 
+**LA CLÉ D'IA : IL A EU RAISON TROIS FOIS, ET LE DÉPÔT AVAIT TORT.** *« Les clés
+sont posées, elles fonctionnent pour la rédaction du devis. Utilise-la. »*
+L'écran demandait « une clé existe-t-elle ? » au lieu de « celui qui va LIRE
+l'image a-t-il la sienne ? ». Deux questions différentes depuis que
+`VISION_PROVIDER` existe. Conséquences trouvées en tirant le fil :
+
+- `lireCroquis` appelait `getFournisseurLLM()` — celui qui RÉDIGE — alors que
+  `getFournisseurVision()` existait pour ça. **Silencieux.**
+- `etatVision` (`src/lib/etat-ia.ts`) tranche désormais, et son motif est celui
+  que l'écran affiche : jamais deux façons de dire la même règle.
+- **`npm run verifier:croquis`** dessine un croquis, le photographie et le fait
+  lire pour de bon. À jouer **depuis son espace**, où ses clés sont posées :
+  ici, la commande refuse de rendre un vert et nomme ce qui manque.
+
+**SES SEUILS, ET ILS DIFFÈRENT SELON LE PIQUAGE** (21 août) : compteur → 3 bar ;
+seau seul → **2,5 bar** (`BAR_SUPPOSE_AU_SEAU`), parce qu'à un robinet rien ne
+garantit le Ø25 ; kit à 2,5 ou 3 bar → impeccable, aucune réserve. Le seuil est
+atteint **à** 2,5, pas dépassé.
+
+**QUATRE CORRECTIONS DE SA PART LE MÊME SOIR, et la première est une leçon.**
+
+1. **La photo ne partait pas.** Le bouton ouvrait l'appareil, rien ne soumettait
+   ensuite. **La suite ne l'avait pas vu parce qu'elle ne posait jamais de
+   photo.** Devant un geste, éprouver le geste ENTIER — pas ses pièces.
+2. **Rien ne s'affiche au compteur.** En Ø25 après compteur, on a au moins 3 bar
+   en dynamique comme en statique : *« tu sais d'office que tu es bien »*. Donc
+   ni mesure demandée, **ni réserve écrite** — un avertissement inutile
+   s'apprend à être ignoré.
+3. **La pression utile est la DYNAMIQUE, buse taille 5.** La statique, robinet
+   fermé, est toujours flatteuse.
+4. **Deux libellés :** pas de piquage sur pompe ; « Robinet de jardin » et non
+   « Ailleurs (…) », qui se coupait dans le menu à 390 px.
+
+5. **Le kit porte les DEUX pressions, et le seuil est 2,5 bar.** *« Kit de
+   mesure débit/pression avec buse taille 5, nb de bar statique, nb de bar
+   dynamique. Si il y a 2,5 bar, 3 bar en dynamique, alors c'est parfait. »*
+   `BAR_MINIMUM_DYNAMIQUE = 2,5` dans `src/lib/arrosage/mesure-debit.ts`.
+   La statique n'est pas décorative : **l'écart** entre les deux (> 1,5 bar)
+   accuse une conduite trop maigre — c'est le réseau qu'on retaille, pas la
+   pression qu'on force. Les deux réserves s'empilent quand les deux sont vraies.
+
+6. **Le seau et le kit sont DEUX encarts** (21 août) — *« la mesure au seau ne
+   doit pas rentrer dans le kit débit/pression »*. Deux gestes, deux outils,
+   deux fiabilités ; le seau porte sous son champ une mention qui **déconseille**
+   et désigne le kit — une simple nuance (« peu précis ») se franchit sans y
+   penser, il l'a fait retirer pour cela. `data-atlas="seau"` et `data-atlas="kit"` tiennent la RÈGLE — ni
+   l'ordre des blocs, ni leurs titres exacts.
+
+**LA RÈGLE À NE PAS PERDRE :** la pression **ne donne pas** le débit. Deux
+robinets à 3 bar délivrent l'un 1 m³/h, l'autre 3.
+`src/lib/arrosage/mesure-debit.ts` en fait une règle pure : mesure au seau, ou
+estimation **signalée**, ou refus. Jamais un chiffre supposé qui se présente
+comme mesuré.
+
+
+
 *« Code le tout dans l'appli. »* `/paysage/arrosage` : le piquage, la mesure au
 seau, le croquis photographié — puis le plan et le détail des pièces. L'écran
 Paysage n'ouvre plus de page extérieure.
