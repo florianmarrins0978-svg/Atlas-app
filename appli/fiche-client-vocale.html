@@ -83,9 +83,13 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
 .champ{display:flex;flex-direction:column;gap:6px}
-.champ input{width:100%;border:0;border-radius:4px;background:var(--cream);
-             padding:15px 16px;font-size:16px;color:var(--charcoal);font-family:inherit;
-             box-shadow:inset 0 0 0 1px var(--line-soft)}
+/* **La case est « la carte douce », la 4 qu'il a choisie** parmi les cinq
+   (`appli/cases-page-entiere.html`), et redite le 21 août au soir : « n'oublie
+   pas que j'ai choisi la 4 ». La planche portait encore l'ancienne case, et cet
+   écart lui a fait croire que le code ne suivait pas la maquette. Une seule
+   vérité, des deux côtés. */
+.champ input{width:100%;min-height:50px;border:0;border-radius:14px;background:var(--paper);
+             padding:15px 16px;font-size:16px;color:var(--charcoal);font-family:inherit}
 .champ input::placeholder{color:var(--muted)}
 .champ input:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
 

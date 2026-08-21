@@ -1074,16 +1074,18 @@ body {
 }
 
 
-/* ─── LA CASE À REMPLIR — celle de SA MAQUETTE, trait pour trait ────────────
+/* ─── LA CASE À REMPLIR — « LA CARTE DOUCE », la 4 qu'il a choisie ──────────
  *
- * **Sa consigne du 21 août 2026, après avoir vu l'écran :** *« je veux que ça
- * ressemble exactement à la maquette qu'on a construite ensemble. Tu me la
- * codes trait pour trait. Tu ne changes rien, elle est parfaite. »*
+ * **Sa plainte du 21 août 2026 :** *« je peux plus voir ces encadrés carrés »*.
+ * Cinq dessins lui ont été proposés, puis relus sur la page entière
+ * (`appli/cases-page-entiere.html`) — et il a tranché deux fois plutôt qu'une :
+ * *« je choisis la 4 »*, puis, le soir : *« n'oublie pas que j'ai choisi la 4
+ * pour la forme des cases, dans les 5 modèles elle s'appelait la carte
+ * douce »*.
  *
- * D'où ces valeurs, recopiées de `appli/fiche-client-vocale.html` et non
- * réinventées : fond `card`, 4 px de rayon, un liseré d'un pixel, et **l'or
- * seulement quand le doigt est posé**. Il a écarté explicitement le liseré doré
- * permanent qu'on lui proposait : *« non »*.
+ * La case d'avant, moins ses angles droits et son liseré : fond `rustTint`,
+ * 14 px de rayon, **aucun bord**. L'or ne vient qu'au doigt posé — il a écarté
+ * le liseré doré permanent qu'on lui proposait : *« non »*.
  *
  * **Une classe, et pas un style en ligne répété.** Le fond et le rayon vivaient
  * en double, dans `Field` et dans `ChampAdresse` : deux écritures de la même
@@ -1091,20 +1093,23 @@ body {
  * `:focus` ne s'écrit pas en style en ligne — c'est ce qui manquait pour que la
  * case dise quelque chose quand on écrit dedans.
  *
- * **16 px de texte, jamais moins** : en dessous, iOS agrandit la page à la mise
- * au point et l'écran saute sous le doigt.
+ * **50 px de haut au minimum**, mesuré sur les cinq dessins : une case élégante
+ * qu'on rate deux fois sur trois avec des gants n'est pas élégante, elle est
+ * ratée. Et **16 px de texte, jamais moins** — en dessous, iOS agrandit la page
+ * à la mise au point et l'écran saute sous le doigt.
  */
 .atlas-case {
   width: 100%;
-  padding: 14px 16px;
+  min-height: 50px;
+  padding: 15px 16px;
   border: 0;
-  border-radius: 4px;
-  background-color: var(--atlas-card, #faf9f5);
+  border-radius: 14px;
+  background-color: var(--atlas-rustTint, #ece9e1);
   color: var(--atlas-ink, #1c1c1a);
   font-size: 16px;
   font-family: inherit;
   outline: 0;
-  box-shadow: inset 0 0 0 1px var(--atlas-lineSoft, rgba(28, 28, 26, 0.07));
+  box-shadow: none;
   transition: box-shadow 0.16s ease;
 }
 .atlas-case::placeholder {

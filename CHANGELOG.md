@@ -9,6 +9,22 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Les cases sont « la carte douce » — la 4, celle qu'il a choisie
+
+**Sa précision du 21 août au soir :** *« n'oublie pas que j'ai choisi la 4 pour
+la forme des cases ; dans les 5 modèles elle s'appelait la carte douce »*, avec
+l'adresse de la planche.
+
+Il avait tranché plus tôt dans la journée, puis, devant l'écran incomplet, il a
+demandé la maquette **trait pour trait** — et sa maquette portait encore
+l'ancienne case. J'ai suivi la maquette et défait son choix : deux consignes
+justes, un dessin faux.
+
+Les deux portent désormais **la même case** — fond papier, 14 px de rayon, aucun
+bord, l'or au doigt posé —, la maquette comme l'application. C'était l'écart qui
+lui faisait croire que le code ne suivait pas la planche : il n'y a plus deux
+vérités à comparer.
+
 ### La fiche client, codée trait pour trait — l'anneau, les photos, un seul bouton
 
 **Sa consigne, après avoir vu la moitié du travail livrée :** *« je veux que ça
