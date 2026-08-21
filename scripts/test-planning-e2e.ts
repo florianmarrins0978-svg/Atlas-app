@@ -666,45 +666,27 @@ async function main() {
   await contexte.close();
   await navigateur.close();
 
-  // **Le verdict s'écrit AVANT le nettoyage.** Une seule ligne de rangement qui
-  // jette — et il y en a eu une : le décor porte désormais un devis, que la
-  // clé étrangère de `devis` empêche de laisser derrière un chantier effacé —
-  // emportait les trente-trois résultats avec elle. On lisait une trace de
-  // PostgreSQL sur `devis_chantier_entreprise_fk` et l'on croyait l'écran
-  // cassé, alors que tout était vert.
-  console.log(`\n${echecs === 0 ? "✅" : "❌"} Le planning refait — ${reussis} réussis, ${echecs} échec(s).`);
-
-  // **Le devis d'abord, le chantier ensuite.** `devis` référence
-  // `(chantier_id, entreprise_id)` sans cascade — et c'est délibéré : une
-  // facture au relevé de TVA ne doit pas pouvoir disparaître parce qu'on efface
-  // un chantier (`supprimerChantier`).
-  let rangementRate: unknown = null;
-  try {
-    // TOUS les devis du chantier, pas seulement celui du décor : l'écran de
-    // création en pose un, et une reprise en poserait un second.
-    //
-    // **Et on les rend au brouillon d'abord.** Le même invariant qui régit le
-    // décor régit le rangement : `empecher_modification_lignes_devis_envoye`
-    // refuse d'effacer les lignes d'un devis parti. C'est juste — un document
-    // envoyé au client ne se retouche pas —, et le décor n'y échappe pas.
-    await pool.query(`UPDATE devis SET statut = 'brouillon' WHERE chantier_id = $1`, [chantierId]);
-    await pool.query(
-      `DELETE FROM lignes_devis WHERE devis_id IN (SELECT id FROM devis WHERE chantier_id = $1)`,
-      [chantierId]
-    );
-    await pool.query(`DELETE FROM envois_devis WHERE chantier_id = $1`, [chantierId]);
-    await pool.query(`DELETE FROM devis WHERE chantier_id = $1`, [chantierId]);
-    await pool.query(`DELETE FROM chantiers WHERE id = $1`, [chantierId]);
-  } catch (e) {
-    rangementRate = e;
-  }
+  // **Rien à ranger, et c'est la règle du dépôt qui le décide.**
+  //
+  // Ce décor pose un devis ENVOYÉ — sans quoi le planning ne listerait pas le
+  // chantier, et la feuille n'aurait rien à imprimer. Or un devis envoyé est
+  // immuable ET indestructible : `trg_devis_immuable` refuse aussi bien de le
+  // repasser en brouillon que de l'effacer, et `empecher_modification_lignes_devis_envoye`
+  // refuse ses lignes (migration 0001). Ce n'est pas un obstacle à contourner,
+  // c'est l'invariant qui garantit qu'un document parti chez le client ne se
+  // réécrit jamais après coup.
+  //
+  // Deux rangements successifs ont buté dessus, chacun sur un déclencheur
+  // différent. La bonne réponse n'était ni de désactiver les déclencheurs ni de
+  // remonter la base : c'est de faire comme les autres suites de ce dépôt —
+  // `test-planning-vers-facture-e2e` en laisse sept, `test-suivi-devis-e2e`
+  // cinq — et de ne rien ranger. Le seed vide l'entreprise de démonstration au
+  // début de chaque batterie ; c'est LUI le ménage, et il ne se bat contre
+  // aucune règle métier.
   await pool.end();
-  if (rangementRate) {
-    console.error("\n❌ Le décor n'a pas pu être rangé — la base garde des restes :");
-    console.error(rangementRate);
-  }
 
-  process.exit(echecs === 0 && !rangementRate ? 0 : 1);
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} Le planning refait — ${reussis} réussis, ${echecs} échec(s).`);
+  process.exit(echecs === 0 ? 0 : 1);
 }
 
 main().catch((e) => {
