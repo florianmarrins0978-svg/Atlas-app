@@ -205,29 +205,41 @@ verifier(
   const dit = (await page.locator(".legende").innerText()).toLowerCase();
   verifier("la légende ne porte plus de phrase d'explication", !dit.includes("barre du haut"));
   verifier(
-    "elle dit la suite : libre, 1 équipe sur 2, complet — puis matin et après-midi",
-    ["libre", "1 équipe sur 2", "complet", "matin", "après-midi"].every((m) => dit.includes(m)),
+    "elle dit la suite : libre, 1 équipe sur 2, les deux équipes — puis matin et après-midi",
+    ["libre", "1 équipe sur 2", "les deux équipes", "matin", "après-midi"].every((m) => dit.includes(m)),
   );
-  const minis = await page.$$eval(".legende .mini", (n) =>
-    n.map((e) => [...e.children].map((i) => i.className)));
+  // **Un rectangle par état, puis DEUX rectangles annotés.** Sa correction du
+  // 21 août : la version d'avant mettait deux barres partout et finissait sur
+  // deux carrés — l'inverse. On compte donc les rectangles de chaque terme, et
+  // l'on mesure que les derniers sont bien des RECTANGLES, pas des carrés.
+  const etats = await page.$$eval(".legende > span:not(.annote)", (n) =>
+    n.map((e) => [...e.querySelectorAll(".rect")].length));
   verifier(
-    `la suite va du vide au plein (lu : ${JSON.stringify(minis)})`,
-    minis.length === 4 &&
-      JSON.stringify(minis[0]) === JSON.stringify(["", ""]) &&
-      JSON.stringify(minis[1]) === JSON.stringify(["pris", ""]) &&
-      JSON.stringify(minis[2]) === JSON.stringify(["plein", "plein"]),
+    `les trois états portent UN rectangle chacun (lu : ${JSON.stringify(etats)})`,
+    JSON.stringify(etats) === JSON.stringify([1, 1, 1]),
   );
+  const couleurs = await page.$$eval(".legende > span:not(.annote) .rect", (n) =>
+    n.map((e) => e.className.replace("rect", "").trim()));
+  verifier(
+    `et ils vont du vide au plein (lu : ${JSON.stringify(couleurs)})`,
+    JSON.stringify(couleurs) === JSON.stringify(["", "pris", "plein"]),
+  );
+
+  const annote = await page.$$eval(".legende .annote .deux .rect", (n) =>
+    n.map((e) => { const r = e.getBoundingClientRect(); return { l: Math.round(r.width), h: Math.round(r.height) }; }));
+  verifier(
+    `le dernier terme porte DEUX rectangles l'un sur l'autre (lu : ${JSON.stringify(annote)})`,
+    annote.length === 2 && annote.every((r) => r.l >= r.h * 2),
+  );
+
   const mots = await page.$$eval(".legende .annote .mots b", (n) => n.map((e) => e.textContent.trim()));
   const hauteurs = await page.$$eval(".legende .annote .mots b", (n) =>
     n.map((e) => Math.round(e.getBoundingClientRect().top)));
   verifier(
-    `« matin » est annoté EN HAUT, « après-midi » EN BAS (lu : ${JSON.stringify(mots)})`,
+    `« matin » est écrit EN FACE du rectangle du haut, « après-midi » de celui du bas (lu : ${JSON.stringify(mots)})`,
     JSON.stringify(mots) === JSON.stringify(["matin", "après-midi"]) && hauteurs[0] < hauteurs[1],
   );
-  verifier(
-    "et les mots ne se chevauchent pas — ils tiennent chacun leur ligne",
-    hauteurs[1] - hauteurs[0] >= 10,
-  );
+  verifier("et les deux mots ne se chevauchent pas", hauteurs[1] - hauteurs[0] >= 10);
 }
 
 // ── LA FEUILLE DE TRAVAIL : le devis sans un seul prix ──────────────────
@@ -237,7 +249,10 @@ verifier(
 // tâches » — sans les prix. Le contrôle qui compte est le dernier : un chiffre
 // suivi d'un euro ne doit apparaître NULLE PART sur cette feuille.
 await page.click('[data-jour="2026-08-26"]');
-await page.click('[data-feuille="0"]');
+// **On ouvre par le NOM, pas par le lien à côté.** Sa remarque du 21 août :
+// « je ne peux pas l'ouvrir en cliquant sur le nom du client ». Viser ici le
+// lien « Sa feuille » rendrait un vert sur le défaut même qu'il a signalé.
+await page.locator('#jour-ouvert .chantier-jour .nom').first().click();
 {
   const feuille = page.locator(".feuille");
   verifier("la feuille s'ouvre sous le jour", (await feuille.count()) === 1);

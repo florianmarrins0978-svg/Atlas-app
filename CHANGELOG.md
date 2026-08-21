@@ -1068,6 +1068,27 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Deux corrections : le nom ouvre la feuille, et la légende était fausse
+
+**Ses deux remarques du 21 août, et les deux étaient justes.**
+
+**1. « Je ne peux pas l'ouvrir en cliquant sur le nom du client. »** La feuille
+ne s'ouvrait que par le lien « Sa feuille › » posé à côté. Or c'est le NOM qu'on
+touche, parce que c'est lui qu'on cherche. Le nom est maintenant le bouton ; le
+lien reste, pour qui ne devine pas qu'un nom se touche. La suite vise désormais
+le nom — viser le lien aurait rendu un vert sur le défaut même qu'il signalait.
+
+**2. La légende ne disait pas ce qu'il avait demandé.** Sa correction, mot pour
+mot : *« il fallait laisser un rectangle blanc pour libre, un vert clair pour
+une équipe sur deux, un foncé pour les deux équipes prises ; et ensuite rajouter
+deux rectangles l'un sur l'autre — pas deux carrés — avec écrit le matin et
+l'après-midi »*. La version d'avant mettait **deux barres partout** et
+finissait sur **deux carrés** : l'inverse, terme à terme.
+
+La suite compte donc les rectangles de chaque terme, et **mesure que les deux
+derniers sont larges au moins deux fois comme ils sont hauts** — sans quoi
+« rectangle » et « carré » se confondent dans un contrôle qui se lit vert.
+
 ### Le planning se MANIPULE : poser, changer d'équipe, déplacer, retirer
 
 **Sa consigne du 21 août 2026, et elle vaut jusqu'à nouvel ordre :**
