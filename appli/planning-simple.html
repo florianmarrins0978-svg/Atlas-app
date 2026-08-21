@@ -176,7 +176,12 @@
                          background:var(--pin);color:#faf9f5;white-space:nowrap}
   .chantier-jour .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
 
-  .chantier-jour{width:100%;border:0;background:transparent;text-align:left;cursor:pointer}
+  .chantier-jour .voir{border:0;background:transparent;cursor:pointer}
+  .gestes-ligne{display:flex;gap:6px;margin-top:8px}
+  .petit{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
+         padding:7px 12px;font-size:12px;color:var(--encre-douce);cursor:pointer}
+  .liste .poser{display:flex;gap:5px;flex-shrink:0}
+  .chantier-jour .equipe{border:0;cursor:pointer}
   .chantier-jour .voir{flex-shrink:0;font-size:12px;color:var(--or);white-space:nowrap}
 
   /* La feuille de travail : le devis rendu sans ses prix. Le fond papier et le
@@ -287,7 +292,7 @@
   <div id="planifies"></div>
 
   <p class="titre-section">Sans date</p>
-  <p class="sous-titre">Aucun chantier n’attend de jour.</p>
+  <div id="sans-date"></div>
 
   <p class="titre-section">En attente du client</p>
   <div class="liste" id="attente"></div>
@@ -332,6 +337,10 @@
                 "Théo", "Nadia", "Bruno", "Lena", "Yanis"];
   let nombreEquipes = 2;
   const EQUIPES = () => NOMS.slice(0, nombreEquipes);
+  // **Modifiable, et c'est tout l'objet de la planche.** Sa consigne du
+  // 21 août : « il faut que j'aille cliquer, pouvoir modifier, changer, voir ce
+  // que ça donne ». Une planche qui ne ferait qu'AFFICHER un état ne répondrait
+  // pas à la demande — on pose donc pour de bon dans cette liste.
   const CHANTIERS = [
     { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipe: "Julien",
       adresse: "4 rue des Ormes, Nantes", tel: "02 40 11 22 33",
@@ -363,6 +372,14 @@
                "Reprise de l'allée en gravillons"] },
     { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipe: "Paul" },
   ];
+  // Sans date : ce qui attend un jour. C'est là qu'on prend pour poser.
+  const SANS_DATE = [
+    { nom: "Mr. Pichon",  adresse: "9 rue du Pré, Vertou", tel: "06 21 43 65 87",
+      taches: ["Élagage d'un cerisier", "Broyage sur place"] },
+    { nom: "Mme Auffret", adresse: "2 allée des Chênes, Carquefou", tel: "02 40 55 44 33",
+      taches: ["Remise en état d'un massif — 40 m²", "Pose d'une toile et paillage"] },
+  ];
+
   const ATTENTE = [
     { nom: "Mr. Julien",       etat: "Il choisit sa date" },
     { nom: "Mr. Bernard",      etat: "Il choisit sa date" },
@@ -569,11 +586,15 @@
     // « le salarié clique sur le jour, il voit à quel client il est affilié, et
     // il peut cliquer sur le devis pour connaître ses tâches » — sans les prix.
     const chantiers = duJour(jourTouche).map((c, i) => `
-      <button type="button" class="chantier-jour" data-feuille="${i}">
+      <div class="chantier-jour">
         <span class="nom">${c.nom}</span>
-        <span class="equipe ${c.equipe ? "" : "vide"}">${c.equipe || "Équipe ?"}</span>
-        <span class="voir">Sa feuille ›</span>
-      </button>`).join("");
+        <button type="button" class="equipe ${c.equipe ? "" : "vide"}" data-equipe="${i}">${c.equipe || "Équipe ?"}</button>
+        <button type="button" class="voir" data-feuille="${i}">Sa feuille ›</button>
+      </div>
+      <div class="gestes-ligne">
+        <button type="button" class="petit" data-demi="${i}">${c.demi === "journee" ? "Journée" : c.demi === "matin" ? "Matin" : "Après-midi"}</button>
+        <button type="button" class="petit" data-retirer="${i}">Retirer du planning</button>
+      </div>`).join("");
 
     boite.innerHTML = `<div class="jour-ouvert">
       <p class="titre">${titreJour(jourTouche)}</p>
@@ -582,8 +603,44 @@
       ${chantiers}</div>
       <div id="feuille"></div>`;
 
+    const duJourLa = () => duJour(jourTouche);
+
     boite.querySelectorAll("[data-feuille]").forEach((b) =>
-      b.addEventListener("click", () => rendreFeuille(duJour(jourTouche)[Number(b.dataset.feuille)])));
+      b.addEventListener("click", () => rendreFeuille(duJourLa()[Number(b.dataset.feuille)])));
+
+    // **L'équipe tourne d'un appui.** Deux équipes, dix équipes, ou aucune :
+    // on passe à la suivante, puis on revient à « Équipe ? ». Un menu déroulant
+    // demanderait deux gestes là où le sien en demande un.
+    boite.querySelectorAll("[data-equipe]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const c = duJourLa()[Number(b.dataset.equipe)];
+        const suivante = EQUIPES()[EQUIPES().indexOf(c.equipe) + 1];
+        c.equipe = c.equipe ? (suivante || "") : EQUIPES()[0];
+        rendre();
+      }));
+
+    // Matin → après-midi → journée, et l'on recommence.
+    boite.querySelectorAll("[data-demi]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const c = duJourLa()[Number(b.dataset.demi)];
+        c.demi = c.demi === "matin" ? "apres" : c.demi === "apres" ? "journee" : "matin";
+        rendre();
+      }));
+
+    // **Retirer rend le chantier à « Sans date », il ne le supprime pas.** Un
+    // chantier effacé d'un appui serait à ressaisir ; celui-là redescend dans
+    // la liste d'attente, d'où il se repose.
+    boite.querySelectorAll("[data-retirer]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const c = duJourLa()[Number(b.dataset.retirer)];
+        const i = CHANTIERS.indexOf(c);
+        if (i >= 0) {
+          const [parti] = CHANTIERS.splice(i, 1);
+          SANS_DATE.push({ nom: parti.nom, adresse: parti.adresse, tel: parti.tel, taches: parti.taches });
+        }
+        document.getElementById("feuille").innerHTML = "";
+        rendre();
+      }));
   }
 
   /**
@@ -680,10 +737,54 @@
         </div>`).join("");
   }
 
+  /**
+   * « Sans date » — et c'est d'ici qu'on POSE.
+   *
+   * Sa consigne du 21 août : « il faut que j'aille cliquer, pouvoir modifier,
+   * changer ». Poser un chantier est le geste central du planning ; une planche
+   * qui ne le permettrait pas ne se laisserait pas juger.
+   *
+   * **Le jour se choisit AVANT**, dans le calendrier — c'est déjà le geste de
+   * l'application, et cela évite un second calendrier dans une feuille. Tant
+   * qu'aucun jour n'est touché, le bouton le dit au lieu de rester inerte.
+   */
+  function rendreSansDate() {
+    const boite = document.getElementById("sans-date");
+    if (SANS_DATE.length === 0) {
+      boite.innerHTML = `<p class="sous-titre">Aucun chantier n’attend de jour.</p>`;
+      return;
+    }
+    const jour = jourTouche && !estWeekEnd(jourTouche) ? jourTouche : null;
+    boite.innerHTML = `
+      <p class="sous-titre">${jour ? `À poser sur ${titreJour(jour)}` : "Touchez d’abord un jour du calendrier"}</p>
+      <div class="liste">
+        ${SANS_DATE.map((c, i) => `
+          <div class="ligne">
+            <span class="nom">${c.nom}</span>
+            ${jour
+              ? `<span class="poser">
+                   <button type="button" class="petit" data-poser="${i}" data-demi-poser="matin">Matin</button>
+                   <button type="button" class="petit" data-poser="${i}" data-demi-poser="apres">Ap.-m.</button>
+                   <button type="button" class="petit" data-poser="${i}" data-demi-poser="journee">Journée</button>
+                 </span>`
+              : `<span class="etat">en attente d’un jour</span>`}
+          </div>`).join("")}
+      </div>`;
+
+    boite.querySelectorAll("[data-poser]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const [c] = SANS_DATE.splice(Number(b.dataset.poser), 1);
+        CHANTIERS.push({ ...c, date: jourTouche, demi: b.dataset.demiPoser, equipe: "" });
+        lundi = lundiDe(jourTouche);
+        rendre();
+      }));
+  }
+
   function rendre() {
     rendreMois();
     rendreJourTouche();
     rendreSemaine();
+    rendreSansDate();
     document.getElementById("attente").innerHTML = ATTENTE.map((a) => `
       <div class="ligne"><span class="nom">${a.nom}</span><span class="etat">${a.etat}</span></div>`).join("");
   }

@@ -37,7 +37,12 @@ function verifier(quoi, condition) {
 const navigateur = await chromium.launch(
   existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {},
 );
-const page = await navigateur.newPage({ viewport: { width: 430, height: 1200 } });
+// **La permission du presse-papier se donne AVANT d'ouvrir la page.** Accordée
+// après coup, elle ne s'applique pas à l'origine déjà chargée : le contrôle du
+// « Copier l'adresse » rougissait sur un geste qui marche pour de vrai.
+const contexte = await navigateur.newContext({ viewport: { width: 430, height: 1200 } });
+await contexte.grantPermissions(["clipboard-write", "clipboard-read"]);
+const page = await contexte.newPage();
 const erreurs = [];
 page.on("pageerror", (e) => erreurs.push(e.message));
 await page.goto(pathToFileURL(FICHIER).href, { waitUntil: "networkidle" });
@@ -268,12 +273,19 @@ await page.click('[data-feuille="0"]');
   verifier("il n'y a QUE deux destinations — plus de Plans, Google Maps ET Waze", liens.length === 4);
 
   // Le copier doit DIRE qu'il a copié : sans mot, on appuie deux fois.
-  await page.context().grantPermissions(["clipboard-write", "clipboard-read"]);
   await page.click("#copier");
+  // **Le mot ne change qu'APRÈS l'écriture dans le presse-papier**, qui est
+  // asynchrone : lu dans la foulée du clic, il rendait encore « Copier
+  // l'adresse » — un rouge sur un geste qui marche. On attend le changement au
+  // lieu de le supposer.
+  await page
+    .waitForFunction(() => document.getElementById("copier")?.textContent !== "Copier l’adresse", null, { timeout: 3000 })
+    .catch(() => {});
+  const motDuCopier = (await page.locator("#copier").innerText()).trim();
+  const presse = await page.evaluate(() => navigator.clipboard.readText().catch((e) => `ERREUR ${e.message}`));
   verifier(
-    "copier l'adresse le dit, et copie pour de bon",
-    (await page.locator("#copier").innerText()).toLowerCase().includes("copiée") &&
-      (await page.evaluate(() => navigator.clipboard.readText())).includes("Orvault"),
+    `copier l'adresse le dit (« ${motDuCopier} ») et copie pour de bon (« ${presse} »)`,
+    motDuCopier.toLowerCase().includes("copiée") && presse.includes("Orvault"),
   );
 }
 
@@ -296,6 +308,58 @@ await page.click("[data-jour='2026-08-21']");
   verifier(
     "sur le 21, l'équipe qui manque se dit au lieu de rester muette",
     dit.includes("équipe à choisir") || dit.includes("équipe ?"),
+  );
+}
+
+// ── ELLE SE MANIPULE — sa consigne du 21 août ──────────────────────────
+//
+// « Il faut que j'aille cliquer, pouvoir modifier, changer, voir ce que ça
+// donne. » Les quatre gestes du planning se jouent donc ici, et l'on vérifie
+// qu'ils changent VRAIMENT l'état — pas seulement le libellé du bouton.
+// Le mois est déjà celui d'août ici : `#retour` y est caché, et le cliquer
+// ferait échouer une suite sur un écran juste.
+await page.click('[data-jour="2026-08-20"]');
+
+// 1 — poser un chantier sans date sur le jour touché
+{
+  const avant = await page.locator("#sans-date .ligne").count();
+  await page.click('[data-poser="0"][data-demi-poser="matin"]');
+  verifier("poser retire le chantier de « Sans date »", (await page.locator("#sans-date .ligne").count()) === avant - 1);
+  const dit = (await page.locator("#jour-ouvert").innerText()).toLowerCase();
+  verifier("et il apparaît dans le jour, sans équipe", dit.includes("mr. pichon") && dit.includes("équipe ?"));
+  verifier(
+    "le calendrier suit : le jeudi 20 n'est plus le même",
+    (await barresDe("2026-08-20"))[0] !== "0%",
+  );
+}
+
+// 2 — l'équipe tourne d'un appui
+{
+  const chip = page.locator('#jour-ouvert [data-equipe]').last();
+  const avant = (await chip.innerText()).trim();
+  await chip.click();
+  const apres = (await page.locator('#jour-ouvert [data-equipe]').last().innerText()).trim();
+  verifier(`un appui change l'équipe (« ${avant} » → « ${apres} »)`, avant !== apres);
+}
+
+// 3 — la demi-journée tourne aussi, et le calendrier le voit
+{
+  const avant = await barresDe("2026-08-20");
+  await page.locator('#jour-ouvert [data-demi]').last().click();
+  verifier(
+    `changer la demi-journée repeint le calendrier (${JSON.stringify(avant)} → ${JSON.stringify(await barresDe("2026-08-20"))})`,
+    JSON.stringify(avant) !== JSON.stringify(await barresDe("2026-08-20")),
+  );
+}
+
+// 4 — retirer rend le chantier à « Sans date », il ne l'efface pas
+{
+  const avant = await page.locator("#sans-date .ligne").count();
+  await page.locator('#jour-ouvert [data-retirer]').last().click();
+  verifier(
+    "retirer le rend à « Sans date » au lieu de l'effacer",
+    (await page.locator("#sans-date .ligne").count()) === avant + 1 &&
+      (await page.locator("#sans-date").innerText()).includes("Pichon"),
   );
 }
 

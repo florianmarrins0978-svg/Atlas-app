@@ -1068,6 +1068,41 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Le planning se MANIPULE : poser, changer d'équipe, déplacer, retirer
+
+**Sa consigne du 21 août 2026, et elle vaut jusqu'à nouvel ordre :**
+
+> *« Attends, ne code rien. Je veux qu'on finisse toute la page ensemble en
+> maquette dynamique, pour que je puisse essayer : cliquer, modifier, changer,
+> voir ce que ça donne. Une fois que tout est validé, je te dirai "c'est bon, tu
+> peux coder". En attendant, tu ne me fais que des maquettes dynamiques. »*
+
+Elle est écrite **en tête de `TODO.md`** — pas au milieu : une consigne qui vit à
+la deux-centième ligne n'est pas lue, et c'est exactement ce que le dépôt existe
+pour éviter.
+
+**Ce que la planche sait faire depuis, et qu'elle ne faisait pas :**
+
+| Geste | Ce qu'il fait vraiment |
+|---|---|
+| poser un « sans date » | matin, après-midi ou journée, sur le jour touché — et il quitte la liste d'attente |
+| toucher l'équipe | elle tourne : Équipe ? → Julien → Paul → Équipe ? |
+| toucher la demi-journée | matin → après-midi → journée, et **le calendrier se repeint** |
+| retirer du planning | le chantier **redescend dans « Sans date »**, il n'est pas effacé — sinon il serait à ressaisir |
+
+**Le jour se choisit dans le calendrier avant de poser**, comme dans
+l'application : un second calendrier dans une feuille serait un deuxième endroit
+où dire la même chose. Tant qu'aucun jour n'est touché, la liste le dit au lieu
+de rester inerte.
+
+**Deux pièges de contrôle payés en l'éprouvant :**
+
+- la permission du presse-papier se donne **avant** d'ouvrir la page ; accordée
+  après, elle ne vaut pas pour l'origine déjà chargée, et le contrôle rougissait
+  sur un geste qui marche ;
+- le mot « Adresse copiée » n'apparaît qu'**après** l'écriture, qui est
+  asynchrone. Lu dans la foulée du clic, il rendait encore « Copier l'adresse ».
+
 ### Reprendre les gestes de « Y aller » sur la feuille de chantier
 
 **Sa demande du 21 août :** *« reprends l'adresse cliquable qui ouvre Maps ou

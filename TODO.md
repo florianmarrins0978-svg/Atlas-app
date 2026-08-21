@@ -9,6 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ CONSIGNE EN COURS — le planning : MAQUETTE SEULEMENT
+
+**Sa consigne du 21 août 2026, à lire avant de toucher à `src/app/planning/` :**
+
+> *« Attends, attends, ne code rien. Je veux qu'on finisse toute la page
+> ensemble en maquette dynamique, pour que je puisse essayer : il faut que
+> j'aille cliquer, pouvoir modifier, changer, voir ce que ça donne. Une fois que
+> tout est validé, tout est bon, dans ce cas-là je te dirai "c'est bon, tu peux
+> coder". En attendant, tu ne codes rien. Tu ne me fais que des maquettes
+> dynamiques, c'est tout. »*
+
+**Ce que cela veut dire, littéralement :** tant qu'il n'a pas dit « c'est bon,
+tu peux coder », **aucune ligne de `src/` ne change pour le planning**. Pas même
+« un petit bout pour qu'il essaie en vrai » — il essaie sur la maquette, c'est
+tout l'objet de la consigne.
+
+**Et la maquette doit se MANIPULER**, pas seulement se regarder : il veut poser
+un chantier, changer une équipe, déplacer, retirer, et voir ce que ça donne. Une
+planche qui se contente d'afficher un état ne répond pas à la demande.
+
+Le point de validation, quand il viendra, se consigne ici même — et c'est ce
+jour-là seulement que `src/app/planning/` s'ouvre.
+
+---
+
 ## Bloqué par une décision du patron
 
 Rien à coder tant que ces points ne sont pas tranchés. Ne pas les redécouvrir :
