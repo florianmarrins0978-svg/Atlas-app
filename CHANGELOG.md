@@ -59,6 +59,20 @@ pas sur une fiche qu'on remplit devant le client.
 Le contrôle vise ses mots à la lettre et l'ordre des blocs : c'est ce qui les
 défend de la réécriture suivante.
 
+**Et la civilité part**, dans la foulée : deux boutons sur la première ligne de
+l'écran alors qu'il écrit déjà « M. Julien » dans le nom. Le titre vient du nom
+qu'il tape. Le contrôle refuse qu'elle revienne — un retrait ne se tient que par
+ce qui ne doit plus être là.
+
+**Puis, capture de l'accueil à l'appui :** *« quand je clique sur devis à
+terminer, je dois arriver directement sur la page du devis, pas ailleurs, et les
+infos que j'ai dictées doivent être remplies »*. Le chemin y menait déjà —
+vérifié au doigt, sur un iPhone simulé. **Ce qui manquait, c'est que ce soit SON
+chantier** : la carte et le devis affichaient un nom d'exemple quoi qu'il tape.
+Le nom, le numéro et l'adresse saisis partent maintenant avec la dictée jusqu'au
+devis, et une case laissée vide se dit (« Client sans nom ») plutôt que de se
+remplacer par un exemple.
+
 ### La fiche dit enfin si le port est ouvert
 
 **« Elle ne se lance plus »**, alors que sa fiche annonçait un serveur qui

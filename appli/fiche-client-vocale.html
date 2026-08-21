@@ -117,11 +117,6 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .canal button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
 .canal button:disabled{opacity:.4}
 
-.civilite{display:flex;gap:10px}
-.civilite button{border-radius:99px;border:1px solid var(--line);background:var(--cream);
-                 padding:13px 30px;font-size:16px;color:var(--charcoal);cursor:pointer;font-family:inherit}
-.civilite button[aria-pressed="true"]{border-color:var(--or);background:var(--paper)}
-
 .lien-or{align-self:flex-start;border:0;background:none;padding:0;font-size:14px;
          font-weight:500;color:var(--pine);cursor:pointer;font-family:inherit}
 
@@ -262,13 +257,11 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
     </div>
 
     <form onsubmit="return false">
-      <div class="champ">
-        <span class="caps">Civilité</span>
-        <div class="civilite">
-          <button type="button" aria-pressed="true">Mr</button>
-          <button type="button" aria-pressed="false">Mme</button>
-        </div>
-      </div>
+      <!-- **La civilité est partie — sa demande du 21 août au soir.** Elle
+           occupait la première ligne de l'écran pour deux boutons, alors qu'il
+           écrit déjà « M. Julien » dans le nom : le titre part donc du nom
+           qu'il tape, comme il l'a toujours tapé. C'est un retrait de plus dans
+           la même direction que le reste — moins de cases, moins de place. -->
 
       <!-- Le nom et le numéro, côte à côte, **chacun avec son intitulé** — sa
            correction du 21 août au soir : « au-dessus du numéro de téléphone,
@@ -298,7 +291,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 
       <div class="champ">
         <span class="caps">Adresse du chantier</span>
-        <input type="text" placeholder="12 rue des Lilas, Nantes" autocomplete="off">
+        <input id="adresse" type="text" placeholder="12 rue des Lilas, Nantes" value="12 rue des Lilas, Nantes" autocomplete="off">
       </div>
 
       <button class="lien-or" type="button">+ Ajouter une adresse client différente</button>
@@ -369,8 +362,8 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
     <div style="padding:20px 26px 0" id="liste-accueil">
       <p class="caps" style="margin:0 0 12px">En cours</p>
       <button class="brin" type="button" id="brin-julien" style="display:none">
-        <span class="quoi">M. Julien</span>
-        <span class="ou">12 rue des Lilas, Nantes</span>
+        <span class="quoi" id="brin-nom">M. Julien</span>
+        <span class="ou" id="brin-ou">12 rue des Lilas, Nantes</span>
         <span class="etat">Devis à terminer</span>
       </button>
       <p id="rien-dicte" style="margin:0;font-size:13.5px;color:var(--muted)">
@@ -388,8 +381,8 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
       euh, il faut aussi couper les inflorescences des hortensias, et puis tondre la pelouse. »</p>
 
     <div class="doc" style="margin-top:14px">
-      <h2>M. Julien</h2>
-      <p style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      <h2 id="devis-nom">M. Julien</h2>
+      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
 
       <div class="ligne-devis">
         <span><span class="libelle">Taille de haie</span><span class="mesure">20 ml</span></span>
@@ -485,13 +478,7 @@ function aller(id) {
   window.scrollTo(0, 0);
 }
 
-/* ─── Civilité, canal ─────────────────────────────────────────────────── */
-document.querySelectorAll(".civilite button").forEach((b) => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll(".civilite button").forEach((x) => x.setAttribute("aria-pressed", "false"));
-    b.setAttribute("aria-pressed", "true");
-  });
-});
+/* ─── Le canal d'envoi ────────────────────────────────────────────────── */
 // « Par e-mail » ne se propose que si une adresse existe : offrir un canal
 // qu'on ne peut pas emprunter est une fausse promesse.
 $("#email").addEventListener("input", (e) => {
@@ -557,6 +544,33 @@ function arreter() {
   $("#brin-julien").style.display = "block";
   $("#rien-dicte").style.display = "none";
   $("#mot-enregistre").textContent = "Enregistré. Vous pouvez fermer l’application.";
+
+  // **Ce qu'il a SAISI part avec la dictée, jusqu'au devis.** Sa remarque du
+  // 21 août au soir : « quand je clique sur devis à terminer, je dois arriver
+  // directement sur la page du devis, et les infos que j'ai dictées doivent
+  // être remplies ». Une carte et un devis qui affichent un nom d'exemple
+  // pendant qu'il en a tapé un autre ne prouvent rien — c'est SON chantier
+  // qu'il doit reconnaître à l'accueil.
+  reporter();
+}
+
+/**
+ * Reporte le nom, le numéro et l'adresse sur la carte de l'accueil et sur le
+ * devis.
+ *
+ * **Une case vide ne se remplace pas par un exemple** : elle se dit. « Client
+ * sans nom » est une information ; « M. Julien » à la place serait un mensonge
+ * de plus dans un document qui part chez quelqu'un.
+ */
+function reporter() {
+  const nom = $("#nom").value.trim() || "Client sans nom";
+  const tel = $("#tel").value.trim();
+  const adresse = $("#adresse").value.trim() || "Adresse à préciser";
+
+  $("#brin-nom").textContent = nom;
+  $("#brin-ou").textContent = adresse;
+  $("#devis-nom").textContent = nom;
+  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" · ");
 }
 
 $("#vers-devis").addEventListener("click", () => aller("devis"));
