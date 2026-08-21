@@ -714,11 +714,21 @@ plutôt que supposé : chacune a son propre écran (`/informations`, `/prix`,
 `/devis-complet`, `/note-vocale`), et la fiche chantier n'en était que la LISTE.
 L'accueil mène déjà à la prochaine (`lienDeReprise`).
 
-**Les quatre questions sont donc réglées, et le code peut commencer.** Ce qu'il
-reste à faire tient en une liste :
+**Les quatre questions sont réglées, et le code a commencé.**
+
+**Lot 1 — FAIT le 21 août 2026** : la fiche client refaite (plus un seul
+« facultatif », le titre « Civilité » retiré, le nom et le numéro sur une ligne,
+le numéro qui s'espace à la frappe, l'envoi sous l'adresse, et les cases en
+« carte douce » — son choix parmi cinq). Éprouvé au navigateur.
+
+**Ce qu'il reste, dans l'ordre :**
 
 1. porter l'anneau et la pellicule sur `chantiers/nouveau` (le chantier doit
-   exister avant la première photo ou la première dictée) ;
+   exister avant la première photo ou la première dictée) — **et c'est avec ce
+   lot que part le bouton « Je dicte mon devis »**, pas avant : le retirer
+   maintenant laisserait la dictée sur la fiche chantier sans chemin pour y
+   aller, et il faut reprendre au passage les **73 suites** qui cliquent
+   `action-dicter` ;
 2. au second appui de l'anneau : lancer la chaîne du devis et **enregistrer**,
    sans attendre un geste de plus — il ferme l'application juste après ;
 3. `lienDeReprise` : les étapes « photos » et « note-vocale » ne doivent plus
@@ -745,6 +755,35 @@ numéro.
 ---
 
 ## À surveiller — non reproduit
+
+### Cinq suites navigateur tombent sur `/prix` — 21 août 2026, PAS le lot en cours
+
+**Ce qui tombe :** `test-brouillon-e2e`, `test-calcul-prix-e2e`,
+`test-anneau-vers-devis-e2e`, `test-choisir-la-date-e2e` et quelques voisines,
+toutes sur la même marche — une navigation vers `/chantiers/[id]/prix` qui
+n'arrive jamais (`page.goto` ou `waitForURL` qui expire).
+
+**Ce n'est pas le lot de la fiche client, et c'est VÉRIFIÉ, pas supposé :** la
+même suite a été rejouée seule après `git stash` de toutes les modifications —
+elle tombe à l'identique sur le code d'avant.
+
+**Et l'écran, lui, va bien.** Interrogé directement avec une vraie session, sur
+un serveur monté à part : `/prix` répond **200 en 107 ms**. Le journal du
+serveur d'essai montre par ailleurs `validerInformationsAction` qui **réussit**
+(200 en 22 ms) — puis plus aucune requête vers `/prix`. La navigation se perd
+donc côté navigateur, pas côté serveur.
+
+**La piste la plus probable, et elle se mesure :** le préchauffage du serveur
+d'essai annonce « 2 écran(s) en échec » et met **376 s** au lieu des 86 s
+habituelles. Un écran non préchauffé se compile à la première ouverture, en mode
+développement, sur une machine chargée — et dépasse le délai de la suite.
+
+**À reprendre ainsi :** faire dire au préchauffage QUELS écrans échouent (il ne
+donne aujourd'hui qu'un compte), plutôt que d'allonger les délais des suites —
+un délai qu'on allonge cache la lenteur au lieu de la montrer.
+
+---
+
 
 ### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août
 

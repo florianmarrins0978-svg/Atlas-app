@@ -51,6 +51,50 @@ async function main() {
     "Le bouton reste inactif sur un formulaire vide : quelque chose est encore exigé."
   );
 
+  // ── Sa fiche client refaite, le 21 août 2026 ──────────────────────────────
+  //
+  // Trois demandes littérales, éprouvées ICI parce qu'aucune ne se voit ailleurs
+  // que dans le navigateur : le numéro qui s'espace à la frappe, le nom et le
+  // numéro sur la même ligne, et la question de l'envoi passée SOUS l'adresse.
+
+  const tel = page.locator('input[type="tel"]');
+  await tel.click();
+  await tel.pressSequentially("0679984514", { delay: 20 });
+  assert.equal(
+    await tel.inputValue(),
+    "06 79 98 45 14",
+    "« il faut que je puisse taper les dix chiffres à la suite et qu'ils se mettent " +
+      "automatiquement avec les bons espaces » — ce n'est pas le cas"
+  );
+
+  const boiteNom = await page.locator('input[placeholder="Bernard"]').boundingBox();
+  const boiteTel = await tel.boundingBox();
+  assert.ok(boiteNom && boiteTel, "le nom et le numéro doivent être dessinés pour être comparés");
+  assert.ok(
+    Math.abs(boiteNom.y - boiteTel.y) < 4,
+    `le nom et le numéro ne sont plus sur la même ligne (${Math.round(Math.abs(boiteNom.y - boiteTel.y))} px d'écart)`
+  );
+  // Un numéro coupé ne se rappelle pas : c'est la seule donnée qu'on ne devine
+  // pas. À 132 px, le dernier chiffre tombait — en silence.
+  assert.ok(
+    await tel.evaluate((e: HTMLInputElement) => e.scrollWidth <= e.clientWidth + 1),
+    "le numéro déborde de sa case : il s'affiche tronqué"
+  );
+
+  // « Comment lui envoyer son devis, tu le mets sous l'adresse. »
+  const boiteAdresse = await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').boundingBox();
+  const boiteCanal = await page.getByText("Comment lui envoyer son devis").boundingBox();
+  assert.ok(boiteAdresse && boiteCanal, "l'adresse et la question de l'envoi doivent être visibles");
+  assert.ok(
+    boiteCanal.y > boiteAdresse.y,
+    "« Comment lui envoyer son devis ? » n'est pas sous l'adresse"
+  );
+
+  // Un retrait ne tient que par ce qui ne doit plus être là.
+  const ecran = await page.locator("form").innerText();
+  assert.ok(!/facultatif/i.test(ecran), "« facultatif » est revenu sur la fiche client");
+  assert.ok(!/civilit/i.test(ecran), "l'intitulé « Civilité » est revenu : il l'a fait retirer");
+
   await page.fill('input[placeholder="Bernard"]', client);
   await page.click('[data-atlas="action-dicter"]');
 
