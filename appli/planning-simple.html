@@ -206,19 +206,21 @@
   .feuille .entete{margin:0;text-align:center;font:700 10.5px/1 ui-sans-serif,sans-serif;
                    letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
   .feuille .client{margin:10px 0 0;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
-  .feuille .adresse{display:block;margin:5px 0 0;text-align:center;font-size:13px;
-                    color:var(--pin);text-decoration:underline;text-underline-offset:3px}
+  /* L'adresse ne s'AFFICHE plus — sa demande du 21 août — mais elle sert
+     toujours : Maps, Waze et « Copier » la lisent sans la montrer. */
   .feuille .gestes{margin-top:10px;display:flex;gap:6px}
   .feuille .geste{flex:1;border:1px solid var(--trait);background:var(--plage);border-radius:8px;
                   padding:11px 6px;text-align:center;font-size:13px;color:var(--encre);
                   text-decoration:none;cursor:pointer;display:block}
   .feuille .geste.eteint{color:var(--gris);opacity:.45}
-  .feuille .quand{margin:4px 0 0;text-align:center;font-size:12px;color:var(--gris)}
   .feuille .taches{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait)}
+  .plus{margin-left:10px;border:1px solid var(--or);background:transparent;border-radius:999px;
+        padding:4px 10px;font-size:11.5px;color:var(--or);cursor:pointer}
+  .choisir{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin-top:4px}
+  .choisir .rien{margin:0;font-size:12px;color:var(--gris)}
   .feuille .taches p{margin:0 0 9px;padding-left:14px;position:relative;font-size:14.5px;line-height:1.45}
   .feuille .taches p::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;
                              border-radius:999px;background:var(--or)}
-  .feuille .sans-prix{margin:10px 0 0;text-align:center;font-size:11.5px;color:var(--gris)}
   .feuille .pdf{display:block;margin:12px auto 0;width:max-content;border-radius:999px;
                 background:var(--pin);color:#faf9f5;padding:10px 20px;font-size:13px}
 
@@ -593,9 +595,18 @@
         : `${noms.slice(0, 2).join(", ")} +${noms.length - 2}`;
       const dit = pris.length === 0 ? "libre" : complet ? `Complet · ${qui}` : qui;
       const etat = pris.length === 0 ? "libre" : complet ? "plein" : "moitie";
+      // **Tant qu'il reste de la place, on peut poser quelqu'un dessus.** Sa
+      // remarque du 21 août : « le 19, j'ai le matin de pris, l'après-midi
+      // libre, et je ne peux pas rajouter quelqu'un dessus — ce n'est pas
+      // normal ». Poser depuis « Sans date » tout en bas de l'écran ne
+      // remplace pas ce geste-là : il regarde la demi-journée, c'est là qu'il
+      // veut ajouter.
+      const plus = complet
+        ? ""
+        : `<button type="button" class="plus" data-ajouter="${demi}">+ Ajouter</button>`;
       return `<div class="demi-ligne">
         <span class="quoi"><i class="pastille ${etat}"></i>${mot}</span>
-        <span class="compte">${dit}</span></div>`;
+        <span class="compte">${dit}${plus}</span></div>`;
     };
 
     // **Chaque chantier ouvre sa feuille de travail.** Sa demande du 21 août :
@@ -620,6 +631,27 @@
       <div id="feuille"></div>`;
 
     const duJourLa = () => duJour(jourTouche);
+
+    // **Qui poser ?** La liste des chantiers en attente s'ouvre sur place. Elle
+    // dit ce qu'elle a, ou qu'elle n'a rien — un bouton qui n'ouvre rien laisse
+    // croire à une panne.
+    boite.querySelectorAll("[data-ajouter]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const demi = b.dataset.ajouter;
+        const choix = document.createElement("div");
+        choix.className = "choisir";
+        choix.innerHTML = SANS_DATE.length === 0
+          ? `<p class="rien">Aucun chantier n’attend de jour.</p>`
+          : SANS_DATE.map((c, i) => `<button type="button" class="petit" data-qui="${i}">${c.nom}</button>`).join("");
+        b.replaceWith(choix);
+        choix.querySelectorAll("[data-qui]").forEach((q) =>
+          q.addEventListener("click", () => {
+            const [c] = SANS_DATE.splice(Number(q.dataset.qui), 1);
+            CHANTIERS.push({ ...c, date: jourTouche, demi, equipe: "" });
+            lundi = lundiDe(jourTouche);
+            rendre();
+          }));
+      }));
 
     boite.querySelectorAll("[data-feuille]").forEach((b) =>
       b.addEventListener("click", () => rendreFeuille(duJourLa()[Number(b.dataset.feuille)])));
@@ -706,8 +738,6 @@
       <div class="feuille">
         <p class="entete">Feuille de chantier</p>
         <p class="client">${c.nom}</p>
-        ${c.adresse ? `<a class="adresse" href="https://maps.apple.com/?daddr=${q}&dirflg=d">${c.adresse}</a>` : ""}
-        <p class="quand">${titreJour(c.date)} · ${ditLaDemi(c.demi)}${c.equipe ? ` · ${c.equipe}` : ""}</p>
 
         <div class="gestes">
           <a class="geste" href="https://maps.apple.com/?daddr=${q}&dirflg=d">Maps</a>
@@ -723,8 +753,7 @@
         <div class="taches">
           ${(c.taches || ["Les tâches viendront du devis."]).map((t) => `<p>${t}</p>`).join("")}
         </div>
-        <p class="sans-prix">Aucun prix sur cette feuille.</p>
-        <span class="pdf">Ouvrir le PDF</span>
+        <span class="pdf">Ouvrir le PDF sans les prix</span>
       </div>`;
 
     // Le mot qui change dit que le geste a eu lieu : sans lui, on appuie deux

@@ -1068,6 +1068,26 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Ajouter quelqu'un là où il regarde, et alléger la feuille
+
+**Sa remarque du 21 août :** *« je clique sur le 19, j'ai le matin de pris,
+l'après-midi libre, et je ne peux pas rajouter quelqu'un dessus — ce n'est pas
+normal »*.
+
+Il avait raison, et le défaut était de conception : poser un chantier ne se
+faisait que depuis « Sans date », **tout en bas de l'écran**. Or il regarde la
+demi-journée, et c'est là qu'il veut ajouter. Chaque demi-journée qui a de la
+place porte donc un **+ Ajouter** ; il ouvre sur place la liste de ceux qui
+attendent un jour. Une demi-journée COMPLÈTE n'en propose aucun — le bouton
+serait un mensonge.
+
+**Et la feuille perd ce qu'il n'a pas demandé** : *« ce qu'il y a sous le nom,
+l'adresse et la date, tu peux supprimer. Tu me laisses Waze, Maps, copier,
+appeler »*. L'adresse et le numéro **servent toujours** aux quatre gestes — ils
+sont lus sans être écrits. Le bouton dit maintenant ce qu'il fait : « Ouvrir le
+PDF sans les prix », ce qui rend la ligne « Aucun prix sur cette feuille »
+inutile.
+
 ### La légende reprise à la lettre, et le nom cliquable là où il cliquait
 
 **Deux corrections qu'il a fallu redemander, et c'est un échec de lecture de ma

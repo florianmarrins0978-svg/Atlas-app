@@ -265,9 +265,13 @@ await page.locator('#jour-ouvert .chantier-jour .nom').first().click();
   const feuille = page.locator(".feuille");
   verifier("la feuille s'ouvre sous le jour", (await feuille.count()) === 1);
   const dit = await feuille.innerText();
-  verifier("elle porte le client et son adresse", dit.includes("Mme Chauvin") && dit.includes("Orvault"));
-  verifier("elle porte l'équipe et la demi-journée", dit.includes("Julien") && dit.includes("après-midi"));
+  verifier("elle porte le client", dit.includes("Mme Chauvin"));
+  // **L'adresse et la date ne s'AFFICHENT plus** — sa demande du 21 août : « ce
+  // qu'il y a sous le nom, l'adresse et la date, tu peux supprimer ». Elles
+  // servent toujours aux quatre gestes, sans être écrites.
+  verifier("l'adresse et la date ne s'écrivent plus sous le nom", !dit.includes("Orvault") && !dit.includes("août"));
   verifier("elle porte les tâches du devis", dit.includes("Plantation de 12 arbustes"));
+  verifier("et le PDF annonce qu'il est sans les prix", dit.toLowerCase().includes("pdf sans les prix"));
   verifier(
     `AUCUN PRIX n'y figure (lu : ${JSON.stringify(dit.match(/[0-9][0-9 ,.]*\s?€|€/g) || [])})`,
     !/€/.test(dit),
@@ -282,8 +286,8 @@ await page.locator('#jour-ouvert .chantier-jour .nom').first().click();
   const liens = await feuille.evaluate((f) =>
     [...f.querySelectorAll("a")].map((a) => a.getAttribute("href")));
   verifier(
-    `l'adresse et « Maps » mènent à un itinéraire vers Orvault (lu : ${JSON.stringify(liens.slice(0, 2))})`,
-    liens.filter((h) => h.startsWith("https://maps.apple.com/?daddr=") && h.includes("Orvault")).length === 2,
+    `« Maps » mène à un itinéraire vers Orvault (lu : ${JSON.stringify(liens.slice(0, 1))})`,
+    liens.filter((h) => h.startsWith("https://maps.apple.com/?daddr=") && h.includes("Orvault")).length === 1,
   );
   verifier(
     "« Waze » mène à Waze, sur la même adresse",
@@ -293,7 +297,7 @@ await page.locator('#jour-ouvert .chantier-jour .nom').first().click();
     "« Appeler le client » compose un vrai numéro, sans ses espaces",
     liens.some((h) => h === "tel:0612345678"),
   );
-  verifier("il n'y a QUE deux destinations — plus de Plans, Google Maps ET Waze", liens.length === 4);
+  verifier("il n'y a QUE deux destinations et un appel — plus de Plans", liens.length === 3);
 
   // Le copier doit DIRE qu'il a copié : sans mot, on appuie deux fois.
   await page.click("#copier");
@@ -386,6 +390,40 @@ await page.click('[data-jour="2026-08-20"]');
   );
 }
 
+// ── AJOUTER QUELQU'UN SUR UNE DEMI-JOURNÉE QUI A DE LA PLACE ───────────
+//
+// Sa remarque du 21 août : « je clique sur le 19, j'ai le matin de pris,
+// l'après-midi libre, et je ne peux pas rajouter quelqu'un dessus — ce n'est
+// pas normal ». Poser depuis « Sans date », tout en bas de l'écran, ne remplace
+// pas ce geste : il regarde la demi-journée, c'est là qu'il veut ajouter.
+await page.click('[data-jour="2026-08-19"]');
+{
+  const lignes = await page.$$eval("#jour-ouvert .demi-ligne", (n) =>
+    n.map((e) => ({ dit: e.innerText.replace(/\s+/g, " ").trim(), plus: !!e.querySelector("[data-ajouter]") })));
+  verifier(
+    `le 19 propose d'ajouter sur ses deux demi-journées, qui ont de la place (lu : ${JSON.stringify(lignes)})`,
+    lignes.length === 2 && lignes.every((l) => l.plus),
+  );
+}
+await page.click('[data-jour="2026-08-21"]');
+{
+  const plus = await page.locator("#jour-ouvert [data-ajouter]").count();
+  verifier("le 21, COMPLET matin et après-midi, n'en propose aucun", plus === 0);
+}
+await page.click('[data-jour="2026-08-19"]');
+{
+  const avant = (await page.locator("#jour-ouvert").innerText()).length;
+  await page.locator('#jour-ouvert [data-ajouter="matin"]').click();
+  const noms = await page.$$eval("#jour-ouvert .choisir [data-qui]", (n) => n.map((e) => e.textContent.trim()));
+  verifier(`le bouton ouvre la liste de ceux qui attendent (lu : ${JSON.stringify(noms)})`, noms.length > 0);
+  await page.locator('#jour-ouvert .choisir [data-qui]').first().click();
+  verifier(
+    "et le choisir le pose pour de bon sur cette demi-journée",
+    (await page.locator("#jour-ouvert").innerText()).length > avant &&
+      (await barresDe("2026-08-19"))[0] !== "0%",
+  );
+}
+
 // ── LE NOM OUVRE LA FEUILLE, DANS LA LISTE DES PLANIFIÉS AUSSI ─────────
 //
 // C'est là qu'il cliquait : « je ne peux toujours pas cliquer sur le nom du
@@ -408,7 +446,8 @@ await page.locator("#planifies .chantier").first().click();
     );
   }
   const dit = await feuille.innerText();
-  verifier("elle porte l'adresse", /rue|chemin|impasse|boulevard|allée/i.test(dit));
+  // L'adresse ne s'écrit plus : ce qui compte, c'est que les gestes la portent.
+  verifier("elle ne réaffiche pas l'adresse", !/rue|chemin|impasse|boulevard|allée/i.test(dit));
   const liens = await feuille.evaluate((f) => [...f.querySelectorAll("a")].map((a) => a.getAttribute("href")));
   verifier(
     `et le numéro pour appeler (lu : ${JSON.stringify(liens.filter((h) => h.startsWith("tel:")))})`,
