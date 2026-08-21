@@ -1302,6 +1302,38 @@ compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 su
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
 
+### Plus de plafond, donc plus de « complet » — trois façons de dire la charge
+
+**Sa décision du 21 août 2026, et elle défait la règle de la veille :**
+
+> *« L'utilisateur ne doit pas avoir de limite d'ajout de chantier, matin ou
+> après-midi, parce que c'est lui qui sait le temps qu'il va passer. On peut
+> être deux dans la boîte et enchaîner quatre ou cinq chantiers dans la journée,
+> surtout en entretien — des chantiers où les gars restent une heure. Donc pas
+> de limite, ni de chantiers ni de gars. Par contre le code couleur libre/plein
+> ne fonctionne plus, il faudrait le repenser. »*
+
+**Ce que cela emporte.** « Complet » n'existait que parce qu'un jour avait un
+maximum : deux équipes, deux places. Sans plafond, le mot ment — et surtout il
+**interdisait d'ajouter** là où il n'y avait rien à interdire. Il a disparu de
+l'écran, et la suite vérifie qu'il n'y revient pas.
+
+**Ce qui le remplace : des faits, plus un verdict.** La fiche du jour dit
+« 3 chantiers · 2 équipes · 1 sans équipe ». Et le mois se lit de trois façons,
+à comparer dans la planche :
+
+| | Ce que la case montre | Ce qu'on y lit d'un coup |
+|---|---|---|
+| **Points** | un point par chantier, matin dessus, après-midi dessous ; creux = personne dessus | la charge du jour, sans jamais plafonner (au-delà de quatre : « +3 ») |
+| **Équipes** | une case par équipe, remplie quand elle est dehors | « me reste-t-il quelqu'un de libre ? » — le nombre de chantiers n'y entre pas |
+| **Chiffres** | le nombre de chantiers, matin puis après-midi | le plus dense, et muet sur les équipes |
+
+**La légende est écrite par le script, plus figée dans la page.** Chaque façon a
+ses mots — et un mot figé finit par mentir, comme « 1 équipe sur 2 » l'a fait la
+veille. La suite vérifie les trois : qu'elles tiennent sur une ligne, qu'elles
+disent où sont le matin et l'après-midi, et qu'aucune ne promet un « complet »
+qui n'existe plus.
+
 ### Un « ＋ » sur la pastille, et la journée entière depuis la liste
 
 **Deux demandes du 21 août.**

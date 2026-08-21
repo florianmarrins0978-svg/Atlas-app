@@ -396,8 +396,18 @@ demande du 21 août) : l'adresse cliquable, **Maps et Waze — plus « Plans »*
 `src/lib/itineraire.ts` et `FeuilleYAller` plutôt que d'écrire une seconde fois
 les mêmes liens.
 
-**⚠ TROUVÉ le 21 août en vérifiant sa question, et NON TRANCHÉ : rien n'empêche
-de poser la MÊME équipe sur deux chantiers de la même demi-journée.** Paul peut
+**⚠ AUCUN PLAFOND — sa décision du 21 août, et elle défait tout ce qui précède
+sur « complet ».** Pas de limite au nombre de chantiers par demi-journée, ni au
+nombre d'équipes : « en entretien, les gars restent une heure et enchaînent
+quatre ou cinq chantiers ». Le code ne devra donc **jamais refuser un ajout** ni
+qualifier un jour de plein. **Reste à choisir comment le mois dit la charge** :
+points, équipes dehors, ou chiffres (les trois se comparent dans la planche).
+
+**⚠ Et la question de la même équipe posée deux fois tombe avec le plafond :**
+rien n'empêche de poser Paul sur deux chantiers de la même demi-journée, et
+c'est désormais ASSUMÉ — deux interventions d'une heure s'enchaînent. Ce qui
+reste à trancher est plus petit : faut-il le SIGNALER (« Paul est déjà sur
+Auffret ce matin ») ? Paul peut
 être sur Leroy et sur Auffret le même après-midi — impossible sur le terrain, et
 le compte s'en trouve flatté : deux chantiers, une seule équipe occupée, l'écran
 dit « 1 sur 2 » et laisse croire qu'il reste de la place.
