@@ -192,8 +192,13 @@ jobs:
           # Elle se donne par son adresse directe. Sans cette ligne, la liste
           # déduite ne la verrait pas, et on lui transmettrait une adresse dont
           # rien ne prouve qu'elle répond.
+          # `arrosage-plan.html` rejoint la liste le 21 août, pour la même
+          # raison : elle se donne par son adresse directe, pas depuis
+          # `essais.html`. Sans cette ligne, on lui transmettrait une adresse
+          # dont rien ne prouve qu'elle répond — c'est déjà arrivé, et c'est LUI
+          # qui avait fait le test.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
-                   arrosage-simple.html $LIES; do
+                   arrosage-simple.html arrosage-plan.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

@@ -435,6 +435,33 @@ pièces. Au compteur, rien n'est demandé : en Ø25 on a d'office ce qu'il faut.
 Ailleurs, le seuil est **2,5 bar en dynamique**. Voir `CHANGELOG.md` et
 `PROJECT_STATE.md`.
 
+## Le plan DESSINÉ — **maquette à valider, 21 août 2026**
+
+*« Il manque la photo, le schéma avec les réseaux, et l'implantation des
+arroseurs. Les différents réseaux de couleurs. Crée-moi des maquettes dynamiques
+en .html, ne code surtout rien. Je veux d'abord voir, analyser, et une fois que
+j'aurai validé, on pourra commencer à coder. »*
+
+**`appli/arrosage-plan.html`** — son croquis du 21 août (pelouse en L, 176 m²,
+piquage au compteur), le plan tracé à ses cotes, 13 arroseurs répartis en
+3 réseaux de couleurs, chacun sous les 1,80 m³/h du compteur. La sélection d'un
+réseau se fait sans une ligne de script.
+
+**Rien n'est codé dans l'application tant qu'il n'a pas validé.** Ce qui attend
+sa réponse :
+
+| | Ce qui attend | Pourquoi on ne tranche pas à sa place |
+|---|---|---|
+| 1 | **L'implantation proposée** — maillage de 6 m pour les turbines, 4 m pour les tuyères de l'extension | C'est son métier. Un maillage plus serré arrose mieux et coûte plus cher ; l'arbitrage lui revient |
+| 2 | **Le découpage en 3 voies** — gauche, droite, extension | Un autre découpage est possible (par exposition, par horaire). Celui-ci est le plus simple à repérer sur le terrain |
+| 3 | **Le tracé des tuyaux** — le tronçon commun traverse la pelouse | Un tracé en périphérie coûte plus de tuyau mais évite de rouvrir le gazon plus tard |
+
+**Ce que la maquette a déjà corrigé de sa capture :** deux réseaux portaient le
+MÊME nom, tronqué (« Pelouse pas de gazon à gauche … »). Un contrôle refuse
+désormais un nom répété ou coupé.
+
+---
+
 **Ce qui reste à coder, et qui n'attend personne :**
 
 - **Rattacher un plan à un chantier.** Rien n'est enregistré aujourd'hui : un

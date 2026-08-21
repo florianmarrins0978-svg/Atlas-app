@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le plan d'arrosage se DESSINE — maquette, rien n'est codé
+
+*Sa demande, capture à l'appui :* **« il manque la photo, le schéma avec les
+réseaux, et l'implantation des arroseurs — les différents réseaux de
+couleurs »**. L'application rendait trois listes et aucun dessin.
+
+**`appli/arrosage-plan.html`**, tracée sur son croquis du jour : pelouse en L,
+12 × 12 et 8 × 4, **176 m²**, piquage au compteur. 13 arroseurs, 3 réseaux de
+couleurs, chacun sous les 1,80 m³/h disponibles. Aucun JavaScript : choisir un
+réseau passe par des boutons radio et du CSS, donc ça marche hors ligne sur son
+téléphone.
+
+**Ce qui distingue ce plan d'un joli dessin, c'est ce que son contrôle
+recalcule** (`scripts/verifier-maquette-arrosage-plan.mjs`) :
+
+- **la surface est relue depuis le polygone tracé** et comparée à celle
+  annoncée — un plan juste sur une forme fausse ferait commander les pièces
+  d'un autre jardin ;
+- **aucun coin de pelouse n'est laissé sans eau** : on maille le terrain tous
+  les 50 cm et l'on vérifie que chaque point est à portée d'un arroseur. C'est
+  le contrôle qui compte, parce qu'un trou ne se voit pas sur un dessin — il se
+  voit en juillet, en jaune. Éprouvé en rétrécissant les turbines : il annonce
+  « 48 m² sans arrosage, à partir de 2,25 × 2,75 m » ;
+- **aucune voie ne dépasse le débit du compteur** — une voie trop chargée fait
+  sortir les arroseurs à moitié ;
+- **les métrés sont mesurés sur le tracé**, jamais saisis ;
+- **aucun nom de réseau répété ni coupé** — le défaut exact de sa capture, où
+  deux réseaux s'appelaient tous les deux « Pelouse pas de gazon à gauche … ».
+  Deux vannes qui portent le même nom, c'est la mauvaise qu'on ferme.
+
+**Deux défauts trouvés en la regardant, jamais par un test :** la photo du
+croquis s'affichait couchée (une rotation EXIF appliquée à tort), et les quatre
+boutons radio se voyaient au-dessus des onglets — le sélecteur CSS ne les
+atteignait pas, ils étaient hors de leur conteneur.
+
+
 ### La photo se PREND ou se CHOISIT — partout, plus seulement sur la fiche client
 
 *« Quand je clique sur ajouter une photo au croquis, il faut que soit je puisse
