@@ -1824,6 +1824,28 @@ source (`scripts/engendrer-maquette-arrosage.mjs`) et tous leurs nombres sont
 calculés. Contrôle : `scripts/verifier-maquette-arrosage.mjs`, dans
 `npm run verifier:maquette`.
 
+### 0 triquadragies bis. `test-fiche-chantier-e2e` tombe SOUS CHARGE, comme les autres
+
+Constaté deux fois le 21 août 2026, sur deux batteries d'affilée :
+
+    ✗ Cocher tient : l'écran ET la base
+      les coches ne sont pas arrivées en base
+
+**Jouée seule, elle passe** — 11 cas, 0 échec, vérifié les deux fois. C'est donc
+la même famille que `test-facture-impayee-e2e` et `test-fiche-pendant-relance` :
+une écriture part au doigt levé, la suite n'attend pas qu'elle arrive, et sous
+la charge de quatre-vingts suites elle mesure la base avant l'écriture.
+
+**Le remède est connu et déjà appliqué ailleurs** (§ « attendre ce qu'on
+affirme, jamais une durée ») : relire jusqu'à voir ce qu'on affirme, laisser
+l'appel PARTIR avant de recharger, et surtout **assener le bon coupable** quand
+il n'arrive jamais — sans quoi le rouge tombe trois cas plus loin, sur un écran
+innocent.
+
+**Qui peut le faire :** n'importe quelle session qui touche à cette fiche. Ce
+n'est pas urgent pour le produit ; c'est urgent pour la batterie, qu'un rouge
+au hasard finit par rendre inutile.
+
 ### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
 
 *Constaté le 16 août 2026 en jouant la batterie complète d'un autre lot.*
