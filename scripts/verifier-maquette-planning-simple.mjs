@@ -142,101 +142,90 @@ verifier(
 
 // ── La marque du jour se dessine, et rien ne mesure zéro ────────────────
 {
-  const boites = await page.$$eval(".marqueP .pts", (n) => n.map((e) => e.getBoundingClientRect().height));
+  const boites = await page.$$eval(".marqueA i", (n) => n.map((e) => e.getBoundingClientRect().height));
   verifier(
-    `les deux rangs de points se dessinent (${boites.length} rangs, aucun de zéro pixel)`,
+    `les deux barres du jour se dessinent (${boites.length} barres, aucune de zéro pixel)`,
     boites.length === 62 && boites.every((h) => h >= 1),
   );
 }
 
 /**
- * Ce qu'une case du mois montre, demi-journée par demi-journée.
+ * Ce qu'une case du mois peint, demi-journée par demi-journée.
  *
- * **Depuis le 21 août, il n'y a plus de plafond** — donc plus de « complet ».
- * La case dit une CHARGE : en mode « Points », un point par chantier, creux
- * quand personne n'est encore affecté. On rend donc, pour le matin puis
- * l'après-midi, le nombre de points et combien sont creux.
+ * **Sa règle du 21 août au soir :** la barre dit une CHARGE — vide, de la place,
+ * complet, ou au-delà. Le dernier état prévient sans interdire. On rend donc
+ * l'état et la part remplie.
  */
 const chargeDe = (jour) =>
-  page.$$eval(`[data-jour="${jour}"] .marqueP .pts`, (n) =>
+  page.$$eval(`[data-jour="${jour}"] .marqueA i`, (n) =>
     n.map((e) => {
-      const pts = [...e.querySelectorAll("i")];
-      const plus = e.querySelector("b");
-      return { points: pts.length + (plus ? Number(plus.textContent.replace("+", "")) : 0),
-               creux: pts.filter((i) => i.classList.contains("creux")).length };
+      const seg = e.querySelector(".seg");
+      if (!seg) return { etat: "libre", part: "0%" };
+      return { etat: seg.className.replace("seg", "").trim() || "libre", part: seg.style.width };
     }));
 
 // ── Ce que le calendrier peint doit être CE QUE LES DONNÉES DISENT ───────
 //
-// Le vendredi 21 porte deux chantiers à la journée, sans équipe : deux points
-// creux le matin, deux l'après-midi. Un calendrier joli mais faux passerait
-// tous les contrôles précédents.
+// Le vendredi 21 porte deux chantiers à la journée et l'entreprise a deux
+// équipes : chaque équipe a le sien, donc COMPLET — sans que rien n'interdise
+// d'en ajouter un troisième (contrôle plus bas).
 verifier(
-  `le vendredi 21 montre deux chantiers, sans personne dessus (lu : ${JSON.stringify(await chargeDe("2026-08-21"))})`,
-  JSON.stringify(await chargeDe("2026-08-21")) ===
-    JSON.stringify([{ points: 2, creux: 2 }, { points: 2, creux: 2 }]),
+  `le vendredi 21 est complet matin et après-midi (lu : ${JSON.stringify(await chargeDe("2026-08-21"))})`,
+  (await chargeDe("2026-08-21")).every((d) => d.etat === "plein" && d.part === "100%"),
 );
 verifier(
-  `le mercredi 19 n'a rien le matin et un chantier l'après-midi (lu : ${JSON.stringify(await chargeDe("2026-08-19"))})`,
-  JSON.stringify(await chargeDe("2026-08-19")) ===
-    JSON.stringify([{ points: 0, creux: 0 }, { points: 1, creux: 0 }]),
+  `le mercredi 19 n'a rien le matin et de la place l'après-midi (lu : ${JSON.stringify(await chargeDe("2026-08-19"))})`,
+  (await chargeDe("2026-08-19"))[0].etat === "libre" &&
+    (await chargeDe("2026-08-19"))[1].etat === "place",
 );
 
-// ── SANS PLAFOND : on ajoute autant de chantiers qu'on veut ─────────────
+// ── LE DÉPASSEMENT PRÉVIENT, IL N'INTERDIT PAS ─────────────────────────
 //
-// Sa décision du 21 août : « pas de limite d'ajout de chantier, ni même de
-// gars — en entretien, les gars restent parfois une heure et enchaînent quatre
-// ou cinq chantiers dans la journée ». Le contrôle qui compte est celui-ci :
-// un jour déjà servi par toutes les équipes doit TOUJOURS accepter un chantier
-// de plus.
-await page.click('[data-jour="2026-08-26"]');
+// Sa proposition du 21 août : « s'il rajoute un troisième chantier avec deux
+// gars, on met une autre couleur pour dire qu'il a dépassé — mais il peut quand
+// même le faire ». Les deux moitiés de la règle se jouent ici : l'ajout PASSE,
+// et la couleur CHANGE.
+await page.click('[data-jour="2026-08-21"]');
 {
-  const avant = (await chargeDe("2026-08-26"))[1].points;
-  const bloc = page.locator("#jour-ouvert .demi").last();
-  verifier("une demi-journée déjà servie par les deux équipes propose encore d'ajouter",
-    (await bloc.locator("[data-ajouter]").count()) === 1);
+  const bloc = page.locator("#jour-ouvert .demi").first();
+  verifier("un jour complet propose quand même d'ajouter", (await bloc.locator("[data-ajouter]").count()) === 1);
   await bloc.locator("[data-ajouter]").click();
   await bloc.locator(".choisir [data-qui]").first().click();
-  const apres = (await chargeDe("2026-08-26"))[1].points;
-  verifier(`et le chantier s'ajoute pour de bon (${avant} → ${apres} points)`, apres === avant + 1);
-}
-
-// ── Le mot « complet » ne doit plus exister nulle part ──────────────────
-//
-// C'était un verdict ; il n'y a plus de plafond pour le rendre.
-{
-  const ecran = (await page.locator(".tel").innerText()).toLowerCase();
-  verifier(`« complet » a disparu de l'écran`, !ecran.includes("complet"));
-}
-
-// ── LA LÉGENDE SUIT CE QU'ON REGARDE ───────────────────────────────────
-//
-// Depuis le 21 août, trois façons de dire la charge se comparent — points,
-// équipes dehors, chiffres —, et chacune a ses propres mots. Une légende figée
-// dans la page finirait par mentir : c'est déjà arrivé avec « 1 équipe sur 2 ».
-{
-  const mots = {};
-  for (const m of ["A", "B", "C"]) {
-    await page.click(`[data-marque="${m}"]`);
-    await page.waitForTimeout(120);
-    mots[m] = (await page.locator("#legende").innerText()).toLowerCase().replace(/\n/g, " ");
-    const hauts = await page.$$eval(".legende > span", (n) =>
-      n.map((e) => Math.round(e.getBoundingClientRect().top)));
-    verifier(
-      `en « ${m} », la légende tient sur UNE ligne (hauts lus : ${JSON.stringify(hauts)})`,
-      hauts.length > 1 && hauts.every((h) => h === hauts[0]),
-    );
-    verifier(`en « ${m} », elle dit où sont le matin et l'après-midi`,
-      mots[m].includes("matin") && mots[m].includes("après-midi"));
-  }
-  verifier(`en « Points », elle parle de chantiers (lu : « ${mots.A} »)`, mots.A.includes("chantier"));
-  verifier(`en « Équipes », elle parle d'équipes (lu : « ${mots.B} »)`, mots.B.includes("équipe"));
-  verifier(`en « Chiffres », elle dit le nombre (lu : « ${mots.C} »)`, mots.C.includes("nombre"));
+  const apres = await chargeDe("2026-08-21");
   verifier(
-    "aucune des trois ne promet un « complet » qui n'existe plus",
-    !Object.values(mots).some((m) => m.includes("complet")),
+    `le troisième chantier passe, et le matin bascule en « au-delà » (lu : ${JSON.stringify(apres)})`,
+    apres[0].etat === "dela" && apres[0].part === "100%",
   );
-  await page.click('[data-marque="A"]');
+  const dit = await page.locator("#jour-ouvert .demi").first().locator(".compte").innerText();
+  verifier(`et le compte le dit en clair (lu : « ${dit.trim()} »)`, /150\s*%/.test(dit));
+}
+
+// ── Le mot « complet » reste — mais comme un ÉTAT, jamais comme un refus ─
+{
+  const bloc = page.locator("#jour-ouvert .demi").last();
+  verifier(
+    "l'après-midi, complet lui aussi, garde son « + Ajouter »",
+    (await bloc.locator("[data-ajouter]").count()) === 1,
+  );
+}
+
+// ── LA LÉGENDE DIT LES QUATRE ÉTATS, SUR UNE LIGNE ─────────────────────
+{
+  const dit = (await page.locator("#legende").innerText()).toLowerCase().replace(/\n/g, " ");
+  verifier(
+    `elle dit la place, le complet et l'au-delà (lu : « ${dit} »)`,
+    ["de la place", "complet", "au-delà", "matin", "après-midi"].every((m) => dit.includes(m)),
+  );
+  const hauts = await page.$$eval(".legende > span", (n) =>
+    n.map((e) => Math.round(e.getBoundingClientRect().top)));
+  verifier(
+    `et tout tient sur UNE ligne (hauts lus : ${JSON.stringify(hauts)})`,
+    hauts.length === 4 && hauts.every((h) => h === hauts[0]),
+  );
+  const carres = await page.$$eval(".legende .carre", (n) =>
+    n.map((e) => { const r = e.getBoundingClientRect(); return Math.abs(r.width - r.height) <= 1; }));
+  verifier(`les cinq marques restent des carrés (lu : ${JSON.stringify(carres)})`,
+    carres.length === 5 && carres.every(Boolean));
 }
 
 // ── AJOUTER QUELQU'UN SUR UNE DEMI-JOURNÉE QUI A DE LA PLACE ───────────
@@ -272,7 +261,7 @@ await page.click('[data-jour="2026-08-19"]');
   verifier(
     "et le choisir le pose pour de bon sur cette demi-journée",
     (await page.locator("#jour-ouvert").innerText()).length > avant &&
-      (await chargeDe("2026-08-19"))[0].points > 0,
+      (await chargeDe("2026-08-19"))[0].etat !== "libre",
   );
 }
 
@@ -294,7 +283,9 @@ await page.click('[data-jour="2026-08-21"]');
     })));
   verifier(
     `les deux demi-journées portent CHACUNE leurs chantiers et leurs pastilles (lu : ${JSON.stringify(blocs)})`,
-    blocs.length === 2 && blocs.every((b) => b.places.length === 2 && b.equipes === 2),
+    // Chaque place porte SA pastille : c'est ce qui est vérifié, pas un compte
+    // figé — un contrôle plus haut a pu poser un chantier de plus.
+    blocs.length === 2 && blocs.every((b) => b.places.length >= 2 && b.equipes === b.places.length),
   );
 
   // Et l'on attribue depuis l'APRÈS-MIDI, sans toucher au matin.
@@ -309,30 +300,25 @@ await page.click('[data-jour="2026-08-21"]');
 
 // ── POSÉ, MAIS PERSONNE DESSUS — ce qui le perdait le 21 août ──────────
 //
-// « Les jours peuvent être pleins, mais les équipes pas choisies. » Un chantier
-// posé sans équipe se montre par un point CREUX ; dès qu'on lui donne
-// quelqu'un, le point se remplit.
+// La barre du mois compte des CHANTIERS depuis sa règle du soir ; ce n'est plus
+// elle qui dit si quelqu'un est affecté. C'est la fiche du jour qui le porte —
+// « Équipe ? » —, et c'est là qu'on l'éprouve.
 await page.click("#retour").catch(() => {});
 await page.click('[data-jour="2026-08-21"]');
 {
-  const avant = await chargeDe("2026-08-21");
-  // Un contrôle plus haut a déjà confié une équipe à l'un d'eux : on exige donc
-  // qu'il RESTE au moins un point creux, pas qu'ils le soient tous. Exiger
-  // l'état vierge ferait dépendre ce contrôle de l'ordre des précédents.
-  verifier(
-    `le 21 porte encore des chantiers sans personne dessus (lu : ${JSON.stringify(avant)})`,
-    avant.some((d) => d.creux > 0),
-  );
+  const avant = await page.locator("#jour-ouvert").innerText();
+  verifier("les chantiers sans personne le disent en toutes lettres", avant.includes("Équipe ?"));
+
   for (const [rang, nom] of [[0, "Julien"], [1, "Paul"], [2, "Julien"], [3, "Paul"]]) {
     await page.locator('#jour-ouvert [data-equipe]').nth(rang).click();
     const bouton = page.locator(`#jour-ouvert .choisir [data-choix="${nom}"]`).first();
     if (!(await bouton.getAttribute("class")).includes("retenue")) await bouton.click();
     await page.locator('#jour-ouvert .choisir [data-fini]').first().click();
   }
-  const apres = await chargeDe("2026-08-21");
+  const apres = await page.locator("#jour-ouvert .demi").first().innerText();
   verifier(
-    `une fois les équipes posées, plus aucun point creux (lu : ${JSON.stringify(apres)})`,
-    apres.every((d) => d.creux === 0),
+    `une fois les équipes posées, le matin ne dit plus « Équipe ? » (lu : « ${apres.replace(/\n/g, " ").slice(0, 60)}… »)`,
+    !apres.includes("Équipe ?"),
   );
 }
 
@@ -374,8 +360,8 @@ await page.click('[data-jour="2026-08-20"]');
     lu[0][0] === "Paul" && lu[1][0].includes("Julien") && lu[1][0].includes("Paul"),
   );
   verifier(
-    `et le calendrier montre bien deux chantiers ce jour-là (lu : ${JSON.stringify(await chargeDe("2026-08-20"))})`,
-    (await chargeDe("2026-08-20")).every((d) => d.points >= 1),
+    `et le calendrier montre bien de la charge ce jour-là (lu : ${JSON.stringify(await chargeDe("2026-08-20"))})`,
+    (await chargeDe("2026-08-20")).every((d) => d.etat !== "libre"),
   );
 }
 

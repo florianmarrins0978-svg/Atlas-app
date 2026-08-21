@@ -415,8 +415,15 @@ demande du 21 août) : l'adresse cliquable, **Maps et Waze — plus « Plans »*
 `src/lib/itineraire.ts` et `FeuilleYAller` plutôt que d'écrire une seconde fois
 les mêmes liens.
 
-**⚠ AUCUN PLAFOND — sa décision du 21 août, et elle défait tout ce qui précède
-sur « complet ».** Pas de limite au nombre de chantiers par demi-journée, ni au
+**LE QUOTA QUI PRÉVIENT SANS INTERDIRE — sa règle du 21 août au soir, et c'est
+elle qui tient.** Une équipe = un chantier = une demi-journée. En dessous : « il
+reste de la place ». À égalité : « complet ». **Au-delà : une troisième couleur
+(l'or), et l'ajout PASSE quand même** — « nous, on prévient juste ». Le
+pourcentage ne s'écrit que s'il dépasse. Le code ne devra donc **jamais refuser
+un ajout**, et **jamais employer le rouge** pour ça : le rouge dit « erreur »,
+pas « regarde ».
+
+**Ce qui précède sur « aucun plafond » reste vrai dans son esprit :** Pas de limite au nombre de chantiers par demi-journée, ni au
 nombre d'équipes : « en entretien, les gars restent une heure et enchaînent
 quatre ou cinq chantiers ». Le code ne devra donc **jamais refuser un ajout** ni
 qualifier un jour de plein. **Reste à choisir comment le mois dit la charge** :

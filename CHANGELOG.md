@@ -1322,6 +1322,50 @@ compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 su
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
 
+### Le quota qui prévient sans interdire — sa proposition, et elle est meilleure
+
+**Sa proposition du 21 août au soir**, après avoir vu les trois façons de dire
+la charge :
+
+> *« Une fois qu'on a mis deux chantiers avec deux gars, on dit que c'est
+> complet. Et s'il en rajoute un troisième, on met une autre couleur pour lui
+> signaler qu'il a dépassé le quota — mais il peut quand même le faire. Nous, on
+> prévient juste. Au cas où il aurait fait une erreur, ou s'il se dit : ces
+> chantiers ne dureront pas vraiment la journée, donc ça passe. »*
+
+**Elle est meilleure que les trois miennes, et voici pourquoi.** « Complet »
+donnait un repère mais refusait ; « aucune limite » n'interdisait plus rien mais
+ne disait plus rien non plus. Sa règle garde le repère — une équipe, un
+chantier, une demi-journée — et le transforme en **avertissement**. Le
+dépassement se voit ; il ne se refuse pas. C'est lui qui sait qu'une taille de
+haie prend une heure.
+
+**Quatre états**, et le dernier est un signal, pas une faute :
+
+| | Ce que ça veut dire |
+|---|---|
+| vide | personne |
+| vert clair | il reste de la place |
+| vert foncé | chaque équipe a son chantier |
+| **or** | **au-delà** — plus de chantiers que d'équipes |
+
+**L'or, jamais le rouge.** Le rouge de l'application dit « erreur »
+(`colors.alert`) : l'employer ici ferait passer un choix délibéré pour un défaut.
+
+**Le pourcentage ne s'écrit que s'il dépasse** — « 3 chantiers · 150 % de vos
+équipes ». À 100 % il n'apprendrait rien de plus que « complet » ; en dessous, il
+ferait lire un calcul là où il suffit de compter.
+
+**Et sa première question du même message est réglée par là :** *« pourquoi
+quand je clique sur le 21 je n'ai pas le même visuel que sur le 19 ? »* — parce
+que « complet » supprimait le « + Ajouter ». Tous les jours proposent maintenant
+les mêmes gestes ; la suite le vérifie sur un jour complet ET sur un jour
+au-delà.
+
+**Les trois façons de dire la charge (points, équipes, chiffres) sont
+retirées** : il a tranché mieux qu'elles, et garder un dessin que plus rien
+n'emploie, c'est laisser une seconde façon de dire la même chose.
+
 ### Plus de plafond, donc plus de « complet » — trois façons de dire la charge
 
 **Sa décision du 21 août 2026, et elle défait la règle de la veille :**

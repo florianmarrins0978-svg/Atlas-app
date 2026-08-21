@@ -130,8 +130,9 @@
   .legende > span{flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:5px}
   .legende .carre{width:11px;height:11px;border-radius:3px;display:block;flex-shrink:0;
                   background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .legende .carre.pris{background:var(--pale);box-shadow:none}
+  .legende .carre.place{background:var(--pale);box-shadow:none}
   .legende .carre.plein{background:var(--pin);box-shadow:none}
+  .legende .carre.dela{background:var(--or);box-shadow:none}
   .legende .pt{width:7px;height:7px;border-radius:999px;display:block;flex-shrink:0;background:var(--pin)}
   .legende .pt.creux{background:transparent;box-shadow:inset 0 0 0 1.5px var(--or)}
   .legende .annote{display:flex;align-items:center;gap:6px}
@@ -140,16 +141,13 @@
   .legende .annote .mots b{height:11px;display:flex;align-items:center;font-weight:600;
                            font-size:9.5px;color:var(--encre-douce)}
 
-  /* A — les points : un par chantier, matin dessus, après-midi dessous. */
-  .marqueP{display:flex;flex-direction:column;gap:3px;align-items:center}
-  .marqueP .pts{display:flex;gap:2.5px;align-items:center;height:7px}
-  .marqueP .pts i{width:5.5px;height:5.5px;border-radius:999px;background:var(--pin);display:block}
-  .marqueP .pts i.creux{background:transparent;box-shadow:inset 0 0 0 1.5px var(--or)}
-  .marqueP .pts b{font:700 8.5px/1 ui-sans-serif,sans-serif;color:var(--encre-douce)}
-
-  /* C — le chiffre, matin puis après-midi. */
-  .marqueC{display:flex;flex-direction:column;gap:1px;align-items:center;line-height:1}
-  .marqueC b{font:600 9px/1 ui-sans-serif,sans-serif;color:var(--encre-douce);min-height:9px}
+  /* La barre du jour : quatre états, dont le dernier prévient sans interdire. */
+  .marqueA .seg.place{background:var(--pale)}
+  .marqueA .seg.plein{background:var(--pin)}
+  /* **L'or, jamais le rouge.** Dépasser n'est pas une faute : il sait qu'une
+     taille de haie prend une heure. Le rouge de l'application dit « erreur »
+     (`colors.alert`) — l'employer ici ferait passer un choix pour un défaut. */
+  .marqueA .seg.dela{background:var(--or)}
 
   /* Le nombre d'équipes — n'existe QUE dans la maquette, pour répondre à sa
      question en la MONTRANT plutôt qu'en l'expliquant. */
@@ -300,13 +298,6 @@
   <button type="button" id="retour" class="retour-aujourdhui" hidden>← Aujourd’hui</button>
 
   <div class="legende" id="legende"></div>
-
-  <div class="equipes" role="group" aria-label="Comment dire la charge">
-    <span>Voir :</span>
-    <button type="button" data-marque="A" aria-pressed="true">Points</button>
-    <button type="button" data-marque="B" aria-pressed="false">Équipes</button>
-    <button type="button" data-marque="C" aria-pressed="false">Chiffres</button>
-  </div>
 
   <div class="equipes" role="group" aria-label="Nombre d'équipes">
     <span>Vos équipes :</span>
@@ -513,27 +504,35 @@
   const estWeekEnd = (iso) => [0, 6].includes(jourDeSemaine(iso));
 
   /**
-   * Ce qu'une demi-journée porte — sans aucun plafond.
+   * Ce qu'une demi-journée porte, et à quelle CHARGE.
    *
-   * **Sa décision du 21 août 2026, et elle défait la règle d'avant :**
-   * *« l'utilisateur ne doit pas avoir de limite d'ajout de chantier, matin ou
-   * après-midi, parce que c'est lui qui sait le temps qu'il va passer. On peut
-   * être deux dans la boîte et enchaîner quatre ou cinq chantiers dans la
-   * journée, surtout en entretien — des chantiers où les gars restent une heure.
-   * Donc pas de limite, ni de chantiers ni de gars. »*
+   * **Sa proposition du 21 août 2026, et c'est la bonne :**
+   * *« Une fois qu'on a mis deux chantiers avec deux gars, on dit que c'est
+   * complet. Et si l'utilisateur en rajoute un troisième, on met une autre
+   * couleur pour lui signaler qu'il a dépassé le quota — mais il peut quand
+   * même le faire. S'il veut mettre trois chantiers par jour avec deux gars, il
+   * le fait ; nous, on prévient juste. Au cas où il aurait fait une erreur, ou
+   * s'il se dit : ces chantiers ne dureront pas vraiment la journée, donc ça
+   * passe. »*
    *
-   * **Ce que cela emporte :** « complet » n'existe plus. Un jour n'est jamais
-   * fermé, et rien n'interdit d'ajouter. Ne restent que des FAITS : combien de
-   * chantiers, quelles équipes sont dehors, combien attendent encore qu'on leur
-   * donne quelqu'un.
+   * **Ce que ce modèle résout, et que ni « complet » ni « aucune limite » ne
+   * réglaient :** un repère existe — une équipe, un chantier, une demi-journée —
+   * sans jamais devenir une barrière. Le dépassement se voit ; il ne se refuse
+   * pas. C'est lui qui sait qu'une taille de haie prend une heure.
+   *
+   * `charge` vaut 1 quand chaque équipe a son chantier. Au-delà, on prévient.
    */
   function occupation(iso, demi) {
-    if (estWeekEnd(iso)) return { pris: [], occupees: [], sansEquipe: 0 };
+    if (estWeekEnd(iso)) return { pris: [], occupees: [], sansEquipe: 0, charge: 0 };
     const pris = duJour(iso).filter((c) => c.demi === "journee" || c.demi === demi);
     const occupees = [...new Set(pris.flatMap((c) => equipesDe(c, demi)))];
     const sansEquipe = pris.filter((c) => equipesDe(c, demi).length === 0).length;
-    return { pris, occupees, sansEquipe };
+    return { pris, occupees, sansEquipe, charge: pris.length / nombreEquipes };
   }
+
+  /** L'état d'une demi-journée : rien, de la place, juste ce qu'il faut, ou trop. */
+  const etatDe = (o) =>
+    o.pris.length === 0 ? "libre" : o.charge < 1 ? "place" : o.charge === 1 ? "plein" : "dela";
 
   const titreJour = (iso) => `${JOURS[jourDeSemaine(iso)]} ${numero(iso)} ${MOIS[enDate(iso).getUTCMonth()]}`;
   // **« ½ journée » ne s'écrit plus.** Sa remarque du 21 août : « il y a marqué
@@ -550,56 +549,28 @@
   }
 
   /**
-   * Ce qu'une case du mois montre — trois façons, à comparer.
+   * Les deux barres du jour : le matin dessus, l'après-midi dessous.
    *
-   * **Sa décision du 21 août a défait l'ancienne :** sans plafond, « libre /
-   * il reste de la place / complet » n'a plus de sens. Une barre qui se
-   * remplit suppose un maximum ; il n'y en a plus. Trois façons de dire la
-   * charge sans en inventer un :
+   * **Quatre états, et le dernier est un avertissement, pas un refus** (sa
+   * proposition du 21 août) :
    *
-   *   A · LES POINTS — un point par chantier, matin en haut, après-midi en bas.
-   *       Un point creux = chantier sans équipe. Au-delà de quatre, un chiffre
-   *       prend le relais : c'est ce qui permet de ne jamais plafonner.
-   *   B · LES ÉQUIPES DEHORS — une case par équipe, remplie quand elle
-   *       travaille. Répond à la seule question qui reste : « me reste-t-il
-   *       quelqu'un de libre ? » Le nombre de chantiers n'y entre pas.
-   *   C · LE CHIFFRE — le nombre de chantiers, matin puis après-midi. Le plus
-   *       dense, le plus muet sur les équipes.
+   *   · vide — personne ;
+   *   · vert clair — il reste de la place ;
+   *   · vert foncé — chaque équipe a son chantier ;
+   *   · **or — au-delà** : plus de chantiers que d'équipes. La barre est pleine
+   *     et change de couleur ; rien n'est interdit, on prévient.
+   *
+   * La barre se remplit à la charge, plafonnée à 100 % pour le DESSIN : au-delà,
+   * c'est la couleur qui parle, sinon il faudrait une barre qui déborde de la
+   * case — et le mois ne serait plus lisible.
    */
   function dessinerMarque(iso) {
-    const m = occupation(iso, "matin");
-    const a = occupation(iso, "apres");
-
-    if (marque === "B") {
-      const barre = (o) => {
-        const cases = EQUIPES().map((e) =>
-          `<span class="seg ${o.occupees.includes(e) ? "pris" : ""}"
-                 style="width:${100 / nombreEquipes}%"></span>`).join("");
-        const attente = o.sansEquipe
-          ? `<span class="seg sans" style="width:${100 / nombreEquipes}%"></span>` : "";
-        return `<i>${cases}${attente}</i>`;
-      };
-      return `<span class="marqueA">${barre(m)}${barre(a)}</span>`;
-    }
-
-    if (marque === "C") {
-      // Un jour vide n'écrit RIEN : quarante points gris sur un mois, c'est du
-      // bruit qu'on lit quand même.
-      const chiffre = (o) => `<b>${o.pris.length || ""}</b>`;
-      return `<span class="marqueC">${chiffre(m)}${chiffre(a)}</span>`;
-    }
-
-    // A — les points. Le quatrième et au-delà se disent en chiffre : la case
-    // du mois ne s'étire pas, et le compte ne se plafonne pas non plus.
-    const points = (o) => {
-      if (o.pris.length === 0) return `<span class="pts"></span>`;
-      if (o.pris.length <= 4) {
-        return `<span class="pts">${o.pris.map((c) =>
-          `<i class="${equipesDe(c, o === m ? "matin" : "apres").length ? "" : "creux"}"></i>`).join("")}</span>`;
-      }
-      return `<span class="pts"><i></i><i></i><i></i><b>+${o.pris.length - 3}</b></span>`;
+    const barre = (o) => {
+      const etat = etatDe(o);
+      const part = Math.round(Math.min(o.charge, 1) * 100);
+      return `<i><span class="seg ${etat}" style="width:${part}%"></span></i>`;
     };
-    return `<span class="marqueP">${points(m)}${points(a)}</span>`;
+    return `<span class="marqueA">${barre(occupation(iso, "matin"))}${barre(occupation(iso, "apres"))}</span>`;
   }
 
   function rendreMois() {
@@ -661,14 +632,15 @@
    * énonce donc ce qui est vrai — le nombre de chantiers, et qui est dehors.
    */
   function ditLeCompte(iso, demi) {
-    const { pris, occupees, sansEquipe } = occupation(iso, demi);
-    if (pris.length === 0) return "libre";
-    const chantiers = `${pris.length} chantier${pris.length > 1 ? "s" : ""}`;
-    const qui = occupees.length
-      ? ` · ${occupees.length} équipe${occupees.length > 1 ? "s" : ""}`
-      : "";
-    const reste = sansEquipe ? ` · ${sansEquipe} sans équipe` : "";
-    return chantiers + qui + reste;
+    const o = occupation(iso, demi);
+    if (o.pris.length === 0) return "libre";
+    const chantiers = `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
+    // **Le pourcentage ne s'écrit QUE s'il dépasse.** À 100 % il n'apprend
+    // rien de plus que « complet » ; en dessous, il ferait lire un calcul là
+    // où il suffit de compter.
+    if (o.charge > 1) return `${chantiers} · ${Math.round(o.charge * 100)} % de vos équipes`;
+    if (o.charge === 1) return `${chantiers} · complet`;
+    return chantiers;
   }
 
   /**
@@ -1037,31 +1009,19 @@
       }));
   }
 
-  /** La légende dit ce que la marque du moment veut dire — et rien d'autre. */
+  /**
+   * La légende : quatre états, dont le dernier prévient sans interdire.
+   *
+   * **« Libre » n'y figure pas**, et c'est délibéré : un carré vide se comprend
+   * seul, et il a demandé que tout tienne sur UNE ligne. Chaque mot gagné là
+   * est un mot qu'on ne lit pas trois cents fois.
+   */
   function rendreLegende() {
-    const l = document.getElementById("legende");
-    if (marque === "B") {
-      l.innerHTML = `
-        <span><i class="carre"></i> libre</span>
-        <span><i class="carre pris"></i> équipe dehors</span>
-        <span><i class="carre sans-eq"></i> à attribuer</span>
-        <span class="annote"><span class="deux"><i class="carre"></i><i class="carre pris"></i></span>
-          <span class="mots"><b>matin</b><b>après-midi</b></span></span>`;
-      l.querySelector(".sans-eq").style.backgroundImage =
-        "repeating-linear-gradient(45deg, rgba(46,59,46,.55) 0 2px, transparent 2px 5px)";
-      return;
-    }
-    if (marque === "C") {
-      l.innerHTML = `
-        <span>Le nombre de chantiers</span>
-        <span class="annote"><span class="deux"><b style="font-size:9px">3</b><b style="font-size:9px">2</b></span>
-          <span class="mots"><b>matin</b><b>après-midi</b></span></span>`;
-      return;
-    }
-    l.innerHTML = `
-      <span><i class="pt"></i> un chantier</span>
-      <span><i class="pt creux"></i> sans équipe</span>
-      <span class="annote"><span class="deux"><i class="pt"></i><i class="pt"></i></span>
+    document.getElementById("legende").innerHTML = `
+      <span><i class="carre place"></i> de la place</span>
+      <span><i class="carre plein"></i> complet</span>
+      <span><i class="carre dela"></i> au-delà</span>
+      <span class="annote"><span class="deux"><i class="carre"></i><i class="carre place"></i></span>
         <span class="mots"><b>matin</b><b>après-midi</b></span></span>`;
   }
 
@@ -1075,13 +1035,6 @@
       <div class="ligne"><span class="nom">${a.nom}</span><span class="etat">${a.etat}</span></div>`).join("");
   }
 
-  document.querySelectorAll("[data-marque]").forEach((b) =>
-    b.addEventListener("click", () => {
-      marque = b.dataset.marque;
-      document.querySelectorAll("[data-marque]").forEach((x) =>
-        x.setAttribute("aria-pressed", String(x === b)));
-      rendre();
-    }));
   document.querySelectorAll("[data-equipes]").forEach((b) =>
     b.addEventListener("click", () => {
       nombreEquipes = Number(b.dataset.equipes);
