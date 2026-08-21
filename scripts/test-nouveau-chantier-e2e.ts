@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { nomDuChantier } from "../src/lib/nom-chantier";
 import { jourIso } from "../src/lib/jour";
 import assert from "node:assert";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Créer un chantier, et ce que cela demande au patron.
 //
@@ -47,7 +48,7 @@ async function main() {
 
   // Et rien n'est obligatoire : le bouton est actif sur un formulaire vierge.
   assert.ok(
-    await page.locator('[data-atlas="action-dicter"]').isEnabled(),
+    await page.locator('[data-atlas="action-ecrire"]').isEnabled(),
     "Le bouton reste inactif sur un formulaire vide : quelque chose est encore exigé."
   );
 
@@ -96,7 +97,7 @@ async function main() {
   assert.ok(!/civilit/i.test(ecran), "l'intitulé « Civilité » est revenu : il l'a fait retirer");
 
   await page.fill('input[placeholder="Bernard"]', client);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
 
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const url = page.url();
@@ -120,7 +121,20 @@ async function main() {
     await page.locator(`text=${nomAttendu}`).first().isVisible(),
     "Le chantier n'a pas pris le nom de son client : il est devenu impossible à reconnaître."
   );
-  assert.ok(await page.locator("text=Ajouter des photos").isVisible(), "Un chantier neuf doit proposer 'Ajouter des photos'");
+  // **Ce contrôle réclamait « Ajouter des photos » dans le tiroir — il ne le
+  // peut plus, et c'est le parcours qui a changé, pas un défaut.** Depuis le
+  // 21 août 2026, le seul bouton de la fiche client mène au DEVIS : un devis
+  // brouillon existe donc dès la création, et le tiroir cesse alors d'annoncer
+  // les étapes qui l'ont précédé. Les photos, elles, se posent maintenant sur
+  // la fiche client (`Pellicule`), pas ici.
+  //
+  // Ce qu'on vérifie à la place tient à ce qui EST le cœur de cette fiche, et
+  // qui survivra au prochain remaniement : l'anneau y est, dès l'arrivée, sur
+  // un chantier neuf — sa demande du 11 août 2026.
+  assert.ok(
+    await page.locator('[data-atlas="anneau-note-vocale"]').isVisible(),
+    "L'anneau manque sur la fiche d'un chantier neuf"
+  );
 
   // Revérifie via la liste (autre écran, autre requête) que le chantier y figure aussi.
   await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
@@ -134,7 +148,7 @@ async function main() {
   // doit exister quand même, et rester reconnaissable : la date est la seule
   // chose vraie qui reste, et elle vaut mieux qu'un « Sans titre ».
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const titre = await page.locator("h1").first().innerText();
   assert.ok(

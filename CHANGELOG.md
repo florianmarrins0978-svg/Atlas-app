@@ -9,6 +9,55 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### La fiche client, codée trait pour trait — l'anneau, les photos, un seul bouton
+
+**Sa consigne, après avoir vu la moitié du travail livrée :** *« je veux que ça
+ressemble exactement à la maquette qu'on a construite ensemble. Tu me la codes
+trait pour trait. Tu ne changes rien, elle est parfaite. »* Il avait raison de
+protester : le lot précédent avait été coupé en deux sans qu'il le demande, et
+il manquait précisément ce qui compte — la dictée et les photos.
+
+Ce que l'écran `chantiers/nouveau` porte désormais, dans l'ordre de la maquette :
+
+| | |
+|---|---|
+| **Les photos** | le carré « + » de la fiche chantier, à l'identique — un champ unique, sans `capture`, donc le menu du téléphone |
+| **L'anneau** | celui de la fiche chantier, à l'identique : un appui dicte, un second **enregistre** |
+| **« Mon devis → »** | n'apparaît qu'une fois la dictée faite |
+| **Un seul bouton** | « Je rédige mon devis » |
+| **Les cases** | celles de la maquette : fond crème, 4 px, un liseré fin, l'or au doigt posé |
+
+**Les deux pièces ne sont pas des copies :** `Pellicule` et `AnneauNoteVocale`
+sont les composants de la fiche chantier, employés tels quels. Deux dessins du
+même geste se liraient comme deux fonctions différentes, et le second aurait
+divergé au premier ajustement (`CLAUDE.md` §3).
+
+**Elles vivent AVANT que le chantier existe**, et c'est le cœur de sa demande :
+il photographie et il dicte chez le client, puis il ferme l'application. Le
+chantier naît donc du premier geste (`assurerChantier`), une seule fois — trois
+photos et une dictée ne font pas quatre chantiers. Et ce qu'il tape APRÈS ce
+premier geste est reporté sur le chantier au moment du bouton : sans cela, un
+nom saisi après la dictée serait perdu, en silence.
+
+**Soixante-treize suites passaient par le bouton retiré.** Elles ne dictaient
+pas : c'était le chemin le plus court vers la fiche d'un chantier neuf. Elles
+passent maintenant par une fonction commune (`scripts/_creer-chantier-e2e.ts`) —
+soixante-treize réécritures séparées auraient produit soixante-treize façons de
+faire la même chose, et la première divergence serait passée inaperçue.
+
+**Un doublon corrigé au passage, que le nouveau parcours a révélé :** un
+brouillon de devis existant dès la création, le tiroir de la fiche chantier
+affichait DEUX lignes vers le même écran — « Devis » et « Devis à la main ». La
+sortie de secours ne s'affiche plus quand le devis est déjà là.
+
+**Et une leçon d'outillage qui valait 26 suites rouges :** un `.next` de
+développement abîmé par des batteries interrompues faisait expirer la navigation
+vers `/chantiers/[id]/prix` dans vingt-six suites — le préchauffage mettait
+376 s et en ratait deux. `rm -rf .next` : 65 s, zéro raté, zéro rouge. Devant une
+grappe de suites qui tombent toutes sur le même écran, vider le cache AVANT de
+chercher dans le produit.
+
+
 ### « Il y a une clé IA » — écrit dans le dépôt, plus dans une session
 
 **Sa consigne, et il a fallu qu'il la répète :** *« il y a une clé IA, il y a

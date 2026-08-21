@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Il n'y a pas de mémoire dans les actions. »** — le patron, 13 août 2026.
 //
@@ -59,18 +60,34 @@ async function main() {
   // moins souvent qu'un exemple, et elle dit ce que le champ EST.
   await page.getByLabel(/Nom du client/i).fill(client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30000 });
   const fiche = page.url();
   const id = fiche.split("/").pop()!;
 
-  await cas("un chantier neuf se rouvre sur sa fiche — la dictée y est", async () => {
-    // Son deuxième exemple : « si je me suis arrêté à mettre des photos et à
-    // rédiger la note vocale, il faut que ça me remette à cette page-là ».
+  await cas("un chantier neuf se rouvre LÀ OÙ IL EN EST", async () => {
+    // Son deuxième exemple, le 17 août : « si je me suis arrêté à mettre des
+    // photos et à rédiger la note vocale, il faut que ça me remette à cette
+    // page-là ».
+    //
+    // **Ce que « cette page-là » désigne a changé le 21 août 2026, et c'est
+    // lui qui l'a décidé** : les photos et la dictée vivent maintenant sur la
+    // fiche client, et le seul bouton de cet écran mène au devis. Un chantier
+    // créé porte donc un devis dès sa naissance — et sa consigne est alors
+    // sans ambiguïté : *« si elle est créée et qu'on a rempli le devis, alors
+    // on doit rouvrir la page du devis directement »*.
+    //
+    // Ce que ce contrôle défend n'a pas bougé : la ligne de l'accueil ramène à
+    // l'étape en cours, jamais à l'accueil d'un autre écran. C'est la
+    // DESTINATION qui suit le parcours, pas la promesse.
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     const lien = page.locator(`a:has-text("${marque}")`).first();
     await lien.waitFor({ state: "visible", timeout: 20000 });
-    assert.equal(await lien.getAttribute("href"), `/chantiers/${id}`);
+    const href = await lien.getAttribute("href");
+    assert.ok(
+      href === `/chantiers/${id}` || href === `/chantiers/${id}/devis-complet`,
+      `la ligne mène à « ${href} » : ce n'est ni la fiche du chantier ni son devis`
+    );
   });
 
   // Il pose son prix — « j'ai enregistré le nouveau prix ».

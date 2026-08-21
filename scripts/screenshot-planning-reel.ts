@@ -1,6 +1,7 @@
 import { chromium, devices } from "playwright";
 import { mkdirSync } from "fs";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const OUT = "artifacts/screenshots/step-25-planning-reel";
 mkdirSync(OUT, { recursive: true });
@@ -15,7 +16,7 @@ async function main() {
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Chantier capture planning ${Date.now()}`);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const chantierId = page.url().split("/").pop()!;
 

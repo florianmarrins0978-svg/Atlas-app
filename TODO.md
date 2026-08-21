@@ -749,28 +749,39 @@ L'accueil mène déjà à la prochaine (`lienDeReprise`).
 
 **Lot 1 — FAIT le 21 août 2026** : la fiche client refaite (plus un seul
 « facultatif », le titre « Civilité » retiré, le nom et le numéro sur une ligne,
-le numéro qui s'espace à la frappe, l'envoi sous l'adresse, et les cases en
-« carte douce » — son choix parmi cinq). Éprouvé au navigateur.
+le numéro qui s'espace à la frappe, l'envoi sous l'adresse). Éprouvé au
+navigateur.
 
-**Ce qu'il reste, dans l'ordre :**
+**Lot 2 — FAIT le 21 août 2026 au soir**, après sa protestation (*« il manque
+trop de choses… tu me la codes trait pour trait »*) : les photos, l'anneau,
+« Mon devis → », le bouton unique « Je rédige mon devis », et les cases de la
+maquette. Le chantier naît du premier geste — photo ou dictée. Les 73 suites qui
+passaient par « Je dicte mon devis » passent par `scripts/_creer-chantier-e2e.ts`.
 
-1. porter l'anneau et la pellicule sur `chantiers/nouveau` (le chantier doit
-   exister avant la première photo ou la première dictée) — **et c'est avec ce
-   lot que part le bouton « Je dicte mon devis »**, pas avant : le retirer
-   maintenant laisserait la dictée sur la fiche chantier sans chemin pour y
-   aller, et il faut reprendre au passage les **73 suites** qui cliquent
-   `action-dicter` ;
-2. au second appui de l'anneau : lancer la chaîne du devis et **enregistrer**,
-   sans attendre un geste de plus — il ferme l'application juste après ;
+**Ce qui reste de la liste d'origine :**
+
+
+
+1. ~~porter l'anneau et la pellicule sur `chantiers/nouveau`~~ — **fait** ;
+2. ~~au second appui de l'anneau, **enregistrer**~~ — **fait** : la note part au
+   second appui et le chantier existe dès cet instant. Reste à **lancer la
+   chaîne du devis** dans la foulée, pour qu'il retrouve un devis déjà rempli
+   sans toucher « Mon devis → » ;
 3. `lienDeReprise` : les étapes « photos » et « note-vocale » ne doivent plus
    viser `/chantiers/[id]` mais la fiche client ;
 4. la flèche de retour du devis (`DevisCompletClient.tsx`) : même chose ;
 5. retirer l'écran `/chantiers/[id]` et ce qui n'y sert plus.
 
-**Une seule chose reste ouverte, et c'est le DESSIN, pas le parcours :** le choix
-des cases (`appli/cases-page-entiere.html`). Il n'empêche rien — les cases de
-`fiche-client-vocale.html` restent en l'état tant qu'il n'a pas donné son
-numéro.
+**Le dessin des cases est tranché** : il a choisi la 4 le 21 août, puis, devant
+l'écran, il a demandé la maquette **trait pour trait** — donc les cases telles
+qu'elles y sont (fond crème, 4 px, un liseré fin, l'or au doigt posé). C'est ce
+qui est codé, dans `.atlas-case`.
+
+**Deux suites restent rouges, et elles ne sont pas de ce lot :**
+`test-fiche-client-e2e` et `test-fiche-chantier-e2e`, toutes deux sur la fiche
+client refondue et la fiche d'entretien du Paysage — le lot d'une autre session,
+déjà trouvé rouge sur `main` seul l'après-midi même. Jouée seule, la première en
+rend quatre. Aucune des deux ne passe par la fiche client de ce lot.
 
 **Ce que le code devra faire, et qui n'est pas qu'un déplacement d'écran :**
 

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 /**
  * L'écran d'un devis déjà parti — « le signet d'or ».
@@ -57,7 +58,7 @@ async function devisParti(page: Page): Promise<{ chantierId: string; url: string
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `M. Signet ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 79 98 45 14");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;

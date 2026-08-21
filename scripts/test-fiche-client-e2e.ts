@@ -13,6 +13,7 @@ import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { devis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // La fiche du client, telle qu'il l'atteint.
 //
@@ -67,7 +68,7 @@ async function main() {
   const nomClient = `Mme Bracquemont ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomClient);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
   const chantierUrl = page.url();
   const chantierId = chantierUrl.split("/").pop()!;
@@ -443,7 +444,7 @@ async function main() {
 
   await cas("un chantier SANS client n'ouvre aucune porte sur du vide", async () => {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-    await page.click('[data-atlas="action-dicter"]');
+    await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
     await page.waitForTimeout(700);
     const { rows } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [
