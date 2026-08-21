@@ -246,11 +246,18 @@ export default function TransmettreAuClient({
           puis, mis devant le choix : garder l'ouverture du message et la
           modification du devis, rien d'autre.
 
-          Ce que cela coûte, et qui est assumé : « Partager » était le seul
-          chemin vers WhatsApp, et le téléchargement du PDF le seul depuis cet
-          écran. Le PDF reste à un doigt — l'aperçu vit sur le devis lui-même,
-          où il l'a placé le 20 août — et le lien du client part toujours par
-          SMS ou par e-mail.
+          **Et le PDF n'est perdu nulle part — c'est LUI qui l'a rappelé, et le
+          dépôt lui donne raison :** *« une fois le devis envoyé, il doit
+          s'enregistrer normalement en PDF dans la catégorie client, c'est là où
+          tous nos nouveaux clients s'enregistrent, il y a trois colonnes devis,
+          factures et fiches chantiers »*. Vérifié plutôt que cru :
+          `chargerFicheClient` ne retient que les devis dont le statut est
+          `envoye`, et les range en vignettes PDF dans la colonne « Devis »
+          (`src/app/clients/[id]/page.tsx`). Un devis parti s'y classe donc tout
+          seul, sans geste de sa part.
+
+          Ce que cela coûte quand même, et qui est assumé : « Partager » était le
+          seul chemin vers WhatsApp depuis cet écran.
 
           **La bascule de canal, elle, RESTE**, et ce n'est pas un oubli : c'est
           le seul endroit où une coordonnée manquante se saisit — il n'existe

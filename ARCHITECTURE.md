@@ -12427,3 +12427,68 @@ Cela ne fait pas arriver le code neuf plus vite : **cela cesse de prétendre
 qu'il est là.** Le geste reste le sien — rouvrir l'espace de travail. Rendre la
 reconstruction automatique dans tous les cas est une autre question, ouverte
 dans `TODO.md`.
+
+---
+
+## 140. L'envoi ramène à l'accueil : le dernier écran de trop
+
+**Le patron, le 21 août 2026, capture à l'appui :** *« Quand je clique sur
+envoyer le devis, il y a bien l'application SMS qui s'ouvre automatiquement, ça
+c'est bien. Par contre juste derrière, il y a cette page-là qui s'affiche et je
+n'ai pas besoin qu'elle s'affiche […] il faut qu'une fois que le devis est
+envoyé, on retourne directement sur la première page, l'accueil. »*
+
+### Pourquoi il avait raison
+
+Cet écran ne lui apprenait rien : il venait d'appuyer, et sa messagerie s'était
+ouverte par-dessus. Au retour de Messages, il tombait sur un récapitulatif à
+refermer avant de reprendre son travail. L'accueil, lui, porte l'état du
+chantier — « devis parti, en attente de réponse » — au milieu des autres.
+
+C'est le deuxième écran supprimé du même parcours en deux jours (§136). Les deux
+avaient la même infirmité : exister pour dire ce que l'on venait de faire.
+
+### L'ordre des deux gestes, et il ne se négocie pas
+
+L'ouverture de la messagerie reste **avant** la navigation. Un navigateur refuse
+une ouverture de `sms:` qui ne suit pas le doigt d'assez près, et sur iOS il la
+refuse **sans un mot**. Le lien touché pour lui vit sur `document.body`, hors de
+l'arbre React : il survit donc au changement d'écran, ce qui était déjà vrai
+avant et le reste.
+
+### Ce que la suppression a emporté
+
+Tout ce qui distinguait « ça vient de partir » : le drapeau `?envoye=1`, la
+mention « Devis prêt pour … », l'état « Devis prêt », et l'effet qui nettoyait
+l'adresse (§139, corrigé la veille). Plus aucun chemin ne les atteignait.
+
+**Conséquence qu'aucun raisonnement n'avait prévue, et que la batterie a
+montrée :** cet écran ne se voit désormais qu'en y REVENANT, sur un devis déjà
+parti. Le geste y est donc une **relance**, et le libellé le dit — « Relancer par
+SMS » et non « Ouvrir le SMS tout prêt ». Ce n'était pas un défaut : c'est la
+règle du 13 août (le libellé annonce ce que le geste fait) qui devient enfin
+visible, le premier envoi n'atterrissant plus jamais là.
+
+### La rangée d'actions, et ce que le patron a tranché
+
+Sur cet écran, il ne veut que deux gestes. « Télécharger le PDF · Partager » est
+retiré.
+
+**Ce qui reste, contre la lettre de sa réponse :** la bascule de canal
+(« Plutôt par e-mail »). Ce n'est pas un troisième bouton mais **le seul endroit
+où une coordonnée manquante se saisit** — il n'existe aucun écran de fiche
+client — et son absence était sa plainte du 13 août : *« si je veux l'envoyer par
+e-mail, je ne peux pas revenir le choisir »*. La retirer rouvrirait un défaut
+déjà payé. Signalé, et il peut trancher autrement.
+
+**Ce que le retrait du PDF ne coûte pas, et c'est LUI qui l'a rappelé :** *« une
+fois le devis envoyé, il doit s'enregistrer normalement en PDF dans la catégorie
+client […] il y a trois colonnes devis, factures et fiches chantiers »*.
+Vérifié plutôt que cru : `chargerFicheClient` ne retient que les devis au statut
+`envoye` et les range en vignettes PDF dans la colonne « Devis ». Un devis parti
+s'y classe tout seul.
+
+**Une nuance dite au patron :** ces vignettes OUVRENT le PDF, elles ne proposent
+pas de l'enregistrer — ce n'est pas le geste « télécharger » du 7 août 2026, qui
+lui, reste éprouvé sur la facture (`test-facture-au-client-e2e.ts`). Question
+posée, réponse non reçue.

@@ -59,6 +59,28 @@ corrigée. `TODO.md` la garde ouverte.
 
 ## 2026-08-21
 
+### Le devis envoyé ramène à l'accueil, sans écran de trop
+
+**Sa demande, capture à l'appui :** *« Quand je clique sur envoyer le devis, il y
+a bien l'application SMS qui s'ouvre, ça c'est bien. Par contre juste derrière,
+il y a cette page-là qui s'affiche et je n'ai pas besoin qu'elle s'affiche […]
+il faut qu'on retourne directement sur l'accueil. »*
+
+Elle ne lui apprenait rien : il venait d'appuyer, et sa messagerie s'était
+ouverte par-dessus. Au retour de Messages, un récapitulatif à refermer avant de
+reprendre son travail. C'est le deuxième écran de trop retiré du même parcours
+en deux jours.
+
+**L'écran du devis parti reste**, mais on ne le voit plus qu'en y revenant par la
+carte du chantier. Il s'allège : « Télécharger le PDF · Partager » est retiré. Le
+devis parti se range de lui-même en PDF dans la fiche du client, colonne
+« Devis » — c'est lui qui l'a rappelé, et le code lui donne raison.
+
+**Ce que ça coûte, dit franchement :** « Partager » était le seul chemin vers
+WhatsApp depuis cet écran. Et la bascule « Plutôt par e-mail » a été GARDÉE
+malgré sa réponse : c'est le seul endroit où saisir une coordonnée manquante, et
+son absence était sa plainte du 13 août. `ARCHITECTURE.md` §140.
+
 ### La ligne « Version » disait le disque, pas ce qui tournait
 
 **Sa phrase :** *« Ça n'a pas marché, j'ai encore l'ancienne version. Pourtant

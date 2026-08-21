@@ -96,12 +96,27 @@ async function main() {
   // total, lui, ne peut afficher 1 200,00 € que si le montant est arrivé.
   // Même remède que `test-prix-e2e.ts` : attendre ce qu'on affirme, jamais une
   // durée.
-  for (const essai of [1, 2, 3, 4]) {
-    await page.reload({ waitUntil: "networkidle" });
-    const total = await page.locator("p", { hasText: "€" }).first().innerText().catch(() => "");
-    if (/1[\s\u202f\u00a0]?200,00/.test(total)) break;
+  //
+  // **Et l'on laisse l'appel PARTIR avant de recharger.** La version d'avant
+  // rechargeait aussitôt, ce qui avortait l'enregistrement qu'elle attendait,
+  // puis recommençait : elle empêchait exactement ce qu'elle guettait. C'est
+  // ainsi qu'elle rougissait encore sous la batterie, jamais jouée seule.
+  await page.waitForLoadState("networkidle");
+  let totalRelu = "";
+  for (const essai of [1, 2, 3, 4, 5]) {
+    totalRelu = await page.locator("p", { hasText: "€" }).first().innerText().catch(() => "");
+    if (/1[\s\u202f\u00a0]?200,00/.test(totalRelu)) break;
     await page.waitForTimeout(essai * 500);
+    await page.reload({ waitUntil: "networkidle" });
   }
+  // **Et l'on ACCUSE le bon coupable.** Sans cela, un prix non enregistré passait
+  // inaperçu ici et faisait rougir l'écran d'arrivée deux cas plus loin — « le
+  // total n'est pas montré avant l'envoi » —, qui n'y était pour rien.
+  assert.match(
+    totalRelu,
+    /1[\s\u202f\u00a0]?200,00/,
+    `le prix n'a jamais été enregistré (total lu : « ${totalRelu} ») : rien de ce que cette suite affirme ensuite n'a de sens`
+  );
 
   await cas("SA SÉQUENCE : retour par mégarde, puis la ligne le ramène à l'envoi", async () => {
     // Il était allé jusqu'à l'écran d'envoi — le devis lui-même depuis le
