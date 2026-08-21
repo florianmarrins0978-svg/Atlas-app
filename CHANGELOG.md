@@ -932,6 +932,22 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Le planning : le mois reste, la semaine ne sert qu'aux planifiés
+
+**Sa correction, le 21 août :** *« je veux un accès au mois ; ce dont je te
+parlais pour la semaine, c'était pour les chantiers planifiés »*. La planche de
+la veille avait remplacé le mois par une semaine — c'était trop.
+
+`appli/planning-simple.html` est refaite : **le calendrier reste au mois**, avec
+ses flèches de mois, et seule la liste du bas se déplace par semaine. Les deux
+ne se concurrencent pas — **toucher un jour du mois amène la liste sur sa
+semaine** : on vise en haut, on lit en bas. Sans ce lien, l'écran porterait deux
+navigations qui s'ignorent, et ce serait la page incompréhensible qu'il vient de
+signaler.
+
+Ce qui reste à trancher : **A, B ou C**, trois façons de marquer les
+demi-journées sur une case de mois. `src/app/planning/` n'a toujours pas bougé.
+
 ### Dessiner le planning en semaines avant d'y toucher
 
 **Sa demande :** *« cette page est beaucoup trop compliquée à comprendre pour

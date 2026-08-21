@@ -42,83 +42,98 @@ const erreurs = [];
 page.on("pageerror", (e) => erreurs.push(e.message));
 await page.goto(pathToFileURL(FICHIER).href, { waitUntil: "networkidle" });
 
-const titre = () => page.locator("#semaine-titre").innerText();
+const titreMois = () => page.locator("#mois-titre").innerText();
+const titreSemaine = () => page.locator("#sem-titre").innerText();
+
+// **Le titre du jour est écrit « vendredi 21 août », mais la feuille de style
+// le met en capitales.** `innerText` rend ce que l'ŒIL voit, pas ce que le HTML
+// porte : un contrôle qui compare au texte source rougit sur une page juste.
+// Payé ici le 19 août 2026.
+const litPlanifies = async () => (await page.locator("#planifies").innerText()).toLowerCase();
 
 verifier("la page se charge sans erreur de script", erreurs.length === 0);
 if (erreurs.length) console.error("   ", erreurs[0]);
 
-// ── La semaine d'arrivée est celle du jour figé (19 août 2026) ────────────
-const semaineDepart = await titre();
+// ── LE CALENDRIER RESTE AU MOIS — sa correction du 21 août ────────────────
+verifier(`le calendrier arrive sur le mois — lu : « ${await titreMois()} »`, /août 2026/i.test(await titreMois()));
 verifier(
-  `la semaine d'arrivée contient le 19 août — lu : « ${semaineDepart} »`,
-  /17\s*–\s*23 août/.test(semaineDepart),
+  "le mois porte bien six semaines de cases (42 jours)",
+  (await page.locator("#mois [data-jour]").count()) === 42,
 );
-// **On lit en insensible à la casse, et c'est un piège payé ici.** Le titre du
-// jour est écrit « vendredi 21 août » dans la page, mais la feuille de style le
-// met en capitales : `innerText` rend ce que l'ŒIL voit, pas ce que le HTML
-// porte. Un contrôle qui compare au texte source rougit sur une page juste.
-const litPlanifies = async () => (await page.locator("#planifies").innerText()).toLowerCase();
+await page.click("#mois-apres");
+verifier(`la flèche du mois avance — « ${await titreMois()} »`, /septembre 2026/i.test(await titreMois()));
+await page.click("#mois-avant");
+verifier(`et revient — « ${await titreMois()} »`, /août 2026/i.test(await titreMois()));
 
+// ── LA SEMAINE NE GOUVERNE QUE LES PLANIFIÉS ─────────────────────────────
+const semaineDepart = await titreSemaine();
+verifier(`la semaine arrive sur celle du 19 août — « ${semaineDepart} »`, /17\s*–\s*23 août/.test(semaineDepart));
 verifier(
   "les deux Martins du vendredi 21 sont dans la liste, avec le jour NOMMÉ",
   (await litPlanifies()).includes("vendredi 21 août"),
 );
-
-// ── Les flèches changent vraiment de semaine ──────────────────────────────
-await page.click("#apres");
-const suivante = await titre();
-verifier(`la flèche droite avance d'une semaine — « ${suivante} »`, /24\s*–\s*30 août/.test(suivante));
+await page.click("#sem-apres");
+verifier(`la flèche de la semaine avance — « ${await titreSemaine()} »`, /24\s*–\s*30 août/.test(await titreSemaine()));
 verifier(
   "l'abri de Pornic apparaît le mardi 25, avec sa demi-journée",
   (await litPlanifies()).includes("mardi 25 août") && (await litPlanifies()).includes("matin"),
 );
-await page.click("#avant");
-verifier("la flèche gauche revient exactement où l'on était", (await titre()) === semaineDepart);
+verifier("la flèche de la semaine n'a PAS changé le mois", /août 2026/i.test(await titreMois()));
+await page.click("#sem-avant");
+verifier("la flèche gauche revient exactement où l'on était", (await titreSemaine()) === semaineDepart);
 
-// ── Une semaine sans rien le DIT, au lieu de rendre une page muette ───────
-await page.click("#avant");
-await page.click("#avant");
+await page.click("#sem-avant");
+await page.click("#sem-avant");
+verifier("une semaine vide le dit en toutes lettres", (await litPlanifies()).includes("aucun chantier posé"));
+
+// ── LE MOIS VISE, LA SEMAINE LIT ──────────────────────────────────────────
+//
+// Toucher un jour du mois doit amener la liste sur SA semaine. Sans ce lien,
+// l'écran porterait deux navigations qui s'ignorent — exactement le genre de
+// page qu'il trouve incompréhensible.
+await page.click('[data-jour="2026-09-03"]');
 verifier(
-  "une semaine vide le dit en toutes lettres",
-  (await litPlanifies()).includes("aucun chantier posé"),
+  `toucher le 3 septembre amène la liste sur sa semaine — « ${await titreSemaine()} »`,
+  /31 août\s*–\s*6 septembre/.test(await titreSemaine()),
 );
-await page.click("#apres");
-await page.click("#apres");
+verifier(
+  "et le jour touché se dit sous le calendrier",
+  (await page.locator("#jour-ouvert").innerText()).toLowerCase().includes("jeudi 3 septembre"),
+);
+await page.click('[data-jour="2026-08-18"]');
+verifier(
+  "un jour libre le dit, au lieu de ne rien afficher",
+  (await page.locator("#jour-ouvert").innerText()).toLowerCase().includes("libre"),
+);
 
-// ── Les trois calendriers se dessinent, et ils sont différents ────────────
-const mesures = {};
-for (const [lettre, selecteur, cases] of [
-  ["A", ".calA", ".calA .demi"],
-  ["B", ".calB", ".calB .case"],
-  ["C", ".calC", ".calC .rond"],
-]) {
-  await page.click(`[data-cal="${lettre}"]`);
+// ── Les trois marques se dessinent, et aucune ne mesure zéro ─────────────
+for (const [lettre, selecteur] of [["A", ".marqueA i"], ["B", ".marqueB"], ["C", ".marqueC i"]]) {
+  await page.click(`[data-marque="${lettre}"]`);
   await page.waitForTimeout(120);
-  const boites = await page.$$eval(cases, (n) => n.map((e) => e.getBoundingClientRect().height));
-  mesures[lettre] = boites;
+  const boites = await page.$$eval(selecteur, (n) => n.map((e) => e.getBoundingClientRect().height));
   verifier(
-    `le calendrier ${lettre} se dessine (${boites.length} cases, aucune de zéro pixel)`,
+    `la marque ${lettre} se dessine (${boites.length} éléments, aucun de zéro pixel)`,
     boites.length > 0 && boites.every((h) => h >= 1),
   );
-  verifier(`le calendrier ${lettre} est le seul affiché`, (await page.locator(selecteur).count()) === 1);
 }
 
-// ── Ce que le calendrier montre doit être CE QUE LES DONNÉES DISENT ───────
+// ── Ce que le calendrier peint doit être CE QUE LES DONNÉES DISENT ───────
 //
-// Le contrôle qui compte : le vendredi 21 porte deux chantiers à la journée,
-// donc ses deux équipes sont prises — matin ET après-midi COMPLETS. Un
-// calendrier joli mais faux passerait tous les contrôles ci-dessus.
-await page.click('[data-cal="B"]');
+// Le vendredi 21 porte deux chantiers à la journée : ses deux équipes sont
+// prises, donc matin ET après-midi complets. Un calendrier joli mais faux
+// passerait tous les contrôles ci-dessus.
+await page.click('[data-marque="A"]');
 await page.waitForTimeout(120);
-const pleines = await page.$$eval(".calB .case.plein", (n) => n.length);
-const moities = await page.$$eval(".calB .case.moitie", (n) => n.length);
+const barresDu21 = await page.$$eval('[data-jour="2026-08-21"] .marqueA i', (n) =>
+  n.map((e) => e.className));
 verifier(
-  `le vendredi 21 est complet matin ET après-midi (2 cases pleines lues : ${pleines})`,
-  pleines === 2,
+  `le vendredi 21 est complet matin ET après-midi (lu : ${JSON.stringify(barresDu21)})`,
+  barresDu21.length === 2 && barresDu21.every((c) => c === "plein"),
 );
+const barresDu19 = await page.$$eval('[data-jour="2026-08-19"] .marqueA i', (n) => n.map((e) => e.className));
 verifier(
-  `mercredi après-midi et jeudi (une équipe sur deux) sont à moitié (3 lues : ${moities})`,
-  moities === 3,
+  `le mercredi 19 est libre le matin, à moitié l'après-midi (lu : ${JSON.stringify(barresDu19)})`,
+  barresDu19[0] === "libre" && barresDu19[1] === "moitie",
 );
 
 await navigateur.close();
