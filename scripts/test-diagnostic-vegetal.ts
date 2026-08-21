@@ -16,6 +16,7 @@ import {
   type FichePourMoteur,
   type Observation,
   type SymptomeFiche,
+  CONSIGNE_IDENTIFIER_ESSENCE,
 } from "../src/lib/diagnostic-vegetal";
 
 /**
@@ -93,15 +94,27 @@ function fiche(code: string, p: Partial<FichePourMoteur> = {}): FichePourMoteur 
     periodeFinMois: null,
     symptomes: [symptome()],
     hotes: [],
+    certitudeMax: "elevee",
+    hotesNonExhaustifs: false,
     ...p,
   };
 }
 
+/**
+ * **L'essence est donnée PAR DÉFAUT depuis le 20 août 2026, et il faut savoir
+ * pourquoi.** `arbitrer` refuse désormais de conclure sans hôte établi (sa
+ * règle : *« identifier l'hôte avant la maladie »*). Sans cette valeur par
+ * défaut, chaque cas ci-dessous éprouverait cette règle-là au lieu de ce qu'il
+ * annonce éprouver — et une régression sur l'écart, les seuils ou les
+ * confusions passerait inaperçue derrière un refus qui a l'air normal.
+ *
+ * La règle d'hôte, elle, a ses propres cas, qui posent `essence` explicitement.
+ */
 function observation(p: Partial<Observation> = {}): Observation {
   return {
     partie: "feuille",
     signes: [{ partie: "feuille", motif: "tache", couleurs: [], localisation: null }],
-    essence: null,
+    essence: { taxonId: "t-chene", port: "feuillu", certitude: "sure" },
     qualitePhoto: "bonne",
     ...p,
   };
@@ -161,14 +174,41 @@ cas("un hôte STRICT exclut une essence différente", () => {
   assert.equal(rapprocher(surAutreEssence, [stricte], 6).length, 0);
 });
 
-cas("un hôte NON strict ne fait que pénaliser — les listes d'hôtes sont rarement exhaustives", () => {
-  const large = fiche("a", { hotes: [{ taxonId: "t-chene", port: "feuillu", specificite: "frequent" }] });
+cas("liste d'hôtes CLOSE : une autre essence exclut la fiche", () => {
+  // Sa règle du 20 août : « ne comparer qu'aux maladies compatibles avec
+  // l'hôte ». Sans mention contraire de la source, la liste est close.
+  const close = fiche("a", { hotes: [{ taxonId: "t-chene", port: "feuillu", specificite: "frequent" }] });
   const surAutreEssence = observation({
     essence: { taxonId: "t-platane", port: "feuillu", certitude: "sure" },
   });
-  const candidats = rapprocher(surAutreEssence, [large], 6);
+  assert.equal(rapprocher(surAutreEssence, [close], 6).length, 0);
+});
+
+cas("liste d'hôtes OUVERTE : la même autre essence ne fait que pénaliser", () => {
+  // C'est la SOURCE qui l'autorise, pas le moteur qui se l'accorde. L'anthracnose
+  // du chêne dit « de nombreuses espèces » : sa fiche porte le drapeau.
+  const ouverte = fiche("a", {
+    hotesNonExhaustifs: true,
+    hotes: [{ taxonId: "t-chene", port: "feuillu", specificite: "frequent" }],
+  });
+  const surAutreEssence = observation({
+    essence: { taxonId: "t-platane", port: "feuillu", certitude: "sure" },
+  });
+  const candidats = rapprocher(surAutreEssence, [ouverte], 6);
   assert.equal(candidats.length, 1, "la fiche doit rester candidate");
   assert.ok(candidats[0].motifs.some((m) => m.quoi === "essence_hors_hotes"));
+});
+
+cas("un hôte STRICT exclut même si la source se dit non exhaustive", () => {
+  // Les deux mentions se contredisent ; c'est la plus stricte qui gagne. Une
+  // fiche qui déclare « uniquement le platane » ET « liste ouverte » est mal
+  // remplie, et le doute doit fermer, jamais ouvrir.
+  const contradictoire = fiche("a", {
+    hotesNonExhaustifs: true,
+    hotes: [{ taxonId: "t-platane", port: "feuillu", specificite: "strict" }],
+  });
+  const surChene = observation({ essence: { taxonId: "t-chene", port: "feuillu", certitude: "sure" } });
+  assert.equal(rapprocher(surChene, [contradictoire], 6).length, 0);
 });
 
 cas("un SIGNE pèse plus qu'un symptôme — c'est du métier, pas du réglage", () => {
@@ -218,6 +258,78 @@ cas("le tri est STABLE à score égal — deux exécutions rendent le même ordr
     a.map((c) => c.fiche.code),
     b.map((c) => c.fiche.code)
   );
+});
+
+console.log("\n=== L'HÔTE D'ABORD : sans essence, aucun diagnostic ===");
+
+// ═══════════════════════════════════════════════════════════════════════════
+// **La règle la plus structurante du lot du 20 août 2026.**
+//
+//   > *« Identifier l'hôte avant la maladie. Si l'espèce est incertaine, ne pas
+//   >   diagnostiquer. »*
+//
+// Ces cas éprouvent qu'elle passe AVANT tout le reste : avant l'écart, avant
+// les seuils, avant même de regarder si une fiche colle parfaitement. Une fiche
+// parfaite sur une essence inconnue ne doit rien rendre — c'est le prix assumé
+// de *« mieux vaut refuser de conclure que produire un faux diagnostic »*.
+// ═══════════════════════════════════════════════════════════════════════════
+
+cas("aucune essence : on demande la photo qui IDENTIFIE, pas celle du symptôme", () => {
+  const parfaite = fiche("a", { symptomes: [symptome({ poids: "cardinal" })] });
+  const v = arbitrer(
+    rapprocher(observation({ essence: null }), [parfaite], 6),
+    observation({ essence: null }),
+    [],
+    SANS_COMPLEMENT
+  );
+  assert.equal(v.issue, "complement");
+  if (v.issue !== "complement") return;
+  assert.equal(v.raison, "essence");
+  assert.equal(v.candidat, null, "désigner une fiche à ce stade serait déjà diagnostiquer");
+  assert.equal(v.consigne, CONSIGNE_IDENTIFIER_ESSENCE);
+});
+
+cas("essence NOMMÉE mais inconnue de la base : même refus — un nom n'est pas un taxon", () => {
+  // `trouverTaxon` rend `null` plutôt que de deviner. Le moteur doit traiter ce
+  // `null` comme une absence, pas comme « on verra bien ».
+  const o = observation({ essence: { taxonId: null, port: "feuillu", certitude: "sure" } });
+  const v = arbitrer(rapprocher(o, [fiche("a")], 6), o, [], SANS_COMPLEMENT);
+  assert.equal(v.issue, "complement");
+  if (v.issue === "complement") assert.equal(v.raison, "essence");
+});
+
+cas("essence INCERTAINE : le mot du modèle suffit à bloquer", () => {
+  const o = observation({ essence: { taxonId: "t-chene", port: "feuillu", certitude: "incertaine" } });
+  const v = arbitrer(rapprocher(o, [fiche("a")], 6), o, [], SANS_COMPLEMENT);
+  assert.equal(v.issue, "complement");
+  if (v.issue === "complement") assert.equal(v.raison, "essence");
+});
+
+cas("essence PROBABLE : cela suffit — on n'exige pas la perfection", () => {
+  // « incertaine » bloque, « probable » passe. Exiger « sure » rendrait l'outil
+  // inutilisable sur le terrain : un modèle de vision dit rarement « sûr ».
+  const o = observation({ essence: { taxonId: "t-chene", port: "feuillu", certitude: "probable" } });
+  const v = arbitrer(rapprocher(o, [fiche("a", { symptomes: [symptome({ poids: "cardinal" })] })], 6), o, [], SANS_COMPLEMENT);
+  assert.equal(v.issue, "conclusion");
+});
+
+cas("la relance sur l'essence a déjà eu lieu : on REFUSE, on ne devine pas", () => {
+  const o = observation({ essence: null });
+  const v = arbitrer(rapprocher(o, [fiche("a", { symptomes: [symptome({ poids: "cardinal" })] })], 6), o, [], {
+    complementDejaDemande: true,
+    baseVide: false,
+  });
+  assert.equal(v.issue, "refus");
+  if (v.issue === "refus") assert.equal(v.motif, "hote_incertain");
+});
+
+cas("TÉMOIN — la même fiche, la même photo, mais l'essence connue : elle conclut", () => {
+  // Sans ce témoin, les cas ci-dessus seraient verts même si le moteur refusait
+  // TOUT. C'est le défaut du 15 août sous une autre forme : un contrôle qui ne
+  // sait pas distinguer « bloqué à raison » de « bloqué tout court ».
+  const o = observation({ essence: { taxonId: "t-chene", port: "feuillu", certitude: "sure" } });
+  const v = arbitrer(rapprocher(o, [fiche("a", { symptomes: [symptome({ poids: "cardinal" })] })], 6), o, [], SANS_COMPLEMENT);
+  assert.equal(v.issue, "conclusion");
 });
 
 console.log("\n=== Arbitrage : les cinq refus ===");
@@ -348,6 +460,24 @@ cas("sans essence reconnue, jamais « élevée »", () => {
 cas("un écart faible ne donne jamais « élevée », même avec un score parfait", () => {
   const parfaite: Candidat = { fiche: fiche("a"), score: 1, motifs: [] };
   assert.notEqual(confiancePour(parfaite, 0.05, "bonne", true), "elevee");
+});
+
+cas("le plafond de la SOURCE gagne sur tout le reste", () => {
+  // Sa règle : « le niveau de certitude affiché ne doit jamais dépasser celui
+  // permis par les données scientifiques ». Photo parfaite, score au plafond,
+  // écart énorme — et la fiche dit « incertaine » : c'est « incertaine ».
+  const bride = fiche("a", { certitudeMax: "incertaine" });
+  const c: Candidat = { fiche: bride, score: 1, motifs: [] };
+  assert.equal(confiancePour(c, 1, "bonne", true), "incertaine");
+});
+
+cas("le plafond de la source n'AUGMENTE jamais la confiance", () => {
+  // Un plafond ne relève rien. Une fiche qui autorise « elevee » sur une photo
+  // floue reste « incertaine » — sinon le champ deviendrait un moyen de forcer
+  // une certitude, c'est-à-dire l'inverse exact de ce qu'il demande.
+  const large = fiche("a", { certitudeMax: "elevee" });
+  const c: Candidat = { fiche: large, score: 1, motifs: [] };
+  assert.equal(confiancePour(c, 1, "mauvaise", true), "incertaine");
 });
 
 console.log("\n=== Le verrou du classeur sémantique ===");

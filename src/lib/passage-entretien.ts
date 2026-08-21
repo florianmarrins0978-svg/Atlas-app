@@ -143,6 +143,10 @@ export function empechementEnvoi(passage: {
   clientId: string | null;
   lignes: readonly LignePassage[];
   envoyeLe: Date | null;
+  /** Par quoi il compte l'envoyer, et ce que la fiche du client porte. */
+  canal?: "sms" | "email";
+  telephone?: string | null;
+  email?: string | null;
 }): string | null {
   if (passage.envoyeLe !== null) {
     return "Ce rapport est déjà parti chez votre client. Il ne se renvoie pas.";
@@ -152,6 +156,15 @@ export function empechementEnvoi(passage: {
   }
   if (!passage.lignes.some((l) => l.faite)) {
     return "Cochez au moins une prestation avant d'envoyer.";
+  }
+  // **Le canal choisi doit avoir une coordonnée, sinon l'appui ouvre un message
+  // SANS destinataire** — et il ne le découvre que dans Messages, c'est-à-dire
+  // trop tard. Le dire ici plutôt que de laisser partir un envoi borgne.
+  if (passage.canal === "sms" && !passage.telephone?.trim()) {
+    return "Ce client n'a pas de téléphone dans sa fiche. Choisissez l'e-mail, ou ajoutez-le.";
+  }
+  if (passage.canal === "email" && !passage.email?.trim()) {
+    return "Ce client n'a pas d'e-mail dans sa fiche. Choisissez le SMS, ou ajoutez-le.";
   }
   return null;
 }

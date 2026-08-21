@@ -12,6 +12,7 @@ import {
   libelleMinutes,
 } from "@/lib/passage-entretien";
 import { composerMessageEntretien, lienTransmission } from "@/lib/message-client";
+import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
 import type { CiviliteChoisie } from "@/lib/civilite";
 import {
   cocherLigneAction,
@@ -29,6 +30,16 @@ import {
 
 type Ligne = { id: string; famille: string; libelle: string; ordre: number; faite: boolean };
 
+/** Un client de la liste — coordonnées comprises : voir la page. */
+type Client = {
+  id: string;
+  nom: string;
+  adresse: string | null;
+  telephone: string | null;
+  email: string | null;
+  canal: "sms" | "email" | null;
+};
+
 export type PassageAffiche = {
   id: string;
   jour: string;
@@ -37,6 +48,7 @@ export type PassageAffiche = {
   clientTelephone: string | null;
   clientEmail: string | null;
   clientCivilite: string | null;
+  clientCanal: "sms" | "email" | null;
   minutes: number | null;
   observations: string | null;
   envoyeLe: string | null;
@@ -51,7 +63,7 @@ export default function FicheChantierClient({
   entrepriseNom,
 }: {
   passage: PassageAffiche;
-  clients: { id: string; nom: string; adresse: string | null }[];
+  clients: Client[];
   /** `https://…`, bâtie par le serveur — jamais lue depuis `window` (voir la page). */
   origine: string;
   entrepriseNom: string;
@@ -59,6 +71,17 @@ export default function FicheChantierClient({
   const [lignes, setLignes] = useState(passage.lignes);
   const [clientId, setClientId] = useState(passage.clientId);
   const [clientNom, setClientNom] = useState(passage.clientNom);
+  /**
+   * **Les coordonnées vivent en ÉTAT, pas dans les props.**
+   *
+   * La fiche s'ouvre sans client : `passage.clientTelephone` est alors vide, et
+   * le rester après qu'il a nommé quelqu'un ferait ouvrir un message sans
+   * destinataire — qu'il ne découvrirait que dans Messages. Elles suivent donc
+   * le client choisi.
+   */
+  const [telephone, setTelephone] = useState(passage.clientTelephone);
+  const [email, setEmail] = useState(passage.clientEmail);
+  const [civilite, setCivilite] = useState(passage.clientCivilite);
   const [minutes, setMinutes] = useState(passage.minutes);
   const [observations, setObservations] = useState(passage.observations ?? "");
   const [envoyeLe, setEnvoyeLe] = useState(passage.envoyeLe);
@@ -71,6 +94,18 @@ export default function FicheChantierClient({
   // lieu, sous le nom du client, du même gris que le reste.
   const [constat, setConstat] = useState<string | null>(null);
   const [choixOuvert, setChoixOuvert] = useState(false);
+  /**
+   * Par quoi le rapport part — **sa demande du 20 août 2026** : *« sous le nom
+   * du client, il doit y avoir la mention envoyé par, avec le choix soit SMS
+   * soit par email »*.
+   *
+   * Le défaut vient de SA fiche client, comme pour le devis : c'est un choix du
+   * client, pas un réglage de l'application. Il reste changeable ici — il
+   * change d'avis au moment d'envoyer, pas au moment de créer la fiche.
+   */
+  const [canal, setCanal] = useState<"sms" | "email">(
+    passage.clientCanal ?? (passage.clientTelephone ? "sms" : "email")
+  );
   const [recherche, setRecherche] = useState("");
 
   const parti = envoyeLe !== null;
@@ -80,6 +115,9 @@ export default function FicheChantierClient({
     clientId,
     lignes,
     envoyeLe: envoyeLe ? new Date(envoyeLe) : null,
+    canal,
+    telephone,
+    email,
   });
 
   async function cocher(ligne: Ligne) {
@@ -102,7 +140,7 @@ export default function FicheChantierClient({
     if (!r.ok) setPhrase(r.phrase);
   }
 
-  async function choisirClient(c: { id: string; nom: string }) {
+  async function choisirClient(c: Client) {
     setChoixOuvert(false);
     setRecherche("");
     const r = await nommerClientAction(passage.id, c.id);
@@ -112,6 +150,11 @@ export default function FicheChantierClient({
     }
     setClientId(c.id);
     setClientNom(c.nom);
+    // Ses coordonnées et son canal arrivent avec lui : sans cela, l'écran
+    // resterait sur celles d'un passage ouvert sans client, c'est-à-dire aucune.
+    setTelephone(c.telephone);
+    setEmail(c.email);
+    setCanal(c.canal ?? (c.telephone ? "sms" : "email"));
     // **Le serveur rend ce qui reste, l'écran l'affiche.** Refaire le repli
     // ici donnerait deux vérités sur une même liste, et une fiche qui montre
     // autre chose que ce qui est en base est pire qu'une fiche trop longue.
@@ -125,14 +168,41 @@ export default function FicheChantierClient({
     );
   }
 
+  /**
+   * Figer le rapport **et ouvrir sa messagerie dans la foulée**.
+   *
+   * *Sa demande du 20 août 2026 : « quand on clique sur enregistrer et envoyer
+   * […] ça ouvre tout de suite soit le SMS, soit l'e-mail […] pas comme là où
+   * ça nous ouvre d'abord une autre page ».* C'est le même geste que sur le
+   * devis depuis le 18 août, et pour la même raison : le rapport est prêt, le
+   * message est prêt, il n'y a plus rien à demander.
+   *
+   * **L'écran figé reste derrière, et ce n'est pas un oubli.** L'ouverture part
+   * d'une continuation asynchrone — le rapport doit d'abord exister en base
+   * pour avoir une adresse — et un navigateur peut refuser une navigation vers
+   * `sms:` qui ne suit pas immédiatement le doigt, sans un mot. S'il refuse, le
+   * patron retrouve le bouton ; s'il accepte, il ne le voit qu'au retour.
+   */
   async function envoyer() {
     const r = await envoyerFicheAction(passage.id);
     if (!r.ok) {
       setPhrase(r.phrase);
       return;
     }
+    const jetonNeuf = r.lien.split("/").pop() ?? null;
     setEnvoyeLe(new Date().toISOString());
-    setJeton(r.lien.split("/").pop() ?? null);
+    setJeton(jetonNeuf);
+    if (!jetonNeuf) return;
+
+    const destinataire = canal === "sms" ? telephone : email;
+    if (!destinataire?.trim()) return;
+    const message = composerMessageEntretien({
+      clientNom: clientNom ?? "",
+      clientCivilite: (civilite ?? undefined) as CiviliteChoisie | undefined,
+      entrepriseNom,
+      lien: `${origine}/entretien/${jetonNeuf}`,
+    });
+    ouvrirAdresse(lienTransmission({ canal, destinataire, message }), canal);
   }
 
   const clientsFiltres = clients.filter((c) =>
@@ -182,6 +252,9 @@ export default function FicheChantierClient({
                 {constat}
               </p>
             )}
+            {!parti && (
+              <ChoixDuCanal canal={canal} setCanal={setCanal} telephone={telephone} email={email} />
+            )}
           </>
         ) : (
           !parti && (
@@ -227,6 +300,7 @@ export default function FicheChantierClient({
                   disabled={parti}
                   onClick={() => cocher(l)}
                   aria-pressed={l.faite}
+                  data-atlas="prestation"
                   className="flex min-h-[48px] w-full items-center gap-[13px] border-b py-[11px] text-left"
                   style={{ borderColor: colors.line }}
                 >
@@ -290,9 +364,9 @@ export default function FicheChantierClient({
             lien={jeton ? `${origine}/entretien/${jeton}` : ""}
             clientNom={clientNom}
             entrepriseNom={entrepriseNom}
-            clientCivilite={passage.clientCivilite}
-            telephone={passage.clientTelephone}
-            email={passage.clientEmail}
+            clientCivilite={civilite}
+            telephone={telephone}
+            email={email}
           />
         ) : (
           <>
@@ -321,6 +395,70 @@ export default function FicheChantierClient({
           </p>
         )}
       </section>
+    </div>
+  );
+}
+
+/**
+ * « Envoyé par » — **sa demande du 20 août 2026**, sous le nom du client.
+ *
+ * **Deux pastilles, pas une liste déroulante.** Il y a exactement deux réponses
+ * possibles, et il choisit d'un pouce, sur un chantier : dérouler pour choisir
+ * entre deux est un geste de plus pour rien. C'est aussi la forme que l'écran
+ * du devis emploie déjà pour changer de canal.
+ *
+ * **Ce qui manque se DIT, et ne se cache pas.** Un canal sans coordonnée reste
+ * proposé — il sait peut-être que le numéro est ailleurs —, mais il porte la
+ * mention, et le bouton d'envoi s'éteint avec sa phrase
+ * (`empechementEnvoi`). Le masquer laisserait croire à une panne.
+ */
+function ChoixDuCanal({
+  canal,
+  setCanal,
+  telephone,
+  email,
+}: {
+  canal: "sms" | "email";
+  setCanal: (c: "sms" | "email") => void;
+  telephone: string | null;
+  email: string | null;
+}) {
+  const cases: { valeur: "sms" | "email"; mot: string; coordonnee: string | null }[] = [
+    { valeur: "sms", mot: "SMS", coordonnee: telephone },
+    { valeur: "email", mot: "E-mail", coordonnee: email },
+  ];
+
+  return (
+    <div className="mt-[10px] flex items-center gap-[8px]" data-atlas="choix-du-canal">
+      <span className={smallCaps} style={{ color: colors.muted, flex: "none" }}>
+        Envoyé par
+      </span>
+      {cases.map((c) => {
+        const actif = canal === c.valeur;
+        return (
+          <button
+            key={c.valeur}
+            type="button"
+            aria-pressed={actif}
+            data-canal={c.valeur}
+            onClick={() => setCanal(c.valeur)}
+            // 34 px de haut, touchable au pouce sans peser sur l'écran : la
+            // pastille est un choix, pas l'action principale.
+            className="rounded-full px-[13px] py-[7px] text-[12.5px] leading-none"
+            style={{
+              flex: "none",
+              backgroundColor: actif ? colors.rust : "transparent",
+              color: actif ? colors.card : colors.inkSoft,
+              border: `1px solid ${actif ? colors.rust : colors.line}`,
+            }}
+          >
+            {c.mot}
+            {!c.coordonnee?.trim() && (
+              <span style={{ opacity: 0.7 }}> · absent</span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -407,11 +545,11 @@ function ChoixDuClient({
   fermer,
   choisir,
 }: {
-  clients: { id: string; nom: string; adresse: string | null }[];
+  clients: Client[];
   recherche: string;
   setRecherche: (v: string) => void;
   fermer: () => void;
-  choisir: (c: { id: string; nom: string }) => void;
+  choisir: (c: Client) => void;
 }) {
   return (
     <section className="mx-[26px] mt-[16px]" data-atlas="choix-du-client">

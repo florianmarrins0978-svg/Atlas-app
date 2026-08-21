@@ -249,6 +249,13 @@ fi
 # connexion à la place d'Atlas, et son téléphone ne voyait rien. Le geste est
 # rejoué ici, à chaque allumage. Le pourquoi complet est dans `ouvrir-port.sh`.
 PORT_PUBLIC="$(bash "$(dirname "$0")/ouvrir-port.sh" 3000)"
+# **Déposé pour la fiche — 21 août 2026.** Le patron : « elle ne se lance
+# plus », alors que sa fiche annonçait un serveur qui répond et le bon code
+# servi. Un port privé donne exactement ce symptôme : GitHub répond par sa page
+# de connexion à la place d'Atlas, et depuis un téléphone non connecté il n'y a
+# rien à voir. L'état du port n'était écrit que dans le terminal du démarrage,
+# que personne ne relit — la fiche, elle, se lit.
+printf '%s\n' "$PORT_PUBLIC" > /tmp/atlas-port.txt 2>/dev/null || true
 
 ADRESSE=""
 if [ -n "${CODESPACE_NAME:-}" ] && [ -n "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]; then

@@ -50,7 +50,130 @@ reloger », montre où chacune irait — il choisit avant qu'on code.
 **Aucun prix n'est inventé sur le devis dessiné** : il n'a annoncé aucun montant
 en dictant, les trois lignes arrivent donc à chiffrer (`CLAUDE.md` §4).
 
+### La fiche dit enfin si le port est ouvert
+
+**« Elle ne se lance plus »**, alors que sa fiche annonçait un serveur qui
+répond, le bon code servi, et « tout concorde ». Un port privé donne exactement
+ce symptôme : GitHub répond par sa page de connexion à la place d'Atlas, et
+depuis un téléphone non connecté à GitHub il n'y a **rien à voir**.
+
+L'état du port n'était écrit que dans le terminal du démarrage — que personne ne
+relit. Il est désormais déposé par `demarrer.sh` et publié sur la fiche, avec le
+remède en trois clics quand il est privé.
+
+**Pourquoi ça retombe en panne tout seul :** `devcontainer.json` déclare le port
+public depuis le 6 août, mais ce fichier n'est appliqué qu'à la CRÉATION de
+l'espace — et le sien est plus ancien. Le geste est rejoué à chaque allumage par
+`ouvrir-port.sh`, qui a besoin de `gh`… absent de cette image. D'où un port qui
+peut redevenir privé sans que rien ne le dise. C'est la troisième fois que ce
+piège coûte une soirée (10 août, puis 21).
+
+### Attendre la construction d'à côté au lieu de la tuer
+
+**Sa plainte du matin :** *« l'appli est hyper lente »*, pour la troisième
+matinée. Sa fiche : construction échouée sur « Another next build process is
+already running », **4,5 Gio de mémoire libres** — donc pas la saturation qu'on
+soupçonnait le 17 août.
+
+Le démarrage lance **deux constructions par nature** : un veilleur est posé
+avant la mise à jour pour que l'application réponde tout de suite, et le banc
+suivant en relance une. Quand la seconde tombait sur la première, on délogeait
+et l'on recommençait — c'est-à-dire qu'on jetait plusieurs minutes de calcul
+déjà faites, sur une machine qui n'en a pas les moyens.
+
+Elle est désormais **attendue** (dix minutes au plus, avec un signe de vie
+chaque minute), et l'on ne déloge qu'ensuite — ce qui reste alors est bien une
+orpheline.
+
+**Et le détenteur du verrou se cherche par le fichier, plus par son nom.** Une
+construction Next est faite de cinq processus, dont deux ne portent nulle part
+les mots « next build » : un survivant de cette espèce était invisible à toute
+recherche par motif. `detenteursDuVerrou()` lit `/proc/<pid>/fd` et trouve qui
+tient `<dist>/lock`, quel que soit son nom.
+
+**CE QUI N'EST PAS PROUVÉ :** la panne n'a pas été reproduite ici. Deux
+hypothèses ont été éprouvées et écartées — le `sleep 1` du démarrage, et
+l'orphelin invisible. Ce qui est livré rend le mécanisme sûr, pas la panne
+corrigée. `TODO.md` la garde ouverte.
+
+---
+
 ## 2026-08-20
+
+### « Mieux vaut refuser de conclure que produire un faux diagnostic »
+
+Sa consigne du 20 août, appliquée point par point (`ARCHITECTURE.md` §138). Ce
+qui existait déjà : le modèle n'a aucun champ pour nommer une maladie, tout ce
+qui s'affiche sort d'une colonne, l'outil sait refuser. Ce qui manquait :
+
+**L'hôte d'abord.** Atlas ne diagnostique plus sans avoir identifié l'essence.
+Sans elle, il demande la photo qui identifie un arbre — feuille entière posée à
+plat, puis l'arbre entier — et refuse au second passage. Un symptôme
+parfaitement caractéristique sur une essence non reconnue ne conclut donc plus :
+c'est le prix, et il est assumé.
+
+**La liste d'hôtes exclut, sauf si la source dit le contraire.** Une maladie du
+platane ne peut plus remonter sur un chêne. C'est la fiche qui déclare si sa
+liste est close, en recopiant ce que le document affirme — l'anthracnose du chêne
+dit « de nombreuses espèces », l'anthracnose du platane dit « Hôtes habituels :
+Platanes ».
+
+**Le plafond de la source gagne toujours.** Une fiche dont le document exige un
+laboratoire ne peut plus afficher mieux que « probable », quel que soit son
+score, et l'écran porte désormais un bloc « Ce qui reste à confirmer » avec la
+phrase exacte de la source. Les photos de référence portent leur avertissement :
+« une ressemblance n'est pas une preuve ».
+
+**Et la comparaison champ par champ après chaque import.** La fiche est relue
+depuis la base et confrontée à son fichier, ligne à ligne, dans la transaction,
+avant validation. Le moindre écart annule l'import entier et nomme le champ.
+Aucune fiche ne peut plus porter « validée » sans ce contrôle — c'est une
+contrainte de la base, pas une intention du code.
+
+**Elle a trouvé deux pertes réelles dans l'heure qui a suivi son écriture** : le
+chemin des photos, que la base jetait après en avoir tiré une clé de stockage ;
+et l'ordre des listes d'hôtes, de sources et de confusions, relues par ordre
+alphabétique au lieu de l'ordre du document. Les deux sont réparées — en gardant
+l'information, jamais en assouplissant le contrôle.
+
+Un troisième défaut est sorti d'une capture, pas d'un test : la phrase du
+laboratoire s'affichait deux fois de suite à l'écran. L'import la refuse
+maintenant.
+
+
+### Anthracnose du chêne et du hêtre — et la relance photo, enfin sur du réel
+
+Troisième fiche réelle, écrite depuis la page Ephytia (INRAE, auteur DSF) que le
+patron a transmise et relue champ par champ. La source commande deux choses que
+la fiche recopie sans les adoucir : la confirmation **exige un laboratoire**
+(d'où `diagnosticPhoto: "indicatif"`, qui plafonne la confiance à « probable »
+quel que soit le score), et les chancres **fragilisent les branches** (d'où
+`impactMecanique: "possible"`, qui fait apparaître la mention de sécurité). Les
+quatre confusions que la page nomme — *Septoria quercicola*, gel, phytotoxicités,
+carences aiguës — ne sont **pas** écrites : une confusion doit désigner une fiche
+qui existe, et aucune de ces quatre n'existe encore.
+
+**Ce qui a été débloqué pour l'écrire**, et qui vaut pour toutes les fiches à
+venir (`ARCHITECTURE.md` §137) :
+
+- une confusion ne pouvait relier que deux fiches d'un **même fichier**. Or les
+  fiches qui se confondent sont celles qu'on écrit à deux jours d'écart, depuis
+  deux pages différentes. Le contrôle porte désormais sur l'import entier ;
+- et son écriture **se perdait en silence** quand la fiche visée n'était pas
+  encore en base : `INSERT … SELECT` n'insère rien sans se plaindre. L'ordre
+  alphabétique des fichiers décidait de ce qui marchait. Les liens en attente
+  sont maintenant raccordés à la fin, et ce qui manque encore fait tomber
+  l'import.
+
+Résultat, éprouvé : une nécrose brune sur feuille **sans essence identifiée** ne
+conclut plus au hasard entre les deux anthracnoses — elle demande *« Photographiez
+une feuille entière, posée à plat »*, puis conclut à la seconde photo. C'est le
+premier usage réel du mécanisme de photo complémentaire.
+
+Deux contrôles corrigés au passage : l'un comptait les confusions de la base
+entière, ce qui n'était vrai que tant qu'elle ne portait que des fixtures ; la
+suite navigateur recopiait à la main le résultat qu'affiche l'écran, au lieu de
+le composer comme le fait le produit.
 
 ### L'écran ne promet plus une version rapide que personne ne construit
 

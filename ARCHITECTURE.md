@@ -11163,6 +11163,71 @@ constructions se marchaient dessus à 6 h 10. La mémoire était encore ample à
 instant (4,3 Gio disponibles) : ce n'est donc pas la saturation du 17 août. La
 cause n'a pas été reproduite ici, et elle reste ouverte dans `TODO.md`.
 
+## 136. Deux constructions au démarrage : on ATTEND la première, on ne la tue pas
+
+**Le patron, le 21 août 2026 au réveil : *« l'appli est hyper lente »*.**
+Troisième matinée de suite, et sa fiche portait le même refus :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (05:17:26Z)
+dit: ⨯ Another next build process is already running.
+memoire: 4,5 Gio disponibles au moment de l'échec
+```
+
+**Ce n'est donc pas la mémoire** — c'était l'explication du 17 août, et elle ne
+tient pas ici : la machine avait 4,5 Gio de reste. Ce sont bien deux
+constructions qui se rencontrent.
+
+### Elles se rencontrent PAR CONSTRUCTION, et c'est le prix d'un choix assumé
+
+`demarrer.sh` pose un veilleur **avant** la mise à jour, délibérément (§24) :
+c'est ce qui donne au patron une application qui répond même si la mise à jour
+échoue. Ce premier veilleur lance un banc, donc une construction. Si la mise à
+jour aboutit, on remplace veilleur et serveur — et le banc suivant en lance une
+seconde. **Deux constructions par allumage** : ce n'est pas un défaut, c'est le
+prix d'un serveur qui répond tout de suite.
+
+### Ce qui manquait : quoi faire quand on tombe sur l'autre
+
+On délogeait, puis on relançait aussitôt. **Déloger n'a de sens que contre une
+ORPHELINE** — une construction dont le destinataire est mort (§131). Contre une
+construction VIVANTE, qui fait exactement le travail qu'on s'apprête à faire,
+c'est le pire des gestes : on jette plusieurs minutes de calcul et l'on
+recommence sur une machine qui n'en a pas les moyens.
+
+`attendreLaConstructionEnCours()` l'attend donc — dix minutes au plus, avec un
+signe de vie chaque minute — puis déloge ce qui reste (là, c'est bien une
+orpheline) et bâtit. Quelques minutes de patience contre une journée en mode
+développement : c'est le même arbitrage que la relance du veilleur (§133), déjà
+tranché dans ce sens.
+
+### Et l'on cesse de chercher le détenteur du verrou PAR SON NOM
+
+Tout ce qui délogeait visait un motif — `pkill -f "[n]ext(…| build)"` au
+démarrage, `pgrep -af "next build"` dans le banc. Or une construction Next n'est
+pas trois processus, elle en est cinq, relevés sur cette machine :
+
+```
+npm exec next build                          ← le motif l'attrape
+sh -c next build                             ← le motif l'attrape
+node …/node_modules/.bin/next build          ← le motif l'attrape
+node …/<dist>/build/<empreinte>.js 43027     ← IL NE L'ATTRAPE PAS
+node …/jest-worker/processChild.js           ← IL NE L'ATTRAPE PAS
+```
+
+`detenteursDuVerrou()` demande donc au système **qui a le fichier `<dist>/lock`
+ouvert**, en lisant `/proc/<pid>/fd`. C'est exact, indépendant des noms, et cela
+survivra à la prochaine façon dont Next découpera ses processus.
+
+### CE QUI N'EST PAS PROUVÉ, et il ne faut pas le croire acquis
+
+**La panne n'a pas été reproduite ici.** Deux hypothèses ont été éprouvées et
+écartées le 21 août : le `sleep 1` de `demarrer.sh` (après `pkill`, plus rien ne
+tenait le verrou et la construction suivante partait) et l'orphelin invisible
+(le `jest-worker` survivant ne tenait pas le verrou). Ce qui est livré rend le
+mécanisme **sûr**, pas la panne **corrigée** : c'est une différence qui compte
+(`AGENTS.md`), et `TODO.md` la garde ouverte.
+
 ## 135. Un écran atteint depuis deux endroits ne peut pas avoir un retour fixe
 
 **Sa remarque du 20 août 2026 :** *« quand j'appuie sur retour, ça ne me fait pas
@@ -12073,3 +12138,226 @@ elle vit dans `test-choisir-la-date-e2e.ts`, sur le dernier écran qu'il voit
 avant d'envoyer.
 
 ---
+
+---
+
+## 137. Une confusion relie deux fiches, pas deux lignes d'un même fichier
+
+**Écrit le 20 août 2026, en écrivant la troisième fiche réelle.**
+
+C'est la confusion (`confusions_phyto`) qui autorise la demande de photo
+complémentaire : sans elle, deux hypothèses au coude à coude donnent un refus,
+et le module perd la moitié de ce qu'il sait faire. Or les fiches qui se
+confondent sont précisément celles qu'on écrit **à des moments différents** :
+l'anthracnose du platane vient d'une page d'Ephytia lue un jour, celle du chêne
+et du hêtre d'une autre page lue le lendemain. Deux lots, deux fichiers.
+
+**Deux obstacles se tenaient l'un derrière l'autre, et le second était muet.**
+
+1. **Le contrôle** (`validerLot`) refusait tout renvoi vers une fiche absente du
+   fichier courant. Il accepte désormais un jeu de `codesConnus` — tous les
+   codes déclarés par l'import en cours, relevés avant la moindre validation. Le
+   contrôle ne disparaît pas : il porte sur l'ensemble au lieu d'un fichier, et
+   un renvoi vers un code qu'aucun lot ne déclare reste refusé.
+
+2. **L'écriture se perdait en silence.** Le lien était posé en
+   `INSERT … SELECT … FROM fiches_phyto WHERE code = $2` : sur une fiche pas
+   encore écrite, cette requête n'insère **rien**, sans erreur ni message.
+   L'ordre alphabétique des fichiers décidait donc de ce qui marchait — un
+   renvoi vers un lot écrit *plus tard* disparaissait, et on ne l'aurait
+   découvert que sur un chantier, devant une relance photo qui ne vient pas.
+   Ce cas n'était pas atteignable avant le point 1 : c'est l'élargissement qui
+   l'a ouvert.
+
+   L'import garde donc une file des confusions non posées et les **raccorde à la
+   fin**, tous les lots écrits. Ce qui échoue encore là fait tomber l'import :
+   la validation ayant déjà refusé les codes inconnus, un lien manquant à ce
+   stade est une faute d'écriture, et un import « réussi » à qui il manque une
+   relance est pire qu'un import rouge.
+
+**Le contrôle a été vu rouge avant d'être cru** (`CLAUDE.md` §5) :
+`test-diagnostic-base.ts` monte deux lots temporaires — l'un renvoyant vers
+l'autre, écrit plus tard — et, l'ancienne écriture rétablie, il rougit en disant
+« il s'est perdu en silence ».
+
+**Ce que cela a coûté par ailleurs**, et qui est instructif : un cas voisin
+affirmait `base.confusions.length === 1`. C'était vrai **par accident**, la base
+ne portant que les fixtures. La première fiche réelle qui déclare une confusion
+l'a fait rougir sur du code juste — le défaut du §5 bis de `CLAUDE.md`, à
+nouveau. Il vérifie maintenant la règle : la confusion d'alpha existe et nomme
+la photo qui tranche, quoi que la base porte d'autre.
+
+**Et une duplication a été retirée dans la foulée.** La suite navigateur
+recopiait à la main le `resultat` qu'affiche l'écran de diagnostic, champ par
+champ — la règle dupliquée entre l'affichage et la vérification qu'interdit
+`CLAUDE.md` §3. `composerResultat` est désormais exportée, et la suite l'appelle.
+
+
+---
+
+## 138. « Bloquer plutôt que deviner » : l'hôte d'abord, et l'intégrité prouvée
+
+**Sa consigne du 20 août 2026**, en deux moitiés qui tiennent chacune en une
+phrase :
+
+> *« Mieux vaut refuser de conclure que produire un faux diagnostic. »*
+> *« Aucune interprétation silencieuse. Aucune donnée inventée. Aucune perte
+> d'information. Aucun diagnostic forcé. En cas de doute, bloquer plutôt que
+> deviner. »*
+
+Le module respectait déjà l'essentiel : le schéma de sortie du modèle n'a **aucun
+champ** pour nommer une maladie (§135), tout ce qui s'affiche sort d'une colonne,
+l'outil sait refuser et sait demander une photo de plus. Ce qui suit est ce qui
+manquait.
+
+### 1. L'hôte d'abord — la règle la plus coûteuse, et la plus juste
+
+> *« Identifier l'hôte avant la maladie. Si l'espèce est incertaine, ne pas
+> diagnostiquer. »*
+
+`arbitrer()` exige désormais une essence **établie** — un taxon reconnu par la
+base, avec une certitude autre qu'« incertaine » — avant de regarder le moindre
+candidat. Sans elle : une relance qui demande la vue qui **identifie un arbre**
+(feuille entière posée à plat, puis l'arbre entier), et au second passage un
+refus nommé `hote_incertain`.
+
+**Le contrôle est placé AVANT la lecture des candidats, et ce n'est pas
+cosmétique.** Plus bas dans la fonction, `premier` existe déjà ; un code qui a un
+premier candidat sous la main finit toujours par le rendre « quand même, puisqu'il
+est loin devant ». Là où il est, il n'y a rien à rendre.
+
+**Le prix est réel et assumé** : un symptôme parfaitement caractéristique sur une
+essence non reconnue ne conclut plus. C'est exactement ce qu'il a demandé.
+
+**« probable » suffit, « incertaine » bloque.** Exiger « sure » rendrait l'outil
+inutilisable : un modèle de vision dit rarement qu'il est sûr.
+
+### 2. La liste d'hôtes : c'est la SOURCE qui dit si elle est close
+
+> *« Ne comparer qu'aux maladies compatibles avec l'hôte et l'organe atteint. »*
+
+Le moteur n'écartait que les fiches à hôte `strict`, et se contentait ailleurs
+d'un malus — parce qu'une liste d'hôtes de source est rarement exhaustive, et
+qu'exclure sur une liste incomplète fait rater un diagnostic juste, **en
+silence**. Les deux positions se défendent, et c'était un arbitrage pris dans le
+code sur une question qui appartient au document.
+
+**La sortie a été de le demander à la source.** L'exclusion devient la règle ;
+`hotes_non_exhaustifs` recopie la mention contraire quand elle existe —
+l'anthracnose du chêne dit « de nombreuses espèces », le fomès dit que les
+feuillus sont touchés « de manière anecdotique ». Ces deux fiches portent donc le
+drapeau, l'anthracnose du platane non (sa page dit « Hôtes habituels :
+Platanes »).
+
+Un hôte `strict` l'emporte toujours sur le drapeau : deux mentions qui se
+contredisent, c'est une fiche mal remplie, et le doute doit fermer, jamais ouvrir.
+
+### 3. Le plafond que la source autorise
+
+> *« Le niveau de certitude affiché ne doit jamais dépasser celui permis par les
+> données scientifiques. »*
+> *« Si la source exige une analyse en laboratoire, Atlas ne doit jamais afficher
+> "confirmé". »*
+
+Deux champs neufs : `certitude_max` (plafond dur, appliqué **en dernier** dans
+`confiancePour`, après tous les autres) et `methode_confirmation` (la phrase de la
+source, recopiée). L'import **refuse** la combinaison qui ment : une méthode de
+confirmation exigée avec une certitude `elevee`.
+
+Un plafond ne relève jamais rien — une fiche qui autorise `elevee` sur une photo
+floue reste « incertaine ». Sinon le champ deviendrait un moyen de forcer une
+certitude, c'est-à-dire l'inverse de ce qu'il demande.
+
+`methode_confirmation` s'affiche **en pleine page**, sous « Ce qui reste à
+confirmer », jamais dans le tiroir des détails : la cacher reviendrait à laisser
+croire qu'il n'y en a pas.
+
+### 4. La comparaison champ par champ — et ce qu'elle a trouvé le jour même
+
+> *« après chaque import, effectue automatiquement une comparaison champ par
+> champ entre la fiche source et les données réellement enregistrées ; […] si une
+> différence, une perte d'information ou une ambiguïté apparaît, bloque la
+> validation et indique précisément l'écart ; une fiche ne passe au statut
+> VALIDÉE qu'après réussite de ce contrôle. »*
+
+`comparerFicheSourceEtEnregistree()` est une fonction **pure** : deux objets de
+même forme entrent, la liste des écarts sort. Elle ne connaît ni la base ni le
+disque, ce qui la rend éprouvable contre des altérations fabriquées — donc
+possible à voir rouge.
+
+**Le schéma Zod ne la rendait pas redondante.** Il vérifie la forme du fichier et
+se tait sur ce qui arrive ensuite : une colonne oubliée dans l'`INSERT`, un
+`text[]` réordonné, un `null` devenu chaîne vide, une valeur tronquée. Tous ces
+défauts sont silencieux — l'import finit en vert et la fiche servie ne dit plus
+tout à fait ce que le document disait.
+
+**Les champs sont listés à la main, jamais balayés par `Object.keys`.** Un
+balayage compare ce que les deux objets ont en commun : le jour où une colonne est
+ajoutée au schéma mais oubliée dans l'`INSERT`, elle manque des **deux** côtés, et
+le contrôle reste vert sur une information perdue. C'est précisément le défaut
+qu'il existe pour attraper.
+
+**Deux prises réelles dans l'heure qui a suivi son écriture :**
+
+- **le chemin des images.** Une fiche déclare `fichier` ; l'import en tirait une
+  clé de stockage et **jetait le chemin**. Rien n'échouait, l'écran affichait bien
+  la photo — mais la base ne savait plus ce qu'une clé représentait. Colonne
+  ajoutée, plutôt que champ écarté du contrôle : l'écarter aurait rendu le
+  contrôle muet sur sa première vraie prise ;
+- **l'ordre des listes.** Les symptômes et les images portaient un `ordre` ; les
+  hôtes, les sources et les confusions non — relus par ordre alphabétique de code,
+  c'est-à-dire dans un ordre qui n'est celui d'aucun document. Sa consigne dit
+  « déplacée » à côté de « perdue » et « modifiée », et l'ordre d'une liste
+  d'hôtes est une information : la plaquette du DSF nomme d'abord les essences les
+  plus touchées.
+
+Dans les deux cas la tentation était d'assouplir le contrôle pour qu'il passe. Un
+contrôle qu'on assouplit pour qu'il passe ne contrôle plus rien.
+
+**Un seul champ est délibérément dérivé** : `storage_key`, régénérée à chaque
+écriture. La comparer littéralement ferait rougir le contrôle sur toutes les
+fiches à photo, à chaque import — et un contrôle qui rougit toujours s'apprend à
+être ignoré. « Dérivé » ne veut pas dire « non vérifié » pour autant : une clé est
+**exigée** dès qu'un fichier était déclaré, sans quoi une photo disparaîtrait de
+l'écran en silence.
+
+### 5. « VALIDÉE » est devenu impossible sans contrôle
+
+L'import n'écrit **jamais** `validee` : la fiche entre au mieux `en_revue`, et
+seule la comparaison réussie la promeut, dans la même transaction. La contrainte
+`fiches_phyto_integrite_ck` en fait une impossibilité plutôt qu'une intention —
+aucune écriture, par aucun chemin, y compris un `UPDATE` en SQL direct par le
+propriétaire de la table, ne peut poser `validee` sans le drapeau. Éprouvé comme
+tel (`test-diagnostic-base.ts`).
+
+Toute réécriture d'une fiche **annule** le contrôle précédent : sans cela, une
+fiche modifiée garderait le vert obtenu par sa version d'avant.
+
+### 6. L'import est passé à UNE SEULE transaction
+
+Chaque lot avait la sienne : un fichier fautif tombait seul, les autres entraient.
+Deux choses l'ont rendu intenable. D'abord les confusions traversent les fichiers
+(§137) : un renvoi vers un lot écrit plus tard est raccordé à la fin, donc absent
+au moment où la transaction du premier lot se ferme — le contrôle le comptait
+comme une perte et faisait tomber un import parfaitement sain. Ensuite, une base à
+moitié importée est exactement l'état ambigu qu'il refuse.
+
+L'ordre est donc : tout écrire → raccorder les renvois → contrôler chaque fiche →
+promouvoir → un seul `COMMIT`. **La validation de forme, elle, reste par fichier
+et tout entière avant la première écriture** : un fichier mal formé est toujours
+signalé nommément, sans qu'on ait rien tenté d'écrire.
+
+### 7. Ce que l'écran dit, et ce qu'il ne dit plus
+
+- **« Une ressemblance n'est pas une preuve »**, sous les photos de référence.
+  Sa règle : *« les photos de référence sont uniquement des indices, jamais une
+  preuve suffisante »*. Une image posée sans un mot se lit comme une
+  confirmation, surtout quand elle ressemble à celle qu'on vient de prendre.
+- **« Ce qui reste à confirmer »**, avec la phrase de la source et les vues qui
+  manquent.
+
+**Un défaut trouvé sur la capture, et pas par un test** — le cinquième de ce
+dépôt (`CLAUDE.md` §5) : la phrase du laboratoire s'affichait deux fois de suite,
+comme méthode de confirmation puis comme première information requise. Une
+consigne répétée se lit comme deux consignes, et sur un chantier on cherche la
+différence entre les deux. L'import refuse désormais cette répétition.

@@ -141,6 +141,33 @@ export const FicheSchema = z.object({
   prevention: z.string().nullable().default(null),
   gestion: z.string().nullable().default(null),
   traitement: z.string().nullable().default(null),
+  // ── Les cinq champs de sa consigne du 20 août 2026 (migration 0057) ──────
+  //
+  // Des TABLEAUX DE PHRASES, jamais un texte suivi : c'est ce qui permet de les
+  // comparer un à un après l'import. Une prose de trois lignes se compare
+  // caractère par caractère ou pas du tout ; une liste dit exactement quelle
+  // entrée manque.
+  /** Ce qui permet de reconnaître ce problème plutôt qu'un autre. */
+  criteresDiscriminants: z.array(z.string().min(5)).default([]),
+  /** Ce qui l'écarte. Un critère négatif ferme, au lieu d'ouvrir. */
+  criteresExclusion: z.array(z.string().min(5)).default([]),
+  facteursFavorisants: z.array(z.string().min(5)).default([]),
+  /** Ce qu'il faudrait EN PLUS de la photo. Affiché quand Atlas refuse. */
+  informationsRequises: z.array(z.string().min(5)).default([]),
+  /** « La détection en laboratoire est nécessaire. » Recopié de la source. */
+  methodeConfirmation: z.string().min(5).nullable().default(null),
+  /**
+   * Le plafond de confiance que la source autorise.
+   *
+   * **`elevee` par défaut, et c'est délibéré malgré les apparences.** Un défaut
+   * prudent (`incertaine`) aurait bridé toutes les fiches déjà écrites sans que
+   * personne ne s'en aperçoive — un plafond silencieux est aussi mauvais qu'un
+   * plafond absent. Le contrôle §7 ci-dessous refuse la combinaison qui compte
+   * vraiment : une méthode de confirmation exigée avec un plafond `elevee`.
+   */
+  certitudeMax: z.enum(["elevee", "probable", "incertaine"]).default("elevee"),
+  /** La SOURCE déclare-t-elle sa liste d'hôtes non close ? */
+  hotesNonExhaustifs: z.boolean().default(false),
   niveauValidation: z.enum(["brouillon", "en_revue", "validee"]).default("brouillon"),
   origine: z.enum(["reelle", "fixture_test"]).default("reelle"),
   version: z.number().int().min(1).default(1),
@@ -233,7 +260,29 @@ export type VerdictImport =
  * qui ne doit jamais passer, c'est une fiche `validee` incomplète — parce que
  * celle-là sera servie à un chantier.
  */
-export function validerLot(brut: unknown, options: { autoriserFixtures: boolean }): VerdictImport {
+export function validerLot(
+  brut: unknown,
+  options: {
+    autoriserFixtures: boolean;
+    /**
+     * Les codes de fiches déclarés par les AUTRES lots du même import.
+     *
+     * **Sans cela, une confusion ne pouvait relier que deux fiches du même
+     * fichier** — et les fiches qui se confondent sont précisément celles qu'on
+     * écrit à des moments différents, à partir de sources différentes.
+     * L'anthracnose du platane et celle du chêne se ressemblent sur une photo
+     * de feuille ; elles vivent dans deux lots, écrits à deux jours d'écart.
+     * La contrainte aurait forcé un fichier unique et géant, ou fait renoncer
+     * aux confusions — c'est-à-dire à la demande de photo complémentaire, donc
+     * à la moitié de ce que ce module sait faire.
+     *
+     * Le contrôle ne disparaît pas : il porte sur l'ensemble de l'import au
+     * lieu d'un fichier. Une confusion vers une fiche qui n'existe nulle part
+     * reste refusée.
+     */
+    codesConnus?: Set<string>;
+  }
+): VerdictImport {
   const analyse = LotSchema.safeParse(brut);
   if (!analyse.success) {
     return {
@@ -252,7 +301,7 @@ export function validerLot(brut: unknown, options: { autoriserFixtures: boolean 
 
   const codesSources = new Set(lot.sources.map((s) => s.code));
   const codesTaxons = new Set(lot.taxons.map((t) => t.code));
-  const codesFiches = new Set(lot.fiches.map((f) => f.code));
+  const codesFiches = new Set([...lot.fiches.map((f) => f.code), ...(options.codesConnus ?? [])]);
   const naturesSources = new Map(lot.sources.map((s) => [s.code, s.nature]));
 
   // Doublons — une même fiche deux fois dans un lot laisserait la dernière
@@ -300,7 +349,7 @@ export function validerLot(brut: unknown, options: { autoriserFixtures: boolean 
     }
     for (const confusion of fiche.confusions) {
       if (!codesFiches.has(confusion.fiche)) {
-        problemes.push(ici(`confusion avec « ${confusion.fiche} », qui n’est pas dans ce lot`));
+        problemes.push(ici(`confusion avec « ${confusion.fiche} », qui n’existe dans aucun lot`));
       }
       if (confusion.fiche === fiche.code) problemes.push(ici("une fiche ne se confond pas avec elle-même"));
       // ── 6. Une relance doit dire QUOI photographier ──────────────────────
@@ -395,6 +444,44 @@ export function validerLot(brut: unknown, options: { autoriserFixtures: boolean 
       avertissements.push(ici("aucune source — cette fiche ne pourra pas être validée en l’état"));
     }
 
+    // ── 7. Une confirmation exigée, et une certitude quand même élevée ─────
+    //
+    // **Sa règle du 20 août 2026 :** *« si la source scientifique exige une
+    // analyse en laboratoire pour confirmer, Atlas ne doit jamais afficher
+    // "confirmé" »*, et *« le niveau de certitude affiché ne doit jamais
+    // dépasser celui permis par les données scientifiques »*.
+    //
+    // La contradiction se glisse sans bruit : `certitudeMax` vaut `elevee` par
+    // défaut, et une fiche qui recopie honnêtement « la détection en
+    // laboratoire est nécessaire » garderait ce plafond sans que personne ne le
+    // remarque. C'est un REFUS et non un avertissement — la fiche affirmerait à
+    // l'écran l'inverse de ce que son propre document dit.
+    if (fiche.methodeConfirmation !== null && fiche.certitudeMax === "elevee") {
+      problemes.push(
+        ici(
+          "la source exige une confirmation (« " +
+            fiche.methodeConfirmation.slice(0, 60) +
+            " ») mais la fiche autorise une certitude « elevee » : baissez `certitudeMax`"
+        )
+      );
+    }
+
+    // ── 8. La même phrase deux fois de suite à l'écran ─────────────────────
+    //
+    // **Trouvé sur une CAPTURE, pas par un test** — le cinquième défaut de ce
+    // dépôt découvert en regardant l'écran (`CLAUDE.md` §5). La méthode de
+    // confirmation s'affiche en pleine page, et juste en dessous la liste des
+    // informations requises : la même phrase y figurait deux fois. Une consigne
+    // répétée se lit comme deux consignes, et sur un chantier on cherche la
+    // différence entre les deux.
+    for (const info of fiche.informationsRequises) {
+      if (fiche.methodeConfirmation !== null && info.trim() === fiche.methodeConfirmation.trim()) {
+        problemes.push(
+          ici("`informationsRequises` répète mot pour mot `methodeConfirmation` : l’écran l’afficherait deux fois")
+        );
+      }
+    }
+
     // Une fiche dont la photo ne peut rien prouver n'a pas à être servable :
     // elle occuperait le classement sans jamais pouvoir conclure.
     if (fiche.diagnosticPhoto === "impossible" && fiche.niveauValidation === "validee") {
@@ -406,4 +493,200 @@ export function validerLot(brut: unknown, options: { autoriserFixtures: boolean 
 
   if (problemes.length > 0) return { ok: false, problemes, avertissements };
   return { ok: true, lot, avertissements };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LA COMPARAISON CHAMP PAR CHAMP — « aucune perte d'information »
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// **Sa consigne du 20 août 2026, et c'est la pièce qui manquait :**
+//
+//   > *« après chaque import, effectue automatiquement une comparaison champ
+//   >   par champ entre la fiche source et les données réellement enregistrées ;
+//   >   vérifie qu'aucune information n'a été perdue, modifiée, déplacée ou
+//   >   interprétée différemment ; si une différence, une perte d'information ou
+//   >   une ambiguïté apparaît, bloque la validation et indique précisément
+//   >   l'écart ; une fiche ne passe au statut VALIDÉE qu'après réussite de ce
+//   >   contrôle. »*
+//
+// ── Pourquoi ce contrôle n'est PAS redondant avec le schéma ────────────────
+//
+// Le schéma Zod vérifie la forme du fichier. Il ne dit rien de ce qui arrive
+// ENSUITE : une colonne oubliée dans l'`INSERT`, un `text[]` écrit dans le
+// mauvais ordre, un `null` devenu chaîne vide, un accent mangé par un encodage,
+// une valeur tronquée par une contrainte de longueur. Tous ces défauts sont
+// **silencieux** — l'import se termine en vert, et la fiche servie ne dit plus
+// tout à fait ce que le document disait.
+//
+// Ce dépôt a déjà payé exactement ce genre de silence : l'écriture des
+// confusions perdait un lien sans un mot (`ARCHITECTURE.md` §137). La leçon est
+// la même — ne pas faire confiance à l'absence d'erreur.
+//
+// ── Pourquoi c'est une fonction PURE ──────────────────────────────────────
+//
+// Elle ne connaît ni la base ni le disque : elle reçoit deux objets de la même
+// forme et rend la liste des écarts. C'est ce qui la rend éprouvable contre des
+// altérations fabriquées (`scripts/test-import-fiches-phyto.ts`), donc ce qui
+// permet de la voir ROUGE — sans quoi elle ne prouverait rien (`CLAUDE.md` §5).
+
+export type EcartIntegrite = {
+  /** Le chemin exact, dans la notation du fichier source. */
+  champ: string;
+  attendu: unknown;
+  trouve: unknown;
+};
+
+/** Rend une valeur comparable et lisible dans un message d'erreur. */
+function figer(v: unknown): string {
+  if (v === null || v === undefined) return "null";
+  if (Array.isArray(v)) return `[${v.map(figer).join(", ")}]`;
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return `{${Object.keys(o)
+      .sort()
+      .map((k) => `${k}: ${figer(o[k])}`)
+      .join(", ")}}`;
+  }
+  return JSON.stringify(v);
+}
+
+function comparer(champ: string, attendu: unknown, trouve: unknown, ecarts: EcartIntegrite[]): void {
+  if (figer(attendu) !== figer(trouve)) ecarts.push({ champ, attendu, trouve });
+}
+
+/**
+ * Les champs SCALAIRES d'une fiche, nommés un à un.
+ *
+ * **Écrits à la main plutôt que balayés par `Object.keys`, et c'est le point le
+ * plus important de ce fichier.** Un balayage automatique compare ce que les
+ * deux objets ont en commun : le jour où une colonne est ajoutée au schéma mais
+ * oubliée dans l'`INSERT`, elle est absente des DEUX côtés — et le contrôle
+ * reste vert sur une information perdue. C'est précisément le défaut qu'il
+ * existe pour attraper.
+ *
+ * Cette liste est donc le contrat, et l'ajout d'un champ oblige à l'y écrire.
+ */
+const CHAMPS_SCALAIRES = [
+  "code",
+  "nomCommun",
+  "nomScientifique",
+  "categorie",
+  "agentCausal",
+  "agentType",
+  "periodeDebutMois",
+  "periodeFinMois",
+  "explicationCourte",
+  "gravite",
+  "impactMecanique",
+  "impactMecaniqueNote",
+  "risqueHumainAnimal",
+  "risqueHumainAnimalNote",
+  "statutReglementaire",
+  "referenceReglementaire",
+  "diagnosticPhoto",
+  "conduiteRecommandee",
+  "prevention",
+  "gestion",
+  "traitement",
+  "methodeConfirmation",
+  "certitudeMax",
+  "hotesNonExhaustifs",
+  "origine",
+  "version",
+  "sourcesAJourLe",
+] as const satisfies readonly (keyof FicheImportee)[];
+
+/** Les champs LISTE de mots ou de phrases, comparés dans l'ordre. */
+const CHAMPS_LISTES = [
+  "partiesAtteintes",
+  "photosUtiles",
+  "criteresDiscriminants",
+  "criteresExclusion",
+  "facteursFavorisants",
+  "informationsRequises",
+] as const satisfies readonly (keyof FicheImportee)[];
+
+/**
+ * Comparer la fiche du FICHIER et la fiche RELUE EN BASE, champ par champ.
+ *
+ * **L'ordre des listes compte, et ce n'est pas de la rigidité mal placée.** Un
+ * symptôme cardinal déplacé en fin de liste change ce que l'écran montre en
+ * premier ; des critères discriminants réordonnés changent ce qu'on lit d'abord
+ * sur un chantier. « Déplacée » figure d'ailleurs mot pour mot dans sa
+ * consigne, à côté de « perdue » et « modifiée ».
+ *
+ * **`niveauValidation` est délibérément ABSENT de la comparaison.** C'est le
+ * seul champ que l'import a le droit de faire évoluer : la fiche est écrite
+ * `en_revue`, puis promue `validee` par ce contrôle même. Le comparer
+ * reviendrait à exiger qu'il ait déjà la valeur que le contrôle doit accorder.
+ */
+export function comparerFicheSourceEtEnregistree(
+  source: FicheImportee,
+  enregistree: FicheImportee
+): EcartIntegrite[] {
+  const ecarts: EcartIntegrite[] = [];
+
+  for (const champ of CHAMPS_SCALAIRES) comparer(champ, source[champ], enregistree[champ], ecarts);
+  for (const champ of CHAMPS_LISTES) comparer(champ, source[champ], enregistree[champ], ecarts);
+
+  // ── Les listes d'objets ────────────────────────────────────────────────
+  //
+  // Le nombre est comparé AVANT le contenu : « 10 symptômes attendus, 9
+  // trouvés » désigne le bon coupable, alors que « symptomes[9] : … vs null »
+  // envoie chercher une différence de contenu là où il y a une disparition.
+  const listes = [
+    ["symptomes", source.symptomes, enregistree.symptomes],
+    ["hotes", source.hotes, enregistree.hotes],
+    ["confusions", source.confusions, enregistree.confusions],
+    ["sources", source.sources, enregistree.sources],
+  ] as const;
+
+  for (const [nom, attendues, trouvees] of listes) {
+    if (attendues.length !== trouvees.length) {
+      ecarts.push({ champ: `${nom}.length`, attendu: attendues.length, trouve: trouvees.length });
+      continue;
+    }
+    attendues.forEach((attendu, i) => comparer(`${nom}[${i}]`, attendu, trouvees[i], ecarts));
+  }
+
+  // ── Les images : un champ DÉRIVÉ, et il faut le dire ────────────────────
+  //
+  // `storageKey` n'est pas une information de la source : la fiche déclare un
+  // `fichier` du dépôt, et l'import en tire une clé de stockage NEUVE à chaque
+  // écriture. La comparer littéralement ferait rougir le contrôle sur toutes
+  // les fiches à photo, à chaque import — et un contrôle qui rougit toujours
+  // s'apprend à être ignoré, ce qui est pire que pas de contrôle du tout.
+  //
+  // **Mais « dérivé » ne veut pas dire « non vérifié ».** Une image déclarée
+  // qui n'aurait été rangée nulle part disparaîtrait de l'écran en silence :
+  // on exige donc qu'une clé existe dès qu'un fichier était demandé. C'est la
+  // seule ligne de cette fonction qui ne compare pas mais qui EXIGE.
+  if (source.images.length !== enregistree.images.length) {
+    ecarts.push({
+      champ: "images.length",
+      attendu: source.images.length,
+      trouve: enregistree.images.length,
+    });
+  } else {
+    source.images.forEach((attendu, i) => {
+      const trouve = enregistree.images[i];
+      for (const champ of ["url", "fichier", "licence", "credit", "partie", "legende"] as const) {
+        comparer(`images[${i}].${champ}`, attendu[champ], trouve[champ], ecarts);
+      }
+      if (attendu.fichier !== null && !trouve.storageKey) {
+        ecarts.push({
+          champ: `images[${i}].storageKey`,
+          attendu: `une clé de stockage (fichier « ${attendu.fichier} » déclaré)`,
+          trouve: null,
+        });
+      }
+    });
+  }
+
+  return ecarts;
+}
+
+/** La phrase d'un écart, pour le journal de l'import et pour le patron. */
+export function decrireEcart(e: EcartIntegrite): string {
+  return `${e.champ} : le fichier dit ${figer(e.attendu)}, la base a enregistré ${figer(e.trouve)}`;
 }
