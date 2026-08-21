@@ -86,6 +86,47 @@ pouvoir d'exécuter des commandes chez lui. Une boucle qui lirait des ordres dan
 le dépôt serait une porte dérobée sur une machine qui porte ses identifiants
 GitHub et ses clés d'IA. Le canal est à sens unique — il publie, on lit.
 
+## 1 ter. L'IA EST BRANCHÉE CHEZ LUI — ne plus jamais dire le contraire
+
+**Sa consigne du 21 août 2026, et il a fallu qu'il la répète :** *« il y a une
+clé IA, il y a Anthropic, elles sont connectées, les deux clés. Enregistre-le
+vraiment dans le dossier, histoire que quand j'ouvre une nouvelle session, tu
+sois au courant que la clé Anthropic est active et que tu t'en sers déjà pour
+faire beaucoup de choses, notamment pour l'arrosage automatique, analyser la
+photo. »*
+
+**Ce qu'il faut tenir pour acquis, dès la première minute d'une session :**
+
+| | |
+|---|---|
+| **Son espace de travail** | Les clés sont posées. L'IA tourne pour de bon : la dictée est transcrite, les devis rédigés, les photos regardées (arrosage, diagnostic végétal, ticket de caisse) |
+| **L'environnement de l'agent** | Aucune clé, et le mandataire refuse les fournisseurs. C'est CE poste-ci qui est démuni, pas le produit |
+
+**La faute à ne plus commettre.** Dire « ce n'est pas possible, il n'y a pas de
+clé », ou livrer un travail en le présentant comme non éprouvable : c'est
+confondre *cette machine* avec *la sienne*. Le 20 août il a déjà dû corriger la
+même erreur d'un autre bord — *« tu peux le faire, il y a déjà l'IA dans
+l'application »* (§5 ter). La formule juste n'est jamais « impossible », c'est :
+**« pas vérifiable ICI ; à jouer sur ton espace »**, avec la commande.
+
+**Comment le VÉRIFIER plutôt que le supposer**, quand la question compte :
+
+```bash
+npm run verifier:ia            # sur son espace : dit quels fournisseurs répondent
+npm run verifier:ia -- --reseau   # et les appelle vraiment
+```
+
+L'écran **Réglages** dit la même chose sans terminal, et c'est ce qu'on lui
+demande en cas de doute — une capture, pas une commande.
+
+**Ce qui NE change pas pour autant.** Un contrôle joué ici sans clé ne prouve
+rien de la rédaction ni de la lecture d'image : ce qui en dépend se vérifie sur
+son espace (`npm run verifier:dictee` en est l'exemple, et il refuse de rendre
+un vert sans clé). Et la batterie de livraison coupe délibérément les clés
+(`SANS_CLES_IA` dans `verifier-avant-livraison.ts`) : une batterie jouée chez lui
+ne doit pas envoyer ses dictées d'essai chez le fournisseur, ni les lui faire
+payer.
+
 ## 2. Tenir la mémoire à jour, sans qu'on le demande
 
 Après **chaque lot de travail important** — une fonctionnalité, une migration,

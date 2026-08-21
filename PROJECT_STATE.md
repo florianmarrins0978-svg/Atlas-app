@@ -70,6 +70,14 @@ ses estimations de durée sont justes, alors que c'est la durée qui fait le pri
 les coûts de chiffrage, les délais de paiement réels, et ce qu'un client refuse.
 Le détail est dans `ARCHITECTURE.md` §90 et `docs/QUESTIONS.md` §17.
 
+**L'IA EST BRANCHÉE, et ce n'est plus une hypothèse.** Le patron, le 21 août
+2026 : *« il y a une clé IA, il y a Anthropic, elles sont connectées, les deux
+clés »*. Sur son espace, la dictée est transcrite, les devis rédigés et les
+photos regardées pour de bon — l'arrosage, le diagnostic végétal, le ticket de
+caisse. Le poste de l'agent, lui, n'a aucune clé : ce qui en dépend se vérifie
+**sur son espace**, jamais ici, et ne se déclare jamais impossible
+(`CLAUDE.md` §1 ter).
+
 **La leçon qui commande ce chantier :** `historique_prix` était lue et jamais
 écrite. Devant toute idée d'apprentissage, la question n'est pas « avons-nous une
 table ? » mais **« qui l'écrit, et à quel moment du parcours ? »**
@@ -413,8 +421,10 @@ l'application. Ce qui est **fait** :
   clés du patron ; **la vision a dû être ajoutée à la couche IA**, qui ne
   manipulait que du texte. Ce qu'elle rend est une proposition : c'est ce qu'il
   confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
-  **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
-  environnement. `ARCHITECTURE.md` §84.
+  **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — pas de clé sur le poste de
+  l'agent. **Chez lui, elle est posée et l'IA tourne** (`CLAUDE.md` §1 ter) :
+  c'est un moyen de mesure qui manque ici, pas une fonctionnalité.
+  `ARCHITECTURE.md` §84.
 - **Un ticket daté d'un autre mois ne disparaît plus** (13 août) : le patron
   ajoute un ticket du 24 juillet depuis l'écran d'août ; il était enregistré —
   dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
