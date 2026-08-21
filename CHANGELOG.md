@@ -9,6 +9,68 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### La fiche client, refaite — premier lot, celui qui se voit
+
+**Sa demande, puis son choix :** *« j'ai envie que les informations prennent
+moins de place »*, et, devant cinq dessins de cases relus sur la page entière :
+*« je choisis la 4 »* — la carte douce.
+
+Ce qui change sur `chantiers/nouveau` :
+
+| | |
+|---|---|
+| **Plus un seul « (facultatif) »** | *« je ne veux plus qu'il y ait marqué facultatif nulle part »* |
+| **Le titre « Civilité » part**, Mr / Mme reste | *« je voulais juste que tu enlèves le titre »* |
+| **Le nom et le numéro sur une ligne** | et le champ Téléphone isolé disparaît |
+| **Le numéro s'espace à la frappe** | `0679984514` → `06 79 98 45 14` |
+| **« Comment lui envoyer son devis ? » sous l'adresse** | sa place, choisie par lui |
+| **Les cases : la carte douce** | fond papier, 14 px de rayon, aucun bord, l'or au doigt posé |
+
+**La case vit dans UNE classe, `.atlas-case`** (`globals.css`). Elle était écrite
+en double — dans `Field` et dans `ChampAdresse` —, et deux écritures de la même
+case divergent au premier ajustement (`CLAUDE.md` §3). C'est aussi ce qui lui
+donne son état au doigt posé : un style en ligne ne sait pas exprimer un
+`:focus`.
+
+**La règle du numéro est une fonction pure** (`src/lib/numero-telephone.ts`),
+éprouvée sans navigateur. Deux points y sont mesurés plutôt que supposés : un
+numéro qui commence par « + » n'est pas retouché (espacé par paires,
+`+33679984514` rendrait `+33 67 99 84 51 4`, le numéro de personne), et **le
+curseur reste où l'on corrige** — sans quoi corriger un chiffre au milieu
+deviendrait impossible.
+
+**Ce qui n'est PAS dans ce lot, et pourquoi.** Le bouton unique (« Je rédige mon
+devis ») et l'anneau sur cet écran arrivent ensemble, au lot suivant : retirer
+« Je dicte mon devis » aujourd'hui laisserait la dictée sur la fiche chantier
+sans aucun chemin pour y aller — et ce sont soixante-treize suites de bout en
+bout qui passent par ce bouton.
+
+**Éprouvé dans un vrai navigateur**, pas seulement à la relecture
+(`test-nouveau-chantier-e2e.ts`) : les dix chiffres tapés d'affilée, les deux
+cases sur la même ligne, le numéro qui ne déborde pas, la question de l'envoi
+sous l'adresse, et l'absence des deux mots retirés.
+
+**Le numéro s'espace à l'ÉCRAN, pas en base.** La jolie forme est un affichage ;
+en base, le numéro est comparé, composé et envoyé. Y écrire les espaces
+obligerait chaque consommateur à savoir les retirer — le rapprochement des
+clients, le lien d'appel, l'envoi du devis — et il suffirait qu'un seul l'oublie
+pour qu'un client cesse d'être reconnu, en silence. Le groupement deux par deux,
+lui, ne s'écrit qu'une fois : il vient de `numero-lisible.ts`, qui l'employait
+déjà pour écrire un numéro sur un écran.
+
+### Le lint retombait dans le même piège, pour la quatrième fois
+
+Un serveur monté à la main avec un `ATLAS_DIST_DIR` inédit a suffi : `npm run
+lint` est passé de 4 avertissements à **1 095 erreurs**, toutes venues de code
+généré, et la batterie a rougi sur une étape sans rapport avec le lot. Les trois
+dossiers connus étaient écartés nommément — pas celui-là.
+
+`eslint.config.mjs` écarte désormais `.next-*/**`. Les trois lignes nommées
+restent, elles portent chacune leur histoire ; ce motif couvre les dossiers
+qu'on ne connaît pas encore, et c'est le seul moyen qu'il n'y ait pas de
+cinquième fois.
+
+
 ### Les quatre questions de la fiche chantier sont réglées
 
 *« Fais ça pour le rajout de la 4e photo du jeudi. »* La dernière réponse

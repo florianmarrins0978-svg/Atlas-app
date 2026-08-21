@@ -146,11 +146,18 @@ async function main() {
     await page.waitForTimeout(400);
     const ecran = await page.locator("body").innerText();
     // Les mots de sa seconde photo, et pas d'autres.
+    //
+    // **« (facultatif) » a disparu de ces quatre intitulés le 21 août 2026**, à
+    // sa demande : *« tu me retires tous les facultatifs, je ne veux plus qu'il
+    // y ait marqué facultatif nulle part »*. Ce contrôle réclamait donc ce
+    // qu'il venait de faire enlever — on adapte le contrôle, on ne remet pas le
+    // mot (`CLAUDE.md` §5 bis). Ce qu'il défend ne change pas : cet écran est
+    // bien celui de sa photo, avec SES champs.
     for (const attendu of [
-      "Nom du client (facultatif)",
-      "Téléphone (facultatif)",
-      "E-mail (facultatif)",
-      "Adresse du chantier (facultatif)",
+      "Nom du client",
+      "Téléphone",
+      "E-mail",
+      "Adresse du chantier",
       "Ajouter une adresse client différente",
     ]) {
       if (!ecran.toUpperCase().includes(attendu.toUpperCase())) {
@@ -159,6 +166,17 @@ async function main() {
             ecran.split("\n").filter((l) => l.trim()).slice(0, 18).join("\n      ")
         );
       }
+    }
+  });
+
+  await cas("plus un seul « facultatif » sur cet écran", async () => {
+    // Un retrait ne tient que par ce qui ne doit PLUS apparaître : sans cela il
+    // revient à la première réécriture, et c'est sa demande qui se défait.
+    const ecran = await page.locator("body").innerText();
+    if (/facultatif/i.test(ecran)) {
+      throw new Error(
+        "« facultatif » est revenu sur la fiche client — il a demandé de tous les retirer le 21 août"
+      );
     }
   });
 
@@ -196,6 +214,12 @@ async function main() {
     );
     if (rows.length !== 1) throw new Error("le chantier a disparu de la base");
     if (rows[0].client !== CLIENT) throw new Error(`client « ${rows[0].client} » au lieu de « ${CLIENT} »`);
+    // **Le numéro s'espace à l'écran depuis le 21 août 2026, PAS en base.**
+    // Cette ligne-là ne bouge donc pas, et c'est tout l'intérêt : la jolie
+    // forme est un affichage, les chiffres sont la donnée. Si elle rougit un
+    // jour, c'est que l'espacement a débordé jusqu'au stockage — et le
+    // rapprochement des clients, le lien d'appel et l'envoi du devis
+    // trouveraient tous un numéro qu'ils ne reconnaissent plus.
     if (rows[0].telephone !== "0679984514") throw new Error(`téléphone « ${rows[0].telephone} »`);
     if (rows[0].adresse !== "10 rue des Lilas, Nantes") {
       throw new Error(`adresse « ${rows[0].adresse ?? "vide"} »`);
