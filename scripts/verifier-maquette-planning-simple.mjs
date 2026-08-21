@@ -589,8 +589,10 @@ await page.click('[data-jour="2026-08-21"]');
 await page.click("#retour").catch(() => {});
 await page.click('[data-jour="2026-08-20"]');
 {
+  // Le « ＋ » est le signe qui invite à en ajouter un autre : il n'appartient
+  // pas au nom de l'équipe, on le retire avant de comparer.
   const lire = () => page.$$eval("#jour-ouvert .demi", (n) =>
-    n.map((e) => [...e.querySelectorAll("[data-equipe]")].map((b) => b.textContent.trim())));
+    n.map((e) => [...e.querySelectorAll("[data-equipe]")].map((b) => b.textContent.replace("＋", "").trim())));
 
   // Le matin : Paul seul. L'après-midi : Julien ET Paul.
   const matin = page.locator("#jour-ouvert .demi").first();
@@ -632,6 +634,22 @@ await page.locator("#planifies .chantier").first().click();
 {
   const feuille = page.locator("#feuille-liste .feuille");
   verifier("un nom de la liste des planifiés ouvre sa feuille", (await feuille.count()) === 1);
+
+  // **Et AU-DESSUS, la journée entière.** Sa demande du 21 août : « il faut que
+  // les deux s'affichent » — le bandeau du jour (matin, après-midi, ajouter) et
+  // la feuille de chantier.
+  {
+    const carte = page.locator("#feuille-liste [data-jour-carte]");
+    verifier("la journée s'ouvre au-dessus de la feuille", (await carte.count()) === 1);
+    const dit = (await carte.innerText()).toLowerCase();
+    verifier(
+      `elle porte le matin, l'après-midi et de quoi ajouter (lu : « ${dit.replace(/\n/g, " ").slice(0, 70)}… »)`,
+      dit.includes("matin") && dit.includes("après-midi") && dit.includes("ajouter"),
+    );
+    const carteBoite = await carte.boundingBox();
+    const feuilleBoite = await feuille.boundingBox();
+    verifier("la feuille est bien SOUS la journée", feuilleBoite.y > carteBoite.y);
+  }
   // **Et elle s'ouvre SOUS la ligne touchée.** Vu sur capture : elle
   // s'affichait au bas de la liste, trois chantiers plus bas, et l'on croyait
   // avoir ouvert le mauvais. On mesure donc la distance entre les deux.
@@ -639,8 +657,10 @@ await page.locator("#planifies .chantier").first().click();
     // On mesure l'écart entre le BAS de la ligne touchée et le HAUT de la
     // feuille. Négatif, il dirait que la feuille s'est ouverte au-dessus —
     // c'est-à-dire ailleurs que sous le doigt.
+    // On mesure l'écart jusqu'à la CARTE du jour, qui est ce qui s'ouvre en
+    // premier sous la ligne — la feuille vient après elle.
     const ligne = await page.locator("#planifies .chantier").first().boundingBox();
-    const boite = await feuille.boundingBox();
+    const boite = await page.locator("#feuille-liste [data-jour-carte]").boundingBox();
     const ecart = Math.round(boite.y - (ligne.y + ligne.height));
     verifier(`elle s'ouvre juste sous la ligne touchée (${ecart} px plus bas)`, ecart >= 0 && ecart < 60);
   }

@@ -1240,6 +1240,28 @@ compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 su
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
 
+### Un « ＋ » sur la pastille, et la journée entière depuis la liste
+
+**Deux demandes du 21 août.**
+
+**1. « Il ne se dira pas qu'il peut cliquer dessus pour ajouter un autre gars. »**
+La pastille qui affiche « Paul » ne disait rien de ce qu'elle sait faire. Elle
+porte maintenant un **« ＋ » discret**, collé au nom : huit pixels, et le geste
+devient visible. Une phrase aurait pris une ligne, et il en a fait retirer trois
+la veille.
+
+**2. « Il faut que les deux s'affichent. »** Toucher un chantier dans la liste
+des planifiés n'ouvrait que sa feuille. Il ouvre désormais **la journée entière
+au-dessus** — matin, après-midi, « + Ajouter un chantier » — puis la feuille en
+dessous. C'est la même carte que sous le calendrier : elle est **écrite une fois
+et branchée deux fois**, sinon les deux endroits auraient fini par proposer des
+gestes différents.
+
+**Ce que ce partage a coûté**, et qui vaut d'être noté : la carte connaissait le
+jour par une variable globale (`jourTouche`). Rendue ailleurs, elle aurait posé
+les chantiers sur le mauvais jour. Elle reçoit donc sa date en argument, et le
+rafraîchissement des compteurs lit la date **sur la carte elle-même**.
+
 ### Le matin et l'après-midi ne partagent plus leurs équipes
 
 **Sa remarque du 21 août :** *« sur Mr. Leroy, qui dure toute la journée, je ne
