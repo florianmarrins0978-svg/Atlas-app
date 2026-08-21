@@ -191,7 +191,13 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
-### Le plan d'arrosage automatique — ESSAYABLE le 17 août 2026, rien n'est codé
+### Le plan d'arrosage automatique — les maquettes, ESSAYABLES depuis le 17 août 2026
+
+**Ce titre disait « rien n'est codé » : ce n'est plus vrai depuis le 20 août.**
+L'outil vit dans l'application — voir §« Le plan d'arrosage vit DANS
+l'application » plus bas. Ce qui suit décrit les **maquettes** de `appli/`, qui
+restent la référence du calcul et l'endroit où il essaie une idée avant qu'elle
+soit codée.
 
 **Du croquis au plan, sa demande du 18 août :** *« une fois que j'ai envoyé la
 photo, il y a le petit encart où on choisit la marque. Tout ce qu'il y a en
@@ -651,6 +657,42 @@ extérieure.
 | La lecture du croquis | `src/server/ai/services/lire-croquis.ts` |
 | Le geste | `src/app/paysage/arrosage/actions.ts` |
 | L'écran | `src/app/paysage/arrosage/ArrosageClient.tsx` |
+| D'où vient le débit | `src/lib/arrosage/mesure-debit.ts` |
+| Qui sait lire une image | `etatVision`, dans `src/lib/etat-ia.ts` |
+
+**LA LECTURE DU CROQUIS S'ÉPROUVE : `npm run verifier:croquis`** (21 août 2026).
+Elle dessine un croquis dans un navigateur — deux surfaces aux cotes
+différentes, une haie en mètres linéaires, un massif, un point d'eau —, le
+photographie et vérifie que ce qui revient porte SES chiffres, pas des valeurs
+par défaut. **À jouer depuis son espace**, où ses clés sont posées : ici et en
+CI, elle refuse de rendre un vert et nomme ce qui manque. C'est la réserve que
+`lire-croquis.ts` portait depuis sa naissance, et qui est levée.
+
+**Et l'écran demande la BONNE question.** Il annonçait « aucune clé d'IA n'est
+posée » dès qu'il ne voyait ni Anthropic ni OpenAI — faux dans les deux sens
+depuis que `VISION_PROVIDER` sépare « qui rédige » de « qui regarde ». Deux
+défauts corrigés le 21 août : `lireCroquis` appelait le fournisseur de
+RÉDACTION, et le message n'accusait jamais le bon coupable.
+
+**Ce que l'écran demande, et ce qu'il ne demande PAS.** Au compteur, rien : en
+Ø25 juste après le compteur, on a au moins 3 bar en dynamique comme en statique,
+*« tu sais d'office que tu es bien »* (20 août). Au robinet de jardin, **deux
+encarts séparés** — sa correction du 21 août : la **mesure au seau** (10 L
+chronométrés, marquée « trop approximatif pour calculer un arrosage : prenez
+le kit ») puis le **kit débit /
+pression, buse 5** (bar statique, bar dynamique). Le seuil retenu est **2,5 bar
+en dynamique** — en dessous, les tuyères se lèvent mal et arrosent court.
+
+**Pourquoi séparés, et pourquoi le seau s'excuse.** Deux gestes, deux outils,
+deux fiabilités : sous un même titre, un chiffre tiré d'un seau rempli à la main
+paraissait valoir celui d'un manomètre. Or c'est le seul des trois à donner le
+débit, et le moins précis des trois.
+
+**La statique n'est pas décorative.** C'est l'ÉCART entre les deux qui accuse :
+une statique à 4 bar qui tombe à 2 en débit désigne une conduite trop maigre ou
+trop longue. Le réseau se retaille, la pression ne se force pas. Et **la
+pression ne donne jamais le débit** : deux robinets à 3 bar délivrent l'un
+1 m³/h, l'autre 3. Sans seau, le débit est estimé **et le plan le dit**.
 
 **AVANT DE TOUCHER AU CALCUL, LIRE CECI.** `src/lib/arrosage/calcul.js` est une
 copie **octet pour octet** de `appli/arrosage-calcul.js`, et

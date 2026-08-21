@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { decrireEtatIA, auMoinsUnEnDefaut, aFaireIA } from "../src/lib/etat-ia";
+import { decrireEtatIA, auMoinsUnEnDefaut, aFaireIA, etatVision, decrireVision } from "../src/lib/etat-ia";
 
 let passed = 0;
 let failed = 0;
@@ -148,6 +148,103 @@ function main() {
     // Les NOMS des variables entrent ; leurs valeurs, jamais.
     const rendu = JSON.stringify(decrireEtatIA("openai", "anthropic", TOUTES));
     assert.doesNotMatch(rendu, /sk-/);
+  });
+
+  // ── QUI REGARDE LES PHOTOS ────────────────────────────────────────────────
+  //
+  // **Ce que ces cas tiennent, et pourquoi ils sont nés le 21 août 2026.**
+  // L'écran d'arrosage annonçait « aucune clé d'IA n'est posée sur ce serveur »
+  // dès qu'il ne trouvait ni Anthropic ni OpenAI. Le patron a repris trois fois
+  // pour dire que ses clés SONT posées et qu'elles servent déjà à rédiger ses
+  // devis. Il avait raison : la question posée n'était pas la bonne. Ce qui
+  // compte n'est pas qu'une clé existe, mais que **celui qui va lire l'image**
+  // ait la sienne — les deux se séparent depuis `VISION_PROVIDER`.
+
+  test("La vision est prête quand SON fournisseur a SA clé", () => {
+    const e = etatVision({ visionProvider: "anthropic", anthropicApiKey: "sk-x" });
+    assert.equal(e.prete, true);
+  });
+
+  // **Le cas qui coûte le plus cher : promettre une lecture qui n'aura pas
+  // lieu.** Une clé posée chez l'un, la vision réglée chez l'autre — l'écran
+  // disait « tout va bien », il photographiait, et rien ne revenait. C'est le
+  // « troisième bouton qui ne répond pas », déjà payé trois fois ici.
+  test("Une clé posée AILLEURS ne rend pas la vision prête", () => {
+    const e = etatVision({ visionProvider: "openai", anthropicApiKey: "sk-x", openaiApiKey: null });
+    assert.equal(
+      e.prete,
+      false,
+      "la vision est annoncée prête alors que la clé est posée chez un AUTRE fournisseur : il photographiera pour rien"
+    );
+  });
+
+  // **Et le message désigne le bon coupable** (`CLAUDE.md` §5) : la variable à
+  // renseigner, nommée, plutôt qu'un « aucune clé » qui envoie chercher partout.
+  test("Le motif nomme la variable exacte, pas « aucune clé »", () => {
+    const e = etatVision({ visionProvider: "openai", anthropicApiKey: "sk-x" });
+    assert.equal(e.prete, false, "la clé d'Anthropic ne fait pas lire OpenAI");
+    if (e.prete) return;
+    assert.match(e.raison, /OPENAI_API_KEY/);
+    assert.doesNotMatch(e.raison, /aucune clé/i);
+  });
+
+  // Gemini est annoncé et non écrit : poser sa clé n'y changerait rien, et le
+  // dire évite d'aller la chercher.
+  test("Un fournisseur qui ne sait pas lire le DIT, au lieu de réclamer une clé", () => {
+    const e = etatVision({ visionProvider: "gemini", anthropicApiKey: "sk-x" });
+    assert.equal(e.prete, false, "Gemini est annoncé capable de lire une image alors que son raccordement n'est pas écrit");
+    if (e.prete) return;
+    assert.doesNotMatch(e.raison, /_API_KEY/);
+    assert.match(e.raison, /Gemini/);
+  });
+
+  test("Sans fournisseur du tout, on le dit sans accuser une clé", () => {
+    const e = etatVision({ visionProvider: "dev" });
+    assert.equal(e.prete, false);
+    if (e.prete) return;
+    assert.doesNotMatch(e.raison, /_API_KEY/);
+  });
+
+  // Une clé n'a rien à faire dans un écran : seul le FAIT qu'elle existe voyage.
+  test("Aucune clé ne ressort du motif", () => {
+    const e = etatVision({ visionProvider: "anthropic", anthropicApiKey: null, openaiApiKey: "sk-secret-42" });
+    assert.doesNotMatch(JSON.stringify(e), /sk-secret/);
+  });
+
+  // ── La carte « Lecture d'image » de l'écran Atlas IA ──────────────────────
+  //
+  // Sa question du 21 août : « va voir ce qu'il y a de posé dans l'application
+  // et dis-moi si c'est bon ou s'il faut qu'on rajoute une clé ». L'écran doit
+  // savoir y répondre tout seul, le jour où il se la repose.
+
+  test("Quand tout est en place, la carte nomme le prestataire", () => {
+    const c = decrireVision("anthropic", TOUTES);
+    assert.equal(c.nature, "reel");
+    assert.match(c.libelle, /Anthropic/);
+    // Un prestataire à qui partent des photos de jardins est un sous-traitant.
+    assert.match(c.explication, /sous-traitant/);
+  });
+
+  // **Les deux échecs ne se réparent pas de la même façon**, et la distinction
+  // se paie en temps : l'un se corrige en collant une clé, l'autre en écrivant
+  // du code. Les confondre envoie chercher au mauvais endroit (`CLAUDE.md` §5).
+  test("Clé manquante : la carte nomme la variable à poser", () => {
+    const c = decrireVision("openai", ["ANTHROPIC_API_KEY"]);
+    assert.equal(c.nature, "cle_absente");
+    assert.equal(c.variableManquante, "OPENAI_API_KEY");
+  });
+
+  test("Fournisseur non raccordé : aucune clé n'est réclamée", () => {
+    const c = decrireVision("gemini", TOUTES);
+    assert.equal(c.nature, "non_raccorde");
+    assert.equal(c.variableManquante, undefined);
+  });
+
+  // La carte doit peser dans le voyant d'ensemble : une lecture en panne est un
+  // défaut, même quand la dictée et la rédaction vont bien.
+  test("Une lecture d'image en panne fait rougir l'écran", () => {
+    assert.equal(auMoinsUnEnDefaut([decrireVision("gemini", TOUTES)]), true);
+    assert.equal(auMoinsUnEnDefaut([decrireVision("anthropic", TOUTES)]), false);
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

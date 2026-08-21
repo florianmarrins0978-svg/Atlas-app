@@ -9,6 +9,163 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### La photo se PREND ou se CHOISIT — partout, plus seulement sur la fiche client
+
+*« Quand je clique sur ajouter une photo au croquis, il faut que soit je puisse
+mettre une photo de ma bibliothèque, soit prendre une photo. Le même schéma que
+pour ajouter des photos à la fiche client. »*
+
+**`capture="environment"` n'est pas une préférence, c'est un ordre.** Le
+téléphone saute directement à l'appareil arrière et le menu « Photothèque /
+Prendre une photo » ne paraît jamais. Deux écrans le portaient : le croquis
+d'arrosage et le diagnostic végétal.
+
+**Le retirer ne coûte rien** — l'appareil reste le premier choix du menu — et
+rend un cas entier : la photo prise la veille. Un croquis se dessine souvent au
+bureau ; le rephotographier depuis un écran donne une photo de photo, floue et
+de travers, que le modèle lit mal. Un feuillage qui jaunit se photographie quand
+on le voit, pas quand on ouvre Atlas.
+
+**Un contrôle réclamait l'inverse, et il a fallu le retourner** — cas d'école de
+`CLAUDE.md` §5 bis : *un contrôle ne doit pas réclamer ce que le patron a fait
+retirer*. Celui du diagnostic verrouillait l'attribut au motif que le parcours
+demandé était « ouvrir, photographier, attendre ». La maquette de la fiche
+client vocale, elle, l'interdisait déjà : les écrans disent désormais tous la
+même chose.
+
+### « Les clés sont posées » — et l'écran répondait à la mauvaise question
+
+**Il a repris trois fois pour dire la même chose**, et il avait raison à chaque
+fois : *« la clé Anthropic et OpenAI est mise sur l'application fonctionnelle,
+elle fonctionne pour d'autres secteurs comme la rédaction du devis. Donc
+utilise-la. »*
+
+L'écran d'arrosage annonçait « aucune clé d'IA n'est posée sur ce serveur » dès
+qu'il ne trouvait ni clé Anthropic ni clé OpenAI. **La question posée n'était pas
+la bonne.** Ce qui compte n'est pas qu'une clé existe quelque part, mais que
+**celui qui va lire l'image** ait la sienne — et les deux se séparent depuis que
+`VISION_PROVIDER` existe : on peut rédiger chez l'un et regarder chez l'autre.
+
+**Deux défauts trouvés en tirant ce fil, et le second était silencieux :**
+
+1. **Le croquis partait chez le fournisseur qui RÉDIGE.** `getFournisseurVision()`
+   existait depuis la veille, écrit précisément pour que « qui regarde les
+   photos » se règle sans toucher à « qui rédige » — et `lireCroquis` appelait
+   pourtant `getFournisseurLLM()`. Une installation qui pose `VISION_PROVIDER`
+   envoyait donc ses croquis au mauvais endroit, sans que rien ne le dise.
+2. **L'écran se trompait dans les deux sens.** Clé posée chez un fournisseur qui
+   ne lit pas les images : il annonçait que tout allait bien, on photographiait,
+   rien ne revenait — le « troisième bouton qui ne répond pas », déjà payé trois
+   fois ici. Et inversement, il criait au manque là où la lecture marchait.
+
+**Une règle pure décide désormais** (`etatVision`, dans `src/lib/etat-ia.ts`),
+et le message qu'elle rend est celui que l'écran affiche : « OpenAI (GPT) lit les
+croquis, mais OPENAI_API_KEY n'est pas posée », ou « Google Gemini ne sait pas
+encore lire une image ici » — car poser la clé de Gemini n'y changerait rien.
+Un « aucune clé » uniforme envoyait chercher au mauvais endroit (`CLAUDE.md` §5).
+
+**Et la lecture s'éprouve enfin pour de bon : `npm run verifier:croquis`.**
+`lire-croquis.ts` écrivait noir sur blanc que cet appel n'avait jamais été
+essayé, faute de clé ici. La commande dessine un croquis dans un navigateur —
+deux surfaces aux cotes différentes, une haie en mètres linéaires, un massif, un
+point d'eau —, le photographie, et vérifie que ce qui revient porte SES chiffres
+et pas des valeurs par défaut. Sans fournisseur de vision, elle refuse de rendre
+un vert et nomme ce qui manque.
+
+### Le calcul suit ses seuils, et ils ne sont pas les mêmes partout
+
+*Sa règle du 21 août 2026 :* **au compteur**, 3 bar, on est bien ; **au seau**,
+« dix-huit, vingt secondes, ce n'est pas trop mal : tu peux faire le calcul comme
+si tu avais deux bars cinq » ; **au kit**, « 2,5 bar, 3 bar, là tu es
+impeccable ».
+
+Le calcul menait jusqu'ici toute mesure sans manomètre à 3 bar — la valeur du
+compteur. **C'est la conduite qui fait la différence** : après le compteur, le
+Ø25 garantit ses 3 bar ; à un robinet de jardin, on ne sait rien de ce qui
+l'alimente. On retient donc le minimum viable plutôt que le confortable. Se
+tromper vers le bas met un arroseur de moins par réseau ; se tromper vers le haut
+en met un de trop, et c'est le gazon qui jaunit en bout de ligne.
+
+Le seuil est atteint **à** 2,5 bar, pas dépassé : une inégalité stricte l'aurait
+refusé de justesse et aurait fait douter d'une mesure qu'il juge bonne.
+
+### Quatre corrections du patron sur l'écran d'arrosage, dont un défaut de parcours
+
+**« Quand je clique sur croquis et que j'ajoute une photo, rien ne se passe. »**
+Il avait raison, et c'est le pire des quatre : le bouton ouvrait bien l'appareil,
+mais rien ne soumettait le formulaire ensuite — il aurait fallu toucher un second
+bouton, que l'écran ne montre pas puisqu'il l'avait demandé sans. **La suite ne
+l'a pas vu parce qu'elle ne posait jamais de photo** : elle vérifiait que le
+bouton existe et qu'il fait 64 px, jamais que le geste aboutit. C'est exactement
+ce qu'`AGENTS.md` interdit — parcourir en entier ce qu'on transmet, du premier
+geste au dernier. Un contrôle pose désormais un vrai fichier et exige une
+réponse de l'écran.
+
+**Les mesures ne s'affichent plus au compteur.** *« Quand je choisis le piquage,
+qu'il se fait après le compteur d'eau, rien ne doit s'afficher. […] Or, quand je
+choisis piquage après robinet, là un encart doit s'ouvrir. »* Et son métier
+explique pourquoi : *« si on se repique directement après le compteur en
+diamètre vingt-cinq, on aura au moins trois bars de pression dynamique, et
+pareil en statique — tu sais d'office que tu es bien »*.
+
+**Aucune réserve n'est donc écrite dans ce cas, et c'est une correction de ma
+part.** La première version avertissait « débit estimé, à vérifier au seau sur
+place ». Un avertissement inutile s'apprend à être ignoré — et celui-là faisait
+douter de la seule situation où il n'y a rien à vérifier.
+
+**La pression qui compte est la DYNAMIQUE, buse taille 5.** *« C'est celle-là
+qui nous intéresse. »* Robinet fermé, un manomètre lit la statique, toujours
+flatteuse ; c'est en débit, à travers une buse calibrée, que le chiffre dit ce
+qui arrivera aux arroseurs. L'étiquette le porte, faute de quoi il mesurerait la
+bonne grandeur au mauvais moment.
+
+**Une règle pure pour dire d'où vient le débit** (`src/lib/arrosage/mesure-debit.ts`) :
+au compteur on calcule sans rien demander ; le seau chronométré est une mesure
+et prime sur tout ; **le manomètre seul ne donne PAS le débit** — deux robinets
+à 3 bar délivrent l'un 1 m³/h, l'autre 3, selon ce qui les alimente. Dans ce
+cas le débit est estimé **et la réserve remonte en rouge sous le plan**. Sans
+aucune mesure, hors compteur, on refuse plutôt que d'inventer : un plan bâti sur
+un débit supposé a toutes les apparences d'un plan juste, et c'est le paysagiste
+qui revient poser un arroseur de moins.
+
+**Le kit se nomme, et il porte DEUX pressions.** *« Tu peux même marquer dans
+le bandeau déroulant kit de mesure débit/pression avec buse taille 5, nb de bar
+statique et nb de bar dynamique. »* Le kit demande donc les deux, et le seuil
+qu'il a donné est écrit noir sur blanc dans la règle : **2,5 bar en dynamique**
+— *« si il y a 2,5 bar, 3 bar en dynamique, alors c'est parfait, c'est ce qu'il
+faut pour que les arroseurs se lèvent correctement »*. En dessous, les tuyères
+sortent mal et arrosent court : le plan le dit plutôt que de laisser découvrir.
+
+**Pourquoi les deux, et pas seulement l'utile.** La dynamique seule ne dit pas
+d'où vient le manque. C'est l'**écart** entre les deux qui accuse : une statique
+à 4 bar qui tombe à 2 dès qu'on ouvre désigne une conduite trop maigre ou trop
+longue — le réseau se retaille, il ne se force pas. Une chute de plus de
+1,5 bar remonte donc sa propre réserve, distincte de celle du seuil, et les deux
+s'empilent quand les deux sont vraies : savoir que deux choses clochent, et
+lesquelles, vaut mieux que de les découvrir l'une après l'autre.
+
+**Le seau a son propre encart, et se dédouane** — sa correction du lendemain :
+*« la mesure au seau ne doit pas rentrer dans le kit débit/pression […] un titre
+du style mesure au seau, en dessous un seau de dix litres en combien de
+secondes, et sur ça tu peux marquer peu fiable ou pas précis, quelque chose pour
+se dédouaner »*.
+
+Il avait raison de le gêner, et pas seulement pour la mise en page : ce sont
+**deux gestes, deux outils, deux fiabilités**. Sous un même titre, un chiffre
+tiré d'un seau rempli à la main paraissait valoir celui d'un manomètre — alors
+que c'est le seul des trois à donner le DÉBIT, et le moins précis des trois.
+**Et la réserve DÉCONSEILLE au lieu de nuancer** — sa deuxième passe le même
+jour : *« peu précis, ordre de grandeur, ça ne va rien dire »*. Il a raison :
+une mention qui qualifie le chiffre se lit comme une nuance et se franchit sans
+y penser. « Trop approximatif pour calculer un arrosage : prenez le kit » ferme
+la question et désigne l'outil juste — sous le champ, là où il le lit au moment
+de le remplir, et non dans une réserve découverte sous le plan.
+
+**Deux libellés corrigés à sa demande :** le piquage sur pompe est retiré, et
+« Ailleurs (robinet de jardin, nourrice existante…) » devient **« Robinet de
+jardin »** — l'ancien se coupait dans le menu natif à 390 px, vu à la capture.
+Un contrôle mesure désormais qu'un choix tient dans sa boîte.
+
 ### Les quatre questions de la fiche chantier sont réglées
 
 *« Fais ça pour le rajout de la 4e photo du jeudi. »* La dernière réponse
