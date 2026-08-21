@@ -326,6 +326,11 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
+- **UN CHANTIER PORTE PLUSIEURS ÉQUIPES** — sa demande du 21 août : « je dois
+  pouvoir mettre tout le monde le matin, puis tout le monde l'aprem ». En base,
+  ce n'est donc pas une colonne `equipe_id` sur le chantier mais une TABLE DE
+  LIAISON (chantier × demi-journée × équipe). Le compte d'occupation porte sur
+  les **équipes occupées**, jamais sur le nombre de chantiers ;
 - **LA FICHE DU JOUR EST FAITE DE DEMI-JOURNÉES**, chacune portant ses
   chantiers, leur équipe, « Déplacer » et « Retirer ». Une liste unique sous les
   deux demi-journées ne permettait pas d'attribuer depuis l'après-midi — c'est ce

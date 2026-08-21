@@ -180,7 +180,11 @@
   .pastille.moitie{background:var(--pale);box-shadow:none}
   .pastille.plein{background:var(--pin);box-shadow:none}
 
-  .place{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .place{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+  /* **La liste des équipes prend toute la largeur de la ligne.** Coincée entre
+     le nom et les boutons, elle empilait ses noms en colonne et poussait la
+     ligne sur cinq hauteurs — vu sur capture, à cinq équipes. */
+  .place .choisir{flex-basis:100%;justify-content:flex-start}
   .place .nom{flex:1;border:0;background:transparent;text-align:left;padding:0;cursor:pointer;
               font:400 17px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
   .place .toute{display:block;margin-top:2px;font:400 11px/1 ui-sans-serif,sans-serif;color:var(--or)}
@@ -233,6 +237,7 @@
   .chantier .equipe{border:0;cursor:pointer}
   .chantier .chevron{border:0;background:transparent;cursor:pointer;padding:0 2px}
   .choisir .petit.retenue{background:var(--pin);color:#faf9f5;border-color:var(--pin)}
+  .choisir .petit.fini{border-color:var(--or);color:var(--or)}
   .chantier .nom{flex:1;font:400 19px/1.2 ui-serif,Georgia,serif}
   .chantier .quand-detail{margin-top:3px;font-size:12.5px;color:var(--or)}
   .chantier .equipe{flex-shrink:0;border-radius:999px;padding:7px 13px;font-size:12.5px;
@@ -353,40 +358,54 @@
                 "Théo", "Nadia", "Bruno", "Lena", "Yanis"];
   let nombreEquipes = 2;
   const EQUIPES = () => NOMS.slice(0, nombreEquipes);
+
+  /**
+   * Ce qu'affiche la pastille d'un chantier.
+   *
+   * **Un chantier peut porter PLUSIEURS équipes.** Sa demande du 21 août :
+   * *« lorsque je choisis une équipe je dois pouvoir mettre toutes les équipes
+   * si je le souhaite, le même jour ou même sur la même demi-journée — tout le
+   * monde le matin, puis tout le monde l'aprem »*. Un gros chantier se fait à
+   * plusieurs, et l'écran doit pouvoir le dire.
+   *
+   * Au-delà de deux noms on compte, sinon la ligne déborde sur un téléphone.
+   */
+  const ditLesEquipes = (e = []) =>
+    e.length === 0 ? "Équipe ?" : e.length <= 2 ? e.join(", ") : `${e[0]} +${e.length - 1}`;
   // **Modifiable, et c'est tout l'objet de la planche.** Sa consigne du
   // 21 août : « il faut que j'aille cliquer, pouvoir modifier, changer, voir ce
   // que ça donne ». Une planche qui ne ferait qu'AFFICHER un état ne répondrait
   // pas à la demande — on pose donc pour de bon dans cette liste.
   const CHANTIERS = [
-    { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipe: "Julien",
+    { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipes: ["Julien"],
       adresse: "4 rue des Ormes, Nantes", tel: "02 40 11 22 33",
       taches: ["Taille de haie de laurier — 18 m linéaires, hauteur 2 m",
                "Évacuation des déchets verts"] },
-    { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipe: "Paul",
+    { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipes: ["Paul"],
       adresse: "12 chemin du Moulin, Sautron", tel: "06 44 55 66 77",
       taches: ["Tonte de la pelouse — environ 900 m²",
                "Débroussaillage du talus arrière",
                "Ramassage et évacuation"] },
-    { nom: "Mr. Martins",                 date: "2026-08-21", demi: "journee", equipe: "" },
-    { nom: "Monsieur Martins",            date: "2026-08-21", demi: "journee", equipe: "" },
-    { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin",   equipe: "Julien" },
-    { nom: "Mme Guérin",                  date: "2026-08-27", demi: "apres",   equipe: "Paul" },
-    { nom: "Mr. Ollivier",                date: "2026-08-27", demi: "matin",   equipe: "Julien" },
+    { nom: "Mr. Martins",                 date: "2026-08-21", demi: "journee", equipes: [] },
+    { nom: "Monsieur Martins",            date: "2026-08-21", demi: "journee", equipes: [] },
+    { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin",   equipes: ["Julien"] },
+    { nom: "Mme Guérin",                  date: "2026-08-27", demi: "apres",   equipes: ["Paul"] },
+    { nom: "Mr. Ollivier",                date: "2026-08-27", demi: "matin",   equipes: ["Julien"] },
     // **Le cas qui manquait, et qui l'a fait douter le 21 août :** un
     // après-midi où les DEUX équipes sont sur le coup, avec le matin libre. Sans
     // lui, rien à l'écran ne distinguait « une équipe sur deux » de « complet »,
     // et sa question — « comment vous faites si l'après-midi j'ai mes deux
     // équipes ? » — n'avait aucune réponse visible.
-    { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipe: "Julien",
+    { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipes: ["Julien"],
       adresse: "7 impasse des Vignes, Orvault", tel: "06 12 34 56 78",
       taches: ["Plantation de 12 arbustes en massif",
                "Apport de terreau et paillage — 3 m³",
                "Arrosage de reprise"] },
-    { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipe: "Paul",
+    { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipes: ["Paul"],
       adresse: "31 boulevard de la Prairie, Nantes", tel: "06 98 76 54 32",
       taches: ["Pose de bordures béton — 24 m",
                "Reprise de l'allée en gravillons"] },
-    { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipe: "Paul" },
+    { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipes: ["Paul"] },
   ];
   // Sans date : ce qui attend un jour. C'est là qu'on prend pour poser.
   const SANS_DATE = [
@@ -453,7 +472,7 @@
     const remplir = (demi, combien) => {
       const deja = siens.filter((c) => c.demi === "journee" || c.demi === demi).length;
       return EQUIPES().slice(deja, combien).map((nom) => ({
-        nom: `Chantier ${nom}`, date: iso, demi, equipe: nom,
+        nom: `Chantier ${nom}`, date: iso, demi, equipes: [nom],
       }));
     };
     if (iso === "2026-08-26") return [...siens, ...remplir("apres", nombreEquipes)];
@@ -463,18 +482,24 @@
   const estWeekEnd = (iso) => [0, 6].includes(jourDeSemaine(iso));
 
   /**
-   * Ce qu'une demi-journée porte : qui y est pris, et quelle PART cela occupe.
+   * Ce qu'une demi-journée porte : quelles équipes y sont prises, et quelle
+   * part cela occupe.
    *
-   * **On rend une proportion, plus trois mots.** Avec deux équipes, « il reste
-   * de la place » ne pouvait vouloir dire qu'une chose ; avec dix, elle en
-   * couvre neuf — une nuance unique dirait la même chose pour une équipe prise
-   * que pour neuf. C'est la question qu'il a posée le 21 août 2026, et elle
-   * change le dessin, pas seulement le texte.
+   * **On compte des ÉQUIPES OCCUPÉES, pas des chantiers.** Sa demande du
+   * 21 août : un chantier peut mobiliser toutes les équipes à la fois. Compter
+   * les chantiers dirait « une place prise sur dix » là où les dix équipes sont
+   * sur le même terrain — c'est-à-dire l'inverse de la vérité.
+   *
+   * **Un chantier posé SANS équipe réserve quand même une place** : il faudra
+   * bien quelqu'un. Elle est hachurée à l'écran — « reste à décider qui y va ».
    */
   function occupation(iso, demi) {
-    if (estWeekEnd(iso)) return { pris: [], part: 0, complet: false };
+    if (estWeekEnd(iso)) return { pris: [], occupees: [], sansEquipe: 0, part: 0, complet: false };
     const pris = duJour(iso).filter((c) => c.demi === "journee" || c.demi === demi);
-    return { pris, part: pris.length / nombreEquipes, complet: pris.length >= nombreEquipes };
+    const occupees = [...new Set(pris.flatMap((c) => c.equipes || []))];
+    const sansEquipe = pris.filter((c) => (c.equipes || []).length === 0).length;
+    const prises = Math.min(occupees.length + sansEquipe, nombreEquipes);
+    return { pris, occupees, sansEquipe, part: prises / nombreEquipes, complet: prises >= nombreEquipes };
   }
 
   const titreJour = (iso) => `${JOURS[jourDeSemaine(iso)]} ${numero(iso)} ${MOIS[enDate(iso).getUTCMonth()]}`;
@@ -525,9 +550,10 @@
   function dessinerMarque(iso) {
     const barre = (o) => {
       const largeur = 100 / nombreEquipes;
-      const places = o.pris.map((c) =>
-        `<span class="seg ${o.complet ? "plein" : "pris"} ${c.equipe ? "" : "sans"}"
-               style="width:${largeur}%"></span>`).join("");
+      const places =
+        o.occupees.map(() => `<span class="seg ${o.complet ? "plein" : "pris"}" style="width:${largeur}%"></span>`).join("") +
+        Array.from({ length: o.sansEquipe },
+          () => `<span class="seg ${o.complet ? "plein" : "pris"} sans" style="width:${largeur}%"></span>`).join("");
       return `<i>${places}</i>`;
     };
     return `<span class="marqueA">${barre(occupation(iso, "matin"))}${barre(occupation(iso, "apres"))}</span>`;
@@ -585,6 +611,21 @@
    *    libre », « après-midi : 2 équipes sur 2 — complet ». Le calendrier
    *    signale ; la fiche tranche.
    */
+  /**
+   * Ce que dit une demi-journée, en toutes lettres.
+   *
+   * **On compte les ÉQUIPES prises, pas les chantiers** — un chantier peut en
+   * mobiliser plusieurs, et « 1 sur 5 » sur un terrain où trois équipes
+   * travaillent serait faux.
+   */
+  function ditLeCompte(iso, demi) {
+    const { occupees, sansEquipe, complet } = occupation(iso, demi);
+    const prises = occupees.length + sansEquipe;
+    if (prises === 0) return "libre";
+    if (complet) return "complet";
+    return `${prises} sur ${nombreEquipes}`;
+  }
+
   function rendreJourTouche() {
     const boite = document.getElementById("jour-ouvert");
     if (!jourTouche) { boite.innerHTML = ""; return; }
@@ -617,15 +658,15 @@
         return `<div class="place">
           <button type="button" class="nom" data-feuille="${i}">${c.nom}${
             c.demi === "journee" ? `<span class="toute">toute la journée</span>` : ""}</button>
-          <button type="button" class="equipe ${c.equipe ? "" : "vide"}" data-equipe="${i}">${c.equipe || "Équipe ?"}</button>
+          <button type="button" class="equipe ${(c.equipes || []).length ? "" : "vide"}" data-equipe="${i}">${ditLesEquipes(c.equipes)}</button>
           <button type="button" class="petit" data-demi="${i}">Déplacer</button>
           <button type="button" class="petit" data-retirer="${i}">Retirer</button>
         </div>`;
       }).join("");
 
-      return `<div class="demi">
+      return `<div class="demi" data-bloc="${demi}">
         <div class="demi-titre"><i class="pastille ${etat}"></i>${mot}
-          <span class="compte">${pris.length === 0 ? "libre" : complet ? "complet" : `${pris.length} sur ${nombreEquipes}`}</span></div>
+          <span class="compte">${ditLeCompte(jourTouche, demi)}</span></div>
         ${lignes}
         ${complet ? "" : `<button type="button" class="plus" data-ajouter="${demi}">+ Ajouter un chantier</button>`}
       </div>`;
@@ -686,7 +727,7 @@
         choix.querySelectorAll("[data-qui]").forEach((q) =>
           q.addEventListener("click", () => {
             const [c] = SANS_DATE.splice(Number(q.dataset.qui), 1);
-            CHANTIERS.push({ ...c, date: jourTouche, demi, equipe: "" });
+            CHANTIERS.push({ ...c, date: jourTouche, demi, equipes: [] });
             lundi = lundiDe(jourTouche);
             rendre();
           }));
@@ -696,7 +737,7 @@
         if (j) j.addEventListener("click", () => {
           if (SANS_DATE.length === 0) return;
           const [c] = SANS_DATE.splice(0, 1);
-          CHANTIERS.push({ ...c, date: jourTouche, demi: "journee", equipe: "" });
+          CHANTIERS.push({ ...c, date: jourTouche, demi: "journee", equipes: [] });
           lundi = lundiDe(jourTouche);
           rendre();
         });
@@ -796,7 +837,7 @@
             <div class="chantier">
               <button type="button" class="nom" data-feuille-liste="${CHANTIERS.indexOf(c)}">${c.nom}
                 <span class="quand-detail">${ditLaDemi(c.demi)}</span></button>
-              <button type="button" class="equipe ${c.equipe ? "" : "vide"}" data-equipe-liste="${CHANTIERS.indexOf(c)}">${c.equipe || "Équipe ?"}</button>
+              <button type="button" class="equipe ${(c.equipes || []).length ? "" : "vide"}" data-equipe-liste="${CHANTIERS.indexOf(c)}">${ditLesEquipes(c.equipes)}</button>
               <button type="button" class="chevron" data-feuille-liste="${CHANTIERS.indexOf(c)}">›</button>
             </div>`).join("")}
         </div>`).join("");
@@ -832,14 +873,65 @@
    */
   function ouvrirChoixEquipe(pastille, c) {
     if (!c) return;
+    c.equipes = c.equipes || [];
     const choix = document.createElement("div");
     choix.className = "choisir";
+
+    // **On COCHE, on ne choisit pas une seule fois.** Sa demande du 21 août :
+    // « je dois pouvoir mettre toutes les équipes si je le souhaite, sur la
+    // même demi-journée ». La liste reste donc ouverte tant qu'il n'a pas fini,
+    // et le calendrier se repeint derrière à chaque coche — sinon il faudrait
+    // refermer pour voir l'effet, et rouvrir pour corriger.
+    // **La liste se construit UNE fois, puis se coche sur place.** La
+    // réécrire à chaque coche remplaçait les boutons sous le doigt : deux
+    // appuis rapprochés, et le second tombait sur un bouton qui n'existait
+    // plus. Trouvé en éprouvant la planche, jamais en la relisant.
+    const marquer = (b, e) => {
+      b.classList.toggle("retenue", c.equipes.includes(e));
+      b.textContent = (c.equipes.includes(e) ? "✓ " : "") + e;
+    };
+
     choix.innerHTML =
-      EQUIPES().map((e) => `<button type="button" class="petit ${c.equipe === e ? "retenue" : ""}" data-choix="${e}">${e}</button>`).join("") +
-      (c.equipe ? `<button type="button" class="petit" data-choix="">Retirer l’équipe</button>` : "");
+      EQUIPES().map((e) => `<button type="button" class="petit" data-choix="${e}"></button>`).join("") +
+      `<button type="button" class="petit fini" data-fini="1">Terminé</button>`;
+
+    choix.querySelectorAll("[data-choix]").forEach((b) => {
+      const e = b.dataset.choix;
+      marquer(b, e);
+      b.addEventListener("click", () => {
+        c.equipes = c.equipes.includes(e) ? c.equipes.filter((x) => x !== e) : [...c.equipes, e];
+        marquer(b, e);
+        rafraichirHorsJour();
+      });
+    });
+    choix.querySelector("[data-fini]").addEventListener("click", () => rendre());
+
     pastille.replaceWith(choix);
-    choix.querySelectorAll("[data-choix]").forEach((b) =>
-      b.addEventListener("click", () => { c.equipe = b.dataset.choix; rendre(); }));
+  }
+
+  /**
+   * Repeindre le calendrier et les listes SANS refermer ce qui est ouvert.
+   *
+   * Sans cela, cocher une équipe referme la liste : il faudrait rouvrir pour la
+   * seconde, et l'on ne verrait jamais l'effet de la première.
+   */
+  function rafraichirHorsJour() {
+    rendreMois();
+    rendreSemaine();
+    rendreSansDate();
+
+    // **Les compteurs de la journée se mettent à jour EUX AUSSI**, sans que la
+    // fiche soit refaite — sinon la liste ouverte se refermerait sous le doigt.
+    // Vu sur capture : trois équipes cochées, et l'en-tête disait encore
+    // « 2 sur 5 ». Un compteur qui retarde d'un geste fait douter du geste.
+    document.querySelectorAll("#jour-ouvert .demi[data-bloc]").forEach((bloc) => {
+      const demi = bloc.dataset.bloc;
+      const { complet, occupees, sansEquipe } = occupation(jourTouche, demi);
+      bloc.querySelector(".compte").textContent = ditLeCompte(jourTouche, demi);
+      const pastille = bloc.querySelector(".pastille");
+      const etat = occupees.length + sansEquipe === 0 ? "libre" : complet ? "plein" : "moitie";
+      pastille.className = `pastille ${etat}`;
+    });
   }
 
   /**
@@ -879,7 +971,7 @@
     boite.querySelectorAll("[data-poser]").forEach((b) =>
       b.addEventListener("click", () => {
         const [c] = SANS_DATE.splice(Number(b.dataset.poser), 1);
-        CHANTIERS.push({ ...c, date: jourTouche, demi: b.dataset.demiPoser, equipe: "" });
+        CHANTIERS.push({ ...c, date: jourTouche, demi: b.dataset.demiPoser, equipes: [] });
         lundi = lundiDe(jourTouche);
         rendre();
       }));

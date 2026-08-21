@@ -1068,6 +1068,37 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Un chantier peut mobiliser PLUSIEURS équipes — même toutes
+
+**Sa demande du 21 août :** *« lorsque je choisis une équipe, je dois pouvoir
+mettre toutes les équipes si je le souhaite, le même jour ou même sur la même
+demi-journée. Je dois pouvoir mettre tout le monde le matin, puis tout le monde
+l'aprem. »*
+
+**Cela change le compte, pas seulement la pastille.** Une demi-journée ne compte
+plus des CHANTIERS mais des **équipes occupées** : sur un terrain où trois
+équipes travaillent, « 1 place prise sur 5 » aurait été l'inverse de la vérité.
+Un chantier posé sans équipe réserve quand même une place — il faudra bien
+quelqu'un — et elle reste hachurée.
+
+**On coche, et la liste reste ouverte.** Fermer à chaque choix obligerait à
+rouvrir pour la seconde équipe, et l'on ne verrait jamais l'effet de la
+première. Le calendrier se repeint derrière à chaque coche ; « Terminé » referme.
+
+**Deux défauts trouvés en l'éprouvant, tous deux invisibles à la relecture :**
+
+- la liste se réécrivait entièrement à chaque coche : deux appuis rapprochés, et
+  le second tombait sur un bouton qui n'existait plus. Elle se construit
+  maintenant une fois, puis se coche sur place ;
+- **le compteur de la demi-journée retardait d'un geste** — trois équipes
+  cochées, et l'en-tête disait encore « 2 sur 5 ». Vu sur capture. Il se met à
+  jour avec le reste, sans que la fiche soit refaite (ce qui refermerait la
+  liste sous le doigt).
+
+**Et la liste prend toute la largeur de la ligne** : coincée entre le nom et les
+boutons, elle empilait ses noms en colonne et poussait la ligne sur cinq
+hauteurs — vu sur capture, à cinq équipes.
+
 ### La journée se lit par demi-journées, chacune avec ses chantiers
 
 **Sa remarque du 21 août :** *« le 21, quand je clique le matin je peux

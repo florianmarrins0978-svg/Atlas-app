@@ -377,49 +377,69 @@ await page.click('[data-jour="2026-08-20"]');
   );
 }
 
-// 2 — l'équipe se CHOISIT : un appui ouvre la liste, il ne décide rien
+// 2 — les équipes se COCHENT : un appui ouvre la liste, il ne décide rien
 //
 // Sa remarque du 21 août : « quand je clique sur équipe, ça me met d'office une
-// équipe, je n'ai pas choisi ». Le contrôle d'avant comparait deux libellés et
-// serait resté vert sur ce défaut : il faut vérifier qu'un appui n'attribue
-// RIEN par lui-même.
+// équipe, je n'ai pas choisi » — puis, le même jour : « je dois pouvoir mettre
+// TOUTES les équipes si je le souhaite, sur la même demi-journée ». Le contrôle
+// d'avant comparait deux libellés et serait resté vert sur les deux défauts.
 {
-  const chip = page.locator('#jour-ouvert [data-equipe]').last();
-  const avant = (await chip.innerText()).trim();
+  // **On part d'un chantier SANS équipe** — les deux Martins du 21. Prendre
+  // « le dernier de la liste » attrapait Mr. Leroy, à qui Paul est déjà confié :
+  // le contrôle lisait alors une équipe cochée d'avance et accusait la planche.
+  await page.click('[data-jour="2026-08-21"]');
+  const chip = page.locator('#jour-ouvert [data-equipe]').first();
   await chip.click();
   const proposes = await page.$$eval("#jour-ouvert .choisir [data-choix]", (n) => n.map((e) => e.textContent.trim()));
   verifier(
     `un appui OUVRE la liste des équipes au lieu d'en poser une (lu : ${JSON.stringify(proposes)})`,
-    proposes.includes("Julien") && proposes.includes("Paul"),
+    proposes.some((m) => m.includes("Julien")) && proposes.some((m) => m.includes("Paul")),
   );
-  // **Rien ne doit avoir été attribué tant qu'il n'a pas choisi.** On le lit
-  // dans le CALENDRIER, pas sur la pastille : celle-ci est remplacée par la
-  // liste au moment du clic, et son absence ferait rougir un écran juste. Une
-  // place encore sans équipe reste hachurée — c'est le `?`.
   verifier(
-    `et rien n'a été attribué tant qu'on n'a pas choisi (barres lues : ${JSON.stringify(await barresDe("2026-08-20"))}, pastille avant : « ${avant} »)`,
-    (await barresDe("2026-08-20")).some((b) => b.endsWith("?")),
+    `et rien n'a été attribué tant qu'on n'a pas coché (barres lues : ${JSON.stringify(await barresDe("2026-08-21"))})`,
+    (await barresDe("2026-08-21")).every((b) => b.endsWith("?")),
   );
 
+  // **Toutes les équipes sur le même chantier**, et le calendrier suit.
+  await page.locator('#jour-ouvert .choisir [data-choix="Julien"]').click();
   await page.locator('#jour-ouvert .choisir [data-choix="Paul"]').click();
-  verifier("choisir Paul l'attribue", (await page.locator("#jour-ouvert").innerText()).includes("Paul"));
-
-  // **On doit pouvoir revenir en arrière**, et au même coût : « je dois pouvoir
-  // cliquer pour la retirer et la remettre ».
-  await page.locator('#jour-ouvert [data-equipe]').last().click();
-  const avecRetrait = await page.$$eval("#jour-ouvert .choisir [data-choix]", (n) => n.map((e) => e.textContent.trim()));
+  const coches = await page.$$eval("#jour-ouvert .choisir [data-choix]", (n) =>
+    n.filter((e) => e.classList.contains("retenue")).map((e) => e.textContent.replace("✓", "").trim()));
   verifier(
-    `une équipe posée peut se RETIRER (lu : ${JSON.stringify(avecRetrait)})`,
-    avecRetrait.some((m) => m.toLowerCase().includes("retirer")),
+    `les deux équipes tiennent sur le MÊME chantier (lu : ${JSON.stringify(coches)})`,
+    coches.length === 2,
   );
-  await page.locator('#jour-ouvert .choisir [data-choix=""]').click();
   verifier(
-    "et la retirer rend « Équipe ? »",
-    (await page.locator("#jour-ouvert").innerText()).includes("Équipe ?"),
+    "la liste est restée ouverte pour cocher la seconde",
+    (await page.locator("#jour-ouvert .choisir").count()) === 1,
+  );
+
+  // **On décoche pour retirer** — au même coût que cocher.
+  await page.locator('#jour-ouvert .choisir [data-choix="Paul"]').click();
+  const apres = await page.$$eval("#jour-ouvert .choisir [data-choix]", (n) =>
+    n.filter((e) => e.classList.contains("retenue")).map((e) => e.textContent.replace("✓", "").trim()));
+  verifier(`décocher retire l'équipe (lu : ${JSON.stringify(apres)})`, apres.length === 1);
+
+  // **Le compteur de la demi-journée suit les coches, sans attendre « Terminé ».**
+  // Vu sur capture le 21 août : trois équipes cochées, et l'en-tête disait
+  // encore « 2 sur 5 ». Un compteur qui retarde d'un geste fait douter du geste.
+  {
+    const dit = await page.locator("#jour-ouvert .demi").first().locator(".compte").innerText();
+    verifier(`le compteur du matin suit la coche (lu : « ${dit} »)`, /sur|complet/.test(dit));
+  }
+
+  await page.locator('#jour-ouvert .choisir [data-fini]').click();
+  verifier(
+    "« Terminé » referme et l'équipe retenue est portée",
+    (await page.locator("#jour-ouvert").innerText()).includes("Julien"),
   );
 }
 
 // 3 — déplacer se choisit, et le calendrier le voit
+//
+// On revient sur le 20, où l'on vient de poser Mr. Pichon : le contrôle des
+// équipes nous avait emmenés sur le 21.
+await page.click('[data-jour="2026-08-20"]');
 {
   const avant = await barresDe("2026-08-20");
   // **On vise le chantier qu'on vient de poser, pas « le dernier de la liste ».**
@@ -529,9 +549,13 @@ await page.click('[data-jour="2026-08-21"]');
   // On attribue les deux équipes du matin, et la hachure doit disparaître.
   // Un chantier à la fois : viser deux fois la première pastille reviendrait à
   // donner les deux équipes au même chantier, et l'autre resterait hachuré.
+  // On referme après chaque choix : deux listes ouvertes en même temps, et le
+  // même nom apparaît deux fois à l'écran — un chantier à la journée est
+  // affiché sous ses deux demi-journées.
   for (const [rang, nom] of [[0, "Julien"], [1, "Paul"]]) {
     await page.locator('#jour-ouvert [data-equipe]').nth(rang).click();
-    await page.locator(`#jour-ouvert .choisir [data-choix="${nom}"]`).click();
+    await page.locator(`#jour-ouvert .choisir [data-choix="${nom}"]`).first().click();
+    await page.locator('#jour-ouvert .choisir [data-fini]').first().click();
   }
   const apres = await barresDe("2026-08-21");
   verifier(
