@@ -489,6 +489,38 @@ la prochaine fois se rediagnostiquera de zéro, exactement comme celle-ci.
 
 ---
 
+## ⏸ La fiche client qui dicte le devis — **dessinée le 21 août, il tranche avant qu'on code**
+
+`appli/fiche-client-vocale.html` (adresse : `…github.io/Atlas-app/essais.html`).
+**Rien n'est codé**, et rien ne doit l'être avant sa réponse.
+
+Ce qu'il a déjà tranché, en répondant aux questions posées avant le dessin :
+
+| Question | Sa réponse |
+|---|---|
+| La fiche chantier (« la page d'après ») | **« On la supprime pour de bon »** |
+| Les deux boutons du bas | L'anneau remplace « Je dicte mon devis » ; reste « J'écris mon devis » |
+| Le champ téléphone isolé | Retiré. **« Comment lui envoyer son devis ? » reste** |
+| L'accueil | Ouvre l'élément là où il en est — devis si le devis est commencé, fiche client si elle est vide. C'est déjà ce que fait `lienDeReprise` |
+
+**Ce qui reste à trancher, et qui bloque le code :** la fiche chantier porte
+quatre choses sans autre maison — « Créer la facture », les étapes du chantier,
+la relecture de la note dictée, et les photos ajoutées après coup. L'écran
+« À trancher » de la maquette propose une place pour chacune.
+
+**Ce que le code devra faire, et qui n'est pas qu'un déplacement d'écran :**
+
+- le chantier doit exister **avant** la première photo ou la première dictée —
+  sinon la photo n'a nulle part où aller. Aujourd'hui il est créé par les deux
+  boutons du bas (`creerPuisAller`) ;
+- `lienDeReprise` (`src/lib/chantier-etat.ts`) renvoie les étapes « photos » et
+  « note-vocale » vers `/chantiers/[id]`, c'est-à-dire vers l'écran qu'il veut
+  supprimer : à rediriger vers la fiche client ;
+- l'anneau doit **redevenir lecteur** sur la fiche client quand une note existe,
+  comme il le fait aujourd'hui sur la fiche chantier.
+
+---
+
 ## À surveiller — non reproduit
 
 ### `test-pastille-equipe-e2e.ts` est tombée une fois — 20 août

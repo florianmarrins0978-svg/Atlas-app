@@ -7,6 +7,49 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-21
+
+### La fiche client qui dicte le devis — dessinée, pas codée
+
+**Sa demande, capture de l'écran à l'appui :** *« J'ai envie que les
+informations prennent moins de place. Le nom et le numéro de téléphone l'un à
+côté de l'autre. Tu me retires tous les facultatifs. Tu vas m'ajouter la
+possibilité de mettre des photos exactement comme il y a sur la page d'après.
+Ensuite, avant les deux touches, le bouton de la note vocale qui se trouve sur
+la page d'après. On appuie, on dicte les tâches à effectuer, celles qu'on voit
+tout de suite avec le client. Dès qu'on rappuie pour arrêter, il faut
+impérativement que les infos aillent s'enregistrer dans le devis. »*
+
+Et le pourquoi, qui commande tout le reste : **il est en rendez-vous**. Il dicte
+ce qu'il voit, il n'a pas le temps de continuer, il ferme l'application. En
+rentrant chez lui, le chantier l'attend à l'accueil et un appui ouvre le devis
+déjà rempli.
+
+**`appli/fiche-client-vocale.html`** — essayable, quatre écrans, atteignable
+depuis `appli/essais.html`. **Rien n'est codé** (`CLAUDE.md` §3 bis).
+
+**Deux pièces sont REPRISES DU CODE, pas redessinées**, parce qu'il a dit
+« exactement comme il y a sur la page d'après » : l'anneau
+(`AnneauNoteVocale.tsx` + le bloc `.atlas-lecteur` de `globals.css` — deux
+cercles, trois traits d'or qui battent, huit barreaux par aile) et le champ de
+photos (`Pellicule.tsx` — un champ unique, `accept="image/*" multiple`, **sans
+`capture`**, sans quoi un iPhone imposerait l'appareil et retirerait l'accès à
+la pellicule).
+
+**Ce que la capture a montré et qu'aucune mesure à l'œil n'aurait vu :** à la
+première largeur essayée, le numéro s'affichait « 06 79 98 45 1 » — le dernier
+chiffre tombait, en silence, sur la seule donnée qu'on ne peut pas deviner. Le
+contrôle compare désormais la largeur du texte à celle de sa boîte, et refuse de
+conclure sur une boîte de zéro pixel.
+
+**Ce qui est posé plutôt que tranché à sa place.** Il veut supprimer la fiche
+chantier pour de bon : elle porte « Créer la facture », les étapes, la relecture
+de la note et les photos d'après-coup. Un quatrième écran, « Ce qui reste à
+reloger », montre où chacune irait — il choisit avant qu'on code.
+
+**Aucun prix n'est inventé sur le devis dessiné** : il n'a annoncé aucun montant
+en dictant, les trois lignes arrivent donc à chiffrer (`CLAUDE.md` §4).
+
 ## 2026-08-20
 
 ### L'écran ne promet plus une version rapide que personne ne construit
