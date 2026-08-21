@@ -66,7 +66,16 @@ function fixturesAutorisees(): boolean {
 
 /** Le filtre commun à toute lecture servante. Écrit une fois, jamais recopié. */
 function filtreServable() {
-  const valide = eq(fichesPhyto.niveauValidation, "validee");
+  // **Deux conditions, et la seconde est redondante AUJOURD'HUI.** La contrainte
+  // `fiches_phyto_integrite_ck` (migration 0057) interdit déjà `validee` sans
+  // contrôle d'intégrité réussi. On la répète ici parce qu'une contrainte se
+  // relâche d'un `ALTER TABLE` que personne ne relira, alors que cette ligne-ci
+  // se lit à chaque fois qu'on touche à la lecture des fiches. Le jour où les
+  // deux divergent, c'est la plus stricte qui l'emporte, et c'est voulu.
+  const valide = and(
+    eq(fichesPhyto.niveauValidation, "validee"),
+    eq(fichesPhyto.controleIntegriteOk, true)
+  );
   return fixturesAutorisees() ? valide : and(valide, eq(fichesPhyto.origine, "reelle"));
 }
 
@@ -103,6 +112,8 @@ export async function lireBasePourMoteur(): Promise<BasePourMoteur> {
       partiesAtteintes: fichesPhyto.partiesAtteintes,
       periodeDebutMois: fichesPhyto.periodeDebutMois,
       periodeFinMois: fichesPhyto.periodeFinMois,
+      certitudeMax: fichesPhyto.certitudeMax,
+      hotesNonExhaustifs: fichesPhyto.hotesNonExhaustifs,
     })
     .from(fichesPhyto)
     .where(filtreServable())

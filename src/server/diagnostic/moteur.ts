@@ -216,6 +216,11 @@ export async function composerResultat(candidat: Candidat, confiance: Confiance)
     gravite: fiche.gravite,
     graviteLibelle: LIBELLE_GRAVITE[fiche.gravite],
     conduite: fiche.conduiteRecommandee,
+    // **Recopie, comme tout le reste.** Aucune de ces trois lignes n'est
+    // composée ni résumée ici : ce sont des colonnes, servies telles quelles.
+    methodeConfirmation: fiche.methodeConfirmation,
+    informationsRequises: fiche.informationsRequises,
+    criteresDiscriminants: fiche.criteresDiscriminants,
     mentions: mentionsDeSecurite({
       gravite: fiche.gravite,
       impactMecanique: fiche.impactMecanique,
@@ -230,6 +235,8 @@ export async function composerResultat(candidat: Candidat, confiance: Confiance)
       agentCausal: fiche.agentCausal,
       agentType: fiche.agentType,
       partiesAtteintes: fiche.partiesAtteintes,
+      facteursFavorisants: fiche.facteursFavorisants,
+      criteresExclusion: fiche.criteresExclusion,
       prevention: fiche.prevention,
       gestion: fiche.gestion,
       traitement: fiche.traitement,

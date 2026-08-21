@@ -12127,3 +12127,172 @@ recopiait à la main le `resultat` qu'affiche l'écran de diagnostic, champ par
 champ — la règle dupliquée entre l'affichage et la vérification qu'interdit
 `CLAUDE.md` §3. `composerResultat` est désormais exportée, et la suite l'appelle.
 
+
+---
+
+## 138. « Bloquer plutôt que deviner » : l'hôte d'abord, et l'intégrité prouvée
+
+**Sa consigne du 20 août 2026**, en deux moitiés qui tiennent chacune en une
+phrase :
+
+> *« Mieux vaut refuser de conclure que produire un faux diagnostic. »*
+> *« Aucune interprétation silencieuse. Aucune donnée inventée. Aucune perte
+> d'information. Aucun diagnostic forcé. En cas de doute, bloquer plutôt que
+> deviner. »*
+
+Le module respectait déjà l'essentiel : le schéma de sortie du modèle n'a **aucun
+champ** pour nommer une maladie (§135), tout ce qui s'affiche sort d'une colonne,
+l'outil sait refuser et sait demander une photo de plus. Ce qui suit est ce qui
+manquait.
+
+### 1. L'hôte d'abord — la règle la plus coûteuse, et la plus juste
+
+> *« Identifier l'hôte avant la maladie. Si l'espèce est incertaine, ne pas
+> diagnostiquer. »*
+
+`arbitrer()` exige désormais une essence **établie** — un taxon reconnu par la
+base, avec une certitude autre qu'« incertaine » — avant de regarder le moindre
+candidat. Sans elle : une relance qui demande la vue qui **identifie un arbre**
+(feuille entière posée à plat, puis l'arbre entier), et au second passage un
+refus nommé `hote_incertain`.
+
+**Le contrôle est placé AVANT la lecture des candidats, et ce n'est pas
+cosmétique.** Plus bas dans la fonction, `premier` existe déjà ; un code qui a un
+premier candidat sous la main finit toujours par le rendre « quand même, puisqu'il
+est loin devant ». Là où il est, il n'y a rien à rendre.
+
+**Le prix est réel et assumé** : un symptôme parfaitement caractéristique sur une
+essence non reconnue ne conclut plus. C'est exactement ce qu'il a demandé.
+
+**« probable » suffit, « incertaine » bloque.** Exiger « sure » rendrait l'outil
+inutilisable : un modèle de vision dit rarement qu'il est sûr.
+
+### 2. La liste d'hôtes : c'est la SOURCE qui dit si elle est close
+
+> *« Ne comparer qu'aux maladies compatibles avec l'hôte et l'organe atteint. »*
+
+Le moteur n'écartait que les fiches à hôte `strict`, et se contentait ailleurs
+d'un malus — parce qu'une liste d'hôtes de source est rarement exhaustive, et
+qu'exclure sur une liste incomplète fait rater un diagnostic juste, **en
+silence**. Les deux positions se défendent, et c'était un arbitrage pris dans le
+code sur une question qui appartient au document.
+
+**La sortie a été de le demander à la source.** L'exclusion devient la règle ;
+`hotes_non_exhaustifs` recopie la mention contraire quand elle existe —
+l'anthracnose du chêne dit « de nombreuses espèces », le fomès dit que les
+feuillus sont touchés « de manière anecdotique ». Ces deux fiches portent donc le
+drapeau, l'anthracnose du platane non (sa page dit « Hôtes habituels :
+Platanes »).
+
+Un hôte `strict` l'emporte toujours sur le drapeau : deux mentions qui se
+contredisent, c'est une fiche mal remplie, et le doute doit fermer, jamais ouvrir.
+
+### 3. Le plafond que la source autorise
+
+> *« Le niveau de certitude affiché ne doit jamais dépasser celui permis par les
+> données scientifiques. »*
+> *« Si la source exige une analyse en laboratoire, Atlas ne doit jamais afficher
+> "confirmé". »*
+
+Deux champs neufs : `certitude_max` (plafond dur, appliqué **en dernier** dans
+`confiancePour`, après tous les autres) et `methode_confirmation` (la phrase de la
+source, recopiée). L'import **refuse** la combinaison qui ment : une méthode de
+confirmation exigée avec une certitude `elevee`.
+
+Un plafond ne relève jamais rien — une fiche qui autorise `elevee` sur une photo
+floue reste « incertaine ». Sinon le champ deviendrait un moyen de forcer une
+certitude, c'est-à-dire l'inverse de ce qu'il demande.
+
+`methode_confirmation` s'affiche **en pleine page**, sous « Ce qui reste à
+confirmer », jamais dans le tiroir des détails : la cacher reviendrait à laisser
+croire qu'il n'y en a pas.
+
+### 4. La comparaison champ par champ — et ce qu'elle a trouvé le jour même
+
+> *« après chaque import, effectue automatiquement une comparaison champ par
+> champ entre la fiche source et les données réellement enregistrées ; […] si une
+> différence, une perte d'information ou une ambiguïté apparaît, bloque la
+> validation et indique précisément l'écart ; une fiche ne passe au statut
+> VALIDÉE qu'après réussite de ce contrôle. »*
+
+`comparerFicheSourceEtEnregistree()` est une fonction **pure** : deux objets de
+même forme entrent, la liste des écarts sort. Elle ne connaît ni la base ni le
+disque, ce qui la rend éprouvable contre des altérations fabriquées — donc
+possible à voir rouge.
+
+**Le schéma Zod ne la rendait pas redondante.** Il vérifie la forme du fichier et
+se tait sur ce qui arrive ensuite : une colonne oubliée dans l'`INSERT`, un
+`text[]` réordonné, un `null` devenu chaîne vide, une valeur tronquée. Tous ces
+défauts sont silencieux — l'import finit en vert et la fiche servie ne dit plus
+tout à fait ce que le document disait.
+
+**Les champs sont listés à la main, jamais balayés par `Object.keys`.** Un
+balayage compare ce que les deux objets ont en commun : le jour où une colonne est
+ajoutée au schéma mais oubliée dans l'`INSERT`, elle manque des **deux** côtés, et
+le contrôle reste vert sur une information perdue. C'est précisément le défaut
+qu'il existe pour attraper.
+
+**Deux prises réelles dans l'heure qui a suivi son écriture :**
+
+- **le chemin des images.** Une fiche déclare `fichier` ; l'import en tirait une
+  clé de stockage et **jetait le chemin**. Rien n'échouait, l'écran affichait bien
+  la photo — mais la base ne savait plus ce qu'une clé représentait. Colonne
+  ajoutée, plutôt que champ écarté du contrôle : l'écarter aurait rendu le
+  contrôle muet sur sa première vraie prise ;
+- **l'ordre des listes.** Les symptômes et les images portaient un `ordre` ; les
+  hôtes, les sources et les confusions non — relus par ordre alphabétique de code,
+  c'est-à-dire dans un ordre qui n'est celui d'aucun document. Sa consigne dit
+  « déplacée » à côté de « perdue » et « modifiée », et l'ordre d'une liste
+  d'hôtes est une information : la plaquette du DSF nomme d'abord les essences les
+  plus touchées.
+
+Dans les deux cas la tentation était d'assouplir le contrôle pour qu'il passe. Un
+contrôle qu'on assouplit pour qu'il passe ne contrôle plus rien.
+
+**Un seul champ est délibérément dérivé** : `storage_key`, régénérée à chaque
+écriture. La comparer littéralement ferait rougir le contrôle sur toutes les
+fiches à photo, à chaque import — et un contrôle qui rougit toujours s'apprend à
+être ignoré. « Dérivé » ne veut pas dire « non vérifié » pour autant : une clé est
+**exigée** dès qu'un fichier était déclaré, sans quoi une photo disparaîtrait de
+l'écran en silence.
+
+### 5. « VALIDÉE » est devenu impossible sans contrôle
+
+L'import n'écrit **jamais** `validee` : la fiche entre au mieux `en_revue`, et
+seule la comparaison réussie la promeut, dans la même transaction. La contrainte
+`fiches_phyto_integrite_ck` en fait une impossibilité plutôt qu'une intention —
+aucune écriture, par aucun chemin, y compris un `UPDATE` en SQL direct par le
+propriétaire de la table, ne peut poser `validee` sans le drapeau. Éprouvé comme
+tel (`test-diagnostic-base.ts`).
+
+Toute réécriture d'une fiche **annule** le contrôle précédent : sans cela, une
+fiche modifiée garderait le vert obtenu par sa version d'avant.
+
+### 6. L'import est passé à UNE SEULE transaction
+
+Chaque lot avait la sienne : un fichier fautif tombait seul, les autres entraient.
+Deux choses l'ont rendu intenable. D'abord les confusions traversent les fichiers
+(§137) : un renvoi vers un lot écrit plus tard est raccordé à la fin, donc absent
+au moment où la transaction du premier lot se ferme — le contrôle le comptait
+comme une perte et faisait tomber un import parfaitement sain. Ensuite, une base à
+moitié importée est exactement l'état ambigu qu'il refuse.
+
+L'ordre est donc : tout écrire → raccorder les renvois → contrôler chaque fiche →
+promouvoir → un seul `COMMIT`. **La validation de forme, elle, reste par fichier
+et tout entière avant la première écriture** : un fichier mal formé est toujours
+signalé nommément, sans qu'on ait rien tenté d'écrire.
+
+### 7. Ce que l'écran dit, et ce qu'il ne dit plus
+
+- **« Une ressemblance n'est pas une preuve »**, sous les photos de référence.
+  Sa règle : *« les photos de référence sont uniquement des indices, jamais une
+  preuve suffisante »*. Une image posée sans un mot se lit comme une
+  confirmation, surtout quand elle ressemble à celle qu'on vient de prendre.
+- **« Ce qui reste à confirmer »**, avec la phrase de la source et les vues qui
+  manquent.
+
+**Un défaut trouvé sur la capture, et pas par un test** — le cinquième de ce
+dépôt (`CLAUDE.md` §5) : la phrase du laboratoire s'affichait deux fois de suite,
+comme méthode de confirmation puis comme première information requise. Une
+consigne répétée se lit comme deux consignes, et sur un chantier on cherche la
+différence entre les deux. L'import refuse désormais cette répétition.

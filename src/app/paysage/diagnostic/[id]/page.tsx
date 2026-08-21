@@ -133,6 +133,34 @@ async function Rendu({ resultat, ficheId }: { resultat: ResultatFige; ficheId: s
           derrière « Voir les détails » aurait vidé le geste de son sens. */}
       {images.length > 0 && <PhotosDeReference images={images} />}
 
+      {/* **Ce que la source exige pour CONFIRMER, en pleine page.**
+          Sa règle du 20 août 2026 : « si la source scientifique exige une
+          analyse en laboratoire pour confirmer, Atlas ne doit jamais afficher
+          "confirmé" ». Le ranger dans « Voir les détails » aurait laissé croire
+          qu'il n'y en avait pas — et c'est justement l'information qui empêche
+          de traiter un arbre sur la foi d'une photo. */}
+      {resultat.methodeConfirmation && (
+        <div
+          className="mt-[20px] rounded-[4px] px-[14px] py-[12px]"
+          style={{ background: colors.card, borderLeft: `3px solid ${colors.or}` }}
+          data-atlas="diagnostic-confirmation"
+        >
+          <p className={libelleCaps} style={{ color: colors.muted }}>
+            Ce qui reste à confirmer
+          </p>
+          <p className="mt-[6px] text-[14px] leading-[1.6]" style={{ color: colors.ink }}>
+            {resultat.methodeConfirmation}
+          </p>
+          {resultat.informationsRequises.length > 0 && (
+            <ul className="mt-[8px] list-disc pl-[18px] text-[13px] leading-[1.6]" style={{ color: colors.inkSoft }}>
+              {resultat.informationsRequises.map((info, i) => (
+                <li key={i}>{info}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <Bloc cle="Gravité" repere="diagnostic-gravite">
         {resultat.graviteLibelle}
       </Bloc>
@@ -169,6 +197,14 @@ function PhotosDeReference({
     <div className="mt-[20px]" data-atlas="diagnostic-photos-reference">
       <p className={libelleCaps} style={{ color: colors.muted }}>
         À quoi ça ressemble
+      </p>
+      {/* **Sa règle du 20 août 2026 :** « les photos de référence sont
+          uniquement des indices, jamais une preuve suffisante ». Une image
+          posée sans un mot se lit comme une confirmation — surtout quand elle
+          ressemble à celle qu'on vient de prendre. La phrase est ici, sous le
+          titre, avant qu'on ait comparé. */}
+      <p className="mt-[6px] text-[12px] leading-[1.5]" style={{ color: colors.muted }}>
+        Une ressemblance n’est pas une preuve : ces photos servent à comparer, pas à confirmer.
       </p>
       <div className="mt-[10px] flex flex-col gap-[14px]">
         {images.map((image) => (

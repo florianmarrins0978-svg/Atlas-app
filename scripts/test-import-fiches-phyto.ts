@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { CHAMPS_QUI_ENGAGENT, validerLot, PREFIXE_FIXTURE } from "../src/lib/import-fiches-phyto";
+import {
+  CHAMPS_QUI_ENGAGENT,
+  validerLot,
+  PREFIXE_FIXTURE,
+  comparerFicheSourceEtEnregistree,
+  decrireEcart,
+} from "../src/lib/import-fiches-phyto";
 import { lirePolitique, echeanceDePurge, POLITIQUE_PAR_DEFAUT } from "../src/lib/retention-diagnostic";
 
 /**
@@ -420,6 +426,168 @@ cas("et elles sont refusées par un import qui n'accepte pas les fixtures", () =
   const brut = JSON.parse(readFileSync("donnees/phyto/fixtures/moteur.json", "utf-8"));
   const verdict = validerLot(brut, { autoriserFixtures: false });
   assert.equal(verdict.ok, false);
+});
+
+console.log("\n=== La comparaison champ par champ : « aucune perte d’information » ===");
+
+// ═══════════════════════════════════════════════════════════════════════════
+// **Sa consigne du 20 août 2026 :** *« vérifie qu'aucune information n'a été
+// perdue, modifiée, déplacée ou interprétée différemment ; si une différence,
+// une perte d'information ou une ambiguïté apparaît, bloque la validation et
+// indique précisément l'écart. »*
+//
+// Chaque cas ci-dessous fabrique UNE altération et vérifie que le contrôle la
+// nomme. C'est la seule manière de savoir qu'il sait échouer (`CLAUDE.md` §5) —
+// et il l'a prouvé en vrai le jour de son écriture, en attrapant deux pertes
+// que personne n'avait vues : le chemin des images, et l'ordre des listes
+// (`ARCHITECTURE.md` §138).
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Une fiche valide, passée par le schéma — donc avec tous ses défauts posés. */
+function ficheAnalysee(p: Record<string, unknown> = {}) {
+  const verdict = validerLot(lot({ fiches: [ficheValide(p)] }), { autoriserFixtures: false });
+  assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
+  if (!verdict.ok) throw new Error("inatteignable");
+  return verdict.lot.fiches[0];
+}
+
+function altere(modifier: (f: ReturnType<typeof ficheAnalysee>) => void) {
+  const source = ficheAnalysee();
+  const enregistree = JSON.parse(JSON.stringify(source)) as ReturnType<typeof ficheAnalysee>;
+  modifier(enregistree);
+  return comparerFicheSourceEtEnregistree(source, enregistree);
+}
+
+cas("identiques : aucun écart — sans quoi tout le reste ne prouverait rien", () => {
+  assert.deepEqual(altere(() => {}), []);
+});
+
+cas("une valeur MODIFIÉE est nommée, avec le champ exact", () => {
+  const ecarts = altere((f) => {
+    f.gravite = "importante";
+  });
+  assert.equal(ecarts.length, 1);
+  assert.equal(ecarts[0].champ, "gravite");
+  assert.match(decrireEcart(ecarts[0]), /le fichier dit "faible".*a enregistré "importante"/);
+});
+
+cas("un texte TRONQUÉ est vu — c'est le défaut d'une colonne trop courte", () => {
+  const ecarts = altere((f) => {
+    f.conduiteRecommandee = f.conduiteRecommandee.slice(0, 12);
+  });
+  assert.equal(ecarts.length, 1);
+  assert.equal(ecarts[0].champ, "conduiteRecommandee");
+});
+
+cas("un `null` devenu chaîne vide est un ÉCART, pas un détail", () => {
+  // C'est le défaut silencieux par excellence : à l'écran, « rien » et « vide »
+  // se ressemblent. En base, l'un dit « la source ne le dit pas » et l'autre
+  // dit « la source dit : rien ». Ce n'est pas la même affirmation.
+  const ecarts = altere((f) => {
+    f.traitement = "";
+  });
+  assert.equal(ecarts.length, 1);
+  assert.equal(ecarts[0].champ, "traitement");
+});
+
+cas("une ligne PERDUE dans une liste est comptée avant d'être détaillée", () => {
+  const ecarts = altere((f) => {
+    f.symptomes = [];
+  });
+  assert.equal(ecarts.length, 1);
+  assert.equal(ecarts[0].champ, "symptomes.length");
+  assert.equal(ecarts[0].attendu, 1);
+  assert.equal(ecarts[0].trouve, 0);
+});
+
+cas("une ligne DÉPLACÉE est vue — sa consigne dit « déplacée », pas seulement « perdue »", () => {
+  const source = ficheAnalysee({
+    criteresDiscriminants: ["Le premier critère, celui qu’on lit d’abord.", "Le second critère."],
+  });
+  const permutee = JSON.parse(JSON.stringify(source)) as typeof source;
+  permutee.criteresDiscriminants = [...source.criteresDiscriminants].reverse();
+  const ecarts = comparerFicheSourceEtEnregistree(source, permutee);
+  assert.equal(ecarts.length, 1);
+  assert.equal(ecarts[0].champ, "criteresDiscriminants");
+});
+
+cas("une image DÉCLARÉE mais rangée nulle part est un écart", () => {
+  // « Dérivé » ne veut pas dire « non vérifié » : une photo qui n'aurait pas
+  // été rangée disparaîtrait de l'écran sans un mot.
+  const source = ficheAnalysee({
+    images: [{ fichier: "donnees/phyto/images/x.jpg", licence: "Domaine public", credit: "Essai" }],
+  });
+  const sansCle = JSON.parse(JSON.stringify(source)) as typeof source;
+  sansCle.images[0].storageKey = null;
+  const ecarts = comparerFicheSourceEtEnregistree(source, sansCle);
+  assert.equal(ecarts.length, 1);
+  assert.match(ecarts[0].champ, /images\[0\]\.storageKey/);
+});
+
+cas("la clé de stockage, elle, ne se compare PAS : elle est dérivée", () => {
+  // Sinon le contrôle rougirait sur toutes les fiches à photo, à chaque import
+  // — et un contrôle qui rougit toujours s'apprend à être ignoré.
+  const source = ficheAnalysee({
+    images: [{ fichier: "donnees/phyto/images/x.jpg", licence: "Domaine public", credit: "Essai" }],
+  });
+  const avecCle = JSON.parse(JSON.stringify(source)) as typeof source;
+  avecCle.images[0].storageKey = "phyto/images/8f3c….jpg";
+  assert.deepEqual(comparerFicheSourceEtEnregistree(source, avecCle), []);
+});
+
+cas("`niveauValidation` est hors comparaison : c'est CE contrôle qui l'accorde", () => {
+  const source = ficheAnalysee();
+  const promue = JSON.parse(JSON.stringify(source)) as typeof source;
+  promue.niveauValidation = "en_revue";
+  assert.deepEqual(comparerFicheSourceEtEnregistree(source, promue), []);
+});
+
+console.log("\n=== Le plafond de certitude ne peut pas contredire la source ===");
+
+cas("une confirmation exigée AVEC une certitude « elevee » est refusée", () => {
+  refus(
+    lot({
+      fiches: [
+        ficheValide({
+          methodeConfirmation: "La détection en laboratoire est nécessaire pour confirmer.",
+          certitudeMax: "elevee",
+        }),
+      ],
+    }),
+    /autorise une certitude/
+  );
+});
+
+cas("une information requise qui RÉPÈTE la méthode de confirmation est refusée", () => {
+  // Défaut trouvé sur une capture, pas par un test : l'écran affichait la même
+  // phrase deux fois de suite. Le contrôle existe pour que cela ne revienne pas.
+  refus(
+    lot({
+      fiches: [
+        ficheValide({
+          methodeConfirmation: "La détection en laboratoire est nécessaire pour confirmer.",
+          certitudeMax: "probable",
+          informationsRequises: ["La détection en laboratoire est nécessaire pour confirmer."],
+        }),
+      ],
+    }),
+    /répète mot pour mot/
+  );
+});
+
+cas("la même fiche, plafonnée à « probable », passe", () => {
+  const verdict = validerLot(
+    lot({
+      fiches: [
+        ficheValide({
+          methodeConfirmation: "La détection en laboratoire est nécessaire pour confirmer.",
+          certitudeMax: "probable",
+        }),
+      ],
+    }),
+    { autoriserFixtures: false }
+  );
+  assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
 });
 
 console.log("\n=== La conservation des photos : configurable, jamais gravée ===");

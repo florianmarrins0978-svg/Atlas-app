@@ -26,7 +26,9 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 | Retrait des métadonnées EXIF (JPEG/PNG/WebP) | **fait**, éprouvé sur l'octet |
 | Conservation configurable + purge planifiée | **fait** |
 | Rattachement facultatif à un chantier | **fait** |
-| Import de fiches : schéma, six refus, traçabilité | **fait**, éprouvé contre des fiches fautives |
+| Import de fiches : schéma, huit refus, traçabilité | **fait**, éprouvé contre des fiches fautives |
+| **Contrôle d'intégrité champ par champ après import** | **fait** — bloque la validation au moindre écart, et « validée » est impossible sans lui (contrainte) |
+| **L'hôte identifié AVANT la maladie** | **fait** — sans essence établie, Atlas demande une photo puis refuse |
 | Classement sémantique | **pas fait** — l'interface et son verrou existent, l'implémentation non |
 | **Fiches phytosanitaires réelles** | **3 sur ~50** — fomès des résineux (DSF, 2013), anthracnose du platane et anthracnose du chêne et du hêtre (Ephytia/DSF, 2024) |
 

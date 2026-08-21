@@ -195,6 +195,54 @@ L'import range le fichier dans le stockage et refuse :
   contrôle existe pour que l'obligation protège au lieu de rassurer ;
 - **une image qui ne désigne ni fichier ni adresse.**
 
+## Les champs qui BRIDENT le diagnostic, et comment les remplir
+
+Ajoutés le 20 août 2026 sur sa consigne (`ARCHITECTURE.md` §138). Ils ne servent
+pas à décrire le problème : ils servent à **empêcher Atlas d'en dire trop**.
+
+| Champ | Ce qu'on y met | Ce qui se passe si on l'oublie |
+|---|---|---|
+| `methodeConfirmation` | La phrase de la source qui dit ce qu'il faut pour confirmer — typiquement un laboratoire | L'écran laisse croire qu'une photo suffit |
+| `certitudeMax` | `probable` ou `incertaine` dès que la source pose une limite | La confiance affichée peut dépasser ce que le document autorise |
+| `hotesNonExhaustifs` | `true` **seulement si la source le dit** (« et de nombreuses autres espèces ») | Un hôte absent de la liste écarte la fiche, à tort |
+| `criteresDiscriminants` | Ce qui permet de reconnaître ce problème plutôt qu'un autre | Rien de cassé, mais l'écran perd ce qui aide à trancher |
+| `criteresExclusion` | Ce que la source donne comme excluant | Idem — et **ne rien inventer** : un critère d'exclusion faux écarte le bon diagnostic |
+| `facteursFavorisants` | « printemps froids et humides », « stress hydrique » | L'artisan ne sait pas pourquoi c'est arrivé chez ce client |
+| `informationsRequises` | Ce qu'il faudrait EN PLUS de la photo | Le refus ne dit pas ce qui manque |
+
+**Deux pièges vécus :**
+
+- **`certitudeMax` avec une méthode de confirmation.** L'import REFUSE une fiche
+  qui exige un laboratoire tout en autorisant une certitude `elevee` : elle
+  affirmerait à l'écran l'inverse de son propre document.
+- **`informationsRequises` qui répète `methodeConfirmation`.** Les deux
+  s'affichent l'un sous l'autre : la phrase apparaissait deux fois. Refusé
+  aussi — trouvé sur une capture, pas par un test.
+
+**Ne PAS remplir `certitudeMax` quand `diagnosticPhoto` dit déjà la même chose.**
+Le fomès déclare `diagnosticPhoto: "indicatif"`, ce qui plafonne déjà à
+« probable » ; l'écrire une seconde fois serait la même règle à deux endroits,
+donc deux endroits qui divergeront (`CLAUDE.md` §3).
+
+## L'import contrôle ce qu'il a écrit, et bloque au moindre écart
+
+Après avoir tout écrit, l'import **relit chaque fiche depuis la base** et la
+compare à son fichier, champ par champ, dans la transaction. Un seul écart annule
+**tout l'import** — pas seulement le lot fautif — et nomme le champ :
+
+    Contrôle d’intégrité en échec — RIEN n’a été écrit pour ce lot :
+         anthracnose-chene-hetre — 1 écart(s) :
+           · gravite : le fichier dit "vigilance", la base a enregistré "faible"
+
+**Une fiche ne porte « validée » qu'après ce contrôle**, et c'est une contrainte
+de la base : aucun `UPDATE`, même sous le rôle propriétaire, ne peut le
+contourner. Toute réécriture d'une fiche annule le contrôle précédent.
+
+**Si vous ajoutez un champ à une fiche**, écrivez-le aussi dans
+`CHAMPS_SCALAIRES` ou `CHAMPS_LISTES` (`src/lib/import-fiches-phyto.ts`). Ces
+listes sont tenues à la main exprès : un balayage automatique ne verrait pas une
+colonne oubliée des deux côtés à la fois.
+
 ## Les confusions : ce qu'on oublie, et qui coûte le plus
 
 `confusions_phyto` est ce qui permet à Atlas de demander **une** photo

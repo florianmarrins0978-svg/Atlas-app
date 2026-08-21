@@ -9,6 +9,47 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### « Mieux vaut refuser de conclure que produire un faux diagnostic »
+
+Sa consigne du 20 août, appliquée point par point (`ARCHITECTURE.md` §138). Ce
+qui existait déjà : le modèle n'a aucun champ pour nommer une maladie, tout ce
+qui s'affiche sort d'une colonne, l'outil sait refuser. Ce qui manquait :
+
+**L'hôte d'abord.** Atlas ne diagnostique plus sans avoir identifié l'essence.
+Sans elle, il demande la photo qui identifie un arbre — feuille entière posée à
+plat, puis l'arbre entier — et refuse au second passage. Un symptôme
+parfaitement caractéristique sur une essence non reconnue ne conclut donc plus :
+c'est le prix, et il est assumé.
+
+**La liste d'hôtes exclut, sauf si la source dit le contraire.** Une maladie du
+platane ne peut plus remonter sur un chêne. C'est la fiche qui déclare si sa
+liste est close, en recopiant ce que le document affirme — l'anthracnose du chêne
+dit « de nombreuses espèces », l'anthracnose du platane dit « Hôtes habituels :
+Platanes ».
+
+**Le plafond de la source gagne toujours.** Une fiche dont le document exige un
+laboratoire ne peut plus afficher mieux que « probable », quel que soit son
+score, et l'écran porte désormais un bloc « Ce qui reste à confirmer » avec la
+phrase exacte de la source. Les photos de référence portent leur avertissement :
+« une ressemblance n'est pas une preuve ».
+
+**Et la comparaison champ par champ après chaque import.** La fiche est relue
+depuis la base et confrontée à son fichier, ligne à ligne, dans la transaction,
+avant validation. Le moindre écart annule l'import entier et nomme le champ.
+Aucune fiche ne peut plus porter « validée » sans ce contrôle — c'est une
+contrainte de la base, pas une intention du code.
+
+**Elle a trouvé deux pertes réelles dans l'heure qui a suivi son écriture** : le
+chemin des photos, que la base jetait après en avoir tiré une clé de stockage ;
+et l'ordre des listes d'hôtes, de sources et de confusions, relues par ordre
+alphabétique au lieu de l'ordre du document. Les deux sont réparées — en gardant
+l'information, jamais en assouplissant le contrôle.
+
+Un troisième défaut est sorti d'une capture, pas d'un test : la phrase du
+laboratoire s'affichait deux fois de suite à l'écran. L'import la refuse
+maintenant.
+
+
 ### Anthracnose du chêne et du hêtre — et la relance photo, enfin sur du réel
 
 Troisième fiche réelle, écrite depuis la page Ephytia (INRAE, auteur DSF) que le

@@ -66,7 +66,7 @@ Elles ne sortiront **que** si `ATLAS_FIXTURES_PHYTO=1` est posé dans le
 processus qui lit — c'est une double garde délibérée. Sans elle, la lecture les
 filtre, exactement comme en production.
 
-**Quatre pièges, dans l'ordre où on les rencontre :**
+**Six pièges, dans l'ordre où on les rencontre :**
 
 1. **L'import exige le rôle PROPRIÉTAIRE.** `atlas_app` n'a que `SELECT` sur la
    base phytosanitaire (migration 0056). Le script le vérifie et le dit ; sans
@@ -82,7 +82,20 @@ filtre, exactement comme en production.
    qui n'ont pas pu être posés sont raccordés à la fin. Ne pas revenir à un
    `INSERT … SELECT` posé dans la foulée : sur une fiche pas encore écrite, il
    n'insère rien **sans se plaindre**, et la relance photo disparaît de l'écran.
-4. **Le vocabulaire est PARTAGÉ** entre les fiches et la consigne du modèle
+4. **L'import n'écrit JAMAIS « validee » directement**, et la contrainte
+   `fiches_phyto_integrite_ck` le rend impossible (migration 0057). Une fiche
+   entre `en_revue` ; seule la comparaison champ par champ, réussie dans la même
+   transaction, la promeut. Si vous ajoutez une colonne à `fiches_phyto`,
+   **écrivez-la dans `CHAMPS_SCALAIRES`** (`src/lib/import-fiches-phyto.ts`) :
+   la liste est tenue à la main précisément pour qu'un oubli d'`INSERT` ne passe
+   pas inaperçu (`ARCHITECTURE.md` §138).
+5. **Le moteur exige une essence établie avant de conclure.** Une observation
+   sans taxon reconnu, ou avec `certitude: "incertaine"`, ne rend jamais de
+   diagnostic — elle demande une photo d'identification, puis refuse. Une suite
+   qui construirait une `Observation` sans `essence` obtiendrait donc un
+   `complement` là où elle attend une conclusion, et cela n'a rien à voir avec ce
+   qu'elle croit éprouver.
+6. **Le vocabulaire est PARTAGÉ** entre les fiches et la consigne du modèle
    (`src/lib/diagnostic-vegetal.ts`). Ajouter un mot d'un seul côté ne produit
    aucune erreur : simplement une fiche qui ne sort plus jamais. Deux contrôles
    l'attrapent — `verifierVocabulaire()` à l'import, et une suite qui vérifie
