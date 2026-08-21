@@ -167,7 +167,11 @@ async function main() {
     });
     await page.locator('button[aria-pressed]').nth(1).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 (`ARCHITECTURE.md` §140) :
+    // c'est lui, le signal. Le lien touché pour lui, LUI, vit sur `document.body`
+    // — hors de l'arbre React — et survit donc au changement d'écran ; c'est ce
+    // qui permet de le relire ici.
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
 
     const porte = page.locator("a[data-transmission-directe]");
     assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
