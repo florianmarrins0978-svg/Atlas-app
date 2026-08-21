@@ -193,6 +193,12 @@ ajoute une ligne et que personne n'en retire jamais.
 
 ## L'arrosage est DANS l'application — 20 août 2026 au soir
 
+**AUCUN ÉCRAN NE FORCE L'APPAREIL PHOTO** (21 août) : `capture="environment"`
+est retiré du croquis d'arrosage et du diagnostic végétal. Sa règle : *« soit je
+peux mettre une photo de ma bibliothèque, soit prendre une photo »*. Le retirer
+ne coûte rien, le garder interdit la photo prise la veille. Deux contrôles le
+tiennent, et celui du diagnostic — qui réclamait l'inverse — a été retourné.
+
 **LA CLÉ D'IA : IL A EU RAISON TROIS FOIS, ET LE DÉPÔT AVAIT TORT.** *« Les clés
 sont posées, elles fonctionnent pour la rédaction du devis. Utilise-la. »*
 L'écran demandait « une clé existe-t-elle ? » au lieu de « celui qui va LIRE

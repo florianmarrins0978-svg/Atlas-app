@@ -232,6 +232,35 @@ async function main() {
     assert.match(texteKit, /buse 5/, `le kit ne nomme pas la buse : ${texteKit}`);
   });
 
+  // ── La photo se PREND ou se CHOISIT ──────────────────────────────────────
+  //
+  // *Sa demande du 21 août 2026 :* « soit je peux mettre une photo de ma
+  // bibliothèque, soit prendre une photo — le même schéma que pour ajouter des
+  // photos à la fiche client ».
+  //
+  // **`capture` n'est pas une préférence, c'est un ordre.** Avec cet attribut,
+  // le téléphone ouvre l'appareil et le menu ne paraît jamais. Or un croquis se
+  // dessine souvent la veille : le rephotographier depuis un écran donne une
+  // photo de photo, que le modèle lira mal.
+  //
+  // Le contrôle tient la RÈGLE — le choix reste au patron — et non une mise en
+  // page : il ne dit rien du libellé du bouton ni de son allure.
+  await cas("le croquis se prend OU se choisit dans la bibliothèque", async () => {
+    const capture = await page.evaluate(() => {
+      const champ = document.querySelector("#croquis") as HTMLInputElement | null;
+      return champ ? champ.getAttribute("capture") : "champ absent";
+    });
+    assert.equal(
+      capture,
+      null,
+      `le champ force l'appareil photo (capture="${capture}") : le menu « Photothèque / Prendre une photo » ne s'ouvrira jamais`
+    );
+    // Et il accepte bien des images — sans quoi la bibliothèque s'ouvrirait sur
+    // des fichiers qu'on ne peut pas choisir.
+    const accepte = await page.getAttribute("#croquis", "accept");
+    assert.match(accepte ?? "", /image/, `le champ n'accepte pas les images : ${accepte}`);
+  });
+
   // **Le puits et la cuve sont retirés**, sur sa demande du 20 août au soir.
   await cas("le piquage sur une pompe n'est plus proposé", async () => {
     const choix = await page.locator("#piquage option").allInnerTexts();

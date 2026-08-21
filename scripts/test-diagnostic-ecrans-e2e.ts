@@ -106,9 +106,24 @@ async function main() {
     );
   });
 
-  await cas("le bouton ouvre l'appareil photo arrière, pas la bibliothèque", async () => {
+  // **Ce contrôle exigeait l'inverse jusqu'au 21 août 2026**, et c'est le cas
+  // d'école de `CLAUDE.md` §5 bis : *un contrôle ne doit pas réclamer ce que le
+  // patron a fait retirer*. Il verrouillait `capture="environment"`, donc
+  // l'ouverture directe de l'appareil — au motif que le parcours demandé était
+  // « ouvrir, photographier, attendre ».
+  //
+  // Sa règle du 21 août dit l'inverse, et pour le bon motif : *« soit je peux
+  // mettre une photo de ma bibliothèque, soit prendre une photo »*. Le
+  // téléphone propose les deux, l'appareil en premier — on ne perd donc rien, et
+  // on gagne la photo prise la veille chez le client.
+  await cas("la photo se prend OU se choisit dans la bibliothèque", async () => {
     const entree = page.locator('[data-atlas="prendre-photo"] input[type="file"]');
-    assert.equal(await entree.getAttribute("capture"), "environment");
+    const capture = await entree.getAttribute("capture");
+    assert.equal(
+      capture,
+      null,
+      `le champ force l'appareil photo (capture="${capture}") : le menu « Photothèque / Prendre une photo » ne s'ouvrira jamais`
+    );
     assert.match((await entree.getAttribute("accept")) ?? "", /image\/jpeg/);
   });
 

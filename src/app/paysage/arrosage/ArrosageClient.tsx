@@ -223,7 +223,18 @@ export default function ArrosageClient({
           name="croquis"
           type="file"
           accept="image/*"
-          capture="environment"
+          // **PAS de `capture` — sa demande du 21 août 2026 :** « soit je peux
+          // mettre une photo de ma bibliothèque, soit prendre une photo ; le
+          // même schéma que pour ajouter des photos à la fiche client ».
+          //
+          // `capture="environment"` n'est pas une préférence, c'est un ORDRE :
+          // le téléphone saute directement à l'appareil et le menu ne s'ouvre
+          // jamais. Un croquis se dessine souvent la veille, au bureau — le
+          // forcer à le rephotographier depuis son écran est une photo de photo,
+          // floue et de travers, que le modèle lira mal.
+          //
+          // La pellicule du chantier (`Pellicule.tsx`) ne porte pas non plus cet
+          // attribut, et c'est bien pour ça que son menu s'ouvre là-bas.
           hidden
           onChange={photoChoisie}
         />

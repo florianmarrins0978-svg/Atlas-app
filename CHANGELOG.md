@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### La photo se PREND ou se CHOISIT — partout, plus seulement sur la fiche client
+
+*« Quand je clique sur ajouter une photo au croquis, il faut que soit je puisse
+mettre une photo de ma bibliothèque, soit prendre une photo. Le même schéma que
+pour ajouter des photos à la fiche client. »*
+
+**`capture="environment"` n'est pas une préférence, c'est un ordre.** Le
+téléphone saute directement à l'appareil arrière et le menu « Photothèque /
+Prendre une photo » ne paraît jamais. Deux écrans le portaient : le croquis
+d'arrosage et le diagnostic végétal.
+
+**Le retirer ne coûte rien** — l'appareil reste le premier choix du menu — et
+rend un cas entier : la photo prise la veille. Un croquis se dessine souvent au
+bureau ; le rephotographier depuis un écran donne une photo de photo, floue et
+de travers, que le modèle lit mal. Un feuillage qui jaunit se photographie quand
+on le voit, pas quand on ouvre Atlas.
+
+**Un contrôle réclamait l'inverse, et il a fallu le retourner** — cas d'école de
+`CLAUDE.md` §5 bis : *un contrôle ne doit pas réclamer ce que le patron a fait
+retirer*. Celui du diagnostic verrouillait l'attribut au motif que le parcours
+demandé était « ouvrir, photographier, attendre ». La maquette de la fiche
+client vocale, elle, l'interdisait déjà : les écrans disent désormais tous la
+même chose.
+
 ### « Les clés sont posées » — et l'écran répondait à la mauvaise question
 
 **Il a repris trois fois pour dire la même chose**, et il avait raison à chaque
