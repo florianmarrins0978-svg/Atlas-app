@@ -60,6 +60,23 @@
     <span class="quoi">Le même sommaire, mais les écrans sont dessous : cliquer un titre y descend, sans quitter la page. Engendrée par <code>scripts/fusionner-maquettes.mjs</code>.</span>
   </a>
 
+  <p class="famille">La fiche client</p>
+
+  <a class="item retenu" href="../../appli/cases-page-entiere.html">
+    <span class="no">▶</span><span class="titre">La page entière, cinq dessins de cases — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 21 août 2026 : <b>« toute la page de haut en bas avec les cinq différentes cases, ce sera plus visuel et je pourrai choisir »</b>. Un seul jeu de balises, cinq feuilles de style : l’écran est écrit UNE fois et se relit sous chaque dessin — aucune case ne peut être plus soignée dans l’une que dans l’autre. Le contrôle mesure les cinq (mêmes champs, rien de coupé, 48 px de prise) et refuse qu’un dessin gagne en perdant un intitulé — ce que la capture a montré et qu’aucune mesure n’aurait vu.</span>
+  </a>
+
+  <a class="item" href="../../appli/cases-a-remplir.html">
+    <span class="no">▶</span><span class="titre">Les cases à remplir, cinq façons — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 21 août 2026 : <b>« fais-moi des photos des cases à remplir plus jolies, je peux plus voir ces encadrés carrés »</b>. Le trait, la capsule, la ligne de fiche, la carte douce, le creux — <b>le même bloc à chaque fois</b>, sinon on choisit un contenu au lieu d’un dessin. La charte et la hauteur de prise (48 px minimum) ne bougent pas d’une proposition à l’autre. <b>Rien n’est codé</b>, il tranche.</span>
+  </a>
+
+  <a class="item retenu" href="../../appli/fiche-client-vocale.html">
+    <span class="no">▶</span><span class="titre">La fiche client qui dicte le devis — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 21 août 2026 : <b>le nom et le numéro sur une ligne</b>, plus aucun « facultatif », le carré photo et <b>l’anneau</b> ramenés de la fiche chantier. Le cœur : <b>on rappuie pour arrêter, et c’est enregistré</b> — il est en rendez-vous, il ferme l’appli, et le chantier l’attend à l’accueil avec son devis déjà rempli. L’anneau et le champ de photos sont <b>repris à l’identique du code</b> (<code>AnneauNoteVocale.tsx</code>, <code>Pellicule.tsx</code>), pas redessinés. Un écran <b>« À trancher »</b> pose ce qui reste sans maison si la fiche chantier disparaît. <b>Rien n’est codé.</b></span>
+  </a>
+
   <p class="famille">Trop de mots</p>
 
   <a class="item retenu" href="../../appli/moins-de-mots.html">
@@ -289,6 +306,11 @@
   <a class="item retenu" href="27-banc-dessai-bascule.html">
     <span class="no">27</span><span class="titre">Banc d’essai — la bascule</span><span class="fleche">→</span>
     <span class="quoi">Celle-ci s’UTILISE : on tape dans les champs, on bascule, et le bouton mène vraiment quelque part — pas au même endroit selon le choix. Volontairement absente de la page unique : elle navigue entre plusieurs écrans et prend tout le téléphone.</span>
+  </a>
+
+  <a class="item" href="../../appli/planning-simple.html">
+    <span class="no">84</span><span class="titre">Le planning, en semaines</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 19 août : <b>« cette page est beaucoup trop compliquée à comprendre »</b>. Corrigée le 21 août sur sa réponse — <b>« je veux un accès au mois ; la semaine, c’était pour les chantiers planifiés »</b>. Le calendrier reste donc au MOIS ; seule la liste du bas se déplace par semaine, jours <b>nommés</b> et clients dessous, titres noirs et centrés. Toucher un jour du mois amène la liste sur sa semaine : on vise en haut, on lit en bas. <b>Retenu le 21 août : les deux barres</b> sous le chiffre (matin dessus, après-midi dessous), et la fiche du jour dit le compte — « 2 équipes sur 2 — complet » — et l’équipe affiliée. <b>Elle s’essaie</b>, et tout se calcule sur les mêmes chantiers que la liste. <b>Rien n’est codé.</b></span>
   </a>
 
   <a class="item retenu" href="../../appli/en-cours-le-chiffre.html">

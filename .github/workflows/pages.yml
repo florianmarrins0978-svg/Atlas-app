@@ -180,13 +180,11 @@ jobs:
           # la racine du site, l'entrée elle-même, et les deux scripts que les
           # pages chargent.
           #
-          # `deux-boutons-devis.html` et `en-cours-le-chiffre.html` s'y ajoutent
-          # à contrecœur : elles étaient vérifiées avant ce changement, et
-          # cesser de les vérifier serait perdre du terrain. Mais **elles ne
-          # sont atteignables depuis `essais.html` par aucun lien** — donc le
-          # patron ne peut pas les ouvrir depuis la seule adresse qu'on lui a
-          # donnée. Ouvert dans `TODO.md` ; à retirer d'ici le jour où elles y
-          # seront liées.
+          # `deux-boutons-devis.html` et `en-cours-le-chiffre.html` ont quitté
+          # cette liste le 20 août : elles sont désormais LIÉES depuis
+          # `essais.html`, donc déduites comme les autres. C'était la condition
+          # écrite ici la veille — le patron peut les ouvrir depuis la seule
+          # adresse qu'on lui ait donnée.
           #
           # `arrosage-simple.html` s'y ajoute pour une raison différente, et
           # voulue : le patron a demandé le 20 août de **ne plus la mettre dans
@@ -195,7 +193,6 @@ jobs:
           # déduite ne la verrait pas, et on lui transmettrait une adresse dont
           # rien ne prouve qu'elle répond.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
-                   deux-boutons-devis.html en-cours-le-chiffre.html \
                    arrosage-simple.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"

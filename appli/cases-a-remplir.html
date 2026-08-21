@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — les cases à remplir, cinq façons</title>
+<style>
+/*
+  LES CASES À REMPLIR, CINQ FAÇONS — sa demande du 21 août 2026 :
+
+    « Fais-moi des photos des cases à remplir plus jolies, je peux plus voir ces
+      encadrés carrés. »
+
+  Cinq traitements du MÊME bloc — nom + téléphone, e-mail, adresse — pour qu'ils
+  se comparent à la lettre. Changer les champs d'une proposition à l'autre
+  ferait choisir un contenu au lieu d'un dessin.
+
+  Ce qui ne bouge PAS d'une proposition à l'autre, et c'est délibéré :
+
+  · **la charte** (`src/lib/design-tokens.ts`) — crème, vert pin, or. Il ne
+    demande pas une autre identité, il demande de sortir du carré ;
+  · **la hauteur de prise** — 48 px au minimum sous le pouce. Une case élégante
+    qu'on rate deux fois sur trois n'est pas élégante, elle est ratée ;
+  · **la place du texte saisi** : à gauche, en 16 px. En dessous, iOS zoome tout
+    seul à la mise au point, et l'écran saute.
+
+  Aucune n'est « la bonne » : c'est lui qui tranche, et rien n'est codé avant.
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.tel{max-width:430px;margin:0 auto;padding:0 0 50px}
+.marque{padding:16px 0 6px;text-align:center;font-size:10px;letter-spacing:.34em;color:var(--muted)}
+h1{margin:0;padding:4px 26px 0;font-family:Georgia,serif;font-weight:400;font-size:31px;line-height:1.1}
+.chapo{margin:12px 26px 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
+
+.prop{margin:34px 0 0;padding:24px 26px 26px;background:var(--cream);
+      border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.prop > .no{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+.prop > h2{margin:7px 0 0;font-family:Georgia,serif;font-weight:400;font-size:23px;line-height:1.15}
+.prop > .quoi{margin:8px 0 22px;font-size:13px;color:var(--muted);line-height:1.6}
+.bloc{display:flex;flex-direction:column;gap:16px}
+.caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.duo{display:flex;gap:9px}
+.duo .nom{flex:1;min-width:0}
+.duo .num{flex:0 0 152px}
+.duo .num input{text-align:right}
+input{width:100%;font-size:16px;color:var(--charcoal);font-family:inherit;border:0;background:none}
+input::placeholder{color:var(--muted)}
+input:focus{outline:0}
+.champ{display:flex;flex-direction:column;gap:6px}
+
+/* ── 1 · LE TRAIT — plus aucune boîte, une ligne sous le texte ─────────────
+   La plus dépouillée : le champ n'existe que par son trait, qui s'éclaire en
+   or quand le doigt s'y pose. C'est l'écriture d'un carnet. */
+.p1 input{padding:12px 2px;border-bottom:1px solid var(--line);border-radius:0;min-height:48px}
+.p1 input:focus{border-bottom:1.5px solid var(--or);padding-bottom:11.5px}
+
+/* ── 2 · LA CAPSULE — la forme des boutons d'Atlas, appliquée aux cases ────
+   Rien de carré nulle part : le bouton « Je rédige mon devis », les capsules
+   « Par SMS » et les champs partagent enfin le même arrondi. */
+.p2 input{padding:14px 20px;background:var(--paper);border-radius:99px;min-height:50px}
+.p2 .duo .num input{text-align:right;padding-right:20px}
+.p2 input:focus{box-shadow:inset 0 0 0 1.5px var(--or)}
+
+/* ── 3 · LA LIGNE DE FICHE — l'intitulé À GAUCHE, la valeur à droite ───────
+   Ce n'est plus un formulaire, c'est une fiche qui se lit. Le gain de place
+   est réel : plus une seule ligne d'intitulé au-dessus des cases. */
+.p3 .rang{display:flex;align-items:center;gap:14px;min-height:52px;
+          border-bottom:1px solid var(--line-soft)}
+.p3 .rang .quoi{flex:0 0 104px;font-size:14px;color:var(--muted)}
+.p3 .rang input{text-align:right;padding:16px 0}
+.p3 .rang:focus-within{border-bottom-color:var(--or)}
+
+/* ── 4 · LA CARTE DOUCE — le carré reste, ses angles partent ───────────────
+   Le moins de changement : la case d'aujourd'hui, arrondie à 14 px, sans son
+   liseré, posée sur un fond légèrement plus clair que la page. */
+.p4 input{padding:15px 16px;background:var(--paper);border-radius:14px;min-height:50px}
+.p4 input:focus{box-shadow:inset 0 0 0 1.5px var(--or)}
+
+/* ── 5 · LE CREUX — la case est un creux dans le papier ───────────────────
+   Pas de bord du tout : une ombre intérieure très douce et un fond à peine
+   plus sombre. De loin, l'écran n'a plus aucune ligne droite. */
+.p5 input{padding:15px 16px;background:var(--paper);border-radius:12px;min-height:50px;
+          box-shadow:inset 0 1.5px 3px rgba(28,28,26,.055)}
+.p5 input:focus{box-shadow:inset 0 1.5px 3px rgba(28,28,26,.055),inset 0 0 0 1.5px var(--or)}
+</style>
+</head>
+<body>
+<div class="tel">
+  <p class="marque">ATLAS</p>
+  <h1>Les cases<br>à remplir</h1>
+  <p class="chapo">Cinq façons du même bloc — <b>nom, téléphone, e-mail, adresse</b>.
+    Touchez une case : elles réagissent toutes. Dites-moi le numéro.</p>
+
+  <section class="prop p1">
+    <p class="no">Proposition 1</p>
+    <h2>Le trait</h2>
+    <p class="quoi">Plus aucune boîte. Une ligne sous le texte, qui s’éclaire en or quand vous écrivez.</p>
+    <div class="bloc">
+      <div class="champ"><span class="caps">Nom du client</span>
+        <div class="duo">
+          <span class="nom"><input type="text" value="M. Julien"></span>
+          <span class="num"><input type="tel" value="06 79 98 45 14"></span>
+        </div>
+      </div>
+      <div class="champ"><span class="caps">E-mail</span><input type="email" placeholder="bernard@exemple.fr"></div>
+      <div class="champ"><span class="caps">Adresse du chantier</span><input type="text" value="12 rue des Lilas, Nantes"></div>
+    </div>
+  </section>
+
+  <section class="prop p2">
+    <p class="no">Proposition 2</p>
+    <h2>La capsule</h2>
+    <p class="quoi">La forme de vos boutons, appliquée aux cases. Plus rien de carré sur l’écran.</p>
+    <div class="bloc">
+      <div class="champ"><span class="caps">Nom du client</span>
+        <div class="duo">
+          <span class="nom"><input type="text" value="M. Julien"></span>
+          <span class="num"><input type="tel" value="06 79 98 45 14"></span>
+        </div>
+      </div>
+      <div class="champ"><span class="caps">E-mail</span><input type="email" placeholder="bernard@exemple.fr"></div>
+      <div class="champ"><span class="caps">Adresse du chantier</span><input type="text" value="12 rue des Lilas, Nantes"></div>
+    </div>
+  </section>
+
+  <section class="prop p3">
+    <p class="no">Proposition 3</p>
+    <h2>La ligne de fiche</h2>
+    <p class="quoi">L’intitulé à gauche, ce que vous tapez à droite. Ce n’est plus un formulaire, c’est une fiche — et c’est la plus compacte des cinq.</p>
+    <div class="bloc">
+      <div class="rang"><span class="quoi">Nom</span><input type="text" value="M. Julien"></div>
+      <div class="rang"><span class="quoi">Téléphone</span><input type="tel" value="06 79 98 45 14"></div>
+      <div class="rang"><span class="quoi">E-mail</span><input type="email" placeholder="bernard@exemple.fr"></div>
+      <div class="rang"><span class="quoi">Adresse</span><input type="text" value="12 rue des Lilas, Nantes"></div>
+    </div>
+  </section>
+
+  <section class="prop p4">
+    <p class="no">Proposition 4</p>
+    <h2>La carte douce</h2>
+    <p class="quoi">Vos cases d’aujourd’hui, mais les angles arrondis et le liseré retiré.</p>
+    <div class="bloc">
+      <div class="champ"><span class="caps">Nom du client</span>
+        <div class="duo">
+          <span class="nom"><input type="text" value="M. Julien"></span>
+          <span class="num"><input type="tel" value="06 79 98 45 14"></span>
+        </div>
+      </div>
+      <div class="champ"><span class="caps">E-mail</span><input type="email" placeholder="bernard@exemple.fr"></div>
+      <div class="champ"><span class="caps">Adresse du chantier</span><input type="text" value="12 rue des Lilas, Nantes"></div>
+    </div>
+  </section>
+
+  <section class="prop p5">
+    <p class="no">Proposition 5</p>
+    <h2>Le creux</h2>
+    <p class="quoi">Aucun bord : la case est un creux dans le papier. De loin, plus une seule ligne droite.</p>
+    <div class="bloc">
+      <div class="champ"><span class="caps">Nom du client</span>
+        <div class="duo">
+          <span class="nom"><input type="text" value="M. Julien"></span>
+          <span class="num"><input type="tel" value="06 79 98 45 14"></span>
+        </div>
+      </div>
+      <div class="champ"><span class="caps">E-mail</span><input type="email" placeholder="bernard@exemple.fr"></div>
+      <div class="champ"><span class="caps">Adresse du chantier</span><input type="text" value="12 rue des Lilas, Nantes"></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

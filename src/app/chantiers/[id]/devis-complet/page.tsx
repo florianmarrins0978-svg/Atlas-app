@@ -4,6 +4,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
+import { canalPourJoindre } from "@/lib/message-client";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
@@ -116,7 +117,13 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
         // Le canal convenu vit sur la fiche du CLIENT, pas sur le devis : c'est
         // un accord avec la personne. Un devis repris six mois plus tard doit
         // partir par le canal du client d'aujourd'hui.
-        canalClient={client?.canalCommunication ?? "sms"}
+        canalClient={
+          canalPourJoindre({
+            canal: client?.canalCommunication ?? null,
+            telephone: client?.telephone,
+            email: client?.email,
+          }) ?? "sms"
+        }
         origine={origine}
         adresseChantier={chantier.adresseChantier ?? ""}
         lignesInitiales={lignes.map((l) => ({
