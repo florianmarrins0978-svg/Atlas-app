@@ -1322,6 +1322,34 @@ compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 su
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
 
+### Le dépassement passe en bleu ardoise, et la légende retrouve son « rien »
+
+**Sa correction du 21 août :** *« la couleur dorée pour le dépassement, je ne
+suis pas très fan. Rajoute un petit carré blanc pour lorsqu'il n'y a rien, le
+vert clair c'est incomplet, le vert foncé c'est complet, et trouve-moi une autre
+couleur pour au-delà. Et pour matin et après-midi, reprends exactement les mêmes
+rectangles que sous les chiffres du mois — même taille, même largeur. »*
+
+**Ni or, ni rouge.** L'or sert partout ailleurs à ce qu'on LIT (les liens, les
+mentions) : employé ici, il ne signalait plus rien. Le rouge dit « erreur », et
+dépasser est un choix qu'il assume. Le **bleu ardoise** est la seule teinte
+froide de l'écran — elle se remarque sans crier.
+
+**La légende dit maintenant les quatre états** : rien · incomplet · complet ·
+au-delà, puis la position. Cinq termes sur une ligne, ce qui a demandé de
+resserrer le corps et l'écart — mesuré à 390 et 375 px, replié en dessous.
+
+**Et les rectangles de matin / après-midi SONT ceux du calendrier** : la légende
+réemploie la classe `.marqueA` telle quelle. Une copie « à la bonne dimension »
+aurait divergé au premier réglage ; la suite mesure les deux et exige qu'ils
+soient identiques.
+
+**Un défaut trouvé en le faisant** : une règle de la toute première légende
+traînait encore et forçait 13 × 13 px à tous ses carrés — les rectangles repris
+du calendrier redevenaient des carrés. Et `align-items:center`, hérité d'une
+règle voisine, les rétrécissait à zéro. Deux fois la même leçon : ce qui est
+mesuré ne se devine pas.
+
 ### Un seul bouton d'ajout, sous la journée — et « toute la journée » retiré
 
 **Sa demande du 21 août au soir, la maquette étant par ailleurs retenue :**

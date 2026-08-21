@@ -42,6 +42,11 @@
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
     --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
     --or:#B98B47; --trait:rgba(28,28,26,.12);
+    /* **Le dépassement : un bleu ardoise.** Ni l'or — il sert à ce qu'on LIT
+       partout ailleurs, et il ne se distinguait plus —, ni le rouge, qui dit
+       « erreur » dans l'application alors que dépasser est un choix. Une teinte
+       froide sur un écran chaud se remarque sans crier. */
+    --ardoise:#4A5A6B;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:#e6e3dc}
@@ -126,28 +131,39 @@
      la place / complet » n'a plus de sens : chaque façon de dire la charge a
      donc ses propres mots, écrits par le script au lieu d'être figés dans la
      page — un mot figé finit par mentir, comme « 1 équipe sur 2 » l'a fait. */
-  .legende{flex-wrap:nowrap;gap:9px;font-size:10px}
+  /* Cinq termes depuis que « rien » est revenu : l'écart et le corps se
+     resserrent pour que la ligne tienne encore à 360 px — mesuré, pas espéré. */
+  .legende{flex-wrap:nowrap;gap:6px;font-size:9px}
   .legende > span{flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:5px}
-  .legende .carre{width:11px;height:11px;border-radius:3px;display:block;flex-shrink:0;
+  .legende .carre{width:10px;height:10px;border-radius:3px;display:block;flex-shrink:0;
                   background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .legende .carre.place{background:var(--pale);box-shadow:none}
   .legende .carre.plein{background:var(--pin);box-shadow:none}
-  .legende .carre.dela{background:var(--or);box-shadow:none}
+  .legende .carre.dela{background:var(--ardoise);box-shadow:none}
   .legende .pt{width:7px;height:7px;border-radius:999px;display:block;flex-shrink:0;background:var(--pin)}
   .legende .pt.creux{background:transparent;box-shadow:inset 0 0 0 1.5px var(--or)}
-  .legende .annote{display:flex;align-items:center;gap:6px}
-  .legende .annote .deux{display:flex;flex-direction:column;gap:3px}
-  .legende .annote .mots{display:flex;flex-direction:column;gap:3px;line-height:1}
-  .legende .annote .mots b{height:11px;display:flex;align-items:center;font-weight:600;
+  /* **Les deux rectangles de la légende SONT ceux du calendrier.** Sa demande
+     du 21 août : « reprends exactement les mêmes rectangles qui se trouvent
+     sous les chiffres du planning du mois, la même taille, la même largeur ».
+     On réemploie donc la classe `.marqueA` telle quelle — pas une copie à la
+     bonne dimension, qui divergerait au premier réglage. */
+  .legende .annote{display:flex;align-items:center;gap:7px}
+  /* `align-items:stretch` : la règle voisine `.legende span{align-items:center}`
+     attrape aussi cette pile et fait rétrécir les rectangles à zéro — ils ont
+     leur largeur du parent, pas d'eux-mêmes. Mesuré, pas supposé. */
+  .legende .annote .marqueA{flex-shrink:0;align-items:stretch}
+  .legende .annote .mots{display:flex;flex-direction:column;gap:2.5px;line-height:1}
+  .legende .annote .mots b{height:6px;display:flex;align-items:center;font-weight:600;
                            font-size:9.5px;color:var(--encre-douce)}
 
   /* La barre du jour : quatre états, dont le dernier prévient sans interdire. */
   .marqueA .seg.place{background:var(--pale)}
   .marqueA .seg.plein{background:var(--pin)}
-  /* **L'or, jamais le rouge.** Dépasser n'est pas une faute : il sait qu'une
-     taille de haie prend une heure. Le rouge de l'application dit « erreur »
-     (`colors.alert`) — l'employer ici ferait passer un choix pour un défaut. */
-  .marqueA .seg.dela{background:var(--or)}
+  /* **Ni or, ni rouge.** L'or sert à ce qu'on LIT partout ailleurs — il ne
+     signalait plus rien ; le rouge dit « erreur », alors que dépasser est un
+     choix qu'il assume. Le bleu ardoise est la seule teinte froide de l'écran :
+     elle se remarque sans crier. */
+  .marqueA .seg.dela{background:var(--ardoise)}
 
   /* Le nombre d'équipes — n'existe QUE dans la maquette, pour répondre à sa
      question en la MONTRANT plutôt qu'en l'expliquant. */
@@ -164,11 +180,7 @@
 
   .legende{margin:14px 18px 0;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;
            font-size:11px;color:var(--gris)}
-  .legende span{display:flex;align-items:center;gap:6px}
-  .legende i{width:13px;height:13px;border-radius:3px;display:inline-block}
-  .legende i.libre{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .legende i.moitie{background:var(--pale)}
-  .legende i.plein{background:var(--pin)}
+  .legende span{display:flex;align-items:center;gap:5px}
 
   /* ── Le jour touché, sous le calendrier ─────────────────────────────── */
   .jour-ouvert{margin:16px 18px 0;padding:14px 15px;border-radius:10px;background:var(--plage)}
@@ -185,6 +197,7 @@
             background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .pastille.moitie{background:var(--pale);box-shadow:none}
   .pastille.plein{background:var(--pin);box-shadow:none}
+  .pastille.dela{background:var(--ardoise);box-shadow:none}
 
   .place{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
   /* **La liste des équipes prend toute la largeur de la ligne.** Coincée entre
@@ -1046,10 +1059,11 @@
    */
   function rendreLegende() {
     document.getElementById("legende").innerHTML = `
-      <span><i class="carre place"></i> de la place</span>
+      <span><i class="carre"></i> rien</span>
+      <span><i class="carre place"></i> incomplet</span>
       <span><i class="carre plein"></i> complet</span>
       <span><i class="carre dela"></i> au-delà</span>
-      <span class="annote"><span class="deux"><i class="carre"></i><i class="carre place"></i></span>
+      <span class="annote"><span class="marqueA"><i><span class="seg place" style="width:100%"></span></i><i></i></span>
         <span class="mots"><b>matin</b><b>après-midi</b></span></span>`;
   }
 

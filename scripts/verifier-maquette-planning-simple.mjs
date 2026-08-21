@@ -142,7 +142,9 @@ verifier(
 
 // ── La marque du jour se dessine, et rien ne mesure zéro ────────────────
 {
-  const boites = await page.$$eval(".marqueA i", (n) => n.map((e) => e.getBoundingClientRect().height));
+  // On compte celles du MOIS : la légende en porte deux de plus depuis qu'elle
+  // réemploie la même marque pour dire où sont le matin et l'après-midi.
+  const boites = await page.$$eval("#mois .marqueA i", (n) => n.map((e) => e.getBoundingClientRect().height));
   verifier(
     `les deux barres du jour se dessinent (${boites.length} barres, aucune de zéro pixel)`,
     boites.length === 62 && boites.every((h) => h >= 1),
@@ -234,23 +236,44 @@ await page.click('[data-jour="2026-08-21"]');
   );
 }
 
-// ── LA LÉGENDE DIT LES QUATRE ÉTATS, SUR UNE LIGNE ─────────────────────
+// ── LA LÉGENDE : QUATRE ÉTATS + LA POSITION, SUR UNE LIGNE ─────────────
 {
   const dit = (await page.locator("#legende").innerText()).toLowerCase().replace(/\n/g, " ");
   verifier(
-    `elle dit la place, le complet et l'au-delà (lu : « ${dit} »)`,
-    ["de la place", "complet", "au-delà", "matin", "après-midi"].every((m) => dit.includes(m)),
+    `elle dit rien, incomplet, complet, au-delà (lu : « ${dit} »)`,
+    ["rien", "incomplet", "complet", "au-delà", "matin", "après-midi"].every((m) => dit.includes(m)),
   );
   const hauts = await page.$$eval(".legende > span", (n) =>
     n.map((e) => Math.round(e.getBoundingClientRect().top)));
   verifier(
     `et tout tient sur UNE ligne (hauts lus : ${JSON.stringify(hauts)})`,
-    hauts.length === 4 && hauts.every((h) => h === hauts[0]),
+    hauts.length === 5 && hauts.every((h) => h === hauts[0]),
   );
   const carres = await page.$$eval(".legende .carre", (n) =>
     n.map((e) => { const r = e.getBoundingClientRect(); return Math.abs(r.width - r.height) <= 1; }));
-  verifier(`les cinq marques restent des carrés (lu : ${JSON.stringify(carres)})`,
-    carres.length === 5 && carres.every(Boolean));
+  verifier(`les quatre états restent des carrés (lu : ${JSON.stringify(carres)})`,
+    carres.length === 4 && carres.every(Boolean));
+
+  // **Les rectangles de matin / après-midi SONT ceux du calendrier.** Sa
+  // demande du 21 août : « exactement les mêmes, la même taille, la même
+  // largeur ». On les mesure des deux côtés — une copie « à la bonne
+  // dimension » divergerait au premier réglage.
+  const mois = await page.$eval('[data-jour="2026-08-20"] .marqueA i', (e) => {
+    const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
+  const leg = await page.$eval(".legende .annote .marqueA i", (e) => {
+    const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
+  verifier(
+    `ceux de la légende ont la taille de ceux du mois (mois ${JSON.stringify(mois)}, légende ${JSON.stringify(leg)})`,
+    JSON.stringify(mois) === JSON.stringify(leg) && mois[0] > mois[1],
+  );
+
+  // **Le dépassement n'est ni or ni rouge.** L'or sert à ce qu'on lit partout
+  // ailleurs ; le rouge dit « erreur », et dépasser est un choix.
+  const couleur = await page.$eval(".legende .carre.dela", (e) => getComputedStyle(e).backgroundColor);
+  verifier(
+    `« au-delà » porte une teinte à lui (lu : ${couleur})`,
+    couleur !== "rgb(185, 139, 71)" && !/^rgb\(1[5-9][0-9]|^rgb\(2[0-5][0-9]/.test(couleur),
+  );
 }
 
 // ── AJOUTER SUR N'IMPORTE QUEL JOUR, PAR LE MÊME GESTE ─────────────────
