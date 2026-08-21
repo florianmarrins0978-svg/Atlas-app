@@ -160,6 +160,25 @@ pas : ce sont des données à recopier de sources officielles.
 | 1 | ~~**Lancer la récolte des sources**~~ — fait le 20 août : 9 documents récoltés, **3 fiches réelles écrites** (fomès des résineux, les deux anthracnoses), chaîne éprouvée de bout en bout. **Reste ~47 fiches.** Ce qui limite n'est pas la saisie mais le TYPE de document : il faut des **fiches-type**, pas des bilans régionaux | moi, à partir des documents publics, avec relecture avant passage en `validee` |
 | 1 bis | **TRANCHER LA LICENCE D'INRAE (Ephytia)** — `http://ephytia.inra.fr`. C'est la source la plus riche en descriptions de symptômes, donc celle qui permettrait d'écrire vite. Son texte n'est pas rapatrié tant que sa réutilisation n'est pas établie : recopier sans licence est un risque qui ne se voit qu'à la mise en demeure. Même question pour le CNPF | le patron, ou un courriel à l'organisme |
 | 2 | **Éprouver l'appel réel de vision sur le banc**, avec de vraies photos. Non vérifiable **ici** — le poste de l'agent n'a pas de clé ; **chez lui, elles sont posées et l'IA tourne** (`CLAUDE.md` §1 ter) | à jouer sur son espace ; il envoie une capture du résultat |
+
+**IL L'A CONFIRMÉ LE 21 AOÛT 2026, et cela déplace la priorité de ce lot.**
+Après avoir fait écrire que ses clés sont posées, il ajoute : *« également, tu
+vas t'en servir pour les maladies »*. Le diagnostic végétal n'est donc pas une
+piste à explorer : **c'est un usage qu'il attend**, au même titre que l'arrosage
+et le ticket de caisse.
+
+Ce qui en découle, et qui ne demande aucune décision de sa part :
+
+- **l'écran existe et la chaîne est branchée** (`src/app/paysage/diagnostic/`,
+  `src/lib/diagnostic-vegetal.ts`). `VISION_PROVIDER` retombe sur le fournisseur
+  de rédaction quand il n'est pas posé : sa clé Anthropic suffit donc, sans
+  réglage de plus ;
+- **ce qui manque est la BIBLIOTHÈQUE, pas le moteur** : trois fiches réelles
+  sur la cinquantaine visée (point 1 ci-dessus). Un diagnostic ne peut rien
+  reconnaître qui n'y figure pas — et c'est ce qui limite l'usage réel, pas le
+  modèle ;
+- **et personne n'a encore vu le résultat sur une vraie photo.** C'est le point
+  2, et il ne se joue que chez lui.
 | 3 | Renseigner les `confusions_phyto` entre fiches proches — c'est **elles** qui permettent la demande de photo complémentaire. **Commencé le 20 août** : les deux anthracnoses sont reliées, et la relance photo est éprouvée sur des fiches réelles. Reste à le faire pour chaque paire proche du lot à venir | avec le lot de fiches |
 | 4 | Régler les seuils (`SEUIL_PLANCHER`, `ECART_NET`, plafonds de confiance) sur de vraies photos et de vraies fiches. Les valeurs actuelles sont un point de départ **assumé**, nommé et éprouvé — pas mesuré | après le premier lot |
 | 4 bis | **Mesurer ce que la règle « hôte d'abord » coûte en pratique** (20 août). Sans essence identifiée, Atlas ne conclut plus du tout. C'est voulu, mais personne n'a encore vu combien de photos réelles échouent à l'identification — c'est la première chose à regarder quand la clé de vision tournera sur le banc | le patron pose sa clé, je regarde |
