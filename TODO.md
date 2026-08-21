@@ -631,6 +631,29 @@ avant d'écrire.
 **Faire le ménage des serveurs dans un appel SÉPARÉ**, qui se termine avant la
 batterie. C'est la seule chose à retenir pour la prochaine fois.
 
+### 0 duotricies ter. Reconstruire tout seul quand du code neuf arrive
+
+Posé le 21 août 2026, après *« j'ai encore l'ancienne version »*.
+
+L'écran **dit** maintenant la vérité (§139) : quand du code plus récent attend
+d'être construit, il l'annonce et donne le geste. **Mais le geste reste le
+sien** — arrêter et rouvrir l'espace de travail.
+
+Aujourd'hui, la reconstruction n'est déclenchée toute seule que dans un cas :
+version bâtie **et** veilleur vivant, où le bouton coupe le serveur et laisse le
+veilleur reconstruire. Sans veilleur, on se contente de le lui dire.
+
+**La question à trancher :** le bouton doit-il savoir reconstruire lui-même,
+sans dépendre du veilleur ? C'est faisable — un processus détaché qui bâtit puis
+remplace le serveur — mais cela veut dire couper son application pendant une ou
+deux minutes sur un geste qu'il n'a pas explicitement demandé. Le mot du bouton
+devrait alors changer : « Chercher les dernières corrections » ne prévient pas
+qu'on va éteindre.
+
+**Qui peut le faire :** une session, une fois qu'il aura dit s'il préfère un
+bouton qui coupe ou un bouton qui prévient. Ne pas trancher à sa place : c'est
+son application pendant ses heures de travail.
+
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous

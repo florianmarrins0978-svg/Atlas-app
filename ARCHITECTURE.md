@@ -12361,3 +12361,69 @@ dépôt (`CLAUDE.md` §5) : la phrase du laboratoire s'affichait deux fois de su
 comme méthode de confirmation puis comme première information requise. Une
 consigne répétée se lit comme deux consignes, et sur un chantier on cherche la
 différence entre les deux. L'import refuse désormais cette répétition.
+
+---
+
+## 139. La ligne « Version » répondait à une autre question que celle posée
+
+**Le patron, le 21 août 2026 :** *« Ça n'a pas marché, j'ai encore l'ancienne
+version. Pourtant j'ai rechargé les mises à jour. »*
+
+Les deux moitiés de sa phrase étaient vraies **en même temps**, et c'est ce qui
+rend le défaut coûteux : la mise à jour avait bien eu lieu, et son écran servait
+bien l'ancienne application.
+
+### Ce qui se passait
+
+Son banc, une fois qu'il a réussi à construire, sert une version **bâtie** —
+du code figé au moment de la construction. C'est ce qui la rend rapide. Or :
+
+| | Ce qui avance | Ce qui est servi |
+|---|---|---|
+| `git` récupère le code neuf | le disque | inchangé |
+| l'espace redémarre | le disque **et** la construction | le code neuf |
+
+Le bouton « Chercher les dernières corrections » fait la première ligne, pas la
+seconde — sauf quand un veilleur est là pour relever le serveur, cas où il coupe
+et laisse reconstruire (`src/lib/issue-mise-a-jour.ts`). Sans veilleur, il
+**dit** qu'il faut rouvrir l'espace. Mais rien ne le rattrapait ensuite.
+
+### Le vrai défaut n'était pas là : il était dans le témoin
+
+`versionExecutee` lisait le **dépôt** (`git log -1` dans le dossier). La ligne
+« Version » annonçait donc le commit du jour pendant que les écrans dataient de
+la veille.
+
+**Cette ligne existe pour répondre à « qu'est-ce que j'exécute ? »** — c'est
+même la raison pour laquelle elle a été ajoutée (§6 de `CLAUDE.md` : *« une
+capture répond à la question sans qu'on ait à la poser »*). Elle répondait à
+« qu'est-ce qui est sur le disque ? ». Les deux réponses ne divergent **que**
+dans la situation où on l'interroge. Un témoin qui ment exactement au moment où
+l'on s'en sert coûte plus cher que pas de témoin : il a envoyé chercher la panne
+du côté de la livraison, qui était irréprochable, et m'y a envoyé aussi.
+
+### Ce qui est posé
+
+`src/lib/version-servie.ts` — une règle pure, sans base ni serveur :
+
+- **en développement**, le dépôt EST ce qui s'exécute (chaque écran se recompile
+  à l'ouverture) : sa version est la bonne, et rien ne peut être « en retard » ;
+- **en version bâtie**, seule la marque posée au démarrage (`ATLAS_VERSION`) dit
+  la vérité — et si le dépôt a avancé depuis, **l'écran le dit**, nomme le code
+  qui attend, et donne le geste : rouvrir l'espace.
+
+Deux refus délibérés, parce qu'un avertissement qui parle à tort s'apprend à
+ignorer : pas de retard annoncé en développement, et **aucun** quand la marque
+de démarrage manque — on ne sait alors pas avec quoi l'application a été bâtie,
+et deviner serait exactement la faute qu'on répare.
+
+`scripts/test-version-servie.ts` rejoue son cas ligne à ligne. Confronté à
+l'ancien comportement — annoncer le dépôt quoi qu'il arrive — il rougit sur ce
+cas précis et sur celui de la branche, et reste vert partout ailleurs.
+
+### Ce que ça ne répare pas, et qu'il faut dire
+
+Cela ne fait pas arriver le code neuf plus vite : **cela cesse de prétendre
+qu'il est là.** Le geste reste le sien — rouvrir l'espace de travail. Rendre la
+reconstruction automatique dans tous les cas est une autre question, ouverte
+dans `TODO.md`.

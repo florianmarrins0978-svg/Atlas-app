@@ -57,6 +57,27 @@ corrigée. `TODO.md` la garde ouverte.
 
 ---
 
+## 2026-08-21
+
+### La ligne « Version » disait le disque, pas ce qui tournait
+
+**Sa phrase :** *« Ça n'a pas marché, j'ai encore l'ancienne version. Pourtant
+j'ai rechargé les mises à jour. »* Les deux moitiés étaient vraies en même
+temps — et c'est ce qui a fait chercher au mauvais endroit.
+
+Son banc sert une version **construite** : c'est ce qui la rend rapide.
+Récupérer le code neuf fait avancer le disque sans toucher à ce qui s'exécute.
+La ligne « Version » de Réglages, elle, lisait le disque : elle confirmait la
+mise à jour à l'instant précis où elle aurait dû avertir que rien de neuf
+n'était servi.
+
+**Ce qui change :** cette ligne annonce désormais **ce que l'application
+exécute**. Quand du code plus récent attend d'être construit, l'écran le dit, le
+nomme, et donne le geste — rouvrir l'espace de travail.
+
+**Ce que ça ne fait pas, dit franchement :** cela n'accélère rien. Cela cesse de
+prétendre que le code neuf est là quand il ne l'est pas. `ARCHITECTURE.md` §139.
+
 ## 2026-08-20
 
 ### « Mieux vaut refuser de conclure que produire un faux diagnostic »
