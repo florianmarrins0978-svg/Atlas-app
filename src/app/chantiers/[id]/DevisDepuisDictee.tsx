@@ -213,7 +213,8 @@ export default function DevisDepuisDictee({
           className="text-center text-[15px]"
           style={{ color: colors.rust }}
         >
-          {libelleEnCours(etat) ?? (etat.type === "repos" ? "Atlas prépare le devis…" : "")}
+          {libelleEnCours(etat)?.replace("le devis", "votre devis") ??
+            (etat.type === "repos" ? "Atlas reprend votre dictée et écrit le devis…" : "")}
         </p>
       ) : variante === "anneau" ? (
         /* **L'écriture nue, et rien autour.** Choisie par le patron le 11 août

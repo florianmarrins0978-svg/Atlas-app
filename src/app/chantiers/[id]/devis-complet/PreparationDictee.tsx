@@ -44,14 +44,15 @@ import DevisDepuisDictee from "../DevisDepuisDictee";
  */
 export default function PreparationDictee({ chantierId }: { chantierId: string }) {
   return (
+    /* **Un seul bandeau, une seule ligne.** La première version en portait deux
+       — une phrase d'explication puis l'état du travail — et elle repoussait la
+       flèche de retour d'un tiers d'écran, vu à la capture. Ce que le bandeau
+       doit dire tient en une ligne ; le reste de la place appartient au devis. */
     <div
-      className="mx-auto mb-3 w-full max-w-[820px] rounded-[10px] px-5 py-4"
+      className="mx-auto mb-2 w-full max-w-[820px] rounded-[10px] px-5 py-3"
       style={{ backgroundColor: colors.card, fontFamily: font.body }}
       data-atlas="preparation-dictee"
     >
-      <p className="mb-1 text-center text-[13px]" style={{ color: colors.muted }}>
-        Atlas reprend ce que vous avez dicté sur le chantier et l&apos;écrit ici.
-      </p>
       <DevisDepuisDictee chantierId={chantierId} transcriptionDisponible auto />
     </div>
   );
