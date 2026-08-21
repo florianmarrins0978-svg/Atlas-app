@@ -96,26 +96,41 @@ async function main() {
     [chantierId]
   );
 
-  // **Un devis ENVOYÉ, et ses deux lignes.** Le planning ne liste que des
+  // **Le devis du chantier, et ses deux lignes.** Le planning ne liste que des
   // chantiers dont le devis est parti : sans lui, le décor décrirait un état
   // que le produit ne peut pas atteindre, et la feuille n'aurait rien à
-  // imprimer. Posé en base plutôt que joué à l'écran — le parcours complet du
-  // devis est éprouvé ailleurs, et le rejouer ici ajouterait deux minutes pour
-  // ne rien apprendre sur le planning.
-  // **Brouillon d'abord, envoyé ENSUITE** : `empecher_modification_lignes_devis_envoye`
-  // refuse toute ligne sur un devis parti — c'est l'invariant du dépôt
-  // (migration 0001), et le décor doit s'y plier comme le produit s'y plie.
-  const devisId = (
-    await pool.query(
-      `INSERT INTO devis (entreprise_id, chantier_id, numero_commercial, numero_version,
-                          statut, entreprise_nom, date_emission, total_ht, total_tva, total_ttc)
-       SELECT c.entreprise_id, c.id, 'D-PLANCHE-' || substr(c.id::text, 1, 8), 1,
-              'brouillon', 'Atelier Démo', CURRENT_DATE, 1000, 200, 1200
-         FROM chantiers c WHERE c.id = $1
-       RETURNING id`,
-      [chantierId]
-    )
+  // imprimer. Les lignes sont posées en base plutôt que saisies à l'écran — le
+  // parcours complet du devis est éprouvé ailleurs, et le rejouer ici
+  // ajouterait deux minutes pour ne rien apprendre sur le planning.
+  //
+  // **On PREND le devis existant, on n'en crée pas un second.** Depuis le
+  // 21 août, `creerPuisFiche` passe par l'écran du devis — la création en pose
+  // donc déjà un, en version 1. Le décor qui en insérait un de plus butait sur
+  // `devis_chantier_version_uk`, et l'erreur accusait la contrainte plutôt que
+  // le décor. Un décor doit partir de ce que le produit vient de faire, pas de
+  // ce qu'il faisait l'avant-veille.
+  const dejaLa = await pool.query(
+    `SELECT id FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
+    [chantierId]
+  );
+  const devisId = (dejaLa.rowCount
+    ? dejaLa
+    : await pool.query(
+        `INSERT INTO devis (entreprise_id, chantier_id, numero_commercial, numero_version,
+                            statut, entreprise_nom, date_emission, total_ht, total_tva, total_ttc)
+         SELECT c.entreprise_id, c.id, 'D-PLANCHE-' || substr(c.id::text, 1, 8), 1,
+                'brouillon', 'Atelier Démo', CURRENT_DATE, 1000, 200, 1200
+           FROM chantiers c WHERE c.id = $1
+         RETURNING id`,
+        [chantierId]
+      )
   ).rows[0].id as string;
+
+  // **Les lignes AVANT l'envoi** : `empecher_modification_lignes_devis_envoye`
+  // refuse toute ligne sur un devis parti — c'est l'invariant du dépôt
+  // (migration 0001), et le décor s'y plie comme le produit s'y plie.
+  await pool.query(`UPDATE devis SET statut = 'brouillon' WHERE id = $1`, [devisId]);
+  await pool.query(`DELETE FROM lignes_devis WHERE devis_id = $1`, [devisId]);
   await pool.query(
     `INSERT INTO lignes_devis (entreprise_id, devis_id, libelle, quantite, prix_unitaire, montant, ordre)
      SELECT d.entreprise_id, d.id, x.libelle, x.qte, x.pu, x.montant, x.ordre
@@ -127,6 +142,7 @@ async function main() {
     [devisId]
   );
   await pool.query(`UPDATE devis SET statut = 'envoye' WHERE id = $1`, [devisId]);
+
   const nom = (await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [chantierId])).rows[0]
     .nom as string;
 
@@ -664,8 +680,14 @@ async function main() {
   // un chantier (`supprimerChantier`).
   let rangementRate: unknown = null;
   try {
-    await pool.query(`DELETE FROM lignes_devis WHERE devis_id = $1`, [devisId]);
-    await pool.query(`DELETE FROM devis WHERE id = $1`, [devisId]);
+    // TOUS les devis du chantier, pas seulement celui du décor : l'écran de
+    // création en pose un, et une reprise en poserait un second.
+    await pool.query(
+      `DELETE FROM lignes_devis WHERE devis_id IN (SELECT id FROM devis WHERE chantier_id = $1)`,
+      [chantierId]
+    );
+    await pool.query(`DELETE FROM envois_devis WHERE chantier_id = $1`, [chantierId]);
+    await pool.query(`DELETE FROM devis WHERE chantier_id = $1`, [chantierId]);
     await pool.query(`DELETE FROM chantiers WHERE id = $1`, [chantierId]);
   } catch (e) {
     rangementRate = e;
