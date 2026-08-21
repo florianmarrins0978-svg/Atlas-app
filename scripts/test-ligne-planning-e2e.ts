@@ -218,11 +218,17 @@ async function main() {
       return {
         // Le nom seul : le bouton porte aussi le moment, en petit et en or.
         nom: (bouton.childNodes[0]?.textContent ?? "").trim(),
-        debordNom: bouton.scrollWidth - bouton.clientWidth,
+        // **Le débordement se lit sur le BOUTON, jamais sur le `<span>` du
+        // moment.** Ce span est EN LIGNE — la planche le veut collé au nom — et
+        // un élément en ligne n'a ni `clientWidth` ni `scrollWidth` : les deux
+        // valent zéro, et `0 − 0 = 0` annoncerait « rien n'est coupé » sur une
+        // ligne coupée. C'est exactement le défaut du 15 août 2026, et c'est le
+        // garde-fou plus bas qui l'a rattrapé ici même.
+        debord: bouton.scrollWidth - bouton.clientWidth,
         largeurNom: bouton.clientWidth,
         texte: (quand.textContent ?? "").trim(),
-        debordTexte: quand.scrollWidth - quand.clientWidth,
-        largeurTexte: quand.clientWidth,
+        // `getBoundingClientRect` fonctionne, LUI, sur un élément en ligne.
+        largeurTexte: quand.getBoundingClientRect().width,
         hauteur: Math.round(bouton.getBoundingClientRect().height),
         couleur: getComputedStyle(quand).color,
       };
@@ -232,7 +238,7 @@ async function main() {
     // ligne qui tient : c'est une page pas encore mise en page, et tout écart
     // mesuré dessus vaut zéro par construction. La suite refuse donc de se
     // prononcer plutôt que de rendre un vert qui ne prouve rien.
-    if (mesure.largeurNom === 0 || mesure.largeurTexte === 0) {
+    if (mesure.largeurNom === 0 || mesure.largeurTexte < 1) {
       throw new Error(
         `La ligne « ${mesure.nom} » mesure 0 px de large : la page n'est pas mise en ` +
           "page au moment de la mesure, et aucun débordement ne peut être vu. " +
@@ -307,15 +313,9 @@ async function main() {
     for (const c of [journee, demi, longue]) {
       const l = await ligneDe(c.id);
       assert.equal(
-        l.debordTexte,
+        l.debord,
         0,
-        `« ${l.texte} » déborde de ${l.debordTexte} px sur les ${l.largeurTexte} px ` +
-          "de la colonne : la phrase est coupée sur son téléphone"
-      );
-      assert.equal(
-        l.debordNom,
-        0,
-        `« ${l.nom.trim()} » déborde de ${l.debordNom} px sur les ${l.largeurNom} px ` +
+        `« ${l.nom} ${l.texte} » déborde de ${l.debord} px sur les ${l.largeurNom} px ` +
           "de la colonne : c'est le nom du chantier qui paie la phrase"
       );
       // Le nom est en serif de 19 px : une seule ligne en fait vingt-quatre.
