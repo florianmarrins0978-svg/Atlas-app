@@ -193,8 +193,15 @@ export async function analyser(
  * n'est reformulé, rien n'est résumé : un modèle qui « améliorerait » la
  * conduite à tenir la changerait, et c'est précisément la ligne qu'un artisan
  * va suivre sur un arbre.
+ *
+ * **Exportée, et pas seulement pour la commodité.** Les suites navigateur
+ * doivent poser un diagnostic déjà rendu pour photographier l'écran ; elles
+ * recopiaient jusque-là ce bloc à la main, ce qui est précisément la règle
+ * dupliquée entre l'affichage et la vérification que `CLAUDE.md` §3 interdit —
+ * une fiche réelle affichée autrement que la suite ne l'écrit, et la suite
+ * reste verte. La même fonction sert désormais aux deux.
  */
-async function composerResultat(candidat: Candidat, confiance: Confiance): Promise<ResultatFige | null> {
+export async function composerResultat(candidat: Candidat, confiance: Confiance): Promise<ResultatFige | null> {
   const complet = await lireFicheComplete(candidat.fiche.id);
   if (!complet) return null;
   const { fiche, sources } = complet;
@@ -209,6 +216,11 @@ async function composerResultat(candidat: Candidat, confiance: Confiance): Promi
     gravite: fiche.gravite,
     graviteLibelle: LIBELLE_GRAVITE[fiche.gravite],
     conduite: fiche.conduiteRecommandee,
+    // **Recopie, comme tout le reste.** Aucune de ces trois lignes n'est
+    // composée ni résumée ici : ce sont des colonnes, servies telles quelles.
+    methodeConfirmation: fiche.methodeConfirmation,
+    informationsRequises: fiche.informationsRequises,
+    criteresDiscriminants: fiche.criteresDiscriminants,
     mentions: mentionsDeSecurite({
       gravite: fiche.gravite,
       impactMecanique: fiche.impactMecanique,
@@ -223,6 +235,8 @@ async function composerResultat(candidat: Candidat, confiance: Confiance): Promi
       agentCausal: fiche.agentCausal,
       agentType: fiche.agentType,
       partiesAtteintes: fiche.partiesAtteintes,
+      facteursFavorisants: fiche.facteursFavorisants,
+      criteresExclusion: fiche.criteresExclusion,
       prevention: fiche.prevention,
       gestion: fiche.gestion,
       traitement: fiche.traitement,

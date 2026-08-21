@@ -41,6 +41,8 @@ const TEMOIN_ECHEC =
   // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
   process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
 const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
+/** Ce que `ouvrir-port.sh` a rendu au dernier démarrage : un seul mot. */
+const FICHIER_PORT = "/tmp/atlas-port.txt";
 const VERROU_VEILLEUR = "/tmp/atlas-veilleur.pid";
 const PORT = process.env.PORT ?? "3000";
 
@@ -146,6 +148,23 @@ console.log(`  Code récupéré    : ${court(tete)}`);
 console.log(`  Code SERVI       : ${ligneCodeServi()}`);
 console.log(`  Serveur          : ${vivant ? `répond sur le port ${PORT}` : `NE RÉPOND PAS sur le port ${PORT}`}`);
 console.log(`  Veilleur         : ${veilleurVivant() ? "en place" : "absent"}`);
+// **Le port, et ce n'est pas un détail d'installation.** Un port privé fait
+// répondre GitHub à la place d'Atlas : depuis un téléphone non connecté, on ne
+// voit qu'une page de connexion, et rien ne dit pourquoi. Le patron l'a vécu le
+// 10 août, puis le 21 — « elle ne se lance plus », sur un serveur pourtant
+// debout.
+const etatPort = existsSync(FICHIER_PORT) ? readFileSync(FICHIER_PORT, "utf8").trim() : null;
+console.log(
+  `  Port 3000        : ${
+    etatPort === "ouvert"
+      ? "ouvert à tous — joignable depuis un téléphone"
+      : etatPort === "hors-codespace"
+        ? "hors espace GitHub — rien à ouvrir"
+        : etatPort === null
+          ? "inconnu (démarrage d'avant le 21 août, ou hors banc)"
+          : `PRIVÉ (${etatPort}) — GitHub répond à la place d'Atlas`
+  }`
+);
 // **Les deux suspects d'une construction qui tombe sur une machine modeste.**
 // Publiés à chaque fois, et pas seulement en cas d'échec : quand la fiche est
 // enfin lue, la tentative est finie depuis longtemps et la mémoire est rendue.
@@ -175,6 +194,19 @@ if (echecBati) {
       "     Les relevés de disque et de mémoire ci-dessus sont pris à l'instant de\n" +
       "     l'échec : c'est là qu'il faut regarder pour savoir POURQUOI elle tombe.\n" +
       "     Rallumer l'espace reste le geste qui répare le plus vite."
+  );
+}
+
+// Placé AVANT le retard de version, comme la lenteur : un port fermé rend
+// l'application injoignable, et savoir qu'elle a deux commits de retard ne sert
+// alors à rien.
+if (etatPort !== null && etatPort !== "ouvert" && etatPort !== "hors-codespace") {
+  soucis.push(
+    "LE PORT 3000 EST PRIVÉ : GitHub répond par sa page de connexion à la place\n" +
+      "     d'Atlas. Depuis un téléphone non connecté à GitHub, il n'y a rien à voir,\n" +
+      "     et l'application paraît « ne plus se lancer » alors qu'elle tourne.\n" +
+      "     Le remède est dans l'éditeur, en trois clics : onglet PORTS → clic droit\n" +
+      "     sur la ligne du port 3000 → « Visibilité du port » → « Public »."
   );
 }
 

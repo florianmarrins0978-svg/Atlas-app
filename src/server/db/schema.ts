@@ -1787,11 +1787,39 @@ export const fichesPhyto = pgTable("fiches_phyto", {
   /** Ne s'affiche que dans les détails, avec sa source : recommander un produit
    *  phytosanitaire engage, et l'IA n'en improvise aucun. */
   traitement: text("traitement"),
+  /** Ce qui permet de RECONNAÎTRE ce problème plutôt qu'un autre. Recopié de la
+   *  source, jamais reformulé — c'est ce qui rend la comparaison champ par
+   *  champ possible après l'import (migration 0057). */
+  criteresDiscriminants: text("criteres_discriminants").array().notNull().default(sql`'{}'::text[]`),
+  /** Ce qui l'ÉCARTE. Un critère négatif ferme au lieu d'ouvrir, et vaut donc
+   *  souvent mieux qu'un positif. */
+  criteresExclusion: text("criteres_exclusion").array().notNull().default(sql`'{}'::text[]`),
+  /** Ne sert PAS au score — ce serait interpréter — mais s'affiche. */
+  facteursFavorisants: text("facteurs_favorisants").array().notNull().default(sql`'{}'::text[]`),
+  /** Ce qu'il faudrait EN PLUS de la photo. Affiché quand Atlas refuse : un
+   *  refus qui dit ce qui manque vaut dix fois un refus qui se tait. */
+  informationsRequises: text("informations_requises").array().notNull().default(sql`'{}'::text[]`),
+  /** « La détection en laboratoire est nécessaire. » Quand c'est rempli,
+   *  l'écran le dit et le mot « confirmé » n'apparaît nulle part. */
+  methodeConfirmation: text("methode_confirmation"),
+  /** Le plafond de confiance que la SOURCE autorise. Le moteur ne le dépasse
+   *  jamais, quel que soit son score. */
+  certitudeMax: text("certitude_max", { enum: ["elevee", "probable", "incertaine"] })
+    .notNull()
+    .default("elevee"),
+  /** La source déclare-t-elle elle-même que sa liste d'hôtes n'est pas close ?
+   *  Si oui, un hôte hors liste redevient un doute au lieu d'une exclusion. */
+  hotesNonExhaustifs: boolean("hotes_non_exhaustifs").notNull().default(false),
   /** **Seule « validee » est servie.** Une fiche en cours de saisie n'atteint
-   *  jamais un chantier. */
+   *  jamais un chantier. Et « validee » est REFUSÉ PAR CONTRAINTE tant que
+   *  `controleIntegriteOk` est faux (migration 0057). */
   niveauValidation: text("niveau_validation", { enum: ["brouillon", "en_revue", "validee"] })
     .notNull()
     .default("brouillon"),
+  /** Posé par la comparaison champ par champ entre le fichier source et ce qui
+   *  a réellement été écrit, dans la transaction d'import. */
+  controleIntegriteOk: boolean("controle_integrite_ok").notNull().default(false),
+  controleIntegriteLe: timestamp("controle_integrite_le", { withTimezone: true }),
   /** Une fixture de test porte obligatoirement un code préfixé `zz-test-`, et
    *  réciproquement — contrainte CHECK dans la migration, dans les DEUX sens.
    *  Le chemin de lecture applicatif écarte les fixtures par défaut. */
@@ -1849,6 +1877,14 @@ export const hotesPhyto = pgTable(
     specificite: text("specificite", { enum: ["strict", "frequent", "occasionnel"] })
       .notNull()
       .default("frequent"),
+    /** L'ordre du FICHIER source, conservé tel quel.
+     *
+     *  Ajouté le 20 août 2026 : la relecture se faisait par ordre alphabétique
+     *  de code, c'est-à-dire dans un ordre qui n'est celui d'aucun document, et
+     *  le contrôle d'intégrité l'a vu du premier coup (`ARCHITECTURE.md` §138).
+     *  L'ordre d'une liste d'hôtes est une information — la plaquette du DSF
+     *  nomme d'abord les essences les plus touchées. */
+    ordre: integer("ordre").notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.ficheId, t.taxonId] })]
 );
@@ -1874,6 +1910,14 @@ export const confusionsPhyto = pgTable(
     /** Nulle = aucune photo ne tranche, et alors on ne relance pas. */
     photoQuiTranche: text("photo_qui_tranche"),
     partieQuiTranche: text("partie_qui_tranche"),
+    /** L'ordre du FICHIER source, conservé tel quel.
+     *
+     *  Ajouté le 20 août 2026 : la relecture se faisait par ordre alphabétique
+     *  de code, c'est-à-dire dans un ordre qui n'est celui d'aucun document, et
+     *  le contrôle d'intégrité l'a vu du premier coup (`ARCHITECTURE.md` §138).
+     *  L'ordre d'une liste d'hôtes est une information — la plaquette du DSF
+     *  nomme d'abord les essences les plus touchées. */
+    ordre: integer("ordre").notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.ficheId, t.ficheConfondueId] })]
 );
@@ -1892,6 +1936,14 @@ export const fichesSources = pgTable(
      *  la conduite recommandée est contestée, il faut pouvoir désigner la source
      *  de CETTE ligne-là, pas la bibliographie entière. */
     champs: text("champs").array().notNull().default(sql`'{}'::text[]`),
+    /** L'ordre du FICHIER source, conservé tel quel.
+     *
+     *  Ajouté le 20 août 2026 : la relecture se faisait par ordre alphabétique
+     *  de code, c'est-à-dire dans un ordre qui n'est celui d'aucun document, et
+     *  le contrôle d'intégrité l'a vu du premier coup (`ARCHITECTURE.md` §138).
+     *  L'ordre d'une liste d'hôtes est une information — la plaquette du DSF
+     *  nomme d'abord les essences les plus touchées. */
+    ordre: integer("ordre").notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.ficheId, t.sourceId] })]
 );
@@ -1904,6 +1956,12 @@ export const imagesPhyto = pgTable(
       .notNull()
       .references(() => fichesPhyto.id, { onDelete: "cascade" }),
     storageKey: text("storage_key"),
+    /** Le chemin de la photo DANS LE DÉPÔT, tel que la fiche le déclare.
+     *  `storageKey` en est dérivée à l'import et change à chaque réécriture ;
+     *  celui-ci ne bouge pas — c'est lui qui dit ce qu'une clé représente.
+     *  Ajouté le 20 août 2026 : le contrôle d'intégrité a montré que la base
+     *  perdait cette information sans que rien ne le signale. */
+    fichier: text("fichier"),
     url: text("url"),
     /** NOT NULL, et c'est le garde-fou : une photo d'organisme reprise sans
      *  droit sur l'écran d'un artisan est un risque qui ne se voit qu'une fois

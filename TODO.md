@@ -98,6 +98,33 @@ besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'el
 refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
 (`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
 
+---
+
+## ⏳ `test-lecons-prix-e2e.ts` a tenu 30 s puis lâché — une seule fois
+
+**Le 20 août 2026**, dans une batterie complète jouée juste après une fusion de
+`main` :
+
+    ❌ page.waitForResponse: Timeout 30000ms exceeded while waiting for event "response"
+
+**Vérifié avant de conclure**, et c'est ce qui compte ici :
+
+- elle était **verte** dans la batterie complète jouée une heure plus tôt, sur le
+  même lot, avant la fusion ;
+- **ni la suite ni le code qu'elle éprouve** ne figurent dans ce que `main` a
+  apporté (`git diff --name-only`, aucun fichier `lecon`) ;
+- **rejouée seule** sur l'arbre fusionné, elle est verte.
+
+Le faisceau désigne donc la charge — cent trois suites sur un seul serveur de
+développement — et non une régression. **Mais c'est le troisième contrôle de ce
+dépôt qui dépend de la charge de la machine**, et c'est cela le vrai sujet : un
+rouge qui tombe au hasard apprend à ignorer le rouge, et l'on perd tout ce qu'il
+surveille.
+
+**Ce qu'il faudrait :** attendre la réponse sur un signal plutôt qu'un délai
+fixe, ou porter ce délai bien au-delà de ce qu'une machine chargée demande. Le
+délai de 30 s est celui de Playwright par défaut, jamais choisi.
+
 ## 🌿 Diagnostic végétal — le module tourne, il lui manque des FICHES
 
 Le code est fait et éprouvé (`ARCHITECTURE.md` §135). Ce qui reste ne se code
@@ -105,11 +132,12 @@ pas : ce sont des données à recopier de sources officielles.
 
 | | Ce qui reste | Qui peut le faire |
 |---|---|---|
-| 1 | ~~**Lancer la récolte des sources**~~ — fait le 20 août : 9 documents récoltés, 1 fiche réelle écrite (fomès des résineux), chaîne éprouvée de bout en bout. **Reste ~49 fiches.** Ce qui limite n'est pas la saisie mais le TYPE de document : il faut des **fiches-type**, pas des bilans régionaux | moi, à partir des documents publics, avec relecture avant passage en `validee` |
+| 1 | ~~**Lancer la récolte des sources**~~ — fait le 20 août : 9 documents récoltés, **3 fiches réelles écrites** (fomès des résineux, les deux anthracnoses), chaîne éprouvée de bout en bout. **Reste ~47 fiches.** Ce qui limite n'est pas la saisie mais le TYPE de document : il faut des **fiches-type**, pas des bilans régionaux | moi, à partir des documents publics, avec relecture avant passage en `validee` |
 | 1 bis | **TRANCHER LA LICENCE D'INRAE (Ephytia)** — `http://ephytia.inra.fr`. C'est la source la plus riche en descriptions de symptômes, donc celle qui permettrait d'écrire vite. Son texte n'est pas rapatrié tant que sa réutilisation n'est pas établie : recopier sans licence est un risque qui ne se voit qu'à la mise en demeure. Même question pour le CNPF | le patron, ou un courriel à l'organisme |
 | 2 | **Éprouver l'appel réel de vision sur le banc**, avec de vraies photos. Non vérifiable ici : aucune clé d'IA dans cet environnement | le patron pose sa clé, je regarde le résultat |
-| 3 | Renseigner les `confusions_phyto` entre fiches proches — c'est **elles** qui permettent la demande de photo complémentaire. Sans elles, deux hypothèses proches donnent un refus au lieu d'une relance | avec le lot de fiches |
+| 3 | Renseigner les `confusions_phyto` entre fiches proches — c'est **elles** qui permettent la demande de photo complémentaire. **Commencé le 20 août** : les deux anthracnoses sont reliées, et la relance photo est éprouvée sur des fiches réelles. Reste à le faire pour chaque paire proche du lot à venir | avec le lot de fiches |
 | 4 | Régler les seuils (`SEUIL_PLANCHER`, `ECART_NET`, plafonds de confiance) sur de vraies photos et de vraies fiches. Les valeurs actuelles sont un point de départ **assumé**, nommé et éprouvé — pas mesuré | après le premier lot |
+| 4 bis | **Mesurer ce que la règle « hôte d'abord » coûte en pratique** (20 août). Sans essence identifiée, Atlas ne conclut plus du tout. C'est voulu, mais personne n'a encore vu combien de photos réelles échouent à l'identification — c'est la première chose à regarder quand la clé de vision tournera sur le banc | le patron pose sa clé, je regarde |
 | 5 | Ajouter le fournisseur de vision au registre des sous-traitants (`docs/RGPD.md` §3), et décider de la durée de conservation des photos | le patron |
 | 6 | Brancher un classement sémantique quand la base dépassera quelques centaines de fiches. L'interface (`ClasseurCandidats`) et son verrou (`appliquerClassement`) existent déjà et sont éprouvés | plus tard, et seulement si le déterministe montre ses limites |
 
@@ -119,30 +147,44 @@ qui est vrai, et c'est le bon état tant que les vraies données ne sont pas là
 
 ---
 
-## ⏳ POURQUOI deux constructions se marchent dessus — non reproduit
+## ⏳ POURQUOI la construction du démarrage tombe sur le verrou — TOUJOURS non reproduit
 
-**Le 20 août 2026 à 6 h 10**, la construction du banc tombe sur « Another next
-build process is already running », et le patron passe la matinée sur la version
-lente. La relance a été réparée (`ARCHITECTURE.md` §133) : **le symptôme ne dure
-plus, la cause n'est pas trouvée.**
+**Trois matinées de suite** — 19, 20 et 21 août 2026 — le patron ouvre Atlas et
+le trouve lent. Chaque fois, la même ligne sur sa fiche :
 
-**Ce qui a été écarté, mesure à l'appui.** Ce n'est pas la saturation mémoire du
-17 août : au moment de l'échec, sa fiche portait **4,3 Gio disponibles**. Et ce
-n'est pas un verrou périmé — éprouvé ici le 20 août, le processus qui tient
-`<dist>/lock` est bien `node …/next build`, vivant, et
-`delogerConstructionsOrphelines()` le déloge correctement (trois processus,
-zéro restant).
+    Code SERVI : AUCUNE — la construction a ÉCHOUÉ
+    dit: ⨯ Another next build process is already running.
 
-**La piste qui reste, et personne ne l'a suivie :** `veiller.sh` ne vérifie
-qu'aucune construction ne tourne **que dans la branche de relance**. La branche
-« plus rien ne répond sur le port » lance `npm run banc` sans ce contrôle. Deux
-bancs peuvent alors se déloger mutuellement leur construction — chacun croyant
-retirer une orpheline. À reproduire avant de corriger : ce dépôt a déjà payé
-trois correctifs écrits contre une panne imaginée (`AGENTS.md`).
+**Ce qui est réparé, et qui tient** (`ARCHITECTURE.md` §133, §136) : le veilleur
+ne renonce plus (une tentative par demi-heure, indéfiniment) ; une construction
+vivante est **attendue** au lieu d'être tuée ; le détenteur du verrou se trouve
+par le fichier `<dist>/lock` et non par un nom de processus.
 
-**Ce qu'il faudrait pour trancher :** que le témoin d'échec porte **qui** tenait
-le verrou (la ligne de commande du processus, son pid, son père). Aujourd'hui il
-ne porte que le message de Next, et l'on ne peut que supposer.
+**CE QUI N'EST TOUJOURS PAS EXPLIQUÉ : pourquoi les deux se rencontrent au point
+d'échouer.** Le démarrage en lance deux par nature, et tout est prévu pour
+qu'elles ne se marchent pas dessus. Deux hypothèses ont été **éprouvées ici le
+21 août, et écartées** :
+
+| Hypothèse | Ce que l'épreuve a rendu |
+|---|---|
+| Le `sleep 1` de `demarrer.sh` est trop court après le `pkill` | après une seconde, **plus rien** ne tenait le verrou, et la construction suivante partait normalement |
+| Un enfant sans le nom « next build » survit et garde le verrou | le seul survivant (`jest-worker/processChild`) **ne tenait pas** le verrou ; la construction suivante partait |
+
+**CE QU'IL FAUT LIRE LA PROCHAINE FOIS, et qui existe depuis le 21 août :** le
+témoin d'échec porte désormais une section `verrou tenu par :` avec le **pid et
+la ligne de commande** du détenteur, relevés à l'instant du refus — pas plus
+tard, quand le coupable a disparu. La fiche du banc la recopie telle quelle.
+
+**Donc : à la prochaine plainte, lire cette section avant toute hypothèse.**
+Elle dira si c'est la construction du premier veilleur, celle d'un banc relancé,
+ou un processus auquel personne n'a pensé. Trois matinées ont été perdues faute
+de ce seul renseignement.
+
+**Et le piège de méthode, payé deux fois en deux jours :** `pkill -f` compare la
+ligne de commande ENTIÈRE de chaque processus, **y compris celle du shell qui
+joue la commande**. Deux épreuves se sont tuées elles-mêmes parce que le motif
+figurait dans leur propre ligne. Les crochets (`[n]ext`) protègent le motif
+contre lui-même, pas contre un `echo` qui le contient.
 
 ## ⏸ « Trop compliquée » — sa plainte du 19 août 2026, RIEN n'est tranché
 

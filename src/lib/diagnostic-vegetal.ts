@@ -173,6 +173,22 @@ export type FichePourMoteur = {
   periodeFinMois: number | null;
   symptomes: SymptomeFiche[];
   hotes: HoteFiche[];
+  /**
+   * Le plafond de confiance que la SOURCE autorise (migration 0057).
+   *
+   * **Sa règle :** *« le niveau de certitude affiché ne doit jamais dépasser
+   * celui permis par les données scientifiques »*. Le score du rapprochement
+   * ignore tout de ce que la source affirme pouvoir prouver ; ce champ le lui
+   * apprend, et il est appliqué en dernier, après tous les autres plafonds.
+   */
+  certitudeMax: Confiance;
+  /**
+   * La source déclare-t-elle sa liste d'hôtes NON CLOSE ?
+   *
+   * Décide seule si un hôte hors liste exclut la fiche ou la pénalise. Voir
+   * `rapprocher()` — c'est le seul endroit où ce champ sert.
+   */
+  hotesNonExhaustifs: boolean;
 };
 
 export type SigneObserve = {
@@ -319,12 +335,25 @@ export function rapprocher(
       continue;
     }
 
-    // Hôte strict : la fiche NE PEUT PAS concerner un autre végétal. C'est ce
-    // qui évite de proposer une maladie du platane sur un chêne.
-    const hotesStricts = fiche.hotes.filter((h) => h.specificite === "strict");
+    // ── L'hôte exclut, sauf si la source dit sa liste ouverte ──────────────
+    //
+    // **Sa règle du 20 août 2026 :** *« ne comparer qu'aux maladies compatibles
+    // avec l'hôte et l'organe atteint »*.
+    //
+    // Jusque-là, seul un hôte `strict` écartait ; ailleurs un hôte hors liste
+    // ne coûtait qu'un malus. C'était prudent pour une bonne raison — une liste
+    // d'hôtes de source est rarement exhaustive, et exclure sur une liste
+    // incomplète fait rater un diagnostic juste, en silence. Mais c'était aussi
+    // un arbitrage pris ICI, sur une question qui appartient au document.
+    //
+    // **La fiche tranche donc elle-même.** `hotesNonExhaustifs` recopie ce que
+    // la source affirme (l'anthracnose du chêne : *« de nombreuses espèces »*).
+    // Sans cette mention, la liste est close et un hôte absent EXCLUT.
     const taxonObserve = observation.essence?.taxonId ?? null;
-    if (hotesStricts.length > 0 && taxonObserve !== null && !hotesStricts.some((h) => h.taxonId === taxonObserve)) {
-      continue;
+    if (taxonObserve !== null && fiche.hotes.length > 0) {
+      const listeClose = !fiche.hotesNonExhaustifs || fiche.hotes.some((h) => h.specificite === "strict");
+      const hoteConnu = fiche.hotes.some((h) => h.taxonId === taxonObserve);
+      if (listeClose && !hoteConnu) continue;
     }
 
     // ── Les deux couvertures ───────────────────────────────────────────────
@@ -381,8 +410,9 @@ export function rapprocher(
         score *= 1.15;
         motifs.push({ quoi: "essence_hote", specificite: hote.specificite });
       } else {
-        // Hôte non listé, mais pas strict : c'est un doute, pas une exclusion.
-        // Les listes d'hôtes sont rarement exhaustives dans les sources.
+        // On n'arrive ici que si la fiche déclare sa liste OUVERTE : l'exclusion
+        // ci-dessus a déjà écarté les autres. C'est donc un doute assumé par la
+        // source, pas une tolérance que le moteur s'accorde.
         score *= 0.6;
         motifs.push({ quoi: "essence_hors_hotes" });
       }
@@ -507,7 +537,24 @@ export const MOTIFS_REFUS = {
   photo_illisible: "La photo ne montre pas assez de détails pour identifier quoi que ce soit.",
   diagnostic_photo_impossible:
     "Ce type de problème ne se confirme pas sur photo. Une observation sur place est nécessaire.",
+  // **L'hôte d'abord, et sans lui rien.** Sa règle du 20 août 2026 :
+  // *« Identifier l'hôte avant la maladie. Si l'espèce est incertaine, ne pas
+  // diagnostiquer. »* Un même symptôme brun sur feuille désigne des problèmes
+  // différents selon l'essence ; conclure sans elle, c'est tirer au sort parmi
+  // les fiches que la photo n'exclut pas.
+  hote_incertain:
+    "L’essence de l’arbre n’a pas pu être identifiée avec certitude, et sans elle un diagnostic n’aurait pas de valeur.",
 } as const;
+
+/**
+ * Ce qu'on demande à photographier quand l'ESSENCE manque.
+ *
+ * Fixe, dans le code, et non tirée d'une fiche : à ce stade aucune fiche n'est
+ * retenue — c'est justement le problème. Le geste demandé est celui qui
+ * identifie un arbre, pas celui qui montre un symptôme.
+ */
+export const CONSIGNE_IDENTIFIER_ESSENCE =
+  "Photographiez une feuille entière posée à plat, puis reculez pour cadrer l’arbre en entier. C’est l’essence qui manque, pas le symptôme.";
 export type MotifRefus = keyof typeof MOTIFS_REFUS;
 
 export type Confusion = {
@@ -522,8 +569,11 @@ export type Arbitrage =
   | { issue: "conclusion"; candidat: Candidat; confiance: Confiance }
   | {
       issue: "complement";
-      candidat: Candidat;
-      concurrent: Candidat;
+      /** `null` quand la relance porte sur l'ESSENCE : à ce stade, aucune fiche
+       *  n'est retenue, et prétendre en désigner une serait déjà diagnostiquer. */
+      candidat: Candidat | null;
+      concurrent: Candidat | null;
+      raison: "confusion" | "essence";
       consigne: string;
       partie: Partie | null;
     }
@@ -569,7 +619,16 @@ export function confiancePour(
   if (candidat.fiche.diagnosticPhoto === "indicatif") abaisser("probable");
 
   // Sans essence, une bonne part de ce qui départage deux fiches manque.
+  // (Depuis le 20 août 2026, `arbitrer` refuse de conclure dans ce cas — ce
+  // plafond reste comme seconde barrière : `confiancePour` est exportée, et un
+  // appel direct ne doit pas pouvoir contourner la règle.)
   if (!essenceConnue) abaisser("probable");
+
+  // **Le plafond de la SOURCE, appliqué en DERNIER et sans exception.**
+  // *« Le niveau de certitude affiché ne doit jamais dépasser celui permis par
+  // les données scientifiques. »* Tout ce qui précède raisonne sur des indices ;
+  // celui-ci recopie ce que le document autorise, et il gagne toujours.
+  abaisser(candidat.fiche.certitudeMax);
 
   return niveau;
 }
@@ -611,6 +670,43 @@ export function arbitrer(
     };
   }
 
+  // ── L'HÔTE D'ABORD. Sans lui, on ne regarde même pas les fiches ────────
+  //
+  // **Sa règle du 20 août 2026, et c'est la plus structurante du lot :**
+  // *« Identifier l'hôte avant la maladie. Si l'espèce est incertaine, ne pas
+  // diagnostiquer. »*
+  //
+  // Ce contrôle est placé AVANT la lecture des candidats, et pas après, pour
+  // une raison qui n'est pas cosmétique : plus bas, `premier` existe déjà, et
+  // un code qui a un premier candidat sous la main finit toujours par le
+  // rendre « quand même, puisqu'il est loin devant ». Ici, il n'y a rien à
+  // rendre — la tentation n'existe pas.
+  //
+  // Le prix est réel et assumé : un symptôme parfaitement caractéristique sur
+  // une essence non reconnue ne conclut plus. C'est exactement ce qu'il a
+  // demandé, et c'est le sens de *« mieux vaut refuser de conclure que produire
+  // un faux diagnostic »*.
+  const essenceEtablie =
+    observation.essence !== null &&
+    observation.essence.taxonId !== null &&
+    observation.essence.certitude !== "incertaine";
+
+  if (!essenceEtablie) {
+    // Une relance est encore possible : on demande la vue qui identifie un
+    // arbre, jamais celle qui montre mieux le symptôme.
+    if (!options.complementDejaDemande) {
+      return {
+        issue: "complement",
+        candidat: null,
+        concurrent: null,
+        raison: "essence",
+        consigne: CONSIGNE_IDENTIFIER_ESSENCE,
+        partie: "feuille",
+      };
+    }
+    return { issue: "refus", motif: "hote_incertain" };
+  }
+
   if (candidats.length === 0) return { issue: "refus", motif: "aucune_piste" };
 
   const premier = candidats[0];
@@ -643,6 +739,7 @@ export function arbitrer(
         issue: "complement",
         candidat: premier,
         concurrent: second,
+        raison: "confusion",
         // Recopiée mot pour mot de la base. Jamais composée ici, et surtout
         // jamais par un modèle : une consigne inventée enverrait photographier
         // ce qui ne tranche rien.
@@ -812,12 +909,27 @@ export type ResultatFige = {
   graviteLibelle: string;
   conduite: string;
   mentions: Mention[];
+  /**
+   * Ce que la source exige pour CONFIRMER — recopié, ou `null`.
+   *
+   * **Affiché en pleine page, jamais dans les détails.** Sa règle : *« si la
+   * source scientifique exige une analyse en laboratoire pour confirmer, Atlas
+   * ne doit jamais afficher "confirmé" »*. Le cacher dans un tiroir reviendrait
+   * à laisser croire qu'il n'y en a pas.
+   */
+  methodeConfirmation: string | null;
+  /** Ce qu'il faudrait EN PLUS de la photo. Recopié, jamais composé. */
+  informationsRequises: string[];
+  /** Ce qui permet de reconnaître ce problème plutôt qu'un autre. Recopié. */
+  criteresDiscriminants: string[];
   /** Ce que « Voir les détails » déplie. Rien ici n'est nécessaire pour agir. */
   details: {
     categorie: string;
     agentCausal: string | null;
     agentType: string;
     partiesAtteintes: string[];
+    facteursFavorisants: string[];
+    criteresExclusion: string[];
     prevention: string | null;
     gestion: string | null;
     traitement: string | null;

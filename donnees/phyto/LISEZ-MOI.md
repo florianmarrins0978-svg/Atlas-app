@@ -4,12 +4,12 @@
 
 | | |
 |---|---|
-| `fiches/` | Les **lots de fiches réelles**, en JSON. **Deux fiches au 20 août 2026** : le fomès des résineux (document du DSF récolté) et l'anthracnose du platane (page Ephytia transmise par le patron). Toutes deux écrites d'une source lue en entier. |
+| `fiches/` | Les **lots de fiches réelles**, en JSON. **Trois fiches au 20 août 2026** : le fomès des résineux (document du DSF récolté), l'anthracnose du platane et l'anthracnose du chêne et du hêtre (pages Ephytia transmises par le patron). Toutes écrites d'une source lue en entier. |
 | `fixtures/` | Des données d'**essai**, qui ne décrivent aucun végétal réel. |
 | `sources.json` | La **liste des documents** à aller chercher chez leurs organismes. Aucune donnée phytosanitaire dedans : seulement des adresses et des licences. |
 | `sources/` | Le **texte** des documents récoltés. Hors de `main` (voir `.gitignore`) : il vit sur la branche de récolte. |
 
-## Pourquoi il n'y en a que deux
+## Pourquoi il n'y en a que trois
 
 Règle du patron, le 20 août 2026 :
 
@@ -195,6 +195,54 @@ L'import range le fichier dans le stockage et refuse :
   contrôle existe pour que l'obligation protège au lieu de rassurer ;
 - **une image qui ne désigne ni fichier ni adresse.**
 
+## Les champs qui BRIDENT le diagnostic, et comment les remplir
+
+Ajoutés le 20 août 2026 sur sa consigne (`ARCHITECTURE.md` §138). Ils ne servent
+pas à décrire le problème : ils servent à **empêcher Atlas d'en dire trop**.
+
+| Champ | Ce qu'on y met | Ce qui se passe si on l'oublie |
+|---|---|---|
+| `methodeConfirmation` | La phrase de la source qui dit ce qu'il faut pour confirmer — typiquement un laboratoire | L'écran laisse croire qu'une photo suffit |
+| `certitudeMax` | `probable` ou `incertaine` dès que la source pose une limite | La confiance affichée peut dépasser ce que le document autorise |
+| `hotesNonExhaustifs` | `true` **seulement si la source le dit** (« et de nombreuses autres espèces ») | Un hôte absent de la liste écarte la fiche, à tort |
+| `criteresDiscriminants` | Ce qui permet de reconnaître ce problème plutôt qu'un autre | Rien de cassé, mais l'écran perd ce qui aide à trancher |
+| `criteresExclusion` | Ce que la source donne comme excluant | Idem — et **ne rien inventer** : un critère d'exclusion faux écarte le bon diagnostic |
+| `facteursFavorisants` | « printemps froids et humides », « stress hydrique » | L'artisan ne sait pas pourquoi c'est arrivé chez ce client |
+| `informationsRequises` | Ce qu'il faudrait EN PLUS de la photo | Le refus ne dit pas ce qui manque |
+
+**Deux pièges vécus :**
+
+- **`certitudeMax` avec une méthode de confirmation.** L'import REFUSE une fiche
+  qui exige un laboratoire tout en autorisant une certitude `elevee` : elle
+  affirmerait à l'écran l'inverse de son propre document.
+- **`informationsRequises` qui répète `methodeConfirmation`.** Les deux
+  s'affichent l'un sous l'autre : la phrase apparaissait deux fois. Refusé
+  aussi — trouvé sur une capture, pas par un test.
+
+**Ne PAS remplir `certitudeMax` quand `diagnosticPhoto` dit déjà la même chose.**
+Le fomès déclare `diagnosticPhoto: "indicatif"`, ce qui plafonne déjà à
+« probable » ; l'écrire une seconde fois serait la même règle à deux endroits,
+donc deux endroits qui divergeront (`CLAUDE.md` §3).
+
+## L'import contrôle ce qu'il a écrit, et bloque au moindre écart
+
+Après avoir tout écrit, l'import **relit chaque fiche depuis la base** et la
+compare à son fichier, champ par champ, dans la transaction. Un seul écart annule
+**tout l'import** — pas seulement le lot fautif — et nomme le champ :
+
+    Contrôle d’intégrité en échec — RIEN n’a été écrit pour ce lot :
+         anthracnose-chene-hetre — 1 écart(s) :
+           · gravite : le fichier dit "vigilance", la base a enregistré "faible"
+
+**Une fiche ne porte « validée » qu'après ce contrôle**, et c'est une contrainte
+de la base : aucun `UPDATE`, même sous le rôle propriétaire, ne peut le
+contourner. Toute réécriture d'une fiche annule le contrôle précédent.
+
+**Si vous ajoutez un champ à une fiche**, écrivez-le aussi dans
+`CHAMPS_SCALAIRES` ou `CHAMPS_LISTES` (`src/lib/import-fiches-phyto.ts`). Ces
+listes sont tenues à la main exprès : un balayage automatique ne verrait pas une
+colonne oubliée des deux côtés à la fois.
+
 ## Les confusions : ce qu'on oublie, et qui coûte le plus
 
 `confusions_phyto` est ce qui permet à Atlas de demander **une** photo
@@ -203,6 +251,24 @@ proches, deux hypothèses au coude à coude donnent un refus.
 
 Une confusion se renseigne **une seule fois**, sur l'une des deux fiches : la
 lecture est symétrique.
+
+**Elle peut viser une fiche d'un AUTRE fichier**, et c'est le cas courant : les
+fiches qui se confondent s'écrivent à des jours d'écart, depuis des sources
+différentes. Les deux anthracnoses en sont l'exemple — même nécrose brune sur
+feuille, hôtes disjoints, deux lots. Le code de la fiche visée doit simplement
+être déclaré par **l'un des fichiers de l'import**.
+
+**Ce qui se passe si la fiche visée est écrite plus tard dans l'import** : rien
+de spécial. Les liens en attente sont raccordés à la fin, une fois tous les lots
+écrits, et l'import tombe si l'un ne se raccorde toujours pas. Ce n'était pas le
+cas avant le 20 août : le lien se perdait sans un mot (`ARCHITECTURE.md` §136).
+
+**Ce qu'une confusion ne doit PAS promettre.** Si aucune photo ne peut trancher
+— parce que la source dit elle-même qu'un laboratoire est nécessaire —
+`photoQuiTranche` reste **nulle**. Atlas refuse alors de conclure, au lieu de
+réclamer une photo qui ne prouverait rien. C'est le cas des quatre confusions que
+la page d'Ephytia nomme pour l'anthracnose du chêne : elles seront écrites quand
+les fiches correspondantes existeront, et sans photo qui tranche.
 
 ## `fixtures/` — des données d'ESSAI, et rien d'autre
 

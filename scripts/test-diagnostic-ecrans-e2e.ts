@@ -3,6 +3,8 @@ import { mkdirSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { composerResultat } from "../src/server/diagnostic/moteur";
+import { lireBasePourMoteur } from "../src/server/repositories/fiches-phyto";
 
 /**
  * Les écrans du diagnostic végétal — **REGARDÉS, pas seulement testés**.
@@ -199,6 +201,10 @@ async function main() {
     assert.ok(photo && conduite && photo.y < conduite.y, "la photo doit précéder la conduite à tenir");
   });
 
+  await cas("l'écran de résultat est capturé — c'est celui qu'il regarde", async () => {
+    await page.screenshot({ path: `${CAPTURES}/diagnostic-resultat.png`, fullPage: true });
+  });
+
   await cas("rien n'est caché derrière la barre du bas", async () => {
     // Le dépôt a déjà payé ce défaut : une pile de notifications repoussait le
     // contenu hors de l'écran. Une page allongée par une photo est exactement
@@ -262,40 +268,40 @@ async function preparerDiagnosticRendu(): Promise<string> {
 
   const c = await getPool().connect();
   try {
-    const { rows: f } = await c.query("SELECT id FROM fiches_phyto WHERE code = 'zz-test-probleme-gamma'");
+    // **La double garde des fixtures s'applique AUSSI ici, et c'est voulu.**
+    // `lireBasePourMoteur` les filtre tant que ce drapeau n'est pas posé dans
+    // le processus qui lit (`fiches-phyto.ts`). L'ancienne version de ce
+    // montage lisait la table en SQL brut et passait donc à côté du filtre —
+    // c'est-à-dire qu'elle n'éprouvait pas le chemin du produit. La suite
+    // s'annonce désormais comme ce qu'elle est : un lecteur de données d'essai.
+    process.env.ATLAS_FIXTURES_PHYTO = "1";
+
+    const base = await lireBasePourMoteur();
+    const fiche = base.fiches.find((x) => x.code === "zz-test-probleme-gamma");
+    if (!fiche) {
+      throw new Error(
+        "La fixture gamma n’est pas lisible : soit l’import vient d’échouer, soit " +
+          "ATLAS_FIXTURES_PHYTO n’est pas posé et la lecture les filtre."
+      );
+    }
+
     const { rows: e } = await c.query(
       "SELECT e.id AS entreprise FROM entreprises e JOIN membres_entreprise m ON m.entreprise_id = e.id LIMIT 1"
     );
-    const resultat = {
-      ficheCode: "zz-test-probleme-gamma",
-      nom: "Problème d'essai gamma",
-      nomScientifique: null,
-      confiance: "probable",
-      confianceLibelle: "Confiance probable",
-      explication: "Donnée d'essai.",
-      gravite: "importante",
-      graviteLibelle: "Importante",
-      conduite: "Donnée d'essai.",
-      mentions: [],
-      details: {
-        categorie: "champignon_lignivore",
-        agentCausal: null,
-        agentType: "champignon",
-        partiesAtteintes: [],
-        prevention: null,
-        gestion: null,
-        traitement: null,
-        sources: [],
-        versionFiche: 1,
-        sourcesAJourLe: null,
-      },
-    };
+
+    // **Le résultat est COMPOSÉ, plus recopié.** Il était écrit à la main ici,
+    // champ par champ — c'est-à-dire la règle dupliquée entre l'affichage et la
+    // vérification que `CLAUDE.md` §3 interdit. Une fiche qui s'afficherait
+    // autrement que la suite ne l'écrit laissait la suite verte.
+    const resultat = await composerResultat({ fiche, score: 0.9, motifs: [] }, "probable");
+    if (!resultat) throw new Error("La fiche n’a pas pu être composée.");
+
     await c.query("BEGIN");
     await c.query("SELECT set_config('app.entreprise_id', $1, true)", [e[0].entreprise]);
     const { rows } = await c.query(
       `INSERT INTO diagnostics (entreprise_id, statut, fiche_id, confiance, resultat, moteur, modele, version_base, rendu_at)
        VALUES ($1,'rendu',$2,'probable',$3,'suite','suite','suite', now()) RETURNING id`,
-      [e[0].entreprise, f[0].id, resultat]
+      [e[0].entreprise, fiche.id, resultat]
     );
     await c.query("COMMIT");
     return rows[0].id as string;

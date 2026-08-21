@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { Pool } from "pg";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import { creerChantier } from "../src/server/repositories/chantiers";
@@ -102,12 +103,17 @@ const RESULTAT_ESSAI = {
   gravite: "faible" as const,
   graviteLibelle: "Faible",
   conduite: "Donnée d'essai.",
+  methodeConfirmation: null,
+  informationsRequises: [],
+  criteresDiscriminants: [],
   mentions: [],
   details: {
     categorie: "maladie",
     agentCausal: null,
     agentType: "inconnu",
     partiesAtteintes: ["feuille"],
+    facteursFavorisants: [],
+    criteresExclusion: [],
     prevention: null,
     gestion: null,
     traitement: null,
@@ -188,8 +194,18 @@ async function main() {
     const alpha = base.fiches.find((f) => f.code === "zz-test-probleme-alpha")!;
     assert.equal(alpha.symptomes.length, 2);
     assert.equal(alpha.hotes.length, 1);
-    assert.equal(base.confusions.length, 1);
-    assert.ok(base.confusions[0].photoQuiTranche);
+
+    // **Compter les confusions de la base ENTIÈRE ne prouvait rien**, et n'était
+    // vrai que par accident : il n'y avait alors que les fixtures. La première
+    // fiche réelle qui déclare une confusion a fait rougir ce cas sur du code
+    // juste (`CLAUDE.md` §5 bis). Ce qui doit être fixé, c'est la RÈGLE : la
+    // confusion d'alpha existe, et elle nomme la photo qui tranche.
+    const beta = base.fiches.find((f) => f.code === "zz-test-probleme-beta")!;
+    const sienne = base.confusions.find(
+      (c) => c.ficheId === alpha.id && c.ficheConfondueId === beta.id
+    );
+    assert.ok(sienne, "la confusion d’alpha vers beta doit être lisible par le moteur");
+    assert.ok(sienne!.photoQuiTranche, "une confusion qui relance doit dire quoi photographier");
   });
 
   await cas("une fiche complète rend ses sources, avec les champs qu'elles appuient", async () => {
@@ -216,12 +232,29 @@ async function main() {
 
   console.log("\n=== Le parcours complet du moteur, sans aucun appel modèle ===");
 
+  /**
+   * L'essence d'essai, résolue depuis la base.
+   *
+   * **Nécessaire depuis le 20 août 2026 :** `arbitrer` refuse de conclure sans
+   * hôte établi (sa règle « identifier l'hôte avant la maladie »). Les cas
+   * ci-dessous éprouvent le rapprochement, l'arbitrage et les seuils ; sans
+   * essence ils éprouveraient tous la même chose — la règle d'hôte —, qui a ses
+   * propres cas dans `test-diagnostic-vegetal.ts`.
+   */
+  const essenceAlpha = await trouverTaxon(null, "Essence d'essai alpha");
+  assert.ok(essenceAlpha, "la fixture d'essence doit être en base");
+  const ESSENCE_CONNUE = {
+    taxonId: essenceAlpha!.id,
+    port: "feuillu" as const,
+    certitude: "sure" as const,
+  };
+
   await cas("un SIGNE cardinal sur le tronc conclut nettement", async () => {
     const base = await lireBasePourMoteur();
     const vue: Observation = {
       partie: "tronc",
       signes: [{ partie: "tronc", motif: "carpophore", couleurs: ["brun"], localisation: "base" }],
-      essence: null,
+      essence: ESSENCE_CONNUE,
       qualitePhoto: "bonne",
     };
     const candidats = rapprocher(vue, base.fiches, 11);
@@ -238,7 +271,7 @@ async function main() {
     const vue: Observation = {
       partie: "feuille",
       signes: [{ partie: "feuille", motif: "tache", couleurs: ["brun"], localisation: "face_superieure" }],
-      essence: null,
+      essence: ESSENCE_CONNUE,
       qualitePhoto: "bonne",
     };
     const candidats = rapprocher(vue, base.fiches, 6);
@@ -258,7 +291,7 @@ async function main() {
     const vue: Observation = {
       partie: "racine",
       signes: [{ partie: "racine", motif: "necrose", couleurs: ["noir"], localisation: null }],
-      essence: null,
+      essence: ESSENCE_CONNUE,
       qualitePhoto: "bonne",
     };
     const candidats = rapprocher(vue, base.fiches, 6);
@@ -542,6 +575,174 @@ async function main() {
       "SELECT count(*)::int AS n FROM fiches_phyto WHERE origine = 'fixture_test' AND code NOT LIKE 'zz-test-%'"
     );
     assert.equal(horsPrefixe[0].n, 0, "la contrainte CHECK garantit le préfixe dans les deux sens");
+  });
+
+  console.log("\n=== « VALIDÉE » est impossible sans contrôle d’intégrité ===");
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // **Sa consigne du 20 août 2026 :** *« une fiche ne passe au statut VALIDÉE
+  // qu'après réussite de ce contrôle. »*
+  //
+  // Écrite dans le seul code de l'import, ce serait une intention. Ces cas
+  // vérifient que c'est une IMPOSSIBILITÉ : la contrainte refuse l'écriture
+  // quel que soit le chemin emprunté, y compris un `UPDATE` en SQL direct par
+  // le propriétaire de la table — c'est-à-dire par le rôle le plus puissant
+  // qui touche cette base.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  await cas("un UPDATE direct qui pose « validee » sans contrôle est REFUSÉ", async () => {
+    const admin = new Pool({
+      connectionString:
+        process.env.DATABASE_ADMIN_URL ??
+        "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test",
+    });
+    try {
+      await assert.rejects(
+        () =>
+          admin.query(
+            `UPDATE fiches_phyto SET niveau_validation = 'validee', controle_integrite_ok = false
+              WHERE code = 'zz-test-probleme-alpha'`
+          ),
+        /fiches_phyto_integrite_ck/,
+        "la contrainte doit refuser, et se nommer dans l’erreur"
+      );
+    } finally {
+      await admin.end();
+    }
+  });
+
+  await cas("un contrôle « réussi » SANS date est refusé lui aussi", async () => {
+    // Sans date, on ne saurait pas si le vert porte sur la fiche actuelle ou
+    // sur une version d’il y a six mois — c’est-à-dire sur rien.
+    const admin = new Pool({
+      connectionString:
+        process.env.DATABASE_ADMIN_URL ??
+        "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test",
+    });
+    try {
+      await assert.rejects(
+        () =>
+          admin.query(
+            `UPDATE fiches_phyto SET controle_integrite_ok = true, controle_integrite_le = NULL
+              WHERE code = 'zz-test-probleme-alpha'`
+          ),
+        /fiches_phyto_integrite_date_ck/
+      );
+    } finally {
+      await admin.end();
+    }
+  });
+
+  await cas("une fiche NON contrôlée n’est pas servie au moteur", async () => {
+    // La contrainte empêche `validee` ; la lecture ajoute sa propre condition.
+    // Ce cas éprouve la seconde : elle doit tenir même si la première tombait.
+    const base = await lireBasePourMoteur();
+    const { rows } = await pool.query(
+      "SELECT code FROM fiches_phyto WHERE controle_integrite_ok = false"
+    );
+    const nonControlees = new Set(rows.map((r) => r.code as string));
+    for (const f of base.fiches) {
+      assert.ok(!nonControlees.has(f.code), `${f.code} est servie sans contrôle d’intégrité`);
+    }
+  });
+
+  console.log("\n=== Une confusion peut relier deux LOTS différents ===");
+
+  /**
+   * **Le défaut que ce cas fixe, et pourquoi il était muet.**
+   *
+   * Les fiches qui se confondent s'écrivent à des moments différents, donc dans
+   * des fichiers différents : l'anthracnose du platane et celle du chêne
+   * donnent la même nécrose brune sur une feuille, et vivent dans deux lots.
+   * Une fois le contrôle élargi pour l'admettre, l'écriture, elle, restait
+   * posée en `INSERT … SELECT … WHERE code = $2` — qui, sur une fiche pas
+   * encore écrite, n'insère **rien du tout, sans une erreur ni un message**.
+   * L'ordre alphabétique des fichiers décidait donc de ce qui marchait, et la
+   * relance photo disparaissait de l'écran sans que personne ne l'apprenne.
+   *
+   * Le lot « amont » est nommé pour passer AVANT le lot « aval » au tri : c'est
+   * le renvoi vers l'avant, celui qui était perdu.
+   */
+  await cas("un renvoi vers une fiche d’un lot écrit PLUS TARD est bien posé", async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { execSync } = await import("node:child_process");
+
+    const dossier = mkdtempSync(join(tmpdir(), "atlas-lots-"));
+    try {
+      const lot = (code: string, confusions: unknown[]) => ({
+        version: "fixtures-renvoi",
+        sources: [
+          {
+            code: "zz-test-source-technique",
+            organisme: "Source d'essai",
+            titre: "Document d'essai",
+            nature: "technique",
+            consulteeLe: "2026-08-20",
+          },
+        ],
+        taxons: [],
+        fiches: [
+          {
+            code,
+            nomCommun: `Renvoi d'essai ${code}`,
+            categorie: "maladie",
+            partiesAtteintes: ["feuille"],
+            explicationCourte: "Donnée d'essai.",
+            gravite: "faible",
+            diagnosticPhoto: "possible",
+            conduiteRecommandee: "Donnée d'essai.",
+            niveauValidation: "validee",
+            origine: "fixture_test",
+            sourcesAJourLe: "2026-08-20",
+            symptomes: [{ nature: "symptome", partie: "feuille", motif: "tache" }],
+            sources: [{ source: "zz-test-source-technique", champs: ["conduite_recommandee", "gravite"] }],
+            confusions,
+          },
+        ],
+      });
+
+      writeFileSync(
+        join(dossier, "1-amont.json"),
+        JSON.stringify(
+          lot("zz-test-renvoi-amont", [
+            {
+              fiche: "zz-test-renvoi-aval",
+              critereDifferenciant: "Donnée d'essai.",
+              photoQuiTranche: "Donnée d'essai.",
+              partieQuiTranche: "feuille",
+            },
+          ])
+        )
+      );
+      writeFileSync(join(dossier, "2-aval.json"), JSON.stringify(lot("zz-test-renvoi-aval", [])));
+
+      execSync(`npx tsx scripts/importer-fiches-phyto.ts ${dossier} --fixtures`, {
+        stdio: "pipe",
+        env: {
+          ...process.env,
+          DATABASE_URL:
+            process.env.DATABASE_ADMIN_URL ??
+            "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test",
+        },
+      });
+
+      const { rows } = await pool.query(
+        `SELECT c.photo_qui_tranche, c.partie_qui_tranche
+           FROM confusions_phyto c
+           JOIN fiches_phyto f ON f.id = c.fiche_id
+           JOIN fiches_phyto g ON g.id = c.fiche_confondue_id
+          WHERE f.code = 'zz-test-renvoi-amont' AND g.code = 'zz-test-renvoi-aval'`
+      );
+      assert.equal(rows.length, 1, "le renvoi vers le lot suivant n’a pas été posé — il s’est perdu en silence");
+      assert.equal(rows[0].partie_qui_tranche, "feuille", "la partie à photographier doit survivre au raccordement");
+    } finally {
+      // Ces deux fiches ne servent qu'ici : les laisser fausserait le compte de
+      // fixtures que le cas précédent vérifie, au prochain passage.
+      await pool.query("DELETE FROM fiches_phyto WHERE code IN ('zz-test-renvoi-amont','zz-test-renvoi-aval')");
+      rmSync(dossier, { recursive: true, force: true });
+    }
   });
 
   console.log(
