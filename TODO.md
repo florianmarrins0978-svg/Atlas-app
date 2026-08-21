@@ -344,6 +344,12 @@ le client ? Sa réponse, et c'est la bonne : le PDF. Une fiche saisie à côté
 serait une seconde liste de ce qui est à faire, et elle divergerait du devis en
 silence.
 
+**Les gestes de la feuille sont ceux de « Y aller », repris tels quels** (sa
+demande du 21 août) : l'adresse cliquable, **Maps et Waze — plus « Plans »**,
+« Appeler le client », « Copier l'adresse ». Rien d'autre. Le code réutilisera
+`src/lib/itineraire.ts` et `FeuilleYAller` plutôt que d'écrire une seconde fois
+les mêmes liens.
+
 **Trois points à régler avant de coder ça, et deux ne sont pas dans sa phrase :**
 
 1. **Les prix cachés dans les libellés.** Une ligne de devis peut porter son

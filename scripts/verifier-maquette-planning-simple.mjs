@@ -244,6 +244,37 @@ await page.click('[data-feuille="0"]');
     `AUCUN PRIX n'y figure (lu : ${JSON.stringify(dit.match(/[0-9][0-9 ,.]*\s?€|€/g) || [])})`,
     !/€/.test(dit),
   );
+
+  // ── Les gestes repris de la feuille « Y aller » ───────────────────────
+  //
+  // Sa demande du 21 août : « reprends l'adresse cliquable qui ouvre Maps ou
+  // Waze, la possibilité d'appeler le client et de copier l'adresse ». On
+  // éprouve les ADRESSES des liens, pas leurs libellés : un bouton nommé
+  // « Waze » qui pointe ailleurs se lit juste et ne mène nulle part.
+  const liens = await feuille.evaluate((f) =>
+    [...f.querySelectorAll("a")].map((a) => a.getAttribute("href")));
+  verifier(
+    `l'adresse et « Maps » mènent à un itinéraire vers Orvault (lu : ${JSON.stringify(liens.slice(0, 2))})`,
+    liens.filter((h) => h.startsWith("https://maps.apple.com/?daddr=") && h.includes("Orvault")).length === 2,
+  );
+  verifier(
+    "« Waze » mène à Waze, sur la même adresse",
+    liens.some((h) => h.startsWith("https://waze.com/ul?q=") && h.includes("Orvault")),
+  );
+  verifier(
+    "« Appeler le client » compose un vrai numéro, sans ses espaces",
+    liens.some((h) => h === "tel:0612345678"),
+  );
+  verifier("il n'y a QUE deux destinations — plus de Plans, Google Maps ET Waze", liens.length === 4);
+
+  // Le copier doit DIRE qu'il a copié : sans mot, on appuie deux fois.
+  await page.context().grantPermissions(["clipboard-write", "clipboard-read"]);
+  await page.click("#copier");
+  verifier(
+    "copier l'adresse le dit, et copie pour de bon",
+    (await page.locator("#copier").innerText()).toLowerCase().includes("copiée") &&
+      (await page.evaluate(() => navigator.clipboard.readText())).includes("Orvault"),
+  );
 }
 
 // ── La fiche du jour dit l'ÉQUIPE, et le COMPTE ─────────────────────────

@@ -1068,6 +1068,22 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Reprendre les gestes de « Y aller » sur la feuille de chantier
+
+**Sa demande du 21 août :** *« reprends l'adresse cliquable qui ouvre Maps ou
+Waze — pas besoin d'en mettre trois —, la possibilité d'appeler le client et de
+copier l'adresse. Le reste, on n'en aura pas besoin. »*
+
+Ces gestes existent déjà dans l'application (`FeuilleYAller`,
+`src/lib/itineraire.ts`) : la planche **recopie leurs adresses exactes**, jamais
+des liens inventés qui ouvriraient sur rien. Deux destinations au lieu de trois —
+« Plans » disparaît, Maps et Waze restent.
+
+**La suite éprouve les ADRESSES des liens, pas leurs libellés** : un bouton
+nommé « Waze » qui pointe ailleurs se lit juste et ne mène nulle part. Elle
+vérifie aussi que « Copier l'adresse » copie pour de bon — et le dit, sans quoi
+on appuie deux fois sans savoir si la première a pris.
+
 ### La feuille de chantier : le devis, sans un seul prix
 
 **Sa demande du 21 août 2026 :** *« il faut pouvoir rajouter le devis en PDF,

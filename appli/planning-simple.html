@@ -187,7 +187,13 @@
   .feuille .entete{margin:0;text-align:center;font:700 10.5px/1 ui-sans-serif,sans-serif;
                    letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
   .feuille .client{margin:10px 0 0;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
-  .feuille .adresse{margin:5px 0 0;text-align:center;font-size:13px;color:var(--encre-douce)}
+  .feuille .adresse{display:block;margin:5px 0 0;text-align:center;font-size:13px;
+                    color:var(--pin);text-decoration:underline;text-underline-offset:3px}
+  .feuille .gestes{margin-top:10px;display:flex;gap:6px}
+  .feuille .geste{flex:1;border:1px solid var(--trait);background:var(--plage);border-radius:8px;
+                  padding:11px 6px;text-align:center;font-size:13px;color:var(--encre);
+                  text-decoration:none;cursor:pointer;display:block}
+  .feuille .geste.eteint{color:var(--gris);opacity:.45}
   .feuille .quand{margin:4px 0 0;text-align:center;font-size:12px;color:var(--gris)}
   .feuille .taches{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait)}
   .feuille .taches p{margin:0 0 9px;padding-left:14px;position:relative;font-size:14.5px;line-height:1.45}
@@ -328,11 +334,11 @@
   const EQUIPES = () => NOMS.slice(0, nombreEquipes);
   const CHANTIERS = [
     { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipe: "Julien",
-      adresse: "4 rue des Ormes, Nantes",
+      adresse: "4 rue des Ormes, Nantes", tel: "02 40 11 22 33",
       taches: ["Taille de haie de laurier — 18 m linéaires, hauteur 2 m",
                "Évacuation des déchets verts"] },
     { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipe: "Paul",
-      adresse: "12 chemin du Moulin, Sautron",
+      adresse: "12 chemin du Moulin, Sautron", tel: "06 44 55 66 77",
       taches: ["Tonte de la pelouse — environ 900 m²",
                "Débroussaillage du talus arrière",
                "Ramassage et évacuation"] },
@@ -347,12 +353,12 @@
     // et sa question — « comment vous faites si l'après-midi j'ai mes deux
     // équipes ? » — n'avait aucune réponse visible.
     { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipe: "Julien",
-      adresse: "7 impasse des Vignes, Orvault",
+      adresse: "7 impasse des Vignes, Orvault", tel: "06 12 34 56 78",
       taches: ["Plantation de 12 arbustes en massif",
                "Apport de terreau et paillage — 3 m³",
                "Arrosage de reprise"] },
     { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipe: "Paul",
-      adresse: "31 boulevard de la Prairie, Nantes",
+      adresse: "31 boulevard de la Prairie, Nantes", tel: "06 98 76 54 32",
       taches: ["Pose de bordures béton — 24 m",
                "Reprise de l'allée en gravillons"] },
     { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipe: "Paul" },
@@ -603,18 +609,51 @@
    */
   function rendreFeuille(c) {
     if (!c) return;
+    // **Les gestes de la feuille « Y aller » sont repris, pas réinventés.** Sa
+    // demande du 21 août : « reprends l'adresse cliquable qui ouvre Maps ou
+    // Waze, la possibilité d'appeler le client et de copier l'adresse — le
+    // reste, on n'en aura pas besoin ». Ces liens existent déjà dans
+    // l'application (`src/lib/itineraire.ts`) : la maquette recopie leurs
+    // formes exactes, pas des adresses inventées qui ouvriraient sur rien.
+    //
+    // **Deux destinations, plus trois.** L'écran d'aujourd'hui propose Plans,
+    // Google Maps et Waze ; il en a retiré une : « pas besoin d'en mettre
+    // trois ».
+    const q = encodeURIComponent(c.adresse || "");
+    const tel = (c.tel || "").replace(/[^+0-9]/g, "");
+
     document.getElementById("feuille").innerHTML = `
       <div class="feuille">
         <p class="entete">Feuille de chantier</p>
         <p class="client">${c.nom}</p>
-        ${c.adresse ? `<p class="adresse">${c.adresse}</p>` : ""}
+        ${c.adresse ? `<a class="adresse" href="https://maps.apple.com/?daddr=${q}&dirflg=d">${c.adresse}</a>` : ""}
         <p class="quand">${titreJour(c.date)} · ${ditLaDemi(c.demi)}${c.equipe ? ` · ${c.equipe}` : ""}</p>
+
+        <div class="gestes">
+          <a class="geste" href="https://maps.apple.com/?daddr=${q}&dirflg=d">Maps</a>
+          <a class="geste" href="https://waze.com/ul?q=${q}&navigate=yes">Waze</a>
+        </div>
+        <div class="gestes">
+          <button type="button" class="geste" id="copier">Copier l’adresse</button>
+          ${tel
+            ? `<a class="geste" href="tel:${tel}">Appeler le client</a>`
+            : `<span class="geste eteint">Appeler le client</span>`}
+        </div>
+
         <div class="taches">
           ${(c.taches || ["Les tâches viendront du devis."]).map((t) => `<p>${t}</p>`).join("")}
         </div>
         <p class="sans-prix">Aucun prix sur cette feuille.</p>
         <span class="pdf">Ouvrir le PDF</span>
       </div>`;
+
+    // Le mot qui change dit que le geste a eu lieu : sans lui, on appuie deux
+    // fois sans savoir si la première a pris.
+    const copier = document.getElementById("copier");
+    if (copier) copier.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(c.adresse || ""); copier.textContent = "Adresse copiée"; }
+      catch { copier.textContent = "Copie refusée"; }
+    });
     document.getElementById("feuille").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
