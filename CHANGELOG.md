@@ -42,6 +42,33 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Dessiner le planning en semaines avant d'y toucher
+
+**Sa demande :** *« cette page est beaucoup trop compliquée à comprendre pour
+les utilisateurs […] fais-moi une maquette de ça, dynamique, en .html, avant de
+me coder quoi que ce soit, que je puisse essayer »*.
+
+`appli/planning-simple.html` **s'essaie pour de bon** : les flèches changent de
+semaine, les trois calendriers se comparent sur place, et tout se calcule sur
+les mêmes chantiers que la liste — un dessin figé aurait pu mentir sur le point
+même qu'il veut juger. `src/app/planning/` n'a pas bougé (`CLAUDE.md` §3 bis).
+
+**Ce que la maquette a fait apparaître, et qui n'était pas dans sa demande :**
+le calendrier actuel montre le MOIS, et c'est lui qui sert à poser une date
+lointaine. Passer à la semaine coûte huit appuis pour aller à deux mois — la
+question est posée dans `TODO.md`, pas tranchée ici.
+
+**Le contrôle joue les gestes** (`scripts/verifier-maquette-planning-simple.mjs`,
+dans `verifier:maquette`) : il change de semaine, compare ce que le calendrier
+peint à ce que les données disent — le vendredi 21 porte deux chantiers à la
+journée, donc ses deux demi-journées sont complètes —, et refuse de conclure sur
+une case de zéro pixel.
+
+**Un piège payé en l'écrivant :** le titre du jour est écrit « vendredi 21 août »
+dans la page, mais la feuille de style le met en capitales. `innerText` rend ce
+que l'ŒIL voit, pas ce que le HTML porte — le contrôle rougissait sur une page
+juste. Il lit désormais en insensible à la casse.
+
 ### Le compte des chantiers ne se dit plus qu'une fois, et en chiffre
 
 **Sa demande, capture à l'appui :** *« la mention en cours qui se trouve sous
