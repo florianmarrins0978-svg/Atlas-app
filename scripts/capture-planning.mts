@@ -125,14 +125,28 @@ const combienDEquipes = (await page.evaluate(`(() => {
 console.log(`  pastilles d'équipe visibles — ${combienDEquipes}`);
 
 // ─── 2. Une journée ouvrable ────────────────────────────────────────────────
+//
+// **Un jour QUI PORTE DU TRAVAIL d'abord.** La version d'avant prenait le
+// premier jour ouvrable du mois — presque toujours vide —, et concluait
+// elle-même « aucun chantier posé ce jour-là : la feuille n'est pas éprouvée ».
+// Une capture d'une journée vide ne montre ni le nom au-dessus de sa
+// demi-journée, ni la pastille d'équipe, ni la feuille : c'est-à-dire rien de
+// ce que le patron a validé sur la planche 84. Un contrôle qui mesure zéro ne
+// mesure rien (`CLAUDE.md` §5), et une capture de rien ne se regarde pas.
+//
+// Une case dont une demi-journée n'est pas « libre » porte un chantier ou une
+// absence — c'est ce que l'écran DIT, et non ce qu'on suppose de la base.
 const jourOuvrable = (await page.evaluate(`(() => {
   const cases = [...document.querySelectorAll("[data-atlas='grille-mois'] [data-jour]")];
-  const ouvrable = cases.find((c) => {
+  const ouvrable = cases.filter((c) => {
     const j = c.getAttribute("data-jour");
     const d = new Date(j + "T12:00:00Z").getUTCDay();
     return d !== 0 && d !== 6;
   });
-  return ouvrable?.getAttribute("data-jour") ?? null;
+  const occupe = ouvrable.find((c) =>
+    [...c.querySelectorAll("[data-demi]")].some((b) => b.getAttribute("data-etat") !== "libre")
+  );
+  return (occupe ?? ouvrable[0])?.getAttribute("data-jour") ?? null;
 })()`)) as string | null;
 
 if (!jourOuvrable) {

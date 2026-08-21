@@ -95,6 +95,25 @@ async function main() {
       WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
     [chantierId]
   );
+  // **Deux équipes NOMMÉES, comme sur la planche et comme chez lui.**
+  //
+  // Sans nom, l'écran écrit son étiquette de repli — « Équipe A » —, qui mesure
+  // 91 px là où « Équipe ? » en fait 75 : seize de plus que tout ce que la
+  // planche 84 dessine, et la ligne déborde alors de quatre pixels. Ce cas-là
+  // existe (une entreprise qui n'a pas nommé ses équipes) et il est noté dans
+  // `TODO.md` pour lui être montré — il ne se répare pas ici, parce que le
+  // corriger, c'est retoucher un dessin qu'il a validé (`CLAUDE.md` §3 bis).
+  //
+  // Ce que ce décor doit reproduire, c'est SON écran : ses équipes portent
+  // « Paul » et « Julien » depuis le 21 août, et c'est ce que la planche montre.
+  await pool.query(
+    `INSERT INTO equipes (entreprise_id, rang, nom)
+     SELECT c.entreprise_id, x.rang, x.nom
+       FROM chantiers c, (VALUES (1, 'Paul'), (2, 'Julien')) AS x(rang, nom)
+      WHERE c.id = $1
+     ON CONFLICT (entreprise_id, rang) DO UPDATE SET nom = EXCLUDED.nom`,
+    [chantierId]
+  );
 
   // **Le devis du chantier, et ses deux lignes.** Le planning ne liste que des
   // chantiers dont le devis est parti : sans lui, le décor décrirait un état
@@ -414,6 +433,55 @@ async function main() {
   });
 
   // ─── DÉPLACER ───────────────────────────────────────────────────────────
+
+  // **Sa ligne tient sur UN trait, et cela se mesure.**
+  //
+  // Trouvé le 21 août 2026 en REGARDANT une capture : sur un chantier dont
+  // l'équipe n'est pas choisie, « Équipe ? » est plus large qu'un prénom, et
+  // « Retirer » basculait à la ligne suivante. La planche 84 ne se replie pas :
+  // elle resserre les petits boutons d'une ligne de demi-journée
+  // (`.demi .petit{padding:7px 9px}`), et la transcription avait perdu la règle.
+  //
+  // **On mesure des HAUTEURS D'ORIGINE, pas des largeurs.** Deux boutons sur la
+  // même ligne partagent le même `top` ; un bouton replié tombe plus bas. C'est
+  // insensible à la police, au zoom et à la longueur des mots — là où comparer
+  // des largeurs demanderait de refaire le calcul de l'écran, et divergerait
+  // (`CLAUDE.md` §3).
+  await essai("la ligne d'une demi-journée ne se replie jamais", async () => {
+    const lignes = await page.evaluate((jour) => {
+      const carte = document.querySelector(`[data-atlas="carte-jour"][data-jour="${jour}"]`);
+      if (!carte) return null;
+      return [...carte.querySelectorAll('[data-atlas="demi"]')].map((d) => {
+        const hauts = [...d.children]
+          .map((e) => e.getBoundingClientRect())
+          .filter((b) => b.width > 0 && b.height > 0)
+          .map((b) => Math.round(b.top));
+        const larg = [...d.children]
+          .map((e) => e.getBoundingClientRect())
+          .filter((b) => b.width > 0)
+          .map((b) => Math.round(b.width));
+        return {
+          dit: (d.textContent ?? "").replace(/\s+/g, " ").trim(),
+          hauts,
+          larg,
+          dispo: Math.round(d.getBoundingClientRect().width),
+        };
+      });
+    }, JOUR);
+
+    assert.ok(lignes && lignes.length > 0, "la fiche du jour ne porte aucune demi-journée");
+    for (const l of lignes) {
+      // Une boîte de zéro pixel ne se mesure pas : refuser plutôt que de rendre
+      // un vert sur rien (`CLAUDE.md` §5).
+      assert.ok(l.hauts.length >= 2, `« ${l.dit} » : rien de visible à mesurer`);
+      const ecart = Math.max(...l.hauts) - Math.min(...l.hauts);
+      assert.ok(
+        ecart <= 12,
+        `la ligne « ${l.dit} » se replie : ${ecart} px de décalage. ` +
+          `Largeurs ${JSON.stringify(l.larg)} dans ${l.dispo} px.`
+      );
+    }
+  });
 
   await essai("« Déplacer » propose les trois moments, et écrit le choix", async () => {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);

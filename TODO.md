@@ -28,6 +28,31 @@ avant de se coder (`CLAUDE.md` §3 bis), et la planche 84 reste la référence.
 Toute correction du planning se porte D'ABORD sur elle, sinon les deux
 divergent — et c'est elle qu'il ouvre sur son téléphone.
 
+### Une équipe SANS NOM fait déborder sa ligne de quatre pixels — à lui montrer
+
+Trouvé le 21 août 2026 en regardant une capture, et mesuré : sur la fiche du
+jour, une ligne de demi-journée aligne la pastille (11 px), le mot (70 px),
+l'équipe, « Déplacer » (68 px) et « Retirer » (56 px), séparés de 8 px, dans
+324 px.
+
+| Étiquette de l'équipe | Largeur | La ligne |
+|---|---|---|
+| « Paul », « Julien » — ses équipes nommées | ~63 px | tient |
+| « Équipe ? » — aucune équipe choisie, ce que la planche dessine | 75 px | tient (312/324) |
+| **« Équipe A » — une équipe existe mais n'a pas de nom** | **91 px** | **déborde de 4 px : « Retirer » passe à la ligne** |
+
+**Pourquoi ce n'est pas corrigé.** Le réparer veut dire retoucher un dessin
+qu'il a validé — rétrécir le mot, resserrer l'écart, ou raccourcir l'étiquette
+de repli. C'est un choix d'apparence, et un choix d'apparence se dessine avant
+de se coder (`CLAUDE.md` §3 bis). La planche 84 ne montre jamais cette
+étiquette : elle n'a donc rien tranché.
+
+**Ce qu'il faut lui demander :** ce cas l'intéresse-t-il ? Il arrive à une
+entreprise qui a réglé deux équipes sans les nommer. S'il le veut réglé, la
+planche décidera comment — et le contrôle
+`test-planning-e2e` (« la ligne d'une demi-journée ne se replie jamais ») le
+verra passer au vert.
+
 ---
 
 ## Le planning codé : trois choses que la planche ne portait pas

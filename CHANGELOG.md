@@ -62,6 +62,24 @@ au patron. Le type se prend désormais à sa source, avec `import type`, et
 le journal du serveur AVANT de soupçonner le contrôle — sont en tête de
 `HANDOVER.md`.
 
+**Et un écart avec la planche, trouvé sur une CAPTURE** — la cinquième fois dans
+ce dépôt qu'un défaut sort d'une image et d'aucun test. La planche resserre les
+petits boutons d'une ligne de demi-journée (`.demi .petit{padding:7px 9px}`) ;
+la transcription avait gardé les 12 px par défaut. Six pixels de trop par
+bouton, et la ligne « Après-midi · Équipe ? · Déplacer · Retirer » faisait
+exactement 324 px dans 324 : « Retirer » basculait à la ligne suivante. Restauré,
+et `test-planning-e2e` le tient désormais — confronté au défaut, il rougit sur
+« 42 px de décalage ». Il mesure des hauteurs d'origine et non des largeurs :
+deux boutons d'une même ligne partagent leur `top`, ce qui ne dépend ni de la
+police ni de la longueur des mots.
+
+**Ce qui n'a PAS été corrigé, et pourquoi.** Une équipe qui existe sans porter
+de nom s'écrit « Équipe A » — 91 px, là où « Équipe ? » en fait 75. La ligne
+déborde alors de quatre pixels. La planche ne dessine jamais cette étiquette :
+la régler voudrait dire retoucher un dessin qu'il a validé, et un choix
+d'apparence se dessine avant de se coder (`CLAUDE.md` §3 bis). Le cas est décrit
+dans `TODO.md`, à lui montrer.
+
 **Un contrôle de notification a été refait pour la même raison de fond**
 (`CLAUDE.md` §5 bis) : « J'ai vu » comptait les cartes de l'accueil avant et
 après le geste et en exigeait une de moins — un compte qui dépendait de l'ordre

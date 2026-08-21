@@ -1088,19 +1088,37 @@ function Petit({
   onClick,
   retenue,
   fini,
+  serre,
   ...reste
 }: {
   children: React.ReactNode;
   onClick: () => void;
   retenue?: boolean;
   fini?: boolean;
+  /**
+   * Resserré à 9 px, comme `.demi .petit` sur la planche 84.
+   *
+   * **Trois pixels par côté, et c'est la ligne entière qui tient ou se replie.**
+   * Sur une ligne de demi-journée, l'écran aligne : pastille (11) + mot (70) +
+   * équipe (75) + « Déplacer » + « Retirer », dans 324 px. Aux 12 px par défaut,
+   * les deux boutons mesurent 74 et 62 — le total fait 324 pile, et « Retirer »
+   * bascule à la ligne suivante. À 9 px ils font 68 et 56, et tout tient sur un
+   * trait, comme sur la planche qu'il a validée.
+   *
+   * Trouvé en REGARDANT la capture, jamais par un test — la quatrième fois dans
+   * ce dépôt (`CLAUDE.md` §5). La planche portait déjà la règle ; c'est la
+   * transcription qui l'avait perdue.
+   */
+  serre?: boolean;
 } & Record<string, unknown>) {
   return (
     <button
       type="button"
       onClick={onClick}
       {...reste}
-      className="flex-shrink-0 cursor-pointer rounded-full px-3 py-[7px] text-[12px]"
+      className={`flex-shrink-0 cursor-pointer rounded-full py-[7px] text-[12px] ${
+        serre ? "px-[9px]" : "px-3"
+      }`}
       style={{
         border: `1px solid ${retenue ? colors.rust : fini ? colors.or : colors.line}`,
         background: retenue ? colors.rust : colors.card,
@@ -1392,6 +1410,7 @@ function CarteDuJour({
                           return (
                             <Petit
                               key={e.rang}
+                              serre
                               data-choix={e.rang}
                               retenue={cochee}
                               onClick={() => basculerEquipe(c.id, demi, e.rang)}
@@ -1401,7 +1420,7 @@ function CarteDuJour({
                             </Petit>
                           );
                         })}
-                        <Petit data-fini="1" fini onClick={() => setOuvert(null)}>
+                        <Petit serre data-fini="1" fini onClick={() => setOuvert(null)}>
                           Terminé
                         </Petit>
                       </Choisir>
@@ -1423,6 +1442,7 @@ function CarteDuJour({
                         {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
                           <Petit
                             key={v}
+                            serre
                             data-vers={v}
                             retenue={quandDuChantier(c) === v}
                             onClick={() => deplacer(c.id, v)}
@@ -1434,12 +1454,13 @@ function CarteDuJour({
                     ) : (
                       <>
                         <Petit
+                          serre
                           data-atlas="deplacer"
                           onClick={() => setOuvert({ quoi: "deplacer", cle, chantierId: c.id, demi })}
                         >
                           Déplacer
                         </Petit>
-                        <Petit data-atlas="retirer" onClick={() => retirerDuJour(c.id)}>
+                        <Petit serre data-atlas="retirer" onClick={() => retirerDuJour(c.id)}>
                           Retirer
                         </Petit>
                       </>
