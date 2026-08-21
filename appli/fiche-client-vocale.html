@@ -117,11 +117,6 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .canal button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
 .canal button:disabled{opacity:.4}
 
-.civilite{display:flex;gap:10px}
-.civilite button{border-radius:99px;border:1px solid var(--line);background:var(--cream);
-                 padding:13px 30px;font-size:16px;color:var(--charcoal);cursor:pointer;font-family:inherit}
-.civilite button[aria-pressed="true"]{border-color:var(--or);background:var(--paper)}
-
 .lien-or{align-self:flex-start;border:0;background:none;padding:0;font-size:14px;
          font-weight:500;color:var(--pine);cursor:pointer;font-family:inherit}
 
@@ -262,13 +257,11 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
     </div>
 
     <form onsubmit="return false">
-      <div class="champ">
-        <span class="caps">Civilité</span>
-        <div class="civilite">
-          <button type="button" aria-pressed="true">Mr</button>
-          <button type="button" aria-pressed="false">Mme</button>
-        </div>
-      </div>
+      <!-- **La civilité est partie — sa demande du 21 août au soir.** Elle
+           occupait la première ligne de l'écran pour deux boutons, alors qu'il
+           écrit déjà « M. Julien » dans le nom : le titre part donc du nom
+           qu'il tape, comme il l'a toujours tapé. C'est un retrait de plus dans
+           la même direction que le reste — moins de cases, moins de place. -->
 
       <!-- Le nom et le numéro, côte à côte, **chacun avec son intitulé** — sa
            correction du 21 août au soir : « au-dessus du numéro de téléphone,
@@ -485,13 +478,7 @@ function aller(id) {
   window.scrollTo(0, 0);
 }
 
-/* ─── Civilité, canal ─────────────────────────────────────────────────── */
-document.querySelectorAll(".civilite button").forEach((b) => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll(".civilite button").forEach((x) => x.setAttribute("aria-pressed", "false"));
-    b.setAttribute("aria-pressed", "true");
-  });
-});
+/* ─── Le canal d'envoi ────────────────────────────────────────────────── */
 // « Par e-mail » ne se propose que si une adresse existe : offrir un canal
 // qu'on ne peut pas emprunter est une fausse promesse.
 $("#email").addEventListener("input", (e) => {

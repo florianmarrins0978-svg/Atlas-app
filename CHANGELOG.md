@@ -59,6 +59,11 @@ pas sur une fiche qu'on remplit devant le client.
 Le contrôle vise ses mots à la lettre et l'ordre des blocs : c'est ce qui les
 défend de la réécriture suivante.
 
+**Et la civilité part**, dans la foulée : deux boutons sur la première ligne de
+l'écran alors qu'il écrit déjà « M. Julien » dans le nom. Le titre vient du nom
+qu'il tape. Le contrôle refuse qu'elle revienne — un retrait ne se tient que par
+ce qui ne doit plus être là.
+
 ### La fiche dit enfin si le port est ouvert
 
 **« Elle ne se lance plus »**, alors que sa fiche annonçait un serveur qui
