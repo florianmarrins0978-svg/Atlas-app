@@ -974,6 +974,33 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### Un mois qu'on lit sans l'apprendre
+
+**Sa demande, le 21 août :** *« tout en faisant un mois facile à comprendre »*.
+Quatre changements dans la planche, et aucun n'est décoratif :
+
+- **les jours des autres mois disparaissent.** Ils ne portent rien, et six
+  cases de chiffres gris se lisent quand même — du bruit payé à chaque coup
+  d'œil. Le prix, assumé : le 3 septembre ne s'atteint plus depuis la grille
+  d'août, il faut la flèche ;
+- **les cases sont carrées et espacées** : le doigt vise ses 44 px, et l'œil
+  sépare les semaines sans un seul trait ;
+- **le week-end est une colonne teintée**, pas un chiffre pâle. Une teinte se
+  voit du coin de l'œil ; un gris clair oblige à lire pour comprendre ;
+- **aujourd'hui porte un cercle d'or**, et un retour « ← Aujourd'hui »
+  apparaît **dès qu'on s'en éloigne** — sans lui on se perd à trois mois ;
+  toujours présent, il se lirait comme une action à faire.
+
+**Deux pièges payés en l'éprouvant**, tous deux du genre qui rend un contrôle
+vert sur un écran faux :
+
+- `[hidden]` ne cachait rien. `.retour-aujourdhui{display:block}` l'emporte sur
+  la règle du navigateur : le bouton restait à l'écran en prétendant être caché.
+  Il faut écrire `.retour-aujourdhui[hidden]{display:none}` ;
+- le contrôle qui vérifiait l'absence des jours voisins cherchait un « 27 »
+  dans la grille d'août — or le 27 août existe. Il accusait une page juste. Il
+  compte désormais les cases vides, et vérifie qu'elles le sont.
+
 ### Le planning : le mois reste, la semaine ne sert qu'aux planifiés
 
 **Sa correction, le 21 août :** *« je veux un accès au mois ; ce dont je te
