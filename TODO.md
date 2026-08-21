@@ -781,18 +781,32 @@ passaient par « Je dicte mon devis » passent par `scripts/_creer-chantier-e2e.
 
 1. ~~porter l'anneau et la pellicule sur `chantiers/nouveau`~~ — **fait** ;
 2. ~~au second appui de l'anneau, **enregistrer**~~ — **fait** : la note part au
-   second appui et le chantier existe dès cet instant. Reste à **lancer la
-   chaîne du devis** dans la foulée, pour qu'il retrouve un devis déjà rempli
-   sans toucher « Mon devis → » ;
+   second appui et le chantier existe dès cet instant ;
+2 bis. ~~retrouver un devis **déjà rempli** sans toucher « Mon devis → »~~ —
+   **fait le 21 août 2026**, après sa panne de Madame Lucie. La chaîne ne part
+   pas au relâchement de l'anneau — il ferme l'application dans la seconde qui
+   suit, l'appel partirait avec l'onglet : elle part **à l'arrivée sur le
+   devis**, qui est le seul moment où un navigateur est là pour attendre le
+   résultat (`src/lib/devis-a-preparer.ts`, `PreparationDictee.tsx`) ;
 3. `lienDeReprise` : les étapes « photos » et « note-vocale » ne doivent plus
    viser `/chantiers/[id]` mais la fiche client ;
 4. la flèche de retour du devis (`DevisCompletClient.tsx`) : même chose ;
 5. retirer l'écran `/chantiers/[id]` et ce qui n'y sert plus.
 
-**Le dessin des cases est tranché** : il a choisi la 4 le 21 août, puis, devant
-l'écran, il a demandé la maquette **trait pour trait** — donc les cases telles
-qu'elles y sont (fond crème, 4 px, un liseré fin, l'or au doigt posé). C'est ce
-qui est codé, dans `.atlas-case`.
+**Le dessin des cases est tranché** : il a choisi la 4 — « la carte douce » —
+et il l'a redit le 21 août au soir. Fond papier, 14 px de rayon, aucun bord,
+l'or au doigt posé. C'est ce qui est codé (`.atlas-case`) **et** ce que porte la
+maquette : les deux ont été remises d'accord le même jour, l'écart entre elles
+étant précisément ce qui lui faisait croire que le code ne suivait pas.
+
+**Huit écarts restent entre l'écran codé et la maquette**, relevés à la mesure
+le 21 août au soir et **non tranchés** — il n'a pas encore dit s'il faut les
+aligner : « ATLAS » absent du haut, la flèche de retour sur sa propre ligne au
+lieu de celle du titre, le nom en 20 px serif au lieu de 16 px sans, les
+pastilles Mr/Mme cerclées de vert au lieu d'or, les capsules du canal sans
+contour, le canal qui n'apparaît qu'une fois une coordonnée saisie, le carré
+photo en trait continu gris au lieu de tirets or, et le bouton principal à
+208 px centré au lieu de pleine largeur.
 
 **Deux suites restent rouges, et elles ne sont pas de ce lot :**
 `test-fiche-client-e2e` et `test-fiche-chantier-e2e`, toutes deux sur la fiche

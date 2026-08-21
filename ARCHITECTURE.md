@@ -12571,3 +12571,71 @@ c'est lui qui l'aurait découvert : un fichier sans nom dans son dossier.
 **« Partager » revient ici**, après avoir été retiré de l'écran d'envoi le même
 matin. C'était le seul chemin vers WhatsApp, et sa place est plutôt sur le
 document rangé que sur le geste d'envoi.
+
+---
+
+## 142. Une dictée mène au devis, et le devis se prépare tout seul en arrivant
+
+**Sa panne du 21 août 2026, et il l'a qualifiée lui-même :** *« c'est le point
+le plus important. Je veux absolument que ça fonctionne. »*
+
+> *« J'ai ouvert un chantier, Madame Lucie. J'ai rentré ces informations,
+> j'appuie sur note vocale, j'ai dicté la prestation du chantier. J'ai rappuyé
+> sur la note vocale, ça a enregistré. J'ai quitté l'application. Je suis
+> retourné dessus. J'ai cliqué sur Madame Lucie qui était enregistrée dans mes
+> chantiers. Or, je ne suis pas arrivé directement sur la page du devis comme
+> demandé, avec mes informations remplies que j'avais dictées. »*
+
+### Deux défauts, et le second était le vrai
+
+**Le chemin.** `getNextAction` renvoyait une dictée sur l'écran
+« Informations » : un écran de contrôle dont il ne veut plus depuis le 5 août
+(*« je ne veux pas tous les autres trucs intermédiaires »*). Il mène désormais
+au devis.
+
+**L'ordre des jalons compte, et ce n'est pas un détail.** La ligne
+`aUneNoteVocale` passe **avant** `informationsVerifieesAt`. La chaîne pose ce
+second jalon dès qu'elle a rangé les prestations — c'est-à-dire **avant** son
+arrêt d'avant-chiffrage. S'il ferme l'application pendant cet arrêt, ce qu'il
+fait puisqu'il est chez sa cliente, l'ordre inverse le renverrait sur l'écran
+« Prix » : un écran de plus entre lui et son devis, et la même panne sous un
+autre nom.
+
+**Le devis lui-même.** Plus grave, et invisible depuis le chemin :
+**enregistrer une dictée ne fabriquait aucun devis.** La chaîne — transcription,
+prestations, tarifs, lignes — attendait qu'il appuie sur « Mon devis → ». Il ne
+l'a pas fait. Corriger le seul chemin l'aurait mené droit sur une feuille vide,
+c'est-à-dire sur la panne du 7 août (*« le devis ne comporte aucune ligne, gros
+bug »*), resservie par un autre bout.
+
+### Pourquoi à l'ARRIVÉE, et pas au relâchement de l'anneau
+
+Le réflexe est de lancer la chaîne dès qu'il relâche l'anneau : c'est plus
+rapide, quand ça marche. Mais **il ferme l'application dans la seconde qui
+suit** — c'est le geste même qu'il décrit — et l'appel part alors avec l'onglet.
+Il n'en resterait rien, et l'on aurait un correctif qui ne se déclenche jamais
+dans les conditions où il est nécessaire.
+
+Le seul moment où l'on est **sûr** qu'un navigateur est présent pour attendre le
+résultat, c'est celui où il rouvre le devis. La préparation vit donc là, et elle
+survit à tout ce qu'il peut fermer entre-temps.
+
+### Trois partis pris de l'écran
+
+| | |
+|---|---|
+| **Le voile couvre le devis, il ne le remplace pas** | Si la chaîne échoue — pas de transcription, aucun tarif, une panne réseau —, « Ouvrir le devis tel quel » lui rend sa feuille et son crayon. Un écran qui n'aurait que l'échec à montrer serait un cul-de-sac |
+| **On écarte sans naviguer** | Un renvoi vers une autre adresse ramènerait ici, où la préparation repartirait aussitôt. Le voile se referme en mémoire, le temps d'une visite ; rien n'est écrit pour désarmer la suivante |
+| **Aucune règle dans l'écran** | Ce qui décide de la présence du voile est pur (`src/lib/devis-a-preparer.ts`) ; ce qui mène la chaîne est le composant qui la menait déjà (`DevisDepuisDictee`, mode `auto`). Une seconde implémentation aurait divergé au premier ajustement |
+
+### Ce qui garde la promesse
+
+`scripts/test-madame-lucie-e2e.ts` rejoue sa séquence entière : dicter, **fermer
+l'application sans rien appuyer d'autre**, revenir par la liste, cliquer le nom.
+Deux suites voisines ne pouvaient pas voir ce trou —
+`test-reprendre-ou-il-en-etait` tient la règle mais ne clique nulle part, et
+`test-anneau-vers-devis-e2e` **appuie sur « Mon devis → »**, c'est-à-dire fait
+précisément le geste qu'il n'a pas fait.
+
+Elle sait échouer : confrontée à l'ancien code, elle rougit sur trois cas et
+nomme le coupable — *« la liste l'envoie sur /informations »*.

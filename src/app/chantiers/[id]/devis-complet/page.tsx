@@ -9,9 +9,12 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
+import { getNoteVocale } from "@/server/repositories/notes-vocales";
+import { devisAPreparer } from "@/lib/devis-a-preparer";
 import { leconsComparables } from "@/server/repositories/lecons-prix";
 import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
+import PreparationDictee from "./PreparationDictee";
 
 // **Une page où il n'y a que le devis.**
 //
@@ -50,12 +53,23 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
   // lecture seule — le consulter ne doit jamais ouvrir une nouvelle version.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
 
-  const [entreprise, client, lignes, brouillon] = await Promise.all([
+  const [entreprise, client, lignes, brouillon, note] = await Promise.all([
     getEntreprise(ctx),
     chantier.clientId ? getClient(ctx, chantier.clientId) : Promise.resolve(null),
     listerLignesPrix(ctx, id),
     getBrouillon(ctx, id),
+    getNoteVocale(ctx, id),
   ]);
+
+  // **Une dictée sans devis se traite ICI, à l'arrivée** — sa panne du 21 août
+  // 2026 : il dicte chez sa cliente, ferme l'application, revient, ouvre le
+  // chantier, et tombe sur une feuille vide. La règle vit dans une fonction
+  // pure (`src/lib/devis-a-preparer.ts`) ; cet écran n'a qu'à l'appliquer.
+  const aPreparer = devisAPreparer({
+    aUneNoteVocale: note !== null,
+    nombreDeLignes: lignes.length,
+    statutDevis: devisRow.statut,
+  });
 
   // **Ce que l'agent a retenu de ses devis passés.**
   //
@@ -91,6 +105,8 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
           2026 : le micro doit toucher aux lignes du devis, donc à son état, et
           il se tient sur la même ligne que le retour — le retour à gauche, le
           micro à droite, comme sur la fiche du client. */}
+      {aPreparer && <PreparationDictee chantierId={id} />}
+
       <DevisCompletClient
         chantierId={id}
         devisId={devisRow.id}

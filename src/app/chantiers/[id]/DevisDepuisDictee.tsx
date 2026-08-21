@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, libelleCaps } from "@/lib/design-tokens";
 import { preparerDevisDepuisDicteeAction, repondreQuestionsChiffrageAction } from "./informations/actions";
@@ -42,6 +42,20 @@ type Props = {
    * rendrait le poids qu'on venait de lui retirer.
    */
   variante?: "principal" | "secondaire" | "anneau";
+  /**
+   * La chaîne part TOUTE SEULE à l'arrivée, sans bouton et sans qu'il touche
+   * rien.
+   *
+   * **Sa panne du 21 août 2026** — voir `src/lib/devis-a-preparer.ts` pour le
+   * récit. Il dicte chez sa cliente, ferme l'application, revient, ouvre le
+   * chantier : le devis doit être là. Personne n'est resté pour appuyer sur
+   * « Mon devis → », alors l'écran s'en charge.
+   *
+   * Dans ce mode il n'y a plus rien à pousser : le composant ne rend que ce
+   * qui se passe — le travail en cours, l'arrêt d'avant-chiffrage, ou ce qui
+   * a échoué avec une sortie vers le devis tel quel.
+   */
+  auto?: boolean;
 };
 
 type Etat =
@@ -80,7 +94,12 @@ function libelleEnCours(etat: Etat): string | null {
   return null;
 }
 
-export default function DevisDepuisDictee({ chantierId, transcriptionDisponible, variante = "principal" }: Props) {
+export default function DevisDepuisDictee({
+  chantierId,
+  transcriptionDisponible,
+  variante = "principal",
+  auto = false,
+}: Props) {
   const router = useRouter();
   const [etat, setEtat] = useState<Etat>({ type: "repos" });
 
@@ -113,7 +132,11 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
         // qu'il devait dire se lit maintenant sur le devis lui-même : les
         // lignes y sont, le total aussi, et la mention « recopiée mot à mot »
         // s'affiche là-bas quand aucun modèle n'a compris la dictée.
-        router.push(`/chantiers/${chantierId}/devis-complet`);
+        // **Déjà sur le devis en mode automatique** : `push` vers l'adresse
+        // courante ne rejoue pas le rendu serveur, et l'écran resterait sur
+        // « Atlas prépare le devis… » devant un devis pourtant écrit.
+        if (auto) router.refresh();
+        else router.push(`/chantiers/${chantierId}/devis-complet`);
         return;
       }
       if (r.statut === "conflit") return setEtat({ type: "conflit" });
@@ -145,7 +168,10 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
       const issue = await attendreLeDevis(chantierId, {
         surAttente: (secondes) => setEtat({ type: "attente", secondes }),
       });
-      if (issue === "pret") return router.push(`/chantiers/${chantierId}/devis-complet`);
+      if (issue === "pret") {
+        if (auto) return router.refresh();
+        return router.push(`/chantiers/${chantierId}/devis-complet`);
+      }
       setEtat({
         type: "message",
         texte:
@@ -155,11 +181,41 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
     }
   }
 
+  // ─── Le départ automatique ────────────────────────────────────────────
+  //
+  // **Une seule fois, et le garde n'est pas une précaution de style.** React
+  // monte deux fois en développement, et un `router.refresh()` peut remonter
+  // l'arbre : sans lui, deux chaînes partiraient sur le même chantier et
+  // s'écraseraient l'une l'autre — prestations en double, ou brouillon repris
+  // à mi-course.
+  const dejaLance = useRef(false);
+  useEffect(() => {
+    if (!auto || dejaLance.current || !transcriptionDisponible) return;
+    dejaLance.current = true;
+    void lancer();
+    // `lancer` ne dépend que des props, et le garde ci-dessus est ce qui
+    // décide du rejeu — pas la liste de dépendances.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, transcriptionDisponible]);
+
   if (!transcriptionDisponible) return null;
 
   return (
     <div className={`flex flex-col gap-2 ${variante === "anneau" ? "items-center" : ""}`}>
-      {variante === "anneau" ? (
+      {auto ? (
+        /* **Rien à pousser : on rend ce qui se passe.** Le bouton n'aurait
+           aucun sens ici — personne n'est venu appuyer, l'écran travaille de
+           lui-même parce qu'il a fermé l'application entre-temps. */
+        <p
+          role="status"
+          aria-live="polite"
+          data-atlas="preparation-automatique"
+          className="text-center text-[15px]"
+          style={{ color: colors.rust }}
+        >
+          {libelleEnCours(etat) ?? (etat.type === "repos" ? "Atlas prépare le devis…" : "")}
+        </p>
+      ) : variante === "anneau" ? (
         /* **L'écriture nue, et rien autour.** Choisie par le patron le 11 août
            2026 sur six formes essayées — l'écriture, le trait, le bouton
            plein, la pastille, l'anneau qui s'étire, le bandeau du tiroir.

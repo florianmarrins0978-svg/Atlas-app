@@ -4,8 +4,29 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-18 · `main`
+**Point de reprise :** 2026-08-21 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## La dictée mène AU DEVIS, et le devis se prépare tout seul (21 août 2026)
+
+**Sa panne, qu'il a lui-même qualifiée de « point le plus important » :** il
+dicte chez Madame Lucie, rappuie sur l'anneau, **ferme l'application**, revient,
+clique le nom dans la liste — et n'arrive pas sur son devis.
+
+Deux choses ont changé, et il faut connaître les deux :
+
+1. `getNextAction` mène au **devis** dès qu'une dictée existe, et cette ligne
+   passe **avant** `informationsVerifieesAt` — la chaîne pose ce jalon avant son
+   arrêt d'avant-chiffrage, et l'ordre inverse renvoie sur l'écran « Prix » ;
+2. **la page du devis prépare la dictée elle-même en arrivant**
+   (`src/lib/devis-a-preparer.ts`, `src/app/chantiers/[id]/devis-complet/PreparationDictee.tsx`). Pas
+   au relâchement de l'anneau : il ferme l'application dans la seconde qui suit,
+   l'appel partirait avec l'onglet.
+
+Le détail et les partis pris sont dans `ARCHITECTURE.md` §142. La séquence
+entière est rejouée par `scripts/test-madame-lucie-e2e.ts`.
 
 ---
 
