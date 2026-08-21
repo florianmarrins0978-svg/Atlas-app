@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### La fiche dit enfin si le port est ouvert
+
+**« Elle ne se lance plus »**, alors que sa fiche annonçait un serveur qui
+répond, le bon code servi, et « tout concorde ». Un port privé donne exactement
+ce symptôme : GitHub répond par sa page de connexion à la place d'Atlas, et
+depuis un téléphone non connecté à GitHub il n'y a **rien à voir**.
+
+L'état du port n'était écrit que dans le terminal du démarrage — que personne ne
+relit. Il est désormais déposé par `demarrer.sh` et publié sur la fiche, avec le
+remède en trois clics quand il est privé.
+
+**Pourquoi ça retombe en panne tout seul :** `devcontainer.json` déclare le port
+public depuis le 6 août, mais ce fichier n'est appliqué qu'à la CRÉATION de
+l'espace — et le sien est plus ancien. Le geste est rejoué à chaque allumage par
+`ouvrir-port.sh`, qui a besoin de `gh`… absent de cette image. D'où un port qui
+peut redevenir privé sans que rien ne le dise. C'est la troisième fois que ce
+piège coûte une soirée (10 août, puis 21).
+
 ### Attendre la construction d'à côté au lieu de la tuer
 
 **Sa plainte du matin :** *« l'appli est hyper lente »*, pour la troisième

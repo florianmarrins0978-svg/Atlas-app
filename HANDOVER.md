@@ -354,6 +354,22 @@ finit ignoré, et le garde-fou se perd sans bruit.
 
 ---
 
+## ⚠ « ELLE NE SE LANCE PLUS » sur une fiche VERTE : regarder le port
+
+**Le 21 août 2026.** Sa fiche disait « le serveur répond », « tout concorde » —
+et il ne pouvait pas ouvrir l'application. Un **port privé** donne exactement ce
+symptôme : GitHub répond par sa page de connexion à la place d'Atlas, et depuis
+un téléphone non connecté il n'y a rien à voir.
+
+La fiche porte désormais une ligne `Port 3000`. **La lire avant toute
+hypothèse.** Si elle dit PRIVÉ, le remède est chez lui, en trois clics : onglet
+PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».
+
+Pourquoi ça revient : `devcontainer.json` déclare le port public, mais ce
+fichier n'est appliqué qu'à la CRÉATION de l'espace — le sien est plus ancien.
+Le geste est rejoué à chaque allumage par `ouvrir-port.sh`, qui a besoin de `gh`,
+absent de cette image.
+
 ## ⚠ « PAGE BLANCHE » : lire la ligne « Code SERVI » avant tout (16 août 2026)
 
 Sur la fiche, deux lignes ensemble tranchent la question sans hypothèse :
