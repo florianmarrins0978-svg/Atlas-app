@@ -107,6 +107,37 @@ for (const [quoi, champ] of [["nom", nom], ["numéro", tel]]) {
   dire(!deborde, `le ${quoi} tient dans sa case, entier (${deborde ? `${ecart} px dehors` : "rien dehors"})`);
 }
 
+// ── 2 bis. Ses trois corrections du 21 août au soir ────────────────────────
+//
+//   « Garde un seul bouton, garde je rédige mon devis. »
+//   « Comment lui envoyer son devis, tu le mets sous l'adresse. »
+//   « Au-dessus du numéro de téléphone, marqué numéro de téléphone. »
+//
+// Ce sont des demandes littérales : un contrôle qui vise l'ordre et les mots
+// exacts est le seul qui les défende contre la réécriture suivante.
+
+const titres = page.locator(".duo-titres span");
+dire(
+  (await titres.nth(1).innerText()).trim().toLowerCase() === "numéro de téléphone",
+  "« Numéro de téléphone » est écrit au-dessus de la case du numéro"
+);
+for (const i of [0, 1]) {
+  const { dehors } = await titres.nth(i).evaluate((el) => ({ dehors: el.scrollWidth - el.clientWidth }));
+  dire(dehors <= 1, `l'intitulé « ${(await titres.nth(i).innerText()).trim()} » n'est pas coupé`);
+}
+
+const yAdresse = (await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').boundingBox())?.y ?? 0;
+const yCanal = (await page.locator("#bloc-canal").boundingBox())?.y ?? 0;
+dire(yAdresse > 0 && yCanal > 0, "l'adresse et la question de l'envoi sont dessinées");
+dire(yCanal > yAdresse, "« Comment lui envoyer son devis ? » est SOUS l'adresse, comme il l'a demandé");
+
+const actions = page.locator("button.principal");
+dire((await actions.count()) === 1, "un seul bouton d'action au bas de l'écran");
+dire(
+  (await actions.first().innerText()).trim() === "Je rédige mon devis",
+  "et c'est « Je rédige mon devis » — ses mots, à la lettre"
+);
+
 // ── 3. Le carré photo ouvre le menu du téléphone, sans l'enfermer ───────────
 const fichier = page.locator('input[type="file"]');
 dire((await fichier.count()) === 1, "un seul champ de fichier, comme dans `Pellicule.tsx`");
