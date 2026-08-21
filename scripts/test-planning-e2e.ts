@@ -89,6 +89,34 @@ async function main() {
       WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
     [chantierId]
   );
+
+  // **Un devis ENVOYÉ, et ses deux lignes.** Le planning ne liste que des
+  // chantiers dont le devis est parti : sans lui, le décor décrirait un état
+  // que le produit ne peut pas atteindre, et la feuille n'aurait rien à
+  // imprimer. Posé en base plutôt que joué à l'écran — le parcours complet du
+  // devis est éprouvé ailleurs, et le rejouer ici ajouterait deux minutes pour
+  // ne rien apprendre sur le planning.
+  const devisId = (
+    await pool.query(
+      `INSERT INTO devis (entreprise_id, chantier_id, numero_commercial, numero_version,
+                          statut, entreprise_nom, date_emission, total_ht, total_tva, total_ttc)
+       SELECT c.entreprise_id, c.id, 'D-PLANCHE-' || substr(c.id::text, 1, 8), 1,
+              'envoye', 'Atelier Démo', CURRENT_DATE, 1000, 200, 1200
+         FROM chantiers c WHERE c.id = $1
+       RETURNING id`,
+      [chantierId]
+    )
+  ).rows[0].id as string;
+  await pool.query(
+    `INSERT INTO lignes_devis (entreprise_id, devis_id, libelle, quantite, prix_unitaire, montant, ordre)
+     SELECT d.entreprise_id, d.id, x.libelle, x.qte, x.pu, x.montant, x.ordre
+       FROM devis d,
+            (VALUES ('Taille de haie de laurier', 18, 40, 720, 0),
+                    ('Évacuation des déchets verts', 1, 280, 280, 1))
+              AS x(libelle, qte, pu, montant, ordre)
+      WHERE d.id = $1`,
+    [devisId]
+  );
   const nom = (await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [chantierId])).rows[0]
     .nom as string;
 
@@ -423,6 +451,20 @@ async function main() {
 
   // **Le contrôle qui compte** : ce PDF est ce que le salarié emporte, et il ne
   // doit porter AUCUN prix. On le télécharge pour de bon.
+  await essai("la feuille porte les lignes du devis, sans un prix", async () => {
+    const dit = await page.locator('[data-atlas="feuille"]').innerText();
+    assert.ok(
+      dit.includes("Taille de haie de laurier"),
+      `la feuille ne porte pas les lignes du devis : « ${dit} »`
+    );
+    // **Aucun montant nulle part** — c'est toute la raison d'être de cette
+    // feuille : *« le salarié ne doit pas avoir accès au prix »*.
+    assert.ok(
+      !/\d[\d\s]*[,.]\d{2}\s*€|€/.test(dit),
+      `un prix s'est glissé dans la feuille : « ${dit} »`
+    );
+  });
+
   await essai("le PDF de la feuille répond, et ne porte aucun prix", async () => {
     const lien = page.locator('[data-atlas="pdf-sans-prix"]');
     const href = await lien.getAttribute("href");

@@ -43,6 +43,7 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
 import {
+  type FeuilleDuChantier,
   basculerEquipeAction,
   deplacerChantierAction,
   deplanifierChantierAction,
@@ -282,7 +283,11 @@ export default function PlanningClient({
   // même composant, écrit une fois.
   type Ouvert =
     | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
-    | { quoi: "deplacer"; cle: string; chantierId: string }
+    // **`demi` compte ici aussi**, et c'est une réparation : sans elle, la liste
+    // des trois moments s'ouvrait dans les DEUX lignes du chantier à la fois —
+    // six boutons pour un seul geste, et le doigt tombait sur la mauvaise.
+    // Un chantier à la journée porte deux lignes ; on n'en touche qu'une.
+    | { quoi: "deplacer"; cle: string; chantierId: string; demi: Demi }
     | { quoi: "ajout-qui"; cle: string }
     | { quoi: "ajout-quand"; cle: string; chantierId: string };
   const [ouvert, setOuvert] = useState<Ouvert | null>(null);
@@ -293,15 +298,15 @@ export default function PlanningClient({
   /** La carte d'un jour dépliée sous une ligne des planifiés. */
   const [carteListe, setCarteListe] = useState<{ apres: string; jour: JourIso } | null>(null);
 
-  /** Les tâches déjà chargées — une par chantier, jamais deux fois. */
-  const [taches, setTaches] = useState<Record<string, string[]>>({});
+  /** Ce que porte la feuille de chaque chantier — chargé une fois, jamais deux. */
+  const [taches, setTaches] = useState<Record<string, FeuilleDuChantier>>({});
 
   useEffect(() => {
     if (!feuille) return;
     if (taches[feuille.chantierId]) return;
     let vivant = true;
-    tachesDuChantierAction(feuille.chantierId).then((liste) => {
-      if (vivant) setTaches((t) => ({ ...t, [feuille.chantierId]: liste }));
+    tachesDuChantierAction(feuille.chantierId).then((quoi) => {
+      if (vivant) setTaches((t) => ({ ...t, [feuille.chantierId]: quoi }));
     });
     return () => {
       vivant = false;
@@ -747,15 +752,30 @@ export default function PlanningClient({
                           libelle={ditLesEquipes(toutes.map(nomEquipe))}
                         />
                       )}
-                      <button
-                        type="button"
-                        aria-label={`Ouvrir la feuille — ${c.nom}`}
-                        onClick={ouvrir}
-                        className="cursor-pointer border-0 bg-transparent px-0.5 text-[19px]"
+                      {/* **Le chevron MÈNE au chantier, il n'ouvre pas la
+                          feuille.** La planche 84 lui donne le même geste que le
+                          nom ; l'application ne le peut pas, et voici pourquoi.
+
+                          Un chantier POSÉ quitte l'onglet « Chantiers »
+                          (`src/lib/onglet-chantier.ts`) : le planning devient
+                          alors le seul endroit d'où l'atteindre. Sans ce lien,
+                          on retombe exactement sur ce qu'il a signalé le 8 août
+                          2026 — *« il se range dans les chantiers planifiés,
+                          mais comment moi je fais pour avoir accès au devis ? »*
+                          —, et la réponse redeviendrait : on ne peut pas.
+
+                          Le nom, lui, garde le geste de la planche : il ouvre la
+                          journée et la feuille. Un chevron promet qu'on PART
+                          quelque part, un nom qu'il se déplie : les deux gestes
+                          se distinguent d'eux-mêmes. */}
+                      <Link
+                        href={`/chantiers/${c.id}`}
+                        aria-label={`Ouvrir le chantier — ${c.nom}`}
+                        className="cursor-pointer px-0.5 text-[19px] no-underline"
                         style={{ color: colors.chevron }}
                       >
                         ›
-                      </button>
+                      </Link>
                     </div>
                     {carteListe?.apres === c.id && (
                       <CarteDuJour
@@ -1160,7 +1180,7 @@ type GestesCarte = {
   nombreEquipes: number;
   ouvert:
     | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
-    | { quoi: "deplacer"; cle: string; chantierId: string }
+    | { quoi: "deplacer"; cle: string; chantierId: string; demi: Demi }
     | { quoi: "ajout-qui"; cle: string }
     | { quoi: "ajout-quand"; cle: string; chantierId: string }
     | null;
@@ -1176,7 +1196,7 @@ type GestesCarte = {
   deplacer: (chantierId: string, quand: QuandChantier) => void;
   retirerDuJour: (chantierId: string) => void;
   poser: (chantierId: string, jour: JourIso, quand: QuandChantier) => void;
-  taches: Record<string, string[]>;
+  taches: Record<string, FeuilleDuChantier>;
 };
 
 /**
@@ -1341,7 +1361,10 @@ function CarteDuJour({
                   ouvert.chantierId === c.id &&
                   ouvert.demi === demi;
                 const choixDeplacer =
-                  ouvert?.quoi === "deplacer" && ouvert.cle === cle && ouvert.chantierId === c.id;
+                  ouvert?.quoi === "deplacer" &&
+                  ouvert.cle === cle &&
+                  ouvert.chantierId === c.id &&
+                  ouvert.demi === demi;
 
                 return (
                   <div
@@ -1412,7 +1435,7 @@ function CarteDuJour({
                       <>
                         <Petit
                           data-atlas="deplacer"
-                          onClick={() => setOuvert({ quoi: "deplacer", cle, chantierId: c.id })}
+                          onClick={() => setOuvert({ quoi: "deplacer", cle, chantierId: c.id, demi })}
                         >
                           Déplacer
                         </Petit>
@@ -1514,7 +1537,7 @@ function CarteDuJour({
         <FeuilleChantier
           key={feuilleIci}
           chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
-          taches={taches[feuilleIci]}
+          feuille={taches[feuilleIci]}
         />
       )}
     </>
@@ -1553,10 +1576,10 @@ function quandDuChantier(c: ChantierPlanning): QuandChantier {
  */
 function FeuilleChantier({
   chantier,
-  taches,
+  feuille,
 }: {
   chantier: ChantierPlanning | null;
-  taches?: string[];
+  feuille?: FeuilleDuChantier;
 }) {
   // **`key={chantier.id}` là où elle est rendue** : changer de chantier remonte
   // le composant, et « Adresse copiée » repart à zéro sans qu'un effet ait à le
@@ -1620,12 +1643,12 @@ function FeuilleChantier({
       </div>
 
       <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
-        {(taches ?? []).length === 0 ? (
+        {(feuille?.taches ?? []).length === 0 ? (
           <p className="m-0 text-[14.5px] leading-[1.45]" style={{ color: colors.muted }}>
-            {taches === undefined ? "Lecture du devis…" : "Aucune ligne sur le devis."}
+            {feuille === undefined ? "Lecture du devis…" : "Aucune ligne sur le devis."}
           </p>
         ) : (
-          (taches ?? []).map((t, i) => (
+          (feuille?.taches ?? []).map((t, i) => (
             <p
               key={`${t}-${i}`}
               className="relative mb-[9px] pl-3.5 text-[14.5px] leading-[1.45]"
@@ -1641,16 +1664,23 @@ function FeuilleChantier({
         )}
       </div>
 
-      <a
-        data-atlas="pdf-sans-prix"
-        href={`/api/chantiers/${chantier.id}/feuille/pdf`}
-        target="_blank"
-        rel="noreferrer"
-        className="mx-auto mt-3 block w-max rounded-full px-5 py-2.5 text-[13px]"
-        style={{ background: colors.rust, color: "#faf9f5" }}
-      >
-        Ouvrir le PDF sans les prix
-      </a>
+      {/* **Le bouton n'existe QUE s'il y a un devis à imprimer.** Sans devis, la
+          route répond 404 : un bouton qui ouvre une erreur est pire qu'un bouton
+          absent — il fait douter de l'application entière. Le cas ne devrait pas
+          se présenter (le planning ne liste que des chantiers dont le devis est
+          PARTI), mais « ne devrait pas » n'est pas « ne peut pas ». */}
+      {feuille?.avecDevis && (
+        <a
+          data-atlas="pdf-sans-prix"
+          href={`/api/chantiers/${chantier.id}/feuille/pdf`}
+          target="_blank"
+          rel="noreferrer"
+          className="mx-auto mt-3 block w-max rounded-full px-5 py-2.5 text-[13px]"
+          style={{ background: colors.rust, color: "#faf9f5" }}
+        >
+          Ouvrir le PDF sans les prix
+        </a>
+      )}
     </div>
   );
 }

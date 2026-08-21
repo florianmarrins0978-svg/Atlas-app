@@ -462,23 +462,45 @@ export async function genererDevisSansPrix(
  * planifiés ferait payer à chaque ouverture du planning ce qui ne sert qu'à un
  * appui.
  */
-export async function tachesDuChantier(ctx: Ctx, chantierId: string): Promise<string[]> {
+export type FeuilleDuChantier = {
+  /** Ce qu'il y a à faire, ligne par ligne, sans un prix. */
+  taches: string[];
+  /**
+   * Un devis existe-t-il ?
+   *
+   * **L'écran s'en sert pour ne pas offrir un bouton qui mène à rien.** Sans
+   * devis, le PDF sans les prix n'a rien à imprimer et la route répond 404 : un
+   * bouton qui ouvre une erreur est pire qu'un bouton absent — il fait douter de
+   * l'application entière. Le cas ne devrait pas se présenter (le planning ne
+   * liste que des chantiers dont le devis est PARTI), mais « ne devrait pas »
+   * n'est pas « ne peut pas ».
+   */
+  avecDevis: boolean;
+};
+
+export async function tachesDuChantier(
+  ctx: Ctx,
+  chantierId: string
+): Promise<FeuilleDuChantier> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const d = await devisÀImprimer(tx, chantierId);
-    if (!d) return [];
+    if (!d) return { taches: [], avecDevis: false };
     const lignes = await tx
       .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite })
       .from(lignesDevis)
       .where(eq(lignesDevis.devisId, d.id))
       .orderBy(lignesDevis.ordre);
-    return lignes.map((l) => {
-      // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
-      // rien de plus que le libellé ; « 18 » dit combien de mètres de haie.
-      const q = Number(l.quantite);
-      return Number.isFinite(q) && q !== 1
-        ? `${l.libelle} — ${q.toLocaleString("fr-FR")}`
-        : l.libelle;
-    });
+    return {
+      avecDevis: true,
+      taches: lignes.map((l) => {
+        // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
+        // rien de plus que le libellé ; « 18 » dit combien de mètres de haie.
+        const q = Number(l.quantite);
+        return Number.isFinite(q) && q !== 1
+          ? `${l.libelle} — ${q.toLocaleString("fr-FR")}`
+          : l.libelle;
+      }),
+    };
   });
 }
 

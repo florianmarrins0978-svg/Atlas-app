@@ -138,8 +138,15 @@ async function main() {
         apres: e.querySelector('[data-demi="apres_midi"]')?.getAttribute("data-etat"),
       }))
     );
-    const libre = jours.find((j) => j.jour && j.matin === "libre" && j.apres === "libre");
-    if (!libre) throw new Error("aucun jour entièrement libre au calendrier");
+    // **Un samedi n'est jamais « pris », et il n'accueille rien pour autant.**
+    // Sa fiche dit « Jamais proposé » et n'offre aucun geste — chercher « le
+    // premier jour libre » tombait dessus, et le contrôle accusait l'écran de
+    // ne pas proposer d'ajouter là où il ne le doit surtout pas.
+    const ouvrable = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
+    const libre = jours.find(
+      (j) => j.jour && ouvrable(j.jour) && j.matin === "libre" && j.apres === "libre"
+    );
+    if (!libre) throw new Error("aucun jour ouvrable entièrement libre au calendrier");
 
     await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
     await page.waitForSelector('[data-atlas="carte-jour"]', { timeout: 15_000 });
@@ -184,8 +191,9 @@ async function main() {
         matin: e.querySelector('[data-demi="matin"]')?.getAttribute("data-etat"),
       }))
     );
-    const libre = jours.find((j) => j.jour && j.matin === "libre");
-    if (!libre) throw new Error("aucun jour libre au calendrier");
+    const ouvrable2 = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
+    const libre = jours.find((j) => j.jour && ouvrable2(j.jour) && j.matin === "libre");
+    if (!libre) throw new Error("aucun jour ouvrable libre au calendrier");
     await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
     await page.waitForTimeout(600);
 

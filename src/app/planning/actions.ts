@@ -12,7 +12,11 @@ import {
 import type { Moment } from "@/server/disponibilites";
 import type { QuandChantier } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
-import { tachesDuChantier } from "@/server/repositories/devis";
+import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
+
+// Réexporté pour l'écran : un composant client ne va pas chercher un type dans
+// un dépôt serveur, il le prend là où il prend l'action.
+export type { FeuilleDuChantier };
 
 /**
  * Poser un chantier : la date et la demi-journée.
@@ -173,9 +177,10 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
  * appui.
  *
  * Rend une liste vide plutôt que de lever : un chantier sans devis n'est pas
- * une panne, et la feuille le dit en toutes lettres.
+ * une panne, et la feuille le dit en toutes lettres — **et n'offre alors pas le
+ * bouton du PDF**, qui répondrait 404.
  */
-export async function tachesDuChantierAction(chantierId: string): Promise<string[]> {
+export async function tachesDuChantierAction(chantierId: string): Promise<FeuilleDuChantier> {
   const ctx = await getCurrentCtx();
   return tachesDuChantier(ctx, chantierId);
 }

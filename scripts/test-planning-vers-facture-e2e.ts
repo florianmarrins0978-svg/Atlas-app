@@ -186,7 +186,16 @@ async function main() {
     const { nom, chantierId } = await chantierPlanifie(page, "devis", -4);
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
 
-    await page.locator(`text=${nom}`).first().click();
+    // **Le CHEVRON, et non le nom.** Depuis la planche 84, le nom d'un chantier
+    // planifié déplie sa journée et sa feuille sur place ; c'est le chevron qui
+    // MÈNE au chantier. Le geste a changé de forme, jamais d'objet : sans lui,
+    // un chantier posé quitte l'onglet « Chantiers » et devient inatteignable —
+    // le cul-de-sac du 8 août 2026, mot pour mot.
+    await page
+      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`)
+      .first()
+      .getByRole("link", { name: `Ouvrir le chantier — ${nom}` })
+      .click();
     // **On attend l'écran, pas l'URL.** Ces liens font une navigation côté
     // client : `waitForURL` ne la voit pas, même en « commit », et le contrôle
     // échouait sur une page pourtant bien ouverte — il accusait le code au lieu
@@ -253,13 +262,19 @@ async function main() {
     // La ligne de CE chantier, et non la première de l'écran : avec plusieurs
     // chantiers terminés, viser la première clôturerait celle du voisin sans que
     // le contrôle s'en aperçoive.
-    const ligne = page.locator(`a[href="/chantiers/${chantierId}/facture"]`);
-    await ligne.first().waitFor({ state: "visible", timeout: 15000 });
-    assert.ok(
-      (await page.locator(`text=${nom}`).count()) > 0,
+    // **La ligne de CE chantier, visée dans SA rangée.** Le fil des terminés
+    // empile ses lignes dans une grille : viser le lien tout seul le fait
+    // recouvrir par la rangée voisine, et Playwright tourne en rond jusqu'à
+    // l'expiration en accusant un écran parfaitement juste.
+    const rangee = page.locator(`[data-atlas="ligne-terminee"]:has-text("${nom}")`).first();
+    await rangee.waitFor({ state: "visible", timeout: 15000 });
+    const ligne = rangee.locator(`a[href="/chantiers/${chantierId}/facture"]`);
+    assert.equal(
+      await ligne.count(),
+      1,
       "le chantier terminé n'est pas dans le fil : le chemin vers la facture est coupé"
     );
-    await ligne.first().click();
+    await ligne.click();
     await page.waitForSelector("text=Le chantier est réalisé ?", { timeout: 15000 });
 
     await page.click("text=Créer la facture");
