@@ -3,6 +3,8 @@ import {
   rangerDuPlusRecent,
   dernierePrestation,
   jourCourt,
+  nomDuFichierDeLaPiece,
+  type PieceDuClient,
 } from "../src/lib/documents-du-client";
 
 // Le rangement des pièces d'un client — sa demande du 20 août 2026, dite deux
@@ -144,6 +146,63 @@ dire(
 // Une date illisible se rend telle quelle plutôt que « undefined ».
 dire(jourCourt("pas-une-date") === "pas-une-date", "une date illisible ne devient pas « undefined »");
 dire(jourCourt("2026-13-01") === "2026-13-01", "un mois qui n'existe pas ne devient pas « undefined »");
+
+// ─── Le nom sous lequel la pièce arrive dans son téléphone ─────────────────
+//
+// **Sa demande du 21 août 2026 :** *« je veux pouvoir l'enregistrer »*
+// (planche 83, proposition C). Un fichier enregistré sans nom prend celui de la
+// page — c'est le défaut du 7 août sur la facture, et il se retrouverait avec
+// dix documents indistinguables dans son dossier.
+const piece = (h: Partial<PieceDuClient>): PieceDuClient => ({
+  id: "x", titre: "n° 2026-0029", jour: "2026-08-12", precision: null,
+  href: "/api/devis/abc/pdf", ...h,
+});
+
+dire(
+  nomDuFichierDeLaPiece(piece({})) === "devis-2026-0029.pdf",
+  `un devis porte son numéro (lu : ${nomDuFichierDeLaPiece(piece({}))})`,
+);
+dire(
+  nomDuFichierDeLaPiece(piece({ href: "/api/factures/abc/pdf", titre: "n° 2026-0031" })) ===
+    "facture-2026-0031.pdf",
+  "une facture s'appelle facture, et non devis",
+);
+// **La nature vient de l'ADRESSE, pas du titre.** Un libellé peut changer à la
+// prochaine demande ; ce que le serveur sert, non.
+dire(
+  nomDuFichierDeLaPiece(piece({ href: "/api/factures/abc/pdf", titre: "n° 2026-0031" }))
+    .startsWith("facture-"),
+  "le genre se lit dans l'adresse",
+);
+// Une fiche de chantier n'a pas de numéro : elle porte son jour, au format de
+// tri — dix fichiers se rangent alors d'eux-mêmes dans l'ordre du temps.
+dire(
+  nomDuFichierDeLaPiece(
+    piece({ href: "/api/chantiers/abc/fiche/pdf", titre: "12 août 2026", jour: "2026-08-12" })
+  ) === "fiche-chantier-2026-08-12.pdf",
+  "une fiche de chantier porte son jour, au format qui se range",
+);
+// Ni numéro ni jour : on ne fabrique pas un nom qui ferait croire à une date.
+dire(
+  nomDuFichierDeLaPiece(piece({ href: "/api/chantiers/abc/fiche/pdf", titre: "Sans date", jour: null })) ===
+    "fiche-chantier.pdf",
+  "sans date, aucune date n'est inventée",
+);
+// Le « n° » et son espace ne traversent JAMAIS jusqu'au nom du fichier : un tel
+// nom se recopie mal et se cherche encore plus mal.
+for (const t of ["n° 2026-0029", "N° 2026-0029", "no 2026-0029", "2026-0029"]) {
+  dire(
+    nomDuFichierDeLaPiece(piece({ titre: t })) === "devis-2026-0029.pdf",
+    `« ${t} » donne devis-2026-0029.pdf (lu : ${nomDuFichierDeLaPiece(piece({ titre: t }))})`,
+  );
+}
+// Et le nom finit toujours par .pdf, sans quoi le téléphone ne sait pas l'ouvrir.
+dire(
+  [piece({}), piece({ jour: null, titre: "?" })].every((p) =>
+    nomDuFichierDeLaPiece(p).endsWith(".pdf")
+  ),
+  "un nom de fichier porte toujours son extension",
+);
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

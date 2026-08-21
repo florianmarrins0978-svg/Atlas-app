@@ -483,6 +483,68 @@ corrigée. `TODO.md` la garde ouverte.
 
 ---
 
+## 2026-08-21
+
+### Les documents d'un client s'enregistrent, au lieu de seulement s'ouvrir
+
+**Sa demande :** *« je veux pouvoir l'enregistrer, mais avant que tu codes quoi
+que ce soit, fais-moi une maquette visuelle »*. Trois façons lui ont été
+dessinées ; il a retenu **la C**.
+
+Sur la fiche d'un client, toucher un document ouvre désormais trois choix :
+**Enregistrer**, Ouvrir, Partager. Le fichier arrive sous son vrai nom —
+`devis-2026-0029.pdf` — et non sous celui de la page.
+
+**Pourquoi pas plus court.** La proposition la plus rapide enregistrait dès le
+premier appui : ouvrir la fiche d'un client pour relire un montant lui aurait
+téléchargé un fichier à chaque coup d'œil. Celle qu'il a retenue ne décide de
+rien à sa place.
+
+**« Partager » revient**, après avoir quitté l'écran d'envoi le même matin :
+c'était le seul chemin vers WhatsApp, et sa place est sur le document rangé.
+`ARCHITECTURE.md` §141.
+
+### Le devis envoyé ramène à l'accueil, sans écran de trop
+
+**Sa demande, capture à l'appui :** *« Quand je clique sur envoyer le devis, il y
+a bien l'application SMS qui s'ouvre, ça c'est bien. Par contre juste derrière,
+il y a cette page-là qui s'affiche et je n'ai pas besoin qu'elle s'affiche […]
+il faut qu'on retourne directement sur l'accueil. »*
+
+Elle ne lui apprenait rien : il venait d'appuyer, et sa messagerie s'était
+ouverte par-dessus. Au retour de Messages, un récapitulatif à refermer avant de
+reprendre son travail. C'est le deuxième écran de trop retiré du même parcours
+en deux jours.
+
+**L'écran du devis parti reste**, mais on ne le voit plus qu'en y revenant par la
+carte du chantier. Il s'allège : « Télécharger le PDF · Partager » est retiré. Le
+devis parti se range de lui-même en PDF dans la fiche du client, colonne
+« Devis » — c'est lui qui l'a rappelé, et le code lui donne raison.
+
+**Ce que ça coûte, dit franchement :** « Partager » était le seul chemin vers
+WhatsApp depuis cet écran. Et la bascule « Plutôt par e-mail » a été GARDÉE
+malgré sa réponse : c'est le seul endroit où saisir une coordonnée manquante, et
+son absence était sa plainte du 13 août. `ARCHITECTURE.md` §140.
+
+### La ligne « Version » disait le disque, pas ce qui tournait
+
+**Sa phrase :** *« Ça n'a pas marché, j'ai encore l'ancienne version. Pourtant
+j'ai rechargé les mises à jour. »* Les deux moitiés étaient vraies en même
+temps — et c'est ce qui a fait chercher au mauvais endroit.
+
+Son banc sert une version **construite** : c'est ce qui la rend rapide.
+Récupérer le code neuf fait avancer le disque sans toucher à ce qui s'exécute.
+La ligne « Version » de Réglages, elle, lisait le disque : elle confirmait la
+mise à jour à l'instant précis où elle aurait dû avertir que rien de neuf
+n'était servi.
+
+**Ce qui change :** cette ligne annonce désormais **ce que l'application
+exécute**. Quand du code plus récent attend d'être construit, l'écran le dit, le
+nomme, et donne le geste — rouvrir l'espace de travail.
+
+**Ce que ça ne fait pas, dit franchement :** cela n'accélère rien. Cela cesse de
+prétendre que le code neuf est là quand il ne l'est pas. `ARCHITECTURE.md` §139.
+
 ## 2026-08-20
 
 ### « Mieux vaut refuser de conclure que produire un faux diagnostic »

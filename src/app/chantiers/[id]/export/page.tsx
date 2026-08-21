@@ -13,16 +13,8 @@ import ExportClient from "./ExportClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function ExportPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  /** `?envoye=1` : on arrive d'un envoi qui vient d'aboutir. Voir `ExportClient`. */
-  searchParams: Promise<{ envoye?: string }>;
-}) {
+export default async function ExportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { envoye: vientDEtreEnvoye } = await searchParams;
 
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
@@ -155,7 +147,6 @@ export default async function ExportPage({
           totalTtc={devisRow.totalTtc}
           numeroDevis={devisRow.numeroCommercial}
           initialEnvoye={devisRow.statut === "envoye"}
-          vientDEtreEnvoye={vientDEtreEnvoye === "1"}
           etatEnvoi={etat}
           messageClient={envoi?.precisionClient ?? null}
           lienEnvoi={envoi && !envoi.reponse ? `/devis/${envoi.jeton}` : null}

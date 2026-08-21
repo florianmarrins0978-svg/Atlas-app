@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import TransmettreAuClient from "./TransmettreAuClient";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
 import { reprendreDevisAction } from "./actions";
 import { enEuros } from "@/lib/euros";
-import { avecCivilite, type Civilite } from "@/lib/civilite";
+import { type Civilite } from "@/lib/civilite";
 
 
 export default function ExportClient({
@@ -27,7 +27,6 @@ export default function ExportClient({
   messageClient,
   lienEnvoi,
   origine,
-  vientDEtreEnvoye = false,
 }: {
   chantierId: string;
   devisId: string;
@@ -51,8 +50,6 @@ export default function ExportClient({
   lienEnvoi: string | null;
   /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
   origine: string;
-  /** On arrive d'un envoi qui vient d'aboutir. Voir `lienClient` plus bas. */
-  vientDEtreEnvoye?: boolean;
 }) {
   const router = useRouter();
   const [reprise, setReprise] = useState(false);
@@ -81,17 +78,18 @@ export default function ExportClient({
    * retour par l'historique, un signet rouvert plus tard tombent alors sur
    * l'état réel du devis parti.
    */
-  const lienClient = vientDEtreEnvoye ? lienEnvoi : null;
-
-  // `replaceState` et non `router.replace` : ce dernier rejouerait le rendu
-  // serveur, et la mention disparaîtrait sous ses yeux à l'instant même où il
-  // vient de la lire. On ne touche qu'à la barre d'adresse.
-  useEffect(() => {
-    if (!vientDEtreEnvoye) return;
-    const url = new URL(window.location.href);
-    url.searchParams.delete("envoye");
-    window.history.replaceState(null, "", url.toString());
-  }, [vientDEtreEnvoye]);
+  // **Plus de « ça vient de partir » sur cet écran — sa demande du 21 août 2026.**
+  //
+  // *« Juste derrière, il y a cette page-là qui s'affiche et je n'ai pas besoin
+  // qu'elle s'affiche […] une fois que le devis est envoyé, on retourne
+  // directement sur l'accueil. »* On n'arrive donc plus JAMAIS ici dans la
+  // seconde qui suit l'appui : cet écran ne se voit qu'en y revenant, plus tard,
+  // par la carte du chantier.
+  //
+  // Tout ce qui distinguait « à l'instant » du reste part avec — le drapeau
+  // `?envoye=1`, la mention « Devis prêt pour … », l'état « Devis prêt ». Ces
+  // branches ne pouvaient plus s'atteindre, et un code mort trompe la session
+  // suivante, qui le corrige ou s'interroge.
   // **L'avertissement avant de rouvrir un devis que le client a en main.**
   //
   // Vérifié dans le dépôt avant d'écrire cet écran, et ce n'est pas une
@@ -114,7 +112,7 @@ export default function ExportClient({
   // Déduit des props, jamais gardé en état : une reprise de devis rafraîchit
   // l'écran, et un état figé à l'ouverture continuerait d'annoncer un devis
   // parti alors qu'une nouvelle version attend d'être envoyée.
-  const envoye = initialEnvoye || lienClient !== null;
+  const envoye = initialEnvoye;
   const nomFichierDevis = `devis-${numeroDevis}.pdf`;
 
   // Un refus, ou un lien périmé : le devis peut repartir, dans une nouvelle
@@ -134,8 +132,8 @@ export default function ExportClient({
   // chaque instant**, celui du moment. Avant l'envoi, reprendre EST le geste ;
   // après, c'est transmettre. Jamais les deux.
   const peutReprendre =
-    !lienClient && (etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc");
-  const lienAMontrer = lienClient ?? lienEnvoi;
+    etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc";
+  const lienAMontrer = lienEnvoi;
 
   /**
    * Rouvre le devis pour le modifier, puis mène à l'écran qui le porte.
@@ -182,15 +180,15 @@ export default function ExportClient({
           d'or » : un filet d'or pour l'état, le montant seul au centre, le geste
           en bas sous le pouce. Les mesures viennent de là ; les reprendre de là
           si on y retouche, jamais de mémoire. */}
-      {envoye || lienClient ? (
+      {envoye ? (
         <EcranDevisParti
-          etat={lienClient ? "Devis prêt" : etatEnvoiLabel[etatEnvoi]}
+          etat={etatEnvoiLabel[etatEnvoi]}
           // La même civilité que la synthèse ci-dessous : lire « Mr. Martins »
           // avant l'envoi et « Martins » juste après ferait douter qu'il
           // s'agisse du même client. Le message qui part chez le client
           // l'aborde de la même façon depuis le 13 août au soir
           // (`src/lib/message-client.ts`).
-          phrase={lienClient ? `Devis prêt pour ${avecCivilite(clientNom, clientCivilite)}.` : etatEnvoiExplication[etatEnvoi]}
+          phrase={etatEnvoiExplication[etatEnvoi]}
           messageClient={messageClient}
           numeroDevis={numeroDevis}
           totalTtc={totalTtc}
@@ -208,13 +206,11 @@ export default function ExportClient({
                 telephone={clientTelephone}
                 email={clientEmail}
                 lien={lienComplet(lienAMontrer)}
-                lienPdf={`/api/devis/${devisId}/pdf?telecharger=1`}
-                nomFichierPdf={nomFichierDevis}
                 // `initialEnvoye` et non `envoye` : juste après le premier
                 // envoi, l'écran dit « Devis prêt » et le geste est bien un
                 // PREMIER envoi. Confondre les deux ferait proposer de
                 // « relancer » un client qui n'a encore rien reçu.
-                relance={initialEnvoye && !lienClient}
+                relance={initialEnvoye}
               />
             ) : null
           }

@@ -931,6 +931,29 @@ avant d'écrire.
 **Faire le ménage des serveurs dans un appel SÉPARÉ**, qui se termine avant la
 batterie. C'est la seule chose à retenir pour la prochaine fois.
 
+### 0 duotricies ter. Reconstruire tout seul quand du code neuf arrive
+
+Posé le 21 août 2026, après *« j'ai encore l'ancienne version »*.
+
+L'écran **dit** maintenant la vérité (§139) : quand du code plus récent attend
+d'être construit, il l'annonce et donne le geste. **Mais le geste reste le
+sien** — arrêter et rouvrir l'espace de travail.
+
+Aujourd'hui, la reconstruction n'est déclenchée toute seule que dans un cas :
+version bâtie **et** veilleur vivant, où le bouton coupe le serveur et laisse le
+veilleur reconstruire. Sans veilleur, on se contente de le lui dire.
+
+**La question à trancher :** le bouton doit-il savoir reconstruire lui-même,
+sans dépendre du veilleur ? C'est faisable — un processus détaché qui bâtit puis
+remplace le serveur — mais cela veut dire couper son application pendant une ou
+deux minutes sur un geste qu'il n'a pas explicitement demandé. Le mot du bouton
+devrait alors changer : « Chercher les dernières corrections » ne prévient pas
+qu'on va éteindre.
+
+**Qui peut le faire :** une session, une fois qu'il aura dit s'il préfère un
+bouton qui coupe ou un bouton qui prévient. Ne pas trancher à sa place : c'est
+son application pendant ses heures de travail.
+
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 
 Sa demande : *« si jamais on facture un client et qui décide de ne pas nous
@@ -1800,6 +1823,28 @@ de plus dans le modèle, pas un quatrième parcours.
 source (`scripts/engendrer-maquette-arrosage.mjs`) et tous leurs nombres sont
 calculés. Contrôle : `scripts/verifier-maquette-arrosage.mjs`, dans
 `npm run verifier:maquette`.
+
+### 0 triquadragies bis. `test-fiche-chantier-e2e` tombe SOUS CHARGE, comme les autres
+
+Constaté deux fois le 21 août 2026, sur deux batteries d'affilée :
+
+    ✗ Cocher tient : l'écran ET la base
+      les coches ne sont pas arrivées en base
+
+**Jouée seule, elle passe** — 11 cas, 0 échec, vérifié les deux fois. C'est donc
+la même famille que `test-facture-impayee-e2e` et `test-fiche-pendant-relance` :
+une écriture part au doigt levé, la suite n'attend pas qu'elle arrive, et sous
+la charge de quatre-vingts suites elle mesure la base avant l'écriture.
+
+**Le remède est connu et déjà appliqué ailleurs** (§ « attendre ce qu'on
+affirme, jamais une durée ») : relire jusqu'à voir ce qu'on affirme, laisser
+l'appel PARTIR avant de recharger, et surtout **assener le bon coupable** quand
+il n'arrive jamais — sans quoi le rouge tombe trois cas plus loin, sur un écran
+innocent.
+
+**Qui peut le faire :** n'importe quelle session qui touche à cette fiche. Ce
+n'est pas urgent pour le produit ; c'est urgent pour la batterie, qu'un rouge
+au hasard finit par rendre inutile.
 
 ### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
 

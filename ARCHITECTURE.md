@@ -12361,3 +12361,213 @@ dépôt (`CLAUDE.md` §5) : la phrase du laboratoire s'affichait deux fois de su
 comme méthode de confirmation puis comme première information requise. Une
 consigne répétée se lit comme deux consignes, et sur un chantier on cherche la
 différence entre les deux. L'import refuse désormais cette répétition.
+
+---
+
+## 139. La ligne « Version » répondait à une autre question que celle posée
+
+**Le patron, le 21 août 2026 :** *« Ça n'a pas marché, j'ai encore l'ancienne
+version. Pourtant j'ai rechargé les mises à jour. »*
+
+Les deux moitiés de sa phrase étaient vraies **en même temps**, et c'est ce qui
+rend le défaut coûteux : la mise à jour avait bien eu lieu, et son écran servait
+bien l'ancienne application.
+
+### Ce qui se passait
+
+Son banc, une fois qu'il a réussi à construire, sert une version **bâtie** —
+du code figé au moment de la construction. C'est ce qui la rend rapide. Or :
+
+| | Ce qui avance | Ce qui est servi |
+|---|---|---|
+| `git` récupère le code neuf | le disque | inchangé |
+| l'espace redémarre | le disque **et** la construction | le code neuf |
+
+Le bouton « Chercher les dernières corrections » fait la première ligne, pas la
+seconde — sauf quand un veilleur est là pour relever le serveur, cas où il coupe
+et laisse reconstruire (`src/lib/issue-mise-a-jour.ts`). Sans veilleur, il
+**dit** qu'il faut rouvrir l'espace. Mais rien ne le rattrapait ensuite.
+
+### Le vrai défaut n'était pas là : il était dans le témoin
+
+`versionExecutee` lisait le **dépôt** (`git log -1` dans le dossier). La ligne
+« Version » annonçait donc le commit du jour pendant que les écrans dataient de
+la veille.
+
+**Cette ligne existe pour répondre à « qu'est-ce que j'exécute ? »** — c'est
+même la raison pour laquelle elle a été ajoutée (§6 de `CLAUDE.md` : *« une
+capture répond à la question sans qu'on ait à la poser »*). Elle répondait à
+« qu'est-ce qui est sur le disque ? ». Les deux réponses ne divergent **que**
+dans la situation où on l'interroge. Un témoin qui ment exactement au moment où
+l'on s'en sert coûte plus cher que pas de témoin : il a envoyé chercher la panne
+du côté de la livraison, qui était irréprochable, et m'y a envoyé aussi.
+
+### Ce qui est posé
+
+`src/lib/version-servie.ts` — une règle pure, sans base ni serveur :
+
+- **en développement**, le dépôt EST ce qui s'exécute (chaque écran se recompile
+  à l'ouverture) : sa version est la bonne, et rien ne peut être « en retard » ;
+- **en version bâtie**, seule la marque posée au démarrage (`ATLAS_VERSION`) dit
+  la vérité — et si le dépôt a avancé depuis, **l'écran le dit**, nomme le code
+  qui attend, et donne le geste : rouvrir l'espace.
+
+Deux refus délibérés, parce qu'un avertissement qui parle à tort s'apprend à
+ignorer : pas de retard annoncé en développement, et **aucun** quand la marque
+de démarrage manque — on ne sait alors pas avec quoi l'application a été bâtie,
+et deviner serait exactement la faute qu'on répare.
+
+`scripts/test-version-servie.ts` rejoue son cas ligne à ligne. Confronté à
+l'ancien comportement — annoncer le dépôt quoi qu'il arrive — il rougit sur ce
+cas précis et sur celui de la branche, et reste vert partout ailleurs.
+
+### Ce que ça ne répare pas, et qu'il faut dire
+
+Cela ne fait pas arriver le code neuf plus vite : **cela cesse de prétendre
+qu'il est là.** Le geste reste le sien — rouvrir l'espace de travail. Rendre la
+reconstruction automatique dans tous les cas est une autre question, ouverte
+dans `TODO.md`.
+
+---
+
+## 140. L'envoi ramène à l'accueil : le dernier écran de trop
+
+**Le patron, le 21 août 2026, capture à l'appui :** *« Quand je clique sur
+envoyer le devis, il y a bien l'application SMS qui s'ouvre automatiquement, ça
+c'est bien. Par contre juste derrière, il y a cette page-là qui s'affiche et je
+n'ai pas besoin qu'elle s'affiche […] il faut qu'une fois que le devis est
+envoyé, on retourne directement sur la première page, l'accueil. »*
+
+### Pourquoi il avait raison
+
+Cet écran ne lui apprenait rien : il venait d'appuyer, et sa messagerie s'était
+ouverte par-dessus. Au retour de Messages, il tombait sur un récapitulatif à
+refermer avant de reprendre son travail. L'accueil, lui, porte l'état du
+chantier — « devis parti, en attente de réponse » — au milieu des autres.
+
+C'est le deuxième écran supprimé du même parcours en deux jours (§136). Les deux
+avaient la même infirmité : exister pour dire ce que l'on venait de faire.
+
+### L'ordre des deux gestes, et il ne se négocie pas
+
+L'ouverture de la messagerie reste **avant** la navigation. Un navigateur refuse
+une ouverture de `sms:` qui ne suit pas le doigt d'assez près, et sur iOS il la
+refuse **sans un mot**. Le lien touché pour lui vit sur `document.body`, hors de
+l'arbre React : il survit donc au changement d'écran, ce qui était déjà vrai
+avant et le reste.
+
+### Ce que la suppression a emporté
+
+Tout ce qui distinguait « ça vient de partir » : le drapeau `?envoye=1`, la
+mention « Devis prêt pour … », l'état « Devis prêt », et l'effet qui nettoyait
+l'adresse (§139, corrigé la veille). Plus aucun chemin ne les atteignait.
+
+**Conséquence qu'aucun raisonnement n'avait prévue, et que la batterie a
+montrée :** cet écran ne se voit désormais qu'en y REVENANT, sur un devis déjà
+parti. Le geste y est donc une **relance**, et le libellé le dit — « Relancer par
+SMS » et non « Ouvrir le SMS tout prêt ». Ce n'était pas un défaut : c'est la
+règle du 13 août (le libellé annonce ce que le geste fait) qui devient enfin
+visible, le premier envoi n'atterrissant plus jamais là.
+
+### La rangée d'actions, et ce que le patron a tranché
+
+Sur cet écran, il ne veut que deux gestes. « Télécharger le PDF · Partager » est
+retiré.
+
+**Ce qui reste, contre la lettre de sa réponse :** la bascule de canal
+(« Plutôt par e-mail »). Ce n'est pas un troisième bouton mais **le seul endroit
+où une coordonnée manquante se saisit** — il n'existe aucun écran de fiche
+client — et son absence était sa plainte du 13 août : *« si je veux l'envoyer par
+e-mail, je ne peux pas revenir le choisir »*. La retirer rouvrirait un défaut
+déjà payé. Signalé, et il peut trancher autrement.
+
+**Ce que le retrait du PDF ne coûte pas, et c'est LUI qui l'a rappelé :** *« une
+fois le devis envoyé, il doit s'enregistrer normalement en PDF dans la catégorie
+client […] il y a trois colonnes devis, factures et fiches chantiers »*.
+Vérifié plutôt que cru : `chargerFicheClient` ne retient que les devis au statut
+`envoye` et les range en vignettes PDF dans la colonne « Devis ». Un devis parti
+s'y classe tout seul.
+
+**Une nuance dite au patron :** ces vignettes OUVRENT le PDF, elles ne proposent
+pas de l'enregistrer — ce n'est pas le geste « télécharger » du 7 août 2026, qui
+lui, reste éprouvé sur la facture (`test-facture-au-client-e2e.ts`). Question
+posée, réponse non reçue.
+
+---
+
+## 141. Enregistrer une pièce : la feuille qui ne décide de rien
+
+**Le patron, le 21 août 2026 :** *« Alors oui, je veux pouvoir l'enregistrer,
+mais avant que tu codes quoi que ce soit, fais-moi une maquette visuelle que je
+voie exactement ce que tu veux me dire. »*
+
+Puis, devant la planche : **« La C »**
+(`docs/maquettes/83-enregistrer-le-pdf.html`).
+
+### Ce qui manquait
+
+Sa fiche client range tout ce qui le concerne en trois colonnes — devis,
+factures, fiches de chantier — et c'est lui qui l'a rappelé : *« une fois le
+devis envoyé, il doit s'enregistrer normalement en PDF dans la catégorie
+client »*. Vérifié plutôt que cru : seuls les devis au statut `envoye` y
+entrent.
+
+Mais ces vignettes **ouvraient** le document dans un onglet. Rien ne proposait
+de le garder — le défaut exact du 7 août, sur un autre écran.
+
+### Pourquoi la C, et pas la plus courte
+
+La **A** (la vignette enregistre) coûtait un geste de moins. Elle décidait à sa
+place : ouvrir la fiche d'un client pour relire un montant lui aurait téléchargé
+un fichier à chaque coup d'œil.
+
+La question lui a donc été posée telle quelle sur la planche — **vient-il
+regarder, ou garder ?** — et sa réponse est celle qui ne tranche pas pour lui :
+un appui, trois choix.
+
+**La B a été dessinée et écartée avec son coût dit :** un rond de 30 px contre
+un lien de 56 px, dans une colonne large de 118 px. Cet écran tient une règle —
+*« un lien qu'il touche d'une main, dehors, parfois avec des gants »* — et deux
+cibles voisines de tailles inégales la défont.
+
+### Les trois conditions, et aucune ne suffit seule
+
+Le remède du 7 août tient à trois choses **réunies**, et c'est ce qui rend le
+défaut si facile à faire revenir :
+
+| | Sans elle |
+|---|---|
+| `?telecharger=1` (le serveur pose `attachment`) | Chrome **affiche** le document |
+| l'attribut `download` (le NOM) | Safari le nomme d'après la page, **sans extension** |
+| **pas** de `target="_blank"` | l'onglet neuf prive Safari de sa demande d'enregistrement |
+
+« Ouvrir » veut exactement l'inverse : pas de `?telecharger=1`, et un onglet à
+part pour ne pas perdre la fiche. Si les deux gestes servaient la même adresse,
+l'un des deux mentirait — et c'est ce que le contrôle vérifie.
+
+### Le nom du fichier est une RÈGLE, pas une chaîne recopiée
+
+`nomDuFichierDeLaPiece` (`src/lib/documents-du-client.ts`), éprouvée sans base :
+
+- **la nature se lit dans l'ADRESSE, jamais dans le titre.** Le titre est ce
+  qu'il lit ; l'adresse est ce que le serveur sert. Deviner « c'est un devis »
+  à partir d'un libellé, c'est se fier à un mot que la prochaine demande peut
+  changer ;
+- le « n° » et son espace ne traversent pas — un tel nom se recopie mal et se
+  cherche encore plus mal ;
+- une fiche de chantier n'a pas de numéro : elle porte son **jour au format de
+  tri** (`AAAA-MM-JJ`), de sorte que dix fichiers se rangent d'eux-mêmes dans
+  l'ordre du temps ;
+- sans numéro ni jour, **aucune date n'est inventée**.
+
+### Le contrôle, et le fait qu'il sache échouer
+
+`scripts/test-enregistrer-piece-e2e.ts` a été confronté aux trois défauts, un
+par un — adresse sans `?telecharger=1`, lien sans nom, onglet neuf ajouté. Il
+rougit sur chacun, en nommant lequel. Une suite qui se serait contentée de
+compter les boutons serait restée verte le jour où l'une des trois saute, et
+c'est lui qui l'aurait découvert : un fichier sans nom dans son dossier.
+
+**« Partager » revient ici**, après avoir été retiré de l'écran d'envoi le même
+matin. C'était le seul chemin vers WhatsApp, et sa place est plutôt sur le
+document rangé que sur le geste d'envoi.
