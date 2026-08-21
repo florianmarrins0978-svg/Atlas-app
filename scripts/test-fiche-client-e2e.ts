@@ -260,15 +260,18 @@ async function main() {
   });
 
   await cas("chaque colonne porte ses PDF, du plus récent au plus ancien", async () => {
+    // **Les pièces sont des BOUTONS depuis le 21 août 2026.** Un appui ouvre
+    // trois choix — Enregistrer, Ouvrir, Partager — au lieu d'ouvrir le PDF
+    // d'office (`ARCHITECTURE.md` §141, planche 83 proposition C). L'adresse ne
+    // se lit donc plus sur la vignette : elle vit dans la feuille.
     const colonnes = await page.evaluate(() =>
       [...document.querySelectorAll("h3")].map((h3) => {
         const boite = h3.parentElement!;
         return {
           titre: (h3.textContent ?? "").trim(),
-          liens: [...boite.querySelectorAll("a")].map((a) => ({
-            href: a.getAttribute("href") ?? "",
-            texte: (a.textContent ?? "").replace(/\s+/g, " ").trim(),
-            haut: a.getBoundingClientRect().top,
+          liens: [...boite.querySelectorAll('[data-atlas="piece"]')].map((b) => ({
+            texte: (b.textContent ?? "").replace(/\s+/g, " ").trim(),
+            haut: b.getBoundingClientRect().top,
           })),
         };
       })
@@ -281,13 +284,21 @@ async function main() {
     };
     for (const colonne of colonnes) {
       assert.ok(colonne.liens.length >= 1, `la colonne « ${colonne.titre} » est vide`);
-      for (const lien of colonne.liens) {
-        assert.match(
-          lien.href,
-          attendus[colonne.titre],
-          `« ${colonne.titre} » pointe sur ${lien.href}, qui n'est pas son PDF`
-        );
-      }
+    }
+
+    // **Chaque colonne mène à SON genre de document**, vérifié en ouvrant la
+    // feuille de sa première pièce — c'est-à-dire par le chemin qu'il emprunte.
+    // Une colonne « Facture » qui servirait des devis se lirait pareil dans le
+    // DOM ; seule l'adresse le dit.
+    for (const [titre, motif] of Object.entries(attendus)) {
+      const cadre = page.locator("div").filter({ has: page.locator(`h3:text-is("${titre}")`) }).last();
+      await cadre.locator('[data-atlas="piece"]').first().click();
+      const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
+      await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
+      const href = (await ouvrir.getAttribute("href")) ?? "";
+      assert.match(href, motif, `« ${titre} » pointe sur ${href}, qui n'est pas son PDF`);
+      await page.getByRole("button", { name: "Annuler" }).click();
+      await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
     }
 
     // **L'ordre se lit sur l'ÉCRAN, pas sur les données.** Un tri juste dans le
@@ -416,11 +427,19 @@ async function main() {
   // ou une page HTML se voit exactement pareil dans le DOM ; c'est en le
   // suivant qu'on l'apprend.
   await cas("la fiche de chantier s'ouvre vraiment, et c'est un PDF", async () => {
-    const href = await page
-      .locator(`a[href="/api/chantiers/${chantierId}/fiche/pdf"]`)
-      .first()
-      .getAttribute("href");
-    assert.ok(href, "aucun lien vers la fiche de chantier en PDF");
+    // L'adresse se lit dans la feuille, ouverte comme il l'ouvre.
+    const cadre = page.locator("div").filter({ has: page.locator('h3:text-is("Fiche chantier")') }).last();
+    await cadre.locator('[data-atlas="piece"]').first().click();
+    const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
+    await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
+    const href = await ouvrir.getAttribute("href");
+    await page.getByRole("button", { name: "Annuler" }).click();
+    await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
+    assert.equal(
+      href,
+      `/api/chantiers/${chantierId}/fiche/pdf`,
+      `la feuille de la fiche de chantier mène à « ${href} »`
+    );
     const reponse = await page.request.get(`${BASE}${href}`);
     assert.equal(reponse.status(), 200, `la fiche de chantier répond ${reponse.status()}`);
     assert.match(

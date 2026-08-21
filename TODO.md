@@ -415,8 +415,25 @@ demande du 21 août) : l'adresse cliquable, **Maps et Waze — plus « Plans »*
 `src/lib/itineraire.ts` et `FeuilleYAller` plutôt que d'écrire une seconde fois
 les mêmes liens.
 
-**⚠ TROUVÉ le 21 août en vérifiant sa question, et NON TRANCHÉ : rien n'empêche
-de poser la MÊME équipe sur deux chantiers de la même demi-journée.** Paul peut
+**LE QUOTA QUI PRÉVIENT SANS INTERDIRE — sa règle du 21 août au soir, et c'est
+elle qui tient.** Une équipe = un chantier = une demi-journée. En dessous : « il
+reste de la place ». À égalité : « complet ». **Au-delà : une troisième couleur
+(l'or), et l'ajout PASSE quand même** — « nous, on prévient juste ». Le
+pourcentage ne s'écrit que s'il dépasse. Le code ne devra donc **jamais refuser
+un ajout**, et **jamais employer le rouge** pour ça : le rouge dit « erreur »,
+pas « regarde ».
+
+**Ce qui précède sur « aucun plafond » reste vrai dans son esprit :** Pas de limite au nombre de chantiers par demi-journée, ni au
+nombre d'équipes : « en entretien, les gars restent une heure et enchaînent
+quatre ou cinq chantiers ». Le code ne devra donc **jamais refuser un ajout** ni
+qualifier un jour de plein. **Reste à choisir comment le mois dit la charge** :
+points, équipes dehors, ou chiffres (les trois se comparent dans la planche).
+
+**⚠ Et la question de la même équipe posée deux fois tombe avec le plafond :**
+rien n'empêche de poser Paul sur deux chantiers de la même demi-journée, et
+c'est désormais ASSUMÉ — deux interventions d'une heure s'enchaînent. Ce qui
+reste à trancher est plus petit : faut-il le SIGNALER (« Paul est déjà sur
+Auffret ce matin ») ? Paul peut
 être sur Leroy et sur Auffret le même après-midi — impossible sur le terrain, et
 le compte s'en trouve flatté : deux chantiers, une seule équipe occupée, l'écran
 dit « 1 sur 2 » et laisse croire qu'il reste de la place.
@@ -924,6 +941,29 @@ avant d'écrire.
 
 **Faire le ménage des serveurs dans un appel SÉPARÉ**, qui se termine avant la
 batterie. C'est la seule chose à retenir pour la prochaine fois.
+
+### 0 duotricies ter. Reconstruire tout seul quand du code neuf arrive
+
+Posé le 21 août 2026, après *« j'ai encore l'ancienne version »*.
+
+L'écran **dit** maintenant la vérité (§139) : quand du code plus récent attend
+d'être construit, il l'annonce et donne le geste. **Mais le geste reste le
+sien** — arrêter et rouvrir l'espace de travail.
+
+Aujourd'hui, la reconstruction n'est déclenchée toute seule que dans un cas :
+version bâtie **et** veilleur vivant, où le bouton coupe le serveur et laisse le
+veilleur reconstruire. Sans veilleur, on se contente de le lui dire.
+
+**La question à trancher :** le bouton doit-il savoir reconstruire lui-même,
+sans dépendre du veilleur ? C'est faisable — un processus détaché qui bâtit puis
+remplace le serveur — mais cela veut dire couper son application pendant une ou
+deux minutes sur un geste qu'il n'a pas explicitement demandé. Le mot du bouton
+devrait alors changer : « Chercher les dernières corrections » ne prévient pas
+qu'on va éteindre.
+
+**Qui peut le faire :** une session, une fois qu'il aura dit s'il préfère un
+bouton qui coupe ou un bouton qui prévient. Ne pas trancher à sa place : c'est
+son application pendant ses heures de travail.
 
 ### 0 quinquadragies. ⏸ L'AVOIR — dessiné le 17 août, **il choisit avant qu'on code**
 
@@ -1794,6 +1834,28 @@ de plus dans le modèle, pas un quatrième parcours.
 source (`scripts/engendrer-maquette-arrosage.mjs`) et tous leurs nombres sont
 calculés. Contrôle : `scripts/verifier-maquette-arrosage.mjs`, dans
 `npm run verifier:maquette`.
+
+### 0 triquadragies bis. `test-fiche-chantier-e2e` tombe SOUS CHARGE, comme les autres
+
+Constaté deux fois le 21 août 2026, sur deux batteries d'affilée :
+
+    ✗ Cocher tient : l'écran ET la base
+      les coches ne sont pas arrivées en base
+
+**Jouée seule, elle passe** — 11 cas, 0 échec, vérifié les deux fois. C'est donc
+la même famille que `test-facture-impayee-e2e` et `test-fiche-pendant-relance` :
+une écriture part au doigt levé, la suite n'attend pas qu'elle arrive, et sous
+la charge de quatre-vingts suites elle mesure la base avant l'écriture.
+
+**Le remède est connu et déjà appliqué ailleurs** (§ « attendre ce qu'on
+affirme, jamais une durée ») : relire jusqu'à voir ce qu'on affirme, laisser
+l'appel PARTIR avant de recharger, et surtout **assener le bon coupable** quand
+il n'arrive jamais — sans quoi le rouge tombe trois cas plus loin, sur un écran
+innocent.
+
+**Qui peut le faire :** n'importe quelle session qui touche à cette fiche. Ce
+n'est pas urgent pour le produit ; c'est urgent pour la batterie, qu'un rouge
+au hasard finit par rendre inutile.
 
 ### 0 triquadragies. `test-facture-impayee-e2e` tombe SOUS CHARGE, pas seule
 

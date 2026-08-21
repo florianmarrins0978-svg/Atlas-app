@@ -76,7 +76,7 @@ async function devisParti(page: Page): Promise<{ chantierId: string; url: string
   await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 20_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 20_000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 20_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   return { chantierId, url };
 }
@@ -151,24 +151,25 @@ async function main() {
     );
     console.log(`  ✓ tout tient dans l'écran (${debordement} px de débordement)`);
 
-    // ── 4 · Les trois actions, en encre foncée ────────────────────────────
-    const pdf = page.getByRole("link", { name: "Télécharger le PDF" });
-    assert.equal(await pdf.count(), 1, "« Télécharger le PDF » a disparu de l'écran d'attente.");
-    assert.match(
-      (await pdf.getAttribute("download")) ?? "",
-      /^devis-.+\.pdf$/,
-      "Le lien PDF n'annonce plus son nom de fichier : sur iPhone il arriverait sous le nom de la page."
-    );
-    const couleur = await pdf.evaluate((n) => getComputedStyle(n).color);
+    // ── 4 · La rangée des actions a été RETIRÉE le 21 août 2026 ───────────
+    //
+    // Devant cet écran : *« garde quand même un seul bouton »*, puis, mis devant
+    // le choix, il a retenu deux gestes — ouvrir le message, modifier le devis.
+    // « Télécharger le PDF » et « Partager » sont donc partis, et avec eux la
+    // mesure de leur encre (sa demande du 12 août, « mets-les en noir foncé »).
+    //
+    // Ce qui reste gardé ailleurs, et qu'on ne perd pas : le téléchargement avec
+    // son nom de fichier vit sur la FACTURE (`test-facture-au-client-e2e.ts`),
+    // et l'aperçu du devis sur `devis-complet`.
     assert.equal(
-      couleur,
-      "rgb(28, 28, 26)",
-      `Les trois actions doivent être en encre foncée (#1c1c1a) — mesuré « ${couleur} ». Sa demande du 12 août : « mets-les en noir foncé ».`
+      await page.getByRole("link", { name: "Télécharger le PDF" }).count(),
+      0,
+      "« Télécharger le PDF » est revenu sur l'écran d'attente : il en a été retiré le 21 août 2026."
     );
     assert.equal(
       await page.getByRole("button", { name: "Partager", exact: true }).count(),
-      1,
-      "« Partager » manque à la ligne des actions."
+      0,
+      "« Partager » est revenu dans la rangée : il en a été retiré le 21 août 2026."
     );
     // **« Copier le lien » a été retiré le 13 août, à sa demande** : « je pense
     // qu'il faudrait aussi retirer copier le lien, ça ne sert à rien ». Le lien
@@ -180,7 +181,7 @@ async function main() {
       0,
       "« Copier le lien » est revenu dans la rangée : il a été retiré le 13 août 2026."
     );
-    console.log("  ✓ les deux actions sont là, en encre foncée, et « Copier le lien » a bien disparu");
+    console.log("  ✓ la rangée des actions a bien disparu — deux gestes, pas six");
 
     // ── 5 · On peut encore changer de canal ───────────────────────────────
     assert.equal(

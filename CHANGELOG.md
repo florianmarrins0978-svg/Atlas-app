@@ -57,6 +57,41 @@ vers `/chantiers/[id]/prix` dans vingt-six suites — le préchauffage mettait
 grappe de suites qui tombent toutes sur le même écran, vider le cache AVANT de
 chercher dans le produit.
 
+### Le planning : un chantier porte son nom UNE fois
+
+**Sa correction du soir, capture à l'appui :** *« Mr. Leroy au-dessus du carré
+vert clair matin ; supprime le Mr. Leroy pour l'aprem, c'est le même chantier,
+pas besoin de répéter ; pareil pour "1 chantier" ; et supprime le trait entre le
+matin et l'après-midi, là on a l'impression que c'est deux chantiers
+différents. »*
+
+Il avait raison, et le défaut était de structure. La fiche du jour était bâtie
+sur les demi-journées : deux blocs séparés par un filet, chacun rejouant le nom
+du client et son compte. Un chantier qui dure la journée s'y écrivait donc
+**deux fois**, avec une barre au milieu — et l'écran disait ce qui était faux.
+
+Elle est bâtie sur le CHANTIER : son nom une fois, en tête, avec le compte de la
+journée à sa droite ; dessous, les moments où il a lieu, chacun gardant son
+équipe, son « Déplacer » et son « Retirer » — le matin et l'après-midi restent
+indépendants, c'est sa règle du 21 août.
+
+Une demi-journée que personne n'occupe garde sa ligne et dit « libre » — la
+cacher ferait croire que la journée entière est prise —, mais elle passe
+**après** les chantiers : *« le nom toujours en premier ! »*. Le 19 et le 26
+ouvraient sur « matin — libre », et l'on lisait ce qui manque avant de savoir de
+qui il s'agit.
+
+Dans la légende, les deux rectangles qui montrent la POSITION sont désormais
+vides tous les deux : *« le rectangle du matin, mets-le blanc comme celui de
+l'après-midi »*. Rempli, le premier se lisait comme un cinquième état, juste
+après « au-delà » — alors qu'il ne dit rien de la charge.
+
+Les contrôles visent la structure, pas les mots — combien de fois le nom
+paraît, combien de comptes sont écrits, quelle bordure sépare les lignes. Un
+contrôle sur « Mr. Leroy » rougirait au premier changement de client d'exemple
+et ne défendrait plus rien. Les trois ont été confrontés à la version d'avant :
+ils rougissent dessus.
+
 
 ### « Il y a une clé IA » — écrit dans le dépôt, plus dans une session
 
@@ -503,6 +538,68 @@ l'orphelin invisible. Ce qui est livré rend le mécanisme sûr, pas la panne
 corrigée. `TODO.md` la garde ouverte.
 
 ---
+
+## 2026-08-21
+
+### Les documents d'un client s'enregistrent, au lieu de seulement s'ouvrir
+
+**Sa demande :** *« je veux pouvoir l'enregistrer, mais avant que tu codes quoi
+que ce soit, fais-moi une maquette visuelle »*. Trois façons lui ont été
+dessinées ; il a retenu **la C**.
+
+Sur la fiche d'un client, toucher un document ouvre désormais trois choix :
+**Enregistrer**, Ouvrir, Partager. Le fichier arrive sous son vrai nom —
+`devis-2026-0029.pdf` — et non sous celui de la page.
+
+**Pourquoi pas plus court.** La proposition la plus rapide enregistrait dès le
+premier appui : ouvrir la fiche d'un client pour relire un montant lui aurait
+téléchargé un fichier à chaque coup d'œil. Celle qu'il a retenue ne décide de
+rien à sa place.
+
+**« Partager » revient**, après avoir quitté l'écran d'envoi le même matin :
+c'était le seul chemin vers WhatsApp, et sa place est sur le document rangé.
+`ARCHITECTURE.md` §141.
+
+### Le devis envoyé ramène à l'accueil, sans écran de trop
+
+**Sa demande, capture à l'appui :** *« Quand je clique sur envoyer le devis, il y
+a bien l'application SMS qui s'ouvre, ça c'est bien. Par contre juste derrière,
+il y a cette page-là qui s'affiche et je n'ai pas besoin qu'elle s'affiche […]
+il faut qu'on retourne directement sur l'accueil. »*
+
+Elle ne lui apprenait rien : il venait d'appuyer, et sa messagerie s'était
+ouverte par-dessus. Au retour de Messages, un récapitulatif à refermer avant de
+reprendre son travail. C'est le deuxième écran de trop retiré du même parcours
+en deux jours.
+
+**L'écran du devis parti reste**, mais on ne le voit plus qu'en y revenant par la
+carte du chantier. Il s'allège : « Télécharger le PDF · Partager » est retiré. Le
+devis parti se range de lui-même en PDF dans la fiche du client, colonne
+« Devis » — c'est lui qui l'a rappelé, et le code lui donne raison.
+
+**Ce que ça coûte, dit franchement :** « Partager » était le seul chemin vers
+WhatsApp depuis cet écran. Et la bascule « Plutôt par e-mail » a été GARDÉE
+malgré sa réponse : c'est le seul endroit où saisir une coordonnée manquante, et
+son absence était sa plainte du 13 août. `ARCHITECTURE.md` §140.
+
+### La ligne « Version » disait le disque, pas ce qui tournait
+
+**Sa phrase :** *« Ça n'a pas marché, j'ai encore l'ancienne version. Pourtant
+j'ai rechargé les mises à jour. »* Les deux moitiés étaient vraies en même
+temps — et c'est ce qui a fait chercher au mauvais endroit.
+
+Son banc sert une version **construite** : c'est ce qui la rend rapide.
+Récupérer le code neuf fait avancer le disque sans toucher à ce qui s'exécute.
+La ligne « Version » de Réglages, elle, lisait le disque : elle confirmait la
+mise à jour à l'instant précis où elle aurait dû avertir que rien de neuf
+n'était servi.
+
+**Ce qui change :** cette ligne annonce désormais **ce que l'application
+exécute**. Quand du code plus récent attend d'être construit, l'écran le dit, le
+nomme, et donne le geste — rouvrir l'espace de travail.
+
+**Ce que ça ne fait pas, dit franchement :** cela n'accélère rien. Cela cesse de
+prétendre que le code neuf est là quand il ne l'est pas. `ARCHITECTURE.md` §139.
 
 ## 2026-08-20
 
@@ -1370,6 +1467,151 @@ Le mot juste ne dépend donc d'aucun nombre : **« il reste de la place »**. Le
 compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 sur 5 ».
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
+
+### Bordeaux pour le dépassement, et un carré qui tombait cinq pixels trop bas
+
+**Ses trois corrections du 21 août, la maquette étant retenue :** le bordeaux
+pour « au-delà », le carré « incomplet » qui n'était pas au niveau des autres, et
+le nom d'un chantier qu'on ajoute qui doit s'aligner sur ceux déjà posés.
+
+**Le carré désaligné venait d'une collision de noms.** `.place` désignait à la
+fois l'état « il reste de la place » dans la légende ET les lignes de chantier
+de la fiche du jour — lesquelles portent `margin-top:10px`. Le carré héritait de
+la marge et tombait cinq pixels plus bas. L'état s'appelle désormais `dispo` :
+**deux sens pour un même mot finissent toujours par se croiser**, et c'est lui
+qui l'a vu, sur son téléphone.
+
+**Le nom du chantier qu'on ajoute prend la forme d'une ligne de chantier** :
+même serif, même bord gauche, les trois moments à la place de la pastille
+d'équipe. Écrit en petit gris à côté des boutons, il se lisait comme une
+étiquette ; là, il se lit comme le chantier qu'il va devenir. La suite mesure le
+bord et le corps plutôt que de juger l'apparence.
+
+**Et la pastille de la fiche du jour lit maintenant la MÊME règle que le
+calendrier** (`etatDe`) : elle avait gardé son calcul à elle, hérité de la
+version d'avant, et deux calculs pour la même chose finissent par ne plus dire
+la même chose.
+
+### Le dépassement passe en bleu ardoise, et la légende retrouve son « rien »
+
+**Sa correction du 21 août :** *« la couleur dorée pour le dépassement, je ne
+suis pas très fan. Rajoute un petit carré blanc pour lorsqu'il n'y a rien, le
+vert clair c'est incomplet, le vert foncé c'est complet, et trouve-moi une autre
+couleur pour au-delà. Et pour matin et après-midi, reprends exactement les mêmes
+rectangles que sous les chiffres du mois — même taille, même largeur. »*
+
+**Ni or, ni rouge.** L'or sert partout ailleurs à ce qu'on LIT (les liens, les
+mentions) : employé ici, il ne signalait plus rien. Le rouge dit « erreur », et
+dépasser est un choix qu'il assume. Le **bleu ardoise** est la seule teinte
+froide de l'écran — elle se remarque sans crier.
+
+**La légende dit maintenant les quatre états** : rien · incomplet · complet ·
+au-delà, puis la position. Cinq termes sur une ligne, ce qui a demandé de
+resserrer le corps et l'écart — mesuré à 390 et 375 px, replié en dessous.
+
+**Et les rectangles de matin / après-midi SONT ceux du calendrier** : la légende
+réemploie la classe `.marqueA` telle quelle. Une copie « à la bonne dimension »
+aurait divergé au premier réglage ; la suite mesure les deux et exige qu'ils
+soient identiques.
+
+**Un défaut trouvé en le faisant** : une règle de la toute première légende
+traînait encore et forçait 13 × 13 px à tous ses carrés — les rectangles repris
+du calendrier redevenaient des carrés. Et `align-items:center`, hérité d'une
+règle voisine, les rétrécissait à zéro. Deux fois la même leçon : ce qui est
+mesuré ne se devine pas.
+
+### Un seul bouton d'ajout, sous la journée — et « toute la journée » retiré
+
+**Sa demande du 21 août au soir, la maquette étant par ailleurs retenue :**
+*« Le "+ Ajouter un chantier", tu le mets en dessous, un rond avec un plus ; je
+ne veux pas qu'il soit affilié à la case matin ou après-midi, ça surcharge et on
+ne comprend plus trop. Et "toute la journée" sous les noms, tu me le
+supprimes. »*
+
+**Deux boutons disaient la même chose deux fois**, et posaient la question du
+moment avant même qu'on ait choisi le client. Un seul rond, sous les deux
+demi-journées, et le moment se choisit **après** : d'abord QUI, ensuite QUAND —
+c'est le client qu'il a en tête, pas la demi-journée. Se tromper de client
+n'oblige plus à revenir en arrière.
+
+**« Toute la journée » disparaît** : le chantier apparaît déjà sous les deux
+demi-journées, la mention ne faisait que le répéter.
+
+### Le quota qui prévient sans interdire — sa proposition, et elle est meilleure
+
+**Sa proposition du 21 août au soir**, après avoir vu les trois façons de dire
+la charge :
+
+> *« Une fois qu'on a mis deux chantiers avec deux gars, on dit que c'est
+> complet. Et s'il en rajoute un troisième, on met une autre couleur pour lui
+> signaler qu'il a dépassé le quota — mais il peut quand même le faire. Nous, on
+> prévient juste. Au cas où il aurait fait une erreur, ou s'il se dit : ces
+> chantiers ne dureront pas vraiment la journée, donc ça passe. »*
+
+**Elle est meilleure que les trois miennes, et voici pourquoi.** « Complet »
+donnait un repère mais refusait ; « aucune limite » n'interdisait plus rien mais
+ne disait plus rien non plus. Sa règle garde le repère — une équipe, un
+chantier, une demi-journée — et le transforme en **avertissement**. Le
+dépassement se voit ; il ne se refuse pas. C'est lui qui sait qu'une taille de
+haie prend une heure.
+
+**Quatre états**, et le dernier est un signal, pas une faute :
+
+| | Ce que ça veut dire |
+|---|---|
+| vide | personne |
+| vert clair | il reste de la place |
+| vert foncé | chaque équipe a son chantier |
+| **or** | **au-delà** — plus de chantiers que d'équipes |
+
+**L'or, jamais le rouge.** Le rouge de l'application dit « erreur »
+(`colors.alert`) : l'employer ici ferait passer un choix délibéré pour un défaut.
+
+**Le pourcentage ne s'écrit que s'il dépasse** — « 3 chantiers · 150 % de vos
+équipes ». À 100 % il n'apprendrait rien de plus que « complet » ; en dessous, il
+ferait lire un calcul là où il suffit de compter.
+
+**Et sa première question du même message est réglée par là :** *« pourquoi
+quand je clique sur le 21 je n'ai pas le même visuel que sur le 19 ? »* — parce
+que « complet » supprimait le « + Ajouter ». Tous les jours proposent maintenant
+les mêmes gestes ; la suite le vérifie sur un jour complet ET sur un jour
+au-delà.
+
+**Les trois façons de dire la charge (points, équipes, chiffres) sont
+retirées** : il a tranché mieux qu'elles, et garder un dessin que plus rien
+n'emploie, c'est laisser une seconde façon de dire la même chose.
+
+### Plus de plafond, donc plus de « complet » — trois façons de dire la charge
+
+**Sa décision du 21 août 2026, et elle défait la règle de la veille :**
+
+> *« L'utilisateur ne doit pas avoir de limite d'ajout de chantier, matin ou
+> après-midi, parce que c'est lui qui sait le temps qu'il va passer. On peut
+> être deux dans la boîte et enchaîner quatre ou cinq chantiers dans la journée,
+> surtout en entretien — des chantiers où les gars restent une heure. Donc pas
+> de limite, ni de chantiers ni de gars. Par contre le code couleur libre/plein
+> ne fonctionne plus, il faudrait le repenser. »*
+
+**Ce que cela emporte.** « Complet » n'existait que parce qu'un jour avait un
+maximum : deux équipes, deux places. Sans plafond, le mot ment — et surtout il
+**interdisait d'ajouter** là où il n'y avait rien à interdire. Il a disparu de
+l'écran, et la suite vérifie qu'il n'y revient pas.
+
+**Ce qui le remplace : des faits, plus un verdict.** La fiche du jour dit
+« 3 chantiers · 2 équipes · 1 sans équipe ». Et le mois se lit de trois façons,
+à comparer dans la planche :
+
+| | Ce que la case montre | Ce qu'on y lit d'un coup |
+|---|---|---|
+| **Points** | un point par chantier, matin dessus, après-midi dessous ; creux = personne dessus | la charge du jour, sans jamais plafonner (au-delà de quatre : « +3 ») |
+| **Équipes** | une case par équipe, remplie quand elle est dehors | « me reste-t-il quelqu'un de libre ? » — le nombre de chantiers n'y entre pas |
+| **Chiffres** | le nombre de chantiers, matin puis après-midi | le plus dense, et muet sur les équipes |
+
+**La légende est écrite par le script, plus figée dans la page.** Chaque façon a
+ses mots — et un mot figé finit par mentir, comme « 1 équipe sur 2 » l'a fait la
+veille. La suite vérifie les trois : qu'elles tiennent sur une ligne, qu'elles
+disent où sont le matin et l'après-midi, et qu'aucune ne promet un « complet »
+qui n'existe plus.
 
 ### Un « ＋ » sur la pastille, et la journée entière depuis la liste
 

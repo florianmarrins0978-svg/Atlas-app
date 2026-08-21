@@ -50,9 +50,6 @@ type Props = {
   telephone: string;
   email: string;
   lien: string;
-  /** Le PDF du devis, pour la ligne des trois actions. */
-  lienPdf: string;
-  nomFichierPdf: string;
   /** Le devis est-il DÉJÀ chez le client ? Commande le libellé du bouton. */
   relance: boolean;
 };
@@ -95,8 +92,6 @@ export default function TransmettreAuClient({
   telephone,
   email,
   lien,
-  lienPdf,
-  nomFichierPdf,
   relance,
 }: Props) {
   const [erreur, setErreur] = useState<string | null>(null);
@@ -134,24 +129,6 @@ export default function TransmettreAuClient({
    */
   function adresse(canalCible: CanalClient, cible: string) {
     return lienTransmission({ canal: canalCible, destinataire: cible, message });
-  }
-
-  async function partagerAutrement() {
-    setErreur(null);
-    // Le partage n'emporte aucun destinataire — c'est exactement pour cela
-    // qu'il n'est plus le chemin principal. Il reste utile pour WhatsApp,
-    // Signal, ou tout ce que le patron a installé.
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title: message.objet, text: message.corps });
-      } catch (e) {
-        // Un partage annulé n'est pas une panne : le patron a changé d'avis.
-        if (e instanceof Error && e.name === "AbortError") return;
-        setErreur("Le partage n'a pas abouti. Le lien reste copiable ci-dessus.");
-      }
-      return;
-    }
-    setErreur("Le partage n'est pas disponible sur cet appareil. Le lien reste copiable ci-dessus.");
   }
 
   async function enregistrerEtOuvrir() {
@@ -264,46 +241,30 @@ export default function TransmettreAuClient({
         {LIBELLE[autre].bascule} →
       </button>
 
-      {/* **Les actions secondaires, en encre foncée — sa demande du 12 août.**
-          Elles étaient dispersées : « Copier le lien » vivait dans l'écran,
-          « Partager » ici, et le PDF plus haut. Autant d'endroits à retoucher
-          le jour où l'un change. Elles tiennent maintenant une seule ligne.
+      {/* **« Télécharger le PDF · Partager » a été retiré le 21 août 2026, à sa
+          demande.** Devant cet écran : *« garde quand même un seul bouton »*,
+          puis, mis devant le choix : garder l'ouverture du message et la
+          modification du devis, rien d'autre.
 
-          **Elles ne sont plus que deux depuis le 13 août** : *« je pense qu'il
-          faudrait aussi retirer copier le lien, ça ne sert à rien »*. Il a
-          raison — le lien part par le SMS, par l'e-mail ou par « Partager », et
-          le presse-papier n'était qu'un quatrième chemin vers la même chose.
+          **Et le PDF n'est perdu nulle part — c'est LUI qui l'a rappelé, et le
+          dépôt lui donne raison :** *« une fois le devis envoyé, il doit
+          s'enregistrer normalement en PDF dans la catégorie client, c'est là où
+          tous nos nouveaux clients s'enregistrent, il y a trois colonnes devis,
+          factures et fiches chantiers »*. Vérifié plutôt que cru :
+          `chargerFicheClient` ne retient que les devis dont le statut est
+          `envoye`, et les range en vignettes PDF dans la colonne « Devis »
+          (`src/app/clients/[id]/page.tsx`). Un devis parti s'y classe donc tout
+          seul, sans geste de sa part.
 
-          Le point médian n'est pas un ornement : trois libellés séparés par du
-          blanc se lisent comme une phrase découpée, et on ne sait plus où finit
-          l'un. Il est `aria-hidden` — un lecteur d'écran annoncerait « point ».
+          Ce que cela coûte quand même, et qui est assumé : « Partager » était le
+          seul chemin vers WhatsApp depuis cet écran.
 
-          « Partager » plutôt que « Partager autrement (WhatsApp…) » : à trois sur
-          une ligne de 390 px, la parenthèse débordait. L'arbitrage est dans la
-          maquette 34. */}
-      <div
-        className="mt-3 flex items-center justify-center text-[13px]"
-        style={{ color: colors.ink }}
-      >
-        <a
-          href={lienPdf}
-          download={nomFichierPdf}
-          className="px-2 font-medium"
-        >
-          Télécharger le PDF
-        </a>
-        <span aria-hidden="true" style={{ color: colors.line }}>
-          ·
-        </span>
-        <button
-          type="button"
-          onClick={partagerAutrement}
-          className="px-2 font-medium"
-          style={{ color: colors.ink }}
-        >
-          Partager
-        </button>
-      </div>
+          **La bascule de canal, elle, RESTE**, et ce n'est pas un oubli : c'est
+          le seul endroit où une coordonnée manquante se saisit — il n'existe
+          aucun écran de fiche client — et son absence était précisément sa
+          plainte du 13 août, *« si je veux l'envoyer par e-mail, je ne peux pas
+          revenir le choisir »*. La retirer rouvrirait un défaut qu'il a déjà
+          payé. */}
 
       {erreur && (
         <p role="alert" className="mt-2 text-center text-[13px]" style={{ color: colors.rust }}>
