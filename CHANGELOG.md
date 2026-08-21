@@ -51,6 +51,23 @@ désormais que le bouton de l'assistant partage la ligne du titre, ce qui était
 le vrai défaut et ne dépend d'aucun calendrier. Un contrôle qui suit l'écran ne
 le tient plus.
 
+**Et un second défaut invisible, trouvé au journal du serveur :** un
+`export type { FeuilleDuChantier };` posé dans `src/app/planning/actions.ts`
+tuait **tout** le module d'actions à son évaluation — `ReferenceError`, et les
+cinq actions de l'écran en 500. `tsc` et `eslint` restaient verts, et le geste
+« réussissait » sans un mot, puisqu'une action serveur ne rend jamais son erreur
+au patron. Le type se prend désormais à sa source, avec `import type`, et
+`test-actions-serveur-sans-export-de-type.ts` rend la faute impossible sur les
+32 fichiers « use server » du dépôt. Le détail et le réflexe qui manquait — lire
+le journal du serveur AVANT de soupçonner le contrôle — sont en tête de
+`HANDOVER.md`.
+
+**Un contrôle de notification a été refait pour la même raison de fond**
+(`CLAUDE.md` §5 bis) : « J'ai vu » comptait les cartes de l'accueil avant et
+après le geste et en exigeait une de moins — un compte qui dépendait de l'ordre
+d'exécution des suites et de l'ordre d'affichage des cartes. Il vise maintenant
+la carte de CE chantier par son identifiant.
+
 
 ### Le planning : un chantier porte son nom UNE fois
 

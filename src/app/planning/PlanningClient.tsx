@@ -42,8 +42,8 @@ import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
+import type { FeuilleDuChantier } from "@/server/repositories/devis";
 import {
-  type FeuilleDuChantier,
   basculerEquipeAction,
   deplacerChantierAction,
   deplanifierChantierAction,

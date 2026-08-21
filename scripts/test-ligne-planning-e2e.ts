@@ -205,10 +205,16 @@ async function main() {
    * pour savoir quel nom porte cet identifiant.
    */
   async function ligneDe(id: string) {
-    const nomDuChantier = (await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [id]))
-      .rows[0].nom as string;
+    // **La rangée se désigne par le CHEVRON, jamais par le nom.** Les trois cas
+    // de cette suite portent le même client — c'est voulu : y coller un
+    // horodatage fabriquait des noms qu'aucun client ne porte, et le contrôle
+    // accusait alors le produit d'une coupure que seul le montage avait faite.
+    // Viser le nom en trouvait donc trois, et l'on mesurait toujours le premier :
+    // « après-midi » se lisait « journée », et le contrôle rougissait sur un
+    // écran juste. Seul l'`id` du chantier désigne une ligne sans ambiguïté, et
+    // c'est le chevron qui le porte.
     const rangee = page
-      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nomDuChantier}")`)
+      .locator(`[data-atlas="ligne-planifiee"]:has(a[href="/chantiers/${id}"])`)
       .first();
     await rangee.scrollIntoViewIfNeeded();
 
@@ -359,11 +365,8 @@ async function main() {
     );
     // Et elle doit bien être quelque part : la retirer des deux endroits
     // laisserait la ligne muette sur qui s'en occupe.
-    const nomDuChantier = (
-      await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [journee.id])
-    ).rows[0].nom as string;
     const rangee = page
-      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nomDuChantier}")`)
+      .locator(`[data-atlas="ligne-planifiee"]:has(a[href="/chantiers/${journee.id}"])`)
       .first();
     const pastilles = await rangee.locator('[data-atlas="equipe"]').count();
     assert.equal(pastilles, 1, `la ligne porte ${pastilles} pastille(s) d'équipe, une attendue`);

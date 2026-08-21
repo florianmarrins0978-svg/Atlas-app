@@ -14,28 +14,16 @@ import type { QuandChantier } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
 
-// Réexporté pour l'écran : un composant client ne va pas chercher un type dans
-// un dépôt serveur, il le prend là où il prend l'action.
-export type { FeuilleDuChantier };
+// **AUCUN `export type { … }` ICI, ni nulle part dans un fichier « use server ».**
+// Le chargeur d'actions de Next réécrit ce module en une liste d'exports de
+// VALEURS : un export de type y survit sous forme de référence à un nom que
+// TypeScript a effacé, et le module entier meurt à l'évaluation sur un
+// « ReferenceError: FeuilleDuChantier is not defined ». Toutes les actions de
+// l'écran répondent alors 500 — pendant que `tsc` et le lint restent verts,
+// puisque le code source, lui, est juste. Payé le 21 août 2026.
+// L'écran prend ce type là où il est défini (`import type` s'efface à la
+// compilation, et c'est déjà la convention du dépôt).
 
-/**
- * Poser un chantier : la date et la demi-journée.
- *
- * **L'équipe ne se choisit plus ICI, et c'est sa demande du 21 août 2026 :**
- * *« le "+ Ajouter un chantier" [...] d'abord QUI, ensuite QUAND »* — puis
- * l'équipe, sur la ligne de la demi-journée, où le matin et l'après-midi sont
- * indépendants (`basculerEquipeAction`). Tout demander d'un coup obligeait à
- * revenir en arrière dès qu'on se trompait de client.
- *
- * **Et le créneau n'est plus refusé.** Sa décision du même jour : *« il ne doit
- * pas y avoir de limite d'ajout de chantier par jour »*. Le dépassement se voit
- * — bordeaux sur le calendrier, « 150 % de vos équipes » sur la fiche du jour —
- * il ne s'interdit pas.
- *
- * Rend `{ succes: false, erreur }` plutôt que de laisser remonter une
- * exception : le message d'une exception levée par une action serveur n'arrive
- * jamais jusqu'au patron (`AGENTS.md`).
- */
 /**
  * Ce que le chantier PORTE après le geste — jamais ce que l'écran a supposé.
  *
@@ -55,6 +43,24 @@ export type ResultatPose =
   | { succes: true; etat: EtatPose }
   | { succes: false; erreur: string };
 
+/**
+ * Poser un chantier : la date et la demi-journée.
+ *
+ * **L'équipe ne se choisit plus ICI, et c'est sa demande du 21 août 2026 :**
+ * *« le "+ Ajouter un chantier" [...] d'abord QUI, ensuite QUAND »* — puis
+ * l'équipe, sur la ligne de la demi-journée, où le matin et l'après-midi sont
+ * indépendants (`basculerEquipeAction`). Tout demander d'un coup obligeait à
+ * revenir en arrière dès qu'on se trompait de client.
+ *
+ * **Et le créneau n'est plus refusé.** Sa décision du même jour : *« il ne doit
+ * pas y avoir de limite d'ajout de chantier par jour »*. Le dépassement se voit
+ * — bordeaux sur le calendrier, « 150 % de vos équipes » sur la fiche du jour —
+ * il ne s'interdit pas.
+ *
+ * Rend `{ succes: false, erreur }` plutôt que de laisser remonter une
+ * exception : le message d'une exception levée par une action serveur n'arrive
+ * jamais jusqu'au patron (`AGENTS.md`).
+ */
 export async function planifierChantierAction(
   chantierId: string,
   datePlanifiee: string,

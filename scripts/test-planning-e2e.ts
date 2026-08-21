@@ -96,12 +96,15 @@ async function main() {
   // imprimer. Posé en base plutôt que joué à l'écran — le parcours complet du
   // devis est éprouvé ailleurs, et le rejouer ici ajouterait deux minutes pour
   // ne rien apprendre sur le planning.
+  // **Brouillon d'abord, envoyé ENSUITE** : `empecher_modification_lignes_devis_envoye`
+  // refuse toute ligne sur un devis parti — c'est l'invariant du dépôt
+  // (migration 0001), et le décor doit s'y plier comme le produit s'y plie.
   const devisId = (
     await pool.query(
       `INSERT INTO devis (entreprise_id, chantier_id, numero_commercial, numero_version,
                           statut, entreprise_nom, date_emission, total_ht, total_tva, total_ttc)
        SELECT c.entreprise_id, c.id, 'D-PLANCHE-' || substr(c.id::text, 1, 8), 1,
-              'envoye', 'Atelier Démo', CURRENT_DATE, 1000, 200, 1200
+              'brouillon', 'Atelier Démo', CURRENT_DATE, 1000, 200, 1200
          FROM chantiers c WHERE c.id = $1
        RETURNING id`,
       [chantierId]
@@ -117,6 +120,7 @@ async function main() {
       WHERE d.id = $1`,
     [devisId]
   );
+  await pool.query(`UPDATE devis SET statut = 'envoye' WHERE id = $1`, [devisId]);
   const nom = (await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [chantierId])).rows[0]
     .nom as string;
 
@@ -139,6 +143,22 @@ async function main() {
       duree_demi_journees: number | null;
       equipes: { demi: string; rang: number }[];
     };
+  };
+
+  /**
+   * Attendre que la BASE dise ce qu'on attend — jamais un délai fixe.
+   *
+   * **Une attente au chronomètre ment dans les deux sens** : trop courte sous
+   * charge, elle fait rougir un geste qui a marché ; trop longue, elle allonge
+   * la batterie pour rien. Ici l'on interroge ce qui compte, et l'on s'arrête
+   * dès que c'est vrai.
+   */
+  const attendre = async (quoi: string, vrai: () => Promise<boolean>) => {
+    for (let i = 0; i < 40; i++) {
+      if (await vrai()) return;
+      await page.waitForTimeout(250);
+    }
+    throw new Error(`dix secondes plus tard, toujours pas : ${quoi}`);
   };
 
   const rangsDe = async (demi: string) =>
@@ -261,7 +281,7 @@ async function main() {
       .first()
       .locator('[data-poser="journee"]')
       .click();
-    await page.waitForTimeout(1200);
+    await attendre("la date est écrite", async () => (await enBase()).jour === JOUR);
     const c = await enBase();
     assert.equal(c.jour, JOUR, "la date n'est pas celle du jour touché");
     assert.equal(c.creneau_debut, "matin", "une journée part le matin");
@@ -334,7 +354,9 @@ async function main() {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     await carte.locator('[data-bloc="matin"] [data-atlas="equipe"]').click();
     await carte.locator('[data-bloc="matin"] [data-choix="1"]').click();
-    await page.waitForTimeout(900);
+    await attendre("l'équipe 1 est cochée le matin", async () =>
+      (await rangsDe("matin")).includes(1)
+    );
     assert.deepEqual(await rangsDe("matin"), [1], "le matin n'a pas pris l'équipe 1");
     assert.deepEqual(await rangsDe("apres_midi"), [], "l'après-midi a bougé tout seul");
   });
@@ -342,14 +364,14 @@ async function main() {
   await essai("plusieurs équipes tiennent sur la même demi-journée", async () => {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     await carte.locator('[data-bloc="matin"] [data-choix="2"]').click();
-    await page.waitForTimeout(900);
+    await attendre("l'équipe 2 s'ajoute", async () => (await rangsDe("matin")).length === 2);
     assert.deepEqual(await rangsDe("matin"), [1, 2], "la seconde équipe n'a pas été ajoutée");
   });
 
   await essai("le même appui décoche", async () => {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     await carte.locator('[data-bloc="matin"] [data-choix="2"]').click();
-    await page.waitForTimeout(900);
+    await attendre("l'équipe 2 se retire", async () => (await rangsDe("matin")).length === 1);
     assert.deepEqual(await rangsDe("matin"), [1], "l'équipe 2 est restée");
   });
 
@@ -377,7 +399,9 @@ async function main() {
     const moments = await carte.locator("[data-vers]").allInnerTexts();
     assert.deepEqual(moments, ["Matin", "Après-midi", "Journée"], `lu : ${JSON.stringify(moments)}`);
     await carte.locator('[data-vers="apres"]').click();
-    await page.waitForTimeout(1200);
+    await attendre("le chantier passe l'après-midi", async () =>
+      (await enBase()).creneau_debut === "apres_midi"
+    );
     const c = await enBase();
     assert.equal(c.creneau_debut, "apres_midi");
     assert.equal(c.duree_demi_journees, 1);
@@ -452,7 +476,18 @@ async function main() {
   // **Le contrôle qui compte** : ce PDF est ce que le salarié emporte, et il ne
   // doit porter AUCUN prix. On le télécharge pour de bon.
   await essai("la feuille porte les lignes du devis, sans un prix", async () => {
+    // **Attendre que la lecture soit FINIE, jamais un délai.** Les lignes
+    // arrivent par une action serveur — la plupart des journées ne s'ouvrent sur
+    // aucune feuille, et les charger avec la page ferait payer à chaque
+    // ouverture du planning ce qui ne sert qu'à un appui. Lire l'encart pendant
+    // qu'il dit encore « Lecture du devis… », c'est mesurer un écran qui n'a pas
+    // fini de se peindre, et accuser le produit d'un défaut qu'on vient de
+    // fabriquer.
+    await attendre("la feuille a fini de lire le devis", async () =>
+      !(await page.locator('[data-atlas="feuille"]').innerText()).includes("Lecture du devis")
+    );
     const dit = await page.locator('[data-atlas="feuille"]').innerText();
+    assert.ok(dit.trim().length > 0, "la feuille est vide : il n'y a rien à mesurer");
     assert.ok(
       dit.includes("Taille de haie de laurier"),
       `la feuille ne porte pas les lignes du devis : « ${dit} »`
@@ -486,7 +521,7 @@ async function main() {
     await allerAuPlanning();
     await toucherLeJour(JOUR);
     await page.locator('[data-atlas="carte-jour"] [data-atlas="retirer"]').first().click();
-    await page.waitForTimeout(1200);
+    await attendre("le chantier quitte le jour", async () => (await enBase()).jour === null);
     const c = await enBase();
     assert.equal(c.jour, null, "la date est restée");
     await allerAuPlanning();
@@ -509,7 +544,7 @@ async function main() {
     const moments = await page.locator("[data-quand]").allInnerTexts();
     assert.deepEqual(moments, ["Matin", "Après-midi", "Journée"], `lu : ${JSON.stringify(moments)}`);
     await page.locator('[data-quand="matin"]').click();
-    await page.waitForTimeout(1200);
+    await attendre("le chantier est reposé", async () => (await enBase()).jour === JOUR);
     const c = await enBase();
     assert.equal(c.jour, JOUR);
     assert.equal(c.creneau_debut, "matin");

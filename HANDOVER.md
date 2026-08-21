@@ -36,6 +36,42 @@ téléphone.
 proposition de chantier voisin. Le code serveur des trois est intact — `TODO.md`
 dit où, et ce qu'il faut lui demander.
 
+### Le piège qui a coûté deux heures : `export type { … }` dans un « use server »
+
+**Ne jamais réexporter un type depuis un fichier d'actions serveur.** Le lot
+portait, dans `src/app/planning/actions.ts`, un innocent :
+
+```ts
+export type { FeuilleDuChantier };   // ⛔ tue TOUT le module
+```
+
+Le chargeur d'actions de Next réécrit ce fichier en une liste d'exports de
+**valeurs**, une par action. Le nom exporté « type » y survit sous forme de
+référence à une chose que TypeScript vient d'effacer, et le module meurt à son
+évaluation :
+
+```
+⨯ ReferenceError: FeuilleDuChantier is not defined
+    at .next-internal/server/app/planning/page/actions.js (server actions loader)
+```
+
+**Toutes les actions de l'écran répondent alors 500** — poser une date, désigner
+une équipe, déplacer, retirer : plus rien n'atteignait la base. Et **rien ne le
+disait** : `tsc --noEmit` vert, `eslint` vert (le code source est juste, c'est la
+réécriture qui ne l'est pas), et le geste « réussissait » à l'écran sans un mot,
+puisqu'une action serveur ne rend jamais son erreur au patron (§0 ter).
+
+**Ce qui a fait perdre les deux heures :** avoir cru à un défaut de décor de
+suite, et cherché dans le contrôle plutôt que dans le journal du serveur. Il y
+était, en toutes lettres, dès la première minute. **Devant une action qui
+n'écrit rien : lire `/tmp/atlas-serveur-e2e.log` AVANT de toucher au contrôle.**
+
+Le type se prend à sa source, avec `import type` — qui s'efface à la compilation,
+et c'est déjà la convention du dépôt (`Notifications.tsx`, `PrixClient.tsx` et
+cinq autres écrans le font). `scripts/test-actions-serveur-sans-export-de-type.ts`
+rend la faute impossible : il balaie les 32 fichiers « use server », refuse les
+deux orthographes, et sait rougir sur la faute même du 21 août.
+
 ---
 
 ## Les suites navigateur échouent TOUTES à la connexion : vider `.next` (21 août 2026)

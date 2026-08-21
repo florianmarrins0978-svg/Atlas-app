@@ -186,6 +186,21 @@ async function main() {
     const { nom, chantierId } = await chantierPlanifie(page, "devis", -4);
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
 
+    // **La liste des planifiés est HEBDOMADAIRE depuis la planche 84** : un
+    // chantier posé dans quatre jours peut tomber la semaine suivante, et la
+    // liste ne le montre alors pas. On touche son jour dans le calendrier —
+    // c'est le geste du patron, et il amène la liste sur SA semaine.
+    const jour = (
+      await inspecter(`SELECT date_planifiee::text AS j FROM chantiers WHERE id = $1`, [chantierId], 1)
+    ).rows[0].j as string;
+    for (let i = 0; i < 12; i++) {
+      if (await page.locator(`[data-atlas="grille-mois"] [data-jour="${jour}"]`).count()) break;
+      await page.click('button[aria-label="Mois suivant"]');
+      await page.waitForTimeout(200);
+    }
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${jour}"]`);
+    await page.waitForTimeout(600);
+
     // **Le CHEVRON, et non le nom.** Depuis la planche 84, le nom d'un chantier
     // planifié déplie sa journée et sa feuille sur place ; c'est le chevron qui
     // MÈNE au chantier. Le geste a changé de forme, jamais d'objet : sans lui,
