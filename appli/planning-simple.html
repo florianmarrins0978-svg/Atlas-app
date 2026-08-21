@@ -107,41 +107,41 @@
   .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
   .marqueA i{height:6px;border-radius:2px;background:var(--plage);
              box-shadow:inset 0 0 0 1px var(--trait);position:relative;overflow:hidden}
-  .marqueA i span{position:absolute;left:0;top:0;bottom:0;background:var(--pale)}
-  .marqueA i.plein{background:var(--pin);box-shadow:none}
+  .marqueA i{display:flex}
+  .marqueA .seg{position:relative;top:0;bottom:0;height:100%}
+  .marqueA .seg.pris{background:var(--pale)}
+  .marqueA .seg.plein{background:var(--pin)}
+  /* **La place posée mais SANS équipe est hachurée.** Un aplat disait « c'est
+     pris » ; il ne pouvait pas dire « et il reste à choisir qui y va ». C'est
+     exactement ce qui le perdait le 21 août. */
+  .marqueA .seg.sans{background-image:repeating-linear-gradient(45deg,
+                     rgba(250,249,245,.85) 0 2px, transparent 2px 5px)}
   .case.we .marqueA{visibility:hidden}
 
   /* La légende ne s'explique plus par une phrase : elle MONTRE la position.
      Sa demande du 21 août — « que sur le planning on comprenne tout de suite
      que le haut c'est le matin et le bas l'après-midi ». Un dessin qui porte
      son mot à côté n'a pas besoin qu'on dise où regarder. */
-  /* **Trois carrés, puis les deux barres FINES du calendrier.** Sa correction du
-     21 août, et il a fallu deux essais pour l'entendre :
+  /* **Quatre petits carrés, tous de la même taille, sur UNE ligne.** Sa
+     correction du 21 août, à la troisième demande — et c'est la mienne, de
+     faute : trois carrés pour les états (blanc, vert clair, vert foncé), puis
+     **deux carrés de la MÊME dimension superposés** pour dire que le haut est le
+     matin et le bas l'après-midi. Pas de gros rectangle inventé pour
+     l'occasion.
 
-       · les trois états gardent leurs CARRÉS, comme avant — blanc, vert clair,
-         foncé, avec leurs mots d'origine ;
-       · pour dire où sont le matin et l'après-midi, on reprend **les barres du
-         calendrier elles-mêmes**, fines, l'une au-dessus de l'autre. Des
-         rectangles épais inventés pour l'occasion ne renvoyaient à rien de ce
-         qu'il voit sur le mois ;
-       · **tout tient sur UNE ligne**, de « libre » à « après-midi » : c'est sa
-         demande, et c'est aussi ce qui fait lire la légende comme une phrase.
-
-     `nowrap` et non un `flex-wrap` : mesuré à 390 px, la ligne tient — et si un
-     mot venait à la faire déborder un jour, mieux vaut le voir tout de suite
-     que la laisser se replier en silence. */
-  .legende{flex-wrap:nowrap;gap:10px;font-size:10.5px}
-  .legende .carre{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
+     Tout tient sur une ligne à 390 px, et `nowrap` l'y oblige : sa capture du
+     21 août montre la légende repliée en deux — c'est ce qu'on empêche ici. */
+  .legende{flex-wrap:nowrap;gap:9px;font-size:10px}
+  .legende > span{flex-shrink:0;white-space:nowrap}
+  .legende .carre{width:11px;height:11px;border-radius:3px;display:block;flex-shrink:0;
                   background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .legende .carre.pris{background:var(--pale);box-shadow:none}
   .legende .carre.plein{background:var(--pin);box-shadow:none}
-  .legende .annote{display:flex;align-items:center;gap:6px;flex-shrink:0}
-  .legende .annote .deux{display:flex;flex-direction:column;gap:4px}
-  .legende .annote .fine{width:18px;height:6px;border-radius:2px;display:block;
-                         background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .legende .annote .mots{display:flex;flex-direction:column;gap:4px;line-height:1}
-  .legende .annote .mots b{height:6px;display:flex;align-items:center;font-weight:600;
-                           font-size:9.5px;color:var(--encre-douce);white-space:nowrap}
+  .legende .annote{display:flex;align-items:center;gap:6px}
+  .legende .annote .deux{display:flex;flex-direction:column;gap:3px}
+  .legende .annote .mots{display:flex;flex-direction:column;gap:3px;line-height:1}
+  .legende .annote .mots b{height:11px;display:flex;align-items:center;font-weight:600;
+                           font-size:9.5px;color:var(--encre-douce)}
 
   /* Le nombre d'équipes — n'existe QUE dans la maquette, pour répondre à sa
      question en la MONTRANT plutôt qu'en l'expliquant. */
@@ -233,8 +233,12 @@
   .jour:first-of-type{border-top:0}
   .jour .quand{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
                text-transform:uppercase;color:var(--encre)}
-  .chantier{margin-top:12px;display:flex;align-items:center;gap:10px;width:100%;
-            border:0;background:transparent;text-align:left;cursor:pointer;padding:0}
+  .chantier{margin-top:12px;display:flex;align-items:center;gap:10px}
+  .chantier .nom{flex:1;border:0;background:transparent;text-align:left;cursor:pointer;padding:0;
+                 font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .chantier .equipe{border:0;cursor:pointer}
+  .chantier .chevron{border:0;background:transparent;cursor:pointer;padding:0 2px}
+  .choisir .petit.retenue{background:var(--pin);color:#faf9f5;border-color:var(--pin)}
   .chantier .nom{flex:1;font:400 19px/1.2 ui-serif,Georgia,serif}
   .chantier .quand-detail{margin-top:3px;font-size:12.5px;color:var(--or)}
   .chantier .equipe{flex-shrink:0;border-radius:999px;padding:7px 13px;font-size:12.5px;
@@ -286,7 +290,7 @@
     <span><i class="carre pris"></i> 1 équipe sur 2</span>
     <span><i class="carre plein"></i> complet</span>
     <span class="annote">
-      <span class="deux"><i class="fine"></i><i class="fine"></i></span>
+      <span class="deux"><i class="carre"></i><i class="carre pris"></i></span>
       <span class="mots"><b>matin</b><b>après-midi</b></span>
     </span>
   </div>
@@ -509,10 +513,29 @@
    * aplat foncé quand c'est complet : le seul état qui interdit de poser un
    * chantier ne se déduit pas d'une nuance, il se voit.
    */
+  /**
+   * Les deux barres du jour : le matin dessus, l'après-midi dessous.
+   *
+   * **Une barre est faite de PLACES, une par équipe.** Sa question du 21 août :
+   * *« j'ai l'impression qu'il y a quelque chose qui n'est pas clair entre le
+   * code couleur qui fait que les jours sont pleins — parce qu'en fait les jours
+   * peuvent être pleins, mais les équipes pas choisies »*. Il avait raison, et
+   * le dessin d'avant confondait les deux : il remplissait pareil un chantier
+   * confié à Julien et un chantier posé sans personne dessus.
+   *
+   * Chaque chantier posé prend UNE place — c'est ce qui remplit la barre, et
+   * c'est juste : la journée est prise, qu'on ait nommé l'équipe ou non. Mais
+   * une place **sans équipe** est hachurée : elle dit « il reste à décider qui
+   * y va », ce qu'un aplat ne pouvait pas dire.
+   */
   function dessinerMarque(iso) {
-    const barre = (o) => o.complet
-      ? `<i class="plein"></i>`
-      : `<i><span style="width:${Math.round(o.part * 100)}%"></span></i>`;
+    const barre = (o) => {
+      const largeur = 100 / nombreEquipes;
+      const places = o.pris.map((c) =>
+        `<span class="seg ${o.complet ? "plein" : "pris"} ${c.equipe ? "" : "sans"}"
+               style="width:${largeur}%"></span>`).join("");
+      return `<i>${places}</i>`;
+    };
     return `<span class="marqueA">${barre(occupation(iso, "matin"))}${barre(occupation(iso, "apres"))}</span>`;
   }
 
@@ -656,16 +679,17 @@
     boite.querySelectorAll("[data-feuille]").forEach((b) =>
       b.addEventListener("click", () => rendreFeuille(duJourLa()[Number(b.dataset.feuille)])));
 
-    // **L'équipe tourne d'un appui.** Deux équipes, dix équipes, ou aucune :
-    // on passe à la suivante, puis on revient à « Équipe ? ». Un menu déroulant
-    // demanderait deux gestes là où le sien en demande un.
+    // **On CHOISIT son équipe, on ne la subit pas.** Sa remarque du 21 août :
+    // *« quand je clique sur équipe, ça me met d'office une équipe, je n'ai pas
+    // choisi, ce n'est pas normal — je dois pouvoir choisir, et modifier »*. La
+    // version d'avant faisait tourner les noms à chaque appui : sur dix équipes,
+    // il fallait neuf appuis pour atteindre la dernière, et l'on posait une
+    // équipe sans l'avoir voulue à chaque passage.
+    //
+    // La liste s'ouvre donc sur place, avec « Retirer l'équipe » quand il y en a
+    // une : changer d'avis doit coûter le même geste que choisir.
     boite.querySelectorAll("[data-equipe]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const c = duJourLa()[Number(b.dataset.equipe)];
-        const suivante = EQUIPES()[EQUIPES().indexOf(c.equipe) + 1];
-        c.equipe = c.equipe ? (suivante || "") : EQUIPES()[0];
-        rendre();
-      }));
+      b.addEventListener("click", () => ouvrirChoixEquipe(b, duJourLa()[Number(b.dataset.equipe)])));
 
     // Matin → après-midi → journée, et l'on recommence.
     boite.querySelectorAll("[data-demi]").forEach((b) =>
@@ -781,17 +805,21 @@
         <div class="jour">
           <p class="quand">${titreJour(iso)}</p>
           ${duJour(iso).map((c) => `
-            <button type="button" class="chantier" data-feuille-liste="${CHANTIERS.indexOf(c)}">
-              <div class="nom">${c.nom}<div class="quand-detail">${ditLaDemi(c.demi)}</div></div>
-              <span class="equipe ${c.equipe ? "" : "vide"}">${c.equipe || "Équipe ?"}</span>
-              <span class="chevron">›</span>
-            </button>`).join("")}
+            <div class="chantier">
+              <button type="button" class="nom" data-feuille-liste="${CHANTIERS.indexOf(c)}">${c.nom}
+                <span class="quand-detail">${ditLaDemi(c.demi)}</span></button>
+              <button type="button" class="equipe ${c.equipe ? "" : "vide"}" data-equipe-liste="${CHANTIERS.indexOf(c)}">${c.equipe || "Équipe ?"}</button>
+              <button type="button" class="chevron" data-feuille-liste="${CHANTIERS.indexOf(c)}">›</button>
+            </div>`).join("")}
         </div>`).join("");
 
     // **Le nom d'un planifié ouvre SA feuille, ici même.** C'est dans CETTE
     // liste qu'il cliquait — pas dans la fiche du jour —, et rien ne se
     // passait : « je ne peux toujours pas cliquer sur le nom du client ». La
     // feuille s'ouvre sous la liste, là où le doigt vient d'appuyer.
+    document.querySelectorAll("[data-equipe-liste]").forEach((b) =>
+      b.addEventListener("click", () => ouvrirChoixEquipe(b, CHANTIERS[Number(b.dataset.equipeListe)])));
+
     document.querySelectorAll("[data-feuille-liste]").forEach((b) =>
       b.addEventListener("click", () => {
         // **La feuille s'ouvre SOUS LA LIGNE touchée**, pas au bas de la liste.
@@ -799,9 +827,31 @@
         // s'affichait après « Monsieur Martins », trois lignes plus bas — on
         // croyait avoir ouvert le mauvais chantier. Le réceptacle se déplace
         // donc jusqu'au doigt.
-        b.after(document.getElementById("feuille-liste"));
+        // **Après la LIGNE, pas après le bouton.** Le nom vit dans une ligne en
+        // `flex` : y glisser la feuille la posait dans la rangée, à côté de la
+        // pastille d'équipe. On sort donc jusqu'à la ligne entière.
+        (b.closest(".chantier") || b).after(document.getElementById("feuille-liste"));
         rendreFeuille(CHANTIERS[Number(b.dataset.feuilleListe)], "feuille-liste");
       }));
+  }
+
+  /**
+   * La liste des équipes, ouverte à la place de la pastille touchée.
+   *
+   * Elle sert aux deux endroits où une équipe s'affiche — la fiche du jour et la
+   * liste des planifiés. Deux listes écrites séparément auraient fini par
+   * proposer des choix différents.
+   */
+  function ouvrirChoixEquipe(pastille, c) {
+    if (!c) return;
+    const choix = document.createElement("div");
+    choix.className = "choisir";
+    choix.innerHTML =
+      EQUIPES().map((e) => `<button type="button" class="petit ${c.equipe === e ? "retenue" : ""}" data-choix="${e}">${e}</button>`).join("") +
+      (c.equipe ? `<button type="button" class="petit" data-choix="">Retirer l’équipe</button>` : "");
+    pastille.replaceWith(choix);
+    choix.querySelectorAll("[data-choix]").forEach((b) =>
+      b.addEventListener("click", () => { c.equipe = b.dataset.choix; rendre(); }));
   }
 
   /**

@@ -326,6 +326,13 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
+- **UNE BARRE EST FAITE DE PLACES, UNE PAR ÉQUIPE — et une place sans équipe
+  est HACHURÉE.** C'est la réponse à sa confusion du 21 août : « les jours
+  peuvent être pleins mais les équipes pas choisies ». Le code devra donc porter
+  deux notions distinctes : la place occupée (un chantier posé) et l'équipe
+  attribuée (qui peut manquer). Les confondre est ce qui le perdait ;
+- **l'équipe se CHOISIT dans une liste, et se retire.** Jamais de rotation à
+  l'appui : sur dix équipes elle poserait neuf fois une équipe non voulue ;
 - **LA BARRE SE REMPLIT — VALIDÉ par lui le 21 août :** *« je suis d'accord
   avec ta méthode pour les dix équipes, la barre elle se remplit petit à petit,
   je trouve que c'est une bonne idée, je valide »*. Ce point est clos : ne pas le

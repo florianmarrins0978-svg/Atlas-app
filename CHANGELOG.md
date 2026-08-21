@@ -1068,6 +1068,43 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### « Plein » ne veut pas dire « attribué » — la hachure le dit enfin
+
+**Sa question du 21 août, et elle valait mieux qu'une réponse :** *« j'ai
+l'impression qu'il y a quelque chose qui n'est pas clair entre le code couleur
+qui fait que les jours sont pleins, parce qu'en fait les jours peuvent être
+pleins mais les équipes pas choisies. J'ai l'impression d'être un peu perdu. »*
+
+**Il n'était pas perdu : le dessin confondait deux choses.** Une barre remplie
+disait « cette demi-journée est prise », et rien d'autre — elle peignait pareil
+un chantier confié à Julien et un chantier posé sans personne dessus. Or ce sont
+deux états très différents : le premier est réglé, le second attend une décision.
+
+**Une barre est désormais faite de PLACES, une par équipe.** Chaque chantier posé
+en prend une — la journée est prise, qu'on ait nommé l'équipe ou non, et c'est
+juste. Mais une place **sans équipe est hachurée** : elle dit « reste à décider
+qui y va ». Le 21 août de la planche, complet et sans équipes, se distingue
+maintenant du 26, complet et attribué.
+
+### On CHOISIT son équipe : un appui n'en pose plus une d'office
+
+**Sa remarque, dans le même message :** *« quand je clique sur équipe, ça me met
+d'office une équipe, je n'ai pas choisi, ce n'est pas normal — je dois pouvoir
+choisir, et modifier »*.
+
+La version d'avant faisait **tourner** les noms à chaque appui. Sur deux équipes
+c'était discutable ; sur dix, il fallait neuf appuis pour atteindre la dernière,
+et l'on posait une équipe non voulue à chaque passage. La pastille ouvre donc la
+**liste des équipes**, avec **« Retirer l'équipe »** quand il y en a une :
+changer d'avis coûte le même geste que choisir. La liste est la même dans la
+fiche du jour et dans les planifiés — deux listes séparées auraient fini par
+proposer des choix différents.
+
+**Le contrôle qui vaut ici** ne compare pas deux libellés : il vérifie dans le
+CALENDRIER qu'après l'ouverture de la liste, **rien n'a été attribué** — la
+place est encore hachurée. L'ancien contrôle serait resté vert sur le défaut
+même qu'il signalait.
+
 ### Ajouter quelqu'un là où il regarde, et alléger la feuille
 
 **Sa remarque du 21 août :** *« je clique sur le 19, j'ai le matin de pris,

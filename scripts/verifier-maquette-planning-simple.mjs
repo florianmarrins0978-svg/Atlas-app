@@ -146,10 +146,22 @@ verifier(
   );
 }
 
-/** Ce qu'une case peint : "complet", ou la part remplie de chaque barre. */
+/**
+ * Ce qu'une case peint, barre par barre : les places occupées.
+ *
+ * Une barre est faite de segments — un par chantier posé. « complet » quand ils
+ * sont pleins ; sinon la part occupée, et `?` marque une place posée SANS
+ * équipe (hachurée à l'écran).
+ */
 const barresDe = (jour) =>
   page.$$eval(`[data-jour="${jour}"] .marqueA i`, (n) =>
-    n.map((e) => (e.classList.contains("plein") ? "complet" : e.firstElementChild?.style.width || "0%")));
+    n.map((e) => {
+      const segs = [...e.children];
+      if (segs.length === 0) return "0%";
+      const part = segs.reduce((t, x) => t + parseFloat(x.style.width), 0);
+      const sans = segs.some((x) => x.classList.contains("sans")) ? "?" : "";
+      return (segs[0].classList.contains("plein") ? "complet" : `${Math.round(part)}%`) + sans;
+    }));
 
 // ── Ce que le calendrier peint doit être CE QUE LES DONNÉES DISENT ───────
 //
@@ -158,7 +170,7 @@ const barresDe = (jour) =>
 // tous les contrôles ci-dessus.
 verifier(
   `le vendredi 21 est complet matin ET après-midi (lu : ${JSON.stringify(await barresDe("2026-08-21"))})`,
-  (await barresDe("2026-08-21")).every((b) => b === "complet"),
+  (await barresDe("2026-08-21")).every((b) => b.startsWith("complet")),
 );
 verifier(
   `le mercredi 19 est vide le matin, à moitié l'après-midi (lu : ${JSON.stringify(await barresDe("2026-08-19"))})`,
@@ -166,7 +178,7 @@ verifier(
 );
 verifier(
   `le mercredi 26 est complet l'après-midi sur un matin libre (lu : ${JSON.stringify(await barresDe("2026-08-26"))})`,
-  JSON.stringify(await barresDe("2026-08-26")) === JSON.stringify(["0%", "complet"]),
+  (await barresDe("2026-08-26"))[0] === "0%" && (await barresDe("2026-08-26"))[1].startsWith("complet"),
 );
 
 // ── SA QUESTION DU 21 AOÛT : « et s'il y a dix équipes ? » ───────────────
@@ -178,7 +190,7 @@ await page.click('[data-equipes="10"]');
 await page.waitForTimeout(150);
 verifier(
   `à dix équipes, le vendredi 21 ne montre plus que deux dixièmes (lu : ${JSON.stringify(await barresDe("2026-08-21"))})`,
-  JSON.stringify(await barresDe("2026-08-21")) === JSON.stringify(["20%", "20%"]),
+  JSON.stringify(await barresDe("2026-08-21")) === JSON.stringify(["20%?", "20%?"]),
 );
 verifier(
   `à dix équipes, le mercredi 19 tombe à un dixième (lu : ${JSON.stringify(await barresDe("2026-08-19"))})`,
@@ -186,13 +198,13 @@ verifier(
 );
 verifier(
   "à dix équipes, « complet » reste montrable — le 26 l'est toujours",
-  (await barresDe("2026-08-26"))[1] === "complet",
+  (await barresDe("2026-08-26"))[1].startsWith("complet"),
 );
 await page.click('[data-equipes="2"]');
 await page.waitForTimeout(150);
 verifier(
   "revenir à deux équipes rend le calendrier d'avant",
-  JSON.stringify(await barresDe("2026-08-21")) === JSON.stringify(["complet", "complet"]),
+  (await barresDe("2026-08-21")).every((b) => b.startsWith("complet")),
 );
 
 // ── La légende MONTRE, elle n'explique plus ─────────────────────────────
@@ -225,11 +237,16 @@ verifier(
       JSON.stringify(carres.map((c) => c.etat)) === JSON.stringify(["", "pris", "plein"]),
   );
 
-  const fines = await page.$$eval(".legende .annote .fine", (n) =>
+  // **Matin et après-midi sont dits par DEUX CARRÉS de la même taille que les
+  // trois autres, superposés.** Sa correction du 21 août, à la troisième
+  // demande : « je ne veux pas de gros rectangle, je veux les mêmes que pour le
+  // code couleur, même dimension, superposés ».
+  const tousLesCarres = await page.$$eval(".legende .carre", (n) =>
     n.map((e) => { const r = e.getBoundingClientRect(); return { l: Math.round(r.width), h: Math.round(r.height) }; }));
   verifier(
-    `matin et après-midi sont dits par DEUX BARRES FINES l'une sur l'autre (lu : ${JSON.stringify(fines)})`,
-    fines.length === 2 && fines.every((r) => r.h <= 7 && r.l >= r.h * 2.5),
+    `les CINQ marques sont des carrés de MÊME taille (lu : ${JSON.stringify(tousLesCarres)})`,
+    tousLesCarres.length === 5 &&
+      tousLesCarres.every((r) => Math.abs(r.l - r.h) <= 1 && r.l === tousLesCarres[0].l),
   );
 
   const mots = await page.$$eval(".legende .annote .mots b", (n) => n.map((e) => e.textContent.trim()));
@@ -360,13 +377,46 @@ await page.click('[data-jour="2026-08-20"]');
   );
 }
 
-// 2 — l'équipe tourne d'un appui
+// 2 — l'équipe se CHOISIT : un appui ouvre la liste, il ne décide rien
+//
+// Sa remarque du 21 août : « quand je clique sur équipe, ça me met d'office une
+// équipe, je n'ai pas choisi ». Le contrôle d'avant comparait deux libellés et
+// serait resté vert sur ce défaut : il faut vérifier qu'un appui n'attribue
+// RIEN par lui-même.
 {
   const chip = page.locator('#jour-ouvert [data-equipe]').last();
   const avant = (await chip.innerText()).trim();
   await chip.click();
-  const apres = (await page.locator('#jour-ouvert [data-equipe]').last().innerText()).trim();
-  verifier(`un appui change l'équipe (« ${avant} » → « ${apres} »)`, avant !== apres);
+  const proposes = await page.$$eval("#jour-ouvert .choisir [data-choix]", (n) => n.map((e) => e.textContent.trim()));
+  verifier(
+    `un appui OUVRE la liste des équipes au lieu d'en poser une (lu : ${JSON.stringify(proposes)})`,
+    proposes.includes("Julien") && proposes.includes("Paul"),
+  );
+  // **Rien ne doit avoir été attribué tant qu'il n'a pas choisi.** On le lit
+  // dans le CALENDRIER, pas sur la pastille : celle-ci est remplacée par la
+  // liste au moment du clic, et son absence ferait rougir un écran juste. Une
+  // place encore sans équipe reste hachurée — c'est le `?`.
+  verifier(
+    `et rien n'a été attribué tant qu'on n'a pas choisi (barres lues : ${JSON.stringify(await barresDe("2026-08-20"))}, pastille avant : « ${avant} »)`,
+    (await barresDe("2026-08-20")).some((b) => b.endsWith("?")),
+  );
+
+  await page.locator('#jour-ouvert .choisir [data-choix="Paul"]').click();
+  verifier("choisir Paul l'attribue", (await page.locator("#jour-ouvert").innerText()).includes("Paul"));
+
+  // **On doit pouvoir revenir en arrière**, et au même coût : « je dois pouvoir
+  // cliquer pour la retirer et la remettre ».
+  await page.locator('#jour-ouvert [data-equipe]').last().click();
+  const avecRetrait = await page.$$eval("#jour-ouvert .choisir [data-choix]", (n) => n.map((e) => e.textContent.trim()));
+  verifier(
+    `une équipe posée peut se RETIRER (lu : ${JSON.stringify(avecRetrait)})`,
+    avecRetrait.some((m) => m.toLowerCase().includes("retirer")),
+  );
+  await page.locator('#jour-ouvert .choisir [data-choix=""]').click();
+  verifier(
+    "et la retirer rend « Équipe ? »",
+    (await page.locator("#jour-ouvert").innerText()).includes("Équipe ?"),
+  );
 }
 
 // 3 — la demi-journée tourne aussi, et le calendrier le voit
@@ -424,6 +474,32 @@ await page.click('[data-jour="2026-08-19"]');
   );
 }
 
+// ── PLEIN, MAIS PAS ATTRIBUÉ — ce qui le perdait le 21 août ────────────
+//
+// « Les jours peuvent être pleins, mais les équipes pas choisies. » Une place
+// posée sans équipe est hachurée : le `?` que rend `barresDe` en témoigne.
+await page.click("#retour").catch(() => {});
+await page.click('[data-jour="2026-08-21"]');
+{
+  const avant = await barresDe("2026-08-21");
+  verifier(
+    `le 21, complet mais sans équipes, porte des places hachurées (lu : ${JSON.stringify(avant)})`,
+    avant.every((b) => b.endsWith("?")),
+  );
+  // On attribue les deux équipes du matin, et la hachure doit disparaître.
+  // Un chantier à la fois : viser deux fois la première pastille reviendrait à
+  // donner les deux équipes au même chantier, et l'autre resterait hachuré.
+  for (const [rang, nom] of [[0, "Julien"], [1, "Paul"]]) {
+    await page.locator('#jour-ouvert [data-equipe]').nth(rang).click();
+    await page.locator(`#jour-ouvert .choisir [data-choix="${nom}"]`).click();
+  }
+  const apres = await barresDe("2026-08-21");
+  verifier(
+    `une fois les deux équipes posées, plus aucune hachure (lu : ${JSON.stringify(apres)})`,
+    apres.every((b) => !b.endsWith("?")),
+  );
+}
+
 // ── LE NOM OUVRE LA FEUILLE, DANS LA LISTE DES PLANIFIÉS AUSSI ─────────
 //
 // C'est là qu'il cliquait : « je ne peux toujours pas cliquer sur le nom du
@@ -438,12 +514,13 @@ await page.locator("#planifies .chantier").first().click();
   // s'affichait au bas de la liste, trois chantiers plus bas, et l'on croyait
   // avoir ouvert le mauvais. On mesure donc la distance entre les deux.
   {
+    // On mesure l'écart entre le BAS de la ligne touchée et le HAUT de la
+    // feuille. Négatif, il dirait que la feuille s'est ouverte au-dessus —
+    // c'est-à-dire ailleurs que sous le doigt.
     const ligne = await page.locator("#planifies .chantier").first().boundingBox();
     const boite = await feuille.boundingBox();
-    verifier(
-      `elle s'ouvre juste sous la ligne touchée (${Math.round(boite.y - (ligne.y + ligne.height))} px plus bas)`,
-      boite.y > ligne.y && boite.y - (ligne.y + ligne.height) < 60,
-    );
+    const ecart = Math.round(boite.y - (ligne.y + ligne.height));
+    verifier(`elle s'ouvre juste sous la ligne touchée (${ecart} px plus bas)`, ecart >= 0 && ecart < 60);
   }
   const dit = await feuille.innerText();
   // L'adresse ne s'écrit plus : ce qui compte, c'est que les gestes la portent.
