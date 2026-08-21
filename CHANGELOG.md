@@ -1240,6 +1240,26 @@ compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 su
 La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
 n'apparaît dans la légende**.
 
+### Le matin et l'après-midi ne partagent plus leurs équipes
+
+**Sa remarque du 21 août :** *« sur Mr. Leroy, qui dure toute la journée, je ne
+peux pas mettre juste Paul le matin et Julien et Paul l'après-midi — si je mets
+les deux l'après-midi, ça me les met aussi le matin. Il faut que tout soit
+indépendant. »*
+
+Un chantier portait **une** liste d'équipes ; il en porte maintenant **deux**,
+matin et après-midi, qui ne se parlent pas. C'est la réalité du métier : on
+démarre à deux et l'on renforce l'après-midi.
+
+**Conséquence sur la liste des planifiés :** la pastille d'un chantier y montre
+toujours toutes ses équipes, mais **elle ouvre la journée** au lieu d'un choix.
+Une pastille unique ne saurait pas laquelle des deux moitiés modifier — et
+choisir pour lui serait exactement le défaut qu'il vient de signaler.
+
+**Le contrôle correspondant met le matin à Paul seul et l'après-midi à Julien et
+Paul**, puis vérifie que le matin n'a pas bougé — et que le calendrier peint bien
+deux moitiés différentes.
+
 ### Un chantier peut mobiliser PLUSIEURS équipes — même toutes
 
 **Sa demande du 21 août :** *« lorsque je choisis une équipe, je dois pouvoir

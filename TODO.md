@@ -326,6 +326,10 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
+- **LE MATIN ET L'APRÈS-MIDI SONT INDÉPENDANTS** — sa remarque du 21 août : sur
+  un chantier à la journée, « juste Paul le matin, Julien et Paul l'après-midi ».
+  La table de liaison porte donc bien la DEMI-JOURNÉE, et jamais une équipe
+  attachée au chantier seul ;
 - **UN CHANTIER PORTE PLUSIEURS ÉQUIPES** — sa demande du 21 août : « je dois
   pouvoir mettre tout le monde le matin, puis tout le monde l'aprem ». En base,
   ce n'est donc pas une colonne `equipe_id` sur le chantier mais une TABLE DE

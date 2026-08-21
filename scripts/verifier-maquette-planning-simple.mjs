@@ -561,18 +561,64 @@ await page.click('[data-jour="2026-08-21"]');
   // On attribue les deux équipes du matin, et la hachure doit disparaître.
   // Un chantier à la fois : viser deux fois la première pastille reviendrait à
   // donner les deux équipes au même chantier, et l'autre resterait hachuré.
-  // On referme après chaque choix : deux listes ouvertes en même temps, et le
-  // même nom apparaît deux fois à l'écran — un chantier à la journée est
-  // affiché sous ses deux demi-journées.
-  for (const [rang, nom] of [[0, "Julien"], [1, "Paul"]]) {
+  // **Il faut attribuer LES QUATRE pastilles** — deux le matin, deux
+  // l'après-midi. Depuis le 21 août, les deux moitiés sont indépendantes : un
+  // chantier à la journée n'hérite plus de ce qu'on a coché le matin. Le
+  // contrôle d'avant n'en remplissait que deux et concluait à tort.
+  for (const [rang, nom] of [[0, "Julien"], [1, "Paul"], [2, "Julien"], [3, "Paul"]]) {
     await page.locator('#jour-ouvert [data-equipe]').nth(rang).click();
-    await page.locator(`#jour-ouvert .choisir [data-choix="${nom}"]`).first().click();
+    const bouton = page.locator(`#jour-ouvert .choisir [data-choix="${nom}"]`).first();
+    // **Cocher, jamais BASCULER.** Un contrôle précédent a pu laisser cette
+    // équipe déjà retenue : rappuyer la retirerait, et l'on conclurait à une
+    // hachure qui n'a rien à voir avec le défaut cherché.
+    if (!(await bouton.getAttribute("class")).includes("retenue")) await bouton.click();
     await page.locator('#jour-ouvert .choisir [data-fini]').first().click();
   }
   const apres = await barresDe("2026-08-21");
   verifier(
     `une fois les deux équipes posées, plus aucune hachure (lu : ${JSON.stringify(apres)})`,
     apres.every((b) => !b.endsWith("?")),
+  );
+}
+
+// ── LE MATIN ET L'APRÈS-MIDI SONT INDÉPENDANTS ────────────────────────
+//
+// Sa remarque du 21 août : « sur Mr. Leroy, qui dure toute la journée, je ne
+// peux pas mettre juste Paul le matin et Julien et Paul l'après-midi — si je
+// mets les deux l'après-midi, ça me les met aussi le matin ».
+await page.click("#retour").catch(() => {});
+await page.click('[data-jour="2026-08-20"]');
+{
+  const lire = () => page.$$eval("#jour-ouvert .demi", (n) =>
+    n.map((e) => [...e.querySelectorAll("[data-equipe]")].map((b) => b.textContent.trim())));
+
+  // Le matin : Paul seul. L'après-midi : Julien ET Paul.
+  const matin = page.locator("#jour-ouvert .demi").first();
+  await matin.locator("[data-equipe]").first().click();
+  const dejaMatin = await matin.locator('.choisir [data-choix].retenue').allTextContents();
+  for (const t of dejaMatin) {
+    const nom = t.replace("✓", "").trim();
+    if (nom !== "Paul") await matin.locator(`.choisir [data-choix="${nom}"]`).click();
+  }
+  if (!dejaMatin.some((t) => t.includes("Paul"))) await matin.locator('.choisir [data-choix="Paul"]').click();
+  await matin.locator(".choisir [data-fini]").click();
+
+  const apres = page.locator("#jour-ouvert .demi").last();
+  await apres.locator("[data-equipe]").first().click();
+  for (const nom of ["Julien", "Paul"]) {
+    const bouton = apres.locator(`.choisir [data-choix="${nom}"]`);
+    if (!(await bouton.getAttribute("class")).includes("retenue")) await bouton.click();
+  }
+  await apres.locator(".choisir [data-fini]").click();
+
+  const lu = await lire();
+  verifier(
+    `le matin garde Paul seul pendant que l'après-midi en porte deux (lu : ${JSON.stringify(lu)})`,
+    lu[0][0] === "Paul" && lu[1][0].includes("Julien") && lu[1][0].includes("Paul"),
+  );
+  verifier(
+    `et le calendrier distingue les deux moitiés (lu : ${JSON.stringify(await barresDe("2026-08-20"))})`,
+    JSON.stringify(await barresDe("2026-08-20")) !== JSON.stringify(["complet", "complet"]),
   );
 }
 
