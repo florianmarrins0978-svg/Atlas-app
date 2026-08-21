@@ -421,9 +421,11 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
     <div class="entete"><h1>Ce qui reste<br>à reloger</h1></div>
 
     <div class="note">
-      <span class="titre">La question</span>
-      Vous supprimez la fiche chantier « pour de bon ». Elle porte <b>quatre choses</b> qui
-      n’ont pas d’autre maison aujourd’hui. Voici où je les mettrais — dites-moi si ça vous va.
+      <span class="titre">Tout est tranché</span>
+      Vous supprimez la fiche chantier « pour de bon ». Elle portait <b>quatre choses</b> sans
+      autre maison : <b>les quatre sont réglées</b>. Deux ne coûtent rien — elles existent déjà
+      ailleurs —, une part (vous n’en voulez pas), et une reste sur la fiche client.
+      <b>Le code peut commencer.</b>
     </div>
 
     <ul class="reloger" style="margin-top:18px">
@@ -442,11 +444,19 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
           ouvre la feuille qui porte « Créer la facture » ; dans <b>Terminés</b>, chaque ligne
           mène droit à la facture. Rien à déplacer.</span>
       </li>
+      <!-- **Rien à reloger non plus, et c'est vérifié dans le code plutôt que
+           supposé** (`CLAUDE.md` §5 ter). Les étapes ne vivent pas DANS la fiche
+           chantier : chacune a son propre écran (`/informations`, `/prix`,
+           `/devis-complet`…), et la fiche n'en était que la liste. L'accueil,
+           lui, mène déjà à la PROCHAINE (`lienDeReprise`). Deux étapes seulement
+           y renvoient vers la fiche chantier — les photos et la dictée — et
+           elles pointeront vers la fiche client, où elles vivent désormais. -->
       <li>
-        <span class="quoi">Les étapes du chantier</span>
-        <span class="prop">Planifier, envoyer le devis, terminer. <b>Proposition :</b> elles
-          restent où elles sont déjà — la carte de l’accueil vous mène toujours à la
-          <b>prochaine étape</b>, c’est ce qu’elle fait aujourd’hui.</span>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Les étapes du chantier</span>
+        <span class="prop"><b>Rien à déplacer — vérifié.</b> Chaque étape a déjà son écran ; la
+          fiche chantier n’en était que la <b>liste</b>. Et votre accueil vous emmène déjà à la
+          <b>prochaine</b> : c’est ce qu’il fait aujourd’hui. Dites-le si vous voulez malgré tout
+          revoir cette liste quelque part.</span>
       </li>
       <!-- **Réglé le 21 août au soir : « on n'a pas besoin de réécouter la note
            dictée ».** Rien à reloger, et une pièce de moins à porter. -->
@@ -455,13 +465,19 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
         <span class="prop"><b>Réglé — vous n’en voulez pas.</b> « On n’a pas besoin de réécouter
           la note dictée. » L’anneau reste donc un micro, et rien d’autre.</span>
       </li>
+      <!-- **Réglé le 21 août au soir : « fais ça pour le rajout de la 4e photo
+           du jeudi ».** Le carré « + » reste sur la fiche client, au même
+           endroit que le jour du rendez-vous.
+
+           **Et le chemin pour y revenir existe déjà**, il change juste de
+           destination : la flèche de retour du devis mène aujourd'hui à la
+           fiche chantier (`DevisCompletClient.tsx`), qui disparaît — elle
+           ramènera à la fiche client. Aucun geste nouveau à apprendre. -->
       <li>
-        <span class="quoi">Une photo que vous ajoutez plus tard</span>
-        <span class="prop"><b>Le cas, en clair :</b> mardi vous êtes chez le client, vous prenez
-          trois photos et vous dictez. Jeudi, vous repassez devant le chantier et vous en prenez
-          une quatrième. <b>Où l’ajoutez-vous ?</b> Aujourd’hui c’est sur la fiche chantier —
-          celle qui disparaît. <b>Proposition :</b> vous rouvrez le chantier depuis l’accueil, et
-          le carré « + » est là, au même endroit que mardi.</span>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Une photo que vous ajoutez plus tard</span>
+        <span class="prop"><b>Réglé.</b> Jeudi, vous rouvrez le chantier depuis l’accueil : le devis
+          s’ouvre, et <b>la flèche de retour vous ramène à la fiche client</b> — le carré « + » est
+          là, au même endroit que mardi. Rien de nouveau à apprendre.</span>
       </li>
     </ul>
 
