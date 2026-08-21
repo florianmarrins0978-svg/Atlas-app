@@ -217,9 +217,21 @@ verifier(
   const dit = (await page.locator(".legende").innerText()).toLowerCase();
   verifier("la légende ne porte plus de phrase d'explication", !dit.includes("barre du haut"));
   verifier(
-    "elle dit la suite : libre, 1 équipe sur 2, complet — puis matin et après-midi",
-    ["libre", "1 équipe sur 2", "complet", "matin", "après-midi"].every((m) => dit.includes(m)),
+    "elle dit la suite : libre, il reste de la place, complet — puis matin et après-midi",
+    ["libre", "il reste de la place", "complet", "matin", "après-midi"].every((m) => dit.includes(m)),
   );
+
+  // **Aucun nombre dans la légende.** Sa question du 21 août : « le "1 équipe
+  // sur 2" bouge en fonction du nombre d'équipes ? 3, 4, 10, 100 ? ». Il ne
+  // bougeait pas. Un mot qui ne dépend d'aucun nombre ne peut plus mentir —
+  // et le contrôle le vérifie aux trois réglages.
+  for (const n of ["2", "5", "10"]) {
+    await page.click(`[data-equipes="${n}"]`);
+    const lu = (await page.locator(".legende").innerText()).toLowerCase();
+    verifier(`à ${n} équipes, la légende ne promet aucun compte (lu : « ${lu.replace(/\n/g, " ")} »)`,
+      !/sur \d/.test(lu));
+  }
+  await page.click('[data-equipes="2"]');
   // **Trois CARRÉS, puis les deux barres FINES du calendrier — et tout sur une
   // seule ligne.** Sa correction du 21 août, qu'il a fallu deux essais pour
   // entendre : « remets les carrés comme avant, et pour matin / après-midi

@@ -1225,6 +1225,21 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### La légende ne promet plus un compte qu'elle ne tient pas
+
+**Sa question du 21 août :** *« le "1 équipe sur 2" bouge en fonction du nombre
+d'équipes ? 3, 4, 10, 100 ? »*
+
+**Non, et c'était un défaut** : le mot était écrit en dur dans la page. Mais le
+corriger en « 1 équipe sur 5 » n'aurait rien réglé — le carré vert clair ne dit
+pas « une seule équipe est prise », il dit **qu'il en reste au moins une de
+libre**, que six soient occupées sur dix ou une sur deux.
+
+Le mot juste ne dépend donc d'aucun nombre : **« il reste de la place »**. Le
+compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 sur 5 ».
+La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
+n'apparaît dans la légende**.
+
 ### Un chantier peut mobiliser PLUSIEURS équipes — même toutes
 
 **Sa demande du 21 août :** *« lorsque je choisis une équipe, je dois pouvoir
