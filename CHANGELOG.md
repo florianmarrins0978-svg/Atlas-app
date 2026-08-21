@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-20
 
+### Le devis part par le canal de la fiche client, pas par celui de la page
+
+**Son défaut, capture à l'appui** : *« sur la fiche client, j'ai choisi
+d'envoyer le devis par email. Et lorsque j'ai validé mon devis […] c'est
+l'application SMS qui s'est ouverte. »*
+
+**Deux sources décidaient du même canal, et elles divergeaient.** Le serveur
+relisait la fiche du client au moment d'envoyer — et refuse d'ailleurs de partir
+tant qu'aucun canal n'y est convenu. L'écran, lui, réutilisait une valeur
+**chargée avec la page**, qui retombait sur un `?? "sms"` écrit à la main. Un
+canal changé entre-temps, ou simplement absent, ouvrait donc la mauvaise
+application — vers un numéro que le client n'a peut-être pas.
+
+**L'envoi rend maintenant le canal ET le destinataire qu'il vient de valider**,
+et c'est ce que l'écran ouvre. Une seule source, la bonne, et rien à
+rafraîchir.
+
+**Et le `?? "sms"` a disparu des écrans** au profit de `canalPourJoindre` : le
+canal convenu s'il a sa coordonnée, sinon la seule coordonnée renseignée, sinon
+`null` — on ne sait pas, et on le dit. Un client qui n'a qu'une adresse e-mail
+ne se voit plus proposer un SMS.
+
+Éprouvé en rejouant son parcours exact, client portant les deux coordonnées :
+`test-envoi-client-e2e.ts` (« le canal de la fiche commande l'ouverture »), plus
+la règle seule dans `test-message-client.ts`.
+
+## 2026-08-20
+
 ### L'écran ne promet plus une version rapide que personne ne construit
 
 **Sa soirée du 20 août :** *« L'application est lente, corrige ça. »* Puis, en

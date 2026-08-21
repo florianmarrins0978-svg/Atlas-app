@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { composerMessageClient, composerMessageFacture, lienTransmission } from "../src/lib/message-client";
+import { canalPourJoindre, composerMessageClient, composerMessageFacture, lienTransmission } from "../src/lib/message-client";
 import { CIVILITE_PAR_DEFAUT, avecCivilite } from "../src/lib/civilite";
 
 // Le message qui remet le devis au client part de la boîte du patron, en son
@@ -146,6 +146,38 @@ test("La date se propose AU PRÉSENT : « vous pouvez », jamais « vous pourrez
   // Le futur repoussait le geste à plus tard, comme s'il fallait d'abord faire
   // autre chose. Il ne doit pas revenir par une reformulation.
   assert.ok(!m.corps.includes("pourrez"), "le futur est revenu dans le message");
+});
+
+test("Le canal se DÉDUIT, il ne s'invente pas", () => {
+  // **Son défaut du 20 août 2026** : *« sur la fiche client j'ai choisi
+  // d'envoyer le devis par email […] c'est l'application SMS qui s'est
+  // ouverte »*. Les écrans portaient un `?? "sms"` écrit à la main.
+
+  // 1. Le canal convenu prime — c'est un accord avec la personne.
+  assert.equal(
+    canalPourJoindre({ canal: "email", telephone: "0612345678", email: "a@b.c" }),
+    "email",
+    "le canal convenu sur la fiche du client ne prime pas"
+  );
+  assert.equal(canalPourJoindre({ canal: "sms", telephone: "0612345678", email: "a@b.c" }), "sms");
+
+  // 2. Un canal convenu SANS sa coordonnée ne vaut rien : il ouvrirait un
+  //    message sans destinataire.
+  assert.equal(canalPourJoindre({ canal: "sms", telephone: null, email: "a@b.c" }), "email");
+  assert.equal(canalPourJoindre({ canal: "email", telephone: "0612345678", email: "" }), "sms");
+
+  // 3. Une seule coordonnée : deviner est sans risque.
+  assert.equal(canalPourJoindre({ telephone: null, email: "a@b.c" }), "email");
+  assert.equal(canalPourJoindre({ telephone: "0612345678", email: null }), "sms");
+
+  // 4. Deux coordonnées et aucun accord : on ne SAIT PAS, et on le dit.
+  //    C'est là que le `?? "sms"` mentait.
+  assert.equal(
+    canalPourJoindre({ telephone: "0612345678", email: "a@b.c" }),
+    null,
+    "sans canal convenu, l'application choisit encore à sa place"
+  );
+  assert.equal(canalPourJoindre({ telephone: null, email: null }), null);
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
