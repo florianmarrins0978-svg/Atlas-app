@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le planning : un chantier porte son nom UNE fois
+
+**Sa correction du soir, capture à l'appui :** *« Mr. Leroy au-dessus du carré
+vert clair matin ; supprime le Mr. Leroy pour l'aprem, c'est le même chantier,
+pas besoin de répéter ; pareil pour "1 chantier" ; et supprime le trait entre le
+matin et l'après-midi, là on a l'impression que c'est deux chantiers
+différents. »*
+
+Il avait raison, et le défaut était de structure. La fiche du jour était bâtie
+sur les demi-journées : deux blocs séparés par un filet, chacun rejouant le nom
+du client et son compte. Un chantier qui dure la journée s'y écrivait donc
+**deux fois**, avec une barre au milieu — et l'écran disait ce qui était faux.
+
+Elle est bâtie sur le CHANTIER : son nom une fois, en tête, avec le compte de la
+journée à sa droite ; dessous, les moments où il a lieu, chacun gardant son
+équipe, son « Déplacer » et son « Retirer » — le matin et l'après-midi restent
+indépendants, c'est sa règle du 21 août.
+
+Une demi-journée que personne n'occupe garde sa ligne et dit « libre » : la
+cacher ferait croire que la journée entière est prise.
+
+Les contrôles visent la structure, pas les mots — combien de fois le nom
+paraît, combien de comptes sont écrits, quelle bordure sépare les lignes. Un
+contrôle sur « Mr. Leroy » rougirait au premier changement de client d'exemple
+et ne défendrait plus rien. Les trois ont été confrontés à la version d'avant :
+ils rougissent dessus.
+
+
 ### « Il y a une clé IA » — écrit dans le dépôt, plus dans une session
 
 **Sa consigne, et il a fallu qu'il la répète :** *« il y a une clé IA, il y a

@@ -216,7 +216,7 @@ await page.click('[data-jour="2026-08-21"]');
   // déjà sélectionnés ». On mesure le bord gauche et le corps, pas l'apparence
   // supposée.
   {
-    const noms = await page.$$eval("#jour-ouvert .place .nom", (n) =>
+    const noms = await page.$$eval("#jour-ouvert .tete .nom, #jour-ouvert .place.en-attente .nom", (n) =>
       n.map((e) => ({ gauche: Math.round(e.getBoundingClientRect().left), corps: getComputedStyle(e).fontSize })));
     verifier(
       `le nom en attente est au même niveau que les autres (lu : ${JSON.stringify(noms)})`,
@@ -230,7 +230,10 @@ await page.click('[data-jour="2026-08-21"]');
     `le troisième chantier passe, et le matin bascule en « au-delà » (lu : ${JSON.stringify(apres)})`,
     apres[0].etat === "dela" && apres[0].part === "100%",
   );
-  const dit = await page.locator("#jour-ouvert .demi").first().locator(".compte").innerText();
+  // Le compte est écrit UNE fois pour la journée, en tête du premier
+  // chantier — sa correction du 21 août : « celui de l'aprem, supprime, il
+  // est déjà écrit pour le matin ».
+  const dit = await page.locator("#jour-ouvert .compte-jour").first().innerText();
   verifier(`et le compte le dit en clair (lu : « ${dit.trim()} »)`, /150\s*%/.test(dit));
 
   // **« Toute la journée » ne s'écrit plus sous les noms** — sa demande du même
@@ -246,6 +249,69 @@ await page.click('[data-jour="2026-08-21"]');
   verifier(
     "même au-delà, le bouton d'ajout est toujours là",
     (await page.locator("#jour-ouvert [data-ajouter]").count()) === 1,
+  );
+}
+
+// ── UN CHANTIER, UN NOM : SA CORRECTION DU 21 AOÛT ─────────────────────
+//
+// *« Supprime le Mr. Leroy pour l'aprem, c'est le même chantier, pas besoin de
+// répéter ; pareil pour "1 chantier" ; et supprime le trait entre le matin et
+// l'après-midi, là on a l'impression que c'est deux chantiers différents. »*
+//
+// On mesure la STRUCTURE, pas les mots : combien de fois le nom paraît, combien
+// de comptes sont écrits, et si un filet sépare les deux demi-journées. Un
+// contrôle sur le libellé « Mr. Leroy » rougirait le jour où il change de
+// client d'exemple, et ne défendrait plus rien.
+{
+  await page.click('[data-jour="2026-08-20"]');
+  const carte = page.locator("#jour-ouvert");
+
+  const noms = await page.$$eval("#jour-ouvert .tete .nom", (n) => n.map((e) => e.textContent.trim()));
+  verifier(
+    `un chantier à la journée n'écrit son nom qu'UNE fois (lu : ${JSON.stringify(noms)})`,
+    noms.length === 1 && new Set(noms).size === 1,
+  );
+
+  verifier(
+    "et son compte n'est écrit qu'une fois",
+    (await carte.locator(".compte-jour").count()) === 1,
+  );
+
+  // Les deux demi-journées portent chacune leur équipe : c'est son autre règle,
+  // et l'une ne doit pas avoir mangé l'autre en supprimant le nom.
+  const equipes = await page.$$eval("#jour-ouvert .demi [data-pour]", (n) => n.map((e) => e.dataset.pour));
+  verifier(
+    `les deux demi-journées gardent chacune leur équipe (lu : ${JSON.stringify(equipes)})`,
+    JSON.stringify(equipes) === JSON.stringify(["matin", "apres"]),
+  );
+
+  // **Aucun filet entre le matin et l'après-midi.** Mesuré sur la bordure
+  // calculée, pas sur l'absence d'une classe : une règle CSS oubliée ailleurs
+  // repeindrait le trait sans qu'aucun nom de classe ne change.
+  const filets = await page.$$eval("#jour-ouvert .demi", (n) =>
+    n.map((e) => getComputedStyle(e).borderTopWidth));
+  verifier(
+    `aucun trait ne sépare les demi-journées (lu : ${JSON.stringify(filets)})`,
+    filets.length === 2 && filets.every((f) => parseFloat(f) === 0),
+  );
+
+  // **Le nom passe AU-DESSUS du carré du matin.** C'est la première de ses
+  // quatre corrections, et la seule qui se mesure en pixels.
+  const positions = await page.locator("#jour-ouvert").evaluate((c) => {
+    const nom = c.querySelector(".tete .nom").getBoundingClientRect();
+    const lignes = [...c.querySelectorAll(".demi")].map((d) => d.getBoundingClientRect());
+    return { nom: Math.round(nom.bottom), matin: Math.round(lignes[0].top),
+             hauteurs: lignes.map((r) => Math.round(r.height)) };
+  });
+  verifier(
+    `le nom est au-dessus de la ligne du matin (nom finit à ${positions.nom}, le matin commence à ${positions.matin})`,
+    positions.nom <= positions.matin,
+  );
+  // Un contrôle qui mesure ZÉRO ne mesure rien : deux lignes écrasées à zéro
+  // pixel satisferaient tout ce qui précède sans rien montrer à l'écran.
+  verifier(
+    `et les deux lignes ont une hauteur réelle (lu : ${JSON.stringify(positions.hauteurs)})`,
+    positions.hauteurs.length === 2 && positions.hauteurs.every((h) => h >= 20),
   );
 }
 

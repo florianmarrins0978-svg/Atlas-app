@@ -187,11 +187,30 @@
                       text-transform:uppercase;text-align:center;color:var(--encre);margin-bottom:14px}
   .jour-ouvert .dit{margin:0;text-align:center;font-size:13px;color:var(--gris)}
 
-  .demi + .demi{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait)}
-  .demi-titre{display:flex;align-items:center;gap:8px;font:600 11px/1 ui-sans-serif,sans-serif;
-              letter-spacing:.12em;text-transform:uppercase;color:var(--encre)}
-  .demi-titre .compte{margin-left:auto;font-weight:500;letter-spacing:0;text-transform:none;
-                      font-size:12px;color:var(--gris)}
+  /* **Pas de filet entre le matin et l'après-midi** — sa correction du
+     21 août : « là on a l'impression que c'est deux chantiers différents ».
+     Le trait séparait ce qui, le plus souvent, est un seul chantier. */
+  .bloc-chantier + .bloc-chantier,
+  .demi.sans-chantier + .bloc-chantier{margin-top:16px}
+  .tete{display:flex;align-items:baseline;gap:10px}
+  .tete .nom{flex:1;border:0;background:transparent;text-align:left;padding:0;cursor:pointer;
+             font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .tete .compte-jour{flex-shrink:0;font-size:12px;color:var(--gris)}
+  .demi{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
+  .demi .mot{font:600 10px/1.15 ui-sans-serif,sans-serif;letter-spacing:.06em;
+             text-transform:uppercase;color:var(--encre);white-space:nowrap}
+  /* La demi-journée occupe une colonne de largeur fixe : sans elle, « Matin »
+     et « Après-midi » décalent leurs boutons l'un par rapport à l'autre, et
+     deux lignes qui devraient se lire d'un trait se lisent une par une. */
+  .demi .mot{width:70px;flex-shrink:0}
+  .demi .compte{margin-left:auto;font-size:12px;color:var(--gris)}
+  .demi .equipe{flex-shrink:0;border:0;border-radius:999px;padding:6px 12px;font-size:12.5px;
+                background:var(--pin);color:#faf9f5;white-space:nowrap;cursor:pointer}
+  .demi .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
+  .demi .equipe .ajouter{margin-left:6px;opacity:.65;font-size:11px}
+  .demi .equipe.vide .ajouter{display:none}
+  .demi .petit{padding:7px 9px}
+  .demi .choisir{flex-basis:100%;justify-content:flex-start}
   .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
             background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
   .pastille.dispo{background:var(--pale);box-shadow:none}
@@ -245,7 +264,7 @@
   .rond-plus:active{background:var(--papier)}
   /* La ligne d'un chantier qu'on est en train de poser : même nom, même
      hauteur que les autres, et les trois moments à la place de la pastille. */
-  .place.en-attente .nom{flex:1;font:400 17px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .place.en-attente .nom{flex:1;font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
   .place.en-attente .quand-choix{display:flex;gap:6px;flex-shrink:0}
   .choisir{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin-top:4px}
   .choisir .rien{margin:0;font-size:12px;color:var(--gris)}
@@ -673,6 +692,27 @@
   }
 
   /**
+   * Ce que dit la JOURNÉE, en un seul endroit.
+   *
+   * **Sa correction du 21 août :** *« "1 chantier" de l'aprem, supprime, c'est
+   * déjà écrit pour le matin »*. Le compte était rendu deux fois — une par
+   * demi-journée — et sur un chantier à la journée les deux lignes disaient le
+   * même mot. On compte donc les chantiers du jour, une fois, en tête.
+   *
+   * La charge, elle, se prend sur la demi-journée la plus chargée : c'est celle
+   * qui décide de la couleur du calendrier, et c'est elle qu'il faut savoir.
+   */
+  function ditLeCompteDuJour(iso) {
+    const n = duJour(iso).length;
+    if (n === 0) return "libre";
+    const texte = `${n} chantier${n > 1 ? "s" : ""}`;
+    const charge = Math.max(occupation(iso, "matin").charge, occupation(iso, "apres").charge);
+    if (charge > 1) return `${texte} · ${Math.round(charge * 100)} % de vos équipes`;
+    if (charge === 1) return `${texte} · complet`;
+    return texte;
+  }
+
+  /**
    * La carte d'une journée : ses deux demi-journées, leurs chantiers, leurs
    * équipes.
    *
@@ -693,31 +733,65 @@
         <p class="dit">Jamais proposé.</p></div><div class="feuille-place"></div>`;
     }
 
-    const bloc = (demi, mot) => {
-      const o = occupation(iso, demi);
-      const { pris } = o;
-      // La pastille lit la MÊME règle que le calendrier : rien, incomplet,
-      // complet, au-delà. Deux calculs pour la même chose finissent par ne plus
-      // dire la même chose.
-      const etat = etatDe(o);
-      const lignes = pris.map((c) => {
-        const i = CHANTIERS.indexOf(c);
-        const equipes = equipesDe(c, demi);
-        return `<div class="place">
-          <button type="button" class="nom" data-feuille="${i}">${c.nom}</button>
-          <button type="button" class="equipe ${equipes.length ? "" : "vide"}"
-                  data-equipe="${i}" data-pour="${demi}">${ditLesEquipes(equipes)}<span class="ajouter">＋</span></button>
-          <button type="button" class="petit" data-demi="${i}">Déplacer</button>
-          <button type="button" class="petit" data-retirer="${i}">Retirer</button>
-        </div>`;
-      }).join("");
+    const DEMIS = [["matin", "Matin"], ["apres", "Après-midi"]];
 
+    // La ligne d'une demi-journée SOUS le nom du chantier : sa pastille, son
+    // moment, son équipe, et les deux gestes. Le matin et l'après-midi gardent
+    // chacun leur équipe — c'est sa règle du 21 août, et elle vaut ici aussi.
+    const ligne = (c, demi, mot) => {
+      const i = CHANTIERS.indexOf(c);
+      const equipes = equipesDe(c, demi);
       return `<div class="demi" data-bloc="${demi}">
-        <div class="demi-titre"><i class="pastille ${etat}"></i>${mot}
-          <span class="compte">${ditLeCompte(iso, demi)}</span></div>
-        ${lignes}
+        <i class="pastille ${etatDe(occupation(iso, demi))}"></i>
+        <span class="mot">${mot}</span>
+        <button type="button" class="equipe ${equipes.length ? "" : "vide"}"
+                data-equipe="${i}" data-pour="${demi}">${ditLesEquipes(equipes)}<span class="ajouter">＋</span></button>
+        <button type="button" class="petit" data-demi="${i}">Déplacer</button>
+        <button type="button" class="petit" data-retirer="${i}">Retirer</button>
       </div>`;
     };
+
+    // Une demi-journée que personne n'occupe garde sa ligne : la cacher ferait
+    // croire que la journée entière est prise.
+    const libre = (demi, mot) => `<div class="demi sans-chantier" data-bloc="${demi}">
+        <i class="pastille ${etatDe(occupation(iso, demi))}"></i>
+        <span class="mot">${mot}</span>
+        <span class="compte">${ditLeCompte(iso, demi)}</span>
+      </div>`;
+
+    // **Le chantier passe AU-DESSUS de ses demi-journées** — sa demande du
+    // 21 août, capture à l'appui : *« Mr. Leroy au-dessus du carré vert clair
+    // matin ; supprime le Mr. Leroy pour l'aprem, c'est le même chantier, pas
+    // besoin de répéter ; pareil pour "1 chantier" ; et supprime le trait entre
+    // le matin et l'après-midi, là on a l'impression que c'est deux chantiers
+    // différents. »*
+    //
+    // Le nom écrit deux fois, séparé par un filet, FAISAIT deux chantiers là où
+    // il n'y en a qu'un. Un chantier porte donc son nom une fois, et dessous
+    // les moments où il a lieu.
+    const groupes = duJour(iso)
+      .map((c) => ({ c, demis: DEMIS.filter(([d]) => c.demi === "journee" || c.demi === d) }))
+      .filter((g) => g.demis.length);
+
+    // Le compte s'écrit UNE fois pour la journée. Répété sous le matin puis
+    // sous l'après-midi, il n'apprenait rien la seconde fois.
+    let compteEcrit = false;
+    const morceaux = [];
+    DEMIS.forEach(([demi, mot]) => {
+      if (occupation(iso, demi).pris.length === 0) morceaux.push(libre(demi, mot));
+      groupes.filter((g) => g.demis[0][0] === demi).forEach((g) => {
+        const i = CHANTIERS.indexOf(g.c);
+        const compte = compteEcrit ? "" : `<span class="compte-jour">${ditLeCompteDuJour(iso)}</span>`;
+        compteEcrit = true;
+        morceaux.push(`<div class="bloc-chantier">
+          <div class="tete">
+            <button type="button" class="nom" data-feuille="${i}">${g.c.nom}</button>
+            ${compte}
+          </div>
+          ${g.demis.map(([d, m]) => ligne(g.c, d, m)).join("")}
+        </div>`);
+      });
+    });
 
     // **Un seul bouton d'ajout, sous la journée — sa demande du 21 août :**
     // *« le "+ Ajouter un chantier", tu le mets en dessous, un rond avec un
@@ -729,8 +803,7 @@
     // deux fois, et posaient la question avant qu'on ait choisi le chantier.
     return `<div class="jour-ouvert" data-jour-carte="${iso}">
       <p class="titre">${titreJour(iso)}</p>
-      ${bloc("matin", "Matin")}
-      ${bloc("apres", "Après-midi")}
+      ${morceaux.join("")}
       <div class="ajout-jour">
         <button type="button" class="rond-plus" data-ajouter="1" aria-label="Ajouter un chantier">+</button>
         <span>Ajouter un chantier</span>
@@ -1018,11 +1091,15 @@
     // fiche soit refaite — sinon la liste ouverte se refermerait sous le doigt.
     // Vu sur capture : trois équipes cochées, et l'en-tête disait encore
     // « 2 sur 5 ». Un compteur qui retarde d'un geste fait douter du geste.
-    document.querySelectorAll("[data-jour-carte] .demi[data-bloc]").forEach((bloc) => {
-      const demi = bloc.dataset.bloc;
-      const iso = bloc.closest("[data-jour-carte]").dataset.jourCarte;
-      bloc.querySelector(".compte").textContent = ditLeCompte(iso, demi);
-      bloc.querySelector(".pastille").className = `pastille ${etatDe(occupation(iso, demi))}`;
+    document.querySelectorAll("[data-jour-carte] .demi[data-bloc]").forEach((ligne) => {
+      const demi = ligne.dataset.bloc;
+      const iso = ligne.closest("[data-jour-carte]").dataset.jourCarte;
+      ligne.querySelector(".pastille").className = `pastille ${etatDe(occupation(iso, demi))}`;
+      const compte = ligne.querySelector(".compte");
+      if (compte) compte.textContent = ditLeCompte(iso, demi);
+    });
+    document.querySelectorAll("[data-jour-carte] .compte-jour").forEach((mot) => {
+      mot.textContent = ditLeCompteDuJour(mot.closest("[data-jour-carte]").dataset.jourCarte);
     });
   }
 
