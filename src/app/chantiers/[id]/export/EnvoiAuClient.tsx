@@ -72,7 +72,16 @@ type Props = {
   clientNom: string;
   ouvert: boolean;
   onFermer: () => void;
-  onEnvoye: (lien: string) => void;
+  /**
+   * Rend **ce que le serveur vient de valider**, pas seulement le lien.
+   *
+   * Le canal et le destinataire sont relus en base au moment de l'envoi
+   * (`preparerEnvoi`). Les transmettre ici évite que l'écran d'appel ne
+   * retombe sur une valeur chargée avec la page — c'est le défaut du 20 août
+   * 2026 : le patron avait choisi l'e-mail sur la fiche de son client, et
+   * c'est le SMS qui s'ouvrait.
+   */
+  onEnvoye: (envoi: { lien: string; canal: "sms" | "email"; destinataire: string | null }) => void;
 };
 
 // La feuille ne fait que monter et démonter son contenu. C'est ce qui garantit
@@ -255,7 +264,7 @@ function Contenu({
         setErreur(r.erreur);
         return;
       }
-      onEnvoye(r.lien);
+      onEnvoye({ lien: r.lien, canal: r.canal, destinataire: r.destinataire });
     } catch (e) {
       // **La phrase de secours, et seulement elle.** L'action rend désormais sa
       // raison plutôt que de lancer (`actions.ts`) : arriver ici signifie que
