@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### La page entière, cinq fois — pour choisir en la voyant
+
+**Sa demande :** *« Fais-moi une maquette dynamique, pas de photos, que je puisse
+essayer avec les cinq différentes cases. Toute la page de haut en bas avec les
+cinq différentes cases, comme ça ce sera plus visuel et je pourrai choisir. »*
+
+`appli/cases-a-remplir.html` montrait les cinq **en morceaux** : trois champs à
+la suite. On y juge un dessin, on n'y voit pas ce qu'il devient sur un écran
+entier — à côté des capsules « Par SMS », du carré photo, de l'anneau, du bouton
+vert. C'est pourtant là que se décide « joli » : dans l'accord, pas dans le
+détail.
+
+**`appli/cases-page-entiere.html`** — la fiche client complète, un choix de cinq
+en haut, et tout continue de marcher : le numéro qui s'espace à la frappe, les
+photos, l'anneau qui dicte. **Un seul jeu de balises, cinq feuilles de style** :
+l'écran est écrit une fois et se relit sous chaque dessin, sans quoi la
+comparaison serait truquée.
+
+**Ce que la capture a montré et qu'aucune mesure n'aurait vu :** le dessin
+« ligne de fiche » masquait TOUS les petits titres pour ranger les intitulés à
+gauche — emportant « Comment lui envoyer son devis ? » et « Photos du chantier »,
+qui ne coiffent aucune case. Il gagnait en légèreté ce qu'il perdait en contenu.
+Le contrôle exige désormais les deux titres dans les cinq dessins.
+
+**Les cases de la fiche client, elles, ne bougent pas** : *« pour les cases,
+change rien, on reste comme on est là »* — le temps qu'il choisisse.
+
 ### Le numéro s'espace tout seul, et deux questions de moins
 
 **Sa demande :** *« Il faut que je puisse taper les dix chiffres à la suite et
