@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { numeroLisible } from "../src/lib/numero-lisible";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Le dernier mètre : le message part-il au bon destinataire ?
 //
@@ -48,7 +49,7 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', TELEPHONE);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const chantierUrl = page.url();
 

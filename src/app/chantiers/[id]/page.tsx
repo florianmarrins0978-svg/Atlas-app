@@ -263,7 +263,18 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           // Elle s'efface une fois le devis parti : rédiger à la main un devis
           // déjà chez le client n'a plus de sens, et le rouvrir passe par
           // « Corriger et renvoyer ».
-          ...(chantier.devisEnvoyeAt
+          // **Et pas DEUX fois la même porte — corrigé le 21 août 2026.**
+          // Depuis que le seul bouton de la fiche client mène au devis, un
+          // brouillon existe dès la création : l'étape « Devis » du tiroir
+          // s'affiche alors, et « Devis à la main » pointait au même endroit,
+          // juste en dessous. Deux lignes, une seule destination — c'est le
+          // genre de doublon qui fait douter d'avoir compris l'écran.
+          //
+          // La sortie de secours garde tout son sens quand aucun devis n'existe
+          // encore (sa demande du 3 août 2026 : « je dois pouvoir cliquer sur
+          // mon devis et le remplir manuellement ») : c'est exactement le cas
+          // où l'étape « Devis », elle, est retirée du tiroir.
+          ...(chantier.devisEnvoyeAt || devisExiste
             ? []
             : [
                 {

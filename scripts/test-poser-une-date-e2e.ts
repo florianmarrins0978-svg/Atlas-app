@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Je peux toujours pas poser de date sur les chantiers test. »**
 //
@@ -83,7 +84,7 @@ async function main() {
   const NOM = `Poser ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', NOM);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantierId = page.url().split("/").pop()!.split("?")[0];
   const marque = await pool.query(

@@ -7,6 +7,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // patron a fait retirer ce mot.
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Du planning à la facture, en partant d'où le patron se trouve.**
 //
@@ -86,7 +87,7 @@ async function chantierPlanifie(
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;

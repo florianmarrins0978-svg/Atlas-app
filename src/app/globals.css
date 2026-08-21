@@ -1074,26 +1074,29 @@ body {
 }
 
 
-/* ─── LA CASE À REMPLIR — « la carte douce », son choix du 21 août 2026 ──────
+/* ─── LA CASE À REMPLIR — « LA CARTE DOUCE », la 4 qu'il a choisie ──────────
  *
- * **Sa plainte :** *« je peux plus voir ces encadrés carrés »*. Cinq dessins
- * lui ont été proposés, la page entière relue sous chacun
- * (`appli/cases-page-entiere.html`) ; il a retenu le 4 : *« je choisis la 4 »*.
+ * **Sa plainte du 21 août 2026 :** *« je peux plus voir ces encadrés carrés »*.
+ * Cinq dessins lui ont été proposés, puis relus sur la page entière
+ * (`appli/cases-page-entiere.html`) — et il a tranché deux fois plutôt qu'une :
+ * *« je choisis la 4 »*, puis, le soir : *« n'oublie pas que j'ai choisi la 4
+ * pour la forme des cases, dans les 5 modèles elle s'appelait la carte
+ * douce »*.
  *
  * La case d'avant, moins ses angles droits et son liseré : fond `rustTint`,
- * 14 px de rayon, aucun bord. L'or ne vient qu'au doigt posé — c'est le seul
- * moment où une case a quelque chose à dire.
+ * 14 px de rayon, **aucun bord**. L'or ne vient qu'au doigt posé — il a écarté
+ * le liseré doré permanent qu'on lui proposait : *« non »*.
  *
- * **Une classe, et pas un style en ligne répété.** Le fond et le rayon
- * vivaient en double, dans `Field` et dans `ChampAdresse` : deux écritures de
- * la même case, qui auraient divergé au premier ajustement (`CLAUDE.md` §3).
- * Et un état `:focus` ne s'écrit pas en style en ligne — c'est ce qui manquait
- * pour que la case dise quoi que ce soit quand on écrit dedans.
+ * **Une classe, et pas un style en ligne répété.** Le fond et le rayon vivaient
+ * en double, dans `Field` et dans `ChampAdresse` : deux écritures de la même
+ * case, qui auraient divergé au premier ajustement (`CLAUDE.md` §3). Et un état
+ * `:focus` ne s'écrit pas en style en ligne — c'est ce qui manquait pour que la
+ * case dise quelque chose quand on écrit dedans.
  *
- * **50 px de haut au minimum.** Mesuré sur les cinq dessins : une case élégante
+ * **50 px de haut au minimum**, mesuré sur les cinq dessins : une case élégante
  * qu'on rate deux fois sur trois avec des gants n'est pas élégante, elle est
- * ratée. Et 16 px de texte, jamais moins — en dessous, iOS zoome de lui-même à
- * la mise au point et l'écran saute sous le doigt.
+ * ratée. Et **16 px de texte, jamais moins** — en dessous, iOS agrandit la page
+ * à la mise au point et l'écran saute sous le doigt.
  */
 .atlas-case {
   width: 100%;

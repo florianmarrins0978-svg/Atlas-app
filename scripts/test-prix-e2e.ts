@@ -1,6 +1,7 @@
 import type { Page, Locator } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 function section(page: Page): Locator {
   return page.locator("form");
@@ -22,7 +23,7 @@ async function main() {
   const nomUnique = `Chantier prix e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   // **Pas de délai écrit à la main ici.** Cinq secondes suffisent quand la
   // suite est jouée seule ; sous soixante suites enchaînées, la création d'un
   // chantier ne les tient pas, et le rouge accuse le produit au lieu de la

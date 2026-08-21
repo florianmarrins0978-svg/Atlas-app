@@ -68,6 +68,104 @@ après le geste et en exigeait une de moins — un compte qui dépendait de l'or
 d'exécution des suites et de l'ordre d'affichage des cartes. Il vise maintenant
 la carte de CE chantier par son identifiant.
 
+### Le plan d'arrosage se DESSINE — maquette, rien n'est codé
+
+*Sa demande, capture à l'appui :* **« il manque la photo, le schéma avec les
+réseaux, et l'implantation des arroseurs — les différents réseaux de
+couleurs »**. L'application rendait trois listes et aucun dessin.
+
+**`appli/arrosage-plan.html`**, tracée sur son croquis du jour : pelouse en L,
+12 × 12 et 8 × 4, **176 m²**, piquage au compteur. 13 arroseurs, 3 réseaux de
+couleurs, chacun sous les 1,80 m³/h disponibles. Aucun JavaScript : choisir un
+réseau passe par des boutons radio et du CSS, donc ça marche hors ligne sur son
+téléphone.
+
+**Ce qui distingue ce plan d'un joli dessin, c'est ce que son contrôle
+recalcule** (`scripts/verifier-maquette-arrosage-plan.mjs`) :
+
+- **la surface est relue depuis le polygone tracé** et comparée à celle
+  annoncée — un plan juste sur une forme fausse ferait commander les pièces
+  d'un autre jardin ;
+- **aucun coin de pelouse n'est laissé sans eau** : on maille le terrain tous
+  les 50 cm et l'on vérifie que chaque point est à portée d'un arroseur. C'est
+  le contrôle qui compte, parce qu'un trou ne se voit pas sur un dessin — il se
+  voit en juillet, en jaune. Éprouvé en rétrécissant les turbines : il annonce
+  « 48 m² sans arrosage, à partir de 2,25 × 2,75 m » ;
+- **aucune voie ne dépasse le débit du compteur** — une voie trop chargée fait
+  sortir les arroseurs à moitié ;
+- **les métrés sont mesurés sur le tracé**, jamais saisis ;
+- **aucun nom de réseau répété ni coupé** — le défaut exact de sa capture, où
+  deux réseaux s'appelaient tous les deux « Pelouse pas de gazon à gauche … ».
+  Deux vannes qui portent le même nom, c'est la mauvaise qu'on ferme.
+
+**Deux défauts trouvés en la regardant, jamais par un test :** la photo du
+croquis s'affichait couchée (une rotation EXIF appliquée à tort), et les quatre
+boutons radio se voyaient au-dessus des onglets — le sélecteur CSS ne les
+atteignait pas, ils étaient hors de leur conteneur.
+
+### Les cases sont « la carte douce » — la 4, celle qu'il a choisie
+
+**Sa précision du 21 août au soir :** *« n'oublie pas que j'ai choisi la 4 pour
+la forme des cases ; dans les 5 modèles elle s'appelait la carte douce »*, avec
+l'adresse de la planche.
+
+Il avait tranché plus tôt dans la journée, puis, devant l'écran incomplet, il a
+demandé la maquette **trait pour trait** — et sa maquette portait encore
+l'ancienne case. J'ai suivi la maquette et défait son choix : deux consignes
+justes, un dessin faux.
+
+Les deux portent désormais **la même case** — fond papier, 14 px de rayon, aucun
+bord, l'or au doigt posé —, la maquette comme l'application. C'était l'écart qui
+lui faisait croire que le code ne suivait pas la planche : il n'y a plus deux
+vérités à comparer.
+
+### La fiche client, codée trait pour trait — l'anneau, les photos, un seul bouton
+
+**Sa consigne, après avoir vu la moitié du travail livrée :** *« je veux que ça
+ressemble exactement à la maquette qu'on a construite ensemble. Tu me la codes
+trait pour trait. Tu ne changes rien, elle est parfaite. »* Il avait raison de
+protester : le lot précédent avait été coupé en deux sans qu'il le demande, et
+il manquait précisément ce qui compte — la dictée et les photos.
+
+Ce que l'écran `chantiers/nouveau` porte désormais, dans l'ordre de la maquette :
+
+| | |
+|---|---|
+| **Les photos** | le carré « + » de la fiche chantier, à l'identique — un champ unique, sans `capture`, donc le menu du téléphone |
+| **L'anneau** | celui de la fiche chantier, à l'identique : un appui dicte, un second **enregistre** |
+| **« Mon devis → »** | n'apparaît qu'une fois la dictée faite |
+| **Un seul bouton** | « Je rédige mon devis » |
+| **Les cases** | celles de la maquette : fond crème, 4 px, un liseré fin, l'or au doigt posé |
+
+**Les deux pièces ne sont pas des copies :** `Pellicule` et `AnneauNoteVocale`
+sont les composants de la fiche chantier, employés tels quels. Deux dessins du
+même geste se liraient comme deux fonctions différentes, et le second aurait
+divergé au premier ajustement (`CLAUDE.md` §3).
+
+**Elles vivent AVANT que le chantier existe**, et c'est le cœur de sa demande :
+il photographie et il dicte chez le client, puis il ferme l'application. Le
+chantier naît donc du premier geste (`assurerChantier`), une seule fois — trois
+photos et une dictée ne font pas quatre chantiers. Et ce qu'il tape APRÈS ce
+premier geste est reporté sur le chantier au moment du bouton : sans cela, un
+nom saisi après la dictée serait perdu, en silence.
+
+**Soixante-treize suites passaient par le bouton retiré.** Elles ne dictaient
+pas : c'était le chemin le plus court vers la fiche d'un chantier neuf. Elles
+passent maintenant par une fonction commune (`scripts/_creer-chantier-e2e.ts`) —
+soixante-treize réécritures séparées auraient produit soixante-treize façons de
+faire la même chose, et la première divergence serait passée inaperçue.
+
+**Un doublon corrigé au passage, que le nouveau parcours a révélé :** un
+brouillon de devis existant dès la création, le tiroir de la fiche chantier
+affichait DEUX lignes vers le même écran — « Devis » et « Devis à la main ». La
+sortie de secours ne s'affiche plus quand le devis est déjà là.
+
+**Et une leçon d'outillage qui valait 26 suites rouges :** un `.next` de
+développement abîmé par des batteries interrompues faisait expirer la navigation
+vers `/chantiers/[id]/prix` dans vingt-six suites — le préchauffage mettait
+376 s et en ratait deux. `rm -rf .next` : 65 s, zéro raté, zéro rouge. Devant une
+grappe de suites qui tombent toutes sur le même écran, vider le cache AVANT de
+chercher dans le produit.
 
 ### Le planning : un chantier porte son nom UNE fois
 

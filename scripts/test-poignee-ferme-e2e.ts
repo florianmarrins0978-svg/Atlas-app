@@ -34,10 +34,8 @@
 
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
-import { Pool } from "pg";
 
 const BASE = "http://localhost:3000";
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /** Ce qu'un doigt atteint sans viser : la recommandation d'Apple comme d'Android. */
 const DOIGT_MINIMUM_PX = 24;
@@ -134,14 +132,12 @@ async function main() {
 
   await contexte.close();
   await navigateur.close();
-  await pool.end();
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Poignée — ${echecs} échec(s).`);
   process.exit(echecs === 0 ? 0 : 1);
 }
 
-main().catch(async (e) => {
+main().catch((e) => {
   console.error(e);
-  await pool.end().catch(() => {});
   process.exit(1);
 });

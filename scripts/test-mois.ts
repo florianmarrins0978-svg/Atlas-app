@@ -11,7 +11,6 @@ import assert from "node:assert/strict";
 import {
   grilleDuMois,
   estWeekEndIso,
-  jourLisibleCourt,
   JOURS_COURTS,
 } from "../src/lib/mois";
 

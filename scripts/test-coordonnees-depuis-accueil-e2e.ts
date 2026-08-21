@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Adresse non renseignée » ouvre l'écran du chantier.**
 //
@@ -62,7 +63,7 @@ async function main() {
   // produit « Chantier du … ». Fabriquer la ligne à la main éprouverait une
   // forme de donnée que l'application ne produit pas.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantierId = page.url().split("/").pop()!.split("?")[0];
 

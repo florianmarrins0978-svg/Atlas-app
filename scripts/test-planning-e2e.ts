@@ -20,6 +20,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const BASE = "http://localhost:3000";
 // DATABASE_URL, jamais une base codée en dur : la suite doit viser la même base
@@ -65,11 +66,16 @@ async function main() {
   //
   // Deux, parce que c'est le cas qu'il a validé : à une seule, il n'y a
   // personne à désigner et la pastille disparaît (règle du 10 août 2026).
+  //
+  // La fiche client n'a plus qu'un bouton depuis le 21 août — *« garde un seul
+  // bouton, garde je rédige mon devis »* : le chemin vers un chantier neuf passe
+  // par `creerPuisFiche`, partagé par les soixante-treize suites qui en ont
+  // besoin (`scripts/_creer-chantier-e2e.ts`).
   const client = `M. Planche ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
   const chantierId = page.url().split("/").pop()!;
 

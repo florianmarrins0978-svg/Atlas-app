@@ -13,6 +13,7 @@ import { mkdirSync } from "node:fs";
 import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -48,7 +49,7 @@ await page.screenshot({ path: `${dossier}/creation-deux-boutons.png`, fullPage: 
 // Le même écran en reprise : un seul bouton, et c'est voulu.
 const chantierId: string = await (async () => {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   return page.url().split("/").pop()!.split("?")[0];
 })();

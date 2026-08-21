@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
 //
@@ -73,7 +74,7 @@ async function creerChantierFacturable(
       .getByRole("button", { name: client.canal === "sms" ? "Par SMS" : "Par e-mail" })
       .click();
   }
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   // Sans délai explicite : celui du contexte s'applique (`e2e-browser.ts`).
   // Dix secondes suffisaient seule et pas en batterie — l'échec accusait alors
   // l'envoi au client, qui n'y était pour rien.
