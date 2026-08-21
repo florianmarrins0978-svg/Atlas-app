@@ -301,7 +301,12 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
-- **LA BARRE SE REMPLIT, elle ne qualifie pas.** Sa question du 21 août :
+- **LA BARRE SE REMPLIT — VALIDÉ par lui le 21 août :** *« je suis d'accord
+  avec ta méthode pour les dix équipes, la barre elle se remplit petit à petit,
+  je trouve que c'est une bonne idée, je valide »*. Ce point est clos : ne pas le
+  rouvrir, et ne pas revenir à trois états.
+
+  Sa question du 21 août :
   « comment tu vas faire s'il y a dix équipes ? ». Trois états ne tiennent qu'à
   deux équipes ; à dix, « il reste de la place » couvre une prise comme neuf.
   Chaque demi-journée se peint donc à la part occupée, et « complet » reste un

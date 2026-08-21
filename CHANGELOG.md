@@ -1124,6 +1124,9 @@ disent tout avec deux équipes. Avec dix, « il reste de la place » couvre une
 journée presque pleine**. On aurait posé un chantier sur un jour saturé en
 croyant y avoir de la place.
 
+**VALIDÉ par lui le jour même :** *« je suis d'accord avec ta méthode pour les
+dix équipes, la barre elle se remplit petit à petit, je valide »*.
+
 **Ce qui remplace.** Chaque barre se **remplit à la part occupée** — deux prises
 sur dix, c'est un cinquième de barre. « Complet » reste un aplat foncé, et c'est
 délibéré : le seul état qui interdit de poser ne doit pas se déduire d'une
