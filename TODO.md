@@ -333,6 +333,25 @@ Le calendrier reste donc au MOIS — c'est lui qui sert à poser une date lointa
 (`PlanningClient.tsx`, `JourneeOuvrable`) —, et la semaine ne gouverne que la
 liste du bas. La planche a été refaite dans ce sens le jour même.
 
+**LA FEUILLE DE CHANTIER — tranché le 21 août : le devis en PDF, sans les
+prix.** Sa question était : PDF du devis sans prix, ou fiche « prestations » sous
+le client ? Sa réponse, et c'est la bonne : le PDF. Une fiche saisie à côté
+serait une seconde liste de ce qui est à faire, et elle divergerait du devis en
+silence.
+
+**Trois points à régler avant de coder ça, et deux ne sont pas dans sa phrase :**
+
+1. **Les prix cachés dans les libellés.** Une ligne de devis peut porter son
+   prix dans son texte — « forfait 350 € », « remise de 10 % ». Retirer les
+   colonnes ne suffit pas : il faut décider ce qu'on fait de ces libellés-là.
+2. **Un compte `membre` voit aujourd'hui ce que voit le propriétaire.** Le rôle
+   existe en base (`membres.role`, `proprietaire` | `membre`) mais rien ne
+   restreint la lecture des montants. Cacher les prix sur la feuille ne servirait
+   à rien tant qu'il peut ouvrir le devis par une autre porte.
+3. **Par où le salarié entre.** Il n'a pas de compte aujourd'hui. Compte nominatif
+   ou lien par jeton comme la page publique du client ? Le second est plus rapide
+   à faire ; le premier est le seul qui permette de dire QUI a vu quoi.
+
 **Ce que la maquette ajoute, et qu'il faudra tenir en codant :** toucher un jour
 du mois amène la liste sur SA semaine. Sans ce lien, l'écran porterait deux
 navigations qui s'ignorent — exactement le genre de page qu'il trouve

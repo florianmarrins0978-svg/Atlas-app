@@ -1047,6 +1047,50 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ## 2026-08-19
 
+### La feuille de chantier : le devis, sans un seul prix
+
+**Sa demande du 21 août 2026 :** *« il faut pouvoir rajouter le devis en PDF,
+non modifiable, pour que le salarié qui a accès au planning clique sur le jour,
+voie à quel client il est affilié, et clique sur le devis pour connaître ses
+tâches. Mais le salarié ne doit pas avoir accès au prix. »* Puis sa propre
+réponse : *« je pense que le plus simple, ça serait de mettre le devis en PDF
+sans les prix »*.
+
+**C'est le bon choix, et la raison n'est pas la simplicité.** Une fiche
+« prestations » saisie à côté serait une SECONDE liste de ce qui est à faire :
+le devis change — une ligne ajoutée au téléphone, une quantité corrigée — et les
+deux divergent en silence. L'équipe partirait alors avec la version d'avant, et
+personne ne s'en apercevrait avant le chantier. C'est la règle du dépôt
+(`CLAUDE.md` §3, *jamais de règle dupliquée*) appliquée à un document.
+
+La planche montre donc une **feuille de chantier qui n'est pas un document** :
+c'est le devis lui-même, rendu sans ses colonnes de prix. Rien à tenir à jour,
+rien qui puisse mentir. Elle s'ouvre depuis le jour du planning, chantier par
+chantier, et la suite vérifie qu'**aucun caractère `€` n'y figure**.
+
+**Deux points restent ouverts, et ils décident du code** (voir `TODO.md`) : les
+libellés de devis qui portent un prix dans leur texte (« forfait 350 € »), et le
+fait qu'un compte `membre` voit aujourd'hui la même chose que le propriétaire —
+cacher les prix sur cette feuille ne servirait à rien s'il peut ouvrir le devis
+par une autre porte.
+
+### La légende suit la suite logique, et annote la dernière marque
+
+**Sa demande, dans le même message :** *« à côté du carré vert foncé complet,
+mets les deux rectangles et marque en face du haut "matin", du bas "après-midi".
+Comme ça, ça suit la suite logique — blanc c'est libre, vert c'est une équipe
+sur deux, foncé c'est les deux équipes — et on explique les deux carrés
+superposés plutôt que de rajouter une phrase. »*
+
+La légende se lit maintenant de gauche à droite comme la chose se remplit :
+**libre → 1 équipe sur 2 → complet**, puis une quatrième marque **annotée** qui
+dit où est le matin et où est l'après-midi. Aucune phrase.
+
+**Un réglage mesuré, pas supposé :** la marque annotée est plus grande que les
+trois autres (12 px par barre au lieu de 5). À la hauteur d'une barre de
+calendrier, « matin » et « après-midi » se touchaient — la suite vérifie qu'il
+reste au moins dix pixels entre les deux mots.
+
 ### « Et s'il y a dix équipes ? » — la barre se remplit au lieu de qualifier
 
 **Sa question du 21 août 2026**, posée devant la planche : *« comment tu vas

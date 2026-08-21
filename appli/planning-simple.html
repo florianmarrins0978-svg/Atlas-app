@@ -115,6 +115,21 @@
      Sa demande du 21 août — « que sur le planning on comprenne tout de suite
      que le haut c'est le matin et le bas l'après-midi ». Un dessin qui porte
      son mot à côté n'a pas besoin qu'on dise où regarder. */
+  /* **Le dernier terme de la suite s'explique lui-même.** Sa demande du 21 août :
+     plutôt qu'une phrase « le haut c'est le matin », on annote la marque — les
+     deux mots sont posés en face des deux rectangles, à la même hauteur. On lit
+     la légende de gauche à droite : libre, une équipe, complet — puis ce que
+     les deux étages veulent dire. */
+  .legende .annote{display:flex;align-items:center;gap:7px}
+  .legende .annote .mots{display:flex;flex-direction:column;gap:2px;line-height:1}
+  /* La marque annotée est plus GRANDE que les autres, et c'est ce qui rend les
+     deux mots lisibles : à la hauteur d'une barre de calendrier, « matin » et
+     « après-midi » se touchaient. */
+  .legende .annote .mini{width:24px;gap:4px}
+  .legende .annote .mini i{height:12px}
+  .legende .annote .mots{gap:4px}
+  .legende .annote .mots b{height:12px;display:flex;align-items:center;font-weight:600;
+                           font-size:10.5px;color:var(--encre-douce)}
   .legende .mini{width:20px;display:flex;flex-direction:column;gap:2px}
   .legende .mini i{height:5px;border-radius:2px;background:var(--plage);
                    box-shadow:inset 0 0 0 1px var(--trait)}
@@ -160,6 +175,27 @@
   .chantier-jour .equipe{flex-shrink:0;border-radius:999px;padding:5px 11px;font-size:12px;
                          background:var(--pin);color:#faf9f5;white-space:nowrap}
   .chantier-jour .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
+
+  .chantier-jour{width:100%;border:0;background:transparent;text-align:left;cursor:pointer}
+  .chantier-jour .voir{flex-shrink:0;font-size:12px;color:var(--or);white-space:nowrap}
+
+  /* La feuille de travail : le devis rendu sans ses prix. Le fond papier et le
+     filet d'or disent « document » sans imiter une feuille A4, qui sur un
+     téléphone ne se lit pas. */
+  .feuille{margin:12px 18px 0;padding:16px 16px 18px;border-radius:10px;background:var(--papier);
+           box-shadow:inset 0 0 0 1px var(--trait)}
+  .feuille .entete{margin:0;text-align:center;font:700 10.5px/1 ui-sans-serif,sans-serif;
+                   letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+  .feuille .client{margin:10px 0 0;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .feuille .adresse{margin:5px 0 0;text-align:center;font-size:13px;color:var(--encre-douce)}
+  .feuille .quand{margin:4px 0 0;text-align:center;font-size:12px;color:var(--gris)}
+  .feuille .taches{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait)}
+  .feuille .taches p{margin:0 0 9px;padding-left:14px;position:relative;font-size:14.5px;line-height:1.45}
+  .feuille .taches p::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;
+                             border-radius:999px;background:var(--or)}
+  .feuille .sans-prix{margin:10px 0 0;text-align:center;font-size:11.5px;color:var(--gris)}
+  .feuille .pdf{display:block;margin:12px auto 0;width:max-content;border-radius:999px;
+                background:var(--pin);color:#faf9f5;padding:10px 20px;font-size:13px}
 
   /* ── Titres de section : noirs, gras, centrés ───────────────────────── */
   .titre-section{margin:26px 18px 0;text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;
@@ -218,9 +254,13 @@
   <button type="button" id="retour" class="retour-aujourdhui" hidden>← Aujourd’hui</button>
 
   <div class="legende">
-    <span><span class="mini"><i class="pris"></i><i></i></span> matin</span>
-    <span><span class="mini"><i></i><i class="pris"></i></span> après-midi</span>
+    <span><span class="mini"><i></i><i></i></span> libre</span>
+    <span><span class="mini"><i class="pris"></i><i></i></span> 1 équipe sur 2</span>
     <span><span class="mini"><i class="plein"></i><i class="plein"></i></span> complet</span>
+    <span class="annote">
+      <span class="mini"><i class="plein"></i><i class="plein"></i></span>
+      <span class="mots"><b>matin</b><b>après-midi</b></span>
+    </span>
   </div>
 
   <div class="equipes" role="group" aria-label="Nombre d'équipes">
@@ -287,8 +327,15 @@
   let nombreEquipes = 2;
   const EQUIPES = () => NOMS.slice(0, nombreEquipes);
   const CHANTIERS = [
-    { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipe: "Julien" },
-    { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipe: "Paul" },
+    { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipe: "Julien",
+      adresse: "4 rue des Ormes, Nantes",
+      taches: ["Taille de haie de laurier — 18 m linéaires, hauteur 2 m",
+               "Évacuation des déchets verts"] },
+    { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipe: "Paul",
+      adresse: "12 chemin du Moulin, Sautron",
+      taches: ["Tonte de la pelouse — environ 900 m²",
+               "Débroussaillage du talus arrière",
+               "Ramassage et évacuation"] },
     { nom: "Mr. Martins",                 date: "2026-08-21", demi: "journee", equipe: "" },
     { nom: "Monsieur Martins",            date: "2026-08-21", demi: "journee", equipe: "" },
     { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin",   equipe: "Julien" },
@@ -299,8 +346,15 @@
     // lui, rien à l'écran ne distinguait « une équipe sur deux » de « complet »,
     // et sa question — « comment vous faites si l'après-midi j'ai mes deux
     // équipes ? » — n'avait aucune réponse visible.
-    { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipe: "Julien" },
-    { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipe: "Paul" },
+    { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipe: "Julien",
+      adresse: "7 impasse des Vignes, Orvault",
+      taches: ["Plantation de 12 arbustes en massif",
+               "Apport de terreau et paillage — 3 m³",
+               "Arrosage de reprise"] },
+    { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipe: "Paul",
+      adresse: "31 boulevard de la Prairie, Nantes",
+      taches: ["Pose de bordures béton — 24 m",
+               "Reprise de l'allée en gravillons"] },
     { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipe: "Paul" },
   ];
   const ATTENTE = [
@@ -505,17 +559,63 @@
         <span class="compte">${dit}</span></div>`;
     };
 
-    const chantiers = duJour(jourTouche).map((c) => `
-      <div class="chantier-jour">
+    // **Chaque chantier ouvre sa feuille de travail.** Sa demande du 21 août :
+    // « le salarié clique sur le jour, il voit à quel client il est affilié, et
+    // il peut cliquer sur le devis pour connaître ses tâches » — sans les prix.
+    const chantiers = duJour(jourTouche).map((c, i) => `
+      <button type="button" class="chantier-jour" data-feuille="${i}">
         <span class="nom">${c.nom}</span>
         <span class="equipe ${c.equipe ? "" : "vide"}">${c.equipe || "Équipe ?"}</span>
-      </div>`).join("");
+        <span class="voir">Sa feuille ›</span>
+      </button>`).join("");
 
     boite.innerHTML = `<div class="jour-ouvert">
       <p class="titre">${titreJour(jourTouche)}</p>
       ${ligneDemi("matin", "Matin")}
       ${ligneDemi("apres", "Après-midi")}
-      ${chantiers}</div>`;
+      ${chantiers}</div>
+      <div id="feuille"></div>`;
+
+    boite.querySelectorAll("[data-feuille]").forEach((b) =>
+      b.addEventListener("click", () => rendreFeuille(duJour(jourTouche)[Number(b.dataset.feuille)])));
+  }
+
+  /**
+   * **La feuille de travail : le devis, sans un seul prix.**
+   *
+   * Sa question du 21 août 2026 : *« le salarié ne doit pas avoir accès au
+   * prix. Est-ce que tu peux me faire un PDF du devis sans les prix, ou est-ce
+   * que le plus simple c'est de créer une fiche prestations sous le client ? »*
+   * — puis sa réponse : *« je pense que le plus simple, ça serait de mettre le
+   * devis en PDF sans les prix »*.
+   *
+   * **C'est le bon choix, et pour une raison de fond :** une fiche
+   * « prestations » saisie à côté serait une SECONDE liste de ce qui est à
+   * faire. Le devis change — une ligne ajoutée au téléphone, une quantité
+   * corrigée — et les deux divergent en silence ; l'équipe part alors avec la
+   * version d'avant. Ici la feuille N'EST PAS un document : c'est le devis
+   * lui-même, rendu sans ses colonnes de prix. Rien à tenir à jour, rien qui
+   * puisse mentir.
+   *
+   * Ce qui reste à trancher, et qui n'est pas un détail : les lignes d'un devis
+   * portent parfois le prix DANS leur libellé (« forfait 350 € »). Il faudra le
+   * dire au moment de coder — voir `TODO.md`.
+   */
+  function rendreFeuille(c) {
+    if (!c) return;
+    document.getElementById("feuille").innerHTML = `
+      <div class="feuille">
+        <p class="entete">Feuille de chantier</p>
+        <p class="client">${c.nom}</p>
+        ${c.adresse ? `<p class="adresse">${c.adresse}</p>` : ""}
+        <p class="quand">${titreJour(c.date)} · ${ditLaDemi(c.demi)}${c.equipe ? ` · ${c.equipe}` : ""}</p>
+        <div class="taches">
+          ${(c.taches || ["Les tâches viendront du devis."]).map((t) => `<p>${t}</p>`).join("")}
+        </div>
+        <p class="sans-prix">Aucun prix sur cette feuille.</p>
+        <span class="pdf">Ouvrir le PDF</span>
+      </div>`;
+    document.getElementById("feuille").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function rendreSemaine() {

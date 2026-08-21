@@ -190,21 +190,59 @@ verifier(
   JSON.stringify(await barresDe("2026-08-21")) === JSON.stringify(["complet", "complet"]),
 );
 
-// ── La légende MONTRE la position, elle ne l'explique plus ──────────────
+// ── La légende MONTRE, elle n'explique plus ─────────────────────────────
 //
 // Sa demande du 21 août : retirer « la barre du haut c'est le matin », mais
-// qu'on le comprenne quand même. La légende porte donc deux marques dessinées,
-// l'une remplie en haut, l'autre en bas.
+// qu'on le comprenne quand même — puis, le même jour : que la légende suive la
+// SUITE LOGIQUE (libre, une équipe, complet) et que les deux étages soient
+// annotés sur la dernière marque plutôt que par une phrase.
 {
   const dit = (await page.locator(".legende").innerText()).toLowerCase();
   verifier("la légende ne porte plus de phrase d'explication", !dit.includes("barre du haut"));
-  verifier("elle dit matin, après-midi, complet", ["matin", "après-midi", "complet"].every((m) => dit.includes(m)));
+  verifier(
+    "elle dit la suite : libre, 1 équipe sur 2, complet — puis matin et après-midi",
+    ["libre", "1 équipe sur 2", "complet", "matin", "après-midi"].every((m) => dit.includes(m)),
+  );
   const minis = await page.$$eval(".legende .mini", (n) =>
     n.map((e) => [...e.children].map((i) => i.className)));
   verifier(
-    `la première marque est remplie EN HAUT, la seconde EN BAS (lu : ${JSON.stringify(minis)})`,
-    minis.length === 3 && minis[0][0] === "pris" && minis[0][1] === "" &&
-      minis[1][0] === "" && minis[1][1] === "pris",
+    `la suite va du vide au plein (lu : ${JSON.stringify(minis)})`,
+    minis.length === 4 &&
+      JSON.stringify(minis[0]) === JSON.stringify(["", ""]) &&
+      JSON.stringify(minis[1]) === JSON.stringify(["pris", ""]) &&
+      JSON.stringify(minis[2]) === JSON.stringify(["plein", "plein"]),
+  );
+  const mots = await page.$$eval(".legende .annote .mots b", (n) => n.map((e) => e.textContent.trim()));
+  const hauteurs = await page.$$eval(".legende .annote .mots b", (n) =>
+    n.map((e) => Math.round(e.getBoundingClientRect().top)));
+  verifier(
+    `« matin » est annoté EN HAUT, « après-midi » EN BAS (lu : ${JSON.stringify(mots)})`,
+    JSON.stringify(mots) === JSON.stringify(["matin", "après-midi"]) && hauteurs[0] < hauteurs[1],
+  );
+  verifier(
+    "et les mots ne se chevauchent pas — ils tiennent chacun leur ligne",
+    hauteurs[1] - hauteurs[0] >= 10,
+  );
+}
+
+// ── LA FEUILLE DE TRAVAIL : le devis sans un seul prix ──────────────────
+//
+// Sa demande du 21 août : « le salarié clique sur le jour, il voit à quel
+// client il est affilié, et il peut cliquer sur le devis pour connaître ses
+// tâches » — sans les prix. Le contrôle qui compte est le dernier : un chiffre
+// suivi d'un euro ne doit apparaître NULLE PART sur cette feuille.
+await page.click('[data-jour="2026-08-26"]');
+await page.click('[data-feuille="0"]');
+{
+  const feuille = page.locator(".feuille");
+  verifier("la feuille s'ouvre sous le jour", (await feuille.count()) === 1);
+  const dit = await feuille.innerText();
+  verifier("elle porte le client et son adresse", dit.includes("Mme Chauvin") && dit.includes("Orvault"));
+  verifier("elle porte l'équipe et la demi-journée", dit.includes("Julien") && dit.includes("après-midi"));
+  verifier("elle porte les tâches du devis", dit.includes("Plantation de 12 arbustes"));
+  verifier(
+    `AUCUN PRIX n'y figure (lu : ${JSON.stringify(dit.match(/[0-9][0-9 ,.]*\s?€|€/g) || [])})`,
+    !/€/.test(dit),
   );
 }
 
