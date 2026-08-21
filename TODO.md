@@ -9,6 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ CONSIGNE EN COURS — le planning : MAQUETTE SEULEMENT
+
+**Sa consigne du 21 août 2026, à lire avant de toucher à `src/app/planning/` :**
+
+> *« Attends, attends, ne code rien. Je veux qu'on finisse toute la page
+> ensemble en maquette dynamique, pour que je puisse essayer : il faut que
+> j'aille cliquer, pouvoir modifier, changer, voir ce que ça donne. Une fois que
+> tout est validé, tout est bon, dans ce cas-là je te dirai "c'est bon, tu peux
+> coder". En attendant, tu ne codes rien. Tu ne me fais que des maquettes
+> dynamiques, c'est tout. »*
+
+**Ce que cela veut dire, littéralement :** tant qu'il n'a pas dit « c'est bon,
+tu peux coder », **aucune ligne de `src/` ne change pour le planning**. Pas même
+« un petit bout pour qu'il essaie en vrai » — il essaie sur la maquette, c'est
+tout l'objet de la consigne.
+
+**Et la maquette doit se MANIPULER**, pas seulement se regarder : il veut poser
+un chantier, changer une équipe, déplacer, retirer, et voir ce que ça donne. Une
+planche qui se contente d'afficher un état ne répond pas à la demande.
+
+Le point de validation, quand il viendra, se consigne ici même — et c'est ce
+jour-là seulement que `src/app/planning/` s'ouvre.
+
+---
+
 ## Bloqué par une décision du patron
 
 Rien à coder tant que ces points ne sont pas tranchés. Ne pas les redécouvrir :
@@ -301,7 +326,29 @@ planche.
 
 **Deux corrections venues de lui le même jour, et à tenir en codant :**
 
-- **LA BARRE SE REMPLIT, elle ne qualifie pas.** Sa question du 21 août :
+- **UN CHANTIER PORTE PLUSIEURS ÉQUIPES** — sa demande du 21 août : « je dois
+  pouvoir mettre tout le monde le matin, puis tout le monde l'aprem ». En base,
+  ce n'est donc pas une colonne `equipe_id` sur le chantier mais une TABLE DE
+  LIAISON (chantier × demi-journée × équipe). Le compte d'occupation porte sur
+  les **équipes occupées**, jamais sur le nombre de chantiers ;
+- **LA FICHE DU JOUR EST FAITE DE DEMI-JOURNÉES**, chacune portant ses
+  chantiers, leur équipe, « Déplacer » et « Retirer ». Une liste unique sous les
+  deux demi-journées ne permettait pas d'attribuer depuis l'après-midi — c'est ce
+  qu'il a signalé le 21 août. Un chantier à la journée apparaît sous les deux et
+  le dit ;
+- **UNE BARRE EST FAITE DE PLACES, UNE PAR ÉQUIPE — et une place sans équipe
+  est HACHURÉE.** C'est la réponse à sa confusion du 21 août : « les jours
+  peuvent être pleins mais les équipes pas choisies ». Le code devra donc porter
+  deux notions distinctes : la place occupée (un chantier posé) et l'équipe
+  attribuée (qui peut manquer). Les confondre est ce qui le perdait ;
+- **l'équipe se CHOISIT dans une liste, et se retire.** Jamais de rotation à
+  l'appui : sur dix équipes elle poserait neuf fois une équipe non voulue ;
+- **LA BARRE SE REMPLIT — VALIDÉ par lui le 21 août :** *« je suis d'accord
+  avec ta méthode pour les dix équipes, la barre elle se remplit petit à petit,
+  je trouve que c'est une bonne idée, je valide »*. Ce point est clos : ne pas le
+  rouvrir, et ne pas revenir à trois états.
+
+  Sa question du 21 août :
   « comment tu vas faire s'il y a dix équipes ? ». Trois états ne tiennent qu'à
   deux équipes ; à dix, « il reste de la place » couvre une prise comme neuf.
   Chaque demi-journée se peint donc à la part occupée, et « complet » reste un
@@ -333,6 +380,31 @@ Le calendrier reste donc au MOIS — c'est lui qui sert à poser une date lointa
 (`PlanningClient.tsx`, `JourneeOuvrable`) —, et la semaine ne gouverne que la
 liste du bas. La planche a été refaite dans ce sens le jour même.
 
+**LA FEUILLE DE CHANTIER — tranché le 21 août : le devis en PDF, sans les
+prix.** Sa question était : PDF du devis sans prix, ou fiche « prestations » sous
+le client ? Sa réponse, et c'est la bonne : le PDF. Une fiche saisie à côté
+serait une seconde liste de ce qui est à faire, et elle divergerait du devis en
+silence.
+
+**Les gestes de la feuille sont ceux de « Y aller », repris tels quels** (sa
+demande du 21 août) : l'adresse cliquable, **Maps et Waze — plus « Plans »**,
+« Appeler le client », « Copier l'adresse ». Rien d'autre. Le code réutilisera
+`src/lib/itineraire.ts` et `FeuilleYAller` plutôt que d'écrire une seconde fois
+les mêmes liens.
+
+**Trois points à régler avant de coder ça, et deux ne sont pas dans sa phrase :**
+
+1. **Les prix cachés dans les libellés.** Une ligne de devis peut porter son
+   prix dans son texte — « forfait 350 € », « remise de 10 % ». Retirer les
+   colonnes ne suffit pas : il faut décider ce qu'on fait de ces libellés-là.
+2. **Un compte `membre` voit aujourd'hui ce que voit le propriétaire.** Le rôle
+   existe en base (`membres.role`, `proprietaire` | `membre`) mais rien ne
+   restreint la lecture des montants. Cacher les prix sur la feuille ne servirait
+   à rien tant qu'il peut ouvrir le devis par une autre porte.
+3. **Par où le salarié entre.** Il n'a pas de compte aujourd'hui. Compte nominatif
+   ou lien par jeton comme la page publique du client ? Le second est plus rapide
+   à faire ; le premier est le seul qui permette de dire QUI a vu quoi.
+
 **Ce que la maquette ajoute, et qu'il faudra tenir en codant :** toucher un jour
 du mois amène la liste sur SA semaine. Sans ce lien, l'écran porterait deux
 navigations qui s'ignorent — exactement le genre de page qu'il trouve
@@ -361,9 +433,12 @@ veille.
 
 ## ~~L'arrosage simplifié~~ — **CODÉ le 20 août 2026**
 
-`/paysage/arrosage` dans l'application : le piquage, la mesure au seau remise
-sur sa décision, le croquis photographié et **lu par l'IA**, puis le plan et le
-détail des pièces. Voir `CHANGELOG.md` et `PROJECT_STATE.md`.
+`/paysage/arrosage` dans l'application : le piquage, le **kit de mesure
+débit / pression (buse 5)** — seau chronométré, bar statique, bar dynamique —,
+le croquis photographié et **lu par l'IA**, puis le plan et le détail des
+pièces. Au compteur, rien n'est demandé : en Ø25 on a d'office ce qu'il faut.
+Ailleurs, le seuil est **2,5 bar en dynamique**. Voir `CHANGELOG.md` et
+`PROJECT_STATE.md`.
 
 **Ce qui reste à coder, et qui n'attend personne :**
 
