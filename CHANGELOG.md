@@ -7,6 +7,38 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-21
+
+### Attendre la construction d'à côté au lieu de la tuer
+
+**Sa plainte du matin :** *« l'appli est hyper lente »*, pour la troisième
+matinée. Sa fiche : construction échouée sur « Another next build process is
+already running », **4,5 Gio de mémoire libres** — donc pas la saturation qu'on
+soupçonnait le 17 août.
+
+Le démarrage lance **deux constructions par nature** : un veilleur est posé
+avant la mise à jour pour que l'application réponde tout de suite, et le banc
+suivant en relance une. Quand la seconde tombait sur la première, on délogeait
+et l'on recommençait — c'est-à-dire qu'on jetait plusieurs minutes de calcul
+déjà faites, sur une machine qui n'en a pas les moyens.
+
+Elle est désormais **attendue** (dix minutes au plus, avec un signe de vie
+chaque minute), et l'on ne déloge qu'ensuite — ce qui reste alors est bien une
+orpheline.
+
+**Et le détenteur du verrou se cherche par le fichier, plus par son nom.** Une
+construction Next est faite de cinq processus, dont deux ne portent nulle part
+les mots « next build » : un survivant de cette espèce était invisible à toute
+recherche par motif. `detenteursDuVerrou()` lit `/proc/<pid>/fd` et trouve qui
+tient `<dist>/lock`, quel que soit son nom.
+
+**CE QUI N'EST PAS PROUVÉ :** la panne n'a pas été reproduite ici. Deux
+hypothèses ont été éprouvées et écartées — le `sleep 1` du démarrage, et
+l'orphelin invisible. Ce qui est livré rend le mécanisme sûr, pas la panne
+corrigée. `TODO.md` la garde ouverte.
+
+---
+
 ## 2026-08-20
 
 ### « Mieux vaut refuser de conclure que produire un faux diagnostic »

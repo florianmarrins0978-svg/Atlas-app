@@ -147,30 +147,44 @@ qui est vrai, et c'est le bon état tant que les vraies données ne sont pas là
 
 ---
 
-## ⏳ POURQUOI deux constructions se marchent dessus — non reproduit
+## ⏳ POURQUOI la construction du démarrage tombe sur le verrou — TOUJOURS non reproduit
 
-**Le 20 août 2026 à 6 h 10**, la construction du banc tombe sur « Another next
-build process is already running », et le patron passe la matinée sur la version
-lente. La relance a été réparée (`ARCHITECTURE.md` §133) : **le symptôme ne dure
-plus, la cause n'est pas trouvée.**
+**Trois matinées de suite** — 19, 20 et 21 août 2026 — le patron ouvre Atlas et
+le trouve lent. Chaque fois, la même ligne sur sa fiche :
 
-**Ce qui a été écarté, mesure à l'appui.** Ce n'est pas la saturation mémoire du
-17 août : au moment de l'échec, sa fiche portait **4,3 Gio disponibles**. Et ce
-n'est pas un verrou périmé — éprouvé ici le 20 août, le processus qui tient
-`<dist>/lock` est bien `node …/next build`, vivant, et
-`delogerConstructionsOrphelines()` le déloge correctement (trois processus,
-zéro restant).
+    Code SERVI : AUCUNE — la construction a ÉCHOUÉ
+    dit: ⨯ Another next build process is already running.
 
-**La piste qui reste, et personne ne l'a suivie :** `veiller.sh` ne vérifie
-qu'aucune construction ne tourne **que dans la branche de relance**. La branche
-« plus rien ne répond sur le port » lance `npm run banc` sans ce contrôle. Deux
-bancs peuvent alors se déloger mutuellement leur construction — chacun croyant
-retirer une orpheline. À reproduire avant de corriger : ce dépôt a déjà payé
-trois correctifs écrits contre une panne imaginée (`AGENTS.md`).
+**Ce qui est réparé, et qui tient** (`ARCHITECTURE.md` §133, §136) : le veilleur
+ne renonce plus (une tentative par demi-heure, indéfiniment) ; une construction
+vivante est **attendue** au lieu d'être tuée ; le détenteur du verrou se trouve
+par le fichier `<dist>/lock` et non par un nom de processus.
 
-**Ce qu'il faudrait pour trancher :** que le témoin d'échec porte **qui** tenait
-le verrou (la ligne de commande du processus, son pid, son père). Aujourd'hui il
-ne porte que le message de Next, et l'on ne peut que supposer.
+**CE QUI N'EST TOUJOURS PAS EXPLIQUÉ : pourquoi les deux se rencontrent au point
+d'échouer.** Le démarrage en lance deux par nature, et tout est prévu pour
+qu'elles ne se marchent pas dessus. Deux hypothèses ont été **éprouvées ici le
+21 août, et écartées** :
+
+| Hypothèse | Ce que l'épreuve a rendu |
+|---|---|
+| Le `sleep 1` de `demarrer.sh` est trop court après le `pkill` | après une seconde, **plus rien** ne tenait le verrou, et la construction suivante partait normalement |
+| Un enfant sans le nom « next build » survit et garde le verrou | le seul survivant (`jest-worker/processChild`) **ne tenait pas** le verrou ; la construction suivante partait |
+
+**CE QU'IL FAUT LIRE LA PROCHAINE FOIS, et qui existe depuis le 21 août :** le
+témoin d'échec porte désormais une section `verrou tenu par :` avec le **pid et
+la ligne de commande** du détenteur, relevés à l'instant du refus — pas plus
+tard, quand le coupable a disparu. La fiche du banc la recopie telle quelle.
+
+**Donc : à la prochaine plainte, lire cette section avant toute hypothèse.**
+Elle dira si c'est la construction du premier veilleur, celle d'un banc relancé,
+ou un processus auquel personne n'a pensé. Trois matinées ont été perdues faute
+de ce seul renseignement.
+
+**Et le piège de méthode, payé deux fois en deux jours :** `pkill -f` compare la
+ligne de commande ENTIÈRE de chaque processus, **y compris celle du shell qui
+joue la commande**. Deux épreuves se sont tuées elles-mêmes parce que le motif
+figurait dans leur propre ligne. Les crochets (`[n]ext`) protègent le motif
+contre lui-même, pas contre un `echo` qui le contient.
 
 ## ⏸ « Trop compliquée » — sa plainte du 19 août 2026, RIEN n'est tranché
 

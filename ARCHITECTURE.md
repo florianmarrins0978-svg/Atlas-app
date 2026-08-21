@@ -11163,6 +11163,71 @@ constructions se marchaient dessus à 6 h 10. La mémoire était encore ample à
 instant (4,3 Gio disponibles) : ce n'est donc pas la saturation du 17 août. La
 cause n'a pas été reproduite ici, et elle reste ouverte dans `TODO.md`.
 
+## 136. Deux constructions au démarrage : on ATTEND la première, on ne la tue pas
+
+**Le patron, le 21 août 2026 au réveil : *« l'appli est hyper lente »*.**
+Troisième matinée de suite, et sa fiche portait le même refus :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (05:17:26Z)
+dit: ⨯ Another next build process is already running.
+memoire: 4,5 Gio disponibles au moment de l'échec
+```
+
+**Ce n'est donc pas la mémoire** — c'était l'explication du 17 août, et elle ne
+tient pas ici : la machine avait 4,5 Gio de reste. Ce sont bien deux
+constructions qui se rencontrent.
+
+### Elles se rencontrent PAR CONSTRUCTION, et c'est le prix d'un choix assumé
+
+`demarrer.sh` pose un veilleur **avant** la mise à jour, délibérément (§24) :
+c'est ce qui donne au patron une application qui répond même si la mise à jour
+échoue. Ce premier veilleur lance un banc, donc une construction. Si la mise à
+jour aboutit, on remplace veilleur et serveur — et le banc suivant en lance une
+seconde. **Deux constructions par allumage** : ce n'est pas un défaut, c'est le
+prix d'un serveur qui répond tout de suite.
+
+### Ce qui manquait : quoi faire quand on tombe sur l'autre
+
+On délogeait, puis on relançait aussitôt. **Déloger n'a de sens que contre une
+ORPHELINE** — une construction dont le destinataire est mort (§131). Contre une
+construction VIVANTE, qui fait exactement le travail qu'on s'apprête à faire,
+c'est le pire des gestes : on jette plusieurs minutes de calcul et l'on
+recommence sur une machine qui n'en a pas les moyens.
+
+`attendreLaConstructionEnCours()` l'attend donc — dix minutes au plus, avec un
+signe de vie chaque minute — puis déloge ce qui reste (là, c'est bien une
+orpheline) et bâtit. Quelques minutes de patience contre une journée en mode
+développement : c'est le même arbitrage que la relance du veilleur (§133), déjà
+tranché dans ce sens.
+
+### Et l'on cesse de chercher le détenteur du verrou PAR SON NOM
+
+Tout ce qui délogeait visait un motif — `pkill -f "[n]ext(…| build)"` au
+démarrage, `pgrep -af "next build"` dans le banc. Or une construction Next n'est
+pas trois processus, elle en est cinq, relevés sur cette machine :
+
+```
+npm exec next build                          ← le motif l'attrape
+sh -c next build                             ← le motif l'attrape
+node …/node_modules/.bin/next build          ← le motif l'attrape
+node …/<dist>/build/<empreinte>.js 43027     ← IL NE L'ATTRAPE PAS
+node …/jest-worker/processChild.js           ← IL NE L'ATTRAPE PAS
+```
+
+`detenteursDuVerrou()` demande donc au système **qui a le fichier `<dist>/lock`
+ouvert**, en lisant `/proc/<pid>/fd`. C'est exact, indépendant des noms, et cela
+survivra à la prochaine façon dont Next découpera ses processus.
+
+### CE QUI N'EST PAS PROUVÉ, et il ne faut pas le croire acquis
+
+**La panne n'a pas été reproduite ici.** Deux hypothèses ont été éprouvées et
+écartées le 21 août : le `sleep 1` de `demarrer.sh` (après `pkill`, plus rien ne
+tenait le verrou et la construction suivante partait) et l'orphelin invisible
+(le `jest-worker` survivant ne tenait pas le verrou). Ce qui est livré rend le
+mécanisme **sûr**, pas la panne **corrigée** : c'est une différence qui compte
+(`AGENTS.md`), et `TODO.md` la garde ouverte.
+
 ## 135. Un écran atteint depuis deux endroits ne peut pas avoir un retour fixe
 
 **Sa remarque du 20 août 2026 :** *« quand j'appuie sur retour, ça ne me fait pas
