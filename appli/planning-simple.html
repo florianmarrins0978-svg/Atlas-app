@@ -3,40 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — Le planning, en semaines</title>
+<title>Atlas — Le planning, simplifié</title>
 </head>
 <body>
 <style>
   /*
     ————————————————————————————————————————————————————————————————
-    LE PLANNING, EN SEMAINES — maquette ESSAYABLE
+    LE PLANNING SIMPLIFIÉ — maquette ESSAYABLE
     ————————————————————————————————————————————————————————————————
 
-    Sa demande du 19 août 2026 : « cette page est beaucoup trop compliquée à
-    comprendre. Les titres en noir, gras, centrés. Pour les planifiés, mettre
-    les JOURS DE LA SEMAINE en haut — vendredi 21 août plutôt que 21 — avec les
-    clients dessous, et une flèche à droite et à gauche pour changer de semaine.
-    Et pour le calendrier au-dessus, quelque chose de plus visuel : qu'on voie
-    tout de suite les jours pris, et ceux pris seulement le matin ou seulement
-    l'après-midi. »
+    Sa demande du 19 août 2026, puis sa correction du 21 :
 
-    ELLE S'ESSAIE, ET ELLE CALCULE. Les flèches changent vraiment de semaine ;
-    le calendrier se refait à partir des mêmes chantiers que la liste. Rien
-    n'est dessiné à la main : ce qu'on voit est ce que les données disent, comme
-    dans l'application.
+      · « Cette page est beaucoup trop compliquée à comprendre. »
+      · Les titres en NOIR, GRAS, CENTRÉS.
+      · Pour les chantiers PLANIFIÉS : les jours de la semaine nommés
+        (« vendredi 21 août » plutôt que « 21 »), les clients dessous, et une
+        flèche de chaque côté pour changer de semaine.
+      · Pour le calendrier du haut : plus simple, plus visuel — qu'on voie tout
+        de suite les jours pris, et ceux pris seulement le matin ou seulement
+        l'après-midi.
+      · **Sa correction du 21 août :** *« je veux un accès au mois ; ce dont je
+        te parlais pour la semaine, c'était pour les chantiers planifiés »*.
+        Le calendrier reste donc au MOIS — c'est lui qui sert à poser une date
+        lointaine —, et la semaine ne gouverne que la liste du bas.
 
-    LES TROIS CALENDRIERS SE COMPARENT SUR PLACE — c'est la seule chose à
-    choisir. Le reste (titres noirs centrés, semaine avec les jours nommés,
-    flèches) suit sa demande sans variante.
+    LES DEUX NE SONT PAS DEUX NAVIGATIONS QUI SE CONCURRENCENT : toucher un jour
+    du mois amène la liste sur la semaine de ce jour. Le mois sert à viser, la
+    semaine à lire.
 
-    Les données sont celles de sa capture : deux Martins le 21, l'abri de
-    Pornic le 25 au matin, trois devis en attente. Deux équipes, Julien et Paul,
-    comme son écran l'annonce.
+    ELLE S'ESSAIE, ET ELLE CALCULE. Rien n'est dessiné à la main : les marques
+    du calendrier viennent des mêmes chantiers que la liste.
+
+    Les données sont celles de sa capture : deux Martins le 21, l'abri de Pornic
+    le 25 au matin, trois devis en attente. Deux équipes, Julien et Paul.
   */
 
   :root{
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
-    --gris:#8a8578; --pin:#2f3b2f; --pin-clair:#4f5f4c; --papier:#ece9e1;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
     --or:#B98B47; --trait:rgba(28,28,26,.12);
   }
   *{box-sizing:border-box}
@@ -49,88 +53,88 @@
 
   .tel{max-width:430px;margin:18px auto 0;background:var(--fond);min-height:70vh;
        border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
-  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
 
   .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--gris);padding:18px 0 0}
-  h1{margin:14px 26px 0;font:400 34px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  h1{margin:14px 22px 0;font:400 34px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
 
-  /* ── Le choix du calendrier — n'existe QUE dans la maquette ───────────── */
-  .choix{margin:16px 20px 0;display:flex;gap:6px;background:var(--papier);border-radius:999px;padding:4px}
-  .choix button{flex:1;border:0;background:transparent;border-radius:999px;padding:9px 4px;
-                font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+  /* Le choix des marques — n'existe QUE dans la maquette. */
+  .choix{margin:16px 18px 0;display:flex;gap:6px;background:var(--papier);border-radius:999px;padding:4px}
+  .choix button{flex:1;border:0;background:transparent;border-radius:999px;padding:9px 3px;
+                font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;
                 color:var(--encre-douce);cursor:pointer}
   .choix button[aria-pressed="true"]{background:var(--pin);color:#faf9f5}
 
-  /* ── La barre de semaine ─────────────────────────────────────────────── */
-  .semaine{margin:20px 20px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .semaine .fleche{width:44px;height:44px;border-radius:999px;border:1px solid var(--trait);
-                   background:var(--plage);color:var(--encre);font-size:20px;line-height:1;cursor:pointer}
-  .semaine .fleche:active{background:var(--papier)}
-  .semaine .quand{flex:1;text-align:center}
-  .semaine .quand b{display:block;font:700 15px/1.2 ui-sans-serif,sans-serif;color:var(--encre)}
-  .semaine .quand span{display:block;margin-top:3px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+  /* ── La barre de navigation, mois ou semaine ─────────────────────────── */
+  .barre{margin:18px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .barre .fleche{width:42px;height:42px;border-radius:999px;border:1px solid var(--trait);
+                 background:var(--plage);color:var(--encre);font-size:19px;line-height:1;cursor:pointer}
+  .barre .fleche:active{background:var(--papier)}
+  .barre .quand{flex:1;text-align:center}
+  .barre .quand b{display:block;font:700 15px/1.2 ui-sans-serif,sans-serif;color:var(--encre)}
+  .barre .quand span{display:block;margin-top:3px;font-size:10.5px;letter-spacing:.18em;
+                     text-transform:uppercase;color:var(--gris)}
 
-  /* ── Titres de section : noirs, gras, centrés (sa demande) ───────────── */
-  .titre-section{margin:26px 20px 0;text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;
-                 letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
-  .sous-titre{margin:6px 20px 0;text-align:center;font-size:12.5px;color:var(--gris)}
+  /* ── Le MOIS ─────────────────────────────────────────────────────────── */
+  .entete-jours{margin:14px 12px 4px;display:grid;grid-template-columns:repeat(7,1fr);
+                font:600 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+                color:var(--gris);text-align:center}
+  .mois{margin:0 12px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px 2px}
+  .case{border:0;background:transparent;padding:4px 0 5px;cursor:pointer;text-align:center;border-radius:8px}
+  .case[aria-pressed="true"]{background:var(--papier)}
+  .case .n{font:400 15px/1 ui-serif,Georgia,serif;color:var(--encre)}
+  .case.hors .n{color:var(--gris);opacity:.35}
+  .case.we .n{color:rgba(28,28,26,.3)}
+  .case.aujourdhui .n{color:var(--or);font-weight:600}
 
-  /* ═══ CALENDRIER A — les deux barres ══════════════════════════════════ */
-  .calA{margin:16px 14px 0;display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-  .calA .j{text-align:center}
-  .calA .nom{font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
-  .calA .num{margin-top:2px;font:400 16px/1 ui-serif,Georgia,serif}
-  .calA .barres{margin-top:6px;display:flex;flex-direction:column;gap:3px}
-  .calA .demi{height:15px;border-radius:3px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .calA .demi.moitie{background:#b9c6b4;box-shadow:none}
-  .calA .demi.plein{background:var(--pin);box-shadow:none}
-  .calA .we .nom,.calA .we .num{opacity:.35}
-  .calA .we .demi{background:transparent;box-shadow:inset 0 0 0 1px rgba(28,28,26,.06)}
+  /* A — deux barres sous le chiffre : matin dessus, après-midi dessous */
+  .marqueA{margin:5px auto 0;width:22px;display:flex;flex-direction:column;gap:2px}
+  .marqueA i{height:5px;border-radius:2px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .marqueA i.moitie{background:var(--pale);box-shadow:none}
+  .marqueA i.plein{background:var(--pin);box-shadow:none}
+  .case.hors .marqueA,.case.we .marqueA{visibility:hidden}
 
-  /* ═══ CALENDRIER B — la grille matin / après-midi ═════════════════════ */
-  .calB{margin:16px 14px 0}
-  .calB table{width:100%;border-collapse:collapse}
-  .calB th{font:600 9.5px/1.3 ui-sans-serif,sans-serif;letter-spacing:.06em;text-transform:uppercase;
-           color:var(--gris);padding-bottom:4px;text-align:center}
-  .calB th b{display:block;font:400 16px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
-  .calB th.we b,.calB th.we{opacity:.35}
-  .calB td.etiquette{width:56px;font:600 9px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;
-                     text-transform:uppercase;color:var(--gris);text-align:right;padding-right:8px}
-  .calB td .case{height:26px;margin:3px 2px;border-radius:4px;background:var(--plage);
-                 box-shadow:inset 0 0 0 1px var(--trait)}
-  .calB td .case.moitie{background:#b9c6b4;box-shadow:none}
-  .calB td .case.plein{background:var(--pin);box-shadow:none}
-  .calB td.we .case{background:transparent;box-shadow:inset 0 0 0 1px rgba(28,28,26,.06)}
+  /* B — le chiffre dans un rond rempli en haut, en bas, ou entier */
+  .marqueB{position:relative;width:34px;height:34px;margin:0 auto;border-radius:999px;overflow:hidden;
+           background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
+           display:flex;align-items:center;justify-content:center}
+  .marqueB .h,.marqueB .b{position:absolute;left:0;right:0;height:50%}
+  .marqueB .h{top:0} .marqueB .b{bottom:0}
+  .marqueB .moitie{background:var(--pale)} .marqueB .plein{background:var(--pin)}
+  .marqueB .n{position:relative}
+  .marqueB .n.clair{color:#faf9f5}
+  .case.hors .marqueB,.case.we .marqueB{background:transparent;box-shadow:none}
 
-  /* ═══ CALENDRIER C — la journée en pastille ══════════════════════════ */
-  .calC{margin:16px 14px 0;display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .calC .j{text-align:center}
-  .calC .nom{font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
-  .calC .rond{margin:5px auto 0;width:36px;height:36px;border-radius:999px;position:relative;overflow:hidden;
-              box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage);
-              display:flex;align-items:center;justify-content:center}
-  .calC .rond .haut,.calC .rond .bas{position:absolute;left:0;right:0;height:50%}
-  .calC .rond .haut{top:0}
-  .calC .rond .bas{bottom:0}
-  .calC .rond .pris{background:var(--pin)}
-  .calC .rond .demi{background:#b9c6b4}
-  .calC .rond .chiffre{position:relative;font:400 15px/1 ui-serif,Georgia,serif;color:var(--encre)}
-  .calC .rond .chiffre.sur-plein{color:#faf9f5}
-  .calC .we .nom{opacity:.35}
-  .calC .we .rond{opacity:.35;box-shadow:inset 0 0 0 1px rgba(28,28,26,.06)}
+  /* C — le chiffre, et sous lui une seule barre coupée en deux */
+  .marqueC{margin:5px auto 0;width:26px;height:6px;display:flex;gap:2px}
+  .marqueC i{flex:1;border-radius:2px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .marqueC i.moitie{background:var(--pale);box-shadow:none}
+  .marqueC i.plein{background:var(--pin);box-shadow:none}
+  .case.hors .marqueC,.case.we .marqueC{visibility:hidden}
 
-  .legende{margin:14px 20px 0;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;
+  .legende{margin:14px 18px 0;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;
            font-size:11px;color:var(--gris)}
   .legende span{display:flex;align-items:center;gap:6px}
-  .legende i{width:14px;height:14px;border-radius:3px;display:inline-block}
+  .legende i{width:13px;height:13px;border-radius:3px;display:inline-block}
   .legende i.libre{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
-  .legende i.moitie{background:#b9c6b4}
+  .legende i.moitie{background:var(--pale)}
   .legende i.plein{background:var(--pin)}
+  .legende .quoi{width:100%;text-align:center;font-size:11px;opacity:.85}
 
-  /* ── Les jours planifiés, et leurs clients ───────────────────────────── */
-  .jour{margin:18px 20px 0;border-top:1px solid var(--trait);padding-top:14px}
+  /* ── Le jour touché, sous le calendrier ─────────────────────────────── */
+  .jour-ouvert{margin:16px 18px 0;padding:13px 15px;border-radius:10px;background:var(--plage)}
+  .jour-ouvert .titre{font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+                      text-transform:uppercase;text-align:center;color:var(--encre)}
+  .jour-ouvert .dit{margin-top:9px;text-align:center;font-size:13px;color:var(--gris)}
+  .jour-ouvert .dit b{color:var(--encre)}
+
+  /* ── Titres de section : noirs, gras, centrés ───────────────────────── */
+  .titre-section{margin:26px 18px 0;text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;
+                 letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .sous-titre{margin:8px 18px 0;text-align:center;font-size:12.5px;color:var(--gris)}
+
+  .jour{margin:16px 18px 0;border-top:1px solid var(--trait);padding-top:13px}
   .jour:first-of-type{border-top:0}
-  .jour .quand{text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+  .jour .quand{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
                text-transform:uppercase;color:var(--encre)}
   .chantier{margin-top:12px;display:flex;align-items:center;gap:10px}
   .chantier .nom{flex:1;font:400 19px/1.2 ui-serif,Georgia,serif}
@@ -139,10 +143,9 @@
                     background:var(--pin);color:#faf9f5;white-space:nowrap}
   .chantier .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
   .chantier .chevron{color:rgba(28,28,26,.28);font-size:19px}
+  .vide-semaine{margin:14px 18px 0;text-align:center;font-size:13.5px;color:var(--gris)}
 
-  .vide-semaine{margin:16px 20px 0;text-align:center;font-size:13.5px;color:var(--gris)}
-
-  .liste{margin:12px 20px 0}
+  .liste{margin:12px 18px 0}
   .liste .ligne{display:flex;align-items:center;justify-content:space-between;gap:10px;
                 padding:11px 0;border-bottom:1px solid var(--trait)}
   .liste .ligne:last-child{border-bottom:0}
@@ -161,42 +164,50 @@
 </style>
 
 <div class="bandeau">
-  <b>Essayez-la.</b> Les flèches changent vraiment de semaine, et les trois
-  calendriers se comparent en haut. Rien n’est codé dans l’application.
+  <b>Essayez-la.</b> Le calendrier reste au <b>mois</b> ; les flèches du bas
+  changent de <b>semaine</b> pour les planifiés. Touchez un jour du mois : la
+  liste vous y amène. Rien n’est codé dans l’application.
 </div>
 
 <div class="tel">
   <p class="marque">ATLAS</p>
   <h1>Planning</h1>
 
-  <div class="choix" role="group" aria-label="Quel calendrier">
-    <button type="button" data-cal="A" aria-pressed="true">A · les barres</button>
-    <button type="button" data-cal="B" aria-pressed="false">B · la grille</button>
-    <button type="button" data-cal="C" aria-pressed="false">C · les ronds</button>
+  <div class="choix" role="group" aria-label="Comment se voient les demi-journées">
+    <button type="button" data-marque="A" aria-pressed="true">A · deux barres</button>
+    <button type="button" data-marque="B" aria-pressed="false">B · le rond</button>
+    <button type="button" data-marque="C" aria-pressed="false">C · une barre</button>
   </div>
 
-  <div class="semaine">
-    <button class="fleche" type="button" id="avant" aria-label="Semaine précédente">‹</button>
-    <div class="quand">
-      <b id="semaine-titre">—</b>
-      <span id="semaine-mois">—</span>
-    </div>
-    <button class="fleche" type="button" id="apres" aria-label="Semaine suivante">›</button>
+  <div class="barre">
+    <button class="fleche" type="button" id="mois-avant" aria-label="Mois précédent">‹</button>
+    <div class="quand"><b id="mois-titre">—</b><span>Le mois</span></div>
+    <button class="fleche" type="button" id="mois-apres" aria-label="Mois suivant">›</button>
   </div>
 
-  <div id="calendrier"></div>
+  <div class="entete-jours"><span>lun</span><span>mar</span><span>mer</span><span>jeu</span>
+    <span>ven</span><span>sam</span><span>dim</span></div>
+  <div class="mois" id="mois"></div>
 
   <div class="legende">
     <span><i class="libre"></i> libre</span>
     <span><i class="moitie"></i> une équipe sur deux</span>
     <span><i class="plein"></i> complet</span>
+    <span class="quoi">En haut le matin, en bas l’après-midi.</span>
   </div>
 
+  <div id="jour-ouvert"></div>
+
   <p class="titre-section">Planifiés</p>
+  <div class="barre">
+    <button class="fleche" type="button" id="sem-avant" aria-label="Semaine précédente">‹</button>
+    <div class="quand"><b id="sem-titre">—</b><span id="sem-dit">—</span></div>
+    <button class="fleche" type="button" id="sem-apres" aria-label="Semaine suivante">›</button>
+  </div>
   <div id="planifies"></div>
 
   <p class="titre-section">Sans date</p>
-  <p class="sous-titre" id="sans-date">Aucun chantier n’attend de jour.</p>
+  <p class="sous-titre">Aucun chantier n’attend de jour.</p>
 
   <p class="titre-section">En attente du client</p>
   <div class="liste" id="attente"></div>
@@ -210,40 +221,40 @@
 <div class="pied">
   <h3>Ce qui suit votre demande, sans variante</h3>
   <ul>
-    <li><b>Les titres sont noirs, gras et centrés</b> — « Planifiés », « Sans
-      date », « En attente du client », et le jour lui-même.</li>
-    <li><b>Les jours sont nommés</b> : « vendredi 21 août », plus « 21 » seul.
-      Les clients du jour sont dessous.</li>
-    <li><b>Une semaine à la fois</b>, avec une flèche de chaque côté. Le
-      calendrier et la liste montrent la MÊME semaine — c’est ce qui fait que
-      l’un explique l’autre.</li>
+    <li><b>Le calendrier reste au mois</b> — votre correction du 21 août. C’est
+      lui qui sert à viser une date lointaine, et les flèches changent de mois.</li>
+    <li><b>La semaine ne gouverne que les planifiés</b>, avec sa propre flèche
+      de chaque côté, les jours <b>nommés</b> et les clients dessous.</li>
+    <li><b>Les titres sont noirs, gras et centrés</b> — et le jour aussi.</li>
+    <li><b>Les deux se parlent :</b> toucher un jour du mois amène la liste sur
+      la semaine de ce jour. On vise en haut, on lit en bas.</li>
   </ul>
   <h3>Ce qu’il reste à choisir</h3>
   <ul>
-    <li><b>A, B ou C</b> — comment se voient les demi-journées.
-      <b>A</b> pose deux barres par jour (matin dessus, après-midi dessous) ;
-      <b>B</b> fait deux lignes nommées, MATIN et APRÈS-MIDI, sur toute la
-      semaine ; <b>C</b> garde un rond par jour, rempli en haut ou en bas.</li>
+    <li><b>A, B ou C</b> — comment se voient les demi-journées sur le mois.
+      <b>A</b> pose deux barres sous le chiffre (matin dessus, après-midi
+      dessous) ; <b>B</b> met le chiffre dans un rond rempli par le haut ou par
+      le bas ; <b>C</b> pose une seule barre coupée en deux (gauche = matin,
+      droite = après-midi).</li>
     <li>Trois couleurs seulement : <b>vide</b> = libre, <b>vert pâle</b> = une
-      équipe sur deux, <b>vert plein</b> = complet. Le mot « complet » n’est
-      plus à expliquer sous le calendrier : la couleur le dit.</li>
+      équipe sur deux, <b>vert plein</b> = complet. La phrase « Complet veut
+      dire : vos 2 équipes sont prises sur cette demi-journée » disparaît — la
+      couleur le dit.</li>
   </ul>
 </div>
 
 <script>
   // ── Les données, celles de sa capture ────────────────────────────────────
-  //
-  // `demi` vaut "journee", "matin" ou "apres". `equipe` vide = pas encore
-  // attribuée : c'est le « Équipe ? » en pointillé de son écran.
-  const EQUIPES = ["Julien", "Paul"];      // ses deux équipes
+  const EQUIPES = ["Julien", "Paul"];
   const CHANTIERS = [
-    { nom: "Mme Rocher",              date: "2026-08-19", demi: "apres",   equipe: "Julien" },
-    { nom: "Mr. Leroy",               date: "2026-08-20", demi: "journee", equipe: "Paul" },
-    { nom: "Mr. Martins",             date: "2026-08-21", demi: "journee", equipe: "" },
-    { nom: "Monsieur Martins",        date: "2026-08-21", demi: "journee", equipe: "" },
-    { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin", equipe: "Julien" },
-    { nom: "Mme Guérin",              date: "2026-08-27", demi: "apres",   equipe: "Paul" },
-    { nom: "Mr. Ollivier",            date: "2026-08-27", demi: "matin",   equipe: "Julien" },
+    { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipe: "Julien" },
+    { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipe: "Paul" },
+    { nom: "Mr. Martins",                 date: "2026-08-21", demi: "journee", equipe: "" },
+    { nom: "Monsieur Martins",            date: "2026-08-21", demi: "journee", equipe: "" },
+    { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin",   equipe: "Julien" },
+    { nom: "Mme Guérin",                  date: "2026-08-27", demi: "apres",   equipe: "Paul" },
+    { nom: "Mr. Ollivier",                date: "2026-08-27", demi: "matin",   equipe: "Julien" },
+    { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipe: "Paul" },
   ];
   const ATTENTE = [
     { nom: "Mr. Julien",       etat: "Il choisit sa date" },
@@ -252,24 +263,22 @@
   ];
 
   // **Le jour d'aujourd'hui est FIGÉ.** Une maquette qui suivrait l'horloge
-  // montrerait une semaine vide dans quinze jours, et l'on croirait qu'elle est
+  // montrerait un mois vide dans quinze jours, et l'on croirait qu'elle est
   // cassée alors qu'elle dirait vrai.
   const AUJOURDHUI = "2026-08-19";
 
   const JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
-  const JOURS_COURTS = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"];
   const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
                 "août", "septembre", "octobre", "novembre", "décembre"];
 
   const enDate = (iso) => new Date(iso + "T12:00:00Z");
   const enIso = (d) => d.toISOString().slice(0, 10);
   const jourDeSemaine = (iso) => enDate(iso).getUTCDay();
+  const numero = (iso) => enDate(iso).getUTCDate();
 
-  /** Le lundi de la semaine qui contient ce jour. */
   function lundiDe(iso) {
     const d = enDate(iso);
-    const decalage = (d.getUTCDay() + 6) % 7;   // lundi = 0
-    d.setUTCDate(d.getUTCDate() - decalage);
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
     return enIso(d);
   }
   function plusDeJours(iso, n) {
@@ -277,20 +286,27 @@
     d.setUTCDate(d.getUTCDate() + n);
     return enIso(d);
   }
+  function plusDeMois(iso, n) {
+    const d = enDate(iso);
+    d.setUTCDate(1);
+    d.setUTCMonth(d.getUTCMonth() + n);
+    return enIso(d);
+  }
 
+  let premierDuMois = plusDeMois(AUJOURDHUI, 0);
   let lundi = lundiDe(AUJOURDHUI);
-  let calendrier = "A";
+  let jourTouche = null;
+  let marque = "A";
 
-  const septJours = () => Array.from({ length: 7 }, (_, i) => plusDeJours(lundi, i));
   const duJour = (iso) => CHANTIERS.filter((c) => c.date === iso);
+  const estWeekEnd = (iso) => [0, 6].includes(jourDeSemaine(iso));
 
   /**
    * Ce qu'une demi-journée vaut : "libre", "moitie" ou "plein".
    *
-   * C'est la règle de son application, pas une invention : une demi-journée est
-   * COMPLÈTE quand ses deux équipes y sont prises. Avec une équipe sur deux, il
-   * reste de la place — et c'est précisément ce que son écran actuel n'arrive
-   * pas à montrer d'un coup d'œil.
+   * C'est la règle de son application : une demi-journée est COMPLÈTE quand ses
+   * deux équipes y sont prises. Avec une équipe sur deux, il reste de la place —
+   * et c'est précisément ce que son écran actuel ne montre pas d'un coup d'œil.
    */
   function etatDemi(iso, demi) {
     const pris = duJour(iso).filter((c) => c.demi === "journee" || c.demi === demi).length;
@@ -298,106 +314,113 @@
     return pris >= EQUIPES.length ? "plein" : "moitie";
   }
 
-  const estWeekEnd = (iso) => [0, 6].includes(jourDeSemaine(iso));
-  const titreJour = (iso) =>
-    `${JOURS[jourDeSemaine(iso)]} ${enDate(iso).getUTCDate()} ${MOIS[enDate(iso).getUTCMonth()]}`;
+  const titreJour = (iso) => `${JOURS[jourDeSemaine(iso)]} ${numero(iso)} ${MOIS[enDate(iso).getUTCMonth()]}`;
+  const ditLaDemi = (demi) =>
+    demi === "journee" ? "journée" : demi === "matin" ? "matin · ½ journée" : "après-midi · ½ journée";
 
-  function ditLaDemi(demi) {
-    if (demi === "journee") return "journée";
-    if (demi === "matin") return "matin · ½ journée";
-    return "après-midi · ½ journée";
+  /** Les 42 cases du mois affiché, lundi en tête. */
+  function casesDuMois() {
+    const depart = lundiDe(premierDuMois);
+    return Array.from({ length: 42 }, (_, i) => plusDeJours(depart, i));
   }
 
-  // ── Les trois calendriers ────────────────────────────────────────────────
-  function dessinerA(jours) {
-    return `<div class="calA">${jours.map((iso) => `
-      <div class="j ${estWeekEnd(iso) ? "we" : ""}">
-        <div class="nom">${JOURS_COURTS[jourDeSemaine(iso)]}</div>
-        <div class="num">${enDate(iso).getUTCDate()}</div>
-        <div class="barres">
-          <div class="demi ${estWeekEnd(iso) ? "" : etatDemi(iso, "matin")}"></div>
-          <div class="demi ${estWeekEnd(iso) ? "" : etatDemi(iso, "apres")}"></div>
-        </div>
-      </div>`).join("")}</div>`;
+  function dessinerMarque(iso) {
+    const m = estWeekEnd(iso) ? "libre" : etatDemi(iso, "matin");
+    const a = estWeekEnd(iso) ? "libre" : etatDemi(iso, "apres");
+    if (marque === "A") return `<span class="marqueA"><i class="${m}"></i><i class="${a}"></i></span>`;
+    if (marque === "C") return `<span class="marqueC"><i class="${m}"></i><i class="${a}"></i></span>`;
+    return "";  // B dessine le chiffre lui-même
   }
 
-  function dessinerB(jours) {
-    const entete = jours.map((iso) => `
-      <th class="${estWeekEnd(iso) ? "we" : ""}">${JOURS_COURTS[jourDeSemaine(iso)]}
-        <b>${enDate(iso).getUTCDate()}</b></th>`).join("");
-    const ligne = (demi, mot) => `
-      <tr><td class="etiquette">${mot}</td>${jours.map((iso) => `
-        <td class="${estWeekEnd(iso) ? "we" : ""}">
-          <div class="case ${estWeekEnd(iso) ? "" : etatDemi(iso, demi)}"></div>
-        </td>`).join("")}</tr>`;
-    return `<div class="calB"><table>
-      <thead><tr><th></th>${entete}</tr></thead>
-      <tbody>${ligne("matin", "Matin")}${ligne("apres", "Ap.-m.")}</tbody>
-    </table></div>`;
+  function rendreMois() {
+    const d = enDate(premierDuMois);
+    document.getElementById("mois-titre").textContent =
+      `${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+
+    document.getElementById("mois").innerHTML = casesDuMois().map((iso) => {
+      const hors = enDate(iso).getUTCMonth() !== d.getUTCMonth();
+      const classes = ["case", hors ? "hors" : "", estWeekEnd(iso) ? "we" : "",
+                       iso === AUJOURDHUI ? "aujourdhui" : ""].filter(Boolean).join(" ");
+      if (marque === "B") {
+        const m = hors || estWeekEnd(iso) ? "libre" : etatDemi(iso, "matin");
+        const a = hors || estWeekEnd(iso) ? "libre" : etatDemi(iso, "apres");
+        const remplir = (e) => (e === "plein" ? "plein" : e === "moitie" ? "moitie" : "");
+        const clair = m === "plein" && a === "plein" ? "clair" : "";
+        return `<button class="${classes}" data-jour="${iso}" aria-pressed="${iso === jourTouche}">
+          <span class="marqueB"><span class="h ${remplir(m)}"></span><span class="b ${remplir(a)}"></span>
+            <span class="n ${clair}">${numero(iso)}</span></span></button>`;
+      }
+      return `<button class="${classes}" data-jour="${iso}" aria-pressed="${iso === jourTouche}">
+        <span class="n">${numero(iso)}</span>${dessinerMarque(iso)}</button>`;
+    }).join("");
+
+    document.querySelectorAll("[data-jour]").forEach((b) =>
+      b.addEventListener("click", () => {
+        jourTouche = b.dataset.jour;
+        // **Le mois vise, la semaine lit.** Toucher un jour amène la liste sur
+        // SA semaine : sans cela, on aurait deux navigations qui s'ignorent, et
+        // c'est exactement le genre d'écran qu'il trouve incompréhensible.
+        lundi = lundiDe(jourTouche);
+        rendre();
+      }));
   }
 
-  function dessinerC(jours) {
-    return `<div class="calC">${jours.map((iso) => {
-      const h = estWeekEnd(iso) ? "libre" : etatDemi(iso, "matin");
-      const b = estWeekEnd(iso) ? "libre" : etatDemi(iso, "apres");
-      const surPlein = h === "plein" && b === "plein";
-      const remplir = (e) => (e === "plein" ? "pris" : e === "moitie" ? "demi" : "");
-      return `<div class="j ${estWeekEnd(iso) ? "we" : ""}">
-        <div class="nom">${JOURS_COURTS[jourDeSemaine(iso)]}</div>
-        <div class="rond">
-          <span class="haut ${remplir(h)}"></span>
-          <span class="bas ${remplir(b)}"></span>
-          <span class="chiffre ${surPlein ? "sur-plein" : ""}">${enDate(iso).getUTCDate()}</span>
-        </div>
-      </div>`;
-    }).join("")}</div>`;
+  function rendreJourTouche() {
+    const boite = document.getElementById("jour-ouvert");
+    if (!jourTouche) { boite.innerHTML = ""; return; }
+    const chantiers = duJour(jourTouche);
+    const dit = estWeekEnd(jourTouche)
+      ? "Jamais proposé."
+      : chantiers.length === 0
+        ? "<b>Libre</b> — matin et après-midi."
+        : chantiers.map((c) => `<b>${c.nom}</b> · ${ditLaDemi(c.demi)}`).join("<br>");
+    boite.innerHTML = `<div class="jour-ouvert">
+      <p class="titre">${titreJour(jourTouche)}</p><p class="dit">${dit}</p></div>`;
   }
 
-  // ── Le rendu ─────────────────────────────────────────────────────────────
-  function rendre() {
-    const jours = septJours();
-    const debut = enDate(jours[0]);
-    const fin = enDate(jours[6]);
-    document.getElementById("semaine-titre").textContent =
+  function rendreSemaine() {
+    const jours = Array.from({ length: 7 }, (_, i) => plusDeJours(lundi, i));
+    const debut = enDate(jours[0]), fin = enDate(jours[6]);
+    document.getElementById("sem-titre").textContent =
       debut.getUTCMonth() === fin.getUTCMonth()
         ? `${debut.getUTCDate()} – ${fin.getUTCDate()} ${MOIS[fin.getUTCMonth()]}`
         : `${debut.getUTCDate()} ${MOIS[debut.getUTCMonth()]} – ${fin.getUTCDate()} ${MOIS[fin.getUTCMonth()]}`;
-    document.getElementById("semaine-mois").textContent =
-      lundi === lundiDe(AUJOURDHUI) ? "Cette semaine" : `Semaine du ${debut.getUTCDate()}`;
+    document.getElementById("sem-dit").textContent =
+      lundi === lundiDe(AUJOURDHUI) ? "Cette semaine" : "La semaine";
 
-    const dessiner = { A: dessinerA, B: dessinerB, C: dessinerC }[calendrier];
-    document.getElementById("calendrier").innerHTML = dessiner(jours);
-
-    const avecChantiers = jours.filter((iso) => duJour(iso).length > 0);
-    document.getElementById("planifies").innerHTML = avecChantiers.length === 0
+    const avec = jours.filter((iso) => duJour(iso).length > 0);
+    document.getElementById("planifies").innerHTML = avec.length === 0
       ? `<p class="vide-semaine">Aucun chantier posé cette semaine.</p>`
-      : avecChantiers.map((iso) => `
+      : avec.map((iso) => `
         <div class="jour">
           <p class="quand">${titreJour(iso)}</p>
           ${duJour(iso).map((c) => `
             <div class="chantier">
-              <div class="nom">${c.nom}
-                <div class="quand-detail">${ditLaDemi(c.demi)}</div>
-              </div>
+              <div class="nom">${c.nom}<div class="quand-detail">${ditLaDemi(c.demi)}</div></div>
               <span class="equipe ${c.equipe ? "" : "vide"}">${c.equipe || "Équipe ?"}</span>
               <span class="chevron">›</span>
             </div>`).join("")}
         </div>`).join("");
+  }
 
+  function rendre() {
+    rendreMois();
+    rendreJourTouche();
+    rendreSemaine();
     document.getElementById("attente").innerHTML = ATTENTE.map((a) => `
       <div class="ligne"><span class="nom">${a.nom}</span><span class="etat">${a.etat}</span></div>`).join("");
   }
 
-  document.getElementById("avant").addEventListener("click", () => { lundi = plusDeJours(lundi, -7); rendre(); });
-  document.getElementById("apres").addEventListener("click", () => { lundi = plusDeJours(lundi, 7); rendre(); });
-  document.querySelectorAll("[data-cal]").forEach((b) => {
+  document.getElementById("mois-avant").addEventListener("click", () => { premierDuMois = plusDeMois(premierDuMois, -1); rendre(); });
+  document.getElementById("mois-apres").addEventListener("click", () => { premierDuMois = plusDeMois(premierDuMois, 1); rendre(); });
+  document.getElementById("sem-avant").addEventListener("click", () => { lundi = plusDeJours(lundi, -7); rendre(); });
+  document.getElementById("sem-apres").addEventListener("click", () => { lundi = plusDeJours(lundi, 7); rendre(); });
+  document.querySelectorAll("[data-marque]").forEach((b) =>
     b.addEventListener("click", () => {
-      calendrier = b.dataset.cal;
-      document.querySelectorAll("[data-cal]").forEach((x) =>
-        x.setAttribute("aria-pressed", String(x === b)));
+      marque = b.dataset.marque;
+      document.querySelectorAll("[data-marque]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
       rendre();
-    });
-  });
+    }));
 
   rendre();
 </script>

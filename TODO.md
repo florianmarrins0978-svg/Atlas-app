@@ -300,19 +300,24 @@ demi-journées — et c'est le cœur de sa plainte, pas un détail :
 
 | | Ce qu'on voit |
 |---|---|
-| **A · les barres** | deux barres par jour, matin dessus, après-midi dessous |
-| **B · la grille** | deux lignes nommées, MATIN et AP.-M., sur toute la semaine |
-| **C · les ronds** | un rond par jour, rempli en haut, en bas, ou entier |
+| **A · deux barres** | deux barres sous le chiffre, matin dessus, après-midi dessous |
+| **B · le rond** | le chiffre dans un rond rempli par le haut, par le bas, ou entier |
+| **C · une barre** | une seule barre sous le chiffre, gauche = matin, droite = après-midi |
 
 Trois couleurs seulement, dans les trois : vide = libre, vert pâle = une équipe
 sur deux, vert plein = complet. **La phrase « Complet veut dire : vos 2 équipes
 sont prises sur cette demi-journée » disparaît** — la couleur le dit.
 
-**Ce que le passage à la semaine coûte, et qui n'est pas dans sa phrase :** le
-calendrier actuel montre le MOIS entier, et c'est ce qui sert à poser une date
-lointaine (`PlanningClient.tsx`, `JourneeOuvrable`). Une vue semaine oblige à
-huit appuis pour aller à deux mois. **À lui demander** : garde-t-on un accès au
-mois pour poser une date, ou les flèches suffisent-elles ?
+**LA QUESTION DU MOIS EST TRANCHÉE, le 21 août :** *« je veux un accès au mois ;
+ce dont je te parlais pour la semaine, c'était pour les chantiers planifiés »*.
+Le calendrier reste donc au MOIS — c'est lui qui sert à poser une date lointaine
+(`PlanningClient.tsx`, `JourneeOuvrable`) —, et la semaine ne gouverne que la
+liste du bas. La planche a été refaite dans ce sens le jour même.
+
+**Ce que la maquette ajoute, et qu'il faudra tenir en codant :** toucher un jour
+du mois amène la liste sur SA semaine. Sans ce lien, l'écran porterait deux
+navigations qui s'ignorent — exactement le genre de page qu'il trouve
+incompréhensible.
 ## ~~Deux maquettes que le patron ne peut pas ouvrir~~ — **RÉGLÉ le 20 août 2026**
 
 `appli/deux-boutons-devis.html` et `appli/en-cours-le-chiffre.html` existent,
