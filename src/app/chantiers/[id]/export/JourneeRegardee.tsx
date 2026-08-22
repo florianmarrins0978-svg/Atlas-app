@@ -50,17 +50,15 @@ export default function JourneeRegardee({
   onRetenir: () => void;
   dejaRetenu: boolean;
 }) {
-  const weekEnd = [0, 6].includes(new Date(`${jour}T12:00:00Z`).getUTCDay());
-
-  if (weekEnd) {
-    return (
-      <Cadre jour={jour}>
-        <p className="m-0 text-center text-[13px]" style={{ color: colors.muted }}>
-          Jamais proposé.
-        </p>
-      </Cadre>
-    );
-  }
+  // **Un samedi se regarde et se propose comme un mardi.** Sa règle du 23 août
+  // 2026 : *« s'il a des salariés qui font des extras, il doit pouvoir
+  // sélectionner ces deux jours »*. Cette fiche répondait « Jamais proposé. »
+  // et s'arrêtait là — alors que `jourRetenable` accepte le week-end depuis
+  // toujours. C'était l'écran qui interdisait ce que la règle permettait.
+  //
+  // L'avertissement demeure, et il suffit : `verifierJourPropose` rend
+  // « C'est un week-end — vous pouvez le proposer, mais vérifiez que c'est
+  // voulu », qui s'affiche juste sous ce bloc.
 
   // Un chantier occupe souvent les deux demi-journées : on le nomme une fois.
   const parNom: { chantier: ChantierPlanning; demies: Demi[] }[] = [];

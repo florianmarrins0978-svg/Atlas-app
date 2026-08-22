@@ -483,7 +483,15 @@ function jourLibreLePlusProche(
     for (const sens of [1, -1] as const) {
       const candidat = versJourIso(ajouterJours(centre, sens * ecart));
       if (candidat < horizon.debut || candidat > horizon.fin) continue;
-      if ([0, 6].includes(new Date(`${candidat}T12:00:00Z`).getUTCDay())) continue;
+      // **Le week-end n'est plus écarté d'office.** Sa règle du 23 août 2026 :
+      // il y travaille en extra. Écarter le samedi ici lui faisait sauter deux
+      // jours ouvrables pour rien quand le vendredi était plein — et lui
+      // proposait le lundi alors que le samedi tenait.
+      //
+      // Ce n'est PAS le même choix que `premiersJoursLibres`, qui garde son
+      // filtre : là, on lui suggère six jours sans qu'il ait rien demandé ;
+      // ici, il cherche déjà une porte de sortie et la plus proche est la
+      // bonne.
       if (libre(candidat)) return candidat;
     }
   }
