@@ -98,6 +98,37 @@ coupable.
 
 ## 2026-08-21
 
+### Discuter le plan — maquette, et un garde-fou qui compte
+
+*« Si l'utilisateur a besoin de te demander une modification, qu'il puisse le
+faire. Une petite interface pour discuter avec toi. »*
+
+**`appli/arrosage-discuter.html`** : trois échanges essayables — pourquoi deux
+réseaux, passer en 15-VAN, préférer des 5004. Le plan se redessine, les pièces
+suivent. Aucun JavaScript : les échanges sont des états choisis par des radios.
+
+**Le point d'architecture prime sur l'interface : Atlas ne dessine pas le plan.**
+Il lit la demande, pose un **paramètre** du calcul, et c'est le calcul
+déterministe qui refait le schéma et la liste. Trois droits : lire le catalogue
+pour répondre, poser un paramètre, refuser en expliquant — et proposer ce qui
+s'en approche. Jamais écrire un chiffre absent du catalogue.
+
+C'est la leçon du jour même : laissé libre, il a inventé « 5004 buse 3.0, portée
+6 m », et le maillage entier en dépendait. **Une conversation rend cette dérive
+plus facile, pas moins** — on écrit une phrase plausible et personne ne la
+recompte.
+
+**Son contrôle a dû être retourné pour valoir quelque chose.** La première
+version vérifiait qu'une bonne valeur est *présente* — ce qui laisse passer une
+valeur fausse citée à côté, exactement comme ce matin. Il vérifie désormais
+l'inverse : **toute portée écrite dans la conversation doit exister au
+catalogue**. Éprouvé en remplaçant 4,5 m par 4,2 m : « une portée inventée fausse
+tout le maillage ».
+
+Deux pièges de contrôle au passage : `innerText` ne rendait que le fil visible et
+accusait la maquette de taire ce qu'elle dit ailleurs ; et le « m » de « m³/h »
+se faisait prendre pour un mètre, ce qui condamnait un débit juste.
+
 ### « Pourquoi pas des 3504 ? » — j'avais inventé les portées
 
 *« Pourquoi tu as utilisé des tuyères 1800 et pas des arroseurs 3500 de chez

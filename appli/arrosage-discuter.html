@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discuter le plan d’arrosage</title>
+<!--
+  MAQUETTE — rien n'est codé. Sa demande du 21 août 2026 : *« si l'utilisateur a
+  besoin de te demander une modification, qu'il puisse le faire. Une petite
+  interface pour discuter avec toi — par exemple : tu m'as mis cinq turbines en
+  5000, j'aurais préféré des 3500, recalcule-moi le schéma. Ou : tu m'as mis des
+  tuyères VAN 12, est-il possible de mettre de la VAN 15 ? »*
+
+  CE QUE CETTE MAQUETTE MONTRE, ET QUI EST LE VRAI SUJET :
+
+  **L'IA NE DESSINE PAS LE PLAN. Elle traduit la phrase en PARAMÈTRES**, et
+  c'est le calcul déterministe qui refait le plan et les pièces. C'est la leçon
+  des dernières heures : laissée libre, elle a inventé des portées (« 5004 buse
+  3.0, portée 6 m » n'existe pas) et le maillage entier en dépendait.
+
+  Elle a donc trois droits, et trois seulement :
+    · LIRE le catalogue pour répondre (« la 15-VAN porte 4,5 m ») ;
+    · POSER un paramètre du calcul (famille, buse, marque, nombre de voies) ;
+    · REFUSER en expliquant, quand la demande sort de ce que les données
+      permettent — et alors elle propose ce qui s'en rapproche.
+
+  Elle n'a jamais le droit de poser un chiffre qui n'est pas au catalogue.
+
+  Aucun JavaScript : les trois échanges sont des états, choisis par des boutons
+  radio et du CSS. Sur la vraie application, ce serait une vraie conversation.
+-->
+<style>
+  :root { --creme:#F3F1EA; --carte:#FBFAF7; --encre:#1A1A18; --gris:#6E6A60;
+           --or:#B4894A; --ligne:#E2DED2; --bleu:#2F6FB2; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--creme); color:var(--encre);
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    max-width:390px; margin-inline:auto; padding:0 0 40px; }
+  h1 { font:400 28px/1.15 Georgia,serif; margin:6px 22px 2px; }
+  .surtitre { margin:22px 22px 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--or); }
+  .regle { height:1px; background:var(--ligne); margin:14px 22px 0; }
+  .titre-bloc { margin:22px 22px 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gris); }
+
+  .plan { background:var(--carte); border-radius:12px; margin:8px 16px 0; padding:10px 8px 6px; }
+  .plan svg { width:100%; height:auto; display:block; }
+
+  input[name=q] { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+
+  /* Une seule variante de tuyères visible à la fois. */
+  .tuy15 { display:none; }
+  #q2:checked ~ .plan .tuy12 { display:none; }
+  #q2:checked ~ .plan .tuy15 { display:block; }
+
+  /* Un seul fil d'échange visible à la fois. */
+  .fil { display:none; margin:8px 16px 0; }
+  #q0:checked ~ .fil0, #q1:checked ~ .fil1, #q2:checked ~ .fil2, #q3:checked ~ .fil3 { display:block; }
+
+  .bulle { border-radius:14px; padding:11px 13px; margin-top:8px; font-size:14px; line-height:1.5; }
+  .lui { background:var(--bleu); color:#FBFAF7; margin-left:34px; border-bottom-right-radius:4px; }
+  .atlas { background:var(--carte); color:var(--encre); margin-right:14px; border-bottom-left-radius:4px; }
+  .atlas b { font-weight:600; }
+  .atlas .chiffres { display:block; margin-top:7px; padding-top:7px; border-top:1px solid var(--ligne); color:var(--gris); font-size:13px; }
+
+  .demandes { margin:14px 16px 0; }
+  .demandes p { margin:0 0 6px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gris); }
+  .demandes label { display:block; background:var(--carte); border:1px solid var(--ligne);
+    border-radius:12px; padding:11px 13px; margin-top:7px; font-size:14px; line-height:1.4;
+    color:var(--encre); cursor:pointer; min-height:44px; }
+  #q1:checked ~ .demandes label[for=q1], #q2:checked ~ .demandes label[for=q2],
+  #q3:checked ~ .demandes label[for=q3] { background:var(--encre); color:#FBFAF7; border-color:var(--encre); }
+
+  .saisie { display:flex; gap:8px; margin:14px 16px 0; }
+  .saisie span { flex:1; background:var(--carte); border:1px solid var(--ligne); border-radius:22px;
+    padding:12px 15px; color:#A9A49A; font-size:15px; }
+  .saisie b { width:44px; height:44px; border-radius:50%; background:var(--encre); color:#FBFAF7;
+    display:flex; align-items:center; justify-content:center; font-size:17px; }
+  .note { margin:18px 22px 0; font-size:12px; line-height:1.5; color:var(--gris); }
+</style>
+
+<p class="surtitre">Paysage</p>
+<h1>Plan d’arrosage</h1>
+<div class="regle"></div>
+
+<input type="radio" name="q" id="q0" checked>
+<input type="radio" name="q" id="q1">
+<input type="radio" name="q" id="q2">
+<input type="radio" name="q" id="q3">
+
+<div class="plan"><svg viewBox="-3 -2.6 25 17.4" role="img" aria-label="Plan du jardin">
+    <defs><clipPath id="pel"><polygon points="0,0 20,0 20,4 12,4 12,12 0,12"/></clipPath></defs>
+    <polygon points="0,0 20,0 20,4 12,4 12,12 0,12" fill="#E9ECE0" stroke="#7C8271" stroke-width=".26"/>
+    <g class="turbines">
+      <circle cx="0" cy="0" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="6" cy="0" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="12" cy="0" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="0" cy="6" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="6" cy="6" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="12" cy="6" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="0" cy="12" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="6" cy="12" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="12" cy="12" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pel)"/>
+      <polyline points="0,4 0,6 0,12 6,12 12,12 12,6" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="0,4 0,0 6,0 12,0" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="6,0 6,6" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+      <circle cx="6" cy="0" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+      <circle cx="12" cy="0" r=".5" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34"/>
+      <circle cx="0" cy="6" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+      <circle cx="6" cy="6" r=".5" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34"/>
+      <circle cx="12" cy="6" r=".5" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34"/>
+      <circle cx="0" cy="12" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+      <circle cx="6" cy="12" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+      <circle cx="12" cy="12" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
+    </g>
+    <g class="tuy12">
+      <circle cx="16" cy="0" r="3.6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="20" cy="0" r="3.6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="20" cy="4" r="3.6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="16" cy="4" r="3.6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pel)"/>
+      <polyline points="0,4 0,0 6,0 12,0 16,0 20,0 20,4 16,4" fill="none" stroke="#2E7D4F" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+      <rect x="15.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+      <rect x="19.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+      <rect x="19.56" y="3.56" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+      <rect x="15.56" y="3.56" width=".88" height=".88" rx=".12" fill="#FBFAF7" stroke="#2E7D4F" stroke-width="0.34"/>
+    </g>
+    <g class="tuy15">
+      <circle cx="16" cy="0" r="4.5" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="20" cy="0" r="4.5" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="20" cy="4" r="4.5" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pel)"/>
+      <circle cx="16" cy="4" r="4.5" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pel)"/>
+      <polyline points="0,4 0,0 6,0 12,0 16,0 20,0 20,4 16,4" fill="none" stroke="#2E7D4F" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+      <rect x="15.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+      <rect x="19.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+      <rect x="19.56" y="3.56" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
+      <rect x="15.56" y="3.56" width=".88" height=".88" rx=".12" fill="#FBFAF7" stroke="#2E7D4F" stroke-width="0.34"/>
+    </g>
+  </svg></div>
+
+<div class="fil fil0">
+  <div class="bulle atlas">Voilà votre plan : <b>9 turbines 3504</b> buse 0,75 sur le carré, <b>4 tuyères 1800</b> buse 12-VAN sur la bande. Deux réseaux.<span class="chiffres">1,44 + 0,90 m³/h · 80 ml de tuyau · 64 ml de tranchée</span></div>
+</div>
+
+<div class="fil fil1">
+  <div class="bulle lui">Pourquoi tu m’as fait 2 réseaux et pas 3&nbsp;?</div>
+  <div class="bulle atlas">Parce que le compteur donne <b>1,80 m³/h</b> et que le plan en demande 2,34 en tout — il faut donc au moins deux voies, et deux suffisent.<br><br>J’ai aussi séparé les familles&nbsp;: une tuyère verse environ trois fois plus vite qu’une turbine. Sur une même voie, la durée qui convient à l’une noie ou assoiffe l’autre.<span class="chiffres">turbines 1,44 m³/h · tuyères 0,90 m³/h · le compteur : 1,80</span></div>
+</div>
+
+<div class="fil fil2">
+  <div class="bulle lui">Tu m’as mis des VAN 12. On peut passer en VAN 15&nbsp;?</div>
+  <div class="bulle atlas">Oui. La 15-VAN porte <b>4,5 m</b> au lieu de 3,6 — j’ai refait le plan, le nombre de réseaux ne bouge pas.<br><br><b>Une réserve&nbsp;:</b> la bande ne fait que 4 m de large. À 4,5 m, vous arroserez <b>50 cm au-delà de la limite</b> — mur, allée ou voisin selon ce qu’il y a.<span class="chiffres">extension : 1,26 m³/h au lieu de 0,90 · total 2,70 · toujours 2 réseaux</span></div>
+  <div class="bulle atlas">Les pièces changent&nbsp;: <b>4 buses 15-VAN</b> (RBT601) remplacent les 12-VAN. Le reste est identique.</div>
+</div>
+
+<div class="fil fil3">
+  <div class="bulle lui">J’aurais préféré des 5004 plutôt que des 3504.</div>
+  <div class="bulle atlas">Je peux, mais je vous le déconseille ici, et voici pourquoi.<br><br>La 5004 la plus courte est la buse 1,0&nbsp;: elle porte <b>8,5 m</b>. Sur votre maillage de 6 m, l’eau tomberait deux fois au même endroit — et je ne peux pas élargir le maillage, un carré de 12 m impose un arroseur au milieu.<br><br>Surtout, elle consomme <b>0,22 m³/h</b> contre 0,16&nbsp;: les neuf passeraient à 1,98 m³/h, au-dessus des 1,80 du compteur. Il faudrait <b>un troisième réseau</b> — une électrovanne et un regard 3 voies en plus.<span class="chiffres">3504 buse 0,75 : 5,2 m · 0,16 m³/h — 5004 buse 1,0 : 8,5 m · 0,22 m³/h</span></div>
+  <div class="bulle atlas">Dites-moi si vous la voulez quand même&nbsp;: je refais le plan avec trois voies.</div>
+</div>
+
+<div class="demandes">
+  <p>Essayez une demande</p>
+  <label for="q1">Pourquoi tu m’as fait 2 réseaux et pas 3&nbsp;?</label>
+  <label for="q2">Tu m’as mis des VAN 12. On peut passer en VAN 15&nbsp;?</label>
+  <label for="q3">J’aurais préféré des 5004 plutôt que des 3504.</label>
+</div>
+
+<div class="saisie"><span>Écrire à Atlas…</span><b>↑</b></div>
+
+<p class="note">Maquette — rien n’est codé. Atlas ne dessine pas le plan&nbsp;: il
+lit votre demande, pose un paramètre du calcul, et c’est le calcul qui refait le
+schéma et les pièces. Il n’écrit jamais un chiffre qui n’est pas au catalogue&nbsp;;
+quand une demande sort de ce que les données permettent, il le dit et propose ce
+qui s’en approche.</p>
+</html>
