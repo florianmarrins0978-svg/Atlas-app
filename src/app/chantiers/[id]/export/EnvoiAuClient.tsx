@@ -7,7 +7,6 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourIso, jourLisible } from "@/lib/jour";
 import Calendrier from "@/components/atlas/Calendrier";
 import { basculerJour } from "@/lib/calendrier";
-import { libelleDuree } from "@/server/disponibilites";
 import {
   preparerEnvoiAction,
   envoyerAuClientAction,
@@ -398,43 +397,27 @@ function Contenu({
             />
           </div>
 
-          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 8 }}>
-            Une date, ou deux au choix du client ?
-          </p>
+          {/* ═══════════════════════════════════════════════════════════
+              **LA LISTE DES SIX JOURS SUGGÉRÉS A ÉTÉ RETIRÉE.**
 
-          <div className="mb-4 flex flex-col gap-1.5">
-            {preparation.joursLibres.map((jour) => {
-              const choisi = selection.includes(jour);
-              return (
-                <button
-                  key={jour}
-                  type="button"
-                  onClick={() => basculer(jour)}
-                  aria-pressed={choisi}
-                  className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
-                  style={{
-                    backgroundColor: choisi ? colors.rustTint : colors.card,
-                    color: colors.ink,
-                  }}
-                >
-                  <span>{jourLisible(jour)}</span>
-                  {choisi && (
-                    <span className="text-[13px] font-medium" style={{ color: colors.rust }}>
-                      proposée
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+              *Sa demande du 23 août 2026 :* « mets le calendrier directement
+              sous le nombre de jours que prend le chantier ; les quelques jours
+              qu'on peut sélectionner au tout début ne servent plus à rien,
+              maintenant qu'on a le mois complet ».
 
-          {preparation.joursLibres.length === 0 && (
-            <p className="mb-4 text-center text-[13px]" style={{ color: colors.rust }}>
-              Aucun jour ne peut accueillir {libelleDuree(preparation.dureeDemiJournees)} dans les trois prochains
-              mois. Choisissez une date plus loin ci-dessous, raccourcissez la durée, ou ajoutez une équipe dans
-              vos réglages.
-            </p>
-          )}
+              Elle date du 8 août, quand l'écran ne montrait QUE six jours ouvrés
+              et qu'aucun autre choix n'existait — *« comment je fais si je dois
+              lui proposer une date dans six mois ? »*. Le calendrier complet est
+              arrivé le 9 ; depuis, la liste ne faisait que redire ses six
+              premières cases, deux gestes plus haut.
+
+              **Ce qu'elle portait et qui ne se perd pas :** la phrase « aucun
+              jour ne peut accueillir cette durée dans les trois prochains mois »
+              devenait muette dès qu'un seul jour tenait. Le calendrier, lui,
+              grise ce qui ne tient pas, sur dix-huit mois — et
+              `verifierJourPropose` prévient à l'appui, en nommant le premier
+              jour possible.
+              ═══════════════════════════════════════════════════════════ */}
 
           {/* **Une date à soi, jusqu'à dix-huit mois.**
 
@@ -462,8 +445,27 @@ function Contenu({
               qu'il faisait, et le retirer rendrait le geste plus joli et moins
               sûr. */}
           <div className="mb-4">
-            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
-              Ou une autre date
+            {/* **La phrase DIT CE QU'IL PEUT FAIRE, elle ne le demande pas.**
+
+                *Sa demande du 23 août 2026 :* « au lieu de marquer "ou une
+                autre date", marque quelque chose qui stipule que l'utilisateur
+                peut choisir, peut proposer deux jours ».
+
+                « Ou une autre date » n'avait plus d'« autre » que quoi, la liste
+                des six jours retirée. Et « Une date, ou deux au choix du
+                client ? » restait une question posée à lui — on lui demandait ce
+                qu'on devait justement lui apprendre : qu'il a droit à deux.
+
+                **Le repère `data-atlas` est là pour les suites**, qui visaient
+                ce libellé mot pour mot : trois d'entre elles se seraient cassées
+                sur un changement de formulation qu'il a demandé
+                (`CLAUDE.md` §5 bis). */}
+            <p
+              data-atlas="invite-dates"
+              className={smallCaps}
+              style={{ color: colors.muted, marginBottom: 6 }}
+            >
+              Proposez une date, ou deux au choix du client
             </p>
             <div className="rounded-[4px] px-3 py-3" style={{ backgroundColor: colors.card }}>
               {/* **Le calendrier marque TOUTE la sélection, pas la dernière
@@ -533,13 +535,21 @@ function Contenu({
             )}
           </div>
 
-          {/* Les dates retenues hors de la liste des six ne se voient nulle
-              part ailleurs : sans ce rappel, le patron enverrait sans savoir ce
-              qu'il propose. */}
-          {selection.some((j) => !preparation.joursLibres.includes(j)) && (
+          {/* **CE QU'IL PROPOSE, ÉCRIT EN TOUTES LETTRES.**
+
+              Ce rappel ne montrait que les dates prises HORS de la liste des six
+              — les seules qui, sinon, ne se voyaient nulle part. La liste
+              retirée le 23 août, ce sont TOUTES les dates retenues qui ne se
+              lisent plus qu'à la marque d'une case de calendrier. Envoyer un
+              devis en ayant compté des cases n'est pas la même chose que
+              l'envoyer en ayant lu « vendredi 28 août ».
+
+              Chaque ligne se retouche : c'est aussi le moyen de retirer une date
+              sans repartir chercher sa case dans le mois. */}
+          {selection.length > 0 && (
             <div className="mb-4 flex flex-col gap-1.5">
-              {selection
-                .filter((j) => !preparation.joursLibres.includes(j))
+              {[...selection]
+                .sort()
                 .map((jour) => (
                   <button
                     key={jour}

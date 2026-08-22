@@ -51,7 +51,7 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.getByText("Choisir la date", { exact: false }).first().click();
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?");
+  await page.waitForSelector('[data-atlas="invite-dates"]');
 
   // --- 1. Le calendrier existe, et il va jusqu'à dix-huit mois -------------
   //

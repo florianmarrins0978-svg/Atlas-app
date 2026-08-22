@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — l'anneau doré d'aujourd'hui (23 août 2026)
+
+Sa remarque, capture à l'appui : *« je ne comprends pas pourquoi le vingt-deux
+reste sélectionné, ce n'est pas très clair ; ça doit être un bug, je pense »*.
+
+**Ce n'en est pas un.** Le 22 porte un anneau **doré** parce que c'est
+aujourd'hui ; le 20 un anneau **noir** parce que c'est le jour touché. Deux
+anneaux de 1,5 px que seule la couleur distingue — sur un téléphone, cela se lit
+« deux jours choisis ».
+
+**Et l'anneau doré est redondant** : le chiffre d'aujourd'hui est déjà doré et
+gras. Le retirer n'invente rien, il supprime un signal en double.
+
+**Mais il touche la planche 84**, qu'il a validée trait pour trait : cela se
+dessine avant de se coder (`CLAUDE.md` §3 bis). Planche 92,
+`appli/calendrier-aujourdhui.html` — **A** garder, **B** retirer.
+
+**Si B est retenu**, trois endroits portent la même règle et doivent changer
+ensemble : `src/app/planning/PlanningClient.tsx`, `appli/planning-simple.html`
+(la référence) et `appli/choisir-la-date.html` (planche 91, d'une autre
+session).
+
+---
+
 ## Les suites du devis « à la main » lâchent sous charge (22 août 2026)
 
 **Constaté sur quatre batteries complètes du 22 août**, sur du code qu'aucune
