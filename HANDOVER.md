@@ -9,6 +9,31 @@ sert.
 
 ---
 
+## LES BUSES SONT CORRIGÉES À LA PRESSION — NE PAS GONFLER LA PORTÉE (22 août 2026)
+
+**Avant de retoucher `modelePour` :** les buses du catalogue sont ramenées à la
+pression du chantier avant tout choix, puis **retriées** par portée décroissante
+(deux buses de pressions de référence différentes ne se réduisent pas du même
+facteur, et tout le choix « la plus grande qui tient » repose sur cet ordre).
+
+| | La loi | Statut | Sens |
+|---|---|---|---|
+| débit | `√(P/P_ref)` — Torricelli | physique | les deux sens |
+| portée | `P^(1/3)` | **estimation** | **vers le bas uniquement** |
+
+**Ne jamais gonfler la portée**, même si la pression est supérieure à celle du
+catalogue : l'exposant n'est pas relevé de ses catalogues, et espacer les
+arroseurs sur un chiffre supposé fabrique un trou d'arrosage qu'on ne voit qu'en
+juillet. Une portée réduite est signalée sous le plan (`porteeEstimee`).
+
+**La pression retenue est celle de la SOURCE**, pas celle du dernier arroseur :
+les pertes du réseau ne sont pas calculées (`TODO.md`). C'est un progrès, pas
+une garantie — ne pas l'annoncer autrement.
+
+Détail : `ARCHITECTURE.md` §144.
+
+---
+
 ## UNE LÉGENDE DE PLAN SE VÉRIFIE CONTRE LE CATALOGUE (22 août 2026)
 
 **Ce qui s'est passé.** Le patron a lu sur le plan « 4 arroseurs en 5004 buse

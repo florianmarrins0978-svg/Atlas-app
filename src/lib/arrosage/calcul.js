@@ -118,10 +118,95 @@ function paveSelonSaRegle(dimension, portee){
   return ecart >= portee - 0.01 ? { n:n, ecart:ecart } : null;
 }
 
+/* ══ LE DÉBIT ET LA PORTÉE D'UNE BUSE À LA PRESSION DU CHANTIER ═════════════
+
+   **Sa demande du 22 août 2026**, une fois ce qui manquait mis devant lui :
+   *« oui code le »*.
+
+   **Le catalogue ne donne qu'UNE valeur par buse, à UNE pression de
+   référence** — 2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères
+   VAN. Le calcul les prenait telles quelles, quelle que soit la pression du
+   chantier. Sur un robinet à 2 bar au lieu de 2,5, cela met **un arroseur de
+   trop par réseau** : la pression tombe, les turbines sortent à moitié, et le
+   gazon jaunit en bout de ligne — le défaut le plus cher, parce qu'il ne se
+   voit qu'en août, quand la tranchée est refermée depuis longtemps.
+
+   ── LE DÉBIT : de la physique, pas un abaque ────────────────────────────────
+
+   L'eau qui sort d'un orifice va d'autant plus vite que la pression est forte,
+   et sa vitesse suit la RACINE CARRÉE de la pression (Torricelli). Le débit
+   fait de même :
+
+       Q(P) = Q_catalogue × √(P / P_catalogue)
+
+   Une 5004 buse 3,0 donnée 0,71 m³/h à 2,5 bar en donne 0,63 à 2 bar, 0,78 à
+   3. **Cela se corrige dans les DEUX sens** : sous-estimer un débit chargerait
+   trop un réseau, ce qui est précisément le défaut qu'on cherche à éviter.
+
+   ── LA PORTÉE : on ne corrige QUE vers le bas ───────────────────────────────
+
+   Aucune loi simple ne donne la portée d'un jet. La balistique pure la ferait
+   suivre la pression, mais l'air freine le jet et l'écrase : les tables des
+   constructeurs montrent une variation bien plus douce, de l'ordre de la
+   racine cubique. C'est l'exposant retenu ici — et **il n'est PAS relevé de
+   ses catalogues à lui**. C'est une estimation, elle est signalée comme telle
+   plutôt que présentée comme acquise (`CLAUDE.md` §4).
+
+   D'où la prudence qui l'accompagne : **au-dessus de la pression de référence,
+   la portée du catalogue est conservée**. Gonfler une portée sur une
+   estimation ferait espacer les arroseurs davantage, et un espacement trop
+   large est un trou d'arrosage qu'on ne découvre qu'en juillet. En dessous, on
+   réduit : c'est le sens où se tromper coûte un arroseur de plus, jamais une
+   tache sèche.
+
+   ⚠ **La pression retenue est celle de la SOURCE**, pas celle qui reste au
+   pied du dernier arroseur : les pertes du réseau lui-même ne sont pas encore
+   calculées (`TODO.md`). Cette correction est donc un progrès, pas une
+   garantie — et l'écran ne dit rien d'autre. */
+var EXPOSANT_PORTEE = 1 / 3;
+
+function buseALaPression(b){
+  var reference = Number(b.pression) || 0;
+  var reelle = Number(etat.pression) || 0;
+  // Sans pression connue des deux côtés, on ne corrige rien : une correction
+  // menée sur un zéro rendrait un débit nul, c'est-à-dire un plan qui paraît
+  // tenir sur n'importe quel réseau.
+  if (!(reference > 0) || !(reelle > 0) || Math.abs(reelle - reference) < 0.01) return b;
+
+  var rapport = reelle / reference;
+  var debit = {};
+  Object.keys(b.debit).forEach(function(angle){
+    if (b.debit[angle] == null) return;
+    debit[angle] = Math.round(b.debit[angle] * Math.sqrt(rapport) * 1000) / 1000;
+  });
+
+  var corrigee = {};
+  Object.keys(b).forEach(function(k){ corrigee[k] = b[k]; });
+  corrigee.debit = debit;
+  corrigee.rayon = rapport < 1
+    ? Math.round(b.rayon * Math.pow(rapport, EXPOSANT_PORTEE) * 100) / 100
+    : b.rayon;
+  corrigee.rayonCatalogue = b.rayon;
+  corrigee.debitCatalogue = b.debit;
+  corrigee.pressionRetenue = reelle;
+  return corrigee;
+}
+
 function modelePour(type, plusPetitCote, dims){
   var marque = marqueCourante();
 
-  var buses = CATALOGUE.busesDe(marque, type);
+  // **Les buses sont ramenées à la pression du chantier AVANT tout choix.**
+  // Le pavage, le débit et la pluviométrie travaillent ensuite sur les mêmes
+  // valeurs : corriger plus tard reviendrait à choisir une buse sur sa fiche
+  // et à la poser sur autre chose.
+  //
+  // **Et l'on retrie**, car deux buses de pressions de référence différentes
+  // ne se réduisent pas du même facteur : l'ordre du catalogue, décroissant
+  // par portée, pourrait ne plus l'être après correction — et tout le choix
+  // « la plus grande qui tient » repose sur cet ordre.
+  var buses = CATALOGUE.busesDe(marque, type)
+    .map(buseALaPression)
+    .sort(function(x, y){ return y.rayon - x.rayon; });
   if (buses.length){
     var b = null;
     if (dims && dims.L > 0 && dims.l > 0){
@@ -143,6 +228,11 @@ function modelePour(type, plusPetitCote, dims){
         ref: b.ref, nom: type === 'tuyere' ? 'Tuyère' : 'Turbine', detail: b.nom,
         marque: nomDeMarque(b.marqueCle),
         marqueCle: b.marqueCle, type: type, portee: b.rayon, pression: b.pression,
+        // **Une valeur corrigée doit pouvoir remonter à sa source.** Sans
+        // cela, l'écran annonce « portée 4,8 m » là où le catalogue dit 5,2 et
+        // personne ne sait plus lequel des deux croire devant le fournisseur.
+        porteeCatalogue: b.rayonCatalogue || b.rayon,
+        pressionRetenue: b.pressionRetenue || b.pression,
         debit360: b.debit[360], debitParAngle: b.debit, colisage: b.colisage,
         source: b.source, buse: b,
         // La pluviométrie n'est pas au catalogue : elle se déduit du débit et de
@@ -1113,6 +1203,16 @@ export function calculerPlan(entree) {
       couleurs: d.secteurs.map(function (_, i) { return couleurReseau(i); }),
       materiel: listeMateriel(d),
       amenee: amenee(d),
+      // **L'ESTIMATION DE PORTÉE SE DIT** (`CLAUDE.md` §4). Le débit corrigé
+      // est de la physique ; la portée, elle, suit un exposant qui n'est pas
+      // relevé de ses catalogues. Quand il a servi — c'est-à-dire quand la
+      // pression du chantier est SOUS celle du catalogue —, l'écran le
+      // signale plutôt que de rendre une portée comme un fait.
+      porteeEstimee: etat.zones.some(function (z) {
+        const m = poser(z).m;
+        return Boolean(m && m.porteeCatalogue && m.portee < m.porteeCatalogue - 0.001);
+      }),
+      pression: Number(etat.pression) || 0,
     };
   } finally {
     etat = avant;

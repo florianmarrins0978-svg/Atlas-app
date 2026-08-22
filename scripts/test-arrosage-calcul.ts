@@ -207,6 +207,59 @@ dire(
   );
 }
 
+// ── 10. LA BUSE EST RAMENÉE À LA PRESSION DU CHANTIER ───────────────────────
+//
+// **Sa demande du 22 août 2026 : « oui code le ».** Le catalogue ne donne qu'une
+// valeur par buse, à une pression de référence (2,5 bar pour ses turbines Rain
+// Bird). Le calcul les prenait telles quelles : sur un robinet à 2 bar, cela
+// mettait un arroseur de trop par réseau — la pression tombe, les turbines
+// sortent à moitié, et le gazon jaunit en bout de ligne.
+{
+  const ZONE = [{ type: "gazon", nom: "Pelouse", L: 20, l: 12 }];
+  const aLaReference = calculerPlan({ seau: 10, temps: 20, pression: 2.5, zones: ZONE });
+  const quadruple = calculerPlan({ seau: 10, temps: 20, pression: 10, zones: ZONE });
+  const moitie = calculerPlan({ seau: 10, temps: 20, pression: 2, zones: ZONE });
+
+  // **√4 = 2 : à quatre fois la pression, un orifice débite deux fois plus.**
+  // C'est la loi de Torricelli, et c'est le contrôle qui la tient. Au-dessus de
+  // la référence la portée ne bouge pas (voir plus bas), donc la buse choisie
+  // est la même et la demande double EXACTEMENT — une tolérance large
+  // laisserait passer un exposant de travers.
+  const rapport = quadruple.demande / aLaReference.demande;
+  dire(
+    Math.abs(rapport - 2) < 0.02,
+    `à 4 × la pression, la demande vaut ${rapport.toFixed(3)} × celle de référence (2 attendu)`,
+  );
+
+  // **La portée ne se GONFLE jamais.** L'exposant de la portée est une
+  // estimation, pas un relevé de ses catalogues : l'appliquer vers le haut
+  // ferait espacer les arroseurs sur un chiffre supposé, et un espacement trop
+  // large est un trou d'arrosage qu'on ne découvre qu'en juillet.
+  const teteRef = aLaReference.materiel.find((m: { nom: string }) => /buse/i.test(m.nom));
+  const teteHaut = quadruple.materiel.find((m: { nom: string }) => /buse/i.test(m.nom));
+  dire(
+    teteRef !== undefined && teteHaut !== undefined && teteRef.q === teteHaut.q,
+    `à 4 × la pression, le même nombre d'arroseurs (${teteRef?.q} → ${teteHaut?.q}) : la portée n'a pas été gonflée`,
+  );
+
+  // **En dessous, on réduit — et ça se voit.** Moins de portée, donc au moins
+  // autant d'arroseurs ; moins de débit par tête, mais la pose se resserre.
+  // Ce qui est tenu ici : le calcul n'est plus indifférent à la pression.
+  dire(
+    Math.abs(moitie.demande - aLaReference.demande) > 0.001,
+    `à 2 bar la demande (${moitie.demande.toFixed(2)}) diffère de celle à 2,5 bar (${aLaReference.demande.toFixed(2)})`,
+  );
+
+  // **À la pression de référence, RIEN ne doit changer.** Une correction qui
+  // s'applique même à rapport égal introduirait un écart d'arrondi partout, et
+  // les plans d'hier ne seraient plus ceux d'aujourd'hui sans raison.
+  const encore = calculerPlan({ seau: 10, temps: 20, pression: 2.5, zones: ZONE });
+  dire(
+    encore.demande === aLaReference.demande,
+    `à la pression du catalogue, le plan est inchangé (${encore.demande.toFixed(3)} m³/h)`,
+  );
+}
+
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);
 assert.equal(echecs, 0);

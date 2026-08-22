@@ -131,6 +131,17 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
 
   const reserves = [...lu.croquis.reserves];
   if (mesure.reserve) reserves.push(mesure.reserve);
+  // **Une portée réduite est une ESTIMATION, et elle se dit.** Le débit des
+  // buses est ramené à la pression du chantier par la loi de l'orifice — de la
+  // physique. La portée, elle, suit un exposant tiré des tables des
+  // constructeurs et non de ses catalogues à lui : la taire ferait passer pour
+  // acquis un chiffre qui ne l'est pas (`CLAUDE.md` §4).
+  if (plan.porteeEstimee) {
+    reserves.push(
+      `${mesure.pression.toString().replace(".", ",")} bar : les portées sont réduites par rapport au ` +
+        "catalogue, donné à plus forte pression — estimation, à confirmer sur place"
+    );
+  }
   if (mesurees.length === 0) {
     return {
       etat: "refus",

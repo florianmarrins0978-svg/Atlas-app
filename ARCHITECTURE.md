@@ -12859,3 +12859,78 @@ exige maintenant une longueur **plausible** (5 à 500 m), un rapport Ø32/Ø25 d
 moins 2, et éprouve la bascule un mètre avant et un mètre après le seuil. Les
 trois défauts plausibles — formule retournée, diamètres inversés, critère de
 vitesse retiré — ont chacun été joués et font rougir la suite.
+
+---
+
+## 144. La buse se calcule à la pression du chantier — et la portée ne se gonfle pas
+
+**Sa demande du 22 août 2026 : « oui code le ».**
+
+### Le problème
+
+`CATALOGUE.buses` ne porte qu'**une** valeur de portée et de débit par buse, à
+**une** pression de référence (2,5 bar pour les turbines Rain Bird, 2 bar pour
+les tuyères VAN) — c'est écrit noir sur blanc dans le catalogue lui-même :
+*« PARTOUT LE MÊME TROU »*. Le calcul les prenait telles quelles.
+
+### Deux lois, deux statuts, et c'est le coeur de la décision
+
+| | La loi | Son statut | Sens de la correction |
+|---|---|---|---|
+| **débit** | `Q ∝ √P` (Torricelli) | **physique** | les deux sens |
+| **portée** | `R ∝ P^(1/3)` | **estimation** | vers le bas seulement |
+
+Le débit d'un orifice suit la racine carrée de la pression : ce n'est pas un
+abaque, c'est de la mécanique des fluides. Sous-estimer un débit chargerait trop
+un réseau — le défaut même qu'on corrige — donc on l'applique **dans les deux
+sens**.
+
+La portée n'a pas d'équivalent. La balistique pure donnerait `R ∝ P`, mais l'air
+freine le jet et l'écrase : les tables des constructeurs montrent une variation
+bien plus douce, de l'ordre de la racine cubique. **Cet exposant n'est pas
+relevé de ses catalogues** — c'est une estimation, et elle est traitée comme
+telle :
+
+1. **jamais vers le haut.** Au-dessus de la pression de référence, la portée du
+   catalogue est conservée. Gonfler une portée sur un chiffre supposé ferait
+   espacer les arroseurs, et un espacement trop large est un trou d'arrosage
+   qu'on ne découvre qu'en juillet ;
+2. **vers le bas, oui.** C'est le sens où se tromper coûte un arroseur de plus,
+   jamais une tache sèche ;
+3. **elle se dit.** `calculerPlan` rend `porteeEstimee`, et `actions.ts` en fait
+   une réserve affichée sous le plan (`CLAUDE.md` §4).
+
+### Où la correction s'applique, et pourquoi là
+
+Dans `modelePour`, **avant tout choix** : les buses sont corrigées puis
+**retriées** par portée décroissante. Deux raisons :
+
+- le pavage, le débit et la pluviométrie travaillent ensuite sur les mêmes
+  valeurs. Corriger plus tard reviendrait à choisir une buse sur sa fiche et à
+  la poser sur autre chose ;
+- deux buses de pressions de référence différentes ne se réduisent pas du même
+  facteur : l'ordre décroissant du catalogue peut cesser de l'être après
+  correction, et tout le choix « la plus grande qui tient » repose sur cet ordre.
+
+### Ce que cela change, et ce que cela ne règle pas
+
+Son jardin d'exemple à 3 bar passe de **trois à quatre réseaux** : les buses
+données à 2,5 bar débitent 9,5 % de plus à 3 bar. Les plans d'avant tenaient sur
+des débits sous-estimés.
+
+**La pression retenue est celle de la SOURCE.** Les pertes du réseau lui-même —
+la ligne, l'électrovanne, les raccords — ne sont toujours pas calculées : le
+dernier arroseur d'une longue ligne voit moins que ce chiffre. Ouvert dans
+`TODO.md`. Le faire demanderait une boucle (la pression dépend du débit, qui
+dépend de la buse, qui dépend de la pression) ; ce n'est pas fait, et le taire
+aurait été présenter un progrès comme une garantie.
+
+### Les contrôles
+
+`test-arrosage-calcul.ts` tient l'égalité **exacte** : à quatre fois la
+pression, la demande vaut exactement le double (√4 = 2). Une tolérance large
+laisserait passer un exposant de travers. Trois défauts ont été joués et font
+chacun rougir la suite : correction retirée, portée gonflée vers le haut, loi
+linéaire au lieu de la racine. Un quatrième contrôle tient la non-régression :
+à la pression du catalogue, le plan doit être **identique** à ce qu'il était.
+

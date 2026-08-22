@@ -9,6 +9,48 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Les buses sont ramenées à la pression du chantier, plus à celle du catalogue
+
+Sa demande, après avoir vu ce qui manquait encore : *« oui code le »*.
+
+**Le défaut.** Le catalogue ne donne qu'UNE valeur par buse, à UNE pression de
+référence — 2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères VAN. Le
+calcul les prenait telles quelles, quelle que soit la pression du chantier. Sur
+un robinet à 2 bar, cela mettait **un arroseur de trop par réseau** : la
+pression tombe, les turbines sortent à moitié, et le gazon jaunit en bout de
+ligne — le défaut le plus cher, parce qu'il ne se voit qu'en août.
+
+**Le débit : de la physique.** L'eau qui sort d'un orifice suit la racine carrée
+de la pression (Torricelli) : `Q(P) = Q_catalogue × √(P / P_catalogue)`. Une
+5004 buse 3,0 donnée 0,71 m³/h à 2,5 bar en donne 0,63 à 2 bar et 0,78 à 3.
+Corrigé **dans les deux sens** — sous-estimer un débit chargerait trop un
+réseau, ce qui est exactement le défaut visé.
+
+**La portée : réduite, jamais gonflée.** Aucune loi simple ne donne la portée
+d'un jet — la balistique pure la ferait suivre la pression, mais l'air freine le
+jet. Les tables des constructeurs montrent une variation de l'ordre de la racine
+cubique, et c'est l'exposant retenu. **Il n'est pas relevé de ses catalogues à
+lui** : au-dessus de la pression de référence, la portée du catalogue est donc
+conservée telle quelle. Gonfler une portée sur une estimation ferait espacer les
+arroseurs, et un espacement trop large est un trou d'arrosage qu'on ne découvre
+qu'en juillet. En dessous on réduit : c'est le sens où se tromper coûte un
+arroseur de plus, jamais une tache sèche. **Et l'écran le dit** — une réserve
+apparaît sous le plan dès qu'une portée a été réduite.
+
+**Ce que cela change sur un plan.** Son jardin d'exemple à 3 bar passe de trois
+à quatre réseaux : les buses données à 2,5 bar débitent 9,5 % de plus qu'annoncé
+à cette pression-là. Le plan d'avant tenait sur des débits sous-estimés.
+
+**Ce qui reste, et qui n'est pas fait :** la pression retenue est celle de la
+SOURCE, pas celle qui reste au pied du dernier arroseur — les pertes du réseau
+lui-même ne sont toujours pas calculées (`TODO.md`). C'est un progrès, pas une
+garantie.
+
+**Les trois défauts plausibles ont été joués** — correction retirée, portée
+gonflée vers le haut, loi linéaire au lieu de la racine — et chacun fait rougir
+`test-arrosage-calcul.ts`. Le contrôle qui les attrape tient l'égalité exacte :
+à quatre fois la pression, la demande doit valoir exactement le double.
+
 ### La légende du plan annonçait un arroseur que le plan ne posait pas
 
 **C'est lui qui l'a vu**, et sa question était la bonne : *« il m'a déjà donné

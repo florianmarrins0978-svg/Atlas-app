@@ -714,6 +714,14 @@ extérieure.
 | D'où vient le débit | `src/lib/arrosage/mesure-debit.ts` |
 | Qui sait lire une image | `etatVision`, dans `src/lib/etat-ia.ts` |
 
+**LES BUSES SONT RAMENÉES À LA PRESSION DU CHANTIER** (22 août 2026). Le
+catalogue ne donne qu'une valeur par buse, à une pression de référence : le
+débit suit désormais `√(P/P_ref)` (physique de l'orifice, corrigé dans les deux
+sens) et la portée `P^(1/3)` **vers le bas seulement** — l'exposant de la portée
+est une estimation, et une portée réduite est signalée sous le plan. Son jardin
+d'exemple à 3 bar passe de trois à quatre réseaux. Détail : `ARCHITECTURE.md`
+§144. **Reste non fait :** les pertes du réseau lui-même (`TODO.md`).
+
 **LE DIAMÈTRE DU TUYAU SE CALCULE, ET L'OUTIL DIT LE SEUIL** (22 août 2026).
 Sa demande : *« passé un certain nombre de mètres linéaires, il faut passer du
 PEHD Ø25 au Ø32 »*. Deux critères, `amenee()` dans `calcul.js` :

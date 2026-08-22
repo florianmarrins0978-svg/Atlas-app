@@ -299,6 +299,24 @@ références et jamais confrontée à elles. Il a demandé d'où elle sortait : 
 nulle part. Quand ses vraies références arrivent, les lignes provisoires qu'elles
 remplacent se **corrigent**, elles ne se laissent pas dormir.
 
+**UNE BUSE SE CALCULE À LA PRESSION DU CHANTIER, PAS À CELLE DU CATALOGUE.**
+Ses catalogues ne donnent qu'une valeur par buse, à une pression de référence
+(2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères VAN). Les prendre
+telles quelles met un arroseur de trop par réseau dès que le chantier est en
+dessous.
+
+| | La loi | Son statut | Sens |
+|---|---|---|---|
+| **débit** | `Q ∝ √P` — Torricelli | **physique** | les deux sens |
+| **portée** | `R ∝ P^(1/3)` | **estimation** | **vers le bas seulement** |
+
+**La portée ne se gonfle JAMAIS.** L'exposant vient des tables des
+constructeurs, pas de ses relevés à lui : au-dessus de la pression de
+référence, on garde la portée du catalogue. Espacer les arroseurs sur un chiffre
+supposé fabrique un trou d'arrosage qu'on ne voit qu'en juillet ; réduire coûte
+au pire un arroseur de plus. **Et une portée réduite se DIT à l'écran** — c'est
+une estimation, pas un fait.
+
 **LE DIAMÈTRE DU TUYAU SE CALCULE, ET SUR DEUX CRITÈRES — jamais un seul.**
 Sa demande du 22 août 2026 : *« passé un certain nombre de mètres linéaires, il
 faut passer du PEHD Ø25 à celui en Ø32 ; j'aimerais que mon outil arrosage
