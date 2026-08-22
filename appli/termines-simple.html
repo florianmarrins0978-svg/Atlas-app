@@ -129,6 +129,9 @@
   /* ── Une ligne de chantier ─────────────────────────────────────────── */
   .ligne{display:flex;align-items:center;gap:14px;padding:14px 0;
          border-bottom:1px solid var(--e-trait)}
+  /* La dernière ligne d'un bloc ne porte pas de filet : le bloc suivant
+     apporte le sien, et les deux se doublaient juste au-dessus de la TVA. */
+  .ligne:last-child{border-bottom:0}
   .ligne .qui{min-width:0;flex:1}
   .ligne .nom{display:block;font:400 17px/1.2 ui-serif,Georgia,serif;
               white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
