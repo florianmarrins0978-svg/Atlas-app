@@ -9,20 +9,154 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ CONSIGNE — « Terminés » : MAQUETTE SEULEMENT (22 août 2026)
+## ⚠ EN ATTENTE DE SA RÉPONSE — compter les chantiers ou les équipes ? (22 août 2026)
 
-*« Propose-moi quelque chose pour la simplifier, **ne code rien**, je veux qu'on
-fasse des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi
-que ce soit. »*
+Sa question, capture à l'appui : *« pourquoi le matin et l'après-midi de monsieur
+Eric s'affichent en incomplet ? »* — Julien **et** Antoine y sont affectés.
 
-`src/app/termines/` **ne se touche pas** tant qu'il n'a pas choisi. La planche
-est `appli/termines-simple.html` (planche 86), et son adresse est
-`…github.io/Atlas-app/termines-simple.html` — ou depuis `essais.html`.
+**La cause, et elle n'est pas cosmétique.** `occupationDemi`
+(`src/lib/planning-jour.ts`) calcule `nombre de CHANTIERS ÷ nombre d'équipes` :
+1 ÷ 2 = 0,5, donc « incomplet ». **L'affectation des équipes par demi-journée,
+posée le 21 août, ne pèse sur aucune capacité** — de ce point de vue elle est
+décorative.
 
-**Ce qu'on attend de lui :** A, B, C, un mélange, ou aucune. *Ne rien changer
-est une réponse.* Une fois qu'il tranche, la planche retenue devient la
-référence : toute correction de « Terminés » se porte D'ABORD sur elle, comme
-la planche 84 pour le planning.
+Conséquence : ce mardi-là **est proposé à ses clients** alors que ses deux
+équipes y sont déjà.
+
+**La règle proposée**, si et seulement s'il dit oui :
+
+| Ce qu'il pose | Aujourd'hui | Après |
+|---|---|---|
+| 1 chantier, Julien + Antoine | incomplet | **complet** |
+| 1 chantier, Julien seul | incomplet | incomplet (juste) |
+| 1 chantier, aucune équipe posée | incomplet | incomplet (inchangé) |
+
+**Le piège, si on le code :** un chantier sans équipe affectée compterait zéro,
+et la journée paraîtrait vide. Il doit valoir **une unité** — sinon on remplace
+un mensonge par un autre.
+
+**Et les DEUX côtés changent ensemble.** `compterOccupation`
+(`src/server/disponibilites.ts`), qui décide des dates offertes au client, compte
+les chantiers lui aussi. Ne corriger que l'affichage ferait dire « complet » au
+planning pendant que l'écran d'envoi proposerait le jour : deux vérités sur la
+même capacité, ce que `CLAUDE.md` §3 interdit.
+
+Planche 90, `appli/equipes-ou-chantiers.html`.
+
+**Ce qui a été écarté en chemin :** un A/B/C sur l'affichage lui a d'abord été
+proposé — *« je ne comprends pas ta proposition A B ou C, ça n'a rien à voir »*.
+C'était répondre à côté : le fond n'est pas un choix d'écran, mais de règle.
+
+---
+## Les suites du devis « à la main » lâchent sous charge (22 août 2026)
+
+**Constaté sur quatre batteries complètes du 22 août**, sur du code qu'aucune
+d'elles ne modifiait : `test-devis-complet-e2e.ts` (« Taux enregistré : 20.00 »
+au lieu de 10.00) et `test-devis-a-la-main-e2e.ts` (« Montant enregistré :
+0.00 » au lieu de 1250.00) rougissent **une batterie sur deux**, chacune à son
+tour. **Jouées seules, les deux passent.** Deux batteries sur quatre au vert
+complet, sans qu'aucun code de l'éditeur ait bougé entre-temps.
+
+Les deux échouent au même endroit : on écrit dans un champ, on relit la base, et
+la valeur n'y est pas encore. L'enregistrement de l'éditeur est différé ; sur un
+serveur de développement chargé par soixante suites, l'assertion arrive avant
+l'écriture.
+
+**Ce n'est pas un défaut du produit — c'est un contrôle qui lit trop tôt.** Mais
+il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un rouge.
+Le corriger, c'est attendre la trace de l'enregistrement plutôt qu'un délai —
+la même leçon que le `networkidle` du 15 août.
+
+**Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
+c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne
+relance pas l'enquête depuis zéro.
+
+## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
+
+Sa colère du 22 août : *« je peux proposer le 24 alors qu'un client a validé le
+24 — corrige-moi ça ! Ça ne doit jamais se reproduire, c'est une erreur
+gravissime !!!! »*
+
+**Le défaut de code est CORRIGÉ** (voir `CHANGELOG.md` et `HANDOVER.md`) : un
+chantier commencé avant la fenêtre et encore en cours dedans n'était compté
+nulle part. Trois contrôles le tiennent, vus rouges contre l'ancienne borne.
+
+**Ce qui reste, et qui n'est PAS un défaut :** avec **deux équipes**,
+l'application propose un jour où une seule équipe est prise. C'est le
+fonctionnement voulu — mais **aucun écran ne le signale**, et rien ne distingue
+un jour vide d'un jour à moitié pris.
+
+Planche 88, `appli/envoi-jour-deja-pris.html`. Deux questions posées, pas une :
+
+| | |
+|---|---|
+| **A / B / C** | ne rien écrire · « 1 chantier sur 2 équipes » · deux carrés comme au planning |
+| **Le fond** | veut-il **interdire** deux chantiers le même jour, ou seulement le voir ? |
+
+**Sa liste — 24, 25, 26, 27, 28, 31 — était compatible avec les deux causes**,
+et rien dans sa capture ne permettait de trancher. Ne pas conclure à sa place :
+c'est le nombre d'équipes de SON entreprise qui décide, et il se lit sur son
+écran Réglages.
+
+---
+
+## ⚠ EN ATTENTE DE SA RÉPONSE — un devis accepté, invisible (22 août 2026)
+
+Sa panne, capture de la confirmation client à l'appui : *« un devis a été
+accepter mais rien n'ai visible sur mon planning »*.
+
+**Ce n'est pas une perte de données, et il faut le dire avant tout le reste.**
+`enregistrerReponse` (`src/server/repositories/envois-devis.ts`) écrit
+`date_planifiee`, `creneau_debut` et `duree_demi_journees` sur le chantier dans
+la **même transaction** que la réponse du client : il n'y a jamais l'une sans
+l'autre. Le 24 août portait bien sa barre pleine dans le calendrier.
+
+**Le défaut est l'ouverture de la liste.** `PlanningClient.tsx` ouvre les
+planifiés sur la semaine du jour :
+
+```ts
+const [lundi, setLundi] = useState<JourIso>(() => lundiDe(aujourdHui));
+```
+
+Samedi 22, cette semaine est vide ; l'écran écrit donc **« Aucun chantier posé
+cette semaine »** pendant que le chantier attend le lundi 24, trois jours plus
+loin. **L'écran lui dit le contraire de ce qui est vrai**, et la seule trace du
+contraire est une barre de 3 px dans le mois. Un pas de « › », ou toucher le 24,
+et il apparaît — mais rien ne le lui dit.
+
+**Reproduit à l'écran avant de répondre**, jamais supposé : chantier inséré au
+24 en base, connexion réelle, capture. C'est ce que `CLAUDE.md` §1 bis exige.
+
+**Rien n'est codé** — sur quelle semaine s'ouvre le planning est un choix
+d'apparence (`CLAUDE.md` §3 bis). La planche est
+`appli/planning-semaine-ouverte.html` (planche 87) :
+
+| | |
+|---|---|
+| **A** | ce qu'il a aujourd'hui |
+| **B** | s'ouvrir sur la semaine du prochain chantier quand celle du jour est vide |
+| **C** | rester sur cette semaine, mais écrire où est le prochain et y emmener |
+
+**Le piège, quand ce sera codé :** ne pas dessiner la liste deux fois. Dans la
+planche, les trois variantes partagent **une seule** fonction de peinture et ne
+divergent qu'à l'endroit où la semaine est vide — deux dessins pour la même
+liste finiraient par ne plus dire pareil (`CLAUDE.md` §3).
+
+---
+
+## ~~⚠ CONSIGNE — « Terminés » : MAQUETTE SEULEMENT~~ — **LEVÉE le 22 août 2026**
+
+Sa consigne du matin — *« ne code rien, je veux des maquettes dynamiques que je
+puisse essayer »* — a été levée le soir même : **« je choisis la B avec les
+modifications que je viens de te demander »**.
+
+La planche retenue est `appli/termines-simple.html` (planche 90,
+proposition B), et **elle reste la référence** : toute correction de
+« Terminés » se porte D'ABORD sur elle, comme la planche 84 pour le planning —
+sinon les deux divergent, et c'est la planche qu'il ouvre sur son téléphone.
+
+**Ce qui reste vrai après coup :** un écran de « Terminés » se dessine toujours
+avant de se coder (`CLAUDE.md` §3 bis).
 
 ---
 

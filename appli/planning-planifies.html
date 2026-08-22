@@ -253,6 +253,11 @@ function dessiner() {
                 <button class="petit" type="button">Retirer</button>
               </div>`).join("")}
 
+            ${c.libre
+              ? `<div class="demi">${pastille(false)}<span class="mot">${c.libre}</span>
+                   <span class="libre">libre</span></div>`
+              : ""}
+
             <div class="feuille">
               <p class="chapeau">Feuille de chantier</p>
               <p class="client">${c.client}</p>
@@ -267,11 +272,6 @@ function dessiner() {
             </div>
           </div></div>
         </div>`).join("")}
-
-      ${j.chantiers[0] && j.chantiers[0].libre
-        ? `<div class="demi">${pastille(false)}<span class="mot">${j.chantiers[0].libre}</span>
-             <span class="libre">libre</span></div>`
-        : ""}
 
       <button class="ajouter-chantier" type="button">
         <span class="rond">+</span> Ajouter un chantier

@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Un devis accepté — sur quelle semaine s'ouvre le planning ?</title>
+<style>
+  /* Couleurs et tailles de la planche 84, sans exception. */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:14px 18px;font-size:13px;line-height:1.45}
+  .bandeau b{color:#fff}
+
+  .cas{max-width:430px;margin:20px auto 0;padding:0 22px}
+  .cas h2{margin:0;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+          text-transform:uppercase;color:var(--or)}
+  .cas p{margin:8px 0 0;font-size:13.5px;line-height:1.55;color:var(--encre-douce)}
+  .cas p b{color:var(--encre)}
+
+  .tel{max-width:430px;margin:12px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);
+       padding-bottom:10px}
+  .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--gris);padding:18px 0 0}
+  h1{margin:14px 22px 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+
+  /* ── LE MOIS, réduit à ce qui compte ici ─────────────────────────────── */
+  .mois{margin:20px 12px 0}
+  .mois .entete{display:flex;align-items:center;justify-content:space-between;gap:10px;
+                margin:0 6px 10px}
+  .mois .entete b{flex:1;text-align:center;font:700 14px/1 ui-sans-serif,sans-serif}
+  .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .grille .nom-jour{text-align:center;font:600 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;
+                    color:var(--gris);padding-bottom:4px}
+  .case{aspect-ratio:1/1.06;border-radius:8px;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;gap:3px;padding-top:2px}
+  .case.week{background:rgba(28,28,26,.045)}
+  .case .n{font:600 14px/1 ui-sans-serif,sans-serif;color:var(--encre)}
+  .case.week .n{color:var(--gris)}
+  .case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .case.aujourdhui .n{color:var(--or)}
+  .case .barres{display:flex;flex-direction:column;gap:2px;width:60%}
+  .case .b{height:3px;border-radius:2px;background:var(--plage);
+           box-shadow:inset 0 0 0 1px var(--trait)}
+  .case .b.plein{background:var(--pin);box-shadow:none}
+
+  /* ── LES PLANIFIÉS ───────────────────────────────────────────────────── */
+  .titre-section{margin:24px 18px 0;text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;
+                 letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .barre{margin:14px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .fleche{width:44px;height:44px;border-radius:999px;border:1px solid var(--trait);
+          background:var(--plage);color:var(--encre-douce);font-size:19px;cursor:pointer;
+          -webkit-tap-highlight-color:transparent}
+  .barre .quand{flex:1;text-align:center;font:700 14px/1 ui-sans-serif,sans-serif}
+
+  .vide{margin:14px 18px 0;text-align:center;font-size:13.5px;color:var(--gris)}
+
+  /* Le renvoi de la variante C : une phrase qui SAIT où est le prochain. */
+  .renvoi{margin:12px 18px 0;width:calc(100% - 36px);border:1px solid var(--or);
+          background:transparent;border-radius:12px;padding:13px 15px;cursor:pointer;
+          display:flex;align-items:center;gap:10px;text-align:left;
+          -webkit-tap-highlight-color:transparent}
+  .renvoi .texte{flex:1;min-width:0}
+  /* Les deux lignes sont des <span> : sans « block » elles se collent bout à
+     bout — « PROCHAIN CHANTIERlundi 24 août ». Vu sur la capture. */
+  .renvoi .texte{display:block}
+  .renvoi .haut{display:block;font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                text-transform:uppercase;color:var(--or)}
+  .renvoi .bas{display:block;margin-top:5px;font:400 17px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .renvoi .chevron{flex-shrink:0;color:var(--or);font-size:19px}
+
+  .jour{margin:16px 18px 0;border-top:1px solid var(--trait);padding-top:13px}
+  .jour:first-of-type{border-top:0}
+  .jour .quand{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+               text-transform:uppercase;color:var(--encre)}
+  .chantier{margin-top:12px;display:flex;align-items:center;gap:10px}
+  .chantier .nom{flex:1;min-width:0;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .chantier .duree{flex-shrink:0;font-size:12.5px;color:var(--or)}
+  .chantier .chevron{flex-shrink:0;color:rgba(28,28,26,.28);font-size:19px}
+
+  .barre-basse{margin-top:22px;border-top:1px solid var(--trait);display:flex;justify-content:space-around;
+               padding:14px 0 4px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .barre-basse .actif{color:var(--encre);font-weight:600;border-bottom:2px solid var(--or);padding-bottom:4px}
+
+  .pied{max-width:430px;margin:22px auto 0;padding:0 22px;font-size:13.5px;line-height:1.55;
+        color:var(--encre-douce)}
+  .pied h3{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;
+           color:var(--or);margin:26px 0 8px}
+  .pied p{margin:0 0 10px}
+  .pied b{color:var(--encre)}
+  .pied .question{background:var(--papier);border-radius:10px;padding:12px 14px;margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Planche 87 — sur quelle semaine le planning s'ouvre-t-il ?</b><br>
+  Ce que tu as signalé : un devis accepté pour le <b>lundi 24 août</b>, et rien de visible.
+  Le chantier <b>est bien posé</b> — c'est l'écran qui ouvre sur la semaine d'aujourd'hui,
+  la vide, et écrit « Aucun chantier posé cette semaine ».<br>
+  Trois écrans ci-dessous. <b>Les flèches marchent</b> : tu peux te promener dans chacun.
+  Dis-moi lequel, et je le code.
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     A — CE QUE TU AS AUJOURD'HUI
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="cas">
+  <h2>A — aujourd'hui</h2>
+  <p>L'écran s'ouvre sur la semaine du jour. Le 24 porte bien sa barre dans le calendrier,
+     mais la liste dessous dit <b>« Aucun chantier posé cette semaine »</b>. C'est ce qui
+     t'a fait croire que rien n'était arrivé.</p>
+</div>
+<div class="tel" data-ecran="A"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     B — OUVRIR SUR LA SEMAINE DU PROCHAIN CHANTIER
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="cas">
+  <h2>B — ouvrir sur le prochain chantier</h2>
+  <p>Quand la semaine du jour est vide, l'écran s'ouvre <b>directement sur la semaine
+     qui porte le prochain chantier</b>. Tu ouvres Atlas, tu vois le chantier accepté,
+     sans un geste.</p>
+</div>
+<div class="tel" data-ecran="B"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     C — RESTER SUR CETTE SEMAINE, MAIS LE DIRE
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="cas">
+  <h2>C — rester sur cette semaine, mais le dire</h2>
+  <p>L'écran ne bouge pas de la semaine du jour, mais à la place de « Aucun chantier posé
+     cette semaine » il écrit <b>où est le prochain</b>, et t'y emmène si tu le touches.</p>
+</div>
+<div class="tel" data-ecran="C"></div>
+
+<div class="pied">
+  <h3>Ce qui ne change pas, quoi qu'il arrive</h3>
+  <p>Le devis accepté <b>était bien enregistré</b> : la date du client et la date du chantier
+     s'écrivent dans le même geste, il n'y en a jamais une sans l'autre. Rien n'a été perdu.</p>
+
+  <h3>Ce qui te débloque tout de suite</h3>
+  <p>Sur l'écran d'aujourd'hui : touche le <b>24 dans le calendrier</b>, ou la flèche
+     <b>›</b> à droite de « 17 – 23 août ». Le chantier est là.</p>
+
+  <div class="question">
+    <b>La question :</b> A, B ou C ? Un mot suffit.
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+   La situation REPRODUITE, pas imaginée : elle sort de l'écran mesuré ce
+   samedi 22 août sur l'application, avec un chantier accepté pour le
+   lundi 24. Les nombres ci-dessous ne se devinent pas — les changer
+   changerait le cas décrit, pas seulement le dessin.
+   ───────────────────────────────────────────────────────────────────── */
+const AUJOURDHUI = "2026-08-22";          // samedi
+const CHANTIER = {
+  jour: "2026-08-24",                     // lundi
+  nom: "Abri Pornic",
+  duree: "une demi-journée",
+};
+
+const NOMS_JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août",
+              "septembre","octobre","novembre","décembre"];
+
+function d(iso){ const [a,m,j] = iso.split("-").map(Number); return new Date(a, m-1, j); }
+function iso(date){
+  const p = (n) => String(n).padStart(2,"0");
+  return `${date.getFullYear()}-${p(date.getMonth()+1)}-${p(date.getDate())}`;
+}
+function plusDeJours(isoJour, n){ const x = d(isoJour); x.setDate(x.getDate()+n); return iso(x); }
+function lundiDe(isoJour){
+  const x = d(isoJour);
+  // getDay() rend 0 le dimanche : on le ramène à 7 pour que la semaine
+  // commence bien un lundi, comme sur son calendrier.
+  const rang = x.getDay() === 0 ? 7 : x.getDay();
+  return plusDeJours(isoJour, 1 - rang);
+}
+function titreSemaine(lundi){
+  const fin = plusDeJours(lundi, 6);
+  const a = d(lundi), b = d(fin);
+  return a.getMonth() === b.getMonth()
+    ? `${a.getDate()} – ${b.getDate()} ${MOIS[b.getMonth()]}`
+    : `${a.getDate()} ${MOIS[a.getMonth()]} – ${b.getDate()} ${MOIS[b.getMonth()]}`;
+}
+function jourLisible(isoJour){
+  const x = d(isoJour);
+  return `${NOMS_JOURS[x.getDay()]} ${x.getDate()} ${MOIS[x.getMonth()]}`;
+}
+
+/* Le mois d'août 2026, tel qu'il tombe : le 1ᵉʳ est un samedi. */
+function dessinerMois(){
+  const premier = d("2026-08-01");
+  const rang = premier.getDay() === 0 ? 7 : premier.getDay();
+  let html = '<div class="entete">'
+    + '<button class="fleche" type="button" aria-label="Mois précédent">‹</button>'
+    + '<b>août 2026</b>'
+    + '<button class="fleche" type="button" aria-label="Mois suivant">›</button>'
+    + '</div><div class="grille">';
+  for (const n of ["LUN","MAR","MER","JEU","VEN","SAM","DIM"]) {
+    html += `<div class="nom-jour">${n}</div>`;
+  }
+  for (let v = 1; v < rang; v++) html += "<div></div>";
+  for (let j = 1; j <= 31; j++) {
+    const jour = `2026-08-${String(j).padStart(2,"0")}`;
+    const sem = [0,6].includes(d(jour).getDay());
+    const porte = jour === CHANTIER.jour;
+    html += `<div class="case${sem ? " week" : ""}${jour === AUJOURDHUI ? " aujourdhui" : ""}">`
+      + `<span class="n">${j}</span>`
+      + `<span class="barres"><span class="b${porte ? " plein" : ""}"></span>`
+      + `<span class="b"></span></span></div>`;
+  }
+  return html + "</div>";
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   UN écran. La variante ne change QU'UNE chose : sur quelle semaine il
+   s'ouvre, et ce qu'il écrit quand cette semaine est vide. Tout le reste
+   est commun — c'est délibéré : deux dessins pour la même liste
+   finiraient par ne plus dire pareil (CLAUDE.md §3).
+   ───────────────────────────────────────────────────────────────────── */
+function monter(hote, variante){
+  const semaineDuChantier = lundiDe(CHANTIER.jour);
+  const semaineDuJour = lundiDe(AUJOURDHUI);
+  // B est la seule à choisir une autre semaine de départ, et seulement
+  // parce que celle du jour ne porte rien.
+  let lundi = variante === "B" ? semaineDuChantier : semaineDuJour;
+
+  hote.innerHTML = '<p class="marque">VOS JOURNÉES</p>'
+    + "<h1>Planning</h1>"
+    + `<div class="mois">${dessinerMois()}</div>`
+    + '<p class="titre-section">Planifiés</p>'
+    + '<div class="barre">'
+    +   '<button class="fleche" type="button" data-pas="-7" aria-label="Semaine précédente">‹</button>'
+    +   '<span class="quand"></span>'
+    +   '<button class="fleche" type="button" data-pas="7" aria-label="Semaine suivante">›</button>'
+    + "</div>"
+    + '<div class="liste"></div>'
+    + '<div class="barre-basse"><span>Chantiers</span><span class="actif">Planning</span>'
+    +   "<span>Terminés</span><span>Paysage</span><span>Réglages</span></div>";
+
+  const quand = hote.querySelector(".quand");
+  const liste = hote.querySelector(".liste");
+
+  function peindre(){
+    quand.textContent = titreSemaine(lundi);
+    const porte = lundi === semaineDuChantier;
+    if (porte) {
+      liste.innerHTML = '<div class="jour">'
+        + `<p class="quand">${jourLisible(CHANTIER.jour).toUpperCase()}</p>`
+        + '<div class="chantier">'
+        +   `<span class="nom">${CHANTIER.nom}</span>`
+        +   `<span class="duree">${CHANTIER.duree}</span>`
+        +   '<span class="chevron">›</span>'
+        + "</div></div>";
+      return;
+    }
+    // Semaine vide. C'est ICI que les variantes divergent, et nulle part
+    // ailleurs.
+    if (variante === "C") {
+      liste.innerHTML = '<p class="vide">Aucun chantier posé cette semaine.</p>'
+        + '<button class="renvoi" type="button">'
+        +   '<span class="texte"><span class="haut">Prochain chantier</span>'
+        +   `<span class="bas">${jourLisible(CHANTIER.jour)} — ${CHANTIER.nom}</span></span>`
+        +   '<span class="chevron">›</span></button>';
+      liste.querySelector(".renvoi").addEventListener("click", () => {
+        lundi = semaineDuChantier;
+        peindre();
+      });
+      return;
+    }
+    liste.innerHTML = '<p class="vide">Aucun chantier posé cette semaine.</p>';
+  }
+
+  for (const f of hote.querySelectorAll("[data-pas]")) {
+    f.addEventListener("click", () => {
+      lundi = plusDeJours(lundi, Number(f.dataset.pas));
+      peindre();
+    });
+  }
+  peindre();
+}
+
+for (const hote of document.querySelectorAll("[data-ecran]")) {
+  monter(hote, hote.dataset.ecran);
+}
+</script>
+</body>
+</html>

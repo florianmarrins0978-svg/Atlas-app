@@ -344,10 +344,21 @@ async function main() {
     assert.deepEqual(noms, [nom], `le nom est écrit ${noms.length} fois : ${JSON.stringify(noms)}`);
   });
 
-  await essai("et son compte n'est écrit qu'une fois", async () => {
+  // **Le compte gris a été RETIRÉ à sa demande du 22 août** — *« supprime-moi
+  // la notion "un chantier" en gris, on n'a pas besoin de cette
+  // information-là »*. Le contrôle ne réclame donc plus le libellé : il vérifie
+  // que ce que ce libellé disait se lit encore, aux pastilles des
+  // demi-journées. Écrire une assertion sur un mot qu'il a fait enlever rendrait
+  // son écran impossible à changer (`CLAUDE.md` §5 bis).
+  await essai("le compte gris a disparu, et la charge se lit encore aux pastilles", async () => {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
-    assert.equal(await carte.locator('[data-atlas="compte-jour"]').count(), 1);
-    assert.match(await carte.locator('[data-atlas="compte-jour"]').innerText(), /1 chantier/);
+    assert.equal(
+      await carte.locator('[data-atlas="compte-jour"]').count(),
+      0,
+      "le compte « 1 chantier » est revenu alors qu'il l'a fait retirer"
+    );
+    const pastilles = await carte.locator('[data-atlas="demi"] [data-atlas="pastille"]').count();
+    assert.ok(pastilles >= 2, `la charge ne se lit plus nulle part : ${pastilles} pastille(s)`);
   });
 
   await essai("le nom passe AU-DESSUS de la ligne du matin", async () => {
@@ -654,13 +665,90 @@ async function main() {
     );
   });
 
-  await essai("le chantier posé figure dans les planifiés, avec son moment", async () => {
+  // **La ligne dit la DURÉE, plus le moment** — sa demande du 22 août 2026,
+  // éprouvée sur la planche 86 puis retenue : *« ce n'est pas clair quand il y
+  // a marqué le matin et l'après-midi »*. La demi-journée se lit toujours, mais
+  // sur la ligne MATIN du volet, une fois déplié.
+  await essai("le chantier posé figure dans les planifiés, avec sa DURÉE", async () => {
     const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`).first();
     await ligne.waitFor({ state: "visible", timeout: 15_000 });
-    const dit = (await ligne.innerText()).toLowerCase();
-    assert.ok(dit.includes("matin"), `la ligne ne dit pas son moment : « ${dit} »`);
-    // **« ½ journée » ne s'écrit plus** : « matin » le dit déjà.
-    assert.ok(!dit.includes("½"), `« ½ journée » est revenu : « ${dit} »`);
+    const duree = (
+      await ligne.locator('[data-atlas="duree-planifiee"]').innerText()
+    ).toLowerCase();
+    assert.ok(
+      /demi-journée|journée|jours/.test(duree),
+      `la ligne ne dit pas la durée du chantier : « ${duree} »`
+    );
+    assert.ok(
+      !/^matin$|^après-midi$/.test(duree),
+      `le moment est revenu à la place de la durée : « ${duree} »`
+    );
+  });
+
+  // **SA CORRECTION DU 22 AOÛT 2026, sur la planche 86 :** *« sur le premier
+  // chantier, l'après-midi de libre passe sous la feuille de chantier ; or il
+  // doit rester en dessous du matin même s'il est libre, ça ne change rien »*.
+  //
+  // La demi-journée vide appartient à la JOURNÉE, pas au chantier : elle se
+  // rangeait donc après lui, c'est-à-dire après sa feuille, à trois écrans du
+  // matin qu'elle complète.
+  //
+  // **Aucun contrôle pur ne peut voir ce défaut** : `blocsDeLaJournee` mettait
+  // déjà le libre au bon rang, et c'est la feuille — rendue en dehors de ces
+  // blocs — qui s'intercalait. Il faut donc mesurer à l'écran.
+  await essai("une demi-journée libre reste sous le matin, AU-DESSUS de la feuille", async () => {
+    await pool.query(
+      `UPDATE chantiers SET creneau_debut = 'matin', duree_demi_journees = 1 WHERE id = $1`,
+      [chantierId]
+    );
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
+    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`).first();
+    await ligne.waitFor({ state: "visible", timeout: 15_000 });
+    await ligne.locator('[data-atlas="nom-planifie"]').click();
+    await ligne.locator('[data-atlas="feuille"]').waitFor({ state: "visible", timeout: 15_000 });
+
+    // **Aucune fonction déclarée DANS l'évaluation.** `tsx` la compile avec
+    // esbuild, qui nomme chaque fonction interne par un helper `__name` absent
+    // du navigateur : l'évaluation lève alors « __name is not defined », et le
+    // contrôle accuse le produit d'un défaut que l'outillage vient de créer.
+    const m = await ligne.evaluate((n) => {
+      const matin = n.querySelector('[data-bloc="matin"]');
+      const aprem = n.querySelector('[data-bloc="apres_midi"]');
+      const feuille = n.querySelector('[data-atlas="feuille"]');
+      return {
+        matin: matin ? Math.round(matin.getBoundingClientRect().top) : null,
+        aprem: aprem ? Math.round(aprem.getBoundingClientRect().top) : null,
+        feuille: feuille ? Math.round(feuille.getBoundingClientRect().top) : null,
+        hauteurAprem: aprem ? Math.round(aprem.getBoundingClientRect().height) : 0,
+      };
+    });
+
+    // **Un contrôle qui mesure zéro ne mesure rien** (`CLAUDE.md` §5) : sans
+    // ces trois éléments, les comparaisons ci-dessous seraient vraies sur du
+    // vide.
+    assert.ok(m.matin !== null, "la ligne du matin est absente");
+    assert.ok(m.aprem !== null, "la demi-journée libre est absente : elle a été cachée");
+    assert.ok(m.feuille !== null, "la feuille de chantier ne s'est pas ouverte");
+    assert.ok(m.hauteurAprem >= 12, `la demi-journée libre est écrasée : ${m.hauteurAprem} px`);
+
+    assert.ok(
+      m.matin! < m.aprem!,
+      `l'après-midi (${m.aprem}) passe avant le matin (${m.matin})`
+    );
+    assert.ok(
+      m.aprem! < m.feuille!,
+      `la demi-journée libre (${m.aprem}) est retombée SOUS la feuille (${m.feuille})`
+    );
+
+    await pool.query(
+      `UPDATE chantiers SET creneau_debut = 'matin', duree_demi_journees = 2 WHERE id = $1`,
+      [chantierId]
+    );
+    // La page est rendue là où ce contrôle l'a prise : les suivants s'appuient
+    // sur la semaine ouverte plus haut.
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
   });
 
   await essai("la flèche de la semaine ne change PAS le mois", async () => {
@@ -750,9 +838,10 @@ async function main() {
 
     await allerAuPlanning();
     await toucherLeJour(samedi);
-    const ligne = page.locator(
-      `[data-atlas="ligne-planifiee"]:has(a[href="/chantiers/${chantierId}"])`
-    );
+    // Visé par le NOM plutôt que par un lien : le chevron de la ligne pivote
+    // désormais au lieu de mener au chantier (planche 86), et un contrôle qui
+    // s'accroche à un `href` se casse au premier remaniement d'apparence.
+    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`);
     await ligne.first().waitFor({ state: "visible", timeout: 15_000 });
     assert.ok(
       (await ligne.count()) >= 1,

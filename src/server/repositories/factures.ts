@@ -419,6 +419,12 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
         factureId: factures.id,
         factureStatut: factures.statut,
         factureNumero: factures.numeroCommercial,
+        // **La date de la FACTURE, pas celle du chantier.** L'écran refait le
+        // 22 août 2026 écrit « Facturé le 20 août » : le dire d'après
+        // `datePlanifiee` affirmerait une date d'émission qu'on n'a pas — le
+        // chantier a pu être fait le 20 et facturé le 30. Un écran qui invente
+        // une date de facture est pire qu'un écran muet.
+        factureDateEmission: factures.dateEmission,
         totalTtc: factures.totalTtc,
         // **Le montant PRÉVU au devis, pour ce qui n'est pas encore facturé.**
         // L'écran doit dire combien attend d'être facturé — c'est la seule

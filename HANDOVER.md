@@ -9,27 +9,94 @@ sert.
 
 ---
 
+## L'OCCUPATION SE BORNE SUR LA FIN DU CHANTIER, JAMAIS SUR SON DÉPART
+
+Corrigé le 22 août 2026, après *« je peux proposer le 24 alors qu'un client a
+validé le 24 »*. **Toute nouvelle requête d'occupation doit passer par
+`encoreEnCoursDepuis`** (`src/server/repositories/occupation-chantiers.ts`) —
+jamais par un `gte(chantiers.datePlanifiee, …)` réécrit à la main.
+
+La raison tient en une phrase : un chantier de trois jours parti le jeudi tient
+encore le lundi, et borner sur son jour de départ le rend **invisible**. Le jour
+paraît libre, l'écran le propose, et — c'est ce qui rendait le défaut grave — la
+revérification de la réponse du client lisait la même occupation tronquée, donc
+**rien ne rattrapait la faute en aval**.
+
+Trois chemins la partagent, et ils doivent continuer de la partager
+(`CLAUDE.md` §3) : l'écran d'envoi, la validation de la date que le patron pose
+au calendrier, la revérification de la réponse du client.
+
+**Et la leçon de méthode, qui vaut partout :** un contrôle qui attend un refus
+doit **nommer le motif attendu**. Le troisième contrôle de ce lot n'affirmait
+que « ça échoue » — il était vert des deux côtés de la correction, parce que le
+refus venait en réalité d'un lien expiré.
+
+---
+
+## « RIEN N'EST VISIBLE SUR MON PLANNING » — DIAGNOSTIQUÉ, pas encore réglé
+
+Sa panne du 22 août 2026. **Si elle revient, la réponse est déjà là — ne pas la
+rechercher :**
+
+| | |
+|---|---|
+| La date est-elle perdue ? | **Non.** `enregistrerReponse` écrit `date_planifiee` sur le chantier dans la MÊME transaction que la réponse du client |
+| Le chantier est-il sur le planning ? | **Oui**, le jour porte sa barre pleine dans le mois |
+| Alors pourquoi ne le voit-il pas ? | La liste des planifiés s'ouvre sur **la semaine du jour**, la trouve vide, et écrit « Aucun chantier posé cette semaine » — pendant que le chantier attend la semaine d'après |
+| Ce qui le débloque tout de suite | toucher le jour dans le calendrier, ou la flèche **›** de la semaine |
+
+**Rien n'est codé** : la planche 87 (`appli/planning-semaine-ouverte.html`)
+attend qu'il choisisse entre A, B et C. Voir `TODO.md`.
+
+**La leçon à garder même quand ce cas sera réglé :** un écran qui montre une
+**fenêtre** — une semaine, un mois, une page — doit dire ce qu'il y a **hors de
+sa fenêtre** quand elle est vide. Sinon son « aucun » se lit « il n'y en a nulle
+part », et c'est le produit qu'on croit cassé. Chercher les autres endroits qui
+ont ce défaut avant qu'il ne les trouve.
+
+---
+
 ## « TERMINÉS » : UNE PLANCHE ATTEND SA RÉPONSE — ne pas coder l'écran
+## « TERMINÉS » A ÉTÉ REFAIT LE 22 AOÛT 2026 — ce qu'il faut savoir avant d'y toucher
 
-Le 22 août 2026 il a écrit, capture à l'appui : *« je la trouve beaucoup trop
-compliquée. Un utilisateur qui ne connaît pas l'application et qui arrive sur
-cette page ne comprend rien. Propose-moi quelque chose pour la simplifier, **ne
-code rien** »*.
+Sa plainte, capture à l'appui : *« je la trouve beaucoup trop compliquée. Un
+utilisateur qui ne connaît pas l'application et qui arrive sur cette page ne
+comprend rien. »* Trois propositions dessinées, et **il a pris la B** —
+`appli/termines-simple.html`, planche 90. **Elle reste la référence** : toute
+correction de cet écran s'y porte d'abord, sinon les deux divergent, et c'est
+elle qu'il ouvre sur son téléphone.
 
-**`src/app/termines/` ne se touche pas** tant qu'il n'a pas tranché. La planche
-est `appli/termines-simple.html` (**86**) : son écran d'aujourd'hui refait à
-l'identique, puis trois simplifications — **A** deux piles, **B** une seule
-liste avec l'état écrit, **C** une page qui ne fait qu'une chose. Elles
-s'essaient : les boutons « Facturer » facturent, les totaux se refont.
+**Ce qui a disparu de l'écran, et qu'il ne faut pas ramener :** le fil vertical
+et ses perles pleines ou creuses, la pastille dorée, le **volet replié** qui
+cachait les chantiers à facturer, « Facturé, tous mois confondus », le surtitre
+et le cheveu. Une suite qui réclamerait l'un d'eux rendrait l'écran impossible à
+changer (`CLAUDE.md` §5 bis) — c'est déjà arrivé, et `test-planning-vers-facture-e2e.ts`
+a été adapté : il passe désormais par l'onglet **« À facturer »**.
 
-**Deux corrections déjà portées**, le soir du 22 : le mois **se feuillette**
-(`‹ Août 2026 ›`, un mois vide répond « aucune facture ») parce qu'il faut
-pouvoir revenir en arrière quand la facturation a du retard — et **ce qui reste
-à facturer ne suit pas le mois**, c'est tout l'objet de sa demande. Le compte
-des factures passe en **noir gras**.
+**Deux choses gouvernent le nouvel écran, et elles se paient si on les ignore :**
 
-Attendre A, B, C, un mélange — ou « aucune », qui est une réponse. Le détail de
-ce qui se comprend mal, et pourquoi, est dans `CHANGELOG.md` du 22 août.
+1. **Un seul mois à la fois, qu'on feuillette** — `‹ Août 2026 ›`. On se déplace
+   sur le **calendrier**, pas sur la liste des mois qui portent quelque chose :
+   un mois vide répond « Rien en juillet 2026 ». La flèche du futur se ferme sur
+   le mois le plus récent.
+2. **CE QUI RESTE À FACTURER NE SUIT PAS LE MOIS.** Sa demande : *« il faut
+   pouvoir revenir dans le passé si jamais on a du retard sur la facturation »*.
+   L'onglet « À facturer » ignore le mois affiché — un chantier de juillet jamais
+   facturé se voit encore en août. `aFacturerPartout` porte cette règle, et la
+   suite pure la fixe.
+
+**Le piège qui a coûté deux suites rouges** : un chantier **clôturé avant sa
+date** reste dans « Terminés » avec une date **à venir**. Ouvrir sur « le mois
+le plus récent qui porte quelque chose » menait donc au mois prochain, vide, et
+le travail du mois en cours avait disparu. `bornesDuFeuilletage` s'ouvre sur le
+mois courant dès qu'il existe quelque chose de plus tard. Ne pas revenir à
+`moisLePlusRecent` pour l'entrée : c'est exactement le défaut.
+
+**Les règles sont dans `src/lib/termines-par-mois.ts`**, pures et éprouvées sans
+base (`scripts/test-termines-par-mois.ts`). L'écran n'y décide de rien.
+
+Le détail — ce qui se comprenait mal, et pourquoi — est dans `CHANGELOG.md` du
+22 août.
 
 ---
 
