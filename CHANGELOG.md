@@ -7,7 +7,197 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-22
+
+### « Terminés » : trois façons de la simplifier, et rien de codé
+
+*« Comme on a fait avec toutes les pages, on les a bien simplifiées, maintenant
+il reste celles-là. Je la trouve beaucoup trop compliquée. Un utilisateur qui ne
+connaît pas l'application et qui arrive sur cette page ne comprend rien.
+Propose-moi quelque chose pour la simplifier, ne code rien, je veux qu'on fasse
+des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi que ce
+soit. »*
+
+Mêmes mots que pour le planning le 19 août (planche 84), donc même réponse :
+`appli/termines-simple.html` — **planche 86**, essayable, et `src/` n'a pas
+bougé (`CLAUDE.md` §3 bis).
+
+**Ce qui se comprend mal sur l'écran actuel**, relevé sur sa capture et non
+supposé :
+
+| | |
+|---|---|
+| Le seul travail qui reste | quatre chantiers à facturer, **repliés** derrière une ligne en petites capitales dorées, sans rien qui dise qu'on peut appuyer |
+| « 3 828,00 € » | écrit **deux fois** — à droite d'« août », puis « Facturé, tous mois confondus ». C'est le même chiffre parce qu'il n'y a qu'un mois, mais il faut le deviner |
+| Trois codes non appris | la pastille dorée « 4 », les points pleins/creux, le montant en or contre le montant en noir |
+| « F2026-0005 · LE 20 » | un numéro de facture avant toute chose, et une date sans son mois |
+| Le fil vertical | 47 px de largeur pour ne rien dire que la liste ne dise déjà |
+| Le relevé de TVA | coupé en deux par la barre du bas |
+
+**Trois propositions**, et elles facturent pour de bon : **A** deux piles (ce
+qui reste en haut, déplié, un bouton par ligne) ; **B** une seule liste où
+l'état s'écrit en toutes lettres, avec deux onglets ; **C** une page qui ne fait
+qu'une chose et s'appelle « À facturer », l'historique derrière une porte.
+
+**Aucun total n'est écrit en dur** : tout se recalcule à partir de la même
+liste, comme le veut la leçon du 21 août — deux chiffres qui se contredisent
+dans un même écran, et c'est toute la liste qu'on cesse de croire. Le total du
+mois de la proposition B l'a d'ailleurs rappelé : il portait 5 868,00 €, la
+somme du facturé ET de l'attendu, c'est-à-dire un chiffre qui n'existe nulle
+part.
+
+**Deux défauts trouvés en la parcourant, et un seul par un test.** « Facture
+n° **-5** » : le tiret de « F2026-0005 » entrait dans le nombre. Aucun contrôle
+ne pouvait le voir — c'est la **capture regardée** qui l'a donné, la cinquième
+fois dans ce dépôt (`CLAUDE.md` §5). L'autre, si : un comparateur qui répondait
+« plus petit » à deux dates **égales** sortait ses deux factures du 19 août à
+l'envers de sa capture, sur les trois écrans à la fois.
+
+**La planche est éprouvée avant de partir en ligne** (`appli/tests/essai-termines.mjs`,
+branchée sur `pages.yml`) : les quatre onglets s'ouvrent, les boutons se
+pressent, les totaux sont relus **à l'écran**, et un écran de moins de 300 px de
+haut est refusé plutôt que compté vert. Confrontée au défaut qu'elle prétend
+voir — l'ancien comparateur remis — elle rougit, et sa phrase désigne le bon
+coupable.
+
+---
+
 ## 2026-08-21
+
+### Le tour plutôt que la coupe — et un contrôle qui dormait
+
+*« On essaye de traverser le moins possible le jardin en faisant des tranchées.
+Là, moi, je ferais le tour : la première tuyère en haut à gauche relie celle du
+haut à droite, puis celle du bas à droite, puis celle du bas à gauche — et c'est
+celle-là la dernière, pas celle du haut à droite. »*
+
+Le réseau 3 coupait l'extension en deux. Son tour coûte **exactement la même
+longueur** — 32 ml — et ne creuse que le long des bords.
+
+**Mais le pire est que mon contrôle n'a rien vu, et il ne pouvait pas.** Il
+mesurait la tranchée à plus de 2 m d'un bord. Dans une bande de 4 m de large, le
+milieu est à 2 m des deux bords : **aucune traversée n'y était jamais
+détectable**. Le contrôle dormait exactement là où il fallait qu'il parle.
+
+Le critère est désormais géométrique : *ce segment part-il d'un bord pour arriver
+sur un bord en passant par l'intérieur ?* Si oui, c'est une coupe. Un segment qui
+va chercher un arroseur du milieu n'arrive sur aucun bord — ce n'en est pas une.
+Éprouvé sur l'ancien tracé : « la tranchée coupe le jardin de 16,0 à 16,4 — le
+tour par le bord fait la même longueur ».
+
+### « D'où sortent tes électrovannes 24 V ? » — de nulle part, et c'était grave
+
+*« Je ne me souviens pas t'avoir donné des électrovannes en 24 V. Pour moi il n'y
+avait que des 9 V. Me suis-je trompé ? »*
+
+**Il ne s'était pas trompé.** Toutes ses fiches de nourrice, relevées le 17 août,
+sont en 9 V — `electrovanne-100dv`, programmateur à pile, pile 9 V. Le « 24 V »
+venait d'une ligne générique du catalogue, marquée `provisoire`, posée avant
+qu'il donne ses références et **jamais confrontée à elles**.
+
+**Et elle ne dormait pas dans un coin : le calcul de l'application la sort.**
+`listeMateriel()` pose « Électrovannes 24 V » dès qu'aucune fiche de nourrice ne
+correspond au nombre de secteurs. Corrigé dans les deux copies du catalogue et du
+calcul.
+
+**Sa règle, qui rend la faute grave et non seulement inexacte :**
+
+| Le programmateur | L'électrovanne |
+|---|---|
+| à pile, 9 V | 9 V |
+| sur secteur, 220 V | 24 V |
+
+Une vanne 24 V pilotée par un boîtier à pile **ne s'ouvre pas**. Le réseau
+n'arrose pas du tout — et cela ne se voit ni sur un plan, ni sur un devis, mais
+après avoir rebouché la tranchée. Un contrôle refuse désormais le mélange, et
+refuse aussi une vanne qui ne dit pas sa tension.
+
+**La leçon dépasse les électrovannes :** une valeur « provisoire » qui survit à
+l'arrivée des vraies références devient un mensonge. Quand ses données arrivent,
+les lignes qu'elles remplacent se corrigent.
+
+### Se piquer au compteur, c'est couper une ligne — la pièce manquait
+
+*« Je te posais la question sur les tés égaux parce qu'en fait il en faut bien
+deux : vu qu'on se pique après le compteur, il va falloir qu'on coupe la ligne,
+parce que le compteur c'est une ligne directe qui part vers la maison. On va
+devoir la couper et mettre un té égal à cet endroit-là. »*
+
+**Il avait raison, et pour une raison que rien dans le dépôt ne portait.** Le té
+égal du regard, je l'avais ; celui du piquage, non — parce qu'il ne dépend
+d'aucun calcul de réseau. Ni des arroseurs, ni des voies, ni du débit : du
+**point de piquage** seul. Il manquait donc, et il aurait manqué sur chaque plan.
+L'oublier, c'est un aller-retour au magasin avec la tranchée ouverte.
+
+**Le plan le montre maintenant** : la ligne du compteur continue vers la maison
+en pointillé, et le losange marque l'endroit où on la coupe. Sans ce trait, la
+pièce paraissait arbitraire.
+
+**Une troisième zone est née** : « du compteur à la nourrice ». Le plan en avait
+deux — le jardin, le regard — et rien pour l'amenée, dont le tuyau n'était même
+pas compté. Il ne l'est toujours pas en mètres, et c'est délibéré : la distance
+dépend du terrain, elle est marquée **à mesurer** plutôt qu'inventée.
+
+### « Où sont les pièces de la nourrice ? » — et un récapitulatif qui mentait
+
+**Deux questions de sa part, deux défauts réels.**
+
+*« Tu as mis 2 tés égaux 25×25×25, pourquoi ? »* Sur la version qu'il regardait :
+un à la nourrice, où le réseau 1 se sépare en deux, et un en 16,0 où partait
+l'antenne du réseau 3. Le second a disparu depuis, en faisant contourner
+l'extension par le coin. Il n'en reste qu'**un**, celui du regard qu'il avait
+lui-même demandé.
+
+**Mais sa capture montrait pire, et je ne l'avais pas vu :** le tableau annonçait
+« 8 tés, 5 coudes » et la phrase juste en dessous « 9 tés + 4 coudes = 13
+raccords ». La phrase était écrite en dur et n'avait pas suivi le tracé — elle
+disait vrai la veille. C'est le pire des cas, parce qu'on la relit sans
+méfiance. Un contrôle recalcule désormais le récapitulatif depuis le tableau.
+
+*« Où sont les pièces pour la nourrice 3 voies ? »* Elle tenait en trois lignes —
+3 électrovannes, 1 regard, 1 programmateur — qui **ne se montent pas** : il
+manquait la clarinette qui relie les vannes, les unions qui permettent de
+démonter, les raccords d'entrée, la vanne de purge pour l'hivernage.
+
+**Tout était déjà relevé sur sa planche du 17 août**, dans
+`CATALOGUE.nourrices[3]`, et n'avait jamais été repris. Les douze pièces sont
+maintenant listées dans leur propre tableau — ce qui est dans le jardin d'un
+côté, ce qui est dans le regard de l'autre.
+
+**Un faux coupable évité au passage :** en détaillant la nourrice, le contrôle
+des raccords s'est mis à compter ses « coudes taraudés MM 1" » comme des fins de
+ligne d'arroseur, et accusait le plan de 2 raccords en trop. Les deux tableaux
+portent désormais leur zone.
+
+### La légende montre au lieu de décrire — et une pièce de moins
+
+*« Le petit schéma en dessous n'est pas clair. On ne sait pas vraiment à quel
+endroit tu veux utiliser un coude taraudé, à quel endroit un té égal ou un té
+taraudé. Là où tu as marqué plein, à côté tu peux mettre un rond plein. »*
+
+**Les symboles sont maintenant dessinés à côté des mots** — le rond plein, le
+rond creux, le carré, le losange, le trait de tranchée —, et ce sont ceux du
+plan. Chacun nomme **la pièce** qu'il implique : plein → té taraudé ; creux →
+coude taraudé ; losange → té égal, qui n'arrose rien. On lisait le plan sans
+savoir quoi visser.
+
+**La jonction se voit enfin.** Elle était dans la commande et nulle part au
+dessin : « 1 té égal » sans savoir où le poser. Un contrôle exige désormais que
+toute pièce facturée soit dessinée quelque part.
+
+**Une jonction supprimée en réordonnant le réseau 3.** Il finissait par une
+antenne partant d'un arroseur — donc un té taraudé ET un té égal au même point.
+En lui faisant faire le tour de l'extension par le coin, la ligne devient
+unique : même longueur (32 ml), un raccord de moins et une pièce de moins.
+
+**Et la phrase sur la tranchée est retirée de l'écran**, à sa demande : *« il
+faut juste que ça soit une règle que toi tu conserves, l'utilisateur n'a pas
+besoin de voir ça »*. Nos raisons de conception restent dans `CLAUDE.md` ;
+l'écran ne porte que ce qui sert à poser le chantier.
+
+**Deux défauts vus à la capture, aucun par un test :** les symboles SVG sans
+largeur imposée s'étiraient à 300 px, et la grille CSS de la légende éclatait un
+mot par ligne — chaque nœud texte devenant une cellule.
 
 ### Le plan dit quel arroseur et pourquoi — et on ne traverse plus le jardin
 

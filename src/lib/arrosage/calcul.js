@@ -957,7 +957,9 @@ function listeMateriel(d){
         lignes.push({ ref:x.ref, nom:(p.marque ? p.marque + ' ' : '') + p.nom, q:x.q, u:'u' });
       });
     } else {
-      lignes.push({ ref:'electrovanne', nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
+      // 9 V, pour s'accorder au programmateur à pile de la ligne suivante :
+      // ses fiches de nourrice le sont toutes, et une 24 V demanderait du 220 V.
+      lignes.push({ ref:'electrovanne', nom:'Électrovannes 9 V', q: d.secteurs.length, u:'u' });
       lignes.push({ ref:'regard', nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
       lignes.push({ nom:'Programmateur ' + voiesProgrammateur(d.secteurs.length) + ' voies', q:1, u:'u' });
     }

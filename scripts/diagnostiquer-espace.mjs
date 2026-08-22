@@ -22,6 +22,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
 
 const DIST = ".next-batie";
 // **Détournable pour l'éprouver, comme le témoin d'échec plus bas — et ce
@@ -154,17 +155,16 @@ console.log(`  Veilleur         : ${veilleurVivant() ? "en place" : "absent"}`);
 // 10 août, puis le 21 — « elle ne se lance plus », sur un serveur pourtant
 // debout.
 const etatPort = existsSync(FICHIER_PORT) ? readFileSync(FICHIER_PORT, "utf8").trim() : null;
-console.log(
-  `  Port 3000        : ${
-    etatPort === "ouvert"
-      ? "ouvert à tous — joignable depuis un téléphone"
-      : etatPort === "hors-codespace"
-        ? "hors espace GitHub — rien à ouvrir"
-        : etatPort === null
-          ? "inconnu (démarrage d'avant le 21 août, ou hors banc)"
-          : `PRIVÉ (${etatPort}) — GitHub répond à la place d'Atlas`
-  }`
-);
+// **On MESURE, on ne suppose plus.** Jusqu'au 22 août 2026 cette ligne
+// recopiait le mot rendu par `ouvrir-port.sh` et en concluait « PRIVÉ » dès
+// qu'il n'avait pas pu régler le port. Elle a envoyé le patron faire trois
+// clics sur un port DÉJÀ public — *« il est en public déjà »* — pendant que la
+// vraie panne restait invisible. L'espace s'appelle désormais par son adresse
+// publique, celle de son téléphone, et rapporte ce qui revient
+// (`scripts/_verdict-port.mjs`).
+const dehors = await regarderDuDehors();
+const port = verdictPort({ etatPort, dehors });
+console.log(`  Port 3000        : ${port.ligne}`);
 // **Les deux suspects d'une construction qui tombe sur une machine modeste.**
 // Publiés à chaque fois, et pas seulement en cas d'échec : quand la fiche est
 // enfin lue, la tentative est finie depuis longtemps et la mémoire est rendue.
@@ -200,15 +200,7 @@ if (echecBati) {
 // Placé AVANT le retard de version, comme la lenteur : un port fermé rend
 // l'application injoignable, et savoir qu'elle a deux commits de retard ne sert
 // alors à rien.
-if (etatPort !== null && etatPort !== "ouvert" && etatPort !== "hors-codespace") {
-  soucis.push(
-    "LE PORT 3000 EST PRIVÉ : GitHub répond par sa page de connexion à la place\n" +
-      "     d'Atlas. Depuis un téléphone non connecté à GitHub, il n'y a rien à voir,\n" +
-      "     et l'application paraît « ne plus se lancer » alors qu'elle tourne.\n" +
-      "     Le remède est dans l'éditeur, en trois clics : onglet PORTS → clic droit\n" +
-      "     sur la ligne du port 3000 → « Visibilité du port » → « Public »."
-  );
-}
+if (port.souci) soucis.push(port.souci);
 
 if (!fetchOk) {
   soucis.push(

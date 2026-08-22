@@ -257,6 +257,40 @@ compteur et des traits qui commencent dans le vide n'est pas un plan : il ne se
 pose pas sur le terrain. La nourrice se **dessine**, avec ses vannes, et chaque
 ligne en part.
 
+**LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
+
+| Le programmateur | L'électrovanne |
+|---|---|
+| à pile, **9 V** | **9 V** |
+| sur secteur, **220 V** | **24 V** |
+
+Ce n'est pas une préférence mais une condition de fonctionnement : une vanne
+24 V pilotée par un boîtier à pile **ne s'ouvre pas**. Le réseau n'arrose pas du
+tout, et on ne s'en aperçoit qu'après avoir rebouché. Cette faute ne se voit ni
+sur un plan, ni sur un devis. **Tous ses programmateurs sont à pile** — donc
+toutes ses vannes sont en 9 V.
+
+**Une valeur « provisoire » qui survit devient un mensonge.** Le catalogue
+portait une « Électrovanne 24 V » générique, posée avant qu'il donne ses
+références et jamais confrontée à elles. Il a demandé d'où elle sortait : de
+nulle part. Quand ses vraies références arrivent, les lignes provisoires qu'elles
+remplacent se **corrigent**, elles ne se laissent pas dormir.
+
+**SE PIQUER AU COMPTEUR, C'EST COUPER UNE LIGNE EN SERVICE.** Sa précision du
+21 août : *« le compteur, c'est une ligne directe qui part vers la maison ; on va
+devoir la couper et mettre un té égal à cet endroit-là »*. Donc **dès que le
+piquage est au compteur, un té égal 25×25×25 entre dans les pièces d'amenée** —
+celles qui vont du compteur à la nourrice.
+
+C'est une pièce qu'aucun calcul de réseau ne produit : elle ne dépend ni des
+arroseurs, ni des voies, ni du débit, mais du **point de piquage** seul. Elle
+manquait donc, et elle aurait manqué sur chaque plan. L'oublier, c'est un
+aller-retour au magasin avec la tranchée ouverte.
+
+**Trois zones, jamais mélangées** : ce qui va du **compteur à la nourrice**, ce
+qui est **dans le regard**, ce qui part **au jardin**. Les confondre a déjà fait
+compter un coude du regard comme une fin de ligne d'arroseur.
+
 **CE QU'ON MINIMISE, C'EST LA TRANCHÉE — PAS LE TUYAU.** Sa règle du 21 août,
 et elle prime sur tout le reste du tracé : *« le trait jaune, c'est une tranchée.
 C'est une équipe qui va devoir creuser la terre. Donc l'idée, c'est de faire le
@@ -288,8 +322,19 @@ au milieu d'un terrain passent des gaines, des drains, une fosse, des racines
 qu'on ne verra qu'à la pelle. Le tour se rebouche ; la traversée se retrouve.
 
 On ne rentre donc dans le jardin **que** pour aller chercher un arroseur qui s'y
-trouve, et par le plus court. Cela se mesure : le linéaire de tranchée à plus de
-2 m d'un bord ne doit pas dépasser ce qu'exigent les arroseurs intérieurs.
+trouve, et par le plus court. **Le tour vaut mieux que la coupe, même à longueur
+égale** — son exemple du 21 août : sur une bande de 8 × 4, faire le tour par
+haut-gauche → haut-droite → bas-droite → bas-gauche coûte exactement autant que
+de la couper en deux, et ne creuse que le long des bords.
+
+**Le critère est géométrique, pas métrique.** Une première version comptait la
+tranchée à plus de 2 m d'un bord : dans une bande de 4 m de large, le milieu est
+à 2 m des deux bords, donc aucune traversée n'y était **jamais** détectée — le
+contrôle dormait exactement là où il fallait qu'il parle. La bonne question est :
+*ce segment part-il d'un bord pour arriver sur un bord en passant par
+l'intérieur ?* Si oui, c'est une coupe, et le tour existe toujours. Un segment
+qui va chercher un arroseur du milieu n'arrive sur aucun bord : ce n'en est pas
+une.
 
 Cela se mesure : la tranchée est l'**union** des tracés — ce qui se superpose ne
 compte qu'une fois — et se compare à l'arbre couvrant minimal de la nourrice et
@@ -359,6 +404,38 @@ Et le **pourquoi** s'écrit, parce qu'un choix qu'on ne comprend pas se refait a
 hasard le chantier suivant. Exemple, sur son plan : une bande de 4 m de large
 reçoit des tuyères, jamais des turbines — une portée de 6 m y arroserait 2 m
 au-delà de la limite, chez le voisin ou sur l'allée.
+
+**UNE LÉGENDE MONTRE, ELLE NE DÉCRIT PAS.** Sa remarque du 21 août : *« on ne
+sait pas vraiment à quel endroit tu veux utiliser un coude taraudé, à quel
+endroit un té égal ou un té taraudé. Là où tu as marqué plein, à côté tu peux
+mettre un rond plein. »* Le symbole se **dessine** à côté du mot, et c'est celui
+qui est sur le plan — un « ● » écrit en toutes lettres ne rend ni la nuance
+plein/creux, ni la forme.
+
+Et chaque symbole **nomme la pièce** qu'il implique : plein → té taraudé ; creux
+→ coude taraudé ; losange → té égal. Sans cela on lit le plan sans savoir quoi
+visser. **Toute pièce facturée se voit quelque part sur le plan** — une pièce
+commandée qu'on ne sait pas où poser ne sert à rien.
+
+**Ce qui est une règle POUR NOUS ne va pas à l'écran.** *« La phrase sur la
+tranchée creusée une fois, tu peux la supprimer. Il faut juste que ça soit une
+règle que toi tu conserves, mais l'utilisateur n'a pas besoin de voir ça. »* Nos
+raisons de conception restent ici ; l'écran ne porte que ce dont il a besoin pour
+poser le chantier.
+
+**RIEN NE SE RÉSUME EN UNE LIGNE SI ÇA SE POSE EN DIX PIÈCES.** Sa question du
+21 août : *« où sont les pièces pour la nourrice 3 voies ? »* Elle tenait en
+trois lignes — 3 électrovannes, 1 regard, 1 programmateur — qui ne se montent
+pas : il manquait la clarinette qui relie les vannes, les unions qui permettent
+de démonter, les raccords d'entrée, la vanne de purge pour l'hivernage. **Tout
+était déjà relevé** dans `CATALOGUE.nourrices[3]` — un ensemble décrit au
+catalogue se recopie, il ne se résume pas.
+
+**Et un récapitulatif se RECALCULE, il ne se recopie pas.** Un écran portait
+« 8 tés, 5 coudes » au tableau et « 9 tés + 4 coudes » dans la phrase en dessous :
+la phrase, écrite en dur, disait vrai la veille. C'est le pire des cas, parce
+qu'on la relit sans méfiance. Deux chiffres qui se contredisent dans le même
+écran, c'est toute la liste qu'on cesse de croire.
 
 **Chaque quantité doit pouvoir se RECOMPOSER à la main.** Sa question du
 21 août — *« je ne comprends pas d'où sortent tes vingt-deux coudes SBE, ça

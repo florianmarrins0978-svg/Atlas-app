@@ -4,8 +4,26 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-21 · `main`
+**Point de reprise :** 2026-08-22 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## « TERMINÉS » : UNE PLANCHE ATTEND SA RÉPONSE — ne pas coder l'écran
+
+Le 22 août 2026 il a écrit, capture à l'appui : *« je la trouve beaucoup trop
+compliquée. Un utilisateur qui ne connaît pas l'application et qui arrive sur
+cette page ne comprend rien. Propose-moi quelque chose pour la simplifier, **ne
+code rien** »*.
+
+**`src/app/termines/` ne se touche pas** tant qu'il n'a pas tranché. La planche
+est `appli/termines-simple.html` (**86**) : son écran d'aujourd'hui refait à
+l'identique, puis trois simplifications — **A** deux piles, **B** une seule
+liste avec l'état écrit, **C** une page qui ne fait qu'une chose. Elles
+s'essaient : les boutons « Facturer » facturent, les totaux se refont.
+
+Attendre A, B, C, un mélange — ou « aucune », qui est une réponse. Le détail de
+ce qui se comprend mal, et pourquoi, est dans `CHANGELOG.md` du 22 août.
 
 ---
 
@@ -130,6 +148,37 @@ relancer. Le premier passage est plus long ; les suivants redeviennent normaux.
 **Ce n'est pas un défaut du produit**, et il ne faut pas le chercher là : la
 construction (`npm run build`) et les cent quatre-vingt-onze suites base étaient
 vertes dans le même passage.
+
+## « L'application ne s'ouvre plus » : LIRE LA FICHE JUSQU'AU BOUT (22 août 2026)
+
+**Payé le matin du 22 août, et c'est la faute que `CLAUDE.md` §1 bis existe pour
+empêcher.** Il signale une panne. La fiche est lue — mais seulement sa DATE :
+périmée de dix heures, donc « ton espace est éteint, rallume-le ». Il le rallume.
+*« Ça marche toujours pas. »*
+
+**L'avertissement était dans la même fiche, dix lignes plus bas, et il y était
+déjà la veille :**
+
+> ⚠ LE PORT 3000 EST PRIVÉ : GitHub répond par sa page de connexion à la place
+> d'Atlas. Depuis un téléphone non connecté à GitHub, il n'y a rien à voir, et
+> l'application paraît « ne plus se lancer » alors qu'elle tourne.
+
+**Pourquoi cela n'apparaît que certains matins.** Un port privé reste joignable
+tant que le navigateur porte une session GitHub valide — c'est pourquoi il a
+travaillé toute la soirée du 21 sans rien remarquer. La session expire dans la
+nuit ; le lendemain, GitHub renvoie sa page de connexion, et Atlas semble mort.
+
+**La règle qui en sort :** la fiche se lit **en entier**, et sa section « Ce
+qu'il faut en conclure » se lit AVANT de formuler quoi que ce soit. Sa date
+tranche sur l'espace ; elle ne tranche pas sur la panne.
+
+**Le remède définitif est de recréer son espace** : `devcontainer.json` publie le
+port et installe `gh`, mais **seulement pour un espace à naître**
+(`ARCHITECTURE.md` §55). Le sien est antérieur, d'où le `sans-gh` qui revient à
+chaque allumage. Tant qu'il le garde, c'est trois clics : onglet PORTS → clic
+droit sur 3000 → Visibilité → Public.
+
+---
 
 ## La dictée mène AU DEVIS, et le devis se prépare tout seul (21 août 2026)
 

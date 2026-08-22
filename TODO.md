@@ -9,6 +9,23 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ CONSIGNE — « Terminés » : MAQUETTE SEULEMENT (22 août 2026)
+
+*« Propose-moi quelque chose pour la simplifier, **ne code rien**, je veux qu'on
+fasse des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi
+que ce soit. »*
+
+`src/app/termines/` **ne se touche pas** tant qu'il n'a pas choisi. La planche
+est `appli/termines-simple.html` (planche 86), et son adresse est
+`…github.io/Atlas-app/termines-simple.html` — ou depuis `essais.html`.
+
+**Ce qu'on attend de lui :** A, B, C, un mélange, ou aucune. *Ne rien changer
+est une réponse.* Une fois qu'il tranche, la planche retenue devient la
+référence : toute correction de « Terminés » se porte D'ABORD sur elle, comme
+la planche 84 pour le planning.
+
+---
+
 ## ~~⚠ CONSIGNE — le planning : MAQUETTE SEULEMENT~~ — **LEVÉE le 21 août 2026**
 
 Sa consigne du 21 août au matin — *« ne code rien, je veux qu'on finisse toute

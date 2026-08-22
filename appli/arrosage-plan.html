@@ -96,8 +96,15 @@
 
   .plan { background:var(--carte); border-radius:12px; margin:10px 16px 0; padding:10px 8px 4px; }
   .plan svg { width:100%; height:auto; display:block; }
-  .legende { margin:6px 6px 4px; font-size:11.5px; line-height:1.5; color:var(--gris); }
-  .legende b { color:var(--encre); }
+  .legende { margin:8px 6px 4px; }
+  .leg-titre { margin:12px 0 5px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--or); }
+  .leg-titre:first-child { margin-top:0; }
+  /* La grille tient le symbole à sa taille : sans largeur imposée, un SVG
+     inline s'étire à toute la colonne — vu à la capture, des ronds de 300 px. */
+  .leg { margin:0 0 6px; font-size:12.5px; line-height:1.45; color:var(--gris);
+         display:grid; grid-template-columns:18px 1fr; gap:9px; align-items:start; }
+  .leg b { color:var(--encre); font-weight:600; }
+  .sym { width:18px; height:18px; flex:none; display:block; }
 
   ul { list-style:none; margin:8px 16px 0; padding:0; }
   .carte {
@@ -172,8 +179,7 @@
       <polyline points="0,12 6,12 12,12" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
       <polyline points="12,12 12,6" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
       <polyline points="6,0 6,6" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-      <polyline points="16,0 16,4" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-      <polyline points="20,0 20,4" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+      <polyline points="20,0 20,4 16,4" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
     </g>
     <polygon points="0,0 20,0 20,4 12,4 12,12 0,12" fill="none" stroke="#7C8271" stroke-width=".26"/>
 
@@ -192,12 +198,21 @@
     <g>
       <rect x="-4.3" y="3.3" width="1.4" height="1.4" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".16"/>
       <text x="-3.6" y="2.5" font-size=".82" font-family="Georgia,serif" fill="#6E6A60" text-anchor="middle">compteur</text>
-      <line x1="-2.9" y1="4" x2="-1.5" y2="4" stroke="#1A1A18" stroke-width=".22"/>
+      <!-- **LA LIGNE DU COMPTEUR PART VERS LA MAISON, ET ON LA COUPE.** Sa
+           précision du 21 août : « le compteur, c'est une ligne directe qui part
+           vers la maison ; nous, on va devoir la couper et mettre un té égal à
+           cet endroit-là ». Sans ce trait, on ne comprend pas pourquoi une
+           pièce de plus apparaît dès que le piquage se fait au compteur. -->
+      <line x1="-2.9" y1="4" x2="-2.2" y2="4" stroke="#1A1A18" stroke-width=".22" data-atlas="amenee"/>
+      <line x1="-2.2" y1="4" x2="-2.2" y2="7.6" stroke="#1A1A18" stroke-width=".18" stroke-dasharray=".4 .35"/>
+      <text x="-2.2" y="8.5" font-size=".8" font-family="Georgia,serif" fill="#6E6A60" text-anchor="middle">maison</text>
+      <rect x="-2.58" y="3.62" width=".76" height=".76" transform="rotate(45 -2.2 4)" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".24" data-piece="jonction"/>
+      <line x1="-2.2" y1="4" x2="-1.5" y2="4" stroke="#1A1A18" stroke-width=".22" data-atlas="amenee"/>
       <rect id="nourrice" x="-1.5" y="2.6" width="1.5" height="2.8" rx=".3" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".22"/>
       <circle cx="-0.75" cy="3.3" r=".3" fill="#2F6FB2"/>
       <circle cx="-0.75" cy="4" r=".3" fill="#2E7D4F"/>
       <circle cx="-0.75" cy="4.7" r=".3" fill="#C08A2E"/>
-      <text x="-2.6" y="7.1" font-size=".82" font-family="Georgia,serif" fill="#1A1A18" text-anchor="middle">nourrice</text>
+      <text x="-3.9" y="5.9" font-size=".82" font-family="Georgia,serif" fill="#1A1A18" text-anchor="middle">nourrice</text>
       <line x1="0" y1="4" x2="0" y2="4" stroke="#1A1A18" stroke-width=".22"/>
     </g>
 
@@ -208,6 +223,7 @@
         <circle cx="0" cy="6" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <polyline points="0,4 0,0 6,0 6,6" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
         <polyline points="0,4 0,6" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+        <rect x="-0.38" y="3.62" width=".76" height=".76" transform="rotate(45 0 4)" fill="#FBFAF7" stroke="#2F6FB2" stroke-width=".26" data-piece="jonction"/>
         <circle cx="0" cy="0" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2" data-famille="turbine"/>
         <circle cx="6" cy="0" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2" data-famille="turbine"/>
         <circle cx="6" cy="6" r=".5" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34" data-famille="turbine"/>
@@ -227,19 +243,28 @@
       <g class="r r3">
         <circle cx="12" cy="0" r="6" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="16" cy="0" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="20" cy="0" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="20" cy="4" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="16" cy="4" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 0,0 6,0 12,0 16,0 20,0 20,4" fill="none" stroke="#C08A2E" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
-        <polyline points="16,0 16,4" fill="none" stroke="#C08A2E" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="20" cy="4" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <circle cx="20" cy="0" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <polyline points="0,4 0,0 6,0 12,0 16,0 20,0 20,4 16,4" fill="none" stroke="#C08A2E" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
         <circle cx="12" cy="0" r=".5" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2" data-famille="turbine"/>
         <rect x="15.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2" data-famille="tuyere"/>
-        <rect x="19.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2" data-famille="tuyere"/>
-        <rect x="19.56" y="3.56" width=".88" height=".88" rx=".12" fill="#FBFAF7" stroke="#C08A2E" stroke-width="0.34" data-famille="tuyere"/>
-        <rect x="15.56" y="3.56" width=".88" height=".88" rx=".12" fill="#FBFAF7" stroke="#C08A2E" stroke-width="0.34" data-famille="tuyere"/>
+        <rect x="15.56" y="3.56" width=".88" height=".88" rx=".12" fill="#FBFAF7" stroke="#C08A2E" stroke-width="0.2" data-famille="tuyere"/>
+        <rect x="19.56" y="3.56" width=".88" height=".88" rx=".12" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2" data-famille="tuyere"/>
+        <rect x="19.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.34" data-famille="tuyere"/>
       </g>
   </svg>
-  <p class="legende"><b>●</b> turbine 5004 · buse 3.0 · portée 6 m &nbsp; <b>■</b> tuyère 1800 · buse 12-VAN · portée 4 m<br>Plein : l’arroseur est <b>en ligne</b> (té taraudé). Creux : il <b>finit</b> la ligne (coude taraudé).<br><b style="color:#B8912F">▬</b> la tranchée — creusée une fois, même quand deux tuyaux y passent.</p>
+  <div class="legende">
+    <p class="leg-titre">Ce que la forme dit</p>
+    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><circle r=".72" fill="#2F6FB2"/></svg><span><b>turbine 5004</b> · buse 3.0 · portée 6 m</span></p>
+    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><rect x="-.66" y="-.66" width="1.32" height="1.32" rx=".18" fill="#2F6FB2"/></svg><span><b>tuyère 1800</b> · buse 12-VAN · portée 4 m</span></p>
+
+    <p class="leg-titre">Ce que le remplissage dit — la pièce qui le raccorde</p>
+    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><circle r=".72" fill="#2F6FB2"/></svg><span><b>plein</b> : la ligne continue → <b>té taraudé 25×3/4"×25</b></span></p>
+    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><circle r=".62" fill="#FBFAF7" stroke="#2F6FB2" stroke-width=".3"/></svg><span><b>creux</b> : la ligne s’arrête là → <b>coude taraudé 25×3/4"</b></span></p>
+    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><rect x="-.56" y="-.56" width="1.12" height="1.12" transform="rotate(45)" fill="#FBFAF7" stroke="#2F6FB2" stroke-width=".3"/></svg><span><b>losange</b> : la ligne se sépare en deux → <b>té égal 25×25×25</b>, qui n’arrose rien</span></p>
+    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><line x1="-.85" y1="0" x2=".85" y2="0" stroke="#D8B45E" stroke-opacity=".85" stroke-width=".9"/></svg><span>la tranchée</span></p>
+  </div>
 </div>
 
 <div class="reseaux">
@@ -261,7 +286,7 @@
           <span class="pastille" style="background:#C08A2E"></span>
           <span class="nom">Réseau 3 — bord haut et extension</span>
           <span class="debit">1,00 m³/h</span>
-          <span class="sous">1 turbine · 4 tuyères · 32 ml · 3 tés + 2 coudes + 1 jonction</span>
+          <span class="sous">1 turbine · 4 tuyères · 32 ml · 4 tés + 1 coude</span>
         </li>
   </ul>
 </div>
@@ -281,23 +306,55 @@
 
 <p class="titre-bloc">Le détail des pièces</p>
 <div class="bloc">
-  <table>
+  <table data-zone="jardin">
     <tr><td class="q">9 u</td><td>Turbine 5004 Plus — escamotable 10 cm</td><td class="ref">RA5004FC</td></tr>
     <tr><td class="q">9 u</td><td>Buse 3.0 — portée 6 m</td><td class="ref">RA-BUSE-30</td></tr>
     <tr><td class="q">4 u</td><td>Tuyère 1800 — escamotable 10 cm</td><td class="ref">RT1804</td></tr>
     <tr><td class="q">4 u</td><td>Buse 12-VAN — portée 4 m</td><td class="ref">RBT636</td></tr>
-    <tr><td class="q">8 u</td><td>Té 90° taraudé 25×3/4"×25 — départ et milieu de ligne</td><td class="ref">te-taraude-25-34-25</td></tr>
-    <tr><td class="q">5 u</td><td>Coude 90° taraudé 25×3/4" — fin de ligne</td><td class="ref">coude-taraude-25-34</td></tr>
-    <tr><td class="q">2 u</td><td>Té 90° 25×25×25 — jonction, sans arroseur</td><td class="ref">te-25-25-25</td></tr>
+    <tr><td class="q">9 u</td><td>Té 90° taraudé 25×3/4"×25 — départ et milieu de ligne</td><td class="ref">te-taraude-25-34-25</td></tr>
+    <tr><td class="q">4 u</td><td>Coude 90° taraudé 25×3/4" — fin de ligne</td><td class="ref">coude-taraude-25-34</td></tr>
+    <tr><td class="q">1 u</td><td>Té égal 25×25×25 — la ligne se sépare, sans arroseur</td><td class="ref">te-25-25-25</td></tr>
     <tr><td class="q">13 u</td><td>Coude SBE 075 — <b>en bas</b>, sur le té ou le coude (toujours 3/4")</td><td class="ref">OD502</td></tr>
     <tr><td class="q">9 u</td><td>Coude SBE 075 — <b>en haut</b>, sur le corps des turbines (3/4")</td><td class="ref">OD502</td></tr>
     <tr><td class="q">4 u</td><td>Coude SBE 050 — <b>en haut</b>, sur le corps des tuyères (1/2")</td><td class="ref">OD501</td></tr>
     <tr><td class="q">76 ml</td><td>PE Ø25 — lignes, depuis la nourrice</td><td class="ref">pehd25</td></tr>
     <tr><td class="q">26 ml</td><td>PEBD rigide Ø16 — reprise vers chaque arroseur</td><td class="ref">pebd16</td></tr>
-    <tr><td class="q">3 u</td><td>Électrovanne 24 V — une par réseau</td><td class="ref">RB-100-DV</td></tr>
-    <tr><td class="q">1 u</td><td>Nourrice : regard 3 vannes</td><td class="ref">RB-VB-3</td></tr>
-    <tr><td class="q">1 u</td><td>Programmateur 3 voies</td><td class="ref">RB-ESP-RZX</td></tr>
   </table>
+</div>
+
+<p class="titre-bloc">Du compteur à la nourrice</p>
+<div class="bloc">
+  <table data-zone="amenee">
+    <tr><td class="q">1 u</td><td>Té égal 25×25×25 — <b>on coupe la ligne du compteur</b> pour dériver vers la nourrice</td><td class="ref">te-25-25-25</td></tr>
+    <tr><td class="q">2 u</td><td>Raccord mâle 25 — 1"</td><td class="ref">raccord-male25</td></tr>
+    <tr><td class="q">à mesurer</td><td>PE Ø25 — du compteur au regard (la distance dépend du terrain)</td><td class="ref">pehd25</td></tr>
+  </table>
+  <p class="compte">Le compteur alimente la maison par une ligne directe. Se piquer
+     dessus veut dire la <b>couper</b> et poser un té égal : c'est une pièce
+     obligatoire dès que le piquage se fait au compteur.</p>
+</div>
+
+<p class="titre-bloc">La nourrice — ce qu'il y a dans le regard</p>
+<div class="bloc">
+  <table data-zone="nourrice">
+    <tr><td class="q">1 u</td><td>Clarinette taraudée 1" — 2 vannes</td><td class="ref">clarinette-2v</td></tr>
+    <tr><td class="q">4 u</td><td>Union droite taraudée MM 1"</td><td class="ref">union</td></tr>
+    <tr><td class="q">3 u</td><td>Électrovanne 100 DV 1" MM 9V — une par réseau</td><td class="ref">electrovanne-100dv</td></tr>
+    <tr><td class="q">4 u</td><td>Raccord mâle 25 — 1"</td><td class="ref">raccord-male25</td></tr>
+    <tr><td class="q">1 u</td><td>Coude 90° taraudé MM 1"</td><td class="ref">coude-mm</td></tr>
+    <tr><td class="q">1 u</td><td>Coude 90° taraudé/fileté MF 1"</td><td class="ref">coude-mf</td></tr>
+    <tr><td class="q">2 u</td><td>Mamelon réduit fileté MM 1"-3/4"</td><td class="ref">mamelon</td></tr>
+    <tr><td class="q">1 u</td><td>Vanne avec vis de purge 3/4"</td><td class="ref">vanne-purge</td></tr>
+    <tr><td class="q">1 u</td><td>Regard rectangle 12"</td><td class="ref">regard-rect12</td></tr>
+    <tr><td class="q">1 u</td><td>Programmateur BL-IP 4 stations 9V</td><td class="ref">prog-4</td></tr>
+    <tr><td class="q">1 u</td><td>Pile alcaline 9V</td><td class="ref">pile-9v</td></tr>
+    <tr><td class="q">6 u</td><td>Connexion étanche</td><td class="ref">connexion</td></tr>
+  </table>
+  <p class="compte">Relevé sur votre planche du 17 août : une clarinette 2 vannes
+     plus une sortie directe font les 3 voies.</p>
+</div>
+
+<div class="bloc" style="margin-top:8px">
   <p class="compte"><b>Deux SBE par arroseur</b>, votre règle du 17 août : celui du
      bas sur la tuyauterie — toujours 3/4", quel que soit l’arroseur — et celui du
      haut au diamètre du corps. Soit 13 + 13 = 26 raccords pour 13 arroseurs.<br>9 tés + 4 coudes = <b>13 raccords pour 13 arroseurs</b> : aucun n’est laissé sans alimentation. La jonction devant le regard ne compte pas — elle n’arrose rien.</p>
