@@ -131,6 +131,37 @@ relancer. Le premier passage est plus long ; les suivants redeviennent normaux.
 construction (`npm run build`) et les cent quatre-vingt-onze suites base étaient
 vertes dans le même passage.
 
+## « L'application ne s'ouvre plus » : LIRE LA FICHE JUSQU'AU BOUT (22 août 2026)
+
+**Payé le matin du 22 août, et c'est la faute que `CLAUDE.md` §1 bis existe pour
+empêcher.** Il signale une panne. La fiche est lue — mais seulement sa DATE :
+périmée de dix heures, donc « ton espace est éteint, rallume-le ». Il le rallume.
+*« Ça marche toujours pas. »*
+
+**L'avertissement était dans la même fiche, dix lignes plus bas, et il y était
+déjà la veille :**
+
+> ⚠ LE PORT 3000 EST PRIVÉ : GitHub répond par sa page de connexion à la place
+> d'Atlas. Depuis un téléphone non connecté à GitHub, il n'y a rien à voir, et
+> l'application paraît « ne plus se lancer » alors qu'elle tourne.
+
+**Pourquoi cela n'apparaît que certains matins.** Un port privé reste joignable
+tant que le navigateur porte une session GitHub valide — c'est pourquoi il a
+travaillé toute la soirée du 21 sans rien remarquer. La session expire dans la
+nuit ; le lendemain, GitHub renvoie sa page de connexion, et Atlas semble mort.
+
+**La règle qui en sort :** la fiche se lit **en entier**, et sa section « Ce
+qu'il faut en conclure » se lit AVANT de formuler quoi que ce soit. Sa date
+tranche sur l'espace ; elle ne tranche pas sur la panne.
+
+**Le remède définitif est de recréer son espace** : `devcontainer.json` publie le
+port et installe `gh`, mais **seulement pour un espace à naître**
+(`ARCHITECTURE.md` §55). Le sien est antérieur, d'où le `sans-gh` qui revient à
+chaque allumage. Tant qu'il le garde, c'est trois clics : onglet PORTS → clic
+droit sur 3000 → Visibilité → Public.
+
+---
+
 ## La dictée mène AU DEVIS, et le devis se prépare tout seul (21 août 2026)
 
 **Sa panne, qu'il a lui-même qualifiée de « point le plus important » :** il
