@@ -49,6 +49,76 @@ l'application, revenir par la liste, cliquer le nom. Confrontée à l'ancien cod
 elle rougit sur trois cas et nomme le coupable : *« la liste l'envoie sur
 /informations »*.
 
+### Le plan repris sur ses trois corrections — la nourrice, les raccords, les marques
+
+**« Tous les réseaux doivent partir de la nourrice — règle indiscutable ! »**
+La première version montrait le compteur et trois traits qui commençaient dans
+le vide : *« je suppose que le réseau jaune partirait du compteur, mais le bleu
+et le vert, on ne sait pas d'où »*. La nourrice est dessinée, avec ses trois
+vannes, et un contrôle refuse une ligne qui démarre ailleurs.
+
+**Le comptage des raccords était faux, et il l'a vu au chiffre près.** La liste
+portait « un collier de prise en charge par arroseur » — une pièce qui n'existe
+pas dans sa règle. Sa planche du 17 août, écrite dans le catalogue depuis
+quatre jours, dit : **départ et milieu de ligne → té taraudé ; fin de ligne →
+coude taraudé**. D'où l'égalité qu'aucune version ne tenait :
+
+> **tés + coudes = nombre d'arroseurs**, et **coudes = nombre de lignes**
+
+En dessous, des arroseurs ne sont raccordés à rien. C'est exactement ce qu'il a
+relevé — *« il y a quatre arroseurs qui ne sont pas alimentés »* — sur un plan
+qui paraissait juste. Aucun test ne le voyait, parce qu'aucun ne confrontait la
+liste des pièces au tracé. Le contrôle le fait maintenant, et il chiffre le
+manque : « 4 tés + 0 coudes = 4 raccords pour 13 arroseurs — 9 arroseurs ne sont
+alimentés par rien ».
+
+**Une conséquence de forme, et elle vaut d'être notée :** un réseau est
+désormais **une ligne continue**. C'est ce qui rend le compte sûr d'un coup
+d'œil — une ligne a exactement une fin, donc un coude, et tout le reste est un
+té. Une ligne qui se ramifie demanderait un té de jonction non taraudé, et le
+compte ne se vérifierait plus à vue.
+
+**Le bandeau des marques est enfin à l'écran** — Rain Bird par défaut, Toro,
+Hunter. Il l'avait demandé le 17 août ; c'était écrit dans le catalogue et
+n'était jamais monté jusqu'à un écran.
+
+**Et la règle vaut pour TOUS les schémas**, à sa demande : elle est écrite dans
+`CLAUDE.md` §4 bis, plus seulement dans un commentaire de catalogue.
+
+### Le plan d'arrosage se DESSINE — maquette, rien n'est codé
+
+*Sa demande, capture à l'appui :* **« il manque la photo, le schéma avec les
+réseaux, et l'implantation des arroseurs — les différents réseaux de
+couleurs »**. L'application rendait trois listes et aucun dessin.
+
+**`appli/arrosage-plan.html`**, tracée sur son croquis du jour : pelouse en L,
+12 × 12 et 8 × 4, **176 m²**, piquage au compteur. 13 arroseurs, 3 réseaux de
+couleurs, chacun sous les 1,80 m³/h disponibles. Aucun JavaScript : choisir un
+réseau passe par des boutons radio et du CSS, donc ça marche hors ligne sur son
+téléphone.
+
+**Ce qui distingue ce plan d'un joli dessin, c'est ce que son contrôle
+recalcule** (`scripts/verifier-maquette-arrosage-plan.mjs`) :
+
+- **la surface est relue depuis le polygone tracé** et comparée à celle
+  annoncée — un plan juste sur une forme fausse ferait commander les pièces
+  d'un autre jardin ;
+- **aucun coin de pelouse n'est laissé sans eau** : on maille le terrain tous
+  les 50 cm et l'on vérifie que chaque point est à portée d'un arroseur. C'est
+  le contrôle qui compte, parce qu'un trou ne se voit pas sur un dessin — il se
+  voit en juillet, en jaune. Éprouvé en rétrécissant les turbines : il annonce
+  « 48 m² sans arrosage, à partir de 2,25 × 2,75 m » ;
+- **aucune voie ne dépasse le débit du compteur** — une voie trop chargée fait
+  sortir les arroseurs à moitié ;
+- **les métrés sont mesurés sur le tracé**, jamais saisis ;
+- **aucun nom de réseau répété ni coupé** — le défaut exact de sa capture, où
+  deux réseaux s'appelaient tous les deux « Pelouse pas de gazon à gauche … ».
+  Deux vannes qui portent le même nom, c'est la mauvaise qu'on ferme.
+
+**Deux défauts trouvés en la regardant, jamais par un test :** la photo du
+croquis s'affichait couchée (une rotation EXIF appliquée à tort), et les quatre
+boutons radio se voyaient au-dessus des onglets — le sélecteur CSS ne les
+atteignait pas, ils étaient hors de leur conteneur.
 
 ### Les cases sont « la carte douce » — la 4, celle qu'il a choisie
 

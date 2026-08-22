@@ -217,6 +217,23 @@ contrôle qui compte les mots de chaque écran et rougit quand un écran en
 gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
 ajoute une ligne et que personne n'en retire jamais.
 
+## Le plan DESSINÉ attend sa validation — 21 août 2026
+
+**`appli/arrosage-plan.html`** : son croquis (pelouse en L, 176 m²), le plan à
+ses cotes, 13 arroseurs, 3 réseaux de couleurs sous 1,80 m³/h.
+**NE RIEN CODER dans l'application avant sa réponse** — c'est sa consigne
+explicite : *« je veux d'abord voir, analyser, et une fois que j'aurai validé,
+on pourra commencer à coder »*. Ce qui attend sa décision est dans `TODO.md`,
+§« Le plan DESSINÉ ».
+
+**Le contrôle recalcule le plan, il ne regarde pas une mise en page** : surface
+relue depuis le polygone, couverture maillée tous les 50 cm (un trou = une tache
+jaune en juillet), débit par voie, métrés mesurés sur le tracé, et **aucun nom de
+réseau répété ni coupé** — le défaut exact de sa capture.
+
+**Son adresse directe** (jamais via `essais.html`, sa demande du 20 août) :
+`https://florianmarrins0978-svg.github.io/Atlas-app/arrosage-plan.html`
+
 ## L'arrosage est DANS l'application — 20 août 2026 au soir
 
 **AUCUN ÉCRAN NE FORCE L'APPAREIL PHOTO** (21 août) : `capture="environment"`
