@@ -277,6 +277,45 @@ Pour effacer vos essais et retrouver les données de démonstration :
 npm run essai:reinitialiser
 ```
 
+## « Elle marche vingt minutes, puis elle crache »
+
+**Ce n'est pas Atlas qui tombe : c'est l'espace de travail qui s'endort.**
+
+Signalé le 21 août 2026 : *« l'application marche vingt, trente minutes et après
+au bout d'un moment elle crache. Elle fait ça à chaque fois. »* Le compte est
+juste, et la cause n'est pas dans l'application — un espace de travail
+**s'arrête tout seul au bout de trente minutes**, c'est le réglage d'origine de
+Codespaces. L'adresse ne répond alors plus, et rien ne dit pourquoi.
+
+**Ce qui compte comme activité, et c'est le piège.** Le compte à rebours regarde
+si l'on est connecté à l'ESPACE — l'éditeur, un terminal. Se servir de
+l'application depuis son téléphone ne le remet pas à zéro : on peut donc
+travailler dans Atlas sans interruption et le voir s'éteindre quand même. C'est
+exactement le cas décrit, et c'est ce qui le rend incompréhensible sur le moment.
+
+### Ce qui allonge le délai — deux minutes, une fois pour toutes
+
+Sur **github.com/settings/codespaces**, le réglage **« Default idle timeout »**
+porte ce délai. Il se pousse jusqu'à **240 minutes** (quatre heures).
+
+> **Non vérifié depuis cet environnement, et il faut le dire :** le mandataire
+> réseau d'ici refuse GitHub, je n'ai donc pas pu ouvrir cette page ni confirmer
+> le libellé exact ni le plafond. Ce qui est vérifié, en revanche, c'est le
+> délai d'origine de trente minutes — il est écrit dans `devcontainer.json` et
+> il correspond au symptôme.
+>
+> Attention à ce que cela coûte : un espace qui reste allumé quatre heures
+> **consomme quatre heures** sur les 60 heures mensuelles du compte gratuit.
+
+### Ce que cela ne règle pas
+
+Quatre heures au lieu de trente minutes, c'est une journée de travail qui tient.
+**Ce n'est pas une application qui marche plusieurs jours sans y penser** — pour
+cela il faut l'héberger ailleurs qu'un espace de travail, qui n'est pas fait
+pour ça. C'est le point 3 de [`A-FAIRE.md`](A-FAIRE.md).
+
+---
+
 ## Fermer proprement
 
 Un espace de travail inutilisé s'arrête tout seul après trente minutes, et ne
