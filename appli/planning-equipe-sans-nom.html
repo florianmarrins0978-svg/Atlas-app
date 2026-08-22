@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Une équipe sans nom — la ligne déborde</title>
+<style>
+  /* Les couleurs et les tailles sont celles de la planche 84, sans exception :
+     cette page ne propose pas un autre écran, elle montre UNE ligne du vôtre. */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:14px 18px;font-size:13px;line-height:1.45}
+  .bandeau b{color:#fff}
+
+  .tel{max-width:430px;margin:18px auto 0;background:var(--fond);min-height:40vh;
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
+  .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--gris);padding:18px 0 0}
+  h1{margin:14px 22px 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+
+  /* La fiche du jour, à l'identique. */
+  .jour-ouvert{margin:16px 18px 0;padding:14px 15px;border-radius:10px;background:var(--plage)}
+  .jour-ouvert .titre{font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+                      text-transform:uppercase;text-align:center;color:var(--encre);margin-bottom:14px}
+  .tete{display:flex;align-items:baseline;gap:10px}
+  .tete .nom{flex:1;font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .demi{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
+  .demi .mot{font:600 10px/1.15 ui-sans-serif,sans-serif;letter-spacing:.06em;
+             text-transform:uppercase;color:var(--encre);white-space:nowrap;width:70px;flex-shrink:0}
+  .demi .equipe{flex-shrink:0;border:0;border-radius:999px;padding:6px 12px;font-size:12.5px;
+                background:var(--pin);color:#faf9f5;white-space:nowrap;cursor:pointer}
+  .demi .equipe .ajouter{margin-left:6px;opacity:.65;font-size:11px}
+  .petit{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
+         padding:7px 12px;font-size:12px;color:var(--encre-douce);cursor:pointer}
+  .demi .petit{padding:7px 9px}
+  .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
+            background:var(--pin)}
+
+  /* Les variantes : la seule chose qui change d'une ligne à l'autre. */
+  .v-lettre .equipe{}                       /* A — l'étiquette devient la lettre */
+  .v-motcourt .mot{width:52px}              /* B — la demi-journée s'abrège */
+
+  /* L'étiquette de chaque essai, hors de l'écran pour ne rien lui ajouter. */
+  .cas{margin:20px 18px 0}
+  .cas .quoi{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+  .cas .lettre{font:700 11px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;color:var(--or)}
+  .cas .dit{font-size:12.5px;color:var(--gris)}
+  .verdict{margin-top:6px;font-size:12px;font-weight:600}
+  .verdict.tient{color:var(--pin)}
+  .verdict.deborde{color:var(--bordeaux)}
+
+  .notes{max-width:430px;margin:22px auto 0;padding:0 22px;font-size:13.5px;line-height:1.55;
+         color:var(--encre-douce)}
+  .notes h2{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;
+            color:var(--or);margin:22px 0 8px}
+  .notes p{margin:0 0 10px}
+  .notes b{color:var(--encre)}
+  .notes .rappel{background:var(--papier);border-radius:10px;padding:12px 14px;margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Regardez, rien n’est codé.</b> Vos équipes s’appellent Paul et Julien, alors la
+  ligne tient. Mais si une équipe <b>n’a pas de nom</b>, l’écran écrit « Équipe A » —
+  et « Retirer » tombe à la ligne. Voici l’état actuel, puis trois façons de le régler.
+  <b>Dites-moi laquelle, ou aucune.</b>
+</div>
+
+<div class="tel">
+  <p class="marque">ATLAS</p>
+  <h1>Une ligne</h1>
+
+  <div class="jour-ouvert">
+    <p class="titre">Lundi 31 août</p>
+
+    <div class="tete"><span class="nom">Mme Rocher</span></div>
+
+    <!-- AUJOURD'HUI -->
+    <div class="cas">
+      <div class="quoi"><span class="lettre">AUJOURD’HUI</span>
+        <span class="dit">l’équipe existe, sans nom</span></div>
+    </div>
+    <div class="demi" data-essai="aujourdhui">
+      <span class="pastille"></span>
+      <span class="mot">Après-midi</span>
+      <button class="equipe">Équipe A<span class="ajouter">＋</span></button>
+      <button class="petit">Déplacer</button>
+      <button class="petit">Retirer</button>
+    </div>
+    <p class="verdict" data-verdict="aujourdhui"></p>
+
+    <!-- A : la lettre seule -->
+    <div class="cas">
+      <div class="quoi"><span class="lettre">A</span>
+        <span class="dit">l’étiquette ne garde que la lettre</span></div>
+    </div>
+    <div class="demi v-lettre" data-essai="lettre">
+      <span class="pastille"></span>
+      <span class="mot">Après-midi</span>
+      <button class="equipe">A<span class="ajouter">＋</span></button>
+      <button class="petit">Déplacer</button>
+      <button class="petit">Retirer</button>
+    </div>
+    <p class="verdict" data-verdict="lettre"></p>
+
+    <!-- B : le mot s'abrège -->
+    <div class="cas">
+      <div class="quoi"><span class="lettre">B</span>
+        <span class="dit">« Ap.-m. », le mot que vos boutons emploient déjà</span></div>
+    </div>
+    <div class="demi v-motcourt" data-essai="motcourt">
+      <span class="pastille"></span>
+      <span class="mot">Ap.-m.</span>
+      <button class="equipe">Équipe A<span class="ajouter">＋</span></button>
+      <button class="petit">Déplacer</button>
+      <button class="petit">Retirer</button>
+    </div>
+    <p class="verdict" data-verdict="motcourt"></p>
+
+    <!-- C : on vous demande son nom -->
+    <div class="cas">
+      <div class="quoi"><span class="lettre">C</span>
+        <span class="dit">l’écran vous invite à la nommer</span></div>
+    </div>
+    <div class="demi" data-essai="nommer">
+      <span class="pastille"></span>
+      <span class="mot">Après-midi</span>
+      <button class="equipe" style="background:transparent;color:var(--or);border:1px dashed var(--or)">Nommer</button>
+      <button class="petit">Déplacer</button>
+      <button class="petit">Retirer</button>
+    </div>
+    <p class="verdict" data-verdict="nommer"></p>
+  </div>
+</div>
+
+<div class="notes">
+  <h2>Ce que chacune coûte</h2>
+  <p><b>A — la lettre seule.</b> Rien d’autre ne bouge. Mais « A » tout seul est moins
+    parlant que « Équipe A » : sur la fiche du jour, on voit une lettre sans savoir
+    tout de suite que c’est une équipe.</p>
+  <p><b>B — « Ap.-m. ».</b> Ce mot existe déjà : c’est celui de vos boutons quand vous
+    posez un chantier sans date. Mais il raccourcit la colonne pour <b>toutes</b> les
+    lignes, y compris celles qui tiennent déjà — le matin et l’après-midi resteraient
+    alignés, simplement plus serrés.</p>
+  <p><b>C — vous la nommez.</b> Au lieu d’inventer « Équipe A », l’écran vous propose
+    de lui donner son nom, d’un appui. C’est le plus court à lire, et c’est ce que
+    vous faites déjà — vos équipes s’appellent Paul et Julien.</p>
+
+  <div class="rappel">
+    <b>Et si vous ne voulez rien changer</b>, c’est une réponse aussi : la ligne se
+    replie, « Retirer » passe dessous, et rien n’est perdu. Le cas ne se présente que
+    chez quelqu’un qui a réglé deux équipes sans les nommer.
+  </div>
+</div>
+
+<script>
+/**
+ * La page se MESURE elle-même — aucun chiffre n'est écrit à la main.
+ *
+ * Deux boutons d'une même ligne partagent leur bord du haut ; un bouton replié
+ * tombe plus bas. C'est ce qu'on regarde, et ça ne dépend ni de la police du
+ * téléphone ni de sa largeur.
+ */
+function mesurer() {
+  for (const ligne of document.querySelectorAll('.demi[data-essai]')) {
+    const boites = [...ligne.children].map((e) => e.getBoundingClientRect());
+    const hauts = boites.map((b) => Math.round(b.top));
+    const replie = Math.max(...hauts) - Math.min(...hauts) > 12;
+
+    // De combien ça déborde : la somme des morceaux et des écarts, contre la place.
+    //
+    // **Chaque largeur est arrondie AVANT d'être ajoutée**, exactement comme le
+    // fait le contrôle de l'application. Additionner les décimales puis arrondir
+    // le total donnait un pixel de plus, et cette page aurait annoncé « 5 » là
+    // où l'application mesure « 4 » : deux calculs pour la même chose finissent
+    // toujours par ne plus dire pareil.
+    const ecart = Math.round(parseFloat(getComputedStyle(ligne).gap) || 0);
+    const somme =
+      boites.reduce((t, b) => t + Math.round(b.width), 0) + ecart * (boites.length - 1);
+    const place = Math.round(ligne.getBoundingClientRect().width);
+    const trop = somme - place;
+
+    const p = document.querySelector(`[data-verdict="${ligne.dataset.essai}"]`);
+    p.className = 'verdict ' + (replie ? 'deborde' : 'tient');
+    p.textContent = replie
+      ? `↩ « Retirer » passe à la ligne — il manque ${trop} px`
+      : `✓ tout tient sur un trait — il reste ${-trop} px`;
+  }
+}
+mesurer();
+addEventListener('resize', mesurer);
+document.fonts && document.fonts.ready.then(mesurer);
+</script>
+</body>
+</html>

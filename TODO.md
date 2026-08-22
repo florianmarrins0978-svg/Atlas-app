@@ -53,6 +53,24 @@ planche décidera comment — et le contrôle
 `test-planning-e2e` (« la ligne d'une demi-journée ne se replie jamais ») le
 verra passer au vert.
 
+**La planche est dessinée et lui a été donnée** — sa demande du 22 août :
+*« oui, fais voir sans rien coder »*. C'est `appli/planning-equipe-sans-nom.html`
+(planche 85), liée depuis `appli/essais.html`. Elle montre l'état actuel puis
+trois issues, et **elle se mesure elle-même** : chaque ligne interroge le
+navigateur et annonce les pixels qui manquent ou qui restent, plutôt que de
+porter des chiffres écrits à la main.
+
+| Issue | Ce qu'elle change | Mesuré |
+|---|---|---|
+| — | aujourd'hui, « Équipe A ＋ » | **il manque 4 px** |
+| **A** | l'étiquette ne garde que sa lettre : « A ＋ » | il reste 38 px |
+| **B** | le mot passe à « Ap.-m. » — celui que ses boutons de pose emploient déjà | il reste 14 px |
+| **C** | l'écran lui propose « Nommer », d'un appui | il reste 13 px |
+
+**Rien n'est codé, et rien ne se code avant sa réponse** (`CLAUDE.md` §3 bis).
+Ne pas rouvrir ce point en écrivant dans `src/` : la planche attend, et « ne rien
+changer » reste une réponse recevable — la ligne se replie, elle ne perd rien.
+
 ---
 
 ## Le planning codé : trois choses que la planche ne portait pas
