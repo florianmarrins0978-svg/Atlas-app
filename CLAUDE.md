@@ -247,6 +247,36 @@ Concrètement, pour toute planche dont on attend un choix :
   parcours sont décidés, pas optionnels.
 - **Marquer une tâche terminée sans l'avoir vérifiée.** Voir §5.
 
+## 4 ter. L'ARROSAGE N'A PAS LE DROIT À L'ERREUR
+
+**Sa consigne du 22 août 2026, et elle prime sur l'envie de livrer :** *« cet
+outil n'a pas le droit à l'erreur, parce qu'énormément d'utilisateurs vont s'en
+servir. Si jamais il se trompe dans les calculs et que les réseaux d'arrosage ne
+se lèvent pas, moi je vais être dans la merde. »*
+
+**Ce que cela change concrètement.** Ailleurs dans ce produit, une erreur se
+corrige : un devis se rectifie, une facture s'annule, un planning se déplace. Un
+réseau d'arrosage est **enterré**. Le défaut ne se voit qu'en juillet, sur un
+gazon jauni, chez un client qui a déjà payé — et c'est le paysagiste qui rouvre
+la tranchée à ses frais.
+
+**Trois règles qui en découlent, et qui ne se négocient pas :**
+
+1. **Aucune valeur d'arrosage ne se devine.** Un chiffre sans source relevée ne
+   rentre pas dans le calcul : il se demande, ou le calcul refuse de conclure.
+   « Plausible » n'est pas une source.
+2. **Se tromper vers le SÛR, toujours.** Devant deux hypothèses également
+   défendables, retenir celle qui pose un arroseur de plus, jamais celle qui en
+   pose un de moins. Un arroseur en trop coûte 30 € ; un réseau qui ne se lève
+   pas coûte le chantier.
+3. **Ce qui n'est pas calculé se DIT à l'écran.** Pas dans le dépôt, pas dans un
+   commentaire : sous le plan, là où il le lit. Une réserve tue vaut un mensonge
+   — parce qu'un plan silencieux est cru complet.
+
+**Et l'inverse est vrai aussi :** un avertissement qui parle à tort s'apprend à
+être ignoré, et l'on perd le garde-fou sans s'en apercevoir. Une réserve se pose
+là où le calcul est réellement muet, nulle part ailleurs.
+
 ## 4 bis. Tout schéma d'arrosage obéit à sa planche du 17 août
 
 Règle posée le 21 août 2026, et qu'il veut **valable partout** : *« sers-t'en
