@@ -313,9 +313,15 @@
     <span class="quoi">Celle-ci s’UTILISE : on tape dans les champs, on bascule, et le bouton mène vraiment quelque part — pas au même endroit selon le choix. Volontairement absente de la page unique : elle navigue entre plusieurs écrans et prend tout le téléphone.</span>
   </a>
 
+  <a class="item" href="../../appli/planning-semaine-ouverte.html">
+    <span class="no">87</span><span class="titre">Un devis accepté, invisible</span><span class="fleche">→</span>
+    <span class="quoi">Sa panne du 22 août 2026 : <b>« un devis a été accepter mais rien n’ai visible sur mon planning »</b>, capture de la confirmation client à l’appui — « Intervention prévue le lundi 24 août ». <b>Reproduit à l’écran avant de répondre</b>, pas deviné : chantier inséré au 24, connexion réelle, capture. Le chantier <b>est bien posé</b> — <code>enregistrerReponse</code> écrit <code>date_planifiee</code> dans la <b>même transaction</b> que la réponse du client, il n’y a jamais l’une sans l’autre — et le 24 porte bien sa barre pleine dans le calendrier. Le défaut est ailleurs : la liste des planifiés <b>s’ouvre sur la semaine du jour</b> (<code>useState(() =&gt; lundiDe(aujourdHui))</code>), la trouve vide, et écrit « Aucun chantier posé cette semaine » pendant que le chantier attend trois jours plus loin. <b>L’écran lui dit donc le contraire de ce qui est vrai</b>, et la seule trace du contraire est une barre de 3 px. Trois écrans : <b>A</b> ce qu’il a, <b>B</b> s’ouvrir sur la semaine du prochain chantier quand celle du jour est vide, <b>C</b> rester sur cette semaine mais écrire où est le prochain, et y emmener. Les trois se promènent — une seule liste les dessine, jamais deux (<code>CLAUDE.md</code> §3). <b>En attente de sa réponse ; rien n’est codé.</b></span>
+  </a>
+
   <a class="item" href="../../appli/planning-planifies.html">
     <span class="no">86</span><span class="titre">Les planifiés, sans répétition</span><span class="fleche">→</span>
     <span class="quoi">Ses trois corrections du 22 août, sur la liste des planifiés de l’écran codé. <b>La durée remplace le moment</b> — <i>« ce n’est pas clair quand il y a marqué le matin et l’après-midi »</i> : la ligne dit désormais le temps que prend le chantier, lu de sa durée en base et non du nombre de demi-journées visibles ce jour-là. <b>Le compte « 1 chantier » disparaît</b> — <i>« on n’a pas besoin de cette information »</i>. <b>Et la répétition cesse</b> : <i>« sur le premier nom il faudrait qu’on clique et que ça se transforme en le menu déroulant qu’on a juste en dessous »</i> — la ligne se déplie sur place, le jour et le nom ne s’écrivent qu’une fois. Un réglage hors de l’écran compare « une demi-journée » et « une demi-journée · matin », la seule chose que la durée seule cesse de dire. <b>En attente de sa réponse ; rien n’est codé.</b></span>
+  </a>
 
   <a class="item" href="../../appli/termines-simple.html">
     <span class="no">86</span><span class="titre">« Terminés », simplifié</span><span class="fleche">→</span>
@@ -561,6 +567,7 @@
   <a class="item" href="68-retirer-le-prix-accorde.html">
     <span class="no">68</span><span class="titre">Retirer le prix accordé</span><span class="fleche">→</span>
     <span class="quoi">Son constat du 17 août : <b>« il n’y a aucun moyen de retirer les cinq pour cent »</b>. <b>Deux de ses trois phrases étaient des défauts, et ils sont réparés</b> — écrire « 0 » laissait une ligne or que le PDF n’imprimait pas, et à la voix le retrait était compris, enregistré… puis défait. Reste le <b>« petit moins »</b> qu’il demande : trois façons de le poser, sur ses chiffres à lui.</span>
+  </a>
 
   <a class="item" href="72-mes-mots-au-catalogue.html">
     <span class="no">72</span><span class="titre">Mes mots au catalogue</span><span class="fleche">→</span>

@@ -9,6 +9,29 @@ sert.
 
 ---
 
+## « RIEN N'EST VISIBLE SUR MON PLANNING » — DIAGNOSTIQUÉ, pas encore réglé
+
+Sa panne du 22 août 2026. **Si elle revient, la réponse est déjà là — ne pas la
+rechercher :**
+
+| | |
+|---|---|
+| La date est-elle perdue ? | **Non.** `enregistrerReponse` écrit `date_planifiee` sur le chantier dans la MÊME transaction que la réponse du client |
+| Le chantier est-il sur le planning ? | **Oui**, le jour porte sa barre pleine dans le mois |
+| Alors pourquoi ne le voit-il pas ? | La liste des planifiés s'ouvre sur **la semaine du jour**, la trouve vide, et écrit « Aucun chantier posé cette semaine » — pendant que le chantier attend la semaine d'après |
+| Ce qui le débloque tout de suite | toucher le jour dans le calendrier, ou la flèche **›** de la semaine |
+
+**Rien n'est codé** : la planche 87 (`appli/planning-semaine-ouverte.html`)
+attend qu'il choisisse entre A, B et C. Voir `TODO.md`.
+
+**La leçon à garder même quand ce cas sera réglé :** un écran qui montre une
+**fenêtre** — une semaine, un mois, une page — doit dire ce qu'il y a **hors de
+sa fenêtre** quand elle est vide. Sinon son « aucun » se lit « il n'y en a nulle
+part », et c'est le produit qu'on croit cassé. Chercher les autres endroits qui
+ont ce défaut avant qu'il ne les trouve.
+
+---
+
 ## « TERMINÉS » : UNE PLANCHE ATTEND SA RÉPONSE — ne pas coder l'écran
 
 Le 22 août 2026 il a écrit, capture à l'appui : *« je la trouve beaucoup trop

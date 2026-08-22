@@ -9,6 +9,50 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — un devis accepté, invisible (22 août 2026)
+
+Sa panne, capture de la confirmation client à l'appui : *« un devis a été
+accepter mais rien n'ai visible sur mon planning »*.
+
+**Ce n'est pas une perte de données, et il faut le dire avant tout le reste.**
+`enregistrerReponse` (`src/server/repositories/envois-devis.ts`) écrit
+`date_planifiee`, `creneau_debut` et `duree_demi_journees` sur le chantier dans
+la **même transaction** que la réponse du client : il n'y a jamais l'une sans
+l'autre. Le 24 août portait bien sa barre pleine dans le calendrier.
+
+**Le défaut est l'ouverture de la liste.** `PlanningClient.tsx` ouvre les
+planifiés sur la semaine du jour :
+
+```ts
+const [lundi, setLundi] = useState<JourIso>(() => lundiDe(aujourdHui));
+```
+
+Samedi 22, cette semaine est vide ; l'écran écrit donc **« Aucun chantier posé
+cette semaine »** pendant que le chantier attend le lundi 24, trois jours plus
+loin. **L'écran lui dit le contraire de ce qui est vrai**, et la seule trace du
+contraire est une barre de 3 px dans le mois. Un pas de « › », ou toucher le 24,
+et il apparaît — mais rien ne le lui dit.
+
+**Reproduit à l'écran avant de répondre**, jamais supposé : chantier inséré au
+24 en base, connexion réelle, capture. C'est ce que `CLAUDE.md` §1 bis exige.
+
+**Rien n'est codé** — sur quelle semaine s'ouvre le planning est un choix
+d'apparence (`CLAUDE.md` §3 bis). La planche est
+`appli/planning-semaine-ouverte.html` (planche 87) :
+
+| | |
+|---|---|
+| **A** | ce qu'il a aujourd'hui |
+| **B** | s'ouvrir sur la semaine du prochain chantier quand celle du jour est vide |
+| **C** | rester sur cette semaine, mais écrire où est le prochain et y emmener |
+
+**Le piège, quand ce sera codé :** ne pas dessiner la liste deux fois. Dans la
+planche, les trois variantes partagent **une seule** fonction de peinture et ne
+divergent qu'à l'endroit où la semaine est vide — deux dessins pour la même
+liste finiraient par ne plus dire pareil (`CLAUDE.md` §3).
+
+---
+
 ## ⚠ CONSIGNE — « Terminés » : MAQUETTE SEULEMENT (22 août 2026)
 
 *« Propose-moi quelque chose pour la simplifier, **ne code rien**, je veux qu'on

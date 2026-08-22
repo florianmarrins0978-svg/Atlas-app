@@ -9,6 +9,44 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Un devis accepté, invisible : le planning s'ouvre sur la mauvaise semaine
+
+*« Un devis a été accepter mais rien n'ai visible sur mon planning »* — avec la
+capture de la confirmation vue par son client : « Intervention prévue le lundi
+24 août ».
+
+**Reproduit à l'écran AVANT de répondre** (`CLAUDE.md` §1 bis), pas deviné :
+fiche d'espace lue — son banc tourne et sert bien le planning réécrit —, chantier
+inséré au 24 août en base locale, connexion réelle, capture.
+
+**Rien n'a été perdu, et c'est la première chose à dire.** `enregistrerReponse`
+écrit `date_planifiee`, `creneau_debut` et `duree_demi_journees` sur le chantier
+dans la **même transaction** que la réponse du client : il ne peut pas y avoir
+l'une sans l'autre. Le 24 août portait bien sa barre pleine dans le calendrier.
+
+**Ce qui l'a trompé.** La liste des planifiés s'ouvre sur la semaine du jour
+(`useState(() => lundiDe(aujourdHui))`). Samedi 22, cette semaine ne porte rien,
+et l'écran écrit alors **« Aucun chantier posé cette semaine »** — une phrase
+juste au mot près, et fausse pour qui la lit : le chantier est là, trois jours
+plus loin. La seule trace du contraire tient dans une barre de 3 px, de la même
+forme que celles des jours vides.
+
+**La leçon, au-delà de ce cas :** un écran qui rend compte d'une **fenêtre**
+(une semaine, un mois, une page) doit dire ce qu'il y a **hors de sa fenêtre**
+quand elle est vide. Sans quoi son « aucun » se lit comme « il n'y en a nulle
+part », et c'est le produit qu'on croit en panne.
+
+**Rien n'est codé** : sur quelle semaine le planning s'ouvre est un choix
+d'apparence, et il se dessine d'abord (`CLAUDE.md` §3 bis). Planche 87,
+`appli/planning-semaine-ouverte.html` — trois écrans qui se promènent, une
+seule fonction de peinture pour les trois.
+
+**Au passage**, deux ancres restées ouvertes dans `docs/maquettes/index.html`
+(planches 68 et 86) : chacune avalait la fiche suivante, qui devenait
+inatteignable. Trouvé en comptant les `<a>` contre les `</a>`.
+
+---
+
 ### « Terminés » : trois façons de la simplifier, et rien de codé
 
 *« Comme on a fait avec toutes les pages, on les a bien simplifiées, maintenant
