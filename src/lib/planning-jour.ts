@@ -252,6 +252,32 @@ export function departEtDuree(
  * Au-delà de deux demi-journées, le chantier dure plus d'une journée et l'écrire
  * « journée » serait faux : on dit alors combien de jours.
  */
+/**
+ * COMBIEN DE TEMPS PREND CE CHANTIER — et non pas à quelle heure il commence.
+ *
+ * **Sa demande du 22 août 2026**, capture à l'appui : *« à la place de "matin",
+ * je pense qu'il doit y avoir écrit la durée du chantier [...] parce que ce
+ * n'est pas clair quand il y a marqué le matin et l'après-midi »*. Éprouvée sur
+ * la planche 86, puis retenue le jour même — *« c'est exactement ce que je
+ * veux »*.
+ *
+ * **Elle compte la DURÉE du chantier, jamais les demi-journées visibles ce
+ * jour-là.** Un chantier de trois jours n'occupe que deux demi-journées sur la
+ * journée qu'on regarde : compter ce qu'on voit lui ferait annoncer « une
+ * journée », c'est-à-dire exactement le malentendu qu'il demande de faire
+ * disparaître. La première version de la planche tombait dans ce piège.
+ *
+ * Trois demi-journées valent « une journée et demie » : arrondir à deux jours
+ * ferait réserver une journée qu'on n'a pas vendue, et l'arrondir à une la
+ * ferait perdre.
+ */
+export function ditLaDuree(duree: number): string {
+  if (duree <= 1) return "une demi-journée";
+  if (duree === 2) return "une journée";
+  if (duree === 3) return "une journée et demie";
+  return `${Math.ceil(duree / 2)} jours`;
+}
+
 export function ditLeQuand(moment: Demi, duree: number): string {
   if (duree > 2) {
     const jours = Math.ceil(duree / 2);

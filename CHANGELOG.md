@@ -9,6 +9,53 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Les planifiés : la durée, plus de compte gris, plus de répétition
+
+*« C'est exactement ce que je veux »* — planche 86 retenue le 22 août 2026, avec
+une correction, puis : *« code-moi exactement ça »*.
+
+**Ce que l'écran dit maintenant, et pourquoi.**
+
+| Avant | Maintenant | Sa raison |
+|---|---|---|
+| « matin » en doré | **la durée** — « une demi-journée », « une journée », « 3 jours » | *« ce n'est pas clair quand il y a marqué le matin et l'après-midi »* |
+| « 1 chantier · complet » en gris | rien | *« on n'a pas besoin d'avoir cette information-là »* |
+| le jour et le nom réécrits sous la ligne | la ligne **se déplie sur place** | *« il y a une répétition qui se crée : deux fois la date, deux fois le nom »* |
+| la demi-journée libre après la feuille | **sous le matin**, avant la feuille | *« il doit rester en dessous du matin même s'il est libre »* |
+
+**La durée compte le CHANTIER, jamais ce qui est visible ce jour-là**
+(`ditLaDuree`, `src/lib/planning-jour.ts`). Un chantier de trois jours n'occupe
+que deux demi-journées sur la journée qu'on regarde : compter celles-là lui
+ferait annoncer « une journée » — le malentendu même qu'il demande de faire
+disparaître. La première version de la planche est tombée dedans.
+
+**La demi-journée libre appartient à la JOURNÉE, pas au chantier** : c'est pour
+cela qu'elle se rangeait après lui, donc après sa feuille, à trois écrans du
+matin qu'elle complète. **Aucun contrôle pur ne pouvait le voir** —
+`blocsDeLaJournee` la mettait déjà au bon rang, et c'est la feuille, rendue en
+dehors de ces blocs, qui s'intercalait. Le contrôle neuf mesure donc les trois
+ordonnées à l'écran, et refuse de conclure sur un élément absent.
+
+**Le geste d'ajout a été extrait** (`AjoutAuJour`) : il appartient au jour, et
+le laisser dans le volet d'un chantier l'aurait affiché autant de fois qu'il y a
+de chantiers ouverts.
+
+**⚠ Une perte à lui signaler, et elle n'est pas décidée.** Le chevron « › » de
+la ligne des planifiés MENAIT au chantier ; sur la planche il **pivote**. Or la
+feuille de chantier n'offre aucun autre chemin vers le devis — c'est-à-dire
+exactement ce qu'il signalait le 8 août 2026 : *« il se range dans les chantiers
+planifiés, mais comment moi je fais pour avoir accès au devis ? »*. La planche a
+été codée telle qu'il l'a validée ; la question lui est posée plutôt que tranchée
+sans lui (`TODO.md`).
+
+**Les contrôles adaptés, jamais le libellé remis** (`CLAUDE.md` §5 bis) : celui
+qui réclamait « 1 chantier » vérifie désormais que le compte a bien disparu et
+que la charge se lit encore aux pastilles ; celui qui lisait « matin » sur la
+ligne lit la durée ; celui qui visait le chantier par un `href` le vise par son
+nom.
+
+---
+
 ### Un jour déjà pris pouvait être proposé — et le client pouvait le retenir
 
 *« Je peux proposer le 24 alors qu'un client a validé le 24 — corrige-moi ça !

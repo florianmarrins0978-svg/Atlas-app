@@ -25,8 +25,7 @@ import {
   blocsDeLaJournee,
   DEMIS,
   ditLeCompteDemi,
-  ditLeCompteDuJour,
-  ditLeQuand,
+  ditLaDuree,
   ditLesEquipes,
   etatDemi,
   MOT_DEMI,
@@ -732,8 +731,17 @@ export default function PlanningClient({
                 const toutes = [...new Set([...c.equipes.matin, ...c.equipes.apres_midi])].sort(
                   (a, b) => a - b
                 );
+                const deplie = carteListe?.apres === c.id;
+                // **Le même nom REFERME ce qu'il a ouvert.** Sa correction du
+                // 22 août : la ligne « se transforme en le menu déroulant »,
+                // elle ne le pousse pas plus bas à chaque appui.
                 const ouvrir = () => {
                   setOuvert(null);
+                  if (deplie) {
+                    setCarteListe(null);
+                    setFeuille(null);
+                    return;
+                  }
                   setCarteListe({ apres: c.id, jour });
                   setFeuille({ chantierId: c.id, cle: `liste:${c.id}` });
                 };
@@ -753,11 +761,17 @@ export default function PlanningClient({
                         }}
                       >
                         {c.nom}
-                        <span className="ml-2 text-[12.5px]" style={{ color: colors.or }}>
-                          {ditLeQuand(
-                            c.creneauDebut === "apres_midi" ? "apres_midi" : "matin",
-                            c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
-                          )}
+                        {/* **La durée, jamais le moment** — sa demande du
+                            22 août, retenue sur la planche 86 : *« ce n'est pas
+                            clair quand il y a marqué le matin et
+                            l'après-midi »*. La demi-journée se lit deux lignes
+                            plus bas, sur la ligne MATIN. */}
+                        <span
+                          data-atlas="duree-planifiee"
+                          className="ml-2 text-[12.5px]"
+                          style={{ color: colors.or }}
+                        >
+                          {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
                         </span>
                       </button>
                       {/* La pastille MÈNE AU JOUR au lieu d'ouvrir un choix : un
@@ -788,25 +802,56 @@ export default function PlanningClient({
                           journée et la feuille. Un chevron promet qu'on PART
                           quelque part, un nom qu'il se déplie : les deux gestes
                           se distinguent d'eux-mêmes. */}
-                      <Link
-                        href={`/chantiers/${c.id}`}
-                        aria-label={`Ouvrir le chantier — ${c.nom}`}
-                        className="cursor-pointer px-0.5 text-[19px] no-underline"
-                        style={{ color: colors.chevron }}
+                      {/* **Le chevron PIVOTE au lieu de partir.** Sur la
+                          planche 86 il annonce un repli, pas un départ — et
+                          deux gestes différents sur la même ligne (le nom
+                          déplie, le chevron s'en va) était précisément ce qui
+                          rendait l'écran illisible.
+
+                          **Le chemin vers la fiche du chantier ne se perd pas
+                          pour autant** : il vit dans la feuille de chantier, qui
+                          s'ouvre juste en dessous. C'est ce qui répond à sa
+                          question du 8 août 2026 — *« il se range dans les
+                          chantiers planifiés, mais comment moi je fais pour
+                          avoir accès au devis ? »* — et la réponse doit rester
+                          atteignable, sinon un chantier posé devient
+                          inaccessible. */}
+                      <span
+                        data-atlas="chevron-planifie"
+                        aria-hidden="true"
+                        className="flex-shrink-0 px-0.5 text-[19px]"
+                        style={{
+                          color: colors.chevron,
+                          transition: "transform .22s cubic-bezier(.22,.61,.36,1)",
+                          transform: deplie ? "rotate(90deg)" : "none",
+                          display: "inline-block",
+                        }}
                       >
                         ›
-                      </Link>
+                      </span>
                     </div>
-                    {carteListe?.apres === c.id && (
+                    {deplie && (
                       <CarteDuJour
                         cle={`liste:${c.id}`}
                         jour={carteListe.jour}
+                        seulement={c.id}
                         {...gestesCarte}
                       />
                     )}
                   </div>
                 );
               })}
+              {/* **Le geste d'ajout suit la JOURNÉE, pas le dernier volet.**
+                  C'est ce que montre la planche 86 : un seul « + » sous les
+                  chantiers du jour, quel que soit le nombre de volets ouverts. */}
+              <AjoutAuJour
+                cle={`ajout:${jour}`}
+                jour={jour}
+                ouvert={ouvert}
+                setOuvert={setOuvert}
+                sansDate={sansDate}
+                poser={poser}
+              />
             </div>
           ))
         )}
@@ -1238,6 +1283,109 @@ type GestesCarte = {
 };
 
 /**
+ * LE GESTE D'AJOUT D'UNE JOURNÉE — écrit une fois, posé à deux endroits.
+ *
+ * **Il appartient au JOUR, pas au chantier.** Sur la planche 86 il vit sous la
+ * liste des chantiers de la journée, après le dernier volet ; le laisser dans
+ * le volet d'un chantier le ferait apparaître autant de fois qu'il y a de
+ * chantiers, et laisserait croire qu'on ajoute quelque chose À ce chantier.
+ *
+ * Sa demande du 21 août tient toujours : *« le "+ Ajouter un chantier", tu le
+ * mets en dessous, un rond avec un plus ; je ne veux pas qu'il soit affilié à
+ * la case matin ou après-midi »*.
+ */
+function AjoutAuJour({
+  cle,
+  jour,
+  ouvert,
+  setOuvert,
+  sansDate,
+  poser,
+}: {
+  cle: string;
+  jour: JourIso;
+} & Pick<GestesCarte, "ouvert" | "setOuvert" | "sansDate" | "poser">) {
+  return (
+    <>
+      {ouvert?.quoi === "ajout-qui" && ouvert.cle === cle ? (
+        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+          {sansDate.length === 0 ? (
+            <p className="m-0 text-[12px]" style={{ color: colors.muted }}>
+              Aucun chantier n’attend de jour.
+            </p>
+          ) : (
+            <Choisir>
+              {sansDate.map((s) => (
+                <Petit
+                  key={s.id}
+                  data-qui={s.id}
+                  onClick={() =>
+                    setOuvert({ quoi: "ajout-quand", cle, chantierId: s.id })
+                  }
+                >
+                  {s.nom}
+                </Petit>
+              ))}
+            </Choisir>
+          )}
+        </div>
+      ) : ouvert?.quoi === "ajout-quand" && ouvert.cle === cle ? (
+        // **Le nom choisi prend la forme des autres lignes** — sa demande du
+        // 21 août : « j'aimerais que le nom se mette au même niveau que ceux
+        // qui sont déjà sélectionnés ». En petit gris à côté des boutons, il
+        // se lisait comme une étiquette ; en serif, il se lit comme le
+        // chantier qu'il va devenir.
+        <div
+          data-atlas="en-attente"
+          className="mt-3.5 flex flex-wrap items-center gap-2 pt-3"
+          style={{ borderTop: `1px solid ${colors.line}` }}
+        >
+          <span
+            className="flex-1"
+            style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2, color: colors.ink }}
+          >
+            {sansDate.find((s) => s.id === ouvert.chantierId)?.nom ?? ""}
+          </span>
+          <span className="flex flex-shrink-0 gap-1.5">
+            {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
+              <Petit
+                key={v}
+                data-quand={v}
+                onClick={() => poser(ouvert.chantierId, jour, v)}
+              >
+                {MOT_QUAND[v]}
+              </Petit>
+            ))}
+          </span>
+        </div>
+      ) : (
+        <div
+          className="mt-3.5 flex items-center justify-center gap-2.5 pt-3 text-[12.5px]"
+          style={{ borderTop: `1px solid ${colors.line}`, color: colors.inkSoft }}
+        >
+          <button
+            type="button"
+            data-atlas="ajouter"
+            aria-label="Ajouter un chantier"
+            onClick={() => setOuvert({ quoi: "ajout-qui", cle })}
+            className="h-[34px] w-[34px] cursor-pointer rounded-full text-[19px] leading-none"
+            style={{
+              border: `1px solid ${colors.or}`,
+              background: "transparent",
+              color: colors.or,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            +
+          </button>
+          <span>Ajouter un chantier</span>
+        </div>
+      )}
+    </>
+  );
+}
+
+/**
  * LA FICHE D'UNE JOURNÉE — écrite UNE fois, branchée à deux endroits.
  *
  * Sous le calendrier quand on touche un jour, et sous une ligne des planifiés.
@@ -1252,6 +1400,7 @@ type GestesCarte = {
 function CarteDuJour({
   cle,
   jour,
+  seulement,
   nombreEquipes,
   ouvert,
   setOuvert,
@@ -1267,7 +1416,28 @@ function CarteDuJour({
   retirerDuJour,
   poser,
   taches,
-}: { cle: string; jour: JourIso } & GestesCarte) {
+}: {
+  cle: string;
+  jour: JourIso;
+  /**
+   * Le chantier SEUL qu'on déplie, quand la carte sort d'une ligne des
+   * planifiés.
+   *
+   * **Sa correction du 22 août 2026 :** *« quand je clique sur le nom du
+   * chantier, il y a une répétition qui se crée : il y a marqué deux fois la
+   * date, deux fois le nom. Or sur le premier nom, il faudrait qu'on clique et
+   * que ça se transforme en le menu déroulant qu'on a juste en dessous. »*
+   *
+   * La ligne des planifiés porte déjà le jour, le nom, la durée et l'équipe :
+   * les redire dessous, c'est écrire deux fois la même chose à deux centimètres
+   * d'écart. La carte ne garde alors que ce que la ligne ne dit pas — les
+   * demi-journées, ce qui reste libre, et la feuille.
+   *
+   * Absent sous le calendrier : là, la carte EST le titre du jour, et elle
+   * porte tous les chantiers.
+   */
+  seulement?: string;
+} & GestesCarte) {
   const feuilleIci = feuille && feuille.cle === cle ? feuille.chantierId : null;
 
   if (estWeekEndIso(jour)) {
@@ -1294,17 +1464,18 @@ function CarteDuJour({
   const duJour = chantiersDuJour(jour);
   const occupe = (c: ChantierPlanning, demi: Demi) =>
     occupationDe(jour, demi).pris.some((x) => x.id === c.id);
-  const blocs = blocsDeLaJournee(duJour, occupe);
-  const chargeMax = Math.max(
-    occupationDe(jour, "matin").charge,
-    occupationDe(jour, "apres_midi").charge
+  // **Le chantier déplié, et ce qui reste libre — dans cet ordre.** Sa
+  // correction du 22 août 2026 : *« l'après-midi de libre passe sous la feuille
+  // de chantier, or il doit rester en dessous du matin même s'il est libre ;
+  // ça ne change rien »*. La demi-journée vide appartient à la journée, pas au
+  // chantier : elle se rangeait donc après lui, c'est-à-dire après sa feuille,
+  // à trois écrans du matin qu'elle complète.
+  //
+  // Les autres chantiers du jour, eux, s'effacent : la ligne des planifiés leur
+  // en donne une à chacun, et les redire ici les écrirait deux fois.
+  const blocs = blocsDeLaJournee(duJour, occupe).filter(
+    (b) => !seulement || b.type === "libre" || b.chantier.id === seulement
   );
-
-  // Le compte de la journée s'écrit en tête du PREMIER chantier, une seule
-  // fois — sa correction du 21 août. On repère son rang plutôt que de basculer
-  // un drapeau pendant le rendu : React peut rejouer un rendu, et le drapeau
-  // resterait alors levé d'un tour sur l'autre.
-  const rangDuPremierChantier = blocs.findIndex((b) => b.type === "chantier");
 
   return (
     <>
@@ -1314,12 +1485,14 @@ function CarteDuJour({
         className="mx-[18px] mt-4 rounded-[10px] px-[15px] py-[14px]"
         style={{ background: colors.card }}
       >
-        <p
-          className="mb-3.5 text-center text-[12.5px] font-bold uppercase leading-none"
-          style={{ letterSpacing: "0.14em", color: colors.ink }}
-        >
-          {jourLisibleCourt(jour)}
-        </p>
+        {!seulement && (
+          <p
+            className="mb-3.5 text-center text-[12.5px] font-bold uppercase leading-none"
+            style={{ letterSpacing: "0.14em", color: colors.ink }}
+          >
+            {jourLisibleCourt(jour)}
+          </p>
+        )}
 
         {blocs.map((bloc, rang) => {
           if (bloc.type === "libre") {
@@ -1352,7 +1525,6 @@ function CarteDuJour({
           }
 
           const c = bloc.chantier;
-          const premier = rang === rangDuPremierChantier;
 
           return (
             <div
@@ -1360,35 +1532,33 @@ function CarteDuJour({
               data-atlas="bloc-chantier"
               style={{ marginTop: rang === 0 ? 0 : 16 }}
             >
-              <div className="flex items-baseline gap-2.5">
-                <button
-                  type="button"
-                  data-atlas="nom-du-jour"
-                  onClick={() =>
-                    setFeuille(
-                      feuilleIci === c.id ? null : { chantierId: c.id, cle }
-                    )
-                  }
-                  className="flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
-                  style={{
-                    fontFamily: font.display,
-                    fontSize: 19,
-                    lineHeight: 1.2,
-                    color: colors.ink,
-                  }}
-                >
-                  {c.nom}
-                </button>
-                {premier && (
-                  <span
-                    data-atlas="compte-jour"
-                    className="flex-shrink-0 text-[12px]"
-                    style={{ color: colors.muted }}
+              {/* **Le compte « 1 chantier · complet » a disparu.** Sa
+                  demande du 22 août : *« supprime-moi la notion "un chantier"
+                  en gris ; on n'a pas besoin d'avoir cette information-là »*.
+                  Ce que la journée porte se voit déjà aux pastilles de chaque
+                  demi-journée, et au calendrier juste au-dessus. */}
+              {!seulement && (
+                <div className="flex items-baseline gap-2.5">
+                  <button
+                    type="button"
+                    data-atlas="nom-du-jour"
+                    onClick={() =>
+                      setFeuille(
+                        feuilleIci === c.id ? null : { chantierId: c.id, cle }
+                      )
+                    }
+                    className="flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
+                    style={{
+                      fontFamily: font.display,
+                      fontSize: 19,
+                      lineHeight: 1.2,
+                      color: colors.ink,
+                    }}
                   >
-                    {ditLeCompteDuJour(duJour.length, chargeMax)}
-                  </span>
-                )}
-              </div>
+                    {c.nom}
+                  </button>
+                </div>
+              )}
 
               {bloc.demis.map((demi) => {
                 const o = occupationDe(jour, demi);
@@ -1492,85 +1662,15 @@ function CarteDuJour({
           );
         })}
 
-        {/* **Un seul bouton d'ajout, sous la journée — sa demande du 21 août :**
-            *« le "+ Ajouter un chantier", tu le mets en dessous, un rond avec un
-            plus ; je ne veux pas qu'il soit affilié à la case matin ou
-            après-midi, ça surcharge et on ne comprend plus trop. »*
-            Le moment se choisit APRÈS : d'abord QUI, ensuite QUAND — se tromper
-            de client n'oblige plus à revenir en arrière. */}
-        {ouvert?.quoi === "ajout-qui" && ouvert.cle === cle ? (
-          <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
-            {sansDate.length === 0 ? (
-              <p className="m-0 text-[12px]" style={{ color: colors.muted }}>
-                Aucun chantier n’attend de jour.
-              </p>
-            ) : (
-              <Choisir>
-                {sansDate.map((s) => (
-                  <Petit
-                    key={s.id}
-                    data-qui={s.id}
-                    onClick={() =>
-                      setOuvert({ quoi: "ajout-quand", cle, chantierId: s.id })
-                    }
-                  >
-                    {s.nom}
-                  </Petit>
-                ))}
-              </Choisir>
-            )}
-          </div>
-        ) : ouvert?.quoi === "ajout-quand" && ouvert.cle === cle ? (
-          // **Le nom choisi prend la forme des autres lignes** — sa demande du
-          // 21 août : « j'aimerais que le nom se mette au même niveau que ceux
-          // qui sont déjà sélectionnés ». En petit gris à côté des boutons, il
-          // se lisait comme une étiquette ; en serif, il se lit comme le
-          // chantier qu'il va devenir.
-          <div
-            data-atlas="en-attente"
-            className="mt-3.5 flex flex-wrap items-center gap-2 pt-3"
-            style={{ borderTop: `1px solid ${colors.line}` }}
-          >
-            <span
-              className="flex-1"
-              style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2, color: colors.ink }}
-            >
-              {sansDate.find((s) => s.id === ouvert.chantierId)?.nom ?? ""}
-            </span>
-            <span className="flex flex-shrink-0 gap-1.5">
-              {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
-                <Petit
-                  key={v}
-                  data-quand={v}
-                  onClick={() => poser(ouvert.chantierId, jour, v)}
-                >
-                  {MOT_QUAND[v]}
-                </Petit>
-              ))}
-            </span>
-          </div>
-        ) : (
-          <div
-            className="mt-3.5 flex items-center justify-center gap-2.5 pt-3 text-[12.5px]"
-            style={{ borderTop: `1px solid ${colors.line}`, color: colors.inkSoft }}
-          >
-            <button
-              type="button"
-              data-atlas="ajouter"
-              aria-label="Ajouter un chantier"
-              onClick={() => setOuvert({ quoi: "ajout-qui", cle })}
-              className="h-[34px] w-[34px] cursor-pointer rounded-full text-[19px] leading-none"
-              style={{
-                border: `1px solid ${colors.or}`,
-                background: "transparent",
-                color: colors.or,
-                WebkitTapHighlightColor: "transparent",
-              }}
-            >
-              +
-            </button>
-            <span>Ajouter un chantier</span>
-          </div>
+        {!seulement && (
+          <AjoutAuJour
+            cle={cle}
+            jour={jour}
+            ouvert={ouvert}
+            setOuvert={setOuvert}
+            sansDate={sansDate}
+            poser={poser}
+          />
         )}
       </div>
 
