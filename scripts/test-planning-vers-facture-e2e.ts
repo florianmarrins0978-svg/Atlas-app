@@ -187,7 +187,31 @@ async function main() {
     const { nom, chantierId } = await chantierPlanifie(page, "devis", -4);
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
 
-    await page.locator(`text=${nom}`).first().click();
+    // **La liste des planifiés est HEBDOMADAIRE depuis la planche 84** : un
+    // chantier posé dans quatre jours peut tomber la semaine suivante, et la
+    // liste ne le montre alors pas. On touche son jour dans le calendrier —
+    // c'est le geste du patron, et il amène la liste sur SA semaine.
+    const jour = (
+      await inspecter(`SELECT date_planifiee::text AS j FROM chantiers WHERE id = $1`, [chantierId], 1)
+    ).rows[0].j as string;
+    for (let i = 0; i < 12; i++) {
+      if (await page.locator(`[data-atlas="grille-mois"] [data-jour="${jour}"]`).count()) break;
+      await page.click('button[aria-label="Mois suivant"]');
+      await page.waitForTimeout(200);
+    }
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${jour}"]`);
+    await page.waitForTimeout(600);
+
+    // **Le CHEVRON, et non le nom.** Depuis la planche 84, le nom d'un chantier
+    // planifié déplie sa journée et sa feuille sur place ; c'est le chevron qui
+    // MÈNE au chantier. Le geste a changé de forme, jamais d'objet : sans lui,
+    // un chantier posé quitte l'onglet « Chantiers » et devient inatteignable —
+    // le cul-de-sac du 8 août 2026, mot pour mot.
+    await page
+      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`)
+      .first()
+      .getByRole("link", { name: `Ouvrir le chantier — ${nom}` })
+      .click();
     // **On attend l'écran, pas l'URL.** Ces liens font une navigation côté
     // client : `waitForURL` ne la voit pas, même en « commit », et le contrôle
     // échouait sur une page pourtant bien ouverte — il accusait le code au lieu
@@ -220,26 +244,74 @@ async function main() {
     );
   });
 
-  await test("« Créer la facture » s'atteint depuis le planning, et prépare la facture", async () => {
+  await test("« Créer la facture » s'atteint sans passer par la fiche, et la prépare", async () => {
     // « avoir un bouton à côté fin de chantier pour que ça crée automatiquement
     // la facturation ». Ce qu'il crée est un brouillon, jamais une facture
     // partie — l'arrêt 3 reste (AGENT.md §2.3).
     //
-    // **Le bouton est passé de la ligne à la feuille le 12 août 2026**, à sa
-    // demande : *« il faut cliquer sur le chevron, la page s'ouvre avec le GPS
-    // et tout machin, et là tu mets créer la facture »*. Ce que cette suite
-    // garde est inchangé : depuis le planning, et sans passer par la fiche, on
-    // atteint la facture. C'est le cul-de-sac du 8 août qu'elle empêche de
-    // revenir, pas une position à l'écran.
-    const { chantierId, nom } = await chantierPlanifie(page, "bouton", -6);
-    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    // ─────────────────────────────────────────────────────────────────────
+    // **LE CHEMIN A CHANGÉ DEUX FOIS, L'OBJET JAMAIS.** Ce que cette suite
+    // défend, c'est le cul-de-sac du 8 août — *« il se range dans les chantiers
+    // planifiés, mais comment moi je fais pour avoir accès au devis ? »* — et
+    // non une position à l'écran.
+    //
+    //   · 8 août : sur la ligne du planning ;
+    //   · 12 août : dans la feuille du chevron, à sa demande — *« il faut
+    //     cliquer sur le chevron [...] et là tu mets créer la facture »* ;
+    //   · **21 août : dans le fil des « Terminés »**, seul chemin restant. Le
+    //     planning refait (planche 84) ne porte pas ce bouton : la feuille qu'il
+    //     a validée est celle que le SALARIÉ emporte, sans un prix. Y remettre
+    //     « Créer la facture » aurait été ajouter à un écran qu'il venait de
+    //     choisir plus simple.
+    //
+    // Le chemin existe donc toujours, et sans passer par la fiche — c'est ce
+    // que le contrôle continue de prouver (`TODO.md` en garde la trace, au cas
+    // où il voudrait le revoir au planning).
+    // ─────────────────────────────────────────────────────────────────────
+    // **Une date PASSÉE, et c'est ce qui le range dans « Terminés »** : le
+    // travail a eu lieu (`src/lib/onglet-chantier.ts`). Avec une date à venir,
+    // le chantier serait au planning et ce contrôle chercherait au mauvais
+    // endroit — en accusant le fil d'être vide.
+    const { chantierId, nom } = await chantierPlanifie(page, "bouton", 6);
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
 
-    // Le chevron de CE chantier, et non le premier de l'écran : avec plusieurs
-    // chantiers au planning, viser le premier clôturerait celui du voisin sans
-    // que le contrôle s'en aperçoive.
-    await page.getByRole("button", { name: `Y aller — ${nom}` }).click();
-    await page.waitForSelector("text=Y aller", { timeout: 10000 });
-    await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).click();
+    // La ligne de CE chantier, et non la première de l'écran : avec plusieurs
+    // chantiers terminés, viser la première clôturerait celle du voisin sans que
+    // le contrôle s'en aperçoive.
+    // **La ligne de CE chantier, visée dans SA rangée.** Le fil des terminés
+    // empile ses lignes dans une grille : viser le lien tout seul le fait
+    // recouvrir par la rangée voisine, et Playwright tourne en rond jusqu'à
+    // l'expiration en accusant un écran parfaitement juste.
+    //
+    // **Et le volet « À facturer » se DÉPLIE d'abord** — c'est le geste du
+    // patron, pas une commodité de contrôle. Un chantier terminé que rien ne
+    // facture encore vit dans ce volet, une grille qui passe de `0fr` à `1fr` :
+    // le lien est bien dans la page, Playwright le dit « visible », et le clic
+    // rebondit indéfiniment sur le pli. Sans ce geste, le contrôle accusait un
+    // écran parfaitement juste, quarante-cinq secondes durant.
+    const volet = page.locator('[data-atlas="encart-a-facturer"]').first();
+    await volet.waitFor({ state: "visible", timeout: 15000 });
+    if ((await volet.getAttribute("aria-expanded")) !== "true") await volet.click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-atlas="encart-a-facturer"]')?.getAttribute("aria-expanded") ===
+        "true",
+      undefined,
+      { timeout: 5000 }
+    );
+    // Le dépliage dure 0,42 s : cliquer pendant qu'il court viserait une ligne
+    // qui bouge encore.
+    await page.waitForTimeout(600);
+
+    const rangee = page.locator(`[data-atlas="ligne-terminee"]:has-text("${nom}")`).first();
+    await rangee.waitFor({ state: "visible", timeout: 15000 });
+    const ligne = rangee.locator(`a[href="/chantiers/${chantierId}/facture"]`);
+    assert.equal(
+      await ligne.count(),
+      1,
+      "le chantier terminé n'est pas dans le fil : le chemin vers la facture est coupé"
+    );
+    await ligne.click();
     await page.waitForSelector("text=Le chantier est réalisé ?", { timeout: 15000 });
 
     await page.click("text=Créer la facture");

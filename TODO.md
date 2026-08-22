@@ -9,28 +9,118 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ CONSIGNE EN COURS — le planning : MAQUETTE SEULEMENT
+## ~~⚠ CONSIGNE — le planning : MAQUETTE SEULEMENT~~ — **LEVÉE le 21 août 2026**
 
-**Sa consigne du 21 août 2026, à lire avant de toucher à `src/app/planning/` :**
+Sa consigne du 21 août au matin — *« ne code rien, je veux qu'on finisse toute
+la page ensemble en maquette dynamique [...] une fois que tout est validé, je te
+dirai c'est bon, tu peux coder »* — **a été levée le soir même** :
 
-> *« Attends, attends, ne code rien. Je veux qu'on finisse toute la page
-> ensemble en maquette dynamique, pour que je puisse essayer : il faut que
-> j'aille cliquer, pouvoir modifier, changer, voir ce que ça donne. Une fois que
-> tout est validé, tout est bon, dans ce cas-là je te dirai "c'est bon, tu peux
-> coder". En attendant, tu ne codes rien. Tu ne me fais que des maquettes
-> dynamiques, c'est tout. »*
+> *« Maintenant tu peux coder cette version de la maquette ! Ne modifie rien !
+> Ne change rien ! Code trait pour trait cette maquette. Prends le temps qu'il
+> faut, je veux aucune erreur, aucun défaut ! »*
 
-**Ce que cela veut dire, littéralement :** tant qu'il n'a pas dit « c'est bon,
-tu peux coder », **aucune ligne de `src/` ne change pour le planning**. Pas même
-« un petit bout pour qu'il essaie en vrai » — il essaie sur la maquette, c'est
-tout l'objet de la consigne.
+La planche retenue est `appli/planning-simple.html` (planche 84), essayée deux
+soirées durant et corrigée neuf fois. Ce qu'elle a coûté et ce qu'elle a
+changé — jusqu'à une migration — est dans `CHANGELOG.md` du 21 août.
 
-**Et la maquette doit se MANIPULER**, pas seulement se regarder : il veut poser
-un chantier, changer une équipe, déplacer, retirer, et voir ce que ça donne. Une
-planche qui se contente d'afficher un état ne répond pas à la demande.
+**Ce qui reste vrai après coup :** un écran du planning se dessine toujours
+avant de se coder (`CLAUDE.md` §3 bis), et la planche 84 reste la référence.
+Toute correction du planning se porte D'ABORD sur elle, sinon les deux
+divergent — et c'est elle qu'il ouvre sur son téléphone.
 
-Le point de validation, quand il viendra, se consigne ici même — et c'est ce
-jour-là seulement que `src/app/planning/` s'ouvre.
+### Une équipe SANS NOM fait déborder sa ligne de quatre pixels — à lui montrer
+
+Trouvé le 21 août 2026 en regardant une capture, et mesuré : sur la fiche du
+jour, une ligne de demi-journée aligne la pastille (11 px), le mot (70 px),
+l'équipe, « Déplacer » (68 px) et « Retirer » (56 px), séparés de 8 px, dans
+324 px.
+
+| Étiquette de l'équipe | Largeur | La ligne |
+|---|---|---|
+| « Paul », « Julien » — ses équipes nommées | ~63 px | tient |
+| « Équipe ? » — aucune équipe choisie, ce que la planche dessine | 75 px | tient (312/324) |
+| **« Équipe A » — une équipe existe mais n'a pas de nom** | **91 px** | **déborde de 4 px : « Retirer » passe à la ligne** |
+
+**Pourquoi ce n'est pas corrigé.** Le réparer veut dire retoucher un dessin
+qu'il a validé — rétrécir le mot, resserrer l'écart, ou raccourcir l'étiquette
+de repli. C'est un choix d'apparence, et un choix d'apparence se dessine avant
+de se coder (`CLAUDE.md` §3 bis). La planche 84 ne montre jamais cette
+étiquette : elle n'a donc rien tranché.
+
+**Ce qu'il faut lui demander :** ce cas l'intéresse-t-il ? Il arrive à une
+entreprise qui a réglé deux équipes sans les nommer. S'il le veut réglé, la
+planche décidera comment — et le contrôle
+`test-planning-e2e` (« la ligne d'une demi-journée ne se replie jamais ») le
+verra passer au vert.
+
+**La planche est dessinée et lui a été donnée** — sa demande du 22 août :
+*« oui, fais voir sans rien coder »*. C'est `appli/planning-equipe-sans-nom.html`
+(planche 85), liée depuis `appli/essais.html`. Elle montre l'état actuel puis
+trois issues, et **elle se mesure elle-même** : chaque ligne interroge le
+navigateur et annonce les pixels qui manquent ou qui restent, plutôt que de
+porter des chiffres écrits à la main.
+
+| Issue | Ce qu'elle change | Mesuré |
+|---|---|---|
+| — | aujourd'hui, « Équipe A ＋ » | **il manque 4 px** |
+| **A** | l'étiquette ne garde que sa lettre : « A ＋ » | il reste 38 px |
+| **B** | le mot passe à « Ap.-m. » — celui que ses boutons de pose emploient déjà | il reste 14 px |
+| **C** | l'écran lui propose « Nommer », d'un appui | il reste 13 px |
+
+**Rien n'est codé, et rien ne se code avant sa réponse** (`CLAUDE.md` §3 bis).
+Ne pas rouvrir ce point en écrivant dans `src/` : la planche attend, et « ne rien
+changer » reste une réponse recevable — la ligne se replie, elle ne perd rien.
+
+---
+
+## Le planning codé : trois choses que la planche ne portait pas
+
+Elles existaient sur l'écran d'avant et **ne figurent pas** sur la planche qu'il
+a validée. Elles ont donc été retirées de l'écran — « trait pour trait » — mais
+elles ne sont pas perdues : le code serveur est là, et il suffit de le
+rebrancher s'il les redemande.
+
+| Ce qui a quitté l'écran | Ce qui reste en place | Ce qu'il faut savoir |
+|---|---|---|
+| **« Créer la facture »**, dans la feuille du chevron (sa demande du 12 août) | La route et l'écran de facture | Le chemin du planning vers la facture est fermé. **L'autre chemin reste ouvert** : chaque ligne du fil des « Terminés » y mène. Ce n'est donc pas le cul-de-sac du 8 août, mais c'est un appui de plus |
+| **« Dans mon agenda »**, la liste de ses rendez-vous extérieurs (9 août) | `periodesOccupeesExterieures`, et l'agenda continue de commander les dates proposées au client | Il ne les LIT plus sur cet écran. Le bandeau qui prévient d'un agenda en panne, lui, est resté |
+| **La proposition de chantier voisin** pour combler une demi-journée (13 août) | `src/server/planning/appariement.ts`, intact et toujours éprouvé (`scripts/test-appariement-chantiers.ts`, `scripts/test-appariement-demi-journees.ts`) | Le calcul de distance existe toujours ; seul le bandeau qui l'affichait a été retiré, l'écran retenu n'en portant pas |
+
+**À lui demander**, sans le noyer : veut-il les revoir, et où ? Rien ne presse —
+il vient de choisir un écran plus simple, et les remettre sans qu'il le demande
+serait défaire ce qu'il a validé.
+
+---
+
+## 🔴 TROIS MIGRATIONS PASSÉES N'ONT RIEN REPRIS — trouvé le 21 août 2026
+
+**Comment on l'a su.** En écrivant la migration 0058, sa reprise de données a
+été rejouée sur une base à l'état d'avant, **avec des données dedans**. Elle
+recopiait **zéro ligne, sans la moindre erreur** : `chantiers` porte `FORCE ROW
+LEVEL SECURITY`, la politique s'applique **même au propriétaire**, et les
+migrations tournent sous `atlas_owner` — partout, chez lui comme en CI. Sans
+`app.entreprise_id`, une migration ne voit RIEN.
+
+0058 est corrigée (elle boucle par entreprise, comme 0036 et 0037) et
+`scripts/test-migrations-sous-rls.ts` garde la porte pour les suivantes.
+
+**Mais le contrôle en a trouvé trois autres, déjà appliquées** — elles ne se
+rejoueront jamais, `_migrations` les a enregistrées :
+
+| Migration | Ce qui n'a rien fait | Ce que ça coûte |
+|---|---|---|
+| `0040_conditions_documents.sql` | `UPDATE devis SET validite_jours = 30` | **Borné.** La ligne « Validité » ne s'imprime pas sur les anciens devis — et ceux qui sont partis sont figés de toute façon |
+| `0039_identite_entreprise.sql` | `UPDATE factures SET entreprise_regime_tva = …` | **Borné.** Le PDF se rabat sur le taux, ce que le fichier annonçait déjà. **Et la réparation buterait sur `trg_facture_immuable`**, qui refuse toute écriture sur une facture émise |
+| `0045_paiements_et_exigibilite.sql` | La reprise des paiements des factures déjà émises | **RÉEL.** Ces factures ne comptent pas au relevé de TVA **à l'encaissement**. C'est le seul des trois qui appelle une réparation |
+
+**Ce qu'il faut décider, et ce n'est pas à moi de le faire seul :** faut-il une
+migration de réparation pour 0045 ? Elle est simple — le même `INSERT`, avec la
+boucle par entreprise et un garde `WHERE NOT EXISTS` — mais elle touche à la
+COMPTABILITÉ. Une écriture comptable ne se glisse pas dans un lot d'écran.
+
+**À lui poser en une phrase**, et seulement quand il aura le planning en main :
+*« des factures émises avant une certaine date ne comptent pas dans le relevé de
+TVA à l'encaissement — je répare ? »*
 
 ---
 
@@ -812,18 +902,32 @@ passaient par « Je dicte mon devis » passent par `scripts/_creer-chantier-e2e.
 
 1. ~~porter l'anneau et la pellicule sur `chantiers/nouveau`~~ — **fait** ;
 2. ~~au second appui de l'anneau, **enregistrer**~~ — **fait** : la note part au
-   second appui et le chantier existe dès cet instant. Reste à **lancer la
-   chaîne du devis** dans la foulée, pour qu'il retrouve un devis déjà rempli
-   sans toucher « Mon devis → » ;
+   second appui et le chantier existe dès cet instant ;
+2 bis. ~~retrouver un devis **déjà rempli** sans toucher « Mon devis → »~~ —
+   **fait le 21 août 2026**, après sa panne de Madame Lucie. La chaîne ne part
+   pas au relâchement de l'anneau — il ferme l'application dans la seconde qui
+   suit, l'appel partirait avec l'onglet : elle part **à l'arrivée sur le
+   devis**, qui est le seul moment où un navigateur est là pour attendre le
+   résultat (`src/lib/devis-a-preparer.ts`, `PreparationDictee.tsx`) ;
 3. `lienDeReprise` : les étapes « photos » et « note-vocale » ne doivent plus
    viser `/chantiers/[id]` mais la fiche client ;
 4. la flèche de retour du devis (`DevisCompletClient.tsx`) : même chose ;
 5. retirer l'écran `/chantiers/[id]` et ce qui n'y sert plus.
 
-**Le dessin des cases est tranché** : il a choisi la 4 le 21 août, puis, devant
-l'écran, il a demandé la maquette **trait pour trait** — donc les cases telles
-qu'elles y sont (fond crème, 4 px, un liseré fin, l'or au doigt posé). C'est ce
-qui est codé, dans `.atlas-case`.
+**Le dessin des cases est tranché** : il a choisi la 4 — « la carte douce » —
+et il l'a redit le 21 août au soir. Fond papier, 14 px de rayon, aucun bord,
+l'or au doigt posé. C'est ce qui est codé (`.atlas-case`) **et** ce que porte la
+maquette : les deux ont été remises d'accord le même jour, l'écart entre elles
+étant précisément ce qui lui faisait croire que le code ne suivait pas.
+
+**Huit écarts restent entre l'écran codé et la maquette**, relevés à la mesure
+le 21 août au soir et **non tranchés** — il n'a pas encore dit s'il faut les
+aligner : « ATLAS » absent du haut, la flèche de retour sur sa propre ligne au
+lieu de celle du titre, le nom en 20 px serif au lieu de 16 px sans, les
+pastilles Mr/Mme cerclées de vert au lieu d'or, les capsules du canal sans
+contour, le canal qui n'apparaît qu'une fois une coordonnée saisie, le carré
+photo en trait continu gris au lieu de tirets or, et le bouton principal à
+208 px centré au lieu de pleine largeur.
 
 **Deux suites restent rouges, et elles ne sont pas de ce lot :**
 `test-fiche-client-e2e` et `test-fiche-chantier-e2e`, toutes deux sur la fiche
@@ -2617,7 +2721,8 @@ Mesuré, pas supposé : `.github/workflows/itineraire.yml`.
 automatique au fil des ouvertures du planning, règles pures dans
 `src/lib/appariement-demi-journees.ts`, appel IGN dans
 `src/server/itineraire/geoplateforme.ts`, bandeau dans
-`src/components/atlas/BandeauAppariement.tsx`. Détail et pourquoi :
+un bandeau sous la journée dépareillée — retiré de l'écran le 21 août 2026 avec
+la refonte du planning, le calcul restant en place. Détail et pourquoi :
 `ARCHITECTURE.md` §117.
 
 **Ce qui RESTE, et n'est pas dans ce lot :**

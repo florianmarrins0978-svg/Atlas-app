@@ -5137,8 +5137,8 @@ regardant l'écran (`CLAUDE.md` §5).
 
 ### Ce que les contrôles prouvent, et ce qu'ils ne prouvent pas
 
-`scripts/test-y-aller-e2e.ts` vérifie **le raccord** : que l'adresse arrive
-vraiment jusqu'au `href`. La règle pure resterait verte même si l'écran oubliait
+La section « feuille de chantier » de `scripts/test-planning-e2e.ts` vérifie
+**le raccord** : que l'adresse arrive vraiment jusqu'au `href`. La règle pure resterait verte même si l'écran oubliait
 de la lui passer — c'est le raccord qui se casse, jamais la formule.
 
 Il ne prouve **pas** que le GPS s'ouvre : un navigateur d'essai n'a ni Plans, ni
@@ -12571,3 +12571,217 @@ c'est lui qui l'aurait découvert : un fichier sans nom dans son dossier.
 **« Partager » revient ici**, après avoir été retiré de l'écran d'envoi le même
 matin. C'était le seul chemin vers WhatsApp, et sa place est plutôt sur le
 document rangé que sur le geste d'envoi.
+
+---
+
+## §129. Le planning refait : le chantier passe avant la demi-journée
+
+*Sa demande du 19 août 2026 — « cette page est beaucoup trop compliquée à
+comprendre pour les utilisateurs » — puis deux soirées de maquette, neuf
+corrections, et sa décision du 21 août : « maintenant tu peux coder cette
+version de la maquette ! Ne modifie rien ! Ne change rien ! Code trait pour
+trait cette maquette. »*
+
+La planche retenue est `appli/planning-simple.html` (planche 84). Ce §
+n'expose pas ce qu'elle montre — l'écran et la planche le disent mieux — mais
+**les trois décisions de structure** qu'il a fallu prendre pour la coder, et
+qui ne se voient pas.
+
+### 1. Une table pour les équipes, et la colonne `chantiers.equipe_id` retirée
+
+**Ce qu'il a demandé, et que la colonne ne pouvait pas porter :**
+
+> *« Lorsque je choisis une équipe je dois pouvoir mettre TOUTES les équipes si
+> je le souhaite, le même jour ou même sur la même demi-journée. Je dois
+> pouvoir mettre tout le monde le matin puis tout le monde l'aprem. »*
+
+> *« Sur Mr. Leroy, qui dure toute la journée, je ne peux pas mettre juste Paul
+> le matin et Julien et Paul l'après-midi — si je mets les deux l'après-midi, ça
+> me les met aussi le matin. Il faut que tout soit INDÉPENDANT. »*
+
+Une colonne porte **une** équipe, et elle la porte pour le chantier **entier** :
+ni l'une ni l'autre des deux demandes. La migration 0058 pose donc
+`equipes_du_chantier (entreprise_id, chantier_id, demi, equipe_id)`, avec sa
+politique d'isolation et son `GRANT`.
+
+**Et la colonne est RETIRÉE, pas doublée.** La garder aurait été la solution
+courte — les écrans qui la lisaient continuaient de fonctionner. Elle aurait
+aussi été la faute de `CLAUDE.md` §3 : le patron retire Paul de l'après-midi sur
+le planning, la colonne dit encore « Paul », et la feuille de route imprimée
+l'envoie sur place. Les lignes existantes sont recopiées sur les **deux**
+demi-journées — c'est exactement ce que la colonne voulait dire — puis elle
+disparaît.
+
+Ce qui la lisait et lit désormais la table : la fiche de chantier PDF (elle
+écrit toutes les équipes du chantier, matin et après-midi confondus) et l'export
+d'entreprise (une sauvegarde qui l'oublierait rendrait un planning dont toutes
+les pastilles seraient vides).
+
+### 2. Le quota prévient, il n'interdit plus
+
+**Sa proposition du 21 août, meilleure que les trois qu'on lui avait
+soumises :**
+
+> *« Une fois qu'on a mis deux chantiers avec deux gars, on dit que c'est
+> complet. Et si l'utilisateur en rajoute un troisième, on met une autre couleur
+> pour lui signaler qu'il a dépassé le quota — mais il peut quand même le faire.
+> [...] Nous, on prévient juste. »*
+
+Quatre états, dans `src/lib/planning-jour.ts` : `libre`, `dispo`, `plein`,
+`dela`. Le dernier est un **avertissement**, jamais un refus.
+
+Conséquence côté serveur, et elle est réelle : `planifierChantier` ne lève plus
+`CreneauIndisponible`, et `basculerEquipeDuChantier` ne lève plus
+`EquipeIndisponible`. Les deux classes ont disparu. **Ce que cela ne relâche
+PAS :** le chemin par lequel le CLIENT choisit sa date garde toutes ses limites
+(`jourRetenable`, `premiersJoursLibres`). Un client n'a pas à forcer une
+journée, ni même à savoir qu'on le peut.
+
+**Les absences d'équipe entrent dans la charge** au même titre qu'un chantier
+(`occupationDemi(pris, nombreEquipes, equipesAbsentes)`). Sans cela le planning
+montrerait un jour libre que l'écran d'envoi refuse au client — deux vérités sur
+la même capacité, sur deux écrans qui se suivent.
+
+### 3. La fiche du jour est bâtie sur le CHANTIER, pas sur la demi-journée
+
+C'est sa dernière correction, capture à l'appui :
+
+> *« Mr. Leroy au-dessus du carré vert clair matin ; supprime le Mr. Leroy pour
+> l'aprem, c'est le même chantier, pas besoin de répéter ; pareil pour "1
+> chantier" ; et supprime le trait entre le matin et l'après-midi, là on a
+> l'impression que c'est deux chantiers différents. »*
+
+L'écran était bâti sur les demi-journées : deux blocs séparés par un filet,
+chacun rejouant le nom du client et son compte. Un chantier qui dure la journée
+s'y écrivait **deux fois**, avec une barre au milieu — l'écran FABRIQUAIT deux
+chantiers là où il n'y en a qu'un.
+
+`blocsDeLaJournee` rend donc, dans l'ordre : les chantiers (chacun avec les
+demi-journées qu'il occupe), puis ce qui reste libre. *« Fais pareil pour les
+autres, le nom toujours en premier ! »* — une demi-journée vide ouvrait la
+fiche, et l'on lisait ce qui MANQUE avant de savoir de qui il s'agit.
+
+### Ce que la planche ne portait pas, et qui a quitté l'écran
+
+Trois choses existaient et **ne figurent pas** sur la planche qu'il a validée :
+« Créer la facture » dans la feuille du chevron, la liste « Dans mon agenda », et
+la proposition de chantier voisin pour combler une demi-journée. Elles ont été
+retirées — *« trait pour trait »* — et le tableau de `TODO.md` dit ce qui reste
+en place côté serveur, pour qu'un simple rebranchement suffise s'il les
+redemande. Le chemin vers la facture n'est pas fermé : le fil des « Terminés » y
+mène toujours.
+
+### LE PIÈGE QUI A FAILLI COÛTER SES ÉQUIPES — une migration ne voit rien
+
+**Le plus cher de ce lot, et il ne se voyait pas.** La reprise de données de la
+migration 0058 — recopier `chantiers.equipe_id` dans la table neuve, puis
+retirer la colonne — était écrite en un seul `INSERT … SELECT FROM chantiers`.
+Elle recopiait **zéro ligne, sans la moindre erreur.**
+
+`chantiers` porte `FORCE ROW LEVEL SECURITY` : la politique s'applique **même au
+propriétaire de la table**, et les migrations tournent justement sous
+`atlas_owner` — chez lui (`.devcontainer/preparer.sh`), en CI (`ci.yml`) et en
+local (`monter-base-locale.sh`). Sans `app.entreprise_id`, la lecture ne rend
+rien. La colonne aurait été retirée juste après, et **toutes les équipes déjà
+affectées auraient disparu de sa base, en silence.**
+
+**Comment il a été trouvé, et c'est la seule façon qui marche** : en rejouant la
+migration sur une base remontée à l'état d'avant, **avec des données dedans**.
+Le SQL est parfaitement correct à la relecture — c'est le contexte d'exécution
+qui manque, et aucune relecture ne le montre.
+
+La migration boucle donc sur `entreprises` et pose le contexte, comme 0036 et
+0037 le faisaient déjà, et elle annonce son compte (`RAISE NOTICE`) : une reprise
+qui ne recopie rien doit se voir dans le journal, pas se deviner.
+
+**`scripts/test-migrations-sous-rls.ts` garde la porte** pour les suivantes : il
+éprouve le piège en base — le propriétaire sans contexte ne voit rien, avec
+contexte voit tout — puis refuse toute migration qui écrit à partir d'une table
+d'entreprise sans poser son contexte.
+
+**Et il en a trouvé trois autres, déjà appliquées** : `0039` (le régime de TVA
+des factures), `0040` (la validité des devis) et `0045` (la reprise des
+paiements). Les deux premières ont une conséquence bornée, que leur propre
+fichier annonçait déjà. **La troisième est réelle** : les factures émises avant
+elle ne comptent pas au relevé de TVA à l'encaissement. Elles sont nommées dans
+le contrôle, avec leur coût, et le point est dans `TODO.md` — une écriture
+comptable se décide, elle ne se glisse pas dans un lot d'écran.
+
+### Ce qui a été appris, et qui vaut au-delà de ce lot
+
+**Un contrôle qui épingle un NOMBRE relevé sur un écran meurt avec cet écran.**
+`test-assistant-en-tete-e2e.ts` mesurait « la dernière case du mois finit
+au-dessus de 626 px » : le planning refait l'a fait rougir sur une demande
+exaucée. Relever le nombre l'aurait fait suivre l'écran au lieu de le tenir ; il
+mesure désormais que le bouton de l'assistant **partage la ligne du titre** —
+ce qui était le défaut d'origine, et ne dépend d'aucun calendrier.
+
+Même leçon pour `test-absence-equipe-e2e.ts`, qui lisait « il reste de la
+place » dans le libellé accessible d'une case. Il lit maintenant l'`data-etat`
+que le calendrier ET la fiche du jour calculent par la même fonction.
+
+## 142. Une dictée mène au devis, et le devis se prépare tout seul en arrivant
+
+**Sa panne du 21 août 2026, et il l'a qualifiée lui-même :** *« c'est le point
+le plus important. Je veux absolument que ça fonctionne. »*
+
+> *« J'ai ouvert un chantier, Madame Lucie. J'ai rentré ces informations,
+> j'appuie sur note vocale, j'ai dicté la prestation du chantier. J'ai rappuyé
+> sur la note vocale, ça a enregistré. J'ai quitté l'application. Je suis
+> retourné dessus. J'ai cliqué sur Madame Lucie qui était enregistrée dans mes
+> chantiers. Or, je ne suis pas arrivé directement sur la page du devis comme
+> demandé, avec mes informations remplies que j'avais dictées. »*
+
+### Deux défauts, et le second était le vrai
+
+**Le chemin.** `getNextAction` renvoyait une dictée sur l'écran
+« Informations » : un écran de contrôle dont il ne veut plus depuis le 5 août
+(*« je ne veux pas tous les autres trucs intermédiaires »*). Il mène désormais
+au devis.
+
+**L'ordre des jalons compte, et ce n'est pas un détail.** La ligne
+`aUneNoteVocale` passe **avant** `informationsVerifieesAt`. La chaîne pose ce
+second jalon dès qu'elle a rangé les prestations — c'est-à-dire **avant** son
+arrêt d'avant-chiffrage. S'il ferme l'application pendant cet arrêt, ce qu'il
+fait puisqu'il est chez sa cliente, l'ordre inverse le renverrait sur l'écran
+« Prix » : un écran de plus entre lui et son devis, et la même panne sous un
+autre nom.
+
+**Le devis lui-même.** Plus grave, et invisible depuis le chemin :
+**enregistrer une dictée ne fabriquait aucun devis.** La chaîne — transcription,
+prestations, tarifs, lignes — attendait qu'il appuie sur « Mon devis → ». Il ne
+l'a pas fait. Corriger le seul chemin l'aurait mené droit sur une feuille vide,
+c'est-à-dire sur la panne du 7 août (*« le devis ne comporte aucune ligne, gros
+bug »*), resservie par un autre bout.
+
+### Pourquoi à l'ARRIVÉE, et pas au relâchement de l'anneau
+
+Le réflexe est de lancer la chaîne dès qu'il relâche l'anneau : c'est plus
+rapide, quand ça marche. Mais **il ferme l'application dans la seconde qui
+suit** — c'est le geste même qu'il décrit — et l'appel part alors avec l'onglet.
+Il n'en resterait rien, et l'on aurait un correctif qui ne se déclenche jamais
+dans les conditions où il est nécessaire.
+
+Le seul moment où l'on est **sûr** qu'un navigateur est présent pour attendre le
+résultat, c'est celui où il rouvre le devis. La préparation vit donc là, et elle
+survit à tout ce qu'il peut fermer entre-temps.
+
+### Trois partis pris de l'écran
+
+| | |
+|---|---|
+| **Le voile couvre le devis, il ne le remplace pas** | Si la chaîne échoue — pas de transcription, aucun tarif, une panne réseau —, « Ouvrir le devis tel quel » lui rend sa feuille et son crayon. Un écran qui n'aurait que l'échec à montrer serait un cul-de-sac |
+| **On écarte sans naviguer** | Un renvoi vers une autre adresse ramènerait ici, où la préparation repartirait aussitôt. Le voile se referme en mémoire, le temps d'une visite ; rien n'est écrit pour désarmer la suivante |
+| **Aucune règle dans l'écran** | Ce qui décide de la présence du voile est pur (`src/lib/devis-a-preparer.ts`) ; ce qui mène la chaîne est le composant qui la menait déjà (`DevisDepuisDictee`, mode `auto`). Une seconde implémentation aurait divergé au premier ajustement |
+
+### Ce qui garde la promesse
+
+`scripts/test-madame-lucie-e2e.ts` rejoue sa séquence entière : dicter, **fermer
+l'application sans rien appuyer d'autre**, revenir par la liste, cliquer le nom.
+Deux suites voisines ne pouvaient pas voir ce trou —
+`test-reprendre-ou-il-en-etait` tient la règle mais ne clique nulle part, et
+`test-anneau-vers-devis-e2e` **appuie sur « Mon devis → »**, c'est-à-dire fait
+précisément le geste qu'il n'a pas fait.
+
+Elle sait échouer : confrontée à l'ancien code, elle rougit sur trois cas et
+nomme le coupable — *« la liste l'envoie sur /informations »*.

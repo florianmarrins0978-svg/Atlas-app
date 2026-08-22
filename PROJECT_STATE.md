@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-20 · branche `main`
+**Dernière mise à jour :** 2026-08-21 · branche `main`
 · dernière migration `drizzle/0056_diagnostic_vegetal.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -9,6 +9,23 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## De la dictée au devis : la chaîne part TOUTE SEULE (21 août 2026)
+
+Sa panne de Madame Lucie : il dicte, ferme l'application, revient, clique le nom
+— et n'arrive pas sur son devis.
+
+| | État |
+|---|---|
+| La liste mène au **devis** dès qu'une dictée existe | **fait** (`chantier-etat.ts`) |
+| Le devis **se prépare lui-même** en arrivant, sans qu'il appuie sur rien | **fait** (`devis-a-preparer.ts`, `PreparationDictee.tsx`) |
+| Sortie de secours si la chaîne échoue : « Ouvrir le devis tel quel » | **fait** |
+| La séquence entière rejouée au navigateur | **fait** (`test-madame-lucie-e2e.ts`) |
+| La qualité de la rédaction avec une VRAIE clé | **non vérifiée ici** — `npm run verifier:dictee`, sur son espace |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §142.
 
 ---
 
@@ -164,7 +181,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
 | **Facture transmise par SMS ou par e-mail**, au choix, coordonnée saisie sur place | `src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx` |
 | **Facture téléchargeable**, sous un nom qui porte son numéro | `src/app/api/factures/[id]/pdf/route.ts` |
-| **Chemin du planning vers la facture**, et rangement en un seul onglet | `src/lib/onglet-chantier.ts`, `src/app/planning/PlanningClient.tsx` |
+| **Chemin vers la facture sans passer par la fiche**, et rangement en un seul onglet. Il partait du planning jusqu'au 21 août 2026 ; l'écran refait ne le porte plus, et c'est le fil des « Terminés » qui y mène | `src/lib/onglet-chantier.ts`, `src/app/termines/FilTermines.tsx` |
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 | Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |
@@ -263,7 +280,7 @@ le réseau.
 | Le trajet demandé à la Géoplateforme de l'IGN — sans clé, sans compte | `src/server/itineraire/geoplateforme.ts` |
 | L'assemblage : rattrapage des coordonnées, présélection, appels, classement | `src/server/planning/appariement.ts` |
 | Les coordonnées d'un chantier, et l'adresse qui les a produites | `drizzle/0049_coordonnees_chantier.sql` |
-| Le bandeau sous la journée dépareillée, avec ses trois états muets | `src/components/atlas/BandeauAppariement.tsx` |
+| ~~Le bandeau sous la journée dépareillée~~ — **retiré de l'écran le 21 août 2026** : la planche 84 n'en porte pas. Le calcul, lui, reste | `src/server/planning/appariement.ts` |
 | La vérification du vrai service, là où il y a du réseau | `.github/workflows/itineraire.yml` |
 
 **Ce qui protège le service public** : le vol d'oiseau classe et écarte d'abord,
@@ -514,21 +531,36 @@ l'application. Ce qui est **fait** :
   jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
   que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
   `ARCHITECTURE.md` §83.
-- **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
-  chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
-  Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
-  le planning. Liens universels et jamais `waze://`, qui échoue en silence
-  quand l'application manque. Sans adresse, rien ne s'invente : les
-  destinations disparaissent et la feuille dit où la saisir. Retenu après
-  quatre maquettes (`docs/maquettes/29` à `32`). **Et « Créer la facture » a
-  quitté la ligne pour la feuille**, à sa demande du même jour : la ligne ne
-  garde que le nom, la date, « Déplacer » et le chevron. `ARCHITECTURE.md` §70.
+- **LE PLANNING REFAIT** (21 août) : *« cette page est beaucoup trop compliquée
+  à comprendre pour les utilisateurs »*, puis deux soirées de maquette, neuf
+  corrections, et *« code trait pour trait cette maquette »*. Le mois reste au
+  mois — c'est lui qui sert à viser une date lointaine — et la semaine ne
+  gouverne que la liste des planifiés. La **fiche du jour est bâtie sur le
+  CHANTIER** : son nom une fois, ses demi-journées dessous, sans trait entre
+  elles. Un chantier porte **plusieurs équipes, indépendantes le matin et
+  l'après-midi** (migration `drizzle/0058_equipes_par_demi_journee.sql`, la
+  colonne `chantiers.equipe_id` retirée). Le quota **prévient sans interdire**.
+  `ARCHITECTURE.md` §129.
+- **La feuille de chantier : le devis sans un seul prix** (21 août) : *« le
+  salarié ne doit pas avoir accès au prix [...] le plus simple, ça serait de
+  mettre le devis en PDF sans les prix »*. Ce n'est pas un document de plus —
+  c'est le devis lui-même, rendu sans ses colonnes de prix (`sansChiffrage`,
+  déjà employé par la fiche de chantier). Et les gestes de « Y aller » y vivent
+  désormais : Maps, Waze, copier l'adresse, appeler le client — quatre, plus
+  cinq. `src/app/api/chantiers/[chantierId]/feuille/pdf/`.
+- **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : liens
+  universels et jamais `waze://`, qui échoue en silence quand l'application
+  manque. Sans adresse, rien ne s'invente : les destinations s'éteignent.
+  Retenu après quatre maquettes (`docs/maquettes/29` à `32`). Les gestes ont
+  déménagé dans la feuille de chantier le 21 août ; la règle pure, elle, n'a pas
+  bougé (`src/lib/itineraire.ts`). `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
-  colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
-  sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à
-  partir de deux** : seul, le mot « équipe » ne s'écrit nulle part. Une table
-  `equipes` (`nom` nullable), une colonne `chantiers.equipe_id`, et une seule
-  fonction pure qui décide du libellé. `ARCHITECTURE.md` §51 et §52.
+  colonnes sans bordure et la journée qui s'ouvre sous le calendrier. Réglages
+  laisse nommer les équipes — mais **seulement à partir de deux** : seul, le mot
+  « équipe » ne s'écrit nulle part. Une table `equipes` (`nom` nullable) et une
+  seule fonction pure qui décide du libellé. Les cinq marques d'occupation ont
+  été remplacées le 21 août par quatre états qui se remplissent à la proportion.
+  `ARCHITECTURE.md` §51, §52 et §129.
 - **« Terminés » et le parcours de facturation** (10 août, au soir) : un fil par
   mois, l'encart « à facturer » posé DANS le mois et replié au repos, le relevé
   de TVA en simple ligne au pied. « Fin de chantier » s'appelle désormais

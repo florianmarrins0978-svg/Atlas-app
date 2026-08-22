@@ -4,6 +4,15 @@
 // petit trait gris au-dessus de "y aller", c'est censé refermer la page, sauf
 // que ça ne marche pas. »*
 //
+// **La feuille éprouvée a changé le 21 août 2026, la poignée n'a pas bougé.**
+// « Y aller » a disparu avec la refonte du planning (planche 84) : la feuille de
+// chantier y est posée dans la page, plus dans un panneau qui remonte. La
+// poignée, elle, vit dans `BottomSheet` — partagée par une dizaine d'écrans —
+// et c'est ELLE que ce contrôle défend. Il passe donc par « Noter une absence »
+// (Réglages → Équipe), qui ouvre la même feuille. Suivre la poignée là où elle
+// vit plutôt que là où elle vivait, c'est la seule façon de ne pas perdre le
+// contrôle avec l'écran (`CLAUDE.md` §5 bis).
+//
 // Elle n'était qu'un trait dessiné — et pire : posée dans le panneau qui arrête
 // les appuis pour que le fond ne se ferme pas sous les doigts, elle ABSORBAIT
 // le geste sans rien en faire. Toucher la poignée pour refermer est ce que tout
@@ -25,11 +34,8 @@
 
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
-import { Pool } from "pg";
-import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const BASE = "http://localhost:3000";
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /** Ce qu'un doigt atteint sans viser : la recommandation d'Apple comme d'Android. */
 const DOIGT_MINIMUM_PX = 24;
@@ -59,39 +65,14 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`);
 
-  // **Le décor est fabriqué ici, jamais emprunté au jeu de démonstration.**
-  // Une première version cherchait un chantier déjà planifié : elle échouait
-  // dès que les suites précédentes avaient consommé le décor, et son message
-  // accusait alors le produit d'un manque qui n'existait pas. La date est
-  // posée en base — le parcours complet du devis est éprouvé ailleurs, et le
-  // rejouer ici ajouterait deux minutes pour ne rien apprendre sur la poignée.
-  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Bernard"]', `M. Poignée ${Date.now()}`);
-  await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!;
-  const pose = await pool.query(
-    `UPDATE chantiers
-        SET devis_envoye_at = now(),
-            date_planifiee = CURRENT_DATE + 3,
-            adresse_chantier = '19 Rue Denfert 30300 Beaucaire'
-      WHERE id = $1`,
-    [chantierId]
-  );
-  if (pose.rowCount !== 1) {
-    throw new Error(
-      "le décor n'a pas pu être posé : le rôle de test ne traverse probablement plus RLS " +
-        "(voir CLAUDE.md §5). Ce n'est pas un défaut du produit."
-    );
-  }
-  const nomChantier = (await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [chantierId]))
-    .rows[0].nom as string;
-
+  // **Aucun décor à fabriquer** : « Noter une absence » est toujours là, sur un
+  // écran de réglages qui ne dépend d'aucune donnée. La version d'avant posait
+  // un chantier en base pour atteindre « Y aller » — deux minutes de montage
+  // pour n'apprendre rien de plus sur la poignée.
   async function ouvrirLaFeuille() {
-    await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('h1:has-text("Planning")', { timeout: 30_000 });
-    await page.getByRole("button", { name: `Y aller — ${nomChantier}` }).click();
+    await page.goto(`${BASE}/reglages/equipe`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("text=+ Noter une absence", { timeout: 30_000 });
+    await page.getByText("+ Noter une absence").first().click();
     await page.getByLabel("Refermer").waitFor({ state: "visible", timeout: 20_000 });
   }
 
@@ -130,7 +111,7 @@ async function main() {
     // pire que la poignée muette : le patron perdrait la feuille en visant
     // « Waze ». C'est ce que `stopPropagation` protège, et il doit survivre.
     await ouvrirLaFeuille();
-    await page.getByText(/Y aller/i).first().click();
+    await page.getByLabel("Motif de l'absence").click();
     await page.waitForTimeout(400);
     assert.ok(
       await page.getByLabel("Refermer").isVisible(),
@@ -151,14 +132,12 @@ async function main() {
 
   await contexte.close();
   await navigateur.close();
-  await pool.end();
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Poignée — ${echecs} échec(s).`);
   process.exit(echecs === 0 ? 0 : 1);
 }
 
-main().catch(async (e) => {
+main().catch((e) => {
   console.error(e);
-  await pool.end().catch(() => {});
   process.exit(1);
 });

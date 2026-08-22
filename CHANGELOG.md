@@ -37,6 +37,123 @@ précisément le raccourci qu'il demande. Un réseau peut donc se ramifier — a
 un té de jonction 25×25×25, qui n'arrose rien et ne compte pas dans l'égalité
 `tés + coudes = arroseurs`.
 
+### Le planning, codé trait pour trait — et une migration avec
+
+**Sa décision du 21 août au soir**, après deux soirées de maquette et neuf
+corrections : *« maintenant tu peux coder cette version de la maquette ! Ne
+modifie rien ! Ne change rien ! Code trait pour trait cette maquette. Prends le
+temps qu'il faut, je veux aucune erreur, aucun défaut ! »*
+
+L'écran est celui de `appli/planning-simple.html` : le mois refait, la fiche du
+jour bâtie sur le CHANTIER et non sur la demi-journée, les planifiés à la
+semaine, et la feuille de chantier — le devis rendu sans un seul prix.
+
+**Ce qui ne se voit pas, et qu'il a fallu poser (détail dans `ARCHITECTURE.md`
+§129) :**
+
+| | |
+|---|---|
+| **Migration 0058** | `equipes_du_chantier` remplace `chantiers.equipe_id`. Une colonne porte UNE équipe, pour le chantier ENTIER : ni « toutes les équipes sur la même demi-journée », ni « Paul le matin, Julien et Paul l'après-midi ». La colonne est retirée, pas doublée — deux vérités auraient divergé au premier retrait |
+| **Le quota prévient** | `planifierChantier` ne refuse plus un créneau, et cocher une équipe ne se refuse jamais. Le dépassement se VOIT — bordeaux, « 150 % de vos équipes » — il ne s'interdit pas. **Le chemin du CLIENT garde toutes ses limites** |
+| **Le devis sans les prix** | Une route de plus, et zéro moteur de plus : `sansChiffrage` existait depuis la fiche de chantier du 20 août. Le titre devient « FEUILLE DE CHANTIER » et le cadre de signature disparaît — sans prix, ce n'est plus un devis |
+| **Deux couleurs à la charte** | `vertPale` et `bordeaux`, fixes comme `sage` et `alert` : dérivées de chaque charte, deux des quatre états finiraient par se ressembler sur l'une des sept |
+
+**Trois choses ont quitté l'écran** parce que la planche ne les portait pas :
+« Créer la facture » dans la feuille, la liste « Dans mon agenda », et la
+proposition de chantier voisin. Le code serveur des trois est intact ;
+`TODO.md` dit où, et ce qu'il faut lui demander.
+
+**Le plus cher du lot ne se voyait pas :** la reprise de données de la migration
+recopiait **zéro ligne, sans erreur** — `chantiers` force la RLS jusque sur le
+propriétaire, et les migrations tournent sous ce rôle-là. La colonne aurait été
+retirée juste après, et toutes ses équipes auraient disparu en silence. Trouvé
+en rejouant la migration sur une base remontée à l'état d'avant, **avec des
+données dedans** ; aucune relecture ne l'aurait montré. `test-migrations-sous-rls.ts`
+garde désormais la porte — et il a trouvé **trois migrations déjà appliquées**
+qui portent le même défaut (`TODO.md`, en tête).
+
+**Deux contrôles ont été refaits plutôt que relevés**, et c'est la leçon du
+lot : `test-assistant-en-tete-e2e.ts` épinglait « la dernière case du mois finit
+au-dessus de 626 px », un nombre relevé sur l'écran d'avant ; il mesure
+désormais que le bouton de l'assistant partage la ligne du titre, ce qui était
+le vrai défaut et ne dépend d'aucun calendrier. Un contrôle qui suit l'écran ne
+le tient plus.
+
+**Et un second défaut invisible, trouvé au journal du serveur :** un
+`export type { FeuilleDuChantier };` posé dans `src/app/planning/actions.ts`
+tuait **tout** le module d'actions à son évaluation — `ReferenceError`, et les
+cinq actions de l'écran en 500. `tsc` et `eslint` restaient verts, et le geste
+« réussissait » sans un mot, puisqu'une action serveur ne rend jamais son erreur
+au patron. Le type se prend désormais à sa source, avec `import type`, et
+`test-actions-serveur-sans-export-de-type.ts` rend la faute impossible sur les
+32 fichiers « use server » du dépôt. Le détail et le réflexe qui manquait — lire
+le journal du serveur AVANT de soupçonner le contrôle — sont en tête de
+`HANDOVER.md`.
+
+**Et un écart avec la planche, trouvé sur une CAPTURE** — la cinquième fois dans
+ce dépôt qu'un défaut sort d'une image et d'aucun test. La planche resserre les
+petits boutons d'une ligne de demi-journée (`.demi .petit{padding:7px 9px}`) ;
+la transcription avait gardé les 12 px par défaut. Six pixels de trop par
+bouton, et la ligne « Après-midi · Équipe ? · Déplacer · Retirer » faisait
+exactement 324 px dans 324 : « Retirer » basculait à la ligne suivante. Restauré,
+et `test-planning-e2e` le tient désormais — confronté au défaut, il rougit sur
+« 42 px de décalage ». Il mesure des hauteurs d'origine et non des largeurs :
+deux boutons d'une même ligne partagent leur `top`, ce qui ne dépend ni de la
+police ni de la longueur des mots.
+
+**Ce qui n'a PAS été corrigé, et pourquoi.** Une équipe qui existe sans porter
+de nom s'écrit « Équipe A » — 91 px, là où « Équipe ? » en fait 75. La ligne
+déborde alors de quatre pixels. La planche ne dessine jamais cette étiquette :
+la régler voudrait dire retoucher un dessin qu'il a validé, et un choix
+d'apparence se dessine avant de se coder (`CLAUDE.md` §3 bis). Le cas est décrit
+dans `TODO.md`, à lui montrer.
+
+**Un contrôle de notification a été refait pour la même raison de fond**
+(`CLAUDE.md` §5 bis) : « J'ai vu » comptait les cartes de l'accueil avant et
+après le geste et en exigeait une de moins — un compte qui dépendait de l'ordre
+d'exécution des suites et de l'ordre d'affichage des cartes. Il vise maintenant
+la carte de CE chantier par son identifiant.
+
+### « Je clique sur Lucie, et j'arrive sur mon devis » — la dictée mène enfin au devis
+
+**Sa panne, mot pour mot :** *« J'ai ouvert un chantier, Madame Lucie. J'ai
+rentré ces informations, j'appuie sur note vocale, j'ai dicté la prestation du
+chantier. J'ai rappuyé sur la note vocale, ça a enregistré. J'ai quitté
+l'application. Je suis retourné dessus. J'ai cliqué sur Madame Lucie. Or, je ne
+suis pas arrivé directement sur la page du devis comme demandé, avec mes
+informations remplies que j'avais dictées. Corrige-moi ça, c'est le point le
+plus important. »*
+
+**Deux défauts, et le second était le vrai.**
+
+Le premier était le chemin : la liste le renvoyait sur l'écran « Informations »
+— un écran de contrôle dont il ne veut plus depuis le 5 août (*« je ne veux pas
+tous les autres trucs intermédiaires »*). `getNextAction` mène désormais au
+devis dès qu'une dictée existe, et **avant** le jalon « informations
+vérifiées » : la chaîne pose ce jalon avant son arrêt d'avant-chiffrage, et
+l'ordre inverse l'aurait envoyé sur l'écran « Prix » — la même panne sous un
+autre nom.
+
+Le second, plus grave : **enregistrer une dictée ne fabriquait aucun devis.** La
+chaîne attendait qu'il appuie sur « Mon devis → », et il ne l'a pas fait — il
+était chez sa cliente, il a fermé l'application. Corriger le seul chemin
+l'aurait mené droit sur une feuille vide, c'est-à-dire sur la panne du 7 août.
+
+**Le devis se prépare donc lui-même en arrivant**, quand une dictée n'a pas
+encore été traitée (`src/lib/devis-a-preparer.ts`, `PreparationDictee.tsx`). À
+l'arrivée plutôt qu'au relâchement de l'anneau, et c'est délibéré : il ferme
+l'application dans la seconde qui suit, l'appel partirait avec l'onglet. Le seul
+moment où un navigateur est là pour attendre le résultat, c'est celui où il
+rouvre le devis.
+
+Le voile se pose **par-dessus** le devis, jamais à sa place : si la chaîne
+échoue, « Ouvrir le devis tel quel » lui rend sa feuille et son crayon.
+
+`scripts/test-madame-lucie-e2e.ts` rejoue sa séquence entière — dicter, fermer
+l'application, revenir par la liste, cliquer le nom. Confrontée à l'ancien code,
+elle rougit sur trois cas et nomme le coupable : *« la liste l'envoie sur
+/informations »*.
+
 ### Le plan repris sur ses trois corrections — la nourrice, les raccords, les marques
 
 **« Tous les réseaux doivent partir de la nourrice — règle indiscutable ! »**
@@ -5280,7 +5397,9 @@ Sa cible reste à 44 px — grossir le signe ne doit pas rétrécir le geste.
 journée ENTIÈRE, pas une demi. Le test se trompait, pas le serveur ; le contrôle
 inverse a été ajouté pour que le premier ne passe pas par hasard.
 
-Nouveau : `scripts/test-changer-equipe.ts` (7 contrôles).
+Nouveau : une suite de sept contrôles sur le changement d'équipe — remplacée le
+21 août 2026 par `scripts/test-equipes-par-demi-journee.ts`, quand l'équipe est
+devenue plusieurs équipes, demi-journée par demi-journée (migration 0058).
 
 ### Les équipes reviennent sous « Équipe », et le planning s'explique
 
@@ -6118,7 +6237,7 @@ bouton mort. **Retirer ne se refuse jamais pour occupation** : libérer une plac
 n'en prend aucune, et refuser enfermerait le patron dans son erreur.
 
 **Les contrôles ont été vus rouges avant d'être livrés** : privés du retrait,
-trois cas de `test-changer-equipe.ts` tombent. Une suite navigateur
+trois cas de la suite du changement d'équipe tombent. Une suite navigateur
 (`test-pastille-equipe-e2e.ts`) parcourt le geste entier — poser, changer,
 retirer, vérifier en base — parce que la règle serveur serait verte même si le
 bouton n'était pas branché : c'est le raccord qui casse, jamais la formule.

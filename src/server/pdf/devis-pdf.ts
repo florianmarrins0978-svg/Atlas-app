@@ -47,13 +47,47 @@ function libelleValiditeDevis(jours: number | null | undefined): string | null {
   return `${jours} jour${jours > 1 ? "s" : ""}`;
 }
 
+/**
+ * Options d'impression du devis.
+ *
+ * **`sansChiffrage` — le devis rendu SANS un seul prix**, sa décision du
+ * 21 août 2026 : *« le salarié ne doit pas avoir accès au prix. Est-ce que tu
+ * peux me faire un PDF du devis sans les prix, ou est-ce que le plus simple
+ * c'est de créer une fiche prestations sous le client ? [...] je pense que le
+ * plus simple, ça serait de mettre le devis en PDF sans les prix. »*
+ *
+ * **C'est le bon choix, et pour une raison de fond :** une fiche
+ * « prestations » saisie à côté serait une SECONDE liste de ce qui est à faire.
+ * Le devis change — une ligne ajoutée au téléphone, une quantité corrigée — et
+ * les deux divergent en silence ; l'équipe part alors avec la version d'avant.
+ * Ici la feuille n'est pas un document de plus : c'est le devis lui-même, rendu
+ * sans ses colonnes de prix. Rien à tenir à jour, rien qui puisse mentir.
+ *
+ * Le mécanisme existait déjà — la fiche de chantier du 20 août s'en sert
+ * (`document-commun.ts`, `sansChiffrage`). Le rebâtir aurait fait deux mises en
+ * page qui divergent sur les feuilles d'un même artisan.
+ */
+export type OptionsDevisPdf = { sansChiffrage?: boolean };
+
 export async function composerDevisPdf(
-  data: DevisPdfData
+  data: DevisPdfData,
+  options: OptionsDevisPdf = {}
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
+  const sansPrix = Boolean(options.sansChiffrage);
   return composerDocument(data, {
-    // Le brouillon le dit : un devis non envoyé qui ne le signale pas peut être
-    // transmis par erreur, alors qu'il n'engage rien.
-    titre: data.statut === "brouillon" ? "DEVIS (BROUILLON)" : "DEVIS",
+    sansChiffrage: options.sansChiffrage,
+    // **Sans les prix, ce n'est plus un devis : c'est la feuille de travail.**
+    // Garder le titre « DEVIS » sur un document qu'un salarié emporte ferait
+    // croire à un devis amputé — et le client à qui on le montrerait par erreur
+    // y verrait un engagement sans montant.
+    //
+    // Le brouillon, lui, le dit : un devis non envoyé qui ne le signale pas peut
+    // être transmis par erreur, alors qu'il n'engage rien.
+    titre: sansPrix
+      ? "FEUILLE DE CHANTIER"
+      : data.statut === "brouillon"
+        ? "DEVIS (BROUILLON)"
+        : "DEVIS",
     references: [
       [
         "Devis n°",
@@ -69,15 +103,25 @@ export async function composerDevisPdf(
         : []),
     ],
     titreNotes: "NOTES / CONDITIONS",
+    // **Ni « bon pour accord » ni cadre à signer sur la feuille de travail.**
+    // Elle ne s'accepte pas : elle se lit sur le chantier. Lui laisser la
+    // mention du devis en ferait un document qu'un client pourrait signer, sans
+    // qu'aucun montant n'y figure.
     mentionLegale: (d) =>
-      `Devis établi par ${d.entrepriseNom}, valable selon la durée indiquée ci-dessus. ` +
-      "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.",
-    cadreSignature: true,
+      sansPrix
+        ? `Feuille de travail établie par ${d.entrepriseNom} d'après le devis ` +
+          "correspondant. Elle ne vaut ni devis ni facture, et n'appelle aucun paiement."
+        : `Devis établi par ${d.entrepriseNom}, valable selon la durée indiquée ci-dessus. ` +
+          "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.",
+    cadreSignature: !sansPrix,
   });
 }
 
-export async function genererPdfDevis(data: DevisPdfData): Promise<Uint8Array> {
-  return (await composerDevisPdf(data)).pdf;
+export async function genererPdfDevis(
+  data: DevisPdfData,
+  options: OptionsDevisPdf = {}
+): Promise<Uint8Array> {
+  return (await composerDevisPdf(data, options)).pdf;
 }
 
 // Réexportés pour ne pas casser les contrôles et les appelants existants.

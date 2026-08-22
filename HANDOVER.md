@@ -4,11 +4,153 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-18 · `main`
+**Point de reprise :** 2026-08-21 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
+## LE PLANNING A ÉTÉ REFAIT LE 21 AOÛT 2026 — ce qu'il faut savoir avant d'y toucher
+
+**L'écran suit `appli/planning-simple.html` (planche 84) trait pour trait**, sur
+sa consigne : *« code trait pour trait cette maquette. Ne modifie rien ! Ne
+change rien ! »*. Toute correction du planning se porte **d'abord sur la
+planche**, sinon les deux divergent — et c'est elle qu'il ouvre sur son
+téléphone.
+
+**Trois choses ont changé sous l'écran, et elles se paient si on les ignore :**
+
+1. **`chantiers.equipe_id` N'EXISTE PLUS.** Les équipes vivent dans
+   `equipes_du_chantier (chantier_id, demi, equipe_id)` — plusieurs par
+   demi-journée, et le matin indépendant de l'après-midi
+   (`drizzle/0058_equipes_par_demi_journee.sql`). Un `UPDATE chantiers SET
+   equipe_id = …` dans une suite ne compilera plus ; c'est voulu.
+2. **Le patron ne se voit plus refuser un créneau.** `CreneauIndisponible` et
+   `EquipeIndisponible` ont disparu : *« il ne doit pas y avoir de limite [...]
+   nous, on prévient juste »*. **Le chemin du CLIENT, lui, garde toutes ses
+   limites** (`jourRetenable`, `premiersJoursLibres`) — ne pas les relâcher.
+3. **Les règles sont dans `src/lib/planning-jour.ts`**, pures et éprouvées sans
+   base (`scripts/test-planning-jour.ts`). L'écran n'y décide de rien.
+
+**Ce qui a quitté l'écran**, la planche ne le portant pas : « Créer la facture »
+(le fil des « Terminés » y mène toujours), la liste « Dans mon agenda », et la
+proposition de chantier voisin. Le code serveur des trois est intact — `TODO.md`
+dit où, et ce qu'il faut lui demander.
+
+### Une batterie qui rougit d'un coup : regarder si la BASE n'a pas été coupée sous elle
+
+**Le cluster PostgreSQL local est PARTAGÉ entre les sessions.** Le patron en fait
+tourner deux ou trois en parallèle (`CLAUDE.md` §6), et elles travaillent toutes
+sur `/tmp/atlas-pgdata`. Une session qui l'arrête et le relance coupe la batterie
+d'une autre en plein vol.
+
+**Ce que ça donne à l'écran, et c'est trompeur :** une suite rougit sur des
+assertions d'affichage — « le nom du client manque », l'écran ne portant plus que
+« ATLAS ». On cherche alors dans le rendu, alors que la page n'a simplement plus
+de session : la connexion s'est faite refuser.
+
+**Le geste qui tranche, en dix secondes :**
+
+```bash
+grep -n "shutdown request\|terminating connection" /tmp/atlas-pgdata/log | tail
+```
+
+Une ligne `received fast shutdown request` à l'heure de l'échec, et c'est réglé :
+la base a été arrêtée sous la batterie. Le journal du serveur de développement
+(`/tmp/atlas-serveur-e2e.log`) porte la même chose vue de l'autre bord —
+« terminating connection due to administrator command », puis un
+`CallbackRouteError` sur la connexion.
+
+**Ce qu'on fait alors :** rejouer la suite seule. Ce qu'on ne fait PAS : corriger
+un écran qui n'a rien. Vécu le 21 août 2026, sur `test-fiche-client-e2e` — trois
+cas rouges, zéro défaut.
+
+### Le piège qui a coûté deux heures : `export type { … }` dans un « use server »
+
+**Ne jamais réexporter un type depuis un fichier d'actions serveur.** Le lot
+portait, dans `src/app/planning/actions.ts`, un innocent :
+
+```ts
+export type { FeuilleDuChantier };   // ⛔ tue TOUT le module
+```
+
+Le chargeur d'actions de Next réécrit ce fichier en une liste d'exports de
+**valeurs**, une par action. Le nom exporté « type » y survit sous forme de
+référence à une chose que TypeScript vient d'effacer, et le module meurt à son
+évaluation :
+
+```
+⨯ ReferenceError: FeuilleDuChantier is not defined
+    at .next-internal/server/app/planning/page/actions.js (server actions loader)
+```
+
+**Toutes les actions de l'écran répondent alors 500** — poser une date, désigner
+une équipe, déplacer, retirer : plus rien n'atteignait la base. Et **rien ne le
+disait** : `tsc --noEmit` vert, `eslint` vert (le code source est juste, c'est la
+réécriture qui ne l'est pas), et le geste « réussissait » à l'écran sans un mot,
+puisqu'une action serveur ne rend jamais son erreur au patron (§0 ter).
+
+**Ce qui a fait perdre les deux heures :** avoir cru à un défaut de décor de
+suite, et cherché dans le contrôle plutôt que dans le journal du serveur. Il y
+était, en toutes lettres, dès la première minute. **Devant une action qui
+n'écrit rien : lire `/tmp/atlas-serveur-e2e.log` AVANT de toucher au contrôle.**
+
+Le type se prend à sa source, avec `import type` — qui s'efface à la compilation,
+et c'est déjà la convention du dépôt (`Notifications.tsx`, `PrixClient.tsx` et
+cinq autres écrans le font). `scripts/test-actions-serveur-sans-export-de-type.ts`
+rend la faute impossible : il balaie les 32 fichiers « use server », refuse les
+deux orthographes, et sait rougir sur la faute même du 21 août.
+
+---
+
+## Les suites navigateur échouent TOUTES à la connexion : vider `.next` (21 août 2026)
+
+**Le symptôme trompe** : cent une suites tombent l'une après l'autre sur
+`page.waitForURL` après avoir soumis le formulaire de connexion. On cherche
+alors du côté de l'authentification, de la limitation de débit, du jeu de
+démonstration — trois pistes, aucune bonne.
+
+**Le vrai signe est deux lignes plus haut, dans le journal du lanceur :**
+
+```
+Préchauffage de 27 écrans (compilation à la demande)...
+Préchauffage terminé : 3 écran(s) prêts, 24 en échec — 10 s.
+```
+
+Un préchauffage sain prend **soixante à quatre-vingts secondes** et rend tous
+les écrans prêts. Dix secondes et vingt-quatre échecs veulent dire que le
+serveur ne compile plus rien dans les temps — et un écran qui met plus de trente
+secondes à se bâtir fait expirer la connexion de la première suite, puis de
+toutes les autres.
+
+**La cause, mesurée :** le cache de développement `.next/` avait enflé à
+**4,3 Go** au fil des passages. Le geste : arrêter ce qui tient le port
+(`fuser -n tcp 3000`, puis `kill -9`), `rm -rf .next .next-verification`, et
+relancer. Le premier passage est plus long ; les suivants redeviennent normaux.
+
+**Ce n'est pas un défaut du produit**, et il ne faut pas le chercher là : la
+construction (`npm run build`) et les cent quatre-vingt-onze suites base étaient
+vertes dans le même passage.
+
+## La dictée mène AU DEVIS, et le devis se prépare tout seul (21 août 2026)
+
+**Sa panne, qu'il a lui-même qualifiée de « point le plus important » :** il
+dicte chez Madame Lucie, rappuie sur l'anneau, **ferme l'application**, revient,
+clique le nom dans la liste — et n'arrive pas sur son devis.
+
+Deux choses ont changé, et il faut connaître les deux :
+
+1. `getNextAction` mène au **devis** dès qu'une dictée existe, et cette ligne
+   passe **avant** `informationsVerifieesAt` — la chaîne pose ce jalon avant son
+   arrêt d'avant-chiffrage, et l'ordre inverse renvoie sur l'écran « Prix » ;
+2. **la page du devis prépare la dictée elle-même en arrivant**
+   (`src/lib/devis-a-preparer.ts`, `src/app/chantiers/[id]/devis-complet/PreparationDictee.tsx`). Pas
+   au relâchement de l'anneau : il ferme l'application dans la seconde qui suit,
+   l'appel partirait avec l'onglet.
+
+Le détail et les partis pris sont dans `ARCHITECTURE.md` §142. La séquence
+entière est rejouée par `scripts/test-madame-lucie-e2e.ts`.
+
+---
 ## « La page ne s'ouvre plus » : REGARDER LA PUBLICATION AVANT DE CHERCHER (21 août 2026)
 
 **Payé le 21 août au soir.** Trois corrections de maquette poussées coup sur
@@ -2619,22 +2761,23 @@ longueur de l'adresse — pour qu'on ne le refasse pas.
 
 ---
 
-### « Y aller » — le chevron doré du planning (12 août 2026)
+### Les gestes de « Y aller » — désormais dans la feuille de chantier
 
-Au bout de chaque chantier planifié, un chevron doré ouvre une feuille : Plans,
-Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
+Ils sont nés le 12 août 2026 dans un panneau qu'un chevron doré faisait
+remonter : Plans, Google Maps, Waze, copier l'adresse, appeler le client.
+**Depuis le 21 août 2026 ils vivent dans la FEUILLE DE CHANTIER**, posée dans la
+page du planning refait (planche 84) — et ils ne sont plus que quatre : *« pas
+besoin d'en mettre trois »*, Google Maps est sorti.
 
 - `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
-- `src/components/atlas/FeuilleYAller.tsx` — la feuille, sur `BottomSheet`.
-- `src/app/planning/PlanningClient.tsx` — le chevron, et `libelleQuand()` écrit
-  une seule fois pour la ligne ET la feuille.
-- `src/lib/nom-chantier.ts` — `intituleDuChantier` : ne recolle le client que si
-  le nom du chantier ne le porte pas déjà, sans quoi la feuille affiche
-  « M. Bernard — Chez M. Bernard ».
+- `src/app/planning/PlanningClient.tsx` — la feuille (`FeuilleChantier`), qui
+  lit `liensItineraire` et `lienAppel` plutôt que de recomposer les adresses.
 - `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
-- Contrôles : `scripts/test-itineraire.ts` (10), `scripts/test-y-aller-e2e.ts`
-  (9), quatre de plus dans `scripts/test-nom-chantier.ts`, deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
-  confrontés au défaut qu'ils prétendent voir avant d'être retenus.
+- Contrôles : `scripts/test-itineraire.ts` (10), la section « feuille de
+  chantier » de `scripts/test-planning-e2e.ts`, quatre de plus dans
+  `scripts/test-nom-chantier.ts`, deux cas de plus dans
+  `scripts/test-planning-repo.ts`. Tous ont été confrontés au défaut qu'ils
+  prétendent voir avant d'être retenus.
 
 **Deux choses à savoir avant d'y toucher :**
 

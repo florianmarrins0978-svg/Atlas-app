@@ -210,15 +210,14 @@ async function main() {
   // **Poser le chantier de départ**, sinon la proposition n'a rien d'où partir.
   // Le matin de la prochaine journée ouvrable ; l'après-midi reste libre. On
   // passe par `planifierChantier` — la fonction même de l'écran — plutôt que
-  // par un UPDATE à la main, pour ne pas dupliquer sa logique d'équipe et
-  // d'occupation. `rangEquipe: 1` vise l'équipe A quand elles sont nommées ;
-  // sinon le chantier retombe sur la première ligne libre, ce qui suffit à
-  // créer le trou de l'après-midi.
+  // par un UPDATE à la main, pour ne pas dupliquer sa logique d'occupation.
+  // **L'équipe ne se pose plus ici** : depuis la migration 0058 elle se coche
+  // demi-journée par demi-journée, après la pose. Le trou de l'après-midi, lui,
+  // ne dépend d'aucune équipe.
   const departNom = CHANTIERS[0].nom;
   const jourDepart = prochainJourOuvrable(maintenant);
   await planifierChantier({ utilisateurId, entrepriseId: entreprise.id }, idParNom[departNom], jourDepart, {
-    moment: "matin",
-    rangEquipe: 1,
+    quand: "matin",
   });
 
   const jourLisible = new Date(`${jourDepart}T12:00:00Z`).toLocaleDateString("fr-FR", {
