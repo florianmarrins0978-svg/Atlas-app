@@ -446,6 +446,71 @@ async function main() {
     );
   });
 
+  // ─── SA RÈGLE DU 22 AOÛT : « oui si c'est des journées complètes, non si
+  //     c'est des demi-journées » ───────────────────────────────────────────
+  //
+  // Elle répond à : *« mettre toutes mes équipes sur un chantier doit-il fermer
+  // la journée ? »*. Les deux moitiés de sa réponse sont éprouvées séparément,
+  // parce qu'une seule des deux passerait aussi bien avec une règle fausse.
+
+  await test("TOUTES ses équipes sur une JOURNÉE ferment le jour au client", async () => {
+    const ctx = await contexte(`journee-${Date.now()}@t.test`);
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { nombreEquipes: 2 });
+
+    const eric = await chantiersRepo.creerChantier(ctx, { nom: "Mr. Eric" });
+    await chantiersRepo.mettreAJourDureeEquipe(ctx, eric.id, { dureePrevue: "1 journée" });
+    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { quand: "journee" });
+    // Ses deux équipes, matin ET après-midi : c'est sa capture du 22 août.
+    for (const demi of ["matin", "apres_midi"] as const) {
+      for (const rang of [1, 2]) {
+        await chantiersRepo.basculerEquipeDuChantier(ctx, eric.id, demi, rang);
+      }
+    }
+
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Faucher", email: "f@ex.test" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
+    const autre = await chantiersRepo.creerChantier(ctx, { nom: "Autre", clientId: client.id });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, autre.id);
+
+    // **On interroge `joursOccupes`, jamais `joursLibres`.** Cette dernière ne
+    // rend que les SIX premiers jours suggérés : un jour situé plus loin en est
+    // absent de toute façon, et une assertion posée dessus serait verte quoi
+    // qu'il arrive. La première version de ce contrôle est tombée dedans —
+    // c'est le piège du `CLAUDE.md` §5, un contrôle vert qui ne prouve rien.
+    const p = await preparerEnvoi(ctx, autre.id, LUNDI);
+    assert.ok(
+      p.joursOccupes.includes(dans(10)),
+      `${dans(10)} reste offert alors que ses DEUX équipes y sont toute la journée`
+    );
+  });
+
+  await test("TOUTES ses équipes sur une DEMI-journée laissent le jour ouvert", async () => {
+    // L'autre moitié de sa règle, et c'est elle qui interdit de simplifier en
+    // « toutes les équipes ⇒ jour fermé » : l'après-midi reste libre, donc le
+    // jour reste proposable.
+    const ctx = await contexte(`demi-${Date.now()}@t.test`);
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { nombreEquipes: 2 });
+
+    const eric = await chantiersRepo.creerChantier(ctx, { nom: "Mr. Eric" });
+    await chantiersRepo.mettreAJourDureeEquipe(ctx, eric.id, { dureePrevue: "une demi-journée" });
+    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { quand: "matin" });
+    for (const rang of [1, 2]) {
+      await chantiersRepo.basculerEquipeDuChantier(ctx, eric.id, "matin", rang);
+    }
+
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Faucher", email: "f@ex.test" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
+    const autre = await chantiersRepo.creerChantier(ctx, { nom: "Autre", clientId: client.id });
+    await chantiersRepo.mettreAJourDureeEquipe(ctx, autre.id, { dureePrevue: "une demi-journée" });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, autre.id);
+
+    const p = await preparerEnvoi(ctx, autre.id, LUNDI);
+    assert.ok(
+      !p.joursOccupes.includes(dans(10)),
+      `${dans(10)} est barré alors que son après-midi est libre`
+    );
+  });
+
   console.log(`\n${passed} réussis, ${failed} échoués`);
   await pool.end();
   if (failed > 0) process.exit(1);

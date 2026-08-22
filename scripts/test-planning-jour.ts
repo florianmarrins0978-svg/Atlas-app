@@ -115,6 +115,43 @@ essai("un chantier se lit matin, après-midi, journée — ou en jours", () => {
   assert.equal(ditLeQuand("apres_midi", 5), "3 jours");
 });
 
+// ─── COMPTER LES ÉQUIPES, ET NON LES CHANTIERS ────────────────────────────
+//
+// **Sa question du 22 août 2026 :** *« pourquoi le matin et l'après-midi de
+// monsieur Eric s'affichent en incomplet ? »* — Julien ET Antoine y étaient, et
+// la charge comptait les CHANTIERS : 1 ÷ 2 = la moitié. Ce jour-là partait donc
+// chez ses clients alors qu'il n'avait plus personne à envoyer.
+//
+// **Sa règle, après la planche 89 :** *« oui si c'est des journées complètes,
+// non si c'est des demi-journées »*.
+essai("deux équipes sur un chantier remplissent la demi-journée", () => {
+  const o = occupationDemi(["eric"], 2, 0, () => 2);
+  assert.equal(o.charge, 1);
+  assert.equal(etatDemi(o), "plein");
+});
+
+essai("une seule équipe sur deux laisse la demi-journée ouverte", () => {
+  const o = occupationDemi(["eric"], 2, 0, () => 1);
+  assert.equal(o.charge, 0.5);
+  assert.equal(etatDemi(o), "dispo");
+});
+
+// **Un chantier sans équipe cochée vaut UNE équipe, jamais zéro.** La plupart
+// des chantiers n'en portent aucune — l'affectation par demi-journée ne date que
+// du 21 août. Les compter zéro viderait le planning d'un coup.
+essai("un chantier sans équipe cochée prend quand même une place", () => {
+  assert.equal(occupationDemi(["x"], 2, 0, () => 0).charge, 0.5);
+  assert.equal(occupationDemi(["x"], 2).charge, 0.5);
+});
+
+// **Le dépassement se voit toujours.** Trois équipes mobilisées pour deux, c'est
+// « au-delà » : il ne s'interdit rien, mais il le voit (sa décision du 21 août).
+essai("plus d'équipes mobilisées que d'équipes se dit « au-delà »", () => {
+  const o = occupationDemi(["a", "b"], 2, 0, () => 2);
+  assert.equal(o.charge, 2);
+  assert.equal(etatDemi(o), "dela");
+});
+
 // **LA DURÉE, ET NON LE MOMENT** — sa demande du 22 août 2026, retenue sur la
 // planche 86 : *« à la place de "matin", je pense qu'il doit y avoir écrit la
 // durée du chantier [...] parce que ce n'est pas clair quand il y a marqué le

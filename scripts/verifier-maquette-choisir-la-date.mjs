@@ -44,6 +44,20 @@ import { chromium } from "playwright";
 // contrôles voisins. Ailleurs (la CI), Playwright trouve le sien.
 const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
+/* global POSES, EQUIPES, tient */
+//
+// **Ces trois noms vivent DANS LA PAGE, pas dans ce script.** Ils sont lus à
+// l'intérieur de `page.evaluate`, dont le corps s'exécute dans le navigateur —
+// `appli/choisir-la-date.html` les y définit (`EQUIPES`, `POSES`, `tient`).
+//
+// La déclaration ci-dessus existe pour ESLint, et **elle ne relâche rien** :
+// `no-undef` reste une erreur partout ailleurs dans ce fichier. Cette règle a
+// été posée après le 10 août 2026, où `scripts/banc.mjs` lisait une variable
+// qui n'existait pas et faisait tomber le banc APRÈS l'avoir annoncé prêt : on
+// nomme donc les trois exceptions plutôt que d'éteindre le garde-fou.
+//
+// Sans elle, `npm run lint` rendait six erreurs et **la CI de `main` restait
+// rouge pour toutes les sessions**, sur du code juste.
 const PAGE = "file://" + path.resolve("appli/choisir-la-date.html");
 const soucis = [];
 const dire = (ok, quoi) => { if (!ok) soucis.push(quoi); };

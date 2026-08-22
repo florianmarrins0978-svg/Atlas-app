@@ -9,6 +9,51 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### La place se compte en ÉQUIPES, plus en chantiers
+
+*« Pourquoi le matin et l'après-midi de monsieur Eric s'affichent en
+incomplet ? »* — Julien **et** Antoine y étaient. Puis, la planche 89 vue :
+*« oui si c'est des journées complètes, non si c'est des demi-journées »*.
+
+**Le défaut.** `occupationDemi` et `compterOccupation` divisaient le nombre de
+**chantiers** par le nombre d'équipes : un chantier pour deux équipes valait la
+moitié, quel que soit le nombre d'équipes réellement cochées dessus.
+L'affectation par demi-journée, posée le 21 août, ne pesait donc sur **aucune
+capacité** — elle était décorative. Conséquence : ce mardi-là partait chez ses
+clients alors qu'il n'avait plus personne à envoyer.
+
+**La règle.** Un chantier prend autant d'équipes qu'on lui en coche, et **au
+moins une** — un chantier sans affectation reste du travail à faire, le compter
+zéro viderait le planning d'un coup.
+
+**Sa règle tombe d'elle-même du comptage par demi-journée**, et c'est ce qui
+évite de la coder deux fois :
+
+| Ce qu'il pose | Résultat |
+|---|---|
+| journée entière, ses 2 équipes | les deux créneaux sont pris → **le jour se ferme** |
+| demi-journée, ses 2 équipes | seul le matin est pris → **l'après-midi reste offert** |
+| 1 équipe sur 2 | la moitié → inchangé |
+
+**Les QUATRE lectures de la place sont nourries de la même source** — l'écran
+d'envoi, la validation de la date qu'il pose lui-même, la revérification de la
+réponse du client, et le planning. Ne corriger que l'affichage aurait fait dire
+« complet » au planning pendant que l'écran d'envoi offrait le jour : deux
+vérités sur la même capacité (`CLAUDE.md` §3), c'est-à-dire le défaut d'origine
+déplacé d'un écran.
+
+**Les deux moitiés de sa règle ont leur contrôle, et chacun a été VU ROUGE sur
+la faute qu'il garde** : celui de la journée contre l'ancienne règle, celui de
+la demi-journée contre la simplification « toutes les équipes ⇒ jour fermé ».
+
+**Et une assertion muette a été trouvée en chemin.** Les deux contrôles
+interrogeaient d'abord `joursLibres` — qui ne rend que les **six premiers** jours
+suggérés. Un jour situé plus loin en est absent quoi qu'il arrive : l'assertion
+était donc vraie par construction, et celle de la journée « passait » sans rien
+prouver. Elles lisent désormais `joursOccupes`, qui couvre douze mois.
+
+---
+
 ### Les planifiés : la durée, plus de compte gris, plus de répétition
 
 *« C'est exactement ce que je veux »* — planche 86 retenue le 22 août 2026, avec

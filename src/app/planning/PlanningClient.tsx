@@ -249,7 +249,12 @@ export default function PlanningClient({
       return occupationDemi(
         parCreneau.get(cle) ?? [],
         nombreEquipes,
-        absentesParCreneau.get(cle) ?? 0
+        absentesParCreneau.get(cle) ?? 0,
+        // **Ce que l'écran sait déjà, et qu'il ne disait pas à la charge.** Les
+        // équipes cochées sur la demi-journée sont sous les yeux du patron ;
+        // les ignorer faisait annoncer « incomplet » un mardi où ses deux
+        // équipes étaient chez Mr. Eric (22 août 2026).
+        (c) => (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length
       );
     },
     [parCreneau, absentesParCreneau, nombreEquipes]

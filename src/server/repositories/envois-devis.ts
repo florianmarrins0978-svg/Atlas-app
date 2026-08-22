@@ -11,7 +11,7 @@ import {
 import { configurationGoogle } from "../agenda/google";
 import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import type { Ctx } from "./context";
-import { encoreEnCoursDepuis } from "./occupation-chantiers";
+import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
 import { lireObjet } from "../storage";
 import {
   compterOccupation,
@@ -130,12 +130,16 @@ async function contrainteDuPlanning(
       )
     );
 
+  // Les équipes cochées comptent dans la place prise : sans elles, un jour où
+  // ses deux équipes travaillent déjà partirait chez un client (22 août 2026).
+  const equipes = await equipesParChantier(tx, entrepriseId);
   const planifies: ChantierPlanifie[] = lignes
     .filter((l) => l.jour !== null && l.id !== exclureChantierId)
     .map((l) => ({
       jour: l.jour as JourIso,
       moment: l.moment === "matin" || l.moment === "apres_midi" ? l.moment : null,
       dureeDemiJournees: l.duree,
+      equipesParDemi: equipes.get(l.id) ?? null,
     }));
 
   const [entreprise] = await tx

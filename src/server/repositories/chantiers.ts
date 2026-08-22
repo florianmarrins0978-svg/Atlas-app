@@ -1,5 +1,6 @@
 import { and, eq, isNull, isNotNull, or, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
+import { equipesParChantier } from "./occupation-chantiers";
 import { chantiers, clients, entreprises, equipesDuChantier, factures } from "../db/schema";
 import {
   compterOccupation,
@@ -565,6 +566,11 @@ export async function planifierChantier(
         )
       );
 
+    // La quatrième lecture de la même règle, et la dernière : elle choisit le
+    // créneau quand le patron pose une date lui-même. Sans les équipes, elle
+    // rangerait un chantier sur un matin que les trois autres tiennent pour
+    // plein (`CLAUDE.md` §3).
+    const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
     const occupation = fusionnerAbsences(
       compterOccupation(
         autres
@@ -573,6 +579,7 @@ export async function planifierChantier(
             jour: a.jour as string,
             moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
             dureeDemiJournees: a.duree,
+            equipesParDemi: equipesPosees.get(a.id) ?? null,
           }))
       ),
       absences,
