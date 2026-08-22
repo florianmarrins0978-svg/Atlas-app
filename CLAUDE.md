@@ -329,6 +329,21 @@ références et jamais confrontée à elles. Il a demandé d'où elle sortait : 
 nulle part. Quand ses vraies références arrivent, les lignes provisoires qu'elles
 remplacent se **corrigent**, elles ne se laissent pas dormir.
 
+**UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU, PAS SEULEMENT PAR LE COMPTEUR.** Sa
+déduction du 22 août 2026 : *« en diamètre vingt-cinq c'est 1,76 m³/h, donc dans
+tous les cas le calcul doit se faire là-dessus, peu importe qu'on ait 2 ou
+1,80 »*. Toutes ses lignes de réseau sont en Ø25 — c'est le diamètre de tous ses
+raccords. La limite d'un réseau est donc **le plus petit** de :
+
+| | |
+|---|---|
+| ce que la source donne | débit au seau × 0,85 |
+| ce que le tuyau passe | **1,76 m³/h en Ø25** |
+
+**Ce défaut était invisible chez lui** : son compteur donne 1,80, donc la source
+a toujours commandé. Il serait apparu chez le premier utilisateur mieux
+alimenté. Une règle éprouvée sur un seul chantier n'est pas une règle éprouvée.
+
 **UNE BUSE SE CALCULE À LA PRESSION DU CHANTIER, PAS À CELLE DU CATALOGUE.**
 Ses catalogues ne donnent qu'une valeur par buse, à une pression de référence
 (2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères VAN). Les prendre

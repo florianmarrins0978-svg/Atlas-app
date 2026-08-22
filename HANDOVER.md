@@ -9,6 +9,30 @@ sert.
 
 ---
 
+## UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU (22 août 2026)
+
+`decouper()` coupe un réseau au **plus petit** de deux chiffres :
+
+| | |
+|---|---|
+| la source | débit au seau × 0,85 |
+| le tuyau | 1,76 m³/h — le Ø25 à 1,5 m/s |
+
+Toutes ses lignes de réseau sont en Ø25 (té 25×3/4"×25, coude 25×3/4"). Avant le
+22 août, seule la source comptait : à 3 m³/h mesurés, un réseau tirait 2,55 m³/h
+dans un tuyau qui n'en passe que 1,76.
+
+**Ce défaut ne se voyait pas chez lui** — son compteur donne 1,80, la source
+commandait toujours. C'est la leçon à retenir : une règle éprouvée sur un seul
+chantier n'est pas éprouvée.
+
+**Conséquence sur un contrôle existant :** le critère de vitesse d'`amenee()`
+n'est plus atteignable par `calculerPlan`, puisque le plafond agit en amont. Il
+reste en place comme garde-fou, et `test-arrosage-calcul.ts` le DIT plutôt que
+de laisser croire qu'il veille encore.
+
+---
+
 ## LES BUSES SONT CORRIGÉES À LA PRESSION — NE PAS GONFLER LA PORTÉE (22 août 2026)
 
 **Avant de retoucher `modelePour` :** les buses du catalogue sont ramenées à la

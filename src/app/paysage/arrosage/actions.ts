@@ -63,6 +63,16 @@ export type EtatPlan =
           debit: number;
           /** Au-delà, même le Ø32 est en surrégime : Ø40, ou un réseau de plus. */
           insuffisantMemeEn32: boolean;
+          /**
+           * Qui plafonne un réseau : la source (le seau) ou le tuyau (Ø25).
+           *
+           * **Il faut le dire quand c'est le tuyau**, sinon un artisan qui a
+           * mesuré 3 m³/h voit ses réseaux coupés plus tôt qu'il ne s'y attend
+           * et croit à un défaut de calcul. C'est son Ø25, et il le lira.
+           */
+          limitePar: "source" | "tuyau";
+          /** Ce qu'un réseau en Ø25 peut porter, en m³/h. */
+          plafond: number;
         };
       };
     };
@@ -164,6 +174,12 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
         seuil32: plan.amenee.longueurMax32,
         debit: plan.amenee.debit,
         insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
+        // **Le calcul repris n'est pas typé** (`allowJs`, `checkJs` coupé) : il
+        // rend une chaîne. On la RESSERRE ici plutôt que d'élargir le type de
+        // l'écran — c'est la frontière, et c'est là qu'un « tuyeau » mal
+        // orthographié doit tomber, pas trois écrans plus loin.
+        limitePar: plan.limitePar === "tuyau" ? "tuyau" : "source",
+        plafond: plan.limiteDuTuyau,
       },
     },
   };

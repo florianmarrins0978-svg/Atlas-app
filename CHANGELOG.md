@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Un réseau est plafonné par SON TUYAU, plus seulement par le compteur
+
+**C'est lui qui l'a déduit**, et il avait raison : *« tu ne viens pas de me dire
+qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous les cas le calcul
+doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80, non ? »*
+
+**Le découpage ne regardait que la SOURCE.** Un réseau était coupé à
+`débit du seau × 0,85`, sans jamais se demander si le tuyau pouvait le porter.
+Or toutes ses lignes de réseau sont en Ø25 — c'est le diamètre de tous ses
+raccords, té 25×3/4"×25 et coude 25×3/4".
+
+| Source mesurée | Ancienne limite par réseau | Ce que le Ø25 passe |
+|---|---|---|
+| 1,80 m³/h | 1,53 | 1,76 — la source commandait, rien à voir |
+| 3,00 m³/h | 2,55 | **1,76 — dépassé de 45 %** |
+| 4,50 m³/h | 3,82 | **1,76 — plus du double** |
+
+**Chez lui, le défaut ne se voyait pas** : son compteur donne 1,80, donc la
+source a toujours commandé. Il serait apparu chez le premier utilisateur mieux
+alimenté — l'eau à plus de 2 m/s dans la ligne, la pression qui tombe avant le
+dernier arroseur, et un gazon jauni en juillet. Exactement ce que sa règle du
+22 août interdit (`CLAUDE.md` §4 ter).
+
+**La limite d'un réseau est désormais le plus petit des deux**, et l'écran dit
+lequel commande : un artisan qui a mesuré 3 m³/h et voit ses réseaux coupés plus
+tôt qu'attendu doit lire que c'est son Ø25, pas un défaut de calcul.
+
+Le plafond du tuyau ne porte pas la marge de 0,85 en plus : les 1,5 m/s sont
+déjà une limite de bonne pratique, l'empiler paierait deux fois la même
+prudence, en vannes.
+
+**Cinq contrôles rougissent si on retire le plafond** — le pire réseau monte à
+1,97 puis 2,63 et 3,94 m³/h à mesure que la source grossit.
+
 ### Le débit au compteur reste à 1,80 — et on sait maintenant pourquoi
 
 Sa précision du 22 août : *« je sais que nos fournisseurs, lorsqu'on se pique

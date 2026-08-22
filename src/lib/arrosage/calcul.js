@@ -816,8 +816,43 @@ function saisonCourante(){
   return SAISONS[2];
 }
 
+/* ══ CE QU'UN RÉSEAU PEUT PORTER : LE PLUS PETIT DES DEUX ═══════════════════
+
+   **Sa déduction du 22 août 2026, et elle a trouvé un trou :** *« tu ne viens
+   pas de me dire qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous
+   les cas le calcul doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80,
+   non ? »*
+
+   **Oui.** Un réseau est limité par DEUX choses, et le découpage n'en regardait
+   qu'une :
+
+   | | |
+   |---|---|
+   | ce que la SOURCE donne | le seau, moins la marge (0,85) |
+   | ce que le TUYAU passe | 1,76 m³/h en Ø25, à 1,5 m/s |
+
+   **Et toutes ses lignes de réseau sont en Ø25** — c'est le diamètre de tous
+   ses raccords : té 25×3/4"×25, coude 25×3/4". Un réseau ne peut donc jamais
+   porter plus de 1,76 m³/h, quelle que soit la générosité du compteur.
+
+   **Ce que cela corrigeait, et personne ne l'avait vu.** Tant que la source
+   reste modeste, c'est elle qui commande et rien ne change : à 1,80 m³/h, la
+   limite était déjà 1,53. Mais dès qu'un artisan mesure 2,5 ou 3 m³/h au seau,
+   l'ancien calcul faisait des réseaux à 2,1 puis 2,55 m³/h — dans un tuyau qui
+   n'en passe que 1,76. L'eau y filerait à plus de 2 m/s, la ligne cogne, et la
+   pression tombe avant le dernier arroseur. **C'est exactement le défaut que
+   sa règle du 22 août interdit** (`CLAUDE.md` §4 ter) : il ne se voit qu'en
+   juillet, sur un gazon jauni, tranchée refermée.
+
+   Le plafond du tuyau ne porte PAS la marge de 0,85 en plus : les 1,5 m/s sont
+   déjà une limite de bonne pratique, pas un maximum physique. L'empiler
+   reviendrait à payer deux fois la même prudence, en vannes. */
 function decouper(){
-  var dispo = debitDisponible(), limite = dispo * MARGE, groupes = {}, ordre = [];
+  var dispo = debitDisponible();
+  var duTuyau = debitMaxDe(CATALOGUE.tuyaux.pe25.dInterieur);
+  var deLaSource = dispo * MARGE;
+  var limite = duTuyau > 0 ? Math.min(deLaSource, duTuyau) : deLaSource;
+  var groupes = {}, ordre = [];
   etat.zones.forEach(function(z){
     var p = poser(z);
     if (p.debit <= 0) return;
@@ -944,6 +979,11 @@ function decouper(){
     });
   });
   return { secteurs:secteurs, dispo:dispo, limite:limite, reseauDuPoint:reseauDuPoint,
+           // **QUI commande la limite**, pour que l'écran puisse le dire. Un
+           // artisan qui mesure 3 m³/h et voit des réseaux plafonnés à 1,76
+           // croirait à un défaut de calcul : c'est son tuyau, et il le lira.
+           limitePar: (duTuyau > 0 && duTuyau < deLaSource) ? 'tuyau' : 'source',
+           limiteDuTuyau: duTuyau, limiteDeLaSource: deLaSource,
            reseauxDeZone:reseauxDeZone,
            demande: etat.zones.reduce(function(s,z){ return s + poser(z).debit; }, 0) };
 }
@@ -1198,6 +1238,8 @@ export function calculerPlan(entree) {
       secteurs: d.secteurs,
       demande: d.demande,
       limite: d.limite,
+      limitePar: d.limitePar,
+      limiteDuTuyau: d.limiteDuTuyau,
       reseauxDeZone: d.reseauxDeZone,
       voies: voiesProgrammateur(d.secteurs.length),
       couleurs: d.secteurs.map(function (_, i) { return couleurReseau(i); }),

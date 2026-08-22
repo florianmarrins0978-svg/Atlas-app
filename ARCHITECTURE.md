@@ -12934,3 +12934,60 @@ chacun rougir la suite : correction retirée, portée gonflée vers le haut, loi
 linéaire au lieu de la racine. Un quatrième contrôle tient la non-régression :
 à la pression du catalogue, le plan doit être **identique** à ce qu'il était.
 
+---
+
+## 145. Un réseau est plafonné par son tuyau, pas seulement par le compteur
+
+**Sa déduction du 22 août 2026**, en lisant le §143 : *« tu ne viens pas de me
+dire qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous les cas le
+calcul doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80, non ? »*
+
+### Le trou
+
+`decouper()` coupait un réseau à `débit du seau × 0,85` — la SOURCE, et rien
+d'autre. Le débit maximal du tuyau, calculé au §143, ne servait qu'à choisir le
+diamètre de l'amenée. Or **toutes les lignes de réseau sont en Ø25** : c'est le
+diamètre de tous les raccords du catalogue (té 25×3/4"×25, coude 25×3/4").
+
+| Source mesurée | Ancienne limite | Ce que le Ø25 passe | |
+|---|---|---|---|
+| 1,80 m³/h | 1,53 | 1,76 | la source commande |
+| 3,00 | 2,55 | 1,76 | **dépassé de 45 %** |
+| 4,50 | 3,82 | 1,76 | **plus du double** |
+
+### Pourquoi personne ne l'avait vu
+
+**Le compteur du patron donne 1,80 m³/h.** À ce débit, la source commande
+toujours : `1,80 × 0,85 = 1,53 < 1,76`. Le défaut était donc structurellement
+invisible sur le seul chantier dont ce dépôt dispose, et il serait apparu chez
+le premier utilisateur mieux alimenté — l'eau à plus de 2 m/s dans la ligne, la
+pression qui tombe avant le dernier arroseur, un gazon jauni en juillet.
+
+**C'est la leçon, et elle dépasse l'arrosage : une règle éprouvée sur un seul
+chantier n'est pas une règle éprouvée.** Les suites montent désormais la source
+jusqu'à 9 m³/h — un régime que le patron ne rencontrera jamais — parce que c'est
+le seul où le défaut existait.
+
+### La décision
+
+`limite = min(débit du seau × 0,85, débit maximal du Ø25)`.
+
+Le plafond du tuyau **ne porte pas la marge de 0,85 en plus** : les 1,5 m/s sont
+déjà une limite de bonne pratique, pas un maximum physique. L'empiler
+reviendrait à payer deux fois la même prudence, en vannes et en devis.
+
+`decouper()` rend `limitePar` (`'source'` ou `'tuyau'`), remonté jusqu'à
+l'écran : un artisan qui a mesuré 3 m³/h et voit ses réseaux coupés plus tôt
+qu'il ne s'y attend doit lire que c'est son Ø25 qui commande, sinon il croit à
+un défaut de calcul.
+
+### Effet de bord assumé sur un contrôle
+
+Le critère de vitesse d'`amenee()` (§143) **n'est plus atteignable** par
+`calculerPlan` : le plafond agit en amont, donc aucun secteur ne peut plus
+l'armer. Il reste en place comme défense en profondeur, mais
+`test-arrosage-calcul.ts` l'écrit noir sur blanc plutôt que de laisser croire
+qu'il veille — **un contrôle qui ne peut plus rougir ne prouve rien**
+(`CLAUDE.md` §5), et le prétendre serait pire que de l'avoir retiré. Ce que la
+suite éprouve à sa place, c'est la garantie qui l'a rendu inatteignable.
+
