@@ -357,7 +357,7 @@ async function main() {
       0,
       "le compte « 1 chantier » est revenu alors qu'il l'a fait retirer"
     );
-    const pastilles = await carte.locator('[data-atlas="demi"] [data-atlas="marque"]').count();
+    const pastilles = await carte.locator('[data-atlas="demi"] [data-atlas="pastille"]').count();
     assert.ok(pastilles >= 2, `la charge ne se lit plus nulle part : ${pastilles} pastille(s)`);
   });
 
@@ -702,6 +702,7 @@ async function main() {
       [chantierId]
     );
     await allerAuPlanning();
+    await toucherLeJour(JOUR);
     const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`).first();
     await ligne.waitFor({ state: "visible", timeout: 15_000 });
     await ligne.locator('[data-atlas="nom-planifie"]').click();
@@ -745,6 +746,10 @@ async function main() {
       `UPDATE chantiers SET creneau_debut = 'matin', duree_demi_journees = 2 WHERE id = $1`,
       [chantierId]
     );
+    // La page est rendue là où ce contrôle l'a prise : les suivants s'appuient
+    // sur la semaine ouverte plus haut.
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
   });
 
   await essai("la flèche de la semaine ne change PAS le mois", async () => {
