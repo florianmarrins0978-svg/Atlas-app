@@ -40,6 +40,10 @@
   .regle { height:1px; background:var(--ligne); margin:14px 22px 0; }
   .titre-bloc { margin:22px 22px 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gris); }
 
+  .impératif { margin:8px 16px 0; background:var(--carte); border-radius:12px;
+               padding:13px 15px; font-size:13.5px; line-height:1.5;
+               color:var(--encre); font-weight:600;
+               box-shadow:inset 3px 0 0 var(--encre); }
   .plan { background:var(--carte); border-radius:12px; margin:8px 16px 0; padding:10px 8px 6px; }
   .plan svg { width:100%; height:auto; display:block; }
 
@@ -102,6 +106,10 @@
 <input type="radio" name="q" id="q2">
 <input type="radio" name="q" id="q3">
 <input type="radio" name="q" id="q4">
+
+<p class="impératif">Votre croquis doit impérativement contenir&nbsp;: les
+   <b>métrés</b>, l’endroit <b>définitif de la nourrice</b>, et l’endroit où se
+   fait le <b>piquage</b>. Sans les trois, aucun plan n’est proposé.</p>
 
 <div class="plan"><svg viewBox="-3 -2.6 25 17.4" role="img" aria-label="Plan du jardin">
     <defs><clipPath id="pel"><polygon points="0,0 20,0 20,4 12,4 12,12 0,12"/></clipPath></defs>
@@ -192,15 +200,15 @@
     <span class="chiffres">Les métrés et le piquage, eux, sont bien là</span></div>
 </div>
 
+<div class="saisie"><span>Écrire à Atlas…</span><b>↑</b></div>
+
 <div class="demandes">
-  <p>Essayez une demande</p>
+  <p>Maquette : trois demandes déjà écrites, pour montrer</p>
   <label for="q1">Pourquoi tu m’as fait 2 réseaux et pas 3&nbsp;?</label>
   <label for="q2">Tu m’as mis des VAN 12. On peut passer en VAN 15&nbsp;?</label>
   <label for="q3">J’aurais préféré des 5004 plutôt que des 3504.</label>
   <label for="q4">Et si le croquis est incomplet&nbsp;?</label>
 </div>
-
-<div class="saisie"><span>Écrire à Atlas…</span><b>↑</b></div>
 
 <p class="note">Maquette — rien n’est codé. Atlas ne dessine pas le plan&nbsp;: il
 lit votre demande, pose un paramètre du calcul, et c’est le calcul qui refait le
@@ -208,5 +216,8 @@ schéma et les pièces. Il n’écrit jamais un chiffre qui n’est pas au catal
 quand une demande sort de ce que les données permettent, il le dit et propose ce
 qui s’en approche.<br><br><b>Et il ne propose rien du tout</b> tant que le croquis
 ne porte pas les métrés, le piquage et l’endroit de la nourrice. La discussion
-sert à modifier un plan&nbsp;; elle n’en crée jamais un.</p>
+sert à modifier un plan&nbsp;; elle n’en crée jamais un.<br><br><b>Les trois
+demandes ci-dessus sont un artifice de maquette</b>, pour montrer sans
+JavaScript. Dans l’application, il n’y aurait que le champ libre&nbsp;: on écrit
+ce qu’on veut.</p>
 </html>

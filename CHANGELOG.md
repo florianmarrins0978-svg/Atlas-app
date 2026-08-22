@@ -404,6 +404,28 @@ coupable.
 
 ## 2026-08-21
 
+### L'avertissement passe au-dessus du croquis, et les suggestions restent en maquette
+
+*« C'est un petit message qu'il faut mettre au-dessus du croquis, en noir gras :
+votre croquis doit impérativement contenir les métrés, l'endroit définitif de la
+nourrice, et l'endroit où le piquage se fait. »*
+
+**Au-dessus, et c'est tout le sujet.** Placé en dessous, il se lirait après avoir
+envoyé une photo incomplète — donc trop tard, et il faudrait retourner au jardin.
+Le contrôle mesure la **position** et le **poids** du texte, pas seulement sa
+présence : éprouvé en le déplaçant sous le croquis, et en lui retirant son gras.
+
+*« Est-ce que tu vas mettre les phrases déjà pré-écrites, ou c'était juste pour
+faire un test ? Je pense qu'il ne faut pas les mettre, mais qu'il faut un endroit
+où on puisse discuter avec toi. »*
+
+**Il a raison, et c'était bien un artifice.** Une maquette sans JavaScript ne
+peut montrer un échange qu'en pré-écrivant les répliques. Dans l'application :
+un champ libre, rien d'autre. Des suggestions toutes faites bornent ce qu'on ose
+demander, et ce qu'il a à dire ne tient jamais dans trois boutons. Le champ de
+saisie remonte donc **au-dessus** des suggestions dans la maquette, et celles-ci
+sont désormais annoncées pour ce qu'elles sont.
+
 ### Sans croquis complet, aucun plan — et la discussion n'en crée jamais un
 
 *« L'outil doit fonctionner avec un plan avec toutes les métrés, l'emplacement du

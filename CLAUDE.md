@@ -265,6 +265,20 @@ Trois éléments, tous obligatoires :
 Il en manque un : on **retire** le plan et l'on dit lequel manque. On ne le grise
 pas — un plan affiché en pâle se photographie et se pose quand même.
 
+**L'AVERTISSEMENT SE LIT AVANT DE PHOTOGRAPHIER**, en gras, **au-dessus** du
+croquis : *« votre croquis doit impérativement contenir les métrés, l'endroit
+définitif de la nourrice, et l'endroit où le piquage se fait »*. Placé en
+dessous, il se lirait après l'envoi d'une photo incomplète — donc trop tard, et
+il faudrait retourner au jardin.
+
+**PAS DE PHRASES PRÉ-ÉCRITES DANS L'APPLICATION.** Sa remarque du 21 août :
+*« il ne faut pas mettre les phrases pré-écrites, mais il faut un endroit où on
+puisse discuter avec toi »*. Un champ libre, rien d'autre. Des suggestions
+toutes faites bornent ce qu'on ose demander — et ce qu'il a à dire ne tient
+jamais dans trois boutons. Elles n'existent dans les maquettes que parce
+qu'aucune ne porte de JavaScript, et cela doit s'y **écrire** pour qu'on ne les
+recopie pas en codant.
+
 **ET LA DISCUSSION NE CRÉE JAMAIS UN PLAN.** *« Elle peut seulement modifier, ou
 recréer si un croquis avec tous les bons éléments aux bons endroits a été
 fourni. »* C'est la tentation exacte d'une conversation : on répond en comblant
