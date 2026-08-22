@@ -621,6 +621,21 @@ coupable.
 
 ## 2026-08-21
 
+### Le plan avoue qu'il n'est pas valable
+
+*« Il n'est pas valable avec cette nouvelle règle. »*
+
+**La maquette affichait l'interdit puis l'enfreignait juste en dessous** :
+« sans les trois, aucun plan n'est proposé », et un plan tracé sur une nourrice
+que j'avais placée d'office, son croquis ne la portant pas. **Un écran qui se
+contredit ainsi apprend à ne plus lire ses propres avertissements** — c'est
+pire que de n'en pas mettre.
+
+Le plan reste montré, parce qu'une maquette sert à voir le rendu, mais il porte
+désormais en tête : « ce plan-ci ne respecte pas cette règle — je l'ai placée au
+piquage pour vous montrer ; dans l'application, il serait refusé ». Un contrôle
+exige cet aveu tant que la nourrice n'est pas sur le croquis.
+
 ### L'avertissement passe au-dessus du croquis, et les suggestions restent en maquette
 
 *« C'est un petit message qu'il faut mettre au-dessus du croquis, en noir gras :

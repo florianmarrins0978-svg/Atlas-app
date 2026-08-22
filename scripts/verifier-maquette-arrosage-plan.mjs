@@ -969,6 +969,31 @@ cas("il le lit AVANT de photographier", () => {
   }
 });
 
+// ── 8 quaterdecies. UN PLAN QUI ENFREINT LA RÈGLE LE DIT ───────────────────
+//
+// *Sa remarque du 21 août :* « il n'est pas valable avec cette nouvelle règle ».
+//
+// **Cette maquette affichait l'interdit puis l'enfreignait juste en dessous** :
+// « sans les trois, aucun plan n'est proposé », et un plan tracé sur une
+// nourrice que j'avais placée d'office, son croquis ne la portant pas. Un écran
+// qui se contredit ainsi apprend à ne plus lire ses propres avertissements.
+//
+// Tant que le croquis ne porte pas le regard, le plan reste montré — c'est une
+// maquette, elle sert à voir le rendu — mais il **dit qu'il n'est pas valable**,
+// et pourquoi.
+cas("un plan qui n'a pas tous ses éléments le dit en tête", async () => {});
+const aveu = await page.evaluate(() => {
+  const p = document.querySelector(".pas-valable");
+  const img = document.querySelector("img[src^='data:image']");
+  return p && img ? { texte: p.innerText, auDessus: p.getBoundingClientRect().top < img.getBoundingClientRect().top } : null;
+});
+cas("l'aveu est là, au-dessus du croquis, et nomme ce qui manque", () => {
+  if (!aveu) throw new Error("le plan est tracé sur une nourrice placée d'office et rien ne le dit");
+  if (!aveu.auDessus) throw new Error("l'aveu est sous le croquis : on aura cru le plan valable avant de le lire");
+  if (!/nourrice/i.test(aveu.texte)) throw new Error("l'aveu ne dit pas QUEL élément manque");
+  if (!/refus/i.test(aveu.texte)) throw new Error("l'aveu ne dit pas que l'application refuserait ce plan");
+});
+
 // ── 9. LE CHOIX DE LA MARQUE — sa demande, deux fois ────────────────────────
 //
 // Le 17 août : *« de base on met du Rain Bird, mais s'il veut, un petit bandeau
