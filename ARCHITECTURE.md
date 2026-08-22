@@ -12785,3 +12785,75 @@ précisément le geste qu'il n'a pas fait.
 
 Elle sait échouer : confrontée à l'ancien code, elle rougit sur trois cas et
 nomme le coupable — *« la liste l'envoie sur /informations »*.
+
+---
+
+## 143. Le calendrier du planning sert aussi à proposer une date
+
+**Sa demande du 22 août 2026**, validée sur planche 91
+(`appli/choisir-la-date.html`) : *« lorsqu'on clique sur "Choisir la date" […]
+on devrait avoir le visuel du calendrier qui se trouve dans la catégorie
+planning, avec la possibilité de cliquer sur les jours pour voir quels chantiers
+y sont déjà affectés — comme ça on peut savoir si oui ou non on peut rajouter
+des clients sur les jours. »*
+
+### Ce que l'écran d'avant ne pouvait pas dire
+
+Il montrait un calendrier NU — des ronds, et les jours impossibles éteints. Il
+refusait un jour **sans jamais dire pourquoi ni ce qu'il portait** : le patron
+ne pouvait pas juger s'il était possible de s'y glisser quand même. Devant un
+jour refusé, il n'avait qu'à le croire sur parole.
+
+### Regarder n'est plus retenir
+
+C'est le changement de fond, et il tient en deux gestes :
+
+| Le geste | Ce qu'il fait |
+|---|---|
+| toucher une case | **ouvre la journée** — qui est là, à quelle demi-journée, avec quelle équipe, et le verdict du serveur pour ce chantier-ci |
+| « Proposer ce jour » | **engage la date** auprès du client |
+
+Auparavant, les deux n'en faisaient qu'un : un jour consulté par erreur partait
+chez quelqu'un. Sur un devis, cela ne se rattrape pas d'un clic.
+
+**Un jour complet reste TOUCHABLE**, à sa demande explicite — *« c'est justement
+celui sur lequel vous voulez regarder avant de décider »*. Il ne se propose
+simplement pas au client tant que la place manque, et la fiche dit laquelle.
+
+### Trois pièces en partage, jamais en copie
+
+| Pièce | Ce qu'elle porte | Pourquoi elle est partagée |
+|---|---|---|
+| `src/components/atlas/MoisCharge.tsx` | le dessin du mois — barres de charge, week-end teinté, aujourd'hui cerclé d'or | deux calendriers divergeraient au premier réglage |
+| `src/components/atlas/useOccupation.ts` | qui occupe quelle demi-journée, absences et équipes cochées comprises | deux calculs finiraient par ne pas dire la même chose de la même journée |
+| `src/server/contexte-planning.ts` | le chargement : chantiers datés, équipes, absences | deux lectures séparées finiraient par ne pas lire les mêmes absences |
+
+**Le prix de ne pas les partager est connu**, et ce dépôt l'a déjà payé : le
+planning annonçant libre une journée que l'écran d'envoi refuse — deux vérités
+sur la même capacité, à deux écrans d'écart (`CLAUDE.md` §3).
+
+### Ce que le serveur garde pour lui
+
+Le calendrier peint la charge des douze mois chargés ; **c'est
+`verifierJourPropose` qui tranche**, y compris au-delà de cette fenêtre. Le
+calendrier montre, le serveur décide — le retirer rendrait le geste plus joli et
+moins sûr.
+
+**Et rien de ce planning ne part chez le client.** Sa page reçoit sa propre
+liste, recalculée sur SA fenêtre au moment où il ouvre le lien (`lireParJeton`).
+Les deux horizons ne se rejoignent nulle part : élargir celui du patron n'ouvre
+pas son carnet de commandes (`docs/AGENT.md` §2.2 bis).
+
+### Ce que la batterie a trouvé, et que la capture ne montrait pas
+
+Trois suites tenaient l'ancien geste, et il fallait les adapter — pas le code
+(`CLAUDE.md` §5 bis) :
+
+- **la case éteinte n'existe plus** : le refus s'écrit sous la case, et c'est le
+  bouton qui reste hors d'atteinte ;
+- **l'exception « tuile de calendrier »** du contrôle des boutons arrondis
+  visait `PlanningClient` ; le dessin ayant déménagé, elle dénonçait une
+  décision du patron qui n'avait pas bougé d'un pixel ;
+- **la fiche du jour portait `data-jour`**, comme les cases : deux éléments pour
+  le même jour, et une suite qui ne savait plus lequel viser. Elle porte
+  désormais `data-journee`.

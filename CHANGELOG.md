@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
+
+**Sa demande, puis sa validation :** *« lorsqu'on clique sur "Choisir la date"
+et que le calendrier s'affiche pour proposer une date au client, on devrait
+avoir le visuel du calendrier qui se trouve dans la catégorie planning, avec la
+possibilité de cliquer sur les jours pour voir quels chantiers y sont déjà
+affectés — comme ça on peut savoir si oui ou non on peut rajouter des clients
+sur les jours »*, puis, devant la planche 91 : *« cette maquette est parfaite,
+tu peux coder ça trait pour trait, ne change rien »*.
+
+**Ce que l'écran d'avant ne pouvait pas dire.** Il montrait des ronds et
+éteignait les jours impossibles — sans jamais dire POURQUOI ni ce qu'ils
+portaient. Impossible de juger si l'on pouvait quand même s'y glisser, et le
+patron n'avait qu'à le croire sur parole.
+
+**Regarder n'est plus retenir**, et c'est le cœur du changement. Toucher une
+case ouvre la journée : qui est là, à quelle demi-journée, avec quelle équipe,
+et le verdict du serveur pour ce chantier-ci. C'est « Proposer ce jour » qui
+engage la date — auparavant, un jour consulté par erreur partait chez le client.
+
+**Un jour complet reste touchable**, à sa demande : c'est justement celui qu'il
+veut regarder avant de décider. Il ne se propose simplement pas.
+
+**Trois pièces sortent en partage plutôt qu'en copie**, et c'est ce qui empêche
+les deux écrans de se contredire : `MoisCharge` (le dessin du mois),
+`useOccupation` (la charge d'une demi-journée) et `contextePlanning` (le
+chargement). Deux calendriers, deux calculs ou deux lectures séparés auraient
+fini par peindre la même journée différemment à deux écrans d'écart — le défaut
+que `CLAUDE.md` §3 interdit, et qui s'est déjà produit ici.
+
+**La durée va jusqu'à 200 jours** — sa correction sur la planche : cent venait
+de sa demande du 3 août, et un chantier de six mois ne s'y posait pas.
+
+**Ce que la batterie a trouvé, et que la capture ne montrait pas :** trois
+suites tenaient l'ancien geste. La case éteinte n'existe plus, l'exception des
+tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour portait
+le même `data-jour` que les cases — deux éléments pour le même jour, et une
+suite qui ne savait plus lequel viser.
+
+
 ### La place se compte en ÉQUIPES, plus en chantiers
 
 *« Pourquoi le matin et l'après-midi de monsieur Eric s'affichent en

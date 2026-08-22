@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-21 · branche `main`
+**Dernière mise à jour :** 2026-08-22 · branche `main`
 · dernière migration `drizzle/0056_diagnostic_vegetal.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -9,6 +9,23 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Proposer une date : le calendrier du planning (22 août 2026)
+
+Sa demande, validée sur planche 91 puis codée trait pour trait.
+
+| | État |
+|---|---|
+| Le calendrier du planning dans « Choisir la date » | **fait** (`MoisCharge`, partagé avec l'écran Planning) |
+| Toucher un jour dit **qui y est déjà**, avec son équipe | **fait** (`JourneeRegardee`) |
+| **Regarder n'est plus retenir** — « Proposer ce jour » engage seul | **fait** |
+| Un jour complet reste **touchable** | **fait**, à sa demande |
+| La durée va jusqu'à **200 jours** | **fait** (`durees-chantier.ts`) |
+| La charge et le chargement partagés, jamais recopiés | **fait** (`useOccupation`, `contextePlanning`) |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §143.
 
 ---
 
