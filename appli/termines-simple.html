@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Terminés », simplifié</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    « TERMINÉS » SIMPLIFIÉ — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 22 août 2026, capture à l'appui :
+
+      « Comme on a fait avec toutes les pages, on les a bien simplifiées,
+        maintenant il reste celles-là. Je la trouve beaucoup trop compliquée.
+        Un utilisateur qui ne connaît pas l'application et qui arrive sur
+        cette page ne comprend rien. Propose-moi quelque chose pour la
+        simplifier, ne code rien, je veux qu'on fasse des maquettes dynamiques
+        en HTML que je puisse essayer avant de coder quoi que ce soit. »
+
+    Même demande, mêmes mots que pour le planning le 19 août (planche 84) :
+    on répond de la même façon — une planche qui s'essaie, rien dans `src/`
+    tant qu'il n'a pas choisi (`CLAUDE.md` §3 bis).
+
+    CE QUI SE COMPREND MAL SUR L'ÉCRAN D'AUJOURD'HUI, relevé sur sa capture :
+
+      1. le SEUL travail qui reste — quatre chantiers à facturer — est écrit
+         en petites capitales dorées et **replié**. Rien ne dit qu'on peut
+         appuyer dessus, et on ne voit pas les quatre chantiers ;
+      2. « 3 828,00 € » est écrit DEUX FOIS (à droite d'août, puis « Facturé,
+         tous mois confondus ») sans qu'on sache pourquoi c'est le même
+         chiffre. Il l'est parce qu'il n'y a qu'un seul mois — mais ça, il
+         faut le deviner ;
+      3. trois codes graphiques que personne n'a appris : la pastille dorée
+         « 4 », les points pleins/creux, le montant en or contre le montant
+         en noir ;
+      4. « F2026-0005 · LE 20 » : un numéro de facture avant toute chose, et
+         une date sans son mois ;
+      5. le fil vertical mange 47 px de largeur pour ne rien dire de plus ;
+      6. « Relevé de TVA collectée » est coupé en deux par la barre du bas.
+
+    TROIS PROPOSITIONS, ET ELLES S'ESSAIENT POUR DE BON. Le bouton
+    « Facturer » facture vraiment : la ligne change de camp, les totaux se
+    refont, le numéro de facture suivant est attribué. « Tout remettre »
+    rejoue la scène.
+
+    RIEN N'EST ÉCRIT EN DUR. Tous les totaux se **recalculent** à partir de la
+    même liste de chantiers — jamais recopiés (`CLAUDE.md` §4 bis : deux
+    chiffres qui se contredisent dans un même écran, et c'est toute la liste
+    qu'on cesse de croire).
+
+    LES DONNÉES. Les cinq factures, leurs montants, leurs dates et les deux
+    totaux sont ceux de SA capture. Les quatre chantiers à facturer sont des
+    exemples — sa capture ne les montre pas, ils sont repliés — et leurs
+    montants font bien les 2 040,00 € qu'elle annonce.
+  */
+
+  :root{
+    --fond:#e6e3dc; --carte:#f5f3ee; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+      --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+    --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--fond)}
+  body{color:var(--encre);font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:0 0 50px;-webkit-text-size-adjust:100%}
+
+  .entete{max-width:430px;margin:0 auto;padding:26px 20px 0;text-align:center}
+  .entete .sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+                text-transform:uppercase;color:var(--or)}
+  .entete h1{margin:11px 0 0;font:400 30px/1.1 ui-serif,Georgia,"Iowan Old Style",serif;
+             letter-spacing:-.015em}
+  .entete p{margin:11px 0 0;font-size:14px;color:var(--encre-douce);line-height:1.6}
+  .entete p b{color:var(--encre)}
+
+  /* ── Le sélecteur : quatre écrans, un seul téléphone ────────────────────
+     Sur un téléphone, quatre maquettes côte à côte font quatre écrans à
+     faire défiler avant de comparer. On en montre UN, et on change. */
+  .choix{max-width:430px;margin:20px auto 0;padding:0 14px;display:grid;
+         grid-template-columns:repeat(4,1fr);gap:6px}
+  .choix button{appearance:none;border:0;cursor:pointer;font:inherit;
+                background:transparent;color:var(--gris);padding:10px 2px 9px;
+                border-radius:11px;font-size:11.5px;font-weight:600;
+                letter-spacing:.1em;text-transform:uppercase;line-height:1.25;
+                box-shadow:inset 0 0 0 1px var(--trait);min-height:46px}
+  .choix button[aria-pressed="true"]{background:var(--encre);color:var(--carte);
+                                     box-shadow:none}
+
+  /* ── Le téléphone ──────────────────────────────────────────────────────
+     Les couleurs de l'écran sont celles de l'application, figées : c'est ce
+     qu'il a sous les yeux sur sa capture, et une maquette qui change de
+     teinte selon le réglage du téléphone ne se compare plus à rien. */
+  .tel{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-douce:#4a4a44;
+    --e-gris:#8a8578; --e-or:#B98B47; --e-pin:#2f3b2f; --e-trait:rgba(28,28,26,.12);
+    max-width:430px;margin:18px auto 0;background:var(--e-fond);color:var(--e-encre);
+    border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.2);
+    min-height:600px;display:flex;flex-direction:column}
+  .corps{flex:1;padding:24px 0 8px}
+
+  .sur-ecran{margin:0 26px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--e-or)}
+  .titre-ecran{margin:11px 26px 0;font:400 40px/1 ui-serif,Georgia,"Iowan Old Style",serif;
+               letter-spacing:-.02em}
+  .phrase{margin:14px 26px 0;font-size:14px;line-height:1.6;color:var(--e-douce)}
+  .phrase b{font-weight:600;color:var(--e-encre)}
+  .filet{margin:20px 26px 0;height:1px;background:var(--e-trait)}
+
+  /* ── Les sections nommées en français ──────────────────────────────── */
+  .section{margin:26px 26px 0}
+  .section > h2{margin:0;display:flex;align-items:baseline;justify-content:space-between;
+                gap:12px;font:400 21px/1.2 ui-serif,Georgia,serif}
+  .section > h2 .somme{font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .section > .quoi{margin:5px 0 0;font-size:12.5px;color:var(--e-gris);line-height:1.55}
+  /* **Le compte des factures : NOIR ET GRAS.** Sa demande du 22 août — « cinq
+     factures envoyées, et tant qui attendent leur facturation, ça tu peux le
+     mettre en noir gras ». C'est ce qu'il vient chercher ; ce n'était pas une
+     note de bas de page. La phrase des devis, elle, reste grise : c'est une
+     réserve, pas un chiffre. */
+  .section > .compte{margin:6px 0 2px;font-size:13px;line-height:1.55;
+                     font-weight:700;color:var(--e-encre)}
+
+  /* ── Feuilleter les mois : ‹ Août 2026 › ───────────────────────────
+     44 px de haut pour les flèches — un pouce, sur un chantier. */
+  .nav-mois{display:flex;align-items:center;gap:2px}
+  .nav-mois .nom-mois-nav{font:400 21px/1.2 ui-serif,Georgia,serif;white-space:nowrap}
+  .nav-mois .somme{margin-left:auto;font-size:16px;font-variant-numeric:tabular-nums;
+                   white-space:nowrap}
+  .fleche-mois{appearance:none;border:0;background:transparent;cursor:pointer;
+               width:38px;height:44px;font-size:22px;line-height:1;color:var(--e-or);
+               font-family:ui-serif,Georgia,serif}
+  .fleche-mois:first-child{margin-left:-10px}
+  .fleche-mois[disabled]{color:var(--e-trait);cursor:default}
+
+  /* ── Une ligne de chantier ─────────────────────────────────────────── */
+  .ligne{display:flex;align-items:center;gap:14px;padding:14px 0;
+         border-bottom:1px solid var(--e-trait)}
+  /* La dernière ligne d'un bloc ne porte pas de filet : le bloc suivant
+     apporte le sien, et les deux se doublaient juste au-dessus de la TVA. */
+  .ligne:last-child{border-bottom:0}
+  .ligne .qui{min-width:0;flex:1}
+  .ligne .nom{display:block;font:400 17px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .quand{display:block;margin-top:4px;font-size:12.5px;color:var(--e-gris);
+                white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .euros{flex:none;font:400 16px/1.2 ui-serif,Georgia,serif;
+                font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ligne .euros.attente{color:var(--e-or)}
+
+  /* Le bouton qui fait le travail. 44 px de haut : c'est un pouce, sur un
+     chantier, parfois avec des gants. */
+  .facturer{appearance:none;border:0;cursor:pointer;font:inherit;flex:none;
+            min-height:44px;padding:0 17px;border-radius:999px;
+            background:var(--e-pin);color:#f4f2ec;font-size:12.5px;font-weight:600;
+            letter-spacing:.12em;text-transform:uppercase}
+  .facturer:active{opacity:.75}
+
+  .vide{margin:16px 0 0;font-size:13.5px;line-height:1.65;color:var(--e-gris)}
+  .vide b{color:var(--e-encre);font-weight:600}
+
+  /* ── Le pied de l'écran : TVA et rappels ───────────────────────────── */
+  .pied-ecran{margin:26px 26px 0;padding-top:6px;border-top:1px solid var(--e-trait)}
+  .rangee{display:flex;align-items:center;justify-content:space-between;gap:14px;
+          min-height:52px;padding:8px 0;border-bottom:1px solid var(--e-trait);
+          font:400 16px/1.25 ui-serif,Georgia,serif;cursor:pointer}
+  .rangee:last-of-type{border-bottom:0}
+  .rangee .fleche{color:var(--e-or);font-size:15px}
+  .rangee .petit{display:block;margin-top:3px;font:400 12px/1.5 ui-sans-serif,sans-serif;
+                 color:var(--e-gris)}
+
+  /* ── La barre du bas ───────────────────────────────────────────────── */
+  .barre{display:flex;background:var(--e-plage);border-top:1px solid var(--e-trait);
+         padding:11px 6px calc(11px + env(safe-area-inset-bottom,0px))}
+  .barre span{flex:1;text-align:center;font-size:9.5px;font-weight:500;letter-spacing:.13em;
+              text-transform:uppercase;color:var(--e-gris);padding:6px 0 8px}
+  .barre span.ici{color:var(--e-encre);box-shadow:inset 0 -2px 0 var(--e-or)}
+
+  /* ── L'écran d'AUJOURD'HUI, refait à l'identique de sa capture ─────── */
+  .fil{position:relative;margin:22px 26px 0}
+  .fil .trait{position:absolute;left:47px;top:14px;bottom:16px;width:1px;background:var(--e-trait)}
+  .mois{position:relative;display:grid;grid-template-columns:47px 1fr;
+        column-gap:26px;padding:14px 0 4px}
+  .mois .pastille{position:absolute;left:47px;top:19px;transform:translate(-50%,-50%);
+                  width:22px;height:22px;border-radius:999px;background:var(--e-or);
+                  color:var(--e-fond);font-size:11px;display:flex;align-items:center;
+                  justify-content:center;font-variant-numeric:tabular-nums}
+  .mois .nom-mois{justify-self:end;text-align:right;padding-right:24px}
+  .mois .nom-mois b{display:block;font:400 17px/1 ui-serif,Georgia,serif}
+  .mois .nom-mois i{display:block;margin-top:4px;font-style:normal;font-size:9px;
+                    letter-spacing:.16em;text-transform:uppercase;color:var(--e-gris)}
+  .mois .total-mois{align-self:center;text-align:right;font-size:11px;letter-spacing:.2em;
+                    text-transform:uppercase;color:var(--e-gris);font-variant-numeric:tabular-nums}
+  .encart{display:flex;align-items:center;gap:9px;width:100%;min-height:44px;
+          padding-left:73px;background:transparent;border:0;cursor:pointer;font:inherit;
+          color:var(--e-or)}
+  .encart .caps{font-size:9.5px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+                white-space:nowrap}
+  .encart .prevu{font-size:12px;opacity:.8;font-variant-numeric:tabular-nums}
+  .encart .chev{margin-left:auto;font-size:15px;transition:transform .3s ease}
+  .encart[aria-expanded="true"] .chev{transform:rotate(90deg)}
+  .volet{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
+  .volet[data-ouvert="oui"]{grid-template-rows:1fr}
+  .volet > div{overflow:hidden}
+  .volet .source{margin:2px 0 10px;padding-left:73px;font-size:12px;color:var(--e-gris)}
+  .ancienne{display:grid;grid-template-columns:47px 1fr;column-gap:26px}
+  .ancienne .perle-col{position:relative}
+  .ancienne .perle{position:absolute;left:47px;top:22px;transform:translate(-50%,-50%);
+                   width:7px;height:7px;border-radius:999px;background:var(--e-or);
+                   box-shadow:0 0 0 4px var(--e-fond)}
+  .ancienne .perle.creuse{background:var(--e-fond);
+                          box-shadow:inset 0 0 0 1px var(--e-or),0 0 0 4px var(--e-fond)}
+  .ancienne .contenu{display:flex;align-items:baseline;justify-content:space-between;
+                     gap:16px;padding:14px 0;border-bottom:1px solid var(--e-trait);min-width:0}
+  .ancienne .contenu .nom{display:block;font:400 17px/1.2 ui-serif,Georgia,serif;
+                          white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ancienne .contenu .ref{display:block;margin-top:3px;font-size:11px;letter-spacing:.14em;
+                          text-transform:uppercase;color:var(--e-gris)}
+  .ancienne .contenu .euros{flex:none;font:400 16px/1.2 ui-serif,Georgia,serif;
+                            font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ancienne .contenu .euros.attente{color:var(--e-or)}
+  .pied-ancien{margin:22px 26px 0;padding-top:14px;border-top:1px solid var(--e-trait)}
+  .pied-ancien .tous{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+                     padding:6px 0;font-size:12.5px;color:var(--e-gris)}
+  .pied-ancien .tous b{font-weight:400;color:var(--e-encre);font-variant-numeric:tabular-nums}
+  .pied-ancien .tva{display:flex;align-items:center;justify-content:space-between;gap:14px;
+                    padding:14px 0;border-top:1px solid var(--e-trait);
+                    font:400 16px/1.2 ui-serif,Georgia,serif}
+  .pied-ancien .tva .fleche{color:var(--e-or);font-size:15px}
+  .pied-ancien .mention{margin:0;font-size:11px;line-height:1.6;color:var(--e-gris)}
+
+  /* ── Sous le téléphone : ce qui change, et le bouton pour rejouer ──── */
+  .commande{max-width:430px;margin:16px auto 0;padding:0 20px;text-align:center}
+  .commande button{appearance:none;border:0;cursor:pointer;font:inherit;
+                   background:transparent;color:var(--encre-douce);font-size:13px;
+                   min-height:44px;padding:0 18px;border-radius:999px;
+                   box-shadow:inset 0 0 0 1px var(--trait)}
+
+  .legende{max-width:430px;margin:22px auto 0;padding:0 20px}
+  .legende .carte{background:var(--carte);border-radius:16px;padding:19px 20px}
+  .legende h3{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--or)}
+  .legende .nom-prop{margin:9px 0 0;font:400 21px/1.25 ui-serif,Georgia,serif}
+  .legende p{margin:10px 0 0;font-size:14px;line-height:1.65;color:var(--encre-douce)}
+  .legende p b{color:var(--encre)}
+  .legende ul{margin:12px 0 0;padding-left:1.15em}
+  .legende li{margin-bottom:7px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+  .legende li b{color:var(--encre)}
+
+  .fin{max-width:430px;margin:26px auto 0;padding:0 20px;font-size:13px;line-height:1.7;
+       color:var(--gris)}
+  .fin b{color:var(--encre-douce)}
+  .fin a{color:var(--or)}
+</style>
+
+<div class="entete">
+  <p class="sur">Atlas · 22 août 2026</p>
+  <h1>« Terminés », simplifié</h1>
+  <p>Votre écran d’aujourd’hui, puis <b>trois façons de le simplifier</b>.
+     Appuyez sur les onglets pour passer de l’un à l’autre —
+     <b>et les boutons « Facturer » facturent pour de bon</b>.</p>
+</div>
+
+<div class="choix" role="group" aria-label="Quel écran regarder">
+  <button type="button" data-vue="aujourdhui" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-vue="a" aria-pressed="false">A · Deux&nbsp;piles</button>
+  <button type="button" data-vue="b" aria-pressed="false">B · Une&nbsp;liste</button>
+  <button type="button" data-vue="c" aria-pressed="false">C · À&nbsp;facturer</button>
+</div>
+
+<div class="tel">
+  <div class="corps" id="ecran"></div>
+  <nav class="barre" id="barre"></nav>
+</div>
+
+<div class="commande">
+  <button type="button" id="remettre">Tout remettre comme au départ</button>
+</div>
+
+<div class="legende"><div class="carte" id="legende"></div></div>
+
+<p class="fin">
+  Cette page ne touche <b>ni à vos données ni à l’application</b> : c’est une
+  maquette. Ce que vous y facturez ne part nulle part et disparaît en fermant.
+  <br><br>
+  Les cinq factures, leurs montants et les deux totaux sont ceux de <b>votre
+  capture</b>. Les quatre chantiers à facturer sont des exemples — votre écran
+  les cache — et leurs montants font bien les <b>2 040,00 €</b> qu’il annonce.
+  <br><br>
+  Les trois propositions portent <b>un chantier de plus</b> : M. Ferreira,
+  terminé le 14 juillet et jamais facturé, pour que <b>le retard s’essaie</b>.
+  L’onglet « Aujourd’hui » ne l’a pas — il doit rester votre capture au chiffre
+  près. Et <b>aucune facture n’a été inventée dans le passé</b> : vos numéros
+  commencent au 18 août, donc les mois d’avant répondent « aucune facture ».
+  <br><br>
+  <a href="essais.html">‹ Toutes les maquettes à essayer</a>
+</p>
+
+<script>
+/* ======================================================================
+   LES CHANTIERS — une seule liste, et tout se recalcule à partir d'elle.
+
+   `numero` non nul = facturé. C'est la seule différence entre les deux
+   camps, exactement comme dans l'application (`estFacture`, qui regarde
+   `factureStatut === "emise"`).
+   ====================================================================== */
+const CAPTURE = [
+  // Les cinq factures de sa capture, au centime et à la date près.
+  { id:'f5', nom:'Mr. Martins',      jour:'2026-08-20', montant:1764.00, numero:'F2026-0005' },
+  { id:'f4', nom:'Mr. Martins',      jour:'2026-08-19', montant:240.00,  numero:'F2026-0004' },
+  { id:'f2', nom:'Monsieur Martins', jour:'2026-08-19', montant:48.00,   numero:'F2026-0002' },
+  { id:'f1', nom:'Monsieur Martins', jour:'2026-08-18', montant:936.00,  numero:'F2026-0001' },
+  { id:'f3', nom:'Monsieur Martin',  jour:'2026-08-14', montant:840.00,  numero:'F2026-0003' },
+  // Les quatre qui attendent : sa capture en annonce quatre pour 2 040,00 €,
+  // sans les montrer. Exemples — 620 + 480 + 700 + 240 = 2 040.
+  { id:'a1', nom:'Mme Renard',            jour:'2026-08-21', montant:620.00, numero:null },
+  { id:'a2', nom:'M. Blanchard',          jour:'2026-08-17', montant:480.00, numero:null },
+  { id:'a3', nom:'Mairie de Sainte-Luce', jour:'2026-08-12', montant:700.00, numero:null },
+  { id:'a4', nom:'Mr. Martins',           jour:'2026-08-08', montant:240.00, numero:null },
+];
+
+/* **Le retard de facturation, sa demande du 22 août** : *« il faut pouvoir
+   revenir dans le passé si jamais on a du retard sur la facturation »*. Un
+   chantier de JUILLET jamais facturé — sans lui, le retour en arrière ne se
+   juge pas, il se croit sur parole.
+
+   **Il ne va que dans les propositions, jamais dans l'écran d'aujourd'hui.**
+   Celui-là doit rester sa capture au chiffre près : un cinquième chantier en
+   attente y ferait « Cinq à facturer · 2 930,00 € », et on ne comparerait plus
+   à ce qu'il a sous les yeux.
+
+   **Aucune facture n'est inventée dans le passé, et c'est délibéré.** Ses
+   numéros commencent à F2026-0001 le 18 août : il n'a jamais facturé avant.
+   Un mois passé sans facture le DIT — « Aucune facture en juillet » — plutôt
+   que d'en fabriquer (`CLAUDE.md` §4 : ce qui n'a pas de source reste vide et
+   signalé). */
+const RETARD = { id:'r1', nom:'M. Ferreira', jour:'2026-07-14', montant:890.00, numero:null };
+
+const DEPART = [...CAPTURE, RETARD];
+
+let chantiers = DEPART.map((c) => ({ ...c }));
+let vue = 'aujourdhui';
+let volet = false; // l'encart replié de l'écran d'aujourd'hui
+
+/* ── Petits outils ─────────────────────────────────────────────────── */
+const MOIS = ['janvier','février','mars','avril','mai','juin',
+              'juillet','août','septembre','octobre','novembre','décembre'];
+
+const EUROS = new Intl.NumberFormat('fr-FR',
+  { style:'currency', currency:'EUR', minimumFractionDigits:2, maximumFractionDigits:2 });
+/** « 1 764,00 € » — le même formateur que l'application. */
+const euros = (n) => EUROS.format(n);
+/** « 1 764 € » — pour un titre, où les centimes n'apprennent rien. */
+const eurosCourt = (n) => new Intl.NumberFormat('fr-FR',
+  { style:'currency', currency:'EUR', maximumFractionDigits:0 }).format(n);
+
+const jourDe  = (iso) => Number(iso.slice(8,10));
+const moisDe  = (iso) => MOIS[Number(iso.slice(5,7)) - 1];
+const anneeDe = (iso) => iso.slice(0,4);
+/** « Jeudi 20 août » — une date qu'on lit, pas « LE 20 ». */
+function dateEnClair(iso){
+  const d = new Date(iso + 'T12:00:00Z');
+  const j = d.toLocaleDateString('fr-FR', { weekday:'long', timeZone:'UTC' });
+  return j.charAt(0).toUpperCase() + j.slice(1) + ' ' + jourDe(iso) + ' ' + moisDe(iso);
+}
+/** « Facture n° 5 » — le numéro qu'il lit à voix haute, pas « F2026-0005 ».
+    `slice(6)` et non 5 : le tiret de « F2026-0005 » entrait dans le nombre et
+    l'écran affichait « Facture n° -5 ». Trouvé en REGARDANT la capture, pas
+    par un contrôle (`CLAUDE.md` §5). */
+const numeroCourt = (n) => 'Facture n° ' + Number(n.slice(6));
+
+const echappe = (t) => String(t).replace(/[&<>"]/g,
+  (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+
+/* ── Les comptes. AUCUN chiffre n'est écrit à la main. ───────────────── */
+
+/** Du plus récent au plus ancien — et **0 quand c'est le même jour**.
+    Un comparateur qui répond -1 à égalité n'est pas seulement instable : il
+    se contredit (a<b et b<a en même temps), et le tri rend un ordre qu'aucune
+    donnée n'explique. Ses deux factures du 19 août sortaient à l'envers de sa
+    capture. */
+const duPlusRecent = (x,y) => x.jour === y.jour ? 0 : (x.jour < y.jour ? 1 : -1);
+const aFacturer = () => chantiers.filter((c) => !c.numero).sort(duPlusRecent);
+const facturees = () => chantiers.filter((c) => c.numero).sort(duPlusRecent);
+const somme = (liste) => liste.reduce((t,c) => t + c.montant, 0);
+
+/** Le prochain numéro libre — pour que « Facturer » se voie jusqu'au bout. */
+function prochainNumero(){
+  const pris = chantiers.filter((c) => c.numero).map((c) => Number(c.numero.slice(5)));
+  return 'F2026-' + String(Math.max(0, ...pris) + 1).padStart(4,'0');
+}
+
+/** Facturer pour de bon : la ligne change de camp, les totaux se refont. */
+function facturer(id){
+  const c = chantiers.find((x) => x.id === id);
+  if (!c || c.numero) return;
+  c.numero = prochainNumero();
+  rendre();
+}
+
+/* ======================================================================
+   REVENIR DANS LE PASSÉ — sa demande du 22 août 2026.
+
+   *« En haut il y a marqué août 2026, mais il faut pouvoir revenir dans le
+   passé si jamais on a du retard sur la facturation. »*
+
+   **On se déplace sur le CALENDRIER, pas sur la liste des mois qui portent
+   quelque chose.** Sauter de août à mai parce que juin et juillet sont vides
+   laisse croire que juin n'existe pas ; l'écran doit pouvoir répondre « aucune
+   facture en juin », ce qui est une réponse.
+
+   **Et ce qui reste à facturer NE SUIT PAS le mois.** C'est tout l'objet de sa
+   demande : un chantier de juillet jamais facturé doit rester sous ses yeux en
+   août, sans quoi il faudrait déjà savoir qu'il existe pour aller le chercher.
+   Seul le FACTURÉ se feuillette.
+   ====================================================================== */
+let recul = 0;              // 0 = le mois le plus récent
+const RECUL_MAX = 18;       // dix-huit mois en arrière : au-delà, plus rien
+
+/** Le mois le plus récent des données — le point de départ du feuilletage. */
+const MOIS_BASE = [...DEPART].sort(duPlusRecent)[0].jour.slice(0, 7);
+
+/** « 2026-08 » reculé de n mois. */
+function decaler(cle, n){
+  let annee = Number(cle.slice(0,4)), mois = Number(cle.slice(5,7)) - n;
+  while (mois < 1) { mois += 12; annee -= 1; }
+  while (mois > 12) { mois -= 12; annee += 1; }
+  return annee + '-' + String(mois).padStart(2, '0');
+}
+const cleAffichee = () => decaler(MOIS_BASE, recul);
+/** « Août 2026 » — le mois en toutes lettres, capitale en tête. */
+function nomDuMois(cle){
+  const n = MOIS[Number(cle.slice(5,7)) - 1];
+  return n.charAt(0).toUpperCase() + n.slice(1) + ' ' + cle.slice(0,4);
+}
+
+/**
+ * L'en-tête d'un mois qu'on peut feuilleter : ‹ Août 2026 › et son total.
+ *
+ * **La flèche du futur se ferme au mois le plus récent.** Un bouton qui ne
+ * fait rien s'appuie deux fois, puis on croit l'écran cassé.
+ */
+function enTeteMois(cle, total){
+  return `
+    <div class="nav-mois">
+      <button type="button" class="fleche-mois" data-recul="1"
+        ${recul >= RECUL_MAX ? 'disabled' : ''} aria-label="Mois précédent">‹</button>
+      <span class="nom-mois-nav">${nomDuMois(cle)}</span>
+      <button type="button" class="fleche-mois" data-recul="-1"
+        ${recul <= 0 ? 'disabled' : ''} aria-label="Mois suivant">›</button>
+      <span class="somme">${total > 0 ? euros(total) : ''}</span>
+    </div>`;
+}
+
+/* ── Les mois, pour les écrans qui les gardent ──────────────────────── */
+function parMois(liste){
+  const groupes = new Map();
+  for (const c of liste){
+    const cle = c.jour.slice(0,7);
+    if (!groupes.has(cle)) groupes.set(cle, { cle, nom:moisDe(c.jour), annee:anneeDe(c.jour), lignes:[] });
+    groupes.get(cle).lignes.push(c);
+  }
+  return [...groupes.values()].sort((a,b) => a.cle < b.cle ? 1 : -1);
+}
+
+/* ======================================================================
+   AUJOURD'HUI — l'écran tel qu'il est, refait de sa capture.
+
+   Il est ici pour une raison : comparer une proposition à un souvenir ne
+   prouve rien. Les points, la pastille, l'encart replié et le fil sont
+   ceux de `src/app/termines/FilTermines.tsx`, au pixel de marge près.
+   ====================================================================== */
+function ecranAujourdhui(){
+  // **Sur SA capture, pas sur les données des propositions.** Le chantier de
+  // juillet resté à facturer n'existe que dans les propositions : ici, l'écran
+  // doit rendre « Quatre à facturer · 2 040,00 € », ce qu'il a sous les yeux.
+  const attente = CAPTURE.filter((c) => !c.numero).sort(duPlusRecent);
+  const faites = CAPTURE.filter((c) => c.numero).sort(duPlusRecent);
+  const moisFaits = parMois(faites);
+  const total = somme(faites);
+  const lettres = ['zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf'];
+  const encart = attente.length > 0
+    ? (lettres[attente.length] || attente.length).replace(/^./, (m) => m.toUpperCase()) + ' à facturer'
+    : null;
+
+  // Le mois porte-t-il l'encart ? Dans l'application, ce qui attend reste
+  // dans SON mois. Ici tout est en août : on l'accroche au mois d'août.
+  const cleAttente = attente.length ? attente[0].jour.slice(0,7) : null;
+
+  const ligne = (c, creuse) => `
+    <div class="ancienne">
+      <span class="perle-col"><span class="perle${creuse ? ' creuse' : ''}"></span></span>
+      <span class="contenu">
+        <span style="min-width:0">
+          <span class="nom">${echappe(c.nom)}</span>
+          <span class="ref">${c.numero
+            ? echappe(c.numero) + ' · le ' + jourDe(c.jour)
+            : 'Le ' + jourDe(c.jour) + ' ' + moisDe(c.jour)}</span>
+        </span>
+        <span class="euros${creuse ? ' attente' : ''}">${euros(c.montant)}</span>
+      </span>
+    </div>`;
+
+  const blocsMois = moisFaits.map((m) => {
+    const porteEncart = encart && m.cle === cleAttente;
+    return `
+      <div>
+        <div class="mois">
+          ${porteEncart ? `<span class="pastille">${attente.length}</span>` : ''}
+          <span class="nom-mois" style="padding-right:${porteEncart ? 24 : 13}px">
+            <b>${m.nom}</b><i>${m.annee}</i>
+          </span>
+          <span class="total-mois">${euros(somme(m.lignes))}</span>
+        </div>
+        ${porteEncart ? `
+          <button type="button" class="encart" data-volet aria-expanded="${volet}">
+            <span class="caps">${encart}</span>
+            <span class="prevu">${euros(somme(attente))}</span>
+            <span class="chev">›</span>
+          </button>
+          <div class="volet" data-ouvert="${volet ? 'oui' : 'non'}">
+            <div>
+              ${attente.map((c) => ligne(c, true)).join('')}
+              <p class="source">Montants prévus aux devis.</p>
+            </div>
+          </div>` : ''}
+        ${m.lignes.map((c) => ligne(c, false)).join('')}
+      </div>`;
+  }).join('');
+
+  return `
+    <p class="sur-ecran">Chantiers réalisés</p>
+    <h1 class="titre-ecran">Terminés</h1>
+    <div class="filet"></div>
+    <div class="fil"><span class="trait"></span>${blocsMois}</div>
+    <div class="pied-ancien">
+      <p class="tous">Facturé, tous mois confondus <b>${euros(total)}</b></p>
+      <div class="tva">Relevé de TVA collectée <span class="fleche">›</span></div>
+      <p class="mention">Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>`;
+}
+
+/* ======================================================================
+   A — DEUX PILES : ce qui reste à faire, puis ce qui est fait.
+
+   Le travail qui reste n'est plus replié : il est en HAUT, dépliés, avec
+   son bouton. Ce qui est fait descend, calme, sous son propre titre.
+   ====================================================================== */
+function ecranA(){
+  const attente = aFacturer(), faites = facturees();
+  // Le mois feuilleté, et lui seul. `attente` ne le suit pas : un chantier de
+  // juillet resté à facturer se voit encore en août — c'est le retard.
+  const cle = cleAffichee();
+  const duMois = faites.filter((c) => c.jour.slice(0,7) === cle);
+
+  const carteAttente = attente.length === 0 ? `
+    <div class="section">
+      <h2>Rien à facturer</h2>
+      <p class="vide">Tous vos chantiers terminés sont facturés.
+        <b>${euros(somme(faites))}</b> en tout.</p>
+    </div>` : `
+    <div class="section">
+      <h2>À facturer <span class="somme" style="color:var(--e-or)">${euros(somme(attente))}</span></h2>
+      <p class="quoi">Montants prévus à vos devis, ils peuvent encore bouger.</p>
+      ${attente.map((c) => `
+        <div class="ligne">
+          <span class="qui">
+            <span class="nom">${echappe(c.nom)}</span>
+            <span class="quand">${dateEnClair(c.jour)} · ${euros(c.montant)}</span>
+          </span>
+          <button type="button" class="facturer" data-facturer="${c.id}">Facturer</button>
+        </div>`).join('')}
+    </div>`;
+
+  const blocFait = `
+    <div class="section">
+      ${enTeteMois(cle, somme(duMois))}
+      ${duMois.length === 0
+        ? `<p class="vide">Aucune facture en ${nomDuMois(cle).toLowerCase()}.</p>`
+        : `<p class="compte">${duMois.length} facture${duMois.length > 1 ? 's' : ''} envoyée${duMois.length > 1 ? 's' : ''}.</p>
+      ${duMois.map((c) => `
+        <div class="ligne">
+          <span class="qui">
+            <span class="nom">${echappe(c.nom)}</span>
+            <span class="quand">${numeroCourt(c.numero)} · ${dateEnClair(c.jour)}</span>
+          </span>
+          <span class="euros">${euros(c.montant)}</span>
+        </div>`).join('')}`}
+    </div>`;
+
+  return `
+    <h1 class="titre-ecran">Terminés</h1>
+    <p class="phrase">${attente.length
+      ? `<b>${attente.length} chantier${attente.length > 1 ? 's' : ''}</b> ` +
+        (attente.length > 1 ? 'attendent leur facture.' : 'attend sa facture.')
+      : 'Tout est facturé.'}</p>
+    <div class="filet"></div>
+    ${carteAttente}
+    ${blocFait}
+    <div class="pied-ecran">
+      <div class="rangee">Ma TVA à déclarer
+        <span class="fleche">›</span></div>
+      <p class="mention" style="margin:0 0 8px;font-size:11px;line-height:1.6;color:var(--e-gris)">
+        Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>`;
+}
+
+/* ======================================================================
+   B — UNE SEULE LISTE, et l'état écrit en toutes lettres.
+
+   Le plus proche d'aujourd'hui : on garde le fil du temps, on retire les
+   codes. Plus de points, plus de pastille, plus d'or contre noir : chaque
+   ligne DIT où elle en est. Deux onglets pour ne voir que ce qui attend.
+   ====================================================================== */
+function ecranB(){
+  const attente = aFacturer(), faites = facturees();
+  const tout = [...chantiers].sort(duPlusRecent);
+
+  const onglet = (cle, texte) => `
+    <button type="button" class="filtre" data-filtre="${cle}"
+      aria-pressed="${filtreB === cle}">${texte}</button>`;
+
+  /* **Le total du mois ne mélange pas les deux camps.** Il portait la somme
+     de tout — 5 868,00 € — c'est-à-dire un chiffre qui n'existe nulle part :
+     ni ce qui est rentré, ni ce qui attend. Exactement le défaut qu'on est en
+     train de retirer. Il ne compte donc que le FACTURÉ, et ce qui attend se
+     dit en dessous, en toutes lettres. */
+  const ligne = (c) => c.numero ? `
+        <div class="ligne">
+          <span class="qui">
+            <span class="nom">${echappe(c.nom)}</span>
+            <span class="quand">Facturé le ${jourDe(c.jour)} ${moisDe(c.jour)} · ${numeroCourt(c.numero)}</span>
+          </span>
+          <span class="euros">${euros(c.montant)}</span>
+        </div>` : `
+        <div class="ligne">
+          <span class="qui">
+            <span class="nom">${echappe(c.nom)}</span>
+            <span class="quand" style="color:var(--e-or)">Pas encore facturé ·
+              ${euros(c.montant)} prévus</span>
+          </span>
+          <button type="button" class="facturer" data-facturer="${c.id}">Facturer</button>
+        </div>`;
+
+  /* **L'onglet « À facturer » ne se feuillette pas.** Il montre tout ce qui
+     attend, tous mois confondus — c'est exactement ce qu'on vient y chercher
+     quand on a du retard. Seul « Tout » se déplace de mois en mois. */
+  const blocs = filtreB === 'attente'
+    ? (attente.length === 0
+        ? `<div class="section"><p class="vide">Rien n’attend. Vous êtes à jour.</p></div>`
+        : `<div class="section">
+             <p class="compte">${attente.length} chantier${attente.length > 1 ? 's' : ''} à facturer, tous mois confondus.</p>
+             ${attente.map(ligne).join('')}
+           </div>`)
+    : (() => {
+        const cleM = cleAffichee();
+        const duMois = tout.filter((c) => c.jour.slice(0,7) === cleM);
+        const faitesDuMois = duMois.filter((c) => c.numero);
+        const attenteDuMois = duMois.filter((c) => !c.numero);
+        return `
+    <div class="section">
+      ${enTeteMois(cleM, somme(faitesDuMois))}
+      ${duMois.length === 0
+        ? `<p class="vide">Rien en ${nomDuMois(cleM).toLowerCase()}.</p>`
+        : `<p class="compte">${faitesDuMois.length} facture${faitesDuMois.length > 1 ? 's' : ''} envoyée${faitesDuMois.length > 1 ? 's' : ''}${
+            attenteDuMois.length
+              ? ` · et ${euros(somme(attenteDuMois))} qui attendent leur facture`
+              : ''}.</p>
+      ${duMois.map(ligne).join('')}`}
+    </div>`;
+      })();
+
+  return `
+    <h1 class="titre-ecran">Terminés</h1>
+    <p class="phrase">${attente.length
+      ? `<b>${attente.length} à facturer</b>, ${euros(somme(attente))} · <b>${faites.length} facturés</b>, ${euros(somme(faites))}`
+      : `<b>${faites.length} facturés</b>, ${euros(somme(faites))}`}</p>
+    <div class="onglets">${onglet('tout','Tout')}${onglet('attente','À facturer')}</div>
+    ${blocs}
+    <div class="pied-ecran">
+      <div class="rangee">Ma TVA à déclarer <span class="fleche">›</span></div>
+      <p class="mention" style="margin:0 0 8px;font-size:11px;line-height:1.6;color:var(--e-gris)">
+        Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>`;
+}
+let filtreB = 'tout';
+
+/* ======================================================================
+   C — LA PAGE NE FAIT QU'UNE CHOSE : facturer.
+
+   L'onglet du bas change de nom. L'écran ne montre QUE ce qui attend, en
+   grand. Ce qui est fait n'est plus une liste : c'est une porte, une
+   ligne, en bas.
+   ====================================================================== */
+function ecranC(){
+  const attente = aFacturer(), faites = facturees();
+
+  const cartes = attente.length === 0 ? `
+    <div class="section">
+      <p class="vide" style="font-size:16px;line-height:1.6">
+        <b>Tout est facturé.</b><br>
+        ${eurosCourt(somme(faites))} envoyés à vos clients ce mois-ci.</p>
+    </div>` : attente.map((c) => `
+    <div class="section" style="background:#faf9f5;border-radius:16px;padding:18px 19px;
+                                box-shadow:inset 0 0 0 1px var(--e-trait)">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px">
+        <span style="font:400 20px/1.2 ui-serif,Georgia,serif;min-width:0;
+                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${echappe(c.nom)}</span>
+        <span style="flex:none;font:400 19px/1.2 ui-serif,Georgia,serif;
+                     font-variant-numeric:tabular-nums;white-space:nowrap">${euros(c.montant)}</span>
+      </div>
+      <p style="margin:6px 0 0;font-size:13px;color:var(--e-gris)">
+        Terminé le ${jourDe(c.jour)} ${moisDe(c.jour)} · montant prévu au devis</p>
+      <button type="button" class="facturer" data-facturer="${c.id}"
+        style="width:100%;margin-top:14px">Facturer ce chantier</button>
+    </div>`).join('');
+
+  return `
+    <h1 class="titre-ecran">À facturer</h1>
+    <p class="phrase">${attente.length
+      ? `<b>${euros(somme(attente))}</b> attendent d’être facturés.`
+      : 'Rien n’attend. Vous êtes à jour.'}</p>
+    <div class="filet"></div>
+    ${cartes}
+    <div class="pied-ecran">
+      <div class="rangee">Mes factures
+        <span style="display:flex;align-items:center;gap:12px">
+          <span style="font:400 14px/1 ui-sans-serif,sans-serif;color:var(--e-gris);
+                       font-variant-numeric:tabular-nums">${faites.length} · ${eurosCourt(somme(faites))}</span>
+          <span class="fleche">›</span></span></div>
+      <div class="rangee">Ma TVA à déclarer <span class="fleche">›</span></div>
+      <p class="mention" style="margin:0 0 8px;font-size:11px;line-height:1.6;color:var(--e-gris)">
+        Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>`;
+}
+
+/* ── La barre du bas : seule la C renomme l'onglet ──────────────────── */
+function barre(){
+  const nom = vue === 'c' ? 'À facturer' : 'Terminés';
+  return ['Chantiers','Planning',nom,'Paysage','Réglages']
+    .map((t) => `<span class="${t === nom ? 'ici' : ''}">${t}</span>`).join('');
+}
+
+/* ── Les légendes, sous le téléphone ────────────────────────────────── */
+const LEGENDES = {
+  aujourdhui: {
+    titre:'Votre écran d’aujourd’hui',
+    chapo:'Refait à l’identique de votre capture, pour comparer sans se fier à un souvenir. <b>L’encart doré s’ouvre</b> : c’est là que sont les quatre chantiers à facturer.',
+    points:[
+      '<b>Le seul travail qui reste est replié</b> — quatre chantiers cachés derrière une ligne en petites capitales, sans rien qui dise qu’on peut appuyer.',
+      '<b>3 828,00 € est écrit deux fois</b>, à droite d’« août » et tout en bas. C’est le même chiffre parce qu’il n’y a qu’un mois — mais il faut le deviner.',
+      '<b>Trois codes que personne n’a appris</b> : la pastille dorée « 4 », les points pleins et creux, le montant en or contre le montant en noir.',
+      '<b>« F2026-0005 · LE 20 »</b> : un numéro de facture avant tout le reste, et une date sans son mois.',
+      '<b>Le fil vertical prend 47 px de large</b> et ne dit rien que la liste ne dise déjà.',
+    ],
+  },
+  a: {
+    titre:'A · Deux piles : ce qui reste, ce qui est fait',
+    chapo:'Ce qui attend <b>monte en haut de l’écran, déplié</b>, avec un bouton « Facturer » par ligne. Ce qui est fait descend, sous un titre qui le nomme.',
+    points:[
+      '<b>Plus rien de replié</b> : les chantiers à facturer se voient et se facturent en un appui.',
+      '<b>‹ Août 2026 › se feuillette</b> — votre demande du 22 août. Reculez : « Aucune facture en juillet » est une réponse, et un mois vide ne se saute pas.',
+      '<b>Ce qui reste à facturer NE suit PAS le mois.</b> M. Ferreira, terminé le 14 juillet et jamais facturé, reste sous vos yeux en août : c’est ça, le retard.',
+      '<b>« 5 factures envoyées » est en noir gras</b>, votre demande. La phrase sur les devis reste grise : c’est une réserve, pas un chiffre.',
+      '<b>« Facture n° 5 · Jeudi 20 août »</b> remplace « F2026-0005 · LE 20 ». Ni fil, ni points, ni pastille.',
+    ],
+  },
+  b: {
+    titre:'B · Une seule liste, l’état écrit',
+    chapo:'Le plus proche de votre écran actuel : on garde le fil du temps, <b>on remplace les codes par des mots</b>. Chaque ligne dit où elle en est.',
+    points:[
+      '<b>« Pas encore facturé » / « Facturé le 20 août »</b> : plus de point creux à décoder.',
+      '<b>‹ Août 2026 › se feuillette</b>, comme dans la A — et le compte des factures est en <b>noir gras</b>.',
+      '<b>Deux onglets</b> — Tout, À facturer. Le second <b>ne se feuillette pas</b> : il montre tout ce qui attend, tous mois confondus. C’est là qu’on va quand on a du retard.',
+      '<b>Une phrase en haut</b> dit les deux chiffres et ce qu’ils sont, au lieu de les poser sans légende.',
+      'C’est la proposition qui change le moins de choses — <b>et donc la plus rapide à coder</b>.',
+    ],
+  },
+  c: {
+    titre:'C · La page ne fait qu’une chose',
+    chapo:'La plus radicale : <b>l’onglet s’appelle « À facturer »</b> et l’écran ne montre que ça. Ce qui est déjà facturé devient une porte, en bas, pas une liste.',
+    points:[
+      '<b>Un chantier, une carte, un bouton.</b> On ne peut pas se tromper sur ce qu’on attend de vous.',
+      '<b>Quand tout est facturé, l’écran le dit</b> — « Tout est facturé » — au lieu d’avoir l’air vide. Facturez les quatre pour voir.',
+      '<b>« Mes factures — 5 · 3 828 € »</b> : l’historique tient en une ligne, et s’ouvre si vous le voulez.',
+      'La TVA n’est plus coupée par la barre du bas.',
+      'Le prix à payer : <b>votre historique n’est plus sous les yeux</b>, il est à un appui.',
+    ],
+  },
+};
+
+/* ── Le rendu ───────────────────────────────────────────────────────── */
+const zone = document.getElementById('ecran');
+const zoneBarre = document.getElementById('barre');
+const zoneLegende = document.getElementById('legende');
+
+function rendre(){
+  zone.innerHTML = vue === 'a' ? ecranA()
+                 : vue === 'b' ? ecranB()
+                 : vue === 'c' ? ecranC()
+                 : ecranAujourdhui();
+  zoneBarre.innerHTML = barre();
+
+  const l = LEGENDES[vue];
+  zoneLegende.innerHTML =
+    `<h3>${vue === 'aujourdhui' ? 'Ce qui se comprend mal' : 'Ce que ça change'}</h3>
+     <p class="nom-prop">${l.titre}</p>
+     <p>${l.chapo}</p>
+     <ul>${l.points.map((p) => `<li>${p}</li>`).join('')}</ul>`;
+
+  // Les boutons « Facturer », partout où ils sont.
+  zone.querySelectorAll('[data-facturer]').forEach((b) =>
+    b.addEventListener('click', () => facturer(b.dataset.facturer)));
+
+  // L'encart replié de l'écran d'aujourd'hui.
+  const bascule = zone.querySelector('[data-volet]');
+  if (bascule) bascule.addEventListener('click', () => { volet = !volet; rendre(); });
+
+  // Les deux onglets de la proposition B.
+  zone.querySelectorAll('[data-filtre]').forEach((b) =>
+    b.addEventListener('click', () => { filtreB = b.dataset.filtre; rendre(); }));
+
+  // Feuilleter les mois. Borné des deux côtés : la flèche du futur se ferme au
+  // mois le plus récent, celle du passé au-delà de dix-huit mois.
+  zone.querySelectorAll('[data-recul]').forEach((b) =>
+    b.addEventListener('click', () => {
+      recul = Math.min(RECUL_MAX, Math.max(0, recul + Number(b.dataset.recul)));
+      rendre();
+    }));
+}
+
+document.querySelectorAll('[data-vue]').forEach((b) =>
+  b.addEventListener('click', () => {
+    vue = b.dataset.vue;
+    document.querySelectorAll('[data-vue]').forEach((x) =>
+      x.setAttribute('aria-pressed', String(x === b)));
+    window.scrollTo({ top:0, behavior:'smooth' });
+    rendre();
+  }));
+
+document.getElementById('remettre').addEventListener('click', () => {
+  chantiers = DEPART.map((c) => ({ ...c }));
+  volet = false; filtreB = 'tout'; recul = 0;
+  rendre();
+});
+
+rendre();
+</script>
+
+<style>
+  /* Les onglets de la proposition B — déclarés après coup pour rester à côté
+     de ce qui les emploie. */
+  .onglets{display:flex;gap:8px;margin:18px 26px 0}
+  .onglets .filtre{appearance:none;border:0;cursor:pointer;font:inherit;
+                   min-height:40px;padding:0 16px;border-radius:999px;
+                   background:transparent;color:var(--e-gris);font-size:13px;
+                   box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .tel .onglets .filtre[aria-pressed="true"]{background:var(--e-encre);color:var(--e-plage);
+                                             box-shadow:none}
+</style>
+</body>
+</html>

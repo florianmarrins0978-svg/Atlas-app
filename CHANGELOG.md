@@ -52,8 +52,141 @@ GitHub ou Atlas, parce qu'un même 404 appelle deux gestes opposés. C'est ainsi
 que la vraie panne est enfin sortie : **son installation de Next.js était
 cassée** (`Cannot find module './detect-typo'`), le serveur ne démarrait plus,
 et ni le port ni l'application n'y étaient pour quelque chose.
+### « Terminés » : revenir dans le passé, et le compte en noir gras
+
+Ses deux corrections sur la planche 86, le soir même : *« en haut il y a marqué
+août 2026, mais il faut pouvoir revenir dans le passé si jamais on a du retard
+sur la facturation »*, et *« cinq factures envoyées et tant qui attendent leur
+facturation, ça tu peux le mettre en noir gras »*.
+
+**Ce qui a été tranché, et qui ne se devinait pas depuis sa phrase :**
+
+| | |
+|---|---|
+| Le mois se feuillette | `‹ Août 2026 ›`, une flèche de chaque côté. La flèche du futur **se ferme** sur le mois le plus récent : un bouton qui ne fait rien s'appuie deux fois, puis on croit l'écran cassé |
+| Un mois vide **le dit** | « Aucune facture en juillet 2026 ». On se déplace sur le **calendrier**, pas sur la liste des mois qui portent quelque chose : sauter de août à mai laisse croire que juin n'existe pas |
+| **Ce qui reste à facturer NE suit PAS le mois** | c'est tout l'objet de sa demande. Un chantier de juillet jamais facturé reste sous ses yeux en août — sinon il faudrait déjà savoir qu'il existe pour aller le chercher |
+| Dans la B, l'onglet « À facturer » ne se feuillette pas non plus | il montre tout ce qui attend, tous mois confondus |
+
+**Aucune facture n'a été inventée dans le passé, et c'est délibéré.** Ses
+numéros commencent à `F2026-0001` le 18 août : il n'a jamais facturé avant. Un
+mois d'avant répond donc « aucune facture » plutôt que de porter du faux
+(`CLAUDE.md` §4). Ce qui a été ajouté, c'est **un seul** chantier — M. Ferreira,
+terminé le 14 juillet, jamais facturé — sans quoi le retour en arrière ne se
+juge pas, il se croit sur parole.
+
+**Et il ne va que dans les propositions.** L'onglet « Aujourd'hui » doit rester
+sa capture au chiffre près : un cinquième chantier en attente y écrirait « Cinq
+à facturer · 2 930,00 € », et on ne comparerait plus à ce qu'il a sous les yeux.
+Deux jeux de données, donc, et la page le dit.
+
+**Le noir gras ne s'applique qu'au compte.** « 5 factures envoyées · et
+2 040,00 € qui attendent leur facture » est ce qu'il vient chercher ; « Montants
+prévus à vos devis » reste gris — c'est une réserve, pas un chiffre. La suite le
+**mesure dans le navigateur** (graisse 700, `rgb(28,28,26)`) : une classe posée
+ne prouve pas une graisse.
+
+### « Terminés » : trois façons de la simplifier, et rien de codé
+
+*« Comme on a fait avec toutes les pages, on les a bien simplifiées, maintenant
+il reste celles-là. Je la trouve beaucoup trop compliquée. Un utilisateur qui ne
+connaît pas l'application et qui arrive sur cette page ne comprend rien.
+Propose-moi quelque chose pour la simplifier, ne code rien, je veux qu'on fasse
+des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi que ce
+soit. »*
+
+Mêmes mots que pour le planning le 19 août (planche 84), donc même réponse :
+`appli/termines-simple.html` — **planche 86**, essayable, et `src/` n'a pas
+bougé (`CLAUDE.md` §3 bis).
+
+**Ce qui se comprend mal sur l'écran actuel**, relevé sur sa capture et non
+supposé :
+
+| | |
+|---|---|
+| Le seul travail qui reste | quatre chantiers à facturer, **repliés** derrière une ligne en petites capitales dorées, sans rien qui dise qu'on peut appuyer |
+| « 3 828,00 € » | écrit **deux fois** — à droite d'« août », puis « Facturé, tous mois confondus ». C'est le même chiffre parce qu'il n'y a qu'un mois, mais il faut le deviner |
+| Trois codes non appris | la pastille dorée « 4 », les points pleins/creux, le montant en or contre le montant en noir |
+| « F2026-0005 · LE 20 » | un numéro de facture avant toute chose, et une date sans son mois |
+| Le fil vertical | 47 px de largeur pour ne rien dire que la liste ne dise déjà |
+| Le relevé de TVA | coupé en deux par la barre du bas |
+
+**Trois propositions**, et elles facturent pour de bon : **A** deux piles (ce
+qui reste en haut, déplié, un bouton par ligne) ; **B** une seule liste où
+l'état s'écrit en toutes lettres, avec deux onglets ; **C** une page qui ne fait
+qu'une chose et s'appelle « À facturer », l'historique derrière une porte.
+
+**Aucun total n'est écrit en dur** : tout se recalcule à partir de la même
+liste, comme le veut la leçon du 21 août — deux chiffres qui se contredisent
+dans un même écran, et c'est toute la liste qu'on cesse de croire. Le total du
+mois de la proposition B l'a d'ailleurs rappelé : il portait 5 868,00 €, la
+somme du facturé ET de l'attendu, c'est-à-dire un chiffre qui n'existe nulle
+part.
+
+**Deux défauts trouvés en la parcourant, et un seul par un test.** « Facture
+n° **-5** » : le tiret de « F2026-0005 » entrait dans le nombre. Aucun contrôle
+ne pouvait le voir — c'est la **capture regardée** qui l'a donné, la cinquième
+fois dans ce dépôt (`CLAUDE.md` §5). L'autre, si : un comparateur qui répondait
+« plus petit » à deux dates **égales** sortait ses deux factures du 19 août à
+l'envers de sa capture, sur les trois écrans à la fois.
+
+**La planche est éprouvée avant de partir en ligne** (`appli/tests/essai-termines.mjs`,
+branchée sur `pages.yml`) : les quatre onglets s'ouvrent, les boutons se
+pressent, les totaux sont relus **à l'écran**, et un écran de moins de 300 px de
+haut est refusé plutôt que compté vert. Confrontée au défaut qu'elle prétend
+voir — l'ancien comparateur remis — elle rougit, et sa phrase désigne le bon
+coupable.
+
+---
 
 ## 2026-08-21
+
+### « Pourquoi pas des 3504 ? » — j'avais inventé les portées
+
+*« Pourquoi tu as utilisé des tuyères 1800 et pas des arroseurs 3500 de chez
+Rain Bird ? »* La réponse tient en une ligne de son catalogue : la 3504 porte au
+minimum **5,2 m** (buse 0,75) pour une bande de **4 m** de large.
+
+**Mais en vérifiant, j'ai trouvé bien pire dans la maquette.** J'annonçais
+« Turbine 5004, buse 3.0 — portée 6 m » : **cette portée n'existe pas**. Ses
+relevés donnent 8,5 m pour la buse 1,0 et **11,1 m** pour la 3,0. Et la 12-VAN ne
+fait pas 4 m mais **3,6 m**. J'avais inventé des valeurs qui étaient dans le
+catalogue depuis le 17 août, et tout le maillage reposait dessus.
+
+**Deux règles de sa part ont débloqué le reste.**
+
+*« Les débits à 360° sont les mêmes qu'à 180° et 90°. »* Le catalogue portait
+cette question ouverte depuis le 17 août et écartait toutes les turbines du
+calcul faute de réponse. Elle est tranchée — et **c'est l'inverse de ce que le
+dépôt supposait** : on imaginait un débit proportionnel à l'arc, ce qui aurait
+divisé par quatre celui d'un coin et fait poser quatre fois trop d'arroseurs sur
+une voie. La règle ne vaut que pour les turbines : une buse VAN projette
+plusieurs filets, et ses propres relevés donnent bien 0,15 / 0,30 / 0,59.
+
+*« On a un recouvrement d'au moins 80 %, pas obligé d'avoir 100 % à chaque
+fois. »* Le contrôle exigeait 100 % de la pelouse à portée d'un arroseur — plus
+strict que son métier, et cela coûte : chaque point manquant fait resserrer le
+maillage, donc ajouter des arroseurs et des raccords. **Un contrôle trop sévère
+fait dépenser aussi sûrement qu'un contrôle absent.**
+
+**Le plan refait sur les vraies valeurs est plus simple que le faux :**
+
+| | Avant (valeurs inventées) | Après (ses relevés) |
+|---|---|---|
+| Arroseurs | 9 turbines 5004 + 4 tuyères | 9 turbines **3504 buse 0,75** + 4 tuyères |
+| Portées | 6 m et 4 m — inexistantes | **5,2 m** et **3,6 m** — relevées |
+| Réseaux | 3 | **2** |
+| Nourrice | 3 voies | **2 voies** |
+| Couverture | — | **100 %**, pour 80 % exigés |
+
+**Et un principe s'est imposé de lui-même : un réseau par famille.** Une tuyère
+verse environ trois fois plus vite qu'une turbine ; sur une même voie, le temps
+qui convient à l'une noie ou assoiffe l'autre. L'ancien plan mélangeait une
+turbine et quatre tuyères sur le réseau 3.
+
+**Deux détails trouvés en lisant les fiches** : la 3504 est en **1/2"** (pas
+3/4" comme la 5004), ce qui change tous ses SBE de corps ; et elle est **livrée
+avec ses six buses**, donc la ligne « buse » disparaît de la commande.
 
 ### Le tour plutôt que la coupe — et un contrôle qui dormait
 

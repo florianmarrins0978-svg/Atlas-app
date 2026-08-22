@@ -4,8 +4,32 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-21 · `main`
+**Point de reprise :** 2026-08-22 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## « TERMINÉS » : UNE PLANCHE ATTEND SA RÉPONSE — ne pas coder l'écran
+
+Le 22 août 2026 il a écrit, capture à l'appui : *« je la trouve beaucoup trop
+compliquée. Un utilisateur qui ne connaît pas l'application et qui arrive sur
+cette page ne comprend rien. Propose-moi quelque chose pour la simplifier, **ne
+code rien** »*.
+
+**`src/app/termines/` ne se touche pas** tant qu'il n'a pas tranché. La planche
+est `appli/termines-simple.html` (**86**) : son écran d'aujourd'hui refait à
+l'identique, puis trois simplifications — **A** deux piles, **B** une seule
+liste avec l'état écrit, **C** une page qui ne fait qu'une chose. Elles
+s'essaient : les boutons « Facturer » facturent, les totaux se refont.
+
+**Deux corrections déjà portées**, le soir du 22 : le mois **se feuillette**
+(`‹ Août 2026 ›`, un mois vide répond « aucune facture ») parce qu'il faut
+pouvoir revenir en arrière quand la facturation a du retard — et **ce qui reste
+à facturer ne suit pas le mois**, c'est tout l'objet de sa demande. Le compte
+des factures passe en **noir gras**.
+
+Attendre A, B, C, un mélange — ou « aucune », qui est une réponse. Le détail de
+ce qui se comprend mal, et pourquoi, est dans `CHANGELOG.md` du 22 août.
 
 ---
 

@@ -531,6 +531,14 @@ l'application. Ce qui est **fait** :
   jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
   que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
   `ARCHITECTURE.md` §83.
+- **« TERMINÉS » : LA PLANCHE EST POSÉE, L'ÉCRAN N'A PAS BOUGÉ** (22 août) :
+  *« je la trouve beaucoup trop compliquée ; un utilisateur qui ne connaît pas
+  l'application n'y comprend rien [...] ne code rien »*. `appli/termines-simple.html`
+  (planche 86) montre son écran d'aujourd'hui puis **trois simplifications
+  essayables** — A deux piles, B une seule liste avec l'état écrit, C une page
+  qui ne fait qu'une chose. **`src/app/termines/` est inchangé** et le reste
+  jusqu'à sa réponse. Éprouvée par `appli/tests/essai-termines.mjs`, branchée
+  sur `pages.yml`. `CHANGELOG.md` du 22 août.
 - **LE PLANNING REFAIT** (21 août) : *« cette page est beaucoup trop compliquée
   à comprendre pour les utilisateurs »*, puis deux soirées de maquette, neuf
   corrections, et *« code trait pour trait cette maquette »*. Le mois reste au

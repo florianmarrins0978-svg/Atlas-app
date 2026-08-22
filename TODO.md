@@ -9,6 +9,23 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ CONSIGNE — « Terminés » : MAQUETTE SEULEMENT (22 août 2026)
+
+*« Propose-moi quelque chose pour la simplifier, **ne code rien**, je veux qu'on
+fasse des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi
+que ce soit. »*
+
+`src/app/termines/` **ne se touche pas** tant qu'il n'a pas choisi. La planche
+est `appli/termines-simple.html` (planche 86), et son adresse est
+`…github.io/Atlas-app/termines-simple.html` — ou depuis `essais.html`.
+
+**Ce qu'on attend de lui :** A, B, C, un mélange, ou aucune. *Ne rien changer
+est une réponse.* Une fois qu'il tranche, la planche retenue devient la
+référence : toute correction de « Terminés » se porte D'ABORD sur elle, comme
+la planche 84 pour le planning.
+
+---
+
 ## ~~⚠ CONSIGNE — le planning : MAQUETTE SEULEMENT~~ — **LEVÉE le 21 août 2026**
 
 Sa consigne du 21 août au matin — *« ne code rien, je veux qu'on finisse toute
@@ -27,6 +44,34 @@ changé — jusqu'à une migration — est dans `CHANGELOG.md` du 21 août.
 avant de se coder (`CLAUDE.md` §3 bis), et la planche 84 reste la référence.
 Toute correction du planning se porte D'ABORD sur elle, sinon les deux
 divergent — et c'est elle qu'il ouvre sur son téléphone.
+
+### Les planifiés : trois corrections dessinées, EN ATTENTE DE SA RÉPONSE
+
+Ses trois remarques du 22 août, sur la liste des planifiés de l'écran codé.
+La planche est `appli/planning-planifies.html` (planche 86), liée depuis
+`appli/essais.html`, **et elle se manipule** : il touche un nom, la fiche
+s'ouvre sur place ; il retouche, elle se referme.
+
+| Sa remarque | Ce que la planche propose |
+|---|---|
+| *« À la place de matin, je pense qu'il doit y avoir écrit la durée du chantier [...] parce que ce n'est pas clair quand il y a marqué le matin et l'après-midi »* | la ligne dit « une demi-journée », « une journée », « 3 jours » |
+| *« Supprime-moi la notion un chantier en gris. On n'a pas besoin de cette information-là »* | le compte gris disparaît de la fiche du jour |
+| *« Sur le premier nom, il faudrait qu'on clique et que ça se transforme en le menu déroulant qu'on a juste en dessous. Pas besoin d'avoir la répétition deux fois »* | la ligne se déplie SUR PLACE ; le jour et le nom ne s'écrivent qu'une fois |
+
+**Le piège à ne pas recopier au moment de coder :** la durée se lit sur
+`dureeDemiJournees` du chantier, **jamais** sur le nombre de demi-journées
+visibles ce jour-là. Un chantier de trois jours n'en montre que deux sur la
+journée qu'on regarde — compter les lignes affichées l'annoncerait « une
+journée », et c'est exactement le malentendu qu'il demande de lever. La
+première version de la planche est tombée dedans.
+
+**Ce que la durée seule CESSE de dire, et qu'il doit trancher :** sur une
+demi-journée, elle ne dit plus si c'est le matin ou l'après-midi — il faut
+ouvrir la ligne pour le voir. Un réglage, hors de l'écran, lui laisse comparer
+« une demi-journée » et « une demi-journée · matin ».
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis) : sa consigne était *« fabrique-moi la
+maquette [...] ne code rien »*.
 
 ### ~~Une équipe SANS NOM fait déborder sa ligne de quatre pixels~~ — **TRANCHÉ le 22 août 2026 : on ne change rien**
 
