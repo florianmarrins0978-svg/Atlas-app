@@ -286,6 +286,14 @@ parce qu'aucun ne comparait la liste des pièces au tracé.
 Et **deux SBE par arroseur** : celui du bas toujours en 3/4" (sur le té ou le
 coude), celui du corps au diamètre de la famille — 3/4" turbine, 1/2" tuyère.
 
+**Chaque quantité doit pouvoir se RECOMPOSER à la main.** Sa question du
+21 août — *« je ne comprends pas d'où sortent tes vingt-deux coudes SBE, ça
+correspond à quoi ? »* — portait sur un chiffre JUSTE. Le défaut n'était pas le
+calcul mais la ligne : « 22 u Coude SBE 075 » ne dit pas à quoi ils servent. On
+recompte, on n'y arrive pas, et c'est toute la liste dont on doute. Une pièce
+qui sert à deux endroits se écrit donc en **deux lignes**, chacune nommant sa
+position.
+
 ## 5. Vérifier : ce qui compte comme « fait »
 
 Rien n'est terminé sans **la batterie complète**, en une commande :

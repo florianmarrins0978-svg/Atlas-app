@@ -101,10 +101,17 @@ const vu = await page.evaluate(() => {
     y2: Number(nourrice.getAttribute("y")) + Number(nourrice.getAttribute("height")),
   };
 
-  const pieces = [...document.querySelectorAll("table tr")].map((tr) => ({
-    q: Number(tr.querySelector(".q").textContent.match(/[\d.]+/)[0]),
-    nom: tr.children[1].textContent.trim(),
-  }));
+  // **Une ligne mal formée ne doit pas faire PLANTER le contrôle** — éprouvé le
+  // 21 août : en retirant une ligne du tableau, la sonde tombait sur une trace
+  // JavaScript au lieu d'accuser le défaut. Une erreur qui n'accuse personne
+  // coûte plus cher que pas d'erreur du tout (`CLAUDE.md` §5).
+  const pieces = [...document.querySelectorAll("table tr")]
+    .map((tr) => {
+      const q = tr.querySelector(".q")?.textContent?.match(/[\d.]+/)?.[0];
+      const nom = tr.children[1]?.textContent?.trim();
+      return q === undefined || nom === undefined ? null : { q: Number(q), nom };
+    })
+    .filter(Boolean);
 
   const marque = document.querySelector("select[name=marque]");
   const marques = marque && {
@@ -350,6 +357,33 @@ for (const [n, r] of Object.entries(vu.reseaux)) {
     }
   });
 }
+
+// ── 8 ter. DEUX SBE PAR ARROSEUR, ET LE CHIFFRE DOIT SE RECOMPOSER ─────────
+//
+// *Sa question du 21 août :* « je ne comprends pas d'où sort ton calcul des
+// vingt-deux coudes SBE 3/4" et les 4 SBE 1/2" — ça correspond à quoi ? »
+//
+// Le chiffre était juste (sa règle du 17 août : **deux SBE par arroseur**, celui
+// du bas toujours en 3/4" sur la tuyauterie, celui du haut au diamètre du
+// corps). **Le défaut était ailleurs : l'écran l'annonçait sans dire à quoi il
+// sert.** Un total qu'on ne peut pas recomposer ne se commande pas de
+// confiance — on le recompte, on n'y arrive pas, et on doute de toute la liste.
+//
+// Le contrôle tient donc les deux : le COMPTE (2 × arroseurs) et le fait que
+// chaque ligne dise sa position.
+cas("deux SBE par arroseur, et chaque ligne dit où il va", () => {
+  const sbe = vu.pieces.filter((p) => /SBE/i.test(p.nom));
+  const total = sbe.reduce((t, p) => t + p.q, 0);
+  const arroseurs = Object.values(vu.reseaux).reduce((t, r) => t + r.tetes.length, 0);
+  if (total !== arroseurs * 2) {
+    throw new Error(`${total} SBE pour ${arroseurs} arroseurs : il en faut deux par arroseur, soit ${arroseurs * 2}`);
+  }
+  for (const p of sbe) {
+    if (!/en bas|en haut/i.test(p.nom)) {
+      throw new Error(`« ${p.nom} » ne dit pas s'il va en bas ou en haut : le total ne se recompose pas`);
+    }
+  }
+});
 
 // ── 9. LE CHOIX DE LA MARQUE — sa demande, deux fois ────────────────────────
 //

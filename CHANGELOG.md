@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### « D'où sortent tes vingt-deux SBE ? » — un chiffre juste, une ligne muette
+
+*« Je ne comprends pas d'où sort ton calcul des vingt-deux coudes SBE 3/4" et
+les 4 SBE 1/2". Ça correspond à quoi ? »*
+
+**Le chiffre était juste** — sa règle du 17 août, écrite dans le catalogue :
+deux SBE par arroseur, celui du bas toujours en 3/4" sur la tuyauterie, celui du
+haut au diamètre du corps (3/4" turbine, 1/2" tuyère). Soit 13 en bas, 9 sur les
+turbines, 4 sur les tuyères.
+
+**Le défaut était la ligne, pas le calcul.** « 22 u Coude SBE 075 » ne dit pas à
+quoi ils servent : on recompte, on n'y arrive pas, et c'est toute la liste dont
+on doute. Une pièce qui sert à deux endroits s'écrit désormais en deux lignes,
+chacune nommant sa position — et un contrôle refuse une ligne SBE qui ne dit pas
+si elle va en haut ou en bas, en plus de vérifier le total (2 × arroseurs).
+
+**Le contrôle PLANTAIT au lieu de rougir**, et c'est la deuxième leçon. Éprouvé
+en retirant une ligne du tableau, il tombait sur une trace JavaScript qui
+n'accusait personne. La sonde ignore maintenant les lignes mal formées et rend
+son verdict : « 13 SBE pour 13 arroseurs : il en faut deux par arroseur, soit
+26 ».
+
 ### « Va au plus court » — un détour de 4 m, devenu un contrôle
 
 *« Pour ton réseau 1 tu t'es trompé : tu aurais dû retirer la dernière ligne
