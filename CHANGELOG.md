@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### « Terminés » : revenir dans le passé, et le compte en noir gras
+
+Ses deux corrections sur la planche 86, le soir même : *« en haut il y a marqué
+août 2026, mais il faut pouvoir revenir dans le passé si jamais on a du retard
+sur la facturation »*, et *« cinq factures envoyées et tant qui attendent leur
+facturation, ça tu peux le mettre en noir gras »*.
+
+**Ce qui a été tranché, et qui ne se devinait pas depuis sa phrase :**
+
+| | |
+|---|---|
+| Le mois se feuillette | `‹ Août 2026 ›`, une flèche de chaque côté. La flèche du futur **se ferme** sur le mois le plus récent : un bouton qui ne fait rien s'appuie deux fois, puis on croit l'écran cassé |
+| Un mois vide **le dit** | « Aucune facture en juillet 2026 ». On se déplace sur le **calendrier**, pas sur la liste des mois qui portent quelque chose : sauter de août à mai laisse croire que juin n'existe pas |
+| **Ce qui reste à facturer NE suit PAS le mois** | c'est tout l'objet de sa demande. Un chantier de juillet jamais facturé reste sous ses yeux en août — sinon il faudrait déjà savoir qu'il existe pour aller le chercher |
+| Dans la B, l'onglet « À facturer » ne se feuillette pas non plus | il montre tout ce qui attend, tous mois confondus |
+
+**Aucune facture n'a été inventée dans le passé, et c'est délibéré.** Ses
+numéros commencent à `F2026-0001` le 18 août : il n'a jamais facturé avant. Un
+mois d'avant répond donc « aucune facture » plutôt que de porter du faux
+(`CLAUDE.md` §4). Ce qui a été ajouté, c'est **un seul** chantier — M. Ferreira,
+terminé le 14 juillet, jamais facturé — sans quoi le retour en arrière ne se
+juge pas, il se croit sur parole.
+
+**Et il ne va que dans les propositions.** L'onglet « Aujourd'hui » doit rester
+sa capture au chiffre près : un cinquième chantier en attente y écrirait « Cinq
+à facturer · 2 930,00 € », et on ne comparerait plus à ce qu'il a sous les yeux.
+Deux jeux de données, donc, et la page le dit.
+
+**Le noir gras ne s'applique qu'au compte.** « 5 factures envoyées · et
+2 040,00 € qui attendent leur facture » est ce qu'il vient chercher ; « Montants
+prévus à vos devis » reste gris — c'est une réserve, pas un chiffre. La suite le
+**mesure dans le navigateur** (graisse 700, `rgb(28,28,26)`) : une classe posée
+ne prouve pas une graisse.
+
 ### « Terminés » : trois façons de la simplifier, et rien de codé
 
 *« Comme on a fait avec toutes les pages, on les a bien simplifiées, maintenant

@@ -94,24 +94,64 @@ dire(avant < 5 && apres > 150, `Aujourd’hui — le volet passe de ${Math.round
 // 4. « Facturer » facture VRAIMENT : les deux totaux se refont d'eux-mêmes.
 await page.click('[data-vue="a"]');
 await page.waitForTimeout(200);
-const sommeA = async (i) => nombre(await page.locator(".section h2 .somme").nth(i).innerText());
-const attenteAvant = await sommeA(0);
-const faitAvant = await sommeA(1);
+const totalAttente = async () => nombre(await page.locator(".section h2 .somme").first().innerText());
+const totalFait = async () => nombre(await page.locator(".nav-mois .somme").first().innerText());
+const attenteAvant = await totalAttente();
+const faitAvant = await totalFait();
 const montant = nombre((await page.locator(".section .ligne .quand").first().innerText()).split("·")[1]);
 await page.locator("[data-facturer]").first().click();
 await page.waitForTimeout(200);
-const attenteApres = await sommeA(0);
-const faitApres = await sommeA(1);
+const attenteApres = await totalAttente();
+const faitApres = await totalFait();
 dire(Math.abs(attenteAvant - montant - attenteApres) < 0.005,
   `A — « à facturer » tombe de ${attenteAvant} à ${attenteApres} (la ligne valait ${montant})`);
 dire(Math.abs(faitApres - faitAvant - montant) < 0.005,
   `A — « facturé » monte de ${faitAvant} à ${faitApres}`);
-dire((await page.locator("[data-facturer]").count()) === 3, "A — il ne reste que trois boutons");
+dire((await page.locator("[data-facturer]").count()) === 4, "A — il reste quatre boutons sur cinq");
+
+// 4 bis. Revenir dans le passé — sa demande du 22 août.
+//
+// Trois choses à prouver ensemble, et la troisième est le cœur de sa demande :
+// le mois recule VRAIMENT, un mois sans facture le DIT au lieu d'être sauté,
+// et ce qui reste à facturer NE SUIT PAS le mois.
+await page.click("#remettre");
+await page.click('[data-vue="a"]');
+await page.waitForTimeout(200);
+dire((await page.locator(".nav-mois .nom-mois-nav").first().innerText()).trim() === "Août 2026",
+  "A — le feuilletage part du mois le plus récent");
+dire(await page.locator('.nav-mois [data-recul="-1"]').first().isDisabled(),
+  "A — la flèche du futur est fermée sur le mois le plus récent");
+const attenteAout = await totalAttente();
+await page.locator('.nav-mois [data-recul="1"]').first().click();
+await page.waitForTimeout(200);
+const nomRecule = (await page.locator(".nav-mois .nom-mois-nav").first().innerText()).trim();
+const texteA = await page.locator("#ecran").innerText();
+dire(nomRecule === "Juillet 2026", `A — un appui sur ‹ ramène à ${nomRecule}`);
+dire(texteA.includes("Aucune facture en juillet 2026"),
+  "A — un mois sans facture le dit, il n'est pas sauté");
+dire(Math.abs((await totalAttente()) - attenteAout) < 0.005 && texteA.includes("Ferreira"),
+  "A — le retard de juillet reste visible quel que soit le mois feuilleté");
+dire(!(await page.locator('.nav-mois [data-recul="-1"]').first().isDisabled()),
+  "A — et la flèche du futur se rouvre dès qu'on a reculé");
+
+// 4 ter. Le compte des factures est en NOIR GRAS — sa demande du 22 août.
+// Mesuré dans le navigateur : une classe posée ne prouve pas une graisse.
+await page.locator('.nav-mois [data-recul="-1"]').first().click();
+await page.waitForTimeout(200);
+const compte = page.locator(".section .compte").first();
+const style = await compte.evaluate((e) => {
+  const s = getComputedStyle(e);
+  return { poids: Number(s.fontWeight), couleur: s.color };
+});
+dire((await compte.innerText()).startsWith("5 factures envoyées"),
+  "A — le compte annonce « 5 factures envoyées »");
+dire(style.poids >= 700 && style.couleur === "rgb(28, 28, 26)",
+  `A — et il est en noir gras (graisse ${style.poids}, ${style.couleur})`);
 
 // 5. Tout facturer : l'écran C doit le DIRE, jamais rester vide.
 await page.click('[data-vue="c"]');
 await page.waitForTimeout(150);
-for (let i = 0; i < 6; i++) {
+for (let i = 0; i < 8; i++) {
   const b = page.locator("[data-facturer]").first();
   if (!(await b.count())) break;
   await b.click();
@@ -119,8 +159,10 @@ for (let i = 0; i < 6; i++) {
 }
 dire((await page.locator("#ecran").innerText()).includes("Tout est facturé"),
   "C — quand tout est facturé, l'écran le dit");
+// 3 828 (sa capture) + 2 040 (les quatre en attente) + 890 (le retard de
+// juillet) = 6 758, sur dix factures.
 const porte = (await page.locator(".rangee").first().innerText()).replace(/\n/g, " ");
-dire(/\b9\b/.test(porte) && nombre(porte.split("·")[1]) === 5868,
+dire(/\b10\b/.test(porte) && nombre(porte.split("·")[1]) === 6758,
   `C — la porte « Mes factures » porte le nouveau total : ${porte}`);
 
 // 6. « Tout remettre » rejoue la scène — sans quoi on ne peut essayer qu'une fois.
