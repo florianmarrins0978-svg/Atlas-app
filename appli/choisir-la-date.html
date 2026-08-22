@@ -82,10 +82,23 @@
   .bloc{margin:20px 18px 0}
   .bloc > .caps{display:block;margin-bottom:8px}
 
-  .duo{display:flex;gap:8px}
-  .duo button{flex:1;border:1px solid var(--trait);background:transparent;border-radius:99px;
-              padding:11px 8px;font-size:14px;color:var(--encre-douce);cursor:pointer;font-family:inherit}
-  .duo button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
+  /* **Un bandeau déroulant, et non trois pastilles** — sa demande du 22 août :
+     *« pour combien de temps prend ce chantier, faut mettre un bandeau
+     déroulant avec demi-journée et 1 à 200 jours »*. Trois choix figés ne
+     couvraient pas un chantier de trois semaines, et il en a.
+
+     La case reprend « la carte douce », le dessin qu'il a retenu le 21 août
+     pour toutes les cases de l'application : fond papier, 14 px de rayon,
+     aucun bord, l'or au doigt posé. */
+  .duree{position:relative;display:block}
+  .duree select{width:100%;min-height:50px;border:0;border-radius:14px;background:var(--papier);
+                padding:15px 42px 15px 16px;font:16px/1.2 inherit;color:var(--encre);
+                appearance:none;-webkit-appearance:none;cursor:pointer}
+  .duree select:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+  /* Le chevron est dessiné à côté : celui du système varie d'un téléphone à
+     l'autre, et disparaît sur certains dès qu'on retire l'apparence native. */
+  .duree::after{content:"⌄";position:absolute;right:16px;top:50%;transform:translateY(-65%);
+                pointer-events:none;font-size:18px;color:var(--gris)}
 
   /* ── AUJOURD'HUI : le calendrier nu ─────────────────────────────────── */
   .nu-entete{display:flex;align-items:center;justify-content:space-between;margin:0 6px 8px}
@@ -218,12 +231,8 @@
   </div>
 
   <div class="bloc">
-    <span class="caps">Combien de temps prend ce chantier ?</span>
-    <div class="duo" id="duree">
-      <button type="button" data-demi="1" aria-pressed="false">Une demi-journée</button>
-      <button type="button" data-demi="2" aria-pressed="true">Une journée</button>
-      <button type="button" data-demi="4" aria-pressed="false">Deux jours</button>
-    </div>
+    <label class="caps" for="duree">Combien de temps prend ce chantier ?</label>
+    <span class="duree"><select id="duree"></select></span>
   </div>
 
   <div class="bloc" id="calendrier"></div>
@@ -520,8 +529,7 @@ function rendre() {
 
   document.querySelectorAll(".choix button").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.vue === vue)));
-  document.querySelectorAll("#duree button").forEach((b) =>
-    b.setAttribute("aria-pressed", String(Number(b.dataset.demi) === nbDemies)));
+  $("#duree").value = String(nbDemies);
 }
 
 /* Un seul écouteur, posé sur le conteneur : le calendrier se redessine à
@@ -566,14 +574,24 @@ $("#calendrier").addEventListener("click", (e) => {
 document.querySelectorAll(".choix button").forEach((b) =>
   b.addEventListener("click", () => { vue = b.dataset.vue; rendre(); }));
 
-document.querySelectorAll("#duree button").forEach((b) =>
-  b.addEventListener("click", () => {
-    nbDemies = Number(b.dataset.demi);
-    // Un jour retenu qui ne tient plus se rend : garder un choix devenu faux
-    // est exactement ce qu'on reproche au calendrier nu.
-    if (jourRetenu && !tient(jourRetenu, nbDemies).possible) jourRetenu = null;
-    rendre();
-  }));
+/* **Une demi-journée, puis 1 à 200 jours** — sa demande du 22 août. Les
+   options sont écrites par le script plutôt qu'à la main : deux cents lignes
+   recopiées finiraient par porter une faute que personne ne relirait. */
+(function remplirLaDuree() {
+  const choix = ['<option value="1">Une demi-journée</option>'];
+  for (let j = 1; j <= 200; j++) {
+    choix.push(`<option value="${j * 2}">${j} jour${j > 1 ? "s" : ""}</option>`);
+  }
+  $("#duree").innerHTML = choix.join("");
+})();
+
+$("#duree").addEventListener("change", (e) => {
+  nbDemies = Number(e.target.value);
+  // Un jour retenu qui ne tient plus se rend : garder un choix devenu faux
+  // est exactement ce qu'on reproche au calendrier nu.
+  if (jourRetenu && !tient(jourRetenu, nbDemies).possible) jourRetenu = null;
+  rendre();
+});
 
 $("#envoyer").addEventListener("click", () => {
   $("#envoyer").textContent = "Rien n’est parti : c’est une maquette";
