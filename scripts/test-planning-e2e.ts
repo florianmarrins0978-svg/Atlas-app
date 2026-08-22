@@ -708,20 +708,19 @@ async function main() {
     await ligne.locator('[data-atlas="nom-planifie"]').click();
     await ligne.locator('[data-atlas="feuille"]').waitFor({ state: "visible", timeout: 15_000 });
 
+    // **Aucune fonction déclarée DANS l'évaluation.** `tsx` la compile avec
+    // esbuild, qui nomme chaque fonction interne par un helper `__name` absent
+    // du navigateur : l'évaluation lève alors « __name is not defined », et le
+    // contrôle accuse le produit d'un défaut que l'outillage vient de créer.
     const m = await ligne.evaluate((n) => {
-      const y = (sel: string) => {
-        const e = n.querySelector(sel);
-        return e ? Math.round(e.getBoundingClientRect().top) : null;
-      };
-      const h = (sel: string) => {
-        const e = n.querySelector(sel);
-        return e ? Math.round(e.getBoundingClientRect().height) : 0;
-      };
+      const matin = n.querySelector('[data-bloc="matin"]');
+      const aprem = n.querySelector('[data-bloc="apres_midi"]');
+      const feuille = n.querySelector('[data-atlas="feuille"]');
       return {
-        matin: y('[data-bloc="matin"]'),
-        aprem: y('[data-bloc="apres_midi"]'),
-        feuille: y('[data-atlas="feuille"]'),
-        hauteurAprem: h('[data-bloc="apres_midi"]'),
+        matin: matin ? Math.round(matin.getBoundingClientRect().top) : null,
+        aprem: aprem ? Math.round(aprem.getBoundingClientRect().top) : null,
+        feuille: feuille ? Math.round(feuille.getBoundingClientRect().top) : null,
+        hauteurAprem: aprem ? Math.round(aprem.getBoundingClientRect().height) : 0,
       };
     });
 

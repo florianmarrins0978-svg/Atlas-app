@@ -9,24 +9,6 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ À LUI DEMANDER — le chemin vers le devis a quitté les planifiés (22 août 2026)
-
-En codant la planche 86 — *« code-moi exactement ça »* — le chevron « › » de la
-ligne des planifiés a cessé d'être un lien vers le chantier : sur la planche, il
-**pivote** pour annoncer le repli.
-
-**Or c'était le seul chemin.** La feuille de chantier n'en offre aucun autre, et
-un chantier posé quitte l'onglet « Chantiers »
-(`src/lib/onglet-chantier.ts`). On retombe donc sur ce qu'il signalait le
-8 août 2026 : *« il se range dans les chantiers planifiés, mais comment moi je
-fais pour avoir accès au devis ? »*
-
-**Rien n'a été inventé pour compenser** : ajouter un bouton que la planche ne
-montre pas serait décider à sa place (`CLAUDE.md` §3 bis). La question :
-**remettre le lien vers le devis dans la feuille de chantier ?**
-
----
-
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 
 Sa colère du 22 août : *« je peux proposer le 24 alors qu'un client a validé le

@@ -40,13 +40,19 @@ ordonnées à l'écran, et refuse de conclure sur un élément absent.
 le laisser dans le volet d'un chantier l'aurait affiché autant de fois qu'il y a
 de chantiers ouverts.
 
-**⚠ Une perte à lui signaler, et elle n'est pas décidée.** Le chevron « › » de
-la ligne des planifiés MENAIT au chantier ; sur la planche il **pivote**. Or la
-feuille de chantier n'offre aucun autre chemin vers le devis — c'est-à-dire
-exactement ce qu'il signalait le 8 août 2026 : *« il se range dans les chantiers
-planifiés, mais comment moi je fais pour avoir accès au devis ? »*. La planche a
-été codée telle qu'il l'a validée ; la question lui est posée plutôt que tranchée
-sans lui (`TODO.md`).
+**Le chevron reste un LIEN, et c'est une suite du dépôt qui l'a tranché.** Il
+avait d'abord été transformé en signe de repli, comme sur la planche —
+`test-planning-vers-facture-e2e.ts` a rougi aussitôt : *« depuis le planning, le
+chantier mène à son devis »*. Le chevron de la planche est son signe de repli à
+elle ; sur cet écran, le NOM déplie et le chevron part. Les confondre coûtait le
+seul chemin vers le devis d'un chantier posé — un chantier posé quitte l'onglet
+« Chantiers », et la feuille n'offre aucun autre accès. C'est-à-dire exactement
+ce qu'il signalait le 8 août 2026 : *« il se range dans les chantiers planifiés,
+mais comment moi je fais pour avoir accès au devis ? »*
+
+**La leçon :** une planche dessine ce qu'on VOIT, pas ce que chaque geste
+promet. Deux signes identiques peuvent porter deux gestes différents, et c'est
+la suite qui garde la différence.
 
 **Les contrôles adaptés, jamais le libellé remis** (`CLAUDE.md` §5 bis) : celui
 qui réclamait « 1 chantier » vérifie désormais que le compte a bien disparu et

@@ -812,33 +812,31 @@ export default function PlanningClient({
                           journée et la feuille. Un chevron promet qu'on PART
                           quelque part, un nom qu'il se déplie : les deux gestes
                           se distinguent d'eux-mêmes. */}
-                      {/* **Le chevron PIVOTE au lieu de partir.** Sur la
-                          planche 86 il annonce un repli, pas un départ — et
-                          deux gestes différents sur la même ligne (le nom
-                          déplie, le chevron s'en va) était précisément ce qui
-                          rendait l'écran illisible.
+                      {/* **LE CHEVRON RESTE UN LIEN VERS LE CHANTIER**, et
+                          c'est un contrôle du dépôt qui l'a rappelé : *« depuis
+                          le planning, le chantier mène à son devis »*
+                          (`test-planning-vers-facture-e2e.ts`).
 
-                          **Le chemin vers la fiche du chantier ne se perd pas
-                          pour autant** : il vit dans la feuille de chantier, qui
-                          s'ouvre juste en dessous. C'est ce qui répond à sa
-                          question du 8 août 2026 — *« il se range dans les
-                          chantiers planifiés, mais comment moi je fais pour
-                          avoir accès au devis ? »* — et la réponse doit rester
-                          atteignable, sinon un chantier posé devient
-                          inaccessible. */}
-                      <span
-                        data-atlas="chevron-planifie"
-                        aria-hidden="true"
-                        className="flex-shrink-0 px-0.5 text-[19px]"
-                        style={{
-                          color: colors.chevron,
-                          transition: "transform .22s cubic-bezier(.22,.61,.36,1)",
-                          transform: deplie ? "rotate(90deg)" : "none",
-                          display: "inline-block",
-                        }}
+                          La planche 86 dessine un chevron qui pivote — mais
+                          c'est son signe de repli à elle, pas le geste de cet
+                          écran : ici le NOM déplie, et le chevron part. Les
+                          confondre coûterait le seul chemin vers le devis d'un
+                          chantier posé, puisqu'un chantier posé quitte l'onglet
+                          « Chantiers » (`src/lib/onglet-chantier.ts`) et que la
+                          feuille n'en offre aucun autre.
+
+                          C'est exactement ce qu'il signalait le 8 août 2026 —
+                          *« il se range dans les chantiers planifiés, mais
+                          comment moi je fais pour avoir accès au devis ? »* — et
+                          la réponse redeviendrait : on ne peut pas. */}
+                      <Link
+                        href={`/chantiers/${c.id}`}
+                        aria-label={`Ouvrir le chantier — ${c.nom}`}
+                        className="cursor-pointer px-0.5 text-[19px] no-underline"
+                        style={{ color: colors.chevron }}
                       >
                         ›
-                      </span>
+                      </Link>
                     </div>
                     {deplie && (
                       <CarteDuJour
