@@ -7,6 +7,52 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-22
+
+### La fiche client est enfin celle de sa maquette — les huit écarts d'un coup
+
+**Sa phrase, devant l'écran :** *« C'est toujours pas la même version que celle
+que je t'avais demandée. Ça fait déjà deux fois que je te le demande. Je ne
+comprends pas pourquoi tu ne veux pas me la coder. »*
+
+Il a raison, et la faute est nette : les écarts avaient été **relevés et
+mesurés le matin même**, puis je lui ai demandé son feu vert au lieu de coder —
+alors qu'il l'avait déjà donné deux fois (*« tu me la codes trait pour trait, tu
+ne changes rien »*). Une liste d'écarts n'est pas un travail livré.
+
+Ce qui manquait, et qui est en place : la flèche de retour sur la ligne du
+titre en chevron nu ; le contour **or** des pastilles Mr / Mme ; le nom du
+client au même corps que le téléphone ; le choix du canal **toujours visible** ;
+les capsules du canal cernées, l'or quand il est pris ; le carré des photos en
+74 × 74 avec son liseré **en tirets doré** ; « Je rédige mon devis » en pleine
+largeur.
+
+**La batterie a trouvé ce que la capture ne montrait pas.** La flèche ramenée
+sur la ligne du titre lui prend trente-six pixels, et la phrase d'attente de la
+dictée occupe les 190 px de droite : « Fiche client » se brisait en deux
+pendant qu'Atlas travaillait. `test-attente-dictee-e2e` l'a vu. Le titre est
+une étiquette, pas du texte : il garde sa largeur, c'est la phrase qui se
+replie.
+
+### La fiche d'état MESURE le port au lieu de le deviner
+
+**Sa matinée du 22 août, et trois allers-retours perdus.** La fiche annonçait
+« Port 3000 : PRIVÉ (sans-gh) » — sans jamais avoir regardé. Elle recopiait le
+mot rendu au démarrage par `ouvrir-port.sh`, lequel ne dit pas l'état du port
+mais ce que le script a pu FAIRE : « `gh` est absent, je n'ai pas pu le régler »
+devenait « donc il est privé ». Il a fait les trois clics, puis : *« il est en
+public déjà »*.
+
+Une fiche existe pour éviter de raisonner sur une machine qu'on ne voit pas
+(`CLAUDE.md` §1 bis). Celle-là raisonnait à notre place, et à tort.
+
+L'espace s'appelle désormais par **son adresse publique**, celle de son
+téléphone, et rapporte ce qui revient — en nommant qui a répondu, le relais de
+GitHub ou Atlas, parce qu'un même 404 appelle deux gestes opposés. C'est ainsi
+que la vraie panne est enfin sortie : **son installation de Next.js était
+cassée** (`Cannot find module './detect-typo'`), le serveur ne démarrait plus,
+et ni le port ni l'application n'y étaient pour quelque chose.
+
 ## 2026-08-21
 
 ### Le tour plutôt que la coupe — et un contrôle qui dormait
