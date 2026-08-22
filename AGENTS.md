@@ -40,6 +40,20 @@ Ce que cela exige concrètement, à chaque lot :
   prétend détecter. Un contrôle qui n'a jamais échoué ne prouve rien. **Et son
   message doit désigner le bon coupable** : une erreur qui envoie chercher au
   mauvais endroit coûte plus cher que pas d'erreur du tout.
+- **Devant un défaut qui ne se reproduit pas ici : commencer par se demander si
+  SA PAGE A SURVÉCU À SON SERVEUR.** Règle posée par le patron le 12 août 2026 —
+  *« retiens ce problème, et la prochaine fois qu'on a un souci, commence par
+  regarder si ce n'est pas ça »*. Son banc redémarre plusieurs fois par soirée ;
+  son onglet reste ouvert des heures. Trois défauts en deux jours, trois
+  symptômes sans rapport apparent, une seule racine — et deux jours perdus à les
+  traiter séparément. **Lui demander d'abord :** depuis combien de temps la page
+  était-elle ouverte, et est-ce qu'un rechargement répare ? Si oui, c'est ça. Le
+  détail et la marche à suivre sont en tête de `HANDOVER.md`.
+- **Reproduire la SÉQUENCE du patron, pas seulement son geste.** Nos suites
+  ouvrent une page et agissent dans la seconde ; lui ouvre, regarde, réfléchit,
+  puis agit. C'est ce temps-là qui fabriquait la panne, et c'est en le rejouant
+  qu'elle est enfin apparue (`scripts/eprouver-page-vieillie.mts`). Un parcours
+  éprouvé « vite » n'est pas le sien.
 - **Reproduire le message du serveur, jamais l'idée qu'on s'en fait.** Trois
   correctifs de suite sont passés au vert en réparant une panne *imaginée* :
   l'écart d'origine avait été supposé dans un sens, il allait dans l'autre. Les

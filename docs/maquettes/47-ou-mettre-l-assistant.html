@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — où mettre l'assistant</title>
+</head>
+<body>
+<style>
+  /*
+    ⚠ PAGE ENGENDRÉE — ne pas la corriger à la main.
+    Source : `scripts/engendrer-maquette-assistant.mjs`.
+
+    « L'onglet de l'assistant est hyper mal placé, propose des choses pour plus
+      qu'il gêne. Crée-moi des maquettes en .html dynamique que j'essaye, ne
+      code rien. »
+        — le patron, le 13 août 2026
+
+    L'écran est le PLANNING, et ce n'est pas un hasard : c'est là que la gêne se
+    mesure au lieu de se discuter. Mesuré dans l'application, sur son écran de
+    390 × 664 : la bulle occupe 56 × 56 px à (318, 512), donc par-dessus les
+    dimanches 23 et 30 — deux cases qu'on touche.
+
+    Les téléphones font 390 px de large, la vraie mesure du sien. Un
+    agrandissement aurait rendu la comparaison fausse : ce qu'on compare ici,
+    c'est justement ce qui se recouvre.
+
+    Aucun script : cases à cocher et étiquettes.
+  */
+
+  :root{
+    /* Couleurs réelles — src/lib/design-tokens.ts */
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --pin:#2f3b2f; --teinte:#ece9e1; --or:#8a7452; --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --carte:#221f19; --encre:#e9e5dc; --gris:#8a867c;
+      --pin:#a9b8a4; --teinte:#272420; --or:#b39b72; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --carte:#221f19; --encre:#e9e5dc; --gris:#8a867c;
+    --pin:#a9b8a4; --teinte:#272420; --or:#b39b72; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       font-size:16px;line-height:1.65;padding:44px 16px 90px}
+  .page{max-width:1320px;margin:0 auto}
+
+  .intro{max-width:66ch;margin:0 auto}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+              color:var(--or);text-align:center}
+  .intro h1{margin:0 0 16px;font-family:ui-serif,Georgia,"Iowan Old Style",serif;
+            font-size:32px;font-weight:400;line-height:1.2;text-align:center}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+  .intro b{color:var(--encre);font-weight:500}
+  .constat{max-width:62ch;margin:24px auto 0;padding:16px 20px;border:1px solid var(--trait);
+           border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.7}
+  .constat b{color:var(--encre);font-weight:500}
+  .constat ul{margin:8px 0 0;padding-left:20px}
+  .constat li{margin:0 0 3px}
+  .marche{max-width:62ch;margin:18px auto 0;padding:14px 20px;border:1px solid var(--trait);
+          border-radius:6px;font-size:13.5px;color:var(--gris);text-align:center}
+  .marche b{color:var(--encre);font-weight:500}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:38px;justify-content:center;align-items:flex-start;margin-top:48px}
+  figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px}
+  figcaption{max-width:38ch;text-align:center;font-size:13px;color:var(--gris);line-height:1.62}
+  figcaption .chapeau{display:block;color:var(--encre);font-weight:500;font-size:13.5px;margin-bottom:4px}
+  figcaption b{color:var(--encre);font-weight:500}
+
+  /* ─── Le téléphone : 390 px, la dalle réelle ────────────────────────────── */
+  .tel{width:410px;max-width:100%;border-radius:42px;padding:10px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 26px 58px rgba(20,18,14,.20)}
+  .ecran{position:relative;overflow:hidden;border-radius:33px;width:390px;max-width:100%;
+         height:664px;background:var(--fond)}
+  .corps{height:calc(100% - 68px);overflow:hidden;padding:26px 26px 0}
+
+  .ouvre,.defile{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+
+  .entete{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .surtitre{margin:0 0 2px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .titre{margin:0;font-family:ui-serif,Georgia,serif;font-size:36px;font-weight:400;line-height:1.05}
+  .filet{height:1px;background:var(--trait);margin:16px 0}
+
+  .encart{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+  .encart-titre{margin:0;font-family:ui-serif,Georgia,serif;font-size:17px}
+  .encart-detail{margin:2px 0 0;font-size:13px;color:var(--gris);line-height:1.35}
+  .connecter{flex-shrink:0;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+
+  /*
+    **Les mesures viennent de l'application, pas de l'œil.** Relevé sur son
+    écran : les cases font 48 × 48, la première ligne du mois commence à y=326,
+    la dernière à y=578 — et la bulle, à (318, 512), tombe donc pile sur les
+    dimanches 23 et 30. Une reproduction « à peu près » aurait montré une bulle
+    posée dans le vide, et la planche aurait prouvé le contraire de ce qu'elle
+    montre. C'est le contrôle qui l'a dit : son témoin refusait de voir le
+    défaut là où il n'était pas.
+  */
+  .mois{display:flex;align-items:baseline;gap:10px;margin:55px 0 14px}
+  .nom-mois{font-family:ui-serif,Georgia,serif;font-size:22px}
+  .annee{margin-left:auto;font-size:11px;letter-spacing:.2em;color:var(--gris)}
+  .fleches{font-size:14px;color:var(--gris);letter-spacing:.4em}
+
+  .semaine{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+  .entete-jours span{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);
+                     padding-bottom:8px}
+  .calendrier{display:flex;flex-direction:column;gap:2.4px}
+  .jour{height:48px;line-height:48px;font-size:15px;color:var(--encre)}
+  .jour.weekend{color:var(--gris)}
+  .jour.hors{color:rgba(138,133,120,.5)}
+  .jour.aujourdhui{color:var(--or)}
+
+  /* ─── La barre du bas, à sa hauteur réelle ──────────────────────────────── */
+  .barre{position:absolute;left:0;right:0;bottom:0;height:68px;display:flex;
+         align-items:center;justify-content:space-around;border-top:1px solid var(--trait);
+         background:var(--fond);padding:0 8px}
+  /* Chaque entrée occupe TOUTE la hauteur de la barre, comme dans
+     l'application : c'est la colonne entière qui se touche, pas le mot. Rendues
+     à la hauteur du texte, elles n'offriraient que 17 px au doigt — et le
+     contrôle, qui ne regardait que la plus grande dimension, laissait passer. */
+  .onglet{display:flex;align-items:center;height:100%;
+          font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);
+          white-space:nowrap}
+  .onglet.actif{color:var(--encre);border-bottom:1px solid var(--or);padding-bottom:3px}
+
+  /* ─── L'assistant, selon la place ───────────────────────────────────────── */
+  .assistant{position:absolute;display:flex;align-items:center;justify-content:center;
+             cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+  /* Aujourd'hui : 56 px, à droite, 28 px au-dessus du bandeau. Les mesures
+     viennent de `AssistantSidebar.tsx`, pas d'une estimation. */
+  .bulle{width:56px;height:56px;border-radius:999px;background:var(--pin);color:#fff;
+         right:16px;bottom:96px;box-shadow:0 6px 18px rgba(20,18,14,.28)}
+
+  /* B — dans l'en-tête : le rond discret du micro, 44 px, teinté. */
+  .dans-entete{position:static;width:44px;height:44px;border-radius:999px;
+               background:var(--teinte);color:var(--pin);flex-shrink:0}
+
+  /* C — la poignée : 16 px de large, 64 de haut, collée au bord. */
+  .poignee{width:16px;height:64px;border-radius:8px 0 0 8px;background:var(--pin);
+           right:0;top:50%;margin-top:-32px;box-shadow:0 2px 10px rgba(20,18,14,.22)}
+  .poignee i{display:block;width:3px;height:22px;border-radius:2px;background:rgba(255,255,255,.75)}
+
+  /* A — dans la barre : une entrée comme les autres, avec son mot. */
+  .assistant-onglet{display:flex;align-items:center;height:100%;
+                    font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+                    color:var(--gris);cursor:pointer;white-space:nowrap}
+
+  /* D — elle s'efface. Le défilement est SIMULÉ par une case : une page qui
+     défile pour de bon demanderait du script, et le patron ne verrait rien. */
+  .bascule-defile{position:absolute;left:14px;bottom:96px;display:flex;align-items:center;gap:7px;
+                  font-size:11px;color:var(--gris);background:var(--carte);border:1px solid var(--trait);
+                  border-radius:999px;padding:6px 12px;cursor:pointer}
+  .bascule-defile .case{width:12px;height:12px;border:1px solid var(--gris);border-radius:3px}
+  .defile:checked ~ .bascule-defile .case{background:var(--pin);border-color:var(--pin)}
+  [data-variante="D"] .bulle{transition:width .28s ease,height .28s ease,opacity .28s ease,
+                             right .28s ease,bottom .28s ease}
+  .defile:checked ~ .bulle{width:22px;height:22px;opacity:.42;right:20px;bottom:110px}
+  .defile:checked ~ .bulle svg{width:11px;height:11px}
+
+  /* ─── Le panneau, identique partout : ce n'est pas lui qu'on compare ────── */
+  .panneau{position:absolute;inset:0;background:var(--carte);display:flex;flex-direction:column;
+           padding:22px 22px 0;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.7,.3,1);
+           border-radius:33px}
+  .ouvre:checked ~ .panneau{transform:translateX(0)}
+  .panneau-tete{display:flex;justify-content:space-between;align-items:center;
+                padding-bottom:14px;border-bottom:1px solid var(--trait)}
+  .panneau-tete span{font-family:ui-serif,Georgia,serif;font-size:18px}
+  .fermer{font-size:18px;color:var(--gris);cursor:pointer;padding:0 6px}
+  .panneau-vide{margin:18px 0 0;font-size:13px;color:var(--gris);line-height:1.5}
+  .panneau-saisie{margin-top:auto;margin-bottom:22px;border:1px solid var(--trait);border-radius:999px;
+                  padding:12px 18px;font-size:13px;color:var(--gris)}
+
+  @media (prefers-reduced-motion: reduce){
+    .panneau,[data-variante="D"] .bulle{transition:none}
+  }
+
+  .bilan{max-width:76ch;margin:64px auto 0;border:1px solid var(--trait);border-radius:8px;padding:22px 26px}
+  .bilan h2{margin:0 0 12px;font-family:ui-serif,Georgia,serif;font-size:20px;font-weight:400}
+  .bilan p{margin:0 0 10px;font-size:14px;color:var(--gris)}
+  .bilan b{color:var(--encre);font-weight:500}
+  .bilan table{width:100%;border-collapse:collapse;font-size:13.5px;color:var(--gris);margin:14px 0}
+  .bilan th,.bilan td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--trait);vertical-align:top}
+  .bilan th{color:var(--encre);font-weight:500}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette 47 · 13 août 2026</p>
+    <h1>Où mettre l'assistant</h1>
+    <p>« L'onglet de l'assistant est hyper mal placé. »</p>
+    <div class="constat">
+      <b>La gêne se mesure, elle ne se discute pas.</b> Sur votre écran, la bulle occupe
+      56 × 56 px à 16 px du bord droit — donc, sur le planning, <b>par-dessus les dimanches
+      23 et 30</b>. Deux cases qu'on touche pour ouvrir une journée.
+      <br><br>
+      Et ce n'est pas le premier écran qu'elle mord. À chaque fois,
+      <b>c'est l'écran qu'on a déplacé pour l'éviter</b> :
+      <ul>
+        <li>« ou rédiger le devis à la main », recouvert ;</li>
+        <li>« Préparer le devis » : 64 px de talon ne suffisaient pas, il en a fallu 112 ;</li>
+        <li>un bouton de reprise, 48 px mangés dès que le message faisait deux lignes ;</li>
+        <li>une capsule qu'il a fallu centrer pour qu'elle lui échappe ;</li>
+        <li>« Reste à payer » calé à gauche, sa fin passant dessous.</li>
+      </ul>
+      <br>
+      C'est pourquoi aucune de ces propositions ne consiste à la déplacer de vingt pixels.
+    </div>
+    <div class="marche">
+      <b>Appuyez sur l'assistant de chaque téléphone</b> — il s'ouvre pareil dans les cinq :
+      ce n'est pas lui qu'on compare, c'est la place qu'il prend quand il est fermé.
+      <b>✕</b> referme.
+    </div>
+  </div>
+
+  <div class="rangee">
+    <figure>
+      <div class="tel"><section class="ecran" data-variante="0">
+        <input type="checkbox" id="p0" class="ouvre">
+        
+        <div class="corps">
+          <header class="entete">
+            <div>
+              <p class="surtitre">Vos journées</p>
+              <h2 class="titre">Planning</h2>
+            </div>
+            
+          </header>
+          <div class="filet"></div>
+          <div class="encart">
+            <div>
+              <p class="encart-titre">Relier mon agenda Google</p>
+              <p class="encart-detail">Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs.</p>
+            </div>
+            <span class="connecter">Connecter</span>
+          </div>
+          <div class="filet"></div>
+          <div class="mois">
+            <span class="nom-mois">août</span>
+            <span class="annee">2026</span>
+            <span class="fleches">‹ ›</span>
+          </div>
+          <div class="semaine entete-jours">
+            <span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span>
+          </div>
+          <div class="calendrier">
+            <div class="semaine"><span class="jour hors">27</span><span class="jour hors">28</span><span class="jour hors">29</span><span class="jour hors">30</span><span class="jour hors">31</span><span class="jour">1</span><span class="jour">2</span></div>
+            <div class="semaine"><span class="jour">3</span><span class="jour">4</span><span class="jour">5</span><span class="jour">6</span><span class="jour">7</span><span class="jour weekend">8</span><span class="jour weekend">9</span></div>
+            <div class="semaine"><span class="jour">10</span><span class="jour">11</span><span class="jour">12</span><span class="jour">13</span><span class="jour aujourdhui">14</span><span class="jour weekend">15</span><span class="jour weekend">16</span></div>
+            <div class="semaine"><span class="jour">17</span><span class="jour">18</span><span class="jour">19</span><span class="jour">20</span><span class="jour">21</span><span class="jour weekend">22</span><span class="jour weekend">23</span></div>
+            <div class="semaine"><span class="jour">24</span><span class="jour">25</span><span class="jour">26</span><span class="jour">27</span><span class="jour">28</span><span class="jour weekend">29</span><span class="jour weekend">30</span></div>
+            <div class="semaine"><span class="jour">31</span><span class="jour hors">1</span><span class="jour hors">2</span><span class="jour hors">3</span><span class="jour hors">4</span><span class="jour hors">5</span><span class="jour hors">6</span></div>
+          </div>
+        </div>
+        <label class="assistant bulle" for="p0" data-assistant><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+    </svg></label>
+        
+        <nav class="barre">
+          <span class="onglet">Chantiers</span><span class="onglet actif">Planning</span><span class="onglet">Terminés</span><span class="onglet">Réglages</span>
+        </nav>
+        <div class="panneau">
+          <div class="panneau-tete">
+            <span>Assistant</span>
+            <label class="fermer" for="p0">✕</label>
+          </div>
+          <p class="panneau-vide">Posez votre question — par exemple « quels devis attendent une réponse ? »</p>
+          <div class="panneau-saisie">Votre question…</div>
+        </div>
+      </section></div>
+      <figcaption>
+        <span class="chapeau">Aujourd'hui</span>
+        La bulle flotte au-dessus de tout, à 28 px du bandeau. Mesurée dans l'application : elle couvre <b>les dimanches 23 et 30</b>.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <div class="tel"><section class="ecran" data-variante="A">
+        <input type="checkbox" id="pA" class="ouvre">
+        
+        <div class="corps">
+          <header class="entete">
+            <div>
+              <p class="surtitre">Vos journées</p>
+              <h2 class="titre">Planning</h2>
+            </div>
+            
+          </header>
+          <div class="filet"></div>
+          <div class="encart">
+            <div>
+              <p class="encart-titre">Relier mon agenda Google</p>
+              <p class="encart-detail">Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs.</p>
+            </div>
+            <span class="connecter">Connecter</span>
+          </div>
+          <div class="filet"></div>
+          <div class="mois">
+            <span class="nom-mois">août</span>
+            <span class="annee">2026</span>
+            <span class="fleches">‹ ›</span>
+          </div>
+          <div class="semaine entete-jours">
+            <span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span>
+          </div>
+          <div class="calendrier">
+            <div class="semaine"><span class="jour hors">27</span><span class="jour hors">28</span><span class="jour hors">29</span><span class="jour hors">30</span><span class="jour hors">31</span><span class="jour">1</span><span class="jour">2</span></div>
+            <div class="semaine"><span class="jour">3</span><span class="jour">4</span><span class="jour">5</span><span class="jour">6</span><span class="jour">7</span><span class="jour weekend">8</span><span class="jour weekend">9</span></div>
+            <div class="semaine"><span class="jour">10</span><span class="jour">11</span><span class="jour">12</span><span class="jour">13</span><span class="jour aujourdhui">14</span><span class="jour weekend">15</span><span class="jour weekend">16</span></div>
+            <div class="semaine"><span class="jour">17</span><span class="jour">18</span><span class="jour">19</span><span class="jour">20</span><span class="jour">21</span><span class="jour weekend">22</span><span class="jour weekend">23</span></div>
+            <div class="semaine"><span class="jour">24</span><span class="jour">25</span><span class="jour">26</span><span class="jour">27</span><span class="jour">28</span><span class="jour weekend">29</span><span class="jour weekend">30</span></div>
+            <div class="semaine"><span class="jour">31</span><span class="jour hors">1</span><span class="jour hors">2</span><span class="jour hors">3</span><span class="jour hors">4</span><span class="jour hors">5</span><span class="jour hors">6</span></div>
+          </div>
+        </div>
+        
+        
+        <nav class="barre">
+          <span class="onglet">Chantiers</span><span class="onglet actif">Planning</span><span class="onglet">Terminés</span><span class="onglet">Réglages</span><label class="onglet assistant-onglet" for="pA" data-assistant>Assistant</label>
+        </nav>
+        <div class="panneau">
+          <div class="panneau-tete">
+            <span>Assistant</span>
+            <label class="fermer" for="pA">✕</label>
+          </div>
+          <p class="panneau-vide">Posez votre question — par exemple « quels devis attendent une réponse ? »</p>
+          <div class="panneau-saisie">Votre question…</div>
+        </div>
+      </section></div>
+      <figcaption>
+        <span class="chapeau">A · Une cinquième entrée dans la barre</span>
+        Elle cesse de flotter : elle prend sa place à côté de Chantiers, Planning, Terminés, Réglages. <b>Elle ne peut plus rien couvrir, sur aucun écran.</b>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <div class="tel"><section class="ecran" data-variante="B">
+        <input type="checkbox" id="pB" class="ouvre">
+        
+        <div class="corps">
+          <header class="entete">
+            <div>
+              <p class="surtitre">Vos journées</p>
+              <h2 class="titre">Planning</h2>
+            </div>
+            <label class="assistant dans-entete" for="pB" data-assistant><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+    </svg></label>
+          </header>
+          <div class="filet"></div>
+          <div class="encart">
+            <div>
+              <p class="encart-titre">Relier mon agenda Google</p>
+              <p class="encart-detail">Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs.</p>
+            </div>
+            <span class="connecter">Connecter</span>
+          </div>
+          <div class="filet"></div>
+          <div class="mois">
+            <span class="nom-mois">août</span>
+            <span class="annee">2026</span>
+            <span class="fleches">‹ ›</span>
+          </div>
+          <div class="semaine entete-jours">
+            <span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span>
+          </div>
+          <div class="calendrier">
+            <div class="semaine"><span class="jour hors">27</span><span class="jour hors">28</span><span class="jour hors">29</span><span class="jour hors">30</span><span class="jour hors">31</span><span class="jour">1</span><span class="jour">2</span></div>
+            <div class="semaine"><span class="jour">3</span><span class="jour">4</span><span class="jour">5</span><span class="jour">6</span><span class="jour">7</span><span class="jour weekend">8</span><span class="jour weekend">9</span></div>
+            <div class="semaine"><span class="jour">10</span><span class="jour">11</span><span class="jour">12</span><span class="jour">13</span><span class="jour aujourdhui">14</span><span class="jour weekend">15</span><span class="jour weekend">16</span></div>
+            <div class="semaine"><span class="jour">17</span><span class="jour">18</span><span class="jour">19</span><span class="jour">20</span><span class="jour">21</span><span class="jour weekend">22</span><span class="jour weekend">23</span></div>
+            <div class="semaine"><span class="jour">24</span><span class="jour">25</span><span class="jour">26</span><span class="jour">27</span><span class="jour">28</span><span class="jour weekend">29</span><span class="jour weekend">30</span></div>
+            <div class="semaine"><span class="jour">31</span><span class="jour hors">1</span><span class="jour hors">2</span><span class="jour hors">3</span><span class="jour hors">4</span><span class="jour hors">5</span><span class="jour hors">6</span></div>
+          </div>
+        </div>
+        
+        
+        <nav class="barre">
+          <span class="onglet">Chantiers</span><span class="onglet actif">Planning</span><span class="onglet">Terminés</span><span class="onglet">Réglages</span>
+        </nav>
+        <div class="panneau">
+          <div class="panneau-tete">
+            <span>Assistant</span>
+            <label class="fermer" for="pB">✕</label>
+          </div>
+          <p class="panneau-vide">Posez votre question — par exemple « quels devis attendent une réponse ? »</p>
+          <div class="panneau-saisie">Votre question…</div>
+        </div>
+      </section></div>
+      <figcaption>
+        <span class="chapeau">B · Dans l'en-tête, près du titre</span>
+        Un rond discret à droite du titre, comme le micro de « Un chantier ». Rien n'est recouvert — mais elle <b>défile avec la page</b> et n'est plus là quand on est en bas.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <div class="tel"><section class="ecran" data-variante="C">
+        <input type="checkbox" id="pC" class="ouvre">
+        
+        <div class="corps">
+          <header class="entete">
+            <div>
+              <p class="surtitre">Vos journées</p>
+              <h2 class="titre">Planning</h2>
+            </div>
+            
+          </header>
+          <div class="filet"></div>
+          <div class="encart">
+            <div>
+              <p class="encart-titre">Relier mon agenda Google</p>
+              <p class="encart-detail">Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs.</p>
+            </div>
+            <span class="connecter">Connecter</span>
+          </div>
+          <div class="filet"></div>
+          <div class="mois">
+            <span class="nom-mois">août</span>
+            <span class="annee">2026</span>
+            <span class="fleches">‹ ›</span>
+          </div>
+          <div class="semaine entete-jours">
+            <span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span>
+          </div>
+          <div class="calendrier">
+            <div class="semaine"><span class="jour hors">27</span><span class="jour hors">28</span><span class="jour hors">29</span><span class="jour hors">30</span><span class="jour hors">31</span><span class="jour">1</span><span class="jour">2</span></div>
+            <div class="semaine"><span class="jour">3</span><span class="jour">4</span><span class="jour">5</span><span class="jour">6</span><span class="jour">7</span><span class="jour weekend">8</span><span class="jour weekend">9</span></div>
+            <div class="semaine"><span class="jour">10</span><span class="jour">11</span><span class="jour">12</span><span class="jour">13</span><span class="jour aujourdhui">14</span><span class="jour weekend">15</span><span class="jour weekend">16</span></div>
+            <div class="semaine"><span class="jour">17</span><span class="jour">18</span><span class="jour">19</span><span class="jour">20</span><span class="jour">21</span><span class="jour weekend">22</span><span class="jour weekend">23</span></div>
+            <div class="semaine"><span class="jour">24</span><span class="jour">25</span><span class="jour">26</span><span class="jour">27</span><span class="jour">28</span><span class="jour weekend">29</span><span class="jour weekend">30</span></div>
+            <div class="semaine"><span class="jour">31</span><span class="jour hors">1</span><span class="jour hors">2</span><span class="jour hors">3</span><span class="jour hors">4</span><span class="jour hors">5</span><span class="jour hors">6</span></div>
+          </div>
+        </div>
+        <label class="assistant poignee" for="pC" data-assistant><i></i></label>
+        
+        <nav class="barre">
+          <span class="onglet">Chantiers</span><span class="onglet actif">Planning</span><span class="onglet">Terminés</span><span class="onglet">Réglages</span>
+        </nav>
+        <div class="panneau">
+          <div class="panneau-tete">
+            <span>Assistant</span>
+            <label class="fermer" for="pC">✕</label>
+          </div>
+          <p class="panneau-vide">Posez votre question — par exemple « quels devis attendent une réponse ? »</p>
+          <div class="panneau-saisie">Votre question…</div>
+        </div>
+      </section></div>
+      <figcaption>
+        <span class="chapeau">C · Une poignée sur le bord</span>
+        Une languette de 16 px collée au bord droit, à mi-hauteur, qu'on tire. <b>Emprise divisée par sept</b>, et toujours atteignable où qu'on soit.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <div class="tel"><section class="ecran" data-variante="D">
+        <input type="checkbox" id="pD" class="ouvre">
+        <input type="checkbox" id="dD" class="defile">
+        <div class="corps">
+          <header class="entete">
+            <div>
+              <p class="surtitre">Vos journées</p>
+              <h2 class="titre">Planning</h2>
+            </div>
+            
+          </header>
+          <div class="filet"></div>
+          <div class="encart">
+            <div>
+              <p class="encart-titre">Relier mon agenda Google</p>
+              <p class="encart-detail">Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs.</p>
+            </div>
+            <span class="connecter">Connecter</span>
+          </div>
+          <div class="filet"></div>
+          <div class="mois">
+            <span class="nom-mois">août</span>
+            <span class="annee">2026</span>
+            <span class="fleches">‹ ›</span>
+          </div>
+          <div class="semaine entete-jours">
+            <span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span>
+          </div>
+          <div class="calendrier">
+            <div class="semaine"><span class="jour hors">27</span><span class="jour hors">28</span><span class="jour hors">29</span><span class="jour hors">30</span><span class="jour hors">31</span><span class="jour">1</span><span class="jour">2</span></div>
+            <div class="semaine"><span class="jour">3</span><span class="jour">4</span><span class="jour">5</span><span class="jour">6</span><span class="jour">7</span><span class="jour weekend">8</span><span class="jour weekend">9</span></div>
+            <div class="semaine"><span class="jour">10</span><span class="jour">11</span><span class="jour">12</span><span class="jour">13</span><span class="jour aujourdhui">14</span><span class="jour weekend">15</span><span class="jour weekend">16</span></div>
+            <div class="semaine"><span class="jour">17</span><span class="jour">18</span><span class="jour">19</span><span class="jour">20</span><span class="jour">21</span><span class="jour weekend">22</span><span class="jour weekend">23</span></div>
+            <div class="semaine"><span class="jour">24</span><span class="jour">25</span><span class="jour">26</span><span class="jour">27</span><span class="jour">28</span><span class="jour weekend">29</span><span class="jour weekend">30</span></div>
+            <div class="semaine"><span class="jour">31</span><span class="jour hors">1</span><span class="jour hors">2</span><span class="jour hors">3</span><span class="jour hors">4</span><span class="jour hors">5</span><span class="jour hors">6</span></div>
+          </div>
+        </div>
+        <label class="assistant bulle" for="pD" data-assistant><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+    </svg></label>
+        <label class="bascule-defile" for="dD"><span class="case"></span>je fais défiler</label>
+        <nav class="barre">
+          <span class="onglet">Chantiers</span><span class="onglet actif">Planning</span><span class="onglet">Terminés</span><span class="onglet">Réglages</span>
+        </nav>
+        <div class="panneau">
+          <div class="panneau-tete">
+            <span>Assistant</span>
+            <label class="fermer" for="pD">✕</label>
+          </div>
+          <p class="panneau-vide">Posez votre question — par exemple « quels devis attendent une réponse ? »</p>
+          <div class="panneau-saisie">Votre question…</div>
+        </div>
+      </section></div>
+      <figcaption>
+        <span class="chapeau">D · Elle s'efface quand on descend</span>
+        Elle reste où elle est, mais devient un petit point dès qu'on fait défiler, et redevient pleine dès qu'on remonte. <b>Cochez « je fais défiler » pour l'essayer.</b>
+      </figcaption>
+    </figure>
+  </div>
+
+  <div class="bilan">
+    <h2>Ce que chacune coûte</h2>
+    <p>Aucune n'est gratuite. Voilà ce qu'on paie, dans chaque cas.</p>
+    <table>
+      <tr><th>Place</th><th>Ce qu'elle recouvre</th><th>Ce qu'elle coûte</th></tr>
+      <tr><td><b>Aujourd'hui</b></td><td>Les dimanches 23 et 30 du calendrier — et un bout de tous les autres écrans</td><td>—</td></tr>
+      <tr><td><b>A</b> — dans la barre</td><td><b>Rien, jamais</b></td><td>La barre passe de quatre mots à cinq. L'assistant devient un endroit où l'on va, plus un compagnon qui suit.</td></tr>
+      <tr><td><b>B</b> — dans l'en-tête</td><td><b>Rien</b></td><td>Il défile avec la page : quand vous êtes en bas d'une longue liste, il n'est plus là. Et sur « Un chantier », il partagerait la place avec le micro.</td></tr>
+      <tr><td><b>C</b> — la poignée</td><td><b>Rien</b> — 16 px contre 56, sept fois moins d'emprise</td><td>Moins évidente : on peut ne pas la voir au début. Et elle longe le contenu à mi-hauteur.</td></tr>
+      <tr><td><b>D</b> — elle s'efface</td><td>Toujours quelque chose, mais en petit et translucide</td><td>Elle reste au-dessus du contenu. Et il faut remonter pour la rappeler.</td></tr>
+    </table>
+    <p><b>Ce que je ne peux pas trancher à votre place :</b> si l'assistant est un outil qu'on
+    va chercher (alors <b>A</b>), ou un compagnon qui doit rester sous le pouce (alors <b>C</b>).
+    Les deux se défendent ; c'est votre façon de travailler qui décide.</p>
+    <p><b>Et il y a une sixième possibilité, que je n'ai pas dessinée :</b> qu'il n'apparaisse
+    que lorsqu'il a quelque chose à dire. Emprise nulle le reste du temps — mais un assistant
+    qu'on ne voit jamais est un assistant qu'on n'utilise pas. Dites-le si vous voulez la voir.</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -19,6 +19,15 @@ on:
       - ".devcontainer/**"
       - "docker/init/**"
       - "scripts/essai.mjs"
+      - "scripts/banc.mjs"
+      - "scripts/verifier-connexion.mjs"
+      # **La connexion est éprouvée ici, donc son code doit déclencher ce
+      # contrôle.** Le 12 août 2026, deux correctifs de connexion sont partis
+      # sur `main` sans que ce workflow ne s'en aperçoive : ses déclencheurs ne
+      # regardaient que l'outillage du banc, jamais ce qui laisse entrer.
+      - "src/app/login/**"
+      - "src/server/rate-limit/**"
+      - "src/auth.ts"
       - "src/server/db/seed.ts"
       - "drizzle/**"
       - "package.json"
@@ -28,6 +37,15 @@ on:
       - ".devcontainer/**"
       - "docker/init/**"
       - "scripts/essai.mjs"
+      - "scripts/banc.mjs"
+      - "scripts/verifier-connexion.mjs"
+      # **La connexion est éprouvée ici, donc son code doit déclencher ce
+      # contrôle.** Le 12 août 2026, deux correctifs de connexion sont partis
+      # sur `main` sans que ce workflow ne s'en aperçoive : ses déclencheurs ne
+      # regardaient que l'outillage du banc, jamais ce qui laisse entrer.
+      - "src/app/login/**"
+      - "src/server/rate-limit/**"
+      - "src/auth.ts"
       - "src/server/db/seed.ts"
       - "drizzle/**"
       - "package.json"
@@ -54,4 +72,17 @@ jobs:
         with:
           configFile: .devcontainer/devcontainer.json
           push: never
-          runCmd: bash .devcontainer/verifier.sh
+          # **Le navigateur d'essai s'installe ICI, pas dans l'image.**
+          #
+          # Le contrôle du banc se connecte désormais pour de vrai, dans un vrai
+          # navigateur, avec une origine étrangère — c'est la seule façon de voir
+          # le « Invalid Server Actions request. » qui a coûté une demi-journée au
+          # patron, et la seule qui aurait vu qu'il ne pouvait pas se connecter le
+          # 12 août. Playwright manquait au conteneur : `TODO.md` le signalait
+          # depuis le 9 août.
+          #
+          # Posé dans la commande plutôt que dans l'image, pour que l'espace du
+          # patron ne porte pas trois cents mégaoctets de navigateur dont il ne
+          # se sert jamais. La machine de GitHub, elle, les paie une fois par
+          # exécution.
+          runCmd: bash -lc "npx playwright install --with-deps chromium && bash .devcontainer/verifier.sh"

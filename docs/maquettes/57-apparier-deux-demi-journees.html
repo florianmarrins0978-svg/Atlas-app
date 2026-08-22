@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Apparier deux demi-journées</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    APPARIER DEUX DEMI-JOURNÉES — quatre façons de le proposer
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 13 août 2026 : « lorsqu'on a fini des chantiers en
+    demi-journée, que le planning soit en mesure de proposer deux demi-journées
+    pour faire une journée, mais de deux chantiers qui sont les plus proches.
+    […] Je vais lui demander s'il veut que je mette ce chantier-là plutôt qu'un
+    autre l'après-midi ou le matin. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE LE DÉPÔT SAIT DÉJÀ FAIRE, et qu'il ne faut pas réinventer :
+
+      · les demi-journées EXISTENT en base — un chantier porte son créneau de
+        départ (`2026-08-06:matin`) et sa durée en demi-journées ;
+      · deux chantiers différents sur le matin et l'après-midi du même jour se
+        représentent déjà sans rien ajouter ;
+      · le planning affiche « Libre » en or sur une demi-journée vide.
+
+    CE QUI MANQUE, et qui commande tout : **Atlas ne connaît aucune distance**.
+    L'adresse d'un chantier est du texte. La Base Adresse Nationale renvoie
+    pourtant les coordonnées à chaque frappe — et on les jette. Il faut donc :
+    les garder, rattraper celles des chantiers déjà saisis, puis seulement
+    apparier.
+
+    ————————————————————————————————————————————————————————————————
+    LA PHRASE DE DISTANCE EST ÉCRITE DEUX FOIS, et ce n'est pas une hésitation.
+
+    « à 8 km à vol d'oiseau » ne coûte rien et n'engage personne. « à 14 min de
+    route » suppose d'envoyer les adresses de ses clients à un service
+    extérieur — un sous-traitant ultérieur de plus, à nommer dans un contrat qui
+    n'existe pas encore (`docs/A-FAIRE.md` points 1 et 2), à moins que le
+    service de l'État ne convienne. C'est ce que va dire
+    `.github/workflows/itineraire.yml`, qui interroge le vrai service depuis une
+    machine qui a le réseau.
+
+    **La mise en page ne change pas entre les deux** : seule la phrase change.
+    C'est délibéré — la décision juridique ne doit pas coûter un redessin.
+
+    ————————————————————————————————————————————————————————————————
+    ET LES CAS QUI NE SONT PAS BEAUX SONT DESSINÉS AUSSI. Un écran qui ne
+    propose rien doit dire POURQUOI : aucun chantier assez proche, ou une
+    adresse qu'on n'a pas su situer. Se taire, c'est laisser croire à une panne.
+
+    Aucun script. Les écrans font 390 px — la dalle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f7f5f0;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1300px;margin:0 auto}
+
+  .intro{max-width:66ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .famille{max-width:1300px;margin:52px auto 0;text-align:center;
+           font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.32em;
+           text-transform:uppercase;color:var(--or)}
+  .sous-famille{max-width:62ch;margin:10px auto 0;text-align:center;
+                font-size:13.4px;color:var(--gris);line-height:1.6}
+  .sous-famille b{color:var(--encre)}
+  .grille{display:flex;flex-wrap:wrap;gap:54px 40px;justify-content:center;
+          align-items:flex-start;margin-top:26px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px;width:100%}
+  .legende{text-align:center;max-width:390px;width:100%}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+              text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+  .legende p + p{margin-top:9px}
+  .legende .reserve{color:var(--encre);opacity:.82}
+  .legende .reserve b{color:var(--or)}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+
+  /* ————————————————————————————————————————————————————————————————
+     L'ÉCRAN PLANNING — repris de `PlanningClient`
+     ———————————————————————————————————————————————————————————————— */
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:100%;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);padding:24px 0 26px;
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .eyebrow{margin:0 24px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--e-or)}
+  .titre-ecran{margin:12px 24px 0;font:400 34px/1.1 ui-serif,Georgia,serif}
+  .filet{margin:16px 24px 0;height:1px;background:var(--e-trait)}
+
+  .jour{margin:20px 24px 0}
+  .jour .date{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--e-gris);margin-bottom:10px}
+  .demi{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+        padding:11px 0;border-bottom:1px solid var(--e-trait)}
+  .demi .quoi{display:flex;align-items:baseline;gap:9px;min-width:0}
+  .demi .perle{width:7px;height:7px;border-radius:9999px;background:var(--e-pin);flex:0 0 auto}
+  .demi .perle.creuse{background:transparent;border:1.5px solid var(--e-or)}
+  .demi .nom{font:400 17px/1.15 ui-serif,Georgia,serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .demi .nom.libre{color:var(--e-or)}
+  .demi .quand{font-size:12.5px;color:var(--e-gris);flex:0 0 auto}
+  .demi .quand.or{color:var(--e-or)}
+
+  /* ── 1 · la ligne qui se complète ─────────────────────────────────────── */
+  .p1 .suggestion{font-size:12.5px;color:var(--e-or);flex:0 0 auto}
+
+  /* ── 2 · le bandeau sous la journée ───────────────────────────────────── */
+  .bandeau{margin-top:12px;padding:13px 14px;border-radius:4px;background:var(--e-plage);
+           border-left:2px solid var(--e-or)}
+  .bandeau .quoi{font-size:13.5px;line-height:1.5}
+  .bandeau .quoi b{font-family:ui-serif,Georgia,serif;font-weight:400;font-size:15px}
+  .bandeau .ou{margin-top:3px;font-size:12px;color:var(--e-gris)}
+  .bandeau .gestes{margin-top:11px;display:flex;gap:10px;align-items:center}
+  .bandeau .principal{border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+                      padding:9px 18px;font-size:13.5px}
+  .bandeau .secondaire{font-size:13px;color:var(--e-or);font-weight:600}
+
+  /* ── 3 · la feuille des candidats ─────────────────────────────────────── */
+  .feuille{margin:18px 0 0;border-top:1px solid var(--e-trait);padding:18px 24px 0}
+  .feuille .chapo{font:400 20px/1.2 ui-serif,Georgia,serif}
+  .feuille .sous{margin-top:5px;font-size:12.5px;color:var(--e-gris)}
+  .cand{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+        padding:13px 0;border-bottom:1px solid var(--e-trait)}
+  .cand .nom{font:400 17px/1.15 ui-serif,Georgia,serif}
+  .cand .ou{margin-top:2px;font-size:11.5px;color:var(--e-gris)}
+  .cand .km{font-size:13px;color:var(--e-or);font-weight:600;white-space:nowrap}
+  .feuille .principal{display:block;margin-top:16px;border-radius:9999px;
+                      background:var(--e-pin);color:#faf9f5;padding:13px 0;
+                      text-align:center;font:400 16px/1 ui-serif,Georgia,serif}
+
+  /* ── 4 · au moment de planifier ───────────────────────────────────────── */
+  .p4 .encart{margin:20px 24px 0;padding:16px 15px;border-radius:4px;background:var(--e-plage)}
+  .p4 .encart .t{font:400 19px/1.25 ui-serif,Georgia,serif}
+  .p4 .encart p{margin:7px 0 0;font-size:13.5px;color:var(--e-gris);line-height:1.55}
+  .p4 .encart .gestes{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+  .p4 .encart .principal{border-radius:9999px;background:var(--e-pin);color:#faf9f5;
+                         padding:12px 0;text-align:center;font-size:15px}
+  .p4 .encart .secondaire{text-align:center;font-size:13.5px;color:var(--e-or);font-weight:600}
+
+  /* ── les cas ingrats ──────────────────────────────────────────────────── */
+  .muet{margin-top:12px;padding:13px 14px;border-radius:4px;
+        border:1px dashed var(--e-trait);font-size:12.8px;color:var(--e-gris);line-height:1.55}
+  .muet b{color:var(--e-encre)}
+  .muet .agir{display:inline-block;margin-top:8px;font-size:13px;color:var(--e-or);font-weight:600}
+
+  .note{max-width:74ch;margin:62px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note code{font-size:12.6px}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le planning</p>
+    <h1>Apparier deux demi-journées</h1>
+    <p>Une demi-journée est prise, l’autre est libre. <b>Quel chantier en attente
+      est le plus proche</b>, pour ne pas traverser le département deux fois dans
+      la journée ?</p>
+    <p>Quatre façons de le proposer — <b>et jamais de le décider</b> : la
+      demi-journée ne se cale que par votre geste.</p>
+  </div>
+
+  <p class="famille">Proposition 1 — la ligne qui se complète</p>
+  <p class="sous-famille">Rien de neuf à l’écran : la ligne « Libre » dit
+    simplement <b>qui pourrait la remplir</b>. Un appui suffit.</p>
+  <div class="grille">
+    <div class="prop p1">
+      <div class="tel"><div class="ecran">
+        <p class="eyebrow">Vos journées</p>
+        <h3 class="titre-ecran">Planning</h3>
+        <div class="filet"></div>
+        <div class="jour">
+          <p class="date">Jeudi 20 août</p>
+          <div class="demi">
+            <span class="quoi"><span class="perle"></span><span class="nom">Abattage — Mr. Martins</span></span>
+            <span class="quand">Matin</span>
+          </div>
+          <div class="demi">
+            <span class="quoi"><span class="perle creuse"></span><span class="nom libre">Libre</span></span>
+            <span class="suggestion">Haie, Mme Roux — 8 km ?</span>
+          </div>
+        </div>
+        <div class="jour">
+          <p class="date">Vendredi 21 août</p>
+          <div class="demi">
+            <span class="quoi"><span class="perle"></span><span class="nom">Dessouchage — Mr. Perrin</span></span>
+            <span class="quand">Journée</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>La plus discrète</h2>
+        <p class="titre">Sur la ligne même</p>
+        <p>La demi-journée libre porte le nom du plus proche et sa distance. On
+          appuie dessus, la feuille s’ouvre, on confirme.</p>
+        <p class="reserve"><b>Ce qu’elle coûte :</b> à 390 px, « Haie, Mme Roux
+          — 8 km ? » tient tout juste. Un nom de client long sera coupé, et
+          l’écran ne dira plus lequel.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="famille">Proposition 2 — le bandeau sous la journée</p>
+  <p class="sous-famille">La journée garde ses lignes ; la proposition vit
+    <b>dessous</b>, avec la place d’expliquer et deux gestes clairs.</p>
+  <div class="grille">
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="eyebrow">Vos journées</p>
+        <h3 class="titre-ecran">Planning</h3>
+        <div class="filet"></div>
+        <div class="jour">
+          <p class="date">Jeudi 20 août</p>
+          <div class="demi">
+            <span class="quoi"><span class="perle"></span><span class="nom">Abattage — Mr. Martins</span></span>
+            <span class="quand">Matin</span>
+          </div>
+          <div class="demi">
+            <span class="quoi"><span class="perle creuse"></span><span class="nom libre">Libre</span></span>
+            <span class="quand or">Après-midi</span>
+          </div>
+          <div class="bandeau">
+            <p class="quoi">L’après-midi est libre. Le plus proche : <b>Taille de haie — Mme Roux</b></p>
+            <p class="ou">Chaponost, à 8 km à vol d’oiseau du chantier du matin.</p>
+            <div class="gestes">
+              <span class="principal">Caler l’après-midi</span>
+              <span class="secondaire">Voir les autres →</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 2 · à vol d’oiseau</h2>
+        <p class="titre">Le bandeau, sans prestataire</p>
+        <p>La distance vient d’un calcul fait chez nous, à partir des
+          coordonnées que la Base Adresse Nationale nous donne déjà.</p>
+        <p class="reserve"><b>Aucune donnée ne sort</b>, aucun contrat nouveau.
+          Réserve honnête : dans les monts, 8 km à vol d’oiseau peuvent faire
+          trente-cinq minutes de route.</p>
+      </div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="eyebrow">Vos journées</p>
+        <h3 class="titre-ecran">Planning</h3>
+        <div class="filet"></div>
+        <div class="jour">
+          <p class="date">Jeudi 20 août</p>
+          <div class="demi">
+            <span class="quoi"><span class="perle"></span><span class="nom">Abattage — Mr. Martins</span></span>
+            <span class="quand">Matin</span>
+          </div>
+          <div class="demi">
+            <span class="quoi"><span class="perle creuse"></span><span class="nom libre">Libre</span></span>
+            <span class="quand or">Après-midi</span>
+          </div>
+          <div class="bandeau">
+            <p class="quoi">L’après-midi est libre. Le plus proche : <b>Taille de haie — Mme Roux</b></p>
+            <p class="ou">Chaponost, à 14 min de route du chantier du matin.</p>
+            <div class="gestes">
+              <span class="principal">Caler l’après-midi</span>
+              <span class="secondaire">Voir les autres →</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 2 · par la route</h2>
+        <p class="titre">Le même bandeau, le vrai trajet</p>
+        <p><b>Seule la phrase change</b> — « à 14 min de route » au lieu de
+          « à 8 km à vol d’oiseau ». La mise en page est identique, exprès : la
+          décision juridique ne doit pas coûter un redessin.</p>
+        <p class="reserve"><b>Ce qu’elle suppose :</b> envoyer vos adresses de
+          clients à un service extérieur. Gratuit et sans contrat SI le service
+          de l’État convient — c’est ce qu’une vérification lancée aujourd’hui
+          doit dire.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="famille">Proposition 3 — la feuille des candidats</p>
+  <p class="sous-famille">Le planning ne dit rien de plus qu’aujourd’hui. C’est
+    en <b>touchant la demi-journée libre</b> qu’Atlas propose — et il en propose
+    trois, classés.</p>
+  <div class="grille">
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="eyebrow">Vos journées</p>
+        <h3 class="titre-ecran">Planning</h3>
+        <div class="filet"></div>
+        <div class="jour">
+          <p class="date">Jeudi 20 août</p>
+          <div class="demi">
+            <span class="quoi"><span class="perle"></span><span class="nom">Abattage — Mr. Martins</span></span>
+            <span class="quand">Matin</span>
+          </div>
+          <div class="demi">
+            <span class="quoi"><span class="perle creuse"></span><span class="nom libre">Libre</span></span>
+            <span class="quand or">Après-midi</span>
+          </div>
+        </div>
+        <div class="feuille">
+          <p class="chapo">Qui, cet après-midi ?</p>
+          <p class="sous">Les plus proches du chantier du matin, à Saint-Genis.</p>
+          <div class="cand">
+            <span><span class="nom">Taille de haie — Mme Roux</span><div class="ou">Chaponost · ½ journée</div></span>
+            <span class="km">8 km</span>
+          </div>
+          <div class="cand">
+            <span><span class="nom">Élagage — Mr. Bernard</span><div class="ou">Brindas · ½ journée</div></span>
+            <span class="km">17 km</span>
+          </div>
+          <div class="cand">
+            <span><span class="nom">Broyage — Mme Fayolle</span><div class="ou">Vaugneray · ½ journée</div></span>
+            <span class="km">23 km</span>
+          </div>
+          <span class="principal">Caler Mme Roux cet après-midi</span>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">Trois candidats, classés</p>
+        <p>Le planning reste tel qu’il est aujourd’hui : rien ne s’ajoute tant
+          que vous ne demandez pas. La feuille vous donne le choix, pas une
+          réponse unique.</p>
+        <p class="reserve"><b>La plus honnête des quatre</b> — vous voyez ce que
+          vous écartez. Réserve : elle demande un appui de plus, et ne vous
+          apprend rien tant que vous ne l’ouvrez pas.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="famille">Proposition 4 — au moment de planifier, pas après</p>
+  <p class="sous-famille">Atlas parle <b>quand vous posez la date</b> d’un
+    chantier d’une demi-journée : c’est là que la question se pose vraiment.</p>
+  <div class="grille">
+    <div class="prop p4">
+      <div class="tel"><div class="ecran">
+        <p class="eyebrow">Abattage — Mr. Martins</p>
+        <h3 class="titre-ecran">Planifier</h3>
+        <div class="filet"></div>
+        <div class="jour">
+          <p class="date">Jeudi 20 août · matin</p>
+          <div class="demi">
+            <span class="quoi"><span class="perle"></span><span class="nom">Abattage — Mr. Martins</span></span>
+            <span class="quand">½ journée</span>
+          </div>
+        </div>
+        <div class="encart">
+          <p class="t">Il reste l’après-midi</p>
+          <p>Une demi-journée seule laisse la moitié du déplacement pour rien.
+            <b>Taille de haie — Mme Roux</b> attend une date, à 8 km.</p>
+          <div class="gestes">
+            <span class="principal">Caler Mme Roux l’après-midi</span>
+            <span class="secondaire">Laisser l’après-midi libre</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Proposition 4</h2>
+        <p class="titre">Au moment où ça se décide</p>
+        <p>La question arrive quand vous posez la date, pas plus tard sur un
+          écran que vous ouvrez peut-être. C’est le moment où vous avez la
+          journée en tête.</p>
+        <p class="reserve"><b>Elle se combine avec la 2 :</b> proposer à la
+          planification ET rappeler sur le planning ce qui est resté à moitié
+          vide. Les deux ne se disputent pas.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="famille">Et quand il n’y a rien de bon à proposer</p>
+  <p class="sous-famille">Ces deux écrans-là comptent autant que les autres :
+    <b>un écran muet passe pour une panne.</b></p>
+  <div class="grille">
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="eyebrow">Vos journées</p>
+        <h3 class="titre-ecran">Planning</h3>
+        <div class="filet"></div>
+        <div class="jour">
+          <p class="date">Jeudi 20 août</p>
+          <div class="demi">
+            <span class="quoi"><span class="perle"></span><span class="nom">Abattage — Mr. Martins</span></span>
+            <span class="quand">Matin</span>
+          </div>
+          <div class="demi">
+            <span class="quoi"><span class="perle creuse"></span><span class="nom libre">Libre</span></span>
+            <span class="quand or">Après-midi</span>
+          </div>
+          <div class="muet">
+            <b>Rien à proposer cet après-midi.</b> Les chantiers d’une
+            demi-journée qui attendent une date sont tous à plus de 40 km —
+            le plus proche, Mme Fayolle, est à 52 km.
+            <span class="agir">Voir quand même →</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Le cas vide</h2>
+        <p class="titre">Rien d’assez proche</p>
+        <p>Atlas dit <b>combien</b> et <b>à quelle distance</b> : sans ce
+          chiffre, « rien à proposer » se lit comme « je n’ai pas cherché ».</p>
+        <p class="reserve"><b>Et il laisse la porte ouverte</b> — c’est votre
+          journée, pas la sienne. Un seuil est un garde-fou, pas un interdit.</p>
+      </div>
+    </div>
+
+    <div class="prop">
+      <div class="tel"><div class="ecran">
+        <p class="eyebrow">Vos journées</p>
+        <h3 class="titre-ecran">Planning</h3>
+        <div class="filet"></div>
+        <div class="jour">
+          <p class="date">Jeudi 20 août</p>
+          <div class="demi">
+            <span class="quoi"><span class="perle"></span><span class="nom">Abattage — Mr. Martins</span></span>
+            <span class="quand">Matin</span>
+          </div>
+          <div class="demi">
+            <span class="quoi"><span class="perle creuse"></span><span class="nom libre">Libre</span></span>
+            <span class="quand or">Après-midi</span>
+          </div>
+          <div class="muet">
+            <b>Je ne sais pas situer ce chantier.</b> Son adresse — « chemin des
+            Vignes, derrière l’église » — n’a pas été reconnue, donc je ne peux
+            comparer aucune distance.
+            <span class="agir">Corriger l’adresse →</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="legende">
+        <h2>Le cas sans adresse</h2>
+        <p class="titre">Une adresse qu’on n’a pas su situer</p>
+        <p>Il arrivera : le champ d’adresse reste libre, et il le restera — on
+          ne va pas empêcher de créer un chantier faute d’un numéro de rue.</p>
+        <p class="reserve"><b>Ce que l’écran ne doit surtout pas faire :</b> se
+          taire. Il nomme l’adresse en cause et mène là où on la corrige.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="note">
+    <span class="t">Ce qu’il faut construire avant, et qui ne se voit pas</span>
+    <b>Atlas ne connaît aucune distance aujourd’hui.</b> L’adresse d’un chantier
+    est du texte. Trois choses, dans l’ordre : <b>garder les coordonnées</b> que
+    la Base Adresse Nationale nous rend déjà à chaque frappe (une migration) ;
+    <b>rattraper</b> celles des chantiers déjà saisis, sans que vous fassiez
+    rien ; puis seulement <b>apparier</b>.
+    <br><br>
+    <span class="t">Vol d’oiseau ou route — la seule vraie question</span>
+    Le vol d’oiseau ne coûte rien et <b>ne fait sortir aucune donnée</b>. La
+    route suppose d’envoyer vos adresses de clients à un service extérieur, donc
+    un sous-traitant de plus à nommer dans le contrat qui vous manque. <b>Sauf
+    si le service de l’État convient</b> — une vérification a été lancée
+    aujourd’hui sur une machine qui a le réseau
+    (<code>.github/workflows/itineraire.yml</code>) : elle chiffrera l’écart
+    entre les deux et dira si le service tient le rythme.
+    <br><br>
+    <span class="t">Ce qui ne changera pas</span>
+    <b>Atlas propose, vous décidez.</b> Aucune demi-journée ne se cale toute
+    seule — c’est la règle du dépôt, et elle vaut ici comme pour l’envoi d’un
+    devis. <b>Aucun fichier de <code>src/</code> n’a été touché.</b>
+  </p>
+
+</div>
+</body>
+</html>

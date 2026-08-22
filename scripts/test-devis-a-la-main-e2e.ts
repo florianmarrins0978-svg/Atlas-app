@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Trois demandes du patron, le 4 août 2026, éprouvées de bout en bout.**
 //
@@ -37,9 +38,9 @@ async function main() {
 
   const client = `M. Durand ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await page.click('button:has-text("Créer le chantier")');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const chantierUrl = page.url();
   const chantierId = chantierUrl.split("/").pop()!;
@@ -92,10 +93,19 @@ async function main() {
   assert.equal(lignes.rows[0].montant, "1250.00", `Montant enregistré : ${lignes.rows[0].montant}`);
   console.log("  ✓ une ligne écrite à la main est enregistrée avec son montant");
 
-  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Envoyer au client", { timeout: 15000 });
+  // **Relu sur le DEVIS, et son libellé dans le CHAMP.** La synthèse d'avant
+  // l'envoi — qui écrivait les libellés en toutes lettres — a disparu le 20 août
+  // 2026 (`ARCHITECTURE.md` §136). Sur le devis, une ligne est un champ : son
+  // libellé n'est pas dans le texte de la page, et le chercher là ferait rougir
+  // un écran parfaitement juste.
+  await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
+  await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
+  const libelle = await page.getByLabel("Description 1").inputValue();
+  assert.ok(
+    /chêne mort/i.test(libelle),
+    `Le devis ne porte pas la ligne écrite à la main : le champ dit « ${libelle} ».`
+  );
   const devis = await page.locator("body").innerText();
-  assert.ok(/chêne mort/i.test(devis), "Le devis ne porte pas la ligne écrite à la main.");
   assert.ok(!/TOTAL\s*0,00\s*€/i.test(devis), `Le devis reste à zéro : ${devis.slice(0, 300)}`);
   console.log("  ✓ le devis reprend la ligne écrite à la main, sans dictée ni proposition");
 

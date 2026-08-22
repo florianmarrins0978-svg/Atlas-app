@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La bascule, affinée</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LA BASCULE, AFFINÉE — six déclinaisons de la proposition retenue
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 11 août 2026 : « pars sur l'idée de la proposition numéro
+    quatre, et modifie-la pour que ce soit beaucoup plus esthétique et élégant ».
+
+    Ce qui est acquis et ne se rediscute pas ici : les deux chemins se voient en
+    même temps, et il n'y a QU'UN bouton à toucher. Ce qui change d'une
+    déclinaison à l'autre, c'est la façon dont le choix se dessine — et le
+    premier essai (maquette 25) était le plus bavard de tous : deux onglets en
+    capitales, un filet qui saute d'un bloc à l'autre. Bavard parce que
+    l'appareillage se voyait plus que le choix.
+
+    LES QUATRE GESTES QUI FONT L'ÉLÉGANCE ICI, et qui reviennent partout :
+
+      1. **La serif remplace les capitales.** Un mot en capitales espacées est
+         un panneau ; le même en serif est une phrase. On choisit entre deux
+         façons de travailler, pas entre deux rubriques.
+      2. **Le repère glisse, il ne saute pas.** Le trait, la perle, la plage :
+         tout se DÉPLACE en un quart de seconde. Un repère qui saute donne un
+         écran mécanique ; le même qui glisse donne un écran habité.
+      3. **Le mot du bouton se fond, il ne clignote pas.** Les deux libellés
+         sont superposés dans la même case et se croisent en opacité. Le bouton
+         ne change jamais de largeur, ne tressaute jamais.
+      4. **L'or ne sert qu'à désigner.** Il ne souligne que ce qui est retenu —
+         nulle part ailleurs. Une couleur qui ne désigne rien est une couleur
+         en trop (charte Origine).
+
+    AUCUN SCRIPT DANS CETTE PAGE — comme la 14, et pour la même raison : votre
+    lecteur n'exécute pas le JavaScript, et les maquettes qui engendraient leurs
+    écrans en script vous rendaient une page blanche. Tout ce qui bouge ici
+    bouge par des cases radio natives et du CSS. Éprouvé JavaScript coupé :
+    `node scripts/verifier-maquette-bascule.mjs`.
+
+    Les écrans font 390 px de large — la largeur réelle de votre téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1240px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+
+  .grille{display:flex;flex-wrap:wrap;gap:56px 44px;justify-content:center;align-items:flex-start;margin-top:46px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:412px}
+  .legende{text-align:center;max-width:390px}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+
+  /* L'écran garde la charte Origine quel que soit le thème de la page :
+     l'application est claire, et la montrer en sombre serait montrer un écran
+     qui n'existe pas. */
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-or-clair:#C9A15E; --e-papier:#ece9e1;
+    --e-trait:rgba(28,28,26,.12);
+    width:390px;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:26px 0 30px}
+
+  .champ{margin:0 24px 16px}
+  .champ .libelle{text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600;color:var(--e-gris)}
+  .champ .val{margin-top:7px;border-radius:4px;background:var(--e-plage);
+              padding:14px 15px;font-size:16px;color:var(--e-gris)}
+  .ajout{margin:2px 24px 0;font-size:14px;font-weight:500;color:var(--e-pin)}
+  .actions{margin:26px 24px 0}
+
+  /* ═══ LE SOCLE COMMUN AUX SIX ═══════════════════════════════════════════
+
+     Les cases radio sont natives et cachées : c'est elles qui portent l'état,
+     sans une ligne de JavaScript. Elles doivent rester AVANT ce qu'elles
+     commandent — tout le CSS ci-dessous passe par le combinateur `~`, qui ne
+     regarde que les frères SUIVANTS. Les déplacer casserait les six d'un coup,
+     en silence. */
+  .bsc input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .bsc label{cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+  /* Le bouton : les deux libellés superposés dans la MÊME case de grille, qui
+     se croisent en opacité. C'est ce qui empêche le bouton de changer de
+     largeur ou de tressauter au moment du choix — un bouton qui bouge sous le
+     doigt est la façon la plus sûre de faire douter de ce qu'on vient de
+     toucher. */
+  .bsc .bouton{position:relative;border-radius:5px;background:var(--e-pin);color:#faf9f5;
+               padding:17px 8px;text-align:center;font-family:ui-serif,Georgia,serif;font-size:18px;
+               transition:transform .12s ease}
+  .bsc .bouton:active{transform:scale(.985)}
+  .bsc .mots{display:grid}
+  .bsc .mots span{grid-area:1/1;transition:opacity .26s ease}
+  .bsc .mots .m2{opacity:0}
+  .bsc .r2:checked ~ .bouton .mots .m1{opacity:0}
+  .bsc .r2:checked ~ .bouton .mots .m2{opacity:1}
+  /* Même chose lorsque le bouton est imbriqué (déclinaison 5). */
+  .bsc .r2:checked ~ * .bouton .mots .m1{opacity:0}
+  .bsc .r2:checked ~ * .bouton .mots .m2{opacity:1}
+
+  /* Le mot retenu prend l'encre, l'autre se retire dans le gris. Jamais de
+     gras : c'est la couleur qui désigne, pas le poids — un mot qui grossit
+     décale son voisin. */
+  .bsc .mot{transition:color .26s ease}
+
+  /* ═══ 1 — LE TRAIT QUI GLISSE ═══════════════════════════════════════════
+     La 14, débarrassée de ses capitales et de son saut. Deux mots en serif sur
+     un cheveu continu, et un segment d'or qui GLISSE de l'un à l'autre. */
+  .d1 .rail{position:relative;display:flex;border-bottom:1px solid var(--e-trait);margin-bottom:18px}
+  .d1 .rail label{flex:1;text-align:center;padding:0 0 13px;
+                  font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--e-gris)}
+  .d1 .curseur{position:absolute;left:0;bottom:-1px;width:50%;height:1.5px;background:var(--e-or);
+               transition:transform .3s cubic-bezier(.4,0,.2,1)}
+  .d1 .r1:checked ~ .rail label:first-of-type,
+  .d1 .r2:checked ~ .rail label:last-of-type{color:var(--e-encre)}
+  .d1 .r2:checked ~ .rail .curseur{transform:translateX(100%)}
+
+  /* ═══ 2 — LE POINT D'OR ═════════════════════════════════════════════════
+     Aucun rail, aucune boîte. Deux mots posés côte à côte, séparés d'un losange
+     d'or minuscule ; sous le mot retenu, un point apparaît. C'est la plus
+     discrète — de loin, on ne voit qu'une ligne de texte. */
+  .d2 .ligne{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px}
+  .d2 .ligne label{position:relative;padding-bottom:11px;
+                   font-family:ui-serif,Georgia,serif;font-size:17.5px;color:var(--e-gris)}
+  .d2 .ligne label::after{content:"";position:absolute;left:50%;bottom:0;width:4px;height:4px;
+                          margin-left:-2px;border-radius:50%;background:var(--e-or);
+                          opacity:0;transform:translateY(3px);transition:opacity .26s ease,transform .26s ease}
+  .d2 .losange{width:4px;height:4px;background:var(--e-or);transform:rotate(45deg);margin-bottom:11px;opacity:.55}
+  .d2 .r1:checked ~ .ligne label:first-of-type,
+  .d2 .r2:checked ~ .ligne label:last-of-type{color:var(--e-encre)}
+  .d2 .r1:checked ~ .ligne label:first-of-type::after,
+  .d2 .r2:checked ~ .ligne label:last-of-type::after{opacity:1;transform:translateY(0)}
+
+  /* ═══ 3 — LA PLAGE QUI GLISSE ═══════════════════════════════════════════
+     Une plage claire glisse sous le mot retenu, sur un fond papier. La plus
+     « moderne » — mais tenue par la charte : rayon 4 px, pas de galet, et un
+     cheveu d'or au pied de la plage pour que l'or continue de désigner. */
+  .d3 .piste{position:relative;display:flex;background:var(--e-papier);border-radius:4px;
+             padding:4px;margin-bottom:18px}
+  .d3 .plage{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);
+             background:var(--e-plage);border-radius:3px;box-shadow:0 1px 0 var(--e-or);
+             transition:transform .3s cubic-bezier(.4,0,.2,1)}
+  .d3 .piste label{position:relative;flex:1;text-align:center;padding:10px 0;
+                   font-family:ui-serif,Georgia,serif;font-size:16.5px;color:var(--e-gris)}
+  .d3 .r1:checked ~ .piste label:first-of-type,
+  .d3 .r2:checked ~ .piste label:last-of-type{color:var(--e-encre)}
+  .d3 .r2:checked ~ .piste .plage{transform:translateX(100%)}
+
+  /* ═══ 4 — LE RAIL ET LA PERLE ═══════════════════════════════════════════
+     Un cheveu tendu d'un bord à l'autre, et une perle d'or qui court dessus.
+     C'est le geste que l'écran des chantiers emploie déjà — le fil et la
+     perle : la même main, au même endroit du parcours. */
+  .d4 .mots-h{display:flex;margin-bottom:10px}
+  .d4 .mots-h label{flex:1;text-align:center;
+                    font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--e-gris)}
+  .d4 .fil{position:relative;height:1px;background:var(--e-trait);margin-bottom:20px}
+  .d4 .perle{position:absolute;top:-3px;left:0;width:50%;
+             transition:transform .32s cubic-bezier(.4,0,.2,1)}
+  .d4 .perle i{display:block;width:7px;height:7px;border-radius:50%;background:var(--e-or);margin:0 auto}
+  .d4 .r1:checked ~ .mots-h label:first-of-type,
+  .d4 .r2:checked ~ .mots-h label:last-of-type{color:var(--e-encre)}
+  .d4 .r2:checked ~ .fil .perle{transform:translateX(100%)}
+
+  /* ═══ 5 — LE CARTOUCHE ══════════════════════════════════════════════════
+     Le choix ne prend plus de ligne à lui : il s'aligne à droite, au-dessus du
+     bouton, en petit. C'est la plus économe en hauteur — et sur son écran, où
+     la barre du navigateur mange le bas, la hauteur est ce qui manque. */
+  .d5 .cartouche{display:flex;align-items:center;justify-content:flex-end;gap:12px;
+                 padding-bottom:11px;margin-bottom:14px}
+  .d5 .cartouche label{position:relative;padding-bottom:5px;
+                       font-family:ui-serif,Georgia,serif;font-size:15px;color:var(--e-gris)}
+  .d5 .cartouche label::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+                              background:var(--e-or);transform:scaleX(0);transform-origin:left;
+                              transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  .d5 .cartouche .sep{width:1px;height:13px;background:var(--e-trait);margin-bottom:5px}
+  .d5 .r1:checked ~ .cartouche label:first-of-type,
+  .d5 .r2:checked ~ .cartouche label:last-of-type{color:var(--e-encre)}
+  .d5 .r1:checked ~ .cartouche label:first-of-type::after,
+  .d5 .r2:checked ~ .cartouche label:last-of-type::after{transform:scaleX(1)}
+
+  /* ═══ 6 — LA BASCULE EN PIED ════════════════════════════════════════════
+     L'ordre s'inverse : le bouton d'abord, le choix dessous. Ce qu'on voit en
+     premier reste l'action ; le choix se lit après, comme une note de bas de
+     page — et il se voit quand même, ce qui était toute la demande. */
+  .d6 .apres{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:15px}
+  .d6 .apres label{position:relative;padding-bottom:6px;
+                   font-family:ui-serif,Georgia,serif;font-size:15.5px;color:var(--e-gris)}
+  .d6 .apres label::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+                          background:var(--e-or);transform:scaleX(0);
+                          transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  .d6 .apres .sep{width:3px;height:3px;background:var(--e-or);transform:rotate(45deg);
+                  margin-bottom:6px;opacity:.5}
+  .d6 .r1:checked ~ .apres label:first-of-type,
+  .d6 .r2:checked ~ .apres label:last-of-type{color:var(--e-encre)}
+  .d6 .r1:checked ~ .apres label:first-of-type::after,
+  .d6 .r2:checked ~ .apres label:last-of-type::after{transform:scaleX(1)}
+
+  .pied{max-width:66ch;margin:66px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        color:var(--gris);font-size:13.6px;line-height:1.7}
+  .pied h3{margin:0 0 10px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--or)}
+  .pied ul{margin:0;padding-left:1.1em}
+  .pied li{margin-bottom:7px}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas · 11 août 2026</p>
+    <h1>La bascule, affinée</h1>
+    <p>Six déclinaisons de la proposition 4. Ce qui ne bouge pas : les deux
+      chemins se voient, et il n'y a qu'un bouton à toucher. Ce qui change :
+      la façon dont le choix se dessine.</p>
+    <p><strong>Touchez les deux mots</strong> de chaque écran — le repère glisse,
+      et le mot du bouton se fond. Rien à installer, aucun script.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ─────────────────────────────── 1 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 1</h2>
+        <p class="titre">Le trait qui glisse</p>
+        <p>La 14, débarrassée de ses capitales et de son saut. Deux mots en
+          serif sur un cheveu continu, et un segment d'or qui glisse de l'un à
+          l'autre.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d1" data-bascule="1">
+          <input class="r1" type="radio" name="d1" id="d1a" checked>
+          <input class="r2" type="radio" name="d1" id="d1b">
+          <div class="rail">
+            <label class="mot" for="d1a">Je dicterai</label>
+            <label class="mot" for="d1b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 2 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 2</h2>
+        <p class="titre">Le point d'or</p>
+        <p>Aucun rail, aucune boîte. Deux mots séparés d'un losange minuscule ;
+          sous le mot retenu, un point apparaît. La plus discrète — de loin, on
+          ne voit qu'une ligne de texte.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d2" data-bascule="1">
+          <input class="r1" type="radio" name="d2" id="d2a" checked>
+          <input class="r2" type="radio" name="d2" id="d2b">
+          <div class="ligne">
+            <label class="mot" for="d2a">Je dicterai</label>
+            <span class="losange"></span>
+            <label class="mot" for="d2b">Je l'écris</label>
+          </div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 3 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 3</h2>
+        <p class="titre">La plage qui glisse</p>
+        <p>Une plage claire glisse sous le mot retenu, sur un fond papier. La
+          plus « moderne », mais tenue par la charte : rayon 4 px, pas de galet,
+          et un cheveu d'or au pied de la plage.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d3" data-bascule="1">
+          <input class="r1" type="radio" name="d3" id="d3a" checked>
+          <input class="r2" type="radio" name="d3" id="d3b">
+          <div class="piste">
+            <span class="plage"></span>
+            <label class="mot" for="d3a">Je dicterai</label>
+            <label class="mot" for="d3b">Je l'écris</label>
+          </div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 4 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 4</h2>
+        <p class="titre">Le rail et la perle</p>
+        <p>Un cheveu tendu d'un bord à l'autre, et une perle d'or qui court
+          dessus. C'est le geste que l'écran des chantiers emploie déjà — la
+          même main, au même endroit du parcours.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d4" data-bascule="1">
+          <input class="r1" type="radio" name="d4" id="d4a" checked>
+          <input class="r2" type="radio" name="d4" id="d4b">
+          <div class="mots-h">
+            <label class="mot" for="d4a">Je dicterai</label>
+            <label class="mot" for="d4b">Je l'écris</label>
+          </div>
+          <div class="fil"><span class="perle"><i></i></span></div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 5 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 5</h2>
+        <p class="titre">Le cartouche</p>
+        <p>Le choix ne prend plus de ligne à lui : il s'aligne à droite,
+          au-dessus du bouton, en petit. La plus économe en hauteur — et sur
+          votre écran, la hauteur est ce qui manque.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d5" data-bascule="1">
+          <input class="r1" type="radio" name="d5" id="d5a" checked>
+          <input class="r2" type="radio" name="d5" id="d5b">
+          <div class="cartouche">
+            <label class="mot" for="d5a">Je dicterai</label>
+            <span class="sep"></span>
+            <label class="mot" for="d5b">Je l'écris</label>
+          </div>
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── 6 ─────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Déclinaison 6</h2>
+        <p class="titre">La bascule en pied</p>
+        <p>L'ordre s'inverse : le bouton d'abord, le choix dessous. Ce qu'on
+          voit en premier reste l'action ; le choix se lit après, comme une note
+          — et il se voit quand même.</p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">E-mail (facultatif)</div><div class="val">bernard@exemple.fr</div></div>
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc d6" data-bascule="1">
+          <input class="r1" type="radio" name="d6" id="d6a" checked>
+          <input class="r2" type="radio" name="d6" id="d6b">
+          <div class="bouton"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span>
+          </span></div>
+          <div class="apres">
+            <label class="mot" for="d6a">Je dicterai</label>
+            <span class="sep"></span>
+            <label class="mot" for="d6b">Je l'écris</label>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <h3>Ce qui les sépare vraiment</h3>
+    <ul>
+      <li><strong>La hauteur.</strong> La 5 coûte 40 px, la 2 et la 6 environ
+        50, la 1 et la 3 environ 60, la 4 environ 65. Sur un écran où la barre
+        du navigateur mange déjà deux cents pixels, ce n'est pas un détail.</li>
+      <li><strong>Le bruit.</strong> La 2 est la plus muette : sans la toucher,
+        elle passe pour une ligne de texte. La 3 est la plus démonstrative — on
+        voit qu'il y a un choix, même de loin. Les autres sont entre les deux.</li>
+      <li><strong>La parenté.</strong> La 4 emprunte le fil et la perle de
+        l'écran des chantiers : c'est la seule qui rappelle un geste que vous
+        connaissez déjà ailleurs dans l'application.</li>
+      <li><strong>Ce qu'aucune ne change.</strong> Le geste : un seul appui, sur
+        un seul bouton. Et la porte du tiroir sur la fiche chantier reste — ce
+        sont deux moments, pas deux chemins.</li>
+      <li><strong>Une réserve honnête sur les polices.</strong> Ces pages
+        empruntent la serif de votre appareil. L'application, elle, charge
+        Playfair Display : le rendu final sera plus dessiné que ce que vous
+        voyez ici.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — le « + » qui mène au GPS</title>
+</head>
+<body>
+<style>
+  /*
+    « À LA PLACE DES FLÈCHES TU METS UN +, ET ÇA OUVRE LA PAGE DE LA PREMIÈRE
+      PHOTO AVEC GOOGLE MAPS, PLANS, WAZE. IL FAUT QUE TOUS LES LIENS SOIENT
+      CLIQUABLES ET FONCTIONNENT. »
+
+    Sa demande du 11 août 2026, après la maquette 29. Le chevron « › » disparaît :
+    c'est le MÊME « + » doré que la pellicule des photos qui prend sa place. Un
+    seul signe pour « il y a quelque chose à faire ici », d'un écran à l'autre.
+
+    TOUT RÉPOND AU DOIGT, ET RIEN N'EST DESSINÉ :
+      · le « + »                → ouvre la feuille
+      · Plans, Google Maps, Waze → ouvrent VRAIMENT le GPS (liens universels)
+      · Copier l'adresse         → copie vraiment, et le dit
+      · Appeler le client        → vrai lien tel:
+      · Ouvrir le chantier       → passe à l'écran du chantier, dans la maquette
+      · Annuler, le voile, Échap → referment
+      · la barre du bas          → Planning est là ; les trois autres le disent
+
+    LE CAS SANS ADRESSE EST DANS LA MAQUETTE, et ce n'est pas un oubli : un
+    chantier dicté à la va-vite n'a pas toujours d'adresse. On ne l'invente pas
+    (CLAUDE.md §4) — le « + » ouvre alors la feuille qui dit quoi faire.
+
+    RIEN N'EST ÉCRIT DANS L'APPLICATION. Il a demandé de ne rien coder.
+  */
+
+  :root{ --fond:#efece6; --plage:#f6f4ef; --encre:#221f1a; --gris:#8b8478; --bronze:#8a7452; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --encre:#e9e5dc; --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:38px 16px 80px}
+  .page{max-width:820px;margin:0 auto}
+
+  .sur{margin:0 0 14px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+  .chapo{margin:0 auto 12px;max-width:56ch;color:var(--gris);font-size:15px;text-align:center}
+  .chapo b{color:var(--encre);font-weight:500}
+
+  .essayer{max-width:52ch;margin:24px auto 0;padding:15px 20px;border:1px solid var(--trait);
+           border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.66;text-align:center}
+  .essayer b{color:var(--encre);font-weight:500}
+
+  .scene{margin:44px auto 0;display:flex;justify-content:center}
+
+  /* ─── Le téléphone, à la taille utile d'un iPhone 13 : 390 × 664 ──────── */
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:664px;
+         display:flex;flex-direction:column;
+         background:#f5f3ee;color:#1c1c1a;
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-or:#B98B47; --e-or-clair:#C9A15E; --e-pin:#2f3b2f;
+         --e-trait:rgba(28,28,26,.16); --e-trait-doux:rgba(28,28,26,.07)}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .vue{display:none;flex-direction:column;flex:1;min-height:0}
+  .vue.la{display:flex}
+
+  .enseigne{padding:24px 0 0;text-align:center;font-size:10.5px;letter-spacing:.52em}
+  .entete{padding:28px 26px 0}
+  .entete h2{margin:0;font-size:34px;line-height:1.02;font-weight:400;letter-spacing:-.018em}
+  .entete .mois{margin:12px 0 0;color:var(--e-gris)}
+  .fermeture{height:1px;background:var(--e-trait);margin:22px 26px 0}
+
+  .bloc{padding:20px 26px 0;overflow-y:auto;flex:1;min-height:0;scrollbar-width:none}
+  .bloc::-webkit-scrollbar{display:none}
+  .bloc .etiquette{margin:0 0 6px;color:var(--e-gris)}
+
+  .ligne{display:flex;align-items:center;gap:14px;padding:13px 0;
+         border-bottom:1px solid var(--e-trait)}
+  .ligne .colonne{min-width:0;flex:1}
+  .ligne .nom{display:block;font-size:16px;line-height:1.2;letter-spacing:-.004em;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .quand{display:block;margin-top:3px;font-size:12px;color:var(--e-gris)}
+  .ligne .sans{display:block;margin-top:3px;font-size:12px;color:var(--e-gris);font-style:italic}
+
+  /* LE « + » — le même signe que la pellicule des photos, en rond. */
+  .plus{flex:0 0 auto;width:34px;height:34px;border-radius:50%;
+        border:1px solid var(--e-trait);background:none;cursor:pointer;
+        color:var(--e-or);font:400 21px/1 ui-sans-serif,-apple-system,sans-serif;
+        display:flex;align-items:center;justify-content:center;padding:0 0 2px;
+        transition:transform .18s cubic-bezier(.22,.61,.36,1),border-color .18s;
+        -webkit-tap-highlight-color:transparent}
+  .plus:active{transform:scale(.94);border-color:var(--e-or)}
+
+  /* L'écran du chantier, au bout de « Ouvrir le chantier ». */
+  .retour{margin:26px 0 0 26px;width:40px;height:40px;border-radius:50%;border:0;
+          background:rgba(28,28,26,.07);color:var(--e-encre);font-size:19px;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+  .retour:active{background:rgba(28,28,26,.13)}
+  .fiche{padding:18px 26px 0}
+  .fiche .statut{margin:0;color:var(--e-or)}
+  .fiche .client{margin:12px 0 0;color:var(--e-gris);font-size:15px;font-family:ui-serif,Georgia,serif}
+  .fiche h2{margin:8px 0 0;font-size:32px;line-height:1.04;font-weight:400;letter-spacing:-.018em}
+  .rang{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+        padding:14px 0;border-bottom:1px solid var(--e-trait)}
+  .rang .quoi{flex:0 0 auto;font-size:19px;font-family:ui-serif,Georgia,serif}
+  .rang .prec{min-width:0;color:var(--e-gris);text-align:right}
+  .rang .prec.or{color:var(--e-or)}
+
+  .barre{margin-top:auto;display:flex;justify-content:space-around;align-items:center;
+         padding:15px 8px 20px;border-top:1px solid var(--e-trait)}
+  .barre button{border:0;background:none;cursor:pointer;font:inherit;color:var(--e-gris);
+                text-transform:uppercase;letter-spacing:.28em;
+                padding:4px 2px;-webkit-tap-highlight-color:transparent}
+  .barre button.actif{color:var(--e-encre);position:relative}
+  .barre button.actif::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:1px;background:var(--e-or)}
+
+  /* Le mot qui répond quand on touche un onglet absent de la maquette. */
+  .aparte{position:absolute;left:26px;right:26px;bottom:86px;padding:11px 14px;
+          background:rgba(28,28,26,.9);color:#f5f3ee;border-radius:6px;
+          font-size:12.5px;text-align:center;opacity:0;pointer-events:none;
+          transition:opacity .24s}
+  .aparte.vu{opacity:1}
+
+  /* ─── La feuille du bas ───────────────────────────────────────────────── */
+  .voile{position:absolute;inset:0;background:rgba(20,18,14,.42);
+         opacity:0;pointer-events:none;transition:opacity .28s;z-index:5;
+         display:flex;align-items:flex-end;justify-content:center}
+  .voile.ouverte{opacity:1;pointer-events:auto}
+  .feuille{width:100%;background:#f5f3ee;color:#1c1c1a;
+           border-radius:26px 26px 0 0;padding:12px 22px 24px;
+           transform:translateY(16px);transition:transform .34s cubic-bezier(.22,.61,.36,1);
+           box-shadow:0 -18px 44px rgba(20,18,14,.22)}
+  .voile.ouverte .feuille{transform:none}
+  .poignee{width:36px;height:3px;border-radius:9px;background:rgba(28,28,26,.16);margin:0 auto 16px}
+  .feuille .ou{margin:0;text-align:center;color:#8a8578;text-transform:uppercase;
+               letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .feuille .lieu{margin:9px 0 2px;text-align:center;font-size:19px;line-height:1.28;
+                 font-family:ui-serif,Georgia,"Iowan Old Style",serif}
+  .feuille .pour{margin:0 0 18px;text-align:center;color:#8a8578;font-size:12.5px}
+
+  .destinations{display:flex;flex-direction:column;gap:1px;background:rgba(28,28,26,.12);
+                border-radius:6px;overflow:hidden}
+  .dest{display:flex;align-items:center;gap:13px;padding:14px 16px;background:#faf9f5;
+        color:#1c1c1a;text-decoration:none;-webkit-tap-highlight-color:transparent}
+  .dest:active{background:#f0eee7}
+  .dest .marque{flex:0 0 auto;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+  .dest .nom{flex:1;font-size:15.5px}
+  .dest .fleche{color:rgba(28,28,26,.28);font-size:16px}
+  .destinations.eteintes .dest{opacity:.34;pointer-events:none}
+
+  .secondaires{display:flex;gap:1px;background:rgba(28,28,26,.12);
+               border-radius:6px;overflow:hidden;margin-top:10px}
+  .sec{flex:1;padding:13px 6px;background:#faf9f5;border:0;cursor:pointer;
+       font:inherit;font-size:12.5px;color:#1c1c1a;text-align:center;text-decoration:none;
+       -webkit-tap-highlight-color:transparent}
+  .sec:active{background:#f0eee7}
+  .memoire{display:flex;align-items:center;justify-content:center;gap:8px;
+           margin-top:15px;font-size:12px;color:#8a8578}
+  .memoire input{accent-color:#2f3b2f;width:15px;height:15px}
+  .renoncer{display:block;width:100%;margin-top:12px;padding:12px;border:0;background:none;
+            cursor:pointer;font:inherit;font-size:14.5px;color:#8a8578}
+
+  .note{max-width:60ch;margin:40px auto 0;font-size:13.5px;color:var(--gris);line-height:1.7}
+  .note h3{margin:0 0 8px;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--bronze);font-weight:500}
+  .note + .note{margin-top:26px}
+  .note b{color:var(--encre);font-weight:500}
+  .note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+             background:var(--plage);border:1px solid var(--trait);border-radius:4px;padding:1px 5px}
+
+  @media (prefers-reduced-motion:reduce){ .voile,.feuille,.plus,.aparte{transition:none} }
+</style>
+
+<div class="page">
+
+  <p class="sur">Maquette 30 · 11 août 2026</p>
+  <h1>Le « + » qui mène au GPS</h1>
+  <p class="chapo">Le chevron disparaît. À sa place, <b>le même « + » doré que la
+    pellicule des photos</b>.</p>
+
+  <div class="essayer">
+    <b>Touchez tout : rien n’est dessiné.</b><br>
+    Les trois destinations ouvriront vraiment votre GPS, adresse posée.
+  </div>
+
+  <div class="scene">
+    <div class="tel"><div class="ecran" id="ecran">
+
+      <!-- ─── Vue 1 : le planning ─────────────────────────────────────── -->
+      <div class="vue la" id="vue-planning">
+        <div class="enseigne">ATLAS</div>
+        <div class="entete">
+          <h2 class="serif">Planning</h2>
+          <p class="mois caps num">Août 2026</p>
+        </div>
+        <div class="fermeture"></div>
+        <div class="bloc">
+          <p class="etiquette caps">Planifiés</p>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom serif">Chêne — M. Bernard</span>
+              <span class="quand num">14 août · matin · Équipe A</span>
+            </span>
+            <button class="plus" aria-label="Y aller — Chêne, M. Bernard"
+                    data-lieu="12 chemin des Chênes, 33600 Pessac"
+                    data-nom="Chêne — M. Bernard"
+                    data-tel="+33556000012">+</button>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom serif">Haie — Mme Rivière</span>
+              <span class="quand num">18 août · journée</span>
+            </span>
+            <button class="plus" aria-label="Y aller — Haie, Mme Rivière"
+                    data-lieu="4 allée des Tilleuls, 33700 Mérignac"
+                    data-nom="Haie — Mme Rivière"
+                    data-tel="+33556000034">+</button>
+          </div>
+
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom serif">Dessouchage — SCI Verdier</span>
+              <span class="quand num">20 août · après-midi · Équipe B</span>
+            </span>
+            <button class="plus" aria-label="Y aller — Dessouchage, SCI Verdier"
+                    data-lieu="27 route de Bayonne, 33140 Villenave-d’Ornon"
+                    data-nom="Dessouchage — SCI Verdier"
+                    data-tel="+33556000056">+</button>
+          </div>
+
+          <!-- L'adresse manque : on ne l'invente pas. -->
+          <div class="ligne">
+            <span class="colonne">
+              <span class="nom serif">Élagage — M. Aubert</span>
+              <span class="quand num">21 août · après-midi</span>
+              <span class="sans">Adresse non renseignée</span>
+            </span>
+            <button class="plus" aria-label="Y aller — Élagage, M. Aubert"
+                    data-lieu="" data-nom="Élagage — M. Aubert" data-tel="">+</button>
+          </div>
+        </div>
+        <div class="barre caps">
+          <button data-onglet="Chantiers">Chantiers</button>
+          <button class="actif" data-ici="oui">Planning</button>
+          <button data-onglet="Terminés">Terminés</button>
+          <button data-onglet="Réglages">Réglages</button>
+        </div>
+      </div>
+
+      <!-- ─── Vue 2 : le chantier ─────────────────────────────────────── -->
+      <div class="vue" id="vue-chantier">
+        <button class="retour" id="revenir" aria-label="Retour au planning">‹</button>
+        <div class="fiche">
+          <p class="statut caps">Planifié</p>
+          <p class="client" id="f-client">M. Bernard — 12 chemin des Chênes, Pessac</p>
+          <h2 class="serif" id="f-nom">Chêne — M. Bernard</h2>
+        </div>
+        <div class="bloc">
+          <div class="rang"><span class="quoi">Note vocale</span><span class="prec caps">Enregistrée</span></div>
+          <div class="rang"><span class="quoi">Informations</span><span class="prec caps or">Vérifiées</span></div>
+          <div class="rang"><span class="quoi">Prix</span><span class="prec caps num">1 320,00 €</span></div>
+          <div class="rang"><span class="quoi">Devis</span><span class="prec caps or">Envoyé</span></div>
+          <div class="rang" id="rang-adresse">
+            <span class="quoi">Adresse</span>
+            <span class="prec caps" id="f-adresse">12 chemin des Chênes, Pessac</span>
+          </div>
+        </div>
+        <div class="barre caps">
+          <button data-onglet="Chantiers">Chantiers</button>
+          <button class="actif" data-ici="oui">Planning</button>
+          <button data-onglet="Terminés">Terminés</button>
+          <button data-onglet="Réglages">Réglages</button>
+        </div>
+      </div>
+
+      <p class="aparte" id="aparte"></p>
+
+      <!-- ─── La feuille ──────────────────────────────────────────────── -->
+      <div class="voile" id="voile" role="dialog" aria-modal="true" aria-label="Y aller">
+        <div class="feuille">
+          <div class="poignee"></div>
+          <p class="ou">Y aller</p>
+          <p class="lieu" id="lieu">12 chemin des Chênes, 33600 Pessac</p>
+          <p class="pour" id="pour">Chêne — M. Bernard</p>
+
+          <div class="destinations" id="destinations">
+            <a class="dest" id="d-plans" href="#" target="_blank" rel="noopener">
+              <span class="marque">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5" aria-hidden="true">
+                  <path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z" stroke-linejoin="round"/>
+                  <circle cx="12" cy="10" r="2.6"/>
+                </svg>
+              </span>
+              <span class="nom">Plans</span><span class="fleche" aria-hidden="true">›</span>
+            </a>
+            <a class="dest" id="d-google" href="#" target="_blank" rel="noopener">
+              <span class="marque">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5" aria-hidden="true">
+                  <path d="M3.5 6.8 9.2 4.4l5.6 2.4 5.7-2.4v12.8l-5.7 2.4-5.6-2.4-5.7 2.4z" stroke-linejoin="round"/>
+                  <path d="M9.2 4.4v14.8M14.8 6.8v14.8" opacity=".55"/>
+                </svg>
+              </span>
+              <span class="nom">Google Maps</span><span class="fleche" aria-hidden="true">›</span>
+            </a>
+            <a class="dest" id="d-waze" href="#" target="_blank" rel="noopener">
+              <span class="marque">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5" aria-hidden="true">
+                  <path d="M20.5 3.5 3.5 10.4l7.4 2.7 2.7 7.4z" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="nom">Waze</span><span class="fleche" aria-hidden="true">›</span>
+            </a>
+          </div>
+
+          <div class="secondaires">
+            <button class="sec" id="copier" type="button">Copier</button>
+            <a class="sec" id="appeler" href="tel:+33556000012">Appeler</a>
+            <button class="sec" id="ouvrir" type="button">Le chantier</button>
+          </div>
+
+          <label class="memoire">
+            <input type="checkbox" id="toujours">
+            Toujours celle-là, ne plus me demander
+          </label>
+
+          <button class="renoncer" type="button" id="renoncer">Annuler</button>
+        </div>
+      </div>
+
+    </div></div>
+  </div>
+
+  <div class="note">
+    <h3>Pourquoi un « + » et pas une flèche</h3>
+    <p>Une flèche dit « ça continue par là » — c’est ce que fait déjà le nom du
+      chantier, qui mène à sa fiche. Le « + » dit autre chose : <b>il ajoute un
+      geste sans quitter l’écran</b>. C’est exactement ce qu’il fait dans la
+      pellicule des photos, et deux signes différents pour la même idée coûtent
+      plus cher qu’un seul, appris une fois.</p>
+  </div>
+
+  <div class="note">
+    <h3>Ce qui reste vrai, et qu’il faut savoir avant de choisir</h3>
+    <p><b>Un téléphone ne dit pas quelles applications il possède.</b> On ne peut
+      donc pas n’afficher que Waze parce que vous n’avez que Waze. La case
+      <b>« Toujours celle-là »</b> règle la question dès le deuxième chantier :
+      cochée, le doigt ne voit plus la feuille — il part.</p>
+    <p><b>Sans adresse, rien ne s’invente.</b> La dernière ligne du planning le
+      montre : le « + » ouvre quand même la feuille, mais les trois destinations
+      s’éteignent et elle dit où saisir l’adresse. Le contraire — un « + » mort,
+      ou absent — laisserait chercher.</p>
+    <p><b>Aucune donnée ne sort d’Atlas.</b> L’adresse part dans l’application
+      que vous touchez, comme si vous l’aviez tapée. Rien n’est envoyé à Google
+      ni à Waze depuis nos serveurs.</p>
+  </div>
+
+  <div class="note">
+    <h3>Ce que ça demanderait, le jour où vous direz oui</h3>
+    <p>L’adresse existe déjà en base (<code>chantiers.adresse_chantier</code>) ;
+      elle ne descend simplement pas encore jusqu’à l’écran Planning. Le reste
+      est un lien. <b>Rien n’est écrit dans l’application pour l’instant</b> —
+      vous avez demandé de ne rien coder.</p>
+  </div>
+
+</div>
+
+<script>
+  /*
+    Les trois adresses de destination — de VRAIS liens universels.
+
+    Pourquoi ceux-ci et pas les schémas propres à chaque application
+    (`waze://`, `comgooglemaps://`) : un schéma propre échoue en silence quand
+    l'application n'est pas installée, et il ne se passe rien sous le doigt. Les
+    liens ci-dessous ouvrent l'application quand elle est là, et son site quand
+    elle ne l'est pas. Jamais d'écran mort.
+  */
+  function liens(lieu) {
+    var q = encodeURIComponent(lieu);
+    return {
+      plans:  "https://maps.apple.com/?daddr=" + q + "&dirflg=d",
+      google: "https://www.google.com/maps/dir/?api=1&destination=" + q,
+      waze:   "https://waze.com/ul?q=" + q + "&navigate=yes"
+    };
+  }
+
+  var voile = document.getElementById("voile");
+  var lieuEl = document.getElementById("lieu");
+  var pourEl = document.getElementById("pour");
+  var dests = document.getElementById("destinations");
+  var appeler = document.getElementById("appeler");
+  var courant = { lieu: "", nom: "", tel: "" };
+
+  function ouvrirFeuille(lieu, nom, tel) {
+    courant = { lieu: lieu, nom: nom, tel: tel };
+    pourEl.textContent = nom;
+
+    if (lieu) {
+      var l = liens(lieu);
+      lieuEl.textContent = lieu;
+      document.getElementById("d-plans").href = l.plans;
+      document.getElementById("d-google").href = l.google;
+      document.getElementById("d-waze").href = l.waze;
+      dests.classList.remove("eteintes");
+    } else {
+      // On ne l'invente pas : on dit ce qui manque et où le saisir.
+      lieuEl.textContent = "Adresse non renseignée";
+      pourEl.textContent = nom + " — à saisir sur la fiche du chantier";
+      dests.classList.add("eteintes");
+    }
+
+    if (tel) {
+      appeler.href = "tel:" + tel;
+      appeler.style.opacity = "";
+      appeler.style.pointerEvents = "";
+    } else {
+      appeler.removeAttribute("href");
+      appeler.style.opacity = ".34";
+      appeler.style.pointerEvents = "none";
+    }
+
+    voile.classList.add("ouverte");
+  }
+  function fermerFeuille() { voile.classList.remove("ouverte"); }
+
+  document.querySelectorAll("button.plus").forEach(function (b) {
+    b.addEventListener("click", function () {
+      ouvrirFeuille(b.getAttribute("data-lieu"), b.getAttribute("data-nom"), b.getAttribute("data-tel"));
+    });
+  });
+
+  document.getElementById("renoncer").addEventListener("click", fermerFeuille);
+  voile.addEventListener("click", function (e) { if (e.target === voile) fermerFeuille(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") fermerFeuille(); });
+
+  // « Copier » copie POUR DE BON, et le dit — un bouton qui ne répond pas
+  // laisse croire qu'il n'a rien fait, et le doigt réappuie.
+  document.getElementById("copier").addEventListener("click", function () {
+    var bouton = this;
+    var texte = courant.lieu;
+    var rendre = function () { bouton.textContent = "Copier"; };
+    if (!texte) { bouton.textContent = "Rien à copier"; setTimeout(rendre, 1400); return; }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(texte).then(
+        function () { bouton.textContent = "Copiée"; setTimeout(rendre, 1400); },
+        function () { bouton.textContent = "Impossible"; setTimeout(rendre, 1400); }
+      );
+    } else {
+      bouton.textContent = "Impossible ici";
+      setTimeout(rendre, 1400);
+    }
+  });
+
+  // « Ouvrir le chantier » mène vraiment quelque part, dans la maquette.
+  var vuePlanning = document.getElementById("vue-planning");
+  var vueChantier = document.getElementById("vue-chantier");
+  document.getElementById("ouvrir").addEventListener("click", function () {
+    document.getElementById("f-nom").textContent = courant.nom;
+    var court = courant.lieu ? courant.lieu.replace(/,\s*\d{5}\s*/, ", ") : "adresse non renseignée";
+    document.getElementById("f-client").textContent = courant.nom.split("—").slice(1).join("—").trim() + " — " + court;
+    document.getElementById("f-adresse").textContent = courant.lieu ? court : "À renseigner";
+    fermerFeuille();
+    vuePlanning.classList.remove("la");
+    vueChantier.classList.add("la");
+  });
+  document.getElementById("revenir").addEventListener("click", function () {
+    vueChantier.classList.remove("la");
+    vuePlanning.classList.add("la");
+  });
+
+  // Les onglets absents de la maquette le DISENT, plutôt que de ne rien faire.
+  var aparte = document.getElementById("aparte");
+  var minuteur;
+  document.querySelectorAll(".barre button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (b.hasAttribute("data-ici")) {
+        vueChantier.classList.remove("la");
+        vuePlanning.classList.add("la");
+        return;
+      }
+      aparte.textContent = "« " + b.getAttribute("data-onglet") + " » n’est pas dans cette maquette.";
+      aparte.classList.add("vu");
+      clearTimeout(minuteur);
+      minuteur = setTimeout(function () { aparte.classList.remove("vu"); }, 1900);
+    });
+  });
+</script>
+</body>
+</html>

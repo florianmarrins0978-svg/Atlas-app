@@ -37,6 +37,13 @@ const CHARGE_UTILE = {
         label: "20 Rue de la Paix 78200 Mantes-la-Jolie",
         context: "78, Yvelines, Île-de-France",
       },
+      // **Longitude d'abord, latitude ensuite** — c'est l'ordre du GeoJSON, et
+      // le piège de ce format. Inversées, deux chantiers du Rhône se
+      // retrouveraient au large de la Somalie sans qu'aucun contrôle ne bronche,
+      // les nombres restant des nombres. Ces deux-là sont choisis pour que
+      // l'inversion se VOIE : 1,7 est une longitude plausible en France,
+      // 48,99 ne l'est pas.
+      geometry: { type: "Point", coordinates: [1.7, 48.99] },
     },
   ],
 };
@@ -76,7 +83,14 @@ async function main() {
       const r = await chercherAdresses("20 rue de la paix 78", s.base);
       assert.ok(r.ok, "La recherche a échoué alors que le service répondait normalement.");
       assert.deepEqual(r.suggestions, [
-        { libelle: "20 Rue de la Paix 78200 Mantes-la-Jolie", contexte: "78, Yvelines, Île-de-France" },
+        {
+          libelle: "20 Rue de la Paix 78200 Mantes-la-Jolie",
+          contexte: "78, Yvelines, Île-de-France",
+          // Gardées depuis le 16 août 2026 : sans elles, aucune distance n'est
+          // calculable, et le planning ne peut pas apparier deux demi-journées.
+          latitude: 48.99,
+          longitude: 1.7,
+        },
       ]);
 
       const demande = s.vues[0];

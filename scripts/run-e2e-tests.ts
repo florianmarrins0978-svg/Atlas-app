@@ -1,4 +1,5 @@
-import { readdirSync } from "node:fs";
+import { openSync, readdirSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { spawnSync, spawn } from "node:child_process";
 import path from "node:path";
 import Redis from "ioredis";
@@ -82,16 +83,72 @@ async function serveurVivant(url: string, tentatives = 6, delaiMs = 10_000): Pro
  * Ne fait jamais échouer la batterie : si un écran ne répond pas ici, la suite
  * qui en dépend le dira mieux, avec son propre message.
  */
+/**
+ * Préchauffer les écrans — **avec une session, sinon on ne préchauffe rien.**
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Trois faux rouges en une journée, le 12 août 2026**, sur trois suites sans
+ * rapport : « clôturé AVANT sa date » (deux fois), « Créer la facture », puis
+ * « un appui dicte, un second enregistre ». Chacune diagnostiquait la même
+ * chose et avait raison — le serveur de développement n'avait pas suivi — et
+ * chacune passait au vert jouée seule. Coût : une batterie complète rejouée à
+ * chaque fois, vingt-cinq minutes, quatre fois dans la journée.
+ *
+ * **La cause n'était pas la machine** — 13 Go libres, charge à 1,2 — mais deux
+ * défauts de ce préchauffage :
+ *
+ *   1. **il tournait SANS session.** Un appel anonyme sur `/termines` est
+ *      renvoyé vers `/login` par le middleware : la route visée n'est jamais
+ *      rendue, donc jamais compilée. Il ne préchauffait en vérité que `/login`,
+ *      et faisait croire au contraire ;
+ *   2. **sa liste était incomplète** — `/termines`, justement, n'y figurait pas,
+ *      alors que c'est l'écran qui a dépassé son délai deux fois.
+ *
+ * **Et les deux défauts avaient la même origine : une deuxième implémentation.**
+ * `scripts/prechauffer.mjs` sait ouvrir une session et parcourir la liste
+ * complète, écrans de chantier compris — c'est ce que fait le banc d'essai
+ * depuis toujours. La batterie, elle, avait sa propre version naïve. Deux
+ * copies de la même idée finissent toujours par diverger, et c'est la plus
+ * faible qui servait ici (`CLAUDE.md` §3).
+ *
+ * Enveloppé en entier : un préchauffage qui échoue ne doit pas empêcher la
+ * batterie de tourner. Au pire, le premier appel repaie son coût — c'est-à-dire
+ * la situation d'avant.
+ */
 async function prechaufferLesEcrans(): Promise<void> {
-  const ecrans = ["/login", "/", "/chantiers/nouveau", "/planning", "/reglages"];
-  console.log("Préchauffage des écrans (compilation à la demande)...");
-  for (const ecran of ecrans) {
-    try {
-      await fetch(`http://localhost:3000${ecran}`, { signal: AbortSignal.timeout(120_000) });
-    } catch {
-      // Un écran qui ne répond pas ici n'est pas une raison d'arrêter : la
-      // suite qui le vise l'expliquera mieux que nous.
+  try {
+    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, prechauffer } = await import(
+      "./prechauffer.mjs"
+    );
+    let motif: string | null = null;
+    const cookie = await cookieDeSession({
+      databaseUrl: process.env.DATABASE_URL,
+      authSecret: process.env.AUTH_SECRET,
+      nodeEnv: process.env.NODE_ENV,
+      ecrire: (raison: string) => {
+        motif = raison;
+      },
+    });
+    if (!cookie) {
+      // **Dire la VRAIE raison.** Un préchauffage muet laisserait croire qu'il a
+      // eu lieu, et les faux rouges reviendraient sans qu'on sache pourquoi.
+      console.log(`⚠ Préchauffage sans session : ${motif ?? "raison inconnue"}`);
+      return;
     }
+    const base = "http://localhost:3000";
+    const ecrans = [...ECRANS_A_PRECHAUFFER, ...(await ecransDeChantier({ base, cookie }))];
+    console.log(`Préchauffage de ${ecrans.length} écrans (compilation à la demande)...`);
+    const bilan = await prechauffer({ base, cookie, ecrans });
+    console.log(
+      `Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
+        (bilan.echoues ? `, ${bilan.echoues} en échec` : "") +
+        ` — ${bilan.secondes} s.`
+    );
+  } catch (err) {
+    console.log(
+      `⚠ Préchauffage impossible : ${err instanceof Error ? err.message : String(err)}. ` +
+        "La batterie continue — le premier appel de chaque écran paiera sa compilation."
+    );
   }
 }
 
@@ -108,9 +165,27 @@ async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boo
   return false;
 }
 
+/**
+ * `--seulement <motif>` : ne jouer que les suites dont le nom le contient.
+ *
+ * **Écrit le 12 août 2026, après avoir rejoué vingt-cinq minutes de batterie
+ * pour observer UNE suite.** Diagnostiquer un rouge ne doit pas coûter le prix
+ * de la batterie entière — c'est ce coût-là qui pousse à supposer la cause au
+ * lieu d'aller la lire, et le dépôt a déjà payé cher les pannes imaginées
+ * (`AGENTS.md`).
+ *
+ * Ce filtre ne remplace jamais la batterie : elle reste ce qui autorise une
+ * livraison, et le script le dit à voix haute dès qu'il en écarte une.
+ */
+const motifDemande = (() => {
+  const i = process.argv.indexOf("--seulement");
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : null;
+})();
+
 if (process.argv.includes("--list")) {
   const fichiers = readdirSync(DOSSIER)
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
+    .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();
   console.log("Suites e2e découvertes :");
   for (const fichier of fichiers) {
@@ -158,6 +233,38 @@ async function main() {
     process.exit(1);
   }
 
+  // **Et sans REDIS_URL, la batterie se saborde à la sixième suite.**
+  //
+  // Payé le 14 août 2026 : lancée sans cette variable, elle a rendu vingt
+  // rouges — et pas un seul ne désignait le coupable. Tous disaient la même
+  // chose, « dépassement de délai en attendant la redirection après la
+  // connexion », c'est-à-dire : le formulaire de connexion est cassé. Il ne
+  // l'était pas. Le limiteur de débit n'accepte que cinq connexions par quart
+  // d'heure pour un même couple (compte, adresse IP) ; toutes les suites se
+  // connectent avec le même compte depuis 127.0.0.1, et le compteur ne se remet
+  // à zéro entre deux suites QUE s'il vit dans Redis — celui de l'adaptateur
+  // mémoire est enfermé dans le processus serveur, hors d'atteinte.
+  //
+  // `reinitialiserLimiteConnexion` se taisait alors et rendait la main : le
+  // seul garde-fou de la batterie s'éteignait sans un mot. On refuse désormais
+  // de partir, plutôt que de rendre pendant vingt minutes un verdict faux.
+  //
+  // (`monter-base-locale.sh` ne pose délibérément PAS REDIS_URL : les suites
+  // BASE laisseraient une connexion ioredis ouverte et ne rendraient jamais la
+  // main. C'est bien à l'appelant des suites navigateur de la poser.)
+  if (!process.env.REDIS_URL) {
+    console.error(
+      "❌ REDIS_URL n'est pas posée, et sans elle cette batterie ne veut rien dire.\n" +
+        "   Le limiteur de connexion bloque au bout de 5 connexions par quart d'heure ;\n" +
+        "   il ne se remet à zéro entre deux suites que s'il vit dans Redis. Sans quoi,\n" +
+        "   à partir de la sixième suite, TOUT échoue sur « dépassement de délai » à la\n" +
+        "   connexion — un message qui accuse le formulaire alors qu'il va très bien.\n" +
+        "   Relancer avec :\n" +
+        "     REDIS_URL=redis://localhost:6379 npm run test:e2e"
+    );
+    process.exit(1);
+  }
+
   console.log("Seed de la base de développement...");
   const seedResult = spawnSync(NODE, [TSX, "src/server/db/seed.ts"], {
     stdio: "inherit",
@@ -177,25 +284,37 @@ async function main() {
   }
 
   console.log("Démarrage du serveur (mode développement)...");
+
+  /**
+   * **La sortie du serveur va dans un FICHIER, jamais dans un tuyau — et c'est
+   * un correctif, pas un rangement (12 août 2026).**
+   *
+   * Elle était jusqu'ici `pipe`, et drainée par un écouteur de CE processus.
+   * Or ce processus lance chaque suite avec `spawnSync`, qui **bloque sa boucle
+   * d'événements** jusqu'à la fin de la suite. Pendant tout ce temps, personne
+   * ne vide le tuyau. Le noyau lui accorde 64 Ko : la suite la plus lourde de
+   * la batterie — sept chantiers bâtis de bout en bout, chacun avec son devis
+   * et son PDF — les dépasse, et **le serveur se bloque alors en écriture**.
+   * Il ne répond plus à rien, la navigation suivante dépasse ses 45 secondes,
+   * et le message accuse l'écran qui avait le malheur de venir après.
+   *
+   * C'est ce qui produisait le rouge intermittent de
+   * `test-planning-vers-facture-e2e` — « deux fois sur cinq batteries », dit
+   * son propre commentaire, qui l'attribuait à la lourdeur du montage. Mesuré
+   * ici : la suite passe systématiquement quand le serveur écrit dans un
+   * fichier, et échoue systématiquement quand il écrit dans un tuyau non
+   * drainé, à code identique.
+   *
+   * Le descripteur est passé directement à l'enfant : le noyau écrit dans le
+   * fichier sans jamais rien attendre de nous.
+   */
+  const JOURNAL_SERVEUR = path.join(tmpdir(), "atlas-serveur-e2e.log");
+  const journalFd = openSync(JOURNAL_SERVEUR, "w");
   const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
     env: process.env,
-    stdio: ["ignore", "pipe", "pipe"],
+    stdio: ["ignore", journalFd, journalFd],
     detached: true,
   });
-
-  // La sortie du serveur était jusqu'ici jetée. Quand il meurt en cours de
-  // route, les suites suivantes échouent toutes sur un banal dépassement de
-  // délai à /login, et rien n'indique la cause réelle. On garde donc ses
-  // dernières lignes pour pouvoir les montrer au moment où ça compte.
-  const journalServeur: string[] = [];
-  const retenir = (donnees: Buffer) => {
-    for (const ligne of donnees.toString().split("\n")) {
-      if (ligne.trim()) journalServeur.push(ligne);
-    }
-    if (journalServeur.length > 200) journalServeur.splice(0, journalServeur.length - 200);
-  };
-  serveur.stdout?.on("data", retenir);
-  serveur.stderr?.on("data", retenir);
 
   let serveurTermine: string | null = null;
   serveur.on("exit", (code, signal) => {
@@ -204,7 +323,16 @@ async function main() {
 
   function montrerJournalServeur() {
     console.error("\n--- Dernières lignes du serveur de développement ---");
-    for (const ligne of journalServeur.slice(-60)) console.error(`  ${ligne}`);
+    let lignes: string[] = [];
+    try {
+      lignes = readFileSync(JOURNAL_SERVEUR, "utf8").split("\n").filter((l) => l.trim());
+    } catch {
+      // Le journal est un confort de diagnostic : ne pas pouvoir le lire ne
+      // doit pas remplacer la vraie panne par une panne de lecture de fichier.
+      console.error("  (journal illisible)");
+    }
+    for (const ligne of lignes.slice(-60)) console.error(`  ${ligne}`);
+    console.error(`--- journal complet : ${JOURNAL_SERVEUR}`);
     console.error("---------------------------------------------------\n");
   }
 
@@ -218,6 +346,7 @@ async function main() {
 
   const fichiers = readdirSync(DOSSIER)
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
+    .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();
 
   if (process.argv.includes("--list")) {
@@ -226,6 +355,21 @@ async function main() {
       console.log(fichier);
     }
     process.exit(0);
+  }
+
+  // **Dire ce qui est écarté, toujours.** Un filtre silencieux ferait passer
+  // « 1/1 suite réussie » pour une batterie verte — exactement le genre de
+  // vert qui ne prouve rien.
+  if (motifDemande !== null) {
+    console.log(
+      `⚠ Filtre « ${motifDemande} » : ${fichiers.length} suite(s) retenue(s). ` +
+        `Ce n'est PAS la batterie — elle se rejoue en entier sans --seulement.`
+    );
+    if (fichiers.length === 0) {
+      console.error(`❌ Aucune suite ne correspond à « ${motifDemande} ».`);
+      process.kill(-serveur.pid!);
+      process.exit(1);
+    }
   }
 
   await prechaufferLesEcrans();

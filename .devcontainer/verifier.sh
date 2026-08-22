@@ -63,4 +63,28 @@ grep -q "L'application répond" /tmp/essai.log || {
 echo "   ✅ L'adresse à ouvrir est écrite dans /tmp/essai.log"
 
 echo
-echo "✅ Banc d'essai vérifié de bout en bout, sans une seule commande tapée."
+echo "→ SE CONNECTER, pour de vrai, comme depuis son téléphone"
+# ─────────────────────────────────────────────────────────────────────────────
+# **Ce que ce contrôle ajoute, et pourquoi il manquait cruellement.**
+#
+# Jusqu'ici, ce script s'arrêtait à « l'écran de connexion s'affiche ». Le
+# 12 août 2026, le patron écrit : *« ça ne marche pas, je n'arrive pas à me
+# connecter »*. L'écran s'affichait parfaitement — c'est ce qui se passait APRÈS
+# l'appui qui était cassé. Un formulaire rendu ne prouve rien d'une connexion,
+# de la même manière qu'une page de santé ne prouve rien d'un écran.
+#
+# `verifier-connexion.mjs` pose délibérément une origine étrangère : c'est le
+# défaut « Invalid Server Actions request. » qui lui a coûté une demi-journée,
+# invisible partout où l'on interroge `127.0.0.1`. Il tourne ici contre le banc
+# DÉJÀ EN ÉCOUTE — donc contre la version bâtie, celle qu'il ouvre vraiment,
+# et non contre un serveur monté pour l'occasion.
+# ─────────────────────────────────────────────────────────────────────────────
+if ! BASE_ESSAI=http://127.0.0.1:3000 node scripts/verifier-connexion.mjs; then
+  echo "--- fin du journal de démarrage (/tmp/essai.log) ---" >&2
+  tail -40 /tmp/essai.log >&2 2>/dev/null || echo "(aucun journal)" >&2
+  echec "impossible de se connecter au banc — c'est la panne du 12 août 2026"
+fi
+
+
+echo
+echo "✅ Banc d'essai vérifié de bout en bout — jusqu'à la connexion, et sans une seule commande tapée."

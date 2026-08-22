@@ -4,7 +4,7 @@ import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import { ajouterPhotoAction } from "../src/app/chantiers/[id]/photos-actions";
-import { enregistrerNoteVocaleAction } from "../src/app/chantiers/[id]/note-vocale/actions";
+import { recevoirNoteVocale } from "../src/server/services/note-vocale-entrante";
 import * as photosRepo from "../src/server/repositories/photos";
 import { fermerLimiteur } from "../src/server/rate-limit";
 
@@ -84,7 +84,7 @@ async function main() {
     const formData = new FormData();
     formData.set("fichier", fichierDeTaille(200 * 1024, "audio/webm", "note.webm"));
     formData.set("dureeSecondes", "12");
-    const note = await enregistrerNoteVocaleAction(chantier.id, formData);
+    const note = await recevoirNoteVocale(chantier.id, formData);
     assert.equal(note.ok, true);
   });
 
@@ -97,7 +97,7 @@ async function main() {
   await test("Upload note vocale : un fichier surdimensionné est refusé avec un message clair", async () => {
     const formData = new FormData();
     formData.set("fichier", fichierDeTaille(LIMITE_TELEVERSEMENT_OCTETS + 1024, "audio/webm", "note-trop-grosse.webm"));
-    const resultat = await enregistrerNoteVocaleAction(chantier.id, formData);
+    const resultat = await recevoirNoteVocale(chantier.id, formData);
     assert.equal(resultat.ok, false, "Un fichier surdimensionné doit être refusé");
     assert.equal(resultat.ok === false && resultat.raison, MESSAGE_FICHIER_TROP_VOLUMINEUX);
   });
@@ -105,7 +105,7 @@ async function main() {
   await test("Upload note vocale : un format refusé NOMME le format reçu", async () => {
     const formData = new FormData();
     formData.set("fichier", fichierDeTaille(1024, "application/pdf", "faux.pdf"));
-    const resultat = await enregistrerNoteVocaleAction(chantier.id, formData);
+    const resultat = await recevoirNoteVocale(chantier.id, formData);
     assert.equal(resultat.ok, false);
     // Sans le format reçu, un type que le téléphone du patron produit et que la
     // liste blanche ignore resterait introuvable : il faudrait le lui demander.
@@ -118,7 +118,7 @@ async function main() {
   await test("Upload note vocale : un enregistrement vide est refusé, pas rangé", async () => {
     const formData = new FormData();
     formData.set("fichier", fichierDeTaille(0, "audio/webm", "note-vide.webm"));
-    const resultat = await enregistrerNoteVocaleAction(chantier.id, formData);
+    const resultat = await recevoirNoteVocale(chantier.id, formData);
     assert.equal(resultat.ok, false, "Zéro octet n'est pas un enregistrement");
     assert.ok(resultat.ok === false && /vide/i.test(resultat.raison));
   });

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
+import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
-import { cellulesDe, type NatureGrille } from "../src/lib/grille-prix";
+import { GRILLES_PAR_DEFAUT, cellulesDe, type NatureGrille } from "../src/lib/grille-prix";
 
 /** Les natures affichées, dans l'ordre de l'écran (`GrillesPrixClient`). */
 const NATURES: NatureGrille[] = ["abattage", "grumes", "fendage", "dessouchage", "haie"];
@@ -39,18 +40,45 @@ async function main() {
   await page.waitForURL(`${BASE}/`);
 
   // --- 1. On la trouve depuis les réglages ---------------------------------
-  await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+  // Depuis le 14 août 2026, les prix vivent sous « Tarifs & catalogue » —
+  // main-d'œuvre, machine et matière au même endroit (`ARCHITECTURE.md` §96).
+  await page.goto(`${BASE}/reglages/tarifs`, { waitUntil: "networkidle" });
   const lien = page.getByRole("link", { name: /Mes prix/i });
   assert.equal(await lien.count(), 1, "Aucun lien vers les grilles dans les réglages : l'écran est introuvable.");
   await lien.click();
   await page.waitForURL(/\/reglages\/prix/);
   console.log("  ✓ les grilles s'atteignent depuis les réglages");
 
+  // **Le décompte AVANT de remplir quoi que ce soit.**
+  //
+  // Ce contrôle attendait « 1 case remplie » — il se croyait seul à écrire dans
+  // cette grille. Il ne l'est pas : sur le devis, enregistrer une ligne range
+  // son prix dans la bonne case (`apprendrePrixGrille`), et c'est même le
+  // sujet du produit — *« je fais plein de devis et dans un mois tu sauras les
+  // remplir tout seul »*. Toute suite qui chiffre un devis avant celle-ci
+  // remplit donc une case, et l'ordre alphabétique décide de qui passe en
+  // premier. Le 13 août 2026, une suite nouvelle nommée « choix-civilite » est
+  // arrivée avant « grille-prix » : le décompte a dit 2, et le contrôle a
+  // accusé l'écran d'un défaut qui n'existait pas.
+  //
+  // On mesure donc l'ÉCART que produit notre propre saisie, seule chose dont
+  // ce contrôle réponde.
+  // L'écran arrive en deux temps : le décompte n'existe qu'une fois les
+  // grilles peintes. Le lire trop tôt rendait « CHARGEMENT… » et faisait
+  // accuser l'écran de n'annoncer aucun décompte.
+  //
+  // **Le motif désigne le REPLI, avec son décompte.** Depuis le 14 août 2026 la
+  // rangée porte aussi une croix « Retirer Arbre 10 à 15 m » : un motif lâche
+  // en trouvait deux, et l'échec accusait l'écran de ne plus afficher sa
+  // rangée — alors qu'il en affichait une de plus.
+  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).waitFor({ timeout: 30_000 });
+  const decompteAvant = await lireDecompte(page);
+
   // --- 2. Un prix saisi survit au rechargement -----------------------------
   //
   // Le bloc « 10 à 15 m », le diamètre « 40 à 50 cm » : la case qu'un chêne
   // ordinaire désigne.
-  await page.getByRole("button", { name: /Arbre 10 à 15 m/ }).click();
+  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).click();
   // **Le nom accessible porte la grille ET la rangée.** Depuis l'arrivée du
   // dessouchage, « 40 à 50 cm » désigne deux cases à l'écran : un tronc à fendre
   // et une souche à arracher. Viser le libellé court seul rendrait ce contrôle
@@ -59,11 +87,11 @@ async function main() {
   const champ = page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm");
   await champ.fill("270");
   // Le prix part au serveur quand le champ perd le focus — comme sur le devis.
-  await page.getByRole("button", { name: /Arbre 10 à 15 m/ }).click();
+  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).click();
   await page.waitForTimeout(1200);
 
   await page.reload({ waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /Arbre 10 à 15 m/ }).click();
+  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).click();
   assert.equal(
     await page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm").inputValue(),
     "270",
@@ -72,15 +100,22 @@ async function main() {
   console.log("  ✓ un prix saisi survit au rechargement");
 
   // --- 3. Le décompte dit ce qui reste à faire -----------------------------
-  const corps = await page.locator("body").innerText();
   // **Le total se calcule, il ne se recopie pas.** Il était écrit « 73 » en dur,
   // et ajouter deux natures le 8 août 2026 a fait échouer ce contrôle pour une
   // bonne raison qui n'était pas la sienne. Dérivé des grilles, il suit.
-  const TOTAL = NATURES.reduce((n, nature) => n + cellulesDe(nature).length, 0);
-  assert.match(
-    corps,
-    new RegExp(`1 case remplie sur ${TOTAL}`),
-    `Le décompte ne dit pas où en est la grille. Lu : « ${corps.replace(/\s+/g, " ").slice(0, 200)} »`
+  const TOTAL = NATURES.reduce((n, nature) => n + cellulesDe(nature, GRILLES_PAR_DEFAUT).length, 0);
+  const corps = await page.locator("body").innerText();
+  const decompteApres = await lireDecompte(page);
+  assert.equal(
+    decompteApres.total,
+    TOTAL,
+    `Le décompte annonce ${decompteApres.total} cases au lieu de ${TOTAL}.`
+  );
+  assert.equal(
+    decompteApres.remplies,
+    decompteAvant.remplies + 1,
+    `Le décompte n'a pas suivi la case qu'on vient de remplir : ` +
+      `${decompteAvant.remplies} avant, ${decompteApres.remplies} après.`
   );
   console.log(`  ✓ elle dit combien de cases sont remplies, sur ${TOTAL}`);
 
@@ -133,13 +168,21 @@ async function main() {
   // Se corriger doit être possible. Une case qu'on vide redevient une question
   // posée ; un zéro enregistré se proposerait sur un devis.
   await page.getByLabel("Fendre le bois — Arbre 10 à 15 m — 40 à 50 cm").fill("");
-  await page.getByRole("button", { name: /Arbre 10 à 15 m/ }).click();
+  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).click();
   await page.waitForTimeout(1200);
   await page.reload({ waitUntil: "networkidle" });
-  assert.match(
-    await page.locator("body").innerText(),
-    new RegExp(`Aucune case remplie sur ${TOTAL}`),
-    "Une case vidée reste enregistrée : le patron ne peut pas revenir sur un prix faux."
+  await page.getByRole("button", { name: /^Arbre 10 à 15 m \d+ \/ \d+$/ }).waitFor({ timeout: 30_000 });
+  // **On revient au décompte de DÉPART, pas à zéro.** Attendre « Aucune case
+  // remplie » supposait encore que ce contrôle est seul à écrire dans cette
+  // grille — or toute suite qui chiffre un devis avant lui y range un prix.
+  // C'est le même piège qu'au décompte d'entrée, et il s'est repris ici une
+  // ligne plus bas.
+  const decompteFinal = await lireDecompte(page);
+  assert.equal(
+    decompteFinal.remplies,
+    decompteAvant.remplies,
+    "Une case vidée reste enregistrée : le patron ne peut pas revenir sur un prix faux. " +
+      `(${decompteAvant.remplies} au départ, ${decompteFinal.remplies} après l'avoir vidée.)`
   );
   console.log("  ✓ vider une case la rend à la question");
 
@@ -151,3 +194,27 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+/**
+ * « N case(s) remplie(s) sur M », lu sur l'écran des grilles.
+ *
+ * Une seule écriture de cette lecture : recopiée aux deux endroits qui en ont
+ * besoin, elle finirait par lire deux choses différentes du même écran.
+ */
+async function lireDecompte(page: Page): Promise<{ remplies: number; total: number }> {
+  const corps = await page.locator("body").innerText();
+  // **« Aucune case remplie sur 82 » est un décompte, lui aussi.** L'écran
+  // change de phrase à zéro, pour dire ce qui va se passer plutôt qu'un « 0 »
+  // sec — et une lecture qui n'attendrait que des chiffres accuserait alors
+  // l'écran de n'annoncer aucun décompte, sur une grille toute neuve.
+  const aucune = /Aucune\s+case\s+remplie\s+sur\s+(\d+)/i.exec(corps);
+  if (aucune) return { remplies: 0, total: Number(aucune[1]) };
+
+  const trouve = /(\d+)\s+cases?\s+remplies?\s+sur\s+(\d+)/.exec(corps);
+  if (!trouve) {
+    throw new Error(
+      `L'écran n'annonce aucun décompte. Lu : « ${corps.replace(/\s+/g, " ").slice(0, 200)} »`
+    );
+  }
+  return { remplies: Number(trouve[1]), total: Number(trouve[2]) };
+}

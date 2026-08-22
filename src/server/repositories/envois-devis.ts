@@ -3,12 +3,13 @@ import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne, type PeriodeOccupee } from "../../lib/agenda-externe";
+import { fusionnerAbsences } from "../../lib/absences-equipe";
 import {
   periodesOccupeesExterieures,
   periodesOccupeesPourEntreprise,
 } from "./agendas-externes";
 import { configurationGoogle } from "../agenda/google";
-import { chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
+import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import type { Ctx } from "./context";
 import { lireObjet } from "../storage";
 import {
@@ -139,13 +140,48 @@ async function contrainteDuPlanning(
 
   const nombreEquipes = entreprise?.nombreEquipes ?? 1;
 
+  // **Les équipes qui ne sont pas là, retirées de la capacité.**
+  //
+  // *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement
+  // pour cinq jours ».* Une absence s'exprime comme une occupation — elle prend
+  // la place qu'un chantier aurait prise — ce qui la fait entrer ici, dans la
+  // carte que les trois chemins partagent déjà, **sans changer une seule
+  // signature** (`src/lib/absences-equipe.ts`).
+  //
+  // Lues dans la même transaction que les chantiers : deux lectures séparées
+  // pourraient tomber de part et d'autre d'une écriture, et la date proposée au
+  // client ne serait alors plus celle que la revérification accepterait.
+  const absences = await tx
+    .select({
+      equipeId: absencesEquipe.equipeId,
+      premierJour: absencesEquipe.premierJour,
+      dernierJour: absencesEquipe.dernierJour,
+    })
+    .from(absencesEquipe)
+    .where(
+      and(
+        eq(absencesEquipe.entrepriseId, entrepriseId),
+        isNull(absencesEquipe.deletedAt),
+        // Ce qui croise la fenêtre, et rien d'autre : une absence de l'an
+        // dernier n'a rien à faire dans ce calcul.
+        lte(absencesEquipe.premierJour, fenetre.fin),
+        gte(absencesEquipe.dernierJour, fenetre.debut)
+      )
+    );
+
   // **Une seule carte d'occupation, jamais deux.** Les trois chemins qui
   // passent ici — l'écran d'envoi, la création de l'envoi, la revérification
   // de la réponse du client — voient donc exactement la même chose, agenda
-  // extérieur compris. Sans agenda relié, la liste est vide et rien ne change.
+  // extérieur et absences compris. Sans agenda relié ni absence notée, les deux
+  // listes sont vides et la carte est exactement celle d'avant.
+  //
+  // **L'ordre compte.** Les absences d'abord — elles AJOUTENT une unité par
+  // équipe partie —, l'agenda ensuite, qui pose `Math.max(…, nombreEquipes)`
+  // parce qu'il ne sait pas qui part et bloque donc tout le monde. Dans l'autre
+  // sens, l'addition dépasserait un plafond que l'agenda venait de poser.
   return {
     occupation: fusionnerOccupationExterne(
-      compterOccupation(planifies),
+      fusionnerAbsences(compterOccupation(planifies), absences, nombreEquipes),
       periodesExterieures,
       nombreEquipes
     ),
@@ -159,6 +195,13 @@ export type CreationEnvoi = {
   canal: CanalCommunication;
   /** Une ou deux dates — la forme est tranchée par le patron à la validation. */
   datesProposees: JourIso[];
+  /**
+   * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
+   *
+   * Absent : `true`, c'est-à-dire ce que faisait l'application depuis toujours.
+   * Un défaut à `false` changerait sans un mot ce que le patron croit envoyer.
+   */
+  autreDateAutorisee?: boolean;
   contenuDevis: string;
   /**
    * Durée à réserver, en demi-journées. Absente : elle se déduit de la dictée,
@@ -260,6 +303,7 @@ export async function creerEnvoi(
         envoyeAt: maintenant,
         canal: creation.canal,
         datesProposees: creation.datesProposees,
+        autreDateAutorisee: creation.autreDateAutorisee ?? true,
         empreinteDevis: empreinteDevis(creation.contenuDevis),
       })
       .returning();
@@ -292,7 +336,17 @@ export type EnvoiPourClient = {
   devisId: string;
   chantierId: string;
   datesProposees: JourIso[];
-  /** Jours indisponibles dans la fenêtre — des dates, rien d'autre. */
+  /** Le calendrier « une autre date » n'est offert que si le patron l'a permis. */
+  autreDateAutorisee: boolean;
+  /**
+   * Jours indisponibles dans la fenêtre — **des dates, rien d'autre**.
+   *
+   * La durée de réservation a été ajoutée ici le 16 août 2026, puis retirée le
+   * jour même : la batterie l'a refusée (*« la durée du chantier a fuité vers
+   * la page du client »*), et elle avait raison — c'est une consigne du patron,
+   * pas une préférence de style. La page du client dit donc « ne peuvent pas
+   * accueillir votre chantier », sans jamais chiffrer (`src/lib/jours-barres.ts`).
+   */
   joursOccupes: JourIso[];
   fenetre: { debut: JourIso; fin: JourIso };
   reponse: "acceptee" | "refusee" | "correction" | null;
@@ -307,6 +361,8 @@ export type EnvoiPourClient = {
     tauxTva: string;
     entrepriseNom: string;
     clientNom: string | null;
+    /** Recopiée sur le devis à son établissement (migration 0038). */
+    clientCivilite: "mr" | "mme" | null;
     adresseChantier: string | null;
     lignes: { libelle: string; quantite: string; prixUnitaire: string; montant: string }[];
   };
@@ -480,6 +536,7 @@ export async function lireParJeton(
       devisId: envoi.devisId,
       chantierId: envoi.chantierId,
       datesProposees: envoi.datesProposees,
+      autreDateAutorisee: envoi.autreDateAutorisee,
       joursOccupes: joursSansPlace,
       fenetre,
       reponse: envoi.reponse,
@@ -494,6 +551,7 @@ export async function lireParJeton(
         tauxTva: d.tauxTva,
         entrepriseNom: d.entrepriseNom,
         clientNom: d.clientNom,
+        clientCivilite: d.clientCivilite,
         adresseChantier: d.adresseChantier,
         lignes: lignesDevisRows.map(({ libelle, quantite, prixUnitaire, montant }) => ({
           libelle,
@@ -595,7 +653,9 @@ export type ResultatReponse =
         | "deja_repondu"
         | "date_indisponible"
         | "date_manquante"
-        | "message_manquant";
+        | "message_manquant"
+        /** Le patron n'a pas autorisé d'autre date sur CET envoi (17 août 2026). */
+        | "autre_date_refusee";
     };
 
 /**
@@ -665,6 +725,16 @@ export async function enregistrerReponse(
     if (!date) return { succes: false, motif: "date_manquante" as const };
 
     const contreProposee = !envoi.datesProposees.includes(date);
+
+    // **Le refus se fait ICI, pas seulement à l'écran** (17 août 2026). La page
+    // du client est publique : elle s'ouvre sans compte, et son formulaire se
+    // rejoue. Cacher le calendrier suffit à l'usage, jamais à la règle — un
+    // envoi où le patron n'a pas autorisé d'autre date ne doit pas pouvoir en
+    // recevoir une, quoi qu'on lui poste. C'est la règle du dépôt : jamais de
+    // règle dupliquée entre l'affichage et la vérification (`CLAUDE.md` §3).
+    if (contreProposee && !envoi.autreDateAutorisee) {
+      return { succes: false, motif: "autre_date_refusee" as const };
+    }
 
     // Revérification côté serveur — la seule qui fasse foi.
     //

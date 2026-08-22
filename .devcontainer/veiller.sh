@@ -28,7 +28,68 @@ DEPOT="${1:-$(pwd)}"
 PORT="${PORT:-3000}"
 JOURNAL="${JOURNAL:-/tmp/essai.log}"
 VERROU=/tmp/atlas-veilleur.pid
-INTERVALLE=15
+# Détournables uniquement pour les ÉPROUVER : une suite ne peut pas attendre un
+# quart d'heure pour vérifier qu'une publication a lieu, ni dix minutes pour
+# voir une construction se retenter.
+INTERVALLE="${ATLAS_INTERVALLE_VEILLE:-15}"
+INTERVALLE_RAPPORT="${ATLAS_INTERVALLE_RAPPORT:-900}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# **LA CONSTRUCTION QUI A ÉCHOUÉ N'ÉTAIT JAMAIS RETENTÉE.**
+#
+# Le patron, le 18 août 2026 : *« je crois que j'ai encore la version lente »*.
+# Sa fiche disait exactement pourquoi :
+#
+#     Code SERVI : AUCUNE — la construction a ÉCHOUÉ (05:13:44Z)
+#     dit: ⨯ Another next build process is already running.
+#
+# Tout le reste avait déjà été réparé : la construction orpheline est délogée
+# avant de bâtir, le verrou de banc se prend en création exclusive, et une
+# seconde tentative part quand c'est ce refus-là qui a parlé
+# (`ARCHITECTURE.md` §126). **Et pourtant il était encore lent** — parce
+# qu'aucun de ces correctifs ne couvre le cas où les deux tentatives tombent.
+#
+# **Le trou était ICI, et il est béant :** ce veilleur ne relance `npm run banc`
+# que lorsque RIEN ne répond sur le port. Or une construction qui échoue laisse
+# le banc en mode développement, et ce mode-là **répond très bien**. Les deux
+# conditions ci-dessous étaient donc satisfaites, le veilleur se déclarait
+# content, et le patron passait sa soirée sur la version lente — sans que rien,
+# nulle part, ne retente quoi que ce soit.
+#
+# La cause de l'échec, elle, est souvent PASSAGÈRE : son espace a 8 Go et 132 Mo
+# libres au moment de la panne. Dix minutes plus tard, la mémoire est rendue et
+# la même construction passe. C'est exactement le cas où réessayer coûte
+# quelques minutes de processeur et rapporte une soirée entière.
+#
+# **C'est le RYTHME qui est borné, plus le nombre — corrigé le 20 août 2026.**
+#
+# Ce compteur s'arrêtait à trois, et la fiche du patron disait alors, mot pour
+# mot : *« il est LENT, et le restera »*. Ce matin-là, à 06 h 10, la
+# construction tombe sur le verrou ; à 06 h 40 il écrit *« l'application est
+# lente corrige ça »*. Les trois tentatives étaient passées, et **plus rien au
+# monde n'allait retenter quoi que ce soit** avant qu'il rallume son espace —
+# un geste que personne ne lui avait demandé, pour une panne qu'il ne pouvait
+# pas voir.
+#
+# Trois tentatives, c'est le bon rythme pour une panne passagère : sa mémoire
+# se libère en dix minutes, et la construction repasse. Mais la cause peut
+# durer plus longtemps que trente minutes — un autre banc qui bâtit, une
+# journée de travail qui occupe les 8 Go —, et une demi-heure de patience ne
+# doit pas condamner la journée entière.
+#
+# **Donc : après la salve rapide, on continue AU RALENTI.** Une construction
+# toutes les demi-heures ne maintient personne à genoux — c'est deux ou trois
+# minutes de processeur par demi-heure —, et elle finit par tomber sur le
+# moment où la machine peut la faire passer. Ce qui reste interdit est
+# inchangé : jamais deux constructions à la fois, et jamais avant que le délai
+# soit écoulé.
+TEMOIN_ECHEC="${ATLAS_TEMOIN_ECHEC:-/tmp/atlas-construction-echouee.txt}"
+RELANCE_APRES="${ATLAS_RELANCE_CONSTRUCTION_S:-600}"
+RELANCES_MAX="${ATLAS_RELANCES_CONSTRUCTION_MAX:-3}"
+# Le pas lent, une fois la salve rapide épuisée.
+RELANCE_LENTE="${ATLAS_RELANCE_LENTE_S:-1800}"
+RELANCES=0
+PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
 
 # **Un seul veilleur.** Deux veilleurs relanceraient deux serveurs, et le remède
 # reproduirait la panne. Le verrou porte un identifiant de processus : un
@@ -43,6 +104,38 @@ fi
 echo $$ > "$VERROU"
 
 cd "$DEPOT" || exit 0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# **La fiche se publie À CÔTÉ de la surveillance, jamais dedans.**
+#
+# Défaut trouvé le 16 août 2026, en cherchant pourquoi le patron ne pouvait plus
+# ouvrir l'application et pourquoi sa fiche datait d'une demi-heure.
+#
+# La publication vivait au bas de la boucle ci-dessous. Or cette boucle **ne
+# tourne pas** quand le serveur est tombé : elle appelle `npm run banc`, qui ne
+# rend la main qu'à la mort du serveur suivant — des heures, si tout va bien.
+# Le compteur n'avançait donc plus, et la fiche se figeait **exactement à
+# l'instant où le veilleur se met au travail**, c'est-à-dire au seul moment où
+# quelqu'un a besoin de la lire.
+#
+# Et le piège se refermait deux fois, parce que la fiche porte sa propre règle
+# de lecture : « passé vingt minutes sans réécriture, l'espace est arrêté ».
+# Elle était donc devenue *fausse* — elle envoyait rallumer une machine qui
+# tournait, au lieu de faire chercher la panne. Une consigne qui accuse à tort
+# coûte plus cher que pas de consigne du tout (`CLAUDE.md` §5).
+#
+# Un processus séparé n'a pas ce défaut : rien de ce que fait la surveillance ne
+# peut l'endormir. Il s'arrête avec le veilleur — sans quoi un veilleur relancé
+# laisserait deux publieurs, et la fiche serait réécrite deux fois par quart
+# d'heure sans que personne ne comprenne pourquoi.
+VEILLEUR=$$
+(
+  while true; do
+    sleep "$INTERVALLE_RAPPORT"
+    kill -0 "$VEILLEUR" 2>/dev/null || exit 0
+    ( cd "$DEPOT" && ATLAS_MOMENT=veille node scripts/rapporter-espace.mjs >> "$JOURNAL" 2>&1 )
+  done
+) &
 
 # **`next dev` ne suffit PAS comme motif, et c'est la cause première du 404.**
 #
@@ -104,6 +197,45 @@ while true; do
     fi
   else
     MUET=0
+
+    # **Le serveur répond — mais sert-il la version rapide ?**
+    #
+    # `banc.mjs` efface ce témoin dès qu'une construction réussit : sa présence
+    # veut donc dire « la dernière tentative a échoué, et nous sommes lents ».
+    # C'est le seul signal qui distingue un banc rapide d'un banc lent, et les
+    # deux répondent pareil à la santé.
+    if [ -f "$TEMOIN_ECHEC" ] && [ "$(date +%s)" -ge "$PROCHAINE_RELANCE" ]; then
+      # **Jamais deux constructions à la fois.** C'est la panne d'origine : une
+      # seconde construction lancée à côté d'une première tombe sur son verrou,
+      # et les deux échouent. Si une construction tourne déjà — la nôtre de tout
+      # à l'heure, ou celle d'un banc relancé ailleurs — on la laisse finir.
+      if ! pgrep -f '[n]ext build' >/dev/null 2>&1; then
+        RELANCES=$((RELANCES + 1))
+        echo "$(date '+%d/%m %H:%M:%S') — la version rapide manque encore : on retente la construction (${RELANCES}/${RELANCES_MAX})" >> "$JOURNAL"
+        # Bloque jusqu'à la mort du serveur suivant, comme la relance ci-dessus.
+        # Si la construction passe, `banc.mjs` remplace le mode développement
+        # par la version bâtie et le patron cesse d'attendre ses écrans.
+        npm run banc >> "$JOURNAL" 2>&1
+        echo "$(date '+%d/%m %H:%M:%S') — le serveur s'est arrêté" >> "$JOURNAL"
+      fi
+      # La salve rapide d'abord — une panne passagère se répare là. Puis le pas
+      # lent, indéfiniment : ce qui a échoué trois fois de suite peut très bien
+      # passer dans une heure, et la journée du patron ne doit pas dépendre de
+      # ce qu'il pense à rallumer son espace.
+      if [ "$RELANCES" -lt "$RELANCES_MAX" ]; then
+        PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
+      else
+        PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_LENTE ))
+        if [ "$RELANCES" -eq "$RELANCES_MAX" ]; then
+          echo "$(date '+%d/%m %H:%M:%S') — ${RELANCES_MAX} tentatives rapprochées ont échoué : on continue, une toutes les ${RELANCE_LENTE} s" >> "$JOURNAL"
+        fi
+      fi
+    fi
   fi
+
+  # La fiche, elle, se publie dans le processus séparé ouvert plus haut : cette
+  # boucle-ci s'arrête de tourner dès que le serveur tombe, et c'est précisément
+  # là qu'il faut continuer à publier.
+
   sleep "$INTERVALLE"
 done

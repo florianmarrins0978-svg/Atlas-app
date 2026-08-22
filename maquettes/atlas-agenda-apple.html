@@ -1,0 +1,360 @@
+<title>Atlas — Réglages : relier l'agenda iCloud</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    RELIER L'AGENDA D'APPLE (iCloud).
+
+    Le patron, le 2026-08-12, capture du Calendrier à l'appui : « je peux
+    connecter ce calendrier à mon appli ? » — puis, aux deux questions posées :
+    le compte derrière la vitrine est **iCloud**, et il veut **les deux sens**
+    (Atlas lit ses rendez-vous, Atlas y écrit ses chantiers).
+
+    CE QUE CET ÉCRAN DOIT RÉSOUDRE, ET QUI N'EXISTE PAS CHEZ GOOGLE :
+
+      · Google : on appuie, l'écran de Google s'ouvre, on accepte. Rien à taper.
+      · Apple  : aucun équivalent pour l'agenda. Il faut un MOT DE PASSE
+        SPÉCIFIQUE À L'APP, généré sur le compte Apple, recopié ici.
+
+    D'où les deux règles que cette maquette met à l'épreuve :
+
+      1. ON PRÉVIENT AVANT DE FAIRE TAPER. Ce mot de passe ouvre TOUT l'iCloud
+         — mail, contacts, fichiers — et Apple ne sait pas le restreindre à
+         l'agenda seul. L'avertissement est donc AU-DESSUS du champ, jamais en
+         dessous : prévenir après la frappe, c'est prévenir trop tard. C'est
+         la seule chose que cet écran ne peut pas se permettre de rater, et le
+         contrôle le vérifie par les positions, pas par la présence du texte.
+
+      2. ÉCRIRE EST UNE DÉCISION, PAS UN DÉFAUT. L'interrupteur « écrire mes
+         chantiers » est ÉTEINT au départ. Tant qu'il l'est, le choix du
+         calendrier n'existe pas : proposer où écrire à quelqu'un qui n'a pas
+         dit qu'il voulait qu'on écrive, c'est lui faire croire que c'est déjà
+         parti. Allumé, il découvre le choix ET la limite : Atlas ne touche
+         jamais un rendez-vous qu'il n'a pas posé.
+
+    CE QUI N'EST PAS DESSINÉ, ET C'EST VOULU : le contenu des rendez-vous lus.
+    Atlas n'en garde rien (`drizzle/0032_agendas_externes.sql`), et un écran qui
+    les listerait donnerait envie de les stocker.
+
+    RÉSERVE. Rien de tout ceci n'existe encore dans `src/` : la table
+    `agendas_externes` n'accepte aujourd'hui que `fournisseur = 'google'`, et le
+    réseau de cet environnement refuse `caldav.icloud.com` — le raccordement
+    réel ne s'éprouvera que sur son banc d'essai. Voir `docs/QUESTIONS.md` §14.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`.
+     Deux fois de suite : « rien ne s'ouvre quand je touche ». Chromium s'en
+     passe — les contrôles restaient au vert pendant que l'écran ne répondait
+     pas sous son doigt. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1400px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:44ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:760px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         /* La charte Arborea, relevée dans `src/lib/design-tokens.ts`. */
+         --e-fond:#f5f3ee; --e-plage:#ece9e1; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-trait:rgba(28,28,26,.12); --e-pin:#2f3b2f; --e-pin-encre:#faf9f5;
+         --e-or:#B98B47; --e-alerte:#9C3B2E; --e-blanc:#faf9f5}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  /* 12 px sous le titre plutôt que zéro : au défilement, le corps vient buter
+     contre l'empattement du serif et l'on croit lire une phrase du titre. */
+  .tete{padding:26px 26px 12px;flex:none}
+  .tete .sur{margin:0;color:var(--e-or)}
+  .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-or);
+         left:calc(14px + 3*(100% - 28px)/4)}
+
+  /* ═══ L'état, en une phrase, avant toute commande ═════════════════════ */
+  /* Même règle que l'écran Google déjà en place : l'artisan doit savoir en une
+     ligne si Atlas tient compte de son agenda. Un raccordement mort en silence
+     est pire que pas de raccordement — il se croit protégé du doublon. */
+  .etat{margin:28px 26px 0;padding:18px 20px;background:var(--e-plage);border-radius:4px}
+  .etat .t{margin:0;font:400 19px/1.3 ui-serif,Georgia,serif}
+  .etat p{margin:9px 0 0;font-size:13.5px;line-height:1.6;color:var(--e-gris)}
+  .etat p b{color:var(--e-encre);font-weight:600}
+  .etat .compte{margin:4px 0 0;font-size:13px;color:var(--e-gris)}
+
+  .bloc{margin:26px 26px 0}
+  .bloc .t{display:flex;align-items:center;gap:12px;margin:0 0 12px;color:var(--e-gris)}
+  .bloc .t i{flex:1;height:1px;background:var(--e-trait)}
+
+  /* ═══ L'avertissement — AU-DESSUS du champ, et c'est la règle ═════════ */
+  .prevenir{margin:0 0 16px;padding:14px 16px;border-radius:4px;
+            background:var(--e-blanc);border-left:3px solid var(--e-alerte);
+            font-size:13px;line-height:1.6;color:var(--e-encre)}
+  .prevenir b{font-weight:600}
+  .prevenir span{display:block;margin-top:6px;color:var(--e-gris)}
+
+  /* Les trois gestes chez Apple. Numérotés parce qu'ils s'enchaînent ailleurs
+     que dans Atlas : celui qui les suit a quitté l'écran, et doit pouvoir y
+     revenir sans perdre le fil. */
+  ol.pas{margin:0 0 18px;padding:0 0 0 24px;font-size:13.5px;line-height:1.65;color:var(--e-gris)}
+  ol.pas li{margin:0 0 7px}
+  ol.pas b{color:var(--e-encre);font-weight:600}
+  ol.pas code{font:500 12.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+              background:var(--e-plage);padding:2px 5px;border-radius:3px;color:var(--e-encre)}
+
+  .champ{display:block;margin:0 0 14px}
+  .champ span{display:block;margin-bottom:5px;font-size:12.5px;color:var(--e-gris)}
+  /* 16 px de corps au minimum : en dessous, Safari zoome à la mise au point et
+     l'écran part de travers sous son doigt. */
+  /* Écrit en propriétés séparées, PAS en raccourci : `font:400 16px/1.4 inherit`
+     est invalide — `inherit` n'est pas admis dans le raccourci `font` — et la
+     déclaration entière tombe. Le champ repassait alors à 13,3 px, soit
+     exactement le zoom de Safari que la ligne ci-dessus prétend éviter. Trouvé
+     par le contrôle, pas à l'œil : à l'écran, la différence ne saute pas. */
+  .champ input{width:100%;padding:13px 15px;
+               font-family:inherit;font-weight:400;font-size:16px;line-height:1.4;
+               background:var(--e-blanc);color:var(--e-encre);
+               border:1px solid var(--e-trait);border-radius:4px}
+  .champ input::placeholder{color:var(--e-gris);opacity:.75}
+
+  /* Tous les boutons sont des capsules — règle du dépôt, question 13 de
+     `docs/QUESTIONS.md`, et un contrôle la tient dans l'application. */
+  .capsule{display:block;width:100%;margin:4px 0 0;padding:14px 20px;border:0;border-radius:999px;
+           font-family:inherit;font-weight:500;font-size:15px;line-height:1.2;text-align:center;
+           background:var(--e-pin);color:var(--e-pin-encre);-webkit-tap-highlight-color:transparent}
+  .capsule.creuse{background:var(--e-plage);color:var(--e-pin)}
+  .capsule.nue{background:none;color:var(--e-gris);font-weight:400;font-size:14px}
+
+  /* ═══ L'interrupteur d'écriture — éteint au départ ════════════════════ */
+  .bascule{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;
+           background:var(--e-plage);border-radius:4px}
+  .bascule .mots{flex:1;min-width:0}
+  .bascule .mots b{display:block;font-size:15px;font-weight:600}
+  .bascule .mots span{display:block;margin-top:4px;font-size:13px;line-height:1.55;color:var(--e-gris)}
+  .piste{flex:none;position:relative;width:52px;height:32px;margin-top:2px;border-radius:999px;
+         background:rgba(28,28,26,.18);transition:background .22s}
+  .piste b{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:999px;
+           background:var(--e-blanc);box-shadow:0 1px 3px rgba(20,18,14,.28);transition:left .22s}
+
+  #ecrire:checked ~ .corps .piste{background:var(--e-pin)}
+  #ecrire:checked ~ .corps .piste b{left:23px}
+  /* Le choix du calendrier N'EXISTE PAS tant que l'écriture est éteinte. */
+  .ecriture{display:none;margin-top:14px}
+  #ecrire:checked ~ .corps .ecriture{display:block}
+
+  .ou{display:flex;align-items:center;gap:12px;padding:13px 4px;border-bottom:1px solid var(--e-trait)}
+  .ou:last-of-type{border-bottom:0}
+  .ou .rond{flex:none;width:20px;height:20px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--e-trait)}
+  /* La pastille reste EN DEDANS du cercle : pleine bord à bord, elle avale le
+     filet et ne se lit plus comme un choix, mais comme une puce décorative. */
+  .ou .rond b{display:block;width:100%;height:100%;border-radius:999px;
+              background:var(--e-pin);transform:scale(0);transition:transform .18s}
+  .ou .nom{flex:1;min-width:0;font-size:15px}
+  .ou .nom span{display:block;font-size:12.5px;color:var(--e-gris)}
+  #cal1:checked ~ .corps .ou.c1 .rond b,
+  #cal2:checked ~ .corps .ou.c2 .rond b,
+  #cal3:checked ~ .corps .ou.c3 .rond b{transform:scale(.56)}
+
+  .limite{margin:14px 0 0;padding:13px 16px;border-radius:4px;background:var(--e-blanc);
+          border-left:3px solid var(--e-or);font-size:13px;line-height:1.6}
+  .limite b{font-weight:600}
+
+  .lu{margin:18px 26px 0;font-size:12.5px;color:var(--e-gris)}
+  .commandes{margin:22px 26px 0;display:flex;flex-direction:column;gap:10px}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Maquette · 12 août 2026</p>
+    <h1>Relier l'agenda iCloud</h1>
+    <p>Le Calendrier d'Apple n'est qu'une vitrine : ce qu'on relie, c'est le
+      compte derrière. Ici, <strong>iCloud</strong> — et dans les deux sens.</p>
+    <p>Apple n'a pas de bouton « accepter » comme Google. Il faut un
+      <strong>mot de passe spécifique à l'app</strong>, et il ouvre tout le
+      compte : l'écran le dit <strong>avant</strong> de faire taper quoi que ce
+      soit.</p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ══ AVANT : rien n'est relié ═══════════════════════════════════ -->
+    <section class="prop">
+      <p class="sous">Avant — rien n'est relié</p>
+      <div class="tel">
+        <div class="ecran" data-s="avant">
+          <div class="tete">
+            <p class="sur caps">Réglages</p>
+            <h1>Mon agenda</h1>
+          </div>
+
+          <div class="corps">
+            <div class="etat">
+              <p class="t">Aucun agenda relié</p>
+              <p>Atlas propose des dates à partir de <b>vos seuls chantiers</b>.
+                Ce qui est noté ailleurs lui reste invisible.</p>
+            </div>
+
+            <div class="bloc">
+              <p class="t caps">iCloud <i></i></p>
+
+              <p class="prevenir" data-s="prevenir">
+                <b>Ce mot de passe ouvre tout votre iCloud</b> — pas seulement
+                l'agenda.
+                <span>Apple ne sait pas le restreindre. Atlas le garde chiffré,
+                  et vous pouvez l'annuler à tout moment depuis votre compte
+                  Apple.</span>
+              </p>
+
+              <ol class="pas">
+                <li>Sur <b>account.apple.com</b>, ouvrez
+                  <b>Connexion et sécurité</b>.</li>
+                <li><b>Mots de passe pour les apps</b>, puis <b>Générer</b>.</li>
+                <li>Recopiez les seize lettres ci-dessous.</li>
+              </ol>
+
+              <label class="champ">
+                <span>Votre adresse iCloud</span>
+                <input type="text" placeholder="prenom@icloud.com"
+                       autocomplete="off" spellcheck="false">
+              </label>
+              <label class="champ" data-s="motdepasse">
+                <span>Mot de passe pour les apps</span>
+                <input type="password" placeholder="abcd-efgh-ijkl-mnop"
+                       autocomplete="off" spellcheck="false">
+              </label>
+
+              <button type="button" class="capsule">Relier mon agenda Apple</button>
+            </div>
+          </div>
+
+          <div class="bas">
+            <span>Chantiers</span><span>Planning</span><span>Clients</span>
+            <span class="actif">Réglages</span><i></i>
+          </div>
+        </div>
+      </div>
+      <p class="note">L'avertissement est <b>au-dessus</b> du champ. Prévenir
+        après la frappe, c'est prévenir trop tard.</p>
+    </section>
+
+    <!-- ══ APRÈS : relié, et l'écriture reste à décider ═══════════════ -->
+    <section class="prop">
+      <p class="sous">Après — relié, l'écriture éteinte</p>
+      <div class="tel">
+        <div class="ecran" data-s="apres">
+          <input type="checkbox" id="ecrire" class="interrupteur">
+          <input type="radio" name="cal" id="cal1" class="interrupteur" checked>
+          <input type="radio" name="cal" id="cal2" class="interrupteur">
+          <input type="radio" name="cal" id="cal3" class="interrupteur">
+
+          <div class="tete">
+            <p class="sur caps">Réglages</p>
+            <h1>Mon agenda</h1>
+          </div>
+
+          <div class="corps">
+            <div class="etat">
+              <p class="t">Atlas tient compte de votre agenda</p>
+              <p class="compte">Compte : florian@icloud.com</p>
+              <p>Une demi-journée prise dans votre agenda <b>ne sera plus
+                proposée</b> à vos clients. Ce qu'ils voient, ce sont des dates
+                — jamais le titre d'un rendez-vous.</p>
+            </div>
+
+            <div class="bloc">
+              <p class="t caps">Dans l'autre sens <i></i></p>
+
+              <label class="bascule" for="ecrire" data-s="bascule">
+                <span class="mots">
+                  <b>Écrire mes chantiers dans mon agenda</b>
+                  <span>Ils apparaîtront dans le Calendrier, comme vos autres
+                    rendez-vous.</span>
+                </span>
+                <span class="piste"><b></b></span>
+              </label>
+
+              <div class="ecriture" data-s="ecriture">
+                <p class="t caps" style="margin:18px 0 2px">Dans quel calendrier <i></i></p>
+
+                <label class="ou c1" for="cal1">
+                  <span class="rond"><b></b></span>
+                  <span class="nom">Atlas<span>Créé pour l'occasion — séparé du reste</span></span>
+                </label>
+                <label class="ou c2" for="cal2">
+                  <span class="rond"><b></b></span>
+                  <span class="nom">Perso<span>Mêlé à vos rendez-vous</span></span>
+                </label>
+                <label class="ou c3" for="cal3">
+                  <span class="rond"><b></b></span>
+                  <span class="nom">Famille<span>Partagé — les autres verraient vos chantiers</span></span>
+                </label>
+
+                <p class="limite">
+                  <b>Atlas ne touche jamais un rendez-vous qu'il n'a pas posé.</b>
+                  Ceux qu'il a écrits se retirent tous d'un geste, le jour où
+                  vous débranchez.
+                </p>
+              </div>
+            </div>
+
+            <p class="lu">Dernière lecture : aujourd'hui à 14 h 32</p>
+
+            <div class="commandes">
+              <button type="button" class="capsule creuse">Mettre en pause</button>
+              <button type="button" class="capsule nue">Débrancher et effacer</button>
+            </div>
+          </div>
+
+          <div class="bas">
+            <span>Chantiers</span><span>Planning</span><span>Clients</span>
+            <span class="actif">Réglages</span><i></i>
+          </div>
+        </div>
+      </div>
+      <p class="note">L'écriture est <b>éteinte au départ</b> : tant qu'elle
+        l'est, le choix du calendrier n'existe pas. Touchez l'interrupteur.</p>
+    </section>
+
+  </div>
+</div>

@@ -95,7 +95,15 @@ export async function envoyerAuClientAction(
   chantierId: string,
   devisId: string,
   datesProposees: string[],
-  dureeDemiJournees?: number
+  dureeDemiJournees?: number,
+  /**
+   * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
+   *
+   * Absent : `true` — ce que l'application faisait depuis toujours. Le
+   * paramètre est en dernier et facultatif pour que rien d'existant ne change
+   * de comportement en silence.
+   */
+  autreDateAutorisee?: boolean
 ): Promise<ResultatEnvoiClient> {
   const ctx = await getCurrentCtx();
 
@@ -146,6 +154,7 @@ export async function envoyerAuClientAction(
       devisId,
       canal: preparation.canal,
       datesProposees,
+      autreDateAutorisee: autreDateAutorisee ?? true,
       contenuDevis: `${devisEnvoye.numeroCommercial}|${devisEnvoye.numeroVersion}|${devisEnvoye.totalTtc}`,
       // La durée réellement retenue, telle que l'écran l'a affichée : c'est sur
       // elle que les dates proposables ont été calculées, et c'est elle qui sera
@@ -188,7 +197,11 @@ function raisonLisible(err: unknown): string {
 }
 
 /**
- * Enregistre la coordonnée manquante d'un client, depuis l'écran Devis.
+ * Enregistre la coordonnée manquante d'un client, depuis l'écran Devis —
+ * **et depuis l'écran Facture** (`facture/TransmettreLaFacture.tsx`), qui offre
+ * le même choix de canal depuis le 12 août 2026 et importe cette action plutôt
+ * que d'en écrire une seconde : deux copies finiraient par diverger, et l'une
+ * des deux oublierait de mettre à jour le canal convenu.
  *
  * **Pourquoi ici.** Il n'existe aucun écran de fiche client : le téléphone et
  * l'e-mail ne se saisissent qu'à la création du chantier. Un patron qui veut

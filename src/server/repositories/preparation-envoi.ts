@@ -1,8 +1,9 @@
 import { and, eq, gte, isNull, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
+import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
-import { chantiers, clients, devis, entreprises } from "../db/schema";
+import { absencesEquipe, chantiers, clients, devis, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import {
   fenetreProposition,
@@ -33,6 +34,24 @@ export type PreparationEnvoi = {
   /** Canal convenu avec le client. Sans lui, l'envoi est impossible. */
   canal: CanalCommunication | null;
   clientNom: string | null;
+  /**
+   * L'identifiant du client, pour que l'écran d'envoi puisse RÉPARER un envoi
+   * bloqué au lieu de s'y arrêter.
+   *
+   * **Le 11 août 2026, cet écran était un cul-de-sac.** Faute de canal, il
+   * affichait « Indiquez d'abord comment joindre ce client — sur sa fiche » et
+   * grisait le bouton. Or l'écran « Informations » a quitté le tiroir de la
+   * fiche le soir même, à la demande du patron : la fiche en question n'offrait
+   * plus rien à indiquer. Un chantier né d'une dictée, dont le client reste
+   * « non renseigné », ne pouvait donc plus jamais partir.
+   *
+   * Le dépôt avait déjà tranché ce point le 4 août, pour l'écran d'après :
+   * *« si la coordonnée manque, elle se saisit sur place — il n'existe aucun
+   * autre écran pour la renseigner, et renvoyer le patron sur la fiche du
+   * client l'enverrait vers une porte qui n'existe pas »*
+   * (`TransmettreAuClient.tsx`). La règle valait ici aussi ; elle y est.
+   */
+  clientId: string | null;
   /** Coordonnée qui servira à l'envoi, pour que le patron la vérifie d'un coup d'œil. */
   destinataire: string | null;
   /** Premiers jours libres, dans l'ordre — la liste où le patron pioche. */
@@ -173,8 +192,30 @@ export async function preparerEnvoi(
     // dédoublement qui avait rangé un chantier dans deux onglets à la fois
     // (`ARCHITECTURE.md` §33). Sans agenda relié, la liste est vide et la carte
     // est exactement celle d'avant.
+    //
+    // **Les équipes absentes entrent ici aussi, et il le fallait.** Cet écran
+    // construit sa propre carte : ne poser les absences que dans
+    // `envois-devis.ts` aurait fait proposer au patron une date que la
+    // revérification aurait ensuite refusée au client. Deux implémentations
+    // d'une même règle finissent toujours par diverger (`CLAUDE.md` §3).
+    const absences = await tx
+      .select({
+        equipeId: absencesEquipe.equipeId,
+        premierJour: absencesEquipe.premierJour,
+        dernierJour: absencesEquipe.dernierJour,
+      })
+      .from(absencesEquipe)
+      .where(
+        and(
+          eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
+          isNull(absencesEquipe.deletedAt),
+          lte(absencesEquipe.premierJour, fenetreOccupationPatron.fin),
+          gte(absencesEquipe.dernierJour, fenetre.debut)
+        )
+      );
+
     const occupation = fusionnerOccupationExterne(
-      compterOccupation(planifies),
+      fusionnerAbsences(compterOccupation(planifies), absences, nombreEquipes),
       periodesExterieures,
       nombreEquipes
     );
@@ -201,6 +242,7 @@ export async function preparerEnvoi(
     return {
       canal,
       clientNom: client?.nom ?? null,
+      clientId: client?.id ?? null,
       destinataire,
       nombreEquipes,
       horizon: fenetrePatron(maintenant),

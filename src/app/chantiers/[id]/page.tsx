@@ -7,6 +7,7 @@ import {
   getSecondarySteps,
 } from "@/lib/chantier-etat";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { versFicheClient } from "@/lib/retour-fiche-client";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantierPourHub } from "@/server/repositories/chantiers";
@@ -227,6 +228,32 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
         photos={photos.map((p) => ({ id: p.id, storageKey: p.storageKey }))}
         etapes={[
           ...etapes,
+          // **La porte vers la fiche du client** — retenue le 16 août 2026
+          // (arrangement B de `docs/maquettes/66`). Elle vit ici plutôt que sur
+          // le nom du client en tête d'écran : celui-ci passe par `precision`,
+          // une simple chaîne d'`EnTeteEcran`, et le rendre cliquable aurait
+          // demandé de toucher une pièce partagée par tous les écrans pour un
+          // seul d'entre eux.
+          //
+          // Elle n'existe QUE si le chantier a un client : une fiche de personne
+          // n'a rien à montrer, et la proposer serait une porte sur du vide.
+          ...(chantier.clientId
+            ? [
+                {
+                  key: "fiche-client" as const,
+                  label: chantier.clientNom ?? "Le client",
+                  // **« De lui » devant « Mme Bracquemont » — vu le 17 août
+                  // 2026 sur la maquette, et jamais par un test.** Le libellé
+                  // est neutre : un client sur deux est une cliente, et rien
+                  // dans la base ne dit lequel.
+                  meta: "Ce qu'on sait de ce client",
+                  done: false,
+                  // On dit d'où l'on part : la flèche de la fiche ramènera ICI,
+                  // et non chez les clients — d'où il ne venait pas.
+                  href: versFicheClient(chantier.clientId, `/chantiers/${id}`),
+                },
+              ]
+            : []),
           // **La sortie de secours suit le même chemin que le reste.**
           // Le patron, le 4 août : « je ne peux toujours pas rédiger mon devis
           // seulement à la main si je le souhaite ». Elle vivait sous le bouton
@@ -236,7 +263,18 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           // Elle s'efface une fois le devis parti : rédiger à la main un devis
           // déjà chez le client n'a plus de sens, et le rouvrir passe par
           // « Corriger et renvoyer ».
-          ...(chantier.devisEnvoyeAt
+          // **Et pas DEUX fois la même porte — corrigé le 21 août 2026.**
+          // Depuis que le seul bouton de la fiche client mène au devis, un
+          // brouillon existe dès la création : l'étape « Devis » du tiroir
+          // s'affiche alors, et « Devis à la main » pointait au même endroit,
+          // juste en dessous. Deux lignes, une seule destination — c'est le
+          // genre de doublon qui fait douter d'avoir compris l'écran.
+          //
+          // La sortie de secours garde tout son sens quand aucun devis n'existe
+          // encore (sa demande du 3 août 2026 : « je dois pouvoir cliquer sur
+          // mon devis et le remplir manuellement ») : c'est exactement le cas
+          // où l'étape « Devis », elle, est retirée du tiroir.
+          ...(chantier.devisEnvoyeAt || devisExiste
             ? []
             : [
                 {

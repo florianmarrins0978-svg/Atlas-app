@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — les maquettes à essayer</title>
+<style>
+  /*
+    LES MAQUETTES À ESSAYER — une seule adresse, et tout est derrière.
+
+    Sa demande, répétée trois fois entre le 17 et le 18 août 2026 : « fais-moi
+    des maquettes dynamiques, pas de photo, que je puisse essayer ».
+
+    **POURQUOI CETTE PAGE EXISTE, ET C'ÉTAIT LE VRAI PROBLÈME.** Les maquettes
+    essayables existaient déjà — dix — mais AUCUNE page ne les rassemblait :
+    `appli/index.html` renvoie droit à l'application, et le sommaire des
+    planches vit dans `docs/`, que le site publié ne sert pas au même endroit.
+    Il fallait connaître chaque nom de fichier. Autant dire qu'elles n'existaient
+    pas.
+
+    Une seule adresse à retenir désormais : **…github.io/Atlas-app/essais.html**
+
+    **AUCUN SCRIPT ICI.** Des liens, rien d'autre — la page s'ouvre hors ligne,
+    dans un onglet laissé ouvert, sur un téléphone qui n'exécute rien.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+           --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+           --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:34px 0 60px;-webkit-text-size-adjust:100%}
+  .page{max-width:460px;margin:0 auto;padding:0 22px}
+  .sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+       text-transform:uppercase;color:var(--or)}
+  h1{margin:12px 0 0;font-family:Georgia,serif;font-weight:400;font-size:33px;
+     line-height:1.06;letter-spacing:-.018em}
+  .chapo{margin:12px 0 0;font-size:14.5px;color:var(--charcoal-soft);line-height:1.6}
+  .chapo b{color:var(--charcoal)}
+  .famille{margin:32px 0 10px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+           text-transform:uppercase;color:var(--muted)}
+
+  /* 64 px de haut au moins : c'est une liste qu'on touche avec le pouce, sur un
+     chantier, parfois avec des gants. */
+  a.essai{display:block;background:var(--cream);border-radius:13px;padding:16px 18px;
+          margin-bottom:9px;text-decoration:none;color:inherit;min-height:64px;
+          box-shadow:inset 0 0 0 1px var(--line)}
+  a.essai .titre{display:block;font-family:Georgia,serif;font-size:19px;line-height:1.2}
+  a.essai .quoi{display:block;margin-top:6px;font-size:13px;color:var(--muted);line-height:1.55}
+  a.essai .quoi b{color:var(--charcoal-soft)}
+  a.essai .neuf{display:inline-block;margin-left:8px;font-size:9px;font-weight:600;
+                letter-spacing:.18em;text-transform:uppercase;color:var(--or);
+                vertical-align:2px}
+
+  .note{margin-top:30px;padding:16px 18px;background:var(--cream);border-radius:13px;
+        font-size:13px;line-height:1.65;color:var(--charcoal-soft)}
+  .note b{color:var(--charcoal)}
+  .note .t{display:block;margin-bottom:8px;font-size:9.5px;font-weight:500;
+           letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Atlas</p>
+  <h1>À essayer</h1>
+  <p class="chapo">Tout ce qui se manipule, sur une seule page. <b>Rien à installer, rien à télécharger</b> — ça marche hors ligne, et vous pouvez laisser cet onglet ouvert.</p>
+
+  <p class="famille">L’écran de création, et l’accueil</p>
+
+  <a class="essai" href="deux-boutons-devis.html">
+    <span class="titre">Je dicte / J’écris mon devis</span>
+    <span class="quoi">Votre demande du 18 août, en cinq façons de la poser — <b>appuyez sur les boutons</b>, ils répondent. <b>La 5 a été retenue</b>, sans les flèches, et elle est dans l’application depuis.</span>
+  </a>
+
+  <a class="essai" href="en-cours-le-chiffre.html">
+    <span class="titre">« En cours », et le chiffre</span>
+    <span class="quoi">Le même nombre était écrit trois fois sur l’accueil. Trois gris comparés pour le mot ; <b>vous avez pris le C</b>, et c’est ce que l’application porte.</span>
+  </a>
+
+  <p class="famille">Le planning</p>
+
+  <a class="essai" href="planning-simple.html">
+    <span class="titre">Le planning, simplifié<span class="neuf">codé</span></span>
+    <span class="quoi">Votre demande du 19 août, corrigée le 21 : <b>le calendrier reste au mois</b>, et c’est la liste des <b>planifiés</b> qui se déplace par semaine — une flèche de chaque côté, <b>appuyez dessus</b>. Les jours y sont <b>nommés</b> (« vendredi 21 août »), les clients dessous, les titres noirs et centrés. <b>Touchez un jour du mois</b> : la liste vous y amène. Le mois a été épuré — les jours des autres mois ne s’écrivent plus, le week-end est une colonne teintée, et un retour <b>« ← Aujourd’hui »</b> apparaît dès qu’on s’éloigne. Chaque jour porte <b>deux barres</b> — le matin dessus, l’après-midi dessous : vide = libre, vert pâle = 1 équipe sur 2, vert plein = complet. La fiche du jour dit <b>qui</b> y est. <b>Et elle se manipule :</b> posez un chantier sans date sur un jour, touchez l’équipe pour la changer, la demi-journée pour la déplacer, ou retirez-le — il redescend dans « Sans date ». <b>Codé dans l’application le 21 août 2026</b>, trait pour trait : c’est l’écran « Planning » que vous ouvrez.</span>
+  </a>
+
+  <a class="essai" href="planning-planifies.html">
+    <span class="titre">Les planifiés, sans répétition<span class="neuf">nouveau</span></span>
+    <span class="quoi">Vos trois corrections du 22 août, <b>et rien n’est codé</b>. <b>1.</b> À côté du nom, « matin » devient <b>la durée du chantier</b> — « une demi-journée », « une journée », « 3 jours » : le temps qu’il prend, pas l’heure où il commence. <b>2.</b> Le compte gris « 1 chantier » <b>a disparu</b>. <b>3.</b> Le nom touché <b>devient sa propre fiche</b>, sur place : plus de jour écrit deux fois, plus de nom écrit deux fois. <b>Essayez-la :</b> touchez un nom, il s’ouvre ; retouchez-le, il se referme ; touchez une équipe, elle change. Et un réglage en bas vous laisse comparer « une demi-journée » avec « une demi-journée · matin » — <b>dites-moi lequel vous voulez</b>.</span>
+  </a>
+
+  <a class="essai" href="planning-equipe-sans-nom.html">
+    <span class="titre">Une équipe sans nom<span class="neuf">nouveau</span></span>
+    <span class="quoi">Un détail trouvé le 22 août, et <b>je n’ai rien codé</b> : sur la fiche du jour, si une équipe existe <b>sans porter de nom</b>, l’écran écrit « Équipe A » — plus large qu’un prénom, et <b>« Retirer » tombe à la ligne</b>. Vos équipes s’appellent Paul et Julien, donc vous ne le voyez pas. La planche montre l’état actuel puis <b>trois façons de le régler</b>, et <b>elle se mesure elle-même</b> : chaque ligne dit s’il lui manque des pixels ou s’il lui en reste. <b>Dites-moi laquelle vous voulez, ou aucune</b> — ne rien changer est une réponse.</span>
+  </a>
+
+  <p class="famille">L’écran « Terminés »</p>
+
+  <a class="essai" href="termines-simple.html">
+    <span class="titre">« Terminés », simplifié<span class="neuf">nouveau</span></span>
+    <span class="quoi">Votre demande du 22 août : <b>« beaucoup trop compliquée »</b>. Votre écran d’aujourd’hui, puis <b>trois façons de le simplifier</b> — et <b>elles s’essaient</b> : les boutons « Facturer » facturent pour de bon, les totaux se refont sous vos yeux, « Tout remettre » rejoue la scène. <b>Dites-moi laquelle vous voulez, ou aucune</b> — rien n’est codé.</span>
+  </a>
+
+  <p class="famille">Trop de mots</p>
+
+  <a class="essai" href="moins-de-mots.html">
+    <span class="titre">Moins de mots<span class="neuf">nouveau</span></span>
+    <span class="quoi">Votre remarque du 19 août. <b>C’est Atlas dépouillé, et ça se sert :</b> appuyez sur « Créer un devis », tapez le nom de votre client, arrivez au devis, envoyez-le. Les cinq onglets marchent, les champs se remplissent. Un bouton <b>« Avant »</b> en haut remet l’écran d’aujourd’hui, pour comparer dans le même geste. <b>Rien n’est codé</b> : l’application n’a pas bougé.</span>
+  </a>
+
+  <p class="famille">Vos clients</p>
+
+  <a class="essai" href="cases-page-entiere.html">
+    <span class="titre">La page entière, cinq dessins de cases<span class="neuf">neuf</span></span>
+    <span class="quoi">Toute la fiche client, de haut en bas, <b>sous les cinq dessins</b> — touchez un numéro en haut, l’écran se relit. Tout marche : le numéro qui s’espace, les photos, l’anneau.</span>
+  </a>
+
+  <a class="essai" href="cases-a-remplir.html">
+    <span class="titre">Les cases à remplir, cinq façons<span class="neuf">neuf</span></span>
+    <span class="quoi"><b>« Je peux plus voir ces encadrés carrés. »</b> Cinq dessins du même bloc — le trait, la capsule, la ligne de fiche, la carte douce, le creux. Touchez-les : elles réagissent toutes.</span>
+  </a>
+
+  <a class="essai" href="fiche-client-vocale.html">
+    <span class="titre">La fiche client qui dicte le devis<span class="neuf">neuf</span></span>
+    <span class="quoi">Le nom et le numéro sur une ligne, les photos, et <b>l’anneau</b> : on appuie, on décrit le chantier, on rappuie — <b>c’est enregistré</b>. Fermez l’appli, le chantier vous attend à l’accueil.</span>
+  </a>
+
+  <a class="essai" href="fiche-client.html">
+    <span class="titre">La fiche client, allégée<span class="neuf">nouveau</span></span>
+    <span class="quoi">Ce que vous avez demandé le 18 août : la <b>dernière prestation en titre noir gras</b> avec ce qu’elle comprend, puis <b>deux encadrés seulement</b> — devis d’un côté, fiche chantier de l’autre, en PDF, du plus récent au plus ancien. <b>Trois choses à me dire</b> y sont posées, dont une : la fiche chantier en PDF <b>n’existe pas encore</b>.</span>
+  </a>
+
+  <a class="essai" href="clients-recherche.html">
+    <span class="titre">Chercher un client<span class="neuf">nouveau</span></span>
+    <span class="quoi">Touchez la lettre <b>M</b>, puis tapez <b>« ar »</b> : deux noms sur quarante-sept. Ouvrez <b>Martins</b> — ses devis et ses factures <b>rangés par année</b>. Et le réglage des <b>photos</b> : deux ans, et la réduction à l’envoi.</span>
+  </a>
+
+  <a class="essai" href="clients.html">
+    <span class="titre">Vos clients, depuis l’accueil</span>
+    <span class="quoi">Le chemin entier : l’accueil, le lien <b>« Vos clients » en or</b> sous le nombre de chantiers, la liste, la fiche, et le retour <b>depuis un chantier</b>.</span>
+  </a>
+
+  <p class="famille">L’arrosage automatique</p>
+
+  <a class="essai" href="arrosage.html">
+    <span class="titre">Le plan d’arrosage</span>
+    <span class="quoi">Elle <b>calcule pour de bon</b> : entrez votre jardin, et le découpage, les durées, le plan et la liste du matériel se refont à chaque frappe.</span>
+  </a>
+
+  <a class="essai" href="arrosage-croquis.html">
+    <span class="titre">Du croquis au plan</span>
+    <span class="quoi">On dessine le terrain à main levée, Atlas en tire les secteurs.</span>
+  </a>
+
+  <a class="essai" href="arrosage-tarifs.html">
+    <span class="titre">Mes prix fournisseur</span>
+    <span class="quoi">Les prix du matériel d’arrosage, à remplir. <b>Ce qui manque part vide et signalé</b> — aucun prix n’est inventé.</span>
+  </a>
+
+  <p class="famille">Les documents</p>
+
+  <a class="essai" href="devis-vocal.html">
+    <span class="titre">Le devis dicté</span>
+    <span class="quoi">On parle, le devis se remplit. Le geste du micro et l’attente, tels qu’ils sont.</span>
+  </a>
+
+  <a class="essai" href="devis-modele.html">
+    <span class="titre">Le devis</span>
+    <span class="quoi">Le document entier — émetteur, client, lignes, TVA, conditions.</span>
+  </a>
+
+  <a class="essai" href="facture-modele.html">
+    <span class="titre">La facture</span>
+    <span class="quoi">Ce que le client reçoit, et ce qui part au relevé de TVA.</span>
+  </a>
+
+  <a class="essai" href="tva-modele.html">
+    <span class="titre">La TVA</span>
+    <span class="quoi">Collectée, déductible, reste à payer. Les achats s’ajoutent et le total se refait. <b>Corrigé le 18 août :</b> la saisie débordait de 141 px sur un téléphone — il fallait glisser l’écran de côté.</span>
+  </a>
+
+  <a class="essai" href="mes-tarifs.html">
+    <span class="titre">Mes tarifs</span>
+    <span class="quoi">Les prix de la main d’œuvre et des prestations, qu’Atlas emploie pour chiffrer.</span>
+  </a>
+
+  <p class="famille">L’application</p>
+
+  <a class="essai" href="app.html">
+    <span class="titre">L’espace pro</span>
+    <span class="quoi">L’application elle-même, telle qu’elle est aujourd’hui.</span>
+  </a>
+
+  <div class="note"><span class="t">Ce que ces pages ne font pas</span>
+    Elles ne touchent <b>ni à vos données ni à l’application</b> : ce sont des
+    maquettes. Ce que vous y tapez ne part nulle part et disparaît en fermant.
+    <br><br>
+    Et là où une vraie frappe demanderait du JavaScript — la recherche d’un
+    client, par exemple —, <b>c’est écrit sur la page</b> plutôt que maquillé.
+  </div>
+</div>
+</body>
+</html>

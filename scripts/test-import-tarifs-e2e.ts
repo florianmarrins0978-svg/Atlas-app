@@ -45,7 +45,8 @@ async function main() {
 
   const avant = await compterTarifs(pool);
 
-  await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+  // Les tarifs ont leur rubrique depuis le 14 août 2026 (ARCHITECTURE.md §96).
+  await page.goto(`${BASE}/reglages/tarifs`, { waitUntil: "networkidle" });
 
   // --- 1. La touche existe -------------------------------------------------
   const champ = page.locator("#fichier-tarifs");

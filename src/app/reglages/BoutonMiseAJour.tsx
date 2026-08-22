@@ -67,7 +67,7 @@ export default function BoutonMiseAJour({ derniereIssue }: { derniereIssue: stri
         type="button"
         onClick={chercher}
         disabled={enCours}
-        className="rounded-[4px] px-4 py-2.5 text-[14px] font-medium"
+        className="rounded-full px-4 py-2.5 text-[14px] font-medium"
         style={{ backgroundColor: colors.rustTint, color: colors.rust }}
       >
         {enCours ? "Recherche en cours…" : "Chercher les dernières corrections"}

@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dicter dans le devis — le micro, et ce qu’il fait</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    DICTER DANS LE DEVIS
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 15 août 2026, capture du devis à l'appui : « rajoute-moi un
+    petit dictaphone en haut à droite comme il y a pour les infos clients quand
+    tu fais un nouveau chantier, pour pouvoir dicter à l'intérieur du devis s'il
+    y a des choses à reprendre ou à modifier. Et je veux exactement les mêmes
+    trois petits points quand ils chargent. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EST ACQUIS ET N'EST PAS À CHOISIR — le micro et les points.
+
+    Copiés au trait près de `DicterCoordonnees.tsx` et de `globals.css`, jamais
+    redessinés : rond de 44 px, fond `rustTint`, tracé `rust` ; rouge et blanc
+    pendant qu'il écoute ; les points prennent la place du micro pendant qu'il
+    travaille. Le souffle est celui de `.atlas-souffle` — 5 px, 1,25 s,
+    décalages de 0,16 et 0,32 s, échelle 0,72 → 1,5. La phrase « Atlas rédige… »
+    vient de `attente-longue.ts`.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS ACQUIS, ET POURQUOI CETTE PLANCHE EXISTE.
+
+    « Dicter s'il y a des choses à reprendre ou à modifier » se lit de deux
+    façons, et elles ne demandent pas le même travail :
+
+      A. la dictée PROPOSE des changements sur les lignes du devis, qu'il coche ;
+      B. la dictée écrit une NOTE à côté, et le devis ne bouge pas.
+
+    **Et il y a une règle du dépôt en travers** (`CLAUDE.md` §4) : ne jamais
+    inventer un prix. Une dictée qui dirait « monte l'élagage à 520 » peut être
+    reprise — le chiffre vient de lui. Une qui dirait « ajoute l'évacuation »
+    sans prix ne doit RIEN chiffrer : la ligne arrive vide, et se voit.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : le micro et la bascule sont des boutons radio natifs.
+    L'écran fait 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --plage:#f5f3ee; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179; --alerte:#d08a6a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --plage:#201e1a; --pin:#7d9179; --alerte:#d08a6a;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:940px;margin:0 auto}
+
+  /* Safari sur iPhone n'active pas un <label> sans « cursor:pointer » — payé le
+     10 août 2026 : « rien ne s'ouvre quand je touche ». */
+  label{cursor:pointer}
+
+  .intro{max-width:62ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .chapitre{max-width:64ch;margin:54px auto 0;text-align:center;
+       font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;
+       text-transform:uppercase;color:var(--or)}
+  .titre-chapitre{max-width:64ch;margin:12px auto 0;text-align:center;
+       font:400 24px/1.25 ui-serif,Georgia,serif}
+  .dit{max-width:60ch;margin:12px auto 0;text-align:center;font-size:14px;color:var(--gris);line-height:1.68}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+  /* ── La bascule A / B ─────────────────────────────────────────────────── */
+  .segments{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:22px auto 0}
+  .segments label{display:inline-flex;align-items:center;border-radius:9999px;
+        padding:9px 18px;font:400 15.5px/1 ui-serif,Georgia,serif;
+        border:1px solid var(--trait);color:var(--gris)}
+  /* `~ .page` et non `~ .banc` : le combinateur du frère exige un FRÈRE des
+     boutons radio. Écrit autrement, rien ne bascule et la planche paraît morte
+     sous le doigt — payé sur la planche 53. */
+  #v-a:checked ~ .page .segments label[for="v-a"],
+  #v-b:checked ~ .page .segments label[for="v-b"]{
+    background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  /* ── L'écran ──────────────────────────────────────────────────────────── */
+  .tel{width:412px;max-width:100%;margin:26px auto 0;border-radius:42px;padding:11px;
+       background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-carte:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-or:#B98B47; --e-pin:#2f3b2f; --e-trait:rgba(28,28,26,.12);
+    --e-alerte:#9C3B2E; --e-teinte:#ece9e1;
+    position:relative;width:390px;max-width:100%;height:600px;overflow:hidden;
+    border-radius:32px;background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+  .haut{display:flex;align-items:flex-start;justify-content:space-between;
+        gap:12px;padding:18px 20px 0}
+  .chev{font-size:22px;color:var(--e-gris);line-height:1}
+
+  /* ── LE MICRO — copié au trait près de DicterCoordonnees.tsx ──────────── */
+  .micro-place{position:relative;display:flex;flex-direction:column;align-items:flex-end}
+  .micro{display:none;height:44px;width:44px;flex-shrink:0;align-items:center;
+         justify-content:center;border-radius:9999px;
+         background:var(--e-teinte);color:var(--e-pin);
+         -webkit-tap-highlight-color:transparent}
+  /* **Rouge et blanc pendant qu'il écoute**, comme dans le produit. */
+  .micro.ecoute{background:var(--e-alerte);color:#fff}
+  /* **Pas de demi-effacement pendant le traitement** : un bouton à moitié
+     effacé, c'est le vocabulaire d'un bouton ÉTEINT. Il ne se presse pas, mais
+     il n'a pas l'air mort — c'est la moitié du défaut réparé le 13 août. */
+  .micro.travaille{cursor:default}
+  .micro svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9}
+
+  /* Les trois points qui soufflent — mesures reprises de `globals.css`, jamais
+     de mémoire : 5 px, 1,25 s, décalages 0,16 et 0,32 s, 0,72 → 1,5. */
+  .souffle{display:flex;align-items:center;justify-content:center;gap:4px}
+  .souffle i{width:5px;height:5px;border-radius:9999px;background:currentColor;
+             transform:scale(.72);opacity:.34;
+             animation:atlas-souffle 1.25s ease-in-out infinite}
+  .souffle i:nth-child(2){animation-delay:.16s}
+  .souffle i:nth-child(3){animation-delay:.32s}
+  @keyframes atlas-souffle{
+    0%,66%,100%{transform:scale(.72);opacity:.34}
+    30%{transform:scale(1.5);opacity:1}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .souffle i{transform:none;animation:atlas-respire 2s ease-in-out infinite}
+    @keyframes atlas-respire{0%,100%{opacity:.32}50%{opacity:1}}
+  }
+
+  .sous-micro{display:none;margin-top:6px;max-width:150px;text-align:right;
+              font-size:11.5px;line-height:1.35;color:var(--e-gris)}
+
+  /* ── Le devis, tel qu'il est sur sa capture ───────────────────────────── */
+  .feuille-devis{margin:14px 20px 0;padding:20px 18px;border-radius:14px;
+                 background:var(--e-carte)}
+  .feuille-devis .entreprise{font:400 24px/1.2 ui-serif,Georgia,serif}
+  .feuille-devis .coord{margin-top:6px;font-size:13px;color:var(--e-encre)}
+  .refs{margin-top:16px}
+  .ref{display:flex;justify-content:space-between;gap:12px;padding:7px 0;
+       border-bottom:1px solid var(--e-trait);font-size:12.5px}
+  .ref .lib{text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--e-gris)}
+  .barre{height:2px;background:var(--e-encre);margin:14px 0 12px}
+  .titre-devis{text-align:center;font:400 22px/1 ui-serif,Georgia,serif;letter-spacing:.14em}
+
+  .lignes{margin-top:16px}
+  .lg{display:flex;justify-content:space-between;gap:10px;padding:9px 0;
+      border-bottom:1px solid var(--e-trait);font-size:13.5px}
+  .lg .prix{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .lg.neuve{color:var(--e-or)}
+  .lg .chg{font-size:11px;color:var(--e-or)}
+
+  /* ── La feuille du bas ────────────────────────────────────────────────── */
+  .voile{position:absolute;inset:0;z-index:2;background:rgba(20,18,14,.34);
+         opacity:0;pointer-events:none;transition:opacity .3s}
+  .feuille{position:absolute;left:0;right:0;bottom:0;z-index:3;
+           background:var(--e-carte);border-radius:20px 20px 0 0;padding:10px 20px 20px;
+           transform:translateY(102%);transition:transform .34s cubic-bezier(.22,.61,.36,1);
+           box-shadow:0 -8px 30px rgba(20,18,14,.16)}
+  .poignee{width:38px;height:4px;border-radius:99px;background:var(--e-trait);margin:0 auto 12px}
+  .feuille .sur{margin:0 0 3px;text-align:center;font:500 9.5px/1 ui-sans-serif,sans-serif;
+                letter-spacing:.28em;text-transform:uppercase;color:var(--e-or)}
+  .feuille .qui{margin:0;text-align:center;font:400 20px/1.24 ui-serif,Georgia,serif}
+  .feuille .filet{height:1px;background:var(--e-trait);margin:14px 0 2px}
+  .dite{margin:8px 0 0;font-size:12.5px;line-height:1.6;color:var(--e-gris);font-style:italic}
+
+  .prop-l{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+          padding:12px 2px;border-bottom:1px solid var(--e-trait)}
+  .prop-l:last-of-type{border-bottom:0}
+  .prop-l .quoi{min-width:0}
+  /* **`display:block`, et ce n'est pas cosmétique.** En ligne, le verbe, le
+     libellé et le détail se suivaient dans le même paragraphe : « CHANGER
+     Élagage — 3 chênes 450,00 € → 520,00 € » se lisait d'un bloc, et le retour
+     à la ligne tombait au milieu d'un prix. Vu sur une capture, jamais par un
+     contrôle. */
+  .prop-l .quoi{display:flex;flex-direction:column}
+  .prop-l .verbe{display:block;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.24em;
+                 text-transform:uppercase;color:var(--e-or)}
+  .prop-l .txt{display:block;margin-top:5px;font:400 15.5px/1.25 ui-serif,Georgia,serif}
+  .prop-l .det{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .prop-l .det b{color:var(--e-encre);font-weight:600}
+  .prop-l .manque{color:var(--e-alerte)}
+  .coche{flex:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--e-or);
+         display:flex;align-items:center;justify-content:center;color:#faf9f5;
+         background:var(--e-or);font-size:13px}
+  .coche.vide{background:transparent;color:transparent}
+
+  .plein{display:block;width:100%;margin-top:14px;border-radius:9999px;
+         background:var(--e-pin);color:#faf9f5;padding:13px 0;text-align:center;
+         font:400 15px/1 ui-serif,Georgia,serif}
+  .creux{display:block;width:100%;margin-top:8px;padding:11px 0;text-align:center;
+         font-size:14px;color:var(--e-gris)}
+
+  /* ═══ Les états du micro ══════════════════════════════════════════════ */
+  #m-repos:checked ~ .page .micro.repos,
+  #m-ecoute:checked ~ .page .micro.ecoute,
+  #m-traite:checked ~ .page .micro.travaille,
+  #m-fini:checked ~ .page .micro.repos{display:flex}
+  #m-ecoute:checked ~ .page .sous-micro.s-ecoute,
+  #m-traite:checked ~ .page .sous-micro.s-traite{display:block}
+  #m-fini:checked ~ .page .voile{opacity:1;pointer-events:auto}
+  #m-fini:checked ~ .page .feuille{transform:none}
+
+  /* Les deux réponses possibles, dans la même feuille. */
+  .pan-a,.pan-b{display:none}
+  #v-a:checked ~ .page .pan-a,
+  #v-b:checked ~ .page .pan-b{display:block}
+  /* En B, le devis ne bouge pas : les lignes proposées n'y paraissent jamais. */
+  #v-b:checked ~ .page .lg.neuve{display:none}
+
+  .legende{max-width:60ch;margin:20px auto 0;text-align:center;font-size:13.4px;
+           color:var(--gris);line-height:1.68;min-height:96px}
+  .legende b{color:var(--encre);font-weight:600}
+  .legende .t{display:block;margin:0 0 6px;font:400 19px/1.25 ui-serif,Georgia,serif;color:var(--encre)}
+  .legende > div{display:none}
+  #v-a:checked ~ .page .legende .l-a,
+  #v-b:checked ~ .page .legende .l-b{display:block}
+
+  .note{max-width:74ch;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        font-size:13.6px;color:var(--gris);line-height:1.72}
+  .note b{color:var(--encre)}
+  .note .t{display:block;margin:0 0 8px;font:500 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .note p{margin:0 0 14px}
+  .note p:last-child{margin-bottom:0}
+</style>
+
+<input type="radio" name="micro" id="m-repos" class="etat" checked>
+<input type="radio" name="micro" id="m-ecoute" class="etat">
+<input type="radio" name="micro" id="m-traite" class="etat">
+<input type="radio" name="micro" id="m-fini" class="etat">
+<input type="radio" name="quoi" id="v-a" class="etat" checked>
+<input type="radio" name="quoi" id="v-b" class="etat">
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Le devis · dicter dedans</p>
+    <h1>Le micro dans le devis</h1>
+    <p>Votre demande du 15 août. <b>Le micro et les trois points ne sont pas à
+      choisir</b> : ce sont exactement ceux des infos client, copiés au trait
+      près — même rond de 44 px, même rouge quand il écoute, même souffle.</p>
+    <p><b>Ce qui reste à trancher, c'est ce que la dictée FAIT</b> au devis. Vos
+      mots — « reprendre ou modifier » — se lisent de deux façons, et elles ne
+      demandent pas le même travail.</p>
+    <p><b>Appuyez sur le micro</b> : il écoute, il travaille, puis il répond.</p>
+  </div>
+
+  <div class="segments">
+    <label for="v-a">A · Elle propose, vous cochez</label>
+    <label for="v-b">B · Elle écrit une note</label>
+  </div>
+
+  <div class="tel"><div class="ecran">
+    <div class="haut">
+      <span class="chev">‹</span>
+      <span class="micro-place">
+        <label class="micro repos" for="m-ecoute" aria-label="Dicter dans le devis">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="3" width="6" height="11" rx="3"/>
+            <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+            <path d="M12 18v3" stroke-linecap="round"/>
+          </svg>
+        </label>
+        <label class="micro ecoute" for="m-traite" aria-label="Arrêter la dictée">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="3" width="6" height="11" rx="3"/>
+            <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+            <path d="M12 18v3" stroke-linecap="round"/>
+          </svg>
+        </label>
+        <label class="micro travaille" for="m-fini" aria-label="Atlas reprend ce que vous avez dit">
+          <span class="souffle" aria-hidden="true"><i></i><i></i><i></i></span>
+        </label>
+        <span class="sous-micro s-ecoute">Parlez — appuyez à nouveau pour arrêter.</span>
+        <span class="sous-micro s-traite">Atlas rédige…</span>
+      </span>
+    </div>
+
+    <div class="feuille-devis">
+      <p class="entreprise">Gunzy</p>
+      <p class="coord">06 79 98 45 14</p>
+      <div class="refs">
+        <div class="ref"><span class="lib">Devis n°</span><span>2026-0010</span></div>
+        <div class="ref"><span class="lib">Date</span><span>15/08/2026</span></div>
+        <div class="ref"><span class="lib">Validité</span><span>30 jours</span></div>
+      </div>
+      <div class="barre"></div>
+      <p class="titre-devis">DEVIS</p>
+
+      <div class="lignes">
+        <div class="lg"><span>Élagage — 3 chênes</span><span class="prix">450,00 €</span></div>
+        <div class="lg"><span>Broyage des branches</span><span class="prix">180,00 €</span></div>
+        <div class="lg neuve">
+          <span>Évacuation des déchets verts <span class="chg">· ajoutée</span></span>
+          <span class="prix">à chiffrer</span>
+        </div>
+      </div>
+    </div>
+
+    <label class="voile" for="m-repos" aria-label="Fermer"></label>
+
+    <div class="feuille">
+      <p class="poignee"></p>
+
+      <div class="pan-a">
+        <p class="sur">Ce qu’Atlas a compris</p>
+        <p class="qui">Trois changements</p>
+        <p class="dite">« Il faut monter l’élagage à 520, enlever le broyage, et
+          ajouter l’évacuation des déchets verts. »</p>
+        <div class="filet"></div>
+
+        <div class="prop-l">
+          <span class="quoi">
+            <span class="verbe">Changer</span>
+            <span class="txt">Élagage — 3 chênes</span>
+            <span class="det">450,00 € → <b>520,00 €</b></span>
+          </span>
+          <span class="coche">✓</span>
+        </div>
+        <div class="prop-l">
+          <span class="quoi">
+            <span class="verbe">Retirer</span>
+            <span class="txt">Broyage des branches</span>
+            <span class="det">180,00 € — la ligne part du devis</span>
+          </span>
+          <span class="coche">✓</span>
+        </div>
+        <div class="prop-l">
+          <span class="quoi">
+            <span class="verbe">Ajouter</span>
+            <span class="txt">Évacuation des déchets verts</span>
+            <span class="det manque">Aucun prix dicté — la ligne arrive vide, à vous de la chiffrer</span>
+          </span>
+          <span class="coche">✓</span>
+        </div>
+
+        <span class="plein">Appliquer les 3 changements</span>
+        <label class="creux" for="m-repos">Ne rien changer</label>
+      </div>
+
+      <div class="pan-b">
+        <p class="sur">Noté sur ce devis</p>
+        <p class="qui">À reprendre</p>
+        <div class="filet"></div>
+        <p class="dite">« Il faut monter l’élagage à 520, enlever le broyage, et
+          ajouter l’évacuation des déchets verts. »</p>
+        <p class="det" style="margin-top:12px;font-size:12px;color:var(--e-gris);line-height:1.6">
+          Le devis n’a pas bougé. Cette note reste attachée jusqu’à ce que vous
+          l’effaciez, et elle ne part jamais au client.
+        </p>
+        <span class="plein">Garder cette note</span>
+        <label class="creux" for="m-repos">Jeter</label>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="legende">
+    <div class="l-a">
+      <span class="t">A · Elle propose, vous cochez</span>
+      La dictée est <b>lue comme des changements</b> : monter un prix, retirer
+      une ligne, en ajouter une. Rien n’est appliqué avant votre appui, et vous
+      décochez ce qui ne va pas. <b>Un prix que vous n’avez pas dit n’est jamais
+      inventé</b> — la ligne arrive vide et le dit en rouge.
+      <b>Ce que ça coûte :</b> c’est un vrai morceau de travail, et une lecture
+      qui se trompe sur un chiffre coûte cher — d’où la case à cocher.
+    </div>
+    <div class="l-b">
+      <span class="t">B · Elle écrit une note</span>
+      La dictée devient <b>un mot attaché au devis</b> — « à reprendre » — et le
+      devis ne bouge pas d’un centime. Vous corrigez ensuite à la main, en
+      relisant ce que vous avez dit.
+      <b>Ce que ça coûte :</b> presque rien à écrire, et aucun risque.
+      <b>Ce que ça ne fait pas :</b> le travail. Vous redites à la main ce que
+      vous venez de dicter.
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que j’en pense, et ce que je ne ferai pas sans vous</span>
+    <p><b>Rien n’est codé</b> — c’est votre règle. Le micro, lui, est prêt : il
+      ne change pas d’un pixel entre les deux réponses.</p>
+    <p><b>A est ce que vous avez demandé</b>, à la lettre : « dicter s’il y a des
+      choses à reprendre ou à modifier ». B est le repli honnête si A vous paraît
+      trop de travail pour ce que ça rend.</p>
+    <p><b>Une règle du dépôt tranche déjà une chose, et elle ne se négocie
+      pas</b> (`CLAUDE.md` §4) : <b>aucun prix ne s’invente</b>. Si vous dites
+      « ajoute l’évacuation » sans dire combien, la ligne arrive vide et se
+      signale. Un devis parti avec un prix deviné coûterait bien plus cher que
+      dix secondes de saisie.</p>
+    <p><b>Et une question que je vous pose plutôt que de la trancher seul</b> :
+      en A, le micro doit-il aussi savoir toucher aux <b>conditions de
+      règlement</b> et aux mentions du bas, ou seulement aux lignes chiffrées ?
+      Je ne l’ai pas dessiné faute de savoir.</p>
+  </div>
+
+</div>
+</body>
+</html>

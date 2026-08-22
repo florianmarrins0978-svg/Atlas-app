@@ -121,7 +121,13 @@ cas("une entrée valide au milieu d'entrées cassées est conservée", () => {
   const s = lireSuggestions({
     features: [null, { properties: { label: "" } }, { properties: { label: "7 Place du Bourg 44190 Clisson" } }, {}],
   });
-  assert.deepEqual(s, [{ libelle: "7 Place du Bourg 44190 Clisson", contexte: null }]);
+  // **Sans coordonnées, la suggestion reste une suggestion.** Une adresse dont
+  // le service ne rend pas la géométrie doit continuer d'être proposée : c'est
+  // le champ d'adresse qui compte d'abord, l'appariement des demi-journées vient
+  // après et sait dire qu'il n'a pas su situer ce chantier.
+  assert.deepEqual(s, [
+    { libelle: "7 Place du Bourg 44190 Clisson", contexte: null, latitude: null, longitude: null },
+  ]);
 });
 
 console.log("\n=== Quand faut-il seulement interroger la base ? ===");

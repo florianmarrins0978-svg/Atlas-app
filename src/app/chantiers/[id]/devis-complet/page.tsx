@@ -1,15 +1,20 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
+import { canalPourJoindre } from "@/lib/message-client";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
+import { getNoteVocale } from "@/server/repositories/notes-vocales";
+import { devisAPreparer } from "@/lib/devis-a-preparer";
 import { leconsComparables } from "@/server/repositories/lecons-prix";
 import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
+import PreparationDictee from "./PreparationDictee";
 
 // **Une page où il n'y a que le devis.**
 //
@@ -48,12 +53,23 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
   // lecture seule — le consulter ne doit jamais ouvrir une nouvelle version.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
 
-  const [entreprise, client, lignes, brouillon] = await Promise.all([
+  const [entreprise, client, lignes, brouillon, note] = await Promise.all([
     getEntreprise(ctx),
     chantier.clientId ? getClient(ctx, chantier.clientId) : Promise.resolve(null),
     listerLignesPrix(ctx, id),
     getBrouillon(ctx, id),
+    getNoteVocale(ctx, id),
   ]);
+
+  // **Une dictée sans devis se traite ICI, à l'arrivée** — sa panne du 21 août
+  // 2026 : il dicte chez sa cliente, ferme l'application, revient, ouvre le
+  // chantier, et tombe sur une feuille vide. La règle vit dans une fonction
+  // pure (`src/lib/devis-a-preparer.ts`) ; cet écran n'a qu'à l'appliquer.
+  const aPreparer = devisAPreparer({
+    aUneNoteVocale: note !== null,
+    nombreDeLignes: lignes.length,
+    statutDevis: devisRow.statut,
+  });
 
   // **Ce que l'agent a retenu de ses devis passés.**
   //
@@ -70,23 +86,26 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
     if (rappel) rappels[ligne.id] = { prix: rappel.prix, phrase: rappel.phrase };
   }
 
+  // **Bâtie ICI, côté serveur, et non depuis `window`.** Le patron doit pouvoir
+  // recevoir une adresse entière — un chemin seul ne s'ouvre nulle part —, et
+  // une origine composée dans le navigateur diffèrerait de ce que le serveur a
+  // rendu, ce qui ferait régénérer tout l'arbre à React. Même raisonnement, et
+  // même code, que l'écran du devis parti.
+  const entetes = await headers();
+  const hote = entetes.get("x-forwarded-host") ?? entetes.get("host") ?? "";
+  const protocole = entetes.get("x-forwarded-proto") ?? (hote.startsWith("localhost") ? "http" : "https");
+  const origine = hote ? `${protocole}://${hote}` : "";
+
   return (
     <div
       style={{ backgroundColor: colors.rustTint, color: colors.ink, fontFamily: font.body, minHeight: "100dvh" }}
       className="px-3 py-4 sm:px-6 sm:py-8"
     >
-      {/* Le seul élément qui n'appartient pas au devis, et il est minuscule :
-          sans lui, la page n'a pas de sortie sur un téléphone. */}
-      <a
-        href={`/chantiers/${id}`}
-        aria-label="Revenir au chantier"
-        className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full sm:mb-4"
-        style={{ backgroundColor: colors.rustTint, marginLeft: 0 }}
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-          <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </a>
+      {/* Le retour et le micro vivent DANS l'écran client depuis le 15 août
+          2026 : le micro doit toucher aux lignes du devis, donc à son état, et
+          il se tient sur la même ligne que le retour — le retour à gauche, le
+          micro à droite, comme sur la fiche du client. */}
+      {aPreparer && <PreparationDictee chantierId={id} />}
 
       <DevisCompletClient
         chantierId={id}
@@ -106,10 +125,22 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
         clientId={chantier.clientId ?? null}
         client={{
           nom: client?.nom ?? "",
+          civilite: client?.civilite ?? null,
           adresse: client?.adresse ?? "",
           telephone: client?.telephone ?? "",
           email: client?.email ?? "",
         }}
+        // Le canal convenu vit sur la fiche du CLIENT, pas sur le devis : c'est
+        // un accord avec la personne. Un devis repris six mois plus tard doit
+        // partir par le canal du client d'aujourd'hui.
+        canalClient={
+          canalPourJoindre({
+            canal: client?.canalCommunication ?? null,
+            telephone: client?.telephone,
+            email: client?.email,
+          }) ?? "sms"
+        }
+        origine={origine}
         adresseChantier={chantier.adresseChantier ?? ""}
         lignesInitiales={lignes.map((l) => ({
           id: l.id,
@@ -119,6 +150,7 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
           montant: l.montant,
         }))}
         tauxTva={devisRow.tauxTva}
+        reductionPourcent={devisRow.reductionPourcent}
         conditionsPaiement={devisRow.conditionsPaiement ?? ""}
         /* La dictée a-t-elle été comprise, ou seulement recopiée ? L'avis vivait
            sur le compte rendu, qui a disparu du parcours : il se dit désormais

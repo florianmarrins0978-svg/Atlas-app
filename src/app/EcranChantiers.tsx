@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, texteSituation } from "@/lib/design-tokens";
-import { nombreEnLettres } from "@/lib/nombre-en-lettres";
+import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import FormulaireNouveauChantier from "./chantiers/nouveau/FormulaireNouveauChantier";
@@ -120,13 +120,12 @@ export default function EcranChantiers({
     },
   });
 
-  // **Le décompte suit ce qui reste, sans attendre le serveur.** « Huit en
-  // cours » au-dessus de sept lignes ferait douter que le retrait ait eu lieu.
+  // **Le décompte suit ce qui reste, sans attendre le serveur.** Un « 8 »
+  // au-dessus de sept lignes ferait douter que le retrait ait eu lieu.
   // Tous les chantiers de la liste n'y entrent pas : `enCours` le dit ligne par
   // ligne, et c'est la seule façon de recompter juste ici.
   const restants = chantiers.filter((c) => !retraits.estRetire(c.id));
   const compte = restants.filter((c) => c.enCours).length;
-  const compteEnLettres = nombreEnLettres(compte);
 
   // Échapper referme, comme partout ailleurs. Sans cela, une personne au
   // clavier se retrouve enfermée dans la feuille.
@@ -176,24 +175,59 @@ export default function EcranChantiers({
               Bonjour {prenom}
             </p>
           )}
-          <h1
-            className="mt-3.5 whitespace-nowrap text-[36px] leading-[1.02]"
-            style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
+          {/*
+            **L'assistant se pose à côté du titre**, comme sur les autres écrans
+            — cet accueil ne passe pas par `EnTeteEcran`, la pièce partagée ne
+            peut donc pas le poser ici.
+
+            `whitespace-nowrap` sur le titre : « Vos chantiers » ne doit pas se
+            replier, et il ne le fait pas — mesuré, il reste sur une ligne avec
+            les 44 px du bouton à côté.
+          */}
+          <div className="flex items-start justify-between gap-4">
+            <h1
+              className="mt-3.5 whitespace-nowrap text-[36px] leading-[1.02]"
+              style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
+            >
+              Vos chantiers
+            </h1>
+            <div className="mt-3.5 flex-shrink-0">
+              <BoutonAssistant />
+            </div>
+          </div>
+          {/* **Le compte ne se dit plus ici, et il ne se dit plus qu'UNE fois.**
+              Sa demande du 19 août 2026, capture à l'appui : il lisait le même
+              nombre trois fois sur le même écran — « Un en cours » sous le
+              titre, « En cours » à gauche de la rubrique, « Un » à sa droite.
+              Il reste la rubrique, avec le chiffre collé au mot.
+
+              Le repère `data-atlas="compteur"` a suivi le compte : il vit
+              maintenant sur la rubrique (`test-dashboard` le lit pour savoir
+              combien de chantiers sont en cours). Le laisser sur une ligne
+              supprimée aurait rendu la suite muette. */}
+
+          {/* **« La catégorie client n'a pas été créée » — 17 août 2026, au
+              soir.** La fiche d'un client existait depuis la veille, mais elle
+              ne s'atteignait que depuis un chantier : rien ne menait à SES
+              clients. Le lien se pose ici, sous le compteur, plutôt que dans un
+              cinquième onglet — la barre du bas en porte quatre et le cinquième
+              est déjà décidé pour les outils métier (`ARCHITECTURE.md` §125).
+
+              En or et en petites capitales, comme le reste de ce bloc : ce
+              qu'on LIT, jamais ce qu'on FAIT. L'action de cet écran reste
+              « Nouveau chantier », et rien ne doit lui disputer l'œil. */}
+          <Link
+            href="/clients"
+            className="mt-[10px] inline-flex items-center gap-[6px] text-[9.5px] font-medium uppercase"
+            style={{ color: colors.or, letterSpacing: "0.28em" }}
           >
-            Vos chantiers
-          </h1>
-          {/* Le compteur, en lettres : un chiffre isolé dans un bandeau de
-              capitales se lit comme une donnée de tableau de bord. L'attribut
-              sert aux suites de bout en bout — un libellé se réécrit, une
-              étiquette de code non. */}
-          <p
-            data-atlas="compteur"
-            data-compte={compte}
-            className="mt-3.5 text-[9.5px] font-medium uppercase"
-            style={{ color: colors.muted, letterSpacing: "0.28em" }}
-          >
-            {compteEnLettres} en cours
-          </p>
+            Vos clients
+            <span
+              aria-hidden="true"
+              className="h-[5px] w-[5px] rotate-45"
+              style={{ borderRight: `1.5px solid ${colors.or}`, borderTop: `1.5px solid ${colors.or}` }}
+            />
+          </Link>
         </div>
 
         {/* Le seul trait de l'en-tête : celui qui le ferme. */}
@@ -212,6 +246,12 @@ export default function EcranChantiers({
             (l'onde d'attente, la taille du rond, le nombre de grains). Ne pas
             les réinventer ici — les deux finiraient par diverger.
 
+            **Le MOT, lui, a grossi le 16 août 2026** — « les capitales, gros et
+            très gras », d'après `docs/maquettes/67-le-nouveau-chantier-plus-gros.html` :
+            13 px, graisse 800, interlettrage 0,22 em, rond de 42 px. Les
+            valeurs vivent dans `globals.css` ; ce fichier-ci ne porte que la
+            structure.
+
             L'action reste un LIEN : sans JavaScript, ou en ouvrant dans un
             nouvel onglet, elle mène à l'écran entier. Le clic ordinaire est
             détourné pour jouer le geste puis faire monter la feuille — la route
@@ -228,7 +268,7 @@ export default function EcranChantiers({
             }}
             className="atlas-geste-nouveau"
           >
-            <span className="atlas-mot">Nouveau chantier</span>
+            <span className="atlas-mot">Créer un devis</span>
             <span className="atlas-rond">
               <span className="atlas-pouls" aria-hidden="true" />
               <span className="atlas-cerne" aria-hidden="true" />
@@ -254,12 +294,33 @@ export default function EcranChantiers({
           </Link>
         </div>
 
+        {/* **Le mot, puis le chiffre — et plus rien à droite.** Sa demande du
+            19 août 2026. Trois choix, tous les trois de lui :
+
+            1. **le nombre en CHIFFRE**, plus en lettres. « Un » à l'autre bout
+               de la ligne se lisait comme un mot de plus, pas comme un compte ;
+            2. **le chiffre est le seul élément en gras** : c'est lui qu'on
+               vient lire, le mot ne fait que le nommer ;
+            3. **le mot passe au gris du second plan** — `inkSoft` au lieu de
+               `muted`. C'est le **C** de la planche
+               (`appli/en-cours-le-chiffre.html`), qu'il a choisi entre trois
+               gris ; le B, plus court d'un demi-ton, aurait demandé un jeton de
+               plus dans les sept chartes. Jamais une valeur écrite en clair
+               ici : elle serait juste sur « Origine » et fausse sur les deux
+               chartes sombres. */}
         <div
-          className="mx-[26px] mb-1 mt-[30px] flex justify-between text-[9.5px] font-medium uppercase"
-          style={{ color: colors.muted, letterSpacing: "0.28em" }}
+          data-atlas="compteur"
+          data-compte={compte}
+          className="mx-[26px] mb-1 mt-[30px] flex items-baseline gap-[10px] text-[9.5px] font-medium uppercase"
+          style={{ color: colors.inkSoft, letterSpacing: "0.28em" }}
         >
           <span>En cours</span>
-          <span style={{ fontVariantNumeric: "tabular-nums" }}>{compteEnLettres}</span>
+          <span
+            className="text-[12px] font-bold"
+            style={{ color: colors.ink, letterSpacing: "0.06em", fontVariantNumeric: "tabular-nums" }}
+          >
+            {compte}
+          </span>
         </div>
 
         {restants.length === 0 ? (
@@ -335,7 +396,7 @@ export default function EcranChantiers({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Nouveau chantier"
+        aria-label="Créer un devis"
         // `fixed`, et non `absolute` : la feuille doit RECOUVRIR le bandeau du
         // bas et la bulle de l'assistant, qui sont fixés au-dessus de l'écran.
         // En absolu elle passait dessous, et sa dernière ligne — celle qui

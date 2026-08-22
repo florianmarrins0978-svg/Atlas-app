@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la fiche client qui dicte le devis</title>
+<style>
+/*
+  LA FICHE CLIENT QUI DICTE LE DEVIS — sa demande du 21 août 2026.
+
+    « J'ai envie que les informations prennent moins de place. Le nom et le
+      numéro de téléphone l'un à côté de l'autre. Tu me retires tous les
+      facultatifs. Tu vas m'ajouter la possibilité de mettre des photos
+      exactement comme il y a sur la page d'après. Ensuite, avant les deux
+      touches, le bouton de la note vocale qui se trouve sur la page d'après.
+      On appuie, on dicte les tâches à effectuer, celles qu'on voit tout de
+      suite avec le client. Dès qu'on rappuie pour arrêter, il faut
+      impérativement que les infos aillent s'enregistrer dans le devis. Car si
+      l'utilisateur est en rendez-vous, il dicte tout ce qu'il voit, ça
+      enregistre, mais il ne peut pas continuer donc il ferme l'appli. Quand il
+      rouvre chez lui, le chantier est visible sur la page d'accueil, il clique,
+      ça ouvre directement la page du devis déjà pré-remplie. »
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI EST REPRIS TEL QUEL DE L'APPLICATION, ET NON REDESSINÉ.
+
+  Deux pièces viennent de la fiche chantier, à l'identique — c'est ce qu'il a
+  demandé (« exactement comme il y a sur la page d'après ») :
+
+  · **L'ANNEAU** (`src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc
+    `.atlas-lecteur` de `src/app/globals.css`) : deux cercles — 74 px en vert
+    pin, 56 px en or —, trois traits d'or au centre qui battent, et huit
+    barreaux de chaque côté qui partent vers l'extérieur. Le CSS ci-dessous est
+    recopié de `globals.css`, pas réinventé : deux ondes différentes dans la
+    même application se liraient comme deux objets différents.
+
+  · **LE CARRÉ PHOTO** (`src/app/chantiers/[id]/Pellicule.tsx`) : un champ de
+    fichier UNIQUE, `accept="image/*" multiple`, **sans `capture`**. C'est ce
+    qui fait apparaître le menu du téléphone à trois entrées — Photothèque,
+    Prendre une photo, Choisir les fichiers. `capture` n'exprime pas une
+    préférence sur un iPhone : il IMPOSE l'appareil photo et retire l'accès à la
+    pellicule. Ici il est donc interdit, comme dans l'application.
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI RESTE À TRANCHER, ET QUI EST POSÉ PLUTÔT QUE DÉCIDÉ EN SILENCE.
+
+  Il a demandé de supprimer la fiche chantier « pour de bon ». Elle porte
+  aujourd'hui quatre choses que cette maquette ne peut pas faire disparaître
+  sans qu'il dise où elles vont : **Créer la facture**, les **étapes** du
+  chantier, la **relecture** de la note dictée, et la **porte vers la fiche
+  client**. L'écran « Ce qui reste à reloger » les montre, avec une proposition.
+
+  AUCUN PRIX N'EST INVENTÉ. Les lignes du devis arrivent à chiffrer, comme dans
+  l'application : il n'a annoncé aucun montant en dictant (`CLAUDE.md` §4).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --pine-light:#4f5f4c; --or:#B98B47; --or-clair:#C9A15E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --alert:#9C3B2E;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.tel{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* ─── En-tête ─────────────────────────────────────────────────────────── */
+.marque{padding:16px 0 6px;text-align:center;font-size:10px;letter-spacing:.34em;color:var(--muted)}
+.entete{display:flex;align-items:flex-start;gap:12px;padding:4px 26px 0}
+.entete h1{margin:0;flex:1;font-family:Georgia,serif;font-weight:400;font-size:31px;line-height:1.1}
+.retour{border:0;background:none;font-size:22px;color:var(--charcoal);padding:0 6px 0 0;cursor:pointer}
+.micro-coin{width:44px;height:44px;border-radius:99px;border:0;background:var(--cream);
+            display:flex;align-items:center;justify-content:center;color:var(--pine);cursor:pointer;
+            box-shadow:inset 0 0 0 1px var(--line-soft)}
+
+/* ─── Formulaire ──────────────────────────────────────────────────────── */
+form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
+.caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.champ{display:flex;flex-direction:column;gap:6px}
+/* **La case est « la carte douce », la 4 qu'il a choisie** parmi les cinq
+   (`appli/cases-page-entiere.html`), et redite le 21 août au soir : « n'oublie
+   pas que j'ai choisi la 4 ». La planche portait encore l'ancienne case, et cet
+   écart lui a fait croire que le code ne suivait pas la maquette. Une seule
+   vérité, des deux côtés. */
+.champ input{width:100%;min-height:50px;border:0;border-radius:14px;background:var(--paper);
+             padding:15px 16px;font-size:16px;color:var(--charcoal);font-family:inherit}
+.champ input::placeholder{color:var(--muted)}
+.champ input:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+
+/* **LE NOM ET LE NUMÉRO SUR LA MÊME LIGNE.** Sa demande, et il l'avait déjà
+   essayé lui-même en tapant le numéro dans la case du nom : « je pense que ça
+   passe ». Ça passe — à condition que le numéro ne se comprime pas. Il est
+   donc à largeur FIXE (une largeur de dix chiffres), et c'est le nom qui prend
+   ce qui reste : un nom trop long se tronque à l'affichage, un numéro tronqué
+   ne se rappelle pas. */
+.duo{display:flex;gap:9px}
+.duo .nom{flex:1;min-width:0}
+/* **152 px, et ce chiffre est MESURÉ, pas estimé à l'œil.** À 132 px, « 06 79
+   98 45 14 » s'affichait « 06 79 98 45 1 » : le dernier chiffre passait à la
+   trappe, en silence, sur la seule donnée qu'on ne peut pas deviner. Un numéro
+   tronqué est pire qu'un numéro absent — on croit l'avoir.
+   `scripts/verifier-maquette-fiche-client-vocale.mjs` refuse tout débordement. */
+.duo .num{flex:0 0 152px}
+.duo .num input{text-align:right;padding-left:10px;padding-right:12px;
+                font-variant-numeric:tabular-nums;letter-spacing:0}
+/* Les deux intitulés s'alignent par le BAS : « Numéro de téléphone » passe sur
+   deux lignes, et un alignement par le haut décollerait « Nom du client » de sa
+   case. */
+.duo-titres{align-items:flex-end;margin-bottom:-1px}
+.duo-titres .num{text-align:right;line-height:1.35}
+
+.canal{display:flex;gap:8px}
+.canal button{flex:1;border-radius:99px;border:1px solid var(--line);background:transparent;
+              padding:11px 8px;font-size:14px;color:var(--charcoal-soft);cursor:pointer;font-family:inherit}
+.canal button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
+.canal button:disabled{opacity:.4}
+
+.civilite{display:flex;gap:10px}
+.civilite button{border-radius:99px;border:1px solid var(--line);background:var(--cream);
+                 padding:13px 30px;font-size:16px;color:var(--charcoal);cursor:pointer;font-family:inherit}
+.civilite button[aria-pressed="true"]{border-color:var(--or);background:var(--paper)}
+
+.lien-or{align-self:flex-start;border:0;background:none;padding:0;font-size:14px;
+         font-weight:500;color:var(--pine);cursor:pointer;font-family:inherit}
+
+/* ─── La pellicule, reprise de `Pellicule.tsx` ─────────────────────────── */
+.pellicule{display:flex;gap:9px;flex-wrap:wrap}
+.ajout-photo{width:74px;height:74px;border-radius:6px;border:1px dashed var(--or);
+             background:transparent;color:var(--or);font-size:27px;line-height:1;
+             display:flex;align-items:center;justify-content:center;cursor:pointer}
+.vignette{width:74px;height:74px;border-radius:6px;object-fit:cover;
+          box-shadow:inset 0 0 0 1px var(--line)}
+.pellicule input[type=file]{display:none}
+
+/* ─── L'ANNEAU — recopié de `globals.css`, section `.atlas-lecteur` ────── */
+.atlas-lecteur{align-self:center;position:relative;display:flex;flex-direction:column;
+               align-items:center;width:100%;--atlas-ampleur:1;margin-top:6px}
+.atlas-aile{position:absolute;top:0;height:76px;width:104px;display:flex;align-items:center;
+            overflow:hidden;pointer-events:none;transform:scaleY(var(--atlas-ampleur));
+            transition:transform 90ms linear,opacity .22s}
+.atlas-aile-g{right:calc(50% + 40px);justify-content:flex-end}
+.atlas-aile-d{left:calc(50% + 40px);justify-content:flex-start}
+.atlas-aile i{position:absolute;display:block;width:2px;border-radius:2px;opacity:0;background:var(--or)}
+.atlas-aile-g i{right:0;animation:atlas-partir-g 1.9s linear infinite;animation-play-state:paused}
+.atlas-aile-d i{left:0;animation:atlas-partir-d 1.9s linear infinite;animation-play-state:paused}
+[data-lit="oui"] .atlas-aile i{animation-play-state:running}
+@keyframes atlas-partir-g{
+  0%{transform:translateX(0) scaleY(.15);opacity:0}
+  16%{opacity:.95} 72%{opacity:.7}
+  100%{transform:translateX(-98px) scaleY(1);opacity:0}}
+@keyframes atlas-partir-d{
+  0%{transform:translateX(0) scaleY(.15);opacity:0}
+  16%{opacity:.95} 72%{opacity:.7}
+  100%{transform:translateX(98px) scaleY(1);opacity:0}}
+.atlas-aile i:nth-child(1){height:9px;animation-delay:0s}
+.atlas-aile i:nth-child(2){height:20px;animation-delay:-.24s}
+.atlas-aile i:nth-child(3){height:13px;animation-delay:-.48s}
+.atlas-aile i:nth-child(4){height:27px;animation-delay:-.72s}
+.atlas-aile i:nth-child(5){height:11px;animation-delay:-.96s}
+.atlas-aile i:nth-child(6){height:22px;animation-delay:-1.2s}
+.atlas-aile i:nth-child(7){height:8px;animation-delay:-1.44s}
+.atlas-aile i:nth-child(8){height:17px;animation-delay:-1.68s}
+.atlas-anneaux{position:relative;display:flex;align-items:center;justify-content:center;
+               min-width:76px;min-height:76px;border:0;background:none;cursor:pointer;
+               transition:transform .22s cubic-bezier(.22,.61,.36,1),opacity .3s}
+.atlas-anneaux:active{transform:scale(.95)}
+.atlas-anneaux span[data-cercle]{position:absolute;border-radius:99px;pointer-events:none}
+.atlas-traits{position:relative;display:flex;align-items:center;gap:4px;z-index:2}
+.atlas-traits i{display:block;width:2px;border-radius:2px;background:var(--or);
+                transform-origin:center;animation:atlas-battre 1.15s ease-in-out infinite;
+                animation-play-state:paused}
+.atlas-traits i:nth-child(1){height:12px;animation-delay:-.1s}
+.atlas-traits i:nth-child(2){height:24px;animation-delay:-.45s}
+.atlas-traits i:nth-child(3){height:12px;animation-delay:-.8s}
+@keyframes atlas-battre{0%,100%{transform:scaleY(.42)}50%{transform:scaleY(1)}}
+[data-lit="oui"] .atlas-traits i{animation-play-state:running}
+.carre-stop{width:17px;height:17px;border-radius:3px;background:var(--or)}
+.atlas-indice{margin:8px 0 0;font-size:11px;color:var(--muted)}
+.atlas-chrono{margin-top:10px;height:16px;font-size:13px;line-height:16px;color:var(--or);
+              font-variant-numeric:tabular-nums;opacity:0;transform:translateY(-4px);
+              transition:opacity .32s .1s,transform .32s .1s}
+[data-lit="oui"] .atlas-chrono{opacity:1;transform:none}
+
+/* « Mon devis → » : le même geste que sous l'anneau de la fiche chantier
+   (`DevisDepuisDictee`, variante « anneau »). Il n'apparaît qu'une fois la
+   dictée faite — avant, il n'y a rien à préparer. */
+.mon-devis{border:0;background:none;padding:10px 6px;cursor:pointer;font-family:inherit;
+           font-size:9.5px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+.apparait{animation:monter .34s ease both}
+@keyframes monter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ─── Le bouton d'action ──────────────────────────────────────────────── */
+.principal{width:100%;border:0;border-radius:99px;background:var(--pine);color:#fff;
+           padding:17px 20px;font-family:Georgia,serif;font-size:17px;cursor:pointer}
+.principal:disabled{opacity:.45}
+
+/* ─── L'accueil ───────────────────────────────────────────────────────── */
+.brin{display:block;width:100%;text-align:left;border:0;background:var(--cream);border-radius:12px;
+      padding:16px 18px;margin-bottom:10px;cursor:pointer;font-family:inherit;
+      box-shadow:inset 0 0 0 1px var(--line-soft)}
+.brin .quoi{display:block;font-family:Georgia,serif;font-size:19px;line-height:1.2;color:var(--charcoal)}
+.brin .ou{display:block;margin-top:5px;font-size:13px;color:var(--muted)}
+.brin .etat{display:block;margin-top:9px;font-size:9.5px;font-weight:500;letter-spacing:.26em;
+            text-transform:uppercase;color:var(--or)}
+
+/* ─── Le devis ────────────────────────────────────────────────────────── */
+.doc{margin:0 26px;background:var(--cream);border-radius:6px;padding:22px 20px;
+     box-shadow:inset 0 0 0 1px var(--line-soft)}
+.doc h2{margin:0 0 3px;font-family:Georgia,serif;font-weight:400;font-size:26px}
+.ligne-devis{display:flex;justify-content:space-between;gap:12px;padding:13px 0;
+             border-bottom:1px solid var(--line)}
+.ligne-devis .libelle{font-family:Georgia,serif;font-size:16.5px;line-height:1.25}
+.ligne-devis .mesure{display:block;margin-top:4px;font-size:12px;color:var(--muted)}
+.ligne-devis .prix{flex:0 0 auto;font-size:12px;color:var(--alert);text-align:right;padding-top:3px}
+.dictee{margin:14px 26px 0;font-size:12.5px;font-style:italic;color:var(--muted);line-height:1.55}
+
+/* ─── Le cadre de la maquette ─────────────────────────────────────────── */
+.ecran{display:none;padding-bottom:40px}
+.ecran.actif{display:block}
+.onglets{position:sticky;top:0;z-index:9;display:flex;gap:6px;padding:8px 12px;
+         background:var(--bone);border-bottom:1px solid var(--line);overflow-x:auto}
+.onglets button{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:99px;
+                padding:8px 13px;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit}
+.onglets button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
+.note{margin:22px 26px 0;padding:15px 17px;border-radius:6px;background:var(--paper);
+      font-size:13px;line-height:1.6;color:var(--charcoal-soft)}
+.note b{color:var(--charcoal)}
+.note .titre{display:block;margin-bottom:7px;font-size:9.5px;font-weight:500;letter-spacing:.26em;
+             text-transform:uppercase;color:var(--or)}
+.reloger{margin:0 26px;padding:0;list-style:none}
+.reloger li{padding:14px 0;border-bottom:1px solid var(--line)}
+.reloger .quoi{font-family:Georgia,serif;font-size:17px}
+.reloger .prop{display:block;margin-top:5px;font-size:13px;color:var(--muted);line-height:1.55}
+.reloger .prop b{color:var(--charcoal-soft)}
+</style>
+</head>
+<body>
+<div class="tel">
+
+  <nav class="onglets" aria-label="Les écrans de la maquette">
+    <button type="button" data-va="fiche" aria-pressed="true">1 · Fiche client</button>
+    <button type="button" data-va="accueil" aria-pressed="false">2 · L'accueil, plus tard</button>
+    <button type="button" data-va="devis" aria-pressed="false">3 · Le devis</button>
+    <button type="button" data-va="reloger" aria-pressed="false">À trancher</button>
+  </nav>
+
+  <!-- ══════════════════ 1 · LA FICHE CLIENT ══════════════════ -->
+  <section class="ecran actif" id="fiche">
+    <p class="marque">ATLAS</p>
+    <div class="entete">
+      <button class="retour" type="button" aria-label="Retour">‹</button>
+      <h1>Fiche client</h1>
+      <button class="micro-coin" type="button" aria-label="Dicter les coordonnées">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <rect x="9" y="3" width="6" height="11" rx="3"/>
+          <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+          <path d="M12 18v3" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <form onsubmit="return false">
+      <!-- **Mr / Mme reste, son INTITULÉ part.** Sa correction, immédiate :
+           « non, remets le Mr et Mme, je voulais juste que tu enlèves le titre
+           civilité ». Les deux boutons se comprennent seuls — « Mr » et « Mme »
+           ne demandent pas qu'on annonce ce qu'ils sont —, et c'est une ligne
+           de petites capitales de moins en haut de l'écran. -->
+      <div class="civilite">
+        <button type="button" aria-pressed="true">Mr</button>
+        <button type="button" aria-pressed="false">Mme</button>
+      </div>
+
+      <!-- Le nom et le numéro, côte à côte, **chacun avec son intitulé** — sa
+           correction du 21 août au soir : « au-dessus du numéro de téléphone,
+           marqué numéro de téléphone ». Un seul intitulé « Client » pour les
+           deux laissait deviner ce qu'était la seconde case ; sur une fiche
+           qu'on remplit devant le client, on ne devine pas.
+
+           **« Téléphone » et pas « Numéro de téléphone »** — sa correction,
+           dans la foulée. Le mot long tenait, mais sur deux lignes : il
+           décalait les deux intitulés l'un par rapport à l'autre pour ne rien
+           apprendre de plus. Les deux cases restent alignées par le bas. -->
+      <div class="champ">
+        <div class="duo duo-titres">
+          <span class="nom caps">Nom du client</span>
+          <span class="num caps">Téléphone</span>
+        </div>
+        <div class="duo">
+          <span class="nom"><input id="nom" type="text" placeholder="M. Julien" value="M. Julien" autocomplete="off"></span>
+          <span class="num"><input id="tel" type="tel" placeholder="06 12 34 56 78" value="06 79 98 45 14" autocomplete="off"></span>
+        </div>
+      </div>
+
+      <div class="champ">
+        <span class="caps">E-mail</span>
+        <input id="email" type="email" placeholder="bernard@exemple.fr" autocomplete="off">
+      </div>
+
+      <div class="champ">
+        <span class="caps">Adresse du chantier</span>
+        <input id="adresse" type="text" placeholder="12 rue des Lilas, Nantes" value="12 rue des Lilas, Nantes" autocomplete="off">
+      </div>
+
+      <button class="lien-or" type="button">+ Ajouter une adresse client différente</button>
+
+      <!-- **Sous l'adresse**, sa place choisie le 21 août au soir. Il a demandé
+           de garder la question et de n'enlever que le champ téléphone isolé ;
+           elle descend simplement là où il la veut, après les coordonnées et
+           avant ce qu'on fait du chantier. -->
+      <fieldset class="champ" style="border:0;margin:0;padding:0" id="bloc-canal">
+        <legend class="caps" style="padding:0">Comment lui envoyer son devis ?</legend>
+        <div class="canal">
+          <button type="button" id="par-sms" aria-pressed="true">Par SMS</button>
+          <button type="button" id="par-mail" aria-pressed="false" disabled>Par e-mail</button>
+        </div>
+      </fieldset>
+
+      <!-- LA PELLICULE. Le champ est unique et SANS `capture` : sur son iPhone,
+           toucher le carré ouvre le menu du système — Photothèque, Prendre une
+           photo, Choisir les fichiers. C'est le comportement de
+           `Pellicule.tsx`, à l'identique. -->
+      <div class="champ">
+        <span class="caps">Photos du chantier</span>
+        <div class="pellicule" id="pellicule">
+          <input id="fichiers" type="file" accept="image/*" multiple>
+          <button class="ajout-photo" type="button" id="ajouter-photo" aria-label="Ajouter des photos">+</button>
+        </div>
+      </div>
+
+      <!-- L'ANNEAU, avant les boutons. Un appui dicte, un second arrête —
+           et c'est à ce second appui que tout est enregistré. -->
+      <div class="atlas-lecteur" id="anneau" data-lit="non">
+        <span class="atlas-aile atlas-aile-g" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="atlas-aile atlas-aile-d" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <button class="atlas-anneaux" type="button" id="dicter" aria-pressed="false" aria-label="Dicter les tâches à faire">
+          <span data-cercle style="width:74px;height:74px;border:1.5px solid var(--pine)"></span>
+          <span data-cercle style="width:56px;height:56px;border:1px solid var(--or)"></span>
+          <span class="atlas-traits" id="traits" aria-hidden="true"><i></i><i></i><i></i></span>
+        </button>
+        <p class="atlas-indice" id="indice">Appuyez et décrivez le chantier</p>
+        <p class="atlas-chrono" id="chrono">0:00</p>
+      </div>
+
+      <!-- Il n'existe qu'une fois la dictée faite, exactement comme sur la
+           fiche chantier d'aujourd'hui. -->
+      <div id="apres-dictee" style="display:none;text-align:center">
+        <button class="mon-devis" type="button" id="vers-devis">Mon devis →</button>
+      </div>
+
+      <div style="padding-top:4px">
+        <button class="principal" type="button" id="ecrire">Je rédige mon devis</button>
+      </div>
+      <p style="margin:2px 0 30px;text-align:center;font-size:12.5px;color:var(--muted)" id="mot-enregistre">&nbsp;</p>
+    </form>
+  </section>
+
+  <!-- ══════════════════ 2 · L'ACCUEIL, PLUS TARD ══════════════════ -->
+  <section class="ecran" id="accueil">
+    <p class="marque">ATLAS</p>
+    <div class="entete"><h1>Vos chantiers</h1></div>
+
+    <div class="note">
+      <span class="titre">Ce que cet écran prouve</span>
+      Vous étiez en rendez-vous. Vous avez dicté, vous avez fermé l’application.
+      <b>Rien n’est perdu</b> : le chantier est là, avec ce que vous avez dit.
+      Touchez-le — vous arrivez <b>directement sur le devis</b>, déjà rempli.
+    </div>
+
+    <div style="padding:20px 26px 0" id="liste-accueil">
+      <p class="caps" style="margin:0 0 12px">En cours</p>
+      <button class="brin" type="button" id="brin-julien" style="display:none">
+        <span class="quoi" id="brin-nom">M. Julien</span>
+        <span class="ou" id="brin-ou">12 rue des Lilas, Nantes</span>
+        <span class="etat">Devis à terminer</span>
+      </button>
+      <p id="rien-dicte" style="margin:0;font-size:13.5px;color:var(--muted)">
+        Revenez ici après avoir dicté sur l’écran 1 : le chantier s’y posera tout seul.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 3 · LE DEVIS ══════════════════ -->
+  <section class="ecran" id="devis">
+    <p class="marque">ATLAS</p>
+    <div class="entete"><button class="retour" type="button" aria-label="Retour">‹</button><h1>Devis</h1></div>
+
+    <p class="dictee">« Alors, on a la haie à tailler, elle fait dans les vingt mètres linéaires…
+      euh, il faut aussi couper les inflorescences des hortensias, et puis tondre la pelouse. »</p>
+
+    <div class="doc" style="margin-top:14px">
+      <h2 id="devis-nom">M. Julien</h2>
+      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+
+      <div class="ligne-devis">
+        <span><span class="libelle">Taille de haie</span><span class="mesure">20 ml</span></span>
+        <span class="prix">à chiffrer</span>
+      </div>
+      <div class="ligne-devis">
+        <span><span class="libelle">Taille des inflorescences d’hortensias</span></span>
+        <span class="prix">à chiffrer</span>
+      </div>
+      <div class="ligne-devis" style="border-bottom:0">
+        <span><span class="libelle">Tonte de la pelouse</span></span>
+        <span class="prix">à chiffrer</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="titre">Pourquoi « à chiffrer » et pas un prix</span>
+      Vous n’avez annoncé <b>aucun montant</b> en dictant. Atlas n’en invente pas : les lignes
+      arrivent rédigées et mesurées, les prix vous attendent. Dictez « et tu mets 500 € » et
+      le montant s’écrit.
+    </div>
+  </section>
+
+  <!-- ══════════════════ À TRANCHER ══════════════════ -->
+  <section class="ecran" id="reloger">
+    <p class="marque">ATLAS</p>
+    <div class="entete"><h1>Ce qui reste<br>à reloger</h1></div>
+
+    <div class="note">
+      <span class="titre">Tout est tranché</span>
+      Vous supprimez la fiche chantier « pour de bon ». Elle portait <b>quatre choses</b> sans
+      autre maison : <b>les quatre sont réglées</b>. Deux ne coûtent rien — elles existent déjà
+      ailleurs —, une part (vous n’en voulez pas), et une reste sur la fiche client.
+      <b>Le code peut commencer.</b>
+    </div>
+
+    <ul class="reloger" style="margin-top:18px">
+      <!-- **Réglé le 21 août au soir, et il n'y a rien à construire.** Sa
+           réponse : « la création de la facture se fera dans la catégorie
+           planning ou terminé ». Les deux chemins EXISTENT déjà dans Atlas —
+           vérifié dans le code avant de répondre (`CLAUDE.md` §5 ter) : la
+           feuille du chevron du planning porte « Créer la facture » depuis sa
+           demande du 12 août (`PlanningClient.tsx`), et chaque ligne du fil des
+           terminés mène à la facture (`FilTermines.tsx`). Supprimer la fiche
+           chantier ne coûte donc rien de ce côté. -->
+      <li>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Créer la facture</span>
+        <span class="prop"><b>Réglé — et c’est déjà en place.</b> Vous l’avez dit :
+          « dans planning ou terminé ». Les deux y sont déjà : dans <b>Planning</b>, le chevron
+          ouvre la feuille qui porte « Créer la facture » ; dans <b>Terminés</b>, chaque ligne
+          mène droit à la facture. Rien à déplacer.</span>
+      </li>
+      <!-- **Rien à reloger non plus, et c'est vérifié dans le code plutôt que
+           supposé** (`CLAUDE.md` §5 ter). Les étapes ne vivent pas DANS la fiche
+           chantier : chacune a son propre écran (`/informations`, `/prix`,
+           `/devis-complet`…), et la fiche n'en était que la liste. L'accueil,
+           lui, mène déjà à la PROCHAINE (`lienDeReprise`). Deux étapes seulement
+           y renvoient vers la fiche chantier — les photos et la dictée — et
+           elles pointeront vers la fiche client, où elles vivent désormais. -->
+      <li>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Les étapes du chantier</span>
+        <span class="prop"><b>Rien à déplacer — vérifié.</b> Chaque étape a déjà son écran ; la
+          fiche chantier n’en était que la <b>liste</b>. Et votre accueil vous emmène déjà à la
+          <b>prochaine</b> : c’est ce qu’il fait aujourd’hui. Dites-le si vous voulez malgré tout
+          revoir cette liste quelque part.</span>
+      </li>
+      <!-- **Réglé le 21 août au soir : « on n'a pas besoin de réécouter la note
+           dictée ».** Rien à reloger, et une pièce de moins à porter. -->
+      <li>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Réécouter ce que vous avez dicté</span>
+        <span class="prop"><b>Réglé — vous n’en voulez pas.</b> « On n’a pas besoin de réécouter
+          la note dictée. » L’anneau reste donc un micro, et rien d’autre.</span>
+      </li>
+      <!-- **Réglé le 21 août au soir : « fais ça pour le rajout de la 4e photo
+           du jeudi ».** Le carré « + » reste sur la fiche client, au même
+           endroit que le jour du rendez-vous.
+
+           **Et le chemin pour y revenir existe déjà**, il change juste de
+           destination : la flèche de retour du devis mène aujourd'hui à la
+           fiche chantier (`DevisCompletClient.tsx`), qui disparaît — elle
+           ramènera à la fiche client. Aucun geste nouveau à apprendre. -->
+      <li>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Une photo que vous ajoutez plus tard</span>
+        <span class="prop"><b>Réglé.</b> Jeudi, vous rouvrez le chantier depuis l’accueil : le devis
+          s’ouvre, et <b>la flèche de retour vous ramène à la fiche client</b> — le carré « + » est
+          là, au même endroit que mardi. Rien de nouveau à apprendre.</span>
+      </li>
+    </ul>
+
+    <div class="note" style="margin-top:22px">
+      <span class="titre">Un détail qui compte</span>
+      Vous pouvez photographier <b>avant</b> d’avoir dit un nom. Le chantier sera donc créé
+      dès la première photo ou la première dictée — sinon la photo n’aurait nulle part où aller.
+      Vous ne verrez rien de ce mécanisme : il apparaîtra simplement à l’accueil.
+    </div>
+  </section>
+
+</div>
+
+<script>
+/*
+  LA MAQUETTE SE MANIPULE — c'est ce qu'il demande depuis le 17 août : « fais-moi
+  des maquettes dynamiques, pas de photo, que je puisse essayer ».
+
+  Rien ici n'appelle un serveur : la dictée est simulée, mais le GESTE est le
+  vrai — un appui commence, un second arrête, et c'est au second que « Mon
+  devis → » apparaît et que le chantier se pose à l'accueil.
+
+  Le choix des photos, lui, n'est PAS simulé : c'est un vrai champ de fichier,
+  donc sur son téléphone c'est le vrai menu du système qui s'ouvre.
+*/
+const $ = (s) => document.querySelector(s);
+
+/* ─── Les onglets ─────────────────────────────────────────────────────── */
+document.querySelectorAll(".onglets button").forEach((b) => {
+  b.addEventListener("click", () => aller(b.dataset.va));
+});
+function aller(id) {
+  document.querySelectorAll(".ecran").forEach((e) => e.classList.toggle("actif", e.id === id));
+  document.querySelectorAll(".onglets button").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.va === id))
+  );
+  window.scrollTo(0, 0);
+}
+
+/**
+ * **Dix chiffres d'affilée, et les espaces se posent tout seuls.**
+ *
+ * Sa demande du 21 août au soir : *« il faut que je puisse taper les dix
+ * chiffres à la suite et qu'ils se mettent automatiquement avec les bons
+ * espaces »*. Sur un chantier, devant le client, on tape le numéro qu'on lit ou
+ * qu'on entend — on ne s'arrête pas toutes les deux touches pour un espace.
+ *
+ * **Par PAIRES, comme un numéro français s'écrit et se dicte** : 06 79 98 45 14.
+ *
+ * **Un numéro qui commence par « + » n'est PAS retouché**, et c'est mesuré, pas
+ * supposé : espacer « +33679984514 » par paires rend « +33 67 99 84 51 4 », qui
+ * n'est le numéro de personne. Un indicatif ne se découpe pas comme un numéro
+ * français, et il y en a autant que de pays. Celui qui tape un « + » sait ce
+ * qu'il écrit : on le laisse écrire.
+ *
+ * **Et le curseur ne saute pas à la fin.** Corriger un chiffre au milieu d'un
+ * numéro déjà tapé est le geste le plus courant après la frappe elle-même ; un
+ * curseur renvoyé au bout à chaque touche rend la correction impossible. On
+ * compte donc les CHIFFRES à gauche du curseur, et on le repose au même rang
+ * une fois les espaces refaits.
+ */
+function espacerLeNumero(champ) {
+  const avant = champ.value.slice(0, champ.selectionStart ?? champ.value.length);
+  const chiffresAGauche = (avant.match(/\d/g) ?? []).length;
+
+  if (champ.value.trim().startsWith("+")) return;
+
+  const chiffres = (champ.value.match(/\d/g) ?? []).join("").slice(0, 10);
+  champ.value = chiffres.replace(/(\d{2})(?=\d)/g, "$1 ");
+
+  // Le curseur retrouve sa place : juste après le n-ième chiffre.
+  let rang = 0, vus = 0;
+  while (rang < champ.value.length && vus < chiffresAGauche) {
+    if (/\d/.test(champ.value[rang])) vus++;
+    rang++;
+  }
+  champ.setSelectionRange(rang, rang);
+}
+
+$("#tel").addEventListener("input", (e) => espacerLeNumero(e.target));
+
+/* ─── Mr / Mme — sans intitulé, mais bien là ──────────────────────────── */
+document.querySelectorAll(".civilite button").forEach((b) => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".civilite button").forEach((x) => x.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", "true");
+  });
+});
+
+/* ─── Le canal d'envoi ────────────────────────────────────────────────── */
+// « Par e-mail » ne se propose que si une adresse existe : offrir un canal
+// qu'on ne peut pas emprunter est une fausse promesse.
+$("#email").addEventListener("input", (e) => {
+  const a = e.target.value.trim().length > 3;
+  $("#par-mail").disabled = !a;
+  if (!a) { $("#par-mail").setAttribute("aria-pressed", "false"); $("#par-sms").setAttribute("aria-pressed", "true"); }
+});
+$("#par-sms").addEventListener("click", () => { $("#par-sms").setAttribute("aria-pressed","true"); $("#par-mail").setAttribute("aria-pressed","false"); });
+$("#par-mail").addEventListener("click", () => { if($("#par-mail").disabled) return; $("#par-mail").setAttribute("aria-pressed","true"); $("#par-sms").setAttribute("aria-pressed","false"); });
+
+/* ─── Les photos : le vrai menu du téléphone ──────────────────────────── */
+$("#ajouter-photo").addEventListener("click", () => $("#fichiers").click());
+$("#fichiers").addEventListener("change", (e) => {
+  for (const f of e.target.files) {
+    const img = document.createElement("img");
+    img.className = "vignette";
+    img.alt = "Photo du chantier";
+    img.src = URL.createObjectURL(f);
+    $("#pellicule").insertBefore(img, $("#ajouter-photo"));
+  }
+  e.target.value = "";
+});
+
+/* ─── L'anneau ────────────────────────────────────────────────────────── */
+let enregistre = false, secondes = 0, horloge = null, ondulation = null;
+const mmss = (s) => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+
+$("#dicter").addEventListener("click", () => (enregistre ? arreter() : commencer()));
+
+function commencer() {
+  enregistre = true; secondes = 0;
+  $("#anneau").dataset.lit = "oui";
+  $("#dicter").setAttribute("aria-pressed", "true");
+  $("#dicter").setAttribute("aria-label", "Arrêter la dictée et enregistrer");
+  // Le carré remplace les trois traits : il ne veut dire qu'une chose, arrêter.
+  $("#traits").outerHTML = '<span class="carre-stop" id="traits" aria-hidden="true"></span>';
+  $("#indice").textContent = "Appuyez pour arrêter";
+  $("#chrono").textContent = "0:00";
+  horloge = setInterval(() => { secondes++; $("#chrono").textContent = mmss(secondes); }, 1000);
+  // L'ampleur suit la voix dans l'application ; ici elle respire, pour que
+  // l'onde ne batte pas comme un métronome.
+  ondulation = setInterval(() => {
+    $("#anneau").style.setProperty("--atlas-ampleur", (0.55 + Math.random() * 0.8).toFixed(2));
+  }, 160);
+}
+
+function arreter() {
+  enregistre = false;
+  clearInterval(horloge); clearInterval(ondulation);
+  $("#anneau").dataset.lit = "non";
+  $("#anneau").style.setProperty("--atlas-ampleur", "1");
+  $("#dicter").setAttribute("aria-pressed", "false");
+  $("#dicter").setAttribute("aria-label", "Écouter la note vocale");
+  $("#traits").outerHTML = '<span class="atlas-traits" id="traits" aria-hidden="true"><i></i><i></i><i></i></span>';
+  $("#indice").textContent = "Poussez l’anneau vers le haut pour retirer";
+
+  // **C'EST ICI QUE TOUT S'ENREGISTRE.** Sa phrase : « dès que je rappuie sur
+  // la note vocale pour stopper l'enregistrement, il faut impérativement que
+  // les infos aillent s'enregistrer dans le devis ». Le chantier se pose donc
+  // à l'accueil au même instant, sans qu'il ait rien d'autre à toucher.
+  $("#apres-dictee").style.display = "block";
+  $("#apres-dictee").classList.add("apparait");
+  $("#brin-julien").style.display = "block";
+  $("#rien-dicte").style.display = "none";
+  $("#mot-enregistre").textContent = "Enregistré. Vous pouvez fermer l’application.";
+
+  // **Ce qu'il a SAISI part avec la dictée, jusqu'au devis.** Sa remarque du
+  // 21 août au soir : « quand je clique sur devis à terminer, je dois arriver
+  // directement sur la page du devis, et les infos que j'ai dictées doivent
+  // être remplies ». Une carte et un devis qui affichent un nom d'exemple
+  // pendant qu'il en a tapé un autre ne prouvent rien — c'est SON chantier
+  // qu'il doit reconnaître à l'accueil.
+  reporter();
+}
+
+/**
+ * Reporte le nom, le numéro et l'adresse sur la carte de l'accueil et sur le
+ * devis.
+ *
+ * **Une case vide ne se remplace pas par un exemple** : elle se dit. « Client
+ * sans nom » est une information ; « M. Julien » à la place serait un mensonge
+ * de plus dans un document qui part chez quelqu'un.
+ */
+function reporter() {
+  const nom = $("#nom").value.trim() || "Client sans nom";
+  const tel = $("#tel").value.trim();
+  const adresse = $("#adresse").value.trim() || "Adresse à préciser";
+
+  $("#brin-nom").textContent = nom;
+  $("#brin-ou").textContent = adresse;
+  $("#devis-nom").textContent = nom;
+  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" · ");
+}
+
+$("#vers-devis").addEventListener("click", () => aller("devis"));
+$("#brin-julien").addEventListener("click", () => aller("devis"));
+$("#ecrire").addEventListener("click", () => aller("devis"));
+</script>
+</body>
+</html>

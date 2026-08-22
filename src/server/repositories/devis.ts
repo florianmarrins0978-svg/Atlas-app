@@ -1,6 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
-import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
+import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
+import { totauxAvecReduction, pourcentValide } from "@/lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
@@ -23,14 +24,28 @@ export async function attribuerNumeroDevis(tx: DbOrTx, entrepriseId: string): Pr
   return `2026-${String(numero).padStart(4, "0")}`;
 }
 
-function calculerTotaux(lignes: { montant: string }[], tauxTva: string) {
-  const totalHt = lignes.reduce((acc, l) => acc.plus(new Decimal(l.montant)), new Decimal(0));
-  const totalTva = totalHt.times(new Decimal(tauxTva)).dividedBy(100);
-  const totalTtc = totalHt.plus(totalTva);
+/**
+ * Les totaux du devis, réduction comprise.
+ *
+ * **Le calcul lui-même vit dans `src/lib/reduction-devis.ts`**, et pas ici :
+ * l'écran, le PDF, la facture et son PDF en ont besoin du mot pour mot. Le
+ * patron a choisi l'arrangement B le 16 août 2026 — la réduction n'est PAS une
+ * ligne du tableau, donc elle ne voyage pas toute seule, et chaque endroit qui
+ * recalculerait à la main serait un montant faux sur un document parti chez un
+ * client. Une seule règle, appelée partout.
+ */
+function calculerTotaux(
+  lignes: { montant: string }[],
+  tauxTva: string,
+  reductionPourcent?: string | null
+) {
+  const t = totauxAvecReduction(lignes, tauxTva, reductionPourcent);
   return {
-    totalHt: totalHt.toFixed(2),
-    totalTva: totalTva.toFixed(2),
-    totalTtc: totalTtc.toFixed(2),
+    totalHt: t.totalHt,
+    totalTva: t.totalTva,
+    totalTtc: t.totalTtc,
+    reductionPourcent: t.reductionPourcent,
+    reductionMontant: t.reductionMontant,
   };
 }
 
@@ -95,6 +110,10 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       .limit(1);
 
     const snapshotEnTete = {
+      // **La validité se fige ici**, avec l'identité : lire le réglage au moment
+      // de composer le PDF ferait changer la durée d'engagement d'un devis déjà
+      // envoyé (`ARCHITECTURE.md` §102).
+      validiteJours: conditionsDepuisEntreprise(entreprise).validiteJours,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
@@ -102,6 +121,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
       clientNom: client?.nom,
+      // Recopiée comme le nom : le document dit comment on s'adressait à son
+      // destinataire CE JOUR-LÀ (migration 0038).
+      clientCivilite: client?.civilite ?? null,
       clientAdresse: client?.adresse,
       clientTelephone: client?.telephone,
       clientEmail: client?.email,
@@ -112,7 +134,12 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
     // sur son devis (10 % en rénovation, 20 % en neuf). Recalculer au taux par
     // défaut effacerait sa correction à la première ligne ajoutée.
     const taux = dernier && dernier.statut === "brouillon" ? dernier.tauxTva : TAUX_TVA_DEFAUT;
-    const totaux = calculerTotaux(lignesPrixActuelles, taux);
+    // **La réduction survit à la régénération**, exactement comme le taux de
+    // TVA juste au-dessus. Elle a été accordée au client ; ajouter une ligne au
+    // devis ne la révoque pas, et la perdre en silence lui ferait renvoyer un
+    // document plus cher que celui qu'il avait promis.
+    const reduction = dernier && dernier.statut === "brouillon" ? dernier.reductionPourcent : null;
+    const totaux = calculerTotaux(lignesPrixActuelles, taux, reduction);
 
     if (dernier && dernier.statut === "brouillon") {
       // Régénération : remplace les lignes et recalcule les totaux, ne change
@@ -203,15 +230,19 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       // le client reçoit un devis qu'il ne peut pas payer.
       entrepriseIban: d.entrepriseIban,
       clientNom: d.clientNom,
+      clientCivilite: d.clientCivilite,
       clientAdresse: d.clientAdresse,
       clientTelephone: d.clientTelephone,
       adresseChantier: d.adresseChantier,
       conditionsPaiement: d.conditionsPaiement,
+      validiteJours: d.validiteJours,
       devise: d.devise,
       tauxTva: d.tauxTva,
       totalHt: d.totalHt,
       totalTva: d.totalTva,
       totalTtc: d.totalTtc,
+      reductionPourcent: d.reductionPourcent,
+      reductionMontant: d.reductionMontant,
       lignes: lignes.map((l) => ({
         libelle: l.libelle,
         quantite: l.quantite,
@@ -245,6 +276,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       entrepriseEmail: avant.entrepriseEmail,
       entrepriseIban: avant.entrepriseIban,
       clientNom: avant.clientNom,
+      clientCivilite: avant.clientCivilite,
       clientAdresse: avant.clientAdresse,
       clientTelephone: avant.clientTelephone,
       adresseChantier: avant.adresseChantier,
@@ -254,6 +286,8 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       totalHt: avant.totalHt,
       totalTva: avant.totalTva,
       totalTtc: avant.totalTtc,
+      reductionPourcent: avant.reductionPourcent,
+      reductionMontant: avant.reductionMontant,
       lignes: lignes.map((l) => ({
         libelle: l.libelle,
         quantite: l.quantite,
@@ -303,13 +337,18 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
 export async function mettreAJourEnTeteDevis(
   ctx: Ctx,
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string }
+  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!avant || avant.statut === "envoye") return null;
 
-    const valeurs: { tauxTva?: string; conditionsPaiement?: string; updatedAt: Date } = { updatedAt: new Date() };
+    const valeurs: {
+      tauxTva?: string;
+      conditionsPaiement?: string;
+      reductionPourcent?: string | null;
+      updatedAt: Date;
+    } = { updatedAt: new Date() };
     if (data.tauxTva !== undefined) {
       // Borné : un taux négatif ou à trois chiffres produirait un total que le
       // patron ne comprendrait pas, et qu'aucun client n'accepterait.
@@ -317,9 +356,21 @@ export async function mettreAJourEnTeteDevis(
       if (Number.isFinite(taux)) valeurs.tauxTva = taux.toFixed(2);
     }
     if (data.conditionsPaiement !== undefined) valeurs.conditionsPaiement = data.conditionsPaiement;
+    // **Le prix accordé au client passe par la MÊME borne que l'écran**
+    // (`pourcentValide`) : une seule règle sert à construire l'écran et à
+    // revalider ce qu'il renvoie, sans quoi les deux finissent par diverger
+    // (`CLAUDE.md` §3). Rendre `null` retire la réduction — c'est ainsi qu'on
+    // revient en arrière quand le client n'obtient finalement rien.
+    if (data.reductionPourcent !== undefined) {
+      valeurs.reductionPourcent = pourcentValide(data.reductionPourcent);
+    }
 
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
-    const totaux = calculerTotaux(lignes, valeurs.tauxTva ?? avant.tauxTva);
+    const totaux = calculerTotaux(
+      lignes,
+      valeurs.tauxTva ?? avant.tauxTva,
+      data.reductionPourcent !== undefined ? valeurs.reductionPourcent : avant.reductionPourcent
+    );
 
     const [row] = await tx
       .update(devis)
@@ -328,4 +379,145 @@ export async function mettreAJourEnTeteDevis(
       .returning();
     return row ?? null;
   });
+}
+
+/**
+ * Le devis d'un chantier, rendu SANS un seul prix — la feuille que le salarié
+ * emporte.
+ *
+ * **Sa décision du 21 août 2026 :** *« le salarié ne doit pas avoir accès au
+ * prix [...] je pense que le plus simple, ça serait de mettre le devis en PDF
+ * sans les prix »*. Le raisonnement complet est dans `devis-pdf.ts` :
+ * l'alternative — une liste de prestations saisie à côté — aurait été une
+ * SECONDE version de ce qui est à faire, et les deux auraient divergé.
+ *
+ * **Toujours le devis ENVOYÉ, jamais un brouillon**, tant qu'il en existe un :
+ * c'est celui que le client a reçu, donc celui sur lequel les deux parties se
+ * sont entendues. Un brouillon en cours d'écriture enverrait l'équipe faire ce
+ * qui n'a pas encore été proposé. Sans devis envoyé, on rend le brouillon —
+ * mieux vaut la liste du jour que rien, et le titre du PDF dit ce qu'il est.
+ *
+ * **Régénéré, jamais servi depuis le stockage.** Le PDF figé au moment de
+ * l'envoi porte, lui, tous les prix : le servir ici reviendrait exactement à ce
+ * qu'on cherche à éviter.
+ */
+export async function genererDevisSansPrix(
+  ctx: Ctx,
+  chantierId: string
+): Promise<Uint8Array | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const d = await devisÀImprimer(tx, chantierId);
+    if (!d) return null;
+    const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, d.id));
+    return genererPdfDevis(
+      {
+        numeroCommercial: d.numeroCommercial,
+        numeroVersion: d.numeroVersion,
+        statut: d.statut as "brouillon" | "envoye",
+        dateEmission: d.dateEmission,
+        entrepriseNom: d.entrepriseNom,
+        entrepriseAdresse: d.entrepriseAdresse,
+        entrepriseSiret: d.entrepriseSiret,
+        entrepriseTelephone: d.entrepriseTelephone,
+        entrepriseEmail: d.entrepriseEmail,
+        // `sansChiffrage` ignore l'IBAN : il n'a rien à faire sur une feuille
+        // de chantier, et le passer ne l'imprime pas.
+        entrepriseIban: d.entrepriseIban,
+        clientNom: d.clientNom,
+        clientCivilite: d.clientCivilite,
+        clientAdresse: d.clientAdresse,
+        clientTelephone: d.clientTelephone,
+        adresseChantier: d.adresseChantier,
+        conditionsPaiement: d.conditionsPaiement,
+        validiteJours: d.validiteJours,
+        devise: d.devise,
+        tauxTva: d.tauxTva,
+        totalHt: d.totalHt,
+        totalTva: d.totalTva,
+        totalTtc: d.totalTtc,
+        reductionPourcent: d.reductionPourcent,
+        reductionMontant: d.reductionMontant,
+        lignes: lignes.map((l) => ({
+          libelle: l.libelle,
+          quantite: l.quantite,
+          prixUnitaire: l.prixUnitaire,
+          montant: l.montant,
+        })),
+      },
+      { sansChiffrage: true }
+    );
+  });
+}
+
+/**
+ * Ce qu'il y a à faire sur ce chantier, en toutes lettres et sans un prix.
+ *
+ * C'est ce que porte la feuille du planning, sous le nom du client. Les mêmes
+ * lignes que le PDF ci-dessus, lues au même endroit : deux listes construites
+ * séparément finiraient par ne plus dire la même chose, et l'équipe croirait
+ * l'écran plutôt que le papier.
+ *
+ * **Une action et non un chargement de page** : la plupart des journées ne
+ * s'ouvrent sur aucune feuille, et charger les lignes de tous les chantiers
+ * planifiés ferait payer à chaque ouverture du planning ce qui ne sert qu'à un
+ * appui.
+ */
+export type FeuilleDuChantier = {
+  /** Ce qu'il y a à faire, ligne par ligne, sans un prix. */
+  taches: string[];
+  /**
+   * Un devis existe-t-il ?
+   *
+   * **L'écran s'en sert pour ne pas offrir un bouton qui mène à rien.** Sans
+   * devis, le PDF sans les prix n'a rien à imprimer et la route répond 404 : un
+   * bouton qui ouvre une erreur est pire qu'un bouton absent — il fait douter de
+   * l'application entière. Le cas ne devrait pas se présenter (le planning ne
+   * liste que des chantiers dont le devis est PARTI), mais « ne devrait pas »
+   * n'est pas « ne peut pas ».
+   */
+  avecDevis: boolean;
+};
+
+export async function tachesDuChantier(
+  ctx: Ctx,
+  chantierId: string
+): Promise<FeuilleDuChantier> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const d = await devisÀImprimer(tx, chantierId);
+    if (!d) return { taches: [], avecDevis: false };
+    const lignes = await tx
+      .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite })
+      .from(lignesDevis)
+      .where(eq(lignesDevis.devisId, d.id))
+      .orderBy(lignesDevis.ordre);
+    return {
+      avecDevis: true,
+      taches: lignes.map((l) => {
+        // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
+        // rien de plus que le libellé ; « 18 » dit combien de mètres de haie.
+        const q = Number(l.quantite);
+        return Number.isFinite(q) && q !== 1
+          ? `${l.libelle} — ${q.toLocaleString("fr-FR")}`
+          : l.libelle;
+      }),
+    };
+  });
+}
+
+/** Le devis à imprimer : l'envoyé le plus récent, sinon le brouillon. */
+async function devisÀImprimer(tx: DbOrTx, chantierId: string) {
+  const [envoye] = await tx
+    .select()
+    .from(devis)
+    .where(sql`${devis.chantierId} = ${chantierId} AND ${devis.statut} = 'envoye'`)
+    .orderBy(desc(devis.numeroVersion))
+    .limit(1);
+  if (envoye) return envoye;
+  const [brouillon] = await tx
+    .select()
+    .from(devis)
+    .where(eq(devis.chantierId, chantierId))
+    .orderBy(desc(devis.numeroVersion))
+    .limit(1);
+  return brouillon ?? null;
 }

@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 async function main() {
   const browser = await lancerNavigateur();
@@ -16,9 +17,21 @@ async function main() {
 
   // --- Chantier avec transcription réelle (seed : Rénovation salle de bain) ---
   await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
-  await page.click("text=Rénovation salle de bain");
+  // **La LIGNE de la liste, pas la première mention du nom.** Depuis le 16 août
+  // 2026, les rappels passent devant les réponses sur l'accueil (« fait la B »),
+  // et un chantier sans devis y porte désormais une carte qui cite son nom. Un
+  // `text=` nu attrapait cette carte — le geste partait ailleurs, et l'erreur
+  // accusait la navigation d'un défaut qui n'était pas le sien.
+  await page.locator(".atlas-ligne", { hasText: "Rénovation salle de bain" }).first().click();
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = page.url();
+  // **L'adresse d'arrivée n'est plus forcément la fiche (13 août 2026).** La
+  // liste ramène désormais à l'écran où le travail s'est arrêté
+  // (`lienDeReprise`, `ARCHITECTURE.md` §98) : ce chantier de démonstration a
+  // une dictée, donc on atterrit sur `/informations`. Déduire l'adresse de la
+  // fiche en recopiant l'URL courante donnait `/informations/transcription`,
+  // c'est-à-dire une page qui n'existe pas — et le rouge accusait la
+  // transcription, qui n'y était pour rien.
+  const chantierUrl = page.url().replace(/(\/chantiers\/[0-9a-f-]{36}).*$/, "$1");
 
   await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Transcription").first().isVisible());
@@ -49,8 +62,8 @@ async function main() {
   // --- Chantier neuf : note vocale absente ---
   const nomUnique = `Chantier transcription e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const nouveauChantierUrl = page.url();
 

@@ -83,10 +83,15 @@ async function main() {
     const c = await getChantierPourHub(A, chantierId);
     const statut = getStatutAffiche(c!);
     assert.equal(statut, "verifie"); // photos + info vérifiées, pas de prix -> "verifie"
+    // **Ce chantier porte une dictée**, et depuis le 21 août 2026 une dictée
+    // mène AU DEVIS — plus à l'écran « Prix » (`ARCHITECTURE.md` §142). La
+    // chaîne va de la dictée au devis d'un seul tenant ; l'écran « Prix » reste
+    // pour qui chiffre à la main, et se rejoint par le tiroir.
     const next = getNextAction(c!);
-    assert.equal(next?.key, "prix");
+    assert.equal(next?.key, "devis-preparer");
     const steps = getSecondarySteps(c!.id, c!, next?.key);
-    assert.ok(!steps.some((s) => s.key === "prix"), "L'étape correspondant à l'action principale ne doit pas être dupliquée");
+    assert.ok(!steps.some((s) => s.key === "devis"), "L'étape correspondant à l'action principale ne doit pas être dupliquée");
+    assert.ok(steps.some((s) => s.key === "prix"), "L'écran Prix doit rester joignable par le tiroir");
     const photosStep = steps.find((s) => s.key === "photos");
     assert.equal(photosStep?.done, true);
     assert.equal(photosStep?.meta, "1 photo");

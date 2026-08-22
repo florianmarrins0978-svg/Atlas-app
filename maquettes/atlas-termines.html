@@ -1,0 +1,370 @@
+<title>Atlas — Terminés : quatre façons de lire ce qui est fait</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    « TERMINÉS » — quatre organisations, une seule charte.
+
+    L'écran d'aujourd'hui (`src/app/termines/page.tsx`) empile trois sortes de
+    pavés arrondis — le relevé de TVA, les chantiers à facturer, les factures —
+    et ne dit JAMAIS combien. Or c'est la seule question que pose cet écran :
+    « qu'est-ce que j'ai encaissé, et qu'est-ce qui me reste à facturer ? »
+
+    Ce que les quatre propositions ont en commun, et qui n'est pas négociable :
+
+      · DES FILETS, PAS DES PAVÉS. Le relevé de TVA cesse d'être une boîte —
+        c'était le seul cadre plein de l'écran, et il attirait l'œil sur ce qui
+        est le moins urgent.
+      · UN MONTANT SE LIT EN COLONNE. Chiffres tabulaires, alignés à droite :
+        « 1 320,00 € » et « 240,00 € » doivent avoir leurs virgules l'une sous
+        l'autre, sinon l'œil recompte.
+      · L'ÉCRAN DIT UNE SOMME. Aujourd'hui il faut additionner de tête.
+
+    CE QUE LA MAQUETTE NE PEUT PAS MONTRER : les montants viennent de
+    `listerChantiersTermines` et `releveTvaCollectee` — calculés, jamais
+    stockés. Atlas PRÉPARE le relevé, il ne le déclare pas (docs/AGENT.md §6) :
+    la mention doit rester à l'écran.
+  */
+
+  :root{
+    --fond:#edece6; --plage:#f7f6f2; --encre:#16170f; --gris:#83867c;
+    --bronze:#8f7130; --trait:rgba(22,23,15,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c2a05f; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:390px;max-width:100%}
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:390px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:740px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#edece6; --e-plage:#f7f6f2; --e-encre:#16170f; --e-gris:#83867c;
+         --e-bronze:#8f7130; --e-trait:rgba(22,23,15,.13); --e-plein:#2a3a2e;
+         --e-plein-encre:#f2f1ea; --e-signe:#c2a05f}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  .tete{padding:26px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:9px 0 0;font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:16px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre)}
+  /* Le trait tombe sous L'ONGLET ACTIF — ici le troisième. Recopié sans être
+     déplacé, il désignait « CHANTIERS » sur un écran « PLANNING ». */
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;
+         background:var(--e-bronze);left:calc(14px + 2*(100% - 28px)/4)}
+
+  /* ═══ Pièces communes ════════════════════════════════════════════════ */
+  .bloc{margin:28px 26px 0}
+  .titre{display:flex;align-items:center;gap:12px;margin:0 0 4px;color:var(--e-gris)}
+  .titre i{flex:1;height:1px;background:var(--e-trait)}
+
+  /* Une facture : un filet, jamais un pavé. Le montant tient sa colonne. */
+  .fact{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+        padding:15px 0;border-bottom:1px solid var(--e-trait);
+        text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
+  .fact .qui{min-width:0}
+  .fact .n{display:block;font:400 17px/1.2 ui-serif,Georgia,serif;
+           white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fact .ref{display:block;margin-top:3px;font-size:11px;letter-spacing:.14em;
+             text-transform:uppercase;color:var(--e-gris)}
+  .fact .eur{flex:none;font:400 16px/1.2 ui-serif,Georgia,serif;
+             font-variant-numeric:tabular-nums;text-align:right}
+  .fact .eur.zero{color:var(--e-gris)}
+
+  /* Le relevé de TVA : une ligne qui se lit, plus un pavé qui se voit. */
+  .lien{display:flex;align-items:center;justify-content:space-between;gap:14px;
+        padding:16px 0;text-decoration:none;color:inherit;
+        -webkit-tap-highlight-color:transparent}
+  .lien .t{font:400 16px/1.2 ui-serif,Georgia,serif}
+  .lien .f{color:var(--e-bronze);font-size:15px}
+
+  /* ═══ A · La somme ═══════════════════════════════════════════════════ */
+  .somme{margin:26px 26px 0}
+  .somme .gros{display:block;margin:12px 0 0;font:400 46px/1 ui-serif,Georgia,serif;
+               letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .somme .quoi{margin:9px 0 0;font-size:12.5px;color:var(--e-gris)}
+  /* Le tiroir de TVA : il descend, il ne recouvre rien. */
+  .tva{display:grid;grid-template-rows:0fr;transition:grid-template-rows .44s cubic-bezier(.22,.61,.36,1)}
+  .tva > div{overflow:hidden}
+  #tva:checked ~ .detail .tva{grid-template-rows:1fr}
+  .detail{margin:22px 26px 0;border-top:1px solid var(--e-trait)}
+  .detail .lien .f{transition:transform .4s cubic-bezier(.22,.61,.36,1);display:block}
+  #tva:checked ~ .detail .lien .f{transform:rotate(90deg)}
+  .lg{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+      padding:9px 0;font-size:13.5px;color:var(--e-gris)}
+  .lg b{font-weight:400;color:var(--e-encre);font-variant-numeric:tabular-nums}
+  .lg.fort{padding-top:13px;margin-top:5px;border-top:1px solid var(--e-trait);color:var(--e-encre)}
+  .avert{margin:6px 0 16px;font-size:11px;line-height:1.6;color:var(--e-gris);opacity:.85}
+
+  /* ═══ B · Ce qui attend ══════════════════════════════════════════════ */
+  .attend{margin:30px 26px 0}
+  .attend .phrase{margin:0;font:400 29px/1.14 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .attend .apres{margin:10px 0 0;font-size:13px;color:var(--e-gris);line-height:1.6}
+  .attend .apres b{color:var(--e-encre);font-weight:400}
+  .repos{margin-top:20px;display:flex;align-items:center;gap:12px;color:var(--e-bronze)}
+  .repos i{display:block;width:5px;height:5px;border-radius:99px;background:var(--e-bronze)}
+  .repos span{font-size:11px;letter-spacing:.24em;text-transform:uppercase}
+
+  /* ═══ C · Le fil par mois ════════════════════════════════════════════ */
+  /* Le même fil que la liste des chantiers : deux écrans qui se ressemblent
+     s'apprennent une seule fois. */
+  .fil{position:relative;margin:26px 26px 0}
+  .fil::before{content:"";position:absolute;left:47px;top:14px;bottom:16px;
+               width:1px;background:var(--e-trait)}
+  .mois{display:grid;grid-template-columns:47px 1fr;gap:0 26px;padding:14px 0 4px}
+  .mois .m{text-align:right;padding-right:13px}
+  .mois .m b{display:block;font:400 17px/1 ui-serif,Georgia,serif}
+  .mois .m span{display:block;margin-top:4px;font-size:9px;letter-spacing:.16em;
+                text-transform:uppercase;color:var(--e-gris)}
+  .mois .tot{align-self:center;text-align:right;font-size:11px;letter-spacing:.2em;
+             text-transform:uppercase;color:var(--e-bronze);font-variant-numeric:tabular-nums}
+  .brin{display:grid;grid-template-columns:47px 1fr;gap:0 26px}
+  .brin .creux{position:relative}
+  /* La perle du fil, comme sur l'accueil : elle marque le jour, pas la ligne. */
+  .brin .creux i{position:absolute;left:47px;top:22px;width:7px;height:7px;
+                 border-radius:99px;transform:translate(-50%,-50%);
+                 background:var(--e-bronze);box-shadow:0 0 0 4px var(--e-fond)}
+  .brin .fact{border-bottom:0;padding:14px 0}
+
+  /* ═══ D · Le registre ════════════════════════════════════════════════ */
+  .quand{display:flex;align-items:center;justify-content:space-between;gap:14px;
+         margin:24px 26px 0}
+  .quand .p{font:400 21px/1 ui-serif,Georgia,serif}
+  .quand .fl{display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+             border-radius:99px;color:var(--e-gris);font-size:17px;text-decoration:none;
+             -webkit-tap-highlight-color:transparent}
+  .quand .fl:active{color:var(--e-bronze)}
+  .reg{margin:20px 26px 0}
+  .reg .l{display:grid;grid-template-columns:46px 1fr auto;gap:0 14px;align-items:baseline;
+          padding:13px 0;border-bottom:1px solid var(--e-trait);
+          text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
+  .reg .d{font-size:11.5px;color:var(--e-gris);font-variant-numeric:tabular-nums}
+  .reg .n{min-width:0;font:400 16px/1.2 ui-serif,Georgia,serif;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .reg .e{font:400 16px/1.2 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums;text-align:right}
+  .reg .e.zero{color:var(--e-gris)}
+  /* Le total : un filet plus appuyé, et rien d'autre. Un pavé vert ferait
+     croire à un bouton. */
+  .reg .total{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:baseline;
+              margin-top:6px;padding-top:16px;border-top:1px solid var(--e-encre)}
+  .reg .total .q{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--e-gris)}
+  .reg .total .v{font:400 23px/1 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+  .reg .dont{display:flex;justify-content:space-between;margin-top:10px;
+             font-size:12px;color:var(--e-gris)}
+  .reg .dont b{font-weight:400;font-variant-numeric:tabular-nums}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Terminés — quatre organisations</p>
+    <h1>Un écran qui dit combien</h1>
+    <p>
+      L'écran d'aujourd'hui empile trois sortes de pavés arrondis et ne dit
+      <strong>jamais combien</strong> — or c'est la seule question qu'on lui
+      pose. Les quatre propositions répondent autrement à la même question ;
+      toutes remplacent les pavés par des <strong>filets</strong>, alignent les
+      montants en colonne, et rendent au relevé de TVA sa juste place : une
+      ligne, pas la seule boîte pleine de l'écran.
+    </p>
+    <p>Sur <strong>A</strong>, touchez « Relevé de TVA collectée » : le détail descend.</p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── A · La somme ───────────────────────────────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="a">
+        <div class="tete"><p class="sur caps">Chantiers réalisés</p><h1>Terminés</h1></div>
+        <div class="corps">
+          <input class="interrupteur" type="checkbox" id="tva">
+
+          <div class="somme">
+            <p class="titre caps">Facturé ce trimestre<i></i></p>
+            <b class="gros num">4 320,00 €</b>
+            <p class="quoi">Quatre factures depuis le 1<sup>er</sup> juillet.</p>
+          </div>
+
+          <div class="detail">
+            <label class="lien" for="tva">
+              <span class="t">Relevé de TVA collectée</span><span class="f">›</span>
+            </label>
+            <div class="tva"><div>
+              <p class="lg">Base hors taxes <b class="num">3 600,00 €</b></p>
+              <p class="lg">TVA collectée · 20 % <b class="num">720,00 €</b></p>
+              <p class="lg fort">Total encaissé <b class="num">4 320,00 €</b></p>
+              <p class="avert">Atlas prépare ce relevé, il ne le déclare pas.</p>
+            </div></div>
+          </div>
+
+          <div class="bloc">
+            <p class="titre caps">Factures<i></i></p>
+            <a class="fact" href="#a"><span class="qui"><b class="n">Chez M. Martins</b><span class="ref">F2026-0006 · 2 août</span></span><span class="eur num">1 320,00 €</span></a>
+            <a class="fact" href="#a"><span class="qui"><b class="n">Terrasse bois</b><span class="ref">F2026-0005 · 28 juillet</span></span><span class="eur num">1 860,00 €</span></a>
+            <a class="fact" href="#a"><span class="qui"><b class="n">Muret de pierre</b><span class="ref">F2026-0004 · 21 juillet</span></span><span class="eur num">640,00 €</span></a>
+            <a class="fact" href="#a"><span class="qui"><b class="n">Abri de jardin</b><span class="ref">F2026-0003 · 14 juillet</span></span><span class="eur num">500,00 €</span></a>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">A · La somme</p>
+      <p class="note">L'écran s'ouvre sur le chiffre qu'on vient chercher. <b>Le relevé de TVA descend sous le doigt au lieu d'emmener sur un autre écran.</b></p>
+    </div>
+
+    <!-- ── B · Ce qui attend ──────────────────────────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="b">
+        <div class="tete"><p class="sur caps">Chantiers réalisés</p><h1>Terminés</h1></div>
+        <div class="corps">
+
+          <div class="attend">
+            <p class="phrase">Rien n'attend<br>de facture.</p>
+            <p class="apres">Le dernier chantier a été facturé <b>il y a deux jours</b>.</p>
+            <div class="repos"><i></i><span>Tout est à jour</span></div>
+          </div>
+
+          <div class="bloc">
+            <p class="titre caps">Facturé · 4 320,00 €<i></i></p>
+            <a class="fact" href="#b"><span class="qui"><b class="n">Chez M. Martins</b><span class="ref">F2026-0006</span></span><span class="eur num">1 320,00 €</span></a>
+            <a class="fact" href="#b"><span class="qui"><b class="n">Terrasse bois</b><span class="ref">F2026-0005</span></span><span class="eur num">1 860,00 €</span></a>
+            <a class="fact" href="#b"><span class="qui"><b class="n">Muret de pierre</b><span class="ref">F2026-0004</span></span><span class="eur num">640,00 €</span></a>
+            <a class="fact" href="#b"><span class="qui"><b class="n">Abri de jardin</b><span class="ref">F2026-0003</span></span><span class="eur num">500,00 €</span></a>
+          </div>
+
+          <div class="bloc" style="border-top:1px solid var(--e-trait);padding-top:4px">
+            <a class="lien" href="#b"><span class="t">Relevé de TVA collectée</span><span class="f">›</span></a>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">B · Ce qui attend</p>
+      <p class="note">L'écran répond d'abord à « ai-je quelque chose à faire ? ». <b>Quand la réponse est non, il le dit en toutes lettres au lieu d'afficher un titre vide.</b></p>
+    </div>
+
+    <!-- ── C · Le fil par mois ────────────────────────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="c">
+        <div class="tete"><p class="sur caps">Chantiers réalisés</p><h1>Terminés</h1></div>
+        <div class="corps">
+          <div class="fil">
+
+            <div class="mois"><span class="m"><b>août</b><span>2026</span></span><span class="tot num">1 320,00 €</span></div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#c"><span class="qui"><b class="n">Chez M. Martins</b><span class="ref">F2026-0006 · le 2</span></span><span class="eur num">1 320,00 €</span></a>
+            </div>
+
+            <div class="mois"><span class="m"><b>juillet</b><span>2026</span></span><span class="tot num">3 000,00 €</span></div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#c"><span class="qui"><b class="n">Terrasse bois</b><span class="ref">F2026-0005 · le 28</span></span><span class="eur num">1 860,00 €</span></a>
+            </div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#c"><span class="qui"><b class="n">Muret de pierre</b><span class="ref">F2026-0004 · le 21</span></span><span class="eur num">640,00 €</span></a>
+            </div>
+            <div class="brin"><span class="creux"><i></i></span>
+              <a class="fact" href="#c"><span class="qui"><b class="n">Abri de jardin</b><span class="ref">F2026-0003 · le 14</span></span><span class="eur num">500,00 €</span></a>
+            </div>
+
+          </div>
+          <div class="bloc" style="border-top:1px solid var(--e-trait);padding-top:0">
+            <p class="lg fort" style="border:0;margin:0;padding:16px 0 0">Facturé ce trimestre <b class="num">4 320,00 €</b></p>
+            <a class="lien" href="#c"><span class="t">Relevé de TVA collectée</span><span class="f">›</span></a>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">C · Le fil par mois</p>
+      <p class="note">Le même fil que la liste des chantiers, avec le total du mois en marge. <b>Deux écrans qui se ressemblent s'apprennent une seule fois.</b></p>
+    </div>
+
+    <!-- ── D · Le registre ────────────────────────────────────────────── -->
+    <div class="prop">
+      <div class="tel"><div class="ecran" data-s="d">
+        <div class="tete"><p class="sur caps">Chantiers réalisés</p><h1>Terminés</h1></div>
+        <div class="corps">
+
+          <div class="quand">
+            <a class="fl" href="#d" aria-label="Trimestre précédent">‹</a>
+            <span class="p">3<sup>e</sup> trimestre 2026</span>
+            <a class="fl" href="#d" aria-label="Trimestre suivant">›</a>
+          </div>
+
+          <div class="reg">
+            <a class="l" href="#d"><span class="d num">02.08</span><span class="n">Chez M. Martins</span><span class="e num">1 320,00 €</span></a>
+            <a class="l" href="#d"><span class="d num">28.07</span><span class="n">Terrasse bois</span><span class="e num">1 860,00 €</span></a>
+            <a class="l" href="#d"><span class="d num">21.07</span><span class="n">Muret de pierre</span><span class="e num">640,00 €</span></a>
+            <a class="l" href="#d"><span class="d num">14.07</span><span class="n">Abri de jardin</span><span class="e num">500,00 €</span></a>
+            <a class="l" href="#d"><span class="d num">09.07</span><span class="n">Reprise de mur</span><span class="e num zero">0,00 €</span></a>
+
+            <div class="total"><span class="q">Total facturé</span><span class="v num">4 320,00 €</span></div>
+            <p class="dont"><span>dont TVA collectée</span><b class="num">720,00 €</b></p>
+            <p class="avert">Atlas prépare ce relevé, il ne le déclare pas.</p>
+          </div>
+        </div>
+        <nav class="bas"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span><i></i></nav>
+      </div></div>
+      <p class="sous">D · Le registre</p>
+      <p class="note">Le relevé de TVA n'est plus un autre écran : il <b>est</b> l'écran. La facture à 0,00 € s'y voit en gris — <b>un montant nul se lit, il ne se cache pas.</b></p>
+    </div>
+
+  </div>
+
+  <p class="note" style="max-width:66ch;margin:44px auto 0;border:0">
+    <b>Trois choses vues sur votre capture, qui ne sont pas des goûts.</b>
+    Le pavé du relevé de TVA est le seul cadre plein de l'écran : il attire
+    l'œil sur ce qui est le moins urgent. « Rien à facturer » s'affiche comme un
+    titre de section suivi de rien — un écran qui a l'air amputé plutôt que
+    calme. Et une facture à <b>0,00 €</b> passe aujourd'hui sans un mot : c'est
+    soit un devis vide facturé par erreur, soit un vrai geste commercial — dans
+    les deux cas l'écran doit le montrer, pas l'aplatir.
+    <br><br>
+    Le rond « N » qui recouvre « CHANTIERS » sur votre capture est
+    l'<b>indicateur de développement de Next.js</b> : il n'existe pas en
+    production. La bulle verte, elle, est bien l'assistant
+    (<code>AssistantSidebar</code>, <code>fixed bottom-24 right-4</code>) — et
+    elle, il faudra décider si elle reste posée là.
+  </p>
+</div>

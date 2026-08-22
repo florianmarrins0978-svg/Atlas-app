@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
+  absencesEquipe,
   audiosAPurger,
   brouillonsInformations,
   chantiers,
@@ -15,6 +16,13 @@ import {
   grillePrix,
   agendasExternes,
   equipes,
+  equipesDuChantier,
+  prestationsEntretien,
+  passagesEntretien,
+  lignesPassage,
+  naturesGrille,
+  paiementsFacture,
+  tranchesGrille,
   factures,
   fragmentsDocuments,
   historiquePrix,
@@ -24,13 +32,19 @@ import {
   lignesPrix,
   materiel,
   membresEntreprise,
+  achatsTva,
   notesVocales,
+  diagnostics,
+  photosDiagnostic,
+  photosDiagnosticAPurger,
+  hypothesesDiagnostic,
   parametresChiffrage,
   photos,
   precisionsChantier,
   prestations,
   propositionsIa,
   tarifs,
+  motsCatalogue,
 } from "../db/schema";
 import type { Ctx } from "./context";
 
@@ -101,6 +115,7 @@ export async function exporterEntreprise(
       leMateriel,
       lesNotes,
       lesPhotos,
+      lesAchatsTva,
       lesTarifs,
       lesLignesPrix,
       lesDevis,
@@ -122,6 +137,19 @@ export async function exporterEntreprise(
       laGrillePrix,
       lesAgendas,
       lesEquipes,
+      sesEquipesDeChantier,
+      sesAbsences,
+      sesTranches,
+      sesNatures,
+      lesReglements,
+      sonModeleEntretien,
+      sesPassages,
+      sesLignesPassage,
+      sesMotsCatalogue,
+      sesDiagnostics,
+      sesPhotosDiagnostic,
+      sesHypotheses,
+      sesPhotosAPurger,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -132,6 +160,12 @@ export async function exporterEntreprise(
       tx.select().from(materiel).where(eq(materiel.entrepriseId, e)),
       tx.select().from(notesVocales).where(eq(notesVocales.entrepriseId, e)),
       tx.select().from(photos).where(eq(photos.entrepriseId, e)),
+      // Les achats et leur TVA déductible. **Ils partent avec le reste** : le
+      // patron a le droit d'emporter TOUTES ses données, et ses tickets sont
+      // parmi les plus personnelles — ils disent où il fait le plein et quand
+      // il travaille. Le contrôle d'exhaustivité les a réclamés avant qu'on y
+      // pense (`test-export-entreprise.ts`).
+      tx.select().from(achatsTva).where(eq(achatsTva.entrepriseId, e)),
       tx.select().from(tarifs).where(eq(tarifs.entrepriseId, e)),
       tx.select().from(lignesPrix).where(eq(lignesPrix.entrepriseId, e)),
       tx.select().from(devis).where(eq(devis.entrepriseId, e)),
@@ -178,6 +212,67 @@ export async function exporterEntreprise(
       // Les noms que le patron a donnés à ses équipes. C'est SA saisie, et rien
       // ne la reconstitue : elle part avec le reste de ses données.
       tx.select().from(equipes).where(eq(equipes.entrepriseId, e)),
+      // **Qui va sur quel chantier, demi-journée par demi-journée** (migration
+      // 0058). C'est sa saisie, et elle ne se reconstitue pas : rien, dans le
+      // chantier, ne dit après coup qui l'a fait. Une sauvegarde qui l'oublierait
+      // rendrait un planning dont toutes les pastilles seraient vides.
+      tx
+        .select()
+        .from(equipesDuChantier)
+        .where(eq(equipesDuChantier.entrepriseId, e)),
+      // Les jours où une équipe n'est pas là (14 août 2026, `ARCHITECTURE.md`
+      // §109). C'est sa saisie, et elle commande les dates qu'Atlas propose à
+      // ses clients : une sauvegarde qui l'oublierait rendrait un planning qui
+      // ne se comporte plus comme le sien.
+      tx.select().from(absencesEquipe).where(eq(absencesEquipe.entrepriseId, e)),
+      // Les tranches et les travaux qu'il a réglés lui-même (14 août 2026,
+      // `ARCHITECTURE.md` §102). Sans eux, une sauvegarde rendrait ses prix
+      // sans rendre les cases qui leur donnent un sens : « 1 400 € » pour
+      // « d90_2 » ne veut rien dire une fois la tranche perdue.
+      tx.select().from(tranchesGrille).where(eq(tranchesGrille.entrepriseId, e)),
+      tx.select().from(naturesGrille).where(eq(naturesGrille.entrepriseId, e)),
+      // Les règlements reçus (migration 0045). Sans eux, une sauvegarde rendrait
+      // les factures sans dire lesquelles ont été payées — donc sans permettre
+      // de reconstituer un seul relevé de TVA.
+      tx.select().from(paiementsFacture).where(eq(paiementsFacture.entrepriseId, e)),
+      // Le modèle de fiche d'entretien (migration 0051). C'est SA saisie —
+      // les prestations, leurs familles, leur ordre —, et rien ne la
+      // reconstitue : le modèle fourni au départ n'est qu'un point de départ,
+      // que dix retraits et cinq ajouts ont pu éloigner de tout ce qu'Atlas
+      // sait engendrer. Une sauvegarde qui l'oublierait rendrait des rapports
+      // d'entretien dont plus personne ne saurait de quelle fiche ils viennent.
+      tx
+        .select()
+        .from(prestationsEntretien)
+        .where(eq(prestationsEntretien.entrepriseId, e)),
+      // Les passages d'entretien et leurs lignes (migration 0055). Ce sont les
+      // rapports partis chez ses clients — avec leur horodatage et leur
+      // empreinte, qui font la preuve du passage depuis qu'il a écarté les
+      // signatures (16 août 2026). Rien ne les reconstitue : les lignes sont
+      // une COPIE du modèle au jour dit, et le modèle a bougé depuis. Une
+      // sauvegarde qui les oublierait perdrait exactement ce dont il aurait
+      // besoin le jour où un client conteste.
+      tx.select().from(passagesEntretien).where(eq(passagesEntretien.entrepriseId, e)),
+      tx.select().from(lignesPassage).where(eq(lignesPassage.entrepriseId, e)),
+      // Les mots qu'il a ajoutés au catalogue (migration 0052). C'est SA
+      // saisie, et rien ne la reconstitue : le vocabulaire d'Atlas, lui, se
+      // retrouve tout seul — ses mots à lui, non. Une sauvegarde qui les
+      // oublierait rendrait une dictée qui ne comprend plus ce qu'elle
+      // comprenait la veille, sans que rien ne dise pourquoi.
+      tx.select().from(motsCatalogue).where(eq(motsCatalogue.entrepriseId, e)),
+      // Les diagnostics végétaux et leurs photos. **Ils partent avec le reste**,
+      // et le contrôle d'exhaustivité les a réclamés le jour même où les tables
+      // sont nées — avant qu'on y pense. Ce sont des données personnelles à part
+      // entière : une photo de diagnostic est prise chez quelqu'un, et le
+      // diagnostic dit ce qu'on a trouvé dans son jardin.
+      tx.select().from(diagnostics).where(eq(diagnostics.entrepriseId, e)),
+      tx.select().from(photosDiagnostic).where(eq(photosDiagnostic.entrepriseId, e)),
+      tx.select().from(hypothesesDiagnostic).where(eq(hypothesesDiagnostic.entrepriseId, e)),
+      // La file de purge part aussi, comme `audios_a_purger` : elle dit à
+      // quelle date chaque photo doit disparaître, ce qui est une information
+      // sur SES données. Exporter l'une sans l'autre aurait été une divergence
+      // sans raison.
+      tx.select().from(photosDiagnosticAPurger).where(eq(photosDiagnosticAPurger.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -192,6 +287,7 @@ export async function exporterEntreprise(
       materiel: leMateriel,
       notes_vocales: lesNotes,
       photos: lesPhotos,
+      achats_tva: lesAchatsTva,
       tarifs: lesTarifs,
       lignes_prix: lesLignesPrix,
       devis: lesDevis,
@@ -223,9 +319,28 @@ export async function exporterEntreprise(
       // qu'il a prise, ou un prix qu'il a réellement pratiqué : la perdre lui
       // ferait rechiffrer à l'aveugle des chantiers déjà arbitrés.
       grille_prix: laGrillePrix,
+      // Les tranches et les travaux qui donnent leur sens aux cases ci-dessus.
+      tranches_grille: sesTranches,
+      natures_grille: sesNatures,
+      // Ce qui a été encaissé, et quand : c'est ce qui date sa TVA.
+      paiements_facture: lesReglements,
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,
+      equipes_du_chantier: sesEquipesDeChantier,
+      absences_equipe: sesAbsences,
+      // Le modèle de fiche d'entretien : ses prestations, ses familles, son ordre.
+      prestations_entretien: sonModeleEntretien,
+      passages_entretien: sesPassages,
+      lignes_passage: sesLignesPassage,
+      mots_catalogue: sesMotsCatalogue,
+      diagnostics: sesDiagnostics,
+      photos_diagnostic: sesPhotosDiagnostic,
+      // Les hypothèses internes du moteur. Jamais affichées, mais elles sont à
+      // lui : elles disent POURQUOI un diagnostic a conclu ce qu'il a conclu,
+      // et c'est exactement ce qu'on veut relire le jour où il est contesté.
+      hypotheses_diagnostic: sesHypotheses,
+      photos_diagnostic_a_purger: sesPhotosAPurger,
     };
 
     const compte: Record<string, number> = {};
@@ -245,6 +360,11 @@ export async function exporterEntreprise(
     for (const n of lesNotes) ajouter(n.storageKey as string | null, "note-vocale");
     for (const d of lesDevis) ajouter(d.pdfStorageKey as string | null, "devis-pdf");
     for (const f of lesFactures) ajouter(f.pdfStorageKey as string | null, "facture-pdf");
+    // Les photos de diagnostic partent avec le reste. Celles déjà purgées ont
+    // une clé nulle : `ajouter` les ignore, plutôt que de faire échouer
+    // l'archive sur un objet qui n'existe plus (c'est le cas normal après
+    // 90 jours, pas une anomalie).
+    for (const p of sesPhotosDiagnostic) ajouter(p.storageKey as string | null, "photo");
 
     return {
       versionFormat: VERSION_FORMAT_EXPORT,

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MICRO_SIMULE = path.join(__dirname, "fixtures", "fake-mic.wav");
@@ -63,8 +64,8 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `Anneau devis ${Date.now()}`);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', `Anneau devis ${Date.now()}`);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 30_000 });
   const fiche = page.url();
   const chantierId = fiche.split("/").pop()!;

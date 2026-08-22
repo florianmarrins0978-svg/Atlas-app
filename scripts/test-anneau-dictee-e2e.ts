@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MICRO_SIMULE = path.join(__dirname, "fixtures", "fake-mic.wav");
@@ -62,8 +63,8 @@ async function main() {
 
   // Un chantier NEUF : ni photo, ni dictée — exactement le sien.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `Anneau e2e ${Date.now()}`);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', `Anneau e2e ${Date.now()}`);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });
   const fiche = page.url();
   // **On attend que la PAGE soit arrivée, pas plus.** `waitForURL` rend la main

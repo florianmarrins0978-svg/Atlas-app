@@ -3,10 +3,17 @@
 import { useEffect, useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourIso, jourLisible } from "@/lib/jour";
 import Calendrier from "@/components/atlas/Calendrier";
+import { basculerJour } from "@/lib/calendrier";
 import { libelleDuree } from "@/server/disponibilites";
-import { preparerEnvoiAction, envoyerAuClientAction, verifierJourProposeAction } from "./actions";
+import {
+  preparerEnvoiAction,
+  envoyerAuClientAction,
+  verifierJourProposeAction,
+  enregistrerCoordonneeClientAction,
+} from "./actions";
 import type { PreparationEnvoi, VerdictJour } from "@/server/repositories/preparation-envoi";
 import BandeDuree from "../BandeDuree";
 
@@ -17,12 +24,47 @@ import BandeDuree from "../BandeDuree";
 // La seule question posée est un RÉGLAGE de l'envoi : une date, ou deux ? Sa
 // réponse déclenche tout le reste.
 
+// **Ce qui s'arrête ici, et ce qui se répare ici.**
+//
+// Le patron, le 11 août 2026, capture à l'appui : *« l'encart qui permet
+// d'envoyer aux clients par SMS, par e-mail, a disparu. »* Il ne voyait plus
+// que « Indiquez d'abord comment joindre ce client — sur sa fiche », et un
+// bouton grisé.
+//
+// **C'était un cul-de-sac, et il s'est refermé le soir même.** L'écran
+// « Informations » — le seul endroit où saisir le téléphone ou l'e-mail d'un
+// client — a quitté le tiroir de la fiche quelques heures plus tôt, à sa
+// demande. La phrase renvoyait donc vers une porte qui n'existe plus, et un
+// chantier né d'une dictée (client « non renseigné ») ne pouvait plus jamais
+// partir.
+//
+// Le dépôt avait pourtant déjà tranché ce point exact le 4 août, pour l'écran
+// d'après : *« si la coordonnée manque, elle se saisit sur place — il n'existe
+// aucun autre écran pour la renseigner, et renvoyer le patron sur la fiche du
+// client l'enverrait vers une porte qui n'existe pas »* (`TransmettreAuClient`).
+// La règle valait ici aussi. Elle y est.
+//
+// Reste `devis_absent`, qui n'est pas du même ordre : rien à saisir ne le
+// résout, et il ne se produit pas depuis ce chemin.
 const MESSAGES_BLOCAGE: Record<string, string> = {
-  canal_absent:
-    "Indiquez d'abord comment joindre ce client — par SMS ou par e-mail — sur sa fiche.",
-  coordonnee_absente: "Ce client n'a pas de coordonnée enregistrée pour le canal choisi.",
+  canal_absent: "Comment joindre ce client ?",
+  coordonnee_absente: "Il manque la coordonnée pour ce canal.",
   devis_absent: "Aucun devis à envoyer pour ce chantier.",
 };
+
+/**
+ * Une date, ou deux — jamais trois (`docs/AGENT.md` §2.2).
+ *
+ * Le nombre vit ici et la RÈGLE dans `src/lib/calendrier.ts` : au-delà du
+ * maximum, c'est le plus ancien choix qui cède la place, plutôt qu'un bouton
+ * qui ne répond pas — ce qui se lit comme une panne.
+ */
+const DATES_AU_MAXIMUM = 2;
+
+const LIBELLE_CANAL = {
+  sms: { titre: "Par SMS", champ: "Numéro de téléphone", exemple: "06 12 34 56 78" },
+  email: { titre: "Par e-mail", champ: "Adresse e-mail", exemple: "client@exemple.fr" },
+} as const;
 
 type Props = {
   chantierId: string;
@@ -30,7 +72,16 @@ type Props = {
   clientNom: string;
   ouvert: boolean;
   onFermer: () => void;
-  onEnvoye: (lien: string) => void;
+  /**
+   * Rend **ce que le serveur vient de valider**, pas seulement le lien.
+   *
+   * Le canal et le destinataire sont relus en base au moment de l'envoi
+   * (`preparerEnvoi`). Les transmettre ici évite que l'écran d'appel ne
+   * retombe sur une valeur chargée avec la page — c'est le défaut du 20 août
+   * 2026 : le patron avait choisi l'e-mail sur la fiche de son client, et
+   * c'est le SMS qui s'ouvrait.
+   */
+  onEnvoye: (envoi: { lien: string; canal: "sms" | "email"; destinataire: string | null }) => void;
 };
 
 // La feuille ne fait que monter et démonter son contenu. C'est ce qui garantit
@@ -53,17 +104,43 @@ function Contenu({
 }: Omit<Props, "ouvert">) {
   const [preparation, setPreparation] = useState<PreparationEnvoi | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
+  /**
+   * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
+   *
+   * **Ouvert par défaut**, parce que c'est ce que l'application faisait depuis
+   * toujours : un défaut fermé changerait sans un mot ce qu'il croit envoyer.
+   * Le choix est figé dans l'envoi — l'écran du client dira demain ce qu'il dit
+   * aujourd'hui.
+   */
+  const [autreDateAutorisee, setAutreDateAutorisee] = useState(true);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   // `undefined` tant que le patron n'a rien corrigé : le serveur déduit alors
   // la durée de la dictée. Une valeur ici veut dire « c'est lui qui a tranché ».
   const [dureeChoisie, setDureeChoisie] = useState<number | undefined>(undefined);
-  // La date que le patron choisit lui-même, et ce que le serveur en dit.
-  // Séparée de `selection` tant qu'elle n'est pas retenable : proposer un jour
-  // que l'envoi refusera ensuite coûte un aller-retour avec son client.
-  const [autreDate, setAutreDate] = useState("");
+  // **Le dernier jour INTERROGÉ au calendrier, et ce que le serveur en a dit.**
+  //
+  // Il ne porte plus la sélection — c'était le défaut du 12 août 2026, signalé
+  // par le patron : *« dès que je choisis à même le planning, je ne peux
+  // choisir qu'un seul jour. Or je dois pouvoir proposer deux jours au
+  // client. »* Cet état était une chaîne unique, et le calendrier n'en
+  // recevait qu'un seul jour à marquer : choisir un second effaçait le premier
+  // sous ses yeux. Il n'avait aucune raison de croire que les deux étaient
+  // retenus — et rappuyer sur le premier pour le retirer le remettait au lieu
+  // de l'enlever.
+  //
+  // **`selection` fait foi, et elle seule.** Ce qui reste ici ne sert qu'à
+  // afficher la phrase du serveur sous le calendrier.
+  const [jourInterroge, setJourInterroge] = useState("");
   const [verdict, setVerdict] = useState<VerdictJour | null>(null);
   const [verification, setVerification] = useState(false);
+  // Le canal et la coordonnée saisis ici même, quand ils manquent. `rejouer`
+  // relance la préparation après l'enregistrement : sans lui, l'écran garderait
+  // le blocage qu'on vient de lever.
+  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email">("sms");
+  const [coordonnee, setCoordonnee] = useState("");
+  const [enregistrement, setEnregistrement] = useState(false);
+  const [rejouer, setRejouer] = useState(0);
 
   useEffect(() => {
     let annule = false;
@@ -83,28 +160,79 @@ function Contenu({
     return () => {
       annule = true;
     };
-  }, [chantierId, dureeChoisie]);
+  }, [chantierId, dureeChoisie, rejouer]);
 
-  function basculerJour(jour: string) {
-    setSelection((actuelle) => {
-      if (actuelle.includes(jour)) return actuelle.filter((j) => j !== jour);
-      // Jamais plus de deux : au-delà, le client ne choisit plus, il hésite.
-      if (actuelle.length >= 2) return [actuelle[1], jour];
-      return [...actuelle, jour];
-    });
+  /**
+   * Enregistre le canal et la coordonnée, puis relance la préparation.
+   *
+   * Le client est mis à jour pour de bon — pas seulement pour cet envoi : c'est
+   * la même information que la fiche porterait, et la saisir deux fois serait
+   * la saisir une fois de trop.
+   */
+  async function enregistrerContact() {
+    const valeur = coordonnee.trim();
+    if (!valeur || !preparation?.clientId) return;
+    setEnregistrement(true);
+    setErreur(null);
+    try {
+      const r = await enregistrerCoordonneeClientAction(preparation.clientId, canalChoisi, valeur);
+      if (!r.succes) {
+        setErreur("Cette coordonnée n'a pas pu être enregistrée. Vérifiez-la et réessayez.");
+        return;
+      }
+      setPreparation(null);
+      setRejouer((n) => n + 1);
+    } catch {
+      setErreur("L'enregistrement n'a pas abouti — vérifiez votre réseau et réessayez.");
+    } finally {
+      setEnregistrement(false);
+    }
   }
 
-  async function verifierAutreDate(jour: string) {
-    setAutreDate(jour);
+  /**
+   * Ajoute ou retire un jour de la sélection.
+   *
+   * La règle « une ou deux, jamais plus » n'est PAS écrite ici : elle vit dans
+   * `src/lib/calendrier.ts`, où elle est éprouvée sans navigateur et où le
+   * serveur la retrouvera. Elle l'était en double jusqu'au 12 août 2026 — deux
+   * copies d'une même règle finissent toujours par diverger, et l'écart se voit
+   * chez le client.
+   */
+  function basculer(jour: string) {
+    setSelection((actuelle) => basculerJour(actuelle, jour, DATES_AU_MAXIMUM));
+  }
+
+  /**
+   * Un jour touché AU CALENDRIER.
+   *
+   * Déjà retenu → on le retire tout de suite : il est passé par le serveur, et
+   * le redemander pour l'enlever serait attendre pour rien.
+   *
+   * Sinon → on demande d'abord au serveur, et on ne le retient que s'il tient.
+   * Le calendrier ne connaît que la fenêtre proche : au-delà, lui seul sait si
+   * la journée est libre (`verifierJourPropose`). Proposer un jour que l'envoi
+   * refuserait ensuite coûte un aller-retour avec le client.
+   */
+  async function toucherAuCalendrier(jour: string) {
+    if (selection.includes(jour)) {
+      basculer(jour);
+      // La phrase du serveur portait sur ce jour-là : la garder après l'avoir
+      // retiré laisserait « retenue » sous un jour qui ne l'est plus.
+      if (jourInterroge === jour) {
+        setJourInterroge("");
+        setVerdict(null);
+      }
+      return;
+    }
+    setJourInterroge(jour);
     setVerdict(null);
-    if (!jour) return;
     setVerification(true);
     try {
       const v = await verifierJourProposeAction(chantierId, jour, preparation?.dureeDemiJournees);
       setVerdict(v);
-      // Retenue tout de suite quand elle tient : un second geste pour confirmer
-      // ce qu'on vient de choisir n'apprend rien à personne.
-      if (v.retenable) basculerJour(jour);
+      // Retenu tout de suite quand il tient : un second geste pour confirmer ce
+      // qu'on vient de choisir n'apprend rien à personne.
+      if (v.retenable) basculer(jour);
     } catch {
       setVerdict({
         jour,
@@ -129,13 +257,14 @@ function Contenu({
         chantierId,
         devisId,
         [...selection].sort(),
-        preparation?.dureeDemiJournees
+        preparation?.dureeDemiJournees,
+        autreDateAutorisee
       );
       if (!r.succes) {
         setErreur(r.erreur);
         return;
       }
-      onEnvoye(r.lien);
+      onEnvoye({ lien: r.lien, canal: r.canal, destinataire: r.destinataire });
     } catch (e) {
       // **La phrase de secours, et seulement elle.** L'action rend désormais sa
       // raison plutôt que de lancer (`actions.ts`) : arriver ici signifie que
@@ -152,6 +281,10 @@ function Contenu({
   }
 
   const blocage = preparation?.blocage ? MESSAGES_BLOCAGE[preparation.blocage] : null;
+  // Deux des trois blocages se lèvent d'une saisie ici même. `devis_absent`,
+  // non : rien à écrire ne le résout.
+  const reparable =
+    preparation?.blocage === "canal_absent" || preparation?.blocage === "coordonnee_absente";
 
   return (
     <>
@@ -166,9 +299,70 @@ function Contenu({
       )}
 
       {preparation && blocage && (
-        <p className="my-5 text-center text-[13px]" style={{ color: colors.rust }}>
+        <p className="mb-3 mt-4 text-center text-[13px]" style={{ color: colors.ink }}>
           {blocage}
         </p>
+      )}
+
+      {/* **On répare, on ne renvoie pas ailleurs.** Les deux voies sont offertes
+          et la coordonnée se saisit ici : c'est le seul endroit atteignable
+          depuis un chantier dicté, dont le client reste « non renseigné ». */}
+      {preparation && reparable && (
+        <div className="mb-5">
+          <div className="mb-2.5 flex gap-2">
+            {(["sms", "email"] as const).map((c) => {
+              const actif = canalChoisi === c;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCanalChoisi(c)}
+                  aria-pressed={actif}
+                  className="flex-1 rounded-full py-3 text-[15px] font-medium"
+                  style={{
+                    backgroundColor: actif ? colors.rustTint : colors.card,
+                    color: actif ? colors.rust : colors.ink,
+                  }}
+                >
+                  {LIBELLE_CANAL[c].titre}
+                </button>
+              );
+            })}
+          </div>
+
+          <input
+            value={coordonnee}
+            onChange={(e) => setCoordonnee(e.target.value)}
+            // Le clavier du téléphone suit le canal : composer un numéro sur un
+            // clavier de texte est une corvée qu'on peut simplement éviter.
+            type={canalChoisi === "sms" ? "tel" : "email"}
+            inputMode={canalChoisi === "sms" ? "tel" : "email"}
+            autoComplete={canalChoisi === "sms" ? "tel" : "email"}
+            aria-label={LIBELLE_CANAL[canalChoisi].champ}
+            placeholder={LIBELLE_CANAL[canalChoisi].exemple}
+            className="w-full rounded-[4px] px-3.5 py-3 text-[16px] outline-none"
+            style={{ backgroundColor: colors.card, color: colors.ink }}
+          />
+
+          <button
+            type="button"
+            onClick={enregistrerContact}
+            disabled={enregistrement || !coordonnee.trim() || !preparation.clientId}
+            className="mt-2.5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-50"
+            style={{ backgroundColor: colors.card, color: colors.rust }}
+          >
+            {enregistrement ? "Enregistrement…" : "Enregistrer et continuer"}
+          </button>
+
+          {/* Sans client rattaché, il n'y a rien à mettre à jour : le dire, au
+              lieu d'offrir un champ qui ne mènerait nulle part. */}
+          {!preparation.clientId && (
+            <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
+              Ce chantier n&apos;a pas encore de client. Ouvrez le devis pour lui donner un nom,
+              puis revenez ici.
+            </p>
+          )}
+        </div>
       )}
 
       {preparation && !blocage && (
@@ -215,9 +409,9 @@ function Contenu({
                 <button
                   key={jour}
                   type="button"
-                  onClick={() => basculerJour(jour)}
+                  onClick={() => basculer(jour)}
                   aria-pressed={choisi}
-                  className="flex items-center justify-between rounded-[4px] px-4 py-3 text-[15px]"
+                  className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
                   style={{
                     backgroundColor: choisi ? colors.rustTint : colors.card,
                     color: colors.ink,
@@ -272,14 +466,20 @@ function Contenu({
               Ou une autre date
             </p>
             <div className="rounded-[4px] px-3 py-3" style={{ backgroundColor: colors.card }}>
+              {/* **Le calendrier marque TOUTE la sélection, pas la dernière
+                  date touchée.** Il ne recevait qu'un seul jour : en choisir un
+                  second effaçait le premier, et le patron en concluait — à
+                  raison — qu'il ne pouvait en proposer qu'un. Ce qu'il voit ici
+                  est désormais exactement ce que son client recevra, y compris
+                  les jours pris dans la liste au-dessus. */}
               <Calendrier
                 debut={preparation.horizon.debut}
                 fin={preparation.horizon.fin}
                 occupes={preparation.joursOccupes}
-                retenus={autreDate ? [autreDate] : []}
+                retenus={selection}
                 aujourdHui={jourIso(new Date())}
-                libelleOccupe="votre planning est complet ce jour-là"
-                onBasculer={(jour) => verifierAutreDate(autreDate === jour ? "" : jour)}
+                dureeDemiJournees={preparation.dureeDemiJournees}
+                onBasculer={toucherAuCalendrier}
               />
             </div>
             {verification && (
@@ -299,7 +499,7 @@ function Contenu({
                     {" "}
                     <button
                       type="button"
-                      onClick={() => verifierAutreDate(verdict.alternative!)}
+                      onClick={() => toucherAuCalendrier(verdict.alternative!)}
                       className="font-medium underline"
                       style={{ color: colors.rust }}
                     >
@@ -327,9 +527,9 @@ function Contenu({
                   <button
                     key={jour}
                     type="button"
-                    onClick={() => basculerJour(jour)}
+                    onClick={() => basculer(jour)}
                     aria-pressed
-                    className="flex items-center justify-between rounded-[4px] px-4 py-3 text-[15px]"
+                    className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
                     style={{ backgroundColor: colors.rustTint, color: colors.ink }}
                   >
                     <span>{jourLisible(jour)}</span>
@@ -341,10 +541,60 @@ function Contenu({
             </div>
           )}
 
+          {/* **Sa demande du 17 août 2026 :** *« il faut que l'utilisateur
+              puisse choisir avant d'envoyer s'il autorise ou non le client à
+              choisir une date si celles proposées ne lui conviennent pas »*.
+
+              Posé ICI, sous les dates et avant le bouton : c'est le dernier
+              regard avant l'envoi, et la phrase en dessous change avec lui —
+              sans quoi il enverrait sans savoir ce que son client va voir. */}
+          {/* **La ligne n'est pas un bouton, l'interrupteur en est un** — c'est
+              la forme des réglages (`NotificationsClient`), et c'est aussi ce
+              que le dépôt exige : toute action ronde, jamais un rectangle. */}
+          <div
+            className="mb-3 flex items-start gap-3 rounded-2xl px-4 py-3"
+            style={{ backgroundColor: colors.card, border: `1px solid ${colors.lineSoft}` }}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px]" style={{ color: colors.ink }}>
+                Il peut proposer une autre date
+              </span>
+              <span className="mt-0.5 block text-[12px] leading-[1.45]" style={{ color: colors.muted }}>
+                {autreDateAutorisee
+                  ? "Un calendrier de vos jours libres s'ouvrira sous vos dates."
+                  : "Il choisira uniquement parmi vos dates, ou demandera une correction."}
+              </span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autreDateAutorisee}
+              aria-label="Il peut proposer une autre date"
+              onClick={() => setAutreDateAutorisee((ouvert) => !ouvert)}
+              // 28 × 48, comme partout ailleurs : la pièce se reconnaît d'un
+              // écran à l'autre, et le pouce la trouve sans regarder.
+              className="relative mt-0.5 h-[28px] w-[48px] flex-none rounded-full transition-colors"
+              style={{
+                backgroundColor: autreDateAutorisee ? colors.rust : colors.line,
+                boxShadow: autreDateAutorisee ? "none" : `inset 0 0 0 1px ${colors.line}`,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-all"
+                style={{ backgroundColor: colors.card, left: autreDateAutorisee ? 23 : 3 }}
+              />
+            </button>
+          </div>
+
           <p className="mb-4 text-center text-[12px]" style={{ color: colors.muted }}>
             {selection.length === 2
-              ? "Le client choisira entre ces deux dates."
-              : "Le client pourra aussi en proposer une autre, parmi vos jours libres."}
+              ? autreDateAutorisee
+                ? "Le client choisira entre ces deux dates, ou en proposera une autre."
+                : "Le client choisira entre ces deux dates, et rien d'autre."
+              : autreDateAutorisee
+                ? "Le client pourra aussi en proposer une autre, parmi vos jours libres."
+                : "Le client ne pourra pas en proposer une autre."}
           </p>
         </>
       )}
@@ -355,18 +605,31 @@ function Contenu({
         </p>
       )}
 
+      {/* **Ce bouton était écrit à la main, et le patron l'a vu le 12 août 2026 :**
+          *« déjà le bouton, ce n'est pas le même »*. Il avait raison — la
+          capsule avait été posée sur `PrimaryButton`, et cet écran-ci ne s'en
+          servait pas. Une action principale dessinée sur place échappe à toute
+          décision d'ensemble : elle ne change que si quelqu'un pense à elle.
+          C'est le composant qui porte la forme, jamais l'écran. */}
       <div className="flex flex-col gap-2.5">
-        <button
+        <PrimaryButton
           onClick={confirmer}
           disabled={enCours || !preparation || !!blocage || selection.length === 0}
-          className="rounded-[4px] py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: colors.rust }}
         >
           {enCours ? "Envoi…" : "Envoyer le devis"}
-        </button>
+        </PrimaryButton>
+        {/* **Un nom qui le distingue, depuis que la feuille vit sur le devis**
+            (20 août 2026). L'écran du devis porte déjà un « Annuler » — celui
+            qui reprend le retrait d'une ligne. Deux boutons du même nom sur le
+            même écran, c'est un lecteur d'écran qui annonce deux fois la même
+            chose sans dire quoi, et une suite qui vise le mauvais des deux.
+            Le mot affiché ne bouge pas : il est clair sous les yeux, il ne
+            l'était plus à l'oreille. */}
         <button
+          type="button"
+          aria-label="Annuler l’envoi"
           onClick={onFermer}
-          className="rounded-[4px] py-3.5 text-[15px] font-medium"
+          className="rounded-full py-3.5 text-[15px] font-medium"
           style={{ color: colors.muted }}
         >
           Annuler

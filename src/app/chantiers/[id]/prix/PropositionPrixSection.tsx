@@ -255,7 +255,7 @@ export default function PropositionPrixSection({
             type="button"
             onClick={appliquer}
             disabled={enCours || dejaAuDetail !== null || !peutAppliquer}
-            className={`rounded-[4px] py-3.5 disabled:opacity-40 ${libelleCaps}`}
+            className={`rounded-full py-3.5 disabled:opacity-40 ${libelleCaps}`}
             style={{ backgroundColor: colors.rustTint, color: colors.rust, minHeight: 48 }}
           >
             {dejaAuDetail ? "Déjà au détail" : enCours ? "Ajout…" : "Ajouter au détail"}

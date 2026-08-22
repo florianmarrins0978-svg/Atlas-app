@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 
 /**
  * **Un seul banc à la fois.**
@@ -47,14 +47,41 @@ function vivant(pid) {
  * @returns {{ pris: true } | { pris: false, parPid: number }}
  */
 export function prendreVerrouBanc({ chemin = CHEMIN_PAR_DEFAUT, pid = process.pid } = {}) {
-  if (existsSync(chemin)) {
-    const ancien = Number.parseInt(readFileSync(chemin, "utf8").trim(), 10);
-    // Un contenu illisible ne doit pas bloquer un démarrage : on le remplace.
-    if (Number.isInteger(ancien) && ancien > 0 && ancien !== pid && vivant(ancien)) {
-      return { pris: false, parPid: ancien };
+  // **Créer d'abord, EXCLUSIVEMENT — et c'est le trou du 17 août 2026.**
+  //
+  // La version précédente regardait si le fichier existait, puis l'écrivait.
+  // Deux bancs qui démarrent dans la même seconde — l'espace en lance un à
+  // l'allumage, le veilleur en relance un dès qu'il croit le serveur mort — ne
+  // trouvaient donc RIEN ni l'un ni l'autre, et repartaient tous les deux. Deux
+  // constructions, un seul verrou chez Next : *« Another next build process is
+  // already running »*, et le banc reste en mode développement — c'est-à-dire
+  // « l'appli est super lente ».
+  //
+  // `wx` demande au système de créer le fichier **ou d'échouer** : un seul des
+  // deux peut réussir, quelle que soit la précision de leur simultanéité.
+  try {
+    writeFileSync(chemin, `${pid}\n`, { flag: "wx" });
+    return { pris: true };
+  } catch (erreur) {
+    if (erreur?.code !== "EEXIST") {
+      // Autre chose que « il existe déjà » — disque plein, droits. Ne JAMAIS
+      // empêcher un démarrage pour un verrou qu'on n'arrive pas à poser : au
+      // pire on perd la garde, au mieux Atlas revient.
+      return { pris: true };
     }
   }
-  writeFileSync(chemin, `${pid}\n`);
+
+  const ancien = Number.parseInt(readFileSync(chemin, "utf8").trim(), 10);
+  if (Number.isInteger(ancien) && ancien > 0 && ancien !== pid && vivant(ancien)) {
+    return { pris: false, parPid: ancien };
+  }
+
+  // Mort, illisible, ou le nôtre : on reprend la place. Le remplacement passe
+  // par un fichier temporaire puis un `rename`, qui est atomique — un lecteur
+  // ne verra jamais un verrou à moitié écrit.
+  const provisoire = `${chemin}.${pid}`;
+  writeFileSync(provisoire, `${pid}\n`);
+  renameSync(provisoire, chemin);
   return { pris: true };
 }
 

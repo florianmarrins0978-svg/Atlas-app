@@ -1,6 +1,12 @@
 import { eq, lte, sql } from "drizzle-orm";
 import { db } from "../db/client";
-import { audiosAPurger, fichiersAPurger, notesVocales } from "../db/schema";
+import {
+  audiosAPurger,
+  fichiersAPurger,
+  notesVocales,
+  photosDiagnostic,
+  photosDiagnosticAPurger,
+} from "../db/schema";
 
 // Application des durées de conservation — voir docs/RGPD.md §4.
 //
@@ -15,6 +21,10 @@ import { audiosAPurger, fichiersAPurger, notesVocales } from "../db/schema";
 
 export type RapportRetention = {
   audiosPurges: number;
+};
+
+export type RapportPhotosDiagnostic = {
+  photosPurgees: number;
 };
 
 /**
@@ -66,5 +76,62 @@ export async function purgerAudiosTranscrits(
     }
 
     return { audiosPurges: purges };
+  });
+}
+
+/**
+ * Purge les photos de diagnostic arrivées à échéance.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Même mécanique que la purge des audios, et pour les mêmes raisons.** Un
+ * balayage direct de `photos_diagnostic` ne renverrait rien : la table est
+ * cloisonnée par entreprise et le planificateur n'a le contexte d'aucune. Le
+ * piège est qu'il ne renverrait rien *silencieusement* — la purge paraîtrait
+ * fonctionner sans jamais rien purger. On adopte donc successivement le
+ * contexte de chaque entreprise concernée, depuis la file : l'isolation n'est
+ * pas contournée, elle est empruntée.
+ *
+ * **L'échéance vient d'une politique CONFIGURABLE** (`src/lib/retention-
+ * diagnostic.ts`), calculée au moment où la photo est rangée — jamais gravée
+ * dans le code. Une photo rattachée à un chantier suit la règle du dossier
+ * chantier, qui peut différer et qui, par défaut, ne purge pas.
+ *
+ * **Le diagnostic survit à sa photo** : il garde son nom de problème, sa date,
+ * sa fiche et sa traçabilité. C'est tout ce qui sert — et c'est tout ce qu'on
+ * garde du jardin de quelqu'un.
+ */
+export async function purgerPhotosDiagnostic(
+  maintenant: Date = new Date()
+): Promise<RapportPhotosDiagnostic> {
+  return db.transaction(async (tx) => {
+    const echues = await tx
+      .select()
+      .from(photosDiagnosticAPurger)
+      .where(lte(photosDiagnosticAPurger.purgerLe, maintenant));
+
+    let purgees = 0;
+    for (const entree of echues) {
+      // Le contexte vient de la file, donc du serveur — jamais d'une entrée
+      // d'utilisateur.
+      await tx.execute(sql`SELECT set_config('app.entreprise_id', ${entree.entrepriseId}, true)`);
+
+      const [photo] = await tx
+        .update(photosDiagnostic)
+        .set({ storageKey: null, purgeeLe: maintenant })
+        .where(eq(photosDiagnostic.id, entree.photoId))
+        .returning({ id: photosDiagnostic.id });
+
+      // La photo a pu disparaître entre la mise en file et l'échéance (le
+      // diagnostic supprimé, le chantier supprimé). La clé de stockage doit
+      // alors être purgée quand même — mais sans doublonner l'objet.
+      if (photo) {
+        await tx.insert(fichiersAPurger).values({ storageKey: entree.storageKey });
+        purgees++;
+      }
+
+      await tx.delete(photosDiagnosticAPurger).where(eq(photosDiagnosticAPurger.id, entree.id));
+    }
+
+    return { photosPurgees: purgees };
   });
 }

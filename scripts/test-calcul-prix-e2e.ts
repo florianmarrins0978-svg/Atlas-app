@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Parcours mobile du lot : informations confirmées → calcul du prix → détail
 // explicatif → validation humaine → étape suivante du chantier.
@@ -41,8 +42,8 @@ async function main() {
 
   const nomUnique = `Chantier calcul prix e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
   const chantierId = chantierUrl.split("/").pop()!;
@@ -94,13 +95,34 @@ async function main() {
 
   // --- Application explicite ---
   await page.click("text=Ajouter au détail");
-  await page.waitForTimeout(1000);
 
-  const apres = await pool.query(
+  // **Attendre que la ligne EXISTE, pas une seconde.** Le 13 août 2026, en
+  // batterie : la suite lisait zéro ligne et annonçait « Une seule ligne doit
+  // avoir été créée » — elle passait pourtant jouée seule. Une seconde suffit
+  // à un serveur au repos, pas sous soixante-six suites, et le message accusait
+  // alors le produit d'un défaut qui n'existait pas. Même famille que les deux
+  // suites corrigées la veille (`316326210`).
+  //
+  // On interroge la base, seule à dire la vérité ici : l'écran peut avoir peint
+  // la ligne avant que l'action serveur ait rendu la main.
+  const jusqua = Date.now() + 30_000;
+  let apres = await pool.query(
     `SELECT libelle, montant FROM lignes_prix WHERE chantier_id = $1 ORDER BY ordre`,
     [chantierId]
   );
-  assert.equal(apres.rows.length, 1, "Une seule ligne doit avoir été créée");
+  while (apres.rows.length === 0 && Date.now() < jusqua) {
+    await page.waitForTimeout(250);
+    apres = await pool.query(
+      `SELECT libelle, montant FROM lignes_prix WHERE chantier_id = $1 ORDER BY ordre`,
+      [chantierId]
+    );
+  }
+
+  assert.equal(
+    apres.rows.length,
+    1,
+    "Une seule ligne doit avoir été créée (attendue jusqu'à 30 s après le geste)"
+  );
   assert.equal(apres.rows[0].montant, PRIX_ATTENDU, "Le montant écrit doit être celui recalculé côté serveur");
 
   // --- Le prix n'est pas validé pour autant ---
@@ -109,7 +131,9 @@ async function main() {
 
   // --- Validation humaine explicite ---
   await page.click("text=Préparer le devis");
-  await page.waitForURL(/\/export$/, { timeout: 10000 });
+  // Vers le DEVIS, et non plus vers la synthèse d'avant l'envoi : celle-ci a été
+  // supprimée le 20 août 2026 (`ARCHITECTURE.md` §136).
+  await page.waitForURL(/\/devis-complet$/, { timeout: 10000 });
   // L'écran Devis crée le brouillon et horodate devis_genere_at pendant son
   // rendu : lire les jalons avant la fin de ce rendu donnerait un état périmé.
   await page.waitForLoadState("networkidle");
@@ -136,7 +160,15 @@ async function main() {
   // exacte dépend d'un timing extérieur à ce lot. Ce qui est vérifié ici, et qui
   // relève bien du calcul du prix : le chantier a franchi l'étape Prix et ne
   // propose plus de la refaire.
-  const etapesDevisAcceptees = ["Préparer le devis", "Consulter le devis"];
+  // « Consulter le devis » est devenu « Envoyer le devis au client » le 13 août
+  // 2026 : le libellé dit désormais le GESTE qui reste, pas l'écran où il mène
+  // (`ARCHITECTURE.md` §98). L'intention de ce contrôle — l'étape suivante doit
+  // concerner le devis — n'a pas bougé d'un pouce.
+  const etapesDevisAcceptees = [
+    "Préparer le devis",
+    "Consulter le devis",
+    "Envoyer le devis au client",
+  ];
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
   // Lecture du texte réellement rendu : plus robuste que le moteur `text=` face
   // au libellé découpé en deux nœuds (`{label} →`), et le contenu obtenu sert

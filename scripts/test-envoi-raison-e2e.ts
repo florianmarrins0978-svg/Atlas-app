@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Je ne peux pas envoyer au client. »** — le patron, le 7 août 2026, devant
 // un écran qui affichait « L'envoi n'a pas pu être préparé. »
@@ -32,9 +33,9 @@ async function main() {
   // Un chantier prêt à partir : client joignable, et une ligne chiffrée.
   const nom = `Raison envoi ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nom);
+  await page.fill('input[placeholder="Bernard"]', nom);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await page.click('button:has-text("Créer le chantier")');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const chantierId = page.url().split("/").pop()!;
 
@@ -54,13 +55,13 @@ async function main() {
   // dont le premier a abouti sans qu'il le voie.
   await pool.query(`UPDATE devis SET statut = 'envoye', envoye_le = now() WHERE chantier_id = $1`, [chantierId]);
 
-  await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1000);
 
   // L'écran d'un devis déjà parti ne propose normalement plus de l'envoyer. S'il
   // le propose encore, c'est justement le chemin sur lequel le patron s'est
   // trouvé — et il doit alors dire la vérité.
-  const ouvrir = page.getByText("Envoyer au client", { exact: false });
+  const ouvrir = page.getByText("Choisir la date", { exact: false });
   if ((await ouvrir.count()) === 0) {
     console.log("  ✓ un devis déjà parti ne propose plus de repartir");
     await pool.end();

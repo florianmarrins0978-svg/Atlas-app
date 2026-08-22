@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { libelleJourBarre, phraseJoursBarres } from "@/lib/jours-barres";
 import {
   etatDuJour,
   grilleDuMois,
@@ -42,7 +43,7 @@ export default function Calendrier({
   retenus,
   onBasculer,
   aujourdHui,
-  libelleOccupe = "déjà pris",
+  dureeDemiJournees,
 }: {
   /** Premier jour recevable, inclus. */
   debut: JourIso;
@@ -56,8 +57,21 @@ export default function Calendrier({
    *  navigateur ne sont pas toujours le même jour, et un rendu qui diverge
    *  déclenche un avertissement d'hydratation. */
   aujourdHui: JourIso;
-  /** Ce qu'entend une personne qui n'utilise pas ses yeux, sur un jour pris. */
-  libelleOccupe?: string;
+  /**
+   * Ce que le chantier doit réserver, en demi-journées — **`null` sur l'écran
+   * du CLIENT**.
+   *
+   * Un jour barré ne l'est pas parce qu'il est « pris » : il l'est parce qu'un
+   * chantier de cette durée ne peut pas y commencer — un jour parfaitement vide
+   * se barre dès que la durée déborderait sur un lendemain plein
+   * (`src/lib/jours-barres.ts`).
+   *
+   * **Sans valeur par défaut, et c'est délibéré.** Chaque écran doit trancher :
+   * le patron a droit à la durée, son client non (consigne tenue par
+   * `test-creneaux-planning.ts`). Un défaut silencieux ferait pencher un écran
+   * du mauvais côté sans que personne ne le décide.
+   */
+  dureeDemiJournees: number | null;
 }) {
   const [mois, setMois] = useState<MoisAffiche>(() =>
     moisDuJour(retenus[0] ?? (aujourdHui >= debut && aujourdHui <= fin ? aujourdHui : debut))
@@ -133,9 +147,11 @@ export default function Calendrier({
                 tabIndex={inactif ? -1 : 0}
                 disabled={inactif}
                 aria-pressed={etat === "retenu"}
-                aria-label={etat === "occupe" ? `${lisible} — ${libelleOccupe}` : lisible}
+                aria-label={
+                  etat === "occupe" ? `${lisible} — ${libelleJourBarre(dureeDemiJournees)}` : lisible
+                }
                 onClick={() => !inactif && onBasculer(c.jour)}
-                className="flex h-11 items-center justify-center rounded-[4px] text-[15px] transition-colors"
+                className="flex h-11 items-center justify-center rounded-full text-[15px] transition-colors"
                 style={
                   !c.duMois
                     ? { opacity: 0.18 }
@@ -159,10 +175,12 @@ export default function Calendrier({
           })}
       </div>
 
+      {/* **La phrase dit POURQUOI, et la durée en est la clé.** Elle annonçait
+          « déjà pris » — faux dès que le jour barré est vide et que c'est la
+          durée qui déborde. Voir `src/lib/jours-barres.ts` pour le récit et le
+          cas reproduit. */}
       {occupes.length > 0 && (
-        <p className="mt-2 text-[12px] opacity-55">
-          Les jours barrés sont déjà pris et ne peuvent pas être choisis.
-        </p>
+        <p className="mt-2 text-[12px] opacity-55">{phraseJoursBarres(dureeDemiJournees)}</p>
       )}
     </div>
   );

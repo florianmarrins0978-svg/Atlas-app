@@ -7,6 +7,7 @@ import { getChantier } from "@/server/repositories/chantiers";
 import { getFacturePourChantier } from "@/server/repositories/factures";
 import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
+import { exigibiliteDe } from "@/server/repositories/paiements-facture";
 import FactureClient from "./FactureClient";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,10 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
   if (!chantier) notFound();
+
+  // Ce que la facture arrêtée devient dépend du régime : au relevé tout de
+  // suite, ou en attente de règlement (migration 0045).
+  const regimeTva = await exigibiliteDe(ctx);
 
   // La facture n'est PAS bâtie à l'ouverture de l'écran : consulter n'est pas
   // clôturer. Elle naît de l'appui sur « Créer la facture », jamais d'un regard.
@@ -47,8 +52,12 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
 
         <FactureClient
           chantierId={id}
+          regimeTva={regimeTva}
           origine={origine}
           entrepriseNom={entreprise?.nom ?? ""}
+          // Sans lui, une coordonnée manquante ne peut se saisir nulle part :
+          // il n'existe aucun écran de fiche client (voir `TransmettreLaFacture`).
+          clientId={chantier.clientId ?? null}
           clientTelephone={client?.telephone ?? null}
           clientEmail={client?.email ?? null}
           canalClient={(client?.canalCommunication as "sms" | "email" | null) ?? null}
@@ -59,6 +68,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
                   numeroCommercial: existante.facture.numeroCommercial,
                   statut: existante.facture.statut,
                   clientNom: existante.facture.clientNom,
+                  clientCivilite: existante.facture.clientCivilite,
                   dateEcheance: existante.facture.dateEcheance,
                   tauxTva: existante.facture.tauxTva,
                   totalHt: existante.facture.totalHt,

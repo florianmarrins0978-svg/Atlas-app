@@ -1,6 +1,7 @@
 import { chromium, devices } from "playwright";
 import { mkdirSync } from "fs";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const OUT = "artifacts/screenshots/step-25-planning-reel";
 mkdirSync(OUT, { recursive: true });
@@ -14,8 +15,8 @@ async function main() {
   const page = await context.newPage();
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `Chantier capture planning ${Date.now()}`);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', `Chantier capture planning ${Date.now()}`);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const chantierId = page.url().split("/").pop()!;
 
