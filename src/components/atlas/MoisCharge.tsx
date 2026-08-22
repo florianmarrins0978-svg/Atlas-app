@@ -140,6 +140,19 @@ export default function MoisCharge({
               key={c.jour}
               type="button"
               data-jour={c.jour}
+              // **L'état de la case, lisible par une suite.** Il ne dit pas si
+              // le serveur acceptera ce jour — lui seul le sait — mais ce que
+              // la case EST : retenue pour le client, un week-end qu'on ne
+              // propose jamais, ou une journée qu'on peut aller regarder.
+              data-etat={
+                retenus.has(c.jour)
+                  ? "retenu"
+                  : c.weekEnd
+                    ? "week-end"
+                    : c.jour < aujourdHui
+                      ? "passe"
+                      : "regardable"
+              }
               aria-pressed={c.jour === jourTouche}
               // **L'état reste ANNONCÉ, même s'il ne s'écrit plus.** La planche
               // a retiré les mots de la case — c'est la couleur qui parle —,

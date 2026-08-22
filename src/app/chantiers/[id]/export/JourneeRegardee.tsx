@@ -176,7 +176,11 @@ function Cadre({ jour, children }: { jour: JourIso; children: React.ReactNode })
   return (
     <div
       data-atlas="journee-regardee"
-      data-jour={jour}
+      // **`data-journee`, et non `data-jour`.** Les cases du calendrier portent
+      // déjà `data-jour` : les deux ensemble rendaient DEUX éléments pour le
+      // même jour, et une suite qui touche « le 3 août » ne savait plus lequel
+      // viser. Trouvé le 22 août 2026, par la suite elle-même.
+      data-journee={jour}
       className="mt-4 rounded-[10px] px-[15px] py-[14px]"
       style={{ background: colors.card }}
     >
