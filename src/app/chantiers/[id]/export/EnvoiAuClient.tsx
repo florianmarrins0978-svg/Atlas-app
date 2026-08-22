@@ -465,7 +465,7 @@ function Contenu({
               className={smallCaps}
               style={{ color: colors.muted, marginBottom: 6 }}
             >
-              Proposez une date, ou deux au choix du client
+              Proposez une ou deux dates
             </p>
             <div className="rounded-[4px] px-3 py-3" style={{ backgroundColor: colors.card }}>
               {/* **Le calendrier marque TOUTE la sélection, pas la dernière
