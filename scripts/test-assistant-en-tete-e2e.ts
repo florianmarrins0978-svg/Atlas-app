@@ -22,15 +22,23 @@ const BASE = "http://localhost:3000";
     3. **aucun titre ne se casse en deux.** C'est le risque connu de cette
        place : sur la fiche chantier, une pastille posée à côté du titre lui
        prenait la moitié de la largeur (11 août 2026) ;
-    4. **le calendrier n'a pas reculé.** Ce contrôle-là existe parce que la
-       première version a échoué ici : le bouton avait été posé sur une ligne à
-       lui, au-dessus du titre, ce qui ajoutait 72 px en tête de CHAQUE écran et
-       poussait la dernière semaine du mois sous la barre du bas. On aurait
-       échangé deux jours recouverts contre une semaine hors de l'écran ;
+    4. **il ne prend pas une ligne à lui.** Ce contrôle-là existe parce que la
+       première version a échoué ici : le bouton avait été posé au-dessus du
+       titre, ce qui ajoutait 72 px en tête de CHAQUE écran et poussait la
+       dernière semaine du mois sous la barre du bas. On aurait échangé deux
+       jours recouverts contre une semaine hors de l'écran.
+
+       **Il mesurait ces pixels-là jusqu'au 21 août 2026** — « la dernière case
+       du mois finit au-dessus de 626 px » —, et le planning refait l'a fait
+       rougir sur une demande exaucée. Relever le nombre l'aurait fait suivre
+       l'écran au lieu de le tenir : il mesure donc que le bouton PARTAGE la
+       ligne du titre, ce qui est le défaut d'origine et ne dépend de rien
+       d'autre ;
     5. **il ouvre et referme**, sinon la place ne vaut rien.
 
   Elle sait échouer : rendre le bouton `fixed` en bas à droite rougit les points
-  1 et 2 ; le poser sur une ligne à lui rougit le point 4 en donnant les pixels.
+  1 et 2 ; le poser sur une ligne à lui rougit le point 4, en donnant les deux
+  bandes qui ne se croisent plus.
 */
 
 let echecs = 0;
@@ -128,40 +136,49 @@ async function main() {
     });
   }
 
-  // ─── Le calendrier n'a pas reculé ─────────────────────────────────────────
+  // ─── L'assistant n'a pas pris une ligne à lui ─────────────────────────────
   //
-  // **Ce contrôle mesure une NON-RÉGRESSION, pas un idéal**, et la nuance a
-  // failli lui faire accuser à tort. Écrit d'abord « la dernière semaine tient
-  // au-dessus de la barre », il rougissait — mais elle passait DÉJÀ onze pixels
-  // dessous avant qu'on ne touche à quoi que ce soit. Un contrôle qui dénonce
-  // un défaut préexistant sous le nom du changement en cours envoie chercher au
-  // mauvais endroit.
+  // **Ce contrôle défend une RÈGLE, plus un nombre de pixels — et il a changé
+  // pour cela le 21 août 2026.** Il mesurait « la dernière case du mois finit
+  // au-dessus de 626 px », relevé sur l'écran d'alors. Le patron a fait refaire
+  // le planning (planche 84) : le calendrier a des cases de 44 px, un bandeau
+  // de navigation et une légende — il finit forcément plus bas, sur un écran
+  // qu'il a lui-même choisi. Le contrôle rougissait donc sur une demande
+  // exaucée (`CLAUDE.md` §5 bis), et il n'aurait plus rien défendu une fois le
+  // nombre relevé à 660 : il aurait suivi l'écran au lieu de le tenir.
   //
-  // Le repère est donc la mesure prise AVANT le déplacement : la dernière case
-  // du mois finissait à 626 px. La première version du bouton, posée sur une
-  // ligne à lui au-dessus du titre, la repoussait à 698 — soit une semaine
-  // entière de perdue. C'est cela, et seulement cela, qu'on refuse.
-  //
-  // (Que cette semaine déborde de onze pixels est un point à part, antérieur,
-  // et noté dans `TODO.md`.)
-  await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector('button[aria-label="Ouvrir l\'assistant"]', { timeout: 20_000 });
-  await cas("le planning montre toujours le mois entier", async () => {
-    const m = await page.evaluate(() => {
-      const cases = [...document.querySelectorAll("button")].filter((e) =>
-        /^\d{1,2}$/.test((e.textContent ?? "").trim()),
+  // **Ce qui était vraiment en jeu**, et qui ne dépend d'aucun calendrier : le
+  // bouton posé sur une ligne à LUI ajoutait 72 px en tête de CHAQUE écran. On
+  // vérifie donc qu'il partage sa ligne avec le titre — c'est exactement le
+  // défaut d'origine, et cela reste vrai quel que soit ce qu'il y a dessous.
+  for (const ecran of ECRANS) {
+    await page.goto(`${BASE}${ecran.url}`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('button[aria-label="Ouvrir l\'assistant"]', { timeout: 20_000 });
+    await cas(`${ecran.nom} — l'assistant partage la ligne du titre`, async () => {
+      const m = await page.evaluate(() => {
+        const b = [...document.querySelectorAll("button")].find((e) =>
+          /assistant/i.test(e.getAttribute("aria-label") ?? ""),
+        )!;
+        const titre = document.querySelector("h1");
+        if (!titre) return null;
+        const rb = b.getBoundingClientRect();
+        const rt = titre.getBoundingClientRect();
+        return {
+          bouton: [Math.round(rb.top), Math.round(rb.bottom)],
+          titre: [Math.round(rt.top), Math.round(rt.bottom)],
+          // Se croisent-ils verticalement ? Deux bandes se croisent dès que
+          // l'une commence avant que l'autre ne finisse.
+          memeLigne: rb.top < rt.bottom && rt.top < rb.bottom,
+        };
+      });
+      assert.ok(m, "aucun titre h1 sur cet écran : le repère du contrôle a disparu");
+      assert.ok(
+        m.memeLigne,
+        `le bouton (${m.bouton.join("–")} px) ne croise pas le titre (${m.titre.join("–")} px) : ` +
+          "il a repris une ligne à lui, et ajoute sa hauteur en tête de chaque écran",
       );
-      const derniere = cases[cases.length - 1].getBoundingClientRect();
-      const barre = document.querySelector(".atlas-nav-basse")?.getBoundingClientRect();
-      return { bas: Math.round(derniere.bottom), hautBarre: Math.round(barre?.top ?? innerHeight) };
     });
-    const AVANT_LE_DEPLACEMENT = 626;
-    assert.ok(
-      m.bas <= AVANT_LE_DEPLACEMENT,
-      `la dernière semaine finit à ${m.bas} px, contre ${AVANT_LE_DEPLACEMENT} avant que ` +
-        "l'assistant ne bouge : l'en-tête a repoussé le mois vers le bas",
-    );
-  });
+  }
 
   // ─── Il ouvre, et il referme ──────────────────────────────────────────────
   await cas("l'assistant s'ouvre et se referme", async () => {

@@ -5137,8 +5137,8 @@ regardant l'écran (`CLAUDE.md` §5).
 
 ### Ce que les contrôles prouvent, et ce qu'ils ne prouvent pas
 
-`scripts/test-y-aller-e2e.ts` vérifie **le raccord** : que l'adresse arrive
-vraiment jusqu'au `href`. La règle pure resterait verte même si l'écran oubliait
+La section « feuille de chantier » de `scripts/test-planning-e2e.ts` vérifie
+**le raccord** : que l'adresse arrive vraiment jusqu'au `href`. La règle pure resterait verte même si l'écran oubliait
 de la lui passer — c'est le raccord qui se casse, jamais la formule.
 
 Il ne prouve **pas** que le GPS s'ouvre : un navigateur d'essai n'a ni Plans, ni
@@ -6806,7 +6806,7 @@ soixante-deux points pendant qu'elle parlait une autre grammaire que les écrans
 
 **Ce qui a été relevé dans le code, et non approché à l'œil**
 (`src/components/atlas/EnTeteEcran.tsx`, `AtlasBottomNav.tsx`,
-`src/app/planning/PlanningClient.tsx`, `src/app/termines/FilTermines.tsx`) :
+`src/app/planning/PlanningClient.tsx`, `src/app/termines/ListeTermines.tsx`) :
 
 | | La planche disait | Les écrans disent |
 |---|---|---|
@@ -12361,3 +12361,807 @@ dépôt (`CLAUDE.md` §5) : la phrase du laboratoire s'affichait deux fois de su
 comme méthode de confirmation puis comme première information requise. Une
 consigne répétée se lit comme deux consignes, et sur un chantier on cherche la
 différence entre les deux. L'import refuse désormais cette répétition.
+
+---
+
+## 139. La ligne « Version » répondait à une autre question que celle posée
+
+**Le patron, le 21 août 2026 :** *« Ça n'a pas marché, j'ai encore l'ancienne
+version. Pourtant j'ai rechargé les mises à jour. »*
+
+Les deux moitiés de sa phrase étaient vraies **en même temps**, et c'est ce qui
+rend le défaut coûteux : la mise à jour avait bien eu lieu, et son écran servait
+bien l'ancienne application.
+
+### Ce qui se passait
+
+Son banc, une fois qu'il a réussi à construire, sert une version **bâtie** —
+du code figé au moment de la construction. C'est ce qui la rend rapide. Or :
+
+| | Ce qui avance | Ce qui est servi |
+|---|---|---|
+| `git` récupère le code neuf | le disque | inchangé |
+| l'espace redémarre | le disque **et** la construction | le code neuf |
+
+Le bouton « Chercher les dernières corrections » fait la première ligne, pas la
+seconde — sauf quand un veilleur est là pour relever le serveur, cas où il coupe
+et laisse reconstruire (`src/lib/issue-mise-a-jour.ts`). Sans veilleur, il
+**dit** qu'il faut rouvrir l'espace. Mais rien ne le rattrapait ensuite.
+
+### Le vrai défaut n'était pas là : il était dans le témoin
+
+`versionExecutee` lisait le **dépôt** (`git log -1` dans le dossier). La ligne
+« Version » annonçait donc le commit du jour pendant que les écrans dataient de
+la veille.
+
+**Cette ligne existe pour répondre à « qu'est-ce que j'exécute ? »** — c'est
+même la raison pour laquelle elle a été ajoutée (§6 de `CLAUDE.md` : *« une
+capture répond à la question sans qu'on ait à la poser »*). Elle répondait à
+« qu'est-ce qui est sur le disque ? ». Les deux réponses ne divergent **que**
+dans la situation où on l'interroge. Un témoin qui ment exactement au moment où
+l'on s'en sert coûte plus cher que pas de témoin : il a envoyé chercher la panne
+du côté de la livraison, qui était irréprochable, et m'y a envoyé aussi.
+
+### Ce qui est posé
+
+`src/lib/version-servie.ts` — une règle pure, sans base ni serveur :
+
+- **en développement**, le dépôt EST ce qui s'exécute (chaque écran se recompile
+  à l'ouverture) : sa version est la bonne, et rien ne peut être « en retard » ;
+- **en version bâtie**, seule la marque posée au démarrage (`ATLAS_VERSION`) dit
+  la vérité — et si le dépôt a avancé depuis, **l'écran le dit**, nomme le code
+  qui attend, et donne le geste : rouvrir l'espace.
+
+Deux refus délibérés, parce qu'un avertissement qui parle à tort s'apprend à
+ignorer : pas de retard annoncé en développement, et **aucun** quand la marque
+de démarrage manque — on ne sait alors pas avec quoi l'application a été bâtie,
+et deviner serait exactement la faute qu'on répare.
+
+`scripts/test-version-servie.ts` rejoue son cas ligne à ligne. Confronté à
+l'ancien comportement — annoncer le dépôt quoi qu'il arrive — il rougit sur ce
+cas précis et sur celui de la branche, et reste vert partout ailleurs.
+
+### Ce que ça ne répare pas, et qu'il faut dire
+
+Cela ne fait pas arriver le code neuf plus vite : **cela cesse de prétendre
+qu'il est là.** Le geste reste le sien — rouvrir l'espace de travail. Rendre la
+reconstruction automatique dans tous les cas est une autre question, ouverte
+dans `TODO.md`.
+
+---
+
+## 140. L'envoi ramène à l'accueil : le dernier écran de trop
+
+**Le patron, le 21 août 2026, capture à l'appui :** *« Quand je clique sur
+envoyer le devis, il y a bien l'application SMS qui s'ouvre automatiquement, ça
+c'est bien. Par contre juste derrière, il y a cette page-là qui s'affiche et je
+n'ai pas besoin qu'elle s'affiche […] il faut qu'une fois que le devis est
+envoyé, on retourne directement sur la première page, l'accueil. »*
+
+### Pourquoi il avait raison
+
+Cet écran ne lui apprenait rien : il venait d'appuyer, et sa messagerie s'était
+ouverte par-dessus. Au retour de Messages, il tombait sur un récapitulatif à
+refermer avant de reprendre son travail. L'accueil, lui, porte l'état du
+chantier — « devis parti, en attente de réponse » — au milieu des autres.
+
+C'est le deuxième écran supprimé du même parcours en deux jours (§136). Les deux
+avaient la même infirmité : exister pour dire ce que l'on venait de faire.
+
+### L'ordre des deux gestes, et il ne se négocie pas
+
+L'ouverture de la messagerie reste **avant** la navigation. Un navigateur refuse
+une ouverture de `sms:` qui ne suit pas le doigt d'assez près, et sur iOS il la
+refuse **sans un mot**. Le lien touché pour lui vit sur `document.body`, hors de
+l'arbre React : il survit donc au changement d'écran, ce qui était déjà vrai
+avant et le reste.
+
+### Ce que la suppression a emporté
+
+Tout ce qui distinguait « ça vient de partir » : le drapeau `?envoye=1`, la
+mention « Devis prêt pour … », l'état « Devis prêt », et l'effet qui nettoyait
+l'adresse (§139, corrigé la veille). Plus aucun chemin ne les atteignait.
+
+**Conséquence qu'aucun raisonnement n'avait prévue, et que la batterie a
+montrée :** cet écran ne se voit désormais qu'en y REVENANT, sur un devis déjà
+parti. Le geste y est donc une **relance**, et le libellé le dit — « Relancer par
+SMS » et non « Ouvrir le SMS tout prêt ». Ce n'était pas un défaut : c'est la
+règle du 13 août (le libellé annonce ce que le geste fait) qui devient enfin
+visible, le premier envoi n'atterrissant plus jamais là.
+
+### La rangée d'actions, et ce que le patron a tranché
+
+Sur cet écran, il ne veut que deux gestes. « Télécharger le PDF · Partager » est
+retiré.
+
+**Ce qui reste, contre la lettre de sa réponse :** la bascule de canal
+(« Plutôt par e-mail »). Ce n'est pas un troisième bouton mais **le seul endroit
+où une coordonnée manquante se saisit** — il n'existe aucun écran de fiche
+client — et son absence était sa plainte du 13 août : *« si je veux l'envoyer par
+e-mail, je ne peux pas revenir le choisir »*. La retirer rouvrirait un défaut
+déjà payé. Signalé, et il peut trancher autrement.
+
+**Ce que le retrait du PDF ne coûte pas, et c'est LUI qui l'a rappelé :** *« une
+fois le devis envoyé, il doit s'enregistrer normalement en PDF dans la catégorie
+client […] il y a trois colonnes devis, factures et fiches chantiers »*.
+Vérifié plutôt que cru : `chargerFicheClient` ne retient que les devis au statut
+`envoye` et les range en vignettes PDF dans la colonne « Devis ». Un devis parti
+s'y classe tout seul.
+
+**Une nuance dite au patron :** ces vignettes OUVRENT le PDF, elles ne proposent
+pas de l'enregistrer — ce n'est pas le geste « télécharger » du 7 août 2026, qui
+lui, reste éprouvé sur la facture (`test-facture-au-client-e2e.ts`). Question
+posée, réponse non reçue.
+
+---
+
+## 141. Enregistrer une pièce : la feuille qui ne décide de rien
+
+**Le patron, le 21 août 2026 :** *« Alors oui, je veux pouvoir l'enregistrer,
+mais avant que tu codes quoi que ce soit, fais-moi une maquette visuelle que je
+voie exactement ce que tu veux me dire. »*
+
+Puis, devant la planche : **« La C »**
+(`docs/maquettes/83-enregistrer-le-pdf.html`).
+
+### Ce qui manquait
+
+Sa fiche client range tout ce qui le concerne en trois colonnes — devis,
+factures, fiches de chantier — et c'est lui qui l'a rappelé : *« une fois le
+devis envoyé, il doit s'enregistrer normalement en PDF dans la catégorie
+client »*. Vérifié plutôt que cru : seuls les devis au statut `envoye` y
+entrent.
+
+Mais ces vignettes **ouvraient** le document dans un onglet. Rien ne proposait
+de le garder — le défaut exact du 7 août, sur un autre écran.
+
+### Pourquoi la C, et pas la plus courte
+
+La **A** (la vignette enregistre) coûtait un geste de moins. Elle décidait à sa
+place : ouvrir la fiche d'un client pour relire un montant lui aurait téléchargé
+un fichier à chaque coup d'œil.
+
+La question lui a donc été posée telle quelle sur la planche — **vient-il
+regarder, ou garder ?** — et sa réponse est celle qui ne tranche pas pour lui :
+un appui, trois choix.
+
+**La B a été dessinée et écartée avec son coût dit :** un rond de 30 px contre
+un lien de 56 px, dans une colonne large de 118 px. Cet écran tient une règle —
+*« un lien qu'il touche d'une main, dehors, parfois avec des gants »* — et deux
+cibles voisines de tailles inégales la défont.
+
+### Les trois conditions, et aucune ne suffit seule
+
+Le remède du 7 août tient à trois choses **réunies**, et c'est ce qui rend le
+défaut si facile à faire revenir :
+
+| | Sans elle |
+|---|---|
+| `?telecharger=1` (le serveur pose `attachment`) | Chrome **affiche** le document |
+| l'attribut `download` (le NOM) | Safari le nomme d'après la page, **sans extension** |
+| **pas** de `target="_blank"` | l'onglet neuf prive Safari de sa demande d'enregistrement |
+
+« Ouvrir » veut exactement l'inverse : pas de `?telecharger=1`, et un onglet à
+part pour ne pas perdre la fiche. Si les deux gestes servaient la même adresse,
+l'un des deux mentirait — et c'est ce que le contrôle vérifie.
+
+### Le nom du fichier est une RÈGLE, pas une chaîne recopiée
+
+`nomDuFichierDeLaPiece` (`src/lib/documents-du-client.ts`), éprouvée sans base :
+
+- **la nature se lit dans l'ADRESSE, jamais dans le titre.** Le titre est ce
+  qu'il lit ; l'adresse est ce que le serveur sert. Deviner « c'est un devis »
+  à partir d'un libellé, c'est se fier à un mot que la prochaine demande peut
+  changer ;
+- le « n° » et son espace ne traversent pas — un tel nom se recopie mal et se
+  cherche encore plus mal ;
+- une fiche de chantier n'a pas de numéro : elle porte son **jour au format de
+  tri** (`AAAA-MM-JJ`), de sorte que dix fichiers se rangent d'eux-mêmes dans
+  l'ordre du temps ;
+- sans numéro ni jour, **aucune date n'est inventée**.
+
+### Le contrôle, et le fait qu'il sache échouer
+
+`scripts/test-enregistrer-piece-e2e.ts` a été confronté aux trois défauts, un
+par un — adresse sans `?telecharger=1`, lien sans nom, onglet neuf ajouté. Il
+rougit sur chacun, en nommant lequel. Une suite qui se serait contentée de
+compter les boutons serait restée verte le jour où l'une des trois saute, et
+c'est lui qui l'aurait découvert : un fichier sans nom dans son dossier.
+
+**« Partager » revient ici**, après avoir été retiré de l'écran d'envoi le même
+matin. C'était le seul chemin vers WhatsApp, et sa place est plutôt sur le
+document rangé que sur le geste d'envoi.
+
+---
+
+## §129. Le planning refait : le chantier passe avant la demi-journée
+
+*Sa demande du 19 août 2026 — « cette page est beaucoup trop compliquée à
+comprendre pour les utilisateurs » — puis deux soirées de maquette, neuf
+corrections, et sa décision du 21 août : « maintenant tu peux coder cette
+version de la maquette ! Ne modifie rien ! Ne change rien ! Code trait pour
+trait cette maquette. »*
+
+La planche retenue est `appli/planning-simple.html` (planche 84). Ce §
+n'expose pas ce qu'elle montre — l'écran et la planche le disent mieux — mais
+**les trois décisions de structure** qu'il a fallu prendre pour la coder, et
+qui ne se voient pas.
+
+### 1. Une table pour les équipes, et la colonne `chantiers.equipe_id` retirée
+
+**Ce qu'il a demandé, et que la colonne ne pouvait pas porter :**
+
+> *« Lorsque je choisis une équipe je dois pouvoir mettre TOUTES les équipes si
+> je le souhaite, le même jour ou même sur la même demi-journée. Je dois
+> pouvoir mettre tout le monde le matin puis tout le monde l'aprem. »*
+
+> *« Sur Mr. Leroy, qui dure toute la journée, je ne peux pas mettre juste Paul
+> le matin et Julien et Paul l'après-midi — si je mets les deux l'après-midi, ça
+> me les met aussi le matin. Il faut que tout soit INDÉPENDANT. »*
+
+Une colonne porte **une** équipe, et elle la porte pour le chantier **entier** :
+ni l'une ni l'autre des deux demandes. La migration 0058 pose donc
+`equipes_du_chantier (entreprise_id, chantier_id, demi, equipe_id)`, avec sa
+politique d'isolation et son `GRANT`.
+
+**Et la colonne est RETIRÉE, pas doublée.** La garder aurait été la solution
+courte — les écrans qui la lisaient continuaient de fonctionner. Elle aurait
+aussi été la faute de `CLAUDE.md` §3 : le patron retire Paul de l'après-midi sur
+le planning, la colonne dit encore « Paul », et la feuille de route imprimée
+l'envoie sur place. Les lignes existantes sont recopiées sur les **deux**
+demi-journées — c'est exactement ce que la colonne voulait dire — puis elle
+disparaît.
+
+Ce qui la lisait et lit désormais la table : la fiche de chantier PDF (elle
+écrit toutes les équipes du chantier, matin et après-midi confondus) et l'export
+d'entreprise (une sauvegarde qui l'oublierait rendrait un planning dont toutes
+les pastilles seraient vides).
+
+### 2. Le quota prévient, il n'interdit plus
+
+**Sa proposition du 21 août, meilleure que les trois qu'on lui avait
+soumises :**
+
+> *« Une fois qu'on a mis deux chantiers avec deux gars, on dit que c'est
+> complet. Et si l'utilisateur en rajoute un troisième, on met une autre couleur
+> pour lui signaler qu'il a dépassé le quota — mais il peut quand même le faire.
+> [...] Nous, on prévient juste. »*
+
+Quatre états, dans `src/lib/planning-jour.ts` : `libre`, `dispo`, `plein`,
+`dela`. Le dernier est un **avertissement**, jamais un refus.
+
+Conséquence côté serveur, et elle est réelle : `planifierChantier` ne lève plus
+`CreneauIndisponible`, et `basculerEquipeDuChantier` ne lève plus
+`EquipeIndisponible`. Les deux classes ont disparu. **Ce que cela ne relâche
+PAS :** le chemin par lequel le CLIENT choisit sa date garde toutes ses limites
+(`jourRetenable`, `premiersJoursLibres`). Un client n'a pas à forcer une
+journée, ni même à savoir qu'on le peut.
+
+**Les absences d'équipe entrent dans la charge** au même titre qu'un chantier
+(`occupationDemi(pris, nombreEquipes, equipesAbsentes)`). Sans cela le planning
+montrerait un jour libre que l'écran d'envoi refuse au client — deux vérités sur
+la même capacité, sur deux écrans qui se suivent.
+
+### 3. La fiche du jour est bâtie sur le CHANTIER, pas sur la demi-journée
+
+C'est sa dernière correction, capture à l'appui :
+
+> *« Mr. Leroy au-dessus du carré vert clair matin ; supprime le Mr. Leroy pour
+> l'aprem, c'est le même chantier, pas besoin de répéter ; pareil pour "1
+> chantier" ; et supprime le trait entre le matin et l'après-midi, là on a
+> l'impression que c'est deux chantiers différents. »*
+
+L'écran était bâti sur les demi-journées : deux blocs séparés par un filet,
+chacun rejouant le nom du client et son compte. Un chantier qui dure la journée
+s'y écrivait **deux fois**, avec une barre au milieu — l'écran FABRIQUAIT deux
+chantiers là où il n'y en a qu'un.
+
+`blocsDeLaJournee` rend donc, dans l'ordre : les chantiers (chacun avec les
+demi-journées qu'il occupe), puis ce qui reste libre. *« Fais pareil pour les
+autres, le nom toujours en premier ! »* — une demi-journée vide ouvrait la
+fiche, et l'on lisait ce qui MANQUE avant de savoir de qui il s'agit.
+
+### Ce que la planche ne portait pas, et qui a quitté l'écran
+
+Trois choses existaient et **ne figurent pas** sur la planche qu'il a validée :
+« Créer la facture » dans la feuille du chevron, la liste « Dans mon agenda », et
+la proposition de chantier voisin pour combler une demi-journée. Elles ont été
+retirées — *« trait pour trait »* — et le tableau de `TODO.md` dit ce qui reste
+en place côté serveur, pour qu'un simple rebranchement suffise s'il les
+redemande. Le chemin vers la facture n'est pas fermé : le fil des « Terminés » y
+mène toujours.
+
+### LE PIÈGE QUI A FAILLI COÛTER SES ÉQUIPES — une migration ne voit rien
+
+**Le plus cher de ce lot, et il ne se voyait pas.** La reprise de données de la
+migration 0058 — recopier `chantiers.equipe_id` dans la table neuve, puis
+retirer la colonne — était écrite en un seul `INSERT … SELECT FROM chantiers`.
+Elle recopiait **zéro ligne, sans la moindre erreur.**
+
+`chantiers` porte `FORCE ROW LEVEL SECURITY` : la politique s'applique **même au
+propriétaire de la table**, et les migrations tournent justement sous
+`atlas_owner` — chez lui (`.devcontainer/preparer.sh`), en CI (`ci.yml`) et en
+local (`monter-base-locale.sh`). Sans `app.entreprise_id`, la lecture ne rend
+rien. La colonne aurait été retirée juste après, et **toutes les équipes déjà
+affectées auraient disparu de sa base, en silence.**
+
+**Comment il a été trouvé, et c'est la seule façon qui marche** : en rejouant la
+migration sur une base remontée à l'état d'avant, **avec des données dedans**.
+Le SQL est parfaitement correct à la relecture — c'est le contexte d'exécution
+qui manque, et aucune relecture ne le montre.
+
+La migration boucle donc sur `entreprises` et pose le contexte, comme 0036 et
+0037 le faisaient déjà, et elle annonce son compte (`RAISE NOTICE`) : une reprise
+qui ne recopie rien doit se voir dans le journal, pas se deviner.
+
+**`scripts/test-migrations-sous-rls.ts` garde la porte** pour les suivantes : il
+éprouve le piège en base — le propriétaire sans contexte ne voit rien, avec
+contexte voit tout — puis refuse toute migration qui écrit à partir d'une table
+d'entreprise sans poser son contexte.
+
+**Et il en a trouvé trois autres, déjà appliquées** : `0039` (le régime de TVA
+des factures), `0040` (la validité des devis) et `0045` (la reprise des
+paiements). Les deux premières ont une conséquence bornée, que leur propre
+fichier annonçait déjà. **La troisième est réelle** : les factures émises avant
+elle ne comptent pas au relevé de TVA à l'encaissement. Elles sont nommées dans
+le contrôle, avec leur coût, et le point est dans `TODO.md` — une écriture
+comptable se décide, elle ne se glisse pas dans un lot d'écran.
+
+### Ce qui a été appris, et qui vaut au-delà de ce lot
+
+**Un contrôle qui épingle un NOMBRE relevé sur un écran meurt avec cet écran.**
+`test-assistant-en-tete-e2e.ts` mesurait « la dernière case du mois finit
+au-dessus de 626 px » : le planning refait l'a fait rougir sur une demande
+exaucée. Relever le nombre l'aurait fait suivre l'écran au lieu de le tenir ; il
+mesure désormais que le bouton de l'assistant **partage la ligne du titre** —
+ce qui était le défaut d'origine, et ne dépend d'aucun calendrier.
+
+Même leçon pour `test-absence-equipe-e2e.ts`, qui lisait « il reste de la
+place » dans le libellé accessible d'une case. Il lit maintenant l'`data-etat`
+que le calendrier ET la fiche du jour calculent par la même fonction.
+
+## 142. Une dictée mène au devis, et le devis se prépare tout seul en arrivant
+
+**Sa panne du 21 août 2026, et il l'a qualifiée lui-même :** *« c'est le point
+le plus important. Je veux absolument que ça fonctionne. »*
+
+> *« J'ai ouvert un chantier, Madame Lucie. J'ai rentré ces informations,
+> j'appuie sur note vocale, j'ai dicté la prestation du chantier. J'ai rappuyé
+> sur la note vocale, ça a enregistré. J'ai quitté l'application. Je suis
+> retourné dessus. J'ai cliqué sur Madame Lucie qui était enregistrée dans mes
+> chantiers. Or, je ne suis pas arrivé directement sur la page du devis comme
+> demandé, avec mes informations remplies que j'avais dictées. »*
+
+### Deux défauts, et le second était le vrai
+
+**Le chemin.** `getNextAction` renvoyait une dictée sur l'écran
+« Informations » : un écran de contrôle dont il ne veut plus depuis le 5 août
+(*« je ne veux pas tous les autres trucs intermédiaires »*). Il mène désormais
+au devis.
+
+**L'ordre des jalons compte, et ce n'est pas un détail.** La ligne
+`aUneNoteVocale` passe **avant** `informationsVerifieesAt`. La chaîne pose ce
+second jalon dès qu'elle a rangé les prestations — c'est-à-dire **avant** son
+arrêt d'avant-chiffrage. S'il ferme l'application pendant cet arrêt, ce qu'il
+fait puisqu'il est chez sa cliente, l'ordre inverse le renverrait sur l'écran
+« Prix » : un écran de plus entre lui et son devis, et la même panne sous un
+autre nom.
+
+**Le devis lui-même.** Plus grave, et invisible depuis le chemin :
+**enregistrer une dictée ne fabriquait aucun devis.** La chaîne — transcription,
+prestations, tarifs, lignes — attendait qu'il appuie sur « Mon devis → ». Il ne
+l'a pas fait. Corriger le seul chemin l'aurait mené droit sur une feuille vide,
+c'est-à-dire sur la panne du 7 août (*« le devis ne comporte aucune ligne, gros
+bug »*), resservie par un autre bout.
+
+### Pourquoi à l'ARRIVÉE, et pas au relâchement de l'anneau
+
+Le réflexe est de lancer la chaîne dès qu'il relâche l'anneau : c'est plus
+rapide, quand ça marche. Mais **il ferme l'application dans la seconde qui
+suit** — c'est le geste même qu'il décrit — et l'appel part alors avec l'onglet.
+Il n'en resterait rien, et l'on aurait un correctif qui ne se déclenche jamais
+dans les conditions où il est nécessaire.
+
+Le seul moment où l'on est **sûr** qu'un navigateur est présent pour attendre le
+résultat, c'est celui où il rouvre le devis. La préparation vit donc là, et elle
+survit à tout ce qu'il peut fermer entre-temps.
+
+### Trois partis pris de l'écran
+
+| | |
+|---|---|
+| **Le voile couvre le devis, il ne le remplace pas** | Si la chaîne échoue — pas de transcription, aucun tarif, une panne réseau —, « Ouvrir le devis tel quel » lui rend sa feuille et son crayon. Un écran qui n'aurait que l'échec à montrer serait un cul-de-sac |
+| **On écarte sans naviguer** | Un renvoi vers une autre adresse ramènerait ici, où la préparation repartirait aussitôt. Le voile se referme en mémoire, le temps d'une visite ; rien n'est écrit pour désarmer la suivante |
+| **Aucune règle dans l'écran** | Ce qui décide de la présence du voile est pur (`src/lib/devis-a-preparer.ts`) ; ce qui mène la chaîne est le composant qui la menait déjà (`DevisDepuisDictee`, mode `auto`). Une seconde implémentation aurait divergé au premier ajustement |
+
+### Ce qui garde la promesse
+
+`scripts/test-madame-lucie-e2e.ts` rejoue sa séquence entière : dicter, **fermer
+l'application sans rien appuyer d'autre**, revenir par la liste, cliquer le nom.
+Deux suites voisines ne pouvaient pas voir ce trou —
+`test-reprendre-ou-il-en-etait` tient la règle mais ne clique nulle part, et
+`test-anneau-vers-devis-e2e` **appuie sur « Mon devis → »**, c'est-à-dire fait
+précisément le geste qu'il n'a pas fait.
+
+Elle sait échouer : confrontée à l'ancien code, elle rougit sur trois cas et
+nomme le coupable — *« la liste l'envoie sur /informations »*.
+
+---
+
+## 143. Le calendrier du planning sert aussi à proposer une date
+
+**Sa demande du 22 août 2026**, validée sur planche 91
+(`appli/choisir-la-date.html`) : *« lorsqu'on clique sur "Choisir la date" […]
+on devrait avoir le visuel du calendrier qui se trouve dans la catégorie
+planning, avec la possibilité de cliquer sur les jours pour voir quels chantiers
+y sont déjà affectés — comme ça on peut savoir si oui ou non on peut rajouter
+des clients sur les jours. »*
+
+### Ce que l'écran d'avant ne pouvait pas dire
+
+Il montrait un calendrier NU — des ronds, et les jours impossibles éteints. Il
+refusait un jour **sans jamais dire pourquoi ni ce qu'il portait** : le patron
+ne pouvait pas juger s'il était possible de s'y glisser quand même. Devant un
+jour refusé, il n'avait qu'à le croire sur parole.
+
+### Regarder n'est plus retenir
+
+C'est le changement de fond, et il tient en deux gestes :
+
+| Le geste | Ce qu'il fait |
+|---|---|
+| toucher une case | **ouvre la journée** — qui est là, à quelle demi-journée, avec quelle équipe, et le verdict du serveur pour ce chantier-ci |
+| « Proposer ce jour » | **engage la date** auprès du client |
+
+Auparavant, les deux n'en faisaient qu'un : un jour consulté par erreur partait
+chez quelqu'un. Sur un devis, cela ne se rattrape pas d'un clic.
+
+**Un jour complet reste TOUCHABLE**, à sa demande explicite — *« c'est justement
+celui sur lequel vous voulez regarder avant de décider »*. Il ne se propose
+simplement pas au client tant que la place manque, et la fiche dit laquelle.
+
+### Trois pièces en partage, jamais en copie
+
+| Pièce | Ce qu'elle porte | Pourquoi elle est partagée |
+|---|---|---|
+| `src/components/atlas/MoisCharge.tsx` | le dessin du mois — barres de charge, week-end teinté, aujourd'hui cerclé d'or | deux calendriers divergeraient au premier réglage |
+| `src/components/atlas/useOccupation.ts` | qui occupe quelle demi-journée, absences et équipes cochées comprises | deux calculs finiraient par ne pas dire la même chose de la même journée |
+| `src/server/contexte-planning.ts` | le chargement : chantiers datés, équipes, absences | deux lectures séparées finiraient par ne pas lire les mêmes absences |
+
+**Le prix de ne pas les partager est connu**, et ce dépôt l'a déjà payé : le
+planning annonçant libre une journée que l'écran d'envoi refuse — deux vérités
+sur la même capacité, à deux écrans d'écart (`CLAUDE.md` §3).
+
+### Ce que le serveur garde pour lui
+
+Le calendrier peint la charge des douze mois chargés ; **c'est
+`verifierJourPropose` qui tranche**, y compris au-delà de cette fenêtre. Le
+calendrier montre, le serveur décide — le retirer rendrait le geste plus joli et
+moins sûr.
+
+**Et rien de ce planning ne part chez le client.** Sa page reçoit sa propre
+liste, recalculée sur SA fenêtre au moment où il ouvre le lien (`lireParJeton`).
+Les deux horizons ne se rejoignent nulle part : élargir celui du patron n'ouvre
+pas son carnet de commandes (`docs/AGENT.md` §2.2 bis).
+
+### Ce que la batterie a trouvé, et que la capture ne montrait pas
+
+Trois suites tenaient l'ancien geste, et il fallait les adapter — pas le code
+(`CLAUDE.md` §5 bis) :
+
+- **la case éteinte n'existe plus** : le refus s'écrit sous la case, et c'est le
+  bouton qui reste hors d'atteinte ;
+- **l'exception « tuile de calendrier »** du contrôle des boutons arrondis
+  visait `PlanningClient` ; le dessin ayant déménagé, elle dénonçait une
+  décision du patron qui n'avait pas bougé d'un pixel ;
+- **la fiche du jour portait `data-jour`**, comme les cases : deux éléments pour
+  le même jour, et une suite qui ne savait plus lequel viser. Elle porte
+  désormais `data-journee`.
+
+---
+
+## 144. Le diamètre du tuyau d'arrosage : deux critères, et un seuil en mètres
+
+**Sa demande du 22 août 2026.** *« Ils sont également en capacité de me dire,
+passé un certain nombre de mètres linéaires, qu'il faut passer du PEHD en
+diamètre vingt-cinq à celui en diamètre trente-deux. J'aimerais que mon outil
+arrosage puisse faire la même chose. »*
+
+### Ce qui existait, et ce qui manquait
+
+`amenee()` (dans `src/lib/arrosage/calcul.js`, copie de
+`appli/arrosage-calcul.js`) calculait déjà la perte de charge de l'amenée
+compteur → regard par Hazen-Williams, et tranchait Ø25 / Ø32 sur **la longueur
+saisie**. Deux manques :
+
+1. **aucun seuil.** Pour savoir où la bascule se produit, il fallait ressaisir
+   la longueur jusqu'à la trouver. Or c'est le seuil qui sert sur le terrain :
+   il se compare au mètre ruban avant de creuser ;
+2. **un seul critère.** La perte de charge d'un tuyau court est presque nulle —
+   donc un Ø25 « passait » à n'importe quel débit pourvu qu'il soit assez court.
+
+### La décision
+
+**Deux critères, et le débit prime.**
+
+| | Formule | Ce qu'elle donne |
+|---|---|---|
+| vitesse | `Q = π(D/2)² × 1,5 m/s × 3600` | Ø25 : 1,76 m³/h · Ø32 : 2,91 |
+| longueur | `L = budget × 10,2 × D^4,87 / (10,67 × (Q/150)^1,852)` | le seuil en mètres |
+
+Le débit prime parce qu'**aucune longueur ne le rattrape**, alors qu'une amenée
+trop longue se raccourcit parfois en déplaçant le regard. Quand le débit interdit
+le Ø25, `longueurMax25` vaut **0** et non le seuil calculé : annoncer « Ø25
+jusqu'à 12 m » sur un tuyau où l'eau filerait à 2 m/s serait un chiffre qu'on
+croit et qui ne tient pas.
+
+**Le budget de perte, c'est `pression source − pression exigée par la buse`** —
+celle à laquelle sa portée et son débit sont donnés au catalogue. Une 5004
+donnée à 2,8 bar sur une source à 3 bar ne laisse que 0,2 bar : d'où des seuils
+courts, et ils sont justes. C'est exactement pourquoi le métier réclame 3 bar
+dynamiques au minimum.
+
+### Ce qui a validé le chiffre de la vitesse
+
+1,5 m/s en Ø25 donne **1,76 m³/h**. Au seau, sur son compteur en Ø25, le patron
+avait relevé **1,80 m³/h** (`mesure-debit.ts`, `DEBIT_COMPTEUR`). Les deux
+chiffres ne viennent pas de la même source — l'un d'un abaque, l'autre d'un seau
+et d'un chronomètre — et ils tombent à 2 % l'un de l'autre. C'est ce qui permet
+de croire la formule plutôt que de la supposer.
+
+### L'écran de l'application ne montre QUE le seuil
+
+`actions.ts` remonte `tuyau: { seuil25, seuil32, debit, insuffisantMemeEn32 }`,
+et **pas** le verdict. Raison : cet écran ne demande pas la longueur de l'amenée,
+et le calcul en prendrait une par défaut (30 m). Un « il vous faut du Ø32 » tiré
+d'une longueur que personne n'a saisie serait un chiffre inventé (`CLAUDE.md`
+§4). Le seuil, lui, ne dépend d'aucune saisie.
+
+La page publiée `appli/arrosage.html`, elle, demande la longueur : elle affiche
+le verdict **et** le seuil.
+
+### Ce que la suite a appris
+
+Le premier contrôle disait `seuil > 0`. Confronté à la formule retournée de
+travers — multiplier au lieu de diviser —, il est resté **vert** en affichant
+« 0 m » : le seuil valait quatre dix-millièmes de mètre. C'est le contrôle qui
+mesure zéro du `CLAUDE.md` §5, dans sa version la plus sournoise, puisqu'il
+affichait le bon chiffre et concluait le contraire. `test-arrosage-calcul.ts`
+exige maintenant une longueur **plausible** (5 à 500 m), un rapport Ø32/Ø25 d'au
+moins 2, et éprouve la bascule un mètre avant et un mètre après le seuil. Les
+trois défauts plausibles — formule retournée, diamètres inversés, critère de
+vitesse retiré — ont chacun été joués et font rougir la suite.
+
+---
+
+## 145. La buse se calcule à la pression du chantier — et la portée ne se gonfle pas
+
+**Sa demande du 22 août 2026 : « oui code le ».**
+
+### Le problème
+
+`CATALOGUE.buses` ne porte qu'**une** valeur de portée et de débit par buse, à
+**une** pression de référence (2,5 bar pour les turbines Rain Bird, 2 bar pour
+les tuyères VAN) — c'est écrit noir sur blanc dans le catalogue lui-même :
+*« PARTOUT LE MÊME TROU »*. Le calcul les prenait telles quelles.
+
+### Deux lois, deux statuts, et c'est le coeur de la décision
+
+| | La loi | Son statut | Sens de la correction |
+|---|---|---|---|
+| **débit** | `Q ∝ √P` (Torricelli) | **physique** | les deux sens |
+| **portée** | `R ∝ P^(1/3)` | **estimation** | vers le bas seulement |
+
+Le débit d'un orifice suit la racine carrée de la pression : ce n'est pas un
+abaque, c'est de la mécanique des fluides. Sous-estimer un débit chargerait trop
+un réseau — le défaut même qu'on corrige — donc on l'applique **dans les deux
+sens**.
+
+La portée n'a pas d'équivalent. La balistique pure donnerait `R ∝ P`, mais l'air
+freine le jet et l'écrase : les tables des constructeurs montrent une variation
+bien plus douce, de l'ordre de la racine cubique. **Cet exposant n'est pas
+relevé de ses catalogues** — c'est une estimation, et elle est traitée comme
+telle :
+
+1. **jamais vers le haut.** Au-dessus de la pression de référence, la portée du
+   catalogue est conservée. Gonfler une portée sur un chiffre supposé ferait
+   espacer les arroseurs, et un espacement trop large est un trou d'arrosage
+   qu'on ne découvre qu'en juillet ;
+2. **vers le bas, oui.** C'est le sens où se tromper coûte un arroseur de plus,
+   jamais une tache sèche ;
+3. **elle se dit.** `calculerPlan` rend `porteeEstimee`, et `actions.ts` en fait
+   une réserve affichée sous le plan (`CLAUDE.md` §4).
+
+### Où la correction s'applique, et pourquoi là
+
+Dans `modelePour`, **avant tout choix** : les buses sont corrigées puis
+**retriées** par portée décroissante. Deux raisons :
+
+- le pavage, le débit et la pluviométrie travaillent ensuite sur les mêmes
+  valeurs. Corriger plus tard reviendrait à choisir une buse sur sa fiche et à
+  la poser sur autre chose ;
+- deux buses de pressions de référence différentes ne se réduisent pas du même
+  facteur : l'ordre décroissant du catalogue peut cesser de l'être après
+  correction, et tout le choix « la plus grande qui tient » repose sur cet ordre.
+
+### Ce que cela change, et ce que cela ne règle pas
+
+Son jardin d'exemple à 3 bar passe de **trois à quatre réseaux** : les buses
+données à 2,5 bar débitent 9,5 % de plus à 3 bar. Les plans d'avant tenaient sur
+des débits sous-estimés.
+
+**La pression retenue est celle de la SOURCE.** Les pertes du réseau lui-même —
+la ligne, l'électrovanne, les raccords — ne sont toujours pas calculées : le
+dernier arroseur d'une longue ligne voit moins que ce chiffre. Ouvert dans
+`TODO.md`. Le faire demanderait une boucle (la pression dépend du débit, qui
+dépend de la buse, qui dépend de la pression) ; ce n'est pas fait, et le taire
+aurait été présenter un progrès comme une garantie.
+
+### Les contrôles
+
+`test-arrosage-calcul.ts` tient l'égalité **exacte** : à quatre fois la
+pression, la demande vaut exactement le double (√4 = 2). Une tolérance large
+laisserait passer un exposant de travers. Trois défauts ont été joués et font
+chacun rougir la suite : correction retirée, portée gonflée vers le haut, loi
+linéaire au lieu de la racine. Un quatrième contrôle tient la non-régression :
+à la pression du catalogue, le plan doit être **identique** à ce qu'il était.
+
+---
+
+## 146. Un réseau est plafonné par son tuyau, pas seulement par le compteur
+
+**Sa déduction du 22 août 2026**, en lisant le §144 : *« tu ne viens pas de me
+dire qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous les cas le
+calcul doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80, non ? »*
+
+### Le trou
+
+`decouper()` coupait un réseau à `débit du seau × 0,85` — la SOURCE, et rien
+d'autre. Le débit maximal du tuyau, calculé au §144, ne servait qu'à choisir le
+diamètre de l'amenée. Or **toutes les lignes de réseau sont en Ø25** : c'est le
+diamètre de tous les raccords du catalogue (té 25×3/4"×25, coude 25×3/4").
+
+| Source mesurée | Ancienne limite | Ce que le Ø25 passe | |
+|---|---|---|---|
+| 1,80 m³/h | 1,53 | 1,76 | la source commande |
+| 3,00 | 2,55 | 1,76 | **dépassé de 45 %** |
+| 4,50 | 3,82 | 1,76 | **plus du double** |
+
+### Pourquoi personne ne l'avait vu
+
+**Le compteur du patron donne 1,80 m³/h.** À ce débit, la source commande
+toujours : `1,80 × 0,85 = 1,53 < 1,76`. Le défaut était donc structurellement
+invisible sur le seul chantier dont ce dépôt dispose, et il serait apparu chez
+le premier utilisateur mieux alimenté — l'eau à plus de 2 m/s dans la ligne, la
+pression qui tombe avant le dernier arroseur, un gazon jauni en juillet.
+
+**C'est la leçon, et elle dépasse l'arrosage : une règle éprouvée sur un seul
+chantier n'est pas une règle éprouvée.** Les suites montent désormais la source
+jusqu'à 9 m³/h — un régime que le patron ne rencontrera jamais — parce que c'est
+le seul où le défaut existait.
+
+### La décision
+
+`limite = min(débit du seau × 0,85, débit maximal du Ø25)`.
+
+Le plafond du tuyau **ne porte pas la marge de 0,85 en plus** : les 1,5 m/s sont
+déjà une limite de bonne pratique, pas un maximum physique. L'empiler
+reviendrait à payer deux fois la même prudence, en vannes et en devis.
+
+`decouper()` rend `limitePar` (`'source'` ou `'tuyau'`), remonté jusqu'à
+l'écran : un artisan qui a mesuré 3 m³/h et voit ses réseaux coupés plus tôt
+qu'il ne s'y attend doit lire que c'est son Ø25 qui commande, sinon il croit à
+un défaut de calcul.
+
+### Effet de bord assumé sur un contrôle
+
+Le critère de vitesse d'`amenee()` (§144) **n'est plus atteignable** par
+`calculerPlan` : le plafond agit en amont, donc aucun secteur ne peut plus
+l'armer. Il reste en place comme défense en profondeur, mais
+`test-arrosage-calcul.ts` l'écrit noir sur blanc plutôt que de laisser croire
+qu'il veille — **un contrôle qui ne peut plus rougir ne prouve rien**
+(`CLAUDE.md` §5), et le prétendre serait pire que de l'avoir retiré. Ce que la
+suite éprouve à sa place, c'est la garantie qui l'a rendu inatteignable.
+
+---
+
+## 147. Ce qui arrive au dernier arroseur : le calcul en deux passes
+
+**Sa demande du 22 août 2026 au soir : « oui corrige la 1 ».** C'était le
+dernier trou connu du calcul d'arrosage.
+
+### Le problème
+
+Seule l'amenée compteur → regard était comptée (§144), et l'écran l'avouait :
+*« ce calcul ne compte QUE l'amenée — ni les antennes, ni les raccords, ni
+l'électrovanne »*. Or c'est la pression au pied du DERNIER arroseur qui décide
+de sa portée, et donc de l'espacement de toute la ligne.
+
+Sur son jardin d'exemple à 3 bar : 0,27 bar perdus dans l'amenée, **0,44 dans
+le réseau**, il arrive **2,28 bar**. Les buses étaient dimensionnées sur 3.
+
+### Ce qui est compté, et d'où ça vient
+
+| | Valeur | Source |
+|---|---|---|
+| la ligne, tronçon par tronçon | Hazen-Williams | formule, déjà au dépôt |
+| l'antenne PEBD Ø16 | calculée, 2 m par tête | longueur de sa nomenclature |
+| l'électrovanne | 0,25 bar | **non relevée** — majorant |
+| les raccords | +15 % du linéaire | **non relevée** — règle de l'art |
+
+Les deux valeurs non relevées sont posées **en majorant** : une perte
+surestimée conclut plus tôt, donc pose un arroseur de plus — le sens où se
+tromper coûte 30 € au lieu d'un chantier (`CLAUDE.md` §4 ter). Le jour où il les
+relève, elles se corrigent en un seul endroit.
+
+### Le débit décroît le long de la ligne
+
+Entre la vanne et la première tête passe le débit du réseau entier ; entre la
+première et la deuxième, ce débit moins une tête. Le calcul parcourt donc les
+têtes **dans l'ordre où le tuyau les visite** — celui que `decouper` a déjà
+établi pour colorier le plan — et somme tronçon par tronçon, en distance de
+Manhattan (un tuyau suit les axes).
+
+Compter le débit total sur toute la longueur donnerait **0,77 bar au lieu de
+0,44** : assez pour condamner des plans qui tiennent, et un avertissement qui
+parle à tort s'apprend à être ignoré.
+
+### Deux passes, et pourquoi jamais trois
+
+La pression au bout dépend des débits, qui dépendent de la pression. On ne peut
+pas commencer par la fin :
+
+1. un plan à la pression de la SOURCE — ce que faisait le calcul jusqu'ici ;
+2. on mesure ce que perdent l'amenée et le pire réseau, on retire, on REFAIT.
+
+**Une troisième passe irait dans le mauvais sens.** La seconde passe baisse les
+débits (moins de pression, moins de débit), donc ses pertes sont plus faibles,
+donc la troisième passe *remonterait* la pression. On tournerait autour de la
+valeur au lieu de s'en approcher. S'arrêter à deux garde les pertes des débits
+les plus forts : le côté prudent.
+
+**La pire perte vaut pour tout le jardin.** Dimensionner chaque réseau à sa
+propre pression donnerait des buses différentes d'une vanne à l'autre sur une
+même pelouse — deux portées, deux espacements, un plan qu'on ne sait pas poser.
+
+**Sous un demi-bar de reste** (`PLANCHER_UTILE`), on ne raffine plus : ce n'est
+plus un ajustement de portée, c'est un réseau qui ne fonctionne pas, et cela
+s'écrit à l'écran.
+
+### Ce qui reste dehors
+
+Le trajet du regard à la première tête. Il dépend de l'endroit où la nourrice
+est posée, et aucune saisie ne le donne aujourd'hui. La pression annoncée est
+donc un **plafond**, et les deux écrans le disent.
+
+### Les chiffres affichés viennent tous de la passe 2
+
+Les deux passes ne donnent pas les mêmes pertes. Publier celles de la passe 1 à
+côté d'un plan issu de la passe 2 mettrait deux pertes d'amenée différentes dans
+le même écran — on relit sans méfiance, on ne retombe pas sur ses pieds, et
+c'est toute la liste dont on doute (`CLAUDE.md` §4 bis). La pression qui a servi
+à choisir les buses reste, elle, celle de la passe 1, plus basse de quelques
+centièmes : l'écart va dans le sens sûr.
+
+### Un contrôle pris en flagrant délit
+
+Le premier contrôle de la perte bornait le résultat à « moins du double du pire
+débit ». La version juste **et** la version fausse y passaient au vert : il a
+fallu injecter le défaut pour s'en apercevoir. La valeur est désormais figée à
+cinq millièmes près, et le message nomme les deux nombres — 0,442 attendu, 0,773
+si la décroissance saute. Sévère à dessein : ce chiffre décide du nombre
+d'arroseurs par ligne.
+
+**Deux autres contrôles ont dû être réécrits**, parce que le raffinement les a
+rendus faux :
+
+- le seuil Ø25 → Ø32 **n'est plus une constante** : allonger l'amenée baisse la
+  pression au bout, donc change la buse et le débit, donc le seuil. C'est un
+  point fixe, pas une frontière fixe ; la suite éprouve l'existence de la
+  bascule, plus son emplacement au mètre ;
+- la loi en √P ne peut plus s'éprouver entre 2,5 et 10 bar : à 10 bar de source
+  il n'en arrive plus 10 au bout, et à 2,5 la portée réduite fait changer de
+  buse. Deux choses bougeaient à la fois. Elle s'éprouve désormais entre 3 et
+  3,2 bar, où la même buse est retenue, contre les pressions réellement
+  reçues.
+

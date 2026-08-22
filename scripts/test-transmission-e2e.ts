@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { numeroLisible } from "../src/lib/numero-lisible";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Le dernier mètre : le message part-il au bon destinataire ?
 //
@@ -48,7 +49,7 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', TELEPHONE);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const chantierUrl = page.url();
 
@@ -65,40 +66,26 @@ async function main() {
   await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 15000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
-  // --- « Télécharger », pas « ouvrir un onglet de plus » -------------------
+  // On revient sur l'écran du devis parti, comme il le fera par la carte du
+  // chantier : il ne s'affiche plus de lui-même après l'envoi.
+  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
+
+  // --- « Télécharger le PDF » n'est plus sur cet écran ---------------------
   //
-  // Le patron, le 7 août 2026 : « quand je clique sur télécharger le PDF, ça me
-  // propose pas de l'enregistrer, ça ouvre juste une page de plus ». Le lien
-  // servait le document `inline`, et sans nom de fichier : un navigateur
-  // l'affiche alors et n'offre rien.
+  // **Retiré le 21 août 2026, à sa demande** : devant cet écran il a voulu n'y
+  // garder que deux gestes — ouvrir le message, et modifier le devis.
   //
-  // Les trois conditions se tiennent, et aucune ne suffit seule :
-  //   - `attachment` côté serveur (`?telecharger=1`), sinon Chrome affiche ;
-  //   - le nom sur le LIEN, sinon Safari nomme le fichier d'après la page —
-  //     c'est le défaut de la sauvegarde, le même matin ;
-  //   - pas de `target`, sinon l'onglet neuf prive Safari de sa demande
-  //     d'enregistrement.
-  const lienPdf = page.getByRole("link", { name: "Télécharger le PDF" });
-  assert.equal(await lienPdf.count(), 1, "Le devis envoyé ne propose plus de télécharger son PDF.");
-  const hrefPdf = (await lienPdf.getAttribute("href")) ?? "";
-  assert.match(
-    hrefPdf,
-    /telecharger=1/,
-    `Le lien sert le PDF en aperçu (« ${hrefPdf} ») : le navigateur l'affichera au lieu de l'enregistrer.`
-  );
-  const nomPdf = (await lienPdf.getAttribute("download")) ?? "";
-  assert.match(
-    nomPdf,
-    /^devis-.+\.pdf$/,
-    `Le lien n'annonce aucun nom de fichier (« ${nomPdf} ») : sur iPhone, le PDF arrivera sous le nom de la page, sans extension.`
-  );
-  assert.equal(
-    await lienPdf.getAttribute("target"),
-    null,
-    "Le lien ouvre un onglet : Safari y affiche le PDF au lieu de proposer de l'enregistrer."
-  );
+  // La garantie du 7 août 2026 — *« quand je clique sur télécharger le PDF, ça
+  // me propose pas de l'enregistrer, ça ouvre juste une page de plus »* — n'est
+  // pas perdue pour autant : le même mécanisme (`?telecharger=1`, le nom sur le
+  // lien, pas de `target`) sert la FACTURE, et il y est éprouvé par
+  // `test-facture-au-client-e2e.ts`. Le devis, lui, garde son aperçu sur
+  // `devis-complet`, où le patron l'a placé la veille.
+  //
+  // Ce qui reste ici est ce que cet écran porte encore, et qui a sa demande
+  // derrière : le message tout prêt, et la bascule de canal.
 
   // --- Le défaut d'origine ------------------------------------------------
   const lienSms = page.locator("a[data-transmission]");

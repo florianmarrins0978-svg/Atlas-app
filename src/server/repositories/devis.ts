@@ -380,3 +380,144 @@ export async function mettreAJourEnTeteDevis(
     return row ?? null;
   });
 }
+
+/**
+ * Le devis d'un chantier, rendu SANS un seul prix — la feuille que le salarié
+ * emporte.
+ *
+ * **Sa décision du 21 août 2026 :** *« le salarié ne doit pas avoir accès au
+ * prix [...] je pense que le plus simple, ça serait de mettre le devis en PDF
+ * sans les prix »*. Le raisonnement complet est dans `devis-pdf.ts` :
+ * l'alternative — une liste de prestations saisie à côté — aurait été une
+ * SECONDE version de ce qui est à faire, et les deux auraient divergé.
+ *
+ * **Toujours le devis ENVOYÉ, jamais un brouillon**, tant qu'il en existe un :
+ * c'est celui que le client a reçu, donc celui sur lequel les deux parties se
+ * sont entendues. Un brouillon en cours d'écriture enverrait l'équipe faire ce
+ * qui n'a pas encore été proposé. Sans devis envoyé, on rend le brouillon —
+ * mieux vaut la liste du jour que rien, et le titre du PDF dit ce qu'il est.
+ *
+ * **Régénéré, jamais servi depuis le stockage.** Le PDF figé au moment de
+ * l'envoi porte, lui, tous les prix : le servir ici reviendrait exactement à ce
+ * qu'on cherche à éviter.
+ */
+export async function genererDevisSansPrix(
+  ctx: Ctx,
+  chantierId: string
+): Promise<Uint8Array | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const d = await devisÀImprimer(tx, chantierId);
+    if (!d) return null;
+    const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, d.id));
+    return genererPdfDevis(
+      {
+        numeroCommercial: d.numeroCommercial,
+        numeroVersion: d.numeroVersion,
+        statut: d.statut as "brouillon" | "envoye",
+        dateEmission: d.dateEmission,
+        entrepriseNom: d.entrepriseNom,
+        entrepriseAdresse: d.entrepriseAdresse,
+        entrepriseSiret: d.entrepriseSiret,
+        entrepriseTelephone: d.entrepriseTelephone,
+        entrepriseEmail: d.entrepriseEmail,
+        // `sansChiffrage` ignore l'IBAN : il n'a rien à faire sur une feuille
+        // de chantier, et le passer ne l'imprime pas.
+        entrepriseIban: d.entrepriseIban,
+        clientNom: d.clientNom,
+        clientCivilite: d.clientCivilite,
+        clientAdresse: d.clientAdresse,
+        clientTelephone: d.clientTelephone,
+        adresseChantier: d.adresseChantier,
+        conditionsPaiement: d.conditionsPaiement,
+        validiteJours: d.validiteJours,
+        devise: d.devise,
+        tauxTva: d.tauxTva,
+        totalHt: d.totalHt,
+        totalTva: d.totalTva,
+        totalTtc: d.totalTtc,
+        reductionPourcent: d.reductionPourcent,
+        reductionMontant: d.reductionMontant,
+        lignes: lignes.map((l) => ({
+          libelle: l.libelle,
+          quantite: l.quantite,
+          prixUnitaire: l.prixUnitaire,
+          montant: l.montant,
+        })),
+      },
+      { sansChiffrage: true }
+    );
+  });
+}
+
+/**
+ * Ce qu'il y a à faire sur ce chantier, en toutes lettres et sans un prix.
+ *
+ * C'est ce que porte la feuille du planning, sous le nom du client. Les mêmes
+ * lignes que le PDF ci-dessus, lues au même endroit : deux listes construites
+ * séparément finiraient par ne plus dire la même chose, et l'équipe croirait
+ * l'écran plutôt que le papier.
+ *
+ * **Une action et non un chargement de page** : la plupart des journées ne
+ * s'ouvrent sur aucune feuille, et charger les lignes de tous les chantiers
+ * planifiés ferait payer à chaque ouverture du planning ce qui ne sert qu'à un
+ * appui.
+ */
+export type FeuilleDuChantier = {
+  /** Ce qu'il y a à faire, ligne par ligne, sans un prix. */
+  taches: string[];
+  /**
+   * Un devis existe-t-il ?
+   *
+   * **L'écran s'en sert pour ne pas offrir un bouton qui mène à rien.** Sans
+   * devis, le PDF sans les prix n'a rien à imprimer et la route répond 404 : un
+   * bouton qui ouvre une erreur est pire qu'un bouton absent — il fait douter de
+   * l'application entière. Le cas ne devrait pas se présenter (le planning ne
+   * liste que des chantiers dont le devis est PARTI), mais « ne devrait pas »
+   * n'est pas « ne peut pas ».
+   */
+  avecDevis: boolean;
+};
+
+export async function tachesDuChantier(
+  ctx: Ctx,
+  chantierId: string
+): Promise<FeuilleDuChantier> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const d = await devisÀImprimer(tx, chantierId);
+    if (!d) return { taches: [], avecDevis: false };
+    const lignes = await tx
+      .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite })
+      .from(lignesDevis)
+      .where(eq(lignesDevis.devisId, d.id))
+      .orderBy(lignesDevis.ordre);
+    return {
+      avecDevis: true,
+      taches: lignes.map((l) => {
+        // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
+        // rien de plus que le libellé ; « 18 » dit combien de mètres de haie.
+        const q = Number(l.quantite);
+        return Number.isFinite(q) && q !== 1
+          ? `${l.libelle} — ${q.toLocaleString("fr-FR")}`
+          : l.libelle;
+      }),
+    };
+  });
+}
+
+/** Le devis à imprimer : l'envoyé le plus récent, sinon le brouillon. */
+async function devisÀImprimer(tx: DbOrTx, chantierId: string) {
+  const [envoye] = await tx
+    .select()
+    .from(devis)
+    .where(sql`${devis.chantierId} = ${chantierId} AND ${devis.statut} = 'envoye'`)
+    .orderBy(desc(devis.numeroVersion))
+    .limit(1);
+  if (envoye) return envoye;
+  const [brouillon] = await tx
+    .select()
+    .from(devis)
+    .where(eq(devis.chantierId, chantierId))
+    .orderBy(desc(devis.numeroVersion))
+    .limit(1);
+  return brouillon ?? null;
+}

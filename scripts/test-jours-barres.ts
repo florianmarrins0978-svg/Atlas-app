@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { phraseJoursBarres, libelleJourBarre } from "../src/lib/jours-barres";
 import { compterOccupation, jourRetenable, type JourIso } from "../src/server/disponibilites";
-import { marqueDuJour } from "../src/lib/mois";
 
 // Un jour barré doit dire POURQUOI il l'est.
 //
@@ -40,8 +39,12 @@ const barre = (jour: string, duree: number) =>
 cas("LE FAIT : un jour VIDE se barre quand la durée déborde sur le lendemain", () => {
   // C'est la situation exacte de sa capture, et le cœur du malentendu.
   assert.equal(
-    marqueDuJour("2026-08-18" as JourIso, OCCUPATION, 2),
-    "libre",
+    // **On lit l'occupation elle-même, plus une marque de calendrier.** Les
+    // cinq marques ont disparu le 21 août 2026 avec le planning refait ; le
+    // décor, lui, se dit aussi bien — et mieux — avec ce que la carte porte
+    // vraiment pour ce jour-là.
+    (OCCUPATION.get("2026-08-18:matin") ?? 0) + (OCCUPATION.get("2026-08-18:apres_midi") ?? 0),
+    0,
     "le décor est faux : le 18 devait être vide pour que ce contrôle prouve quelque chose"
   );
   assert.equal(barre("2026-08-18", 1), false, "une demi-journée devrait tenir le 18");

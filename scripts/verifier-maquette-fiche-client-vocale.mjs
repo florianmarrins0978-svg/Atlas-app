@@ -148,6 +148,48 @@ dire(
   "et c'est « Je rédige mon devis » — ses mots, à la lettre"
 );
 
+// ── 2 ter. Les dix chiffres se posent tout seuls ───────────────────────────
+//
+// *« Il faut que je puisse taper les dix chiffres à la suite et qu'ils se
+// mettent automatiquement avec les bons espaces. »* Sur un chantier, devant le
+// client, on ne s'arrête pas toutes les deux touches.
+
+await page.fill("#tel", "");
+await page.type("#tel", "0679984514");
+dire(
+  (await page.inputValue("#tel")) === "06 79 98 45 14",
+  `dix chiffres d'affilée deviennent « 06 79 98 45 14 » (obtenu : « ${await page.inputValue("#tel")} »)`
+);
+
+await page.fill("#tel", "");
+await page.type("#tel", "06.79-98x45y14");
+dire(
+  (await page.inputValue("#tel")) === "06 79 98 45 14",
+  "les points, tirets et lettres tombent — c'est un numéro, pas une note"
+);
+
+// **Un indicatif ne se découpe pas comme un numéro français.** Espacer
+// « +33679984514 » par paires rendrait « +33 67 99 84 51 4 », qui n'est le
+// numéro de personne : celui qui tape un « + » sait ce qu'il écrit.
+await page.fill("#tel", "");
+await page.type("#tel", "+33679984514");
+dire(
+  (await page.inputValue("#tel")) === "+33679984514",
+  "un numéro international n'est pas retouché"
+);
+
+// Le geste le plus courant après la frappe : corriger un chiffre au milieu. Un
+// curseur renvoyé au bout à chaque touche rend la correction impossible.
+await page.fill("#tel", "");
+await page.type("#tel", "0679984514");
+await page.locator("#tel").evaluate((e) => e.setSelectionRange(4, 4));
+await page.keyboard.type("5");
+dire(
+  (await page.locator("#tel").evaluate((e) => e.selectionStart)) === 5,
+  "le curseur reste où l'on corrige, il ne saute pas à la fin"
+);
+await page.fill("#tel", "06 79 98 45 14");
+
 // ── 3. Le carré photo ouvre le menu du téléphone, sans l'enfermer ───────────
 const fichier = page.locator('input[type="file"]');
 dire((await fichier.count()) === 1, "un seul champ de fichier, comme dans `Pellicule.tsx`");

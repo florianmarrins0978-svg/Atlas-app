@@ -4,10 +4,462 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-18 · `main`
+**Point de reprise :** 2026-08-22 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+
+## LA PRESSION QUI DIMENSIONNE EST CELLE DU DERNIER ARROSEUR (22 août 2026)
+
+**Avant de toucher à `decouper` ou à `buseALaPression`, sachez ceci :** le
+calcul tourne **deux fois**.
+
+1. un plan à la pression de la SOURCE ;
+2. on mesure ce que perdent l'amenée et le pire réseau, on retire, on REFAIT.
+
+`pressionDeCalcul` (globale) porte la pression de la passe 2. Elle est remise à
+`null` au début de chaque `decouper` **et** dans le `finally` de `calculerPlan` —
+deux gardes, parce que sur un serveur deux artisans calculent en même temps.
+
+**Ne pas ajouter de troisième passe.** Elle irait dans le mauvais sens : moins
+de pression → moins de débit → moins de perte → la pression remonterait. On
+tournerait autour de la valeur. Deux passes gardent les pertes des débits les
+plus forts, donc le côté sûr.
+
+**Ce qui est compté :** ligne (débit décroissant, Manhattan), antenne Ø16,
+électrovanne (0,25 bar, **non relevé**), raccords (+15 %, **non relevé**).
+**Ce qui ne l'est pas :** le trajet regard → première tête. Les deux écrans le
+disent ; ne pas le taire si vous y touchez.
+
+**Les chiffres affichés viennent tous de la passe 2** — sinon deux pertes
+d'amenée différentes cohabiteraient dans le même écran.
+
+**Et `test-arrosage-calcul.ts` fige la perte à 0,442 bar ± 0,005.** Ce n'est pas
+une rigidité gratuite : ce chiffre décide du nombre d'arroseurs par ligne. S'il
+change, c'est SCIEMMENT, avec la raison dans le commit.
+
+Détail : `ARCHITECTURE.md` §147.
+
+---
+
+## UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU (22 août 2026)
+
+`decouper()` coupe un réseau au **plus petit** de deux chiffres :
+
+| | |
+|---|---|
+| la source | débit au seau × 0,85 |
+| le tuyau | 1,76 m³/h — le Ø25 à 1,5 m/s |
+
+Toutes ses lignes de réseau sont en Ø25 (té 25×3/4"×25, coude 25×3/4"). Avant le
+22 août, seule la source comptait : à 3 m³/h mesurés, un réseau tirait 2,55 m³/h
+dans un tuyau qui n'en passe que 1,76.
+
+**Ce défaut ne se voyait pas chez lui** — son compteur donne 1,80, la source
+commandait toujours. C'est la leçon à retenir : une règle éprouvée sur un seul
+chantier n'est pas éprouvée.
+
+**Conséquence sur un contrôle existant :** le critère de vitesse d'`amenee()`
+n'est plus atteignable par `calculerPlan`, puisque le plafond agit en amont. Il
+reste en place comme garde-fou, et `test-arrosage-calcul.ts` le DIT plutôt que
+de laisser croire qu'il veille encore.
+
+---
+
+## LES BUSES SONT CORRIGÉES À LA PRESSION — NE PAS GONFLER LA PORTÉE (22 août 2026)
+
+**Avant de retoucher `modelePour` :** les buses du catalogue sont ramenées à la
+pression du chantier avant tout choix, puis **retriées** par portée décroissante
+(deux buses de pressions de référence différentes ne se réduisent pas du même
+facteur, et tout le choix « la plus grande qui tient » repose sur cet ordre).
+
+| | La loi | Statut | Sens |
+|---|---|---|---|
+| débit | `√(P/P_ref)` — Torricelli | physique | les deux sens |
+| portée | `P^(1/3)` | **estimation** | **vers le bas uniquement** |
+
+**Ne jamais gonfler la portée**, même si la pression est supérieure à celle du
+catalogue : l'exposant n'est pas relevé de ses catalogues, et espacer les
+arroseurs sur un chiffre supposé fabrique un trou d'arrosage qu'on ne voit qu'en
+juillet. Une portée réduite est signalée sous le plan (`porteeEstimee`).
+
+**La pression retenue est celle de la SOURCE**, pas celle du dernier arroseur :
+les pertes du réseau ne sont pas calculées (`TODO.md`). C'est un progrès, pas
+une garantie — ne pas l'annoncer autrement.
+
+Détail : `ARCHITECTURE.md` §145.
+
+---
+
+## UNE LÉGENDE DE PLAN SE VÉRIFIE CONTRE LE CATALOGUE (22 août 2026)
+
+**Ce qui s'est passé.** Le patron a lu sur le plan « 4 arroseurs en 5004 buse
+3.0 » et a demandé si c'était tenable. Ça ne l'était pas — 2,84 m³/h là où le
+Ø25 en passe 1,76 — **mais le plan ne posait pas de 5004** : neuf 3504 buse 0,75
+et quatre tuyères. Seule la **légende** était restée sur le matériel de la
+première version de la planche.
+
+**Le pire :** `verifier-maquette-arrosage-plan.mjs` **exigeait** cette légende,
+libellés en dur. Elle ne pouvait donc pas être corrigée sans faire rougir la
+batterie. Un contrôle qui fixe un libellé fige une erreur (`CLAUDE.md` §5 bis).
+
+**La règle, valable pour toute planche :** une légende se vérifie contre le
+catalogue (le nom exact de la buse, sa portée) **et** contre la liste des pièces
+de la même page. Si les trois ne s'accordent pas, l'un ment et rien ne dit
+lequel au moment de commander.
+
+**Le calcul, lui, n'était pas en cause** — il coupe bien les réseaux sous le
+débit disponible. Devant une plainte sur un chiffre d'arrosage : regarder
+d'abord si le chiffre vient du CALCUL ou d'un libellé écrit à la main.
+
+---
+
+## LE DIAMÈTRE DU TUYAU D'ARROSAGE : DEUX CRITÈRES, PAS UN (22 août 2026)
+
+**Si vous touchez au calcul d'arrosage, lisez ceci d'abord.** Le choix Ø25 / Ø32
+ne dépend PAS que de la longueur, et c'est le piège qui était dans le code :
+
+| Ce qui impose le Ø32 | Pourquoi on ne peut pas l'oublier |
+|---|---|
+| le **débit** (vitesse ≤ 1,5 m/s) | un tuyau court ne perd presque rien : sur la seule perte de charge, un Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court |
+| la **longueur** (perte de charge) | au-delà du seuil, la marge de pression est mangée avant les arroseurs |
+
+Débits maximaux qui en découlent : **Ø25 → 1,76 m³/h**, **Ø32 → 2,91**. Le
+chiffre du Ø25 recoupe sa propre mesure au seau sur son compteur (1,80 m³/h) —
+c'est ce qui permet de le croire.
+
+**Le débit prime sur la longueur** : aucune longueur ne rattrape un débit trop
+fort, alors qu'une amenée trop longue se raccourcit parfois en déplaçant le
+regard. Quand le débit interdit le Ø25, `longueurMax25` rend **0**, jamais un
+nombre de mètres — un seuil qu'on croit et qui ne tient pas coûte une tranchée.
+
+**Les deux copies du calcul doivent rester identiques** (`appli/arrosage-calcul.js`
+et `src/lib/arrosage/calcul.js`) : `npm run verifier:maquette` rougit sinon.
+
+**Ce qui n'a pas pu être éprouvé ici :** la ligne du seuil dans l'écran de
+l'application (`ArrosageClient.tsx`) n'apparaît qu'après lecture d'un croquis,
+donc avec une clé d'IA. Elle a été vue au navigateur sur `appli/arrosage.html`,
+dans ses deux cas. À regarder sur son espace au premier plan calculé.
+
+Détail complet : `ARCHITECTURE.md` §144.
+
+---
+
+## LA PLACE SE COMPTE EN ÉQUIPES — et QUATRE lectures doivent s'accorder
+
+Posé le 22 août 2026, sur sa règle : *« oui si c'est des journées complètes, non
+si c'est des demi-journées »*.
+
+Un chantier prend **autant d'équipes qu'on lui en coche, au moins une**
+(`equipesMobilisees`, `src/server/disponibilites.ts`). Toute nouvelle lecture de
+la place doit passer par là — jamais par un `pris.length`.
+
+**Elles sont quatre, et elles doivent rendre le même verdict** (`CLAUDE.md` §3) :
+
+| Où | Ce qu'elle décide |
+|---|---|
+| `preparerEnvoi` | les jours suggérés et les jours barrés de SON calendrier |
+| `verifierJourPropose` | la date qu'il pose lui-même au calendrier |
+| `contrainteDuPlanning` | ce que le CLIENT peut retenir |
+| `PlanningClient` → `occupationDemi` | la couleur des pastilles |
+
+Les trois premières lisent les affectations par `equipesParChantier`
+(`occupation-chantiers.ts`) ; la quatrième les a déjà à l'écran. **N'en corriger
+qu'une déplace le défaut au lieu de le réparer** : le planning dirait « complet »
+pendant que l'écran d'envoi offrirait le jour.
+
+**Le piège de l'assertion muette, payé ici :** `preparerEnvoi().joursLibres` ne
+rend que les **six premiers** jours suggérés. Une assertion du type
+« tel jour n'est pas dans joursLibres » sur un jour plus lointain est vraie par
+construction et ne prouve rien. Interroger `joursOccupes`, qui couvre douze mois.
+
+---
+
+## L'OCCUPATION SE BORNE SUR LA FIN DU CHANTIER, JAMAIS SUR SON DÉPART
+
+Corrigé le 22 août 2026, après *« je peux proposer le 24 alors qu'un client a
+validé le 24 »*. **Toute nouvelle requête d'occupation doit passer par
+`encoreEnCoursDepuis`** (`src/server/repositories/occupation-chantiers.ts`) —
+jamais par un `gte(chantiers.datePlanifiee, …)` réécrit à la main.
+
+La raison tient en une phrase : un chantier de trois jours parti le jeudi tient
+encore le lundi, et borner sur son jour de départ le rend **invisible**. Le jour
+paraît libre, l'écran le propose, et — c'est ce qui rendait le défaut grave — la
+revérification de la réponse du client lisait la même occupation tronquée, donc
+**rien ne rattrapait la faute en aval**.
+
+Trois chemins la partagent, et ils doivent continuer de la partager
+(`CLAUDE.md` §3) : l'écran d'envoi, la validation de la date que le patron pose
+au calendrier, la revérification de la réponse du client.
+
+**Et la leçon de méthode, qui vaut partout :** un contrôle qui attend un refus
+doit **nommer le motif attendu**. Le troisième contrôle de ce lot n'affirmait
+que « ça échoue » — il était vert des deux côtés de la correction, parce que le
+refus venait en réalité d'un lien expiré.
+
+---
+
+## « RIEN N'EST VISIBLE SUR MON PLANNING » — DIAGNOSTIQUÉ, pas encore réglé
+
+Sa panne du 22 août 2026. **Si elle revient, la réponse est déjà là — ne pas la
+rechercher :**
+
+| | |
+|---|---|
+| La date est-elle perdue ? | **Non.** `enregistrerReponse` écrit `date_planifiee` sur le chantier dans la MÊME transaction que la réponse du client |
+| Le chantier est-il sur le planning ? | **Oui**, le jour porte sa barre pleine dans le mois |
+| Alors pourquoi ne le voit-il pas ? | La liste des planifiés s'ouvre sur **la semaine du jour**, la trouve vide, et écrit « Aucun chantier posé cette semaine » — pendant que le chantier attend la semaine d'après |
+| Ce qui le débloque tout de suite | toucher le jour dans le calendrier, ou la flèche **›** de la semaine |
+
+**Rien n'est codé** : la planche 87 (`appli/planning-semaine-ouverte.html`)
+attend qu'il choisisse entre A, B et C. Voir `TODO.md`.
+
+**La leçon à garder même quand ce cas sera réglé :** un écran qui montre une
+**fenêtre** — une semaine, un mois, une page — doit dire ce qu'il y a **hors de
+sa fenêtre** quand elle est vide. Sinon son « aucun » se lit « il n'y en a nulle
+part », et c'est le produit qu'on croit cassé. Chercher les autres endroits qui
+ont ce défaut avant qu'il ne les trouve.
+
+---
+
+## « TERMINÉS » : UNE PLANCHE ATTEND SA RÉPONSE — ne pas coder l'écran
+## « TERMINÉS » A ÉTÉ REFAIT LE 22 AOÛT 2026 — ce qu'il faut savoir avant d'y toucher
+
+Sa plainte, capture à l'appui : *« je la trouve beaucoup trop compliquée. Un
+utilisateur qui ne connaît pas l'application et qui arrive sur cette page ne
+comprend rien. »* Trois propositions dessinées, et **il a pris la B** —
+`appli/termines-simple.html`, planche 90. **Elle reste la référence** : toute
+correction de cet écran s'y porte d'abord, sinon les deux divergent, et c'est
+elle qu'il ouvre sur son téléphone.
+
+**Ce qui a disparu de l'écran, et qu'il ne faut pas ramener :** le fil vertical
+et ses perles pleines ou creuses, la pastille dorée, le **volet replié** qui
+cachait les chantiers à facturer, « Facturé, tous mois confondus », le surtitre
+et le cheveu. Une suite qui réclamerait l'un d'eux rendrait l'écran impossible à
+changer (`CLAUDE.md` §5 bis) — c'est déjà arrivé, et `test-planning-vers-facture-e2e.ts`
+a été adapté : il passe désormais par l'onglet **« À facturer »**.
+
+**Deux choses gouvernent le nouvel écran, et elles se paient si on les ignore :**
+
+1. **Un seul mois à la fois, qu'on feuillette** — `‹ Août 2026 ›`. On se déplace
+   sur le **calendrier**, pas sur la liste des mois qui portent quelque chose :
+   un mois vide répond « Rien en juillet 2026 ». La flèche du futur se ferme sur
+   le mois le plus récent.
+2. **CE QUI RESTE À FACTURER NE SUIT PAS LE MOIS.** Sa demande : *« il faut
+   pouvoir revenir dans le passé si jamais on a du retard sur la facturation »*.
+   L'onglet « À facturer » ignore le mois affiché — un chantier de juillet jamais
+   facturé se voit encore en août. `aFacturerPartout` porte cette règle, et la
+   suite pure la fixe.
+
+**Le piège qui a coûté deux suites rouges** : un chantier **clôturé avant sa
+date** reste dans « Terminés » avec une date **à venir**. Ouvrir sur « le mois
+le plus récent qui porte quelque chose » menait donc au mois prochain, vide, et
+le travail du mois en cours avait disparu. `bornesDuFeuilletage` s'ouvre sur le
+mois courant dès qu'il existe quelque chose de plus tard. Ne pas revenir à
+`moisLePlusRecent` pour l'entrée : c'est exactement le défaut.
+
+**Les règles sont dans `src/lib/termines-par-mois.ts`**, pures et éprouvées sans
+base (`scripts/test-termines-par-mois.ts`). L'écran n'y décide de rien.
+
+Le détail — ce qui se comprenait mal, et pourquoi — est dans `CHANGELOG.md` du
+22 août.
+
+---
+
+## LE PLANNING A ÉTÉ REFAIT LE 21 AOÛT 2026 — ce qu'il faut savoir avant d'y toucher
+
+**L'écran suit `appli/planning-simple.html` (planche 84) trait pour trait**, sur
+sa consigne : *« code trait pour trait cette maquette. Ne modifie rien ! Ne
+change rien ! »*. Toute correction du planning se porte **d'abord sur la
+planche**, sinon les deux divergent — et c'est elle qu'il ouvre sur son
+téléphone.
+
+**Trois choses ont changé sous l'écran, et elles se paient si on les ignore :**
+
+1. **`chantiers.equipe_id` N'EXISTE PLUS.** Les équipes vivent dans
+   `equipes_du_chantier (chantier_id, demi, equipe_id)` — plusieurs par
+   demi-journée, et le matin indépendant de l'après-midi
+   (`drizzle/0058_equipes_par_demi_journee.sql`). Un `UPDATE chantiers SET
+   equipe_id = …` dans une suite ne compilera plus ; c'est voulu.
+2. **Le patron ne se voit plus refuser un créneau.** `CreneauIndisponible` et
+   `EquipeIndisponible` ont disparu : *« il ne doit pas y avoir de limite [...]
+   nous, on prévient juste »*. **Le chemin du CLIENT, lui, garde toutes ses
+   limites** (`jourRetenable`, `premiersJoursLibres`) — ne pas les relâcher.
+3. **Les règles sont dans `src/lib/planning-jour.ts`**, pures et éprouvées sans
+   base (`scripts/test-planning-jour.ts`). L'écran n'y décide de rien.
+
+**Ce qui a quitté l'écran**, la planche ne le portant pas : « Créer la facture »
+(le fil des « Terminés » y mène toujours), la liste « Dans mon agenda », et la
+proposition de chantier voisin. Le code serveur des trois est intact — `TODO.md`
+dit où, et ce qu'il faut lui demander.
+
+### Une batterie qui rougit d'un coup : regarder si la BASE n'a pas été coupée sous elle
+
+**Le cluster PostgreSQL local est PARTAGÉ entre les sessions.** Le patron en fait
+tourner deux ou trois en parallèle (`CLAUDE.md` §6), et elles travaillent toutes
+sur `/tmp/atlas-pgdata`. Une session qui l'arrête et le relance coupe la batterie
+d'une autre en plein vol.
+
+**Ce que ça donne à l'écran, et c'est trompeur :** une suite rougit sur des
+assertions d'affichage — « le nom du client manque », l'écran ne portant plus que
+« ATLAS ». On cherche alors dans le rendu, alors que la page n'a simplement plus
+de session : la connexion s'est faite refuser.
+
+**Le geste qui tranche, en dix secondes :**
+
+```bash
+grep -n "shutdown request\|terminating connection" /tmp/atlas-pgdata/log | tail
+```
+
+Une ligne `received fast shutdown request` à l'heure de l'échec, et c'est réglé :
+la base a été arrêtée sous la batterie. Le journal du serveur de développement
+(`/tmp/atlas-serveur-e2e.log`) porte la même chose vue de l'autre bord —
+« terminating connection due to administrator command », puis un
+`CallbackRouteError` sur la connexion.
+
+**Ce qu'on fait alors :** rejouer la suite seule. Ce qu'on ne fait PAS : corriger
+un écran qui n'a rien. Vécu le 21 août 2026, sur `test-fiche-client-e2e` — trois
+cas rouges, zéro défaut.
+
+### Le piège qui a coûté deux heures : `export type { … }` dans un « use server »
+
+**Ne jamais réexporter un type depuis un fichier d'actions serveur.** Le lot
+portait, dans `src/app/planning/actions.ts`, un innocent :
+
+```ts
+export type { FeuilleDuChantier };   // ⛔ tue TOUT le module
+```
+
+Le chargeur d'actions de Next réécrit ce fichier en une liste d'exports de
+**valeurs**, une par action. Le nom exporté « type » y survit sous forme de
+référence à une chose que TypeScript vient d'effacer, et le module meurt à son
+évaluation :
+
+```
+⨯ ReferenceError: FeuilleDuChantier is not defined
+    at .next-internal/server/app/planning/page/actions.js (server actions loader)
+```
+
+**Toutes les actions de l'écran répondent alors 500** — poser une date, désigner
+une équipe, déplacer, retirer : plus rien n'atteignait la base. Et **rien ne le
+disait** : `tsc --noEmit` vert, `eslint` vert (le code source est juste, c'est la
+réécriture qui ne l'est pas), et le geste « réussissait » à l'écran sans un mot,
+puisqu'une action serveur ne rend jamais son erreur au patron (§0 ter).
+
+**Ce qui a fait perdre les deux heures :** avoir cru à un défaut de décor de
+suite, et cherché dans le contrôle plutôt que dans le journal du serveur. Il y
+était, en toutes lettres, dès la première minute. **Devant une action qui
+n'écrit rien : lire `/tmp/atlas-serveur-e2e.log` AVANT de toucher au contrôle.**
+
+Le type se prend à sa source, avec `import type` — qui s'efface à la compilation,
+et c'est déjà la convention du dépôt (`Notifications.tsx`, `PrixClient.tsx` et
+cinq autres écrans le font). `scripts/test-actions-serveur-sans-export-de-type.ts`
+rend la faute impossible : il balaie les 32 fichiers « use server », refuse les
+deux orthographes, et sait rougir sur la faute même du 21 août.
+
+---
+
+## Les suites navigateur échouent TOUTES à la connexion : vider `.next` (21 août 2026)
+
+**Le symptôme trompe** : cent une suites tombent l'une après l'autre sur
+`page.waitForURL` après avoir soumis le formulaire de connexion. On cherche
+alors du côté de l'authentification, de la limitation de débit, du jeu de
+démonstration — trois pistes, aucune bonne.
+
+**Le vrai signe est deux lignes plus haut, dans le journal du lanceur :**
+
+```
+Préchauffage de 27 écrans (compilation à la demande)...
+Préchauffage terminé : 3 écran(s) prêts, 24 en échec — 10 s.
+```
+
+Un préchauffage sain prend **soixante à quatre-vingts secondes** et rend tous
+les écrans prêts. Dix secondes et vingt-quatre échecs veulent dire que le
+serveur ne compile plus rien dans les temps — et un écran qui met plus de trente
+secondes à se bâtir fait expirer la connexion de la première suite, puis de
+toutes les autres.
+
+**La cause, mesurée :** le cache de développement `.next/` avait enflé à
+**4,3 Go** au fil des passages. Le geste : arrêter ce qui tient le port
+(`fuser -n tcp 3000`, puis `kill -9`), `rm -rf .next .next-verification`, et
+relancer. Le premier passage est plus long ; les suivants redeviennent normaux.
+
+**Ce n'est pas un défaut du produit**, et il ne faut pas le chercher là : la
+construction (`npm run build`) et les cent quatre-vingt-onze suites base étaient
+vertes dans le même passage.
+
+## « L'application ne s'ouvre plus » : LIRE LA FICHE JUSQU'AU BOUT (22 août 2026)
+
+**Payé le matin du 22 août, et c'est la faute que `CLAUDE.md` §1 bis existe pour
+empêcher.** Il signale une panne. La fiche est lue — mais seulement sa DATE :
+périmée de dix heures, donc « ton espace est éteint, rallume-le ». Il le rallume.
+*« Ça marche toujours pas. »*
+
+**L'avertissement était dans la même fiche, dix lignes plus bas, et il y était
+déjà la veille :**
+
+> ⚠ LE PORT 3000 EST PRIVÉ : GitHub répond par sa page de connexion à la place
+> d'Atlas. Depuis un téléphone non connecté à GitHub, il n'y a rien à voir, et
+> l'application paraît « ne plus se lancer » alors qu'elle tourne.
+
+**Pourquoi cela n'apparaît que certains matins.** Un port privé reste joignable
+tant que le navigateur porte une session GitHub valide — c'est pourquoi il a
+travaillé toute la soirée du 21 sans rien remarquer. La session expire dans la
+nuit ; le lendemain, GitHub renvoie sa page de connexion, et Atlas semble mort.
+
+**La règle qui en sort :** la fiche se lit **en entier**, et sa section « Ce
+qu'il faut en conclure » se lit AVANT de formuler quoi que ce soit. Sa date
+tranche sur l'espace ; elle ne tranche pas sur la panne.
+
+**Le remède définitif est de recréer son espace** : `devcontainer.json` publie le
+port et installe `gh`, mais **seulement pour un espace à naître**
+(`ARCHITECTURE.md` §55). Le sien est antérieur, d'où le `sans-gh` qui revient à
+chaque allumage. Tant qu'il le garde, c'est trois clics : onglet PORTS → clic
+droit sur 3000 → Visibilité → Public.
+
+---
+
+## La dictée mène AU DEVIS, et le devis se prépare tout seul (21 août 2026)
+
+**Sa panne, qu'il a lui-même qualifiée de « point le plus important » :** il
+dicte chez Madame Lucie, rappuie sur l'anneau, **ferme l'application**, revient,
+clique le nom dans la liste — et n'arrive pas sur son devis.
+
+Deux choses ont changé, et il faut connaître les deux :
+
+1. `getNextAction` mène au **devis** dès qu'une dictée existe, et cette ligne
+   passe **avant** `informationsVerifieesAt` — la chaîne pose ce jalon avant son
+   arrêt d'avant-chiffrage, et l'ordre inverse renvoie sur l'écran « Prix » ;
+2. **la page du devis prépare la dictée elle-même en arrivant**
+   (`src/lib/devis-a-preparer.ts`, `src/app/chantiers/[id]/devis-complet/PreparationDictee.tsx`). Pas
+   au relâchement de l'anneau : il ferme l'application dans la seconde qui suit,
+   l'appel partirait avec l'onglet.
+
+Le détail et les partis pris sont dans `ARCHITECTURE.md` §142. La séquence
+entière est rejouée par `scripts/test-madame-lucie-e2e.ts`.
+
+---
+## « La page ne s'ouvre plus » : REGARDER LA PUBLICATION AVANT DE CHERCHER (21 août 2026)
+
+**Payé le 21 août au soir.** Trois corrections de maquette poussées coup sur
+coup, trois messages « c'est poussé, recharge » — et lui : *« la page ne s'ouvre
+plus »*. La maquette était juste, le dépôt était juste. **C'est la publication
+qui n'avait pas eu lieu.**
+
+`.github/workflows/pages.yml` porte `concurrency: pages` avec
+`cancel-in-progress: true` : **chaque poussée ANNULE la publication en cours.**
+Une rafale de trois poussées en cinq minutes laisse donc deux déploiements
+« cancelled » et un seul qui aboutit — et entre les deux, l'adresse ne sert rien
+de neuf, voire ne répond pas.
+
+**Donc, avant de lui dire de regarder :** attendre que la publication soit verte
+(onglet Actions → « Publication de l'appli sur GitHub Pages »). Elle interroge
+elle-même chaque page à son adresse publique après déploiement — quand elle est
+verte, la page répond pour de bon.
+
+**Et devant la plainte :** regarder la dernière exécution AVANT de chercher dans
+la page. Une maquette qu'on vient de corriger trois fois est bien plus souvent
+non publiée que cassée.
 
 ## « L'application est lente » : REGARDER QUI CONSTRUIT (20 août 2026)
 
@@ -114,8 +566,13 @@ filtre, exactement comme en production.
 | Écrans | `src/app/paysage/diagnostic/` |
 
 **Ce qui n'a PAS été vérifié, et doit s'écrire ainsi :** l'appel réel au
-fournisseur de vision. Aucune clé d'IA dans cet environnement — comme pour la
-lecture des tickets de gazole. Tout le reste l'a été.
+fournisseur de vision, **depuis cet environnement-ci** — il n'y a pas de clé sur
+le poste de l'agent, comme pour la lecture des tickets de gazole. Tout le reste
+l'a été.
+
+**Attention à ne pas en tirer la mauvaise conclusion :** chez lui, les clés sont
+posées et l'IA tourne (`CLAUDE.md` §1 ter). Ce qui manque ici est un moyen de
+mesure, pas une fonctionnalité — et cela se joue sur son espace.
 
 ---
 
@@ -169,7 +626,86 @@ contrôle qui compte les mots de chaque écran et rougit quand un écran en
 gagne**. Sans lui, l'application regrossira, parce que chaque décision juste
 ajoute une ligne et que personne n'en retire jamais.
 
+## Le plan DESSINÉ attend sa validation — 21 août 2026
+
+**`appli/arrosage-plan.html`** : son croquis (pelouse en L, 176 m²), le plan à
+ses cotes, 13 arroseurs, 3 réseaux de couleurs sous 1,80 m³/h.
+**NE RIEN CODER dans l'application avant sa réponse** — c'est sa consigne
+explicite : *« je veux d'abord voir, analyser, et une fois que j'aurai validé,
+on pourra commencer à coder »*. Ce qui attend sa décision est dans `TODO.md`,
+§« Le plan DESSINÉ ».
+
+**Le contrôle recalcule le plan, il ne regarde pas une mise en page** : surface
+relue depuis le polygone, couverture maillée tous les 50 cm (un trou = une tache
+jaune en juillet), débit par voie, métrés mesurés sur le tracé, et **aucun nom de
+réseau répété ni coupé** — le défaut exact de sa capture.
+
+**Son adresse directe** (jamais via `essais.html`, sa demande du 20 août) :
+`https://florianmarrins0978-svg.github.io/Atlas-app/arrosage-plan.html`
+
 ## L'arrosage est DANS l'application — 20 août 2026 au soir
+
+**AUCUN ÉCRAN NE FORCE L'APPAREIL PHOTO** (21 août) : `capture="environment"`
+est retiré du croquis d'arrosage et du diagnostic végétal. Sa règle : *« soit je
+peux mettre une photo de ma bibliothèque, soit prendre une photo »*. Le retirer
+ne coûte rien, le garder interdit la photo prise la veille. Deux contrôles le
+tiennent, et celui du diagnostic — qui réclamait l'inverse — a été retourné.
+
+**LA CLÉ D'IA : IL A EU RAISON TROIS FOIS, ET LE DÉPÔT AVAIT TORT.** *« Les clés
+sont posées, elles fonctionnent pour la rédaction du devis. Utilise-la. »*
+L'écran demandait « une clé existe-t-elle ? » au lieu de « celui qui va LIRE
+l'image a-t-il la sienne ? ». Deux questions différentes depuis que
+`VISION_PROVIDER` existe. Conséquences trouvées en tirant le fil :
+
+- `lireCroquis` appelait `getFournisseurLLM()` — celui qui RÉDIGE — alors que
+  `getFournisseurVision()` existait pour ça. **Silencieux.**
+- `etatVision` (`src/lib/etat-ia.ts`) tranche désormais, et son motif est celui
+  que l'écran affiche : jamais deux façons de dire la même règle.
+- **`npm run verifier:croquis`** dessine un croquis, le photographie et le fait
+  lire pour de bon. À jouer **depuis son espace**, où ses clés sont posées :
+  ici, la commande refuse de rendre un vert et nomme ce qui manque.
+
+**SES SEUILS, ET ILS DIFFÈRENT SELON LE PIQUAGE** (21 août) : compteur → 3 bar ;
+seau seul → **2,5 bar** (`BAR_SUPPOSE_AU_SEAU`), parce qu'à un robinet rien ne
+garantit le Ø25 ; kit à 2,5 ou 3 bar → impeccable, aucune réserve. Le seuil est
+atteint **à** 2,5, pas dépassé.
+
+**QUATRE CORRECTIONS DE SA PART LE MÊME SOIR, et la première est une leçon.**
+
+1. **La photo ne partait pas.** Le bouton ouvrait l'appareil, rien ne soumettait
+   ensuite. **La suite ne l'avait pas vu parce qu'elle ne posait jamais de
+   photo.** Devant un geste, éprouver le geste ENTIER — pas ses pièces.
+2. **Rien ne s'affiche au compteur.** En Ø25 après compteur, on a au moins 3 bar
+   en dynamique comme en statique : *« tu sais d'office que tu es bien »*. Donc
+   ni mesure demandée, **ni réserve écrite** — un avertissement inutile
+   s'apprend à être ignoré.
+3. **La pression utile est la DYNAMIQUE, buse taille 5.** La statique, robinet
+   fermé, est toujours flatteuse.
+4. **Deux libellés :** pas de piquage sur pompe ; « Robinet de jardin » et non
+   « Ailleurs (…) », qui se coupait dans le menu à 390 px.
+
+5. **Le kit porte les DEUX pressions, et le seuil est 2,5 bar.** *« Kit de
+   mesure débit/pression avec buse taille 5, nb de bar statique, nb de bar
+   dynamique. Si il y a 2,5 bar, 3 bar en dynamique, alors c'est parfait. »*
+   `BAR_MINIMUM_DYNAMIQUE = 2,5` dans `src/lib/arrosage/mesure-debit.ts`.
+   La statique n'est pas décorative : **l'écart** entre les deux (> 1,5 bar)
+   accuse une conduite trop maigre — c'est le réseau qu'on retaille, pas la
+   pression qu'on force. Les deux réserves s'empilent quand les deux sont vraies.
+
+6. **Le seau et le kit sont DEUX encarts** (21 août) — *« la mesure au seau ne
+   doit pas rentrer dans le kit débit/pression »*. Deux gestes, deux outils,
+   deux fiabilités ; le seau porte sous son champ une mention qui **déconseille**
+   et désigne le kit — une simple nuance (« peu précis ») se franchit sans y
+   penser, il l'a fait retirer pour cela. `data-atlas="seau"` et `data-atlas="kit"` tiennent la RÈGLE — ni
+   l'ordre des blocs, ni leurs titres exacts.
+
+**LA RÈGLE À NE PAS PERDRE :** la pression **ne donne pas** le débit. Deux
+robinets à 3 bar délivrent l'un 1 m³/h, l'autre 3.
+`src/lib/arrosage/mesure-debit.ts` en fait une règle pure : mesure au seau, ou
+estimation **signalée**, ou refus. Jamais un chiffre supposé qui se présente
+comme mesuré.
+
+
 
 *« Code le tout dans l'appli. »* `/paysage/arrosage` : le piquage, la mesure au
 seau, le croquis photographié — puis le plan et le détail des pièces. L'écran
@@ -2513,22 +3049,23 @@ longueur de l'adresse — pour qu'on ne le refasse pas.
 
 ---
 
-### « Y aller » — le chevron doré du planning (12 août 2026)
+### Les gestes de « Y aller » — désormais dans la feuille de chantier
 
-Au bout de chaque chantier planifié, un chevron doré ouvre une feuille : Plans,
-Google Maps, Waze, copier l'adresse, appeler le client. Sans quitter l'écran.
+Ils sont nés le 12 août 2026 dans un panneau qu'un chevron doré faisait
+remonter : Plans, Google Maps, Waze, copier l'adresse, appeler le client.
+**Depuis le 21 août 2026 ils vivent dans la FEUILLE DE CHANTIER**, posée dans la
+page du planning refait (planche 84) — et ils ne sont plus que quatre : *« pas
+besoin d'en mettre trois »*, Google Maps est sorti.
 
 - `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
-- `src/components/atlas/FeuilleYAller.tsx` — la feuille, sur `BottomSheet`.
-- `src/app/planning/PlanningClient.tsx` — le chevron, et `libelleQuand()` écrit
-  une seule fois pour la ligne ET la feuille.
-- `src/lib/nom-chantier.ts` — `intituleDuChantier` : ne recolle le client que si
-  le nom du chantier ne le porte pas déjà, sans quoi la feuille affiche
-  « M. Bernard — Chez M. Bernard ».
+- `src/app/planning/PlanningClient.tsx` — la feuille (`FeuilleChantier`), qui
+  lit `liensItineraire` et `lienAppel` plutôt que de recomposer les adresses.
 - `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
-- Contrôles : `scripts/test-itineraire.ts` (10), `scripts/test-y-aller-e2e.ts`
-  (9), quatre de plus dans `scripts/test-nom-chantier.ts`, deux cas de plus dans `scripts/test-planning-repo.ts`. Les trois ont été
-  confrontés au défaut qu'ils prétendent voir avant d'être retenus.
+- Contrôles : `scripts/test-itineraire.ts` (10), la section « feuille de
+  chantier » de `scripts/test-planning-e2e.ts`, quatre de plus dans
+  `scripts/test-nom-chantier.ts`, deux cas de plus dans
+  `scripts/test-planning-repo.ts`. Tous ont été confrontés au défaut qu'ils
+  prétendent voir avant d'être retenus.
 
 **Deux choses à savoir avant d'y toucher :**
 

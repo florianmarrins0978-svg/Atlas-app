@@ -1,4 +1,4 @@
-import { getFournisseurLLM } from "../providers/llm/fabrique";
+import { getFournisseurVision } from "../providers/llm/fabrique";
 
 /**
  * Lire un croquis de jardin photographié, avec ses métrés.
@@ -202,7 +202,12 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
  * sur la saisie à la main, qui est un parcours entier et non une panne.
  */
 export async function lireCroquis(base64: string, mimeType: string): Promise<ResultatCroquis> {
-  const fournisseur = getFournisseurLLM();
+  // **Le fournisseur de VISION, pas celui qui rédige** — corrigé le 21 août
+  // 2026. `getFournisseurVision()` existe depuis la veille, précisément pour
+  // que « qui regarde les photos » se règle sans toucher à « qui rédige » ; le
+  // croquis appelait pourtant le second. Une installation qui pose
+  // `VISION_PROVIDER` envoyait donc ses croquis au mauvais endroit, en silence.
+  const fournisseur = getFournisseurVision();
   if (!fournisseur.lireImage) {
     return { ok: false, raison: "La lecture automatique n’est pas disponible ici." };
   }

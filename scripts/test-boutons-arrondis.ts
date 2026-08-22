@@ -92,7 +92,24 @@ function fichiers(dossier: string): string[] {
  *
  * Ces cinq points sont dans `TODO.md`, en attente de sa décision.
  */
-const HORS_CHARTE: Array<{ motif: RegExp; pourquoi: string }> = [
+const HORS_CHARTE: Array<{
+  motif: RegExp;
+  pourquoi: string;
+  /**
+   * Ce qui restreint l'exception À L'INTÉRIEUR du fichier.
+   *
+   * **Ajouté le 21 août 2026, et c'est une réponse à un défaut de ce contrôle
+   * lui-même :** une exception portant sur le fichier entier laisse passer tous
+   * les boutons qu'on y écrira demain. `ChoixUnite.tsx` le dit déjà en toutes
+   * lettres, et c'était acceptable parce qu'il ne tient qu'une case. Le
+   * planning, lui, porte une vingtaine de boutons : l'exempter en entier
+   * reviendrait à retirer l'écran le plus consulté de la surveillance.
+   *
+   * Quand ce champ est là, seul ce qui LUI correspond est pardonné ; tout autre
+   * bouton carré du même fichier fait toujours rougir.
+   */
+  seulement?: RegExp;
+}> = [
   // **L'exception des écrans du CLIENT a été LEVÉE le 13 août 2026**, et c'est
   // lui qui a tranché : capture des deux écrans côte à côte, question posée,
   // réponse « oui ». Les quatre boutons que voit son client — accepter,
@@ -130,6 +147,32 @@ const HORS_CHARTE: Array<{ motif: RegExp; pourquoi: string }> = [
     motif: /^src[/\\]components[/\\]atlas[/\\]ChoixUnite\.tsx$/,
     pourquoi: "case d'un champ qu'on remplit, alignée sur le champ « Prix » voisin",
   },
+  {
+    // **UNE CASE DU CALENDRIER, PAS UN BOUTON.** La charte est citée deux fois
+    // plus haut : la capsule va à ce qu'on APPUIE, les 4 px à ce qu'on remplit —
+    // et une case de calendrier n'est ni l'un ni l'autre. C'est une TUILE : un
+    // chiffre, deux barres de charge dessous, quarante-deux fois de suite. En
+    // capsule, la grille du mois devient un chapelet de galets et cesse de se
+    // lire comme un calendrier.
+    //
+    // **Le patron l'a arbitrée** : la planche 84 (`appli/planning-simple.html`)
+    // porte `border-radius:10px` sur `.case`, il l'a essayée deux soirées et
+    // tranché le 21 août 2026 — *« code trait pour trait cette maquette »*.
+    // C'est donc une décision de sa part, comme l'était celle du 12 août sur
+    // les boutons ; les deux ne se contredisent que si l'on prend une tuile
+    // pour un bouton.
+    //
+    // **`seulement` la borne à la case elle-même** : elle seule porte
+    // `data-jour=`. Les vingt autres boutons du planning restent surveillés.
+    // **Le dessin a DÉMÉNAGÉ le 22 août 2026**, quand l'écran d'envoi s'est mis
+    // à montrer le même calendrier que le planning (`MoisCharge`). L'exception
+    // suit la tuile, elle ne la suivait pas : sans cela, ce contrôle dénonçait
+    // une décision que le patron avait prise et qui n'avait pas bougé d'un
+    // pixel — le pire des rouges, celui qui accuse à tort (`AGENTS.md`).
+    motif: /^src[/\\]components[/\\]atlas[/\\]MoisCharge\.tsx$/,
+    seulement: /data-jour=/,
+    pourquoi: "case du calendrier : une tuile de 44 px, ni geste ni champ",
+  },
 ];
 
 /**
@@ -160,9 +203,12 @@ function main() {
   const coupables: string[] = [];
   for (const f of fichiers(RACINE)) {
     const exception = HORS_CHARTE.find((e) => e.motif.test(f));
-    if (exception) continue;
+    // Sans `seulement`, l'exception couvre le fichier entier — c'est le cas des
+    // deux premières, écrites avant que ce champ n'existe.
+    if (exception && !exception.seulement) continue;
     const t = sansCommentaires(readFileSync(f, "utf8"));
     for (const m of t.matchAll(RECTANGULAIRE)) {
+      if (exception?.seulement?.test(m[0])) continue;
       const ligne = t.slice(0, m.index).split("\n").length;
       const rayon = m[1] ? `rayon ${m[1]} px` : `rounded-${m[2]}`;
       coupables.push(`${f}:${ligne} — ${rayon}`);
@@ -225,6 +271,21 @@ function main() {
     "Le motif lit encore les commentaires : il dénoncerait un bouton parfaitement rond."
   );
   console.log("  ✓ un rayon cité dans un COMMENTAIRE ne déclenche rien");
+
+  // **Une exception bornée doit rester bornée.** Sans ce témoin, une expression
+  // `seulement` trop large — `/./` par exemple — pardonnerait tout le fichier
+  // sans que rien ne le dise, et l'on croirait le planning surveillé.
+  {
+    const bornee = HORS_CHARTE.find((e) => e.seulement);
+    assert.ok(bornee, "l'exception bornée a disparu : le mécanisme n'est plus éprouvé");
+    const voisin = '<button onClick={() => f()} className="rounded-md">Déplacer</button>';
+    assert.equal(
+      bornee.seulement!.test(voisin),
+      false,
+      "l'exception bornée pardonne un bouton ordinaire : elle ne borne plus rien"
+    );
+    console.log("  ✓ une exception bornée ne pardonne QUE ce qu'elle nomme");
+  }
 
   const capsule = '<Link href="/x" className="rounded-full py-3">Essai</Link>';
   assert.equal(

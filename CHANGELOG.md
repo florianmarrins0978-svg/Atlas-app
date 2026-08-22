@@ -7,7 +7,1686 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-22
+
+### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
+
+**Sa demande, puis sa validation :** *« lorsqu'on clique sur "Choisir la date"
+et que le calendrier s'affiche pour proposer une date au client, on devrait
+avoir le visuel du calendrier qui se trouve dans la catégorie planning, avec la
+possibilité de cliquer sur les jours pour voir quels chantiers y sont déjà
+affectés — comme ça on peut savoir si oui ou non on peut rajouter des clients
+sur les jours »*, puis, devant la planche 91 : *« cette maquette est parfaite,
+tu peux coder ça trait pour trait, ne change rien »*.
+
+**Ce que l'écran d'avant ne pouvait pas dire.** Il montrait des ronds et
+éteignait les jours impossibles — sans jamais dire POURQUOI ni ce qu'ils
+portaient. Impossible de juger si l'on pouvait quand même s'y glisser, et le
+patron n'avait qu'à le croire sur parole.
+
+**Regarder n'est plus retenir**, et c'est le cœur du changement. Toucher une
+case ouvre la journée : qui est là, à quelle demi-journée, avec quelle équipe,
+et le verdict du serveur pour ce chantier-ci. C'est « Proposer ce jour » qui
+engage la date — auparavant, un jour consulté par erreur partait chez le client.
+
+**Un jour complet reste touchable**, à sa demande : c'est justement celui qu'il
+veut regarder avant de décider. Il ne se propose simplement pas.
+
+**Trois pièces sortent en partage plutôt qu'en copie**, et c'est ce qui empêche
+les deux écrans de se contredire : `MoisCharge` (le dessin du mois),
+`useOccupation` (la charge d'une demi-journée) et `contextePlanning` (le
+chargement). Deux calendriers, deux calculs ou deux lectures séparés auraient
+fini par peindre la même journée différemment à deux écrans d'écart — le défaut
+que `CLAUDE.md` §3 interdit, et qui s'est déjà produit ici.
+
+**La durée va jusqu'à 200 jours** — sa correction sur la planche : cent venait
+de sa demande du 3 août, et un chantier de six mois ne s'y posait pas.
+
+**Ce que la batterie a trouvé, et que la capture ne montrait pas :** trois
+suites tenaient l'ancien geste. La case éteinte n'existe plus, l'exception des
+tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour portait
+le même `data-jour` que les cases — deux éléments pour le même jour, et une
+suite qui ne savait plus lequel viser.
+
+### Ce qui arrive au DERNIER arroseur est enfin calculé
+
+Sa demande, après qu'on lui a nommé le dernier trou connu : *« oui corrige la
+1 »*.
+
+**Le défaut.** Seule l'amenée compteur → regard était comptée, et l'écran
+l'avouait : *« ce calcul ne compte QUE l'amenée — ni les antennes, ni les
+raccords, ni l'électrovanne »*. Ce qui restait au pied du dernier arroseur d'une
+ligne, personne ne le savait. Or c'est lui qui décide : sans la pression à
+laquelle sa buse est donnée, il porte moins loin que le plan ne le suppose, et
+le coin de pelouse qu'il devait atteindre jaunit en juillet.
+
+**Sur son jardin d'exemple, à 3 bar au compteur :**
+
+| | |
+|---|---|
+| perdu dans l'amenée | 0,27 bar |
+| perdu dans le réseau | **0,44 bar** |
+| il arrive au dernier arroseur | **2,28 bar** |
+
+Le réseau perd plus que l'amenée — l'électrovanne seule pèse davantage que
+trente mètres de Ø25. C'est cela qui manquait, et les buses sont désormais
+dimensionnées sur 2,28 bar et non sur 3.
+
+**Le débit décroît le long de la ligne, et c'est tout le calcul.** Entre la
+vanne et la première tête passe le débit du réseau entier ; entre la première et
+la deuxième, ce débit moins une tête. Compter le débit total partout — le
+raccourci tentant — donnerait 0,77 bar au lieu de 0,44 : assez pour condamner
+des plans qui tiennent.
+
+**Deux passes, jamais trois.** La pression au bout dépend des débits, qui
+dépendent de la pression : on calcule un premier plan à la pression de la
+source, on mesure ce qui se perd, on refait le plan à la pression obtenue. Une
+troisième passe *remonterait* la pression (moins de débit, moins de perte) : on
+tournerait autour de la valeur au lieu de s'en approcher. S'arrêter à deux garde
+les pertes des débits les plus forts, donc le côté sûr.
+
+**Deux valeurs ne viennent pas de ses catalogues**, et cela s'écrit plutôt que de
+se taire : la perte de l'électrovanne (0,25 bar, forfait majorant) et la majoration
+pour raccords (+15 %). Posées en majorant : une perte surestimée pose un
+arroseur de plus, jamais un de moins.
+
+**Ce qui reste dehors, et que l'écran dit :** le trajet du regard à la première
+tête. Il dépend de l'endroit où la nourrice est posée, et aucune saisie ne le
+donne. La pression annoncée est donc un plafond.
+
+**Un contrôle a été pris en flagrant délit de ne rien prouver.** Il bornait la
+perte à « moins du double du pire débit » — la version juste ET la version
+fausse y passaient au vert. Il a fallu injecter le défaut pour s'en apercevoir.
+La valeur est désormais figée à cinq millièmes de bar près : ce chiffre décide
+du nombre d'arroseurs par ligne, il n'a pas le droit de bouger en silence.
+
+### Un réseau est plafonné par SON TUYAU, plus seulement par le compteur
+
+**C'est lui qui l'a déduit**, et il avait raison : *« tu ne viens pas de me dire
+qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous les cas le calcul
+doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80, non ? »*
+
+**Le découpage ne regardait que la SOURCE.** Un réseau était coupé à
+`débit du seau × 0,85`, sans jamais se demander si le tuyau pouvait le porter.
+Or toutes ses lignes de réseau sont en Ø25 — c'est le diamètre de tous ses
+raccords, té 25×3/4"×25 et coude 25×3/4".
+
+| Source mesurée | Ancienne limite par réseau | Ce que le Ø25 passe |
+|---|---|---|
+| 1,80 m³/h | 1,53 | 1,76 — la source commandait, rien à voir |
+| 3,00 m³/h | 2,55 | **1,76 — dépassé de 45 %** |
+| 4,50 m³/h | 3,82 | **1,76 — plus du double** |
+
+**Chez lui, le défaut ne se voyait pas** : son compteur donne 1,80, donc la
+source a toujours commandé. Il serait apparu chez le premier utilisateur mieux
+alimenté — l'eau à plus de 2 m/s dans la ligne, la pression qui tombe avant le
+dernier arroseur, et un gazon jauni en juillet. Exactement ce que sa règle du
+22 août interdit (`CLAUDE.md` §4 ter).
+
+**La limite d'un réseau est désormais le plus petit des deux**, et l'écran dit
+lequel commande : un artisan qui a mesuré 3 m³/h et voit ses réseaux coupés plus
+tôt qu'attendu doit lire que c'est son Ø25, pas un défaut de calcul.
+
+Le plafond du tuyau ne porte pas la marge de 0,85 en plus : les 1,5 m/s sont
+déjà une limite de bonne pratique, l'empiler paierait deux fois la même
+prudence, en vannes.
+
+**Cinq contrôles rougissent si on retire le plafond** — le pire réseau monte à
+1,97 puis 2,63 et 3,94 m³/h à mesure que la source grossit.
+
+### Le débit au compteur reste à 1,80 — et on sait maintenant pourquoi
+
+Sa précision du 22 août : *« je sais que nos fournisseurs, lorsqu'on se pique
+après compteur, estiment au moins 2 m³/h »*. Et, sur la proposition de demander
+le calibre du compteur plutôt qu'un seau : *« non, laisse le calcul au seau,
+tout le monde a l'habitude de faire comme ça »*.
+
+**Aucun code ne change** — c'est la raison qui manquait. Deux chiffres
+coexistent : sa mesure au seau sur son compteur (1,80 m³/h) et le plancher que
+son métier retient (2,00). Le `CLAUDE.md` §4 ter tranche : calculer sur 2,00
+mettrait un arroseur de plus par réseau qu'un compteur à 1,80 ne peut
+alimenter, et un réseau qui ne se lève pas se découvre en juillet. Calculer sur
+1,80 chez quelqu'un qui a 2,00 coûte au pire une vanne de trop.
+
+**Et le calibre du compteur est écarté**, avec sa raison : le seau est le geste
+que tout le monde connaît. C'est écrit dans `mesure-debit.ts` pour que personne
+ne rouvre la question.
+
+### Les buses sont ramenées à la pression du chantier, plus à celle du catalogue
+
+Sa demande, après avoir vu ce qui manquait encore : *« oui code le »*.
+
+**Le défaut.** Le catalogue ne donne qu'UNE valeur par buse, à UNE pression de
+référence — 2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères VAN. Le
+calcul les prenait telles quelles, quelle que soit la pression du chantier. Sur
+un robinet à 2 bar, cela mettait **un arroseur de trop par réseau** : la
+pression tombe, les turbines sortent à moitié, et le gazon jaunit en bout de
+ligne — le défaut le plus cher, parce qu'il ne se voit qu'en août.
+
+**Le débit : de la physique.** L'eau qui sort d'un orifice suit la racine carrée
+de la pression (Torricelli) : `Q(P) = Q_catalogue × √(P / P_catalogue)`. Une
+5004 buse 3,0 donnée 0,71 m³/h à 2,5 bar en donne 0,63 à 2 bar et 0,78 à 3.
+Corrigé **dans les deux sens** — sous-estimer un débit chargerait trop un
+réseau, ce qui est exactement le défaut visé.
+
+**La portée : réduite, jamais gonflée.** Aucune loi simple ne donne la portée
+d'un jet — la balistique pure la ferait suivre la pression, mais l'air freine le
+jet. Les tables des constructeurs montrent une variation de l'ordre de la racine
+cubique, et c'est l'exposant retenu. **Il n'est pas relevé de ses catalogues à
+lui** : au-dessus de la pression de référence, la portée du catalogue est donc
+conservée telle quelle. Gonfler une portée sur une estimation ferait espacer les
+arroseurs, et un espacement trop large est un trou d'arrosage qu'on ne découvre
+qu'en juillet. En dessous on réduit : c'est le sens où se tromper coûte un
+arroseur de plus, jamais une tache sèche. **Et l'écran le dit** — une réserve
+apparaît sous le plan dès qu'une portée a été réduite.
+
+**Ce que cela change sur un plan.** Son jardin d'exemple à 3 bar passe de trois
+à quatre réseaux : les buses données à 2,5 bar débitent 9,5 % de plus qu'annoncé
+à cette pression-là. Le plan d'avant tenait sur des débits sous-estimés.
+
+**Ce qui reste, et qui n'est pas fait :** la pression retenue est celle de la
+SOURCE, pas celle qui reste au pied du dernier arroseur — les pertes du réseau
+lui-même ne sont toujours pas calculées (`TODO.md`). C'est un progrès, pas une
+garantie.
+
+**Les trois défauts plausibles ont été joués** — correction retirée, portée
+gonflée vers le haut, loi linéaire au lieu de la racine — et chacun fait rougir
+`test-arrosage-calcul.ts`. Le contrôle qui les attrape tient l'égalité exacte :
+à quatre fois la pression, la demande doit valoir exactement le double.
+
+### La légende du plan annonçait un arroseur que le plan ne posait pas
+
+**C'est lui qui l'a vu**, et sa question était la bonne : *« il m'a déjà donné
+4 arroseurs en 5004 buse 3 sur un seul réseau avec 3 bar de pression et du Ø25
+pour le PEHD — est-ce correct ? »*
+
+**Non, et de loin.** Quatre buses 3.0 de 5004 tirent 4 × 0,71 = **2,84 m³/h** :
+
+| | |
+|---|---|
+| ce qu'un Ø25 laisse passer | 1,76 m³/h |
+| ce que donne son compteur à 3 bar | 1,80 m³/h |
+| ce que quatre 5004 buse 3.0 demandent | **2,84 m³/h** |
+
+**Mais le calcul, lui, n'a jamais proposé ça.** Sur ce plan, il pose **neuf
+turbines 3504 buse 0,75** (0,16 m³/h chacune, 1,44 sur le réseau) et **quatre
+tuyères 12-VAN** (0,90). Les deux réseaux tiennent sous 1,80.
+
+**Le mensonge était dans la LÉGENDE de `appli/arrosage-plan.html`**, restée sur
+le matériel de la toute première version de la planche : « turbine 5004 · buse
+3.0 · portée 6 m » à côté d'un plan de 3504 — et une portée de 6 m qui
+n'appartient ni à l'une ni à l'autre (la 5004 buse 3.0 porte à 11,1 m, la 3504
+buse 0,75 à 5,2 m).
+
+**Et le contrôle TENAIT le mensonge en place.**
+`verifier-maquette-arrosage-plan.mjs` exigeait littéralement `/turbine 5004/`,
+`/buse 3\.0/` et `/portée 6 m/` : les libellés de la première version, recopiés
+dans le contrôle. Le plan a changé de matériel, la légende est restée, et le
+contrôle interdisait de la corriger. C'est le `CLAUDE.md` §5 bis retourné —
+un contrôle qui réclame ce qui n'existe plus.
+
+**Ce qu'il vérifie maintenant**, et qui ne peut plus mentir : la légende cite
+une buse qui existe au catalogue **sous son nom exact**, elle annonce **la
+portée du catalogue**, et elle nomme le matériel que **la liste des pièces
+facture**. Les trois défauts — libellé périmé, portée inventée, légende
+décalée de la commande — ont été joués et font rougir le contrôle en nommant
+le coupable.
+
+### Le diamètre du tuyau se calcule, et l'outil dit À PARTIR DE COMBIEN DE MÈTRES
+
+Sa demande : *« ils sont également en capacité de me dire, passé un certain
+nombre de mètres linéaires, qu'il faut passer du PEHD en diamètre vingt-cinq à
+celui en diamètre trente-deux. J'aimerais que mon outil arrosage puisse faire la
+même chose. »*
+
+**Ce que le calcul savait déjà, et ce qui lui manquait.** Il répondait OUI ou
+NON sur la longueur **saisie** — il fallait donc la ressaisir trois fois pour
+trouver où la bascule se produit. Il annonce maintenant le **seuil** : « le Ø25
+tient jusqu'à 73 m à ce débit, le Ø32 jusqu'à 248 m ». C'est le seul chiffre
+utile avant de creuser, parce qu'il se compare au mètre ruban sur place.
+
+C'est la formule de perte de charge déjà présente (Hazen-Williams), retournée :
+
+    L max = budget × 10,2 × D^4,87 / (10,67 × (Q/C)^1,852)
+
+le budget étant ce qui reste à la source une fois retirée la pression à laquelle
+la buse posée est donnée au catalogue.
+
+**Un second critère est entré, et il corrige un vrai défaut.** Le calcul ne
+regardait que la perte de charge : un tuyau court n'en perd presque aucune,
+donc **un Ø25 « passait » à n'importe quel débit pourvu qu'il soit assez
+court**. C'est faux — au-delà de 1,5 m/s l'eau cogne, le coup de bélier fatigue
+les électrovannes, et le bruit s'entend dans la maison. D'où les débits maximaux
+que les fournisseurs annoncent par diamètre, et que l'outil applique désormais :
+**1,76 m³/h en Ø25, 2,91 en Ø32**.
+
+**Ce chiffre recoupe sa propre mesure**, et c'est ce qui permet de le croire :
+au seau, sur son compteur en Ø25, il avait relevé 1,80 m³/h. La formule en donne
+1,76 — le tuyau ne laissait pas passer davantage.
+
+**Ce que la suite a appris en cours de route.** Le premier contrôle du seuil
+disait `seuil > 0`. Confronté à la formule retournée de travers — multiplier au
+lieu de diviser —, il est resté **vert** en annonçant « 0 m » : le seuil valait
+quatre dix-millièmes de mètre. C'est le contrôle qui mesure zéro du `CLAUDE.md`
+§5, dans sa version la plus sournoise, puisqu'il affichait le bon chiffre et
+concluait le contraire. La suite exige maintenant une longueur **plausible**
+(5 à 500 m), et éprouve la bascule un mètre avant et un mètre après le seuil.
+
+**Non éprouvé ici :** l'écran de l'application n'affiche le seuil qu'une fois un
+croquis lu, ce qui demande une clé d'IA que cet environnement n'a pas. La ligne
+a été vérifiée sur la page publiée (`appli/arrosage.html`), au navigateur, dans
+ses deux cas — Ø25 suffisant, et débit qui l'interdit.
+
+
+### La place se compte en ÉQUIPES, plus en chantiers
+
+*« Pourquoi le matin et l'après-midi de monsieur Eric s'affichent en
+incomplet ? »* — Julien **et** Antoine y étaient. Puis, la planche 89 vue :
+*« oui si c'est des journées complètes, non si c'est des demi-journées »*.
+
+**Le défaut.** `occupationDemi` et `compterOccupation` divisaient le nombre de
+**chantiers** par le nombre d'équipes : un chantier pour deux équipes valait la
+moitié, quel que soit le nombre d'équipes réellement cochées dessus.
+L'affectation par demi-journée, posée le 21 août, ne pesait donc sur **aucune
+capacité** — elle était décorative. Conséquence : ce mardi-là partait chez ses
+clients alors qu'il n'avait plus personne à envoyer.
+
+**La règle.** Un chantier prend autant d'équipes qu'on lui en coche, et **au
+moins une** — un chantier sans affectation reste du travail à faire, le compter
+zéro viderait le planning d'un coup.
+
+**Sa règle tombe d'elle-même du comptage par demi-journée**, et c'est ce qui
+évite de la coder deux fois :
+
+| Ce qu'il pose | Résultat |
+|---|---|
+| journée entière, ses 2 équipes | les deux créneaux sont pris → **le jour se ferme** |
+| demi-journée, ses 2 équipes | seul le matin est pris → **l'après-midi reste offert** |
+| 1 équipe sur 2 | la moitié → inchangé |
+
+**Les QUATRE lectures de la place sont nourries de la même source** — l'écran
+d'envoi, la validation de la date qu'il pose lui-même, la revérification de la
+réponse du client, et le planning. Ne corriger que l'affichage aurait fait dire
+« complet » au planning pendant que l'écran d'envoi offrait le jour : deux
+vérités sur la même capacité (`CLAUDE.md` §3), c'est-à-dire le défaut d'origine
+déplacé d'un écran.
+
+**Les deux moitiés de sa règle ont leur contrôle, et chacun a été VU ROUGE sur
+la faute qu'il garde** : celui de la journée contre l'ancienne règle, celui de
+la demi-journée contre la simplification « toutes les équipes ⇒ jour fermé ».
+
+**Et une assertion muette a été trouvée en chemin.** Les deux contrôles
+interrogeaient d'abord `joursLibres` — qui ne rend que les **six premiers** jours
+suggérés. Un jour situé plus loin en est absent quoi qu'il arrive : l'assertion
+était donc vraie par construction, et celle de la journée « passait » sans rien
+prouver. Elles lisent désormais `joursOccupes`, qui couvre douze mois.
+
+---
+
+### Les planifiés : la durée, plus de compte gris, plus de répétition
+
+*« C'est exactement ce que je veux »* — planche 86 retenue le 22 août 2026, avec
+une correction, puis : *« code-moi exactement ça »*.
+
+**Ce que l'écran dit maintenant, et pourquoi.**
+
+| Avant | Maintenant | Sa raison |
+|---|---|---|
+| « matin » en doré | **la durée** — « une demi-journée », « une journée », « 3 jours » | *« ce n'est pas clair quand il y a marqué le matin et l'après-midi »* |
+| « 1 chantier · complet » en gris | rien | *« on n'a pas besoin d'avoir cette information-là »* |
+| le jour et le nom réécrits sous la ligne | la ligne **se déplie sur place** | *« il y a une répétition qui se crée : deux fois la date, deux fois le nom »* |
+| la demi-journée libre après la feuille | **sous le matin**, avant la feuille | *« il doit rester en dessous du matin même s'il est libre »* |
+
+**La durée compte le CHANTIER, jamais ce qui est visible ce jour-là**
+(`ditLaDuree`, `src/lib/planning-jour.ts`). Un chantier de trois jours n'occupe
+que deux demi-journées sur la journée qu'on regarde : compter celles-là lui
+ferait annoncer « une journée » — le malentendu même qu'il demande de faire
+disparaître. La première version de la planche est tombée dedans.
+
+**La demi-journée libre appartient à la JOURNÉE, pas au chantier** : c'est pour
+cela qu'elle se rangeait après lui, donc après sa feuille, à trois écrans du
+matin qu'elle complète. **Aucun contrôle pur ne pouvait le voir** —
+`blocsDeLaJournee` la mettait déjà au bon rang, et c'est la feuille, rendue en
+dehors de ces blocs, qui s'intercalait. Le contrôle neuf mesure donc les trois
+ordonnées à l'écran, et refuse de conclure sur un élément absent.
+
+**Le geste d'ajout a été extrait** (`AjoutAuJour`) : il appartient au jour, et
+le laisser dans le volet d'un chantier l'aurait affiché autant de fois qu'il y a
+de chantiers ouverts.
+
+**Le chevron reste un LIEN, et c'est une suite du dépôt qui l'a tranché.** Il
+avait d'abord été transformé en signe de repli, comme sur la planche —
+`test-planning-vers-facture-e2e.ts` a rougi aussitôt : *« depuis le planning, le
+chantier mène à son devis »*. Le chevron de la planche est son signe de repli à
+elle ; sur cet écran, le NOM déplie et le chevron part. Les confondre coûtait le
+seul chemin vers le devis d'un chantier posé — un chantier posé quitte l'onglet
+« Chantiers », et la feuille n'offre aucun autre accès. C'est-à-dire exactement
+ce qu'il signalait le 8 août 2026 : *« il se range dans les chantiers planifiés,
+mais comment moi je fais pour avoir accès au devis ? »*
+
+**La leçon :** une planche dessine ce qu'on VOIT, pas ce que chaque geste
+promet. Deux signes identiques peuvent porter deux gestes différents, et c'est
+la suite qui garde la différence.
+
+**Les contrôles adaptés, jamais le libellé remis** (`CLAUDE.md` §5 bis) : celui
+qui réclamait « 1 chantier » vérifie désormais que le compte a bien disparu et
+que la charge se lit encore aux pastilles ; celui qui lisait « matin » sur la
+ligne lit la durée ; celui qui visait le chantier par un `href` le vise par son
+nom.
+
+---
+
+### Un jour déjà pris pouvait être proposé — et le client pouvait le retenir
+
+*« Je peux proposer le 24 alors qu'un client a validé le 24 — corrige-moi ça !
+Ça ne doit jamais se reproduire, c'est une erreur gravissime !!!! »*
+
+**Le défaut.** Les trois chemins qui calculent l'occupation bornaient leur
+requête sur `date_planifiee >= début` — le jour où le chantier **commence**. Un
+chantier de trois jours parti le **jeudi** tient encore le **lundi** suivant :
+sa date de départ tombe hors de la fenêtre, sa ligne n'est pas ramenée, et ce
+lundi-là s'affiche **libre** alors qu'il est pris.
+
+**Ce qui le rendait grave, et non pas seulement gênant.** L'écran d'envoi
+n'était pas seul à se tromper : la **revérification de la réponse du client**
+lisait exactement la même occupation tronquée. Rien ne rattrapait donc la faute
+en aval — le client acceptait, le chantier se posait, et deux chantiers se
+retrouvaient le même jour sans qu'un seul écran s'en aperçoive. Le contrôle
+neuf le montre noir sur blanc contre l'ancienne borne : `succes: true` sur une
+date déjà occupée.
+
+**La correction.** Un prédicat unique, `encoreEnCoursDepuis`
+(`src/server/repositories/occupation-chantiers.ts`), partagé par les trois
+chemins — jamais trois copies (`CLAUDE.md` §3) :
+
+```sql
+date_planifiee + COALESCE(duree_demi_journees, 2) * INTERVAL '1 day' >= début
+```
+
+Reculer de `n` jours **calendaires** pour `n` demi-journées est toujours
+généreux : `n` demi-journées valent `⌈n/2⌉` jours ouvrés, et même un départ le
+vendredi ne creuse jamais l'écart au-delà. Trop ramener ne coûte rien —
+`compterOccupation` recalcule ensuite les créneaux exacts.
+
+**Trois contrôles, et ils ont été VUS ROUGES** contre l'ancienne borne, remise
+exprès (`scripts/test-preparation-envoi.ts`) : le jour n'est plus suggéré,
+l'envoi refuse de le proposer, et le client ne peut plus le retenir.
+
+**Le troisième était d'abord vert pour un mauvais motif, et c'est la leçon.**
+Il n'affirmait que `succes === false` — or `enregistrerReponse` refusait pour
+`expire`, le lien ayant vieilli de mars à août faute de lui passer la date.
+Vert des deux côtés de la correction, il ne prouvait rien. **Un contrôle qui
+attend un refus doit nommer le motif attendu** : sans quoi il se contente du
+premier refus venu, qui n'est presque jamais celui qu'on croit.
+
+**Ce qui n'est PAS corrigé, parce que c'est son choix.** Avec deux équipes,
+l'application propose un jour où une seule est prise — c'est le fonctionnement
+voulu, mais aucun écran ne le signale. Planche 88,
+`appli/envoi-jour-deja-pris.html`, en attente de sa réponse.
+
+---
+
+### Un devis accepté, invisible : le planning s'ouvre sur la mauvaise semaine
+
+*« Un devis a été accepter mais rien n'ai visible sur mon planning »* — avec la
+capture de la confirmation vue par son client : « Intervention prévue le lundi
+24 août ».
+
+**Reproduit à l'écran AVANT de répondre** (`CLAUDE.md` §1 bis), pas deviné :
+fiche d'espace lue — son banc tourne et sert bien le planning réécrit —, chantier
+inséré au 24 août en base locale, connexion réelle, capture.
+
+**Rien n'a été perdu, et c'est la première chose à dire.** `enregistrerReponse`
+écrit `date_planifiee`, `creneau_debut` et `duree_demi_journees` sur le chantier
+dans la **même transaction** que la réponse du client : il ne peut pas y avoir
+l'une sans l'autre. Le 24 août portait bien sa barre pleine dans le calendrier.
+
+**Ce qui l'a trompé.** La liste des planifiés s'ouvre sur la semaine du jour
+(`useState(() => lundiDe(aujourdHui))`). Samedi 22, cette semaine ne porte rien,
+et l'écran écrit alors **« Aucun chantier posé cette semaine »** — une phrase
+juste au mot près, et fausse pour qui la lit : le chantier est là, trois jours
+plus loin. La seule trace du contraire tient dans une barre de 3 px, de la même
+forme que celles des jours vides.
+
+**La leçon, au-delà de ce cas :** un écran qui rend compte d'une **fenêtre**
+(une semaine, un mois, une page) doit dire ce qu'il y a **hors de sa fenêtre**
+quand elle est vide. Sans quoi son « aucun » se lit comme « il n'y en a nulle
+part », et c'est le produit qu'on croit en panne.
+
+**Rien n'est codé** : sur quelle semaine le planning s'ouvre est un choix
+d'apparence, et il se dessine d'abord (`CLAUDE.md` §3 bis). Planche 87,
+`appli/planning-semaine-ouverte.html` — trois écrans qui se promènent, une
+seule fonction de peinture pour les trois.
+
+**Au passage**, deux ancres restées ouvertes dans `docs/maquettes/index.html`
+(planches 68 et 86) : chacune avalait la fiche suivante, qui devenait
+inatteignable. Trouvé en comptant les `<a>` contre les `</a>`.
+
+---
+
+### La fiche client est enfin celle de sa maquette — les huit écarts d'un coup
+
+**Sa phrase, devant l'écran :** *« C'est toujours pas la même version que celle
+que je t'avais demandée. Ça fait déjà deux fois que je te le demande. Je ne
+comprends pas pourquoi tu ne veux pas me la coder. »*
+
+Il a raison, et la faute est nette : les écarts avaient été **relevés et
+mesurés le matin même**, puis je lui ai demandé son feu vert au lieu de coder —
+alors qu'il l'avait déjà donné deux fois (*« tu me la codes trait pour trait, tu
+ne changes rien »*). Une liste d'écarts n'est pas un travail livré.
+
+Ce qui manquait, et qui est en place : la flèche de retour sur la ligne du
+titre en chevron nu ; le contour **or** des pastilles Mr / Mme ; le nom du
+client au même corps que le téléphone ; le choix du canal **toujours visible** ;
+les capsules du canal cernées, l'or quand il est pris ; le carré des photos en
+74 × 74 avec son liseré **en tirets doré** ; « Je rédige mon devis » en pleine
+largeur.
+
+**La batterie a trouvé ce que la capture ne montrait pas.** La flèche ramenée
+sur la ligne du titre lui prend trente-six pixels, et la phrase d'attente de la
+dictée occupe les 190 px de droite : « Fiche client » se brisait en deux
+pendant qu'Atlas travaillait. `test-attente-dictee-e2e` l'a vu. Le titre est
+une étiquette, pas du texte : il garde sa largeur, c'est la phrase qui se
+replie.
+
+### La fiche d'état MESURE le port au lieu de le deviner
+
+**Sa matinée du 22 août, et trois allers-retours perdus.** La fiche annonçait
+« Port 3000 : PRIVÉ (sans-gh) » — sans jamais avoir regardé. Elle recopiait le
+mot rendu au démarrage par `ouvrir-port.sh`, lequel ne dit pas l'état du port
+mais ce que le script a pu FAIRE : « `gh` est absent, je n'ai pas pu le régler »
+devenait « donc il est privé ». Il a fait les trois clics, puis : *« il est en
+public déjà »*.
+
+Une fiche existe pour éviter de raisonner sur une machine qu'on ne voit pas
+(`CLAUDE.md` §1 bis). Celle-là raisonnait à notre place, et à tort.
+
+L'espace s'appelle désormais par **son adresse publique**, celle de son
+téléphone, et rapporte ce qui revient — en nommant qui a répondu, le relais de
+GitHub ou Atlas, parce qu'un même 404 appelle deux gestes opposés. C'est ainsi
+que la vraie panne est enfin sortie : **son installation de Next.js était
+cassée** (`Cannot find module './detect-typo'`), le serveur ne démarrait plus,
+et ni le port ni l'application n'y étaient pour quelque chose.
+### « Terminés » refait : la B, codée
+
+*« Je choisis la B avec les modifications que je viens de te demander. »*
+La planche 90 est retenue et portée dans `src/app/termines/`.
+
+**Elle est née « 86 », puis « 89 », et elle finit « 90 » — deux collisions en
+une soirée.** Trois sessions dessinaient le même jour, et chacune a pris le
+numéro libre sur SA copie de `main` : 86 pour les planifiés, 89 pour les deux
+équipes. C'est la nôtre qui bouge les deux fois, parce qu'elle est celle qui
+tient la fusion et que renuméroter chez soi ne réécrit pas le texte d'une
+session qui tourne encore.
+
+**Ce n'est pas une étourderie, c'est le numéro lui-même qui est fragile.** Le
+relever sur `main` avant d'écrire ne suffit pas : entre le relevé et la poussée,
+une autre session a publié. Troisième incident du genre après la §59 en double
+du 11 août. Tant qu'il n'y a pas mieux, la règle utile est : **le numéro se
+vérifie une dernière fois à la fusion, jamais à l'écriture** — et le fichier de
+la planche ne le porte pas dans son nom (`termines-simple.html`), ce qui rend
+la renumérotation indolore.
+
+**Ce qui a quitté l'écran, et ne doit pas revenir :**
+
+| | Pourquoi |
+|---|---|
+| Le **fil vertical** et ses perles pleines ou creuses | 47 px de largeur pour un code que personne n'a appris |
+| La **pastille dorée** et le **volet replié** | le seul travail qui reste ne se cache pas derrière une ligne en petites capitales |
+| « **Facturé, tous mois confondus** » | il répétait le chiffre déjà écrit à droite du mois, sans qu'on sache pourquoi c'était le même |
+| Le surtitre « CHANTIERS RÉALISÉS » et le cheveu | la planche n'en porte pas, et le titre suffit |
+| L'or contre le noir comme seul signe | remplacé par des **mots** : « Pas encore facturé », « Facturé le 20 août » |
+
+**Deux règles gouvernent le nouvel écran**, et elles se paient si on les ignore.
+Un **seul mois à la fois**, qu'on feuillette — et **ce qui reste à facturer ne
+suit pas le mois** : l'onglet « À facturer » montre tout, tous mois confondus.
+Elles vivent dans `src/lib/termines-par-mois.ts`, pures et éprouvées sans base ;
+l'écran n'y décide de rien.
+
+**« Facturé le 20 août » a coûté une colonne de plus en base.** La maquette
+écrivait cette phrase d'après `datePlanifiee` — la date du CHANTIER. Or un
+chantier fait le 20 peut être facturé le 30 : l'écran aurait affirmé une date
+d'émission qu'il n'a pas. `factures.date_emission` entre donc dans la requête,
+et sans elle la phrase se tait plutôt que d'inventer.
+
+**Deux suites ont été adaptées, aucune n'a été satisfaite en remettant ce qu'il
+a fait retirer** (`CLAUDE.md` §5 bis) :
+
+- `test-planning-vers-facture-e2e.ts` dépliait le volet pour atteindre un
+  chantier non facturé. Il passe désormais par l'onglet « À facturer » — ce qui
+  le rend **indifférent au calendrier** : un chantier terminé il y a six jours
+  peut tomber dans le mois précédent selon la date du jour, et le contrôle
+  aurait cherché dans un mois qui ne le porte pas, en accusant un écran juste ;
+- `capture-termines.mts` mesurait le volet, la pastille, et l'absence de tout
+  coin arrondi. Il mesure maintenant le feuilletage, le compte **en noir gras**
+  (graisse et couleur calculées, pas la classe posée), et refuse de conclure sur
+  un écran sans lignes.
+
+**Un défaut trouvé en écrivant la suite pure** : le comparateur de `preparer`
+rendait 0 pour deux chantiers du même **mois**, et non du même **jour** — les
+lignes d'un mois seraient sorties dans l'ordre de la base. Le contrôle « dans le
+mois, le plus récent en tête » l'a attrapé avant l'écran.
+
+**UN CHANTIER CLÔTURÉ EN AVANCE VIDAIT L'ÉCRAN.** Deux suites rouges d'un coup,
+et le défaut aurait été chez lui. Clôturer un chantier avant sa date le range
+dans « Terminés » **en lui laissant sa date à venir** : le mois d'entrée était
+« le plus récent qui porte quelque chose », donc septembre, donc un écran vide —
+et tout le travail du mois en cours disparu, sans rien qui dise pourquoi.
+`bornesDuFeuilletage` ouvre désormais sur le **mois courant** dès qu'il existe
+quelque chose de plus tard, et laisse la flèche › aller voir ce qui est en
+avance. Sans rien ce mois-ci, on s'ouvre sur le dernier mois qui porte quelque
+chose : après deux mois creux, une page blanche serait exacte et inutile.
+
+**Et un défaut vu sur la CAPTURE, comme les cinq précédents de ce dépôt** :
+« Pas encore facturé · 1 764,00 € prévus » était tronqué par la capsule
+« Facturer » — le montant y passait. La ligne d'état s'enroule maintenant sur
+deux lignes ; le NOM, lui, reste coupé, parce qu'un nom se reconnaît tronqué et
+qu'un chiffre coupé ne se devine pas. Corrigé **d'abord sur la planche**, puis
+dans l'écran (`CLAUDE.md` §3 bis).
+
+### « Terminés » : revenir dans le passé, et le compte en noir gras
+
+Ses deux corrections sur la planche 90, le soir même : *« en haut il y a marqué
+août 2026, mais il faut pouvoir revenir dans le passé si jamais on a du retard
+sur la facturation »*, et *« cinq factures envoyées et tant qui attendent leur
+facturation, ça tu peux le mettre en noir gras »*.
+
+**Ce qui a été tranché, et qui ne se devinait pas depuis sa phrase :**
+
+| | |
+|---|---|
+| Le mois se feuillette | `‹ Août 2026 ›`, une flèche de chaque côté. La flèche du futur **se ferme** sur le mois le plus récent : un bouton qui ne fait rien s'appuie deux fois, puis on croit l'écran cassé |
+| Un mois vide **le dit** | « Aucune facture en juillet 2026 ». On se déplace sur le **calendrier**, pas sur la liste des mois qui portent quelque chose : sauter de août à mai laisse croire que juin n'existe pas |
+| **Ce qui reste à facturer NE suit PAS le mois** | c'est tout l'objet de sa demande. Un chantier de juillet jamais facturé reste sous ses yeux en août — sinon il faudrait déjà savoir qu'il existe pour aller le chercher |
+| Dans la B, l'onglet « À facturer » ne se feuillette pas non plus | il montre tout ce qui attend, tous mois confondus |
+
+**Aucune facture n'a été inventée dans le passé, et c'est délibéré.** Ses
+numéros commencent à `F2026-0001` le 18 août : il n'a jamais facturé avant. Un
+mois d'avant répond donc « aucune facture » plutôt que de porter du faux
+(`CLAUDE.md` §4). Ce qui a été ajouté, c'est **un seul** chantier — M. Ferreira,
+terminé le 14 juillet, jamais facturé — sans quoi le retour en arrière ne se
+juge pas, il se croit sur parole.
+
+**Et il ne va que dans les propositions.** L'onglet « Aujourd'hui » doit rester
+sa capture au chiffre près : un cinquième chantier en attente y écrirait « Cinq
+à facturer · 2 930,00 € », et on ne comparerait plus à ce qu'il a sous les yeux.
+Deux jeux de données, donc, et la page le dit.
+
+**Le noir gras ne s'applique qu'au compte.** « 5 factures envoyées · et
+2 040,00 € qui attendent leur facture » est ce qu'il vient chercher ; « Montants
+prévus à vos devis » reste gris — c'est une réserve, pas un chiffre. La suite le
+**mesure dans le navigateur** (graisse 700, `rgb(28,28,26)`) : une classe posée
+ne prouve pas une graisse.
+
+### « Terminés » : trois façons de la simplifier, et rien de codé
+
+*« Comme on a fait avec toutes les pages, on les a bien simplifiées, maintenant
+il reste celles-là. Je la trouve beaucoup trop compliquée. Un utilisateur qui ne
+connaît pas l'application et qui arrive sur cette page ne comprend rien.
+Propose-moi quelque chose pour la simplifier, ne code rien, je veux qu'on fasse
+des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi que ce
+soit. »*
+
+Mêmes mots que pour le planning le 19 août (planche 84), donc même réponse :
+`appli/termines-simple.html` — **planche 90**, essayable, et `src/` n'a pas
+bougé (`CLAUDE.md` §3 bis).
+
+**Ce qui se comprend mal sur l'écran actuel**, relevé sur sa capture et non
+supposé :
+
+| | |
+|---|---|
+| Le seul travail qui reste | quatre chantiers à facturer, **repliés** derrière une ligne en petites capitales dorées, sans rien qui dise qu'on peut appuyer |
+| « 3 828,00 € » | écrit **deux fois** — à droite d'« août », puis « Facturé, tous mois confondus ». C'est le même chiffre parce qu'il n'y a qu'un mois, mais il faut le deviner |
+| Trois codes non appris | la pastille dorée « 4 », les points pleins/creux, le montant en or contre le montant en noir |
+| « F2026-0005 · LE 20 » | un numéro de facture avant toute chose, et une date sans son mois |
+| Le fil vertical | 47 px de largeur pour ne rien dire que la liste ne dise déjà |
+| Le relevé de TVA | coupé en deux par la barre du bas |
+
+**Trois propositions**, et elles facturent pour de bon : **A** deux piles (ce
+qui reste en haut, déplié, un bouton par ligne) ; **B** une seule liste où
+l'état s'écrit en toutes lettres, avec deux onglets ; **C** une page qui ne fait
+qu'une chose et s'appelle « À facturer », l'historique derrière une porte.
+
+**Aucun total n'est écrit en dur** : tout se recalcule à partir de la même
+liste, comme le veut la leçon du 21 août — deux chiffres qui se contredisent
+dans un même écran, et c'est toute la liste qu'on cesse de croire. Le total du
+mois de la proposition B l'a d'ailleurs rappelé : il portait 5 868,00 €, la
+somme du facturé ET de l'attendu, c'est-à-dire un chiffre qui n'existe nulle
+part.
+
+**Deux défauts trouvés en la parcourant, et un seul par un test.** « Facture
+n° **-5** » : le tiret de « F2026-0005 » entrait dans le nombre. Aucun contrôle
+ne pouvait le voir — c'est la **capture regardée** qui l'a donné, la cinquième
+fois dans ce dépôt (`CLAUDE.md` §5). L'autre, si : un comparateur qui répondait
+« plus petit » à deux dates **égales** sortait ses deux factures du 19 août à
+l'envers de sa capture, sur les trois écrans à la fois.
+
+**La planche est éprouvée avant de partir en ligne** (`appli/tests/essai-termines.mjs`,
+branchée sur `pages.yml`) : les quatre onglets s'ouvrent, les boutons se
+pressent, les totaux sont relus **à l'écran**, et un écran de moins de 300 px de
+haut est refusé plutôt que compté vert. Confrontée au défaut qu'elle prétend
+voir — l'ancien comparateur remis — elle rougit, et sa phrase désigne le bon
+coupable.
+
+---
+
 ## 2026-08-21
+
+### La nourrice se place par lui, jamais par l'outil
+
+*« Ça, c'est l'utilisateur qui placera la nourrice où il veut. »*
+
+Elle n'est ni calculée, ni déduite, ni proposée d'office : elle est **lue** sur
+le croquis. L'IA la cherche ; si elle ne la trouve pas, elle refuse et le dit —
+elle ne la pose pas au piquage « pour dépanner », ce que j'avais fait.
+
+**Ce n'est pas une question de politesse.** L'endroit du regard dépend de ce que
+lui seul sait : un point d'eau existant, un passage de voiture, un massif qu'on
+ne rouvre pas, l'accès pour l'hivernage. Un outil qui le placerait ferait creuser
+au mauvais endroit — et une tranchée ne se déplace pas.
+
+**Informer n'est pas proposer** : s'il demande ce que change tel emplacement, on
+répond avec des chiffres — l'amenée s'allonge, les lignes raccourcissent. On ne
+dit jamais où le mettre. Un contrôle refuse désormais un écran qui suggère un
+emplacement, et exige qu'il le LUI demande.
+
+### Le plan avoue qu'il n'est pas valable
+
+*« Il n'est pas valable avec cette nouvelle règle. »*
+
+**La maquette affichait l'interdit puis l'enfreignait juste en dessous** :
+« sans les trois, aucun plan n'est proposé », et un plan tracé sur une nourrice
+que j'avais placée d'office, son croquis ne la portant pas. **Un écran qui se
+contredit ainsi apprend à ne plus lire ses propres avertissements** — c'est
+pire que de n'en pas mettre.
+
+Le plan reste montré, parce qu'une maquette sert à voir le rendu, mais il porte
+désormais en tête : « ce plan-ci ne respecte pas cette règle — je l'ai placée au
+piquage pour vous montrer ; dans l'application, il serait refusé ». Un contrôle
+exige cet aveu tant que la nourrice n'est pas sur le croquis.
+
+### L'avertissement passe au-dessus du croquis, et les suggestions restent en maquette
+
+*« C'est un petit message qu'il faut mettre au-dessus du croquis, en noir gras :
+votre croquis doit impérativement contenir les métrés, l'endroit définitif de la
+nourrice, et l'endroit où le piquage se fait. »*
+
+**Au-dessus, et c'est tout le sujet.** Placé en dessous, il se lirait après avoir
+envoyé une photo incomplète — donc trop tard, et il faudrait retourner au jardin.
+Le contrôle mesure la **position** et le **poids** du texte, pas seulement sa
+présence : éprouvé en le déplaçant sous le croquis, et en lui retirant son gras.
+
+*« Est-ce que tu vas mettre les phrases déjà pré-écrites, ou c'était juste pour
+faire un test ? Je pense qu'il ne faut pas les mettre, mais qu'il faut un endroit
+où on puisse discuter avec toi. »*
+
+**Il a raison, et c'était bien un artifice.** Une maquette sans JavaScript ne
+peut montrer un échange qu'en pré-écrivant les répliques. Dans l'application :
+un champ libre, rien d'autre. Des suggestions toutes faites bornent ce qu'on ose
+demander, et ce qu'il a à dire ne tient jamais dans trois boutons. Le champ de
+saisie remonte donc **au-dessus** des suggestions dans la maquette, et celles-ci
+sont désormais annoncées pour ce qu'elles sont.
+
+### Sans croquis complet, aucun plan — et la discussion n'en crée jamais un
+
+*« L'outil doit fonctionner avec un plan avec toutes les métrés, l'emplacement du
+piquage et l'endroit définitif de la nourrice. Sans ça il ne doit rien proposer.
+La discussion ne doit jamais créer un plan avec des réseaux — elle peut seulement
+modifier, ou recréer si un croquis avec tous les bons éléments aux bons endroits
+a été fourni. »*
+
+Trois éléments obligatoires : les **métrés**, le **piquage**, l'**endroit
+définitif de la nourrice**. Il en manque un, le plan est **retiré** de l'écran —
+pas grisé : un plan affiché en pâle se photographie et se pose quand même. Et
+l'écran dit lequel manque, avec ce qu'il faut faire.
+
+**Pourquoi la règle vise la discussion en particulier** : c'est sa tentation
+exacte. On répond en comblant ce qui manque, parce qu'une phrase se complète plus
+facilement qu'un dessin. Un plan tracé sur une nourrice supposée fait creuser au
+mauvais endroit, et une tranchée ne se déplace pas.
+
+**Un manquement à noter, et il est de moi :** le plan de son jardin a été tracé
+avec une nourrice que j'ai placée moi-même — son croquis porte les métrés et le
+piquage, pas le regard. Selon sa règle, ce plan n'aurait pas dû être proposé.
+
+### Discuter le plan — maquette, et un garde-fou qui compte
+
+*« Si l'utilisateur a besoin de te demander une modification, qu'il puisse le
+faire. Une petite interface pour discuter avec toi. »*
+
+**`appli/arrosage-discuter.html`** : trois échanges essayables — pourquoi deux
+réseaux, passer en 15-VAN, préférer des 5004. Le plan se redessine, les pièces
+suivent. Aucun JavaScript : les échanges sont des états choisis par des radios.
+
+**Le point d'architecture prime sur l'interface : Atlas ne dessine pas le plan.**
+Il lit la demande, pose un **paramètre** du calcul, et c'est le calcul
+déterministe qui refait le schéma et la liste. Trois droits : lire le catalogue
+pour répondre, poser un paramètre, refuser en expliquant — et proposer ce qui
+s'en approche. Jamais écrire un chiffre absent du catalogue.
+
+C'est la leçon du jour même : laissé libre, il a inventé « 5004 buse 3.0, portée
+6 m », et le maillage entier en dépendait. **Une conversation rend cette dérive
+plus facile, pas moins** — on écrit une phrase plausible et personne ne la
+recompte.
+
+**Son contrôle a dû être retourné pour valoir quelque chose.** La première
+version vérifiait qu'une bonne valeur est *présente* — ce qui laisse passer une
+valeur fausse citée à côté, exactement comme ce matin. Il vérifie désormais
+l'inverse : **toute portée écrite dans la conversation doit exister au
+catalogue**. Éprouvé en remplaçant 4,5 m par 4,2 m : « une portée inventée fausse
+tout le maillage ».
+
+Deux pièges de contrôle au passage : `innerText` ne rendait que le fil visible et
+accusait la maquette de taire ce qu'elle dit ailleurs ; et le « m » de « m³/h »
+se faisait prendre pour un mètre, ce qui condamnait un débit juste.
+
+### « Pourquoi pas des 3504 ? » — j'avais inventé les portées
+
+*« Pourquoi tu as utilisé des tuyères 1800 et pas des arroseurs 3500 de chez
+Rain Bird ? »* La réponse tient en une ligne de son catalogue : la 3504 porte au
+minimum **5,2 m** (buse 0,75) pour une bande de **4 m** de large.
+
+**Mais en vérifiant, j'ai trouvé bien pire dans la maquette.** J'annonçais
+« Turbine 5004, buse 3.0 — portée 6 m » : **cette portée n'existe pas**. Ses
+relevés donnent 8,5 m pour la buse 1,0 et **11,1 m** pour la 3,0. Et la 12-VAN ne
+fait pas 4 m mais **3,6 m**. J'avais inventé des valeurs qui étaient dans le
+catalogue depuis le 17 août, et tout le maillage reposait dessus.
+
+**Deux règles de sa part ont débloqué le reste.**
+
+*« Les débits à 360° sont les mêmes qu'à 180° et 90°. »* Le catalogue portait
+cette question ouverte depuis le 17 août et écartait toutes les turbines du
+calcul faute de réponse. Elle est tranchée — et **c'est l'inverse de ce que le
+dépôt supposait** : on imaginait un débit proportionnel à l'arc, ce qui aurait
+divisé par quatre celui d'un coin et fait poser quatre fois trop d'arroseurs sur
+une voie. La règle ne vaut que pour les turbines : une buse VAN projette
+plusieurs filets, et ses propres relevés donnent bien 0,15 / 0,30 / 0,59.
+
+*« On a un recouvrement d'au moins 80 %, pas obligé d'avoir 100 % à chaque
+fois. »* Le contrôle exigeait 100 % de la pelouse à portée d'un arroseur — plus
+strict que son métier, et cela coûte : chaque point manquant fait resserrer le
+maillage, donc ajouter des arroseurs et des raccords. **Un contrôle trop sévère
+fait dépenser aussi sûrement qu'un contrôle absent.**
+
+**Le plan refait sur les vraies valeurs est plus simple que le faux :**
+
+| | Avant (valeurs inventées) | Après (ses relevés) |
+|---|---|---|
+| Arroseurs | 9 turbines 5004 + 4 tuyères | 9 turbines **3504 buse 0,75** + 4 tuyères |
+| Portées | 6 m et 4 m — inexistantes | **5,2 m** et **3,6 m** — relevées |
+| Réseaux | 3 | **2** |
+| Nourrice | 3 voies | **2 voies** |
+| Couverture | — | **100 %**, pour 80 % exigés |
+
+**Et un principe s'est imposé de lui-même : un réseau par famille.** Une tuyère
+verse environ trois fois plus vite qu'une turbine ; sur une même voie, le temps
+qui convient à l'une noie ou assoiffe l'autre. L'ancien plan mélangeait une
+turbine et quatre tuyères sur le réseau 3.
+
+**Deux détails trouvés en lisant les fiches** : la 3504 est en **1/2"** (pas
+3/4" comme la 5004), ce qui change tous ses SBE de corps ; et elle est **livrée
+avec ses six buses**, donc la ligne « buse » disparaît de la commande.
+
+### Le tour plutôt que la coupe — et un contrôle qui dormait
+
+*« On essaye de traverser le moins possible le jardin en faisant des tranchées.
+Là, moi, je ferais le tour : la première tuyère en haut à gauche relie celle du
+haut à droite, puis celle du bas à droite, puis celle du bas à gauche — et c'est
+celle-là la dernière, pas celle du haut à droite. »*
+
+Le réseau 3 coupait l'extension en deux. Son tour coûte **exactement la même
+longueur** — 32 ml — et ne creuse que le long des bords.
+
+**Mais le pire est que mon contrôle n'a rien vu, et il ne pouvait pas.** Il
+mesurait la tranchée à plus de 2 m d'un bord. Dans une bande de 4 m de large, le
+milieu est à 2 m des deux bords : **aucune traversée n'y était jamais
+détectable**. Le contrôle dormait exactement là où il fallait qu'il parle.
+
+Le critère est désormais géométrique : *ce segment part-il d'un bord pour arriver
+sur un bord en passant par l'intérieur ?* Si oui, c'est une coupe. Un segment qui
+va chercher un arroseur du milieu n'arrive sur aucun bord — ce n'en est pas une.
+Éprouvé sur l'ancien tracé : « la tranchée coupe le jardin de 16,0 à 16,4 — le
+tour par le bord fait la même longueur ».
+
+### « D'où sortent tes électrovannes 24 V ? » — de nulle part, et c'était grave
+
+*« Je ne me souviens pas t'avoir donné des électrovannes en 24 V. Pour moi il n'y
+avait que des 9 V. Me suis-je trompé ? »*
+
+**Il ne s'était pas trompé.** Toutes ses fiches de nourrice, relevées le 17 août,
+sont en 9 V — `electrovanne-100dv`, programmateur à pile, pile 9 V. Le « 24 V »
+venait d'une ligne générique du catalogue, marquée `provisoire`, posée avant
+qu'il donne ses références et **jamais confrontée à elles**.
+
+**Et elle ne dormait pas dans un coin : le calcul de l'application la sort.**
+`listeMateriel()` pose « Électrovannes 24 V » dès qu'aucune fiche de nourrice ne
+correspond au nombre de secteurs. Corrigé dans les deux copies du catalogue et du
+calcul.
+
+**Sa règle, qui rend la faute grave et non seulement inexacte :**
+
+| Le programmateur | L'électrovanne |
+|---|---|
+| à pile, 9 V | 9 V |
+| sur secteur, 220 V | 24 V |
+
+Une vanne 24 V pilotée par un boîtier à pile **ne s'ouvre pas**. Le réseau
+n'arrose pas du tout — et cela ne se voit ni sur un plan, ni sur un devis, mais
+après avoir rebouché la tranchée. Un contrôle refuse désormais le mélange, et
+refuse aussi une vanne qui ne dit pas sa tension.
+
+**La leçon dépasse les électrovannes :** une valeur « provisoire » qui survit à
+l'arrivée des vraies références devient un mensonge. Quand ses données arrivent,
+les lignes qu'elles remplacent se corrigent.
+
+### Se piquer au compteur, c'est couper une ligne — la pièce manquait
+
+*« Je te posais la question sur les tés égaux parce qu'en fait il en faut bien
+deux : vu qu'on se pique après le compteur, il va falloir qu'on coupe la ligne,
+parce que le compteur c'est une ligne directe qui part vers la maison. On va
+devoir la couper et mettre un té égal à cet endroit-là. »*
+
+**Il avait raison, et pour une raison que rien dans le dépôt ne portait.** Le té
+égal du regard, je l'avais ; celui du piquage, non — parce qu'il ne dépend
+d'aucun calcul de réseau. Ni des arroseurs, ni des voies, ni du débit : du
+**point de piquage** seul. Il manquait donc, et il aurait manqué sur chaque plan.
+L'oublier, c'est un aller-retour au magasin avec la tranchée ouverte.
+
+**Le plan le montre maintenant** : la ligne du compteur continue vers la maison
+en pointillé, et le losange marque l'endroit où on la coupe. Sans ce trait, la
+pièce paraissait arbitraire.
+
+**Une troisième zone est née** : « du compteur à la nourrice ». Le plan en avait
+deux — le jardin, le regard — et rien pour l'amenée, dont le tuyau n'était même
+pas compté. Il ne l'est toujours pas en mètres, et c'est délibéré : la distance
+dépend du terrain, elle est marquée **à mesurer** plutôt qu'inventée.
+
+### « Où sont les pièces de la nourrice ? » — et un récapitulatif qui mentait
+
+**Deux questions de sa part, deux défauts réels.**
+
+*« Tu as mis 2 tés égaux 25×25×25, pourquoi ? »* Sur la version qu'il regardait :
+un à la nourrice, où le réseau 1 se sépare en deux, et un en 16,0 où partait
+l'antenne du réseau 3. Le second a disparu depuis, en faisant contourner
+l'extension par le coin. Il n'en reste qu'**un**, celui du regard qu'il avait
+lui-même demandé.
+
+**Mais sa capture montrait pire, et je ne l'avais pas vu :** le tableau annonçait
+« 8 tés, 5 coudes » et la phrase juste en dessous « 9 tés + 4 coudes = 13
+raccords ». La phrase était écrite en dur et n'avait pas suivi le tracé — elle
+disait vrai la veille. C'est le pire des cas, parce qu'on la relit sans
+méfiance. Un contrôle recalcule désormais le récapitulatif depuis le tableau.
+
+*« Où sont les pièces pour la nourrice 3 voies ? »* Elle tenait en trois lignes —
+3 électrovannes, 1 regard, 1 programmateur — qui **ne se montent pas** : il
+manquait la clarinette qui relie les vannes, les unions qui permettent de
+démonter, les raccords d'entrée, la vanne de purge pour l'hivernage.
+
+**Tout était déjà relevé sur sa planche du 17 août**, dans
+`CATALOGUE.nourrices[3]`, et n'avait jamais été repris. Les douze pièces sont
+maintenant listées dans leur propre tableau — ce qui est dans le jardin d'un
+côté, ce qui est dans le regard de l'autre.
+
+**Un faux coupable évité au passage :** en détaillant la nourrice, le contrôle
+des raccords s'est mis à compter ses « coudes taraudés MM 1" » comme des fins de
+ligne d'arroseur, et accusait le plan de 2 raccords en trop. Les deux tableaux
+portent désormais leur zone.
+
+### La légende montre au lieu de décrire — et une pièce de moins
+
+*« Le petit schéma en dessous n'est pas clair. On ne sait pas vraiment à quel
+endroit tu veux utiliser un coude taraudé, à quel endroit un té égal ou un té
+taraudé. Là où tu as marqué plein, à côté tu peux mettre un rond plein. »*
+
+**Les symboles sont maintenant dessinés à côté des mots** — le rond plein, le
+rond creux, le carré, le losange, le trait de tranchée —, et ce sont ceux du
+plan. Chacun nomme **la pièce** qu'il implique : plein → té taraudé ; creux →
+coude taraudé ; losange → té égal, qui n'arrose rien. On lisait le plan sans
+savoir quoi visser.
+
+**La jonction se voit enfin.** Elle était dans la commande et nulle part au
+dessin : « 1 té égal » sans savoir où le poser. Un contrôle exige désormais que
+toute pièce facturée soit dessinée quelque part.
+
+**Une jonction supprimée en réordonnant le réseau 3.** Il finissait par une
+antenne partant d'un arroseur — donc un té taraudé ET un té égal au même point.
+En lui faisant faire le tour de l'extension par le coin, la ligne devient
+unique : même longueur (32 ml), un raccord de moins et une pièce de moins.
+
+**Et la phrase sur la tranchée est retirée de l'écran**, à sa demande : *« il
+faut juste que ça soit une règle que toi tu conserves, l'utilisateur n'a pas
+besoin de voir ça »*. Nos raisons de conception restent dans `CLAUDE.md` ;
+l'écran ne porte que ce qui sert à poser le chantier.
+
+**Deux défauts vus à la capture, aucun par un test :** les symboles SVG sans
+largeur imposée s'étiraient à 300 px, et la grille CSS de la légende éclatait un
+mot par ligne — chaque nœud texte devenant une cellule.
+
+### Le plan dit quel arroseur et pourquoi — et on ne traverse plus le jardin
+
+**Trois règles de plus, toutes sorties de sa lecture du plan.**
+
+**« Combiner les deux économies, et à égalité privilégier la tranchée, car c'est
+moins fatigant. »** Le tuyau se pose, la tranchée se creuse, se remblaie et se
+voit encore dans le gazon l'été suivant.
+
+**« On traverse le moins possible le jardin dans sa largeur : beaucoup de choses
+enterrées. »** Ce n'est pas une question de mètres mais de risque — gaines,
+drains, fosse, racines qu'on ne voit qu'à la pelle. Le tour se rebouche, la
+traversée se retrouve. Un contrôle mesure le linéaire de tranchée à plus de 2 m
+d'un bord et le compare à ce qu'exigent les arroseurs intérieurs. Sur ce plan :
+4 m, pour 4 m nécessaires — le seul arroseur du milieu est celui du centre.
+Éprouvé en faisant traverser le réseau jaune : « 12 m de tranchée en plein jardin
+pour 4 m nécessaires ».
+
+**« Tu dois savoir me dire où sont les tuyères et pourquoi, et quelle buse. »**
+Le plan ne montrait que treize points identiques : sur le terrain, on ne sait pas
+lequel visser où. **La forme porte désormais la famille** — rond pour une turbine,
+carré pour une tuyère —, le remplissage garde la position sur la ligne, et la
+légende nomme la buse. Un bloc dit le POURQUOI : les turbines 5004 buse 3.0
+couvrent le carré de 12 m avec 9 arroseurs là où une portée plus courte en
+demanderait 16 ; les tuyères 1800 buse 12-VAN tiennent la bande de 4 m, qu'une
+turbine de 6 m arroserait 2 m au-delà de la limite.
+
+**Un contrôle a dû suivre le libellé plutôt que le figer** : il lisait « 4
+arroseurs » sur les cartes, qui annoncent maintenant « 4 turbines ». Il additionne
+désormais les familles et les confronte à ce qui est dessiné, famille par famille.
+
+### La tranchée, pas le tuyau — 10 m de terrassement en moins, à tuyau égal
+
+*« Il faut que tu te dises que le trait jaune, c'est une tranchée. C'est une
+équipe qui va devoir creuser la terre pour faire passer le tuyau. Donc l'idée,
+c'est de faire le moins de tranchée possible. Si on peut réutiliser une tranchée
+déjà faite et juste faire une petite antenne — un mètre par exemple — pour aller
+chercher l'arroseur, c'est moins éprouvant que de faire tout le tour. »*
+
+**Cela change ce qu'on minimise, et c'était faux jusqu'ici.** Le contrôle
+comparait la somme des TUYAUX au plus court. Mais deux tuyaux qui suivent le
+même chemin n'occupent qu'une tranchée : le mètre de tuyau se paie une fois, le
+mètre de tranchée se paie en heures d'homme et en gazon rouvert.
+
+Le plan le montre : à longueur de tuyau **égale** — 76 ml —, faire remonter le
+troisième réseau par le bord haut, déjà creusé pour le premier, au lieu de
+traverser la pelouse : **74 → 64 ml de tranchée**.
+
+La tranchée est désormais **dessinée** (le trait ocre large, sous les tuyaux), et
+son linéaire annoncé. Deux contrôles la tiennent, séparés parce que ce sont deux
+défauts distincts : l'union des tuyaux ne doit pas dépasser le minimum
+nécessaire, et aucun tuyau ne doit passer hors d'une tranchée dessinée — sans
+quoi le chantier serait chiffré trop court.
+
+**Un contrôle a dû être corrigé au passage, et il interdisait sa règle.** Il
+exigeait que CHAQUE ligne parte de la nourrice, et rougissait donc sur la petite
+antenne d'un mètre qu'il décrit. La règle juste : **un réseau part de la
+nourrice, ses antennes partent de lui**.
+
+### Le comptage s'applique à CHAQUE réseau — un contrôle global mentait
+
+*« Faut surtout que tu en fasses une règle. Il faut que tu l'appliques pour
+chaque réseau que tu crées. »*
+
+**Il avait raison contre mon contrôle**, qui vérifiait `tés + coudes = arroseurs`
+sur le TOTAL. Une somme juste peut cacher un réseau en excès et un autre en
+manque : ils se compensent, le total tombe juste, et c'est sur le terrain qu'on
+découvre qu'une voie n'a pas de quoi raccorder son dernier arroseur. **Un
+contrôle qui ne regarde que la somme laisse passer exactement le défaut qu'il
+prétend attraper.**
+
+Le décompte se lit désormais **sur le plan**, réseau par réseau — têtes pleines
+pour les tés, têtes creuses pour les fins de ligne — puis se compare à ce que la
+carte annonce. Si les deux divergent, l'un ment et rien ne dit lequel au moment
+de commander. Éprouvé sur une compensation exacte (un té de trop chez le 2, un
+de moins chez le 3) : les deux réseaux rougissent séparément, là où l'ancien
+contrôle voyait un total juste.
+
+Le gabarit complet — arroseurs, coudes, tés, jonctions, SBE, PEBD, PE — est dans
+`CLAUDE.md` §4 bis, à dérouler pour chaque réseau créé.
+
+### « D'où sortent tes vingt-deux SBE ? » — un chiffre juste, une ligne muette
+
+*« Je ne comprends pas d'où sort ton calcul des vingt-deux coudes SBE 3/4" et
+les 4 SBE 1/2". Ça correspond à quoi ? »*
+
+**Le chiffre était juste** — sa règle du 17 août, écrite dans le catalogue :
+deux SBE par arroseur, celui du bas toujours en 3/4" sur la tuyauterie, celui du
+haut au diamètre du corps (3/4" turbine, 1/2" tuyère). Soit 13 en bas, 9 sur les
+turbines, 4 sur les tuyères.
+
+**Le défaut était la ligne, pas le calcul.** « 22 u Coude SBE 075 » ne dit pas à
+quoi ils servent : on recompte, on n'y arrive pas, et c'est toute la liste dont
+on doute. Une pièce qui sert à deux endroits s'écrit désormais en deux lignes,
+chacune nommant sa position — et un contrôle refuse une ligne SBE qui ne dit pas
+si elle va en haut ou en bas, en plus de vérifier le total (2 × arroseurs).
+
+**Le contrôle PLANTAIT au lieu de rougir**, et c'est la deuxième leçon. Éprouvé
+en retirant une ligne du tableau, il tombait sur une trace JavaScript qui
+n'accusait personne. La sonde ignore maintenant les lignes mal formées et rend
+son verdict : « 13 SBE pour 13 arroseurs : il en faut deux par arroseur, soit
+26 ».
+
+### « Va au plus court » — un détour de 4 m, devenu un contrôle
+
+*« Pour ton réseau 1 tu t'es trompé : tu aurais dû retirer la dernière ligne
+entre l'arroseur du haut et l'arroseur du milieu, mais par contre, devant le
+regard, mettre un té — et du coup tu aurais pu joindre le premier arroseur qui
+est collé au regard et celui qui est en haut. »*
+
+La ligne faisait le tour puis **revenait sur elle-même** pour rattraper un
+arroseur situé à 2 m de la nourrice. Un té de jonction devant le regard et deux
+branches courtes : **18 ml au lieu de 22**. Le tuyau en trop se paie deux fois,
+au mètre et en tranchée.
+
+**Ce qui compte n'est pas les 4 m, c'est que le détour se MESURE.** La longueur
+d'un tracé se compare désormais à l'arbre couvrant minimal de ses points, en
+distance de Manhattan — un tuyau suit les axes, il ne coupe pas en diagonale au
+milieu du gazon. C'est une borne basse honnête : au-delà de 5 %, le tracé revient
+sur lui-même. Éprouvé en remettant l'ancien tracé, il annonce « 22 ml tracés pour
+18 ml nécessaires — 4 m de tuyau en trop, payés au mètre ET en tranchée ».
+
+Les réseaux 2 et 3 étaient déjà au plus court : le contrôle ne rougit pas pour
+le plaisir.
+
+**Conséquence sur la règle précédente :** « un réseau = une ligne continue »
+était une simplification de ma part, pas une règle du métier. Elle empêchait
+précisément le raccourci qu'il demande. Un réseau peut donc se ramifier — avec
+un té de jonction 25×25×25, qui n'arrose rien et ne compte pas dans l'égalité
+`tés + coudes = arroseurs`.
+
+### Le planning, codé trait pour trait — et une migration avec
+
+**Sa décision du 21 août au soir**, après deux soirées de maquette et neuf
+corrections : *« maintenant tu peux coder cette version de la maquette ! Ne
+modifie rien ! Ne change rien ! Code trait pour trait cette maquette. Prends le
+temps qu'il faut, je veux aucune erreur, aucun défaut ! »*
+
+L'écran est celui de `appli/planning-simple.html` : le mois refait, la fiche du
+jour bâtie sur le CHANTIER et non sur la demi-journée, les planifiés à la
+semaine, et la feuille de chantier — le devis rendu sans un seul prix.
+
+**Ce qui ne se voit pas, et qu'il a fallu poser (détail dans `ARCHITECTURE.md`
+§129) :**
+
+| | |
+|---|---|
+| **Migration 0058** | `equipes_du_chantier` remplace `chantiers.equipe_id`. Une colonne porte UNE équipe, pour le chantier ENTIER : ni « toutes les équipes sur la même demi-journée », ni « Paul le matin, Julien et Paul l'après-midi ». La colonne est retirée, pas doublée — deux vérités auraient divergé au premier retrait |
+| **Le quota prévient** | `planifierChantier` ne refuse plus un créneau, et cocher une équipe ne se refuse jamais. Le dépassement se VOIT — bordeaux, « 150 % de vos équipes » — il ne s'interdit pas. **Le chemin du CLIENT garde toutes ses limites** |
+| **Le devis sans les prix** | Une route de plus, et zéro moteur de plus : `sansChiffrage` existait depuis la fiche de chantier du 20 août. Le titre devient « FEUILLE DE CHANTIER » et le cadre de signature disparaît — sans prix, ce n'est plus un devis |
+| **Deux couleurs à la charte** | `vertPale` et `bordeaux`, fixes comme `sage` et `alert` : dérivées de chaque charte, deux des quatre états finiraient par se ressembler sur l'une des sept |
+
+**Trois choses ont quitté l'écran** parce que la planche ne les portait pas :
+« Créer la facture » dans la feuille, la liste « Dans mon agenda », et la
+proposition de chantier voisin. Le code serveur des trois est intact ;
+`TODO.md` dit où, et ce qu'il faut lui demander.
+
+**Le plus cher du lot ne se voyait pas :** la reprise de données de la migration
+recopiait **zéro ligne, sans erreur** — `chantiers` force la RLS jusque sur le
+propriétaire, et les migrations tournent sous ce rôle-là. La colonne aurait été
+retirée juste après, et toutes ses équipes auraient disparu en silence. Trouvé
+en rejouant la migration sur une base remontée à l'état d'avant, **avec des
+données dedans** ; aucune relecture ne l'aurait montré. `test-migrations-sous-rls.ts`
+garde désormais la porte — et il a trouvé **trois migrations déjà appliquées**
+qui portent le même défaut (`TODO.md`, en tête).
+
+**Deux contrôles ont été refaits plutôt que relevés**, et c'est la leçon du
+lot : `test-assistant-en-tete-e2e.ts` épinglait « la dernière case du mois finit
+au-dessus de 626 px », un nombre relevé sur l'écran d'avant ; il mesure
+désormais que le bouton de l'assistant partage la ligne du titre, ce qui était
+le vrai défaut et ne dépend d'aucun calendrier. Un contrôle qui suit l'écran ne
+le tient plus.
+
+**Et un second défaut invisible, trouvé au journal du serveur :** un
+`export type { FeuilleDuChantier };` posé dans `src/app/planning/actions.ts`
+tuait **tout** le module d'actions à son évaluation — `ReferenceError`, et les
+cinq actions de l'écran en 500. `tsc` et `eslint` restaient verts, et le geste
+« réussissait » sans un mot, puisqu'une action serveur ne rend jamais son erreur
+au patron. Le type se prend désormais à sa source, avec `import type`, et
+`test-actions-serveur-sans-export-de-type.ts` rend la faute impossible sur les
+32 fichiers « use server » du dépôt. Le détail et le réflexe qui manquait — lire
+le journal du serveur AVANT de soupçonner le contrôle — sont en tête de
+`HANDOVER.md`.
+
+**Et un écart avec la planche, trouvé sur une CAPTURE** — la cinquième fois dans
+ce dépôt qu'un défaut sort d'une image et d'aucun test. La planche resserre les
+petits boutons d'une ligne de demi-journée (`.demi .petit{padding:7px 9px}`) ;
+la transcription avait gardé les 12 px par défaut. Six pixels de trop par
+bouton, et la ligne « Après-midi · Équipe ? · Déplacer · Retirer » faisait
+exactement 324 px dans 324 : « Retirer » basculait à la ligne suivante. Restauré,
+et `test-planning-e2e` le tient désormais — confronté au défaut, il rougit sur
+« 42 px de décalage ». Il mesure des hauteurs d'origine et non des largeurs :
+deux boutons d'une même ligne partagent leur `top`, ce qui ne dépend ni de la
+police ni de la longueur des mots.
+
+**Ce qui n'a PAS été corrigé, et pourquoi.** Une équipe qui existe sans porter
+de nom s'écrit « Équipe A » — 91 px, là où « Équipe ? » en fait 75. La ligne
+déborde alors de quatre pixels. La planche ne dessine jamais cette étiquette :
+la régler voudrait dire retoucher un dessin qu'il a validé, et un choix
+d'apparence se dessine avant de se coder (`CLAUDE.md` §3 bis). Le cas est décrit
+dans `TODO.md`, à lui montrer.
+
+**Un contrôle de notification a été refait pour la même raison de fond**
+(`CLAUDE.md` §5 bis) : « J'ai vu » comptait les cartes de l'accueil avant et
+après le geste et en exigeait une de moins — un compte qui dépendait de l'ordre
+d'exécution des suites et de l'ordre d'affichage des cartes. Il vise maintenant
+la carte de CE chantier par son identifiant.
+
+### « Je clique sur Lucie, et j'arrive sur mon devis » — la dictée mène enfin au devis
+
+**Sa panne, mot pour mot :** *« J'ai ouvert un chantier, Madame Lucie. J'ai
+rentré ces informations, j'appuie sur note vocale, j'ai dicté la prestation du
+chantier. J'ai rappuyé sur la note vocale, ça a enregistré. J'ai quitté
+l'application. Je suis retourné dessus. J'ai cliqué sur Madame Lucie. Or, je ne
+suis pas arrivé directement sur la page du devis comme demandé, avec mes
+informations remplies que j'avais dictées. Corrige-moi ça, c'est le point le
+plus important. »*
+
+**Deux défauts, et le second était le vrai.**
+
+Le premier était le chemin : la liste le renvoyait sur l'écran « Informations »
+— un écran de contrôle dont il ne veut plus depuis le 5 août (*« je ne veux pas
+tous les autres trucs intermédiaires »*). `getNextAction` mène désormais au
+devis dès qu'une dictée existe, et **avant** le jalon « informations
+vérifiées » : la chaîne pose ce jalon avant son arrêt d'avant-chiffrage, et
+l'ordre inverse l'aurait envoyé sur l'écran « Prix » — la même panne sous un
+autre nom.
+
+Le second, plus grave : **enregistrer une dictée ne fabriquait aucun devis.** La
+chaîne attendait qu'il appuie sur « Mon devis → », et il ne l'a pas fait — il
+était chez sa cliente, il a fermé l'application. Corriger le seul chemin
+l'aurait mené droit sur une feuille vide, c'est-à-dire sur la panne du 7 août.
+
+**Le devis se prépare donc lui-même en arrivant**, quand une dictée n'a pas
+encore été traitée (`src/lib/devis-a-preparer.ts`, `PreparationDictee.tsx`). À
+l'arrivée plutôt qu'au relâchement de l'anneau, et c'est délibéré : il ferme
+l'application dans la seconde qui suit, l'appel partirait avec l'onglet. Le seul
+moment où un navigateur est là pour attendre le résultat, c'est celui où il
+rouvre le devis.
+
+Le voile se pose **par-dessus** le devis, jamais à sa place : si la chaîne
+échoue, « Ouvrir le devis tel quel » lui rend sa feuille et son crayon.
+
+`scripts/test-madame-lucie-e2e.ts` rejoue sa séquence entière — dicter, fermer
+l'application, revenir par la liste, cliquer le nom. Confrontée à l'ancien code,
+elle rougit sur trois cas et nomme le coupable : *« la liste l'envoie sur
+/informations »*.
+
+### Le plan repris sur ses trois corrections — la nourrice, les raccords, les marques
+
+**« Tous les réseaux doivent partir de la nourrice — règle indiscutable ! »**
+La première version montrait le compteur et trois traits qui commençaient dans
+le vide : *« je suppose que le réseau jaune partirait du compteur, mais le bleu
+et le vert, on ne sait pas d'où »*. La nourrice est dessinée, avec ses trois
+vannes, et un contrôle refuse une ligne qui démarre ailleurs.
+
+**Le comptage des raccords était faux, et il l'a vu au chiffre près.** La liste
+portait « un collier de prise en charge par arroseur » — une pièce qui n'existe
+pas dans sa règle. Sa planche du 17 août, écrite dans le catalogue depuis
+quatre jours, dit : **départ et milieu de ligne → té taraudé ; fin de ligne →
+coude taraudé**. D'où l'égalité qu'aucune version ne tenait :
+
+> **tés + coudes = nombre d'arroseurs**, et **coudes = nombre de lignes**
+
+En dessous, des arroseurs ne sont raccordés à rien. C'est exactement ce qu'il a
+relevé — *« il y a quatre arroseurs qui ne sont pas alimentés »* — sur un plan
+qui paraissait juste. Aucun test ne le voyait, parce qu'aucun ne confrontait la
+liste des pièces au tracé. Le contrôle le fait maintenant, et il chiffre le
+manque : « 4 tés + 0 coudes = 4 raccords pour 13 arroseurs — 9 arroseurs ne sont
+alimentés par rien ».
+
+**Une conséquence de forme, et elle vaut d'être notée :** un réseau est
+désormais **une ligne continue**. C'est ce qui rend le compte sûr d'un coup
+d'œil — une ligne a exactement une fin, donc un coude, et tout le reste est un
+té. Une ligne qui se ramifie demanderait un té de jonction non taraudé, et le
+compte ne se vérifierait plus à vue.
+
+**Le bandeau des marques est enfin à l'écran** — Rain Bird par défaut, Toro,
+Hunter. Il l'avait demandé le 17 août ; c'était écrit dans le catalogue et
+n'était jamais monté jusqu'à un écran.
+
+**Et la règle vaut pour TOUS les schémas**, à sa demande : elle est écrite dans
+`CLAUDE.md` §4 bis, plus seulement dans un commentaire de catalogue.
+
+### Le plan d'arrosage se DESSINE — maquette, rien n'est codé
+
+*Sa demande, capture à l'appui :* **« il manque la photo, le schéma avec les
+réseaux, et l'implantation des arroseurs — les différents réseaux de
+couleurs »**. L'application rendait trois listes et aucun dessin.
+
+**`appli/arrosage-plan.html`**, tracée sur son croquis du jour : pelouse en L,
+12 × 12 et 8 × 4, **176 m²**, piquage au compteur. 13 arroseurs, 3 réseaux de
+couleurs, chacun sous les 1,80 m³/h disponibles. Aucun JavaScript : choisir un
+réseau passe par des boutons radio et du CSS, donc ça marche hors ligne sur son
+téléphone.
+
+**Ce qui distingue ce plan d'un joli dessin, c'est ce que son contrôle
+recalcule** (`scripts/verifier-maquette-arrosage-plan.mjs`) :
+
+- **la surface est relue depuis le polygone tracé** et comparée à celle
+  annoncée — un plan juste sur une forme fausse ferait commander les pièces
+  d'un autre jardin ;
+- **aucun coin de pelouse n'est laissé sans eau** : on maille le terrain tous
+  les 50 cm et l'on vérifie que chaque point est à portée d'un arroseur. C'est
+  le contrôle qui compte, parce qu'un trou ne se voit pas sur un dessin — il se
+  voit en juillet, en jaune. Éprouvé en rétrécissant les turbines : il annonce
+  « 48 m² sans arrosage, à partir de 2,25 × 2,75 m » ;
+- **aucune voie ne dépasse le débit du compteur** — une voie trop chargée fait
+  sortir les arroseurs à moitié ;
+- **les métrés sont mesurés sur le tracé**, jamais saisis ;
+- **aucun nom de réseau répété ni coupé** — le défaut exact de sa capture, où
+  deux réseaux s'appelaient tous les deux « Pelouse pas de gazon à gauche … ».
+  Deux vannes qui portent le même nom, c'est la mauvaise qu'on ferme.
+
+**Deux défauts trouvés en la regardant, jamais par un test :** la photo du
+croquis s'affichait couchée (une rotation EXIF appliquée à tort), et les quatre
+boutons radio se voyaient au-dessus des onglets — le sélecteur CSS ne les
+atteignait pas, ils étaient hors de leur conteneur.
+
+### Les cases sont « la carte douce » — la 4, celle qu'il a choisie
+
+**Sa précision du 21 août au soir :** *« n'oublie pas que j'ai choisi la 4 pour
+la forme des cases ; dans les 5 modèles elle s'appelait la carte douce »*, avec
+l'adresse de la planche.
+
+Il avait tranché plus tôt dans la journée, puis, devant l'écran incomplet, il a
+demandé la maquette **trait pour trait** — et sa maquette portait encore
+l'ancienne case. J'ai suivi la maquette et défait son choix : deux consignes
+justes, un dessin faux.
+
+Les deux portent désormais **la même case** — fond papier, 14 px de rayon, aucun
+bord, l'or au doigt posé —, la maquette comme l'application. C'était l'écart qui
+lui faisait croire que le code ne suivait pas la planche : il n'y a plus deux
+vérités à comparer.
+
+### La fiche client, codée trait pour trait — l'anneau, les photos, un seul bouton
+
+**Sa consigne, après avoir vu la moitié du travail livrée :** *« je veux que ça
+ressemble exactement à la maquette qu'on a construite ensemble. Tu me la codes
+trait pour trait. Tu ne changes rien, elle est parfaite. »* Il avait raison de
+protester : le lot précédent avait été coupé en deux sans qu'il le demande, et
+il manquait précisément ce qui compte — la dictée et les photos.
+
+Ce que l'écran `chantiers/nouveau` porte désormais, dans l'ordre de la maquette :
+
+| | |
+|---|---|
+| **Les photos** | le carré « + » de la fiche chantier, à l'identique — un champ unique, sans `capture`, donc le menu du téléphone |
+| **L'anneau** | celui de la fiche chantier, à l'identique : un appui dicte, un second **enregistre** |
+| **« Mon devis → »** | n'apparaît qu'une fois la dictée faite |
+| **Un seul bouton** | « Je rédige mon devis » |
+| **Les cases** | celles de la maquette : fond crème, 4 px, un liseré fin, l'or au doigt posé |
+
+**Les deux pièces ne sont pas des copies :** `Pellicule` et `AnneauNoteVocale`
+sont les composants de la fiche chantier, employés tels quels. Deux dessins du
+même geste se liraient comme deux fonctions différentes, et le second aurait
+divergé au premier ajustement (`CLAUDE.md` §3).
+
+**Elles vivent AVANT que le chantier existe**, et c'est le cœur de sa demande :
+il photographie et il dicte chez le client, puis il ferme l'application. Le
+chantier naît donc du premier geste (`assurerChantier`), une seule fois — trois
+photos et une dictée ne font pas quatre chantiers. Et ce qu'il tape APRÈS ce
+premier geste est reporté sur le chantier au moment du bouton : sans cela, un
+nom saisi après la dictée serait perdu, en silence.
+
+**Soixante-treize suites passaient par le bouton retiré.** Elles ne dictaient
+pas : c'était le chemin le plus court vers la fiche d'un chantier neuf. Elles
+passent maintenant par une fonction commune (`scripts/_creer-chantier-e2e.ts`) —
+soixante-treize réécritures séparées auraient produit soixante-treize façons de
+faire la même chose, et la première divergence serait passée inaperçue.
+
+**Un doublon corrigé au passage, que le nouveau parcours a révélé :** un
+brouillon de devis existant dès la création, le tiroir de la fiche chantier
+affichait DEUX lignes vers le même écran — « Devis » et « Devis à la main ». La
+sortie de secours ne s'affiche plus quand le devis est déjà là.
+
+**Et une leçon d'outillage qui valait 26 suites rouges :** un `.next` de
+développement abîmé par des batteries interrompues faisait expirer la navigation
+vers `/chantiers/[id]/prix` dans vingt-six suites — le préchauffage mettait
+376 s et en ratait deux. `rm -rf .next` : 65 s, zéro raté, zéro rouge. Devant une
+grappe de suites qui tombent toutes sur le même écran, vider le cache AVANT de
+chercher dans le produit.
+
+### Le planning : un chantier porte son nom UNE fois
+
+**Sa correction du soir, capture à l'appui :** *« Mr. Leroy au-dessus du carré
+vert clair matin ; supprime le Mr. Leroy pour l'aprem, c'est le même chantier,
+pas besoin de répéter ; pareil pour "1 chantier" ; et supprime le trait entre le
+matin et l'après-midi, là on a l'impression que c'est deux chantiers
+différents. »*
+
+Il avait raison, et le défaut était de structure. La fiche du jour était bâtie
+sur les demi-journées : deux blocs séparés par un filet, chacun rejouant le nom
+du client et son compte. Un chantier qui dure la journée s'y écrivait donc
+**deux fois**, avec une barre au milieu — et l'écran disait ce qui était faux.
+
+Elle est bâtie sur le CHANTIER : son nom une fois, en tête, avec le compte de la
+journée à sa droite ; dessous, les moments où il a lieu, chacun gardant son
+équipe, son « Déplacer » et son « Retirer » — le matin et l'après-midi restent
+indépendants, c'est sa règle du 21 août.
+
+Une demi-journée que personne n'occupe garde sa ligne et dit « libre » — la
+cacher ferait croire que la journée entière est prise —, mais elle passe
+**après** les chantiers : *« le nom toujours en premier ! »*. Le 19 et le 26
+ouvraient sur « matin — libre », et l'on lisait ce qui manque avant de savoir de
+qui il s'agit.
+
+Dans la légende, les deux rectangles qui montrent la POSITION sont désormais
+vides tous les deux : *« le rectangle du matin, mets-le blanc comme celui de
+l'après-midi »*. Rempli, le premier se lisait comme un cinquième état, juste
+après « au-delà » — alors qu'il ne dit rien de la charge.
+
+Les contrôles visent la structure, pas les mots — combien de fois le nom
+paraît, combien de comptes sont écrits, quelle bordure sépare les lignes. Un
+contrôle sur « Mr. Leroy » rougirait au premier changement de client d'exemple
+et ne défendrait plus rien. Les trois ont été confrontés à la version d'avant :
+ils rougissent dessus.
+
+
+### « Il y a une clé IA » — écrit dans le dépôt, plus dans une session
+
+**Sa consigne, et il a fallu qu'il la répète :** *« il y a une clé IA, il y a
+Anthropic, elles sont connectées, les deux clés. Enregistre-le vraiment dans le
+dossier, histoire que quand j'ouvre une nouvelle session, tu sois au courant que
+la clé Anthropic est active et que tu t'en sers déjà pour faire beaucoup de
+choses, notamment pour l'arrosage automatique, analyser la photo. »*
+
+Le dépôt disait « aucune clé d'IA » à cinq endroits, sans jamais préciser **de
+quelle machine** il parlait. Une session arrivant à froid en concluait que l'IA
+n'était pas branchée — et le lui annonçait. Il l'avait déjà corrigé dans l'autre
+sens le 20 août (*« tu peux le faire, il y a déjà l'IA dans l'application »*).
+
+`CLAUDE.md` §1 ter tranche désormais, et il est lu au début de chaque
+conversation : **chez lui les clés sont posées et l'IA tourne** ; **ici, sur le
+poste de l'agent, il n'y en a aucune**. Les cinq phrases ambiguës sont
+corrigées, et la formule juste n'est plus « impossible » mais *« pas vérifiable
+ici, à jouer sur ton espace »*, avec la commande.
+
+
+### La fiche client, refaite — premier lot, celui qui se voit
+
+**Sa demande, puis son choix :** *« j'ai envie que les informations prennent
+moins de place »*, et, devant cinq dessins de cases relus sur la page entière :
+*« je choisis la 4 »* — la carte douce.
+
+Ce qui change sur `chantiers/nouveau` :
+
+| | |
+|---|---|
+| **Plus un seul « (facultatif) »** | *« je ne veux plus qu'il y ait marqué facultatif nulle part »* |
+| **Le titre « Civilité » part**, Mr / Mme reste | *« je voulais juste que tu enlèves le titre »* |
+| **Le nom et le numéro sur une ligne** | et le champ Téléphone isolé disparaît |
+| **Le numéro s'espace à la frappe** | `0679984514` → `06 79 98 45 14` |
+| **« Comment lui envoyer son devis ? » sous l'adresse** | sa place, choisie par lui |
+| **Les cases : la carte douce** | fond papier, 14 px de rayon, aucun bord, l'or au doigt posé |
+
+**La case vit dans UNE classe, `.atlas-case`** (`globals.css`). Elle était écrite
+en double — dans `Field` et dans `ChampAdresse` —, et deux écritures de la même
+case divergent au premier ajustement (`CLAUDE.md` §3). C'est aussi ce qui lui
+donne son état au doigt posé : un style en ligne ne sait pas exprimer un
+`:focus`.
+
+**La règle du numéro est une fonction pure** (`src/lib/numero-telephone.ts`),
+éprouvée sans navigateur. Deux points y sont mesurés plutôt que supposés : un
+numéro qui commence par « + » n'est pas retouché (espacé par paires,
+`+33679984514` rendrait `+33 67 99 84 51 4`, le numéro de personne), et **le
+curseur reste où l'on corrige** — sans quoi corriger un chiffre au milieu
+deviendrait impossible.
+
+**Ce qui n'est PAS dans ce lot, et pourquoi.** Le bouton unique (« Je rédige mon
+devis ») et l'anneau sur cet écran arrivent ensemble, au lot suivant : retirer
+« Je dicte mon devis » aujourd'hui laisserait la dictée sur la fiche chantier
+sans aucun chemin pour y aller — et ce sont soixante-treize suites de bout en
+bout qui passent par ce bouton.
+
+**Éprouvé dans un vrai navigateur**, pas seulement à la relecture
+(`test-nouveau-chantier-e2e.ts`) : les dix chiffres tapés d'affilée, les deux
+cases sur la même ligne, le numéro qui ne déborde pas, la question de l'envoi
+sous l'adresse, et l'absence des deux mots retirés.
+
+**Le numéro s'espace à l'ÉCRAN, pas en base.** La jolie forme est un affichage ;
+en base, le numéro est comparé, composé et envoyé. Y écrire les espaces
+obligerait chaque consommateur à savoir les retirer — le rapprochement des
+clients, le lien d'appel, l'envoi du devis — et il suffirait qu'un seul l'oublie
+pour qu'un client cesse d'être reconnu, en silence. Le groupement deux par deux,
+lui, ne s'écrit qu'une fois : il vient de `numero-lisible.ts`, qui l'employait
+déjà pour écrire un numéro sur un écran.
+
+### Le lint retombait dans le même piège, pour la quatrième fois
+
+Un serveur monté à la main avec un `ATLAS_DIST_DIR` inédit a suffi : `npm run
+lint` est passé de 4 avertissements à **1 095 erreurs**, toutes venues de code
+généré, et la batterie a rougi sur une étape sans rapport avec le lot. Les trois
+dossiers connus étaient écartés nommément — pas celui-là.
+
+`eslint.config.mjs` écarte désormais `.next-*/**`. Les trois lignes nommées
+restent, elles portent chacune leur histoire ; ce motif couvre les dossiers
+qu'on ne connaît pas encore, et c'est le seul moyen qu'il n'y ait pas de
+cinquième fois.
+
+
+### La photo se PREND ou se CHOISIT — partout, plus seulement sur la fiche client
+
+*« Quand je clique sur ajouter une photo au croquis, il faut que soit je puisse
+mettre une photo de ma bibliothèque, soit prendre une photo. Le même schéma que
+pour ajouter des photos à la fiche client. »*
+
+**`capture="environment"` n'est pas une préférence, c'est un ordre.** Le
+téléphone saute directement à l'appareil arrière et le menu « Photothèque /
+Prendre une photo » ne paraît jamais. Deux écrans le portaient : le croquis
+d'arrosage et le diagnostic végétal.
+
+**Le retirer ne coûte rien** — l'appareil reste le premier choix du menu — et
+rend un cas entier : la photo prise la veille. Un croquis se dessine souvent au
+bureau ; le rephotographier depuis un écran donne une photo de photo, floue et
+de travers, que le modèle lit mal. Un feuillage qui jaunit se photographie quand
+on le voit, pas quand on ouvre Atlas.
+
+**Un contrôle réclamait l'inverse, et il a fallu le retourner** — cas d'école de
+`CLAUDE.md` §5 bis : *un contrôle ne doit pas réclamer ce que le patron a fait
+retirer*. Celui du diagnostic verrouillait l'attribut au motif que le parcours
+demandé était « ouvrir, photographier, attendre ». La maquette de la fiche
+client vocale, elle, l'interdisait déjà : les écrans disent désormais tous la
+même chose.
+
+### « Les clés sont posées » — et l'écran répondait à la mauvaise question
+
+**Il a repris trois fois pour dire la même chose**, et il avait raison à chaque
+fois : *« la clé Anthropic et OpenAI est mise sur l'application fonctionnelle,
+elle fonctionne pour d'autres secteurs comme la rédaction du devis. Donc
+utilise-la. »*
+
+L'écran d'arrosage annonçait « aucune clé d'IA n'est posée sur ce serveur » dès
+qu'il ne trouvait ni clé Anthropic ni clé OpenAI. **La question posée n'était pas
+la bonne.** Ce qui compte n'est pas qu'une clé existe quelque part, mais que
+**celui qui va lire l'image** ait la sienne — et les deux se séparent depuis que
+`VISION_PROVIDER` existe : on peut rédiger chez l'un et regarder chez l'autre.
+
+**Deux défauts trouvés en tirant ce fil, et le second était silencieux :**
+
+1. **Le croquis partait chez le fournisseur qui RÉDIGE.** `getFournisseurVision()`
+   existait depuis la veille, écrit précisément pour que « qui regarde les
+   photos » se règle sans toucher à « qui rédige » — et `lireCroquis` appelait
+   pourtant `getFournisseurLLM()`. Une installation qui pose `VISION_PROVIDER`
+   envoyait donc ses croquis au mauvais endroit, sans que rien ne le dise.
+2. **L'écran se trompait dans les deux sens.** Clé posée chez un fournisseur qui
+   ne lit pas les images : il annonçait que tout allait bien, on photographiait,
+   rien ne revenait — le « troisième bouton qui ne répond pas », déjà payé trois
+   fois ici. Et inversement, il criait au manque là où la lecture marchait.
+
+**Une règle pure décide désormais** (`etatVision`, dans `src/lib/etat-ia.ts`),
+et le message qu'elle rend est celui que l'écran affiche : « OpenAI (GPT) lit les
+croquis, mais OPENAI_API_KEY n'est pas posée », ou « Google Gemini ne sait pas
+encore lire une image ici » — car poser la clé de Gemini n'y changerait rien.
+Un « aucune clé » uniforme envoyait chercher au mauvais endroit (`CLAUDE.md` §5).
+
+**Et la lecture s'éprouve enfin pour de bon : `npm run verifier:croquis`.**
+`lire-croquis.ts` écrivait noir sur blanc que cet appel n'avait jamais été
+essayé, faute de clé ici. La commande dessine un croquis dans un navigateur —
+deux surfaces aux cotes différentes, une haie en mètres linéaires, un massif, un
+point d'eau —, le photographie, et vérifie que ce qui revient porte SES chiffres
+et pas des valeurs par défaut. Sans fournisseur de vision, elle refuse de rendre
+un vert et nomme ce qui manque.
+
+### Le calcul suit ses seuils, et ils ne sont pas les mêmes partout
+
+*Sa règle du 21 août 2026 :* **au compteur**, 3 bar, on est bien ; **au seau**,
+« dix-huit, vingt secondes, ce n'est pas trop mal : tu peux faire le calcul comme
+si tu avais deux bars cinq » ; **au kit**, « 2,5 bar, 3 bar, là tu es
+impeccable ».
+
+Le calcul menait jusqu'ici toute mesure sans manomètre à 3 bar — la valeur du
+compteur. **C'est la conduite qui fait la différence** : après le compteur, le
+Ø25 garantit ses 3 bar ; à un robinet de jardin, on ne sait rien de ce qui
+l'alimente. On retient donc le minimum viable plutôt que le confortable. Se
+tromper vers le bas met un arroseur de moins par réseau ; se tromper vers le haut
+en met un de trop, et c'est le gazon qui jaunit en bout de ligne.
+
+Le seuil est atteint **à** 2,5 bar, pas dépassé : une inégalité stricte l'aurait
+refusé de justesse et aurait fait douter d'une mesure qu'il juge bonne.
+
+### Quatre corrections du patron sur l'écran d'arrosage, dont un défaut de parcours
+
+**« Quand je clique sur croquis et que j'ajoute une photo, rien ne se passe. »**
+Il avait raison, et c'est le pire des quatre : le bouton ouvrait bien l'appareil,
+mais rien ne soumettait le formulaire ensuite — il aurait fallu toucher un second
+bouton, que l'écran ne montre pas puisqu'il l'avait demandé sans. **La suite ne
+l'a pas vu parce qu'elle ne posait jamais de photo** : elle vérifiait que le
+bouton existe et qu'il fait 64 px, jamais que le geste aboutit. C'est exactement
+ce qu'`AGENTS.md` interdit — parcourir en entier ce qu'on transmet, du premier
+geste au dernier. Un contrôle pose désormais un vrai fichier et exige une
+réponse de l'écran.
+
+**Les mesures ne s'affichent plus au compteur.** *« Quand je choisis le piquage,
+qu'il se fait après le compteur d'eau, rien ne doit s'afficher. […] Or, quand je
+choisis piquage après robinet, là un encart doit s'ouvrir. »* Et son métier
+explique pourquoi : *« si on se repique directement après le compteur en
+diamètre vingt-cinq, on aura au moins trois bars de pression dynamique, et
+pareil en statique — tu sais d'office que tu es bien »*.
+
+**Aucune réserve n'est donc écrite dans ce cas, et c'est une correction de ma
+part.** La première version avertissait « débit estimé, à vérifier au seau sur
+place ». Un avertissement inutile s'apprend à être ignoré — et celui-là faisait
+douter de la seule situation où il n'y a rien à vérifier.
+
+**La pression qui compte est la DYNAMIQUE, buse taille 5.** *« C'est celle-là
+qui nous intéresse. »* Robinet fermé, un manomètre lit la statique, toujours
+flatteuse ; c'est en débit, à travers une buse calibrée, que le chiffre dit ce
+qui arrivera aux arroseurs. L'étiquette le porte, faute de quoi il mesurerait la
+bonne grandeur au mauvais moment.
+
+**Une règle pure pour dire d'où vient le débit** (`src/lib/arrosage/mesure-debit.ts`) :
+au compteur on calcule sans rien demander ; le seau chronométré est une mesure
+et prime sur tout ; **le manomètre seul ne donne PAS le débit** — deux robinets
+à 3 bar délivrent l'un 1 m³/h, l'autre 3, selon ce qui les alimente. Dans ce
+cas le débit est estimé **et la réserve remonte en rouge sous le plan**. Sans
+aucune mesure, hors compteur, on refuse plutôt que d'inventer : un plan bâti sur
+un débit supposé a toutes les apparences d'un plan juste, et c'est le paysagiste
+qui revient poser un arroseur de moins.
+
+**Le kit se nomme, et il porte DEUX pressions.** *« Tu peux même marquer dans
+le bandeau déroulant kit de mesure débit/pression avec buse taille 5, nb de bar
+statique et nb de bar dynamique. »* Le kit demande donc les deux, et le seuil
+qu'il a donné est écrit noir sur blanc dans la règle : **2,5 bar en dynamique**
+— *« si il y a 2,5 bar, 3 bar en dynamique, alors c'est parfait, c'est ce qu'il
+faut pour que les arroseurs se lèvent correctement »*. En dessous, les tuyères
+sortent mal et arrosent court : le plan le dit plutôt que de laisser découvrir.
+
+**Pourquoi les deux, et pas seulement l'utile.** La dynamique seule ne dit pas
+d'où vient le manque. C'est l'**écart** entre les deux qui accuse : une statique
+à 4 bar qui tombe à 2 dès qu'on ouvre désigne une conduite trop maigre ou trop
+longue — le réseau se retaille, il ne se force pas. Une chute de plus de
+1,5 bar remonte donc sa propre réserve, distincte de celle du seuil, et les deux
+s'empilent quand les deux sont vraies : savoir que deux choses clochent, et
+lesquelles, vaut mieux que de les découvrir l'une après l'autre.
+
+**Le seau a son propre encart, et se dédouane** — sa correction du lendemain :
+*« la mesure au seau ne doit pas rentrer dans le kit débit/pression […] un titre
+du style mesure au seau, en dessous un seau de dix litres en combien de
+secondes, et sur ça tu peux marquer peu fiable ou pas précis, quelque chose pour
+se dédouaner »*.
+
+Il avait raison de le gêner, et pas seulement pour la mise en page : ce sont
+**deux gestes, deux outils, deux fiabilités**. Sous un même titre, un chiffre
+tiré d'un seau rempli à la main paraissait valoir celui d'un manomètre — alors
+que c'est le seul des trois à donner le DÉBIT, et le moins précis des trois.
+**Et la réserve DÉCONSEILLE au lieu de nuancer** — sa deuxième passe le même
+jour : *« peu précis, ordre de grandeur, ça ne va rien dire »*. Il a raison :
+une mention qui qualifie le chiffre se lit comme une nuance et se franchit sans
+y penser. « Trop approximatif pour calculer un arrosage : prenez le kit » ferme
+la question et désigne l'outil juste — sous le champ, là où il le lit au moment
+de le remplir, et non dans une réserve découverte sous le plan.
+
+**Deux libellés corrigés à sa demande :** le piquage sur pompe est retiré, et
+« Ailleurs (robinet de jardin, nourrice existante…) » devient **« Robinet de
+jardin »** — l'ancien se coupait dans le menu natif à 390 px, vu à la capture.
+Un contrôle mesure désormais qu'un choix tient dans sa boîte.
+
+### Les quatre questions de la fiche chantier sont réglées
+
+*« Fais ça pour le rajout de la 4e photo du jeudi. »* La dernière réponse
+attendue. Bilan des quatre choses que portait la fiche chantier, qu'il veut
+supprimer :
+
+| | |
+|---|---|
+| Créer la facture | **Existe déjà** — la feuille du chevron du planning, et le fil des terminés |
+| Les étapes du chantier | **Rien à déplacer** — chacune a son écran, la fiche n'en était que la liste, et l'accueil mène déjà à la prochaine |
+| Réécouter la note dictée | **Retiré** — « on n'a pas besoin » |
+| Une photo ajoutée plus tard | **Sur la fiche client**, où l'on revient par la flèche de retour du devis |
+
+**Deux de ces quatre réponses ont été cherchées dans le code avant d'être
+posées**, plutôt que soumises en question : c'est ce que `CLAUDE.md` §5 ter
+demande, et cela lui a épargné deux allers-retours.
+
+**Le parcours est donc tranché ; le code peut commencer**, et `TODO.md` porte la
+liste de ce qu'il faudra toucher. Ce qui reste ouvert n'est plus le parcours
+mais le **dessin des cases**, et il n'empêche rien.
+
+### La page entière, cinq fois — pour choisir en la voyant
+
+**Sa demande :** *« Fais-moi une maquette dynamique, pas de photos, que je puisse
+essayer avec les cinq différentes cases. Toute la page de haut en bas avec les
+cinq différentes cases, comme ça ce sera plus visuel et je pourrai choisir. »*
+
+`appli/cases-a-remplir.html` montrait les cinq **en morceaux** : trois champs à
+la suite. On y juge un dessin, on n'y voit pas ce qu'il devient sur un écran
+entier — à côté des capsules « Par SMS », du carré photo, de l'anneau, du bouton
+vert. C'est pourtant là que se décide « joli » : dans l'accord, pas dans le
+détail.
+
+**`appli/cases-page-entiere.html`** — la fiche client complète, un choix de cinq
+en haut, et tout continue de marcher : le numéro qui s'espace à la frappe, les
+photos, l'anneau qui dicte. **Un seul jeu de balises, cinq feuilles de style** :
+l'écran est écrit une fois et se relit sous chaque dessin, sans quoi la
+comparaison serait truquée.
+
+**Ce que la capture a montré et qu'aucune mesure n'aurait vu :** le dessin
+« ligne de fiche » masquait TOUS les petits titres pour ranger les intitulés à
+gauche — emportant « Comment lui envoyer son devis ? » et « Photos du chantier »,
+qui ne coiffent aucune case. Il gagnait en légèreté ce qu'il perdait en contenu.
+Le contrôle exige désormais les deux titres dans les cinq dessins.
+
+**Les cases de la fiche client, elles, ne bougent pas** : *« pour les cases,
+change rien, on reste comme on est là »* — le temps qu'il choisisse.
+
+### Le numéro s'espace tout seul, et deux questions de moins
+
+**Sa demande :** *« Il faut que je puisse taper les dix chiffres à la suite et
+qu'ils se mettent automatiquement avec les bons espaces. »* Sur un chantier,
+devant le client, on ne s'arrête pas toutes les deux touches. `0679984514`
+devient `06 79 98 45 14` à la frappe, et les points, tirets et lettres tombent.
+
+**Deux choses mesurées plutôt que supposées.** Un numéro qui commence par « + »
+n'est **pas** retouché : espacer `+33679984514` par paires rend
+`+33 67 99 84 51 4`, qui n'est le numéro de personne — un indicatif ne se découpe
+pas comme un numéro français. Et **le curseur ne saute pas à la fin** : corriger
+un chiffre au milieu est le geste le plus courant après la frappe, et un curseur
+renvoyé au bout à chaque touche rend la correction impossible.
+
+**Deux des quatre questions de l'écran « À trancher » sont réglées** : la facture
+(*« dans la catégorie planning ou terminé »* — les deux chemins existaient déjà)
+et la relecture de la note (*« on n'a pas besoin de réécouter »*). La question
+des photos ajoutées après coup était mal posée : elle est réécrite avec le cas
+concret plutôt qu'en résumé.
 
 ### Cinq façons de dessiner une case à remplir
 
@@ -147,6 +1826,68 @@ l'orphelin invisible. Ce qui est livré rend le mécanisme sûr, pas la panne
 corrigée. `TODO.md` la garde ouverte.
 
 ---
+
+## 2026-08-21
+
+### Les documents d'un client s'enregistrent, au lieu de seulement s'ouvrir
+
+**Sa demande :** *« je veux pouvoir l'enregistrer, mais avant que tu codes quoi
+que ce soit, fais-moi une maquette visuelle »*. Trois façons lui ont été
+dessinées ; il a retenu **la C**.
+
+Sur la fiche d'un client, toucher un document ouvre désormais trois choix :
+**Enregistrer**, Ouvrir, Partager. Le fichier arrive sous son vrai nom —
+`devis-2026-0029.pdf` — et non sous celui de la page.
+
+**Pourquoi pas plus court.** La proposition la plus rapide enregistrait dès le
+premier appui : ouvrir la fiche d'un client pour relire un montant lui aurait
+téléchargé un fichier à chaque coup d'œil. Celle qu'il a retenue ne décide de
+rien à sa place.
+
+**« Partager » revient**, après avoir quitté l'écran d'envoi le même matin :
+c'était le seul chemin vers WhatsApp, et sa place est sur le document rangé.
+`ARCHITECTURE.md` §141.
+
+### Le devis envoyé ramène à l'accueil, sans écran de trop
+
+**Sa demande, capture à l'appui :** *« Quand je clique sur envoyer le devis, il y
+a bien l'application SMS qui s'ouvre, ça c'est bien. Par contre juste derrière,
+il y a cette page-là qui s'affiche et je n'ai pas besoin qu'elle s'affiche […]
+il faut qu'on retourne directement sur l'accueil. »*
+
+Elle ne lui apprenait rien : il venait d'appuyer, et sa messagerie s'était
+ouverte par-dessus. Au retour de Messages, un récapitulatif à refermer avant de
+reprendre son travail. C'est le deuxième écran de trop retiré du même parcours
+en deux jours.
+
+**L'écran du devis parti reste**, mais on ne le voit plus qu'en y revenant par la
+carte du chantier. Il s'allège : « Télécharger le PDF · Partager » est retiré. Le
+devis parti se range de lui-même en PDF dans la fiche du client, colonne
+« Devis » — c'est lui qui l'a rappelé, et le code lui donne raison.
+
+**Ce que ça coûte, dit franchement :** « Partager » était le seul chemin vers
+WhatsApp depuis cet écran. Et la bascule « Plutôt par e-mail » a été GARDÉE
+malgré sa réponse : c'est le seul endroit où saisir une coordonnée manquante, et
+son absence était sa plainte du 13 août. `ARCHITECTURE.md` §140.
+
+### La ligne « Version » disait le disque, pas ce qui tournait
+
+**Sa phrase :** *« Ça n'a pas marché, j'ai encore l'ancienne version. Pourtant
+j'ai rechargé les mises à jour. »* Les deux moitiés étaient vraies en même
+temps — et c'est ce qui a fait chercher au mauvais endroit.
+
+Son banc sert une version **construite** : c'est ce qui la rend rapide.
+Récupérer le code neuf fait avancer le disque sans toucher à ce qui s'exécute.
+La ligne « Version » de Réglages, elle, lisait le disque : elle confirmait la
+mise à jour à l'instant précis où elle aurait dû avertir que rien de neuf
+n'était servi.
+
+**Ce qui change :** cette ligne annonce désormais **ce que l'application
+exécute**. Quand du code plus récent attend d'être construit, l'écran le dit, le
+nomme, et donne le geste — rouvrir l'espace de travail.
+
+**Ce que ça ne fait pas, dit franchement :** cela n'accélère rien. Cela cesse de
+prétendre que le code neuf est là quand il ne l'est pas. `ARCHITECTURE.md` §139.
 
 ## 2026-08-20
 
@@ -999,6 +2740,546 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 ---
 
 ## 2026-08-19
+
+### La légende ne promet plus un compte qu'elle ne tient pas
+
+**Sa question du 21 août :** *« le "1 équipe sur 2" bouge en fonction du nombre
+d'équipes ? 3, 4, 10, 100 ? »*
+
+**Non, et c'était un défaut** : le mot était écrit en dur dans la page. Mais le
+corriger en « 1 équipe sur 5 » n'aurait rien réglé — le carré vert clair ne dit
+pas « une seule équipe est prise », il dit **qu'il en reste au moins une de
+libre**, que six soient occupées sur dix ou une sur deux.
+
+Le mot juste ne dépend donc d'aucun nombre : **« il reste de la place »**. Le
+compte exact, lui, se lit là où il est vrai — dans la fiche du jour, « 4 sur 5 ».
+La suite vérifie aux trois réglages (2, 5, 10 équipes) qu'**aucun « sur N »
+n'apparaît dans la légende**.
+
+### Bordeaux pour le dépassement, et un carré qui tombait cinq pixels trop bas
+
+**Ses trois corrections du 21 août, la maquette étant retenue :** le bordeaux
+pour « au-delà », le carré « incomplet » qui n'était pas au niveau des autres, et
+le nom d'un chantier qu'on ajoute qui doit s'aligner sur ceux déjà posés.
+
+**Le carré désaligné venait d'une collision de noms.** `.place` désignait à la
+fois l'état « il reste de la place » dans la légende ET les lignes de chantier
+de la fiche du jour — lesquelles portent `margin-top:10px`. Le carré héritait de
+la marge et tombait cinq pixels plus bas. L'état s'appelle désormais `dispo` :
+**deux sens pour un même mot finissent toujours par se croiser**, et c'est lui
+qui l'a vu, sur son téléphone.
+
+**Le nom du chantier qu'on ajoute prend la forme d'une ligne de chantier** :
+même serif, même bord gauche, les trois moments à la place de la pastille
+d'équipe. Écrit en petit gris à côté des boutons, il se lisait comme une
+étiquette ; là, il se lit comme le chantier qu'il va devenir. La suite mesure le
+bord et le corps plutôt que de juger l'apparence.
+
+**Et la pastille de la fiche du jour lit maintenant la MÊME règle que le
+calendrier** (`etatDe`) : elle avait gardé son calcul à elle, hérité de la
+version d'avant, et deux calculs pour la même chose finissent par ne plus dire
+la même chose.
+
+### Le dépassement passe en bleu ardoise, et la légende retrouve son « rien »
+
+**Sa correction du 21 août :** *« la couleur dorée pour le dépassement, je ne
+suis pas très fan. Rajoute un petit carré blanc pour lorsqu'il n'y a rien, le
+vert clair c'est incomplet, le vert foncé c'est complet, et trouve-moi une autre
+couleur pour au-delà. Et pour matin et après-midi, reprends exactement les mêmes
+rectangles que sous les chiffres du mois — même taille, même largeur. »*
+
+**Ni or, ni rouge.** L'or sert partout ailleurs à ce qu'on LIT (les liens, les
+mentions) : employé ici, il ne signalait plus rien. Le rouge dit « erreur », et
+dépasser est un choix qu'il assume. Le **bleu ardoise** est la seule teinte
+froide de l'écran — elle se remarque sans crier.
+
+**La légende dit maintenant les quatre états** : rien · incomplet · complet ·
+au-delà, puis la position. Cinq termes sur une ligne, ce qui a demandé de
+resserrer le corps et l'écart — mesuré à 390 et 375 px, replié en dessous.
+
+**Et les rectangles de matin / après-midi SONT ceux du calendrier** : la légende
+réemploie la classe `.marqueA` telle quelle. Une copie « à la bonne dimension »
+aurait divergé au premier réglage ; la suite mesure les deux et exige qu'ils
+soient identiques.
+
+**Un défaut trouvé en le faisant** : une règle de la toute première légende
+traînait encore et forçait 13 × 13 px à tous ses carrés — les rectangles repris
+du calendrier redevenaient des carrés. Et `align-items:center`, hérité d'une
+règle voisine, les rétrécissait à zéro. Deux fois la même leçon : ce qui est
+mesuré ne se devine pas.
+
+### Un seul bouton d'ajout, sous la journée — et « toute la journée » retiré
+
+**Sa demande du 21 août au soir, la maquette étant par ailleurs retenue :**
+*« Le "+ Ajouter un chantier", tu le mets en dessous, un rond avec un plus ; je
+ne veux pas qu'il soit affilié à la case matin ou après-midi, ça surcharge et on
+ne comprend plus trop. Et "toute la journée" sous les noms, tu me le
+supprimes. »*
+
+**Deux boutons disaient la même chose deux fois**, et posaient la question du
+moment avant même qu'on ait choisi le client. Un seul rond, sous les deux
+demi-journées, et le moment se choisit **après** : d'abord QUI, ensuite QUAND —
+c'est le client qu'il a en tête, pas la demi-journée. Se tromper de client
+n'oblige plus à revenir en arrière.
+
+**« Toute la journée » disparaît** : le chantier apparaît déjà sous les deux
+demi-journées, la mention ne faisait que le répéter.
+
+### Le quota qui prévient sans interdire — sa proposition, et elle est meilleure
+
+**Sa proposition du 21 août au soir**, après avoir vu les trois façons de dire
+la charge :
+
+> *« Une fois qu'on a mis deux chantiers avec deux gars, on dit que c'est
+> complet. Et s'il en rajoute un troisième, on met une autre couleur pour lui
+> signaler qu'il a dépassé le quota — mais il peut quand même le faire. Nous, on
+> prévient juste. Au cas où il aurait fait une erreur, ou s'il se dit : ces
+> chantiers ne dureront pas vraiment la journée, donc ça passe. »*
+
+**Elle est meilleure que les trois miennes, et voici pourquoi.** « Complet »
+donnait un repère mais refusait ; « aucune limite » n'interdisait plus rien mais
+ne disait plus rien non plus. Sa règle garde le repère — une équipe, un
+chantier, une demi-journée — et le transforme en **avertissement**. Le
+dépassement se voit ; il ne se refuse pas. C'est lui qui sait qu'une taille de
+haie prend une heure.
+
+**Quatre états**, et le dernier est un signal, pas une faute :
+
+| | Ce que ça veut dire |
+|---|---|
+| vide | personne |
+| vert clair | il reste de la place |
+| vert foncé | chaque équipe a son chantier |
+| **or** | **au-delà** — plus de chantiers que d'équipes |
+
+**L'or, jamais le rouge.** Le rouge de l'application dit « erreur »
+(`colors.alert`) : l'employer ici ferait passer un choix délibéré pour un défaut.
+
+**Le pourcentage ne s'écrit que s'il dépasse** — « 3 chantiers · 150 % de vos
+équipes ». À 100 % il n'apprendrait rien de plus que « complet » ; en dessous, il
+ferait lire un calcul là où il suffit de compter.
+
+**Et sa première question du même message est réglée par là :** *« pourquoi
+quand je clique sur le 21 je n'ai pas le même visuel que sur le 19 ? »* — parce
+que « complet » supprimait le « + Ajouter ». Tous les jours proposent maintenant
+les mêmes gestes ; la suite le vérifie sur un jour complet ET sur un jour
+au-delà.
+
+**Les trois façons de dire la charge (points, équipes, chiffres) sont
+retirées** : il a tranché mieux qu'elles, et garder un dessin que plus rien
+n'emploie, c'est laisser une seconde façon de dire la même chose.
+
+### Plus de plafond, donc plus de « complet » — trois façons de dire la charge
+
+**Sa décision du 21 août 2026, et elle défait la règle de la veille :**
+
+> *« L'utilisateur ne doit pas avoir de limite d'ajout de chantier, matin ou
+> après-midi, parce que c'est lui qui sait le temps qu'il va passer. On peut
+> être deux dans la boîte et enchaîner quatre ou cinq chantiers dans la journée,
+> surtout en entretien — des chantiers où les gars restent une heure. Donc pas
+> de limite, ni de chantiers ni de gars. Par contre le code couleur libre/plein
+> ne fonctionne plus, il faudrait le repenser. »*
+
+**Ce que cela emporte.** « Complet » n'existait que parce qu'un jour avait un
+maximum : deux équipes, deux places. Sans plafond, le mot ment — et surtout il
+**interdisait d'ajouter** là où il n'y avait rien à interdire. Il a disparu de
+l'écran, et la suite vérifie qu'il n'y revient pas.
+
+**Ce qui le remplace : des faits, plus un verdict.** La fiche du jour dit
+« 3 chantiers · 2 équipes · 1 sans équipe ». Et le mois se lit de trois façons,
+à comparer dans la planche :
+
+| | Ce que la case montre | Ce qu'on y lit d'un coup |
+|---|---|---|
+| **Points** | un point par chantier, matin dessus, après-midi dessous ; creux = personne dessus | la charge du jour, sans jamais plafonner (au-delà de quatre : « +3 ») |
+| **Équipes** | une case par équipe, remplie quand elle est dehors | « me reste-t-il quelqu'un de libre ? » — le nombre de chantiers n'y entre pas |
+| **Chiffres** | le nombre de chantiers, matin puis après-midi | le plus dense, et muet sur les équipes |
+
+**La légende est écrite par le script, plus figée dans la page.** Chaque façon a
+ses mots — et un mot figé finit par mentir, comme « 1 équipe sur 2 » l'a fait la
+veille. La suite vérifie les trois : qu'elles tiennent sur une ligne, qu'elles
+disent où sont le matin et l'après-midi, et qu'aucune ne promet un « complet »
+qui n'existe plus.
+
+### Un « ＋ » sur la pastille, et la journée entière depuis la liste
+
+**Deux demandes du 21 août.**
+
+**1. « Il ne se dira pas qu'il peut cliquer dessus pour ajouter un autre gars. »**
+La pastille qui affiche « Paul » ne disait rien de ce qu'elle sait faire. Elle
+porte maintenant un **« ＋ » discret**, collé au nom : huit pixels, et le geste
+devient visible. Une phrase aurait pris une ligne, et il en a fait retirer trois
+la veille.
+
+**2. « Il faut que les deux s'affichent. »** Toucher un chantier dans la liste
+des planifiés n'ouvrait que sa feuille. Il ouvre désormais **la journée entière
+au-dessus** — matin, après-midi, « + Ajouter un chantier » — puis la feuille en
+dessous. C'est la même carte que sous le calendrier : elle est **écrite une fois
+et branchée deux fois**, sinon les deux endroits auraient fini par proposer des
+gestes différents.
+
+**Ce que ce partage a coûté**, et qui vaut d'être noté : la carte connaissait le
+jour par une variable globale (`jourTouche`). Rendue ailleurs, elle aurait posé
+les chantiers sur le mauvais jour. Elle reçoit donc sa date en argument, et le
+rafraîchissement des compteurs lit la date **sur la carte elle-même**.
+
+### Le matin et l'après-midi ne partagent plus leurs équipes
+
+**Sa remarque du 21 août :** *« sur Mr. Leroy, qui dure toute la journée, je ne
+peux pas mettre juste Paul le matin et Julien et Paul l'après-midi — si je mets
+les deux l'après-midi, ça me les met aussi le matin. Il faut que tout soit
+indépendant. »*
+
+Un chantier portait **une** liste d'équipes ; il en porte maintenant **deux**,
+matin et après-midi, qui ne se parlent pas. C'est la réalité du métier : on
+démarre à deux et l'on renforce l'après-midi.
+
+**Conséquence sur la liste des planifiés :** la pastille d'un chantier y montre
+toujours toutes ses équipes, mais **elle ouvre la journée** au lieu d'un choix.
+Une pastille unique ne saurait pas laquelle des deux moitiés modifier — et
+choisir pour lui serait exactement le défaut qu'il vient de signaler.
+
+**Le contrôle correspondant met le matin à Paul seul et l'après-midi à Julien et
+Paul**, puis vérifie que le matin n'a pas bougé — et que le calendrier peint bien
+deux moitiés différentes.
+
+### Un chantier peut mobiliser PLUSIEURS équipes — même toutes
+
+**Sa demande du 21 août :** *« lorsque je choisis une équipe, je dois pouvoir
+mettre toutes les équipes si je le souhaite, le même jour ou même sur la même
+demi-journée. Je dois pouvoir mettre tout le monde le matin, puis tout le monde
+l'aprem. »*
+
+**Cela change le compte, pas seulement la pastille.** Une demi-journée ne compte
+plus des CHANTIERS mais des **équipes occupées** : sur un terrain où trois
+équipes travaillent, « 1 place prise sur 5 » aurait été l'inverse de la vérité.
+Un chantier posé sans équipe réserve quand même une place — il faudra bien
+quelqu'un — et elle reste hachurée.
+
+**On coche, et la liste reste ouverte.** Fermer à chaque choix obligerait à
+rouvrir pour la seconde équipe, et l'on ne verrait jamais l'effet de la
+première. Le calendrier se repeint derrière à chaque coche ; « Terminé » referme.
+
+**Deux défauts trouvés en l'éprouvant, tous deux invisibles à la relecture :**
+
+- la liste se réécrivait entièrement à chaque coche : deux appuis rapprochés, et
+  le second tombait sur un bouton qui n'existait plus. Elle se construit
+  maintenant une fois, puis se coche sur place ;
+- **le compteur de la demi-journée retardait d'un geste** — trois équipes
+  cochées, et l'en-tête disait encore « 2 sur 5 ». Vu sur capture. Il se met à
+  jour avec le reste, sans que la fiche soit refaite (ce qui refermerait la
+  liste sous le doigt).
+
+**Et la liste prend toute la largeur de la ligne** : coincée entre le nom et les
+boutons, elle empilait ses noms en colonne et poussait la ligne sur cinq
+hauteurs — vu sur capture, à cinq équipes.
+
+### La journée se lit par demi-journées, chacune avec ses chantiers
+
+**Sa remarque du 21 août :** *« le 21, quand je clique le matin je peux
+attribuer une équipe, et quand je clique sur l'après-midi je ne peux rien
+attribuer — je dois cliquer sur journée pour attribuer l'aprem »*.
+
+**Le défaut était de structure, pas d'affichage.** La fiche du jour montrait deux
+lignes d'état — Matin, Après-midi — puis, DESSOUS, une liste unique de
+chantiers ; et l'équipe s'attachait au chantier. Il regardait « Après-midi » et
+n'y trouvait rien à toucher.
+
+Chaque demi-journée porte donc maintenant **ses propres lignes**, avec leur
+pastille d'équipe, leur « Déplacer » et leur « Retirer ». **Un chantier à la
+journée apparaît sous les deux, et le dit** (« toute la journée ») : le cacher
+d'un côté ferait croire que l'après-midi est libre.
+
+**« Déplacer » ouvre une liste, comme l'équipe** — Matin, Après-midi, Journée.
+Aucune rotation qui déciderait à sa place : c'est la même règle qu'il a posée
+pour les équipes, et elle vaut partout.
+
+**Ce que la suite éprouve désormais**, et qu'elle ne pouvait pas voir avant :
+que les deux demi-journées portent chacune leurs chantiers ET leurs pastilles,
+et qu'**on attribue une équipe depuis l'après-midi sans passer par « journée »**.
+
+### « Plein » ne veut pas dire « attribué » — la hachure le dit enfin
+
+**Sa question du 21 août, et elle valait mieux qu'une réponse :** *« j'ai
+l'impression qu'il y a quelque chose qui n'est pas clair entre le code couleur
+qui fait que les jours sont pleins, parce qu'en fait les jours peuvent être
+pleins mais les équipes pas choisies. J'ai l'impression d'être un peu perdu. »*
+
+**Il n'était pas perdu : le dessin confondait deux choses.** Une barre remplie
+disait « cette demi-journée est prise », et rien d'autre — elle peignait pareil
+un chantier confié à Julien et un chantier posé sans personne dessus. Or ce sont
+deux états très différents : le premier est réglé, le second attend une décision.
+
+**Une barre est désormais faite de PLACES, une par équipe.** Chaque chantier posé
+en prend une — la journée est prise, qu'on ait nommé l'équipe ou non, et c'est
+juste. Mais une place **sans équipe est hachurée** : elle dit « reste à décider
+qui y va ». Le 21 août de la planche, complet et sans équipes, se distingue
+maintenant du 26, complet et attribué.
+
+### On CHOISIT son équipe : un appui n'en pose plus une d'office
+
+**Sa remarque, dans le même message :** *« quand je clique sur équipe, ça me met
+d'office une équipe, je n'ai pas choisi, ce n'est pas normal — je dois pouvoir
+choisir, et modifier »*.
+
+La version d'avant faisait **tourner** les noms à chaque appui. Sur deux équipes
+c'était discutable ; sur dix, il fallait neuf appuis pour atteindre la dernière,
+et l'on posait une équipe non voulue à chaque passage. La pastille ouvre donc la
+**liste des équipes**, avec **« Retirer l'équipe »** quand il y en a une :
+changer d'avis coûte le même geste que choisir. La liste est la même dans la
+fiche du jour et dans les planifiés — deux listes séparées auraient fini par
+proposer des choix différents.
+
+**Le contrôle qui vaut ici** ne compare pas deux libellés : il vérifie dans le
+CALENDRIER qu'après l'ouverture de la liste, **rien n'a été attribué** — la
+place est encore hachurée. L'ancien contrôle serait resté vert sur le défaut
+même qu'il signalait.
+
+### Ajouter quelqu'un là où il regarde, et alléger la feuille
+
+**Sa remarque du 21 août :** *« je clique sur le 19, j'ai le matin de pris,
+l'après-midi libre, et je ne peux pas rajouter quelqu'un dessus — ce n'est pas
+normal »*.
+
+Il avait raison, et le défaut était de conception : poser un chantier ne se
+faisait que depuis « Sans date », **tout en bas de l'écran**. Or il regarde la
+demi-journée, et c'est là qu'il veut ajouter. Chaque demi-journée qui a de la
+place porte donc un **+ Ajouter** ; il ouvre sur place la liste de ceux qui
+attendent un jour. Une demi-journée COMPLÈTE n'en propose aucun — le bouton
+serait un mensonge.
+
+**Et la feuille perd ce qu'il n'a pas demandé** : *« ce qu'il y a sous le nom,
+l'adresse et la date, tu peux supprimer. Tu me laisses Waze, Maps, copier,
+appeler »*. L'adresse et le numéro **servent toujours** aux quatre gestes — ils
+sont lus sans être écrits. Le bouton dit maintenant ce qu'il fait : « Ouvrir le
+PDF sans les prix », ce qui rend la ligne « Aucun prix sur cette feuille »
+inutile.
+
+### La légende reprise à la lettre, et le nom cliquable là où il cliquait
+
+**Deux corrections qu'il a fallu redemander, et c'est un échec de lecture de ma
+part.**
+
+**1. La légende.** Sa demande, mot pour mot : *« remets comme c'était avant — un
+carré blanc pour libre, un carré vert clair pour une équipe sur deux, le carré
+foncé pour complet. Et les rectangles FINS que tu as utilisés pour ton code
+couleur, mets-en deux l'un au-dessus de l'autre et marque matin et après-midi.
+Pourquoi tu m'as mis deux rectangles épais ? Et je veux tout sur la même
+ligne. »*
+
+Donc : **trois carrés** (leurs mots d'origine, « complet » compris), puis **les
+barres fines du calendrier elles-mêmes**, l'une sur l'autre, annotées — et
+**tout sur une seule ligne**, mesuré à 390 px. La suite vérifie les trois
+choses : que les états sont carrés, que les deux dernières marques sont fines
+(larges au moins deux fois et demie comme elles sont hautes), et que les quatre
+termes partagent le même haut. Une légende qui se replierait passerait sinon
+inaperçue.
+
+**2. « Je ne peux toujours pas cliquer sur le nom du client. »** Le geste avait
+été ajouté — mais dans la fiche du jour, alors qu'il cliquait dans la **liste des
+planifiés**. Les deux ouvrent maintenant la feuille.
+
+**Et elle s'ouvre SOUS la ligne touchée.** Première version : elle s'affichait au
+bas de la liste — on appuyait sur « Mme Rocher » et la feuille apparaissait après
+« Monsieur Martins », trois lignes plus bas. Vu sur capture, jamais par un test ;
+la suite mesure désormais l'écart entre la ligne et la feuille.
+
+### Deux corrections : le nom ouvre la feuille, et la légende était fausse
+
+**Ses deux remarques du 21 août, et les deux étaient justes.**
+
+**1. « Je ne peux pas l'ouvrir en cliquant sur le nom du client. »** La feuille
+ne s'ouvrait que par le lien « Sa feuille › » posé à côté. Or c'est le NOM qu'on
+touche, parce que c'est lui qu'on cherche. Le nom est maintenant le bouton ; le
+lien reste, pour qui ne devine pas qu'un nom se touche. La suite vise désormais
+le nom — viser le lien aurait rendu un vert sur le défaut même qu'il signalait.
+
+**2. La légende ne disait pas ce qu'il avait demandé.** Sa correction, mot pour
+mot : *« il fallait laisser un rectangle blanc pour libre, un vert clair pour
+une équipe sur deux, un foncé pour les deux équipes prises ; et ensuite rajouter
+deux rectangles l'un sur l'autre — pas deux carrés — avec écrit le matin et
+l'après-midi »*. La version d'avant mettait **deux barres partout** et
+finissait sur **deux carrés** : l'inverse, terme à terme.
+
+La suite compte donc les rectangles de chaque terme, et **mesure que les deux
+derniers sont larges au moins deux fois comme ils sont hauts** — sans quoi
+« rectangle » et « carré » se confondent dans un contrôle qui se lit vert.
+
+### Le planning se MANIPULE : poser, changer d'équipe, déplacer, retirer
+
+**Sa consigne du 21 août 2026, et elle vaut jusqu'à nouvel ordre :**
+
+> *« Attends, ne code rien. Je veux qu'on finisse toute la page ensemble en
+> maquette dynamique, pour que je puisse essayer : cliquer, modifier, changer,
+> voir ce que ça donne. Une fois que tout est validé, je te dirai "c'est bon, tu
+> peux coder". En attendant, tu ne me fais que des maquettes dynamiques. »*
+
+Elle est écrite **en tête de `TODO.md`** — pas au milieu : une consigne qui vit à
+la deux-centième ligne n'est pas lue, et c'est exactement ce que le dépôt existe
+pour éviter.
+
+**Ce que la planche sait faire depuis, et qu'elle ne faisait pas :**
+
+| Geste | Ce qu'il fait vraiment |
+|---|---|
+| poser un « sans date » | matin, après-midi ou journée, sur le jour touché — et il quitte la liste d'attente |
+| toucher l'équipe | elle tourne : Équipe ? → Julien → Paul → Équipe ? |
+| toucher la demi-journée | matin → après-midi → journée, et **le calendrier se repeint** |
+| retirer du planning | le chantier **redescend dans « Sans date »**, il n'est pas effacé — sinon il serait à ressaisir |
+
+**Le jour se choisit dans le calendrier avant de poser**, comme dans
+l'application : un second calendrier dans une feuille serait un deuxième endroit
+où dire la même chose. Tant qu'aucun jour n'est touché, la liste le dit au lieu
+de rester inerte.
+
+**Deux pièges de contrôle payés en l'éprouvant :**
+
+- la permission du presse-papier se donne **avant** d'ouvrir la page ; accordée
+  après, elle ne vaut pas pour l'origine déjà chargée, et le contrôle rougissait
+  sur un geste qui marche ;
+- le mot « Adresse copiée » n'apparaît qu'**après** l'écriture, qui est
+  asynchrone. Lu dans la foulée du clic, il rendait encore « Copier l'adresse ».
+
+### Reprendre les gestes de « Y aller » sur la feuille de chantier
+
+**Sa demande du 21 août :** *« reprends l'adresse cliquable qui ouvre Maps ou
+Waze — pas besoin d'en mettre trois —, la possibilité d'appeler le client et de
+copier l'adresse. Le reste, on n'en aura pas besoin. »*
+
+Ces gestes existent déjà dans l'application (`FeuilleYAller`,
+`src/lib/itineraire.ts`) : la planche **recopie leurs adresses exactes**, jamais
+des liens inventés qui ouvriraient sur rien. Deux destinations au lieu de trois —
+« Plans » disparaît, Maps et Waze restent.
+
+**La suite éprouve les ADRESSES des liens, pas leurs libellés** : un bouton
+nommé « Waze » qui pointe ailleurs se lit juste et ne mène nulle part. Elle
+vérifie aussi que « Copier l'adresse » copie pour de bon — et le dit, sans quoi
+on appuie deux fois sans savoir si la première a pris.
+
+### La feuille de chantier : le devis, sans un seul prix
+
+**Sa demande du 21 août 2026 :** *« il faut pouvoir rajouter le devis en PDF,
+non modifiable, pour que le salarié qui a accès au planning clique sur le jour,
+voie à quel client il est affilié, et clique sur le devis pour connaître ses
+tâches. Mais le salarié ne doit pas avoir accès au prix. »* Puis sa propre
+réponse : *« je pense que le plus simple, ça serait de mettre le devis en PDF
+sans les prix »*.
+
+**C'est le bon choix, et la raison n'est pas la simplicité.** Une fiche
+« prestations » saisie à côté serait une SECONDE liste de ce qui est à faire :
+le devis change — une ligne ajoutée au téléphone, une quantité corrigée — et les
+deux divergent en silence. L'équipe partirait alors avec la version d'avant, et
+personne ne s'en apercevrait avant le chantier. C'est la règle du dépôt
+(`CLAUDE.md` §3, *jamais de règle dupliquée*) appliquée à un document.
+
+La planche montre donc une **feuille de chantier qui n'est pas un document** :
+c'est le devis lui-même, rendu sans ses colonnes de prix. Rien à tenir à jour,
+rien qui puisse mentir. Elle s'ouvre depuis le jour du planning, chantier par
+chantier, et la suite vérifie qu'**aucun caractère `€` n'y figure**.
+
+**Deux points restent ouverts, et ils décident du code** (voir `TODO.md`) : les
+libellés de devis qui portent un prix dans leur texte (« forfait 350 € »), et le
+fait qu'un compte `membre` voit aujourd'hui la même chose que le propriétaire —
+cacher les prix sur cette feuille ne servirait à rien s'il peut ouvrir le devis
+par une autre porte.
+
+### La légende suit la suite logique, et annote la dernière marque
+
+**Sa demande, dans le même message :** *« à côté du carré vert foncé complet,
+mets les deux rectangles et marque en face du haut "matin", du bas "après-midi".
+Comme ça, ça suit la suite logique — blanc c'est libre, vert c'est une équipe
+sur deux, foncé c'est les deux équipes — et on explique les deux carrés
+superposés plutôt que de rajouter une phrase. »*
+
+La légende se lit maintenant de gauche à droite comme la chose se remplit :
+**libre → 1 équipe sur 2 → complet**, puis une quatrième marque **annotée** qui
+dit où est le matin et où est l'après-midi. Aucune phrase.
+
+**Un réglage mesuré, pas supposé :** la marque annotée est plus grande que les
+trois autres (12 px par barre au lieu de 5). À la hauteur d'une barre de
+calendrier, « matin » et « après-midi » se touchaient — la suite vérifie qu'il
+reste au moins dix pixels entre les deux mots.
+
+### « Et s'il y a dix équipes ? » — la barre se remplit au lieu de qualifier
+
+**Sa question du 21 août 2026**, posée devant la planche : *« comment tu vas
+faire s'il y a dix équipes ? »*. Elle casse le dessin d'avant, et pas seulement
+son texte.
+
+**Ce qui ne tenait pas.** Trois états — libre, il reste de la place, complet —
+disent tout avec deux équipes. Avec dix, « il reste de la place » couvre une
+équipe prise comme neuf : **la même nuance pour une journée presque vide et une
+journée presque pleine**. On aurait posé un chantier sur un jour saturé en
+croyant y avoir de la place.
+
+**VALIDÉ par lui le jour même :** *« je suis d'accord avec ta méthode pour les
+dix équipes, la barre elle se remplit petit à petit, je valide »*.
+
+**Ce qui remplace.** Chaque barre se **remplit à la part occupée** — deux prises
+sur dix, c'est un cinquième de barre. « Complet » reste un aplat foncé, et c'est
+délibéré : le seul état qui interdit de poser ne doit pas se déduire d'une
+nuance. La planche porte un réglage **2 · 5 · 10 équipes** pour qu'il le voie au
+lieu qu'on le lui explique.
+
+**Et la fiche du jour compte les noms plutôt que les équipes** : au-delà de
+trois, elle écrit « Julien, Paul +8 ». Dix noms sur une ligne de téléphone ne se
+lisent pas.
+
+### La légende montre la position au lieu de l'écrire
+
+**Sa demande, dans le même message :** *« la barre du haut c'est le matin, la
+barre du bas l'après-midi — enlève cette phrase, mais qu'on le comprenne tout de
+suite »*.
+
+La légende porte donc **la marque elle-même** : un dessin rempli en haut à côté
+du mot « matin », un rempli en bas à côté d'« après-midi », un plein à côté de
+« complet ». Trois mots, aucune phrase — et la position s'apprend en regardant,
+pas en lisant. « Touchez un jour pour savoir qui y est » disparaît aussi : on
+touche un jour parce qu'on veut savoir, pas parce qu'on l'a lu.
+
+### Retirer du planning tout ce qui répète ce qu'on sait déjà
+
+**Ses quatre coupes du 21 août**, et le motif est le même à chaque fois : *« tu
+mets beaucoup de phrases qui ne servent à rien »*.
+
+| Retiré | Ce qu'il en dit |
+|---|---|
+| « 2 équipes sur 2 » | il a deux équipes, il les connaît par leur nom — reste « Complet · Julien, Paul » |
+| « Cette semaine » sous « 24 – 30 août » | *« on sait très bien que c'est une semaine, on n'est pas idiot à ce point-là »* |
+| « Le mois » sous « août 2026 » | même chose |
+| « ½ journée » après « matin » ou « après-midi » | le mot d'à côté le dit déjà |
+
+**Ce que ces mots coûtaient**, et qui ne se voit qu'une fois retirés : un mot qui
+répète son voisin se lit quand même — et pendant qu'on le lit, on cherche ce
+qu'il ajoute. Sur un écran qu'il parcourt entre deux chantiers, c'est le genre de
+frottement qui fait dire « c'est trop compliqué ».
+
+### Le planning : c'est A, et deux manques qu'il a vus avant nous
+
+**Sa réponse du 21 août :** *« pour le planning du mois je veux le A »* — les
+deux barres sous le chiffre, matin dessus, après-midi dessous. Le rond et la
+barre unique sont retirés de la planche : garder un dessin que plus rien
+n'emploie, c'est laisser deux façons de dire la même chose.
+
+**Et deux manques, qu'il a trouvés en s'en servant :**
+
+- *« Comment vous faites si l'après-midi j'ai mes deux équipes sur le coup ? »*
+  La question n'avait aucune réponse visible : **aucune journée des données ne
+  montrait ce cas**. « 1 équipe sur 2 » et « complet » ne se distinguent qu'une
+  fois vus côte à côte. Le mercredi 26 est ajouté — matin libre, après-midi
+  complet —, et la légende compte au lieu de qualifier : « 1 équipe sur 2 »,
+  « complet · 2 sur 2 » ;
+- *« Il y a marqué le client, si c'est la journée ou la demi-journée, mais pas
+  l'équipe qui est affiliée. »* La fiche du jour porte désormais l'équipe, comme
+  la liste du bas — le même chantier ne peut pas dire deux choses selon l'endroit
+  où on le lit. Elle dit aussi le compte, demi-journée par demi-journée : « matin
+  libre », « après-midi : 2 équipes sur 2 — complet ». Le calendrier signale, la
+  fiche tranche.
+
+**Un défaut vu sur la capture, et par aucun test :** la phrase de la légende se
+redécoupait en colonnes — « Touchez un / jour / pour savoir qui y / est. » — parce
+que `.legende span{display:flex}` l'attrapait aussi. Cinquième fois dans ce dépôt
+qu'un défaut sort d'une image.
 
 ### Un mois qu'on lit sans l'apprendre
 
@@ -4172,7 +6453,9 @@ Sa cible reste à 44 px — grossir le signe ne doit pas rétrécir le geste.
 journée ENTIÈRE, pas une demi. Le test se trompait, pas le serveur ; le contrôle
 inverse a été ajouté pour que le premier ne passe pas par hasard.
 
-Nouveau : `scripts/test-changer-equipe.ts` (7 contrôles).
+Nouveau : une suite de sept contrôles sur le changement d'équipe — remplacée le
+21 août 2026 par `scripts/test-equipes-par-demi-journee.ts`, quand l'équipe est
+devenue plusieurs équipes, demi-journée par demi-journée (migration 0058).
 
 ### Les équipes reviennent sous « Équipe », et le planning s'explique
 
@@ -5010,7 +7293,7 @@ bouton mort. **Retirer ne se refuse jamais pour occupation** : libérer une plac
 n'en prend aucune, et refuser enfermerait le patron dans son erreur.
 
 **Les contrôles ont été vus rouges avant d'être livrés** : privés du retrait,
-trois cas de `test-changer-equipe.ts` tombent. Une suite navigateur
+trois cas de la suite du changement d'équipe tombent. Une suite navigateur
 (`test-pastille-equipe-e2e.ts`) parcourt le geste entier — poser, changer,
 retirer, vérifier en base — parce que la règle serveur serait verte même si le
 bouton n'était pas branché : c'est le raccord qui casse, jamais la formule.

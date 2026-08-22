@@ -6806,14 +6806,89 @@
 #s62 .note li{margin-bottom:6px}
 
 
-/* 63 — Choisir la date, sans l’écran du milieu */
+/* 63 — Enregistrer le PDF depuis la fiche client */
 #s63{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --alert:#9C3B2E; --line:rgba(28,28,26,0.12);
+  }
+#s63, #s63 *{ box-sizing:border-box; }
+#s63{
+    margin:0; background:#e8e5de; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:28px 16px 60px;
+  }
+#s63 h1{ font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
+#s63 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:760px; line-height:1.5; margin:0 0 26px; }
+#s63 .rangee{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
+#s63 .colonne{ width:390px; }
+#s63 .etiquette{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
+#s63 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:52px; }
+#s63 .dit b{ color:var(--ink); }
+#s63 .ecran{
+    width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.14); padding-bottom:14px;
+  }
+#s63 .entete{ padding:16px 26px 0; }
+#s63 .surtitre{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--or); margin:0; }
+#s63 .titre{ font-family:Georgia,"Times New Roman",serif; font-size:31px; line-height:1.05; margin:5px 0 0; letter-spacing:-.018em; }
+#s63 .coord{ font-size:12.5px; color:var(--muted); margin:6px 0 0; }
+#s63 .derniere{ padding:18px 26px 0; }
+#s63 .derniere p{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#000; margin:0; }
+#s63 .derniere ul{ list-style:none; padding:0; margin:11px 0 0; }
+#s63 .derniere li{ position:relative; padding-left:15px; font-size:14px; line-height:1.45; color:var(--ink-soft); margin-top:6px; }
+#s63 .derniere li::before{ content:""; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:50%; background:var(--or); }
+#s63 .colonnes{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:0 16px; margin-top:24px; }
+#s63 .cadre{ min-width:0; background:var(--cream); border-radius:12px; padding:12px 9px 10px; }
+#s63 .cadre h3{ margin:0; font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
+#s63 .compte{ display:block; margin-top:3px; font-size:10.5px; color:var(--muted); }
+#s63 .piece{ display:block; min-height:56px; padding:8px 0 2px; text-align:center; text-decoration:none; color:var(--ink); }
+#s63 .piece + .piece{ border-top:1px solid var(--line); margin-top:8px; }
+#s63 .vignette{
+    margin:0 auto; width:24px; height:29px; border-radius:3px; background:#fff;
+    box-shadow:inset 0 0 0 1px rgba(156,59,46,.35); color:var(--alert);
+    font-size:6.5px; font-weight:700; letter-spacing:.06em;
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:3px;
+  }
+#s63 .nom{ display:block; margin-top:5px; font-size:12.5px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#s63 .quand{ display:block; margin-top:2px; font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#s63 .fleche-bas{ position:absolute; right:-1px; bottom:-1px; width:13px; height:13px; border-radius:50%;
+    background:var(--pine); color:#fff; font-size:8px; line-height:13px; text-align:center; font-weight:700; }
+#s63 .vignette-enveloppe{ position:relative; width:24px; margin:0 auto; }
+#s63 .deux{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px; }
+#s63 .mini{
+    width:30px; height:30px; border-radius:50%; background:var(--paper); color:var(--pine);
+    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+#s63 .voile{ position:relative; }
+#s63 .feuille{
+    margin:9px 0 0; background:#fff; border-radius:14px; padding:8px 0 4px;
+    box-shadow:0 -1px 10px rgba(0,0,0,.10);
+  }
+#s63 .feuille p{ margin:0 0 4px; text-align:center; font-size:10.5px; color:var(--muted); }
+#s63 .feuille a{ display:block; padding:11px 10px; font-size:13.5px; text-align:center; text-decoration:none; color:var(--ink); }
+#s63 .feuille a + a{ border-top:1px solid var(--line); }
+#s63 .feuille .principal{ font-weight:600; color:var(--pine); }
+#s63 .note{ width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
+#s63 .note b{ color:var(--ink); }
+#s63 .question{
+    max-width:800px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
+    border-left:3px solid var(--or); border-radius:0 10px 10px 0;
+  }
+#s63 .question h2{ font-size:14px; margin:0 0 8px; }
+#s63 .question p{ font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
+#s63 .question p:last-child{ margin-bottom:0; }
+#s63 .question b{ color:var(--ink); }
+
+
+/* 64 — Choisir la date, sans l’écran du milieu */
+#s64{
     --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
     --or:#B98B47; --pin:#2f3b2f; --papier:#ece9e1;
     --trait:rgba(28,28,26,.12); --traitdoux:rgba(28,28,26,.07);
   }
 @media (prefers-color-scheme: dark){
-#s63:not([data-theme="light"]){
+#s64:not([data-theme="light"]){
       --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
       --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
       --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
@@ -6821,80 +6896,80 @@
 
   
 }
-#s63[data-theme="dark"]{
+#s64[data-theme="dark"]{
     --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
     --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
     --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
   }
-#s63, #s63 *{box-sizing:border-box}
-#s63{
+#s64, #s64 *{box-sizing:border-box}
+#s64{
     margin:0;background:var(--fond);color:var(--encre);
     font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
     padding:36px 18px 80px;
   }
-#s63 .chapo{max-width:780px;margin:0 auto 40px}
-#s63 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
-#s63 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
-#s63 .chapo b{color:var(--encre);font-weight:500}
-#s63 .fil{
+#s64 .chapo{max-width:780px;margin:0 auto 40px}
+#s64 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
+#s64 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+#s64 .chapo b{color:var(--encre);font-weight:500}
+#s64 .fil{
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     max-width:780px;margin:0 auto 40px;font-size:13px;
   }
-#s63 .etape{
+#s64 .etape{
     padding:8px 14px;border-radius:999px;border:1px solid var(--trait);
     background:var(--carte);color:var(--encre);
   }
-#s63 .etape.saute{
+#s64 .etape.saute{
     text-decoration:line-through;color:var(--gris);
     border-style:dashed;background:transparent;
   }
-#s63 .fleche{color:var(--gris)}
-#s63 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
-#s63 .colonne{width:390px;max-width:100%}
-#s63 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
-#s63 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
-#s63 .note b{color:var(--encre);font-weight:500}
-#s63 .tel{
+#s64 .fleche{color:var(--gris)}
+#s64 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
+#s64 .colonne{width:390px;max-width:100%}
+#s64 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+#s64 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
+#s64 .note b{color:var(--encre);font-weight:500}
+#s64 .tel{
     width:390px;max-width:100%;height:560px;overflow:hidden;background:var(--fond);
     border:1px solid var(--trait);border-radius:22px;display:flex;flex-direction:column;
   }
-#s63 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
-#s63 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
-#s63 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
-#s63 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
-#s63 .bloc{margin-top:18px}
-#s63 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
-#s63 .signature{
+#s64 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
+#s64 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s64 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
+#s64 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
+#s64 .bloc{margin-top:18px}
+#s64 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s64 .signature{
     margin-top:18px;height:76px;border:1px dashed var(--trait);border-radius:8px;
   }
-#s63 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
-#s63 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
-#s63 .vert{
+#s64 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
+#s64 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
+#s64 .vert{
     display:block;width:100%;padding:15px;border-radius:999px;text-align:center;
     background:var(--pin);color:#f5f3ee;font-size:16px;
     font-family:ui-serif,Georgia,"Times New Roman",serif;
   }
-#s63 .lien{
+#s64 .lien{
     display:block;width:100%;margin-top:12px;text-align:center;
     font-size:14px;font-weight:500;color:var(--pin);
   }
-#s63 .creux{
+#s64 .creux{
     display:block;width:100%;margin-top:10px;padding:13px;border-radius:999px;
     text-align:center;border:1px solid var(--trait);color:var(--pin);font-size:14.5px;
   }
-#s63 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
-#s63 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
-#s63 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
-#s63 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
-#s63 .apres b{color:var(--encre);font-weight:500}
-#s63 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
-#s63 .apres th,#s63 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
-#s63 .apres th{color:var(--encre);font-weight:500}
-#s63 .question{
+#s64 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
+#s64 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
+#s64 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+#s64 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+#s64 .apres b{color:var(--encre);font-weight:500}
+#s64 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
+#s64 .apres th,#s64 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
+#s64 .apres th{color:var(--encre);font-weight:500}
+#s64 .question{
     border-left:3px solid var(--or);background:rgba(185,139,71,.08);
     padding:14px 16px;border-radius:0 10px 10px 0;margin:0 0 18px;
   }
-#s63 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
+#s64 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
 
 
 </style>
@@ -7183,7 +7258,11 @@
       </a>
       <p class="famille">Le devis avant l’envoi</p>
       <a class="item" href="#m63">
-        <span class="no">63</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
+        <span class="no">63</span><span class="titre">Enregistrer le PDF depuis la fiche client</span><span class="fleche">↓</span>
+        <span class="quoi">Les vignettes de la fiche client OUVRENT le PDF sans proposer de l’enregistrer. Trois dosages du geste — et la question qu’il doit trancher : vient-il regarder, ou garder ?</span>
+      </a>
+      <a class="item" href="#m64">
+        <span class="no">64</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
         <span class="quoi">« Envoyer au client » devient « Choisir la date », en vert et sans flèche, et mène droit au calendrier. L’écran du milieu, qui redit le devis qu’on vient de fermer, saute. Trois écrans deviennent deux.</span>
       </a>
     <p class="note">
@@ -24027,10 +24106,211 @@
   <section class="etape" id="m63">
     <div class="etape-tete">
       <span class="etape-no">63</span>
-      <h2>Choisir la date, sans l’écran du milieu</h2>
+      <h2>Enregistrer le PDF depuis la fiche client</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s63">
+<h1>Enregistrer le PDF depuis la fiche client</h1>
+<p class="chapo">
+  Aujourd'hui, toucher une vignette <b>ouvre</b> le PDF dans un onglet : rien ne propose de
+  l'enregistrer. Trois façons de lui donner le geste qu'il demande, de la plus courte à la plus
+  prudente. L'écran dessiné est le vrai — trois colonnes, vignettes de 56&nbsp;px, sur ses 390&nbsp;px.
+</p>
+
+<div class="rangee">
+
+  <!-- ————————————————— A ————————————————— -->
+  <div class="colonne">
+    <p class="etiquette">Proposition A — la vignette enregistre</p>
+    <p class="dit">
+      Un seul geste, aucun élément nouveau. Toucher la pièce <b>l'enregistre</b>, sous son vrai nom
+      (<code>devis-2026-0029.pdf</code>). Une pastille verte sur la vignette annonce ce qui va se passer.
+      <b>Ce qu'il perd&nbsp;:</b> il ne peut plus simplement le regarder.
+    </p>
+    <div class="ecran">
+      <div class="entete">
+        <p class="surtitre">Client</p>
+        <h2 class="titre">Mr. Bernard</h2>
+        <p class="coord">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      </div>
+      <div class="derniere">
+        <p>Dernière prestation · 12 août</p>
+        <ul><li>Taille d'une haie de laurier (20 ml)</li><li>Évacuation des déchets verts</li></ul>
+      </div>
+      <div class="colonnes">
+        <div class="cadre">
+          <h3>Devis</h3><span class="compte">2 pièces</span>
+          <a class="piece" href="#">
+            <span class="vignette-enveloppe"><span class="vignette">PDF</span><span class="fleche-bas">↓</span></span>
+            <span class="nom">n° 2026-0029</span><span class="quand">12 août</span>
+          </a>
+          <a class="piece" href="#">
+            <span class="vignette-enveloppe"><span class="vignette">PDF</span><span class="fleche-bas">↓</span></span>
+            <span class="nom">n° 2026-0014</span><span class="quand">3 juil.</span>
+          </a>
+        </div>
+        <div class="cadre">
+          <h3>Facture</h3><span class="compte">1 pièce</span>
+          <a class="piece" href="#">
+            <span class="vignette-enveloppe"><span class="vignette">PDF</span><span class="fleche-bas">↓</span></span>
+            <span class="nom">n° 2026-0031</span><span class="quand">14 août</span>
+          </a>
+        </div>
+        <div class="cadre">
+          <h3>Fiche chantier</h3><span class="compte">1 pièce</span>
+          <a class="piece" href="#">
+            <span class="vignette-enveloppe"><span class="vignette">PDF</span><span class="fleche-bas">↓</span></span>
+            <span class="nom">12 août</span><span class="quand">Haie de laurier</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      <b>Éprouvé sur son téléphone.</b> C'est le mécanisme exact qui a réglé sa plainte du 7 août sur
+      la facture — <code>?telecharger=1</code>, le nom sur le lien, pas d'onglet neuf.
+    </p>
+  </div>
+
+  <!-- ————————————————— B ————————————————— -->
+  <div class="colonne">
+    <p class="etiquette">Proposition B — ouvrir, ou enregistrer</p>
+    <p class="dit">
+      La vignette continue d'<b>ouvrir</b>. Un rond à côté <b>enregistre</b>. Les deux gestes existent,
+      il choisit. <b>Ce que ça coûte&nbsp;:</b> deux cibles côte à côte dans une colonne large de
+      118&nbsp;px — avec des gants, le mauvais doigt tombe vite.
+    </p>
+    <div class="ecran">
+      <div class="entete">
+        <p class="surtitre">Client</p>
+        <h2 class="titre">Mr. Bernard</h2>
+        <p class="coord">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      </div>
+      <div class="derniere">
+        <p>Dernière prestation · 12 août</p>
+        <ul><li>Taille d'une haie de laurier (20 ml)</li><li>Évacuation des déchets verts</li></ul>
+      </div>
+      <div class="colonnes">
+        <div class="cadre">
+          <h3>Devis</h3><span class="compte">2 pièces</span>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0029</span><span class="quand">12 août</span>
+            <span class="deux"><span class="mini">↓</span></span>
+          </div>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0014</span><span class="quand">3 juil.</span>
+            <span class="deux"><span class="mini">↓</span></span>
+          </div>
+        </div>
+        <div class="cadre">
+          <h3>Facture</h3><span class="compte">1 pièce</span>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0031</span><span class="quand">14 août</span>
+            <span class="deux"><span class="mini">↓</span></span>
+          </div>
+        </div>
+        <div class="cadre">
+          <h3>Fiche chantier</h3><span class="compte">1 pièce</span>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">12 août</span><span class="quand">Haie de laurier</span>
+            <span class="deux"><span class="mini">↓</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      <b>La réserve, dite franchement.</b> Le dépôt tient une règle sur ces vignettes : 56&nbsp;px de
+      haut au moins, « un lien qu'il touche d'une main, dehors, parfois avec des gants ». Ce rond
+      fait 30&nbsp;px et vit contre un lien plus grand que lui.
+    </p>
+  </div>
+
+  <!-- ————————————————— C ————————————————— -->
+  <div class="colonne">
+    <p class="etiquette">Proposition C — une petite feuille</p>
+    <p class="dit">
+      Toucher la pièce ouvre <b>trois choix</b> — ouvrir, enregistrer, partager. Rien ne se décide à
+      sa place, et « Partager » revient (perdu sur l'écran d'envoi).
+      <b>Ce que ça coûte&nbsp;:</b> un appui de plus, à chaque fois, même pour un simple coup d'œil.
+    </p>
+    <div class="ecran">
+      <div class="entete">
+        <p class="surtitre">Client</p>
+        <h2 class="titre">Mr. Bernard</h2>
+        <p class="coord">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      </div>
+      <div class="derniere">
+        <p>Dernière prestation · 12 août</p>
+        <ul><li>Taille d'une haie de laurier (20 ml)</li></ul>
+      </div>
+      <div class="colonnes">
+        <div class="cadre voile">
+          <h3>Devis</h3><span class="compte">2 pièces</span>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0029</span><span class="quand">12 août</span>
+          </div>
+          <div class="feuille">
+            <p>n° 2026-0029</p>
+            <a class="principal" href="#">Enregistrer</a>
+            <a href="#">Ouvrir</a>
+            <a href="#">Partager</a>
+          </div>
+        </div>
+        <div class="cadre">
+          <h3>Facture</h3><span class="compte">1 pièce</span>
+          <a class="piece" href="#">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0031</span><span class="quand">14 août</span>
+          </a>
+        </div>
+        <div class="cadre">
+          <h3>Fiche chantier</h3><span class="compte">1 pièce</span>
+          <a class="piece" href="#">
+            <span class="vignette">PDF</span>
+            <span class="nom">12 août</span><span class="quand">Haie de laurier</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      <b>Dessinée dans la colonne pour montrer l'encombrement réel.</b> En vrai, cette feuille
+      monterait du bas de l'écran, sur toute la largeur — comme celle du calendrier.
+    </p>
+  </div>
+
+</div>
+
+<div class="question">
+  <h2>La question que je ne tranche pas à sa place</h2>
+  <p>
+    <b>Ouvre-t-il ces PDF pour les REGARDER, ou pour les GARDER&nbsp;?</b>
+  </p>
+  <p>
+    S'il ouvre la fiche d'un client au téléphone pour relire un montant, la <b>A</b> lui télécharge un
+    fichier qu'il n'a pas demandé, à chaque coup d'œil. S'il vient toujours pour archiver ou
+    transmettre, la <b>A</b> est la plus courte, et les deux autres lui coûtent un geste pour rien.
+  </p>
+  <p>
+    Mon avis, s'il le veut&nbsp;: <b>la A</b>. C'est le mécanisme déjà éprouvé sur son téléphone, il
+    n'ajoute aucune cible à viser, et le devis reste consultable en entier sur son écran — c'est
+    même là qu'il l'a mis. Mais s'il lui arrive de venir ici juste pour vérifier un chiffre, la
+    <b>C</b> est la seule qui ne décide de rien à sa place.
+  </p>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m64">
+    <div class="etape-tete">
+      <span class="etape-no">64</span>
+      <h2>Choisir la date, sans l’écran du milieu</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s64">
 <div class="chapo">
   <h1>Choisir la date, sans l’écran du milieu</h1>
   <p>

@@ -83,9 +83,13 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
 .champ{display:flex;flex-direction:column;gap:6px}
-.champ input{width:100%;border:0;border-radius:4px;background:var(--cream);
-             padding:15px 16px;font-size:16px;color:var(--charcoal);font-family:inherit;
-             box-shadow:inset 0 0 0 1px var(--line-soft)}
+/* **La case est « la carte douce », la 4 qu'il a choisie** parmi les cinq
+   (`appli/cases-page-entiere.html`), et redite le 21 août au soir : « n'oublie
+   pas que j'ai choisi la 4 ». La planche portait encore l'ancienne case, et cet
+   écart lui a fait croire que le code ne suivait pas la maquette. Une seule
+   vérité, des deux côtés. */
+.champ input{width:100%;min-height:50px;border:0;border-radius:14px;background:var(--paper);
+             padding:15px 16px;font-size:16px;color:var(--charcoal);font-family:inherit}
 .champ input::placeholder{color:var(--muted)}
 .champ input:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
 
@@ -421,9 +425,11 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
     <div class="entete"><h1>Ce qui reste<br>à reloger</h1></div>
 
     <div class="note">
-      <span class="titre">La question</span>
-      Vous supprimez la fiche chantier « pour de bon ». Elle porte <b>quatre choses</b> qui
-      n’ont pas d’autre maison aujourd’hui. Voici où je les mettrais — dites-moi si ça vous va.
+      <span class="titre">Tout est tranché</span>
+      Vous supprimez la fiche chantier « pour de bon ». Elle portait <b>quatre choses</b> sans
+      autre maison : <b>les quatre sont réglées</b>. Deux ne coûtent rien — elles existent déjà
+      ailleurs —, une part (vous n’en voulez pas), et une reste sur la fiche client.
+      <b>Le code peut commencer.</b>
     </div>
 
     <ul class="reloger" style="margin-top:18px">
@@ -442,21 +448,40 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
           ouvre la feuille qui porte « Créer la facture » ; dans <b>Terminés</b>, chaque ligne
           mène droit à la facture. Rien à déplacer.</span>
       </li>
+      <!-- **Rien à reloger non plus, et c'est vérifié dans le code plutôt que
+           supposé** (`CLAUDE.md` §5 ter). Les étapes ne vivent pas DANS la fiche
+           chantier : chacune a son propre écran (`/informations`, `/prix`,
+           `/devis-complet`…), et la fiche n'en était que la liste. L'accueil,
+           lui, mène déjà à la PROCHAINE (`lienDeReprise`). Deux étapes seulement
+           y renvoient vers la fiche chantier — les photos et la dictée — et
+           elles pointeront vers la fiche client, où elles vivent désormais. -->
       <li>
-        <span class="quoi">Les étapes du chantier</span>
-        <span class="prop">Planifier, envoyer le devis, terminer. <b>Proposition :</b> elles
-          restent où elles sont déjà — la carte de l’accueil vous mène toujours à la
-          <b>prochaine étape</b>, c’est ce qu’elle fait aujourd’hui.</span>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Les étapes du chantier</span>
+        <span class="prop"><b>Rien à déplacer — vérifié.</b> Chaque étape a déjà son écran ; la
+          fiche chantier n’en était que la <b>liste</b>. Et votre accueil vous emmène déjà à la
+          <b>prochaine</b> : c’est ce qu’il fait aujourd’hui. Dites-le si vous voulez malgré tout
+          revoir cette liste quelque part.</span>
       </li>
+      <!-- **Réglé le 21 août au soir : « on n'a pas besoin de réécouter la note
+           dictée ».** Rien à reloger, et une pièce de moins à porter. -->
       <li>
-        <span class="quoi">Réécouter ce que vous avez dicté</span>
-        <span class="prop">L’anneau sait relire une note enregistrée. <b>Proposition :</b> sur la
-          fiche client — même anneau, il redevient lecteur dès qu’il y a quelque chose à écouter.</span>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Réécouter ce que vous avez dicté</span>
+        <span class="prop"><b>Réglé — vous n’en voulez pas.</b> « On n’a pas besoin de réécouter
+          la note dictée. » L’anneau reste donc un micro, et rien d’autre.</span>
       </li>
+      <!-- **Réglé le 21 août au soir : « fais ça pour le rajout de la 4e photo
+           du jeudi ».** Le carré « + » reste sur la fiche client, au même
+           endroit que le jour du rendez-vous.
+
+           **Et le chemin pour y revenir existe déjà**, il change juste de
+           destination : la flèche de retour du devis mène aujourd'hui à la
+           fiche chantier (`DevisCompletClient.tsx`), qui disparaît — elle
+           ramènera à la fiche client. Aucun geste nouveau à apprendre. -->
       <li>
-        <span class="quoi">Les photos, plus tard</span>
-        <span class="prop">Vous en ajoutez une le lendemain, chantier déjà créé.
-          <b>Proposition :</b> la fiche client, au même endroit que le jour du rendez-vous.</span>
+        <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Une photo que vous ajoutez plus tard</span>
+        <span class="prop"><b>Réglé.</b> Jeudi, vous rouvrez le chantier depuis l’accueil : le devis
+          s’ouvre, et <b>la flèche de retour vous ramène à la fiche client</b> — le carré « + » est
+          là, au même endroit que mardi. Rien de nouveau à apprendre.</span>
       </li>
     </ul>
 
@@ -495,6 +520,48 @@ function aller(id) {
   );
   window.scrollTo(0, 0);
 }
+
+/**
+ * **Dix chiffres d'affilée, et les espaces se posent tout seuls.**
+ *
+ * Sa demande du 21 août au soir : *« il faut que je puisse taper les dix
+ * chiffres à la suite et qu'ils se mettent automatiquement avec les bons
+ * espaces »*. Sur un chantier, devant le client, on tape le numéro qu'on lit ou
+ * qu'on entend — on ne s'arrête pas toutes les deux touches pour un espace.
+ *
+ * **Par PAIRES, comme un numéro français s'écrit et se dicte** : 06 79 98 45 14.
+ *
+ * **Un numéro qui commence par « + » n'est PAS retouché**, et c'est mesuré, pas
+ * supposé : espacer « +33679984514 » par paires rend « +33 67 99 84 51 4 », qui
+ * n'est le numéro de personne. Un indicatif ne se découpe pas comme un numéro
+ * français, et il y en a autant que de pays. Celui qui tape un « + » sait ce
+ * qu'il écrit : on le laisse écrire.
+ *
+ * **Et le curseur ne saute pas à la fin.** Corriger un chiffre au milieu d'un
+ * numéro déjà tapé est le geste le plus courant après la frappe elle-même ; un
+ * curseur renvoyé au bout à chaque touche rend la correction impossible. On
+ * compte donc les CHIFFRES à gauche du curseur, et on le repose au même rang
+ * une fois les espaces refaits.
+ */
+function espacerLeNumero(champ) {
+  const avant = champ.value.slice(0, champ.selectionStart ?? champ.value.length);
+  const chiffresAGauche = (avant.match(/\d/g) ?? []).length;
+
+  if (champ.value.trim().startsWith("+")) return;
+
+  const chiffres = (champ.value.match(/\d/g) ?? []).join("").slice(0, 10);
+  champ.value = chiffres.replace(/(\d{2})(?=\d)/g, "$1 ");
+
+  // Le curseur retrouve sa place : juste après le n-ième chiffre.
+  let rang = 0, vus = 0;
+  while (rang < champ.value.length && vus < chiffresAGauche) {
+    if (/\d/.test(champ.value[rang])) vus++;
+    rang++;
+  }
+  champ.setSelectionRange(rang, rang);
+}
+
+$("#tel").addEventListener("input", (e) => espacerLeNumero(e.target));
 
 /* ─── Mr / Mme — sans intitulé, mais bien là ──────────────────────────── */
 document.querySelectorAll(".civilite button").forEach((b) => {

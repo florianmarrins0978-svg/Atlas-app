@@ -12,6 +12,7 @@ import { mkdirSync } from "node:fs";
 import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -34,7 +35,7 @@ await page.waitForURL(`${BASE}/`, { timeout: 60_000 });
 
 // Le chantier de sa capture : créé sans rien: ni client, ni adresse.
 await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-await page.click('[data-atlas="action-dicter"]');
+await creerPuisFiche(page);
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
 const chantierId = page.url().split("/").pop()!.split("?")[0];
 

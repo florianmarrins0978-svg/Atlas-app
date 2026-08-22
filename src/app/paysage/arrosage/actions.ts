@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
+import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 
 /**
  * Les gestes de l'écran « Plan d'arrosage ».
@@ -40,6 +41,48 @@ export type EtatPlan =
          * à en inventer, ce que ce dépôt interdit.
          */
         materiel: { ref?: string; nom: string; q: number; u: string }[];
+        /**
+         * **À PARTIR DE COMBIEN DE MÈTRES IL FAUT DU Ø32** — sa demande du
+         * 22 août 2026 : *« passé un certain nombre de mètres linéaires, il
+         * faut passer du PEHD Ø25 au Ø32 ; j'aimerais que mon outil fasse la
+         * même chose »*.
+         *
+         * **Ce sont des SEUILS, pas un verdict**, et c'est délibéré. Le calcul
+         * sait aussi trancher sur une longueur donnée — mais cet écran ne
+         * demande pas la longueur de l'amenée, et le calcul en prendrait une
+         * par défaut. Un « il vous faut du Ø32 » tiré d'une longueur que
+         * personne n'a saisie serait un chiffre inventé (`CLAUDE.md` §4). Le
+         * seuil, lui, ne dépend d'aucune saisie : il se compare au mètre ruban
+         * sur place.
+         */
+        tuyau: {
+          /** Mètres de Ø25 admissibles. **Zéro quand le débit l'interdit** — l'eau y filerait trop vite, quelle que soit la longueur. */
+          seuil25: number;
+          seuil32: number;
+          /** Le débit du réseau le plus gourmand : c'est lui qui dimensionne. */
+          debit: number;
+          /** Au-delà, même le Ø32 est en surrégime : Ø40, ou un réseau de plus. */
+          insuffisantMemeEn32: boolean;
+          /**
+           * Qui plafonne un réseau : la source (le seau) ou le tuyau (Ø25).
+           *
+           * **Il faut le dire quand c'est le tuyau**, sinon un artisan qui a
+           * mesuré 3 m³/h voit ses réseaux coupés plus tôt qu'il ne s'y attend
+           * et croit à un défaut de calcul. C'est son Ø25, et il le lira.
+           */
+          limitePar: "source" | "tuyau";
+          /** Ce qu'un réseau en Ø25 peut porter, en m³/h. */
+          plafond: number;
+        };
+        /**
+         * Ce qui arrive au pied du DERNIER arroseur, en bar.
+         *
+         * **C'est lui qui décide de la portée**, pas le compteur : entre les
+         * deux se perdent l'amenée, l'électrovanne, la ligne, ses raccords et
+         * l'antenne Ø16. Le trajet du regard à la première tête n'est PAS
+         * compté — il dépend de l'endroit où la nourrice est posée.
+         */
+        pressionAuxArroseurs: number;
       };
     };
 
@@ -71,16 +114,31 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     z.type === "haie" || z.type === "massif" ? z.ml !== null : z.L !== null && z.l !== null
   );
 
-  const seau = Number(formulaire.get("litres")) || 0;
-  const temps = Number(formulaire.get("secondes")) || 0;
-  const pression = Number(formulaire.get("bar")) || 0;
-  const compteur = String(formulaire.get("piquage") ?? "compteur") === "compteur" ? "oui" : "non";
+  // **D'où vient le débit, et ce qu'on en sait** — `src/lib/arrosage/mesure-debit.ts`.
+  // La pression NE DONNE PAS le débit : la règle refuse plutôt que d'inventer,
+  // et toute estimation porte sa réserve jusque sous le plan.
+  const piquage = String(formulaire.get("piquage") ?? "compteur");
+  const nombre = (cle: string) => {
+    const brut = formulaire.get(cle);
+    if (brut === null || String(brut).trim() === "") return null;
+    const n = Number(brut);
+    return Number.isFinite(n) ? n : null;
+  };
+  const mesure = debitRetenu({
+    piquage,
+    secondes: nombre("secondes"),
+    barStatique: nombre("barStatique"),
+    barDynamique: nombre("barDynamique"),
+  });
+  if (!mesure.ok) return { etat: "refus", raison: mesure.raison };
 
   const plan = calculerPlan({
-    seau,
-    temps,
-    pression,
-    compteur,
+    // Le calcul raisonne en seau et temps : on lui rend le débit retenu sous
+    // cette forme, sans repasser par la saisie — une seule source du débit.
+    seau: SEAU_LITRES,
+    temps: (SEAU_LITRES / mesure.debit) * 3.6,
+    pression: mesure.pression,
+    compteur: piquage === "compteur" ? "oui" : "non",
     zones: mesurees.map((z) => ({
       type: z.type,
       nom: z.nom ?? undefined,
@@ -91,14 +149,44 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   });
 
   const reserves = [...lu.croquis.reserves];
+  if (mesure.reserve) reserves.push(mesure.reserve);
+  // **Une portée réduite est une ESTIMATION, et elle se dit.** Le débit des
+  // buses est ramené à la pression du chantier par la loi de l'orifice — de la
+  // physique. La portée, elle, suit un exposant tiré des tables des
+  // constructeurs et non de ses catalogues à lui : la taire ferait passer pour
+  // acquis un chiffre qui ne l'est pas (`CLAUDE.md` §4).
+  // **CE QUI ARRIVE AU DERNIER ARROSEUR, ET CE QUI N'EST PAS COMPTÉ.**
+  //
+  // Le calcul retire maintenant l'amenée, l'électrovanne, la ligne, ses
+  // raccords et l'antenne Ø16 — mais PAS le trajet du regard jusqu'à la
+  // première tête, qui dépend de l'endroit où la nourrice est posée et
+  // qu'aucune saisie ne donne. La pression annoncée est donc un plafond, et le
+  // dire vaut mieux qu'un chiffre qu'on croit exact (`CLAUDE.md` §4 ter).
+  if (plan.pressionTropBasse) {
+    reserves.push(
+      `Il ne resterait que ${plan.pressionAuxArroseurs.toFixed(1).replace(".", ",")} bar au dernier ` +
+        "arroseur : trop peu pour qu'il se lève correctement. Raccourcissez les lignes, " +
+        "ajoutez une vanne, ou piquez plus en amont."
+    );
+  } else if (plan.pressionRaffinee) {
+    reserves.push(
+      `${plan.pressionAuxArroseurs.toFixed(1).replace(".", ",")} bar au dernier arroseur ` +
+        `(${plan.perteReseau.toFixed(2).replace(".", ",")} bar perdus dans le réseau, ` +
+        `${plan.perteAmenee.toFixed(2).replace(".", ",")} dans l'amenée) — le trajet du regard ` +
+        "jusqu'à la première tête n'est pas compté"
+    );
+  }
+  if (plan.porteeEstimee) {
+    reserves.push(
+      `${mesure.pression.toString().replace(".", ",")} bar : les portées sont réduites par rapport au ` +
+        "catalogue, donné à plus forte pression — estimation, à confirmer sur place"
+    );
+  }
   if (mesurees.length === 0) {
     return {
       etat: "refus",
       raison: "Aucune zone du croquis n’a de mesure lisible : le plan ne peut pas se calculer.",
     };
-  }
-  if (plan.debitDisponible <= 0) {
-    reserves.push("le débit n’a pas été mesuré : le découpage en réseaux ne tient pas compte du compteur");
   }
 
   return {
@@ -111,6 +199,19 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
       voies: plan.voies,
       couleurs: plan.couleurs,
       materiel: plan.materiel,
+      tuyau: {
+        seuil25: plan.amenee.longueurMax25,
+        seuil32: plan.amenee.longueurMax32,
+        debit: plan.amenee.debit,
+        insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
+        // **Le calcul repris n'est pas typé** (`allowJs`, `checkJs` coupé) : il
+        // rend une chaîne. On la RESSERRE ici plutôt que d'élargir le type de
+        // l'écran — c'est la frontière, et c'est là qu'un « tuyeau » mal
+        // orthographié doit tomber, pas trois écrans plus loin.
+        limitePar: plan.limitePar === "tuyau" ? "tuyau" : "source",
+        plafond: plan.limiteDuTuyau,
+      },
+      pressionAuxArroseurs: plan.pressionAuxArroseurs,
     },
   };
 }

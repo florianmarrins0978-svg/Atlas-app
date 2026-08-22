@@ -18,6 +18,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { composerMessageClient } from "../src/lib/message-client";
 import { avecCivilite } from "../src/lib/civilite";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -45,7 +46,7 @@ await page.waitForURL(`${BASE}/`, { timeout: 60_000 });
 await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
 await page.fill('input[placeholder="Bernard"]', CLIENT);
 await page.fill('input[placeholder="06 12 34 56 78"]', "0679984514");
-await page.click('[data-atlas="action-dicter"]');
+await creerPuisFiche(page);
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
 const chantierId = page.url().split("/").pop()!.split("?")[0];
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Il n'y a pas de mémoire dans les actions. »** — le patron, 13 août 2026.
 //
@@ -59,18 +60,34 @@ async function main() {
   // moins souvent qu'un exemple, et elle dit ce que le champ EST.
   await page.getByLabel(/Nom du client/i).fill(client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30000 });
   const fiche = page.url();
   const id = fiche.split("/").pop()!;
 
-  await cas("un chantier neuf se rouvre sur sa fiche — la dictée y est", async () => {
-    // Son deuxième exemple : « si je me suis arrêté à mettre des photos et à
-    // rédiger la note vocale, il faut que ça me remette à cette page-là ».
+  await cas("un chantier neuf se rouvre LÀ OÙ IL EN EST", async () => {
+    // Son deuxième exemple, le 17 août : « si je me suis arrêté à mettre des
+    // photos et à rédiger la note vocale, il faut que ça me remette à cette
+    // page-là ».
+    //
+    // **Ce que « cette page-là » désigne a changé le 21 août 2026, et c'est
+    // lui qui l'a décidé** : les photos et la dictée vivent maintenant sur la
+    // fiche client, et le seul bouton de cet écran mène au devis. Un chantier
+    // créé porte donc un devis dès sa naissance — et sa consigne est alors
+    // sans ambiguïté : *« si elle est créée et qu'on a rempli le devis, alors
+    // on doit rouvrir la page du devis directement »*.
+    //
+    // Ce que ce contrôle défend n'a pas bougé : la ligne de l'accueil ramène à
+    // l'étape en cours, jamais à l'accueil d'un autre écran. C'est la
+    // DESTINATION qui suit le parcours, pas la promesse.
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     const lien = page.locator(`a:has-text("${marque}")`).first();
     await lien.waitFor({ state: "visible", timeout: 20000 });
-    assert.equal(await lien.getAttribute("href"), `/chantiers/${id}`);
+    const href = await lien.getAttribute("href");
+    assert.ok(
+      href === `/chantiers/${id}` || href === `/chantiers/${id}/devis-complet`,
+      `la ligne mène à « ${href} » : ce n'est ni la fiche du chantier ni son devis`
+    );
   });
 
   // Il pose son prix — « j'ai enregistré le nouveau prix ».
@@ -96,12 +113,27 @@ async function main() {
   // total, lui, ne peut afficher 1 200,00 € que si le montant est arrivé.
   // Même remède que `test-prix-e2e.ts` : attendre ce qu'on affirme, jamais une
   // durée.
-  for (const essai of [1, 2, 3, 4]) {
-    await page.reload({ waitUntil: "networkidle" });
-    const total = await page.locator("p", { hasText: "€" }).first().innerText().catch(() => "");
-    if (/1[\s\u202f\u00a0]?200,00/.test(total)) break;
+  //
+  // **Et l'on laisse l'appel PARTIR avant de recharger.** La version d'avant
+  // rechargeait aussitôt, ce qui avortait l'enregistrement qu'elle attendait,
+  // puis recommençait : elle empêchait exactement ce qu'elle guettait. C'est
+  // ainsi qu'elle rougissait encore sous la batterie, jamais jouée seule.
+  await page.waitForLoadState("networkidle");
+  let totalRelu = "";
+  for (const essai of [1, 2, 3, 4, 5]) {
+    totalRelu = await page.locator("p", { hasText: "€" }).first().innerText().catch(() => "");
+    if (/1[\s\u202f\u00a0]?200,00/.test(totalRelu)) break;
     await page.waitForTimeout(essai * 500);
+    await page.reload({ waitUntil: "networkidle" });
   }
+  // **Et l'on ACCUSE le bon coupable.** Sans cela, un prix non enregistré passait
+  // inaperçu ici et faisait rougir l'écran d'arrivée deux cas plus loin — « le
+  // total n'est pas montré avant l'envoi » —, qui n'y était pour rien.
+  assert.match(
+    totalRelu,
+    /1[\s\u202f\u00a0]?200,00/,
+    `le prix n'a jamais été enregistré (total lu : « ${totalRelu} ») : rien de ce que cette suite affirme ensuite n'a de sens`
+  );
 
   await cas("SA SÉQUENCE : retour par mégarde, puis la ligne le ramène à l'envoi", async () => {
     // Il était allé jusqu'à l'écran d'envoi — le devis lui-même depuis le

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { lireLeCroquis, type EtatPlan } from "./actions";
 
@@ -27,11 +27,48 @@ import { lireLeCroquis, type EtatPlan } from "./actions";
  * vides n'annoncent pas « 0,00 m³/h » — un zéro se lirait comme une mesure, et
  * c'est la règle du dépôt sur les montants absents (`CLAUDE.md` §4).
  */
-export default function ArrosageClient({ iaPrete }: { iaPrete: boolean }) {
+export default function ArrosageClient({
+  iaPrete,
+  motifIA,
+}: {
+  iaPrete: boolean;
+  /** Pourquoi la lecture ne se fera pas, en français. `null` quand elle se fera. */
+  motifIA: string | null;
+}) {
   const [etat, agir, enCours] = useActionState<EtatPlan, FormData>(lireLeCroquis, { etat: "vide" });
+  /**
+   * **Les mesures n'apparaissent QUE si le piquage n'est pas au compteur.**
+   *
+   * *Sa correction du 20 août au soir, sur capture :* « quand je choisis le
+   * piquage, qu'il se fait après le compteur d'eau, rien ne doit s'afficher. Il
+   * ne doit pas y avoir marqué dix litres, vingt, trois bars. Or, quand je
+   * choisis piquage après robinet, là un encart doit s'ouvrir. »
+   *
+   * Et il a raison sur le fond : après le compteur, la pression du réseau de
+   * ville est connue — c'est ailleurs qu'elle ne l'est pas.
+   */
+  const [piquage, setPiquage] = useState("compteur");
+  const formulaire = useRef<HTMLFormElement>(null);
+
+  /**
+   * **La photo choisie PART toute seule.**
+   *
+   * *Sa correction du 20 août au soir :* « quand je clique sur croquis et que
+   * j'ajoute une photo, rien ne se passe ».
+   *
+   * Il avait raison, et c'était un défaut de parcours, pas de code : le bouton
+   * ouvrait bien l'appareil, mais rien ne soumettait le formulaire ensuite. Il
+   * aurait fallu toucher un second bouton — que l'écran ne montrait pas, à sa
+   * demande. **Ma suite ne l'a pas vu parce qu'elle ne posait jamais de
+   * photo** : elle vérifiait que le bouton existe, jamais que le geste aboutit
+   * (`AGENTS.md` — parcourir en entier ce qu'on transmet).
+   */
+  function photoChoisie(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files && e.target.files.length > 0) formulaire.current?.requestSubmit();
+  }
 
   return (
-    <form action={agir} className="pb-[86px]">
+    <form ref={formulaire} action={agir} className="pb-[86px]">
       {/* Le titre vient de `EnTeteEcran`, comme sur tous les autres écrans. */}
 
       {/* ─── Le piquage, et la mesure ─────────────────────────────────────── */}
@@ -43,42 +80,125 @@ export default function ArrosageClient({ iaPrete }: { iaPrete: boolean }) {
         <select
           id="piquage"
           name="piquage"
-          defaultValue="compteur"
+          value={piquage}
+          onChange={(e) => setPiquage(e.target.value)}
           className="mt-[7px] block w-full appearance-none rounded-[11px] border-0 px-[14px] py-[15px] text-[16px]"
           style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}`, minHeight: 52 }}
         >
           <option value="compteur">Juste après le compteur d’eau</option>
-          <option value="ailleurs">Ailleurs (robinet de jardin, nourrice existante…)</option>
-          <option value="puits">Sur un puits ou une cuve</option>
+          {/* Le puits et la cuve sont retirés sur sa demande du 20 août au soir :
+              « tu peux retirer le piquage sur une pompe ».
+
+              **Le libellé dit « Robinet de jardin », la valeur reste
+              `ailleurs`** — sa dernière correction du même soir. Le mot est ce
+              qu'il lit ; la valeur porte la RÈGLE (ici : mesurer plutôt que
+              supposer). Les renommer ensemble obligerait à toucher
+              `mesure-debit.ts` et sa suite pour un mot d'écran. */}
+          <option value="ailleurs">Robinet de jardin</option>
         </select>
 
-        {/* Trois cases, trois mots. Il a demandé « minimaliste, sans mots qui
-            servent à rien » — « Litres », « Secondes », « Bar » suffisent à
-            savoir quoi mettre dedans. */}
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {[
-            { nom: "litres", mot: "Litres", defaut: "10" },
-            { nom: "secondes", mot: "Secondes", defaut: "20" },
-            { nom: "bar", mot: "Bar", defaut: "3" },
-          ].map((c) => (
-            <span key={c.nom} className="min-w-0">
-              <label className={`block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor={c.nom}>
-                {c.mot}
+        {/* **Deux façons de connaître le débit, et il n'en fait qu'une.** Le
+            seau donne le débit directement ; le manomètre donne la pression, et
+            le débit s'en déduit. Le seau vaut 10 L — c'est ce qu'il a dit, et
+            un seau de maçon en fait dix : le demander serait une case de plus
+            pour une réponse toujours pareille.
+
+            Rien n'est prérempli : une valeur posée d'avance se prend pour une
+            mesure, et il calculerait sur un chiffre que personne n'a relevé
+            (`CLAUDE.md` §4). */}
+        {/* **DEUX MESURES, DEUX ENCARTS — sa correction du 21 août :** « la
+            mesure au seau ne doit pas rentrer dans le kit débit/pression ».
+            Elle avait raison de le gêner : ce sont deux gestes, deux outils et
+            deux fiabilités. Les ranger sous un même titre laissait croire que
+            le seau se relève AVEC le kit, et qu'un chiffre tiré du seau vaut
+            celui du manomètre.
+
+            **L'ordre suit le geste sur le chantier** : le seau se fait à mains
+            nues, tout de suite ; le kit se visse et se lit. Le premier donne le
+            DÉBIT — la seule grandeur qu'aucune pression ne donne. Les deux
+            suivants disent ce qui arrivera aux arroseurs (la dynamique décide,
+            sous 2,5 bar ils sortent mal) et d'où vient le manque (l'écart avec
+            la statique accuse la conduite, pas le réseau).
+
+            Rien n'est prérempli — une valeur posée d'avance se prend pour une
+            mesure (`CLAUDE.md` §4). */}
+        {piquage !== "compteur" && (
+          <div data-atlas="mesures" className="mt-4">
+            <div data-atlas="seau">
+              <p className={`block ${libelleCaps}`} style={{ color: colors.or }}>
+                Mesure au seau
+              </p>
+              <label className={`mt-3 block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor="secondes">
+                Un seau de 10 L rempli en… secondes
               </label>
               <input
-                id={c.nom}
-                name={c.nom}
+                id="secondes"
+                name="secondes"
                 type="number"
                 inputMode="decimal"
                 min="1"
                 step="any"
-                defaultValue={c.defaut}
-                className="mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[10px] py-3 text-[16px]"
+                placeholder="20"
+                className="mt-[5px] block w-full rounded-[10px] border-0 px-[12px] py-3 text-[16px]"
                 style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
               />
-            </span>
-          ))}
-        </div>
+              {/* **Le seau se dédouane, et il dit QUOI FAIRE À LA PLACE.** Sa
+                  correction du 21 août : « peu précis, ordre de grandeur, ça ne
+                  va rien dire — qu'on comprenne tout de suite qu'en gros ce
+                  n'est pas une bonne idée de calculer au seau pour son arrosage
+                  automatique ».
+
+                  Une réserve qui qualifie le chiffre (« approximatif ») se lit
+                  comme une nuance et se franchit sans y penser. Une réserve qui
+                  DÉCONSEILLE le geste et désigne l'outil juste ferme la
+                  question — c'est la différence entre un avertissement qu'on
+                  ignore et un avertissement qui change ce qu'on fait. */}
+              <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>
+                Trop approximatif pour calculer un arrosage : prenez le kit.
+              </p>
+            </div>
+
+            <div data-atlas="kit" className="mt-5">
+              <p className={`block ${libelleCaps}`} style={{ color: colors.or }}>
+                Kit débit / pression, buse 5
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <span className="min-w-0">
+                  <label className={`block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor="barStatique">
+                    Bar statique
+                  </label>
+                  <input
+                    id="barStatique"
+                    name="barStatique"
+                    type="number"
+                    inputMode="decimal"
+                    min="0.5"
+                    step="any"
+                    placeholder="3,5"
+                    className="mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[12px] py-3 text-[16px]"
+                    style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+                  />
+                </span>
+                <span className="min-w-0">
+                  <label className={`block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor="barDynamique">
+                    Bar dynamique
+                  </label>
+                  <input
+                    id="barDynamique"
+                    name="barDynamique"
+                    type="number"
+                    inputMode="decimal"
+                    min="0.5"
+                    step="any"
+                    placeholder="3"
+                    className="mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[12px] py-3 text-[16px]"
+                    style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+                  />
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ─── Le croquis ───────────────────────────────────────────────────── */}
@@ -98,22 +218,44 @@ export default function ArrosageClient({ iaPrete }: { iaPrete: boolean }) {
         </label>
         {/* `capture` ouvre l'appareil photo du téléphone plutôt que la pellicule :
             le croquis est sous ses yeux, il le photographie. */}
-        <input id="croquis" name="croquis" type="file" accept="image/*" capture="environment" hidden />
-        <button type="submit" data-atlas="lire-croquis" className="sr-only">
-          Lire le croquis
-        </button>
+        <input
+          id="croquis"
+          name="croquis"
+          type="file"
+          accept="image/*"
+          // **PAS de `capture` — sa demande du 21 août 2026 :** « soit je peux
+          // mettre une photo de ma bibliothèque, soit prendre une photo ; le
+          // même schéma que pour ajouter des photos à la fiche client ».
+          //
+          // `capture="environment"` n'est pas une préférence, c'est un ORDRE :
+          // le téléphone saute directement à l'appareil et le menu ne s'ouvre
+          // jamais. Un croquis se dessine souvent la veille, au bureau — le
+          // forcer à le rephotographier depuis son écran est une photo de photo,
+          // floue et de travers, que le modèle lira mal.
+          //
+          // La pellicule du chantier (`Pellicule.tsx`) ne porte pas non plus cet
+          // attribut, et c'est bien pour ça que son menu s'ouvre là-bas.
+          hidden
+          onChange={photoChoisie}
+        />
       </div>
 
-      {/* **L'IA absente se DIT, et avant le geste.** Sans clé, la lecture ne
-          rendra rien : le laisser photographier pour rien serait le troisième
-          bouton qui ne répond pas. */}
-      {!iaPrete && (
+      {/* **L'IA indisponible se DIT, et avant le geste.** Sans lecture, le
+          laisser photographier pour rien serait le troisième bouton qui ne
+          répond pas.
+
+          **Le motif vient du serveur, il n'est pas rédigé ici** — corrigé le
+          21 août 2026. L'écran affirmait « aucune clé d'IA n'est posée sur ce
+          serveur » quelle que soit la cause : c'est faux quand la clé est là
+          mais que le fournisseur choisi ne sait pas lire une image, et cela
+          envoie coller une clé qui ne changera rien (`CLAUDE.md` §5). */}
+      {!iaPrete && motifIA && (
         <p
           data-atlas="alerte"
           className="mx-[22px] mt-4 text-[13px] leading-relaxed"
           style={{ color: colors.alert }}
         >
-          Aucune clé d’IA n’est posée sur ce serveur : le croquis ne sera pas lu.
+          {motifIA} Le croquis ne sera pas lu.
         </p>
       )}
 
@@ -130,6 +272,11 @@ export default function ArrosageClient({ iaPrete }: { iaPrete: boolean }) {
       {etat.etat === "lu" && <Plan etat={etat} />}
     </form>
   );
+}
+
+/** Deux décimales, virgule française — un chiffre à l'anglaise se relit mal. */
+function virgule(x: number) {
+  return x.toFixed(2).replace(".", ",");
 }
 
 /** Le plan, une fois le croquis lu : les réseaux, puis le détail des pièces. */
@@ -168,6 +315,29 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
           )}
         </div>
       ))}
+
+      {/* **LE SEUIL DU Ø32 — sa demande du 22 août 2026.** Ses fournisseurs
+          savent lui dire à partir de combien de mètres le Ø25 ne tient plus ;
+          l'outil le dit maintenant aussi, et il le dit AVANT la tranchée.
+
+          **Une ligne, pas un paragraphe** (`CLAUDE.md` §3 ter) : le mètre
+          ruban est dans sa poche, le raisonnement est dans le dépôt. */}
+      {plan.tuyau.debit > 0 && (
+        <p
+          className="mx-[22px] mt-3 text-[13px] leading-relaxed"
+          style={{ color: plan.tuyau.insuffisantMemeEn32 ? colors.alert : colors.muted }}
+          data-atlas="seuil-tuyau"
+        >
+          {plan.tuyau.insuffisantMemeEn32
+            ? `${virgule(plan.tuyau.debit)} m³/h sur un réseau : même le Ø32 est trop juste.`
+            : plan.tuyau.seuil25 > 0
+              ? `Ø25 jusqu’à ${Math.floor(plan.tuyau.seuil25)} m, Ø32 au-delà.` +
+                (plan.tuyau.limitePar === "tuyau"
+                  ? ` Réseaux plafonnés à ${virgule(plan.tuyau.plafond)} m³/h : c’est le Ø25 qui commande, pas le compteur.`
+                  : "")
+              : `Ø32 d’office : ${virgule(plan.tuyau.debit)} m³/h passent trop vite en Ø25.`}
+        </p>
+      )}
 
       <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
         Le détail des pièces

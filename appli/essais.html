@@ -87,8 +87,45 @@
   <p class="famille">Le planning</p>
 
   <a class="essai" href="planning-simple.html">
-    <span class="titre">Le planning, simplifié<span class="neuf">nouveau</span></span>
-    <span class="quoi">Votre demande du 19 août, corrigée le 21 : <b>le calendrier reste au mois</b>, et c’est la liste des <b>planifiés</b> qui se déplace par semaine — une flèche de chaque côté, <b>appuyez dessus</b>. Les jours y sont <b>nommés</b> (« vendredi 21 août »), les clients dessous, les titres noirs et centrés. <b>Touchez un jour du mois</b> : la liste vous y amène. Le mois a été épuré — les jours des autres mois ne s’écrivent plus, le week-end est une colonne teintée, et un retour <b>« ← Aujourd’hui »</b> apparaît dès qu’on s’éloigne. Et <b>trois façons de marquer les demi-journées</b> à comparer en haut — vide = libre, vert pâle = une équipe sur deux, vert plein = complet. <b>Rien n’est codé.</b></span>
+    <span class="titre">Le planning, simplifié<span class="neuf">codé</span></span>
+    <span class="quoi">Votre demande du 19 août, corrigée le 21 : <b>le calendrier reste au mois</b>, et c’est la liste des <b>planifiés</b> qui se déplace par semaine — une flèche de chaque côté, <b>appuyez dessus</b>. Les jours y sont <b>nommés</b> (« vendredi 21 août »), les clients dessous, les titres noirs et centrés. <b>Touchez un jour du mois</b> : la liste vous y amène. Le mois a été épuré — les jours des autres mois ne s’écrivent plus, le week-end est une colonne teintée, et un retour <b>« ← Aujourd’hui »</b> apparaît dès qu’on s’éloigne. Chaque jour porte <b>deux barres</b> — le matin dessus, l’après-midi dessous : vide = libre, vert pâle = 1 équipe sur 2, vert plein = complet. La fiche du jour dit <b>qui</b> y est. <b>Et elle se manipule :</b> posez un chantier sans date sur un jour, touchez l’équipe pour la changer, la demi-journée pour la déplacer, ou retirez-le — il redescend dans « Sans date ». <b>Codé dans l’application le 21 août 2026</b>, trait pour trait : c’est l’écran « Planning » que vous ouvrez.</span>
+  </a>
+
+  <a class="essai" href="planning-planifies.html">
+    <span class="titre">Les planifiés, sans répétition<span class="neuf">nouveau</span></span>
+    <span class="quoi">Vos trois corrections du 22 août, <b>et rien n’est codé</b>. <b>1.</b> À côté du nom, « matin » devient <b>la durée du chantier</b> — « une demi-journée », « une journée », « 3 jours » : le temps qu’il prend, pas l’heure où il commence. <b>2.</b> Le compte gris « 1 chantier » <b>a disparu</b>. <b>3.</b> Le nom touché <b>devient sa propre fiche</b>, sur place : plus de jour écrit deux fois, plus de nom écrit deux fois. <b>Essayez-la :</b> touchez un nom, il s’ouvre ; retouchez-le, il se referme ; touchez une équipe, elle change. Et un réglage en bas vous laisse comparer « une demi-journée » avec « une demi-journée · matin » — <b>dites-moi lequel vous voulez</b>.</span>
+  </a>
+
+  <a class="essai" href="equipes-ou-chantiers.html">
+    <span class="titre">Deux équipes sur un chantier<span class="neuf">nouveau</span></span>
+    <span class="quoi">Votre question du 22 août : <b>pourquoi Mr. Eric s’affiche en « incomplet » alors que Julien ET Antoine sont dessus ?</b> La réponse en images, étape par étape. En deux mots : l’application <b>compte les chantiers, pas les équipes</b> — 1 chantier pour 2 équipes, donc « à moitié plein ». Elle croit qu’il vous reste quelqu’un. <b>Et elle propose ce mardi à vos clients.</b> La planche montre le calcul d’aujourd’hui, celui qu’on pourrait faire à la place, et ce que votre client voit dans les deux cas. <b>Rien n’est codé</b> — un oui ou un non suffit.</span>
+  </a>
+
+  <a class="essai" href="envoi-jour-deja-pris.html">
+    <span class="titre">Un jour déjà pris, proposé quand même<span class="neuf">nouveau</span></span>
+    <span class="quoi">Votre colère du 22 août : <b>« je peux proposer le 24 alors qu’un client a validé le 24 »</b>. <b>Un défaut est corrigé et poussé</b> : un chantier de plusieurs jours commencé <b>avant</b> la fenêtre n’était compté nulle part — les trois calculs ne regardaient que son jour de départ —, si bien qu’un jour déjà pris paraissait libre. <b>Et le contrôle de la réponse de votre client faisait la même erreur</b>, donc rien ne rattrapait la faute : deux chantiers le même jour. Trois contrôles neufs le tiennent, vus rouges contre l’ancien code. <b>Reste l’autre cas</b>, qui est votre choix : avec <b>deux équipes</b>, l’application propose un jour où une seule est prise — c’est voulu, mais elle ne vous le dit nulle part. Trois façons de l’écrire, <b>et les lignes se touchent</b>. <b>Rien n’est codé</b> de ce côté-là.</span>
+  </a>
+
+  <a class="essai" href="planning-semaine-ouverte.html">
+    <span class="titre">Un devis accepté, invisible<span class="neuf">nouveau</span></span>
+    <span class="quoi">Votre panne du 22 août : <b>« un devis a été accepté mais rien n’est visible sur mon planning »</b>. Le chantier <b>était bien posé</b> — la date du client et celle du chantier s’écrivent dans le même geste, rien n’a été perdu. C’est l’écran qui s’ouvre sur <b>la semaine d’aujourd’hui</b>, la trouve vide, et écrit « Aucun chantier posé cette semaine » pendant que le chantier attend <b>trois jours plus loin</b>. La planche montre votre écran d’aujourd’hui, puis <b>deux façons de le régler</b> — s’ouvrir sur la semaine du prochain chantier, ou rester sur celle-ci en disant où il est. <b>Les flèches marchent</b> : promenez-vous dans les trois. <b>Rien n’est codé</b> — dites-moi A, B ou C.</span>
+  </a>
+
+  <a class="essai" href="planning-equipe-sans-nom.html">
+    <span class="titre">Une équipe sans nom<span class="neuf">nouveau</span></span>
+    <span class="quoi">Un détail trouvé le 22 août, et <b>je n’ai rien codé</b> : sur la fiche du jour, si une équipe existe <b>sans porter de nom</b>, l’écran écrit « Équipe A » — plus large qu’un prénom, et <b>« Retirer » tombe à la ligne</b>. Vos équipes s’appellent Paul et Julien, donc vous ne le voyez pas. La planche montre l’état actuel puis <b>trois façons de le régler</b>, et <b>elle se mesure elle-même</b> : chaque ligne dit s’il lui manque des pixels ou s’il lui en reste. <b>Dites-moi laquelle vous voulez, ou aucune</b> — ne rien changer est une réponse.</span>
+  </a>
+
+  <a class="essai" href="choisir-la-date.html">
+    <span class="titre">Choisir la date, avec le planning<span class="neuf">nouveau</span></span>
+    <span class="quoi">Votre demande du 22 août : <b>« on devrait avoir le visuel du calendrier qui se trouve dans la catégorie planning »</b> quand on propose une date au client, <b>avec la possibilité de cliquer sur les jours pour voir quels chantiers y sont déjà affectés</b>. La planche montre les deux, à comparer d’un doigt : <b>« Aujourd’hui »</b>, le calendrier nu — des ronds, et les jours refusés simplement éteints, sans qu’on sache pourquoi ; et <b>« Ce que je propose »</b>, votre calendrier du planning — les deux barres sous le chiffre, le week-end teinté, aujourd’hui cerclé d’or —, et <b>sous lui la fiche du jour</b> : qui est déjà là, à quelle demi-journée, avec quelle équipe, et s’il reste de la place pour ce client-ci. <b>Elle se manipule :</b> touchez les jours, changez de mois, choisissez la durée du chantier au <b>bandeau déroulant</b> — d’une demi-journée à 200 jours — tout se recalcule. <b>Un jour complet reste touchable</b>, c’est justement celui que vous voulez regarder avant de décider. <b>Rien n’est codé.</b></span>
+  </a>
+
+  <p class="famille">L’écran « Terminés »</p>
+
+  <a class="essai" href="termines-simple.html">
+    <span class="titre">« Terminés », simplifié<span class="neuf">codé</span></span>
+    <span class="quoi">Votre demande du 22 août : <b>« beaucoup trop compliquée »</b>. Votre écran d’avant, puis trois façons de le simplifier — <b>vous avez pris la B</b>, et elle est dans l’application depuis. Un <b>seul mois à la fois</b>, qu’on feuillette avec <b>‹ Août 2026 ›</b> : reculez, un mois sans facture vous le dit. <b>Ce qui reste à facturer ne suit pas le mois</b> — l’onglet « À facturer » montre tout, tous mois confondus, pour le jour où la facturation a du retard. Plus de points ni de pastille : chaque ligne <b>dit</b> où elle en est. La planche reste ici : elle garde les trois propositions, et <b>toute correction de l’écran passera d’abord par elle</b>.</span>
   </a>
 
   <p class="famille">Trop de mots</p>
@@ -99,6 +136,11 @@
   </a>
 
   <p class="famille">Vos clients</p>
+
+  <a class="essai" href="cases-page-entiere.html">
+    <span class="titre">La page entière, cinq dessins de cases<span class="neuf">neuf</span></span>
+    <span class="quoi">Toute la fiche client, de haut en bas, <b>sous les cinq dessins</b> — touchez un numéro en haut, l’écran se relit. Tout marche : le numéro qui s’espace, les photos, l’anneau.</span>
+  </a>
 
   <a class="essai" href="cases-a-remplir.html">
     <span class="titre">Les cases à remplir, cinq façons<span class="neuf">neuf</span></span>

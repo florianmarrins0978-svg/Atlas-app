@@ -3,6 +3,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
+import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
 import { absencesEquipe, chantiers, clients, devis, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import {
@@ -165,16 +166,22 @@ export async function preparerEnvoi(
           // Bornée sur la fenêtre LA PLUS LARGE des deux : une occupation
           // absente ne se voit pas — le jour s'affiche simplement libre, et le
           // patron le propose. C'est exactement le défaut qu'on répare.
-          gte(chantiers.datePlanifiee, fenetre.debut),
+          //
+          // **Et pas sur la date de DÉPART.** Un chantier commencé avant la
+          // fenêtre peut encore l'occuper ; borner sur son premier jour le
+          // rendait invisible (`encoreEnCoursDepuis`).
+          encoreEnCoursDepuis(fenetre.debut),
           lte(chantiers.datePlanifiee, fenetreOccupationPatron.fin)
         )
       );
+    const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
     const planifies: ChantierPlanifie[] = occupesRows
       .filter((r) => r.jour !== null && r.id !== chantierId)
       .map((r) => ({
         jour: r.jour as JourIso,
         moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
         dureeDemiJournees: r.duree,
+        equipesParDemi: equipesPosees.get(r.id) ?? null,
       }));
     const [entreprise] = await tx
       .select({ nombreEquipes: entreprises.nombreEquipes })
@@ -475,10 +482,15 @@ async function contrainteSurHorizon(
         and(
           eq(chantiers.entrepriseId, ctx.entrepriseId),
           isNull(chantiers.deletedAt),
-          gte(chantiers.datePlanifiee, horizon.debut),
+          // Même règle que l'écran d'envoi, et surtout la même fonction :
+          // c'est ici qu'on valide la date que le patron choisit au
+          // calendrier. Deux bornes différentes lui feraient accepter un jour
+          // que l'écran refuse, ou l'inverse.
+          encoreEnCoursDepuis(horizon.debut),
           lte(chantiers.datePlanifiee, horizon.fin)
         )
       );
+    const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
     return compterOccupation(
       rows
         .filter((r) => r.jour !== null && r.id !== chantierId)
@@ -486,6 +498,7 @@ async function contrainteSurHorizon(
           jour: r.jour as JourIso,
           moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
           dureeDemiJournees: r.duree,
+          equipesParDemi: equipesPosees.get(r.id) ?? null,
         }))
     );
   });

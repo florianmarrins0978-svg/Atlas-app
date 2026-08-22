@@ -3,7 +3,7 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
 import { rubriquesReglages, surtitreReglages } from "@/lib/rubriques-reglages";
-import { versionExecutee } from "@/server/version-executee";
+import { versionEtRetard } from "@/server/version-executee";
 import { etatVersionLente } from "@/server/etat-banc";
 import { panneauVersionLente } from "@/lib/version-lente";
 import BoutonMiseAJour from "./BoutonMiseAJour";
@@ -36,7 +36,8 @@ export const dynamic = "force-dynamic";
  */
 export default async function ReglagesPage() {
   const ctx = await getCurrentCtx();
-  const [role, version] = await Promise.all([getRole(ctx), versionExecutee()]);
+  const [role, etatVersion] = await Promise.all([getRole(ctx), versionEtRetard()]);
+  const version = etatVersion.ligne;
 
   // Le rôle décide de ce que le SERVEUR rend, pas de ce que la feuille de style
   // cache : ce qu'un membre n'a pas le droit de voir ne sort pas d'ici
@@ -84,6 +85,30 @@ export default async function ReglagesPage() {
           <p className="text-[13px]" style={{ color: colors.muted }}>
             {version ?? "inconnue — cette installation n'annonce pas sa version."}
           </p>
+
+          {/* **LE CAS QUI LUI A COÛTÉ UNE SOIRÉE, dit en toutes lettres.**
+
+              Le 21 août 2026 : *« Ça n'a pas marché, j'ai encore l'ancienne
+              version. Pourtant j'ai rechargé les mises à jour. »* Les deux
+              étaient vrais — le code neuf était bien arrivé sur le disque, et
+              le serveur exécutait bien celui de la veille. La ligne ci-dessus
+              lisait le disque : elle confirmait la mise à jour à l'instant
+              précis où elle aurait dû avertir que rien de neuf n'était servi.
+
+              En or, comme tout ce qui attend un geste de lui (`CLAUDE.md`) —
+              et il y a bien un geste à faire : rouvrir l'espace de travail. */}
+          {etatVersion.enRetard && (
+            <div className="mt-3 py-1 pl-[15px]" style={{ borderLeft: `1px solid ${colors.or}` }}>
+              <p className="text-[13px]" style={{ color: colors.ink }}>
+                Du code plus récent est déjà là, mais l&apos;application exécute encore la
+                version ci-dessus : elle a été construite avant.
+              </p>
+              <p className="mt-1 text-[12px]" style={{ color: colors.muted }}>
+                En attente : {etatVersion.enAttente}. Arrêtez puis rouvrez l&apos;espace de
+                travail — il se reconstruira au démarrage.
+              </p>
+            </div>
+          )}
 
           {/* Dit en toutes lettres, parce que « main » tout seul ne veut rien
               dire pour lui : le dernier mot est la branche suivie, et un travail

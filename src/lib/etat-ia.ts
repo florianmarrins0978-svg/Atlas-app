@@ -34,7 +34,7 @@ export type NatureFournisseur =
   | "cle_absente";
 
 export type EtatFournisseur = {
-  role: "Transcription" | "Rédaction";
+  role: "Transcription" | "Rédaction" | "Lecture d’image";
   nature: NatureFournisseur;
   /** Ce qui s'affiche en gros : le prestataire, ou l'absence de prestataire. */
   libelle: string;
@@ -80,8 +80,20 @@ const CE_QUI_REMPLACE = {
     "Les informations du chantier sont déduites par de simples règles d'écriture, sans aucun modèle de langage derrière.",
 } as const;
 
+/**
+ * Les deux rôles que `decrire` sait traiter.
+ *
+ * **Volontairement plus étroit que `EtatFournisseur["role"]`**, qui porte aussi
+ * « Lecture d'image » : celle-ci a ses propres phrases (un croquis n'est ni un
+ * audio ni une dictée) et sa propre règle, `etatVision`. Élargir les tables
+ * ci-dessus pour l'y faire entrer aurait produit une carte qui parle de
+ * « transcriptions simulées » à propos d'une photo — le genre de phrase qu'on
+ * ne voit qu'à la capture.
+ */
+type RoleDecrit = "Transcription" | "Rédaction";
+
 function decrire(
-  role: EtatFournisseur["role"],
+  role: RoleDecrit,
   valeur: string,
   connus: Record<string, Fiche>,
   clesPresentes: ReadonlySet<string>
@@ -178,4 +190,124 @@ export function aFaireIA(etats: EtatFournisseur[]): string | undefined {
 /** Vrai si au moins un des deux ne fait pas ce qu'on croit — sert à colorer l'écran. */
 export function auMoinsUnEnDefaut(etats: EtatFournisseur[]): boolean {
   return etats.some((e) => e.nature !== "reel");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUI REGARDE LES PHOTOS — et l'écran doit le dire JUSTE.
+//
+// **Pourquoi cette fonction est née, le 21 août 2026.** L'écran d'arrosage
+// annonçait « aucune clé d'IA n'est posée sur ce serveur » dès qu'il ne
+// trouvait ni clé Anthropic ni clé OpenAI — une question qui n'est pas celle
+// qu'il faut poser. Ce qui compte n'est pas qu'une clé existe quelque part,
+// mais que **le fournisseur qui va lire l'image** ait la sienne. Les deux se
+// séparent depuis que `VISION_PROVIDER` existe : on peut rédiger chez l'un et
+// regarder chez l'autre.
+//
+// Sans cette distinction, l'écran se trompe DANS LES DEUX SENS — et le second
+// est le plus coûteux :
+//
+//   1. clé posée, mais chez un fournisseur qui ne lit pas les images : l'écran
+//      annonce que tout va bien, il photographie… et rien ne revient. C'est le
+//      « troisième bouton qui ne répond pas », déjà payé trois fois ici ;
+//   2. vision réglée sur un fournisseur dont la clé est là, mais l'autre clé
+//      absente : l'écran crie au manque alors que la lecture fonctionne.
+//
+// **Et le message doit désigner le bon coupable** (`CLAUDE.md` §5) : « aucune
+// clé » quand c'est le fournisseur qui ne sait pas lire envoie coller une clé
+// qui ne changera rien.
+//
+// Fonction pure : aucune variable d'environnement lue ici, aucun réseau.
+
+export type EtatVision =
+  /** Le fournisseur choisi sait lire une image, et sa clé est là. */
+  | { prete: true; fournisseur: string }
+  /** La lecture ne rendra rien — et on dit pourquoi, en français. */
+  | { prete: false; raison: string };
+
+/** Ceux qui savent VRAIMENT regarder une image, et la clé que chacun réclame. */
+const VISION: Record<string, { libelle: string; variable: string }> = {
+  anthropic: { libelle: "Anthropic (Claude)", variable: "ANTHROPIC_API_KEY" },
+  openai: { libelle: "OpenAI (GPT)", variable: "OPENAI_API_KEY" },
+};
+
+export function etatVision(entree: {
+  /** `VISION_PROVIDER`, ou à défaut le fournisseur de rédaction. */
+  visionProvider: string;
+  anthropicApiKey?: string | null;
+  openaiApiKey?: string | null;
+}): EtatVision {
+  const nom = (entree.visionProvider ?? "").toLowerCase();
+  const fiche = VISION[nom];
+
+  // Gemini est un raccordement annoncé et non écrit : il répond « fournisseur
+  // non implémenté » à chaque appel. Poser sa clé n'y changerait rien, et le
+  // dire évite d'aller la chercher.
+  if (!fiche) {
+    if (nom === "gemini") {
+      return { prete: false, raison: "Google Gemini ne sait pas encore lire une image ici." };
+    }
+    return { prete: false, raison: "Aucun fournisseur de lecture d’image n’est configuré." };
+  }
+
+  const cles: Record<string, string | null | undefined> = {
+    anthropic: entree.anthropicApiKey,
+    openai: entree.openaiApiKey,
+  };
+  if (!cles[nom]) {
+    return { prete: false, raison: `${fiche.libelle} lit les croquis, mais ${fiche.variable} n’est pas posée.` };
+  }
+  return { prete: true, fournisseur: fiche.libelle };
+}
+
+/**
+ * La carte « Lecture d'image » de l'écran Atlas IA.
+ *
+ * **Pourquoi elle est née le 21 août 2026.** Le patron a demandé : *« va voir ce
+ * qu'il y a de posé dans l'application et dis-moi si c'est bon ou s'il faut
+ * qu'on rajoute une clé »*. La bonne réponse n'est pas que je regarde à sa
+ * place une fois : c'est que l'application le dise, à lui, le jour où il se
+ * pose la question. L'écran nommait déjà qui écoute et qui rédige ; il ne
+ * disait rien de qui REGARDE, alors que c'est un réglage à part depuis
+ * `VISION_PROVIDER`.
+ *
+ * **La décision n'est pas reprise ici** : elle appartient à `etatVision`, et
+ * l'écran d'arrosage s'appuie sur la même. Deux implémentations finiraient par
+ * ne plus dire la même chose, et c'est le patron qui verrait l'écart entre un
+ * réglage qui se dit vert et un croquis qui ne se lit pas (`CLAUDE.md` §3).
+ *
+ * On lui passe les NOMS des variables renseignées, jamais leurs valeurs — une
+ * clé n'a rien à faire dans du HTML rendu.
+ */
+export function decrireVision(
+  visionProvider: string,
+  clesPresentes: readonly string[]
+): EtatFournisseur {
+  const etat = etatVision({
+    visionProvider,
+    anthropicApiKey: clesPresentes.includes("ANTHROPIC_API_KEY") ? "posée" : null,
+    openaiApiKey: clesPresentes.includes("OPENAI_API_KEY") ? "posée" : null,
+  });
+  const role = "Lecture d’image" as const;
+
+  if (etat.prete) {
+    return {
+      role,
+      nature: "reel",
+      libelle: etat.fournisseur,
+      explication:
+        "Les croquis d’arrosage et les tickets photographiés partent chez ce prestataire. Il devient un sous-traitant à faire figurer dans vos documents (voir docs/RGPD.md §3).",
+    };
+  }
+
+  // **Deux échecs qui ne se réparent pas de la même façon**, et le dire épargne
+  // d'aller coller une clé qui ne changerait rien : l'un se corrige en collant
+  // une clé, l'autre en écrivant du code.
+  const variable = etat.raison.match(/[A-Z_]+_API_KEY/)?.[0];
+  return {
+    role,
+    nature: variable ? "cle_absente" : "non_raccorde",
+    libelle: etat.raison,
+    explication: "Aucun croquis ne sera lu : l’écran d’arrosage le dit avant de faire photographier.",
+    ...(variable ? { variableManquante: variable } : {}),
+  };
 }

@@ -73,6 +73,12 @@ jobs:
           # voie. Une suite qui ne barre pas la publication ne barre rien.
           BASE_URL=http://127.0.0.1:8080 npm run test:arrosage
           BASE_URL=http://127.0.0.1:8080 npm run test:croquis
+          # **La planche qu'on lui demande d'ESSAYER se parcourt d'abord ici.**
+          # Trois fois, une adresse lui a été transmise sans que personne ne
+          # l'ait ouverte, et c'est lui qui a trouvé le défaut. Celle-ci
+          # s'ouvre, ses quatre onglets s'affichent et ses boutons se pressent
+          # dans un vrai navigateur avant qu'elle parte en ligne.
+          BASE_URL=http://127.0.0.1:8080 npm run test:termines
 
   deploy:
     name: Déploiement
@@ -192,8 +198,14 @@ jobs:
           # Elle se donne par son adresse directe. Sans cette ligne, la liste
           # déduite ne la verrait pas, et on lui transmettrait une adresse dont
           # rien ne prouve qu'elle répond.
+          # `arrosage-plan.html` rejoint la liste le 21 août, pour la même
+          # raison : elle se donne par son adresse directe, pas depuis
+          # `essais.html`. Sans cette ligne, on lui transmettrait une adresse
+          # dont rien ne prouve qu'elle répond — c'est déjà arrivé, et c'est LUI
+          # qui avait fait le test.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
-                   arrosage-simple.html $LIES; do
+                   arrosage-simple.html arrosage-plan.html \
+                   arrosage-discuter.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

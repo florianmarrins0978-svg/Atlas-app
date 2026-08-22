@@ -16,6 +16,7 @@ import {
   grillePrix,
   agendasExternes,
   equipes,
+  equipesDuChantier,
   prestationsEntretien,
   passagesEntretien,
   lignesPassage,
@@ -136,6 +137,7 @@ export async function exporterEntreprise(
       laGrillePrix,
       lesAgendas,
       lesEquipes,
+      sesEquipesDeChantier,
       sesAbsences,
       sesTranches,
       sesNatures,
@@ -210,6 +212,14 @@ export async function exporterEntreprise(
       // Les noms que le patron a donnés à ses équipes. C'est SA saisie, et rien
       // ne la reconstitue : elle part avec le reste de ses données.
       tx.select().from(equipes).where(eq(equipes.entrepriseId, e)),
+      // **Qui va sur quel chantier, demi-journée par demi-journée** (migration
+      // 0058). C'est sa saisie, et elle ne se reconstitue pas : rien, dans le
+      // chantier, ne dit après coup qui l'a fait. Une sauvegarde qui l'oublierait
+      // rendrait un planning dont toutes les pastilles seraient vides.
+      tx
+        .select()
+        .from(equipesDuChantier)
+        .where(eq(equipesDuChantier.entrepriseId, e)),
       // Les jours où une équipe n'est pas là (14 août 2026, `ARCHITECTURE.md`
       // §109). C'est sa saisie, et elle commande les dates qu'Atlas propose à
       // ses clients : une sauvegarde qui l'oublierait rendrait un planning qui
@@ -317,6 +327,7 @@ export async function exporterEntreprise(
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,
+      equipes_du_chantier: sesEquipesDeChantier,
       absences_equipe: sesAbsences,
       // Le modèle de fiche d'entretien : ses prestations, ses familles, son ordre.
       prestations_entretien: sonModeleEntretien,

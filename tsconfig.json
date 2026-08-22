@@ -85,7 +85,11 @@
     ".next-essai/types/**/*.ts",
     ".next-essai/dev/types/**/*.ts",
     ".next-essai-verrou/types/**/*.ts",
-    ".next-essai-verrou/dev/types/**/*.ts"
+    ".next-essai-verrou/dev/types/**/*.ts",
+    ".next-vue/types/**/*.ts",
+    ".next-vue/dev/types/**/*.ts",
+    ".next-diag/types/**/*.ts",
+    ".next-diag/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

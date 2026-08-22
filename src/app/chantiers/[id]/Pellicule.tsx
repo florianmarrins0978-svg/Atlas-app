@@ -39,9 +39,25 @@ export type VignettePhoto = { id: string; storageKey: string };
  */
 export default function Pellicule({
   chantierId,
+  assurerChantier,
   initiales,
 }: {
-  chantierId: string;
+  /**
+   * Le chantier, s'il existe déjà. **`null` sur la fiche client** : il n'est
+   * créé qu'au premier geste — voir `assurerChantier`.
+   */
+  chantierId: string | null;
+  /**
+   * Fait exister le chantier, et rend son identifiant.
+   *
+   * **Sa demande du 21 août 2026 met les photos AVANT la création** : il
+   * photographie chez le client, puis il dicte, et le chantier naît de ces
+   * gestes-là. Une photo n'a nulle part où aller tant qu'aucun chantier
+   * n'existe ; on le crée donc à la première photo, sans rien lui demander de
+   * plus. Appelée plusieurs fois, elle rend le MÊME chantier — sans quoi trois
+   * photos feraient trois chantiers.
+   */
+  assurerChantier?: () => Promise<string>;
   initiales: VignettePhoto[];
 }) {
   const router = useRouter();
@@ -83,7 +99,9 @@ export default function Pellicule({
       const fd = new FormData();
       fd.set("fichier", fichier);
       try {
-        const { id, storageKey } = await ajouterPhotoAction(chantierId, fd);
+        const cible = chantierId ?? (await assurerChantier?.());
+        if (!cible) break;
+        const { id, storageKey } = await ajouterPhotoAction(cible, fd);
         setPhotos((p) => [...p, { id, storageKey }]);
       } catch {
         // Une photo en échec parmi plusieurs n'interrompt pas les autres.
@@ -123,7 +141,10 @@ export default function Pellicule({
           // montre et ce qu'il annonce doivent raconter le même instant.
           aria-label={enCours ? "Envoi des photos en cours" : "Ajouter des photos"}
           className="atlas-ajouter"
-          style={{ border: `1px solid ${colors.line}`, color: colors.or }}
+          // Le liseré est en TIRETS et doré, comme sur sa maquette : un carré
+          // en trait plein se lit comme une case vide, pas comme un endroit où
+          // poser une photo.
+          style={{ border: `1px dashed ${colors.or}`, color: colors.or }}
         >
           {/* **Le même souffle que la dictée**, sur sa demande du 13 août 2026 :
               *« oui souffle aussi pour la photo »*. C'était ici le même

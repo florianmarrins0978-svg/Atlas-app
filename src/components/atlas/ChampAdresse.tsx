@@ -134,17 +134,23 @@ export default function ChampAdresse({
           aria-expanded={listeVisible}
           aria-autocomplete="list"
           aria-controls={`${identifiant}-liste`}
+          // **La case vient de `.atlas-case`** (`globals.css`), pas d'un style
+          // écrit ici : elle était en double avec `Field`, et deux écritures de
+          // la même case divergent au premier ajustement (`CLAUDE.md` §3).
+          // C'est aussi ce qui lui donne son état au doigt posé, qu'un style en
+          // ligne ne sait pas exprimer.
           className={
             enLigne
               ? "block w-full border-0 bg-transparent p-0 outline-none"
-              : "rounded-[4px] border-0 px-4 py-3.5 outline-none"
+              : "atlas-case"
           }
-          // 17 px en ligne, 16 en carte — jamais moins : en dessous de 16, iOS
-          // agrandit la page à la mise au point et l'écran saute.
+          // 17 px en ligne, 16 en carte (posé par `.atlas-case`) — jamais
+          // moins : en dessous de 16, iOS agrandit la page à la mise au point
+          // et l'écran saute.
           style={
             enLigne
               ? { color: colors.ink, fontFamily: font.display, fontSize: 17, lineHeight: 1.35 }
-              : { backgroundColor: colors.card, color: colors.ink, fontFamily: font.body, fontSize: "16px" }
+              : { fontFamily: font.body }
           }
         />
       </label>

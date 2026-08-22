@@ -422,6 +422,12 @@ const MAQUETTES = [
     quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
   },
   {
+    fichier: "83-enregistrer-le-pdf.html",
+    titre: "Enregistrer le PDF depuis la fiche client",
+    famille: "Le devis avant l\u2019envoi",
+    quoi: "Les vignettes de la fiche client OUVRENT le PDF sans proposer de l\u2019enregistrer. Trois dosages du geste \u2014 et la question qu\u2019il doit trancher : vient-il regarder, ou garder ?",
+  },
+  {
     fichier: "82-choisir-la-date.html",
     titre: "Choisir la date, sans l’écran du milieu",
     famille: "Le devis avant l’envoi",

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS, DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Comment je fais si je dois lui proposer une date dans six mois ? »**
 // — le patron, le 8 août 2026, en ajoutant : *« c'est un problème qui va se
@@ -35,7 +36,7 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nom);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const chantierId = page.url().split("/").pop()!;
 
@@ -64,14 +65,39 @@ async function main() {
     "Aucun calendrier : le patron ne peut proposer que la semaine qui vient."
   );
 
-  // Le lendemain ne se choisit pas : proposer demain met le patron en défaut.
+  // **Le lendemain se REGARDE mais ne se PROPOSE pas.**
+  //
+  // Le contrôle exigeait auparavant une case éteinte. Depuis le 22 août 2026,
+  // sur sa demande (planche 91), **toutes les cases restent touchables** :
+  // *« un jour complet reste touchable — c'est justement celui sur lequel vous
+  // voulez regarder avant de décider »*. Le refus a donc changé de place : il
+  // n'éteint plus la case, il s'écrit sous elle, et c'est « Proposer ce jour »
+  // qui reste hors d'atteinte.
   const demain = versJourIso(ajouterJours(aujourdHui, 1));
   const caseDemain = page.locator(`[data-jour="${demain}"]`);
   if ((await caseDemain.count()) > 0) {
-    assert.ok(
-      await caseDemain.first().isDisabled(),
-      `Le calendrier laisse choisir ${demain} (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
+    await caseDemain.first().click();
+    const fiche = page.locator('[data-atlas="journee-regardee"]');
+    await fiche.waitFor({ state: "visible", timeout: 30_000 });
+    await page.waitForFunction(
+      () => !document.body.innerText.includes("Vérification de votre planning"),
+      undefined,
+      { timeout: 30_000 }
     );
+    // Un week-end ne porte même pas le bouton : la fiche dit « Jamais proposé »
+    // et s'arrête là. C'est un refus aussi, et le plus net des deux.
+    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
+    const refuse =
+      (await bouton.count()) === 0
+        ? /Jamais proposé/.test(await fiche.innerText())
+        : await bouton.isDisabled();
+    assert.ok(
+      refuse,
+      `Le calendrier laisse PROPOSER ${demain} (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
+    );
+    // On referme, pour repartir d'un écran propre.
+    await caseDemain.first().click();
+    await page.waitForTimeout(200);
   }
 
   // --- 2. Une date à six mois est acceptée, et elle se voit ----------------
@@ -95,8 +121,18 @@ async function main() {
   }
   const cible = page.locator(`[data-jour="${dansSixMois}"]`);
   assert.equal(await cible.count(), 1, `${dansSixMois} reste introuvable dans le calendrier.`);
-  assert.ok(await cible.isEnabled(), `${dansSixMois} est grisé alors qu'il est libre.`);
+  // **Regarder, puis proposer** — les deux gestes de sa planche 91 : le premier
+  // ouvre la journée pour voir qui y est, le second seul engage la date.
   await cible.click();
+  await page.waitForSelector('[data-atlas="journee-regardee"]', { timeout: 30_000 });
+  await page.waitForFunction(
+    () => !document.body.innerText.includes("Vérification de votre planning"),
+    undefined,
+    { timeout: 60_000 }
+  );
+  const proposer = page.locator('[data-atlas="retenir-le-jour"]');
+  assert.ok(await proposer.isEnabled(), `${dansSixMois} est refusé alors qu'il est libre.`);
+  await proposer.click();
   console.log("  ✓ une autre date se choisit, d'après-demain à dix-huit mois");
   await page.waitForTimeout(2500);
 
@@ -106,9 +142,11 @@ async function main() {
     /ne tient pas ce jour-là|pas lisible|dix-huit mois/,
     `L'écran refuse une date à six mois. Lu : « ${ecran.replace(/\s+/g, " ").slice(0, 300) }»`
   );
-  assert.equal(
-    await page.locator('button[aria-pressed="true"]').filter({ hasText: /proposée/ }).count() >= 1,
-    true,
+  const apresLeChoix = await page.locator("body").innerText();
+  const [, moisChoisi, jourChoisi] = dansSixMois.split("-");
+  assert.match(
+    apresLeChoix,
+    new RegExp(`${Number(jourChoisi)}\\s+${MOIS[Number(moisChoisi) - 1]}`, "i"),
     "La date choisie n'apparaît nulle part : le patron enverrait sans savoir ce qu'il propose."
   );
   console.log("  ✓ une date à six mois est retenue, et affichée");

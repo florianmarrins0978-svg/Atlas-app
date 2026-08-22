@@ -7,6 +7,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // patron a fait retirer ce mot.
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Ce que devient un devis parti, vu du patron (docs/AGENT.md §2.2).
 //
@@ -62,7 +63,7 @@ async function devisParti(page: Page, suffixe: string) {
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;
@@ -80,7 +81,7 @@ async function devisParti(page: Page, suffixe: string) {
   await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // **Le jeton se lit dans la BASE, plus à l'écran.**
   //
@@ -169,41 +170,49 @@ async function main() {
   });
 
   await test("« J'ai vu » retire la notification, et pour de bon", async () => {
-    const { jeton } = await devisParti(page, "vu");
+    const { chantierId, jeton } = await devisParti(page, "vu");
     await clientRefuse(browser, jeton);
 
-    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-    // **Déplier la pile avant de chercher.** Depuis le 16 août 2026, les rappels
-    // passent devant les réponses de clients (sa décision « fait la B »), et
-    // l'accueil n'en pose que deux : une réponse peut donc être repliée derrière
-    // « N autres devis à regarder ». Elle existe et se touche en un appui — mais
-    // pas sans ce geste, et la suite accuserait la carte d'être absente.
-    const deplier = page.getByRole("button", { name: /autres? devis à regarder/ });
-    if ((await deplier.count()) > 0) {
-      await deplier.first().click();
-      await page.waitForTimeout(300);
-    }
-    // Compté avant/après : les suites précédentes laissent leurs propres refus
-    // non lus, et exiger zéro reviendrait à tester l'ordre d'exécution.
-    const avant = await page.locator("text=Devis retourné").count();
-    assert.ok(avant > 0, "aucune notification à marquer comme vue");
+    // **On vise LA carte de CE chantier, jamais un compte de cartes.**
+    //
+    // Ce contrôle comptait les « Devis retourné » de l'accueil avant et après le
+    // geste, et exigeait un de moins. Deux choses lui étaient alors étrangères
+    // et le faisaient rougir sur du code juste : le nombre de refus laissés non
+    // lus par les suites d'avant, et l'ORDRE des cartes — depuis le 16 août
+    // 2026 les rappels passent devant les réponses de clients, si bien que le
+    // premier « J'ai vu » de la page pouvait appartenir à un rappel. Le geste
+    // marchait, il écartait simplement une autre carte que celle qu'on comptait.
+    //
+    // Un identifiant ne dépend ni de l'ordre d'exécution ni de la mise en page
+    // (`CLAUDE.md` §5 bis) : la carte porte son chantier, on la nomme.
+    const laCarte = () =>
+      page.locator(`[data-atlas="carte-reponse"][data-chantier="${chantierId}"]`);
 
-    await page.locator("text=J'ai vu").first().click();
+    /** Déplier la pile : l'accueil n'en pose que deux, le reste est à un appui. */
+    const deplier = async () => {
+      const bouton = page.getByRole("button", { name: /autres? devis à regarder/ });
+      if ((await bouton.count()) > 0) {
+        await bouton.first().click();
+        await page.waitForTimeout(300);
+      }
+    };
+
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await deplier();
+    // **Zéro carte ne prouve rien** (`CLAUDE.md` §5) : sans elle, l'assertion
+    // finale serait vraie d'avance et ce contrôle rendrait un vert imperturbable.
+    assert.strictEqual(await laCarte().count(), 1, "la réponse de CE client n'est pas annoncée");
+
+    await laCarte().getByRole("button", { name: "J'ai vu" }).click();
     await page.waitForTimeout(1500);
 
-    // **Et redéplier APRÈS le rechargement.** Le repli revient à zéro à chaque
-    // chargement : compter la pile dépliée avant et repliée après comparait
-    // deux choses différentes, et le contrôle accusait « J'ai vu » de ne rien
-    // faire alors qu'il faisait exactement son travail.
+    // **Après un vrai rechargement, et repli redéplié.** Le repli revient à zéro
+    // à chaque chargement : c'est ce que le patron verra en rouvrant l'accueil.
     await page.reload({ waitUntil: "networkidle" });
-    const encore = page.getByRole("button", { name: /autres? devis à regarder/ });
-    if ((await encore.count()) > 0) {
-      await encore.first().click();
-      await page.waitForTimeout(300);
-    }
+    await deplier();
     assert.strictEqual(
-      await page.locator("text=Devis retourné").count(),
-      avant - 1,
+      await laCarte().count(),
+      0,
       "la notification revient après rechargement"
     );
   });
@@ -239,7 +248,7 @@ async function main() {
     await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     try {
-      await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+      await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
     } catch (e) {
       // Ce contrôle a échoué une fois dans la batterie complète, jamais seul :
       // l'attente expirait sans qu'on sache pourquoi. Un délai dépassé ne
@@ -256,6 +265,11 @@ async function main() {
       chantierId,
     ]);
     assert.strictEqual(envois.rows[0].n, 2, "le second envoi n'a pas été enregistré");
+
+    // **On rouvre l'écran du devis parti.** L'envoi ramène à l'accueil depuis le
+    // 21 août 2026 : ce que ce cas inspecte — les gestes offerts APRÈS l'envoi —
+    // se lit là où il revient, par la carte du chantier.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
     // **Un seul bouton à chaque instant — sa règle du 13 août (maquette 40, B).**
     //
@@ -275,8 +289,12 @@ async function main() {
 
     // Et le geste qui reste est bien celui du moment.
     assert.ok(
-      (await page.getByRole("link", { name: /Ouvrir le (SMS|mail|message)/i }).count()) +
-        (await page.getByRole("button", { name: /Ouvrir le (SMS|mail|message)/i }).count()) >
+      // « Relancer » depuis le 21 août 2026 : cet écran ne se voit plus qu'en y
+      // REVENANT, sur un devis déjà parti — le geste est donc une relance, et le
+      // libellé le dit. Les deux formes restent acceptées : ce qu'on vérifie est
+      // qu'un geste de transmission subsiste, pas lequel.
+      (await page.getByRole("link", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) +
+        (await page.getByRole("button", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) >
         0,
       "après l'envoi, l'écran ne porte plus aucun geste : la transmission a disparu avec la reprise."
     );

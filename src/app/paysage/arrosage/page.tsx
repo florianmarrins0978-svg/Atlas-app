@@ -1,5 +1,6 @@
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getConfigIA } from "@/server/ai/config";
+import { etatVision } from "@/lib/etat-ia";
 import ArrosageClient from "./ArrosageClient";
 
 /**
@@ -19,8 +20,12 @@ export const dynamic = "force-dynamic";
 
 export default async function ArrosagePage() {
   const ia = getConfigIA();
-  // N'importe lequel des deux suffit : le croquis part chez celui qui est posé.
-  const iaPrete = Boolean(ia.anthropicApiKey || ia.openaiApiKey);
+  // **La bonne question n'est pas « une clé existe-t-elle », mais « celui qui
+  // va LIRE l'image a-t-il la sienne ».** L'ancienne version répondait vrai dès
+  // qu'une clé traînait quelque part : avec `VISION_PROVIDER` réglé ailleurs,
+  // l'écran promettait une lecture qui ne pouvait pas avoir lieu. La règle est
+  // pure et éprouvée sans réseau (`src/lib/etat-ia.ts`).
+  const vision = etatVision(ia);
 
   return (
     <div>
@@ -32,7 +37,10 @@ export default async function ArrosagePage() {
         surtitre="Paysage"
         titre="Plan d’arrosage"
       />
-      <ArrosageClient iaPrete={iaPrete} />
+      <ArrosageClient
+        iaPrete={vision.prete}
+        motifIA={vision.prete ? null : vision.raison}
+      />
     </div>
   );
 }

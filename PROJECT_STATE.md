@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-20 · branche `main`
+**Dernière mise à jour :** 2026-08-22 · branche `main`
 · dernière migration `drizzle/0056_diagnostic_vegetal.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -9,6 +9,40 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Proposer une date : le calendrier du planning (22 août 2026)
+
+Sa demande, validée sur planche 91 puis codée trait pour trait.
+
+| | État |
+|---|---|
+| Le calendrier du planning dans « Choisir la date » | **fait** (`MoisCharge`, partagé avec l'écran Planning) |
+| Toucher un jour dit **qui y est déjà**, avec son équipe | **fait** (`JourneeRegardee`) |
+| **Regarder n'est plus retenir** — « Proposer ce jour » engage seul | **fait** |
+| Un jour complet reste **touchable** | **fait**, à sa demande |
+| La durée va jusqu'à **200 jours** | **fait** (`durees-chantier.ts`) |
+| La charge et le chargement partagés, jamais recopiés | **fait** (`useOccupation`, `contextePlanning`) |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §143.
+
+---
+
+## De la dictée au devis : la chaîne part TOUTE SEULE (21 août 2026)
+
+Sa panne de Madame Lucie : il dicte, ferme l'application, revient, clique le nom
+— et n'arrive pas sur son devis.
+
+| | État |
+|---|---|
+| La liste mène au **devis** dès qu'une dictée existe | **fait** (`chantier-etat.ts`) |
+| Le devis **se prépare lui-même** en arrivant, sans qu'il appuie sur rien | **fait** (`devis-a-preparer.ts`, `PreparationDictee.tsx`) |
+| Sortie de secours si la chaîne échoue : « Ouvrir le devis tel quel » | **fait** |
+| La séquence entière rejouée au navigateur | **fait** (`test-madame-lucie-e2e.ts`) |
+| La qualité de la rédaction avec une VRAIE clé | **non vérifiée ici** — `npm run verifier:dictee`, sur son espace |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §142.
 
 ---
 
@@ -69,6 +103,14 @@ rien, par ordre de poids :** le temps réel d'un chantier — donc Atlas ignore 
 ses estimations de durée sont justes, alors que c'est la durée qui fait le prix —,
 les coûts de chiffrage, les délais de paiement réels, et ce qu'un client refuse.
 Le détail est dans `ARCHITECTURE.md` §90 et `docs/QUESTIONS.md` §17.
+
+**L'IA EST BRANCHÉE, et ce n'est plus une hypothèse.** Le patron, le 21 août
+2026 : *« il y a une clé IA, il y a Anthropic, elles sont connectées, les deux
+clés »*. Sur son espace, la dictée est transcrite, les devis rédigés et les
+photos regardées pour de bon — l'arrosage, le diagnostic végétal, le ticket de
+caisse. Le poste de l'agent, lui, n'a aucune clé : ce qui en dépend se vérifie
+**sur son espace**, jamais ici, et ne se déclare jamais impossible
+(`CLAUDE.md` §1 ter).
 
 **La leçon qui commande ce chantier :** `historique_prix` était lue et jamais
 écrite. Devant toute idée d'apprentissage, la question n'est pas « avons-nous une
@@ -156,7 +198,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
 | **Facture transmise par SMS ou par e-mail**, au choix, coordonnée saisie sur place | `src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx` |
 | **Facture téléchargeable**, sous un nom qui porte son numéro | `src/app/api/factures/[id]/pdf/route.ts` |
-| **Chemin du planning vers la facture**, et rangement en un seul onglet | `src/lib/onglet-chantier.ts`, `src/app/planning/PlanningClient.tsx` |
+| **Chemin vers la facture sans passer par la fiche**, et rangement en un seul onglet. Il partait du planning jusqu'au 21 août 2026 ; l'écran refait ne le porte plus, et c'est la liste des « Terminés » qui y mène — sur sa ligne, ou par l'onglet « À facturer » | `src/lib/onglet-chantier.ts`, `src/app/termines/ListeTermines.tsx` |
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 | Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |
@@ -191,7 +233,13 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | **Ses tranches et ses travaux, au lieu des nôtres** — les diamètres, les hauteurs, les façons d'abattre et les travaux s'ajoutent et se retirent (écran « Mes prix » et écran « Mes mesures »). Retirer n'efface aucun prix : les cases sont rangées et reviennent. Un travail ajouté n'est PAS reconnu par le chiffrage depuis une dictée, et l'écran le dit (`ARCHITECTURE.md` §105) | `src/lib/grille-prix.ts` + `src/server/repositories/grilles-reglables.ts` + `src/app/reglages/prix/` + `drizzle/0041_tranches_et_natures_de_grille.sql` |
 | **L'unité d'un tarif se CHOISIT** dans un bandeau déroulant (jour/homme, m², ml, heure, forfait, tonne, « aucune ») — la case reste libre pour le stère et l'arbre. Ce qu'elle évite : le rapprochement se fait à la lettre près, et « jours/homme » mal tapé faisait cesser la multiplication en silence (`ARCHITECTURE.md` §101) | `src/lib/unites-tarif.ts` + `src/components/atlas/ChoixUnite.tsx` + `src/app/reglages/ReglagesClient.tsx` |
 
-### Le plan d'arrosage automatique — ESSAYABLE le 17 août 2026, rien n'est codé
+### Le plan d'arrosage automatique — les maquettes, ESSAYABLES depuis le 17 août 2026
+
+**Ce titre disait « rien n'est codé » : ce n'est plus vrai depuis le 20 août.**
+L'outil vit dans l'application — voir §« Le plan d'arrosage vit DANS
+l'application » plus bas. Ce qui suit décrit les **maquettes** de `appli/`, qui
+restent la référence du calcul et l'endroit où il essaie une idée avant qu'elle
+soit codée.
 
 **Du croquis au plan, sa demande du 18 août :** *« une fois que j'ai envoyé la
 photo, il y a le petit encart où on choisit la marque. Tout ce qu'il y a en
@@ -249,7 +297,7 @@ le réseau.
 | Le trajet demandé à la Géoplateforme de l'IGN — sans clé, sans compte | `src/server/itineraire/geoplateforme.ts` |
 | L'assemblage : rattrapage des coordonnées, présélection, appels, classement | `src/server/planning/appariement.ts` |
 | Les coordonnées d'un chantier, et l'adresse qui les a produites | `drizzle/0049_coordonnees_chantier.sql` |
-| Le bandeau sous la journée dépareillée, avec ses trois états muets | `src/components/atlas/BandeauAppariement.tsx` |
+| ~~Le bandeau sous la journée dépareillée~~ — **retiré de l'écran le 21 août 2026** : la planche 84 n'en porte pas. Le calcul, lui, reste | `src/server/planning/appariement.ts` |
 | La vérification du vrai service, là où il y a du réseau | `.github/workflows/itineraire.yml` |
 
 **Ce qui protège le service public** : le vol d'oiseau classe et écarte d'abord,
@@ -407,8 +455,10 @@ l'application. Ce qui est **fait** :
   clés du patron ; **la vision a dû être ajoutée à la couche IA**, qui ne
   manipulait que du texte. Ce qu'elle rend est une proposition : c'est ce qu'il
   confirme qui compte. Un crédit de TVA s'affiche en négatif, signe et phrase.
-  **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — aucune clé dans cet
-  environnement. `ARCHITECTURE.md` §84.
+  **NON VÉRIFIÉ ICI : la lecture d'un vrai ticket** — pas de clé sur le poste de
+  l'agent. **Chez lui, elle est posée et l'IA tourne** (`CLAUDE.md` §1 ter) :
+  c'est un moyen de mesure qui manque ici, pas une fonctionnalité.
+  `ARCHITECTURE.md` §84.
 - **Un ticket daté d'un autre mois ne disparaît plus** (13 août) : le patron
   ajoute un ticket du 24 juillet depuis l'écran d'août ; il était enregistré —
   dans juillet — et **invisible**, l'écran ne montrant qu'une période. La
@@ -498,21 +548,48 @@ l'application. Ce qui est **fait** :
   jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
   que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
   `ARCHITECTURE.md` §83.
-- **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : au bout de
-  chaque ligne des chantiers planifiés, un **chevron doré** ouvre une feuille —
-  Plans, Google Maps, Waze, copier l'adresse, appeler le client — sans quitter
-  le planning. Liens universels et jamais `waze://`, qui échoue en silence
-  quand l'application manque. Sans adresse, rien ne s'invente : les
-  destinations disparaissent et la feuille dit où la saisir. Retenu après
-  quatre maquettes (`docs/maquettes/29` à `32`). **Et « Créer la facture » a
-  quitté la ligne pour la feuille**, à sa demande du même jour : la ligne ne
-  garde que le nom, la date, « Déplacer » et le chevron. `ARCHITECTURE.md` §70.
+- **« TERMINÉS » REFAIT** (22 août) : *« je la trouve beaucoup trop compliquée ;
+  un utilisateur qui ne connaît pas l'application n'y comprend rien »*. Trois
+  simplifications dessinées (planche 90, `appli/termines-simple.html`), **il a
+  pris la B**, codée le soir même. **Un seul mois à la fois, qu'on feuillette**
+  — `‹ Août 2026 ›`, et un mois vide répond « Rien en juillet 2026 ». **Ce qui
+  reste à facturer NE SUIT PAS le mois** : l'onglet « À facturer » montre tout,
+  tous mois confondus, parce qu'un chantier de juillet jamais facturé doit
+  rester sous ses yeux en août. Les codes graphiques — fil, perles pleines ou
+  creuses, pastille dorée, volet replié — sont remplacés par des **mots** :
+  « Pas encore facturé », « Facturé le 20 août ». Le compte des factures est en
+  **noir gras**, à sa demande. `src/lib/termines-par-mois.ts` porte les règles,
+  `ListeTermines.tsx` l'écran. `CHANGELOG.md` du 22 août.
+- **LE PLANNING REFAIT** (21 août) : *« cette page est beaucoup trop compliquée
+  à comprendre pour les utilisateurs »*, puis deux soirées de maquette, neuf
+  corrections, et *« code trait pour trait cette maquette »*. Le mois reste au
+  mois — c'est lui qui sert à viser une date lointaine — et la semaine ne
+  gouverne que la liste des planifiés. La **fiche du jour est bâtie sur le
+  CHANTIER** : son nom une fois, ses demi-journées dessous, sans trait entre
+  elles. Un chantier porte **plusieurs équipes, indépendantes le matin et
+  l'après-midi** (migration `drizzle/0058_equipes_par_demi_journee.sql`, la
+  colonne `chantiers.equipe_id` retirée). Le quota **prévient sans interdire**.
+  `ARCHITECTURE.md` §129.
+- **La feuille de chantier : le devis sans un seul prix** (21 août) : *« le
+  salarié ne doit pas avoir accès au prix [...] le plus simple, ça serait de
+  mettre le devis en PDF sans les prix »*. Ce n'est pas un document de plus —
+  c'est le devis lui-même, rendu sans ses colonnes de prix (`sansChiffrage`,
+  déjà employé par la fiche de chantier). Et les gestes de « Y aller » y vivent
+  désormais : Maps, Waze, copier l'adresse, appeler le client — quatre, plus
+  cinq. `src/app/api/chantiers/[chantierId]/feuille/pdf/`.
+- **« Y aller » : l'adresse du chantier jusqu'au GPS** (12 août) : liens
+  universels et jamais `waze://`, qui échoue en silence quand l'application
+  manque. Sans adresse, rien ne s'invente : les destinations s'éteignent.
+  Retenu après quatre maquettes (`docs/maquettes/29` à `32`). Les gestes ont
+  déménagé dans la feuille de chantier le 21 août ; la règle pure, elle, n'a pas
+  bougé (`src/lib/itineraire.ts`). `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
-  colonnes sans bordure, cinq marques d'occupation, et la journée qui s'ouvre
-  sous le calendrier. Réglages laisse nommer les équipes — mais **seulement à
-  partir de deux** : seul, le mot « équipe » ne s'écrit nulle part. Une table
-  `equipes` (`nom` nullable), une colonne `chantiers.equipe_id`, et une seule
-  fonction pure qui décide du libellé. `ARCHITECTURE.md` §51 et §52.
+  colonnes sans bordure et la journée qui s'ouvre sous le calendrier. Réglages
+  laisse nommer les équipes — mais **seulement à partir de deux** : seul, le mot
+  « équipe » ne s'écrit nulle part. Une table `equipes` (`nom` nullable) et une
+  seule fonction pure qui décide du libellé. Les cinq marques d'occupation ont
+  été remplacées le 21 août par quatre états qui se remplissent à la proportion.
+  `ARCHITECTURE.md` §51, §52 et §129.
 - **« Terminés » et le parcours de facturation** (10 août, au soir) : un fil par
   mois, l'encart « à facturer » posé DANS le mois et replié au repos, le relevé
   de TVA en simple ligne au pied. « Fin de chantier » s'appelle désormais
@@ -651,6 +728,73 @@ extérieure.
 | La lecture du croquis | `src/server/ai/services/lire-croquis.ts` |
 | Le geste | `src/app/paysage/arrosage/actions.ts` |
 | L'écran | `src/app/paysage/arrosage/ArrosageClient.tsx` |
+| D'où vient le débit | `src/lib/arrosage/mesure-debit.ts` |
+| Qui sait lire une image | `etatVision`, dans `src/lib/etat-ia.ts` |
+
+**CE QUI ARRIVE AU DERNIER ARROSEUR EST CALCULÉ** (22 août 2026, soir). Le
+dernier trou connu est fermé : l'électrovanne, la ligne (débit décroissant
+tronçon par tronçon), ses raccords et l'antenne Ø16 sont retirés en plus de
+l'amenée. Sur son jardin à 3 bar : **2,28 bar au dernier arroseur**, et les
+buses sont dimensionnées là-dessus. Deux passes, jamais trois. **Reste dehors :**
+le trajet du regard à la première tête, qu'aucune saisie ne donne — les deux
+écrans le disent. Détail : `ARCHITECTURE.md` §147.
+
+**LES BUSES SONT RAMENÉES À LA PRESSION DU CHANTIER** (22 août 2026). Le
+catalogue ne donne qu'une valeur par buse, à une pression de référence : le
+débit suit désormais `√(P/P_ref)` (physique de l'orifice, corrigé dans les deux
+sens) et la portée `P^(1/3)` **vers le bas seulement** — l'exposant de la portée
+est une estimation, et une portée réduite est signalée sous le plan. Son jardin
+d'exemple à 3 bar passe de trois à quatre réseaux. Détail : `ARCHITECTURE.md`
+§145. **Reste non fait :** les pertes du réseau lui-même (`TODO.md`).
+
+**LE DIAMÈTRE DU TUYAU SE CALCULE, ET L'OUTIL DIT LE SEUIL** (22 août 2026).
+Sa demande : *« passé un certain nombre de mètres linéaires, il faut passer du
+PEHD Ø25 au Ø32 »*. Deux critères, `amenee()` dans `calcul.js` :
+
+| | |
+|---|---|
+| **le débit** | vitesse ≤ 1,5 m/s → Ø25 : 1,76 m³/h · Ø32 : 2,91 |
+| **la longueur** | Hazen-Williams retournée → le seuil en mètres |
+
+L'écran de l'application affiche « Ø25 jusqu'à 55 m, Ø32 au-delà » ; la page
+publiée `appli/arrosage.html` affiche en plus le verdict, parce qu'elle demande
+la longueur. Éprouvé par `scripts/test-arrosage-calcul.ts`, et **la ligne de
+l'écran de l'application n'a PAS pu être vue ici** : elle n'apparaît qu'un
+croquis lu, ce qui demande une clé d'IA. Détail : `ARCHITECTURE.md` §144.
+
+**LA LECTURE DU CROQUIS S'ÉPROUVE : `npm run verifier:croquis`** (21 août 2026).
+Elle dessine un croquis dans un navigateur — deux surfaces aux cotes
+différentes, une haie en mètres linéaires, un massif, un point d'eau —, le
+photographie et vérifie que ce qui revient porte SES chiffres, pas des valeurs
+par défaut. **À jouer depuis son espace**, où ses clés sont posées : ici et en
+CI, elle refuse de rendre un vert et nomme ce qui manque. C'est la réserve que
+`lire-croquis.ts` portait depuis sa naissance, et qui est levée.
+
+**Et l'écran demande la BONNE question.** Il annonçait « aucune clé d'IA n'est
+posée » dès qu'il ne voyait ni Anthropic ni OpenAI — faux dans les deux sens
+depuis que `VISION_PROVIDER` sépare « qui rédige » de « qui regarde ». Deux
+défauts corrigés le 21 août : `lireCroquis` appelait le fournisseur de
+RÉDACTION, et le message n'accusait jamais le bon coupable.
+
+**Ce que l'écran demande, et ce qu'il ne demande PAS.** Au compteur, rien : en
+Ø25 juste après le compteur, on a au moins 3 bar en dynamique comme en statique,
+*« tu sais d'office que tu es bien »* (20 août). Au robinet de jardin, **deux
+encarts séparés** — sa correction du 21 août : la **mesure au seau** (10 L
+chronométrés, marquée « trop approximatif pour calculer un arrosage : prenez
+le kit ») puis le **kit débit /
+pression, buse 5** (bar statique, bar dynamique). Le seuil retenu est **2,5 bar
+en dynamique** — en dessous, les tuyères se lèvent mal et arrosent court.
+
+**Pourquoi séparés, et pourquoi le seau s'excuse.** Deux gestes, deux outils,
+deux fiabilités : sous un même titre, un chiffre tiré d'un seau rempli à la main
+paraissait valoir celui d'un manomètre. Or c'est le seul des trois à donner le
+débit, et le moins précis des trois.
+
+**La statique n'est pas décorative.** C'est l'ÉCART entre les deux qui accuse :
+une statique à 4 bar qui tombe à 2 en débit désigne une conduite trop maigre ou
+trop longue. Le réseau se retaille, la pression ne se force pas. Et **la
+pression ne donne jamais le débit** : deux robinets à 3 bar délivrent l'un
+1 m³/h, l'autre 3. Sans seau, le débit est estimé **et le plan le dit**.
 
 **AVANT DE TOUCHER AU CALCUL, LIRE CECI.** `src/lib/arrosage/calcul.js` est une
 copie **octet pour octet** de `appli/arrosage-calcul.js`, et

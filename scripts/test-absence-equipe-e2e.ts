@@ -190,14 +190,25 @@ async function main() {
     }
     assert.ok(await caseDuJour.count(), `le calendrier n'atteint pas le ${premier}`);
 
-    const etat = (await caseDuJour.first().getAttribute("aria-label")) ?? "";
-    assert.ok(
-      !/libre/.test(etat),
-      `le ${premier} est annoncé « ${etat} » alors qu'une équipe sur deux est partie`
+    // **On lit l'ÉTAT PEINT, pas une phrase.** La case portait autrefois « il
+    // reste de la place » dans son libellé accessible ; la planche 84 a retiré
+    // les mots — c'est la couleur qui parle. Un contrôle accroché à ce
+    // libellé-là défendrait une tournure, pas la règle : viser `data-etat`, que
+    // le calendrier ET la fiche du jour calculent par la même fonction, tient
+    // quel que soit le mot choisi demain (`CLAUDE.md` §5 bis).
+    const etatMatin = await caseDuJour
+      .first()
+      .locator('[data-demi="matin"]')
+      .getAttribute("data-etat");
+    assert.notEqual(
+      etatMatin,
+      "libre",
+      `le ${premier} est peint « libre » alors qu'une équipe sur deux est partie`
     );
-    assert.ok(
-      /reste de la place/.test(etat),
-      `une équipe sur deux étant partie, il devrait rester de la place — lu : « ${etat} »`
+    assert.equal(
+      etatMatin,
+      "dispo",
+      `une équipe sur deux étant partie, il devrait rester de la place — lu : « ${etatMatin} »`
     );
   });
 

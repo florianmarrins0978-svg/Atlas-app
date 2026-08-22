@@ -18,6 +18,7 @@
 import { mkdirSync } from "node:fs";
 import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -51,7 +52,7 @@ await page.screenshot({ path: `${dossier}/civilite-mme-prise.png` });
 
 // L'écran du devis : la seconde porte, celle qui corrige.
 await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
-await page.click('[data-atlas="action-dicter"]');
+await creerPuisFiche(page);
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
 const chantierId = page.url().split("/").pop()!.split("?")[0];
 
