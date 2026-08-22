@@ -444,6 +444,24 @@ coupable.
 
 ## 2026-08-21
 
+### La nourrice se place par lui, jamais par l'outil
+
+*« Ça, c'est l'utilisateur qui placera la nourrice où il veut. »*
+
+Elle n'est ni calculée, ni déduite, ni proposée d'office : elle est **lue** sur
+le croquis. L'IA la cherche ; si elle ne la trouve pas, elle refuse et le dit —
+elle ne la pose pas au piquage « pour dépanner », ce que j'avais fait.
+
+**Ce n'est pas une question de politesse.** L'endroit du regard dépend de ce que
+lui seul sait : un point d'eau existant, un passage de voiture, un massif qu'on
+ne rouvre pas, l'accès pour l'hivernage. Un outil qui le placerait ferait creuser
+au mauvais endroit — et une tranchée ne se déplace pas.
+
+**Informer n'est pas proposer** : s'il demande ce que change tel emplacement, on
+répond avec des chiffres — l'amenée s'allonge, les lignes raccourcissent. On ne
+dit jamais où le mettre. Un contrôle refuse désormais un écran qui suggère un
+emplacement, et exige qu'il le LUI demande.
+
 ### Le plan avoue qu'il n'est pas valable
 
 *« Il n'est pas valable avec cette nouvelle règle. »*
