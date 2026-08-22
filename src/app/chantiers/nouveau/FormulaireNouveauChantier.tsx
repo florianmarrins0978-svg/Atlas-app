@@ -277,14 +277,23 @@ export default function FormulaireNouveauChantier({
         {/* Retour discret — même style que la fiche chantier. En feuille il
             referme sans quitter l'accueil ; en page il y revient. Le dessin est
             le même : c'est le même geste pour le patron. */}
-        <div className="px-6 pt-8">
+
+        {/* **`items-center` et non plus `items-start`.** Sans le surtitre, le
+            bloc de gauche n'a plus qu'une ligne : le micro aligné par le haut
+            se posait au-dessus du titre au lieu d'en face. Mesuré à l'écran —
+            les deux centres tombent maintenant sur le même pixel. */}
+        <div className="flex items-center justify-between gap-3 px-6 pt-8">
+          {/* **Le retour est SUR la ligne du titre, et c'est un chevron nu** —
+              22 août 2026, sa maquette codée trait pour trait (`.entete` dans
+              `appli/fiche-client-vocale.html`). Il occupait auparavant une
+              ligne à lui, dans un rond beige : deux lignes d'en-tête là où sa
+              planche n'en veut qu'une, et le titre repoussé d'autant. */}
           {enFeuille ? (
             <button
               type="button"
               onClick={onFermer}
               aria-label="Retour à la liste des chantiers"
-              className="flex h-10 w-10 items-center justify-center rounded-full"
-              style={{ backgroundColor: colors.rustTint }}
+              className="-ml-1 flex h-10 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />
             </button>
@@ -292,20 +301,12 @@ export default function FormulaireNouveauChantier({
             <Link
               href="/"
               aria-label="Retour à la liste des chantiers"
-              className="flex h-10 w-10 items-center justify-center rounded-full"
-              style={{ backgroundColor: colors.rustTint }}
+              className="-ml-1 flex h-10 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />
             </Link>
           )}
-        </div>
-
-        {/* **`items-center` et non plus `items-start`.** Sans le surtitre, le
-            bloc de gauche n'a plus qu'une ligne : le micro aligné par le haut
-            se posait au-dessus du titre au lieu d'en face. Mesuré à l'écran —
-            les deux centres tombent maintenant sur le même pixel. */}
-        <div className="flex items-center justify-between gap-4 px-6 pt-5">
-          <div>
+          <div className="min-w-0 flex-1">
             {/* **« Fiche client », et plus de surtitre du tout.** Sa demande du
                 16 août 2026, capture à l'appui : *« Enlève nouveau un chantier
                 et remplace par fiche client. »*
@@ -373,10 +374,14 @@ export default function FormulaireNouveauChantier({
               numéro est ici. */}
           <div className="flex gap-2.5">
             <div className="min-w-0 flex-1">
+              {/* **Plus de `big`** : sa maquette écrit toutes les cases au même
+                  corps (`input{font-size:16px}`), et la case du nom y a donc la
+                  même hauteur que celle du téléphone. Le serif de 20 px la
+                  faisait dépasser de six pixels — visible à la capture, et
+                  c'est ce qu'il montrait du doigt le 22 août. */}
               <Field
                 label="Nom du client"
                 placeholder="Bernard"
-                big
                 value={nomClient}
                 onChange={setNomClient}
               />
@@ -472,8 +477,13 @@ export default function FormulaireNouveauChantier({
               sa place, choisie par lui : *« comment lui envoyer son devis, tu
               le mets sous l'adresse »*. Il n'apparaît toujours qu'une fois une
               coordonnée saisie : poser la question avant serait sans objet. */}
-          {(aTelephone || aEmail) && (
-            <fieldset className="flex flex-col gap-1.5">
+          {/* **Il ne s'efface plus faute de coordonnée** — 22 août 2026. Sa
+              maquette le montre en permanence, et son absence sur un écran
+              neuf faisait bouger toute la page dès la première touche du
+              numéro. Les deux capsules restent inertes tant qu'il n'y a rien
+              pour envoyer : proposer un canal sans coordonnée est sans objet,
+              le masquer laisse chercher pourquoi le choix a disparu. */}
+          <fieldset className="flex flex-col gap-1.5">
               <legend className={smallCaps} style={{ color: colors.muted }}>
                 Comment lui envoyer son devis ?
               </legend>
@@ -491,8 +501,7 @@ export default function FormulaireNouveauChantier({
                   onClick={() => setCanalChoisi("email")}
                 />
               </div>
-            </fieldset>
-          )}
+          </fieldset>
 
           {/* **LES PHOTOS ET L'ANNEAU, sur la fiche client — 21 août 2026.**
 
@@ -564,6 +573,7 @@ export default function FormulaireNouveauChantier({
                 disabled={!peutCreer}
                 onClick={() => creerPuisAller("devis")}
                 repere="action-ecrire"
+                pleineLargeur
               >
                 {enCoursVers === "devis" ? "Création…" : "Je rédige mon devis"}
               </PrimaryButton>
@@ -634,10 +644,13 @@ function ChoixCanal({
       onClick={onClick}
       disabled={!disponible}
       aria-pressed={actif}
-      className="flex-1 rounded-full py-3.5 text-[15px] font-medium disabled:opacity-40"
+      // Les mesures de sa maquette (`.canal button`) : 14 px de texte, un
+      // liseré gris au repos, l'OR et le fond papier quand le canal est pris.
+      className="flex-1 rounded-full py-[11px] text-[14px] disabled:opacity-40"
       style={{
-        backgroundColor: actif ? colors.rustTint : colors.card,
-        color: actif ? colors.rust : colors.ink,
+        backgroundColor: actif ? colors.rustTint : "transparent",
+        color: actif ? colors.ink : colors.inkSoft,
+        boxShadow: `inset 0 0 0 1px ${actif ? colors.or : colors.line}`,
       }}
     >
       {libelle}

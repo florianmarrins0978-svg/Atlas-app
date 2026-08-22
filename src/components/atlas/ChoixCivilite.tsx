@@ -97,13 +97,23 @@ export default function ChoixCivilite({
               data-atlas={`civilite-${cle}`}
               // Un second appui rend le choix : voir l'en-tête.
               onClick={() => onChange(actif ? null : cle)}
-              className="rounded-full px-6 py-2.5 text-[15px] font-medium disabled:opacity-50"
+              // Les mesures de sa maquette, au pixel (`.civilite button` dans
+              // `appli/fiche-client-vocale.html`) : 16 px de texte, 13/30 de
+              // retrait, un liseré gris au repos.
+              className="rounded-full px-[30px] py-[13px] text-[16px] disabled:opacity-50"
               style={{
                 backgroundColor: actif ? colors.rustTint : colors.card,
-                color: actif ? colors.rust : colors.ink,
-                // Le contour signale le choix sans compter sur la seule couleur
-                // — un fond teinté seul se perd au soleil, sur un chantier.
-                boxShadow: actif ? `inset 0 0 0 1px ${colors.rust}` : "none",
+                color: colors.ink,
+                // **Le contour PRIS est OR, pas vert** — 22 août 2026. Sa
+                // maquette porte `border-color: var(--or)`, et il a demandé
+                // qu'elle soit codée trait pour trait. Le vert pin faisait de
+                // ces deux pastilles un geste ; ce n'en est pas un — c'est un
+                // choix déjà fait, et l'or est la voix de ce qui se lit
+                // (`design-tokens.ts`).
+                //
+                // Le contour reste indispensable : un fond teinté seul se perd
+                // au soleil, sur un chantier.
+                boxShadow: `inset 0 0 0 1px ${actif ? colors.or : colors.line}`,
               }}
             >
               {/* « Mr », sans point, comme il l'a écrit. Le point n'apparaît
