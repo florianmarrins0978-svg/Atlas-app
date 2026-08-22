@@ -85,6 +85,26 @@ cas("un 404 DÉSIGNE son auteur : le relais de GitHub, ou Atlas", async () => {
   assert.match(dAtlas!.motif ?? "", /ATLAS lui-même/, "un 404 d'Atlas est mis sur le dos du port : trois clics inutiles de plus");
 });
 
+cas("un renvoi ne publie QUE le domaine, jamais l'adresse d'authentification", async () => {
+  // **Le filtre à secrets avalait la ligne entière** (22 août 2026) : l'adresse
+  // de connexion GitHub porte « authorize », que `expurger` retire en bloc — et
+  // la fiche perdait le seul mot qui répondait à la question. Le domaine suffit
+  // à trancher, et ne peut rien divulguer.
+  const rendu = await regarderDuDehors({
+    nom: "espace", domaine: "app.github.dev",
+    chercher: () =>
+      Promise.resolve({
+        status: 302,
+        headers: new Headers({
+          location: "https://github.com/login/oauth/authorize?client_id=abc&state=SECRET_TOKEN_123",
+        }),
+      } as Response),
+  });
+  assert.doesNotMatch(rendu!.motif ?? "", /authorize|SECRET_TOKEN/, "l'adresse complète est publiée : le filtre retirera la ligne entière");
+  assert.match(rendu!.motif ?? "", /github\.com/, "le domaine, qui tranche à lui seul, est perdu");
+  assert.match(rendu!.motif ?? "", /n'est PAS public/, "le verdict ne dit pas ce qu'il faut en conclure");
+});
+
 cas("hors espace GitHub, il n'y a rien à ouvrir et rien à craindre", () => {
   const { ligne, souci } = verdictPort({ etatPort: "hors-codespace", dehors: null });
   assert.match(ligne, /hors espace/);

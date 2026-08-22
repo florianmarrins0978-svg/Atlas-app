@@ -114,11 +114,26 @@ export async function regarderDuDehors({
     // 200, et c'est ce qui a fait croire à un serveur en bonne santé.
     if (r.status === 200 && type.includes("json")) return { joignable: true, statut: 200, type };
     if (r.status >= 300 && r.status < 400) {
+      // **Le SEUL nom de domaine, jamais l'adresse entière.** Le renvoi d'un
+      // port privé pointe vers une page d'authentification GitHub, dont
+      // l'adresse porte « authorize » et un jeton de retour. Publiée telle
+      // quelle, elle était retirée en bloc par le filtre à secrets de
+      // `rapporter-espace.mjs` — et la fiche perdait précisément le mot qui
+      // répondait à la question (22 août 2026). Le domaine suffit à trancher :
+      // `github.com`, c'est le relais ; autre chose, c'est Atlas.
+      let ou = "ailleurs";
+      try {
+        ou = new URL(r.headers.get("location") ?? "", url).host;
+      } catch {
+        /* une destination illisible ne doit pas faire tomber le diagnostic */
+      }
       return {
         joignable: false,
         statut: r.status,
         type,
-        motif: `renvoi vers ${r.headers.get("location") ?? "ailleurs"} — ce n'est pas Atlas`,
+        motif: /github\.com$/i.test(ou)
+          ? `renvoi vers ${ou} — le relais demande une connexion GitHub, donc le port n'est PAS public`
+          : `renvoi vers ${ou} — ce n'est pas Atlas`,
       };
     }
     // **QUI répond, et c'est toute la question** — ajouté le 22 août 2026,
