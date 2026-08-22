@@ -44,6 +44,35 @@ différentes ont mené la même enquête le même jour, chacune de son côté. L
 prochaine batterie rouge sur l'une de ces trois suites se joue **seule** avant
 toute autre hypothèse.
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — le temps passé, montré ou non (22 août 2026)
+
+Sa demande, capture de la fiche d'entretien à l'appui : *« il faudrait mettre un
+petit bouton on/off pour si l'utilisateur ne veut pas que le temps apparaisse
+sur la fiche, pouvoir l'effacer — on, le temps apparaîtrait sur la fiche ; off,
+il n'apparaîtrait pas »*.
+
+**Planche 92 : `appli/temps-sur-la-fiche.html`. RIEN N'EST CODÉ** (`CLAUDE.md`
+§3 bis). Elle montre les deux côtés à la fois — sa fiche et le compte rendu de
+la cliente, qui se recompose sous le doigt.
+
+**Deux questions attendent sa réponse, et la suite en dépend :**
+
+| | |
+|---|---|
+| **Le réglage de départ** | La planche s'ouvre sur **Visible**, ce que l'application fait aujourd'hui (le temps s'affiche toujours). S'il préfère que chaque fiche parte **Masquée**, c'est une valeur par défaut à changer |
+| **Masquer ou ne rien saisir ?** | La planche masque et **garde la durée enregistrée** pour lui. S'il voulait pouvoir ne rien saisir du tout, c'est autre chose : `minutes` deviendrait nullable au sens fort, et la molette elle-même devrait pouvoir revenir à « — » |
+
+**Ce que coder demandera, quand il aura répondu** — écrit ici pour que la
+prochaine session ne le redécouvre pas :
+
+· une colonne sur `passages_entretien` (`temps_visible`, défaut à décider) et
+  sa migration ;
+· `majPassageAction` la pose, comme `minutes` et `observations` ;
+· `lireRapportParJeton` la rend, et `src/app/entretien/[jeton]/page.tsx`
+  n'affiche le paragraphe que si elle est vraie **et** `minutes !== null` — la
+  règle vit côté serveur, jamais dans le HTML du client ;
+· l'interrupteur se fige avec le reste quand `envoyeLe !== null`.
+
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 
 Sa colère du 22 août : *« je peux proposer le 24 alors qu'un client a validé le
