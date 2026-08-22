@@ -731,6 +731,14 @@ extérieure.
 | D'où vient le débit | `src/lib/arrosage/mesure-debit.ts` |
 | Qui sait lire une image | `etatVision`, dans `src/lib/etat-ia.ts` |
 
+**CE QUI ARRIVE AU DERNIER ARROSEUR EST CALCULÉ** (22 août 2026, soir). Le
+dernier trou connu est fermé : l'électrovanne, la ligne (débit décroissant
+tronçon par tronçon), ses raccords et l'antenne Ø16 sont retirés en plus de
+l'amenée. Sur son jardin à 3 bar : **2,28 bar au dernier arroseur**, et les
+buses sont dimensionnées là-dessus. Deux passes, jamais trois. **Reste dehors :**
+le trajet du regard à la première tête, qu'aucune saisie ne donne — les deux
+écrans le disent. Détail : `ARCHITECTURE.md` §147.
+
 **LES BUSES SONT RAMENÉES À LA PRESSION DU CHANTIER** (22 août 2026). Le
 catalogue ne donne qu'une valeur par buse, à une pression de référence : le
 débit suit désormais `√(P/P_ref)` (physique de l'orifice, corrigé dans les deux

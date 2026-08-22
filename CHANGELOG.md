@@ -48,6 +48,58 @@ tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour porta
 le même `data-jour` que les cases — deux éléments pour le même jour, et une
 suite qui ne savait plus lequel viser.
 
+### Ce qui arrive au DERNIER arroseur est enfin calculé
+
+Sa demande, après qu'on lui a nommé le dernier trou connu : *« oui corrige la
+1 »*.
+
+**Le défaut.** Seule l'amenée compteur → regard était comptée, et l'écran
+l'avouait : *« ce calcul ne compte QUE l'amenée — ni les antennes, ni les
+raccords, ni l'électrovanne »*. Ce qui restait au pied du dernier arroseur d'une
+ligne, personne ne le savait. Or c'est lui qui décide : sans la pression à
+laquelle sa buse est donnée, il porte moins loin que le plan ne le suppose, et
+le coin de pelouse qu'il devait atteindre jaunit en juillet.
+
+**Sur son jardin d'exemple, à 3 bar au compteur :**
+
+| | |
+|---|---|
+| perdu dans l'amenée | 0,27 bar |
+| perdu dans le réseau | **0,44 bar** |
+| il arrive au dernier arroseur | **2,28 bar** |
+
+Le réseau perd plus que l'amenée — l'électrovanne seule pèse davantage que
+trente mètres de Ø25. C'est cela qui manquait, et les buses sont désormais
+dimensionnées sur 2,28 bar et non sur 3.
+
+**Le débit décroît le long de la ligne, et c'est tout le calcul.** Entre la
+vanne et la première tête passe le débit du réseau entier ; entre la première et
+la deuxième, ce débit moins une tête. Compter le débit total partout — le
+raccourci tentant — donnerait 0,77 bar au lieu de 0,44 : assez pour condamner
+des plans qui tiennent.
+
+**Deux passes, jamais trois.** La pression au bout dépend des débits, qui
+dépendent de la pression : on calcule un premier plan à la pression de la
+source, on mesure ce qui se perd, on refait le plan à la pression obtenue. Une
+troisième passe *remonterait* la pression (moins de débit, moins de perte) : on
+tournerait autour de la valeur au lieu de s'en approcher. S'arrêter à deux garde
+les pertes des débits les plus forts, donc le côté sûr.
+
+**Deux valeurs ne viennent pas de ses catalogues**, et cela s'écrit plutôt que de
+se taire : la perte de l'électrovanne (0,25 bar, forfait majorant) et la majoration
+pour raccords (+15 %). Posées en majorant : une perte surestimée pose un
+arroseur de plus, jamais un de moins.
+
+**Ce qui reste dehors, et que l'écran dit :** le trajet du regard à la première
+tête. Il dépend de l'endroit où la nourrice est posée, et aucune saisie ne le
+donne. La pression annoncée est donc un plafond.
+
+**Un contrôle a été pris en flagrant délit de ne rien prouver.** Il bornait la
+perte à « moins du double du pire débit » — la version juste ET la version
+fausse y passaient au vert. Il a fallu injecter le défaut pour s'en apercevoir.
+La valeur est désormais figée à cinq millièmes de bar près : ce chiffre décide
+du nombre d'arroseurs par ligne, il n'a pas le droit de bouger en silence.
+
 ### Un réseau est plafonné par SON TUYAU, plus seulement par le compteur
 
 **C'est lui qui l'a déduit**, et il avait raison : *« tu ne viens pas de me dire

@@ -9,6 +9,39 @@ sert.
 
 ---
 
+## LA PRESSION QUI DIMENSIONNE EST CELLE DU DERNIER ARROSEUR (22 août 2026)
+
+**Avant de toucher à `decouper` ou à `buseALaPression`, sachez ceci :** le
+calcul tourne **deux fois**.
+
+1. un plan à la pression de la SOURCE ;
+2. on mesure ce que perdent l'amenée et le pire réseau, on retire, on REFAIT.
+
+`pressionDeCalcul` (globale) porte la pression de la passe 2. Elle est remise à
+`null` au début de chaque `decouper` **et** dans le `finally` de `calculerPlan` —
+deux gardes, parce que sur un serveur deux artisans calculent en même temps.
+
+**Ne pas ajouter de troisième passe.** Elle irait dans le mauvais sens : moins
+de pression → moins de débit → moins de perte → la pression remonterait. On
+tournerait autour de la valeur. Deux passes gardent les pertes des débits les
+plus forts, donc le côté sûr.
+
+**Ce qui est compté :** ligne (débit décroissant, Manhattan), antenne Ø16,
+électrovanne (0,25 bar, **non relevé**), raccords (+15 %, **non relevé**).
+**Ce qui ne l'est pas :** le trajet regard → première tête. Les deux écrans le
+disent ; ne pas le taire si vous y touchez.
+
+**Les chiffres affichés viennent tous de la passe 2** — sinon deux pertes
+d'amenée différentes cohabiteraient dans le même écran.
+
+**Et `test-arrosage-calcul.ts` fige la perte à 0,442 bar ± 0,005.** Ce n'est pas
+une rigidité gratuite : ce chiffre décide du nombre d'arroseurs par ligne. S'il
+change, c'est SCIEMMENT, avec la raison dans le commit.
+
+Détail : `ARCHITECTURE.md` §147.
+
+---
+
 ## UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU (22 août 2026)
 
 `decouper()` coupe un réseau au **plus petit** de deux chiffres :

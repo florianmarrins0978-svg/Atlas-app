@@ -372,6 +372,28 @@ références et jamais confrontée à elles. Il a demandé d'où elle sortait : 
 nulle part. Quand ses vraies références arrivent, les lignes provisoires qu'elles
 remplacent se **corrigent**, elles ne se laissent pas dormir.
 
+**CE QUI COMPTE, C'EST LA PRESSION AU DERNIER ARROSEUR, PAS AU COMPTEUR.** Sa
+demande du 22 août 2026 au soir : *« oui corrige la 1 »*. Entre le compteur et
+le bout d'une ligne se perdent l'amenée, l'électrovanne, la ligne elle-même,
+ses raccords et l'antenne Ø16 — de l'ordre d'un demi à trois quarts de bar sur
+un jardin ordinaire. Dimensionner sur la pression du compteur, c'est prêter aux
+arroseurs de bout de ligne une portée qu'ils n'ont pas.
+
+**Le débit DÉCROÎT le long de la ligne**, et c'est tout le calcul : entre la
+vanne et la première tête passe le débit du réseau entier, puis une tête de
+moins à chaque tronçon. Compter le débit total partout surestime la perte de
+75 % — assez pour condamner des plans qui tiennent.
+
+**Deux passes, jamais trois.** La pression au bout dépend des débits, qui
+dépendent d'elle. On calcule un plan à la pression de la source, on mesure ce
+qui se perd, on refait. Une troisième passe remonterait la pression et l'on
+tournerait autour de la valeur : s'arrêter à deux garde les pertes des débits
+les plus forts, donc le côté sûr.
+
+**Ce qui n'est PAS compté se dit à l'écran** : le trajet du regard à la
+première tête, qui dépend de l'endroit où la nourrice est posée. La pression
+annoncée est un plafond.
+
 **UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU, PAS SEULEMENT PAR LE COMPTEUR.** Sa
 déduction du 22 août 2026 : *« en diamètre vingt-cinq c'est 1,76 m³/h, donc dans
 tous les cas le calcul doit se faire là-dessus, peu importe qu'on ait 2 ou
