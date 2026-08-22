@@ -76,13 +76,37 @@ export type OccupationDemi<C> = {
 export function occupationDemi<C>(
   pris: readonly C[],
   nombreEquipes: number,
-  equipesAbsentes = 0
+  equipesAbsentes = 0,
+  /**
+   * Combien d'équipes ce chantier mobilise sur cette demi-journée.
+   *
+   * **Sa question du 22 août 2026 :** *« pourquoi le matin et l'après-midi de
+   * monsieur Eric s'affichent en incomplet ? »* — Julien ET Antoine y étaient.
+   * La charge comptait les CHANTIERS : un chantier pour deux équipes valait la
+   * moitié, et ce jour-là partait chez ses clients alors qu'il n'avait plus
+   * personne à envoyer.
+   *
+   * **Sa règle, une fois la planche 89 vue :** *« oui si c'est des journées
+   * complètes, non si c'est des demi-journées »*. Elle tombe d'elle-même du
+   * comptage par demi-journée — un chantier d'une journée avec ses deux équipes
+   * prend les deux créneaux et ferme le jour ; sur une seule demi-journée, il ne
+   * ferme que le matin.
+   *
+   * Omise, chaque chantier vaut une équipe : c'est l'ancien comportement, et il
+   * reste juste là où aucune affectation n'est renseignée. Le compter zéro
+   * viderait le planning.
+   */
+  equipesDe?: (chantier: C) => number
 ): OccupationDemi<C> {
   // **Jamais de division par zéro.** `nombre_equipes` vaut au minimum 1 en
   // base, mais une entreprise absente rendrait `0` : la charge deviendrait
   // `Infinity`, et le calendrier peindrait « au-delà » sur une journée vide.
   const equipes = Math.max(1, nombreEquipes);
-  return { pris, charge: (pris.length + Math.max(0, equipesAbsentes)) / equipes };
+  const mobilisees = pris.reduce(
+    (total, c) => total + Math.max(1, Math.trunc(equipesDe ? equipesDe(c) : 1)),
+    0
+  );
+  return { pris, charge: (mobilisees + Math.max(0, equipesAbsentes)) / equipes };
 }
 
 export function etatDemi<C>(o: OccupationDemi<C>): EtatDemi {

@@ -9,6 +9,36 @@ sert.
 
 ---
 
+## LA PLACE SE COMPTE EN ÉQUIPES — et QUATRE lectures doivent s'accorder
+
+Posé le 22 août 2026, sur sa règle : *« oui si c'est des journées complètes, non
+si c'est des demi-journées »*.
+
+Un chantier prend **autant d'équipes qu'on lui en coche, au moins une**
+(`equipesMobilisees`, `src/server/disponibilites.ts`). Toute nouvelle lecture de
+la place doit passer par là — jamais par un `pris.length`.
+
+**Elles sont quatre, et elles doivent rendre le même verdict** (`CLAUDE.md` §3) :
+
+| Où | Ce qu'elle décide |
+|---|---|
+| `preparerEnvoi` | les jours suggérés et les jours barrés de SON calendrier |
+| `verifierJourPropose` | la date qu'il pose lui-même au calendrier |
+| `contrainteDuPlanning` | ce que le CLIENT peut retenir |
+| `PlanningClient` → `occupationDemi` | la couleur des pastilles |
+
+Les trois premières lisent les affectations par `equipesParChantier`
+(`occupation-chantiers.ts`) ; la quatrième les a déjà à l'écran. **N'en corriger
+qu'une déplace le défaut au lieu de le réparer** : le planning dirait « complet »
+pendant que l'écran d'envoi offrirait le jour.
+
+**Le piège de l'assertion muette, payé ici :** `preparerEnvoi().joursLibres` ne
+rend que les **six premiers** jours suggérés. Une assertion du type
+« tel jour n'est pas dans joursLibres » sur un jour plus lointain est vraie par
+construction et ne prouve rien. Interroger `joursOccupes`, qui couvre douze mois.
+
+---
+
 ## L'OCCUPATION SE BORNE SUR LA FIN DU CHANTIER, JAMAIS SUR SON DÉPART
 
 Corrigé le 22 août 2026, après *« je peux proposer le 24 alors qu'un client a

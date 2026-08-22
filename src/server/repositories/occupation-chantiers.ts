@@ -1,6 +1,7 @@
-import { sql } from "drizzle-orm";
-import { chantiers } from "../db/schema";
-import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type JourIso } from "../disponibilites";
+import { eq, sql } from "drizzle-orm";
+import type { DbOrTx } from "../db/client";
+import { chantiers, equipesDuChantier } from "../db/schema";
+import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type JourIso, type Moment } from "../disponibilites";
 
 /**
  * Quels chantiers peuvent encore occuper une fenêtre qui commence à `debut`.
@@ -36,4 +37,38 @@ import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type JourIso } from "../disponibilites"
  */
 export function encoreEnCoursDepuis(debut: JourIso) {
   return sql`${chantiers.datePlanifiee} + (COALESCE(${chantiers.dureeDemiJournees}, ${DUREE_PAR_DEFAUT_DEMI_JOURNEES}) * INTERVAL '1 day') >= ${debut}::date`;
+}
+
+/**
+ * Combien d'équipes chaque chantier mobilise, par demi-journée.
+ *
+ * **Écrite une fois pour les trois chemins d'occupation** — l'écran d'envoi, la
+ * validation de la date du patron, la revérification de la réponse du client.
+ * Le planning, lui, tient déjà ces nombres à l'écran : c'est la même règle, lue
+ * de deux sources, et elle doit rendre le même verdict des deux côtés
+ * (`CLAUDE.md` §3). Si l'un fermait la journée pendant que l'autre l'offrait au
+ * client, on n'aurait fait que déplacer le défaut du 22 août 2026.
+ *
+ * **Les affectations ne portent pas de jour**, seulement une demi-journée : un
+ * chantier de trois jours emmène la même équipe le matin de chacun de ses
+ * jours. C'est le modèle posé par la migration 0058, et il suffit — on ne
+ * change pas d'équipe au milieu d'un chantier.
+ */
+export async function equipesParChantier(
+  tx: DbOrTx,
+  entrepriseId: string
+): Promise<Map<string, Partial<Record<Moment, number>>>> {
+  const lignes = await tx
+    .select({ chantierId: equipesDuChantier.chantierId, demi: equipesDuChantier.demi })
+    .from(equipesDuChantier)
+    .where(eq(equipesDuChantier.entrepriseId, entrepriseId));
+
+  const par = new Map<string, Partial<Record<Moment, number>>>();
+  for (const l of lignes) {
+    if (l.demi !== "matin" && l.demi !== "apres_midi") continue;
+    const siennes = par.get(l.chantierId) ?? {};
+    siennes[l.demi] = (siennes[l.demi] ?? 0) + 1;
+    par.set(l.chantierId, siennes);
+  }
+  return par;
 }
