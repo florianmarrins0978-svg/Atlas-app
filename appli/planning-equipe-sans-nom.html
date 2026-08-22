@@ -35,10 +35,19 @@
   .demi .mot{font:600 10px/1.15 ui-sans-serif,sans-serif;letter-spacing:.06em;
              text-transform:uppercase;color:var(--encre);white-space:nowrap;width:70px;flex-shrink:0}
   .demi .equipe{flex-shrink:0;border:0;border-radius:999px;padding:6px 12px;font-size:12.5px;
-                background:var(--pin);color:#faf9f5;white-space:nowrap;cursor:pointer}
+                background:var(--pin);color:#faf9f5;white-space:nowrap}
   .demi .equipe .ajouter{margin-left:6px;opacity:.65;font-size:11px}
   .petit{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
-         padding:7px 12px;font-size:12px;color:var(--encre-douce);cursor:pointer}
+         padding:7px 12px;font-size:12px;color:var(--encre-douce)}
+
+  /* **Ici, RIEN ne se touche — et ça doit se voir avant d'essayer.**
+     La planche 84 se manipulait : on y posait un chantier, on y changeait une
+     équipe. Celle-ci ne montre qu'UNE ligne, quatre fois, pour la comparer.
+     Des boutons qui gardent la main du curseur et s'illuminent sous le doigt
+     promettent un geste qui n'existe pas — on appuie, rien ne bouge, et on se
+     demande si c'est cassé. */
+  .demi .equipe, .demi .petit{cursor:default;pointer-events:none;
+                              -webkit-tap-highlight-color:transparent;user-select:none}
   .demi .petit{padding:7px 9px}
   .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
             background:var(--pin)}
@@ -72,6 +81,7 @@
   ligne tient. Mais si une équipe <b>n’a pas de nom</b>, l’écran écrit « Équipe A » —
   et « Retirer » tombe à la ligne. Voici l’état actuel, puis trois façons de le régler.
   <b>Dites-moi laquelle, ou aucune.</b>
+  <br><span style="opacity:.72">Ici rien ne se touche : c’est une ligne montrée quatre fois, pas un écran à essayer.</span>
 </div>
 
 <div class="tel">
