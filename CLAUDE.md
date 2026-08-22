@@ -257,16 +257,37 @@ compteur et des traits qui commencent dans le vide n'est pas un plan : il ne se
 pose pas sur le terrain. La nourrice se **dessine**, avec ses vannes, et chaque
 ligne en part.
 
-**Toujours le plus court.** *« Il faut que tu te dises que tu essayes d'aller
-au plus court à chaque fois. »* Le tuyau en trop se paie deux fois : au mètre,
-et en tranchée. Un tracé qui **revient sur lui-même** pour rattraper un arroseur
-déjà dépassé est le défaut typique — mieux vaut un **té de jonction devant le
-regard** et deux branches courtes qu'une seule ligne qui fait le tour.
+**CE QU'ON MINIMISE, C'EST LA TRANCHÉE — PAS LE TUYAU.** Sa règle du 21 août,
+et elle prime sur tout le reste du tracé : *« le trait jaune, c'est une tranchée.
+C'est une équipe qui va devoir creuser la terre. Donc l'idée, c'est de faire le
+moins de tranchée possible. Si on peut réutiliser une tranchée déjà faite et
+juste faire une petite antenne — un mètre par exemple — pour aller chercher
+l'arroseur, c'est moins éprouvant que de faire tout le tour. »*
 
-Cela se mesure, donc cela se contrôle : la longueur d'un tracé se compare à
-l'**arbre couvrant minimal** de ses points en distance de Manhattan (un tuyau
-suit les axes, il ne coupe pas en diagonale). Au-delà de 5 %, c'est un détour.
-Le défaut qu'il a relevé le 21 août valait 4 m — 22 tracés pour 18 nécessaires.
+**Deux tuyaux qui suivent le même chemin n'occupent qu'UNE tranchée.** Le mètre
+de tuyau se paie une fois ; le mètre de tranchée se paie en heures d'homme, et
+en gazon rouvert. Un réseau a donc raison de **rallonger son tuyau** pour rester
+dans une saignée déjà ouverte.
+
+Ce qu'il faut chercher, dans cet ordre :
+
+1. une **tranchée principale** que plusieurs réseaux empruntent ;
+2. des **antennes courtes** qui s'y greffent pour desservir un arroseur isolé ;
+3. jamais un contournement complet quand un mètre d'antenne suffit.
+
+Cela se mesure : la tranchée est l'**union** des tracés — ce qui se superpose ne
+compte qu'une fois — et se compare à l'arbre couvrant minimal de la nourrice et
+des arroseurs, en distance de Manhattan (un tuyau suit les axes). Sur son plan
+du 21 août, à longueur de tuyau **égale** (76 ml), faire remonter le troisième
+réseau par le bord haut déjà creusé a économisé **10 m de tranchée** — 74 → 64.
+
+**Un tracé ne doit pas revenir sur lui-même** pour rattraper un arroseur déjà
+dépassé : mieux vaut un té de jonction et deux branches courtes. Mais ce défaut-
+là se juge largement, car rallonger un tuyau pour suivre une tranchée est un bon
+calcul, pas un détour.
+
+**Une antenne part du RÉSEAU, pas de la nourrice.** Seul le réseau part du
+regard ; ses antennes se greffent sur un point qu'il dessert déjà.
 
 **Les raccords se comptent par POSITION, jamais par arroseur** — sa planche du
 17 août, écrite dans `appli/arrosage-catalogue.js` :

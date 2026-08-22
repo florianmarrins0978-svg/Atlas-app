@@ -118,6 +118,9 @@ const vu = await page.evaluate(() => {
     })
     .filter(Boolean);
 
+  const tranchee = [...document.querySelectorAll('[data-atlas="tranchee"]')].map((l) =>
+    l.getAttribute("points").trim().split(/\s+/).map((p) => p.split(",").map(Number)));
+
   const marque = document.querySelector("select[name=marque]");
   const marques = marque && {
     defaut: marque.options[marque.selectedIndex].textContent.trim(),
@@ -131,6 +134,7 @@ const vu = await page.evaluate(() => {
     cartes,
     boite,
     pieces,
+    tranchee,
     marques,
     texte: document.body.innerText,
     deborde: document.documentElement.scrollWidth > 390,
@@ -251,17 +255,32 @@ cas("la nourrice est dessinée", () => {
   if (!vu.boite) throw new Error("aucune nourrice sur le plan : on ne sait pas d'où partent les réseaux");
 });
 
-cas("les trois réseaux partent de la nourrice", () => {
+// **Une ANTENNE part du réseau, pas de la nourrice** — corrigé le 21 août 2026.
+// Ce contrôle exigeait que CHAQUE ligne démarre au regard, et rougissait donc
+// sur la petite antenne d'un mètre qu'il décrit lui-même : *« si on peut
+// réutiliser une tranchée déjà faite et juste faire une petite antenne pour
+// aller chercher l'arroseur »*. Il interdisait le raccourci qu'il demande.
+//
+// La règle juste : **un réseau part de la nourrice**, et tout le reste de ses
+// lignes se raccorde à un point qu'il dessert déjà. Rien ne pend dans le vide,
+// et les antennes restent possibles.
+cas("chaque réseau part de la nourrice, ses antennes partent de lui", () => {
   const b = vu.boite;
   if (!b) return;
+  const auRegard = ([x, y]) => x >= b.x1 - 0.5 && x <= b.x2 + 0.5 && y >= b.y1 - 0.5 && y <= b.y2 + 0.5;
+
   for (const [n, r] of Object.entries(vu.reseaux)) {
+    if (!r.tuyaux.some((poly) => auRegard(poly[0]))) {
+      throw new Error(`aucune ligne du réseau ${n} ne part de la nourrice : on ne saurait pas où le brancher`);
+    }
+    // Tous les points déjà atteints par ce réseau : une antenne doit s'y greffer.
+    const atteints = r.tuyaux.flatMap((poly) => poly).map((p) => p.join());
     for (const poly of r.tuyaux) {
-      const [x, y] = poly[0];
-      // Le départ touche la nourrice, à un demi-mètre près (l'épaisseur du
-      // regard et celle du trait ne doivent pas faire rougir pour rien).
-      const proche = x >= b.x1 - 0.5 && x <= b.x2 + 0.5 && y >= b.y1 - 0.5 && y <= b.y2 + 0.5;
-      if (!proche) {
-        throw new Error(`une ligne du réseau ${n} commence en ${x},${y} — pas à la nourrice : sur le terrain, on ne saurait pas où la brancher`);
+      const depart = poly[0];
+      if (auRegard(depart)) continue;
+      const greffe = atteints.filter((p) => p === depart.join()).length >= 2;
+      if (!greffe) {
+        throw new Error(`une antenne du réseau ${n} commence en ${depart.join(",")} — ni à la nourrice, ni sur son réseau : elle pend dans le vide`);
       }
     }
   }
@@ -394,10 +413,16 @@ for (const [n, r] of Object.entries(vu.reseaux)) {
     // Les points à desservir : les arroseurs, plus le départ commun (la nourrice).
     const points = [r.tuyaux[0][0], ...r.tetes];
     const mini = arbreMinimal(points);
-    if (trace > mini * 1.05 + 0.01) {
+    // **Une marge large, et c'est voulu depuis sa règle de la tranchée.** Un
+    // réseau qui rallonge SON tuyau pour rester dans une saignée déjà ouverte
+    // fait le bon choix : le tuyau se paie au mètre, la tranchée en heures de
+    // terrassement. Ce contrôle-ci n'attrape donc plus que les détours francs —
+    // une ligne qui revient sur elle-même. C'est le contrôle de la TRANCHÉE,
+    // plus bas, qui juge l'ensemble.
+    if (trace > mini * 1.5 + 0.01) {
       throw new Error(
         `${trace.toFixed(0)} ml tracés pour ${mini.toFixed(0)} ml nécessaires — ` +
-        `${(trace - mini).toFixed(0)} m de tuyau en trop, payés au mètre ET en tranchée`
+        `la ligne revient sur elle-même au lieu de suivre une tranchée`
       );
     }
   });
@@ -426,6 +451,86 @@ cas("deux SBE par arroseur, et chaque ligne dit où il va", () => {
   for (const p of sbe) {
     if (!/en bas|en haut/i.test(p.nom)) {
       throw new Error(`« ${p.nom} » ne dit pas s'il va en bas ou en haut : le total ne se recompose pas`);
+    }
+  }
+});
+
+// ── 8 quinquies. LA TRANCHÉE, PAS LE TUYAU — sa règle du 21 août 2026 ──────
+//
+// *« Il faut que tu te dises que le trait jaune, c'est une tranchée. C'est une
+// équipe qui va devoir creuser la terre pour faire passer le tuyau. Donc l'idée,
+// c'est de faire le moins de tranchée possible. Si on peut réutiliser une
+// tranchée déjà faite et juste faire une petite antenne — un mètre par exemple —
+// pour aller chercher l'arroseur, c'est moins éprouvant que de faire tout le
+// tour. »*
+//
+// **CELA CHANGE CE QU'ON MINIMISE.** Jusqu'ici ce contrôle comparait la somme
+// des TUYAUX au plus court. Mais deux tuyaux qui suivent le même chemin
+// n'occupent qu'UNE tranchée : le mètre de tuyau se paie une fois, le mètre de
+// tranchée se paie en heures de terrassement. Le plan retenu le montre : à
+// longueur de tuyau égale — 76 ml — faire remonter le troisième réseau par le
+// bord haut, déjà creusé pour le premier, économise **10 m de tranchée**.
+//
+// Le contrôle mesure donc l'UNION des tracés, en pas de 50 cm : ce qui se
+// superpose ne compte qu'une fois. Puis il la compare à l'arbre couvrant
+// minimal de la nourrice et des arroseurs — la tranchée la plus courte qui les
+// relie tous.
+cas("on creuse le moins de tranchée possible", () => {
+  const pas = (poly) => {
+    const out = new Set();
+    for (let i = 0; i < poly.length - 1; i++) {
+      const [x1, y1] = poly[i];
+      const [x2, y2] = poly[i + 1];
+      const n = Math.round(Math.hypot(x2 - x1, y2 - y1) * 2);
+      for (let k = 0; k < n; k++) {
+        const a = [x1 + ((x2 - x1) * k) / n, y1 + ((y2 - y1) * k) / n].map((v) => v.toFixed(2));
+        const b = [x1 + ((x2 - x1) * (k + 1)) / n, y1 + ((y2 - y1) * (k + 1)) / n].map((v) => v.toFixed(2));
+        out.add([a.join(), b.join()].sort().join("|"));
+      }
+    }
+    return out;
+  };
+
+  // Ce que les TUYAUX occupent réellement, superpositions fondues.
+  const union = new Set();
+  for (const r of Object.values(vu.reseaux)) for (const poly of r.tuyaux) for (const seg of pas(poly)) union.add(seg);
+  const creuse = union.size / 2;
+
+  const points = [vu.reseaux[1].tuyaux[0][0], ...Object.values(vu.reseaux).flatMap((r) => r.tetes)];
+  const uniques = [...new Map(points.map((p) => [p.join(), p])).values()];
+  const mini = arbreMinimal(uniques);
+  if (creuse > mini * 1.05 + 0.01) {
+    throw new Error(
+      `${creuse.toFixed(0)} ml de tranchée pour ${mini.toFixed(0)} ml nécessaires — ` +
+      `${(creuse - mini).toFixed(0)} m à creuser pour rien, et la terre se paie en heures`
+    );
+  }
+});
+
+cas("la tranchée dessinée couvre tous les tuyaux", () => {
+  const pas = (poly) => {
+    const out = new Set();
+    for (let i = 0; i < poly.length - 1; i++) {
+      const [x1, y1] = poly[i];
+      const [x2, y2] = poly[i + 1];
+      const n = Math.round(Math.hypot(x2 - x1, y2 - y1) * 2);
+      for (let k = 0; k < n; k++) {
+        const a = [x1 + ((x2 - x1) * k) / n, y1 + ((y2 - y1) * k) / n].map((v) => v.toFixed(2));
+        const b = [x1 + ((x2 - x1) * (k + 1)) / n, y1 + ((y2 - y1) * (k + 1)) / n].map((v) => v.toFixed(2));
+        out.add([a.join(), b.join()].sort().join("|"));
+      }
+    }
+    return out;
+  };
+  const dessinee = new Set();
+  for (const poly of vu.tranchee) for (const seg of pas(poly)) dessinee.add(seg);
+  for (const r of Object.values(vu.reseaux)) {
+    for (const poly of r.tuyaux) {
+      for (const seg of pas(poly)) {
+        if (!dessinee.has(seg)) {
+          throw new Error("un tuyau passe hors de toute tranchée dessinée : le chantier serait chiffré trop court");
+        }
+      }
     }
   }
 });

@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### La tranchée, pas le tuyau — 10 m de terrassement en moins, à tuyau égal
+
+*« Il faut que tu te dises que le trait jaune, c'est une tranchée. C'est une
+équipe qui va devoir creuser la terre pour faire passer le tuyau. Donc l'idée,
+c'est de faire le moins de tranchée possible. Si on peut réutiliser une tranchée
+déjà faite et juste faire une petite antenne — un mètre par exemple — pour aller
+chercher l'arroseur, c'est moins éprouvant que de faire tout le tour. »*
+
+**Cela change ce qu'on minimise, et c'était faux jusqu'ici.** Le contrôle
+comparait la somme des TUYAUX au plus court. Mais deux tuyaux qui suivent le
+même chemin n'occupent qu'une tranchée : le mètre de tuyau se paie une fois, le
+mètre de tranchée se paie en heures d'homme et en gazon rouvert.
+
+Le plan le montre : à longueur de tuyau **égale** — 76 ml —, faire remonter le
+troisième réseau par le bord haut, déjà creusé pour le premier, au lieu de
+traverser la pelouse : **74 → 64 ml de tranchée**.
+
+La tranchée est désormais **dessinée** (le trait ocre large, sous les tuyaux), et
+son linéaire annoncé. Deux contrôles la tiennent, séparés parce que ce sont deux
+défauts distincts : l'union des tuyaux ne doit pas dépasser le minimum
+nécessaire, et aucun tuyau ne doit passer hors d'une tranchée dessinée — sans
+quoi le chantier serait chiffré trop court.
+
+**Un contrôle a dû être corrigé au passage, et il interdisait sa règle.** Il
+exigeait que CHAQUE ligne parte de la nourrice, et rougissait donc sur la petite
+antenne d'un mètre qu'il décrit. La règle juste : **un réseau part de la
+nourrice, ses antennes partent de lui**.
+
 ### Le comptage s'applique à CHAQUE réseau — un contrôle global mentait
 
 *« Faut surtout que tu en fasses une règle. Il faut que tu l'appliques pour

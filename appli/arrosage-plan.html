@@ -160,7 +160,19 @@
   <svg viewBox="-6 -3 30 19.6" role="img" aria-label="Plan de la pelouse : la nourrice et les trois réseaux">
     <defs><clipPath id="pelouse"><polygon points="0,0 20,0 20,4 12,4 12,12 0,12"/></clipPath></defs>
 
-    <polygon points="0,0 20,0 20,4 12,4 12,12 0,12" fill="#E9ECE0" stroke="#7C8271" stroke-width=".26"/>
+    <polygon points="0,0 20,0 20,4 12,4 12,12 0,12" fill="#E9ECE0" stroke="none"/>
+    <!-- LA TRANCHÉE — ce qu'une équipe creuse, et qu'on ne creuse qu'UNE fois. -->
+    <g>
+      <polyline points="0,4 0,0" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+      <polyline points="0,0 6,0 12,0 16,0 20,0" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+      <polyline points="0,4 0,6 0,12" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+      <polyline points="0,12 6,12 12,12" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+      <polyline points="12,12 12,6" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+      <polyline points="6,0 6,6" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+      <polyline points="16,0 16,4" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+      <polyline points="20,0 20,4" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
+    </g>
+    <polygon points="0,0 20,0 20,4 12,4 12,12 0,12" fill="none" stroke="#7C8271" stroke-width=".26"/>
 
     <g fill="#6E6A60" font-size="1.05" font-family="Georgia,serif" text-anchor="middle">
       <text x="6" y="-1.1">12 m</text>
@@ -187,23 +199,23 @@
     </g>
 
       <g class="r r1">
-        <circle cx="0" cy="6" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="0" cy="0" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="6" cy="0" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="6" cy="6" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 0,6" fill="none" stroke="#2F6FB2" stroke-width=".3" stroke-linejoin="round" stroke-linecap="round"/>
-        <polyline points="0,4 0,0 6,0 6,6" fill="none" stroke="#2F6FB2" stroke-width=".3" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="0" cy="6" r=".46" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34"/>
+        <circle cx="0" cy="6" r="6" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
+        <polyline points="0,4 0,0 6,0 6,6" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="0,4 0,6" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
         <circle cx="0" cy="0" r=".46" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
         <circle cx="6" cy="0" r=".46" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2"/>
         <circle cx="6" cy="6" r=".46" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34"/>
+        <circle cx="0" cy="6" r=".46" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34"/>
       </g>
       <g class="r r2">
         <circle cx="0" cy="12" r="6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="6" cy="12" r="6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="12" cy="12" r="6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="12" cy="6" r="6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 0,12 6,12 12,12 12,6" fill="none" stroke="#2E7D4F" stroke-width=".3" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="0,4 0,6 0,12 6,12 12,12 12,6" fill="none" stroke="#2E7D4F" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
         <circle cx="0" cy="12" r=".46" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
         <circle cx="6" cy="12" r=".46" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
         <circle cx="12" cy="12" r=".46" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2"/>
@@ -215,21 +227,20 @@
         <circle cx="20" cy="0" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="20" cy="4" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
         <circle cx="16" cy="4" r="4" fill="#C08A2E" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 12,4 12,0 16,0 20,0 20,4 16,4" fill="none" stroke="#C08A2E" stroke-width=".3" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="0,4 0,0 6,0 12,0 16,0 20,0 20,4" fill="none" stroke="#C08A2E" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="16,0 16,4" fill="none" stroke="#C08A2E" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
         <circle cx="12" cy="0" r=".46" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2"/>
         <circle cx="16" cy="0" r=".46" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2"/>
         <circle cx="20" cy="0" r=".46" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2"/>
-        <circle cx="20" cy="4" r=".46" fill="#C08A2E" stroke="#C08A2E" stroke-width="0.2"/>
+        <circle cx="20" cy="4" r=".46" fill="#FBFAF7" stroke="#C08A2E" stroke-width="0.34"/>
         <circle cx="16" cy="4" r=".46" fill="#FBFAF7" stroke="#C08A2E" stroke-width="0.34"/>
       </g>
   </svg>
-  <p class="legende"><b>●</b> arroseur en ligne — un té taraudé.
-     <b>○</b> fin de ligne — un coude taraudé.
-     La tache est la portée réelle : un creux entre deux taches est un creux dans l’arrosage.</p>
+  <p class="legende"><b>●</b> arroseur en ligne — un té taraudé. <b>○</b> fin de ligne — un coude taraudé. <b style="color:#B8912F">▬</b> la tranchée : on la creuse une fois, même quand deux tuyaux y passent.</p>
 </div>
 
 <div class="reseaux">
-  <p class="titre-bloc">3 réseaux · 1,80 m³/h disponible</p>
+  <p class="titre-bloc">3 réseaux · 1,80 m³/h · 64 ml de tranchée</p>
   <ul>
         <li class="carte c1">
           <span class="pastille" style="background:#2F6FB2"></span>
@@ -245,9 +256,9 @@
         </li>
         <li class="carte c3">
           <span class="pastille" style="background:#C08A2E"></span>
-          <span class="nom">Réseau 3 — haut-droite et extension</span>
+          <span class="nom">Réseau 3 — bord haut et extension</span>
           <span class="debit">1,00 m³/h</span>
-          <span class="sous">5 arroseurs · 32 ml · 4 tés + 1 coude</span>
+          <span class="sous">5 arroseurs · 32 ml · 3 tés + 2 coudes + 1 jonction</span>
         </li>
   </ul>
 </div>
@@ -259,9 +270,9 @@
     <tr><td class="q">9 u</td><td>Buse 3.0 — portée 6 m</td><td class="ref">RA-BUSE-30</td></tr>
     <tr><td class="q">4 u</td><td>Tuyère 1800 — escamotable 10 cm</td><td class="ref">RT1804</td></tr>
     <tr><td class="q">4 u</td><td>Buse 12-VAN — portée 4 m</td><td class="ref">RBT636</td></tr>
-    <tr><td class="q">9 u</td><td>Té 90° taraudé 25×3/4"×25 — départ et milieu de ligne</td><td class="ref">te-taraude-25-34-25</td></tr>
-    <tr><td class="q">4 u</td><td>Coude 90° taraudé 25×3/4" — fin de ligne</td><td class="ref">coude-taraude-25-34</td></tr>
-    <tr><td class="q">1 u</td><td>Té 90° 25×25×25 — jonction devant le regard, sans arroseur</td><td class="ref">te-25-25-25</td></tr>
+    <tr><td class="q">8 u</td><td>Té 90° taraudé 25×3/4"×25 — départ et milieu de ligne</td><td class="ref">te-taraude-25-34-25</td></tr>
+    <tr><td class="q">5 u</td><td>Coude 90° taraudé 25×3/4" — fin de ligne</td><td class="ref">coude-taraude-25-34</td></tr>
+    <tr><td class="q">2 u</td><td>Té 90° 25×25×25 — jonction, sans arroseur</td><td class="ref">te-25-25-25</td></tr>
     <tr><td class="q">13 u</td><td>Coude SBE 075 — <b>en bas</b>, sur le té ou le coude (toujours 3/4")</td><td class="ref">OD502</td></tr>
     <tr><td class="q">9 u</td><td>Coude SBE 075 — <b>en haut</b>, sur le corps des turbines (3/4")</td><td class="ref">OD502</td></tr>
     <tr><td class="q">4 u</td><td>Coude SBE 050 — <b>en haut</b>, sur le corps des tuyères (1/2")</td><td class="ref">OD501</td></tr>
