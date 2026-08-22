@@ -207,8 +207,32 @@ export function getNextAction(c: EtatChantierPourAction): NextAction | null {
   // seul geste qui manquait quand il a perdu sa place.
   if (c.devisGenereAt) return { key: "devis-consulter", label: "Envoyer le devis au client" };
   if (c.prixValideAt) return { key: "devis-preparer", label: "Préparer le devis" };
+  // **Une dictée mène AU DEVIS, plus à l'écran « Informations » — 21 août 2026.**
+  //
+  // Sa panne, dans ses mots : *« j'ai dicté la prestation, j'ai rappuyé, ça a
+  // enregistré, j'ai quitté l'application, je suis revenu, j'ai cliqué sur
+  // Madame Lucie — or je ne suis PAS arrivé directement sur la page du devis
+  // comme demandé, avec mes informations déjà remplies. »*
+  //
+  // Il a raison, et il l'avait déjà dit le 5 août : *« je ne veux pas tous les
+  // autres trucs intermédiaires »*. « Informations » était l'un d'eux : un
+  // écran de contrôle qui n'existe plus dans son parcours, puisque la chaîne
+  // va de la dictée au devis d'un seul tenant (`devis-depuis-dictee.ts`).
+  //
+  // **Ce qui rend ce renvoi possible sans mentir :** le devis se prépare
+  // lui-même en arrivant, si la dictée n'a pas encore été traitée
+  // (`src/lib/devis-a-preparer.ts`). Sans cela, on l'enverrait sur une feuille
+  // vide — c'est-à-dire sur ce qu'il appelle, à juste titre, un gros bug.
+  //
+  // **Et cette ligne passe AVANT « informations vérifiées », ce qui n'est pas
+  // un détail d'ordre.** La chaîne pose ce jalon dès qu'elle a rangé les
+  // prestations, c'est-à-dire AVANT l'arrêt d'avant-chiffrage
+  // (`devis-depuis-dictee.ts`, étape 2). S'il ferme l'application pendant cet
+  // arrêt — ce qu'il fait, il est chez sa cliente —, l'ordre inverse le
+  // renverrait sur l'écran « Prix » : un écran de plus entre lui et son devis,
+  // et la panne de Madame Lucie recommencerait sous un autre nom.
+  if (c.aUneNoteVocale) return { key: "devis-preparer", label: "Préparer le devis" };
   if (c.informationsVerifieesAt) return { key: "prix", label: "Calculer le prix" };
-  if (c.aUneNoteVocale) return { key: "informations", label: "Vérifier les informations" };
   if (c.photosCount > 0) return { key: "note-vocale", label: "Enregistrer une note vocale" };
   return { key: "photos", label: "Ajouter des photos" };
 }

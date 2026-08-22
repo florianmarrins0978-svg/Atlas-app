@@ -353,9 +353,11 @@ async function main() {
       getNextAction({ ...base, photosCount: 2, aUneNoteVocale: false, informationsVerifieesAt: null })?.key,
       "note-vocale"
     );
+    // **Une dictée mène AU DEVIS depuis le 21 août 2026** — plus à l'écran
+    // « Informations », qui a quitté son parcours (`ARCHITECTURE.md` §142).
     assert.equal(
       getNextAction({ ...base, aUneNoteVocale: true, informationsVerifieesAt: null })?.key,
-      "informations"
+      "devis-preparer"
     );
   });
 

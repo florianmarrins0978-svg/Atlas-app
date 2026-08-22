@@ -104,7 +104,9 @@ cas("un jalon franchi commande, même si tout l'amont manque", () => {
     [{ devisGenereAt: JADIS }, "devis-consulter"],
     [{ prixValideAt: JADIS }, "devis-preparer"],
     [{ informationsVerifieesAt: JADIS }, "prix"],
-    [{ aUneNoteVocale: true }, "informations"],
+    // **La dictée mène au devis depuis le 21 août 2026**, et plus à l'écran
+    // « Informations » : voir `chantier-etat.ts`, sa panne de Madame Lucie.
+    [{ aUneNoteVocale: true }, "devis-preparer"],
     [{ photosCount: 3 }, "note-vocale"],
     [{}, "photos"],
   ];
@@ -243,6 +245,23 @@ cas("SON CAS : la liste mène à l'écran d'ENVOI, pas à la fiche", () => {
   );
 });
 
+cas("une dictée passe devant « informations vérifiées » — l'arrêt de chiffrage", () => {
+  // **La chaîne pose `informationsVerifieesAt` AVANT de demander ses
+  // précisions de prix** (`devis-depuis-dictee.ts`, étape 2). S'il ferme
+  // l'application pendant cet arrêt — c'est ce qu'il fait, il est chez sa
+  // cliente —, l'ordre inverse le renverrait sur l'écran « Prix ». Un écran de
+  // plus entre lui et son devis, et la panne de Madame Lucie recommencerait.
+  assert.equal(
+    getNextAction({ ...NEUF, aUneNoteVocale: true, informationsVerifieesAt: JADIS })?.key,
+    "devis-preparer",
+    "un chantier dicté est renvoyé sur « Prix » : c'est l'écran intermédiaire qu'il refuse"
+  );
+  assert.equal(
+    lienDeReprise(CHANTIER, { ...NEUF, aUneNoteVocale: true, informationsVerifieesAt: JADIS }),
+    `/chantiers/${CHANTIER}/devis-complet`
+  );
+});
+
 cas("chaque arrêt a son écran de reprise, et « ainsi de suite »", () => {
   const attendus: [Partial<EtatChantierPourAction>, string][] = [
     // Rien fait, ou seulement des photos et une dictée : la fiche EST l'écran —
@@ -251,7 +270,11 @@ cas("chaque arrêt a son écran de reprise, et « ainsi de suite »", () => {
     // Photos et dictée se reprennent SUR la fiche : la pellicule et l'anneau y
     // sont, au milieu de l'écran. C'est « cette page-là », dans ses mots.
     [{ photosCount: 2 }, ""],
-    [{ aUneNoteVocale: true }, "/informations"],
+    // Sa panne du 21 août 2026 : il dicte, ferme l'application, revient, clique
+    // sur sa cliente — et doit tomber SUR SON DEVIS, pas sur un écran de
+    // contrôle intermédiaire. Le devis se prépare lui-même en arrivant
+    // (`src/lib/devis-a-preparer.ts`), sans quoi ce renvoi mènerait au vide.
+    [{ aUneNoteVocale: true }, "/devis-complet"],
     [{ informationsVerifieesAt: JADIS }, "/prix"],
     // Voir ci-dessus : l'écran qui porte l'envoi est le devis depuis le 20 août.
     [{ prixValideAt: JADIS }, "/devis-complet"],

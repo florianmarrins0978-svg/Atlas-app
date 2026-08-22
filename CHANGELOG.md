@@ -86,6 +86,46 @@ après le geste et en exigeait une de moins — un compte qui dépendait de l'or
 d'exécution des suites et de l'ordre d'affichage des cartes. Il vise maintenant
 la carte de CE chantier par son identifiant.
 
+### « Je clique sur Lucie, et j'arrive sur mon devis » — la dictée mène enfin au devis
+
+**Sa panne, mot pour mot :** *« J'ai ouvert un chantier, Madame Lucie. J'ai
+rentré ces informations, j'appuie sur note vocale, j'ai dicté la prestation du
+chantier. J'ai rappuyé sur la note vocale, ça a enregistré. J'ai quitté
+l'application. Je suis retourné dessus. J'ai cliqué sur Madame Lucie. Or, je ne
+suis pas arrivé directement sur la page du devis comme demandé, avec mes
+informations remplies que j'avais dictées. Corrige-moi ça, c'est le point le
+plus important. »*
+
+**Deux défauts, et le second était le vrai.**
+
+Le premier était le chemin : la liste le renvoyait sur l'écran « Informations »
+— un écran de contrôle dont il ne veut plus depuis le 5 août (*« je ne veux pas
+tous les autres trucs intermédiaires »*). `getNextAction` mène désormais au
+devis dès qu'une dictée existe, et **avant** le jalon « informations
+vérifiées » : la chaîne pose ce jalon avant son arrêt d'avant-chiffrage, et
+l'ordre inverse l'aurait envoyé sur l'écran « Prix » — la même panne sous un
+autre nom.
+
+Le second, plus grave : **enregistrer une dictée ne fabriquait aucun devis.** La
+chaîne attendait qu'il appuie sur « Mon devis → », et il ne l'a pas fait — il
+était chez sa cliente, il a fermé l'application. Corriger le seul chemin
+l'aurait mené droit sur une feuille vide, c'est-à-dire sur la panne du 7 août.
+
+**Le devis se prépare donc lui-même en arrivant**, quand une dictée n'a pas
+encore été traitée (`src/lib/devis-a-preparer.ts`, `PreparationDictee.tsx`). À
+l'arrivée plutôt qu'au relâchement de l'anneau, et c'est délibéré : il ferme
+l'application dans la seconde qui suit, l'appel partirait avec l'onglet. Le seul
+moment où un navigateur est là pour attendre le résultat, c'est celui où il
+rouvre le devis.
+
+Le voile se pose **par-dessus** le devis, jamais à sa place : si la chaîne
+échoue, « Ouvrir le devis tel quel » lui rend sa feuille et son crayon.
+
+`scripts/test-madame-lucie-e2e.ts` rejoue sa séquence entière — dicter, fermer
+l'application, revenir par la liste, cliquer le nom. Confrontée à l'ancien code,
+elle rougit sur trois cas et nomme le coupable : *« la liste l'envoie sur
+/informations »*.
+
 ### Le plan repris sur ses trois corrections — la nourrice, les raccords, les marques
 
 **« Tous les réseaux doivent partir de la nourrice — règle indiscutable ! »**

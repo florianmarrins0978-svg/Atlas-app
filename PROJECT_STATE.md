@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-20 · branche `main`
+**Dernière mise à jour :** 2026-08-21 · branche `main`
 · dernière migration `drizzle/0056_diagnostic_vegetal.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -9,6 +9,23 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## De la dictée au devis : la chaîne part TOUTE SEULE (21 août 2026)
+
+Sa panne de Madame Lucie : il dicte, ferme l'application, revient, clique le nom
+— et n'arrive pas sur son devis.
+
+| | État |
+|---|---|
+| La liste mène au **devis** dès qu'une dictée existe | **fait** (`chantier-etat.ts`) |
+| Le devis **se prépare lui-même** en arrivant, sans qu'il appuie sur rien | **fait** (`devis-a-preparer.ts`, `PreparationDictee.tsx`) |
+| Sortie de secours si la chaîne échoue : « Ouvrir le devis tel quel » | **fait** |
+| La séquence entière rejouée au navigateur | **fait** (`test-madame-lucie-e2e.ts`) |
+| La qualité de la rédaction avec une VRAIE clé | **non vérifiée ici** — `npm run verifier:dictee`, sur son espace |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §142.
 
 ---
 
