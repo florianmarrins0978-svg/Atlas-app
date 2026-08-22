@@ -13063,3 +13063,79 @@ qu'il veille — **un contrôle qui ne peut plus rougir ne prouve rien**
 (`CLAUDE.md` §5), et le prétendre serait pire que de l'avoir retiré. Ce que la
 suite éprouve à sa place, c'est la garantie qui l'a rendu inatteignable.
 
+---
+
+## 147. Envoyer la facture : trois appuis deviennent un, et le mot dit ce qu'il engage
+
+**Le patron, le 22 août 2026, capture à l'appui :** *« Quand je clique sur
+confirmer le départ de la facture, ça me l'arrête. Après, je clique pour
+l'envoyer. Ensuite, je dois recliquer pour ouvrir l'application SMS. Ça fait
+beaucoup trop de clics. »*
+
+Retenu sur planche (`docs/maquettes/84-envoyer-la-facture.html`) : **la B**,
+et *« le choix SMS ou e-mail, mais de la même forme que sur la page fiche
+client »*.
+
+### Il comptait juste, et le premier appui mentait
+
+| | Ce que ça faisait |
+|---|---|
+| « Confirmer le départ de la facture → » | l'**arrête** — numéro définitif, TVA, plus aucune modification |
+| « Envoyer la facture au client → » | fabrique le lien du client |
+| « Ouvrir le SMS tout prêt → » | ouvre enfin la messagerie |
+
+**Le premier ne faisait partir rien du tout.** Le code le savait déjà et le
+disait en commentaire — *« le patron a lu "facture arrêtée" et compris que son
+client l'avait reçue »* — sans que le libellé en tire la conséquence. Son mot à
+lui, « Envoyer la facture », est plus juste pour l'envoi ; mais il ne dit plus
+l'arrêt, qui est **sans retour**.
+
+### Pourquoi la B, et ce qu'elle coûte
+
+La **A** faisait exactement ce qu'il demandait, et rien de plus. Le risque n'est
+pas théorique : si la messagerie refuse de s'ouvrir — iOS le fait, sans un mot —
+la facture est **arrêtée quand même**, dans sa TVA, sans que le client ait rien
+reçu.
+
+Deux gestes séparés le lui rappelaient. Avec un seul, **la phrase est tout ce
+qui reste** : deux lignes sous le bouton, qui disent l'arrêt et nomment la
+sortie (l'avoir). Il ne les lira qu'une fois ; elles seront là le jour où il se
+demandera pourquoi sa facture ne se modifie plus.
+
+La **C** — n'arrêter qu'une fois le message parti — a été dessinée pour être
+**écartée**, et le dépôt savait déjà pourquoi : aucun navigateur ne distingue
+« expédié » de « ouvert puis abandonné » ni de « refusé sans un mot »
+(`src/lib/depart-messagerie.ts`). Elle laisserait des factures faites, envoyées,
+jamais entrées en comptabilité.
+
+### L'ordre des opérations n'est pas un détail
+
+Arrêter, préparer le lien, **ouvrir la messagerie, puis seulement rafraîchir**.
+Un navigateur peut refuser une navigation vers `sms:` qui ne suit pas le doigt
+d'assez près ; rafraîchir d'abord, c'est perdre le geste. Même ordre que l'envoi
+du devis, pour la même raison.
+
+Et si le lien manque après l'émission, l'écran **dit que la facture est arrêtée
+quand même** : le taire lui ferait croire que rien n'a eu lieu, et rappuyer sur
+un bouton qui a déjà engagé sa comptabilité.
+
+### La capsule du canal est EXTRAITE, pas recopiée
+
+`ChoixCanal` vivait dans `FormulaireNouveauChantier`, taillée aux mesures de sa
+maquette. Elle vit maintenant dans `src/components/atlas/` : deux dessins du
+même geste auraient divergé au premier ajustement, et c'est lui qui aurait vu
+deux capsules différentes pour la même question à deux écrans d'intervalle
+(`CLAUDE.md` §3).
+
+**Un canal sans coordonnée reste INERTE, jamais masqué** — sa règle, dictée le
+même jour : *« refuse l'envoi : ça veut dire qu'il communique avec le client par
+SMS, donc il enverra par SMS »*. Aucun champ de saisie ici : il a écarté l'idée.
+
+### Le contrôle, et ce qu'il a fallu corriger pour qu'il accuse juste
+
+`scripts/test-envoyer-la-facture-e2e.ts` attendait le bouton par son **libellé**.
+Confronté à l'ancien mot, il mourait sur un délai dépassé — il échouait, mais
+n'apprenait rien. Il vise désormais un repère stable (`data-atlas`), trouve le
+bouton, puis **cite ce qu'il a lu** : *« le bouton dit "Confirmer le départ de la
+facture →" »*. Éprouvé aussi sans la phrase d'engagement : il rougit en disant
+que rien n'avertit de l'arrêt.
