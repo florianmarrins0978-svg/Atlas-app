@@ -257,6 +257,25 @@ compteur et des traits qui commencent dans le vide n'est pas un plan : il ne se
 pose pas sur le terrain. La nourrice se **dessine**, avec ses vannes, et chaque
 ligne en part.
 
+**LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
+
+| Le programmateur | L'électrovanne |
+|---|---|
+| à pile, **9 V** | **9 V** |
+| sur secteur, **220 V** | **24 V** |
+
+Ce n'est pas une préférence mais une condition de fonctionnement : une vanne
+24 V pilotée par un boîtier à pile **ne s'ouvre pas**. Le réseau n'arrose pas du
+tout, et on ne s'en aperçoit qu'après avoir rebouché. Cette faute ne se voit ni
+sur un plan, ni sur un devis. **Tous ses programmateurs sont à pile** — donc
+toutes ses vannes sont en 9 V.
+
+**Une valeur « provisoire » qui survit devient un mensonge.** Le catalogue
+portait une « Électrovanne 24 V » générique, posée avant qu'il donne ses
+références et jamais confrontée à elles. Il a demandé d'où elle sortait : de
+nulle part. Quand ses vraies références arrivent, les lignes provisoires qu'elles
+remplacent se **corrigent**, elles ne se laissent pas dormir.
+
 **SE PIQUER AU COMPTEUR, C'EST COUPER UNE LIGNE EN SERVICE.** Sa précision du
 21 août : *« le compteur, c'est une ligne directe qui part vers la maison ; on va
 devoir la couper et mettre un té égal à cet endroit-là »*. Donc **dès que le
@@ -303,8 +322,19 @@ au milieu d'un terrain passent des gaines, des drains, une fosse, des racines
 qu'on ne verra qu'à la pelle. Le tour se rebouche ; la traversée se retrouve.
 
 On ne rentre donc dans le jardin **que** pour aller chercher un arroseur qui s'y
-trouve, et par le plus court. Cela se mesure : le linéaire de tranchée à plus de
-2 m d'un bord ne doit pas dépasser ce qu'exigent les arroseurs intérieurs.
+trouve, et par le plus court. **Le tour vaut mieux que la coupe, même à longueur
+égale** — son exemple du 21 août : sur une bande de 8 × 4, faire le tour par
+haut-gauche → haut-droite → bas-droite → bas-gauche coûte exactement autant que
+de la couper en deux, et ne creuse que le long des bords.
+
+**Le critère est géométrique, pas métrique.** Une première version comptait la
+tranchée à plus de 2 m d'un bord : dans une bande de 4 m de large, le milieu est
+à 2 m des deux bords, donc aucune traversée n'y était **jamais** détectée — le
+contrôle dormait exactement là où il fallait qu'il parle. La bonne question est :
+*ce segment part-il d'un bord pour arriver sur un bord en passant par
+l'intérieur ?* Si oui, c'est une coupe, et le tour existe toujours. Un segment
+qui va chercher un arroseur du milieu n'arrive sur aucun bord : ce n'en est pas
+une.
 
 Cela se mesure : la tranchée est l'**union** des tracés — ce qui se superpose ne
 compte qu'une fois — et se compare à l'arbre couvrant minimal de la nourrice et
