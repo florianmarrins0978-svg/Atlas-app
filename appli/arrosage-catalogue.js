@@ -667,7 +667,18 @@ var CATALOGUE = {
     // **La marque vaut pour elle aussi** — sa réponse du 17 août : « ça sera
     // valable aussi pour les électrovannes, pour le reste non. » Le jour où ses
     // références arriveront, cette ligne se dédoublera par marque.
-    { ref:'electrovanne', nom:'Électrovanne 24 V', regle:'parSecteur',
+    // **9 V, PAS 24 V — sa correction du 21 août 2026.** Cette ligne portait
+    // « Électrovanne 24 V », une valeur générique posée avant qu'il donne ses
+    // références, et jamais confrontée à elles. Il a demandé d'où elle sortait :
+    // de nulle part. Toutes SES fiches de nourrice (17 août) sont en 9 V —
+    // `electrovanne-100dv`, `prog-N` à pile, `pile-9v`.
+    //
+    // **Et sa règle rend la faute grave, pas seulement inexacte** : une
+    // électrovanne 24 V veut un programmateur sur secteur 220 V ; une 9 V veut
+    // un programmateur à pile. Les mélanger ne fait pas un réseau qui arrose
+    // mal, mais un réseau qui n'arrose PAS — et on ne s'en aperçoit qu'après
+    // avoir rebouché.
+    { ref:'electrovanne', nom:'Électrovanne 9 V', regle:'parSecteur',
       suitLaMarque:true, source:'provisoire' },
     // « crosse » générique retirée le 17 août : remplacée par les coudes SBE
     // réels, choisis selon le taraudage du corps (voir CATALOGUE.coudes).

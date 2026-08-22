@@ -9,6 +9,58 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le tour plutôt que la coupe — et un contrôle qui dormait
+
+*« On essaye de traverser le moins possible le jardin en faisant des tranchées.
+Là, moi, je ferais le tour : la première tuyère en haut à gauche relie celle du
+haut à droite, puis celle du bas à droite, puis celle du bas à gauche — et c'est
+celle-là la dernière, pas celle du haut à droite. »*
+
+Le réseau 3 coupait l'extension en deux. Son tour coûte **exactement la même
+longueur** — 32 ml — et ne creuse que le long des bords.
+
+**Mais le pire est que mon contrôle n'a rien vu, et il ne pouvait pas.** Il
+mesurait la tranchée à plus de 2 m d'un bord. Dans une bande de 4 m de large, le
+milieu est à 2 m des deux bords : **aucune traversée n'y était jamais
+détectable**. Le contrôle dormait exactement là où il fallait qu'il parle.
+
+Le critère est désormais géométrique : *ce segment part-il d'un bord pour arriver
+sur un bord en passant par l'intérieur ?* Si oui, c'est une coupe. Un segment qui
+va chercher un arroseur du milieu n'arrive sur aucun bord — ce n'en est pas une.
+Éprouvé sur l'ancien tracé : « la tranchée coupe le jardin de 16,0 à 16,4 — le
+tour par le bord fait la même longueur ».
+
+### « D'où sortent tes électrovannes 24 V ? » — de nulle part, et c'était grave
+
+*« Je ne me souviens pas t'avoir donné des électrovannes en 24 V. Pour moi il n'y
+avait que des 9 V. Me suis-je trompé ? »*
+
+**Il ne s'était pas trompé.** Toutes ses fiches de nourrice, relevées le 17 août,
+sont en 9 V — `electrovanne-100dv`, programmateur à pile, pile 9 V. Le « 24 V »
+venait d'une ligne générique du catalogue, marquée `provisoire`, posée avant
+qu'il donne ses références et **jamais confrontée à elles**.
+
+**Et elle ne dormait pas dans un coin : le calcul de l'application la sort.**
+`listeMateriel()` pose « Électrovannes 24 V » dès qu'aucune fiche de nourrice ne
+correspond au nombre de secteurs. Corrigé dans les deux copies du catalogue et du
+calcul.
+
+**Sa règle, qui rend la faute grave et non seulement inexacte :**
+
+| Le programmateur | L'électrovanne |
+|---|---|
+| à pile, 9 V | 9 V |
+| sur secteur, 220 V | 24 V |
+
+Une vanne 24 V pilotée par un boîtier à pile **ne s'ouvre pas**. Le réseau
+n'arrose pas du tout — et cela ne se voit ni sur un plan, ni sur un devis, mais
+après avoir rebouché la tranchée. Un contrôle refuse désormais le mélange, et
+refuse aussi une vanne qui ne dit pas sa tension.
+
+**La leçon dépasse les électrovannes :** une valeur « provisoire » qui survit à
+l'arrivée des vraies références devient un mensonge. Quand ses données arrivent,
+les lignes qu'elles remplacent se corrigent.
+
 ### Se piquer au compteur, c'est couper une ligne — la pièce manquait
 
 *« Je te posais la question sur les tés égaux parce qu'en fait il en faut bien

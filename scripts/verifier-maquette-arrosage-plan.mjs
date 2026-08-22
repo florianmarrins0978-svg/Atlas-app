@@ -606,9 +606,18 @@ cas("la tranchée dessinée couvre tous les tuyaux", () => {
 // tranchée situé à plus de 2 m d'un bord, et le compare à ce qu'exigent les
 // arroseurs intérieurs. Sur ce plan : 4 m, pour 4 m nécessaires — le seul
 // arroseur du milieu est celui du centre.
-cas("on ne traverse le jardin que pour desservir ce qui s'y trouve", () => {
-  const bord = ([x, y]) => {
-    let m = Infinity;
+cas("aucune tranchée ne coupe le jardin d'un bord à l'autre", () => {
+  // **Le seuil de distance était le MAUVAIS critère, et il l'a vu avant moi.**
+  // La première version comptait la tranchée à plus de 2 m d'un bord. Dans une
+  // bande de 4 m de large — son extension —, le milieu est à 2 m des deux
+  // bords : AUCUNE traversée n'y était jamais détectée. Le contrôle dormait
+  // exactement là où il fallait qu'il parle.
+  //
+  // Le bon critère est géométrique, pas métrique : **un segment qui part d'un
+  // bord et arrive sur un bord en passant par l'intérieur est une traversée**,
+  // et le tour existe toujours. Un segment qui va chercher un arroseur situé au
+  // milieu n'en est pas une : il n'arrive sur aucun bord.
+  const surLeBord = ([x, y]) => {
     for (let i = 0; i < vu.contour.length; i++) {
       const [ax, ay] = vu.contour[i];
       const [bx, by] = vu.contour[(i + 1) % vu.contour.length];
@@ -616,34 +625,26 @@ cas("on ne traverse le jardin que pour desservir ce qui s'y trouve", () => {
       const dy = by - ay;
       const L = dx * dx + dy * dy;
       const t = L === 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L));
-      m = Math.min(m, Math.hypot(x - (ax + t * dx), y - (ay + t * dy)));
+      if (Math.hypot(x - (ax + t * dx), y - (ay + t * dy)) < 0.01) return true;
     }
-    return m;
+    return false;
   };
-  const SEUIL = 2;
 
-  let dedans = 0;
   for (const poly of vu.tranchee) {
     for (let i = 0; i < poly.length - 1; i++) {
       const a = poly[i];
       const b = poly[i + 1];
-      const n = Math.max(1, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) * 8));
-      for (let k = 0; k < n; k++) {
-        const p = [a[0] + ((b[0] - a[0]) * (k + 0.5)) / n, a[1] + ((b[1] - a[1]) * (k + 0.5)) / n];
-        if (bord(p) > SEUIL) dedans += Math.hypot(b[0] - a[0], b[1] - a[1]) / n;
+      if (!surLeBord(a) || !surLeBord(b)) continue;
+      // Les deux bouts touchent le périmètre : reste à savoir si le trait le
+      // longe (bon) ou le coupe (à éviter). On regarde son milieu.
+      const milieu = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      if (!surLeBord(milieu)) {
+        throw new Error(
+          `la tranchée coupe le jardin de ${a.join(",")} à ${b.join(",")} — ` +
+          "le tour par le bord fait la même longueur, et c'est au milieu que passent les gaines et les drains"
+        );
       }
     }
-  }
-
-  const necessaire = Object.values(vu.reseaux)
-    .flatMap((r) => r.tetes)
-    .reduce((t, a) => t + Math.max(0, bord(a) - SEUIL), 0);
-
-  if (dedans > necessaire + 1) {
-    throw new Error(
-      `${dedans.toFixed(0)} m de tranchée en plein jardin pour ${necessaire.toFixed(0)} m nécessaires — ` +
-      `on traverse là où on pouvait longer, et c'est au milieu que se trouvent les gaines et les drains`
-    );
   }
 });
 
@@ -807,6 +808,46 @@ cas("au compteur, le té égal qui coupe la ligne est prévu", () => {
   }
   if (!/couper|coupe/i.test(vu.piecesAmenee.map((p) => p.nom).join(" ") + vu.texte)) {
     throw new Error("le plan ne dit pas qu'il faut COUPER la ligne du compteur : la pièce paraît arbitraire");
+  }
+});
+
+// ── 8 duodecies. LA TENSION S'ACCORDE, SINON RIEN N'ARROSE ─────────────────
+//
+// *Sa règle du 21 août 2026 :* « une électrovanne en 24 V doit être reliée à un
+// programmateur sur courant 220 V. Or tous les programmateurs que tu as dans ta
+// base sont des programmateurs à pile 9 V, donc ils vont avec les électrovannes
+// 9 V. Tu peux enregistrer : programmateur 9 V = électrovanne 9 V ;
+// programmateur électrique 220 V = électrovanne 24 V. »
+//
+// **Ce n'est pas une préférence, c'est une condition de fonctionnement.** Une
+// 24 V pilotée par un boîtier à pile ne s'ouvre pas : le réseau n'arrose pas du
+// tout, et on ne s'en aperçoit qu'après avoir rebouché la tranchée. C'est le
+// genre de faute qui ne se voit ni sur un plan, ni sur un devis.
+//
+// **Et elle est née d'une valeur inventée** : le catalogue portait une
+// « Électrovanne 24 V » générique, posée avant qu'il donne ses références et
+// jamais confrontée à elles. Il a demandé d'où elle sortait — de nulle part.
+cas("la tension des vannes s'accorde avec celle du programmateur", () => {
+  const toutes = [...vu.pieces, ...vu.piecesAmenee, ...vu.piecesNourrice];
+  const vannes = toutes.filter((p) => /électrovanne/i.test(p.nom));
+  const progs = toutes.filter((p) => /programmateur/i.test(p.nom));
+  if (vannes.length === 0 || progs.length === 0) return;
+
+  const tension = (nom) => (/220\s*V|secteur/i.test(nom) ? "220" : /\b9\s*V/i.test(nom) ? "9" : /\b24\s*V/i.test(nom) ? "24" : null);
+  for (const v of vannes) {
+    const tv = tension(v.nom);
+    if (tv === null) throw new Error(`« ${v.nom} » ne dit pas sa tension : on ne peut pas vérifier qu'elle s'ouvrira`);
+    for (const g of progs) {
+      const tg = tension(g.nom);
+      if (tg === null) throw new Error(`« ${g.nom} » ne dit pas sa tension`);
+      const accord = (tg === "9" && tv === "9") || (tg === "220" && tv === "24");
+      if (!accord) {
+        throw new Error(
+          `« ${g.nom} » avec « ${v.nom} » : la vanne ne s'ouvrira pas. ` +
+          "Programmateur à pile 9 V → vanne 9 V ; programmateur 220 V → vanne 24 V"
+        );
+      }
+    }
   }
 });
 
