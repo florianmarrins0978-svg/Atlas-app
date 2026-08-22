@@ -533,7 +533,7 @@ l'application. Ce qui est **fait** :
   `ARCHITECTURE.md` §83.
 - **« TERMINÉS » REFAIT** (22 août) : *« je la trouve beaucoup trop compliquée ;
   un utilisateur qui ne connaît pas l'application n'y comprend rien »*. Trois
-  simplifications dessinées (planche 86, `appli/termines-simple.html`), **il a
+  simplifications dessinées (planche 89, `appli/termines-simple.html`), **il a
   pris la B**, codée le soir même. **Un seul mois à la fois, qu'on feuillette**
   — `‹ Août 2026 ›`, et un mois vide répond « Rien en juillet 2026 ». **Ce qui
   reste à facturer NE SUIT PAS le mois** : l'onglet « À facturer » montre tout,

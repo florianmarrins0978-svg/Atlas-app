@@ -80,6 +80,7 @@ export default function PrimaryButton({
   href,
   disabled = false,
   repere,
+  pleineLargeur = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
@@ -87,18 +88,33 @@ export default function PrimaryButton({
   disabled?: boolean;
   /** Repère de suite, posé en `data-atlas`. Jamais lu par le produit. */
   repere?: string;
+  /**
+   * La capsule prend toute la largeur de son bloc.
+   *
+   * **Sa maquette de la fiche client le veut ainsi** (`.principal{width:100%}`
+   * dans `appli/fiche-client-vocale.html`), et il a demandé qu'elle soit codée
+   * trait pour trait. Le 22 août, devant l'écran : *« ça fait déjà deux fois
+   * que je te le demande »*.
+   *
+   * **Cela ne rouvre PAS « une seule forme d'action »**, qui est le sujet de ce
+   * fichier : le dessin ne bouge pas d'un pixel — même capsule, même vert,
+   * même serif, même hauteur. Seule la largeur suit le bloc, et un écran qui
+   * n'en veut pas n'a rien à faire.
+   */
+  pleineLargeur?: boolean;
 }) {
   // La capsule ne prend que la place de son texte : c'est tout son intérêt.
   // 13 px de retrait vertical sur un corps de 17 la posent à 50 px de haut —
   // au-dessus des 44 px qu'Apple demande au doigt, et huit de moins qu'avant.
   const className =
-    "inline-flex items-center justify-center gap-2 px-9 py-[13px] text-[17px] transition-transform active:scale-[0.985]";
+    `${pleineLargeur ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 px-9 py-[13px] text-[17px] transition-transform active:scale-[0.985]`;
   const dessin = { borderRadius: 9999, fontFamily: font.display };
 
   // **Le bouton se centre lui-même.** À largeur libre, laissé au fil du texte,
   // il se collerait à gauche ; l'appelant l'oublierait une fois sur deux, et le
   // défaut passerait pour un choix. Aucun des dix-sept écrans n'a à le savoir.
-  const centrer = (el: React.ReactElement) => <div className="flex justify-center">{el}</div>;
+  const centrer = (el: React.ReactElement) =>
+    pleineLargeur ? el : <div className="flex justify-center">{el}</div>;
 
   if (disabled) {
     return centrer(

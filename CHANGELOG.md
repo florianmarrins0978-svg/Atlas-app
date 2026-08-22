@@ -9,10 +9,202 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Les planifiés : la durée, plus de compte gris, plus de répétition
+
+*« C'est exactement ce que je veux »* — planche 86 retenue le 22 août 2026, avec
+une correction, puis : *« code-moi exactement ça »*.
+
+**Ce que l'écran dit maintenant, et pourquoi.**
+
+| Avant | Maintenant | Sa raison |
+|---|---|---|
+| « matin » en doré | **la durée** — « une demi-journée », « une journée », « 3 jours » | *« ce n'est pas clair quand il y a marqué le matin et l'après-midi »* |
+| « 1 chantier · complet » en gris | rien | *« on n'a pas besoin d'avoir cette information-là »* |
+| le jour et le nom réécrits sous la ligne | la ligne **se déplie sur place** | *« il y a une répétition qui se crée : deux fois la date, deux fois le nom »* |
+| la demi-journée libre après la feuille | **sous le matin**, avant la feuille | *« il doit rester en dessous du matin même s'il est libre »* |
+
+**La durée compte le CHANTIER, jamais ce qui est visible ce jour-là**
+(`ditLaDuree`, `src/lib/planning-jour.ts`). Un chantier de trois jours n'occupe
+que deux demi-journées sur la journée qu'on regarde : compter celles-là lui
+ferait annoncer « une journée » — le malentendu même qu'il demande de faire
+disparaître. La première version de la planche est tombée dedans.
+
+**La demi-journée libre appartient à la JOURNÉE, pas au chantier** : c'est pour
+cela qu'elle se rangeait après lui, donc après sa feuille, à trois écrans du
+matin qu'elle complète. **Aucun contrôle pur ne pouvait le voir** —
+`blocsDeLaJournee` la mettait déjà au bon rang, et c'est la feuille, rendue en
+dehors de ces blocs, qui s'intercalait. Le contrôle neuf mesure donc les trois
+ordonnées à l'écran, et refuse de conclure sur un élément absent.
+
+**Le geste d'ajout a été extrait** (`AjoutAuJour`) : il appartient au jour, et
+le laisser dans le volet d'un chantier l'aurait affiché autant de fois qu'il y a
+de chantiers ouverts.
+
+**Le chevron reste un LIEN, et c'est une suite du dépôt qui l'a tranché.** Il
+avait d'abord été transformé en signe de repli, comme sur la planche —
+`test-planning-vers-facture-e2e.ts` a rougi aussitôt : *« depuis le planning, le
+chantier mène à son devis »*. Le chevron de la planche est son signe de repli à
+elle ; sur cet écran, le NOM déplie et le chevron part. Les confondre coûtait le
+seul chemin vers le devis d'un chantier posé — un chantier posé quitte l'onglet
+« Chantiers », et la feuille n'offre aucun autre accès. C'est-à-dire exactement
+ce qu'il signalait le 8 août 2026 : *« il se range dans les chantiers planifiés,
+mais comment moi je fais pour avoir accès au devis ? »*
+
+**La leçon :** une planche dessine ce qu'on VOIT, pas ce que chaque geste
+promet. Deux signes identiques peuvent porter deux gestes différents, et c'est
+la suite qui garde la différence.
+
+**Les contrôles adaptés, jamais le libellé remis** (`CLAUDE.md` §5 bis) : celui
+qui réclamait « 1 chantier » vérifie désormais que le compte a bien disparu et
+que la charge se lit encore aux pastilles ; celui qui lisait « matin » sur la
+ligne lit la durée ; celui qui visait le chantier par un `href` le vise par son
+nom.
+
+---
+
+### Un jour déjà pris pouvait être proposé — et le client pouvait le retenir
+
+*« Je peux proposer le 24 alors qu'un client a validé le 24 — corrige-moi ça !
+Ça ne doit jamais se reproduire, c'est une erreur gravissime !!!! »*
+
+**Le défaut.** Les trois chemins qui calculent l'occupation bornaient leur
+requête sur `date_planifiee >= début` — le jour où le chantier **commence**. Un
+chantier de trois jours parti le **jeudi** tient encore le **lundi** suivant :
+sa date de départ tombe hors de la fenêtre, sa ligne n'est pas ramenée, et ce
+lundi-là s'affiche **libre** alors qu'il est pris.
+
+**Ce qui le rendait grave, et non pas seulement gênant.** L'écran d'envoi
+n'était pas seul à se tromper : la **revérification de la réponse du client**
+lisait exactement la même occupation tronquée. Rien ne rattrapait donc la faute
+en aval — le client acceptait, le chantier se posait, et deux chantiers se
+retrouvaient le même jour sans qu'un seul écran s'en aperçoive. Le contrôle
+neuf le montre noir sur blanc contre l'ancienne borne : `succes: true` sur une
+date déjà occupée.
+
+**La correction.** Un prédicat unique, `encoreEnCoursDepuis`
+(`src/server/repositories/occupation-chantiers.ts`), partagé par les trois
+chemins — jamais trois copies (`CLAUDE.md` §3) :
+
+```sql
+date_planifiee + COALESCE(duree_demi_journees, 2) * INTERVAL '1 day' >= début
+```
+
+Reculer de `n` jours **calendaires** pour `n` demi-journées est toujours
+généreux : `n` demi-journées valent `⌈n/2⌉` jours ouvrés, et même un départ le
+vendredi ne creuse jamais l'écart au-delà. Trop ramener ne coûte rien —
+`compterOccupation` recalcule ensuite les créneaux exacts.
+
+**Trois contrôles, et ils ont été VUS ROUGES** contre l'ancienne borne, remise
+exprès (`scripts/test-preparation-envoi.ts`) : le jour n'est plus suggéré,
+l'envoi refuse de le proposer, et le client ne peut plus le retenir.
+
+**Le troisième était d'abord vert pour un mauvais motif, et c'est la leçon.**
+Il n'affirmait que `succes === false` — or `enregistrerReponse` refusait pour
+`expire`, le lien ayant vieilli de mars à août faute de lui passer la date.
+Vert des deux côtés de la correction, il ne prouvait rien. **Un contrôle qui
+attend un refus doit nommer le motif attendu** : sans quoi il se contente du
+premier refus venu, qui n'est presque jamais celui qu'on croit.
+
+**Ce qui n'est PAS corrigé, parce que c'est son choix.** Avec deux équipes,
+l'application propose un jour où une seule est prise — c'est le fonctionnement
+voulu, mais aucun écran ne le signale. Planche 88,
+`appli/envoi-jour-deja-pris.html`, en attente de sa réponse.
+
+---
+
+### Un devis accepté, invisible : le planning s'ouvre sur la mauvaise semaine
+
+*« Un devis a été accepter mais rien n'ai visible sur mon planning »* — avec la
+capture de la confirmation vue par son client : « Intervention prévue le lundi
+24 août ».
+
+**Reproduit à l'écran AVANT de répondre** (`CLAUDE.md` §1 bis), pas deviné :
+fiche d'espace lue — son banc tourne et sert bien le planning réécrit —, chantier
+inséré au 24 août en base locale, connexion réelle, capture.
+
+**Rien n'a été perdu, et c'est la première chose à dire.** `enregistrerReponse`
+écrit `date_planifiee`, `creneau_debut` et `duree_demi_journees` sur le chantier
+dans la **même transaction** que la réponse du client : il ne peut pas y avoir
+l'une sans l'autre. Le 24 août portait bien sa barre pleine dans le calendrier.
+
+**Ce qui l'a trompé.** La liste des planifiés s'ouvre sur la semaine du jour
+(`useState(() => lundiDe(aujourdHui))`). Samedi 22, cette semaine ne porte rien,
+et l'écran écrit alors **« Aucun chantier posé cette semaine »** — une phrase
+juste au mot près, et fausse pour qui la lit : le chantier est là, trois jours
+plus loin. La seule trace du contraire tient dans une barre de 3 px, de la même
+forme que celles des jours vides.
+
+**La leçon, au-delà de ce cas :** un écran qui rend compte d'une **fenêtre**
+(une semaine, un mois, une page) doit dire ce qu'il y a **hors de sa fenêtre**
+quand elle est vide. Sans quoi son « aucun » se lit comme « il n'y en a nulle
+part », et c'est le produit qu'on croit en panne.
+
+**Rien n'est codé** : sur quelle semaine le planning s'ouvre est un choix
+d'apparence, et il se dessine d'abord (`CLAUDE.md` §3 bis). Planche 87,
+`appli/planning-semaine-ouverte.html` — trois écrans qui se promènent, une
+seule fonction de peinture pour les trois.
+
+**Au passage**, deux ancres restées ouvertes dans `docs/maquettes/index.html`
+(planches 68 et 86) : chacune avalait la fiche suivante, qui devenait
+inatteignable. Trouvé en comptant les `<a>` contre les `</a>`.
+
+---
+
+### La fiche client est enfin celle de sa maquette — les huit écarts d'un coup
+
+**Sa phrase, devant l'écran :** *« C'est toujours pas la même version que celle
+que je t'avais demandée. Ça fait déjà deux fois que je te le demande. Je ne
+comprends pas pourquoi tu ne veux pas me la coder. »*
+
+Il a raison, et la faute est nette : les écarts avaient été **relevés et
+mesurés le matin même**, puis je lui ai demandé son feu vert au lieu de coder —
+alors qu'il l'avait déjà donné deux fois (*« tu me la codes trait pour trait, tu
+ne changes rien »*). Une liste d'écarts n'est pas un travail livré.
+
+Ce qui manquait, et qui est en place : la flèche de retour sur la ligne du
+titre en chevron nu ; le contour **or** des pastilles Mr / Mme ; le nom du
+client au même corps que le téléphone ; le choix du canal **toujours visible** ;
+les capsules du canal cernées, l'or quand il est pris ; le carré des photos en
+74 × 74 avec son liseré **en tirets doré** ; « Je rédige mon devis » en pleine
+largeur.
+
+**La batterie a trouvé ce que la capture ne montrait pas.** La flèche ramenée
+sur la ligne du titre lui prend trente-six pixels, et la phrase d'attente de la
+dictée occupe les 190 px de droite : « Fiche client » se brisait en deux
+pendant qu'Atlas travaillait. `test-attente-dictee-e2e` l'a vu. Le titre est
+une étiquette, pas du texte : il garde sa largeur, c'est la phrase qui se
+replie.
+
+### La fiche d'état MESURE le port au lieu de le deviner
+
+**Sa matinée du 22 août, et trois allers-retours perdus.** La fiche annonçait
+« Port 3000 : PRIVÉ (sans-gh) » — sans jamais avoir regardé. Elle recopiait le
+mot rendu au démarrage par `ouvrir-port.sh`, lequel ne dit pas l'état du port
+mais ce que le script a pu FAIRE : « `gh` est absent, je n'ai pas pu le régler »
+devenait « donc il est privé ». Il a fait les trois clics, puis : *« il est en
+public déjà »*.
+
+Une fiche existe pour éviter de raisonner sur une machine qu'on ne voit pas
+(`CLAUDE.md` §1 bis). Celle-là raisonnait à notre place, et à tort.
+
+L'espace s'appelle désormais par **son adresse publique**, celle de son
+téléphone, et rapporte ce qui revient — en nommant qui a répondu, le relais de
+GitHub ou Atlas, parce qu'un même 404 appelle deux gestes opposés. C'est ainsi
+que la vraie panne est enfin sortie : **son installation de Next.js était
+cassée** (`Cannot find module './detect-typo'`), le serveur ne démarrait plus,
+et ni le port ni l'application n'y étaient pour quelque chose.
 ### « Terminés » refait : la B, codée
 
 *« Je choisis la B avec les modifications que je viens de te demander. »*
-La planche 86 est retenue et portée dans `src/app/termines/`.
+La planche 89 est retenue et portée dans `src/app/termines/`.
+
+**Elle est née « 86 », et elle a été renumérotée à la fusion.** Une autre
+session travaillait le même jour et a donné le même numéro à sa planche des
+planifiés — déjà codée, et citée dans cinq suites du planning. C'est la nôtre
+qui bouge : la plus petite retouche, et elle ne réécrit pas le texte d'une
+session qui tourne encore. C'est la deuxième collision de ce genre après la
+§59 en double du 11 août : **prendre le prochain numéro se fait sur `main`
+fraîchement récupéré, pas sur ce qu'on a sous la main.**
 
 **Ce qui a quitté l'écran, et ne doit pas revenir :**
 
@@ -73,7 +265,7 @@ dans l'écran (`CLAUDE.md` §3 bis).
 
 ### « Terminés » : revenir dans le passé, et le compte en noir gras
 
-Ses deux corrections sur la planche 86, le soir même : *« en haut il y a marqué
+Ses deux corrections sur la planche 89, le soir même : *« en haut il y a marqué
 août 2026, mais il faut pouvoir revenir dans le passé si jamais on a du retard
 sur la facturation »*, et *« cinq factures envoyées et tant qui attendent leur
 facturation, ça tu peux le mettre en noir gras »*.
@@ -115,7 +307,7 @@ des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi que c
 soit. »*
 
 Mêmes mots que pour le planning le 19 août (planche 84), donc même réponse :
-`appli/termines-simple.html` — **planche 86**, essayable, et `src/` n'a pas
+`appli/termines-simple.html` — **planche 89**, essayable, et `src/` n'a pas
 bougé (`CLAUDE.md` §3 bis).
 
 **Ce qui se comprend mal sur l'écran actuel**, relevé sur sa capture et non
@@ -159,6 +351,53 @@ coupable.
 ---
 
 ## 2026-08-21
+
+### « Pourquoi pas des 3504 ? » — j'avais inventé les portées
+
+*« Pourquoi tu as utilisé des tuyères 1800 et pas des arroseurs 3500 de chez
+Rain Bird ? »* La réponse tient en une ligne de son catalogue : la 3504 porte au
+minimum **5,2 m** (buse 0,75) pour une bande de **4 m** de large.
+
+**Mais en vérifiant, j'ai trouvé bien pire dans la maquette.** J'annonçais
+« Turbine 5004, buse 3.0 — portée 6 m » : **cette portée n'existe pas**. Ses
+relevés donnent 8,5 m pour la buse 1,0 et **11,1 m** pour la 3,0. Et la 12-VAN ne
+fait pas 4 m mais **3,6 m**. J'avais inventé des valeurs qui étaient dans le
+catalogue depuis le 17 août, et tout le maillage reposait dessus.
+
+**Deux règles de sa part ont débloqué le reste.**
+
+*« Les débits à 360° sont les mêmes qu'à 180° et 90°. »* Le catalogue portait
+cette question ouverte depuis le 17 août et écartait toutes les turbines du
+calcul faute de réponse. Elle est tranchée — et **c'est l'inverse de ce que le
+dépôt supposait** : on imaginait un débit proportionnel à l'arc, ce qui aurait
+divisé par quatre celui d'un coin et fait poser quatre fois trop d'arroseurs sur
+une voie. La règle ne vaut que pour les turbines : une buse VAN projette
+plusieurs filets, et ses propres relevés donnent bien 0,15 / 0,30 / 0,59.
+
+*« On a un recouvrement d'au moins 80 %, pas obligé d'avoir 100 % à chaque
+fois. »* Le contrôle exigeait 100 % de la pelouse à portée d'un arroseur — plus
+strict que son métier, et cela coûte : chaque point manquant fait resserrer le
+maillage, donc ajouter des arroseurs et des raccords. **Un contrôle trop sévère
+fait dépenser aussi sûrement qu'un contrôle absent.**
+
+**Le plan refait sur les vraies valeurs est plus simple que le faux :**
+
+| | Avant (valeurs inventées) | Après (ses relevés) |
+|---|---|---|
+| Arroseurs | 9 turbines 5004 + 4 tuyères | 9 turbines **3504 buse 0,75** + 4 tuyères |
+| Portées | 6 m et 4 m — inexistantes | **5,2 m** et **3,6 m** — relevées |
+| Réseaux | 3 | **2** |
+| Nourrice | 3 voies | **2 voies** |
+| Couverture | — | **100 %**, pour 80 % exigés |
+
+**Et un principe s'est imposé de lui-même : un réseau par famille.** Une tuyère
+verse environ trois fois plus vite qu'une turbine ; sur une même voie, le temps
+qui convient à l'une noie ou assoiffe l'autre. L'ancien plan mélangeait une
+turbine et quatre tuyères sur le réseau 3.
+
+**Deux détails trouvés en lisant les fiches** : la 3504 est en **1/2"** (pas
+3/4" comme la 5004), ce qui change tous ses SBE de corps ; et elle est **livrée
+avec ses six buses**, donc la ligne « buse » disparaît de la commande.
 
 ### Le tour plutôt que la coupe — et un contrôle qui dormait
 

@@ -20,7 +20,7 @@ import {
 /**
  * « Terminés » — un mois à la fois, et l'état écrit en toutes lettres.
  *
- * *Planche 86, proposition B (`appli/termines-simple.html`), retenue par le
+ * *Planche 89, proposition B (`appli/termines-simple.html`), retenue par le
  * patron le 22 août 2026 : « je choisis la B avec les modifications que je
  * viens de te demander ».*
  *

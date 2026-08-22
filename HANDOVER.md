@@ -9,12 +9,60 @@ sert.
 
 ---
 
+## L'OCCUPATION SE BORNE SUR LA FIN DU CHANTIER, JAMAIS SUR SON DÉPART
+
+Corrigé le 22 août 2026, après *« je peux proposer le 24 alors qu'un client a
+validé le 24 »*. **Toute nouvelle requête d'occupation doit passer par
+`encoreEnCoursDepuis`** (`src/server/repositories/occupation-chantiers.ts`) —
+jamais par un `gte(chantiers.datePlanifiee, …)` réécrit à la main.
+
+La raison tient en une phrase : un chantier de trois jours parti le jeudi tient
+encore le lundi, et borner sur son jour de départ le rend **invisible**. Le jour
+paraît libre, l'écran le propose, et — c'est ce qui rendait le défaut grave — la
+revérification de la réponse du client lisait la même occupation tronquée, donc
+**rien ne rattrapait la faute en aval**.
+
+Trois chemins la partagent, et ils doivent continuer de la partager
+(`CLAUDE.md` §3) : l'écran d'envoi, la validation de la date que le patron pose
+au calendrier, la revérification de la réponse du client.
+
+**Et la leçon de méthode, qui vaut partout :** un contrôle qui attend un refus
+doit **nommer le motif attendu**. Le troisième contrôle de ce lot n'affirmait
+que « ça échoue » — il était vert des deux côtés de la correction, parce que le
+refus venait en réalité d'un lien expiré.
+
+---
+
+## « RIEN N'EST VISIBLE SUR MON PLANNING » — DIAGNOSTIQUÉ, pas encore réglé
+
+Sa panne du 22 août 2026. **Si elle revient, la réponse est déjà là — ne pas la
+rechercher :**
+
+| | |
+|---|---|
+| La date est-elle perdue ? | **Non.** `enregistrerReponse` écrit `date_planifiee` sur le chantier dans la MÊME transaction que la réponse du client |
+| Le chantier est-il sur le planning ? | **Oui**, le jour porte sa barre pleine dans le mois |
+| Alors pourquoi ne le voit-il pas ? | La liste des planifiés s'ouvre sur **la semaine du jour**, la trouve vide, et écrit « Aucun chantier posé cette semaine » — pendant que le chantier attend la semaine d'après |
+| Ce qui le débloque tout de suite | toucher le jour dans le calendrier, ou la flèche **›** de la semaine |
+
+**Rien n'est codé** : la planche 87 (`appli/planning-semaine-ouverte.html`)
+attend qu'il choisisse entre A, B et C. Voir `TODO.md`.
+
+**La leçon à garder même quand ce cas sera réglé :** un écran qui montre une
+**fenêtre** — une semaine, un mois, une page — doit dire ce qu'il y a **hors de
+sa fenêtre** quand elle est vide. Sinon son « aucun » se lit « il n'y en a nulle
+part », et c'est le produit qu'on croit cassé. Chercher les autres endroits qui
+ont ce défaut avant qu'il ne les trouve.
+
+---
+
+## « TERMINÉS » : UNE PLANCHE ATTEND SA RÉPONSE — ne pas coder l'écran
 ## « TERMINÉS » A ÉTÉ REFAIT LE 22 AOÛT 2026 — ce qu'il faut savoir avant d'y toucher
 
 Sa plainte, capture à l'appui : *« je la trouve beaucoup trop compliquée. Un
 utilisateur qui ne connaît pas l'application et qui arrive sur cette page ne
 comprend rien. »* Trois propositions dessinées, et **il a pris la B** —
-`appli/termines-simple.html`, planche 86. **Elle reste la référence** : toute
+`appli/termines-simple.html`, planche 89. **Elle reste la référence** : toute
 correction de cet écran s'y porte d'abord, sinon les deux divergent, et c'est
 elle qu'il ouvre sur son téléphone.
 

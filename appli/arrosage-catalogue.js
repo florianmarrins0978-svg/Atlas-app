@@ -247,20 +247,27 @@ var CATALOGUE = {
        seule valeur de débit par numéro de buse, à une pression de référence —
        AUCUNE répartition par angle, contrairement aux tuyères VAN/SRS/R-VAN.
 
-       **CE QUI N'EST PAS TRANCHÉ, et ne se devine pas :** sur une turbine, le
-       jet est UN SEUL filet qui balaie l'arc réglé — contrairement à une buse
-       VAN qui projette plusieurs filets simultanés. Le débit d'une turbine
-       est peut-être exactement proportionnel à l'arc (un filet qui balaie
-       deux fois moins d'angle consomme deux fois moins d'eau), ce qui
-       justifierait de déduire coins/bords depuis ce seul chiffre — mais c'est
-       précisément le genre de déduction que sa règle du 17 août interdit tant
-       qu'elle n'est pas confirmée : « les valeurs sont lues, jamais déduites »
-       a été vérifié FAUX sur les buses VAN (la 6-VAN n'est pas proportionnelle).
+       **TRANCHÉ PAR LE PATRON LE 21 AOÛT 2026 :** *« les débits à 360° sont les
+       mêmes qu'à 180° et 90° »*. Sur une turbine, le jet est UN SEUL filet qui
+       balaie l'arc réglé : il sort autant d'eau par seconde qu'il balaie un
+       quart de cercle ou le tour entier — seule la durée passée sur chaque
+       point change. **Le débit d'une turbine ne dépend donc PAS de son arc**,
+       et `debit:{360: …}` vaut pour tous les angles.
 
-       Le débit est donc entré en `debit:{360: …}` SEULEMENT — jamais 90/180 —
-       et `busesDe()` (plus haut) exige les trois angles pour poser une buse
-       automatiquement : ces turbines restent donc VISIBLES au registre de
-       prix, mais ÉCARTÉES du calcul tant que la question n'a pas sa réponse. */
+       **C'EST L'INVERSE DE CE QU'ON AVAIT SUPPOSÉ ICI**, et c'est pour cela
+       qu'on ne l'avait pas déduit : on imaginait un débit proportionnel à
+       l'arc (« deux fois moins d'angle, deux fois moins d'eau »). Faux. La
+       règle du 17 août — « les valeurs sont lues, jamais déduites » — a bien
+       servi : la déduction plausible aurait divisé par quatre le débit d'un
+       arroseur de coin, et fait poser quatre fois trop d'arroseurs sur une
+       même voie.
+
+       **ET CELA NE VAUT QUE POUR LES TURBINES.** Une buse VAN projette
+       PLUSIEURS filets simultanés : moins d'arc, moins de filets, moins de
+       débit. Ses propres relevés le montrent (12-VAN : 0,15 à 90°, 0,30 à
+       180°, 0,59 à 360°) — pour une tuyère, le débit se lit par angle, comme
+       il est écrit. Étendre la règle des turbines aux tuyères contredirait
+       ses mesures. */
     { ref:'HA2211-B1', nom:'PGP-ADJ · buse 1 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:8.8, pression:2.8, debit:{ 360:0.14 },
       colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },

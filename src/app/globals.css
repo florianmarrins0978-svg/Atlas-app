@@ -758,9 +758,15 @@ body {
 .atlas-pellicule::-webkit-scrollbar { display: none; }
 .atlas-vue,
 .atlas-ajouter {
-  flex: 0 0 68px;
-  height: 62px;
-  border-radius: 3px;
+  /* **Les mesures de sa maquette** (`.ajout-photo` dans
+   * `appli/fiche-client-vocale.html`), codée trait pour trait le 22 août 2026 :
+   * un carré de 74, des angles de 6, et surtout un liseré EN TIRETS, doré. Le
+   * trait continu gris de 68 × 62 se lisait comme une case vide plutôt que
+   * comme un endroit où poser une photo — et c'est ce qu'il montrait du doigt
+   * en comparant les deux écrans. */
+  flex: 0 0 74px;
+  height: 74px;
+  border-radius: 6px;
   scroll-snap-align: start;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), border-color 0.2s;

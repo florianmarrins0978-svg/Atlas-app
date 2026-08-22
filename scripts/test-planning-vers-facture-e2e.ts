@@ -295,7 +295,7 @@ async function main() {
     // le contrôle s'en aperçoive.
     //
     // **On passe par l'onglet « À facturer », et c'est le geste du patron.**
-    // L'écran refait le 22 août 2026 (planche 86, proposition B) s'ouvre sur le
+    // L'écran refait le 22 août 2026 (planche 89, proposition B) s'ouvre sur le
     // mois le plus récent : un chantier terminé il y a six jours peut tomber
     // dans le mois d'avant selon la date du jour, et le contrôle chercherait
     // alors dans un mois qui ne le porte pas — en accusant un écran juste.

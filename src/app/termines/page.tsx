@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 /**
  * « Terminés » — un mois à la fois, et l'état écrit en toutes lettres.
  *
- * *Refait le 22 août 2026 d'après la planche 86, proposition B
+ * *Refait le 22 août 2026 d'après la planche 89, proposition B
  * (`appli/termines-simple.html`), retenue par le patron : « je choisis la B
  * avec les modifications que je viens de te demander ». La planche reste la
  * référence — toute correction de cet écran s'y porte D'ABORD, sinon les deux
