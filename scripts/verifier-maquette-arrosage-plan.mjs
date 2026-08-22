@@ -210,7 +210,7 @@ cas("la photo du croquis est là", () => {
 });
 
 // ── 2. Aucun coin de pelouse n'est oublié ───────────────────────────────────
-const dedans = (x, y, pts) => {
+const dedans2 = (x, y, pts) => {
   let ok = false;
   for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
     const [xi, yi] = pts[i];
@@ -221,17 +221,35 @@ const dedans = (x, y, pts) => {
 };
 const toutesPortees = Object.values(vu.reseaux).flatMap((r) => r.portees);
 
-cas("aucun coin de pelouse n'est laissé sans eau", () => {
+// **80 % SUFFIT — sa règle du 21 août 2026** : *« on a un recouvrement d'au
+// moins 80 %, pas obligé d'avoir 100 % à chaque fois »*, en validant la 12-VAN
+// à 3,6 m sur une bande de 4 m.
+//
+// La version précédente exigeait **100 %** de la pelouse à portée d'un arroseur.
+// C'était plus strict que son métier, et cela coûte : chaque point manquant fait
+// resserrer le maillage, donc ajouter des arroseurs, des raccords et du tuyau
+// que personne ne paie. Un contrôle trop sévère fait dépenser aussi sûrement
+// qu'un contrôle absent.
+const COUVERTURE_MINIMALE = 0.8;
+
+cas(`au moins ${Math.round(COUVERTURE_MINIMALE * 100)} % de la pelouse est à portée d'un arroseur`, () => {
+  let dedans = 0;
+  let couvert = 0;
   const trous = [];
   for (let x = 0.25; x < 20; x += 0.5) {
     for (let y = 0.25; y < 12; y += 0.5) {
-      if (!dedans(x, y, vu.contour)) continue;
-      const couvert = toutesPortees.some(([cx, cy, r]) => Math.hypot(x - cx, y - cy) <= r + 0.01);
-      if (!couvert) trous.push(`${x}×${y}`);
+      if (!dedans2(x, y, vu.contour)) continue;
+      dedans++;
+      if (toutesPortees.some(([cx, cy, r]) => Math.hypot(x - cx, y - cy) <= r + 0.01)) couvert++;
+      else if (trous.length < 1) trous.push(`${x}×${y}`);
     }
   }
-  if (trous.length > 0) {
-    throw new Error(`${trous.length} m² sans arrosage, à partir de ${trous[0]} m — c'est une tache jaune en juillet, et elle ne se voit pas sur le dessin`);
+  const part = dedans === 0 ? 1 : couvert / dedans;
+  if (part < COUVERTURE_MINIMALE) {
+    throw new Error(
+      `${Math.round(part * 100)} % de la pelouse arrosée, il en faut ${Math.round(COUVERTURE_MINIMALE * 100)} % — ` +
+      `${((dedans - couvert) / 4).toFixed(0)} m² au sec, à partir de ${trous[0]} m : c'est une tache jaune en juillet`
+    );
   }
 });
 
@@ -750,7 +768,11 @@ cas("la nourrice est détaillée, pas résumée", () => {
     throw new Error(`${vannes} électrovanne(s) pour ${vu.cartes.length} réseaux : il en faut une par voie`);
   }
   for (const [quoi, motif] of [
-    ["la clarinette qui relie les vannes", /clarinette/i],
+    // **La pièce qui relie les vannes n'a pas le même nom selon le nombre de
+    // voies** : une clarinette à partir de trois, un té MMF à deux (ses fiches
+    // du 17 août). Exiger « clarinette » figeait la nourrice 3 voies et faisait
+    // rougir un regard 2 voies parfaitement monté (`CLAUDE.md` §5 bis).
+    ["la pièce qui relie les vannes (clarinette ou té MMF)", /clarinette|té .*mmf/i],
     ["les unions, sans quoi rien ne se démonte", /union/i],
     ["le regard", /regard/i],
     ["le programmateur", /programmateur/i],

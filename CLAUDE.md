@@ -257,6 +257,29 @@ compteur et des traits qui commencent dans le vide n'est pas un plan : il ne se
 pose pas sur le terrain. La nourrice se **dessine**, avec ses vannes, et chaque
 ligne en part.
 
+**LE DÉBIT D'UNE TURBINE NE DÉPEND PAS DE SON ARC.** Sa règle du 21 août :
+*« les débits à 360° sont les mêmes qu'à 180° et 90° »*. Le jet est un seul
+filet qui balaie l'arc réglé — il sort autant d'eau par seconde sur un quart de
+cercle que sur le tour entier ; seule la durée passée sur chaque point change.
+Un arroseur de coin consomme donc **autant** qu'un plein cercle.
+
+**C'est l'inverse de ce que le dépôt supposait**, et c'est pourquoi il ne l'avait
+pas déduit. La déduction plausible — « deux fois moins d'angle, deux fois moins
+d'eau » — aurait divisé par quatre le débit d'un coin, et fait poser quatre fois
+trop d'arroseurs sur une même voie.
+
+**Et cela ne vaut QUE pour les turbines.** Une buse VAN projette plusieurs filets
+simultanés : moins d'arc, moins de filets, moins de débit — ses relevés le
+montrent (12-VAN : 0,15 à 90°, 0,30 à 180°, 0,59 à 360°). Pour une tuyère, le
+débit se lit par angle.
+
+**80 % DE RECOUVREMENT SUFFIT — pas besoin de 100 %.** Sa règle du 21 août, en
+validant la 12-VAN à 3,6 m sur une bande de 4 m. Le recouvrement se lit
+`portée ÷ espacement` : deux arroseurs espacés de leur portée exacte se
+recouvrent à 100 %, ce qui est confortable et cher. Le seuil est **0,8**, soit
+un espacement jusqu'à **1,25 × la portée**. Exiger 100 % partout fait poser des
+arroseurs et des raccords que personne ne paie.
+
 **LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
 
 | Le programmateur | L'électrovanne |

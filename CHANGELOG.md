@@ -9,6 +9,53 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### « Pourquoi pas des 3504 ? » — j'avais inventé les portées
+
+*« Pourquoi tu as utilisé des tuyères 1800 et pas des arroseurs 3500 de chez
+Rain Bird ? »* La réponse tient en une ligne de son catalogue : la 3504 porte au
+minimum **5,2 m** (buse 0,75) pour une bande de **4 m** de large.
+
+**Mais en vérifiant, j'ai trouvé bien pire dans la maquette.** J'annonçais
+« Turbine 5004, buse 3.0 — portée 6 m » : **cette portée n'existe pas**. Ses
+relevés donnent 8,5 m pour la buse 1,0 et **11,1 m** pour la 3,0. Et la 12-VAN ne
+fait pas 4 m mais **3,6 m**. J'avais inventé des valeurs qui étaient dans le
+catalogue depuis le 17 août, et tout le maillage reposait dessus.
+
+**Deux règles de sa part ont débloqué le reste.**
+
+*« Les débits à 360° sont les mêmes qu'à 180° et 90°. »* Le catalogue portait
+cette question ouverte depuis le 17 août et écartait toutes les turbines du
+calcul faute de réponse. Elle est tranchée — et **c'est l'inverse de ce que le
+dépôt supposait** : on imaginait un débit proportionnel à l'arc, ce qui aurait
+divisé par quatre celui d'un coin et fait poser quatre fois trop d'arroseurs sur
+une voie. La règle ne vaut que pour les turbines : une buse VAN projette
+plusieurs filets, et ses propres relevés donnent bien 0,15 / 0,30 / 0,59.
+
+*« On a un recouvrement d'au moins 80 %, pas obligé d'avoir 100 % à chaque
+fois. »* Le contrôle exigeait 100 % de la pelouse à portée d'un arroseur — plus
+strict que son métier, et cela coûte : chaque point manquant fait resserrer le
+maillage, donc ajouter des arroseurs et des raccords. **Un contrôle trop sévère
+fait dépenser aussi sûrement qu'un contrôle absent.**
+
+**Le plan refait sur les vraies valeurs est plus simple que le faux :**
+
+| | Avant (valeurs inventées) | Après (ses relevés) |
+|---|---|---|
+| Arroseurs | 9 turbines 5004 + 4 tuyères | 9 turbines **3504 buse 0,75** + 4 tuyères |
+| Portées | 6 m et 4 m — inexistantes | **5,2 m** et **3,6 m** — relevées |
+| Réseaux | 3 | **2** |
+| Nourrice | 3 voies | **2 voies** |
+| Couverture | — | **100 %**, pour 80 % exigés |
+
+**Et un principe s'est imposé de lui-même : un réseau par famille.** Une tuyère
+verse environ trois fois plus vite qu'une turbine ; sur une même voie, le temps
+qui convient à l'une noie ou assoiffe l'autre. L'ancien plan mélangeait une
+turbine et quatre tuyères sur le réseau 3.
+
+**Deux détails trouvés en lisant les fiches** : la 3504 est en **1/2"** (pas
+3/4" comme la 5004), ce qui change tous ses SBE de corps ; et elle est **livrée
+avec ses six buses**, donc la ligne « buse » disparaît de la commande.
+
 ### Le tour plutôt que la coupe — et un contrôle qui dormait
 
 *« On essaye de traverser le moins possible le jardin en faisant des tranchées.
