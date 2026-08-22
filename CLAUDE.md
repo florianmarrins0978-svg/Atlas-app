@@ -295,6 +295,21 @@ Trois éléments, tous obligatoires :
 Il en manque un : on **retire** le plan et l'on dit lequel manque. On ne le grise
 pas — un plan affiché en pâle se photographie et se pose quand même.
 
+**LA NOURRICE SE PLACE PAR LUI, JAMAIS PAR L'OUTIL.** Sa règle du 21 août :
+*« c'est l'utilisateur qui placera la nourrice où il veut »*. Elle n'est ni
+calculée, ni déduite, ni proposée d'office : elle est **lue** sur le croquis.
+L'IA qui lit la photo la cherche ; si elle ne la trouve pas, elle refuse et le
+dit — elle ne la pose pas au piquage « pour dépanner ».
+
+Ce n'est pas une question de politesse : l'endroit du regard dépend de ce que
+lui seul sait — un point d'eau existant, un passage de voiture, un massif qu'on
+ne rouvre pas, l'accès pour l'hivernage. Un outil qui le placerait ferait creuser
+au mauvais endroit, et une tranchée ne se déplace pas.
+
+**Informer n'est pas proposer.** S'il demande ce que change tel ou tel
+emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
+raccourcissent. On ne dit jamais où le mettre.
+
 **L'AVERTISSEMENT SE LIT AVANT DE PHOTOGRAPHIER**, en gras, **au-dessus** du
 croquis : *« votre croquis doit impérativement contenir les métrés, l'endroit
 définitif de la nourrice, et l'endroit où le piquage se fait »*. Placé en
