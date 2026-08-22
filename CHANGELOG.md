@@ -9,9 +9,315 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### La place se compte en ÉQUIPES, plus en chantiers
+
+*« Pourquoi le matin et l'après-midi de monsieur Eric s'affichent en
+incomplet ? »* — Julien **et** Antoine y étaient. Puis, la planche 89 vue :
+*« oui si c'est des journées complètes, non si c'est des demi-journées »*.
+
+**Le défaut.** `occupationDemi` et `compterOccupation` divisaient le nombre de
+**chantiers** par le nombre d'équipes : un chantier pour deux équipes valait la
+moitié, quel que soit le nombre d'équipes réellement cochées dessus.
+L'affectation par demi-journée, posée le 21 août, ne pesait donc sur **aucune
+capacité** — elle était décorative. Conséquence : ce mardi-là partait chez ses
+clients alors qu'il n'avait plus personne à envoyer.
+
+**La règle.** Un chantier prend autant d'équipes qu'on lui en coche, et **au
+moins une** — un chantier sans affectation reste du travail à faire, le compter
+zéro viderait le planning d'un coup.
+
+**Sa règle tombe d'elle-même du comptage par demi-journée**, et c'est ce qui
+évite de la coder deux fois :
+
+| Ce qu'il pose | Résultat |
+|---|---|
+| journée entière, ses 2 équipes | les deux créneaux sont pris → **le jour se ferme** |
+| demi-journée, ses 2 équipes | seul le matin est pris → **l'après-midi reste offert** |
+| 1 équipe sur 2 | la moitié → inchangé |
+
+**Les QUATRE lectures de la place sont nourries de la même source** — l'écran
+d'envoi, la validation de la date qu'il pose lui-même, la revérification de la
+réponse du client, et le planning. Ne corriger que l'affichage aurait fait dire
+« complet » au planning pendant que l'écran d'envoi offrait le jour : deux
+vérités sur la même capacité (`CLAUDE.md` §3), c'est-à-dire le défaut d'origine
+déplacé d'un écran.
+
+**Les deux moitiés de sa règle ont leur contrôle, et chacun a été VU ROUGE sur
+la faute qu'il garde** : celui de la journée contre l'ancienne règle, celui de
+la demi-journée contre la simplification « toutes les équipes ⇒ jour fermé ».
+
+**Et une assertion muette a été trouvée en chemin.** Les deux contrôles
+interrogeaient d'abord `joursLibres` — qui ne rend que les **six premiers** jours
+suggérés. Un jour situé plus loin en est absent quoi qu'il arrive : l'assertion
+était donc vraie par construction, et celle de la journée « passait » sans rien
+prouver. Elles lisent désormais `joursOccupes`, qui couvre douze mois.
+
+---
+
+### Les planifiés : la durée, plus de compte gris, plus de répétition
+
+*« C'est exactement ce que je veux »* — planche 86 retenue le 22 août 2026, avec
+une correction, puis : *« code-moi exactement ça »*.
+
+**Ce que l'écran dit maintenant, et pourquoi.**
+
+| Avant | Maintenant | Sa raison |
+|---|---|---|
+| « matin » en doré | **la durée** — « une demi-journée », « une journée », « 3 jours » | *« ce n'est pas clair quand il y a marqué le matin et l'après-midi »* |
+| « 1 chantier · complet » en gris | rien | *« on n'a pas besoin d'avoir cette information-là »* |
+| le jour et le nom réécrits sous la ligne | la ligne **se déplie sur place** | *« il y a une répétition qui se crée : deux fois la date, deux fois le nom »* |
+| la demi-journée libre après la feuille | **sous le matin**, avant la feuille | *« il doit rester en dessous du matin même s'il est libre »* |
+
+**La durée compte le CHANTIER, jamais ce qui est visible ce jour-là**
+(`ditLaDuree`, `src/lib/planning-jour.ts`). Un chantier de trois jours n'occupe
+que deux demi-journées sur la journée qu'on regarde : compter celles-là lui
+ferait annoncer « une journée » — le malentendu même qu'il demande de faire
+disparaître. La première version de la planche est tombée dedans.
+
+**La demi-journée libre appartient à la JOURNÉE, pas au chantier** : c'est pour
+cela qu'elle se rangeait après lui, donc après sa feuille, à trois écrans du
+matin qu'elle complète. **Aucun contrôle pur ne pouvait le voir** —
+`blocsDeLaJournee` la mettait déjà au bon rang, et c'est la feuille, rendue en
+dehors de ces blocs, qui s'intercalait. Le contrôle neuf mesure donc les trois
+ordonnées à l'écran, et refuse de conclure sur un élément absent.
+
+**Le geste d'ajout a été extrait** (`AjoutAuJour`) : il appartient au jour, et
+le laisser dans le volet d'un chantier l'aurait affiché autant de fois qu'il y a
+de chantiers ouverts.
+
+**Le chevron reste un LIEN, et c'est une suite du dépôt qui l'a tranché.** Il
+avait d'abord été transformé en signe de repli, comme sur la planche —
+`test-planning-vers-facture-e2e.ts` a rougi aussitôt : *« depuis le planning, le
+chantier mène à son devis »*. Le chevron de la planche est son signe de repli à
+elle ; sur cet écran, le NOM déplie et le chevron part. Les confondre coûtait le
+seul chemin vers le devis d'un chantier posé — un chantier posé quitte l'onglet
+« Chantiers », et la feuille n'offre aucun autre accès. C'est-à-dire exactement
+ce qu'il signalait le 8 août 2026 : *« il se range dans les chantiers planifiés,
+mais comment moi je fais pour avoir accès au devis ? »*
+
+**La leçon :** une planche dessine ce qu'on VOIT, pas ce que chaque geste
+promet. Deux signes identiques peuvent porter deux gestes différents, et c'est
+la suite qui garde la différence.
+
+**Les contrôles adaptés, jamais le libellé remis** (`CLAUDE.md` §5 bis) : celui
+qui réclamait « 1 chantier » vérifie désormais que le compte a bien disparu et
+que la charge se lit encore aux pastilles ; celui qui lisait « matin » sur la
+ligne lit la durée ; celui qui visait le chantier par un `href` le vise par son
+nom.
+
+---
+
+### Un jour déjà pris pouvait être proposé — et le client pouvait le retenir
+
+*« Je peux proposer le 24 alors qu'un client a validé le 24 — corrige-moi ça !
+Ça ne doit jamais se reproduire, c'est une erreur gravissime !!!! »*
+
+**Le défaut.** Les trois chemins qui calculent l'occupation bornaient leur
+requête sur `date_planifiee >= début` — le jour où le chantier **commence**. Un
+chantier de trois jours parti le **jeudi** tient encore le **lundi** suivant :
+sa date de départ tombe hors de la fenêtre, sa ligne n'est pas ramenée, et ce
+lundi-là s'affiche **libre** alors qu'il est pris.
+
+**Ce qui le rendait grave, et non pas seulement gênant.** L'écran d'envoi
+n'était pas seul à se tromper : la **revérification de la réponse du client**
+lisait exactement la même occupation tronquée. Rien ne rattrapait donc la faute
+en aval — le client acceptait, le chantier se posait, et deux chantiers se
+retrouvaient le même jour sans qu'un seul écran s'en aperçoive. Le contrôle
+neuf le montre noir sur blanc contre l'ancienne borne : `succes: true` sur une
+date déjà occupée.
+
+**La correction.** Un prédicat unique, `encoreEnCoursDepuis`
+(`src/server/repositories/occupation-chantiers.ts`), partagé par les trois
+chemins — jamais trois copies (`CLAUDE.md` §3) :
+
+```sql
+date_planifiee + COALESCE(duree_demi_journees, 2) * INTERVAL '1 day' >= début
+```
+
+Reculer de `n` jours **calendaires** pour `n` demi-journées est toujours
+généreux : `n` demi-journées valent `⌈n/2⌉` jours ouvrés, et même un départ le
+vendredi ne creuse jamais l'écart au-delà. Trop ramener ne coûte rien —
+`compterOccupation` recalcule ensuite les créneaux exacts.
+
+**Trois contrôles, et ils ont été VUS ROUGES** contre l'ancienne borne, remise
+exprès (`scripts/test-preparation-envoi.ts`) : le jour n'est plus suggéré,
+l'envoi refuse de le proposer, et le client ne peut plus le retenir.
+
+**Le troisième était d'abord vert pour un mauvais motif, et c'est la leçon.**
+Il n'affirmait que `succes === false` — or `enregistrerReponse` refusait pour
+`expire`, le lien ayant vieilli de mars à août faute de lui passer la date.
+Vert des deux côtés de la correction, il ne prouvait rien. **Un contrôle qui
+attend un refus doit nommer le motif attendu** : sans quoi il se contente du
+premier refus venu, qui n'est presque jamais celui qu'on croit.
+
+**Ce qui n'est PAS corrigé, parce que c'est son choix.** Avec deux équipes,
+l'application propose un jour où une seule est prise — c'est le fonctionnement
+voulu, mais aucun écran ne le signale. Planche 88,
+`appli/envoi-jour-deja-pris.html`, en attente de sa réponse.
+
+---
+
+### Un devis accepté, invisible : le planning s'ouvre sur la mauvaise semaine
+
+*« Un devis a été accepter mais rien n'ai visible sur mon planning »* — avec la
+capture de la confirmation vue par son client : « Intervention prévue le lundi
+24 août ».
+
+**Reproduit à l'écran AVANT de répondre** (`CLAUDE.md` §1 bis), pas deviné :
+fiche d'espace lue — son banc tourne et sert bien le planning réécrit —, chantier
+inséré au 24 août en base locale, connexion réelle, capture.
+
+**Rien n'a été perdu, et c'est la première chose à dire.** `enregistrerReponse`
+écrit `date_planifiee`, `creneau_debut` et `duree_demi_journees` sur le chantier
+dans la **même transaction** que la réponse du client : il ne peut pas y avoir
+l'une sans l'autre. Le 24 août portait bien sa barre pleine dans le calendrier.
+
+**Ce qui l'a trompé.** La liste des planifiés s'ouvre sur la semaine du jour
+(`useState(() => lundiDe(aujourdHui))`). Samedi 22, cette semaine ne porte rien,
+et l'écran écrit alors **« Aucun chantier posé cette semaine »** — une phrase
+juste au mot près, et fausse pour qui la lit : le chantier est là, trois jours
+plus loin. La seule trace du contraire tient dans une barre de 3 px, de la même
+forme que celles des jours vides.
+
+**La leçon, au-delà de ce cas :** un écran qui rend compte d'une **fenêtre**
+(une semaine, un mois, une page) doit dire ce qu'il y a **hors de sa fenêtre**
+quand elle est vide. Sans quoi son « aucun » se lit comme « il n'y en a nulle
+part », et c'est le produit qu'on croit en panne.
+
+**Rien n'est codé** : sur quelle semaine le planning s'ouvre est un choix
+d'apparence, et il se dessine d'abord (`CLAUDE.md` §3 bis). Planche 87,
+`appli/planning-semaine-ouverte.html` — trois écrans qui se promènent, une
+seule fonction de peinture pour les trois.
+
+**Au passage**, deux ancres restées ouvertes dans `docs/maquettes/index.html`
+(planches 68 et 86) : chacune avalait la fiche suivante, qui devenait
+inatteignable. Trouvé en comptant les `<a>` contre les `</a>`.
+
+---
+
+### La fiche client est enfin celle de sa maquette — les huit écarts d'un coup
+
+**Sa phrase, devant l'écran :** *« C'est toujours pas la même version que celle
+que je t'avais demandée. Ça fait déjà deux fois que je te le demande. Je ne
+comprends pas pourquoi tu ne veux pas me la coder. »*
+
+Il a raison, et la faute est nette : les écarts avaient été **relevés et
+mesurés le matin même**, puis je lui ai demandé son feu vert au lieu de coder —
+alors qu'il l'avait déjà donné deux fois (*« tu me la codes trait pour trait, tu
+ne changes rien »*). Une liste d'écarts n'est pas un travail livré.
+
+Ce qui manquait, et qui est en place : la flèche de retour sur la ligne du
+titre en chevron nu ; le contour **or** des pastilles Mr / Mme ; le nom du
+client au même corps que le téléphone ; le choix du canal **toujours visible** ;
+les capsules du canal cernées, l'or quand il est pris ; le carré des photos en
+74 × 74 avec son liseré **en tirets doré** ; « Je rédige mon devis » en pleine
+largeur.
+
+**La batterie a trouvé ce que la capture ne montrait pas.** La flèche ramenée
+sur la ligne du titre lui prend trente-six pixels, et la phrase d'attente de la
+dictée occupe les 190 px de droite : « Fiche client » se brisait en deux
+pendant qu'Atlas travaillait. `test-attente-dictee-e2e` l'a vu. Le titre est
+une étiquette, pas du texte : il garde sa largeur, c'est la phrase qui se
+replie.
+
+### La fiche d'état MESURE le port au lieu de le deviner
+
+**Sa matinée du 22 août, et trois allers-retours perdus.** La fiche annonçait
+« Port 3000 : PRIVÉ (sans-gh) » — sans jamais avoir regardé. Elle recopiait le
+mot rendu au démarrage par `ouvrir-port.sh`, lequel ne dit pas l'état du port
+mais ce que le script a pu FAIRE : « `gh` est absent, je n'ai pas pu le régler »
+devenait « donc il est privé ». Il a fait les trois clics, puis : *« il est en
+public déjà »*.
+
+Une fiche existe pour éviter de raisonner sur une machine qu'on ne voit pas
+(`CLAUDE.md` §1 bis). Celle-là raisonnait à notre place, et à tort.
+
+L'espace s'appelle désormais par **son adresse publique**, celle de son
+téléphone, et rapporte ce qui revient — en nommant qui a répondu, le relais de
+GitHub ou Atlas, parce qu'un même 404 appelle deux gestes opposés. C'est ainsi
+que la vraie panne est enfin sortie : **son installation de Next.js était
+cassée** (`Cannot find module './detect-typo'`), le serveur ne démarrait plus,
+et ni le port ni l'application n'y étaient pour quelque chose.
+### « Terminés » refait : la B, codée
+
+*« Je choisis la B avec les modifications que je viens de te demander. »*
+La planche 90 est retenue et portée dans `src/app/termines/`.
+
+**Elle est née « 86 », puis « 89 », et elle finit « 90 » — deux collisions en
+une soirée.** Trois sessions dessinaient le même jour, et chacune a pris le
+numéro libre sur SA copie de `main` : 86 pour les planifiés, 89 pour les deux
+équipes. C'est la nôtre qui bouge les deux fois, parce qu'elle est celle qui
+tient la fusion et que renuméroter chez soi ne réécrit pas le texte d'une
+session qui tourne encore.
+
+**Ce n'est pas une étourderie, c'est le numéro lui-même qui est fragile.** Le
+relever sur `main` avant d'écrire ne suffit pas : entre le relevé et la poussée,
+une autre session a publié. Troisième incident du genre après la §59 en double
+du 11 août. Tant qu'il n'y a pas mieux, la règle utile est : **le numéro se
+vérifie une dernière fois à la fusion, jamais à l'écriture** — et le fichier de
+la planche ne le porte pas dans son nom (`termines-simple.html`), ce qui rend
+la renumérotation indolore.
+
+**Ce qui a quitté l'écran, et ne doit pas revenir :**
+
+| | Pourquoi |
+|---|---|
+| Le **fil vertical** et ses perles pleines ou creuses | 47 px de largeur pour un code que personne n'a appris |
+| La **pastille dorée** et le **volet replié** | le seul travail qui reste ne se cache pas derrière une ligne en petites capitales |
+| « **Facturé, tous mois confondus** » | il répétait le chiffre déjà écrit à droite du mois, sans qu'on sache pourquoi c'était le même |
+| Le surtitre « CHANTIERS RÉALISÉS » et le cheveu | la planche n'en porte pas, et le titre suffit |
+| L'or contre le noir comme seul signe | remplacé par des **mots** : « Pas encore facturé », « Facturé le 20 août » |
+
+**Deux règles gouvernent le nouvel écran**, et elles se paient si on les ignore.
+Un **seul mois à la fois**, qu'on feuillette — et **ce qui reste à facturer ne
+suit pas le mois** : l'onglet « À facturer » montre tout, tous mois confondus.
+Elles vivent dans `src/lib/termines-par-mois.ts`, pures et éprouvées sans base ;
+l'écran n'y décide de rien.
+
+**« Facturé le 20 août » a coûté une colonne de plus en base.** La maquette
+écrivait cette phrase d'après `datePlanifiee` — la date du CHANTIER. Or un
+chantier fait le 20 peut être facturé le 30 : l'écran aurait affirmé une date
+d'émission qu'il n'a pas. `factures.date_emission` entre donc dans la requête,
+et sans elle la phrase se tait plutôt que d'inventer.
+
+**Deux suites ont été adaptées, aucune n'a été satisfaite en remettant ce qu'il
+a fait retirer** (`CLAUDE.md` §5 bis) :
+
+- `test-planning-vers-facture-e2e.ts` dépliait le volet pour atteindre un
+  chantier non facturé. Il passe désormais par l'onglet « À facturer » — ce qui
+  le rend **indifférent au calendrier** : un chantier terminé il y a six jours
+  peut tomber dans le mois précédent selon la date du jour, et le contrôle
+  aurait cherché dans un mois qui ne le porte pas, en accusant un écran juste ;
+- `capture-termines.mts` mesurait le volet, la pastille, et l'absence de tout
+  coin arrondi. Il mesure maintenant le feuilletage, le compte **en noir gras**
+  (graisse et couleur calculées, pas la classe posée), et refuse de conclure sur
+  un écran sans lignes.
+
+**Un défaut trouvé en écrivant la suite pure** : le comparateur de `preparer`
+rendait 0 pour deux chantiers du même **mois**, et non du même **jour** — les
+lignes d'un mois seraient sorties dans l'ordre de la base. Le contrôle « dans le
+mois, le plus récent en tête » l'a attrapé avant l'écran.
+
+**UN CHANTIER CLÔTURÉ EN AVANCE VIDAIT L'ÉCRAN.** Deux suites rouges d'un coup,
+et le défaut aurait été chez lui. Clôturer un chantier avant sa date le range
+dans « Terminés » **en lui laissant sa date à venir** : le mois d'entrée était
+« le plus récent qui porte quelque chose », donc septembre, donc un écran vide —
+et tout le travail du mois en cours disparu, sans rien qui dise pourquoi.
+`bornesDuFeuilletage` ouvre désormais sur le **mois courant** dès qu'il existe
+quelque chose de plus tard, et laisse la flèche › aller voir ce qui est en
+avance. Sans rien ce mois-ci, on s'ouvre sur le dernier mois qui porte quelque
+chose : après deux mois creux, une page blanche serait exacte et inutile.
+
+**Et un défaut vu sur la CAPTURE, comme les cinq précédents de ce dépôt** :
+« Pas encore facturé · 1 764,00 € prévus » était tronqué par la capsule
+« Facturer » — le montant y passait. La ligne d'état s'enroule maintenant sur
+deux lignes ; le NOM, lui, reste coupé, parce qu'un nom se reconnaît tronqué et
+qu'un chiffre coupé ne se devine pas. Corrigé **d'abord sur la planche**, puis
+dans l'écran (`CLAUDE.md` §3 bis).
+
 ### « Terminés » : revenir dans le passé, et le compte en noir gras
 
-Ses deux corrections sur la planche 86, le soir même : *« en haut il y a marqué
+Ses deux corrections sur la planche 90, le soir même : *« en haut il y a marqué
 août 2026, mais il faut pouvoir revenir dans le passé si jamais on a du retard
 sur la facturation »*, et *« cinq factures envoyées et tant qui attendent leur
 facturation, ça tu peux le mettre en noir gras »*.
@@ -53,7 +359,7 @@ des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi que c
 soit. »*
 
 Mêmes mots que pour le planning le 19 août (planche 84), donc même réponse :
-`appli/termines-simple.html` — **planche 86**, essayable, et `src/` n'a pas
+`appli/termines-simple.html` — **planche 90**, essayable, et `src/` n'a pas
 bougé (`CLAUDE.md` §3 bis).
 
 **Ce qui se comprend mal sur l'écran actuel**, relevé sur sa capture et non

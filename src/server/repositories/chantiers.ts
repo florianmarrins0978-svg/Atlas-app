@@ -1,5 +1,6 @@
-import { and, eq, isNull, isNotNull, sql, desc } from "drizzle-orm";
+import { and, eq, isNull, isNotNull, or, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
+import { equipesParChantier } from "./occupation-chantiers";
 import { chantiers, clients, entreprises, equipesDuChantier, factures } from "../db/schema";
 import {
   compterOccupation,
@@ -565,6 +566,11 @@ export async function planifierChantier(
         )
       );
 
+    // La quatrième lecture de la même règle, et la dernière : elle choisit le
+    // créneau quand le patron pose une date lui-même. Sans les équipes, elle
+    // rangerait un chantier sur un matin que les trois autres tiennent pour
+    // plein (`CLAUDE.md` §3).
+    const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
     const occupation = fusionnerAbsences(
       compterOccupation(
         autres
@@ -573,6 +579,7 @@ export async function planifierChantier(
             jour: a.jour as string,
             moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
             dureeDemiJournees: a.duree,
+            equipesParDemi: equipesPosees.get(a.id) ?? null,
           }))
       ),
       absences,
@@ -677,7 +684,30 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
       })
       .from(chantiers)
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
-      .where(and(isNull(chantiers.deletedAt), isNotNull(chantiers.devisEnvoyeAt)));
+      // **UN CHANTIER QUI PORTE UNE DATE EST TOUJOURS MONTRÉ.**
+      //
+      // *Sa panne du 22 août 2026 :* « tu vois bien que le chantier de Bernard
+      // n'est pas indiqué [...] juste le chantier n'apparaît pas sur le
+      // calendrier » — capture du 24 à l'appui, matin libre, après-midi libre.
+      //
+      // Cette liste n'admettait que les chantiers dont le devis est PARTI. Or
+      // le calcul de capacité, lui, compte **tous** les chantiers datés
+      // (`contrainteDuPlanning`, `compterOccupation`) : un chantier daté sans
+      // devis envoyé prenait donc la place — l'écran d'envoi refusait ce jour
+      // au client — pendant que le planning l'affichait vide. Deux vérités sur
+      // la même journée, à deux écrans d'écart, et c'est précisément ce que
+      // `CLAUDE.md` §3 interdit.
+      //
+      // Le devis envoyé reste un motif d'affichage — un chantier en attente de
+      // date doit se voir dans « Sans date » —, mais il n'en est plus le SEUL :
+      // une date posée suffit. Rien de ce qui occupe une journée ne peut plus
+      // rester invisible.
+      .where(
+        and(
+          isNull(chantiers.deletedAt),
+          or(isNotNull(chantiers.devisEnvoyeAt), isNotNull(chantiers.datePlanifiee))
+        )
+      );
 
     // **Les rangs, jamais les identifiants** : c'est le rang qui porte la
     // lettre de repli et l'ordre d'affichage, et ce qui part vers un composant

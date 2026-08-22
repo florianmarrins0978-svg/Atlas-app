@@ -21,6 +21,7 @@ import {
   ditLeCompteDemi,
   ditLeCompteDuJour,
   ditLeQuand,
+  ditLaDuree,
   ditLesEquipes,
   etatDemi,
   occupationDemi,
@@ -112,6 +113,72 @@ essai("un chantier se lit matin, après-midi, journée — ou en jours", () => {
   assert.equal(ditLeQuand("matin", 2), "journée");
   assert.equal(ditLeQuand("matin", 6), "3 jours");
   assert.equal(ditLeQuand("apres_midi", 5), "3 jours");
+});
+
+// ─── COMPTER LES ÉQUIPES, ET NON LES CHANTIERS ────────────────────────────
+//
+// **Sa question du 22 août 2026 :** *« pourquoi le matin et l'après-midi de
+// monsieur Eric s'affichent en incomplet ? »* — Julien ET Antoine y étaient, et
+// la charge comptait les CHANTIERS : 1 ÷ 2 = la moitié. Ce jour-là partait donc
+// chez ses clients alors qu'il n'avait plus personne à envoyer.
+//
+// **Sa règle, après la planche 89 :** *« oui si c'est des journées complètes,
+// non si c'est des demi-journées »*.
+essai("deux équipes sur un chantier remplissent la demi-journée", () => {
+  const o = occupationDemi(["eric"], 2, 0, () => 2);
+  assert.equal(o.charge, 1);
+  assert.equal(etatDemi(o), "plein");
+});
+
+essai("une seule équipe sur deux laisse la demi-journée ouverte", () => {
+  const o = occupationDemi(["eric"], 2, 0, () => 1);
+  assert.equal(o.charge, 0.5);
+  assert.equal(etatDemi(o), "dispo");
+});
+
+// **Un chantier sans équipe cochée vaut UNE équipe, jamais zéro.** La plupart
+// des chantiers n'en portent aucune — l'affectation par demi-journée ne date que
+// du 21 août. Les compter zéro viderait le planning d'un coup.
+essai("un chantier sans équipe cochée prend quand même une place", () => {
+  assert.equal(occupationDemi(["x"], 2, 0, () => 0).charge, 0.5);
+  assert.equal(occupationDemi(["x"], 2).charge, 0.5);
+});
+
+// **Le dépassement se voit toujours.** Trois équipes mobilisées pour deux, c'est
+// « au-delà » : il ne s'interdit rien, mais il le voit (sa décision du 21 août).
+essai("plus d'équipes mobilisées que d'équipes se dit « au-delà »", () => {
+  const o = occupationDemi(["a", "b"], 2, 0, () => 2);
+  assert.equal(o.charge, 2);
+  assert.equal(etatDemi(o), "dela");
+});
+
+// **LA DURÉE, ET NON LE MOMENT** — sa demande du 22 août 2026, retenue sur la
+// planche 86 : *« à la place de "matin", je pense qu'il doit y avoir écrit la
+// durée du chantier [...] parce que ce n'est pas clair quand il y a marqué le
+// matin et l'après-midi »*.
+essai("un chantier annonce le temps qu'il prend, pas l'heure où il commence", () => {
+  assert.equal(ditLaDuree(1), "une demi-journée");
+  assert.equal(ditLaDuree(2), "une journée");
+  assert.equal(ditLaDuree(4), "2 jours");
+  assert.equal(ditLaDuree(6), "3 jours");
+});
+
+// **Trois demi-journées ne s'arrondissent NI en haut NI en bas.** Arrondir à
+// deux jours réserverait une journée qu'il n'a pas vendue ; arrondir à une la
+// lui ferait perdre. Ce cas-là est le seul que la formule en jours ne sait pas
+// dire toute seule, et c'est pourquoi il a sa ligne.
+essai("une journée et demie s'écrit comme telle", () => {
+  assert.equal(ditLaDuree(3), "une journée et demie");
+});
+
+// **Le libellé ne compte JAMAIS ce qui est visible ce jour-là.** Un chantier de
+// trois jours n'occupe que deux demi-journées sur la journée qu'on regarde :
+// s'il comptait celles-là, il annoncerait « une journée » — le malentendu même
+// qu'il demande de faire disparaître. La première version de la planche 86 est
+// tombée dedans, et le chiffre était juste par ailleurs.
+essai("un chantier de trois jours n'annonce pas « une journée »", () => {
+  assert.notEqual(ditLaDuree(6), "une journée");
+  assert.equal(ditLaDuree(6), "3 jours");
 });
 
 // ─── L'ORDRE DES BLOCS — deux de ses corrections du 21 août ────────────────

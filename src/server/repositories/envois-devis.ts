@@ -11,6 +11,7 @@ import {
 import { configurationGoogle } from "../agenda/google";
 import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import type { Ctx } from "./context";
+import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
 import { lireObjet } from "../storage";
 import {
   compterOccupation,
@@ -119,17 +120,26 @@ async function contrainteDuPlanning(
       and(
         eq(chantiers.entrepriseId, entrepriseId),
         isNull(chantiers.deletedAt),
-        gte(chantiers.datePlanifiee, fenetre.debut),
+        // **La borne qui garde le planning.** C'est cette occupation-ci qui
+        // revérifie la réponse du client : bornée sur la date de départ, elle
+        // laissait passer un chantier commencé avant la fenêtre et encore en
+        // cours dedans — donc deux chantiers le même jour, sans que rien ne
+        // s'en aperçoive avant le terrain (`encoreEnCoursDepuis`).
+        encoreEnCoursDepuis(fenetre.debut),
         lte(chantiers.datePlanifiee, fenetre.fin)
       )
     );
 
+  // Les équipes cochées comptent dans la place prise : sans elles, un jour où
+  // ses deux équipes travaillent déjà partirait chez un client (22 août 2026).
+  const equipes = await equipesParChantier(tx, entrepriseId);
   const planifies: ChantierPlanifie[] = lignes
     .filter((l) => l.jour !== null && l.id !== exclureChantierId)
     .map((l) => ({
       jour: l.jour as JourIso,
       moment: l.moment === "matin" || l.moment === "apres_midi" ? l.moment : null,
       dureeDemiJournees: l.duree,
+      equipesParDemi: equipes.get(l.id) ?? null,
     }));
 
   const [entreprise] = await tx

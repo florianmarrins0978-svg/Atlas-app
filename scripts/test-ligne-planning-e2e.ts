@@ -215,13 +215,13 @@ async function main() {
     // écran juste. Seul l'`id` du chantier désigne une ligne sans ambiguïté, et
     // c'est le chevron qui le porte.
     const rangee = page
-      .locator(`[data-atlas="ligne-planifiee"]:has(a[href="/chantiers/${id}"])`)
+      .locator(`[data-atlas="ligne-planifiee"][data-chantier="${id}"]`)
       .first();
     await rangee.scrollIntoViewIfNeeded();
 
     const mesure = await rangee.evaluate((r) => {
       const bouton = r.querySelector('[data-atlas="nom-planifie"]') as HTMLElement;
-      const quand = bouton.querySelector("span") as HTMLElement;
+      const quand = bouton.querySelector('[data-atlas="duree-planifiee"]') as HTMLElement;
       return {
         // Le nom seul : le bouton porte aussi le moment, en petit et en or.
         nom: (bouton.childNodes[0]?.textContent ?? "").trim(),
@@ -255,7 +255,7 @@ async function main() {
     return mesure;
   }
 
-  await test("La ligne dit le moment, et le JOUR est écrit au-dessus", async () => {
+  await test("La ligne dit la DURÉE, et le JOUR est écrit au-dessus", async () => {
     await allerAuPlanning();
     await amenerSurLaSemaineDesCas();
 
@@ -263,18 +263,22 @@ async function main() {
     const apresMidi = await ligneDe(demi.id);
     const troisJours = await ligneDe(longue.id);
 
-    // La journée pleine : « journée » porte la durée à elle seule, et « matin »
-    // n'a rien à y faire — c'est le défaut du 13 août.
-    assert.match(pleine.texte, /journée/, `journée pleine : « ${pleine.texte} »`);
+    // **LA LIGNE DIT LE TEMPS QUE PREND LE CHANTIER, PLUS L'HEURE OÙ IL
+    // COMMENCE.** Sa demande du 22 août 2026, éprouvée sur la planche 86 puis
+    // retenue le jour même : *« ce n'est pas clair quand il y a marqué le matin
+    // et l'après-midi »*. La demi-journée se lit toujours — sur la ligne MATIN
+    // du volet, une fois la ligne dépliée —, mais plus ici.
+    //
+    // Le contrôle a donc changé d'objet, et le libellé n'a PAS été remis : une
+    // assertion sur un mot qu'il fait enlever rend son écran impossible à
+    // changer (`CLAUDE.md` §5 bis).
+    assert.equal(pleine.texte, "une journée", `journée pleine : « ${pleine.texte} »`);
     assert.ok(
-      !/\bmatin\b/.test(pleine.texte),
-      `« matin » ne doit pas s'y écrire : « ${pleine.texte} »`
+      !/\bmatin\b|\baprès-midi\b/.test(pleine.texte),
+      `le moment est revenu à la place de la durée : « ${pleine.texte} »`
     );
 
-    // **« ½ journée » ne s'écrit plus** — sa remarque du 21 août : « il y a
-    // marqué matin, et à chaque fois demi-journée ». Un mot qui répète son
-    // voisin se lit quand même, et fait douter qu'il dise autre chose.
-    assert.equal(apresMidi.texte, "après-midi", `demi-journée : « ${apresMidi.texte} »`);
+    assert.equal(apresMidi.texte, "une demi-journée", `demi-journée : « ${apresMidi.texte} »`);
     assert.equal(troisJours.texte, "3 jours", `trois jours : « ${troisJours.texte} »`);
 
     // **LA DATE A QUITTÉ LA LIGNE POUR LE TITRE DU JOUR**, et ce n'est pas une
@@ -367,7 +371,7 @@ async function main() {
     // Et elle doit bien être quelque part : la retirer des deux endroits
     // laisserait la ligne muette sur qui s'en occupe.
     const rangee = page
-      .locator(`[data-atlas="ligne-planifiee"]:has(a[href="/chantiers/${journee.id}"])`)
+      .locator(`[data-atlas="ligne-planifiee"][data-chantier="${journee.id}"]`)
       .first();
     const pastilles = await rangee.locator('[data-atlas="equipe"]').count();
     assert.equal(pastilles, 1, `la ligne porte ${pastilles} pastille(s) d'équipe, une attendue`);
