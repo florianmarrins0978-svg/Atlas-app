@@ -257,6 +257,17 @@ compteur et des traits qui commencent dans le vide n'est pas un plan : il ne se
 pose pas sur le terrain. La nourrice se **dessine**, avec ses vannes, et chaque
 ligne en part.
 
+**Toujours le plus court.** *« Il faut que tu te dises que tu essayes d'aller
+au plus court à chaque fois. »* Le tuyau en trop se paie deux fois : au mètre,
+et en tranchée. Un tracé qui **revient sur lui-même** pour rattraper un arroseur
+déjà dépassé est le défaut typique — mieux vaut un **té de jonction devant le
+regard** et deux branches courtes qu'une seule ligne qui fait le tour.
+
+Cela se mesure, donc cela se contrôle : la longueur d'un tracé se compare à
+l'**arbre couvrant minimal** de ses points en distance de Manhattan (un tuyau
+suit les axes, il ne coupe pas en diagonale). Au-delà de 5 %, c'est un détour.
+Le défaut qu'il a relevé le 21 août valait 4 m — 22 tracés pour 18 nécessaires.
+
 **Les raccords se comptent par POSITION, jamais par arroseur** — sa planche du
 17 août, écrite dans `appli/arrosage-catalogue.js` :
 

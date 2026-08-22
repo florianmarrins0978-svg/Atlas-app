@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### « Va au plus court » — un détour de 4 m, devenu un contrôle
+
+*« Pour ton réseau 1 tu t'es trompé : tu aurais dû retirer la dernière ligne
+entre l'arroseur du haut et l'arroseur du milieu, mais par contre, devant le
+regard, mettre un té — et du coup tu aurais pu joindre le premier arroseur qui
+est collé au regard et celui qui est en haut. »*
+
+La ligne faisait le tour puis **revenait sur elle-même** pour rattraper un
+arroseur situé à 2 m de la nourrice. Un té de jonction devant le regard et deux
+branches courtes : **18 ml au lieu de 22**. Le tuyau en trop se paie deux fois,
+au mètre et en tranchée.
+
+**Ce qui compte n'est pas les 4 m, c'est que le détour se MESURE.** La longueur
+d'un tracé se compare désormais à l'arbre couvrant minimal de ses points, en
+distance de Manhattan — un tuyau suit les axes, il ne coupe pas en diagonale au
+milieu du gazon. C'est une borne basse honnête : au-delà de 5 %, le tracé revient
+sur lui-même. Éprouvé en remettant l'ancien tracé, il annonce « 22 ml tracés pour
+18 ml nécessaires — 4 m de tuyau en trop, payés au mètre ET en tranchée ».
+
+Les réseaux 2 et 3 étaient déjà au plus court : le contrôle ne rougit pas pour
+le plaisir.
+
+**Conséquence sur la règle précédente :** « un réseau = une ligne continue »
+était une simplification de ma part, pas une règle du métier. Elle empêchait
+précisément le raccourci qu'il demande. Un réseau peut donc se ramifier — avec
+un té de jonction 25×25×25, qui n'arrose rien et ne compte pas dans l'égalité
+`tés + coudes = arroseurs`.
+
 ### Le plan repris sur ses trois corrections — la nourrice, les raccords, les marques
 
 **« Tous les réseaux doivent partir de la nourrice — règle indiscutable ! »**

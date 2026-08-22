@@ -294,6 +294,63 @@ cas("une fin de ligne — donc un coude — par ligne dessinée", () => {
   }
 });
 
+// ── 8 bis. AU PLUS COURT — sa règle du 21 août 2026 ─────────────────────────
+//
+// *« Il faut que tu te dises que tu essayes d'aller au plus court à chaque
+// fois. Pour ton réseau 1 tu t'es trompé : tu aurais dû retirer la dernière
+// ligne entre l'arroseur du haut et l'arroseur du milieu, mais par contre,
+// devant le regard, mettre un té — et du coup tu aurais pu joindre le premier
+// arroseur qui est collé au regard et celui qui est en haut. »*
+//
+// Il avait raison, et le détour se CHIFFRE : 22 ml tracés là où 18 suffisent.
+// Le tuyau en trop se paie deux fois — au mètre, et en tranchée.
+//
+// **Ce contrôle compare le tracé à l'arbre couvrant minimal** des points qu'il
+// dessert (nourrice comprise), en distance de Manhattan : un tuyau suit les
+// axes, il ne coupe pas en diagonale au milieu du gazon. C'est une borne
+// basse honnête — le tracé ne peut pas faire mieux, et s'il en est loin, c'est
+// qu'il revient sur lui-même.
+//
+// **Une marge de 5 % est laissée** : la contourner d'un obstacle est légitime,
+// revenir chercher un arroseur déjà dépassé ne l'est pas.
+const manhattan = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+const arbreMinimal = (pts) => {
+  const dans = new Set([0]);
+  let total = 0;
+  while (dans.size < pts.length) {
+    let court = Infinity;
+    let suivant = -1;
+    for (const i of dans) {
+      for (let j = 0; j < pts.length; j++) {
+        if (dans.has(j)) continue;
+        const d = manhattan(pts[i], pts[j]);
+        if (d < court) { court = d; suivant = j; }
+      }
+    }
+    total += court;
+    dans.add(suivant);
+  }
+  return total;
+};
+
+for (const [n, r] of Object.entries(vu.reseaux)) {
+  cas(`le réseau ${n} va au plus court`, () => {
+    const trace = r.tuyaux.reduce(
+      (t, poly) => t + poly.slice(1).reduce((s, p, k) => s + Math.hypot(p[0] - poly[k][0], p[1] - poly[k][1]), 0),
+      0
+    );
+    // Les points à desservir : les arroseurs, plus le départ commun (la nourrice).
+    const points = [r.tuyaux[0][0], ...r.tetes];
+    const mini = arbreMinimal(points);
+    if (trace > mini * 1.05 + 0.01) {
+      throw new Error(
+        `${trace.toFixed(0)} ml tracés pour ${mini.toFixed(0)} ml nécessaires — ` +
+        `${(trace - mini).toFixed(0)} m de tuyau en trop, payés au mètre ET en tranchée`
+      );
+    }
+  });
+}
+
 // ── 9. LE CHOIX DE LA MARQUE — sa demande, deux fois ────────────────────────
 //
 // Le 17 août : *« de base on met du Rain Bird, mais s'il veut, un petit bandeau
