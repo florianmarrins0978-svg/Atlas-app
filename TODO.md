@@ -9,6 +9,24 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
+
+Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
+sorti trois manques du calcul d'arrosage. **Les deux premiers sont faits** (le diamètre du
+tuyau, `ARCHITECTURE.md` §144 ; la buse à la pression du chantier, §145). Reste
+le troisième, à ne coder que s'il le demande :
+
+| Ce qui manque | Ce que ça change | Coût |
+|---|---|---|
+| ~~le débit d'une buse baisse avec la pression~~ | **FAIT le 22 août 2026** — `ARCHITECTURE.md` §145 | |
+| **les pertes de charge du réseau lui-même** | `perteDeCharge` ne sert qu'à l'amenée compteur → regard ; rien ne dit ce qui reste au DERNIER arroseur d'une ligne, ni ce que mangent l'électrovanne et les raccords | le calcul existe, il faut le promener le long de la ligne |
+
+**Ne pas les coder d'office.** Le second surtout rendrait des plans plus sévères
+— donc plus d'arroseurs, donc des devis plus chers — et c'est une décision de
+métier, pas de code.
+
+---
+
 ## Les suites du devis « à la main » lâchent sous charge (22 août 2026)
 
 **Constaté sur quatre batteries complètes du 22 août**, sur du code qu'aucune

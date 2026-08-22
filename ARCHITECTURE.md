@@ -12857,3 +12857,209 @@ Trois suites tenaient l'ancien geste, et il fallait les adapter — pas le code
 - **la fiche du jour portait `data-jour`**, comme les cases : deux éléments pour
   le même jour, et une suite qui ne savait plus lequel viser. Elle porte
   désormais `data-journee`.
+
+---
+
+## 144. Le diamètre du tuyau d'arrosage : deux critères, et un seuil en mètres
+
+**Sa demande du 22 août 2026.** *« Ils sont également en capacité de me dire,
+passé un certain nombre de mètres linéaires, qu'il faut passer du PEHD en
+diamètre vingt-cinq à celui en diamètre trente-deux. J'aimerais que mon outil
+arrosage puisse faire la même chose. »*
+
+### Ce qui existait, et ce qui manquait
+
+`amenee()` (dans `src/lib/arrosage/calcul.js`, copie de
+`appli/arrosage-calcul.js`) calculait déjà la perte de charge de l'amenée
+compteur → regard par Hazen-Williams, et tranchait Ø25 / Ø32 sur **la longueur
+saisie**. Deux manques :
+
+1. **aucun seuil.** Pour savoir où la bascule se produit, il fallait ressaisir
+   la longueur jusqu'à la trouver. Or c'est le seuil qui sert sur le terrain :
+   il se compare au mètre ruban avant de creuser ;
+2. **un seul critère.** La perte de charge d'un tuyau court est presque nulle —
+   donc un Ø25 « passait » à n'importe quel débit pourvu qu'il soit assez court.
+
+### La décision
+
+**Deux critères, et le débit prime.**
+
+| | Formule | Ce qu'elle donne |
+|---|---|---|
+| vitesse | `Q = π(D/2)² × 1,5 m/s × 3600` | Ø25 : 1,76 m³/h · Ø32 : 2,91 |
+| longueur | `L = budget × 10,2 × D^4,87 / (10,67 × (Q/150)^1,852)` | le seuil en mètres |
+
+Le débit prime parce qu'**aucune longueur ne le rattrape**, alors qu'une amenée
+trop longue se raccourcit parfois en déplaçant le regard. Quand le débit interdit
+le Ø25, `longueurMax25` vaut **0** et non le seuil calculé : annoncer « Ø25
+jusqu'à 12 m » sur un tuyau où l'eau filerait à 2 m/s serait un chiffre qu'on
+croit et qui ne tient pas.
+
+**Le budget de perte, c'est `pression source − pression exigée par la buse`** —
+celle à laquelle sa portée et son débit sont donnés au catalogue. Une 5004
+donnée à 2,8 bar sur une source à 3 bar ne laisse que 0,2 bar : d'où des seuils
+courts, et ils sont justes. C'est exactement pourquoi le métier réclame 3 bar
+dynamiques au minimum.
+
+### Ce qui a validé le chiffre de la vitesse
+
+1,5 m/s en Ø25 donne **1,76 m³/h**. Au seau, sur son compteur en Ø25, le patron
+avait relevé **1,80 m³/h** (`mesure-debit.ts`, `DEBIT_COMPTEUR`). Les deux
+chiffres ne viennent pas de la même source — l'un d'un abaque, l'autre d'un seau
+et d'un chronomètre — et ils tombent à 2 % l'un de l'autre. C'est ce qui permet
+de croire la formule plutôt que de la supposer.
+
+### L'écran de l'application ne montre QUE le seuil
+
+`actions.ts` remonte `tuyau: { seuil25, seuil32, debit, insuffisantMemeEn32 }`,
+et **pas** le verdict. Raison : cet écran ne demande pas la longueur de l'amenée,
+et le calcul en prendrait une par défaut (30 m). Un « il vous faut du Ø32 » tiré
+d'une longueur que personne n'a saisie serait un chiffre inventé (`CLAUDE.md`
+§4). Le seuil, lui, ne dépend d'aucune saisie.
+
+La page publiée `appli/arrosage.html`, elle, demande la longueur : elle affiche
+le verdict **et** le seuil.
+
+### Ce que la suite a appris
+
+Le premier contrôle disait `seuil > 0`. Confronté à la formule retournée de
+travers — multiplier au lieu de diviser —, il est resté **vert** en affichant
+« 0 m » : le seuil valait quatre dix-millièmes de mètre. C'est le contrôle qui
+mesure zéro du `CLAUDE.md` §5, dans sa version la plus sournoise, puisqu'il
+affichait le bon chiffre et concluait le contraire. `test-arrosage-calcul.ts`
+exige maintenant une longueur **plausible** (5 à 500 m), un rapport Ø32/Ø25 d'au
+moins 2, et éprouve la bascule un mètre avant et un mètre après le seuil. Les
+trois défauts plausibles — formule retournée, diamètres inversés, critère de
+vitesse retiré — ont chacun été joués et font rougir la suite.
+
+---
+
+## 145. La buse se calcule à la pression du chantier — et la portée ne se gonfle pas
+
+**Sa demande du 22 août 2026 : « oui code le ».**
+
+### Le problème
+
+`CATALOGUE.buses` ne porte qu'**une** valeur de portée et de débit par buse, à
+**une** pression de référence (2,5 bar pour les turbines Rain Bird, 2 bar pour
+les tuyères VAN) — c'est écrit noir sur blanc dans le catalogue lui-même :
+*« PARTOUT LE MÊME TROU »*. Le calcul les prenait telles quelles.
+
+### Deux lois, deux statuts, et c'est le coeur de la décision
+
+| | La loi | Son statut | Sens de la correction |
+|---|---|---|---|
+| **débit** | `Q ∝ √P` (Torricelli) | **physique** | les deux sens |
+| **portée** | `R ∝ P^(1/3)` | **estimation** | vers le bas seulement |
+
+Le débit d'un orifice suit la racine carrée de la pression : ce n'est pas un
+abaque, c'est de la mécanique des fluides. Sous-estimer un débit chargerait trop
+un réseau — le défaut même qu'on corrige — donc on l'applique **dans les deux
+sens**.
+
+La portée n'a pas d'équivalent. La balistique pure donnerait `R ∝ P`, mais l'air
+freine le jet et l'écrase : les tables des constructeurs montrent une variation
+bien plus douce, de l'ordre de la racine cubique. **Cet exposant n'est pas
+relevé de ses catalogues** — c'est une estimation, et elle est traitée comme
+telle :
+
+1. **jamais vers le haut.** Au-dessus de la pression de référence, la portée du
+   catalogue est conservée. Gonfler une portée sur un chiffre supposé ferait
+   espacer les arroseurs, et un espacement trop large est un trou d'arrosage
+   qu'on ne découvre qu'en juillet ;
+2. **vers le bas, oui.** C'est le sens où se tromper coûte un arroseur de plus,
+   jamais une tache sèche ;
+3. **elle se dit.** `calculerPlan` rend `porteeEstimee`, et `actions.ts` en fait
+   une réserve affichée sous le plan (`CLAUDE.md` §4).
+
+### Où la correction s'applique, et pourquoi là
+
+Dans `modelePour`, **avant tout choix** : les buses sont corrigées puis
+**retriées** par portée décroissante. Deux raisons :
+
+- le pavage, le débit et la pluviométrie travaillent ensuite sur les mêmes
+  valeurs. Corriger plus tard reviendrait à choisir une buse sur sa fiche et à
+  la poser sur autre chose ;
+- deux buses de pressions de référence différentes ne se réduisent pas du même
+  facteur : l'ordre décroissant du catalogue peut cesser de l'être après
+  correction, et tout le choix « la plus grande qui tient » repose sur cet ordre.
+
+### Ce que cela change, et ce que cela ne règle pas
+
+Son jardin d'exemple à 3 bar passe de **trois à quatre réseaux** : les buses
+données à 2,5 bar débitent 9,5 % de plus à 3 bar. Les plans d'avant tenaient sur
+des débits sous-estimés.
+
+**La pression retenue est celle de la SOURCE.** Les pertes du réseau lui-même —
+la ligne, l'électrovanne, les raccords — ne sont toujours pas calculées : le
+dernier arroseur d'une longue ligne voit moins que ce chiffre. Ouvert dans
+`TODO.md`. Le faire demanderait une boucle (la pression dépend du débit, qui
+dépend de la buse, qui dépend de la pression) ; ce n'est pas fait, et le taire
+aurait été présenter un progrès comme une garantie.
+
+### Les contrôles
+
+`test-arrosage-calcul.ts` tient l'égalité **exacte** : à quatre fois la
+pression, la demande vaut exactement le double (√4 = 2). Une tolérance large
+laisserait passer un exposant de travers. Trois défauts ont été joués et font
+chacun rougir la suite : correction retirée, portée gonflée vers le haut, loi
+linéaire au lieu de la racine. Un quatrième contrôle tient la non-régression :
+à la pression du catalogue, le plan doit être **identique** à ce qu'il était.
+
+---
+
+## 146. Un réseau est plafonné par son tuyau, pas seulement par le compteur
+
+**Sa déduction du 22 août 2026**, en lisant le §144 : *« tu ne viens pas de me
+dire qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous les cas le
+calcul doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80, non ? »*
+
+### Le trou
+
+`decouper()` coupait un réseau à `débit du seau × 0,85` — la SOURCE, et rien
+d'autre. Le débit maximal du tuyau, calculé au §144, ne servait qu'à choisir le
+diamètre de l'amenée. Or **toutes les lignes de réseau sont en Ø25** : c'est le
+diamètre de tous les raccords du catalogue (té 25×3/4"×25, coude 25×3/4").
+
+| Source mesurée | Ancienne limite | Ce que le Ø25 passe | |
+|---|---|---|---|
+| 1,80 m³/h | 1,53 | 1,76 | la source commande |
+| 3,00 | 2,55 | 1,76 | **dépassé de 45 %** |
+| 4,50 | 3,82 | 1,76 | **plus du double** |
+
+### Pourquoi personne ne l'avait vu
+
+**Le compteur du patron donne 1,80 m³/h.** À ce débit, la source commande
+toujours : `1,80 × 0,85 = 1,53 < 1,76`. Le défaut était donc structurellement
+invisible sur le seul chantier dont ce dépôt dispose, et il serait apparu chez
+le premier utilisateur mieux alimenté — l'eau à plus de 2 m/s dans la ligne, la
+pression qui tombe avant le dernier arroseur, un gazon jauni en juillet.
+
+**C'est la leçon, et elle dépasse l'arrosage : une règle éprouvée sur un seul
+chantier n'est pas une règle éprouvée.** Les suites montent désormais la source
+jusqu'à 9 m³/h — un régime que le patron ne rencontrera jamais — parce que c'est
+le seul où le défaut existait.
+
+### La décision
+
+`limite = min(débit du seau × 0,85, débit maximal du Ø25)`.
+
+Le plafond du tuyau **ne porte pas la marge de 0,85 en plus** : les 1,5 m/s sont
+déjà une limite de bonne pratique, pas un maximum physique. L'empiler
+reviendrait à payer deux fois la même prudence, en vannes et en devis.
+
+`decouper()` rend `limitePar` (`'source'` ou `'tuyau'`), remonté jusqu'à
+l'écran : un artisan qui a mesuré 3 m³/h et voit ses réseaux coupés plus tôt
+qu'il ne s'y attend doit lire que c'est son Ø25 qui commande, sinon il croit à
+un défaut de calcul.
+
+### Effet de bord assumé sur un contrôle
+
+Le critère de vitesse d'`amenee()` (§144) **n'est plus atteignable** par
+`calculerPlan` : le plafond agit en amont, donc aucun secteur ne peut plus
+l'armer. Il reste en place comme défense en profondeur, mais
+`test-arrosage-calcul.ts` l'écrit noir sur blanc plutôt que de laisser croire
+qu'il veille — **un contrôle qui ne peut plus rougir ne prouve rien**
+(`CLAUDE.md` §5), et le prétendre serait pire que de l'avoir retiré. Ce que la
+suite éprouve à sa place, c'est la garantie qui l'a rendu inatteignable.
+

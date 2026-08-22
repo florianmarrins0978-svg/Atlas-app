@@ -83,10 +83,95 @@ function paveSelonSaRegle(dimension, portee){
   return ecart >= portee - 0.01 ? { n:n, ecart:ecart } : null;
 }
 
+/* ══ LE DÉBIT ET LA PORTÉE D'UNE BUSE À LA PRESSION DU CHANTIER ═════════════
+
+   **Sa demande du 22 août 2026**, une fois ce qui manquait mis devant lui :
+   *« oui code le »*.
+
+   **Le catalogue ne donne qu'UNE valeur par buse, à UNE pression de
+   référence** — 2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères
+   VAN. Le calcul les prenait telles quelles, quelle que soit la pression du
+   chantier. Sur un robinet à 2 bar au lieu de 2,5, cela met **un arroseur de
+   trop par réseau** : la pression tombe, les turbines sortent à moitié, et le
+   gazon jaunit en bout de ligne — le défaut le plus cher, parce qu'il ne se
+   voit qu'en août, quand la tranchée est refermée depuis longtemps.
+
+   ── LE DÉBIT : de la physique, pas un abaque ────────────────────────────────
+
+   L'eau qui sort d'un orifice va d'autant plus vite que la pression est forte,
+   et sa vitesse suit la RACINE CARRÉE de la pression (Torricelli). Le débit
+   fait de même :
+
+       Q(P) = Q_catalogue × √(P / P_catalogue)
+
+   Une 5004 buse 3,0 donnée 0,71 m³/h à 2,5 bar en donne 0,63 à 2 bar, 0,78 à
+   3. **Cela se corrige dans les DEUX sens** : sous-estimer un débit chargerait
+   trop un réseau, ce qui est précisément le défaut qu'on cherche à éviter.
+
+   ── LA PORTÉE : on ne corrige QUE vers le bas ───────────────────────────────
+
+   Aucune loi simple ne donne la portée d'un jet. La balistique pure la ferait
+   suivre la pression, mais l'air freine le jet et l'écrase : les tables des
+   constructeurs montrent une variation bien plus douce, de l'ordre de la
+   racine cubique. C'est l'exposant retenu ici — et **il n'est PAS relevé de
+   ses catalogues à lui**. C'est une estimation, elle est signalée comme telle
+   plutôt que présentée comme acquise (`CLAUDE.md` §4).
+
+   D'où la prudence qui l'accompagne : **au-dessus de la pression de référence,
+   la portée du catalogue est conservée**. Gonfler une portée sur une
+   estimation ferait espacer les arroseurs davantage, et un espacement trop
+   large est un trou d'arrosage qu'on ne découvre qu'en juillet. En dessous, on
+   réduit : c'est le sens où se tromper coûte un arroseur de plus, jamais une
+   tache sèche.
+
+   ⚠ **La pression retenue est celle de la SOURCE**, pas celle qui reste au
+   pied du dernier arroseur : les pertes du réseau lui-même ne sont pas encore
+   calculées (`TODO.md`). Cette correction est donc un progrès, pas une
+   garantie — et l'écran ne dit rien d'autre. */
+var EXPOSANT_PORTEE = 1 / 3;
+
+function buseALaPression(b){
+  var reference = Number(b.pression) || 0;
+  var reelle = Number(etat.pression) || 0;
+  // Sans pression connue des deux côtés, on ne corrige rien : une correction
+  // menée sur un zéro rendrait un débit nul, c'est-à-dire un plan qui paraît
+  // tenir sur n'importe quel réseau.
+  if (!(reference > 0) || !(reelle > 0) || Math.abs(reelle - reference) < 0.01) return b;
+
+  var rapport = reelle / reference;
+  var debit = {};
+  Object.keys(b.debit).forEach(function(angle){
+    if (b.debit[angle] == null) return;
+    debit[angle] = Math.round(b.debit[angle] * Math.sqrt(rapport) * 1000) / 1000;
+  });
+
+  var corrigee = {};
+  Object.keys(b).forEach(function(k){ corrigee[k] = b[k]; });
+  corrigee.debit = debit;
+  corrigee.rayon = rapport < 1
+    ? Math.round(b.rayon * Math.pow(rapport, EXPOSANT_PORTEE) * 100) / 100
+    : b.rayon;
+  corrigee.rayonCatalogue = b.rayon;
+  corrigee.debitCatalogue = b.debit;
+  corrigee.pressionRetenue = reelle;
+  return corrigee;
+}
+
 function modelePour(type, plusPetitCote, dims){
   var marque = marqueCourante();
 
-  var buses = CATALOGUE.busesDe(marque, type);
+  // **Les buses sont ramenées à la pression du chantier AVANT tout choix.**
+  // Le pavage, le débit et la pluviométrie travaillent ensuite sur les mêmes
+  // valeurs : corriger plus tard reviendrait à choisir une buse sur sa fiche
+  // et à la poser sur autre chose.
+  //
+  // **Et l'on retrie**, car deux buses de pressions de référence différentes
+  // ne se réduisent pas du même facteur : l'ordre du catalogue, décroissant
+  // par portée, pourrait ne plus l'être après correction — et tout le choix
+  // « la plus grande qui tient » repose sur cet ordre.
+  var buses = CATALOGUE.busesDe(marque, type)
+    .map(buseALaPression)
+    .sort(function(x, y){ return y.rayon - x.rayon; });
   if (buses.length){
     var b = null;
     if (dims && dims.L > 0 && dims.l > 0){
@@ -108,6 +193,11 @@ function modelePour(type, plusPetitCote, dims){
         ref: b.ref, nom: type === 'tuyere' ? 'Tuyère' : 'Turbine', detail: b.nom,
         marque: nomDeMarque(b.marqueCle),
         marqueCle: b.marqueCle, type: type, portee: b.rayon, pression: b.pression,
+        // **Une valeur corrigée doit pouvoir remonter à sa source.** Sans
+        // cela, l'écran annonce « portée 4,8 m » là où le catalogue dit 5,2 et
+        // personne ne sait plus lequel des deux croire devant le fournisseur.
+        porteeCatalogue: b.rayonCatalogue || b.rayon,
+        pressionRetenue: b.pressionRetenue || b.pression,
         debit360: b.debit[360], debitParAngle: b.debit, colisage: b.colisage,
         source: b.source, buse: b,
         // La pluviométrie n'est pas au catalogue : elle se déduit du débit et de
@@ -311,6 +401,63 @@ function perteDeCharge(debitM3h, longueurM, dInterieurMm){
   return metres / 10.2;             // 10,2 m de colonne d'eau = 1 bar
 }
 
+/* ══ LE SEUIL EN MÈTRES : À PARTIR DE COMBIEN LE Ø25 NE SUFFIT PLUS ═════════
+
+   **Sa demande du 22 août 2026 :** *« ils sont également en capacité de me
+   dire, passé un certain nombre de mètres linéaires, qu'il faut passer du PEHD
+   en diamètre vingt-cinq à celui en diamètre trente-deux. J'aimerais que mon
+   outil arrosage puisse faire la même chose. »*
+
+   Le calcul savait déjà répondre OUI ou NON sur UNE longueur saisie (`amenee`
+   ci-dessous). Ce qu'il ne savait pas dire, c'est **à partir de combien** — or
+   c'est le seul chiffre utile avant de creuser : il se compare au mètre ruban
+   sur place, au lieu de ressaisir la longueur trois fois pour trouver la
+   bascule à tâtons.
+
+   C'est la formule de la perte de charge, retournée. De
+
+       perte = 10,67 × L × (Q/C)^1,852 / D^4,87 / 10,2
+
+   on tire la longueur que le budget de perte autorise :
+
+       L max = budget × 10,2 × D^4,87 / (10,67 × (Q/C)^1,852)
+
+   **Le budget, c'est ce qui reste APRÈS les buses** : la pression à la source
+   moins celle à laquelle la buse posée est donnée au catalogue. Une 5004
+   donnée à 2,8 bar sur une source à 3 bar ne laisse que 0,2 bar — d'où des
+   seuils courts, et ils sont justes : c'est exactement pourquoi le métier
+   réclame 3 bar dynamiques au minimum. */
+function longueurMaxEn(budgetBar, debitM3h, dInterieurMm){
+  if (!(budgetBar > 0) || !(debitM3h > 0) || !(dInterieurMm > 0)) return 0;
+  var q = debitM3h / 3600;          // m³/s
+  var d = dInterieurMm / 1000;      // m
+  return budgetBar * 10.2 * Math.pow(d, 4.87) / (10.67 * Math.pow(q / 150, 1.852));
+}
+
+/* ══ LE SECOND CRITÈRE, QUE LA LONGUEUR NE VOIT PAS : LA VITESSE ════════════
+
+   Un tuyau court ne perd presque rien — donc, sur la seule perte de charge, un
+   Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court. C'est
+   faux : au-delà d'environ 1,5 m/s l'eau cogne, le coup de bélier fatigue les
+   électrovannes, et le bruit s'entend dans la maison. Les abaques de
+   fournisseur s'arrêtent tous là, et c'est de cette limite que sortent les
+   débits maximaux qu'ils annoncent par diamètre — 1,76 m³/h en Ø25, 2,91 en
+   Ø32.
+
+   **Ce chiffre recoupe SA propre mesure**, et c'est ce qui permet de le
+   croire : au seau, sur son compteur en Ø25, il a relevé 1,80 m³/h. La formule
+   en donne 1,76. Le tuyau ne laissait pas passer davantage.
+
+   Sans ce critère, un jardin dont la source est généreuse se verrait poser du
+   Ø25 sur quinze mètres au motif que la perte y reste faible. */
+var VITESSE_MAX = 1.5;   // m/s dans un PEHD enterré — au-delà, ça cogne
+
+function debitMaxDe(dInterieurMm){
+  if (!(dInterieurMm > 0)) return 0;
+  var d = dInterieurMm / 1000;      // m
+  return Math.PI * Math.pow(d / 2, 2) * VITESSE_MAX * 3600;
+}
+
 /* Ce que devient l'amenée compteur → regard, une fois le jardin découpé. */
 function amenee(d){
   var longueur = Number(etat.amenee) || 0;
@@ -327,13 +474,39 @@ function amenee(d){
   var perte25 = perteDeCharge(pire, longueur, t25.dInterieur);
   var perte32 = perteDeCharge(pire, longueur, t32.dInterieur);
   var source = Number(etat.pression) || 0;
-  // Le Ø25 est insuffisant quand, PERTES DES ANTENNES MISES À PART, il ne
-  // laisse déjà plus aux buses la pression à laquelle elles sont données.
-  var suffit = !(longueur > 0 && pire > 0 && exigee > 0) || (source - perte25 >= exigee);
+  var budget = source - exigee;
+  var debitMax25 = debitMaxDe(t25.dInterieur), debitMax32 = debitMaxDe(t32.dInterieur);
+
+  /* **DEUX RAISONS DE PASSER EN Ø32, et l'une ne remplace pas l'autre.**
+
+     · la LONGUEUR : la perte cumulée finit par manger le budget ;
+     · le DÉBIT : l'eau va trop vite, quelle que soit la longueur.
+
+     Une amenée de trois mètres échappe à la première et pas à la seconde. Ne
+     retenir que la perte de charge — ce que faisait ce calcul — revient à
+     poser du Ø25 sur une source généreuse, et à l'entendre cogner. */
+  var tropVite = pire > 0 && debitMax25 > 0 && pire > debitMax25;
+  var tropLoin = longueur > 0 && pire > 0 && exigee > 0 && (source - perte25 < exigee);
+  var suffit = !(tropVite || tropLoin);
+  // Le débit prime : aucune longueur ne le rattrape, alors qu'une amenée trop
+  // longue se raccourcit parfois en déplaçant le regard.
+  var motif = tropVite ? 'debit' : (tropLoin ? 'longueur' : null);
+
   return { longueur:longueur, debit:pire, exigee:exigee, source:source,
-           perte25:perte25, perte32:perte32, suffit:suffit,
+           perte25:perte25, perte32:perte32, suffit:suffit, motif:motif,
            auRegard: source - (suffit ? perte25 : perte32),
            diametre: suffit ? 25 : 32,
+           // **Zéro quand le débit l'interdit, et non le seuil calculé.**
+           // Annoncer « Ø25 jusqu'à 12 m » alors que l'eau y filerait à
+           // 2 m/s serait un seuil qu'on croit et qui ne tient pas.
+           longueurMax25: tropVite ? 0 : longueurMaxEn(budget, pire, t25.dInterieur),
+           longueurMax32: longueurMaxEn(budget, pire, t32.dInterieur),
+           debitMax25: debitMax25, debitMax32: debitMax32,
+           // Au-delà, même le Ø32 est en surrégime : c'est le Ø40 ou un
+           // secteur de plus, et cela se DIT plutôt que de sortir un plan qui
+           // ne tiendra pas.
+           insuffisantMemeEn32: pire > 0 && debitMax32 > 0 && pire > debitMax32,
+           budget: budget,
            provisoire: (suffit ? t25 : t32).source === 'provisoire' };
 }
 
@@ -608,8 +781,43 @@ function saisonCourante(){
   return SAISONS[2];
 }
 
+/* ══ CE QU'UN RÉSEAU PEUT PORTER : LE PLUS PETIT DES DEUX ═══════════════════
+
+   **Sa déduction du 22 août 2026, et elle a trouvé un trou :** *« tu ne viens
+   pas de me dire qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous
+   les cas le calcul doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80,
+   non ? »*
+
+   **Oui.** Un réseau est limité par DEUX choses, et le découpage n'en regardait
+   qu'une :
+
+   | | |
+   |---|---|
+   | ce que la SOURCE donne | le seau, moins la marge (0,85) |
+   | ce que le TUYAU passe | 1,76 m³/h en Ø25, à 1,5 m/s |
+
+   **Et toutes ses lignes de réseau sont en Ø25** — c'est le diamètre de tous
+   ses raccords : té 25×3/4"×25, coude 25×3/4". Un réseau ne peut donc jamais
+   porter plus de 1,76 m³/h, quelle que soit la générosité du compteur.
+
+   **Ce que cela corrigeait, et personne ne l'avait vu.** Tant que la source
+   reste modeste, c'est elle qui commande et rien ne change : à 1,80 m³/h, la
+   limite était déjà 1,53. Mais dès qu'un artisan mesure 2,5 ou 3 m³/h au seau,
+   l'ancien calcul faisait des réseaux à 2,1 puis 2,55 m³/h — dans un tuyau qui
+   n'en passe que 1,76. L'eau y filerait à plus de 2 m/s, la ligne cogne, et la
+   pression tombe avant le dernier arroseur. **C'est exactement le défaut que
+   sa règle du 22 août interdit** (`CLAUDE.md` §4 ter) : il ne se voit qu'en
+   juillet, sur un gazon jauni, tranchée refermée.
+
+   Le plafond du tuyau ne porte PAS la marge de 0,85 en plus : les 1,5 m/s sont
+   déjà une limite de bonne pratique, pas un maximum physique. L'empiler
+   reviendrait à payer deux fois la même prudence, en vannes. */
 function decouper(){
-  var dispo = debitDisponible(), limite = dispo * MARGE, groupes = {}, ordre = [];
+  var dispo = debitDisponible();
+  var duTuyau = debitMaxDe(CATALOGUE.tuyaux.pe25.dInterieur);
+  var deLaSource = dispo * MARGE;
+  var limite = duTuyau > 0 ? Math.min(deLaSource, duTuyau) : deLaSource;
+  var groupes = {}, ordre = [];
   etat.zones.forEach(function(z){
     var p = poser(z);
     if (p.debit <= 0) return;
@@ -736,6 +944,11 @@ function decouper(){
     });
   });
   return { secteurs:secteurs, dispo:dispo, limite:limite, reseauDuPoint:reseauDuPoint,
+           // **QUI commande la limite**, pour que l'écran puisse le dire. Un
+           // artisan qui mesure 3 m³/h et voit des réseaux plafonnés à 1,76
+           // croirait à un défaut de calcul : c'est son tuyau, et il le lira.
+           limitePar: (duTuyau > 0 && duTuyau < deLaSource) ? 'tuyau' : 'source',
+           limiteDuTuyau: duTuyau, limiteDeLaSource: deLaSource,
            reseauxDeZone:reseauxDeZone,
            demande: etat.zones.reduce(function(s,z){ return s + poser(z).debit; }, 0) };
 }

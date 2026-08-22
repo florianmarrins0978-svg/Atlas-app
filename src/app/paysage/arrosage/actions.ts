@@ -41,6 +41,39 @@ export type EtatPlan =
          * à en inventer, ce que ce dépôt interdit.
          */
         materiel: { ref?: string; nom: string; q: number; u: string }[];
+        /**
+         * **À PARTIR DE COMBIEN DE MÈTRES IL FAUT DU Ø32** — sa demande du
+         * 22 août 2026 : *« passé un certain nombre de mètres linéaires, il
+         * faut passer du PEHD Ø25 au Ø32 ; j'aimerais que mon outil fasse la
+         * même chose »*.
+         *
+         * **Ce sont des SEUILS, pas un verdict**, et c'est délibéré. Le calcul
+         * sait aussi trancher sur une longueur donnée — mais cet écran ne
+         * demande pas la longueur de l'amenée, et le calcul en prendrait une
+         * par défaut. Un « il vous faut du Ø32 » tiré d'une longueur que
+         * personne n'a saisie serait un chiffre inventé (`CLAUDE.md` §4). Le
+         * seuil, lui, ne dépend d'aucune saisie : il se compare au mètre ruban
+         * sur place.
+         */
+        tuyau: {
+          /** Mètres de Ø25 admissibles. **Zéro quand le débit l'interdit** — l'eau y filerait trop vite, quelle que soit la longueur. */
+          seuil25: number;
+          seuil32: number;
+          /** Le débit du réseau le plus gourmand : c'est lui qui dimensionne. */
+          debit: number;
+          /** Au-delà, même le Ø32 est en surrégime : Ø40, ou un réseau de plus. */
+          insuffisantMemeEn32: boolean;
+          /**
+           * Qui plafonne un réseau : la source (le seau) ou le tuyau (Ø25).
+           *
+           * **Il faut le dire quand c'est le tuyau**, sinon un artisan qui a
+           * mesuré 3 m³/h voit ses réseaux coupés plus tôt qu'il ne s'y attend
+           * et croit à un défaut de calcul. C'est son Ø25, et il le lira.
+           */
+          limitePar: "source" | "tuyau";
+          /** Ce qu'un réseau en Ø25 peut porter, en m³/h. */
+          plafond: number;
+        };
       };
     };
 
@@ -108,6 +141,17 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
 
   const reserves = [...lu.croquis.reserves];
   if (mesure.reserve) reserves.push(mesure.reserve);
+  // **Une portée réduite est une ESTIMATION, et elle se dit.** Le débit des
+  // buses est ramené à la pression du chantier par la loi de l'orifice — de la
+  // physique. La portée, elle, suit un exposant tiré des tables des
+  // constructeurs et non de ses catalogues à lui : la taire ferait passer pour
+  // acquis un chiffre qui ne l'est pas (`CLAUDE.md` §4).
+  if (plan.porteeEstimee) {
+    reserves.push(
+      `${mesure.pression.toString().replace(".", ",")} bar : les portées sont réduites par rapport au ` +
+        "catalogue, donné à plus forte pression — estimation, à confirmer sur place"
+    );
+  }
   if (mesurees.length === 0) {
     return {
       etat: "refus",
@@ -125,6 +169,18 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
       voies: plan.voies,
       couleurs: plan.couleurs,
       materiel: plan.materiel,
+      tuyau: {
+        seuil25: plan.amenee.longueurMax25,
+        seuil32: plan.amenee.longueurMax32,
+        debit: plan.amenee.debit,
+        insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
+        // **Le calcul repris n'est pas typé** (`allowJs`, `checkJs` coupé) : il
+        // rend une chaîne. On la RESSERRE ici plutôt que d'élargir le type de
+        // l'écran — c'est la frontière, et c'est là qu'un « tuyeau » mal
+        // orthographié doit tomber, pas trois écrans plus loin.
+        limitePar: plan.limitePar === "tuyau" ? "tuyau" : "source",
+        plafond: plan.limiteDuTuyau,
+      },
     },
   };
 }

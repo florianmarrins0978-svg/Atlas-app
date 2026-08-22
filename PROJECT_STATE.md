@@ -731,6 +731,29 @@ extérieure.
 | D'où vient le débit | `src/lib/arrosage/mesure-debit.ts` |
 | Qui sait lire une image | `etatVision`, dans `src/lib/etat-ia.ts` |
 
+**LES BUSES SONT RAMENÉES À LA PRESSION DU CHANTIER** (22 août 2026). Le
+catalogue ne donne qu'une valeur par buse, à une pression de référence : le
+débit suit désormais `√(P/P_ref)` (physique de l'orifice, corrigé dans les deux
+sens) et la portée `P^(1/3)` **vers le bas seulement** — l'exposant de la portée
+est une estimation, et une portée réduite est signalée sous le plan. Son jardin
+d'exemple à 3 bar passe de trois à quatre réseaux. Détail : `ARCHITECTURE.md`
+§145. **Reste non fait :** les pertes du réseau lui-même (`TODO.md`).
+
+**LE DIAMÈTRE DU TUYAU SE CALCULE, ET L'OUTIL DIT LE SEUIL** (22 août 2026).
+Sa demande : *« passé un certain nombre de mètres linéaires, il faut passer du
+PEHD Ø25 au Ø32 »*. Deux critères, `amenee()` dans `calcul.js` :
+
+| | |
+|---|---|
+| **le débit** | vitesse ≤ 1,5 m/s → Ø25 : 1,76 m³/h · Ø32 : 2,91 |
+| **la longueur** | Hazen-Williams retournée → le seuil en mètres |
+
+L'écran de l'application affiche « Ø25 jusqu'à 55 m, Ø32 au-delà » ; la page
+publiée `appli/arrosage.html` affiche en plus le verdict, parce qu'elle demande
+la longueur. Éprouvé par `scripts/test-arrosage-calcul.ts`, et **la ligne de
+l'écran de l'application n'a PAS pu être vue ici** : elle n'apparaît qu'un
+croquis lu, ce qui demande une clé d'IA. Détail : `ARCHITECTURE.md` §144.
+
 **LA LECTURE DU CROQUIS S'ÉPROUVE : `npm run verifier:croquis`** (21 août 2026).
 Elle dessine un croquis dans un navigateur — deux surfaces aux cotes
 différentes, une haie en mètres linéaires, un massif, un point d'eau —, le
