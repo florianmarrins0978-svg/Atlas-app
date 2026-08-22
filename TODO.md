@@ -36,27 +36,23 @@ perdrait la note d'un homme qui range son téléphone et démarre. Le champ à
 
 ---
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — l'anneau doré d'aujourd'hui (23 août 2026)
+## ~~L'anneau doré d'aujourd'hui~~ — **TRANCHÉ le 23 août 2026 : on garde**
 
-Sa remarque, capture à l'appui : *« je ne comprends pas pourquoi le vingt-deux
-reste sélectionné, ce n'est pas très clair ; ça doit être un bug, je pense »*.
+Sa remarque : *« je ne comprends pas pourquoi le vingt-deux reste sélectionné,
+ce n'est pas très clair ; ça doit être un bug, je pense »*. Puis, la planche 92
+vue : *« ah, je n'avais pas compris que c'était le jour qu'on est. Peut-être le
+laisser. »*
 
-**Ce n'en est pas un.** Le 22 porte un anneau **doré** parce que c'est
-aujourd'hui ; le 20 un anneau **noir** parce que c'est le jour touché. Deux
-anneaux de 1,5 px que seule la couleur distingue — sur un téléphone, cela se lit
-« deux jours choisis ».
+**Rien à coder.** Ce n'était pas un défaut d'affichage mais un code qu'il n'avait
+pas appris ; une fois le sens connu, l'anneau ne le gêne plus.
 
-**Et l'anneau doré est redondant** : le chiffre d'aujourd'hui est déjà doré et
-gras. Le retirer n'invente rien, il supprime un signal en double.
+**Ce qu'il faut en retenir, et qui vaut au-delà de ce cas :** le premier réflexe
+a été de vouloir corriger l'écran. La vraie question était *« sait-il ce que ce
+signe veut dire ? »* — et la planche a servi à le lui apprendre, pas à changer
+le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
-**Mais il touche la planche 84**, qu'il a validée trait pour trait : cela se
-dessine avant de se coder (`CLAUDE.md` §3 bis). Planche 92,
-`appli/calendrier-aujourdhui.html` — **A** garder, **B** retirer.
-
-**Si B est retenu**, trois endroits portent la même règle et doivent changer
-ensemble : `src/app/planning/PlanningClient.tsx`, `appli/planning-simple.html`
-(la référence) et `appli/choisir-la-date.html` (planche 91, d'une autre
-session).
+La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
+chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
 
 ---
 
