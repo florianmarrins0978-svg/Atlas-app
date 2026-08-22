@@ -5,7 +5,7 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as clientsRepo from "../src/server/repositories/clients";
 import * as devisRepo from "../src/server/repositories/devis";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
-import { creerEnvoi, lireParJeton } from "../src/server/repositories/envois-devis";
+import { creerEnvoi, lireParJeton, enregistrerReponse } from "../src/server/repositories/envois-devis";
 import { preparerEnvoi, premiersJoursLibres } from "../src/server/repositories/preparation-envoi";
 import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from "../src/server/disponibilites";
 
@@ -218,6 +218,128 @@ async function main() {
     assert.ok(
       vu.joursOccupes.every((j) => j <= vu.fenetre.fin),
       "un jour occupé dépasse la fenêtre annoncée au client"
+    );
+  });
+
+  await test("un chantier COMMENCÉ AVANT la fenêtre et encore en cours n'est pas oublié", async () => {
+    // **Sa panne du 22 août 2026 :** *« je peux proposer le 24 alors qu'un
+    // client a validé le 24 — corrige-moi ça ! Ça ne doit jamais se
+    // reproduire, c'est une erreur gravissime !!!! »*
+    //
+    // Les trois chemins d'occupation bornaient leur requête sur la date de
+    // DÉPART du chantier. Un chantier de trois jours parti l'avant-veille tient
+    // encore le premier jour proposable : sa ligne n'était pas ramenée, ce jour
+    // paraissait libre, et l'écran le suggérait. La revérification de la
+    // réponse du client lisait la même occupation tronquée, donc rien ne
+    // rattrapait la faute — deux chantiers le même jour, découverts sur le
+    // terrain.
+    const ctx = await contexte(`deborde-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Faucher", email: "f@ex.test" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    // Trois jours ouvrés partis le lundi : lundi, mardi, MERCREDI. Le mercredi
+    // est `dans(2)`, c'est-à-dire le PREMIER jour proposable — et le départ,
+    // `dans(0)`, tombe hors de la fenêtre.
+    const long = await chantiersRepo.creerChantier(ctx, { nom: "Trois jours de taille" });
+    await chantiersRepo.mettreAJourDureeEquipe(ctx, long.id, { dureePrevue: "3 jours" });
+    await chantiersRepo.planifierChantier(ctx, long.id, dans(0));
+
+    const fenetre = fenetreProposition(LUNDI);
+    assert.strictEqual(fenetre.debut, dans(2), "la fenêtre ne commence pas où ce cas le suppose");
+
+    const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
+    assert.ok(
+      !p.joursLibres.includes(dans(2)),
+      `${dans(2)} est suggéré alors qu'un chantier commencé le ${dans(0)} l'occupe encore`
+    );
+    assert.ok(
+      p.joursOccupes.includes(dans(2)),
+      `${dans(2)} n'est pas barré sur son calendrier alors qu'il est pris`
+    );
+  });
+
+  await test("l'envoi REFUSE de proposer un jour qu'un chantier en cours occupe", async () => {
+    // Le premier verrou : le patron ne peut même pas mettre ce jour dans son
+    // envoi. Avant la correction, `creerEnvoi` lisait la même occupation
+    // tronquée et laissait passer.
+    const ctx = await contexte(`deborde-envoi-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Faucher", email: "f@ex.test" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const long = await chantiersRepo.creerChantier(ctx, { nom: "Trois jours de taille" });
+    await chantiersRepo.mettreAJourDureeEquipe(ctx, long.id, { dureePrevue: "3 jours" });
+    await chantiersRepo.planifierChantier(ctx, long.id, dans(0));
+
+    await assert.rejects(
+      () =>
+        creerEnvoi(
+          ctx,
+          {
+            chantierId: chantier.id,
+            devisId: brouillon.id,
+            canal: "email",
+            datesProposees: [dans(2)],
+            contenuDevis: "Taille de haie",
+          },
+          LUNDI
+        ),
+      /jour_occupe/,
+      `${dans(2)} a été proposé alors qu'un chantier commencé le ${dans(0)} l'occupe encore`
+    );
+  });
+
+  await test("le client ne peut pas retenir un jour qu'un chantier en cours occupe", async () => {
+    // **Le verrou qui compte vraiment.** L'écran peut se tromper sans dommage
+    // tant que la revérification refuse ; c'est elle qui décide, et c'est elle
+    // qui lisait aussi l'occupation tronquée.
+    //
+    // Le chantier long est posé APRÈS l'envoi, à dessein : c'est la course
+    // réelle — le devis part le lundi, la semaine se remplit, le client répond
+    // le mercredi. Le poser avant ne prouverait rien, puisque `creerEnvoi`
+    // refuserait déjà (contrôle précédent).
+    const ctx = await contexte(`deborde-client-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Faucher", email: "f@ex.test" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId: chantier.id,
+        devisId: brouillon.id,
+        canal: "email",
+        datesProposees: [dans(2)],
+        contenuDevis: "Taille de haie",
+      },
+      LUNDI
+    );
+
+    const long = await chantiersRepo.creerChantier(ctx, { nom: "Trois jours de taille" });
+    await chantiersRepo.mettreAJourDureeEquipe(ctx, long.id, { dureePrevue: "3 jours" });
+    await chantiersRepo.planifierChantier(ctx, long.id, dans(0));
+
+    const r = await enregistrerReponse(envoi.jeton, {
+      decision: "accepte",
+      dateRetenue: dans(2),
+      precision: null,
+      adresseIp: null,
+      agentUtilisateur: null,
+      // **Sans cette date, le lien est « expiré » et le refus ne prouve
+      // rien du planning.** La première version de ce contrôle était verte
+      // pour ce motif-là, sur l'ancienne borne comme sur la nouvelle.
+    }, LUNDI);
+    // **Le motif est vérifié, pas seulement l'échec.** Un refus pour « déjà
+    // répondu » ou « lien expiré » rendrait ce contrôle vert sans rien prouver
+    // du planning — c'est le piège du `CLAUDE.md` §5.
+    assert.deepStrictEqual(
+      r,
+      { succes: false, motif: "date_indisponible" },
+      `le client a retenu ${dans(2)}, déjà pris par un chantier commencé le ${dans(0)}`
     );
   });
 

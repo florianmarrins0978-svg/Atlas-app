@@ -3,6 +3,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
+import { encoreEnCoursDepuis } from "./occupation-chantiers";
 import { absencesEquipe, chantiers, clients, devis, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import {
@@ -165,7 +166,11 @@ export async function preparerEnvoi(
           // Bornée sur la fenêtre LA PLUS LARGE des deux : une occupation
           // absente ne se voit pas — le jour s'affiche simplement libre, et le
           // patron le propose. C'est exactement le défaut qu'on répare.
-          gte(chantiers.datePlanifiee, fenetre.debut),
+          //
+          // **Et pas sur la date de DÉPART.** Un chantier commencé avant la
+          // fenêtre peut encore l'occuper ; borner sur son premier jour le
+          // rendait invisible (`encoreEnCoursDepuis`).
+          encoreEnCoursDepuis(fenetre.debut),
           lte(chantiers.datePlanifiee, fenetreOccupationPatron.fin)
         )
       );
@@ -475,7 +480,11 @@ async function contrainteSurHorizon(
         and(
           eq(chantiers.entrepriseId, ctx.entrepriseId),
           isNull(chantiers.deletedAt),
-          gte(chantiers.datePlanifiee, horizon.debut),
+          // Même règle que l'écran d'envoi, et surtout la même fonction :
+          // c'est ici qu'on valide la date que le patron choisit au
+          // calendrier. Deux bornes différentes lui feraient accepter un jour
+          // que l'écran refuse, ou l'inverse.
+          encoreEnCoursDepuis(horizon.debut),
           lte(chantiers.datePlanifiee, horizon.fin)
         )
       );

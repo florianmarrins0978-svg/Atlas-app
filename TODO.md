@@ -9,6 +9,35 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
+
+Sa colère du 22 août : *« je peux proposer le 24 alors qu'un client a validé le
+24 — corrige-moi ça ! Ça ne doit jamais se reproduire, c'est une erreur
+gravissime !!!! »*
+
+**Le défaut de code est CORRIGÉ** (voir `CHANGELOG.md` et `HANDOVER.md`) : un
+chantier commencé avant la fenêtre et encore en cours dedans n'était compté
+nulle part. Trois contrôles le tiennent, vus rouges contre l'ancienne borne.
+
+**Ce qui reste, et qui n'est PAS un défaut :** avec **deux équipes**,
+l'application propose un jour où une seule équipe est prise. C'est le
+fonctionnement voulu — mais **aucun écran ne le signale**, et rien ne distingue
+un jour vide d'un jour à moitié pris.
+
+Planche 88, `appli/envoi-jour-deja-pris.html`. Deux questions posées, pas une :
+
+| | |
+|---|---|
+| **A / B / C** | ne rien écrire · « 1 chantier sur 2 équipes » · deux carrés comme au planning |
+| **Le fond** | veut-il **interdire** deux chantiers le même jour, ou seulement le voir ? |
+
+**Sa liste — 24, 25, 26, 27, 28, 31 — était compatible avec les deux causes**,
+et rien dans sa capture ne permettait de trancher. Ne pas conclure à sa place :
+c'est le nombre d'équipes de SON entreprise qui décide, et il se lit sur son
+écran Réglages.
+
+---
+
 ## ⚠ EN ATTENTE DE SA RÉPONSE — un devis accepté, invisible (22 août 2026)
 
 Sa panne, capture de la confirmation client à l'appui : *« un devis a été

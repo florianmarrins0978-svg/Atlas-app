@@ -11,6 +11,7 @@ import {
 import { configurationGoogle } from "../agenda/google";
 import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import type { Ctx } from "./context";
+import { encoreEnCoursDepuis } from "./occupation-chantiers";
 import { lireObjet } from "../storage";
 import {
   compterOccupation,
@@ -119,7 +120,12 @@ async function contrainteDuPlanning(
       and(
         eq(chantiers.entrepriseId, entrepriseId),
         isNull(chantiers.deletedAt),
-        gte(chantiers.datePlanifiee, fenetre.debut),
+        // **La borne qui garde le planning.** C'est cette occupation-ci qui
+        // revérifie la réponse du client : bornée sur la date de départ, elle
+        // laissait passer un chantier commencé avant la fenêtre et encore en
+        // cours dedans — donc deux chantiers le même jour, sans que rien ne
+        // s'en aperçoive avant le terrain (`encoreEnCoursDepuis`).
+        encoreEnCoursDepuis(fenetre.debut),
         lte(chantiers.datePlanifiee, fenetre.fin)
       )
     );

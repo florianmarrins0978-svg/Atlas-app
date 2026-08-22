@@ -9,6 +9,56 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Un jour déjà pris pouvait être proposé — et le client pouvait le retenir
+
+*« Je peux proposer le 24 alors qu'un client a validé le 24 — corrige-moi ça !
+Ça ne doit jamais se reproduire, c'est une erreur gravissime !!!! »*
+
+**Le défaut.** Les trois chemins qui calculent l'occupation bornaient leur
+requête sur `date_planifiee >= début` — le jour où le chantier **commence**. Un
+chantier de trois jours parti le **jeudi** tient encore le **lundi** suivant :
+sa date de départ tombe hors de la fenêtre, sa ligne n'est pas ramenée, et ce
+lundi-là s'affiche **libre** alors qu'il est pris.
+
+**Ce qui le rendait grave, et non pas seulement gênant.** L'écran d'envoi
+n'était pas seul à se tromper : la **revérification de la réponse du client**
+lisait exactement la même occupation tronquée. Rien ne rattrapait donc la faute
+en aval — le client acceptait, le chantier se posait, et deux chantiers se
+retrouvaient le même jour sans qu'un seul écran s'en aperçoive. Le contrôle
+neuf le montre noir sur blanc contre l'ancienne borne : `succes: true` sur une
+date déjà occupée.
+
+**La correction.** Un prédicat unique, `encoreEnCoursDepuis`
+(`src/server/repositories/occupation-chantiers.ts`), partagé par les trois
+chemins — jamais trois copies (`CLAUDE.md` §3) :
+
+```sql
+date_planifiee + COALESCE(duree_demi_journees, 2) * INTERVAL '1 day' >= début
+```
+
+Reculer de `n` jours **calendaires** pour `n` demi-journées est toujours
+généreux : `n` demi-journées valent `⌈n/2⌉` jours ouvrés, et même un départ le
+vendredi ne creuse jamais l'écart au-delà. Trop ramener ne coûte rien —
+`compterOccupation` recalcule ensuite les créneaux exacts.
+
+**Trois contrôles, et ils ont été VUS ROUGES** contre l'ancienne borne, remise
+exprès (`scripts/test-preparation-envoi.ts`) : le jour n'est plus suggéré,
+l'envoi refuse de le proposer, et le client ne peut plus le retenir.
+
+**Le troisième était d'abord vert pour un mauvais motif, et c'est la leçon.**
+Il n'affirmait que `succes === false` — or `enregistrerReponse` refusait pour
+`expire`, le lien ayant vieilli de mars à août faute de lui passer la date.
+Vert des deux côtés de la correction, il ne prouvait rien. **Un contrôle qui
+attend un refus doit nommer le motif attendu** : sans quoi il se contente du
+premier refus venu, qui n'est presque jamais celui qu'on croit.
+
+**Ce qui n'est PAS corrigé, parce que c'est son choix.** Avec deux équipes,
+l'application propose un jour où une seule est prise — c'est le fonctionnement
+voulu, mais aucun écran ne le signale. Planche 88,
+`appli/envoi-jour-deja-pris.html`, en attente de sa réponse.
+
+---
+
 ### Un devis accepté, invisible : le planning s'ouvre sur la mauvaise semaine
 
 *« Un devis a été accepter mais rien n'ai visible sur mon planning »* — avec la

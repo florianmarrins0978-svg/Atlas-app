@@ -9,6 +9,30 @@ sert.
 
 ---
 
+## L'OCCUPATION SE BORNE SUR LA FIN DU CHANTIER, JAMAIS SUR SON DÉPART
+
+Corrigé le 22 août 2026, après *« je peux proposer le 24 alors qu'un client a
+validé le 24 »*. **Toute nouvelle requête d'occupation doit passer par
+`encoreEnCoursDepuis`** (`src/server/repositories/occupation-chantiers.ts`) —
+jamais par un `gte(chantiers.datePlanifiee, …)` réécrit à la main.
+
+La raison tient en une phrase : un chantier de trois jours parti le jeudi tient
+encore le lundi, et borner sur son jour de départ le rend **invisible**. Le jour
+paraît libre, l'écran le propose, et — c'est ce qui rendait le défaut grave — la
+revérification de la réponse du client lisait la même occupation tronquée, donc
+**rien ne rattrapait la faute en aval**.
+
+Trois chemins la partagent, et ils doivent continuer de la partager
+(`CLAUDE.md` §3) : l'écran d'envoi, la validation de la date que le patron pose
+au calendrier, la revérification de la réponse du client.
+
+**Et la leçon de méthode, qui vaut partout :** un contrôle qui attend un refus
+doit **nommer le motif attendu**. Le troisième contrôle de ce lot n'affirmait
+que « ça échoue » — il était vert des deux côtés de la correction, parce que le
+refus venait en réalité d'un lien expiré.
+
+---
+
 ## « RIEN N'EST VISIBLE SUR MON PLANNING » — DIAGNOSTIQUÉ, pas encore réglé
 
 Sa panne du 22 août 2026. **Si elle revient, la réponse est déjà là — ne pas la

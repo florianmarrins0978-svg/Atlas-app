@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Proposer un jour déjà occupé</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:14px 18px;font-size:13px;line-height:1.45}
+  .bandeau b{color:#fff}
+
+  .cas{max-width:430px;margin:22px auto 0;padding:0 22px}
+  .cas h2{margin:0;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+          text-transform:uppercase;color:var(--or)}
+  .cas p{margin:8px 0 0;font-size:13.5px;line-height:1.55;color:var(--encre-douce)}
+  .cas p b{color:var(--encre)}
+
+  .tel{max-width:430px;margin:12px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);
+       padding:20px 18px 16px}
+  .chapeau{text-align:center;font:400 22px/1.2 ui-serif,Georgia,serif}
+  .sous{margin:4px 0 18px;text-align:center;font-size:13px;color:var(--gris)}
+  .smallcaps{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+             text-transform:uppercase;color:var(--gris);margin:0 0 8px}
+
+  .jours{display:flex;flex-direction:column;gap:6px}
+  .jour{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:999px;
+        padding:13px 16px;background:var(--plage);color:var(--encre);font-size:15px;
+        text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .jour .quand{flex:1;min-width:0}
+  .jour[aria-pressed="true"]{background:rgba(110,36,51,.10)}
+  .jour .marque{flex-shrink:0;font-size:13px;font-weight:500;color:var(--bordeaux)}
+
+  /* La charge du jour — ce que la variante ajoute, et rien d'autre. */
+  .jour .charge{flex-shrink:0;font-size:12.5px;color:var(--or);white-space:nowrap}
+  .jour .pastilles{flex-shrink:0;display:flex;gap:3px}
+  /* Le carré VIDE doit se voir autant que le plein : à 1 px de trait clair il
+     disparaissait sur la ligne teintée, et « une équipe prise sur deux » se
+     lisait « une seule équipe ». Vu sur la capture. */
+  .jour .pastilles i{width:11px;height:11px;border-radius:2px;background:var(--plage);
+                     box-shadow:inset 0 0 0 1.5px rgba(28,28,26,.34);display:block}
+  .jour .pastilles i.prise{background:var(--pin);box-shadow:none}
+
+  .pied{max-width:430px;margin:24px auto 0;padding:0 22px;font-size:13.5px;line-height:1.55;
+        color:var(--encre-douce)}
+  .pied h3{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;
+           color:var(--or);margin:24px 0 8px}
+  .pied p{margin:0 0 10px}
+  .pied b{color:var(--encre)}
+  .pied .question{background:var(--papier);border-radius:10px;padding:12px 14px;margin-top:16px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Planche 88 — un jour qui porte déjà un chantier</b><br>
+  Ta colère du 22 août : <b>« je peux proposer le 24 alors qu'un client a validé le 24 »</b>.
+  <b>Un défaut est corrigé et poussé</b> — un chantier de plusieurs jours commencé avant
+  n'était pas compté, si bien qu'un jour pris paraissait libre.<br>
+  Reste <b>l'autre cas</b> : avec <b>deux équipes</b>, l'application propose le 24 parce
+  qu'une équipe y est encore libre. Elle a raison de le proposer — mais elle ne te dit
+  <b>nulle part</b> qu'une équipe y est déjà. Trois façons de le dire.
+</div>
+
+<div class="cas">
+  <h2>A — aujourd'hui</h2>
+  <p>Le 24 est écrit <b>exactement comme</b> le 25, le 26, le 27. Rien ne distingue
+     un jour vide d'un jour à moitié pris.</p>
+</div>
+<div class="tel" data-variante="A"></div>
+
+<div class="cas">
+  <h2>B — le dire en toutes lettres</h2>
+  <p>Le jour porte sa charge, écrite : <b>« 1 chantier sur 2 équipes »</b>. Rien à
+     apprendre, rien à décoder.</p>
+</div>
+<div class="tel" data-variante="B"></div>
+
+<div class="cas">
+  <h2>C — deux carrés, comme sur le planning</h2>
+  <p>Les mêmes carrés que ton calendrier : un par équipe, plein quand elle est prise.
+     Plus court, mais il faut savoir les lire.</p>
+</div>
+<div class="tel" data-variante="C"></div>
+
+<div class="pied">
+  <h3>Ce qui est déjà corrigé et poussé</h3>
+  <p>Un chantier de <b>trois jours parti le jeudi</b> tient encore le lundi. Les trois
+     endroits qui calculent l'occupation ne regardaient que son <b>jour de départ</b> :
+     hors fenêtre, donc invisible, donc le lundi paraissait libre. <b>Et le contrôle
+     de la réponse du client faisait la même erreur</b> — c'est ce qui laissait deux
+     chantiers tomber le même jour. Trois contrôles neufs le tiennent, et je les ai
+     vus rougir contre l'ancien code.</p>
+
+  <h3>Ce qui reste à ton choix</h3>
+  <p>Proposer un jour où <b>une</b> de tes deux équipes est déjà prise : l'application
+     le fait exprès. Si tu ne veux <b>jamais</b> deux chantiers le même jour, dis-le —
+     c'est un autre réglage, et je le pose.</p>
+
+  <div class="question">
+    <b>La question :</b> A, B ou C ? Et : deux chantiers le même jour, jamais — ou seulement signalé ?
+  </div>
+</div>
+
+<script>
+/* Les jours de sa capture du 22 août, à l'identique. Le 24 porte le chantier
+   qu'un client venait d'accepter ; les autres sont vides. */
+const JOURS = [
+  { quand: "lundi 24 août",    pris: 1, proposee: true  },
+  { quand: "mardi 25 août",    pris: 0, proposee: false },
+  { quand: "mercredi 26 août", pris: 0, proposee: false },
+  { quand: "jeudi 27 août",    pris: 0, proposee: false },
+  { quand: "vendredi 28 août", pris: 0, proposee: false },
+  { quand: "lundi 31 août",    pris: 0, proposee: false },
+];
+const EQUIPES = 2;
+
+/* Une seule fonction dessine les trois : elles ne divergent qu'à l'endroit où
+   la charge s'écrit. Deux dessins pour la même liste finiraient par ne plus
+   dire pareil (CLAUDE.md §3). */
+function charge(j, variante) {
+  if (variante === "A" || j.pris === 0) return "";
+  if (variante === "B") {
+    const mot = j.pris === 1 ? "1 chantier" : `${j.pris} chantiers`;
+    return `<span class="charge">${mot} sur ${EQUIPES} équipes</span>`;
+  }
+  let carres = "";
+  for (let i = 0; i < EQUIPES; i++) carres += `<i class="${i < j.pris ? "prise" : ""}"></i>`;
+  return `<span class="pastilles" aria-label="${j.pris} équipe sur ${EQUIPES} déjà prise">${carres}</span>`;
+}
+
+for (const hote of document.querySelectorAll("[data-variante]")) {
+  const v = hote.dataset.variante;
+  let html = '<p class="chapeau">Envoyer à Eric</p>'
+    + '<p class="sous">Par SMS au 06 79 98 45 14</p>'
+    + '<p class="smallcaps">Une date, ou deux au choix du client ?</p>'
+    + '<div class="jours">';
+  for (const j of JOURS) {
+    html += `<button class="jour" type="button" aria-pressed="${j.proposee}">`
+      + `<span class="quand">${j.quand}</span>`
+      + charge(j, v)
+      + (j.proposee ? '<span class="marque">proposée</span>' : "")
+      + "</button>";
+  }
+  hote.innerHTML = html + "</div>";
+
+  // Les boutons se touchent pour de bon : c'est le geste qu'il fait.
+  for (const b of hote.querySelectorAll(".jour")) {
+    b.addEventListener("click", () => {
+      const on = b.getAttribute("aria-pressed") === "true";
+      b.setAttribute("aria-pressed", String(!on));
+      const m = b.querySelector(".marque");
+      if (on && m) m.remove();
+      if (!on && !m) b.insertAdjacentHTML("beforeend", '<span class="marque">proposée</span>');
+    });
+  }
+}
+</script>
+</body>
+</html>
