@@ -77,12 +77,16 @@ const vu = await page.evaluate(() => {
     const n = Number(g.className.baseVal.match(/r(\d)\b/)[1]);
     reseaux[n] = {
       // Les têtes portent un rayon d'affichage ; la PORTÉE est le cercle pâle.
-      tetes: [...g.querySelectorAll("circle")].filter((c) => nb(c.getAttribute("r")) < 1)
-        .map((c) => [nb(c.getAttribute("cx")), nb(c.getAttribute("cy"))]),
+      tetes: [...g.querySelectorAll("[data-famille]")].map((e) =>
+        e.tagName === "circle"
+          ? [nb(e.getAttribute("cx")), nb(e.getAttribute("cy"))]
+          : [nb(e.getAttribute("x")) + nb(e.getAttribute("width")) / 2,
+             nb(e.getAttribute("y")) + nb(e.getAttribute("height")) / 2]),
       // Une fin de ligne se dessine CREUSE : c'est un coude, pas un té. Le
       // contrôle lit donc le plan, pas seulement la liste des pièces.
-      fins: [...g.querySelectorAll("circle")].filter(
-        (c) => nb(c.getAttribute("r")) < 1 && /FBFAF7/i.test(c.getAttribute("fill") ?? "")
+      familles: [...g.querySelectorAll("[data-famille]")].map((e) => e.getAttribute("data-famille")),
+      fins: [...g.querySelectorAll("[data-famille]")].filter(
+        (e) => /FBFAF7/i.test(e.getAttribute("fill") ?? "")
       ).length,
       portees: [...g.querySelectorAll("circle")].filter((c) => nb(c.getAttribute("r")) >= 1)
         .map((c) => [nb(c.getAttribute("cx")), nb(c.getAttribute("cy")), nb(c.getAttribute("r"))]),
@@ -203,12 +207,25 @@ cas(`aucun réseau ne dépasse les ${DEBIT_DISPONIBLE} m³/h du compteur`, () =>
   }
 });
 
-cas("chaque réseau annonce le nombre d'arroseurs qu'il DESSINE", () => {
+// **La carte annonce désormais les FAMILLES, pas un total** — sa demande du
+// 21 août : savoir où sont les tuyères et où sont les 5004. Le contrôle a suivi
+// le libellé plutôt que de le figer (`CLAUDE.md` §5 bis) : il additionne ce qui
+// est annoncé et le confronte à ce qui est dessiné, famille par famille.
+cas("chaque réseau annonce les arroseurs qu'il DESSINE, par famille", () => {
   vu.cartes.forEach((c, i) => {
-    const n = Number(c.sous.match(/(\d+)\s*arroseurs/)?.[1]);
-    const dessines = vu.reseaux[i + 1].tetes.length;
-    if (n !== dessines) {
-      throw new Error(`« ${c.nom} » annonce ${n} arroseurs et le plan en dessine ${dessines}`);
+    const r = vu.reseaux[i + 1];
+    const dits = {
+      turbine: Number(c.sous.match(/(\d+)\s*turbines?/)?.[1] ?? 0),
+      tuyere: Number(c.sous.match(/(\d+)\s*tuyères?/)?.[1] ?? 0),
+    };
+    for (const famille of ["turbine", "tuyere"]) {
+      const dessines = r.familles.filter((f) => f === famille).length;
+      if (dits[famille] !== dessines) {
+        throw new Error(`« ${c.nom} » annonce ${dits[famille]} ${famille}(s) et le plan en dessine ${dessines}`);
+      }
+    }
+    if (dits.turbine + dits.tuyere !== r.tetes.length) {
+      throw new Error(`« ${c.nom} » : ${dits.turbine + dits.tuyere} arroseurs annoncés pour ${r.tetes.length} dessinés`);
     }
   });
 });
@@ -532,6 +549,103 @@ cas("la tranchée dessinée couvre tous les tuyaux", () => {
         }
       }
     }
+  }
+});
+
+// ── 8 sexies. ON TRAVERSE LE MOINS POSSIBLE LE JARDIN ──────────────────────
+//
+// *Sa règle du 21 août :* « on essaye de traverser le moins possible le jardin
+// sur sa largeur, car beaucoup de choses enterrées — pour le réseau jaune
+// j'aurais fait le tour et non traverser dans sa largeur ».
+//
+// **Ce n'est pas une question de mètres, c'est une question de risque.** Au
+// milieu d'un terrain passent des gaines, des drains, une fosse, des racines de
+// sujets qu'on ne verra qu'à la pelle. Longer un bord coûte parfois plus de
+// tuyau et coûte toujours moins d'ennuis — et le tour se rebouche, la traversée
+// se retrouve.
+//
+// **On ne rentre donc dans le jardin QUE pour aller chercher un arroseur qui
+// s'y trouve, et par le plus court.** Le contrôle mesure le linéaire de
+// tranchée situé à plus de 2 m d'un bord, et le compare à ce qu'exigent les
+// arroseurs intérieurs. Sur ce plan : 4 m, pour 4 m nécessaires — le seul
+// arroseur du milieu est celui du centre.
+cas("on ne traverse le jardin que pour desservir ce qui s'y trouve", () => {
+  const bord = ([x, y]) => {
+    let m = Infinity;
+    for (let i = 0; i < vu.contour.length; i++) {
+      const [ax, ay] = vu.contour[i];
+      const [bx, by] = vu.contour[(i + 1) % vu.contour.length];
+      const dx = bx - ax;
+      const dy = by - ay;
+      const L = dx * dx + dy * dy;
+      const t = L === 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L));
+      m = Math.min(m, Math.hypot(x - (ax + t * dx), y - (ay + t * dy)));
+    }
+    return m;
+  };
+  const SEUIL = 2;
+
+  let dedans = 0;
+  for (const poly of vu.tranchee) {
+    for (let i = 0; i < poly.length - 1; i++) {
+      const a = poly[i];
+      const b = poly[i + 1];
+      const n = Math.max(1, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) * 8));
+      for (let k = 0; k < n; k++) {
+        const p = [a[0] + ((b[0] - a[0]) * (k + 0.5)) / n, a[1] + ((b[1] - a[1]) * (k + 0.5)) / n];
+        if (bord(p) > SEUIL) dedans += Math.hypot(b[0] - a[0], b[1] - a[1]) / n;
+      }
+    }
+  }
+
+  const necessaire = Object.values(vu.reseaux)
+    .flatMap((r) => r.tetes)
+    .reduce((t, a) => t + Math.max(0, bord(a) - SEUIL), 0);
+
+  if (dedans > necessaire + 1) {
+    throw new Error(
+      `${dedans.toFixed(0)} m de tranchée en plein jardin pour ${necessaire.toFixed(0)} m nécessaires — ` +
+      `on traverse là où on pouvait longer, et c'est au milieu que se trouvent les gaines et les drains`
+    );
+  }
+});
+
+// ── 8 septies. LE PLAN DIT QUEL ARROSEUR, ET POURQUOI ──────────────────────
+//
+// *Sa demande du 21 août :* « sur le plan avec les arroseurs, tu dois savoir me
+// dire où sont les tuyères et pourquoi, et quelle buse tu utilises — pareil
+// pour les 5004. Il faut que l'utilisateur, en regardant son plan, sache tout
+// de suite où les réseaux passent, quels arroseurs tu vas utiliser à quel
+// endroit, et pourquoi. »
+//
+// Un plan qui ne dit que « treize points » ne se pose pas : sur le terrain, on
+// ne sait pas lequel visser où. La FORME porte la famille (rond : turbine,
+// carré : tuyère), le remplissage porte la position sur la ligne.
+cas("chaque arroseur dit sa famille, et la légende la traduit", () => {
+  for (const [n, r] of Object.entries(vu.reseaux)) {
+    if (r.familles.length !== r.tetes.length) {
+      throw new Error(`réseau ${n} : ${r.familles.length} arroseurs nommés pour ${r.tetes.length} dessinés`);
+    }
+    for (const f of r.familles) {
+      if (f !== "turbine" && f !== "tuyere") throw new Error(`famille inconnue sur le réseau ${n} : « ${f} »`);
+    }
+  }
+  const texte = vu.texte.toLowerCase();
+  // La légende doit traduire les deux formes, ET nommer la buse de chacune :
+  // « une tuyère » ne suffit pas à commander, « 12-VAN » oui.
+  for (const attendu of [/turbine\s*5004/, /buse\s*3\.0/, /tuyère\s*1800/, /12-van/, /portée\s*6\s*m/, /portée\s*4\s*m/]) {
+    if (!attendu.test(texte)) throw new Error(`le plan ne dit pas « ${attendu.source} » : on ne sait pas quoi visser où`);
+  }
+});
+
+// **Le POURQUOI, pas seulement le QUOI.** Un choix qu'on ne comprend pas se
+// refait au hasard le chantier suivant.
+cas("le choix des arroseurs s'explique", () => {
+  const texte = vu.texte.toLowerCase();
+  if (!/pourquoi/.test(texte)) throw new Error("le plan ne dit nulle part POURQUOI ces arroseurs-là");
+  // La raison des tuyères est celle qui compte : la bande est trop étroite.
+  if (!/(4 m de large|étroit|au-delà|limite|voisin)/.test(texte)) {
+    throw new Error("le plan ne dit pas pourquoi une tuyère plutôt qu'une turbine sur la bande étroite");
   }
 });
 

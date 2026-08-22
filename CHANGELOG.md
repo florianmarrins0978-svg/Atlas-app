@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le plan dit quel arroseur et pourquoi — et on ne traverse plus le jardin
+
+**Trois règles de plus, toutes sorties de sa lecture du plan.**
+
+**« Combiner les deux économies, et à égalité privilégier la tranchée, car c'est
+moins fatigant. »** Le tuyau se pose, la tranchée se creuse, se remblaie et se
+voit encore dans le gazon l'été suivant.
+
+**« On traverse le moins possible le jardin dans sa largeur : beaucoup de choses
+enterrées. »** Ce n'est pas une question de mètres mais de risque — gaines,
+drains, fosse, racines qu'on ne voit qu'à la pelle. Le tour se rebouche, la
+traversée se retrouve. Un contrôle mesure le linéaire de tranchée à plus de 2 m
+d'un bord et le compare à ce qu'exigent les arroseurs intérieurs. Sur ce plan :
+4 m, pour 4 m nécessaires — le seul arroseur du milieu est celui du centre.
+Éprouvé en faisant traverser le réseau jaune : « 12 m de tranchée en plein jardin
+pour 4 m nécessaires ».
+
+**« Tu dois savoir me dire où sont les tuyères et pourquoi, et quelle buse. »**
+Le plan ne montrait que treize points identiques : sur le terrain, on ne sait pas
+lequel visser où. **La forme porte désormais la famille** — rond pour une turbine,
+carré pour une tuyère —, le remplissage garde la position sur la ligne, et la
+légende nomme la buse. Un bloc dit le POURQUOI : les turbines 5004 buse 3.0
+couvrent le carré de 12 m avec 9 arroseurs là où une portée plus courte en
+demanderait 16 ; les tuyères 1800 buse 12-VAN tiennent la bande de 4 m, qu'une
+turbine de 6 m arroserait 2 m au-delà de la limite.
+
+**Un contrôle a dû suivre le libellé plutôt que le figer** : il lisait « 4
+arroseurs » sur les cartes, qui annoncent maintenant « 4 turbines ». Il additionne
+désormais les familles et les confronte à ce qui est dessiné, famille par famille.
+
 ### La tranchée, pas le tuyau — 10 m de terrassement en moins, à tuyau égal
 
 *« Il faut que tu te dises que le trait jaune, c'est une tranchée. C'est une

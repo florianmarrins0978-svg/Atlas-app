@@ -275,6 +275,22 @@ Ce qu'il faut chercher, dans cet ordre :
 2. des **antennes courtes** qui s'y greffent pour desservir un arroseur isolé ;
 3. jamais un contournement complet quand un mètre d'antenne suffit.
 
+**On CHERCHE les deux économies à la fois** — le tuyau et la tranchée. *« Il faut
+combiner économie de ml de tuyau et réutiliser une tranchée. »* Et quand les deux
+solutions se valent : **la tranchée l'emporte**, *« car c'est moins fatigant »*.
+Un mètre de tuyau se pose ; un mètre de tranchée se creuse, se remblaie, et se
+voit encore dans le gazon l'été suivant.
+
+**ON TRAVERSE LE MOINS POSSIBLE LE JARDIN DANS SA LARGEUR.** Sa règle du
+21 août : *« beaucoup de choses enterrées — pour le réseau jaune j'aurais fait le
+tour et non traversé »*. Ce n'est pas une question de mètres mais de **risque** :
+au milieu d'un terrain passent des gaines, des drains, une fosse, des racines
+qu'on ne verra qu'à la pelle. Le tour se rebouche ; la traversée se retrouve.
+
+On ne rentre donc dans le jardin **que** pour aller chercher un arroseur qui s'y
+trouve, et par le plus court. Cela se mesure : le linéaire de tranchée à plus de
+2 m d'un bord ne doit pas dépasser ce qu'exigent les arroseurs intérieurs.
+
 Cela se mesure : la tranchée est l'**union** des tracés — ce qui se superpose ne
 compte qu'une fois — et se compare à l'arbre couvrant minimal de la nourrice et
 des arroseurs, en distance de Manhattan (un tuyau suit les axes). Sur son plan
@@ -328,6 +344,21 @@ parce qu'aucun ne comparait la liste des pièces au tracé.
 
 Et **deux SBE par arroseur** : celui du bas toujours en 3/4" (sur le té ou le
 coude), celui du corps au diamètre de la famille — 3/4" turbine, 1/2" tuyère.
+
+**LE PLAN DIT QUEL ARROSEUR, OÙ, ET POURQUOI.** *« Sur le plan, tu dois savoir
+me dire où sont les tuyères et pourquoi, et quelle buse tu utilises — pareil pour
+les 5004. Il faut que l'utilisateur, en regardant son plan, sache tout de suite
+où les réseaux passent, quels arroseurs à quel endroit, et pourquoi. »*
+
+Un plan qui ne montre que des points ne se pose pas : sur le terrain, on ne sait
+pas lequel visser où. Donc **la forme porte la famille** (rond : turbine ; carré :
+tuyère), le remplissage porte la position sur la ligne, et la légende nomme la
+**buse** — « 12-VAN », pas « une tuyère » : on ne commande pas avec le second.
+
+Et le **pourquoi** s'écrit, parce qu'un choix qu'on ne comprend pas se refait au
+hasard le chantier suivant. Exemple, sur son plan : une bande de 4 m de large
+reçoit des tuyères, jamais des turbines — une portée de 6 m y arroserait 2 m
+au-delà de la limite, chez le voisin ou sur l'allée.
 
 **Chaque quantité doit pouvoir se RECOMPOSER à la main.** Sa question du
 21 août — *« je ne comprends pas d'où sortent tes vingt-deux coudes SBE, ça
