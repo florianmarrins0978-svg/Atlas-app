@@ -28,6 +28,7 @@ import {
   etatDemi,
   MOT_DEMI,
   MOT_QUAND,
+  quandDuChantier,
   occupationDemi,
   type Demi,
   type EtatDemi,
@@ -390,7 +391,18 @@ export default function PlanningClient({
     setOuvert(null);
     enTransition(async () => {
       const r = await deplacerChantierAction(chantierId, quand);
-      if (!r.succes) return;
+      if (!r.succes) {
+        // **Un refus avalé est un défaut muet**, et le dépôt l'a déjà payé le
+        // 11 août 2026 : « Impossible d'enregistrer la note » sans que personne
+        // puisse savoir laquelle des quatre causes s'appliquait. Ici le `return`
+        // seul rendait « Déplacer » indistinguable d'un bouton mort — c'est
+        // précisément ce qu'il a signalé le 23 août.
+        //
+        // Journalisé plutôt que levé : le message d'une exception d'action
+        // serveur n'arrive jamais jusqu'à lui (`AGENTS.md`).
+        console.error("Déplacement refusé", { chantierId, quand, erreur: r.erreur });
+        return;
+      }
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
       );
@@ -1402,17 +1414,30 @@ function CarteDuJour({
                       // rotation qui déciderait à sa place. C'est la règle qu'il
                       // a posée pour l'équipe, et elle vaut partout.
                       <Choisir>
-                        {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
-                          <Petit
-                            key={v}
-                            serre
-                            data-vers={v}
-                            retenue={quandDuChantier(c) === v}
-                            onClick={() => deplacer(c.id, v)}
-                          >
-                            {MOT_QUAND[v]}
-                          </Petit>
-                        ))}
+                        {/* **« Journée » disparaît au-delà d'une journée.**
+                            Sur un chantier de trois jours, elle écrit le même
+                            état que « Matin » — le départ, la durée étant
+                            protégée — et l'une des deux ne faisait donc rien.
+                            Un bouton qui n'écrit rien se retire ; le laisser en
+                            expliquant serait pire, puisqu'il faut le lire pour
+                            savoir de ne pas l'employer. */}
+                        {(Object.keys(MOT_QUAND) as QuandChantier[])
+                          .filter(
+                            (v) =>
+                              v !== "journee" ||
+                              (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
+                          )
+                          .map((v) => (
+                            <Petit
+                              key={v}
+                              serre
+                              data-vers={v}
+                              retenue={quandDuChantier(c) === v}
+                              onClick={() => deplacer(c.id, v)}
+                            >
+                              {MOT_QUAND[v]}
+                            </Petit>
+                          ))}
                       </Choisir>
                     ) : (
                       <>
@@ -1456,13 +1481,6 @@ function CarteDuJour({
       )}
     </>
   );
-}
-
-/** Comment ce chantier se lit dans les trois boutons de « Déplacer ». */
-function quandDuChantier(c: ChantierPlanning): QuandChantier {
-  const duree = c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
-  if (duree >= 2) return "journee";
-  return c.creneauDebut === "apres_midi" ? "apres" : "matin";
 }
 
 /**

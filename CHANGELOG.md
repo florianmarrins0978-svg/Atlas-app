@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### « Déplacer » offrait des boutons qui n'écrivaient rien
+
+*« Cliquer sur Déplacer ne déplace pas le chantier, ça ne fait rien du tout. »*
+
+**Et c'était vrai, sur un chantier de plus d'une journée.** `departEtDuree`
+protège la durée d'un chantier long — la raccourcir lui ferait perdre des jours
+de travail en silence —, si bien que « Matin » et « Journée » y écrivent le
+**même** état : le départ. Or `quandDuChantier` rendait « journee » dès deux
+demi-journées : la pastille se posait sur « Journée », et « Matin » restait
+éteint **tout en n'écrivant rien**. Deux boutons sur trois, morts.
+
+Au-delà d'une journée, ce qu'il choisit est donc le **départ**, et l'écran le
+dit : « Journée » disparaît, la pastille tombe sur « Matin » ou « Après-midi ».
+Un bouton qui n'écrit rien se retire — le laisser en l'expliquant serait pire,
+puisqu'il faudrait le lire pour savoir de ne pas s'en servir.
+
+**Le contrôle qui tient ça ne vérifie pas un libellé mais une propriété :** pour
+chaque durée, aucun bouton offert n'écrit l'état déjà en place. Il survivra au
+prochain remaniement des mots, et il a été vu rouge contre l'ancienne règle.
+
+**`quandDuChantier` a quitté l'écran pour `src/lib/`** : c'est une règle, pas un
+dessin, et enfermée dans un composant elle ne s'éprouvait qu'au navigateur
+(`CLAUDE.md` §3). Son défaut a d'ailleurs survécu tout ce temps pour cette
+raison.
+
+**Et le refus est devenu bavard.** `if (!r.succes) return;` avalait toute erreur
+du serveur : « Déplacer » était alors indistinguable d'un bouton mort. C'est le
+piège du 11 août 2026 — *« Impossible d'enregistrer la note »* sans que personne
+puisse savoir laquelle des quatre causes s'appliquait. Journalisé plutôt que
+levé : le message d'une exception d'action serveur n'arrive jamais jusqu'à lui.
+
+---
+
 ### Un jour plein se PRÉVIENT, il ne se refuse plus — et « trop tôt » disparaît
 
 *« Si l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le
