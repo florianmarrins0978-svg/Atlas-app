@@ -62,6 +62,29 @@ cas("une adresse publique qui ne rend PAS Atlas est signalée, avec ce qu'elle r
   assert.match(souci ?? "", /github\.com\/login/, "le souci ne dit pas CE QUE voit son téléphone");
 });
 
+cas("un 404 DÉSIGNE son auteur : le relais de GitHub, ou Atlas", async () => {
+  // **Deux 404 opposés portent le même chiffre** — trouvé le 22 août 2026,
+  // après avoir envoyé le patron deux fois à l'onglet PORTS sur un « 404 » qui
+  // n'accusait personne. Celui du relais veut dire « le port n'est pas
+  // public » ; celui d'Atlas veut dire l'inverse — le port est ouvert, et
+  // c'est l'application qui refuse. Le geste à faire n'est pas le même.
+  const faux = (entetes: Record<string, string>) =>
+    Promise.resolve({ status: 404, headers: new Headers(entetes) } as Response);
+
+  const duRelais = await regarderDuDehors({
+    nom: "espace", domaine: "app.github.dev",
+    chercher: () => faux({ server: "GitHub.com", "content-type": "text/html" }),
+  });
+  assert.match(duRelais!.motif ?? "", /RELAIS GITHUB/, "un 404 de GitHub n'est pas reconnu : on renvoie lire le journal d'Atlas pour rien");
+  assert.match(duRelais!.motif ?? "", /pas public/, "il ne dit pas le geste qui répare");
+
+  const dAtlas = await regarderDuDehors({
+    nom: "espace", domaine: "app.github.dev",
+    chercher: () => faux({ server: "next.js", "content-type": "application/json" }),
+  });
+  assert.match(dAtlas!.motif ?? "", /ATLAS lui-même/, "un 404 d'Atlas est mis sur le dos du port : trois clics inutiles de plus");
+});
+
 cas("hors espace GitHub, il n'y a rien à ouvrir et rien à craindre", () => {
   const { ligne, souci } = verdictPort({ etatPort: "hors-codespace", dehors: null });
   assert.match(ligne, /hors espace/);

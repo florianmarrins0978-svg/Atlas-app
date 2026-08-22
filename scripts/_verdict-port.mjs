@@ -121,7 +121,26 @@ export async function regarderDuDehors({
         motif: `renvoi vers ${r.headers.get("location") ?? "ailleurs"} — ce n'est pas Atlas`,
       };
     }
-    return { joignable: false, statut: r.status, type };
+    // **QUI répond, et c'est toute la question** — ajouté le 22 août 2026,
+    // après un « 404 » qui ne désignait personne. Un 404 du relais de GitHub
+    // (port non public) et un 404 d'Atlas (route absente) portent le même
+    // chiffre et appellent deux gestes opposés : rendre le port public, ou
+    // aller lire le journal du serveur. Envoyer au mauvais des deux, c'est ce
+    // qu'on vient de faire deux fois.
+    //
+    // **On publie l'IDENTITÉ du serveur, jamais le corps de sa réponse.** Ce
+    // dépôt est public, et une censure faite au jugé finit toujours par
+    // laisser passer l'imprévu (`scripts/rapporter-espace.mjs`).
+    const serveur = r.headers.get("server") ?? "sans nom";
+    const relais = /github/i.test(serveur) || /github/i.test(r.headers.get("x-github-request-id") ?? "x");
+    return {
+      joignable: false,
+      statut: r.status,
+      type,
+      motif: relais
+        ? `réponse ${r.status} du RELAIS GITHUB (serveur « ${serveur} ») — la requête n'atteint pas Atlas, le port n'est pas public`
+        : `réponse ${r.status} d'ATLAS lui-même (serveur « ${serveur} », ${type || "sans type"}) — le port est bien ouvert, c'est l'application qui refuse`,
+    };
   } catch (err) {
     return {
       joignable: false,
