@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Le débit au compteur reste à 1,80 — et on sait maintenant pourquoi
+
+Sa précision du 22 août : *« je sais que nos fournisseurs, lorsqu'on se pique
+après compteur, estiment au moins 2 m³/h »*. Et, sur la proposition de demander
+le calibre du compteur plutôt qu'un seau : *« non, laisse le calcul au seau,
+tout le monde a l'habitude de faire comme ça »*.
+
+**Aucun code ne change** — c'est la raison qui manquait. Deux chiffres
+coexistent : sa mesure au seau sur son compteur (1,80 m³/h) et le plancher que
+son métier retient (2,00). Le `CLAUDE.md` §4 ter tranche : calculer sur 2,00
+mettrait un arroseur de plus par réseau qu'un compteur à 1,80 ne peut
+alimenter, et un réseau qui ne se lève pas se découvre en juillet. Calculer sur
+1,80 chez quelqu'un qui a 2,00 coûte au pire une vanne de trop.
+
+**Et le calibre du compteur est écarté**, avec sa raison : le seau est le geste
+que tout le monde connaît. C'est écrit dans `mesure-debit.ts` pour que personne
+ne rouvre la question.
+
 ### Les buses sont ramenées à la pression du chantier, plus à celle du catalogue
 
 Sa demande, après avoir vu ce qui manquait encore : *« oui code le »*.
