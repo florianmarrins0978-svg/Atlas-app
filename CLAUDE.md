@@ -247,7 +247,95 @@ Concrètement, pour toute planche dont on attend un choix :
   parcours sont décidés, pas optionnels.
 - **Marquer une tâche terminée sans l'avoir vérifiée.** Voir §5.
 
+## 4 ter. L'ARROSAGE N'A PAS LE DROIT À L'ERREUR
+
+**Sa consigne du 22 août 2026, et elle prime sur l'envie de livrer :** *« cet
+outil n'a pas le droit à l'erreur, parce qu'énormément d'utilisateurs vont s'en
+servir. Si jamais il se trompe dans les calculs et que les réseaux d'arrosage ne
+se lèvent pas, moi je vais être dans la merde. »*
+
+**Ce que cela change concrètement.** Ailleurs dans ce produit, une erreur se
+corrige : un devis se rectifie, une facture s'annule, un planning se déplace. Un
+réseau d'arrosage est **enterré**. Le défaut ne se voit qu'en juillet, sur un
+gazon jauni, chez un client qui a déjà payé — et c'est le paysagiste qui rouvre
+la tranchée à ses frais.
+
+**Trois règles qui en découlent, et qui ne se négocient pas :**
+
+1. **Aucune valeur d'arrosage ne se devine.** Un chiffre sans source relevée ne
+   rentre pas dans le calcul : il se demande, ou le calcul refuse de conclure.
+   « Plausible » n'est pas une source.
+2. **Se tromper vers le SÛR, toujours.** Devant deux hypothèses également
+   défendables, retenir celle qui pose un arroseur de plus, jamais celle qui en
+   pose un de moins. Un arroseur en trop coûte 30 € ; un réseau qui ne se lève
+   pas coûte le chantier.
+3. **Ce qui n'est pas calculé se DIT à l'écran.** Pas dans le dépôt, pas dans un
+   commentaire : sous le plan, là où il le lit. Une réserve tue vaut un mensonge
+   — parce qu'un plan silencieux est cru complet.
+
+**Et l'inverse est vrai aussi :** un avertissement qui parle à tort s'apprend à
+être ignoré, et l'on perd le garde-fou sans s'en apercevoir. Une réserve se pose
+là où le calcul est réellement muet, nulle part ailleurs.
+
 ## 4 bis. Tout schéma d'arrosage obéit à sa planche du 17 août
+
+**SANS CROQUIS COMPLET, AUCUN PLAN.** Sa règle du 21 août 2026, et elle passe
+avant tout le reste de cette section : *« l'outil doit fonctionner avec un plan
+avec toutes les métrés, l'emplacement du piquage et l'endroit définitif de la
+nourrice — sans ça il ne doit rien proposer »*.
+
+Trois éléments, tous obligatoires :
+
+| | Sans lui |
+|---|---|
+| **les métrés** | on ne sait pas combien d'arroseurs, ni où |
+| **le piquage** | on ne sait pas quel débit, ni s'il faut couper une ligne |
+| **l'endroit DÉFINITIF de la nourrice** | on ne sait ni d'où partent les lignes, ni où creuser |
+
+Il en manque un : on **retire** le plan et l'on dit lequel manque. On ne le grise
+pas — un plan affiché en pâle se photographie et se pose quand même.
+
+**LA NOURRICE SE PLACE PAR LUI, JAMAIS PAR L'OUTIL.** Sa règle du 21 août :
+*« c'est l'utilisateur qui placera la nourrice où il veut »*. Elle n'est ni
+calculée, ni déduite, ni proposée d'office : elle est **lue** sur le croquis.
+L'IA qui lit la photo la cherche ; si elle ne la trouve pas, elle refuse et le
+dit — elle ne la pose pas au piquage « pour dépanner ».
+
+Ce n'est pas une question de politesse : l'endroit du regard dépend de ce que
+lui seul sait — un point d'eau existant, un passage de voiture, un massif qu'on
+ne rouvre pas, l'accès pour l'hivernage. Un outil qui le placerait ferait creuser
+au mauvais endroit, et une tranchée ne se déplace pas.
+
+**Informer n'est pas proposer.** S'il demande ce que change tel ou tel
+emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
+raccourcissent. On ne dit jamais où le mettre.
+
+**L'AVERTISSEMENT SE LIT AVANT DE PHOTOGRAPHIER**, en gras, **au-dessus** du
+croquis : *« votre croquis doit impérativement contenir les métrés, l'endroit
+définitif de la nourrice, et l'endroit où le piquage se fait »*. Placé en
+dessous, il se lirait après l'envoi d'une photo incomplète — donc trop tard, et
+il faudrait retourner au jardin.
+
+**PAS DE PHRASES PRÉ-ÉCRITES DANS L'APPLICATION.** Sa remarque du 21 août :
+*« il ne faut pas mettre les phrases pré-écrites, mais il faut un endroit où on
+puisse discuter avec toi »*. Un champ libre, rien d'autre. Des suggestions
+toutes faites bornent ce qu'on ose demander — et ce qu'il a à dire ne tient
+jamais dans trois boutons. Elles n'existent dans les maquettes que parce
+qu'aucune ne porte de JavaScript, et cela doit s'y **écrire** pour qu'on ne les
+recopie pas en codant.
+
+**ET LA DISCUSSION NE CRÉE JAMAIS UN PLAN.** *« Elle peut seulement modifier, ou
+recréer si un croquis avec tous les bons éléments aux bons endroits a été
+fourni. »* C'est la tentation exacte d'une conversation : on répond en comblant
+ce qui manque, parce qu'une phrase se complète plus facilement qu'un dessin. Un
+plan tracé sur une nourrice supposée fait creuser au mauvais endroit — et une
+tranchée ne se déplace pas.
+
+**Un manquement à noter, du 21 août :** le plan de son jardin a été tracé avec
+une nourrice que J'AI placée, son croquis ne la portant pas. Il aurait dû être
+refusé.
+
+
 
 Règle posée le 21 août 2026, et qu'il veut **valable partout** : *« sers-t'en
 pour tous les schémas, il fonctionnera partout, ça doit être la règle »*.
@@ -298,6 +386,95 @@ portait une « Électrovanne 24 V » générique, posée avant qu'il donne ses
 références et jamais confrontée à elles. Il a demandé d'où elle sortait : de
 nulle part. Quand ses vraies références arrivent, les lignes provisoires qu'elles
 remplacent se **corrigent**, elles ne se laissent pas dormir.
+
+**CE QUI COMPTE, C'EST LA PRESSION AU DERNIER ARROSEUR, PAS AU COMPTEUR.** Sa
+demande du 22 août 2026 au soir : *« oui corrige la 1 »*. Entre le compteur et
+le bout d'une ligne se perdent l'amenée, l'électrovanne, la ligne elle-même,
+ses raccords et l'antenne Ø16 — de l'ordre d'un demi à trois quarts de bar sur
+un jardin ordinaire. Dimensionner sur la pression du compteur, c'est prêter aux
+arroseurs de bout de ligne une portée qu'ils n'ont pas.
+
+**Le débit DÉCROÎT le long de la ligne**, et c'est tout le calcul : entre la
+vanne et la première tête passe le débit du réseau entier, puis une tête de
+moins à chaque tronçon. Compter le débit total partout surestime la perte de
+75 % — assez pour condamner des plans qui tiennent.
+
+**Deux passes, jamais trois.** La pression au bout dépend des débits, qui
+dépendent d'elle. On calcule un plan à la pression de la source, on mesure ce
+qui se perd, on refait. Une troisième passe remonterait la pression et l'on
+tournerait autour de la valeur : s'arrêter à deux garde les pertes des débits
+les plus forts, donc le côté sûr.
+
+**Ce qui n'est PAS compté se dit à l'écran** : le trajet du regard à la
+première tête, qui dépend de l'endroit où la nourrice est posée. La pression
+annoncée est un plafond.
+
+**UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU, PAS SEULEMENT PAR LE COMPTEUR.** Sa
+déduction du 22 août 2026 : *« en diamètre vingt-cinq c'est 1,76 m³/h, donc dans
+tous les cas le calcul doit se faire là-dessus, peu importe qu'on ait 2 ou
+1,80 »*. Toutes ses lignes de réseau sont en Ø25 — c'est le diamètre de tous ses
+raccords. La limite d'un réseau est donc **le plus petit** de :
+
+| | |
+|---|---|
+| ce que la source donne | débit au seau × 0,85 |
+| ce que le tuyau passe | **1,76 m³/h en Ø25** |
+
+**Ce défaut était invisible chez lui** : son compteur donne 1,80, donc la source
+a toujours commandé. Il serait apparu chez le premier utilisateur mieux
+alimenté. Une règle éprouvée sur un seul chantier n'est pas une règle éprouvée.
+
+**UNE BUSE SE CALCULE À LA PRESSION DU CHANTIER, PAS À CELLE DU CATALOGUE.**
+Ses catalogues ne donnent qu'une valeur par buse, à une pression de référence
+(2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères VAN). Les prendre
+telles quelles met un arroseur de trop par réseau dès que le chantier est en
+dessous.
+
+| | La loi | Son statut | Sens |
+|---|---|---|---|
+| **débit** | `Q ∝ √P` — Torricelli | **physique** | les deux sens |
+| **portée** | `R ∝ P^(1/3)` | **estimation** | **vers le bas seulement** |
+
+**La portée ne se gonfle JAMAIS.** L'exposant vient des tables des
+constructeurs, pas de ses relevés à lui : au-dessus de la pression de
+référence, on garde la portée du catalogue. Espacer les arroseurs sur un chiffre
+supposé fabrique un trou d'arrosage qu'on ne voit qu'en juillet ; réduire coûte
+au pire un arroseur de plus. **Et une portée réduite se DIT à l'écran** — c'est
+une estimation, pas un fait.
+
+**LE DIAMÈTRE DU TUYAU SE CALCULE, ET SUR DEUX CRITÈRES — jamais un seul.**
+Sa demande du 22 août 2026 : *« passé un certain nombre de mètres linéaires, il
+faut passer du PEHD Ø25 à celui en Ø32 ; j'aimerais que mon outil arrosage
+puisse faire la même chose »*. Ses fournisseurs savent le lui dire ; c'est un
+calcul, pas un tour de main.
+
+| Ce qui impose le Ø32 | La règle | Le chiffre |
+|---|---|---|
+| **le débit** — l'eau va trop vite | vitesse ≤ 1,5 m/s | Ø25 : **1,76 m³/h** · Ø32 : **2,91** |
+| **la longueur** — la perte mange la marge | Hazen-Williams, retournée | dépend du débit et du budget |
+
+**Le piège, et il était dans le dépôt.** Le calcul ne regardait QUE la perte de
+charge. Or un tuyau court n'en perd presque aucune : sur ce seul critère, **un
+Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court**. C'est
+faux — au-delà de 1,5 m/s l'eau cogne, le coup de bélier fatigue les
+électrovannes, et le bruit s'entend dans la maison. Le critère de vitesse est
+donc entré, et c'est lui qui donne les débits maximaux que les fournisseurs
+annoncent par diamètre.
+
+**Ce chiffre recoupe SA mesure**, et c'est ce qui permet de le croire : au seau,
+sur son compteur en Ø25, il a relevé 1,80 m³/h ; la formule en donne 1,76. Le
+tuyau ne laissait pas passer davantage.
+
+**Et l'outil dit le SEUIL, pas seulement le verdict.** « Le Ø25 tient jusqu'à
+73 m à ce débit » se compare au mètre ruban avant de creuser ; un oui/non sur
+une longueur saisie oblige à la ressaisir trois fois pour trouver la bascule.
+Quand le débit interdit le Ø25, le seuil vaut **zéro**, jamais un nombre de
+mètres qu'on croirait.
+
+**LA PRESSION NE DONNE PAS LE DÉBIT, ET LE DÉBIT NE DONNE PAS LA PRESSION.**
+Les deux se calculent, mais séparément : le débit vient du diamètre (vitesse ×
+section) ou du seau chronométré ; la pression dit ce qui arrivera aux arroseurs
+une fois les pertes retirées. Les confondre met trop d'arroseurs sur un réseau.
 
 **SE PIQUER AU COMPTEUR, C'EST COUPER UNE LIGNE EN SERVICE.** Sa précision du
 21 août : *« le compteur, c'est une ligne directe qui part vers la maison ; on va
@@ -439,6 +616,22 @@ Et chaque symbole **nomme la pièce** qu'il implique : plein → té taraudé ; 
 → coude taraudé ; losange → té égal. Sans cela on lit le plan sans savoir quoi
 visser. **Toute pièce facturée se voit quelque part sur le plan** — une pièce
 commandée qu'on ne sait pas où poser ne sert à rien.
+
+**UNE LÉGENDE SE VÉRIFIE CONTRE LE CATALOGUE ET CONTRE LA COMMANDE.** Payé le
+22 août 2026, et c'est lui qui l'a relevé : *« il m'a déjà donné 4 arroseurs en
+5004 buse 3 sur un seul réseau avec 3 bar et du Ø25 — est-ce correct ? »* Ça ne
+l'était pas (2,84 m³/h pour un Ø25 qui en passe 1,76), **mais le plan ne posait
+pas de 5004** : la légende, elle, était restée sur le matériel de la première
+version de la planche, et son contrôle **exigeait ce libellé en dur**. La
+légende ne pouvait donc plus être corrigée sans faire rougir la batterie.
+
+Trois choses doivent s'accorder, et un contrôle doit les confronter :
+
+| | |
+|---|---|
+| le nom de la buse | **exactement** celui du catalogue |
+| la portée annoncée | celle du catalogue, pas une valeur ronde |
+| le matériel cité | celui que **la liste des pièces facture** |
 
 **Ce qui est une règle POUR NOUS ne va pas à l'écran.** *« La phrase sur la
 tranchée creusée une fois, tu peux la supprimer. Il faut juste que ça soit une

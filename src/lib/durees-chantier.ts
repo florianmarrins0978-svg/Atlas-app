@@ -20,7 +20,16 @@
 // qu'à un seul endroit, et pas celui où il la cherchait. Deux écrans la
 // montrent désormais, avec la même liste : deux copies auraient divergé.
 
-export const DUREE_MAX_JOURS = 100;
+/**
+ * **Deux cents jours depuis le 22 août 2026**, et c'est lui qui l'a relevé sur
+ * la planche 91 : *« pour combien de temps prend ce chantier, faut mettre un
+ * bandeau déroulant avec demi-journée et 1 à 200 jours »*.
+ *
+ * Cent venait de sa demande du 3 août — « 100 max » —, posée quand la molette
+ * naissait. Elle a tenu jusqu'au jour où il a regardé le calendrier de ses
+ * journées : un chantier de six mois se pose, et la liste s'arrêtait avant.
+ */
+export const DUREE_MAX_JOURS = 200;
 
 export type ChoixDuree = { demiJournees: number; libelle: string };
 

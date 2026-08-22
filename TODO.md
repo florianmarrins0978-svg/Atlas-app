@@ -53,6 +53,21 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
+
+Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
+sorti trois manques du calcul d'arrosage. **Les trois sont faits** — le diamètre du tuyau
+(`ARCHITECTURE.md` §144), la buse à la pression du chantier (§145), les pertes du
+réseau (§147). Ce qui suit est l'historique, et ce qui reste dehors :
+
+| Ce qui manque | Ce que ça change | Coût |
+|---|---|---|
+| ~~le débit d'une buse baisse avec la pression~~ | **FAIT le 22 août 2026** — `ARCHITECTURE.md` §145 | |
+| ~~les pertes de charge du réseau lui-même~~ | **FAIT le 22 août 2026** — `ARCHITECTURE.md` §147. Reste dehors : le trajet du regard à la première tête, qu'aucune saisie ne donne | |
+
+**Ne pas les coder d'office.** Le second surtout rendrait des plans plus sévères
+— donc plus d'arroseurs, donc des devis plus chers — et c'est une décision de
+métier, pas de code.
 
 ---
 
@@ -802,6 +817,37 @@ le croquis photographié et **lu par l'IA**, puis le plan et le détail des
 pièces. Au compteur, rien n'est demandé : en Ø25 on a d'office ce qu'il faut.
 Ailleurs, le seuil est **2,5 bar en dynamique**. Voir `CHANGELOG.md` et
 `PROJECT_STATE.md`.
+
+## Discuter le plan avec Atlas — **maquette à valider, 21 août 2026**
+
+*« Si l'utilisateur a besoin de te demander une modification, qu'il puisse le
+faire. Une petite interface pour discuter avec toi — par exemple : tu m'as mis
+cinq turbines en 5000, j'aurais préféré des 3500, recalcule-moi le schéma. Ou :
+tu m'as mis des VAN 12, est-il possible de mettre de la VAN 15 ? »*
+
+**`appli/arrosage-discuter.html`** — trois échanges essayables : pourquoi deux
+réseaux, passer en 15-VAN, préférer des 5004. Le plan se redessine, les pièces
+suivent.
+
+**LE POINT D'ARCHITECTURE, ET IL PRIME SUR LE RESTE :** *Atlas ne dessine pas le
+plan.* Il lit la demande, **pose un paramètre du calcul** (famille, buse, marque,
+nombre de voies), et c'est le calcul déterministe qui refait le schéma et la
+liste. Trois droits, pas un de plus : lire le catalogue pour répondre, poser un
+paramètre, refuser en expliquant. **Jamais écrire un chiffre absent du
+catalogue.**
+
+C'est la leçon du 21 août : laissé libre, il a inventé « 5004 buse 3.0, portée
+6 m » — qui n'existe pas — et tout le maillage en dépendait. Une conversation
+rend cette dérive **plus** facile, pas moins : on écrit une phrase plausible et
+personne ne la recompte. Son contrôle vérifie donc que **toute portée citée
+existe au catalogue**, prise par l'autre bout : pas « une bonne valeur est
+présente », mais « aucune valeur inventée n'est écrite ».
+
+**Ce qui attend sa réponse :** les deux questions mises de côté (combien de
+turbines par voie ; la pluviométrie entre un coin et un plein cercle), et
+l'accord pour coder.
+
+---
 
 ## Le plan DESSINÉ — **maquette à valider, 21 août 2026**
 

@@ -32,6 +32,139 @@ reçue de l'écran, elle serait un moyen de forcer n'importe quel jour.
 
 **Ce qui reste refusé partout**, parce que ce n'est pas un jugement d'artisan :
 une date passée, ou au-delà de dix-huit mois.
+## LA PRESSION QUI DIMENSIONNE EST CELLE DU DERNIER ARROSEUR (22 août 2026)
+
+**Avant de toucher à `decouper` ou à `buseALaPression`, sachez ceci :** le
+calcul tourne **deux fois**.
+
+1. un plan à la pression de la SOURCE ;
+2. on mesure ce que perdent l'amenée et le pire réseau, on retire, on REFAIT.
+
+`pressionDeCalcul` (globale) porte la pression de la passe 2. Elle est remise à
+`null` au début de chaque `decouper` **et** dans le `finally` de `calculerPlan` —
+deux gardes, parce que sur un serveur deux artisans calculent en même temps.
+
+**Ne pas ajouter de troisième passe.** Elle irait dans le mauvais sens : moins
+de pression → moins de débit → moins de perte → la pression remonterait. On
+tournerait autour de la valeur. Deux passes gardent les pertes des débits les
+plus forts, donc le côté sûr.
+
+**Ce qui est compté :** ligne (débit décroissant, Manhattan), antenne Ø16,
+électrovanne (0,25 bar, **non relevé**), raccords (+15 %, **non relevé**).
+**Ce qui ne l'est pas :** le trajet regard → première tête. Les deux écrans le
+disent ; ne pas le taire si vous y touchez.
+
+**Les chiffres affichés viennent tous de la passe 2** — sinon deux pertes
+d'amenée différentes cohabiteraient dans le même écran.
+
+**Et `test-arrosage-calcul.ts` fige la perte à 0,442 bar ± 0,005.** Ce n'est pas
+une rigidité gratuite : ce chiffre décide du nombre d'arroseurs par ligne. S'il
+change, c'est SCIEMMENT, avec la raison dans le commit.
+
+Détail : `ARCHITECTURE.md` §147.
+
+---
+
+## UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU (22 août 2026)
+
+`decouper()` coupe un réseau au **plus petit** de deux chiffres :
+
+| | |
+|---|---|
+| la source | débit au seau × 0,85 |
+| le tuyau | 1,76 m³/h — le Ø25 à 1,5 m/s |
+
+Toutes ses lignes de réseau sont en Ø25 (té 25×3/4"×25, coude 25×3/4"). Avant le
+22 août, seule la source comptait : à 3 m³/h mesurés, un réseau tirait 2,55 m³/h
+dans un tuyau qui n'en passe que 1,76.
+
+**Ce défaut ne se voyait pas chez lui** — son compteur donne 1,80, la source
+commandait toujours. C'est la leçon à retenir : une règle éprouvée sur un seul
+chantier n'est pas éprouvée.
+
+**Conséquence sur un contrôle existant :** le critère de vitesse d'`amenee()`
+n'est plus atteignable par `calculerPlan`, puisque le plafond agit en amont. Il
+reste en place comme garde-fou, et `test-arrosage-calcul.ts` le DIT plutôt que
+de laisser croire qu'il veille encore.
+
+---
+
+## LES BUSES SONT CORRIGÉES À LA PRESSION — NE PAS GONFLER LA PORTÉE (22 août 2026)
+
+**Avant de retoucher `modelePour` :** les buses du catalogue sont ramenées à la
+pression du chantier avant tout choix, puis **retriées** par portée décroissante
+(deux buses de pressions de référence différentes ne se réduisent pas du même
+facteur, et tout le choix « la plus grande qui tient » repose sur cet ordre).
+
+| | La loi | Statut | Sens |
+|---|---|---|---|
+| débit | `√(P/P_ref)` — Torricelli | physique | les deux sens |
+| portée | `P^(1/3)` | **estimation** | **vers le bas uniquement** |
+
+**Ne jamais gonfler la portée**, même si la pression est supérieure à celle du
+catalogue : l'exposant n'est pas relevé de ses catalogues, et espacer les
+arroseurs sur un chiffre supposé fabrique un trou d'arrosage qu'on ne voit qu'en
+juillet. Une portée réduite est signalée sous le plan (`porteeEstimee`).
+
+**La pression retenue est celle de la SOURCE**, pas celle du dernier arroseur :
+les pertes du réseau ne sont pas calculées (`TODO.md`). C'est un progrès, pas
+une garantie — ne pas l'annoncer autrement.
+
+Détail : `ARCHITECTURE.md` §145.
+
+---
+
+## UNE LÉGENDE DE PLAN SE VÉRIFIE CONTRE LE CATALOGUE (22 août 2026)
+
+**Ce qui s'est passé.** Le patron a lu sur le plan « 4 arroseurs en 5004 buse
+3.0 » et a demandé si c'était tenable. Ça ne l'était pas — 2,84 m³/h là où le
+Ø25 en passe 1,76 — **mais le plan ne posait pas de 5004** : neuf 3504 buse 0,75
+et quatre tuyères. Seule la **légende** était restée sur le matériel de la
+première version de la planche.
+
+**Le pire :** `verifier-maquette-arrosage-plan.mjs` **exigeait** cette légende,
+libellés en dur. Elle ne pouvait donc pas être corrigée sans faire rougir la
+batterie. Un contrôle qui fixe un libellé fige une erreur (`CLAUDE.md` §5 bis).
+
+**La règle, valable pour toute planche :** une légende se vérifie contre le
+catalogue (le nom exact de la buse, sa portée) **et** contre la liste des pièces
+de la même page. Si les trois ne s'accordent pas, l'un ment et rien ne dit
+lequel au moment de commander.
+
+**Le calcul, lui, n'était pas en cause** — il coupe bien les réseaux sous le
+débit disponible. Devant une plainte sur un chiffre d'arrosage : regarder
+d'abord si le chiffre vient du CALCUL ou d'un libellé écrit à la main.
+
+---
+
+## LE DIAMÈTRE DU TUYAU D'ARROSAGE : DEUX CRITÈRES, PAS UN (22 août 2026)
+
+**Si vous touchez au calcul d'arrosage, lisez ceci d'abord.** Le choix Ø25 / Ø32
+ne dépend PAS que de la longueur, et c'est le piège qui était dans le code :
+
+| Ce qui impose le Ø32 | Pourquoi on ne peut pas l'oublier |
+|---|---|
+| le **débit** (vitesse ≤ 1,5 m/s) | un tuyau court ne perd presque rien : sur la seule perte de charge, un Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court |
+| la **longueur** (perte de charge) | au-delà du seuil, la marge de pression est mangée avant les arroseurs |
+
+Débits maximaux qui en découlent : **Ø25 → 1,76 m³/h**, **Ø32 → 2,91**. Le
+chiffre du Ø25 recoupe sa propre mesure au seau sur son compteur (1,80 m³/h) —
+c'est ce qui permet de le croire.
+
+**Le débit prime sur la longueur** : aucune longueur ne rattrape un débit trop
+fort, alors qu'une amenée trop longue se raccourcit parfois en déplaçant le
+regard. Quand le débit interdit le Ø25, `longueurMax25` rend **0**, jamais un
+nombre de mètres — un seuil qu'on croit et qui ne tient pas coûte une tranchée.
+
+**Les deux copies du calcul doivent rester identiques** (`appli/arrosage-calcul.js`
+et `src/lib/arrosage/calcul.js`) : `npm run verifier:maquette` rougit sinon.
+
+**Ce qui n'a pas pu être éprouvé ici :** la ligne du seuil dans l'écran de
+l'application (`ArrosageClient.tsx`) n'apparaît qu'après lecture d'un croquis,
+donc avec une clé d'IA. Elle a été vue au navigateur sur `appli/arrosage.html`,
+dans ses deux cas. À regarder sur son espace au premier plan calculé.
+
+Détail complet : `ARCHITECTURE.md` §144.
 
 ---
 

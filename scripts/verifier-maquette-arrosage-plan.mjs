@@ -37,6 +37,10 @@ import { chromium } from "playwright";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
+// **Le catalogue, et non des libellés recopiés ici.** Un contrôle qui porte ses
+// propres références finit par défendre celles d'avant-hier — c'est exactement
+// ce qui est arrivé à la légende de cette planche (voir plus bas).
+import { CATALOGUE } from "../src/lib/arrosage/catalogue.js";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CHEMIN = resolve(process.argv[2] ?? join(RACINE, "appli/arrosage-plan.html"));
@@ -686,11 +690,63 @@ cas("chaque arroseur dit sa famille, et la légende la traduit", () => {
       if (f !== "turbine" && f !== "tuyere") throw new Error(`famille inconnue sur le réseau ${n} : « ${f} »`);
     }
   }
-  const texte = vu.texte.toLowerCase();
-  // La légende doit traduire les deux formes, ET nommer la buse de chacune :
-  // « une tuyère » ne suffit pas à commander, « 12-VAN » oui.
-  for (const attendu of [/turbine\s*5004/, /buse\s*3\.0/, /tuyère\s*1800/, /12-van/, /portée\s*6\s*m/, /portée\s*4\s*m/]) {
-    if (!attendu.test(texte)) throw new Error(`le plan ne dit pas « ${attendu.source} » : on ne sait pas quoi visser où`);
+  // ── LA LÉGENDE SE VÉRIFIE CONTRE LE CATALOGUE, PAS CONTRE ELLE-MÊME ─────
+  //
+  // **Ce contrôle a menti pendant quatre jours, et c'est le patron qui l'a vu.**
+  // Le 22 août 2026 : *« il m'a déjà donné 4 arroseurs en 5004 buse 3 sur un
+  // seul réseau avec 3 bar et du Ø25, est-ce correct ? »* Ce n'était pas
+  // correct — quatre buses 3.0 de 5004 tirent 2,84 m³/h, soit plus d'une fois
+  // et demie ce qu'un Ø25 laisse passer, et bien au-delà des 1,80 m³/h du
+  // compteur. Mais ce plan-là n'a JAMAIS posé de 5004 : il pose neuf 3504 buse
+  // 0,75 et quatre tuyères. **Seule la légende disait 5004** — et ce contrôle
+  // l'EXIGEAIT, en recopiant les libellés de la toute première version de la
+  // planche. Le plan a changé de matériel, la légende est restée, et le
+  // contrôle la tenait en place.
+  //
+  // Un contrôle ne doit donc pas fixer un libellé (`CLAUDE.md` §5 bis) : il
+  // vérifie que la légende nomme un matériel qui EXISTE au catalogue, avec SA
+  // portée, et que c'est bien celui que la liste facture. Ces trois-là ne
+  // peuvent plus diverger en silence.
+  const lignesLegende = vu.legende.texte.split("\n").map((l) => l.trim()).filter(Boolean);
+  const sansAccent = (x) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const facturees = sansAccent(vu.pieces.map((p) => p.nom).join(" · "));
+
+  for (const famille of ["turbine", "tuyère"]) {
+    const ligne = lignesLegende.find((l) => sansAccent(l).startsWith(sansAccent(famille)));
+    if (!ligne) throw new Error(`la légende ne traduit pas la forme « ${famille} » : on ne sait pas quoi visser où`);
+
+    // La buse citée doit exister au catalogue, sous SON nom exact. Une
+    // inclusion approximative laisserait passer une buse inventée dont le nom
+    // contient celui d'une vraie (`CLAUDE.md` §4 bis).
+    const buse = CATALOGUE.buses
+      .filter((b) => sansAccent(ligne).includes(sansAccent(b.nom)))
+      .sort((a, b) => b.nom.length - a.nom.length)[0];
+    if (!buse) {
+      throw new Error(`« ${ligne} » ne cite aucune buse du catalogue : on ne commande pas avec ce libellé`);
+    }
+
+    // Et la portée annoncée est CELLE DU CATALOGUE. Une portée inventée fait
+    // acheter le mauvais nombre d'arroseurs, et c'est lui qui revient poser
+    // les manquants.
+    const dit = ligne.match(/port[ée]e\s*([\d]+(?:[.,][\d]+)?)\s*m/i);
+    if (!dit) throw new Error(`« ${ligne} » n'annonce aucune portée`);
+    const annoncee = Number(dit[1].replace(",", "."));
+    if (Math.abs(annoncee - buse.rayon) > 0.06) {
+      throw new Error(
+        `« ${ligne} » annonce ${annoncee} m alors que ${buse.nom} porte à ${buse.rayon} m au catalogue`
+      );
+    }
+
+    // Enfin : la légende parle-t-elle du matériel que la LISTE facture ? C'est
+    // le contrôle qui aurait vu le mensonge — la légende disait 5004 pendant
+    // que la commande portait des 3504.
+    const modele = buse.nom.split("·")[0].trim();
+    if (!facturees.includes(sansAccent(modele))) {
+      throw new Error(
+        `la légende annonce « ${modele} » que la liste des pièces ne facture nulle part : ` +
+          `l'un des deux ment, et rien ne dit lequel au moment de commander`
+      );
+    }
   }
 });
 
@@ -726,8 +782,13 @@ cas("la légende montre les symboles, et nomme la pièce de chacun", () => {
     ["le té taraudé (arroseur en ligne)", /té taraudé/],
     ["le coude taraudé (fin de ligne)", /coude taraudé/],
     ["le té égal (la ligne se sépare)", /té égal/],
-    ["la turbine et sa buse", /turbine 5004.*buse/s],
-    ["la tuyère et sa buse", /tuyère 1800.*buse/s],
+    // **Le MODÈLE n'est pas figé ici** : quel arroseur la planche pose est une
+    // décision de métier qui change d'un jardin à l'autre. Ce qui ne change
+    // pas, c'est qu'une turbine et une tuyère soient chacune nommée AVEC sa
+    // buse — « une tuyère » ne se commande pas, « 12-VAN » oui. Le contrôle
+    // ci-dessus, lui, confronte le libellé au catalogue et à la commande.
+    ["la turbine et sa buse", /turbine\s+\S+.*buse/s],
+    ["la tuyère et sa buse", /tuyère\s+\S+.*buse/s],
   ]) {
     if (!motif.test(t)) throw new Error(`la légende ne dit pas où va ${quoi}`);
   }
@@ -871,6 +932,66 @@ cas("la tension des vannes s'accorde avec celle du programmateur", () => {
       }
     }
   }
+});
+
+// ── 8 terdecies. CE QU'IL DOIT LIRE AVANT DE PHOTOGRAPHIER ─────────────────
+//
+// *Sa demande du 21 août :* « c'est un petit message qu'il faut mettre au-dessus
+// du croquis, en noir gras : votre croquis doit impérativement contenir les
+// métrés, l'endroit définitif de la nourrice, et l'endroit où le piquage se
+// fait ».
+//
+// **AU-DESSUS, et c'est tout le sujet.** Placé en dessous, il se lirait après
+// avoir envoyé une photo incomplète — donc trop tard, et il faudrait retourner
+// au jardin. Le contrôle mesure donc la POSITION, pas seulement la présence.
+cas("l'avertissement est au-dessus du croquis, et nomme les trois éléments", async () => {});
+const avertissement = await page.evaluate(() => {
+  const p = document.querySelector(".impératif");
+  const img = document.querySelector("img[src^='data:image']");
+  if (!p || !img) return null;
+  return {
+    texte: p.innerText,
+    gras: getComputedStyle(p).fontWeight,
+    auDessus: p.getBoundingClientRect().top < img.getBoundingClientRect().top,
+  };
+});
+cas("il le lit AVANT de photographier", () => {
+  if (!avertissement) throw new Error("aucun avertissement sur ce que le croquis doit porter");
+  if (!avertissement.auDessus) {
+    throw new Error("l'avertissement est sous le croquis : il se lira après avoir envoyé une photo incomplète, donc trop tard");
+  }
+  if (Number(avertissement.gras) < 600) {
+    throw new Error(`l'avertissement pèse ${avertissement.gras} : il a demandé du gras, sans quoi il se saute`);
+  }
+  const t = avertissement.texte.toLowerCase();
+  for (const [quoi, motif] of [["les métrés", /métré/], ["la nourrice", /nourrice/], ["le piquage", /piquage/]]) {
+    if (!motif.test(t)) throw new Error(`l'avertissement ne réclame pas ${quoi}`);
+  }
+});
+
+// ── 8 quaterdecies. UN PLAN QUI ENFREINT LA RÈGLE LE DIT ───────────────────
+//
+// *Sa remarque du 21 août :* « il n'est pas valable avec cette nouvelle règle ».
+//
+// **Cette maquette affichait l'interdit puis l'enfreignait juste en dessous** :
+// « sans les trois, aucun plan n'est proposé », et un plan tracé sur une
+// nourrice que j'avais placée d'office, son croquis ne la portant pas. Un écran
+// qui se contredit ainsi apprend à ne plus lire ses propres avertissements.
+//
+// Tant que le croquis ne porte pas le regard, le plan reste montré — c'est une
+// maquette, elle sert à voir le rendu — mais il **dit qu'il n'est pas valable**,
+// et pourquoi.
+cas("un plan qui n'a pas tous ses éléments le dit en tête", async () => {});
+const aveu = await page.evaluate(() => {
+  const p = document.querySelector(".pas-valable");
+  const img = document.querySelector("img[src^='data:image']");
+  return p && img ? { texte: p.innerText, auDessus: p.getBoundingClientRect().top < img.getBoundingClientRect().top } : null;
+});
+cas("l'aveu est là, au-dessus du croquis, et nomme ce qui manque", () => {
+  if (!aveu) throw new Error("le plan est tracé sur une nourrice placée d'office et rien ne le dit");
+  if (!aveu.auDessus) throw new Error("l'aveu est sous le croquis : on aura cru le plan valable avant de le lire");
+  if (!/nourrice/i.test(aveu.texte)) throw new Error("l'aveu ne dit pas QUEL élément manque");
+  if (!/refus/i.test(aveu.texte)) throw new Error("l'aveu ne dit pas que l'application refuserait ce plan");
 });
 
 // ── 9. LE CHOIX DE LA MARQUE — sa demande, deux fois ────────────────────────

@@ -274,6 +274,11 @@ export default function ArrosageClient({
   );
 }
 
+/** Deux décimales, virgule française — un chiffre à l'anglaise se relit mal. */
+function virgule(x: number) {
+  return x.toFixed(2).replace(".", ",");
+}
+
 /** Le plan, une fois le croquis lu : les réseaux, puis le détail des pièces. */
 function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
   const { plan, reserves } = etat;
@@ -310,6 +315,29 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
           )}
         </div>
       ))}
+
+      {/* **LE SEUIL DU Ø32 — sa demande du 22 août 2026.** Ses fournisseurs
+          savent lui dire à partir de combien de mètres le Ø25 ne tient plus ;
+          l'outil le dit maintenant aussi, et il le dit AVANT la tranchée.
+
+          **Une ligne, pas un paragraphe** (`CLAUDE.md` §3 ter) : le mètre
+          ruban est dans sa poche, le raisonnement est dans le dépôt. */}
+      {plan.tuyau.debit > 0 && (
+        <p
+          className="mx-[22px] mt-3 text-[13px] leading-relaxed"
+          style={{ color: plan.tuyau.insuffisantMemeEn32 ? colors.alert : colors.muted }}
+          data-atlas="seuil-tuyau"
+        >
+          {plan.tuyau.insuffisantMemeEn32
+            ? `${virgule(plan.tuyau.debit)} m³/h sur un réseau : même le Ø32 est trop juste.`
+            : plan.tuyau.seuil25 > 0
+              ? `Ø25 jusqu’à ${Math.floor(plan.tuyau.seuil25)} m, Ø32 au-delà.` +
+                (plan.tuyau.limitePar === "tuyau"
+                  ? ` Réseaux plafonnés à ${virgule(plan.tuyau.plafond)} m³/h : c’est le Ø25 qui commande, pas le compteur.`
+                  : "")
+              : `Ø32 d’office : ${virgule(plan.tuyau.debit)} m³/h passent trop vite en Ø25.`}
+        </p>
+      )}
 
       <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
         Le détail des pièces

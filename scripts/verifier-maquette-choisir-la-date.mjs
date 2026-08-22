@@ -23,9 +23,12 @@
        regarder avant de décider ; l'éteindre le renverrait à ne rien savoir.
     5. **Le mois se feuillette**, et « ← Aujourd'hui » paraît dès qu'on
        s'éloigne — comme au planning.
-    6. **Changer la durée reprend un jour devenu impossible** : garder un choix
+    6. **La durée est un bandeau DÉROULANT**, d'une demi-journée à 200 jours —
+       sa demande du 22 août. Trois pastilles figées ne couvraient pas un
+       chantier de trois semaines, et il en a.
+    7. **Changer la durée reprend un jour devenu impossible** : garder un choix
        devenu faux est exactement ce qu'on reproche au calendrier nu.
-    7. **Rien ne déborde à 390 px**, la largeur de son téléphone.
+    8. **Rien ne déborde à 390 px**, la largeur de son téléphone.
 
   Il sait échouer : éprouvé en retirant la fiche du jour (2 rougit), en
   désactivant les jours complets (4 rougit), en figeant le jour retenu quand la
@@ -124,7 +127,16 @@ await page.locator("[data-retour]").click();
 await page.waitForTimeout(150);
 dire(await page.locator("[data-retour]").isHidden(), "« ← Aujourd'hui » reste là une fois revenu");
 
-// 6 — changer la durée rend un jour devenu impossible
+// 6 — le bandeau déroulant, d'une demi-journée à 200 jours
+const options = await page.$$eval("#duree option", (os) =>
+  os.map((o) => ({ valeur: Number(o.value), mot: o.textContent.trim() })));
+dire(options.length === 201, `le déroulant porte ${options.length} choix au lieu de 201 (une demi-journée + 1 à 200 jours)`);
+dire(options[0] && /demi-journée/i.test(options[0].mot), "le premier choix n'est pas la demi-journée");
+dire(options.some((o) => o.mot === "1 jour"), "« 1 jour » manque");
+dire(options.some((o) => o.mot === "200 jours"), "« 200 jours » manque : il ne peut pas poser un long chantier");
+dire(options.every((o, i) => i === 0 || o.valeur === i * 2), "les durées ne se suivent pas en demi-journées");
+
+// 7 — changer la durée rend un jour devenu impossible
 const rendu = await page.evaluate(() => {
   // On retient un jour qui tient sur une demi-journée mais pas sur quatre :
   // c'est le cas que le calendrier nu laissait passer en silence.
@@ -136,7 +148,7 @@ const rendu = await page.evaluate(() => {
   return null;
 });
 if (rendu) {
-  await page.locator('#duree button[data-demi="1"]').click();
+  await page.selectOption("#duree", "1");
   await page.waitForTimeout(120);
   await page.locator(`.case[data-jour="${rendu}"]`).click();
   await page.waitForTimeout(120);
@@ -144,13 +156,13 @@ if (rendu) {
   if (await bouton.count()) await bouton.first().click();
   await page.waitForTimeout(120);
   dire(await page.locator("#retenu-dit").isVisible(), "le jour retenu ne s'écrit nulle part");
-  await page.locator('#duree button[data-demi="4"]').click();
+  await page.selectOption("#duree", "4");
   await page.waitForTimeout(150);
   dire(await page.locator("#retenu-dit").isHidden(), "un jour devenu impossible reste proposé au client");
   dire(await page.locator("#envoyer").isDisabled(), "« Envoyer » reste allumé sans jour tenable");
 }
 
-// 7 — rien ne déborde
+// 8 — rien ne déborde
 const debord = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 dire(debord <= 0, `la planche déborde de ${debord} px sur la largeur de son téléphone`);
 

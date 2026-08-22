@@ -64,6 +64,34 @@ export const SEAU_LITRES = 10;
  */
 export const DEBIT_COMPTEUR = 1.8;
 
+/*
+ * **POURQUOI 1,80 ET NON 2,00 — sa précision du 22 août 2026.**
+ *
+ * *« Je sais que nos fournisseurs, lorsqu'on se pique après compteur, estiment
+ * au moins 2 m³/h. »*
+ *
+ * Deux chiffres, donc, et ils ne se contredisent pas : sa mesure au seau sur
+ * son propre compteur donne **1,80**, l'estimation du métier dit **au moins
+ * 2,00**. Le second est un plancher de profession, le premier un relevé.
+ *
+ * **On garde le relevé, et c'est la règle du `CLAUDE.md` §4 ter qui tranche :**
+ * devant deux valeurs défendables, retenir celle qui pose un arroseur de plus.
+ * Calculer sur 2,00 mettrait un arroseur de plus par réseau qu'un compteur à
+ * 1,80 ne peut alimenter — et un réseau qui ne se lève pas se découvre en
+ * juillet, tranchée refermée. Calculer sur 1,80 chez quelqu'un qui a 2,00 coûte
+ * au pire une vanne de trop.
+ *
+ * **Ce que ce chiffre reste :** UNE mesure, sur UN branchement. Le jour où il en
+ * relève d'autres, elles se rangent ici — et si plusieurs compteurs donnent
+ * franchement mieux, la valeur se corrige, à un seul endroit.
+ *
+ * **Le calibre du compteur a été proposé, et écarté par lui** le 22 août :
+ * *« non, laisse le calcul au seau, tout le monde a l'habitude de faire comme
+ * ça »*. Le seau reste donc la seule mesure demandée, et seulement hors
+ * compteur — au compteur, sa règle du 20 août tient : on ne demande rien.
+ * Ne pas rouvrir sans qu'il le demande.
+ */
+
 /**
  * La pression retenue au compteur, en bar.
  *
