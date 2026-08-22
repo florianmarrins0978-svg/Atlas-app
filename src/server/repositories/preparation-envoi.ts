@@ -6,6 +6,7 @@ import { periodesOccupeesExterieures } from "./agendas-externes";
 import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
 import { absencesEquipe, chantiers, clients, devis, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
+import { jourLisible } from "../../lib/jour";
 import {
   fenetreProposition,
   fenetrePatron,
@@ -403,11 +404,17 @@ export async function verifierJourPropose(
     return { jour, retenable: false, raison: "Cette date n'est pas lisible.", alternative: null };
   }
   if (jour < horizon.debut) {
+    // **Sa remarque du 23 août 2026 :** *« "trop tôt" veut rien dire, on
+    // comprend pas bien »*. La phrase disait la règle au lieu de dire quoi
+    // faire — et « après-demain » oblige à compter dans sa tête devant un
+    // calendrier qui affiche déjà les dates. On nomme donc le premier jour
+    // possible, et on s'arrête là : le « sinon vous vous mettez en défaut »
+    // le mettait en tort pour un appui.
     return {
       jour,
       retenable: false,
-      raison: "Trop tôt : proposez au moins après-demain, sinon vous vous mettez en défaut.",
-      alternative: null,
+      raison: `Ce jour est trop proche. Le premier possible est le ${jourLisible(horizon.debut)}.`,
+      alternative: horizon.debut,
     };
   }
   if (jour > horizon.fin) {
@@ -437,10 +444,30 @@ export async function verifierJourPropose(
     };
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // **UNE JOURNÉE PLEINE SE PRÉVIENT, ELLE NE SE REFUSE PLUS.**
+  //
+  // *Sa règle du 23 août 2026 :* « si l'utilisateur juge qu'il peut rajouter un
+  // chantier, il doit pouvoir le faire quand même ; nous on a mis un message
+  // disant que c'est complet ». C'est mot pour mot la décision qu'il avait
+  // prise le 21 août pour le planning — *« il ne doit pas y avoir de limite
+  // d'ajout de chantier par jour [...] nous, on prévient juste »* —, et elle
+  // vaut donc aussi ici. Lui seul sait qu'une taille de haie prend une heure.
+  //
+  // **Ce que cela ne rouvre PAS, et il faut le tenir :** le 22 août il a exigé
+  // qu'un jour déjà pris ne soit *plus jamais* proposé de lui-même — *« c'est
+  // une erreur gravissime »*. Les deux règles ne se contredisent pas, parce que
+  // ce qui les sépare est la DÉLIBÉRATION : `premiersJoursLibres` ne suggère
+  // toujours aucun jour plein, et l'écran écrit « complet » sous ses yeux. Ce
+  // qui change, c'est qu'il peut passer outre en le sachant.
+  //
+  // L'alternative reste offerte : prévenir sans montrer la sortie, c'est le
+  // laisser chercher à l'aveugle dans dix-huit mois de calendrier.
+  // ═══════════════════════════════════════════════════════════════════════
   return {
     jour,
-    retenable: false,
-    raison: `${libelleDuree(preparation.dureeDemiJournees)} ne tient pas ce jour-là : votre planning est déjà pris.`,
+    retenable: true,
+    raison: `Ce jour est complet — ${libelleDuree(preparation.dureeDemiJournees).toLowerCase()} n'y tient pas. Vous pouvez le proposer quand même.`,
     alternative: jourLibreLePlusProche(jour, horizon, libre),
   };
 }

@@ -7,6 +7,58 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-23
+
+### Un jour plein se PRÉVIENT, il ne se refuse plus — et « trop tôt » disparaît
+
+*« Si l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le
+faire quand même. Nous on a mis un message disant que c'est complet. D'ailleurs
+"trop tôt" veut rien dire, on comprend pas bien, faut changer ça. »*
+
+**Le message.** « Trop tôt : proposez au moins après-demain, sinon vous vous
+mettez en défaut » énonçait la règle au lieu de dire quoi faire, obligeait à
+compter dans sa tête devant un calendrier qui affiche les dates, et le mettait
+en tort pour un appui. Il **nomme** désormais le premier jour possible, et
+l'offre d'un geste.
+
+**Le refus.** Un jour plein bloquait l'envoi. C'est sa décision du 21 août,
+appliquée là où elle manquait : *« il ne doit pas y avoir de limite d'ajout de
+chantier par jour [...] nous, on prévient juste »*. Lui seul sait qu'une taille
+de haie prend une heure.
+
+**Et c'est ici que ses DEUX règles ont failli se contredire.** Le 22 août :
+*« je peux proposer le 24 alors qu'un client a validé le 24 — ça ne doit jamais
+se reproduire »*. Le 23 : *« il doit pouvoir le faire quand même »*. Ce qui les
+sépare est la **délibération**, et rien d'autre :
+
+| | |
+|---|---|
+| il force un jour écrit « complet » | sa décision — son client peut prendre la date |
+| il propose un jour **libre** qui se remplit après | il n'a rien décidé — le client choisit ailleurs |
+
+**Ces deux cas étaient indiscernables à la lecture du lien**, et le contrôle du
+22 août l'a montré en rougissant : une date simplement « proposée » laissait
+passer le second cas, c'est-à-dire le double chantier dans sa version course.
+D'où la colonne `dates_forcees` (migration 0059) — la photographie, prise à
+l'envoi, de ce qui était déjà plein ce jour-là. **Calculée au serveur**, jamais
+reçue de l'écran : venue du navigateur, elle serait un moyen de forcer
+n'importe quelle date.
+
+**Ce qui reste refusé** : une date passée, ou au-delà de dix-huit mois. Ce ne
+sont pas des arbitrages d'artisan. Un contrôle le fixe, sans quoi le
+retournement aurait tout ouvert d'un coup.
+
+**Et l'avertissement se voit.** Il s'affichait en gris discret — la couleur des
+notes de bas de page —, or c'est le mot « complet » qu'il ne faut pas manquer
+avant d'envoyer. Le gris ne reste que pour la remarque du week-end, qui
+n'engage à rien.
+
+**Deux contrôles retournés, jamais le libellé remis** (`CLAUDE.md` §5 bis) :
+ceux qui réclamaient le refus vérifient désormais l'avertissement et la
+possibilité de passer outre.
+
+---
+
 ## 2026-08-22
 
 ### La place se compte en ÉQUIPES, plus en chantiers

@@ -491,8 +491,25 @@ function Contenu({
                 pourquoi, et on propose le jour libre le plus proche — chercher
                 à l'aveugle dans dix-huit mois de calendrier n'est pas un
                 travail. */}
+            {/* **Un avertissement se VOIT, sinon ce n'est pas un
+                avertissement.** Depuis sa règle du 23 août 2026, un jour plein
+                n'est plus refusé — il est signalé, et la date est retenue quand
+                même. La phrase passait alors en gris discret, comme une note de
+                bas de page : c'est précisément le mot « complet » qu'il ne faut
+                pas manquer avant d'envoyer.
+
+                Le gris ne reste que pour la remarque du week-end, qui ne
+                l'engage à rien. */}
             {!verification && verdict?.raison && (
-              <p className="mt-1.5 text-[13px]" style={{ color: verdict.retenable ? colors.muted : colors.rust }}>
+              <p
+                className="mt-1.5 text-[13px]"
+                style={{
+                  color:
+                    verdict.retenable && !/complet/i.test(verdict.raison)
+                      ? colors.muted
+                      : colors.rust,
+                }}
+              >
                 {verdict.raison}
                 {verdict.alternative && (
                   <>

@@ -1162,6 +1162,22 @@ export const envoisDevis = pgTable(
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     datesProposees: date("dates_proposees").array().notNull(),
     /**
+     * Celles qu'il a proposées alors que la journée était DÉJÀ PLEINE.
+     *
+     * Sa règle du 23 août 2026 — *« si l'utilisateur juge qu'il peut rajouter un
+     * chantier, il doit pouvoir le faire quand même »* — ne tient avec celle du
+     * 22 — *« un jour déjà pris proposé, ça ne doit jamais se reproduire »* —
+     * que si l'on sait, à la réponse du client, laquelle des deux s'applique.
+     *
+     * Un jour forcé : sa décision, le client peut le prendre. Un jour libre qui
+     * s'est rempli depuis : il n'a rien décidé, et le client choisit ailleurs.
+     *
+     * **Calculée au serveur** à la création de l'envoi, jamais reçue de l'écran :
+     * une valeur venue du navigateur ferait de cette colonne un moyen de forcer
+     * n'importe quelle date.
+     */
+    datesForcees: date("dates_forcees").array().notNull().default([]),
+    /**
      * Le client peut-il proposer une autre date que celles offertes ?
      *
      * Décidé par le patron **avant l'envoi** (17 août 2026), puis FIGÉ ici :
