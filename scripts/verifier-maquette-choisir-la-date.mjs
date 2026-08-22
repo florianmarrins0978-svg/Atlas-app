@@ -1,0 +1,150 @@
+/*
+  CHOISIR LA DATE AVEC LE CALENDRIER DU PLANNING — ce que cette planche doit
+  tenir.
+
+  Sa demande du 22 août 2026 : *« lorsqu'on clique sur "Choisir la date" et que
+  le calendrier s'affiche pour proposer une date au client, on devrait avoir le
+  visuel du calendrier qui se trouve dans la catégorie planning, avec la
+  possibilité de cliquer sur les jours pour voir quels chantiers y sont déjà
+  affectés — comme ça on peut savoir si oui ou non on peut rajouter des clients
+  sur les jours. »*
+
+  CE CONTRÔLE NE REGARDE PAS UNE MISE EN PAGE, IL SE SERT DE LA PLANCHE.
+
+    1. **Le calendrier du planning est bien là** : les deux barres sous le
+       chiffre, le week-end teinté, aujourd'hui cerclé d'or. Une planche qui
+       redessinerait un calendrier ordinaire ne répondrait pas à sa demande.
+    2. **Toucher un jour dit QUI y est déjà** — le cœur de sa question. Sur le
+       jour le plus chargé, la fiche doit nommer chaque chantier, sa commune,
+       ses demi-journées et son équipe.
+    3. **Elle dit s'il reste de la place POUR CE CHANTIER-CI.** C'est ce que le
+       calendrier nu ne pouvait pas dire : il éteignait un jour sans un mot.
+    4. **Un jour complet reste TOUCHABLE.** C'est justement celui qu'il veut
+       regarder avant de décider ; l'éteindre le renverrait à ne rien savoir.
+    5. **Le mois se feuillette**, et « ← Aujourd'hui » paraît dès qu'on
+       s'éloigne — comme au planning.
+    6. **Changer la durée reprend un jour devenu impossible** : garder un choix
+       devenu faux est exactement ce qu'on reproche au calendrier nu.
+    7. **Rien ne déborde à 390 px**, la largeur de son téléphone.
+
+  Il sait échouer : éprouvé en retirant la fiche du jour (2 rougit), en
+  désactivant les jours complets (4 rougit), en figeant le jour retenu quand la
+  durée change (6 rougit).
+
+  Usage : node scripts/verifier-maquette-choisir-la-date.mjs
+*/
+import path from "node:path";
+import { existsSync } from "node:fs";
+import { chromium } from "playwright";
+
+// Le navigateur du bac à sable, quand il est là — le même chemin que les
+// contrôles voisins. Ailleurs (la CI), Playwright trouve le sien.
+const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
+
+const PAGE = "file://" + path.resolve("appli/choisir-la-date.html");
+const soucis = [];
+const dire = (ok, quoi) => { if (!ok) soucis.push(quoi); };
+
+const navigateur = await chromium.launch(
+  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+);
+const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
+const page = await contexte.newPage();
+page.on("pageerror", (e) => soucis.push(`erreur JS : ${e.message}`));
+page.on("console", (m) => { if (m.type() === "error") soucis.push(`console : ${m.text()}`); });
+
+await page.goto(PAGE, { waitUntil: "networkidle" });
+await page.waitForTimeout(300);
+
+// 1 — le dessin du planning, pas un calendrier ordinaire
+dire(await page.locator(".case .marqueA i").count() > 0, "aucune barre de demi-journée : ce n'est pas le calendrier du planning");
+dire(await page.locator(".case.we").count() > 0, "le week-end n'est pas teinté");
+dire(await page.locator(".case.aujourdhui").count() === 1, "aujourd'hui n'est pas cerclé d'or, ou l'est plus d'une fois");
+dire(await page.locator(".legende .annote").count() === 1, "la légende ne montre plus où sont le matin et l'après-midi");
+
+// 2 — le jour le plus chargé nomme ce qu'il porte
+const cases = page.locator(".case:not(.we)");
+const combien = await cases.count();
+dire(combien > 0, "le mois ne s'est pas dessiné");
+
+let plusCharge = null, score = -1;
+for (let i = 0; i < combien; i++) {
+  const j = await cases.nth(i).getAttribute("data-jour");
+  const n = await page.evaluate((jour) => POSES.filter((p) => p.jour === jour).length, j);
+  if (n > score) { score = n; plusCharge = i; }
+}
+dire(score > 0, "aucun chantier de démonstration n'est posé : la planche ne montre rien");
+await cases.nth(plusCharge).click();
+await page.waitForTimeout(200);
+const fiche = (await page.locator(".jour-ouvert").innerText()).toLowerCase();
+dire(/matin/.test(fiche) && /après-midi/.test(fiche), "la fiche du jour ne dit pas les demi-journées");
+const noms = await page.evaluate((i) => {
+  const jour = document.querySelectorAll(".case:not(.we)")[i].dataset.jour;
+  return [...new Set(POSES.filter((p) => p.jour === jour).map((p) => p.nom))];
+}, plusCharge);
+for (const n of noms) {
+  dire(fiche.includes(n.toLowerCase()), `« ${n} » est posé ce jour-là mais la fiche ne le nomme pas`);
+}
+dire(await page.locator(".jour-ouvert .equipe").count() > 0, "la fiche ne dit pas quelle équipe est prise");
+
+// 3 — le verdict pour CE chantier
+dire(await page.locator(".verdict").count() === 1, "aucun verdict : l'écran ne dit pas s'il peut y ajouter ce client");
+
+// 4 — un jour complet reste touchable
+const casComplet = await page.evaluate(() => {
+  const cases = [...document.querySelectorAll(".case:not(.we)")];
+  const plein = cases.find((c) => {
+    const jour = c.dataset.jour;
+    return POSES.filter((p) => p.jour === jour && p.demi === "matin").length >= EQUIPES;
+  });
+  return plein ? { jour: plein.dataset.jour, eteint: plein.disabled } : null;
+});
+dire(casComplet !== null, "aucun jour complet dans le mois : la planche ne montre pas le cas qui l'intéresse");
+if (casComplet) dire(!casComplet.eteint, "un jour complet est éteint : c'est justement celui qu'il veut regarder");
+
+// 5 — le mois se feuillette
+await page.locator('[data-mois="1"]').click();
+await page.waitForTimeout(150);
+dire(await page.locator("[data-retour]").isVisible(), "« ← Aujourd'hui » ne paraît pas quand on s'éloigne du mois courant");
+await page.locator("[data-retour]").click();
+await page.waitForTimeout(150);
+dire(await page.locator("[data-retour]").isHidden(), "« ← Aujourd'hui » reste là une fois revenu");
+
+// 6 — changer la durée rend un jour devenu impossible
+const rendu = await page.evaluate(() => {
+  // On retient un jour qui tient sur une demi-journée mais pas sur quatre :
+  // c'est le cas que le calendrier nu laissait passer en silence.
+  const cases = [...document.querySelectorAll(".case:not(.we)")];
+  for (const c of cases) {
+    const j = c.dataset.jour;
+    if (tient(j, 1).possible && !tient(j, 4).possible) return j;
+  }
+  return null;
+});
+if (rendu) {
+  await page.locator('#duree button[data-demi="1"]').click();
+  await page.waitForTimeout(120);
+  await page.locator(`.case[data-jour="${rendu}"]`).click();
+  await page.waitForTimeout(120);
+  const bouton = page.locator("[data-retenir]");
+  if (await bouton.count()) await bouton.first().click();
+  await page.waitForTimeout(120);
+  dire(await page.locator("#retenu-dit").isVisible(), "le jour retenu ne s'écrit nulle part");
+  await page.locator('#duree button[data-demi="4"]').click();
+  await page.waitForTimeout(150);
+  dire(await page.locator("#retenu-dit").isHidden(), "un jour devenu impossible reste proposé au client");
+  dire(await page.locator("#envoyer").isDisabled(), "« Envoyer » reste allumé sans jour tenable");
+}
+
+// 7 — rien ne déborde
+const debord = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+dire(debord <= 0, `la planche déborde de ${debord} px sur la largeur de son téléphone`);
+
+await navigateur.close();
+
+if (soucis.length) {
+  console.error("❌ Choisir la date — la planche ne tient pas :");
+  for (const s of soucis) console.error(`   · ${s}`);
+  process.exit(1);
+}
+console.log("✅ Choisir la date — la planche montre qui est là, et dit s'il reste de la place.");
