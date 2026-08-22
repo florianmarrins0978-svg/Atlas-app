@@ -9,6 +9,51 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### « Terminés » refait : la B, codée
+
+*« Je choisis la B avec les modifications que je viens de te demander. »*
+La planche 86 est retenue et portée dans `src/app/termines/`.
+
+**Ce qui a quitté l'écran, et ne doit pas revenir :**
+
+| | Pourquoi |
+|---|---|
+| Le **fil vertical** et ses perles pleines ou creuses | 47 px de largeur pour un code que personne n'a appris |
+| La **pastille dorée** et le **volet replié** | le seul travail qui reste ne se cache pas derrière une ligne en petites capitales |
+| « **Facturé, tous mois confondus** » | il répétait le chiffre déjà écrit à droite du mois, sans qu'on sache pourquoi c'était le même |
+| Le surtitre « CHANTIERS RÉALISÉS » et le cheveu | la planche n'en porte pas, et le titre suffit |
+| L'or contre le noir comme seul signe | remplacé par des **mots** : « Pas encore facturé », « Facturé le 20 août » |
+
+**Deux règles gouvernent le nouvel écran**, et elles se paient si on les ignore.
+Un **seul mois à la fois**, qu'on feuillette — et **ce qui reste à facturer ne
+suit pas le mois** : l'onglet « À facturer » montre tout, tous mois confondus.
+Elles vivent dans `src/lib/termines-par-mois.ts`, pures et éprouvées sans base ;
+l'écran n'y décide de rien.
+
+**« Facturé le 20 août » a coûté une colonne de plus en base.** La maquette
+écrivait cette phrase d'après `datePlanifiee` — la date du CHANTIER. Or un
+chantier fait le 20 peut être facturé le 30 : l'écran aurait affirmé une date
+d'émission qu'il n'a pas. `factures.date_emission` entre donc dans la requête,
+et sans elle la phrase se tait plutôt que d'inventer.
+
+**Deux suites ont été adaptées, aucune n'a été satisfaite en remettant ce qu'il
+a fait retirer** (`CLAUDE.md` §5 bis) :
+
+- `test-planning-vers-facture-e2e.ts` dépliait le volet pour atteindre un
+  chantier non facturé. Il passe désormais par l'onglet « À facturer » — ce qui
+  le rend **indifférent au calendrier** : un chantier terminé il y a six jours
+  peut tomber dans le mois précédent selon la date du jour, et le contrôle
+  aurait cherché dans un mois qui ne le porte pas, en accusant un écran juste ;
+- `capture-termines.mts` mesurait le volet, la pastille, et l'absence de tout
+  coin arrondi. Il mesure maintenant le feuilletage, le compte **en noir gras**
+  (graisse et couleur calculées, pas la classe posée), et refuse de conclure sur
+  un écran sans lignes.
+
+**Un défaut trouvé en écrivant la suite pure** : le comparateur de `preparer`
+rendait 0 pour deux chantiers du même **mois**, et non du même **jour** — les
+lignes d'un mois seraient sorties dans l'ordre de la base. Le contrôle « dans le
+mois, le plus récent en tête » l'a attrapé avant l'écran.
+
 ### « Terminés » : revenir dans le passé, et le compte en noir gras
 
 Ses deux corrections sur la planche 86, le soir même : *« en haut il y a marqué

@@ -9,20 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ CONSIGNE — « Terminés » : MAQUETTE SEULEMENT (22 août 2026)
+## ~~⚠ CONSIGNE — « Terminés » : MAQUETTE SEULEMENT~~ — **LEVÉE le 22 août 2026**
 
-*« Propose-moi quelque chose pour la simplifier, **ne code rien**, je veux qu'on
-fasse des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi
-que ce soit. »*
+Sa consigne du matin — *« ne code rien, je veux des maquettes dynamiques que je
+puisse essayer »* — a été levée le soir même : **« je choisis la B avec les
+modifications que je viens de te demander »**.
 
-`src/app/termines/` **ne se touche pas** tant qu'il n'a pas choisi. La planche
-est `appli/termines-simple.html` (planche 86), et son adresse est
-`…github.io/Atlas-app/termines-simple.html` — ou depuis `essais.html`.
+La planche retenue est `appli/termines-simple.html` (planche 86,
+proposition B), et **elle reste la référence** : toute correction de
+« Terminés » se porte D'ABORD sur elle, comme la planche 84 pour le planning —
+sinon les deux divergent, et c'est la planche qu'il ouvre sur son téléphone.
 
-**Ce qu'on attend de lui :** A, B, C, un mélange, ou aucune. *Ne rien changer
-est une réponse.* Une fois qu'il tranche, la planche retenue devient la
-référence : toute correction de « Terminés » se porte D'ABORD sur elle, comme
-la planche 84 pour le planning.
+**Ce qui reste vrai après coup :** un écran de « Terminés » se dessine toujours
+avant de se coder (`CLAUDE.md` §3 bis).
 
 ---
 

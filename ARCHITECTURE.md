@@ -6806,7 +6806,7 @@ soixante-deux points pendant qu'elle parlait une autre grammaire que les écrans
 
 **Ce qui a été relevé dans le code, et non approché à l'œil**
 (`src/components/atlas/EnTeteEcran.tsx`, `AtlasBottomNav.tsx`,
-`src/app/planning/PlanningClient.tsx`, `src/app/termines/FilTermines.tsx`) :
+`src/app/planning/PlanningClient.tsx`, `src/app/termines/ListeTermines.tsx`) :
 
 | | La planche disait | Les écrans disent |
 |---|---|---|

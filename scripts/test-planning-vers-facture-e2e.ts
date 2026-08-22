@@ -278,30 +278,23 @@ async function main() {
     // La ligne de CE chantier, et non la première de l'écran : avec plusieurs
     // chantiers terminés, viser la première clôturerait celle du voisin sans que
     // le contrôle s'en aperçoive.
-    // **La ligne de CE chantier, visée dans SA rangée.** Le fil des terminés
-    // empile ses lignes dans une grille : viser le lien tout seul le fait
-    // recouvrir par la rangée voisine, et Playwright tourne en rond jusqu'à
-    // l'expiration en accusant un écran parfaitement juste.
     //
-    // **Et le volet « À facturer » se DÉPLIE d'abord** — c'est le geste du
-    // patron, pas une commodité de contrôle. Un chantier terminé que rien ne
-    // facture encore vit dans ce volet, une grille qui passe de `0fr` à `1fr` :
-    // le lien est bien dans la page, Playwright le dit « visible », et le clic
-    // rebondit indéfiniment sur le pli. Sans ce geste, le contrôle accusait un
-    // écran parfaitement juste, quarante-cinq secondes durant.
-    const volet = page.locator('[data-atlas="encart-a-facturer"]').first();
-    await volet.waitFor({ state: "visible", timeout: 15000 });
-    if ((await volet.getAttribute("aria-expanded")) !== "true") await volet.click();
-    await page.waitForFunction(
-      () =>
-        document.querySelector('[data-atlas="encart-a-facturer"]')?.getAttribute("aria-expanded") ===
-        "true",
-      undefined,
-      { timeout: 5000 }
-    );
-    // Le dépliage dure 0,42 s : cliquer pendant qu'il court viserait une ligne
-    // qui bouge encore.
-    await page.waitForTimeout(600);
+    // **On passe par l'onglet « À facturer », et c'est le geste du patron.**
+    // L'écran refait le 22 août 2026 (planche 86, proposition B) s'ouvre sur le
+    // mois le plus récent : un chantier terminé il y a six jours peut tomber
+    // dans le mois d'avant selon la date du jour, et le contrôle chercherait
+    // alors dans un mois qui ne le porte pas — en accusant un écran juste.
+    // Cet onglet, lui, montre tout ce qui attend TOUS MOIS CONFONDUS : c'est
+    // exactement ce qu'il a demandé pour le retard de facturation, et c'est ce
+    // qui rend ce contrôle indifférent au calendrier.
+    //
+    // **Il n'y a plus de volet à déplier** : le travail qui reste ne se cache
+    // plus. Réclamer ici le pli que le patron a fait retirer rendrait son écran
+    // impossible à changer (`CLAUDE.md` §5 bis).
+    const ongletAttente = page.getByRole("button", { name: "À facturer" });
+    await ongletAttente.waitFor({ state: "visible", timeout: 15000 });
+    await ongletAttente.click();
+    await page.waitForSelector('[data-atlas="tout-ce-qui-attend"]', { timeout: 5000 });
 
     const rangee = page.locator(`[data-atlas="ligne-terminee"]:has-text("${nom}")`).first();
     await rangee.waitFor({ state: "visible", timeout: 15000 });

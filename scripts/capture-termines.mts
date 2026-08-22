@@ -1,7 +1,14 @@
-// Capture de « Terminés » — le fil, l'encart replié, l'encart ouvert.
+// Capture de « Terminés » — le mois qu'on feuillette, et les deux onglets.
 //
-// **Sur ce lot de maquettes, tous les défauts réels se sont vus à l'œil.** Ce
-// script mesure ce que l'œil a fini par voir.
+// **Refait le 22 août 2026 avec l'écran** (planche 86, proposition B). La
+// version d'avant mesurait le volet replié, la pastille dorée et l'absence de
+// tout coin arrondi : trois choses que le patron a fait retirer. Une sonde qui
+// réclame ce qui n'existe plus rend l'écran impossible à changer, et rougit sur
+// du code juste (`CLAUDE.md` §5 bis).
+//
+// **Sur ce lot, tous les défauts réels se sont vus à l'œil** — « Facture n° -5 »
+// n'a été trouvé par aucun contrôle. Ce script mesure ce que l'œil a fini par
+// voir, et prend les captures qu'on regarde ensuite.
 //
 // `localhost`, jamais `127.0.0.1` : Next refuse ses ressources de développement
 // à une origine étrangère, et la page arrive alors JAMAIS hydratée.
@@ -38,66 +45,51 @@ await page.evaluate(() => document.fonts.ready);
 await page.waitForTimeout(600);
 
 /**
- * **`checkVisibility` IGNORE LE ROGNAGE** : les lignes d'un tiroir fermé lui
- * paraissent visibles. On mesure donc l'INTERSECTION RÉELLE avec la boîte du
- * volet — c'est la seule chose que l'œil, lui, voit.
+ * **On mesure la mise en page, jamais la classe posée.** Une classe `font-bold`
+ * ne prouve pas une graisse : c'est le style calculé qui décide, et c'est lui
+ * que l'œil voit.
  */
 const SONDE = `(() => {
-  const volet = document.querySelector("[data-atlas='volet-a-facturer']");
-  const boiteVolet = volet ? volet.getBoundingClientRect() : null;
-  const lignes = [...document.querySelectorAll("[data-atlas='ligne-terminee']")];
-  const dansLeVolet = (e) => {
-    if (!boiteVolet) return false;
-    const r = e.getBoundingClientRect();
-    return r.bottom > boiteVolet.top && r.top < boiteVolet.bottom && r.height > 1;
-  };
-  // Les montants : la colonne doit finir au MÊME pixel.
-  const montants = lignes.map((l) => {
-    const m = l.querySelector("a > span:last-child");
-    return m ? { droite: Math.round(m.getBoundingClientRect().right), texte: m.textContent.trim(),
-                 tabulaire: getComputedStyle(m).fontVariantNumeric.includes("tabular-nums") } : null;
-  }).filter(Boolean);
-  // Aucun fond plein ni coin arrondi dans le CORPS de l'écran.
-  // Le corps de l'écran, et lui seul. Interroger le document entier ramenait
-  // le bandeau du bas et la bulle de l'assistant : le contrôle accusait
-  // « Terminés » de pavés qui ne lui appartiennent pas.
   const corps = document.querySelector("[data-atlas='ecran-termines']");
-  const fautifs = [...(corps ? corps.querySelectorAll("div,section,a,p,span,button") : [])].filter((e) => {
+  const lignes = [...document.querySelectorAll("[data-atlas='ligne-terminee']")];
+
+  // Les montants d'une même colonne doivent finir au MÊME pixel. Les lignes en
+  // attente portent une capsule à la place : elles ne sont pas de cette colonne.
+  const montants = lignes.map((l) => {
+    const m = l.querySelector(":scope > span:last-child");
+    if (!m || /facturer/i.test(m.textContent)) return null;
+    return { droite: Math.round(m.getBoundingClientRect().right),
+             tabulaire: getComputedStyle(m).fontVariantNumeric.includes("tabular-nums") };
+  }).filter(Boolean);
+
+  const compte = corps ? corps.querySelector("[data-atlas='compte-du-mois']") : null;
+  const styleCompte = compte ? getComputedStyle(compte) : null;
+
+  const boite = (sel) => {
+    const e = corps ? corps.querySelector(sel) : null;
+    if (!e) return null;
     const r = e.getBoundingClientRect();
-    if (r.width < 40 || r.height < 20) return false;          // perles, pastilles, chevrons
-    const s = getComputedStyle(e);
-    const fond = s.backgroundColor;
-    const plein = fond !== "rgba(0, 0, 0, 0)" && fond !== "transparent";
-    const rond = parseFloat(s.borderTopLeftRadius) > 8;
-    return plein || rond;
-  }).map((e) => (e.tagName + "." + (e.className || "").toString().slice(0, 40)).trim());
+    return { h: Math.round(r.height), l: Math.round(r.width) };
+  };
+
   return {
     lignes: lignes.length,
-    lignesDansLeVolet: lignes.filter(dansLeVolet).length,
-    encart: document.querySelector("[data-atlas='encart-a-facturer']")?.innerText.replace(/\\s+/g, " ").trim() ?? null,
-    hauteurEncart: document.querySelector("[data-atlas='encart-a-facturer']")
-      ? Math.round(document.querySelector("[data-atlas='encart-a-facturer']").getBoundingClientRect().height) : null,
-    hauteurVolet: boiteVolet ? Math.round(boiteVolet.height) : null,
+    // **Rien ne doit être replié** : ce qui reste à faire ne se cache plus.
+    // Une ligne de zéro pixel de haut serait un pli qui n'ose pas dire son nom.
+    lignesEcrasees: lignes.filter((l) => l.getBoundingClientRect().height < 20).length,
+    mois: corps?.querySelector("[data-atlas='navigation-mois']")?.innerText.replace(/\\s+/g, " ").trim() ?? null,
+    compte: compte ? compte.innerText.replace(/\\s+/g, " ").trim() : null,
+    compteGras: styleCompte ? Number(styleCompte.fontWeight) : null,
+    compteCouleur: styleCompte ? styleCompte.color : null,
+    fleches: [...(corps ? corps.querySelectorAll("[data-atlas^='mois-']") : [])]
+      .map((b) => ({ quoi: b.dataset.atlas, h: Math.round(b.getBoundingClientRect().height),
+                     ferme: b.disabled })),
+    boutonFacturer: boite("[data-atlas='ligne-terminee'] span:last-child"),
     montantsDroite: [...new Set(montants.map((m) => m.droite))],
     montantsTabulaires: montants.every((m) => m.tabulaire),
-    aFacturerEcrit: /à facturer/i.test(document.body.innerText),
-    // La pastille ne doit mordre sur AUCUN nom de mois : son fond est opaque,
-    // et elle mangeait la dernière lettre de « juillet ».
-    pastilleMord: (() => {
-      const mois = [...(corps ? corps.querySelectorAll("[data-atlas='nom-du-mois']") : [])];
-      return mois.some((m) => {
-        const pastille = m.parentElement.querySelector("[data-atlas='pastille']");
-        if (!pastille) return false;
-        const p = document.createRange(); p.selectNodeContents(m);
-        const t = p.getBoundingClientRect(), b = pastille.getBoundingClientRect();
-        return t.right > b.left + 1 && t.left < b.right;
-      });
-    })(),
-    // Un montant nul ne doit pas s'écrire quand il est seulement INCONNU.
-    encartAZero: [...document.querySelectorAll("[data-atlas='encart-a-facturer']")]
-      .map((e) => e.innerText.replace(/\s+/g, " ").trim())
-      .filter((t) => /0,00/.test(t)),
-    fautifs: [...new Set(fautifs)].slice(0, 6),
+    // **Aucun code graphique de l'ancien écran ne doit survivre.**
+    restesAnciens: ["pastille", "encart-a-facturer", "volet-a-facturer", "nom-du-mois"]
+      .filter((n) => document.querySelector("[data-atlas='" + n + "']")),
     debordement: document.documentElement.scrollWidth > window.innerWidth + 1,
   };
 })()`;
@@ -108,62 +100,80 @@ async function sonder(quoi: string) {
   return e;
 }
 
-// ─── 1. Au repos : l'encart appelle, il n'occupe pas ────────────────────────
+// ─── 1. Au repos : le mois le plus récent, tout déplié ──────────────────────
 let etat = await sonder("au repos");
-await page.screenshot({ path: `${dossier}/termines-1-repos.png`, fullPage: true });
+await page.screenshot({ path: `${dossier}/termines-1-mois.png`, fullPage: true });
+
 if (etat.debordement) echecs.push("la page déborde latéralement.");
-if ((etat.fautifs as string[]).length > 0)
-  echecs.push(`le corps porte un fond plein ou un coin arrondi : ${JSON.stringify(etat.fautifs)}`);
-if (etat.pastilleMord === true)
-  echecs.push("la pastille passe par-dessus le nom du mois et lui mange une lettre.");
-if ((etat.encartAZero as string[]).length > 0)
-  echecs.push(`un encart annonce un montant nul là où il est inconnu : ${JSON.stringify(etat.encartAZero)}`);
-if (etat.hauteurEncart !== null && (etat.hauteurEncart as number) < 40)
-  echecs.push(`l'encart fait ${etat.hauteurEncart} px : sous 44, on le rate deux fois sur trois.`);
-if (etat.lignesDansLeVolet !== 0 && etat.hauteurVolet === 0)
-  echecs.push("le volet est fermé mais ses lignes comptent comme visibles : le contrôle ment.");
+if ((etat.restesAnciens as string[]).length > 0)
+  echecs.push(`l'ancien écran survit quelque part : ${JSON.stringify(etat.restesAnciens)}`);
+if ((etat.lignes as number) === 0)
+  echecs.push("aucune ligne à l'écran : la sonde ne mesure rien, elle ne prouve donc rien.");
+if ((etat.lignesEcrasees as number) > 0)
+  echecs.push(`${etat.lignesEcrasees} ligne(s) de moins de 20 px : quelque chose est encore replié.`);
 
-/** Le trait du bandeau tombe-t-il sous l'onglet ACTIF ? On mesure le TEXTE. */
-const trait = (await page.evaluate(`(() => {
-  const nav = document.querySelector(".atlas-nav-basse");
-  const actif = [...nav.querySelectorAll("a")].find((a) => a.getAttribute("aria-current") === "page");
-  const barre = nav.querySelector("span[aria-hidden] > span") ?? nav.querySelector("span[aria-hidden]");
-  if (!actif || !barre) return null;
-  const p = document.createRange(); p.selectNodeContents(actif);
-  const t = p.getBoundingClientRect(), b = barre.getBoundingClientRect();
-  return { onglet: actif.textContent.trim(), ecart: Math.round(Math.abs((t.x + t.width/2) - (b.x + b.width/2))) };
-})()`)) as { onglet: string; ecart: number } | null;
-console.log(`  le trait du bandeau — ${JSON.stringify(trait)}`);
-if (!trait || trait.onglet !== "Terminés") echecs.push(`l'onglet allumé est « ${trait?.onglet} » et non « Terminés ».`);
-else if (trait.ecart > 24) echecs.push(`le trait tombe à ${trait.ecart} px du centre de « Terminés ».`);
+// **Le compte, en noir gras** — sa demande du 22 août 2026.
+if (etat.compte === null) echecs.push("le compte des factures a disparu de l'écran.");
+else {
+  if ((etat.compteGras as number) < 700)
+    echecs.push(`le compte est en graisse ${etat.compteGras} : il le veut GRAS.`);
+  if (etat.compteCouleur !== "rgb(28, 28, 26)")
+    echecs.push(`le compte est en ${etat.compteCouleur} : il le veut NOIR.`);
+}
 
-// ─── 2. L'encart ouvert ─────────────────────────────────────────────────────
-const aEncart = (await page.locator("[data-atlas='encart-a-facturer']").count()) > 0;
-if (aEncart) {
-  const libelle = String(etat.encart ?? "");
-  if (/\b0\b/.test(libelle.split("·")[0] ?? "")) echecs.push(`l'encart écrit un chiffre : « ${libelle} »`);
-  await page.locator("[data-atlas='encart-a-facturer']").first().click();
-  await page.waitForTimeout(800);
-  etat = await sonder("encart ouvert");
-  await page.screenshot({ path: `${dossier}/termines-2-ouvert.png`, fullPage: true });
+// **Les flèches se touchent avec un pouce, et celle du futur est fermée.**
+const fleches = etat.fleches as { quoi: string; h: number; ferme: boolean }[];
+if (fleches.length !== 2) echecs.push(`${fleches.length} flèche(s) de mois au lieu de deux.`);
+for (const f of fleches) {
+  if (f.h < 44) echecs.push(`la flèche « ${f.quoi} » fait ${f.h} px : sous 44, on la rate.`);
+}
+if (fleches.find((f) => f.quoi === "mois-suivant")?.ferme !== true)
+  echecs.push("la flèche du futur est ouverte sur le mois le plus récent : elle ne mène nulle part.");
 
-  // **Le compte annoncé égale le nombre de lignes montrées.**
-  const annonce = libelle.match(/^(\S+)/)?.[1] ?? "";
-  const MOTS: Record<string, number> = { Un: 1, Deux: 2, Trois: 3, Quatre: 4, Cinq: 5, Six: 6, Sept: 7, Huit: 8, Neuf: 9, Dix: 10 };
-  const attendu = MOTS[annonce];
-  if (attendu && etat.lignesDansLeVolet !== attendu)
-    echecs.push(`l'encart annonce « ${annonce} » et montre ${etat.lignesDansLeVolet} ligne(s).`);
+// **Les montants d'une même colonne finissent au même pixel.**
+const droites = etat.montantsDroite as number[];
+if (droites.length > 1)
+  echecs.push(`les montants finissent à ${droites.length} abscisses : ${JSON.stringify(droites)}`);
+if ((etat.montantsTabulaires as boolean) !== true)
+  echecs.push("les montants ne sont pas en chiffres tabulaires : l'œil recompte à chaque ligne.");
 
-  // **Les montants d'une même colonne finissent au même pixel.**
-  const droites = etat.montantsDroite as number[];
-  if (droites.length > 1) echecs.push(`les montants finissent à ${droites.length} abscisses différentes : ${JSON.stringify(droites)}`);
-  if (etat.montantsTabulaires !== true) echecs.push("les montants ne sont pas en chiffres tabulaires : l'œil recompte à chaque ligne.");
-  if ((etat.fautifs as string[]).length > 0)
-    echecs.push(`l'encart ouvert révèle un fond plein ou un coin arrondi : ${JSON.stringify(etat.fautifs)}`);
+// ─── 2. Revenir dans le passé ───────────────────────────────────────────────
+const moisAvant = String(etat.mois ?? "");
+await page.locator("[data-atlas='mois-precedent']").first().click();
+await page.waitForTimeout(400);
+etat = await sonder("un mois en arrière");
+await page.screenshot({ path: `${dossier}/termines-2-mois-precedent.png`, fullPage: true });
+
+if (String(etat.mois ?? "") === moisAvant)
+  echecs.push(`la flèche ‹ n'a rien changé : toujours « ${moisAvant} ».`);
+if (fleches.length === 2 &&
+    (etat.fleches as { quoi: string; ferme: boolean }[]).find((f) => f.quoi === "mois-suivant")?.ferme === true)
+  echecs.push("la flèche du futur reste fermée après avoir reculé : on ne peut plus revenir.");
+// Un mois sans rien DIT qu'il n'a rien — il ne se saute pas, et il ne se tait pas.
+if ((etat.lignes as number) === 0 && !/Rien en /i.test(await page.locator("[data-atlas='ecran-termines']").innerText()))
+  echecs.push("un mois vide ne dit pas qu'il est vide.");
+
+// ─── 3. L'onglet « À facturer » ─────────────────────────────────────────────
+const ongletAttente = page.getByRole("button", { name: "À facturer" });
+if ((await ongletAttente.count()) === 0) {
+  echecs.push("l'onglet « À facturer » n'existe pas.");
 } else {
-  // **À zéro, la chaîne « à facturer » n'apparaît nulle part.**
-  if (etat.aFacturerEcrit === true) echecs.push("aucun chantier n'attend, et pourtant l'écran écrit « à facturer ».");
-  console.log("  (aucun chantier en attente : l'encart n'existe pas, et c'est la règle)");
+  const hauteurOnglet = Math.round((await ongletAttente.boundingBox())?.height ?? 0);
+  if (hauteurOnglet < 40) echecs.push(`l'onglet fait ${hauteurOnglet} px de haut : trop petit pour un pouce.`);
+  await ongletAttente.click();
+  await page.waitForTimeout(400);
+  etat = await sonder("onglet « À facturer »");
+  await page.screenshot({ path: `${dossier}/termines-3-a-facturer.png`, fullPage: true });
+
+  // **Il ne se feuillette PAS** : il montre tout ce qui attend, tous mois
+  // confondus. C'est ce que le patron a demandé pour le retard de facturation.
+  if ((etat.fleches as unknown[]).length !== 0)
+    echecs.push("l'onglet « À facturer » porte des flèches de mois : il ne doit pas se feuilleter.");
+  const texte = await page.locator("[data-atlas='ecran-termines']").innerText();
+  if ((etat.lignes as number) === 0 && !/Rien n['’]attend/i.test(texte))
+    echecs.push("rien n'attend, et l'écran ne le dit pas — il a l'air amputé plutôt que calme.");
+  if ((etat.lignes as number) > 0 && !/Pas encore facturé/i.test(texte))
+    echecs.push("une ligne en attente ne dit pas son état en toutes lettres.");
 }
 
 await navigateur.close();
@@ -172,4 +182,4 @@ if (echecs.length) {
   for (const e of echecs) console.log(`   — ${e}`);
   process.exit(1);
 }
-console.log(`\n✅ « Terminés » tient son fil. Captures dans ${dossier}`);
+console.log(`\n✅ « Terminés » se feuillette et se lit. Captures dans ${dossier}`);

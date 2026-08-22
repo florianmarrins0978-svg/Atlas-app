@@ -181,7 +181,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | Facture bâtie depuis le devis, arrêt 3 | `src/app/chantiers/[id]/facture/` |
 | **Facture transmise par SMS ou par e-mail**, au choix, coordonnée saisie sur place | `src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx` |
 | **Facture téléchargeable**, sous un nom qui porte son numéro | `src/app/api/factures/[id]/pdf/route.ts` |
-| **Chemin vers la facture sans passer par la fiche**, et rangement en un seul onglet. Il partait du planning jusqu'au 21 août 2026 ; l'écran refait ne le porte plus, et c'est le fil des « Terminés » qui y mène | `src/lib/onglet-chantier.ts`, `src/app/termines/FilTermines.tsx` |
+| **Chemin vers la facture sans passer par la fiche**, et rangement en un seul onglet. Il partait du planning jusqu'au 21 août 2026 ; l'écran refait ne le porte plus, et c'est la liste des « Terminés » qui y mène — sur sa ligne, ou par l'onglet « À facturer » | `src/lib/onglet-chantier.ts`, `src/app/termines/ListeTermines.tsx` |
 | Installation sur téléphone : icône, plein écran, marges de sécurité | `src/app/layout.tsx`, `src/app/globals.css`, `scripts/generer-icones.mjs` |
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 | Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |
@@ -531,14 +531,18 @@ l'application. Ce qui est **fait** :
   jamais lequel s'applique** — le seuil porte sur la TVA due, or il ne connaît
   que la collectée. Migration `drizzle/0035_periodicite_tva.sql`.
   `ARCHITECTURE.md` §83.
-- **« TERMINÉS » : LA PLANCHE EST POSÉE, L'ÉCRAN N'A PAS BOUGÉ** (22 août) :
-  *« je la trouve beaucoup trop compliquée ; un utilisateur qui ne connaît pas
-  l'application n'y comprend rien [...] ne code rien »*. `appli/termines-simple.html`
-  (planche 86) montre son écran d'aujourd'hui puis **trois simplifications
-  essayables** — A deux piles, B une seule liste avec l'état écrit, C une page
-  qui ne fait qu'une chose. **`src/app/termines/` est inchangé** et le reste
-  jusqu'à sa réponse. Éprouvée par `appli/tests/essai-termines.mjs`, branchée
-  sur `pages.yml`. `CHANGELOG.md` du 22 août.
+- **« TERMINÉS » REFAIT** (22 août) : *« je la trouve beaucoup trop compliquée ;
+  un utilisateur qui ne connaît pas l'application n'y comprend rien »*. Trois
+  simplifications dessinées (planche 86, `appli/termines-simple.html`), **il a
+  pris la B**, codée le soir même. **Un seul mois à la fois, qu'on feuillette**
+  — `‹ Août 2026 ›`, et un mois vide répond « Rien en juillet 2026 ». **Ce qui
+  reste à facturer NE SUIT PAS le mois** : l'onglet « À facturer » montre tout,
+  tous mois confondus, parce qu'un chantier de juillet jamais facturé doit
+  rester sous ses yeux en août. Les codes graphiques — fil, perles pleines ou
+  creuses, pastille dorée, volet replié — sont remplacés par des **mots** :
+  « Pas encore facturé », « Facturé le 20 août ». Le compte des factures est en
+  **noir gras**, à sa demande. `src/lib/termines-par-mois.ts` porte les règles,
+  `ListeTermines.tsx` l'écran. `CHANGELOG.md` du 22 août.
 - **LE PLANNING REFAIT** (21 août) : *« cette page est beaucoup trop compliquée
   à comprendre pour les utilisateurs »*, puis deux soirées de maquette, neuf
   corrections, et *« code trait pour trait cette maquette »*. Le mois reste au
