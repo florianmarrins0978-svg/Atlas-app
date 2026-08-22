@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Se piquer au compteur, c'est couper une ligne — la pièce manquait
+
+*« Je te posais la question sur les tés égaux parce qu'en fait il en faut bien
+deux : vu qu'on se pique après le compteur, il va falloir qu'on coupe la ligne,
+parce que le compteur c'est une ligne directe qui part vers la maison. On va
+devoir la couper et mettre un té égal à cet endroit-là. »*
+
+**Il avait raison, et pour une raison que rien dans le dépôt ne portait.** Le té
+égal du regard, je l'avais ; celui du piquage, non — parce qu'il ne dépend
+d'aucun calcul de réseau. Ni des arroseurs, ni des voies, ni du débit : du
+**point de piquage** seul. Il manquait donc, et il aurait manqué sur chaque plan.
+L'oublier, c'est un aller-retour au magasin avec la tranchée ouverte.
+
+**Le plan le montre maintenant** : la ligne du compteur continue vers la maison
+en pointillé, et le losange marque l'endroit où on la coupe. Sans ce trait, la
+pièce paraissait arbitraire.
+
+**Une troisième zone est née** : « du compteur à la nourrice ». Le plan en avait
+deux — le jardin, le regard — et rien pour l'amenée, dont le tuyau n'était même
+pas compté. Il ne l'est toujours pas en mètres, et c'est délibéré : la distance
+dépend du terrain, elle est marquée **à mesurer** plutôt qu'inventée.
+
 ### « Où sont les pièces de la nourrice ? » — et un récapitulatif qui mentait
 
 **Deux questions de sa part, deux défauts réels.**

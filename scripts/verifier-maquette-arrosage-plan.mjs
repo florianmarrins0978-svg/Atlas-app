@@ -130,6 +130,15 @@ const vu = await page.evaluate(() => {
 
   const jonctions = document.querySelectorAll('[data-piece="jonction"]').length;
 
+  const lire = (zone) => [...document.querySelectorAll(`table[data-zone="${zone}"] tr`)]
+    .map((tr) => {
+      const q = tr.querySelector(".q")?.textContent?.match(/[\d.]+/)?.[0];
+      const nom = tr.children[1]?.textContent?.trim();
+      return nom === undefined ? null : { q: q === undefined ? null : Number(q), nom };
+    })
+    .filter(Boolean);
+  const piecesAmenee = lire("amenee");
+
   const piecesNourrice = [...document.querySelectorAll('table[data-zone="nourrice"] tr')]
     .map((tr) => {
       const q = tr.querySelector(".q")?.textContent?.match(/[\d.]+/)?.[0];
@@ -144,6 +153,9 @@ const vu = await page.evaluate(() => {
     symboles: document.querySelectorAll(".legende svg").length,
     texte: document.querySelector(".legende")?.innerText ?? "",
   };
+
+  const champPiquage = document.querySelector("select[name=piquage]");
+  const piquage = champPiquage?.options[champPiquage.selectedIndex]?.textContent ?? "";
 
   const marque = document.querySelector("select[name=marque]");
   const marques = marque && {
@@ -162,6 +174,8 @@ const vu = await page.evaluate(() => {
     legende,
     jonctions,
     piecesNourrice,
+    piecesAmenee,
+    piquage,
     marques,
     texte: document.body.innerText,
     deborde: document.documentElement.scrollWidth > 390,
@@ -704,7 +718,12 @@ cas("la légende montre les symboles, et nomme la pièce de chacun", () => {
 // dessin, on lit « 1 té égal » sans savoir à quel endroit le poser.
 cas("chaque jonction facturée est dessinée quelque part", () => {
   const dessinees = vu.jonctions;
-  const facturees = vu.pieces.filter((p) => /té égal/i.test(p.nom)).reduce((t, p) => t + p.q, 0);
+  // **Les trois zones, pas seulement le jardin** : le té égal qui coupe la ligne
+  // du compteur est facturé dans l'amenée, et dessiné près du compteur. Ne
+  // regarder qu'une zone accuserait le plan d'une pièce en trop.
+  const facturees = [...vu.pieces, ...vu.piecesAmenee, ...vu.piecesNourrice]
+    .filter((p) => /té égal/i.test(p.nom))
+    .reduce((t, p) => t + (p.q ?? 0), 0);
   if (dessinees !== facturees) {
     throw new Error(`${facturees} té(s) égal(aux) commandé(s) pour ${dessinees} dessiné(s) : on ne saurait pas où le poser`);
   }
@@ -763,6 +782,31 @@ cas("le récapitulatif dit les mêmes chiffres que le tableau", () => {
   }
   if (Number(dit[3]) !== tes + coudes) {
     throw new Error(`le récapitulatif annonce ${dit[3]} raccords pour ${tes + coudes} listés`);
+  }
+});
+
+// ── 8 undecies. SE PIQUER AU COMPTEUR, C'EST COUPER UNE LIGNE ──────────────
+//
+// *Sa précision du 21 août :* « vu qu'on se pique après le compteur, il va
+// falloir qu'on coupe la ligne — parce que le compteur, c'est une ligne directe
+// qui part vers la maison. On va devoir la couper et mettre un té égal à cet
+// endroit-là. Donc tu sais d'office que lorsqu'on se raccorde après le compteur,
+// il y a un té égal dans les pièces destinées à aller du compteur à la
+// nourrice. »
+//
+// **C'est une pièce qu'aucun calcul de réseau ne produit** : elle ne dépend ni
+// des arroseurs, ni des voies, ni du débit — seulement du POINT DE PIQUAGE. Elle
+// manquait donc, et elle manquerait sur chaque plan tant que la règle n'est pas
+// écrite. L'oublier, c'est un aller-retour au magasin avec la tranchée ouverte.
+cas("au compteur, le té égal qui coupe la ligne est prévu", () => {
+  const piquage = vu.piquage ?? "";
+  if (!/compteur/i.test(piquage)) return; // Ailleurs, rien à couper.
+  const te = vu.piecesAmenee.filter((p) => /té égal/i.test(p.nom)).reduce((t, p) => t + (p.q ?? 0), 0);
+  if (te < 1) {
+    throw new Error("piquage au compteur, mais aucun té égal dans l'amenée : la ligne qui part vers la maison ne se dérive pas sans la couper");
+  }
+  if (!/couper|coupe/i.test(vu.piecesAmenee.map((p) => p.nom).join(" ") + vu.texte)) {
+    throw new Error("le plan ne dit pas qu'il faut COUPER la ligne du compteur : la pièce paraît arbitraire");
   }
 });
 

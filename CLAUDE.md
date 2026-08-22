@@ -257,6 +257,21 @@ compteur et des traits qui commencent dans le vide n'est pas un plan : il ne se
 pose pas sur le terrain. La nourrice se **dessine**, avec ses vannes, et chaque
 ligne en part.
 
+**SE PIQUER AU COMPTEUR, C'EST COUPER UNE LIGNE EN SERVICE.** Sa précision du
+21 août : *« le compteur, c'est une ligne directe qui part vers la maison ; on va
+devoir la couper et mettre un té égal à cet endroit-là »*. Donc **dès que le
+piquage est au compteur, un té égal 25×25×25 entre dans les pièces d'amenée** —
+celles qui vont du compteur à la nourrice.
+
+C'est une pièce qu'aucun calcul de réseau ne produit : elle ne dépend ni des
+arroseurs, ni des voies, ni du débit, mais du **point de piquage** seul. Elle
+manquait donc, et elle aurait manqué sur chaque plan. L'oublier, c'est un
+aller-retour au magasin avec la tranchée ouverte.
+
+**Trois zones, jamais mélangées** : ce qui va du **compteur à la nourrice**, ce
+qui est **dans le regard**, ce qui part **au jardin**. Les confondre a déjà fait
+compter un coude du regard comme une fin de ligne d'arroseur.
+
 **CE QU'ON MINIMISE, C'EST LA TRANCHÉE — PAS LE TUYAU.** Sa règle du 21 août,
 et elle prime sur tout le reste du tracé : *« le trait jaune, c'est une tranchée.
 C'est une équipe qui va devoir creuser la terre. Donc l'idée, c'est de faire le

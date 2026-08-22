@@ -198,12 +198,21 @@
     <g>
       <rect x="-4.3" y="3.3" width="1.4" height="1.4" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".16"/>
       <text x="-3.6" y="2.5" font-size=".82" font-family="Georgia,serif" fill="#6E6A60" text-anchor="middle">compteur</text>
-      <line x1="-2.9" y1="4" x2="-1.5" y2="4" stroke="#1A1A18" stroke-width=".22"/>
+      <!-- **LA LIGNE DU COMPTEUR PART VERS LA MAISON, ET ON LA COUPE.** Sa
+           précision du 21 août : « le compteur, c'est une ligne directe qui part
+           vers la maison ; nous, on va devoir la couper et mettre un té égal à
+           cet endroit-là ». Sans ce trait, on ne comprend pas pourquoi une
+           pièce de plus apparaît dès que le piquage se fait au compteur. -->
+      <line x1="-2.9" y1="4" x2="-2.2" y2="4" stroke="#1A1A18" stroke-width=".22" data-atlas="amenee"/>
+      <line x1="-2.2" y1="4" x2="-2.2" y2="7.6" stroke="#1A1A18" stroke-width=".18" stroke-dasharray=".4 .35"/>
+      <text x="-2.2" y="8.5" font-size=".8" font-family="Georgia,serif" fill="#6E6A60" text-anchor="middle">maison</text>
+      <rect x="-2.58" y="3.62" width=".76" height=".76" transform="rotate(45 -2.2 4)" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".24" data-piece="jonction"/>
+      <line x1="-2.2" y1="4" x2="-1.5" y2="4" stroke="#1A1A18" stroke-width=".22" data-atlas="amenee"/>
       <rect id="nourrice" x="-1.5" y="2.6" width="1.5" height="2.8" rx=".3" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".22"/>
       <circle cx="-0.75" cy="3.3" r=".3" fill="#2F6FB2"/>
       <circle cx="-0.75" cy="4" r=".3" fill="#2E7D4F"/>
       <circle cx="-0.75" cy="4.7" r=".3" fill="#C08A2E"/>
-      <text x="-2.6" y="7.1" font-size=".82" font-family="Georgia,serif" fill="#1A1A18" text-anchor="middle">nourrice</text>
+      <text x="-3.9" y="5.9" font-size=".82" font-family="Georgia,serif" fill="#1A1A18" text-anchor="middle">nourrice</text>
       <line x1="0" y1="4" x2="0" y2="4" stroke="#1A1A18" stroke-width=".22"/>
     </g>
 
@@ -311,6 +320,18 @@
     <tr><td class="q">76 ml</td><td>PE Ø25 — lignes, depuis la nourrice</td><td class="ref">pehd25</td></tr>
     <tr><td class="q">26 ml</td><td>PEBD rigide Ø16 — reprise vers chaque arroseur</td><td class="ref">pebd16</td></tr>
   </table>
+</div>
+
+<p class="titre-bloc">Du compteur à la nourrice</p>
+<div class="bloc">
+  <table data-zone="amenee">
+    <tr><td class="q">1 u</td><td>Té égal 25×25×25 — <b>on coupe la ligne du compteur</b> pour dériver vers la nourrice</td><td class="ref">te-25-25-25</td></tr>
+    <tr><td class="q">2 u</td><td>Raccord mâle 25 — 1"</td><td class="ref">raccord-male25</td></tr>
+    <tr><td class="q">à mesurer</td><td>PE Ø25 — du compteur au regard (la distance dépend du terrain)</td><td class="ref">pehd25</td></tr>
+  </table>
+  <p class="compte">Le compteur alimente la maison par une ligne directe. Se piquer
+     dessus veut dire la <b>couper</b> et poser un té égal : c'est une pièce
+     obligatoire dès que le piquage se fait au compteur.</p>
 </div>
 
 <p class="titre-bloc">La nourrice — ce qu'il y a dans le regard</p>
