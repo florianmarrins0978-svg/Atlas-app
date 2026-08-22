@@ -204,7 +204,8 @@ jobs:
           # dont rien ne prouve qu'elle répond — c'est déjà arrivé, et c'est LUI
           # qui avait fait le test.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
-                   arrosage-simple.html arrosage-plan.html $LIES; do
+                   arrosage-simple.html arrosage-plan.html \
+                   arrosage-discuter.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

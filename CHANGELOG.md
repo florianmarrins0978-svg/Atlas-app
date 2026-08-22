@@ -444,6 +444,81 @@ coupable.
 
 ## 2026-08-21
 
+### L'avertissement passe au-dessus du croquis, et les suggestions restent en maquette
+
+*« C'est un petit message qu'il faut mettre au-dessus du croquis, en noir gras :
+votre croquis doit impérativement contenir les métrés, l'endroit définitif de la
+nourrice, et l'endroit où le piquage se fait. »*
+
+**Au-dessus, et c'est tout le sujet.** Placé en dessous, il se lirait après avoir
+envoyé une photo incomplète — donc trop tard, et il faudrait retourner au jardin.
+Le contrôle mesure la **position** et le **poids** du texte, pas seulement sa
+présence : éprouvé en le déplaçant sous le croquis, et en lui retirant son gras.
+
+*« Est-ce que tu vas mettre les phrases déjà pré-écrites, ou c'était juste pour
+faire un test ? Je pense qu'il ne faut pas les mettre, mais qu'il faut un endroit
+où on puisse discuter avec toi. »*
+
+**Il a raison, et c'était bien un artifice.** Une maquette sans JavaScript ne
+peut montrer un échange qu'en pré-écrivant les répliques. Dans l'application :
+un champ libre, rien d'autre. Des suggestions toutes faites bornent ce qu'on ose
+demander, et ce qu'il a à dire ne tient jamais dans trois boutons. Le champ de
+saisie remonte donc **au-dessus** des suggestions dans la maquette, et celles-ci
+sont désormais annoncées pour ce qu'elles sont.
+
+### Sans croquis complet, aucun plan — et la discussion n'en crée jamais un
+
+*« L'outil doit fonctionner avec un plan avec toutes les métrés, l'emplacement du
+piquage et l'endroit définitif de la nourrice. Sans ça il ne doit rien proposer.
+La discussion ne doit jamais créer un plan avec des réseaux — elle peut seulement
+modifier, ou recréer si un croquis avec tous les bons éléments aux bons endroits
+a été fourni. »*
+
+Trois éléments obligatoires : les **métrés**, le **piquage**, l'**endroit
+définitif de la nourrice**. Il en manque un, le plan est **retiré** de l'écran —
+pas grisé : un plan affiché en pâle se photographie et se pose quand même. Et
+l'écran dit lequel manque, avec ce qu'il faut faire.
+
+**Pourquoi la règle vise la discussion en particulier** : c'est sa tentation
+exacte. On répond en comblant ce qui manque, parce qu'une phrase se complète plus
+facilement qu'un dessin. Un plan tracé sur une nourrice supposée fait creuser au
+mauvais endroit, et une tranchée ne se déplace pas.
+
+**Un manquement à noter, et il est de moi :** le plan de son jardin a été tracé
+avec une nourrice que j'ai placée moi-même — son croquis porte les métrés et le
+piquage, pas le regard. Selon sa règle, ce plan n'aurait pas dû être proposé.
+
+### Discuter le plan — maquette, et un garde-fou qui compte
+
+*« Si l'utilisateur a besoin de te demander une modification, qu'il puisse le
+faire. Une petite interface pour discuter avec toi. »*
+
+**`appli/arrosage-discuter.html`** : trois échanges essayables — pourquoi deux
+réseaux, passer en 15-VAN, préférer des 5004. Le plan se redessine, les pièces
+suivent. Aucun JavaScript : les échanges sont des états choisis par des radios.
+
+**Le point d'architecture prime sur l'interface : Atlas ne dessine pas le plan.**
+Il lit la demande, pose un **paramètre** du calcul, et c'est le calcul
+déterministe qui refait le schéma et la liste. Trois droits : lire le catalogue
+pour répondre, poser un paramètre, refuser en expliquant — et proposer ce qui
+s'en approche. Jamais écrire un chiffre absent du catalogue.
+
+C'est la leçon du jour même : laissé libre, il a inventé « 5004 buse 3.0, portée
+6 m », et le maillage entier en dépendait. **Une conversation rend cette dérive
+plus facile, pas moins** — on écrit une phrase plausible et personne ne la
+recompte.
+
+**Son contrôle a dû être retourné pour valoir quelque chose.** La première
+version vérifiait qu'une bonne valeur est *présente* — ce qui laisse passer une
+valeur fausse citée à côté, exactement comme ce matin. Il vérifie désormais
+l'inverse : **toute portée écrite dans la conversation doit exister au
+catalogue**. Éprouvé en remplaçant 4,5 m par 4,2 m : « une portée inventée fausse
+tout le maillage ».
+
+Deux pièges de contrôle au passage : `innerText` ne rendait que le fil visible et
+accusait la maquette de taire ce qu'elle dit ailleurs ; et le « m » de « m³/h »
+se faisait prendre pour un mètre, ce qui condamnait un débit juste.
+
 ### « Pourquoi pas des 3504 ? » — j'avais inventé les portées
 
 *« Pourquoi tu as utilisé des tuyères 1800 et pas des arroseurs 3500 de chez

@@ -873,6 +873,41 @@ cas("la tension des vannes s'accorde avec celle du programmateur", () => {
   }
 });
 
+// ── 8 terdecies. CE QU'IL DOIT LIRE AVANT DE PHOTOGRAPHIER ─────────────────
+//
+// *Sa demande du 21 août :* « c'est un petit message qu'il faut mettre au-dessus
+// du croquis, en noir gras : votre croquis doit impérativement contenir les
+// métrés, l'endroit définitif de la nourrice, et l'endroit où le piquage se
+// fait ».
+//
+// **AU-DESSUS, et c'est tout le sujet.** Placé en dessous, il se lirait après
+// avoir envoyé une photo incomplète — donc trop tard, et il faudrait retourner
+// au jardin. Le contrôle mesure donc la POSITION, pas seulement la présence.
+cas("l'avertissement est au-dessus du croquis, et nomme les trois éléments", async () => {});
+const avertissement = await page.evaluate(() => {
+  const p = document.querySelector(".impératif");
+  const img = document.querySelector("img[src^='data:image']");
+  if (!p || !img) return null;
+  return {
+    texte: p.innerText,
+    gras: getComputedStyle(p).fontWeight,
+    auDessus: p.getBoundingClientRect().top < img.getBoundingClientRect().top,
+  };
+});
+cas("il le lit AVANT de photographier", () => {
+  if (!avertissement) throw new Error("aucun avertissement sur ce que le croquis doit porter");
+  if (!avertissement.auDessus) {
+    throw new Error("l'avertissement est sous le croquis : il se lira après avoir envoyé une photo incomplète, donc trop tard");
+  }
+  if (Number(avertissement.gras) < 600) {
+    throw new Error(`l'avertissement pèse ${avertissement.gras} : il a demandé du gras, sans quoi il se saute`);
+  }
+  const t = avertissement.texte.toLowerCase();
+  for (const [quoi, motif] of [["les métrés", /métré/], ["la nourrice", /nourrice/], ["le piquage", /piquage/]]) {
+    if (!motif.test(t)) throw new Error(`l'avertissement ne réclame pas ${quoi}`);
+  }
+});
+
 // ── 9. LE CHOIX DE LA MARQUE — sa demande, deux fois ────────────────────────
 //
 // Le 17 août : *« de base on met du Rain Bird, mais s'il veut, un petit bandeau
