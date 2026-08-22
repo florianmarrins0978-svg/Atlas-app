@@ -41,6 +41,29 @@ export type EtatPlan =
          * à en inventer, ce que ce dépôt interdit.
          */
         materiel: { ref?: string; nom: string; q: number; u: string }[];
+        /**
+         * **À PARTIR DE COMBIEN DE MÈTRES IL FAUT DU Ø32** — sa demande du
+         * 22 août 2026 : *« passé un certain nombre de mètres linéaires, il
+         * faut passer du PEHD Ø25 au Ø32 ; j'aimerais que mon outil fasse la
+         * même chose »*.
+         *
+         * **Ce sont des SEUILS, pas un verdict**, et c'est délibéré. Le calcul
+         * sait aussi trancher sur une longueur donnée — mais cet écran ne
+         * demande pas la longueur de l'amenée, et le calcul en prendrait une
+         * par défaut. Un « il vous faut du Ø32 » tiré d'une longueur que
+         * personne n'a saisie serait un chiffre inventé (`CLAUDE.md` §4). Le
+         * seuil, lui, ne dépend d'aucune saisie : il se compare au mètre ruban
+         * sur place.
+         */
+        tuyau: {
+          /** Mètres de Ø25 admissibles. **Zéro quand le débit l'interdit** — l'eau y filerait trop vite, quelle que soit la longueur. */
+          seuil25: number;
+          seuil32: number;
+          /** Le débit du réseau le plus gourmand : c'est lui qui dimensionne. */
+          debit: number;
+          /** Au-delà, même le Ø32 est en surrégime : Ø40, ou un réseau de plus. */
+          insuffisantMemeEn32: boolean;
+        };
       };
     };
 
@@ -125,6 +148,12 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
       voies: plan.voies,
       couleurs: plan.couleurs,
       materiel: plan.materiel,
+      tuyau: {
+        seuil25: plan.amenee.longueurMax25,
+        seuil32: plan.amenee.longueurMax32,
+        debit: plan.amenee.debit,
+        insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
+      },
     },
   };
 }

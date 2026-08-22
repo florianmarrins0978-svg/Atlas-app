@@ -685,14 +685,28 @@ function dessinerMateriel(d){
     note.innerHTML = '<b>Ø25</b> par défaut — le calcul ne peut pas encore trancher : il lui manque ' +
                      'un secteur posé et sa pression de service.';
   } else {
+    // **LE SEUIL EN MÈTRES, sa demande du 22 août 2026.** Le verdict répondait
+    // par oui ou par non sur la longueur SAISIE ; il fallait la ressaisir trois
+    // fois pour trouver où la bascule se produit. Le seuil se lit une fois et
+    // se compare au mètre ruban, avant de creuser.
+    var seuil = a.motif === 'debit'
+      ? '<b>Aucune longueur de Ø25 ne convient</b> : à ' + nb(a.debit) + ' m³/h, l\'eau y filerait ' +
+        'au-dessus de 1,5 m/s (le Ø25 en passe ' + nb(a.debitMax25) + ' m³/h au maximum).'
+      : '<b>Le Ø25 tient jusqu\'à ' + nb(a.longueurMax25, 0) + ' m</b> à ce débit, le Ø32 jusqu\'à ' +
+        nb(a.longueurMax32, 0) + ' m.';
     note.innerHTML = '<b>Amenée : Ø' + a.diametre + '</b> sur ' + nb(a.longueur,0) + ' m. ' +
       'Le plus gros secteur tire ' + nb(a.debit) + ' m³/h ; en Ø25 la perte est de ' +
       nb(a.perte25,2) + ' bar, ce qui laisse ' + nb(a.source - a.perte25,2) + ' bar au regard pour ' +
       nb(a.exigee,1) + ' bar exigés par les buses' +
       (a.suffit
-        ? '. <b>Le Ø25 suffit</b>, on n\'y touche pas.'
+        ? '. <b>Le Ø25 suffit</b>, on n\'y touche pas. '
         : '. <b>Insuffisant : on passe en Ø32</b> (perte ' + nb(a.perte32,2) + ' bar, soit ' +
-          nb(a.source - a.perte32,2) + ' bar au regard).') +
+          nb(a.source - a.perte32,2) + ' bar au regard). ') +
+      seuil +
+      (a.insuffisantMemeEn32
+        ? ' <b>Et le Ø32 lui-même est en surrégime à ce débit</b> (' + nb(a.debitMax32) + ' m³/h au ' +
+          'maximum) : c\'est du Ø40, ou un secteur de plus.'
+        : '') +
       ' <span class="provisoire">Ce calcul ne compte QUE l\'amenée</span> — ni les antennes, ni les ' +
       'raccords, ni l\'électrovanne. Un « le Ø25 suffit » est donc un plancher, pas une garantie.';
   }

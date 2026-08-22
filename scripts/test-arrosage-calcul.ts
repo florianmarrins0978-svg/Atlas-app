@@ -132,6 +132,81 @@ dire(
   "une marque est le défaut, comme il l'a demandé (Rain Bird)",
 );
 
+// ── 9. LE SEUIL Ø25 → Ø32, ET SON ACCORD AVEC LE VERDICT ────────────────────
+//
+// **Sa demande du 22 août 2026 :** *« passé un certain nombre de mètres
+// linéaires, il faut passer du PEHD Ø25 à celui en Ø32 ; j'aimerais que mon
+// outil arrosage puisse faire la même chose. »*
+//
+// **Le contrôle qui compte n'est pas la valeur du seuil, c'est son ACCORD avec
+// le verdict.** Deux chiffres sortent maintenant du même calcul : « le Ø25
+// tient jusqu'à 54 m » et, sur une longueur saisie, « le Ø25 suffit / ne suffit
+// pas ». S'ils se contredisent — et une formule retournée de travers les
+// contredirait sans rien casser d'autre —, c'est la liste entière qu'on cesse
+// de croire (`CLAUDE.md` §4 bis). On éprouve donc les deux côtés du seuil.
+{
+  const auSeuil = calculerPlan({ ...JARDIN, amenee: 1 });
+  const seuil = auSeuil.amenee.longueurMax25;
+  // **`seuil > 0` NE PROUVAIT RIEN, et il a fallu le voir pour le croire.** En
+  // retournant la formule de travers (multiplier au lieu de diviser), le seuil
+  // tombe à quatre dix-millièmes de mètre : « supérieur à zéro », donc vert,
+  // en annonçant « 0 m » à l'écran. C'est le contrôle qui mesure zéro du
+  // `CLAUDE.md` §5, dans sa version la plus sournoise — il affichait le bon
+  // chiffre et concluait le contraire.
+  //
+  // On exige donc une longueur PLAUSIBLE : sous 5 m, aucune amenée ne serait
+  // jamais en Ø25 ; au-delà de 500 m, ce n'est plus un jardin.
+  dire(
+    seuil >= 5 && seuil <= 500,
+    `le Ø25 tient jusqu'à ${seuil.toFixed(0)} m à ${auSeuil.amenee.debit.toFixed(2)} m³/h`,
+  );
+
+  const avant = calculerPlan({ ...JARDIN, amenee: Math.floor(seuil) - 1 });
+  const apres = calculerPlan({ ...JARDIN, amenee: Math.ceil(seuil) + 1 });
+  dire(
+    avant.amenee.diametre === 25 && apres.amenee.diametre === 32,
+    `un mètre avant le seuil : Ø${avant.amenee.diametre} · un mètre après : Ø${apres.amenee.diametre}`,
+  );
+
+  // Le Ø32 tient forcément plus loin que le Ø25, à débit égal. Une inversion
+  // des diamètres dans la formule se verrait ici, et nulle part ailleurs.
+  //
+  // **Et « plus loin » se mesure, sinon deux quasi-zéros le satisfont.** Le
+  // rapport réel vaut 3,4 à section constante ; on exige au moins le double,
+  // ce qu'aucune erreur de diamètre ne franchit par hasard.
+  dire(
+    auSeuil.amenee.longueurMax32 >= auSeuil.amenee.longueurMax25 * 2,
+    `le Ø32 tient plus loin (${auSeuil.amenee.longueurMax32.toFixed(0)} m) que le Ø25 (${seuil.toFixed(0)} m)`,
+  );
+
+  // **LE DÉBIT PASSE AVANT LA LONGUEUR.** Un tuyau court ne perd presque rien :
+  // sur la seule perte de charge, un Ø25 « passerait » à n'importe quel débit
+  // pourvu qu'il soit assez court. Au-delà de 1,5 m/s l'eau cogne — d'où
+  // 1,76 m³/h maximum en Ø25, et un seuil qui tombe à ZÉRO plutôt que de rester
+  // rassurant.
+  //
+  // 10 L en 8 s font 4,50 m³/h : de quoi charger un réseau bien au-delà.
+  const gros = calculerPlan({
+    seau: 10, temps: 8, pression: 3, amenee: 5,
+    zones: [{ type: "gazon", nom: "Grande pelouse", L: 40, l: 30 }],
+  });
+  dire(
+    gros.amenee.debit > gros.amenee.debitMax25 && gros.amenee.diametre === 32,
+    `${gros.amenee.debit.toFixed(2)} m³/h : Ø32 sur 5 m malgré la perte de charge faible`,
+  );
+  dire(
+    gros.amenee.longueurMax25 === 0,
+    "aucune longueur de Ø25 n'est annoncée quand le débit l'interdit — et non un seuil qu'on croirait",
+  );
+
+  // Ce jardin-ci reste dans le Ø25 : le contrôle ci-dessus ne doit pas rougir
+  // partout, sinon il ne dit plus rien.
+  dire(
+    plan.amenee.diametre === 25,
+    `le jardin de la maquette reste en Ø25 (${plan.amenee.debit.toFixed(2)} m³/h sur ${plan.amenee.longueur} m)`,
+  );
+}
+
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);
 assert.equal(echecs, 0);

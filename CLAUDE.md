@@ -299,6 +299,40 @@ références et jamais confrontée à elles. Il a demandé d'où elle sortait : 
 nulle part. Quand ses vraies références arrivent, les lignes provisoires qu'elles
 remplacent se **corrigent**, elles ne se laissent pas dormir.
 
+**LE DIAMÈTRE DU TUYAU SE CALCULE, ET SUR DEUX CRITÈRES — jamais un seul.**
+Sa demande du 22 août 2026 : *« passé un certain nombre de mètres linéaires, il
+faut passer du PEHD Ø25 à celui en Ø32 ; j'aimerais que mon outil arrosage
+puisse faire la même chose »*. Ses fournisseurs savent le lui dire ; c'est un
+calcul, pas un tour de main.
+
+| Ce qui impose le Ø32 | La règle | Le chiffre |
+|---|---|---|
+| **le débit** — l'eau va trop vite | vitesse ≤ 1,5 m/s | Ø25 : **1,76 m³/h** · Ø32 : **2,91** |
+| **la longueur** — la perte mange la marge | Hazen-Williams, retournée | dépend du débit et du budget |
+
+**Le piège, et il était dans le dépôt.** Le calcul ne regardait QUE la perte de
+charge. Or un tuyau court n'en perd presque aucune : sur ce seul critère, **un
+Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court**. C'est
+faux — au-delà de 1,5 m/s l'eau cogne, le coup de bélier fatigue les
+électrovannes, et le bruit s'entend dans la maison. Le critère de vitesse est
+donc entré, et c'est lui qui donne les débits maximaux que les fournisseurs
+annoncent par diamètre.
+
+**Ce chiffre recoupe SA mesure**, et c'est ce qui permet de le croire : au seau,
+sur son compteur en Ø25, il a relevé 1,80 m³/h ; la formule en donne 1,76. Le
+tuyau ne laissait pas passer davantage.
+
+**Et l'outil dit le SEUIL, pas seulement le verdict.** « Le Ø25 tient jusqu'à
+73 m à ce débit » se compare au mètre ruban avant de creuser ; un oui/non sur
+une longueur saisie oblige à la ressaisir trois fois pour trouver la bascule.
+Quand le débit interdit le Ø25, le seuil vaut **zéro**, jamais un nombre de
+mètres qu'on croirait.
+
+**LA PRESSION NE DONNE PAS LE DÉBIT, ET LE DÉBIT NE DONNE PAS LA PRESSION.**
+Les deux se calculent, mais séparément : le débit vient du diamètre (vitesse ×
+section) ou du seau chronométré ; la pression dit ce qui arrivera aux arroseurs
+une fois les pertes retirées. Les confondre met trop d'arroseurs sur un réseau.
+
 **SE PIQUER AU COMPTEUR, C'EST COUPER UNE LIGNE EN SERVICE.** Sa précision du
 21 août : *« le compteur, c'est une ligne directe qui part vers la maison ; on va
 devoir la couper et mettre un té égal à cet endroit-là »*. Donc **dès que le

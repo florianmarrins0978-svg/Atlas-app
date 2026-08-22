@@ -9,6 +9,37 @@ sert.
 
 ---
 
+## LE DIAMÈTRE DU TUYAU D'ARROSAGE : DEUX CRITÈRES, PAS UN (22 août 2026)
+
+**Si vous touchez au calcul d'arrosage, lisez ceci d'abord.** Le choix Ø25 / Ø32
+ne dépend PAS que de la longueur, et c'est le piège qui était dans le code :
+
+| Ce qui impose le Ø32 | Pourquoi on ne peut pas l'oublier |
+|---|---|
+| le **débit** (vitesse ≤ 1,5 m/s) | un tuyau court ne perd presque rien : sur la seule perte de charge, un Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court |
+| la **longueur** (perte de charge) | au-delà du seuil, la marge de pression est mangée avant les arroseurs |
+
+Débits maximaux qui en découlent : **Ø25 → 1,76 m³/h**, **Ø32 → 2,91**. Le
+chiffre du Ø25 recoupe sa propre mesure au seau sur son compteur (1,80 m³/h) —
+c'est ce qui permet de le croire.
+
+**Le débit prime sur la longueur** : aucune longueur ne rattrape un débit trop
+fort, alors qu'une amenée trop longue se raccourcit parfois en déplaçant le
+regard. Quand le débit interdit le Ø25, `longueurMax25` rend **0**, jamais un
+nombre de mètres — un seuil qu'on croit et qui ne tient pas coûte une tranchée.
+
+**Les deux copies du calcul doivent rester identiques** (`appli/arrosage-calcul.js`
+et `src/lib/arrosage/calcul.js`) : `npm run verifier:maquette` rougit sinon.
+
+**Ce qui n'a pas pu être éprouvé ici :** la ligne du seuil dans l'écran de
+l'application (`ArrosageClient.tsx`) n'apparaît qu'après lecture d'un croquis,
+donc avec une clé d'IA. Elle a été vue au navigateur sur `appli/arrosage.html`,
+dans ses deux cas. À regarder sur son espace au premier plan calculé.
+
+Détail complet : `ARCHITECTURE.md` §143.
+
+---
+
 ## LA PLACE SE COMPTE EN ÉQUIPES — et QUATRE lectures doivent s'accorder
 
 Posé le 22 août 2026, sur sa règle : *« oui si c'est des journées complètes, non

@@ -311,6 +311,63 @@ function perteDeCharge(debitM3h, longueurM, dInterieurMm){
   return metres / 10.2;             // 10,2 m de colonne d'eau = 1 bar
 }
 
+/* ══ LE SEUIL EN MÈTRES : À PARTIR DE COMBIEN LE Ø25 NE SUFFIT PLUS ═════════
+
+   **Sa demande du 22 août 2026 :** *« ils sont également en capacité de me
+   dire, passé un certain nombre de mètres linéaires, qu'il faut passer du PEHD
+   en diamètre vingt-cinq à celui en diamètre trente-deux. J'aimerais que mon
+   outil arrosage puisse faire la même chose. »*
+
+   Le calcul savait déjà répondre OUI ou NON sur UNE longueur saisie (`amenee`
+   ci-dessous). Ce qu'il ne savait pas dire, c'est **à partir de combien** — or
+   c'est le seul chiffre utile avant de creuser : il se compare au mètre ruban
+   sur place, au lieu de ressaisir la longueur trois fois pour trouver la
+   bascule à tâtons.
+
+   C'est la formule de la perte de charge, retournée. De
+
+       perte = 10,67 × L × (Q/C)^1,852 / D^4,87 / 10,2
+
+   on tire la longueur que le budget de perte autorise :
+
+       L max = budget × 10,2 × D^4,87 / (10,67 × (Q/C)^1,852)
+
+   **Le budget, c'est ce qui reste APRÈS les buses** : la pression à la source
+   moins celle à laquelle la buse posée est donnée au catalogue. Une 5004
+   donnée à 2,8 bar sur une source à 3 bar ne laisse que 0,2 bar — d'où des
+   seuils courts, et ils sont justes : c'est exactement pourquoi le métier
+   réclame 3 bar dynamiques au minimum. */
+function longueurMaxEn(budgetBar, debitM3h, dInterieurMm){
+  if (!(budgetBar > 0) || !(debitM3h > 0) || !(dInterieurMm > 0)) return 0;
+  var q = debitM3h / 3600;          // m³/s
+  var d = dInterieurMm / 1000;      // m
+  return budgetBar * 10.2 * Math.pow(d, 4.87) / (10.67 * Math.pow(q / 150, 1.852));
+}
+
+/* ══ LE SECOND CRITÈRE, QUE LA LONGUEUR NE VOIT PAS : LA VITESSE ════════════
+
+   Un tuyau court ne perd presque rien — donc, sur la seule perte de charge, un
+   Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court. C'est
+   faux : au-delà d'environ 1,5 m/s l'eau cogne, le coup de bélier fatigue les
+   électrovannes, et le bruit s'entend dans la maison. Les abaques de
+   fournisseur s'arrêtent tous là, et c'est de cette limite que sortent les
+   débits maximaux qu'ils annoncent par diamètre — 1,76 m³/h en Ø25, 2,91 en
+   Ø32.
+
+   **Ce chiffre recoupe SA propre mesure**, et c'est ce qui permet de le
+   croire : au seau, sur son compteur en Ø25, il a relevé 1,80 m³/h. La formule
+   en donne 1,76. Le tuyau ne laissait pas passer davantage.
+
+   Sans ce critère, un jardin dont la source est généreuse se verrait poser du
+   Ø25 sur quinze mètres au motif que la perte y reste faible. */
+var VITESSE_MAX = 1.5;   // m/s dans un PEHD enterré — au-delà, ça cogne
+
+function debitMaxDe(dInterieurMm){
+  if (!(dInterieurMm > 0)) return 0;
+  var d = dInterieurMm / 1000;      // m
+  return Math.PI * Math.pow(d / 2, 2) * VITESSE_MAX * 3600;
+}
+
 /* Ce que devient l'amenée compteur → regard, une fois le jardin découpé. */
 function amenee(d){
   var longueur = Number(etat.amenee) || 0;
@@ -327,13 +384,39 @@ function amenee(d){
   var perte25 = perteDeCharge(pire, longueur, t25.dInterieur);
   var perte32 = perteDeCharge(pire, longueur, t32.dInterieur);
   var source = Number(etat.pression) || 0;
-  // Le Ø25 est insuffisant quand, PERTES DES ANTENNES MISES À PART, il ne
-  // laisse déjà plus aux buses la pression à laquelle elles sont données.
-  var suffit = !(longueur > 0 && pire > 0 && exigee > 0) || (source - perte25 >= exigee);
+  var budget = source - exigee;
+  var debitMax25 = debitMaxDe(t25.dInterieur), debitMax32 = debitMaxDe(t32.dInterieur);
+
+  /* **DEUX RAISONS DE PASSER EN Ø32, et l'une ne remplace pas l'autre.**
+
+     · la LONGUEUR : la perte cumulée finit par manger le budget ;
+     · le DÉBIT : l'eau va trop vite, quelle que soit la longueur.
+
+     Une amenée de trois mètres échappe à la première et pas à la seconde. Ne
+     retenir que la perte de charge — ce que faisait ce calcul — revient à
+     poser du Ø25 sur une source généreuse, et à l'entendre cogner. */
+  var tropVite = pire > 0 && debitMax25 > 0 && pire > debitMax25;
+  var tropLoin = longueur > 0 && pire > 0 && exigee > 0 && (source - perte25 < exigee);
+  var suffit = !(tropVite || tropLoin);
+  // Le débit prime : aucune longueur ne le rattrape, alors qu'une amenée trop
+  // longue se raccourcit parfois en déplaçant le regard.
+  var motif = tropVite ? 'debit' : (tropLoin ? 'longueur' : null);
+
   return { longueur:longueur, debit:pire, exigee:exigee, source:source,
-           perte25:perte25, perte32:perte32, suffit:suffit,
+           perte25:perte25, perte32:perte32, suffit:suffit, motif:motif,
            auRegard: source - (suffit ? perte25 : perte32),
            diametre: suffit ? 25 : 32,
+           // **Zéro quand le débit l'interdit, et non le seuil calculé.**
+           // Annoncer « Ø25 jusqu'à 12 m » alors que l'eau y filerait à
+           // 2 m/s serait un seuil qu'on croit et qui ne tient pas.
+           longueurMax25: tropVite ? 0 : longueurMaxEn(budget, pire, t25.dInterieur),
+           longueurMax32: longueurMaxEn(budget, pire, t32.dInterieur),
+           debitMax25: debitMax25, debitMax32: debitMax32,
+           // Au-delà, même le Ø32 est en surrégime : c'est le Ø40 ou un
+           // secteur de plus, et cela se DIT plutôt que de sortir un plan qui
+           // ne tiendra pas.
+           insuffisantMemeEn32: pire > 0 && debitMax32 > 0 && pire > debitMax32,
+           budget: budget,
            provisoire: (suffit ? t25 : t32).source === 'provisoire' };
 }
 

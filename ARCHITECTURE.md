@@ -12785,3 +12785,77 @@ précisément le geste qu'il n'a pas fait.
 
 Elle sait échouer : confrontée à l'ancien code, elle rougit sur trois cas et
 nomme le coupable — *« la liste l'envoie sur /informations »*.
+
+---
+
+## 143. Le diamètre du tuyau d'arrosage : deux critères, et un seuil en mètres
+
+**Sa demande du 22 août 2026.** *« Ils sont également en capacité de me dire,
+passé un certain nombre de mètres linéaires, qu'il faut passer du PEHD en
+diamètre vingt-cinq à celui en diamètre trente-deux. J'aimerais que mon outil
+arrosage puisse faire la même chose. »*
+
+### Ce qui existait, et ce qui manquait
+
+`amenee()` (dans `src/lib/arrosage/calcul.js`, copie de
+`appli/arrosage-calcul.js`) calculait déjà la perte de charge de l'amenée
+compteur → regard par Hazen-Williams, et tranchait Ø25 / Ø32 sur **la longueur
+saisie**. Deux manques :
+
+1. **aucun seuil.** Pour savoir où la bascule se produit, il fallait ressaisir
+   la longueur jusqu'à la trouver. Or c'est le seuil qui sert sur le terrain :
+   il se compare au mètre ruban avant de creuser ;
+2. **un seul critère.** La perte de charge d'un tuyau court est presque nulle —
+   donc un Ø25 « passait » à n'importe quel débit pourvu qu'il soit assez court.
+
+### La décision
+
+**Deux critères, et le débit prime.**
+
+| | Formule | Ce qu'elle donne |
+|---|---|---|
+| vitesse | `Q = π(D/2)² × 1,5 m/s × 3600` | Ø25 : 1,76 m³/h · Ø32 : 2,91 |
+| longueur | `L = budget × 10,2 × D^4,87 / (10,67 × (Q/150)^1,852)` | le seuil en mètres |
+
+Le débit prime parce qu'**aucune longueur ne le rattrape**, alors qu'une amenée
+trop longue se raccourcit parfois en déplaçant le regard. Quand le débit interdit
+le Ø25, `longueurMax25` vaut **0** et non le seuil calculé : annoncer « Ø25
+jusqu'à 12 m » sur un tuyau où l'eau filerait à 2 m/s serait un chiffre qu'on
+croit et qui ne tient pas.
+
+**Le budget de perte, c'est `pression source − pression exigée par la buse`** —
+celle à laquelle sa portée et son débit sont donnés au catalogue. Une 5004
+donnée à 2,8 bar sur une source à 3 bar ne laisse que 0,2 bar : d'où des seuils
+courts, et ils sont justes. C'est exactement pourquoi le métier réclame 3 bar
+dynamiques au minimum.
+
+### Ce qui a validé le chiffre de la vitesse
+
+1,5 m/s en Ø25 donne **1,76 m³/h**. Au seau, sur son compteur en Ø25, le patron
+avait relevé **1,80 m³/h** (`mesure-debit.ts`, `DEBIT_COMPTEUR`). Les deux
+chiffres ne viennent pas de la même source — l'un d'un abaque, l'autre d'un seau
+et d'un chronomètre — et ils tombent à 2 % l'un de l'autre. C'est ce qui permet
+de croire la formule plutôt que de la supposer.
+
+### L'écran de l'application ne montre QUE le seuil
+
+`actions.ts` remonte `tuyau: { seuil25, seuil32, debit, insuffisantMemeEn32 }`,
+et **pas** le verdict. Raison : cet écran ne demande pas la longueur de l'amenée,
+et le calcul en prendrait une par défaut (30 m). Un « il vous faut du Ø32 » tiré
+d'une longueur que personne n'a saisie serait un chiffre inventé (`CLAUDE.md`
+§4). Le seuil, lui, ne dépend d'aucune saisie.
+
+La page publiée `appli/arrosage.html`, elle, demande la longueur : elle affiche
+le verdict **et** le seuil.
+
+### Ce que la suite a appris
+
+Le premier contrôle disait `seuil > 0`. Confronté à la formule retournée de
+travers — multiplier au lieu de diviser —, il est resté **vert** en affichant
+« 0 m » : le seuil valait quatre dix-millièmes de mètre. C'est le contrôle qui
+mesure zéro du `CLAUDE.md` §5, dans sa version la plus sournoise, puisqu'il
+affichait le bon chiffre et concluait le contraire. `test-arrosage-calcul.ts`
+exige maintenant une longueur **plausible** (5 à 500 m), un rapport Ø32/Ø25 d'au
+moins 2, et éprouve la bascule un mètre avant et un mètre après le seuil. Les
+trois défauts plausibles — formule retournée, diamètres inversés, critère de
+vitesse retiré — ont chacun été joués et font rougir la suite.

@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Le diamètre du tuyau se calcule, et l'outil dit À PARTIR DE COMBIEN DE MÈTRES
+
+Sa demande : *« ils sont également en capacité de me dire, passé un certain
+nombre de mètres linéaires, qu'il faut passer du PEHD en diamètre vingt-cinq à
+celui en diamètre trente-deux. J'aimerais que mon outil arrosage puisse faire la
+même chose. »*
+
+**Ce que le calcul savait déjà, et ce qui lui manquait.** Il répondait OUI ou
+NON sur la longueur **saisie** — il fallait donc la ressaisir trois fois pour
+trouver où la bascule se produit. Il annonce maintenant le **seuil** : « le Ø25
+tient jusqu'à 73 m à ce débit, le Ø32 jusqu'à 248 m ». C'est le seul chiffre
+utile avant de creuser, parce qu'il se compare au mètre ruban sur place.
+
+C'est la formule de perte de charge déjà présente (Hazen-Williams), retournée :
+
+    L max = budget × 10,2 × D^4,87 / (10,67 × (Q/C)^1,852)
+
+le budget étant ce qui reste à la source une fois retirée la pression à laquelle
+la buse posée est donnée au catalogue.
+
+**Un second critère est entré, et il corrige un vrai défaut.** Le calcul ne
+regardait que la perte de charge : un tuyau court n'en perd presque aucune,
+donc **un Ø25 « passait » à n'importe quel débit pourvu qu'il soit assez
+court**. C'est faux — au-delà de 1,5 m/s l'eau cogne, le coup de bélier fatigue
+les électrovannes, et le bruit s'entend dans la maison. D'où les débits maximaux
+que les fournisseurs annoncent par diamètre, et que l'outil applique désormais :
+**1,76 m³/h en Ø25, 2,91 en Ø32**.
+
+**Ce chiffre recoupe sa propre mesure**, et c'est ce qui permet de le croire :
+au seau, sur son compteur en Ø25, il avait relevé 1,80 m³/h. La formule en donne
+1,76 — le tuyau ne laissait pas passer davantage.
+
+**Ce que la suite a appris en cours de route.** Le premier contrôle du seuil
+disait `seuil > 0`. Confronté à la formule retournée de travers — multiplier au
+lieu de diviser —, il est resté **vert** en annonçant « 0 m » : le seuil valait
+quatre dix-millièmes de mètre. C'est le contrôle qui mesure zéro du `CLAUDE.md`
+§5, dans sa version la plus sournoise, puisqu'il affichait le bon chiffre et
+concluait le contraire. La suite exige maintenant une longueur **plausible**
+(5 à 500 m), et éprouve la bascule un mètre avant et un mètre après le seuil.
+
+**Non éprouvé ici :** l'écran de l'application n'affiche le seuil qu'une fois un
+croquis lu, ce qui demande une clé d'IA que cet environnement n'a pas. La ligne
+a été vérifiée sur la page publiée (`appli/arrosage.html`), au navigateur, dans
+ses deux cas — Ø25 suffisant, et débit qui l'interdit.
+
+
 ### La place se compte en ÉQUIPES, plus en chantiers
 
 *« Pourquoi le matin et l'après-midi de monsieur Eric s'affichent en
