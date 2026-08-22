@@ -7,6 +7,61 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-22
+
+### « Terminés » : trois façons de la simplifier, et rien de codé
+
+*« Comme on a fait avec toutes les pages, on les a bien simplifiées, maintenant
+il reste celles-là. Je la trouve beaucoup trop compliquée. Un utilisateur qui ne
+connaît pas l'application et qui arrive sur cette page ne comprend rien.
+Propose-moi quelque chose pour la simplifier, ne code rien, je veux qu'on fasse
+des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi que ce
+soit. »*
+
+Mêmes mots que pour le planning le 19 août (planche 84), donc même réponse :
+`appli/termines-simple.html` — **planche 86**, essayable, et `src/` n'a pas
+bougé (`CLAUDE.md` §3 bis).
+
+**Ce qui se comprend mal sur l'écran actuel**, relevé sur sa capture et non
+supposé :
+
+| | |
+|---|---|
+| Le seul travail qui reste | quatre chantiers à facturer, **repliés** derrière une ligne en petites capitales dorées, sans rien qui dise qu'on peut appuyer |
+| « 3 828,00 € » | écrit **deux fois** — à droite d'« août », puis « Facturé, tous mois confondus ». C'est le même chiffre parce qu'il n'y a qu'un mois, mais il faut le deviner |
+| Trois codes non appris | la pastille dorée « 4 », les points pleins/creux, le montant en or contre le montant en noir |
+| « F2026-0005 · LE 20 » | un numéro de facture avant toute chose, et une date sans son mois |
+| Le fil vertical | 47 px de largeur pour ne rien dire que la liste ne dise déjà |
+| Le relevé de TVA | coupé en deux par la barre du bas |
+
+**Trois propositions**, et elles facturent pour de bon : **A** deux piles (ce
+qui reste en haut, déplié, un bouton par ligne) ; **B** une seule liste où
+l'état s'écrit en toutes lettres, avec deux onglets ; **C** une page qui ne fait
+qu'une chose et s'appelle « À facturer », l'historique derrière une porte.
+
+**Aucun total n'est écrit en dur** : tout se recalcule à partir de la même
+liste, comme le veut la leçon du 21 août — deux chiffres qui se contredisent
+dans un même écran, et c'est toute la liste qu'on cesse de croire. Le total du
+mois de la proposition B l'a d'ailleurs rappelé : il portait 5 868,00 €, la
+somme du facturé ET de l'attendu, c'est-à-dire un chiffre qui n'existe nulle
+part.
+
+**Deux défauts trouvés en la parcourant, et un seul par un test.** « Facture
+n° **-5** » : le tiret de « F2026-0005 » entrait dans le nombre. Aucun contrôle
+ne pouvait le voir — c'est la **capture regardée** qui l'a donné, la cinquième
+fois dans ce dépôt (`CLAUDE.md` §5). L'autre, si : un comparateur qui répondait
+« plus petit » à deux dates **égales** sortait ses deux factures du 19 août à
+l'envers de sa capture, sur les trois écrans à la fois.
+
+**La planche est éprouvée avant de partir en ligne** (`appli/tests/essai-termines.mjs`,
+branchée sur `pages.yml`) : les quatre onglets s'ouvrent, les boutons se
+pressent, les totaux sont relus **à l'écran**, et un écran de moins de 300 px de
+haut est refusé plutôt que compté vert. Confrontée au défaut qu'elle prétend
+voir — l'ancien comparateur remis — elle rougit, et sa phrase désigne le bon
+coupable.
+
+---
+
 ## 2026-08-21
 
 ### Le tour plutôt que la coupe — et un contrôle qui dormait

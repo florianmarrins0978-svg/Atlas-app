@@ -73,6 +73,12 @@ jobs:
           # voie. Une suite qui ne barre pas la publication ne barre rien.
           BASE_URL=http://127.0.0.1:8080 npm run test:arrosage
           BASE_URL=http://127.0.0.1:8080 npm run test:croquis
+          # **La planche qu'on lui demande d'ESSAYER se parcourt d'abord ici.**
+          # Trois fois, une adresse lui a été transmise sans que personne ne
+          # l'ait ouverte, et c'est lui qui a trouvé le défaut. Celle-ci
+          # s'ouvre, ses quatre onglets s'affichent et ses boutons se pressent
+          # dans un vrai navigateur avant qu'elle parte en ligne.
+          BASE_URL=http://127.0.0.1:8080 npm run test:termines
 
   deploy:
     name: Déploiement
