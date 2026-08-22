@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Enregistrer le PDF depuis la fiche client</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    ENREGISTRER LE PDF DEPUIS LA FICHE CLIENT
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 21 août 2026 :
+
+      « Une fois le devis envoyé, il doit s'enregistrer normalement en PDF
+        dans la catégorie client, parce que c'est là où tous nos nouveaux
+        clients s'enregistrent et il y a trois colonnes devis, factures et
+        fiches chantiers. Donc une fois que le devis il est parti, on pourra
+        toujours le retrouver là-bas. »
+
+    Puis, quand je lui ai signalé que ces vignettes OUVRENT le PDF sans
+    proposer de l'enregistrer :
+
+      « Alors oui, je veux pouvoir l'enregistrer, mais avant que tu codes quoi
+        que ce soit, fais-moi une maquette visuelle. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EXISTE AUJOURD'HUI — vérifié dans le code, pas supposé
+
+    La fiche client (`src/app/clients/[id]/page.tsx`) porte trois colonnes.
+    Chaque pièce est un lien de 56 px de haut minimum — « un lien qu'il touche
+    d'une main, dehors, parfois avec des gants » — avec une vignette PDF, le
+    numéro, et la date.
+
+    Ce lien ouvre `/api/devis/<id>/pdf` dans un onglet neuf. Le navigateur
+    AFFICHE donc le document. Rien ne propose de l'enregistrer.
+
+    C'est exactement le défaut dont il s'était plaint le 7 août 2026, sur un
+    autre écran : « quand je clique sur télécharger le PDF, ça me propose pas
+    de l'enregistrer, ça ouvre juste une page de plus ». Le remède est connu et
+    ÉPROUVÉ SUR SON TÉLÉPHONE depuis — il sert la facture :
+
+      · `?telecharger=1` côté serveur, qui pose l'en-tête `attachment` ;
+      · l'attribut `download` sur le lien, qui donne son nom au fichier ;
+      · pas de `target="_blank"`, sinon Safari affiche au lieu d'enregistrer.
+
+    Les trois se tiennent, et aucune ne suffit seule.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE CETTE PLANCHE DEMANDE
+
+    Trois dosages du même geste. La question derrière n'est pas décorative :
+
+      **Veut-il encore pouvoir REGARDER un devis sans l'enregistrer ?**
+
+    S'il ouvre la fiche d'un client au téléphone pour relire un montant, la A
+    lui télécharge un fichier qu'il n'a pas demandé. S'il vient toujours pour
+    archiver, la A est la plus courte et les autres lui coûtent un geste.
+
+    C'est à lui de le dire — je ne le devine pas.
+  */
+
+  :root {
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --alert:#9C3B2E; --line:rgba(28,28,26,0.12);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:#e8e5de; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:28px 16px 60px;
+  }
+  h1 { font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
+  .chapo { font-size:13.5px; color:var(--ink-soft); max-width:760px; line-height:1.5; margin:0 0 26px; }
+  .rangee { display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
+  .colonne { width:390px; }
+  .etiquette { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
+  .dit { font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:52px; }
+  .dit b { color:var(--ink); }
+
+  /* ——— l'écran, à la taille de sa dalle ——— */
+  .ecran {
+    width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.14); padding-bottom:14px;
+  }
+  .entete { padding:16px 26px 0; }
+  .surtitre { font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--or); margin:0; }
+  .titre { font-family:Georgia,"Times New Roman",serif; font-size:31px; line-height:1.05; margin:5px 0 0; letter-spacing:-.018em; }
+  .coord { font-size:12.5px; color:var(--muted); margin:6px 0 0; }
+  .derniere { padding:18px 26px 0; }
+  .derniere p { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#000; margin:0; }
+  .derniere ul { list-style:none; padding:0; margin:11px 0 0; }
+  .derniere li { position:relative; padding-left:15px; font-size:14px; line-height:1.45; color:var(--ink-soft); margin-top:6px; }
+  .derniere li::before { content:""; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:50%; background:var(--or); }
+
+  .colonnes { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:0 16px; margin-top:24px; }
+  .cadre { min-width:0; background:var(--cream); border-radius:12px; padding:12px 9px 10px; }
+  .cadre h3 { margin:0; font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
+  .compte { display:block; margin-top:3px; font-size:10.5px; color:var(--muted); }
+
+  .piece { display:block; min-height:56px; padding:8px 0 2px; text-align:center; text-decoration:none; color:var(--ink); }
+  .piece + .piece { border-top:1px solid var(--line); margin-top:8px; }
+  .vignette {
+    margin:0 auto; width:24px; height:29px; border-radius:3px; background:#fff;
+    box-shadow:inset 0 0 0 1px rgba(156,59,46,.35); color:var(--alert);
+    font-size:6.5px; font-weight:700; letter-spacing:.06em;
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:3px;
+  }
+  .nom { display:block; margin-top:5px; font-size:12.5px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .quand { display:block; margin-top:2px; font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* A — la vignette enregistre */
+  .fleche-bas { position:absolute; right:-1px; bottom:-1px; width:13px; height:13px; border-radius:50%;
+    background:var(--pine); color:#fff; font-size:8px; line-height:13px; text-align:center; font-weight:700; }
+  .vignette-enveloppe { position:relative; width:24px; margin:0 auto; }
+
+  /* B — deux gestes */
+  .deux { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px; }
+  .mini {
+    width:30px; height:30px; border-radius:50%; background:var(--paper); color:var(--pine);
+    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+
+  /* C — la feuille */
+  .voile { position:relative; }
+  .feuille {
+    margin:9px 0 0; background:#fff; border-radius:14px; padding:8px 0 4px;
+    box-shadow:0 -1px 10px rgba(0,0,0,.10);
+  }
+  .feuille p { margin:0 0 4px; text-align:center; font-size:10.5px; color:var(--muted); }
+  .feuille a { display:block; padding:11px 10px; font-size:13.5px; text-align:center; text-decoration:none; color:var(--ink); }
+  .feuille a + a { border-top:1px solid var(--line); }
+  .feuille .principal { font-weight:600; color:var(--pine); }
+
+  .note { width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
+  .note b { color:var(--ink); }
+
+  .question {
+    max-width:800px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
+    border-left:3px solid var(--or); border-radius:0 10px 10px 0;
+  }
+  .question h2 { font-size:14px; margin:0 0 8px; }
+  .question p { font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
+  .question p:last-child { margin-bottom:0; }
+  .question b { color:var(--ink); }
+</style>
+
+<h1>Enregistrer le PDF depuis la fiche client</h1>
+<p class="chapo">
+  Aujourd'hui, toucher une vignette <b>ouvre</b> le PDF dans un onglet : rien ne propose de
+  l'enregistrer. Trois façons de lui donner le geste qu'il demande, de la plus courte à la plus
+  prudente. L'écran dessiné est le vrai — trois colonnes, vignettes de 56&nbsp;px, sur ses 390&nbsp;px.
+</p>
+
+<div class="rangee">
+
+  <!-- ————————————————— A ————————————————— -->
+  <div class="colonne">
+    <p class="etiquette">Proposition A — la vignette enregistre</p>
+    <p class="dit">
+      Un seul geste, aucun élément nouveau. Toucher la pièce <b>l'enregistre</b>, sous son vrai nom
+      (<code>devis-2026-0029.pdf</code>). Une pastille verte sur la vignette annonce ce qui va se passer.
+      <b>Ce qu'il perd&nbsp;:</b> il ne peut plus simplement le regarder.
+    </p>
+    <div class="ecran">
+      <div class="entete">
+        <p class="surtitre">Client</p>
+        <h2 class="titre">Mr. Bernard</h2>
+        <p class="coord">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      </div>
+      <div class="derniere">
+        <p>Dernière prestation · 12 août</p>
+        <ul><li>Taille d'une haie de laurier (20 ml)</li><li>Évacuation des déchets verts</li></ul>
+      </div>
+      <div class="colonnes">
+        <div class="cadre">
+          <h3>Devis</h3><span class="compte">2 pièces</span>
+          <a class="piece" href="#">
+            <span class="vignette-enveloppe"><span class="vignette">PDF</span><span class="fleche-bas">↓</span></span>
+            <span class="nom">n° 2026-0029</span><span class="quand">12 août</span>
+          </a>
+          <a class="piece" href="#">
+            <span class="vignette-enveloppe"><span class="vignette">PDF</span><span class="fleche-bas">↓</span></span>
+            <span class="nom">n° 2026-0014</span><span class="quand">3 juil.</span>
+          </a>
+        </div>
+        <div class="cadre">
+          <h3>Facture</h3><span class="compte">1 pièce</span>
+          <a class="piece" href="#">
+            <span class="vignette-enveloppe"><span class="vignette">PDF</span><span class="fleche-bas">↓</span></span>
+            <span class="nom">n° 2026-0031</span><span class="quand">14 août</span>
+          </a>
+        </div>
+        <div class="cadre">
+          <h3>Fiche chantier</h3><span class="compte">1 pièce</span>
+          <a class="piece" href="#">
+            <span class="vignette-enveloppe"><span class="vignette">PDF</span><span class="fleche-bas">↓</span></span>
+            <span class="nom">12 août</span><span class="quand">Haie de laurier</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      <b>Éprouvé sur son téléphone.</b> C'est le mécanisme exact qui a réglé sa plainte du 7 août sur
+      la facture — <code>?telecharger=1</code>, le nom sur le lien, pas d'onglet neuf.
+    </p>
+  </div>
+
+  <!-- ————————————————— B ————————————————— -->
+  <div class="colonne">
+    <p class="etiquette">Proposition B — ouvrir, ou enregistrer</p>
+    <p class="dit">
+      La vignette continue d'<b>ouvrir</b>. Un rond à côté <b>enregistre</b>. Les deux gestes existent,
+      il choisit. <b>Ce que ça coûte&nbsp;:</b> deux cibles côte à côte dans une colonne large de
+      118&nbsp;px — avec des gants, le mauvais doigt tombe vite.
+    </p>
+    <div class="ecran">
+      <div class="entete">
+        <p class="surtitre">Client</p>
+        <h2 class="titre">Mr. Bernard</h2>
+        <p class="coord">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      </div>
+      <div class="derniere">
+        <p>Dernière prestation · 12 août</p>
+        <ul><li>Taille d'une haie de laurier (20 ml)</li><li>Évacuation des déchets verts</li></ul>
+      </div>
+      <div class="colonnes">
+        <div class="cadre">
+          <h3>Devis</h3><span class="compte">2 pièces</span>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0029</span><span class="quand">12 août</span>
+            <span class="deux"><span class="mini">↓</span></span>
+          </div>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0014</span><span class="quand">3 juil.</span>
+            <span class="deux"><span class="mini">↓</span></span>
+          </div>
+        </div>
+        <div class="cadre">
+          <h3>Facture</h3><span class="compte">1 pièce</span>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0031</span><span class="quand">14 août</span>
+            <span class="deux"><span class="mini">↓</span></span>
+          </div>
+        </div>
+        <div class="cadre">
+          <h3>Fiche chantier</h3><span class="compte">1 pièce</span>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">12 août</span><span class="quand">Haie de laurier</span>
+            <span class="deux"><span class="mini">↓</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      <b>La réserve, dite franchement.</b> Le dépôt tient une règle sur ces vignettes : 56&nbsp;px de
+      haut au moins, « un lien qu'il touche d'une main, dehors, parfois avec des gants ». Ce rond
+      fait 30&nbsp;px et vit contre un lien plus grand que lui.
+    </p>
+  </div>
+
+  <!-- ————————————————— C ————————————————— -->
+  <div class="colonne">
+    <p class="etiquette">Proposition C — une petite feuille</p>
+    <p class="dit">
+      Toucher la pièce ouvre <b>trois choix</b> — ouvrir, enregistrer, partager. Rien ne se décide à
+      sa place, et « Partager » revient (perdu sur l'écran d'envoi).
+      <b>Ce que ça coûte&nbsp;:</b> un appui de plus, à chaque fois, même pour un simple coup d'œil.
+    </p>
+    <div class="ecran">
+      <div class="entete">
+        <p class="surtitre">Client</p>
+        <h2 class="titre">Mr. Bernard</h2>
+        <p class="coord">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      </div>
+      <div class="derniere">
+        <p>Dernière prestation · 12 août</p>
+        <ul><li>Taille d'une haie de laurier (20 ml)</li></ul>
+      </div>
+      <div class="colonnes">
+        <div class="cadre voile">
+          <h3>Devis</h3><span class="compte">2 pièces</span>
+          <div class="piece">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0029</span><span class="quand">12 août</span>
+          </div>
+          <div class="feuille">
+            <p>n° 2026-0029</p>
+            <a class="principal" href="#">Enregistrer</a>
+            <a href="#">Ouvrir</a>
+            <a href="#">Partager</a>
+          </div>
+        </div>
+        <div class="cadre">
+          <h3>Facture</h3><span class="compte">1 pièce</span>
+          <a class="piece" href="#">
+            <span class="vignette">PDF</span>
+            <span class="nom">n° 2026-0031</span><span class="quand">14 août</span>
+          </a>
+        </div>
+        <div class="cadre">
+          <h3>Fiche chantier</h3><span class="compte">1 pièce</span>
+          <a class="piece" href="#">
+            <span class="vignette">PDF</span>
+            <span class="nom">12 août</span><span class="quand">Haie de laurier</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      <b>Dessinée dans la colonne pour montrer l'encombrement réel.</b> En vrai, cette feuille
+      monterait du bas de l'écran, sur toute la largeur — comme celle du calendrier.
+    </p>
+  </div>
+
+</div>
+
+<div class="question">
+  <h2>La question que je ne tranche pas à sa place</h2>
+  <p>
+    <b>Ouvre-t-il ces PDF pour les REGARDER, ou pour les GARDER&nbsp;?</b>
+  </p>
+  <p>
+    S'il ouvre la fiche d'un client au téléphone pour relire un montant, la <b>A</b> lui télécharge un
+    fichier qu'il n'a pas demandé, à chaque coup d'œil. S'il vient toujours pour archiver ou
+    transmettre, la <b>A</b> est la plus courte, et les deux autres lui coûtent un geste pour rien.
+  </p>
+  <p>
+    Mon avis, s'il le veut&nbsp;: <b>la A</b>. C'est le mécanisme déjà éprouvé sur son téléphone, il
+    n'ajoute aucune cible à viser, et le devis reste consultable en entier sur son écran — c'est
+    même là qu'il l'a mis. Mais s'il lui arrive de venir ici juste pour vérifier un chiffre, la
+    <b>C</b> est la seule qui ne décide de rien à sa place.
+  </p>
+</div>
+
+</body>
+</html>

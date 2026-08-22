@@ -1,0 +1,286 @@
+<title>Le tracé du tuyau</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE TRACÉ DU TUYAU — la question qui bloque le comptage des tés et coudes.
+
+    Posée dans TODO.md § « 0 quaterquadragies » : dans un secteur à plusieurs
+    rangées, le tuyau serpente-t-il en une seule ligne continue depuis le
+    regard, ou partez-vous en plusieurs lignes parallèles pour un même
+    secteur ? Sans cette réponse, `CATALOGUE.piecesReseau` (Té/Coude/Jonction)
+    reste écarté du calcul automatique — deviner un tracé inventerait un
+    chantier qui n'existe pas.
+
+    Ce n'est pas une maquette d'écran : rien à essayer, rien à saisir. C'est un
+    dessin pour qu'il pointe l'option qui correspond à son geste sur le
+    terrain, plutôt que de le décrire en mots. Les deux tracés portent le MÊME
+    secteur (3 rangées de 4 arroseurs) pour qu'on compare pièce pour pièce.
+
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : la bascule est un `input` natif, les tracés sont du SVG.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:900px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .reglage{margin:0 0 20px}
+  .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .segments{display:flex;flex-wrap:wrap;gap:8px}
+  .segments label{display:inline-block;padding:10px 16px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:14px;cursor:pointer;color:var(--gris)}
+
+  .ta,.tb{display:none}
+  #t-a:checked ~ .dedans .ta,
+  #t-b:checked ~ .dedans .tb{display:block}
+  #t-a:checked ~ .dedans label[for="t-a"],
+  #t-b:checked ~ .dedans label[for="t-b"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+
+  .planche{border-radius:22px;background:var(--papier);border:1px solid var(--trait);
+           padding:18px 18px 20px;box-shadow:0 10px 34px rgba(28,28,26,.08)}
+  .planche .titre-p{font-family:Georgia,serif;font-size:19px;margin:0 0 3px}
+  .planche .sous-p{font-size:12.5px;color:var(--gris);margin:0 0 14px}
+
+  .trace{width:100%;height:auto;display:block;margin:0 0 14px}
+  .trace .fond-plan{fill:var(--teinte)}
+  .trace .tuyau{fill:none;stroke:var(--eau);stroke-width:3.4;
+                stroke-linecap:round;stroke-linejoin:round}
+  .trace .tuyau-fleche{fill:var(--eau)}
+  .trace .tete{fill:var(--pin);stroke:var(--papier);stroke-width:2}
+  .trace .regard{fill:var(--or);stroke:var(--papier);stroke-width:2}
+  .trace .coude-tronc{fill:var(--pin);stroke:var(--papier);stroke-width:2}
+  .trace .etq{fill:var(--gris);font-size:10.5px;font-family:inherit}
+  .trace .etq-b{fill:var(--encre);font-weight:600;font-size:10.5px;font-family:inherit}
+  .trace .rang{fill:var(--gris);font-size:10px;font-family:inherit;text-anchor:end}
+
+  .compte{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+  .compte span{font-size:12px;color:var(--encre);background:var(--teinte);
+              border-radius:999px;padding:6px 12px}
+  .compte b{font-family:Georgia,serif;font-size:14px;font-weight:400}
+
+  .consequence{font-size:13.5px;line-height:1.7;color:var(--gris);margin:0}
+  .consequence b{color:var(--encre);font-weight:600}
+
+  .note{margin-top:24px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+</style>
+
+<input type="radio" name="t" id="t-a" class="etat">
+<input type="radio" name="t" id="t-b" class="etat" checked>
+
+<div class="dedans">
+  <h1>Le tracé du tuyau</h1>
+  <p class="intro"><b>Tranché le 17 août : c'est B</b>, plusieurs lignes
+    parallèles — avec sa correction sur les jonctions. A reste ci-dessous pour
+    mémoire, ce n'est pas votre geste. Le même secteur — 3 rangées de 4
+    arroseurs, depuis le même regard — est tracé des deux façons.</p>
+
+  <p class="dit">« C'est le B, sauf que la jonction […] ressemble à un té […]
+    un coude avec un tuyau, le tuyau on peut le courber pour former le coude.
+    Chose qu'on ne peut pas faire lorsque c'est un té, puisqu'on est obligé de
+    couper pour mettre un té. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Son geste sur le chantier</span>
+    <div class="segments">
+      <label for="t-a">A · Une seule ligne, en serpentin</label>
+      <label for="t-b">B · Plusieurs lignes parallèles · <b>retenu</b></label>
+    </div>
+  </div>
+
+  <div class="ta">
+    <div class="planche">
+      <p class="titre-p">A · Le tuyau serpente, rangée par rangée</p>
+      <p class="sous-p">Un seul tuyau continu depuis le regard : il traverse
+        toute la rangée 1, redescend, traverse la rangée 2 en sens inverse,
+        redescend, traverse la rangée 3. Douze arroseurs, un seul fil d'eau.</p>
+
+      <svg class="trace" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet">
+        <rect class="fond-plan" x="0" y="0" width="640" height="300" rx="14"/>
+        <text class="rang" x="60" y="70">rangée 1</text>
+        <text class="rang" x="60" y="150">rangée 2</text>
+        <text class="rang" x="60" y="230">rangée 3</text>
+
+        <!-- regard -->
+        <rect class="regard" x="18" y="255" width="26" height="26" rx="4"/>
+        <text class="etq" x="14" y="296">Regard</text>
+
+        <!-- tuyau : regard -> r1 (g->d) -> descend -> r2 (d->g) -> descend -> r3 (g->d) -->
+        <path class="tuyau" d="M31 255 V70 H520 V150 H100 V230 H520" />
+        <polygon class="tuyau-fleche" points="520,224 520,236 532,230" />
+
+        <!-- rangée 1 : 4 points, gauche -> droite -->
+        <circle class="tete" cx="100" cy="70" r="9"/>
+        <circle class="tete" cx="240" cy="70" r="9"/>
+        <circle class="tete" cx="380" cy="70" r="9"/>
+        <circle class="tete" cx="520" cy="70" r="9"/>
+        <text class="etq-b" x="100" y="48" text-anchor="middle">Départ</text>
+        <text class="etq" x="240" y="48" text-anchor="middle">Milieu</text>
+        <text class="etq" x="380" y="48" text-anchor="middle">Milieu</text>
+        <text class="etq" x="520" y="48" text-anchor="middle">tourne</text>
+
+        <!-- rangée 2 : 4 points, droite -> gauche -->
+        <circle class="tete" cx="520" cy="150" r="9"/>
+        <circle class="tete" cx="380" cy="150" r="9"/>
+        <circle class="tete" cx="240" cy="150" r="9"/>
+        <circle class="tete" cx="100" cy="150" r="9"/>
+        <text class="etq" x="520" y="176" text-anchor="middle">Milieu</text>
+        <text class="etq" x="380" y="176" text-anchor="middle">Milieu</text>
+        <text class="etq" x="240" y="176" text-anchor="middle">Milieu</text>
+        <text class="etq" x="100" y="176" text-anchor="middle">tourne</text>
+
+        <!-- rangée 3 : 4 points, gauche -> droite -->
+        <circle class="tete" cx="100" cy="230" r="9"/>
+        <circle class="tete" cx="240" cy="230" r="9"/>
+        <circle class="tete" cx="380" cy="230" r="9"/>
+        <circle class="tete" cx="520" cy="230" r="9"/>
+        <text class="etq" x="100" y="256" text-anchor="middle">Milieu</text>
+        <text class="etq" x="240" y="256" text-anchor="middle">Milieu</text>
+        <text class="etq" x="380" y="256" text-anchor="middle">Milieu</text>
+        <text class="etq-b" x="520" y="256" text-anchor="middle">Fin</text>
+      </svg>
+
+      <div class="compte">
+        <span>Un seul <b>Départ</b>, un seul <b>Fin</b></span>
+        <span><b>10</b> Milieux</span>
+        <span><b>2</b> demi-tours en bout de rangée</span>
+      </div>
+
+      <p class="consequence"><b>Ce que ça change pour le comptage :</b> presque
+        tout le secteur est fait de la même pièce (le té 90° taraudé de
+        « Milieu »), plus une seule pièce de fin. Reste à savoir ce que porte
+        le <b>demi-tour</b> en bout de rangée — un coude simple, ou un té qui
+        continue tout droit avant de redescendre ?</p>
+    </div>
+  </div>
+
+  <div class="tb">
+    <div class="planche">
+      <p class="titre-p">B · Plusieurs lignes parallèles depuis le regard</p>
+      <p class="sous-p">Un tronc commun part du regard ; tant qu'il lui reste
+        une rangée à atteindre plus loin, il se détache par une <b>jonction</b>
+        (un té — on coupe le tuyau). À la <b>dernière</b> rangée, il n'a plus
+        besoin de continuer : le tuyau se courbe pour y entrer, sans té à couper.
+        Corrigé le 17 août sur son geste réel.</p>
+
+      <svg class="trace" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet">
+        <rect class="fond-plan" x="0" y="0" width="640" height="300" rx="14"/>
+
+        <!-- regard -->
+        <rect class="regard" x="18" y="255" width="26" height="26" rx="4"/>
+        <text class="etq" x="14" y="296">Regard</text>
+
+        <!-- tronc commun vertical -->
+        <path class="tuyau" d="M31 255 V70" />
+        <!-- branches horizontales, une par rangée -->
+        <path class="tuyau" d="M31 70 H520" />
+        <path class="tuyau" d="M31 150 H520" />
+        <path class="tuyau" d="M31 230 H520" />
+        <polygon class="tuyau-fleche" points="514,64 514,76 526,70" />
+        <polygon class="tuyau-fleche" points="514,144 514,156 526,150" />
+        <polygon class="tuyau-fleche" points="514,224 514,236 526,230" />
+
+        <!-- Le tronc CONTINUE après ces deux points (une rangée de plus à
+             atteindre) : ce sont de vraies jonctions, un té qu'on coupe. -->
+        <circle class="regard" cx="31" cy="230" r="6"/>
+        <circle class="regard" cx="31" cy="150" r="6"/>
+        <text class="etq-b" x="48" y="222">Jonction (té)</text>
+        <text class="etq-b" x="48" y="142">Jonction (té)</text>
+
+        <!-- Ici le tronc S'ARRÊTE : rien à couper, le tuyau se courbe. -->
+        <circle class="coude-tronc" cx="31" cy="70" r="6"/>
+        <text class="etq-b" x="48" y="62">Coude (tuyau courbé)</text>
+
+        <!-- rangée 1 -->
+        <circle class="tete" cx="100" cy="70" r="9"/>
+        <circle class="tete" cx="240" cy="70" r="9"/>
+        <circle class="tete" cx="380" cy="70" r="9"/>
+        <circle class="tete" cx="520" cy="70" r="9"/>
+        <text class="etq-b" x="100" y="48" text-anchor="middle">Départ</text>
+        <text class="etq" x="240" y="48" text-anchor="middle">Milieu</text>
+        <text class="etq" x="380" y="48" text-anchor="middle">Milieu</text>
+        <text class="etq-b" x="520" y="48" text-anchor="middle">Fin</text>
+
+        <!-- rangée 2 -->
+        <circle class="tete" cx="100" cy="150" r="9"/>
+        <circle class="tete" cx="240" cy="150" r="9"/>
+        <circle class="tete" cx="380" cy="150" r="9"/>
+        <circle class="tete" cx="520" cy="150" r="9"/>
+        <text class="etq-b" x="100" y="176" text-anchor="middle">Départ</text>
+        <text class="etq" x="240" y="176" text-anchor="middle">Milieu</text>
+        <text class="etq" x="380" y="176" text-anchor="middle">Milieu</text>
+        <text class="etq-b" x="520" y="176" text-anchor="middle">Fin</text>
+
+        <!-- rangée 3 -->
+        <circle class="tete" cx="100" cy="230" r="9"/>
+        <circle class="tete" cx="240" cy="230" r="9"/>
+        <circle class="tete" cx="380" cy="230" r="9"/>
+        <circle class="tete" cx="520" cy="230" r="9"/>
+        <text class="etq-b" x="100" y="256" text-anchor="middle">Départ</text>
+        <text class="etq" x="240" y="256" text-anchor="middle">Milieu</text>
+        <text class="etq" x="380" y="256" text-anchor="middle">Milieu</text>
+        <text class="etq-b" x="520" y="256" text-anchor="middle">Fin</text>
+      </svg>
+
+      <div class="compte">
+        <span><b>3</b> Départs, <b>3</b> Fins</span>
+        <span><b>6</b> Milieux</span>
+        <span><b>2</b> Jonctions (tés) sur le tronc</span>
+        <span><b>0</b> pièce à la dernière rangée</span>
+      </div>
+
+      <p class="consequence"><b>Sa correction du 17 août :</b> une jonction
+        ressemble à un té — on doit couper le tuyau pour l'insérer. Ça vaut
+        pour chaque rangée où le tronc CONTINUE ensuite : ici, les deux plus
+        proches du regard. À la <b>dernière</b> rangée, le tronc s'arrête ; un
+        coude se fait en courbant le tuyau lui-même, <b>sans pièce à part</b> —
+        ce qu'on ne peut pas faire pour un té, qui exige de couper. Pour N
+        rangées : <b>(N − 1)</b> jonctions, <b>0</b> pièce à la dernière.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que sa réponse débloque</span>
+    <p>Réponse tranchée le 17 août : <b>B</b>, avec la règle du té et du coude.
+      Les quatre pièces du réseau latéral (Départ/Milieu, Fin, Jonction, PEBD)
+      sont désormais comptées automatiquement, secteur par secteur, dans
+      <code>appli/arrosage.html</code> — elles ne restent plus à l'écart de la
+      liste au fournisseur. Détail dans <code>TODO.md</code> §
+      « 0 quaterquadragies ».</p>
+  </div>
+</div>

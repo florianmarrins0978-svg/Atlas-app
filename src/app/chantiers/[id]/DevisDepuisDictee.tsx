@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, libelleCaps } from "@/lib/design-tokens";
 import { preparerDevisDepuisDicteeAction, repondreQuestionsChiffrageAction } from "./informations/actions";
 import { precisionLisible, type QuestionChiffrage } from "@/lib/questions-chiffrage";
+import { attendreLeDevis } from "@/lib/attente-devis";
 
 // Le geste unique : de la dictée au devis.
 //
@@ -41,18 +42,64 @@ type Props = {
    * rendrait le poids qu'on venait de lui retirer.
    */
   variante?: "principal" | "secondaire" | "anneau";
+  /**
+   * La chaîne part TOUTE SEULE à l'arrivée, sans bouton et sans qu'il touche
+   * rien.
+   *
+   * **Sa panne du 21 août 2026** — voir `src/lib/devis-a-preparer.ts` pour le
+   * récit. Il dicte chez sa cliente, ferme l'application, revient, ouvre le
+   * chantier : le devis doit être là. Personne n'est resté pour appuyer sur
+   * « Mon devis → », alors l'écran s'en charge.
+   *
+   * Dans ce mode il n'y a plus rien à pousser : le composant ne rend que ce
+   * qui se passe — le travail en cours, l'arrêt d'avant-chiffrage, ou ce qui
+   * a échoué avec une sortie vers le devis tel quel.
+   */
+  auto?: boolean;
 };
 
 type Etat =
   | { type: "repos" }
   | { type: "encours" }
+  /**
+   * La réponse ne revient pas, et on attend le devis lui-même.
+   *
+   * **`secondes` n'est pas un ornement.** Un écran qui dit « ça travaille »
+   * sans jamais changer se lit comme un écran figé, et c'est exactement ce que
+   * le patron a vécu pendant six minutes : il a fini par recharger, faute de
+   * savoir si quelque chose se passait encore.
+   */
+  | { type: "attente"; secondes: number }
   | { type: "conflit" }
   // L'arrêt d'avant-chiffrage : ce qui manque et qui fait le prix.
   | { type: "questions"; questions: QuestionChiffrage[] }
   | { type: "sansPrix"; raison: string }
   | { type: "message"; texte: string };
 
-export default function DevisDepuisDictee({ chantierId, transcriptionDisponible, variante = "principal" }: Props) {
+/**
+ * Ce que le bouton dit pendant qu'il travaille, ou `null` s'il est au repos.
+ *
+ * **Le compteur n'est pas une coquetterie.** Un écran qui répète « ça
+ * travaille » sans jamais changer se lit comme un écran figé — c'est ce que le
+ * patron a vécu six minutes avant de recharger. Un nombre qui monte dit au
+ * moins que quelque chose se passe encore, et jusqu'à quand on l'a laissé.
+ */
+function libelleEnCours(etat: Etat): string | null {
+  if (etat.type === "encours") return "Atlas prépare le devis…";
+  if (etat.type === "attente") {
+    return etat.secondes < 15
+      ? "Atlas prépare le devis…"
+      : `Atlas prépare toujours le devis… (${etat.secondes} s)`;
+  }
+  return null;
+}
+
+export default function DevisDepuisDictee({
+  chantierId,
+  transcriptionDisponible,
+  variante = "principal",
+  auto = false,
+}: Props) {
   const router = useRouter();
   const [etat, setEtat] = useState<Etat>({ type: "repos" });
 
@@ -85,7 +132,11 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
         // qu'il devait dire se lit maintenant sur le devis lui-même : les
         // lignes y sont, le total aussi, et la mention « recopiée mot à mot »
         // s'affiche là-bas quand aucun modèle n'a compris la dictée.
-        router.push(`/chantiers/${chantierId}/devis-complet`);
+        // **Déjà sur le devis en mode automatique** : `push` vers l'adresse
+        // courante ne rejoue pas le rendu serveur, et l'écran resterait sur
+        // « Atlas prépare le devis… » devant un devis pourtant écrit.
+        if (auto) router.refresh();
+        else router.push(`/chantiers/${chantierId}/devis-complet`);
         return;
       }
       if (r.statut === "conflit") return setEtat({ type: "conflit" });
@@ -103,15 +154,69 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
       if (r.statut === "questions") return setEtat({ type: "questions", questions: r.questions });
       setEtat({ type: "message", texte: r.erreur });
     } catch {
-      setEtat({ type: "message", texte: "La préparation n'a pas abouti. Réessayez." });
+      // **La réponse s'est perdue — le travail, lui, a peut-être abouti.**
+      //
+      // Le patron, le 12 août 2026 : *« il s'est passé plus de six minutes et
+      // j'ai dû recharger la page pour que le devis arrive. »* Le serveur avait
+      // fini depuis longtemps ; c'est la réponse qui n'est jamais revenue, et
+      // l'écran restait sur « Atlas prépare le devis… » sans rien savoir.
+      //
+      // On cesse donc de dépendre de cet unique aller-retour : on demande à
+      // intervalles si le devis est là, et on y va dès qu'il l'est. Recharger la
+      // page n'est plus son travail. Voir `src/lib/attente-devis.ts`.
+      setEtat({ type: "attente", secondes: 0 });
+      const issue = await attendreLeDevis(chantierId, {
+        surAttente: (secondes) => setEtat({ type: "attente", secondes }),
+      });
+      if (issue === "pret") {
+        if (auto) return router.refresh();
+        return router.push(`/chantiers/${chantierId}/devis-complet`);
+      }
+      setEtat({
+        type: "message",
+        texte:
+          "La préparation n'a pas abouti, et le devis n'est pas arrivé. Rechargez la page : " +
+          "s'il est là, tout est bon ; sinon, reprenez « Mon devis ».",
+      });
     }
   }
+
+  // ─── Le départ automatique ────────────────────────────────────────────
+  //
+  // **Une seule fois, et le garde n'est pas une précaution de style.** React
+  // monte deux fois en développement, et un `router.refresh()` peut remonter
+  // l'arbre : sans lui, deux chaînes partiraient sur le même chantier et
+  // s'écraseraient l'une l'autre — prestations en double, ou brouillon repris
+  // à mi-course.
+  const dejaLance = useRef(false);
+  useEffect(() => {
+    if (!auto || dejaLance.current || !transcriptionDisponible) return;
+    dejaLance.current = true;
+    void lancer();
+    // `lancer` ne dépend que des props, et le garde ci-dessus est ce qui
+    // décide du rejeu — pas la liste de dépendances.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, transcriptionDisponible]);
 
   if (!transcriptionDisponible) return null;
 
   return (
     <div className={`flex flex-col gap-2 ${variante === "anneau" ? "items-center" : ""}`}>
-      {variante === "anneau" ? (
+      {auto ? (
+        /* **Rien à pousser : on rend ce qui se passe.** Le bouton n'aurait
+           aucun sens ici — personne n'est venu appuyer, l'écran travaille de
+           lui-même parce qu'il a fermé l'application entre-temps. */
+        <p
+          role="status"
+          aria-live="polite"
+          data-atlas="preparation-automatique"
+          className="text-center text-[15px]"
+          style={{ color: colors.rust }}
+        >
+          {libelleEnCours(etat)?.replace("le devis", "votre devis") ??
+            (etat.type === "repos" ? "Atlas reprend votre dictée et écrit le devis…" : "")}
+        </p>
+      ) : variante === "anneau" ? (
         /* **L'écriture nue, et rien autour.** Choisie par le patron le 11 août
            2026 sur six formes essayées — l'écriture, le trait, le bouton
            plein, la pastille, l'anneau qui s'étire, le bandeau du tiroir.
@@ -125,28 +230,28 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
         <button
           type="button"
           onClick={() => lancer()}
-          disabled={etat.type === "encours"}
+          disabled={etat.type === "encours" || etat.type === "attente"}
           data-atlas="mon-devis"
           className={`px-2 py-2 disabled:opacity-40 ${libelleCaps}`}
           style={{ color: colors.or }}
         >
-          {etat.type === "encours" ? "Atlas prépare le devis…" : "Mon devis →"}
+          {libelleEnCours(etat) ?? "Mon devis →"}
         </button>
       ) : variante === "principal" ? (
         <button
           type="button"
           onClick={() => lancer()}
-          disabled={etat.type === "encours"}
-          className="w-full rounded-[4px] py-3.5 text-[15px] font-medium text-white disabled:opacity-40"
+          disabled={etat.type === "encours" || etat.type === "attente"}
+          className="w-full rounded-full py-3.5 text-[15px] font-medium text-white disabled:opacity-40"
           style={{ backgroundColor: colors.rust }}
         >
-          {etat.type === "encours" ? "Atlas prépare le devis…" : "Créer le devis à partir de ma dictée"}
+          {libelleEnCours(etat) ?? "Créer le devis à partir de ma dictée"}
         </button>
       ) : (
         <button
           type="button"
           onClick={() => lancer()}
-          disabled={etat.type === "encours"}
+          disabled={etat.type === "encours" || etat.type === "attente"}
           // Seule la variante discrète prend la voix des libellés : c'est la
           // seule à ne vivre que sur l'écran Informations. La variante mise en
           // avant est sur l'écran Transcription, qui n'est pas encore refait —
@@ -157,7 +262,7 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
           {/* Sans la flèche : en capitales espacées, la phrase tient tout juste
               sur une ligne, et la flèche la faisait passer à deux — seule sur
               la seconde. Vu en capture, jamais par une suite. */}
-          {etat.type === "encours" ? "Atlas prépare le devis…" : "Aller jusqu'au devis d'un seul geste"}
+          {libelleEnCours(etat) ?? "Aller jusqu'au devis d'un seul geste"}
         </button>
       )}
 
@@ -182,7 +287,7 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
             <button
               type="button"
               onClick={() => router.push(`/chantiers/${chantierId}/devis-complet`)}
-              className="rounded-[4px] px-4 py-2.5 text-[14px] font-medium"
+              className="rounded-full px-4 py-2.5 text-[14px] font-medium"
               style={{ backgroundColor: colors.rust, color: colors.cream }}
             >
               Ouvrir le devis et poser les prix →
@@ -218,7 +323,7 @@ export default function DevisDepuisDictee({ chantierId, transcriptionDisponible,
             <button
               type="button"
               onClick={() => setEtat({ type: "repos" })}
-              className="rounded-[4px] py-2.5 text-[14px] font-medium"
+              className="rounded-full py-2.5 text-[14px] font-medium"
               style={{ backgroundColor: colors.card, color: colors.ink }}
             >
               Conserver mes corrections
@@ -331,7 +436,7 @@ function QuestionsChiffrage({
                       key={o.valeur}
                       type="button"
                       onClick={() => setReponses((r) => ({ ...r, [q.id]: o.valeur }))}
-                      className="rounded-[4px] px-4 py-2.5 text-left text-[14px] font-medium"
+                      className="rounded-full px-4 py-2.5 text-left text-[14px] font-medium"
                       style={{
                         backgroundColor: choisie ? colors.rust : colors.card,
                         color: choisie ? colors.cream : colors.ink,
@@ -366,7 +471,7 @@ function QuestionsChiffrage({
         type="button"
         onClick={valider}
         disabled={envoi}
-        className="mt-5 w-full rounded-[4px] py-3 text-[15px] font-medium disabled:opacity-40"
+        className="mt-5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
         style={{ backgroundColor: colors.rust, color: colors.cream }}
       >
         {envoi ? "Atlas termine le devis…" : toutesRepondues ? "Continuer vers le devis" : "Continuer sans répondre à tout"}

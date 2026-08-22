@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { colors, smallCaps } from "@/lib/design-tokens";
 import ImportTarifs from "./ImportTarifs";
+import { BandeauUnites, CaseUnite } from "@/components/atlas/ChoixUnite";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -18,6 +19,10 @@ type Champ = "intitule" | "prix" | "unite";
 export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif[] }) {
   const [tarifs, setTarifs] = useState<Tarif[]>(initialTarifs);
   const [ajoutEnCours, setAjoutEnCours] = useState(false);
+  // Un seul bandeau d'unités ouvert à la fois. Il est tenu ICI parce que la
+  // case et le bandeau vivent de part et d'autre de la ligne retirable — voir
+  // le commentaire sous la carte.
+  const [uniteOuverte, setUniteOuverte] = useState<string | null>(null);
   function modifierLocal(id: string, champ: Champ, valeur: string) {
     setTarifs((cur) => cur.map((t) => (t.id === id ? { ...t, [champ]: valeur } : t)));
   }
@@ -48,7 +53,11 @@ export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif
   const tarifsVisibles = tarifs.filter((t) => !retraits.estRetire(t.id));
 
   return (
-    <div className="px-6 pt-5">
+    // Aucun retrait horizontal ici : la rubrique qui l'accueille pose déjà les
+    // 26 px de la charte. Il en portait 24 (`px-6`, l'ANCIENNE échelle) du
+    // temps où il vivait à même l'écran des réglages — additionnés, ils
+    // décalaient toute la liste de 50 px, seule au milieu de l'écran.
+    <div className="pt-1">
       {/* Le prix d'un chantier peut aussi être calculé à partir des paramètres
           de chiffrage quand aucun tarif ne correspond : ne pas laisser croire
           que ces tarifs sont la seule source possible. */}
@@ -111,24 +120,32 @@ export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif
               </label>
               {/* L'unité est ce qui autorise la multiplication par une quantité
                   confirmée lors du calcul du prix : sans elle, le tarif est
-                  toujours repris tel quel. */}
-              <label className="flex flex-col gap-1">
-                <span className={smallCaps} style={{ color: colors.muted }}>
-                  Unité (facultatif)
-                </span>
-                <input
-                  value={t.unite ?? ""}
-                  placeholder="m², heure…"
-                  aria-label="Unité du tarif"
-                  onChange={(e) => modifierLocal(t.id, "unite", e.target.value)}
-                  onBlur={(e) => persister(t.id, "unite", e.target.value)}
-                  className="rounded-[4px] border-0 px-3 py-2.5 outline-none"
-                  style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
-                />
-              </label>
+                  toujours repris tel quel. Et comme le rapprochement se fait à
+                  la lettre près, elle se CHOISIT depuis le 14 août 2026 — voir
+                  `src/lib/unites-tarif.ts`. */}
+              <CaseUnite
+                valeur={t.unite}
+                ouvert={uniteOuverte === t.id}
+                onBasculer={() => setUniteOuverte((cur) => (cur === t.id ? null : t.id))}
+              />
             </div>
           </div>
           </LigneRetirable>
+
+          {/* **Le bandeau se déplie HORS de la ligne, et c'est obligatoire.**
+              L'enveloppe ci-dessus masque ce qui dépasse pour pouvoir se
+              refermer au retrait : posé dedans, le bandeau serait tranché et
+              les dernières unités inatteignables. Voir `ChoixUnite`. */}
+          {uniteOuverte === t.id && !retraits.estRetire(t.id) && (
+            <BandeauUnites
+              valeur={t.unite}
+              onChoisir={(unite) => {
+                setUniteOuverte(null);
+                modifierLocal(t.id, "unite", unite);
+                void persister(t.id, "unite", unite);
+              }}
+            />
+          )}
           </li>
         ))}
       </ul>
@@ -137,7 +154,12 @@ export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif
         dernier={retraits.dernier}
         nombre={retraits.nombre}
         onAnnuler={retraits.annuler}
-        className="mt-3 !mx-0"
+        // `mx-0!`, et non `!mx-0` : en Tailwind 4 le modificateur s'écrit en
+        // SUFFIXE. Écrite à la mode de la version 3, la classe ne faisait rien
+        // — le tiroir gardait les 26 px de marge du composant et se décalait de
+        // la liste qu'il commente. Invisible tant que ce bloc vivait dans un
+        // écran à `px-6` ; visible depuis qu'il a sa propre rubrique.
+        className="mt-3 mx-0!"
       />
 
       <button

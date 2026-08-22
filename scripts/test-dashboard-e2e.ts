@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 async function main() {
   const browser = await lancerNavigateur();
@@ -26,21 +27,30 @@ async function main() {
   const compterChantiersAffiches = () => page.locator("a.atlas-brin").count();
   const nbAvant = await compterChantiersAffiches();
 
-  // Le compteur s'écrit en toutes lettres depuis le 10 août 2026 (« HUIT EN
-  // COURS ») : on ne peut plus le lire au `parseInt`. Il porte donc son nombre
-  // en attribut — un libellé se réécrit à chaque maquette, une étiquette de
-  // code non, et un contrôle accroché au libellé casse à la refonte suivante
-  // sans qu'aucun défaut n'existe.
-  const lireCompteur = async () =>
-    Number(await page.locator('[data-atlas="compteur"]').getAttribute("data-compte"));
+  // Le compteur porte son nombre en ATTRIBUT, et c'est ce qu'on lit : un
+  // libellé se réécrit à chaque maquette, une étiquette de code non. Il l'a
+  // porté en toutes lettres (« HUIT EN COURS », 10 août 2026), puis en chiffre
+  // à côté du mot (19 août) ; l'attribut, lui, n'a pas bougé — et aucune de ces
+  // deux refontes n'a cassé ce contrôle, ce qui est exactement l'intention.
+  const compteur = page.locator('[data-atlas="compteur"]');
+  const lireCompteur = async () => Number(await compteur.getAttribute("data-compte"));
   const nombreAvant = await lireCompteur();
+
+  // **Et ce qu'on LIT à l'écran doit être le chiffre.** Sa demande du 19 août.
+  // L'attribut seul ne dirait rien d'un retour aux lettres : le contrôle
+  // resterait vert sur un écran qui n'est plus le sien.
+  const ditALEcran = (await compteur.innerText()).replace(/\s+/g, " ").trim();
+  assert.ok(
+    new RegExp(`\\b${nombreAvant}\\b`).test(ditALEcran),
+    `La rubrique dit « ${ditALEcran} » : le nombre doit s'y lire en chiffre`
+  );
   assert.equal(nombreAvant, nbAvant, "L'indicateur affiché doit correspondre au nombre réel de cartes chantier");
 
   // --- Crée un nouveau chantier réel et vérifie que l'indicateur se met à jour ---
   const nomUnique = `Chantier dashboard e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
 
   await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
@@ -56,6 +66,44 @@ async function main() {
   // --- Persistance après rechargement ---
   await page.reload({ waitUntil: "networkidle" });
   assert.equal(await lireCompteur(), nbAvant + 1);
+
+  // --- La ligne d'état est en OR, sur TOUTES les cartes (16 août 2026) ---
+  //
+  // **Sa consigne, capture de cet écran à l'appui :** *« mets le "devis prêt à
+  // envoyer sans photo" en doré ; pour tous les messages je veux que cette
+  // partie-là apparaisse en doré »*.
+  //
+  // **Pourquoi ici et pas seulement dans la suite base.**
+  // `test-ligne-etat-chantier.ts` éprouve la RÈGLE : `enOr` vaut vrai pour tous
+  // les statuts. Elle serait verte même si l'écran ignorait ce drapeau — c'est
+  // le raccord qui casse, jamais la formule. Et sa demande porte sur ce qu'il
+  // VOIT, pas sur un booléen.
+  //
+  // On lit la couleur CALCULÉE, jamais un nom de classe : `colors.or` vaut
+  // #B98B47 (`src/lib/design-tokens.ts`), soit rgb(185, 139, 71).
+  const OR = "rgb(185, 139, 71)";
+  const teintes = await page.evaluate(() =>
+    [...document.querySelectorAll("a.atlas-brin")].map((a) => {
+      // La ligne d'état est la seule en petites capitales de la carte.
+      const etat = [...a.querySelectorAll("p")].find(
+        (e) => getComputedStyle(e).textTransform === "uppercase"
+      );
+      return {
+        texte: etat?.textContent?.trim() ?? null,
+        couleur: etat ? getComputedStyle(etat).color : null,
+      };
+    })
+  );
+  // **Zéro carte n'est pas un succès.** Une liste vide rendrait ce contrôle
+  // vert sans qu'il ait rien mesuré — le piège payé la veille (`CLAUDE.md` §5).
+  assert.ok(teintes.length > 0, "aucune carte sur l'accueil : la couleur n'a pas pu être mesurée");
+  const grises = teintes.filter((t) => t.couleur !== OR);
+  assert.equal(
+    grises.length,
+    0,
+    `${grises.length} ligne(s) d'état hors de l'or : ` +
+      grises.map((t) => `« ${t.texte} » en ${t.couleur}`).join(" ; ")
+  );
 
   await browser.close();
   console.log("✅ Test bout-en-bout Dashboard (accueil) réussi.");

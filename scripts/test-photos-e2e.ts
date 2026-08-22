@@ -1,7 +1,9 @@
 import { lancerNavigateur } from "./e2e-browser";
+import type { Request, Route } from "playwright";
 import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(__dirname, "fixtures", "test-photo.jpg");
@@ -40,8 +42,8 @@ async function main() {
   // Crée un chantier dédié pour ce test, pour ne pas dépendre du contenu du seed.
   const nomUnique = `Chantier photos e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
 
@@ -59,6 +61,19 @@ async function main() {
   );
 
   // --- Ajout réel d'une photo, sur place ---------------------------------
+  //
+  // **L'envoi est RETENU trois secondes**, sinon l'attente passerait plus vite
+  // que la mesure et le contrôle du souffle (plus bas) serait vert sans avoir
+  // rien regardé. C'est le même procédé que `test-attente-dictee-e2e.ts`, et la
+  // même raison.
+  const cettePage = (url: URL) => url.pathname === new URL(chantierUrl).pathname;
+  const retenir = async (route: Route, requete: Request) => {
+    if (requete.method() !== "POST") return route.continue();
+    await new Promise((r) => setTimeout(r, 3000));
+    return route.continue();
+  };
+  await page.route(cettePage, retenir);
+
   const [fileChooser] = await Promise.all([
     page.waitForEvent("filechooser"),
     // Un seul appui, et le menu du téléphone. Playwright rend l'événement
@@ -68,7 +83,64 @@ async function main() {
   ]);
   await fileChooser.setFiles(FIXTURE);
 
+  // --- L'attente SOUFFLE ici aussi ---------------------------------------
+  //
+  // Sa demande du 13 août 2026 : *« oui souffle aussi pour la photo »*. Ce
+  // bouton portait le même caractère « … » immobile que la dictée, à la lettre
+  // près — donc le même défaut, et il n'y a aucune raison que deux attentes du
+  // même produit se disent de deux façons.
+  //
+  // On mesure le geste, jamais la présence d'une classe : une classe posée sur
+  // un élément dont plus aucune règle ne parle est une mort silencieuse.
+  {
+    const points = tiroir.locator(".atlas-souffle i");
+    const present = await points
+      .first()
+      .waitFor({ state: "visible", timeout: 10000 })
+      .then(() => true)
+      .catch(() => false);
+    assert.ok(
+      present,
+      "aucun point qui souffle pendant l'envoi d'une photo : l'attente est-elle revenue " +
+        "au caractère « … » ? (le geste vit dans PointsQuiSoufflent)",
+    );
+
+    const releves: number[] = [];
+    for (let t = 0; t < 1400; t += 40) {
+      releves.push(
+        await points.first().evaluate((el) => {
+          const s = getComputedStyle(el);
+          const m = new DOMMatrixReadOnly(s.transform === "none" ? "" : s.transform);
+          return Math.hypot(m.m11, m.m12);
+        }),
+      );
+      await new Promise((r) => setTimeout(r, 40));
+    }
+    const souffle = Math.max(...releves) - Math.min(...releves);
+    assert.ok(
+      souffle >= 0.5,
+      `les points n'enflent que de ${souffle.toFixed(2)} pendant l'envoi — sous 0,5, l'œil ne le voit pas`,
+    );
+    console.log("  ✓ l'attente de la photo souffle, comme celle de la dictée");
+  }
+
   await tiroir.locator('img[src^="/api/fichiers/"]').first().waitFor({ state: "visible", timeout: 15000 });
+
+  // **L'interception est RELÂCHÉE ici, et ce n'est pas du rangement.**
+  //
+  // Router une adresse désactive le cache HTTP de TOUTE la page, pas seulement
+  // des requêtes visées. La visionneuse, plus bas, repartait donc du réseau
+  // pour une image déjà affichée : au moment du contrôle son `<img>` n'avait
+  // pas fini de charger, sa boîte faisait zéro pixel, et Playwright la disait
+  // invisible. L'échec accusait la visionneuse — qui n'y était pour rien — et
+  // il a fallu AFFICHER les images présentes pour le voir : elles étaient là,
+  // toutes les deux, au bon endroit.
+  //
+  // Et le relâchement vient APRÈS l'attente ci-dessus, pas avant : couper la
+  // route pendant que l'envoi est encore en vol laisse un appel à moitié
+  // traité, et Playwright répond « Route is already handled! » — une erreur qui
+  // n'apprend rien sur ce qu'on éprouve.
+  await page.unroute(cettePage, retenir);
   assert.equal(
     page.url(),
     chantierUrl,

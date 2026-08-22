@@ -6,6 +6,11 @@
 // adresse, aucune durée. Le client apprend que le patron n'est pas libre le 24,
 // exactement ce qu'il aurait appris en téléphonant.
 
+// La liste des durées qu'il déroule pour choisir. Elle est importée plutôt que
+// recopiée : l'écran du choix et la ligne du planning doivent dire le même mot,
+// et deux copies finissent toujours par diverger — voir `libelleDureeCourt`.
+import { DUREES } from "@/lib/durees-chantier";
+
 /** Fenêtre par défaut sur laquelle un client peut proposer une date. */
 export const FENETRE_PROPOSITION_JOURS = 90;
 
@@ -290,7 +295,36 @@ export type ChantierPlanifie = {
   moment: Moment | null;
   /** Absente si jamais renseignée — une journée entière est alors supposée. */
   dureeDemiJournees: number | null;
+  /**
+   * Combien d'équipes ce chantier mobilise, par demi-journée.
+   *
+   * **Sa règle du 22 août 2026**, après la planche 89 : *« oui si c'est des
+   * journées complètes, non si c'est des demi-journées »*. Il répondait à la
+   * question « mettre toutes mes équipes sur un chantier doit-il fermer la
+   * journée ? » — et sa réponse tombe d'elle-même dès qu'on compte **par
+   * demi-journée** : un chantier d'une journée avec ses deux équipes prend les
+   * deux créneaux, donc la journée se ferme ; le même chantier sur une
+   * demi-journée ne prend que le matin, et l'après-midi reste ouvert.
+   *
+   * Absent = une équipe, comme avant. Un chantier sans affectation reste du
+   * travail à faire : le compter zéro rendrait la journée vide.
+   */
+  equipesParDemi?: Partial<Record<Moment, number>> | null;
 };
+
+/**
+ * Combien d'équipes ce chantier prend sur cette demi-journée — **au moins une**.
+ *
+ * Le plancher n'est pas une précaution de style : jusqu'au 22 août 2026 aucune
+ * affectation ne pesait sur la capacité, et la plupart des chantiers n'en
+ * portent donc aucune. Les compter zéro viderait le planning d'un coup.
+ */
+export function equipesMobilisees(
+  p: Pick<ChantierPlanifie, "equipesParDemi">,
+  moment: Moment
+): number {
+  return Math.max(1, Math.trunc(p.equipesParDemi?.[moment] ?? 1));
+}
 
 /**
  * Combien de chantiers occupent chaque demi-journée.
@@ -307,7 +341,12 @@ export function compterOccupation(planifies: readonly ChantierPlanifie[]): Map<s
     const duree = p.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
     for (const c of creneauxDuChantier(depart, duree)) {
       const cle = cleCreneau(c);
-      compte.set(cle, (compte.get(cle) ?? 0) + 1);
+      // **On compte les ÉQUIPES mobilisées, plus les chantiers.** Sa question du
+      // 22 août : ses deux équipes étaient chez Mr. Eric et le planning
+      // annonçait « incomplet », donc ce jour-là partait chez ses clients alors
+      // qu'il n'avait plus personne. Compter les chantiers ignorait
+      // précisément ce qu'il venait de renseigner.
+      compte.set(cle, (compte.get(cle) ?? 0) + equipesMobilisees(p, c.moment));
     }
   }
   return compte;
@@ -376,8 +415,15 @@ export function dureeEnDemiJournees(texte: string | null | undefined): number | 
   if (!texte) return null;
   const t = texte.toLowerCase().replace(/ /g, " ");
 
-  // « demi-journée », « une demi journée », « 1/2 journée »
-  if (/(?:demi[\s-]*journ[ée]e|1\s*\/\s*2\s*journ[ée]e)/.test(t)) return 1;
+  // « demi-journée », « une demi journée », « 1/2 journée », « ½ journée »
+  //
+  // **« ½ » a été ajouté le 16 août 2026, et ce n'était pas cosmétique.** C'est
+  // le libellé que la molette affiche au patron (`src/lib/durees-chantier.ts`),
+  // donc celui qu'il redit et qu'il dicte. Sans ce caractère, la phrase tombait
+  // sur la règle suivante — « journée » sans chiffre reconnu — et rendait DEUX
+  // demi-journées : une demi-journée dictée réservait la journée entière, sans
+  // qu'aucun écran ne le signale.
+  if (/(?:demi[\s-]*journ[ée]e|(?:1\s*\/\s*2|½)\s*journ[ée]e)/.test(t)) return 1;
 
   const MOTS: Record<string, number> = {
     un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5,
@@ -423,8 +469,126 @@ export function libelleDuree(demiJournees: number): string {
   return `${Math.floor(demiJournees / 2)} jours et demi`;
 }
 
+/**
+ * La durée **en abrégé**, dans les mots de la liste où il la choisit.
+ *
+ * **Deux registres, et c'est délibéré.** `libelleDuree` écrit de la prose —
+ * « une journée ne tient pas ce jour-là » — et se lit dans une phrase.
+ * Celle-ci écrit une ÉTIQUETTE, sur une ligne de 204 px : « ½ journée »,
+ * « 1 journée », « 3 jours ». Fondre les deux donnerait « une journée » sur une
+ * ligne où l'on compte, ou « 1 journée » au milieu d'une phrase.
+ *
+ * **Les mots viennent de `DUREES`, jamais d'ici.** C'est la liste qu'il déroule
+ * pour choisir la durée d'un chantier : l'écran de la ligne et l'écran du choix
+ * doivent dire le même mot, sans quoi il choisit « 1 journée » et lit autre
+ * chose le lendemain. Le 4 août 2026, il avait déjà corrigé « 1 jour » en
+ * « 1 journée » ; le 15 août, une maquette écrivait de nouveau « ½ jour » et il
+ * a dû le redire. Recopier ces mots à la main, c'est reprogrammer cet
+ * aller-retour.
+ *
+ * **Le repli n'est pas décoratif.** `DUREES` ne propose que la demi-journée
+ * puis des jours entiers, mais `dureeEnDemiJournees` peut rendre un nombre
+ * IMPAIR à partir d'une durée dictée (« une journée et demie » → 3). Une durée
+ * impossible à choisir reste possible à recevoir, et une ligne muette vaudrait
+ * pire qu'un mot approximatif.
+ */
+export function libelleDureeCourt(demiJournees: number): string {
+  const n = Math.max(1, Math.trunc(demiJournees));
+  const dansLaListe = DUREES.find((d) => d.demiJournees === n);
+  if (dansLaListe) return dansLaListe.libelle;
+  const jours = Math.floor(n / 2);
+  return `${jours} ${jours > 1 ? "jours" : "journée"} ½`;
+}
+
 /** Libellé du moment, pour l'écran du patron — jamais pour le client. */
 export const LIBELLE_MOMENT: Record<Moment, string> = {
   matin: "matin",
   apres_midi: "après-midi",
 };
+
+/**
+ * Ce qu'un chantier OCCUPE, dit en toutes lettres.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **LE DÉFAUT QUE CETTE FONCTION REMPLACE, ET POURQUOI IL COMPTAIT.**
+ *
+ * La ligne du planning écrivait `creneauDebut` — la demi-journée de DÉPART —
+ * et rien d'autre. Or `DUREE_PAR_DEFAUT_DEMI_JOURNEES` vaut 2 : un chantier
+ * posé prend la journée entière. **Le cas le plus courant du produit était
+ * donc celui qui mentait**, et un chantier de trois jours annonçait « matin ».
+ *
+ * Le patron, capture à l'appui le 13 août 2026 : *« ça laisse à penser que
+ * juste le matin est bloqué alors que c'est la journée »*.
+ *
+ * **Ce qui n'était PAS en cause :** `compterOccupation()` parcourt déjà
+ * `creneauxDuChantier(départ, durée)`. Les pastilles du calendrier et la
+ * réservation ont toujours compté juste — seule la phrase se trompait. Aucune
+ * donnée n'a été touchée, aucune migration.
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * **La règle vient des créneaux, jamais d'un calcul refait à côté.** On
+ * demande à `creneauxDuChantier` ce que le chantier occupe vraiment — c'est
+ * elle qui saute les week-ends — puis on compte les jours distincts. Refaire
+ * l'arithmétique ici produirait deux vérités : celle de l'écran et celle de la
+ * réservation, qui finiraient par diverger un vendredi.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **CE QUE LE PATRON A ARRÊTÉ LE 15 AOÛT 2026, ET QUI REMPLACE LA VEILLE.**
+ *
+ * Sur `docs/maquettes/59-la-ligne-qui-dit-tout.html` : *« je veux journée et
+ * toute la ligne »*, après avoir demandé *« il doit y avoir le nombre de jour,
+ * le matin, l'après-midi et la journée comme infos possible »*.
+ *
+ * La ligne porte donc **le moment de départ ET la durée** :
+ *
+ *   · une journée pleine partie le matin → « journée », seule. Le mot porte la
+ *     durée à lui seul ; « journée · 1 journée » aurait dit deux fois la même
+ *     chose sur une ligne de 204 px ;
+ *   · une vraie demi-journée → « matin · ½ journée » ;
+ *   · tout le reste → « matin · 3 jours », « après-midi · 1 journée ».
+ *
+ * **« du 21 au 25 août » est retiré**, alors qu'il l'avait choisi la veille sur
+ * la planche 53. Ce qui se perd est réel et doit être su : la ligne ne dit plus
+ * QUAND le chantier finit, et « 3 jours » partis un vendredi finissent le mardi
+ * — les week-ends étant sautés, il ne peut pas le recalculer de tête. Ce qui se
+ * gagne est ce qu'il a demandé : le nombre de jours, qu'aucune plage de dates
+ * ne donnait.
+ *
+ * **L'INVARIANT À NE JAMAIS PERDRE, et il n'est pas d'écriture.** « matin » ne
+ * s'écrit JAMAIS sans sa durée. Seul, il redit exactement le défaut qu'il a
+ * signalé le 13 août — *« ça laisse à penser que juste le matin est bloqué »*.
+ * C'est le nombre accolé qui le rend honnête : « matin · 3 jours » ne se lit
+ * pas comme une demi-journée. Alléger la ligne un jour en retirant la durée
+ * rouvrirait ce défaut sans que rien ne le dise — `test-libelle-occupation.ts`
+ * le garde.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+export type Occupation = {
+  /** « journée », « matin · ½ journée », « après-midi · 1 journée ». */
+  texte: string;
+};
+
+export function libelleOccupation(
+  jour: JourIso,
+  moment: Moment | null,
+  dureeDemiJournees: number | null
+): Occupation {
+  // Un chantier posé avant l'existence des créneaux n'a ni moment ni durée :
+  // il est traité comme une journée entière à partir du matin, exactement le
+  // comportement qu'il avait. C'est la même hypothèse que `compterOccupation`,
+  // et elle doit le rester.
+  const depart: Creneau = { jour, moment: moment === "apres_midi" ? "apres_midi" : "matin" };
+  const duree = Math.max(1, Math.trunc(dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES));
+  const creneaux = creneauxDuChantier(depart, duree);
+
+  const jours = [...new Set(creneaux.map((c) => c.jour))];
+
+  // **La journée pleine, et elle seule, se passe de durée** : le mot la porte.
+  // Le test est bien « un seul jour ET deux créneaux » — deux demi-journées
+  // parties l'APRÈS-MIDI n'en sont pas une : elles occupent cet après-midi et
+  // la matinée du lendemain, et écrire « journée » ferait croire à l'artisan
+  // que sa matinée du lendemain est libre.
+  if (jours.length === 1 && creneaux.length === 2) return { texte: "journée" };
+
+  return { texte: `${LIBELLE_MOMENT[depart.moment]} · ${libelleDureeCourt(duree)}` };
+}

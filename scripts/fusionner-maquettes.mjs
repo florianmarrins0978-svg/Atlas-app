@@ -14,7 +14,7 @@
   pas diverger de ses originaux : ils restent la source, elle est le produit.
 */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -183,7 +183,338 @@ const MAQUETTES = [
     quoi: "Celui qu’il a gardé, et lui seul : le mot, le rond qui bat à sa droite. Onde ramenée de 1,85 à 1,42 fois le rond, rond de 46 à 38 px, gerbe de seize grains à onze.",
     retenu: true,
   },
+  {
+    fichier: "25-les-deux-portes.html",
+    titre: "Les deux portes, côte à côte",
+    famille: "Les deux portes de la création",
+    quoi: "Six façons de montrer « créer le chantier » ET « devis à la main » d’un seul coup d’œil. La 4 bascule pour de bon, sans script.",
+    retenu: true,
+  },
+  {
+    fichier: "26-la-bascule-affinee.html",
+    titre: "La bascule, affinée",
+    famille: "Les deux portes de la création",
+    quoi: "Six déclinaisons de la proposition 4 : le trait qui glisse, le point d’or, la plage, la perle, le cartouche, la bascule en pied.",
+    retenu: true,
+  },
+  {
+    fichier: "28-le-bouton.html",
+    titre: "Le bouton, huit façons",
+    famille: "Les deux portes de la création",
+    quoi: "« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci. La capsule est retenue.",
+    retenu: true,
+  },
+  {
+    fichier: "33-le-devis-parti-allege.html",
+    titre: "Le devis parti, allégé",
+    famille: "Dire moins sur l’écran du devis",
+    quoi: "« Trop d’infos sur cette page » : l’écran en porte onze blocs et déborde de 382 px. Quatre façons de retrancher — l’adresse effacée, l’état monté dans le titre, le devis replié, ou le geste seul sous le pouce — et la question du bouton « carré », mesurée : il est déjà au rayon des cartes.",
+    retenu: true,
+  },
+  {
+    fichier: "34-le-devis-sur-sa-base.html",
+    titre: "Le devis parti, sur sa base",
+    famille: "Dire moins sur l’écran du devis",
+    quoi: "Ce qu’il a arrêté : le nom du devis et le total, plus de lignes, « Modifier mon devis » sous le total, et les trois actions en encre foncée. Sa base au mot près, puis quatre façons de la tenir — sans carte, dans le titre, les actions empilées, ou le signet d’or.",
+    retenu: true,
+  },
+  {
+    fichier: "35-l-ecran-de-connexion.html",
+    titre: "L’écran de connexion",
+    famille: "La dernière porte",
+    quoi: "Le seul écran resté dans l’identité d’avant le 3 août. L’avant, puis quatre après : la carte gardée, sans carte, le sceau, la ligne d’imprimé. Un bouton montre le refus de connexion sur les cinq écrans à la fois.",
+  },
+  {
+    fichier: "36-le-logo-qui-sanime.html",
+    titre: "Le logo qui s’anime",
+    famille: "La dernière porte",
+    quoi: "La proposition 4 sans son titre, le sceau et ATLAS au-dessus, et la marque qui s’anime une demi-seconde avant d’entrer. Ça s’essaie : on appuie sur « Entrer », l’application arrive. Six animations, l’écran étant identique partout.",
+  },
+  {
+    fichier: "37-le-motif-du-sceau.html",
+    titre: "Le motif dans le rond d’or",
+    famille: "La dernière porte",
+    quoi: "Le tour est retenu ; seule la gravure change. Huit motifs, et une bande en tête qui les montre à leur taille réelle — c’est là que se juge lequel tient encore à six millimètres.",
+  },
+  {
+    fichier: "40-le-message-du-devis-fige.html",
+    titre: "Le message du devis figé",
+    famille: "Dire moins sur l’écran du devis",
+    quoi: "« Le message dit de consulter la case devis, mais aucune case devis n’existe. » Le témoin, puis trois façons : le message devient la porte, un vrai bouton, ou plus de message du tout.",
+    retenu: true,
+  },
+  {
+    fichier: "44-la-feuille-denvoi.html",
+    titre: "La feuille d’envoi : un seul geste à la fois",
+    famille: "La feuille d’envoi",
+    quoi: "Deux boutons pleins l’un sous l’autre sur la feuille d’un devis corrigé. Deux lectures du retrait, montrées dans les deux moments — avant et après l’envoi — et trois dosages de « Plutôt par e-mail ».",
+  },
+  {
+    fichier: "45-modifier-son-devis.html",
+    titre: "Le devis : le reprendre avant de l’envoyer",
+    famille: "Le devis avant l’envoi",
+    quoi: "Tout est là pour vérifier, rien pour corriger : « Modifier mon devis » n’existe qu’APRÈS l’envoi. Son idée — le mot « Devis » cliquable — dessinée telle quelle, et quatre autres façons d’y arriver.",
+  },
+  {
+    fichier: "46-pendant-que-ca-batit.html",
+    titre: "Pendant que ça bâtit",
+    famille: "Le banc d’essai",
+    quoi: "« Les nouvelles pages ne chargent mal ou pas du tout. » Rien n’était cassé : le banc sert en mode développement pendant qu’il bâtit, et rien ne le disait. Trois façons de montrer l’avancement, avec les mesures.",
+  },
+  {
+    fichier: "55-une-equipe-part-cinq-jours.html",
+    titre: "Une équipe part cinq jours",
+    famille: "Le planning",
+    quoi: "« Comment on fait si une équipe part en déplacement pour cinq jours ? » Si toute l’entreprise part, l’agenda Google suffit déjà. Si une équipe sur deux part, rien ne convient. Trois endroits où poser le geste.",
+    fichier: "57-apparier-deux-demi-journees.html",
+    titre: "Apparier deux demi-journées",
+    famille: "Le planning",
+    quoi: "Quand une demi-journée est prise et l’autre libre, Atlas propose le chantier en attente le plus proche. Quatre façons de le dire, le bandeau dessiné à vol d’oiseau ET par la route, et les deux cas où il n’y a rien de bon à proposer.",
+  },
+  {
+    fichier: "56-le-devis-qui-tarde.html",
+    titre: "Le devis qui tarde : le rappel, et le délai",
+    famille: "Le devis avant l’envoi",
+    quoi: "Un rappel quand un chantier reste sans devis. CODÉ le 16 août sur ses trois réponses : carte teintée avec le compte des jours, quatre jours, et « Chantier sans devis » — le seul libellé qui ne se confond pas avec sa voisine.",
+  },
+  {
+    fichier: "58-le-nombre-de-jours-en-or.html",
+    titre: "Le nombre de jours, en or",
+    famille: "Le planning",
+    quoi: "« Avant il y avait le nombre de jour en doré, où c’est passé ? » — il n’avait jamais existé dans l’application. Quatre écritures de la même ligne, et les trois choses qui en approchaient, retrouvées dans l’historique plutôt que devinées.",
+  },
+  {
+    fichier: "59-la-ligne-qui-dit-tout.html",
+    titre: "La ligne qui dit tout",
+    famille: "Le planning",
+    quoi: "La date, le moment de départ et la durée sur la ligne d’un chantier posé, sur les cinq cas du produit. Retenue puis CODÉE le 15 août — « je veux journée et toute la ligne ».",
+  },
+  {
+    fichier: "60-les-conditions-sur-le-devis.html",
+    titre: "Les conditions sur le devis",
+    famille: "Le devis",
+    quoi: "Six conditions se règlent, une seule arrive sur le document — son constat du 16 août. Trois façons de faire monter les cinq autres, face au champ de notes qu’il peut déjà avoir rempli.",
+  },
+  {
+    fichier: "61-la-reduction-au-client.html",
+    titre: "La réduction au client",
+    famille: "Le devis",
+    quoi: "« Fais cinq pour cent sur le montant du devis » — où la petite ligne se pose, et sous quel mot. Le coût des trois est très inégal : une ligne voyage seule jusqu’à la facture.",
+  },
+  {
+    fichier: "62-la-fiche-dentretien.html",
+    titre: "La fiche d’entretien",
+    famille: "L’entretien récurrent",
+    quoi: "Ce que le paysagiste coche sur le chantier. Vingt prestations, quatre faites : tiennent-elles au pouce ? Trois gestes — la liste d’un bloc, rangée par familles, ou trois états avec « sans objet ».",
+  },
+  {
+    fichier: "63-le-rapport-au-client.html",
+    titre: "Le rapport que reçoit le client",
+    famille: "L’entretien récurrent",
+    quoi: "La sortie de la fiche. L’autre application lui montre seize fois « Faux » sur un passage qu’il paie : tout, seulement ce qui a été fait, ou le reste replié en une phrase.",
+  },
+  {
+    fichier: "64-composer-sa-fiche.html",
+    titre: "Composer sa fiche d’entretien",
+    famille: "L’entretien récurrent",
+    quoi: "Dans les Réglages : ajouter, retirer, renommer ses prestations. La question qui reste — une seule fiche pour tous, ou un modèle puis une fiche par client.",
+  },
+  {
+    fichier: "65-choisir-l-heure.html",
+    titre: "Choisir l’heure au pouce",
+    famille: "L’entretien récurrent",
+    quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
+  },
+  {
+    fichier: "77-la-fiche-dans-paysage.html",
+    titre: "La fiche de chantier, et le pont vers le client",
+    famille: "L’entretien récurrent",
+    quoi: "Rangée dans Paysage, à côté de l’arrosage — sa décision du 17 août. La seule question qui reste : à quel moment le client est-il nommé, sachant qu’un outil doit s’ouvrir sans lui et que le pré-remplissage l’exige.",
+  },
+  {
+    fichier: "66-ce-que-je-sais-du-client.html",
+    titre: "Ce que je sais du client",
+    famille: "Les chantiers",
+    quoi: "L’application sait qu’un client est venu quatre fois et qu’il doit encore 740 € — elle ne le montre nulle part. Un encart, une fiche, ou un cinquième onglet.",
+  },
+  {
+    fichier: "67-le-nouveau-chantier-plus-gros.html",
+    titre: "Le nouveau chantier, plus gros",
+    famille: "Enlever le gros bouton",
+    quoi: "« Le plus gros et en gras » — trois formes, trois tailles, trois graisses, et le témoin d’aujourd’hui figé à côté. Le cran le plus gros est celui qui tient encore sans couper le mot sur un écran de 360 px.",
+  },
+  {
+    fichier: "68-retirer-le-prix-accorde.html",
+    titre: "Retirer le prix accordé",
+    famille: "Le devis",
+    quoi: "« Il n’y a aucun moyen de retirer les cinq pour cent. » Écrire 0 ne le retirait pas, la voix non plus — les deux sont réparés. Reste le « petit moins » : glisser la ligne, un rond en face, ou la ligne du bas qui bascule.",
+  },
+  {
+    fichier: "78-le-quinconce-dans-un-couloir.html",
+    titre: "Le quinconce dans un couloir",
+    famille: "L’arrosage automatique",
+    quoi: "Sa règle du 18 août : « dans les couloirs, le but c’est de poser les tuyères en quinconce, celle de gauche recouvre quasi 100 % jusqu’à celle de droite ». Son couloir de 10 × 2 m posé de trois façons — 12 tuyères aujourd’hui, 5 en quinconce, 3 avec une plus grosse buse. La seule chose à trancher : jusqu’où il accepte que ça arrose à côté.",
+  },
+  {
+    fichier: "69-le-plan-darrosage.html",
+    titre: "Le plan d’arrosage",
+    famille: "L’arrosage automatique",
+    quoi: "« Un outil pour les paysagistes pour réaliser des plans d’arrosage automatique. » Trois façons d’entrer le jardin : la feuille, les zones mesurées, ou le plan dessiné.",
+  },
+  {
+    fichier: "70-le-debit-ne-se-partage-pas.html",
+    titre: "Le débit ne se partage pas",
+    famille: "L’arrosage automatique",
+    quoi: "Le calcul qui fait tout l’outil, et rien n’y est à choisir : 1,80 m³/h au robinet, 8,47 demandés, huit secteurs, 3 h 14 de cycle.",
+  },
+  {
+    fichier: "71-ce-qui-sort-du-plan.html",
+    titre: "Ce qui sort du plan",
+    famille: "L’arrosage automatique",
+    quoi: "Le devis, la carte du coffret, le plan remis au client. Ce qu’il y a à choisir : par lequel on commence.",
+  },
+  {
+    fichier: "73-le-trace-du-tuyau.html",
+    titre: "Le tracé du tuyau",
+    famille: "L’arrosage automatique",
+    quoi: "Une seule ligne en serpentin, ou plusieurs lignes parallèles ? Le même secteur tracé des deux façons pour qu’il pointe son geste réel. Tranché : c’est B.",
+  },
+  {
+    fichier: "81-simple-il-ne-paie-pas.html",
+    titre: "Simple : il ne paie pas",
+    famille: "L’argent qui ne rentre pas",
+    quoi: "Refait après sa correction « c’est trop compliqué » : un lien, une question, deux réponses. Quatre écrans.",
+  },
+  {
+    fichier: "79-il-ne-paie-pas.html",
+    titre: "Il ne paie pas",
+    famille: "L’argent qui ne rentre pas",
+    quoi: "Un avoir éteint la dette et interdit de réclamer ; une facture déclarée perdue reste réclamable. Trois arrangements.",
+  },
+  {
+    fichier: "80-l-avoir.html",
+    titre: "L’avoir",
+    famille: "L’argent qui ne rentre pas",
+    quoi: "La forme du document : à part, en mention, ou facture refaite. Trois montants essayables, tous recalculés.",
+  },
+  {
+    fichier: "76-le-cinquieme-onglet.html",
+    titre: "Le cinquième onglet",
+    famille: "L’arrosage automatique",
+    quoi: "Où ranger les outils métier ? Sa décision : un cinquième onglet « Outils ». Cinq variantes de barre, mesurées à 360 px — deux sont à écarter.",
+  },
+  {
+    fichier: "75-le-plan-comme-le-sien.html",
+    titre: "Le plan comme le sien",
+    famille: "L’arrosage automatique",
+    quoi: "Sa photo d’un plan d’exécution, refaite un réseau par couleur : la cible du produit, dessinée avant d’écrire le moteur de plan.",
+  },
+  {
+    fichier: "74-ou-sont-les-tes.html",
+    titre: "Où sont les tés",
+    famille: "L’arrosage automatique",
+    quoi: "« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! » — son tracé libre, cinq tés marqués, et la règle qui vaut partout : N arroseurs, N − 1 tés.",
+  },
+  {
+    fichier: "72-mes-mots-au-catalogue.html",
+    titre: "Mes mots au catalogue",
+    famille: "Les réglages",
+    quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
+  },
+  {
+    fichier: "83-enregistrer-le-pdf.html",
+    titre: "Enregistrer le PDF depuis la fiche client",
+    famille: "Le devis avant l\u2019envoi",
+    quoi: "Les vignettes de la fiche client OUVRENT le PDF sans proposer de l\u2019enregistrer. Trois dosages du geste \u2014 et la question qu\u2019il doit trancher : vient-il regarder, ou garder ?",
+  },
+  {
+    fichier: "82-choisir-la-date.html",
+    titre: "Choisir la date, sans l’écran du milieu",
+    famille: "Le devis avant l’envoi",
+    quoi: "« Envoyer au client » devient « Choisir la date », en vert et sans flèche, et mène droit au calendrier. L’écran du milieu, qui redit le devis qu’on vient de fermer, saute. Trois écrans deviennent deux.",
+  },
 ];
+
+/* ————————————————————————————————————————————————————————————————
+   Une maquette qu'il ne peut pas atteindre n'existe pas
+   ————————————————————————————————————————————————————————————————
+
+   **Ce que ce contrôle a trouvé le 15 août 2026, et qui ne se voyait nulle
+   part : six maquettes dessinées, commises, et introuvables.** 38, 39, 41, 42,
+   43 et 46 n'étaient inscrites ni au sommaire (`index.html`) ni à la page
+   unique. Elles n'existaient que pour qui connaissait leur nom de fichier —
+   c'est-à-dire pour personne, le patron ne consultant que ces deux portes.
+
+   Le compte affiché ne pouvait pas l'attraper : « 36 maquettes fusionnées »
+   reste parfaitement plausible quand il en manque six.
+
+   Les deux portes n'ont pas le même rôle, et l'exigence porte donc sur leur
+   RÉUNION, pas sur chacune : la page unique est une SÉLECTION — elle recolle
+   les maquettes de charte, et laisse dehors celles qui se manipulent (les
+   « à l'essai », qui ne valent que seules) ; le sommaire est le CATALOGUE.
+   Être dans l'une des deux suffit ; n'être dans aucune est le défaut.
+
+   Second contrôle, sur les numéros. Le patron les désigne par leur chiffre —
+   « fais la 34 » — et cinq numéros étaient déjà portés en double.
+*/
+function verifierLaListe() {
+  const plaintes = [];
+
+  const surDisque = readdirSync(SOURCE)
+    .filter((f) => /^\d/.test(f) && f.endsWith(".html"))
+    .sort();
+  const inscrites = new Set(MAQUETTES.map((m) => m.fichier));
+  const sommaire = readFileSync(join(SOURCE, "index.html"), "utf8");
+
+  for (const f of surDisque) {
+    if (!inscrites.has(f) && !sommaire.includes(f)) {
+      plaintes.push(
+        `« ${f} » n'est ni au sommaire ni dans la page unique : le patron n'a aucun chemin qui y mène.`,
+      );
+    }
+  }
+  for (const m of MAQUETTES) {
+    if (!existsSync(join(SOURCE, m.fichier))) {
+      plaintes.push(`« ${m.fichier} » est inscrite mais introuvable dans ${SOURCE}.`);
+    }
+  }
+  // Un lien mort dans le sommaire est le défaut d'origine de ce dossier : le
+  // patron a cliqué, et rien ne s'est ouvert.
+  for (const lien of sommaire.matchAll(/href="(\d[^"]*\.html)"/g)) {
+    if (!existsSync(join(SOURCE, lien[1]))) {
+      plaintes.push(`le sommaire renvoie à « ${lien[1] } », qui n'existe pas.`);
+    }
+  }
+
+  const parNumero = new Map();
+  for (const f of surDisque) {
+    const numero = f.slice(0, 2);
+    if (!parNumero.has(numero)) parNumero.set(numero, []);
+    parNumero.get(numero).push(f);
+  }
+  // Les doublons d'avant le 15 août sont tolérés NOMMÉMENT : les renuméroter
+  // casserait les renvois déjà écrits dans TODO.md, ARCHITECTURE.md et dans les
+  // conversations. Tout nouveau doublon, lui, fait rougir.
+  //
+  // Le 50 est un cas à part, et volontaire : Gunzi, Goonzi et Gunzy sont LA MÊME
+  // planche sous trois noms, montrées côte à côte. Les séparer les rendrait
+  // incomparables.
+  const DOUBLONS_HERITES = new Set(["33", "34", "35", "36", "37", "50"]);
+  for (const [numero, fichiers] of parNumero) {
+    if (fichiers.length > 1 && !DOUBLONS_HERITES.has(numero)) {
+      plaintes.push(
+        `le numéro ${numero} est porté par ${fichiers.length} maquettes (${fichiers.join(", ")}) : « fais la ${Number(numero)} » ne désigne plus rien.`,
+      );
+    }
+  }
+
+  if (plaintes.length) {
+    console.error("La liste des maquettes est en défaut :\n  • " + plaintes.join("\n  • "));
+    process.exit(1);
+  }
+}
+
+verifierLaListe();
 
 /* ————————————————————————————————————————————————————————————————
    Confinement de la feuille de style
@@ -341,6 +672,33 @@ function sansBlocsOpaques(css) {
 // uniques et référencés par <use>/url() : on n'y touche pas.
 const IDS_A_PREFIXER = ["modele", "duo", "trio", "g1", "g2", "g3", "chartes", "ecran"];
 
+// **Et les familles d'identifiants numérotés**, qui ne peuvent pas s'énumérer :
+// une maquette à huit écrans en pose vingt-quatre, la suivante en posera
+// d'autres. Les nommer un par un dans la liste ci-dessus, c'est se condamner à
+// l'oublier — et l'oubli ne se voit pas : deux maquettes qui portent chacune un
+// `entrer-1` donnent une page unique où le libellé de la seconde coche la case
+// de la PREMIÈRE. Elle s'affiche parfaitement et ne répond à rien. Trouvé le
+// 12 août 2026 en ajoutant la maquette 34 à côté de la 33.
+const FAMILLES_A_PREFIXER = [
+  /^entrer-\d+$/,
+  /^adresse-\d+$/,
+  /^mdp-\d+$/,
+  // Les réglages en lettre-tiret-lettre des planches récentes (`f-a`, `t-3`,
+  // `g-2`, `v-b`, `m-1`…). Ils sont si courts que deux maquettes finiront par
+  // se les partager, et la panne est muette : la seconde cocherait la case de
+  // la première. Préfixés d'avance plutôt qu'après coup.
+  /^[a-z]-[a-z0-9]{1,3}$/,
+];
+
+/** Les identifiants du corps qui appartiennent à une famille numérotée. */
+function idsDeFamille(corps) {
+  const trouves = new Set();
+  for (const m of corps.matchAll(/id="([^"]+)"/g)) {
+    if (FAMILLES_A_PREFIXER.some((f) => f.test(m[1]))) trouves.add(m[1]);
+  }
+  return [...trouves];
+}
+
 function lire(maquette, indice) {
   const numero = String(indice + 1).padStart(2, "0");
   const hote = `#s${numero}`;
@@ -363,8 +721,34 @@ function lire(maquette, indice) {
     return "";
   });
 
-  for (const id of IDS_A_PREFIXER) {
+  const prefixes = [];
+  for (const id of [...IDS_A_PREFIXER, ...idsDeFamille(corps)]) {
+    if (!corps.includes(`id="${id}"`)) continue;
     corps = corps.replaceAll(`id="${id}"`, `id="s${numero}-${id}"`);
+    // **Et le `for` du libellé avec, sinon la case ne se coche plus.** Une
+    // maquette sans script peut dépendre d'un identifiant tout autant qu'une
+    // autre : `<label for="g1">` sur `<input id="g1">` est ce qui rend une
+    // bascule ou un bouton utilisable sans JavaScript. Préfixer l'un sans
+    // l'autre laisse une page qui s'affiche parfaitement et ne répond à rien —
+    // la pire des pannes, parce qu'aucune capture ne la montre. Trouvé le
+    // 12 août 2026 sur la maquette du logo, par le contrôle et non à l'œil.
+    corps = corps.replaceAll(`for="${id}"`, `for="s${numero}-${id}"`);
+    prefixes.push(id);
+  }
+
+  // **Et la FEUILLE DE STYLE avec, sinon la planche s'affiche et ne répond à
+  // rien.** Une maquette sans script pilote ses états par `#t-3:checked ~ …` et
+  // colore la pastille choisie par `label[for="t-3"]`. Préfixer l'identifiant
+  // dans le corps sans le suivre dans le style, c'est casser exactement ce
+  // qu'on venait de protéger : les trois formes disparaissent d'un coup, ou
+  // pire, une seule reste figée. Trouvé le 16 août 2026 en ajoutant la 62 —
+  // par le contrôle plus bas, jamais à l'œil.
+  //
+  // Du plus long au plus court : `#t-1` ne doit pas mordre dans `#t-15`.
+  let feuille = sansCommentaires(style[1]);
+  for (const id of [...prefixes].sort((a, b) => b.length - a.length)) {
+    feuille = feuille.replaceAll(`for="${id}"`, `for="s${numero}-${id}"`);
+    feuille = feuille.replace(new RegExp(`#${id}\\b`, "g"), `#s${numero}-${id}`);
   }
 
   return {
@@ -372,7 +756,8 @@ function lire(maquette, indice) {
     numero,
     ancre: `m${numero}`,
     hote: `s${numero}`,
-    css: confinerAnimations(confinerCss(sansCommentaires(style[1]), hote), `s${numero}`),
+    prefixes,
+    css: confinerAnimations(confinerCss(feuille, hote), `s${numero}`),
     corps: corps.trim(),
     scripts,
   };
@@ -398,6 +783,19 @@ for (const p of pages) {
       plaintes.push(`${p.fichier} : sélecteur non confiné « ${sel.slice(0, 70)} »`);
     }
   }
+  // **Aucune référence orpheline dans le style.** Un `#t-3` ou un
+  // `label[for="t-3"]` resté nu dans la feuille alors que le corps porte
+  // `s43-t-3` ne désigne plus rien : la page s'affiche parfaitement et ne
+  // répond à rien — la panne que ce script existe pour empêcher.
+  for (const id of p.prefixes) {
+    if (new RegExp(`#${id}\\b`).test(p.css) || p.css.includes(`for="${id}"`)) {
+      plaintes.push(
+        `${p.fichier} : la feuille désigne encore #${id} alors que le corps porte ` +
+          `#${p.hote}-${id} — les réglages ne répondraient plus`,
+      );
+    }
+  }
+
   // Chaque identifiant que le script va chercher doit exister, PRÉFIXÉ, dans
   // le corps — sinon le clonage tombe sur null au chargement de la page.
   // Le contrôle lit les appels réels plutôt que de supposer un nom : il

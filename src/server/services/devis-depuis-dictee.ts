@@ -13,8 +13,10 @@ import { peutPreparerDevis } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
 import { listerPrestations, modifierPrestation } from "../repositories/prestations";
 import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
+import { lireGrilles } from "../repositories/grilles-reglables";
 import { lignesVendables } from "../../lib/lignes-vendables";
 import type { LectureDictee, PropositionExtraction } from "../ai/schemas/extraction";
+import { logger } from "../logger";
 
 // **De la dictée au devis, en un seul geste.**
 //
@@ -80,7 +82,48 @@ export type ResultatDevisDepuisDictee =
   | { statut: "questions"; questions: QuestionChiffrage[] }
   | { statut: "prepare"; rapport: RapportDevisDepuisDictee };
 
+/**
+ * **On mesure ce que la chaîne coûte, parce que personne ne le savait.**
+ *
+ * Le patron, le 12 août 2026 : *« entre le moment où je clique mon devis et le
+ * moment où le devis apparaît, il s'est passé plus de six minutes. »* Le
+ * raisonnement disait que c'était impossible — chaque appel à un modèle est
+ * borné à trente secondes — mais **personne ne l'avait mesuré chez lui**, et
+ * raisonner à distance sur une machine qu'on ne voit pas a déjà coûté cher à ce
+ * dépôt (`AGENTS.md`).
+ *
+ * Cette enveloppe coûte deux `Date.now()` et clôt la question la prochaine
+ * fois : si la chaîne met vraiment des minutes, le journal le dira, avec le
+ * statut obtenu — et l'on saura quel maillon accuser au lieu de le deviner.
+ *
+ * Elle journalise **aussi quand la chaîne échoue** : une panne lente est
+ * exactement le cas où la durée renseigne le plus.
+ */
 export async function preparerDevisDepuisDictee(
+  ctx: Ctx,
+  chantierId: string,
+  options: { remplacer?: boolean } = {}
+): Promise<ResultatDevisDepuisDictee> {
+  const debut = Date.now();
+  try {
+    const resultat = await executerChaineDevis(ctx, chantierId, options);
+    logger.info("Devis depuis dictée : chaîne terminée", {
+      chantierId,
+      statut: resultat.statut,
+      dureeMs: Date.now() - debut,
+    });
+    return resultat;
+  } catch (err) {
+    logger.error("Devis depuis dictée : la chaîne a échoué", {
+      chantierId,
+      dureeMs: Date.now() - debut,
+      motif: err instanceof Error ? err.message : String(err),
+    });
+    throw err;
+  }
+}
+
+async function executerChaineDevis(
   ctx: Ctx,
   chantierId: string,
   options: { remplacer?: boolean } = {}
@@ -163,7 +206,10 @@ async function questionsRestantes(
   prestations: { libelle: string; description?: string | null; quantite?: string | null; unite?: string | null }[]
 ): Promise<QuestionChiffrage[]> {
   const deja = await listerPrecisions(ctx, chantierId);
-  return questionsAvantChiffrage(prestations, new Set(deja.map((p) => p.sujet)));
+  // Ses façons d'abattre à lui : une question qui proposerait les trois
+  // d'origine laisserait sa quatrième rangée vide pour toujours.
+  const { axes } = await lireGrilles(ctx);
+  return questionsAvantChiffrage(prestations, new Set(deja.map((p) => p.sujet)), axes.techniques);
 }
 
 /**

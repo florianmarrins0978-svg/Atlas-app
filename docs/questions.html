@@ -81,6 +81,21 @@
 <li><a href="#10-qui-voit-quoi--moi-mes-clients-leurs-salariés-">Qui voit quoi : moi, mes clients, leurs salariés ?</a></li>
 <li><a href="#11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</a></li>
 <li><a href="#12-lagenda-google--mes-artisans-auront-ils-des-identifiants-à-saisir-">L'agenda Google : mes artisans auront-ils des identifiants à saisir ?</a></li>
+<li><a href="#13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-">Pourquoi tous les boutons ont-ils la même forme ?</a></li>
+<li><a href="#14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-">Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?</a></li>
+<li><a href="#15-ma-tva-je-la-déclare-tous-les-mois-ou-tous-les-trimestres-">Ma TVA, je la déclare tous les mois ou tous les trimestres ?</a></li>
+<li><a href="#16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">L'IA se sert-elle de mes réglages pour faire les devis ?</a></li>
+<li><a href="#17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</a></li>
+<li><a href="#18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-">À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?</a></li>
+</ol>
+<p>18 bis. <a href="#18-bis-le-catalogue-sécrit-maintenant--et-non-il-ne-sautoalimente-pas">Le catalogue s'écrit maintenant — et non, il ne s'autoalimente pas</a></p>
+<ol>
+<li><a href="#19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-">Une équipe part cinq jours en déplacement : comment on gère ça ?</a></li>
+<li><a href="#20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-">Si un client ne me paie pas, la TVA part quand même ?</a></li>
+<li><a href="#21-quelle-est-la-différence-entre--planning--et--équipe--dans-les-réglages-">Quelle est la différence entre « Planning » et « Équipe » dans les réglages ?</a></li>
+<li><a href="#22-mes-outils-de-calcul-on-les-range-où-dans-lapplication-">Mes outils de calcul, on les range où dans l'application ?</a></li>
+<li><a href="#23-lapplication-est-elle-trop-compliquée-pour-un-artisan-pressé-">L'application est-elle trop compliquée pour un artisan pressé ?</a></li>
+<li><a href="#24-faut-il-une-licence-pour-se-servir-des-données-de-linrae-">Faut-il une licence pour se servir des données de l'INRAE ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -457,8 +472,35 @@
 <h3 id="-sans-les-prix--ne-peut-pas-être-un-masquage-à-lécran">« Sans les prix » ne peut pas être un masquage à l'écran</h3>
 <p>Le point sur lequel il ne faut pas transiger. Cacher un montant dans la page ne le retire pas de ce que la page a reçu : un salarié qui ouvre l'adresse du PDF, ou qui regarde ce que son téléphone a téléchargé, verrait tout.</p>
 <p><strong>Les montants ne doivent pas sortir du serveur</strong> pour qui n'a pas le droit de les voir — ni dans la page, ni dans le PDF, ni dans une réponse d'API. C'est plus de travail qu'un test dans l'affichage, et c'est la seule version honnête : un salarié qui découvre votre marge parce qu'il a su regarder, c'est pire que pas de restriction du tout, puisque vous vous croyiez protégé.</p>
-<h3 id="ce-qui-reste-à-trancher">Ce qui reste à trancher</h3>
-<p><strong>Le salarié voit-il le planning de toute l'entreprise, ou seulement ses chantiers à lui ?</strong> Question posée le 7 août 2026, réponse remise à plus tard : <em>« attends, fais déjà tout le reste, on en reparle après. »</em> Elle change le travail et elle change ce qui se vend.</p>
+<h3 id="tranché-le-13-août-2026--quatre-rôles-et-une-portée-qui-se-règle-par-personne">Tranché le 13 août 2026 : quatre rôles, et une portée qui se règle par personne</h3>
+<p><strong>Le salarié voit-il le planning de toute l'entreprise, ou seulement ses chantiers à lui ?</strong> Question posée le 7 août, réponse remise (<em>« attends, fais déjà tout le reste, on en reparle après »</em>), puis donnée le 13 août :</p>
+<blockquote><em>« Accès à tout, mais le patron choisira s'il a accès qu'à ses chantiers ou à tout. »</em></blockquote>
+<p><strong>Ce n'est ni l'une ni l'autre des deux options proposées.</strong> C'est un réglage <strong>par personne</strong>, posé sous le rôle du salarié : deux salariés peuvent ne pas voir la même chose. Et <strong>le défaut est « tout »</strong> — un salarié invité ce matin voit le planning entier tant que son patron n'a rien restreint. Restreindre est un geste, pas un état de départ.</p>
+<p><strong>Un quatrième rôle est ajouté le même jour : le commercial.</strong> Il vend, il n'engage pas.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Qui</th>
+<th>Ce qu'il voit</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Vous, l'éditeur</strong></td>
+<td>Tout, <strong>plus</strong> le vocabulaire du métier</td>
+</tr>
+<tr>
+<td><strong>Le patron</strong> — <em>ce qui se vend</em></td>
+<td>Toute son entreprise, sans exception</td>
+</tr>
+<tr>
+<td><strong>Le commercial</strong></td>
+<td>Les chantiers, le planning, les devis <strong>et les prix</strong> — il en a besoin pour vendre. Ni les factures, ni la TVA, ni l'IBAN, ni les accès, ni l'abonnement. Il lit les tarifs, il ne les change pas</td>
+</tr>
+<tr>
+<td><strong>Le salarié</strong></td>
+<td>Le planning et ses chantiers, les devis <strong>sans aucun montant</strong>. Le patron choisit s'il voit tout le planning ou ses seuls chantiers</td>
+</tr>
+</tbody></table></div>
+<p><strong>Attention à un mot qui trompe :</strong> dans Atlas, une « équipe » n'est pas un groupe de personnes, c'est une <strong>file du planning</strong> — combien de chantiers partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront jamais l'application ; un commercial a un compte et ne conduit aucun chantier. Les réglages tiennent donc <strong>deux listes séparées</strong> : <em>qui a accès</em>, et <em>vos équipes</em>.</p>
+<h3 id="ce-qui-reste-vrai-et-qui-nest-pas-encore-fait">Ce qui reste vrai, et qui n'est pas encore fait</h3>
+<p><strong>Rien de ce tableau n'est en place au 13 août 2026.</strong> La base ne connaît que deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès, et surtout <strong>rien ne filtre ce qui est envoyé</strong> : un membre voit aujourd'hui tous les prix et tous les montants. Le dessin de ces écrans existe (<code>maquettes/atlas-reglages-equipe.html</code>) ; le code, non.</p>
 <hr>
 <h2 id="11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">11. Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -569,6 +611,587 @@
 <p><strong>Une réserve, écrite parce qu'elle compte.</strong> À ma connaissance, l'agenda relève des permissions dites « sensibles » — vérification gratuite mais longue — et non des « restreintes », qui exigent en plus un audit de sécurité payant. <strong>Je n'ai pas pu le confirmer</strong> : le réseau de l'environnement de développement refuse les pages de Google. À vérifier avant d'annoncer une date de lancement.</p>
 <h3 id="ce-quil-faut-en-retenir-pour-le-calendrier">Ce qu'il faut en retenir pour le calendrier</h3>
 <p><strong>Lancez la demande de vérification tôt</strong>, pas la semaine où vous voulez vendre. C'est le genre de délai qui ne se rattrape pas.</p>
+<hr>
+<h2 id="13-pourquoi-tous-les-boutons-ont-ils-la-même-forme-">13. Pourquoi tous les boutons ont-ils la même forme ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Posée le 11 août 2026 :</em> « comment ça ce bouton est sur vingt-sept écrans ? tu peux m'expliquer » — puis, le lendemain, en voyant sur la feuille d'envoi de son devis un bouton carré à côté d'une capsule : « remplace tous les boutons rectangulaires par les boutons arrondis ».</p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Parce qu'une forme est une phrase.</strong> Dans Atlas, la capsule pleine, en vert pin, veut dire exactement une chose : <em>appuie ici, c'est l'action de cet écran</em>. Si deux écrans la disent avec deux dessins différents, il faut la réapprendre à chaque fois — et surtout, on doute : <em>est-ce que celui-là fait vraiment la même chose ?</em></p>
+<p>C'est aussi pour cela que <strong>les champs et les cartes gardent leurs coins presque droits</strong> (4 px). Le rayon n'est pas une décoration, c'est un panneau : arrondi plein = on touche, presque droit = on lit. Tout arrondir aurait effacé la distinction.</p>
+<h3 id="une-correction-parce-que-je-vous-ai-donné-un-faux-chiffre">Une correction, parce que je vous ai donné un faux chiffre</h3>
+<p><strong>« Vingt-sept écrans » était faux, et c'est moi qui l'ai écrit.</strong> J'avais compté les fichiers, pas les écrans — les huit maquettes de travail (<code>/design/…</code>), qui ne sont pas votre application, étaient dans le tas.</p>
+<p>Le vrai décompte, au 12 août 2026 :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Combien</th>
+</tr></thead><tbody>
+<tr>
+<td>Écrans du produit qui portent le bouton partagé</td>
+<td><strong>8</strong> (11 boutons)</td>
+</tr>
+<tr>
+<td>Écrans d'erreur, qui le prennent par une pièce commune</td>
+<td><strong>9</strong> (1 bouton)</td>
+</tr>
+<tr>
+<td>Maquettes de travail, hors application</td>
+<td>8</td>
+</tr>
+<tr>
+<td><strong>Total réel dans votre application</strong></td>
+<td><strong>17 écrans</strong></td>
+</tr>
+</tbody></table></div>
+<p>Le code ne porte plus le chiffre, il porte <strong>la commande pour le recompter</strong> — un nombre écrit à la main dans un commentaire est faux le mois suivant, et personne ne le vérifie.</p>
+<h3 id="pourquoi-la-capsule-et-pas-autre-chose">Pourquoi la capsule, et pas autre chose</h3>
+<p>Vous avez choisi la cinquième de huit propositions dessinées le 11 août (maquette 28). Le bouton d'avant pesait par <strong>trois</strong> choses à la fois, et vous n'en avez nommé qu'une — « trop gros, carré, pas esthétique » :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui pesait</th>
+<th>Avant</th>
+<th>La capsule</th>
+</tr></thead><tbody>
+<tr>
+<td>La hauteur</td>
+<td>58 px, près d'un dixième de votre écran</td>
+<td>43 px</td>
+</tr>
+<tr>
+<td>La largeur</td>
+<td>il touchait les deux marges, donc rien ne le contenait</td>
+<td>juste la largeur du mot</td>
+</tr>
+<tr>
+<td>La forme</td>
+<td>presque droite, 5 px de rayon</td>
+<td>pleinement arrondie</td>
+</tr>
+</tbody></table></div>
+<p>Elle est <strong>plus petite que ce qu'elle remplace</strong>, alors qu'elle a l'air plus présente : c'est la largeur libre qui fait ça, pas la taille.</p>
+<p><strong>Une chose à savoir sur la comparaison que je vous avais montrée d'abord : elle mentait.</strong> J'avais découpé chaque bouton au ras, et deux boutons de largeurs différentes affichés dans deux colonnes de même largeur donnent l'impression inverse de la vérité — la capsule paraissait plus grosse. La planche a été refaite en photographiant l'écran entier.</p>
+<h3 id="ce-qui-empêche-que-ça-reparte-dans-tous-les-sens">Ce qui empêche que ça reparte dans tous les sens</h3>
+<p>Le 12 août, trois écrans dessinaient encore leur bouton à la main : ils avaient été écrits avant la capsule et ne l'avaient jamais su. <strong>C'est vous qui l'avez vu, pas nous</strong> — d'où un contrôle automatique (<code>scripts/test-boutons-arrondis.ts</code>) qui refuse désormais tout bouton rectangulaire ajouté dans l'application. Il tourne à chaque livraison.</p>
+<p>Il ne regarde que <strong>la forme</strong>, volontairement : deux boutons (la connexion, les documents légaux) doivent rester des boutons de formulaire, et les forcer à passer par la pièce commune casserait leur envoi. La forme, elle, est la même pour tous.</p>
+<h3 id="ce-que-ça-vous-coûte-quand-vous-changez-davis">Ce que ça vous coûte quand vous changez d'avis</h3>
+<p><strong>Un seul fichier à toucher</strong>, <code>src/components/atlas/PrimaryButton.tsx</code> : les 17 écrans suivent. C'est tout l'intérêt d'avoir une pièce commune plutôt que dix-sept dessins — le jour où la capsule ne vous plaît plus, ce n'est pas dix-sept corrections, c'en est une.</p>
+<hr>
+<h2 id="14-le-calendrier-dapple--puis-je-le-relier-comme-lagenda-google-">14. Le Calendrier d'Apple : puis-je le relier comme l'agenda Google ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Posée le 12 août 2026</em>, capture du Calendrier d'Apple à l'appui : « je peux connecter ce calendrier à mon appli ? »</p>
+<h3 id="oui--mais-ce-nest-pas-le-même-travail-que-google">Oui — mais ce n'est pas le même travail que Google</h3>
+<p><strong>D'abord, une distinction qui change tout : le Calendrier d'Apple n'est qu'une vitrine.</strong> Il affiche aussi bien un compte iCloud qu'un compte Gmail ou un compte professionnel. Ce n'est donc pas « le Calendrier » qu'on relie, c'est le compte qui est derrière.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'il y a derrière la vitrine</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td>Un compte <strong>Google</strong></td>
+<td><strong>Rien à écrire.</strong> Le code existe déjà ; il reste vos identifiants Google (<a href="A-FAIRE.md" target="_blank" rel="noopener">A-FAIRE §7</a>)</td>
+</tr>
+<tr>
+<td><strong>iCloud</strong></td>
+<td>Un fournisseur en plus, et un parcours moins confortable — voir ci-dessous</td>
+</tr>
+<tr>
+<td><strong>Outlook / Exchange</strong></td>
+<td>Un troisième raccordement, encore différent</td>
+</tr>
+</tbody></table></div>
+<p><strong>Vous avez répondu iCloud</strong>, et vous voulez <strong>les deux sens</strong> : qu'Atlas lise vos rendez-vous, et qu'il y écrive vos chantiers.</p>
+<h3 id="pourquoi-apple-demande-plus-de-gestes-que-google">Pourquoi Apple demande plus de gestes que Google</h3>
+<p>Chez Google, l'artisan appuie sur un bouton, l'écran de Google s'ouvre, il accepte, c'est fini — il n'a rien à taper (voir question 12).</p>
+<p><strong>Apple n'offre pas d'équivalent pour l'agenda.</strong> Le bouton « Se connecter avec Apple » existe, mais il ne donne accès qu'à une identité, jamais au calendrier. Le seul chemin praticable est le protocole <em>CalDAV</em>, avec un <strong>mot de passe spécifique à l'application</strong> que vous générez sur votre compte Apple.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Google</th>
+<th>iCloud</th>
+</tr></thead><tbody>
+<tr>
+<td>Ce que l'artisan fait</td>
+<td>Il appuie, il accepte</td>
+<td>Il va sur son compte Apple, génère un mot de passe de 16 caractères, le recopie dans Atlas</td>
+</tr>
+<tr>
+<td>Ce qu'Apple exige</td>
+<td>—</td>
+<td>La double authentification activée sur le compte</td>
+</tr>
+<tr>
+<td>Écrire dans l'agenda</td>
+<td>Possible, permission à part</td>
+<td>Possible, sans permission supplémentaire</td>
+</tr>
+<tr>
+<td>Portée de l'accès</td>
+<td><strong>L'agenda seul</strong></td>
+<td><strong>Tout l'iCloud</strong> — mail, contacts, fichiers</td>
+</tr>
+</tbody></table></div>
+<h3 id="les-trois-réserves-écrites-parce-quelles-comptent">Les trois réserves, écrites parce qu'elles comptent</h3>
+<p><strong>1. Le mot de passe ouvre tout l'iCloud, pas seulement l'agenda.</strong> Apple ne sait pas restreindre un mot de passe spécifique à un seul service. Atlas le chiffre au repos comme il chiffre les jetons Google (<code>src/server/agenda/secret-au-repos.ts</code>), mais le chiffrement protège d'une sauvegarde recopiée, pas de l'étendue de ce que la clé ouvre. C'est la vraie différence avec Google, et elle ne se corrige pas côté Atlas.</p>
+<p><strong>2. Apple ne documente pas publiquement ce canal.</strong> Il fonctionne depuis des années et de nombreux logiciels s'en servent, mais il n'y a <strong>aucun engagement</strong> d'Apple : cela peut cesser du jour au lendemain, sans préavis. Le raccordement Google, lui, repose sur une interface publique et versionnée.</p>
+<p><strong>3. Écrire est un geste qui ne se reprend pas tout seul.</strong> Atlas posera des rendez-vous dans votre agenda personnel. Il ne touchera <strong>jamais</strong> ce qui ne vient pas de lui, et ce qu'il a posé se retire d'un geste — mais c'est une décision, pas un réglage par défaut.</p>
+<h3 id="ce-que-ça-coûte-en-argent--rien">Ce que ça coûte en argent : rien</h3>
+<p>Et sur ce point, <strong>Apple est moins cher que Google</strong> : pas de compte développeur, pas d'écran de consentement à faire valider, pas de plafond de cent comptes de test, <strong>pas de semaines d'attente</strong>. Là où Google impose une vérification avant de commercialiser (<a href="A-FAIRE.md" target="_blank" rel="noopener">A-FAIRE §8</a>), iCloud ne demande la permission de personne.</p>
+<h3 id="ce-que-je-nai-pas-pu-vérifier-dici">Ce que je n'ai pas pu vérifier d'ici</h3>
+<p><strong>Le réseau de l'environnement de développement refuse <code>caldav.icloud.com</code></strong> — essayé le 12 août 2026, connexion refusée. Tout ce qui touche au comportement réel d'Apple devra donc être éprouvé <strong>sur votre banc d'essai</strong>, pas ici. C'est la même situation que pour Google, et elle se traite pareil : la logique qui décide vit dans un module qui ne parle à personne et qui, lui, s'éprouve entièrement ici.</p>
+<h3 id="ce-qui-a-été-fait-le-jour-même">Ce qui a été fait le jour même</h3>
+<p>Vous avez répondu <em>« code pour qu'on puisse lire et écrire dans cet agenda »</em> — c'est écrit. Vous collez votre adresse iCloud et le mot de passe pour les apps ; Atlas trouve vos agendas, cesse de proposer les demi-journées déjà prises, et — <strong>si vous l'allumez</strong> — pose vos chantiers dans le calendrier que vous désignez. Débrancher les retire.</p>
+<p><strong>Ce qui n'a PAS pu être vérifié, et qu'il faut lire comme tel :</strong> aucun échange réel avec iCloud n'a eu lieu ici — le réseau de l'environnement de développement le refuse. Les contrôles couvrent tout ce qui <em>décide</em> ; ce qui reste à éprouver, c'est le dialogue avec Apple lui-même, et cela demande votre compte. <strong>Attendez-vous à un premier essai qui échoue</strong> : ce sera dit à l'écran, avec la phrase d'Apple telle quelle.</p>
+<h3 id="ce-que-ça-ne-change-pas">Ce que ça ne change pas</h3>
+<p>Ce qui décide quelles demi-journées sont prises, et comment elles se fondent dans votre planning, est <strong>commun à tous les agendas</strong> et ne bouge pas d'une ligne (<code>src/lib/agenda-externe.ts</code>). Le nouveau code n'ajoute qu'une chose : la manière d'aller chercher les rendez-vous. Deux fournisseurs, une seule règle — c'est ce qui évite que le planning finisse par répondre différemment selon le calendrier branché.</p>
+<h2 id="15-ma-tva-je-la-déclare-tous-les-mois-ou-tous-les-trimestres-">15. Ma TVA, je la déclare tous les mois ou tous les trimestres ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Posée le 2026-08-12.</em> Vous aviez raison de le demander : l'écran était découpé en trimestres, et personne n'avait écrit pourquoi.</p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Tous les mois, par défaut.</strong> La déclaration de TVA au régime réel normal — le formulaire CA3 — est mensuelle. Le trimestre n'est pas un choix libre : c'est une <strong>option</strong>, ouverte seulement si votre TVA due de l'année précédente est <strong>inférieure à 4 000 €</strong>. Au-dessus, on revient au mois.</p>
+<h3 id="ce-qui-change-en-2027-et-qui-vous-concerne">Ce qui change en 2027, et qui vous concerne</h3>
+<p>Il existe encore aujourd'hui un troisième cas : le <strong>régime réel simplifié</strong>, une déclaration annuelle avec deux acomptes en juillet et décembre. <strong>Il disparaît au 1er janvier 2027</strong> — voté à l'article 38 de la loi de finances pour 2025 (loi n° 2025-127 du 14 février 2025), ses modalités ajustées par celle pour</p>
+<ol>
+<li>Toutes les entreprises basculent alors au réel normal : mensuel ou</li>
+</ol>
+<p>trimestriel.</p>
+<p>Autrement dit, <strong>la question « mois ou trimestre » sera la seule qui se pose</strong>. C'est pour cela que l'application ne propose que ces deux-là.</p>
+<h3 id="ce-quatlas-ne-vous-dira-jamais-et-pourquoi">Ce qu'Atlas ne vous dira jamais, et pourquoi</h3>
+<p><strong>Lequel des deux vous concerne.</strong> Le seuil des 4 000 € porte sur la TVA <strong>due</strong> : ce que vous avez collecté <em>moins</em> ce que vous déduisez sur vos achats. Atlas ne connaît que la première — il ne voit ni votre gazole, ni votre tronçonneuse, ni votre assurance.</p>
+<p>Il ne peut donc pas calculer si vous avez droit au trimestre, et il ne doit pas le laisser croire. C'est la même règle que pour les prix : sans source fiable, on n'écrit pas. <strong>Votre comptable tranche ; l'application obéit.</strong></p>
+<h3 id="où-ça-se-règle">Où ça se règle</h3>
+<p><strong>Réglages → Votre TVA</strong>, deux boutons : « Tous les mois » ou « Tous les trimestres ». Le mois est coché d'avance, puisque c'est le défaut légal. L'écran de TVA et son calendrier suivent votre choix — douze mois d'un côté, quatre trimestres de l'autre.</p>
+<hr>
+<h2 id="16-lia-se-sert-elle-de-mes-réglages-pour-faire-les-devis-">16. L'IA se sert-elle de mes réglages pour faire les devis ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question posée le 13 août 2026, en dessinant l'écran des tarifs.</em></p>
+<h3 id="oui--et-dans-un-ordre-précis-qui-ne-laisse-aucune-place-à-linvention">Oui — et dans un ordre précis, qui ne laisse aucune place à l'invention</h3>
+<p>Quand Atlas doit mettre un prix sur une ligne, il fait toujours la même chose, dans cet ordre :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qu'il fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>Il cherche dans <strong>vos tarifs</strong>. Un seul correspond : il le prend, tel quel</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Plusieurs correspondent : <strong>il ne choisit pas</strong>. Il vous les montre et vous laissez trancher</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Aucun ne correspond : il <strong>calcule</strong> avec vos coûts (durée × ouvriers × coût journalier, + le chef, + le déplacement, + votre marge)</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>Il ne peut pas calculer : il écrit <strong>« prix à renseigner »</strong> et se tait</td>
+</tr>
+</tbody></table></div>
+<p>Le code le dit dans ces mots : <em>« jamais de prix inventé, jamais de choix arbitraire »</em>.</p>
+<h3 id="ce-qui-ne-part-jamais-chez-un-fournisseur-dia">Ce qui ne part JAMAIS chez un fournisseur d'IA</h3>
+<p><strong>Votre identité — nom, adresse, SIRET, IBAN — n'est jamais envoyée au modèle.</strong> Elle est recopiée dans le document au moment où il est créé, c'est tout. Ce qui identifie votre entreprise et votre banque ne sort pas de chez vous.</p>
+<p>Ce qui sert au modèle, en revanche : <strong>le vocabulaire du métier</strong> (les mots, pour comprendre votre dictée) et <strong>ce que vous avez chiffré par le passé</strong>.</p>
+<h3 id="le-problème-que-cette-question-a-fait-apparaître">Le problème que cette question a fait apparaître</h3>
+<p>Le calcul du point 3 s'appuie sur <strong>cinq chiffres enregistrés pour votre entreprise</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Valeur posée aujourd'hui</th>
+</tr></thead><tbody>
+<tr>
+<td>Un ouvrier, à la journée</td>
+<td>200 €</td>
+</tr>
+<tr>
+<td>Un chef d'équipe, à la journée</td>
+<td>280 €</td>
+</tr>
+<tr>
+<td>Déplacement, au forfait</td>
+<td>35 €</td>
+</tr>
+<tr>
+<td>Votre marge</td>
+<td>20 %</td>
+</tr>
+<tr>
+<td>TVA par défaut</td>
+<td>20 %</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun écran ne permet de les changer.</strong> Ils décident pourtant du prix proposé chaque fois qu'aucun tarif ne correspond. Un artisan dont l'ouvrier coûte 260 € par jour verra donc des prix trop bas — <strong>sans jamais savoir d'où ils viennent</strong>.</p>
+<p>C'est pire qu'un réglage absent : c'est un réglage qui existe, qui agit, et qu'on ne peut pas voir. L'écran est dessiné (<code>maquettes/atlas-reglages-tarifs.html</code>) ; il reste à le coder.</p>
+<hr>
+<h2 id="17-le--deuxième-cerveau---ce-qui-apprend-déjà-et-ce-qui-ne-retient-rien">17. Le « deuxième cerveau » : ce qui apprend déjà, et ce qui ne retient rien</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Direction posée par le patron le 13 août 2026 :</em></p>
+<blockquote><em>« L'idée, c'est de créer un deuxième cerveau au sein de l'application, pour qu'elle s'utilise comme un assistant de gestion / devis, facture, planning. Elle doit apprendre, enregistrer, s'améliorer, s'auto-alimenter. »</em></blockquote>
+<p>C'est la suite d'une phrase plus ancienne, et il faut les lire ensemble : <em>« si l'appli n'a aucune mémoire, comment l'IA va enregistrer et se souvenir ? Pour s'améliorer, elle a besoin de mémoire. »</em></p>
+<h3 id="le-piège-déjà-payé-une-fois-et-quil-ne-faut-pas-refaire">Le piège déjà payé une fois, et qu'il ne faut pas refaire</h3>
+<p>Une table <code>historique_prix</code> existait. Le chiffrage la <strong>lisait</strong>. Et <strong>l'application ne l'écrivait jamais</strong>. Une mémoire que personne n'alimente n'est pas une mémoire — c'est du décor.</p>
+<p><strong>La bonne question n'est donc pas « avons-nous une base pour retenir ? », mais « qui l'écrit, et quand ? »</strong> Chaque fois qu'on parlera d'apprentissage, c'est cette question-là qu'il faudra poser en premier.</p>
+<h3 id="ce-qui-apprend-vraiment-aujourdhui">Ce qui apprend vraiment aujourd'hui</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui apprend</th>
+<th>Ce qu'il retient</th>
+<th>Alimenté ?</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>La mémoire des prix</strong></td>
+<td>Ce que vous avez <strong>réellement</strong> facturé sur un chantier comparable — rappelé sur le suivant</td>
+<td><strong>oui</strong></td>
+</tr>
+<tr>
+<td><strong>Les cinq grilles</strong></td>
+<td>Abattage, fendage, dessouchage, haie, grumes : elles se remplissent de vos devis</td>
+<td><strong>oui</strong></td>
+</tr>
+<tr>
+<td><strong>La base documentaire</strong></td>
+<td>Des fragments de texte indexés, réutilisables par l'agent</td>
+<td><strong>oui</strong></td>
+</tr>
+</tbody></table></div>
+<p>Un point de méthode important : le prix retenu est présenté comme un <strong>rappel</strong>, jamais comme un calcul. <em>« Vous aviez facturé 180 € »</em> se vérifie d'un coup d'œil ; <em>« ça fait 180 € »</em> demande qu'on fasse confiance.</p>
+<h3 id="ce-qui-ne-retient-rien-et-qui-manque-au-deuxième-cerveau">Ce qui ne retient rien, et qui manque au deuxième cerveau</h3>
+<ul>
+<li><strong>Vos coûts</strong> (question 15) : figés à des valeurs d'usine, ni réglables ni apprises.</li>
+<li><strong>Le temps réel des chantiers.</strong> Rien n'enregistre combien de temps un chantier a <em>vraiment</em> pris. Atlas ne peut donc pas savoir si ses estimations de durée sont justes — or c'est la durée qui fait le prix au point 3. <strong>C'est le manque le plus lourd</strong>, et le plus facile à combler : une question à la clôture d'un chantier suffirait.</li>
+<li><strong>Les délais de paiement.</strong> Rien ne retient qu'un client règle à 45 jours quand il en a promis 30.</li>
+<li><strong>Ce que le client refuse.</strong> Un devis corrigé ou refusé porte une information de prix ; elle n'est pas retenue.</li>
+</ul>
+<h3 id="ce-que-ça-veut-dire-concrètement">Ce que ça veut dire concrètement</h3>
+<p>Le deuxième cerveau <strong>existe déjà en partie</strong> : les prix, les grilles, les documents. Ce qui lui manque, ce ne sont pas des idées, ce sont <strong>des moments où l'application demande</strong> : à la fin d'un chantier, à la réception d'un paiement, au refus d'un devis. Chaque moment est un lot de quelques jours ; chacun rend l'agent plus juste sur le devis suivant.</p>
+<hr>
+<h2 id="18-à-quoi-sert-le-catalogue-et-pourquoi-je-ne-peux-rien-y-écrire-">18. À quoi sert le catalogue, et pourquoi je ne peux rien y écrire ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question posée le 14 août 2026, capture de l'écran « Catalogue » à l'appui.</em></p>
+<h3 id="ce-que-cest">Ce que c'est</h3>
+<p><strong>Le vocabulaire du métier, partagé par toutes les entreprises qui utilisent Atlas.</strong> Chaque entrée porte un nom officiel et tous les mots qui veulent dire la même chose : « Élagage » y traîne derrière lui <em>abattage</em>, <em>démontage</em>, <em>dessouchage</em>, et les variantes <em>sapin</em>, <em>arbre</em>, <em>conifère</em>.</p>
+<h3 id="à-quoi-ça-sert-concrètement">À quoi ça sert, concrètement</h3>
+<p>À <strong>comprendre ce que vous dictez</strong>. Quand vous dites <em>« faut me démonter le sapin du fond »</em>, aucun mot de la phrase n'est « élagage » — c'est le catalogue qui fait le rapprochement. Sans lui, la dictée ne se rattache à rien et l'agent ne sait pas quelle prestation écrire sur le devis.</p>
+<p><strong>Il ne porte aucun prix</strong>, et c'est voulu. Vos prix vivent ailleurs :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Où</th>
+<th>Ce qu'on y trouve</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Mes tarifs</strong></td>
+<td>Ce que vous tapez à la main : un intitulé, un montant, une unité</td>
+</tr>
+<tr>
+<td><strong>Mes prix</strong></td>
+<td>Les cinq grilles du métier — abattage, fendage, dessouchage, haie, grumes</td>
+</tr>
+<tr>
+<td><strong>La mémoire des prix</strong></td>
+<td>Ce que vous avez réellement facturé, rappelé sur le chantier suivant (question 17)</td>
+</tr>
+<tr>
+<td><strong>Le catalogue</strong></td>
+<td>Des <strong>mots</strong>, rien d'autre</td>
+</tr>
+</tbody></table></div>
+<h3 id="pourquoi-vous-ne-pouvez-rien-y-écrire">Pourquoi vous ne pouvez rien y écrire</h3>
+<p>Parce qu'il est <strong>commun à tout le monde</strong>. Une ligne ajoutée depuis votre téléphone changerait le vocabulaire de tous les autres artisans, sans qu'ils l'aient demandé ni qu'ils puissent la corriger. Aujourd'hui, il n'est donc rempli que par Atlas.</p>
+<p>Ce n'est pas un refus définitif : on peut très bien lui ajouter <strong>vos</strong> mots à vous, visibles de vous seul, par-dessus le vocabulaire commun. Ça n'existe pas encore, personne ne l'a demandé jusqu'ici.</p>
+<h3 id="deux-défauts-que-la-capture-a-révélés-le-même-jour">Deux défauts que la capture a révélés, le même jour</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Défaut</th>
+<th>La vérité</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Pas de flèche de retour</strong></td>
+<td>Simple oubli. L'en-tête de l'écran sait afficher la flèche — la page ne la lui a jamais demandée. On y arrive depuis <em>Tarifs &amp; catalogue</em>, et on en repart par la barre du bas.</td>
+</tr>
+<tr>
+<td><strong>« Aucun prix encore constaté par votre entreprise »</strong></td>
+<td><strong>Cette phrase ne changera jamais</strong>, quoi que vous fassiez.</td>
+</tr>
+</tbody></table></div>
+<p>La seconde mérite d'être expliquée, parce qu'elle est exactement le piège décrit en question 17 — et qu'il traîne encore ici.</p>
+<p><strong>Il y a eu deux mémoires des prix.</strong> La première (<code>historique_prix</code>) n'était jamais écrite : le fameux décor. Elle a été remplacée par une seconde (<code>lecons_prix</code>), celle qui marche vraiment, qui retient ce que vous facturez et vous le rappelle sur le chantier d'après.</p>
+<p><strong>L'écran du catalogue, lui, est resté branché sur l'ancienne.</strong> Il interroge une mémoire vide, et annonce donc fidèlement qu'elle est vide. Vos prix sont bien retenus — c'est cet écran-là qui regarde au mauvais endroit.</p>
+<p><strong>Ce qui a été fait le 17 août :</strong> la flèche est revenue, et la phrase est partie. Aucun prix ne l'a remplacée — voir « ce qui reste ouvert », plus bas.</p>
+<hr>
+<h2 id="18-bis-le-catalogue-sécrit-maintenant--et-non-il-ne-sautoalimente-pas">18 bis. Le catalogue s'écrit maintenant — et non, il ne s'autoalimente pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Vous avez reposé la même question le 17 août 2026, même écran, même capture : « À quoi sert cette page ?? On peut rien modifier rajouter ». Un écran qu'il faut expliquer deux fois n'est pas mal compris : il ne dit pas ce qu'il fait.</em></p>
+<h3 id="ce-que-vous-pouvez-faire-depuis-le-17-août">Ce que vous pouvez faire, depuis le 17 août</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Le geste</th>
+<th>Ce qui se passe</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>« + mon mot »</strong> sur une carte</td>
+<td>votre mot s'ajoute <strong>en doré</strong> à celle d'Atlas — « écime » sous « Élagage »</td>
+</tr>
+<tr>
+<td><strong>« + Nouvelle prestation »</strong></td>
+<td>une entrée qui n'existe que chez vous</td>
+</tr>
+<tr>
+<td><strong>la croix</strong> à côté d'un de vos mots</td>
+<td>il s'en va (un mot d'Atlas, lui, ne se retire pas)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Vos mots ne partent chez personne.</strong> Ils sont à vous seul, rangés à part du vocabulaire commun. C'est toute la raison pour laquelle cet écran ne s'écrivait pas jusque-là : une ligne ajoutée depuis votre téléphone aurait changé le vocabulaire de tous les autres artisans.</p>
+<p><strong>Écrivez le mot COURT, comme vous le dites.</strong> Atlas rapproche en cherchant votre mot dans la phrase dictée : « écime » attrape <em>« écime-moi le tilleul »</em>, « écimage » ne l'attrape pas. L'écran vous le rappelle dans le champ.</p>
+<h3 id="est-ce-que-ça-sautoalimente-">Est-ce que ça s'autoalimente ?</h3>
+<p><strong>Votre question, le 17 août :</strong> <em>« ça veut dire que le document s'autoalimente à chaque fois qu'on rajoute un nouveau mot dans un devis et qu'il comprend ce que c'est, il le rajoute automatiquement ? »</em></p>
+<p><strong>Non — et jamais dans le vocabulaire d'Atlas.</strong> Celui-là est commun à toutes les entreprises : personne ne peut l'enrichir depuis son téléphone, sinon les mots d'un artisan changeraient les devis d'un autre.</p>
+<p><strong>Dans VOS mots, en revanche, oui — c'est fait le 17 août.</strong> Quand une dictée contient un mot qu'Atlas ne connaît pas <em>et</em> qu'il sait à quoi il se rapporte — votre condition, mot pour mot —, une carte apparaît en haut du catalogue :</p>
+<blockquote><strong>« écime »</strong> — dans votre dictée : « faut m'écimer le tilleul du fond » Le retenir comme un mot pour <strong>Élagage</strong> ?  <strong>[Oui, retenir]  [Non]</strong></blockquote>
+<p><strong>Il ne s'ajoute rien tout seul.</strong> Vous répondez, et c'est tout. Si vous dites non, la proposition ne revient jamais — mais vous pouvez toujours écrire le mot à la main plus tard si vous changez d'avis.</p>
+<p><strong>Rien n'est proposé quand Atlas ne comprend pas de quoi parlait la dictée.</strong> C'était votre condition : sans savoir à quoi rattacher le mot, le retenir n'apprendrait rien à personne.</p>
+<h3 id="ce-qui-reste-ouvert-et-qui-attend-votre-décision">Ce qui reste ouvert, et qui attend votre décision</h3>
+<p><strong>Faut-il remettre un prix sur ces cartes ?</strong> La mémoire des prix range ses montants <strong>par nature de chantier</strong> (un abattage, un démontage avec rétention, un diamètre de 70), pas par mot de catalogue. Afficher « la dernière fois : 450 € » sous « Élagage » alors que la mémoire porte un abattage serait pire que l'ancienne phrase, qui au moins n'inventait rien. Deux réponses possibles : rien du tout — c'est l'état actuel —, ou la ligne <strong>uniquement</strong> quand la nature correspond exactement.</p>
+<hr>
+<h2 id="19-une-équipe-part-cinq-jours-en-déplacement--comment-on-gère-ça-">19. Une équipe part cinq jours en déplacement : comment on gère ça ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Votre question, le 14 août 2026 :</strong> <em>« Comment on fait si jamais il y a une équipe qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un moyen de l'ajouter au planning ? »</em></p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Si toute l'entreprise part : c'est déjà possible aujourd'hui.</strong> Vous créez l'événement dans votre agenda Google relié, et les cinq jours se bloquent — Atlas ne proposera plus aucune date à un client sur cette période. Une période de plusieurs jours occupe toutes les demi-journées qu'elle traverse, week-ends compris.</p>
+<p><strong>Si une seule équipe part : rien ne convient.</strong> Et il vaut mieux le savoir avant de compter dessus.</p>
+<h3 id="pourquoi-lagenda-ne-suffit-pas-dans-ce-cas">Pourquoi l'agenda ne suffit pas dans ce cas</h3>
+<p>Une période occupée dans votre agenda bloque <strong>tout le monde</strong>, pas une équipe. C'est un choix délibéré, pas un oubli : Atlas ne peut pas deviner si une équipe sait partir sans vous. Avec deux équipes dont une seule en déplacement, vous perdriez cinq jours de celle qui reste.</p>
+<p>L'autre levier — le nombre d'équipes, dans Réglages → Équipe — est <strong>un nombre sans dates</strong>. Le passer de 2 à 1 marche, jusqu'au jour où l'on oublie de le remonter.</p>
+<h3 id="un-point-qui-surprend-et-quil-vaut-mieux-connaître">Un point qui surprend, et qu'il vaut mieux connaître</h3>
+<p><strong>L'équipe inscrite sur un chantier est une étiquette, pas une contrainte.</strong> Atlas compte les chantiers par demi-journée et compare ce compte au nombre d'équipes ; il ne vérifie pas <em>laquelle</em> est libre. Deux chantiers le même matin, tous les deux sur « Équipe 1 » : Atlas les accepte.</p>
+<p>Cela ne gêne pas tant que vous répartissez vous-même. Cela devient faux le jour où une équipe est absente — d'où la question.</p>
+<h3 id="les-deux-façons-de-le-régler-et-ce-quelles-coûtent">Les deux façons de le régler, et ce qu'elles coûtent</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que ça fait</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>A — L'absence datée</strong></td>
+<td>« Équipe 1 absente du 8 au 12 septembre ». Atlas la retire du compte ces jours-là, et tout revient normal le 13 sans rien défaire</td>
+<td>Petit : une table, une règle, un écran dans Réglages → Équipe</td>
+</tr>
+<tr>
+<td><strong>B — L'occupation par équipe</strong></td>
+<td>Atlas sait qui est où, et refuse deux chantiers sur la même équipe au même moment</td>
+<td>Gros : il faudrait choisir l'équipe <strong>avant</strong> de proposer une date au client, donc toucher au parcours du devis</td>
+</tr>
+</tbody></table></div>
+<p><strong>Recommandation : A d'abord.</strong> B seulement si le télescopage de deux chantiers sur une même équipe se produit vraiment — sinon, c'est du travail dont on ne verra jamais l'effet.</p>
+<hr>
+<h2 id="20-si-un-client-ne-me-paie-pas-la-tva-part-quand-même-">20. Si un client ne me paie pas, la TVA part quand même ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question posée le 14 août 2026 : « à partir du moment où j'envoie la facture à mon client, elle rentre automatiquement dans mon relevé de TVA. Sauf que s'il décide de ne pas me payer, je vais avoir des problèmes. »</em></p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Votre inquiétude est fondée, et la loi est de votre côté.</strong> Pour une <strong>prestation de services</strong> — ce que vous vendez —, la TVA est exigible <strong>quand vous êtes payé</strong>, pas quand vous facturez. C'est le régime par défaut (article 269-2-c du code général des impôts).</p>
+<p>Encaisser la TVA sur un chantier qu'on ne vous a pas réglé, ça n'existe pas : tant que l'argent n'est pas rentré, l'État n'attend rien.</p>
+<h3 id="alors-pourquoi-atlas-la-compte-à-lémission-">Alors pourquoi Atlas la compte à l'émission ?</h3>
+<p>Parce qu'il a été écrit ainsi, et <strong>c'est à corriger</strong>. Aujourd'hui le relevé prend toutes les factures marquées « émise », à leur date d'émission. C'est le régime <strong>des débits</strong> — qui existe, mais qui est une <strong>option</strong> : on la demande expressément à l'administration, on ne l'a pas par hasard.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Régime</th>
+<th>La TVA est due…</th>
+<th>Qui l'a</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Encaissements</strong></td>
+<td>le jour où le client vous paie</td>
+<td>tous les prestataires de services, <strong>par défaut</strong></td>
+</tr>
+<tr>
+<td><strong>Débits</strong></td>
+<td>le jour où vous émettez la facture</td>
+<td>ceux qui en ont fait la demande</td>
+</tr>
+</tbody></table></div>
+<h3 id="les-deux-nuances-qui-comptent">Les deux nuances qui comptent</h3>
+<p><strong>Si vous vendez aussi du bois</strong>, c'est une marchandise et non un service : cette partie-là reste due à la livraison, quel que soit votre régime. Un chantier qui mélange les deux se sépare en deux lignes.</p>
+<p><strong>Sous le régime des débits, une facture jamais payée n'est pas perdue non plus</strong> : la TVA se récupère au titre des « créances irrécouvrables », mais seulement après avoir prouvé que le recouvrement a échoué. C'est plus long, et c'est de l'argent avancé entre-temps.</p>
+<h3 id="ce-que-ça-change-dans-atlas">Ce que ça change dans Atlas</h3>
+<p>Rien n'est encore codé. Ce qu'il faudra :</p>
+<ol>
+<li>une <strong>date de paiement</strong> sur chaque facture, acomptes compris ;</li>
+<li>le relevé calculé sur cette date-là, et non sur la date d'émission ;</li>
+<li>un réglage <strong>encaissements / débits</strong>, parce que les deux existent.</li>
+</ol>
+<h3 id="-mais-comment-atlas-saura-que-jai-été-payé--">« Mais comment Atlas saura que j'ai été payé ? »</h3>
+<p><em>Votre question, dans la foulée — et c'est la bonne.</em> <strong>Atlas ne le sait pas.</strong> Il n'a aucun accès à votre compte en banque. Trois façons, et elles se combinent :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Comment</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>Vous le dites</strong> — au moment où vous voyez le virement</td>
+<td>Rien à brancher. Mais si vous oubliez, vous <strong>sous-déclarez</strong> — et c'est pire que déclarer trop tôt</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>Atlas vous le demande</strong> — en fin de trimestre, il liste les factures en attente</td>
+<td>Un geste par trimestre au lieu d'un par facture. C'est ce qui rend le 1 sûr</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>Votre banque</strong> — Atlas lit vos virements reçus et propose le rapprochement</td>
+<td>Un prestataire agréé, un contrat, un coût mensuel</td>
+</tr>
+</tbody></table></div>
+<p><strong>Vous avez choisi le 3</strong>, le 14 août 2026. Deux choses en découlent, et elles ne se négocient pas :</p>
+<ul>
+<li><strong>un relevé bancaire ne porte pas de numéro de facture</strong> — seulement une date, un montant et un libellé (« VIR M BERNARD »). Atlas ne peut donc que <strong>proposer</strong> ; c'est votre doigt qui confirme. Quand le montant ne tombe pas juste — un acompte, deux factures en un virement —, il dira qu'il ne sait pas au lieu de deviner ;</li>
+<li><strong>l'accès se renouvelle tous les 90 jours</strong>, règle européenne. Vous serez prévenu une semaine avant, et les paiements se noteront à la main pendant ce temps-là.</li>
+</ul>
+<p>Le dessin : <code>maquettes/atlas-banque-rapprochement.html</code>. Le prestataire reste à choisir — <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a> §13.</p>
+<h3 id="ce-que-je-ne-peux-pas-décider-à-votre-place">Ce que je ne peux pas décider à votre place</h3>
+<p><strong>Sous quel régime vous êtes.</strong> Votre comptable le sait en une phrase, ou c'est écrit sur votre dernière déclaration. Le point est inscrit dans <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a> §12.</p>
+<hr>
+<h2 id="21-quelle-est-la-différence-entre--planning--et--équipe--dans-les-réglages-">21. Quelle est la différence entre « Planning » et « Équipe » dans les réglages ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Votre question du 16 août 2026, capture de l'écran « Réglages ▸ Planning » à l'appui.</em></p>
+<p><strong>Aucune. Et c'était un défaut, pas une subtilité.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>La rubrique</th>
+<th>Ce qu'on y réglait vraiment</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Planning</strong></td>
+<td>Combien partent en même temps · leurs noms</td>
+</tr>
+<tr>
+<td><strong>Équipe</strong></td>
+<td><strong>La même chose</strong>, plus les absences (« Julien part cinq jours »)</td>
+</tr>
+</tbody></table></div>
+<p>Les deux écrans affichaient <strong>le même bloc</strong>. « Planning » promettait « horaires, équipes et disponibilités » : les horaires ne se règlent pas — le planning raisonne en demi-journées, et chaque jour est libre ou porte le nom de son chantier —, et les disponibilités, ce sont les absences, qui vivent dans « Équipe ».</p>
+<p><strong>Ce qui a été fait, le jour même :</strong> la rubrique « Planning » est supprimée. Tout est dans <strong>« Équipe »</strong> — combien partent en même temps, leurs noms, leurs absences. Une seule porte.</p>
+<p><strong>Attention à un mot qui trompe, et il vaut la peine d'être redit</strong> : dans Atlas, une « équipe » n'est pas un groupe de personnes, c'est une <strong>file du planning</strong> — combien de chantiers partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront jamais l'application. Le jour où des gens auront un compte, ce sera une <strong>autre</strong> liste (voir §11).</p>
+<p><strong>Si les horaires viennent un jour</strong> — « on commence à 8 h, on finit à 17 h » —, ils iront dans « Équipe » eux aussi, ou dans une rubrique qui ne parle QUE d'horaires. Recréer une rubrique « Planning » qui montre à nouveau les équipes, c'est rouvrir exactement ce qui vient d'être refermé.</p>
+<hr>
+<h2 id="22-mes-outils-de-calcul-on-les-range-où-dans-lapplication-">22. Mes outils de calcul, on les range où dans l'application ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Votre question du 17 août 2026 :</em> <strong>« L'idée, c'est de créer des outils comme celui-là pour les paysagistes ; après je ferai la même chose pour les terrasses bois. Pour toi le mieux, c'est de créer une nouvelle catégorie paysage ? Ou alors on range ça dans les réglages, sous une catégorie paysage ? »</strong></p>
+<p><strong>Votre décision : un cinquième onglet, « Paysage ».</strong> Voici pourquoi les deux autres pistes ont été écartées, pour ne pas les rouvrir dans trois mois.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Où</th>
+<th>Pourquoi non</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Dans les Réglages</strong></td>
+<td>On y règle ce qui vaut <strong>une fois pour toutes</strong> : vos tarifs, votre équipe, votre TVA. Un plan d'arrosage se refait à <strong>chaque client</strong>, comme un devis. Rangé là, il serait mal nommé et enterré sous quinze rubriques</td>
+</tr>
+<tr>
+<td><strong>Une rubrique dans les Réglages, sous « Paysage »</strong></td>
+<td>Même raison que ci-dessus : c'est l'endroit qui ne va pas, pas le mot. Le mot « Paysage », lui, vous l'avez finalement gardé pour l'onglet — voir plus bas</td>
+</tr>
+<tr>
+<td><strong>Attaché au chantier</strong> <em>(ce que je proposais)</em></td>
+<td>Un plan est toujours fait pour quelqu'un, et rangé là on le retrouve six mois plus tard chez le bon client. <strong>Mais</strong> un outil qui exige un chantier ne sert pas en visite de devis, quand le client n'existe pas encore. Votre objection l'emporte</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce que le cinquième onglet a coûté, et ce n'est pas rien.</strong> La barre du bas en portait quatre. À cinq, chaque colonne perd un cinquième de sa largeur — et sur un téléphone de 360 pixels, <strong>le mot « CHANTIERS » ne rentrait plus</strong> : il débordait de 12 pixels. Resserrer un peu les lettres ne suffisait pas non plus — il débordait encore de 4. Vous avez choisi de <strong>réduire la taille des lettres</strong> (8,5 px au lieu de 9,5), qui laisse un peu plus de 6 pixels de marge.</p>
+<p>Le dessin des cinq variantes, avec les mesures : <code>docs/maquettes/76-le-cinquieme-onglet.html</code>. Et un contrôle mesure désormais la barre à 360 pixels avant chaque mise en ligne — ce genre de défaut ne se voit pas sur un grand écran, seulement sur le vôtre.</p>
+<p><strong>Deux choses restent ouvertes</strong>, et elles se décideront à l'usage :</p>
+<ul>
+<li>l'onglet s'appelle <strong>« Paysage »</strong>. Vous aviez d'abord retenu « Outils », et j'avais écarté « Paysage » en disant que c'était votre métier entier, donc que ça ne distinguait rien. <strong>Vous êtes revenu dessus, et votre choix se défend mieux que mon objection</strong> : l'onglet porte le nom du MÉTIER qu'il sert. Le jour où un menuisier utilisera Atlas, il aura un onglet « Menuiserie » à côté — et ça se lira mieux que deux listes d'« outils » qu'il faudrait départager en entrant. Ce qui reste vrai : l'onglet porte une LISTE, donc il ne s'appelle pas « Arrosage » — sinon il faudrait le renommer à la terrasse bois ;</li>
+<li>un plan fait <strong>en visite de devis</strong> doit pouvoir rejoindre son chantier ensuite. C'est le revers de l'accès sans chantier que vous avez voulu : sans ce rattachement, on cherchera le plan six mois plus tard.</li>
+</ul>
+<hr>
+<h2 id="23-lapplication-est-elle-trop-compliquée-pour-un-artisan-pressé-">23. L'application est-elle trop compliquée pour un artisan pressé ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Votre question, le 19 août 2026 :</strong> <em>« j'ai l'impression que l'application va être trop compliquée à utiliser, il y a beaucoup trop de mots dans tous les sens. […] J'ai voulu créer une application luxe, mais au final j'ai l'impression que je me suis perdu. […] Des entrepreneurs qui n'ont pas de temps : s'ils passent quinze minutes à essayer de comprendre comment elle marche, ils ne vont juste pas l'utiliser. Il ne faut pas oublier qu'il y a des boomers dessus qui ont déjà du mal à utiliser leur téléphone. »</em></p>
+<h3 id="la-réponse-courte--oui-et-voilà-où">La réponse courte : oui, et voilà où</h3>
+<p>Trois écrans ont été regardés à la taille de votre téléphone, et leurs mots comptés.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Écran</th>
+<th>Mots aujourd'hui</th>
+<th>En retirant ce qui ne sert à rien</th>
+</tr></thead><tbody>
+<tr>
+<td>La fiche client</td>
+<td>39</td>
+<td><strong>19</strong></td>
+</tr>
+<tr>
+<td>L'accueil</td>
+<td>35</td>
+<td><strong>21</strong></td>
+</tr>
+<tr>
+<td>Les réglages</td>
+<td>89</td>
+<td><strong>26</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-est-bon-et-quil-ne-faut-pas-casser">Ce qui est bon, et qu'il ne faut pas casser</h3>
+<p><strong>Le nombre de gestes.</strong> De l'ouverture au devis, il en faut huit, et c'est déjà le minimum : votre client vous donne son nom, son numéro et son adresse, vous appuyez sur « J'écris mon devis ». On ne peut pas faire moins sans deviner à votre place. <strong>Le problème n'est pas le nombre de gestes — c'est le nombre de mots entre deux gestes.</strong></p>
+<h3 id="là-où-je-ne-suis-pas-daccord-avec-vous">Là où je ne suis pas d'accord avec vous</h3>
+<p>Vous dites : <em>« j'ai voulu faire luxe et je me suis perdu »</em>. <strong>Le luxe n'est pas le coupable — le luxe, c'est le vide.</strong> Les polices, les couleurs, les capsules vertes, les blancs : rien de tout cela ne vous encombre.</p>
+<p>Ce qui encombre, ce sont <strong>les phrases qui expliquent</strong>. Trois exemples réels, relevés à l'écran :</p>
+<ul>
+<li>sur la <strong>fiche client</strong>, le mot <em>« (facultatif) »</em> est écrit <strong>cinq fois</strong> — et <strong>tous</strong> les champs le sont. Un mot qui vaut pour tout ne distingue rien ;</li>
+<li>sur l'<strong>accueil</strong>, le nombre de chantiers est écrit <strong>deux fois</strong> à trois centimètres d'intervalle, et l'ancienneté du devis <strong>deux fois</strong> aussi (« 28 jours », puis la phrase qui le redit) ;</li>
+<li>dans les <strong>réglages</strong>, chaque rubrique porte dessous une phrase qui énumère ce qu'elle contient — treize phrases, et il faut défiler deux fois pour changer un prix.</li>
+</ul>
+<p><strong>Un écran qui a besoin de se justifier est un écran qui n'est pas clair.</strong> La phrase d'explication ne répare jamais un mauvais titre : elle le cache.</p>
+<h3 id="ce-qui-compte-le-plus-et-qui-nest-pas-dans-les-chiffres">Ce qui compte le plus, et qui n'est pas dans les chiffres</h3>
+<p><strong>C'est la troisième fois que vous le dites.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Quand</th>
+<th>Vos mots</th>
+<th>Ce qu'on a fait</th>
+</tr></thead><tbody>
+<tr>
+<td>11 août</td>
+<td><em>« informations, prix, devis peuvent disparaître »</em></td>
+<td>trois étapes retirées d'un écran</td>
+</tr>
+<tr>
+<td>17 août</td>
+<td><em>« l'utilisateur a besoin d'aller à l'essentiel constamment »</em></td>
+<td>deux maquettes jetées, une refaite</td>
+</tr>
+<tr>
+<td>19 août</td>
+<td>ci-dessus</td>
+<td>la planche 82</td>
+</tr>
+</tbody></table></div>
+<p>Trois fois, un écran a été corrigé — et la gêne est revenue ailleurs. <strong>Le défaut n'est donc pas dans un écran : rien n'empêche l'application de regrossir.</strong> Chaque décision juste ajoute une ligne, une phrase, un écran, et personne n'en retire jamais.</p>
+<p>Le jour où vous direz oui à ces trois écrans, il faudra donc <strong>quelque chose qui compte les mots et qui bloque quand un écran en gagne</strong> — comme il existe déjà des contrôles qui bloquent sur un prix mal calculé. Sans ça, il y aura une quatrième fois.</p>
+<h3 id="ce-que-ça-coûte-et-ce-que-vous-devez-décider">Ce que ça coûte, et ce que vous devez décider</h3>
+<p><strong>Rien n'est codé.</strong> La maquette <strong>« Moins de mots »</strong> est Atlas dépouillé, et <strong>elle se sert</strong> : appuyez sur « Créer un devis », tapez le nom de votre client, arrivez au devis, envoyez-le. Les cinq onglets marchent. Un bouton « Avant » en haut remet l'écran d'aujourd'hui, pour comparer dans le même geste. Elle s'ouvre depuis votre page habituelle, <strong>« À essayer »</strong> — c'est le premier lien.</p>
+<ul>
+<li>les <strong>trois écrans</strong> : deux à trois jours ;</li>
+<li>le <strong>compteur de mots</strong> qui empêche de regrossir : une journée ;</li>
+<li>la <strong>relecture des autres écrans</strong> : elle n'est pas proposée, et c'est volontaire. La faire au jugé, c'est exactement l'erreur qu'on cherche à arrêter.</li>
+</ul>
+<p><strong>La seule chose à me dire : ces trois écrans vous vont-ils ?</strong> Si un seul vous va, on ne fait que celui-là.</p>
+<hr>
+<h2 id="24-faut-il-une-licence-pour-se-servir-des-données-de-linrae-">24. Faut-il une licence pour se servir des données de l'INRAE ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Votre question, le 20 août 2026 :</strong> <em>« On a besoin d'une licence pour utiliser leur donnée ? »</em> — à propos d'Ephytia, la base de l'INRAE sur les maladies des arbres, dont Atlas a besoin pour son module de diagnostic végétal.</p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p><strong>Ça dépend de ce qu'on en fait.</strong> Trois cas, et un seul pose vraiment question.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'on fait</th>
+<th>Licence nécessaire ?</th>
+</tr></thead><tbody>
+<tr>
+<td>Recopier leur texte dans le dépôt d'Atlas</td>
+<td><strong>Oui.</strong> C'est pour cela que ça n'a pas été fait : leur texte n'est pas rapatrié tant que la licence n'est pas établie</td>
+</tr>
+<tr>
+<td>Écrire <strong>nos</strong> fiches à partir des faits, en citant l'INRAE et l'adresse consultée</td>
+<td><strong>Non.</strong> Un fait — « feutrage blanc sur la feuille » — n'appartient à personne</td>
+</tr>
+<tr>
+<td>Refaire <strong>toute leur base</strong> de cette façon, des centaines de fiches</td>
+<td><strong>À demander.</strong> Le droit protège aussi les bases de données contre l'extraction massive, même quand chaque fait pris isolément est libre</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-que-ça-veut-dire-concrètement">Ce que ça veut dire concrètement</h3>
+<p>Pour <strong>quelques dizaines de fiches</strong> écrites de notre côté, avec la source citée : rien à demander. C'est ce que fait n'importe quel professionnel qui consulte une référence puis écrit sa propre note.</p>
+<p>Pour aller vers <strong>plusieurs centaines</strong> en s'appuyant surtout sur eux : oui, il faut leur écrire. Ce n'est pas une formalité coûteuse — l'INRAE est un institut de recherche public, et le courriel est prêt dans <code>docs/courriel-inrae.md</code>.</p>
+<h3 id="les-documents-de-létat-ne-posent-eux-aucune-question">Les documents de l'État ne posent, eux, aucune question</h3>
+<p>Tout ce que publient le <strong>ministère de l'Agriculture</strong>, le <strong>Département de la santé des forêts</strong> et les <strong>DRAAF</strong> est sous <em>Licence Ouverte 2.0</em> : réutilisation libre, <strong>y compris commerciale</strong>, à condition de citer la source et sa date de mise à jour.</p>
+<p>C'est de là que vient la première fiche d'Atlas — le fomès des résineux, écrite d'après une plaquette du DSF de 2013. Aucune autorisation n'a été nécessaire.</p>
+<p><strong>La limite de ces documents-là</strong>, et c'est pour cela qu'on regarde du côté de l'INRAE : ce sont surtout des bilans régionaux. Ils nomment les problèmes et disent leur importance, mais décrivent rarement les symptômes assez précisément pour qu'Atlas puisse les reconnaître sur une photo. Ephytia, lui, est fait de fiches descriptives — exactement ce qu'il faut.</p>
+<h3 id="ce-qui-nest-pas-de-lavis-dun-juriste">Ce qui n'est pas de l'avis d'un juriste</h3>
+<p>Ce qui précède est une lecture raisonnable du droit français et européen, pas une consultation. Si le module devient un argument commercial d'Atlas, la question mérite d'être posée une fois à un professionnel — en même temps que le contrat de sous-traitance, qui attend déjà (<code>docs/A-FAIRE.md</code>).</p>
 </main>
 </body>
 </html>

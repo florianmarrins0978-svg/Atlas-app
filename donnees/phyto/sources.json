@@ -1,0 +1,130 @@
+{
+  "_lisez_moi": "Les DOCUMENTS à récolter, pas leur contenu. Ce fichier ne porte aucune donnée phytosanitaire : il dit seulement où aller chercher, et sous quelle licence. La récolte se fait par .github/workflows/recolter-sources-phyto.yml, sur une machine qui a le réseau — l'environnement de développement d'Atlas ne peut atteindre aucun de ces domaines (403 du mandataire). Voir ARCHITECTURE.md §135.12.",
+
+  "_comment_les_adresses_sont_trouvees": "Par recherche web, qui sert d'ANNUAIRE — on en tire des adresses, jamais du contenu. Le résumé qu'elle rend est écrit par un modèle ; c'est le document lui-même, récolté ici, qui fait foi. Une adresse morte se voit dans le journal de récolte plutôt que de passer inaperçue.",
+
+  "_licences": {
+    "licence-ouverte-2.0": "Licence Ouverte / Open Licence 2.0 (Etalab). Réutilisation libre, y compris commerciale, avec mention de la source et de la date de mise à jour. Régime par défaut des documents publiés par l'État français — dont agriculture.gouv.fr et les DRAAF.",
+    "a_verifier": "Licence non établie. Le texte n'est PAS rapatrié : seule l'adresse est conservée, et il faut aller la lire soi-même. Recopier sans licence est un risque qui ne se voit qu'à la mise en demeure."
+  },
+
+  "sources": [
+    {
+      "code": "dsf-portail",
+      "organisme": "Département de la santé des forêts — ministère de l'Agriculture",
+      "titre": "Santé des forêts : ressources et publications",
+      "url": "https://agriculture.gouv.fr/sante-des-forets-ressources-et-publications-0",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Page d'entrée du DSF. Récoltée le 20 août 2026 : son contenu est rendu en JavaScript, l'extraction ne rapporte que la navigation. Gardée pour mémoire — elle ne sert pas à écrire une fiche."
+    },
+    {
+      "code": "dsf-oidium-chenes",
+      "organisme": "Département de la santé des forêts — ministère de l'Agriculture",
+      "titre": "Oïdium des chênes : une maladie, plusieurs agents pathogènes",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/Oidium_des_chenes.pdf",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Récoltée. C'est une affiche de RECHERCHE sur la taxinomie : elle ne porte ni symptômes utilisables, ni conduite à tenir. Elle a servi à éprouver la chaîne de récolte, pas à écrire une fiche."
+    },
+    {
+      "code": "dsf-fomes-plaquette",
+      "organisme": "Département de la santé des forêts — ministère de l'Agriculture",
+      "titre": "Plaquette Fomès (Heterobasidion annosum)",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/Plaquette_Fomes_2013-1_cle0d148e.pdf",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Champignon lignivore des résineux — dans le périmètre demandé."
+    },
+    {
+      "code": "dsf-lettre",
+      "organisme": "Département de la santé des forêts — ministère de l'Agriculture",
+      "titre": "La lettre du DSF",
+      "url": "https://agriculture.gouv.fr/telecharger/151462",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Bulletin du DSF."
+    },
+    {
+      "code": "dsf-bilan-sud-est",
+      "organisme": "Département de la santé des forêts — ministère de l'Agriculture",
+      "titre": "Bilan de la santé des forêts — Rhône-Alpes, PACA, Languedoc-Roussillon",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/2-_Rhone_Alpes-PACA-_Languedoc_Roussilon_cle0eb88a.pdf",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Bilan régional : problèmes rencontrés, essences touchées, niveaux d'impact."
+    },
+    {
+      "code": "dsf-bilan-idf",
+      "organisme": "Département de la santé des forêts — ministère de l'Agriculture",
+      "titre": "Bilan de la santé des forêts — Île-de-France",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/Ile_de_France_4Pages_2013_cle0b9899.pdf",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Bilan régional."
+    },
+    {
+      "code": "draaf-bilan-normandie-2024",
+      "organisme": "DRAAF Normandie — ministère de l'Agriculture",
+      "titre": "Bilan de la santé des forêts en Normandie — 2024",
+      "url": "https://draaf.normandie.agriculture.gouv.fr/IMG/pdf/20250218-bilan_2024_normandie_version_open_v4.pdf",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Porte un tableau « Santé des essences : principaux problèmes et niveau d'impact » — c'est le format le plus proche de ce qu'une fiche demande."
+    },
+    {
+      "code": "draaf-bilan-hdf-2023",
+      "organisme": "DRAAF Hauts-de-France — ministère de l'Agriculture",
+      "titre": "Bilan de la santé des forêts Hauts-de-France — 2023",
+      "url": "https://draaf.hauts-de-france.agriculture.gouv.fr/IMG/pdf/20230110-bilan_phytosanitaire_hdf_2023_v7-3.pdf",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Bilan régional."
+    },
+    {
+      "code": "draaf-bilan-cvl-normandie-2023",
+      "organisme": "DRAAF Centre-Val de Loire — ministère de l'Agriculture",
+      "titre": "Bilan phytosanitaire — 2023",
+      "url": "https://draaf.centre-val-de-loire.agriculture.gouv.fr/IMG/pdf/bilan_phytosanitaire_normandie_2023.pdf",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Bilan régional."
+    },
+    {
+      "code": "draaf-bilan-ardeche-2019",
+      "organisme": "DRAAF Auvergne-Rhône-Alpes — ministère de l'Agriculture",
+      "titre": "Bilan DSF Ardèche — 2019",
+      "url": "https://draaf.auvergne-rhone-alpes.agriculture.gouv.fr/IMG/pdf/Bilan_Ardeche_DSF_2019_cle0d1685.pdf",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Bilan départemental."
+    },
+    {
+      "code": "draaf-processionnaire-pin",
+      "organisme": "DRAAF Auvergne-Rhône-Alpes — ministère de l'Agriculture",
+      "titre": "La chenille processionnaire du pin",
+      "url": "https://draaf.auvergne-rhone-alpes.agriculture.gouv.fr/La-chenille-processionnaire-du-pin",
+      "nature": "officielle",
+      "licence": "licence-ouverte-2.0",
+      "role": "Ravageur, et l'un des rares à porter un RISQUE HUMAIN ET ANIMAL direct (poils urticants) — le module distingue ce risque de la santé du végétal."
+    },
+    {
+      "code": "inrae-ephytia-forets",
+      "organisme": "INRAE",
+      "titre": "Ephytia — Forêts",
+      "url": "http://ephytia.inra.fr/fr/C/19061/Forets-Oidium-du-chene",
+      "nature": "scientifique",
+      "licence": "a_verifier",
+      "role": "Base de l'INRAE, riche en symptômes décrits. La licence de réutilisation n'est pas établie : l'adresse est conservée, le texte n'est pas rapatrié tant qu'elle ne l'est pas. **À trancher — c'est probablement la meilleure source pour ce module.**"
+    },
+    {
+      "code": "cnpf-bilan-bretagne-pdl-2021",
+      "organisme": "CNPF Bretagne — Pays de la Loire",
+      "titre": "Bilan phytosanitaire Pays de la Loire — 2021",
+      "url": "https://bretagne-paysdelaloire.cnpf.fr/sites/bretagne-paysdelaloire/files/2022-02/Bilan%20phytosanitaire%20Pays%20de%20Loire%202021_VF.pdf",
+      "nature": "technique",
+      "licence": "a_verifier",
+      "role": "Le CNPF n'est pas un service de l'État : la Licence Ouverte ne s'applique pas d'office. Adresse conservée, texte non rapatrié."
+    }
+  ]
+}

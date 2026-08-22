@@ -1,0 +1,406 @@
+<title>Le nouveau chantier, plus gros</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE NOUVEAU CHANTIER, PLUS GROS — « le plus gros et en gras ».
+
+    LE PATRON, LE 16 AOÛT 2026, capture de l'écran Chantiers à l'appui :
+    « Le nouveau chantier fait le plus gros et en gras. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QU'IL FAUT SAVOIR AVANT DE CHOISIR, ET QU'IL A LUI-MÊME DÉCIDÉ.
+
+    · Le 11 août, il a REFUSÉ l'aplat vert : « ce gros bouton en plein milieu,
+      ça ne fait pas très luxe ». Aucune proposition ici ne le ramène : ce qui
+      grossit, c'est le MOT, pas une pastille pleine.
+    · Le même jour, il a lui-même RESSERRÉ cet endroit (maquette 24) : libellé
+      de 9,5 à 9 px, rond de 46 à 38 px, signe de 24 à 20. Grossir aujourd'hui
+      n'est donc pas corriger un oubli — c'est revenir sur un réglage qu'il
+      avait posé, et `docs/maquettes/24-le-bouton-retenu.html` devra être
+      corrigé en même temps que le code, sinon les deux diront le contraire.
+    · Le geste ne bouge pas : l'onde d'attente, les trois tours et les onze
+      grains d'or restent tels quels. Ils sont ici à titre indicatif — cette
+      planche n'exécute AUCUN script, donc pas de gerbe à l'appui.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EST À CHOISIR, ET C'EST TOUT.
+
+    LA FORME · A garde les capitales espacées et les grossit. B écrit le mot
+    dans la serif du titre, comme « Vos chantiers » — c'est la plus grosse à
+    surface égale, mais elle cesse d'être une étiquette pour devenir un second
+    titre. C tient toute la largeur, le mot calé à gauche et le rond au bout,
+    comme une ligne du fil.
+
+    LA TAILLE · trois crans, jusqu'au plus gros qui tienne SANS COUPER le mot
+    sur un écran de 360 px. Au-delà, « Nouveau chantier » se replie ou finit en
+    « … » — le contrôle le refuse plutôt que de le laisser passer.
+
+    LA GRAISSE · celle d'aujourd'hui est en tête de liste, pour comparer. La
+    demande dit « en gras » : c'est 700 qui est proposé par défaut.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les réglages sont des boutons radio natifs.
+    LE TÉMOIN « AUJOURD'HUI » NE BOUGE JAMAIS — 9 px, graisse 500, rond 38 px,
+    relevés dans `globals.css`. Un repère qui suivrait les réglages ne
+    comparerait plus rien.
+    Le contrôle : `scripts/verifier-maquette-nouveau-chantier.mjs`.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.12); --papier:#faf9f5; --pin:#2f3b2f; --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  /* Il lit sur un téléphone : à 360 px, dix-huit pixels de marge de chaque côté
+     rétrécissent la planche au point de faire croire que le mot déborde alors
+     qu'il tient dans le vrai écran. */
+  @media (max-width:430px){ body{padding:20px 9px 60px} }
+  .dedans{max-width:940px;margin:0 auto}
+
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+
+  .dit{margin:0 0 24px;padding:14px 17px;border-radius:12px;
+       background:var(--papier);border-left:3px solid var(--or);
+       font-size:13.5px;line-height:1.65;font-style:italic;color:var(--gris)}
+  .dit b{font-style:normal;color:var(--encre);font-weight:600}
+
+  /* ═══ Les réglages — des radios, aucun script ════════════════════════ */
+  .etat{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .reglage{margin:0 0 10px}
+  .reglage .quoi{display:block;font-size:10px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--gris);margin-bottom:7px}
+  .segments{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+  .segments label{cursor:pointer;padding:9px 15px;border-radius:9999px;
+                  border:1px solid var(--trait);font-size:13.5px;
+                  background:var(--papier);color:var(--gris);
+                  -webkit-tap-highlight-color:transparent}
+  #f-a:checked ~ .dedans .segments label[for="f-a"],
+  #f-b:checked ~ .dedans .segments label[for="f-b"],
+  #f-c:checked ~ .dedans .segments label[for="f-c"],
+  #t-1:checked ~ .dedans .segments label[for="t-1"],
+  #t-2:checked ~ .dedans .segments label[for="t-2"],
+  #t-3:checked ~ .dedans .segments label[for="t-3"],
+  #g-1:checked ~ .dedans .segments label[for="g-1"],
+  #g-2:checked ~ .dedans .segments label[for="g-2"],
+  #g-3:checked ~ .dedans .segments label[for="g-3"]{
+    background:var(--pin);border-color:var(--pin);color:#fff}
+
+  /* **LES MESURES SONT PORTÉES PAR DES VARIABLES**, et non recopiées dans
+     chaque forme : les trois formes doivent grossir ENSEMBLE, sans quoi on
+     comparerait trois tailles différentes en croyant comparer trois dessins.
+     Le cran d'ouverture est le plus gros — c'est ce qu'il a demandé. */
+  .dedans{--cap:17px; --lsp:.16em; --serif:26px; --rond:50px; --signe:24px; --gras:700}
+  #t-1:checked ~ .dedans{--cap:13px; --lsp:.22em; --serif:20px; --rond:42px; --signe:20px}
+  #t-2:checked ~ .dedans{--cap:15px; --lsp:.19em; --serif:23px; --rond:46px; --signe:22px}
+  #t-3:checked ~ .dedans{--cap:17px; --lsp:.16em; --serif:26px; --rond:50px; --signe:24px}
+  #g-1:checked ~ .dedans{--gras:500}
+  #g-2:checked ~ .dedans{--gras:700}
+  #g-3:checked ~ .dedans{--gras:800}
+
+  /* ═══ Le téléphone ═══════════════════════════════════════════════════ */
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .tel{flex:none;width:390px;max-width:100%;border-radius:26px;padding:12px 0 0;
+       background:var(--papier);overflow:hidden;
+       box-shadow:0 1px 3px rgba(20,18,14,.14),0 26px 58px rgba(20,18,14,.18)}
+
+  .sceau{text-align:center;font-size:11px;letter-spacing:.42em;color:var(--encre);
+         margin:8px 0 26px}
+  .bonjour{padding:0 26px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;
+           color:var(--or);margin:0}
+  .titre-ecran{padding:0 26px;margin:14px 0 0;font-family:Georgia,serif;font-weight:400;
+               font-size:36px;line-height:1.02;letter-spacing:-.018em}
+  .compteur{padding:0 26px;margin:14px 0 0;font-size:9.5px;font-weight:500;
+            letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .filet{height:1px;background:var(--trait);margin:26px 26px 0}
+
+  /* L'action. La rangée qui la porte est la MÊME pour les trois formes : c'est
+     elle qui donne l'espace au-dessus et en dessous, et le laisser varier
+     ferait bouger tout le fil d'une forme à l'autre. */
+  .action{padding:22px 26px 2px;display:flex;justify-content:center}
+  .geste{display:flex;align-items:center;justify-content:center;gap:13px;
+         text-decoration:none;color:var(--encre);
+         -webkit-tap-highlight-color:transparent}
+  .geste .mot{white-space:nowrap}
+  .mot.caps{font-size:var(--cap);font-weight:var(--gras);letter-spacing:var(--lsp);
+            text-transform:uppercase}
+  .mot.serif{font-family:Georgia,"Times New Roman",serif;font-size:var(--serif);
+             font-weight:var(--gras);letter-spacing:-.01em}
+
+  .rond{position:relative;display:grid;place-items:center;flex:none;
+        width:var(--rond);height:var(--rond);border-radius:9999px}
+  .rond .cerne{position:absolute;inset:0;z-index:2;border-radius:9999px;
+               border:1px solid var(--trait)}
+  .rond .pouls{position:absolute;inset:0;z-index:1;border-radius:9999px;
+               border:1px solid var(--or);opacity:0;
+               animation:battement 3.4s cubic-bezier(.16,.7,.3,1) infinite}
+  @keyframes battement{
+    0%{transform:scale(1);opacity:0} 8%{opacity:.5}
+    46%{transform:scale(1.42);opacity:0} 100%{transform:scale(1.42);opacity:0}}
+  .rond svg{position:relative;z-index:4;display:block;
+            width:var(--signe);height:var(--signe)}
+  .rond svg path{stroke:var(--or);stroke-width:1.25}
+  .geste:active .rond{transform:scale(.92)}
+  @media (prefers-reduced-motion: reduce){ .rond .pouls{animation:none} }
+
+  /* Les trois formes, une seule à la fois. */
+  .f-a,.f-b,.f-c{display:none}
+  #f-a:checked ~ .dedans .f-a,
+  #f-b:checked ~ .dedans .f-b{display:flex}
+  #f-c:checked ~ .dedans .f-c{display:flex}
+  /* C tient toute la largeur : le mot à gauche, le rond au bout de la ligne. */
+  .action.pleine{justify-content:stretch}
+  .geste.large{width:100%;justify-content:space-between;gap:16px}
+
+  /* ═══ Le fil, pour voir ce que l'action pousse vers le bas ═══════════ */
+  .entete-fil{display:flex;justify-content:space-between;padding:0 26px;
+              margin:30px 0 4px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+              text-transform:uppercase;color:var(--gris)}
+  .brin{display:flex;gap:16px;padding:14px 26px;border-top:1px solid var(--trait)}
+  .brin .jour{width:52px;flex:none;text-align:center}
+  .brin .nb{font-family:Georgia,serif;font-size:22px;line-height:1}
+  .brin .mois{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+  .brin .nom{font-family:Georgia,serif;font-size:17px}
+  .brin .ou{font-size:12.5px;color:var(--gris)}
+  .brin .mention{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);
+              margin-top:4px}
+  .bas{display:flex;justify-content:space-between;padding:14px 22px 16px;
+       margin-top:6px;border-top:1px solid var(--trait);
+       font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+  .bas .actif{color:var(--encre)}
+
+  /* ═══ Le témoin — figé, et c'est tout son intérêt ════════════════════ */
+  .temoin{margin:0 0 18px;padding:14px 16px;border-radius:12px;
+          background:var(--papier);border:1px solid var(--trait)}
+  .legende .temoin .t{display:block;font-family:inherit;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--gris);margin-bottom:10px}
+  .temoin .geste{justify-content:flex-start}
+  .temoin .mot{font-size:9px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .temoin .rond{width:38px;height:38px}
+  .temoin .rond svg{width:20px;height:20px}
+  .temoin .rond .pouls{animation:none}
+
+  .legende{flex:1;min-width:290px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .l-a,.l-b,.l-c{display:none}
+  #f-a:checked ~ .dedans .l-a,
+  #f-b:checked ~ .dedans .l-b,
+  #f-c:checked ~ .dedans .l-c{display:block}
+  .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:6px}
+</style>
+
+<input type="radio" name="f" id="f-a" class="etat" checked>
+<input type="radio" name="f" id="f-b" class="etat">
+<input type="radio" name="f" id="f-c" class="etat">
+<input type="radio" name="t" id="t-1" class="etat">
+<input type="radio" name="t" id="t-2" class="etat">
+<input type="radio" name="t" id="t-3" class="etat" checked>
+<input type="radio" name="g" id="g-1" class="etat">
+<input type="radio" name="g" id="g-2" class="etat" checked>
+<input type="radio" name="g" id="g-3" class="etat">
+
+<div class="dedans">
+  <h1>Le nouveau chantier, plus gros</h1>
+  <p class="intro">Votre demande du 16 août. <b>Rien n’est codé</b> — c’est votre
+    règle. <b>Touchez les trois réglages</b> : la forme du mot, sa taille, sa
+    graisse. L’écran suit, et le témoin « aujourd’hui » reste à côté pour
+    comparer.</p>
+
+  <p class="dit">« Le <b>nouveau chantier</b> fait le <b>plus gros et en
+    gras</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">La forme</span>
+    <div class="segments">
+      <label for="f-a">A · Les capitales</label>
+      <label for="f-b">B · La serif du titre</label>
+      <label for="f-c">C · Toute la largeur</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">La taille</span>
+    <div class="segments">
+      <label for="t-1">Gros</label>
+      <label for="t-2">Plus gros</label>
+      <label for="t-3">Le plus gros</label>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <span class="quoi">La graisse</span>
+    <div class="segments">
+      <label for="g-1">Celle d’aujourd’hui</label>
+      <label for="g-2">Gras</label>
+      <label for="g-3">Très gras</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel" data-atlas="ecran">
+      <p class="sceau">ATLAS</p>
+      <p class="bonjour">Bonjour compte</p>
+      <h2 class="titre-ecran">Vos chantiers</h2>
+      <p class="compteur">Sept en cours</p>
+      <div class="filet"></div>
+
+      <!-- ═══ A · les capitales, grossies ════════════════════════════════ -->
+      <div class="action f-a">
+        <a class="geste" href="#" data-forme="a" aria-label="Nouveau chantier">
+          <span class="mot caps" data-atlas="mot">Nouveau chantier</span>
+          <span class="rond">
+            <span class="pouls" aria-hidden="true"></span>
+            <span class="cerne" aria-hidden="true"></span>
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8"/></svg>
+          </span>
+        </a>
+      </div>
+
+      <!-- ═══ B · la serif du titre ══════════════════════════════════════ -->
+      <div class="action f-b">
+        <a class="geste" href="#" data-forme="b" aria-label="Nouveau chantier">
+          <span class="mot serif" data-atlas="mot">Nouveau chantier</span>
+          <span class="rond">
+            <span class="pouls" aria-hidden="true"></span>
+            <span class="cerne" aria-hidden="true"></span>
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8"/></svg>
+          </span>
+        </a>
+      </div>
+
+      <!-- ═══ C · toute la largeur ═══════════════════════════════════════ -->
+      <div class="action pleine f-c">
+        <a class="geste large" href="#" data-forme="c" aria-label="Nouveau chantier">
+          <span class="mot caps" data-atlas="mot">Nouveau chantier</span>
+          <span class="rond">
+            <span class="pouls" aria-hidden="true"></span>
+            <span class="cerne" aria-hidden="true"></span>
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8"/></svg>
+          </span>
+        </a>
+      </div>
+
+      <div class="entete-fil"><span>En cours</span><span>Sept</span></div>
+      <div class="brin">
+        <span class="jour"><span class="nb">16</span><br><span class="mois">Août</span></span>
+        <span><span class="nom">Mr. Felicie 1786867102580</span><br>
+          <span class="ou">Adresse non renseignée</span>
+          <span class="mention">Brouillon · sans photo</span></span>
+      </div>
+      <div class="brin">
+        <span class="jour"><span class="nb">16</span><br><span class="mois">Août</span></span>
+        <span><span class="nom">Mr. Felicie 1786867067405</span><br>
+          <span class="ou">Adresse non renseignée</span>
+          <span class="mention">Brouillon · sans photo</span></span>
+      </div>
+      <div class="bas">
+        <span class="actif">Chantiers</span><span>Planning</span>
+        <span>Terminés</span><span>Réglages</span>
+      </div>
+    </div>
+
+    <div class="legende">
+      <div class="temoin" data-atlas="temoin">
+        <span class="t">Aujourd’hui — ce que vous avez à l’écran</span>
+        <a class="geste" href="#" aria-label="Nouveau chantier">
+          <span class="mot" data-atlas="mot-temoin">Nouveau chantier</span>
+          <span class="rond">
+            <span class="cerne" aria-hidden="true"></span>
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9.6v12.8M9.6 16h12.8"/></svg>
+          </span>
+        </a>
+      </div>
+
+      <div class="l-a">
+        <span class="t">A · Les capitales</span>
+        Le même mot qu’aujourd’hui, <b>grossi et mis en gras</b>. Il reste une
+        étiquette : il ne concurrence pas « Vos chantiers », et l’or ne se pose
+        toujours que sur le signe.
+        <span class="cout"><b>Ce que ça coûte : rien.</b> Trois valeurs changent
+        dans une feuille de style, le geste et la feuille qui monte ne bougent
+        pas. C’est la seule des trois qui n’a aucune conséquence ailleurs.</span>
+      </div>
+      <div class="l-b">
+        <span class="t">B · La serif du titre</span>
+        Le mot passe dans <b>la police du titre</b>, comme « Vos chantiers ». À
+        surface égale c’est de loin le plus gros, et le plus habité.
+        <span class="cout"><b>Ce que ça coûte, et ce n’est pas technique :</b>
+        vous avez alors <b>deux titres</b> sur le même écran, à quarante pixels
+        l’un de l’autre. L’œil ne sait plus lequel est la page et lequel est
+        l’action. À regarder sur votre téléphone avant de le retenir.</span>
+      </div>
+      <div class="l-c">
+        <span class="t">C · Toute la largeur</span>
+        Le mot est calé <b>à gauche</b>, le rond part <b>au bout de la ligne</b>.
+        L’action occupe toute la largeur : c’est la plus visible des trois, et
+        celle qui se touche le plus facilement du pouce.
+        <span class="cout"><b>Ce que ça coûte :</b> elle prend la forme d’une
+        <b>ligne du fil</b>, et vous aviez refusé les boîtes justement pour que
+        rien ne ressemble à une carte. Le risque n’est pas la place, c’est de
+        la lire comme un chantier de plus.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui ne bouge pas, quelle que soit votre réponse</span>
+    <ul>
+      <li><b>Pas d’aplat vert.</b> Vous l’aviez refusé le 11 août — « ce gros
+        bouton en plein milieu, ça ne fait pas très luxe ». Ce qui grossit ici,
+        c’est le mot, jamais une pastille pleine.</li>
+      <li><b>Le geste reste le vôtre</b> : l’anneau qui bat tant qu’on ne l’a
+        pas touché, les trois tours et les onze grains d’or à l’appui, puis la
+        feuille une demi-seconde plus tard. Cette planche n’exécute aucun
+        script : le battement est là, la gerbe ne peut pas y être.</li>
+      <li><b>Le mot ne sera jamais coupé.</b> Le cran le plus gros est le plus
+        gros qui tienne sur un écran de 360 px — le plus étroit des vôtres —
+        sans « … » ni retour à la ligne : il reste 284 px de mot et de rond
+        pour 308 disponibles. C’est ce que le contrôle mesure, sur les vingt-
+        sept combinaisons.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Une chose à savoir avant de trancher</span>
+    <ul>
+      <li>Le 11 août, c’est <b>vous</b> qui aviez resserré cet endroit : le
+        libellé de 9,5 à 9 px, le rond de 46 à 38, le signe de 24 à 20
+        (maquette 24). Grossir n’est donc pas réparer un oubli, c’est revenir
+        dessus — ce qui est votre droit le plus entier, mais la maquette 24
+        sera corrigée en même temps, sinon les deux se contrediront.</li>
+      <li><b>Ce que vous voyez ici est ce que vous aurez</b> : l’application
+        emploie les polices de votre appareil, exactement comme cette page
+        (vérifié dans <i>globals.css</i>). Une seule réserve : « Très gras »
+        peut se confondre avec « Gras » selon l’appareil — sur iPhone les deux
+        existent vraiment, sur d’autres écrans le second est simulé.</li>
+    </ul>
+  </div>
+</div>

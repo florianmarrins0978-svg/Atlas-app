@@ -6,6 +6,7 @@ import {
   chantiers,
   clients,
   devis,
+  entreprises,
   factures,
   lignesDevis,
   lignesFacture,
@@ -14,7 +15,15 @@ import type { Ctx } from "./context";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
+import { totauxAvecReduction } from "../../lib/reduction-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
+import {
+  dansLaPeriode,
+  enAttenteDeReglement,
+  entreesDuReleve,
+  type Exigibilite,
+} from "../../lib/exigibilite-tva";
+import { exigibiliteDe, facturesAvecPaiements } from "./paiements-facture";
 
 // Fin de chantier, facture et TVA — docs/AGENT.md §2.3.
 //
@@ -95,6 +104,15 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
       .where(eq(lignesDevis.devisId, devisSource.id))
       .orderBy(asc(lignesDevis.ordre));
 
+    // Le régime de TVA se lit MAINTENANT, pour être figé dans la facture — une
+    // pièce comptable garde ce qu'elle portait le jour de son émission
+    // (migration 0039).
+    const [entrepriseCourante] = await tx
+      .select({ regimeTva: entreprises.regimeTva })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+
     const numeroCommercial = await attribuerNumeroFacture(tx, ctx.entrepriseId);
     const echeance = new Date(maintenant.getTime() + DELAI_PAIEMENT_JOURS * 86_400_000);
 
@@ -111,10 +129,16 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         entrepriseNom: devisSource.entrepriseNom,
         entrepriseAdresse: devisSource.entrepriseAdresse,
         entrepriseSiret: devisSource.entrepriseSiret,
+        // Le régime au jour de l'émission, figé comme le reste de l'identité
+        // (migration 0039). Lu sur l'entreprise et non sur le devis : un devis
+        // n'imprime pas la mention de l'article 293 B, il n'avait donc aucune
+        // raison de la porter.
+        entrepriseRegimeTva: entrepriseCourante?.regimeTva ?? null,
         entrepriseEmail: devisSource.entrepriseEmail,
         entrepriseTelephone: devisSource.entrepriseTelephone,
         entrepriseIban: devisSource.entrepriseIban,
         clientNom: devisSource.clientNom,
+        clientCivilite: devisSource.clientCivilite,
         clientAdresse: devisSource.clientAdresse,
         clientTelephone: devisSource.clientTelephone,
         clientEmail: devisSource.clientEmail,
@@ -127,6 +151,12 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         totalHt: devisSource.totalHt,
         totalTva: devisSource.totalTva,
         totalTtc: devisSource.totalTtc,
+        // **Le prix accordé suit le devis jusqu'ici, et c'est la moitié de la
+        // fonctionnalité.** Une remise consentie sur le devis puis absente de
+        // la facture ferait payer au client le prix qu'on venait de lui
+        // retirer — et c'est lui qui s'en apercevrait.
+        reductionPourcent: devisSource.reductionPourcent,
+        reductionMontant: devisSource.reductionMontant,
         createdBy: ctx.utilisateurId,
       })
       .returning();
@@ -208,12 +238,14 @@ function donneesFacture(
     dateEcheance: f.dateEcheance,
     numeroDevis,
     entrepriseNom: f.entrepriseNom,
+    regimeTva: f.entrepriseRegimeTva,
     entrepriseAdresse: f.entrepriseAdresse,
     entrepriseSiret: f.entrepriseSiret,
     entrepriseTelephone: f.entrepriseTelephone,
     entrepriseEmail: f.entrepriseEmail,
     entrepriseIban: f.entrepriseIban,
     clientNom: f.clientNom,
+    clientCivilite: f.clientCivilite,
     clientAdresse: f.clientAdresse,
     clientTelephone: f.clientTelephone,
     adresseChantier: f.adresseChantier,
@@ -223,6 +255,8 @@ function donneesFacture(
     totalHt: f.totalHt,
     totalTva: f.totalTva,
     totalTtc: f.totalTtc,
+    reductionPourcent: f.reductionPourcent,
+    reductionMontant: f.reductionMontant,
     lignes: lignes
       .slice()
       .sort((a, b) => a.ordre - b.ordre)
@@ -270,9 +304,14 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId));
 
-    const totalHt = lignes.reduce((acc, l) => acc.plus(new Decimal(l.montant)), new Decimal(0));
-    const totalTva = totalHt.times(new Decimal(avant.tauxTva)).dividedBy(100);
-    const totalTtc = totalHt.plus(totalTva);
+    // **La même règle que le devis, appelée et non réécrite.** Le patron a
+    // choisi l'arrangement B : la réduction n'est pas une ligne, donc ce
+    // recalcul-ci l'oublierait s'il additionnait seulement les lignes — et la
+    // facture émise, immuable, partirait au prix plein.
+    const t = totauxAvecReduction(lignes, avant.tauxTva, avant.reductionPourcent);
+    const totalHt = new Decimal(t.totalHt);
+    const totalTva = new Decimal(t.totalTva);
+    const totalTtc = new Decimal(t.totalTtc);
 
     // La pièce est figée au moment de l'émission, jamais régénérée ensuite :
     // une facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit
@@ -291,6 +330,11 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
           totalHt: totalHt.toFixed(2),
           totalTva: totalTva.toFixed(2),
           totalTtc: totalTtc.toFixed(2),
+          // **Le montant retiré se recalcule avec les totaux, jamais séparément.**
+          // Les lignes peuvent avoir bougé depuis la création de la facture ; un
+          // montant resté sur l'ancien HT donnerait un « Total HT après remise »
+          // qui ne serait la différence de rien.
+          reductionMontant: t.reductionMontant,
         },
         lignes,
         d?.numero ?? null
@@ -311,6 +355,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
         totalHt: totalHt.toFixed(2),
         totalTva: totalTva.toFixed(2),
         totalTtc: totalTtc.toFixed(2),
+        reductionMontant: t.reductionMontant,
         pdfStorageKey: objet.storageKey,
         pdfChecksum: objet.checksum,
       })
@@ -332,6 +377,7 @@ export type ChantierTermine = {
   id: string;
   nom: string;
   clientNom: string | null;
+  clientCivilite: "mr" | "mme" | null;
   datePlanifiee: string | null;
   termineAt: Date | null;
   factureEnvoyeeAt: Date | null;
@@ -366,12 +412,19 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
         id: chantiers.id,
         nom: chantiers.nom,
         clientNom: clients.nom,
+        clientCivilite: clients.civilite,
         datePlanifiee: chantiers.datePlanifiee,
         termineAt: chantiers.termineAt,
         factureEnvoyeeAt: chantiers.factureEnvoyeeAt,
         factureId: factures.id,
         factureStatut: factures.statut,
         factureNumero: factures.numeroCommercial,
+        // **La date de la FACTURE, pas celle du chantier.** L'écran refait le
+        // 22 août 2026 écrit « Facturé le 20 août » : le dire d'après
+        // `datePlanifiee` affirmerait une date d'émission qu'on n'a pas — le
+        // chantier a pu être fait le 20 et facturé le 30. Un écran qui invente
+        // une date de facture est pire qu'un écran muet.
+        factureDateEmission: factures.dateEmission,
         totalTtc: factures.totalTtc,
         // **Le montant PRÉVU au devis, pour ce qui n'est pas encore facturé.**
         // L'écran doit dire combien attend d'être facturé — c'est la seule
@@ -422,12 +475,22 @@ export async function listerChantiersTermines(ctx: Ctx, aujourdHui: string = jou
 
 export type LigneReleveTva = {
   numeroCommercial: string;
+  /**
+   * **La date qui compte pour la période**, et non plus forcément l'émission.
+   *
+   * Aux encaissements, c'est celle du règlement : c'est lui qui rend la TVA
+   * exigible (migration 0045). Le nom reste `dateEmission` parce qu'une
+   * douzaine d'écrans et de suites le lisent ; `motif` dit laquelle des deux
+   * c'est, pour que l'écran ne mente pas au patron.
+   */
   dateEmission: string;
   clientNom: string | null;
   totalHt: string;
   tauxTva: string;
   totalTva: string;
   totalTtc: string;
+  /** `paiement` : la ligne est un encaissement. `emission` : le régime des débits. */
+  motif?: "emission" | "paiement";
 };
 
 export type ReleveTva = {
@@ -437,6 +500,10 @@ export type ReleveTva = {
   totalHt: string;
   totalTva: string;
   totalTtc: string;
+  /** Sous quel régime ce relevé a été calculé — l'écran doit pouvoir le dire. */
+  regime: Exigibilite;
+  /** Ce qui n'y est pas encore, et qui attend son paiement. Zéro aux débits. */
+  enAttente: { nombre: number; ttc: string; tva: string };
 };
 
 /**
@@ -449,39 +516,68 @@ export type ReleveTva = {
  * copie.
  */
 export async function releveTvaCollectee(ctx: Ctx, debut: string, fin: string): Promise<ReleveTva> {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const lignes = await tx
-      .select({
-        numeroCommercial: factures.numeroCommercial,
-        dateEmission: factures.dateEmission,
-        clientNom: factures.clientNom,
-        totalHt: factures.totalHt,
-        tauxTva: factures.tauxTva,
-        totalTva: factures.totalTva,
-        totalTtc: factures.totalTtc,
-      })
-      .from(factures)
-      .where(
-        and(
-          eq(factures.statut, "emise"),
-          sql`${factures.dateEmission} >= ${debut}`,
-          sql`${factures.dateEmission} <= ${fin}`
-        )
-      )
-      .orderBy(asc(factures.dateEmission), asc(factures.numeroCommercial));
+  // **Le régime décide de la DATE qui compte** (migration 0045). Aux
+  // encaissements — le défaut légal d'une prestation de services —, une facture
+  // n'entre au relevé qu'à hauteur de ce qui a été reçu, à la date où il l'a
+  // été. Aux débits, elle y entre entière le jour de son émission.
+  const [regime, avecPaiements] = await Promise.all([exigibiliteDe(ctx), facturesAvecPaiements(ctx)]);
 
-    const somme = (champ: keyof LigneReleveTva) =>
-      lignes
-        .reduce((acc, l) => acc.plus(new Decimal(l[champ] as string)), new Decimal(0))
-        .toFixed(2);
+  const lignes: LigneReleveTva[] = [];
+  for (const f of avecPaiements) {
+    const entrees = entreesDuReleve(f, f.paiements, regime);
+    for (const e of entrees) {
+      if (!dansLaPeriode(e, debut, fin)) continue;
+      lignes.push({
+        numeroCommercial: f.numeroCommercial,
+        dateEmission: e.date,
+        clientNom: f.clientNom,
+        totalHt: e.ht,
+        // Le taux figé sur la facture : un acompte ne change pas le taux, il
+        // n'en encaisse qu'une part.
+        tauxTva: tauxDeLaFacture(f),
+        totalTva: e.tva,
+        totalTtc: e.ttc,
+        motif: e.motif,
+      });
+    }
+  }
 
-    return {
-      debut,
-      fin,
-      lignes,
-      totalHt: somme("totalHt"),
-      totalTva: somme("totalTva"),
-      totalTtc: somme("totalTtc"),
-    };
-  });
+  // L'ordre du relevé : la date qui compte, puis le numéro. C'est l'ordre du
+  // formulaire, et celui où il recopie.
+  lignes.sort((a, b) =>
+    a.dateEmission === b.dateEmission
+      ? a.numeroCommercial.localeCompare(b.numeroCommercial)
+      : a.dateEmission < b.dateEmission
+        ? -1
+        : 1
+  );
+
+  const somme = (champ: "totalHt" | "totalTva" | "totalTtc") =>
+    lignes.reduce((acc, l) => acc.plus(new Decimal(l[champ])), new Decimal(0)).toFixed(2);
+
+  return {
+    debut,
+    fin,
+    lignes,
+    totalHt: somme("totalHt"),
+    totalTva: somme("totalTva"),
+    totalTtc: somme("totalTtc"),
+    regime,
+    enAttente: enAttenteDeReglement(
+      avecPaiements.map((f) => ({ facture: f, paiements: f.paiements })),
+      regime
+    ),
+  };
+}
+
+/**
+ * Le taux d'une facture, tel qu'il a été figé.
+ *
+ * Recalculé depuis les totaux quand la colonne manque — une facture ancienne
+ * peut l'avoir laissée vide, et le relevé doit rester lisible.
+ */
+function tauxDeLaFacture(f: { totalHt: string; totalTva: string }): string {
+  const ht = new Decimal(f.totalHt || "0");
+  if (ht.lessThanOrEqualTo(0)) return "0.00";
+  return new Decimal(f.totalTva || "0").dividedBy(ht).times(100).toDecimalPlaces(2).toFixed(2);
 }

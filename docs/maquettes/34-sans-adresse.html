@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Un chantier sans adresse</title>
+</head>
+<body>
+<style>
+  /*
+    « MONTRE MOI » — sa réponse du 12 août 2026, à la question de savoir si la
+    phrase suffit quand un chantier n'a pas d'adresse.
+
+    À gauche : ce que fait l'application AUJOURD'HUI. À droite : ce que
+    donnerait un bouton « Saisir l'adresse ». Rien n'est codé à droite.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --pin:#2f3b2f;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:#e9e6df;color:var(--encre);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .titre{max-width:60ch;margin:0 auto;padding:26px 20px 6px}
+  .titre h1{margin:0;font-size:24px;font-weight:400;letter-spacing:-.01em}
+  .titre p{margin:8px 0 0;color:#6f6a5f;font-size:14px;line-height:1.7}
+
+  .lot{max-width:60ch;margin:0 auto;padding:18px 20px}
+  .etiq{margin:0 0 4px;color:#8a7452;text-transform:uppercase;letter-spacing:.3em;
+        font-size:9.5px;font-weight:500}
+  .dit{margin:0 0 14px;color:#6f6a5f;font-size:13.5px;line-height:1.65}
+  .dit b{color:var(--encre);font-weight:500}
+
+  .feuille{width:390px;max-width:100%;background:var(--fond);
+           border-radius:26px 26px 14px 14px;padding:12px 24px 20px;
+           box-shadow:0 1px 3px rgba(20,18,14,.10),0 14px 34px rgba(20,18,14,.12)}
+  .poignee{width:38px;height:4px;border-radius:9px;background:rgba(28,28,26,.15);margin:0 auto 18px}
+  .ou{margin:0;text-align:center;color:var(--or)}
+  .lieu{margin:10px 0 0;text-align:center;font-size:21.5px;line-height:1.22}
+  .pour{margin:7px 0 0;text-align:center;color:var(--gris);font-size:13.5px}
+  .quandi{margin:5px 0 0;text-align:center;color:var(--gris);font-size:12px}
+  .filet{height:1px;background:var(--trait-doux);margin:16px 0 14px}
+
+  .destinations{display:flex;flex-direction:column;gap:1px;background:var(--trait-doux);
+                border-radius:10px;overflow:hidden;opacity:.3}
+  .dest{display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--plage)}
+  .dest .marque{flex:0 0 auto;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+  .dest .nom{flex:1;font-size:16px}
+  .dest .fleche{color:var(--or);font-size:17px}
+
+  .annexes{display:flex;gap:1px;background:var(--trait-doux);border-radius:10px;
+           overflow:hidden;margin-top:10px}
+  .an{flex:1;padding:13px 8px;background:var(--plage);font-size:13.5px;text-align:center}
+  .eteint{color:var(--gris);opacity:.4}
+
+  /* Le bouton proposé — plein, vert pin : c'est ce qu'on FAIT. */
+  /* **La pastille, à sa demande du 13 août 2026 : « avec le bouton, tu le mets
+     arrondi ».** Il portait 6 px, seule forme carrée de la feuille. Et elle est
+     CREUSE dans le produit : le geste principal reste de PARTIR, celui-ci
+     répare ce qui manque. */
+  .saisir{display:block;width:100%;margin-top:12px;padding:14px;border-radius:999px;
+          background:var(--pin);color:#f5f3ee;text-align:center;font-size:15px}
+  .renoncer{display:block;width:100%;margin-top:6px;padding:13px;text-align:center;
+            font-size:15px;color:var(--gris)}
+
+  .fin{max-width:60ch;margin:0 auto;padding:10px 20px 70px;color:#6f6a5f;
+       font-size:14px;line-height:1.7}
+  .fin h2{margin:26px 0 6px;font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+          color:#8a7452;font-weight:500}
+  .fin b{color:var(--encre);font-weight:500}
+</style>
+
+<div class="titre">
+  <h1 class="serif">Un chantier sans adresse</h1>
+  <p>Ça arrive : un chantier dicté à la va-vite n’en a pas toujours.
+     <b>Rien ne s’invente</b> — les trois GPS s’éteignent. La question est de
+     savoir si la phrase suffit, ou s’il faut un bouton.</p>
+</div>
+
+<div class="lot">
+  <p class="etiq">A — ce que fait l’application aujourd’hui</p>
+  <p class="dit">La feuille dit ce qui manque et <b>où</b> le saisir, sans y mener.
+     Le nom du chantier, sur la ligne du planning, ouvre déjà sa fiche.</p>
+  <div class="feuille">
+    <div class="poignee"></div>
+    <p class="ou caps">Y aller</p>
+    <p class="lieu serif">Adresse non renseignée</p>
+    <p class="pour serif">M. Aubert — Élagage de platanes</p>
+    <p class="quandi">À saisir sur la fiche du chantier</p>
+    <div class="filet"></div>
+    <div class="destinations">
+      <span class="dest">
+        <span class="marque"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+        <span class="nom">Plans</span><span class="fleche">›</span>
+      </span>
+      <span class="dest">
+        <span class="marque"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5"><path d="M3.5 6.8 9.2 4.4l5.6 2.4 5.7-2.4v12.8l-5.7 2.4-5.6-2.4-5.7 2.4z" stroke-linejoin="round"/><path d="M9.2 4.4v14.8M14.8 6.8v14.8" opacity=".55"/></svg></span>
+        <span class="nom">Google Maps</span><span class="fleche">›</span>
+      </span>
+      <span class="dest">
+        <span class="marque"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5"><path d="M20.5 3.5 3.5 10.4l7.4 2.7 2.7 7.4z" stroke-linejoin="round"/></svg></span>
+        <span class="nom">Waze</span><span class="fleche">›</span>
+      </span>
+    </div>
+    <div class="annexes">
+      <span class="an eteint">Copier l’adresse</span>
+      <span class="an eteint">Appeler le client</span>
+    </div>
+    <span class="renoncer">Annuler</span>
+  </div>
+</div>
+
+<div class="lot">
+  <p class="etiq">B — avec un bouton « Saisir l’adresse »</p>
+  <p class="dit">Le même écran, plus <b>un bouton qui ouvre la fiche du chantier
+     directement sur l’adresse</b>. Vous la tapez, vous revenez, vous partez —
+     sans refermer la feuille pour chercher le chantier dans la liste.</p>
+  <div class="feuille">
+    <div class="poignee"></div>
+    <p class="ou caps">Y aller</p>
+    <p class="lieu serif">Adresse non renseignée</p>
+    <p class="pour serif">M. Aubert — Élagage de platanes</p>
+    <p class="quandi">Vendredi 21 août · après-midi</p>
+    <div class="filet"></div>
+    <div class="destinations">
+      <span class="dest">
+        <span class="marque"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+        <span class="nom">Plans</span><span class="fleche">›</span>
+      </span>
+      <span class="dest">
+        <span class="marque"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5"><path d="M3.5 6.8 9.2 4.4l5.6 2.4 5.7-2.4v12.8l-5.7 2.4-5.6-2.4-5.7 2.4z" stroke-linejoin="round"/><path d="M9.2 4.4v14.8M14.8 6.8v14.8" opacity=".55"/></svg></span>
+        <span class="nom">Google Maps</span><span class="fleche">›</span>
+      </span>
+      <span class="dest">
+        <span class="marque"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.5"><path d="M20.5 3.5 3.5 10.4l7.4 2.7 2.7 7.4z" stroke-linejoin="round"/></svg></span>
+        <span class="nom">Waze</span><span class="fleche">›</span>
+      </span>
+    </div>
+    <div class="annexes">
+      <span class="an eteint">Copier l’adresse</span>
+      <span class="an eteint">Appeler le client</span>
+    </div>
+    <span class="saisir">Saisir l’adresse</span>
+    <span class="renoncer">Annuler</span>
+  </div>
+</div>
+
+<div class="fin">
+  <h2>Ce que chacune coûte</h2>
+  <p><b>A</b> — rien à faire. Vous refermez la feuille, vous touchez le nom du
+     chantier, vous saisissez l’adresse. Trois gestes, et il faut savoir que le
+     nom mène à la fiche.</p>
+  <p><b>B</b> — un appui, vous y êtes. En échange, <b>un bouton de plus</b> dans
+     une feuille qui n’en avait pas — et qui ne sert que dans ce cas-là.</p>
+  <h2>Ce que je ne fais pas sans vous</h2>
+  <p><b>Retenu le 13 août 2026 : la variante B</b>, avec le bouton en pastille. Codé dans <code>FeuilleYAller.tsx</code> — il n’apparaît que sans adresse, et mène au devis complet, seul écran où elle s’édite.</p>
+</div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import { chromium, devices } from "playwright";
 import { mkdirSync, writeFileSync } from "fs";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const OUT = "artifacts/screenshots/step-24-devis-reel";
 mkdirSync(OUT, { recursive: true });
@@ -12,8 +13,8 @@ async function main() {
   const page = await context.newPage();
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', "M. Capture");
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', "M. Capture");
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const chantierUrl = page.url();
 
@@ -37,15 +38,19 @@ async function main() {
   const reponse = await page.request.get(`http://localhost:3000${apercuHref}`);
   writeFileSync(`${OUT}/apercu-devis.pdf`, await reponse.body());
 
-  await page.click("text=Envoyer au client");
+  await page.click("text=Choisir la date");
   await page.waitForSelector("text=Une date, ou deux au choix du client ?");
   await page.screenshot({ path: `${OUT}/02-confirmation-envoi.png`, fullPage: true });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour");
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
   await page.screenshot({ path: `${OUT}/03-apres-envoi.png`, fullPage: true });
 
-  const telechargementHref = await page.locator("text=Télécharger le PDF").getAttribute("href");
-  const reponseFinale = await page.request.get(`http://localhost:3000${telechargementHref}`);
+  // **Demandé au serveur.** « Télécharger le PDF » a été retiré de cet écran le
+  // 21 août 2026 : on photographie ce qu'il voit, et il ne le voit plus. Le
+  // document, lui, existe toujours et c'est bien celui-là qu'on garde.
+  const reponseFinale = await page.request.get(
+    `http://localhost:3000${apercuHref}?telecharger=1`
+  );
   writeFileSync(`${OUT}/devis-envoye.pdf`, await reponseFinale.body());
 
   await browser.close();

@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le bouton, huit façons</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LE BOUTON — huit façons, la bascule retenue au-dessus
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 11 août 2026 : « j'aime bien le premier [le trait qui glisse],
+    par contre le bouton je le trouve un peu trop gros, carré, pas esthétique ».
+
+    Ce qui est ACQUIS et ne bouge plus dans cette page : la bascule est celle de
+    la déclinaison 1 — deux mots en serif, un segment d'or qui glisse. Elle est
+    identique sur les huit écrans. **Seul le bouton change**, sinon on ne
+    comparerait rien.
+
+    ————————————————————————————————————————————————————————————————
+    D'OÙ VIENT LA MASSE, puisque c'est elle qu'il faut alléger. Le bouton
+    d'aujourd'hui pèse par TROIS choses à la fois, et chacune se traite
+    séparément :
+
+      · la HAUTEUR — 58 px, soit près d'un dixième de son écran ;
+      · le REMPLISSAGE — un aplat de vert pin d'un bord à l'autre ;
+      · la LARGEUR — il touche les deux marges, donc rien ne le contient.
+
+    Les huit propositions n'attaquent pas les mêmes : 1, 6 et 7 enlèvent le
+    remplissage ; 2 et 3 gardent l'aplat mais rabattent la hauteur ; 5 lâche la
+    pleine largeur ; 4 et 8 gardent la masse et travaillent le détail.
+
+    ————————————————————————————————————————————————————————————————
+    UNE RÉSERVE, ET IL FAUT LA LIRE AVANT DE CHOISIR LA HUITIÈME.
+
+    Le rayon de 5 px n'est pas un défaut : il a été choisi le 10 août 2026, et
+    `src/components/atlas/PrimaryButton.tsx` dit pourquoi, mot pour mot —
+    « Un rectangle presque droit se lit comme une pièce imprimée ; le même
+    arrondi à 16 px se lit comme un bouton d'application — c'est très exactement
+    ce dont le patron ne voulait plus. »
+
+    La proposition 8 revient donc sur cette décision. Elle est là parce qu'il dit
+    aujourd'hui « trop carré », et que c'est son écran ; elle est signalée pour
+    qu'il sache ce qu'il rouvre, pas pour l'en dissuader.
+
+    ————————————————————————————————————————————————————————————————
+    AUCUN SCRIPT. Les bascules sont des cases radio natives ; l'appui du doigt et
+    les fondus sont du CSS. Éprouvé JavaScript coupé :
+    `node scripts/verifier-maquette-bascule.mjs`.
+
+    Les écrans font 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1260px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+
+  .grille{display:flex;flex-wrap:wrap;gap:52px 40px;justify-content:center;align-items:flex-start;margin-top:44px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:412px}
+  .legende{text-align:center;max-width:390px}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+  .legende .chiffre{display:block;margin-top:6px;font-size:12px;color:var(--or)}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-papier:#ece9e1; --e-trait:rgba(28,28,26,.12);
+    width:390px;overflow:hidden;border-radius:32px;background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;padding:26px 0 30px}
+
+  .champ{margin:0 24px 16px}
+  .champ .libelle{text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600;color:var(--e-gris)}
+  .champ .val{margin-top:7px;border-radius:4px;background:var(--e-plage);padding:14px 15px;font-size:16px;color:var(--e-gris)}
+  .ajout{margin:2px 24px 0;font-size:14px;font-weight:500;color:var(--e-pin)}
+  .actions{margin:26px 24px 0}
+
+  /* ── La bascule retenue, identique partout ───────────────────────────── */
+  .bsc input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .bsc label{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .rail{position:relative;display:flex;border-bottom:1px solid var(--e-trait);margin-bottom:18px}
+  .rail label{flex:1;text-align:center;padding:0 0 13px;font-family:ui-serif,Georgia,serif;font-size:17px;
+              color:var(--e-gris);transition:color .26s ease}
+  .curseur{position:absolute;left:0;bottom:-1px;width:50%;height:1.5px;background:var(--e-or);
+           transition:transform .3s cubic-bezier(.4,0,.2,1)}
+  .bsc .r1:checked ~ .rail label:first-of-type,
+  .bsc .r2:checked ~ .rail label:last-of-type{color:var(--e-encre)}
+  .bsc .r2:checked ~ .rail .curseur{transform:translateX(100%)}
+
+  /* Les deux libellés superposés dans la même case : le bouton ne change
+     jamais de largeur au moment du choix. Il prend celle du plus long, une fois
+     pour toutes — ce qui vaut aussi pour les formes à largeur libre (5). */
+  .mots{display:grid;justify-items:center;align-items:center}
+  .mots span{grid-area:1/1;transition:opacity .26s ease;white-space:nowrap}
+  .mots .m2{opacity:0}
+  .bsc .r2:checked ~ .bt .mots .m1,
+  .bsc .r2:checked ~ .bt-c .bt .mots .m1{opacity:0}
+  .bsc .r2:checked ~ .bt .mots .m2,
+  .bsc .r2:checked ~ .bt-c .bt .mots .m2{opacity:1}
+
+  /* Le socle de tous les boutons : ce qui ne varie pas d'une proposition à
+     l'autre — la police de titre, le centrage, l'appui du doigt. */
+  .bt{display:flex;align-items:center;justify-content:center;
+      font-family:ui-serif,Georgia,serif;transition:transform .12s ease,background-color .2s ease,
+      box-shadow .2s ease,color .2s ease}
+  .bt:active{transform:scale(.985)}
+
+  /* ═══ 1 — LE FILET ══════════════════════════════════════════════════════
+     On retire l'aplat, on garde le contour. Le bouton cesse d'être une masse
+     et devient un cadre — c'est la façon la plus directe d'alléger sans rien
+     rétrécir. Ce qu'il faut savoir : un bouton sans fond appelle moins le
+     doigt qu'un bouton plein, sur un écran qu'on parcourt vite. */
+  .b1{height:52px;border-radius:4px;color:var(--e-pin);font-size:17.5px;
+      box-shadow:inset 0 0 0 1px var(--e-pin)}
+  .b1:active{background:var(--e-papier)}
+
+  /* ═══ 2 — LE BANDEAU FIN ════════════════════════════════════════════════
+     L'aplat reste, la hauteur tombe de 58 à 44, et la serif cède la place à des
+     capitales espacées. Ce n'est plus un bouton : c'est une bande imprimée. */
+  .b2{height:44px;border-radius:3px;background:var(--e-pin);color:#faf9f5;
+      font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase}
+
+  /* ═══ 3 — LA PLAQUE GRAVÉE ══════════════════════════════════════════════
+     L'aplat reste, mais un liseré d'or court à l'intérieur, à 5 px des bords —
+     comme le filet d'une plaque gravée. La masse ne change pas ; c'est le
+     détail qui la rachète. */
+  .b3{position:relative;height:54px;border-radius:4px;background:var(--e-pin);color:#faf9f5;font-size:17.5px}
+  .b3::after{content:"";position:absolute;inset:5px;border:1px solid rgba(201,161,94,.5);border-radius:2px;
+             pointer-events:none}
+
+  /* ═══ 4 — LE SCEAU AU BOUT ══════════════════════════════════════════════
+     Un disque d'or à droite, la flèche dedans. Le bouton garde sa masse, mais
+     l'œil s'accroche au disque plutôt qu'au bloc — et le geste a une cible. */
+  .b4{position:relative;height:54px;border-radius:4px;background:var(--e-pin);color:#faf9f5;font-size:17.5px}
+  .b4 .disque{position:absolute;right:11px;top:50%;margin-top:-14px;width:28px;height:28px;border-radius:50%;
+              display:flex;align-items:center;justify-content:center;font-size:14px;
+              color:var(--e-or);box-shadow:inset 0 0 0 1px rgba(201,161,94,.65)}
+
+  /* ═══ 5 — LA CAPSULE ════════════════════════════════════════════════════
+     Il lâche la pleine largeur. Un bouton qui ne touche plus les marges est
+     tenu par le blanc autour de lui, et cesse aussitôt de peser. C'est la
+     proposition qui change le plus la RESPIRATION de l'écran. */
+  .bt-c{display:flex;justify-content:center}
+  .b5{height:50px;padding:0 34px;border-radius:26px;background:var(--e-pin);color:#faf9f5;font-size:17px}
+
+  /* ═══ 6 — LE DOUBLE FILET ═══════════════════════════════════════════════
+     Ni fond ni cadre : un cheveu au-dessus, un cheveu en dessous, et le texte
+     entre les deux. La plus « papeterie » de toutes — et la plus discrète,
+     peut-être trop pour l'action principale d'un écran. */
+  .b6{height:54px;color:var(--e-pin);font-size:18px;
+      border-top:1px solid var(--e-trait);border-bottom:1px solid var(--e-trait)}
+  .b6:active{background:var(--e-papier)}
+
+  /* ═══ 7 — LE TRAIT D'OR ═════════════════════════════════════════════════
+     Plus de boîte du tout : le texte, et un cheveu d'or dessous, à la largeur
+     du mot. C'est le plus léger possible — au point qu'il faut se demander s'il
+     se lit encore comme l'action principale, ou comme un lien parmi d'autres. */
+  .b7{height:46px;color:var(--e-pin);font-size:19px}
+  .b7 .mots span{padding-bottom:7px;border-bottom:1.5px solid var(--e-or)}
+
+  /* ═══ 8 — L'ANGLE ADOUCI ════════════════════════════════════════════════
+     La réponse littérale à « trop carré » : le rayon passe de 5 à 14, la
+     hauteur tombe à 52, et une ombre douce décolle le bouton du fond.
+     **C'est celle qui revient sur la décision du 10 août** — voir l'en-tête. */
+  .b8{height:52px;border-radius:14px;background:var(--e-pin);color:#faf9f5;font-size:17.5px;
+      box-shadow:0 6px 18px rgba(47,59,47,.22)}
+  .b8:active{box-shadow:0 3px 9px rgba(47,59,47,.26)}
+
+  .pied{max-width:68ch;margin:64px auto 0;padding-top:26px;border-top:1px solid var(--trait);
+        color:var(--gris);font-size:13.6px;line-height:1.7}
+  .pied h3{margin:0 0 10px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .pied ul{margin:0;padding-left:1.1em}
+  .pied li{margin-bottom:7px}
+  .pied b{color:var(--encre);font-weight:500}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas · 11 août 2026</p>
+    <h1>Le bouton, huit façons</h1>
+    <p>« Trop gros, carré, pas esthétique ». La bascule retenue reste identique
+      sur les huit — seul le bouton change.</p>
+    <p><strong>Touchez-les</strong> : ils répondent, et la bascule marche aussi.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ── 1 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 1</h2>
+        <p class="titre">Le filet</p>
+        <p>On retire l'aplat, on garde le contour. Le bouton cesse d'être une
+          masse et devient un cadre.</p>
+        <span class="chiffre">52 px · sans fond</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b1" id="b1a" checked>
+          <input class="r2" type="radio" name="b1" id="b1b">
+          <div class="rail">
+            <label for="b1a">Je dicterai</label><label for="b1b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b1"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 2 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 2</h2>
+        <p class="titre">Le bandeau fin</p>
+        <p>L'aplat reste, la hauteur tombe de 58 à 44, et la serif cède la place
+          à des capitales espacées. Une bande imprimée.</p>
+        <span class="chiffre">44 px · plein</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b2" id="b2a" checked>
+          <input class="r2" type="radio" name="b2" id="b2b">
+          <div class="rail">
+            <label for="b2a">Je dicterai</label><label for="b2b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b2"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier</span>
+            <span class="m2" data-mot>Ouvrir le devis</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 3 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 3</h2>
+        <p class="titre">La plaque gravée</p>
+        <p>Un liseré d'or court à l'intérieur, à cinq pixels des bords. La masse
+          ne change pas ; c'est le détail qui la rachète.</p>
+        <span class="chiffre">54 px · plein</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b3" id="b3a" checked>
+          <input class="r2" type="radio" name="b3" id="b3b">
+          <div class="rail">
+            <label for="b3a">Je dicterai</label><label for="b3b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b3"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 4 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 4</h2>
+        <p class="titre">Le sceau au bout</p>
+        <p>Un disque d'or à droite, la flèche dedans. L'œil s'accroche au disque
+          plutôt qu'au bloc, et le geste a une cible.</p>
+        <span class="chiffre">54 px · plein</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b4" id="b4a" checked>
+          <input class="r2" type="radio" name="b4" id="b4b">
+          <div class="rail">
+            <label for="b4a">Je dicterai</label><label for="b4b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b4">
+            <span class="mots">
+              <span class="m1" data-mot>Créer le chantier</span>
+              <span class="m2" data-mot>Ouvrir le devis</span></span>
+            <span class="disque" aria-hidden="true">→</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 5 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 5</h2>
+        <p class="titre">La capsule</p>
+        <p>Il lâche la pleine largeur. Un bouton qui ne touche plus les marges
+          est tenu par le blanc autour de lui, et cesse aussitôt de peser.</p>
+        <span class="chiffre">50 px · largeur libre</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b5" id="b5a" checked>
+          <input class="r2" type="radio" name="b5" id="b5b">
+          <div class="rail">
+            <label for="b5a">Je dicterai</label><label for="b5b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt-c">
+            <div class="bt b5"><span class="mots">
+              <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+              <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 6 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 6</h2>
+        <p class="titre">Le double filet</p>
+        <p>Ni fond ni cadre : un cheveu au-dessus, un cheveu en dessous, et le
+          texte entre les deux. La plus « papeterie ».</p>
+        <span class="chiffre">54 px · sans fond</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b6" id="b6a" checked>
+          <input class="r2" type="radio" name="b6" id="b6b">
+          <div class="rail">
+            <label for="b6a">Je dicterai</label><label for="b6b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b6"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 7 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 7</h2>
+        <p class="titre">Le trait d'or</p>
+        <p>Plus de boîte du tout : le texte, et un cheveu d'or dessous, à la
+          largeur du mot. Le plus léger possible.</p>
+        <span class="chiffre">46 px · sans fond</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b7" id="b7a" checked>
+          <input class="r2" type="radio" name="b7" id="b7b">
+          <div class="rail">
+            <label for="b7a">Je dicterai</label><label for="b7b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b7"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ── 8 ── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Proposition 8</h2>
+        <p class="titre">L'angle adouci</p>
+        <p>La réponse littérale à « trop carré » : rayon 14, hauteur 52, une
+          ombre douce. <b>C'est celle qui revient sur la décision du 10 août</b>
+          — le rayon droit avait été choisi pour ne pas ressembler à une
+          application.</p>
+        <span class="chiffre">52 px · plein · rayon 14</span>
+      </div>
+      <div class="tel"><div class="ecran">
+        <div class="champ"><div class="libelle">Adresse du chantier (facultatif)</div><div class="val">12 rue des Lilas, Nantes</div></div>
+        <div class="ajout">+ Ajouter une adresse client différente</div>
+        <div class="actions bsc" data-bascule="1">
+          <input class="r1" type="radio" name="b8" id="b8a" checked>
+          <input class="r2" type="radio" name="b8" id="b8b">
+          <div class="rail">
+            <label for="b8a">Je dicterai</label><label for="b8b">Je l'écris</label>
+            <span class="curseur"></span>
+          </div>
+          <div class="bt b8"><span class="mots">
+            <span class="m1" data-mot>Créer le chantier&nbsp;→</span>
+            <span class="m2" data-mot>Ouvrir le devis&nbsp;→</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <h3>Ce qu'il faut peser</h3>
+    <ul>
+      <li><b>Un bouton sans fond appelle moins le doigt.</b> Les 1, 6 et 7 sont
+        les plus élégantes et les plus risquées : sur un écran qu'on parcourt
+        vite, un aplat se trouve sans réfléchir, un contour se cherche. La 7 est
+        la limite — elle ressemble à un lien plus qu'à l'action principale.</li>
+      <li><b>Le doigt, mesuré.</b> Les huit tiennent les 44 px de hauteur utile
+        d'Apple. La 2 est exactement à la borne : rien en dessous.</li>
+      <li><b>Ce bouton est sur vingt-sept écrans.</b> Le changer ici, c'est le
+        changer partout — devis, facture, planning. C'est voulu : une seule
+        forme d'action principale dans toute l'application. Mais le choix
+        dépasse l'écran de création.</li>
+      <li><b>La réserve sur la 8.</b> Le rayon droit a été retenu le 10 août
+        pour que le bouton se lise « comme une pièce imprimée » et non comme un
+        bouton d'application. La 8 rouvre ce point ; c'est légitime, mais ce
+        n'est pas un détail de finition.</li>
+      <li><b>Une réserve honnête sur les polices.</b> Cette page emprunte la
+        serif de votre appareil ; l'application charge Playfair Display, le
+        rendu final sera plus dessiné.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

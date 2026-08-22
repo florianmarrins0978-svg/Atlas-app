@@ -4,10 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { jourLisible } from "@/lib/jour";
-import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
-import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
-import { terminerChantierAction, emettreFactureAction, preparerLienFactureAction } from "./actions";
+import { type CanalClient } from "@/lib/message-client";
+import { useRetourDeMessagerie } from "@/lib/depart-messagerie";
+import TransmettreLaFacture from "./TransmettreLaFacture";
+import { terminerChantierAction, emettreFactureAction } from "./actions";
+import { avecCivilite } from "@/lib/civilite";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
 // devis sont déjà là, il n'y a rien à saisir. Franchissable en un geste quand
@@ -25,6 +28,8 @@ export type FacturePourEcran = {
   numeroCommercial: string;
   statut: "brouillon" | "emise";
   clientNom: string | null;
+  /** Recopiée sur la facture à son établissement (migration 0038). */
+  clientCivilite: "mr" | "mme" | null;
   dateEcheance: string | null;
   tauxTva: string;
   totalHt: string;
@@ -38,64 +43,43 @@ export default function FactureClient({
   initialFacture,
   origine,
   entrepriseNom,
+  clientId,
   clientTelephone,
   clientEmail,
   canalClient,
+  regimeTva,
 }: {
   chantierId: string;
   initialFacture: FacturePourEcran | null;
   /** Adresse complète du site, bâtie côté serveur : un chemin seul ne s'ouvre nulle part. */
   origine: string;
   entrepriseNom: string;
+  clientId: string | null;
   clientTelephone: string | null;
   clientEmail: string | null;
   canalClient: CanalClient | null;
+  /**
+   * Quand la TVA devient exigible chez cette entreprise (migration 0045).
+   *
+   * **La phrase qui suit l'émission en dépend, et ce n'est pas cosmétique.**
+   * Aux encaissements, une facture arrêtée ne figure PAS au relevé : elle
+   * attend son règlement. Lui dire l'inverse — ce que cet écran faisait — lui
+   * ferait chercher dans son relevé un montant qui n'y est pas, et douter de
+   * l'application au lieu de noter son paiement.
+   */
+  regimeTva: "encaissements" | "debits";
 }) {
   const router = useRouter();
   useRetourDeMessagerie();
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
-  const [jetonFacture, setJetonFacture] = useState<string | null>(null);
 
   // Le canal convenu avec le client ; à défaut, celui dont on a la coordonnée.
-  // Jamais deviné au hasard : sans coordonnée, le bouton s'ouvrirait sur un
-  // destinataire vide et le patron enverrait dans le vide sans le voir.
+  // Ce n'est qu'un DÉPART : depuis le 12 août, l'écran offre l'autre voie sans
+  // rien demander (`TransmettreLaFacture`). Auparavant ce choix était définitif,
+  // et un client sans portable ne pouvait pas être facturé du tout.
   const canal: CanalClient = canalClient ?? (clientTelephone ? "sms" : "email");
-  const destinataire = canal === "sms" ? clientTelephone : clientEmail;
-
-  const lienFacture = jetonFacture ? `${origine}/factures/${jetonFacture}` : null;
-  const adresseMessagerie = lienFacture
-    ? lienTransmission({
-        canal,
-        destinataire,
-        message: composerMessageFacture({
-          clientNom: initialFacture?.clientNom ?? "",
-          entrepriseNom,
-          numeroFacture: initialFacture?.numeroCommercial ?? "",
-          echeanceLisible: initialFacture?.dateEcheance ? jourLisible(initialFacture.dateEcheance) : null,
-          lien: lienFacture,
-        }),
-      })
-    : "";
-
-  async function preparerLien() {
-    if (!initialFacture) return;
-    setEnCours(true);
-    setErreur(null);
-    try {
-      const r = await preparerLienFactureAction(initialFacture.id, canal);
-      if (!r.succes) {
-        setErreur(r.erreur);
-        return;
-      }
-      setJetonFacture(r.jeton);
-    } catch {
-      setErreur("Le lien de la facture n'a pas pu être préparé.");
-    } finally {
-      setEnCours(false);
-    }
-  }
 
   async function terminer() {
     setEnCours(true);
@@ -165,7 +149,8 @@ export default function FactureClient({
           Facture
         </p>
         <p className="text-[15px]" style={{ color: colors.ink }}>
-          {initialFacture.numeroCommercial} — {initialFacture.clientNom ?? "Client non renseigné"}
+          <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> —{" "}
+          {avecCivilite(initialFacture.clientNom, initialFacture.clientCivilite) || "Client non renseigné"}
         </p>
         {initialFacture.dateEcheance && (
           <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
@@ -234,6 +219,24 @@ export default function FactureClient({
         >
           Voir la facture en PDF →
         </a>
+
+        {/* **Ouvrir n'est pas garder.** Le patron, le 10 août 2026 : il ne
+            pouvait que regarder la facture, jamais la ranger sur son téléphone
+            ou son ordinateur (`TODO.md` §8). Le nom du fichier porte le numéro
+            — « F2026-0001.pdf », pas « facture.pdf » : il en aura des centaines
+            dans le même dossier, et « facture (17).pdf » ne se retrouve pas.
+            L'attribut `download` ne suffit pas seul (iOS l'ignore selon les
+            versions) : la route répond `Content-Disposition: attachment` sur
+            `?telecharger=1`, et c'est elle qui fait foi. */}
+        <a
+          href={`/api/factures/${initialFacture.id}/pdf?telecharger=1`}
+          download={nomDuFichier(initialFacture, emise)}
+          data-atlas="telecharger-facture"
+          className="mt-2 block text-center text-[13px]"
+          style={{ color: colors.muted }}
+        >
+          Télécharger ({nomDuFichier(initialFacture, emise)})
+        </a>
       </div>
 
       {erreur && (
@@ -245,11 +248,12 @@ export default function FactureClient({
       {emise ? (
         <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
           <p className="text-center text-[15px]" style={{ color: colors.ink }}>
-            Facture {initialFacture.numeroCommercial} arrêtée.
+            Facture <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> arrêtée.
           </p>
           <p className="mt-2 text-center text-[13px]" style={{ color: colors.muted }}>
-            Elle figure au relevé de TVA collectée et ne peut plus être modifiée
-            — une correction passerait par un avoir.
+            {regimeTva === "encaissements"
+              ? "Elle ne peut plus être modifiée — une correction passerait par un avoir. Elle entrera au relevé de TVA le jour où votre client vous paiera : notez-le dans Ma TVA."
+              : "Elle figure au relevé de TVA collectée et ne peut plus être modifiée — une correction passerait par un avoir."}
           </p>
 
           {/* **« Arrêtée » n'est pas « partie ».**
@@ -258,37 +262,21 @@ export default function FactureClient({
               seul départ réel : Atlas prépare le message, le patron l'expédie
               depuis sa propre messagerie (`docs/A-FAIRE.md` §5). */}
           <div className="mt-5" style={{ borderTop: `1px solid ${colors.lineSoft}`, paddingTop: 16 }}>
-            {lienFacture ? (
-              <>
-                {/* Même geste que pour le devis : on retient le départ vers la
-                    messagerie, et le retour ramène à l'accueil avec un mot
-                    (`src/lib/annonce-transmission.ts`). La phrase diffère —
-                    une facture n'attend pas de réponse. */}
-                <a
-                  href={adresseMessagerie}
-                  onClick={() => marquerDepartMessagerie("facture", initialFacture.clientNom ?? "")}
-                  className="block rounded-[4px] py-3 text-center text-[15px] font-medium"
-                  style={{ backgroundColor: colors.rust, color: colors.cream }}
-                >
-                  Ouvrir le {canal === "sms" ? "SMS" : "e-mail"} tout prêt →
-                </a>
-                <p className="mt-3 break-all text-center text-[12px]" style={{ color: colors.muted }}>
-                  {lienFacture}
-                </p>
-                <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
-                  Le message s&apos;ouvre dans votre messagerie. Rien ne part tant que vous ne l&apos;envoyez pas.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="mb-3 text-center text-[13px]" style={{ color: colors.muted }}>
-                  Votre client ne l&apos;a pas encore reçue.
-                </p>
-                <PrimaryButton disabled={enCours} onClick={preparerLien}>
-                  {enCours ? "Préparation…" : "Envoyer la facture au client →"}
-                </PrimaryButton>
-              </>
-            )}
+            <TransmettreLaFacture
+              factureId={initialFacture.id}
+              clientId={clientId}
+              clientNom={initialFacture.clientNom ?? ""}
+              clientCivilite={initialFacture.clientCivilite}
+              entrepriseNom={entrepriseNom}
+              numeroFacture={initialFacture.numeroCommercial}
+              echeanceLisible={
+                initialFacture.dateEcheance ? jourLisible(initialFacture.dateEcheance) : null
+              }
+              canal={canal}
+              telephone={clientTelephone ?? ""}
+              email={clientEmail ?? ""}
+              origine={origine}
+            />
           </div>
         </div>
       ) : (
@@ -303,6 +291,31 @@ export default function FactureClient({
       )}
     </div>
   );
+}
+
+/**
+ * Le nom du fichier que le patron retrouvera dans son dossier.
+ *
+ * Il dit le NUMÉRO et l'ÉTAT : deux fichiers de la même facture peuvent
+ * cohabiter — celui qu'il a regardé avant d'arrêter, et celui que son client a
+ * reçu — et rien d'autre ne dirait lequel est lequel. Le même mot est écrit à
+ * l'écran, pour qu'il sache avant d'appuyer ce qu'il va trouver après.
+ *
+ * La règle est ici ET dans la route (`api/factures/[id]/pdf`), et c'est la
+ * seule duplication assumée : l'attribut `download` du navigateur ne traverse
+ * pas jusqu'au serveur, et l'en-tête du serveur ne remonte pas jusqu'au
+ * libellé. Deux suites les comparent (`test-facture-au-client-e2e.ts`,
+ * `capture-facture.mts`) — sans quoi elles divergeraient en silence.
+ *
+ * **Et elles ont divergé, au premier jet.** L'état venait d'`initialFacture`,
+ * qui est le rendu du serveur à l'ARRIVÉE sur l'écran : après l'arrêt de la
+ * facture, sans rechargement, il annonçait encore un brouillon pendant que le
+ * serveur servait la pièce définitive. Le patron aurait cherché
+ * « F2026-0001-brouillon.pdf » dans un dossier qui contient
+ * « F2026-0001.pdf ». On lit donc `emise`, l'état vivant de l'écran.
+ */
+function nomDuFichier(f: FacturePourEcran, emise: boolean): string {
+  return emise ? `${f.numeroCommercial}.pdf` : `${f.numeroCommercial}-brouillon.pdf`;
 }
 
 function Ligne({ label, valeur }: { label: string; valeur: string }) {

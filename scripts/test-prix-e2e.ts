@@ -1,6 +1,7 @@
 import type { Page, Locator } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 function section(page: Page): Locator {
   return page.locator("form");
@@ -21,9 +22,14 @@ async function main() {
 
   const nomUnique = `Chantier prix e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
-  await page.click('button:has-text("Créer le chantier")');
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
+  await creerPuisFiche(page);
+  // **Pas de délai écrit à la main ici.** Cinq secondes suffisent quand la
+  // suite est jouée seule ; sous soixante suites enchaînées, la création d'un
+  // chantier ne les tient pas, et le rouge accuse le produit au lieu de la
+  // machine. Le délai commun — quarante-cinq secondes, posé par
+  // `lancerNavigateur` — existe exactement pour cela (`e2e-browser.ts`).
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
   const prixUrl = `${page.url()}/prix`;
 
   // --- État vide ---
@@ -49,8 +55,24 @@ async function main() {
   await page.waitForTimeout(400);
 
   // --- Persistance après rechargement ---
-  await page.reload({ waitUntil: "networkidle" });
-  const inputsApresReload = section(page).locator("input");
+  //
+  // **On RELIT jusqu'à ce que la base ait reçu, au lieu d'attendre 400 ms.**
+  // L'écran n'attend pas son enregistrement : il rend la main dès le doigt levé
+  // et l'appel continue derrière. Quatre cents millisecondes suffisent quand la
+  // suite est jouée seule ; sous quatre-vingts suites enchaînées, le
+  // rechargement avorte l'appel en vol, et le contrôle accuse le calcul du prix
+  // alors que rien n'est cassé — « '0.00' == '34.50' », le 16 août 2026.
+  //
+  // Même remède que `test-informations-e2e.ts`, `test-periodicite-tva-e2e.ts`
+  // et `test-unite-tarif-e2e.ts` : **attendre ce qu'on affirme, jamais une
+  // durée.**
+  let inputsApresReload = section(page).locator("input");
+  for (const essai of [1, 2, 3, 4]) {
+    await page.reload({ waitUntil: "networkidle" });
+    inputsApresReload = section(page).locator("input");
+    if ((await inputsApresReload.nth(3).inputValue().catch(() => "")) === "34.50") break;
+    await page.waitForTimeout(essai * 400);
+  }
   assert.equal(await inputsApresReload.nth(0).inputValue(), "Main d'œuvre");
   assert.equal(await inputsApresReload.nth(1).inputValue(), "1120.50");
   assert.equal(await inputsApresReload.nth(2).inputValue(), "Déplacement");

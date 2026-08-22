@@ -2,6 +2,8 @@ import { adressesDuDocument } from "../../lib/adresses";
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
+import { avecCivilite } from "@/lib/civilite";
+import { libelleReduction } from "@/lib/reduction-devis";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -272,15 +274,31 @@ export type DonneesDocument = {
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
   clientNom?: string | null;
+  /** Recopiée sur le document au moment où il est établi (migration 0038). */
+  clientCivilite?: "mr" | "mme" | null;
   clientAdresse?: string | null;
   clientTelephone?: string | null;
   adresseChantier?: string | null;
   conditionsPaiement?: string | null;
   devise: string;
   tauxTva: string;
+  /** **Déjà net de la réduction** — voir `src/lib/reduction-devis.ts`. */
   totalHt: string;
   totalTva: string;
   totalTtc: string;
+  /**
+   * Le prix accordé au client, s'il y en a un.
+   *
+   * *Arrangement B, choisi par le patron le 16 août 2026 :* « sous le total et
+   * prix accordé au client ». Le prix plein s'écrit d'abord, la remise dessous,
+   * puis le net — d'où le besoin des DEUX : le pourcentage pour la phrase, le
+   * montant pour la colonne de droite.
+   *
+   * Absents : le bloc de totaux est exactement celui d'avant le 16 août. Les
+   * milliers de devis déjà émis ne changent pas d'un pixel.
+   */
+  reductionPourcent?: string | null;
+  reductionMontant?: string | null;
   lignes: LigneDocument[];
 };
 
@@ -291,12 +309,50 @@ export type OptionsDocument = {
   references: [string, string][];
   /** Intertitre du bloc de notes — le devis y met aussi ses conditions. */
   titreNotes: string;
+  /**
+   * L'en-tête de la colonne des lignes. « DESCRIPTION » par défaut — mais une
+   * fiche de chantier liste ce qui a été fait, pas ce qui est proposé.
+   */
+  enTeteLignes?: string;
+  /**
+   * Des blocs de texte supplémentaires — `[intertitre, contenu]` —, écrits
+   * avant celui des notes.
+   *
+   * **Pourquoi ils existent.** La fiche de chantier a besoin de deux blocs de
+   * plus que le devis : le matériel employé et le compte des photos. Le premier
+   * réflexe avait été de les entasser dans le `rappel` de l'en-tête, séparés par
+   * des retours à la ligne — mais ce champ s'écrit d'un seul trait : les trois
+   * lignes se seraient imprimées bout à bout, ou `pdf-lib` aurait refusé le
+   * saut de ligne. Un mécanisme nommé vaut mieux qu'un champ détourné.
+   *
+   * Le devis et la facture n'en passent aucun, et rien ne change pour eux.
+   */
+  blocsTexte?: [string, string][];
   /** Mention légale du pied. Elle diffère du tout au tout entre les deux pièces. */
   mentionLegale: (data: DonneesDocument) => string;
   /** Le devis se signe, la facture se règle. */
   cadreSignature: boolean;
   /** Sur une facture, le rappel du devis d'origine. */
   rappel?: string | null;
+  /**
+   * Le document ne porte AUCUN chiffre : ni colonnes de prix, ni totaux, ni TVA.
+   *
+   * **Pour la fiche de chantier**, demandée par le patron le 20 août 2026. Elle
+   * dit ce qui a été fait, pas ce que ça coûte — le client l'a déjà su par le
+   * devis, et le saura par la facture.
+   *
+   * **Pourquoi une option plutôt qu'un troisième moteur.** Devis, facture et
+   * fiche partagent tout le reste : le papier, l'en-tête de l'entreprise, le
+   * bloc émetteur/client, les notes, le pied, la pagination. Les recopier
+   * produirait deux mises en page qui divergent — et c'est le client qui verrait
+   * la différence entre les feuilles qu'un même artisan lui envoie
+   * (`CLAUDE.md` §3).
+   *
+   * **Absente, rien ne change.** Chaque `if` posé pour elle est additif, et une
+   * empreinte de la trace du devis et de la facture le prouve au centième de
+   * point (`scripts/test-fiche-chantier-pdf.ts`).
+   */
+  sansChiffrage?: boolean;
 };
 
 
@@ -398,7 +454,10 @@ export async function composerDocument(
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
 
   const client = [
-    data.clientNom,
+    // **Le papier nomme le client comme l'écran et le message.** Une seule
+    // règle (`src/lib/civilite.ts`) : recopiée ici, elle aurait fini par dire
+    // « Mme Roux » à l'écran et « Mr. Roux » sur le PDF qu'elle garde.
+    avecCivilite(data.clientNom, data.clientCivilite),
     // L'adresse du client — ou, à défaut, celle du chantier, sans étiquette.
     // La ligne « Chantier : … » ne subsiste que si les travaux ont lieu
     // ailleurs. Même fonction qu'à l'écran (`src/lib/adresses.ts`) : deux
@@ -422,10 +481,12 @@ export async function composerDocument(
 
   const enTeteColonne: Style = { taille: 7.5, police: ctx.sansGras, couleur: ETIQUETTE };
   const enTeteTableau = () => {
-    ecrireEspace(ctx, "DESCRIPTION", MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
-    ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
-    ecrireEspaceADroite(ctx, "PRIX UNITAIRE HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
-    ecrireEspaceADroite(ctx, "TOTAL HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
+    ecrireEspace(ctx, options.enTeteLignes ?? "DESCRIPTION", MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
+    if (!options.sansChiffrage) {
+      ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceADroite(ctx, "PRIX UNITAIRE HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceADroite(ctx, "TOTAL HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
+    }
     y -= 9;
     trait(ctx, y, 1.2, ENCRE);
     y -= 17;
@@ -441,7 +502,11 @@ export async function composerDocument(
   }
 
   for (const ligne of data.lignes) {
-    const lignesLibelle = enLignes(ligne.libelle, ctx.sans, 9, xQte - MARGE - 50);
+    // Sans colonnes de prix, le libellé dispose de toute la feuille : garder la
+    // largeur du devis couperait « Démontage de trois chênes en tête de chat »
+    // en deux pour laisser la place à des colonnes qui n'existent pas.
+    const largeurLibelle = options.sansChiffrage ? DROITE - MARGE : xQte - MARGE - 50;
+    const lignesLibelle = enLignes(ligne.libelle, ctx.sans, 9, largeurLibelle);
     const hauteurLigne = Math.max(lignesLibelle.length, 1) * 11 + 19;
     // Une ligne ne se coupe jamais en deux : elle passe entière à la page
     // suivante, en-tête de colonnes redessiné pour qu'on sache encore ce
@@ -451,12 +516,14 @@ export async function composerDocument(
       enTeteTableau();
     }
     lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
-    ecrireADroite(ctx, ligne.quantite, xQte, y, { taille: 9 });
-    ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
-    ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), xMontant, y, {
-      taille: 9,
-      police: ctx.sansGras,
-    });
+    if (!options.sansChiffrage) {
+      ecrireADroite(ctx, ligne.quantite, xQte, y, { taille: 9 });
+      ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
+      ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), xMontant, y, {
+        taille: 9,
+        police: ctx.sansGras,
+      });
+    }
     y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
     trait(ctx, y, 0.7, TRAIT_CLAIR);
     y -= 12;
@@ -465,13 +532,49 @@ export async function composerDocument(
   // ─── Totaux, calés à droite ─────────────────────────────────────────────
   // Le bloc entier tient sur une seule page : un « Total TTC » séparé de son
   // « Total HT » par un saut de page se lit de travers.
-  place(74);
+  //
+  // **Sauté en entier sur une fiche de chantier.** Écrire « Total TTC : 0,00 € »
+  // sur un compte rendu de travaux ferait croire à un travail fait pour rien —
+  // c'est la même règle que la fiche client, où un montant absent s'écrit « — »
+  // et jamais « 0 € » (`CLAUDE.md` §4).
+  if (!options.sansChiffrage) {
+  const libelleRemise = libelleReduction(data.reductionPourcent ?? null);
+  const avecRemise = libelleRemise !== null && data.reductionMontant != null;
+  // Deux lignes de plus quand une remise est accordée : la place se réserve
+  // AVANT le saut de page, sinon « Total TTC » se retrouve seul en haut de la
+  // page suivante.
+  place(avecRemise ? 74 + 32 : 74);
   y -= 6;
   const gaucheTotaux = DROITE - 220;
 
-  ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
-  ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
-  y -= 16;
+  if (avecRemise) {
+    // **Le prix plein d'abord**, puis ce qui a été consenti, puis le net : c'est
+    // la présentation qu'il a choisie, et c'est celle qui permet au client de
+    // refaire le calcul. Le brut vaut net + retiré, jamais une troisième
+    // colonne qui pourrait les contredire.
+    const brut = new Decimal(data.totalHt).plus(new Decimal(data.reductionMontant!)).toFixed(2);
+    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(brut, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 16;
+
+    ecrire(ctx, libelleRemise!, gaucheTotaux, y, { taille: 9.5 });
+    // **Le trait d'union, jamais le « moins » typographique (U+2212).** Les
+    // polices standard du PDF sont encodées en WinAnsi, qui ne le connaît pas :
+    // `pdf-lib` lève « WinAnsi cannot encode "−" », et c'est TOUT le devis qui
+    // ne se génère plus. Trouvé par `test-reduction-parcours-db.ts`, pas par le
+    // typage — l'écran, lui, l'affiche très bien, ce qui rendait le défaut
+    // invisible partout ailleurs.
+    ecrireADroite(ctx, `- ${formatMontant(data.reductionMontant!, data.devise)}`, DROITE, y, { taille: 9.5 });
+    y -= 16;
+
+    ecrire(ctx, "Total HT après remise", gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 16;
+  } else {
+    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 16;
+  }
 
   const tauxLisible = new Decimal(data.tauxTva).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
   ecrire(ctx, `TVA (${tauxLisible} %)`, gaucheTotaux, y, { taille: 9.5 });
@@ -487,9 +590,24 @@ export async function composerDocument(
     police: ctx.serifGras,
   });
   y -= 34;
+  }
 
   // ─── Conditions et modalités de paiement ────────────────────────────────
   const etiquetteBloc: Style = { taille: 7.5, police: ctx.sansGras, couleur: ETIQUETTE };
+
+  // Les blocs supplémentaires — matériel, photos — passent avant les notes :
+  // ils décrivent le chantier, là où les notes commentent.
+  for (const [intertitre, contenu] of options.blocsTexte ?? []) {
+    const lignesBloc = enLignes(contenu, ctx.sans, 9, DROITE - MARGE);
+    place(14 + lignesBloc.length * 12);
+    ecrireEspace(ctx, intertitre, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
+    y -= 14;
+    for (const l of lignesBloc) {
+      ecrire(ctx, l, MARGE, y, { taille: 9 });
+      y -= 12;
+    }
+    y -= 12;
+  }
 
   if (data.conditionsPaiement) {
     const lignesNotes = enLignes(data.conditionsPaiement, ctx.sans, 9, DROITE - MARGE);
@@ -503,7 +621,9 @@ export async function composerDocument(
     y -= 12;
   }
 
-  if (data.entrepriseIban) {
+  // Les modalités de paiement suivent le chiffrage : sur une fiche de chantier,
+  // un IBAN sans montant invite à payer une somme que personne n'a écrite.
+  if (data.entrepriseIban && !options.sansChiffrage) {
     place(38);
     ecrireEspace(ctx, "MODALITÉS DE PAIEMENT", MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;

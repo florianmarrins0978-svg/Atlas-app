@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — chercher un client, et ses années</title>
+<style>
+  /*
+    CHERCHER UN CLIENT — sa demande du 17 août 2026 :
+
+      « je pense qu'à l'intérieur on peut créer une base ou peut-être trier par
+        nom, et dès qu'on… avec une recherche en haut, comme ça on peut
+        rechercher un nom de client, par exemple Monsieur Martins, le nom sort,
+        on clique dessus, on voit tous les devis et les factures rangées par
+        date, par année. »
+
+    Puis : « code rien, fais des maquettes dynamiques en .html, pas de photo,
+    je veux pouvoir essayer ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUE `appli/clients.html` FAIT DÉJÀ, et qu'on ne refait pas ici : le
+    chemin — l'accueil, le lien or, la liste, la fiche, le retour depuis un
+    chantier. Cette page-ci ne traite que les DEUX choses qu'il a ajoutées :
+    **chercher** un nom, et **ranger par année** ses devis et ses factures.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LA CONTRAINTE QU'IL FAUT DIRE, PLUTÔT QUE DE LA CONTOURNER EN SILENCE.
+
+    Une vraie recherche au clavier demande du JavaScript, et ce dépôt s'en
+    passe : son lecteur n'en exécute pas toujours, et une maquette qui s'ouvre
+    blanche ne prouve rien (défaut vécu le 12 août 2026, maquette 39).
+
+    Cette page est donc manipulable SANS script, et elle propose deux façons de
+    trouver un nom — les deux se touchent pour de vrai :
+
+      A · la recherche par lettre (l'alphabet sous le champ) ;
+      B · la recherche par frappe, dont les trois états sont rejouables.
+
+    Dans l'application, B sera une vraie frappe. Ce qui se juge ici, c'est ce
+    qu'on VOIT à chaque état — pas la mécanique.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%}
+  a{color:inherit;text-decoration:none}
+  .tel{max-width:414px;margin:0 auto;min-height:100vh;background:var(--bone);
+       padding-bottom:96px}
+
+  /* Un écran à la fois, par ancre — aucun script. L'accueil de cette page
+     (la liste) est écrit EN DERNIER : `~` ne voit que les frères qui suivent,
+     et `:has()` manque encore sur les téléphones anciens. */
+  .ecran{display:none;padding:24px 0 0}
+  .ecran:target{display:block}
+  #liste{display:block}
+  .ecran:target ~ #liste{display:none}
+
+  .surtitre{display:block;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--or);padding:0 26px}
+  h1{margin:12px 0 0;padding:0 26px;font-family:Georgia,serif;font-weight:400;
+     font-size:34px;line-height:1.04;letter-spacing:-.018em}
+  .compte{display:block;margin-top:12px;padding:0 26px;font-size:9.5px;
+          font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .filet{height:1px;background:var(--line);margin:18px 26px 0}
+
+  /* ── Le champ de recherche ─────────────────────────────────────────────── */
+  .cherche{margin:16px 26px 0;display:flex;align-items:center;gap:10px;
+           background:var(--cream);border-radius:11px;padding:12px 14px;
+           box-shadow:inset 0 0 0 1px var(--line-soft)}
+  .loupe{width:15px;height:15px;border:1.6px solid var(--muted);border-radius:50%;
+         flex:none;position:relative}
+  .loupe::after{content:"";position:absolute;right:-5px;bottom:-4px;width:6px;height:1.6px;
+                background:var(--muted);transform:rotate(45deg)}
+  /* 16 px au moins : en dessous, iOS agrandit la page à la mise au point. */
+  .cherche input{border:0;background:none;outline:none;font-size:16px;width:100%;
+                 color:var(--charcoal);font-family:inherit}
+  .cherche input::placeholder{color:var(--muted)}
+  .frappe{font-size:16px;color:var(--charcoal)}
+  .curseur{display:inline-block;width:1px;height:17px;background:var(--or);
+           vertical-align:-3px;margin-left:1px}
+
+  /* L'alphabet — proposition A. Chaque lettre est une ancre. */
+  .alphabet{display:flex;flex-wrap:wrap;gap:5px;margin:12px 26px 0}
+  .alphabet a{font-size:11.5px;font-weight:500;letter-spacing:.06em;color:var(--muted);
+              padding:6px 8px;border-radius:7px;background:var(--cream);min-width:28px;
+              text-align:center}
+  .alphabet a.vise{background:var(--paper);color:var(--or);box-shadow:inset 0 0 0 1px var(--or)}
+  .alphabet a.creuse{opacity:.32}
+
+  /* ── Une ligne de client ───────────────────────────────────────────────── */
+  .initiale{margin:20px 26px 6px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--muted)}
+  .client{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline;
+          margin:0 26px;padding:13px 0;border-bottom:1px solid var(--line-soft)}
+  .client .nom{font-family:Georgia,serif;font-size:17.5px}
+  .client .dit{grid-column:1;font-size:12.5px;color:var(--muted)}
+  .client .montant{grid-row:1 / span 2;align-self:center;font-size:13px;color:var(--muted);
+                   font-variant-numeric:tabular-nums}
+  mark{background:rgba(185,139,71,.22);color:inherit;border-radius:2px;padding:0 1px}
+
+  /* ── La fiche d'un client, rangée par année ────────────────────────────── */
+  /* **32 px de haut au moins, gants compris.** Mesuré : sans ce calage, quatre
+     liens de cette page tombaient sous 28 px — on les rate au doigt, et rien
+     ne le dit à la lecture du code. */
+  .retour{display:inline-flex;align-items:center;gap:7px;margin:0 26px;
+          padding:8px 0;
+          font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;
+          color:var(--muted)}
+  .chev-g{width:5px;height:5px;transform:rotate(-135deg);
+          border-right:1.5px solid currentColor;border-top:1.5px solid currentColor}
+  .an{display:flex;align-items:baseline;gap:12px;margin:26px 26px 0}
+  .an b{font-family:Georgia,serif;font-weight:400;font-size:21px}
+  .an .trait{flex:1;height:1px;background:var(--line)}
+  .an .somme{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .piece{display:grid;grid-template-columns:auto 1fr auto;gap:0 12px;align-items:baseline;
+         margin:0 26px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+  .puce{width:7px;height:7px;border-radius:2px;align-self:center}
+  .puce.devis{background:var(--or)}
+  .puce.facture{background:var(--pine)}
+  .piece .quoi{font-size:15px}
+  .piece .quand{grid-column:2;font-size:12px;color:var(--muted);margin-top:2px}
+  .piece .prix{font-size:14px;font-variant-numeric:tabular-nums}
+  .legende{display:flex;gap:16px;margin:14px 26px 0;font-size:11.5px;color:var(--muted)}
+  .legende span{display:inline-flex;align-items:center;gap:6px}
+
+  .note{margin:26px 26px 0;padding:15px 17px;background:var(--cream);border-radius:11px;
+        font-size:13px;line-height:1.6;color:var(--charcoal-soft)}
+  .note b{color:var(--charcoal)}
+  .note a{display:inline-block;padding:7px 2px;font-weight:600;color:var(--or)}
+  .note .t{display:block;margin-bottom:7px;font-size:9.5px;font-weight:500;
+           letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+
+  /* ── Les photos : le réglage ───────────────────────────────────────────── */
+  .reglage{margin:16px 26px 0;background:var(--cream);border-radius:11px;padding:15px 17px}
+  .reglage .quoi{font-size:15.5px}
+  .reglage .pourquoi{margin-top:5px;font-size:13px;color:var(--muted);line-height:1.55}
+  .choix{display:flex;gap:7px;margin-top:13px;flex-wrap:wrap}
+  .choix a{font-size:14px;padding:9px 0;width:60px;text-align:center;border-radius:999px;
+           background:var(--bone);color:var(--charcoal)}
+  .choix a.pris{background:var(--paper);color:var(--or);font-weight:600;
+                box-shadow:inset 0 0 0 1px var(--or)}
+  .apres{margin-top:10px;font-size:12.5px;color:var(--muted)}
+
+  .barre{position:fixed;left:0;right:0;bottom:0;max-width:414px;margin:0 auto;
+         display:flex;justify-content:space-between;padding:13px 26px 26px;
+         background:var(--bone);border-top:1px solid var(--line);
+         font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+         color:var(--muted)}
+  .barre .actif{color:var(--charcoal)}
+</style>
+</head>
+<body>
+<div class="tel">
+
+<!-- ══ La recherche par frappe — trois états rejouables ══════════════════ -->
+<section class="ecran" id="frappe-m">
+  <span class="surtitre">Vos chantiers</span>
+  <h1>Vos clients</h1>
+  <span class="compte">Quarante-sept clients</span>
+  <div class="filet"></div>
+  <div class="cherche"><span class="loupe"></span><span class="frappe">m<span class="curseur"></span></span></div>
+  <p class="initiale">Onze noms</p>
+  <a class="client" href="#fiche"><span class="nom"><mark>M</mark>r. Martins</span><span class="montant">3 200 €</span><span class="dit">10 rue d’Enfer, Nantes</span></a>
+  <a class="client" href="#fiche"><span class="nom"><mark>M</mark>me Félicie</span><span class="montant">840 €</span><span class="dit">Vertou</span></a>
+  <a class="client" href="#fiche"><span class="nom"><mark>M</mark>r. Marchand</span><span class="montant">1 260 €</span><span class="dit">Rezé</span></a>
+  <a class="client" href="#fiche"><span class="nom"><mark>M</mark>me Moreau</span><span class="montant">470 €</span><span class="dit">Saint-Herblain</span></a>
+  <div class="note"><span class="t">Vous tapez</span>Après le <b>M</b>, onze noms restent. Continuez : <a href="#frappe-mar">tapez « ar » →</a></div>
+</section>
+
+<section class="ecran" id="frappe-mar">
+  <span class="surtitre">Vos chantiers</span>
+  <h1>Vos clients</h1>
+  <span class="compte">Quarante-sept clients</span>
+  <div class="filet"></div>
+  <div class="cherche"><span class="loupe"></span><span class="frappe">mar<span class="curseur"></span></span></div>
+  <p class="initiale">Deux noms</p>
+  <a class="client" href="#fiche"><span class="nom"><mark>Mar</mark>tins</span><span class="montant">3 200 €</span><span class="dit">Mr. — 10 rue d’Enfer, Nantes</span></a>
+  <a class="client" href="#fiche"><span class="nom"><mark>Mar</mark>chand</span><span class="montant">1 260 €</span><span class="dit">Mr. — Rezé</span></a>
+  <div class="note"><span class="t">Trois lettres suffisent</span>Sur quarante-sept clients, il en reste <b>deux</b>. Touchez <b>Martins</b> pour voir sa fiche. <br><br><a href="#liste">← revenir à la liste entière</a></div>
+</section>
+
+<!-- ══ La fiche : devis et factures rangés par année ═════════════════════ -->
+<section class="ecran" id="fiche">
+  <a class="retour" href="#liste"><span class="chev-g"></span>Vos clients</a>
+  <h1>Mr. Martins</h1>
+  <span class="compte">10 rue d’Enfer, Nantes · 06 79 98 45 14</span>
+  <div class="filet"></div>
+
+  <div class="an"><b>2026</b><span class="trait"></span><span class="somme">2 360 €</span></div>
+  <div class="piece"><span class="puce facture"></span><span class="quoi">Facture nº 2026-014</span><span class="prix">1 620 €</span><span class="quand">12 août · payée</span></div>
+  <div class="piece"><span class="puce devis"></span><span class="quoi">Devis nº 2026-031</span><span class="prix">1 620 €</span><span class="quand">28 juillet · accepté</span></div>
+  <div class="piece"><span class="puce devis"></span><span class="quoi">Devis nº 2026-022</span><span class="prix">740 €</span><span class="quand">14 mai · refusé</span></div>
+
+  <div class="an"><b>2025</b><span class="trait"></span><span class="somme">840 €</span></div>
+  <div class="piece"><span class="puce facture"></span><span class="quoi">Facture nº 2025-089</span><span class="prix">840 €</span><span class="quand">3 octobre · payée</span></div>
+  <div class="piece"><span class="puce devis"></span><span class="quoi">Devis nº 2025-102</span><span class="prix">840 €</span><span class="quand">21 septembre · accepté</span></div>
+
+  <div class="legende"><span><i class="puce devis" style="display:inline-block"></i>Devis</span><span><i class="puce facture" style="display:inline-block"></i>Factures</span></div>
+
+  <div class="note"><span class="t">Ce qui se décide ici</span>
+    Les deux sortes sont <b>mêlées et rangées par date</b>, la plus récente en
+    haut — on lit l’histoire du client. L’autre façon serait <b>deux piles
+    séparées</b> : tous les devis, puis toutes les factures.<br><br>
+    Mêlées, on voit qu’un devis est devenu une facture. Séparées, on retrouve
+    plus vite un document précis. <b>Dites-moi laquelle.</b>
+  </div>
+  <div class="note"><span class="t">Et un détail qui compte</span>
+    Le total de l’année est à droite : <b>2 360 €</b> en 2026. Il compte les
+    <b>factures</b>, jamais les devis — un devis refusé n’a rien rapporté.
+  </div>
+</section>
+
+<!-- ══ Les photos ═══════════════════════════════════════════════════════ -->
+<section class="ecran" id="photos">
+  <a class="retour" href="#liste"><span class="chev-g"></span>Vos clients</a>
+  <h1>Photos</h1>
+  <span class="compte">Réglages · Sécurité &amp; données</span>
+  <div class="filet"></div>
+
+  <div class="reglage">
+    <p class="quoi">Garder les photos</p>
+    <p class="pourquoi">Passé ce délai, les photos d’un chantier terminé sont effacées. Les devis et les factures, eux, sont gardés dix ans — c’est la loi.</p>
+    <div class="choix"><a href="#photos">1 an</a><a class="pris" href="#photos">2 ans</a><a href="#photos">5 ans</a><a href="#photos">Jamais</a></div>
+    <p class="apres">Vous avez retenu <b>2 ans</b>.</p>
+  </div>
+
+  <div class="reglage">
+    <p class="quoi">Réduire les photos à l’envoi</p>
+    <p class="pourquoi">Une photo de téléphone pèse 3 Mo. Réduite à la taille utile, elle en pèse 300 Ko — et se voit pareil sur un devis.</p>
+    <div class="choix"><a class="pris" href="#photos">Oui</a><a href="#photos">Non</a></div>
+    <p class="apres">Mesuré : <b>dix fois moins</b> de place, et le chantier s’ouvre plus vite.</p>
+  </div>
+
+  <div class="note"><span class="t">Ce que ça change, chiffré</span>
+    Sans rien faire : <b>2 Go par an</b> et par artisan. Avec la réduction et
+    les deux ans : <b>environ 400 Mo</b>. C’est <b>cinq fois moins</b> à
+    sauvegarder, et autant de moins à payer.<br><br>
+    <b>Rien n’est codé</b> — ces deux réglages sont dessinés, pas branchés.
+  </div>
+</section>
+
+<!-- ══ La liste — l'écran d'entrée (écrit en dernier, cf. la règle) ══════ -->
+<section class="ecran" id="liste">
+  <span class="surtitre">Vos chantiers</span>
+  <h1>Vos clients</h1>
+  <span class="compte">Quarante-sept clients</span>
+  <div class="filet"></div>
+
+  <div class="cherche"><span class="loupe"></span><input type="text" placeholder="Chercher un nom" aria-label="Chercher un client"></div>
+
+  <div class="alphabet">
+    <a href="#liste">Tout</a><a href="#liste" class="creuse">A</a><a href="#liste" class="creuse">B</a>
+    <a href="#liste">C</a><a href="#liste">D</a><a href="#liste" class="creuse">E</a>
+    <a href="#liste">F</a><a href="#liste" class="creuse">G</a><a href="#liste">H</a>
+    <a href="#frappe-m" class="vise">M</a><a href="#liste">P</a><a href="#liste">R</a>
+    <a href="#liste">S</a><a href="#liste">T</a><a href="#liste" class="creuse">V</a>
+  </div>
+
+  <p class="initiale">C</p>
+  <a class="client" href="#fiche"><span class="nom">Mme Chauvin</span><span class="montant">1 940 €</span><span class="dit">Bouguenais</span></a>
+  <p class="initiale">F</p>
+  <a class="client" href="#fiche"><span class="nom">Mme Félicie</span><span class="montant">840 €</span><span class="dit">Vertou</span></a>
+  <p class="initiale">M</p>
+  <a class="client" href="#fiche"><span class="nom">Mr. Marchand</span><span class="montant">1 260 €</span><span class="dit">Rezé</span></a>
+  <a class="client" href="#fiche"><span class="nom">Mr. Martins</span><span class="montant">3 200 €</span><span class="dit">10 rue d’Enfer, Nantes</span></a>
+  <a class="client" href="#fiche"><span class="nom">Mme Moreau</span><span class="montant">470 €</span><span class="dit">Saint-Herblain</span></a>
+
+  <div class="note"><span class="t">À essayer, dans l’ordre</span>
+    <b>1 ·</b> touchez la lettre <b>M</b> de l’alphabet — c’est la recherche
+    <b>par lettre</b>.<br>
+    <b>2 ·</b> de là, <b>tapez « ar »</b> : deux noms restent sur quarante-sept.<br>
+    <b>3 ·</b> touchez <b>Martins</b> : ses devis et ses factures, <b>par
+    année</b>.<br>
+    <b>4 ·</b> et le réglage des <a href="#photos">photos →</a>
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page ne peut pas faire</span>
+    La frappe au clavier ne filtre pas <b>pour de vrai</b> : cela demande du
+    JavaScript, et ces maquettes s’en passent pour s’ouvrir partout, même hors
+    ligne. Le champ ci-dessus <b>s’écrit</b>, mais c’est l’alphabet qui
+    navigue. <b>Dans l’application, la frappe filtrera vraiment</b> — les
+    écrans montrés ici sont ceux que vous verrez.
+  </div>
+</section>
+
+<div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+</div>
+</body>
+</html>

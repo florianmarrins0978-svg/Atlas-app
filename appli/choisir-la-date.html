@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Choisir la date — avec le calendrier du planning</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 22 AOÛT 2026 — et RIEN N'EST CODÉ.
+
+  *« Lorsqu'on clique sur "Choisir la date" et que le calendrier s'affiche pour
+  proposer une date au client, on devrait avoir le visuel du calendrier qui se
+  trouve dans la catégorie planning, avec la possibilité de cliquer sur les
+  jours pour voir quels chantiers y sont déjà affectés — comme ça on peut
+  savoir si oui ou non on peut rajouter des clients sur les jours. »*
+
+  ─── Ce que cette planche montre ──────────────────────────────────────────
+
+  La feuille qui s'ouvre sur le devis, dans DEUX états, à comparer d'un doigt :
+
+    · AUJOURD'HUI — le calendrier nu. Des ronds, un mois, rien d'autre. Il dit
+      qu'un jour est proposable, jamais POURQUOI, et jamais ce qui s'y trouve
+      déjà. Devant un jour refusé, on ne peut que le croire sur parole.
+
+    · PROPOSÉ — le calendrier DU PLANNING, celui qu'il connaît : les deux
+      barres sous le chiffre (matin dessus, après-midi dessous), le week-end
+      teinté, aujourd'hui cerclé d'or. Et sous le calendrier, **la fiche du
+      jour** : qui est déjà là, à quelle demi-journée, avec quelle équipe — et
+      s'il reste de la place pour ce chantier-ci.
+
+  ─── Trois partis pris, à lui soumettre ───────────────────────────────────
+
+  1. **Le calendrier est le MÊME dessin que le planning**, pas un cousin. Les
+     règles et les valeurs sont recopiées de `appli/planning-simple.html`,
+     elle-même tirée de l'écran codé — deux dessins du même objet finiraient
+     par diverger au premier réglage.
+
+  2. **Un jour complet reste TOUCHABLE.** Il ne s'ouvre pas au client, mais il
+     s'ouvre à lui : c'est justement le jour sur lequel il veut savoir qui est
+     déjà là avant de décider. Un jour grisé qui ne répond pas au doigt ne
+     répond pas non plus à sa question.
+
+  3. **Rien n'est proposé au client tant qu'il n'a pas touché « Envoyer ».**
+     Choisir un jour ici ne réserve rien : l'arrêt avant l'envoi ne bouge pas.
+
+  Les chantiers de démonstration sont posés à partir d'AUJOURD'HUI, quel que
+  soit le jour où il ouvre la page : une planche qui montre un mois périmé se
+  lit comme une planche fausse.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  /* Le choix des deux états, collé en haut — comme sur ses autres planches. */
+  .choix{position:sticky;top:0;z-index:9;display:flex;gap:8px;justify-content:center;
+         padding:10px 12px;background:#e6e3dc;border-bottom:1px solid var(--trait)}
+  .choix button{border:1px solid var(--trait);background:transparent;border-radius:99px;
+                padding:9px 16px;font:600 12.5px/1 ui-sans-serif,sans-serif;color:var(--gris);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
+
+  .tel{max-width:430px;margin:16px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
+
+  /* ── La feuille d'envoi ─────────────────────────────────────────────── */
+  .feuille-tete{padding:22px 18px 0;text-align:center}
+  .feuille-tete h1{margin:0;font:400 26px/1.15 ui-serif,Georgia,serif}
+  .feuille-tete .sous{margin:6px 0 0;font-size:13px;color:var(--gris)}
+
+  .caps{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .bloc{margin:20px 18px 0}
+  .bloc > .caps{display:block;margin-bottom:8px}
+
+  /* **Un bandeau déroulant, et non trois pastilles** — sa demande du 22 août :
+     *« pour combien de temps prend ce chantier, faut mettre un bandeau
+     déroulant avec demi-journée et 1 à 200 jours »*. Trois choix figés ne
+     couvraient pas un chantier de trois semaines, et il en a.
+
+     La case reprend « la carte douce », le dessin qu'il a retenu le 21 août
+     pour toutes les cases de l'application : fond papier, 14 px de rayon,
+     aucun bord, l'or au doigt posé. */
+  .duree{position:relative;display:block}
+  .duree select{width:100%;min-height:50px;border:0;border-radius:14px;background:var(--papier);
+                padding:15px 42px 15px 16px;font:16px/1.2 inherit;color:var(--encre);
+                appearance:none;-webkit-appearance:none;cursor:pointer}
+  .duree select:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+  /* Le chevron est dessiné à côté : celui du système varie d'un téléphone à
+     l'autre, et disparaît sur certains dès qu'on retire l'apparence native. */
+  .duree::after{content:"⌄";position:absolute;right:16px;top:50%;transform:translateY(-65%);
+                pointer-events:none;font-size:18px;color:var(--gris)}
+
+  /* ── AUJOURD'HUI : le calendrier nu ─────────────────────────────────── */
+  .nu-entete{display:flex;align-items:center;justify-content:space-between;margin:0 6px 8px}
+  .nu-entete b{font:500 15px/1 ui-sans-serif,sans-serif;text-transform:capitalize}
+  .nu-jours,.nu-mois{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .nu-jours span{padding-bottom:4px;font-size:11px;text-transform:uppercase;opacity:.45}
+  .nu-mois button{height:44px;border:0;background:transparent;border-radius:999px;
+                  font-size:15px;color:var(--encre);cursor:pointer;font-family:inherit}
+  .nu-mois button:disabled{opacity:.25;cursor:not-allowed}
+  .nu-mois button[aria-pressed="true"]{background:var(--pin);color:#faf9f5}
+  .nu-vide{height:44px}
+  .nu-dit{margin:10px 0 0;font-size:12px;color:var(--gris);text-align:center}
+
+  /* ── PROPOSÉ : le calendrier du planning ────────────────────────────────
+     Recopié de `appli/planning-simple.html`, valeur pour valeur — c'est le
+     dessin qu'il a arrêté le 21 août, et il ne se redessine pas ici. */
+  .fleche{width:34px;height:34px;border:0;background:transparent;border-radius:999px;
+          font-size:18px;color:var(--encre-douce);cursor:pointer;flex-shrink:0}
+  .mois-tete{margin:0 6px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mois-tete b{flex:1;text-align:center;font:700 15px/1.2 ui-sans-serif,sans-serif}
+
+  .entete-jours{margin:16px 0 6px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;
+                font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+                color:var(--gris);text-align:center}
+  .entete-jours .we{color:rgba(28,28,26,.3)}
+  .mois{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .creux{aspect-ratio:1/1.06}
+  .case{border:0;background:transparent;padding:0;cursor:pointer;border-radius:10px;
+        aspect-ratio:1/1.06;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+  .case.we{background:rgba(28,28,26,.035)}
+  .case[aria-pressed="true"]{background:var(--papier);box-shadow:inset 0 0 0 1.5px var(--encre)}
+  .case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .case .n{font:400 17px/1 ui-serif,Georgia,serif;color:var(--encre)}
+  .case.we .n{color:rgba(28,28,26,.42)}
+  .case.aujourdhui .n{color:var(--or);font-weight:600}
+  /* Le jour RETENU pour le client : plein, comme le choix du calendrier nu. */
+  .case.retenu{background:var(--pin)}
+  .case.retenu .n{color:#faf9f5}
+  .case.retenu .marqueA i{background:rgba(250,249,245,.22);box-shadow:none}
+
+  .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
+  .marqueA i{height:6px;border-radius:2px;background:var(--plage);
+             box-shadow:inset 0 0 0 1px var(--trait);position:relative;overflow:hidden;display:flex}
+  .marqueA .seg{height:100%}
+  .marqueA .seg.dispo{background:var(--pale)}
+  .marqueA .seg.plein{background:var(--pin)}
+  .marqueA .seg.dela{background:var(--bordeaux)}
+  .case.we .marqueA{visibility:hidden}
+
+  .legende{margin:14px 8px 0;display:flex;flex-wrap:nowrap;gap:6px;justify-content:center;
+           font-size:9px;color:var(--gris)}
+  .legende > span{flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:5px}
+  .legende .carre{width:10px;height:10px;border-radius:3px;display:block;flex-shrink:0;
+                  background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .legende .carre.dispo{background:var(--pale);box-shadow:none}
+  .legende .carre.plein{background:var(--pin);box-shadow:none}
+  .legende .carre.dela{background:var(--bordeaux);box-shadow:none}
+  .legende .annote{display:flex;align-items:center;gap:7px}
+  .legende .annote .marqueA{flex-shrink:0;align-items:stretch}
+  .legende .annote .mots{display:flex;flex-direction:column;gap:2.5px;line-height:1}
+  .legende .annote .mots b{height:6px;display:flex;align-items:center;font-weight:600;
+                           font-size:9.5px;color:var(--encre-douce)}
+
+  .retour-aujourdhui[hidden]{display:none}
+  .retour-aujourdhui{margin:12px auto 0;display:block;border:0;background:transparent;cursor:pointer;
+                     font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
+                     color:var(--or)}
+
+  /* ── La fiche du jour, sous le calendrier ───────────────────────────── */
+  .jour-ouvert{margin:16px 0 0;padding:14px 15px;border-radius:10px;background:var(--plage)}
+  .jour-ouvert .titre{font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+                      text-transform:uppercase;text-align:center;color:var(--encre);margin-bottom:14px}
+  .jour-ouvert .dit{margin:0;text-align:center;font-size:13px;color:var(--gris)}
+  .ligne-chantier{display:flex;align-items:baseline;gap:10px;margin-top:12px}
+  .ligne-chantier:first-of-type{margin-top:0}
+  .ligne-chantier .nom{flex:1;font:400 18px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .ligne-chantier .ou{display:block;font:400 12.5px/1.3 ui-sans-serif,sans-serif;color:var(--gris)}
+  .demi{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .demi .mot{width:74px;flex-shrink:0;font:600 10px/1.15 ui-sans-serif,sans-serif;
+             letter-spacing:.06em;text-transform:uppercase;color:var(--encre)}
+  .demi .equipe{flex-shrink:0;border:0;border-radius:999px;padding:5px 11px;font-size:12.5px;
+                background:var(--pin);color:#faf9f5;white-space:nowrap}
+  .demi .compte{margin-left:auto;font-size:12px;color:var(--gris)}
+  .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
+            background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .pastille.dispo{background:var(--pale);box-shadow:none}
+  .pastille.plein{background:var(--pin);box-shadow:none}
+  .pastille.dela{background:var(--bordeaux);box-shadow:none}
+
+  /* Le verdict pour CE chantier-ci : ce que le calendrier nu ne disait pas. */
+  .verdict{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait-doux);
+           display:flex;align-items:center;gap:10px}
+  .verdict .mot{flex:1;font-size:13px;line-height:1.35;color:var(--encre-douce)}
+  .verdict.non .mot{color:var(--bordeaux)}
+  .verdict button{flex-shrink:0;border:0;border-radius:999px;background:var(--pin);color:#faf9f5;
+                  padding:9px 15px;font:600 12.5px/1 ui-sans-serif,sans-serif;cursor:pointer;font-family:inherit}
+  .verdict button[disabled]{background:transparent;color:var(--gris);box-shadow:inset 0 0 0 1px var(--trait);cursor:not-allowed}
+
+  .retenu-dit{margin:18px 18px 0;padding:12px 14px;border-radius:10px;background:var(--papier);
+              font-size:13.5px;color:var(--encre);text-align:center}
+  .retenu-dit b{font-family:ui-serif,Georgia,serif;font-weight:400;font-size:16px}
+  .retenu-dit[hidden]{display:none}
+
+  .principal{margin:18px 18px 26px;width:calc(100% - 36px);border:0;border-radius:99px;
+             background:var(--pin);color:#fff;padding:16px 20px;font-family:ui-serif,Georgia,serif;
+             font-size:17px;cursor:pointer}
+  .principal[disabled]{background:var(--trait);color:var(--gris);cursor:not-allowed}
+
+  .note{max-width:430px;margin:16px auto 0;padding:0 20px;font-size:12.5px;line-height:1.6;color:#5b564c}
+  .note b{color:#2b2820}
+</style>
+</head>
+<body>
+
+<p class="bandeau">
+  <b>Votre demande du 22 août</b> — le calendrier du planning à la place du calendrier nu,
+  quand vous proposez une date. <b>Rien n’est codé :</b> l’application n’a pas bougé.
+  Touchez les jours, changez de mois, changez la durée.
+</p>
+
+<nav class="choix" aria-label="Les deux versions">
+  <button type="button" data-vue="avant" aria-pressed="false">Aujourd’hui</button>
+  <button type="button" data-vue="apres" aria-pressed="true">Ce que je propose</button>
+</nav>
+
+<div class="tel">
+  <div class="feuille-tete">
+    <h1>Envoyer à Madame Lucie</h1>
+    <p class="sous">Proposez-lui un jour. Rien ne part tant que vous n’avez pas touché « Envoyer ».</p>
+  </div>
+
+  <div class="bloc">
+    <label class="caps" for="duree">Combien de temps prend ce chantier ?</label>
+    <span class="duree"><select id="duree"></select></span>
+  </div>
+
+  <div class="bloc" id="calendrier"></div>
+
+  <p class="retenu-dit" id="retenu-dit" hidden></p>
+
+  <button class="principal" id="envoyer" type="button" disabled>Envoyer le devis</button>
+</div>
+
+<p class="note">
+  <b>Ce que le calendrier nu ne pouvait pas dire.</b> Il refusait un jour sans jamais montrer
+  ce qui s’y trouvait : impossible de juger si l’on pouvait quand même s’y glisser. Ici, un jour
+  complet <b>reste touchable</b> — c’est justement celui sur lequel vous voulez regarder avant de
+  décider. Il ne se propose simplement pas au client tant que la place manque.
+</p>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Les règles de charge sont celles de l'application (`src/lib/planning-jour.ts`)
+   — recopiées ici parce qu'une maquette ne peut pas l'importer, et écrites en
+   une seule fonction pour qu'on voie tout de suite qu'elles n'ont pas dérivé :
+
+     charge = chantiers pris ÷ nombre d'équipes
+     libre  : rien              dispo : charge < 1
+     plein  : charge = 1        au-delà : charge > 1
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const EQUIPES = 2;
+const JOURS_COURTS = ["L", "M", "M", "J", "V", "S", "D"];
+const MOIS_LONGS = ["janvier","février","mars","avril","mai","juin","juillet","août",
+                    "septembre","octobre","novembre","décembre"];
+const JOURS_LONGS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+
+const $ = (s) => document.querySelector(s);
+const iso = (d) => d.toISOString().slice(0, 10);
+const enDate = (j) => new Date(j + "T00:00:00Z");
+const plus = (d, n) => { const x = new Date(d); x.setUTCDate(x.getUTCDate() + n); return x; };
+const estWeekEnd = (d) => d.getUTCDay() === 0 || d.getUTCDay() === 6;
+
+const MAINTENANT = new Date();
+const AUJOURDHUI = iso(new Date(Date.UTC(
+  MAINTENANT.getFullYear(), MAINTENANT.getMonth(), MAINTENANT.getDate())));
+
+/* Le prochain jour ouvré à partir d'un décalage — les chantiers de
+   démonstration ne tombent jamais un dimanche, ce qui se verrait tout de suite
+   comme une planche fausse. */
+function ouvre(decalage) {
+  let d = plus(enDate(AUJOURDHUI), decalage);
+  while (estWeekEnd(d)) d = plus(d, 1);
+  return iso(d);
+}
+
+/* Ses chantiers déjà posés, à partir d'aujourd'hui. Deux équipes : Paul et
+   Julien, comme dans son jeu de démonstration. */
+const POSES = [
+  { jour: ouvre(1), demi: "matin",      nom: "M. Bernard",   ou: "Vertou",        equipe: "Paul" },
+  { jour: ouvre(1), demi: "apres_midi", nom: "M. Bernard",   ou: "Vertou",        equipe: "Paul" },
+  { jour: ouvre(2), demi: "matin",      nom: "Mme Roux",     ou: "Nantes",        equipe: "Julien" },
+  { jour: ouvre(3), demi: "matin",      nom: "M. Guillou",   ou: "Rezé",          equipe: "Paul" },
+  { jour: ouvre(3), demi: "apres_midi", nom: "M. Guillou",   ou: "Rezé",          equipe: "Paul" },
+  { jour: ouvre(3), demi: "matin",      nom: "Mme Perrin",   ou: "Saint-Herblain",equipe: "Julien" },
+  { jour: ouvre(3), demi: "apres_midi", nom: "Mme Perrin",   ou: "Saint-Herblain",equipe: "Julien" },
+  { jour: ouvre(6), demi: "matin",      nom: "Copropriété du Parc", ou: "Orvault",equipe: "Paul" },
+  { jour: ouvre(6), demi: "apres_midi", nom: "Copropriété du Parc", ou: "Orvault",equipe: "Paul" },
+  { jour: ouvre(6), demi: "matin",      nom: "M. Léon",      ou: "Carquefou",     equipe: "Julien" },
+  { jour: ouvre(6), demi: "apres_midi", nom: "M. Léon",      ou: "Carquefou",     equipe: "Julien" },
+  { jour: ouvre(6), demi: "apres_midi", nom: "Mme Fauvel",   ou: "Nantes",        equipe: "—" },
+  { jour: ouvre(9), demi: "matin",      nom: "M. Tanguy",    ou: "Sautron",       equipe: "Julien" },
+];
+
+const prisSur = (jour, demi) => POSES.filter((p) => p.jour === jour && p.demi === demi);
+
+function etatDe(jour, demi) {
+  if (estWeekEnd(enDate(jour))) return { etat: "we", charge: 0, pris: [] };
+  const pris = prisSur(jour, demi);
+  const charge = pris.length / EQUIPES;
+  if (pris.length === 0) return { etat: "libre", charge, pris };
+  if (charge < 1) return { etat: "dispo", charge, pris };
+  return { etat: charge === 1 ? "plein" : "dela", charge, pris };
+}
+
+/* Les demi-journées qu'un chantier occuperait à partir d'un jour, en sautant
+   les week-ends — la même règle que l'application : un chantier de deux jours
+   posé un vendredi finit le lundi. */
+function demiesOccupees(jour, nbDemies) {
+  const suite = [];
+  let d = enDate(jour);
+  let reste = nbDemies;
+  let demi = "matin";
+  while (reste > 0) {
+    if (estWeekEnd(d)) { d = plus(d, 1); demi = "matin"; continue; }
+    suite.push({ jour: iso(d), demi });
+    reste--;
+    if (demi === "matin") demi = "apres_midi";
+    else { demi = "matin"; d = plus(d, 1); }
+  }
+  return suite;
+}
+
+/** Ce chantier tient-il à partir de ce jour ? La question que le calendrier
+    nu tranchait en silence. */
+function tient(jour, nbDemies) {
+  if (estWeekEnd(enDate(jour))) return { possible: false, motif: "Un week-end n’est jamais proposé." };
+  if (jour < AUJOURDHUI) return { possible: false, motif: "Ce jour est passé." };
+  for (const d of demiesOccupees(jour, nbDemies)) {
+    const e = etatDe(d.jour, d.demi);
+    if (e.pris.length >= EQUIPES) {
+      const quand = d.jour === jour ? (d.demi === "matin" ? "le matin" : "l’après-midi")
+                                    : `le ${JOURS_LONGS[(enDate(d.jour).getUTCDay() + 6) % 7]} suivant`;
+      return { possible: false, motif: `Vos ${EQUIPES} équipes sont déjà prises ${quand}.` };
+    }
+  }
+  return { possible: true };
+}
+
+/* ─── L'état de la planche ──────────────────────────────────────────────── */
+let vue = "apres";
+let nbDemies = 2;
+let curseur = { annee: enDate(AUJOURDHUI).getUTCFullYear(), mois: enDate(AUJOURDHUI).getUTCMonth() };
+let jourTouche = null;   // le jour REGARDÉ
+let jourRetenu = null;   // le jour qu'on proposera au client
+
+function grilleDuMois(annee, mois) {
+  const premier = new Date(Date.UTC(annee, mois, 1));
+  const decalage = (premier.getUTCDay() + 6) % 7;   // lundi en tête
+  const combien = new Date(Date.UTC(annee, mois + 1, 0)).getUTCDate();
+  const cases = [];
+  for (let i = 0; i < decalage; i++) cases.push(null);
+  for (let n = 1; n <= combien; n++) {
+    const d = new Date(Date.UTC(annee, mois, n));
+    cases.push({ jour: iso(d), numero: n, weekEnd: estWeekEnd(d) });
+  }
+  return cases;
+}
+
+const echappe = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const enLettres = (j) => {
+  const d = enDate(j);
+  return `${JOURS_LONGS[(d.getUTCDay() + 6) % 7]} ${d.getUTCDate()} ${MOIS_LONGS[d.getUTCMonth()]}`;
+};
+
+/* ─── Le calendrier NU, celui d'aujourd'hui ─────────────────────────────── */
+function dessinerNu() {
+  const cases = grilleDuMois(curseur.annee, curseur.mois);
+  const jours = cases.map((c) => {
+    if (!c) return '<span class="nu-vide"></span>';
+    const v = tient(c.jour, nbDemies);
+    return `<button type="button" data-jour="${c.jour}" ${v.possible ? "" : "disabled"}
+              aria-pressed="${c.jour === jourRetenu}">${c.numero}</button>`;
+  }).join("");
+
+  return `
+    <span class="caps">Quel jour lui proposez-vous ?</span>
+    <div class="nu-entete">
+      <button class="fleche" type="button" data-mois="-1" aria-label="Mois précédent">‹</button>
+      <b>${MOIS_LONGS[curseur.mois]} ${curseur.annee}</b>
+      <button class="fleche" type="button" data-mois="1" aria-label="Mois suivant">›</button>
+    </div>
+    <div class="nu-jours">${JOURS_COURTS.map((j) => `<span>${j}</span>`).join("")}</div>
+    <div class="nu-mois">${jours}</div>
+    <p class="nu-dit">Les jours qui ne peuvent pas accueillir ce chantier sont éteints.</p>`;
+}
+
+/* ─── Le calendrier DU PLANNING ─────────────────────────────────────────── */
+function barre(jour, demi) {
+  const e = etatDe(jour, demi);
+  const part = Math.round(Math.min(e.charge, 1) * 100);
+  const classe = e.etat === "dispo" ? "dispo" : e.etat === "plein" ? "plein" : e.etat === "dela" ? "dela" : "";
+  return `<i><span class="seg ${classe}" style="width:${part}%"></span></i>`;
+}
+
+function dessinerPlanning() {
+  const cases = grilleDuMois(curseur.annee, curseur.mois);
+  const jours = cases.map((c) => {
+    if (!c) return '<span class="creux"></span>';
+    const classes = ["case"];
+    if (c.weekEnd) classes.push("we");
+    if (c.jour === AUJOURDHUI) classes.push("aujourdhui");
+    if (c.jour === jourRetenu) classes.push("retenu");
+    return `<button type="button" class="${classes.join(" ")}" data-jour="${c.jour}"
+              aria-pressed="${c.jour === jourTouche}"
+              aria-label="${enLettres(c.jour)}">
+              <span class="n">${c.numero}</span>
+              <span class="marqueA">${barre(c.jour, "matin")}${barre(c.jour, "apres_midi")}</span>
+            </button>`;
+  }).join("");
+
+  const surLeMois = enDate(AUJOURDHUI).getUTCFullYear() === curseur.annee
+                 && enDate(AUJOURDHUI).getUTCMonth() === curseur.mois;
+
+  return `
+    <span class="caps">Quel jour lui proposez-vous ?</span>
+    <div class="mois-tete" style="margin-top:8px">
+      <button class="fleche" type="button" data-mois="-1" aria-label="Mois précédent">‹</button>
+      <b>${MOIS_LONGS[curseur.mois]} ${curseur.annee}</b>
+      <button class="fleche" type="button" data-mois="1" aria-label="Mois suivant">›</button>
+    </div>
+    <div class="entete-jours">${JOURS_COURTS.map((j, i) =>
+      `<span class="${i >= 5 ? "we" : ""}">${j}</span>`).join("")}</div>
+    <div class="mois">${jours}</div>
+    <button class="retour-aujourdhui" type="button" data-retour ${surLeMois ? "hidden" : ""}>← Aujourd’hui</button>
+    <div class="legende">
+      <span><i class="carre"></i>rien</span>
+      <span><i class="carre dispo"></i>de la place</span>
+      <span><i class="carre plein"></i>complet</span>
+      <span><i class="carre dela"></i>au-delà</span>
+      <span class="annote">
+        <span class="marqueA"><i></i><i></i></span>
+        <span class="mots"><b>matin</b><b>après-midi</b></span>
+      </span>
+    </div>
+    ${dessinerFicheDuJour()}`;
+}
+
+/* ─── La fiche du jour : QUI est déjà là, et reste-t-il de la place ────── */
+function dessinerFicheDuJour() {
+  if (!jourTouche) {
+    return `<div class="jour-ouvert"><p class="dit">Touchez un jour pour voir qui y est déjà.</p></div>`;
+  }
+  if (estWeekEnd(enDate(jourTouche))) {
+    return `<div class="jour-ouvert">
+      <p class="titre">${enLettres(jourTouche)}</p>
+      <p class="dit">Jamais proposé.</p></div>`;
+  }
+
+  // Un chantier occupe souvent les deux demi-journées : on le nomme UNE fois,
+  // et ses demi-journées se lisent dessous. Deux lignes pour le même client se
+  // lisaient comme deux chantiers — sa correction du 21 août, sur le planning.
+  const noms = [];
+  for (const p of POSES.filter((p) => p.jour === jourTouche)) {
+    let bloc = noms.find((b) => b.nom === p.nom);
+    if (!bloc) { bloc = { nom: p.nom, ou: p.ou, demies: [] }; noms.push(bloc); }
+    bloc.demies.push(p);
+  }
+
+  const lignes = noms.map((b) => `
+    <div class="ligne-chantier">
+      <span class="nom">${echappe(b.nom)}<span class="ou">${echappe(b.ou)}</span></span>
+    </div>
+    ${b.demies.map((d) => `
+      <div class="demi">
+        <span class="mot">${d.demi === "matin" ? "Matin" : "Après-midi"}</span>
+        <span class="equipe">${echappe(d.equipe)}</span>
+      </div>`).join("")}`).join("");
+
+  const compte = (demi) => {
+    const e = etatDe(jourTouche, demi);
+    if (e.pris.length === 0) return "libre";
+    if (e.charge > 1) return `${e.pris.length} chantiers · ${Math.round(e.charge * 100)} % de vos équipes`;
+    if (e.charge === 1) return `${e.pris.length} chantier${e.pris.length > 1 ? "s" : ""} · complet`;
+    return `${e.pris.length} chantier${e.pris.length > 1 ? "s" : ""}`;
+  };
+
+  const v = tient(jourTouche, nbDemies);
+  const verdict = v.possible
+    ? `<div class="verdict">
+         <span class="mot">Il reste de la place pour Madame Lucie.</span>
+         <button type="button" data-retenir="${jourTouche}">Proposer ce jour</button>
+       </div>`
+    : `<div class="verdict non">
+         <span class="mot">${echappe(v.motif)}</span>
+         <button type="button" disabled>Proposer ce jour</button>
+       </div>`;
+
+  return `<div class="jour-ouvert">
+    <p class="titre">${enLettres(jourTouche)}</p>
+    ${lignes || '<p class="dit">Personne. La journée est entière.</p>'}
+    <div class="demi" style="margin-top:14px">
+      <span class="mot">Matin</span>
+      <i class="pastille ${etatDe(jourTouche, "matin").etat}"></i>
+      <span class="compte">${compte("matin")}</span>
+    </div>
+    <div class="demi">
+      <span class="mot">Après-midi</span>
+      <i class="pastille ${etatDe(jourTouche, "apres_midi").etat}"></i>
+      <span class="compte">${compte("apres_midi")}</span>
+    </div>
+    ${verdict}
+  </div>`;
+}
+
+/* ─── Le rendu ──────────────────────────────────────────────────────────── */
+function rendre() {
+  $("#calendrier").innerHTML = vue === "avant" ? dessinerNu() : dessinerPlanning();
+
+  const dit = $("#retenu-dit");
+  if (jourRetenu) {
+    dit.hidden = false;
+    dit.innerHTML = `Proposé à votre cliente : <b>${enLettres(jourRetenu)}</b>`;
+  } else {
+    dit.hidden = true;
+  }
+  $("#envoyer").disabled = !jourRetenu;
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.vue === vue)));
+  $("#duree").value = String(nbDemies);
+}
+
+/* Un seul écouteur, posé sur le conteneur : le calendrier se redessine à
+   chaque geste, et rebrancher les boutons un par un finirait par en oublier. */
+$("#calendrier").addEventListener("click", (e) => {
+  const cible = e.target.closest("button");
+  if (!cible) return;
+
+  if (cible.dataset.mois) {
+    const pas = Number(cible.dataset.mois);
+    let m = curseur.mois + pas, a = curseur.annee;
+    if (m < 0) { m = 11; a--; } else if (m > 11) { m = 0; a++; }
+    curseur = { annee: a, mois: m };
+    return rendre();
+  }
+  if (cible.hasAttribute("data-retour")) {
+    const d = enDate(AUJOURDHUI);
+    curseur = { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
+    return rendre();
+  }
+  if (cible.dataset.retenir) {
+    jourRetenu = cible.dataset.retenir;
+    return rendre();
+  }
+  if (cible.dataset.jour) {
+    // **Le calendrier nu n'a pas de fiche du jour** : y toucher un jour, c'est
+    // le retenir tout de suite. C'est justement ce qu'il reproche — on choisit
+    // sans avoir rien vu.
+    if (vue === "avant") jourRetenu = cible.dataset.jour;
+    else {
+      jourTouche = cible.dataset.jour === jourTouche ? null : cible.dataset.jour;
+      // Une case d'un autre mois fait basculer le calendrier, comme au planning.
+      const d = enDate(cible.dataset.jour);
+      if (d.getUTCFullYear() !== curseur.annee || d.getUTCMonth() !== curseur.mois) {
+        curseur = { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
+      }
+    }
+    return rendre();
+  }
+});
+
+document.querySelectorAll(".choix button").forEach((b) =>
+  b.addEventListener("click", () => { vue = b.dataset.vue; rendre(); }));
+
+/* **Une demi-journée, puis 1 à 200 jours** — sa demande du 22 août. Les
+   options sont écrites par le script plutôt qu'à la main : deux cents lignes
+   recopiées finiraient par porter une faute que personne ne relirait. */
+(function remplirLaDuree() {
+  const choix = ['<option value="1">Une demi-journée</option>'];
+  for (let j = 1; j <= 200; j++) {
+    choix.push(`<option value="${j * 2}">${j} jour${j > 1 ? "s" : ""}</option>`);
+  }
+  $("#duree").innerHTML = choix.join("");
+})();
+
+$("#duree").addEventListener("change", (e) => {
+  nbDemies = Number(e.target.value);
+  // Un jour retenu qui ne tient plus se rend : garder un choix devenu faux
+  // est exactement ce qu'on reproche au calendrier nu.
+  if (jourRetenu && !tient(jourRetenu, nbDemies).possible) jourRetenu = null;
+  rendre();
+});
+
+$("#envoyer").addEventListener("click", () => {
+  $("#envoyer").textContent = "Rien n’est parti : c’est une maquette";
+  setTimeout(() => { $("#envoyer").textContent = "Envoyer le devis"; }, 2200);
+});
+
+rendre();
+</script>
+</body>
+</html>

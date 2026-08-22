@@ -182,7 +182,7 @@ export default function ImportTarifs({ onImporte }: { onImporte: (tarifs: Tarif[
               type="button"
               onClick={appliquer}
               disabled={enCours || (apercu.aCreer.length === 0 && apercu.aMettreAJour.length === 0)}
-              className="rounded-[4px] py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
+              className="rounded-full py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
               style={{ backgroundColor: colors.rust }}
             >
               {enCours ? "Enregistrement…" : "Enregistrer ces tarifs"}

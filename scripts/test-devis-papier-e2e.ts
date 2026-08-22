@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Trois défauts trouvés par le patron sur son premier vrai devis à la main.**
 //
@@ -39,11 +40,11 @@ async function main() {
   const ADRESSE = "10 rue denfert rochereau 78200 mantes la jolie";
   const nomClient = `Martin ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomClient);
+  await page.fill('input[placeholder="Bernard"]', nomClient);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0660060265");
   await page.fill('input[placeholder="bernard@exemple.fr"]', "client@exemple.net");
   await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', ADRESSE);
-  await page.click('button:has-text("Créer le chantier")');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15000 });
   const chantierId = page.url().split("/").pop()!;
 

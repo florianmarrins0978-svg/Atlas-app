@@ -22,12 +22,48 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
 
 const DIST = ".next-batie";
-const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
+// **Détournable pour l'éprouver, comme le témoin d'échec plus bas — et ce
+// n'est pas une commodité.** Le 17 août 2026, la suite `test-banc-lent-se-dit`
+// a rougi sur QUATRE cas sans le moindre défaut de produit : la batterie
+// elle-même lance un banc à sa dernière étape, ce banc bâtit, et laisse dans le
+// dépôt un témoin portant le commit courant. Le diagnostic répondait alors
+// « Code SERVI : <commit> » là où la suite attendait « en cours » ou
+// « ÉCHOUÉ ». Un contrôle qui dépend d'un reste laissé par un autre contrôle
+// rougit au hasard — et un rouge au hasard s'apprend à être ignoré.
+const TEMOIN_BATI = process.env.ATLAS_TEMOIN_BATI || `${DIST}/atlas-version-batie.txt`;
+// Posé par `banc.mjs` quand `next build` tombe. Voir son en-tête : « aucune
+// version bâtie » recouvrait trois états très différents, dont un seul est
+// passager.
+const TEMOIN_ECHEC =
+  // Détournable uniquement pour l'éprouver : une suite ne peut pas écrire
+  // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
+  process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
 const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
+/** Ce que `ouvrir-port.sh` a rendu au dernier démarrage : un seul mot. */
+const FICHIER_PORT = "/tmp/atlas-port.txt";
 const VERROU_VEILLEUR = "/tmp/atlas-veilleur.pid";
 const PORT = process.env.PORT ?? "3000";
+
+/**
+ * Une mesure du système, sur une ligne, ou « inconnu ».
+ *
+ * Ne lève jamais : ce diagnostic doit rester lisible sur une machine qui n'a ni
+ * `df` ni `free`. Un relevé manquant vaut mieux qu'un diagnostic qui tombe.
+ */
+function mesureSysteme(commande, args) {
+  try {
+    return execFileSync(commande, args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .join(" | ");
+  } catch {
+    return "inconnu";
+  }
+}
 
 /** Une commande git, ou `null` si elle échoue — jamais une exception. */
 function git(...args) {
@@ -72,6 +108,32 @@ const amont = git("rev-parse", `origin/${branche}`);
 const retard = amont && tete ? git("rev-list", "--count", `${tete}..${amont}`) : null;
 const avance = amont && tete ? git("rev-list", "--count", `${amont}..${tete}`) : null;
 const bati = existsSync(TEMOIN_BATI) ? readFileSync(TEMOIN_BATI, "utf8").trim() : null;
+const echecBati = existsSync(TEMOIN_ECHEC) ? readFileSync(TEMOIN_ECHEC, "utf8").trim() : null;
+
+/**
+ * Ce que la ligne « Code SERVI » doit dire, et il y a TROIS cas.
+ *
+ * Le 16 août 2026, elle n'en disait qu'un : « aucune version bâtie — le banc
+ * sert le mode développement ». Vrai dans les trois, et donc inutile dans les
+ * trois : une construction en cours se traverse en deux minutes, une
+ * construction échouée condamne le banc à compiler chaque écran à l'ouverture,
+ * pour toujours. C'est la seconde qu'il a vécue en écrivant « l'appli est
+ * vraiment très lente », et rien ne permettait de les distinguer.
+ */
+function ligneCodeServi() {
+  if (bati) return court(bati);
+  if (echecBati) {
+    const quand = (echecBati.match(/^quand: (.+)$/m) ?? [])[1] ?? "?";
+    // **« et le restera » était vrai, et ne l'est plus — 20 août 2026.** Le
+    // veilleur s'arrêtait après trois tentatives ; il continue désormais au
+    // ralenti, une par demi-heure. Laisser la phrase d'avant ferait conclure
+    // qu'il n'y a rien à attendre, et enverrait rallumer un espace qui est en
+    // train de se réparer tout seul — une consigne qui accuse à tort coûte
+    // plus cher que pas de consigne du tout (`CLAUDE.md` §5).
+    return `AUCUNE — la construction a ÉCHOUÉ (${quand}). Le banc compile chaque écran à l'ouverture : il est LENT en attendant, et le veilleur retente.`;
+  }
+  return "aucune version bâtie — construction en cours, ou pas encore lancée (le banc est lent en attendant)";
+}
 const derniereIssue = existsSync(FICHIER_ISSUE) ? readFileSync(FICHIER_ISSUE, "utf8").trim() : null;
 const vivant = await serveurRepond();
 
@@ -84,14 +146,61 @@ const brancheLisible =
   branche === "HEAD" ? "AUCUNE (tête détachée — la mise à jour ne peut pas fonctionner)" : (branche ?? "inconnue (hors dépôt git ?)");
 console.log(`  Branche suivie   : ${brancheLisible}`);
 console.log(`  Code récupéré    : ${court(tete)}`);
-console.log(`  Code SERVI       : ${bati ? court(bati) : "aucune version bâtie — le banc sert le mode développement"}`);
+console.log(`  Code SERVI       : ${ligneCodeServi()}`);
 console.log(`  Serveur          : ${vivant ? `répond sur le port ${PORT}` : `NE RÉPOND PAS sur le port ${PORT}`}`);
 console.log(`  Veilleur         : ${veilleurVivant() ? "en place" : "absent"}`);
+// **Le port, et ce n'est pas un détail d'installation.** Un port privé fait
+// répondre GitHub à la place d'Atlas : depuis un téléphone non connecté, on ne
+// voit qu'une page de connexion, et rien ne dit pourquoi. Le patron l'a vécu le
+// 10 août, puis le 21 — « elle ne se lance plus », sur un serveur pourtant
+// debout.
+const etatPort = existsSync(FICHIER_PORT) ? readFileSync(FICHIER_PORT, "utf8").trim() : null;
+// **On MESURE, on ne suppose plus.** Jusqu'au 22 août 2026 cette ligne
+// recopiait le mot rendu par `ouvrir-port.sh` et en concluait « PRIVÉ » dès
+// qu'il n'avait pas pu régler le port. Elle a envoyé le patron faire trois
+// clics sur un port DÉJÀ public — *« il est en public déjà »* — pendant que la
+// vraie panne restait invisible. L'espace s'appelle désormais par son adresse
+// publique, celle de son téléphone, et rapporte ce qui revient
+// (`scripts/_verdict-port.mjs`).
+const dehors = await regarderDuDehors();
+const port = verdictPort({ etatPort, dehors });
+console.log(`  Port 3000        : ${port.ligne}`);
+// **Les deux suspects d'une construction qui tombe sur une machine modeste.**
+// Publiés à chaque fois, et pas seulement en cas d'échec : quand la fiche est
+// enfin lue, la tentative est finie depuis longtemps et la mémoire est rendue.
+console.log(`  Disque libre     : ${mesureSysteme("df", ["-h", "--output=avail,pcent", "."])}`);
+console.log(`  Mémoire          : ${mesureSysteme("free", ["-h", "--si"])}`);
+if (echecBati) {
+  console.log("\n  Au moment de l'échec de construction :");
+  for (const ligne of echecBati.split("\n")) console.log(`    ${ligne}`);
+}
 if (derniereIssue) console.log(`  Dernière m.à.j.  : ${derniereIssue}`);
 
 console.log("\n── Ce qu'il faut en conclure ──────────────────────\n");
 
 const soucis = [];
+
+// **La lenteur passe AVANT le retard de version.** Un banc qui compile chaque
+// écran à l'ouverture est inutilisable ; savoir qu'il a deux commits de retard
+// ne sert alors à rien. Le 16 août 2026, la fiche annonçait le retard et taisait
+// la lenteur — c'est l'inverse qu'il fallait lire.
+if (echecBati) {
+  soucis.push(
+    "LA CONSTRUCTION A ÉCHOUÉ : le banc reste en mode développement, où chaque\n" +
+      "     écran met jusqu'à une minute à s'ouvrir la PREMIÈRE fois. C'est la cause\n" +
+      "     d'une application « très lente ». Le veilleur retente — trois fois de\n" +
+      "     suite à dix minutes, puis une fois par demi-heure, indéfiniment : le\n" +
+      "     banc peut donc redevenir rapide sans que personne y touche.\n" +
+      "     Les relevés de disque et de mémoire ci-dessus sont pris à l'instant de\n" +
+      "     l'échec : c'est là qu'il faut regarder pour savoir POURQUOI elle tombe.\n" +
+      "     Rallumer l'espace reste le geste qui répare le plus vite."
+  );
+}
+
+// Placé AVANT le retard de version, comme la lenteur : un port fermé rend
+// l'application injoignable, et savoir qu'elle a deux commits de retard ne sert
+// alors à rien.
+if (port.souci) soucis.push(port.souci);
 
 if (!fetchOk) {
   soucis.push(

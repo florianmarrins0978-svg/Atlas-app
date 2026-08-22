@@ -55,6 +55,35 @@ const eslintConfig = defineConfig([
     // banc : une fois `npm run banc` joué, `npm run lint` recrachait
     // 1 271 erreurs venues de code généré. Un contrôle noyé ne se lit plus.
     ".next-batie/**",
+    // Le même piège, une seconde fois : le serveur au profil « banc » monté par
+    // `scripts/test-bandeau-banc-e2e.ts` a besoin de son propre dossier — Next.js
+    // 16 refuse deux serveurs de développement dans un même répertoire. Sans
+    // cette ligne, `npm run lint` passait de zéro à 1 116 erreurs dès que cette
+    // suite avait tourné une fois, toutes venues de code généré.
+    ".next-banc-essai/**",
+    // **Et une TROISIÈME fois, le 16 août 2026.** La batterie bâtit désormais
+    // (`verifier-avant-livraison.ts`, étape « Construction »), parce qu'une
+    // panne qui n'existe qu'à la construction traversait sinon tous les
+    // contrôles au vert. Elle bâtit dans son propre dossier pour ne pas écraser
+    // le `.next` d'un serveur qui tourne — et ce dossier doit donc être écarté
+    // ici, sans quoi le lint de la batterie SUIVANTE recracherait des milliers
+    // d'erreurs venues de code généré. Constaté sur-le-champ : 1 478.
+    //
+    // Trois fois le même piège : `scripts/test-verrou-construction.ts` vérifie
+    // maintenant que tout dossier de construction employé par la batterie est
+    // écarté ici, pour qu'il n'y ait pas de quatrième.
+    ".next-verification/**",
+    // **Et une QUATRIÈME fois, le 21 août 2026 — d'où ce motif.** Un serveur
+    // monté à la main avec un `ATLAS_DIST_DIR` inédit (`.next-vue`) a suffi :
+    // le lint est passé de 4 avertissements à 1 095 erreurs, toutes venues de
+    // code généré, et la batterie a rougi sur une étape qui n'avait rien à
+    // voir avec le lot en cours.
+    //
+    // Les trois lignes ci-dessus restent — elles portent chacune leur
+    // histoire —, mais elles ne suffisaient pas : elles nomment les dossiers
+    // qu'on connaissait. Ce motif-ci couvre ceux qu'on ne connaît pas encore,
+    // et c'est le seul moyen qu'il n'y ait pas de cinquième fois.
+    ".next-*/**",
     // appli/ est un projet distinct (HTML/JS statique navigateur + scripts
     // Node, sans React ni TypeScript) : les règles Next.js n'y ont pas de sens
     // et rejetteraient par exemple le `require()` de sa batterie de tests.

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Banc d'essai : la bascule</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    BANC D'ESSAI — la bascule, à essayer pour de vrai
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande : « créez-moi une maquette en HTML dynamique que je peux tester,
+    voir si ça me plaît ». Les maquettes 25 et 26 se REGARDENT ; celle-ci
+    s'UTILISE.
+
+    Ce qu'on peut y faire, du premier geste au dernier :
+      · changer de déclinaison en haut, et comparer sans recharger ;
+      · TAPER dans les champs — ce sont de vrais champs ;
+      · basculer entre « je dicterai » et « je l'écris » ;
+      · APPUYER sur le bouton : il mène vraiment quelque part, et pas au même
+        endroit selon le choix. C'est ce dernier point qui fait la différence
+        entre une image et un essai.
+
+    ————————————————————————————————————————————————————————————————
+    TOUJOURS AUCUN SCRIPT. Et cette page va plus loin que les précédentes, donc
+    il faut dire comment :
+
+      · le changement de déclinaison et la bascule sont des cases radio natives ;
+      · la navigation entre les écrans est faite avec `:target` — de simples
+        ancres, celles qui existent dans les navigateurs depuis toujours ;
+      · **le bouton est DEUX liens superposés.** Celui qui est visible est aussi
+        le seul qui reçoive le doigt (`pointer-events`). C'est ce qui permet à un
+        même bouton de mener à deux endroits différents sans une ligne de
+        JavaScript — et c'est le seul endroit de cette page qui mérite qu'on
+        s'arrête : si l'on retirait `pointer-events:none` du lien invisible, il
+        continuerait d'intercepter le doigt et le bouton mènerait TOUJOURS au
+        même écran, en silence, alors que le libellé, lui, aurait changé.
+
+    ————————————————————————————————————————————————————————————————
+    SUR UN TÉLÉPHONE, LE CADRE DISPARAÎT et l'écran prend toute la place : c'est
+    ainsi qu'il faut juger. Sur un ordinateur, le cadre revient pour qu'on voie
+    les proportions réelles.
+
+    Ce qui est feint, et dit franchement : les deux écrans d'arrivée. Ils
+    existent pour prouver que le bouton mène quelque part, pas pour montrer à
+    quoi ils ressembleront. Le reste — champs, bascule, bouton — est à l'échelle
+    et à la charte Origine (`src/lib/design-tokens.ts`).
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13);
+    /* La charte Origine, celle de l'application. */
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-papier:#ece9e1; --e-trait:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:28px 16px 40px;-webkit-text-size-adjust:100%}
+  .v{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+  /* ── L'échafaudage : tout ce qui n'est PAS l'application ────────────────
+     Volontairement d'une autre matière — pas de plage crème, pas de serif de
+     titre — pour qu'on ne le prenne jamais pour un écran d'Atlas. */
+  .banc{max-width:430px;margin:0 auto}
+  .entete{text-align:center;margin-bottom:18px}
+  .entete .sur{margin:0 0 8px;font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--or)}
+  .entete h1{margin:0 0 8px;font:400 24px/1.2 ui-serif,Georgia,"Iowan Old Style",serif}
+  .entete p{margin:0;font-size:13px;color:var(--gris)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px}
+  .chips label{padding:7px 11px;border-radius:4px;font-size:12px;line-height:1;
+               color:var(--gris);border:1px solid var(--trait);cursor:pointer;
+               -webkit-tap-highlight-color:transparent;transition:all .18s ease}
+  #v1:checked ~ .banc label[for="v1"], #v2:checked ~ .banc label[for="v2"],
+  #v3:checked ~ .banc label[for="v3"], #v4:checked ~ .banc label[for="v4"],
+  #v5:checked ~ .banc label[for="v5"], #v6:checked ~ .banc label[for="v6"]{
+    color:var(--encre);border-color:var(--or);box-shadow:inset 0 -2px 0 var(--or)}
+
+  /* ── Le téléphone ───────────────────────────────────────────────────── */
+  .tel{position:relative;border-radius:38px;padding:10px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 26px 56px rgba(20,18,14,.2)}
+  .ecran{border-radius:30px;background:var(--e-fond);color:var(--e-encre);
+         min-height:660px;padding:22px 0 28px;overflow:hidden}
+
+  /* Sur un téléphone, on juge l'écran, pas le cadre : le cadre s'efface. */
+  @media (max-width:520px){
+    body{padding:16px 0 0}
+    .banc{max-width:none}
+    .entete,.chips{padding:0 14px}
+    .tel{border-radius:0;padding:0;box-shadow:none;background:none}
+    .ecran{border-radius:0;min-height:calc(100vh - 150px)}
+  }
+
+  /* ── Les écrans, et la navigation par ancres ────────────────────────────
+     `.cible` est cachée ; elle apparaît quand l'adresse la désigne, et masque
+     alors l'écran de création — qui doit donc venir APRÈS elle dans le
+     document, `~` ne regardant que les frères suivants. Les intervertir
+     casserait la navigation sans que rien ne le dise. */
+  .cible{display:none}
+  .cible:target{display:block}
+  .cible:target ~ #creation{display:none}
+
+  .retour{display:inline-flex;align-items:center;justify-content:center;
+          width:40px;height:40px;border-radius:50%;background:var(--e-papier);
+          margin:0 0 0 22px;text-decoration:none;color:var(--e-pin);font-size:17px}
+  .titre{padding:18px 22px 0}
+  .titre .sur{margin:0 0 7px;font-size:11px;font-weight:600;letter-spacing:.18em;
+              text-transform:uppercase;color:var(--e-or)}
+  .titre h2{margin:0;font:400 30px/1.15 ui-serif,Georgia,serif}
+  .feint{margin:22px 22px 0;padding:15px 16px;border-radius:4px;background:var(--e-papier);
+         font-size:13px;line-height:1.55;color:var(--e-gris)}
+
+  /* ── L'écran de création ────────────────────────────────────────────── */
+  .haut{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 22px 0}
+  .haut .sur{margin:0 0 7px;font-size:11px;font-weight:600;letter-spacing:.18em;
+             text-transform:uppercase;color:var(--e-or)}
+  .haut h2{margin:0;font:400 30px/1.15 ui-serif,Georgia,serif}
+  .micro{flex:0 0 auto;width:44px;height:44px;border-radius:50%;background:var(--e-papier);
+         display:flex;align-items:center;justify-content:center}
+
+  /* **`display:block` n'est pas décoratif ici, et l'oublier a coûté une
+     capture.** `.champ` est un `<label>` — donc INLINE par défaut. Ses marges
+     latérales ne s'appliquaient pas : le libellé et le champ partaient à ras
+     bord de l'écran, la plage débordant à droite, pendant que le bouton et la
+     bascule, eux, étaient bien en retrait. Vu sur une capture au format du
+     téléphone ; aucun contrôle ne l'aurait dit, et le rendu sur ordinateur ne
+     le montrait pas. */
+  .champ{display:block;margin:0 22px 14px}
+  .champ .libelle{display:block;margin-bottom:6px;font-size:11px;font-weight:600;
+                  letter-spacing:.18em;text-transform:uppercase;color:var(--e-gris)}
+  /* 16 px de corps, jamais moins : en dessous, iOS agrandit la page dès qu'un
+     champ prend le focus, et l'on se retrouve avec un écran zoomé à rétablir à
+     la main. C'est une règle du produit, pas de la maquette. */
+  .champ input{width:100%;border:0;border-radius:4px;background:var(--e-plage);
+               padding:14px 15px;font-size:16px;color:var(--e-encre);outline:none;
+               font-family:inherit}
+  .champ input::placeholder{color:var(--e-gris)}
+  .champ.grand input{font-family:ui-serif,Georgia,serif;font-size:20px}
+  .champ input:focus{box-shadow:inset 0 0 0 1px var(--e-or)}
+  .ajout{margin:2px 22px 0;font-size:14px;font-weight:500;color:var(--e-pin)}
+  .zone{margin:24px 22px 0}
+
+  .decl{display:none}
+  #v1:checked ~ .banc .z1, #v2:checked ~ .banc .z2, #v3:checked ~ .banc .z3,
+  #v4:checked ~ .banc .z4, #v5:checked ~ .banc .z5, #v6:checked ~ .banc .z6{display:block}
+
+  /* ── Le socle des six bascules ──────────────────────────────────────────
+     Identique à la maquette 26, à une chose près, et elle est capitale : le
+     bouton n'est plus un rectangle mais DEUX LIENS superposés. Celui qu'on
+     lit est le seul qui reçoive le doigt. */
+  .bsc input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .bsc label{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .bsc .bouton{position:relative;height:58px;border-radius:5px;background:var(--e-pin);
+               transition:transform .12s ease}
+  .bsc .bouton:active{transform:scale(.985)}
+  .bsc .lien{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+             color:#faf9f5;text-decoration:none;font-family:ui-serif,Georgia,serif;font-size:18px;
+             transition:opacity .26s ease;pointer-events:none}
+  .bsc .l1{opacity:1;pointer-events:auto}
+  .bsc .l2{opacity:0}
+  .bsc .r2:checked ~ .bouton .l1{opacity:0;pointer-events:none}
+  .bsc .r2:checked ~ .bouton .l2{opacity:1;pointer-events:auto}
+  .bsc .r2:checked ~ .apres .bouton .l1{opacity:0;pointer-events:none}
+  .bsc .r2:checked ~ .apres .bouton .l2{opacity:1;pointer-events:auto}
+  .bsc .mot{transition:color .26s ease}
+
+  /* 1 — Le trait qui glisse */
+  .d1 .rail{position:relative;display:flex;border-bottom:1px solid var(--e-trait);margin-bottom:18px}
+  .d1 .rail label{flex:1;text-align:center;padding:0 0 13px;font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--e-gris)}
+  .d1 .curseur{position:absolute;left:0;bottom:-1px;width:50%;height:1.5px;background:var(--e-or);
+               transition:transform .3s cubic-bezier(.4,0,.2,1)}
+  .d1 .r1:checked ~ .rail label:first-of-type,
+  .d1 .r2:checked ~ .rail label:last-of-type{color:var(--e-encre)}
+  .d1 .r2:checked ~ .rail .curseur{transform:translateX(100%)}
+
+  /* 2 — Le point d'or */
+  .d2 .ligne{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px}
+  .d2 .ligne label{position:relative;padding-bottom:11px;font-family:ui-serif,Georgia,serif;font-size:17.5px;color:var(--e-gris)}
+  .d2 .ligne label::after{content:"";position:absolute;left:50%;bottom:0;width:4px;height:4px;margin-left:-2px;
+                          border-radius:50%;background:var(--e-or);opacity:0;transform:translateY(3px);
+                          transition:opacity .26s ease,transform .26s ease}
+  .d2 .losange{width:4px;height:4px;background:var(--e-or);transform:rotate(45deg);margin-bottom:11px;opacity:.55}
+  .d2 .r1:checked ~ .ligne label:first-of-type,
+  .d2 .r2:checked ~ .ligne label:last-of-type{color:var(--e-encre)}
+  .d2 .r1:checked ~ .ligne label:first-of-type::after,
+  .d2 .r2:checked ~ .ligne label:last-of-type::after{opacity:1;transform:translateY(0)}
+
+  /* 3 — La plage qui glisse */
+  .d3 .piste{position:relative;display:flex;background:var(--e-papier);border-radius:4px;padding:4px;margin-bottom:18px}
+  .d3 .plage{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);
+             background:var(--e-plage);border-radius:3px;box-shadow:0 1px 0 var(--e-or);
+             transition:transform .3s cubic-bezier(.4,0,.2,1)}
+  .d3 .piste label{position:relative;flex:1;text-align:center;padding:10px 0;font-family:ui-serif,Georgia,serif;font-size:16.5px;color:var(--e-gris)}
+  .d3 .r1:checked ~ .piste label:first-of-type,
+  .d3 .r2:checked ~ .piste label:last-of-type{color:var(--e-encre)}
+  .d3 .r2:checked ~ .piste .plage{transform:translateX(100%)}
+
+  /* 4 — Le rail et la perle */
+  .d4 .mots-h{display:flex;margin-bottom:10px}
+  .d4 .mots-h label{flex:1;text-align:center;font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--e-gris)}
+  .d4 .fil{position:relative;height:1px;background:var(--e-trait);margin-bottom:20px}
+  .d4 .perle{position:absolute;top:-3px;left:0;width:50%;transition:transform .32s cubic-bezier(.4,0,.2,1)}
+  .d4 .perle i{display:block;width:7px;height:7px;border-radius:50%;background:var(--e-or);margin:0 auto}
+  .d4 .r1:checked ~ .mots-h label:first-of-type,
+  .d4 .r2:checked ~ .mots-h label:last-of-type{color:var(--e-encre)}
+  .d4 .r2:checked ~ .fil .perle{transform:translateX(100%)}
+
+  /* 5 — Le cartouche */
+  .d5 .cartouche{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding-bottom:11px;margin-bottom:14px}
+  .d5 .cartouche label{position:relative;padding-bottom:5px;font-family:ui-serif,Georgia,serif;font-size:15px;color:var(--e-gris)}
+  .d5 .cartouche label::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--e-or);
+                              transform:scaleX(0);transform-origin:left;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  .d5 .cartouche .sep{width:1px;height:13px;background:var(--e-trait);margin-bottom:5px}
+  .d5 .r1:checked ~ .cartouche label:first-of-type,
+  .d5 .r2:checked ~ .cartouche label:last-of-type{color:var(--e-encre)}
+  .d5 .r1:checked ~ .cartouche label:first-of-type::after,
+  .d5 .r2:checked ~ .cartouche label:last-of-type::after{transform:scaleX(1)}
+
+  /* 6 — La bascule en pied */
+  .d6 .apres{margin-top:0}
+  .d6 .sous{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:15px}
+  .d6 .sous label{position:relative;padding-bottom:6px;font-family:ui-serif,Georgia,serif;font-size:15.5px;color:var(--e-gris)}
+  .d6 .sous label::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--e-or);
+                         transform:scaleX(0);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  .d6 .sous .sep{width:3px;height:3px;background:var(--e-or);transform:rotate(45deg);margin-bottom:6px;opacity:.5}
+  .d6 .r1:checked ~ .sous label:first-of-type,
+  .d6 .r2:checked ~ .sous label:last-of-type{color:var(--e-encre)}
+  .d6 .r1:checked ~ .sous label:first-of-type::after,
+  .d6 .r2:checked ~ .sous label:last-of-type::after{transform:scaleX(1)}
+
+  .pied{max-width:430px;margin:26px auto 0;padding:0 16px 8px;
+        font-size:12.5px;line-height:1.65;color:var(--gris)}
+  .pied b{color:var(--encre);font-weight:500}
+</style>
+
+<!-- Les cases qui portent la déclinaison choisie. Elles doivent rester ICI,
+     avant tout ce qu'elles commandent : le CSS ne les atteint que par `~`. -->
+<input class="v" type="radio" name="decl" id="v1" checked>
+<input class="v" type="radio" name="decl" id="v2">
+<input class="v" type="radio" name="decl" id="v3">
+<input class="v" type="radio" name="decl" id="v4">
+<input class="v" type="radio" name="decl" id="v5">
+<input class="v" type="radio" name="decl" id="v6">
+
+<div class="banc">
+
+  <div class="entete">
+    <p class="sur">Atlas · banc d'essai</p>
+    <h1>La bascule, à l'essai</h1>
+    <p>Choisissez une déclinaison, tapez dans les champs, basculez, appuyez sur
+      le bouton — il mène vraiment quelque part, et pas au même endroit selon
+      votre choix.</p>
+  </div>
+
+  <div class="chips">
+    <label for="v1" data-choix>1 · Le trait</label>
+    <label for="v2" data-choix>2 · Le point d'or</label>
+    <label for="v3" data-choix>3 · La plage</label>
+    <label for="v4" data-choix>4 · La perle</label>
+    <label for="v5" data-choix>5 · Le cartouche</label>
+    <label for="v6" data-choix>6 · En pied</label>
+  </div>
+
+  <div class="tel">
+
+    <!-- Les deux écrans d'arrivée. Ils viennent AVANT la création : voir le
+         commentaire sur `.cible:target ~ #creation`. -->
+    <section id="fiche" class="cible ecran">
+      <a class="retour" href="#creation" aria-label="Retour">‹</a>
+      <div class="titre">
+        <p class="sur">Chantier</p>
+        <h2>M. Bernard</h2>
+      </div>
+      <p class="feint"><b>Vous êtes arrivé sur la fiche du chantier.</b><br>
+        C'est ce que fait « Créer le chantier » : le chantier existe, et vous
+        dicterez dessus. Cet écran-ci est feint — il ne sert qu'à prouver que le
+        bouton mène quelque part.</p>
+    </section>
+
+    <section id="devis" class="cible ecran">
+      <a class="retour" href="#creation" aria-label="Retour">‹</a>
+      <div class="titre">
+        <p class="sur">Devis</p>
+        <h2>À la main</h2>
+      </div>
+      <p class="feint"><b>Vous êtes arrivé sur le devis, à rédiger vous-même.</b><br>
+        Le chantier a été créé d'abord — c'est ce qui permet au devis de
+        connaître déjà le client. Cet écran-ci est feint.</p>
+    </section>
+
+    <div id="creation" class="ecran">
+      <div class="haut">
+        <div>
+          <p class="sur">Nouveau</p>
+          <h2>Un chantier</h2>
+        </div>
+        <span class="micro" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6" stroke-linecap="round">
+            <rect x="9" y="3" width="6" height="11" rx="3"></rect>
+            <path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path>
+          </svg>
+        </span>
+      </div>
+
+      <div style="height:22px"></div>
+
+      <label class="champ grand">
+        <span class="libelle">Nom du client (facultatif)</span>
+        <input type="text" placeholder="M. Bernard">
+      </label>
+      <label class="champ">
+        <span class="libelle">Téléphone (facultatif)</span>
+        <input type="tel" placeholder="06 12 34 56 78">
+      </label>
+      <label class="champ">
+        <span class="libelle">E-mail (facultatif)</span>
+        <input type="email" placeholder="bernard@exemple.fr">
+      </label>
+      <label class="champ">
+        <span class="libelle">Adresse du chantier (facultatif)</span>
+        <input type="text" placeholder="12 rue des Lilas, Nantes">
+      </label>
+      <p class="ajout">+ Ajouter une adresse client différente</p>
+
+      <!-- ── 1 ── -->
+      <div class="zone decl z1 bsc d1" data-bascule="1">
+        <input class="r1" type="radio" name="p1" id="p1a" checked>
+        <input class="r2" type="radio" name="p1" id="p1b">
+        <div class="rail">
+          <label class="mot" for="p1a">Je dicterai</label>
+          <label class="mot" for="p1b">Je l'écris</label>
+          <span class="curseur"></span>
+        </div>
+        <div class="bouton">
+          <a class="lien l1" href="#fiche"><span data-mot>Créer le chantier&nbsp;→</span></a>
+          <a class="lien l2" href="#devis"><span data-mot>Ouvrir le devis&nbsp;→</span></a>
+        </div>
+      </div>
+
+      <!-- ── 2 ── -->
+      <div class="zone decl z2 bsc d2" data-bascule="1">
+        <input class="r1" type="radio" name="p2" id="p2a" checked>
+        <input class="r2" type="radio" name="p2" id="p2b">
+        <div class="ligne">
+          <label class="mot" for="p2a">Je dicterai</label>
+          <span class="losange"></span>
+          <label class="mot" for="p2b">Je l'écris</label>
+        </div>
+        <div class="bouton">
+          <a class="lien l1" href="#fiche"><span data-mot>Créer le chantier&nbsp;→</span></a>
+          <a class="lien l2" href="#devis"><span data-mot>Ouvrir le devis&nbsp;→</span></a>
+        </div>
+      </div>
+
+      <!-- ── 3 ── -->
+      <div class="zone decl z3 bsc d3" data-bascule="1">
+        <input class="r1" type="radio" name="p3" id="p3a" checked>
+        <input class="r2" type="radio" name="p3" id="p3b">
+        <div class="piste">
+          <span class="plage"></span>
+          <label class="mot" for="p3a">Je dicterai</label>
+          <label class="mot" for="p3b">Je l'écris</label>
+        </div>
+        <div class="bouton">
+          <a class="lien l1" href="#fiche"><span data-mot>Créer le chantier&nbsp;→</span></a>
+          <a class="lien l2" href="#devis"><span data-mot>Ouvrir le devis&nbsp;→</span></a>
+        </div>
+      </div>
+
+      <!-- ── 4 ── -->
+      <div class="zone decl z4 bsc d4" data-bascule="1">
+        <input class="r1" type="radio" name="p4" id="p4a" checked>
+        <input class="r2" type="radio" name="p4" id="p4b">
+        <div class="mots-h">
+          <label class="mot" for="p4a">Je dicterai</label>
+          <label class="mot" for="p4b">Je l'écris</label>
+        </div>
+        <div class="fil"><span class="perle"><i></i></span></div>
+        <div class="bouton">
+          <a class="lien l1" href="#fiche"><span data-mot>Créer le chantier&nbsp;→</span></a>
+          <a class="lien l2" href="#devis"><span data-mot>Ouvrir le devis&nbsp;→</span></a>
+        </div>
+      </div>
+
+      <!-- ── 5 ── -->
+      <div class="zone decl z5 bsc d5" data-bascule="1">
+        <input class="r1" type="radio" name="p5" id="p5a" checked>
+        <input class="r2" type="radio" name="p5" id="p5b">
+        <div class="cartouche">
+          <label class="mot" for="p5a">Je dicterai</label>
+          <span class="sep"></span>
+          <label class="mot" for="p5b">Je l'écris</label>
+        </div>
+        <div class="bouton">
+          <a class="lien l1" href="#fiche"><span data-mot>Créer le chantier&nbsp;→</span></a>
+          <a class="lien l2" href="#devis"><span data-mot>Ouvrir le devis&nbsp;→</span></a>
+        </div>
+      </div>
+
+      <!-- ── 6 ── -->
+      <div class="zone decl z6 bsc d6" data-bascule="1">
+        <input class="r1" type="radio" name="p6" id="p6a" checked>
+        <input class="r2" type="radio" name="p6" id="p6b">
+        <div class="bouton">
+          <a class="lien l1" href="#fiche"><span data-mot>Créer le chantier&nbsp;→</span></a>
+          <a class="lien l2" href="#devis"><span data-mot>Ouvrir le devis&nbsp;→</span></a>
+        </div>
+        <div class="sous">
+          <label class="mot" for="p6a">Je dicterai</label>
+          <span class="sep"></span>
+          <label class="mot" for="p6b">Je l'écris</label>
+        </div>
+      </div>
+
+      <div style="height:28px"></div>
+    </div>
+
+  </div>
+</div>
+
+<p class="pied">
+  <b>Ce qui est vrai ici :</b> les champs, la bascule, le bouton, les
+  proportions, la charte. <b>Ce qui est feint :</b> les deux écrans d'arrivée —
+  ils ne servent qu'à prouver que le bouton mène quelque part, et pas au même
+  endroit selon votre choix. <b>Une réserve honnête :</b> cette page emprunte la
+  serif de votre appareil ; l'application charge Playfair Display, le rendu final
+  sera plus dessiné.
+</p>
+</body>
+</html>

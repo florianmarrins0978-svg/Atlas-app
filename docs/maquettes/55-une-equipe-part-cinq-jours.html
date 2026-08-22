@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Une équipe part cinq jours</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    UNE ÉQUIPE PART CINQ JOURS
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 14 août 2026 :
+
+      « Comment on fait si jamais il y a une équipe qui doit partir en
+        déplacement pour cinq jours ? Est-ce qu'il y a un moyen de l'ajouter
+        au planning ? Dis-moi comment on peut gérer cette histoire. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EXISTE DÉJÀ, ET CE QUI MANQUE — vérifié dans le code, pas de mémoire
+
+    · Si TOUTE l'entreprise part : l'agenda Google relié suffit. Une période de
+      plusieurs jours occupe toutes les demi-journées qu'elle traverse,
+      week-ends compris. Rien à écrire.
+
+    · Si UNE équipe sur deux part : rien ne convient. L'agenda bloque tout le
+      monde — c'est délibéré, Atlas ne peut pas deviner si une équipe sait
+      partir sans le patron — et le nombre d'équipes est un nombre SANS DATES.
+
+    · Et un point qui décide de tout : L'ÉQUIPE INSCRITE SUR UN CHANTIER EST
+      UNE ÉTIQUETTE, PAS UNE CONTRAINTE. Atlas compte les chantiers par
+      demi-journée et les compare au nombre d'équipes ; il ne vérifie pas
+      LAQUELLE est libre. Deux chantiers le même matin, tous deux « Équipe 1 » :
+      acceptés.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE CES TROIS PLANCHES DÉBATTENT
+
+    Toutes font la même chose au fond — retirer une équipe du compte sur des
+    jours donnés. Elles diffèrent sur OÙ ÇA SE POSE, et c'est la seule question
+    qui compte : le geste doit tomber là où le patron y pense.
+
+      A · dans Réglages → Équipe, sous les noms — là où vivent les équipes
+      B · sur le planning, en tenant le jour — là où il voit le trou
+      C · une ligne du planning comme un chantier — le déplacement EST du travail
+
+    Rien n'est codé. C'est `CLAUDE.md` §3 bis : une demande d'apparence se
+    dessine avant de se coder.
+
+    ————————————————————————————————————————————————————————————————
+    Aucun script — son lecteur n'en exécute pas. Les écrans font 390 px, la
+    dalle de son téléphone.
+  */
+
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --pin:#2f3b2f; --papier:#ece9e1;
+    --trait:rgba(28,28,26,.12); --traitdoux:rgba(28,28,26,.07);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
+      --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
+      --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
+    --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
+    --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--fond);color:var(--encre);
+    font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:36px 18px 80px;
+  }
+  .chapo{max-width:780px;margin:0 auto 42px}
+  h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
+  .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+  .chapo b{color:var(--encre);font-weight:500}
+
+  .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
+  .colonne{width:390px;max-width:100%}
+  .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+  .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:118px}
+  .note b{color:var(--encre);font-weight:500}
+
+  .tel{
+    width:390px;max-width:100%;height:640px;overflow:hidden;background:var(--fond);
+    border:1px solid var(--trait);border-radius:22px;display:flex;flex-direction:column;
+  }
+  .haut{height:24px;flex:none}
+  .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column}
+  .retour{
+    width:40px;height:40px;border-radius:999px;background:var(--papier);margin:12px 0 0 24px;flex:none;
+    display:flex;align-items:center;justify-content:center;color:var(--pin);font-size:17px;
+  }
+  .surtitre{margin:18px 26px 0;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris)}
+  .h1e{margin:7px 26px 0;font-size:27px;font-weight:400}
+
+  .lib{
+    display:flex;align-items:center;gap:12px;margin:26px 26px 6px;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);
+  }
+  .lib i{height:1px;flex:1;background:var(--trait)}
+
+  .ligne{
+    display:flex;align-items:center;gap:12px;margin:0 26px;padding:13px 0;
+    border-bottom:1px solid var(--traitdoux);font-size:15px;
+  }
+  .ligne:last-of-type{border-bottom:0}
+  .rang{
+    width:26px;height:26px;border-radius:999px;flex:none;background:var(--papier);
+    display:flex;align-items:center;justify-content:center;font-size:11.5px;color:var(--pin);
+  }
+  .nom{flex:1}
+  .apart{font-size:12.5px;color:var(--or)}
+  .chev{color:var(--gris);font-size:15px}
+
+  .ajouter{
+    display:block;margin:14px 26px 0;padding:12px;border:1px solid var(--trait);
+    border-radius:999px;text-align:center;font-size:13.5px;color:var(--pin);background:transparent;
+  }
+
+  .pied{margin:20px 26px 0;font-size:12px;line-height:1.7;color:var(--gris);border-top:1px solid var(--trait);padding-top:16px}
+  .pied b{color:var(--encre);font-weight:500}
+
+  .onglets{height:56px;flex:none;border-top:1px solid var(--trait);display:flex;align-items:center;background:var(--fond)}
+  .onglets span{flex:1;text-align:center;font-size:11px;letter-spacing:.06em;color:var(--gris)}
+  .onglets .actif{color:var(--pin);font-weight:500}
+
+  /* ── B · le planning, et la feuille qui monte ─────────────────── */
+  .jour{margin:16px 26px 0}
+  .jour .date{font-size:12.5px;color:var(--gris);letter-spacing:.04em}
+  .carte{
+    margin-top:7px;background:var(--carte);border:1px solid var(--traitdoux);
+    border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:11px;
+  }
+  .carte .t{flex:1;font-size:14.5px}
+  .carte .s{font-size:11.5px;color:var(--gris);margin-top:2px}
+  .pastille{
+    font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pin);
+    background:var(--papier);border-radius:999px;padding:3px 9px;white-space:nowrap;
+  }
+  .barre-absence{
+    margin-top:7px;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;
+    background:rgba(185,139,71,.12);border:1px dashed rgba(185,139,71,.45);
+  }
+  .barre-absence .t{flex:1;font-size:13.5px;color:#7d6234}
+  .barre-absence .t b{color:var(--encre);font-weight:500}
+
+  .feuille{
+    margin-top:auto;background:var(--carte);border-top:1px solid var(--trait);
+    border-radius:18px 18px 0 0;padding:10px 0 18px;
+  }
+  .poignee{width:38px;height:4px;border-radius:999px;background:var(--trait);margin:0 auto 14px}
+  .feuille .sur{text-align:center;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+  .feuille .tt{text-align:center;font-size:19px;margin:6px 0 14px}
+  .champ{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin:0 18px;padding:12px 14px;background:var(--fond);border-bottom:1px solid var(--traitdoux);
+  }
+  .champ:first-of-type{border-radius:10px 10px 0 0}
+  .champ:last-of-type{border-radius:0 0 10px 10px;border-bottom:0}
+  .champ .k{font-size:13px;color:var(--gris)}
+  .champ .v{font-size:15px}
+  .valider{
+    display:block;margin:14px 18px 0;padding:14px;border-radius:999px;text-align:center;
+    background:var(--pin);color:#f5f3ee;font-size:15px;
+  }
+
+  /* ── C · la ligne de déplacement dans le fil ──────────────────── */
+  .depl{
+    margin-top:7px;background:var(--carte);border:1px solid var(--traitdoux);border-left:3px solid var(--or);
+    border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:11px;
+  }
+  .depl .t{flex:1;font-size:14.5px}
+  .depl .s{font-size:11.5px;color:var(--gris);margin-top:2px}
+
+  .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
+  .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+  .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+  .apres b{color:var(--encre);font-weight:500}
+  .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
+  .apres th,.apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
+  .apres th{color:var(--encre);font-weight:500}
+</style>
+
+<div class="chapo">
+  <h1>Une équipe part cinq jours</h1>
+  <p>
+    <b>Si toute l’entreprise part, c’est déjà réglé</b> — l’événement dans votre
+    agenda Google bloque les cinq jours. Ces planches traitent l’autre cas :
+    <b>une équipe sur deux</b>, où l’agenda bloquerait aussi celle qui reste.
+  </p>
+  <p>
+    Les trois font la même chose au fond : retirer une équipe du compte sur des
+    jours donnés. Elles diffèrent sur <b>où le geste se pose</b> — et c’est la
+    seule question qui compte, parce qu’il doit tomber là où vous y pensez.
+  </p>
+</div>
+
+<div class="grille">
+
+  <!-- ══ A ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition A · sous les noms</p>
+    <p class="note">
+      Dans <b>Réglages → Équipe</b>, sous les noms : chaque équipe porte ses
+      absences. C’est là qu’elles vivent, et on y va quand on <b>prépare</b> —
+      le lundi soir, en organisant la semaine. Le défaut : ce n’est pas là que
+      vous êtes quand le déplacement se décide, souvent au téléphone.
+    </p>
+    <div class="tel">
+      <div class="haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Réglages</div>
+        <div class="h1e">Équipe</div>
+
+        <div class="lib">Combien partent en même temps <i></i></div>
+        <div style="text-align:center;font-size:44px;line-height:1;margin:12px 0 4px">2</div>
+        <p style="margin:0 26px;text-align:center;font-size:12.5px;color:var(--gris)">
+          Deux chantiers peuvent partir le même jour.
+        </p>
+
+        <div class="lib">Leurs noms <i></i></div>
+        <div class="ligne"><span class="rang">1</span><span class="nom">Jean</span><span class="chev">›</span></div>
+        <div class="ligne"><span class="rang">2</span><span class="nom">Paul</span><span class="chev">›</span></div>
+
+        <div class="lib">Absences <i></i></div>
+        <div class="ligne">
+          <span class="rang">2</span>
+          <span class="nom">Paul<span style="display:block;font-size:11.5px;color:var(--gris);margin-top:2px">Déplacement</span></span>
+          <span class="apart">8 → 12 sept.</span>
+        </div>
+        <button class="ajouter">+ Noter une absence</button>
+
+        <p class="pied">
+          Une équipe absente <b>ne compte plus</b> ces jours-là : Atlas ne
+          proposera qu’une seule date à la fois, et tout revient normal le 13.
+        </p>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ B ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition B · en tenant le jour</p>
+    <p class="note">
+      Sur le <b>planning</b>, un appui long sur un jour ouvre une feuille :
+      quelle équipe, jusqu’à quand. Le geste tombe <b>là où vous voyez le
+      trou</b>, sans changer d’écran. Le défaut : un appui long ne se voit pas
+      — rien sur l’écran ne dit qu’il existe, et vous seul le sauriez.
+    </p>
+    <div class="tel">
+      <div class="haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Planning</div>
+
+        <div class="jour">
+          <div class="date">Lundi 8 septembre</div>
+          <div class="carte">
+            <span class="t">Mr. Bernard<span class="s">Rue des Lilas · matin</span></span>
+            <span class="pastille">Jean</span>
+          </div>
+          <div class="barre-absence">
+            <span class="t"><b>Paul</b> — déplacement, jusqu’au 12</span>
+          </div>
+        </div>
+
+        <div class="jour">
+          <div class="date">Mardi 9 septembre</div>
+          <div class="carte">
+            <span class="t">Mme Félicie<span class="s">Chemin du Bois · journée</span></span>
+            <span class="pastille">Jean</span>
+          </div>
+        </div>
+
+        <div class="feuille">
+          <div class="poignee"></div>
+          <div class="sur">Lundi 8 septembre</div>
+          <div class="tt">Qui n’est pas là ?</div>
+          <div class="champ"><span class="k">Équipe</span><span class="v">Paul</span></div>
+          <div class="champ"><span class="k">Jusqu’au</span><span class="v">vendredi 12</span></div>
+          <div class="champ"><span class="k">Motif</span><span class="v" style="color:var(--gris)">Déplacement</span></div>
+          <div class="valider">Noter l’absence</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ C ══════════════════════════════════════════════════════ -->
+  <div class="colonne">
+    <p class="titre-prop">Proposition C · une ligne comme une autre</p>
+    <p class="note">
+      Le déplacement <b>est du travail</b> : il se pose sur le planning comme un
+      chantier, avec son équipe et ses cinq jours — mais sans client, sans devis
+      et sans facture. Un seul geste à apprendre, celui que vous faites déjà.
+      Le défaut : il faut distinguer les deux d’un coup d’œil, sinon on cherche
+      un devis qui n’existe pas.
+    </p>
+    <div class="tel">
+      <div class="haut"></div>
+      <div class="ecran">
+        <div class="retour">‹</div>
+        <div class="surtitre">Atlas</div>
+        <div class="h1e">Planning</div>
+
+        <div class="jour">
+          <div class="date">Lundi 8 septembre</div>
+          <div class="carte">
+            <span class="t">Mr. Bernard<span class="s">Rue des Lilas · matin</span></span>
+            <span class="pastille">Jean</span>
+          </div>
+          <div class="depl">
+            <span class="t">Déplacement<span class="s">Lyon · 5 jours, jusqu’au 12</span></span>
+            <span class="pastille">Paul</span>
+          </div>
+        </div>
+
+        <div class="jour">
+          <div class="date">Mardi 9 septembre</div>
+          <div class="carte">
+            <span class="t">Mme Félicie<span class="s">Chemin du Bois · journée</span></span>
+            <span class="pastille">Jean</span>
+          </div>
+          <div class="depl">
+            <span class="t">Déplacement<span class="s">Lyon · jour 2 sur 5</span></span>
+            <span class="pastille">Paul</span>
+          </div>
+        </div>
+
+        <div class="jour">
+          <div class="date">Mercredi 10 septembre</div>
+          <div class="depl">
+            <span class="t">Déplacement<span class="s">Lyon · jour 3 sur 5</span></span>
+            <span class="pastille">Paul</span>
+          </div>
+        </div>
+
+        <p class="pied">
+          Le trait doré à gauche distingue ce qui n’est pas un chantier :
+          <b>ni devis, ni facture</b> — seulement une équipe qui n’est pas
+          disponible.
+        </p>
+      </div>
+      <div class="onglets">
+        <span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Réglages</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="apres">
+  <h2>Ce que les trois partagent, et qui ne se dessine pas</h2>
+  <p>
+    Quelle que soit celle que vous retenez, la règle en dessous est la même et
+    c’est elle qui fait le travail : <b>une équipe absente ne compte plus dans
+    les dates proposées au client</b> sur ces jours-là. Avec deux équipes dont
+    une en déplacement, Atlas se comporte exactement comme s’il n’y en avait
+    qu’une — puis tout revient normal, sans que vous ayez rien à défaire.
+  </p>
+  <p>
+    Et <b>la même règle sert deux fois</b> : à construire la liste des dates
+    proposées, et à revérifier celle que le client choisit. Jamais deux
+    implémentations — c’est ce qui a déjà évité qu’un client retienne une date
+    qu’on ne pouvait pas tenir.
+  </p>
+
+  <h2>Ce que ça change, et ce que ça ne change pas</h2>
+  <table>
+    <tr><th>Ce qui change</th><th>Ce qui ne bouge pas</th></tr>
+    <tr>
+      <td>Les dates proposées au client tiennent compte de l’équipe absente</td>
+      <td>Le client ne voit <b>jamais</b> vos équipes ni vos absences — il voit une date, comme aujourd’hui</td>
+    </tr>
+    <tr>
+      <td>Le planning montre pourquoi un jour est plus chargé</td>
+      <td>Rien n’est envoyé, validé ni facturé sans votre geste</td>
+    </tr>
+    <tr>
+      <td>Un déplacement se note en quelques secondes</td>
+      <td>L’agenda Google continue de bloquer tout le monde, quand c’est vous qui partez</td>
+    </tr>
+  </table>
+
+  <h2>Ce que je ne fais PAS dans ce lot, et pourquoi</h2>
+  <p>
+    <b>Vérifier qu’une équipe n’est pas sur deux chantiers en même temps.</b>
+    C’est un problème réel — l’équipe inscrite sur un chantier est aujourd’hui
+    une étiquette, pas une contrainte — mais le régler oblige à choisir l’équipe
+    <b>avant</b> de proposer une date au client, donc à toucher au parcours du
+    devis. C’est un autre lot, et il n’a de sens que si le télescopage vous
+    arrive vraiment. Dites-le-moi si c’est le cas.
+  </p>
+</div>
+
+</body>
+</html>

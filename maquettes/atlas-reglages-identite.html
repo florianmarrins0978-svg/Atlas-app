@@ -1,0 +1,640 @@
+<title>Atlas — Réglages : l'identité de l'entreprise</title>
+
+<style>
+  /*
+    SANS AUCUN SCRIPT pour la page.
+
+    RÉGLAGES — L'IDENTITÉ DE L'ENTREPRISE. Deuxième lot.
+
+    Le premier lot a posé l'ossature (`atlas-reglages-plan.html`,
+    `ARCHITECTURE.md` §86) : deux niveaux, qui voit quoi, la forme de
+    l'interrupteur. Celui-ci ouvre la première rubrique de « Mon entreprise »,
+    et c'est la première de ses quatre priorités.
+
+    CE QU'IL A DEMANDÉ : « Identité, coordonnées et informations légales,
+    SIRET/SIREN, informations bancaires (seulement les obligatoires) ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUE LE DÉPÔT SAIT DÉJÀ, ET QU'IL NE FAUT PAS REDÉCOUVRIR
+    ─────────────────────────────────────────────────────────────────────────
+
+    En base, `entreprises` porte SIX champs et pas un de plus : `nom`, `siret`,
+    `adresse`, `telephone`, `email`, `iban`. Il n'y a NI forme juridique, NI
+    numéro de TVA, NI régime fiscal, NI titulaire de compte.
+
+    Sur le document, `document-commun.ts` n'imprime que TROIS lignes d'émetteur
+    — le nom, l'adresse, et « SIRET … » — puis l'IBAN sous « MODALITÉS DE
+    PAIEMENT ». **Le téléphone et l'e-mail de l'entreprise ne figurent nulle
+    part sur le devis**, alors qu'ils sont saisis. Un client qui veut appeler
+    n'a pas de numéro.
+
+    ─────────────────────────────────────────────────────────────────────────
+    TROIS POINTS QUI DEMANDENT SA DÉCISION, ET QUI NE SONT PAS COSMÉTIQUES
+    ─────────────────────────────────────────────────────────────────────────
+
+    1. LE SIREN NE SE SAISIT PAS : il EST les neuf premiers chiffres du SIRET.
+       Le demander deux fois serait offrir deux façons de se contredire. L'écran
+       le montre donc, sans le demander — troisième écran.
+
+    2. LE RÉGIME DE TVA EST AUJOURD'HUI DEVINÉ, ET C'EST FRAGILE.
+       `facture-pdf.ts` imprime « TVA non applicable, art. 293 B du CGI » quand
+       le taux appliqué vaut zéro — donc il DÉDUIT le régime d'un chiffre saisi
+       par ailleurs. Un artisan en franchise qui laisse 20 % par mégarde perd sa
+       mention ; un assujetti qui pose 0 % voit s'imprimer une phrase fausse sur
+       une pièce comptable. Le régime doit être DÉCLARÉ une fois, ici, et
+       commander le reste.
+
+    3. LE NUMÉRO DE TVA INTRACOMMUNAUTAIRE N'EXISTE PAS DANS ATLAS et ne
+       s'imprime nulle part. Pour une entreprise assujettie, c'est une mention
+       attendue sur la facture. **Réserve honnête : le détail des mentions
+       obligatoires n'a pas pu être vérifié à sa source depuis cet
+       environnement — le mandataire réseau refuse les sites publics. À faire
+       confirmer par son comptable avant de coder** (même règle que
+       `docs/A-FAIRE.md` §6, qui ne cite aucun tarif faute de pouvoir les lire).
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI NE PORTE PAS D'INTERRUPTEUR, ET POURQUOI
+    ─────────────────────────────────────────────────────────────────────────
+
+    Aucun champ de cet écran n'est désactivable. Ce n'est pas un oubli : le nom,
+    l'adresse et le SIRET de l'émetteur sont ce qui identifie la pièce, et les
+    couper produirait une facture irrégulière — la règle posée au lot 1. Ce qui
+    se règle ici, c'est la VALEUR, jamais la présence.
+
+    Le quatrième écran montre l'état qui compte : les champs vides, et ce que
+    leur absence empêche. Un champ sans source fiable reste vide et signalé
+    (`docs/AGENT.md` §3) — jamais rempli d'un exemple plausible.
+  */
+
+  /* La charte de l'application, recopiée de `src/lib/design-tokens.ts` et
+     comparée à ce fichier par `maquettes/charte.mjs`. */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --bronze:#b98b47; --trait:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+      --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141510; --plage:#1c1e17; --encre:#e8e7dd; --gris:#8a8c80;
+    --bronze:#c9a15e; --trait:rgba(232,231,221,.15);
+  }
+
+  /* SAFARI SUR IPHONE N'ACTIVE PAS UN <label> SANS `cursor:pointer`. */
+  label{cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 84px}
+  .page{max-width:1700px;margin:0 auto}
+
+  .intro{max-width:62ch;margin:0 auto 34px;text-align:center}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze)}
+  .intro h1{margin:0 0 14px;font:400 30px/1.25 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.01em}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px}
+  .intro strong{color:var(--encre);font-weight:600}
+  .loupe{display:none}
+  @media (min-width:1000px){
+    .loupe{display:block;margin:18px auto 0;padding-top:14px;max-width:56ch;
+           border-top:1px solid var(--trait);font-size:13.5px;color:var(--gris)}
+  }
+
+  .rangee{display:flex;flex-wrap:wrap;gap:44px 32px;justify-content:center;align-items:flex-start}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:12px;width:412px;max-width:100%}
+
+  /* LE GROS PLAN — une loupe, jamais un téléphone élargi (`ARCHITECTURE.md`
+     §86). Elle n'agit qu'au-dessus de 1000 px, ce qui laisse les contrôles
+     mesurer les vraies dimensions en iPhone 13. */
+  @media (min-width:1000px){
+    .rangee{flex-direction:column;flex-wrap:nowrap;gap:80px;align-items:center}
+    .prop{display:grid;width:auto;max-width:none;column-gap:52px;
+          grid-template-columns:auto 320px;
+          grid-template-rows:auto auto 1fr;
+          grid-template-areas:"tel sous" "tel note" "tel .";
+          justify-items:start}
+    .prop .tel{grid-area:tel;zoom:1.35}
+    .prop .sous{grid-area:sous;text-align:left;align-self:start;padding-top:50px}
+    .prop .note{grid-area:note;text-align:left;max-width:none;align-self:start;
+                font-size:14px;line-height:1.7}
+  }
+  @media (min-width:1500px){
+    .prop{grid-template-columns:auto 360px}
+    .prop .tel{zoom:1.6}
+    .prop .sous{padding-top:59px}
+  }
+
+  .sous{margin:0;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .note{margin:0;max-width:42ch;text-align:center;font-size:13px;color:var(--gris);
+        border-top:1px solid var(--trait);padding-top:10px}
+  .note b{color:var(--encre);font-weight:600}
+
+  .tel{width:412px;max-width:100%;border-radius:44px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{position:relative;overflow:hidden;border-radius:34px;height:720px;
+         display:flex;flex-direction:column;
+         background:var(--e-fond);color:var(--e-encre);
+         font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+         --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+         --e-bronze:#b98b47; --e-trait:rgba(28,28,26,.12); --e-plein:#2f3b2f;
+         --e-alerte:#9C3B2E}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+
+  /* `EnTeteEcran`, valeur pour valeur. */
+  .tete{padding:34px 26px 0;flex:none}
+  .tete .sur{margin:0;color:var(--e-bronze)}
+  .tete h1{margin:14px 0 0;font:400 36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .cheveu{flex:none;height:1px;margin:26px 26px 0;background:var(--e-trait)}
+  .corps{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:26px}
+
+  /* `AtlasBottomNav`, valeur pour valeur. */
+  .bas{position:relative;flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+       border-top:1px solid var(--e-trait);padding:18px 14px 26px;background:var(--e-fond)}
+  .bas span{text-align:center;color:var(--e-gris);padding-bottom:8px;
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .bas span.actif{color:var(--e-encre);transform:translateY(-2px)}
+  .bas i{position:absolute;bottom:26px;width:calc((100% - 28px)/4);height:1px;background:var(--e-bronze)}
+  .bas i.q1{left:14px}
+  .bas i.q4{left:calc(14px + 3*(100% - 28px)/4)}
+
+  /* ═══ Un bloc de section ═════════════════════════════════════════════ */
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--e-trait)}
+  .bloc .t{margin:0 0 10px;color:var(--e-gris)}
+  .corps > .bloc:first-of-type{border-top:0;padding-top:0}
+
+  /* ═══ Une ligne de saisie ════════════════════════════════════════════ */
+  /* L'étiquette au-dessus, la valeur en serif, un filet dessous : c'est la
+     grammaire des réglages déjà en place (`src/app/reglages/VosEquipes.tsx`),
+     et elle tient la cible de 44 px sans effort. La dernière ligne d'un bloc
+     perd son filet — il ne sépare plus rien. */
+  .ch{display:block;padding:13px 0;border-bottom:1px solid var(--e-trait);
+      transition:border-color .24s}
+  .bloc .ch:last-child{border-bottom:0}
+  .ch .et{display:block;margin-bottom:5px;color:var(--e-gris)}
+  /* 17 px : en dessous de 16, Safari zoome à la mise au point et l'écran saute. */
+  .va{display:block;width:100%;border:0;background:transparent;padding:0;margin:0;
+      -webkit-appearance:none;appearance:none;border-radius:0;
+      font:400 17px/1.35 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .va.pale{color:var(--e-gris)}
+  .va::placeholder{color:var(--e-gris);opacity:.66}
+  .va:focus{outline:none}
+  .ch:has(.va:focus){border-bottom-color:var(--e-bronze)}
+  /* Une adresse ne se coupe pas au bord de l'écran : le patron a lu une adresse
+     amputée sur son propre devis, et `ChampNu` porte déjà cette leçon. */
+  textarea.va{resize:none;height:48px;overflow:hidden}
+
+  /* Ce que l'application DÉDUIT, et qui ne se saisit donc pas. */
+  .deduit{display:block;margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .deduit b{color:var(--e-encre);font-weight:400;font-variant-numeric:tabular-nums}
+
+  /* ═══ Le choix du régime ═════════════════════════════════════════════ */
+  .opt{display:flex;align-items:flex-start;gap:13px;padding:14px 0;min-height:54px;
+       border-bottom:1px solid var(--e-trait);-webkit-tap-highlight-color:transparent}
+  .opt .rond{flex:none;margin-top:2px;width:19px;height:19px;border-radius:99px;
+             box-shadow:inset 0 0 0 1px var(--e-trait);transition:box-shadow .24s}
+  .opt .txt{flex:1;min-width:0}
+  .opt .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif}
+  .opt .dit{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  #r-franchise:checked ~ .choix .o-franchise .rond,
+  #r-assujetti:checked ~ .choix .o-assujetti .rond{box-shadow:inset 0 0 0 6px var(--e-bronze)}
+
+  /* Ce qui suit le choix : le numéro n'existe que pour qui doit en avoir un. */
+  .siAssujetti{display:none}
+  #r-assujetti:checked ~ .choix .siAssujetti{display:block}
+  .siFranchise{display:none}
+  #r-franchise:checked ~ .choix .siFranchise{display:block}
+
+  /* ═══ Ce qui se dit sans crier ════════════════════════════════════════ */
+  /* Le liseré à gauche est la grammaire du signalement déjà en place dans
+     `src/app/reglages/page.tsx` : il n'apparaît que si quelque chose ne fait pas
+     ce qu'on croit. Un encadré complet ferait un panneau, et l'écran retenu par
+     le patron n'a pas de cadres. */
+  /* POSÉ HORS D'UN BLOC, IL DOIT PORTER SON PROPRE RETRAIT. Sans cette règle
+     il touchait les deux bords de l'écran pendant que tout le reste s'arrêtait
+     à 26 px — vu sur la capture, jamais par un contrôle. */
+  .corps > .mot{margin-left:26px;margin-right:26px}
+  .mot{margin:14px 0 0;padding:13px 15px;border-radius:4px;background:var(--e-plage);
+       border-left:3px solid var(--e-plein);font-size:11.5px;line-height:1.6;color:var(--e-gris)}
+  .mot b{color:var(--e-encre);font-weight:600}
+  .mot.grave{border-left-color:var(--e-alerte)}
+  .mot.grave b{color:var(--e-alerte)}
+
+  /* ═══ La liste d'un compte neuf ═══════════════════════════════════════ */
+  /* Reprise de la grammaire du lot 1 : une rubrique, son chevron, sa ligne de
+     situation. S'y ajoute l'ÉTAT — rempli, ou manquant — parce qu'à la première
+     ouverture, c'est la seule chose que l'artisan a besoin de savoir. */
+  .rub{display:flex;align-items:center;gap:14px;padding:14px 0;min-height:54px;
+       border-bottom:1px solid var(--e-trait)}
+  .bloc .rub:last-child{border-bottom:0}
+  .rub .txt{flex:1;min-width:0}
+  .rub .nom{display:block;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--e-encre)}
+  .rub .dit{display:block;margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--e-gris)}
+  .rub .chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--e-trait);
+             border-top:1.5px solid var(--e-trait);transform:rotate(45deg)}
+  .rub .etat{flex:none;color:var(--e-bronze)}
+  /* Le manque porte la couleur d'alerte ET le mot : une information qui n'existe
+     qu'en couleur n'existe pas pour tout le monde. */
+  .rub.vide .etat{color:var(--e-alerte)}
+  .rub.vide .nom{color:var(--e-encre)}
+
+  /* Un champ qu'il faut remplir, et qui ne l'est pas. Le manque se voit sur la
+     LIGNE, pas seulement dans une phrase en bas d'écran. */
+  .ch.creux{border-bottom-color:var(--e-alerte)}
+  .ch.creux .et{color:var(--e-alerte)}
+  /* ET ELLE GARDE SON FILET, MÊME EN DERNIÈRE POSITION. La règle qui l'efface
+     vaut pour un SÉPARATEUR — or sur une ligne en manque, le trait n'est plus
+     un séparateur, c'est le signalement lui-même. Deux lignes vides dont une
+     seule était soulignée se lisaient comme un défaut d'affichage. */
+  .bloc .ch.creux:last-child{border-bottom:1px solid var(--e-alerte)}
+
+  /* SUR TÉLÉPHONE, LE CADRE S'EFFACE. Il coûte 54 px — 32 de marge de page, 22
+     de coque — et l'écran ne mesurerait plus que 336 px au lieu de 390. La
+     barre basse de l'application n'y tient pas : c'est ce qui avait fait
+     rapetisser sa chasse dans les planches d'avant le 13 août 2026
+     (`ARCHITECTURE.md` §86). */
+  @media (max-width:520px){
+    body{padding:26px 0 72px}
+    .intro,.sous,.note{padding-left:16px;padding-right:16px}
+    .tel{width:100%;padding:0;background:none;box-shadow:none;border-radius:0}
+    .ecran{border-radius:0}
+  }
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Réglages — l'identité de l'entreprise</p>
+    <h1>Ce qui identifie ses pièces</h1>
+    <p>
+      Première des quatre priorités. <strong>Aucun champ n'a d'interrupteur</strong> :
+      ce qui identifie une facture ne se coupe pas — ce qui se règle ici, c'est
+      la valeur, jamais la présence. Touchez le <strong>régime de TVA</strong> du
+      troisième écran : c'est lui qui commande la mention imprimée, et il est
+      aujourd'hui <strong>deviné</strong> par l'application.
+    </p>
+    <p class="loupe">
+      Sur grand écran, les téléphones sont <strong>agrandis à la loupe</strong> :
+      les proportions restent celles d'un iPhone, et une cible de 44 px reste une
+      cible de 44 px.
+    </p>
+  </div>
+
+  <div class="rangee">
+
+    <!-- ── 1. L'identité ──────────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">Identité</p>
+      <div class="tel"><div class="ecran" data-s="identite">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Identité</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Comment vous vous nommez</p>
+            <label class="ch">
+              <span class="et caps">Nom de l&apos;entreprise</span>
+              <input class="va" type="text" autocomplete="organization" spellcheck="false" value="Arborea">
+            </label>
+            <label class="ch">
+              <span class="et caps">Forme juridique</span>
+              <input class="va" type="text" autocomplete="off" spellcheck="false" value="SASU">
+            </label>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Où vous êtes établi</p>
+            <label class="ch" data-s="ch-adresse">
+              <span class="et caps">Adresse du siège</span>
+              <textarea class="va" spellcheck="false" aria-label="Adresse du siège">12 route des Coteaux
+78200 Mantes-la-Jolie</textarea>
+            </label>
+          </div>
+
+          <p class="mot" data-s="mot-identite">
+            Ces trois lignes sont <b>exactement ce que votre client lit</b> en haut
+            de son devis, sous « Émetteur ». Rien d&apos;autre n&apos;y figure.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>La forme juridique n&apos;existe pas en base</b> aujourd&apos;hui :
+        `entreprises` porte six champs, et elle n&apos;en fait pas partie.
+      </p>
+    </div>
+
+    <!-- ── 2. Le SIRET, et le SIREN qu'on ne demande pas ──────────────── -->
+    <div class="prop">
+      <p class="sous">SIRET et SIREN</p>
+      <div class="tel"><div class="ecran" data-s="siret">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Identité</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Vos identifiants</p>
+            <label class="ch" data-s="ch-siret">
+              <span class="et caps">SIRET</span>
+              <input class="va" type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
+                     value="812 345 678 00027" aria-label="Numéro SIRET">
+              <!-- LE SIREN NE SE SAISIT PAS. Ce sont les neuf premiers chiffres
+                   du SIRET ; les quatre suivants plus la clé désignent
+                   l'établissement. Deux champs, ce serait deux façons de se
+                   contredire — et c'est celui qui saisit qui paierait l'écart. -->
+              <span class="deduit" data-s="siren">
+                SIREN <b>812 345 678</b> — les neuf premiers chiffres. Il ne se
+                saisit pas séparément.
+              </span>
+            </label>
+          </div>
+
+          <p class="mot">
+            Le SIRET est la <b>seule ligne d&apos;identification</b> imprimée
+            aujourd&apos;hui sous votre nom et votre adresse.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Vous avez demandé « SIRET/SIREN ». <b>Un seul champ suffit</b> : le
+        second se lit dans le premier, et l&apos;écran le montre plutôt que de
+        le redemander.
+      </p>
+    </div>
+
+    <!-- ── 3. La TVA : déclarée, et non plus devinée ──────────────────── -->
+    <div class="prop">
+      <p class="sous">Le régime de TVA</p>
+      <div class="tel"><div class="ecran" data-s="tva">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>TVA</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <input class="interrupteur" type="radio" name="regime" id="r-franchise" checked>
+          <input class="interrupteur" type="radio" name="regime" id="r-assujetti">
+
+          <div class="bloc choix">
+            <p class="t caps">Votre régime</p>
+
+            <label class="opt o-franchise" for="r-franchise">
+              <span class="rond"></span>
+              <span class="txt">
+                <span class="nom">Franchise en base</span>
+                <span class="dit">Vous ne facturez pas de TVA. La mention de
+                  l&apos;article 293 B s&apos;imprime sur chaque pièce.</span>
+              </span>
+            </label>
+
+            <label class="opt o-assujetti" for="r-assujetti">
+              <span class="rond"></span>
+              <span class="txt">
+                <span class="nom">Assujettie</span>
+                <span class="dit">Vous facturez la TVA. Votre numéro
+                  intracommunautaire figure alors sur la facture.</span>
+              </span>
+            </label>
+
+            <!-- Le numéro n'existe que pour qui doit en avoir un. Le montrer
+                 grisé sous « franchise » inviterait à remplir un champ qui ne
+                 sera jamais imprimé. -->
+            <div class="siAssujetti" data-s="numero">
+              <label class="ch">
+                <span class="et caps">Numéro de TVA intracommunautaire</span>
+                <input class="va" type="text" autocomplete="off" spellcheck="false"
+                       value="FR76 812345678" aria-label="Numéro de TVA intracommunautaire">
+              </label>
+              <p class="mot grave">
+                <b>Ce champ n&apos;existe pas encore dans Atlas</b>, et rien ne
+                l&apos;imprime. À faire confirmer par votre comptable avant
+                d&apos;être codé.
+              </p>
+            </div>
+
+            <div class="siFranchise" data-s="mention">
+              <p class="mot">
+                S&apos;imprimera en bas de chaque facture : <b>« TVA non
+                applicable, art. 293 B du CGI »</b>.
+              </p>
+            </div>
+          </div>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Aujourd&apos;hui, l&apos;application devine ce régime</b> : elle
+        imprime la franchise quand le taux vaut zéro. Un taux mal saisi produit
+        donc une pièce comptable fausse, dans un sens ou dans l&apos;autre.
+      </p>
+    </div>
+
+    <!-- ── 4. Coordonnées et banque ───────────────────────────────────── -->
+    <div class="prop">
+      <p class="sous">Coordonnées et banque</p>
+      <div class="tel"><div class="ecran" data-s="banque">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Coordonnées</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Pour vous joindre</p>
+            <label class="ch">
+              <span class="et caps">Téléphone</span>
+              <input class="va" type="tel" autocomplete="tel" value="06 12 34 56 78">
+            </label>
+            <label class="ch">
+              <span class="et caps">Adresse e-mail</span>
+              <input class="va" type="email" autocomplete="email" spellcheck="false" value="contact@arborea.fr">
+            </label>
+          </div>
+
+          <p class="mot" data-s="mot-joindre">
+            <b>Ni l&apos;un ni l&apos;autre ne figure sur votre devis
+            aujourd&apos;hui.</b> Un client qui veut vous appeler n&apos;a pas
+            votre numéro sous les yeux.
+          </p>
+
+          <div class="bloc">
+            <p class="t caps">Pour être payé</p>
+            <label class="ch">
+              <span class="et caps">IBAN</span>
+              <input class="va" type="text" autocomplete="off" spellcheck="false"
+                     value="FR76 3000 4000 0300 0012 3456 789" aria-label="IBAN">
+            </label>
+            <label class="ch">
+              <span class="et caps">Titulaire du compte</span>
+              <input class="va" type="text" autocomplete="off" spellcheck="false" value="Arborea">
+            </label>
+          </div>
+
+          <!-- « Seulement les obligatoires », a-t-il dit. Le BIC n'en est pas :
+               un virement à l'intérieur de l'espace SEPA se fait sur le seul
+               IBAN. Un champ de plus, c'est une occasion de plus de se tromper
+               sur vingt-sept caractères. -->
+          <p class="mot" data-s="mot-bic">
+            <b>Pas de BIC.</b> Un virement en Europe se fait sur le seul IBAN :
+            le demander serait vingt-sept caractères de plus à se tromper.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Le <b>titulaire du compte</b> n&apos;existe pas non plus en base. Sans
+        lui, un IBAN à un nom différent de l&apos;entreprise inquiète le client
+        au lieu de le rassurer.
+      </p>
+    </div>
+
+    <!-- ── 5. Ce qui manque, et ce que ça empêche ─────────────────────── -->
+    <div class="prop">
+      <p class="sous">Ce qui manque</p>
+      <div class="tel"><div class="ecran" data-s="manque">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Identité</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <div class="bloc">
+            <p class="t caps">Comment vous vous nommez</p>
+            <label class="ch">
+              <span class="et caps">Nom de l&apos;entreprise</span>
+              <input class="va" type="text" autocomplete="organization" spellcheck="false" value="Arborea">
+            </label>
+            <label class="ch creux" data-s="creux-adresse">
+              <span class="et caps">Adresse du siège — manquante</span>
+              <textarea class="va" spellcheck="false" placeholder="Aucune adresse enregistrée"
+                        aria-label="Adresse du siège"></textarea>
+            </label>
+            <label class="ch creux" data-s="creux-siret">
+              <span class="et caps">SIRET — manquant</span>
+              <input class="va" type="text" inputmode="numeric" placeholder="Aucun numéro enregistré"
+                     aria-label="Numéro SIRET">
+            </label>
+          </div>
+
+          <!-- LE MANQUE SE DIT, IL NE SE COMBLE PAS. Un exemple plausible mis à
+               la place d'une donnée absente s'imprimerait sur une facture
+               (`docs/AGENT.md` §3). Et la phrase dit ce que l'absence EMPÊCHE,
+               pas seulement qu'il manque quelque chose : « champ requis » ne
+               fait agir personne. -->
+          <p class="mot grave" data-s="empeche">
+            <b>Vos factures ne sont pas conformes tant que ces deux lignes sont
+            vides.</b> Atlas les laisse en blanc plutôt que d&apos;inventer :
+            une adresse plausible imprimée sur une pièce comptable serait pire
+            que le vide.
+          </p>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        Le manque se voit <b>sur la ligne</b>, pas seulement dans une phrase en
+        bas d&apos;écran — celle-ci se lit après avoir défilé, la ligne se voit
+        tout de suite.
+      </p>
+    </div>
+
+    <!-- ── 6. À la première ouverture : tout est vierge ────────────────── -->
+    <div class="prop">
+      <p class="sous">Le premier jour</p>
+      <div class="tel"><div class="ecran" data-s="neuf">
+        <div class="tete"><p class="sur caps">Mon entreprise</p><h1>Réglages</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <!-- CE QUE LE PATRON A RAPPELÉ LE 13 AOÛT 2026 : « quand
+               l'application sera commercialisée, le devis ne comportera aucune
+               information, il sera vierge, et c'est avec ces informations-là
+               qu'il devra se remplir automatiquement ».
+
+               Son banc d'essai ne montre JAMAIS cet état : le jeu de départ
+               pose « Atelier Démo » avec son SIRET, son adresse et son IBAN
+               (`src/server/db/seed.ts`). L'écran qu'il regarde est donc
+               toujours rempli, et le premier jour d'un vrai artisan n'a jamais
+               été vu par personne. -->
+          <p class="mot grave" data-s="premier">
+            <b>Votre devis se remplira tout seul avec ce que vous mettez ici.</b>
+            Tant que ces lignes sont vides, elles manqueront sur chaque
+            document — Atlas n&apos;invente rien à votre place.
+          </p>
+
+          <div class="bloc">
+            <p class="t caps">Avant votre premier devis</p>
+            <div class="rub vide"><span class="txt"><span class="nom">Identité</span><span class="dit">Nom, adresse, SIRET</span></span><span class="etat caps">À remplir</span><span class="chev"></span></div>
+            <div class="rub vide"><span class="txt"><span class="nom">TVA</span><span class="dit">Franchise, ou assujettie</span></span><span class="etat caps">À remplir</span><span class="chev"></span></div>
+            <div class="rub vide"><span class="txt"><span class="nom">Informations bancaires</span><span class="dit">L&apos;IBAN sur lequel vous serez payé</span></span><span class="etat caps">À remplir</span><span class="chev"></span></div>
+          </div>
+
+          <div class="bloc">
+            <p class="t caps">Quand vous voudrez</p>
+            <div class="rub"><span class="txt"><span class="nom">Tarifs &amp; catalogue</span><span class="dit">Se remplira aussi de vos devis</span></span><span class="chev"></span></div>
+            <div class="rub"><span class="txt"><span class="nom">Équipe</span><span class="dit">Vous seul, pour l&apos;instant</span></span><span class="chev"></span></div>
+          </div>
+
+        </div>
+        <div class="bas"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Réglages</span><i class="q4"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Cet écran n&apos;existe nulle part aujourd&apos;hui.</b> L&apos;identité
+        ne se saisit que depuis « le devis écrit à la main » — donc au milieu de
+        la rédaction d&apos;un devis, jamais avant.
+      </p>
+    </div>
+
+    <!-- ── 7. Le piège : le devis fige ce qu'il a trouvé ───────────────── -->
+    <div class="prop">
+      <p class="sous">Ce qui est figé</p>
+      <div class="tel"><div class="ecran" data-s="fige">
+        <div class="tete"><p class="sur caps">Devis nº 2026-004</p><h1>Envoyer</h1></div>
+        <div class="cheveu"></div>
+        <div class="corps">
+
+          <!-- LE PIÈGE, ET IL EST DANS LE CODE : `devis.ts` recopie l'identité
+               de l'entreprise DANS le devis au moment où il est créé. C'est la
+               bonne décision — une pièce comptable doit garder l'identité
+               qu'elle portait le jour de son émission, et non suivre les
+               corrections d'après.
+
+               Mais la conséquence n'est écrite nulle part : compléter son SIRET
+               ce soir ne répare AUCUN devis déjà créé. Sans cet avertissement,
+               l'artisan corrige, regarde son ancien devis, et croit à une
+               panne. -->
+          <div class="bloc">
+            <p class="t caps">Ce que votre client recevra</p>
+            <div class="ch">
+              <span class="et caps">Émetteur</span>
+              <span class="va" data-s="fige-nom">Arborea</span>
+              <span class="deduit">12 route des Coteaux, 78200 Mantes-la-Jolie</span>
+            </div>
+            <div class="ch creux" data-s="fige-siret">
+              <span class="et caps">SIRET — absent de ce devis</span>
+              <span class="va pale">Non renseigné le jour de sa création</span>
+            </div>
+          </div>
+
+          <p class="mot grave" data-s="avert">
+            <b>Ce devis a figé vos informations le jour où il a été créé.</b>
+            Compléter votre SIRET maintenant vaudra pour les <b>prochains</b>
+            devis — celui-ci garde ce qu&apos;il avait, parce qu&apos;une pièce
+            déjà remise ne se réécrit pas.
+          </p>
+
+        </div>
+        <div class="bas"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span><i class="q1"></i></div>
+      </div></div>
+      <p class="note">
+        <b>Rien n&apos;avertit de cela aujourd&apos;hui</b>, et rien ne vérifie
+        l&apos;identité avant l&apos;envoi. Le premier devis d&apos;un artisan
+        peut partir sans SIRET ni IBAN, sans un mot.
+      </p>
+    </div>
+
+  </div>
+</div>

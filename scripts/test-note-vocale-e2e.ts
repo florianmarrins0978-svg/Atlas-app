@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FAKE_MIC = path.join(__dirname, "fixtures", "fake-mic.wav");
@@ -30,8 +31,8 @@ async function main() {
 
   const nomUnique = `Chantier note e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const noteUrl = `${page.url()}/note-vocale`;
 

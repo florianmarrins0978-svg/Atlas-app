@@ -1,0 +1,283 @@
+<title>Le cinquième onglet</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE CINQUIÈME ONGLET — « Outils », et le seul vrai risque de son choix.
+
+    Sa question du 17 août 2026 : « L'idée c'est de créer des outils comme
+    celui-là pour les paysagistes, après je ferai la même chose pour les
+    terrasses bois. Pour toi le mieux c'est de créer une nouvelle catégorie
+    paysage ? Ou alors on range ça dans les réglages ? » — et sa décision, le
+    formulaire rendu : **un cinquième onglet « Outils »**.
+
+    ————————————————————————————————————————————————————————————————
+    POURQUOI UNE PLANCHE AVANT DE TOUCHER À LA BARRE
+
+    La barre du bas porte QUATRE onglets depuis le 10 août, et son dessin a été
+    choisi par lui : pas d'icônes (« quatre pictogrammes sous quatre mots
+    répétaient la même information »), des capitales de 9,5 px très espacées
+    (0,28em), et un trait d'or qui glisse — le « trait G ».
+
+    Passer à cinq resserre chaque colonne d'un cinquième. Sur un écran de
+    360 px, la question n'est pas esthétique : **« CHANTIERS » tient-il encore
+    dans sa colonne ?** Si non, le mot se coupe ou déborde — et c'est l'écran
+    qu'il ouvre vingt fois par jour.
+
+    Cette planche pose les cinq variantes CÔTE À CÔTE, à la largeur réelle, et
+    mesure. Le §3 bis du dépôt : on dessine, il choisit, ensuite seulement on
+    touche à `src/`.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché. AUCUN SCRIPT.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --alerte:#9C3B2E; --pin:#2f3b2f;
+    --creme:#f5f3ee; --ligne:rgba(28,28,26,0.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --alerte:#C87058; --pin:#7d9179;
+      --creme:#1e1c18; --ligne:rgba(233,229,220,0.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --alerte:#C87058; --pin:#7d9179;
+    --creme:#1e1c18; --ligne:rgba(233,229,220,0.16);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:1000px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .jeu{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+  .cas{flex:0 0 auto;width:360px}
+  .cas .titre{font-family:Georgia,serif;font-size:17px;margin:0 0 3px}
+  .cas .quoi{font-size:12.5px;color:var(--gris);line-height:1.55;margin:0 0 10px;min-height:56px}
+  .cas .verdict{font-size:12.5px;margin:8px 0 0;line-height:1.55}
+  .cas .verdict b{font-weight:600}
+  .ok{color:var(--pin)}
+  .ko{color:var(--alerte)}
+
+  /* ══ LA BARRE, dans ses vraies mesures — reprises de AtlasBottomNav.tsx ══ */
+  .tel{width:360px;border:1px solid var(--trait);border-radius:14px;overflow:hidden;
+       background:var(--papier)}
+  .ecran{height:78px;background:var(--fond);display:flex;align-items:center;
+         justify-content:center;font-size:12px;color:var(--gris)}
+  .barre{background:var(--creme);border-top:1px solid var(--ligne);position:relative}
+  .rangee{display:grid;padding:18px 14px 8px;position:relative}
+  .rangee.q4{grid-template-columns:repeat(4,1fr)}
+  .rangee.q5{grid-template-columns:repeat(5,1fr)}
+  .rangee a{padding-bottom:8px;text-align:center;font-size:9.5px;font-weight:500;
+            text-transform:uppercase;letter-spacing:.28em;color:var(--gris);
+            text-decoration:none;white-space:nowrap}
+  .rangee a.actif{color:var(--encre);transform:translateY(-2px)}
+  /* Les variantes ne changent QU'UNE chose chacune : c'est ce qui permet de
+     savoir laquelle a payé. */
+  .serre a{letter-spacing:.18em}
+  .petit a{font-size:8.5px;letter-spacing:.14em}
+  .icone a{font-size:8.5px;letter-spacing:.10em}
+  .icone .pic{display:block;font-size:15px;letter-spacing:0;margin-bottom:3px;
+              filter:grayscale(1);opacity:.8}
+  .icone a.actif .pic{filter:none;opacity:1}
+  .fil{position:absolute;bottom:8px;left:14px;pointer-events:none}
+  .rangee.q4 .fil{width:calc((100% - 28px) / 4)}
+  .rangee.q5 .fil{width:calc((100% - 28px) / 5)}
+  .fil span{display:block;height:1px;background:var(--or)}
+
+  .mesure{margin-top:8px;font-size:11.5px;color:var(--gris);
+          font-variant-numeric:tabular-nums}
+
+  .note{margin-top:26px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note + .note{margin-top:14px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:7px}
+</style>
+
+<div class="dedans">
+  <h1>Le cinquième onglet</h1>
+  <p class="intro">Votre choix : <b>un onglet « Outils »</b>, pour l'arrosage
+    puis les terrasses bois. Le seul vrai risque, c'est la place — la barre en
+    porte quatre depuis le 10 août, et passer à cinq resserre chaque colonne
+    d'un cinquième. <b>Toutes les barres ci-dessous sont à 360 px</b>, la
+    largeur de l'écran le plus étroit.</p>
+
+  <p class="dit">« L'idée, c'est de créer des outils comme celui-là pour les
+    paysagistes. Après, je ferai la même chose pour les terrasses bois. »
+    — et votre réponse au formulaire : <b>un cinquième onglet.</b></p>
+
+  <div class="jeu">
+
+    <div class="cas">
+      <p class="titre">Aujourd'hui — quatre onglets</p>
+      <p class="quoi">Le témoin, pour comparer. Capitales de 9,5 px, espacées
+        de 0,28em, le trait d'or sous l'onglet courant. Aucune icône : votre
+        décision du 10 août.</p>
+      <div class="tel">
+        <div class="ecran">l'écran Chantiers</div>
+        <div class="barre"><div class="rangee q4">
+          <a class="actif" href="#a">Chantiers</a><a href="#a">Planning</a>
+          <a href="#a">Terminés</a><a href="#a">Réglages</a>
+          <span class="fil" style="transform:translateX(0)"><span></span></span>
+        </div></div>
+      </div>
+      <p class="verdict"><b>Le repère.</b> C'est ce que vous avez sous les yeux.</p>
+    </div>
+
+    <div class="cas">
+      <p class="titre">A · Cinq, sans rien changer</p>
+      <p class="quoi">On ajoute « Outils » et on ne touche à rien d'autre.
+        C'est la version la plus fidèle à ce que vous avez choisi — et c'est
+        elle qui dit si le problème existe vraiment.</p>
+      <div class="tel">
+        <div class="ecran">l'écran Chantiers</div>
+        <div class="barre"><div class="rangee q5" id="a">
+          <a class="actif" href="#a">Chantiers</a><a href="#a">Planning</a>
+          <a href="#a">Terminés</a><a href="#a">Outils</a><a href="#a">Réglages</a>
+          <span class="fil" style="transform:translateX(0)"><span></span></span>
+        </div></div>
+      </div>
+      <p class="verdict ko" id="vA"><b>Ça ne tient pas.</b> Une colonne a droit à 66,4 px ; « CHANTIERS » en demande 78,8 : <b>12,4 px de trop</b>. Le mot pousse sa colonne et écrase les voisines.</p>
+    </div>
+
+    <div class="cas">
+      <p class="titre">B · Cinq, l'espacement resserré</p>
+      <p class="quoi">Même taille de lettre, mais l'espacement passe de 0,28 à
+        0,18em. C'est ce qui coûte le moins à l'œil : le mot garde sa taille,
+        il respire seulement un peu moins.</p>
+      <div class="tel">
+        <div class="ecran">l'écran Chantiers</div>
+        <div class="barre"><div class="rangee q5 serre" id="b">
+          <a class="actif" href="#b">Chantiers</a><a href="#b">Planning</a>
+          <a href="#b">Terminés</a><a href="#b">Outils</a><a href="#b">Réglages</a>
+          <span class="fil" style="transform:translateX(0)"><span></span></span>
+        </div></div>
+      </div>
+      <p class="verdict ko" id="vB"><b>Ça ne tient pas non plus</b> — 70,3 px pour 66,4, soit <b>3,9 px de trop</b>. (J'avais d'abord annoncé que ça passait de 1,3 px : ma mesure était fausse, voir plus bas.)</p>
+    </div>
+
+    <div class="cas">
+      <p class="titre">C · Cinq, lettre plus petite</p>
+      <p class="quoi">8,5 px au lieu de 9,5, espacement 0,14em. On gagne
+        largement la place — reste à savoir si ça se lit encore à bout de bras,
+        sur un chantier, au soleil.</p>
+      <div class="tel">
+        <div class="ecran">l'écran Chantiers</div>
+        <div class="barre"><div class="rangee q5 petit" id="c">
+          <a class="actif" href="#c">Chantiers</a><a href="#c">Planning</a>
+          <a href="#c">Terminés</a><a href="#c">Outils</a><a href="#c">Réglages</a>
+          <span class="fil" style="transform:translateX(0)"><span></span></span>
+        </div></div>
+      </div>
+      <p class="verdict ok" id="vC"><b>Ça tient</b> — 59,8 px pour 66,4, soit <b>6,2 px de marge</b>. C'est la variante retenue.</p>
+    </div>
+
+    <div class="cas">
+      <p class="titre">D · Cinq, avec une icône</p>
+      <p class="quoi"><b>Revient sur votre décision du 10 août</b> — vous aviez
+        retiré les icônes parce qu'elles répétaient les mots. À cinq, elles
+        rendent un autre service : on vise la bonne colonne sans lire.</p>
+      <div class="tel">
+        <div class="ecran">l'écran Chantiers</div>
+        <div class="barre"><div class="rangee q5 icone" id="d">
+          <a class="actif" href="#d"><span class="pic">🌿</span>Chantiers</a>
+          <a href="#d"><span class="pic">📅</span>Planning</a>
+          <a href="#d"><span class="pic">✓</span>Terminés</a>
+          <a href="#d"><span class="pic">🧰</span>Outils</a>
+          <a href="#d"><span class="pic">⚙</span>Réglages</a>
+          <span class="fil" style="transform:translateX(0)"><span></span></span>
+        </div></div>
+      </div>
+      <p class="verdict ok" id="vD"><b>Ça tient le plus large</b> — 56,8 px pour 66,4, <b>9,2 px de marge</b>. Et l'icône se vise sans lire.</p>
+    </div>
+
+    <div class="cas">
+      <p class="titre">E · Quatre onglets, « Outils » ailleurs</p>
+      <p class="quoi">La barre ne bouge pas. « Outils » entre par l'écran
+        Chantiers — une ligne en haut, à côté du titre. Rien à resserrer, et
+        l'entrée reste joignable sans chantier.</p>
+      <div class="tel">
+        <div class="ecran" style="flex-direction:column;gap:6px;height:78px">
+          <span style="font:400 17px/1 Georgia,serif;color:var(--encre)">Vos chantiers</span>
+          <span style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or)">🧰 Outils métier</span>
+        </div>
+        <div class="barre"><div class="rangee q4" id="e">
+          <a class="actif" href="#e">Chantiers</a><a href="#e">Planning</a>
+          <a href="#e">Terminés</a><a href="#e">Réglages</a>
+          <span class="fil" style="transform:translateX(0)"><span></span></span>
+        </div></div>
+      </div>
+      <p class="verdict ok"><b>Aucun risque de place.</b> Mais ce n'est pas ce
+        que vous avez demandé — je la mets pour comparaison.</p>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que la mesure dit</span>
+    <p>Les verdicts ci-dessus sont <b>mesurés dans un navigateur à 360 px</b>,
+      pas supposés : on compare la largeur réelle de chaque mot à celle de sa
+      colonne. À cinq onglets, la colonne tombe de 89,5 à <b>71,6 px</b>.</p>
+    <table style="border-collapse:collapse;font-size:12.5px;margin-top:8px">
+      <tr><td style="padding:3px 14px 3px 0">A · sans rien changer</td>
+          <td style="padding:3px 0"><b class="ko">78,8 px — déborde de 12,4</b></td></tr>
+      <tr><td style="padding:3px 14px 3px 0">B · espacement resserré</td>
+          <td style="padding:3px 0"><b class="ko">70,3 px — déborde de 3,9</b></td></tr>
+      <tr><td style="padding:3px 14px 3px 0">C · lettre plus petite</td>
+          <td style="padding:3px 0"><b class="ok">59,8 px — 6,2 de marge</b></td></tr>
+      <tr><td style="padding:3px 14px 3px 0">D · avec une icône</td>
+          <td style="padding:3px 0"><b class="ok">56,8 px — 9,2 de marge</b></td></tr>
+    </table>
+    <p style="margin-top:10px"><b>A et B sont donc à écarter tous les deux</b> :
+      ni l'un ni l'autre ne rentre.</p>
+
+    <p style="margin-top:10px"><b>⚠ Ces nombres corrigent une première mesure
+      fausse, et il faut le dire.</b> J'avais d'abord divisé la largeur de la
+      barre par cinq, en comptant ses marges intérieures comme de la place
+      disponible : j'annonçais 71,6 px de colonne au lieu de 66,4, donc des
+      marges gonflées de 5,6 px — et je vous ai écrit que B « tenait de
+      1,3 px » alors qu'il débordait de 3,9. <b>C'est le contrôle qui l'a
+      trouvé</b>, en comparant le trait d'or à la colonne : deux mesures qui
+      auraient dû tomber pareil, et qui ne tombaient pas. Votre choix, lui, ne
+      change pas : C reste la bonne.</p>
+
+    <p style="margin-top:10px">Un contrôle mesure désormais la barre à 360 px
+      avant chaque mise en ligne (<code>scripts/test-barre-basse-e2e.ts</code>),
+      parce que ce défaut est invisible sur un grand écran.</p>
+    <p><b>Le mot qui décide, c'est « CHANTIERS »</b> : neuf lettres, le plus
+      long des cinq. Si lui passe, tous passent.</p>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qu'il y a derrière le choix, au-delà de la place</span>
+    <ul>
+      <li><b>Ce que l'onglet contiendra.</b> Aujourd'hui l'arrosage, demain les
+        terrasses bois. Une liste d'outils, donc — pas un outil unique, sinon
+        l'onglet s'appellerait « Arrosage ».</li>
+      <li><b>Le plan reste-t-il attaché à un client ?</b> Un outil joignable
+        sans chantier, c'est pratique en visite de devis — mais il faut alors
+        pouvoir rattacher le plan au chantier ensuite, sans quoi on le
+        cherchera six mois plus tard.</li>
+      <li><b>Les icônes.</b> Si D vous va, c'est une décision qui revient sur
+        celle du 10 août. Ce n'est pas un problème — c'est juste à dire, pour
+        qu'on ne la croie pas oubliée.</li>
+    </ul>
+  </div>
+</div>

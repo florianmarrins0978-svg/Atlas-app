@@ -226,6 +226,47 @@ async function main() {
     await page.close();
   });
 
+  await test("l'encart INVITE à laisser un mot, il ne se contente pas de le permettre", async () => {
+    // **Le patron, le 13 août 2026 :** *« écris une petite phrase sur l'encart
+    // pour laisser un mot, qu'il sache qu'il peut le faire »*.
+    //
+    // L'intitulé posait une question — « Une erreur, une question, une
+    // précision ? » — sans dire qu'on avait le droit d'y répondre. Ce qui est
+    // en jeu n'est pas la politesse : un client qui repère une faute et n'ose
+    // pas l'écrire touche « Je ne donne pas suite », et le patron lit un refus
+    // là où il n'y avait qu'une coquille.
+    const { envoi } = await preparerEnvoi("invite", [3, 6]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    const invite = page.locator("text=/vous pouvez laisser un mot/i");
+    assert.strictEqual(
+      await invite.count(),
+      1,
+      "aucune phrase n'invite le client à écrire : il ne saura pas qu'il en a le droit"
+    );
+
+    // **Au-dessus du champ, jamais en dessous** : une invitation lue après coup
+    // n'invite plus personne. Mesuré, parce que l'ordre dans le code ne dit
+    // rien de l'ordre à l'écran.
+    const boiteInvite = await invite.first().boundingBox();
+    const boiteChamp = await page.locator("#precision").boundingBox();
+    assert.ok(boiteInvite && boiteChamp, "l'invitation ou le champ n'est pas à l'écran");
+    assert.ok(
+      boiteInvite!.y + boiteInvite!.height <= boiteChamp!.y + 1,
+      `l'invitation est sous le champ (y=${boiteInvite!.y.toFixed(0)} contre ${boiteChamp!.y.toFixed(0)})`
+    );
+
+    // Et elle ne promet rien que l'application ne tienne : le client n'a aucun
+    // moyen de recevoir une réponse ici.
+    const texte = (await invite.first().innerText()).toLowerCase();
+    assert.ok(
+      !/répondra|réponse sous|rappellera/.test(texte),
+      `l'invitation promet une réponse que rien ne garantit : « ${texte} »`
+    );
+    await page.close();
+  });
+
   await context.close();
   await browser.close();
   console.log(`\n${passed} réussis, ${failed} échoués`);

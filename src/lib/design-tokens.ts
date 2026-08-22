@@ -17,25 +17,59 @@
 //
 // **Les documents font exception**, et c'est délibéré : voir `couleursDocument`.
 
+// ─── CES VALEURS PASSENT PAR UNE VARIABLE CSS DEPUIS LE 14 AOÛT 2026 ────────
+//
+// **Pourquoi, et ce que ça permet.** Le patron a choisi sept chartes de
+// couleurs (`src/lib/chartes.ts`), dont deux sombres, et veut pouvoir en
+// changer depuis les réglages. Elles étaient écrites en clair ici et employées
+// dans plus de trois cents endroits, en style en ligne : rien n'aurait suivi.
+//
+// **La valeur de repli EST la charte d'origine, au caractère près.** Une page
+// qui ne poserait aucune variable — un écran rendu hors du gabarit, un courriel,
+// un document — retombe donc exactement sur ce que l'application portait avant
+// ce lot. Ce n'est pas une précaution de style : c'est ce qui fait que ce
+// changement n'a, par défaut, aucun effet visible.
+//
+// **Ce qui ne passe PAS par une variable :** `alert`, `sage` et `sageLight` —
+// ils ne changent pas d'une charte à l'autre —, et surtout `couleursDocument`
+// plus bas, qui doit rester en clair : un devis ne part pas en noir chez le
+// client parce que l'artisan a choisi « Nuit ».
 export const colors = {
-  cream: "#f5f3ee", // --bone : fond de page
-  card: "#faf9f5", // --cream : fond des cartes et tuiles
-  ink: "#1c1c1a", // --charcoal : texte principal
-  inkSoft: "#4a4a44", // --charcoal-soft : texte de second plan, chapôs
-  muted: "#8a8578", // --muted : texte secondaire / meta
+  cream: "var(--atlas-cream, #f5f3ee)", // --bone : fond de page
+  card: "var(--atlas-card, #faf9f5)", // --cream : fond des cartes et tuiles
+  ink: "var(--atlas-ink, #1c1c1a)", // --charcoal : texte principal
+  inkSoft: "var(--atlas-inkSoft, #4a4a44)", // --charcoal-soft : texte de second plan, chapôs
+  muted: "var(--atlas-muted, #8a8578)", // --muted : texte secondaire / meta
   // L'accent unique — actions, libellés de statut, états actifs. Le nom `rust`
   // est conservé : soixante fichiers l'emploient, et le renommer d'un coup
   // aurait mêlé un changement d'identité à un changement mécanique, chacun
   // masquant les erreurs de l'autre. C'est le vert pin d'Arborea.
-  rust: "#2f3b2f", // --pine
-  rustDeep: "#4f5f4c", // --pine-light : survol, second niveau
-  rustTint: "#ece9e1", // --paper : fond des avatars d'icône et éléments teintés
+  rust: "var(--atlas-rust, #2f3b2f)", // --pine
+  rustDeep: "var(--atlas-rustDeep, #4f5f4c)", // --pine-light : survol, second niveau
+  rustTint: "var(--atlas-rustTint, #ece9e1)", // --paper : fond des avatars d'icône et éléments teintés
   sage: "#7d9a6d", // --sage : bordure de survol, encarts d'information
   sageLight: "#9fbd82", // --sage-light
   // Exception discrète, sans équivalent chez Arborea : uniquement pour
   // confirmer une action destructive. Gardée en terre cuite sombre, car une
   // alerte en vert se confondrait avec l'accent ordinaire.
   alert: "#9C3B2E",
+  // ─── Les deux couleurs du planning, posées le 21 août 2026 ───────────────
+  //
+  // **Elles ne suivent pas la charte, comme `sage` et `alert`**, et c'est
+  // délibéré : le calendrier distingue quatre états d'une même demi-journée —
+  // rien, incomplet, complet, au-delà. Dérivées de chaque charte, deux d'entre
+  // elles finiraient par se ressembler sur l'une des sept, et le mois cesserait
+  // de se lire d'un coup d'œil, ce qui est sa seule raison d'être.
+  //
+  // `vertPale` : « il reste de la place ». Assez clair pour se distinguer du
+  // vert pin plein, assez soutenu pour ne pas se confondre avec un carré vide.
+  vertPale: "#b9c6b4",
+  // `bordeaux` : le dépassement — plus de chantiers que d'équipes. **Son choix
+  // du 21 août, après l'or puis l'ardoise**, tous deux écartés par lui. L'or
+  // sert partout ailleurs à ce qu'on LIT, il ne signalait donc plus rien ; et
+  // ce n'est PAS `alert` (#9C3B2E), qui dit « erreur » — dépasser est un choix
+  // qu'il assume : *« il peut quand même le faire, nous on prévient juste »*.
+  bordeaux: "#6E2433",
   // ─── L'or, second accent, posé le 9 août 2026 ────────────────────────────
   //
   // **Il vient d'une maquette du patron, pas d'une envie.** Il a envoyé une
@@ -52,11 +86,11 @@ export const colors = {
   // Sur le fond crème, `or` tient le contraste du texte courant ; `orClair` est
   // réservé aux traits, cercles et icônes posés sur le vert pin, où il faut
   // remonter la clarté.
-  or: "#B98B47",
-  orClair: "#C9A15E",
-  line: "rgba(28,28,26,0.12)", // --line : séparateurs, bordures fines
-  lineSoft: "rgba(28,28,26,0.07)", // --line-soft : bordure des tuiles
-  chevron: "rgba(28,28,26,0.28)", // affordance de navigation discrète
+  or: "var(--atlas-or, #B98B47)",
+  orClair: "var(--atlas-orClair, #C9A15E)",
+  line: "var(--atlas-line, rgba(28,28,26,0.12))", // --line : séparateurs, bordures fines
+  lineSoft: "var(--atlas-lineSoft, rgba(28,28,26,0.07))", // --line-soft : bordure des tuiles
+  chevron: "var(--atlas-chevron, rgba(28,28,26,0.28))", // affordance de navigation discrète
 } as const;
 
 // ─── Les documents que le client reçoit ─────────────────────────────────────

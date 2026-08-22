@@ -1,12 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { colors } from "@/lib/design-tokens";
+import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import {
+  etapeAttente,
+  phraseAttente,
+  SEUIL_ABANDON_MS,
+  SEUIL_LONGUE_MS,
+  type EtapeAttente,
+} from "@/lib/attente-longue";
 import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { dicterCoordonneesAction } from "./actions";
 
 /**
- * Le micro discret, à droite du titre « Un chantier ».
+ * Le micro discret, à droite du titre « Fiche client » (« Un chantier » jusqu'au
+ * 16 août 2026).
  *
  * Le patron, le 7 août 2026 : *« à côté de "Un chantier", à droite, je veux une
  * petite touche discrète, juste le signe de la note vocale, pour que je puisse
@@ -26,6 +35,25 @@ import { dicterCoordonneesAction } from "./actions";
  * que la dictée n'en dit rien, il reste. Si la dictée en donne un et que le
  * champ est vide, il se remplit. Perdre une saisie parce qu'on a dicté ensuite
  * serait la pire façon d'aider.
+ *
+ * **L'ATTENTE, refaite le 13 août 2026.** Il avait signalé : *« une fois qu'on a
+ * appuyé sur le dictaphone, on ne sait pas ce qui se passe. Les trois petits
+ * points sont fixes […] on ne sait pas si ça bug ou non. »* Ce n'était pas une
+ * animation arrêtée — c'était le caractère « … », un seul glyphe : il n'y avait
+ * rien qui pût bouger.
+ *
+ * Trois choses ont changé au même endroit, et **elles ne se remplacent pas** :
+ *
+ * 1. les points **soufflent** — proposition C de
+ *    `docs/maquettes/43-l-attente-a-lessai.html`, qu'il a désignée ;
+ * 2. le bouton **reste à pleine encre**. Le demi-effacement d'avant était le
+ *    vocabulaire d'un bouton éteint ;
+ * 3. **une phrase le dit en toutes lettres.** C'est la seule des trois qui
+ *    parvient à qui n'a pas les yeux sur l'écran, et probablement la plus utile
+ *    des trois : l'écran se taisait pendant le seul moment où l'on se demande
+ *    s'il est en panne.
+ *
+ * `scripts/test-attente-dictee-e2e.ts` mesure le souffle et exige la phrase.
  */
 export default function DicterCoordonnees({
   onCoordonnees,
@@ -34,11 +62,59 @@ export default function DicterCoordonnees({
 }) {
   const [etat, setEtat] = useState<"repos" | "enregistre" | "traite">("repos");
   const [message, setMessage] = useState<string | null>(null);
+  const [attente, setAttente] = useState<EtapeAttente>("normale");
   const recorder = useRef<MediaRecorder | null>(null);
   const morceaux = useRef<Blob[]>([]);
 
+  /**
+   * L'attente qui s'éternise se raconte, au lieu de souffler indéfiniment.
+   *
+   * Deux réveils plutôt qu'une horloge qui tourne : on n'a besoin de rien
+   * savoir entre les deux, et un compteur qui bat toutes les secondes ferait
+   * repeindre l'écran cinquante fois pour changer deux phrases.
+   *
+   * Les seuils et les phrases vivent dans `src/lib/attente-longue.ts` — l'écran
+   * affiche, il ne décide pas.
+   */
+  useEffect(() => {
+    if (etat !== "traite") return;
+    const debut = Date.now();
+    // **On relit le temps ÉCOULÉ, on ne pose pas l'étape en dur.** Un téléphone
+    // qui s'endort étire ses minuteries : le réveil des douze secondes peut
+    // tomber à la cinquantième. Poser « longue » à ce moment-là annoncerait
+    // « c'est plus long que d'habitude » alors qu'il faudrait déjà rendre la
+    // main. La règle vit dans `attente-longue.ts` et tranche sur la durée
+    // réelle, jamais sur celle qu'on espérait.
+    const relire = () => setAttente(etapeAttente(Date.now() - debut));
+    const longue = setTimeout(relire, SEUIL_LONGUE_MS);
+    const abandon = setTimeout(relire, SEUIL_ABANDON_MS);
+    return () => {
+      clearTimeout(longue);
+      clearTimeout(abandon);
+    };
+  }, [etat]);
+
+  /**
+   * Le numéro de la dictée en cours.
+   *
+   * **Il naît du renoncement.** Tant que l'écran restait bloqué jusqu'à la
+   * réponse, une seule dictée pouvait exister. Depuis qu'il rend la main au
+   * bout de quarante-cinq secondes, le patron peut redicter pendant que la
+   * PREMIÈRE court encore — et celle-ci, en revenant, remettrait l'écran au
+   * repos en plein milieu du nouvel enregistrement.
+   *
+   * Une réponse ne touche donc à l'écran que si elle est encore celle qu'on
+   * attend. Si personne n'a redicté, la vieille réponse s'applique — c'est
+   * voulu : elle ne remplit que les champs restés vides, et jeter un travail
+   * qui a fini d'aboutir serait le gaspiller pour rien.
+   */
+  const tour = useRef(0);
+
   async function demarrer() {
     setMessage(null);
+    setAttente("normale");
+    // Toute dictée encore en vol cesse d'être celle qu'on attend.
+    tour.current += 1;
     try {
       const flux = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mr = new MediaRecorder(flux);
@@ -64,14 +140,19 @@ export default function DicterCoordonnees({
   function arreter() {
     recorder.current?.stop();
     recorder.current = null;
+    setAttente("normale");
     setEtat("traite");
   }
 
   async function envoyer(blob: Blob) {
+    const mien = tour.current;
+    /** Cette réponse-ci est-elle encore celle que l'écran attend ? */
+    const actuelle = () => tour.current === mien;
     try {
       const fd = new FormData();
       fd.set("fichier", new File([blob], "dictee.webm", { type: blob.type || "audio/webm" }));
       const r = await dicterCoordonneesAction(fd);
+      if (!actuelle()) return;
       if (!r.ok) {
         setMessage(
           r.raison === "vide"
@@ -88,30 +169,56 @@ export default function DicterCoordonnees({
           : `${remplis} information${remplis > 1 ? "s" : ""} reprise${remplis > 1 ? "s" : ""} — relisez avant de créer.`
       );
     } catch {
-      setMessage("La dictée n'a pas abouti. Vous pouvez saisir les informations à la main.");
+      if (actuelle()) {
+        setMessage("La dictée n'a pas abouti. Vous pouvez saisir les informations à la main.");
+      }
     } finally {
-      setEtat("repos");
+      // Remettre l'écran au repos alors qu'une NOUVELLE dictée enregistre
+      // couperait celle-ci en plein milieu : c'est le seul dégât que la
+      // réponse en retard puisse faire, et il est évité ici.
+      if (actuelle()) setEtat("repos");
     }
   }
 
   const enCours = etat === "enregistre";
+
+  /**
+   * L'écran a renoncé : il rend le micro, et le bouton se presse à nouveau.
+   *
+   * L'appel, lui, n'est pas interrompu — on ne ferme pas la porte, on rend le
+   * geste. S'il finit par répondre et que personne n'a redicté entre-temps, les
+   * champs vides se remplissent et l'écran le dit.
+   */
+  const rendu = etat === "traite" && attente === "abandonnee";
+  const travaille = etat === "traite" && !rendu;
 
   return (
     <div className="flex flex-col items-end">
       <button
         type="button"
         onClick={enCours ? arreter : demarrer}
-        disabled={etat === "traite"}
-        aria-label={enCours ? "Arrêter la dictée" : "Dicter les informations du client"}
+        disabled={travaille}
+        aria-label={
+          enCours
+            ? "Arrêter la dictée"
+            : travaille
+              ? "Atlas reprend ce que vous avez dit"
+              : "Dicter les informations du client"
+        }
         className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full"
         style={{
           backgroundColor: enCours ? colors.alert : colors.rustTint,
           color: enCours ? "#FFFFFF" : colors.rust,
-          opacity: etat === "traite" ? 0.5 : 1,
+          // **Pas de demi-effacement pendant le traitement.** Il y en avait un,
+          // et c'était la moitié du défaut signalé le 13 août : un bouton à
+          // moitié effacé, c'est le vocabulaire d'un bouton ÉTEINT, pas d'un
+          // bouton qui travaille. L'écran disait « rien ne se passe » deux fois
+          // — par les points immobiles, et par là. Il ne se presse toujours pas
+          // (`disabled`), mais il n'a plus l'air mort.
         }}
       >
-        {etat === "traite" ? (
-          <span className="text-[11px] font-semibold">…</span>
+        {travaille ? (
+          <PointsQuiSoufflent />
         ) : (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
             <rect x="9" y="3" width="6" height="11" rx="3" />
@@ -120,9 +227,26 @@ export default function DicterCoordonnees({
           </svg>
         )}
       </button>
-      {(enCours || message) && (
-        <p className="mt-2 max-w-[190px] text-right text-[12px] leading-snug" style={{ color: colors.muted }}>
-          {enCours ? "J'écoute — touchez pour arrêter." : message}
+      {/*
+        **La phrase du traitement est la moitié du correctif, et peut-être la
+        plus utile.** L'écran parlait quand il écoutait et quand il avait fini,
+        et il se taisait exactement pendant le seul moment où l'on se demande
+        s'il est en panne. Aucune animation ne dit ce que des mots disent.
+
+        `role="status"` : le changement est annoncé à qui n'a pas les yeux sur
+        l'écran. Les points, eux, sont décoratifs et se taisent.
+      */}
+      {(enCours || etat === "traite" || message) && (
+        <p
+          role="status"
+          className="mt-2 max-w-[190px] text-right text-[12px] leading-snug"
+          style={{ color: colors.muted }}
+        >
+          {enCours
+            ? "J'écoute — touchez pour arrêter."
+            : etat === "traite"
+              ? phraseAttente(attente)
+              : message}
         </p>
       )}
     </div>

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — le bouton de la facture</title>
+</head>
+<body>
+<style>
+  /*
+    « OUVRIR LE SMS TOUT PRÊT EST CARRÉ, JE LE VEUX OVALE COMME TOUS LES AUTRES. »
+      — le patron, le 10 août 2026 (TODO.md §8, point 2)
+
+    Ce fichier existe parce qu'une demande d'apparence se DESSINE avant de se
+    coder (CLAUDE.md §3 bis). Rien n'est touché dans l'application tant qu'il
+    n'a pas désigné une des deux propositions.
+
+    ─── Ce qui a changé depuis sa demande, et qu'il faut lui dire ───────────
+
+    Le 10 août, TOUS les boutons d'Atlas étaient à 5 px de rayon, et « ovale »
+    aurait voulu dire : changer la charte entière. Le 11 août au soir, il a
+    tranché autre chose — la capsule, « partout » — et les dix-sept écrans y
+    sont passés.
+
+    Ce bouton-là est resté carré : il est peint à la main dans l'écran de la
+    facture, il n'a donc jamais reçu la décision d'ensemble. C'est le même
+    défaut que celui trouvé le 12 août sur la feuille d'envoi du devis
+    (HANDOVER.md, « Le bouton, ce n'est pas le même »).
+
+    Autrement dit : sa demande est déjà la règle partout ailleurs. Il ne reste
+    qu'à choisir COMMENT elle s'applique ici — et c'est la seule vraie
+    question, parce que ce bouton n'est pas au milieu d'un écran vide : il est
+    au fond d'une carte, sous une facture déjà arrêtée.
+  */
+
+  :root{ --fond:#efece6; --plage:#f6f4ef; --carte:#faf8f4; --encre:#221f1a; --gris:#8b8478;
+         --bronze:#8a7452; --terre:#2c3a2e; --creme:#f6f4ef; --trait:rgba(34,31,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --fond:#171613; --plage:#1e1c18; --carte:#222019; --encre:#e9e5dc;
+      --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+  }
+  :root[data-theme="dark"]{ --fond:#171613; --plage:#1e1c18; --carte:#222019; --encre:#e9e5dc;
+    --gris:#8a867c; --bronze:#b39b72; --trait:rgba(233,229,220,.16); }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 16px 90px}
+  .page{max-width:1240px;margin:0 auto}
+
+  .intro{max-width:64ch;margin:0 auto}
+  .intro .sur{margin:0 0 16px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--bronze);text-align:center}
+  .intro h1{margin:0 0 16px;font:400 32px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em;text-align:center;text-wrap:balance}
+  .intro p{margin:0 0 12px;color:var(--gris);font-size:15px;text-align:center}
+  .intro b{color:var(--encre);font-weight:500}
+  .appui{max-width:60ch;margin:24px auto 0;padding:15px 20px;border:1px solid var(--trait);
+         border-radius:6px;font-size:13.5px;color:var(--gris);line-height:1.66}
+  .appui b{color:var(--encre);font-weight:500}
+
+  .famille{margin:56px 0 6px;text-align:center;font-size:10px;letter-spacing:.3em;
+           text-transform:uppercase;color:var(--bronze)}
+  .sous-titre{margin:0 auto 30px;max-width:62ch;text-align:center;color:var(--gris);font-size:14px}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+  figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px}
+  figcaption{max-width:33ch;text-align:center;font-size:13px;color:var(--gris);line-height:1.62}
+  figcaption .tete{display:block;color:var(--encre);font-weight:500;font-size:13.5px;margin-bottom:4px}
+  figcaption b{color:var(--encre);font-weight:500}
+
+  /* ─── Le téléphone, à la place réelle d'une page : 390 × 664 ───────────── */
+  .tel{width:340px;max-width:100%;border-radius:40px;padding:10px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 26px 58px rgba(20,18,14,.20)}
+  .ecran{position:relative;overflow:hidden;border-radius:31px;height:578px;background:var(--fond);
+         display:flex;flex-direction:column;padding:22px 18px}
+
+  .surtitre{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);margin:0 0 6px}
+  .titre{margin:0 0 16px;font:400 30px/1.1 ui-serif,Georgia,serif}
+  .filet{height:1px;background:var(--trait);margin:0 0 16px}
+
+  .carte{background:var(--carte);border-radius:4px;padding:16px 16px 18px;margin-bottom:12px}
+  .etiquette{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris);margin:0 0 6px}
+  .ligne{display:flex;justify-content:space-between;font-size:13px;margin:2px 0}
+  .ligne span:first-child{color:var(--gris)}
+  .ttc{margin-top:12px;padding-top:12px;border-top:1px solid var(--trait);text-align:center}
+  .ttc .mot{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris)}
+  .ttc .somme{margin:4px 0 0;font:600 27px/1 ui-serif,Georgia,serif;color:var(--bronze)}
+
+  .arretee{text-align:center;font-size:13px;margin:0 0 4px}
+  .apres{text-align:center;font-size:11.5px;color:var(--gris);margin:0 0 14px;line-height:1.5}
+  .separation{height:1px;background:var(--trait);margin:0 0 14px}
+  .dessous{text-align:center;font-size:11px;color:var(--gris);margin:9px 0 0}
+  .bascule{display:block;width:100%;text-align:center;font-size:12.5px;font-weight:500;color:#8a4b2a;margin-top:10px}
+
+  /* ─── Les trois dessins du même bouton ─────────────────────────────────── */
+  .action{display:block;background:var(--terre);color:var(--creme);text-align:center;
+          font-size:14px;font-weight:500;text-decoration:none}
+
+  /* Aujourd'hui : pleine largeur, 4 px de rayon, peint à la main dans l'écran. */
+  .action.carre{border-radius:4px;padding:12px 0;width:100%}
+
+  /* A — la capsule, exactement celle des dix-sept autres écrans. */
+  .action.capsule{border-radius:9999px;padding:13px 34px;width:auto;margin:0 auto;
+                  font:500 15px/1 ui-serif,Georgia,serif;letter-spacing:.005em}
+
+  /* B — la même capsule, cernée : ovale aussi, mais qui ne pèse plus. */
+  .action.capsule-cernee{border-radius:9999px;padding:12px 32px;width:auto;margin:0 auto;
+                         background:transparent;color:#8a4b2a;border:1px solid rgba(138,75,42,.55);
+                         font:500 15px/1 ui-serif,Georgia,serif}
+
+  .marque{display:inline-block;margin-top:10px;padding:3px 10px;border-radius:9999px;
+          border:1px solid var(--trait);font-size:10.5px;letter-spacing:.12em;
+          text-transform:uppercase;color:var(--gris)}
+  .marque.actuel{color:#9a5b3a;border-color:rgba(154,91,58,.4)}
+
+  table{border-collapse:collapse;margin:34px auto 0;font-size:13px;max-width:760px;width:100%}
+  th,td{border-bottom:1px solid var(--trait);padding:9px 12px;text-align:left;vertical-align:top}
+  th{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:400}
+  td b{color:var(--encre);font-weight:500}
+  td{color:var(--gris)}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Écran facture · le message tout prêt</p>
+    <h1>« Je le veux ovale comme tous les autres »</h1>
+    <p>Le bouton qui ouvre le SMS — ou l’e-mail — au bas de la facture arrêtée.
+       Il est le seul de l’application à être resté carré, parce qu’il est
+       <b>peint à la main dans l’écran</b> et n’a donc jamais reçu la décision
+       du 11 août.</p>
+    <p>Deux façons de le rendre ovale. <b>Rien n’est codé</b> : l’application
+       affiche encore celui de gauche.</p>
+
+    <div class="appui">
+      <b>Ce qui a changé depuis votre demande.</b> Le 10 août, tous les boutons
+      d’Atlas étaient carrés, et « ovale » aurait voulu dire changer la charte
+      entière. Le 11 août au soir, vous avez choisi la capsule — et « partout ».
+      Les dix-sept écrans l’ont adoptée ; celui-ci est passé au travers.
+      <b>Choisir A, c’est donc simplement le rattraper</b> : aucune autre décision
+      n’est rouverte.
+      <br><br>
+      <b>Pourquoi la seconde proposition change d’axe.</b> La première idée était
+      une capsule qui garde toute la largeur. Mesurée sur votre écran, elle est
+      <b>indiscernable de A</b> — le libellé est si long que la capsule remplit
+      déjà la carte à deux pixels près. Deux dessins identiques ne font pas un
+      choix : B change donc de nature plutôt que de mesure.
+    </div>
+  </div>
+
+  <p class="famille">Le choix</p>
+  <p class="sous-titre">Les trois téléphones sont à la place réelle d’une page —
+     390 px de large, barre du navigateur déduite.</p>
+
+  <div class="rangee">
+
+    <!-- ─── Aujourd'hui ─────────────────────────────────────────────────── -->
+    <figure>
+      <div class="tel"><div class="ecran">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <a class="action carre">Ouvrir le SMS tout prêt →</a>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete">Aujourd’hui</span>
+        Pleine largeur, coins à 4 px. Il touche les deux bords de la carte :
+        rien ne le contient, et c’est ce qui le fait paraître massif.
+        <span class="marque actuel">Ce que vous voyez</span>
+      </figcaption>
+    </figure>
+
+    <!-- ─── A : la capsule de partout ───────────────────────────────────── -->
+    <figure>
+      <div class="tel"><div class="ecran">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <a class="action capsule">Ouvrir le SMS tout prêt →</a>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete">A — la capsule, comme partout</span>
+        Le bouton exact des dix-sept autres écrans : demi-cercle franc, largeur
+        de son texte, tenu par le blanc autour de lui. <b>Aucune règle nouvelle</b> —
+        c’est la charte qui rattrape un oubli.
+        <span class="marque">Rien d’autre ne bouge</span>
+      </figcaption>
+    </figure>
+
+    <!-- ─── B : la capsule pleine largeur ───────────────────────────────── -->
+    <figure>
+      <div class="tel"><div class="ecran">
+        <p class="surtitre">Chez M. Bernard</p>
+        <h2 class="titre">Facture</h2>
+        <div class="filet"></div>
+        <div class="carte">
+          <p class="etiquette">Facture</p>
+          <div class="ligne"><span>Total HT</span><span>800,00 €</span></div>
+          <div class="ligne"><span>TVA 20 %</span><span>160,00 €</span></div>
+          <div class="ttc"><p class="mot">Total TTC</p><p class="somme">960,00 €</p></div>
+        </div>
+        <div class="carte">
+          <p class="arretee">Facture F2026-0001 arrêtée.</p>
+          <p class="apres">Elle figure au relevé de TVA collectée et ne peut plus être modifiée.</p>
+          <div class="separation"></div>
+          <a class="action capsule-cernee">Ouvrir le SMS tout prêt →</a>
+          <p class="dessous">Au 06 12 34 56 78 — c’est vous qui l’envoyez.</p>
+          <span class="bascule">Plutôt par e-mail →</span>
+        </div>
+      </div></div>
+      <figcaption>
+        <span class="tete">B — la même capsule, cernée</span>
+        Ovale elle aussi, mais posée et non plaquée. À cet endroit la facture
+        est <b>déjà arrêtée</b> : le geste irréversible est passé, et celui-ci
+        n’est plus qu’une suite. Au prix d’une <b>seconde forme d’action</b> dans
+        une application qui n’en a qu’une.
+        <span class="marque">Une exception à assumer</span>
+      </figcaption>
+    </figure>
+
+  </div>
+
+  <table>
+    <tr><th>Ce qui les sépare</th><th>A — la capsule de partout</th><th>B — la capsule cernée</th></tr>
+    <tr><td><b>Forme</b></td><td>rayon plein, aplat terre cuite</td><td>rayon plein, filet seul</td></tr>
+    <tr><td><b>Hauteur au doigt</b></td><td>50 px (Apple en demande 44)</td><td>48 px</td></tr>
+    <tr><td><b>Cohérence</b></td><td>identique aux dix-sept autres écrans</td><td>seule action cernée d’Atlas</td></tr>
+    <tr><td><b>Ce que ça coûte</b></td><td>rien : le composant existe déjà</td><td>une seconde forme d’action à tenir dans le temps</td></tr>
+    <tr><td><b>Ce que ça change ailleurs</b></td><td>rien</td><td>rien, tant qu’elle reste ici seule</td></tr>
+  </table>
+
+</div>
+</body>
+</html>

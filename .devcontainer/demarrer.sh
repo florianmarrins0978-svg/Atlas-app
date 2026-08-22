@@ -31,7 +31,28 @@ JOURNAL=/tmp/essai.log
 # port 3000** : le suivant ne pouvait plus s'y attacher, et l'orphelin servait un
 # cache périmé — toutes les pages en 404. Reproduit sur cette machine, en
 # regardant la liste des processus, pas en relisant le script.
-pkill -f "[n]ext(-server| dev| start)" 2>/dev/null || true
+# **`build` EST DANS LE MOTIF, et c'est le correctif du 16 août 2026.**
+#
+# Le patron : « l'appli est vraiment très lente, mais vraiment ». Sa
+# construction échouait à CHAQUE démarrage sur :
+#
+#     ✕ Another next build process is already running.
+#
+# Le motif d'avant — `next(-server| dev| start)` — n'attrapait pas
+# `next build`. Or ce script pose un veilleur AVANT la mise à jour (voir plus
+# bas, c'est délibéré) : ce premier veilleur lance un banc, qui lance une
+# construction. La mise à jour aboutit ensuite, on tue veilleur et serveur pour
+# les remplacer par leurs versions neuves — mais la CONSTRUCTION, elle,
+# survivait. Orpheline, elle gardait le verrou du système ; le banc suivant
+# tombait dessus, rendait 1, et le repli laissait le patron en mode
+# développement, où chaque écran se compile à l'ouverture.
+#
+# Cela se reproduisait à chaque allumage qui récupère du code, ce qui explique
+# que trois redémarrages n'y aient rien changé.
+#
+# Tuer une construction en cours ne coûte rien ici : elle bâtissait le code
+# d'AVANT la mise à jour, celui qu'on vient précisément de remplacer.
+pkill -f "[n]ext(-server| dev| start| build)" 2>/dev/null || true
 # Laisser le port se libérer : tuer n'est pas instantané, et se précipiter
 # reproduirait la panne qu'on vient d'éviter.
 sleep 1
@@ -203,7 +224,8 @@ if [ "$MISE_A_JOUR" = "faite" ]; then
   echo "$(date '+%d/%m %H:%M:%S') — code neuf : on remplace veilleur et serveur" >> "$JOURNAL"
   pkill -f "[v]eiller.sh" 2>/dev/null || true
   rm -f /tmp/atlas-veilleur.pid
-  pkill -f "[n]ext(-server| dev| start)" 2>/dev/null || true
+  # Voir le pavé plus haut : `build` est dans le motif à dessein.
+  pkill -f "[n]ext(-server| dev| start| build)" 2>/dev/null || true
   sleep 1
   lancer_veilleur
 fi
@@ -227,6 +249,13 @@ fi
 # connexion à la place d'Atlas, et son téléphone ne voyait rien. Le geste est
 # rejoué ici, à chaque allumage. Le pourquoi complet est dans `ouvrir-port.sh`.
 PORT_PUBLIC="$(bash "$(dirname "$0")/ouvrir-port.sh" 3000)"
+# **Déposé pour la fiche — 21 août 2026.** Le patron : « elle ne se lance
+# plus », alors que sa fiche annonçait un serveur qui répond et le bon code
+# servi. Un port privé donne exactement ce symptôme : GitHub répond par sa page
+# de connexion à la place d'Atlas, et depuis un téléphone non connecté il n'y a
+# rien à voir. L'état du port n'était écrit que dans le terminal du démarrage,
+# que personne ne relit — la fiche, elle, se lit.
+printf '%s\n' "$PORT_PUBLIC" > /tmp/atlas-port.txt 2>/dev/null || true
 
 ADRESSE=""
 if [ -n "${CODESPACE_NAME:-}" ] && [ -n "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]; then
@@ -345,6 +374,37 @@ setsid nohup bash -c "
   done
   cd '$CD' && node scripts/diagnostiquer-banc.mjs > '$VERDICT' 2>&1
 " > /dev/null 2>&1 < /dev/null &
+
+# ─────────────────────────────────────────────────────────────────────────────
+# **L'espace raconte son état là où l'agent sait lire.**
+#
+# Demandé par le patron le 12 août 2026 : *« faut trouver un moyen pour que tu
+# aies accès à mon espace »*. Il n'y en a pas — aucune route ne relie les deux
+# machines — et la solution qui « marcherait » (une boucle qui exécuterait des
+# ordres lus dans le dépôt) serait une porte dérobée sur une machine qui porte
+# ses identifiants. Le sens INVERSE, lui, est sans danger : sa machine publie,
+# l'agent lit.
+#
+# Posé ICI, après le lancement, et détaché : la publication traverse le réseau
+# et attend que le serveur réponde. Elle ne doit jamais retarder ni empêcher le
+# démarrage — le patron n'a pas à perdre son banc parce qu'une fiche n'a pas pu
+# s'écrire.
+#
+# **Publiée DEUX fois, et la première tout de suite.** Corrigé le 12 août 2026 :
+# la version d'origine attendait que le serveur réponde avant d'écrire quoi que
+# ce soit — jusqu'à dix minutes. Or le cas pour lequel cette fiche existe est
+# précisément celui où le serveur NE répond pas : « mon application ne s'ouvre
+# plus ». Elle se taisait donc exactement quand on avait besoin d'elle, et
+# l'agent en était réduit à supposer. La première passe dit « voilà l'état, le
+# serveur n'a pas encore répondu » ; la seconde la remplace une fois debout.
+setsid nohup bash -c "
+  cd '$CD' && ATLAS_MOMENT=allumage node scripts/rapporter-espace.mjs
+  for _ in \$(seq 1 60); do
+    curl -sf -o /dev/null --max-time 5 http://127.0.0.1:3000/api/health/live && break
+    sleep 10
+  done
+  cd '$CD' && ATLAS_MOMENT=demarre node scripts/rapporter-espace.mjs
+" > /tmp/rapport-espace.log 2>&1 < /dev/null &
 
 echo "──────────────────────────────────────────────"
 echo "  Si l'adresse ne s'ouvre pas, une seule commande"
