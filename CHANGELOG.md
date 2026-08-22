@@ -9,6 +9,44 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### La légende du plan annonçait un arroseur que le plan ne posait pas
+
+**C'est lui qui l'a vu**, et sa question était la bonne : *« il m'a déjà donné
+4 arroseurs en 5004 buse 3 sur un seul réseau avec 3 bar de pression et du Ø25
+pour le PEHD — est-ce correct ? »*
+
+**Non, et de loin.** Quatre buses 3.0 de 5004 tirent 4 × 0,71 = **2,84 m³/h** :
+
+| | |
+|---|---|
+| ce qu'un Ø25 laisse passer | 1,76 m³/h |
+| ce que donne son compteur à 3 bar | 1,80 m³/h |
+| ce que quatre 5004 buse 3.0 demandent | **2,84 m³/h** |
+
+**Mais le calcul, lui, n'a jamais proposé ça.** Sur ce plan, il pose **neuf
+turbines 3504 buse 0,75** (0,16 m³/h chacune, 1,44 sur le réseau) et **quatre
+tuyères 12-VAN** (0,90). Les deux réseaux tiennent sous 1,80.
+
+**Le mensonge était dans la LÉGENDE de `appli/arrosage-plan.html`**, restée sur
+le matériel de la toute première version de la planche : « turbine 5004 · buse
+3.0 · portée 6 m » à côté d'un plan de 3504 — et une portée de 6 m qui
+n'appartient ni à l'une ni à l'autre (la 5004 buse 3.0 porte à 11,1 m, la 3504
+buse 0,75 à 5,2 m).
+
+**Et le contrôle TENAIT le mensonge en place.**
+`verifier-maquette-arrosage-plan.mjs` exigeait littéralement `/turbine 5004/`,
+`/buse 3\.0/` et `/portée 6 m/` : les libellés de la première version, recopiés
+dans le contrôle. Le plan a changé de matériel, la légende est restée, et le
+contrôle interdisait de la corriger. C'est le `CLAUDE.md` §5 bis retourné —
+un contrôle qui réclame ce qui n'existe plus.
+
+**Ce qu'il vérifie maintenant**, et qui ne peut plus mentir : la légende cite
+une buse qui existe au catalogue **sous son nom exact**, elle annonce **la
+portée du catalogue**, et elle nomme le matériel que **la liste des pièces
+facture**. Les trois défauts — libellé périmé, portée inventée, légende
+décalée de la commande — ont été joués et font rougir le contrôle en nommant
+le coupable.
+
 ### Le diamètre du tuyau se calcule, et l'outil dit À PARTIR DE COMBIEN DE MÈTRES
 
 Sa demande : *« ils sont également en capacité de me dire, passé un certain

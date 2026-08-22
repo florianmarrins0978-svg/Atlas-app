@@ -9,6 +9,29 @@ sert.
 
 ---
 
+## UNE LÉGENDE DE PLAN SE VÉRIFIE CONTRE LE CATALOGUE (22 août 2026)
+
+**Ce qui s'est passé.** Le patron a lu sur le plan « 4 arroseurs en 5004 buse
+3.0 » et a demandé si c'était tenable. Ça ne l'était pas — 2,84 m³/h là où le
+Ø25 en passe 1,76 — **mais le plan ne posait pas de 5004** : neuf 3504 buse 0,75
+et quatre tuyères. Seule la **légende** était restée sur le matériel de la
+première version de la planche.
+
+**Le pire :** `verifier-maquette-arrosage-plan.mjs` **exigeait** cette légende,
+libellés en dur. Elle ne pouvait donc pas être corrigée sans faire rougir la
+batterie. Un contrôle qui fixe un libellé fige une erreur (`CLAUDE.md` §5 bis).
+
+**La règle, valable pour toute planche :** une légende se vérifie contre le
+catalogue (le nom exact de la buse, sa portée) **et** contre la liste des pièces
+de la même page. Si les trois ne s'accordent pas, l'un ment et rien ne dit
+lequel au moment de commander.
+
+**Le calcul, lui, n'était pas en cause** — il coupe bien les réseaux sous le
+débit disponible. Devant une plainte sur un chiffre d'arrosage : regarder
+d'abord si le chiffre vient du CALCUL ou d'un libellé écrit à la main.
+
+---
+
 ## LE DIAMÈTRE DU TUYAU D'ARROSAGE : DEUX CRITÈRES, PAS UN (22 août 2026)
 
 **Si vous touchez au calcul d'arrosage, lisez ceci d'abord.** Le choix Ø25 / Ø32

@@ -474,6 +474,22 @@ Et chaque symbole **nomme la pièce** qu'il implique : plein → té taraudé ; 
 visser. **Toute pièce facturée se voit quelque part sur le plan** — une pièce
 commandée qu'on ne sait pas où poser ne sert à rien.
 
+**UNE LÉGENDE SE VÉRIFIE CONTRE LE CATALOGUE ET CONTRE LA COMMANDE.** Payé le
+22 août 2026, et c'est lui qui l'a relevé : *« il m'a déjà donné 4 arroseurs en
+5004 buse 3 sur un seul réseau avec 3 bar et du Ø25 — est-ce correct ? »* Ça ne
+l'était pas (2,84 m³/h pour un Ø25 qui en passe 1,76), **mais le plan ne posait
+pas de 5004** : la légende, elle, était restée sur le matériel de la première
+version de la planche, et son contrôle **exigeait ce libellé en dur**. La
+légende ne pouvait donc plus être corrigée sans faire rougir la batterie.
+
+Trois choses doivent s'accorder, et un contrôle doit les confronter :
+
+| | |
+|---|---|
+| le nom de la buse | **exactement** celui du catalogue |
+| la portée annoncée | celle du catalogue, pas une valeur ronde |
+| le matériel cité | celui que **la liste des pièces facture** |
+
 **Ce qui est une règle POUR NOUS ne va pas à l'écran.** *« La phrase sur la
 tranchée creusée une fois, tu peux la supprimer. Il faut juste que ça soit une
 règle que toi tu conserves, mais l'utilisateur n'a pas besoin de voir ça. »* Nos
