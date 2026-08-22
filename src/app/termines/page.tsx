@@ -39,6 +39,10 @@ export default async function TerminesPage() {
   const ctx = await getCurrentCtx();
   const chantiers = await listerChantiersTermines(ctx);
   const lignes = preparer(chantiers);
+  // **Le mois du jour se décide ICI, sur le serveur.** Calculé dans le
+  // navigateur, il pourrait différer de celui du rendu serveur pour qui n'est
+  // pas au même fuseau : React refuse alors l'hydratation, et l'écran fige.
+  const moisCourant = new Date().toISOString().slice(0, 7);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -51,7 +55,7 @@ export default async function TerminesPage() {
             Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
           </p>
         ) : (
-          <ListeTermines lignes={lignes} />
+          <ListeTermines lignes={lignes} moisCourant={moisCourant} />
         )}
 
         {/* **Le relevé se consulte une fois par période** : il n'a rien à faire

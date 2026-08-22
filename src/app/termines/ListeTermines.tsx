@@ -5,12 +5,12 @@ import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
 import {
   aFacturerPartout,
+  bornesDuFeuilletage,
   decalerMois,
   factureesPartout,
   formatEuros,
   libelleCompte,
   libelleFacturee,
-  moisLePlusRecent,
   nomDuMois,
   resumeDuMois,
   somme,
@@ -41,17 +41,33 @@ import {
  * chantier de juillet jamais facturé se voit encore en août, sinon il faudrait
  * déjà savoir qu'il existe pour aller le chercher.
  */
-export default function ListeTermines({ lignes }: { lignes: LigneAffichee[] }) {
+export default function ListeTermines({
+  lignes,
+  moisCourant,
+}: {
+  lignes: LigneAffichee[];
+  /**
+   * `AAAA-MM` du jour, calculé sur le SERVEUR.
+   *
+   * Le lire dans le navigateur ferait rendre au serveur un mois et au client un
+   * autre pour qui n'est pas au même fuseau — React refuse alors l'hydratation,
+   * et l'écran fige à ce qu'il était.
+   */
+  moisCourant: string;
+}) {
   const [onglet, setOnglet] = useState<"tout" | "attente">("tout");
-  const [recul, setRecul] = useState(0);
 
   const attente = useMemo(() => aFacturerPartout(lignes), [lignes]);
   const faites = useMemo(() => factureesPartout(lignes), [lignes]);
 
-  // Le mois d'entrée : le plus récent qui porte quelque chose. Sans rien, le
-  // mois courant — l'écran doit bien s'ouvrir quelque part.
-  const base = moisLePlusRecent(lignes) ?? new Date().toISOString().slice(0, 7);
-  const cle = decalerMois(base, recul);
+  const { entree, borne } = useMemo(
+    () => bornesDuFeuilletage(lignes, moisCourant),
+    [lignes, moisCourant]
+  );
+  // Le mois affiché se garde en clair — un décalage relatif se recalculait à
+  // chaque rendu, et le jour où l'entrée bouge il ne veut plus rien dire.
+  const [cle, setCle] = useState(entree);
+  const plancher = decalerMois(entree, RECUL_MAX);
   const mois = useMemo(() => resumeDuMois(lignes, cle), [lignes, cle]);
 
   return (
@@ -106,8 +122,9 @@ export default function ListeTermines({ lignes }: { lignes: LigneAffichee[] }) {
           <NavigationMois
             cle={cle}
             total={mois.totalFacture}
-            recul={recul}
-            surRecul={setRecul}
+            peutReculer={cle > plancher}
+            peutAvancer={cle < borne}
+            surMois={setCle}
           />
           {mois.lignes.length === 0 ? (
             <p className="mt-4 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
@@ -142,25 +159,27 @@ const RECUL_MAX = 18;
 function NavigationMois({
   cle,
   total,
-  recul,
-  surRecul,
+  peutReculer,
+  peutAvancer,
+  surMois,
 }: {
   cle: string;
   total: number;
-  recul: number;
-  surRecul: (n: number) => void;
+  peutReculer: boolean;
+  peutAvancer: boolean;
+  surMois: (cle: string) => void;
 }) {
   return (
     <div className="flex items-center gap-0.5" data-atlas="navigation-mois">
       <Fleche
         sens="passe"
-        desactivee={recul >= RECUL_MAX}
-        onClick={() => surRecul(Math.min(RECUL_MAX, recul + 1))}
+        desactivee={!peutReculer}
+        onClick={() => surMois(decalerMois(cle, 1))}
       />
       <span style={{ fontFamily: font.display, fontSize: 21, lineHeight: 1.2, whiteSpace: "nowrap" }}>
         {nomDuMois(cle)}
       </span>
-      <Fleche sens="futur" desactivee={recul <= 0} onClick={() => surRecul(Math.max(0, recul - 1))} />
+      <Fleche sens="futur" desactivee={!peutAvancer} onClick={() => surMois(decalerMois(cle, -1))} />
       <span
         className="ml-auto text-[16px]"
         style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}
@@ -271,8 +290,13 @@ function Ligne({ ligne }: { ligne: LigneAffichee }) {
         >
           {ligne.nom}
         </b>
+        {/* **La ligne d'état s'enroule, elle ne se coupe pas.** Vu sur une
+            capture de l'écran, avec de vrais montants : « Pas encore facturé ·
+            1 764,00 € prévus » perdait « prévus », et parfois le montant
+            lui-même. Le NOM, lui, reste sur une ligne — un nom se reconnaît
+            tronqué, un chiffre coupé ne se devine pas. */}
         <span
-          className="mt-1 block truncate text-[12.5px]"
+          className="mt-1 block text-[12.5px] leading-[1.45]"
           style={{ color: ligne.aFacturer ? colors.or : colors.muted }}
         >
           {ligne.aFacturer

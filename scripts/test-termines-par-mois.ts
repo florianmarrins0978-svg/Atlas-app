@@ -15,6 +15,7 @@ import {
   preparer,
   resumeDuMois,
   moisLePlusRecent,
+  bornesDuFeuilletage,
   decalerMois,
   nomDuMois,
   aFacturerPartout,
@@ -195,6 +196,34 @@ essai("CE QUI ATTEND NE SUIT PAS LE MOIS — c'est tout l'objet de sa demande", 
   // Et le mois d'août, lui, n'en porte qu'un.
   assert.equal(resumeDuMois(lignes, "2026-08").aFacturer.length, 1);
   assert.equal(factureesPartout(lignes).length, 1);
+});
+
+essai("UN CHANTIER CLÔTURÉ EN AVANCE NE VIDE PAS L'ÉCRAN", () => {
+  // Payé le 22 août 2026, deux suites rouges d'un coup. Clôturer un chantier
+  // avant sa date le range dans « Terminés » en lui laissant sa date À VENIR.
+  // L'écran s'ouvrait alors sur le mois prochain — vide — et tout le travail du
+  // mois en cours avait disparu, sans rien qui dise pourquoi.
+  const lignes = preparer([
+    ligne({ id: "ce-mois", datePlanifiee: "2026-08-16", devisTotalTtc: "300.00" }),
+    ligne({ id: "en-avance", datePlanifiee: "2026-09-30", factureStatut: "emise", totalTtc: "500.00" }),
+  ]);
+  const { entree, borne } = bornesDuFeuilletage(lignes, "2026-08");
+  assert.equal(entree, "2026-08", "l'écran doit s'ouvrir sur le mois courant, pas sur le futur");
+  assert.equal(borne, "2026-09", "mais la flèche doit permettre d'aller voir le chantier en avance");
+  assert.equal(resumeDuMois(lignes, entree).lignes.length, 1);
+});
+
+essai("sans rien ce mois-ci, on s'ouvre sur le dernier mois qui porte quelque chose", () => {
+  // Après deux mois sans chantier, ouvrir sur un mois vide serait exact et
+  // inutile : on montre le dernier travail plutôt qu'une page blanche.
+  const lignes = preparer([
+    ligne({ id: "juin", datePlanifiee: "2026-06-12", factureStatut: "emise", totalTtc: "500.00" }),
+  ]);
+  assert.deepEqual(bornesDuFeuilletage(lignes, "2026-08"), { entree: "2026-06", borne: "2026-08" });
+});
+
+essai("sans rien du tout, on s'ouvre sur le mois courant", () => {
+  assert.deepEqual(bornesDuFeuilletage([], "2026-08"), { entree: "2026-08", borne: "2026-08" });
 });
 
 essai("« Août 2026 » s'écrit en toutes lettres, capitale en tête", () => {

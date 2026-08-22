@@ -113,7 +113,7 @@ export function preparer(lignes: readonly LigneTerminee[]): LigneAffichee[] {
 }
 
 /**
- * Le mois par lequel l'écran s'ouvre : le plus récent qui porte quelque chose.
+ * Le mois le plus récent qui porte quelque chose.
  *
  * `null` quand il n'y a rien à montrer — l'écran dit alors autre chose, il ne
  * feuillette pas un calendrier vide.
@@ -125,6 +125,34 @@ export function moisLePlusRecent(lignes: readonly LigneAffichee[]): string | nul
     if (recent === null || l.cleMois > recent) recent = l.cleMois;
   }
   return recent;
+}
+
+/**
+ * Le mois par lequel l'écran s'ouvre, et jusqu'où l'on peut avancer.
+ *
+ * **Un chantier terminé peut être DANS LE FUTUR**, et c'est ce qui a fait
+ * rougir deux suites le 22 août 2026 : clôturer un chantier avant sa date le
+ * range dans « Terminés » en gardant sa date à venir. L'écran s'ouvrait alors
+ * sur le mois prochain, et tout ce qu'il vient de faire ce mois-ci avait
+ * disparu — un écran vide, sans rien qui dise pourquoi.
+ *
+ * On s'ouvre donc sur le **mois courant** dès qu'il y a quelque chose de plus
+ * récent que lui, et sur le dernier mois qui porte quelque chose sinon : après
+ * deux mois sans chantier, on n'ouvre pas sur du vide.
+ *
+ * `borne` reste le mois le plus récent qui existe : la flèche du futur s'arrête
+ * là, mais elle permet d'aller voir le chantier clôturé en avance.
+ */
+export function bornesDuFeuilletage(
+  lignes: readonly LigneAffichee[],
+  moisCourant: string
+): { entree: string; borne: string } {
+  const recent = moisLePlusRecent(lignes);
+  if (recent === null) return { entree: moisCourant, borne: moisCourant };
+  return {
+    entree: recent > moisCourant ? moisCourant : recent,
+    borne: recent > moisCourant ? recent : moisCourant,
+  };
 }
 
 /**

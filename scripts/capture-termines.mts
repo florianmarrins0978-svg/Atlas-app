@@ -84,7 +84,13 @@ const SONDE = `(() => {
     fleches: [...(corps ? corps.querySelectorAll("[data-atlas^='mois-']") : [])]
       .map((b) => ({ quoi: b.dataset.atlas, h: Math.round(b.getBoundingClientRect().height),
                      ferme: b.disabled })),
-    boutonFacturer: boite("[data-atlas='ligne-terminee'] span:last-child"),
+    // La capsule « Facturer », visée par son texte : le dernier \`span\` d'une
+    // ligne facturée est le MONTANT, et le mesurer ne prouvait rien.
+    capsuleFacturer: (() => {
+      const c = [...(corps ? corps.querySelectorAll("[data-atlas='ligne-terminee'] span") : [])]
+        .find((e) => e.children.length === 0 && e.textContent.trim() === "Facturer");
+      return c ? Math.round(c.getBoundingClientRect().height) : null;
+    })(),
     montantsDroite: [...new Set(montants.map((m) => m.droite))],
     montantsTabulaires: montants.every((m) => m.tabulaire),
     // **Aucun code graphique de l'ancien écran ne doit survivre.**
@@ -127,10 +133,32 @@ if (fleches.length !== 2) echecs.push(`${fleches.length} flèche(s) de mois au l
 for (const f of fleches) {
   if (f.h < 44) echecs.push(`la flèche « ${f.quoi} » fait ${f.h} px : sous 44, on la rate.`);
 }
-if (fleches.find((f) => f.quoi === "mois-suivant")?.ferme !== true)
-  echecs.push("la flèche du futur est ouverte sur le mois le plus récent : elle ne mène nulle part.");
+// **Une flèche ouverte doit MENER quelque part, et se fermer au bout.** On ne
+// peut pas exiger qu'elle soit fermée au repos : un chantier clôturé en avance
+// porte une date à venir, l'écran s'ouvre alors sur le mois courant et il y a
+// bien un mois plus loin à aller voir.
+{
+  let tours = 0;
+  while (tours < 6 && !(await page.locator("[data-atlas='mois-suivant']").first().isDisabled())) {
+    const avant = await page.locator("[data-atlas='navigation-mois']").first().innerText();
+    await page.locator("[data-atlas='mois-suivant']").first().click();
+    await page.waitForTimeout(300);
+    const apres = await page.locator("[data-atlas='navigation-mois']").first().innerText();
+    if (avant === apres) { echecs.push("la flèche › est ouverte et ne change pas de mois."); break; }
+    tours++;
+  }
+  if (tours >= 6) echecs.push("la flèche › ne se ferme jamais : le feuilletage part vers l'infini.");
+  // Et on revient d'où l'on venait, pour que la suite mesure ce qu'elle croit.
+  for (let i = 0; i < tours; i++) {
+    await page.locator("[data-atlas='mois-precedent']").first().click();
+    await page.waitForTimeout(200);
+  }
+}
 
 // **Les montants d'une même colonne finissent au même pixel.**
+if (etat.capsuleFacturer !== null && (etat.capsuleFacturer as number) < 44)
+  echecs.push(`la capsule « Facturer » fait ${etat.capsuleFacturer} px : sous 44, on la rate.`);
+
 const droites = etat.montantsDroite as number[];
 if (droites.length > 1)
   echecs.push(`les montants finissent à ${droites.length} abscisses : ${JSON.stringify(droites)}`);

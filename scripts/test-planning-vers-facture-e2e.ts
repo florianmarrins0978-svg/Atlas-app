@@ -134,7 +134,22 @@ async function ongletsOuIlFigure(page: Page, nom: string): Promise<string[]> {
     ["termines", "/termines", "Terminés"],
   ] as const) {
     await ouvrir(page, chemin, titre);
-    if ((await page.locator(`text=${nom}`).count()) > 0) trouves.push(onglet);
+    let vu = (await page.locator(`text=${nom}`).count()) > 0;
+    // **« Terminés » ne montre qu'UN MOIS à la fois**, depuis l'écran refait le
+    // 22 août 2026. Ce contrôle-ci parle de RANGEMENT — dans quel onglet le
+    // chantier tombe —, pas de calendrier : un chantier terminé la semaine
+    // dernière peut appartenir au mois précédent selon le jour où la batterie
+    // tourne, et le chercher dans le seul mois affiché ferait rougir un écran
+    // juste. L'onglet « À facturer », lui, montre tout, tous mois confondus.
+    if (!vu && onglet === "termines") {
+      const attente = page.getByRole("button", { name: "À facturer" });
+      if ((await attente.count()) > 0) {
+        await attente.click();
+        await page.waitForSelector('[data-atlas="tout-ce-qui-attend"]', { timeout: 5000 });
+        vu = (await page.locator(`text=${nom}`).count()) > 0;
+      }
+    }
+    if (vu) trouves.push(onglet);
   }
   return trouves;
 }
@@ -296,13 +311,22 @@ async function main() {
     await ongletAttente.click();
     await page.waitForSelector('[data-atlas="tout-ce-qui-attend"]', { timeout: 5000 });
 
-    const rangee = page.locator(`[data-atlas="ligne-terminee"]:has-text("${nom}")`).first();
-    await rangee.waitFor({ state: "visible", timeout: 15000 });
-    const ligne = rangee.locator(`a[href="/chantiers/${chantierId}/facture"]`);
+    // **La rangée EST le lien**, depuis l'écran refait : toute la ligne mène à
+    // la facture, et la capsule « Facturer » est un `span` à l'intérieur. En
+    // chercher un `<a>` DESCENDANT n'en trouvait aucun — le contrôle accusait
+    // le chemin d'être coupé alors qu'il était sous son curseur.
+    const ligne = page.locator(
+      `a[data-atlas="ligne-terminee"][href="/chantiers/${chantierId}/facture"]`
+    );
+    await ligne.waitFor({ state: "visible", timeout: 15000 });
     assert.equal(
       await ligne.count(),
       1,
-      "le chantier terminé n'est pas dans le fil : le chemin vers la facture est coupé"
+      "le chantier terminé n'est pas dans la liste : le chemin vers la facture est coupé"
+    );
+    assert.ok(
+      (await ligne.innerText()).includes(nom),
+      "la ligne visée ne porte pas le nom du chantier attendu"
     );
     await ligne.click();
     await page.waitForSelector("text=Le chantier est réalisé ?", { timeout: 15000 });

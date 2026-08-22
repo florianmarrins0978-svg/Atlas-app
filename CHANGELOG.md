@@ -54,6 +54,23 @@ rendait 0 pour deux chantiers du même **mois**, et non du même **jour** — le
 lignes d'un mois seraient sorties dans l'ordre de la base. Le contrôle « dans le
 mois, le plus récent en tête » l'a attrapé avant l'écran.
 
+**UN CHANTIER CLÔTURÉ EN AVANCE VIDAIT L'ÉCRAN.** Deux suites rouges d'un coup,
+et le défaut aurait été chez lui. Clôturer un chantier avant sa date le range
+dans « Terminés » **en lui laissant sa date à venir** : le mois d'entrée était
+« le plus récent qui porte quelque chose », donc septembre, donc un écran vide —
+et tout le travail du mois en cours disparu, sans rien qui dise pourquoi.
+`bornesDuFeuilletage` ouvre désormais sur le **mois courant** dès qu'il existe
+quelque chose de plus tard, et laisse la flèche › aller voir ce qui est en
+avance. Sans rien ce mois-ci, on s'ouvre sur le dernier mois qui porte quelque
+chose : après deux mois creux, une page blanche serait exacte et inutile.
+
+**Et un défaut vu sur la CAPTURE, comme les cinq précédents de ce dépôt** :
+« Pas encore facturé · 1 764,00 € prévus » était tronqué par la capsule
+« Facturer » — le montant y passait. La ligne d'état s'enroule maintenant sur
+deux lignes ; le NOM, lui, reste coupé, parce qu'un nom se reconnaît tronqué et
+qu'un chiffre coupé ne se devine pas. Corrigé **d'abord sur la planche**, puis
+dans l'écran (`CLAUDE.md` §3 bis).
+
 ### « Terminés » : revenir dans le passé, et le compte en noir gras
 
 Ses deux corrections sur la planche 86, le soir même : *« en haut il y a marqué

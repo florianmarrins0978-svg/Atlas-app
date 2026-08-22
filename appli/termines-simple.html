@@ -164,8 +164,12 @@
   .ligne .qui{min-width:0;flex:1}
   .ligne .nom{display:block;font:400 17px/1.2 ui-serif,Georgia,serif;
               white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ligne .quand{display:block;margin-top:4px;font-size:12.5px;color:var(--e-gris);
-                white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* **La ligne d'état s'enroule, elle ne se coupe pas.** Vu sur une capture de
+     l'écran codé, avec ses vrais montants : « Pas encore facturé · 1 764,00 €
+     prévus » passait sous la capsule et perdait « prévus » — et parfois le
+     montant lui-même. Le NOM, lui, reste sur une ligne : c'est un nom, il se
+     reconnaît tronqué ; un chiffre coupé, non. */
+  .ligne .quand{display:block;margin-top:4px;font-size:12.5px;color:var(--e-gris)}
   .ligne .euros{flex:none;font:400 16px/1.2 ui-serif,Georgia,serif;
                 font-variant-numeric:tabular-nums;white-space:nowrap}
   .ligne .euros.attente{color:var(--e-or)}

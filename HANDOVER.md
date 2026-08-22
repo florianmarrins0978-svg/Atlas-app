@@ -37,6 +37,13 @@ a été adapté : il passe désormais par l'onglet **« À facturer »**.
    facturé se voit encore en août. `aFacturerPartout` porte cette règle, et la
    suite pure la fixe.
 
+**Le piège qui a coûté deux suites rouges** : un chantier **clôturé avant sa
+date** reste dans « Terminés » avec une date **à venir**. Ouvrir sur « le mois
+le plus récent qui porte quelque chose » menait donc au mois prochain, vide, et
+le travail du mois en cours avait disparu. `bornesDuFeuilletage` s'ouvre sur le
+mois courant dès qu'il existe quelque chose de plus tard. Ne pas revenir à
+`moisLePlusRecent` pour l'entrée : c'est exactement le défaut.
+
 **Les règles sont dans `src/lib/termines-par-mois.ts`**, pures et éprouvées sans
 base (`scripts/test-termines-par-mois.ts`). L'écran n'y décide de rien.
 
