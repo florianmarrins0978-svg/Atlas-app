@@ -114,7 +114,10 @@ const vu = await page.evaluate(() => {
   // 21 août : en retirant une ligne du tableau, la sonde tombait sur une trace
   // JavaScript au lieu d'accuser le défaut. Une erreur qui n'accuse personne
   // coûte plus cher que pas d'erreur du tout (`CLAUDE.md` §5).
-  const pieces = [...document.querySelectorAll("table tr")]
+  // La ZONE compte : un « coude taraudé MM 1" » du regard n'est pas une fin de
+  // ligne d'arroseur. Les confondre a fait rougir le compte des raccords le jour
+  // où la nourrice a été détaillée — un faux coupable, le pire des messages.
+  const pieces = [...document.querySelectorAll('table[data-zone="jardin"] tr')]
     .map((tr) => {
       const q = tr.querySelector(".q")?.textContent?.match(/[\d.]+/)?.[0];
       const nom = tr.children[1]?.textContent?.trim();
@@ -126,6 +129,14 @@ const vu = await page.evaluate(() => {
     l.getAttribute("points").trim().split(/\s+/).map((p) => p.split(",").map(Number)));
 
   const jonctions = document.querySelectorAll('[data-piece="jonction"]').length;
+
+  const piecesNourrice = [...document.querySelectorAll('table[data-zone="nourrice"] tr')]
+    .map((tr) => {
+      const q = tr.querySelector(".q")?.textContent?.match(/[\d.]+/)?.[0];
+      const nom = tr.children[1]?.textContent?.trim();
+      return q === undefined || nom === undefined ? null : { q: Number(q), nom };
+    })
+    .filter(Boolean);
 
   const legende = {
     // Un symbole DESSINÉ, pas un caractère : « ● » se lit mal, ne rend pas la
@@ -150,6 +161,7 @@ const vu = await page.evaluate(() => {
     tranchee,
     legende,
     jonctions,
+    piecesNourrice,
     marques,
     texte: document.body.innerText,
     deborde: document.documentElement.scrollWidth > 390,
@@ -695,6 +707,62 @@ cas("chaque jonction facturée est dessinée quelque part", () => {
   const facturees = vu.pieces.filter((p) => /té égal/i.test(p.nom)).reduce((t, p) => t + p.q, 0);
   if (dessinees !== facturees) {
     throw new Error(`${facturees} té(s) égal(aux) commandé(s) pour ${dessinees} dessiné(s) : on ne saurait pas où le poser`);
+  }
+});
+
+// ── 8 nonies. LA NOURRICE SE POSE, DONC ELLE SE DÉTAILLE ───────────────────
+//
+// *Sa question du 21 août :* « où sont les pièces pour la nourrice 3 voies ? »
+//
+// Elle tenait en trois lignes — 3 électrovannes, 1 regard, 1 programmateur —
+// qui ne se posent pas : il manquait la clarinette qui les relie, les unions
+// qui les démontent, les raccords d'entrée, la purge d'hivernage. **Tout cela
+// était déjà relevé sur sa planche du 17 août**, dans
+// `appli/arrosage-catalogue.js` (`CATALOGUE.nourrices[3]`), et n'avait jamais
+// été repris ici.
+//
+// Le contrôle exige donc ce qui rend un regard montable : autant
+// d'électrovannes que de réseaux, la clarinette, les unions, la purge.
+cas("la nourrice est détaillée, pas résumée", () => {
+  const q = (motif) => vu.piecesNourrice.filter((p) => motif.test(p.nom)).reduce((t, p) => t + p.q, 0);
+  const vannes = q(/électrovanne/i);
+  if (vannes !== vu.cartes.length) {
+    throw new Error(`${vannes} électrovanne(s) pour ${vu.cartes.length} réseaux : il en faut une par voie`);
+  }
+  for (const [quoi, motif] of [
+    ["la clarinette qui relie les vannes", /clarinette/i],
+    ["les unions, sans quoi rien ne se démonte", /union/i],
+    ["le regard", /regard/i],
+    ["le programmateur", /programmateur/i],
+    ["la vanne de purge, pour l'hivernage", /purge/i],
+  ]) {
+    if (q(motif) < 1) throw new Error(`la nourrice ne porte pas ${quoi} : le regard ne se monte pas`);
+  }
+});
+
+// ── 8 decies. LE RÉCAPITULATIF SUIT LE TABLEAU ─────────────────────────────
+//
+// **Un défaut qu'il a vu et pas moi, sur sa capture du 21 août à 9 h 59 :** le
+// tableau annonçait « 8 tés, 5 coudes » et la phrase en dessous « 9 tés + 4
+// coudes = 13 raccords ». La phrase était écrite en dur et n'avait pas suivi le
+// tracé. Elle disait vrai la veille — et c'est le pire des cas, parce qu'elle
+// se relit sans méfiance.
+//
+// Deux chiffres qui se contredisent dans le même écran, c'est toute la liste
+// qu'on cesse de croire.
+cas("le récapitulatif dit les mêmes chiffres que le tableau", () => {
+  const q = (motif) => vu.pieces.filter((p) => motif.test(p.nom)).reduce((t, p) => t + p.q, 0);
+  const tes = q(/^Té 90° taraudé/i);
+  const coudes = q(/^Coude 90° taraudé/i);
+  const dit = vu.texte.match(/(\d+)\s*tés?\s*\+\s*(\d+)\s*coudes?\s*=\s*(\d+)\s*raccords/i);
+  if (!dit) throw new Error("aucun récapitulatif des raccords sous le tableau");
+  if (Number(dit[1]) !== tes || Number(dit[2]) !== coudes) {
+    throw new Error(
+      `le récapitulatif dit « ${dit[1]} tés + ${dit[2]} coudes » et le tableau porte ${tes} tés + ${coudes} coudes`
+    );
+  }
+  if (Number(dit[3]) !== tes + coudes) {
+    throw new Error(`le récapitulatif annonce ${dit[3]} raccords pour ${tes + coudes} listés`);
   }
 });
 

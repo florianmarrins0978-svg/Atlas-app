@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### « Où sont les pièces de la nourrice ? » — et un récapitulatif qui mentait
+
+**Deux questions de sa part, deux défauts réels.**
+
+*« Tu as mis 2 tés égaux 25×25×25, pourquoi ? »* Sur la version qu'il regardait :
+un à la nourrice, où le réseau 1 se sépare en deux, et un en 16,0 où partait
+l'antenne du réseau 3. Le second a disparu depuis, en faisant contourner
+l'extension par le coin. Il n'en reste qu'**un**, celui du regard qu'il avait
+lui-même demandé.
+
+**Mais sa capture montrait pire, et je ne l'avais pas vu :** le tableau annonçait
+« 8 tés, 5 coudes » et la phrase juste en dessous « 9 tés + 4 coudes = 13
+raccords ». La phrase était écrite en dur et n'avait pas suivi le tracé — elle
+disait vrai la veille. C'est le pire des cas, parce qu'on la relit sans
+méfiance. Un contrôle recalcule désormais le récapitulatif depuis le tableau.
+
+*« Où sont les pièces pour la nourrice 3 voies ? »* Elle tenait en trois lignes —
+3 électrovannes, 1 regard, 1 programmateur — qui **ne se montent pas** : il
+manquait la clarinette qui relie les vannes, les unions qui permettent de
+démonter, les raccords d'entrée, la vanne de purge pour l'hivernage.
+
+**Tout était déjà relevé sur sa planche du 17 août**, dans
+`CATALOGUE.nourrices[3]`, et n'avait jamais été repris. Les douze pièces sont
+maintenant listées dans leur propre tableau — ce qui est dans le jardin d'un
+côté, ce qui est dans le regard de l'autre.
+
+**Un faux coupable évité au passage :** en détaillant la nourrice, le contrôle
+des raccords s'est mis à compter ses « coudes taraudés MM 1" » comme des fins de
+ligne d'arroseur, et accusait le plan de 2 raccords en trop. Les deux tableaux
+portent désormais leur zone.
+
 ### La légende montre au lieu de décrire — et une pièce de moins
 
 *« Le petit schéma en dessous n'est pas clair. On ne sait pas vraiment à quel

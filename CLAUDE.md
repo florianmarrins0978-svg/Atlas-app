@@ -378,6 +378,20 @@ règle que toi tu conserves, mais l'utilisateur n'a pas besoin de voir ça. »* 
 raisons de conception restent ici ; l'écran ne porte que ce dont il a besoin pour
 poser le chantier.
 
+**RIEN NE SE RÉSUME EN UNE LIGNE SI ÇA SE POSE EN DIX PIÈCES.** Sa question du
+21 août : *« où sont les pièces pour la nourrice 3 voies ? »* Elle tenait en
+trois lignes — 3 électrovannes, 1 regard, 1 programmateur — qui ne se montent
+pas : il manquait la clarinette qui relie les vannes, les unions qui permettent
+de démonter, les raccords d'entrée, la vanne de purge pour l'hivernage. **Tout
+était déjà relevé** dans `CATALOGUE.nourrices[3]` — un ensemble décrit au
+catalogue se recopie, il ne se résume pas.
+
+**Et un récapitulatif se RECALCULE, il ne se recopie pas.** Un écran portait
+« 8 tés, 5 coudes » au tableau et « 9 tés + 4 coudes » dans la phrase en dessous :
+la phrase, écrite en dur, disait vrai la veille. C'est le pire des cas, parce
+qu'on la relit sans méfiance. Deux chiffres qui se contredisent dans le même
+écran, c'est toute la liste qu'on cesse de croire.
+
 **Chaque quantité doit pouvoir se RECOMPOSER à la main.** Sa question du
 21 août — *« je ne comprends pas d'où sortent tes vingt-deux coudes SBE, ça
 correspond à quoi ? »* — portait sur un chiffre JUSTE. Le défaut n'était pas le
