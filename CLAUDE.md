@@ -257,6 +257,54 @@ compteur et des traits qui commencent dans le vide n'est pas un plan : il ne se
 pose pas sur le terrain. La nourrice se **dessine**, avec ses vannes, et chaque
 ligne en part.
 
+**CE QU'ON MINIMISE, C'EST LA TRANCHÉE — PAS LE TUYAU.** Sa règle du 21 août,
+et elle prime sur tout le reste du tracé : *« le trait jaune, c'est une tranchée.
+C'est une équipe qui va devoir creuser la terre. Donc l'idée, c'est de faire le
+moins de tranchée possible. Si on peut réutiliser une tranchée déjà faite et
+juste faire une petite antenne — un mètre par exemple — pour aller chercher
+l'arroseur, c'est moins éprouvant que de faire tout le tour. »*
+
+**Deux tuyaux qui suivent le même chemin n'occupent qu'UNE tranchée.** Le mètre
+de tuyau se paie une fois ; le mètre de tranchée se paie en heures d'homme, et
+en gazon rouvert. Un réseau a donc raison de **rallonger son tuyau** pour rester
+dans une saignée déjà ouverte.
+
+Ce qu'il faut chercher, dans cet ordre :
+
+1. une **tranchée principale** que plusieurs réseaux empruntent ;
+2. des **antennes courtes** qui s'y greffent pour desservir un arroseur isolé ;
+3. jamais un contournement complet quand un mètre d'antenne suffit.
+
+**On CHERCHE les deux économies à la fois** — le tuyau et la tranchée. *« Il faut
+combiner économie de ml de tuyau et réutiliser une tranchée. »* Et quand les deux
+solutions se valent : **la tranchée l'emporte**, *« car c'est moins fatigant »*.
+Un mètre de tuyau se pose ; un mètre de tranchée se creuse, se remblaie, et se
+voit encore dans le gazon l'été suivant.
+
+**ON TRAVERSE LE MOINS POSSIBLE LE JARDIN DANS SA LARGEUR.** Sa règle du
+21 août : *« beaucoup de choses enterrées — pour le réseau jaune j'aurais fait le
+tour et non traversé »*. Ce n'est pas une question de mètres mais de **risque** :
+au milieu d'un terrain passent des gaines, des drains, une fosse, des racines
+qu'on ne verra qu'à la pelle. Le tour se rebouche ; la traversée se retrouve.
+
+On ne rentre donc dans le jardin **que** pour aller chercher un arroseur qui s'y
+trouve, et par le plus court. Cela se mesure : le linéaire de tranchée à plus de
+2 m d'un bord ne doit pas dépasser ce qu'exigent les arroseurs intérieurs.
+
+Cela se mesure : la tranchée est l'**union** des tracés — ce qui se superpose ne
+compte qu'une fois — et se compare à l'arbre couvrant minimal de la nourrice et
+des arroseurs, en distance de Manhattan (un tuyau suit les axes). Sur son plan
+du 21 août, à longueur de tuyau **égale** (76 ml), faire remonter le troisième
+réseau par le bord haut déjà creusé a économisé **10 m de tranchée** — 74 → 64.
+
+**Un tracé ne doit pas revenir sur lui-même** pour rattraper un arroseur déjà
+dépassé : mieux vaut un té de jonction et deux branches courtes. Mais ce défaut-
+là se juge largement, car rallonger un tuyau pour suivre une tranchée est un bon
+calcul, pas un détour.
+
+**Une antenne part du RÉSEAU, pas de la nourrice.** Seul le réseau part du
+regard ; ses antennes se greffent sur un point qu'il dessert déjà.
+
 **Les raccords se comptent par POSITION, jamais par arroseur** — sa planche du
 17 août, écrite dans `appli/arrosage-catalogue.js` :
 
@@ -267,13 +315,58 @@ ligne en part.
 | jonction sans arroseur | Té 25×25×25, non taraudé |
 
 **D'où le contrôle qui vaut pour tout schéma : `tés + coudes = arroseurs`**, et
-`coudes = nombre de lignes`. En dessous, des arroseurs ne sont raccordés à rien.
+`coudes = nombre de lignes`.
+
+**ET IL S'APPLIQUE À CHAQUE RÉSEAU, UN PAR UN — jamais au total.** Sa règle du
+21 août : *« il faut que tu l'appliques pour chaque réseau que tu crées »*. Une
+vérification faite sur la somme laisse passer exactement ce qu'elle prétend
+attraper : un réseau en excès et un autre en manque se **compensent**, le total
+tombe juste, et c'est sur le terrain qu'on découvre qu'une voie n'a pas de quoi
+raccorder son dernier arroseur.
+
+Le gabarit, à dérouler pour **chaque** réseau créé :
+
+| Ce qu'on compte | Comment |
+|---|---|
+| arroseurs | ce que le réseau dessert |
+| coudes taraudés | **une fin par ligne** du réseau |
+| tés taraudés | arroseurs − coudes |
+| tés de jonction | les ramifications, qui n'arrosent rien |
+| SBE | **2 × arroseurs** : 3/4" en bas, diamètre du corps en haut |
+| PEBD Ø16 | 2 m par arroseur |
+| PE Ø25 | mesuré sur le tracé, comparé au plus court |
+
+Et ce que le réseau **annonce** doit être ce que le plan **dessine** : si les
+deux divergent, l'un des deux ment et rien ne dit lequel au moment de commander. En dessous, des arroseurs ne sont raccordés à rien.
 C'est lui qui l'a relevé, au chiffre près, sur un plan qui paraissait juste :
 *« il y a quatre arroseurs qui ne sont pas alimentés »*. Aucun test ne le voyait,
 parce qu'aucun ne comparait la liste des pièces au tracé.
 
 Et **deux SBE par arroseur** : celui du bas toujours en 3/4" (sur le té ou le
 coude), celui du corps au diamètre de la famille — 3/4" turbine, 1/2" tuyère.
+
+**LE PLAN DIT QUEL ARROSEUR, OÙ, ET POURQUOI.** *« Sur le plan, tu dois savoir
+me dire où sont les tuyères et pourquoi, et quelle buse tu utilises — pareil pour
+les 5004. Il faut que l'utilisateur, en regardant son plan, sache tout de suite
+où les réseaux passent, quels arroseurs à quel endroit, et pourquoi. »*
+
+Un plan qui ne montre que des points ne se pose pas : sur le terrain, on ne sait
+pas lequel visser où. Donc **la forme porte la famille** (rond : turbine ; carré :
+tuyère), le remplissage porte la position sur la ligne, et la légende nomme la
+**buse** — « 12-VAN », pas « une tuyère » : on ne commande pas avec le second.
+
+Et le **pourquoi** s'écrit, parce qu'un choix qu'on ne comprend pas se refait au
+hasard le chantier suivant. Exemple, sur son plan : une bande de 4 m de large
+reçoit des tuyères, jamais des turbines — une portée de 6 m y arroserait 2 m
+au-delà de la limite, chez le voisin ou sur l'allée.
+
+**Chaque quantité doit pouvoir se RECOMPOSER à la main.** Sa question du
+21 août — *« je ne comprends pas d'où sortent tes vingt-deux coudes SBE, ça
+correspond à quoi ? »* — portait sur un chiffre JUSTE. Le défaut n'était pas le
+calcul mais la ligne : « 22 u Coude SBE 075 » ne dit pas à quoi ils servent. On
+recompte, on n'y arrive pas, et c'est toute la liste dont on doute. Une pièce
+qui sert à deux endroits se écrit donc en **deux lignes**, chacune nommant sa
+position.
 
 ## 5. Vérifier : ce qui compte comme « fait »
 

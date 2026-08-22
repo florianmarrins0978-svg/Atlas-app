@@ -9,6 +9,136 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le plan dit quel arroseur et pourquoi — et on ne traverse plus le jardin
+
+**Trois règles de plus, toutes sorties de sa lecture du plan.**
+
+**« Combiner les deux économies, et à égalité privilégier la tranchée, car c'est
+moins fatigant. »** Le tuyau se pose, la tranchée se creuse, se remblaie et se
+voit encore dans le gazon l'été suivant.
+
+**« On traverse le moins possible le jardin dans sa largeur : beaucoup de choses
+enterrées. »** Ce n'est pas une question de mètres mais de risque — gaines,
+drains, fosse, racines qu'on ne voit qu'à la pelle. Le tour se rebouche, la
+traversée se retrouve. Un contrôle mesure le linéaire de tranchée à plus de 2 m
+d'un bord et le compare à ce qu'exigent les arroseurs intérieurs. Sur ce plan :
+4 m, pour 4 m nécessaires — le seul arroseur du milieu est celui du centre.
+Éprouvé en faisant traverser le réseau jaune : « 12 m de tranchée en plein jardin
+pour 4 m nécessaires ».
+
+**« Tu dois savoir me dire où sont les tuyères et pourquoi, et quelle buse. »**
+Le plan ne montrait que treize points identiques : sur le terrain, on ne sait pas
+lequel visser où. **La forme porte désormais la famille** — rond pour une turbine,
+carré pour une tuyère —, le remplissage garde la position sur la ligne, et la
+légende nomme la buse. Un bloc dit le POURQUOI : les turbines 5004 buse 3.0
+couvrent le carré de 12 m avec 9 arroseurs là où une portée plus courte en
+demanderait 16 ; les tuyères 1800 buse 12-VAN tiennent la bande de 4 m, qu'une
+turbine de 6 m arroserait 2 m au-delà de la limite.
+
+**Un contrôle a dû suivre le libellé plutôt que le figer** : il lisait « 4
+arroseurs » sur les cartes, qui annoncent maintenant « 4 turbines ». Il additionne
+désormais les familles et les confronte à ce qui est dessiné, famille par famille.
+
+### La tranchée, pas le tuyau — 10 m de terrassement en moins, à tuyau égal
+
+*« Il faut que tu te dises que le trait jaune, c'est une tranchée. C'est une
+équipe qui va devoir creuser la terre pour faire passer le tuyau. Donc l'idée,
+c'est de faire le moins de tranchée possible. Si on peut réutiliser une tranchée
+déjà faite et juste faire une petite antenne — un mètre par exemple — pour aller
+chercher l'arroseur, c'est moins éprouvant que de faire tout le tour. »*
+
+**Cela change ce qu'on minimise, et c'était faux jusqu'ici.** Le contrôle
+comparait la somme des TUYAUX au plus court. Mais deux tuyaux qui suivent le
+même chemin n'occupent qu'une tranchée : le mètre de tuyau se paie une fois, le
+mètre de tranchée se paie en heures d'homme et en gazon rouvert.
+
+Le plan le montre : à longueur de tuyau **égale** — 76 ml —, faire remonter le
+troisième réseau par le bord haut, déjà creusé pour le premier, au lieu de
+traverser la pelouse : **74 → 64 ml de tranchée**.
+
+La tranchée est désormais **dessinée** (le trait ocre large, sous les tuyaux), et
+son linéaire annoncé. Deux contrôles la tiennent, séparés parce que ce sont deux
+défauts distincts : l'union des tuyaux ne doit pas dépasser le minimum
+nécessaire, et aucun tuyau ne doit passer hors d'une tranchée dessinée — sans
+quoi le chantier serait chiffré trop court.
+
+**Un contrôle a dû être corrigé au passage, et il interdisait sa règle.** Il
+exigeait que CHAQUE ligne parte de la nourrice, et rougissait donc sur la petite
+antenne d'un mètre qu'il décrit. La règle juste : **un réseau part de la
+nourrice, ses antennes partent de lui**.
+
+### Le comptage s'applique à CHAQUE réseau — un contrôle global mentait
+
+*« Faut surtout que tu en fasses une règle. Il faut que tu l'appliques pour
+chaque réseau que tu crées. »*
+
+**Il avait raison contre mon contrôle**, qui vérifiait `tés + coudes = arroseurs`
+sur le TOTAL. Une somme juste peut cacher un réseau en excès et un autre en
+manque : ils se compensent, le total tombe juste, et c'est sur le terrain qu'on
+découvre qu'une voie n'a pas de quoi raccorder son dernier arroseur. **Un
+contrôle qui ne regarde que la somme laisse passer exactement le défaut qu'il
+prétend attraper.**
+
+Le décompte se lit désormais **sur le plan**, réseau par réseau — têtes pleines
+pour les tés, têtes creuses pour les fins de ligne — puis se compare à ce que la
+carte annonce. Si les deux divergent, l'un ment et rien ne dit lequel au moment
+de commander. Éprouvé sur une compensation exacte (un té de trop chez le 2, un
+de moins chez le 3) : les deux réseaux rougissent séparément, là où l'ancien
+contrôle voyait un total juste.
+
+Le gabarit complet — arroseurs, coudes, tés, jonctions, SBE, PEBD, PE — est dans
+`CLAUDE.md` §4 bis, à dérouler pour chaque réseau créé.
+
+### « D'où sortent tes vingt-deux SBE ? » — un chiffre juste, une ligne muette
+
+*« Je ne comprends pas d'où sort ton calcul des vingt-deux coudes SBE 3/4" et
+les 4 SBE 1/2". Ça correspond à quoi ? »*
+
+**Le chiffre était juste** — sa règle du 17 août, écrite dans le catalogue :
+deux SBE par arroseur, celui du bas toujours en 3/4" sur la tuyauterie, celui du
+haut au diamètre du corps (3/4" turbine, 1/2" tuyère). Soit 13 en bas, 9 sur les
+turbines, 4 sur les tuyères.
+
+**Le défaut était la ligne, pas le calcul.** « 22 u Coude SBE 075 » ne dit pas à
+quoi ils servent : on recompte, on n'y arrive pas, et c'est toute la liste dont
+on doute. Une pièce qui sert à deux endroits s'écrit désormais en deux lignes,
+chacune nommant sa position — et un contrôle refuse une ligne SBE qui ne dit pas
+si elle va en haut ou en bas, en plus de vérifier le total (2 × arroseurs).
+
+**Le contrôle PLANTAIT au lieu de rougir**, et c'est la deuxième leçon. Éprouvé
+en retirant une ligne du tableau, il tombait sur une trace JavaScript qui
+n'accusait personne. La sonde ignore maintenant les lignes mal formées et rend
+son verdict : « 13 SBE pour 13 arroseurs : il en faut deux par arroseur, soit
+26 ».
+
+### « Va au plus court » — un détour de 4 m, devenu un contrôle
+
+*« Pour ton réseau 1 tu t'es trompé : tu aurais dû retirer la dernière ligne
+entre l'arroseur du haut et l'arroseur du milieu, mais par contre, devant le
+regard, mettre un té — et du coup tu aurais pu joindre le premier arroseur qui
+est collé au regard et celui qui est en haut. »*
+
+La ligne faisait le tour puis **revenait sur elle-même** pour rattraper un
+arroseur situé à 2 m de la nourrice. Un té de jonction devant le regard et deux
+branches courtes : **18 ml au lieu de 22**. Le tuyau en trop se paie deux fois,
+au mètre et en tranchée.
+
+**Ce qui compte n'est pas les 4 m, c'est que le détour se MESURE.** La longueur
+d'un tracé se compare désormais à l'arbre couvrant minimal de ses points, en
+distance de Manhattan — un tuyau suit les axes, il ne coupe pas en diagonale au
+milieu du gazon. C'est une borne basse honnête : au-delà de 5 %, le tracé revient
+sur lui-même. Éprouvé en remettant l'ancien tracé, il annonce « 22 ml tracés pour
+18 ml nécessaires — 4 m de tuyau en trop, payés au mètre ET en tranchée ».
+
+Les réseaux 2 et 3 étaient déjà au plus court : le contrôle ne rougit pas pour
+le plaisir.
+
+**Conséquence sur la règle précédente :** « un réseau = une ligne continue »
+était une simplification de ma part, pas une règle du métier. Elle empêchait
+précisément le raccourci qu'il demande. Un réseau peut donc se ramifier — avec
+un té de jonction 25×25×25, qui n'arrose rien et ne compte pas dans l'égalité
+`tés + coudes = arroseurs`.
+
 ### Le planning, codé trait pour trait — et une migration avec
 
 **Sa décision du 21 août au soir**, après deux soirées de maquette et neuf
