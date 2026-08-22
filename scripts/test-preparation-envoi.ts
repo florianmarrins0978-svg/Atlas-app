@@ -343,6 +343,109 @@ async function main() {
     );
   });
 
+  await test("un devis accepté POSE le chantier, et le planning le montre", async () => {
+    // **Sa panne du 22 août 2026 :** *« tu vois bien que le chantier de Bernard
+    // n'est pas indiqué [...] juste le chantier n'apparaît pas sur le
+    // calendrier »*, capture du 24 à l'appui : matin libre, après-midi libre.
+    //
+    // **Aucun contrôle ne couvrait ce chemin en entier.** On vérifiait que la
+    // réponse du client était acceptée (`succes: true`) — jamais que le
+    // chantier portait ensuite une date, ni qu'il remontait dans la liste du
+    // planning. Or l'écriture se fait sous un contexte de JETON, pas de
+    // session : une règle d'isolation qui la refuserait ne lèverait rien, elle
+    // toucherait zéro ligne en silence.
+    const ctx = await contexte(`pose-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "Bernard", email: "b@ex.test" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie de Bernard", clientId: client.id });
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId: chantier.id,
+        devisId: brouillon.id,
+        canal: "email",
+        datesProposees: [dans(10)],
+        contenuDevis: "Taille de haie",
+      },
+      LUNDI
+    );
+
+    const r = await enregistrerReponse(
+      envoi.jeton,
+      {
+        decision: "accepte",
+        dateRetenue: dans(10),
+        precision: null,
+        adresseIp: null,
+        agentUtilisateur: null,
+      },
+      LUNDI
+    );
+    assert.deepStrictEqual(
+      r,
+      { succes: true, dateRetenue: dans(10), contreProposee: false },
+      "le client n'a pas pu accepter"
+    );
+
+    // 1. La date est-elle vraiment ÉCRITE sur le chantier ?
+    const pose = await chantiersRepo.getChantier(ctx, chantier.id);
+    assert.strictEqual(
+      pose?.datePlanifiee,
+      dans(10),
+      `le devis est accepté mais le chantier ne porte aucune date : ${pose?.datePlanifiee ?? "null"}`
+    );
+    assert.ok(pose?.creneauDebut, "le chantier n'a pas de créneau de départ");
+
+    // 2. Et le PLANNING le voit-il ? La liste exige un devis envoyé : un
+    //    chantier daté mais absent de cette liste ne s'affiche nulle part, et
+    //    c'est exactement ce qu'il a sous les yeux.
+    const surLePlanning = await chantiersRepo.listerChantiersPourPlanning(ctx);
+    const vu = surLePlanning.find((c) => c.id === chantier.id);
+    assert.ok(
+      vu,
+      "le chantier porte sa date mais n'apparaît pas dans le planning : il est invisible"
+    );
+    assert.strictEqual(vu?.datePlanifiee, dans(10), "le planning ne lit pas la bonne date");
+  });
+
+  await test("un chantier DATÉ se voit au planning, même sans devis envoyé", async () => {
+    // **Sa panne du 22 août 2026 :** *« tu vois bien que le chantier de Bernard
+    // n'est pas indiqué [...] juste le chantier n'apparaît pas sur le
+    // calendrier »*, capture du 24 à l'appui : matin libre, après-midi libre.
+    //
+    // **Le défaut n'était pas dans l'écriture mais dans la LECTURE.** La liste
+    // du planning n'admettait que les chantiers dont le devis est parti, tandis
+    // que le calcul de capacité compte tous les chantiers datés. Un chantier
+    // daté sans devis envoyé prenait donc la place — le client se voyait
+    // refuser ce jour — pendant que le planning l'affichait libre.
+    const ctx = await contexte(`invisible-${Date.now()}@t.test`);
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie de Bernard" });
+    await chantiersRepo.planifierChantier(ctx, chantier.id, dans(10));
+
+    const surLePlanning = await chantiersRepo.listerChantiersPourPlanning(ctx);
+    const vu = surLePlanning.find((c) => c.id === chantier.id);
+    assert.ok(
+      vu,
+      `le chantier est posé au ${dans(10)} mais n'apparaît pas au planning : le jour se lit libre`
+    );
+    assert.strictEqual(vu?.datePlanifiee, dans(10));
+
+    // **Et il prend bien la place qu'il occupe.** C'est l'autre moitié de la
+    // règle : si l'affichage et la capacité ne disaient pas la même chose, on
+    // n'aurait fait que déplacer le mensonge d'un écran à l'autre.
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Faucher", email: "f@ex.test" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
+    const autre = await chantiersRepo.creerChantier(ctx, { nom: "Autre haie", clientId: client.id });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, autre.id);
+    const p = await preparerEnvoi(ctx, autre.id, LUNDI);
+    assert.ok(
+      p.joursOccupes.includes(dans(10)),
+      `le ${dans(10)} n'est pas barré alors qu'un chantier y est posé`
+    );
+  });
+
   console.log(`\n${passed} réussis, ${failed} échoués`);
   await pool.end();
   if (failed > 0) process.exit(1);

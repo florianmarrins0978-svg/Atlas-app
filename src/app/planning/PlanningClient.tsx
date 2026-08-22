@@ -746,7 +746,17 @@ export default function PlanningClient({
                   setFeuille({ chantierId: c.id, cle: `liste:${c.id}` });
                 };
                 return (
-                  <div key={c.id} data-atlas="ligne-planifiee">
+                  <div
+                    key={c.id}
+                    data-atlas="ligne-planifiee"
+                    /* **Le chantier se désigne par son identifiant, pas par un
+                       lien.** Les contrôles visaient la ligne par le `href` du
+                       chevron ; celui-ci pivote désormais au lieu de mener au
+                       chantier, et trois suites se sont retrouvées à attendre un
+                       élément disparu. Un attribut posé pour ça ne dépend
+                       d'aucun choix d'apparence. */
+                    data-chantier={c.id}
+                  >
                     <div className="mt-3 flex items-center gap-2.5">
                       <button
                         type="button"
