@@ -238,9 +238,86 @@ GitHub ou Atlas, parce qu'un même 404 appelle deux gestes opposés. C'est ainsi
 que la vraie panne est enfin sortie : **son installation de Next.js était
 cassée** (`Cannot find module './detect-typo'`), le serveur ne démarrait plus,
 et ni le port ni l'application n'y étaient pour quelque chose.
+### « Terminés » refait : la B, codée
+
+*« Je choisis la B avec les modifications que je viens de te demander. »*
+La planche 90 est retenue et portée dans `src/app/termines/`.
+
+**Elle est née « 86 », puis « 89 », et elle finit « 90 » — deux collisions en
+une soirée.** Trois sessions dessinaient le même jour, et chacune a pris le
+numéro libre sur SA copie de `main` : 86 pour les planifiés, 89 pour les deux
+équipes. C'est la nôtre qui bouge les deux fois, parce qu'elle est celle qui
+tient la fusion et que renuméroter chez soi ne réécrit pas le texte d'une
+session qui tourne encore.
+
+**Ce n'est pas une étourderie, c'est le numéro lui-même qui est fragile.** Le
+relever sur `main` avant d'écrire ne suffit pas : entre le relevé et la poussée,
+une autre session a publié. Troisième incident du genre après la §59 en double
+du 11 août. Tant qu'il n'y a pas mieux, la règle utile est : **le numéro se
+vérifie une dernière fois à la fusion, jamais à l'écriture** — et le fichier de
+la planche ne le porte pas dans son nom (`termines-simple.html`), ce qui rend
+la renumérotation indolore.
+
+**Ce qui a quitté l'écran, et ne doit pas revenir :**
+
+| | Pourquoi |
+|---|---|
+| Le **fil vertical** et ses perles pleines ou creuses | 47 px de largeur pour un code que personne n'a appris |
+| La **pastille dorée** et le **volet replié** | le seul travail qui reste ne se cache pas derrière une ligne en petites capitales |
+| « **Facturé, tous mois confondus** » | il répétait le chiffre déjà écrit à droite du mois, sans qu'on sache pourquoi c'était le même |
+| Le surtitre « CHANTIERS RÉALISÉS » et le cheveu | la planche n'en porte pas, et le titre suffit |
+| L'or contre le noir comme seul signe | remplacé par des **mots** : « Pas encore facturé », « Facturé le 20 août » |
+
+**Deux règles gouvernent le nouvel écran**, et elles se paient si on les ignore.
+Un **seul mois à la fois**, qu'on feuillette — et **ce qui reste à facturer ne
+suit pas le mois** : l'onglet « À facturer » montre tout, tous mois confondus.
+Elles vivent dans `src/lib/termines-par-mois.ts`, pures et éprouvées sans base ;
+l'écran n'y décide de rien.
+
+**« Facturé le 20 août » a coûté une colonne de plus en base.** La maquette
+écrivait cette phrase d'après `datePlanifiee` — la date du CHANTIER. Or un
+chantier fait le 20 peut être facturé le 30 : l'écran aurait affirmé une date
+d'émission qu'il n'a pas. `factures.date_emission` entre donc dans la requête,
+et sans elle la phrase se tait plutôt que d'inventer.
+
+**Deux suites ont été adaptées, aucune n'a été satisfaite en remettant ce qu'il
+a fait retirer** (`CLAUDE.md` §5 bis) :
+
+- `test-planning-vers-facture-e2e.ts` dépliait le volet pour atteindre un
+  chantier non facturé. Il passe désormais par l'onglet « À facturer » — ce qui
+  le rend **indifférent au calendrier** : un chantier terminé il y a six jours
+  peut tomber dans le mois précédent selon la date du jour, et le contrôle
+  aurait cherché dans un mois qui ne le porte pas, en accusant un écran juste ;
+- `capture-termines.mts` mesurait le volet, la pastille, et l'absence de tout
+  coin arrondi. Il mesure maintenant le feuilletage, le compte **en noir gras**
+  (graisse et couleur calculées, pas la classe posée), et refuse de conclure sur
+  un écran sans lignes.
+
+**Un défaut trouvé en écrivant la suite pure** : le comparateur de `preparer`
+rendait 0 pour deux chantiers du même **mois**, et non du même **jour** — les
+lignes d'un mois seraient sorties dans l'ordre de la base. Le contrôle « dans le
+mois, le plus récent en tête » l'a attrapé avant l'écran.
+
+**UN CHANTIER CLÔTURÉ EN AVANCE VIDAIT L'ÉCRAN.** Deux suites rouges d'un coup,
+et le défaut aurait été chez lui. Clôturer un chantier avant sa date le range
+dans « Terminés » **en lui laissant sa date à venir** : le mois d'entrée était
+« le plus récent qui porte quelque chose », donc septembre, donc un écran vide —
+et tout le travail du mois en cours disparu, sans rien qui dise pourquoi.
+`bornesDuFeuilletage` ouvre désormais sur le **mois courant** dès qu'il existe
+quelque chose de plus tard, et laisse la flèche › aller voir ce qui est en
+avance. Sans rien ce mois-ci, on s'ouvre sur le dernier mois qui porte quelque
+chose : après deux mois creux, une page blanche serait exacte et inutile.
+
+**Et un défaut vu sur la CAPTURE, comme les cinq précédents de ce dépôt** :
+« Pas encore facturé · 1 764,00 € prévus » était tronqué par la capsule
+« Facturer » — le montant y passait. La ligne d'état s'enroule maintenant sur
+deux lignes ; le NOM, lui, reste coupé, parce qu'un nom se reconnaît tronqué et
+qu'un chiffre coupé ne se devine pas. Corrigé **d'abord sur la planche**, puis
+dans l'écran (`CLAUDE.md` §3 bis).
+
 ### « Terminés » : revenir dans le passé, et le compte en noir gras
 
-Ses deux corrections sur la planche 86, le soir même : *« en haut il y a marqué
+Ses deux corrections sur la planche 90, le soir même : *« en haut il y a marqué
 août 2026, mais il faut pouvoir revenir dans le passé si jamais on a du retard
 sur la facturation »*, et *« cinq factures envoyées et tant qui attendent leur
 facturation, ça tu peux le mettre en noir gras »*.
@@ -282,7 +359,7 @@ des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi que c
 soit. »*
 
 Mêmes mots que pour le planning le 19 août (planche 84), donc même réponse :
-`appli/termines-simple.html` — **planche 86**, essayable, et `src/` n'a pas
+`appli/termines-simple.html` — **planche 90**, essayable, et `src/` n'a pas
 bougé (`CLAUDE.md` §3 bis).
 
 **Ce qui se comprend mal sur l'écran actuel**, relevé sur sa capture et non

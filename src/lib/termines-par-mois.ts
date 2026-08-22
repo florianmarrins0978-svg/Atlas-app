@@ -1,14 +1,20 @@
-// « Terminés » : le fil par mois, et ce qui attend d'être facturé.
+// « Terminés » : le mois qu'on feuillette, et ce qui attend d'être facturé.
 //
-// **Une règle pure, testable sans base**, parce qu'elle décide de trois choses
-// que l'œil ne rattrape pas : dans quel mois tombe un chantier, combien
-// attendent d'être facturés, et ce que chaque mois totalise.
+// **Des règles pures, testables sans base**, parce qu'elles décident de trois
+// choses que l'œil ne rattrape pas : dans quel mois tombe un chantier, ce que
+// ce mois totalise, et ce qui reste à facturer tous mois confondus.
 //
-// **Un chantier non facturé reste DANS SON MOIS.** Le chantier du 20 août est
-// un chantier d'août ; le sortir dans un bloc à part casse le fil, qui ne
-// raconte plus le temps mais deux listes empilées.
-
-import { nombreEnLettres } from "@/lib/nombre-en-lettres";
+// **Refait le 22 août 2026 sur la planche 90** (`appli/termines-simple.html`,
+// proposition B), retenue par le patron : *« je choisis la B avec les
+// modifications que je viens de te demander »*. L'écran d'avant empilait un fil
+// par mois, chacun portant un volet replié ; celui-ci montre **un seul mois à
+// la fois**, qu'on feuillette.
+//
+// **CE QUI RESTE À FACTURER NE SUIT PAS LE MOIS**, et c'est tout l'objet de sa
+// demande : *« il faut pouvoir revenir dans le passé si jamais on a du retard
+// sur la facturation »*. Un chantier de juillet jamais facturé doit rester sous
+// ses yeux en août — sinon il faudrait déjà savoir qu'il existe pour aller le
+// chercher. D'où `aFacturerPartout`, qui ignore délibérément le mois affiché.
 
 /** Ce que l'écran reçoit du dépôt, réduit à ce dont la règle a besoin. */
 export type LigneTerminee = {
@@ -17,6 +23,8 @@ export type LigneTerminee = {
   clientNom: string | null;
   datePlanifiee: string | null;
   factureNumero: string | null;
+  /** `AAAA-MM-JJ` — la date d'ÉMISSION de la facture, jamais celle du chantier. */
+  factureDateEmission: string | null;
   /** `"emise"` quand la facture est partie chez le client. */
   factureStatut: string | null;
   /** Le total de la facture, quand elle existe. */
@@ -30,20 +38,21 @@ export type LigneAffichee = LigneTerminee & {
   aFacturer: boolean;
   /** Le montant à montrer : celui de la facture, sinon celui du devis. */
   montant: number | null;
+  /** `AAAA-MM`, ou `""` quand le chantier n'a pas de date. */
+  cleMois: string;
 };
 
-export type MoisTermine = {
-  /** `AAAA-MM` — la clé de tri, jamais affichée telle quelle. */
+/** Ce qu'un mois porte, une fois qu'on s'y est arrêté. */
+export type ResumeMois = {
+  /** `AAAA-MM` */
   cle: string;
-  nom: string;
-  annee: number;
-  /** Ce qui est facturé : le mois se solde avec ça. */
+  /** Tout ce que ce mois porte, du plus récent au plus ancien, les deux camps mêlés. */
+  lignes: LigneAffichee[];
+  /** Ce qui est facturé dans ce mois — le mois se solde avec ça. */
   facturees: LigneAffichee[];
-  /** Ce qui attend — l'encart, replié au repos. */
+  /** Ce qui attend DANS CE MOIS. La liste complète est `aFacturerPartout`. */
   aFacturer: LigneAffichee[];
-  /** Le total des factures du mois. */
   totalFacture: number;
-  /** Le total prévu aux devis de ce qui attend. */
   totalPrevu: number;
 };
 
@@ -72,78 +81,184 @@ export function estFacture(l: Pick<LigneTerminee, "factureStatut">): boolean {
 }
 
 /**
- * Range les chantiers terminés par mois, du plus récent au plus ancien.
+ * Décore les lignes et les range du plus récent au plus ancien.
  *
- * Un chantier sans date ne peut pas appartenir à un mois : il tombe dans un
- * groupe à part, en tête, plutôt que d'être rangé au hasard.
+ * **Le comparateur rend 0 à dates égales.** Un comparateur qui répond « plus
+ * petit » dans ce cas se contredit (`a<b` et `b<a` à la fois) et le tri rend
+ * alors un ordre qu'aucune donnée n'explique : deux factures du même jour
+ * sortaient à l'envers de ce que le patron voit sur son écran. Trouvé sur la
+ * planche 90, où les deux factures du 19 août s'échangeaient.
  */
-export function grouperParMois(lignes: readonly LigneTerminee[]): MoisTermine[] {
-  const parCle = new Map<string, MoisTermine>();
-
-  for (const l of lignes) {
-    const facture = estFacture(l);
-    const affichee: LigneAffichee = {
-      ...l,
-      aFacturer: !facture,
-      montant: facture ? euros(l.totalTtc) : euros(l.devisTotalTtc),
-    };
-
-    const jour = l.datePlanifiee ?? "";
-    const cle = jour.slice(0, 7) || "sans-date";
-    let mois = parCle.get(cle);
-    if (!mois) {
-      const annee = Number(jour.slice(0, 4));
-      const indice = Number(jour.slice(5, 7)) - 1;
-      mois = {
-        cle,
-        nom: MOIS[indice] ?? "sans date",
-        annee: Number.isFinite(annee) ? annee : 0,
-        facturees: [],
-        aFacturer: [],
-        totalFacture: 0,
-        totalPrevu: 0,
+export function preparer(lignes: readonly LigneTerminee[]): LigneAffichee[] {
+  return lignes
+    .map((l): LigneAffichee => {
+      const facture = estFacture(l);
+      return {
+        ...l,
+        aFacturer: !facture,
+        montant: facture ? euros(l.totalTtc) : euros(l.devisTotalTtc),
+        cleMois: (l.datePlanifiee ?? "").slice(0, 7),
       };
-      parCle.set(cle, mois);
-    }
-
-    if (facture) {
-      mois.facturees.push(affichee);
-      mois.totalFacture += affichee.montant ?? 0;
-    } else {
-      mois.aFacturer.push(affichee);
-      mois.totalPrevu += affichee.montant ?? 0;
-    }
-  }
-
-  // Le plus récent en tête — c'est celui que le patron vient regarder en
-  // rentrant. « sans-date » passe devant : un chantier qu'on ne sait pas
-  // dater ne doit pas se perdre au fond de la liste.
-  return [...parCle.values()].sort((a, b) => {
-    if (a.cle === "sans-date") return -1;
-    if (b.cle === "sans-date") return 1;
-    return a.cle < b.cle ? 1 : -1;
-  });
+    })
+    .sort((a, b) => {
+      const da = a.datePlanifiee ?? "";
+      const db = b.datePlanifiee ?? "";
+      if (da === db) return 0;
+      // Un chantier sans date ne se range nulle part dans le temps : il passe
+      // devant plutôt que de se perdre au fond de la liste.
+      if (!da) return -1;
+      if (!db) return 1;
+      return da < db ? 1 : -1;
+    });
 }
 
 /**
- * Ce que dit l'encart — ou `null` quand il ne doit PAS exister.
+ * Le mois le plus récent qui porte quelque chose.
  *
- * **À zéro, l'encart n'existe pas.** Jamais de « 0 », jamais de compte au
- * singulier bancal : le mois n'affiche alors que son total. C'était le défaut
- * de l'ancien écran — « Rien à facturer » s'affichait comme un titre de section
- * suivi de rien, et l'écran avait l'air amputé au lieu d'avoir l'air calme.
- *
- * Le compte s'écrit **en toutes lettres**, comme partout ailleurs.
+ * `null` quand il n'y a rien à montrer — l'écran dit alors autre chose, il ne
+ * feuillette pas un calendrier vide.
  */
-export function libelleEncart(combien: number): string | null {
-  if (combien <= 0) return null;
-  const mot = nombreEnLettres(combien);
-  return `${mot.charAt(0).toUpperCase()}${mot.slice(1)} à facturer`;
+export function moisLePlusRecent(lignes: readonly LigneAffichee[]): string | null {
+  let recent: string | null = null;
+  for (const l of lignes) {
+    if (!l.cleMois) continue;
+    if (recent === null || l.cleMois > recent) recent = l.cleMois;
+  }
+  return recent;
 }
 
-/** Le total facturé sur l'ensemble des mois montrés. */
-export function totalFacture(mois: readonly MoisTermine[]): number {
-  return mois.reduce((somme, m) => somme + m.totalFacture, 0);
+/**
+ * Le mois par lequel l'écran s'ouvre, et jusqu'où l'on peut avancer.
+ *
+ * **Un chantier terminé peut être DANS LE FUTUR**, et c'est ce qui a fait
+ * rougir deux suites le 22 août 2026 : clôturer un chantier avant sa date le
+ * range dans « Terminés » en gardant sa date à venir. L'écran s'ouvrait alors
+ * sur le mois prochain, et tout ce qu'il vient de faire ce mois-ci avait
+ * disparu — un écran vide, sans rien qui dise pourquoi.
+ *
+ * On s'ouvre donc sur le **mois courant** dès qu'il y a quelque chose de plus
+ * récent que lui, et sur le dernier mois qui porte quelque chose sinon : après
+ * deux mois sans chantier, on n'ouvre pas sur du vide.
+ *
+ * `borne` reste le mois le plus récent qui existe : la flèche du futur s'arrête
+ * là, mais elle permet d'aller voir le chantier clôturé en avance.
+ */
+export function bornesDuFeuilletage(
+  lignes: readonly LigneAffichee[],
+  moisCourant: string
+): { entree: string; borne: string } {
+  const recent = moisLePlusRecent(lignes);
+  if (recent === null) return { entree: moisCourant, borne: moisCourant };
+  return {
+    entree: recent > moisCourant ? moisCourant : recent,
+    borne: recent > moisCourant ? recent : moisCourant,
+  };
+}
+
+/**
+ * « 2026-08 » reculé de `n` mois — `n` négatif avance.
+ *
+ * **On se déplace sur le CALENDRIER, pas sur la liste des mois qui portent
+ * quelque chose.** Sauter d'août à mai parce que juin et juillet sont vides
+ * laisserait croire que juin n'existe pas ; l'écran doit pouvoir répondre
+ * « aucune facture en juin », ce qui est une réponse.
+ */
+export function decalerMois(cle: string, n: number): string {
+  let annee = Number(cle.slice(0, 4));
+  let mois = Number(cle.slice(5, 7)) - n;
+  while (mois < 1) { mois += 12; annee -= 1; }
+  while (mois > 12) { mois -= 12; annee += 1; }
+  return `${annee}-${String(mois).padStart(2, "0")}`;
+}
+
+/** « Août 2026 ». */
+export function nomDuMois(cle: string): string {
+  const nom = MOIS[Number(cle.slice(5, 7)) - 1];
+  if (!nom) return "";
+  return `${nom.charAt(0).toUpperCase()}${nom.slice(1)} ${cle.slice(0, 4)}`;
+}
+
+/** « août » — le mois seul, en minuscules, pour une phrase. */
+export function moisSeul(cle: string): string {
+  return MOIS[Number(cle.slice(5, 7)) - 1] ?? "";
+}
+
+/** Ce que porte un mois donné. */
+export function resumeDuMois(lignes: readonly LigneAffichee[], cle: string): ResumeMois {
+  const duMois = lignes.filter((l) => l.cleMois === cle);
+  const facturees = duMois.filter((l) => !l.aFacturer);
+  const aFacturer = duMois.filter((l) => l.aFacturer);
+  return {
+    cle,
+    lignes: duMois,
+    facturees,
+    aFacturer,
+    totalFacture: somme(facturees),
+    totalPrevu: somme(aFacturer),
+  };
+}
+
+/**
+ * Tout ce qui attend d'être facturé, TOUS MOIS CONFONDUS.
+ *
+ * **Elle ignore le mois affiché, et c'est délibéré** — voir l'en-tête du
+ * fichier : c'est la demande du patron sur le retard de facturation.
+ */
+export function aFacturerPartout(lignes: readonly LigneAffichee[]): LigneAffichee[] {
+  return lignes.filter((l) => l.aFacturer);
+}
+
+/** Ce qui est facturé, tous mois confondus. */
+export function factureesPartout(lignes: readonly LigneAffichee[]): LigneAffichee[] {
+  return lignes.filter((l) => !l.aFacturer);
+}
+
+/** La somme des montants connus. Un montant inconnu ne vaut pas zéro : il ne compte pas. */
+export function somme(lignes: readonly LigneAffichee[]): number {
+  return lignes.reduce((t, l) => t + (l.montant ?? 0), 0);
+}
+
+/**
+ * « 5 factures envoyées · et 2 040,00 € qui attendent leur facture. »
+ *
+ * **Le patron l'a demandée en noir gras le 22 août 2026** : c'est ce qu'il
+ * vient chercher, pas une note de bas de page. La seconde moitié n'apparaît que
+ * s'il y a quelque chose en attente DANS CE MOIS, et seulement si son montant
+ * est connu — annoncer « 0,00 € qui attendent » là où on ne sait pas serait
+ * dire qu'il n'y a rien à encaisser.
+ */
+export function libelleCompte(mois: ResumeMois): string {
+  const n = mois.facturees.length;
+  const debut = n === 0
+    ? "Aucune facture envoyée"
+    : `${n} facture${n > 1 ? "s" : ""} envoyée${n > 1 ? "s" : ""}`;
+  const montantConnu = mois.aFacturer.some((l) => l.montant !== null);
+  if (mois.aFacturer.length === 0 || !montantConnu) return `${debut}.`;
+  return `${debut} · et ${formatEuros(mois.totalPrevu)} qui attendent leur facture.`;
+}
+
+/**
+ * « Facture n° 5 » — le numéro qu'il lit à voix haute.
+ *
+ * **« F2026-0005 » ne se dit pas au téléphone**, et il ouvrait chaque ligne de
+ * l'ancien écran, avant même le nom du client. On garde la fin du numéro, qui
+ * est ce qui le distingue.
+ *
+ * On lit les chiffres de FIN, sans supposer où tombe le tiret : `slice(5)` avait
+ * fait écrire « Facture n° -5 » sur la planche 90 — le tiret entrait dans le
+ * nombre. Trouvé en regardant l'écran, par aucun contrôle.
+ */
+export function numeroCourt(numero: string): string {
+  const fin = numero.match(/(\d+)\s*$/);
+  return fin ? `Facture n° ${Number(fin[1])}` : `Facture ${numero}`;
+}
+
+/** « Facturé le 20 août », d'après la date d'émission — ou rien si on l'ignore. */
+export function libelleFacturee(l: LigneAffichee): string {
+  const jour = l.factureDateEmission;
+  if (!jour) return l.factureNumero ? numeroCourt(l.factureNumero) : "Facturée";
+  const quand = `Facturé le ${Number(jour.slice(8, 10))} ${moisSeul(jour.slice(0, 7))}`;
+  return l.factureNumero ? `${quand} · ${numeroCourt(l.factureNumero)}` : quand;
 }
 
 const EUROS = new Intl.NumberFormat("fr-FR", {
