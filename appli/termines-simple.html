@@ -125,6 +125,25 @@
                 gap:12px;font:400 21px/1.2 ui-serif,Georgia,serif}
   .section > h2 .somme{font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
   .section > .quoi{margin:5px 0 0;font-size:12.5px;color:var(--e-gris);line-height:1.55}
+  /* **Le compte des factures : NOIR ET GRAS.** Sa demande du 22 août — « cinq
+     factures envoyées, et tant qui attendent leur facturation, ça tu peux le
+     mettre en noir gras ». C'est ce qu'il vient chercher ; ce n'était pas une
+     note de bas de page. La phrase des devis, elle, reste grise : c'est une
+     réserve, pas un chiffre. */
+  .section > .compte{margin:6px 0 2px;font-size:13px;line-height:1.55;
+                     font-weight:700;color:var(--e-encre)}
+
+  /* ── Feuilleter les mois : ‹ Août 2026 › ───────────────────────────
+     44 px de haut pour les flèches — un pouce, sur un chantier. */
+  .nav-mois{display:flex;align-items:center;gap:2px}
+  .nav-mois .nom-mois-nav{font:400 21px/1.2 ui-serif,Georgia,serif;white-space:nowrap}
+  .nav-mois .somme{margin-left:auto;font-size:16px;font-variant-numeric:tabular-nums;
+                   white-space:nowrap}
+  .fleche-mois{appearance:none;border:0;background:transparent;cursor:pointer;
+               width:38px;height:44px;font-size:22px;line-height:1;color:var(--e-or);
+               font-family:ui-serif,Georgia,serif}
+  .fleche-mois:first-child{margin-left:-10px}
+  .fleche-mois[disabled]{color:var(--e-trait);cursor:default}
 
   /* ── Une ligne de chantier ─────────────────────────────────────────── */
   .ligne{display:flex;align-items:center;gap:14px;padding:14px 0;
@@ -280,6 +299,12 @@
   capture</b>. Les quatre chantiers à facturer sont des exemples — votre écran
   les cache — et leurs montants font bien les <b>2 040,00 €</b> qu’il annonce.
   <br><br>
+  Les trois propositions portent <b>un chantier de plus</b> : M. Ferreira,
+  terminé le 14 juillet et jamais facturé, pour que <b>le retard s’essaie</b>.
+  L’onglet « Aujourd’hui » ne l’a pas — il doit rester votre capture au chiffre
+  près. Et <b>aucune facture n’a été inventée dans le passé</b> : vos numéros
+  commencent au 18 août, donc les mois d’avant répondent « aucune facture ».
+  <br><br>
   <a href="essais.html">‹ Toutes les maquettes à essayer</a>
 </p>
 
@@ -291,7 +316,7 @@
    camps, exactement comme dans l'application (`estFacture`, qui regarde
    `factureStatut === "emise"`).
    ====================================================================== */
-const DEPART = [
+const CAPTURE = [
   // Les cinq factures de sa capture, au centime et à la date près.
   { id:'f5', nom:'Mr. Martins',      jour:'2026-08-20', montant:1764.00, numero:'F2026-0005' },
   { id:'f4', nom:'Mr. Martins',      jour:'2026-08-19', montant:240.00,  numero:'F2026-0004' },
@@ -305,6 +330,25 @@ const DEPART = [
   { id:'a3', nom:'Mairie de Sainte-Luce', jour:'2026-08-12', montant:700.00, numero:null },
   { id:'a4', nom:'Mr. Martins',           jour:'2026-08-08', montant:240.00, numero:null },
 ];
+
+/* **Le retard de facturation, sa demande du 22 août** : *« il faut pouvoir
+   revenir dans le passé si jamais on a du retard sur la facturation »*. Un
+   chantier de JUILLET jamais facturé — sans lui, le retour en arrière ne se
+   juge pas, il se croit sur parole.
+
+   **Il ne va que dans les propositions, jamais dans l'écran d'aujourd'hui.**
+   Celui-là doit rester sa capture au chiffre près : un cinquième chantier en
+   attente y ferait « Cinq à facturer · 2 930,00 € », et on ne comparerait plus
+   à ce qu'il a sous les yeux.
+
+   **Aucune facture n'est inventée dans le passé, et c'est délibéré.** Ses
+   numéros commencent à F2026-0001 le 18 août : il n'a jamais facturé avant.
+   Un mois passé sans facture le DIT — « Aucune facture en juillet » — plutôt
+   que d'en fabriquer (`CLAUDE.md` §4 : ce qui n'a pas de source reste vide et
+   signalé). */
+const RETARD = { id:'r1', nom:'M. Ferreira', jour:'2026-07-14', montant:890.00, numero:null };
+
+const DEPART = [...CAPTURE, RETARD];
 
 let chantiers = DEPART.map((c) => ({ ...c }));
 let vue = 'aujourdhui';
@@ -366,6 +410,60 @@ function facturer(id){
   rendre();
 }
 
+/* ======================================================================
+   REVENIR DANS LE PASSÉ — sa demande du 22 août 2026.
+
+   *« En haut il y a marqué août 2026, mais il faut pouvoir revenir dans le
+   passé si jamais on a du retard sur la facturation. »*
+
+   **On se déplace sur le CALENDRIER, pas sur la liste des mois qui portent
+   quelque chose.** Sauter de août à mai parce que juin et juillet sont vides
+   laisse croire que juin n'existe pas ; l'écran doit pouvoir répondre « aucune
+   facture en juin », ce qui est une réponse.
+
+   **Et ce qui reste à facturer NE SUIT PAS le mois.** C'est tout l'objet de sa
+   demande : un chantier de juillet jamais facturé doit rester sous ses yeux en
+   août, sans quoi il faudrait déjà savoir qu'il existe pour aller le chercher.
+   Seul le FACTURÉ se feuillette.
+   ====================================================================== */
+let recul = 0;              // 0 = le mois le plus récent
+const RECUL_MAX = 18;       // dix-huit mois en arrière : au-delà, plus rien
+
+/** Le mois le plus récent des données — le point de départ du feuilletage. */
+const MOIS_BASE = [...DEPART].sort(duPlusRecent)[0].jour.slice(0, 7);
+
+/** « 2026-08 » reculé de n mois. */
+function decaler(cle, n){
+  let annee = Number(cle.slice(0,4)), mois = Number(cle.slice(5,7)) - n;
+  while (mois < 1) { mois += 12; annee -= 1; }
+  while (mois > 12) { mois -= 12; annee += 1; }
+  return annee + '-' + String(mois).padStart(2, '0');
+}
+const cleAffichee = () => decaler(MOIS_BASE, recul);
+/** « Août 2026 » — le mois en toutes lettres, capitale en tête. */
+function nomDuMois(cle){
+  const n = MOIS[Number(cle.slice(5,7)) - 1];
+  return n.charAt(0).toUpperCase() + n.slice(1) + ' ' + cle.slice(0,4);
+}
+
+/**
+ * L'en-tête d'un mois qu'on peut feuilleter : ‹ Août 2026 › et son total.
+ *
+ * **La flèche du futur se ferme au mois le plus récent.** Un bouton qui ne
+ * fait rien s'appuie deux fois, puis on croit l'écran cassé.
+ */
+function enTeteMois(cle, total){
+  return `
+    <div class="nav-mois">
+      <button type="button" class="fleche-mois" data-recul="1"
+        ${recul >= RECUL_MAX ? 'disabled' : ''} aria-label="Mois précédent">‹</button>
+      <span class="nom-mois-nav">${nomDuMois(cle)}</span>
+      <button type="button" class="fleche-mois" data-recul="-1"
+        ${recul <= 0 ? 'disabled' : ''} aria-label="Mois suivant">›</button>
+      <span class="somme">${total > 0 ? euros(total) : ''}</span>
+    </div>`;
+}
+
 /* ── Les mois, pour les écrans qui les gardent ──────────────────────── */
 function parMois(liste){
   const groupes = new Map();
@@ -385,7 +483,11 @@ function parMois(liste){
    ceux de `src/app/termines/FilTermines.tsx`, au pixel de marge près.
    ====================================================================== */
 function ecranAujourdhui(){
-  const attente = aFacturer(), faites = facturees();
+  // **Sur SA capture, pas sur les données des propositions.** Le chantier de
+  // juillet resté à facturer n'existe que dans les propositions : ici, l'écran
+  // doit rendre « Quatre à facturer · 2 040,00 € », ce qu'il a sous les yeux.
+  const attente = CAPTURE.filter((c) => !c.numero).sort(duPlusRecent);
+  const faites = CAPTURE.filter((c) => c.numero).sort(duPlusRecent);
   const moisFaits = parMois(faites);
   const total = somme(faites);
   const lettres = ['zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf'];
@@ -458,7 +560,10 @@ function ecranAujourdhui(){
    ====================================================================== */
 function ecranA(){
   const attente = aFacturer(), faites = facturees();
-  const moisFaits = parMois(faites);
+  // Le mois feuilleté, et lui seul. `attente` ne le suit pas : un chantier de
+  // juillet resté à facturer se voit encore en août — c'est le retard.
+  const cle = cleAffichee();
+  const duMois = faites.filter((c) => c.jour.slice(0,7) === cle);
 
   const carteAttente = attente.length === 0 ? `
     <div class="section">
@@ -479,20 +584,21 @@ function ecranA(){
         </div>`).join('')}
     </div>`;
 
-  const blocsFaits = moisFaits.map((m) => `
+  const blocFait = `
     <div class="section">
-      <h2>${m.nom.charAt(0).toUpperCase() + m.nom.slice(1)} ${m.annee}
-        <span class="somme">${euros(somme(m.lignes))}</span></h2>
-      <p class="quoi">${m.lignes.length} facture${m.lignes.length > 1 ? 's' : ''} envoyée${m.lignes.length > 1 ? 's' : ''}.</p>
-      ${m.lignes.map((c) => `
+      ${enTeteMois(cle, somme(duMois))}
+      ${duMois.length === 0
+        ? `<p class="vide">Aucune facture en ${nomDuMois(cle).toLowerCase()}.</p>`
+        : `<p class="compte">${duMois.length} facture${duMois.length > 1 ? 's' : ''} envoyée${duMois.length > 1 ? 's' : ''}.</p>
+      ${duMois.map((c) => `
         <div class="ligne">
           <span class="qui">
             <span class="nom">${echappe(c.nom)}</span>
             <span class="quand">${numeroCourt(c.numero)} · ${dateEnClair(c.jour)}</span>
           </span>
           <span class="euros">${euros(c.montant)}</span>
-        </div>`).join('')}
-    </div>`).join('');
+        </div>`).join('')}`}
+    </div>`;
 
   return `
     <h1 class="titre-ecran">Terminés</h1>
@@ -502,7 +608,7 @@ function ecranA(){
       : 'Tout est facturé.'}</p>
     <div class="filet"></div>
     ${carteAttente}
-    ${blocsFaits}
+    ${blocFait}
     <div class="pied-ecran">
       <div class="rangee">Ma TVA à déclarer
         <span class="fleche">›</span></div>
@@ -521,8 +627,6 @@ function ecranA(){
 function ecranB(){
   const attente = aFacturer(), faites = facturees();
   const tout = [...chantiers].sort(duPlusRecent);
-  const liste = filtreB === 'attente' ? attente : tout;
-  const moisListe = parMois(liste);
 
   const onglet = (cle, texte) => `
     <button type="button" class="filtre" data-filtre="${cle}"
@@ -533,18 +637,7 @@ function ecranB(){
      ni ce qui est rentré, ni ce qui attend. Exactement le défaut qu'on est en
      train de retirer. Il ne compte donc que le FACTURÉ, et ce qui attend se
      dit en dessous, en toutes lettres. */
-  const blocs = moisListe.map((m) => {
-    const faitesDuMois = m.lignes.filter((c) => c.numero);
-    const attenteDuMois = m.lignes.filter((c) => !c.numero);
-    return `
-    <div class="section">
-      <h2>${m.nom.charAt(0).toUpperCase() + m.nom.slice(1)} ${m.annee}
-        <span class="somme">${euros(somme(faitesDuMois))}</span></h2>
-      <p class="quoi">${faitesDuMois.length} facture${faitesDuMois.length > 1 ? 's' : ''} envoyée${faitesDuMois.length > 1 ? 's' : ''}${
-        attenteDuMois.length
-          ? ` · et ${euros(somme(attenteDuMois))} qui attendent leur facture`
-          : ''}.</p>
-      ${m.lignes.map((c) => c.numero ? `
+  const ligne = (c) => c.numero ? `
         <div class="ligne">
           <span class="qui">
             <span class="nom">${echappe(c.nom)}</span>
@@ -559,10 +652,35 @@ function ecranB(){
               ${euros(c.montant)} prévus</span>
           </span>
           <button type="button" class="facturer" data-facturer="${c.id}">Facturer</button>
-        </div>`).join('')}
+        </div>`;
+
+  /* **L'onglet « À facturer » ne se feuillette pas.** Il montre tout ce qui
+     attend, tous mois confondus — c'est exactement ce qu'on vient y chercher
+     quand on a du retard. Seul « Tout » se déplace de mois en mois. */
+  const blocs = filtreB === 'attente'
+    ? (attente.length === 0
+        ? `<div class="section"><p class="vide">Rien n’attend. Vous êtes à jour.</p></div>`
+        : `<div class="section">
+             <p class="compte">${attente.length} chantier${attente.length > 1 ? 's' : ''} à facturer, tous mois confondus.</p>
+             ${attente.map(ligne).join('')}
+           </div>`)
+    : (() => {
+        const cleM = cleAffichee();
+        const duMois = tout.filter((c) => c.jour.slice(0,7) === cleM);
+        const faitesDuMois = duMois.filter((c) => c.numero);
+        const attenteDuMois = duMois.filter((c) => !c.numero);
+        return `
+    <div class="section">
+      ${enTeteMois(cleM, somme(faitesDuMois))}
+      ${duMois.length === 0
+        ? `<p class="vide">Rien en ${nomDuMois(cleM).toLowerCase()}.</p>`
+        : `<p class="compte">${faitesDuMois.length} facture${faitesDuMois.length > 1 ? 's' : ''} envoyée${faitesDuMois.length > 1 ? 's' : ''}${
+            attenteDuMois.length
+              ? ` · et ${euros(somme(attenteDuMois))} qui attendent leur facture`
+              : ''}.</p>
+      ${duMois.map(ligne).join('')}`}
     </div>`;
-  }).join('') || `
-    <div class="section"><p class="vide">Rien dans cette liste.</p></div>`;
+      })();
 
   return `
     <h1 class="titre-ecran">Terminés</h1>
@@ -652,11 +770,11 @@ const LEGENDES = {
     titre:'A · Deux piles : ce qui reste, ce qui est fait',
     chapo:'Ce qui attend <b>monte en haut de l’écran, déplié</b>, avec un bouton « Facturer » par ligne. Ce qui est fait descend, sous un titre qui le nomme.',
     points:[
-      '<b>Plus rien de replié</b> : les quatre chantiers à facturer se voient et se facturent en un appui.',
-      '<b>Deux titres en français</b> — « À facturer », « Août 2026 » — au lieu de deux listes qu’il faut distinguer à la forme des points.',
-      '<b>Un seul total par bloc</b>, à côté de son titre. Le doublon « Facturé, tous mois confondus » disparaît : il ne reviendra que le jour où il y aura plusieurs mois.',
-      '<b>« Facture n° 5 · Jeudi 20 août »</b> remplace « F2026-0005 · LE 20 ».',
-      'Ni fil, ni points, ni pastille. <b>L’or ne sert plus que pour l’argent qui n’est pas encore rentré.</b>',
+      '<b>Plus rien de replié</b> : les chantiers à facturer se voient et se facturent en un appui.',
+      '<b>‹ Août 2026 › se feuillette</b> — votre demande du 22 août. Reculez : « Aucune facture en juillet » est une réponse, et un mois vide ne se saute pas.',
+      '<b>Ce qui reste à facturer NE suit PAS le mois.</b> M. Ferreira, terminé le 14 juillet et jamais facturé, reste sous vos yeux en août : c’est ça, le retard.',
+      '<b>« 5 factures envoyées » est en noir gras</b>, votre demande. La phrase sur les devis reste grise : c’est une réserve, pas un chiffre.',
+      '<b>« Facture n° 5 · Jeudi 20 août »</b> remplace « F2026-0005 · LE 20 ». Ni fil, ni points, ni pastille.',
     ],
   },
   b: {
@@ -664,9 +782,9 @@ const LEGENDES = {
     chapo:'Le plus proche de votre écran actuel : on garde le fil du temps, <b>on remplace les codes par des mots</b>. Chaque ligne dit où elle en est.',
     points:[
       '<b>« Pas encore facturé » / « Facturé le 20 août »</b> : plus de point creux à décoder.',
-      '<b>Deux onglets</b> — Tout, À facturer. Un appui, et l’écran ne montre plus que le travail qui reste.',
+      '<b>‹ Août 2026 › se feuillette</b>, comme dans la A — et le compte des factures est en <b>noir gras</b>.',
+      '<b>Deux onglets</b> — Tout, À facturer. Le second <b>ne se feuillette pas</b> : il montre tout ce qui attend, tous mois confondus. C’est là qu’on va quand on a du retard.',
       '<b>Une phrase en haut</b> dit les deux chiffres et ce qu’ils sont, au lieu de les poser sans légende.',
-      'Le bouton « Facturer » est <b>sur la ligne</b>, pas derrière un volet.',
       'C’est la proposition qui change le moins de choses — <b>et donc la plus rapide à coder</b>.',
     ],
   },
@@ -713,6 +831,14 @@ function rendre(){
   // Les deux onglets de la proposition B.
   zone.querySelectorAll('[data-filtre]').forEach((b) =>
     b.addEventListener('click', () => { filtreB = b.dataset.filtre; rendre(); }));
+
+  // Feuilleter les mois. Borné des deux côtés : la flèche du futur se ferme au
+  // mois le plus récent, celle du passé au-delà de dix-huit mois.
+  zone.querySelectorAll('[data-recul]').forEach((b) =>
+    b.addEventListener('click', () => {
+      recul = Math.min(RECUL_MAX, Math.max(0, recul + Number(b.dataset.recul)));
+      rendre();
+    }));
 }
 
 document.querySelectorAll('[data-vue]').forEach((b) =>
@@ -726,7 +852,7 @@ document.querySelectorAll('[data-vue]').forEach((b) =>
 
 document.getElementById('remettre').addEventListener('click', () => {
   chantiers = DEPART.map((c) => ({ ...c }));
-  volet = false; filtreB = 'tout';
+  volet = false; filtreB = 'tout'; recul = 0;
   rendre();
 });
 

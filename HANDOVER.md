@@ -69,6 +69,12 @@ l'identique, puis trois simplifications — **A** deux piles, **B** une seule
 liste avec l'état écrit, **C** une page qui ne fait qu'une chose. Elles
 s'essaient : les boutons « Facturer » facturent, les totaux se refont.
 
+**Deux corrections déjà portées**, le soir du 22 : le mois **se feuillette**
+(`‹ Août 2026 ›`, un mois vide répond « aucune facture ») parce qu'il faut
+pouvoir revenir en arrière quand la facturation a du retard — et **ce qui reste
+à facturer ne suit pas le mois**, c'est tout l'objet de sa demande. Le compte
+des factures passe en **noir gras**.
+
 Attendre A, B, C, un mélange — ou « aucune », qui est une réponse. Le détail de
 ce qui se comprend mal, et pourquoi, est dans `CHANGELOG.md` du 22 août.
 

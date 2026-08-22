@@ -150,6 +150,83 @@ inatteignable. Trouvé en comptant les `<a>` contre les `</a>`.
 
 ---
 
+### La fiche client est enfin celle de sa maquette — les huit écarts d'un coup
+
+**Sa phrase, devant l'écran :** *« C'est toujours pas la même version que celle
+que je t'avais demandée. Ça fait déjà deux fois que je te le demande. Je ne
+comprends pas pourquoi tu ne veux pas me la coder. »*
+
+Il a raison, et la faute est nette : les écarts avaient été **relevés et
+mesurés le matin même**, puis je lui ai demandé son feu vert au lieu de coder —
+alors qu'il l'avait déjà donné deux fois (*« tu me la codes trait pour trait, tu
+ne changes rien »*). Une liste d'écarts n'est pas un travail livré.
+
+Ce qui manquait, et qui est en place : la flèche de retour sur la ligne du
+titre en chevron nu ; le contour **or** des pastilles Mr / Mme ; le nom du
+client au même corps que le téléphone ; le choix du canal **toujours visible** ;
+les capsules du canal cernées, l'or quand il est pris ; le carré des photos en
+74 × 74 avec son liseré **en tirets doré** ; « Je rédige mon devis » en pleine
+largeur.
+
+**La batterie a trouvé ce que la capture ne montrait pas.** La flèche ramenée
+sur la ligne du titre lui prend trente-six pixels, et la phrase d'attente de la
+dictée occupe les 190 px de droite : « Fiche client » se brisait en deux
+pendant qu'Atlas travaillait. `test-attente-dictee-e2e` l'a vu. Le titre est
+une étiquette, pas du texte : il garde sa largeur, c'est la phrase qui se
+replie.
+
+### La fiche d'état MESURE le port au lieu de le deviner
+
+**Sa matinée du 22 août, et trois allers-retours perdus.** La fiche annonçait
+« Port 3000 : PRIVÉ (sans-gh) » — sans jamais avoir regardé. Elle recopiait le
+mot rendu au démarrage par `ouvrir-port.sh`, lequel ne dit pas l'état du port
+mais ce que le script a pu FAIRE : « `gh` est absent, je n'ai pas pu le régler »
+devenait « donc il est privé ». Il a fait les trois clics, puis : *« il est en
+public déjà »*.
+
+Une fiche existe pour éviter de raisonner sur une machine qu'on ne voit pas
+(`CLAUDE.md` §1 bis). Celle-là raisonnait à notre place, et à tort.
+
+L'espace s'appelle désormais par **son adresse publique**, celle de son
+téléphone, et rapporte ce qui revient — en nommant qui a répondu, le relais de
+GitHub ou Atlas, parce qu'un même 404 appelle deux gestes opposés. C'est ainsi
+que la vraie panne est enfin sortie : **son installation de Next.js était
+cassée** (`Cannot find module './detect-typo'`), le serveur ne démarrait plus,
+et ni le port ni l'application n'y étaient pour quelque chose.
+### « Terminés » : revenir dans le passé, et le compte en noir gras
+
+Ses deux corrections sur la planche 86, le soir même : *« en haut il y a marqué
+août 2026, mais il faut pouvoir revenir dans le passé si jamais on a du retard
+sur la facturation »*, et *« cinq factures envoyées et tant qui attendent leur
+facturation, ça tu peux le mettre en noir gras »*.
+
+**Ce qui a été tranché, et qui ne se devinait pas depuis sa phrase :**
+
+| | |
+|---|---|
+| Le mois se feuillette | `‹ Août 2026 ›`, une flèche de chaque côté. La flèche du futur **se ferme** sur le mois le plus récent : un bouton qui ne fait rien s'appuie deux fois, puis on croit l'écran cassé |
+| Un mois vide **le dit** | « Aucune facture en juillet 2026 ». On se déplace sur le **calendrier**, pas sur la liste des mois qui portent quelque chose : sauter de août à mai laisse croire que juin n'existe pas |
+| **Ce qui reste à facturer NE suit PAS le mois** | c'est tout l'objet de sa demande. Un chantier de juillet jamais facturé reste sous ses yeux en août — sinon il faudrait déjà savoir qu'il existe pour aller le chercher |
+| Dans la B, l'onglet « À facturer » ne se feuillette pas non plus | il montre tout ce qui attend, tous mois confondus |
+
+**Aucune facture n'a été inventée dans le passé, et c'est délibéré.** Ses
+numéros commencent à `F2026-0001` le 18 août : il n'a jamais facturé avant. Un
+mois d'avant répond donc « aucune facture » plutôt que de porter du faux
+(`CLAUDE.md` §4). Ce qui a été ajouté, c'est **un seul** chantier — M. Ferreira,
+terminé le 14 juillet, jamais facturé — sans quoi le retour en arrière ne se
+juge pas, il se croit sur parole.
+
+**Et il ne va que dans les propositions.** L'onglet « Aujourd'hui » doit rester
+sa capture au chiffre près : un cinquième chantier en attente y écrirait « Cinq
+à facturer · 2 930,00 € », et on ne comparerait plus à ce qu'il a sous les yeux.
+Deux jeux de données, donc, et la page le dit.
+
+**Le noir gras ne s'applique qu'au compte.** « 5 factures envoyées · et
+2 040,00 € qui attendent leur facture » est ce qu'il vient chercher ; « Montants
+prévus à vos devis » reste gris — c'est une réserve, pas un chiffre. La suite le
+**mesure dans le navigateur** (graisse 700, `rgb(28,28,26)`) : une classe posée
+ne prouve pas une graisse.
+
 ### « Terminés » : trois façons de la simplifier, et rien de codé
 
 *« Comme on a fait avec toutes les pages, on les a bien simplifiées, maintenant
@@ -204,6 +281,53 @@ coupable.
 ---
 
 ## 2026-08-21
+
+### « Pourquoi pas des 3504 ? » — j'avais inventé les portées
+
+*« Pourquoi tu as utilisé des tuyères 1800 et pas des arroseurs 3500 de chez
+Rain Bird ? »* La réponse tient en une ligne de son catalogue : la 3504 porte au
+minimum **5,2 m** (buse 0,75) pour une bande de **4 m** de large.
+
+**Mais en vérifiant, j'ai trouvé bien pire dans la maquette.** J'annonçais
+« Turbine 5004, buse 3.0 — portée 6 m » : **cette portée n'existe pas**. Ses
+relevés donnent 8,5 m pour la buse 1,0 et **11,1 m** pour la 3,0. Et la 12-VAN ne
+fait pas 4 m mais **3,6 m**. J'avais inventé des valeurs qui étaient dans le
+catalogue depuis le 17 août, et tout le maillage reposait dessus.
+
+**Deux règles de sa part ont débloqué le reste.**
+
+*« Les débits à 360° sont les mêmes qu'à 180° et 90°. »* Le catalogue portait
+cette question ouverte depuis le 17 août et écartait toutes les turbines du
+calcul faute de réponse. Elle est tranchée — et **c'est l'inverse de ce que le
+dépôt supposait** : on imaginait un débit proportionnel à l'arc, ce qui aurait
+divisé par quatre celui d'un coin et fait poser quatre fois trop d'arroseurs sur
+une voie. La règle ne vaut que pour les turbines : une buse VAN projette
+plusieurs filets, et ses propres relevés donnent bien 0,15 / 0,30 / 0,59.
+
+*« On a un recouvrement d'au moins 80 %, pas obligé d'avoir 100 % à chaque
+fois. »* Le contrôle exigeait 100 % de la pelouse à portée d'un arroseur — plus
+strict que son métier, et cela coûte : chaque point manquant fait resserrer le
+maillage, donc ajouter des arroseurs et des raccords. **Un contrôle trop sévère
+fait dépenser aussi sûrement qu'un contrôle absent.**
+
+**Le plan refait sur les vraies valeurs est plus simple que le faux :**
+
+| | Avant (valeurs inventées) | Après (ses relevés) |
+|---|---|---|
+| Arroseurs | 9 turbines 5004 + 4 tuyères | 9 turbines **3504 buse 0,75** + 4 tuyères |
+| Portées | 6 m et 4 m — inexistantes | **5,2 m** et **3,6 m** — relevées |
+| Réseaux | 3 | **2** |
+| Nourrice | 3 voies | **2 voies** |
+| Couverture | — | **100 %**, pour 80 % exigés |
+
+**Et un principe s'est imposé de lui-même : un réseau par famille.** Une tuyère
+verse environ trois fois plus vite qu'une turbine ; sur une même voie, le temps
+qui convient à l'une noie ou assoiffe l'autre. L'ancien plan mélangeait une
+turbine et quatre tuyères sur le réseau 3.
+
+**Deux détails trouvés en lisant les fiches** : la 3504 est en **1/2"** (pas
+3/4" comme la 5004), ce qui change tous ses SBE de corps ; et elle est **livrée
+avec ses six buses**, donc la ligne « buse » disparaît de la commande.
 
 ### Le tour plutôt que la coupe — et un contrôle qui dormait
 

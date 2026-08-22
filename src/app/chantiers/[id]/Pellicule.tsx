@@ -141,7 +141,10 @@ export default function Pellicule({
           // montre et ce qu'il annonce doivent raconter le même instant.
           aria-label={enCours ? "Envoi des photos en cours" : "Ajouter des photos"}
           className="atlas-ajouter"
-          style={{ border: `1px solid ${colors.line}`, color: colors.or }}
+          // Le liseré est en TIRETS et doré, comme sur sa maquette : un carré
+          // en trait plein se lit comme une case vide, pas comme un endroit où
+          // poser une photo.
+          style={{ border: `1px dashed ${colors.or}`, color: colors.or }}
         >
           {/* **Le même souffle que la dictée**, sur sa demande du 13 août 2026 :
               *« oui souffle aussi pour la photo »*. C'était ici le même
