@@ -306,7 +306,7 @@ export default function FormulaireNouveauChantier({
               <FlecheRetour />
             </Link>
           )}
-          <div className="min-w-0 flex-1">
+          <div className="flex-shrink-0">
             {/* **« Fiche client », et plus de surtitre du tout.** Sa demande du
                 16 août 2026, capture à l'appui : *« Enlève nouveau un chantier
                 et remplace par fiche client. »*
@@ -319,7 +319,18 @@ export default function FormulaireNouveauChantier({
                 « Fiche client » est vrai dans les deux cas, à la création
                 comme à la reprise. Lui garder une ligne au-dessus obligerait
                 à inventer un mot qu'il n'a pas demandé (`CLAUDE.md` §4). */}
-            <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
+            {/* **Le titre ne se brise JAMAIS en deux** — `test-attente-dictee-e2e`
+                tient cette promesse, et il l'a fait rougir le 22 août : la
+                flèche de retour, ramenée sur cette ligne, lui a pris trente-six
+                pixels, et la phrase d'attente de la dictée (190 px, à droite) a
+                fini de le casser. Un titre qui se réorganise pendant qu'il
+                attend donne l'impression d'un écran qui part en morceaux.
+                « Fiche client » est une étiquette, pas du texte : elle garde sa
+                largeur, et c'est la phrase qui se replie. */}
+            <h1
+              className="whitespace-nowrap text-[32px] leading-tight"
+              style={{ fontFamily: font.display }}
+            >
               Fiche client
             </h1>
           </div>
@@ -373,7 +384,7 @@ export default function FormulaireNouveauChantier({
               **Le champ « Téléphone » seul a disparu** dans le même geste : le
               numéro est ici. */}
           <div className="flex gap-2.5">
-            <div className="min-w-0 flex-1">
+            <div className="flex-shrink-0">
               {/* **Plus de `big`** : sa maquette écrit toutes les cases au même
                   corps (`input{font-size:16px}`), et la case du nom y a donc la
                   même hauteur que celle du téléphone. Le serif de 20 px la
