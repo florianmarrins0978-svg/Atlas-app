@@ -28,7 +28,7 @@ avant de se coder (`CLAUDE.md` §3 bis), et la planche 84 reste la référence.
 Toute correction du planning se porte D'ABORD sur elle, sinon les deux
 divergent — et c'est elle qu'il ouvre sur son téléphone.
 
-### Une équipe SANS NOM fait déborder sa ligne de quatre pixels — à lui montrer
+### ~~Une équipe SANS NOM fait déborder sa ligne de quatre pixels~~ — **TRANCHÉ le 22 août 2026 : on ne change rien**
 
 Trouvé le 21 août 2026 en regardant une capture, et mesuré : sur la fiche du
 jour, une ligne de demi-journée aligne la pastille (11 px), le mot (70 px),
@@ -67,9 +67,31 @@ porter des chiffres écrits à la main.
 | **B** | le mot passe à « Ap.-m. » — celui que ses boutons de pose emploient déjà | il reste 14 px |
 | **C** | l'écran lui propose « Nommer », d'un appui | il reste 13 px |
 
-**Rien n'est codé, et rien ne se code avant sa réponse** (`CLAUDE.md` §3 bis).
-Ne pas rouvrir ce point en écrivant dans `src/` : la planche attend, et « ne rien
-changer » reste une réponse recevable — la ligne se replie, elle ne perd rien.
+**SA RÉPONSE, le 22 août 2026 : on ne change rien.** *« On laisse comme c'est là
+et on verra bien plus tard. »*
+
+**Ce qui l'a décidé, et c'est utile de le savoir :** la planche se mesurant chez
+celui qui l'ouvre, elle lui a répondu elle-même — sur SON téléphone (~430 px de
+large), la première ligne annonce **« il reste 29 px »**. Le débordement n'existe
+que sur un écran plus étroit, autour de 390 px. Et même là, rien n'est perdu :
+« Retirer » passe simplement à la ligne du dessous, toujours atteignable.
+
+**Il a alors demandé si l'application ne pouvait pas se METTRE À L'ÉCHELLE** —
+tout rétrécir sur un petit écran pour que le visuel ne change jamais. C'est
+faisable, et ça rouvre deux pannes que ce dépôt a déjà payées :
+
+| | Aujourd'hui | Réduit de 13 % (430 → 375 px) | Ce que ça coûte |
+|---|---|---|---|
+| Texte des champs | 16 px | **14 px** | iOS agrandit la page de lui-même à la mise au point, et l'écran saute sous le doigt (`ARCHITECTURE.md`, « les champs passent de 15 à 16 px ») |
+| Zones à toucher | 44 px | **38 px** | on rate le bouton — et il travaille avec des gants |
+
+Devant ces deux chiffres il a tranché : *« si tu me dis que ce que font les
+applications, c'est de laisser les pages respirer, dans ces cas-là on laisse
+comme c'est là »*.
+
+**NE PAS ROUVRIR CE POINT.** Ni l'étiquette de repli, ni la mise à l'échelle
+globale. La planche 85 reste en ligne : elle documente ce qui a été écarté, et
+pourquoi. S'il y revient un jour, c'est de là qu'on repart.
 
 ---
 
