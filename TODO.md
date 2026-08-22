@@ -9,30 +9,6 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-<<<<<<< HEAD
-## Les suites du devis « à la main » lâchent sous charge (22 août 2026)
-
-**Constaté sur quatre batteries complètes du 22 août**, sur du code qu'aucune
-d'elles ne modifiait : `test-devis-complet-e2e.ts` (« Taux enregistré : 20.00 »
-au lieu de 10.00) et `test-devis-a-la-main-e2e.ts` (« Montant enregistré :
-0.00 » au lieu de 1250.00) rougissent **une batterie sur deux**, chacune à son
-tour. **Jouées seules, les deux passent.** Deux batteries sur quatre au vert
-complet, sans qu'aucun code de l'éditeur ait bougé entre-temps.
-
-Les deux échouent au même endroit : on écrit dans un champ, on relit la base, et
-la valeur n'y est pas encore. L'enregistrement de l'éditeur est différé ; sur un
-serveur de développement chargé par soixante suites, l'assertion arrive avant
-l'écriture.
-
-**Ce n'est pas un défaut du produit — c'est un contrôle qui lit trop tôt.** Mais
-il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un rouge.
-Le corriger, c'est attendre la trace de l'enregistrement plutôt qu'un délai —
-la même leçon que le `networkidle` du 15 août.
-
-**Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
-c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne
-relance pas l'enquête depuis zéro.
-=======
 ## ⚠ EN ATTENTE DE SA RÉPONSE — compter les chantiers ou les équipes ? (22 août 2026)
 
 Sa question, capture à l'appui : *« pourquoi le matin et l'après-midi de monsieur
@@ -72,7 +48,28 @@ proposé — *« je ne comprends pas ta proposition A B ou C, ça n'a rien à vo
 C'était répondre à côté : le fond n'est pas un choix d'écran, mais de règle.
 
 ---
->>>>>>> origin/main
+## Les suites du devis « à la main » lâchent sous charge (22 août 2026)
+
+**Constaté sur quatre batteries complètes du 22 août**, sur du code qu'aucune
+d'elles ne modifiait : `test-devis-complet-e2e.ts` (« Taux enregistré : 20.00 »
+au lieu de 10.00) et `test-devis-a-la-main-e2e.ts` (« Montant enregistré :
+0.00 » au lieu de 1250.00) rougissent **une batterie sur deux**, chacune à son
+tour. **Jouées seules, les deux passent.** Deux batteries sur quatre au vert
+complet, sans qu'aucun code de l'éditeur ait bougé entre-temps.
+
+Les deux échouent au même endroit : on écrit dans un champ, on relit la base, et
+la valeur n'y est pas encore. L'enregistrement de l'éditeur est différé ; sur un
+serveur de développement chargé par soixante suites, l'assertion arrive avant
+l'écriture.
+
+**Ce n'est pas un défaut du produit — c'est un contrôle qui lit trop tôt.** Mais
+il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un rouge.
+Le corriger, c'est attendre la trace de l'enregistrement plutôt qu'un délai —
+la même leçon que le `networkidle` du 15 août.
+
+**Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
+c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne
+relance pas l'enquête depuis zéro.
 
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 
