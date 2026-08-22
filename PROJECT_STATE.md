@@ -12,6 +12,23 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Proposer une date : le calendrier du planning (22 août 2026)
+
+Sa demande, validée sur planche 91 puis codée trait pour trait.
+
+| | État |
+|---|---|
+| Le calendrier du planning dans « Choisir la date » | **fait** (`MoisCharge`, partagé avec l'écran Planning) |
+| Toucher un jour dit **qui y est déjà**, avec son équipe | **fait** (`JourneeRegardee`) |
+| **Regarder n'est plus retenir** — « Proposer ce jour » engage seul | **fait** |
+| Un jour complet reste **touchable** | **fait**, à sa demande |
+| La durée va jusqu'à **200 jours** | **fait** (`durees-chantier.ts`) |
+| La charge et le chargement partagés, jamais recopiés | **fait** (`useOccupation`, `contextePlanning`) |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §143.
+
+---
+
 ## De la dictée au devis : la chaîne part TOUTE SEULE (21 août 2026)
 
 Sa panne de Madame Lucie : il dicte, ferme l'application, revient, clique le nom
@@ -720,7 +737,7 @@ débit suit désormais `√(P/P_ref)` (physique de l'orifice, corrigé dans les 
 sens) et la portée `P^(1/3)` **vers le bas seulement** — l'exposant de la portée
 est une estimation, et une portée réduite est signalée sous le plan. Son jardin
 d'exemple à 3 bar passe de trois à quatre réseaux. Détail : `ARCHITECTURE.md`
-§144. **Reste non fait :** les pertes du réseau lui-même (`TODO.md`).
+§145. **Reste non fait :** les pertes du réseau lui-même (`TODO.md`).
 
 **LE DIAMÈTRE DU TUYAU SE CALCULE, ET L'OUTIL DIT LE SEUIL** (22 août 2026).
 Sa demande : *« passé un certain nombre de mètres linéaires, il faut passer du
@@ -735,7 +752,7 @@ L'écran de l'application affiche « Ø25 jusqu'à 55 m, Ø32 au-delà » ; la p
 publiée `appli/arrosage.html` affiche en plus le verdict, parce qu'elle demande
 la longueur. Éprouvé par `scripts/test-arrosage-calcul.ts`, et **la ligne de
 l'écran de l'application n'a PAS pu être vue ici** : elle n'apparaît qu'un
-croquis lu, ce qui demande une clé d'IA. Détail : `ARCHITECTURE.md` §143.
+croquis lu, ce qui demande une clé d'IA. Détail : `ARCHITECTURE.md` §144.
 
 **LA LECTURE DU CROQUIS S'ÉPROUVE : `npm run verifier:croquis`** (21 août 2026).
 Elle dessine un croquis dans un navigateur — deux surfaces aux cotes

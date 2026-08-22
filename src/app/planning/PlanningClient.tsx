@@ -7,6 +7,7 @@ import { estAuPlanning } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
   creneauxDuChantier,
@@ -15,10 +16,8 @@ import {
 } from "@/server/disponibilites";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import {
-  grilleDuMois,
   jourLisibleCourt,
   estWeekEndIso,
-  JOURS_COURTS,
   MOIS_LONGS,
 } from "@/lib/mois";
 import {
@@ -31,7 +30,6 @@ import {
   MOT_DEMI,
   MOT_QUAND,
   occupationDemi,
-  partDeLaBarre,
   type Demi,
   type EtatDemi,
   type QuandChantier,
@@ -80,7 +78,15 @@ import {
 
 type EquipesParDemi = { matin: number[]; apres_midi: number[] };
 
-type ChantierPlanning = {
+/**
+ * Un chantier tel que le planning le lit — la forme rendue par
+ * `listerChantiersPourPlanning`.
+ *
+ * **Exporté depuis le 22 août 2026** : l'écran d'envoi montre la même journée
+ * (`JourneeRegardee`), et une seconde définition aurait divergé au premier
+ * champ ajouté.
+ */
+export type ChantierPlanning = {
   id: string;
   nom: string;
   clientNom: string | null;
@@ -423,11 +429,6 @@ export default function PlanningClient({
     });
   }
 
-  const cases = useMemo(() => grilleDuMois(curseur.annee, curseur.mois), [curseur]);
-  const surLeMois =
-    enDate(aujourdHui).getUTCFullYear() === curseur.annee &&
-    enDate(aujourdHui).getUTCMonth() === curseur.mois;
-
   const joursDeLaSemaine = useMemo(
     () => Array.from({ length: 7 }, (_, i) => plusDeJours(lundi, i)),
     [lundi]
@@ -548,140 +549,22 @@ export default function PlanningClient({
         )}
 
         {/* ─── LE MOIS ──────────────────────────────────────────────────────
-            Quatre choix de la planche, et aucun n'est décoratif :
-            1. les jours des autres mois DISPARAISSENT — ils ne portaient rien,
-               et six cases de chiffres gris se lisent quand même ;
-            2. les cases sont carrées et espacées : le doigt vise 44 px, et l'œil
-               sépare les semaines sans un seul trait ;
-            3. le week-end est une colonne TEINTÉE, pas un chiffre pâle — la
-               teinte se voit du coin de l'œil ;
-            4. aujourd'hui porte un cercle d'or, et un retour apparaît dès qu'on
-               s'en éloigne : sans lui, on se perd à trois mois. */}
-        <div ref={grilleRef} className="mt-[18px]">
-          <div className="mx-[18px] flex items-center justify-between gap-2.5">
-            <Fleche
-              libelle="Mois précédent"
-              signe="‹"
-              onClick={() =>
-                setCurseur((c) =>
-                  c.mois === 0 ? { annee: c.annee - 1, mois: 11 } : { ...c, mois: c.mois - 1 }
-                )
-              }
-            />
-            <div className="flex-1 text-center">
-              <b
-                data-atlas="mois-titre"
-                className="block text-[15px] font-bold leading-[1.2]"
-                style={{ color: colors.ink }}
-              >
-                {MOIS_LONGS[curseur.mois]} {curseur.annee}
-              </b>
-            </div>
-            <Fleche
-              libelle="Mois suivant"
-              signe="›"
-              onClick={() =>
-                setCurseur((c) =>
-                  c.mois === 11 ? { annee: c.annee + 1, mois: 0 } : { ...c, mois: c.mois + 1 }
-                )
-              }
-            />
-          </div>
-
-          <div
-            className="mx-[12px] mb-1.5 mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase"
-            style={{ letterSpacing: "0.1em", color: colors.muted }}
-            aria-hidden="true"
-          >
-            {JOURS_COURTS.map((j, i) => (
-              <span key={j} style={i >= 5 ? { color: "rgba(28,28,26,0.3)" } : undefined}>
-                {j}
-              </span>
-            ))}
-          </div>
-
-          <div className="mx-[12px] grid grid-cols-7 gap-1" data-atlas="grille-mois">
-            {cases.map((c) =>
-              c.horsMois ? (
-                <span key={c.jour} data-atlas="creux" style={{ aspectRatio: "1 / 1.06" }} />
-              ) : (
-                <button
-                  key={c.jour}
-                  type="button"
-                  data-jour={c.jour}
-                  aria-pressed={c.jour === jourTouche}
-                  // **L'état reste ANNONCÉ, même s'il ne s'écrit plus.** La
-                  // planche a retiré les mots de la case — c'est la couleur qui
-                  // parle —, mais une couleur ne se lit pas à voix haute. Ce
-                  // libellé est ce qui reste à qui n'emploie pas ses yeux, et
-                  // c'est la même phrase que la fiche du jour : deux formules
-                  // pour le même état finiraient par se contredire.
-                  aria-label={`${jourLisibleCourt(c.jour)} — matin : ${ditLeCompteDemi(
-                    occupationDe(c.jour, "matin")
-                  )}, après-midi : ${ditLeCompteDemi(occupationDe(c.jour, "apres_midi"))}`}
-                  onClick={() => toucherLeJour(c.jour)}
-                  className="flex flex-col items-center justify-center gap-1 rounded-[10px] border-0 p-0"
-                  style={{
-                    aspectRatio: "1 / 1.06",
-                    background:
-                      c.jour === jourTouche
-                        ? colors.rustTint
-                        : c.weekEnd
-                          ? "rgba(28,28,26,0.035)"
-                          : "transparent",
-                    boxShadow:
-                      c.jour === jourTouche
-                        ? `inset 0 0 0 1.5px ${colors.ink}`
-                        : c.jour === aujourdHui
-                          ? `inset 0 0 0 1.5px ${colors.or}`
-                          : "none",
-                    WebkitTapHighlightColor: "transparent",
-                  }}
-                >
-                  <span
-                    className="text-[17px] leading-none"
-                    style={{
-                      fontFamily: font.display,
-                      color:
-                        c.jour === aujourdHui
-                          ? colors.or
-                          : c.weekEnd
-                            ? "rgba(28,28,26,0.42)"
-                            : colors.ink,
-                      fontWeight: c.jour === aujourdHui ? 600 : 400,
-                    }}
-                  >
-                    {c.numero}
-                  </span>
-                  <MarqueDuJour
-                    matin={occupationDe(c.jour, "matin")}
-                    apres={occupationDe(c.jour, "apres_midi")}
-                    cache={c.weekEnd}
-                  />
-                </button>
-              )
-            )}
-          </div>
-
-          {/* Le retour n'existe QUE si l'on s'est éloigné : un bouton toujours
-              là se lit comme une action à faire. */}
-          {!surLeMois && (
-            <button
-              type="button"
-              data-atlas="retour-aujourdhui"
-              onClick={() => {
-                const d = enDate(aujourdHui);
-                setCurseur({ annee: d.getUTCFullYear(), mois: d.getUTCMonth() });
-              }}
-              className="mx-auto mt-3 block border-0 bg-transparent text-[11px] font-semibold uppercase"
-              style={{ letterSpacing: "0.18em", color: colors.or }}
-            >
-              ← Aujourd’hui
-            </button>
-          )}
+            **Le dessin vit désormais dans `MoisCharge`**, depuis le 22 août
+            2026 : l'écran d'envoi montre le MÊME calendrier quand le patron
+            choisit une date à proposer (sa demande, planche 91). Deux
+            calendriers écrits séparément ne peindraient plus la même journée à
+            deux écrans d'écart — `CLAUDE.md` §3. Les quatre choix de la planche
+            84 y sont commentés, avec leur pourquoi. */}
+        <div ref={grilleRef} className="mx-[12px] mt-[18px]">
+          <MoisCharge
+            curseur={curseur}
+            setCurseur={setCurseur}
+            aujourdHui={aujourdHui}
+            jourTouche={jourTouche}
+            onToucherJour={toucherLeJour}
+            occupationDe={occupationDe}
+          />
         </div>
-
-        <Legende />
 
         {/* ─── LA FICHE DU JOUR, DIRECTEMENT SOUS LE CALENDRIER ───────────── */}
         <div ref={carteRef}>
@@ -1018,133 +901,8 @@ function TitreSection({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Le fond d'un état — la même règle pour la barre, la pastille et la légende. */
-function fondDeLEtat(etat: EtatDemi): string {
-  if (etat === "dispo") return colors.vertPale;
-  if (etat === "plein") return colors.rust;
-  if (etat === "dela") return colors.bordeaux;
-  return "transparent";
-}
 
-/**
- * Les deux barres sous le chiffre : le matin dessus, l'après-midi dessous.
- *
- * **Sa question du 21 août : « comment tu vas faire s'il y a dix équipes ? »**
- * Trois états ne tenaient pas : avec dix équipes, « il reste de la place »
- * couvre une équipe prise comme neuf. La barre se REMPLIT donc à la
- * proportion — deux prises sur dix, c'est un cinquième de barre.
- */
-function MarqueDuJour({
-  matin,
-  apres,
-  cache,
-}: {
-  matin: { pris: readonly unknown[]; charge: number };
-  apres: { pris: readonly unknown[]; charge: number };
-  cache?: boolean;
-}) {
-  const barre = (o: { pris: readonly unknown[]; charge: number }, quoi: string) => {
-    const etat = etatDemi(o);
-    return (
-      <i
-        key={quoi}
-        data-demi={quoi}
-        data-etat={etat}
-        className="flex h-[6px] overflow-hidden rounded-[2px]"
-        style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
-      >
-        <span
-          data-atlas="seg"
-          className="h-full"
-          style={{ width: `${partDeLaBarre(o.charge)}%`, background: fondDeLEtat(etat) }}
-        />
-      </i>
-    );
-  };
-  return (
-    <span
-      data-atlas="marque"
-      className="flex w-[24px] flex-col gap-[2.5px]"
-      style={{ visibility: cache ? "hidden" : "visible" }}
-    >
-      {barre(matin, "matin")}
-      {barre(apres, "apres_midi")}
-    </span>
-  );
-}
 
-/**
- * La légende : quatre états, puis la POSITION.
- *
- * **Les deux derniers rectangles sont vides tous les deux** — sa correction du
- * 21 août : *« le rectangle du matin, mets-le blanc comme celui de
- * l'après-midi »*. Rempli, le premier se lisait comme un cinquième état, juste
- * après « au-delà » ; il ne dit rien de la charge, seulement où est le matin.
- *
- * **« Libre » n'y figure pas**, et c'est délibéré : un carré vide se comprend
- * seul, et il a demandé que tout tienne sur UNE ligne.
- */
-function Legende() {
-  const carre = (etat: EtatDemi) => (
-    <i
-      data-atlas="carre"
-      data-etat={etat}
-      className="block h-[10px] w-[10px] flex-shrink-0 rounded-[3px]"
-      style={
-        etat === "libre"
-          ? { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-          : { background: fondDeLEtat(etat) }
-      }
-    />
-  );
-  const mots: [EtatDemi, string][] = [
-    ["libre", "rien"],
-    ["dispo", "incomplet"],
-    ["plein", "complet"],
-    ["dela", "au-delà"],
-  ];
-  return (
-    <div
-      data-atlas="legende"
-      className="mx-[18px] mt-3.5 flex flex-nowrap items-center justify-center gap-1.5 text-[9px]"
-      style={{ color: colors.muted }}
-    >
-      {mots.map(([etat, mot]) => (
-        <span key={etat} className="flex flex-shrink-0 items-center gap-[5px] whitespace-nowrap">
-          {carre(etat)} {mot}
-        </span>
-      ))}
-      <span
-        data-atlas="legende-position"
-        className="flex flex-shrink-0 items-center gap-[7px] whitespace-nowrap"
-      >
-        <span className="flex w-[24px] flex-shrink-0 flex-col gap-[2.5px] self-stretch">
-          {["matin", "apres_midi"].map((d) => (
-            <i
-              key={d}
-              className="flex h-[6px] rounded-[2px]"
-              style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
-            />
-          ))}
-        </span>
-        <span className="flex flex-col gap-[2.5px] leading-none">
-          <b
-            className="flex h-[6px] items-center text-[9.5px] font-semibold"
-            style={{ color: colors.inkSoft }}
-          >
-            matin
-          </b>
-          <b
-            className="flex h-[6px] items-center text-[9.5px] font-semibold"
-            style={{ color: colors.inkSoft }}
-          >
-            après-midi
-          </b>
-        </span>
-      </span>
-    </div>
-  );
-}
 
 function Pastille({ etat }: { etat: EtatDemi }) {
   return (

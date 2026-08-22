@@ -279,6 +279,49 @@ là où le calcul est réellement muet, nulle part ailleurs.
 
 ## 4 bis. Tout schéma d'arrosage obéit à sa planche du 17 août
 
+**SANS CROQUIS COMPLET, AUCUN PLAN.** Sa règle du 21 août 2026, et elle passe
+avant tout le reste de cette section : *« l'outil doit fonctionner avec un plan
+avec toutes les métrés, l'emplacement du piquage et l'endroit définitif de la
+nourrice — sans ça il ne doit rien proposer »*.
+
+Trois éléments, tous obligatoires :
+
+| | Sans lui |
+|---|---|
+| **les métrés** | on ne sait pas combien d'arroseurs, ni où |
+| **le piquage** | on ne sait pas quel débit, ni s'il faut couper une ligne |
+| **l'endroit DÉFINITIF de la nourrice** | on ne sait ni d'où partent les lignes, ni où creuser |
+
+Il en manque un : on **retire** le plan et l'on dit lequel manque. On ne le grise
+pas — un plan affiché en pâle se photographie et se pose quand même.
+
+**L'AVERTISSEMENT SE LIT AVANT DE PHOTOGRAPHIER**, en gras, **au-dessus** du
+croquis : *« votre croquis doit impérativement contenir les métrés, l'endroit
+définitif de la nourrice, et l'endroit où le piquage se fait »*. Placé en
+dessous, il se lirait après l'envoi d'une photo incomplète — donc trop tard, et
+il faudrait retourner au jardin.
+
+**PAS DE PHRASES PRÉ-ÉCRITES DANS L'APPLICATION.** Sa remarque du 21 août :
+*« il ne faut pas mettre les phrases pré-écrites, mais il faut un endroit où on
+puisse discuter avec toi »*. Un champ libre, rien d'autre. Des suggestions
+toutes faites bornent ce qu'on ose demander — et ce qu'il a à dire ne tient
+jamais dans trois boutons. Elles n'existent dans les maquettes que parce
+qu'aucune ne porte de JavaScript, et cela doit s'y **écrire** pour qu'on ne les
+recopie pas en codant.
+
+**ET LA DISCUSSION NE CRÉE JAMAIS UN PLAN.** *« Elle peut seulement modifier, ou
+recréer si un croquis avec tous les bons éléments aux bons endroits a été
+fourni. »* C'est la tentation exacte d'une conversation : on répond en comblant
+ce qui manque, parce qu'une phrase se complète plus facilement qu'un dessin. Un
+plan tracé sur une nourrice supposée fait creuser au mauvais endroit — et une
+tranchée ne se déplace pas.
+
+**Un manquement à noter, du 21 août :** le plan de son jardin a été tracé avec
+une nourrice que J'AI placée, son croquis ne la portant pas. Il aurait dû être
+refusé.
+
+
+
 Règle posée le 21 août 2026, et qu'il veut **valable partout** : *« sers-t'en
 pour tous les schémas, il fonctionnera partout, ça doit être la règle »*.
 

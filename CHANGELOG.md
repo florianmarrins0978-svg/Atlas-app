@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
+
+**Sa demande, puis sa validation :** *« lorsqu'on clique sur "Choisir la date"
+et que le calendrier s'affiche pour proposer une date au client, on devrait
+avoir le visuel du calendrier qui se trouve dans la catégorie planning, avec la
+possibilité de cliquer sur les jours pour voir quels chantiers y sont déjà
+affectés — comme ça on peut savoir si oui ou non on peut rajouter des clients
+sur les jours »*, puis, devant la planche 91 : *« cette maquette est parfaite,
+tu peux coder ça trait pour trait, ne change rien »*.
+
+**Ce que l'écran d'avant ne pouvait pas dire.** Il montrait des ronds et
+éteignait les jours impossibles — sans jamais dire POURQUOI ni ce qu'ils
+portaient. Impossible de juger si l'on pouvait quand même s'y glisser, et le
+patron n'avait qu'à le croire sur parole.
+
+**Regarder n'est plus retenir**, et c'est le cœur du changement. Toucher une
+case ouvre la journée : qui est là, à quelle demi-journée, avec quelle équipe,
+et le verdict du serveur pour ce chantier-ci. C'est « Proposer ce jour » qui
+engage la date — auparavant, un jour consulté par erreur partait chez le client.
+
+**Un jour complet reste touchable**, à sa demande : c'est justement celui qu'il
+veut regarder avant de décider. Il ne se propose simplement pas.
+
+**Trois pièces sortent en partage plutôt qu'en copie**, et c'est ce qui empêche
+les deux écrans de se contredire : `MoisCharge` (le dessin du mois),
+`useOccupation` (la charge d'une demi-journée) et `contextePlanning` (le
+chargement). Deux calendriers, deux calculs ou deux lectures séparés auraient
+fini par peindre la même journée différemment à deux écrans d'écart — le défaut
+que `CLAUDE.md` §3 interdit, et qui s'est déjà produit ici.
+
+**La durée va jusqu'à 200 jours** — sa correction sur la planche : cent venait
+de sa demande du 3 août, et un chantier de six mois ne s'y posait pas.
+
+**Ce que la batterie a trouvé, et que la capture ne montrait pas :** trois
+suites tenaient l'ancien geste. La case éteinte n'existe plus, l'exception des
+tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour portait
+le même `data-jour` que les cases — deux éléments pour le même jour, et une
+suite qui ne savait plus lequel viser.
+
 ### Un réseau est plafonné par SON TUYAU, plus seulement par le compteur
 
 **C'est lui qui l'a déduit**, et il avait raison : *« tu ne viens pas de me dire
@@ -581,6 +620,81 @@ coupable.
 ---
 
 ## 2026-08-21
+
+### L'avertissement passe au-dessus du croquis, et les suggestions restent en maquette
+
+*« C'est un petit message qu'il faut mettre au-dessus du croquis, en noir gras :
+votre croquis doit impérativement contenir les métrés, l'endroit définitif de la
+nourrice, et l'endroit où le piquage se fait. »*
+
+**Au-dessus, et c'est tout le sujet.** Placé en dessous, il se lirait après avoir
+envoyé une photo incomplète — donc trop tard, et il faudrait retourner au jardin.
+Le contrôle mesure la **position** et le **poids** du texte, pas seulement sa
+présence : éprouvé en le déplaçant sous le croquis, et en lui retirant son gras.
+
+*« Est-ce que tu vas mettre les phrases déjà pré-écrites, ou c'était juste pour
+faire un test ? Je pense qu'il ne faut pas les mettre, mais qu'il faut un endroit
+où on puisse discuter avec toi. »*
+
+**Il a raison, et c'était bien un artifice.** Une maquette sans JavaScript ne
+peut montrer un échange qu'en pré-écrivant les répliques. Dans l'application :
+un champ libre, rien d'autre. Des suggestions toutes faites bornent ce qu'on ose
+demander, et ce qu'il a à dire ne tient jamais dans trois boutons. Le champ de
+saisie remonte donc **au-dessus** des suggestions dans la maquette, et celles-ci
+sont désormais annoncées pour ce qu'elles sont.
+
+### Sans croquis complet, aucun plan — et la discussion n'en crée jamais un
+
+*« L'outil doit fonctionner avec un plan avec toutes les métrés, l'emplacement du
+piquage et l'endroit définitif de la nourrice. Sans ça il ne doit rien proposer.
+La discussion ne doit jamais créer un plan avec des réseaux — elle peut seulement
+modifier, ou recréer si un croquis avec tous les bons éléments aux bons endroits
+a été fourni. »*
+
+Trois éléments obligatoires : les **métrés**, le **piquage**, l'**endroit
+définitif de la nourrice**. Il en manque un, le plan est **retiré** de l'écran —
+pas grisé : un plan affiché en pâle se photographie et se pose quand même. Et
+l'écran dit lequel manque, avec ce qu'il faut faire.
+
+**Pourquoi la règle vise la discussion en particulier** : c'est sa tentation
+exacte. On répond en comblant ce qui manque, parce qu'une phrase se complète plus
+facilement qu'un dessin. Un plan tracé sur une nourrice supposée fait creuser au
+mauvais endroit, et une tranchée ne se déplace pas.
+
+**Un manquement à noter, et il est de moi :** le plan de son jardin a été tracé
+avec une nourrice que j'ai placée moi-même — son croquis porte les métrés et le
+piquage, pas le regard. Selon sa règle, ce plan n'aurait pas dû être proposé.
+
+### Discuter le plan — maquette, et un garde-fou qui compte
+
+*« Si l'utilisateur a besoin de te demander une modification, qu'il puisse le
+faire. Une petite interface pour discuter avec toi. »*
+
+**`appli/arrosage-discuter.html`** : trois échanges essayables — pourquoi deux
+réseaux, passer en 15-VAN, préférer des 5004. Le plan se redessine, les pièces
+suivent. Aucun JavaScript : les échanges sont des états choisis par des radios.
+
+**Le point d'architecture prime sur l'interface : Atlas ne dessine pas le plan.**
+Il lit la demande, pose un **paramètre** du calcul, et c'est le calcul
+déterministe qui refait le schéma et la liste. Trois droits : lire le catalogue
+pour répondre, poser un paramètre, refuser en expliquant — et proposer ce qui
+s'en approche. Jamais écrire un chiffre absent du catalogue.
+
+C'est la leçon du jour même : laissé libre, il a inventé « 5004 buse 3.0, portée
+6 m », et le maillage entier en dépendait. **Une conversation rend cette dérive
+plus facile, pas moins** — on écrit une phrase plausible et personne ne la
+recompte.
+
+**Son contrôle a dû être retourné pour valoir quelque chose.** La première
+version vérifiait qu'une bonne valeur est *présente* — ce qui laisse passer une
+valeur fausse citée à côté, exactement comme ce matin. Il vérifie désormais
+l'inverse : **toute portée écrite dans la conversation doit exister au
+catalogue**. Éprouvé en remplaçant 4,5 m par 4,2 m : « une portée inventée fausse
+tout le maillage ».
+
+Deux pièges de contrôle au passage : `innerText` ne rendait que le fil visible et
+accusait la maquette de taire ce qu'elle dit ailleurs ; et le « m » de « m³/h »
+se faisait prendre pour un mètre, ce qui condamnait un débit juste.
 
 ### « Pourquoi pas des 3504 ? » — j'avais inventé les portées
 

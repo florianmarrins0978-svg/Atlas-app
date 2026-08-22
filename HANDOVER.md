@@ -54,7 +54,7 @@ juillet. Une portée réduite est signalée sous le plan (`porteeEstimee`).
 les pertes du réseau ne sont pas calculées (`TODO.md`). C'est un progrès, pas
 une garantie — ne pas l'annoncer autrement.
 
-Détail : `ARCHITECTURE.md` §144.
+Détail : `ARCHITECTURE.md` §145.
 
 ---
 
@@ -108,7 +108,7 @@ l'application (`ArrosageClient.tsx`) n'apparaît qu'après lecture d'un croquis,
 donc avec une clé d'IA. Elle a été vue au navigateur sur `appli/arrosage.html`,
 dans ses deux cas. À regarder sur son espace au premier plan calculé.
 
-Détail complet : `ARCHITECTURE.md` §143.
+Détail complet : `ARCHITECTURE.md` §144.
 
 ---
 

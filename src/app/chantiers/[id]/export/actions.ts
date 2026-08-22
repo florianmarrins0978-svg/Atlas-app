@@ -1,6 +1,7 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
+import { contextePlanning } from "@/server/contexte-planning";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "@/server/repositories/devis";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { ingererDevis } from "@/server/documents/ingestion";
@@ -55,7 +56,26 @@ export async function reprendreDevisAction(chantierId: string) {
  */
 export async function preparerEnvoiAction(chantierId: string, dureeDemiJournees?: number) {
   const ctx = await getCurrentCtx();
-  return preparerEnvoi(ctx, chantierId, new Date(), dureeDemiJournees);
+  const maintenant = new Date();
+  // **Le planning descend avec la préparation** — sa demande du 22 août 2026,
+  // validée sur planche 91 : *« la possibilité de cliquer sur les jours pour
+  // voir quels chantiers y sont déjà affectés, comme ça on peut savoir si oui
+  // ou non on peut rajouter des clients sur les jours »*.
+  //
+  // **Le MÊME chargement que l'écran Planning** (`contextePlanning`), pas un
+  // second : deux lectures séparées finiraient par ne pas compter les mêmes
+  // absences, et deux écrans qui se suivent peindraient la même journée
+  // différemment (`CLAUDE.md` §3).
+  //
+  // **Rien de tout cela ne part chez le client.** La page du client reçoit sa
+  // propre liste, recalculée sur SA fenêtre au moment où il ouvre le lien
+  // (`lireParJeton`) — les deux ne se rejoignent nulle part
+  // (`docs/AGENT.md` §2.2 bis).
+  const [preparation, planning] = await Promise.all([
+    preparerEnvoi(ctx, chantierId, maintenant, dureeDemiJournees),
+    contextePlanning(ctx, maintenant),
+  ]);
+  return { ...preparation, planning };
 }
 
 /**
