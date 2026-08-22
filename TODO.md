@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — une note sur la feuille de chantier (23 août 2026)
+
+Sa demande : *« entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un
+petit encadré où l'utilisateur peut marquer quelque chose — penser à prendre le
+broyeur, client plus disponible à partir de neuf heures »*.
+
+**Rien de tel n'existe**, vérifié plutôt que supposé (`CLAUDE.md` §5 ter) : la
+table `chantiers` n'a aucun champ libre, `notes_vocales` porte la dictée, et le
+`note` du schéma appartient aux paiements.
+
+Planche 93, `appli/note-feuille-chantier.html` : **A** le cadre toujours ouvert
+(141 px à vide sur chaque feuille), **B** une ligne discrète qui s'ouvre au doigt
+(45 px).
+
+**La seconde question décide de l'implémentation**, et il ne l'a pas soulevée :
+la note va-t-elle sur le **PDF sans les prix** — celui que ses gars emportent —
+ou reste-t-elle dans l'application ? Sur le PDF, elle devient un document qui
+sort de l'entreprise et se relit sur un chantier ; dedans seulement, elle reste
+un pense-bête.
+
+**Ce qu'il faudra, si c'est retenu :** une colonne sur `chantiers`, une action
+serveur, et l'enregistrement à la sortie du cadre — un bouton non touché
+perdrait la note d'un homme qui range son téléphone et démarre. Le champ à
+**16 px** au moins, sous quoi iOS zoome et fait sauter l'écran.
+
+---
+
 ## ⚠ EN ATTENTE DE SA RÉPONSE — l'anneau doré d'aujourd'hui (23 août 2026)
 
 Sa remarque, capture à l'appui : *« je ne comprends pas pourquoi le vingt-deux
