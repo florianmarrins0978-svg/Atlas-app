@@ -62,7 +62,7 @@ ont ce défaut avant qu'il ne les trouve.
 Sa plainte, capture à l'appui : *« je la trouve beaucoup trop compliquée. Un
 utilisateur qui ne connaît pas l'application et qui arrive sur cette page ne
 comprend rien. »* Trois propositions dessinées, et **il a pris la B** —
-`appli/termines-simple.html`, planche 89. **Elle reste la référence** : toute
+`appli/termines-simple.html`, planche 90. **Elle reste la référence** : toute
 correction de cet écran s'y porte d'abord, sinon les deux divergent, et c'est
 elle qu'il ouvre sur son téléphone.
 

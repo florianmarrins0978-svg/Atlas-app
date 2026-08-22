@@ -3,7 +3,7 @@
 // Trois choses que l'œil ne rattrape pas : dans quel mois tombe un chantier, ce
 // que ce mois totalise, et ce qui reste à facturer TOUS MOIS CONFONDUS.
 //
-// **Refait le 22 août 2026 avec l'écran** (planche 89, proposition B). Les cas
+// **Refait le 22 août 2026 avec l'écran** (planche 90, proposition B). Les cas
 // d'avant qui portaient encore quelque chose ont été gardés — un montant
 // inconnu qui n'est pas zéro, une facture à 0,00 € qui se lit, « émise » comme
 // seul état qui vaut facturé. Ceux qui décrivaient l'encart replié sont partis
@@ -278,7 +278,7 @@ essai("un montant inconnu ne s'annonce pas « 0,00 € qui attendent »", () => 
 });
 
 essai("« F2026-0005 » se dit « Facture n° 5 », jamais « n° -5 »", () => {
-  // Le tiret entrait dans le nombre sur la planche 89, et l'écran écrivait
+  // Le tiret entrait dans le nombre sur la planche 90, et l'écran écrivait
   // « Facture n° -5 ». Aucun contrôle ne l'a vu : c'est la capture, regardée.
   assert.equal(numeroCourt("F2026-0005"), "Facture n° 5");
   assert.equal(numeroCourt("F2026-0012"), "Facture n° 12");

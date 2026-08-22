@@ -1,6 +1,6 @@
 // Capture de « Terminés » — le mois qu'on feuillette, et les deux onglets.
 //
-// **Refait le 22 août 2026 avec l'écran** (planche 89, proposition B). La
+// **Refait le 22 août 2026 avec l'écran** (planche 90, proposition B). La
 // version d'avant mesurait le volet replié, la pastille dorée et l'absence de
 // tout coin arrondi : trois choses que le patron a fait retirer. Une sonde qui
 // réclame ce qui n'existe plus rend l'écran impossible à changer, et rougit sur

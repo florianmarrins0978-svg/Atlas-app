@@ -9,6 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+<<<<<<< HEAD
 ## Les suites du devis « à la main » lâchent sous charge (22 août 2026)
 
 **Constaté sur quatre batteries complètes du 22 août**, sur du code qu'aucune
@@ -31,6 +32,47 @@ la même leçon que le `networkidle` du 15 août.
 **Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
 c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne
 relance pas l'enquête depuis zéro.
+=======
+## ⚠ EN ATTENTE DE SA RÉPONSE — compter les chantiers ou les équipes ? (22 août 2026)
+
+Sa question, capture à l'appui : *« pourquoi le matin et l'après-midi de monsieur
+Eric s'affichent en incomplet ? »* — Julien **et** Antoine y sont affectés.
+
+**La cause, et elle n'est pas cosmétique.** `occupationDemi`
+(`src/lib/planning-jour.ts`) calcule `nombre de CHANTIERS ÷ nombre d'équipes` :
+1 ÷ 2 = 0,5, donc « incomplet ». **L'affectation des équipes par demi-journée,
+posée le 21 août, ne pèse sur aucune capacité** — de ce point de vue elle est
+décorative.
+
+Conséquence : ce mardi-là **est proposé à ses clients** alors que ses deux
+équipes y sont déjà.
+
+**La règle proposée**, si et seulement s'il dit oui :
+
+| Ce qu'il pose | Aujourd'hui | Après |
+|---|---|---|
+| 1 chantier, Julien + Antoine | incomplet | **complet** |
+| 1 chantier, Julien seul | incomplet | incomplet (juste) |
+| 1 chantier, aucune équipe posée | incomplet | incomplet (inchangé) |
+
+**Le piège, si on le code :** un chantier sans équipe affectée compterait zéro,
+et la journée paraîtrait vide. Il doit valoir **une unité** — sinon on remplace
+un mensonge par un autre.
+
+**Et les DEUX côtés changent ensemble.** `compterOccupation`
+(`src/server/disponibilites.ts`), qui décide des dates offertes au client, compte
+les chantiers lui aussi. Ne corriger que l'affichage ferait dire « complet » au
+planning pendant que l'écran d'envoi proposerait le jour : deux vérités sur la
+même capacité, ce que `CLAUDE.md` §3 interdit.
+
+Planche 90, `appli/equipes-ou-chantiers.html`.
+
+**Ce qui a été écarté en chemin :** un A/B/C sur l'affichage lui a d'abord été
+proposé — *« je ne comprends pas ta proposition A B ou C, ça n'a rien à voir »*.
+C'était répondre à côté : le fond n'est pas un choix d'écran, mais de règle.
+
+---
+>>>>>>> origin/main
 
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 
@@ -111,7 +153,7 @@ Sa consigne du matin — *« ne code rien, je veux des maquettes dynamiques que 
 puisse essayer »* — a été levée le soir même : **« je choisis la B avec les
 modifications que je viens de te demander »**.
 
-La planche retenue est `appli/termines-simple.html` (planche 89,
+La planche retenue est `appli/termines-simple.html` (planche 90,
 proposition B), et **elle reste la référence** : toute correction de
 « Terminés » se porte D'ABORD sur elle, comme la planche 84 pour le planning —
 sinon les deux divergent, et c'est la planche qu'il ouvre sur son téléphone.

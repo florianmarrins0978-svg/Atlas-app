@@ -196,15 +196,22 @@ et ni le port ni l'application n'y étaient pour quelque chose.
 ### « Terminés » refait : la B, codée
 
 *« Je choisis la B avec les modifications que je viens de te demander. »*
-La planche 89 est retenue et portée dans `src/app/termines/`.
+La planche 90 est retenue et portée dans `src/app/termines/`.
 
-**Elle est née « 86 », et elle a été renumérotée à la fusion.** Une autre
-session travaillait le même jour et a donné le même numéro à sa planche des
-planifiés — déjà codée, et citée dans cinq suites du planning. C'est la nôtre
-qui bouge : la plus petite retouche, et elle ne réécrit pas le texte d'une
-session qui tourne encore. C'est la deuxième collision de ce genre après la
-§59 en double du 11 août : **prendre le prochain numéro se fait sur `main`
-fraîchement récupéré, pas sur ce qu'on a sous la main.**
+**Elle est née « 86 », puis « 89 », et elle finit « 90 » — deux collisions en
+une soirée.** Trois sessions dessinaient le même jour, et chacune a pris le
+numéro libre sur SA copie de `main` : 86 pour les planifiés, 89 pour les deux
+équipes. C'est la nôtre qui bouge les deux fois, parce qu'elle est celle qui
+tient la fusion et que renuméroter chez soi ne réécrit pas le texte d'une
+session qui tourne encore.
+
+**Ce n'est pas une étourderie, c'est le numéro lui-même qui est fragile.** Le
+relever sur `main` avant d'écrire ne suffit pas : entre le relevé et la poussée,
+une autre session a publié. Troisième incident du genre après la §59 en double
+du 11 août. Tant qu'il n'y a pas mieux, la règle utile est : **le numéro se
+vérifie une dernière fois à la fusion, jamais à l'écriture** — et le fichier de
+la planche ne le porte pas dans son nom (`termines-simple.html`), ce qui rend
+la renumérotation indolore.
 
 **Ce qui a quitté l'écran, et ne doit pas revenir :**
 
@@ -265,7 +272,7 @@ dans l'écran (`CLAUDE.md` §3 bis).
 
 ### « Terminés » : revenir dans le passé, et le compte en noir gras
 
-Ses deux corrections sur la planche 89, le soir même : *« en haut il y a marqué
+Ses deux corrections sur la planche 90, le soir même : *« en haut il y a marqué
 août 2026, mais il faut pouvoir revenir dans le passé si jamais on a du retard
 sur la facturation »*, et *« cinq factures envoyées et tant qui attendent leur
 facturation, ça tu peux le mettre en noir gras »*.
@@ -307,7 +314,7 @@ des maquettes dynamiques en HTML que je puisse essayer avant de coder quoi que c
 soit. »*
 
 Mêmes mots que pour le planning le 19 août (planche 84), donc même réponse :
-`appli/termines-simple.html` — **planche 89**, essayable, et `src/` n'a pas
+`appli/termines-simple.html` — **planche 90**, essayable, et `src/` n'a pas
 bougé (`CLAUDE.md` §3 bis).
 
 **Ce qui se comprend mal sur l'écran actuel**, relevé sur sa capture et non

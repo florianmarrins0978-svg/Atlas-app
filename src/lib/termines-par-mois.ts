@@ -4,7 +4,7 @@
 // choses que l'œil ne rattrape pas : dans quel mois tombe un chantier, ce que
 // ce mois totalise, et ce qui reste à facturer tous mois confondus.
 //
-// **Refait le 22 août 2026 sur la planche 89** (`appli/termines-simple.html`,
+// **Refait le 22 août 2026 sur la planche 90** (`appli/termines-simple.html`,
 // proposition B), retenue par le patron : *« je choisis la B avec les
 // modifications que je viens de te demander »*. L'écran d'avant empilait un fil
 // par mois, chacun portant un volet replié ; celui-ci montre **un seul mois à
@@ -87,7 +87,7 @@ export function estFacture(l: Pick<LigneTerminee, "factureStatut">): boolean {
  * petit » dans ce cas se contredit (`a<b` et `b<a` à la fois) et le tri rend
  * alors un ordre qu'aucune donnée n'explique : deux factures du même jour
  * sortaient à l'envers de ce que le patron voit sur son écran. Trouvé sur la
- * planche 89, où les deux factures du 19 août s'échangeaient.
+ * planche 90, où les deux factures du 19 août s'échangeaient.
  */
 export function preparer(lignes: readonly LigneTerminee[]): LigneAffichee[] {
   return lignes
@@ -245,7 +245,7 @@ export function libelleCompte(mois: ResumeMois): string {
  * est ce qui le distingue.
  *
  * On lit les chiffres de FIN, sans supposer où tombe le tiret : `slice(5)` avait
- * fait écrire « Facture n° -5 » sur la planche 89 — le tiret entrait dans le
+ * fait écrire « Facture n° -5 » sur la planche 90 — le tiret entrait dans le
  * nombre. Trouvé en regardant l'écran, par aucun contrôle.
  */
 export function numeroCourt(numero: string): string {
