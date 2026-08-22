@@ -460,6 +460,11 @@ la phrase, écrite en dur, disait vrai la veille. C'est le pire des cas, parce
 qu'on la relit sans méfiance. Deux chiffres qui se contredisent dans le même
 écran, c'est toute la liste qu'on cesse de croire.
 
+**PAS DE GRAS DANS UNE LISTE DE PIÈCES.** Sa demande du 21 août. Une liste de
+commande se lit ligne à ligne : y appuyer des mots hiérarchise ce qui n'a pas à
+l'être, et attire l'œil sur la moitié d'une désignation. Le gras sert dans une
+explication, pas dans un tableau où chaque ligne compte autant que la suivante.
+
 **Chaque quantité doit pouvoir se RECOMPOSER à la main.** Sa question du
 21 août — *« je ne comprends pas d'où sortent tes vingt-deux coudes SBE, ça
 correspond à quoi ? »* — portait sur un chiffre JUSTE. Le défaut n'était pas le
