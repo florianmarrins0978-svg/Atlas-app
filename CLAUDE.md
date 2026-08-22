@@ -360,6 +360,24 @@ hasard le chantier suivant. Exemple, sur son plan : une bande de 4 m de large
 reçoit des tuyères, jamais des turbines — une portée de 6 m y arroserait 2 m
 au-delà de la limite, chez le voisin ou sur l'allée.
 
+**UNE LÉGENDE MONTRE, ELLE NE DÉCRIT PAS.** Sa remarque du 21 août : *« on ne
+sait pas vraiment à quel endroit tu veux utiliser un coude taraudé, à quel
+endroit un té égal ou un té taraudé. Là où tu as marqué plein, à côté tu peux
+mettre un rond plein. »* Le symbole se **dessine** à côté du mot, et c'est celui
+qui est sur le plan — un « ● » écrit en toutes lettres ne rend ni la nuance
+plein/creux, ni la forme.
+
+Et chaque symbole **nomme la pièce** qu'il implique : plein → té taraudé ; creux
+→ coude taraudé ; losange → té égal. Sans cela on lit le plan sans savoir quoi
+visser. **Toute pièce facturée se voit quelque part sur le plan** — une pièce
+commandée qu'on ne sait pas où poser ne sert à rien.
+
+**Ce qui est une règle POUR NOUS ne va pas à l'écran.** *« La phrase sur la
+tranchée creusée une fois, tu peux la supprimer. Il faut juste que ça soit une
+règle que toi tu conserves, mais l'utilisateur n'a pas besoin de voir ça. »* Nos
+raisons de conception restent ici ; l'écran ne porte que ce dont il a besoin pour
+poser le chantier.
+
 **Chaque quantité doit pouvoir se RECOMPOSER à la main.** Sa question du
 21 août — *« je ne comprends pas d'où sortent tes vingt-deux coudes SBE, ça
 correspond à quoi ? »* — portait sur un chiffre JUSTE. Le défaut n'était pas le

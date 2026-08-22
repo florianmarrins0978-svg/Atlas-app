@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### La légende montre au lieu de décrire — et une pièce de moins
+
+*« Le petit schéma en dessous n'est pas clair. On ne sait pas vraiment à quel
+endroit tu veux utiliser un coude taraudé, à quel endroit un té égal ou un té
+taraudé. Là où tu as marqué plein, à côté tu peux mettre un rond plein. »*
+
+**Les symboles sont maintenant dessinés à côté des mots** — le rond plein, le
+rond creux, le carré, le losange, le trait de tranchée —, et ce sont ceux du
+plan. Chacun nomme **la pièce** qu'il implique : plein → té taraudé ; creux →
+coude taraudé ; losange → té égal, qui n'arrose rien. On lisait le plan sans
+savoir quoi visser.
+
+**La jonction se voit enfin.** Elle était dans la commande et nulle part au
+dessin : « 1 té égal » sans savoir où le poser. Un contrôle exige désormais que
+toute pièce facturée soit dessinée quelque part.
+
+**Une jonction supprimée en réordonnant le réseau 3.** Il finissait par une
+antenne partant d'un arroseur — donc un té taraudé ET un té égal au même point.
+En lui faisant faire le tour de l'extension par le coin, la ligne devient
+unique : même longueur (32 ml), un raccord de moins et une pièce de moins.
+
+**Et la phrase sur la tranchée est retirée de l'écran**, à sa demande : *« il
+faut juste que ça soit une règle que toi tu conserves, l'utilisateur n'a pas
+besoin de voir ça »*. Nos raisons de conception restent dans `CLAUDE.md` ;
+l'écran ne porte que ce qui sert à poser le chantier.
+
+**Deux défauts vus à la capture, aucun par un test :** les symboles SVG sans
+largeur imposée s'étiraient à 300 px, et la grille CSS de la légende éclatait un
+mot par ligne — chaque nœud texte devenant une cellule.
+
 ### Le plan dit quel arroseur et pourquoi — et on ne traverse plus le jardin
 
 **Trois règles de plus, toutes sorties de sa lecture du plan.**

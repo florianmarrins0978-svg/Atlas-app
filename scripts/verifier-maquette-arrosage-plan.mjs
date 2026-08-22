@@ -125,6 +125,15 @@ const vu = await page.evaluate(() => {
   const tranchee = [...document.querySelectorAll('[data-atlas="tranchee"]')].map((l) =>
     l.getAttribute("points").trim().split(/\s+/).map((p) => p.split(",").map(Number)));
 
+  const jonctions = document.querySelectorAll('[data-piece="jonction"]').length;
+
+  const legende = {
+    // Un symbole DESSINÉ, pas un caractère : « ● » se lit mal, ne rend pas la
+    // nuance plein/creux, et ne prouve pas qu'il ressemble à ce qui est tracé.
+    symboles: document.querySelectorAll(".legende svg").length,
+    texte: document.querySelector(".legende")?.innerText ?? "",
+  };
+
   const marque = document.querySelector("select[name=marque]");
   const marques = marque && {
     defaut: marque.options[marque.selectedIndex].textContent.trim(),
@@ -139,6 +148,8 @@ const vu = await page.evaluate(() => {
     boite,
     pieces,
     tranchee,
+    legende,
+    jonctions,
     marques,
     texte: document.body.innerText,
     deborde: document.documentElement.scrollWidth > 390,
@@ -646,6 +657,44 @@ cas("le choix des arroseurs s'explique", () => {
   // La raison des tuyères est celle qui compte : la bande est trop étroite.
   if (!/(4 m de large|étroit|au-delà|limite|voisin)/.test(texte)) {
     throw new Error("le plan ne dit pas pourquoi une tuyère plutôt qu'une turbine sur la bande étroite");
+  }
+});
+
+// ── 8 octies. LA LÉGENDE DIT OÙ VA CHAQUE PIÈCE ────────────────────────────
+//
+// *Sa remarque du 21 août :* « le petit schéma en dessous n'est pas clair. On ne
+// sait pas vraiment à quel endroit tu veux utiliser un coude taraudé, à quel
+// endroit un té égal ou un té taraudé. Là où tu as marqué plein, à côté tu peux
+// mettre un rond plein ; là où tu as marqué creux, le rond creux que tu
+// utilises. »
+//
+// **Une légende qui décrit avec des mots ce qu'on voit avec les yeux ne sert à
+// rien.** Le symbole doit être DESSINÉ à côté du mot, et être celui-là même qui
+// est sur le plan. Et chaque symbole doit nommer LA PIÈCE qu'il implique : sans
+// cela, on lit le plan sans savoir quoi visser.
+cas("la légende montre les symboles, et nomme la pièce de chacun", () => {
+  if (vu.legende.symboles < 5) {
+    throw new Error(`${vu.legende.symboles} symbole(s) dessiné(s) dans la légende : les décrire avec des mots ne dit pas à quoi ils ressemblent`);
+  }
+  const t = vu.legende.texte.toLowerCase();
+  for (const [quoi, motif] of [
+    ["le té taraudé (arroseur en ligne)", /té taraudé/],
+    ["le coude taraudé (fin de ligne)", /coude taraudé/],
+    ["le té égal (la ligne se sépare)", /té égal/],
+    ["la turbine et sa buse", /turbine 5004.*buse/s],
+    ["la tuyère et sa buse", /tuyère 1800.*buse/s],
+  ]) {
+    if (!motif.test(t)) throw new Error(`la légende ne dit pas où va ${quoi}`);
+  }
+});
+
+// **La jonction se VOIT sur le plan.** Elle est dans la commande ; sans elle au
+// dessin, on lit « 1 té égal » sans savoir à quel endroit le poser.
+cas("chaque jonction facturée est dessinée quelque part", () => {
+  const dessinees = vu.jonctions;
+  const facturees = vu.pieces.filter((p) => /té égal/i.test(p.nom)).reduce((t, p) => t + p.q, 0);
+  if (dessinees !== facturees) {
+    throw new Error(`${facturees} té(s) égal(aux) commandé(s) pour ${dessinees} dessiné(s) : on ne saurait pas où le poser`);
   }
 });
 
