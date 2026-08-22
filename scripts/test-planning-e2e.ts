@@ -718,6 +718,56 @@ async function main() {
 
   // ─── LE WEEK-END ────────────────────────────────────────────────────────
 
+  // **Un chantier POSÉ un samedi ne disparaît pas du planning.**
+  //
+  // Trouvé le 22 août 2026, et par accident : la batterie a traversé minuit un
+  // vendredi soir, si bien que « planifié pour AUJOURD'HUI » de
+  // `test-planning-vers-facture` a posé sa date sur un SAMEDI — et n'a plus
+  // trouvé le chantier dans aucun onglet.
+  //
+  // La cause : la liste des planifiés lisait la CHARGE d'une demi-journée, qui
+  // vaut zéro le week-end (la planche n'y dessine rien), au lieu de lire ce qui
+  // y est POSÉ. Le chantier restait rangé au planning par `onglet-chantier` et
+  // n'y était visible nulle part — deux vérités sur le même chantier, et le
+  // cul-de-sac du 8 août recommencé.
+  //
+  // Le produit ne pose pas de samedi lui-même ; une date venue d'ailleurs, si.
+  // C'est pourquoi ce décor l'écrit en base : c'est un état que le chantier peut
+  // atteindre, et l'écran doit savoir le montrer.
+  await essai("un chantier posé un SAMEDI reste visible dans les planifiés", async () => {
+    // JOUR est un LUNDI (`lundiDansDeuxMois`) : cinq jours plus loin, samedi.
+    const samedi = (() => {
+      const d = new Date(`${JOUR}T12:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + 5);
+      return d.toISOString().slice(0, 10);
+    })();
+
+    const r = await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [
+      chantierId,
+      samedi,
+    ]);
+    assert.equal(r.rowCount, 1, "le décor n'a pas pu poser la date du samedi");
+
+    await allerAuPlanning();
+    await toucherLeJour(samedi);
+    const ligne = page.locator(
+      `[data-atlas="ligne-planifiee"]:has(a[href="/chantiers/${chantierId}"])`
+    );
+    await ligne.first().waitFor({ state: "visible", timeout: 15_000 });
+    assert.ok(
+      (await ligne.count()) >= 1,
+      "un chantier posé un samedi n'apparaît plus dans les planifiés : il est perdu"
+    );
+
+    // Et la fiche du jour, elle, dit toujours « Jamais proposé » — c'est la
+    // planche, et elle ne change pas : on ne PROPOSE pas le week-end, on se
+    // contente de ne rien cacher.
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${samedi}"]`);
+    assert.match(await carte.innerText(), /Jamais proposé/);
+
+    await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [chantierId, JOUR]);
+  });
+
   await essai("un samedi le dit, au lieu de proposer des gestes", async () => {
     const samedi = new Date(`${JOUR}T12:00:00Z`);
     samedi.setUTCDate(samedi.getUTCDate() + 5);

@@ -429,16 +429,36 @@ export default function PlanningClient({
     [lundi]
   );
 
-  /** Les chantiers d'un jour, sans doublon — un chantier à la journée n'y est qu'une fois. */
+  /**
+   * Les chantiers d'un jour, sans doublon — un chantier à la journée n'y est
+   * qu'une fois.
+   *
+   * **Il lit `parCreneau`, jamais `occupationDe` — et un samedi le prouve.**
+   *
+   * `occupationDe` répond à « quelle est la CHARGE de cette demi-journée » : le
+   * week-end, elle rend zéro, parce que la planche 84 n'y propose rien et n'y
+   * dessine aucune barre. Cette fonction-ci répond à autre chose : « qu'est-ce
+   * qui EST POSÉ ce jour-là ». Passer par la première effaçait de l'écran un
+   * chantier posé un samedi — invisible au planning, alors qu'`onglet-chantier`
+   * l'y range toujours. Deux vérités sur le même chantier (`CLAUDE.md` §3), et
+   * le cul-de-sac du 8 août recommencé : « il se range dans les planifiés, mais
+   * comment moi je fais pour y accéder ? »
+   *
+   * Trouvé le 22 août 2026, la batterie ayant traversé minuit un vendredi soir :
+   * le contrôle « un chantier, un seul onglet » a posé sa date sur un SAMEDI et
+   * n'a plus trouvé le chantier nulle part.
+   */
   const chantiersDuJour = useCallback(
     (jour: JourIso) => {
       const vus = new Map<string, ChantierPlanning>();
       for (const demi of DEMIS) {
-        for (const c of occupationDe(jour, demi).pris) vus.set(c.id, c);
+        for (const c of parCreneau.get(cleCreneau({ jour, moment: demi })) ?? []) {
+          vus.set(c.id, c);
+        }
       }
       return [...vus.values()];
     },
-    [occupationDe]
+    [parCreneau]
   );
 
   const titreSemaine = useMemo(() => {

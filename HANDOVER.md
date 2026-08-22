@@ -36,6 +36,34 @@ téléphone.
 proposition de chantier voisin. Le code serveur des trois est intact — `TODO.md`
 dit où, et ce qu'il faut lui demander.
 
+### Une batterie qui rougit d'un coup : regarder si la BASE n'a pas été coupée sous elle
+
+**Le cluster PostgreSQL local est PARTAGÉ entre les sessions.** Le patron en fait
+tourner deux ou trois en parallèle (`CLAUDE.md` §6), et elles travaillent toutes
+sur `/tmp/atlas-pgdata`. Une session qui l'arrête et le relance coupe la batterie
+d'une autre en plein vol.
+
+**Ce que ça donne à l'écran, et c'est trompeur :** une suite rougit sur des
+assertions d'affichage — « le nom du client manque », l'écran ne portant plus que
+« ATLAS ». On cherche alors dans le rendu, alors que la page n'a simplement plus
+de session : la connexion s'est faite refuser.
+
+**Le geste qui tranche, en dix secondes :**
+
+```bash
+grep -n "shutdown request\|terminating connection" /tmp/atlas-pgdata/log | tail
+```
+
+Une ligne `received fast shutdown request` à l'heure de l'échec, et c'est réglé :
+la base a été arrêtée sous la batterie. Le journal du serveur de développement
+(`/tmp/atlas-serveur-e2e.log`) porte la même chose vue de l'autre bord —
+« terminating connection due to administrator command », puis un
+`CallbackRouteError` sur la connexion.
+
+**Ce qu'on fait alors :** rejouer la suite seule. Ce qu'on ne fait PAS : corriger
+un écran qui n'a rien. Vécu le 21 août 2026, sur `test-fiche-client-e2e` — trois
+cas rouges, zéro défaut.
+
 ### Le piège qui a coûté deux heures : `export type { … }` dans un « use server »
 
 **Ne jamais réexporter un type depuis un fichier d'actions serveur.** Le lot
