@@ -278,7 +278,29 @@ Le défaut qu'il a relevé le 21 août valait 4 m — 22 tracés pour 18 nécess
 | jonction sans arroseur | Té 25×25×25, non taraudé |
 
 **D'où le contrôle qui vaut pour tout schéma : `tés + coudes = arroseurs`**, et
-`coudes = nombre de lignes`. En dessous, des arroseurs ne sont raccordés à rien.
+`coudes = nombre de lignes`.
+
+**ET IL S'APPLIQUE À CHAQUE RÉSEAU, UN PAR UN — jamais au total.** Sa règle du
+21 août : *« il faut que tu l'appliques pour chaque réseau que tu crées »*. Une
+vérification faite sur la somme laisse passer exactement ce qu'elle prétend
+attraper : un réseau en excès et un autre en manque se **compensent**, le total
+tombe juste, et c'est sur le terrain qu'on découvre qu'une voie n'a pas de quoi
+raccorder son dernier arroseur.
+
+Le gabarit, à dérouler pour **chaque** réseau créé :
+
+| Ce qu'on compte | Comment |
+|---|---|
+| arroseurs | ce que le réseau dessert |
+| coudes taraudés | **une fin par ligne** du réseau |
+| tés taraudés | arroseurs − coudes |
+| tés de jonction | les ramifications, qui n'arrosent rien |
+| SBE | **2 × arroseurs** : 3/4" en bas, diamètre du corps en haut |
+| PEBD Ø16 | 2 m par arroseur |
+| PE Ø25 | mesuré sur le tracé, comparé au plus court |
+
+Et ce que le réseau **annonce** doit être ce que le plan **dessine** : si les
+deux divergent, l'un des deux ment et rien ne dit lequel au moment de commander. En dessous, des arroseurs ne sont raccordés à rien.
 C'est lui qui l'a relevé, au chiffre près, sur un plan qui paraissait juste :
 *« il y a quatre arroseurs qui ne sont pas alimentés »*. Aucun test ne le voyait,
 parce qu'aucun ne comparait la liste des pièces au tracé.

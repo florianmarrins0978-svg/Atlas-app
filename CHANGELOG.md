@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-21
 
+### Le comptage s'applique à CHAQUE réseau — un contrôle global mentait
+
+*« Faut surtout que tu en fasses une règle. Il faut que tu l'appliques pour
+chaque réseau que tu crées. »*
+
+**Il avait raison contre mon contrôle**, qui vérifiait `tés + coudes = arroseurs`
+sur le TOTAL. Une somme juste peut cacher un réseau en excès et un autre en
+manque : ils se compensent, le total tombe juste, et c'est sur le terrain qu'on
+découvre qu'une voie n'a pas de quoi raccorder son dernier arroseur. **Un
+contrôle qui ne regarde que la somme laisse passer exactement le défaut qu'il
+prétend attraper.**
+
+Le décompte se lit désormais **sur le plan**, réseau par réseau — têtes pleines
+pour les tés, têtes creuses pour les fins de ligne — puis se compare à ce que la
+carte annonce. Si les deux divergent, l'un ment et rien ne dit lequel au moment
+de commander. Éprouvé sur une compensation exacte (un té de trop chez le 2, un
+de moins chez le 3) : les deux réseaux rougissent séparément, là où l'ancien
+contrôle voyait un total juste.
+
+Le gabarit complet — arroseurs, coudes, tés, jonctions, SBE, PEBD, PE — est dans
+`CLAUDE.md` §4 bis, à dérouler pour chaque réseau créé.
+
 ### « D'où sortent tes vingt-deux SBE ? » — un chiffre juste, une ligne muette
 
 *« Je ne comprends pas d'où sort ton calcul des vingt-deux coudes SBE 3/4" et

@@ -79,6 +79,11 @@ const vu = await page.evaluate(() => {
       // Les têtes portent un rayon d'affichage ; la PORTÉE est le cercle pâle.
       tetes: [...g.querySelectorAll("circle")].filter((c) => nb(c.getAttribute("r")) < 1)
         .map((c) => [nb(c.getAttribute("cx")), nb(c.getAttribute("cy"))]),
+      // Une fin de ligne se dessine CREUSE : c'est un coude, pas un té. Le
+      // contrôle lit donc le plan, pas seulement la liste des pièces.
+      fins: [...g.querySelectorAll("circle")].filter(
+        (c) => nb(c.getAttribute("r")) < 1 && /FBFAF7/i.test(c.getAttribute("fill") ?? "")
+      ).length,
       portees: [...g.querySelectorAll("circle")].filter((c) => nb(c.getAttribute("r")) >= 1)
         .map((c) => [nb(c.getAttribute("cx")), nb(c.getAttribute("cy")), nb(c.getAttribute("r"))]),
       tuyaux: [...g.querySelectorAll("polyline")].map((l) =>
@@ -275,7 +280,7 @@ cas("les trois réseaux partent de la nourrice", () => {
 // D'où le contrôle qu'aucune version ne tenait, et qui aurait attrapé le
 // défaut : **tés + coudes = arroseurs**. En dessous, des arroseurs ne sont
 // raccordés à rien — et cela ne se voit qu'au moment de poser.
-cas("chaque arroseur a SON raccord : tés + coudes = arroseurs", () => {
+cas("la commande porte le total de tous les réseaux", () => {
   const q = (motif) => vu.pieces.filter((p) => motif.test(p.nom)).reduce((t, p) => t + p.q, 0);
   const tes = q(/Té .*taraudé/i);
   const coudes = q(/Coude .*taraudé/i);
@@ -300,6 +305,46 @@ cas("une fin de ligne — donc un coude — par ligne dessinée", () => {
     throw new Error(`${coudes} coudes taraudés pour ${lignes} lignes tracées : chaque ligne finit une fois, et une seule`);
   }
 });
+
+// ── 8 quater. LE COMPTAGE SE FAIT PAR RÉSEAU, JAMAIS EN GROS ───────────────
+//
+// *Sa règle du 21 août :* « faut surtout que tu en fasses une règle — il faut
+// que tu l'appliques pour CHAQUE réseau que tu crées ».
+//
+// **Et il a raison contre la version précédente de ce contrôle**, qui vérifiait
+// `tés + coudes = arroseurs` sur le TOTAL. Un total juste peut cacher un réseau
+// en excès et un autre en manque : ils se compensent, la somme tombe juste, et
+// c'est sur le terrain qu'on découvre qu'une voie n'a pas de quoi raccorder son
+// dernier arroseur. Un contrôle qui ne regarde que la somme laisse passer
+// exactement le défaut qu'il prétend attraper.
+//
+// Le décompte se lit donc SUR LE PLAN, réseau par réseau — têtes pleines (tés),
+// têtes creuses (coudes de fin) — puis se compare à ce que la carte annonce.
+for (const [n, r] of Object.entries(vu.reseaux)) {
+  cas(`réseau ${n} : son compte tombe juste, à lui seul`, () => {
+    const arroseurs = r.tetes.length;
+    const coudes = r.fins;
+    const tes = arroseurs - coudes;
+
+    if (coudes !== r.tuyaux.length) {
+      throw new Error(`${coudes} fin(s) de ligne dessinée(s) pour ${r.tuyaux.length} ligne(s) : chaque ligne finit une fois, et une seule`);
+    }
+
+    // Ce que la carte annonce doit être ce que le plan dessine — sinon l'un des
+    // deux ment, et on ne sait pas lequel au moment de commander.
+    const carte = vu.cartes[Number(n) - 1];
+    const dits = carte.sous.match(/(\d+)\s*tés?\s*\+\s*(\d+)\s*coude/);
+    if (!dits) throw new Error(`la carte du réseau ${n} n'annonce pas son compte : « ${carte.sous} »`);
+    if (Number(dits[1]) !== tes || Number(dits[2]) !== coudes) {
+      throw new Error(
+        `la carte annonce ${dits[1]} tés + ${dits[2]} coudes, le plan en dessine ${tes} + ${coudes}`
+      );
+    }
+    if (tes + coudes !== arroseurs) {
+      throw new Error(`${tes} tés + ${coudes} coudes pour ${arroseurs} arroseurs sur ce seul réseau`);
+    }
+  });
+}
 
 // ── 8 bis. AU PLUS COURT — sa règle du 21 août 2026 ─────────────────────────
 //
