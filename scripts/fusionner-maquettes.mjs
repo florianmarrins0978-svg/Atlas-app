@@ -422,6 +422,12 @@ const MAQUETTES = [
     quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
   },
   {
+    fichier: "84-envoyer-la-facture.html",
+    titre: "Envoyer la facture en un seul geste",
+    famille: "L\u2019argent qui ne rentre pas",
+    quoi: "Trois appuis pour envoyer une facture, et le premier ment : il l\u2019ARR\u00caTE au lieu de la faire partir. Un encart SMS / e-mail, un bouton, la messagerie tout de suite \u2014 et la question : le mot doit-il dire qu\u2019il arr\u00eate ?",
+  },
+  {
     fichier: "83-enregistrer-le-pdf.html",
     titre: "Enregistrer le PDF depuis la fiche client",
     famille: "Le devis avant l\u2019envoi",
