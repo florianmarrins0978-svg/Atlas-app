@@ -132,6 +132,43 @@ cas("la demande des 5004 est discutée, pas rejetée", () => {
   if (!/quand même/i.test(t3)) throw new Error("le dernier mot ne lui est pas rendu : un conseil n'est pas une décision");
 });
 
+// ── SANS CROQUIS COMPLET, AUCUN PLAN — sa règle du 21 août 2026 ───────────
+//
+// *« L'outil doit fonctionner avec un plan avec toutes les métrés, l'emplacement
+// du piquage et l'endroit définitif de la nourrice. Sans ça il ne doit rien
+// proposer. La discussion ne doit jamais créer un plan avec des réseaux — elle
+// peut seulement modifier, ou recréer si un croquis avec tous les bons éléments
+// aux bons endroits a été fourni. »*
+//
+// **La discussion ne remplace pas le croquis.** C'est la tentation exacte d'une
+// conversation : on répond à une demande en comblant ce qui manque, parce qu'une
+// phrase se complète plus facilement qu'un dessin. Un plan tracé sur une nourrice
+// supposée fait creuser au mauvais endroit — et la tranchée ne se déplace pas.
+//
+// **On RETIRE le plan, on ne le grise pas.** Un plan affiché en pâle se
+// photographie et se pose quand même.
+cas("croquis incomplet : aucun plan n'est montré, et l'on dit ce qui manque", async () => {});
+await page.click("label[for=q4]");
+await page.waitForTimeout(200);
+const incomplet = await page.evaluate(() => ({
+  planVisible: [...document.querySelectorAll(".plan")].some((e) => getComputedStyle(e).display !== "none"),
+  manque: document.querySelector(".manque")?.innerText ?? "",
+}));
+cas("le plan disparaît tant que le croquis n'est pas complet", () => {
+  if (incomplet.planVisible) {
+    throw new Error("le plan reste à l'écran alors que le croquis est incomplet : il se photographie et se pose quand même");
+  }
+});
+cas("les trois éléments obligatoires sont nommés, et l'on voit lequel manque", () => {
+  const t = incomplet.manque.toLowerCase();
+  for (const [quoi, motif] of [["les métrés", /métré/], ["le piquage", /piquage/], ["la nourrice", /nourrice/]]) {
+    if (!motif.test(t)) throw new Error(`l'écran ne dit pas si ${quoi} est là : il ne sait pas quoi renvoyer`);
+  }
+  if (!/où|placez|endroit/i.test(incomplet.manque)) {
+    throw new Error("l'écran dit qu'il manque quelque chose sans dire quoi faire");
+  }
+});
+
 cas("rien ne déborde sur 390 px", async () => {});
 const deborde = await page.evaluate(() => document.documentElement.scrollWidth > 390);
 cas("la page tient dans la largeur de son téléphone", () => {

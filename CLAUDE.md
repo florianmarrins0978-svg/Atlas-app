@@ -249,6 +249,35 @@ Concrètement, pour toute planche dont on attend un choix :
 
 ## 4 bis. Tout schéma d'arrosage obéit à sa planche du 17 août
 
+**SANS CROQUIS COMPLET, AUCUN PLAN.** Sa règle du 21 août 2026, et elle passe
+avant tout le reste de cette section : *« l'outil doit fonctionner avec un plan
+avec toutes les métrés, l'emplacement du piquage et l'endroit définitif de la
+nourrice — sans ça il ne doit rien proposer »*.
+
+Trois éléments, tous obligatoires :
+
+| | Sans lui |
+|---|---|
+| **les métrés** | on ne sait pas combien d'arroseurs, ni où |
+| **le piquage** | on ne sait pas quel débit, ni s'il faut couper une ligne |
+| **l'endroit DÉFINITIF de la nourrice** | on ne sait ni d'où partent les lignes, ni où creuser |
+
+Il en manque un : on **retire** le plan et l'on dit lequel manque. On ne le grise
+pas — un plan affiché en pâle se photographie et se pose quand même.
+
+**ET LA DISCUSSION NE CRÉE JAMAIS UN PLAN.** *« Elle peut seulement modifier, ou
+recréer si un croquis avec tous les bons éléments aux bons endroits a été
+fourni. »* C'est la tentation exacte d'une conversation : on répond en comblant
+ce qui manque, parce qu'une phrase se complète plus facilement qu'un dessin. Un
+plan tracé sur une nourrice supposée fait creuser au mauvais endroit — et une
+tranchée ne se déplace pas.
+
+**Un manquement à noter, du 21 août :** le plan de son jardin a été tracé avec
+une nourrice que J'AI placée, son croquis ne la portant pas. Il aurait dû être
+refusé.
+
+
+
 Règle posée le 21 août 2026, et qu'il veut **valable partout** : *« sers-t'en
 pour tous les schémas, il fonctionnera partout, ça doit être la règle »*.
 

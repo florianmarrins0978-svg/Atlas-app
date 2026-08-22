@@ -52,7 +52,23 @@
 
   /* Un seul fil d'échange visible à la fois. */
   .fil { display:none; margin:8px 16px 0; }
-  #q0:checked ~ .fil0, #q1:checked ~ .fil1, #q2:checked ~ .fil2, #q3:checked ~ .fil3 { display:block; }
+  #q0:checked ~ .fil0, #q1:checked ~ .fil1, #q2:checked ~ .fil2,
+  #q3:checked ~ .fil3, #q4:checked ~ .fil4 { display:block; }
+
+  /* **SANS CROQUIS COMPLET, AUCUN PLAN.** Sa règle du 21 août : l'outil ne
+     propose rien tant qu'il n'a pas les métrés, le piquage ET l'endroit
+     définitif de la nourrice. On ne grise pas le plan : on le RETIRE. Un plan
+     affiché en pâle se photographie et se pose quand même. */
+  #q4:checked ~ .plan { display:none; }
+  .manque { display:none; background:var(--carte); border-radius:12px;
+            margin:8px 16px 0; padding:16px; }
+  #q4:checked ~ .manque { display:block; }
+  .manque h2 { font:400 19px/1.3 Georgia,serif; margin:0 0 10px; }
+  .manque ul { list-style:none; margin:0; padding:0; }
+  .manque li { font-size:14px; line-height:1.5; padding:7px 0 7px 24px; position:relative; color:var(--gris); }
+  .manque li::before { content:"○"; position:absolute; left:2px; color:var(--or); }
+  .manque li.ok { color:var(--encre); }
+  .manque li.ok::before { content:"●"; }
 
   .bulle { border-radius:14px; padding:11px 13px; margin-top:8px; font-size:14px; line-height:1.5; }
   .lui { background:var(--bleu); color:#FBFAF7; margin-left:34px; border-bottom-right-radius:4px; }
@@ -66,7 +82,8 @@
     border-radius:12px; padding:11px 13px; margin-top:7px; font-size:14px; line-height:1.4;
     color:var(--encre); cursor:pointer; min-height:44px; }
   #q1:checked ~ .demandes label[for=q1], #q2:checked ~ .demandes label[for=q2],
-  #q3:checked ~ .demandes label[for=q3] { background:var(--encre); color:#FBFAF7; border-color:var(--encre); }
+  #q3:checked ~ .demandes label[for=q3],
+  #q4:checked ~ .demandes label[for=q4] { background:var(--encre); color:#FBFAF7; border-color:var(--encre); }
 
   .saisie { display:flex; gap:8px; margin:14px 16px 0; }
   .saisie span { flex:1; background:var(--carte); border:1px solid var(--ligne); border-radius:22px;
@@ -84,6 +101,7 @@
 <input type="radio" name="q" id="q1">
 <input type="radio" name="q" id="q2">
 <input type="radio" name="q" id="q3">
+<input type="radio" name="q" id="q4">
 
 <div class="plan"><svg viewBox="-3 -2.6 25 17.4" role="img" aria-label="Plan du jardin">
     <defs><clipPath id="pel"><polygon points="0,0 20,0 20,4 12,4 12,12 0,12"/></clipPath></defs>
@@ -156,11 +174,30 @@
   <div class="bulle atlas">Dites-moi si vous la voulez quand même&nbsp;: je refais le plan avec trois voies.</div>
 </div>
 
+<div class="manque">
+  <h2>Il manque de quoi tracer le plan</h2>
+  <ul>
+    <li class="ok">Les métrés du jardin — 12 × 12 et 8 × 4</li>
+    <li class="ok">Le piquage — après le compteur</li>
+    <li>L’endroit de la nourrice : où voulez-vous poser le regard&nbsp;?</li>
+  </ul>
+</div>
+
+<div class="fil fil4">
+  <div class="bulle lui">Refais-moi le plan avec des 15-VAN.</div>
+  <div class="bulle atlas">Je ne peux pas encore&nbsp;: <b>votre croquis ne dit pas où va la nourrice</b>.
+    Sans ça, je ne sais ni d’où partent les lignes, ni combien de tuyau, ni où creuser.
+    <br><br>Placez-la sur le croquis et renvoyez-le&nbsp;: je trace le plan, et ensuite vous pourrez
+    me demander toutes les modifications que vous voulez.
+    <span class="chiffres">Les métrés et le piquage, eux, sont bien là</span></div>
+</div>
+
 <div class="demandes">
   <p>Essayez une demande</p>
   <label for="q1">Pourquoi tu m’as fait 2 réseaux et pas 3&nbsp;?</label>
   <label for="q2">Tu m’as mis des VAN 12. On peut passer en VAN 15&nbsp;?</label>
   <label for="q3">J’aurais préféré des 5004 plutôt que des 3504.</label>
+  <label for="q4">Et si le croquis est incomplet&nbsp;?</label>
 </div>
 
 <div class="saisie"><span>Écrire à Atlas…</span><b>↑</b></div>
@@ -169,5 +206,7 @@
 lit votre demande, pose un paramètre du calcul, et c’est le calcul qui refait le
 schéma et les pièces. Il n’écrit jamais un chiffre qui n’est pas au catalogue&nbsp;;
 quand une demande sort de ce que les données permettent, il le dit et propose ce
-qui s’en approche.</p>
+qui s’en approche.<br><br><b>Et il ne propose rien du tout</b> tant que le croquis
+ne porte pas les métrés, le piquage et l’endroit de la nourrice. La discussion
+sert à modifier un plan&nbsp;; elle n’en crée jamais un.</p>
 </html>

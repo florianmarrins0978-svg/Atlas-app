@@ -404,6 +404,28 @@ coupable.
 
 ## 2026-08-21
 
+### Sans croquis complet, aucun plan — et la discussion n'en crée jamais un
+
+*« L'outil doit fonctionner avec un plan avec toutes les métrés, l'emplacement du
+piquage et l'endroit définitif de la nourrice. Sans ça il ne doit rien proposer.
+La discussion ne doit jamais créer un plan avec des réseaux — elle peut seulement
+modifier, ou recréer si un croquis avec tous les bons éléments aux bons endroits
+a été fourni. »*
+
+Trois éléments obligatoires : les **métrés**, le **piquage**, l'**endroit
+définitif de la nourrice**. Il en manque un, le plan est **retiré** de l'écran —
+pas grisé : un plan affiché en pâle se photographie et se pose quand même. Et
+l'écran dit lequel manque, avec ce qu'il faut faire.
+
+**Pourquoi la règle vise la discussion en particulier** : c'est sa tentation
+exacte. On répond en comblant ce qui manque, parce qu'une phrase se complète plus
+facilement qu'un dessin. Un plan tracé sur une nourrice supposée fait creuser au
+mauvais endroit, et une tranchée ne se déplace pas.
+
+**Un manquement à noter, et il est de moi :** le plan de son jardin a été tracé
+avec une nourrice que j'ai placée moi-même — son croquis porte les métrés et le
+piquage, pas le regard. Selon sa règle, ce plan n'aurait pas dû être proposé.
+
 ### Discuter le plan — maquette, et un garde-fou qui compte
 
 *« Si l'utilisateur a besoin de te demander une modification, qu'il puisse le
