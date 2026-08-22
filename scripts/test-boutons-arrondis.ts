@@ -164,7 +164,12 @@ const HORS_CHARTE: Array<{
     //
     // **`seulement` la borne à la case elle-même** : elle seule porte
     // `data-jour=`. Les vingt autres boutons du planning restent surveillés.
-    motif: /^src[/\\]app[/\\]planning[/\\]PlanningClient\.tsx$/,
+    // **Le dessin a DÉMÉNAGÉ le 22 août 2026**, quand l'écran d'envoi s'est mis
+    // à montrer le même calendrier que le planning (`MoisCharge`). L'exception
+    // suit la tuile, elle ne la suivait pas : sans cela, ce contrôle dénonçait
+    // une décision que le patron avait prise et qui n'avait pas bougé d'un
+    // pixel — le pire des rouges, celui qui accuse à tort (`AGENTS.md`).
+    motif: /^src[/\\]components[/\\]atlas[/\\]MoisCharge\.tsx$/,
     seulement: /data-jour=/,
     pourquoi: "case du calendrier : une tuile de 44 px, ni geste ni champ",
   },

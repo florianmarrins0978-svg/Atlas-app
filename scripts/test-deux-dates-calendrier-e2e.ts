@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
-import { versJourIso } from "../src/server/disponibilites";
+import {
+  DELAI_MINIMAL_JOURS, versJourIso } from "../src/server/disponibilites";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Je ne peux choisir qu'un seul jour à même le planning. »**
@@ -82,15 +83,39 @@ async function main() {
   );
 
   /** Les jours du calendrier réellement choisissables, dans l'ordre du mois. */
+  /**
+   * Les journées qu'on peut aller REGARDER.
+   *
+   * **Depuis le 22 août 2026, aucune case n'est éteinte** — sa demande, planche
+   * 91 : *« un jour complet reste touchable, c'est justement celui sur lequel
+   * vous voulez regarder avant de décider »*. « choisissable » n'existe donc
+   * plus ; ce qui reste, c'est ce que la case EST, et le serveur tranche
+   * ensuite.
+   */
   async function joursOffertsAuChoix(): Promise<string[]> {
-    return page.locator('[data-jour][data-etat="choisissable"]').evaluateAll((els) =>
-      els.map((e) => e.getAttribute("data-jour")!).filter(Boolean)
-    );
+    const tous = await page
+      .locator('[data-jour][data-etat="regardable"]')
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean));
+    // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
+    // au 1er : ses premiers jours ouvrés sont derrière nous, et le délai minimal
+    // en écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
+    // parfaitement juste — le pire des rouges (`AGENTS.md`).
+    const plancher = new Date();
+    plancher.setDate(plancher.getDate() + DELAI_MINIMAL_JOURS + 1);
+    const depuis = plancher.toISOString().slice(0, 10);
+    return tous.filter((j) => j >= depuis);
   }
 
-  /** Touche un jour au calendrier et laisse le serveur répondre. */
+  /**
+   * Regarde un jour, puis le retient — ou le rend s'il l'était déjà.
+   *
+   * **Deux gestes, et c'est le sujet du 22 août :** toucher la case OUVRE la
+   * journée pour voir qui y est ; c'est « Proposer ce jour » qui engage la date.
+   * Un jour consulté par erreur partait auparavant chez le client.
+   */
   async function toucher(jour: string) {
     await page.locator(`[data-jour="${jour}"]`).click();
+    await page.locator('[data-atlas="journee-regardee"]').waitFor({ state: "visible", timeout: 30_000 });
     // Le verdict vient du serveur : on attend qu'il ait cessé de vérifier,
     // plutôt qu'un délai fixe qui échouerait au hasard sous la batterie
     // complète — un contrôle qui rougit sans raison apprend à ignorer le rouge.
@@ -98,7 +123,11 @@ async function main() {
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
       .catch(() => undefined);
-    await page.waitForTimeout(350);
+    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
+    if ((await bouton.count()) > 0 && (await bouton.isEnabled())) await bouton.click();
+    // On referme la fiche : la suivante s'ouvrira sur un écran propre.
+    await page.locator(`[data-jour="${jour}"]`).click();
+    await page.waitForTimeout(250);
   }
 
   const offerts = await joursOffertsAuChoix();
