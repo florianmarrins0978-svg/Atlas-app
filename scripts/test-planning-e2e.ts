@@ -822,6 +822,59 @@ async function main() {
   // Le produit ne pose pas de samedi lui-même ; une date venue d'ailleurs, si.
   // C'est pourquoi ce décor l'écrit en base : c'est un état que le chantier peut
   // atteindre, et l'écran doit savoir le montrer.
+  // **SA DEMANDE DU 23 AOÛT 2026 :** *« entre "Copier l'adresse" et "Ouvrir le
+  // PDF", j'aimerais avoir un petit encadré où l'utilisateur peut marquer
+  // quelque chose — penser à prendre le broyeur »*.
+  //
+  // **Ce que ce contrôle garde, c'est le RECHARGEMENT.** Écrire dans un champ
+  // marche toujours ; c'est l'enregistrement qui casse en silence, et il ne se
+  // voit qu'en revenant. Une note perdue sans un mot, c'est le broyeur oublié
+  // alors qu'il croit l'avoir noté.
+  await essai("la note de la feuille s'écrit et survit au rechargement", async () => {
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
+    await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    const champ = page.locator('[data-atlas="note-chantier"]').first();
+    await champ.waitFor({ state: "visible", timeout: 15_000 });
+
+    // **16 px au moins** : en dessous, iOS grossit la page à la mise au point et
+    // l'écran saute sous le doigt. Mesuré, jamais supposé.
+    const taille = await champ.evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+    assert.ok(taille >= 16, `le champ fait ${taille} px : iOS zoomera dessus`);
+
+    const note = `Broyeur — ${Date.now()}`;
+    await champ.fill(note);
+    // Enregistré en SORTANT du cadre, jamais par un bouton.
+    await page.locator('[data-atlas="feuille"]').first().click({ position: { x: 8, y: 8 } });
+    await page
+      .locator('[data-atlas="note-etat"]')
+      .first()
+      .filter({ hasText: /Enregistr/ })
+      .waitFor({ timeout: 15_000 });
+
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
+    await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    const relu = page.locator('[data-atlas="note-chantier"]').first();
+    await relu.waitFor({ state: "visible", timeout: 15_000 });
+    assert.equal(
+      await relu.inputValue(),
+      note,
+      "la note n'a pas survécu au rechargement : elle est perdue sans un mot"
+    );
+
+    // **Le vide EFFACE.** Sans quoi le cadre resterait « rempli de rien », et
+    // l'on ne saurait plus distinguer une note effacée d'une note oubliée.
+    await relu.fill("");
+    await page.locator('[data-atlas="feuille"]').first().click({ position: { x: 8, y: 8 } });
+    await page
+      .locator('[data-atlas="note-etat"]')
+      .first()
+      .filter({ hasText: /Enregistr/ })
+      .waitFor({ timeout: 15_000 });
+  });
+
   await essai("un chantier posé un SAMEDI reste visible dans les planifiés", async () => {
     // JOUR est un LUNDI (`lundiDansDeuxMois`) : cinq jours plus loin, samedi.
     const samedi = (() => {

@@ -74,6 +74,50 @@ deux écrans.
 
 Détail : `ARCHITECTURE.md` §150.
 
+### Une note sur la feuille de chantier — « penser à prendre le broyeur »
+
+*« Entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un petit
+encadré où l'utilisateur peut marquer quelque chose — penser à prendre le
+broyeur, client plus disponible à partir de neuf heures. »*
+
+**Cherché avant d'affirmer que c'était neuf** (`CLAUDE.md` §5 ter) : la table
+`chantiers` ne portait aucun champ libre, `notes_vocales` est la dictée, et le
+seul `note` du schéma appartenait aux paiements. Colonne posée par la
+migration 0060, bornée à 2 000 caractères — la note descend avec la liste
+entière du planning.
+
+**La variante A retenue, et c'est LUI qui a tranché sans le savoir.** La
+planche 93 proposait aussi une ligne discrète « ＋ Ajouter une note », plus
+économe de 96 px sur chaque feuille. Devant l'image, il a répondu : *« B, y'a
+rien ? Je vois rien. »* La ligne était pourtant là, en doré. **Une invitation
+qu'il ne voit pas sur une capture, il ne la trouvera pas davantage sur un
+chantier** — l'argument des 96 px ne pesait plus rien.
+
+**Elle ne part sur aucun document, et sa raison éclaire le PDF sans les prix :**
+*« elle peut rester là, car les salariés auront accès au planning ; justement,
+c'est pour cela que je voulait le devis sans les prix »*. Le PDF est le devis
+expurgé, destiné à sortir ; la note est un pense-bête interne, que ses équipes
+lisent en ouvrant la feuille.
+
+**Enregistrée en SORTANT du cadre**, jamais par un bouton : il range son
+téléphone et démarre, et un bouton non touché perdrait la note. Le refus se dit
+— une note perdue en silence, c'est le broyeur oublié alors qu'il croit l'avoir
+noté (le piège du 11 août).
+
+**Le vide efface**, il ne stocke pas une chaîne creuse : sinon l'écran
+afficherait un cadre « rempli de rien », indistinguable d'une note oubliée. Et
+une note démesurée est **tronquée, jamais refusée** — la borne vit en base, et
+un refus lui ferait perdre ce qu'il vient d'écrire au doigt.
+
+**`NOTE_MAX` vit dans `src/lib/`**, pas dans le dépôt : l'écran doit connaître
+ce chiffre, et l'importer du serveur aurait tiré la base dans le navigateur.
+Trois usages — l'écran, le dépôt, la base — un seul nombre.
+
+Trois contrôles, dont celui qui compte : **une entreprise ne peut ni lire ni
+écrire la note d'une autre.**
+
+---
+
 ### « Déplacer » offrait des boutons qui n'écrivaient rien
 
 *« Cliquer sur Déplacer ne déplace pas le chantier, ça ne fait rien du tout. »*

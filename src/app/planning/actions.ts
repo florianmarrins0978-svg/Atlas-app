@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import {
   planifierChantier,
   deplanifierChantier,
+  ecrireNoteChantier,
   deplacerChantier,
   supprimerChantier,
   SuppressionChantierRefusee,
@@ -131,6 +132,23 @@ export async function deplacerChantierAction(
       dureeDemiJournees: row.dureeDemiJournees ?? null,
     },
   };
+}
+
+/**
+ * Écrit le pense-bête d'un chantier — sa demande du 23 août 2026.
+ *
+ * **Rend un résultat, ne lève jamais.** Le message d'une exception d'action
+ * serveur n'arrive pas jusqu'à lui (`AGENTS.md`) : un refus se rend en valeur,
+ * sinon l'écran affiche « Enregistré » sur une note perdue.
+ */
+export async function ecrireNoteChantierAction(
+  chantierId: string,
+  note: string
+): Promise<{ succes: true; note: string | null } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  const row = await ecrireNoteChantier(ctx, chantierId, note);
+  if (!row) return { succes: false, erreur: "Ce chantier n'existe plus." };
+  return { succes: true, note: row.note };
 }
 
 export async function deplanifierChantierAction(chantierId: string) {
