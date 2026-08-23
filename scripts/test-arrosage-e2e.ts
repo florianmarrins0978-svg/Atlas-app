@@ -411,6 +411,77 @@ async function main() {
     );
   });
 
+  // ── L'ATTENTE SOUFFLE, ELLE NE S'ÉCRIT PAS EN « … » ──────────────────────
+  //
+  // **Sa demande du 23 août 2026 :** *« lors de la lecture du croquis, mets les
+  // trois petits points qui bougent — la fonction souffle qu'on a mise partout
+  // dans l'application »*.
+  //
+  // Trois points de suspension IMMOBILES sont exactement le défaut qu'il avait
+  // signalé le 13 août sur la dictée : ils disent « rien ne se passe » pendant
+  // que le travail est en cours. Et la lecture d'un croquis est la plus longue
+  // attente de l'application.
+  //
+  // **LA RÉPONSE DU SERVEUR EST RETARDÉE EXPRÈS**, et c'est ce qui rend ce
+  // contrôle sûr. Sur ce banc, aucune clé de vision n'est posée : la lecture
+  // refuse en quelques dizaines de millisecondes, et guetter le souffle
+  // reviendrait à jouer à pile ou face — un contrôle qui passe au vert une fois
+  // sur deux ne prouve rien et finit ignoré.
+  await cas("pendant la lecture, les trois points soufflent", async () => {
+    await page.goto(`${BASE}/paysage/arrosage`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(400);
+
+    // On ne retarde QUE l'action serveur (une requête POST sur l'écran
+    // lui-même) : retarder tout la page mettrait aussi les ressources en
+    // attente, et l'écran ne serait plus celui qu'il voit.
+    const retarder = async (route: import("playwright").Route) => {
+      if (route.request().method() !== "POST") return route.continue();
+      await new Promise((r) => setTimeout(r, 2_000));
+      return route.continue();
+    };
+    await page.route(`${BASE}/paysage/arrosage`, retarder);
+
+    try {
+      const pixel = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "base64"
+      );
+      await page.setInputFiles("#croquis", { name: "croquis.png", mimeType: "image/png", buffer: pixel });
+
+      const points = page.locator(".atlas-souffle i");
+      await points.first().waitFor({ state: "visible", timeout: 5_000 });
+      assert.equal(await points.count(), 3, "il faut trois points, pas un glyphe « … »");
+
+      // **Le souffle se MESURE**, il ne se suppose pas : le composant peut être
+      // là et son animation coupée par une feuille de style, et l'écran
+      // montrerait alors trois points immobiles — le défaut d'origine, sous un
+      // autre nom.
+      const echelles: number[] = [];
+      for (let t = 0; t < 1_000; t += 40) {
+        echelles.push(
+          await points.first().evaluate((el) => {
+            const m = new DOMMatrixReadOnly(
+              getComputedStyle(el).transform === "none" ? "" : getComputedStyle(el).transform
+            );
+            return Math.hypot(m.m11, m.m12);
+          })
+        );
+        await page.waitForTimeout(40);
+      }
+      const amplitude = Math.max(...echelles) - Math.min(...echelles);
+      assert.ok(
+        amplitude >= 0.5,
+        `les points n'enflent que de ${amplitude.toFixed(2)} — sous 0,5, l'œil ne le voit pas`
+      );
+
+      // Et le caractère immobile ne doit pas cohabiter avec eux.
+      const libelle = await page.locator('[data-atlas="ajouter-croquis"]').innerText();
+      assert.doesNotMatch(libelle, /…/, `le « … » immobile est encore là : « ${libelle} »`);
+    } finally {
+      await page.unroute(`${BASE}/paysage/arrosage`, retarder);
+    }
+  });
+
   // **Quand la lecture ne se fera pas, l'écran dit POURQUOI — et le motif doit
   // désigner le bon coupable.** Corrigé le 21 août 2026 : l'écran servait
   // « aucune clé d'IA n'est posée sur ce serveur » quelle qu'en soit la cause,

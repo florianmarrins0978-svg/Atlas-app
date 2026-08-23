@@ -7,6 +7,7 @@ import { lireLeCroquis, type EtatPlan } from "./actions";
 // page publiée : deux façons d'écrire une quantité finiraient par diverger.
 import { quantiteEcrite } from "@/lib/arrosage/calcul.js";
 import PlanDessine from "./PlanDessine";
+import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 
 /**
  * L'écran « Plan d'arrosage » — deux gestes, et le plan sort.
@@ -237,7 +238,25 @@ export default function ArrosageClient({
           className="mt-[14px] flex min-h-[64px] cursor-pointer items-center justify-center gap-2.5 rounded-[12px] text-[11px] font-semibold uppercase"
           style={{ border: `1.5px dashed ${colors.line}`, backgroundColor: colors.cream, color: colors.inkSoft, letterSpacing: "0.18em" }}
         >
-          {enCours ? "Lecture du croquis…" : "Ajouter la photo du croquis"}
+          {/* **L'ATTENTE SOUFFLE ICI COMME PARTOUT AILLEURS** — sa demande du
+              23 août 2026 : *« lors de la lecture du croquis, mets les trois
+              petits points qui bougent »*.
+
+              Trois points de suspension IMMOBILES sont exactement le défaut
+              qu'il avait signalé le 13 août sur la dictée : ils disent « rien
+              ne se passe » alors que le travail est en cours, et la lecture
+              d'un croquis par l'IA est la plus longue attente de
+              l'application. Le geste vient de sa proposition C, et il est
+              partagé — `PointsQuiSoufflent`, jamais recopié
+              (`ARCHITECTURE.md` §66). */}
+          {enCours ? (
+            <>
+              Lecture du croquis
+              <PointsQuiSoufflent />
+            </>
+          ) : (
+            "Ajouter la photo du croquis"
+          )}
         </label>
         {/* `capture` ouvre l'appareil photo du téléphone plutôt que la pellicule :
             le croquis est sous ses yeux, il le photographie. */}
@@ -311,7 +330,11 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
       {/* **LE DESSIN D'ABORD.** C'est ce qu'il regarde ; la liste de pièces,
           c'est ce qu'il emporte chez le fournisseur ensuite. L'ordre inverse
           l'obligeait à faire défiler tout un tableau pour voir son jardin. */}
-      <PlanDessine dessin={dessin} />
+      {/* **Le dessin peut manquer sans que le plan tombe** — sa correction du
+          23 août 2026. Un croquis qui porte ses métrés, son piquage et sa
+          nourrice donne un plan juste même si l'agencement n'a pas pu être
+          reconstitué ; la réserve, plus bas, dit alors pourquoi. */}
+      {dessin && <PlanDessine dessin={dessin} />}
       <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
         {plan.secteurs.length} réseau{plan.secteurs.length > 1 ? "x" : ""}
         {plan.debitDisponible > 0 ? ` · ${plan.debitDisponible.toFixed(2).replace(".", ",")} m³/h` : ""}
