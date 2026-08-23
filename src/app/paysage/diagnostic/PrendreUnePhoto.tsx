@@ -9,12 +9,16 @@ import { analyserPhotoAction, ajouterComplementAction } from "./actions";
 /**
  * Le seul geste de l'écran d'entrée : appuyer, photographier, attendre.
  *
- * **`capture="environment"` ouvre l'appareil arrière du téléphone**, pas la
- * bibliothèque de photos. C'est ce qui fait la différence entre « prendre une
- * photo » et « choisir une photo » — et le parcours qu'il a demandé est le
- * premier : *ouvrir la rubrique, prendre une photo, attendre, obtenir une
- * réponse*. Sur un ordinateur, l'attribut est ignoré et le sélecteur de
- * fichiers s'ouvre : rien n'est perdu.
+ * **Le téléphone propose les DEUX : prendre une photo, ou en choisir une.**
+ * L'écran portait `capture="environment"`, qui ouvre l'appareil arrière et ne
+ * laisse pas le choix. Ce n'était pas ce qu'il voulait — sa règle du 21 août
+ * 2026, posée pour le croquis d'arrosage et valable ici : *« soit je peux
+ * mettre une photo de ma bibliothèque, soit prendre une photo »*.
+ *
+ * Le retirer ne coûte rien : l'appareil reste le premier choix du menu. Le
+ * garder, en revanche, interdisait une photo prise la veille chez le client —
+ * un feuillage qui jaunit se photographie quand on le voit, pas quand on ouvre
+ * Atlas.
  *
  * **L'attente est DITE, et c'est le point délicat de cet écran.** Un appel de
  * vision prend plusieurs secondes ; sans un mot, il appuie une seconde fois, et
@@ -40,7 +44,15 @@ export default function PrendreUnePhoto({
         ref={entree}
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        capture="environment"
+        // **PAS de `capture` — la même règle que pour le croquis d'arrosage**,
+        // posée le 21 août 2026 : « soit je peux mettre une photo de ma
+        // bibliothèque, soit prendre une photo ».
+        //
+        // Il l'a demandé pour le croquis ; le diagnostic portait le même
+        // attribut, donc le même défaut. Le retirer ne coûte RIEN — l'appareil
+        // reste proposé dans le menu du téléphone —, tandis que le garder
+        // interdit une photo prise la veille chez le client. Un feuillage qui
+        // jaunit se photographie quand on le voit, pas quand on ouvre Atlas.
         className="hidden"
         onChange={(e) => {
           const fichier = e.target.files?.[0];

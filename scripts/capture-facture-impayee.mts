@@ -15,6 +15,7 @@ import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -56,7 +57,7 @@ async function factureEmise(nomClient: string, prix: string): Promise<string> {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.locator('input[placeholder="Bernard"]').fill(nomClient);
   await page.locator('input[placeholder="06 12 34 56 78"]').fill("06 79 98 45 14");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const url = page.url().split("?")[0];
   const chantierId = url.split("/").pop()!;
@@ -72,15 +73,18 @@ async function factureEmise(nomClient: string, prix: string): Promise<string> {
 
   await page.goto(`${url}/export`, { waitUntil: "networkidle" });
   await page.click("text=Envoyer au client");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 30_000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await pool.query("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId]);
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.click("text=Créer la facture");
   await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 30_000 });
-  await page.click("text=Confirmer le départ de la facture");
+  // **UN SEUL APPUI depuis le 22 août 2026** : ce bouton arrête la facture ET
+  // ouvre la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
+  // jamais par son libellé — c'est le libellé qui a changé.
+  await page.click('[data-atlas="envoyer-la-facture"]');
   await page.waitForSelector("text=arrêtée", { timeout: 30_000 });
   return chantierId;
 }

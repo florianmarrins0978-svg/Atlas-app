@@ -13,6 +13,15 @@ import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { devis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ajouterPrestation as ajouterPrestationEntretien } from "../src/server/repositories/prestations-entretien";
+import {
+  ouvrirPassage,
+  lirePassage,
+  cocherLigne,
+  nommerClient,
+  figerPassage,
+} from "../src/server/repositories/passages-entretien";
 
 // La fiche du client, telle qu'il l'atteint.
 //
@@ -67,7 +76,7 @@ async function main() {
   const nomClient = `Mme Bracquemont ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomClient);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
   const chantierUrl = page.url();
   const chantierId = chantierUrl.split("/").pop()!;
@@ -159,6 +168,23 @@ async function main() {
   await terminerChantier(ctx, chantierId);
   const facture = await getFacturePourChantier(ctx, chantierId);
   await emettreFacture(ctx, facture!.facture.id);
+
+  // **Et une fiche d'entretien REMPLIE PUIS ENVOYÉE.** Depuis sa règle du
+  // 23 août 2026, la troisième colonne ne porte que celles-là : facturer ne
+  // fabrique plus de fiche, si bien que sans ce geste la colonne serait vide et
+  // l'ordre — le cœur de sa demande — ne se vérifierait plus.
+  const clientDuChantier = (
+    await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [chantierId])
+  ).rows[0].client_id as string;
+  await ajouterPrestationEntretien(ctx, { famille: "Pelouse", libelle: "Tonte" });
+  const passageOuvert = await ouvrirPassage(ctx, "2026-06-18");
+  assert.ok(passageOuvert.ok, "la fiche d'entretien du montage n'a pas pu s'ouvrir");
+  const passageLu = await lirePassage(ctx, passageOuvert.id);
+  await cocherLigne(ctx, passageOuvert.id, passageLu!.lignes[0].id, true);
+  await nommerClient(ctx, passageOuvert.id, clientDuChantier);
+  const passageFige = await figerPassage(ctx, passageOuvert.id);
+  assert.ok(passageFige.ok, "la fiche d'entretien du montage n'est pas partie");
+  const jetonFiche = passageFige.jeton;
 
   // **On compte les devis DU CLIENT, pas ceux d'un chantier.** Ce garde-fou
   // visait `chantier_id` et a accusé le montage à tort dès que le second devis
@@ -259,15 +285,18 @@ async function main() {
   });
 
   await cas("chaque colonne porte ses PDF, du plus récent au plus ancien", async () => {
+    // **Les pièces sont des BOUTONS depuis le 21 août 2026.** Un appui ouvre
+    // trois choix — Enregistrer, Ouvrir, Partager — au lieu d'ouvrir le PDF
+    // d'office (`ARCHITECTURE.md` §141, planche 83 proposition C). L'adresse ne
+    // se lit donc plus sur la vignette : elle vit dans la feuille.
     const colonnes = await page.evaluate(() =>
       [...document.querySelectorAll("h3")].map((h3) => {
         const boite = h3.parentElement!;
         return {
           titre: (h3.textContent ?? "").trim(),
-          liens: [...boite.querySelectorAll("a")].map((a) => ({
-            href: a.getAttribute("href") ?? "",
-            texte: (a.textContent ?? "").replace(/\s+/g, " ").trim(),
-            haut: a.getBoundingClientRect().top,
+          liens: [...boite.querySelectorAll('[data-atlas="piece"]')].map((b) => ({
+            texte: (b.textContent ?? "").replace(/\s+/g, " ").trim(),
+            haut: b.getBoundingClientRect().top,
           })),
         };
       })
@@ -276,17 +305,27 @@ async function main() {
     const attendus: Record<string, RegExp> = {
       Devis: /^\/api\/devis\//,
       Facture: /^\/api\/factures\//,
-      "Fiche chantier": /^\/api\/chantiers\/[0-9a-f-]{36}\/fiche\/pdf$/,
+      // **Plus un PDF de chantier depuis le 23 août 2026** : la colonne porte
+      // le rapport d'entretien, à l'adresse même que le client a reçue.
+      "Fiche chantier": /^\/entretien\/[A-Za-z0-9_-]+$/,
     };
     for (const colonne of colonnes) {
       assert.ok(colonne.liens.length >= 1, `la colonne « ${colonne.titre} » est vide`);
-      for (const lien of colonne.liens) {
-        assert.match(
-          lien.href,
-          attendus[colonne.titre],
-          `« ${colonne.titre} » pointe sur ${lien.href}, qui n'est pas son PDF`
-        );
-      }
+    }
+
+    // **Chaque colonne mène à SON genre de document**, vérifié en ouvrant la
+    // feuille de sa première pièce — c'est-à-dire par le chemin qu'il emprunte.
+    // Une colonne « Facture » qui servirait des devis se lirait pareil dans le
+    // DOM ; seule l'adresse le dit.
+    for (const [titre, motif] of Object.entries(attendus)) {
+      const cadre = page.locator("div").filter({ has: page.locator(`h3:text-is("${titre}")`) }).last();
+      await cadre.locator('[data-atlas="piece"]').first().click();
+      const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
+      await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
+      const href = (await ouvrir.getAttribute("href")) ?? "";
+      assert.match(href, motif, `« ${titre} » pointe sur ${href}, qui n'est pas son PDF`);
+      await page.getByRole("button", { name: "Annuler" }).click();
+      await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
     }
 
     // **L'ordre se lit sur l'ÉCRAN, pas sur les données.** Un tri juste dans le
@@ -414,36 +453,48 @@ async function main() {
   // **Ouvert POUR DE BON, pas seulement listé.** Un lien qui rend une erreur 500
   // ou une page HTML se voit exactement pareil dans le DOM ; c'est en le
   // suivant qu'on l'apprend.
-  await cas("la fiche de chantier s'ouvre vraiment, et c'est un PDF", async () => {
-    const href = await page
-      .locator(`a[href="/api/chantiers/${chantierId}/fiche/pdf"]`)
-      .first()
-      .getAttribute("href");
-    assert.ok(href, "aucun lien vers la fiche de chantier en PDF");
-    const reponse = await page.request.get(`${BASE}${href}`);
-    assert.equal(reponse.status(), 200, `la fiche de chantier répond ${reponse.status()}`);
-    assert.match(
-      reponse.headers()["content-type"] ?? "",
-      /application\/pdf/,
-      `la fiche n'est pas servie en PDF : ${reponse.headers()["content-type"]}`
-    );
-    const octets = await reponse.body();
+  await cas("la fiche s'ouvre vraiment, et c'est le rapport reçu par le client", async () => {
+    // **Ce n'est plus un PDF, et c'est le sujet.** Jusqu'au 23 août 2026 cette
+    // colonne servait la feuille INTERNE d'un chantier terminé — équipe,
+    // créneau, note vocale, adresse —, celle que ses salariés ouvrent dans la
+    // camionnette. Rangée au dossier d'un client, elle donnait à croire qu'il
+    // l'avait reçue. Elle porte désormais le rapport d'entretien, à l'adresse
+    // même qu'il a envoyée.
+    const cadre = page.locator("div").filter({ has: page.locator('h3:text-is("Fiche chantier")') }).last();
+    await cadre.locator('[data-atlas="piece"]').first().click();
+    const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
+    await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
+    const href = await ouvrir.getAttribute("href");
+
+    // **« Enregistrer » n'est PAS proposé**, et ce n'est pas un oubli : rien ne
+    // fige ce rapport en fichier. Le laisser ferait descendre une page web
+    // nommée `.pdf`, que rien n'ouvrirait — le défaut du 7 août, retourné.
     assert.equal(
-      octets.subarray(0, 5).toString("latin1"),
-      "%PDF-",
-      "le fichier servi ne commence pas par %PDF-"
+      await page.locator('[data-atlas="piece-enregistrer"]').count(),
+      0,
+      "« Enregistrer » est offert sur une fiche qui n'est pas un fichier"
     );
-    // **Aucun prix sur une fiche de chantier.** Elle se donne à un locataire, à
-    // un syndic, à l'assurance d'un voisin : un montant imprimé ici divulgue ce
-    // que le propriétaire a payé. La mise en page l'éprouve déjà
-    // (`test-fiche-chantier-pdf.ts`) ; ici on éprouve que c'est bien CE
-    // document-là qui est servi.
-    assert.ok(octets.length > 2000, `la fiche pèse ${octets.length} octets — elle est probablement vide`);
+    await page.getByRole("button", { name: "Annuler" }).click();
+    await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
+
+    assert.equal(href, `/entretien/${jetonFiche}`, `la feuille de la fiche mène à « ${href} »`);
+
+    // **Ouvert POUR DE BON, pas seulement listé.** Un lien qui rend une erreur
+    // 500 se voit exactement pareil dans le DOM ; c'est en le suivant qu'on
+    // l'apprend.
+    const reponse = await page.request.get(`${BASE}${href}`);
+    assert.equal(reponse.status(), 200, `le rapport d'entretien répond ${reponse.status()}`);
+    const corps = await reponse.text();
+    assert.match(
+      corps,
+      /Tonte/i,
+      "le rapport ne porte pas la prestation cochée : ce n'est pas la fiche envoyée"
+    );
   });
 
   await cas("un chantier SANS client n'ouvre aucune porte sur du vide", async () => {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-    await page.click('[data-atlas="action-dicter"]');
+    await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
     await page.waitForTimeout(700);
     const { rows } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [

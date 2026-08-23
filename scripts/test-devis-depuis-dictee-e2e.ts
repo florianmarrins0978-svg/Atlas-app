@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Le parcours que le patron réclamait : de la dictée au devis, en un geste.**
 //
@@ -41,7 +42,7 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomDuClient);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const chantierUrl = page.url();
   const chantierId = chantierUrl.split("/").pop()!;
@@ -164,15 +165,40 @@ async function main() {
   console.log("  ✓ rien n'est parti au client");
 
   // --- Le devis, tel qu'il partira au client ------------------------------
-  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
-  await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
-  const ecranDevis = await page.locator("body").innerText();
-  assert.ok(/taille de haie/i.test(ecranDevis), "Le devis ne porte pas la prestation dictée.");
-  assert.ok(
-    !/TOTAL\s*0,00\s*€/i.test(ecranDevis),
-    `Le devis affiche un total nul. Écran : ${ecranDevis.slice(0, 400)}`
+  //
+  // **On lit l'INSTANTANÉ IMPRIMÉ, plus un écran.** Ce contrôle ouvrait
+  // `/export` et cherchait « taille de haie » dans le texte de la page. Deux
+  // raisons de ne jamais y arriver, depuis le 20 août 2026 (`c9abb50`) :
+  // l'écran intermédiaire a été supprimé — `/export` renvoie sur le devis tant
+  // qu'il n'est pas parti — et sur le devis, la désignation vit dans un
+  // `<input>`, dont la valeur ne fait pas partie du texte de la page. Le
+  // contrôle accusait donc la dictée pour un parcours qui avait changé
+  // (`CLAUDE.md` §5 bis : on adapte le contrôle, on ne rétablit pas l'écran).
+  //
+  // Ce qui compte n'a pas bougé : ce que le client recevra. C'est
+  // `lignes_devis` — l'instantané figé à l'impression, pas les lignes de prix
+  // qu'on peut encore corriger — et il se vérifie sous l'aperçu PDF lui-même.
+  const devisId = (await pool.query(`SELECT id FROM devis WHERE chantier_id = $1`, [chantierId])).rows[0].id;
+  const apercu = await page.request.get(`${BASE}/api/devis/${devisId}/pdf`);
+  assert.equal(apercu.status(), 200, "L'aperçu du PDF du devis dicté ne répond pas.");
+
+  const imprime = await pool.query(
+    `SELECT libelle, montant FROM lignes_devis WHERE devis_id = $1 ORDER BY ordre`,
+    [devisId]
   );
-  console.log("  ✓ l'écran Devis porte les prestations et un total");
+  assert.ok(
+    imprime.rows.length > 0,
+    "Le devis s'imprimerait sans aucune ligne : le client recevrait une feuille vide."
+  );
+  assert.ok(
+    imprime.rows.some((l) => /haie/i.test(l.libelle ?? "")),
+    `Le devis imprimé ne porte pas ce qui a été dicté : « ${imprime.rows
+      .map((l) => l.libelle)
+      .join(" || ")} »`
+  );
+  const totalImprime = imprime.rows.reduce((somme, l) => somme + Number(l.montant ?? 0), 0);
+  assert.ok(totalImprime > 0, `Le devis partirait à ${totalImprime} € — le client recevrait un document nul.`);
+  console.log("  ✓ le devis imprimé porte les prestations dictées et un total");
 
   // --- Rejouer le geste ne double rien -------------------------------------
   // Le défaut du 3 août — un devis passé de 1 674 à 3 348 € — est venu d'un

@@ -1,99 +1,142 @@
 import Link from "next/link";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersTermines } from "@/server/repositories/factures";
-import { formatEuros, grouperParMois, totalFacture } from "@/lib/termines-par-mois";
-import FilTermines from "./FilTermines";
+import { preparer } from "@/lib/termines-par-mois";
+import ListeTermines from "./ListeTermines";
+import { tvaDeLaPeriodeCourante } from "@/server/tva-courante";
 
 export const dynamic = "force-dynamic";
 
 /**
- * « Terminés » — le fil par mois, et facturer en trois appuis.
+ * « Terminés » — un mois à la fois, et l'état écrit en toutes lettres.
  *
- * *Refait le 10 août 2026 d'après la maquette retenue par le patron
- * (`maquettes/atlas-facturer.html`, `docs/INTEGRER-ORIGINE.md` §6 quinquies).*
+ * *Refait le 22 août 2026 d'après la planche 90, proposition B
+ * (`appli/termines-simple.html`), retenue par le patron : « je choisis la B
+ * avec les modifications que je viens de te demander ». La planche reste la
+ * référence — toute correction de cet écran s'y porte D'ABORD, sinon les deux
+ * divergent, et c'est elle qu'il ouvre sur son téléphone.*
  *
- * **Ce qui clochait, et qui n'était pas une affaire de goût.** L'écran empilait
- * trois sortes de pavés arrondis — le relevé de TVA, les chantiers à facturer,
- * les factures. Le relevé de TVA était le **seul cadre plein**, si bien que
- * l'œil allait d'abord sur ce qu'on consulte une fois par trimestre.
- * « Rien à facturer » s'affichait comme un titre de section suivi de rien :
- * l'écran avait l'air amputé au lieu d'avoir l'air calme. Et **il ne disait
- * jamais combien**, alors que c'est la seule question qu'on lui pose.
+ * **Sa plainte, le 22 août :** *« je la trouve beaucoup trop compliquée. Un
+ * utilisateur qui ne connaît pas l'application et qui arrive sur cette page ne
+ * comprend rien. »*
  *
- * **Un chantier non facturé reste DANS SON MOIS.** Le chantier du 20 août est
- * un chantier d'août ; le sortir dans un bloc à part casse le fil, qui ne
- * raconte plus le temps mais deux listes empilées.
+ * **Ce qui a quitté l'écran, et pourquoi :**
+ *
+ *   - le **fil vertical** et ses perles pleines ou creuses — 47 px de largeur
+ *     pour un code que personne n'a appris ;
+ *   - la **pastille dorée** portant le compte, et le volet **replié** :
+ *     le seul travail qui reste ne se cache pas ;
+ *   - « **Facturé, tous mois confondus** », qui répétait le chiffre déjà écrit
+ *     à droite du mois sans qu'on sache pourquoi c'était le même ;
+ *   - le surtitre « CHANTIERS RÉALISÉS » et le cheveu : la planche n'en porte
+ *     pas, et le titre suffit.
+ *
+ * Ce qui reste du pied : le relevé de TVA, devenu **« Ma TVA à déclarer »** —
+ * il se consultait sous la barre du bas, coupé en deux.
  */
+const formatEuros = new Intl.NumberFormat("fr-FR", {
+  style: "currency",
+  currency: "EUR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 export default async function TerminesPage() {
   const ctx = await getCurrentCtx();
   const chantiers = await listerChantiersTermines(ctx);
-  const mois = grouperParMois(chantiers);
+  const lignes = preparer(chantiers);
+  // **Le mois du jour se décide ICI, sur le serveur.** Calculé dans le
+  // navigateur, il pourrait différer de celui du rendu serveur pour qui n'est
+  // pas au même fuseau : React refuse alors l'hydratation, et l'écran fige.
+  const moisCourant = new Date().toISOString().slice(0, 7);
+
+  // **Ce qu'il reste à payer de TVA, pour la carte en tête — sa demande du
+  // 23 août 2026.** Composé une seule fois, dans `src/server/tva-courante.ts` :
+  // recomposer ces chiffres ici aurait donné deux additions de la même somme,
+  // et deux montants possiblement différents à deux écrans d'intervalle.
+  const tva = await tvaDeLaPeriodeCourante(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-10" data-atlas="ecran-termines">
-        <EnTeteEcran
-          surtitre="Chantiers réalisés"
-          titre="Terminés"
-          // **Rien quand il n'y a rien.** L'ancien écran écrivait « Rien à
-          // facturer », ce qui remplissait la place d'une absence par un titre
-          // suivi de rien. Le compte vit désormais dans l'encart du mois — là
-          // où il sert — et l'en-tête se tait.
-        />
+        {/* Ni surtitre ni cheveu : la planche retenue n'en porte pas. */}
+        <EnTeteEcran titre="Terminés" cheveu={false} />
 
-        {chantiers.length === 0 ? (
-          <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-            Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
-          </p>
-        ) : (
-          <FilTermines mois={mois} />
-        )}
+        {/* **LA CARTE DE TVA, EN TÊTE — sa demande du 23 août 2026.**
 
-        {/* Le pied : ce qui a été facturé, puis le relevé.
-            **Le relevé cesse d'être un pavé** — c'est une ligne, comme le
-            reste. Il se consulte une fois par période : il n'a rien à faire en
-            tête d'écran.
+            *« Je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le
+            voit pas trop. »* Il vivait tout en bas, après la liste entière ; le
+            code assumait cette place — *« le relevé se consulte une fois par
+            période »* — et l'argument tenait. Mais il est passé devant sans le
+            trouver, et c'est lui qui s'en sert.
 
-            **« Facturé ce trimestre » a été corrigé le 12 août 2026 : il
-            mentait.** `totalFacture(mois)` additionne TOUS les mois du fil,
-            depuis toujours — jamais un trimestre. Le chiffre était juste, sa
-            légende ne l'était pas, et personne ne pouvait s'en apercevoir sans
-            aller lire la fonction. Trouvé en cherchant tout autre chose : ce
-            que le patron demandait, c'était de découper la TVA au mois. */}
-        <div className="mx-[26px] mt-[22px] pt-4" style={{ borderTop: `1px solid ${colors.line}` }}>
-          <p
-            className="flex items-baseline justify-between gap-3.5 py-1.5 text-[12.5px]"
-            style={{ color: colors.muted }}
-          >
-            Facturé, tous mois confondus
-            <b
-              className="font-normal"
-              style={{ color: colors.ink, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}
+            Trois places lui ont été dessinées (`docs/maquettes/86`, essayables
+            au doigt). Il a retenu la **B** : pas un lien, mais **ce qu'il vient
+            y chercher**. Le montant se lit sans ouvrir.
+
+            **La période est NOMMÉE, et « Reste à payer » aussi** — c'est la
+            réserve dite devant la planche avant qu'il ne choisisse : ce montant
+            n'est pas dû le jour où il le lit. Il dépend de son rythme et de son
+            régime, et n'est exigible qu'à l'échéance. Sans ces deux mots, la
+            carte se lirait « ce que je dois aujourd'hui ». */}
+        <Link
+          href="/termines/tva"
+          data-atlas="carte-tva"
+          className="mx-[26px] mt-[18px] flex items-center justify-between gap-3 rounded-[4px] px-[15px] py-[17px]"
+          style={{ backgroundColor: colors.card }}
+        >
+          <span className="min-w-0">
+            {/* **En or et en gras — sa demande du 23 août 2026 au soir.** Ce
+                titre était le plus pâle de la carte alors que c'est lui qui
+                nomme l'outil dont il disait, le matin même, *« il est caché, on
+                ne le voit pas trop »*. Déplacer la carte en tête ne suffisait
+                donc pas : encore fallait-il qu'on la voie. */}
+            <span className={`block ${libelleCaps} font-bold`} style={{ color: colors.or }}>
+              Ma TVA à déclarer
+            </span>
+            <span
+              className="mt-[3px] block truncate text-[16.5px]"
+              style={{ fontFamily: font.display }}
             >
-              {formatEuros(totalFacture(mois))}
-            </b>
-          </p>
-          <Link
-            href="/termines/tva"
-            className="flex items-center justify-between gap-3.5 py-3.5"
-            style={{ borderTop: `1px solid ${colors.line}` }}
+              {tva.periode}
+            </span>
+          </span>
+          <span
+            className="shrink-0 text-[21px]"
+            style={{ fontFamily: font.display, color: colors.rust, fontVariantNumeric: "tabular-nums" }}
           >
-            <span style={{ fontFamily: font.display, fontSize: 16, lineHeight: 1.2 }}>
-              Relevé de TVA collectée
-            </span>
-            <span aria-hidden="true" className="text-[15px]" style={{ color: colors.or }}>
-              ›
-            </span>
-          </Link>
-          {/* **Cette mention reste, où que le relevé aille** (`docs/AGENT.md`
-              §6) : Atlas le prépare, il ne le déclare pas. Le relevé est
-              calculé à la demande, jamais stocké. */}
-          <p className="text-[11px] leading-[1.6]" style={{ color: colors.muted }}>
-            Atlas prépare ce relevé, il ne le déclare pas.
-          </p>
+            {formatEuros.format(tva.reste)}
+          </span>
+        </Link>
+        {/* **La mention grise sous la carte est partie le 23 août 2026**, à sa
+            demande : *« la petite phrase en dessous d'août 2026, en gris,
+            supprime-la »*. Cet écran portait trop de choses à lire pour ce
+            qu'il vient y faire.
+
+            **Ce que `docs/AGENT.md` §6 exige n'est pas perdu pour autant** —
+            Atlas prépare le relevé, il ne le déclare pas —, et c'est la seule
+            raison pour laquelle ce retrait est possible : la phrase existe en
+            toutes lettres AU BAS DU RELEVÉ lui-même (`termines/tva`), là où les
+            chiffres se lisent et où la question se pose. La retirer des deux
+            endroits serait autre chose, et se refuserait. */}
+
+        {/* **Ce repère existe pour qu'un contrôle puisse mesurer une PLACE.**
+            Sa proposition B tient à ce que la carte passe AVANT la liste ; sans
+            un repère sur la liste, le contrôle comparait la carte à sa propre
+            mention et restait vert la carte remise en pied d'écran — vert sur
+            le défaut même dont il portait le nom. */}
+        <div data-atlas="contenu-termines">
+          {chantiers.length === 0 ? (
+            <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
+              Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
+            </p>
+          ) : (
+            <ListeTermines lignes={lignes} moisCourant={moisCourant} />
+          )}
         </div>
+
       </div>
     </div>
   );

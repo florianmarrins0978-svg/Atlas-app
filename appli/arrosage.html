@@ -642,7 +642,7 @@ function dessinerMateriel(d){
     var b = document.createElement('div');
     b.className = 'mat';
     var p = l.ref != null ? PRIX[l.ref] : undefined;
-    b.innerHTML = '<span class="mat-q">' + l.q + ' ' + l.u + '</span><span class="mat-n">' + l.nom + '</span>' +
+    b.innerHTML = '<span class="mat-q">' + quantiteEcrite(l.q, l.u) + '</span><span class="mat-n">' + l.nom + '</span>' +
       (p != null ? '<span class="mat-a">' + nb(p * l.q) + ' € HT</span>' : '');
     hote.appendChild(b);
   });
@@ -685,16 +685,44 @@ function dessinerMateriel(d){
     note.innerHTML = '<b>Ø25</b> par défaut — le calcul ne peut pas encore trancher : il lui manque ' +
                      'un secteur posé et sa pression de service.';
   } else {
+    // **LE SEUIL EN MÈTRES, sa demande du 22 août 2026.** Le verdict répondait
+    // par oui ou par non sur la longueur SAISIE ; il fallait la ressaisir trois
+    // fois pour trouver où la bascule se produit. Le seuil se lit une fois et
+    // se compare au mètre ruban, avant de creuser.
+    var seuil = a.motif === 'debit'
+      ? '<b>Aucune longueur de Ø25 ne convient</b> : à ' + nb(a.debit) + ' m³/h, l\'eau y filerait ' +
+        'au-dessus de 1,5 m/s (le Ø25 en passe ' + nb(a.debitMax25) + ' m³/h au maximum).'
+      : '<b>Le Ø25 tient jusqu\'à ' + nb(a.longueurMax25, 0) + ' m</b> à ce débit, le Ø32 jusqu\'à ' +
+        nb(a.longueurMax32, 0) + ' m.';
     note.innerHTML = '<b>Amenée : Ø' + a.diametre + '</b> sur ' + nb(a.longueur,0) + ' m. ' +
       'Le plus gros secteur tire ' + nb(a.debit) + ' m³/h ; en Ø25 la perte est de ' +
       nb(a.perte25,2) + ' bar, ce qui laisse ' + nb(a.source - a.perte25,2) + ' bar au regard pour ' +
       nb(a.exigee,1) + ' bar exigés par les buses' +
       (a.suffit
-        ? '. <b>Le Ø25 suffit</b>, on n\'y touche pas.'
+        ? '. <b>Le Ø25 suffit</b>, on n\'y touche pas. '
         : '. <b>Insuffisant : on passe en Ø32</b> (perte ' + nb(a.perte32,2) + ' bar, soit ' +
-          nb(a.source - a.perte32,2) + ' bar au regard).') +
-      ' <span class="provisoire">Ce calcul ne compte QUE l\'amenée</span> — ni les antennes, ni les ' +
-      'raccords, ni l\'électrovanne. Un « le Ø25 suffit » est donc un plancher, pas une garantie.';
+          nb(a.source - a.perte32,2) + ' bar au regard). ') +
+      seuil +
+      (a.insuffisantMemeEn32
+        ? ' <b>Et le Ø32 lui-même est en surrégime à ce débit</b> (' + nb(a.debitMax32) + ' m³/h au ' +
+          'maximum) : c\'est du Ø40, ou un secteur de plus.'
+        : '') +
+      // **CE QUI ARRIVE AU DERNIER ARROSEUR — le trou fermé le 22 août au soir.**
+      // Cette phrase disait « ce calcul ne compte QUE l'amenée ». Ce n'est plus
+      // vrai : l'électrovanne, la ligne, ses raccords et l'antenne Ø16 sont
+      // maintenant retirés. Ce qui reste dehors, c'est le trajet du regard à la
+      // première tête — et c'est CELA qu'il faut dire, pas l'ancien aveu.
+      (d.pressionAuxArroseurs > 0
+        ? ' <b>Au dernier arroseur : ' + nb(d.pressionAuxArroseurs, 2) + ' bar</b> — il s\'en ' +
+          'perd encore ' + nb(d.perteReseau, 2) + ' bar après le regard (électrovanne, ligne, ' +
+          'raccords, antenne Ø16).' +
+          (d.pressionTropBasse
+            ? ' <span class="provisoire">C\'est trop peu pour que les arroseurs se lèvent</span> : ' +
+              'raccourcissez les lignes, ajoutez une vanne, ou piquez plus en amont.'
+            : '')
+        : '') +
+      ' <span class="provisoire">Le trajet du regard à la première tête n\'est pas compté</span> — ' +
+      'il dépend de l\'endroit où la nourrice est posée. La pression annoncée est donc un plafond.';
   }
   hote.appendChild(note);
 }
@@ -728,7 +756,7 @@ function dessinerNourrice(d){
   fiche.pieces.forEach(function(x){
     var p = CATALOGUE.piece(x.ref);
     var nom = p ? (p.marque ? p.marque + ' ' : '') + p.nom : x.ref;
-    html += '<div class="piece"><span>' + x.q + ' u</span><span>' + nom + '</span></div>';
+    html += '<div class="piece"><span>' + quantiteEcrite(x.q, 'u') + '</span><span>' + nom + '</span></div>';
   });
   hote.innerHTML = html;
 }
@@ -770,7 +798,7 @@ function totalDeLaListe(lignes){
 function texteDeLaListe(d){
   var l = ['Demande de prix — arrosage automatique',
            'Marque souhaitée : ' + nomDeMarque(marqueCourante()), ''];
-  listeMateriel(d).forEach(function(x){ l.push('- ' + x.q + ' ' + x.u + '  ' + x.nom); });
+  listeMateriel(d).forEach(function(x){ l.push('- ' + quantiteEcrite(x.q, x.u) + '  ' + x.nom); });
   // Le diamètre de l'amenée est CALCULÉ (sa règle : Ø25 par défaut, Ø32 s'il
   // le faut) — le fournisseur doit lire le bon, pas un Ø32 posé d'office.
   var a = amenee(d);

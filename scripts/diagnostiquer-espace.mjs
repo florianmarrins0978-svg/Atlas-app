@@ -22,6 +22,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
 
 const DIST = ".next-batie";
 // **Détournable pour l'éprouver, comme le témoin d'échec plus bas — et ce
@@ -41,6 +42,8 @@ const TEMOIN_ECHEC =
   // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
   process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
 const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
+/** Ce que `ouvrir-port.sh` a rendu au dernier démarrage : un seul mot. */
+const FICHIER_PORT = "/tmp/atlas-port.txt";
 const VERROU_VEILLEUR = "/tmp/atlas-veilleur.pid";
 const PORT = process.env.PORT ?? "3000";
 
@@ -146,6 +149,22 @@ console.log(`  Code récupéré    : ${court(tete)}`);
 console.log(`  Code SERVI       : ${ligneCodeServi()}`);
 console.log(`  Serveur          : ${vivant ? `répond sur le port ${PORT}` : `NE RÉPOND PAS sur le port ${PORT}`}`);
 console.log(`  Veilleur         : ${veilleurVivant() ? "en place" : "absent"}`);
+// **Le port, et ce n'est pas un détail d'installation.** Un port privé fait
+// répondre GitHub à la place d'Atlas : depuis un téléphone non connecté, on ne
+// voit qu'une page de connexion, et rien ne dit pourquoi. Le patron l'a vécu le
+// 10 août, puis le 21 — « elle ne se lance plus », sur un serveur pourtant
+// debout.
+const etatPort = existsSync(FICHIER_PORT) ? readFileSync(FICHIER_PORT, "utf8").trim() : null;
+// **On MESURE, on ne suppose plus.** Jusqu'au 22 août 2026 cette ligne
+// recopiait le mot rendu par `ouvrir-port.sh` et en concluait « PRIVÉ » dès
+// qu'il n'avait pas pu régler le port. Elle a envoyé le patron faire trois
+// clics sur un port DÉJÀ public — *« il est en public déjà »* — pendant que la
+// vraie panne restait invisible. L'espace s'appelle désormais par son adresse
+// publique, celle de son téléphone, et rapporte ce qui revient
+// (`scripts/_verdict-port.mjs`).
+const dehors = await regarderDuDehors();
+const port = verdictPort({ etatPort, dehors });
+console.log(`  Port 3000        : ${port.ligne}`);
 // **Les deux suspects d'une construction qui tombe sur une machine modeste.**
 // Publiés à chaque fois, et pas seulement en cas d'échec : quand la fiche est
 // enfin lue, la tentative est finie depuis longtemps et la mémoire est rendue.
@@ -177,6 +196,11 @@ if (echecBati) {
       "     Rallumer l'espace reste le geste qui répare le plus vite."
   );
 }
+
+// Placé AVANT le retard de version, comme la lenteur : un port fermé rend
+// l'application injoignable, et savoir qu'elle a deux commits de retard ne sert
+// alors à rien.
+if (port.souci) soucis.push(port.souci);
 
 if (!fetchOk) {
   soucis.push(

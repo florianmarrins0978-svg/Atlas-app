@@ -758,9 +758,15 @@ body {
 .atlas-pellicule::-webkit-scrollbar { display: none; }
 .atlas-vue,
 .atlas-ajouter {
-  flex: 0 0 68px;
-  height: 62px;
-  border-radius: 3px;
+  /* **Les mesures de sa maquette** (`.ajout-photo` dans
+   * `appli/fiche-client-vocale.html`), codée trait pour trait le 22 août 2026 :
+   * un carré de 74, des angles de 6, et surtout un liseré EN TIRETS, doré. Le
+   * trait continu gris de 68 × 62 se lisait comme une case vide plutôt que
+   * comme un endroit où poser une photo — et c'est ce qu'il montrait du doigt
+   * en comparant les deux écrans. */
+  flex: 0 0 74px;
+  height: 74px;
+  border-radius: 6px;
   scroll-snap-align: start;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), border-color 0.2s;
@@ -1071,4 +1077,50 @@ body {
     0%, 100% { opacity: 0.32; }
     50% { opacity: 1; }
   }
+}
+
+
+/* ─── LA CASE À REMPLIR — « LA CARTE DOUCE », la 4 qu'il a choisie ──────────
+ *
+ * **Sa plainte du 21 août 2026 :** *« je peux plus voir ces encadrés carrés »*.
+ * Cinq dessins lui ont été proposés, puis relus sur la page entière
+ * (`appli/cases-page-entiere.html`) — et il a tranché deux fois plutôt qu'une :
+ * *« je choisis la 4 »*, puis, le soir : *« n'oublie pas que j'ai choisi la 4
+ * pour la forme des cases, dans les 5 modèles elle s'appelait la carte
+ * douce »*.
+ *
+ * La case d'avant, moins ses angles droits et son liseré : fond `rustTint`,
+ * 14 px de rayon, **aucun bord**. L'or ne vient qu'au doigt posé — il a écarté
+ * le liseré doré permanent qu'on lui proposait : *« non »*.
+ *
+ * **Une classe, et pas un style en ligne répété.** Le fond et le rayon vivaient
+ * en double, dans `Field` et dans `ChampAdresse` : deux écritures de la même
+ * case, qui auraient divergé au premier ajustement (`CLAUDE.md` §3). Et un état
+ * `:focus` ne s'écrit pas en style en ligne — c'est ce qui manquait pour que la
+ * case dise quelque chose quand on écrit dedans.
+ *
+ * **50 px de haut au minimum**, mesuré sur les cinq dessins : une case élégante
+ * qu'on rate deux fois sur trois avec des gants n'est pas élégante, elle est
+ * ratée. Et **16 px de texte, jamais moins** — en dessous, iOS agrandit la page
+ * à la mise au point et l'écran saute sous le doigt.
+ */
+.atlas-case {
+  width: 100%;
+  min-height: 50px;
+  padding: 15px 16px;
+  border: 0;
+  border-radius: 14px;
+  background-color: var(--atlas-rustTint, #ece9e1);
+  color: var(--atlas-ink, #1c1c1a);
+  font-size: 16px;
+  font-family: inherit;
+  outline: 0;
+  box-shadow: none;
+  transition: box-shadow 0.16s ease;
+}
+.atlas-case::placeholder {
+  color: var(--atlas-muted, #8a8578);
+}
+.atlas-case:focus {
+  box-shadow: inset 0 0 0 1.5px var(--atlas-or, #B98B47);
 }

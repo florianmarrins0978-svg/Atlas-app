@@ -247,20 +247,27 @@ var CATALOGUE = {
        seule valeur de débit par numéro de buse, à une pression de référence —
        AUCUNE répartition par angle, contrairement aux tuyères VAN/SRS/R-VAN.
 
-       **CE QUI N'EST PAS TRANCHÉ, et ne se devine pas :** sur une turbine, le
-       jet est UN SEUL filet qui balaie l'arc réglé — contrairement à une buse
-       VAN qui projette plusieurs filets simultanés. Le débit d'une turbine
-       est peut-être exactement proportionnel à l'arc (un filet qui balaie
-       deux fois moins d'angle consomme deux fois moins d'eau), ce qui
-       justifierait de déduire coins/bords depuis ce seul chiffre — mais c'est
-       précisément le genre de déduction que sa règle du 17 août interdit tant
-       qu'elle n'est pas confirmée : « les valeurs sont lues, jamais déduites »
-       a été vérifié FAUX sur les buses VAN (la 6-VAN n'est pas proportionnelle).
+       **TRANCHÉ PAR LE PATRON LE 21 AOÛT 2026 :** *« les débits à 360° sont les
+       mêmes qu'à 180° et 90° »*. Sur une turbine, le jet est UN SEUL filet qui
+       balaie l'arc réglé : il sort autant d'eau par seconde qu'il balaie un
+       quart de cercle ou le tour entier — seule la durée passée sur chaque
+       point change. **Le débit d'une turbine ne dépend donc PAS de son arc**,
+       et `debit:{360: …}` vaut pour tous les angles.
 
-       Le débit est donc entré en `debit:{360: …}` SEULEMENT — jamais 90/180 —
-       et `busesDe()` (plus haut) exige les trois angles pour poser une buse
-       automatiquement : ces turbines restent donc VISIBLES au registre de
-       prix, mais ÉCARTÉES du calcul tant que la question n'a pas sa réponse. */
+       **C'EST L'INVERSE DE CE QU'ON AVAIT SUPPOSÉ ICI**, et c'est pour cela
+       qu'on ne l'avait pas déduit : on imaginait un débit proportionnel à
+       l'arc (« deux fois moins d'angle, deux fois moins d'eau »). Faux. La
+       règle du 17 août — « les valeurs sont lues, jamais déduites » — a bien
+       servi : la déduction plausible aurait divisé par quatre le débit d'un
+       arroseur de coin, et fait poser quatre fois trop d'arroseurs sur une
+       même voie.
+
+       **ET CELA NE VAUT QUE POUR LES TURBINES.** Une buse VAN projette
+       PLUSIEURS filets simultanés : moins d'arc, moins de filets, moins de
+       débit. Ses propres relevés le montrent (12-VAN : 0,15 à 90°, 0,30 à
+       180°, 0,59 à 360°) — pour une tuyère, le débit se lit par angle, comme
+       il est écrit. Étendre la règle des turbines aux tuyères contredirait
+       ses mesures. */
     { ref:'HA2211-B1', nom:'PGP-ADJ · buse 1 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:8.8, pression:2.8, debit:{ 360:0.14 },
       colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
@@ -667,7 +674,18 @@ var CATALOGUE = {
     // **La marque vaut pour elle aussi** — sa réponse du 17 août : « ça sera
     // valable aussi pour les électrovannes, pour le reste non. » Le jour où ses
     // références arriveront, cette ligne se dédoublera par marque.
-    { ref:'electrovanne', nom:'Électrovanne 24 V', regle:'parSecteur',
+    // **9 V, PAS 24 V — sa correction du 21 août 2026.** Cette ligne portait
+    // « Électrovanne 24 V », une valeur générique posée avant qu'il donne ses
+    // références, et jamais confrontée à elles. Il a demandé d'où elle sortait :
+    // de nulle part. Toutes SES fiches de nourrice (17 août) sont en 9 V —
+    // `electrovanne-100dv`, `prog-N` à pile, `pile-9v`.
+    //
+    // **Et sa règle rend la faute grave, pas seulement inexacte** : une
+    // électrovanne 24 V veut un programmateur sur secteur 220 V ; une 9 V veut
+    // un programmateur à pile. Les mélanger ne fait pas un réseau qui arrose
+    // mal, mais un réseau qui n'arrose PAS — et on ne s'en aperçoit qu'après
+    // avoir rebouché.
+    { ref:'electrovanne', nom:'Électrovanne 9 V', regle:'parSecteur',
       suitLaMarque:true, source:'provisoire' },
     // « crosse » générique retirée le 17 août : remplacée par les coudes SBE
     // réels, choisis selon le taraudage du corps (voir CATALOGUE.coudes).
@@ -682,6 +700,36 @@ var CATALOGUE = {
     { ref:'pe32', nom:'Tuyau PE 32 (ligne principale)', regle:'aMesurer', unite:'ml', source:'provisoire' },
     { ref:'pe25', nom:'Tuyau PE 25 (antennes)', regle:'aMesurer', unite:'ml', source:'provisoire' }
   ],
+
+  /* ══ CE QUE SA NOTICE RAIN BIRD DIT DE L'ÉLECTROVANNE ══════════════════════
+
+     **Relevé le 22 août 2026** sur la notice qu'il a envoyée
+     (`man_DV_DVF.pdf`, Rain Bird, P/N 231576-B). Ce sont ses vannes : toutes
+     ses fiches de nourrice montent des 100-DV.
+
+     | | 075-DV (3/4") | 100-DV (1") |
+     |---|---|---|
+     | débit admis | 0,05 à 5,0 m³/h | 0,05 à 9,08 m³/h |
+     | pression admise | 1 à 10 bar | 1 à 10 bar |
+
+     Et une règle que le dépôt appliquait de travers : **le réducteur de
+     pression ne sert qu'au-delà de 5,5 bar** (*« if pressure is greater than
+     80 psi (5,5 bar), install a pressure regulator on the line before the
+     valve »*). Il était facturé d'office sur chaque chantier.
+
+     ⚠ **CE QUE CETTE NOTICE NE DONNE PAS :** la perte de charge de la vanne.
+     C'est une notice d'installation, pas une fiche technique — il n'y a ni
+     courbe ni tableau ΔP. Le forfait majorant de `PERTE_ELECTROVANNE` reste
+     donc en place, et reste non relevé. */
+  electrovanneDV: {
+    debitMin: 0.05, debitMax100: 9.08, debitMax075: 5.0,
+    pressionMin: 1, pressionMax: 10,
+    // Au-delà, la notice impose un réducteur AVANT la vanne.
+    reducteurAuDelaDe: 5.5,
+    // Les modèles mâle-mâle et mâle-cannelé sont déconseillés au-delà.
+    debitMaxMMetMB: 6.8,
+    source: 'patron', releve: 'Notice Rain Bird DV/DVF, P/N 231576-B (2011)'
+  },
 
   /* ── LES PIÈCES DE NOURRICE — un catalogue à part, référencé par les fiches
      ci-dessous. Chaque pièce n'est écrite QU'UNE FOIS ici, même si elle
@@ -928,6 +976,40 @@ CATALOGUE.busesDe = function (marqueCle, pourType) {
       return b.debit[90] != null && b.debit[180] != null && b.debit[360] != null;
     })
     .sort(function (a, b) { return b.rayon - a.rayon; });
+};
+
+/* ══ UNE RÉFÉRENCE, OU RIEN ════════════════════════════════════════════════
+
+   **Sa consigne du 22 août 2026, en majuscules et six points d'exclamation :**
+   *« tu ne dois surtout pas inventer de prix ni de référence !!!!!!! »*
+
+   **Il avait raison, et le défaut était à l'écran.** La liste de matériel
+   affichait une colonne « référence » remplie avec les CLÉS INTERNES du
+   catalogue : `te-taraude-25-34-25`, `electrovanne-100dv`, `regard-rect12`,
+   `sonde-pluie`. Ce ne sont pas des références : ce sont des noms de variables.
+   Un paysagiste qui arrive chez Aqua Plus en demandant un « te-taraude-25-34-25 »
+   se fait regarder de travers, et il a raison — ça n'existe pas.
+
+   **Ce qui EST une référence :** celle qu'on a relevée sur ses documents. Ces
+   entrées-là portent toutes un champ `releve` (« Aqua Plus 2026, p. 11 ») —
+   RA3504, RA3504-B075, OD501, RBT636. Les autres n'ont qu'un nom et une
+   marque, ce qui suffit pour commander au comptoir mais n'est PAS une
+   référence.
+
+   Cette fonction rend l'une ou l'autre, jamais un entre-deux. Le silence est
+   la bonne réponse quand on ne sait pas : un nom sans référence se commande,
+   une référence inventée fait perdre une matinée. */
+CATALOGUE.referenceDe = function (cle) {
+  if (!cle) return null;
+  var listes = [CATALOGUE.arroseurs, CATALOGUE.buses, CATALOGUE.corps,
+                CATALOGUE.coudes, CATALOGUE.gaines];
+  for (var i = 0; i < listes.length; i++) {
+    var trouve = (listes[i] || []).filter(function (x) { return x.ref === cle; })[0];
+    // **`releve` est le seul juge.** Une entrée sans relevé est une entrée
+    // dont la référence n'a jamais été lue sur un document du patron.
+    if (trouve) return trouve.releve ? trouve.ref : null;
+  }
+  return null;
 };
 
 /* Tout ce qui peut porter un prix, à un seul endroit : c'est la liste qu'il

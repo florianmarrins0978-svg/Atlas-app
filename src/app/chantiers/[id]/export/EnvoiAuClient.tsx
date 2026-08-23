@@ -5,16 +5,17 @@ import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourIso, jourLisible } from "@/lib/jour";
-import Calendrier from "@/components/atlas/Calendrier";
+import MoisCharge from "@/components/atlas/MoisCharge";
+import { useOccupation } from "@/components/atlas/useOccupation";
+import JourneeRegardee from "./JourneeRegardee";
 import { basculerJour } from "@/lib/calendrier";
-import { libelleDuree } from "@/server/disponibilites";
 import {
   preparerEnvoiAction,
   envoyerAuClientAction,
   verifierJourProposeAction,
   enregistrerCoordonneeClientAction,
 } from "./actions";
-import type { PreparationEnvoi, VerdictJour } from "@/server/repositories/preparation-envoi";
+import type { VerdictJour } from "@/server/repositories/preparation-envoi";
 import BandeDuree from "../BandeDuree";
 
 // L'unique arrêt avant l'envoi (docs/AGENT.md §2.2). Le patron vient de valider
@@ -72,7 +73,16 @@ type Props = {
   clientNom: string;
   ouvert: boolean;
   onFermer: () => void;
-  onEnvoye: (lien: string) => void;
+  /**
+   * Rend **ce que le serveur vient de valider**, pas seulement le lien.
+   *
+   * Le canal et le destinataire sont relus en base au moment de l'envoi
+   * (`preparerEnvoi`). Les transmettre ici évite que l'écran d'appel ne
+   * retombe sur une valeur chargée avec la page — c'est le défaut du 20 août
+   * 2026 : le patron avait choisi l'e-mail sur la fiche de son client, et
+   * c'est le SMS qui s'ouvrait.
+   */
+  onEnvoye: (envoi: { lien: string; canal: "sms" | "email"; destinataire: string | null }) => void;
 };
 
 // La feuille ne fait que monter et démonter son contenu. C'est ce qui garantit
@@ -93,7 +103,10 @@ function Contenu({
   onFermer,
   onEnvoye,
 }: Omit<Props, "ouvert">) {
-  const [preparation, setPreparation] = useState<PreparationEnvoi | null>(null);
+  // Ce que l'action rend : la préparation, ET le planning qui va avec — c'est
+  // lui qui peint les journées (`preparerEnvoiAction`).
+  const [preparation, setPreparation] =
+    useState<Awaited<ReturnType<typeof preparerEnvoiAction>> | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
   /**
    * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
@@ -125,6 +138,26 @@ function Contenu({
   const [jourInterroge, setJourInterroge] = useState("");
   const [verdict, setVerdict] = useState<VerdictJour | null>(null);
   const [verification, setVerification] = useState(false);
+  /**
+   * Le mois affiché.
+   *
+   * **`null` tant que la préparation n'est pas là**, pour partir sur le mois
+   * d'aujourd'hui sans qu'un premier rendu montre janvier 1970.
+   */
+  const [curseur, setCurseur] = useState<{ annee: number; mois: number } | null>(null);
+
+  /**
+   * La charge des journées, calculée comme au planning — jamais une seconde
+   * fois (`useOccupation`). Le planning descend avec la préparation
+   * (`preparerEnvoiAction`) : sans lui, l'écran peindrait un mois vide et
+   * annoncerait libre ce que l'envoi refuse.
+   */
+  const { occupationDe, nomEquipe } = useOccupation({
+    chantiers: preparation?.planning.chantiers ?? [],
+    nombreEquipes: preparation?.planning.nombreEquipes ?? 1,
+    absences: preparation?.planning.absences ?? [],
+    equipesNommees: preparation?.planning.equipesNommees ?? [],
+  });
   // Le canal et la coordonnée saisis ici même, quand ils manquent. `rejouer`
   // relance la préparation après l'enregistrement : sans lui, l'écran garderait
   // le blocage qu'on vient de lever.
@@ -139,6 +172,14 @@ function Contenu({
       .then((p) => {
         if (annule) return;
         setPreparation(p);
+        // Le mois d'aujourd'hui, posé une seule fois : le rappel de la
+        // préparation à chaque changement de durée ne doit pas ramener le
+        // patron de mars à août pendant qu'il cherche une date.
+        setCurseur((c) => {
+          if (c) return c;
+          const d = new Date(`${jourIso(new Date())}T12:00:00Z`);
+          return { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
+        });
         // Pré-sélection du premier jour libre : dans la majorité des cas c'est
         // celui que le patron retiendra, et il reste libre de le décocher.
         // Recalculée à chaque changement de durée : garder une date qui ne tient
@@ -204,26 +245,32 @@ function Contenu({
    * la journée est libre (`verifierJourPropose`). Proposer un jour que l'envoi
    * refuserait ensuite coûte un aller-retour avec le client.
    */
-  async function toucherAuCalendrier(jour: string) {
-    if (selection.includes(jour)) {
-      basculer(jour);
-      // La phrase du serveur portait sur ce jour-là : la garder après l'avoir
-      // retiré laisserait « retenue » sous un jour qui ne l'est plus.
-      if (jourInterroge === jour) {
-        setJourInterroge("");
-        setVerdict(null);
-      }
+  /**
+   * **REGARDER un jour n'est plus le RETENIR** — sa demande du 22 août 2026,
+   * validée sur planche 91 : *« la possibilité de cliquer sur les jours pour
+   * voir quels chantiers y sont déjà affectés, comme ça on peut savoir si oui
+   * ou non on peut rajouter des clients »*.
+   *
+   * Jusque-là, toucher un jour au calendrier le proposait au client dans la
+   * foulée. Or ce qu'il veut d'abord, c'est CONSULTER une journée chargée pour
+   * juger s'il peut s'y glisser — et un jour consulté par erreur partait chez
+   * quelqu'un. Le second geste, « Proposer ce jour », vit sur la fiche du jour.
+   *
+   * Le serveur est interrogé dès le regard : le calendrier ne connaît que la
+   * fenêtre proche, et lui seul sait si la journée tient au-delà.
+   */
+  async function regarderLeJour(jour: string) {
+    // Retoucher le jour déjà ouvert le referme — le même geste qu'au planning.
+    if (jourInterroge === jour) {
+      setJourInterroge("");
+      setVerdict(null);
       return;
     }
     setJourInterroge(jour);
     setVerdict(null);
     setVerification(true);
     try {
-      const v = await verifierJourProposeAction(chantierId, jour, preparation?.dureeDemiJournees);
-      setVerdict(v);
-      // Retenu tout de suite quand il tient : un second geste pour confirmer ce
-      // qu'on vient de choisir n'apprend rien à personne.
-      if (v.retenable) basculer(jour);
+      setVerdict(await verifierJourProposeAction(chantierId, jour, preparation?.dureeDemiJournees));
     } catch {
       setVerdict({
         jour,
@@ -255,7 +302,7 @@ function Contenu({
         setErreur(r.erreur);
         return;
       }
-      onEnvoye(r.lien);
+      onEnvoye({ lien: r.lien, canal: r.canal, destinataire: r.destinataire });
     } catch (e) {
       // **La phrase de secours, et seulement elle.** L'action rend désormais sa
       // raison plutôt que de lancer (`actions.ts`) : arriver ici signifie que
@@ -389,43 +436,27 @@ function Contenu({
             />
           </div>
 
-          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 8 }}>
-            Une date, ou deux au choix du client ?
-          </p>
+          {/* ═══════════════════════════════════════════════════════════
+              **LA LISTE DES SIX JOURS SUGGÉRÉS A ÉTÉ RETIRÉE.**
 
-          <div className="mb-4 flex flex-col gap-1.5">
-            {preparation.joursLibres.map((jour) => {
-              const choisi = selection.includes(jour);
-              return (
-                <button
-                  key={jour}
-                  type="button"
-                  onClick={() => basculer(jour)}
-                  aria-pressed={choisi}
-                  className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
-                  style={{
-                    backgroundColor: choisi ? colors.rustTint : colors.card,
-                    color: colors.ink,
-                  }}
-                >
-                  <span>{jourLisible(jour)}</span>
-                  {choisi && (
-                    <span className="text-[13px] font-medium" style={{ color: colors.rust }}>
-                      proposée
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+              *Sa demande du 23 août 2026 :* « mets le calendrier directement
+              sous le nombre de jours que prend le chantier ; les quelques jours
+              qu'on peut sélectionner au tout début ne servent plus à rien,
+              maintenant qu'on a le mois complet ».
 
-          {preparation.joursLibres.length === 0 && (
-            <p className="mb-4 text-center text-[13px]" style={{ color: colors.rust }}>
-              Aucun jour ne peut accueillir {libelleDuree(preparation.dureeDemiJournees)} dans les trois prochains
-              mois. Choisissez une date plus loin ci-dessous, raccourcissez la durée, ou ajoutez une équipe dans
-              vos réglages.
-            </p>
-          )}
+              Elle date du 8 août, quand l'écran ne montrait QUE six jours ouvrés
+              et qu'aucun autre choix n'existait — *« comment je fais si je dois
+              lui proposer une date dans six mois ? »*. Le calendrier complet est
+              arrivé le 9 ; depuis, la liste ne faisait que redire ses six
+              premières cases, deux gestes plus haut.
+
+              **Ce qu'elle portait et qui ne se perd pas :** la phrase « aucun
+              jour ne peut accueillir cette durée dans les trois prochains mois »
+              devenait muette dès qu'un seul jour tenait. Le calendrier, lui,
+              grise ce qui ne tient pas, sur dix-huit mois — et
+              `verifierJourPropose` prévient à l'appui, en nommant le premier
+              jour possible.
+              ═══════════════════════════════════════════════════════════ */}
 
           {/* **Une date à soi, jusqu'à dix-huit mois.**
 
@@ -453,67 +484,113 @@ function Contenu({
               qu'il faisait, et le retirer rendrait le geste plus joli et moins
               sûr. */}
           <div className="mb-4">
-            <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
-              Ou une autre date
+            {/* **La phrase DIT CE QU'IL PEUT FAIRE, elle ne le demande pas.**
+
+                *Sa demande du 23 août 2026 :* « au lieu de marquer "ou une
+                autre date", marque quelque chose qui stipule que l'utilisateur
+                peut choisir, peut proposer deux jours ».
+
+                « Ou une autre date » n'avait plus d'« autre » que quoi, la liste
+                des six jours retirée. Et « Une date, ou deux au choix du
+                client ? » restait une question posée à lui — on lui demandait ce
+                qu'on devait justement lui apprendre : qu'il a droit à deux.
+
+                **Le repère `data-atlas` est là pour les suites**, qui visaient
+                ce libellé mot pour mot : trois d'entre elles se seraient cassées
+                sur un changement de formulation qu'il a demandé
+                (`CLAUDE.md` §5 bis). */}
+            <p
+              data-atlas="invite-dates"
+              className={smallCaps}
+              style={{ color: colors.muted, marginBottom: 6 }}
+            >
+              Proposez une ou deux dates
             </p>
-            <div className="rounded-[4px] px-3 py-3" style={{ backgroundColor: colors.card }}>
-              {/* **Le calendrier marque TOUTE la sélection, pas la dernière
-                  date touchée.** Il ne recevait qu'un seul jour : en choisir un
-                  second effaçait le premier, et le patron en concluait — à
-                  raison — qu'il ne pouvait en proposer qu'un. Ce qu'il voit ici
-                  est désormais exactement ce que son client recevra, y compris
-                  les jours pris dans la liste au-dessus. */}
-              <Calendrier
-                debut={preparation.horizon.debut}
-                fin={preparation.horizon.fin}
-                occupes={preparation.joursOccupes}
-                retenus={selection}
-                aujourdHui={jourIso(new Date())}
-                dureeDemiJournees={preparation.dureeDemiJournees}
-                onBasculer={toucherAuCalendrier}
-              />
+            {/* **LE CALENDRIER DU PLANNING, et plus un calendrier nu** — sa
+                demande du 22 août 2026, validée sur planche 91 : *« on devrait
+                avoir le visuel du calendrier qui se trouve dans la catégorie
+                planning, avec la possibilité de cliquer sur les jours pour voir
+                quels chantiers y sont déjà affectés — comme ça on peut savoir
+                si oui ou non on peut rajouter des clients sur les jours »*,
+                puis *« cette maquette est parfaite, tu peux coder ça trait pour
+                trait, ne change rien »*.
+
+                Le calendrier d'avant montrait des ronds et éteignait les jours
+                impossibles **sans jamais dire pourquoi ni ce qu'ils
+                portaient** : impossible de juger si l'on pouvait quand même s'y
+                glisser.
+
+                **C'est le MÊME composant que le planning** (`MoisCharge`), et
+                la MÊME charge (`useOccupation`) : deux dessins ou deux calculs
+                écrits séparément ne peindraient plus la même journée à deux
+                écrans d'écart (`CLAUDE.md` §3).
+
+                **Ce que le calendrier ne peut pas savoir, le serveur le dit.**
+                Il peint la charge des douze mois chargés ; c'est
+                `verifierJourPropose` qui tranche, y compris au-delà. Le
+                calendrier montre donc, et le serveur décide — le retirer
+                rendrait le geste plus joli et moins sûr. */}
+            <div className="rounded-[10px] px-3 py-3" style={{ backgroundColor: colors.card }}>
+              {curseur && (
+                <MoisCharge
+                  curseur={curseur}
+                  setCurseur={(maj) => setCurseur((c) => (c ? maj(c) : c))}
+                  aujourdHui={jourIso(new Date())}
+                  jourTouche={jourInterroge || null}
+                  onToucherJour={regarderLeJour}
+                  occupationDe={occupationDe}
+                  jourRetenus={selection}
+                  reperePrefixe="envoi-"
+                />
+              )}
             </div>
-            {verification && (
-              <p className="mt-1.5 text-[13px]" style={{ color: colors.muted }}>
-                Vérification de votre planning…
-              </p>
+
+            {/* **La fiche du jour, directement sous le calendrier** — le cœur
+                de sa demande : qui est déjà là, à quelle demi-journée, avec
+                quelle équipe, et s'il reste de la place pour CE client-ci. */}
+            {jourInterroge && (
+              <JourneeRegardee
+                jour={jourInterroge}
+                occupationDe={occupationDe}
+                nomEquipe={nomEquipe}
+                verdict={verification || !verdict ? null : verdict}
+                dejaRetenu={selection.includes(jourInterroge)}
+                onRetenir={() => basculer(jourInterroge)}
+              />
             )}
-            {/* Un jour refusé sans un mot renvoie au téléphone. On dit
-                pourquoi, et on propose le jour libre le plus proche — chercher
-                à l'aveugle dans dix-huit mois de calendrier n'est pas un
-                travail. */}
-            {!verification && verdict?.raison && (
-              <p className="mt-1.5 text-[13px]" style={{ color: verdict.retenable ? colors.muted : colors.rust }}>
-                {verdict.raison}
-                {verdict.alternative && (
-                  <>
-                    {" "}
-                    <button
-                      type="button"
-                      onClick={() => toucherAuCalendrier(verdict.alternative!)}
-                      className="font-medium underline"
-                      style={{ color: colors.rust }}
-                    >
-                      Prendre le {jourLisible(verdict.alternative)}
-                    </button>
-                  </>
-                )}
-              </p>
-            )}
-            {!verification && verdict?.retenable && !verdict.raison && (
-              <p className="mt-1.5 text-[13px]" style={{ color: colors.rust }}>
-                {jourLisible(verdict.jour)} — retenue.
+
+            {/* Un jour refusé sans un mot renvoie au téléphone. On propose le
+                jour libre le plus proche — chercher à l'aveugle dans dix-huit
+                mois de calendrier n'est pas un travail. */}
+            {!verification && verdict?.alternative && (
+              <p className="mt-1.5 text-center text-[13px]" style={{ color: colors.muted }}>
+                <button
+                  type="button"
+                  onClick={() => regarderLeJour(verdict.alternative!)}
+                  className="font-medium underline"
+                  style={{ color: colors.rust }}
+                >
+                  Voir le {jourLisible(verdict.alternative)}
+                </button>
               </p>
             )}
           </div>
 
-          {/* Les dates retenues hors de la liste des six ne se voient nulle
-              part ailleurs : sans ce rappel, le patron enverrait sans savoir ce
-              qu'il propose. */}
-          {selection.some((j) => !preparation.joursLibres.includes(j)) && (
+          {/* **CE QU'IL PROPOSE, ÉCRIT EN TOUTES LETTRES.**
+
+              Ce rappel ne montrait que les dates prises HORS de la liste des six
+              — les seules qui, sinon, ne se voyaient nulle part. La liste
+              retirée le 23 août, ce sont TOUTES les dates retenues qui ne se
+              lisent plus qu'à la marque d'une case de calendrier. Envoyer un
+              devis en ayant compté des cases n'est pas la même chose que
+              l'envoyer en ayant lu « vendredi 28 août ».
+
+              Chaque ligne se retouche : c'est aussi le moyen de retirer une date
+              sans repartir chercher sa case dans le mois. */}
+          {selection.length > 0 && (
             <div className="mb-4 flex flex-col gap-1.5">
-              {selection
-                .filter((j) => !preparation.joursLibres.includes(j))
+              {[...selection]
+                .sort()
                 .map((jour) => (
                   <button
                     key={jour}

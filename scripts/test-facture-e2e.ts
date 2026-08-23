@@ -7,6 +7,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // patron a fait retirer ce mot.
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Créer la facture, l'envoyer, et le relevé de TVA — vus depuis l'écran du patron
 // (docs/AGENT.md §2.3). L'arrêt 3 est ici : rien ne part sans un appui.
@@ -74,7 +75,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;
@@ -90,9 +91,9 @@ async function chantierRealise(page: Page, suffixe: string) {
 
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
   await page.click("text=Choisir la date");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await inspecter("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId], 1);
 
@@ -161,7 +162,11 @@ async function main() {
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
-    await page.click("text=Confirmer le départ de la facture");
+    // **UN SEUL APPUI depuis le 22 août 2026** — il arrête la facture ET ouvre
+    // la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
+    // jamais par son libellé : c'est justement le libellé qui a changé, et
+    // l'attendre ferait mourir la suite sur un délai qui n'accuse personne.
+    await page.click('[data-atlas="envoyer-la-facture"]');
     await page.waitForSelector("text=arrêtée", { timeout: 15000 });
 
     const { rows } = await inspecter(
@@ -204,12 +209,16 @@ async function main() {
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
-    await page.click("text=Confirmer le départ de la facture");
+    // **UN SEUL APPUI depuis le 22 août 2026** — il arrête la facture ET ouvre
+    // la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
+    // jamais par son libellé : c'est justement le libellé qui a changé, et
+    // l'attendre ferait mourir la suite sur un délai qui n'accuse personne.
+    await page.click('[data-atlas="envoyer-la-facture"]');
     await page.waitForSelector("text=arrêtée", { timeout: 15000 });
 
     await page.reload({ waitUntil: "networkidle" });
     assert.strictEqual(
-      await page.locator("text=Confirmer le départ de la facture").count(),
+      await page.locator('[data-atlas="envoyer-la-facture"]').count(),
       0,
       "la facture peut être émise une seconde fois"
     );

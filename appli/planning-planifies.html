@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Les planifiés — la durée, et plus de répétition</title>
+<style>
+  /* Couleurs et tailles de la planche 84, sans exception. */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:14px 18px;font-size:13px;line-height:1.45}
+  .bandeau b{color:#fff}
+
+  .tel{max-width:430px;margin:18px auto 0;background:var(--fond);min-height:40vh;
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);
+       padding-bottom:8px}
+  .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--gris);padding:18px 0 0}
+  h1{margin:14px 22px 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+
+  .titre-section{margin:26px 18px 0;text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;
+                 letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .barre{margin:14px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .fleche{width:44px;height:44px;border-radius:999px;border:1px solid var(--trait);
+          background:var(--plage);color:var(--encre-douce);font-size:19px;cursor:pointer;
+          -webkit-tap-highlight-color:transparent}
+  .barre .quand{flex:1;text-align:center;font:700 14px/1 ui-sans-serif,sans-serif}
+
+  .jour{margin:16px 18px 0;border-top:1px solid var(--trait);padding-top:13px}
+  .jour:first-of-type{border-top:0}
+  .jour .quand{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+               text-transform:uppercase;color:var(--encre)}
+
+  /* ── LA LIGNE D'UN CHANTIER — elle se déplie SUR PLACE ───────────────── */
+  .chantier{margin-top:12px}
+  .chantier .tete{display:flex;align-items:center;gap:10px;width:100%;border:0;padding:0;
+                  background:transparent;text-align:left;cursor:pointer;
+                  -webkit-tap-highlight-color:transparent}
+  /* **La durée passe SOUS le nom** — sa demande du 23 août 2026 : *« le "une
+     journée" en doré, mets-le sous le nom »*. À côté, elle disputait la
+     largeur au nom et à l'équipe : « Chantier test — Abri Pornic » cassait
+     alors en deux lignes et la durée finissait seule en dessous, à gauche,
+     sans qu'on sache à quoi elle se rapportait. Dessous, elle y est toujours. */
+  .chantier .qui{flex:1;min-width:0}
+  .chantier .nom{display:block;font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .chantier .duree{display:block;margin-top:3px;font-size:12.5px;color:var(--or)}
+  .chantier .equipe{flex-shrink:0;border:0;border-radius:999px;padding:7px 13px;font-size:12.5px;
+                    background:var(--pin);color:#faf9f5;white-space:nowrap}
+  .chantier .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
+  .chantier .chevron{flex-shrink:0;color:rgba(28,28,26,.28);font-size:19px;
+                     transition:transform .22s cubic-bezier(.22,.61,.36,1)}
+  .chantier[data-ouvert="1"] .chevron{transform:rotate(90deg)}
+
+  /* Le volet : une grille de 0fr à 1fr, comme le fil des Terminés. */
+  .volet{display:grid;grid-template-rows:0fr;
+         transition:grid-template-rows .3s cubic-bezier(.22,.61,.36,1)}
+  .chantier[data-ouvert="1"] .volet{grid-template-rows:1fr}
+  .volet > .dedans{overflow:hidden}
+
+  .demi{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
+  .demi .mot{font:600 10px/1.15 ui-sans-serif,sans-serif;letter-spacing:.06em;
+             text-transform:uppercase;color:var(--encre);white-space:nowrap;width:70px;flex-shrink:0}
+  .demi .equipe{flex-shrink:0;border:0;border-radius:999px;padding:6px 12px;font-size:12.5px;
+                background:var(--pin);color:#faf9f5;white-space:nowrap;cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+  .demi .equipe.vide{background:transparent;color:var(--or);border:1px dashed var(--or)}
+  .demi .equipe .ajouter{margin-left:6px;opacity:.65;font-size:11px}
+  .demi .libre{margin-left:auto;font-size:12.5px;color:var(--gris)}
+  .petit{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
+         padding:7px 9px;font-size:12px;color:var(--encre-douce);cursor:pointer;flex-shrink:0;
+         -webkit-tap-highlight-color:transparent}
+  .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
+            background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .pastille.dispo{background:var(--pale);box-shadow:none}
+  .pastille.plein{background:var(--pin);box-shadow:none}
+
+  /* La feuille de chantier, telle qu'elle est aujourd'hui. */
+  .feuille{margin:14px 0 4px;padding:14px 15px;border-radius:10px;background:var(--papier)}
+  .feuille .chapeau{text-align:center;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                    text-transform:uppercase;color:var(--or)}
+  .feuille .client{margin:8px 0 0;text-align:center;font:400 22px/1.2 ui-serif,Georgia,serif}
+  .feuille .gestes{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .feuille .gestes .petit{padding:11px 8px;text-align:center;background:var(--plage)}
+  .feuille .rien{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--trait);
+                 font-size:13px;color:var(--gris)}
+  .feuille .pdf{margin:12px auto 0;display:block;border:0;border-radius:999px;background:var(--pin);
+                color:#faf9f5;padding:12px 22px;font-size:13.5px;cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+
+  .ajouter-chantier{margin:12px 0 2px;display:flex;align-items:center;justify-content:center;gap:10px;
+                    width:100%;border:0;background:transparent;cursor:pointer;color:var(--encre-douce);
+                    font-size:14px;padding:4px 0;-webkit-tap-highlight-color:transparent}
+  .ajouter-chantier .rond{width:38px;height:38px;border-radius:999px;border:1px solid var(--or);
+                          color:var(--or);display:grid;place-items:center;font-size:19px}
+
+  .barre-basse{margin-top:22px;border-top:1px solid var(--trait);display:flex;justify-content:space-around;
+               padding:14px 0 4px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .barre-basse .actif{color:var(--encre);font-weight:600;border-bottom:2px solid var(--or);padding-bottom:4px}
+
+  /* Le réglage d'essai, HORS de l'écran : il ne fait pas partie du produit. */
+  .essai{max-width:430px;margin:18px auto 0;padding:12px 16px;border-radius:12px;background:var(--papier)}
+  .essai p{margin:0 0 8px;font-size:12.5px;color:var(--encre-douce)}
+  .essai .choix{display:flex;gap:6px;flex-wrap:wrap}
+  .essai button{border:1px solid var(--trait);background:var(--plage);border-radius:999px;
+                padding:8px 14px;font-size:12.5px;color:var(--encre-douce);cursor:pointer}
+  .essai button[aria-pressed="true"]{background:var(--pin);color:#faf9f5;border-color:var(--pin)}
+
+  .pied{max-width:430px;margin:22px auto 0;padding:0 22px;font-size:13.5px;line-height:1.55;
+        color:var(--encre-douce)}
+  .pied h3{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;
+           color:var(--or);margin:22px 0 8px}
+  .pied p{margin:0 0 10px}
+  .pied b{color:var(--encre)}
+  .pied .question{background:var(--papier);border-radius:10px;padding:12px 14px;margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Essayez-la.</b> Touchez le nom d’un chantier : il s’ouvre <b>sur place</b>, sans
+  répéter le jour ni le nom. Retouchez-le, il se referme. Les équipes se changent,
+  les chantiers se déplacent. <b>Rien n’est codé dans l’application.</b>
+</div>
+
+<div class="tel">
+  <p class="marque">ATLAS</p>
+  <h1>Planning</h1>
+
+  <p class="titre-section">Planifiés</p>
+  <div class="barre">
+    <button class="fleche" type="button" aria-label="Semaine précédente">‹</button>
+    <div class="quand">24 – 30 août</div>
+    <button class="fleche" type="button" aria-label="Semaine suivante">›</button>
+  </div>
+
+  <div id="semaine"></div>
+
+  <div class="barre-basse">
+    <span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span>
+    <span>Paysage</span><span>Réglages</span>
+  </div>
+</div>
+
+<div class="essai">
+  <p><b>Un essai, pour vous seul :</b> sur un chantier d’une demi-journée, faut-il dire
+    <i>quelle</i> demi-journée ?</p>
+  <div class="choix">
+    <button type="button" data-mot="seule" aria-pressed="true">une demi-journée</button>
+    <button type="button" data-mot="avec" aria-pressed="false">une demi-journée · matin</button>
+  </div>
+</div>
+
+<div class="pied">
+  <h3>Ce qui a changé</h3>
+  <p><b>1. La durée à la place du moment.</b> « matin » devient « une demi-journée »,
+    « une journée », « 2 jours ». C’est le temps que prend le chantier, pas l’heure
+    où il commence.</p>
+  <p><b>2. « 1 chantier » a disparu.</b> Le compte gris ne disait rien que la liste
+    ne montre déjà.</p>
+  <p><b>3. Plus de répétition.</b> Le nom touché <b>devient</b> sa propre fiche :
+    le jour et le nom ne s’écrivent qu’une fois. « Ajouter un chantier » reste
+    en bas du jour, là où il y a de la place.</p>
+
+  <div class="question">
+    <b>La question que ça pose :</b> avec la durée seule, un chantier d’une demi-journée
+    ne dit plus s’il est le matin ou l’après-midi — il faut l’ouvrir pour le voir.
+    Les deux boutons ci-dessus vous laissent comparer. <b>Dites-moi lequel.</b>
+  </div>
+</div>
+
+<script>
+/* ─── Le décor, tel qu'il l'a sous les yeux ────────────────────────────── */
+const JOURS = [
+  {
+    quand: "Mardi 25 août",
+    chantiers: [
+      { nom: "Chantier test — Abri Pornic", client: "M. Moreau (test)", duree: 1,
+        demis: [{ mot: "Matin", equipe: "Julien" }], libre: "Après-midi" },
+    ],
+  },
+  {
+    quand: "Mercredi 26 août",
+    chantiers: [
+      { nom: "Mme Chauvin", client: "Mme Chauvin", duree: 2,
+        demis: [{ mot: "Matin", equipe: "Paul" }, { mot: "Après-midi", equipe: "Paul" }] },
+      { nom: "M. Leroy", client: "M. Leroy", duree: 1,
+        demis: [{ mot: "Après-midi", equipe: null }] },
+    ],
+  },
+  {
+    quand: "Jeudi 27 août",
+    chantiers: [
+      // Trois jours : la ligne le DIT, même si ce jour-ci n'en montre que deux
+      // demi-journées. C'est tout l'objet de sa demande — la durée du chantier,
+      // pas ce qu'il occupe aujourd'hui.
+      { nom: "M. Bernard-Delacroix", client: "M. Bernard-Delacroix", duree: 6,
+        demis: [{ mot: "Matin", equipe: "Paul" }, { mot: "Après-midi", equipe: "Paul" }] },
+    ],
+  },
+];
+
+/**
+ * Le mot de la durée — celui que la ligne portera à la place de « matin ».
+ *
+ * Il compte des DEMI-JOURNÉES, comme l'application : 1 = une demi-journée,
+ * 2 = une journée, 4 = deux jours. Le moment ne s'y ajoute que si l'essai
+ * du bas le demande, et seulement quand il apprend quelque chose : sur une
+ * journée entière, dire « matin » n'aurait aucun sens.
+ */
+let AVEC_MOMENT = false;
+function ditLaDuree(c) {
+  // **La durée du CHANTIER, pas ce qu'il occupe ce jour-ci.** Un chantier de
+  // trois jours ne montre que deux demi-journées sur la journée qu'on regarde ;
+  // compter les lignes affichées l'annoncerait « une journée », et c'est
+  // exactement le malentendu qu'on cherche à lever.
+  if (c.duree === 1) {
+    const mot = "une demi-journée";
+    return AVEC_MOMENT ? `${mot} · ${c.demis[0].mot.toLowerCase()}` : mot;
+  }
+  if (c.duree === 2) return "une journée";
+  if (c.duree === 3) return "une journée et demie";
+  return `${Math.ceil(c.duree / 2)} jours`;
+}
+
+/** Ce que la pastille dit de la demi-journée : prise, ou libre. */
+const pastille = (prise) => `<span class="pastille ${prise ? "plein" : ""}"></span>`;
+
+function dessiner() {
+  document.getElementById("semaine").innerHTML = JOURS.map((j, ij) => `
+    <div class="jour">
+      <p class="quand">${j.quand}</p>
+      ${j.chantiers.map((c, ic) => `
+        <div class="chantier" data-jour="${ij}" data-rang="${ic}" data-ouvert="0">
+          <button class="tete" type="button" aria-expanded="false">
+            <span class="qui">
+              <span class="nom">${c.nom}</span>
+              <span class="duree">${ditLaDuree(c)}</span>
+            </span>
+            ${c.demis.some((d) => d.equipe)
+              ? `<span class="equipe">${[...new Set(c.demis.map((d) => d.equipe).filter(Boolean))].join(", ")}</span>`
+              : `<span class="equipe vide">Équipe ?</span>`}
+            <span class="chevron" aria-hidden="true">›</span>
+          </button>
+
+          <div class="volet"><div class="dedans">
+            ${c.demis.map((d, id) => `
+              <div class="demi">
+                ${pastille(true)}
+                <span class="mot">${d.mot}</span>
+                <button class="equipe ${d.equipe ? "" : "vide"}" type="button"
+                        data-equipe="${ij}.${ic}.${id}">${d.equipe ?? "Équipe ?"}${
+                          d.equipe ? '<span class="ajouter">＋</span>' : ""}</button>
+                <button class="petit" type="button">Déplacer</button>
+                <button class="petit" type="button">Retirer</button>
+              </div>`).join("")}
+
+            ${c.libre
+              ? `<div class="demi">${pastille(false)}<span class="mot">${c.libre}</span>
+                   <span class="libre">libre</span></div>`
+              : ""}
+
+            <div class="feuille">
+              <p class="chapeau">Feuille de chantier</p>
+              <p class="client">${c.client}</p>
+              <div class="gestes">
+                <button class="petit" type="button">Maps</button>
+                <button class="petit" type="button">Waze</button>
+                <button class="petit" type="button">Copier l’adresse</button>
+                <button class="petit" type="button">Appeler le client</button>
+              </div>
+              <p class="rien">Aucune ligne sur le devis.</p>
+              <button class="pdf" type="button">Ouvrir le PDF sans les prix</button>
+            </div>
+          </div></div>
+        </div>`).join("")}
+
+      <button class="ajouter-chantier" type="button">
+        <span class="rond">+</span> Ajouter un chantier
+      </button>
+    </div>`).join("");
+}
+
+/* ─── Les gestes ───────────────────────────────────────────────────────── */
+document.getElementById("semaine").addEventListener("click", (e) => {
+  const tete = e.target.closest(".tete");
+  if (tete) {
+    // **Un seul chantier ouvert à la fois.** Deux fiches dépliées, et l'on
+    // perd la vue d'ensemble de la semaine — c'est précisément ce qu'il
+    // reprochait à la répétition.
+    const bloc = tete.closest(".chantier");
+    const ouvert = bloc.dataset.ouvert === "1";
+    for (const b of document.querySelectorAll(".chantier")) {
+      b.dataset.ouvert = "0";
+      b.querySelector(".tete").setAttribute("aria-expanded", "false");
+    }
+    if (!ouvert) {
+      bloc.dataset.ouvert = "1";
+      tete.setAttribute("aria-expanded", "true");
+    }
+    return;
+  }
+
+  // La pastille d'équipe fait le tour des équipes, pour qu'il puisse essayer.
+  const pastilleEquipe = e.target.closest("[data-equipe]");
+  if (pastilleEquipe) {
+    const [ij, ic, id] = pastilleEquipe.dataset.equipe.split(".").map(Number);
+    const suite = [null, "Paul", "Julien"];
+    const d = JOURS[ij].chantiers[ic].demis[id];
+    d.equipe = suite[(suite.indexOf(d.equipe) + 1) % suite.length];
+    const rouvrir = `[data-jour="${ij}"][data-rang="${ic}"]`;
+    dessiner();
+    const bloc = document.querySelector(rouvrir);
+    bloc.dataset.ouvert = "1";
+    bloc.querySelector(".tete").setAttribute("aria-expanded", "true");
+  }
+});
+
+for (const b of document.querySelectorAll(".essai button")) {
+  b.addEventListener("click", () => {
+    AVEC_MOMENT = b.dataset.mot === "avec";
+    for (const autre of document.querySelectorAll(".essai button")) {
+      autre.setAttribute("aria-pressed", String(autre === b));
+    }
+    dessiner();
+  });
+}
+
+dessiner();
+</script>
+</body>
+</html>

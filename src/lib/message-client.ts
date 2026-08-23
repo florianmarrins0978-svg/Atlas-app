@@ -197,3 +197,41 @@ export function lienTransmission(params: {
     `&body=${encodeURIComponent(message.corps)}`
   );
 }
+
+/**
+ * Par quel canal joindre ce client — **sans jamais en inventer un**.
+ *
+ * **Écrit le 20 août 2026, après son défaut** : *« sur la fiche client j'ai
+ * choisi d'envoyer le devis par email […] c'est l'application SMS qui s'est
+ * ouverte »*. La cause principale était ailleurs (deux sources pour un même
+ * canal, voir `DevisCompletClient`), mais les écrans portaient aussi un
+ * `?? "sms"` écrit à la main : un client qui n'a QU'UNE adresse e-mail et
+ * aucun canal convenu se voyait proposer un SMS, vers un numéro qui n'existe
+ * pas.
+ *
+ * L'ordre, et il n'a rien d'arbitraire :
+ *
+ *   1. **le canal convenu**, si la coordonnée correspondante existe — c'est un
+ *      accord avec la personne, il prime sur toute déduction ;
+ *   2. **la seule coordonnée renseignée**, s'il n'y en a qu'une — deviner est
+ *      ici sans risque, il n'existe pas d'autre chemin ;
+ *   3. sinon **`null`** : on ne sait pas, et on le dit. L'envoi est de toute
+ *      façon bloqué en amont tant qu'aucun canal n'est convenu
+ *      (`preparerEnvoi`, blocage « canal_absent »).
+ *
+ * C'est la même règle que le formulaire de création de chantier applique déjà
+ * pour proposer un canal ; l'écrire une fois évite qu'elles ne divergent.
+ */
+export function canalPourJoindre(client: {
+  canal?: CanalClient | null;
+  telephone?: string | null;
+  email?: string | null;
+}): CanalClient | null {
+  const aTelephone = Boolean(client.telephone?.trim());
+  const aEmail = Boolean(client.email?.trim());
+  if (client.canal === "sms" && aTelephone) return "sms";
+  if (client.canal === "email" && aEmail) return "email";
+  if (aTelephone && !aEmail) return "sms";
+  if (aEmail && !aTelephone) return "email";
+  return null;
+}

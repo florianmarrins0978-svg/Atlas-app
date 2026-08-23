@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le temps passé, montré ou non</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LE TEMPS PASSÉ, MONTRÉ OU NON — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 22 août 2026, capture de la fiche d'entretien à l'appui :
+
+      « Il faudrait mettre un petit bouton on/off pour si l'utilisateur ne veut
+        pas que le temps apparaisse sur la fiche, pouvoir l'effacer. On, le
+        temps apparaîtrait sur la fiche ; off, il n'apparaîtrait pas. »
+
+    ─── CE QUE LA PLANCHE TRANCHE, ET QUI N'ALLAIT PAS DE SOI ────────────────
+
+    1. **« Effacer » ne veut pas dire OUBLIER.** Le temps reste enregistré sur
+       le passage — il sert au patron, pas seulement au client. Le bouton ne
+       gouverne QUE ce que le compte rendu montre.
+
+       **La phrase sous la molette a été raccourcie le 23 août, à sa demande** :
+       « votre client ne le verra pas sur son compte rendu », rien de plus. La
+       version longue disait aussi que la durée restait enregistrée ; il n'en
+       veut pas, et c'est sa fiche.
+
+    2. **L'état se LIT en toutes lettres** — « Visible » / « Masqué » — et pas
+       seulement à la position du curseur. Un interrupteur nu se décode ; un
+       mot se lit. C'est un écran qu'on regarde avec un gant, entre deux
+       chantiers.
+
+    3. **Le compte rendu se recompose sous ses yeux**, à droite. C'est le seul
+       moyen de répondre à la question qu'il pose vraiment : « qu'est-ce que
+       mon client voit ? » Une capture ne le dirait pas ; une phrase non plus.
+
+    ─── CE QUI RESTE À TRANCHER, ET QUI EST POUR LUI ─────────────────────────
+
+    · **Le réglage par défaut.** Aujourd'hui le temps s'affiche toujours : le
+      défaut « Visible » ne change donc rien à ce qu'il connaît. Le défaut
+      « Masqué » lui ferait cocher à chaque fois qu'il veut le montrer. La
+      planche s'ouvre sur « Visible » — DITES-LE si vous préférez l'inverse.
+
+    · **Une fois le rapport parti, plus rien ne bouge** — c'est déjà la règle
+      de cette fiche : le compte rendu est figé, horodaté, et c'est ce qui lui
+      tient lieu de signature. L'interrupteur s'éteint donc avec le reste.
+      Touchez « Rapport déjà envoyé » en bas pour le voir.
+
+    RIEN N'EST CODÉ. Les valeurs (Mme Lucie Bertin, 1 h 40, les prestations)
+    sont celles de sa capture du 22 août.
+  */
+
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .scene{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:flex-start;
+         max-width:960px;margin:20px auto 0;padding:0 14px}
+
+  .colonne{flex:1 1 380px;max-width:430px}
+  .etiquette{text-align:center;font:600 10.5px/1.4 ui-sans-serif,sans-serif;letter-spacing:.2em;
+             text-transform:uppercase;color:var(--gris);margin:0 0 8px}
+
+  .tel{background:var(--fond);border-radius:26px;overflow:hidden;
+       box-shadow:0 18px 46px rgba(20,18,14,.18);padding-bottom:24px}
+  .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--gris);padding:18px 0 0}
+  h1{margin:12px 26px 0;font:400 30px/1.05 ui-serif,Georgia,serif;letter-spacing:-.018em}
+  .sous{margin:6px 26px 0;font-size:13.5px;color:var(--gris)}
+
+  .titre-section{margin:26px 26px 0;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                 text-transform:uppercase;color:var(--gris)}
+
+  /* ── Les prestations, telles quelles : elles ne sont pas le sujet ────── */
+  .presta{display:flex;align-items:center;gap:13px;margin:0 26px;padding:11px 0;
+          border-bottom:1px solid var(--trait);font-size:15px;line-height:1.3}
+  .presta i{flex:none;width:22px;height:22px;border-radius:7px;background:var(--pin);
+            border:1.5px solid var(--pin);color:#faf9f5;font-style:normal;font-size:13px;
+            display:flex;align-items:center;justify-content:center}
+
+  /* ── LA LIGNE DU TITRE « TEMPS PASSÉ », ET SON INTERRUPTEUR ──────────
+     Le mot d'état est à GAUCHE du curseur, contre lui : lu de droite à
+     gauche il se rattacherait au titre de la section suivante. */
+  .ligne-titre{display:flex;align-items:center;justify-content:space-between;gap:10px;
+               margin:26px 26px 0}
+  .ligne-titre h2{margin:0;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                  text-transform:uppercase;color:var(--gris)}
+
+  .bascule{display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;
+           cursor:pointer;font:inherit;-webkit-tap-highlight-color:transparent}
+  .bascule .mot{font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;
+                text-transform:uppercase;color:var(--gris);transition:color .18s}
+  .bascule[aria-pressed="true"] .mot{color:var(--pin)}
+  .bascule .piste{position:relative;width:44px;height:26px;border-radius:999px;
+                  background:var(--papier);box-shadow:inset 0 0 0 1px var(--trait);
+                  transition:background .18s,box-shadow .18s}
+  .bascule[aria-pressed="true"] .piste{background:var(--pin);box-shadow:inset 0 0 0 1px var(--pin)}
+  .bascule .perle{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;
+                  background:#faf9f5;box-shadow:0 1px 3px rgba(20,18,14,.28);transition:transform .18s}
+  .bascule[aria-pressed="true"] .perle{transform:translateX(18px)}
+  .bascule:disabled{cursor:default;opacity:.42}
+
+  /* ── La molette, recopiée de l'écran : deux listes ────────────────────
+     **Le total gris à droite est parti le 23 août, à sa demande.** Les deux
+     listes disent déjà « 1 h » et « 40 » : le répéter en « 1 h 40 » à côté
+     n'apprenait rien et poussait les listes vers la gauche. */
+  .molette{display:flex;align-items:center;gap:10px;margin:8px 26px 0}
+  .molette select{flex:1;min-width:0;border-radius:14px;padding:12px 15px;font:17px/1.2 ui-serif,Georgia,serif;
+                  background:var(--plage);color:var(--encre);border:1px solid var(--trait);outline:none}
+  /* **Le chevron natif reste.** Sans lui, les deux listes se lisent comme des
+     champs à remplir — or on ne tape rien ici, on fait tourner une molette.
+     L'écran codé les laisse natives, la planche fait pareil. */
+
+  /* La phrase qui n'existe QUE quand c'est masqué : elle répond à
+     « où est passée ma durée ? » avant qu'il se pose la question. */
+  .note{margin:9px 26px 0;font-size:12.5px;line-height:1.5;color:var(--gris)}
+  .note b{color:var(--encre-douce);font-weight:600}
+  .note.cachee{display:none}
+
+  .obs{margin:8px 26px 0;border-radius:14px;border:1px solid var(--trait);background:var(--plage);
+       padding:12px 15px;font-size:14.5px;line-height:1.5;color:var(--encre-douce)}
+
+  .envoyer{display:block;margin:26px 26px 0;width:calc(100% - 52px);border:0;border-radius:999px;
+           background:var(--pin);color:#faf9f5;font:600 17px/1 ui-sans-serif,sans-serif;padding:15px;
+           cursor:pointer}
+  .envoyer:disabled{opacity:.4;cursor:default}
+  .fige{margin:12px 26px 0;text-align:center;font-size:12.5px;color:var(--gris)}
+
+  /* ── LE COMPTE RENDU, CÔTÉ CLIENT ────────────────────────────────────
+     Fond blanc, sérif, or : ce sont les couleurs du DOCUMENT, pas celles de
+     l'application (`couleursDocument` dans le dépôt). Les confondre ferait
+     croire que le client voit son écran à lui. */
+  .doc{background:#F4EFE8;border-radius:26px;padding:22px 18px;box-shadow:0 18px 46px rgba(20,18,14,.12)}
+  .feuille{background:#fff;border-radius:16px;padding:26px 24px;color:#1c1c1a;
+           box-shadow:0 1px 3px rgba(20,18,14,.08)}
+  .feuille .chapeau{font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
+                    color:#8a8578;margin:0}
+  .feuille h3{margin:8px 0 0;font:400 21px/1.2 ui-serif,Georgia,serif}
+  .feuille .quand{margin:4px 0 0;font-size:14px;color:#8a8578}
+  .feuille .fam{margin:20px 0 0;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
+                text-transform:uppercase;color:#8a8578}
+  .feuille ul{margin:8px 0 0;padding:0;list-style:none}
+  .feuille li{display:flex;gap:8px;padding:5px 0;font-size:15px;line-height:1.4}
+  .feuille li span:first-child{color:#8a8578}
+
+  /* La ligne qui s'en va. Elle ne se grise pas : elle DISPARAÎT, comme sur
+     le compte rendu qu'il recevra pour de bon. */
+  .temps-doc{margin:24px 0 0;border-top:1px solid rgba(28,28,26,.12);padding-top:16px;font-size:14px;
+             color:#8a8578}
+  .temps-doc b{color:#1c1c1a}
+  .temps-doc.partie{display:none}
+
+  .obs-doc{margin:16px 0 0;border-radius:12px;background:#F7F5F0;padding:12px 16px;font-size:14px;line-height:1.6}
+  .pied{margin:24px 0 0;font-size:11.5px;line-height:1.6;color:#8a8578}
+
+  /* ── Ce qu'on lui demande ────────────────────────────────────────────── */
+  .question{max-width:960px;margin:26px auto 0;padding:0 16px}
+  .question .cadre{background:var(--plage);border:1px solid var(--trait);border-radius:18px;
+                   padding:18px 20px;font-size:14px;line-height:1.65;color:var(--encre-douce)}
+  .question h4{margin:0 0 8px;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+               text-transform:uppercase;color:var(--gris)}
+  .question p{margin:0 0 10px}
+  .question p:last-child{margin:0}
+  .question b{color:var(--encre)}
+</style>
+
+<p class="bandeau">
+  <b>Un petit bouton on/off à côté de « Temps passé »</b> — votre demande du 22 août.<br>
+  Touchez-le : le compte rendu de votre client se refait à droite. <b>Rien n’est codé.</b>
+</p>
+
+<div class="scene">
+
+  <!-- ─── CÔTÉ PATRON ─────────────────────────────────────────────────── -->
+  <div class="colonne">
+    <p class="etiquette">Votre fiche, sur le chantier</p>
+    <div class="tel">
+      <p class="marque">ATLAS</p>
+      <h1>Fiche d’entretien</h1>
+      <p class="sous">Vendredi 22 août 2026 · Mme Lucie Bertin</p>
+
+      <p class="titre-section">Tonte</p>
+      <div class="presta"><i>✓</i><span>Tonte des pelouses</span></div>
+      <div class="presta"><i>✓</i><span>Ramassage de l’herbe</span></div>
+      <p class="titre-section">Taille</p>
+      <div class="presta"><i>✓</i><span>Taille de la haie de laurier</span></div>
+
+      <!-- LA LIGNE EN QUESTION -->
+      <div class="ligne-titre">
+        <h2>Temps passé</h2>
+        <button type="button" class="bascule" id="bascule" aria-pressed="true"
+                aria-label="Montrer le temps passé sur le compte rendu du client">
+          <span class="mot" id="mot">Visible</span>
+          <span class="piste" aria-hidden="true"><span class="perle"></span></span>
+        </button>
+      </div>
+
+      <div class="molette">
+        <select id="heures" aria-label="Heures"></select>
+        <select id="minutes" aria-label="Minutes"></select>
+      </div>
+
+      <p class="note cachee" id="note">
+        Votre client ne le verra pas sur son compte rendu.
+      </p>
+
+      <p class="titre-section">Observations</p>
+      <div class="obs">La haie du fond repousse vite, à revoir en octobre.</div>
+
+      <button type="button" class="envoyer" id="envoyer">Enregistrer et envoyer</button>
+      <p class="fige" id="fige"></p>
+    </div>
+  </div>
+
+  <!-- ─── CÔTÉ CLIENT ─────────────────────────────────────────────────── -->
+  <div class="colonne">
+    <p class="etiquette">Ce que Mme Bertin reçoit</p>
+    <div class="doc">
+      <div class="feuille">
+        <p class="chapeau">Compte rendu de passage</p>
+        <h3>Éden Nature</h3>
+        <p class="quand">Vendredi 22 août 2026 · Mme Lucie Bertin</p>
+
+        <p class="fam">Tonte</p>
+        <ul>
+          <li><span>✓</span><span>Tonte des pelouses</span></li>
+          <li><span>✓</span><span>Ramassage de l’herbe</span></li>
+        </ul>
+        <p class="fam">Taille</p>
+        <ul>
+          <li><span>✓</span><span>Taille de la haie de laurier</span></li>
+        </ul>
+
+        <p class="temps-doc" id="temps-doc">Temps passé&nbsp;: <b id="temps-doc-valeur">1 h 40</b></p>
+
+        <div class="obs-doc">La haie du fond repousse vite, à revoir en octobre.</div>
+
+        <p class="pied">Envoyé le 22 août 2026 à 17:12. Ce compte rendu est figé&nbsp;: il ne peut plus être modifié.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="question">
+  <div class="cadre">
+    <h4>Ce que j’attends de vous</h4>
+    <p><b>Le réglage de départ.</b> La planche s’ouvre sur <b>Visible</b> — c’est ce que
+      l’application fait aujourd’hui, le temps s’affiche toujours. Si vous préférez que
+      chaque fiche parte <b>Masquée</b>, et que vous décidiez de le montrer au cas par cas,
+      dites-le : c’est une ligne à changer.</p>
+    <p><b>Le temps n’est jamais perdu.</b> Éteint, il reste enregistré sur votre fiche —
+      seul le compte rendu du client l’ignore. Si vous vouliez au contraire pouvoir
+      <b>ne rien saisir du tout</b>, c’est autre chose, et il faut me le dire.</p>
+    <p><b>Une fois parti, plus rien ne bouge.</b> Touchez « Enregistrer et envoyer » :
+      l’interrupteur s’éteint avec le reste de la fiche, comme les coches et les
+      observations. Le compte rendu est horodaté, c’est ce qui vous tient lieu de
+      signature.</p>
+  </div>
+</div>
+
+<script>
+  // ── La durée, à la molette : les mêmes crans que l'application ────────
+  //    24 h au plus, et 5 minutes de pas (`MINUTES_MAX`, `PAS_MINUTES` dans
+  //    `src/lib/passage-entretien.ts`). Recopier d'autres bornes ici ferait
+  //    une planche qui promet ce que l'écran refuse.
+  var MINUTES_MAX = 24 * 60, PAS = 5;
+
+  var selH = document.getElementById('heures');
+  var selM = document.getElementById('minutes');
+  for (var h = 0; h <= MINUTES_MAX / 60; h++) selH.add(new Option(h + ' h', String(h)));
+  for (var m = 0; m < 60; m += PAS) selM.add(new Option(String(m).padStart(2, '0'), String(m)));
+  selH.value = '1'; selM.value = '40';
+
+  // Le même libellé que le dépôt (`libelleMinutes`) : « 45 min », « 2 h »,
+  // « 1 h 40 ». Une seconde formule ici finirait par écrire « 1 h 4 ».
+  function libelle(min) {
+    var n = Math.max(0, Math.trunc(min)), h = Math.floor(n / 60), r = n % 60;
+    if (h === 0) return r + ' min';
+    if (r === 0) return h + ' h';
+    return h + ' h ' + String(r).padStart(2, '0');
+  }
+
+  var bascule = document.getElementById('bascule');
+  var mot = document.getElementById('mot');
+  var note = document.getElementById('note');
+  var tempsDoc = document.getElementById('temps-doc');
+  var tempsDocValeur = document.getElementById('temps-doc-valeur');
+  var envoyer = document.getElementById('envoyer');
+  var fige = document.getElementById('fige');
+
+  var visible = true, parti = false;
+
+  function peindre() {
+    var min = Number(selH.value) * 60 + Number(selM.value);
+    var texte = libelle(min);
+
+    tempsDocValeur.textContent = texte;
+
+    bascule.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    mot.textContent = visible ? 'Visible' : 'Masqué';
+
+    // La ligne du client s'en va pour de bon — elle ne se grise pas.
+    tempsDoc.classList.toggle('partie', !visible);
+    note.classList.toggle('cachee', visible);
+    // **La phrase est FIXE, elle ne porte plus la durée.** Sa demande du
+    // 23 août : « raccourcis la phrase à "votre client ne le verra pas sur son
+    // compte rendu" ». Elle disait aussi que la durée restait enregistrée — il
+    // n'en veut pas, et un écran encombré se lit moins bien qu'un écran sobre.
+
+    bascule.disabled = parti;
+    selH.disabled = parti; selM.disabled = parti;
+    envoyer.disabled = parti;
+    envoyer.textContent = parti ? 'Rapport envoyé' : 'Enregistrer et envoyer';
+    fige.textContent = parti
+      ? 'Rapport parti à 17:12. La fiche est figée — rechargez la page pour recommencer.'
+      : '';
+  }
+
+  bascule.addEventListener('click', function () { if (!parti) { visible = !visible; peindre(); } });
+  selH.addEventListener('change', peindre);
+  selM.addEventListener('change', peindre);
+  envoyer.addEventListener('click', function () { parti = true; peindre(); });
+
+  peindre();
+</script>
+</body>
+</html>

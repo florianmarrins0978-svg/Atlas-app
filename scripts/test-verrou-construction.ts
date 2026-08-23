@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   constructionsEnCours,
   delogerConstructionsOrphelines,
+  attendreLaConstructionEnCours,
+  detenteursDuVerrou,
 } from "./verrou-construction.mjs";
 
 // **« L'appli est vraiment très lente, mais vraiment. »** — 16 août 2026.
@@ -267,6 +270,99 @@ await verifierAsync("sans orpheline, on ne déloge rien et on ne se tue pas soi-
   );
 });
 
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // **On ATTEND une construction vivante, on ne la tue pas.**
+  //
+  // Le patron, le 21 août 2026 : *« l'appli est hyper lente »*, pour la troisième
+  // matinée, et toujours sur « Another next build process is already running »
+  // avec de la mémoire de reste. Le démarrage lance DEUX constructions par
+  // nature : déloger la seconde qu'on rencontre, c'est jeter le travail de la
+  // première et recommencer sur une machine qui n'en a pas les moyens.
+  await verifierAsync("une construction VIVANTE est attendue, et l'attente se termine avec elle", async () => {
+    const faux = fausseConstruction();
+    assert.ok(faux.pid, "le faux processus n'a pas démarré : rien à éprouver");
+    await new Promise((r) => setTimeout(r, 400));
+
+    const dits: string[] = [];
+    const debut = Date.now();
+    // Elle meurt pendant l'attente : c'est exactement ce qui arrive quand la
+    // construction sœur finit son travail.
+    setTimeout(() => faux.kill("SIGKILL"), 1500);
+    const finie = await attendreLaConstructionEnCours({
+      motif: MOTIF_ESSAI,
+      dossierDist: ".next-aucun-dossier-de-ce-nom",
+      patienceMs: 20_000,
+      dire: (m: string) => {
+        dits.push(m);
+      },
+    });
+    const duree = Date.now() - debut;
+
+    assert.equal(finie, true, "l'attente a expiré alors que la construction avait fini");
+    assert.ok(duree >= 1200, `rendu en ${duree} ms : l'attente n'a rien attendu du tout`);
+    assert.ok(
+      dits.some((d) => /on l.attend au lieu de la tuer/.test(d)),
+      "l'attente ne se dit pas : le patron verrait un banc muet pendant des minutes"
+    );
+  });
+
+  await verifierAsync("TÉMOIN — l'attente est BORNÉE : elle rend la main si l'autre s'éternise", async () => {
+    // Sans ce cas, une attente sans fin passerait pour correcte — et le banc
+    // resterait suspendu à une construction qui ne finira jamais.
+    const faux = fausseConstruction();
+    assert.ok(faux.pid, "le faux processus n'a pas démarré");
+    try {
+      const finie = await attendreLaConstructionEnCours({
+        motif: MOTIF_ESSAI,
+        dossierDist: ".next-aucun-dossier-de-ce-nom",
+        patienceMs: 1500,
+        dire: () => {},
+      });
+      assert.equal(finie, false, "l'attente a conclu que c'était fini alors que la construction tourne encore");
+    } finally {
+      faux.kill("SIGKILL");
+    }
+  });
+
+  await verifierAsync("sans rien qui bâtisse, l'attente rend la main tout de suite", async () => {
+    const debut = Date.now();
+    const finie = await attendreLaConstructionEnCours({
+      motif: MOTIF_ESSAI,
+      dossierDist: ".next-aucun-dossier-de-ce-nom",
+      patienceMs: 20_000,
+      dire: () => {},
+    });
+    assert.equal(finie, true);
+    assert.ok(Date.now() - debut < 1000, "elle attend alors que rien ne bâtit : le banc perdrait ce temps à chaque fois");
+  });
+
+  // **Le détenteur du verrou se trouve par le FICHIER, pas par un nom.** Une
+  // construction Next est faite de cinq processus, et deux d'entre eux ne portent
+  // nulle part les mots « next build » : un survivant de cette espèce serait
+  // invisible à toute recherche par motif.
+  await verifierAsync("le détenteur du verrou se cherche par le fichier ouvert", async () => {
+    const dossier = mkdtempSync(path.join(tmpdir(), "atlas-verrou-"));
+    const lock = path.join(dossier, "lock");
+    writeFileSync(lock, "");
+    // Un processus qui tient le fichier ouvert, sans porter aucun nom de Next.
+    const tenant = spawn("bash", ["-c", `exec 9<"${lock}"; sleep 20`], { detached: true });
+    await new Promise((r) => setTimeout(r, 600));
+    try {
+      const trouves = detenteursDuVerrou(dossier);
+      assert.ok(
+        trouves.some((t) => t.pid === tenant.pid),
+        `le détenteur (pid ${tenant.pid}) n'est pas trouvé : un orphelin sans nom garderait le verrou pour toujours`
+      );
+    } finally {
+      try {
+        process.kill(-tenant.pid!, "SIGKILL");
+      } catch {
+        /* déjà mort */
+      }
+      rmSync(dossier, { recursive: true, force: true });
+    }
+  });
 }
 
 verifier("banc.mjs déloge l'orpheline AVANT de bâtir", () => {

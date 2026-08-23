@@ -73,6 +73,12 @@ jobs:
           # voie. Une suite qui ne barre pas la publication ne barre rien.
           BASE_URL=http://127.0.0.1:8080 npm run test:arrosage
           BASE_URL=http://127.0.0.1:8080 npm run test:croquis
+          # **La planche qu'on lui demande d'ESSAYER se parcourt d'abord ici.**
+          # Trois fois, une adresse lui a été transmise sans que personne ne
+          # l'ait ouverte, et c'est lui qui a trouvé le défaut. Celle-ci
+          # s'ouvre, ses quatre onglets s'affichent et ses boutons se pressent
+          # dans un vrai navigateur avant qu'elle parte en ligne.
+          BASE_URL=http://127.0.0.1:8080 npm run test:termines
 
   deploy:
     name: Déploiement
@@ -180,13 +186,11 @@ jobs:
           # la racine du site, l'entrée elle-même, et les deux scripts que les
           # pages chargent.
           #
-          # `deux-boutons-devis.html` et `en-cours-le-chiffre.html` s'y ajoutent
-          # à contrecœur : elles étaient vérifiées avant ce changement, et
-          # cesser de les vérifier serait perdre du terrain. Mais **elles ne
-          # sont atteignables depuis `essais.html` par aucun lien** — donc le
-          # patron ne peut pas les ouvrir depuis la seule adresse qu'on lui a
-          # donnée. Ouvert dans `TODO.md` ; à retirer d'ici le jour où elles y
-          # seront liées.
+          # `deux-boutons-devis.html` et `en-cours-le-chiffre.html` ont quitté
+          # cette liste le 20 août : elles sont désormais LIÉES depuis
+          # `essais.html`, donc déduites comme les autres. C'était la condition
+          # écrite ici la veille — le patron peut les ouvrir depuis la seule
+          # adresse qu'on lui ait donnée.
           #
           # `arrosage-simple.html` s'y ajoute pour une raison différente, et
           # voulue : le patron a demandé le 20 août de **ne plus la mettre dans
@@ -194,9 +198,14 @@ jobs:
           # Elle se donne par son adresse directe. Sans cette ligne, la liste
           # déduite ne la verrait pas, et on lui transmettrait une adresse dont
           # rien ne prouve qu'elle répond.
+          # `arrosage-plan.html` rejoint la liste le 21 août, pour la même
+          # raison : elle se donne par son adresse directe, pas depuis
+          # `essais.html`. Sans cette ligne, on lui transmettrait une adresse
+          # dont rien ne prouve qu'elle répond — c'est déjà arrivé, et c'est LUI
+          # qui avait fait le test.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
-                   deux-boutons-devis.html en-cours-le-chiffre.html \
-                   arrosage-simple.html $LIES; do
+                   arrosage-simple.html arrosage-plan.html \
+                   arrosage-discuter.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

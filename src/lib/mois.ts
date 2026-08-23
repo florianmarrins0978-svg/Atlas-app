@@ -8,11 +8,14 @@
 //    de juillet au lieu de cinq, et TOUT LE MOIS glisse d'un jour — les
 //    contrôles restent verts, les chiffres sont tous là, et le patron lit un
 //    calendrier faux.
-// 2. **« Complet » se compte PAR ÉQUIPE.** Un jour où une seule équipe sur deux
-//    est prise reste proposable. C'est tout l'objet du compteur de Réglages.
+// 2. **La date se lit en français, pas comme le navigateur la rend.**
+//
+// **Ce qui a QUITTÉ ce fichier le 21 août 2026** : les cinq marques du
+// calendrier et la répartition par équipe. Le planning refait porte ses propres
+// règles dans `src/lib/planning-jour.ts` — voir plus bas.
 
-import type { JourIso, Moment } from "@/server/disponibilites";
-import { cleCreneau, versJourIso } from "@/server/disponibilites";
+import type { JourIso } from "@/server/disponibilites";
+import { versJourIso } from "@/server/disponibilites";
 
 /** Lundi en tête — la semaine française, pas celle du navigateur. */
 export const JOURS_COURTS = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
@@ -63,53 +66,15 @@ export function grilleDuMois(annee: number, mois: number): CaseMois[] {
   });
 }
 
-/** Les cinq marques du calendrier — cinq, et non quatre. */
-export type MarqueJour = "libre" | "reste" | "matin" | "apres_midi" | "plein";
-
-/**
- * Ce que porte un jour, à partir de l'occupation réelle et du nombre d'équipes.
- *
- * | Marque | Ce qu'elle dit |
- * |---|---|
- * | `libre` | rien n'est posé ce jour-là |
- * | `reste` | il reste de la place — au moins une équipe libre |
- * | `matin` | le matin est complet **pour toutes les équipes** |
- * | `apres_midi` | l'après-midi est complet |
- * | `plein` | la journée est pleine |
- *
- * **Quatre marques ne suffisaient plus dès qu'il y a plusieurs équipes** : sans
- * `reste`, un jour à moitié pris se lisait comme un jour libre, et le patron
- * découvrait la collision en ouvrant la journée.
- */
-export function marqueDuJour(
-  jour: JourIso,
-  occupation: ReadonlyMap<string, number>,
-  nombreEquipes: number
-): MarqueJour {
-  const equipes = Math.max(1, Math.trunc(nombreEquipes) || 1);
-  const pris = (moment: Moment) => occupation.get(cleCreneau({ jour, moment })) ?? 0;
-
-  const matin = pris("matin");
-  const apresMidi = pris("apres_midi");
-  const matinComplet = matin >= equipes;
-  const apremComplet = apresMidi >= equipes;
-
-  if (matinComplet && apremComplet) return "plein";
-  if (matinComplet) return "matin";
-  if (apremComplet) return "apres_midi";
-  // Rien de complet : reste-t-il quelque chose de posé ? Un jour vierge ne
-  // porte aucune marque — le calendrier doit se lire d'abord comme des
-  // chiffres.
-  return matin + apresMidi > 0 ? "reste" : "libre";
-}
-
-/** Ce que la légende écrit, dans l'ordre des marques. */
-export const LEGENDE_MARQUES: { marque: Exclude<MarqueJour, "libre">; texte: string }[] = [
-  { marque: "reste", texte: "de la place" },
-  { marque: "matin", texte: "matin pris" },
-  { marque: "apres_midi", texte: "après-midi pris" },
-  { marque: "plein", texte: "journée pleine" },
-];
+// **LES CINQ MARQUES ONT DISPARU LE 21 AOÛT 2026.** `MarqueJour`,
+// `marqueDuJour` et `LEGENDE_MARQUES` disaient « libre / de la place / matin
+// pris / après-midi pris / journée pleine ». Le planning refait (planche 84)
+// peint deux barres qui se REMPLISSENT à la proportion, et quatre états dont le
+// dernier prévient sans interdire : `src/lib/planning-jour.ts`.
+//
+// Les garder à côté aurait fait deux façons de dire la charge d'un même jour, et
+// c'est exactement ce que `CLAUDE.md` §3 interdit : elles auraient divergé au
+// premier réglage, et l'écart se serait vu là où le patron compare.
 
 /** « Jeudi 20 août » — la date telle que la journée l'écrit. */
 export function jourLisibleCourt(jour: JourIso): string {
@@ -129,52 +94,8 @@ export function estWeekEndIso(jour: JourIso): boolean {
   return j === 0 || j === 6;
 }
 
-// ─── Qui occupe quelle équipe, sur une demi-journée ────────────────────────
-
-/** Ce qu'une ligne de la journée montre : une équipe, et ce qu'elle tient. */
-export type LigneEquipe<C> = {
-  /** 1 à N — c'est lui qui porte la lettre de repli. */
-  rang: number;
-  /** Le chantier qui l'occupe, ou `null` : la ligne est libre. */
-  occupe: C | null;
-};
-
-/**
- * Répartit les chantiers d'une demi-journée sur les équipes.
- *
- * **Un chantier posé AVANT les équipes n'en a aucune** (`equipeId` à `null`,
- * l'état de tout ce qui existait avant la migration 0034). On ne lui en invente
- * pas : il prend simplement le premier rang encore libre, de façon déterministe
- * — deux affichages successifs doivent montrer la même chose, sinon le patron
- * voit son planning bouger tout seul.
- *
- * Les chantiers attribués passent d'abord : sans cela, un chantier sans équipe
- * pourrait s'asseoir sur le rang d'un chantier qui, lui, en a une.
- */
-export function repartirParEquipe<C extends { id: string; rangEquipe: number | null }>(
-  occupants: readonly C[],
-  nombreEquipes: number
-): LigneEquipe<C>[] {
-  const borne = Math.max(1, Math.trunc(nombreEquipes) || 1);
-  const lignes: LigneEquipe<C>[] = Array.from({ length: borne }, (_, i) => ({ rang: i + 1, occupe: null }));
-
-  const attribues = occupants.filter((c) => c.rangEquipe != null);
-  const sansEquipe = occupants.filter((c) => c.rangEquipe == null);
-
-  for (const c of attribues) {
-    const place = lignes.find((l) => l.rang === c.rangEquipe && l.occupe === null);
-    // Rang hors bornes (le compteur a baissé depuis) ou déjà pris : le chantier
-    // ne disparaît pas de l'écran pour autant — il rejoint la file d'attente.
-    if (place) place.occupe = c;
-    else sansEquipe.push(c);
-  }
-
-  // Ordre stable par identifiant : la seule façon que deux rendus successifs
-  // montrent la même chose sans rien écrire en base.
-  for (const c of [...sansEquipe].sort((a, b) => a.id.localeCompare(b.id))) {
-    const libre = lignes.find((l) => l.occupe === null);
-    if (libre) libre.occupe = c;
-  }
-
-  return lignes;
-}
+// **`repartirParEquipe` a disparu le 21 août 2026, avec les cinq marques.** Elle
+// asseyait les chantiers d'une demi-journée sur des lignes d'équipes, une par
+// rang. La fiche du jour est désormais bâtie sur le CHANTIER — son nom une fois,
+// ses demi-journées dessous — et une équipe n'est plus une file : un chantier
+// peut en porter plusieurs sur la même moitié (migration 0058).

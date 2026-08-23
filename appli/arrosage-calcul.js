@@ -83,10 +83,117 @@ function paveSelonSaRegle(dimension, portee){
   return ecart >= portee - 0.01 ? { n:n, ecart:ecart } : null;
 }
 
+/* ══ LE DÉBIT ET LA PORTÉE D'UNE BUSE À LA PRESSION DU CHANTIER ═════════════
+
+   **Sa demande du 22 août 2026**, une fois ce qui manquait mis devant lui :
+   *« oui code le »*.
+
+   **Le catalogue ne donne qu'UNE valeur par buse, à UNE pression de
+   référence** — 2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères
+   VAN. Le calcul les prenait telles quelles, quelle que soit la pression du
+   chantier. Sur un robinet à 2 bar au lieu de 2,5, cela met **un arroseur de
+   trop par réseau** : la pression tombe, les turbines sortent à moitié, et le
+   gazon jaunit en bout de ligne — le défaut le plus cher, parce qu'il ne se
+   voit qu'en août, quand la tranchée est refermée depuis longtemps.
+
+   ── LE DÉBIT : de la physique, pas un abaque ────────────────────────────────
+
+   L'eau qui sort d'un orifice va d'autant plus vite que la pression est forte,
+   et sa vitesse suit la RACINE CARRÉE de la pression (Torricelli). Le débit
+   fait de même :
+
+       Q(P) = Q_catalogue × √(P / P_catalogue)
+
+   Une 5004 buse 3,0 donnée 0,71 m³/h à 2,5 bar en donne 0,63 à 2 bar, 0,78 à
+   3. **Cela se corrige dans les DEUX sens** : sous-estimer un débit chargerait
+   trop un réseau, ce qui est précisément le défaut qu'on cherche à éviter.
+
+   ── LA PORTÉE : on ne corrige QUE vers le bas ───────────────────────────────
+
+   Aucune loi simple ne donne la portée d'un jet. La balistique pure la ferait
+   suivre la pression, mais l'air freine le jet et l'écrase : les tables des
+   constructeurs montrent une variation bien plus douce, de l'ordre de la
+   racine cubique. C'est l'exposant retenu ici — et **il n'est PAS relevé de
+   ses catalogues à lui**. C'est une estimation, elle est signalée comme telle
+   plutôt que présentée comme acquise (`CLAUDE.md` §4).
+
+   D'où la prudence qui l'accompagne : **au-dessus de la pression de référence,
+   la portée du catalogue est conservée**. Gonfler une portée sur une
+   estimation ferait espacer les arroseurs davantage, et un espacement trop
+   large est un trou d'arrosage qu'on ne découvre qu'en juillet. En dessous, on
+   réduit : resserrer la pose ajoute des têtes sur la ZONE, que le découpage
+   répartira sur une vanne de plus — jamais sur la même. C'est le sens sûr, et
+   il coûte une électrovanne, pas un chantier (`CLAUDE.md` §4 ter, redressé par
+   lui le 22 août : *« un arroseur de trop fait que le réseau ne peut pas se
+   lever »*).
+
+   ⚠ **La pression retenue est celle de la SOURCE**, pas celle qui reste au
+   pied du dernier arroseur : les pertes du réseau lui-même ne sont pas encore
+   calculées (`TODO.md`). Cette correction est donc un progrès, pas une
+   garantie — et l'écran ne dit rien d'autre. */
+var EXPOSANT_PORTEE = 1 / 3;
+
+/* ══ QUELLE PRESSION SERT À DIMENSIONNER LES BUSES ══════════════════════════
+
+   **Ce n'est plus celle de la source depuis le 22 août 2026 au soir**, et c'est
+   le dernier trou connu qui se ferme. Une buse était ramenée à la pression du
+   compteur ; or entre le compteur et le dernier arroseur d'une ligne il se perd
+   l'amenée, l'électrovanne, la ligne elle-même, ses raccords et l'antenne Ø16 —
+   de l'ordre d'un demi-bar à trois quarts de bar sur un jardin ordinaire.
+   Dimensionner sur la pression du compteur, c'était donc prêter aux arroseurs
+   de bout de ligne une portée qu'ils n'ont pas.
+
+   **`null` veut dire « la source », et c'est l'état de la première passe** :
+   il faut bien un premier plan pour savoir ce que le réseau va perdre. Voir
+   `decouper`. */
+var pressionDeCalcul = null;
+
+function pressionRetenue(){
+  return pressionDeCalcul !== null ? pressionDeCalcul : (Number(etat.pression) || 0);
+}
+
+function buseALaPression(b){
+  var reference = Number(b.pression) || 0;
+  var reelle = pressionRetenue();
+  // Sans pression connue des deux côtés, on ne corrige rien : une correction
+  // menée sur un zéro rendrait un débit nul, c'est-à-dire un plan qui paraît
+  // tenir sur n'importe quel réseau.
+  if (!(reference > 0) || !(reelle > 0) || Math.abs(reelle - reference) < 0.01) return b;
+
+  var rapport = reelle / reference;
+  var debit = {};
+  Object.keys(b.debit).forEach(function(angle){
+    if (b.debit[angle] == null) return;
+    debit[angle] = Math.round(b.debit[angle] * Math.sqrt(rapport) * 1000) / 1000;
+  });
+
+  var corrigee = {};
+  Object.keys(b).forEach(function(k){ corrigee[k] = b[k]; });
+  corrigee.debit = debit;
+  corrigee.rayon = rapport < 1
+    ? Math.round(b.rayon * Math.pow(rapport, EXPOSANT_PORTEE) * 100) / 100
+    : b.rayon;
+  corrigee.rayonCatalogue = b.rayon;
+  corrigee.debitCatalogue = b.debit;
+  corrigee.pressionRetenue = reelle;
+  return corrigee;
+}
+
 function modelePour(type, plusPetitCote, dims){
   var marque = marqueCourante();
 
-  var buses = CATALOGUE.busesDe(marque, type);
+  // **Les buses sont ramenées à la pression du chantier AVANT tout choix.**
+  // Le pavage, le débit et la pluviométrie travaillent ensuite sur les mêmes
+  // valeurs : corriger plus tard reviendrait à choisir une buse sur sa fiche
+  // et à la poser sur autre chose.
+  //
+  // **Et l'on retrie**, car deux buses de pressions de référence différentes
+  // ne se réduisent pas du même facteur : l'ordre du catalogue, décroissant
+  // par portée, pourrait ne plus l'être après correction — et tout le choix
+  // « la plus grande qui tient » repose sur cet ordre.
+  var buses = CATALOGUE.busesDe(marque, type)
+    .map(buseALaPression)
+    .sort(function(x, y){ return y.rayon - x.rayon; });
   if (buses.length){
     var b = null;
     if (dims && dims.L > 0 && dims.l > 0){
@@ -108,6 +215,11 @@ function modelePour(type, plusPetitCote, dims){
         ref: b.ref, nom: type === 'tuyere' ? 'Tuyère' : 'Turbine', detail: b.nom,
         marque: nomDeMarque(b.marqueCle),
         marqueCle: b.marqueCle, type: type, portee: b.rayon, pression: b.pression,
+        // **Une valeur corrigée doit pouvoir remonter à sa source.** Sans
+        // cela, l'écran annonce « portée 4,8 m » là où le catalogue dit 5,2 et
+        // personne ne sait plus lequel des deux croire devant le fournisseur.
+        porteeCatalogue: b.rayonCatalogue || b.rayon,
+        pressionRetenue: b.pressionRetenue || b.pression,
         debit360: b.debit[360], debitParAngle: b.debit, colisage: b.colisage,
         source: b.source, buse: b,
         // La pluviométrie n'est pas au catalogue : elle se déduit du débit et de
@@ -243,6 +355,9 @@ var DEFAUTS = {
   seau:10, temps:20, pression:3, saison:'juillet', compteur:null, corps:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   amenee:30, pe25:120, sonde:false, croquis:null,
+  // Du regard à la première tête, en mètres. Lu sur le croquis quand il montre
+  // la nourrice (`geometrie-croquis.ts`) ; zéro sinon, et l'écran le dit.
+  regardVersZone:0,
   zones:[
     { id:1, nom:'Pelouse arrière', type:'gazon',   L:18, l:12, materiel:'auto' },
     // **Plus de tuyères imposées sur une grande pelouse (17 août).** Les deux
@@ -311,6 +426,184 @@ function perteDeCharge(debitM3h, longueurM, dInterieurMm){
   return metres / 10.2;             // 10,2 m de colonne d'eau = 1 bar
 }
 
+/* ══ LE SEUIL EN MÈTRES : À PARTIR DE COMBIEN LE Ø25 NE SUFFIT PLUS ═════════
+
+   **Sa demande du 22 août 2026 :** *« ils sont également en capacité de me
+   dire, passé un certain nombre de mètres linéaires, qu'il faut passer du PEHD
+   en diamètre vingt-cinq à celui en diamètre trente-deux. J'aimerais que mon
+   outil arrosage puisse faire la même chose. »*
+
+   Le calcul savait déjà répondre OUI ou NON sur UNE longueur saisie (`amenee`
+   ci-dessous). Ce qu'il ne savait pas dire, c'est **à partir de combien** — or
+   c'est le seul chiffre utile avant de creuser : il se compare au mètre ruban
+   sur place, au lieu de ressaisir la longueur trois fois pour trouver la
+   bascule à tâtons.
+
+   C'est la formule de la perte de charge, retournée. De
+
+       perte = 10,67 × L × (Q/C)^1,852 / D^4,87 / 10,2
+
+   on tire la longueur que le budget de perte autorise :
+
+       L max = budget × 10,2 × D^4,87 / (10,67 × (Q/C)^1,852)
+
+   **Le budget, c'est ce qui reste APRÈS les buses** : la pression à la source
+   moins celle à laquelle la buse posée est donnée au catalogue. Une 5004
+   donnée à 2,8 bar sur une source à 3 bar ne laisse que 0,2 bar — d'où des
+   seuils courts, et ils sont justes : c'est exactement pourquoi le métier
+   réclame 3 bar dynamiques au minimum. */
+function longueurMaxEn(budgetBar, debitM3h, dInterieurMm){
+  if (!(budgetBar > 0) || !(debitM3h > 0) || !(dInterieurMm > 0)) return 0;
+  var q = debitM3h / 3600;          // m³/s
+  var d = dInterieurMm / 1000;      // m
+  return budgetBar * 10.2 * Math.pow(d, 4.87) / (10.67 * Math.pow(q / 150, 1.852));
+}
+
+/* ══ LE SECOND CRITÈRE, QUE LA LONGUEUR NE VOIT PAS : LA VITESSE ════════════
+
+   Un tuyau court ne perd presque rien — donc, sur la seule perte de charge, un
+   Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court. C'est
+   faux : au-delà d'environ 1,5 m/s l'eau cogne, le coup de bélier fatigue les
+   électrovannes, et le bruit s'entend dans la maison. Les abaques de
+   fournisseur s'arrêtent tous là, et c'est de cette limite que sortent les
+   débits maximaux qu'ils annoncent par diamètre — 1,76 m³/h en Ø25, 2,91 en
+   Ø32.
+
+   **Ce chiffre recoupe SA propre mesure**, et c'est ce qui permet de le
+   croire : au seau, sur son compteur en Ø25, il a relevé 1,80 m³/h. La formule
+   en donne 1,76. Le tuyau ne laissait pas passer davantage.
+
+   Sans ce critère, un jardin dont la source est généreuse se verrait poser du
+   Ø25 sur quinze mètres au motif que la perte y reste faible. */
+var VITESSE_MAX = 1.5;   // m/s dans un PEHD enterré — au-delà, ça cogne
+
+function debitMaxDe(dInterieurMm){
+  if (!(dInterieurMm > 0)) return 0;
+  var d = dInterieurMm / 1000;      // m
+  return Math.PI * Math.pow(d / 2, 2) * VITESSE_MAX * 3600;
+}
+
+/* ══ CE QUE LE RÉSEAU LUI-MÊME MANGE, DU REGARD AU DERNIER ARROSEUR ═════════
+
+   **Sa demande du 22 août 2026**, après qu'on lui a dit ce qui manquait
+   encore : *« oui corrige la 1 »*.
+
+   Jusqu'ici, le seul calcul de perte portait sur l'AMENÉE (compteur → regard),
+   et l'écran l'avouait : *« ce calcul ne compte QUE l'amenée — ni les antennes,
+   ni les raccords, ni l'électrovanne »*. Ce qui restait au pied du DERNIER
+   arroseur d'une ligne, personne ne le savait. Or c'est lui qui décide : s'il
+   ne reçoit pas la pression à laquelle sa buse est donnée, il porte moins loin
+   que le plan ne le suppose, et le coin de pelouse qu'il devait atteindre
+   jaunit en juillet.
+
+   ── LE DÉBIT DÉCROÎT LE LONG DE LA LIGNE, ET C'EST TOUT LE CALCUL ───────────
+
+   Entre la vanne et le premier arroseur passe le débit du réseau entier ;
+   entre le premier et le deuxième, ce débit moins une tête ; et ainsi de suite
+   jusqu'au dernier, qui ne reçoit plus que le sien. Compter le débit total sur
+   toute la longueur — ce qui serait plus simple — surestime la perte du double
+   ou plus (0,46 bar contre 0,20 sur une ligne de six têtes) : assez pour
+   condamner des plans qui tiennent, et un avertissement qui parle à tort
+   s'apprend à être ignoré (`CLAUDE.md` §4 ter).
+
+   On parcourt donc les têtes DANS L'ORDRE OÙ LE TUYAU LES VISITE — celui que
+   `decouper` a déjà établi — et l'on somme tronçon par tronçon.
+
+   **Les distances se mesurent en Manhattan**, pas à vol d'oiseau : un tuyau
+   suit les axes, c'est la règle du dépôt sur les tranchées.
+
+   ── CE QU'ON AJOUTE, ET D'OÙ ÇA VIENT ───────────────────────────────────────
+
+   | | Valeur | Source |
+   |---|---|---|
+   | l'électrovanne | 0,25 bar | **non relevée** — majorant de la littérature |
+   | les raccords (tés, coudes) | +15 % du linéaire | **non relevée** — règle de l'art |
+   | l'antenne PEBD Ø16 | calculée, 2 m par tête | longueur relevée de sa nomenclature |
+
+   **Deux de ces trois valeurs ne sont pas dans ses catalogues**, et cela
+   s'écrit plutôt que de se taire. Elles sont posées EN MAJORANT : une perte
+   surestimée conclut « pression insuffisante » plus tôt, donc pose un arroseur
+   de plus — le sens où se tromper coûte 30 € au lieu d'un chantier. Le jour où
+   il relève les vraies, elles se corrigent ici, à un seul endroit.
+
+   ⚠ **CE QUI N'EST TOUJOURS PAS COMPTÉ :** le trajet du regard jusqu'à la
+   première tête. Il dépend de l'endroit où la nourrice est posée dans le
+   jardin, et aucune saisie ne le donne aujourd'hui. La perte rendue est donc
+   un PLANCHER, et l'écran le dit. */
+var PERTE_ELECTROVANNE = 0.25;   // bar, forfait majorant — non relevé
+var MAJORATION_RACCORDS = 0.15;  // +15 % du linéaire — règle de l'art, non relevée
+var METRES_ANTENNE = 2;          // PEBD Ø16 par tête — sa nomenclature du 17 août
+var DIAMETRE_INT_PEBD16 = 12.4;  // mm, Ø16 PN6 — le plus étroit, donc le plus prudent
+
+function perteDuReseau(secteur){
+  var pts = secteur && secteur.points;
+  var t25 = CATALOGUE.tuyaux.pe25;
+  // **Sans les têtes, on ne conclut pas.** Un goutte-à-goutte n'a pas de ligne
+  // d'arroseurs : rendre zéro serait dire « aucune perte », ce qui est faux.
+  // On rend `null`, et l'appelant sait qu'il n'y a rien à dire.
+  if (!pts || pts.length < 1) return null;
+
+  var lineaire = 0;
+  // Le débit qui passe encore dans le tronçon menant à la tête i : c'est la
+  // somme de ce que boivent cette tête et toutes celles qui la suivent.
+  var restant = pts.reduce(function(s, p){ return s + (p.debit || 0); }, 0);
+  var debitDuReseau = restant;
+
+  /* **LE TRAJET DU REGARD À LA PREMIÈRE TÊTE — comblé le 22 août 2026 au soir.**
+
+     C'était le dernier morceau non compté, et je lui avais dit qu'aucune saisie
+     ne le donnait. Sa réponse : *« j'ai pas besoin de lui dire, il a tous les
+     métrés du terrain, il a juste à calculer »*. Il avait raison — le croquis
+     porte la nourrice ET les zones, et les cotes donnent l'échelle. C'est la
+     LECTURE qui ne relevait pas les places (`geometrie-croquis.ts`).
+
+     **Tout le débit du réseau passe par ce tronçon**, puisqu'aucune tête n'y a
+     encore puisé : c'est le morceau le plus chargé de toute la ligne, et donc
+     celui qui perd le plus au mètre.
+
+     Zéro tant que la place de la nourrice n'a pas été lue — et l'écran le dit
+     plutôt que de laisser croire que le trajet est compté. */
+  var versLaZone = Number(etat.regardVersZone) || 0;
+  var amont = perteDeCharge(debitDuReseau, versLaZone, t25.dInterieur);
+  for (var i = 1; i < pts.length; i++){
+    restant -= (pts[i-1].debit || 0);
+    var l = Math.abs(pts[i].x - pts[i-1].x) + Math.abs(pts[i].y - pts[i-1].y);
+    lineaire += perteDeCharge(restant, l, t25.dInterieur);
+  }
+
+  // L'antenne de la DERNIÈRE tête : c'est elle qui subit tout le reste, et
+  // c'est sa pression qui décide de la portée en bout de ligne.
+  var unitaire = secteur.debitUnitaire || 0;
+  var antenne = perteDeCharge(unitaire, METRES_ANTENNE, DIAMETRE_INT_PEBD16);
+
+  return {
+    lineaire: lineaire,
+    amont: amont,
+    raccords: (lineaire + amont) * MAJORATION_RACCORDS,
+    electrovanne: PERTE_ELECTROVANNE,
+    antenne: antenne,
+    total: (lineaire + amont) * (1 + MAJORATION_RACCORDS) + PERTE_ELECTROVANNE + antenne
+  };
+}
+
+/* La perte du réseau LE PLUS DÉFAVORABLE — et elle vaut pour tout le jardin.
+
+   **Pourquoi la pire, et non chacune la sienne.** Dimensionner chaque réseau à
+   sa propre pression donnerait des buses différentes d'une vanne à l'autre sur
+   une même pelouse : deux portées, deux espacements, un plan qu'on ne sait pas
+   poser. On retient donc la pire, ce qui revient à poser partout la buse qui
+   tient au point le plus mal alimenté. C'est le sens sûr (`CLAUDE.md` §4 ter),
+   et cela coûte au pire une vanne de plus sur les réseaux les mieux servis —
+   jamais une tête de plus sur une vanne déjà chargée. */
+function pirePerteDeReseau(d){
+  var pire = 0;
+  (d.secteurs || []).forEach(function(s){
+    var p = perteDuReseau(s);
+    if (p && p.total > pire) pire = p.total;
+  });
+  return pire;
+}
+
 /* Ce que devient l'amenée compteur → regard, une fois le jardin découpé. */
 function amenee(d){
   var longueur = Number(etat.amenee) || 0;
@@ -327,13 +620,39 @@ function amenee(d){
   var perte25 = perteDeCharge(pire, longueur, t25.dInterieur);
   var perte32 = perteDeCharge(pire, longueur, t32.dInterieur);
   var source = Number(etat.pression) || 0;
-  // Le Ø25 est insuffisant quand, PERTES DES ANTENNES MISES À PART, il ne
-  // laisse déjà plus aux buses la pression à laquelle elles sont données.
-  var suffit = !(longueur > 0 && pire > 0 && exigee > 0) || (source - perte25 >= exigee);
+  var budget = source - exigee;
+  var debitMax25 = debitMaxDe(t25.dInterieur), debitMax32 = debitMaxDe(t32.dInterieur);
+
+  /* **DEUX RAISONS DE PASSER EN Ø32, et l'une ne remplace pas l'autre.**
+
+     · la LONGUEUR : la perte cumulée finit par manger le budget ;
+     · le DÉBIT : l'eau va trop vite, quelle que soit la longueur.
+
+     Une amenée de trois mètres échappe à la première et pas à la seconde. Ne
+     retenir que la perte de charge — ce que faisait ce calcul — revient à
+     poser du Ø25 sur une source généreuse, et à l'entendre cogner. */
+  var tropVite = pire > 0 && debitMax25 > 0 && pire > debitMax25;
+  var tropLoin = longueur > 0 && pire > 0 && exigee > 0 && (source - perte25 < exigee);
+  var suffit = !(tropVite || tropLoin);
+  // Le débit prime : aucune longueur ne le rattrape, alors qu'une amenée trop
+  // longue se raccourcit parfois en déplaçant le regard.
+  var motif = tropVite ? 'debit' : (tropLoin ? 'longueur' : null);
+
   return { longueur:longueur, debit:pire, exigee:exigee, source:source,
-           perte25:perte25, perte32:perte32, suffit:suffit,
+           perte25:perte25, perte32:perte32, suffit:suffit, motif:motif,
            auRegard: source - (suffit ? perte25 : perte32),
            diametre: suffit ? 25 : 32,
+           // **Zéro quand le débit l'interdit, et non le seuil calculé.**
+           // Annoncer « Ø25 jusqu'à 12 m » alors que l'eau y filerait à
+           // 2 m/s serait un seuil qu'on croit et qui ne tient pas.
+           longueurMax25: tropVite ? 0 : longueurMaxEn(budget, pire, t25.dInterieur),
+           longueurMax32: longueurMaxEn(budget, pire, t32.dInterieur),
+           debitMax25: debitMax25, debitMax32: debitMax32,
+           // Au-delà, même le Ø32 est en surrégime : c'est le Ø40 ou un
+           // secteur de plus, et cela se DIT plutôt que de sortir un plan qui
+           // ne tiendra pas.
+           insuffisantMemeEn32: pire > 0 && debitMax32 > 0 && pire > debitMax32,
+           budget: budget,
            provisoire: (suffit ? t25 : t32).source === 'provisoire' };
 }
 
@@ -608,27 +927,140 @@ function saisonCourante(){
   return SAISONS[2];
 }
 
+/* ══ CE QU'UN RÉSEAU PEUT PORTER : LE PLUS PETIT DES DEUX ═══════════════════
+
+   **Sa déduction du 22 août 2026, et elle a trouvé un trou :** *« tu ne viens
+   pas de me dire qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous
+   les cas le calcul doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80,
+   non ? »*
+
+   **Oui.** Un réseau est limité par DEUX choses, et le découpage n'en regardait
+   qu'une :
+
+   | | |
+   |---|---|
+   | ce que la SOURCE donne | le seau, moins la marge (0,85) |
+   | ce que le TUYAU passe | 1,76 m³/h en Ø25, à 1,5 m/s |
+
+   **Et toutes ses lignes de réseau sont en Ø25** — c'est le diamètre de tous
+   ses raccords : té 25×3/4"×25, coude 25×3/4". Un réseau ne peut donc jamais
+   porter plus de 1,76 m³/h, quelle que soit la générosité du compteur.
+
+   **Ce que cela corrigeait, et personne ne l'avait vu.** Tant que la source
+   reste modeste, c'est elle qui commande et rien ne change : à 1,80 m³/h, la
+   limite était déjà 1,53. Mais dès qu'un artisan mesure 2,5 ou 3 m³/h au seau,
+   l'ancien calcul faisait des réseaux à 2,1 puis 2,55 m³/h — dans un tuyau qui
+   n'en passe que 1,76. L'eau y filerait à plus de 2 m/s, la ligne cogne, et la
+   pression tombe avant le dernier arroseur. **C'est exactement le défaut que
+   sa règle du 22 août interdit** (`CLAUDE.md` §4 ter) : il ne se voit qu'en
+   juillet, sur un gazon jauni, tranchée refermée.
+
+   Le plafond du tuyau ne porte PAS la marge de 0,85 en plus : les 1,5 m/s sont
+   déjà une limite de bonne pratique, pas un maximum physique. L'empiler
+   reviendrait à payer deux fois la même prudence, en vannes. */
+/* ══ DEUX PASSES, ET POURQUOI IL EN FAUT DEUX ═══════════════════════════════
+
+   Le serpent se mord la queue : la pression au pied du dernier arroseur dépend
+   de ce que le réseau perd, ce qui dépend du débit des buses, qui dépend de la
+   pression. On ne peut pas commencer par la fin.
+
+   **On tourne donc deux fois, jamais plus :**
+
+   1. un plan à la pression de la SOURCE — c'est ce que faisait le calcul
+      jusqu'ici, et il donne un ordre de grandeur des débits ;
+   2. on mesure ce que perdent l'amenée et le pire réseau, on retire, et l'on
+      REFAIT le plan à cette pression-là.
+
+   **Deux suffisent, et une troisième serait pire.** La correction de la
+   seconde passe baisse les débits (moins de pression, moins de débit), donc
+   les pertes de la troisième passe seraient PLUS FAIBLES et la pression
+   remonterait : on tournerait autour de la vraie valeur au lieu de s'en
+   approcher. S'arrêter à deux, c'est rester du côté PRUDENT — les pertes
+   retenues sont celles des débits les plus forts.
+
+   **Et l'on ne descend jamais sous un demi-bar de marge** (`PLANCHER_UTILE`) :
+   en dessous, ce n'est plus un ajustement de portée, c'est un réseau qui ne
+   fonctionne pas — et cela se DIT à l'écran plutôt que de sortir un plan bâti
+   sur une pression que rien ne garantit. */
+var PLANCHER_UTILE = 0.5;   // bar : sous ce reste, on ne raffine plus, on alerte
+
 function decouper(){
-  var dispo = debitDisponible(), limite = dispo * MARGE, groupes = {}, ordre = [];
+  // **La passe 1 part TOUJOURS de la source**, sinon un appel précédent
+  // laisserait sa pression derrière lui et deux plans identiques
+  // différeraient selon ce qui a été calculé avant.
+  pressionDeCalcul = null;
+  var essai = decouperUneFois();
+
+  var source = Number(etat.pression) || 0;
+  var perteReseau = pirePerteDeReseau(essai);
+  var perteAmenee = amenee(essai).perte25;
+  var reste = source - perteAmenee - perteReseau;
+
+  if (source > 0 && perteReseau > 0 && reste >= PLANCHER_UTILE){
+    pressionDeCalcul = reste;
+  }
+  var d = decouperUneFois();
+
+  /* **CE QU'ON AFFICHE VIENT DE LA PASSE 2, ET D'ELLE SEULE.**
+
+     Les deux passes ne donnent pas les mêmes pertes — la seconde travaille sur
+     des débits plus faibles, donc elle perd moins. Publier les chiffres de la
+     passe 1 à côté d'un plan issu de la passe 2 mettrait DEUX pertes d'amenée
+     différentes dans le même écran, et c'est le pire des cas : on relit sans
+     méfiance, on ne retombe pas sur ses pieds, et c'est toute la liste dont on
+     doute (`CLAUDE.md` §4 bis).
+
+     La pression qui a servi à CHOISIR les buses reste, elle, celle de la passe
+     1 — plus basse de quelques centièmes. L'écart va dans le sens sûr : les
+     buses sont choisies pour une pression un peu plus dure que celle annoncée,
+     jamais l'inverse. */
+  d.perteAmenee = amenee(d).perte25;
+  d.perteReseau = pirePerteDeReseau(d);
+  d.pressionAuxArroseurs = source > 0 ? source - d.perteAmenee - d.perteReseau : 0;
+  // **Le raffinement a-t-il eu lieu ?** L'écran doit pouvoir le dire : un plan
+  // calculé à la pression de la source et un plan calculé au pied du dernier
+  // arroseur ne se valent pas, et le second est le seul qui engage.
+  d.pressionRaffinee = pressionDeCalcul !== null;
+  // Sous le plancher, aucune buse ne tient ses caractéristiques : c'est une
+  // alerte, pas un ajustement.
+  d.pressionTropBasse = source > 0 && reste < PLANCHER_UTILE;
+  return d;
+}
+
+function decouperUneFois(){
+  var dispo = debitDisponible();
+  var duTuyau = debitMaxDe(CATALOGUE.tuyaux.pe25.dInterieur);
+  var deLaSource = dispo * MARGE;
+  var limite = duTuyau > 0 ? Math.min(deLaSource, duTuyau) : deLaSource;
+  var groupes = {}, ordre = [];
   etat.zones.forEach(function(z){
     var p = poser(z);
     if (p.debit <= 0) return;
     // La clé du groupe ne contient QUE ce qui ne change pas avec la saison :
     // le matériel et la famille de plantes. Un secteur est du câblage.
     //
-    // **ET LA PLUVIOMÉTRIE EN FAIT PARTIE — sa règle du 17 août, « ça ne se
-    // mélange jamais ».** Le type ne suffit pas : deux TURBINES peuvent avoir
-    // des pluviométries différentes selon leur buse, et une vanne les ouvrirait
-    // pour la même durée. Le défaut est resté invisible tant que les deux
-    // pelouses du jardin d'exemple étaient l'une en turbines et l'autre en
-    // tuyères ; le jour où sa règle sur les tuyères les a mises toutes deux en
-    // turbines, elles se sont retrouvées sur la même vanne avec 5,9 et
-    // 6,1 mm/h — et c'est le PLAN, en les coloriant de la même couleur, qui l'a
-    // montré. Ici l'écart était de 3 % ; entre une 3504 fine et une grosse
-    // PGP, il se compte en multiples.
-    var clef = p.cle + '|' + TYPES[z.type].famille + '|' + (p.m.pluvio || 0);
-    if (!groupes[clef]) { groupes[clef] = { zones:[], membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
+    // **LA PLUVIOMÉTRIE N'EN FAIT PLUS PARTIE — sa décision du 23 août 2026 :**
+    // *« ne prends pas en compte la pluviométrie »*. Elle y était depuis le
+    // 17 août, et c'est LUI qui l'y avait mise (« ça ne se mélange jamais ») ;
+    // c'est donc lui qui l'en retire, et il n'y a rien à rouvrir ici.
+    //
+    // **Ce que cela change, pour qui reprendra ce fichier.** Deux turbines de
+    // buses différentes peuvent désormais partager une vanne. Elles versent
+    // alors des millimètres/heure différents, et la vanne les ouvre pour la même
+    // durée : la durée calculée (`r.minutes`) convient à l'une et pas à l'autre.
+    // Sur son jardin, l'écart mesuré était de 3 % — entre une 3504 fine et une
+    // grosse PGP, il se compterait en multiples. Il le sait, il arbitre à
+    // l'arrosage.
+    //
+    // **La pluviométrie sert toujours aux DURÉES** (`poser()`), qui restent
+    // calculées par modèle. Ce qui a disparu, c'est son pouvoir de séparer deux
+    // secteurs — rien d'autre.
+    var clef = p.cle + '|' + TYPES[z.type].famille;
+    if (!groupes[clef]) { groupes[clef] = { zones:[], nomDeZone:{}, membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
     groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
+    // **Le nom de chaque zone, retrouvable par son identifiant.** Un secteur ne
+    // dessert pas forcément tout le groupe : il faut pouvoir nommer LES SIENNES.
+    groupes[clef].nomDeZone[z.id] = z.nom || TYPES[z.type].nom;
     groupes[clef].membres.push({ zoneId: z.id, points: p.points });
     groupes[clef].debit += p.debit;
     groupes[clef].minutes = p.minutes;
@@ -650,14 +1082,44 @@ function decouper(){
   ordre.forEach(function(clef){
     var g = groupes[clef];
     var premier = secteurs.length;
-    var ajouter = function(debit, combien, rang){
+    // **UN SECTEUR NOMME LES ZONES QU'IL ARROSE, PAS CELLES DE SON GROUPE.**
+    //
+    // *Défaut révélé le 23 août 2026 par le retrait de la pluviométrie.* Tant
+    // qu'elle coupait, un groupe ne portait qu'un modèle et se répartissait
+    // presque toujours sur une seule zone : nommer le groupe entier revenait au
+    // même. Depuis, deux pelouses de buses différentes tombent dans le même
+    // groupe — et la coupe par points contiguës peut retomber exactement sur
+    // leur limite. L'écran annonçait alors « Devant + Derrière » pour une vanne
+    // qui n'arrose que « Devant ». Un plan qui nomme la mauvaise zone fait
+    // creuser au mauvais endroit.
+    var nommer = function(points){
+      if (!points || !points.length) return g.zones.join(' + ');
+      var vues = [];
+      points.forEach(function(x){
+        var nom = g.nomDeZone[x.zoneId];
+        if (nom && vues.indexOf(nom) < 0) vues.push(nom);
+      });
+      return vues.length ? vues.join(' + ') : g.zones.join(' + ');
+    };
+
+    var ajouter = function(debit, combien, rang, points, membres){
       secteurs.push({
-        nom: g.zones.join(' + '),
+        // **`membres` porte le zoneId, `points` ne le porte pas.** Les têtes
+        // rendues par `poser()` ne savent pas de quelle zone elles viennent :
+        // c'est le découpage qui l'a noté, et lui seul peut nommer.
+        nom: nommer(membres),
         part: combien > 1 ? rang + ' sur ' + combien : null,
         famille: g.m.famille,
         debit: debit,
         minutes: g.minutes,
-        passages: g.passages
+        passages: g.passages,
+        // **Les têtes du réseau, dans l'ordre où le tuyau les visite.** Sans
+        // elles, la perte de charge de la ligne ne se calcule pas : il faut
+        // savoir combien de mètres séparent chaque arroseur du suivant, et
+        // quel débit passe encore dans ce tronçon-là.
+        points: points || null,
+        // Le débit unitaire d'une tête, pour la perte de son antenne Ø16.
+        debitUnitaire: points && points.length ? debit / points.length : 0
       });
     };
 
@@ -695,7 +1157,7 @@ function decouper(){
       // veut. La division en parts égales reste juste pour elle.
       var n = limite > 0 ? Math.max(1, Math.ceil(g.debit / limite)) : 1;
       for (var i=0;i<n;i++){
-        ajouter(g.debit / n, n, i+1);
+        ajouter(g.debit / n, n, i+1, null);
         g.membres.forEach(function(mb){ noterZone(mb.zoneId, premier + i); });
       }
       return;
@@ -728,7 +1190,7 @@ function decouper(){
       paquets[i].push(x); debits[i] += x.debit;
     });
     paquets.forEach(function(pq, i){
-      ajouter(debits[i], paquets.length, i+1);
+      ajouter(debits[i], paquets.length, i+1, pq.map(function(x){ return x.pt; }), pq);
       pq.forEach(function(x){
         reseauDuPoint[x.zoneId + ':' + x.pt.x.toFixed(3) + ':' + x.pt.y.toFixed(3)] = premier + i;
         noterZone(x.zoneId, premier + i);
@@ -736,8 +1198,30 @@ function decouper(){
     });
   });
   return { secteurs:secteurs, dispo:dispo, limite:limite, reseauDuPoint:reseauDuPoint,
+           // **QUI commande la limite**, pour que l'écran puisse le dire. Un
+           // artisan qui mesure 3 m³/h et voit des réseaux plafonnés à 1,76
+           // croirait à un défaut de calcul : c'est son tuyau, et il le lira.
+           limitePar: (duTuyau > 0 && duTuyau < deLaSource) ? 'tuyau' : 'source',
+           limiteDuTuyau: duTuyau, limiteDeLaSource: deLaSource,
            reseauxDeZone:reseauxDeZone,
            demande: etat.zones.reduce(function(s,z){ return s + poser(z).debit; }, 0) };
+}
+
+/**
+ * La quantité, écrite comme il la lit — sa demande du 23 août 2026 :
+ * *« pour le calcul des pièces, 13x et pas 13 u »*.
+ *
+ * **Le « u » ne disparaît pas du calcul, seulement de l'écran.** L'unité reste
+ * dans les données (`{ q, u }`) : c'est elle qui distingue une pièce qu'on
+ * compte d'un tuyau qu'on mesure, et le fournisseur ne commande pas
+ * « 80x de PE Ø25 ». Ce qui change, c'est le mot affiché devant une pièce.
+ *
+ * **Une seule fonction pour les deux écrans** — la page publiée et
+ * l'application. Deux façons d'écrire la même quantité finiraient par
+ * diverger, et c'est ce que `CLAUDE.md` §3 interdit.
+ */
+function quantiteEcrite(q, u){
+  return u === 'u' ? q + 'x' : q + ' ' + u;
 }
 
 function voiesProgrammateur(n){
@@ -922,7 +1406,9 @@ function listeMateriel(d){
         lignes.push({ ref:x.ref, nom:(p.marque ? p.marque + ' ' : '') + p.nom, q:x.q, u:'u' });
       });
     } else {
-      lignes.push({ ref:'electrovanne', nom:'Électrovannes 24 V', q: d.secteurs.length, u:'u' });
+      // 9 V, pour s'accorder au programmateur à pile de la ligne suivante :
+      // ses fiches de nourrice le sont toutes, et une 24 V demanderait du 220 V.
+      lignes.push({ ref:'electrovanne', nom:'Électrovannes 9 V', q: d.secteurs.length, u:'u' });
       lignes.push({ ref:'regard', nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
       lignes.push({ nom:'Programmateur ' + voiesProgrammateur(d.secteurs.length) + ' voies', q:1, u:'u' });
     }
@@ -936,7 +1422,28 @@ function listeMateriel(d){
     // chaque commande. Ne pas le remettre « par prudence » : la question a été
     // posée et tranchée, et ce commentaire existe pour éviter qu'on la
     // rouvre.
-    lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    /* ══ LE RÉDUCTEUR EST POUR LE GOUTTE-À-GOUTTE, ET POUR LUI SEUL ══════════
+
+       **Sa règle du 22 août 2026, en deux temps.** Il était d'abord facturé
+       d'office sur chaque chantier — une pièce que j'avais posée sans source
+       (`source:'provisoire'`). Sa notice Rain Bird m'a fait le conditionner à
+       la pression : *« if pressure is greater than 80 psi (5,5 bar), install a
+       pressure regulator »*. Faux aussi, et il l'a corrigé aussitôt :
+       **« non, remets-le, il est utilisé pour le goutte-à-goutte seulement »**.
+
+       C'est son métier qui parle, et la notice de la vanne ne pouvait pas le
+       dire : une gaine de goutteurs travaille à basse pression — une bien plus
+       basse que ce qu'un réseau d'arroseurs demande. Sans réducteur, les
+       goutteurs se déboîtent ou débitent n'importe quoi. La pression de la
+       SOURCE n'y change rien : même à 3 bar, le goutte-à-goutte en a besoin ;
+       même à 6, un réseau de turbines n'en veut pas.
+
+       **La leçon vaut au-delà de cette pièce.** Une notice de constructeur dit
+       ce que le MATÉRIEL supporte, jamais ce que le CHANTIER exige. Prendre
+       l'une pour l'autre a retiré du devis une pièce qui devait y être. */
+    if (combienGoutteAGoutte(d) > 0){
+      lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    }
     if (etat.sonde) lignes.push({ ref:'sonde-pluie', nom:'Sonde de pluie', q:1, u:'u' });
   }
   return lignes;

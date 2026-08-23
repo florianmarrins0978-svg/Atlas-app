@@ -295,7 +295,36 @@ export type ChantierPlanifie = {
   moment: Moment | null;
   /** Absente si jamais renseignée — une journée entière est alors supposée. */
   dureeDemiJournees: number | null;
+  /**
+   * Combien d'équipes ce chantier mobilise, par demi-journée.
+   *
+   * **Sa règle du 22 août 2026**, après la planche 89 : *« oui si c'est des
+   * journées complètes, non si c'est des demi-journées »*. Il répondait à la
+   * question « mettre toutes mes équipes sur un chantier doit-il fermer la
+   * journée ? » — et sa réponse tombe d'elle-même dès qu'on compte **par
+   * demi-journée** : un chantier d'une journée avec ses deux équipes prend les
+   * deux créneaux, donc la journée se ferme ; le même chantier sur une
+   * demi-journée ne prend que le matin, et l'après-midi reste ouvert.
+   *
+   * Absent = une équipe, comme avant. Un chantier sans affectation reste du
+   * travail à faire : le compter zéro rendrait la journée vide.
+   */
+  equipesParDemi?: Partial<Record<Moment, number>> | null;
 };
+
+/**
+ * Combien d'équipes ce chantier prend sur cette demi-journée — **au moins une**.
+ *
+ * Le plancher n'est pas une précaution de style : jusqu'au 22 août 2026 aucune
+ * affectation ne pesait sur la capacité, et la plupart des chantiers n'en
+ * portent donc aucune. Les compter zéro viderait le planning d'un coup.
+ */
+export function equipesMobilisees(
+  p: Pick<ChantierPlanifie, "equipesParDemi">,
+  moment: Moment
+): number {
+  return Math.max(1, Math.trunc(p.equipesParDemi?.[moment] ?? 1));
+}
 
 /**
  * Combien de chantiers occupent chaque demi-journée.
@@ -312,7 +341,12 @@ export function compterOccupation(planifies: readonly ChantierPlanifie[]): Map<s
     const duree = p.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
     for (const c of creneauxDuChantier(depart, duree)) {
       const cle = cleCreneau(c);
-      compte.set(cle, (compte.get(cle) ?? 0) + 1);
+      // **On compte les ÉQUIPES mobilisées, plus les chantiers.** Sa question du
+      // 22 août : ses deux équipes étaient chez Mr. Eric et le planning
+      // annonçait « incomplet », donc ce jour-là partait chez ses clients alors
+      // qu'il n'avait plus personne. Compter les chantiers ignorait
+      // précisément ce qu'il venait de renseigner.
+      compte.set(cle, (compte.get(cle) ?? 0) + equipesMobilisees(p, c.moment));
     }
   }
   return compte;

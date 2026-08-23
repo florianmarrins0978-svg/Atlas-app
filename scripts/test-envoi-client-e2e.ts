@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
 //
@@ -57,7 +58,7 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
 async function creerChantierFacturable(
   page: Page,
   suffixe: string,
-  client: { nom?: string; telephone?: string; email?: string } = {
+  client: { nom?: string; telephone?: string; email?: string; canal?: "sms" | "email" } = {
     nom: "M. Bernard",
     telephone: "06 12 34 56 78",
   }
@@ -66,7 +67,14 @@ async function creerChantierFacturable(
   if (client.nom) await page.fill('input[placeholder="Bernard"]', client.nom);
   if (client.telephone) await page.fill('input[placeholder="06 12 34 56 78"]', client.telephone);
   if (client.email) await page.fill('input[placeholder="bernard@exemple.fr"]', client.email);
-  await page.click('[data-atlas="action-dicter"]');
+  // Le canal convenu avec le client, quand les deux coordonnées existent : sans
+  // lui, rien ne se devine, et c'est exactement le cas de son défaut du 20 août.
+  if (client.canal) {
+    await page
+      .getByRole("button", { name: client.canal === "sms" ? "Par SMS" : "Par e-mail" })
+      .click();
+  }
+  await creerPuisFiche(page);
   // Sans délai explicite : celui du contexte s'applique (`e2e-browser.ts`).
   // Dix secondes suffisaient seule et pas en batterie — l'échec accusait alors
   // l'envoi au client, qui n'y était pour rien.
@@ -130,7 +138,7 @@ async function main() {
     });
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
     assert.ok(
       await page.locator("text=Par e-mail au dupuis@exemple.fr").isVisible(),
@@ -139,19 +147,99 @@ async function main() {
     await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
+  await test("LE CANAL DE LA FICHE COMMANDE L'OUVERTURE — e-mail, pas SMS", async () => {
+    // **Son défaut du 20 août 2026, reproduit ici** : *« sur la fiche client,
+    // j'ai choisi d'envoyer le devis par email. Et lorsque j'ai validé mon
+    // devis […] c'est l'application SMS qui s'est ouverte. »*
+    //
+    // Le client porte les DEUX coordonnées : c'est le cas où rien ne se devine,
+    // et où seul l'accord tranche. Deux sources décidaient alors du canal —
+    // celle du serveur, relue à l'envoi, et un `?? "sms"` chargé avec la page.
+    const url = await creerChantierFacturable(page, "canalchoisi", {
+      nom: "Mr. Julien",
+      telephone: "0679984514",
+      email: "julien@exemple.fr",
+      canal: "email",
+    });
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
+    await page.waitForSelector('[data-atlas="invite-dates"]', {
+      timeout: DELAI_ECRAN_MS,
+    });
+    await page.locator('button[aria-pressed]').nth(1).click();
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 (`ARCHITECTURE.md` §140) :
+    // c'est lui, le signal. Le lien touché pour lui, LUI, vit sur `document.body`
+    // — hors de l'arbre React — et survit donc au changement d'écran ; c'est ce
+    // qui permet de le relire ici.
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+
+    const porte = page.locator("a[data-transmission-directe]");
+    assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
+    const adresse = (await porte.getAttribute("href")) ?? "";
+    assert.ok(
+      adresse.startsWith("mailto:"),
+      `le canal de la fiche est « e-mail » et c'est ${adresse.slice(0, 12)} qui s'ouvre`
+    );
+    assert.ok(
+      decodeURIComponent(adresse).includes("julien@exemple.fr"),
+      `le destinataire n'est pas celui de la fiche : ${adresse.slice(0, 80)}`
+    );
+  });
+
+  /**
+   * Retenir un jour au calendrier — le geste complet depuis la planche 91.
+   *
+   * **Toucher une case ne retient plus rien** : elle OUVRE la fiche du jour,
+   * pour qu'il voie ce qui s'y trouve avant de décider. C'est « Proposer ce
+   * jour » qui retient. Écrit une fois ici : deux copies de ce geste
+   * finiraient par diverger (`CLAUDE.md` §3).
+   */
+  async function retenirAuCalendrier(page: Page, jour: string) {
+    await page.locator(`[data-jour="${jour}"]`).click();
+    await page
+      .locator("text=Vérification de votre planning…")
+      .waitFor({ state: "hidden", timeout: 20_000 })
+      .catch(() => undefined);
+    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
+    await bouton.waitFor({ state: "visible", timeout: 20_000 });
+    await bouton.click();
+    // On referme la fiche : la suivante s'ouvrira sur un écran propre.
+    await page.locator(`[data-jour="${jour}"]`).click();
+    await page.waitForTimeout(250);
+  }
+
   await test("le patron ne propose jamais plus de deux dates", async () => {
     const url = await creerChantierFacturable(page, "deuxmax");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
-    const jours = page.locator('button[aria-pressed]');
-    const total = await jours.count();
-    assert.ok(total >= 3, `pas assez de jours libres proposés (${total})`);
+    // **Le geste passe par le CALENDRIER depuis le 23 août 2026.** La liste des
+    // six jours suggérés a été retirée à sa demande — *« les quelques jours
+    // qu'on peut sélectionner au tout début ne servent plus à rien, maintenant
+    // qu'on a le mois complet »* —, donc `button[aria-pressed]` ne rend plus
+    // que les dates DÉJÀ retenues. La règle éprouvée ici, elle, n'a pas
+    // changé : jamais plus de deux.
+    const cases = page.locator('[data-jour][data-etat="regardable"]');
+    const total = await cases.count();
+    assert.ok(total >= 3, `pas assez de jours libres au calendrier (${total})`);
 
-    // Le premier est pré-sélectionné : on en ajoute deux de plus.
-    await jours.nth(1).click();
-    await jours.nth(2).click();
+    // Une date est déjà retenue à l'ouverture : on en retient deux de plus, et
+    // la troisième doit chasser la première — jamais trois.
+    // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
+    // au 1er : ses premiers jours sont derrière nous, et le délai minimal en
+    // écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
+    // parfaitement juste — le pire des rouges (`AGENTS.md`), et c'est ce qui
+    // vient d'arriver : « Proposer ce jour » restait désactivé.
+    const plancher = new Date();
+    plancher.setDate(plancher.getDate() + 3);
+    const depuis = plancher.toISOString().slice(0, 10);
+    const aRetenir = (
+      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => j >= depuis);
+    assert.ok(aRetenir.length >= 2, `pas assez de jours acceptables (${aRetenir.length})`);
+    for (const jour of aRetenir.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
     // le calendrier marque toute la sélection et non plus la dernière date
@@ -174,12 +262,22 @@ async function main() {
     const url = await creerChantierFacturable(page, "cycle");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
-    // Deux dates : c'est le cas qui laisse le client choisir.
-    await page.locator('button[aria-pressed]').nth(1).click();
+    // Deux dates : c'est le cas qui laisse le client choisir. Prise au
+    // calendrier, la liste des six ayant disparu le 23 août 2026.
+    const plancherCycle = new Date();
+    plancherCycle.setDate(plancherCycle.getDate() + 3);
+    const depuisCycle = plancherCycle.toISOString().slice(0, 10);
+    const offerts = (
+      await page
+        .locator('[data-jour][data-etat="regardable"]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => j >= depuisCycle);
+    assert.ok(offerts.length >= 1, "aucun jour acceptable au calendrier");
+    await retenirAuCalendrier(page, offerts[0]);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
     // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
     // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
@@ -215,6 +313,11 @@ async function main() {
       "le message ouvert par l'appui ne porte pas le lien du devis"
     );
 
+    // **On rouvre l'écran du devis parti pour la suite de ce cas.** L'envoi
+    // ramène à l'accueil depuis le 21 août 2026 ; le message tout prêt, lui,
+    // vit toujours là-bas, et c'est par la carte du chantier qu'il y revient.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+
     // Le dernier mètre : sans ce bouton, le lien reste à recopier à la main
     // dans un SMS. C'est le geste que l'application doit épargner, et il a
     // manqué jusqu'ici (docs/A-FAIRE.md §5).
@@ -223,8 +326,13 @@ async function main() {
     // `sms:` doit être portée par un attribut `href` pour être lisible dans la
     // page. Le défaut d'avant — un message ouvert sans destinataire — ne se
     // voyait que dans la messagerie du patron, c'est-à-dire trop tard.
+    //
+    // **« Relancer », et non « Ouvrir le SMS tout prêt » — et c'est juste.** Le
+    // libellé dit ce que le geste FAIT (sa règle du 13 août) : on revient ici
+    // sur un devis DÉJÀ parti, donc le geste est une relance. Depuis que l'envoi
+    // ramène à l'accueil (21 août), c'est même le seul cas où cet écran se voit.
     assert.ok(
-      await page.getByRole("link", { name: /Ouvrir le (message|SMS|e-mail) tout prêt/ }).isVisible(),
+      await page.getByRole("link", { name: /Relancer par (SMS|e-mail)/ }).isVisible(),
       "le lien qui ouvre le message tout prêt doit apparaître dès que le lien existe"
     );
     // Dire qui envoie, pour que le patron n'attende pas un départ automatique
@@ -244,7 +352,7 @@ async function main() {
     // moins la hauteur de la barre ? » Une première version amenait l'élément
     // au bord de la fenêtre — c'est-à-dire exactement sous la barre — et
     // accusait donc toujours, y compris à tort.
-    for (const texte of ["Ouvrir le SMS tout prêt", "c'est vous qui l'envoyez"]) {
+    for (const texte of ["Relancer par SMS", "c'est vous qui l'envoyez"]) {
       const cible = page.locator(`text=${texte}`).first();
       assert.ok(await cible.isVisible(), `« ${texte} » doit être présent à l'écran`);
 
@@ -304,11 +412,13 @@ async function main() {
     const url = await creerChantierFacturable(page, "rejoue");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
-    await page.reload({ waitUntil: "networkidle" });
+    // On rouvre le DEVIS : c'est là que se poserait de nouveau « Choisir la
+    // date », et c'est donc là qu'il faut vérifier qu'il ne s'y pose plus.
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     assert.strictEqual(
       await page.locator("text=Choisir la date").count(),
       0,
@@ -328,7 +438,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "porte-ouverte");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
     const bascule = page.getByRole("switch", { name: /autre date/i });
     assert.ok(await bascule.isVisible(), "l'interrupteur « une autre date » manque avant l'envoi");
@@ -362,11 +472,15 @@ async function main() {
     const url = await creerChantierFacturable(page, "sans-calendrier");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
     await page.getByRole("switch", { name: /autre date/i }).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+
+    // On revient sur l'écran du devis parti, comme par la carte du chantier :
+    // c'est lui qui porte le message tout prêt, et il ne s'affiche plus seul.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
     // **Décodé d'abord** : le lien voyage dans le corps d'un `sms:`, donc
     // encodé (`%2Fdevis%2F`). Cherché tel quel, on ne le trouve jamais — et le

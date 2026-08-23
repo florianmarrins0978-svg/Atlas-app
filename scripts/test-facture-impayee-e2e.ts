@@ -1,6 +1,7 @@
 import type { BrowserContext, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Facture impayée » : la carte, son montant, et « Plus tard ».**
 //
@@ -70,7 +71,7 @@ async function chantierFacturable(page: Page): Promise<string> {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Impaye ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const url = page.url().split("?")[0];
   const chantierId = url.split("/").pop()!;
@@ -86,17 +87,26 @@ async function chantierFacturable(page: Page): Promise<string> {
 
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
   await page.click("text=Choisir la date");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 30_000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await monter("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId]);
 
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.click("text=Créer la facture");
   await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 30_000 });
-  await page.click("text=Confirmer le départ de la facture");
+  // **UN SEUL APPUI depuis le 22 août 2026** : ce bouton arrête la facture ET
+  // ouvre la messagerie (`ARCHITECTURE.md` §152). Repéré par son `data-atlas`,
+  // jamais par son libellé — c'est le libellé qui a changé.
+  await page.click('[data-atlas="envoyer-la-facture"]');
   await page.waitForSelector("text=arrêtée", { timeout: 30_000 });
+  // **Et l'on attend que le GESTE SOIT FINI, pas seulement l'arrêt.** Depuis le
+  // geste unique du 22 août 2026, « arrêtée » s'affiche AVANT que le lien du
+  // client soit préparé — et cette préparation date le chantier de l'instant.
+  // Une suite qui antidate entre les deux voit son écriture écrasée, puis
+  // accuse l'accueil de ne pas poser la carte (`ARCHITECTURE.md` §152).
+  await page.waitForSelector("a[data-transmission-directe]", { state: "attached", timeout: 30_000 });
   return chantierId;
 }
 

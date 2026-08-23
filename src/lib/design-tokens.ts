@@ -53,6 +53,23 @@ export const colors = {
   // confirmer une action destructive. Gardée en terre cuite sombre, car une
   // alerte en vert se confondrait avec l'accent ordinaire.
   alert: "#9C3B2E",
+  // ─── Les deux couleurs du planning, posées le 21 août 2026 ───────────────
+  //
+  // **Elles ne suivent pas la charte, comme `sage` et `alert`**, et c'est
+  // délibéré : le calendrier distingue quatre états d'une même demi-journée —
+  // rien, incomplet, complet, au-delà. Dérivées de chaque charte, deux d'entre
+  // elles finiraient par se ressembler sur l'une des sept, et le mois cesserait
+  // de se lire d'un coup d'œil, ce qui est sa seule raison d'être.
+  //
+  // `vertPale` : « il reste de la place ». Assez clair pour se distinguer du
+  // vert pin plein, assez soutenu pour ne pas se confondre avec un carré vide.
+  vertPale: "#b9c6b4",
+  // `bordeaux` : le dépassement — plus de chantiers que d'équipes. **Son choix
+  // du 21 août, après l'or puis l'ardoise**, tous deux écartés par lui. L'or
+  // sert partout ailleurs à ce qu'on LIT, il ne signalait donc plus rien ; et
+  // ce n'est PAS `alert` (#9C3B2E), qui dit « erreur » — dépasser est un choix
+  // qu'il assume : *« il peut quand même le faire, nous on prévient juste »*.
+  bordeaux: "#6E2433",
   // ─── L'or, second accent, posé le 9 août 2026 ────────────────────────────
   //
   // **Il vient d'une maquette du patron, pas d'une envie.** Il a envoyé une

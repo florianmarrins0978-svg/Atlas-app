@@ -32,6 +32,14 @@ import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositori
 import { terminerChantier, emettreFacture, getFacturePourChantier } from "../src/server/repositories/factures";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
 import { chargerFicheClient } from "../src/server/repositories/fiche-client";
+import { ajouterPrestation as ajouterPrestationEntretien } from "../src/server/repositories/prestations-entretien";
+import {
+  ouvrirPassage,
+  lirePassage,
+  cocherLigne,
+  nommerClient,
+  figerPassage,
+} from "../src/server/repositories/passages-entretien";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { chantiers, devis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -54,6 +62,35 @@ async function monterEntreprise(nom: string) {
     { email: `fc-${Math.random().toString(36).slice(2)}@essai.local`, nom: "Patron" }
   );
   return { utilisateurId, entrepriseId: entreprise.id };
+}
+
+/**
+ * Une fiche d'entretien REMPLIE et ENVOYÉE — par le vrai parcours.
+ *
+ * Pas d'`INSERT` à la main : `figerPassage` est ce qui pose `envoye_le` et le
+ * jeton, et c'est sur eux que la colonne du dossier se remplit. Un montage qui
+ * les écrirait directement passerait au vert sur un produit cassé.
+ */
+async function ficheEnvoyee(
+  ctx: { utilisateurId: string; entrepriseId: string },
+  clientId: string,
+  jour: string,
+  combienCochees = 1
+) {
+  await ajouterPrestationEntretien(ctx, { famille: "Pelouse", libelle: "Tonte" });
+  await ajouterPrestationEntretien(ctx, { famille: "Tailles", libelle: "Taille de haie" });
+
+  const ouvert = await ouvrirPassage(ctx, jour);
+  assert.ok(ouvert.ok, "la fiche d'entretien n'a pas pu s'ouvrir");
+  const passage = await lirePassage(ctx, ouvert.id);
+  assert.ok(passage, "la fiche ouverte est introuvable");
+  for (const ligne of passage.lignes.slice(0, combienCochees)) {
+    await cocherLigne(ctx, ouvert.id, ligne.id, true);
+  }
+  await nommerClient(ctx, ouvert.id, clientId);
+  const fige = await figerPassage(ctx, ouvert.id);
+  assert.ok(fige.ok, `la fiche n'est pas partie : ${fige.ok ? "" : fige.phrase}`);
+  return { id: ouvert.id, jeton: fige.jeton };
 }
 
 /** Un chantier chiffré, facturé et émis — le parcours complet. */
@@ -162,29 +199,122 @@ async function main() {
     await nettoyerBase();
     const ctx = await monterEntreprise("Essai pièces");
     const client = await creerClient(ctx, { nom: "M. Martins" });
-    const un = await chantierFacture(ctx, client.id, "Élagage", [["Élagage — 3 chênes", "450.00"]]);
-    const deux = await chantierFacture(ctx, client.id, "Taille", [["Taille de haie", "300.00"]]);
+    await chantierFacture(ctx, client.id, "Élagage", [["Élagage — 3 chênes", "450.00"]]);
+    await chantierFacture(ctx, client.id, "Taille", [["Taille de haie", "300.00"]]);
+    const saFiche = await ficheEnvoyee(ctx, client.id, "2026-08-20");
 
     const fiche = await chargerFicheClient(ctx, client.id);
     assert.ok(fiche, "la fiche est introuvable");
     const { devis: sesDevis, fiches, factures: sesFactures } = fiche.pieces;
 
     assert.equal(sesDevis.length, 2, "les deux devis envoyés doivent être là");
-    assert.equal(fiches.length, 2, "les deux chantiers terminés ont chacun leur fiche");
     assert.equal(sesFactures.length, 2, "les deux factures émises doivent être là");
+    // **UNE fiche, pas trois** : les deux chantiers facturés n'en produisent
+    // aucune, seule celle qu'il a remplie compte (sa règle du 23 août 2026).
+    assert.equal(fiches.length, 1, "la colonne ne porte pas la seule fiche envoyée");
+    assert.equal(fiches[0].id, saFiche.id, "la pièce ne désigne pas la fiche envoyée");
 
     // Chaque pièce mène à SON document, et l'adresse est celle que l'écran pose.
     for (const d of sesDevis) assert.match(d.href, /^\/api\/devis\/[0-9a-f-]{36}\/pdf$/, `devis : ${d.href}`);
     for (const f of sesFactures) assert.match(f.href, /^\/api\/factures\/[0-9a-f-]{36}\/pdf$/, `facture : ${f.href}`);
-    for (const f of fiches) {
-      assert.match(f.href, /^\/api\/chantiers\/[0-9a-f-]{36}\/fiche\/pdf$/, `fiche : ${f.href}`);
-    }
-    const idsFiches = fiches.map((f) => f.id).sort();
-    assert.deepEqual(
-      idsFiches,
-      [un.chantierId, deux.chantierId].sort(),
-      "les fiches ne désignent pas les deux chantiers terminés"
+    // **L'adresse que le CLIENT a reçue**, pas un PDF : ce rapport n'est figé
+    // nulle part en fichier, et la vignette le dit (`format: "page"`).
+    assert.equal(fiches[0].href, `/entretien/${saFiche.jeton}`, `fiche : ${fiches[0].href}`);
+    assert.equal(fiches[0].format, "page", "la fiche s'annonce comme un PDF qu'elle n'est pas");
+    // **Le COMPTE, et c'est une capture qui a appris à l'exiger.** L'écran
+    // annonçait « 0 prestation » sur une fiche qui en portait deux : la
+    // sous-requête corrélée se rendait en `l.passage_id = l.id`, jamais vraie
+    // (`fiche-client.ts` le raconte). Aucune assertion ne regardait ce texte —
+    // et un compte de zéro se lit comme une fiche vide, pas comme un défaut.
+    assert.equal(
+      fiches[0].precision,
+      "1 prestation",
+      `la fiche annonce « ${fiches[0].precision} » au lieu de ce qu'elle porte`
     );
+  });
+
+  // ── SA RÈGLE DU 23 AOÛT 2026 ─────────────────────────────────────────────
+  //
+  // *« Je viens de facturer monsieur Bernard […] néanmoins il y a une fiche
+  // chantier qui s'est créée en même temps. Cette catégorie est réservée
+  // lorsque les paysagistes créent une fiche chantier avec les informations
+  // type la tonte, la taille, ce qu'ils ont fait. À aucun moment, lorsqu'une
+  // facture doit être envoyée, une fiche chantier doit être créée. »*
+  //
+  // **Le mécanisme, et il était invisible à la lecture :** émettre une facture
+  // POSE `termine_at` (`factures.ts` : `COALESCE(termine_at, now())`), et la
+  // colonne listait les chantiers terminés. Le document qu'elle ouvrait est de
+  // surcroît la feuille INTERNE — équipe, créneau, note vocale — que ses
+  // salariés lisent dans la camionnette : rangée au dossier d'un client, elle
+  // donnait à croire qu'il l'avait reçue.
+  await essai("facturer ne fabrique AUCUNE fiche de chantier", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai Bernard");
+    const client = await creerClient(ctx, { nom: "M. Bernard" });
+    await chantierFacture(ctx, client.id, "Haie de laurier", [["Haie de laurier (20 ml)", "400.00"]]);
+
+    const fiche = await chargerFicheClient(ctx, client.id);
+    assert.equal(fiche!.pieces.factures.length, 1, "la facture émise doit être là");
+    assert.deepEqual(
+      fiche!.pieces.fiches,
+      [],
+      "facturer a fabriqué une fiche de chantier que personne n'a écrite"
+    );
+  });
+
+  // **Une fiche d'entretien sans aucun chantier compte quand même.** Elle
+  // s'ouvre depuis Paysage, se nomme, s'envoie — sans qu'aucun chantier
+  // n'existe. Un retour anticipé « ce client n'a pas de chantier » la faisait
+  // disparaître de son dossier.
+  await essai("un client sans chantier voit tout de même sa fiche envoyée", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai sans chantier");
+    const client = await creerClient(ctx, { nom: "Mme Roux" });
+    const saFiche = await ficheEnvoyee(ctx, client.id, "2026-08-21");
+
+    const fiche = await chargerFicheClient(ctx, client.id);
+    assert.ok(fiche, "la fiche du client est introuvable");
+    assert.equal(fiche.pieces.fiches.length, 1, "la fiche envoyée a disparu du dossier");
+    assert.equal(fiche.pieces.fiches[0].href, `/entretien/${saFiche.jeton}`);
+  });
+
+  // **Deux fiches, deux comptes DIFFÉRENTS.** Un seul compte juste peut l'être
+  // par hasard — si la sous-requête rendait le total de l'entreprise, une fiche
+  // à une prestation passerait au vert dans le cas ci-dessus. Deux fiches qui
+  // ne portent pas le même nombre ne laissent plus cette porte ouverte.
+  await essai("chaque fiche annonce SON nombre de prestations", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai comptes");
+    const client = await creerClient(ctx, { nom: "Mme Aubry" });
+    await ficheEnvoyee(ctx, client.id, "2026-07-02", 1);
+    await ficheEnvoyee(ctx, client.id, "2026-07-30", 2);
+
+    const fiche = await chargerFicheClient(ctx, client.id);
+    const comptes = fiche!.pieces.fiches.map((f) => f.precision);
+    // Du plus récent au plus ancien : la fiche à deux prestations d'abord.
+    assert.deepEqual(
+      comptes,
+      ["2 prestations", "1 prestation"],
+      `les fiches annoncent : ${comptes.join(" | ")}`
+    );
+  });
+
+  // **Un brouillon n'est pas une pièce**, ici comme pour les devis : tant qu'il
+  // n'est pas figé, il n'a ni date d'envoi ni adresse publique — la colonne
+  // renverrait vers une page qui n'existe pas.
+  await essai("une fiche d'entretien PAS ENVOYÉE reste hors du dossier", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai brouillon fiche");
+    const client = await creerClient(ctx, { nom: "M. Blanc" });
+    await ajouterPrestationEntretien(ctx, { famille: "Pelouse", libelle: "Tonte" });
+    const ouvert = await ouvrirPassage(ctx, "2026-08-22");
+    assert.ok(ouvert.ok);
+    const passage = await lirePassage(ctx, ouvert.id);
+    await cocherLigne(ctx, ouvert.id, passage!.lignes[0].id, true);
+    await nommerClient(ctx, ouvert.id, client.id);
+
+    const fiche = await chargerFicheClient(ctx, client.id);
+    assert.deepEqual(fiche!.pieces.fiches, [], "un brouillon de fiche est entré dans le dossier");
   });
 
   await essai("chaque colonne descend dans le temps, sans exception", async () => {
@@ -194,6 +324,13 @@ async function main() {
     await chantierDate(ctx, client.id, "Ancien", [["Taille", "100.00"]], "2024-03-02");
     await chantierDate(ctx, client.id, "Milieu", [["Tonte", "150.00"]], "2025-06-10");
     await chantierDate(ctx, client.id, "Récent", [["Élagage", "200.00"]], "2026-07-28");
+    // **Les fiches ont leurs propres dates**, et ne suivent plus les chantiers :
+    // depuis le 23 août 2026 la colonne porte les fiches d'entretien envoyées,
+    // pas les chantiers terminés. Trois d'entre elles, pour que le tri ait
+    // quelque chose à prouver ici comme dans les deux autres colonnes.
+    await ficheEnvoyee(ctx, client.id, "2024-04-05");
+    await ficheEnvoyee(ctx, client.id, "2025-09-14");
+    await ficheEnvoyee(ctx, client.id, "2026-06-01");
 
     const fiche = await chargerFicheClient(ctx, client.id);
     for (const [quoi, pieces] of Object.entries(fiche!.pieces)) {

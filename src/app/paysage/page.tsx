@@ -107,15 +107,6 @@ export default function PaysagePage() {
             <LigneOutil key={o.nom} outil={o} derniere={i === OUTILS.length - 1} />
           ))}
         </section>
-
-        <p
-          className="mx-[26px] mt-[24px] text-[12.5px] leading-[1.7]"
-          style={{ color: colors.muted }}
-        >
-          Ces outils sortent des <b style={{ color: colors.ink, fontWeight: 600 }}>quantités</b>,
-          jamais un prix du catalogue. La liste part chez votre fournisseur ; son devis
-          revient par le parcours habituel.
-        </p>
       </div>
     </div>
   );

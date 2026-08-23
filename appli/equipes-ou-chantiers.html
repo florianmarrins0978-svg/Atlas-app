@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Compter les chantiers ou les équipes</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:22px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 10px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  .carte{max-width:430px;margin:10px auto 0;background:var(--fond);border-radius:18px;
+         padding:18px 18px 20px;box-shadow:0 10px 30px rgba(20,18,14,.13)}
+
+  /* ── L'écran d'Eric, tel qu'il est ─────────────────────────────────── */
+  .jour{text-align:center;font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+        text-transform:uppercase;color:var(--encre);margin:0 0 14px}
+  .nom{font:400 21px/1.2 ui-serif,Georgia,serif;margin:0 0 12px}
+  .demi{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .demi .mot{font:600 10px/1.15 ui-sans-serif,sans-serif;letter-spacing:.06em;
+             text-transform:uppercase;width:78px;flex-shrink:0}
+  .demi .equipe{border-radius:999px;padding:8px 14px;font-size:13px;background:var(--pin);
+                color:#faf9f5;white-space:nowrap}
+  .past{width:13px;height:13px;border-radius:3px;flex-shrink:0;display:inline-block}
+  .past.dispo{background:var(--pale)}
+  .past.plein{background:var(--pin)}
+
+  /* ── Les deux équipes, en gros ─────────────────────────────────────── */
+  .equipes{display:flex;gap:12px;margin:14px 0 0}
+  .eq{flex:1;border-radius:14px;padding:14px 10px;text-align:center;
+      border:1.5px solid var(--trait);background:var(--plage)}
+  .eq.occupee{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+  .eq .qui{font:600 14px/1.2 ui-sans-serif,sans-serif}
+  .eq .quoi{margin-top:5px;font-size:11.5px;opacity:.75}
+
+  /* ── Le compteur : ce que l'application calcule ────────────────────── */
+  .compteur{margin-top:16px;border-radius:14px;padding:15px 16px;background:var(--papier)}
+  .compteur .calcul{font:400 20px/1.3 ui-serif,Georgia,serif;text-align:center}
+  .compteur .verdict{margin-top:10px;text-align:center;font:700 12px/1 ui-sans-serif,sans-serif;
+                     letter-spacing:.14em;text-transform:uppercase}
+  .compteur .verdict.faux{color:var(--bordeaux)}
+  .compteur .verdict.juste{color:var(--pin)}
+  .compteur .suite{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--trait);
+                   font-size:13.5px;line-height:1.5;color:var(--encre-douce);text-align:center}
+
+  /* ── Ce que le client voit ─────────────────────────────────────────── */
+  .client{margin-top:12px;border-radius:14px;padding:14px 15px;background:var(--plage);
+          border:1px solid var(--trait)}
+  .client .chapeau{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                   text-transform:uppercase;color:var(--gris);margin:0 0 10px;text-align:center}
+  .client .ligne{display:flex;align-items:center;gap:10px;border-radius:999px;padding:11px 15px;
+                 background:var(--fond);font-size:14.5px;margin-top:6px}
+  .client .ligne.offert{box-shadow:inset 0 0 0 1.5px var(--bordeaux)}
+  .client .ligne .marque{margin-left:auto;font-size:12px;color:var(--bordeaux);font-weight:500}
+  .client .ligne.absent{opacity:.4;text-decoration:line-through}
+
+  .verdictgros{max-width:430px;margin:16px auto 0;padding:16px 20px;border-radius:14px;
+               background:var(--bordeaux);color:#fff;font-size:15px;line-height:1.5}
+  .verdictgros.bon{background:var(--pin)}
+  .verdictgros b{color:#fff}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+            background:var(--papier);font-size:15px;line-height:1.55}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px}
+  .question .choix{margin-top:14px;padding-top:14px;border-top:1px solid var(--trait)}
+  .question .choix div{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+  .question .choix .mot{flex-shrink:0;width:44px;font-weight:700}
+  .question .choix .oui{color:var(--pin)}
+  .question .choix .non{color:var(--gris)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ta question :</b> pourquoi Mr. Eric s'affiche en <b>incomplet</b> alors que
+  Julien <i>et</i> Antoine sont dessus ?<br>
+  Réponse en images. <b>Rien n'est codé.</b>
+</div>
+
+<!-- ═══ 1. CE QUE TU AS FAIT ═══════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>1 · Ce que tu as fait</h2>
+  <p>Tu as mis <b>tes deux équipes</b> sur le chantier de Mr. Eric, matin et après-midi.</p>
+</div>
+<div class="carte">
+  <p class="jour">Mardi 25 août</p>
+  <p class="nom">Mr. Eric</p>
+  <div class="demi">
+    <span class="past dispo"></span>
+    <span class="mot">Matin</span>
+    <span class="equipe">Julien, Antoine</span>
+  </div>
+  <div class="demi">
+    <span class="past dispo"></span>
+    <span class="mot">Après-midi</span>
+    <span class="equipe">Julien, Antoine</span>
+  </div>
+  <div class="equipes">
+    <div class="eq occupee"><div class="qui">Julien</div><div class="quoi">chez Mr. Eric</div></div>
+    <div class="eq occupee"><div class="qui">Antoine</div><div class="quoi">chez Mr. Eric</div></div>
+  </div>
+</div>
+<div class="bloc">
+  <p><b>Sur le terrain : plus personne de libre ce mardi.</b></p>
+</div>
+
+<!-- ═══ 2. CE QUE L'APPLICATION COMPTE ═════════════════════════════════ -->
+<div class="bloc">
+  <h2>2 · Ce que l'application compte aujourd'hui</h2>
+  <p>Elle ne regarde pas <b>qui</b> est sur le chantier. Elle compte les
+     <b>chantiers</b>.</p>
+</div>
+<div class="carte">
+  <div class="compteur">
+    <p class="calcul">1 chantier ÷ 2 équipes = <b>la moitié</b></p>
+    <p class="verdict faux">→ elle affiche « incomplet »</p>
+    <p class="suite">Elle croit qu'il te reste <b>une équipe de libre</b>.<br>
+       Or Julien et Antoine sont tous les deux chez Mr. Eric.</p>
+  </div>
+  <div class="client">
+    <p class="chapeau">Et donc, ce que ton client se voit proposer</p>
+    <div class="ligne offert"><span>mardi 25 août</span><span class="marque">proposé</span></div>
+    <div class="ligne"><span>mercredi 26 août</span></div>
+  </div>
+</div>
+<div class="verdictgros">
+  <b>Le risque :</b> un client accepte le mardi 25. Le jour venu, tu n'as
+  personne à lui envoyer.
+</div>
+
+<!-- ═══ 3. CE QUE ÇA DONNERAIT SI ON COMPTAIT LES ÉQUIPES ══════════════ -->
+<div class="bloc">
+  <h2>3 · Si on comptait les équipes</h2>
+  <p>Même écran, autre calcul : on regarde <b>combien d'équipes sont prises</b>.</p>
+</div>
+<div class="carte">
+  <p class="jour">Mardi 25 août</p>
+  <p class="nom">Mr. Eric</p>
+  <div class="demi">
+    <span class="past plein"></span>
+    <span class="mot">Matin</span>
+    <span class="equipe">Julien, Antoine</span>
+  </div>
+  <div class="demi">
+    <span class="past plein"></span>
+    <span class="mot">Après-midi</span>
+    <span class="equipe">Julien, Antoine</span>
+  </div>
+  <div class="compteur">
+    <p class="calcul">2 équipes prises ÷ 2 équipes = <b>tout</b></p>
+    <p class="verdict juste">→ elle affiche « complet »</p>
+  </div>
+  <div class="client">
+    <p class="chapeau">Et donc, ce que ton client se voit proposer</p>
+    <div class="ligne absent"><span>mardi 25 août</span></div>
+    <div class="ligne"><span>mercredi 26 août</span></div>
+  </div>
+</div>
+<div class="verdictgros bon">
+  Le mardi n'est plus proposé. Ton client choisit un jour où tu as
+  vraiment quelqu'un.
+</div>
+
+<!-- ═══ 4. ET SI TU NE METS QU'UNE ÉQUIPE ══════════════════════════════ -->
+<div class="bloc">
+  <h2>4 · Et si tu ne mets qu'une équipe ?</h2>
+  <p>Rien ne change : il te reste Antoine, donc le jour reste ouvert.</p>
+</div>
+<div class="carte">
+  <p class="jour">Mardi 25 août</p>
+  <p class="nom">Mr. Eric</p>
+  <div class="demi">
+    <span class="past dispo"></span>
+    <span class="mot">Matin</span>
+    <span class="equipe">Julien</span>
+  </div>
+  <div class="equipes">
+    <div class="eq occupee"><div class="qui">Julien</div><div class="quoi">chez Mr. Eric</div></div>
+    <div class="eq"><div class="qui">Antoine</div><div class="quoi">libre</div></div>
+  </div>
+  <div class="compteur">
+    <p class="calcul">1 équipe prise ÷ 2 équipes = <b>la moitié</b></p>
+    <p class="verdict juste">→ « incomplet », et c'est juste</p>
+  </div>
+</div>
+
+<div class="question">
+  <b>La question, en un mot :</b>
+  Est-ce que mettre toutes tes équipes sur un chantier doit fermer la journée ?
+  <div class="choix">
+    <div><span class="mot oui">Oui</span><span>je le corrige.</span></div>
+    <div><span class="mot non">Non</span><span>on laisse comme c'est.</span></div>
+  </div>
+</div>
+
+</body>
+</html>

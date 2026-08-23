@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« La facture s'affiche partie, mais le client ne la reçoit pas. »**
 //
@@ -44,7 +45,7 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15000 });
   const chantierId = page.url().split("/").pop()!;
 
@@ -105,9 +106,12 @@ async function main() {
   // le contrôle accusait alors le produit de n'avoir pas arrêté la facture. Faux
   // rouge constaté le 12 août 2026, vert dans la foulée joué seul.
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /Créer la facture|Confirmer le départ/i }).first().click();
+  await page.getByRole("button", { name: /Créer la facture/i }).first().click();
 
-  const confirmer = page.getByRole("button", { name: /Confirmer le départ/i });
+  // **UN SEUL APPUI depuis le 22 août 2026** (`ARCHITECTURE.md` §147) : ce
+  // bouton arrête la facture ET ouvre la messagerie. Repéré par son
+  // `data-atlas` et non par son libellé, qui a déjà changé une fois.
+  const confirmer = page.locator('[data-atlas="envoyer-la-facture"]');
   // Le bouton de confirmation apparaît quand la facture est préparée. S'il ne
   // vient pas, l'écran est peut-être déjà passé à l'étape suivante : on ne fait
   // donc pas de son absence un échec, c'est l'assertion qui suit qui tranche.
@@ -133,12 +137,13 @@ async function main() {
     /ne l'a pas encore reçue/i,
     "L'écran laisse croire que la facture est partie alors que rien ne la porte au client."
   );
-  const bouton = page.getByRole("button", { name: /Envoyer la facture au client/i });
-  assert.equal(await bouton.count(), 1, "Aucun moyen d'envoyer la facture au client.");
   console.log("  ✓ une facture arrêtée dit qu'elle n'est pas encore partie, et propose de l'envoyer");
 
   // --- 2. Le lien, et la messagerie du patron -----------------------------
-  await bouton.click();
+  //
+  // **Plus de second appui à faire :** l'envoi a déjà préparé le lien. Ce qui
+  // reste ici est le message tout prêt de l'écran d'après — celui qui rattrape
+  // le cas où le téléphone aurait refusé d'ouvrir la messagerie.
 
   const lien = page.getByRole("link", { name: /Ouvrir le (SMS|e-mail) tout prêt/ });
   // **Attendre le lien, jamais un délai fixe.** Ce contrôle a échoué une fois

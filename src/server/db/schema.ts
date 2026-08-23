@@ -242,6 +242,16 @@ export const passagesEntretien = pgTable(
     jour: date("jour").notNull(),
     /** Le temps passé, à la molette. NULL tant qu'il ne l'a pas posé. */
     minutes: integer("minutes"),
+    /**
+     * Le temps paraît-il sur le compte rendu du CLIENT ? — sa demande du
+     * 22 août 2026, planche 92.
+     *
+     * **Faux n'efface rien** : la durée reste ici, c'est la lecture publique
+     * qui la tait. Masquer en remettant `minutes` à NULL aurait confondu « je
+     * n'ai pas chronométré » et « je ne veux pas le lui dire », et lui aurait
+     * fait perdre son chiffre (migration `0060`).
+     */
+    tempsVisible: boolean("temps_visible").notNull().default(true),
     observations: text("observations"),
     /** Recopié à l'envoi : un rapport parti ne se renomme plus (migration 0055). */
     clientNomFige: text("client_nom"),
@@ -297,6 +307,51 @@ export const equipes = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang)]
+);
+
+/**
+ * Les équipes affectées à un chantier, DEMI-JOURNÉE PAR DEMI-JOURNÉE.
+ *
+ * **Ses deux demandes du 21 août 2026**, éprouvées sur la planche 84
+ * (`appli/planning-simple.html`) avant d'être codées :
+ *
+ *   · *« je dois pouvoir mettre TOUTES les équipes si je le souhaite, sur la
+ *     même demi-journée — tout le monde le matin, puis tout le monde
+ *     l'aprem »* ;
+ *   · *« Paul le matin, Julien et Paul l'après-midi : il faut que tout soit
+ *     INDÉPENDANT »*.
+ *
+ * Une colonne sur `chantiers` ne pouvait répondre ni à l'une ni à l'autre. Elle
+ * a donc été retirée plutôt que doublée : deux endroits pour la même réponse
+ * finissent par ne plus dire la même chose.
+ *
+ * Une ligne absente n'est pas « personne y va » au sens d'un choix : c'est
+ * « reste à décider ». C'est ce que le planning peint en hachuré.
+ */
+export const equipesDuChantier = pgTable(
+  "equipes_du_chantier",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    /** `matin` ou `apres_midi` — le même vocabulaire que `creneauDebut`. */
+    demi: text("demi").notNull(),
+    equipeId: uuid("equipe_id")
+      .notNull()
+      .references(() => equipes.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("equipes_du_chantier_uk").on(t.chantierId, t.demi, t.equipeId),
+    index("equipes_du_chantier_idx").on(t.entrepriseId, t.chantierId),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "equipes_du_chantier_chantier_entreprise_fk",
+    }).onDelete("cascade"),
+  ]
 );
 
 /**
@@ -455,10 +510,27 @@ export const chantiers = pgTable(
      */
     rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
     tailleEquipe: text("taille_equipe"),
-    // Quelle équipe tient ce chantier. NULL = pas encore attribué, l'état de
-    // tout chantier planifié avant la migration 0034 : rien ne permet de
-    // deviner après coup qui l'a fait.
-    equipeId: uuid("equipe_id").references(() => equipes.id, { onDelete: "set null" }),
+    /**
+     * Le pense-bête de CE chantier — « penser à prendre le broyeur ».
+     *
+     * Sa demande du 23 août 2026. **Jamais imprimée** : ni sur le devis, ni sur
+     * le PDF sans les prix. C'est sa décision, et sa raison tient en une
+     * phrase — *« les salariés auront accès au planning ; justement, c'est pour
+     * cela que je voulais le devis sans les prix »*. Le PDF est le devis
+     * expurgé ; la note vit sur la feuille de chantier, que ses gars ouvrent
+     * depuis le planning.
+     *
+     * Bornée en base à 2 000 caractères (migration 0060) : elle descend avec
+     * la liste entière du planning, et un copier-coller malheureux alourdirait
+     * chaque lecture.
+     */
+    note: text("note"),
+    // **Qui tient ce chantier vit dans `equipesDuChantier`, plus ici.** La
+    // colonne `equipe_id` portait UNE équipe, pour le chantier entier ; il en
+    // veut plusieurs, et différentes le matin et l'après-midi (migration 0058).
+    // La garder à côté aurait fait deux vérités sur la même question — celle du
+    // planning et celle de la feuille de route, qui auraient divergé au premier
+    // retrait (`CLAUDE.md` §3).
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -1114,6 +1186,22 @@ export const envoisDevis = pgTable(
     expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     datesProposees: date("dates_proposees").array().notNull(),
+    /**
+     * Celles qu'il a proposées alors que la journée était DÉJÀ PLEINE.
+     *
+     * Sa règle du 23 août 2026 — *« si l'utilisateur juge qu'il peut rajouter un
+     * chantier, il doit pouvoir le faire quand même »* — ne tient avec celle du
+     * 22 — *« un jour déjà pris proposé, ça ne doit jamais se reproduire »* —
+     * que si l'on sait, à la réponse du client, laquelle des deux s'applique.
+     *
+     * Un jour forcé : sa décision, le client peut le prendre. Un jour libre qui
+     * s'est rempli depuis : il n'a rien décidé, et le client choisit ailleurs.
+     *
+     * **Calculée au serveur** à la création de l'envoi, jamais reçue de l'écran :
+     * une valeur venue du navigateur ferait de cette colonne un moyen de forcer
+     * n'importe quelle date.
+     */
+    datesForcees: date("dates_forcees").array().notNull().default([]),
     /**
      * Le client peut-il proposer une autre date que celles offertes ?
      *

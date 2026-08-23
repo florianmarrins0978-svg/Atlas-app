@@ -140,10 +140,12 @@ export default async function ReleveTvaPage({
               où l'on achète une machine sans facturer grand-chose donne un
               crédit de TVA. Le borner à zéro cacherait le mois où le patron a
               le plus besoin de savoir. */}
-          <div
-            className="mt-px rounded-b-[10px] px-4 py-4"
-            style={{ backgroundColor: colors.card }}
-          >
+          {/* **Plus d'arrondi en bas : le bloc des gestes le porte désormais.**
+              Depuis le 23 août 2026, « Scanner un ticket » et « Écrire à la
+              main » sont rattachés sous cet encadré (proposition C,
+              `docs/maquettes/85`) — les deux ne font plus qu'une seule pièce, et
+              c'est cette continuité qui dit le lien sans un mot de plus. */}
+          <div data-atlas="encadre-tva" className="mt-px px-4 py-4" style={{ backgroundColor: colors.card }}>
             <div className="flex items-center justify-between gap-3">
               <span className="text-[14px]">Reste à payer</span>
               <span

@@ -15,6 +15,7 @@
 import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -44,7 +45,7 @@ await page.waitForURL(`${BASE}/`, { timeout: 60_000 });
 await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
 await page.fill('input[placeholder="Bernard"]', client);
 await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-await page.click('[data-atlas="action-dicter"]');
+await creerPuisFiche(page);
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
 const chantierId = page.url().split("/").pop()!;
 
@@ -144,14 +145,16 @@ if ((await telechargement.count()) !== 1) {
 }
 
 // ─── 2. La facture arrêtée, et l'envoi ──────────────────────────────────────
-const confirmer = page.getByRole("button", { name: /Confirmer le départ/i });
+// Repéré par son `data-atlas` : le libellé a changé le 22 août 2026.
+const confirmer = page.locator('[data-atlas="envoyer-la-facture"]');
 if (await confirmer.count()) {
   await confirmer.first().click();
   await page.waitForTimeout(3000);
 }
 await page.screenshot({ path: `${dossier}/facture-2-arretee.png`, fullPage: true });
 
-await page.getByRole("button", { name: /Envoyer la facture au client/i }).first().click();
+// L'envoi prépare déjà le lien depuis le 22 août 2026 : plus de second appui.
+// (`ARCHITECTURE.md` §147)
 const lienSms = page.locator("a[data-atlas='transmission-sms']");
 await lienSms.waitFor({ state: "visible", timeout: 30_000 }).catch(() => undefined);
 await page.waitForTimeout(500);

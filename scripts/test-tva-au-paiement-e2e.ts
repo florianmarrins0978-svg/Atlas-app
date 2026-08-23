@@ -3,6 +3,7 @@ import type { BrowserContext, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Est-ce qu'il y a une possibilité pour que la facture rentre au relevé de
 // TVA seulement une fois que le client m'a payé ? »** — le patron, le 14 août
@@ -63,7 +64,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;
@@ -79,9 +80,9 @@ async function chantierRealise(page: Page, suffixe: string) {
 
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
   await page.click("text=Choisir la date");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await inspecter("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId], 1);
   return { chantierId, nom: avecCivilite(client) };
@@ -92,7 +93,10 @@ async function emettre(page: Page, chantierId: string): Promise<string> {
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.click("text=Créer la facture");
   await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
-  await page.click("text=Confirmer le départ de la facture");
+  // **UN SEUL APPUI depuis le 22 août 2026** : ce bouton arrête la facture ET
+  // ouvre la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
+  // jamais par son libellé — c'est le libellé qui a changé.
+  await page.click('[data-atlas="envoyer-la-facture"]');
   await page.waitForSelector("text=arrêtée", { timeout: 15000 });
   const { rows } = await inspecter(
     "SELECT numero_commercial FROM factures WHERE chantier_id = $1",

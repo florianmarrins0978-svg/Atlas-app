@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Je peux toujours pas poser de date sur les chantiers test. »**
 //
@@ -29,9 +30,28 @@ import { pool } from "../src/server/db/client";
 // **ET VOICI POURQUOI LA SUITE EXISTANTE ÉTAIT VERTE :** Playwright fait
 // défiler un élément jusqu'à lui AVANT de cliquer dessus. Un contrôle qui
 // « clique » n'éprouve donc jamais si la cible était ATTEIGNABLE — il éprouve
-// qu'elle existe. Ce contrôle-ci ne clique pas pour vérifier : il MESURE la
-// position du calendrier dans la fenêtre après l'appui, ce qu'aucun clic ne
-// peut dire.
+// qu'elle existe.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// **CE QUE LE PLANNING REFAIT A CHANGÉ, LE 21 AOÛT 2026** (planche 84, retenue
+// par le patron après deux soirées d'essais).
+//
+// Le raccord n'a plus lieu d'être, parce que le geste ne part plus de là. Deux
+// chemins, et le premier ne fait pas remonter l'écran :
+//
+//   · **depuis la fiche d'un jour** — on touche un jour, et « + Ajouter un
+//     chantier » ouvre la liste des sans-date SUR PLACE. Le geste part de là où
+//     l'œil est déjà. C'est le chemin principal, et c'est lui qui répond
+//     vraiment au défaut du 17 août ;
+//   · **depuis « Sans date »** — les trois moments s'arment dès qu'un jour est
+//     touché, et **la liste DIT quoi faire** tant qu'aucun ne l'est.
+//
+// C'est cette dernière phrase qui remplace le raccord mesuré : ce qui l'avait
+// bloqué n'était pas une fonction absente, c'était un écran qui n'offrait aucun
+// chemin visible. Un écran qui le dit en offre un.
+//
+// **Le contrôle a donc changé de cible, jamais d'objet** — il défend toujours
+// « de cet écran-là, une date se pose » (`CLAUDE.md` §5 bis).
 
 const BASE = "http://localhost:3000";
 const ECRAN_DU_PATRON = devices["iPhone 13"];
@@ -64,7 +84,7 @@ async function main() {
   const NOM = `Poser ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', NOM);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantierId = page.url().split("/").pop()!.split("?")[0];
   const marque = await pool.query(
@@ -92,74 +112,55 @@ async function main() {
     }
   });
 
-  await cas("LE RACCORD : le toucher amène le calendrier sous les yeux", async () => {
-    // **On descend jusqu'à la liste comme lui**, sans passer par un clic
-    // Playwright qui ferait défiler tout seul — c'est ce défilement automatique
-    // qui rendait le défaut invisible à la suite existante.
+  // **L'ÉCRAN DIT CE QU'IL MANQUE, il ne reste pas inerte.** C'est la leçon du
+  // 17 août, et elle survit à la refonte : ce qui l'avait bloqué, ce n'était pas
+  // une fonction absente — c'était une ligne qui annonçait « À poser » sans
+  // offrir aucun chemin. Ici la liste le dit en toutes lettres tant qu'aucun
+  // jour n'est touché.
+  await cas("tant qu'aucun jour n'est touché, la liste DIT quoi faire", async () => {
     await page.locator('[data-atlas="sans-date"]').last().scrollIntoViewIfNeeded();
-    await page.waitForTimeout(400);
-
-    const avant = await page.evaluate(() => {
-      const g = document.querySelector('[data-atlas="grille-mois"]');
-      if (!g) return null;
-      const r = g.getBoundingClientRect();
-      return { haut: Math.round(r.top), bas: Math.round(r.bottom), ecran: window.innerHeight };
-    });
-    if (!avant) throw new Error("aucun calendrier sur l'écran du planning");
-    // Le décor de son cas : de la liste, le calendrier est bel et bien parti en
-    // haut. Si ce n'était pas vrai, le contrôle ne prouverait rien.
-    if (avant.haut > 0) {
-      throw new Error(
-        `le calendrier est déjà visible avant l'appui (haut à ${avant.haut} px) : ` +
-          "la scène n'est pas la sienne, et ce contrôle ne mesurerait rien"
-      );
+    const dit = await page.locator('[data-atlas="ou-poser"]').innerText();
+    if (!/Touchez d’abord un jour/.test(dit)) {
+      throw new Error(`la liste ne dit pas quoi faire — lu : « ${dit} »`);
     }
-
-    await ligne.click();
-    await page.waitForTimeout(1200);
-
-    const apres = await page.evaluate(() => {
-      const g = document.querySelector('[data-atlas="grille-mois"]');
-      if (!g) return null;
-      const r = g.getBoundingClientRect();
-      return { haut: Math.round(r.top), bas: Math.round(r.bottom), ecran: window.innerHeight };
-    });
-    if (!apres) throw new Error("le calendrier a disparu après l'appui");
-
-    // **LE CONTRÔLE QUI PORTE CE LOT.** Le calendrier doit être ENTIÈREMENT
-    // dans la fenêtre : à moitié dedans, il faut deviner qu'il faut remonter,
-    // et c'est exactement ce qui l'a bloqué deux fois.
-    if (apres.haut < 0 || apres.bas > apres.ecran) {
-      throw new Error(
-        `le calendrier n'est pas venu sous les yeux : ${apres.haut} → ${apres.bas} ` +
-          `pour ${apres.ecran} px d'écran (il était à ${avant.haut} avant l'appui)`
-      );
+    if ((await ligne.locator("[data-poser]").count()) !== 0) {
+      throw new Error("des boutons de pose s'offrent alors qu'aucun jour n'est choisi");
     }
   });
 
-  await cas("et de là, la date se pose pour de bon", async () => {
-    const jours = await page.$$eval('[data-atlas="grille-mois"] button', (l) =>
-      l.map((e) => ({ jour: e.getAttribute("data-jour"), marque: e.getAttribute("data-marque") }))
+  // **LE CHEMIN QUI NE FAIT PAS REMONTER L'ÉCRAN** — celui de la planche 84 :
+  // on touche un jour, et l'on ajoute DEPUIS SA FICHE. C'est la réponse au
+  // défaut du 17 août : le geste part de là où l'œil est déjà.
+  await cas("depuis la fiche d'un jour, « Ajouter un chantier » le pose", async () => {
+    const jours = await page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
+      l.map((e) => ({
+        jour: e.getAttribute("data-jour"),
+        matin: e.querySelector('[data-demi="matin"]')?.getAttribute("data-etat"),
+        apres: e.querySelector('[data-demi="apres_midi"]')?.getAttribute("data-etat"),
+      }))
     );
-    const libre = jours.find((j) => j.marque === "libre" && j.jour);
-    if (!libre) throw new Error("aucun jour libre au calendrier");
+    // **On vise un jour OUVRABLE, et depuis le 23 août 2026 ce n'est plus
+    // parce qu'un samedi refuserait quoi que ce soit** — il offre désormais les
+    // mêmes gestes (sa règle : « s'il a des salariés qui font des extras »).
+    // C'est simplement le cas ordinaire que ce contrôle décrit ; le samedi a le
+    // sien, dans `test-planning-e2e.ts`.
+    const ouvrable = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
+    const libre = jours.find(
+      (j) => j.jour && ouvrable(j.jour) && j.matin === "libre" && j.apres === "libre"
+    );
+    if (!libre) throw new Error("aucun jour ouvrable entièrement libre au calendrier");
 
-    await page.click(`[data-atlas="grille-mois"] button[data-jour="${libre.jour}"]`);
-    await page.waitForTimeout(700);
-    const journee = page.locator('[data-atlas="journee"]');
-    if ((await journee.count()) === 0) throw new Error("toucher un jour n'ouvre rien");
-    // L'écran doit NOMMER ce qu'il va poser : sans cela, on ne sait pas lequel
-    // des cinq chantiers de la liste est en jeu.
-    const dit = (await journee.innerText()).replace(/\s+/g, " ");
-    if (!dit.includes(NOM)) {
-      throw new Error(`la journée ouverte ne nomme pas le chantier visé : « ${dit.slice(0, 120)} »`);
-    }
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
+    await page.waitForSelector('[data-atlas="carte-jour"]', { timeout: 15_000 });
 
-    await page.locator('[data-atlas="creneau"][data-libre="oui"]').first().click();
-    await page.waitForTimeout(400);
-    const bouton = page.locator('[data-atlas="poser"]');
-    if (await bouton.isDisabled()) throw new Error("le bouton reste éteint après le choix du créneau");
-    await bouton.click();
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${libre.jour}"]`);
+    await carte.locator('[data-atlas="ajouter"]').click();
+    // **D'abord QUI, ensuite QUAND** — sa demande du 21 août : se tromper de
+    // client n'oblige plus à revenir en arrière.
+    await page.waitForSelector(`[data-qui="${chantierId}"]`, { timeout: 10_000 });
+    await page.locator(`[data-qui="${chantierId}"]`).click();
+    await page.waitForSelector('[data-quand="journee"]', { timeout: 10_000 });
+    await page.locator('[data-quand="journee"]').click();
     await page.waitForTimeout(1500);
 
     const { rows } = await pool.query(
@@ -167,7 +168,8 @@ async function main() {
       [chantierId]
     );
     if (!rows[0]?.jour) throw new Error("aucune date en base : la pose n'a rien enregistré");
-    const pose = rows[0].jour instanceof Date ? rows[0].jour.toISOString().slice(0, 10) : String(rows[0].jour);
+    const pose =
+      rows[0].jour instanceof Date ? rows[0].jour.toISOString().slice(0, 10) : String(rows[0].jour);
     if (pose !== libre.jour) throw new Error(`posé le ${pose} au lieu du ${libre.jour}`);
   });
 
@@ -177,6 +179,43 @@ async function main() {
     if ((await ligne.count()) !== 0) {
       throw new Error("le chantier attend toujours une date alors qu'il vient d'en recevoir une");
     }
+  });
+
+  // **L'AUTRE CHEMIN, celui de la liste** — il existe aussi, et il faut qu'un
+  // jour touché arme bien les trois boutons. On le rejoue en retirant le
+  // chantier du planning, puis en le reposant depuis « Sans date ».
+  await cas("un jour touché arme les trois boutons de « Sans date »", async () => {
+    await pool.query(`UPDATE chantiers SET date_planifiee = NULL WHERE id = $1`, [chantierId]);
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    const jours = await page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
+      l.map((e) => ({
+        jour: e.getAttribute("data-jour"),
+        matin: e.querySelector('[data-demi="matin"]')?.getAttribute("data-etat"),
+      }))
+    );
+    const ouvrable2 = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
+    const libre = jours.find((j) => j.jour && ouvrable2(j.jour) && j.matin === "libre");
+    if (!libre) throw new Error("aucun jour ouvrable libre au calendrier");
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
+    await page.waitForTimeout(600);
+
+    const moments = await ligne.locator("[data-poser]").allInnerTexts();
+    if (moments.length !== 3) {
+      throw new Error(`la ligne offre ${moments.length} bouton(s) : ${JSON.stringify(moments)}`);
+    }
+    await ligne.locator('[data-poser="matin"]').click();
+    await page.waitForTimeout(1500);
+
+    const { rows } = await pool.query(
+      `SELECT date_planifiee AS jour, creneau_debut AS moment, duree_demi_journees AS duree
+         FROM chantiers WHERE id = $1`,
+      [chantierId]
+    );
+    const pose =
+      rows[0].jour instanceof Date ? rows[0].jour.toISOString().slice(0, 10) : String(rows[0].jour);
+    if (pose !== libre.jour) throw new Error(`posé le ${pose} au lieu du ${libre.jour}`);
+    if (rows[0].moment !== "matin") throw new Error(`posé sur « ${rows[0].moment} » et non le matin`);
+    if (rows[0].duree !== 1) throw new Error(`un matin fait une demi-journée, pas ${rows[0].duree}`);
   });
 
   await navigateur.close();

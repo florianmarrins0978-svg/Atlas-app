@@ -62,6 +62,7 @@ export default async function FichePage({ params }: { params: Promise<{ id: stri
           clientCivilite: passage.clientCivilite,
           clientCanal: passage.clientCanal,
           minutes: passage.minutes,
+          tempsVisible: passage.tempsVisible,
           observations: passage.observations,
           envoyeLe: passage.envoyeLe ? passage.envoyeLe.toISOString() : null,
           jeton: passage.jeton,

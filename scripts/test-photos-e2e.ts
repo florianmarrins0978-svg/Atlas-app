@@ -3,6 +3,7 @@ import type { Request, Route } from "playwright";
 import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(__dirname, "fixtures", "test-photo.jpg");
@@ -42,7 +43,7 @@ async function main() {
   const nomUnique = `Chantier photos e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await page.click('[data-atlas="action-dicter"]');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
 

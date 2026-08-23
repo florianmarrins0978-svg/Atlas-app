@@ -8,6 +8,7 @@
     "test:e2e": "node tests/e2e.js",
     "test:arrosage": "node tests/essai-arrosage-detaille.cjs",
     "test:croquis": "node tests/essai-croquis.cjs",
+    "test:termines": "node tests/essai-termines.mjs",
     "cap:sync": "npm run build:www && cap sync"
   },
   "devDependencies": {
