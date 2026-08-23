@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan d'arrosage — essai</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  PLAN D'ARROSAGE AUTOMATIQUE — MAQUETTE ESSAYABLE, RIEN N'EST CODÉ DANS L'APPLI
+
+  Sa demande du 17 août 2026 : « un outil pour les paysagistes pour réaliser des
+  plans d'arrosage automatique », puis : « des maquettes dynamiques en .html que
+  je puisse essayer, pas de photo ».
+
+  D'où cette page-ci plutôt qu'une planche de plus : elle CALCULE pour de bon.
+  On entre son propre jardin, et le découpage, les durées et la liste du
+  matériel se refont à chaque frappe. C'est le seul moyen de savoir si l'outil
+  dit des choses justes AVANT d'écrire une ligne de l'application.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  SA DÉCISION DU 17 AOÛT, ET ELLE SIMPLIFIE TOUT :
+
+    « Je pense qu'il faut simplement créer le plan et la liste du matos à
+     acheter. Ensuite moi j'envoie à mes fournisseurs, il me font un devis, puis
+     je repasse par le circuit normal de l'application pour rédiger le devis et
+     l'envoyer à mes clients. »
+
+  Conséquence tenue à la lettre : IL N'Y A AUCUN PRIX SUR CETTE PAGE. Pas de
+  total, pas d'estimation, pas de « à partir de ». La sortie est une liste de
+  QUANTITÉS, prête à partir chez Chausson ou Aqua Plus. Le devis client se fait
+  après, dans Atlas, avec les prix que le fournisseur aura rendus.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QUE LE CALCUL FAIT, ET POURQUOI IL EST NÉCESSAIRE
+
+  1. LE DÉBIT. Un robinet de pavillon donne 1,5 à 2 m³/h. Un jardin complet en
+     demande souvent quatre à cinq fois plus. On ne peut donc pas tout ouvrir
+     ensemble : il faut des SECTEURS, ouverts l'un après l'autre.
+  2. LA PLUVIOMÉTRIE. Une turbine verse 11 mm d'eau à l'heure, une tuyère 38.
+     C'est elle qui donne les durées — pas la surface.
+  3. LES DEUX RÈGLES DE DÉCOUPAGE, qui passent avant le remplissage :
+     · un secteur ne porte QU'UNE pluviométrie (la vanne ouvre tout son secteur
+       pour la même durée : mélanger, c'est trois fois trop d'eau d'un côté) ;
+     · un secteur ne porte QU'UNE famille de plantes (le potager veut trois
+       passages par semaine, une haie deux).
+     Ces deux règles sont ce qui distingue un plan d'une addition.
+
+  CE QUE LA PAGE NE FAIT PAS, ET C'EST DIT PLUTÔT QUE TU : les pertes de charge
+  et le diamètre des tuyaux. Sans effet sur un pavillon en PE 32 ; déterminant
+  sur une longue ligne. Les longueurs de tuyau sont donc À SAISIR, jamais
+  devinées.
+
+  Aucune dépendance, aucun réseau, aucune donnée qui sort : tout se calcule dans
+  le téléphone. Ce qui est saisi reste dans le navigateur (localStorage) pour
+  qu'un essai survive à un rechargement.
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --eau:#3E6B7A;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --eau:#7FA8B5;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:18px 14px 90px}
+  .dedans{max-width:640px;margin:0 auto}
+  h1{font-family:Georgia,serif;font-weight:400;font-size:25px;line-height:1.15;margin:0 0 6px}
+  .sur{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--or);margin:0 0 8px}
+  .chapo{color:var(--gris);font-size:13.5px;margin:0 0 18px}
+  .chapo b{color:var(--encre)}
+
+  section{background:var(--papier);border:1px solid var(--trait);border-radius:16px;
+          padding:15px 14px;margin-bottom:14px}
+  h2{font-family:Georgia,serif;font-weight:400;font-size:19px;margin:0 0 3px}
+  .aide{font-size:12.5px;color:var(--gris);margin:0 0 12px;line-height:1.5}
+
+  label{display:block;font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+        color:var(--or);margin-bottom:5px}
+  input,select{font:inherit;font-size:16px;color:var(--encre);background:transparent;
+               border:1px solid var(--trait);border-radius:10px;padding:10px 11px;
+               width:100%;-webkit-appearance:none;appearance:none}
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--gris) 50%),
+                          linear-gradient(135deg,var(--gris) 50%,transparent 50%);
+         background-position:calc(100% - 17px) 20px,calc(100% - 12px) 20px;
+         background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+  input:focus,select:focus{outline:2px solid var(--pin);outline-offset:1px}
+  .ligne{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .ligne > div{flex:1;min-width:96px}
+
+  .sortie{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--teinte);
+          font-size:14px}
+  .sortie b{font-family:Georgia,serif;font-size:22px;font-weight:400}
+  .sortie .petit{font-size:12.5px;color:var(--gris);display:block;margin-top:3px}
+
+  .zone{border:1px solid var(--trait);border-radius:14px;padding:12px;margin-bottom:10px}
+  .zone-tete{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .zone-tete input{flex:1;font-size:15px;font-weight:600;border-color:transparent;
+                   background:var(--teinte);padding:9px 10px}
+  .retirer{flex:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--trait);
+           background:transparent;color:var(--gris);font-size:18px;line-height:1;cursor:pointer}
+  .retirer:hover{color:var(--alerte);border-color:var(--alerte)}
+  .zone-res{margin-top:10px;font-size:12.5px;color:var(--pin);line-height:1.5}
+
+  .ajouts{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
+  .ajouts button{flex:1 1 auto;padding:12px 10px;border-radius:999px;border:1px dashed var(--trait);
+                 background:transparent;color:var(--gris);font:inherit;font-size:13px;cursor:pointer}
+  .ajouts button:hover{border-style:solid;color:var(--encre)}
+
+  .sec{padding:10px 2px;border-bottom:1px solid var(--trait)}
+  .sec:last-child{border-bottom:0}
+  .sec-t{margin:0 0 6px;font-size:14px;display:flex;align-items:baseline;gap:8px}
+  .sec-n{flex:none;font-size:11px;letter-spacing:.1em;color:var(--or);
+         border:1px solid var(--trait);border-radius:6px;padding:2px 6px}
+  .jauge{height:8px;border-radius:999px;background:var(--teinte);overflow:hidden}
+  .jauge span{display:block;height:100%;background:var(--eau)}
+  .sec-d{margin:5px 0 0;font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+  .sec-fam{display:inline-block;margin-right:8px;font-size:10.5px;letter-spacing:.08em;
+           text-transform:uppercase;color:var(--pin)}
+
+  .avert{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--teinte);
+         font-size:13px;line-height:1.55}
+  .avert.rouge{box-shadow:inset 3px 0 0 var(--alerte)}
+  .avert b{color:var(--alerte)}
+
+  .saisons{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .saisons button{flex:1 1 auto;padding:9px 8px;border-radius:999px;border:1px solid var(--trait);
+                  background:transparent;color:var(--gris);font:inherit;font-size:12.5px;cursor:pointer}
+  .saisons button[aria-pressed="true"]{background:var(--pin);color:var(--papier);border-color:var(--pin)}
+
+  .plan{width:100%;height:auto;display:block;margin:8px 0 2px}
+  .plan .gazon{fill:var(--teinte)}
+  .plan .bordure{fill:none;stroke:var(--trait);stroke-width:1.5}
+  .plan .portee{fill:var(--eau);fill-opacity:.13;stroke:var(--eau);stroke-opacity:.35;stroke-width:1}
+  .plan .tete{fill:var(--pin);stroke:var(--papier);stroke-width:1.5}
+  .plan .cote{fill:var(--gris);font-size:11px;text-anchor:middle;font-family:inherit}
+  .plan .cote-g{text-anchor:end}
+  /* LE CROQUIS DU CLIENT — sa demande du 17 août : c'est par lui qu'on entre.
+     La photo reste affichée pendant qu'on renseigne le jardin : elle est la
+     référence, et la relire coûte moins cher que de la retenir. */
+  .croquis-ajout{display:block;text-align:center;padding:14px;border-radius:12px;
+                 border:1px dashed var(--trait);color:var(--gris);font-size:14px;
+                 cursor:pointer;background:var(--papier)}
+  .croquis-vue{position:relative;margin-bottom:10px}
+  .croquis-vue img{width:100%;height:auto;display:block;border-radius:12px;
+                   border:1px solid var(--trait);background:var(--papier)}
+  .croquis-vue button{position:absolute;top:8px;right:8px;border:0;cursor:pointer;
+                      border-radius:999px;padding:7px 13px;font:inherit;font-size:12.5px;
+                      background:var(--encre);color:var(--fond);opacity:.88}
+  .plan-legende{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 14px;font-size:12px;color:var(--gris)}
+  .plan-legende span{display:inline-flex;align-items:center;gap:6px}
+  .plan-legende i{width:11px;height:11px;border-radius:50%;flex:none}
+  .plan-nom{font-size:12.5px;color:var(--gris);margin:12px 0 0}
+
+  .mat{display:flex;align-items:baseline;gap:9px;padding:9px 2px;border-bottom:1px solid var(--trait)}
+  .mat:last-child{border-bottom:0}
+  .mat-q{flex:none;min-width:62px;font-variant-numeric:tabular-nums;font-size:14px}
+  .mat-n{flex:1;font-size:13.5px}
+  .mat-a{flex:none;font-size:11px;color:var(--gris)}
+  .mat input{width:74px;padding:7px 8px;font-size:15px;text-align:right}
+
+  .option{margin:0 0 10px}
+  .option .case{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--encre);
+                text-transform:none;letter-spacing:0}
+  .option input{width:22px;height:22px;flex:none;-webkit-appearance:checkbox;appearance:checkbox}
+  .aide-courte{display:block;font-size:12px;color:var(--gris);margin-top:4px;line-height:1.45}
+
+  .provisoire{color:var(--alerte)}
+  .bandeau{margin:0 0 14px;padding:12px 13px;border-radius:12px;background:var(--papier);
+           border:1px solid var(--trait);box-shadow:inset 3px 0 0 var(--or);
+           font-size:13px;line-height:1.55;color:var(--gris)}
+  .bandeau b{color:var(--encre)}
+  .manque-fiche{margin:0 0 12px;padding:12px 13px;border-radius:12px;background:var(--teinte);
+                font-size:13px;line-height:1.55}
+  .manque-fiche b{color:var(--alerte)}
+  .piece{display:flex;gap:9px;padding:7px 2px;font-size:13px;border-bottom:1px solid var(--trait)}
+  .piece span:first-child{flex:none;min-width:52px;font-variant-numeric:tabular-nums}
+
+  .gestes{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .gestes button,.gestes a{flex:1 1 140px;text-align:center;padding:14px 12px;border-radius:999px;
+    background:var(--pin);color:var(--papier);border:0;font:inherit;font-size:14.5px;
+    cursor:pointer;text-decoration:none}
+  .gestes .second{background:transparent;color:var(--encre);border:1px solid var(--trait)}
+
+  .pied{font-size:12.5px;color:var(--gris);line-height:1.6;margin-top:18px}
+  .pied b{color:var(--encre)}
+  .vide{font-size:13px;color:var(--gris);font-style:italic;padding:8px 0}
+
+  @media print{
+    body{background:#fff;padding:0}
+    section{border:0;background:#fff;padding:0 0 14px}
+    .ajouts,.gestes,.saisons,.retirer{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="dedans">
+
+  <p class="sur">Atlas · maquette essayable</p>
+  <p class="bandeau" id="bandeau"></p>
+  <h1>Plan d'arrosage automatique</h1>
+  <p class="chapo">Entrez votre jardin : tout se recalcule à chaque frappe.
+    <b>Rien n'est codé dans l'application</b> — cette page sert à éprouver le
+    calcul avant. <b>Aucun prix</b> : la sortie est la liste à envoyer au
+    fournisseur.</p>
+
+  <section>
+    <h2>1 · Le point d'eau</h2>
+    <p class="aide">D'où part l'arrosage ? C'est ce qui décide de tout le
+      reste — et c'est la seule chose que l'outil ne peut pas deviner.</p>
+
+    <div class="ligne" style="margin-bottom:10px">
+      <div><label for="compteur">Le piquage se fait…</label>
+        <select id="compteur">
+          <option value="oui">Juste après le compteur d'eau</option>
+          <option value="non">Ailleurs (robinet de jardin, nourrice existante…)</option>
+        </select></div>
+    </div>
+    <p class="aide" id="compteurNote" style="margin:0 0 12px"></p>
+
+    <div class="ligne">
+      <div><label for="seau">Seau (litres)</label><input id="seau" type="number" inputmode="decimal" min="1" step="1" value="10"></div>
+      <div><label for="temps">Rempli en (s)</label><input id="temps" type="number" inputmode="decimal" min="1" step="1" value="20"></div>
+      <div><label for="pression">Pression (bar)</label><input id="pression" type="number" inputmode="decimal" min="1" step="0.1" value="3"></div>
+    </div>
+    <p class="sortie">Débit disponible <b id="debitDispo">—</b> m³/h
+      <span class="petit" id="debitNote"></span></p>
+
+    <p class="aide" id="recouvrementNote" style="margin:12px 0 0"></p>
+  </section>
+
+  <section>
+    <h2>2 · Le croquis</h2>
+    <p class="aide">Photographiez le croquis du client, avec ses métrés. Il
+      reste sous les yeux pendant que le jardin se renseigne — et il part
+      avec le chantier.</p>
+
+    <div id="croquis"></div>
+    <label class="croquis-ajout" for="croquisFichier">
+      <span id="croquisLibelle">Ajouter la photo du croquis</span>
+      <input id="croquisFichier" type="file" accept="image/*" hidden>
+    </label>
+    <p class="aide" id="croquisNote" style="margin:10px 0 16px"></p>
+
+    <p class="aide"><b>Ce que je lis du croquis</b> — corrigez ce qui ne
+      correspond pas. Une zone = une partie du jardin qui s'arrose pareil ; les
+      mesures suffisent, le matériel et la pose se déduisent.</p>
+    <div class="ligne" style="margin-bottom:10px">
+      <div><label for="marque">Marque des arroseurs</label>
+        <select id="marque"></select></div>
+    </div>
+    <p class="aide" id="marqueNote" style="margin:0 0 12px"></p>
+
+    <div class="ligne" style="margin-bottom:6px">
+      <div><label for="corps">Corps d'arroseur</label>
+        <select id="corps"></select></div>
+    </div>
+    <p class="aide" id="corpsNote" style="margin:0 0 12px"></p>
+
+    <div id="zones"></div>
+    <div class="ajouts">
+      <button type="button" data-ajout="gazon">+ Pelouse</button>
+      <button type="button" data-ajout="massif">+ Massif</button>
+      <button type="button" data-ajout="haie">+ Haie</button>
+      <button type="button" data-ajout="potager">+ Potager</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>3 · La liste à envoyer au fournisseur</h2>
+    <p class="aide">Des <b>quantités</b>, pas des prix. Les longueurs de tuyau
+      sont à mesurer sur place : elles ne se devinent pas, alors elles se
+      saisissent.</p>
+    <p class="option"><label class="case"><input type="checkbox" id="sonde"> Ajouter une sonde de pluie</label>
+      <span class="aide-courte">Elle coupe le cycle quand il a plu : c'est une ligne d'achat, pas un calcul.</span></p>
+    <div id="nourrice"></div>
+    <div id="materiel"></div>
+    <p id="total"></p>
+    <div class="gestes">
+      <button type="button" id="copier">Copier la liste</button>
+      <a class="second" href="arrosage-tarifs.html">Mes prix</a>
+      <a id="envoyer" href="#">Envoyer par mail</a>
+      <button type="button" class="second" id="imprimer">Imprimer</button>
+    </div>
+  </section>
+
+  <p class="pied">
+    <b>La perte de charge n'est calculée que sur l'amenée</b> (compteur →
+    regard), pour trancher son diamètre. Ni les antennes, ni les raccords, ni
+    l'électrovanne n'y sont : un « le Ø25 suffit » est un plancher, pas une
+    garantie.<br>
+    <b>Rien ne part tout seul.</b> « Automatique » désigne l'arrosage, pas
+    l'expédition.
+  </p>
+</div>
+
+<script src="arrosage-catalogue.js"></script>
+<script src="arrosage-calcul.js"></script>
+<script>
+
+/* ── Le rendu ────────────────────────────────────────────────────────────── */
+function dessinerZones(){
+  var hote = document.getElementById('zones');
+  hote.innerHTML = '';
+  if (!etat.zones.length){
+    hote.innerHTML = '<p class="vide">Aucune zone. Ajoutez-en une ci-dessous.</p>';
+    return;
+  }
+  etat.zones.forEach(function(z){
+    var t = TYPES[z.type], p = poser(z), bloc = document.createElement('div');
+    if (!p.m) { p = Object.assign(p, { m: { nom:'—', detail:'', portee:0, source:'provisoire' } }); }
+    bloc.className = 'zone';
+    var mesures = (t.forme === 'surface' || t.forme === 'nappe')
+      ? '<div class="ligne">' +
+        '<div><label>Longueur (m)</label><input type="number" inputmode="decimal" min="0" step="0.5" data-champ="L" value="' + (z.L||'') + '"></div>' +
+        '<div><label>Largeur (m)</label><input type="number" inputmode="decimal" min="0" step="0.5" data-champ="l" value="' + (z.l||'') + '"></div>' +
+        (t.forme === 'surface'
+          ? '<div><label>Arroseur</label><select data-champ="materiel">' +
+              '<option value="auto"' + (z.materiel==='auto'?' selected':'') + '>Au mieux</option>' +
+              '<option value="turbine"' + (z.materiel==='turbine'?' selected':'') + '>Turbines</option>' +
+              '<option value="tuyere"' + (z.materiel==='tuyere'?' selected':'') + '>Tuyères</option>' +
+            '</select></div>'
+          : '') + '</div>'
+      : '<div class="ligne"><div><label>Longueur de haie (m)</label>' +
+        '<input type="number" inputmode="decimal" min="0" step="1" data-champ="ml" value="' + (z.ml||'') + '"></div>' +
+        '<div><label>Lignes de goutte-à-goutte</label><select data-champ="lignesHaie">' +
+          '<option value="1"' + (Number(z.lignesHaie)!==2?' selected':'') + '>Une ligne</option>' +
+          '<option value="2"' + (Number(z.lignesHaie)===2?' selected':'') + '>Deux lignes</option>' +
+        '</select></div></div>';
+
+    var resume = p.debit > 0
+      ? (t.forme === 'surface'
+          ? p.nombre + ' ' + p.m.nom.toLowerCase() + (p.nombre>1?'s':'') +
+            (p.m.detail ? ' ' + p.m.detail : '') + ' (' + p.nx + ' × ' + p.ny + ')' +
+            ' — un tous les ' + nb(p.ecart) + ' m, recouvrement ' +
+            Math.round(recouvrementObtenu(p.m.portee, p.ecart) * 100) + ' %' +
+            (p.quinconce ? ', en quinconce' : ', en carré') +
+            (p.tropSerre ? ' · <span class="provisoire">buse trop grande pour cette zone : ' +
+              'l\'écart tombe sous la portée</span>' : '')
+          : (p.lignes ? p.lignes + ' ligne' + (p.lignes>1?'s':'') +
+              (p.ecartLignes ? ' à ' + Math.round(p.ecartLignes*100) + ' cm' : '') + ' · ' : '') +
+            p.nombre + ' m de gaine')
+        + ' · ' + nb(p.debit) + ' m³/h · ' + p.minutes + ' min, ' + p.passages + '×/semaine'
+        + (p.emprunte ? ' · <span class="provisoire">modèle générique, pas encore ' + nomDeMarque(marqueCourante()) + '</span>'
+                      : (p.m.source === 'provisoire' ? ' · <span class="provisoire">portée à confirmer</span>' : ''))
+      : 'Mesures à compléter.';
+
+    bloc.innerHTML =
+      '<div class="zone-tete">' +
+        '<input type="text" data-champ="nom" value="' + (z.nom||'').replace(/"/g,'&quot;') + '" aria-label="Nom de la zone">' +
+        '<button type="button" class="retirer" data-retirer="' + z.id + '" aria-label="Retirer cette zone">×</button>' +
+      '</div>' + mesures +
+      '<p class="zone-res">' + resume + '</p>';
+
+    bloc.querySelectorAll('[data-champ]').forEach(function(champ){
+      champ.addEventListener('input', function(){
+        var v = champ.getAttribute('data-champ');
+        z[v] = (v === 'nom' || v === 'materiel') ? champ.value : champ.value;
+        // Le nom se retape lettre par lettre : tout redessiner à chaque frappe
+        // ferait perdre le curseur. On ne rafraîchit donc que ce qui découle.
+        if (v === 'nom') { recalculer(false); } else { recalculer(true); }
+      });
+    });
+    bloc.querySelector('[data-retirer]').addEventListener('click', function(){
+      etat.zones = etat.zones.filter(function(x){ return x.id !== z.id; });
+      recalculer(true);
+    });
+    hote.appendChild(bloc);
+  });
+}
+
+function dessinerMarques(){
+  var choix = document.getElementById('marque');
+  if (!choix.options.length){
+    CATALOGUE.marques.filter(function(m){ return !m.cache; }).forEach(function(m){
+      var o = document.createElement('option');
+      o.value = m.cle; o.textContent = m.nom;
+      choix.appendChild(o);
+    });
+    choix.addEventListener('change', function(){
+      etat.marque = choix.value; etat.corps = null; recalculer(true);
+    });
+  }
+  choix.value = marqueCourante();
+
+  var cle = marqueCourante();
+  var combien = CATALOGUE.arroseursDe(cle).length +
+                CATALOGUE.buses.filter(function(b){ return b.marqueCle === cle; }).length;
+  document.getElementById('marqueNote').innerHTML = combien
+    ? combien + ' modèle' + (combien>1?'s':'') + ' ' + nomDeMarque(cle) + ' au catalogue.' +
+      (function(){
+        var trous = [];
+        if (!CATALOGUE.busesDe(cle,'turbine').length && !CATALOGUE.arroseursDe(cle,'turbine').length)
+          trous.push('aucune turbine');
+        var corpsDeLaMarque = CATALOGUE.corps.filter(function(c){ return c.marqueCle === cle; }).length;
+        if (!corpsDeLaMarque) trous.push('aucun corps d\'arroseur');
+        return trous.length
+          ? ' <span class="provisoire">Manque encore : ' + trous.join(', ') + '.</span>'
+          : '';
+      })()
+    : '<span class="provisoire">Aucun modèle ' + nomDeMarque(cle) + ' enregistré.</span> ' +
+      'Je calcule avec des valeurs génériques en attendant vos photos — et je le ' +
+      'redis sur chaque zone plutôt que de le laisser croire.';
+}
+
+function dessinerCorps(){
+  var choix = document.getElementById('corps');
+  var chez = CATALOGUE.corpsDe(marqueCourante());
+  choix.innerHTML = '';
+  if (!chez.length){
+    choix.innerHTML = '<option value="">Aucun corps ' + nomDeMarque(marqueCourante()) + ' enregistré</option>';
+    document.getElementById('corpsNote').innerHTML =
+      '<span class="provisoire">Aucun corps ' + nomDeMarque(marqueCourante()) +
+      ' au catalogue.</span> La liste ne comptera pas de corps pour cette marque.';
+    return;
+  }
+  chez.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c.ref; o.textContent = c.nom + ' — ' + c.detail;
+    choix.appendChild(o);
+  });
+  var courant = corpsCourant();
+  choix.value = courant.ref;
+  document.getElementById('corpsNote').innerHTML =
+    '<b>' + courant.nom + '.</b> ' + CATALOGUE.explicationCorps(courant);
+}
+
+/* ══ LE CROQUIS : le montrer, et le garder ═══════════════════════════════════
+
+   **La photo est REDIMENSIONNÉE avant d'être gardée, et ce n'est pas du
+   confort.** Une photo de téléphone pèse 3 à 8 Mo ; `localStorage` en accepte
+   environ 5 au total, pour TOUT le jardin. Enregistrée telle quelle, elle
+   ferait sauter la sauvegarde — et c'est le jardin entier qui disparaîtrait au
+   rechargement, pas seulement l'image. On la ramène donc à 1400 px de grand
+   côté, en JPEG, ce qui suffit largement à relire des cotes écrites à la main.
+
+   Et si l'enregistrement échoue quand même (photo énorme, place déjà prise),
+   **on le DIT** au lieu de laisser croire que c'est gardé. */
+function reduireImage(fichier, fait){
+  var lecteur = new FileReader();
+  lecteur.onload = function(){
+    var img = new Image();
+    img.onload = function(){
+      var MAX = 1400;
+      var k = Math.min(1, MAX / Math.max(img.width, img.height));
+      var c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      try { fait(c.toDataURL('image/jpeg', 0.75)); }
+      catch (e) { fait(null); }
+    };
+    img.onerror = function(){ fait(null); };
+    img.src = lecteur.result;
+  };
+  lecteur.onerror = function(){ fait(null); };
+  lecteur.readAsDataURL(fichier);
+}
+
+function dessinerCroquis(){
+  var hote = document.getElementById('croquis');
+  var note = document.getElementById('croquisNote');
+  var libelle = document.getElementById('croquisLibelle');
+  hote.innerHTML = '';
+  if (etat.croquis){
+    var vue = document.createElement('div');
+    vue.className = 'croquis-vue';
+    var img = document.createElement('img');
+    img.src = etat.croquis;
+    img.alt = 'Le croquis du client, photographié';
+    var retirer = document.createElement('button');
+    retirer.type = 'button';
+    retirer.textContent = 'Retirer';
+    retirer.addEventListener('click', function(){
+      etat.croquis = null; enregistrer(); dessinerCroquis();
+    });
+    vue.appendChild(img); vue.appendChild(retirer);
+    hote.appendChild(vue);
+    libelle.textContent = 'Remplacer la photo';
+    // **Ce que la page ne sait PAS faire, écrit noir sur blanc.** Elle est
+    // servie en pages statiques : aucun serveur, aucun modèle. Lire des cotes
+    // sur une photo demande l'application. Laisser croire le contraire ferait
+    // livrer un jardin vide sur un chantier.
+    note.innerHTML = '<span class="provisoire">Les cotes ne se lisent pas encore ' +
+      'toutes seules</span> — cette page est servie sans serveur. Renseignez le ' +
+      'jardin ci-dessous en regardant le croquis ; il reste affiché, et il part ' +
+      'avec le chantier.';
+  } else {
+    libelle.textContent = 'Ajouter la photo du croquis';
+    note.innerHTML = 'Facultatif, mais c\'est lui qui fait foi sur le chantier.';
+  }
+}
+
+function dessinerSaisons(){
+  var hote = document.getElementById('saisons');
+  if (!hote) return;   // section retirée le 17 août, sur sa demande
+  hote.innerHTML = '';
+  SAISONS.forEach(function(s){
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = s.nom;
+    b.setAttribute('aria-pressed', s.cle === etat.saison ? 'true' : 'false');
+    b.addEventListener('click', function(){ etat.saison = s.cle; recalculer(true); });
+    hote.appendChild(b);
+  });
+}
+
+function dessinerSecteurs(d){
+  var hote = document.getElementById('secteurs');
+  if (!hote) return;   // section retirée le 17 août, sur sa demande
+  hote.innerHTML = '';
+  if (!d.secteurs.length){
+    hote.innerHTML = '<p class="vide">Rien à découper tant qu\'aucune zone n\'est mesurée.</p>';
+    return;
+  }
+  d.secteurs.forEach(function(s, i){
+    var part = d.dispo > 0 ? Math.min(100, Math.round(s.debit / d.dispo * 100)) : 0;
+    var bloc = document.createElement('div');
+    bloc.className = 'sec';
+    bloc.innerHTML =
+      '<p class="sec-t"><span class="sec-n">S' + (i+1) + '</span>' +
+        '<span class="sec-z">' + s.nom + '</span>' +
+        (s.part ? ' <span class="sec-part">' + s.part + '</span>' : '') + '</p>' +
+      '<div class="jauge"><span style="width:' + part + '%"></span></div>' +
+      '<p class="sec-d"><span class="sec-fam">' + s.famille + '</span>' +
+        '<span class="sec-q">' + nb(s.debit) + '</span> m³/h · ' +
+        '<span class="sec-min">' + s.minutes + '</span> min · ' + s.passages + '×/sem.</p>';
+    hote.appendChild(bloc);
+  });
+}
+
+function dessinerVerdict(d){
+  var hote = document.getElementById('verdict');
+  if (!hote) return;   // section retirée le 17 août, sur sa demande
+  var cycle = d.secteurs.reduce(function(s,x){ return s + x.minutes; }, 0);
+  var fin = DEPART + cycle;
+  var voies = voiesProgrammateur(d.secteurs.length);
+  var libres = voies - d.secteurs.length;
+  var html = '';
+
+  if (d.secteurs.length){
+    html += '<p class="avert">Cycle complet <b style="color:inherit">' + duree(cycle) + '</b> · ' +
+            'départ ' + heure(DEPART) + ', fin ' + heure(fin) + '.<br>' +
+            'Programmateur <b style="color:inherit">' + voies + ' voies</b> — ' +
+            (libres === 0 ? 'aucune voie libre, un massif de plus et il faut le changer'
+                          : libres + ' voie' + (libres>1?'s':'') + ' libre' + (libres>1?'s':'')) + '.</p>';
+    if (fin > LEVER){
+      html += '<p class="avert rouge"><b>Le cycle finit après ' + heure(LEVER) + '.</b> ' +
+              'L\'eau du dernier secteur s\'évapore au lieu d\'entrer : il faut ' +
+              'démarrer plus tôt, ou arroser un jour sur deux en alternant les secteurs.</p>';
+    }
+    if (d.demande > d.dispo){
+      html += '<p class="avert">Le jardin demande <b style="color:inherit">' + nb(d.demande) + ' m³/h</b> ' +
+              'pour ' + nb(d.dispo) + ' disponibles, soit ' + nb(d.demande/d.dispo,1) + ' fois trop : ' +
+              'rien ne peut s\'ouvrir en même temps, d\'où les ' + d.secteurs.length + ' secteurs.</p>';
+    }
+  }
+  hote.innerHTML = html;
+}
+
+/* Les couleurs des réseaux — les siennes en tête (« réseau un en bleu, réseau
+   deux en vert, réseau trois en jaune, ainsi de suite »), puis de quoi tenir
+   au-delà sans que deux voisines se confondent. Un jardin dépasse vite six
+   secteurs : la liste boucle plutôt que de rendre du gris, et le numéro reste
+   écrit à côté de la pastille — c'est LUI qui identifie le réseau, la couleur
+   ne fait que le retrouver d'un coup d'œil. Quelqu'un qui distingue mal le
+   vert du rouge lit toujours le plan. */
+
+function dessinerPlans(){
+  var hote = document.getElementById('plans');
+  if (!hote) return;   // section retirée le 17 août, sur sa demande
+  hote.innerHTML = '';
+  var eu = false;
+  var d = decouper();
+  etat.zones.forEach(function(z){
+    if (TYPES[z.type].forme !== 'surface') return;
+    var p = poser(z);
+    if (!p.nombre) return;
+    eu = true;
+    var E = 11, marge = 26, margeG = 44;
+    var L = (Number(z.L)||0) * E, H = (Number(z.l)||0) * E;
+    // **Le plan dessine EXACTEMENT les points que `poser()` a comptés** — la
+    // même liste, jamais recalculée à côté. Une deuxième version de ce calcul
+    // avait fini par diverger : le plan déplaçait des points sans jamais en
+    // retirer, entassant deux têtes d'un côté et laissant un trou de l'autre
+    // (signalé le 17 août). `p.points` est en mètres depuis le coin (0,0) ;
+    // ici on les met seulement à l'échelle du dessin.
+    var couronnes = '', tetes = '', vusIci = [];
+    p.points.forEach(function(pt){
+      var x = margeG + pt.x * E, y = marge + pt.y * E;
+      // Le réseau vient du DÉCOUPAGE, jamais recalculé ici : le plan et la
+      // liste des secteurs doivent désigner la même vanne (règle du §3).
+      var iRes = d.reseauDuPoint[z.id + ':' + pt.x.toFixed(3) + ':' + pt.y.toFixed(3)];
+      var c = iRes == null ? null : couleurReseau(iRes);
+      if (iRes != null && vusIci.indexOf(iRes) < 0) vusIci.push(iRes);
+      couronnes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (p.m.portee*E) + '" class="portee"' +
+                   (c ? ' style="fill:' + c + ';stroke:' + c + '"' : '') + '/>';
+      tetes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.5" class="tete"' +
+               (c ? ' style="fill:' + c + '"' : '') + '/>';
+    });
+    vusIci.sort(function(a,b){ return a - b; });
+    var legende = vusIci.length < 2 ? '' :
+      '<p class="plan-legende">' + vusIci.map(function(i){
+        return '<span><i style="background:' + couleurReseau(i) + '"></i>Réseau ' + (i+1) + '</span>';
+      }).join('') + '</p>';
+    var id = 'gz' + z.id;
+    var bloc = document.createElement('div');
+    bloc.innerHTML =
+      '<p class="plan-nom">' + (z.nom || TYPES[z.type].nom) + ' — ' + p.nombre + ' ' +
+        p.m.nom.toLowerCase() + (p.nombre>1?'s':'') + ', portée ' + nb(p.m.portee,0) + ' m</p>' +
+      '<svg viewBox="0 0 ' + (L+margeG+marge) + ' ' + (H+marge*2) + '" class="plan" role="img" ' +
+        'aria-label="Plan de ' + (z.nom||'la zone') + ' : ' + p.nombre + ' arroseurs">' +
+        '<defs><clipPath id="' + id + '"><rect x="' + margeG + '" y="' + marge + '" width="' + L + '" height="' + H + '" rx="6"/></clipPath></defs>' +
+        '<rect x="' + margeG + '" y="' + marge + '" width="' + L + '" height="' + H + '" rx="6" class="gazon"/>' +
+        '<g clip-path="url(#' + id + ')">' + couronnes + '</g>' +
+        '<rect x="' + margeG + '" y="' + marge + '" width="' + L + '" height="' + H + '" rx="6" class="bordure"/>' +
+        tetes +
+        '<text x="' + (margeG + L/2) + '" y="' + (marge+H+17) + '" class="cote">' + nb(Number(z.L)||0,0) + ' m</text>' +
+        '<text x="' + (margeG-10) + '" y="' + (marge+H/2) + '" class="cote cote-g">' + nb(Number(z.l)||0,0) + ' m</text>' +
+      '</svg>' + legende;
+    hote.appendChild(bloc);
+  });
+  if (!eu) hote.innerHTML = '<p class="vide">Le plan se dessine dès qu\'une pelouse est mesurée.</p>';
+}
+
+
+function dessinerMateriel(d){
+  var hote = document.getElementById('materiel');
+  hote.innerHTML = '';
+  var lignes = listeMateriel(d);
+  if (!lignes.length){
+    hote.innerHTML = '<p class="vide">La liste se remplit dès qu\'une zone est mesurée.</p>';
+    return;
+  }
+  lignes.forEach(function(l){
+    var b = document.createElement('div');
+    b.className = 'mat';
+    var p = l.ref != null ? PRIX[l.ref] : undefined;
+    b.innerHTML = '<span class="mat-q">' + l.q + ' ' + l.u + '</span><span class="mat-n">' + l.nom + '</span>' +
+      (p != null ? '<span class="mat-a">' + nb(p * l.q) + ' € HT</span>' : '');
+    hote.appendChild(b);
+  });
+  var t = totalDeLaListe(lignes);
+  document.getElementById('total').className = 'avert' + (t.manquantes ? '' : ' ');
+  document.getElementById('total').innerHTML = t.chiffrees === 0
+    ? 'Aucun prix enregistré. <b style="color:inherit">Saisissez les vôtres</b> dans « Mes prix » : ' +
+      'le total sortira alors à vos tarifs, jamais à ceux du catalogue.'
+    : (t.manquantes
+        ? '<b>' + nb(t.somme) + ' € HT</b> sur ' + t.chiffrees + ' ligne(s) — ' +
+          '<b>' + t.manquantes + ' sans prix</b>, non comptée(s). Le total est donc INCOMPLET.'
+        : '<b style="color:inherit">' + nb(t.somme) + ' € HT</b> — toutes les lignes chiffrées à vos prix.');
+  // Les LONGUEURS ne se devinent pas : elles dépendent du chemin, pas des
+  // surfaces. Une valeur inventée ici serait pire qu'une case vide — elle
+  // serait crue. Le DIAMÈTRE, lui, se calcule (voir `amenee`).
+  [['amenee','Du compteur au regard','ml'],['pe25','Antennes vers les secteurs (Ø25)','ml']].forEach(function(t){
+    var b = document.createElement('div');
+    b.className = 'mat';
+    b.innerHTML = '<span class="mat-q"><input type="number" inputmode="numeric" min="0" step="5" data-tuyau="' + t[0] + '" value="' + etat[t[0]] + '"></span>' +
+                  '<span class="mat-n">' + t[1] + '</span><span class="mat-a">à mesurer</span>';
+    b.querySelector('input').addEventListener('input', function(e){
+      etat[t[0]] = e.target.value; recalculer(false);
+    });
+    hote.appendChild(b);
+  });
+
+  // **LE VERDICT Ø25 / Ø32 — sa règle du 17 août, et il porte ses nombres.**
+  // Un « prenez du Ø32 » sans les chiffres qui l'imposent est un ordre ; avec
+  // eux, c'est un calcul qu'il peut contredire. Et ce qui N'EST PAS compté est
+  // écrit noir sur blanc : un verdict qu'on croit complet quand il ne l'est
+  // pas coûte plus cher qu'un verdict absent.
+  var a = amenee(d);
+  var note = document.createElement('p');
+  note.className = 'aide';
+  note.style.margin = '10px 0 0';
+  if (!(a.longueur > 0)){
+    note.innerHTML = '<b>Le diamètre de l\'amenée se calcule</b> dès que sa longueur est saisie ' +
+                     'ci-dessus. Sa règle : <b>Ø25 par défaut</b>, Ø32 seulement si le calcul le démontre.';
+  } else if (!(a.debit > 0 && a.exigee > 0)){
+    note.innerHTML = '<b>Ø25</b> par défaut — le calcul ne peut pas encore trancher : il lui manque ' +
+                     'un secteur posé et sa pression de service.';
+  } else {
+    // **LE SEUIL EN MÈTRES, sa demande du 22 août 2026.** Le verdict répondait
+    // par oui ou par non sur la longueur SAISIE ; il fallait la ressaisir trois
+    // fois pour trouver où la bascule se produit. Le seuil se lit une fois et
+    // se compare au mètre ruban, avant de creuser.
+    var seuil = a.motif === 'debit'
+      ? '<b>Aucune longueur de Ø25 ne convient</b> : à ' + nb(a.debit) + ' m³/h, l\'eau y filerait ' +
+        'au-dessus de 1,5 m/s (le Ø25 en passe ' + nb(a.debitMax25) + ' m³/h au maximum).'
+      : '<b>Le Ø25 tient jusqu\'à ' + nb(a.longueurMax25, 0) + ' m</b> à ce débit, le Ø32 jusqu\'à ' +
+        nb(a.longueurMax32, 0) + ' m.';
+    note.innerHTML = '<b>Amenée : Ø' + a.diametre + '</b> sur ' + nb(a.longueur,0) + ' m. ' +
+      'Le plus gros secteur tire ' + nb(a.debit) + ' m³/h ; en Ø25 la perte est de ' +
+      nb(a.perte25,2) + ' bar, ce qui laisse ' + nb(a.source - a.perte25,2) + ' bar au regard pour ' +
+      nb(a.exigee,1) + ' bar exigés par les buses' +
+      (a.suffit
+        ? '. <b>Le Ø25 suffit</b>, on n\'y touche pas. '
+        : '. <b>Insuffisant : on passe en Ø32</b> (perte ' + nb(a.perte32,2) + ' bar, soit ' +
+          nb(a.source - a.perte32,2) + ' bar au regard). ') +
+      seuil +
+      (a.insuffisantMemeEn32
+        ? ' <b>Et le Ø32 lui-même est en surrégime à ce débit</b> (' + nb(a.debitMax32) + ' m³/h au ' +
+          'maximum) : c\'est du Ø40, ou un secteur de plus.'
+        : '') +
+      // **CE QUI ARRIVE AU DERNIER ARROSEUR — le trou fermé le 22 août au soir.**
+      // Cette phrase disait « ce calcul ne compte QUE l'amenée ». Ce n'est plus
+      // vrai : l'électrovanne, la ligne, ses raccords et l'antenne Ø16 sont
+      // maintenant retirés. Ce qui reste dehors, c'est le trajet du regard à la
+      // première tête — et c'est CELA qu'il faut dire, pas l'ancien aveu.
+      (d.pressionAuxArroseurs > 0
+        ? ' <b>Au dernier arroseur : ' + nb(d.pressionAuxArroseurs, 2) + ' bar</b> — il s\'en ' +
+          'perd encore ' + nb(d.perteReseau, 2) + ' bar après le regard (électrovanne, ligne, ' +
+          'raccords, antenne Ø16).' +
+          (d.pressionTropBasse
+            ? ' <span class="provisoire">C\'est trop peu pour que les arroseurs se lèvent</span> : ' +
+              'raccourcissez les lignes, ajoutez une vanne, ou piquez plus en amont.'
+            : '')
+        : '') +
+      ' <span class="provisoire">Le trajet du regard à la première tête n\'est pas compté</span> — ' +
+      'il dépend de l\'endroit où la nourrice est posée. La pression annoncée est donc un plafond.';
+  }
+  hote.appendChild(note);
+}
+
+/* La nourrice : SA fiche, ou rien. Composer une nourrice de son cru, c'est
+   envoyer une commande à laquelle il manquera un té — et le chantier s'arrête
+   à la pose, pas au bureau. */
+function dessinerNourrice(d){
+  var hote = document.getElementById('nourrice');
+  hote.innerHTML = '';
+  var voies = d.secteurs.length;
+  if (!voies) return;
+  var fiche = CATALOGUE.ficheNourrice(voies, combienGoutteAGoutte(d));
+  if (!fiche){
+    // On dit AUSSI ce qui est déjà enregistré : sans cela, il ne sait pas où il
+    // en est de ses envois, et il refait une fiche déjà donnée.
+    var connues = Object.keys(CATALOGUE.nourrices)
+      .map(Number).sort(function(a,b){ return a - b; });
+    var etat = connues.length
+      ? 'Déjà enregistrées : ' + connues.join(', ') + ' voies.'
+      : 'Aucune fiche enregistrée pour l\'instant.';
+    hote.innerHTML = '<p class="manque-fiche"><b>Fiche « nourrice ' + voies + ' voie' +
+      (voies>1?'s':'') + ' » à renseigner.</b> Le calcul dit qu\'il en faut une ; ' +
+      'je ne compose pas son contenu à votre place. ' + etat +
+      '<br><span class="aide-courte">Et au-delà d\'une certaine taille : une seule ' +
+      'nourrice, ou deux plus petites ? Je ne le suppose pas — dites-le, ' +
+      'et ce sera pareil pour toutes.</span></p>';
+    return;
+  }
+  var html = '<p class="aide" style="margin:0 0 6px"><b>' + fiche.nom + '</b> — votre fiche.</p>';
+  fiche.pieces.forEach(function(x){
+    var p = CATALOGUE.piece(x.ref);
+    var nom = p ? (p.marque ? p.marque + ' ' : '') + p.nom : x.ref;
+    html += '<div class="piece"><span>' + x.q + ' u</span><span>' + nom + '</span></div>';
+  });
+  hote.innerHTML = html;
+}
+
+function dessinerBandeau(){
+  var n = CATALOGUE.provisoires();
+  var fiches = Object.keys(CATALOGUE.nourrices).length;
+  var relevees = CATALOGUE.buses.filter(function(b){ return b.source === 'patron'; }).length;
+  // **Dire ce qui est ARRIVÉ autant que ce qui manque.** Un bandeau qui ne
+  // compte que les trous laisse croire que rien n'a avancé le jour même où sept
+  // buses sont entrées — et il finit par être ignoré.
+  var arrive = relevees
+    ? '<b>' + relevees + ' buses relevées de vos catalogues.</b> ' : '';
+  document.getElementById('bandeau').innerHTML = arrive + (n === 0 && fiches > 0
+    ? 'Catalogue à jour : toutes les valeurs viennent de vos fiches.'
+    : n + ' valeur' + (n>1?'s':'') + ' encore provisoire' + (n>1?'s':'') +
+      ' (turbines, gaine, matériel), ' +
+      (fiches === 0 ? 'et aucune fiche de nourrice.'
+                    : 'et ' + fiches + ' fiche(s) de nourrice.'));
+}
+
+var PRIX = (function(){ try { return JSON.parse(localStorage.getItem('atlas-arrosage-prix')) || {}; }
+                        catch (e) { return {}; } })();
+
+/* Le total à SES prix. **Aucune ligne n'est complétée par une autre** : ce qui
+   n'a pas de prix dans son registre est compté comme manquant et annoncé. Un
+   total qui bouche ses trous est faux d'une façon qui ne se voit pas — il reste
+   plausible. */
+function totalDeLaListe(lignes){
+  var somme = 0, manquantes = 0, chiffrees = 0;
+  lignes.forEach(function(l){
+    var p = l.ref != null ? PRIX[l.ref] : undefined;
+    if (p == null) { manquantes++; return; }
+    somme += p * l.q; chiffrees++;
+  });
+  return { somme:somme, manquantes:manquantes, chiffrees:chiffrees };
+}
+
+function texteDeLaListe(d){
+  var l = ['Demande de prix — arrosage automatique',
+           'Marque souhaitée : ' + nomDeMarque(marqueCourante()), ''];
+  listeMateriel(d).forEach(function(x){ l.push('- ' + x.q + ' ' + x.u + '  ' + x.nom); });
+  // Le diamètre de l'amenée est CALCULÉ (sa règle : Ø25 par défaut, Ø32 s'il
+  // le faut) — le fournisseur doit lire le bon, pas un Ø32 posé d'office.
+  var a = amenee(d);
+  l.push('- ' + etat.amenee + ' ml  Tuyau PEHD Ø' + a.diametre + ' (amenée compteur → regard)');
+  l.push('- ' + etat.pe25 + ' ml  Tuyau PEHD Ø25 (antennes vers les secteurs)');
+  l.push('');
+  l.push('Installation : ' + d.secteurs.length + ' secteurs, débit disponible ' + nb(d.dispo) + ' m³/h à ' + nb(etat.pression,1) + ' bar.');
+  // Le contenu du regard est déjà dans les lignes ci-dessus (listeMateriel le
+  // reprend depuis la fiche) : pas la peine de le lister deux fois dans le
+  // même message.
+  if (d.secteurs.length && !CATALOGUE.ficheNourrice(d.secteurs.length, combienGoutteAGoutte(d))) {
+    l.push('');
+    l.push('Nourrice ' + d.secteurs.length + ' voies : fiche non renseignée.');
+  }
+  return l.join('\n');
+}
+
+/* ── Le liant ────────────────────────────────────────────────────────────── */
+function recalculer(redessinerZones){
+  var d = decouper();
+  document.getElementById('debitDispo').textContent = d.dispo > 0 ? nb(d.dispo) : '—';
+  document.getElementById('debitNote').textContent = d.dispo > 0
+    ? Math.round(d.dispo * 1000 / 60) + ' L/min · un secteur ne dépassera pas ' + nb(d.limite) + ' m³/h'
+    : 'Remplissez le seau et le temps.';
+  dessinerMarques();
+  dessinerCorps();
+  if (redessinerZones) dessinerZones();
+  dessinerSecteurs(d);
+  dessinerVerdict(d);
+  dessinerPlans();
+  dessinerNourrice(d);
+  dessinerMateriel(d);
+  dessinerBandeau();
+    // **Sa règle du 17 août :** « L'utilisateur devra dire s'il se repique juste
+  // après le compteur d'eau — le top du top, la ville délivre au moins 3 bar,
+  // du sûr, et là tu sauras. Sinon tu dois lui expliquer quoi faire pour que tu
+  // aies les bonnes infos. » L'écran ne se contente donc pas de poser la
+  // question : dans le cas défavorable, il dit QUOI FAIRE. Une question sans
+  // marche à suivre renvoie l'utilisateur à son ignorance.
+  document.getElementById('compteurNote').innerHTML = etat.compteur === 'non'
+    ? '<b>Alors il faut mesurer sur place</b>, et c\'est deux gestes : ' +
+      '<b>1.</b> ouvrir en grand et remplir un seau gradué en comptant les secondes ' +
+      '(c\'est le débit ci-dessous) ; <b>2.</b> visser un manomètre à 5 € sur le ' +
+      'robinet, ouvert, pour lire la pression. <span class="provisoire">Sans ces ' +
+      'deux mesures, le plan repose sur une supposition</span> — et il s\'écroule à ' +
+      'la mise en eau.'
+    : '<b>Le meilleur cas.</b> Le réseau de ville délivre au moins 3 bar au ' +
+      'compteur : la pression est connue, il ne reste que le débit à mesurer au seau.';
+  document.getElementById('compteur').value = etat.compteur === 'non' ? 'non' : 'oui';
+
+  document.getElementById('recouvrementNote').innerHTML =
+    '<b>Votre règle de pose :</b> écart entre arroseurs jamais inférieur à la ' +
+    'portée, jamais au-delà de ' + nb(ECART_MAX_FACTEUR,1).replace(',0','') +
+    ' × la portée (' + Math.round(RECOUVREMENT_MIN*100) + ' % de recouvrement au minimum). ' +
+    'Une portée de 5 m donne donc entre 5 et 6 m. Quinconce dès ' +
+    (QUINCONCE_AU_DELA_DE + 1) + ' arroseurs, et les coins toujours occupés.';
+  var mail = document.getElementById('envoyer');
+  mail.href = 'mailto:?subject=' + encodeURIComponent('Demande de prix — arrosage automatique') +
+              '&body=' + encodeURIComponent(texteDeLaListe(d));
+  enregistrer();
+}
+
+
+['seau','temps','pression'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', function(e){
+    etat[id] = e.target.value; recalculer(false);
+  });
+});
+
+document.getElementById('seau').value = etat.seau;
+document.getElementById('temps').value = etat.temps;
+document.getElementById('pression').value = etat.pression;
+
+document.querySelectorAll('[data-ajout]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var type = b.getAttribute('data-ajout');
+    var z = { id: prochainId++, nom: TYPES[type].nom, type: type, materiel: type === 'gazon' ? 'auto' : 'gaine' };
+    if (TYPES[type].forme === 'surface') { z.L = 10; z.l = 8; }
+    else if (TYPES[type].forme === 'nappe') { z.L = 10; z.l = 2; }
+    else { z.ml = 20; z.lignesHaie = 1; }
+    etat.zones.push(z);
+    recalculer(true);
+  });
+});
+
+document.getElementById('copier').addEventListener('click', function(){
+  var texte = texteDeLaListe(decouper());
+  var bouton = this;
+  function dire(mot){ bouton.textContent = mot; setTimeout(function(){ bouton.textContent = 'Copier la liste'; }, 1800); }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(texte).then(function(){ dire('Copié'); }, function(){ dire('Copie refusée'); });
+  } else {
+    // Sur un téléphone ancien, le presse-papier n'existe pas : plutôt que de
+    // ne rien faire en silence, on montre le texte à sélectionner.
+    window.prompt('Copiez la liste :', texte); dire('Copié');
+  }
+});
+document.getElementById('corps').addEventListener('change', function(e){
+  etat.corps = e.target.value || null;
+  recalculer(false);
+});
+
+document.getElementById('compteur').addEventListener('change', function(e){
+  etat.compteur = e.target.value;
+  // Au compteur, la pression est celle du réseau : au moins 3 bar. On la pose
+  // plutôt que de la laisser à 3 « par hasard » — et il peut la corriger.
+  if (etat.compteur === 'oui' && (!etat.pression || Number(etat.pression) < 3)){
+    etat.pression = 3;
+    document.getElementById('pression').value = 3;
+  }
+  recalculer(false);
+});
+
+document.getElementById('imprimer').addEventListener('click', function(){ window.print(); });
+
+var caseSonde = document.getElementById('sonde');
+caseSonde.checked = !!etat.sonde;
+caseSonde.addEventListener('change', function(){ etat.sonde = caseSonde.checked; recalculer(false); });
+
+// **Le choix de la photo — et l'échec de l'enregistrement se DIT.** Une photo
+// trop lourde pour `localStorage` ferait sauter la sauvegarde du jardin
+// entier ; on remet alors la page dans l'état d'avant plutôt que d'afficher
+// une image qui ne survivra pas au rechargement.
+document.getElementById('croquisFichier').addEventListener('change', function(e){
+  var f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  var avant = etat.croquis;
+  reduireImage(f, function(donnees){
+    var note = document.getElementById('croquisNote');
+    if (!donnees){
+      note.innerHTML = '<span class="provisoire">Cette photo n\'a pas pu être lue.</span> ' +
+                       'Réessayez, ou prenez-la à nouveau.';
+      return;
+    }
+    etat.croquis = donnees;
+    try { localStorage.setItem('atlas-arrosage', JSON.stringify(etat)); }
+    catch (err) {
+      etat.croquis = avant;
+      dessinerCroquis();
+      note.innerHTML = '<span class="provisoire">Photo trop lourde pour être gardée ici.</span> ' +
+                       'Le jardin, lui, est intact. Reprenez-la de plus loin ou de moins près.';
+      return;
+    }
+    dessinerCroquis();
+  });
+});
+
+dessinerSaisons();
+dessinerCroquis();
+recalculer(true);
+</script>
+</body>
+</html>

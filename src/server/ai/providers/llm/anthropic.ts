@@ -4,6 +4,8 @@ import type {
   ResultatLLMAvecOutils,
   MessageConversation,
   DefinitionOutil,
+  ImagePourLecture,
+  OptionsVision,
 } from "./interface";
 import { erreurIA } from "../../errors";
 import { getConfigIA } from "../../config";
@@ -36,11 +38,122 @@ function construireMessagesAnthropic(historique: MessageConversation[]): { role:
   return messages;
 }
 
+/**
+ * Le modèle employé quand rien n'est réglé.
+ *
+ * **Il était recopié à trois endroits de ce fichier.** Nommé ici, il se change
+ * en un point — et `VISION_MODELE` permet d'en changer sans rebâtir
+ * l'application, ce qui était impossible tant qu'il vivait au milieu d'une
+ * requête.
+ */
+const MODELE_PAR_DEFAUT = "claude-sonnet-4-6";
+
 // Fournisseur réel, avec usage d'outils. Domaine accessible depuis ce
 // sandbox, mais aucune clé n'y est configurée (voir rapport du lot IA-01) —
 // fonctionnera normalement une fois ANTHROPIC_API_KEY définie.
 export const fournisseurLLMAnthropic: FournisseurLLM = {
   nom: "anthropic",
+  /**
+   * Lire une image — un ticket de caisse, en l'occurrence.
+   *
+   * **Ce n'est plus qu'un raccourci vers `lireImages`, et c'est délibéré.** Les
+   * deux portaient la même requête, à un tableau près : deux copies de la même
+   * règle finissent toujours par diverger (`CLAUDE.md` §3), et la divergence se
+   * serait manifestée le jour où l'une gagne un correctif que l'autre n'a pas —
+   * un délai, un code d'erreur, un en-tête d'API. Le plafond de 512 jetons
+   * reste ici, parce qu'il appartient au ticket : on attend un objet de cinq
+   * champs, pas un commentaire sur la photo.
+   */
+  async lireImage(systeme: string, consigne: string, image: ImagePourLecture): Promise<ResultatLLM> {
+    return this.lireImages!(systeme, consigne, [image], { maxTokens: 512 });
+  },
+
+  /**
+   * Lire une ou plusieurs images.
+   *
+   * **`temperature: 0`** : lire un chiffre ou décrire une tache n'est pas une
+   * tâche créative. Deux lectures de la même photo doivent donner la même
+   * description, sans quoi le patron verrait le diagnostic changer en
+   * rescannant — et n'aurait aucun moyen de savoir laquelle croire.
+   *
+   * **Les images passent AVANT la consigne**, et l'ordre n'est pas indifférent :
+   * c'est la disposition recommandée par Anthropic pour les questions portant
+   * sur des images, et elle donne de meilleurs résultats qu'une consigne posée
+   * en tête.
+   */
+  async lireImages(
+    systeme: string,
+    consigne: string,
+    images: ImagePourLecture[],
+    options?: OptionsVision
+  ): Promise<ResultatLLM> {
+    const cle = getConfigIA().anthropicApiKey;
+    if (!cle) {
+      return { succes: false, erreur: erreurIA("cle_api_absente", "ANTHROPIC_API_KEY n'est pas configurée.") };
+    }
+    if (images.length === 0) {
+      return { succes: false, erreur: erreurIA("reponse_invalide", "Aucune image à lire.") };
+    }
+    try {
+      const controller = new AbortController();
+      // Plus long que pour du texte : une photo pèse, et le patron est souvent
+      // sur le réseau du bord de route.
+      const timeout = setTimeout(() => controller.abort(), 45_000);
+      const reponse = await fetch(`${getConfigIA().anthropicBaseUrl}/v1/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": cle,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: options?.modele ?? getConfigIA().visionModele ?? MODELE_PAR_DEFAUT,
+          max_tokens: options?.maxTokens ?? 1024,
+          temperature: 0,
+          system: systeme,
+          messages: [
+            {
+              role: "user",
+              content: [
+                ...images.map((image) => ({
+                  type: "image",
+                  source: { type: "base64", media_type: image.mimeType, data: image.base64 },
+                })),
+                { type: "text", text: consigne },
+              ],
+            },
+          ],
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (reponse.status === 401 || reponse.status === 403) {
+        return { succes: false, erreur: erreurIA("cle_api_refusee", `ANTHROPIC_API_KEY est refusée (HTTP ${reponse.status}).`) };
+      }
+      if (reponse.status === 429) {
+        return { succes: false, erreur: erreurIA("quota_depasse", "Quota Anthropic dépassé.") };
+      }
+      if (!reponse.ok) {
+        console.error(`Lecture d'image Anthropic échouée : HTTP ${reponse.status}`);
+        return { succes: false, erreur: erreurIA("fournisseur_indisponible", `Erreur du fournisseur (${reponse.status}).`) };
+      }
+      const donnees = (await reponse.json()) as { content?: { type: string; text?: string }[] };
+      const texte = donnees.content?.find((b) => b.type === "text")?.text;
+      if (!texte) {
+        return { succes: false, erreur: erreurIA("reponse_invalide", "Le fournisseur n'a rien renvoyé de lisible.") };
+      }
+      return { succes: true, texte };
+    } catch (err) {
+      const nom = err instanceof Error ? err.name : "";
+      if (nom === "AbortError") {
+        return { succes: false, erreur: erreurIA("fournisseur_indisponible", "La lecture a dépassé le temps imparti.") };
+      }
+      console.error("Lecture d'image Anthropic échouée :", err);
+      return { succes: false, erreur: erreurIA("fournisseur_indisponible", "Le fournisseur n'a pas répondu.") };
+    }
+  },
+
   async genererTexte(systeme: string, message: string): Promise<ResultatLLM> {
     const cle = getConfigIA().anthropicApiKey;
     if (!cle) {
@@ -61,7 +174,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6",
+          model: MODELE_PAR_DEFAUT,
           max_tokens: 1024,
           system: systeme,
           messages: [{ role: "user", content: message }],
@@ -123,7 +236,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6",
+          model: MODELE_PAR_DEFAUT,
           max_tokens: 1024,
           system: systeme,
           messages: construireMessagesAnthropic(historique),

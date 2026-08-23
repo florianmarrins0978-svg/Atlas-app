@@ -1,12 +1,16 @@
 "use server";
 
+import { PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { veilleurEnVie } from "@/server/etat-banc";
 import { creerTarif, listerTarifs, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
 import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
 import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@/lib/import-tarifs";
 import { exigerProprietaire } from "@/server/autorisation";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { nommerEquipe } from "@/server/repositories/equipes";
+import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/absences-equipe";
+import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { versionExecutee } from "@/server/version-executee";
 import { issueApresMiseAJour } from "@/lib/issue-mise-a-jour";
 
@@ -162,11 +166,88 @@ export async function appliquerImportTarifsAction(choix: {
  * 6 août ». La borne est appliquée dans le dépôt, pas ici : zéro équipe rendrait
  * tout jour indisponible sans qu'aucun écran ne dise pourquoi.
  */
+/**
+ * La périodicité du relevé de TVA : au mois, ou au trimestre.
+ *
+ * **Ce que cette action enregistre est une DÉCLARATION du patron, pas une
+ * déduction de l'application.** Le trimestre n'est ouvert que si la TVA due de
+ * l'année précédente est inférieure à 4 000 € — et la TVA due est la collectée
+ * MOINS la déductible. Atlas ne connaît que la collectée : il ne voit ni le
+ * gazole, ni la tronçonneuse, ni l'assurance. Il ne peut donc pas savoir si le
+ * patron y a droit, et il ne doit rien en laisser croire (`CLAUDE.md` §4).
+ *
+ * C'est son comptable qui sait ; l'écran obéit.
+ *
+ * **Le retour dit ce que la base porte, jamais ce qui a été demandé.** Une
+ * valeur inattendue est ignorée par le dépôt : l'écran doit donc pouvoir
+ * revenir sur son affichage optimiste plutôt que de montrer un réglage que la
+ * base n'a pas pris.
+ */
+export async function mettreAJourPeriodiciteTvaAction(periodiciteTva: "mensuelle" | "trimestrielle") {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "modifier la périodicité du relevé de TVA");
+  const e = await mettreAJourEntreprise(ctx, { periodiciteTva });
+  return { periodiciteTva: e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT };
+}
+
 export async function mettreAJourNombreEquipesAction(nombreEquipes: number) {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "modifier le nombre d'équipes");
   const e = await mettreAJourEntreprise(ctx, { nombreEquipes });
   return { nombreEquipes: e?.nombreEquipes ?? 1 };
+}
+
+/**
+ * Noter qu'une équipe n'est pas là, et la retirer de la capacité ces jours-là.
+ *
+ * *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement
+ * pour cinq jours ».* Retenu sur maquette (`docs/maquettes/55`, proposition A).
+ *
+ * **Les refus se RENDENT, ils ne se lèvent pas.** Le message d'une exception
+ * levée par une action serveur n'atteint jamais l'écran du patron : Next.js le
+ * remplace en production par un identifiant opaque, et son banc sert une
+ * version bâtie (`AGENTS.md`). Chaque refus revient donc en valeur, avec sa
+ * phrase — et c'est la MÊME règle que l'écran, jamais une seconde
+ * (`src/lib/absences-equipe.ts`).
+ */
+export type ResultatAbsence =
+  | { ok: true; id: string }
+  | { ok: false; raison: string };
+
+export async function noterAbsenceAction(formData: FormData): Promise<ResultatAbsence> {
+  const rang = Number(formData.get("rang"));
+  const premierJour = String(formData.get("premierJour") ?? "").trim();
+  const dernierJour = String(formData.get("dernierJour") ?? "").trim();
+  const motif = String(formData.get("motif") ?? "").trim() || null;
+
+  // **Rejouée au serveur, même si l'écran l'a déjà vue.** Un écran n'est pas
+  // une garde : il suffit d'une requête écrite à la main pour poser une absence
+  // à l'envers, qui n'occuperait alors aucun jour et rendrait la capacité
+  // fausse en silence.
+  const refus = refusDeLAbsence(premierJour, dernierJour);
+  if (refus) return { ok: false, raison: phraseDuRefus(refus) };
+
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "noter l'absence d'une équipe");
+
+  const ligne = await noterAbsenceEquipe(ctx, { rang, premierJour, dernierJour, motif });
+  if (!ligne) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
+  return { ok: true, id: ligne.id };
+}
+
+/**
+ * Retirer une absence notée par erreur.
+ *
+ * `false` veut dire « la ligne n'a pas bougé » — filtrée par la RLS, ou déjà
+ * retirée. L'écran doit alors la remettre plutôt que de la faire disparaître à
+ * tort : une absence effacée sans l'être rendrait des dates que le patron croit
+ * bloquées (`ARCHITECTURE.md` §48).
+ */
+export async function retirerAbsenceAction(id: string): Promise<{ ok: boolean }> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "retirer l'absence d'une équipe");
+  const ligne = await retirerAbsenceEquipe(ctx, id);
+  return { ok: Boolean(ligne) };
 }
 
 /**
@@ -252,7 +333,7 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
       // c'est écrit dans `demarrer.sh`.
       const issue = issueApresMiseAJour({
         versionBatie: process.env.NODE_ENV === "production",
-        veilleurPresent: await veilleurEnVie(),
+        veilleurPresent: veilleurEnVie(),
         suffixeVersion: await suffixeVersion(),
       });
       if (issue.couperLeServeur) programmerReconstruction();
@@ -288,25 +369,6 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
  * suivantes en disant « des modifications non enregistrées sont présentes ».
  * Le remède aurait créé la panne, définitivement.
  */
-/**
- * Le veilleur est-il là pour relever le serveur qu'on s'apprête à couper ?
- *
- * Son verrou porte un identifiant de processus, précisément pour qu'un fichier
- * resté d'un conteneur précédent ne mente pas (`veiller.sh`). On vérifie donc
- * que le processus vit, pas que le fichier existe.
- */
-async function veilleurEnVie(): Promise<boolean> {
-  try {
-    const { readFile } = await import("node:fs/promises");
-    const pid = Number((await readFile("/tmp/atlas-veilleur.pid", "utf8")).trim());
-    if (!Number.isInteger(pid) || pid <= 0) return false;
-    process.kill(pid, 0); // Ne tue rien : demande seulement s'il existe.
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Coupe le serveur bâti — après avoir rendu sa réponse.
  *

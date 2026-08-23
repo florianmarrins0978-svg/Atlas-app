@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // DATABASE_URL, jamais une base codée en dur : la suite doit viser la même base
 // que le serveur qu'elle pilote (atlas_dev en local, atlas_test en CI).
@@ -41,8 +42,8 @@ async function main() {
 
   const nomUnique = `Chantier devis IA e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', nomUnique);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', nomUnique);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
 
@@ -93,7 +94,7 @@ async function main() {
   // --- Vérifie que le devis n'a pas été envoyé ni facturé ---
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
   assert.ok(
-    await page.locator("text=Envoyer au client").isVisible(),
+    await page.locator("text=Choisir la date").isVisible(),
     "Le devis ne doit jamais être envoyé automatiquement"
   );
 

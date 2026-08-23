@@ -1,7 +1,13 @@
 import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+// Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
+// applique la même règle que le produit plutôt que de recomposer « Chez … ».
+// Recopié ici, ce contrôle est passé au rouge le 13 août 2026, le jour où le
+// patron a fait retirer ce mot.
+import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // Ce que devient un devis parti, vu du patron (docs/AGENT.md §2.2).
 //
@@ -54,10 +60,10 @@ async function devisParti(page: Page, suffixe: string) {
   // (« Chez … », voir `src/lib/nom-chantier.ts`). C'est donc le client qui
   // porte la marque unique, et le repère suit.
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
-  const nom = `Chez ${client}`;
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  const nom = avecCivilite(client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('button:has-text("Créer le chantier")');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
   const url = page.url();
   const chantierId = url.split("/").pop()!;
@@ -71,14 +77,30 @@ async function devisParti(page: Page, suffixe: string) {
   await champs.nth(1).blur();
   await page.waitForTimeout(500);
 
-  await page.goto(`${url}/export`, { waitUntil: "networkidle" });
-  await page.click("text=Envoyer au client");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+  await page.click("text=Choisir la date");
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
-  const lien = await page.locator("text=/\\/devis\\/[A-Za-z0-9_-]+/").first().innerText();
-  const jeton = lien.slice(lien.indexOf("/devis/") + "/devis/".length).trim();
+  // **Le jeton se lit dans la BASE, plus à l'écran.**
+  //
+  // Il se lisait dans l'adresse complète, affichée en toutes lettres sous le
+  // total. Le patron l'a fait retirer le 12 août — « il y a trop d'infos sur
+  // cette page » : trois lignes de caractères illisibles qu'il ne relisait
+  // jamais, et que « Copier le lien » met de toute façon dans le presse-papier.
+  //
+  // Cette suite ne parle pas du lien : elle a besoin du jeton pour JOUER LE
+  // CLIENT sur sa page publique. Le prendre à l'écran, c'était faire dépendre
+  // cinq contrôles de suivi d'un détail d'affichage — et c'est exactement ce
+  // qui vient d'arriver : les cinq sont tombés d'un coup sur un changement qui
+  // ne les concernait pas.
+  const { rows } = await inspecter(
+    "select jeton from envois_devis where chantier_id = $1 order by envoye_at desc limit 1",
+    [chantierId],
+    1
+  );
+  const jeton = rows[0].jeton as string;
 
   return { chantierId, nom, url, jeton };
 }
@@ -103,9 +125,18 @@ async function main() {
 
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     const carte = page.locator(`text=${nom}`).first().locator("xpath=ancestor::a[1]");
+    // **Le libellé a changé le 13 août 2026, à sa demande** : « en attente de
+    // réponse » était vrai mais ne disait pas CE QUI attend — un devis parti,
+    // ou un client qu'on n'a pas rappelé (`ARCHITECTURE.md` §77).
     assert.ok(
-      (await carte.locator("text=En attente de réponse").count()) > 0,
-      "la liste ne dit pas que le chantier attend le client"
+      (await carte.locator("text=Devis envoyé").count()) > 0,
+      "la liste ne dit pas que le devis est parti"
+    );
+    // Et la date d'envoi, en clair, sous l'état : c'est ce qu'il a demandé de
+    // voir. Sans elle, il ne sait pas depuis combien de temps il attend.
+    assert.ok(
+      (await carte.locator("text=/Envoyé le /").count()) > 0,
+      "la liste ne dit pas QUAND le devis est parti"
     );
 
     // Planifier soi-même une date que le client s'apprête à choisir préparerait
@@ -139,22 +170,49 @@ async function main() {
   });
 
   await test("« J'ai vu » retire la notification, et pour de bon", async () => {
-    const { jeton } = await devisParti(page, "vu");
+    const { chantierId, jeton } = await devisParti(page, "vu");
     await clientRefuse(browser, jeton);
 
-    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-    // Compté avant/après : les suites précédentes laissent leurs propres refus
-    // non lus, et exiger zéro reviendrait à tester l'ordre d'exécution.
-    const avant = await page.locator("text=Devis retourné").count();
-    assert.ok(avant > 0, "aucune notification à marquer comme vue");
+    // **On vise LA carte de CE chantier, jamais un compte de cartes.**
+    //
+    // Ce contrôle comptait les « Devis retourné » de l'accueil avant et après le
+    // geste, et exigeait un de moins. Deux choses lui étaient alors étrangères
+    // et le faisaient rougir sur du code juste : le nombre de refus laissés non
+    // lus par les suites d'avant, et l'ORDRE des cartes — depuis le 16 août
+    // 2026 les rappels passent devant les réponses de clients, si bien que le
+    // premier « J'ai vu » de la page pouvait appartenir à un rappel. Le geste
+    // marchait, il écartait simplement une autre carte que celle qu'on comptait.
+    //
+    // Un identifiant ne dépend ni de l'ordre d'exécution ni de la mise en page
+    // (`CLAUDE.md` §5 bis) : la carte porte son chantier, on la nomme.
+    const laCarte = () =>
+      page.locator(`[data-atlas="carte-reponse"][data-chantier="${chantierId}"]`);
 
-    await page.locator("text=J'ai vu").first().click();
+    /** Déplier la pile : l'accueil n'en pose que deux, le reste est à un appui. */
+    const deplier = async () => {
+      const bouton = page.getByRole("button", { name: /autres? devis à regarder/ });
+      if ((await bouton.count()) > 0) {
+        await bouton.first().click();
+        await page.waitForTimeout(300);
+      }
+    };
+
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await deplier();
+    // **Zéro carte ne prouve rien** (`CLAUDE.md` §5) : sans elle, l'assertion
+    // finale serait vraie d'avance et ce contrôle rendrait un vert imperturbable.
+    assert.strictEqual(await laCarte().count(), 1, "la réponse de CE client n'est pas annoncée");
+
+    await laCarte().getByRole("button", { name: "J'ai vu" }).click();
     await page.waitForTimeout(1500);
 
+    // **Après un vrai rechargement, et repli redéplié.** Le repli revient à zéro
+    // à chaque chargement : c'est ce que le patron verra en rouvrant l'accueil.
     await page.reload({ waitUntil: "networkidle" });
+    await deplier();
     assert.strictEqual(
-      await page.locator("text=Devis retourné").count(),
-      avant - 1,
+      await laCarte().count(),
+      0,
       "la notification revient après rechargement"
     );
   });
@@ -163,6 +221,9 @@ async function main() {
     const { chantierId, url, jeton } = await devisParti(page, "reprise");
     await clientRefuse(browser, jeton);
 
+    // **Sur `/export` : l'écran d'APRÈS l'envoi.** Le raccourci du 20 août 2026
+    // n'a supprimé que sa face d'avant (`ARCHITECTURE.md` §136) ; c'est celle-ci
+    // qui porte la réponse du client et la reprise.
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     assert.ok(
       await page.locator("text=Le client n'a pas donné suite").isVisible(),
@@ -170,7 +231,7 @@ async function main() {
     );
 
     await page.click("text=Reprendre le devis");
-    await page.waitForSelector("text=Envoyer au client", { timeout: 15000 });
+    await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
 
     // Une nouvelle version, pas une modification de celle qui est partie : le
     // devis refusé reste la trace de ce qui avait été proposé.
@@ -183,11 +244,11 @@ async function main() {
     assert.strictEqual(rows[1].statut, "brouillon");
 
     // Et elle repart réellement : c'est tout l'objet de la reprise.
-    await page.click("text=Envoyer au client");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.click("text=Choisir la date");
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     try {
-      await page.waitForSelector("text=Devis prêt pour", { timeout: 15000 });
+      await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
     } catch (e) {
       // Ce contrôle a échoué une fois dans la batterie complète, jamais seul :
       // l'attente expirait sans qu'on sache pourquoi. Un délai dépassé ne
@@ -204,27 +265,82 @@ async function main() {
       chantierId,
     ]);
     assert.strictEqual(envois.rows[0].n, 2, "le second envoi n'a pas été enregistré");
-  });
 
-  await test("un devis en attente affiche son lien, pour relancer sans le regénérer", async () => {
-    const { url } = await devisParti(page, "relance");
-
-    await page.reload({ waitUntil: "networkidle" });
+    // **On rouvre l'écran du devis parti.** L'envoi ramène à l'accueil depuis le
+    // 21 août 2026 : ce que ce cas inspecte — les gestes offerts APRÈS l'envoi —
+    // se lit là où il revient, par la carte du chantier.
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
 
-    // Sélecteurs restreints au paragraphe : en mode développement, une erreur
-    // afficherait le code source de l'écran, où ces phrases figurent aussi.
+    // **Un seul bouton à chaque instant — sa règle du 13 août (maquette 40, B).**
+    //
+    // Sa capture montrait « Ouvrir le SMS tout prêt » ET « Reprendre le devis »
+    // l'un sous l'autre, tous deux pleins, sur un devis qu'il venait de reprendre
+    // et d'envoyer : l'écran lui proposait de reprendre ce qu'il venait de
+    // reprendre. Le contrôle regarde donc l'écran APRÈS l'envoi, moment que
+    // personne n'inspectait — c'est exactement là que le défaut vivait.
+    for (const libelle of [/Reprendre le devis/i, /Corriger et renvoyer/i]) {
+      assert.strictEqual(
+        await page.getByRole("button", { name: libelle }).count(),
+        0,
+        `Une fois le devis reparti, « ${libelle.source} » ne doit plus être à l'écran : ` +
+          "il proposerait de reprendre ce qui vient d'être repris et envoyé."
+      );
+    }
+
+    // Et le geste qui reste est bien celui du moment.
+    assert.ok(
+      // « Relancer » depuis le 21 août 2026 : cet écran ne se voit plus qu'en y
+      // REVENANT, sur un devis déjà parti — le geste est donc une relance, et le
+      // libellé le dit. Les deux formes restent acceptées : ce qu'on vérifie est
+      // qu'un geste de transmission subsiste, pas lequel.
+      (await page.getByRole("link", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) +
+        (await page.getByRole("button", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) >
+        0,
+      "après l'envoi, l'écran ne porte plus aucun geste : la transmission a disparu avec la reprise."
+    );
+  });
+
+  await test("relancer réutilise le MÊME lien, sans regénérer de devis", async () => {
+    const { url, jeton } = await devisParti(page, "relance");
+
+    await page.reload({ waitUntil: "networkidle" });
+    // Voir ci-dessus : l'attente d'une réponse se lit sur l'écran d'après l'envoi.
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+
+    // Sélecteur restreint au paragraphe : en mode développement, une erreur
+    // afficherait le code source de l'écran, où cette phrase figure aussi.
     assert.strictEqual(
       await page.locator('p:text-is("En attente de réponse")').count(),
       1,
       "l'écran ne rappelle pas que le client n'a pas répondu"
     );
+
+    // **Ce qui compte, c'est que le lien soit LE MÊME — pas qu'il soit affiché.**
+    //
+    // Ce contrôle exigeait la phrase « Le lien est toujours actif », posée sous
+    // l'adresse complète écrite en toutes lettres. Le patron a fait retirer les
+    // deux le 12 août : trois lignes de caractères qu'il ne relisait jamais.
+    // Le contrôle est alors tombé — sur un détail d'affichage, pas sur ce qu'il
+    // avait à défendre.
+    //
+    // Ce qu'il avait à défendre, c'est ceci : relancer ne doit pas obliger à
+    // regénérer un devis, donc le geste de relance doit porter le jeton DÉJÀ
+    // envoyé. On le lit dans le lien de transmission, celui que le doigt touche.
+    const adresse = (await page.locator("a[data-transmission]").getAttribute("href")) ?? "";
+    assert.ok(
+      decodeURIComponent(adresse).includes(`/devis/${jeton}`),
+      `Le geste de relance ne porte pas le jeton déjà envoyé (${jeton}) : le patron devrait renvoyer un nouveau devis pour relancer. Adresse : « ${adresse.slice(0, 90)} »`
+    );
+
+    // Et le devis n'a pas été régénéré au passage : une seule version existe.
+    const { rows } = await inspecter(
+      "select count(*)::text as n from devis where chantier_id = $1",
+      [url.split("/").pop()!]
+    );
     assert.strictEqual(
-      await page
-        .locator('p:has-text("Le lien est toujours actif — renvoyez-le tel quel pour relancer.")')
-        .count(),
-      1,
-      "le lien n'est pas proposé : relancer obligerait à renvoyer un nouveau devis"
+      rows[0].n,
+      "1",
+      "Consulter l'écran d'un devis parti a créé une seconde version : la relance ne doit rien regénérer."
     );
   });
 

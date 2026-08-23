@@ -1,0 +1,463 @@
+<title>Atlas — moins de mots</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    ATLAS DÉPOUILLÉ — l'application, en moins de mots, ET ELLE SE SERT.
+
+    LE PATRON, LE 19 AOÛT 2026 :
+    « Il y a beaucoup trop de mots dans tous les sens. […] S'ils passent quinze
+    minutes à essayer de comprendre comment elle marche, ils ne vont juste pas
+    l'utiliser. Il ne faut pas oublier qu'il y a des boomers dessus. »
+
+    Puis, deux fois de suite, devant ce qu'on lui envoyait :
+    « Je t'ai dit de rien coder, seulement une maquette dynamique. »
+    « Une maquette dynamique QUE JE PUISSE UTILISER. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE LES DEUX PREMIÈRES VERSIONS ONT RATÉ, ET POURQUOI.
+
+    Elles étaient des PLANCHES : des écrans posés côte à côte, avec des flèches
+    et des comptes de mots, à REGARDER. Ce n'est pas ce qu'il demande. Il veut
+    poser le pouce dessus, appuyer sur « Créer un devis », taper un nom, arriver
+    sur le devis — et sentir si c'est plus simple. On ne juge pas une
+    application sur une capture ; on la juge en s'en servant.
+
+    Celle-ci se sert : la barre du bas fonctionne, les boutons mènent quelque
+    part, les champs se remplissent au clavier, le devis s'envoie.
+
+    ————————————————————————————————————————————————————————————————
+    AUCUN JAVASCRIPT — et ce n'est pas un exploit, c'est une contrainte.
+
+    Son lecteur n'en exécute pas (`PROJECT_STATE.md`), et la page doit s'ouvrir
+    hors ligne depuis son téléphone. Toute la navigation tient donc sur des
+    boutons radio cachés et `:checked`. Les champs de saisie sont de vrais
+    champs : il tape dedans pour de bon, et rien ne part nulle part.
+
+    ————————————————————————————————————————————————————————————————
+    LE BOUTON « AVANT » EN HAUT.
+
+    Il montre l'écran TEL QU'IL EST AUJOURD'HUI, pour trois écrans : l'accueil,
+    la fiche client, les réglages. C'est là que la comparaison vit — dans le
+    même geste, pas dans une planche à part.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis). Cette page ne
+    parle à rien, n'enregistre rien, et disparaît en la fermant.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#e7e3da;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --alerte:#C87058; --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-tap-highlight-color:transparent}
+
+  /* Les commandes : cachées, mais ce sont elles qui font marcher la maquette. */
+  .cmd{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+  .tel{max-width:430px;margin:0 auto;min-height:100%;
+       display:flex;flex-direction:column;background:var(--fond)}
+
+  /* ── Le bandeau du haut : ce que c'est, et le bouton « avant » ─────────── */
+  .bandeau{display:flex;align-items:center;gap:10px;padding:9px 16px;
+           background:var(--teinte);border-bottom:1px solid var(--trait);
+           font-size:11.5px;color:var(--gris)}
+  .bandeau .quoi{flex:1;min-width:0}
+  .bandeau .quoi b{color:var(--encre);font-weight:600}
+  .modes{display:flex;gap:5px;flex:none}
+  .modes label{padding:8px 12px;border-radius:9999px;border:1px solid var(--trait);
+               background:var(--papier);color:var(--gris);font-size:12px;
+               cursor:pointer;min-height:44px;display:flex;align-items:center}
+  #m-av:checked ~ .tel .modes label[for="m-av"],
+  #m-ap:checked ~ .tel .modes label[for="m-ap"]{background:var(--pin);border-color:var(--pin);color:#fff}
+
+  /* ── Le corps : un écran à la fois ────────────────────────────────────── */
+  /* **Le bas de l'écran est mangé par la barre.** Ce dépôt a déjà payé une
+     barre qui recouvrait une carte entière : le contenu se termine donc bien
+     au-dessus d'elle, et non dessous. */
+  .corps{flex:1;padding:22px 20px 96px;overflow:hidden}
+  .ecran{display:none}
+  #v-accueil:checked ~ .tel .corps .s-accueil,
+  #v-fiche:checked   ~ .tel .corps .s-fiche,
+  #v-devis:checked   ~ .tel .corps .s-devis,
+  #v-parti:checked   ~ .tel .corps .s-parti,
+  #v-planning:checked ~ .tel .corps .s-planning,
+  #v-termines:checked ~ .tel .corps .s-termines,
+  #v-paysage:checked  ~ .tel .corps .s-paysage,
+  #v-reglages:checked ~ .tel .corps .s-reglages,
+  #v-prix:checked     ~ .tel .corps .s-prix{display:block}
+
+  /* Avant / après : ne concerne que les trois écrans qui changent. */
+  .av,.ap{display:none}
+  #m-av:checked ~ .tel .corps .av{display:block}
+  #m-ap:checked ~ .tel .corps .ap{display:block}
+
+  /* ── Les pièces de l'application ──────────────────────────────────────── */
+  .chapeau{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--or);margin:0 0 5px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:30px;line-height:1.15;margin:0 0 6px}
+  .sous{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin:0 0 4px}
+  .or{color:var(--or)}
+
+  .regle{height:1px;background:var(--trait);margin:18px 0}
+
+  .action{display:flex;align-items:center;justify-content:space-between;
+          gap:14px;padding:14px 4px;min-height:56px;cursor:pointer}
+  .action > .txt{font-size:14px;letter-spacing:.22em;text-transform:uppercase;font-weight:600}
+  .action .plus{flex:none;width:52px;height:52px;border-radius:50%;
+                border:1px solid var(--or);color:var(--or);font-size:22px;
+                display:flex;align-items:center;justify-content:center}
+
+  .ligne{display:block;background:var(--teinte);border-radius:12px;
+         padding:14px 15px;margin-top:11px;cursor:pointer;min-height:56px}
+  .ligne .etat{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:5px}
+  .ligne .nom{display:block;font-family:Georgia,serif;font-size:18px;line-height:1.2}
+  .ligne .dit{display:block;font-size:12.5px;color:var(--gris);line-height:1.5;margin-top:5px}
+  .ligne .agir{display:block;font-size:14px;margin-top:9px}
+
+  .lab{display:block;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+       color:var(--gris);margin:16px 0 6px}
+  input[type=text],input[type=tel],input[type=email],textarea{
+    width:100%;background:var(--teinte);border:0;border-radius:6px;
+    padding:14px 13px;font:inherit;font-size:16px;color:var(--encre);
+    outline:none;min-height:50px}
+  input::placeholder,textarea::placeholder{color:var(--gris)}
+  textarea{min-height:96px;resize:vertical}
+
+  .pastilles{display:flex;gap:8px;flex-wrap:wrap}
+  .pastilles span{padding:9px 16px;border-radius:9999px;background:var(--teinte);
+                  font-size:13.5px;color:var(--gris);min-height:40px;display:flex;align-items:center}
+  .pastilles span.prise{background:var(--pin);color:#fff}
+
+  .capsule{display:flex;align-items:center;justify-content:center;
+           margin-top:14px;padding:16px;border-radius:9999px;
+           background:var(--pin);color:#fff;font-size:15.5px;
+           cursor:pointer;min-height:56px;text-align:center}
+  .capsule.creux{background:transparent;color:var(--pin);border:1px solid var(--pin)}
+  .retour{display:inline-flex;align-items:center;justify-content:center;
+          width:44px;height:44px;border-radius:50%;background:var(--teinte);
+          color:var(--encre);font-size:19px;cursor:pointer;margin-bottom:14px}
+
+  .rub{display:flex;gap:12px;align-items:flex-start;padding:14px 0;
+       border-bottom:1px solid var(--trait);cursor:pointer;min-height:52px}
+  .rub .rond{flex:none;width:18px;height:18px;border-radius:5px;
+             border:1.5px solid var(--or);margin-top:3px}
+  .rub .nom{display:block;font-family:Georgia,serif;font-size:16.5px;line-height:1.25}
+  .rub .txt{display:block;font-size:12px;color:var(--gris);line-height:1.45;margin-top:2px}
+
+  .tot{display:flex;justify-content:space-between;font-size:14.5px;padding:5px 0}
+  .tot.gros{font-family:Georgia,serif;font-size:19px;padding-top:10px;margin-top:8px;
+            border-top:2px solid var(--encre)}
+
+  .note{margin-top:18px;font-size:12.5px;color:var(--gris);line-height:1.6}
+  .note b{color:var(--encre)}
+
+  /* Ce qui est en trop, dans la version d'aujourd'hui. */
+  .trop{background:rgba(156,59,46,.14);border-radius:3px;
+        box-shadow:0 0 0 1px rgba(156,59,46,.3);padding:0 3px}
+
+  .bravo{text-align:center;padding:40px 0 10px}
+  .bravo .rond{width:74px;height:74px;border-radius:50%;border:1px solid var(--or);
+               color:var(--or);font-size:31px;margin:0 auto 20px;
+               display:flex;align-items:center;justify-content:center}
+
+  /* ── La barre du bas : elle marche ────────────────────────────────────── */
+  .barre{position:sticky;bottom:0;z-index:2;display:flex;background:var(--fond);
+         border-top:1px solid var(--trait);padding:0 4px}
+  .barre label{flex:1;text-align:center;padding:15px 2px 18px;font-size:8.5px;
+               letter-spacing:.09em;text-transform:uppercase;color:var(--gris);
+               cursor:pointer;border-top:2px solid transparent;min-height:52px}
+  #v-accueil:checked ~ .tel .barre label[for="v-accueil"],
+  #v-fiche:checked   ~ .tel .barre label[for="v-accueil"],
+  #v-devis:checked   ~ .tel .barre label[for="v-accueil"],
+  #v-parti:checked   ~ .tel .barre label[for="v-accueil"],
+  #v-planning:checked ~ .tel .barre label[for="v-planning"],
+  #v-termines:checked ~ .tel .barre label[for="v-termines"],
+  #v-paysage:checked  ~ .tel .barre label[for="v-paysage"],
+  #v-reglages:checked ~ .tel .barre label[for="v-reglages"],
+  #v-prix:checked     ~ .tel .barre label[for="v-reglages"]{
+    color:var(--encre);border-top-color:var(--or)}
+
+  .vide{color:var(--gris);font-size:14px;margin-top:30px;line-height:1.7}
+</style>
+
+<!-- Quel écran est ouvert. -->
+<input type="radio" name="vue" id="v-accueil"  class="cmd" checked>
+<input type="radio" name="vue" id="v-fiche"    class="cmd">
+<input type="radio" name="vue" id="v-devis"    class="cmd">
+<input type="radio" name="vue" id="v-parti"    class="cmd">
+<input type="radio" name="vue" id="v-planning" class="cmd">
+<input type="radio" name="vue" id="v-termines" class="cmd">
+<input type="radio" name="vue" id="v-paysage"  class="cmd">
+<input type="radio" name="vue" id="v-reglages" class="cmd">
+<input type="radio" name="vue" id="v-prix"     class="cmd">
+<!-- Aujourd'hui, ou dépouillé. -->
+<input type="radio" name="mode" id="m-av" class="cmd">
+<input type="radio" name="mode" id="m-ap" class="cmd" checked>
+
+<div class="tel">
+
+  <div class="bandeau">
+    <span class="quoi"><b>Maquette</b> — servez-vous-en. Rien n'est enregistré.</span>
+    <span class="modes">
+      <label for="m-av">Avant</label>
+      <label for="m-ap">Dépouillé</label>
+    </span>
+  </div>
+
+  <div class="corps">
+
+    <!-- ═══════════════════════  ACCUEIL  ═══════════════════════ -->
+    <div class="ecran s-accueil">
+
+      <div class="ap">
+        <p class="chapeau">Bonjour Florian</p>
+        <h1>Vos chantiers</h1>
+        <p class="sous or">Vos clients ›</p>
+        <div class="regle"></div>
+        <label class="action" for="v-fiche">
+          <span class="txt">Créer un devis</span>
+          <span class="plus">+</span>
+        </label>
+        <label class="ligne" for="v-devis">
+          <span class="etat">Devis à envoyer · 28 jours</span>
+          <span class="nom">Terrasse bois</span>
+        </label>
+        <label class="ligne" for="v-devis">
+          <span class="etat">Correction demandée</span>
+          <span class="nom">Reprise de toiture</span>
+        </label>
+        <label class="ligne" for="v-devis">
+          <span class="etat">À chiffrer</span>
+          <span class="nom">Pose de clôture</span>
+        </label>
+        <label class="ligne" for="v-devis">
+          <span class="etat">Devis accepté</span>
+          <span class="nom">Rénovation salle de bain</span>
+        </label>
+      </div>
+
+      <div class="av">
+        <p class="chapeau">Bonjour Florian</p>
+        <h1>Vos chantiers</h1>
+        <p class="sous"><span class="trop">Quatre en cours</span></p>
+        <p class="sous or">Vos clients ›</p>
+        <div class="regle"></div>
+        <label class="action" for="v-fiche">
+          <span class="txt">Créer un devis</span>
+          <span class="plus">+</span>
+        </label>
+        <div style="display:flex;justify-content:space-between;margin-top:14px">
+          <span class="sous" style="margin:0"><span class="trop">En cours</span></span>
+          <span class="sous" style="margin:0"><span class="trop">Quatre</span></span>
+        </div>
+        <label class="ligne" for="v-devis">
+          <span class="etat">Devis en attente · 28 jours</span>
+          <span class="nom">Terrasse bois</span>
+          <span class="dit"><span class="trop">Chantier ouvert depuis 28 jours, et aucun devis n'est parti.</span></span>
+          <span class="agir"><span class="trop">Faire le devis</span></span>
+        </label>
+        <label class="ligne" for="v-devis">
+          <span class="etat">Correction demandée</span>
+          <span class="nom">Reprise de toiture</span>
+          <span class="dit"><span class="trop">Le client a demandé une correction sur le devis envoyé.</span></span>
+          <span class="agir"><span class="trop">Reprendre le devis</span></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════  FICHE CLIENT  ═══════════════════════ -->
+    <div class="ecran s-fiche">
+      <label class="retour" for="v-accueil">‹</label>
+
+      <div class="ap">
+        <h1>Votre client</h1>
+        <label class="lab" for="f-nom">Nom</label>
+        <input id="f-nom" type="text" placeholder="M. Dupont">
+        <label class="lab" for="f-coord">Téléphone ou e-mail</label>
+        <input id="f-coord" type="tel" placeholder="06 12 34 56 78">
+        <label class="lab" for="f-adr">Adresse du chantier</label>
+        <input id="f-adr" type="text" placeholder="8 rue du Port, Nantes">
+        <p class="sous or" style="margin-top:16px">+ Adresse du client</p>
+        <label class="capsule" for="v-devis">Je dicte mon devis</label>
+        <label class="capsule creux" for="v-devis">J'écris mon devis</label>
+        <p class="note">Tapez dedans, c'est un vrai clavier. Puis appuyez sur un
+        des deux boutons.</p>
+      </div>
+
+      <div class="av">
+        <h1>Fiche client</h1>
+        <span class="lab">Civilité <span class="trop">(facultatif)</span></span>
+        <div class="pastilles"><span>Mr</span><span>Mme</span></div>
+        <label class="lab" for="g-nom">Nom du client <span class="trop">(facultatif)</span></label>
+        <input id="g-nom" type="text" placeholder="Bernard">
+        <label class="lab" for="g-tel">Téléphone <span class="trop">(facultatif)</span></label>
+        <input id="g-tel" type="tel" placeholder="06 12 34 56 78">
+        <label class="lab" for="g-mail">E-mail <span class="trop">(facultatif)</span></label>
+        <input id="g-mail" type="email" placeholder="bernard@exemple.fr">
+        <span class="lab"><span class="trop">Comment lui envoyer son devis ?</span></span>
+        <div class="pastilles"><span class="prise">Par SMS</span><span>Par e-mail</span></div>
+        <label class="lab" for="g-adr">Adresse du chantier <span class="trop">(facultatif)</span></label>
+        <input id="g-adr" type="text" placeholder="12 rue des Lilas, Nantes">
+        <p class="sous or" style="margin-top:16px">+ Ajouter une <span class="trop">adresse client différente</span></p>
+        <label class="capsule" for="v-devis">Je dicte mon devis</label>
+        <label class="capsule creux" for="v-devis">J'écris mon devis</label>
+        <p class="note"><b>« Facultatif » est écrit cinq fois</b> — et tous les
+        champs le sont.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════  LE DEVIS  ═══════════════════════ -->
+    <div class="ecran s-devis">
+      <label class="retour" for="v-accueil">‹</label>
+      <h1>Terrasse bois</h1>
+      <p class="sous">M. Dupont · 8 rue du Port</p>
+
+      <label class="lab" for="d-quoi">Ce que vous faites</label>
+      <textarea id="d-quoi" placeholder="Terrasse en pin classe 4, 24 m², sur plots réglables. Dépose de l'ancienne."></textarea>
+
+      <label class="lab" for="d-prix">Prix</label>
+      <input id="d-prix" type="text" placeholder="4 800">
+
+      <div style="margin-top:20px">
+        <div class="tot"><span>Total HT</span><span>4 800,00 €</span></div>
+        <div class="tot"><span>TVA 20 %</span><span>960,00 €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span>5 760,00 €</span></div>
+      </div>
+
+      <label class="capsule" for="v-parti">Envoyer à M. Dupont</label>
+      <label class="capsule creux" for="v-devis">Voir le document</label>
+
+      <p class="note">Aujourd'hui, cet écran est le <b>document entier</b> —
+      émetteur, numéro, validité, mentions, signature : <b>deux hauteurs et
+      demie de téléphone</b> avant d'atteindre « Envoyer ». Le document ne
+      disparaît pas : il est derrière « Voir le document », et le client le
+      reçoit tel quel.</p>
+    </div>
+
+    <!-- ═══════════════════════  DEVIS PARTI  ═══════════════════════ -->
+    <div class="ecran s-parti">
+      <div class="bravo">
+        <div class="rond">✦</div>
+        <h1 style="font-size:26px">C'est parti</h1>
+        <p class="vide" style="margin-top:8px">Le devis est chez M. Dupont.<br>
+        Vous serez prévenu quand il répond.</p>
+      </div>
+      <label class="capsule" for="v-accueil">Revenir aux chantiers</label>
+    </div>
+
+    <!-- ═══════════════════════  PLANNING  ═══════════════════════ -->
+    <div class="ecran s-planning">
+      <h1>Planning</h1>
+      <p class="sous">Cette semaine</p>
+      <div class="ligne"><span class="etat">Lundi 24</span><span class="nom">Terrasse bois</span></div>
+      <div class="ligne"><span class="etat">Mercredi 26</span><span class="nom">Pose de clôture</span></div>
+      <div class="ligne"><span class="etat">Vendredi 28</span><span class="nom">Reprise de toiture</span></div>
+      <p class="note">Cet écran n'est pas retouché ici. Il fait toucher
+      <b>54 choses</b> sur une seule hauteur d'écran — il mérite son propre
+      passage, et il ne se dessine pas sans vous.</p>
+    </div>
+
+    <!-- ═══════════════════════  TERMINÉS  ═══════════════════════ -->
+    <div class="ecran s-termines">
+      <h1>Terminés</h1>
+      <div class="ligne"><span class="etat">Facturé · 12 août</span><span class="nom">Élagage chêne</span></div>
+      <div class="ligne"><span class="etat">Payé · 2 août</span><span class="nom">Tonte annuelle Martins</span></div>
+    </div>
+
+    <!-- ═══════════════════════  PAYSAGE  ═══════════════════════ -->
+    <div class="ecran s-paysage">
+      <h1>Paysage</h1>
+      <div class="ligne"><span class="nom">Plan d'arrosage</span></div>
+      <div class="ligne"><span class="nom">Croquis de terrain</span></div>
+    </div>
+
+    <!-- ═══════════════════════  RÉGLAGES  ═══════════════════════ -->
+    <div class="ecran s-reglages">
+
+      <div class="ap">
+        <h1>Réglages</h1>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Mon entreprise</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Mon équipe</span></label>
+        <label class="rub" for="v-prix"><span class="rond"></span><span class="nom">Mes prix</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Mes devis et factures</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Fiche d'entretien</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Atlas IA</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Agenda</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Abonnement</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Mes données</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Mon compte</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Notifications</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Mot de passe</span></label>
+        <label class="rub" for="v-reglages"><span class="rond"></span><span class="nom">Couleurs</span></label>
+        <p class="note">Appuyez sur <b>Mes prix</b> : c'est le seul qui s'ouvre
+        pour l'instant.</p>
+      </div>
+
+      <div class="av">
+        <p class="chapeau">Mon entreprise</p>
+        <h1>Réglages</h1>
+        <p class="sous" style="margin-top:14px">L'entreprise</p>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Mon entreprise</span><span class="txt"><span class="trop">Identité, coordonnées et informations légales</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Équipe</span><span class="txt"><span class="trop">Combien partent en même temps, leurs noms et leurs absences</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Tarifs &amp; catalogue</span><span class="txt"><span class="trop">Prestations, main-d'œuvre, matériel et marges</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Devis &amp; factures</span><span class="txt"><span class="trop">Validité, acompte, délai de paiement et mentions</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Fiche d'entretien</span><span class="txt"><span class="trop">Les prestations que vous cochez sur un chantier d'entretien</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Atlas IA</span><span class="txt"><span class="trop">Automatisations et suggestions</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom"><span class="trop">Intégrations</span></span><span class="txt"><span class="trop">Calendrier, comptabilité et services connectés</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Abonnement</span><span class="txt"><span class="trop">Offre, paiement et factures Atlas</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Sécurité &amp; données</span><span class="txt"><span class="trop">Export, effacement et RGPD</span></span></span></div>
+        <p class="sous" style="margin-top:20px">Moi</p>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Mon compte</span><span class="txt"><span class="trop">Nom et e-mail</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Notifications</span><span class="txt"><span class="trop">Alertes et rappels</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Connexion</span><span class="txt"><span class="trop">Mot de passe et sécurité</span></span></span></div>
+        <div class="rub"><span class="rond"></span><span><span class="nom">Apparence</span><span class="txt"><span class="trop">Les couleurs de l'application</span></span></span></div>
+        <p class="note"><b>Treize phrases sous treize titres.</b> Il faut défiler
+        deux fois pour changer un prix.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════  MES PRIX  ═══════════════════════ -->
+    <div class="ecran s-prix">
+      <label class="retour" for="v-reglages">‹</label>
+      <h1>Mes prix</h1>
+      <label class="lab" for="p-heure">L'heure de main-d'œuvre</label>
+      <input id="p-heure" type="text" placeholder="45 €">
+      <label class="lab" for="p-deplacement">Le déplacement</label>
+      <input id="p-deplacement" type="text" placeholder="35 €">
+      <label class="lab" for="p-marge">Votre marge sur le matériel</label>
+      <input id="p-marge" type="text" placeholder="20 %">
+      <label class="capsule" for="v-reglages">C'est enregistré</label>
+      <p class="note">Trois champs, un écran, pas de défilement. C'est ce que
+      vous venez chercher ici neuf fois sur dix.</p>
+    </div>
+
+  </div>
+
+  <div class="barre">
+    <label for="v-accueil">Chantiers</label>
+    <label for="v-planning">Planning</label>
+    <label for="v-termines">Terminés</label>
+    <label for="v-paysage">Paysage</label>
+    <label for="v-reglages">Réglages</label>
+  </div>
+
+</div>

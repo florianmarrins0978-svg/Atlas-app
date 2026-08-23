@@ -2,6 +2,7 @@ import { chromium, devices } from "playwright";
 import { mkdirSync } from "fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(__dirname, "fixtures", "test-photo.jpg");
@@ -16,8 +17,8 @@ async function main() {
   const page = await context.newPage();
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="M. Bernard"]', `Chantier capture ${Date.now()}`);
-  await page.click('button:has-text("Créer le chantier")');
+  await page.fill('input[placeholder="Bernard"]', `Chantier capture ${Date.now()}`);
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
 
   // La pellicule du tiroir a remplacé l'écran Photos le 11 août 2026 : tout se

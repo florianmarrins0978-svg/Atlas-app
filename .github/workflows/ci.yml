@@ -124,6 +124,25 @@ jobs:
       # TRUNCATE — pour que les tests « fail-closed » et NOBYPASSRLS aient un
       # sens. Seul le nettoyage entre suites, opération de banc d'essai, emprunte
       # le rôle propriétaire via DATABASE_ADMIN_URL (cf. scripts/_test-db.ts).
+      # ═══════════════════════════════════════════════════════════════════
+      # La base phytosanitaire ne reçoit RIEN qui ne soit sourcé.
+      # ═══════════════════════════════════════════════════════════════════
+      #
+      # Ajouté le 20 août 2026 avec le module de diagnostic végétal. Les fiches
+      # arrivent par des fichiers de données, pas par du code : sans ce
+      # contrôle, une fiche « validée » sans source, ou employant un mot hors
+      # vocabulaire, entrerait sur `main` sans que rien ne s'y oppose — et le
+      # second défaut est SILENCIEUX (la fiche ne sortirait jamais, sans la
+      # moindre erreur).
+      #
+      # `--verifier` n'écrit rien : il lit, valide et refuse. Aucune base n'est
+      # nécessaire, aucun secret non plus.
+      - name: Contrôler les fiches phytosanitaires
+        run: npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fiches --verifier
+
+      - name: Contrôler les fixtures d'essai du diagnostic
+        run: npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fixtures --fixtures --verifier
+
       - name: Suite de tests (base de données)
         env:
           DATABASE_URL: postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test
@@ -209,3 +228,36 @@ jobs:
             tail -40 /tmp/essai-connexion.log
             exit 1
           }
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # La fiche d'état part-elle vraiment ?
+  #
+  # **Séparé du reste, et c'est délibéré.** Cette épreuve n'a besoin ni de
+  # PostgreSQL, ni de Redis, ni d'un navigateur : la coller au travail ci-dessus
+  # la ferait attendre huit minutes pour vingt secondes de vérification, et un
+  # échec de la base la ferait passer pour cassée à son tour.
+  #
+  # Elle vit ici parce qu'elle NE PEUT PAS tourner chez l'agent : le jeton que
+  # sa machine expose est un substitut de son mandataire réseau, et GitHub le
+  # refuse. C'est le déplacement que `CLAUDE.md` §5 prescrit — ce qui n'est pas
+  # joignable d'ici s'éprouve là où il l'est.
+  #
+  # Ce qu'elle aurait attrapé : le 12 août 2026, le patron a redémarré son
+  # espace deux fois pour une fiche qui ne pouvait pas partir.
+  fiche-etat:
+    runs-on: ubuntu-latest
+    permissions:
+      # Le strict nécessaire : ouvrir, modifier et refermer une fiche jetable.
+      issues: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: La publication de la fiche d'état fonctionne de bout en bout
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/eprouver-publication-fiche.mjs

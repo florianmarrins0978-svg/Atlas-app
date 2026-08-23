@@ -1,10 +1,21 @@
 "use client";
 
+// Le corps de cet écran — la carte, la cause en développement, la référence et
+// le bouton — vit dans `CorpsErreur`, partagé par les neuf écrans d'erreur. Lui
+// seul sait qu'un morceau de code manquant ne se répare pas avec « Réessayer » :
+// voir `src/lib/reprise-erreur.ts`.
+
 import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
-import PrimaryButton from "@/components/atlas/PrimaryButton";
+import CorpsErreur from "@/components/atlas/CorpsErreur";
 
-export default function Erreur({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function Erreur({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="px-6 pt-8">
@@ -28,14 +39,7 @@ export default function Erreur({ reset }: { error: Error & { digest?: string }; 
         </h1>
       </div>
       <div className="px-6 pt-6">
-        <div className="rounded-[4px] px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
-          <p className="text-[14px]" style={{ color: colors.muted }}>
-            Impossible de charger ce chantier pour l&apos;instant.
-          </p>
-        </div>
-        <div className="mt-4">
-          <PrimaryButton onClick={reset}>Réessayer</PrimaryButton>
-        </div>
+        <CorpsErreur erreur={error} reset={reset} phrase="Impossible de charger ce chantier pour l'instant." />
       </div>
     </div>
   );

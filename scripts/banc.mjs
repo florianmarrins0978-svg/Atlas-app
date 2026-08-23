@@ -28,10 +28,15 @@
 
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
+import {
+  delogerConstructionsOrphelines,
+  attendreLaConstructionEnCours,
+  detenteursDuVerrou,
+} from "./verrou-construction.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
@@ -42,6 +47,41 @@ const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
 // un disque lent. Voir `next.config.ts` (`ATLAS_DIST_DIR`).
 const DIST = ".next-batie";
 const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
+// **Le témoin d'ÉCHEC, et il vaut le témoin de réussite.**
+//
+// Le 16 août 2026 : « l'appli est vraiment très lente, vraiment ». Sa fiche
+// disait « aucune version bâtie — le banc sert le mode développement », ce qui
+// est vrai mais ne distingue pas trois états très différents : la construction
+// tourne encore, elle a échoué, elle n'a jamais démarré. Le premier se traverse
+// en deux minutes, le deuxième condamne le banc à la lenteur pour toujours — et
+// rien ne permettait de les séparer sans lire un journal auquel l'agent n'a pas
+// accès. Le message d'échec existait pourtant : il partait dans `/tmp/essai.log`,
+// que personne ne lit.
+//
+// Hors de `DIST` délibérément : ce dossier est effacé par une construction
+// suivante, et l'échec doit survivre à la tentative qui le remplace.
+const TEMOIN_ECHEC =
+  // Détournable uniquement pour l'éprouver : une suite ne peut pas écrire
+  // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
+  process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
+
+/**
+ * Une mesure du système, sur une ligne, ou « inconnu ».
+ *
+ * Ne lève jamais : ce relevé sert à expliquer un échec, il ne doit pas en
+ * fabriquer un second. Une machine sans `df` ni `free` reste une machine.
+ */
+function mesure(commande, args) {
+  try {
+    return execFileSync(commande, args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .join(" | ");
+  } catch {
+    return "inconnu";
+  }
+}
 
 // **Prévenir le veilleur pendant la bascule, sinon il tue ce qu'on remplace.**
 //
@@ -134,6 +174,44 @@ function jouer(commande, args, env = process.env) {
     const p = spawn(commande, args, { stdio: SANS_TERMINAL, env });
     p.on("exit", (code) => resoudre(code ?? 1));
     p.on("error", () => resoudre(1));
+  });
+}
+
+/**
+ * Les dernières lignes qu'une commande a écrites, en plus de son code.
+ *
+ * **Écrit le 16 août 2026, après une soirée entière perdue faute de ces
+ * lignes.** Le témoin d'échec portait l'heure, le code de sortie, le disque et
+ * la mémoire — tout sauf ce que la construction avait DIT. On a donc cherché
+ * une saturation pendant des heures, alors que le message tenait en une ligne :
+ * « Another next build process is already running ». C'est le reproche que ce
+ * dépôt se fait à lui-même depuis le 11 août : *aller chercher la ligne exacte
+ * que le programme écrit, jamais l'idée qu'on s'en fait*.
+ *
+ * La sortie reste héritée — le patron doit voir la construction avancer — et
+ * elle est en plus RETENUE, pour que l'échec puisse se raconter.
+ */
+function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
+  return new Promise((resoudre) => {
+    const gardees = [];
+    const retenir = (morceau) => {
+      for (const ligne of morceau.toString().split("\n")) {
+        if (ligne.trim() === "") continue;
+        gardees.push(ligne);
+        if (gardees.length > lignes) gardees.shift();
+      }
+    };
+    const p = spawn(commande, args, { stdio: ["ignore", "pipe", "pipe"], env });
+    p.stdout?.on("data", (m) => {
+      process.stdout.write(m);
+      retenir(m);
+    });
+    p.stderr?.on("data", (m) => {
+      process.stderr.write(m);
+      retenir(m);
+    });
+    p.on("exit", (code) => resoudre({ code: code ?? 1, sortie: gardees.join("\n") }));
+    p.on("error", (e) => resoudre({ code: 1, sortie: String(e?.message ?? e) }));
   });
 }
 
@@ -355,8 +433,14 @@ async function prechaufferEcransPublics() {
   // Enveloppé en entier : rien de ceci ne doit pouvoir empêcher le banc de
   // servir. Au pire, le premier appel repaiera son coût.
   try {
-    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, expliquerObstacle, prechauffer } =
-      await import("./prechauffer.mjs");
+    const {
+      cookieDeSession,
+      ecransDeChantier,
+      ECRANS_A_PRECHAUFFER,
+      ETAT_PRECHAUFFAGE,
+      expliquerObstacle,
+      prechauffer,
+    } = await import("./prechauffer.mjs");
     let motif = null;
     const cookie = await cookieDeSession({
       databaseUrl: process.env.DATABASE_URL,
@@ -372,7 +456,42 @@ async function prechaufferEcransPublics() {
     }
     const ecrans = [...ECRANS_A_PRECHAUFFER, ...(await ecransDeChantier({ base, cookie }))];
     console.log(`  Préchauffage de ${ecrans.length} écrans — ils s'ouvriront ensuite du premier coup.`);
-    const bilan = await prechauffer({ base, cookie, ecrans, ecrire: (l) => console.log(`  · ${l}`) });
+    // **Déposer l'avancement, pour que l'application puisse le DIRE.**
+    //
+    // `prechauffer` porte un rappel `avancer` depuis le 9 août 2026, et
+    // `/api/health/banc` sait déjà lire le fichier qu'il devait produire —
+    // mais **personne ne le lui passait**. La page de diagnostic répondait donc
+    // « le préchauffage n'a pas encore commencé » du début à la fin, et le
+    // bandeau du patron n'avait aucun chiffre à montrer. Une fonction prévue,
+    // documentée, éprouvée, et jamais branchée : elle ne coûtait rien à écrire
+    // et ne servait à rien tant que cette ligne n'existait pas.
+    //
+    // L'écriture est enveloppée : un `/tmp` plein ne doit pas arrêter un
+    // préchauffage qui, lui, rend l'application ouvrable.
+    const deposer = (etat) => {
+      try {
+        writeFileSync(ETAT_PRECHAUFFAGE, JSON.stringify({ ...etat, majAt: new Date().toISOString() }));
+      } catch {
+        // Le confort tombe, le banc continue.
+      }
+    };
+    const bilan = await prechauffer({
+      base,
+      cookie,
+      ecrans,
+      ecrire: (l) => console.log(`  · ${l}`),
+      avancer: deposer,
+    });
+    deposer({
+      faits: ecrans.length,
+      total: ecrans.length,
+      reussis: bilan.reussis,
+      echoues: bilan.echoues,
+      encours: null,
+      termine: true,
+      secondes: bilan.secondes,
+      obstacle: expliquerObstacle(bilan.renvoiDominant),
+    });
     console.log(`  Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
       (bilan.echoues ? `, ${bilan.echoues} en échec` : "") + ` — ${bilan.secondes} s.\n`);
     const obstacle = expliquerObstacle(bilan.renvoiDominant);
@@ -478,14 +597,111 @@ if (raison) {
   prechaufferEcransPublics();
   console.log(`  Sa version rapide se construit en même temps (${raison}) — ne fermez rien.\n`);
 
+  // **Écarter les types laissés par une AUTRE construction, avant de bâtir.**
+  //
+  // Le patron, le 11 août 2026 au soir : « Failed to type check », sur une route
+  // qui existait. Puis une seconde fois, sur une route qui venait d'être
+  // supprimée. Deux formes du même piège.
+  //
+  // Next se protège pourtant : son contrôle de types écarte `<distDir>/dev/types`
+  // — « pour empêcher des types de développement périmés de faire échouer la
+  // construction ». Mais ici `distDir` vaut `.next-batie`, si bien qu'il écarte
+  // `.next-batie/dev` pendant que les restes vivent dans `.next`. Le garde-fou
+  // vise à côté dès qu'on bâtit ailleurs que dans `.next`.
+  //
+  // `tsconfig.json` exclut déjà `.next/dev` — celui-là est réécrit en
+  // permanence par le serveur de développement, on ne peut que l'ignorer.
+  // `.next/types`, lui, ne se régénère pas : personne ne bâtit dans `.next`
+  // ici. Il ne peut donc qu'être **périmé**, et il décrit alors des routes
+  // d'avant — celle des photos, supprimée ce soir-là, en est l'exemple exact.
+  // On l'efface : ce qui n'existe plus ne peut plus accuser à tort.
+  //
+  // Reproduit dans les deux sens avant d'écrire ces lignes : avec ce reste, la
+  // construction du banc échoue au mot près comme chez lui ; sans lui, elle
+  // passe.
+  try {
+    rmSync(".next/types", { recursive: true, force: true });
+  } catch {
+    // Rien à réparer : au pire le dossier n'existait pas, et c'est le cas normal.
+  }
+
+  // **NE PAS RETIRER `<DIST>/lock`. La tentation est forte, et elle est fausse.**
+  //
+  // Le 16 août 2026, la construction du patron rendait :
+  //
+  //     ✕ Another next build process is already running.
+  //       - A previous build that didn't exit cleanly
+  //
+  // La deuxième ligne fait croire à un verrou périmé qu'il suffirait d'effacer.
+  // **Éprouvé, et c'est faux** : un fichier `lock` posé à la main n'empêche
+  // aucune construction — Next prend un verrou du système (`lockfileTryAcquire`),
+  // que le noyau relâche tout seul à la mort du processus. Le fichier qui reste
+  // n'est qu'une trace.
+  //
+  // Donc, quand ce message apparaît, **une construction tourne pour de bon**.
+  // L'effacer lancerait une SECONDE construction à côté de la première, sur une
+  // machine qui n'arrive déjà pas à en finir une — le remède qui tue, que ce
+  // dépôt a déjà payé deux fois (le second serveur du 9 août, le second banc du
+  // 10). Next a raison de refuser ; c'est nous qui devons cesser de le
+  // provoquer.
+
+  // **MAIS ON DÉLOGE L'ORPHELINE — et ce n'est pas le même geste.**
+  //
+  // Le 17 août 2026 au soir : *« même problème qu'hier, l'appli est super
+  // lente »*, et sa fiche portait le même refus qu'la veille. Ce n'était
+  // pourtant pas la même panne : le correctif du 16 tue les constructions **au
+  // démarrage**, or son espace n'a que 8 Go et le noyau tue un processus quand
+  // la mémoire manque. Un banc tué laisse SA construction vivante ; le veilleur
+  // en relance un ; celui-là tombe sur le verrou de l'orpheline, et le banc
+  // reste lent pour le reste de la soirée.
+  //
+  // On ne double donc pas une construction — on retire celle qui n'a plus de
+  // destinataire. Le raisonnement complet est dans `verrou-construction.mjs`.
+  await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
+
   // La construction écrit dans SON dossier : le serveur de développement garde
   // le sien, et les deux ne se marchent jamais dessus.
-  const code = await jouer("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+  // Rempli seulement si le verrou parle : c'est la seule information qui
+  // manquait pour comprendre pourquoi deux constructions se rencontrent.
+  let quiTenaitLeVerrou = "";
+  let { code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+
+  // **Une seconde tentative, et une seule, quand c'est LE verrou qui a parlé.**
+  //
+  // Une construction peut naître entre notre délogement et notre lancement — la
+  // fenêtre est courte, elle n'est pas nulle. Repartir coûte quelques minutes ;
+  // ne pas repartir coûte une soirée entière en mode développement, où chaque
+  // écran se compile à l'ouverture. On ne réessaie QUE sur ce refus-là : une
+  // erreur de types ne se répare pas en insistant.
+  if (code !== 0 && /Another next build process is already running/i.test(sortie)) {
+    // **On ATTEND d'abord, on déloge seulement après — corrigé le 21 août
+    // 2026.** Déloger n'a de sens que contre une orpheline ; contre une
+    // construction vivante, qui fait exactement le travail qu'on s'apprête à
+    // faire, c'est jeter plusieurs minutes de calcul pour recommencer. Le
+    // démarrage en lance deux par nature (`verrou-construction.mjs`), et c'est
+    // précisément là que le patron le payait.
+    // **QUI le tient : relevé MAINTENANT, et gardé pour le témoin d'échec.**
+    // Trois matinées de suite ont été perdues faute de cette ligne : on savait
+    // qu'un verrou était tenu, jamais par qui. Plus tard, le coupable a disparu
+    // et il ne reste qu'à supposer — ce que ce dépôt s'interdit (`AGENTS.md`).
+    quiTenaitLeVerrou = detenteursDuVerrou(DIST)
+      .map(({ pid, ligne }) => `      pid ${pid} — ${ligne}`)
+      .join("\n");
+    console.log("\n  (Le verrou de construction est tenu.)\n");
+    if (quiTenaitLeVerrou) console.log(`  Il est tenu par :\n${quiTenaitLeVerrou}\n`);
+    await attendreLaConstructionEnCours({ dossierDist: DIST, dire: (m) => console.log(m) });
+    // Ce qui reste après l'attente est bien une orpheline, ou rien du tout.
+    await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
+    ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
+  }
 
   if (code === 0) {
     try {
       mkdirSync(DIST, { recursive: true });
       writeFileSync(TEMOIN_BATI, version ?? "inconnue");
+      // Un échec d'hier ne doit pas accuser la construction d'aujourd'hui : le
+      // témoin d'échec ne survit pas à une réussite.
+      rmSync(TEMOIN_ECHEC, { force: true });
     } catch {
       // Sans témoin on rebâtira au prochain démarrage : coûteux, jamais faux.
     }
@@ -577,6 +793,33 @@ if (raison) {
       );
     }
   } else {
+    // L'échec se dépose là où la fiche saura le lire. Sans cela il ne vit que
+    // dans un journal local, et l'agent voit un banc « sans version bâtie »
+    // sans pouvoir dire si c'est passager ou définitif.
+    try {
+      writeFileSync(
+        TEMOIN_ECHEC,
+        [
+          `quand: ${new Date().toISOString()}`,
+          `code: ${code}`,
+          // Les deux suspects d'une construction qui tombe sur une machine
+          // modeste, relevés À L'INSTANT de l'échec : plus tard, la mémoire est
+          // rendue et le coupable a disparu.
+          `disque: ${mesure("df", ["-h", "--output=avail", "."])}`,
+          `memoire: ${mesure("free", ["-h"])}`,
+          // **Qui tenait le verrou, s'il a parlé.** Relevé à l'instant du
+          // refus, pas maintenant : le coupable a souvent disparu depuis.
+          ...(quiTenaitLeVerrou ? ["verrou tenu par :", quiTenaitLeVerrou] : []),
+          // **CE QUE LA CONSTRUCTION A DIT.** Sans ces lignes, le 16 août a été
+          // passé à chercher une saturation qui n'existait pas, alors que le
+          // message tenait en une phrase.
+          "dit:",
+          sortie || "(la construction n'a rien écrit)",
+        ].join("\n")
+      );
+    } catch {
+      // Un témoin qu'on ne peut pas écrire ne doit pas empêcher le repli.
+    }
     // **Jamais en silence, et jamais rien du tout.** Voir l'en-tête : un banc
     // lent reste un banc, un banc mort coûte une soirée.
     console.error(

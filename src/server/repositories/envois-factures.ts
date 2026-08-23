@@ -90,6 +90,28 @@ export async function creerEnvoiFacture(
   });
 }
 
+/**
+ * Corrige le canal d'un lien déjà émis.
+ *
+ * Le patron choisit SMS ou e-mail **au moment d'envoyer**, et il change d'avis
+ * après avoir préparé le lien — c'est même le cas courant : il prépare, voit
+ * que le client n'a pas de portable, bascule sur l'e-mail. Fabriquer un second
+ * envoi serait le pire des deux mondes (deux adresses pour une même facture,
+ * et lui ne saurait plus laquelle il a transmise) ; laisser le registre dire
+ * « SMS » alors que la facture est partie par courriel serait un mensonge
+ * tranquille, celui qu'on découvre six mois plus tard en cherchant une preuve
+ * d'envoi. On garde donc le jeton, et on corrige ce que le registre affirme.
+ */
+export async function corrigerCanalEnvoiFacture(
+  ctx: Ctx,
+  envoiId: string,
+  canal: "sms" | "email"
+): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx.update(envoisFactures).set({ canal }).where(eq(envoisFactures.id, envoiId));
+  });
+}
+
 /** Le dernier lien émis pour cette facture, pour le retrouver sans en créer un second. */
 export async function dernierEnvoiFacture(ctx: Ctx, factureId: string): Promise<EnvoiFacture | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {

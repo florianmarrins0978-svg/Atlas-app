@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 async function main() {
   const browser = await lancerNavigateur();
@@ -18,9 +19,9 @@ async function main() {
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   // Client et coordonnée : sans canal d'envoi convenu, l'écran devis refuse
   // — à juste titre — de partir chez le client.
-  await page.fill('input[placeholder="M. Bernard"]', client);
+  await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await page.click('button:has-text("Créer le chantier")');
+  await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = page.url();
 
@@ -35,7 +36,9 @@ async function main() {
   await page.waitForTimeout(400);
 
   // --- Écran Devis : aperçu PDF avant envoi ---
-  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
+  // L'adresse `/export` renvoie au devis tant que rien n'est parti (20 août
+  // 2026, `ARCHITECTURE.md` §136) : on y va donc directement.
+  await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Aperçu du PDF").isVisible());
 
   const apercuHref = await page.locator("text=Aperçu du PDF").getAttribute("href");
@@ -50,25 +53,29 @@ async function main() {
   assert.ok(await page.locator("text=/1\\s?200,00\\s?€/").isVisible(), "Le total TTC doit être exact (1 200,00 €)");
 
   // --- Envoi au client ---
-  await page.click("text=Envoyer au client");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.click("text=Choisir la date");
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForSelector("text=Devis prêt pour", { timeout: 10000 });
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 10000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
-  // --- Persistance après rechargement : reste "envoyé" ---
-  // L'écran ne répète plus « devis prêt » : rechargé, il dit où en est le devis
-  // parti — ici, en attente de la réponse du client.
-  await page.reload({ waitUntil: "networkidle" });
+  // --- Persistance : l'écran du devis parti, retrouvé plus tard ---
+  // **On y VA, il ne s'affiche plus tout seul.** Depuis le 21 août 2026, l'envoi
+  // ramène à l'accueil : cet écran ne se voit qu'en revenant par la carte du
+  // chantier, et c'est exactement ce qu'on rejoue ici.
+  await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
   assert.ok(
     await page.locator('p:text-is("En attente de réponse")').isVisible(),
     "L'état envoyé doit persister après rechargement"
   );
-  assert.ok(await page.locator("text=Télécharger le PDF").isVisible());
-  assert.ok(!(await page.locator("text=Envoyer au client").isVisible()));
+  assert.ok(!(await page.locator("text=Choisir la date").isVisible()));
 
-  // --- Le PDF téléchargé (envoyé) est un vrai PDF avec les bonnes données ---
-  const telechargementHref = await page.locator("text=Télécharger le PDF").getAttribute("href");
-  const reponsePdf = await page.request.get(`http://localhost:3000${telechargementHref}`);
+  // --- Le PDF du devis parti est un vrai PDF, aux bonnes données ------------
+  //
+  // **Demandé au serveur, et non plus lu sur un lien de cet écran** : « Télécharger
+  // le PDF » en a été retiré le 21 août 2026, à sa demande — il n'y voulait que
+  // deux gestes. Ce qui est vérifié ici n'a pas bougé d'un pouce : le document
+  // existe, il est servi, et c'en est bien un.
+  const reponsePdf = await page.request.get(`http://localhost:3000${apercuHref}?telecharger=1`);
   assert.equal(reponsePdf.status(), 200);
   assert.equal(reponsePdf.headers()["content-type"], "application/pdf");
   const octetsPdf = await reponsePdf.body();

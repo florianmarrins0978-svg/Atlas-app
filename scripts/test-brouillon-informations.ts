@@ -226,7 +226,11 @@ async function main() {
     assert.ok(confirme!.confirmeAt, "La confirmation doit être horodatée");
   });
 
-  await test("Action principale : passe à « Calculer le prix » une fois les informations vérifiées", async () => {
+  // **Le libellé a changé de sens le 21 août 2026, et le contrôle avec lui.**
+  // Une dictée mène désormais AU DEVIS, avant comme après la vérification des
+  // informations : la chaîne va de l'une à l'autre d'un seul tenant, et l'écran
+  // « Prix » n'est plus une étape de ce chemin (`ARCHITECTURE.md` §142).
+  await test("Action principale : une dictée mène au devis, vérifiée ou non", async () => {
     const avant = await chantiersRepo.getChantier(A, chantier.id);
     assert.equal(
       getNextAction({
@@ -238,7 +242,7 @@ async function main() {
         devisEnvoyeAt: null,
         datePlanifiee: null,
       })?.key,
-      "informations"
+      "devis-preparer"
     );
 
     await chantiersRepo.marquerInformationsVerifiees(A, chantier.id);
@@ -248,6 +252,23 @@ async function main() {
       getNextAction({
         photosCount: 0,
         aUneNoteVocale: true,
+        informationsVerifieesAt: apres!.informationsVerifieesAt,
+        prixValideAt: null,
+        devisGenereAt: null,
+        devisEnvoyeAt: null,
+        datePlanifiee: null,
+      })?.key,
+      "devis-preparer",
+      "vérifier les informations ramène sur l'écran « Prix » : c'est l'écran intermédiaire qu'il refuse"
+    );
+
+    // **Sans dictée, l'écran « Prix » reste le bon**, et c'est ce qui montre
+    // que la règle n'a pas été élargie plus qu'il ne fallait : celui qui écrit
+    // son devis à la main y passe encore.
+    assert.equal(
+      getNextAction({
+        photosCount: 0,
+        aUneNoteVocale: false,
         informationsVerifieesAt: apres!.informationsVerifieesAt,
         prixValideAt: null,
         devisGenereAt: null,

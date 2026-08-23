@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la fiche client, cinq dessins de cases</title>
+<style>
+/*
+  LA PAGE ENTIÈRE, CINQ FOIS — sa demande du 21 août 2026 :
+
+    « Fais-moi une maquette dynamique en point HTML, pas de photos, une maquette
+      que je puisse essayer avec les cinq différentes cases. Tu me fais toute la
+      page de haut en bas avec les cinq différentes cases, comme ça ce sera plus
+      visuel et je pourrai choisir. »
+
+  **Pourquoi cette page existe alors que `cases-a-remplir.html` montrait déjà les
+  cinq.** Celle-là les montrait EN MORCEAUX, trois champs à la suite. On y juge un
+  dessin ; on n'y voit pas ce qu'il devient sur un écran entier — à côté des
+  capsules « Par SMS », du carré photo, de l'anneau, du bouton vert. C'est
+  pourtant là que se décide « joli » : dans l'accord, pas dans le détail.
+
+  **Un seul jeu de balises, cinq feuilles de style.** L'écran est écrit UNE fois
+  et se relit sous chaque dessin : c'est ce qui rend la comparaison honnête —
+  aucun champ ne peut être plus soigné dans l'une que dans l'autre.
+
+  Ce qui ne change JAMAIS d'un dessin à l'autre : la charte, les 16 px du texte
+  saisi (en dessous, iOS zoome tout seul et l'écran saute), et la hauteur de
+  prise, 48 px minimum. `scripts/verifier-maquette-cases-page-entiere.mjs`
+  mesure les cinq.
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.tel{max-width:430px;margin:0 auto;padding-bottom:44px}
+
+/* ─── Le choix des cinq, collé en haut ────────────────────────────────── */
+.choix{position:sticky;top:0;z-index:9;display:flex;gap:6px;padding:9px 12px;
+       background:var(--bone);border-bottom:1px solid var(--line);overflow-x:auto}
+.choix button{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:99px;
+              padding:9px 14px;font-size:12.5px;color:var(--muted);cursor:pointer;font-family:inherit;
+              white-space:nowrap}
+.choix button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
+.nom-du-dessin{margin:16px 26px 0;font-size:13px;color:var(--muted);line-height:1.55}
+.nom-du-dessin b{color:var(--charcoal);font-family:Georgia,serif;font-size:16px;font-weight:400}
+
+/* ─── L'écran ─────────────────────────────────────────────────────────── */
+.marque{padding:16px 0 6px;text-align:center;font-size:10px;letter-spacing:.34em;color:var(--muted)}
+.entete{display:flex;align-items:flex-start;gap:12px;padding:4px 26px 0}
+.entete h1{margin:0;flex:1;font-family:Georgia,serif;font-weight:400;font-size:31px;line-height:1.1}
+.retour{border:0;background:none;font-size:22px;color:var(--charcoal);padding:0 6px 0 0;cursor:pointer}
+.micro-coin{width:44px;height:44px;border-radius:99px;border:0;background:var(--cream);
+            display:flex;align-items:center;justify-content:center;color:var(--pine);cursor:pointer;
+            box-shadow:inset 0 0 0 1px var(--line-soft)}
+form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
+.caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.champ{display:flex;flex-direction:column;gap:6px}
+.rang-quoi{display:none}
+input{width:100%;font-size:16px;color:var(--charcoal);font-family:inherit;border:0;background:none}
+input::placeholder{color:var(--muted)}
+input:focus{outline:0}
+.duo{display:flex;gap:9px}
+.duo .nom{flex:1;min-width:0}
+.duo .num{flex:0 0 152px}
+.duo .num input{text-align:right;font-variant-numeric:tabular-nums}
+.civilite{display:flex;gap:10px}
+.civilite button{border-radius:99px;border:1px solid var(--line);background:var(--cream);
+                 padding:13px 30px;font-size:16px;color:var(--charcoal);cursor:pointer;font-family:inherit}
+.civilite button[aria-pressed="true"]{border-color:var(--or);background:var(--paper)}
+.canal{display:flex;gap:8px}
+.canal button{flex:1;border-radius:99px;border:1px solid var(--line);background:transparent;
+              padding:11px 8px;font-size:14px;color:var(--charcoal-soft);cursor:pointer;font-family:inherit}
+.canal button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
+.canal button:disabled{opacity:.4}
+.lien-or{align-self:flex-start;border:0;background:none;padding:0;font-size:14px;
+         font-weight:500;color:var(--pine);cursor:pointer;font-family:inherit}
+.pellicule{display:flex;gap:9px;flex-wrap:wrap}
+.ajout-photo{width:74px;height:74px;border-radius:6px;border:1px dashed var(--or);
+             background:transparent;color:var(--or);font-size:27px;line-height:1;
+             display:flex;align-items:center;justify-content:center;cursor:pointer}
+.vignette{width:74px;height:74px;border-radius:6px;object-fit:cover;box-shadow:inset 0 0 0 1px var(--line)}
+.pellicule input[type=file]{display:none}
+.mon-devis{border:0;background:none;padding:10px 6px;cursor:pointer;font-family:inherit;
+           font-size:9.5px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+.principal{width:100%;border:0;border-radius:99px;background:var(--pine);color:#fff;
+           padding:17px 20px;font-family:Georgia,serif;font-size:17px;cursor:pointer}
+
+/* ─── L'ANNEAU — recopié de `globals.css`, section `.atlas-lecteur` ────── */
+.atlas-lecteur{align-self:center;position:relative;display:flex;flex-direction:column;
+               align-items:center;width:100%;--atlas-ampleur:1;margin-top:6px}
+.atlas-aile{position:absolute;top:0;height:76px;width:104px;display:flex;align-items:center;
+            overflow:hidden;pointer-events:none;transform:scaleY(var(--atlas-ampleur));
+            transition:transform 90ms linear,opacity .22s}
+.atlas-aile-g{right:calc(50% + 40px);justify-content:flex-end}
+.atlas-aile-d{left:calc(50% + 40px);justify-content:flex-start}
+.atlas-aile i{position:absolute;display:block;width:2px;border-radius:2px;opacity:0;background:var(--or)}
+.atlas-aile-g i{right:0;animation:atlas-partir-g 1.9s linear infinite;animation-play-state:paused}
+.atlas-aile-d i{left:0;animation:atlas-partir-d 1.9s linear infinite;animation-play-state:paused}
+[data-lit="oui"] .atlas-aile i{animation-play-state:running}
+@keyframes atlas-partir-g{
+  0%{transform:translateX(0) scaleY(.15);opacity:0}
+  16%{opacity:.95} 72%{opacity:.7}
+  100%{transform:translateX(-98px) scaleY(1);opacity:0}}
+@keyframes atlas-partir-d{
+  0%{transform:translateX(0) scaleY(.15);opacity:0}
+  16%{opacity:.95} 72%{opacity:.7}
+  100%{transform:translateX(98px) scaleY(1);opacity:0}}
+.atlas-aile i:nth-child(1){height:9px;animation-delay:0s}
+.atlas-aile i:nth-child(2){height:20px;animation-delay:-.24s}
+.atlas-aile i:nth-child(3){height:13px;animation-delay:-.48s}
+.atlas-aile i:nth-child(4){height:27px;animation-delay:-.72s}
+.atlas-aile i:nth-child(5){height:11px;animation-delay:-.96s}
+.atlas-aile i:nth-child(6){height:22px;animation-delay:-1.2s}
+.atlas-aile i:nth-child(7){height:8px;animation-delay:-1.44s}
+.atlas-aile i:nth-child(8){height:17px;animation-delay:-1.68s}
+.atlas-anneaux{position:relative;display:flex;align-items:center;justify-content:center;
+               min-width:76px;min-height:76px;border:0;background:none;cursor:pointer;
+               transition:transform .22s cubic-bezier(.22,.61,.36,1),opacity .3s}
+.atlas-anneaux:active{transform:scale(.95)}
+.atlas-anneaux span[data-cercle]{position:absolute;border-radius:99px;pointer-events:none}
+.atlas-traits{position:relative;display:flex;align-items:center;gap:4px;z-index:2}
+.atlas-traits i{display:block;width:2px;border-radius:2px;background:var(--or);
+                transform-origin:center;animation:atlas-battre 1.15s ease-in-out infinite;
+                animation-play-state:paused}
+.atlas-traits i:nth-child(1){height:12px;animation-delay:-.1s}
+.atlas-traits i:nth-child(2){height:24px;animation-delay:-.45s}
+.atlas-traits i:nth-child(3){height:12px;animation-delay:-.8s}
+@keyframes atlas-battre{0%,100%{transform:scaleY(.42)}50%{transform:scaleY(1)}}
+[data-lit="oui"] .atlas-traits i{animation-play-state:running}
+.carre-stop{width:17px;height:17px;border-radius:3px;background:var(--or)}
+.atlas-indice{margin:8px 0 0;font-size:11px;color:var(--muted)}
+.atlas-chrono{margin-top:10px;height:16px;font-size:13px;line-height:16px;color:var(--or);
+              font-variant-numeric:tabular-nums;opacity:0;transform:translateY(-4px);
+              transition:opacity .32s .1s,transform .32s .1s}
+[data-lit="oui"] .atlas-chrono{opacity:1;transform:none}
+
+
+/* ═══ LES CINQ DESSINS ═══════════════════════════════════════════════════
+   Chacun ne touche QUE les cases. Tout le reste de l'écran est commun, sans
+   quoi on comparerait deux écrans au lieu de deux dessins. */
+
+/* 1 · LE TRAIT — plus aucune boîte, une ligne sous le texte. */
+[data-cases="1"] .champ input{padding:12px 2px;border-bottom:1px solid var(--line);min-height:48px}
+[data-cases="1"] .champ input:focus{border-bottom:1.5px solid var(--or);padding-bottom:11.5px}
+
+/* 2 · LA CAPSULE — la forme des boutons d'Atlas. */
+[data-cases="2"] .champ input{padding:14px 20px;background:var(--paper);border-radius:99px;min-height:50px}
+[data-cases="2"] .duo .num input{padding-right:20px}
+[data-cases="2"] .champ input:focus{box-shadow:inset 0 0 0 1.5px var(--or)}
+
+/* 3 · LA LIGNE DE FICHE — l'intitulé à gauche, la valeur à droite.
+   Le duo se déplie : deux rangs l'un sous l'autre, chacun avec son mot. */
+/* **Seuls les intitulés DES CASES passent à gauche.** Masquer tous les `.caps`
+   emportait « Comment lui envoyer son devis ? » et « Photos du chantier » —
+   vu à la capture, jamais à la mesure. Un dessin qui gagne parce qu'il a perdu
+   deux intitulés ne gagne pas : il triche. */
+[data-cases="3"] .champ .caps{display:none}
+[data-cases="3"] .rang-quoi{display:block;flex:0 0 106px;font-size:14px;color:var(--muted)}
+[data-cases="3"] .champ{flex-direction:row;align-items:center;gap:14px;
+                        border-bottom:1px solid var(--line-soft)}
+[data-cases="3"] .champ input{text-align:right;padding:16px 0}
+[data-cases="3"] .champ:focus-within{border-bottom-color:var(--or)}
+[data-cases="3"] .duo{display:block}
+[data-cases="3"] .duo .num{flex:none}
+[data-cases="3"] form{gap:0}
+[data-cases="3"] .civilite,[data-cases="3"] .canal,[data-cases="3"] .pellicule,
+[data-cases="3"] .lien-or,[data-cases="3"] .bloc-libre{margin-top:17px}
+
+/* 4 · LA CARTE DOUCE — la case d'aujourd'hui, arrondie, sans liseré. */
+[data-cases="4"] .champ input{padding:15px 16px;background:var(--paper);border-radius:14px;min-height:50px}
+[data-cases="4"] .champ input:focus{box-shadow:inset 0 0 0 1.5px var(--or)}
+
+/* 5 · LE CREUX — aucun bord, un creux dans le papier. */
+[data-cases="5"] .champ input{padding:15px 16px;background:var(--paper);border-radius:12px;min-height:50px;
+                              box-shadow:inset 0 1.5px 3px rgba(28,28,26,.055)}
+[data-cases="5"] .champ input:focus{box-shadow:inset 0 1.5px 3px rgba(28,28,26,.055),
+                                                inset 0 0 0 1.5px var(--or)}
+</style>
+</head>
+<body>
+<div class="tel" id="ecran" data-cases="1">
+
+  <nav class="choix" aria-label="Le dessin des cases">
+    <button type="button" data-c="1" aria-pressed="true">1 · Le trait</button>
+    <button type="button" data-c="2" aria-pressed="false">2 · La capsule</button>
+    <button type="button" data-c="3" aria-pressed="false">3 · La ligne de fiche</button>
+    <button type="button" data-c="4" aria-pressed="false">4 · La carte douce</button>
+    <button type="button" data-c="5" aria-pressed="false">5 · Le creux</button>
+  </nav>
+  <p class="nom-du-dessin"><b id="titre-dessin">Le trait</b> — <span id="quoi-dessin">plus aucune boîte, une ligne sous le texte qui s’éclaire quand vous écrivez.</span></p>
+
+  <p class="marque">ATLAS</p>
+  <div class="entete">
+    <button class="retour" type="button" aria-label="Retour">‹</button>
+    <h1>Fiche client</h1>
+    <button class="micro-coin" type="button" aria-label="Dicter les coordonnées">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+        <rect x="9" y="3" width="6" height="11" rx="3"/>
+        <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+        <path d="M12 18v3" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <form onsubmit="return false">
+    <div class="civilite">
+      <button type="button" aria-pressed="true">Mr</button>
+      <button type="button" aria-pressed="false">Mme</button>
+    </div>
+
+    <div class="duo">
+      <div class="champ nom">
+        <span class="caps">Nom du client</span><span class="rang-quoi">Nom</span>
+        <input id="nom" type="text" value="M. Julien" autocomplete="off">
+      </div>
+      <div class="champ num">
+        <span class="caps">Téléphone</span><span class="rang-quoi">Téléphone</span>
+        <input id="tel" type="tel" placeholder="06 12 34 56 78" value="06 79 98 45 14" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="champ">
+      <span class="caps">E-mail</span><span class="rang-quoi">E-mail</span>
+      <input type="email" placeholder="bernard@exemple.fr" autocomplete="off">
+    </div>
+
+    <div class="champ">
+      <span class="caps">Adresse du chantier</span><span class="rang-quoi">Adresse</span>
+      <input id="adresse" type="text" value="12 rue des Lilas, Nantes" autocomplete="off">
+    </div>
+
+    <button class="lien-or" type="button">+ Ajouter une adresse client différente</button>
+
+    <fieldset class="bloc-libre" style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">
+      <legend class="caps" style="padding:0">Comment lui envoyer son devis ?</legend>
+      <div class="canal">
+        <button type="button" id="par-sms" aria-pressed="true">Par SMS</button>
+        <button type="button" id="par-mail" aria-pressed="false">Par e-mail</button>
+      </div>
+    </fieldset>
+
+    <div class="bloc-libre" style="display:flex;flex-direction:column;gap:6px">
+      <span class="caps">Photos du chantier</span>
+      <div class="pellicule" id="pellicule">
+        <input id="fichiers" type="file" accept="image/*" multiple>
+        <button class="ajout-photo" type="button" id="ajouter-photo" aria-label="Ajouter des photos">+</button>
+      </div>
+    </div>
+
+    <div class="atlas-lecteur" id="anneau" data-lit="non">
+      <span class="atlas-aile atlas-aile-g" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="atlas-aile atlas-aile-d" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <button class="atlas-anneaux" type="button" id="dicter" aria-pressed="false" aria-label="Dicter les tâches à faire">
+        <span data-cercle style="width:74px;height:74px;border:1.5px solid var(--pine)"></span>
+        <span data-cercle style="width:56px;height:56px;border:1px solid var(--or)"></span>
+        <span class="atlas-traits" id="traits" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <p class="atlas-indice" id="indice">Appuyez et décrivez le chantier</p>
+      <p class="atlas-chrono" id="chrono">0:00</p>
+    </div>
+
+    <div id="apres-dictee" style="display:none;text-align:center">
+      <button class="mon-devis" type="button">Mon devis →</button>
+    </div>
+
+    <div style="padding-top:4px">
+      <button class="principal" type="button">Je rédige mon devis</button>
+    </div>
+  </form>
+</div>
+
+<script>
+/*
+  Un seul écran, cinq feuilles de style. Le bouton pose `data-cases` sur le
+  conteneur, et rien d'autre ne bouge : ni le contenu, ni l'ordre, ni les gestes.
+*/
+const $ = (s) => document.querySelector(s);
+
+const DESSINS = {
+  1: ["Le trait", "plus aucune boîte, une ligne sous le texte qui s’éclaire quand vous écrivez."],
+  2: ["La capsule", "la forme de vos boutons, appliquée aux cases. Plus rien de carré sur l’écran."],
+  3: ["La ligne de fiche", "l’intitulé à gauche, ce que vous tapez à droite. La plus compacte des cinq."],
+  4: ["La carte douce", "vos cases d’aujourd’hui, mais les angles arrondis et le liseré retiré."],
+  5: ["Le creux", "aucun bord : la case est un creux dans le papier."],
+};
+
+document.querySelectorAll(".choix button").forEach((b) => {
+  b.addEventListener("click", () => {
+    $("#ecran").dataset.cases = b.dataset.c;
+    document.querySelectorAll(".choix button").forEach((x) =>
+      x.setAttribute("aria-pressed", String(x === b))
+    );
+    const [nom, quoi] = DESSINS[b.dataset.c];
+    $("#titre-dessin").textContent = nom;
+    $("#quoi-dessin").textContent = quoi;
+  });
+});
+
+document.querySelectorAll(".civilite button").forEach((b) => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".civilite button").forEach((x) => x.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", "true");
+  });
+});
+$("#par-sms").addEventListener("click", () => { $("#par-sms").setAttribute("aria-pressed","true"); $("#par-mail").setAttribute("aria-pressed","false"); });
+$("#par-mail").addEventListener("click", () => { $("#par-mail").setAttribute("aria-pressed","true"); $("#par-sms").setAttribute("aria-pressed","false"); });
+
+/* Le numéro s'espace tout seul — la même règle que sur la fiche client. */
+function espacerLeNumero(champ) {
+  const avant = champ.value.slice(0, champ.selectionStart ?? champ.value.length);
+  const chiffresAGauche = (avant.match(/\d/g) ?? []).length;
+  if (champ.value.trim().startsWith("+")) return;
+  const chiffres = (champ.value.match(/\d/g) ?? []).join("").slice(0, 10);
+  champ.value = chiffres.replace(/(\d{2})(?=\d)/g, "$1 ");
+  let rang = 0, vus = 0;
+  while (rang < champ.value.length && vus < chiffresAGauche) {
+    if (/\d/.test(champ.value[rang])) vus++;
+    rang++;
+  }
+  champ.setSelectionRange(rang, rang);
+}
+$("#tel").addEventListener("input", (e) => espacerLeNumero(e.target));
+
+/* Les photos : le vrai menu du téléphone, sans `capture`. */
+$("#ajouter-photo").addEventListener("click", () => $("#fichiers").click());
+$("#fichiers").addEventListener("change", (e) => {
+  for (const f of e.target.files) {
+    const img = document.createElement("img");
+    img.className = "vignette"; img.alt = "Photo du chantier";
+    img.src = URL.createObjectURL(f);
+    $("#pellicule").insertBefore(img, $("#ajouter-photo"));
+  }
+  e.target.value = "";
+});
+
+/* L'anneau — le même geste que sur la fiche client. */
+let enregistre = false, secondes = 0, horloge = null, ondulation = null;
+const mmss = (s) => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+$("#dicter").addEventListener("click", () => (enregistre ? arreter() : commencer()));
+function commencer() {
+  enregistre = true; secondes = 0;
+  $("#anneau").dataset.lit = "oui";
+  $("#dicter").setAttribute("aria-pressed", "true");
+  $("#traits").outerHTML = '<span class="carre-stop" id="traits" aria-hidden="true" style="width:17px;height:17px;border-radius:3px;background:var(--or)"></span>';
+  $("#indice").textContent = "Appuyez pour arrêter";
+  $("#chrono").textContent = "0:00";
+  horloge = setInterval(() => { secondes++; $("#chrono").textContent = mmss(secondes); }, 1000);
+  ondulation = setInterval(() => {
+    $("#anneau").style.setProperty("--atlas-ampleur", (0.55 + Math.random() * 0.8).toFixed(2));
+  }, 160);
+}
+function arreter() {
+  enregistre = false;
+  clearInterval(horloge); clearInterval(ondulation);
+  $("#anneau").dataset.lit = "non";
+  $("#anneau").style.setProperty("--atlas-ampleur", "1");
+  $("#dicter").setAttribute("aria-pressed", "false");
+  $("#traits").outerHTML = '<span class="atlas-traits" id="traits" aria-hidden="true"><i></i><i></i><i></i></span>';
+  $("#indice").textContent = "Enregistré";
+  $("#apres-dictee").style.display = "block";
+}
+</script>
+</body>
+</html>

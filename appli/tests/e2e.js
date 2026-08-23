@@ -22,6 +22,33 @@ function ok(name, cond){ if (cond) pass++; else { fail++; fails.push(name); } }
    Même mécanisme que scripts/e2e-browser.ts, côté application Next.js. */
 const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
 
+/* Une photo d'essai engendrée ici, pour éprouver le croquis sans dépendre d'un
+   binaire déposé à la main — qui se perdrait au premier rangement du dépôt. */
+const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
+{
+  const { writeFileSync } = require('fs');
+  const zlib = require('zlib');
+  const w = 900, h = 700, lignes = [];
+  for (let y = 0; y < h; y++){
+    const l = Buffer.alloc(1 + w * 3);
+    for (let x = 0; x < w; x++){ l[1 + x*3] = 205; l[2 + x*3] = 212; l[3 + x*3] = 195; }
+    lignes.push(l);
+  }
+  const morceau = (type, data) => {
+    const c = Buffer.concat([Buffer.from(type), data]);
+    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+    const crc = Buffer.alloc(4); crc.writeUInt32BE(zlib.crc32(c));
+    return Buffer.concat([len, c, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2;
+  writeFileSync(CROQUIS_ESSAI, Buffer.concat([
+    Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]),
+    morceau('IHDR', ihdr), morceau('IDAT', zlib.deflateSync(Buffer.concat(lignes))),
+    morceau('IEND', Buffer.alloc(0))
+  ]));
+}
+
 (async () => {
   const browser = await chromium.launch(EXE ? { executablePath: EXE } : {});
   const ctx = await browser.newContext();
@@ -243,6 +270,409 @@ const EXE = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
     ok('envoi : absence d’e-mail signalée', statut2.visible && /Aucun e-mail/.test(statut2.texte));
 
     await cDest.close();
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     PLAN D'ARROSAGE — la maquette essayable (17 août 2026).
+
+     Elle n'a pas la barre de navigation d'Arborea, et c'est voulu : c'est une
+     maquette d'Atlas posée ici parce que c'est le seul endroit du dépôt qui
+     soit PUBLIÉ, donc le seul où le patron puisse l'ouvrir depuis son téléphone
+     avec JavaScript. Les contrôles ci-dessous gardent ce qui casserait sans
+     bruit : une erreur au chargement (page blanche), un calcul qui déborde le
+     débit du robinet, et un prix qui apparaîtrait alors que toute la page tient
+     sur la promesse qu'il n'y en a aucun.
+     ───────────────────────────────────────────────────────────────────────── */
+  {
+    const cArr = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await cArr.route(/googleapis|gstatic|cloudflare|jsdelivr/i, r => r.abort());
+    const page = await cArr.newPage();
+    const errs = []; page.on('pageerror', e => errs.push('arrosage: ' + e.message));
+    await page.goto(`${B}/arrosage.html`, { waitUntil:'domcontentloaded' });
+    await page.waitForTimeout(250);
+
+    ok('arrosage : aucune erreur JS au chargement', errs.length === 0);
+    if (errs.length) fails.push(...errs);
+
+    const dispo = (await page.$eval('#debitDispo', el => el.textContent)).trim();
+    ok('arrosage : le débit se calcule du seau', dispo === '1,80');
+
+    // Le panneau des secteurs a été retiré le 17 août sur sa demande ; le
+    // découpage, lui, tourne toujours et décide de tout le reste.
+    const secteurs = await page.evaluate(() => decouper().secteurs.length);
+    // Le seuil était de 6 : il visait le jardin d'exemple d'alors. Le quinconce
+    // de son croquis du 18 août a fait tomber le débit, donc le nombre de
+    // vannes. Ce que ce contrôle garde n'est pas un nombre — c'est que le
+    // découpage RÉPONDE au lieu de rendre zéro, ce qui serait le signe qu'il ne
+    // tourne plus depuis que son écran a disparu.
+    ok('arrosage : le jardin de départ se découpe', secteurs >= 1);
+
+    // **Le quinconce retire un arroseur, il ne le déplace pas.** Une pose
+    // décalée qui garde tous ses points fait exactement ce qu'il a signalé le
+    // 17 août : une capture avec une tête en trop, cerclée en rouge. Le plan a
+    // depuis quitté l'écran, sur sa demande — mais l'invariant qui comptait
+    // reste : le nombre ANNONCÉ sur la zone et la liste de points sont une
+    // seule et même chose, jamais deux calculs côte à côte.
+    const nomSurZone = await page.$eval('.zone-res', el => el.textContent);
+    const teteAttendue = Number((nomSurZone.match(/^(\d+)\s/) || [])[1]);
+    const pointsComptes = await page.evaluate(() => {
+      const z = etat.zones.filter(x => TYPES[x.type].forme === 'surface')[0];
+      const p = poser(z);
+      return { nombre: p.nombre, points: p.points.length };
+    });
+    ok('arrosage : le nombre annoncé est exactement la liste de points',
+       teteAttendue > 0 && pointsComptes.points === teteAttendue &&
+       pointsComptes.nombre === teteAttendue);
+
+    // L'invariant du métier : un secteur au-dessus du robinet, et les derniers
+    // arroseurs bavent au lieu d'arroser.
+    //
+    // **Lu dans le CALCUL et non à l'écran** : le panneau des secteurs a été
+    // retiré le 17 août sur sa demande (« tu supprimes la 3 »), mais le
+    // découpage tourne toujours — c'est lui qui donne les couleurs du plan et
+    // le nombre d'électrovannes. L'invariant, lui, n'a pas bougé d'un pouce.
+    const debits = await page.evaluate(() => decouper().secteurs.map(s => s.debit));
+    ok('arrosage : aucun secteur au-dessus du robinet',
+       debits.length > 0 && debits.every(d => d <= parseFloat(dispo.replace(',', '.')) + 1e-9));
+
+    // La saison change les durées, jamais le câblage : c'est ce qui décide de
+    // l'heure de départ, et un cycle qui déborde envoie arroser en plein soleil.
+    const cycle = await page.evaluate(() => {
+      const lire = () => { const d = decouper();
+        return { n: d.secteurs.length, min: d.secteurs.reduce((a, s) => a + s.minutes, 0) }; };
+      const avant = etat.saison;
+      etat.saison = 'juillet'; const juillet = lire();
+      etat.saison = 'avril';   const avril = lire();
+      etat.saison = avant;     recalculer(true);
+      return { juillet, avril };
+    });
+    await page.waitForTimeout(120);
+    ok('arrosage : les durées existent et baissent en avril',
+       cycle.juillet.min > 0 && cycle.avril.min < cycle.juillet.min);
+    ok('arrosage : changer de saison ne recâble pas', cycle.avril.n === cycle.juillet.n);
+
+    // **LE CROQUIS — sa demande du 17 août : « la 2, ça doit être la photo du
+    // croquis qu'on ajoute ».** La page est publiée sans serveur : elle ne LIT
+    // pas les cotes, et elle doit le dire. Un écran qui laisserait croire le
+    // contraire ferait partir un jardin vide sur un chantier.
+    ok('arrosage : le croquis se photographie', (await page.$$eval('#croquisFichier', e => e.length)) === 1);
+    // **On POSE une photo pour éprouver l'avertissement.** Une première version
+    // acceptait aussi le texte affiché SANS photo : elle passait au vert même
+    // quand l'avertissement avait disparu, puisque l'autre branche du message
+    // suffisait à la satisfaire. Un contrôle qui accepte deux états n'en garde
+    // aucun.
+    await page.setInputFiles('#croquisFichier', CROQUIS_ESSAI);
+    await page.waitForTimeout(900);
+    ok('arrosage : la photo du croquis s\'affiche', (await page.$$eval('.croquis-vue img', e => e.length)) === 1);
+    ok('arrosage : et la page annonce ce qu\'elle ne sait pas encore lire',
+       /ne se lisent pas encore/.test(await page.$eval('#croquisNote', el => el.innerText)));
+    // Et les sections retirées le sont VRAIMENT : « tu supprimes la 3 ».
+    const titres = await page.$$eval('h2', e => e.map(x => x.textContent.trim()));
+    ok('arrosage : trois sections — le découpage ET le plan retirés',
+       titres.length === 3 && /Le croquis/.test(titres[1]) &&
+       !titres.some(t => /secteurs/i.test(t)) && !titres.some(t => /^\d+ · Le plan/.test(t)));
+
+    // Sa décision du 17 août : la sortie est une liste de quantités, pas un
+    // devis. Le jour où un montant apparaît, ce contrôle le dit.
+    const corps = await page.$eval('body', el => el.innerText);
+    ok('arrosage : aucun prix nulle part', !/€|\bEUR\b/.test(corps));
+    // Retourné le 18 août sur sa décision : *« le disconnecteur, tu peux le
+    // supprimer à tout jamais, je n'en mets jamais. »* Gardé plutôt que
+    // supprimé, pour que la pièce ne revienne pas au premier raisonnement
+    // « c'est obligatoire sur l'eau potable » — juste en général, faux pour
+    // lui, et sa décision serait perdue.
+    ok('arrosage : le disconnecteur n\'est plus dans la liste', !/Disconnecteur/.test(corps),
+       (corps.match(/[^\n]*Disconnecteur[^\n]*/) || [''])[0]);
+
+    // Un ajout de zone doit vraiment ajouter : c'est le geste central.
+    const avant = await page.$$eval('.zone', e => e.length);
+    await page.click('[data-ajout="massif"]'); await page.waitForTimeout(150);
+    ok('arrosage : ajouter une zone l’ajoute', (await page.$$eval('.zone', e => e.length)) === avant + 1);
+
+    // **Le coude SBE, sa consigne du 17 août : « sous les arroseurs il faut
+    // obligatoirement des coudes SBE, choisis-les en fonction des diamètres,
+    // un à chaque fois par arroseur. »** Le taraudage vient du corps choisi
+    // (1/2" ou 3/4"), pas d'une supposition — deux références différentes
+    // selon la famille, et le mauvais choix ne visse simplement pas.
+    const materiel = await page.$eval('#materiel', el => el.innerText);
+    ok('arrosage : un coude SBE est compté, un par arroseur', /Coude SBE/.test(materiel));
+    ok('arrosage : plus de « crosse » générique — remplacée par le vrai coude',
+       !/[Cc]rosse/.test(materiel), materiel.match(/[Cc]rosse[^\n]*/)?.[0] || '');
+
+    // **Deux SBE par arroseur, pas un** — sa planche du 17 août sur le réseau
+    // latéral : un raccord en bas (toujours 3/4", sur la tuyauterie) et un en
+    // haut (au diamètre du corps). En manquer un sous-compte une pièce que
+    // chaque arroseur porte réellement.
+    //
+    // **Ce contrôle lisait les étiquettes « (haut, au corps) » et « (bas, sur
+    // la ligne) » ; il compte désormais.** Le patron a fait retirer ces
+    // mentions le 18 août — *« ce sont des données pour toi [...] l'utilisateur
+    // n'a pas besoin de ces infos-là »* —, et les deux emplois d'une même
+    // référence se sont fondus en une ligne. Un contrôle accroché à un libellé
+    // meurt au premier changement de libellé ; la RÈGLE, elle, ne bouge pas :
+    // deux SBE par arroseur, quel que soit le nom écrit sur la ligne.
+    const sbe = await page.evaluate(() => {
+      const arroseurs = etat.zones.reduce((s, z) => {
+        const p = poser(z);
+        return s + (p.m && p.m.type !== 'gaine' ? p.nombre : 0);
+      }, 0);
+      const total = listeMateriel(decouper())
+        .filter(l => /SBE/.test(l.nom)).reduce((s, l) => s + l.q, 0);
+      return { arroseurs, total };
+    });
+    // Le cas qui empêche de mesurer zéro : sans arroseur posé, 0 === 2×0 serait
+    // vert sans rien prouver (le piège du 15 août).
+    ok('arrosage : le jardin d\'épreuve pose bien des arroseurs', sbe.arroseurs > 0,
+       JSON.stringify(sbe));
+    ok('arrosage : deux SBE par arroseur — celui du haut ET celui du bas',
+       sbe.arroseurs > 0 && sbe.total === sbe.arroseurs * 2, JSON.stringify(sbe));
+    ok('arrosage : le PEBD16 de reprise est compté', /PEBD rigide/.test(materiel));
+
+        // **Le corps par défaut, sa décision du 17 août : « 10 cm sans option,
+    // mais proposer les autres à chaque fois ». Un sélecteur cassé (élément
+    // absent du DOM) fait planter TOUTE la page — c'est le défaut réellement
+    // survenu en écrivant ce lot : une édition partielle avait laissé le
+    // script référencer un <select id="corps"> qui n'existait pas.**
+    const corpsChoix = await page.$eval('#corps', el => el.value);
+    ok('arrosage : un corps est sélectionné par défaut', !!corpsChoix, 'lu : ' + corpsChoix);
+    const corpsNote = await page.$eval('#corpsNote', el => el.innerText);
+    ok('arrosage : le corps par défaut est le 10 cm sans option',
+       /10 cm/.test(corpsNote) && !/SAM|régulateur/i.test(corpsNote), corpsNote.slice(0, 80));
+    ok('arrosage : ce que le corps apporte est expliqué en clair',
+       /courant|pente|pression/i.test(corpsNote), corpsNote.slice(0, 80));
+
+    // Rien ne doit déborder sur un téléphone.
+    ok('arrosage : rien ne déborde en largeur',
+       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+
+    // **Le chemin qu'aucune donnée n'emprunte encore.** Ses fiches de nourrice
+    // arrivées le 17 août 2026 (de 1 à 6 voies, relevées « ce qui se trouve
+    // dans le regard d'arrosage »). Un jardin de 8×6 m avec des tuyères
+    // tombe sur 3 secteurs, qui a sa fiche réelle : la 3504 (Rain Bird) prend
+    // sa place. Testé sur de VRAIES données, pas un montage de fortune.
+    await page.evaluate(() => {
+      etat.zones = [{ id:900, nom:'Test', type:'gazon', L:8, l:6, materiel:'tuyere' }];
+      recalculer(true);
+    });
+    await page.waitForTimeout(150);
+    const fiche = await page.$eval('#nourrice', el => el.innerText);
+    // Le mot « Clarinette » était un indice de « c'est une vraie fiche », et il
+    // est tombé le 18 août : les petites fiches se montent sans clarinette.
+    // Ce qui compte est que la fiche soit LA SIENNE (source « patron ») et
+    // qu'elle s'affiche complète.
+    ok('arrosage : une fiche de nourrice enregistrée s’affiche',
+       /votre fiche/i.test(fiche) && /Électrovanne/.test(fiche) && !/à renseigner/.test(fiche));
+    // Ses pièces se retrouvent aussi dans la liste chiffrable — pas dupliquées,
+    // pas oubliées : c'est ELLES qui remplacent les lignes génériques.
+    // **Ce contrôle exigeait le mot « Clarinette », et il est devenu faux le
+    // 18 août** : le quinconce de son croquis a fait tomber ce jardin à moins
+    // de voies, et les petites fiches se montent sans clarinette. Le mot
+    // n'était qu'un indice ; la RÈGLE est que ses pièces REMPLACENT les
+    // lignes génériques au lieu de s'y ajouter.
+    const materiel2 = await page.$eval('#materiel', el => el.innerText);
+    const remplace = await page.evaluate(() => {
+      const d = decouper();
+      const f = CATALOGUE.ficheNourrice(d.secteurs.length, combienGoutteAGoutte(d));
+      if (!f || !f.pieces || !f.pieces.length) return { fiche: false };
+      const refs = listeMateriel(d).map(l => l.ref);
+      const manquantes = f.pieces.filter(x => refs.indexOf(x.ref) < 0);
+      return { fiche: true, source: f.source, pieces: f.pieces.length,
+               manquantes: manquantes.map(x => x.ref) };
+    });
+    // Sans fiche, rien n'est éprouvé : on le dit au lieu de rendre du vert.
+    ok('arrosage : une fiche de nourrice existe bien pour ce jardin',
+       remplace.fiche === true && remplace.source === 'patron', JSON.stringify(remplace));
+    ok('arrosage : les pièces de la fiche entrent dans la liste chiffrable',
+       remplace.fiche && remplace.pieces > 0 && remplace.manquantes.length === 0 &&
+       !/Électrovannes 24 V|Regards de vannes/.test(materiel2),
+       'manquantes : ' + (remplace.manquantes || []).join(', '));
+
+    // **Les débits par ARC sont lus au catalogue, jamais déduits par division.**
+    // Sur les grosses buses la division tombe juste, donc un contrôle posé sur
+    // la 18-VAN n'aurait rien vu. Celui-ci force une petite zone, où la 6-VAN
+    // est retenue : le tableau donne 0,08 / 0,13 / 0,27, quand une division du
+    // tour complet donnerait 0,0675 / 0,135. Douze arroseurs → 1,64 m³/h par le
+    // tableau, 0,54 par division. Quatre centièmes : c'est tout ce qui sépare
+    // une donnée relevée d'une donnée supposée, et c'est mesurable.
+    await page.evaluate(() => {
+      etat.zones = [{ id:900, nom:'Petit gazon', type:'gazon', L:3, l:2, materiel:'tuyere' }];
+      recalculer(true);
+    });
+    await page.waitForTimeout(200);
+    // **Le nombre 0,58 était écrit en dur, et il a bougé avec le quinconce.**
+    // Ce qu'il gardait ne bouge pas : le débit d'un quart et d'un demi-tour est
+    // LU au catalogue, jamais obtenu en divisant le tour complet. On compare
+    // donc les deux façons de compter — et l'on exige qu'elles DIFFÈRENT, ce
+    // qui est le seul témoignage qu'on a bien lu le tableau.
+    const arcs = await page.evaluate(() => {
+      const z = etat.zones[0], p = poser(z);
+      if (!p.m || !p.points) return { pose: false };
+      const parTable = p.debit;
+      const parDivision = p.points.reduce((s, pt) =>
+        s + (pt.zone === 'coin' ? p.m.debit360/4 : pt.zone === 'bord' ? p.m.debit360/2 : p.m.debit360), 0);
+      return { pose: true, buse: p.m.nom + ' ' + p.m.detail, tetes: p.points.length,
+               lu: !!p.m.debitParAngle, parTable: +parTable.toFixed(3), parDivision: +parDivision.toFixed(3) };
+    });
+    ok('arrosage : la petite zone pose bien des tuyères à arcs', arcs.pose && arcs.tetes > 0 && arcs.lu,
+       JSON.stringify(arcs));
+    ok('arrosage : le débit d’un arc vient du tableau, pas d’une division',
+       arcs.pose && Math.abs(arcs.parTable - arcs.parDivision) > 0.005, JSON.stringify(arcs));
+
+    ok('arrosage : toujours aucune erreur JS', errs.length === 0);
+    await cArr.close();
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     LE REGISTRE DE SES PRIX (17 août 2026).
+
+     Sa consigne : les prix des catalogues sont des prix CLIENT, ils ne
+     s'enregistrent pas. Les siens, négociés, se tapent ici et ne quittent pas
+     son navigateur. Ce que ces contrôles tiennent, et qui se perdrait sans eux :
+     tant que le registre est vide, AUCUN euro n'apparaît sur le plan ; dès
+     qu'un prix est saisi, il est repris — et les lignes sans prix restent
+     comptées comme manquantes plutôt que comblées.
+     ───────────────────────────────────────────────────────────────────────── */
+  {
+    const cPrix = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await cPrix.route(/googleapis|gstatic|cloudflare|jsdelivr/i, r => r.abort());
+    const page = await cPrix.newPage();
+    const errs = []; page.on('pageerror', e => errs.push('tarifs: ' + e.message));
+    await page.goto(`${B}/arrosage-tarifs.html`, { waitUntil:'domcontentloaded' });
+    await page.waitForTimeout(250);
+    await page.evaluate(() => localStorage.removeItem('atlas-arrosage-prix'));
+    await page.reload({ waitUntil:'domcontentloaded' });
+    await page.waitForTimeout(250);
+
+    ok('tarifs : aucune erreur JS au chargement', errs.length === 0);
+    if (errs.length) fails.push(...errs);
+
+    const produits = await page.$$eval('.p', e => e.length);
+    ok('tarifs : le registre liste les produits du catalogue', produits >= 10);
+    ok('tarifs : aucun prix pré-rempli',
+       (await page.$$eval('.p input', e => e.filter(x => x.value !== '').length)) === 0);
+
+    // **Aucun prix de CATALOGUE nulle part.** Sa consigne : les tarifs imprimés
+    // sont des prix client. Une première version de ce contrôle ne regardait
+    // que le plan — un prix recopié dans la fiche produit passait au vert. Il
+    // regarde donc les descriptifs eux-mêmes.
+    const details = await page.$$eval('.p .det', e => e.map(x => x.textContent).join(' | '));
+    ok('tarifs : aucun montant dans les descriptifs produits', !/\d\s*€/.test(details));
+
+    // Le plan, registre vide : pas un euro. C'est la promesse de toute la page.
+    const plan = await cPrix.newPage();
+    await plan.goto(`${B}/arrosage.html`, { waitUntil:'domcontentloaded' });
+    await plan.waitForTimeout(300);
+    ok('tarifs : registre vide, aucun euro sur le plan',
+       !/€/.test(await plan.$eval('#materiel', el => el.innerText)));
+
+    // Il tape un prix : le plan le reprend, et dit ce qui manque encore.
+    //
+    // **Le contrôle DEMANDE AU PLAN quelle référence il commande, au lieu de
+    // la nommer.** Deux versions ont rougi pour n'avoir pas fait cela : la
+    // première visait la première carte du registre, la seconde nommait la
+    // 12-VAN — et chaque fois qu'une de ses règles a changé le jardin
+    // d'exemple (les turbines posables, puis les tuyères réservées aux petits
+    // espaces), le contrôle chiffrait un produit que le plan ne commande plus.
+    // Trois cases rouges pour une raison qui n'était pas la leur. Ici, la
+    // référence et sa quantité sortent du plan lui-même : le jardin peut
+    // changer autant qu'il veut, le contrôle éprouve toujours la même chose —
+    // que le total vaille EXACTEMENT quantité × prix saisi.
+    const cible = await plan.evaluate(() => {
+      const l = listeMateriel(decouper()).filter(x => x.ref && x.u === 'u');
+      return l.length ? { ref: l[0].ref, q: l[0].q } : null;
+    });
+    ok('tarifs : le plan commande bien une référence chiffrable', !!cible && cible.q > 0,
+       JSON.stringify(cible));
+    await page.$$eval('.p', (cartes, ref) => {
+      const carte = cartes.filter(c => c.textContent.indexOf(ref) >= 0)[0];
+      const el = carte.querySelector('input');
+      el.value = '3.10'; el.dispatchEvent(new Event('input'));
+    }, cible.ref);
+    await page.waitForTimeout(200);
+    ok('tarifs : le compte suit la saisie', /1 \/ /.test(await page.$eval('#compte', el => el.innerText)));
+
+    await plan.reload({ waitUntil:'domcontentloaded' });
+    await plan.waitForTimeout(300);
+    const total = await plan.$eval('#total', el => el.innerText);
+    ok('tarifs : le plan chiffre à SON prix', /€ HT/.test(total));
+    // **Le montant est vérifié au centime**, pas par un motif de texte. Une
+    // version antérieure se contentait de lire « … sans prix » : un total qui
+    // comblait ses trous à 10 € la ligne affichait toujours cette phrase et
+    // passait au vert. Le montant attendu est calculé depuis la quantité que
+    // le plan commande — et surtout pas depuis le total des arroseurs, ce qui
+    // laisserait passer un cumul de lignes non chiffrées.
+    const attendu = (cible.q * 3.10).toFixed(2).replace('.', ',');
+    ok('tarifs : le total vaut EXACTEMENT les lignes chiffrées',
+       new RegExp(attendu.replace(',', ',') + '\\s*€').test(total),
+       'attendu ' + attendu + ' € (' + cible.q + ' × 3,10) | lu : ' + total.slice(0, 80));
+    ok('tarifs : et les lignes sans prix restent annoncées', /sans prix|INCOMPLET/.test(total));
+
+    // Une case vidée efface le prix — « gratuit » n'est pas « pas renseigné ».
+    // La MÊME carte que celle qu'on vient de remplir, sinon on vide une case
+    // déjà vide et le contrôle passe au vert sans rien avoir éprouvé.
+    await page.$$eval('.p', (cartes, ref) => {
+      const carte = cartes.filter(c => c.textContent.indexOf(ref) >= 0)[0];
+      const el = carte.querySelector('input');
+      el.value = ''; el.dispatchEvent(new Event('input'));
+    }, cible.ref);
+    await page.waitForTimeout(200);
+    ok('tarifs : vider une case efface le prix', /0 \/ /.test(await page.$eval('#compte', el => el.innerText)));
+
+    ok('tarifs : toujours aucune erreur JS', errs.length === 0);
+    await cPrix.close();
+  }
+
+  // ── Les clients, à l'essai ────────────────────────────────────────────────
+  //
+  // Sa demande du 17 août 2026 au soir : *« montre-moi depuis chantier ce que ça
+  // donnerait, crée une maquette dynamique que je puisse essayer »*.
+  //
+  // **Elle se manipule SANS JavaScript** — la navigation passe par `:target`.
+  // Le contrôle coupe donc le script : c'est la seule façon de prouver que la
+  // page ne dépend pas de lui, et une planche qui ne s'ouvrirait pas chez lui
+  // ne vaut rien.
+  {
+    const cCl = await browser.newContext({ viewport: { width: 390, height: 850 }, javaScriptEnabled: false });
+    const page = await cCl.newPage();
+    const visible = (id) => page.locator('#' + id).isVisible();
+
+    await page.goto(`${B}/clients.html`, { waitUntil: 'domcontentloaded' });
+    ok('clients : l\'accueil s\'ouvre seul', (await visible('accueil')) && !(await visible('liste')));
+
+    await page.locator('#accueil a[href="#liste"]').click();
+    ok('clients : « Vos clients » ouvre la liste', (await visible('liste')) && !(await visible('accueil')));
+
+    await page.locator('#liste a[href="#client"]').first().click();
+    ok('clients : un nom ouvre sa fiche', await visible('client'));
+
+    // **Le chemin qu'il a demandé de voir : DEPUIS un chantier.**
+    await page.locator('#client a[href="#chantier"]').first().click();
+    ok('clients : un chantier s\'ouvre depuis la fiche', await visible('chantier'));
+    await page.locator('#chantier a[href="#client"]').first().click();
+    ok('clients : et le chantier ramène à la fiche du client', await visible('client'));
+
+    // **L'arithmétique, parce qu'il la refait.** Le détail des chantiers doit
+    // faire le total facturé, et le seul impayé doit faire ce qui reste dû.
+    await page.goto(`${B}/clients.html#client`, { waitUntil: 'domcontentloaded' });
+    const texte = await page.locator('#client').innerText();
+    const montants = (texte.match(/(\d[\d  ]*) €/g) || []).map(m => Number(m.replace(/[^\d]/g, '')));
+    const parChantier = [887, 740, 980, 593];
+    ok('clients : le détail des chantiers fait bien le total facturé',
+       montants.indexOf(parChantier.reduce((a, b) => a + b, 0)) >= 0,
+       'attendu 3200 quelque part dans : ' + montants.join(', '));
+    ok('clients : ce qui reste dû est bien le seul chantier impayé',
+       /740 €.*impay|impay.*740 €/s.test(texte) && montants.indexOf(740) >= 0);
+
+    // La barre du bas garde QUATRE onglets : le cinquième est réservé aux
+    // outils métier, et à cinq colonnes « CHANTIERS » déborde déjà.
+    const onglets = await page.locator('.barre span').count();
+    ok('clients : la barre du bas garde quatre onglets', onglets === 4, 'vus : ' + onglets);
+
+    // Rien ne déborde sur son téléphone.
+    const large = await page.evaluate(() => document.documentElement.scrollWidth);
+    ok('clients : rien ne déborde à 390 px', large <= 391, 'largeur ' + large);
+
+    await cCl.close();
   }
 
   await browser.close();

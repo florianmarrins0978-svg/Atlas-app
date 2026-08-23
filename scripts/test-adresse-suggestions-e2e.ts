@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Le geste que le patron a décrit, joué en entier.**
 //
@@ -15,7 +16,7 @@ import { lancerNavigateur } from "./e2e-browser";
 //   3. **le choix ne rouvre pas la liste sous le doigt.** Le champ change de
 //      valeur au moment du choix ; si ce changement relançait une recherche, la
 //      liste se rouvrirait sur l'adresse tout juste validée, par-dessus le
-//      bouton « Créer le chantier » ;
+//      bouton de création (« Je dicte mon devis ») ;
 //   4. **une panne du service ne casse pas le formulaire.** Le patron travaille
 //      dehors : le réseau va et vient. Le champ doit rester un champ ordinaire,
 //      et le chantier doit pouvoir se créer quand même.
@@ -106,7 +107,7 @@ async function main() {
   assert.equal(
     await liste.count(),
     0,
-    "La liste s'est rouverte sur l'adresse tout juste validée — elle recouvre alors le bouton « Créer le chantier »."
+    "La liste s'est rouverte sur l'adresse tout juste validée — elle recouvre alors les boutons de création."
   );
 
   // --- 5. Une panne du service ne casse pas le formulaire ------------------
@@ -122,7 +123,7 @@ async function main() {
 
   // Et le chantier se crée quand même, avec une adresse que la base ignore —
   // un chemin, un lieu-dit, « derrière la scierie ». C'est là qu'il travaille.
-  await page.getByRole("button", { name: /Créer le chantier/i }).click();
+  await creerPuisFiche(page);
   // **Généreux, et pour une raison précise.** Cette suite passe la PREMIÈRE de
   // la batterie (ordre alphabétique) : elle paie donc la toute première
   // compilation de la fiche de chantier, sur un serveur de développement qui

@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le calendrier des trimestres</title>
+</head>
+<body>
+<style>
+  /*
+    « ENTRE LE 2e TRIMESTRE 2026 ET LE 4e TRIMESTRE 2026, J'AIMERAIS QU'IL Y AIT
+    UN PETIT CALENDRIER, ET SI ON CLIQUE DESSUS ON A ACCÈS AU CALENDRIER POUR SE
+    DÉPLACER PLUS RAPIDEMENT. PEUT-ÊTRE UN CALENDRIER SANS LES JOURS, PARCE
+    QU'ON N'A PAS BESOIN DE JOURS ÉTANT DONNÉ QUE CE N'EST QUE DES MOIS. »
+
+    Sa demande du 12 août 2026. Aujourd'hui, remonter au 1er trimestre 2025
+    demande sept appuis sur « ← » — et sept chargements d'écran.
+
+    TROIS FAÇONS, à essayer au doigt (le choix est en haut) :
+      · LES QUATRE TRIMESTRES — une année, quatre pavés, les mois écrits dessous.
+      · LES DOUZE MOIS        — le calendrier sans les jours, au pied de la
+                                lettre : on touche un mois, on tombe sur son
+                                trimestre.
+      · LA LISTE              — quatre lignes, rien à viser.
+
+    TOUT RÉPOND : les flèches d'année changent l'année, un trimestre touché
+    ferme le panneau et change le titre de l'écran. Rien n'est codé dans
+    l'application.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --pin:#2f3b2f; --teinte:#ece9e1;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ressort:cubic-bezier(.22,1.02,.36,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:#e9e6df;color:var(--encre);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .caps{text-transform:uppercase;letter-spacing:.28em;font-size:9.5px;font-weight:500}
+
+  .choix{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;
+         padding:14px 16px 12px;background:#e9e6df}
+  .choix .quoi{width:100%;text-align:center;color:#8a7452;text-transform:uppercase;
+               letter-spacing:.3em;font-size:9.5px;font-weight:500;margin-bottom:2px}
+  .choix button{border:1px solid var(--trait);background:none;border-radius:999px;
+                padding:8px 15px;font:inherit;font-size:12.5px;color:#6f6a5f;cursor:pointer;
+                -webkit-tap-highlight-color:transparent;transition:all .2s}
+  .choix button[aria-pressed="true"]{background:var(--encre);border-color:var(--encre);color:#f5f3ee}
+
+  .scene{display:flex;justify-content:center;padding:0}
+  .tel{width:100%;background:none;padding:0;border-radius:0;box-shadow:none}
+  .ecran{position:relative;overflow:hidden;width:100%;
+         height:calc(100dvh - 92px);min-height:600px;
+         display:flex;flex-direction:column;background:var(--fond)}
+  @media (min-width:560px){
+    .scene{padding:26px 16px 40px}
+    .tel{width:390px;padding:11px;border-radius:44px;background:#cfccc4;
+         box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.20)}
+    .ecran{height:700px;border-radius:34px}
+  }
+
+  .corps{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none}
+  .corps::-webkit-scrollbar{display:none}
+
+  .retour{margin:26px 0 0 24px;width:40px;height:40px;border:0;border-radius:999px;
+          background:var(--teinte);display:flex;align-items:center;justify-content:center;
+          cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .surtitre{margin:26px 0 0;padding:0 24px;color:var(--or)}
+  .titre{margin:9px 0 0;padding:0 24px;font-size:34px;line-height:1.04;font-weight:400;
+         letter-spacing:-.018em}
+  .filet{height:1px;background:var(--trait);margin:20px 24px 0}
+
+  /* ─── LA RANGÉE : c'est ici que le calendrier se pose ────────────────────── */
+  .rangee{display:flex;align-items:center;justify-content:space-between;gap:10px;
+          margin-top:20px;padding:0 24px;font-size:14px;font-weight:500}
+  .rangee a{color:var(--pin);text-decoration:none;-webkit-tap-highlight-color:transparent;
+            white-space:nowrap}
+  /* Le carré de 44 px est invisible, mais il est là : une icône de 18 px se
+     rate deux fois sur trois avec des gants. */
+  .cal{flex:0 0 auto;width:44px;height:44px;margin:-12px 0;border:0;background:none;
+       display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+       -webkit-tap-highlight-color:transparent;transition:transform .18s var(--ressort)}
+  .cal:active{transform:scale(.88)}
+  .cal svg{display:block}
+
+  .cartes{display:flex;flex-direction:column;gap:16px;padding:24px 24px 0}
+  .carte{background:var(--plage);border-radius:4px}
+  .total{padding:24px 20px;text-align:center}
+  .total .quoi{margin:0 0 6px;color:var(--gris)}
+  .total .somme{margin:0;font-size:36px;line-height:1;font-weight:600;color:var(--pin)}
+  .total .ht{margin:12px 0 0;font-size:13px;color:var(--gris)}
+  .liste{padding:20px}
+  .liste .combien{margin:0 0 12px;color:var(--gris)}
+  .fact{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+        padding:6px 0}
+  .fact .qui{font-size:15px}
+  .fact .quand{margin-top:2px;font-size:12px;color:var(--gris)}
+  .fact .combien2{flex:0 0 auto;font-size:15px;color:var(--pin)}
+  .mention{padding:4px 26px 26px;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
+
+  .barre{display:flex;justify-content:space-around;align-items:center;
+         padding:15px 8px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--trait)}
+  .barre span{color:var(--gris);text-transform:uppercase;letter-spacing:.28em;
+              font-size:9.5px;font-weight:500}
+  .barre span.actif{color:var(--encre);position:relative}
+  .barre span.actif::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:1px;background:var(--or)}
+
+  /* ─── LE PANNEAU ─────────────────────────────────────────────────────────── */
+  .voile{position:absolute;inset:0;z-index:10;background:rgba(20,18,14,.44);
+         backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+         opacity:0;pointer-events:none;transition:opacity .28s;
+         display:flex;align-items:flex-end;justify-content:center}
+  .voile.ouvert{opacity:1;pointer-events:auto}
+  .feuille{width:100%;background:var(--fond);border-radius:26px 26px 0 0;
+           box-shadow:0 -18px 44px rgba(20,18,14,.22);
+           padding:11px 22px calc(18px + env(safe-area-inset-bottom));
+           transform:translateY(101%);transition:transform .38s var(--ressort)}
+  .voile.ouvert .feuille{transform:none}
+  .poignee{width:38px;height:4px;border-radius:9px;background:rgba(28,28,26,.15);margin:0 auto 16px}
+
+  .annee{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .annee button{width:44px;height:44px;border:0;background:none;cursor:pointer;
+                font:400 20px/1 ui-sans-serif,-apple-system,sans-serif;color:var(--pin);
+                -webkit-tap-highlight-color:transparent}
+  .annee .n{font-family:ui-serif,Georgia,serif;font-size:24px;font-variant-numeric:tabular-nums}
+
+  .grille{display:grid;gap:9px}
+  .g4{grid-template-columns:1fr 1fr}
+  .g12{grid-template-columns:repeat(3,1fr)}
+  .pave{border:1px solid var(--trait);background:var(--plage);border-radius:8px;
+        padding:14px 8px;cursor:pointer;font:inherit;text-align:center;color:var(--encre);
+        -webkit-tap-highlight-color:transparent;transition:all .16s}
+  .pave:active{transform:scale(.97)}
+  .pave .t{display:block;font-family:ui-serif,Georgia,serif;font-size:17px}
+  .pave .m{display:block;margin-top:3px;font-size:11px;color:var(--gris)}
+  .pave.ici{background:var(--pin);border-color:var(--pin);color:#f5f3ee}
+  .pave.ici .m{color:rgba(245,243,238,.66)}
+  /* Le trimestre en cours dans la vraie vie : un point doré, jamais une
+     couleur pleine — sinon deux pavés se disputent le regard. */
+  .pave.aujourdhui{position:relative}
+  .pave.aujourdhui::after{content:"";position:absolute;top:7px;right:7px;width:5px;height:5px;
+                          border-radius:999px;background:var(--or)}
+  .g12 .pave{padding:12px 4px}
+  .g12 .pave .t{font-size:15px}
+  .g12 .pave .m{font-size:10px}
+
+  .rangs{display:flex;flex-direction:column;gap:1px;background:var(--trait-doux);
+         border-radius:10px;overflow:hidden}
+  .rang{display:flex;align-items:center;justify-content:space-between;gap:12px;
+        padding:15px 16px;background:var(--plage);border:0;cursor:pointer;font:inherit;
+        text-align:left;color:var(--encre);-webkit-tap-highlight-color:transparent}
+  .rang:active{background:#f0eee7}
+  .rang .t{font-family:ui-serif,Georgia,serif;font-size:16.5px}
+  .rang .m{font-size:12px;color:var(--gris)}
+  .rang.ici{background:var(--pin);color:#f5f3ee}
+  .rang.ici .m{color:rgba(245,243,238,.66)}
+
+  .aujourd{display:block;width:100%;margin-top:12px;padding:12px;border:0;background:none;
+           cursor:pointer;font:inherit;font-size:14px;color:var(--pin);text-align:center;
+           -webkit-tap-highlight-color:transparent}
+  .renoncer{display:block;width:100%;margin-top:2px;padding:12px;border:0;background:none;
+            cursor:pointer;font:inherit;font-size:15px;color:var(--gris);text-align:center;
+            -webkit-tap-highlight-color:transparent}
+
+  .dessous{background:#e9e6df;padding:34px 20px 70px}
+  .dessous .dedans{max-width:60ch;margin:0 auto;color:#6f6a5f;font-size:14px;line-height:1.7}
+  .dessous h2{margin:0 0 6px;font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+              color:#8a7452;font-weight:500}
+  .dessous h2:not(:first-child){margin-top:28px}
+  .dessous b{color:var(--encre);font-weight:500}
+
+  @media (prefers-reduced-motion:reduce){ .voile,.feuille,.cal,.pave{transition:none} }
+</style>
+
+<div class="choix" id="choix">
+  <span class="quoi">Quelle forme de calendrier</span>
+  <button type="button" data-f="quatre" aria-pressed="true">Les quatre trimestres</button>
+  <button type="button" data-f="douze" aria-pressed="false">Les douze mois</button>
+  <button type="button" data-f="liste" aria-pressed="false">La liste</button>
+</div>
+
+<div class="scene">
+  <div class="tel"><div class="ecran" id="ecran">
+
+    <div class="corps">
+      <button class="retour" aria-label="Retour">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="2.4">
+          <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <p class="surtitre caps">TVA collectée</p>
+      <h1 class="titre serif" id="titre">3e trimestre 2026</h1>
+      <div class="filet"></div>
+
+      <div class="rangee">
+        <a href="#" id="prec">← <span>2e trimestre 2026</span></a>
+
+        <!-- **LE CALENDRIER, exactement là où il l'a demandé** : entre les deux
+             flèches, au milieu. Un trait fin plutôt qu'une icône pleine — la
+             charte ne pose du plein que sur ce qu'on FAIT. -->
+        <button class="cal" id="cal" aria-label="Choisir un trimestre">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f"
+               stroke-width="1.6" aria-hidden="true">
+            <rect x="3.2" y="5" width="17.6" height="15.4" rx="2.4"/>
+            <path d="M3.2 9.6h17.6" />
+            <path d="M8 3.4v3.2M16 3.4v3.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <a href="#" id="suiv"><span>4e trimestre 2026</span> →</a>
+      </div>
+
+      <div class="cartes">
+        <div class="carte total">
+          <p class="quoi caps">TVA collectée</p>
+          <p class="somme serif num">164,00 €</p>
+          <p class="ht num">sur 820,00 € hors taxes</p>
+        </div>
+
+        <div class="carte liste">
+          <p class="combien caps">2 factures</p>
+          <div class="fact">
+            <div>
+              <div class="qui">F2026-0001 — Monsieur Martins</div>
+              <div class="quand">mercredi 12 août</div>
+            </div>
+            <span class="combien2 num">156,00 €</span>
+          </div>
+          <div class="fact">
+            <div>
+              <div class="qui">F2026-0002 — Monsieur Martins</div>
+              <div class="quand">mercredi 12 août</div>
+            </div>
+            <span class="combien2 num">8,00 €</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="mention">Ce relevé est préparé par Atlas à partir de vos factures émises.
+        Il ne vaut pas déclaration : celle-ci reste à faire par votre outil comptable.</p>
+    </div>
+
+    <div class="barre">
+      <span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Réglages</span>
+    </div>
+
+    <div class="voile" id="voile" role="dialog" aria-modal="true">
+      <div class="feuille">
+        <div class="poignee"></div>
+
+        <div class="annee">
+          <button type="button" id="moins" aria-label="Année précédente">‹</button>
+          <span class="n" id="lannee">2026</span>
+          <button type="button" id="plus" aria-label="Année suivante">›</button>
+        </div>
+
+        <div id="panneau"></div>
+
+        <button class="aujourd" type="button" id="aujourd">Revenir au trimestre en cours</button>
+        <button class="renoncer" type="button" id="fermer">Annuler</button>
+      </div>
+    </div>
+
+  </div></div>
+</div>
+
+<div class="dessous">
+  <div class="dedans">
+    <h2>Ce que ça vous fait gagner</h2>
+    <p>Aujourd’hui, remonter au <b>1<sup>er</sup> trimestre 2025</b> depuis celui-ci
+      demande <b>sept appuis</b> sur « ← », et sept chargements d’écran. Avec le
+      calendrier : <b>deux appuis</b>, et un seul chargement.</p>
+
+    <h2>Les trois formes</h2>
+    <p><b>Les quatre trimestres.</b> Une année, quatre pavés, les mois écrits
+      dessous en petit. C’est la forme la plus proche de ce que l’écran montre —
+      il ne parle qu’en trimestres.</p>
+    <p><b>Les douze mois.</b> Votre idée, au pied de la lettre : un calendrier
+      sans les jours. On touche « septembre », on tombe sur le 3<sup>e</sup>
+      trimestre. Plus de cases à viser, mais on pense en mois, ce qui est
+      peut-être plus naturel quand on cherche une facture.</p>
+    <p><b>La liste.</b> Quatre lignes pleine largeur, rien à viser au doigt.
+      La plus sûre avec des gants, la moins jolie.</p>
+
+    <h2>Ce qui est vrai dans les trois</h2>
+    <p>Le <b>point doré</b> marque le trimestre en cours dans la vraie vie ; le
+      pavé <b>vert plein</b> marque celui que vous regardez. Les deux ne se
+      confondent pas. « Revenir au trimestre en cours » est là pour le jour où
+      vous vous êtes perdu en 2023.</p>
+
+    <h2>Ce que je n’ai pas décidé seul</h2>
+    <p><b>Rien n’est codé.</b> Dites-moi laquelle, et je la fais.</p>
+  </div>
+</div>
+
+<script>
+  var MOIS = ["janvier","février","mars","avril","mai","juin",
+              "juillet","août","septembre","octobre","novembre","décembre"];
+  var COURTS = ["janv.","févr.","mars","avr.","mai","juin",
+                "juil.","août","sept.","oct.","nov.","déc."];
+  var RANG = ["1er","2e","3e","4e"];
+
+  // Le trimestre « d'aujourd'hui » de la maquette : celui de sa capture.
+  var AUJ = { annee: 2026, t: 3, mois: 7 };   // août 2026, sa capture
+  var vu = { annee: 2026, t: 3 };   // celui qu'on regarde
+  var anneePanneau = 2026;
+  var forme = "quatre";
+
+  function libelle(p){ return RANG[p.t - 1] + " trimestre " + p.annee; }
+  function moisDe(t){ return COURTS[(t-1)*3] + " – " + COURTS[(t-1)*3 + 2]; }
+  function precedent(p){ return p.t === 1 ? { annee: p.annee - 1, t: 4 } : { annee: p.annee, t: p.t - 1 }; }
+  function suivant(p){ return p.t === 4 ? { annee: p.annee + 1, t: 1 } : { annee: p.annee, t: p.t + 1 }; }
+
+  function peindreEcran(){
+    document.getElementById("titre").textContent = libelle(vu);
+    document.getElementById("prec").innerHTML = "← <span>" + libelle(precedent(vu)) + "</span>";
+    document.getElementById("suiv").innerHTML = "<span>" + libelle(suivant(vu)) + "</span> →";
+  }
+
+  function peindrePanneau(){
+    document.getElementById("lannee").textContent = anneePanneau;
+    var p = document.getElementById("panneau");
+    p.innerHTML = "";
+
+    if (forme === "liste") {
+      var rangs = document.createElement("div");
+      rangs.className = "rangs";
+      for (var t = 1; t <= 4; t++) rangs.appendChild(uneLigne(t));
+      p.appendChild(rangs);
+      return;
+    }
+
+    var g = document.createElement("div");
+    g.className = "grille " + (forme === "douze" ? "g12" : "g4");
+    if (forme === "douze") {
+      for (var m = 0; m < 12; m++) g.appendChild(unMois(m));
+    } else {
+      for (var q = 1; q <= 4; q++) g.appendChild(unPave(q));
+    }
+    p.appendChild(g);
+  }
+
+  function marques(el, t){
+    if (anneePanneau === vu.annee && t === vu.t) el.classList.add("ici");
+    if (anneePanneau === AUJ.annee && t === AUJ.t) el.classList.add("aujourdhui");
+  }
+
+  function unPave(t){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "pave";
+    b.innerHTML = "<span class='t'>" + RANG[t-1] + " trimestre</span><span class='m'>" + moisDe(t) + "</span>";
+    marques(b, t);
+    b.addEventListener("click", function(){ choisir(t); });
+    return b;
+  }
+
+  function unMois(m){
+    var t = Math.floor(m / 3) + 1;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "pave";
+    b.innerHTML = "<span class='t'>" + MOIS[m].slice(0,1).toUpperCase() + MOIS[m].slice(1) +
+                  "</span><span class='m'>" + RANG[t-1] + " trim.</span>";
+    // **Le point doré marque le MOIS courant, pas les trois du trimestre.**
+    // Posé par trimestre, il se répétait trois fois de suite : trois points
+    // pour un seul « aujourd'hui », c'est un repère qui cesse d'en être un.
+    if (anneePanneau === vu.annee && t === vu.t) b.classList.add("ici");
+    if (anneePanneau === AUJ.annee && m === AUJ.mois) b.classList.add("aujourdhui");
+    b.addEventListener("click", function(){ choisir(t); });
+    return b;
+  }
+
+  function uneLigne(t){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "rang";
+    b.innerHTML = "<span class='t'>" + RANG[t-1] + " trimestre</span><span class='m'>" + moisDe(t) + "</span>";
+    marques(b, t);
+    b.addEventListener("click", function(){ choisir(t); });
+    return b;
+  }
+
+  function choisir(t){
+    vu = { annee: anneePanneau, t: t };
+    peindreEcran();
+    fermer();
+  }
+
+  var voile = document.getElementById("voile");
+  function ouvrir(){ anneePanneau = vu.annee; peindrePanneau(); voile.classList.add("ouvert"); }
+  function fermer(){ voile.classList.remove("ouvert"); }
+
+  document.getElementById("cal").addEventListener("click", ouvrir);
+  document.getElementById("fermer").addEventListener("click", fermer);
+  voile.addEventListener("click", function(e){ if (e.target === voile) fermer(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") fermer(); });
+
+  document.getElementById("moins").addEventListener("click", function(){ anneePanneau--; peindrePanneau(); });
+  document.getElementById("plus").addEventListener("click", function(){ anneePanneau++; peindrePanneau(); });
+  document.getElementById("aujourd").addEventListener("click", function(){
+    vu = { annee: AUJ.annee, t: AUJ.t }; peindreEcran(); fermer();
+  });
+
+  document.getElementById("prec").addEventListener("click", function(e){ e.preventDefault(); vu = precedent(vu); peindreEcran(); });
+  document.getElementById("suiv").addEventListener("click", function(e){ e.preventDefault(); vu = suivant(vu); peindreEcran(); });
+
+  document.querySelectorAll("#choix button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("#choix button").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      b.setAttribute("aria-pressed","true");
+      forme = b.getAttribute("data-f");
+      if (voile.classList.contains("ouvert")) peindrePanneau(); else ouvrir();
+    });
+  });
+
+  peindreEcran();
+</script>
+</body>
+</html>

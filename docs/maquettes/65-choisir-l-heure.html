@@ -1,0 +1,350 @@
+<title>Choisir l'heure au pouce</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    CHOISIR L'HEURE AU POUCE — le temps passé ne se tape pas.
+
+    LE PATRON, LE 16 AOÛT 2026 : « pour l'heure, ça serait bien de ne pas avoir
+    à l'écrire, mais d'avoir par exemple une petite molette ou un truc sympa
+    pour choisir l'heure. Tout en gardant à l'esprit que je veux une application
+    ULTRA LUXE ET MODERNE. »
+
+    ————————————————————————————————————————————————————————————————
+    POURQUOI UN CLAVIER EST LE MAUVAIS OUTIL ICI, indépendamment du goût.
+
+    Le temps passé se saisit EN FIN DE CHANTIER, debout, avec des gants, sur un
+    téléphone au soleil. Un clavier numérique demande de viser quatre touches et
+    de savoir quel format on attend — « 1h40 », « 1:40 », « 100 » ? Chaque
+    format accepté est une règle de plus, chaque format refusé est un aller-
+    retour. Une molette ne peut produire qu'une valeur juste : il n'y a rien à
+    valider, donc rien à refuser.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI N'EST PAS À CHOISIR — ce sont des conséquences.
+
+    · LE PAS EST DE CINQ MINUTES. À la minute près, la molette ferait deux cent
+      quarante crans pour quatre heures et deviendrait inutilisable au pouce ;
+      et personne ne facture un entretien à la minute.
+    · ELLE S'OUVRE SUR LE TEMPS PLANIFIÉ, jamais sur zéro. Neuf fois sur dix, le
+      passage a duré à peu près ce qui était prévu : la bonne valeur est alors à
+      un cran, pas à vingt. (Ici la maquette part de zéro — sans JavaScript, une
+      page ne peut pas se positionner elle-même. Dans l'application, elle le
+      pourra.)
+    · L'ÉCART RESTE AFFICHÉ À CÔTÉ. C'est lui qui dit si le contrat est bien
+      taillé, et c'est la seule raison d'afficher le planifié.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE « ULTRA LUXE » VEUT DIRE ICI, en trois décisions et pas en adjectifs.
+
+    1. LE CHIFFRE EST GRAND ET EN SERIF. Un temps qu'on lit à distance de bras,
+       posé comme un chiffre de montre, pas comme une valeur de formulaire.
+    2. CE QUI EST LOIN S'EFFACE. Les crans s'estompent vers les bords
+       (mask-image) : l'œil ne voit que ce qui compte, et la bande paraît
+       tourner sur elle-même au lieu de glisser dans une boîte.
+    3. RIEN NE CLIGNOTE, RIEN NE REBONDIT. Le luxe, sur un outil de travail, est
+       l'absence de bruit : un seul trait doré marque le cran choisi, et il ne
+       bouge jamais.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : la molette est une zone de défilement avec accroche
+    (scroll-snap) et un repère collé (position: sticky). Le procédé est celui
+    décrit dans PROJECT_STATE.md, y compris ses trois pièges — le rembourrage
+    est posé sur le CONTENU, jamais sur le conteneur, sans quoi le repère se
+    décale de la moitié.
+    Contrôle : scripts/verifier-maquette-choisir-l-heure.mjs
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --teinte:#ece9e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --teinte:#252320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --teinte:#252320;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .reglage{margin:0 0 18px}
+  .reglage .quoi{display:block;font-size:11px;letter-spacing:.13em;
+                 text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .segments{display:flex;flex-wrap:wrap;gap:8px}
+  .segments label{display:inline-block;padding:9px 15px;border-radius:999px;
+                  border:1px solid var(--trait);background:var(--papier);
+                  font-size:13.5px;cursor:pointer;color:var(--gris)}
+  #h-a:checked ~ .dedans label[for="h-a"],
+  #h-b:checked ~ .dedans label[for="h-b"],
+  #h-c:checked ~ .dedans label[for="h-c"]{background:var(--pin);color:var(--papier);
+                                          border-color:var(--pin)}
+
+  .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+  .tel{width:330px;flex:none;border-radius:26px;background:var(--papier);
+       border:1px solid var(--trait);padding:18px 16px 20px;
+       box-shadow:0 10px 34px rgba(28,28,26,.09)}
+  .barre{display:flex;justify-content:space-between;align-items:baseline;
+         margin-bottom:14px}
+  .barre .ou{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+             color:var(--or)}
+  .barre .quand{font-size:11.5px;color:var(--gris)}
+
+  .champ-nom{margin:0 0 10px;font-size:11px;letter-spacing:.13em;
+             text-transform:uppercase;color:var(--or);display:flex;
+             justify-content:space-between;align-items:baseline}
+  .champ-nom .prevu{font-size:11px;letter-spacing:0;color:var(--gris);
+                    text-transform:none}
+
+  .ha,.hb,.hc{display:none}
+  #h-a:checked ~ .dedans .ha,
+  #h-b:checked ~ .dedans .hb,
+  #h-c:checked ~ .dedans .hc{display:block}
+
+  /* ═══ A · la molette du téléphone ═════════════════════════════════════════
+     Deux listes natives. Sur un iPhone, c'est EXACTEMENT la molette qu'il
+     décrit : elle s'ouvre au bas de l'écran et se fait défiler au pouce. Ce
+     dépôt a déjà tranché ainsi pour la durée d'un chantier (durees-chantier.ts). */
+  .duo{display:flex;gap:10px}
+  .duo select{flex:1;font:inherit;font-size:19px;font-family:Georgia,serif;
+              color:var(--encre);background:var(--papier);
+              border:1px solid var(--trait);border-radius:14px;
+              padding:14px 12px;appearance:none;text-align:center}
+
+  /* ═══ B · les quarts d'heure ══════════════════════════════════════════════ */
+  .pas{display:flex;flex-wrap:wrap;gap:8px}
+  .pas label{flex:1 1 calc(33.333% - 8px);text-align:center;padding:14px 6px;
+             border-radius:14px;border:1px solid var(--trait);
+             font-family:Georgia,serif;font-size:17px;color:var(--gris);
+             cursor:pointer;background:transparent}
+  .etat:checked + label.q{background:var(--pin);border-color:var(--pin);
+                          color:var(--papier)}
+  .autre{display:block;margin-top:10px;text-align:center;font-size:13px;
+         color:var(--or)}
+
+  /* ═══ C · la molette Atlas ════════════════════════════════════════════════
+     Une zone de défilement avec accroche, et un repère COLLÉ au centre. Le
+     repère est le premier enfant du contenu et porte `top` égal au rembourrage
+     du contenu : il se tient donc exactement au milieu de la fenêtre, par
+     construction, sans qu'aucun calcul ne suive le défilement. */
+  .molette{position:relative;border-radius:18px;background:var(--teinte);
+           padding:0 6px;overflow:hidden}
+  .bande{height:196px;overflow-y:auto;scroll-snap-type:y proximity;
+         scrollbar-width:none;
+         /* Ce qui est loin s'efface : la bande paraît tourner. */
+         -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 30%,#000 70%,transparent 100%);
+         mask-image:linear-gradient(180deg,transparent 0,#000 30%,#000 70%,transparent 100%)}
+  .bande::-webkit-scrollbar{display:none}
+  /* Le rembourrage est posé sur le CONTENU, jamais sur le conteneur — sans
+     quoi le repère se décale de la moitié (piège consigné le 10 août 2026). */
+  .dedans-bande{padding:74px 0}
+  .repere{position:sticky;top:74px;height:0;z-index:2}
+  .repere::before{content:"";display:block;height:48px;border-radius:12px;
+                  border-top:1px solid var(--or);border-bottom:1px solid var(--or);
+                  background:rgba(185,139,71,.07)}
+  .v{height:48px;display:flex;align-items:center;justify-content:center;
+     scroll-snap-align:center;font-family:Georgia,serif;font-size:22px;
+     color:var(--encre)}
+
+  .ecart{margin-top:12px;display:flex;justify-content:space-between;
+         align-items:center;font-size:12.5px;color:var(--gris)}
+  .ecart .pastille{background:var(--teinte);color:var(--pin);border-radius:999px;
+                   padding:5px 11px}
+  .bouton{display:block;margin-top:16px;text-align:center;padding:15px;
+          border-radius:999px;background:var(--pin);color:var(--papier);
+          font-size:15px}
+
+  .legende{flex:1;min-width:280px;font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .legende .t{display:block;font-family:Georgia,serif;font-size:18px;
+              color:var(--encre);margin-bottom:8px}
+  .legende b{color:var(--encre);font-weight:600}
+  .cout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--trait)}
+
+  .note{margin-top:30px;padding:16px 18px;border-radius:12px;
+        background:var(--papier);font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin-bottom:6px}
+</style>
+
+<input type="radio" name="h" id="h-a" class="etat" checked>
+<input type="radio" name="h" id="h-b" class="etat">
+<input type="radio" name="h" id="h-c" class="etat">
+
+<input type="radio" name="q" id="q1" class="etat">
+<input type="radio" name="q" id="q2" class="etat">
+<input type="radio" name="q" id="q3" class="etat" checked>
+<input type="radio" name="q" id="q4" class="etat">
+<input type="radio" name="q" id="q5" class="etat">
+<input type="radio" name="q" id="q6" class="etat">
+
+<div class="dedans">
+  <h1>Choisir l'heure au pouce</h1>
+  <p class="intro">Le temps passé ne se tape plus. <b>Rien n'est codé.</b>
+    <b>Faites tourner la molette C avec le doigt</b> — elle s'accroche aux crans,
+    sans une ligne de JavaScript.</p>
+
+  <p class="dit">« Ça serait bien de <b>ne pas avoir à l'écrire</b>, mais d'avoir
+    une petite molette ou un truc sympa pour choisir l'heure. Tout en gardant à
+    l'esprit que je veux une application <b>ultra luxe et moderne</b>. »</p>
+
+  <div class="reglage">
+    <span class="quoi">Comment il pose son temps</span>
+    <div class="segments">
+      <label for="h-a">A · La molette du téléphone — <b>retenu</b></label>
+      <label for="h-b">B · Les quarts d'heure</label>
+      <label for="h-c">C · La molette Atlas</label>
+    </div>
+  </div>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="barre"><span class="ou">Fin de passage</span><span class="quand">Monsieur Martins</span></div>
+      <p class="champ-nom">Temps passé <span class="prevu">planifié 2 h 30</span></p>
+
+      <!-- ═══ A · deux listes natives ═══════════════════════════════════════ -->
+      <div class="ha">
+        <div class="duo">
+          <select aria-label="Heures">
+            <option>0 h</option><option selected>1 h</option><option>2 h</option>
+            <option>3 h</option><option>4 h</option><option>5 h</option>
+          </select>
+          <select aria-label="Minutes">
+            <option>00</option><option>05</option><option>10</option>
+            <option>15</option><option>20</option><option>25</option>
+            <option>30</option><option>35</option><option selected>40</option>
+            <option>45</option><option>50</option><option>55</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ═══ B · les quarts d'heure ════════════════════════════════════════ -->
+      <div class="hb">
+        <div class="pas">
+          <label class="q" for="q1">1 h 00</label>
+          <label class="q" for="q2">1 h 15</label>
+          <label class="q" for="q3">1 h 30</label>
+          <label class="q" for="q4">1 h 45</label>
+          <label class="q" for="q5">2 h 00</label>
+          <label class="q" for="q6">2 h 15</label>
+        </div>
+        <span class="autre">Une autre durée…</span>
+      </div>
+
+      <!-- ═══ C · la molette Atlas ══════════════════════════════════════════ -->
+      <div class="hc">
+        <div class="molette">
+          <div class="bande">
+            <div class="dedans-bande">
+              <div class="repere"></div>
+              <div class="v">0 h 00</div><div class="v">0 h 05</div><div class="v">0 h 10</div>
+              <div class="v">0 h 15</div><div class="v">0 h 20</div><div class="v">0 h 25</div>
+              <div class="v">0 h 30</div><div class="v">0 h 35</div><div class="v">0 h 40</div>
+              <div class="v">0 h 45</div><div class="v">0 h 50</div><div class="v">0 h 55</div>
+              <div class="v">1 h 00</div><div class="v">1 h 05</div><div class="v">1 h 10</div>
+              <div class="v">1 h 15</div><div class="v">1 h 20</div><div class="v">1 h 25</div>
+              <div class="v">1 h 30</div><div class="v">1 h 35</div><div class="v">1 h 40</div>
+              <div class="v">1 h 45</div><div class="v">1 h 50</div><div class="v">1 h 55</div>
+              <div class="v">2 h 00</div><div class="v">2 h 05</div><div class="v">2 h 10</div>
+              <div class="v">2 h 15</div><div class="v">2 h 20</div><div class="v">2 h 25</div>
+              <div class="v">2 h 30</div><div class="v">2 h 35</div><div class="v">2 h 40</div>
+              <div class="v">2 h 45</div><div class="v">2 h 50</div><div class="v">2 h 55</div>
+              <div class="v">3 h 00</div><div class="v">3 h 15</div><div class="v">3 h 30</div>
+              <div class="v">3 h 45</div><div class="v">4 h 00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ecart">
+        <span>Sur les 2 h 30 prévues</span>
+        <span class="pastille">− 50 min</span>
+      </div>
+      <span class="bouton">Enregistrer et envoyer</span>
+    </div>
+
+    <div class="legende">
+      <div class="ha">
+        <span class="t">A · La molette du téléphone</span>
+        <b>Sa décision du 16 août 2026 : « la A ».</b>
+        Deux listes natives. Sur son iPhone, <b>c'est déjà la molette</b> : elle
+        monte du bas de l'écran, se fait défiler au pouce, et il la connaît par
+        cœur. Ce dépôt a d'ailleurs tranché ainsi pour la durée d'un chantier.
+        <span class="cout">Ce que ça coûte : <b>rien</b> — ni code, ni entretien,
+        et elle parle aux lecteurs d'écran sans qu'on s'en occupe. Ce qu'on n'a
+        pas : elle ressemble à un formulaire, pas à Atlas. Le luxe s'arrête à la
+        bordure.</span>
+      </div>
+      <div class="hb">
+        <span class="t">B · Les quarts d'heure</span>
+        Six pastilles autour du temps prévu. <b>Un seul appui</b>, sans rien
+        faire défiler — et c'est le cas de neuf passages sur dix.
+        <span class="cout">Ce que ça coûte : <b>le quart d'heure comme seule
+        unité</b>. « 1 h 40 » demande alors le lien « une autre durée », donc un
+        second écran pour un cas rare. Le plus rapide au doigt, le moins précis.</span>
+      </div>
+      <div class="hc">
+        <span class="t">C · La molette Atlas</span>
+        Une vraie molette, faite <b>sans une ligne de JavaScript</b> : la bande
+        s'accroche aux crans, un trait doré marque le choix, et ce qui est loin
+        s'efface. C'est la seule des trois qui ressemble à l'application.
+        <span class="cout">Ce que ça coûte : <b>elle doit être écrite et tenue</b>
+        — le repère, l'accroche, la lecture de la valeur, et un cas que le
+        clavier ne pose pas : accessible au lecteur d'écran, il faut lui adjoindre
+        une liste invisible. Comptez une demi-journée, pas dix minutes.
+        Je l'avais recommandée ; <b>il a choisi la A</b>, et il a une bonne
+        raison de son côté : la molette du téléphone est celle qu'il connaît
+        déjà, elle ne coûte rien à tenir, et elle ne peut pas se désynchroniser.
+        Cette planche reste comme trace du chemin.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui n'est pas à choisir</span>
+    <ul>
+      <li><b>Le pas est de cinq minutes.</b> À la minute près, la molette ferait
+        deux cent quarante crans pour quatre heures — inutilisable au pouce, et
+        personne ne facture un entretien à la minute.</li>
+      <li><b>Elle s'ouvre sur le temps planifié</b>, jamais sur zéro : la bonne
+        valeur est alors à un cran, pas à vingt. (La maquette part de zéro — sans
+        JavaScript, une page ne peut pas se placer elle-même.)</li>
+      <li><b>L'écart reste affiché</b> : c'est lui qui vous dit si le contrat est
+        bien taillé, et c'est la seule raison de rappeler le temps prévu.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce que « ultra luxe » veut dire ici</span>
+    <ul>
+      <li><b>Le chiffre est grand et en serif</b>, posé comme sur un cadran de
+        montre — pas comme une valeur de formulaire.</li>
+      <li><b>Ce qui est loin s'efface.</b> L'œil ne voit que ce qui compte, et la
+        bande paraît tourner sur elle-même au lieu de glisser dans une boîte.</li>
+      <li><b>Rien ne clignote, rien ne rebondit.</b> Sur un outil de travail, le
+        luxe est l'absence de bruit : un seul trait doré, qui ne bouge jamais.</li>
+    </ul>
+  </div>
+</div>

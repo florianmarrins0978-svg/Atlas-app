@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « En cours », et le chiffre</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    « EN COURS », ET LE CHIFFRE — trois gris pour le mot
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 19 août 2026, capture à l'appui :
+
+      · supprimer « UN EN COURS » sous « Vos chantiers » ;
+      · supprimer le « UN » en lettres, à droite de la ligne « EN COURS » ;
+      · mettre à CÔTÉ de « En cours » le NOMBRE de chantiers, en chiffre et en
+        gras ;
+      · « En cours » moins gras que le chiffre, mais **un tout petit peu plus
+        foncé** qu'aujourd'hui.
+
+    « Un tout petit peu plus foncé » ne se code pas depuis une phrase : c'est
+    la seule chose que cette planche demande de trancher. Les trois gris sont
+    ceux de `src/lib/design-tokens.ts`, pas des valeurs approchées à l'œil.
+
+    AUCUN SCRIPT DANS CETTE PAGE — son lecteur n'exécute pas le JavaScript.
+    Elle vit dans `appli/`, le seul dossier publié du dépôt, pour s'ouvrir
+    depuis son téléphone.
+  */
+
+  :root{ --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.13); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:44px 18px 80px;-webkit-text-size-adjust:100%}
+  .page{max-width:1240px;margin:0 auto}
+  .intro{max-width:62ch;margin:0 auto 18px;text-align:center}
+  .intro .sur{margin:0 0 15px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--or)}
+  .intro h1{margin:0 0 14px;font:400 31px/1.22 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.012em}
+  .intro p{margin:0 0 10px;color:var(--gris);font-size:15px}
+
+  .grille{display:flex;flex-wrap:wrap;gap:52px 40px;justify-content:center;align-items:flex-start;margin-top:44px}
+  .prop{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:412px}
+  .legende{text-align:center;max-width:390px}
+  .legende h2{margin:0 0 7px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .legende .titre{margin:0 0 7px;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .legende p{margin:0;font-size:13.4px;color:var(--gris);line-height:1.62}
+  .legende code{font-size:12.5px}
+
+  .tel{width:412px;max-width:100%;border-radius:42px;padding:11px;background:#cfccc4;
+       box-shadow:0 1px 3px rgba(20,18,14,.16),0 30px 66px rgba(20,18,14,.22)}
+  .ecran{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-gris:#8a8578;
+    --e-gris-fonce:#6f6a5f; --e-inksoft:#4a4a44;
+    --e-pin:#2f3b2f; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;overflow:hidden;border-radius:32px;
+    background:var(--e-fond);color:var(--e-encre);
+    font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:22px 0 26px}
+
+  .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--e-gris)}
+  .bonjour{margin:18px 26px 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--e-or)}
+  .titre-ecran{margin:12px 26px 0;font:400 36px/1.02 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-.018em}
+  .clients{margin:10px 26px 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--e-or)}
+  .filet{margin:26px 26px 0;height:1px;background:var(--e-trait)}
+  .action{margin:22px 26px 0;display:flex;align-items:center;justify-content:center;gap:14px;
+          font-size:11.5px;font-weight:600;letter-spacing:.28em;text-transform:uppercase}
+  .action .rond{width:42px;height:42px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--e-trait);
+                display:flex;align-items:center;justify-content:center;color:var(--e-or);font-size:16px}
+
+  /* ── La ligne qui change ─────────────────────────────────────────────── */
+  .rubrique{margin:30px 26px 4px;display:flex;align-items:baseline;gap:10px;
+            font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .rubrique .nombre{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--e-encre);
+                    font-variant-numeric:tabular-nums}
+  .avant .rubrique{justify-content:space-between}
+
+  .ligne{margin:14px 26px 0;display:grid;grid-template-columns:auto 1px 1fr;gap:0 13px}
+  .ligne .date{text-align:right;font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--e-gris)}
+  .ligne .date b{display:block;font:400 22px/1 ui-serif,Georgia,serif;color:var(--e-encre);letter-spacing:0}
+  .ligne .barre{background:var(--e-trait)}
+  .ligne .quoi{font:400 20px/1.2 ui-serif,Georgia,serif}
+  .ligne .lieu{margin-top:6px;font-size:13px;color:#9C3B2E;text-decoration:underline dotted}
+  .ligne .etat{margin-top:7px;font-size:9.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--e-or)}
+
+  .pied{max-width:66ch;margin:60px auto 0;padding-top:24px;border-top:1px solid var(--trait);
+        color:var(--gris);font-size:13.6px;line-height:1.7}
+  .pied h3{margin:0 0 10px;font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .pied ul{margin:0;padding-left:1.1em}
+  .pied li{margin-bottom:8px}
+  .pied b{color:var(--encre);font-weight:600}
+</style>
+
+<div class="page">
+
+  <div class="intro">
+    <p class="sur">Atlas · 19 août 2026</p>
+    <h1>« En cours », et le chiffre</h1>
+    <p>Les deux lignes en trop sont retirées et le nombre passe en chiffre, en
+      gras, à côté du mot. Restait à choisir de combien le mot fonce :
+      <strong>c'est le C, le plus foncé des trois</strong> — et c'est ce que
+      l'application porte.</p>
+  </div>
+
+  <div class="grille">
+
+    <!-- ─────────────────────────── AUJOURD'HUI ─────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Aujourd’hui</h2>
+        <p class="titre">Le compte dit trois fois</p>
+        <p>« Un en cours » sous le titre, « En cours » à gauche, « Un » à
+          droite. Le même nombre, écrit deux fois en lettres.</p>
+      </div>
+      <div class="tel"><div class="ecran avant">
+        <p class="marque">ATLAS</p>
+        <p class="bonjour">Bonjour compte</p>
+        <h1 class="titre-ecran">Vos chantiers</h1>
+        <p class="clients" style="color:var(--e-gris)">Un en cours</p>
+        <p class="clients">Vos clients ›</p>
+        <div class="filet"></div>
+        <div class="action">Créer un devis <span class="rond">+</span></div>
+        <div class="rubrique" style="color:var(--e-gris)">
+          <span>En cours</span><span>Un</span>
+        </div>
+        <div class="ligne">
+          <div class="date"><b>18</b>Août</div><div class="barre"></div>
+          <div><p class="quoi">Chantier du mardi 18 août</p>
+            <p class="lieu">Adresse non renseignée</p>
+            <p class="etat">Devis prêt à envoyer · sans photo</p></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── A ──────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Gris A</h2>
+        <p class="titre">Le gris d’aujourd’hui</p>
+        <p>Les deux lignes retirées, le chiffre en gras — mais le mot garde son
+          gris actuel. <code>#8a8578</code></p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <p class="marque">ATLAS</p>
+        <p class="bonjour">Bonjour compte</p>
+        <h1 class="titre-ecran">Vos chantiers</h1>
+        <p class="clients">Vos clients ›</p>
+        <div class="filet"></div>
+        <div class="action">Créer un devis <span class="rond">+</span></div>
+        <div class="rubrique" style="color:var(--e-gris)" data-mot>
+          <span>En cours</span><span class="nombre">1</span>
+        </div>
+        <div class="ligne">
+          <div class="date"><b>18</b>Août</div><div class="barre"></div>
+          <div><p class="quoi">Chantier du mardi 18 août</p>
+            <p class="lieu">Adresse non renseignée</p>
+            <p class="etat">Devis prêt à envoyer · sans photo</p></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── B ──────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Gris B · un cran</h2>
+        <p class="titre">Un tout petit peu plus foncé</p>
+        <p>Le pas le plus court entre le gris actuel et le texte de second
+          plan. C’est celui qui répond le plus littéralement à sa phrase.
+          <code>#6f6a5f</code></p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <p class="marque">ATLAS</p>
+        <p class="bonjour">Bonjour compte</p>
+        <h1 class="titre-ecran">Vos chantiers</h1>
+        <p class="clients">Vos clients ›</p>
+        <div class="filet"></div>
+        <div class="action">Créer un devis <span class="rond">+</span></div>
+        <div class="rubrique" style="color:var(--e-gris-fonce)" data-mot>
+          <span>En cours</span><span class="nombre">1</span>
+        </div>
+        <div class="ligne">
+          <div class="date"><b>18</b>Août</div><div class="barre"></div>
+          <div><p class="quoi">Chantier du mardi 18 août</p>
+            <p class="lieu">Adresse non renseignée</p>
+            <p class="etat">Devis prêt à envoyer · sans photo</p></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ─────────────────────────────── C ──────────────────────────────── -->
+    <div class="prop">
+      <div class="legende">
+        <h2>Gris C · retenu</h2>
+        <p class="titre">Le gris du second plan</p>
+        <p>Celui que porte déjà le texte de second plan de l’application. Net,
+          mais le mot commence à disputer l’œil au chiffre.
+          <code>#4a4a44</code></p>
+      </div>
+      <div class="tel"><div class="ecran">
+        <p class="marque">ATLAS</p>
+        <p class="bonjour">Bonjour compte</p>
+        <h1 class="titre-ecran">Vos chantiers</h1>
+        <p class="clients">Vos clients ›</p>
+        <div class="filet"></div>
+        <div class="action">Créer un devis <span class="rond">+</span></div>
+        <div class="rubrique" style="color:var(--e-inksoft)" data-mot>
+          <span>En cours</span><span class="nombre">1</span>
+        </div>
+        <div class="ligne">
+          <div class="date"><b>18</b>Août</div><div class="barre"></div>
+          <div><p class="quoi">Chantier du mardi 18 août</p>
+            <p class="lieu">Adresse non renseignée</p>
+            <p class="etat">Devis prêt à envoyer · sans photo</p></div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <h3>Ce qui est déjà décidé</h3>
+    <ul>
+      <li><b>« Un en cours » disparaît</b> sous le titre, et <b>« Un »</b>
+        disparaît à droite de la rubrique. Le nombre n’est plus dit qu’une
+        fois.</li>
+      <li><b>Le nombre passe en chiffre</b>, collé au mot, et il est le seul
+        élément en gras de la ligne : c’est lui qu’on vient lire.</li>
+    </ul>
+    <h3>Ce qui reste à choisir</h3>
+    <ul>
+      <li><b>A, B ou C</b> — de combien « En cours » fonce. Rien d’autre ne
+        change d’une planche à l’autre.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

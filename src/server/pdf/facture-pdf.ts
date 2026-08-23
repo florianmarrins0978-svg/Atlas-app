@@ -37,6 +37,15 @@ export type FacturePdfData = DonneesDocument & {
   dateEcheance?: string | null;
   /** Le numéro du devis dont la facture est issue, quand il est connu. */
   numeroDevis?: string | null;
+  /**
+   * Le régime de TVA **au jour de l'émission**, figé dans la facture
+   * (migration 0039).
+   *
+   * Absent pour les factures antérieures : la mention se déduit alors du taux,
+   * exactement comme avant. Ne pas retirer ce repli — il porte tout
+   * l'historique.
+   */
+  regimeTva?: "assujettie" | "franchise" | null;
 };
 
 /**
@@ -44,16 +53,27 @@ export type FacturePdfData = DonneesDocument & {
  *
  * La dernière phrase — la franchise de l'article 293 B — porte dans le modèle
  * la consigne « à retirer si vous êtes assujetti à la TVA ». On ne peut pas
- * laisser cette décision à l'impression : ici, elle se déduit du taux
- * réellement appliqué. Une facture qui affiche une TVA de 10 % **et** annonce
- * la franchise se contredit sous les yeux du client.
+ * laisser cette décision à l'impression.
+ *
+ * **ELLE SE LIT DÉSORMAIS DANS LE RÉGIME DÉCLARÉ, ET NON PLUS DANS LE TAUX**
+ * (migration 0039, `ARCHITECTURE.md` §81). Jusqu'au 13 août 2026, la franchise
+ * était DEVINÉE : « le taux vaut zéro, donc c'est une franchise ». La situation
+ * fiscale de l'entreprise se déduisait donc d'un chiffre saisi chantier par
+ * chantier, et les deux sens étaient faux — un artisan en franchise qui laissait
+ * 20 % par mégarde perdait une mention obligatoire ; un assujetti qui posait
+ * 0 % voyait s'imprimer, sur une pièce comptable, une phrase qui ne le
+ * concernait pas.
+ *
+ * **Le repli sur le taux demeure, et doit demeurer** : les factures émises avant
+ * la migration n'ont pas de régime figé, et il porte tout leur historique.
  */
-function mentionLegaleFacture(data: DonneesDocument): string {
+function mentionLegaleFacture(data: FacturePdfData): string {
   const base =
     "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
     "est exigible, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. " +
     "Pas d'escompte pour paiement anticipé.";
-  const enFranchise = Number(data.tauxTva) === 0;
+  const enFranchise =
+    data.regimeTva != null ? data.regimeTva === "franchise" : Number(data.tauxTva) === 0;
   return enFranchise ? `${base} TVA non applicable, art. 293 B du CGI.` : base;
 }
 
@@ -76,7 +96,9 @@ export async function composerFacturePdf(
     titre: data.statut === "brouillon" ? "FACTURE (BROUILLON)" : "FACTURE",
     references,
     titreNotes: "NOTES",
-    mentionLegale: mentionLegaleFacture,
+    // `composerDocument` ne connaît que `DonneesDocument` : la fonction reçoit
+    // donc `data` par fermeture, qui porte le régime.
+    mentionLegale: () => mentionLegaleFacture(data),
     cadreSignature: false,
     rappel: data.numeroDevis ? `Établie à partir du devis n° ${data.numeroDevis}` : null,
   });

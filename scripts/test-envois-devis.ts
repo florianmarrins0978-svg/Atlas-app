@@ -120,16 +120,36 @@ async function main() {
   });
 
   // ---- Création de l'envoi
-  await test("le patron ne peut pas proposer un jour déjà occupé", async () => {
+  //
+  // **Ce contrôle a été RETOURNÉ le 23 août 2026, sur sa règle :** *« si
+  // l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le
+  // faire quand même ; nous on a mis un message disant que c'est complet »*.
+  // Il réclamait le refus qu'il fait retirer ; le remettre rendrait son écran
+  // impossible à changer (`CLAUDE.md` §5 bis).
+  await test("le patron PEUT proposer un jour déjà occupé, en le sachant", async () => {
     const { ctx, chantierId, devisId } = await contexteAvecDevis(`occupe-${Date.now()}@t.test`);
     const autre = await chantiersRepo.creerChantier(ctx, { nom: "Chantier déjà calé" });
     await chantiersRepo.planifierChantier(ctx, autre.id, dans(10));
 
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "devis" },
+      MAINTENANT
+    );
+    assert.deepStrictEqual(envoi.datesProposees, [dans(10)], "sa date n'a pas été retenue");
+  });
+
+  // **Ce qui reste refusé, et ce n'est PAS un jugement d'artisan.** Une date
+  // passée ou au-delà de dix-huit mois n'est pas un arbitrage : la fenêtre
+  // garde donc ses bornes. Sans ce contrôle, le retournement ci-dessus aurait
+  // tout ouvert d'un coup, et personne ne s'en serait aperçu.
+  await test("mais jamais une date hors de sa fenêtre", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`fenetre-${Date.now()}@t.test`);
     await assert.rejects(
       () =>
         creerEnvoi(
           ctx,
-          { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "devis" },
+          { chantierId, devisId, canal: "sms", datesProposees: [dans(-30)], contenuDevis: "devis" },
           MAINTENANT
         ),
       (err: unknown) => err instanceof DatesProposeesInvalidesError
@@ -472,6 +492,100 @@ async function main() {
       auDepart?.fenetre,
       "la fenêtre a glissé : le client ne voit plus ce qui lui avait été promis"
     );
+  });
+
+  // ── Le client peut-il proposer une AUTRE date ? (17 août 2026) ────────────
+  //
+  // *« Il faut que l'utilisateur puisse choisir avant d'envoyer s'il autorise
+  // ou non le client à choisir une date si celles proposées ne lui conviennent
+  // pas. »* Jusque-là, le client le pouvait TOUJOURS.
+
+  await test("par défaut, le client peut toujours proposer une autre date", async () => {
+    // **Le défaut compte autant que le réglage** : les liens déjà partis
+    // doivent continuer de se comporter comme le client les a reçus.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`autre-defaut-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "devis" },
+      MAINTENANT
+    );
+    const vue = await lireParJeton(envoi.jeton, MAINTENANT);
+    assert.strictEqual(vue?.autreDateAutorisee, true, "le calendrier devrait rester ouvert par défaut");
+  });
+
+  await test("refusé, le calendrier ne part pas à la page publique", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`autre-ferme-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId,
+        devisId,
+        canal: "sms",
+        datesProposees: [dans(10)],
+        contenuDevis: "devis",
+        autreDateAutorisee: false,
+      },
+      MAINTENANT
+    );
+    const vue = await lireParJeton(envoi.jeton, MAINTENANT);
+    assert.strictEqual(vue?.autreDateAutorisee, false);
+  });
+
+  await test("refusé, une AUTRE date postée au serveur est rejetée", async () => {
+    // **C'est le cas qui compte.** La page du client est publique : cacher le
+    // calendrier suffit à l'usage, jamais à la règle — son formulaire se rejoue.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`autre-poste-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId,
+        devisId,
+        canal: "sms",
+        datesProposees: [dans(10)],
+        contenuDevis: "devis",
+        autreDateAutorisee: false,
+      },
+      MAINTENANT
+    );
+
+    const refus = await enregistrerReponse(
+      envoi.jeton,
+      { decision: "accepte", dateRetenue: dans(12) },
+      MAINTENANT
+    );
+    assert.strictEqual(refus.succes, false, "une date hors des propositions a été acceptée");
+    assert.strictEqual(refus.succes === false && refus.motif, "autre_date_refusee");
+
+    // Et la date PROPOSÉE, elle, passe : on n'a pas fermé la porte principale.
+    const accord = await enregistrerReponse(
+      envoi.jeton,
+      { decision: "accepte", dateRetenue: dans(10) },
+      MAINTENANT
+    );
+    assert.strictEqual(accord.succes, true, "la date proposée devrait rester acceptable");
+  });
+
+  await test("autorisé, la contre-proposition reste possible", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`autre-ouvert-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId,
+        devisId,
+        canal: "sms",
+        datesProposees: [dans(10)],
+        contenuDevis: "devis",
+        autreDateAutorisee: true,
+      },
+      MAINTENANT
+    );
+    const r = await enregistrerReponse(
+      envoi.jeton,
+      { decision: "accepte", dateRetenue: dans(12) },
+      MAINTENANT
+    );
+    assert.strictEqual(r.succes, true, "la contre-proposition devrait passer quand elle est autorisée");
+    assert.strictEqual(r.succes === true && r.contreProposee, true);
   });
 
   console.log(`\n${passed} réussis, ${failed} échoués`);

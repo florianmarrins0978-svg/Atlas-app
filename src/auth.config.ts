@@ -37,6 +37,21 @@ export const authConfig = {
     async session({ session, token }) {
       if (token.utilisateurId && session.user) {
         session.user.id = token.utilisateurId as string;
+        /**
+         * **QUAND ce jeton a été signé — ce qui rend « me déconnecter partout »
+         * possible sans table de sessions.**
+         *
+         * Atlas n'en garde aucune : il n'y a donc rien à supprimer pour fermer
+         * une session ouverte ailleurs. Mais chaque jeton porte son instant
+         * d'émission (`iat`, la convention JWT), et il suffit de refuser ceux
+         * qui précèdent une coupure — c'est `getCurrentCtx` qui compare, côté
+         * Node, parce qu'il faut lire la base pour connaître cette coupure.
+         *
+         * **Recopié ici plutôt que lu du jeton là-bas** : `auth()` ne rend que
+         * la session, jamais le jeton brut. Sans cette ligne, l'instant existe
+         * et reste inatteignable.
+         */
+        session.user.emisLe = typeof token.iat === "number" ? token.iat : undefined;
       }
       return session;
     },

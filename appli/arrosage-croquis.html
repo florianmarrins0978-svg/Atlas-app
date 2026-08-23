@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le croquis → le plan — essai</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  DU CROQUIS AU PLAN — LA MAQUETTE ESSAYABLE DE LA CIBLE
+
+  Sa demande du 17 août 2026 au soir, mot pour mot :
+
+    « Une fois que j'ai envoyé la photo de mon jardin avec les mesures, ici il
+     y a le petit encart où on peut choisir la marque. Et tout ce qu'il y a en
+     dessous, je pense que tu peux le supprimer. Il faut qu'une fois que tu as
+     lu les mesures avec l'IA, tu me fasses le plan en couleur avec les
+     différents réseaux, comme le plan que je t'ai envoyé hier — contenant la
+     nourrice, les PE en pointillés, les arroseurs représentés par des ronds —
+     et que tu me fasses la liste des pièces à acheter. Tu peux mettre une
+     case : deux réseaux ou trois réseaux, les pièces pour la nourrice, ensuite
+     les pièces pour les arroseurs, quel arroseur tu utilises, le nombre de
+     couronnes de PE et en quel diamètre, et le goutte-à-goutte. Avant de coder
+     quoi que ce soit, crée-moi une maquette dynamique que je puisse essayer. »
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QUI DISPARAÎT PAR RAPPORT À L'OUTIL D'AUJOURD'HUI
+
+  Sous le choix de marque, il ne reste RIEN à saisir : ni le corps d'arroseur,
+  ni les zones, ni leurs mesures. Tout cela vient du croquis. L'écran ne
+  demande plus que deux choses — la photo, et la marque.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  ⚠ CE QUI EST SIMULÉ, ET CE QUI NE L'EST PAS. Il faut que ce soit clair, sans
+  quoi cette page ferait croire à une lecture d'image qui n'existe pas encore.
+
+  · SIMULÉ : la LECTURE du croquis. Cette page est servie sans serveur (pages
+    statiques) et n'a aucun modèle d'IA. On choisit donc un jardin parmi trois,
+    comme si l'IA venait de le lire — et l'écran l'écrit noir sur blanc.
+  · PAS SIMULÉ, et c'est tout l'intérêt : le PLAN et la LISTE. Ils sont
+    calculés par `arrosage-calcul.js`, exactement le même code que l'outil, sur
+    exactement son catalogue. Les quantités qu'il lit ici sont celles qu'il
+    commanderait.
+
+  **Aucun chiffre n'est écrit à la main dans cette page.** Une première version
+  d'une planche l'avait fait, le 17 août : il a lu la liste et vu tout de suite
+  des pièces mélangées entre plusieurs fiches de nourrice. Une maquette ne
+  recopie pas un calcul — elle l'appelle.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  SA CLÉ DE SAUVEGARDE EST À PART (`atlas-arrosage-croquis`) : essayer trois
+  jardins d'exemple ici ne doit pas effacer celui qu'il a saisi dans l'outil.
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --alerte:#9C3B2E; --teinte:#ece9e1; --plan:#1c1c1a; --herbe:#eef0e6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --alerte:#C87058; --teinte:#252320; --plan:#e9e5dc; --herbe:#232620;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:18px 14px 90px}
+  .dedans{max-width:640px;margin:0 auto}
+  h1{font-family:Georgia,serif;font-weight:400;font-size:25px;line-height:1.15;margin:0 0 6px}
+  .sur{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--or);margin:0 0 8px}
+  .chapo{color:var(--gris);font-size:13.5px;margin:0 0 18px}
+  .chapo b{color:var(--encre)}
+
+  section{background:var(--papier);border:1px solid var(--trait);border-radius:16px;
+          padding:15px 14px;margin-bottom:14px}
+  h2{font-family:Georgia,serif;font-weight:400;font-size:19px;margin:0 0 3px}
+  .aide{font-size:12.5px;color:var(--gris);margin:0 0 12px;line-height:1.5}
+  .aide b{color:var(--encre)}
+  .provisoire{color:var(--alerte)}
+
+  label{display:block;font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+        color:var(--or);margin-bottom:5px}
+  select{font:inherit;font-size:16px;color:var(--encre);background:transparent;
+         border:1px solid var(--trait);border-radius:10px;padding:10px 11px;
+         width:100%;-webkit-appearance:none;appearance:none;
+         background-image:linear-gradient(45deg,transparent 50%,var(--gris) 50%),
+                          linear-gradient(135deg,var(--gris) 50%,transparent 50%);
+         background-position:calc(100% - 17px) 20px,calc(100% - 12px) 20px;
+         background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+
+  /* ── Le croquis ─────────────────────────────────────────────────────────── */
+  .croquis-ajout{display:block;text-align:center;padding:14px;border-radius:12px;
+                 border:1px dashed var(--trait);color:var(--gris);font-size:13.5px;
+                 cursor:pointer;background:var(--papier)}
+  .croquis-vue{position:relative;margin-bottom:10px}
+  .croquis-vue img{width:100%;height:auto;display:block;border-radius:12px;
+                   border:1px solid var(--trait)}
+  .croquis-vue button{position:absolute;top:8px;right:8px;border:0;cursor:pointer;
+                      border-radius:999px;padding:7px 13px;font:inherit;font-size:12.5px;
+                      background:var(--encre);color:var(--fond);opacity:.88}
+
+  .exemples{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 0}
+  .exemples button{flex:1 1 auto;padding:11px 9px;border-radius:999px;
+                   border:1px solid var(--trait);background:transparent;color:var(--gris);
+                   font:inherit;font-size:12.5px;cursor:pointer}
+  .exemples button[aria-pressed="true"]{background:var(--pin);color:var(--papier);
+                                        border-color:var(--pin)}
+
+  /* ── Le plan ────────────────────────────────────────────────────────────── */
+  .feuille{border:1px solid var(--trait);border-radius:14px;padding:10px 8px 6px;
+           background:var(--papier);overflow-x:auto}
+  .plan{width:100%;min-width:300px;height:auto;display:block}
+  .plan .parcelle{fill:none;stroke:var(--plan);stroke-width:2}
+  .plan .gazon{fill:var(--herbe);stroke:var(--plan);stroke-width:1.2}
+  .plan .contour{fill:none;stroke:var(--plan);stroke-width:1.2}
+  /* **Ni `stroke` ni `fill` ici : ils arrivent par attribut.** Une règle de
+     feuille de style l'emporte sur un attribut de présentation — c'est ce qui
+     a effacé les cercles de portée de la planche 75, un `fill="none"` repeint
+     par un `.gazon{fill:…}`. La bande porte la couleur de SA vanne. */
+  .plan .massif{fill:var(--teinte);stroke-width:1;
+                stroke-dasharray:1 4;stroke-linecap:round}
+  .plan .arc{fill:none;stroke-width:1;stroke-opacity:.8}
+  .plan .zone-arc{fill-opacity:.15}
+  .plan .tete{fill:var(--papier);stroke-width:2.4}
+  .plan .tuyau{fill:none;stroke-width:2.2;stroke-dasharray:8 4;stroke-linecap:round}
+  .plan .tuyau-p{fill:none;stroke:var(--plan);stroke-width:2.4;stroke-dasharray:10 4;
+                 stroke-linecap:round}
+  .plan .cote{fill:var(--gris);font-size:10px;font-family:inherit;text-anchor:middle}
+  .plan .repere{font-size:10.5px;font-family:inherit}
+  .plan text.repere:not([fill]){fill:var(--plan)}
+  .plan .ech{fill:var(--gris);font-size:10px;font-style:italic;font-family:inherit}
+
+  .legende{display:flex;flex-wrap:wrap;gap:7px 16px;margin:10px 2px 0;font-size:12px;color:var(--gris)}
+  .legende span{display:inline-flex;align-items:center;gap:6px}
+  .legende i{width:11px;height:11px;border-radius:50%;flex:none}
+  .legende i.trait{width:16px;height:0;border-top:2px dashed var(--plan);border-radius:0}
+
+  /* ── Les casiers de la liste ────────────────────────────────────────────── */
+  .casier{border:1px solid var(--trait);border-radius:14px;padding:12px 13px;margin-bottom:10px}
+  .casier > h3{margin:0 0 2px;font-family:Georgia,serif;font-weight:400;font-size:16px}
+  .casier > .quoi{margin:0 0 10px;font-size:12px;color:var(--gris);line-height:1.5}
+  .l{display:flex;gap:10px;align-items:baseline;padding:7px 0;
+     border-bottom:1px solid var(--trait);font-size:13.5px}
+  .l:last-child{border-bottom:0}
+  .l .q{flex:none;min-width:58px;color:var(--gris);font-variant-numeric:tabular-nums}
+  .l .n{flex:1;min-width:0}
+  .vide{font-size:13px;color:var(--gris);margin:0}
+
+  .compte{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+  .compte span{font-size:12.5px;color:var(--encre);background:var(--teinte);
+               border-radius:999px;padding:7px 13px}
+  .compte b{font-family:Georgia,serif;font-size:15px;font-weight:400}
+
+  .pied{margin-top:22px;font-size:12.5px;color:var(--gris);line-height:1.7}
+  .pied b{color:var(--encre)}
+</style>
+</head>
+<body>
+<div class="dedans">
+  <p class="sur">Atlas · maquette essayable</p>
+  <h1>Du croquis au plan</h1>
+  <p class="chapo">Vous envoyez la photo, vous choisissez la marque.
+    <b>Tout le reste se déduit</b> : le plan en couleur et la liste des pièces.
+    <b>Rien n'est codé dans l'application</b> — c'est la maquette pour essayer
+    avant.</p>
+
+  <section>
+    <h2>1 · Le croquis</h2>
+    <p class="aide">Photographiez le croquis du client avec ses métrés. C'est
+      la seule chose que vous saisissez.</p>
+
+    <div id="croquis"></div>
+    <label class="croquis-ajout" for="croquisFichier" style="margin-bottom:10px">
+      <span id="croquisLibelle">Ajouter la photo du croquis</span>
+      <input id="croquisFichier" type="file" accept="image/*" hidden>
+    </label>
+
+    <p class="aide" id="lecture" style="margin:0 0 12px"></p>
+
+    <label for="exemples" style="margin-bottom:7px">Ce que l'IA a lu</label>
+    <div class="exemples" id="exemples"></div>
+    <p class="aide" style="margin:10px 0 14px">
+      <span class="provisoire">La lecture de la photo est simulée ici</span> —
+      cette page n'a pas de serveur. Choisissez un jardin d'exemple pour voir ce
+      que donnerait la lecture. <b>Le plan et la liste, eux, sont vraiment
+      calculés</b>, sur votre catalogue.
+    </p>
+
+    <label for="marque">Marque des arroseurs</label>
+    <select id="marque"></select>
+    <p class="aide" id="marqueNote" style="margin:8px 0 0"></p>
+  </section>
+
+  <section>
+    <h2>2 · Le plan</h2>
+    <p class="aide">Un réseau, une couleur. Les <b>PE en pointillés</b>, les
+      arroseurs en <b>ronds</b>, la <b>nourrice</b> à son regard.</p>
+    <div class="feuille"><div id="plan"></div></div>
+    <div class="legende" id="legende"></div>
+  </section>
+
+  <section>
+    <h2>3 · Les pièces à acheter</h2>
+    <p class="aide">Des <b>quantités</b>, jamais un prix du catalogue. Rangées
+      comme vous les commandez.</p>
+    <div class="compte" id="compte"></div>
+    <div id="casiers"></div>
+  </section>
+
+  <p class="pied">
+    <b>Ce qui est simulé :</b> la lecture des mesures sur la photo. Rien
+    d'autre.<br>
+    <b>Ce qui ne l'est pas :</b> le plan, les quantités, le choix des buses, le
+    découpage en réseaux, les pièces de nourrice — tout sort du même calcul que
+    l'outil, sur votre catalogue.<br>
+    <b>Aucun prix</b> : la liste part chez votre fournisseur, son devis revient
+    par le parcours habituel.
+  </p>
+</div>
+
+<script>window.CLE_ETAT = 'atlas-arrosage-croquis';</script>
+<script src="arrosage-catalogue.js"></script>
+<script src="arrosage-calcul.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   CETTE PAGE NE CALCULE RIEN ELLE-MÊME.
+
+   Elle appelle `poser`, `decouper` et `listeMateriel` — le code de l'outil,
+   sorti dans `arrosage-calcul.js` pour cette raison précise. Recopier ici la
+   moindre règle produirait deux versions de la même chose, et c'est ainsi
+   qu'un arroseur en trop est apparu sur son plan le 17 août.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── LES TROIS JARDINS D'EXEMPLE — ce que l'IA rendrait d'un croquis ────────
+   Ils ne sont PAS des décors : ce sont des jardins plausibles, dont chaque
+   mesure passe dans le vrai calcul. Trois, pour qu'il voie l'écran changer —
+   un seul exemple ne dirait pas si le plan suit vraiment ce qu'on lui donne. */
+var JARDINS = [
+  { nom:'Pavillon simple',
+    dit:'Une pelouse, un massif le long de la maison.',
+    zones:[
+      { id:1, nom:'Pelouse', type:'gazon', L:18, l:12, materiel:'auto' },
+      { id:2, nom:'Massif', type:'massif', L:14, l:1.6, materiel:'gaine' }
+    ] },
+  { nom:'Devant et derrière',
+    dit:'Deux pelouses, un massif, une haie.',
+    zones:[
+      { id:1, nom:'Pelouse arrière', type:'gazon', L:18, l:12, materiel:'auto' },
+      { id:2, nom:'Pelouse avant', type:'gazon', L:12, l:8, materiel:'auto' },
+      { id:3, nom:'Massif', type:'massif', L:15, l:2.4, materiel:'gaine' },
+      { id:4, nom:'Haie', type:'haie', ml:40, lignesHaie:1, materiel:'gaine' }
+    ] },
+  { nom:'Avec un couloir',
+    dit:'Une grande pelouse, un couloir étroit derrière le massif, un potager.',
+    zones:[
+      { id:1, nom:'Grande pelouse', type:'gazon', L:22, l:14, materiel:'auto' },
+      { id:2, nom:'Couloir latéral', type:'gazon', L:10, l:2, materiel:'auto' },
+      { id:3, nom:'Massif', type:'massif', L:18, l:2, materiel:'gaine' },
+      { id:4, nom:'Potager', type:'potager', L:8, l:3, materiel:'gaine' }
+    ] }
+];
+
+if (etat.jardin === undefined) etat.jardin = 1;
+
+function jardinCourant(){
+  var i = Number(etat.jardin);
+  return JARDINS[i >= 0 && i < JARDINS.length ? i : 0];
+}
+
+/* ── Le croquis : le montrer, et le garder ──────────────────────────────────
+   La photo est réduite avant d'être enregistrée : une photo de téléphone pèse
+   3 à 8 Mo quand `localStorage` en accepte environ 5 pour tout le reste. */
+function reduireImage(fichier, fait){
+  var lecteur = new FileReader();
+  lecteur.onload = function(){
+    var img = new Image();
+    img.onload = function(){
+      var MAX = 1400, k = Math.min(1, MAX / Math.max(img.width, img.height));
+      var c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      try { fait(c.toDataURL('image/jpeg', 0.75)); } catch (e) { fait(null); }
+    };
+    img.onerror = function(){ fait(null); };
+    img.src = lecteur.result;
+  };
+  lecteur.onerror = function(){ fait(null); };
+  lecteur.readAsDataURL(fichier);
+}
+
+function dessinerCroquis(){
+  var hote = document.getElementById('croquis');
+  var libelle = document.getElementById('croquisLibelle');
+  var lecture = document.getElementById('lecture');
+  hote.innerHTML = '';
+  if (etat.croquis){
+    var vue = document.createElement('div');
+    vue.className = 'croquis-vue';
+    var img = document.createElement('img');
+    img.src = etat.croquis; img.alt = 'Le croquis du client, photographié';
+    var retirer = document.createElement('button');
+    retirer.type = 'button'; retirer.textContent = 'Retirer';
+    retirer.addEventListener('click', function(){
+      etat.croquis = null; enregistrer(); dessinerCroquis();
+    });
+    vue.appendChild(img); vue.appendChild(retirer);
+    hote.appendChild(vue);
+    libelle.textContent = 'Remplacer la photo';
+    lecture.innerHTML = '<b>Croquis reçu.</b> Il reste avec le chantier.';
+  } else {
+    libelle.textContent = 'Ajouter la photo du croquis';
+    lecture.innerHTML = 'Facultatif ici — c\'est lui qui fera foi sur le chantier.';
+  }
+}
+
+function dessinerExemples(){
+  var hote = document.getElementById('exemples');
+  hote.innerHTML = '';
+  JARDINS.forEach(function(j, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = j.nom;
+    b.setAttribute('aria-pressed', String(Number(etat.jardin) === i));
+    b.title = j.dit;
+    b.addEventListener('click', function(){ etat.jardin = i; recalculer(); });
+    hote.appendChild(b);
+  });
+}
+
+function dessinerMarques(){
+  var sel = document.getElementById('marque');
+  sel.innerHTML = '';
+  CATALOGUE.marques.forEach(function(m){
+    var o = document.createElement('option');
+    o.value = m.cle; o.textContent = m.nom;
+    if (m.cle === marqueCourante()) o.selected = true;
+    sel.appendChild(o);
+  });
+  var combien = CATALOGUE.busesDe(marqueCourante(), 'tuyere').length +
+                CATALOGUE.busesDe(marqueCourante(), 'turbine').length;
+  document.getElementById('marqueNote').innerHTML = combien
+    ? combien + ' buse(s) ' + nomDeMarque(marqueCourante()) + ' posables au catalogue.'
+    : '<span class="provisoire">Aucune buse ' + nomDeMarque(marqueCourante()) +
+      ' encore enregistrée</span> — le plan reprendra la marque par défaut.';
+}
+
+/* ══ LE PLAN D'ENSEMBLE — le vocabulaire de SON plan à lui ══════════════════
+
+   Sa photo du 17 août : les PE en pointillés, les arroseurs en ronds, la
+   nourrice dans son regard, une couleur par réseau. La dripline n'est PAS
+   tracée — sa consigne : « juste la dripline, ça tu ne le mets pas » — mais sa
+   vanne est bien au regard.
+
+   **La disposition des zones est arbitraire, et c'est la seule chose qui le
+   soit.** L'outil ne sait pas encore OÙ les zones sont les unes par rapport
+   aux autres : c'est précisément ce que la lecture du croquis apportera. On
+   les range donc côte à côte, à l'échelle, ce qui suffit à juger les symboles,
+   les couleurs et la lisibilité — le reste viendra du croquis. */
+var E = 13;          // pixels par mètre
+var MARGE_PLAN = 34; // le tour du dessin
+
+function dessinerPlan(d){
+  var hote = document.getElementById('plan');
+  var legende = document.getElementById('legende');
+  hote.innerHTML = ''; legende.innerHTML = '';
+
+  var surfaces = etat.zones.filter(function(z){ return TYPES[z.type].forme === 'surface'; });
+  var nappes = etat.zones.filter(function(z){ return TYPES[z.type].forme !== 'surface'; });
+  if (!surfaces.length){
+    hote.innerHTML = '<p class="vide">Le plan se dessine dès qu\'une pelouse est lue.</p>';
+    return;
+  }
+
+  // On pose les pelouses côte à côte, alignées en haut.
+  var x = MARGE_PLAN, hauteurMax = 0, boites = [];
+  surfaces.forEach(function(z){
+    var L = (Number(z.L)||0) * E, H = (Number(z.l)||0) * E;
+    boites.push({ z:z, x:x, y:MARGE_PLAN, L:L, H:H });
+    x += L + 26;
+    if (H > hauteurMax) hauteurMax = H;
+  });
+  var largeur = x - 26 + MARGE_PLAN;
+  var bandeMassif = nappes.length ? 30 : 0;
+  var hauteur = MARGE_PLAN + hauteurMax + 30 + bandeMassif + 56;
+
+  var svg = ['<svg class="plan" viewBox="0 0 ' + Math.round(largeur) + ' ' + Math.round(hauteur) +
+             '" role="img" aria-label="Plan d\'arrosage, un réseau par couleur">'];
+  var vus = [];
+
+  // ── LES MASSIFS : une bande par massif, À LA COULEUR DE SA VANNE ─────────
+  //
+  // Sa consigne du 17 août : « la dripline, ça tu ne le mets pas » — seul le
+  // TRACÉ disparaît, pas la zone ni sa vanne. Une bande grise unique laissait
+  // croire l'inverse : le dessin montrait deux couleurs quand la nourrice en
+  // annonçait trois, et rien ne disait où passait la troisième voie. La bande
+  // porte donc la couleur de son réseau, comme les arroseurs.
+  var reseauxNappe = [];
+  if (nappes.length){
+    var yM = MARGE_PLAN + hauteurMax + 22;
+    var largeurM = (largeur - 2*MARGE_PLAN - 8 * (nappes.length - 1)) / nappes.length;
+    nappes.forEach(function(z, k){
+      var rs = (d.reseauxDeZone && d.reseauxDeZone[z.id]) || [];
+      var c = rs.length ? couleurReseau(rs[0]) : 'var(--gris)';
+      rs.forEach(function(i){ if (reseauxNappe.indexOf(i) < 0) reseauxNappe.push(i); });
+      var xM = MARGE_PLAN + k * (largeurM + 8);
+      svg.push('<rect class="massif" x="' + xM.toFixed(1) + '" y="' + yM + '" width="' +
+               largeurM.toFixed(1) + '" height="' + bandeMassif + '" rx="4" stroke="' + c + '"/>');
+      svg.push('<text class="repere" x="' + (xM + 7).toFixed(1) + '" y="' + (yM + 19) +
+               '" fill="' + c + '">' + (z.nom || TYPES[z.type].nom) + ' — goutte-à-goutte</text>');
+    });
+  }
+
+  boites.forEach(function(b){
+    var p = poser(b.z);
+    svg.push('<rect class="gazon" x="' + b.x + '" y="' + b.y + '" width="' + b.L +
+             '" height="' + b.H + '" rx="4"/>');
+    if (!p.nombre || !p.m) return;
+
+    var id = 'z' + b.z.id;
+    svg.push('<defs><clipPath id="' + id + '"><rect x="' + b.x + '" y="' + b.y +
+             '" width="' + b.L + '" height="' + b.H + '" rx="4"/></clipPath></defs>');
+    var couronnes = '', tetes = '', parReseau = {}, ordreR = [];
+    p.points.forEach(function(pt){
+      var cx = b.x + pt.x * E, cy = b.y + pt.y * E;
+      var i = d.reseauDuPoint[b.z.id + ':' + pt.x.toFixed(3) + ':' + pt.y.toFixed(3)];
+      var c = i == null ? 'var(--pin)' : couleurReseau(i);
+      if (i != null && vus.indexOf(i) < 0) vus.push(i);
+      couronnes += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' +
+                   (p.m.portee * E).toFixed(1) + '" class="zone-arc" fill="' + c + '"/>' +
+                   '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' +
+                   (p.m.portee * E).toFixed(1) + '" class="arc" stroke="' + c + '"/>';
+      tetes += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) +
+               '" r="4" class="tete" stroke="' + c + '"/>';
+      var cle = (i == null ? 'x' : i);
+      if (!parReseau[cle]) { parReseau[cle] = { c:c, pts:[] }; ordreR.push(cle); }
+      parReseau[cle].pts.push({ x:cx, y:cy });
+    });
+    svg.push('<g clip-path="url(#' + id + ')">' + couronnes + '</g>');
+    // **Le contour AVANT les tuyaux, et ce n'est pas cosmétique.** Dessiné
+    // après, le trait de la pelouse repeignait la rangée du BAS — dont les
+    // têtes sont posées sur la bordure. Le tracé était juste, et le plan
+    // montrait un réseau à moitié relié. Un défaut que seul l'œil voit : le
+    // contrôle des orphelins interroge le chemin, pas les pixels.
+    svg.push('<rect class="contour" x="' + b.x + '" y="' + b.y + '" width="' + b.L +
+             '" height="' + b.H + '" rx="4"/>');
+
+    // ── LE TUYAU : UN TRACÉ QUI VISITE TOUTES LES TÊTES DE SON RÉSEAU ───────
+    //
+    // **La version d'avant dessinait une ligne PAR RANGÉE, et elle mentait.**
+    // Une rangée qui ne portait qu'une seule tête de ce réseau n'avait pas de
+    // ligne du tout : sur le plan « Pavillon simple », l'arroseur bleu du
+    // milieu flottait, relié à rien — et les deux verts du milieu formaient un
+    // trait suspendu, sans rien qui remonte vers leur rangée du bas. Un plan
+    // qu'on emporte sur le chantier doit montrer par où passe le tuyau, sinon
+    // il ne sert qu'à compter.
+    //
+    // Le tracé suit l'ORDRE DE POSE (`pointsDeLaPose` : rangée par rangée, de
+    // gauche à droite) et va d'une tête à la suivante en deux segments à angle
+    // droit — horizontal puis vertical. C'est le serpentin qu'on déroule pour
+    // de vrai, et c'est aussi ce qui rend visibles les tés de sa règle du
+    // 17 août : chaque tête traversée par le tracé en porte un, la dernière
+    // n'a qu'un coude.
+    ordreR.forEach(function(k){
+      var r = parReseau[k];
+      if (r.pts.length < 2) return;
+
+      // **LE TRACÉ VA AU PLUS PROCHE, ET DEUX VERSIONS ONT ÉCHOUÉ AVANT.**
+      //
+      // 1. Une ligne par RANGÉE : une rangée qui ne portait qu'une tête de ce
+      //    réseau n'avait pas de ligne du tout, et l'arroseur flottait, relié
+      //    à rien. Vu sur le plan « Pavillon simple ».
+      // 2. Un serpentin dans l'ordre de pose : il faisait descendre le tuyau
+      //    du bout d'une rangée jusqu'à une tête isolée à l'autre bout,
+      //    traversant au passage les arroseurs d'un AUTRE réseau. Sur
+      //    « Devant et derrière », le bleu repartait du coin droit pour aller
+      //    chercher une tête à gauche, en coupant deux verts — un plan qu'on
+      //    ne peut pas poser, et qui donne à lire des tés là où il n'y a rien.
+      //
+      // On part donc de la tête la plus proche du regard (en bas à gauche) et
+      // l'on rejoint chaque fois la plus proche restante, à angle droit. Ce
+      // n'est pas l'optimum du tracé — il n'existe pas ici, faute de savoir où
+      // passent les obstacles —, mais aucune jambe n'est absurde, et c'est ce
+      // qu'il doit pouvoir juger d'un regard.
+      var restants = r.pts.slice();
+      var depart = 0;
+      for (var q = 1; q < restants.length; q++){
+        var s0 = restants[depart], s1 = restants[q];
+        if ((s1.x - b.x) + (b.y + b.H - s1.y) < (s0.x - b.x) + (b.y + b.H - s0.y)) depart = q;
+      }
+      var suite = restants.splice(depart, 1);
+      while (restants.length){
+        var der = suite[suite.length - 1], meilleur = 0;
+        for (var q2 = 1; q2 < restants.length; q2++){
+          var da = Math.abs(restants[q2].x - der.x) + Math.abs(restants[q2].y - der.y);
+          var db = Math.abs(restants[meilleur].x - der.x) + Math.abs(restants[meilleur].y - der.y);
+          if (da < db) meilleur = q2;
+        }
+        suite.push(restants.splice(meilleur, 1)[0]);
+      }
+
+      var dd = 'M' + suite[0].x.toFixed(1) + ' ' + suite[0].y.toFixed(1);
+      for (var q3 = 1; q3 < suite.length; q3++){
+        var pt = suite[q3], av = suite[q3-1];
+        // Horizontal puis vertical : le tuyau longe la rangée, puis coupe.
+        if (Math.abs(pt.x - av.x) > 0.5) dd += ' H' + pt.x.toFixed(1);
+        if (Math.abs(pt.y - av.y) > 0.5) dd += ' V' + pt.y.toFixed(1);
+      }
+      svg.push('<path class="tuyau" stroke="' + r.c + '" d="' + dd + '"/>');
+    });
+    svg.push(tetes);
+    svg.push('<text class="cote" x="' + (b.x + b.L/2).toFixed(0) + '" y="' +
+             (b.y + b.H + 15) + '">' + (b.z.nom || '') + ' — ' + nb(Number(b.z.L),0) +
+             ' × ' + nb(Number(b.z.l),0) + ' m</text>');
+  });
+
+  // ── LA NOURRICE, dans son regard, avec une vanne par réseau ──────────────
+  var yR = hauteur - 40;
+  var xR = MARGE_PLAN;
+  var voies = d.secteurs.length;
+  var largeurR = Math.max(64, 15 * voies + 22);
+  svg.push('<rect x="' + xR + '" y="' + (yR - 15) + '" width="' + largeurR +
+           '" height="30" rx="4" fill="var(--papier)" stroke="var(--plan)" stroke-width="1.6"/>');
+  for (var v = 0; v < voies; v++){
+    var xv = xR + 13 + v * 15;
+    var cv = couleurReseau(v);
+    svg.push('<path d="M' + (xv-6) + ' ' + (yR-7) + ' L' + xv + ' ' + yR + ' L' + (xv-6) + ' ' + (yR+7) + ' Z" fill="' + cv + '"/>' +
+             '<path d="M' + (xv+6) + ' ' + (yR-7) + ' L' + xv + ' ' + yR + ' L' + (xv+6) + ' ' + (yR+7) + ' Z" fill="' + cv + '"/>');
+  }
+  svg.push('<text class="repere" x="' + (xR + largeurR + 9) + '" y="' + (yR + 4) +
+           '">Nourrice ' + voies + ' voie' + (voies > 1 ? 's' : '') + ' — dans le regard</text>');
+  // L'amenée, en PE, du compteur au regard.
+  var a = amenee(d);
+  svg.push('<path class="tuyau-p" d="M' + (xR - 16) + ' ' + yR + ' H' + xR + '"/>');
+  svg.push('<text class="ech" x="' + MARGE_PLAN + '" y="' + (hauteur - 8) +
+           '">Amenée PE Ø' + a.diametre + ' · échelle 1/100e</text>');
+  svg.push('</svg>');
+  hote.innerHTML = svg.join('');
+
+  vus.sort(function(p, q){ return p - q; });
+  var l = vus.map(function(i){
+    return '<span><i style="background:' + couleurReseau(i) + '"></i>Réseau ' + (i+1) + '</span>';
+  });
+  l.push('<span><i class="trait"></i>PE, en pointillés</span>');
+  reseauxNappe.sort(function(p, q){ return p - q; }).forEach(function(i){
+    l.push('<span><i style="background:' + couleurReseau(i) +
+           ';border-radius:3px"></i>Réseau ' + (i+1) + ' — goutte-à-goutte, non tracé</span>');
+  });
+  legende.innerHTML = l.join('');
+}
+
+/* ══ LES CASIERS — l'ordre dans lequel IL commande ══════════════════════════
+
+   Sa demande : « une case, par exemple deux réseaux ou trois réseaux ; les
+   pièces pour la nourrice ; ensuite les pièces pour les arroseurs, quel
+   arroseur tu utilises ; le nombre de couronnes de PE et en quel diamètre ; et
+   le goutte-à-goutte. »
+
+   Les lignes ne sont pas réécrites : elles viennent de `listeMateriel`, et on
+   ne fait que les RANGER. Un casier qui recopierait une désignation finirait
+   par mentir le jour où le catalogue change. */
+var COURONNE = 50;   // mètres par couronne de PE — à confirmer par lui
+
+function rangerEnCasiers(lignes, d){
+  var casiers = [
+    { titre:'Les arroseurs', quoi:'Ce qui arrose, et ce qui le tient.', refs:[], test:function(l){
+        return /Turbine|Tuyère|Buse|SBE|PEBD/i.test(l.nom); } },
+    { titre:'Le goutte-à-goutte', quoi:'Gaine de goutteurs, au mètre.', refs:[], test:function(l){
+        return /goutteur|dripline/i.test(l.nom); } },
+    { titre:'La nourrice', quoi:'Tout ce qui se monte dans le regard.', refs:[], test:function(l){
+        return /Clarinette|Électrovanne|Electrovanne|Union|Mamelon|Raccord|Regard|Programmateur|Pile|Connexion|Vanne|Coude 90° taraudé MM|MF 1|Té taraudé|Régulateur/i.test(l.nom); } },
+    { titre:'Le réseau enterré', quoi:'Les tés, coudes et jonctions de la tuyauterie.', refs:[], test:function(l){
+        return /Té 90|Coude 90° taraudé 25/i.test(l.nom); } },
+    { titre:'Tête de réseau', quoi:'Ce qui protège et régule, avant le regard.', refs:[], test:function(l){
+        return /Disconnecteur|Réducteur|Sonde/i.test(l.nom); } }
+  ];
+  var restes = [];
+  lignes.forEach(function(l){
+    for (var i = 0; i < casiers.length; i++){
+      if (casiers[i].test(l)){ casiers[i].refs.push(l); return; }
+    }
+    restes.push(l);
+  });
+  // **Rien ne se perd.** Une ligne qu'aucun casier ne reconnaît s'affiche
+  // quand même, sous son propre titre : la faire disparaître serait retirer
+  // une pièce de la commande sans le dire.
+  if (restes.length) casiers.push({ titre:'Autres pièces', quoi:'Non classées — à ranger.', refs:restes });
+  return casiers.filter(function(c){ return c.refs.length; });
+}
+
+function dessinerCasiers(d){
+  var hote = document.getElementById('casiers');
+  var compte = document.getElementById('compte');
+  hote.innerHTML = ''; compte.innerHTML = '';
+
+  var lignes = listeMateriel(d);
+  if (!lignes.length){
+    hote.innerHTML = '<p class="vide">La liste se remplit dès qu\'un jardin est lu.</p>';
+    return;
+  }
+
+  // Le bandeau : combien de réseaux, et quel arroseur.
+  var arroseurs = {};
+  etat.zones.forEach(function(z){
+    var p = poser(z);
+    if (p.m && p.m.type !== 'gaine' && p.nombre) arroseurs[p.m.nom + ' ' + p.m.detail] = true;
+  });
+  var a = amenee(d);
+  var bulles = ['<span><b>' + d.secteurs.length + '</b> réseau' + (d.secteurs.length > 1 ? 'x' : '') + '</span>'];
+  Object.keys(arroseurs).forEach(function(n){ bulles.push('<span>' + n + '</span>'); });
+  bulles.push('<span>Amenée <b>Ø' + a.diametre + '</b></span>');
+  compte.innerHTML = bulles.join('');
+
+  rangerEnCasiers(lignes, d).forEach(function(c){
+    var b = document.createElement('div');
+    b.className = 'casier';
+    var html = '<h3>' + c.titre + '</h3><p class="quoi">' + (c.quoi || '') + '</p>';
+    c.refs.forEach(function(l){
+      html += '<div class="l"><span class="q">' + l.q + ' ' + l.u + '</span>' +
+              '<span class="n">' + l.nom + '</span></div>';
+    });
+    b.innerHTML = html;
+    hote.appendChild(b);
+  });
+
+  // ── LES COURONNES DE PE — sa demande, et ce qu'on NE sait pas ────────────
+  // Il veut « le nombre de couronnes de PE et en quel diamètre ». Le DIAMÈTRE
+  // se calcule (sa règle : Ø25 par défaut, Ø32 si l'hydraulique l'impose). La
+  // LONGUEUR, elle, dépend du tracé sur le terrain : on ne l'invente pas, on
+  // la demande — et on dit combien de couronnes elle ferait.
+  var pe = document.createElement('div');
+  pe.className = 'casier';
+  pe.innerHTML =
+    '<h3>Le tuyau PE</h3>' +
+    '<p class="quoi">Le <b>diamètre</b> se calcule ; la <b>longueur</b> se mesure ' +
+    'sur le terrain — elle dépend du tracé, et une longueur inventée se paie ' +
+    'à la pose.</p>' +
+    '<div class="l"><span class="q">Ø' + a.diametre + '</span>' +
+    '<span class="n">Amenée du compteur au regard — ' +
+    (a.longueur > 0
+      ? nb(a.longueur,0) + ' m, soit ' + Math.ceil(a.longueur / COURONNE) + ' couronne(s) de ' + COURONNE + ' m'
+      : '<span class="provisoire">longueur à mesurer</span>') +
+    '</span></div>' +
+    '<div class="l"><span class="q">Ø25</span><span class="n">Antennes vers les réseaux — ' +
+    '<span class="provisoire">longueur à mesurer</span></span></div>' +
+    '<p class="quoi" style="margin:10px 0 0">La couronne est comptée à ' + COURONNE +
+    ' m. <span class="provisoire">À confirmer</span> — c\'est le conditionnement ' +
+    'de votre fournisseur, pas une donnée du catalogue.</p>';
+  hote.appendChild(pe);
+}
+
+/* ── Le liant ────────────────────────────────────────────────────────────── */
+function recalculer(){
+  etat.zones = JSON.parse(JSON.stringify(jardinCourant().zones));
+  var d = decouper();
+  dessinerCroquis();
+  dessinerExemples();
+  dessinerMarques();
+  dessinerPlan(d);
+  dessinerCasiers(d);
+  enregistrer();
+}
+
+document.getElementById('marque').addEventListener('change', function(e){
+  etat.marque = e.target.value; recalculer();
+});
+
+document.getElementById('croquisFichier').addEventListener('change', function(e){
+  var f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  var avant = etat.croquis;
+  reduireImage(f, function(donnees){
+    var lecture = document.getElementById('lecture');
+    if (!donnees){
+      lecture.innerHTML = '<span class="provisoire">Cette photo n\'a pas pu être lue.</span> Réessayez.';
+      return;
+    }
+    etat.croquis = donnees;
+    try { localStorage.setItem(CLE_ETAT, JSON.stringify(etat)); }
+    catch (err) {
+      etat.croquis = avant;
+      dessinerCroquis();
+      lecture.innerHTML = '<span class="provisoire">Photo trop lourde pour être gardée ici.</span> ' +
+                          'Reprenez-la de plus loin.';
+      return;
+    }
+    dessinerCroquis();
+  });
+});
+
+recalculer();
+</script>
+</body>
+</html>

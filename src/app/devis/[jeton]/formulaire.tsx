@@ -53,19 +53,31 @@ export default function FormulaireReponse({
             </label>
           ))}
 
-          <label className="flex items-center gap-3 text-[15px] text-ink">
-            <input
-              type="radio"
-              name="choixDate"
-              value="autre"
-              checked={choixDate === "autre"}
-              onChange={(e) => setChoixDate(e.target.value)}
-              className="h-5 w-5"
-            />
-            <span>{libelleAutreDate(envoi.datesProposees.length)}</span>
-          </label>
+          {/* **« Une autre date » n'apparaît que si l'artisan l'a permis**
+              (17 août 2026, sa demande : *« il faut que l'utilisateur puisse
+              choisir avant d'envoyer s'il autorise ou non le client à choisir
+              une date »*). Le choix est FIGÉ dans l'envoi : cet écran dira
+              demain ce qu'il dit aujourd'hui.
 
-          {choixDate === "autre" && (
+              **Cacher ne suffit pas** : cette page est publique et son
+              formulaire se rejoue. Le serveur refuse la contre-proposition de
+              son côté (`enregistrerReponse`, motif `autre_date_refusee`) — une
+              règle tenue à un seul endroit, jamais deux. */}
+          {envoi.autreDateAutorisee && (
+            <label className="flex items-center gap-3 text-[15px] text-ink">
+              <input
+                type="radio"
+                name="choixDate"
+                value="autre"
+                checked={choixDate === "autre"}
+                onChange={(e) => setChoixDate(e.target.value)}
+                className="h-5 w-5"
+              />
+              <span>{libelleAutreDate(envoi.datesProposees.length)}</span>
+            </label>
+          )}
+
+          {envoi.autreDateAutorisee && choixDate === "autre" && (
             <div className="mt-2 flex flex-col gap-1">
               {/* **Un calendrier, et non plus le sélecteur du téléphone.**
                   Sa demande du 8 août 2026 : « qu'il ait accès au calendrier
@@ -81,12 +93,17 @@ export default function FormulaireReponse({
                   serveur revérifie de toute façon — l'affichage n'est qu'un
                   instantané, deux clients peuvent viser le même jour. */}
               <input type="hidden" name="dateAutre" value={dateAutre} />
+              {/* `dureeDemiJournees={null}` : le client n'apprend rien du
+                  découpage du planning de son artisan — ni créneau, ni durée.
+                  Consigne du patron, tenue par `test-creneaux-planning.ts`. Sa
+                  phrase sous le calendrier reste vraie sans rien chiffrer. */}
               <Calendrier
                 debut={envoi.fenetre.debut}
                 fin={envoi.fenetre.fin}
                 occupes={envoi.joursOccupes}
                 retenus={dateAutre ? [dateAutre] : []}
                 aujourdHui={aujourdHui}
+                dureeDemiJournees={null}
                 onBasculer={(jour) => setDateAutre((actuel) => (actuel === jour ? "" : jour))}
               />
               {dateAutre && (
@@ -131,6 +148,20 @@ export default function FormulaireReponse({
         <label className="block text-[13px] font-medium text-ink/60" htmlFor="precision">
           Une erreur, une question, une précision&nbsp;?
         </label>
+        {/* **La phrase qui dit que c'est permis.** Le patron, le 13 août 2026 :
+            *« écris une petite phrase sur l'encart pour laisser un mot, qu'il
+            sache qu'il peut le faire »*. L'intitulé ci-dessus posait une
+            question ; il ne disait pas qu'on avait le droit d'y répondre. Un
+            client qui repère une faute et n'ose pas l'écrire touche « Je ne
+            donne pas suite », et le patron lit un refus là où il n'y avait
+            qu'une coquille — c'est très exactement le chantier perdu que ce
+            champ existe pour éviter.
+
+            Elle est AU-DESSUS du champ, jamais en dessous : une invitation lue
+            après coup n'invite plus personne. */}
+        <p className="mt-1 text-[13px] text-ink/70">
+          Vous pouvez laisser un mot à votre artisan : il le lira tel quel.
+        </p>
         <textarea
           id="precision"
           name="precision"
@@ -141,9 +172,6 @@ export default function FormulaireReponse({
           placeholder="« Mon nom est mal écrit », « plutôt le matin », « il manque le broyage »…"
           className="mt-2 w-full resize-y rounded-xl border border-black/10 px-3 py-2 text-[15px]"
         />
-        <p className="mt-1.5 text-[12px] text-ink/50">
-          Votre artisan lira ce message tel quel.
-        </p>
       </section>
 
       {etat && "erreur" in etat && (
@@ -169,7 +197,7 @@ export default function FormulaireReponse({
           name="decision"
           value="accepte"
           disabled={enCours}
-          className="rounded-xl bg-[#2F3B2F] py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
+          className="rounded-full bg-[#2F3B2F] py-3.5 text-[16px] font-medium text-white disabled:opacity-50"
         >
           {enCours ? "Envoi…" : "J'accepte ce devis"}
         </button>
@@ -179,7 +207,7 @@ export default function FormulaireReponse({
           value="correction"
           disabled={enCours || precision.trim() === ""}
           title={precision.trim() === "" ? "Écrivez d'abord ce qui doit être corrigé." : undefined}
-          className="rounded-xl border border-[#2F3B2F]/30 py-3 text-[15px] font-medium text-[#2F3B2F] disabled:opacity-40"
+          className="rounded-full border border-[#2F3B2F]/30 py-3 text-[15px] font-medium text-[#2F3B2F] disabled:opacity-40"
         >
           Une correction avant d&apos;accepter
         </button>
@@ -193,7 +221,7 @@ export default function FormulaireReponse({
           name="decision"
           value="refuse"
           disabled={enCours}
-          className="rounded-xl border border-black/15 py-3 text-[15px] text-ink/70 disabled:opacity-50"
+          className="rounded-full border border-black/15 py-3 text-[15px] text-ink/70 disabled:opacity-50"
         >
           Je ne donne pas suite
         </button>

@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { destinataireLisible } from "@/lib/numero-lisible";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
+import type { Civilite } from "@/lib/civilite";
 
 // Ouvre l'application de messagerie du patron, message prêt à partir, **au bon
 // destinataire**.
@@ -39,20 +42,30 @@ import { enregistrerCoordonneeClientAction } from "./actions";
 type Props = {
   clientId: string | null;
   clientNom: string;
+  /** Ce qu'il a choisi au-dessus du nom (migration 0038). */
+  clientCivilite: Civilite | null;
   entrepriseNom: string;
   /** Le canal convenu sur la fiche du client — un défaut, pas une contrainte. */
   canal: CanalClient;
   telephone: string;
   email: string;
   lien: string;
+  /** Le devis est-il DÉJÀ chez le client ? Commande le libellé du bouton. */
+  relance: boolean;
 };
 
+// **Le libellé dit ce que le geste FAIT, et ce n'est pas la même chose selon
+// que le devis est déjà parti ou non.** « Ouvrir le SMS tout prêt » décrit le
+// premier envoi ; devant un devis que le client a déjà en main, il fait croire
+// qu'on va lui en envoyer un second. C'est « relancer » — le même lien, tel
+// quel — et c'est le mot que le patron a retenu sur la maquette 34.
 const LIBELLE: Record<
   CanalClient,
-  { bouton: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
+  { bouton: string; relance: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
 > = {
   sms: {
     bouton: "Ouvrir le SMS tout prêt",
+    relance: "Relancer par SMS",
     bascule: "Plutôt par SMS",
     champ: "Numéro de téléphone",
     exemple: "06 12 34 56 78",
@@ -61,6 +74,7 @@ const LIBELLE: Record<
   },
   email: {
     bouton: "Ouvrir l'e-mail tout prêt",
+    relance: "Relancer par e-mail",
     bascule: "Plutôt par e-mail",
     champ: "Adresse e-mail",
     exemple: "client@exemple.fr",
@@ -72,11 +86,13 @@ const LIBELLE: Record<
 export default function TransmettreAuClient({
   clientId,
   clientNom,
+  clientCivilite,
   entrepriseNom,
   canal,
   telephone,
   email,
   lien,
+  relance,
 }: Props) {
   const [erreur, setErreur] = useState<string | null>(null);
   const [coordonnees, setCoordonnees] = useState<Record<CanalClient, string>>({ sms: telephone, email });
@@ -99,7 +115,7 @@ export default function TransmettreAuClient({
   // sans jamais être parti.
   useRetourDeMessagerie();
 
-  const message = composerMessageClient({ clientNom, entrepriseNom, lien });
+  const message = composerMessageClient({ clientNom, clientCivilite, entrepriseNom, lien });
   const autre: CanalClient = canalChoisi === "sms" ? "email" : "sms";
   const destinataire = coordonnees[canalChoisi];
 
@@ -113,24 +129,6 @@ export default function TransmettreAuClient({
    */
   function adresse(canalCible: CanalClient, cible: string) {
     return lienTransmission({ canal: canalCible, destinataire: cible, message });
-  }
-
-  async function partagerAutrement() {
-    setErreur(null);
-    // Le partage n'emporte aucun destinataire — c'est exactement pour cela
-    // qu'il n'est plus le chemin principal. Il reste utile pour WhatsApp,
-    // Signal, ou tout ce que le patron a installé.
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title: message.objet, text: message.corps });
-      } catch (e) {
-        // Un partage annulé n'est pas une panne : le patron a changé d'avis.
-        if (e instanceof Error && e.name === "AbortError") return;
-        setErreur("Le partage n'a pas abouti. Le lien reste copiable ci-dessus.");
-      }
-      return;
-    }
-    setErreur("Le partage n'est pas disponible sur cet appareil. Le lien reste copiable ci-dessus.");
   }
 
   async function enregistrerEtOuvrir() {
@@ -164,18 +162,23 @@ export default function TransmettreAuClient({
             href={adresse(canalChoisi, destinataire)}
             data-transmission={canalChoisi}
             onClick={() => marquerDepartMessagerie("devis", clientNom)}
-            className="mt-3 block w-full rounded-[4px] py-3 text-center text-[15px] font-medium text-white"
+            className="block w-full rounded-full py-3 text-center text-[15px] font-medium text-white"
             style={{ backgroundColor: colors.rust }}
           >
-            {LIBELLE[canalChoisi].bouton}
+            {relance ? LIBELLE[canalChoisi].relance : LIBELLE[canalChoisi].bouton}
           </a>
           {/* Dire à qui : le patron doit voir le destinataire AVANT d'ouvrir sa
               messagerie, pas le découvrir dedans.
               La phrase est d'un seul tenant : coupée en morceaux, JSX avalait
               l'espace avant le tiret et affichait « Au 0679984514— c'est vous ».
-              Même défaut que « Créer la facture » en haut de la fiche. */}
+              Même défaut que « Créer la facture » en haut de la fiche.
+
+              **Le numéro est espacé** (`numeroLisible`) : collé, il se vérifiait
+              chiffre par chiffre ou pas du tout. Le lien `sms:`, lui, continue
+              de porter le numéro brut — c'est `lienTransmission` qui retire les
+              espaces, et non cette ligne. */}
           <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
-            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataire} — c'est vous qui l'envoyez.`}
+            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataireLisible(canalChoisi, destinataire)} — c'est vous qui l'envoyez.`}
           </p>
         </>
       ) : (
@@ -199,20 +202,24 @@ export default function TransmettreAuClient({
             className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
             style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
           />
-          <button
-            type="button"
+          <PrimaryButton
             onClick={enregistrerEtOuvrir}
             disabled={enregistrement || saisie.trim() === ""}
-            className="w-full rounded-[4px] py-3 text-[15px] font-medium text-white disabled:opacity-40"
-            style={{ backgroundColor: colors.rust }}
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer et ouvrir le message"}
-          </button>
+          </PrimaryButton>
         </div>
       )}
 
       {/* Changer d'avis. Toujours présent, jamais présélectionné : la voie
-          normale reste celle convenue avec le client sur sa fiche. */}
+          normale reste celle convenue avec le client sur sa fiche.
+
+          **Il a failli disparaître, et ce serait une régression.** Aucune des
+          cinq mises en page de la maquette 34 ne le portait — je l'avais omis.
+          Or c'est une demande explicite du 4 août : « si je veux l'envoyer par
+          e-mail, je ne peux pas revenir le choisir ». Il reprend donc sa place
+          juste sous la ligne du destinataire, qui nomme déjà le canal — c'est
+          là qu'on se rend compte qu'on s'est trompé de voie. */}
       <button
         type="button"
         onClick={() => {
@@ -220,20 +227,44 @@ export default function TransmettreAuClient({
           setSaisie("");
           setErreur(null);
         }}
-        className="mt-3 block w-full text-center text-[14px] font-medium"
-        style={{ color: colors.rust }}
+        className="mt-3 block w-full text-center text-[15px] font-semibold"
+        // **L'or, et non le gris — sa demande du 13 août.** Il était en gris
+        // 13 px sous la ligne du destinataire, et se lisait comme une mention
+        // légale : « il faut le mettre en gras ou en doré, et légèrement plus
+        // gros ». L'or est la couleur de ce qu'on LIT dans la charte, mais
+        // c'est ici le seul endroit où il porte un geste — assumé : cette ligne
+        // n'est pas une action de plus, c'est la MÊME action par l'autre voie.
+        // Quinze pixels : deux de plus que la rangée du dessous, un de moins
+        // que le bouton plein. Elle se voit sans disputer la place.
+        style={{ color: colors.or }}
       >
         {LIBELLE[autre].bascule} →
       </button>
 
-      <button
-        type="button"
-        onClick={partagerAutrement}
-        className="mt-2 block w-full text-center text-[13px]"
-        style={{ color: colors.muted }}
-      >
-        Partager autrement (WhatsApp…)
-      </button>
+      {/* **« Télécharger le PDF · Partager » a été retiré le 21 août 2026, à sa
+          demande.** Devant cet écran : *« garde quand même un seul bouton »*,
+          puis, mis devant le choix : garder l'ouverture du message et la
+          modification du devis, rien d'autre.
+
+          **Et le PDF n'est perdu nulle part — c'est LUI qui l'a rappelé, et le
+          dépôt lui donne raison :** *« une fois le devis envoyé, il doit
+          s'enregistrer normalement en PDF dans la catégorie client, c'est là où
+          tous nos nouveaux clients s'enregistrent, il y a trois colonnes devis,
+          factures et fiches chantiers »*. Vérifié plutôt que cru :
+          `chargerFicheClient` ne retient que les devis dont le statut est
+          `envoye`, et les range en vignettes PDF dans la colonne « Devis »
+          (`src/app/clients/[id]/page.tsx`). Un devis parti s'y classe donc tout
+          seul, sans geste de sa part.
+
+          Ce que cela coûte quand même, et qui est assumé : « Partager » était le
+          seul chemin vers WhatsApp depuis cet écran.
+
+          **La bascule de canal, elle, RESTE**, et ce n'est pas un oubli : c'est
+          le seul endroit où une coordonnée manquante se saisit — il n'existe
+          aucun écran de fiche client — et son absence était précisément sa
+          plainte du 13 août, *« si je veux l'envoyer par e-mail, je ne peux pas
+          revenir le choisir »*. La retirer rouvrirait un défaut qu'il a déjà
+          payé. */}
 
       {erreur && (
         <p role="alert" className="mt-2 text-center text-[13px]" style={{ color: colors.rust }}>

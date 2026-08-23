@@ -33,7 +33,9 @@ async function main() {
     await page.click('button[type="submit"]');
     await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
 
-    await page.goto("http://localhost:3000/reglages", { waitUntil: "networkidle" });
+    // Le téléchargement a rejoint la rubrique « Sécurité & données » le 14 août
+    // 2026, quand l'écran des réglages est devenu un sommaire (ARCHITECTURE.md §96).
+    await page.goto("http://localhost:3000/reglages/donnees", { waitUntil: "networkidle" });
 
     const bouton = page.locator("text=Télécharger mes données");
     assert.ok(await bouton.isVisible(), "Le bouton « Télécharger mes données » est absent de Réglages.");

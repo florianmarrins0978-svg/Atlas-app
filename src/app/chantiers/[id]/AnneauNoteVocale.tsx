@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, libelleCaps } from "@/lib/design-tokens";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { supprimerNoteVocaleAction, enregistrerNoteVocaleAction } from "./note-vocale/actions";
+import { supprimerNoteVocaleAction } from "./note-vocale/actions";
 import { useMagnetophone, formulaireDeNote } from "./magnetophone";
+import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
 
 /**
  * L'anneau muet — l'accès direct à la note vocale, sur la fiche du chantier.
@@ -47,10 +48,35 @@ import { useMagnetophone, formulaireDeNote } from "./magnetophone";
  */
 export default function AnneauNoteVocale({
   chantierId,
+  assurerChantier,
+  onDicte,
   storageKey,
   dureeSecondes,
 }: {
-  chantierId: string;
+  /**
+   * Le chantier, s'il existe déjà. **`null` sur la fiche client** : il n'est
+   * créé qu'au moment où l'on arrête de dicter — voir `assurerChantier`.
+   */
+  chantierId: string | null;
+  /**
+   * Fait exister le chantier, et rend son identifiant.
+   *
+   * **Sa demande du 21 août 2026 :** *« dès que je rappuie sur la note vocale
+   * pour stopper l'enregistrement, il faut IMPÉRATIVEMENT que les infos aillent
+   * s'enregistrer »* — parce qu'il est en rendez-vous et qu'il va fermer
+   * l'application. Le chantier naît donc de ce geste-là, sans qu'il ait à
+   * toucher autre chose.
+   */
+  assurerChantier?: () => Promise<string>;
+  /**
+   * Appelé une fois la note enregistrée, avec le chantier qui la porte.
+   *
+   * **Sur la fiche du chantier, il n'y a rien à faire de plus** : la page se
+   * rafraîchit et l'anneau devient le lecteur. Sur la fiche CLIENT, c'est ce
+   * signal qui fait apparaître « Mon devis → » sous l'anneau — et un
+   * rafraîchissement y effacerait ce qu'il vient de taper.
+   */
+  onDicte?: (chantierId: string) => void;
   /** Absent, l'audio a été purgé après transcription : il n'y a rien à écouter. */
   storageKey: string | null;
   dureeSecondes: number | null;
@@ -75,10 +101,12 @@ export default function AnneauNoteVocale({
   // annulation qui ne rendrait que le texte serait pire que pas d'annulation.
   const retraits = useRetraits({
     valider: async () => {
-      await supprimerNoteVocaleAction(chantierId);
+      // Sans chantier, il n'y a pas de note à retirer : le tiroir de retrait
+      // n'apparaît pas non plus (`enregistreur` plus bas).
+      if (chantierId) await supprimerNoteVocaleAction(chantierId);
     },
   });
-  const retiree = retraits.estRetire(chantierId);
+  const retiree = chantierId !== null && retraits.estRetire(chantierId);
 
   // ─── Le volume réellement enregistré ──────────────────────────────────
   //
@@ -206,28 +234,32 @@ export default function AnneauNoteVocale({
     if (!capte) return;
     setEnvoi(true);
     try {
-      const resultat = await enregistrerNoteVocaleAction(
-        chantierId,
+      // **Une URL, pas une action serveur** — c'est le correctif du 12 août
+      // 2026, après trois signalements du patron. Une action est adressée par
+      // un identifiant fabriqué à la construction ; son banc se reconstruit
+      // tout seul, et cette fiche est justement l'écran où l'on STATIONNE avant
+      // de dicter. La page appelait donc un identifiant disparu, et l'envoi
+      // échouait sans jamais atteindre le serveur. Voir `envoi-note-vocale.ts`.
+      //
+      // `envoyerNoteVocale` ne lève jamais : tout échec revient en `raison`,
+      // déjà traduit et nommant le maillon.
+      const cible = chantierId ?? (await assurerChantier?.());
+      if (!cible) {
+        magnetophone.setErreur("Impossible d'enregistrer ce chantier pour l'instant. Réessayez.");
+        return;
+      }
+      const resultat = await envoyerNoteVocale(
+        cible,
         formulaireDeNote(capte.blob, capte.secondes)
       );
-      // **Un refus DIT pourquoi.** Le patron a vu « Impossible d'enregistrer la
-      // note pour l'instant. Réessayez. » sans que personne puisse savoir ce
-      // qui s'était passé — le message du serveur était jeté ici même. Voir
-      // `ResultatNoteVocale` dans note-vocale/actions.ts.
       if (!resultat.ok) {
         magnetophone.setErreur(resultat.raison);
         return;
       }
-      router.refresh();
-    } catch (err) {
-      // Ici, ce n'est plus un refus : c'est que l'aller-retour n'a pas abouti.
-      // Le distinguer compte — « le serveur a dit non » et « le serveur n'a
-      // rien dit » ne se réparent pas au même endroit, et le second est ce
-      // qu'on voit derrière un mandataire qui coupe.
-      console.error("Note vocale : envoi impossible", err);
-      magnetophone.setErreur(
-        "L'enregistrement n'a pas pu être transmis — la connexion a été interrompue. Réessayez."
-      );
+      // Sur la fiche client, celui qui nous a posés décide de la suite : un
+      // rafraîchissement effacerait la saisie en cours.
+      if (onDicte) onDicte(cible);
+      else router.refresh();
     } finally {
       setEnvoi(false);
     }
@@ -236,6 +268,7 @@ export default function AnneauNoteVocale({
   function retirer() {
     audioRef.current?.pause();
     setLit(false);
+    if (!chantierId) return;
     retraits.retirer(chantierId, "cette note vocale");
     // Le glisseur revient à sa place : rouvert par « Annuler », l'anneau doit
     // se retrouver là où on l'a laissé, pas déjà poussé vers le haut.

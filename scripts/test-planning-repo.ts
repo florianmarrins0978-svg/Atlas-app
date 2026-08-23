@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
+import * as clientsRepo from "../src/server/repositories/clients";
 import { getPlanificationEtat, trierParDatePlanifiee } from "../src/lib/chantier-etat";
 import { nettoyerBase } from "./_test-db";
 
@@ -90,6 +91,43 @@ async function main() {
     const maj = await chantiersRepo.deplanifierChantier(A, c1.id);
     assert.equal(maj.datePlanifiee, null);
     assert.equal(getPlanificationEtat(maj), "a_planifier");
+  });
+
+  // **« Y aller » se sert ici, et nulle part ailleurs.** Le patron ouvre la
+  // feuille en voiture, souvent sans réseau : l'adresse et le numéro doivent
+  // descendre AVEC la liste. Les oublier de ce `select` ne casserait rien de
+  // visible — la feuille dirait simplement « Adresse non renseignée » sur un
+  // chantier qui en a une, et il croirait la base vide.
+  await test("Le planning descend l'adresse du chantier et le numéro du client", async () => {
+    const client = await clientsRepo.creerClient(A, { nom: "M. Bernard", telephone: "05 56 00 00 12" });
+    const c3 = await chantiersRepo.creerChantier(A, {
+      nom: "Chêne — M. Bernard",
+      adresseChantier: "12 chemin des Chênes, 33600 Pessac",
+      clientId: client.id,
+    });
+    const co = await pool.connect();
+    try {
+      await co.query("BEGIN");
+      await co.query(`SELECT set_config('app.entreprise_id', $1, true)`, [A.entrepriseId]);
+      await co.query(`UPDATE chantiers SET devis_envoye_at = now() WHERE id = $1`, [c3.id]);
+      await co.query("COMMIT");
+    } finally {
+      co.release();
+    }
+
+    const liste = await chantiersRepo.listerChantiersPourPlanning(A);
+    const ligne = liste.find((c) => c.id === c3.id);
+    assert.ok(ligne, "le chantier doit figurer au planning");
+    assert.equal(ligne.adresseChantier, "12 chemin des Chênes, 33600 Pessac");
+    assert.equal(ligne.clientTelephone, "05 56 00 00 12");
+  });
+
+  await test("Un chantier sans adresse la rend nulle, pas vide — rien ne s'invente", async () => {
+    const liste = await chantiersRepo.listerChantiersPourPlanning(A);
+    const ligne = liste.find((c) => c.id === c2.id);
+    assert.ok(ligne);
+    assert.equal(ligne.adresseChantier, null);
+    assert.equal(ligne.clientTelephone, null);
   });
 
   await test("Isolation : B ne voit aucun chantier de A dans son planning", async () => {

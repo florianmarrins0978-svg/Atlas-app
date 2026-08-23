@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **Revenir de sa messagerie, et retomber chez soi.**
 //
@@ -57,8 +58,11 @@ async function main() {
   // suite : elle simulait le retour depuis le planning, un écran qui ne porte
   // pas le mécanisme — et concluait que le mécanisme ne marchait pas. Le
   // patron, lui, part TOUJOURS de l'écran où se trouve le bouton.
-  const chantierId = await chantierAvecDevisPret();
-  assert.ok(chantierId, "Aucun chantier avec un devis prêt : le jeu de démonstration ne permet pas d'éprouver ce parcours.");
+  const chantierId = await chantierAvecDevisPret(page);
+  // **Sur `/export` : c'est là que vit le lien de transmission**, et donc le
+  // mécanisme du retour. Le raccourci du 20 août 2026 a supprimé la face AVANT
+  // l'envoi de cette adresse (`ARCHITECTURE.md` §136), pas celle d'après — et
+  // le devis vient précisément de partir.
   await page.goto(`${BASE}/chantiers/${chantierId}/export`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);
 
@@ -108,20 +112,62 @@ async function main() {
   console.log("✅ Le retour de la messagerie ramène chez soi, avec un mot juste.");
 }
 
-/** Un chantier dont le devis est parti et attend encore une réponse. */
-async function chantierAvecDevisPret(): Promise<string | null> {
+/**
+ * Un chantier dont le devis vient de partir — **fabriqué ici, pas emprunté.**
+ *
+ * **Cette suite tirait au sort, et c'est ce qui l'a fait rougir le 12 août
+ * 2026.** Elle prenait `SELECT … WHERE reponse IS NULL LIMIT 1`, sans `ORDER BY`
+ * ni propriétaire : le premier envoi sans réponse que la base voulait bien
+ * rendre, c'est-à-dire un chantier laissé par une AUTRE suite. Le jeu de
+ * démonstration, lui, n'en fournit aucun — son unique devis envoyé porte déjà
+ * une réponse — donc elle ne pouvait même pas tourner seule.
+ *
+ * Ajouter une suite ailleurs a suffi à changer l'ordre physique des lignes, et
+ * elle est tombée sur un chantier dont l'écran d'envoi ne monte pas le
+ * mécanisme du retour. Le message accusait alors le retour de messagerie, qui
+ * n'y était pour rien — **une erreur qui envoie chercher au mauvais endroit
+ * coûte plus cher que pas d'erreur du tout** (`AGENTS.md`).
+ *
+ * Une suite qui dépend des restes d'une autre n'éprouve pas ce qu'elle croit.
+ * Celle-ci fabrique donc le sien, du client au devis parti.
+ */
+async function chantierAvecDevisPret(page: import("playwright").Page): Promise<string> {
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+  await page.fill('input[placeholder="Bernard"]', `Retour messagerie ${Date.now()}`);
+  await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
+  await creerPuisFiche(page);
+  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
+  const chantierId = page.url().split("/").pop()!;
+
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.waitForSelector("text=Total TTC", { timeout: 40_000 });
+  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
+  await page.waitForTimeout(900);
+  await page.getByLabel("Description 1").fill("Taille d'une haie de charmille");
+  await page.getByLabel("Prix unitaire 1").fill("420");
+  await page.getByLabel("Description 1").click();
+  await page.waitForTimeout(1200);
+
+  await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+  await page.getByText("Choisir la date", { exact: false }).first().click();
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
+  await page.getByRole("button", { name: "Envoyer le devis" }).click();
+  await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+
+  // On vérifie que le lien est bien là AVANT de jouer le retour : sans lui,
+  // l'écran ne monte pas le mécanisme, et la suite accuserait le mauvais.
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   try {
     const { rows } = await pool.query(
-      `SELECT d.chantier_id FROM envois_devis e
-         JOIN devis d ON d.id = e.devis_id
-        WHERE e.reponse IS NULL
-        LIMIT 1`
+      `SELECT 1 FROM envois_devis e JOIN devis d ON d.id = e.devis_id
+        WHERE d.chantier_id = $1 AND e.reponse IS NULL`,
+      [chantierId]
     );
-    return rows[0]?.chantier_id ?? null;
+    assert.ok(rows[0], "Le devis de ce chantier n'est pas parti : rien à éprouver au retour.");
   } finally {
     await pool.end();
   }
+  return chantierId;
 }
 
 /** Ce que fait iOS au retour de Messages : la page était cachée, elle réapparaît. */

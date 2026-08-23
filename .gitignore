@@ -57,6 +57,20 @@ next-env.d.ts
 # de construction, pas du code source ; ne doivent jamais gonfler l'historique
 # du dépôt
 /artifacts/
+# Même raison. `captures/` a été ajouté le 20 août 2026, quand la suite des
+# écrans du diagnostic végétal a commencé à en déposer : la règle existait, le
+# dossier n'y était pas, et trois PNG se sont retrouvés dans l'index.
+/captures/
+
+# Le TEXTE des documents phytosanitaires récoltés chez leurs organismes.
+#
+# Il vit sur la branche de récolte (`.github/workflows/recolter-sources-phyto.yml`,
+# qui l'ajoute en forçant), **pas sur `main`** : ce sont des documents de tiers,
+# rapatriés pour être lus au moment de la saisie, et il n'y a aucune raison de
+# les traîner dans l'historique du produit. Ce qui reste sur `main`, c'est
+# `sources.json` — la liste de ce qu'on va chercher — et les fiches qu'on en
+# tire, qui sont notre travail.
+/donnees/phyto/sources/
 
 # Scripts jetables de vérification, écrits pendant une session pour regarder un
 # écran dans un navigateur. Ils vivent à la racine parce que Playwright doit s'y
@@ -76,3 +90,9 @@ maquettes/*-essai.html
 sauvegarde-atlas-*.sql
 sauvegarde-atlas-*.json
 .next-batie
+.next-verification
+# Le serveur au profil « banc » monté par `test-bandeau-banc-e2e.ts` : Next.js
+# refuse deux serveurs de développement dans un même dossier, il lui faut donc
+# le sien. Un fichier neuf dans l'arbre git ferait refuser TOUTES les mises à
+# jour du banc du patron (`mettre-a-jour.sh`).
+.next-banc-essai

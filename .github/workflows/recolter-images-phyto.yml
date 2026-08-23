@@ -1,0 +1,122 @@
+name: Récolter les photos de référence
+
+# Télécharge les photos que les fiches phytosanitaires déclarent, et les dépose
+# sur une branche à elles.
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# **Pourquoi ce workflow existe.**
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Sa demande du 20 août 2026 : *« il faut absolument mettre des photos,
+# l'utilisateur a besoin de comparer avec une vraie photo qui comporte la
+# maladie »*. L'écran les affiche. Restait à les faire entrer.
+#
+# Deux obstacles, et un seul chemin les contourne tous les deux : l'environnement
+# de développement d'Atlas n'atteint aucun site extérieur (403 du mandataire), et
+# une photo collée dans une conversation ne peut pas être écrite sur le disque.
+# Une machine qui a le réseau, elle, télécharge le fichier depuis son adresse
+# d'origine — c'est ce que fait déjà `recolter-sources-phyto.yml` pour les
+# documents, `pages.yml` pour le site publié et `relever-palette.yml` pour les
+# modèles.
+#
+# **Séparé de la récolte des SOURCES, et c'est délibéré.** Le texte des
+# documents de tiers ne va pas sur `main` (voir `.gitignore`) ; les photos, si —
+# elles sont sous licence libre, et ce sont des pièces du produit. Deux
+# destinations différentes, donc deux branches, donc deux workflows. Les mêler
+# aurait fait entrer le texte dans `main` par la porte des images.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branche:
+        description: "Branche où déposer les photos (créée si absente)"
+        required: false
+        default: "images-phyto"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: recolte-images-phyto
+  cancel-in-progress: false
+
+jobs:
+  recolter:
+    name: Récolte des photos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # **Oublié à la première exécution, et le workflow est tombé dessus.**
+      # `npx tsx` n'existe pas sur un runner nu : le contrôle des fiches
+      # échouait après avoir téléchargé la photo, donc rien n'était déposé —
+      # une récolte réussie perdue sur une dépendance manquante.
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Récolter
+        run: node scripts/recolter-images-phyto.mjs
+
+      # Le contrôle qui compte : ce qui vient d'être déposé doit être une IMAGE,
+      # pas une page d'erreur enregistrée sous une extension d'image. Un fichier
+      # illisible se découvrirait sinon à l'écran, sur le chantier.
+      - name: Vérifier que ce sont bien des images
+        run: |
+          set -e
+          shopt -s nullglob
+          fichiers=(donnees/phyto/images/*.jpg donnees/phyto/images/*.png donnees/phyto/images/*.webp)
+          if [ ${#fichiers[@]} -eq 0 ]; then
+            echo "Aucune photo déposée."
+            exit 0
+          fi
+          for f in "${fichiers[@]}"; do
+            type=$(file --mime-type -b "$f")
+            n=$(wc -c < "$f")
+            echo "  $(basename "$f") : $type, $n octets"
+            case "$type" in
+              image/*) ;;
+              *) echo "  ❌ $(basename "$f") n'est pas une image ($type)."; exit 1 ;;
+            esac
+            if [ "$n" -gt 512000 ]; then
+              echo "  ❌ $(basename "$f") dépasse 500 Ko."
+              exit 1
+            fi
+          done
+
+      # Les fiches doivent rester valides une fois les images en place : c'est le
+      # même contrôle que la CI, joué ici avant de déposer quoi que ce soit.
+      - name: Contrôler les fiches avec leurs images
+        run: npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fiches --verifier
+
+      - name: Déposer sur la branche des photos
+        env:
+          BRANCHE: ${{ inputs.branche || 'images-phyto' }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCHE"
+          git add donnees/phyto/images
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau : les photos déclarées sont déjà présentes."
+            exit 0
+          fi
+          git commit -m "Récolter les photos de référence déclarées par les fiches
+
+          Téléchargées depuis leur adresse d'origine, sous la licence que la fiche
+          déclare. Le contenu des fiches n'est pas touché."
+          git push -f origin "$BRANCHE"
+          echo "Déposé sur la branche $BRANCHE."
+
+      - name: Joindre les photos au run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: images-phyto
+          path: donnees/phyto/images/
+          if-no-files-found: warn

@@ -1,5 +1,6 @@
 import assert from "node:assert";
-import { composerMessageClient, lienTransmission } from "../src/lib/message-client";
+import { canalPourJoindre, composerMessageClient, composerMessageFacture, lienTransmission } from "../src/lib/message-client";
+import { CIVILITE_PAR_DEFAUT, avecCivilite } from "../src/lib/civilite";
 
 // Le message qui remet le devis au client part de la boîte du patron, en son
 // nom. Ce qu'il contient n'est donc pas un détail de présentation : c'est un
@@ -95,6 +96,88 @@ test("Destinataire absent : le message s'ouvre quand même", () => {
   const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
   assert.ok(lienTransmission({ canal: "email", destinataire: null, message: m }).startsWith("mailto:?"));
   assert.ok(lienTransmission({ canal: "sms", destinataire: "", message: m }).startsWith("sms:?"));
+});
+
+
+// ─── Ce que le CLIENT lit, et que le patron a corrigé le 13 août 2026 ────────
+//
+// Sa capture du SMS tout prêt : *« Bonjour Martins »*, et *« vous pourrez en
+// proposer une autre »*. Deux corrections, mot pour mot : *« pareil pour le
+// message tout prêt, c'est Bonjour Mr Martins »* et *« vous pouvez en proposer
+// une autre »*.
+//
+// Ce texte-là est le seul que le client voie de nous avant d'ouvrir le devis :
+// il n'a aucune suite de rattrapage.
+
+test("Le message aborde le client par sa civilité", () => {
+  const m = composerMessageClient({ clientNom: "Martins", entrepriseNom: "Atelier Démo", lien: LIEN });
+  assert.ok(
+    m.corps.startsWith(`Bonjour ${CIVILITE_PAR_DEFAUT} Martins,`),
+    `le message s'ouvre sur « ${m.corps.split("\n")[0]} »`
+  );
+});
+
+test("Une civilité déjà saisie n'est jamais doublée dans le message", () => {
+  // « Bonjour Mr. Mme Roux » serait pire que pas de civilité du tout.
+  for (const nom of ["Mme Roux", "M. Bernard", "SARL Untel"]) {
+    const m = composerMessageClient({ clientNom: nom, entrepriseNom: "Atelier Démo", lien: LIEN });
+    assert.ok(m.corps.startsWith(`Bonjour ${nom},`), `« ${m.corps.split("\n")[0]} »`);
+  }
+});
+
+test("La facture aborde le client de la même façon que le devis", () => {
+  // Deux règles séparées finiraient par diverger, et le client se demanderait
+  // si le devis et la facture viennent bien du même artisan.
+  const f = composerMessageFacture({
+    clientNom: "Martins",
+    entrepriseNom: "Atelier Démo",
+    numeroFacture: "F2026-0001",
+    lien: LIEN,
+  });
+  assert.ok(f.corps.startsWith(`Bonjour ${avecCivilite("Martins")},`), f.corps.split("\n")[0]);
+});
+
+test("La date se propose AU PRÉSENT : « vous pouvez », jamais « vous pourrez »", () => {
+  const m = composerMessageClient({ clientNom: "Martins", entrepriseNom: "Atelier Démo", lien: LIEN });
+  assert.ok(
+    m.corps.includes("vous pouvez en proposer une autre"),
+    "la phrase des dates ne dit plus ce que le patron a demandé"
+  );
+  // Le futur repoussait le geste à plus tard, comme s'il fallait d'abord faire
+  // autre chose. Il ne doit pas revenir par une reformulation.
+  assert.ok(!m.corps.includes("pourrez"), "le futur est revenu dans le message");
+});
+
+test("Le canal se DÉDUIT, il ne s'invente pas", () => {
+  // **Son défaut du 20 août 2026** : *« sur la fiche client j'ai choisi
+  // d'envoyer le devis par email […] c'est l'application SMS qui s'est
+  // ouverte »*. Les écrans portaient un `?? "sms"` écrit à la main.
+
+  // 1. Le canal convenu prime — c'est un accord avec la personne.
+  assert.equal(
+    canalPourJoindre({ canal: "email", telephone: "0612345678", email: "a@b.c" }),
+    "email",
+    "le canal convenu sur la fiche du client ne prime pas"
+  );
+  assert.equal(canalPourJoindre({ canal: "sms", telephone: "0612345678", email: "a@b.c" }), "sms");
+
+  // 2. Un canal convenu SANS sa coordonnée ne vaut rien : il ouvrirait un
+  //    message sans destinataire.
+  assert.equal(canalPourJoindre({ canal: "sms", telephone: null, email: "a@b.c" }), "email");
+  assert.equal(canalPourJoindre({ canal: "email", telephone: "0612345678", email: "" }), "sms");
+
+  // 3. Une seule coordonnée : deviner est sans risque.
+  assert.equal(canalPourJoindre({ telephone: null, email: "a@b.c" }), "email");
+  assert.equal(canalPourJoindre({ telephone: "0612345678", email: null }), "sms");
+
+  // 4. Deux coordonnées et aucun accord : on ne SAIT PAS, et on le dit.
+  //    C'est là que le `?? "sms"` mentait.
+  assert.equal(
+    canalPourJoindre({ telephone: "0612345678", email: "a@b.c" }),
+    null,
+    "sans canal convenu, l'application choisit encore à sa place"
+  );
+  assert.equal(canalPourJoindre({ telephone: null, email: null }), null);
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

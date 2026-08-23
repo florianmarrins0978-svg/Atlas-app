@@ -2,15 +2,28 @@
 
 /* La charte d'Arborea, relevée sur le site publié du patron plutôt
    qu'approchée à l'œil — voir src/lib/design-tokens.ts. */
+/* ─── ELLES SUIVENT LA CHARTE CHOISIE DEPUIS LE 14 AOÛT 2026 ───────────────
+   Ces variables-ci alimentent les classes Tailwind (`bg-paper`, `text-ink`,
+   `border-line`…) ; `src/lib/design-tokens.ts` alimente les styles en ligne.
+   **Les deux doivent suivre la charte, sinon l'écran se coupe en deux** — vu
+   sur une capture le jour même : tout l'accueil était passé au sombre et la
+   bande sous la barre de navigation restait blanche, parce qu'elle portait
+   `bg-paper` et non un style en ligne.
+
+   Le repli est la charte d'origine, au caractère près : sans variable posée,
+   rien ne change. Le gabarit pose `--atlas-*` sur `<html>` — donc ICI, sur
+   `:root` — et non sur `<body>` : une variable définie sur le corps ne serait
+   pas visible d'une déclaration faite à la racine, et ces sept lignes
+   retomberaient silencieusement sur leur repli. */
 :root {
-  --ink: #1c1c1a;          /* --charcoal */
-  --paper: #f5f3ee;        /* --bone : fond de page */
-  --card: #faf9f5;         /* --cream : cartes et tuiles */
-  --accent: #2f3b2f;       /* --pine : l'accent unique */
-  --accent-deep: #4f5f4c;  /* --pine-light */
-  --line: rgba(28, 28, 26, 0.12);
-  --or: #b98b47;           /* le second accent, celui de ce qu'on LIT */
-  --ok: #7d9a6d;           /* --sage */
+  --ink: var(--atlas-ink, #1c1c1a);            /* --charcoal */
+  --paper: var(--atlas-cream, #f5f3ee);        /* --bone : fond de page */
+  --card: var(--atlas-card, #faf9f5);          /* --cream : cartes et tuiles */
+  --accent: var(--atlas-rust, #2f3b2f);        /* --pine : l'accent unique */
+  --accent-deep: var(--atlas-rustDeep, #4f5f4c); /* --pine-light */
+  --line: var(--atlas-line, rgba(28, 28, 26, 0.12));
+  --or: var(--atlas-or, #b98b47);              /* le second accent, celui de ce qu'on LIT */
+  --ok: #7d9a6d;           /* --sage : ne change pas d'une charte à l'autre */
   --warn: #b8860b;
 }
 
@@ -128,6 +141,28 @@ body {
   position: relative;
 }
 
+/* --- Une colonne d'écran qui défile, sans barre grise ----------------------
+ *
+ * Chaque zone qui défile portait jusqu'ici sa propre règle de masquage, et
+ * personne ne les comptait : celle du fil des chantiers — la plus vue de
+ * l'application — avait été oubliée, et le patron l'a signalée le 11 août
+ * (« supprime-moi ça, je ne veux pas voir ça du tout »).
+ *
+ * Celle-ci est écrite pour être RÉUTILISÉE plutôt que recopiée. La cinquième
+ * zone recopiée aurait fini par oublier la règle à son tour ; c'est déjà
+ * arrivé une fois, et `test-aucune-barre-de-defilement-e2e.ts` existe
+ * précisément parce que la vigilance n'y suffisait pas. */
+.atlas-colonne-defile {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.atlas-colonne-defile::-webkit-scrollbar {
+  display: none;
+}
+
 /* La zone qui défile. Le dégradé d'opacité aux deux bouts évite la coupure
  * nette : une ligne tranchée au ras du bord se lit comme un défaut d'affichage,
  * un fondu se lit comme « ça continue ». */
@@ -173,6 +208,32 @@ body {
 .atlas-tige {
   position: relative;
   padding-bottom: 3.5rem;
+}
+
+/* **Une carte ne peut plus se reposer à moitié coupée.**
+ *
+ * Le patron, le 16 août 2026, capture à l'appui : *« le premier message est
+ * trop haut et le début n'est pas visible. »*
+ *
+ * CE QUI SE PASSAIT, MESURÉ. Les cartes vivent dans `.atlas-fil-defile`, un
+ * cadre de 281 px qui porte 1 368 px de contenu et un fondu de 18 px en haut.
+ * Au repos la première carte est nette — elle commence 38 px sous le bord —
+ * mais dès qu'on fait défiler, elle s'arrête où le doigt la laisse : son
+ * étiquette et le nom du chantier passent sous le fondu, et il ne reste que la
+ * dernière ligne et le geste. C'est exactement ce qu'il a vu.
+ *
+ * LE CADRE DÉCLARAIT DÉJÀ `scroll-snap-type: y proximity` — et AUCUN de ses
+ * enfants n'avait jamais déclaré de point d'accroche. La propriété était donc
+ * inerte depuis le premier jour, et rien ne pouvait le dire : elle est valide,
+ * elle ne fait simplement rien sans cible.
+ *
+ * `scroll-margin-top` vaut plus que le fondu : le point d'arrêt se pose SOUS
+ * lui, jamais dessous-dessus. Sans cette marge, la carte s'accrocherait pile au
+ * bord du cadre — c'est-à-dire dans le fondu, donc à moitié effacée : le défaut
+ * réparé à l'identique. */
+.atlas-fil-defile [data-atlas="carte-reponse"] {
+  scroll-snap-align: start;
+  scroll-margin-top: 24px;
 }
 /* Le fil lui-même est dessiné ligne par ligne (`src/app/ListeChantiers.tsx`)
  * et non ici : la couche qui glisse pour découvrir la corbeille porte le fond
@@ -697,9 +758,15 @@ body {
 .atlas-pellicule::-webkit-scrollbar { display: none; }
 .atlas-vue,
 .atlas-ajouter {
-  flex: 0 0 68px;
-  height: 62px;
-  border-radius: 3px;
+  /* **Les mesures de sa maquette** (`.ajout-photo` dans
+   * `appli/fiche-client-vocale.html`), codée trait pour trait le 22 août 2026 :
+   * un carré de 74, des angles de 6, et surtout un liseré EN TIRETS, doré. Le
+   * trait continu gris de 68 × 62 se lisait comme une case vide plutôt que
+   * comme un endroit où poser une photo — et c'est ce qu'il montrait du doigt
+   * en comparant les deux écrans. */
+  flex: 0 0 74px;
+  height: 74px;
+  border-radius: 6px;
   scroll-snap-align: start;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), border-color 0.2s;
@@ -722,6 +789,23 @@ body {
  * arrêté par lui après onze maquettes, et chaque mesure est chiffrée dans
  * `docs/maquettes/24-le-bouton-retenu.html` — c'est lui qui a resserré l'onde,
  * réduit le rond et ramené la gerbe de seize grains à onze.
+ *
+ * **LE MOT A GROSSI LE 16 AOÛT 2026, ET C'EST LUI QUI EST REVENU DESSUS.**
+ * *« Le nouveau chantier fait le plus gros et en gras »*, puis, la planche
+ * `docs/maquettes/67-le-nouveau-chantier-plus-gros.html` en main : **« les
+ * capitales, gros et très gras »**. Le libellé passe donc de 9 à 13 px, de la
+ * graisse 500 à 800, son interlettrage se resserre de 0,28 à 0,22 em — au-delà,
+ * un mot de seize capitales n'est plus un mot mais une frise —, et le rond
+ * suit, de 38 à 42 px. **Le signe reste à 20 px** : c'est le rapport de la
+ * planche, et l'agrandir aurait rempli l'anneau.
+ *
+ * Ce sont les valeurs du cran « Gros » de la planche 67, pas des chiffres
+ * approchés à l'œil. Elles y sont mesurées : 13 px de capitales à 0,22 em font
+ * 182 px, plus 13 d'écart et 42 de rond — 237 px, quand l'écran le plus étroit
+ * du patron (360 px, moins deux marges de 26) en laisse 308. **La marge n'est
+ * donc pas là par hasard : c'est ce qui garantit que « Nouveau chantier » ne
+ * finira jamais en « … ».** `scripts/test-bouton-nouveau-chantier-e2e.ts` le
+ * mesure à chaque batterie.
  *
  * Le geste, dans l'ordre : l'anneau BAT tant qu'on ne l'a pas touché ; à
  * l'appui il s'enfonce, le signe part en trois tours freinés, onze grains d'or
@@ -750,21 +834,23 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .atlas-geste-nouveau .atlas-mot {
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.28em;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   white-space: nowrap;
   transition: letter-spacing 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-[data-geste="part"] .atlas-mot { letter-spacing: 0.38em; }
+/* L'écart de départ reste le même — +0,10 em — pour que le mot s'ouvre d'autant
+   qu'avant sous le doigt, sans que le geste change de caractère. */
+[data-geste="part"] .atlas-mot { letter-spacing: 0.32em; }
 
 .atlas-rond {
   position: relative;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 9999px;
   transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
@@ -876,4 +962,165 @@ body {
   [data-tiroir="oui"] .atlas-scene-fiche {
     transform: none;
   }
+}
+
+/* ─── La porte : le sceau qui tourne pendant qu'on vérifie ────────────────────
+ *
+ * Retenu par le patron le 12 août 2026 (maquettes 33 et 34) : « un logo
+ * dynamique qui s'enclenche au moment où on valide l'adresse et le mdp ».
+ *
+ * **`infinite` n'est pas un excès de zèle.** Une demi-seconde est la durée d'UN
+ * tour, pas celle de l'attente : le serveur répond quand il répond, et sur un
+ * réseau de chantier cela peut prendre deux secondes. Une marque qui s'arrête
+ * au bout d'un demi-tour pendant que la page attend encore ressemble à une
+ * application plantée — c'est écrit sur la maquette, et c'est ce qui a décidé
+ * du choix entre les six animations.
+ *
+ * **Ce qui n'est PAS tenu, et il faut le savoir avant de s'en étonner :** le
+ * tour n'a pas de plancher. Si la vérification répond en cent millisecondes, le
+ * geste est coupé en son milieu. Le tenir vraiment supposerait de retarder la
+ * navigation côté client, alors que `connexionAction` redirige côté serveur —
+ * on paierait un demi-seconde d'attente réelle à chaque connexion pour une
+ * question d'allure. Arbitrage assumé, pas oubli. */
+.atlas-sceau-en-marche {
+  animation: atlas-sceau-tour 0.5s cubic-bezier(0.55, 0, 0.25, 1) infinite;
+}
+@keyframes atlas-sceau-tour {
+  to { transform: rotate(360deg); }
+}
+
+/* Le champ de la porte : une ligne d'imprimé, pas une plage.
+ *
+ * **16 px, et cela ne se négocie pas** : en dessous, iOS agrandit la page dès
+ * que le champ prend le focus — le patron tapait son adresse et l'écran lui
+ * sautait au visage. Cet écran était en 15 px depuis toujours.
+ *
+ * La ligne passe à l'or sous le champ qu'on remplit : c'est la seule réponse à
+ * « ça n'a pas l'air cliquable » qui ne remette pas une plage sous le texte
+ * (`HANDOVER.md`, piège 18). Sans elle, la proposition retenue serait un
+ * formulaire sans affordance. */
+.atlas-champ-ligne {
+  width: 100%;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 0 0 10px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.22s ease;
+}
+.atlas-champ-ligne:focus {
+  border-bottom-color: var(--or);
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-sceau-en-marche { animation: none; }
+  .atlas-champ-ligne { transition: none; }
+}
+
+/* ===========================================================================
+ * L'ATTENTE QUI SOUFFLE — les trois points de la dictée
+ *
+ * Le patron, le 13 août 2026 : *« une fois qu'on a appuyé sur le dictaphone, on
+ * ne sait pas ce qui se passe. Les trois petits points sont fixes […] on ne
+ * sait pas si ça bug ou non. »*
+ *
+ * Ce n'était pas une animation arrêtée : c'était le caractère « … », un seul
+ * glyphe. Il n'y avait rien qui pût bouger.
+ *
+ * **Les mesures viennent de `docs/maquettes/43-l-attente-a-lessai.html`,
+ * proposition C, qu'il a désignée** — les reprendre de là si on y retouche,
+ * jamais de mémoire. Les points enflent et se rétractent l'un après l'autre,
+ * SANS se déplacer : rien ne sort du rond de 44 px, donc rien ne peut cogner le
+ * titre d'à côté.
+ * ======================================================================== */
+.atlas-souffle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.atlas-souffle i {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  /* `currentColor` : la couleur vient de ce qui porte les points, pour que le
+   * même geste serve un jour ailleurs sans emporter la teinte de cet écran-ci. */
+  background: currentColor;
+  transform: scale(0.72);
+  opacity: 0.34;
+  animation: atlas-souffle 1.25s ease-in-out infinite;
+}
+.atlas-souffle i:nth-child(2) { animation-delay: 0.16s; }
+.atlas-souffle i:nth-child(3) { animation-delay: 0.32s; }
+@keyframes atlas-souffle {
+  0%, 66%, 100% { transform: scale(0.72); opacity: 0.34; }
+  30% { transform: scale(1.5); opacity: 1; }
+}
+
+/* Qui demande moins de mouvement n'a pas droit à moins d'information.
+ *
+ * Tout couper rendrait le défaut qu'on répare — trois points fixes, et personne
+ * pour dire si ça travaille. Ce qui gêne dans ce réglage, c'est le DÉPLACEMENT
+ * et le changement de taille, pas la lumière : il reste donc une respiration,
+ * sans un pixel de mouvement. */
+@media (prefers-reduced-motion: reduce) {
+  .atlas-souffle i {
+    transform: none;
+    animation: atlas-respire 2s ease-in-out infinite;
+  }
+  @keyframes atlas-respire {
+    0%, 100% { opacity: 0.32; }
+    50% { opacity: 1; }
+  }
+}
+
+
+/* ─── LA CASE À REMPLIR — « LA CARTE DOUCE », la 4 qu'il a choisie ──────────
+ *
+ * **Sa plainte du 21 août 2026 :** *« je peux plus voir ces encadrés carrés »*.
+ * Cinq dessins lui ont été proposés, puis relus sur la page entière
+ * (`appli/cases-page-entiere.html`) — et il a tranché deux fois plutôt qu'une :
+ * *« je choisis la 4 »*, puis, le soir : *« n'oublie pas que j'ai choisi la 4
+ * pour la forme des cases, dans les 5 modèles elle s'appelait la carte
+ * douce »*.
+ *
+ * La case d'avant, moins ses angles droits et son liseré : fond `rustTint`,
+ * 14 px de rayon, **aucun bord**. L'or ne vient qu'au doigt posé — il a écarté
+ * le liseré doré permanent qu'on lui proposait : *« non »*.
+ *
+ * **Une classe, et pas un style en ligne répété.** Le fond et le rayon vivaient
+ * en double, dans `Field` et dans `ChampAdresse` : deux écritures de la même
+ * case, qui auraient divergé au premier ajustement (`CLAUDE.md` §3). Et un état
+ * `:focus` ne s'écrit pas en style en ligne — c'est ce qui manquait pour que la
+ * case dise quelque chose quand on écrit dedans.
+ *
+ * **50 px de haut au minimum**, mesuré sur les cinq dessins : une case élégante
+ * qu'on rate deux fois sur trois avec des gants n'est pas élégante, elle est
+ * ratée. Et **16 px de texte, jamais moins** — en dessous, iOS agrandit la page
+ * à la mise au point et l'écran saute sous le doigt.
+ */
+.atlas-case {
+  width: 100%;
+  min-height: 50px;
+  padding: 15px 16px;
+  border: 0;
+  border-radius: 14px;
+  background-color: var(--atlas-rustTint, #ece9e1);
+  color: var(--atlas-ink, #1c1c1a);
+  font-size: 16px;
+  font-family: inherit;
+  outline: 0;
+  box-shadow: none;
+  transition: box-shadow 0.16s ease;
+}
+.atlas-case::placeholder {
+  color: var(--atlas-muted, #8a8578);
+}
+.atlas-case:focus {
+  box-shadow: inset 0 0 0 1.5px var(--atlas-or, #B98B47);
 }

@@ -18,7 +18,8 @@ votre compte GitHub, que vous avez déjà.
 5. [Brancher une vraie IA sur vos essais](#brancher-une-vraie-ia-sur-vos-essais)
 6. [Repartir de zéro](#repartir-de-zéro)
 7. [Fermer proprement](#fermer-proprement)
-8. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
+8. [**L'application ne s'ouvre plus du tout**](#lapplication-ne-souvre-plus-du-tout)
+9. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
 
 ---
 
@@ -285,6 +286,55 @@ consomme rien tant qu'il est arrêté. Le rouvrir prend quelques secondes et
 Pour tout effacer : `github.com/codespaces`, puis supprimer l'espace.
 
 Le compte gratuit inclut 60 heures par mois, largement de quoi essayer.
+
+---
+
+## L'application ne s'ouvre plus du tout
+
+**Ce que vous voyez :** vous ouvrez votre favori Atlas et, au lieu de
+l'application, votre téléphone propose de **télécharger un fichier** portant le
+nom de l'adresse — ou l'onglet reste sur `about:blank`. Rien à télécharger,
+rien à lire.
+
+**Ce n'est pas l'application. C'est votre espace de travail qui s'est arrêté.**
+
+GitHub éteint un espace inactif au bout d'une trentaine de minutes. L'adresse,
+elle, continue d'exister — mais plus personne ne répond derrière, et votre
+navigateur ne sait pas quoi faire de ce silence : il vous propose de
+l'enregistrer.
+
+### Le remède, en deux gestes
+
+1. Ouvrez **`github.com/codespaces`**.
+2. Touchez votre espace. Il se rallume — comptez une à deux minutes.
+
+Puis rouvrez votre favori Atlas. L'application redémarre toute seule à chaque
+allumage : il n'y a rien d'autre à faire, aucun terminal à ouvrir.
+
+### Comment en être sûr avant de chercher ailleurs
+
+Votre espace publie sa propre fiche d'état, et elle reste lisible **même quand
+il est éteint** :
+
+> **[État du banc d'essai](https://github.com/florianmarrins0978-svg/Atlas-app/issues/47)**
+
+**Regardez d'abord sa date.** Elle se réécrit tous les quarts d'heure tant que
+l'espace tourne.
+
+| Ce que dit la date | Ce que ça veut dire |
+|---|---|
+| moins de 20 minutes | l'espace tourne : le problème est ailleurs, envoyez une capture |
+| plus de 20 minutes | **l'espace est arrêté** — rallumez-le, c'est tout |
+
+La fiche dit aussi quelle version du code votre espace a récupérée : de quoi
+savoir, d'un coup d'œil, si une correction annoncée est bien arrivée chez vous.
+
+### Pourquoi on ne peut pas l'empêcher
+
+L'extinction est une règle de GitHub, pas d'Atlas : elle économise vos heures
+gratuites. Le jour où Atlas tournera sur un vrai hébergement, la question
+disparaîtra — l'adresse répondra toujours. En attendant, un espace qui dort est
+le fonctionnement normal, pas une panne.
 
 ---
 
