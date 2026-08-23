@@ -19,6 +19,7 @@ export default function ExportClient({
   clientTelephone,
   clientEmail,
   entrepriseNom,
+  modeleMessage,
   canalClient,
   totalTtc,
   numeroDevis,
@@ -38,6 +39,8 @@ export default function ExportClient({
   clientTelephone: string;
   clientEmail: string;
   entrepriseNom: string;
+  /** Son gabarit de message, ou `null` pour celui d'Atlas. */
+  modeleMessage: string | null;
   canalClient: "sms" | "email";
   totalTtc: string;
   /** Le numéro commercial, pour nommer le fichier téléchargé. */
@@ -202,6 +205,7 @@ export default function ExportClient({
                 clientNom={clientNom}
                 clientCivilite={clientCivilite}
                 entrepriseNom={entrepriseNom}
+                modeleMessage={modeleMessage}
                 canal={canalClient}
                 telephone={clientTelephone}
                 email={clientEmail}

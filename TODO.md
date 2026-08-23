@@ -2620,7 +2620,7 @@ vanne, son tuyau visite toutes ses têtes où qu'elles soient, et le départ se
 mesure depuis le regard — sa règle du 21 août. Regardé à l'écran sur les trois
 jardins d'exemple, pas seulement compté.
 
-### 0 quinvicies septies. Son message au client, et l'allure de ses devis — **DEUX PLANCHES, RIEN N'EST CODÉ**
+### 0 quinvicies septies. Son message au client — **CODÉ le 23 août 2026** — et l'allure de ses devis, qui attend encore
 
 **SES RÉPONSES DU 23 AOÛT AU SOIR, sur le message :** *« Message client A. Liens
 obligatoire. Et message pour tous. »*
@@ -2649,7 +2649,18 @@ montrait rien qu'un écran cassé, au lieu de sa facture parlant d'un devis. Un
 contrôle le tient désormais (`verifier-maquette-message-et-allure.mjs`, éprouvé
 rouge sur ce défaut précis).
 
-**Rien n'est codé tant qu'il n'a pas dit 1 ou 2.**
+**IL A RÉPONDU « FAÇON 1 », ET C'EST CODÉ** (`ARCHITECTURE.md` §157) : colonne
+`entreprises.message_client`, bloc dans « Devis & factures », refus du message
+sans lien à l'écran ET au serveur, aperçu des trois documents, et le gabarit
+descend jusqu'aux trois écrans d'envoi. Éprouvé de bout en bout —
+`test-message-au-client-e2e.ts` va des réglages jusqu'à l'adresse `sms:`.
+
+**Ce qui a changé dans ce que ses clients reçoivent, et qu'il faut savoir :** la
+phrase du devis tenait en deux morceaux, de part et d'autre du lien ; un seul
+emplacement ne peut pas porter les deux. Elles sont réunies avant le lien. Idem
+pour l'échéance de la facture.
+
+**Reste ouvert sur le message :** rien.
 
 **SES RÉPONSES DU 23 AOÛT AU SOIR, sur l'allure :** *« Allure des devis B, juste
 pour devis facture. Fais-en une dizaine. Le fond teinté fais-le modifiable et

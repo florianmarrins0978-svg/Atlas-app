@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import {
   BORNES,
@@ -8,6 +8,13 @@ import {
   lignesConditionsDevis,
   type Conditions,
 } from "@/lib/conditions-documents";
+import {
+  MESSAGE_PAR_DEFAUT,
+  PASTILLES,
+  phraseDuDocument,
+  refusDuMessage,
+  rendreMessage,
+} from "@/lib/message-client";
 import { majConditionsAction } from "./actions";
 
 /**
@@ -25,11 +32,54 @@ import { majConditionsAction } from "./actions";
  * mauvaise (`CLAUDE.md` §3). Il ne porte aucun montant : le total d'un devis à
  * venir n'existe pas, et un chiffre inventé là finirait imprimé.
  */
-export default function DocumentsClient({ initial }: { initial: Conditions }) {
+/** Ce que chaque pastille dit, dans SES mots — pas « [client] » en clair. */
+const MOTS: Record<(typeof PASTILLES)[number], string> = {
+  "[client]": "le client",
+  "[document]": "le document",
+  "[lien]": "le lien",
+  "[entreprise]": "mon entreprise",
+};
+
+/** Les trois documents de l'aperçu, et ce qu'Atlas écrit à la place de `[document]`. */
+const APERCUS = [
+  { clef: "devis", nom: "Devis", phrase: phraseDuDocument({ genre: "devis" }) },
+  {
+    clef: "facture",
+    nom: "Facture",
+    // Un numéro et une échéance d'exemple, reconnaissables comme tels : les
+    // siens n'existent pas tant qu'aucune facture n'est émise, et en inventer
+    // un vrai lui ferait croire qu'il regarde une facture existante.
+    phrase: phraseDuDocument({
+      genre: "facture",
+      numero: "F2026-0008",
+      echeanceLisible: "21 septembre",
+    }),
+  },
+  { clef: "entretien", nom: "Compte rendu", phrase: phraseDuDocument({ genre: "entretien" }) },
+] as const;
+
+export default function DocumentsClient({
+  initial,
+  messageInitial,
+  entrepriseNom,
+}: {
+  initial: Conditions;
+  /** Son message, ou `null` quand il n'a pas touché à celui d'Atlas. */
+  messageInitial: string | null;
+  entrepriseNom: string;
+}) {
   const [c, setC] = useState<Conditions>(initial);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   const [aEcrire, setAEcrire] = useState(false);
+  const [message, setMessage] = useState(messageInitial ?? MESSAGE_PAR_DEFAUT);
+  const [apercuSur, setApercuSur] = useState<(typeof APERCUS)[number]["clef"]>("devis");
+  const zone = useRef<HTMLTextAreaElement | null>(null);
+
+  // **Le refus vient de la MÊME fonction que le serveur** (`refusDuMessage`) :
+  // un écran qui laisserait enregistrer ce que le serveur rejette lui ferait
+  // appuyer sur un bouton qui ne fait rien.
+  const refusMessage = refusDuMessage(message);
 
   function poser(partiel: Partial<Conditions>) {
     setC((v) => ({ ...v, ...partiel }));
@@ -47,12 +97,16 @@ export default function DocumentsClient({ initial }: { initial: Conditions }) {
         moyensPaiement: prochain.moyensPaiement,
         rappelerPenalites: prochain.rappelerPenalites,
         textePied: prochain.textePied,
-      });
+      }, message);
       setRefus(r.ok ? null : r.raison);
       // **On affiche ce que la base porte, jamais ce qu'on a demandé.** Un refus
       // silencieux laisserait un réglage coché qui n'existe pas.
       if (r.ok) {
         setC(lireConditions(r.conditions));
+        // **On réaffiche ce que la base porte.** `null` veut dire « celui
+        // d'Atlas » : le champ redevient alors son texte, et non un cadre vide
+        // qu'il croirait avoir effacé.
+        setMessage(r.messageClient ?? MESSAGE_PAR_DEFAUT);
         setAEcrire(false);
       }
     });
@@ -185,6 +239,142 @@ export default function DocumentsClient({ initial }: { initial: Conditions }) {
         </p>
       </Bloc>
 
+      {/* ── SON MESSAGE AU CLIENT — sa demande du 23 août 2026 ──────────────
+          *« Y a-t-il un endroit dans les réglages où l'utilisateur peut rédiger
+          ce message automatique ? »* Il n'y en avait pas.
+
+          **Ici et pas ailleurs** : sa réponse A, devant la planche
+          `appli/mon-message-au-client.html`. **Un seul message pour ses trois
+          documents**, et la phrase du milieu vient d'Atlas — sa « façon 1 »,
+          choisie après avoir vu ce que l'autre coûtait : une facture qui parle
+          d'un devis, et l'échéance perdue. */}
+      <Bloc titre="Mon message au client">
+        <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
+          Il part avec votre devis, votre facture et votre compte rendu de passage.
+          Ce que vous posez entre crochets, Atlas le remplace.
+        </p>
+
+        <textarea
+          ref={zone}
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            setAEcrire(true);
+          }}
+          data-atlas="message-client"
+          aria-label="Votre message au client"
+          rows={10}
+          className="w-full rounded-[6px] px-[13px] py-[11px] leading-[1.5]"
+          style={{
+            // **16 px, jamais moins.** En dessous, iOS grossit la page à la
+            // première frappe et l'écran saute sous son doigt.
+            fontSize: 16,
+            backgroundColor: colors.card,
+            color: colors.ink,
+            border: `1px solid ${refusMessage ? colors.alert : colors.line}`,
+            resize: "vertical",
+          }}
+        />
+
+        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          <span className={texteSituation} style={{ color: colors.muted }}>
+            Poser :
+          </span>
+          {PASTILLES.map((pastille) => (
+            <button
+              key={pastille}
+              type="button"
+              data-atlas={`pastille-${pastille.slice(1, -1)}`}
+              onClick={() => {
+                // **Posée LÀ OÙ LE CURSEUR EST**, pas à la fin : un mot qui
+                // atterrit au bas du message oblige à le déplacer au doigt.
+                const z = zone.current;
+                const debut = z?.selectionStart ?? message.length;
+                const fin = z?.selectionEnd ?? debut;
+                const prochain = message.slice(0, debut) + pastille + message.slice(fin);
+                setMessage(prochain);
+                setAEcrire(true);
+                requestAnimationFrame(() => {
+                  z?.focus();
+                  z?.setSelectionRange(debut + pastille.length, debut + pastille.length);
+                });
+              }}
+              className="rounded-full px-3 py-2 text-[13px]"
+              style={{ color: colors.or, boxShadow: `inset 0 0 0 1px ${colors.or}` }}
+            >
+              {MOTS[pastille]}
+            </button>
+          ))}
+          <button
+            type="button"
+            data-atlas="message-defaut"
+            onClick={() => {
+              setMessage(MESSAGE_PAR_DEFAUT);
+              setAEcrire(true);
+            }}
+            className="rounded-full px-3 py-2 text-[13px]"
+            style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+          >
+            Remettre celui d&apos;Atlas
+          </button>
+        </div>
+
+        {refusMessage && (
+          <p
+            role="alert"
+            data-atlas="message-refus"
+            className={`mt-2.5 ${texteSituation}`}
+            style={{ color: colors.alert }}
+          >
+            {refusMessage}
+          </p>
+        )}
+
+        {/* **L'aperçu passe par la MÊME fonction que l'envoi** (`rendreMessage`).
+            Une seconde rédaction ici finirait par ne plus dire la même chose que
+            ce que le client reçoit — et c'est le second qui compte. */}
+        <p className={`mb-2 mt-5 ${libelleCaps}`} style={{ color: colors.muted }}>
+          Ce que votre client recevra
+        </p>
+        <div className="mb-2.5 flex gap-2">
+          {APERCUS.map((a) => (
+            <button
+              key={a.clef}
+              type="button"
+              data-atlas={`apercu-${a.clef}`}
+              aria-pressed={apercuSur === a.clef}
+              onClick={() => setApercuSur(a.clef)}
+              className="min-h-[44px] flex-1 rounded-[6px] text-[13.5px]"
+              style={
+                apercuSur === a.clef
+                  ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.or}` }
+                  : { color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }
+              }
+            >
+              {a.nom}
+            </button>
+          ))}
+        </div>
+        <p
+          data-atlas="message-apercu"
+          className="whitespace-pre-wrap rounded-[6px] px-[13px] py-[11px] text-[14px] leading-[1.5]"
+          style={{ backgroundColor: colors.card, color: colors.inkSoft }}
+        >
+          {rendreMessage(message.trim() || MESSAGE_PAR_DEFAUT, {
+            client: "Mme Larousse",
+            document: APERCUS.find((a) => a.clef === apercuSur)!.phrase,
+            // Une adresse d'exemple, reconnaissable comme telle : le vrai lien
+            // n'existe qu'au moment de l'envoi, et un lien inventé se toucherait.
+            lien: "https://…/devis/…",
+            entreprise: entrepriseNom,
+          })}
+        </p>
+        <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
+          L&apos;objet du courriel n&apos;est pas modifiable : il doit rester
+          reconnaissable dans une boîte de réception.
+        </p>
+      </Bloc>
+
       {/* L'aperçu vient APRÈS les réglages : lu avant, il décrirait un état
           qu'on n'a pas encore choisi. */}
       <Bloc titre="Ce que votre devis dira">
@@ -222,15 +412,22 @@ export default function DocumentsClient({ initial }: { initial: Conditions }) {
         <button
           type="button"
           onClick={() => enregistrer({})}
-          disabled={!aEcrire && !enCours}
+          disabled={(!aEcrire && !enCours) || refusMessage !== null}
           className="block w-full rounded-full py-[15px] text-center text-[16px]"
           style={{
-            backgroundColor: !aEcrire && !enCours ? colors.card : colors.rust,
-            color: !aEcrire && !enCours ? colors.muted : colors.cream,
-            boxShadow: !aEcrire && !enCours ? `inset 0 0 0 1px ${colors.line}` : "none",
+            backgroundColor: (!aEcrire && !enCours) || refusMessage ? colors.card : colors.rust,
+            color: (!aEcrire && !enCours) || refusMessage ? colors.muted : colors.cream,
+            boxShadow:
+              (!aEcrire && !enCours) || refusMessage ? `inset 0 0 0 1px ${colors.line}` : "none",
           }}
         >
-          {enCours ? "Enregistrement…" : !aEcrire ? "Enregistré ✓" : "Enregistrer"}
+          {enCours
+            ? "Enregistrement…"
+            : refusMessage
+              ? "Message incomplet"
+              : !aEcrire
+                ? "Enregistré ✓"
+                : "Enregistrer"}
         </button>
       </div>
     </div>

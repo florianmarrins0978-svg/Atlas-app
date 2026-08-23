@@ -59,6 +59,7 @@ export default function TransmettreLaFacture({
   clientNom,
   clientCivilite,
   entrepriseNom,
+  modeleMessage,
   numeroFacture,
   echeanceLisible,
   canal,
@@ -72,6 +73,13 @@ export default function TransmettreLaFacture({
   clientNom: string;
   clientCivilite: "mr" | "mme" | null;
   entrepriseNom: string;
+  /**
+   * Son gabarit de message, écrit dans « Devis & factures ». `null` : Atlas.
+   *
+   * **`modeleMessage`, jamais `messageClient`** : ce nom est pris ailleurs dans
+   * l'application, où il désigne le mot laissé par le CLIENT — l'inverse.
+   */
+  modeleMessage: string | null;
   numeroFacture: string;
   echeanceLisible: string | null;
   /** Le canal convenu sur la fiche du client — un défaut, jamais une contrainte. */
@@ -117,6 +125,7 @@ export default function TransmettreLaFacture({
         clientCivilite,
         clientNom,
         entrepriseNom,
+        modele: modeleMessage,
         numeroFacture,
         echeanceLisible,
         lien: lienFacture,
@@ -192,6 +201,7 @@ export default function TransmettreLaFacture({
         clientCivilite,
             clientNom,
             entrepriseNom,
+        modele: modeleMessage,
             numeroFacture,
             echeanceLisible,
             lien: `${origine}/factures/${jetonPret}`,

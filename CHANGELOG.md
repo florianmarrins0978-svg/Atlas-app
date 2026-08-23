@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Son message au client s'écrit — un seul, pour ses trois documents
+
+*« Y a-t-il un endroit dans les réglages où l'utilisateur peut rédiger ce
+message automatique ? S'il n'y en a pas, il faut en créer un. »* Il n'y en avait
+pas : le texte vivait dans le code, identique pour toutes les entreprises.
+
+**Ses trois décisions, et elles commandent tout :** le réglage vit dans « Devis
+& factures » (A) ; **le lien est obligatoire** — Atlas refuse d'enregistrer sans
+lui, à l'écran comme au serveur ; et c'est **un seul message pour les trois
+documents**.
+
+**La troisième demandait un arbitrage, et il l'a pris en images.** Un texte
+unique et littéral ferait dire à sa facture *« Voici votre devis, choisissez
+votre date »*, et l'échéance disparaîtrait. Devant les six bulles de la planche
+— ses trois documents, dans les deux façons de faire — il a répondu **« façon
+1 »** : il écrit le cadre, Atlas pose la phrase du milieu, à l'endroit où il
+met `[document]`.
+
+**Ce qui change dans ce que ses clients reçoivent, et il faut le dire.** La
+phrase du devis tenait en deux morceaux, l'un avant le lien, l'autre après ;
+un seul emplacement ne peut pas porter les deux. Les deux idées sont réunies
+avant le lien — et le « vous POUVEZ » qu'il avait corrigé le 13 août est
+resté, un contrôle l'exigeait. L'échéance de la facture, elle, remonte avant le
+lien pour la même raison.
+
+**`null` en base veut dire « celui d'Atlas », jamais « vide ».** Recopier le
+texte par défaut dans la colonne figerait chaque entreprise sur la version du
+jour : une correction ultérieure ne l'atteindrait plus, et personne ne s'en
+apercevrait. Le texte d'Atlas retapé à l'identique redevient donc `null`.
+
+**L'objet du courriel ne se règle pas** : il ne se lit que par courriel, jamais
+par SMS, et un objet vide ou trompeur envoie le message aux indésirables.
+
+
 ### Les prix tapés sur l'écran du devis partent enfin chez le client
 
 *« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
