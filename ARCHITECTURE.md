@@ -13224,6 +13224,61 @@ Passer à « Masqué » est le défaut de la colonne à retourner. Voir `TODO.md
 
 ---
 
+## 150. Le dossier du client ne porte que ce qu'il a reçu
+
+**Sa règle du 23 août 2026**, après avoir facturé M. Bernard : *« il y a une
+fiche chantier qui s'est créée en même temps. Cette catégorie est réservée
+lorsque les paysagistes créent une fiche chantier avec les informations type la
+tonte, la taille, ce qu'ils ont fait. À aucun moment, lorsqu'une facture doit
+être envoyée, une fiche chantier doit être créée. »*
+
+### Deux erreurs se cachaient l'une derrière l'autre
+
+| | |
+|---|---|
+| **Quand** | la colonne listait les chantiers `termine_at IS NOT NULL`, et **émettre une facture pose cette date** (`factures.ts` : `COALESCE(termine_at, now())`). Facturer fabriquait donc une pièce que personne n'avait écrite |
+| **Quoi** | le document servi était la feuille **interne** — équipe, créneau, note vocale, adresse — que ses salariés ouvrent dans la camionnette. Rangée au dossier d'un client, elle donnait à croire qu'il l'avait reçue |
+
+La seconde est la plus grave, et c'est celle qu'on ne voyait pas : une colonne
+qui se remplit toute seule finit par être crue.
+
+### La règle, et elle vaut pour les trois colonnes
+
+**Une pièce du dossier est un document que le client A REÇU.** Un devis envoyé,
+une facture émise, une fiche d'entretien partie. Ni brouillon, ni document
+interne, ni pièce déduite d'un état.
+
+La colonne porte donc les `passages_entretien` **figés** (`envoye_le` et `jeton`
+non nuls), à l'adresse même que le client a reçue — `/entretien/{jeton}`.
+
+### Une pièce n'est plus forcément un PDF
+
+`PieceDuClient.format` (`"pdf"` par défaut) le dit à la carte. Sur une page :
+la vignette annonce « FICHE », « Enregistrer » disparaît et « Ouvrir » devient
+le geste principal. Rien ne fige ce rapport en fichier : proposer de
+l'enregistrer aurait fait descendre une page web nommée `.pdf`, que rien
+n'ouvre — le défaut du 7 août 2026, retourné.
+
+### LE PIÈGE DRIZZLE, ET IL RESSERVIRA
+
+Une sous-requête corrélée écrite `${passagesEntretien.id}` se rend en **`"id"`
+NU** dès qu'aucune jointure n'oblige Drizzle à qualifier ses colonnes :
+
+```
+select count(*)::int from "lignes_passage" l
+ where l.passage_id = "id" and l.faite     -- « id » = celui de l, jamais vrai
+```
+
+Chaque fiche s'annonçait « 0 prestation » sur une base qui en portait deux ou
+trois. **Le voisin `listerPassages` écrit exactement la même chose et
+fonctionne** — il porte un `leftJoin`, qui force la qualification : le motif
+paraissait donc éprouvé. Écrire `passages_entretien.id` en toutes lettres.
+
+**Aucun test ne l'a vu ; c'est la CAPTURE qui l'a montré** — la cinquième fois
+dans ce dépôt qu'un défaut sort d'une image et d'aucun vert (`CLAUDE.md` §5). Le
+contrôle qui manquait exige désormais **deux fiches à comptes différents** : un
+seul compte juste peut l'être par hasard.
+
 ## 149. Le croquis dit où sont les choses : les proportions, et l'échelle déduite
 
 **Sa demande du 22 août 2026 au soir : « oui fais-le lire les proportions ».**
