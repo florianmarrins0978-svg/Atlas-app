@@ -32,13 +32,28 @@ passer à l'échelle.
 
 ## Le corps du message
 
+**Version du 23 août 2026, reformulée par le patron** — la première partie est
+la sienne : d'où il vient, et pourquoi il fait cet outil. Ce qui suit ne corrige
+que l'orthographe et quelques tournures. **Ne pas la réécrire** : un institut
+lit la différence entre un artisan qui explique son métier et un texte lissé.
+
 > Madame, Monsieur,
 >
-> Je suis paysagiste-élagueur et je développe, pour mon métier, un outil
-> d'assistance appelé Atlas. L'une de ses fonctions permet à un professionnel de
-> photographier une anomalie sur un arbre ou un arbuste — une feuille, une
-> écorce, un champignon — et d'obtenir une aide à l'identification, assortie
-> d'une conduite à tenir.
+> Je suis paysagiste-élagueur, diplômé d'État. J'ai obtenu mon BTS Aménagements
+> paysagers à l'établissement de Saint-Germain-en-Laye, puis mon CS
+> arboriste-grimpeur quelques années plus tard.
+>
+> Aujourd'hui, j'aimerais pouvoir partager ce savoir. C'est pourquoi je
+> développe, pour mon métier, un outil d'assistance sous la forme d'une
+> application. L'une de ses fonctions permet à un professionnel de photographier
+> une anomalie sur un arbre ou un arbuste — une feuille, une écorce, un
+> champignon — et d'obtenir une aide à l'identification, assortie d'une conduite
+> à tenir.
+>
+> J'ai trop souvent vu des arbres se faire abattre sous prétexte qu'ils étaient
+> malades, sans réel diagnostic. C'est pourquoi j'ai eu l'envie de créer une
+> application qui recenserait les différentes maladies avec leur niveau de
+> gravité, afin de limiter ces comportements abusifs.
 >
 > Cet outil ne fonctionne que s'il s'appuie sur des données fiables. J'ai fait le
 > choix de ne jamais laisser une intelligence artificielle inventer un
@@ -55,38 +70,59 @@ passer à l'échelle.
 > Je souhaiterais donc savoir à quelles conditions je peux :
 >
 > 1. m'appuyer sur les fiches d'Ephytia relatives aux forêts et aux arbres
->    d'ornement pour rédiger des fiches propres à Atlas, en citant systématiquement
->    l'INRAE et Ephytia comme source, avec l'adresse de la page consultée et sa
->    date de consultation ;
+>    d'ornement pour rédiger des fiches propres à mon application, en citant
+>    systématiquement l'INRAE et Ephytia comme source, avec l'adresse de la page
+>    consultée et sa date de consultation ;
 > 2. reprendre, le cas échéant, de courts extraits de vos descriptions lorsque la
 >    formulation exacte importe — un critère qui distingue deux problèmes voisins,
 >    par exemple ;
 > 3. utiliser certaines de vos photographies, à titre illustratif, avec le crédit
->    correspondant. Je note que plusieurs d'entre elles portent un crédit
->    nominatif — j'ai par exemple relevé, sur la fiche de l'anthracnose du
->    platane : CHAMONT S. (INRA), Arnaud Giraudel et Jean-Pierre Henry. Si
->    l'accord de chaque auteur est nécessaire, je comprendrai tout à fait que ce
->    point soit écarté.
+>    correspondant.
 >
-> Je précise le contexte, car il compte pour votre réponse : Atlas est un outil
-> professionnel, destiné à être diffusé auprès d'autres artisans, et donc à usage
-> potentiellement commercial. Le nombre de fiches visé se compte en dizaines
-> aujourd'hui, et pourrait atteindre quelques centaines.
+> Je précise le contexte, car il compte pour votre réponse : mon application est
+> un outil professionnel, destiné à être diffusé auprès d'autres artisans, et
+> donc à usage potentiellement commercial. Le nombre de fiches visé se compte en
+> dizaines aujourd'hui, et pourrait atteindre quelques centaines.
 >
-> Si une convention ou une mention particulière est nécessaire, je m'y conformerai
-> volontiers. Et si certaines de ces utilisations ne sont pas envisageables, je
-> vous serais reconnaissant de me le dire : je préfère écarter une source dès le
-> départ plutôt que de découvrir le problème une fois le travail fait.
+> Si une convention ou une mention particulière est nécessaire, je m'y
+> conformerai volontiers. Et si certaines de ces utilisations ne sont pas
+> envisageables, je vous serais reconnaissant de me le dire.
 >
-> Je reste à votre disposition pour vous présenter l'outil ou vous montrer une
-> fiche telle qu'elle serait rédigée.
+> Vous trouverez ci-joint un document de trois pages qui montre, sur un exemple
+> complet, la manière dont vos contenus seraient présentés dans l'application. Je
+> reste naturellement à votre disposition pour vous en dire davantage.
 >
 > Je vous remercie de l'attention portée à ma demande et vous prie d'agréer,
 > Madame, Monsieur, l'expression de mes salutations distinguées.
 >
-> *[Prénom Nom]*
+> Florian Martins
 > *[Nom de l'entreprise]*
 > *[Téléphone] — [Adresse électronique]*
+
+### Ce qui a été corrigé, et ce qui ne l'a pas été
+
+| Sa phrase | Ce qui a changé |
+|---|---|
+| « diplômer d'état » | « diplômé d'État » |
+| « au célèbre établissement de saint germain en laye » | la ville s'écrit avec ses traits d'union, et **« célèbre » est retiré** : vanter l'école devant un institut de recherche dessert le propos, alors que nommer le diplôme suffit |
+| « quelque année plus tard » | « quelques années plus tard » |
+| « ce faire abbatre… étaient malade… de réels diagnostic » | « se faire abattre… étaient malades… sans réel diagnostic » |
+| « j'ai eu l'envie de crée une application qui recenserais les différentes maladie » | « de créer une application qui recenserait les différentes maladies » |
+| « comportement abusif » | « comportements abusifs » |
+| « Je vous transmets une photo d'un exemple » | **c'est un document de trois pages, plus une photo d'écran** — et l'annoncer comme tel change ce que le lecteur en attend |
+| « Martins Florian. » | « Florian Martins », prénom d'abord, sans point |
+
+**Ce qui n'a PAS été touché**, et il faut que cela reste ainsi : l'ordre de ses
+idées, sa raison de faire l'outil (les arbres abattus sans diagnostic), et le
+fait qu'il annonce lui-même l'usage commercial. C'est ce paragraphe-là qui donne
+sa crédibilité à la demande.
+
+**Un point rendu au patron** : sa version disait « se compte en dizaines
+aujourd'hui » et s'arrêtait là. « et pourrait atteindre quelques centaines » a
+été **conservé**, parce que c'est précisément ce chiffre qui rend l'autorisation
+nécessaire (`docs/QUESTIONS.md` §24) : quelques dizaines de fiches citées ne
+demandent rien à personne. Le retirer ferait poser une question sans objet — et
+la pièce jointe, elle, porte le même chiffre.
 
 ---
 

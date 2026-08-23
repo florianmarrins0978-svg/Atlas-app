@@ -72,3 +72,34 @@ c'est ainsi que la première version, qui débordait de 148 px, a été prise.
   Le document l'affirme noir sur blanc à l'INRAE : *« ici une photographie du
   domaine public, et non une photographie INRAE »*. Cette phrase devient fausse
   le jour où la fiche du platane recevra une image INRAE.
+
+### Ce qui a été établi sur cette photo, et ce qui ne l'a pas été
+
+**Sa question du 23 août 2026 :** *« tu es sûr que la photo utilisée n'est pas
+une photo de l'INRAE, parce qu'il ne faut pas les prendre pour des cons »*. Elle
+est juste : c'est la seule affirmation du document qui pourrait se retourner
+contre lui.
+
+**Ce qui est vérifié dans le dépôt** — et qui tient :
+
+| | |
+|---|---|
+| l'adresse enregistrée | `commons.wikimedia.org/wiki/Special:FilePath/Apiognomonia veneta leaf.JPG` — Wikimedia Commons, pas `ephytia.inrae.fr` |
+| la seule image de TOUTES les fiches | une seule, celle-là ; aucune autre n'a d'image |
+| aucune adresse INRAE/Ephytia | ne pointe vers un fichier image, nulle part |
+| l'espèce photographiée | *Platanus occidentalis* — le platane d'Amérique, cohérent avec un cliché de l'USDA et non avec un relevé français |
+| les figures d'Ephytia | **écartées à dessein** : deux portent un « © » nominatif (CHAMONT S. (INRA), Arnaud Giraudel, Jean-Pierre Henry) |
+| l'import | **refuse** toute image dont la licence porte « © » ou « droits réservés » (`import-fiches-phyto.ts`, refus n° 7) |
+
+**Ce qui n'a PAS pu être vérifié depuis l'environnement de l'agent :** la page
+Commons elle-même. Le mandataire réseau bloque `commons.wikimedia.org`, et le
+fichier local ne porte aucune métadonnée — la vignette servie par Commons les
+retire. La mention « domaine public, travail d'un employé de l'USDA » vient donc
+de ce que le patron a transmis le 20 août avec la photo, pas d'un relevé fait
+ici. **Le dire ainsi plutôt que de laisser croire à une vérification qui n'a pas
+eu lieu** (`AGENTS.md`).
+
+**Ce qui la vérifie en dix secondes, depuis un navigateur :** ouvrir
+<https://commons.wikimedia.org/wiki/File:Apiognomonia_veneta_leaf.JPG> et lire
+le bandeau de licence. S'il n'annonce pas le domaine public, la photo sort de la
+fiche et le document se refait — la phrase de la page 1 deviendrait fausse.
