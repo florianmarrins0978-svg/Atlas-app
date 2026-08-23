@@ -60,6 +60,21 @@ environnement** — la fonction pure `lireReponseCroquis` est éprouvée
 (`test-lecture-croquis.ts`), l'appel au fournisseur ne l'est pas. Premier essai à
 faire sur son banc.
 
+### DEUX ÉCHELLES, ET NE PAS LES CONFONDRE (23 août 2026)
+
+| | Ce qu'elle sert | Devant un dessin approximatif |
+|---|---|---|
+| `echelleDuCroquis` | le trajet du regard → la pression → l'espacement | **refuse** |
+| `echelleTolerante` | le dessin | **conclut**, et le dit en réserve |
+
+**Ne pas « harmoniser » les deux.** Une pelouse placée de travers se voit à
+l'œil ; une pression fausse ne se voit qu'en juillet. C'est sa correction :
+*« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle »*.
+
+**Et l'agencement n'est pas l'un des trois éléments obligatoires** (métrés,
+piquage, nourrice). Un agencement illisible ne retire que le DESSIN : le plan
+sort quand même, avec une réserve qui dit pourquoi.
+
 ### LE CROQUIS SE LIT EN FRACTIONS, ET UN SEUL ENDROIT LES CONVERTIT
 
 `lire-croquis.ts` rend des places **en fraction du dessin** (0 à 1), jamais des

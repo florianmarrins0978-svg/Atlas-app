@@ -2563,6 +2563,54 @@ préfixe (`batterie19`) a la suite au vert ; les quatre suivantes, avec, au roug
 refuser de conclure quand son montage n'a pas reproduit le cas — c'est ce qui a
 permis de le voir.
 
+### 0 quinvicies septies. Son message au client, et l'allure de ses devis — **DEUX PLANCHES, RIEN N'EST CODÉ**
+
+**Sa demande du 23 août 2026**, en deux morceaux : *« y a-t-il un endroit dans
+les réglages où l'utilisateur peut rédiger ce message automatique ? S'il n'y en
+a pas, il faut en créer un. Et il faudrait également que l'utilisateur puisse
+avoir un endroit dédié à la modification de son devis. S'il veut rajouter son
+logo, changer la typographie, changer le fond de page. »*
+
+**CHERCHÉ AVANT DE RÉPONDRE** (`CLAUDE.md` §5 ter), et les deux manquent
+vraiment :
+
+| | Ce qui existe | Ce qui manque |
+|---|---|---|
+| **le message** | `src/lib/message-client.ts` — écrit en dur, le même pour tous | aucun réglage, nulle part |
+| **l'allure du devis** | « Apparence » règle les couleurs de **l'application** ; « Devis & factures » règle validité, acompte, délai, mentions | le logo (aucune colonne au schéma), la typographie, le fond de page |
+
+**Les deux planches, qu'il doit ouvrir avant qu'on code :**
+
+- `appli/mon-message-au-client.html` — deux endroits où le poser, puis l'écran :
+  le cadre s'écrit, le téléphone dessous rend le SMS que reçoit vraiment le
+  client. Trois pastilles posent `[client]`, `[lien]`, `[entreprise]` **sous le
+  curseur**. Effacer le lien le **dit**, sans le remettre en douce.
+- `appli/allure-de-mes-devis.html` — logo, trois typographies, trois fonds,
+  quatre accents, et le devis se repeint à l'instant.
+
+**Le texte de la planche est RECOPIÉ du code qui l'envoie**, et un contrôle le
+tient (`scripts/verifier-maquette-message-et-allure.mjs`) : une planche qui
+montrerait un autre message lui ferait juger un texte que ses clients ne
+reçoivent pas — c'est le malentendu même qu'il vient corriger. Le contrôle sait
+rougir : éprouvé sur un mot changé, l'alerte du lien retirée, le jeton posé à la
+fin, et le fond figé.
+
+**CE QU'IL DOIT TRANCHER**, et rien ne se code avant :
+
+| | La question |
+|---|---|
+| 1 | le message : dans « Devis & factures », ou une rubrique « Mes messages » ? |
+| 2 | le lien est-il **obligatoire** — Atlas refuse-t-il un message sans lui ? |
+| 3 | un message par document, ou un seul pour tout ? |
+| 4 | l'allure : rubrique à part, ou bloc dans « Devis & factures » ? |
+| 5 | l'allure vaut-elle pour **tous** les documents, ou le devis seul ? |
+| 6 | trois typographies suffisent-elles ? |
+| 7 | garde-t-on le **fond teinté** ? Il s'imprime, donc il coûte de l'encre à chacun de ses clients |
+
+**Ce qui restera scellé quoi qu'il choisisse**, et la planche le dit : mentions
+obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
+n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
+
 ### 0 trigies quinquies. ~~Cinq suites du devis rougissaient une batterie sur deux~~ — **RÉPARÉES le 23 août 2026**
 
 **Quatre l'étaient pour la même raison, et la cinquième pour une autre.** C'est

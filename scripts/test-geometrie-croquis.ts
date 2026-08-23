@@ -5,6 +5,7 @@ import {
   trajetLePlusLong,
   ECART_MAX_ENTRE_ZONES,
   poserSurLeTerrain,
+  echelleTolerante,
   type ZonePositionnee,
 } from "../src/lib/arrosage/geometrie-croquis";
 
@@ -234,13 +235,142 @@ const PELOUSE: ZonePositionnee = {
     "sans nourrice dessinée, les zones se posent et le regard reste absent",
   );
 
-  // Un croquis qui n'est pas à l'échelle est refusé ici comme ailleurs : c'est
-  // la même règle, appelée au même endroit.
+  // **Un croquis hors d'échelle N'EST PLUS REFUSÉ ICI** — sa correction du
+  // 23 août 2026. Il est posé d'après ses cotes, et l'écart se DIT.
+  // La sévère, elle, continue de refuser : voir le bloc suivant.
   const detraque = poserSurLeTerrain({ x: 0, y: 0 }, [
     { position: { x: 0.25, y: 0.5 }, largeurFraction: 0.5, hauteurFraction: 0.5, L: 12, l: 12 },
     { position: { x: 0.75, y: 0.5 }, largeurFraction: 0.5, hauteurFraction: 0.5, L: 60, l: 60 },
   ]);
-  dire(!detraque.ok, detraque.ok ? "un croquis hors d'échelle a été posé" : `refusé : ${detraque.raison}`);
+  dire(detraque.ok, detraque.ok ? "un croquis hors d'échelle se pose quand même" : `refusé : ${detraque.raison}`);
+  dire(
+    detraque.ok && detraque.terrain.reserve !== null,
+    "et l'écart se DIT au lieu de bloquer le plan",
+  );
+}
+
+// ── UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME (23 août 2026) ────────────────
+//
+// **Sa correction, et elle est juste :** *« il n'arrive pas à me lire mon
+// croquis sous prétexte qu'il n'est pas à l'échelle... les utilisateurs ne vont
+// pas s'amuser à faire des croquis à l'échelle à chaque fois. Là, il y a tous
+// les métrés. »*
+//
+// **Les COTES commandent, le dessin ne fait qu'ordonner.** Un croquis à main
+// levée dit avec certitude qui est à gauche de qui ; il ne dit rien de fiable
+// sur les longueurs — c'est justement pour cela qu'on y écrit les métrés.
+{
+  // Son croquis du 23 août : un terrain de 25 × 20, une haie de 25 m le long du
+  // haut, un retour de 5 × 10. Les proportions sont celles d'un dessin fait à
+  // la main — la haie est tracée trop épaisse, le retour trop court.
+  const AMAIN = [
+    { position: { x: 0.4, y: 0.5 }, largeurFraction: 0.7, hauteurFraction: 0.6, L: 25, l: 20 },
+    { position: { x: 0.4, y: 0.2 }, largeurFraction: 0.7, hauteurFraction: 0.05, L: null, l: null, ml: 25 },
+    { position: { x: 0.85, y: 0.45 }, largeurFraction: 0.2, hauteurFraction: 0.5, L: 5, l: 10 },
+  ];
+
+  // Un dessin à main levée reste **à peu près** juste : les deux règles
+  // concluent, et il n'y a rien à signaler. C'est le cas courant.
+  const souple = echelleTolerante(AMAIN);
+  dire(souple.ok, souple.ok ? `la tolérante conclut : ${Math.round(souple.metresParFraction)} m par unité` : `refusé : ${souple.raison}`);
+  dire(echelleDuCroquis(AMAIN).ok, "un dessin à peu près juste passe même la règle sévère");
+
+  // ── LÀ OÙ LES DEUX RÈGLES SE SÉPARENT ─────────────────────────────────────
+  //
+  // Un croquis franchement hors d'échelle. **La sévère refuse**, et elle a
+  // raison : c'est elle qui nourrit le trajet du regard, donc le calcul de
+  // pression, donc l'espacement des arroseurs — un chiffre faux y coûte un plan
+  // faux. **La tolérante conclut**, parce que ce qu'elle sert est un DESSIN.
+  const TORDU = [
+    { position: { x: 0.25, y: 0.5 }, largeurFraction: 0.5, hauteurFraction: 0.5, L: 12, l: 12 },
+    { position: { x: 0.75, y: 0.5 }, largeurFraction: 0.5, hauteurFraction: 0.5, L: 60, l: 60 },
+  ];
+  const severe = echelleDuCroquis(TORDU);
+  dire(!severe.ok, severe.ok ? "la sévère a conclu sur un croquis hors d'échelle" : `la sévère refuse : ${severe.raison}`);
+  const tordu = echelleTolerante(TORDU);
+  dire(tordu.ok, tordu.ok ? `la tolérante conclut malgré tout (${Math.round(tordu.metresParFraction)} m par unité)` : `refusé : ${tordu.raison}`);
+
+  const pose = poserSurLeTerrain({ x: 0.95, y: 0.6 }, AMAIN);
+  dire(pose.ok, pose.ok ? "son croquis à main levée se pose sur le terrain" : `refusé : ${pose.raison}`);
+  if (pose.ok) {
+    dire(
+      pose.terrain.zones[0].L === 25 && pose.terrain.zones[0].l === 20,
+      "les cotes traversent intactes — c'est le dessin qui plie, jamais les métrés",
+    );
+    dire(pose.terrain.nourrice !== null, "la nourrice est posée");
+    // **Un dessin à peu près juste ne DIT rien** : une réserve posée à chaque
+    // croquis s'apprend à être ignorée, et ne servirait plus le jour où elle
+    // compte vraiment.
+    dire(
+      pose.terrain.reserve === null,
+      `rien à signaler sur un dessin à peu près juste (${pose.terrain.reserve ?? "aucune réserve"})`,
+    );
+  }
+
+  // **C'est le croquis TORDU qui se signale.** Une réserve, jamais un refus :
+  // les métrés sont justes, c'est l'agencement qui suit un dessin approximatif.
+  const poseTordue = poserSurLeTerrain({ x: 0, y: 0 }, TORDU);
+  if (poseTordue.ok) {
+    dire(
+      poseTordue.terrain.reserve !== null && /vérifier/.test(poseTordue.terrain.reserve),
+      `l'agencement hors d'échelle est signalé (${poseTordue.terrain.reserve ?? "aucune réserve"})`,
+    );
+  }
+
+  // **LA HAIE SEULE SUFFIT À DONNER L'ÉCHELLE** (23 août 2026). Sur son
+  // croquis, elle longe tout le haut du terrain et porte sa longueur — 25 m.
+  // Le cas est réel : une pelouse dont la lecture n'a pas rendu les proportions
+  // laisserait, sans elle, un croquis muet où tout est pourtant coté.
+  const parLaHaie = [
+    { position: { x: 0.4, y: 0.5 }, largeurFraction: null, hauteurFraction: null, L: 25, l: 20 },
+    { position: { x: 0.4, y: 0.2 }, largeurFraction: 0.5, hauteurFraction: 0.04, L: null, l: null, ml: 25 },
+  ];
+  const parHaie = echelleTolerante(parLaHaie);
+  dire(
+    parHaie.ok && !parHaie.approchee,
+    parHaie.ok
+      ? `la haie donne l'échelle à elle seule : ${Math.round(parHaie.metresParFraction)} m par unité` +
+        (parHaie.approchee ? " — mais elle est tombée sur le dernier recours" : "")
+      : `refusé : ${parHaie.raison}`,
+  );
+  // 25 m sur la moitié du dessin : cinquante mètres par unité, et pas la valeur
+  // grossière du dernier recours (la plus grande cote sur toute l'étendue).
+  dire(
+    parHaie.ok && Math.abs(parHaie.metresParFraction - 50) < 1,
+    parHaie.ok ? `et c'est bien SA longueur qui la donne (${parHaie.metresParFraction.toFixed(1)})` : "",
+  );
+
+  // **LE CAS QUI L'A BLOQUÉ : aucune proportion de zone lue.** La lecture n'a
+  // rendu que des cotes et des places, sans les tailles dessinées — et l'ancien
+  // message accusait ses cotes, c'est-à-dire le mauvais coupable.
+  const sansProportions = [
+    { position: { x: 0.4, y: 0.5 }, largeurFraction: null, hauteurFraction: null, L: 25, l: 20 },
+    { position: { x: 0.85, y: 0.45 }, largeurFraction: null, hauteurFraction: null, L: 5, l: 10 },
+  ];
+  const dernierRecours = poserSurLeTerrain({ x: 0.95, y: 0.6 }, sansProportions);
+  dire(
+    dernierRecours.ok,
+    dernierRecours.ok
+      ? "sans proportions lues, le terrain se pose quand même — sur la plus grande cote"
+      : `refusé : ${dernierRecours.raison}`,
+  );
+  if (dernierRecours.ok) {
+    dire(
+      dernierRecours.terrain.reserve !== null && /à l’estime/.test(dernierRecours.terrain.reserve),
+      "et l'on dit que les zones sont placées à l'estime",
+    );
+  }
+
+  // **Ce qui reste refusé, et doit l'être** : un croquis qui ne situe RIEN. Là,
+  // il n'y a pas d'agencement à reconstituer, seulement à inventer.
+  const nullePart = poserSurLeTerrain(null, [
+    { position: null, largeurFraction: null, hauteurFraction: null, L: 25, l: 20 },
+  ]);
+  dire(!nullePart.ok, nullePart.ok ? "un croquis sans aucune place a été posé" : `refusé : ${nullePart.raison}`);
+  dire(
+    !nullePart.ok && !/cote/.test(nullePart.raison),
+    `et le refus n'accuse PAS les cotes, qui sont là (« ${nullePart.ok ? "" : nullePart.raison} »)`,
+  );
 }
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);

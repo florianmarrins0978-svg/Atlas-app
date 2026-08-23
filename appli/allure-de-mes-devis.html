@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'allure de mes devis — logo, typographie, fond de page</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:24px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  /* ── Les réglages, tels qu'ils seraient ───────────────────────────── */
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--fond);border-radius:14px;
+         padding:16px 16px 18px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .ecran .chapeau{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--or);margin:0}
+  .ecran .titre{margin:8px 0 0;font:400 26px/1.2 ui-serif,Georgia,serif}
+
+  .reglage{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--trait)}
+  .reglage:first-of-type{border-top:0;padding-top:0}
+  .reglage .etiquette{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                      text-transform:uppercase;color:var(--gris);margin:0 0 9px}
+  .reglage .aide{margin:8px 0 0;font-size:12.5px;line-height:1.45;color:var(--gris)}
+
+  .choix{display:flex;gap:8px;flex-wrap:wrap}
+  .choix button{flex:1 1 0;min-width:104px;min-height:52px;border:1px solid var(--trait);
+                border-radius:10px;background:var(--plage);color:var(--encre);padding:9px 8px;
+                font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .choix button small{display:block;font-size:11.5px;color:var(--gris);margin-top:3px}
+  .choix button[aria-pressed="true"]{border-color:var(--or);background:rgba(185,139,71,.12)}
+  .choix button[aria-pressed="true"] small{color:var(--encre-douce)}
+
+  .pastilles{display:flex;gap:10px;flex-wrap:wrap}
+  .pastilles button{width:44px;height:44px;border-radius:999px;border:2px solid transparent;
+                    cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pastilles button[aria-pressed="true"]{border-color:var(--encre)}
+
+  .logo-ligne{display:flex;align-items:center;gap:12px}
+  .logo-case{width:56px;height:56px;border-radius:10px;border:1px dashed var(--gris);
+             display:grid;place-items:center;font-size:11px;color:var(--gris);text-align:center;
+             line-height:1.2;flex:none;background:var(--plage);padding:4px}
+  .logo-case.pose{border-style:solid;border-color:var(--trait);background:var(--pin);color:#f5f3ee;
+                  font:700 17px/1 ui-serif,Georgia,serif;letter-spacing:.06em}
+  .logo-ligne button{border:1px solid var(--or);border-radius:999px;background:transparent;
+                     color:var(--or);padding:11px 16px;font-size:14px;cursor:pointer;
+                     -webkit-tap-highlight-color:transparent}
+
+  /* ── L'APERÇU : le devis tel qu'il partira ────────────────────────── */
+  .apercu-titre{max-width:430px;margin:22px auto 0;padding:0 20px;
+                font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                text-transform:uppercase;color:var(--or)}
+  .feuille{max-width:430px;margin:9px auto 0;border-radius:12px;padding:20px 18px 22px;
+           box-shadow:0 10px 28px rgba(20,18,14,.16);overflow:hidden}
+  .feuille .haut{display:flex;align-items:flex-start;gap:12px}
+  .feuille .marque{width:44px;height:44px;border-radius:8px;display:grid;place-items:center;
+                   font:700 15px/1 inherit;letter-spacing:.06em;flex:none}
+  .feuille .nom{font-size:17px;font-weight:700;margin:0}
+  .feuille .sous{margin:2px 0 0;font-size:11.5px;opacity:.72;line-height:1.35}
+  /* **`nowrap` : sans lui, « N° 2026-0012 » et « Validité 30 jours » se cassent
+     en quatre lignes sur un iPhone — l'en-tête paraissait bancal et l'on
+     aurait jugé la mise en page sur un défaut de la maquette. */
+  .feuille .meta{margin-left:auto;text-align:right;font-size:11px;line-height:1.5;
+                 opacity:.75;white-space:nowrap;flex:none}
+  .feuille h1{margin:16px 0 0;font-size:23px;font-weight:400;letter-spacing:.02em}
+  .feuille .rule{height:2px;margin:7px 0 0;border-radius:2px}
+  .feuille .client{margin:14px 0 0;font-size:12.5px;line-height:1.5;opacity:.85}
+  .feuille table{width:100%;border-collapse:collapse;margin:14px 0 0;font-size:12.5px}
+  .feuille th{text-align:left;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+              padding:0 0 6px;opacity:.6;font-weight:700}
+  .feuille th.n,.feuille td.n{text-align:right}
+  .feuille td{padding:8px 0;border-top:1px solid rgba(0,0,0,.10);vertical-align:top}
+  .feuille .totaux{margin:12px 0 0;font-size:12.5px}
+  .feuille .totaux div{display:flex;justify-content:space-between;padding:4px 0}
+  .feuille .totaux .ttc{font-weight:700;font-size:15px;padding-top:8px;
+                        border-top:1px solid rgba(0,0,0,.14)}
+  .feuille .pied{margin:14px 0 0;padding-top:10px;border-top:1px solid rgba(0,0,0,.10);
+                 font-size:10.5px;line-height:1.45;opacity:.66}
+
+  .verdict{max-width:430px;margin:16px auto 0;padding:14px 18px;border-radius:14px;
+           font-size:14.5px;line-height:1.5;background:var(--papier);color:var(--encre-douce)}
+  .verdict b{color:var(--encre)}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+            background:var(--papier);font-size:15px;line-height:1.55}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px}
+  .question .liste{margin-top:14px;padding-top:14px;border-top:1px solid var(--trait)}
+  .question .liste div{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+  .question .liste .mot{flex-shrink:0;width:34px;font-weight:700;color:var(--pin)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ta demande :</b> « un endroit dédié à la modification de son devis — s'il veut
+  rajouter son logo, changer la typographie, changer le fond de page ».<br>
+  <b>Ça n'existe pas :</b> « Apparence » ne règle que les couleurs de
+  l'application, pas celles de tes documents. Voici l'écran — <b>et il
+  fonctionne</b> : touche les choix, la feuille dessous change.
+</div>
+
+<!-- ═══ OÙ ÇA VIT ═══════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>Où cet écran se range</h2>
+  <p><b>A —</b> une rubrique à lui, « L'allure de mes documents », dans les
+     réglages. Elle se trouve du premier coup d'œil.</p>
+  <p><b>B —</b> un bloc de plus dans « Devis &amp; factures », là où se règlent
+     déjà la validité et l'acompte. Rien de neuf à chercher, mais l'écran
+     s'allonge.</p>
+</div>
+
+<div class="ecran">
+  <p class="chapeau">Mon entreprise</p>
+  <p class="titre">L'allure de mes documents</p>
+
+  <div class="reglage" style="margin-top:16px">
+    <p class="etiquette">Mon logo</p>
+    <div class="logo-ligne">
+      <div class="logo-case" id="case-logo">Aucun<br>logo</div>
+      <button type="button" id="basculer-logo">Choisir une image</button>
+    </div>
+    <p class="aide">Il se pose en haut à gauche, au-dessus de tes coordonnées.</p>
+  </div>
+
+  <div class="reglage">
+    <p class="etiquette">Typographie</p>
+    <div class="choix" id="choix-police">
+      <button type="button" data-valeur="classique" aria-pressed="true">Classique<small>Empattements</small></button>
+      <button type="button" data-valeur="moderne" aria-pressed="false">Moderne<small>Sans empattements</small></button>
+      <button type="button" data-valeur="etroite" aria-pressed="false">Étroite<small>Tient plus de lignes</small></button>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <p class="etiquette">Fond de page</p>
+    <div class="choix" id="choix-fond">
+      <button type="button" data-valeur="blanc" aria-pressed="false">Blanc<small>Le moins d'encre</small></button>
+      <button type="button" data-valeur="creme" aria-pressed="true">Crème<small>Celui d'aujourd'hui</small></button>
+      <button type="button" data-valeur="gris" aria-pressed="false">Gris clair<small>Plus sobre</small></button>
+    </div>
+    <p class="aide">Un fond teinté s'imprime : il consomme de l'encre à chaque page,
+      et ressort plus foncé sur une imprimante de bureau qu'à l'écran.</p>
+  </div>
+
+  <div class="reglage">
+    <p class="etiquette">Couleur d'accent</p>
+    <div class="pastilles" id="choix-accent">
+      <button type="button" data-valeur="#B98B47" style="background:#B98B47" aria-pressed="true" aria-label="Or"></button>
+      <button type="button" data-valeur="#2f3b2f" style="background:#2f3b2f" aria-pressed="false" aria-label="Vert pin"></button>
+      <button type="button" data-valeur="#6E2433" style="background:#6E2433" aria-pressed="false" aria-label="Bordeaux"></button>
+      <button type="button" data-valeur="#1c1c1a" style="background:#1c1c1a" aria-pressed="false" aria-label="Noir"></button>
+    </div>
+    <p class="aide">Le trait sous « Devis », et le logo quand tu n'en poses pas.</p>
+  </div>
+</div>
+
+<p class="apercu-titre">Ce que ton client recevra</p>
+<div class="feuille" id="feuille"></div>
+
+<div class="verdict">
+  <b>Ce qui ne bouge pas, et pourquoi.</b> Les mentions obligatoires, la
+  disposition des colonnes et l'ordre des totaux restent scellés : un devis mal
+  posé n'est pas un devis moins joli, c'est un devis qu'on peut te contester.
+  Ce qui s'ouvre, c'est ce qui ne change rien à sa valeur.
+</div>
+
+<div class="question">
+  <b>Quatre questions :</b>
+  <div class="liste">
+    <div><span class="mot">1.</span><span><b>A</b> — une rubrique à part — ou
+      <b>B</b> — un bloc dans « Devis &amp; factures » ?</span></div>
+    <div><span class="mot">2.</span><span>Ces réglages valent-ils pour <b>tout</b> —
+      devis, facture, fiche de chantier, compte rendu d'entretien — ou seulement
+      pour le devis ?</span></div>
+    <div><span class="mot">3.</span><span>Trois typographies suffisent-elles, ou en
+      veux-tu d'autres ? Dis-moi lesquelles tu as en tête.</span></div>
+    <div><span class="mot">4.</span><span>Le <b>fond teinté</b> : je le garde ? Il
+      s'imprime, donc il coûte de l'encre à chacun de tes clients qui imprime son
+      devis.</span></div>
+  </div>
+</div>
+
+<script>
+/* Les lignes viennent de SON devis du 23 août — pas d'un exemple inventé. */
+const LIGNES = [
+  ["Taille de haie de laurier (20 ml)", "1", "560,00 €", "560,00 €"],
+  ["Évacuation des déchets verts", "1", "160,00 €", "160,00 €"],
+];
+
+const POLICES = {
+  classique: 'ui-serif,Georgia,"Times New Roman",serif',
+  moderne: 'ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif',
+  etroite: '"Avenir Next Condensed","Helvetica Neue Condensed",'
+    + '"Arial Narrow",ui-sans-serif,sans-serif',
+};
+
+const FONDS = {
+  blanc: { papier: "#ffffff", encre: "#141414" },
+  creme: { papier: "#ece9e1", encre: "#1c1c1a" },
+  gris: { papier: "#e8e8e6", encre: "#17171a" },
+};
+
+const choix = { police: "classique", fond: "creme", accent: "#B98B47", logo: false };
+
+const feuille = document.getElementById("feuille");
+
+function peindre() {
+  const fond = FONDS[choix.fond];
+  feuille.style.background = fond.papier;
+  feuille.style.color = fond.encre;
+  feuille.style.fontFamily = POLICES[choix.police];
+
+  /* **Le logo posé prend la couleur d'accent quand il n'y a pas d'image.**
+     Montrer un carré vide serait montrer un devis qu'il n'enverra jamais ;
+     montrer une image inventée lui ferait croire qu'Atlas en fabrique une. */
+  const marque = choix.logo
+    ? '<div class="marque" style="background:' + choix.accent + ';color:#fff">EN</div>'
+    : "";
+
+  feuille.innerHTML =
+    '<div class="haut">' + marque
+      + '<div><p class="nom">Eden Nature</p>'
+      + '<p class="sous">Paysagiste · 10 rue Denfert-Rochereau, 78200 Mantes-la-Jolie<br>'
+      + "06 79 98 45 14</p></div>"
+      + '<div class="meta">N° 2026-0012<br>23 août 2026<br>Validité 30 jours</div>'
+    + "</div>"
+    + "<h1>Devis</h1>"
+    + '<div class="rule" style="background:' + choix.accent + '"></div>'
+    + '<p class="client"><b>Mme Larousse</b><br>4 allée des Tilleuls, 78200 Mantes-la-Jolie</p>'
+    + "<table><thead><tr><th>Désignation</th><th class=\"n\">Qté</th>"
+      + '<th class="n">P.U. HT</th><th class="n">Total HT</th></tr></thead><tbody>'
+    + LIGNES.map((l) =>
+        "<tr><td>" + l[0] + '</td><td class="n">' + l[1]
+        + '</td><td class="n">' + l[2] + '</td><td class="n">' + l[3] + "</td></tr>"
+      ).join("")
+    + "</tbody></table>"
+    + '<div class="totaux">'
+      + "<div><span>Total HT</span><span>720,00 €</span></div>"
+      + "<div><span>TVA (10 %)</span><span>72,00 €</span></div>"
+      + '<div class="ttc"><span>Total TTC</span><span style="color:' + choix.accent
+      + '">792,00 €</span></div>'
+    + "</div>"
+    + '<p class="pied">Devis établi par Eden Nature, valable 30 jours. Bon pour accord '
+      + "précédé de la mention manuscrite, daté et signé par le client.</p>";
+}
+
+/* Une seule fonction pour les trois rangées de choix : trois écouteurs écrits
+   séparément finiraient par ne plus marquer la sélection de la même façon. */
+function brancher(id, clef) {
+  const hote = document.getElementById(id);
+  for (const bouton of hote.querySelectorAll("button")) {
+    bouton.addEventListener("click", () => {
+      for (const autre of hote.querySelectorAll("button")) {
+        autre.setAttribute("aria-pressed", String(autre === bouton));
+      }
+      choix[clef] = bouton.dataset.valeur;
+      peindre();
+    });
+  }
+}
+
+brancher("choix-police", "police");
+brancher("choix-fond", "fond");
+brancher("choix-accent", "accent");
+
+const caseLogo = document.getElementById("case-logo");
+const basculer = document.getElementById("basculer-logo");
+basculer.addEventListener("click", () => {
+  choix.logo = !choix.logo;
+  caseLogo.className = choix.logo ? "logo-case pose" : "logo-case";
+  caseLogo.innerHTML = choix.logo ? "EN" : "Aucun<br>logo";
+  basculer.textContent = choix.logo ? "Retirer le logo" : "Choisir une image";
+  peindre();
+});
+
+peindre();
+</script>
+</body>
+</html>
