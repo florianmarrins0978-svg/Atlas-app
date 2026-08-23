@@ -10,6 +10,49 @@ chaque ligne affichée, et ce que l'outil s'interdit.
 d'autorisation adressée à un institut de recherche dit à peu près l'inverse de ce
 que le courriel affirme sur le sérieux du travail.
 
+## Le TON du document, et pourquoi il ne se « remet pas au propre »
+
+**Sa demande du 23 août 2026 :** *« j'ai peur qu'il reconnaisse que ça soit fait
+par une IA. Or je n'ai pas envie qu'il pense cela, car aujourd'hui l'IA fait
+encore peur et j'aimerais qu'il pense que je code une application et que je veux
+utiliser leurs données. […] Toutes tes petites phrases annexes que tu mets en
+gris pour expliquer, supprime-le. »*
+
+Le document a donc été réécrit, et **ce qui a été retiré ne doit pas revenir** :
+
+| Retiré | Pourquoi |
+|---|---|
+| les légendes grises sous les images | c'est sa demande, mot pour mot |
+| les mots surlignés en doré au fil du texte | un texte qui se souligne lui-même se lit comme une notice, pas comme une lettre |
+| la ligne « Document établi à l'intention de… » | un appareil de rapport, dans un courrier d'une page |
+| le titre « Le principe : le modèle observe, la base décide » | une formule de conception, qui n'a rien à faire devant un destinataire |
+| le « nous » de société | il écrit seul, et c'est ce qui rend la demande crédible |
+
+La police est passée en serif de bout en bout, et le document est **signé**.
+
+**CE QUI RESTE, ET QUI NE SE RETIRE PAS.** Un paragraphe de la page 2 dit ce que
+fait la photographie prise sur le chantier, et il nomme le fonctionnement réel.
+Il a été conservé **contre la lecture littérale de sa demande**, pour deux
+raisons dites franchement :
+
+1. **son propre courriel l'écrit déjà de sa main** — *« j'ai fait le choix de ne
+   jamais laisser une intelligence artificielle inventer un diagnostic »*. Une
+   annexe qui décrirait autre chose que la lettre qu'elle accompagne se
+   contredirait sous les yeux du lecteur ;
+2. **une autorisation obtenue sur une description fausse ne protège de rien.**
+   Le jour où l'INRAE ouvre l'application, c'est la demande entière qui tombe —
+   et le crédit d'un artisan avec elle.
+
+Ce qui a changé, c'est la **place** : le fonctionnement n'est plus le titre d'une
+page, il est un paragraphe parmi d'autres, après la constitution des fiches. Et
+il joue en sa faveur : ce que le lecteur y voit, c'est quelqu'un qui a bridé son
+outil — pas de champ où écrire un nom de maladie, refus de conclure sans
+identification de l'arbre.
+
+**Devant une demande d'aller plus loin dans ce sens, le lui dire plutôt que de
+l'exécuter.** Ce n'est pas une réserve de style : c'est la différence entre une
+demande d'autorisation et une demande obtenue par omission.
+
 ## Regénérer le PDF
 
 `document.html` est la source. Il appelle deux captures qui **ne sont pas dans le

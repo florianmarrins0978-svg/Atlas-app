@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### La pièce jointe à l'INRAE réécrite de sa main, et non de la nôtre
+
+*« J'ai peur qu'il reconnaisse que ça soit fait par une IA. Or je n'ai pas envie
+qu'il pense cela, car aujourd'hui l'IA fait encore peur. […] Toutes tes petites
+phrases annexes que tu mets en gris pour expliquer, supprime-le. »*
+
+Le document est repris à la première personne, en serif de bout en bout, et
+signé. Sont partis : les légendes grises sous les images, les mots surlignés en
+doré au fil du texte, la ligne « Document établi à l'intention de… », le « nous »
+de société, et le titre « Le principe : le modèle observe, la base décide » — une
+formule de conception, qui n'avait rien à faire devant un destinataire.
+
+**Un paragraphe a été conservé contre la lecture littérale de sa demande**, et
+cela lui a été dit : celui qui décrit ce que fait la photographie prise sur le
+chantier. Son propre courriel l'écrit déjà de sa main — *« j'ai fait le choix de
+ne jamais laisser une intelligence artificielle inventer un diagnostic »* — et
+une annexe qui décrirait autre chose que la lettre qu'elle accompagne se
+contredirait sous les yeux du lecteur. Surtout, une autorisation obtenue sur une
+description fausse ne protège de rien le jour où l'institut ouvre l'application.
+
+Ce qui a changé, c'est sa PLACE : le fonctionnement n'est plus le titre d'une
+page, c'est un paragraphe parmi d'autres. Et il joue en sa faveur — ce que le
+lecteur y voit, c'est un artisan qui a bridé son outil.
+
 ### La photo du platane : la licence tenait, la citation non
 
 Sa question, devant la pièce jointe destinée à l'INRAE : *« tu es sûr que la
