@@ -9,6 +9,32 @@ sert.
 
 ---
 
+## PRÉVENIR N'EST PAS REFUSER — et « proposée » n'est pas « forcée »
+
+Posé le 23 août 2026. **Deux de ses règles se ressemblent et disent le
+contraire ; ce qui les sépare est la délibération.**
+
+| Sa phrase | Ce qu'elle exige |
+|---|---|
+| 22 août — *« je peux proposer le 24 alors qu'un client a validé le 24, ça ne doit jamais se reproduire »* | l'application ne suggère **jamais** d'elle-même un jour plein |
+| 23 août — *« s'il juge qu'il peut rajouter un chantier, il doit pouvoir le faire quand même »* | il peut **forcer** un jour plein, en le voyant écrit « complet » |
+
+Les deux tiennent ensemble parce que `premiersJoursLibres` ne suggère aucun jour
+plein, tandis que `verifierJourPropose` **prévient sans refuser**.
+
+**Le piège, et il a été payé :** à la réponse du client, « la date figure dans
+l'envoi » ne suffit PAS à l'autoriser. Un jour proposé alors qu'il était LIBRE,
+puis rempli entre-temps, passerait sans que personne n'ait rien décidé — le
+double chantier du 22 août, dans sa version course. Seule `envois_devis.
+dates_forcees` (migration 0059) distingue les deux : c'est la photographie,
+prise à l'envoi, de ce qui était déjà plein. Elle se calcule **au serveur** ;
+reçue de l'écran, elle serait un moyen de forcer n'importe quel jour.
+
+**Ce qui reste refusé partout**, parce que ce n'est pas un jugement d'artisan :
+une date passée, ou au-delà de dix-huit mois.
+
+---
+
 ## UNE RÉFÉRENCE, OU RIEN — et le sûr, c'est MOINS d'arroseurs par vanne
 
 **Deux consignes du 22 août 2026 au soir, toutes deux à ne jamais rouvrir.**

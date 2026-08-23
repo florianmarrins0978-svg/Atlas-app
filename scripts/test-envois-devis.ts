@@ -120,16 +120,36 @@ async function main() {
   });
 
   // ---- Création de l'envoi
-  await test("le patron ne peut pas proposer un jour déjà occupé", async () => {
+  //
+  // **Ce contrôle a été RETOURNÉ le 23 août 2026, sur sa règle :** *« si
+  // l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le
+  // faire quand même ; nous on a mis un message disant que c'est complet »*.
+  // Il réclamait le refus qu'il fait retirer ; le remettre rendrait son écran
+  // impossible à changer (`CLAUDE.md` §5 bis).
+  await test("le patron PEUT proposer un jour déjà occupé, en le sachant", async () => {
     const { ctx, chantierId, devisId } = await contexteAvecDevis(`occupe-${Date.now()}@t.test`);
     const autre = await chantiersRepo.creerChantier(ctx, { nom: "Chantier déjà calé" });
     await chantiersRepo.planifierChantier(ctx, autre.id, dans(10));
 
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "devis" },
+      MAINTENANT
+    );
+    assert.deepStrictEqual(envoi.datesProposees, [dans(10)], "sa date n'a pas été retenue");
+  });
+
+  // **Ce qui reste refusé, et ce n'est PAS un jugement d'artisan.** Une date
+  // passée ou au-delà de dix-huit mois n'est pas un arbitrage : la fenêtre
+  // garde donc ses bornes. Sans ce contrôle, le retournement ci-dessus aurait
+  // tout ouvert d'un coup, et personne ne s'en serait aperçu.
+  await test("mais jamais une date hors de sa fenêtre", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`fenetre-${Date.now()}@t.test`);
     await assert.rejects(
       () =>
         creerEnvoi(
           ctx,
-          { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "devis" },
+          { chantierId, devisId, canal: "sms", datesProposees: [dans(-30)], contenuDevis: "devis" },
           MAINTENANT
         ),
       (err: unknown) => err instanceof DatesProposeesInvalidesError

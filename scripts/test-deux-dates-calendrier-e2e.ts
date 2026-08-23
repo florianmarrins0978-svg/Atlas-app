@@ -65,7 +65,7 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.getByText("Choisir la date", { exact: false }).first().click();
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
   await page.waitForTimeout(600);
 
   // **On part d'une ardoise vide.** Le premier jour libre est pré-coché, et son
@@ -82,7 +82,6 @@ async function main() {
     "La sélection n'a pas pu être vidée : la suite mesurerait autre chose que son geste."
   );
 
-  /** Les jours du calendrier réellement choisissables, dans l'ordre du mois. */
   /**
    * Les journées qu'on peut aller REGARDER.
    *

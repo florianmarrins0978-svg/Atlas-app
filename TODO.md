@@ -9,6 +9,50 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — une note sur la feuille de chantier (23 août 2026)
+
+Sa demande : *« entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un
+petit encadré où l'utilisateur peut marquer quelque chose — penser à prendre le
+broyeur, client plus disponible à partir de neuf heures »*.
+
+**Rien de tel n'existe**, vérifié plutôt que supposé (`CLAUDE.md` §5 ter) : la
+table `chantiers` n'a aucun champ libre, `notes_vocales` porte la dictée, et le
+`note` du schéma appartient aux paiements.
+
+Planche 93, `appli/note-feuille-chantier.html` : **A** le cadre toujours ouvert
+(141 px à vide sur chaque feuille), **B** une ligne discrète qui s'ouvre au doigt
+(45 px).
+
+**La seconde question décide de l'implémentation**, et il ne l'a pas soulevée :
+la note va-t-elle sur le **PDF sans les prix** — celui que ses gars emportent —
+ou reste-t-elle dans l'application ? Sur le PDF, elle devient un document qui
+sort de l'entreprise et se relit sur un chantier ; dedans seulement, elle reste
+un pense-bête.
+
+**Ce qu'il faudra, si c'est retenu :** une colonne sur `chantiers`, une action
+serveur, et l'enregistrement à la sortie du cadre — un bouton non touché
+perdrait la note d'un homme qui range son téléphone et démarre. Le champ à
+**16 px** au moins, sous quoi iOS zoome et fait sauter l'écran.
+
+---
+
+## ~~L'anneau doré d'aujourd'hui~~ — **TRANCHÉ le 23 août 2026 : on garde**
+
+Sa remarque : *« je ne comprends pas pourquoi le vingt-deux reste sélectionné,
+ce n'est pas très clair ; ça doit être un bug, je pense »*. Puis, la planche 92
+vue : *« ah, je n'avais pas compris que c'était le jour qu'on est. Peut-être le
+laisser. »*
+
+**Rien à coder.** Ce n'était pas un défaut d'affichage mais un code qu'il n'avait
+pas appris ; une fois le sens connu, l'anneau ne le gêne plus.
+
+**Ce qu'il faut en retenir, et qui vaut au-delà de ce cas :** le premier réflexe
+a été de vouloir corriger l'écran. La vraie question était *« sait-il ce que ce
+signe veut dire ? »* — et la planche a servi à le lui apprendre, pas à changer
+le produit. **Ne pas rouvrir** sans qu'il le redemande.
+
+La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
+chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
 ## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
 
 Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
@@ -61,6 +105,35 @@ l'écran sans attendre la trace de son enregistrement.
 différentes ont mené la même enquête le même jour, chacune de son côté. La
 prochaine batterie rouge sur l'une de ces trois suites se joue **seule** avant
 toute autre hypothèse.
+
+## ⚠ EN ATTENTE DE SA RÉPONSE — le temps passé, montré ou non (22 août 2026)
+
+Sa demande, capture de la fiche d'entretien à l'appui : *« il faudrait mettre un
+petit bouton on/off pour si l'utilisateur ne veut pas que le temps apparaisse
+sur la fiche, pouvoir l'effacer — on, le temps apparaîtrait sur la fiche ; off,
+il n'apparaîtrait pas »*.
+
+**Planche 92 : `appli/temps-sur-la-fiche.html`. RIEN N'EST CODÉ** (`CLAUDE.md`
+§3 bis). Elle montre les deux côtés à la fois — sa fiche et le compte rendu de
+la cliente, qui se recompose sous le doigt.
+
+**Deux questions attendent sa réponse, et la suite en dépend :**
+
+| | |
+|---|---|
+| **Le réglage de départ** | La planche s'ouvre sur **Visible**, ce que l'application fait aujourd'hui (le temps s'affiche toujours). S'il préfère que chaque fiche parte **Masquée**, c'est une valeur par défaut à changer |
+| **Masquer ou ne rien saisir ?** | La planche masque et **garde la durée enregistrée** pour lui. S'il voulait pouvoir ne rien saisir du tout, c'est autre chose : `minutes` deviendrait nullable au sens fort, et la molette elle-même devrait pouvoir revenir à « — » |
+
+**Ce que coder demandera, quand il aura répondu** — écrit ici pour que la
+prochaine session ne le redécouvre pas :
+
+· une colonne sur `passages_entretien` (`temps_visible`, défaut à décider) et
+  sa migration ;
+· `majPassageAction` la pose, comme `minutes` et `observations` ;
+· `lireRapportParJeton` la rend, et `src/app/entretien/[jeton]/page.tsx`
+  n'affiche le paragraphe que si elle est vraie **et** `minutes !== null` — la
+  règle vit côté serveur, jamais dans le HTML du client ;
+· l'interrupteur se fige avec le reste quand `envoyeLe !== null`.
 
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 

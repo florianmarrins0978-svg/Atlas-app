@@ -50,17 +50,15 @@ export default function JourneeRegardee({
   onRetenir: () => void;
   dejaRetenu: boolean;
 }) {
-  const weekEnd = [0, 6].includes(new Date(`${jour}T12:00:00Z`).getUTCDay());
-
-  if (weekEnd) {
-    return (
-      <Cadre jour={jour}>
-        <p className="m-0 text-center text-[13px]" style={{ color: colors.muted }}>
-          Jamais proposé.
-        </p>
-      </Cadre>
-    );
-  }
+  // **Un samedi se regarde et se propose comme un mardi.** Sa règle du 23 août
+  // 2026 : *« s'il a des salariés qui font des extras, il doit pouvoir
+  // sélectionner ces deux jours »*. Cette fiche répondait « Jamais proposé. »
+  // et s'arrêtait là — alors que `jourRetenable` accepte le week-end depuis
+  // toujours. C'était l'écran qui interdisait ce que la règle permettait.
+  //
+  // L'avertissement demeure, et il suffit : `verifierJourPropose` rend
+  // « C'est un week-end — vous pouvez le proposer, mais vérifiez que c'est
+  // voulu », qui s'affiche juste sous ce bloc.
 
   // Un chantier occupe souvent les deux demi-journées : on le nomme une fois.
   const parNom: { chantier: ChantierPlanning; demies: Demi[] }[] = [];
@@ -143,7 +141,23 @@ export default function JourneeRegardee({
       >
         <span
           className="flex-1 text-[13px] leading-snug"
-          style={{ color: verdict && !verdict.retenable ? colors.bordeaux : colors.inkSoft }}
+          // **Un avertissement se VOIT, sinon ce n'est pas un avertissement.**
+          //
+          // Depuis sa règle du 23 août 2026 — *« si l'utilisateur juge qu'il
+          // peut rajouter un chantier, il doit pouvoir le faire quand même »* —
+          // un jour plein rend `retenable: true` : il est signalé, plus refusé.
+          // La couleur, elle, ne regardait que `retenable` : « ce jour est
+          // complet » passait donc en gris doux, la teinte des notes de bas de
+          // page, sur la seule phrase qu'il ne faut pas manquer avant d'envoyer.
+          //
+          // Le gris reste pour ce qui ne l'engage à rien — « il reste de la
+          // place », la remarque du week-end.
+          style={{
+            color:
+              verdict && (!verdict.retenable || /complet/i.test(verdict.raison ?? ""))
+                ? colors.bordeaux
+                : colors.inkSoft,
+          }}
         >
           {!verdict
             ? "Vérification de votre planning…"

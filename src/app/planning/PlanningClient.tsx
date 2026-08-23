@@ -17,7 +17,6 @@ import {
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import {
   jourLisibleCourt,
-  estWeekEndIso,
   MOIS_LONGS,
 } from "@/lib/mois";
 import {
@@ -29,6 +28,7 @@ import {
   etatDemi,
   MOT_DEMI,
   MOT_QUAND,
+  quandDuChantier,
   occupationDemi,
   type Demi,
   type EtatDemi,
@@ -250,7 +250,9 @@ export default function PlanningClient({
 
   const occupationDe = useCallback(
     (jour: JourIso, demi: Demi) => {
-      if (estWeekEndIso(jour)) return occupationDemi<ChantierPlanning>([], nombreEquipes, 0);
+      // **Le week-end porte sa charge comme les autres.** Sa règle du 23 août
+      // 2026 : il y travaille en extra, et un samedi chargé qui s'affiche vide
+      // lui ferait poser un second chantier par-dessus.
       const cle = cleCreneau({ jour, moment: demi });
       return occupationDemi(
         parCreneau.get(cle) ?? [],
@@ -389,7 +391,18 @@ export default function PlanningClient({
     setOuvert(null);
     enTransition(async () => {
       const r = await deplacerChantierAction(chantierId, quand);
-      if (!r.succes) return;
+      if (!r.succes) {
+        // **Un refus avalé est un défaut muet**, et le dépôt l'a déjà payé le
+        // 11 août 2026 : « Impossible d'enregistrer la note » sans que personne
+        // puisse savoir laquelle des quatre causes s'appliquait. Ici le `return`
+        // seul rendait « Déplacer » indistinguable d'un bouton mort — c'est
+        // précisément ce qu'il a signalé le 23 août.
+        //
+        // Journalisé plutôt que levé : le message d'une exception d'action
+        // serveur n'arrive jamais jusqu'à lui (`AGENTS.md`).
+        console.error("Déplacement refusé", { chantierId, quand, erreur: r.erreur });
+        return;
+      }
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
       );
@@ -765,7 +778,11 @@ export default function PlanningClient({
               className="mx-[18px] mt-2 text-center text-[12.5px]"
               style={{ color: colors.muted }}
             >
-              {jourTouche && !estWeekEndIso(jourTouche)
+              {/* **Un samedi touché est un jour comme un autre** — sa règle
+                  du 23 août 2026. La condition écartait le week-end : il
+                  touchait son samedi, et l'écran continuait de lui dire de
+                  toucher un jour. */}
+              {jourTouche
                 ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
                 : "Touchez d’abord un jour du calendrier"}
             </p>
@@ -790,7 +807,7 @@ export default function PlanningClient({
                     >
                       {c.nom}
                     </span>
-                    {jourTouche && !estWeekEndIso(jourTouche) ? (
+                    {jourTouche ? (
                       <span className="flex flex-shrink-0 gap-[5px]">
                         {(
                           [
@@ -1211,30 +1228,27 @@ function CarteDuJour({
 } & GestesCarte) {
   const feuilleIci = feuille && feuille.cle === cle ? feuille.chantierId : null;
 
-  if (estWeekEndIso(jour)) {
-    return (
-      <div
-        data-atlas="carte-jour"
-        data-jour={jour}
-        className="mx-[18px] mt-4 rounded-[10px] px-[15px] py-[14px]"
-        style={{ background: colors.card }}
-      >
-        <p
-          className="mb-3.5 text-center text-[12.5px] font-bold uppercase leading-none"
-          style={{ letterSpacing: "0.14em", color: colors.ink }}
-        >
-          {jourLisibleCourt(jour)}
-        </p>
-        <p className="m-0 text-center text-[13px]" style={{ color: colors.muted }}>
-          Jamais proposé.
-        </p>
-      </div>
-    );
-  }
+  // **LE WEEK-END EST UNE JOURNÉE COMME UNE AUTRE.**
+  //
+  // *Sa règle du 23 août 2026 :* « le samedi et le dimanche, l'utilisateur doit
+  // pouvoir le proposer ; s'il a des salariés qui font des extras, il doit
+  // pouvoir sélectionner ces deux jours ».
+  //
+  // La fiche répondait « Jamais proposé. » et n'offrait aucun geste : un
+  // cul-de-sac, sur un jour où il travaille pour de bon. Le serveur, lui, ne
+  // l'a jamais refusé — `jourRetenable` accepte le samedi depuis toujours, et
+  // c'est écrit noir sur blanc dans `disponibilites.ts`. C'était donc l'ÉCRAN
+  // qui interdisait ce que la règle permettait.
+  //
+  // **Ce qui ne change pas :** le week-end n'est toujours pas SUGGÉRÉ parmi les
+  // six premiers jours (`premiersJoursLibres`). Pouvoir le choisir n'est pas se
+  // le voir proposer d'office — proposer un dimanche à un particulier n'est
+  // presque jamais ce qu'il veut.
 
   const duJour = chantiersDuJour(jour);
   const occupe = (c: ChantierPlanning, demi: Demi) =>
     occupationDe(jour, demi).pris.some((x) => x.id === c.id);
+
   // **Le chantier déplié, et ce qui reste libre — dans cet ordre.** Sa
   // correction du 22 août 2026 : *« l'après-midi de libre passe sous la feuille
   // de chantier, or il doit rester en dessous du matin même s'il est libre ;
@@ -1400,17 +1414,30 @@ function CarteDuJour({
                       // rotation qui déciderait à sa place. C'est la règle qu'il
                       // a posée pour l'équipe, et elle vaut partout.
                       <Choisir>
-                        {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
-                          <Petit
-                            key={v}
-                            serre
-                            data-vers={v}
-                            retenue={quandDuChantier(c) === v}
-                            onClick={() => deplacer(c.id, v)}
-                          >
-                            {MOT_QUAND[v]}
-                          </Petit>
-                        ))}
+                        {/* **« Journée » disparaît au-delà d'une journée.**
+                            Sur un chantier de trois jours, elle écrit le même
+                            état que « Matin » — le départ, la durée étant
+                            protégée — et l'une des deux ne faisait donc rien.
+                            Un bouton qui n'écrit rien se retire ; le laisser en
+                            expliquant serait pire, puisqu'il faut le lire pour
+                            savoir de ne pas l'employer. */}
+                        {(Object.keys(MOT_QUAND) as QuandChantier[])
+                          .filter(
+                            (v) =>
+                              v !== "journee" ||
+                              (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
+                          )
+                          .map((v) => (
+                            <Petit
+                              key={v}
+                              serre
+                              data-vers={v}
+                              retenue={quandDuChantier(c) === v}
+                              onClick={() => deplacer(c.id, v)}
+                            >
+                              {MOT_QUAND[v]}
+                            </Petit>
+                          ))}
                       </Choisir>
                     ) : (
                       <>
@@ -1454,13 +1481,6 @@ function CarteDuJour({
       )}
     </>
   );
-}
-
-/** Comment ce chantier se lit dans les trois boutons de « Déplacer ». */
-function quandDuChantier(c: ChantierPlanning): QuandChantier {
-  const duree = c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
-  if (duree >= 2) return "journee";
-  return c.creneauDebut === "apres_midi" ? "apres" : "matin";
 }
 
 /**

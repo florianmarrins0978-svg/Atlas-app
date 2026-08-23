@@ -7,7 +7,129 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-23
+
+### « Déplacer » offrait des boutons qui n'écrivaient rien
+
+*« Cliquer sur Déplacer ne déplace pas le chantier, ça ne fait rien du tout. »*
+
+**Et c'était vrai, sur un chantier de plus d'une journée.** `departEtDuree`
+protège la durée d'un chantier long — la raccourcir lui ferait perdre des jours
+de travail en silence —, si bien que « Matin » et « Journée » y écrivent le
+**même** état : le départ. Or `quandDuChantier` rendait « journee » dès deux
+demi-journées : la pastille se posait sur « Journée », et « Matin » restait
+éteint **tout en n'écrivant rien**. Deux boutons sur trois, morts.
+
+Au-delà d'une journée, ce qu'il choisit est donc le **départ**, et l'écran le
+dit : « Journée » disparaît, la pastille tombe sur « Matin » ou « Après-midi ».
+Un bouton qui n'écrit rien se retire — le laisser en l'expliquant serait pire,
+puisqu'il faudrait le lire pour savoir de ne pas s'en servir.
+
+**Le contrôle qui tient ça ne vérifie pas un libellé mais une propriété :** pour
+chaque durée, aucun bouton offert n'écrit l'état déjà en place. Il survivra au
+prochain remaniement des mots, et il a été vu rouge contre l'ancienne règle.
+
+**`quandDuChantier` a quitté l'écran pour `src/lib/`** : c'est une règle, pas un
+dessin, et enfermée dans un composant elle ne s'éprouvait qu'au navigateur
+(`CLAUDE.md` §3). Son défaut a d'ailleurs survécu tout ce temps pour cette
+raison.
+
+**Et le refus est devenu bavard.** `if (!r.succes) return;` avalait toute erreur
+du serveur : « Déplacer » était alors indistinguable d'un bouton mort. C'est le
+piège du 11 août 2026 — *« Impossible d'enregistrer la note »* sans que personne
+puisse savoir laquelle des quatre causes s'appliquait. Journalisé plutôt que
+levé : le message d'une exception d'action serveur n'arrive jamais jusqu'à lui.
+
+---
+
+### Un jour plein se PRÉVIENT, il ne se refuse plus — et « trop tôt » disparaît
+
+*« Si l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le
+faire quand même. Nous on a mis un message disant que c'est complet. D'ailleurs
+"trop tôt" veut rien dire, on comprend pas bien, faut changer ça. »*
+
+**Le message.** « Trop tôt : proposez au moins après-demain, sinon vous vous
+mettez en défaut » énonçait la règle au lieu de dire quoi faire, obligeait à
+compter dans sa tête devant un calendrier qui affiche les dates, et le mettait
+en tort pour un appui. Il **nomme** désormais le premier jour possible, et
+l'offre d'un geste.
+
+**Le refus.** Un jour plein bloquait l'envoi. C'est sa décision du 21 août,
+appliquée là où elle manquait : *« il ne doit pas y avoir de limite d'ajout de
+chantier par jour [...] nous, on prévient juste »*. Lui seul sait qu'une taille
+de haie prend une heure.
+
+**Et c'est ici que ses DEUX règles ont failli se contredire.** Le 22 août :
+*« je peux proposer le 24 alors qu'un client a validé le 24 — ça ne doit jamais
+se reproduire »*. Le 23 : *« il doit pouvoir le faire quand même »*. Ce qui les
+sépare est la **délibération**, et rien d'autre :
+
+| | |
+|---|---|
+| il force un jour écrit « complet » | sa décision — son client peut prendre la date |
+| il propose un jour **libre** qui se remplit après | il n'a rien décidé — le client choisit ailleurs |
+
+**Ces deux cas étaient indiscernables à la lecture du lien**, et le contrôle du
+22 août l'a montré en rougissant : une date simplement « proposée » laissait
+passer le second cas, c'est-à-dire le double chantier dans sa version course.
+D'où la colonne `dates_forcees` (migration 0059) — la photographie, prise à
+l'envoi, de ce qui était déjà plein ce jour-là. **Calculée au serveur**, jamais
+reçue de l'écran : venue du navigateur, elle serait un moyen de forcer
+n'importe quelle date.
+
+**Ce qui reste refusé** : une date passée, ou au-delà de dix-huit mois. Ce ne
+sont pas des arbitrages d'artisan. Un contrôle le fixe, sans quoi le
+retournement aurait tout ouvert d'un coup.
+
+**Et l'avertissement se voit.** Il s'affichait en gris discret — la couleur des
+notes de bas de page —, or c'est le mot « complet » qu'il ne faut pas manquer
+avant d'envoyer. Le gris ne reste que pour la remarque du week-end, qui
+n'engage à rien.
+
+**Deux contrôles retournés, jamais le libellé remis** (`CLAUDE.md` §5 bis) :
+ceux qui réclamaient le refus vérifient désormais l'avertissement et la
+possibilité de passer outre.
+
+---
+
 ## 2026-08-22
+
+### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
+
+**Sa demande, capture de la fiche d'entretien à l'appui :** *« il faudrait
+mettre un petit bouton on/off pour si l'utilisateur ne veut pas que le temps
+apparaisse sur la fiche, pouvoir l'effacer — on, le temps apparaîtrait sur la
+fiche ; off, il n'apparaîtrait pas »*.
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis : une demande de geste se dessine
+avant de toucher `src/`, et « c'est tout petit » n'est pas une exception).
+La planche est à `appli/temps-sur-la-fiche.html`, n° 92.
+
+**Ce qu'elle tranche, et qui n'allait pas de soi :**
+
+· **« Effacer » ne veut pas dire OUBLIER.** La durée reste enregistrée sur le
+  passage — elle sert au patron, pas seulement au client —, et seul le compte
+  rendu l'ignore. Une phrase le dit sous la molette quand c'est éteint : sans
+  elle, il croit avoir perdu sa durée et la ressaisit au passage suivant.
+· **L'état se lit en toutes lettres**, « Visible » / « Masqué ». Un curseur nu
+  se décode ; cet écran se regarde avec un gant, entre deux chantiers.
+· **La ligne du client DISPARAÎT**, elle ne se grise pas : c'est ce que le
+  compte rendu fera pour de bon (`src/app/entretien/[jeton]/page.tsx` ne rend
+  ce paragraphe que si `rapport.minutes !== null`).
+· **Les deux côtés se voient à la fois** — sa fiche, et ce que sa cliente
+  reçoit. C'est le seul moyen de répondre à ce qu'il demande vraiment :
+  « qu'est-ce que mon client voit ? ». Une capture ne le dirait pas.
+
+**Deux questions lui sont posées sur la planche**, et la suite en dépend : le
+réglage de départ (elle s'ouvre sur « Visible », ce que l'application fait
+aujourd'hui) et le cas où il voudrait **ne rien saisir du tout**, qui serait
+autre chose qu'un masquage.
+
+Le contrôle (`scripts/verifier-maquette-temps-sur-la-fiche.mjs`, branché sur
+`npm run verifier:maquette`) **a été vu rougir** contre les trois états dégradés
+qu'il prétend attraper : une ligne cachée par une simple opacité — donc encore
+lue et encore à sa place —, la phrase « reste enregistré » supprimée, et un
+interrupteur qui survivait à l'envoi.
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 
