@@ -13309,3 +13309,72 @@ accuse à tort coûte plus cher que pas de contrôle du tout (`AGENTS.md`). D'o�
 repère `data-atlas="encadre-tva"`, et une mesure d'encadré à encadré — largeur et
 bord gauche compris, car deux marges différentes feraient un décrochement visible
 que rien d'autre ne dirait.
+
+## §150. Le pense-bête de la feuille de chantier
+
+**Sa demande du 23 août 2026 :** *« entre "Copier l'adresse" et "Ouvrir le PDF",
+j'aimerais avoir un petit encadré où l'utilisateur peut marquer quelque chose —
+penser à prendre le broyeur, client plus disponible à partir de neuf heures »*.
+
+Rien de tel n'existait, **vérifié plutôt que supposé** (`CLAUDE.md` §5 ter) :
+`notes_vocales` porte la dictée que l'IA relit pour en tirer un devis — y verser
+un pense-bête ferait chiffrer « prendre le broyeur » —, et le `note` du schéma
+appartient aux paiements. D'où la colonne `chantiers.note_feuille`
+(migration 0060).
+
+### Ses deux décisions, et ce qu'elles ferment
+
+- **La forme : proposition A** (planche 93). Le cadre est ouvert en permanence.
+  Il occupe la place même vide, sur chaque feuille : c'est le prix qu'il a
+  choisi de payer contre un geste de moins.
+- **La note ne part sur AUCUN document** — ni devis, ni facture, ni PDF sans les
+  prix. Sur le PDF que ses gars emportent, elle serait devenue un écrit qui sort
+  de l'entreprise et se relit sur un chantier ; « client pas disponible avant
+  neuf heures » se serait alors rédigé en sachant que le client peut le lire.
+  **C'est cette promesse qui l'autorise à écrire librement**, et c'est pourquoi
+  une suite la tient.
+
+### Trois choix d'écran qui ne se défont pas sans raison
+
+1. **Enregistré en SORTANT du cadre, jamais par un bouton.** Il range son
+   téléphone et démarre : un bouton non touché perdrait la note, et il ne s'en
+   apercevrait que sur le chantier suivant.
+2. **Le champ est à 16 px au moins**, en dur et non par une classe. En dessous,
+   iOS zoome à la mise au point et la feuille saute sous le doigt au moment
+   précis où il commence à écrire. C'est une contrainte du système, pas un choix
+   de charte, et elle ne doit pas se perdre dans un remaniement des tailles.
+3. **Le refus se rend en valeur, jamais en exception** (`AGENTS.md`) : le message
+   d'une exception levée par une action serveur n'arriverait pas jusqu'à lui.
+
+### Le défaut que la suite a trouvé, et qui ne se voyait pas à l'œil
+
+**La note arrive APRÈS que le cadre soit à l'écran.** La feuille se charge d'un
+appui : le composant est monté avec `note = null`, et le texte tombe une fraction
+de seconde plus tard. `useState` ne retenant que sa valeur initiale, le cadre
+restait vide — la note était bien en base, et il ne l'aurait jamais revue.
+
+**À l'écran, rien ne se voyait** : un cadre vide sur un chantier sans note est
+exactement ce qu'on attend. Seul un aller-retour complet — écrire, recharger,
+relire — pouvait le montrer.
+
+L'effet qui répare ne pose la note lue que sur un cadre **intact** : le cadre
+étant ouvert d'emblée, il peut taper avant que le serveur n'ait répondu, et
+écraser ce qu'il vient d'écrire serait pire que le défaut corrigé.
+
+### Deux fois où le contrôle du PDF ne pouvait PAS échouer
+
+La promesse « elle ne part sur aucun document » ne vaut que si quelque chose la
+vérifie. Les deux premières versions de cette vérification étaient **vertes en
+confrontation avec une note délibérément versée dans le PDF** :
+
+1. elle cherchait les mots dans les **octets bruts** — or le texte d'un PDF est
+   comprimé, et rien n'y est jamais trouvé ;
+2. décomprimés, les flux écrivent le texte en **hexadécimal**
+   (`<4174656C696572> Tj`) — chercher des mots en clair n'y trouvait toujours
+   rien.
+
+D'où la mesure qui garde les deux : **le contrôle prouve d'abord qu'il sait lire
+ce PDF** en y retrouvant une ligne du devis. Sans elle, il aurait continué à
+promettre le silence d'un document qu'il ne savait pas ouvrir — la faute exacte
+de `CLAUDE.md` §5 : *un contrôle qui mesure zéro ne mesure rien, et il est pire
+qu'absent.*

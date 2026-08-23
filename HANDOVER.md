@@ -1718,6 +1718,34 @@ reviendra à la prochaine page supprimée.
 
 ## Ce qui vient d'être terminé
 
+**LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier
+l'adresse" et "Ouvrir le PDF", un petit encadré où marquer quelque chose. »*
+Proposition A retenue : cadre ouvert en permanence
+(`ARCHITECTURE.md` §150, migration 0060).
+
+**Trois choses à ne pas défaire :**
+
+1. **Elle ne part sur AUCUN document** — sa décision. Ni devis, ni facture, ni
+   PDF sans les prix. C'est cette promesse qui l'autorise à y écrire ce qu'il ne
+   dirait pas devant le client, et `test-note-feuille-e2e` la tient.
+2. **Enregistré en sortant du cadre**, jamais par un bouton.
+3. **Le champ à 16 px en dur** : en dessous, iOS zoome et l'écran saute sous son
+   doigt. Contrainte du système, pas choix de charte.
+
+**⚠ LE PIÈGE, ET IL A ÉTÉ PAYÉ :** la note arrive APRÈS que le cadre soit à
+l'écran, et `useState` ne retient que sa valeur initiale — le cadre restait vide
+alors que la note était en base. **Rien ne se voyait à l'œil** : un cadre vide
+sur un chantier sans note est ce qu'on attend. L'effet qui répare ne pose la note
+lue que sur un cadre INTACT (`touche.current`) : le cadre étant ouvert d'emblée,
+il peut taper avant la réponse du serveur.
+
+**⚠ ET LE LECTEUR DE PDF DE LA SUITE, deux fois faux avant d'être juste :** le
+texte d'un PDF est comprimé, puis écrit en hexadécimal. Chercher des mots en
+clair y trouve toujours zéro — donc toujours vert. Le contrôle prouve maintenant
+d'abord qu'il sait lire ce PDF, en y retrouvant une ligne du devis. **Ne pas
+retirer cette vérification préalable** en croyant simplifier.
+
+
 **LA TVA SE LIT EN TÊTE, LES GESTES TOUCHENT LEUR CHIFFRE (23 août).** Ses deux
 remarques : *« l'outil Ma TVA à déclarer, il est caché »* et *« on ne comprend
 pas trop que scanner ou écrire à la main, c'est pour la TVA déductible »*. Deux

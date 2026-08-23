@@ -9,6 +9,49 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Un pense-bête sur la feuille de chantier
+
+*« Entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un petit
+encadré où l'utilisateur peut marquer quelque chose — penser à prendre le
+broyeur, client plus disponible à partir de neuf heures. »*
+
+Rien de tel n'existait. Le cadre est là, **ouvert en permanence** (sa
+proposition A sur la planche 93), à l'endroit qu'il a nommé. Il s'enregistre
+**en sortant du cadre**, jamais par un bouton : il range son téléphone et
+démarre, et un bouton non touché perdrait la note.
+
+**La note ne part sur AUCUN document** — sa seconde décision, celle qui
+commandait l'implémentation. Ni devis, ni facture, ni PDF sans les prix. Sur le
+papier que ses gars emportent, elle serait devenue un écrit qui sort de
+l'entreprise : « client pas disponible avant neuf heures » se serait alors rédigé
+en sachant que le client peut le lire. C'est cette promesse qui l'autorise à
+écrire librement, et une suite la tient.
+
+**Le défaut que la suite a trouvé ne se voyait pas à l'œil :** la note arrivait
+après que le cadre soit à l'écran, et le cadre gardait sa valeur initiale — vide.
+Elle était bien en base ; il ne l'aurait jamais revue. À l'écran, un cadre vide
+sur un chantier sans note est exactement ce qu'on attend.
+
+**Et deux fois, le contrôle du PDF ne pouvait pas échouer.** Il cherchait les
+mots dans les octets bruts d'un fichier comprimé, puis en clair dans un flux qui
+écrit son texte en hexadécimal : dans les deux cas, vert en confrontation avec
+une note délibérément versée dans le document. Il prouve désormais d'abord qu'il
+sait LIRE ce PDF. Détail dans `ARCHITECTURE.md` §150.
+
+### Deux réparations sur le lot précédent
+
+La carte « Ma TVA à déclarer » gardait un coin à 12 px, contre sa règle du
+12 août — même forme partout. Elle passe aux 4 px des plages : une capsule sur
+une carte pleine largeur serait le galet que la charte refuse. Le contrôle porte
+une exception **bornée à cette carte**, et tout autre bouton carré du même écran
+le fait toujours rougir.
+
+Et `test-envoyer-la-facture-e2e` visait mot pour mot « Une date, ou deux au choix
+du client ? » — une phrase qu'il a fait changer le 23 août même. La suite mourait
+sur du code juste, pour une demande exaucée : c'est `CLAUDE.md` §5 bis, et le
+repère posé par l'autre session existait exactement pour ça.
+
+
 ### La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
 
 *« Je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le voit pas

@@ -84,7 +84,7 @@ export default async function TerminesPage() {
         <Link
           href="/termines/tva"
           data-atlas="carte-tva"
-          className="mx-[26px] mt-4 flex items-center justify-between gap-3 rounded-[12px] px-[15px] py-[13px]"
+          className="mx-[26px] mt-4 flex items-center justify-between gap-3 rounded-[4px] px-[15px] py-[13px]"
           style={{ backgroundColor: colors.card }}
         >
           <span className="min-w-0">

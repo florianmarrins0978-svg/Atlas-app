@@ -499,6 +499,21 @@ export const chantiers = pgTable(
      * sans qu'on perde rien — et l'invariant comptable reste entier.
      */
     rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
+    /**
+     * Le pense-bête de la feuille de chantier — « prendre le broyeur »,
+     * « client pas dispo avant 9 h ».
+     *
+     * **Distincte de `notesVocales`, et ce n'est pas un doublon** : celle-là est
+     * la dictée que l'IA relit pour en tirer un devis. Y verser un pense-bête
+     * ferait chiffrer « prendre le broyeur ».
+     *
+     * **Elle ne sort de l'entreprise sur AUCUN document** — son choix du 23 août
+     * 2026, posé devant la planche 93 : ni devis, ni facture, ni PDF sans les
+     * prix. Sur le PDF que ses gars emportent, elle serait devenue un écrit qui
+     * se relit sur un chantier, et « client pas dispo avant 9 h » se serait
+     * rédigé en sachant que le client peut le lire.
+     */
+    noteFeuille: text("note_feuille"),
     tailleEquipe: text("taille_equipe"),
     // **Qui tient ce chantier vit dans `equipesDuChantier`, plus ici.** La
     // colonne `equipe_id` portait UNE équipe, pour le chantier entier ; il en

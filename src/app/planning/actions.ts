@@ -12,7 +12,12 @@ import {
 import type { Moment } from "@/server/disponibilites";
 import type { QuandChantier } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
-import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
+import {
+  tachesDuChantier,
+  enregistrerNoteFeuille,
+  type FeuilleDuChantier,
+  type EnregistrementNote,
+} from "@/server/repositories/devis";
 
 // **AUCUN `export type { … }` ICI, ni nulle part dans un fichier « use server ».**
 // Le chargeur d'actions de Next réécrit ce module en une liste d'exports de
@@ -189,4 +194,23 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
 export async function tachesDuChantierAction(chantierId: string): Promise<FeuilleDuChantier> {
   const ctx = await getCurrentCtx();
   return tachesDuChantier(ctx, chantierId);
+}
+
+/**
+ * Enregistrer le pense-bête de la feuille de chantier.
+ *
+ * *Sa demande du 23 août 2026 :* « entre "Copier l'adresse" et "Ouvrir le PDF",
+ * j'aimerais avoir un petit encadré où l'utilisateur peut marquer quelque
+ * chose — penser à prendre le broyeur, client plus disponible à partir de neuf
+ * heures ».
+ *
+ * **Le refus est une valeur de retour, jamais une exception** : le message
+ * d'une exception levée ici n'arriverait pas jusqu'à lui (`AGENTS.md`).
+ */
+export async function enregistrerNoteFeuilleAction(
+  chantierId: string,
+  note: string
+): Promise<EnregistrementNote> {
+  const ctx = await getCurrentCtx();
+  return enregistrerNoteFeuille(ctx, chantierId, note);
 }

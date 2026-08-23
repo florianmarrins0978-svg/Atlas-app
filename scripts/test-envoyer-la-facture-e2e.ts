@@ -84,7 +84,13 @@ async function main() {
   // Ce refus nomme le bon coupable — c'est lui qui m'a mis sur la voie.
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Choisir la date" }).click();
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
+  // **Visé par son repère, jamais par sa phrase.** Cette suite attendait
+  // « Une date, ou deux au choix du client ? » — un libellé que le patron a fait
+  // changer le 23 août même (« marque quelque chose qui stipule que
+  // l'utilisateur peut choisir »). La suite est alors morte sur un délai
+  // dépassé, sur du code juste et pour une demande exaucée : c'est `CLAUDE.md`
+  // §5 bis, et le repère `data-atlas="invite-dates"` existe exactement pour ça.
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 });
 
