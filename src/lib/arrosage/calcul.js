@@ -1386,7 +1386,23 @@ function listeMateriel(d){
     // chaque commande. Ne pas le remettre « par prudence » : la question a été
     // posée et tranchée, et ce commentaire existe pour éviter qu'on la
     // rouvre.
-    lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    /* ══ LE RÉDUCTEUR NE SE POSE PLUS D'OFFICE ═══════════════════════════════
+
+       **Il était facturé à chaque chantier, et c'est moi qui l'avais mis là**
+       (`source:'provisoire'` au catalogue) — sans source, sans règle, sans que
+       le patron l'ait demandé.
+
+       **Sa notice Rain Bird, envoyée le 22 août 2026, tranche :** *« If
+       pressure is greater than 80 psi (5,5 bar), install a pressure regulator
+       on the line before the valve »*. En dessous, la vanne travaille dans sa
+       plage (1 à 10 bar) et le réducteur ne sert à rien.
+
+       **Chez lui, la source donne 3 bar** : la pièce était donc facturée pour
+       rien à chaque devis. C'est exactement l'inverse de ce qu'il demande —
+       *« il faut qu'il me calcule le nombre juste »*. */
+    if ((Number(etat.pression) || 0) > CATALOGUE.electrovanneDV.reducteurAuDelaDe){
+      lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    }
     if (etat.sonde) lignes.push({ ref:'sonde-pluie', nom:'Sonde de pluie', q:1, u:'u' });
   }
   return lignes;

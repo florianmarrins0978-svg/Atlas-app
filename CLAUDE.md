@@ -286,6 +286,20 @@ la tranchée à ses frais.
 
    Une vanne de plus coûte une électrovanne et une voie de programmateur. Un
    réseau qui ne se lève pas coûte le chantier.
+
+   **ET CETTE PRUDENCE NE S'APPLIQUE QU'AUX INCONNUES.** Sa précision du
+   22 août, dans la foulée : *« faut pas pour autant qu'il retire un arroseur,
+   il faut qu'il me calcule le nombre juste »*.
+
+   | | |
+   |---|---|
+   | ce qui se **calcule** — la couverture d'une zone, le débit d'une buse, les pertes | **exact**, sans marge ajoutée |
+   | ce qu'on **ignore** — une valeur non relevée, une longueur non saisie | prudent, dans le sens ci-dessus |
+
+   Retirer un arroseur « pour être tranquille » n'est pas de la prudence : c'est
+   un trou d'arrosage, et il se voit en juillet exactement comme la panne qu'on
+   voulait éviter. La marge se prend sur ce qu'on ne sait pas, jamais sur ce
+   qu'on sait.
 3. **Ce qui n'est pas calculé se DIT à l'écran.** Pas dans le dépôt, pas dans un
    commentaire : sous le plan, là où il le lit. Une réserve tue vaut un mensonge
    — parce qu'un plan silencieux est cru complet.

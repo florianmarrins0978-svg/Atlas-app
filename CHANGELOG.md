@@ -48,6 +48,47 @@ tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour porta
 le même `data-jour` que les cases — deux éléments pour le même jour, et une
 suite qui ne savait plus lequel viser.
 
+### Sa notice Rain Bird retire une pièce facturée pour rien
+
+Il envoie la notice de ses électrovannes (`man_DV_DVF.pdf`, Rain Bird, P/N
+231576-B) en réponse à la valeur que je disais manquante.
+
+**Elle ne donne pas la perte de charge** — c'est une notice d'installation, pas
+une fiche technique : ni courbe, ni tableau ΔP. Le forfait majorant de 0,25 bar
+reste donc en place, et reste non relevé.
+
+**Mais elle apprend trois choses**, toutes désormais au catalogue :
+
+| | 075-DV (3/4") | 100-DV (1") |
+|---|---|---|
+| débit admis | 0,05 à 5,0 m³/h | 0,05 à 9,08 m³/h |
+| pression admise | 1 à 10 bar | 1 à 10 bar |
+
+Et surtout : *« if pressure is greater than 80 psi (5,5 bar), install a
+pressure regulator on the line before the valve »*.
+
+**Le réducteur de pression était facturé sur CHAQUE chantier** — une pièce que
+j'avais posée d'office, sans source (`source:'provisoire'`). Chez lui, la source
+donne 3 bar : la vanne travaille dans sa plage, le réducteur ne sert à rien. Il
+n'apparaît plus qu'au-delà de 5,5 bar.
+
+### « Il faut qu'il me calcule le nombre juste » — la prudence ne vaut que pour l'inconnu
+
+Sa précision, aussitôt après avoir redressé la règle du sûr : *« faut pas pour
+autant qu'il retire un arroseur, il faut qu'il me calcule le nombre juste »*.
+
+La règle pouvait se lire de travers — « en cas de doute, moins d'arroseurs »
+n'autorise pas à en retirer un au jugé. Elle distingue maintenant deux choses :
+
+| | |
+|---|---|
+| ce qui se **calcule** — couverture, débit d'une buse, pertes | **exact**, sans marge ajoutée |
+| ce qu'on **ignore** — une valeur non relevée, une longueur non saisie | prudent |
+
+Retirer un arroseur « pour être tranquille » n'est pas de la prudence : c'est un
+trou d'arrosage, et il se voit en juillet exactement comme la panne qu'on
+voulait éviter.
+
 ### La colonne « référence » affichait des noms de variables
 
 **Sa consigne, en majuscules et six points d'exclamation :** *« tu ne dois

@@ -701,6 +701,36 @@ export const CATALOGUE = {
     { ref:'pe25', nom:'Tuyau PE 25 (antennes)', regle:'aMesurer', unite:'ml', source:'provisoire' }
   ],
 
+  /* ══ CE QUE SA NOTICE RAIN BIRD DIT DE L'ÉLECTROVANNE ══════════════════════
+
+     **Relevé le 22 août 2026** sur la notice qu'il a envoyée
+     (`man_DV_DVF.pdf`, Rain Bird, P/N 231576-B). Ce sont ses vannes : toutes
+     ses fiches de nourrice montent des 100-DV.
+
+     | | 075-DV (3/4") | 100-DV (1") |
+     |---|---|---|
+     | débit admis | 0,05 à 5,0 m³/h | 0,05 à 9,08 m³/h |
+     | pression admise | 1 à 10 bar | 1 à 10 bar |
+
+     Et une règle que le dépôt appliquait de travers : **le réducteur de
+     pression ne sert qu'au-delà de 5,5 bar** (*« if pressure is greater than
+     80 psi (5,5 bar), install a pressure regulator on the line before the
+     valve »*). Il était facturé d'office sur chaque chantier.
+
+     ⚠ **CE QUE CETTE NOTICE NE DONNE PAS :** la perte de charge de la vanne.
+     C'est une notice d'installation, pas une fiche technique — il n'y a ni
+     courbe ni tableau ΔP. Le forfait majorant de `PERTE_ELECTROVANNE` reste
+     donc en place, et reste non relevé. */
+  electrovanneDV: {
+    debitMin: 0.05, debitMax100: 9.08, debitMax075: 5.0,
+    pressionMin: 1, pressionMax: 10,
+    // Au-delà, la notice impose un réducteur AVANT la vanne.
+    reducteurAuDelaDe: 5.5,
+    // Les modèles mâle-mâle et mâle-cannelé sont déconseillés au-delà.
+    debitMaxMMetMB: 6.8,
+    source: 'patron', releve: 'Notice Rain Bird DV/DVF, P/N 231576-B (2011)'
+  },
+
   /* ── LES PIÈCES DE NOURRICE — un catalogue à part, référencé par les fiches
      ci-dessous. Chaque pièce n'est écrite QU'UNE FOIS ici, même si elle
      revient dans les six fiches (l'électrovanne, par exemple, est dans les

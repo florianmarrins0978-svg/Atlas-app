@@ -432,6 +432,28 @@ dire(
   );
 }
 
+// ── 13. LE RÉDUCTEUR DE PRESSION NE SE FACTURE PLUS D'OFFICE ────────────────
+//
+// **Sa notice Rain Bird, envoyée le 22 août 2026** (`man_DV_DVF.pdf`) : *« if
+// pressure is greater than 80 psi (5,5 bar), install a pressure regulator on
+// the line before the valve »*. En dessous, la vanne travaille dans sa plage
+// (1 à 10 bar) et le réducteur ne sert à rien.
+//
+// Il était pourtant sur CHAQUE devis — une pièce que j'avais posée d'office,
+// sans source. Chez lui, la source donne 3 bar : facturée pour rien à chaque
+// chantier. C'est l'inverse de ce qu'il demande : *« il faut qu'il me calcule
+// le nombre juste »*.
+{
+  const ZONE_SIMPLE = [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }];
+  const aTroisBars = calculerPlan({ seau: 10, temps: 20, pression: 3, zones: ZONE_SIMPLE });
+  const aSixBars = calculerPlan({ seau: 10, temps: 20, pression: 6, zones: ZONE_SIMPLE });
+  const reducteur = (p: { materiel: { nom: string }[] }) =>
+    p.materiel.some((m) => /Réducteur/i.test(m.nom));
+
+  dire(!reducteur(aTroisBars), "à 3 bar, aucun réducteur facturé — la vanne est dans sa plage");
+  dire(reducteur(aSixBars), "à 6 bar, le réducteur est facturé — au-dessus de 5,5, sa notice l'impose");
+}
+
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);
 assert.equal(echecs, 0);
