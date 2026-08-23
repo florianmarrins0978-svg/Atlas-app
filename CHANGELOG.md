@@ -668,8 +668,6 @@ texte nu.
 Mesuré dans un vrai navigateur, à 390 px : durée sous le nom, nom sur une seule
 ligne (23 px), et `border-top: 0px` au-dessus du « + ».
 
-## 2026-08-23
-
 ### Rien à poser : le geste « Ajouter un chantier » disparaît
 
 **Sa remarque, capture à l'appui :** *« lorsqu'aucun chantier n'attend de jour,

@@ -9,6 +9,32 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ `ARCHITECTURE.md` porte SIX paragraphes pour trois numéros (23 août 2026)
+
+Trois numéros sont pris deux fois, et cela existe déjà sur `main` — ce n'est
+donc pas une fusion à rattraper, c'est un état à corriger une fois :
+
+| N° | Le premier | Le second |
+|---|---|---|
+| **134** | Chercher un client : la règle vit hors de l'écran | Le troisième document : une option dans le moteur |
+| **135** | Un écran atteint depuis deux endroits | Le diagnostic végétal : le modèle observe, la base décide |
+| **136** | Deux constructions au démarrage | « Choisir la date » : l'écran du milieu disparaît |
+
+C'est exactement ce que `CLAUDE.md` §6 B annonce : *« son numéro n'est pas
+réservé »*, six sessions écrivent en parallèle, et deux d'entre elles ont pris
+le même à quelques heures d'écart. La règle dit de renuméroter **le sien** — mais
+ici les deux sont sur `main` depuis, et plus aucune n'est « la sienne ».
+
+**Ce qu'il faut faire, et pourquoi ce n'est pas urgent :** renuméroter le second
+jeu à la suite du dernier paragraphe existant, et corriger les renvois qui le
+citent (`grep -n '§13[456]'`). Un renvoi vers « §135 » ne dit aujourd'hui pas
+lequel des deux — c'est une gêne à la relecture, pas un défaut de produit.
+
+**Ce qu'il ne faut PAS faire : le corriger au milieu d'un autre lot.** Toucher
+onze mille lignes d'`ARCHITECTURE.md` pendant que cinq sessions y ajoutent des
+paragraphes fabrique exactement les conflits que le §6 décrit. À faire seul, et
+poussé aussitôt.
+
 ## ⚠ `ss` ne rend RIEN dans cet environnement — un port se mesure autrement (23 août 2026)
 
 **Payé trois batteries d'affilée ce soir**, chacune tombée sur un
