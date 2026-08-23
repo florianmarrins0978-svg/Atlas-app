@@ -668,16 +668,26 @@ async function main() {
   // sans dépendre de ce qu'une autre suite y a laissé. Les dates retirées sont
   // relevées AVANT, et remises après, y compris si la mesure échoue.
   await essai("aucun chantier en attente : plus de « Ajouter un chantier »", async () => {
-    const { rows: entreprise } = await pool.query(
-      `SELECT entreprise_id FROM chantiers WHERE id = $1`,
-      [chantierId]
-    );
-    const entrepriseId = entreprise[0].entreprise_id as string;
-
-    // Ce qu'on va dater, pour pouvoir le rendre exactement.
+    // ─── POURQUOI LA PORTÉE N'EST PAS « CETTE ENTREPRISE » ────────────────
+    //
+    // **Vérifié dans le code, pas supposé.** Une première version datait les
+    // chantiers de l'entreprise de démonstration, et n'atteignait jamais zéro
+    // dans la batterie complète : « Élagage du grand chêne » restait, un
+    // chantier posé par `test-detection-automatique-e2e` **dans une autre
+    // entreprise**.
+    //
+    // Ce n'est pas une fuite du produit. `listerChantiersPourPlanning` isole
+    // par la RLS (`withEntreprise`), sans clause `entreprise_id` explicite —
+    // ce qui est juste sous `atlas_app`, le rôle de production. Mais les suites
+    // navigateur démarrent leur serveur sous un rôle qui **traverse** la RLS,
+    // parce qu'elles inspectent la base (`CLAUDE.md` §5). Sur CE serveur-là,
+    // et sur lui seul, le planning du compte de démonstration montre les
+    // chantiers des entreprises créées par les autres suites.
+    //
+    // La mesure porte donc sur toute la base d'essai — et rend **exactement**
+    // ce qu'elle a daté, jamais « tout ce qui porte cette date ».
     const { rows: sansDate } = await pool.query(
-      `SELECT id FROM chantiers WHERE entreprise_id = $1 AND date_planifiee IS NULL`,
-      [entrepriseId]
+      `SELECT id FROM chantiers WHERE date_planifiee IS NULL`
     );
     const rendus: string[] = sansDate.map((r) => r.id as string);
 
@@ -716,10 +726,8 @@ async function main() {
         // on relève SON identifiant — c'est lui qu'on rendra, pas « tout ce
         // qui porte cette date », qui emporterait un chantier posé avant nous.
         const { rows: encore } = await pool.query(
-          `UPDATE chantiers SET date_planifiee = $2
-             WHERE entreprise_id = $1 AND date_planifiee IS NULL
-           RETURNING id`,
-          [entrepriseId, JOUR]
+          `UPDATE chantiers SET date_planifiee = $1 WHERE date_planifiee IS NULL RETURNING id`,
+          [JOUR]
         );
         rendus.push(...encore.map((r) => r.id as string));
       }
