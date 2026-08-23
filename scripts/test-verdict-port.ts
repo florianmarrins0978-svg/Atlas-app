@@ -97,6 +97,23 @@ cas("un 404 DÉSIGNE son auteur, et sur une SIGNATURE, non sur des indices", asy
       "qui a envoyé le patron lire un journal muet pendant que le port était en cause"
   );
   assert.match(toutNu!.motif ?? "", /n'atteint PAS l'application/, "il n'oriente pas vers le port");
+  // **Et il DIT ce que la réponse portait.** Devant un refus nu, c'est la seule
+  // chose qui reste à examiner — sans elle, la fiche décrit un vide et l'agent
+  // en est réduit à supposer, ce qui a déjà coûté deux allers-retours au patron.
+  assert.match(
+    toutNu!.motif ?? "",
+    /en-têtes reçus : AUCUN/,
+    "la fiche ne dit pas que la réponse n'avait AUCUN en-tête : le seul fait qui restait à lire"
+  );
+
+  // Et quand il y en a, ce sont les NOMS qui sortent — jamais les valeurs, qui
+  // peuvent porter un jeton sur un dépôt public.
+  const avecEntetes = await regarderDuDehors({
+    nom: "espace", domaine: "app.github.dev",
+    chercher: () => faux({ "x-github-request-id": "SECRET-123", server: "GitHub.com" }),
+  });
+  assert.match(avecEntetes!.motif ?? "", /en-têtes reçus : .*x-github-request-id/, "les noms d'en-têtes ne sont pas publiés");
+  assert.doesNotMatch(avecEntetes!.motif ?? "", /SECRET-123/, "une VALEUR d'en-tête est publiée : ce dépôt est public");
 
   // Et l'inverse : une réponse SIGNÉE est bien mise au compte d'Atlas, sans
   // quoi le contrôle serait devenu incapable de désigner l'application et l'on

@@ -13762,3 +13762,14 @@ une route dont on avait retiré l'en-tête.
 **Le perdre ne casserait rien à l'écran** — c'est tout le danger. Le diagnostic
 se remettrait simplement à accuser le relais en toutes circonstances, et
 personne ne le saurait avant la prochaine soirée perdue.
+
+### Et devant un refus NU, la fiche dit ce que la réponse portait
+
+Un 404 sans en-tête ni type ne laisse rien à examiner : la fiche décrivait un
+vide, et l'agent en était réduit à supposer — deux allers-retours au patron, un
+soir où il allait se coucher. Elle publie donc les **noms** des en-têtes reçus,
+ou « AUCUN » quand il n'y en avait pas.
+
+**Les noms, jamais les valeurs** : ce dépôt est public, et une valeur d'en-tête
+peut porter un jeton. Un contrôle le tient, et il a été vu rouge dans les deux
+sens — sur la disparition des noms, et sur la fuite d'une valeur.

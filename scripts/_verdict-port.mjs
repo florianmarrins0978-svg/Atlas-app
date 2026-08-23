@@ -172,6 +172,12 @@ export async function regarderDuDehors({
     // signature : présente, c'est Atlas ; absente, la requête n'est pas arrivée
     // jusqu'à lui. Les marques de GitHub restent lues, mais seulement pour
     // NOMMER le relais — plus pour décider.
+    // **Les NOMS des en-têtes reçus, jamais leurs valeurs.** Devant un refus nu,
+    // savoir ce que la réponse portait — ou ne portait rien du tout — est la
+    // seule chose qui distingue un relais muet d'un serveur intermédiaire. Les
+    // valeurs, elles, peuvent contenir un jeton ; ce dépôt est public
+    // (`scripts/rapporter-espace.mjs`).
+    const nomsEntetes = [...r.headers.keys()].sort().join(", ") || "AUCUN";
     const signeAtlas = r.headers.get("x-atlas-vivant") !== null;
     const marqueGithub = /github/i.test(serveur) || /github/i.test(r.headers.get("x-github-request-id") ?? "x");
     const relais = !signeAtlas;
@@ -181,8 +187,9 @@ export async function regarderDuDehors({
       type,
       motif: relais
         ? `réponse ${r.status} de ${marqueGithub ? "GitHub" : "quelque chose"} AVANT Atlas ` +
-          `(serveur « ${serveur} », ${type || "sans type"}, non signée) — la requête ` +
-          `n'atteint PAS l'application : c'est le port ou le relais, pas le code`
+          `(serveur « ${serveur} », ${type || "sans type"}, non signée ; en-têtes reçus : ` +
+          `${nomsEntetes}) — la requête n'atteint PAS l'application : c'est le port ou ` +
+          `le relais, pas le code`
         : `réponse ${r.status} d'ATLAS lui-même (signature reçue, serveur « ${serveur} », ` +
           `${type || "sans type"}) — le port est bien ouvert, c'est l'application qui refuse`,
     };
