@@ -341,6 +341,22 @@ au mauvais endroit, et une tranchée ne se déplace pas.
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
 
+**LA PLUVIOMÉTRIE NE SÉPARE PAS DEUX VANNES — sa décision du 23 août 2026 :**
+*« ne prends pas en compte la pluviométrie »*. Elle était dans la clé de secteur
+depuis le 17 août, mise par lui (« ça ne se mélange jamais ») ; il l'a retirée le
+23. **Ne pas la remettre** : deux turbines de buses différentes partagent
+désormais une vanne, avec des millimètres/heure différents pour une même durée
+d'ouverture, et c'est lui qui arbitre à l'arrosage.
+
+**Ce qui sépare, en revanche, c'est le MATÉRIEL.** Une turbine et une tuyère ne
+s'ouvrent jamais ensemble : l'une verse environ trois fois plus vite. Cette
+règle-là n'a pas bougé.
+
+**LES PIÈCES SE COMPTENT EN « 13x », PAS EN « 13 u »** — même jour. L'unité reste
+dans les données : elle distingue une pièce qu'on compte d'un tuyau qu'on mesure,
+et « 80x de PE Ø25 » ne se commande pas. Une seule fonction l'écrit
+(`quantiteEcrite`), pour l'application comme pour la page publiée.
+
 **L'AVERTISSEMENT SE LIT AVANT DE PHOTOGRAPHIER**, en gras, **au-dessus** du
 croquis : *« votre croquis doit impérativement contenir les métrés, l'endroit
 définitif de la nourrice, et l'endroit où le piquage se fait »*. Placé en
@@ -784,6 +800,21 @@ de navigation sur la page publique du client, l'ordre des totaux d'une facture,
 une pile de notifications qui repoussait tout le contenu hors de l'écran — ont
 été trouvés en regardant une capture, jamais par un test vert. Prendre une
 capture des écrans touchés fait partie du travail, pas de la finition.
+
+**Un écran qu'on ne peut pas atteindre ici se rend quand même.** Le plan
+d'arrosage demande une photo de croquis et une clé de vision, que cet
+environnement n'a pas : `scripts/capture-plan-arrosage.ts` rend donc le seul
+composant du dessin, avec les données que le calcul produit vraiment.
+
+```bash
+npx tsx scripts/capture-plan-arrosage.ts /tmp/captures
+```
+
+Il a attrapé, le 23 août 2026, quatre défauts qu'aucun test ne voyait — dont
+deux qui ne se montrent **qu'à partir de trois réseaux** : deux tuyaux d'une même
+tranchée dessinaient le même trait, et la tranchée avait la couleur du troisième
+réseau. La maquette validée n'en portait que deux. *Une règle éprouvée sur un
+seul cas n'est pas éprouvée.*
 
 ### Parcourir soi-même ce qu'on transmet
 

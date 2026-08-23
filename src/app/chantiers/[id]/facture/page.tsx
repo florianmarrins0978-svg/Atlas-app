@@ -8,6 +8,7 @@ import { getFacturePourChantier } from "@/server/repositories/factures";
 import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { exigibiliteDe } from "@/server/repositories/paiements-facture";
+import { dernierEnvoiFacture } from "@/server/repositories/envois-factures";
 import FactureClient from "./FactureClient";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,16 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   // composée dans le navigateur, elle diffère de ce que le serveur a rendu, et
   // React régénère alors tout l'arbre. Le patron doit pouvoir copier une
   // adresse entière — un chemin seul ne s'ouvre nulle part.
+  // **Le lien déjà préparé, lu ICI plutôt que redemandé à l'écran.**
+  //
+  // Depuis le 22 août 2026, « Envoyer la facture » arrête ET prépare le lien en
+  // un seul appui (`ARCHITECTURE.md` §152). L'écran d'après ne le savait pas :
+  // il repropusait « Envoyer la facture au client », c'est-à-dire un second
+  // appui pour refaire ce qui venait d'être fait. Le patron l'aurait retrouvé
+  // le jour où sa messagerie refuse de s'ouvrir — précisément le jour où cet
+  // écran doit le rattraper.
+  const envoiDejaFait = existante ? await dernierEnvoiFacture(ctx, existante.facture.id) : null;
+
   const entetes = await headers();
   const hote = entetes.get("x-forwarded-host") ?? entetes.get("host") ?? "";
   const protocole = entetes.get("x-forwarded-proto") ?? (hote.startsWith("localhost") ? "http" : "https");
@@ -61,6 +72,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
           clientTelephone={client?.telephone ?? null}
           clientEmail={client?.email ?? null}
           canalClient={(client?.canalCommunication as "sms" | "email" | null) ?? null}
+          jetonDejaPrepare={envoiDejaFait?.jeton ?? null}
           initialFacture={
             existante
               ? {

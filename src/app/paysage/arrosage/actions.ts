@@ -4,8 +4,9 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
-import { trajetLePlusLong } from "@/lib/arrosage/geometrie-croquis";
+import { trajetLePlusLong, poserSurLeTerrain } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
+import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
 
 /**
  * Les gestes de l'écran « Plan d'arrosage ».
@@ -30,6 +31,15 @@ export type EtatPlan =
       etat: "lu";
       zones: { type: string; nom: string | null; L: number | null; l: number | null; ml: number | null }[];
       reserves: string[];
+      /**
+       * LE PLAN DESSINÉ — le contour du jardin, la tranchée, les réseaux.
+       *
+       * *Sa demande du 21 août 2026 : « il manque la photo, le schéma avec les
+       * réseaux, et l'implantation des arroseurs ».* Il ne peut exister que si
+       * le croquis porte les trois éléments obligatoires ; sinon l'écran
+       * n'arrive jamais ici, il refuse (`CLAUDE.md` §4 bis).
+       */
+      dessin: Dessin;
       plan: {
         debitDisponible: number;
         secteurs: { nom: string; debit: number; famille: string; part: string | null }[];
@@ -156,16 +166,20 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
      alors zéro et la réserve l'annonce : c'est ce que le calcul faisait déjà
      hier pour tout le monde, donc ce n'est pas une régression — mais le taire
      ferait croire que le trajet est compté. */
-  const trajet = trajetLePlusLong(
-    lu.croquis.nourrice,
-    mesurees.map((z) => ({
-      position: z.x !== null && z.y !== null ? { x: z.x, y: z.y } : null,
-      largeurFraction: z.largeurFraction,
-      hauteurFraction: z.hauteurFraction,
-      L: z.L,
-      l: z.l,
-    }))
-  );
+  //
+  // **Les places se lisent EN FRACTION, et se convertissent ici** — une seule
+  // fois, par un seul chemin (`geometrie-croquis.ts`). Le trajet et le dessin
+  // partent donc des mêmes mètres : deux conversions finiraient par poser la
+  // même pelouse à deux endroits (`CLAUDE.md` §3).
+  const places = mesurees.map((z) => ({
+    position: z.x !== null && z.y !== null ? { x: z.x, y: z.y } : null,
+    largeurFraction: z.largeurFraction,
+    hauteurFraction: z.hauteurFraction,
+    L: z.L,
+    l: z.l,
+  }));
+  const trajet = trajetLePlusLong(lu.croquis.nourrice, places);
+  const terrain = poserSurLeTerrain(lu.croquis.nourrice, places);
 
   const plan = calculerPlan({
     regardVersZone: trajet.ok ? trajet.metres : 0,
@@ -175,12 +189,18 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     temps: (SEAU_LITRES / mesure.debit) * 3.6,
     pression: mesure.pression,
     compteur: piquage === "compteur" ? "oui" : "non",
-    zones: mesurees.map((z) => ({
+    zones: mesurees.map((z, i) => ({
       type: z.type,
       nom: z.nom ?? undefined,
       L: z.L ?? undefined,
       l: z.l ?? undefined,
       ml: z.ml ?? undefined,
+      // **Où la zone se trouve, EN MÈTRES** — sans quoi le plan se compte mais
+      // ne se dessine pas. Ce n'est pas la fraction lue : c'est elle passée à
+      // l'échelle du croquis. `undefined` traverse jusqu'au dessin, qui refuse
+      // alors — c'est là que la règle vit, pas ici.
+      x: terrain.ok ? terrain.terrain.zones[i].x : undefined,
+      y: terrain.ok ? terrain.terrain.zones[i].y : undefined,
     })),
   });
 
@@ -231,10 +251,31 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     };
   }
 
+  // ── SANS CROQUIS COMPLET, AUCUN PLAN — `CLAUDE.md` §4 bis ────────────────
+  //
+  // *« L'outil doit fonctionner avec un plan avec toutes les métrées,
+  // l'emplacement du piquage et l'endroit définitif de la nourrice — sans ça il
+  // ne doit rien proposer. »* Ce n'est pas le DESSIN qu'on retire, c'est le
+  // plan entier : une liste de pièces sans tracé se commande quand même, et
+  // c'est ce qu'il a refusé le 21 août (« il n'est pas valable avec cette
+  // nouvelle règle »). On dit lequel des trois manque, et l'on s'arrête.
+  if (!terrain.ok) return { etat: "refus", raison: terrain.raison };
+  const dessine = dessinerPlan(
+    plan.dessin as ZoneDessinee[],
+    // **La nourrice EN MÈTRES**, sur le même repère que les zones. Lui passer
+    // la fraction lue dessinerait un jardin d'un mètre de large : le défaut
+    // aurait été muet, puisque tout resterait cohérent entre soi.
+    terrain.terrain.nourrice,
+    plan.couleurs as string[]
+  );
+  if (!dessine.ok) return { etat: "refus", raison: dessine.raison };
+  reserves.push(...dessine.reserves);
+
   return {
     etat: "lu",
     zones: lu.croquis.zones,
     reserves,
+    dessin: dessine.dessin,
     plan: {
       debitDisponible: plan.debitDisponible,
       secteurs: plan.secteurs,

@@ -213,3 +213,80 @@ export function trajetLePlusLong(
 
   return { ok: true, metres: Math.round(plusLong * 10) / 10, estimee: true };
 }
+
+/**
+ * LE CROQUIS POSÉ SUR LE TERRAIN — des fractions du dessin à des mètres.
+ *
+ * **Ajouté le 23 août 2026, au moment de brancher le plan dessiné.** Le tracé
+ * (`trace.ts`) et le contour (`terrain.ts`) travaillent en MÈTRES, avec une
+ * origine au coin haut-gauche du terrain ; la lecture, elle, ne rend que des
+ * fractions du dessin — c'est tout ce qu'une image permet de dire sûrement.
+ * Il fallait donc un passage, et **un seul** : deux façons de convertir un
+ * croquis en terrain finiraient par placer la même pelouse à deux endroits
+ * (`CLAUDE.md` §3).
+ *
+ * **L'échelle vient d'ici, jamais du dessin de la nourrice.** Elle se déduit
+ * des cotes déjà lues, par la médiane des estimations de toutes les zones — et
+ * `echelleDuCroquis` refuse de conclure quand elles se contredisent. La
+ * nourrice n'y participe pas : elle n'a pas de cote, seulement une place.
+ *
+ * **L'origine est ramenée à zéro**, sur le coin haut-gauche de ce que le
+ * croquis montre. Un terrain qui commencerait à x = 40 m parce que le dessin
+ * est décentré ne serait pas faux, mais il cadrerait mal et se lirait mal.
+ */
+export type TerrainPose = {
+  /** Les zones, en mètres : coin haut-gauche et cotes. */
+  zones: { x: number; y: number; L: number; l: number }[];
+  /** Le regard, en mètres, sur le même repère. `null` s'il n'est pas dessiné. */
+  nourrice: PointCroquis | null;
+};
+
+export function poserSurLeTerrain(
+  regard: PointCroquis | null,
+  zones: ZonePositionnee[]
+): { ok: true; terrain: TerrainPose } | { ok: false; raison: string } {
+  const echelle = echelleDuCroquis(zones);
+  if (!echelle.ok) return { ok: false, raison: echelle.raison };
+  const m = echelle.metresParFraction;
+
+  const posees: ({ x: number; y: number; L: number; l: number } | null)[] = zones.map((z) => {
+    if (!z.position || z.L === null || z.l === null || z.L <= 0 || z.l <= 0) return null;
+    // **Le coin, pas le centre** : la lecture rend un centre, le dessin veut un
+    // coin. Et les CÔTÉS viennent des cotes lues, jamais de la largeur
+    // dessinée — un rectangle tracé de travers ne doit pas changer le métré.
+    return {
+      x: z.position.x * m - z.L / 2,
+      y: z.position.y * m - z.l / 2,
+      L: z.L,
+      l: z.l,
+    };
+  });
+
+  const vues = posees.filter((z): z is NonNullable<typeof z> => z !== null);
+  if (vues.length === 0) {
+    return { ok: false, raison: "aucune zone du croquis n'a à la fois sa place et ses cotes" };
+  }
+
+  const nourrice = regard ? { x: regard.x * m, y: regard.y * m } : null;
+  const xs = [...vues.map((z) => z.x), ...(nourrice ? [nourrice.x] : [])];
+  const ys = [...vues.map((z) => z.y), ...(nourrice ? [nourrice.y] : [])];
+  const ox = Math.min(...xs);
+  const oy = Math.min(...ys);
+  const arrondir = (v: number) => Math.round(v * 100) / 100;
+
+  return {
+    ok: true,
+    terrain: {
+      // **`null` reste `null`**, et il compte : une zone sans place laisse un
+      // trou dans la liste, à la même position que dans `zones`. C'est ce qui
+      // permet à l'appelant de savoir LAQUELLE n'a pas pu être posée, au lieu
+      // de décaler toutes les suivantes en silence.
+      zones: posees.map((z) =>
+        z === null
+          ? { x: 0, y: 0, L: 0, l: 0 }
+          : { x: arrondir(z.x - ox), y: arrondir(z.y - oy), L: z.L, l: z.l }
+      ),
+      nourrice: nourrice ? { x: arrondir(nourrice.x - ox), y: arrondir(nourrice.y - oy) } : null,
+    },
+  };
+}

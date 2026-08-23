@@ -6,10 +6,12 @@ import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { jourLisible } from "@/lib/jour";
-import { type CanalClient } from "@/lib/message-client";
-import { useRetourDeMessagerie } from "@/lib/depart-messagerie";
+import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { useRetourDeMessagerie, marquerDepartMessagerie } from "@/lib/depart-messagerie";
+import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
+import ChoixCanal from "@/components/atlas/ChoixCanal";
 import TransmettreLaFacture from "./TransmettreLaFacture";
-import { terminerChantierAction, emettreFactureAction } from "./actions";
+import { terminerChantierAction, emettreFactureAction, preparerLienFactureAction } from "./actions";
 import { avecCivilite } from "@/lib/civilite";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
@@ -47,6 +49,7 @@ export default function FactureClient({
   clientTelephone,
   clientEmail,
   canalClient,
+  jetonDejaPrepare = null,
   regimeTva,
 }: {
   chantierId: string;
@@ -58,6 +61,14 @@ export default function FactureClient({
   clientTelephone: string | null;
   clientEmail: string | null;
   canalClient: CanalClient | null;
+  /**
+   * Le lien du client, s'il a déjà été préparé.
+   *
+   * Depuis le geste unique du 22 août 2026, l'envoi le fabrique en même temps
+   * qu'il arrête la facture. Sans cette valeur, l'écran d'après redemanderait de
+   * le préparer — un second appui pour refaire ce qui vient d'être fait.
+   */
+  jetonDejaPrepare?: string | null;
   /**
    * Quand la TVA devient exigible chez cette entreprise (migration 0045).
    *
@@ -81,6 +92,17 @@ export default function FactureClient({
   // et un client sans portable ne pouvait pas être facturé du tout.
   const canal: CanalClient = canalClient ?? (clientTelephone ? "sms" : "email");
 
+  /**
+   * Le canal de CET envoi — choisi sur l'écran, à côté du bouton.
+   *
+   * **Sa demande du 22 août 2026** (planche 84, proposition B) : *« au-dessus du
+   * bouton, remettre le petit encart, soit SMS soit e-mail, et l'utilisateur
+   * choisit »*. Il part de l'accord passé avec le client, et se corrige d'un
+   * doigt sans quitter l'écran.
+   */
+  const [canalEnvoi, setCanalEnvoi] = useState<CanalClient>(canal);
+  const destinataire = (canalEnvoi === "sms" ? clientTelephone : clientEmail) ?? "";
+
   async function terminer() {
     setEnCours(true);
     setErreur(null);
@@ -100,23 +122,85 @@ export default function FactureClient({
     }
   }
 
-  async function confirmer() {
+  /**
+   * **UN SEUL GESTE : arrêter la facture, et ouvrir sa messagerie.**
+   *
+   * Le patron, le 22 août 2026, capture à l'appui : *« quand je clique sur
+   * confirmer le départ de la facture, ça me l'arrête. Après, je clique pour
+   * l'envoyer. Ensuite, je dois recliquer pour ouvrir l'application SMS. Ça
+   * fait beaucoup trop de clics. »* Il en comptait trois ; il en reste un.
+   * Retenu sur planche (`docs/maquettes/84-envoyer-la-facture.html`,
+   * proposition B).
+   *
+   * ── L'ORDRE N'EST PAS UN DÉTAIL ──────────────────────────────────────────
+   *
+   * La messagerie s'ouvre **avant** de rafraîchir l'écran. Un navigateur peut
+   * refuser une navigation vers `sms:` qui ne suit pas le doigt d'assez près,
+   * et iOS la refuse **sans un mot** ; rafraîchir d'abord, c'est perdre le
+   * geste. C'est le même ordre que l'envoi du devis, pour la même raison.
+   *
+   * ── CE QUI RESTE DERRIÈRE, ET POURQUOI ───────────────────────────────────
+   *
+   * Si l'ouverture est refusée, l'écran d'après porte toujours
+   * `TransmettreLaFacture` — le message tout prêt, avec son bouton. La facture
+   * est alors arrêtée sans être partie, et **c'est exactement ce que la
+   * proposition A taisait** : le mot « envoyer » ne dit pas l'arrêt. D'où les
+   * deux lignes sous le bouton, qui le disent.
+   */
+  async function envoyerLaFacture() {
     if (!initialFacture) return;
     setEnCours(true);
     setErreur(null);
     try {
-      const r = await emettreFactureAction(initialFacture.id);
-      if (!r.succes) {
-        setErreur(r.erreur);
+      const emission = await emettreFactureAction(initialFacture.id);
+      if (!emission.succes) {
+        setErreur(emission.erreur);
         return;
       }
       setEmise(true);
+
+      const lien = await preparerLienFactureAction(initialFacture.id, canalEnvoi);
+      if (!lien.succes) {
+        // **La facture EST arrêtée, et il doit le savoir.** Taire l'émission
+        // parce que le lien a manqué lui ferait croire que rien n'a eu lieu —
+        // et il rappuierait sur un bouton qui a déjà engagé sa comptabilité.
+        setErreur(
+          `Facture arrêtée, mais le lien n'a pas pu être préparé — ${lien.erreur} ` +
+            `Le message tout prêt vous attend ci-dessous.`
+        );
+        router.refresh();
+        return;
+      }
+
+      marquerDepartMessagerie("facture", initialFacture.clientNom ?? "");
+      ouvrirAdresse(
+        lienTransmission({
+          canal: canalEnvoi,
+          destinataire,
+          message: composerMessageFacture({
+            clientCivilite: initialFacture.clientCivilite,
+            clientNom: initialFacture.clientNom ?? "",
+            entrepriseNom,
+            numeroFacture: initialFacture.numeroCommercial,
+            echeanceLisible: initialFacture.dateEcheance
+              ? jourLisible(initialFacture.dateEcheance)
+              : null,
+            lien: `${origine}/factures/${lien.jeton}`,
+          }),
+        }),
+        canalEnvoi
+      );
+
+      // Après l'ouverture, jamais avant : l'écran repasse alors sur sa face
+      // « arrêtée », qui porte le message tout prêt si la messagerie a refusé.
+      router.refresh();
     } catch {
-      setErreur("La facture n'a pas pu être émise.");
+      setErreur("La facture n'a pas pu être envoyée.");
     } finally {
       setEnCours(false);
     }
   }
+
 
   if (!initialFacture) {
     return (
@@ -272,7 +356,8 @@ export default function FactureClient({
               echeanceLisible={
                 initialFacture.dateEcheance ? jourLisible(initialFacture.dateEcheance) : null
               }
-              canal={canal}
+              canal={canalEnvoi}
+              jetonInitial={jetonDejaPrepare}
               telephone={clientTelephone ?? ""}
               email={clientEmail ?? ""}
               origine={origine}
@@ -284,9 +369,78 @@ export default function FactureClient({
           <p className="text-center text-[14px]" style={{ color: colors.muted }}>
             Rien n&apos;a changé depuis le devis ?
           </p>
-          <PrimaryButton disabled={enCours} onClick={confirmer}>
-            {enCours ? "Émission…" : "Confirmer le départ de la facture →"}
+
+          {/* **L'encart du canal, à la forme de la fiche client — sa demande du
+              22 août 2026 :** *« le choix SMS ou e-mail, mais de la même forme
+              que sur la page fiche client »*. C'est la MÊME capsule, extraite
+              pour l'occasion (`ChoixCanal`) : deux dessins du même geste
+              auraient divergé au premier ajustement.
+
+              **Un canal sans coordonnée reste inerte, et c'est sa règle :**
+              *« refuse l'envoi : ça veut dire qu'il communique avec le client
+              par SMS, donc il enverra par SMS »*. Aucun champ de saisie ici —
+              il a écarté l'idée. */}
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className={smallCaps} style={{ color: colors.muted }}>
+              Comment lui envoyer sa facture ?
+            </legend>
+            <div className="flex gap-2">
+              <ChoixCanal
+                libelle="Par SMS"
+                actif={canalEnvoi === "sms"}
+                disponible={Boolean(clientTelephone)}
+                onClick={() => setCanalEnvoi("sms")}
+              />
+              <ChoixCanal
+                libelle="Par e-mail"
+                actif={canalEnvoi === "email"}
+                disponible={Boolean(clientEmail)}
+                onClick={() => setCanalEnvoi("email")}
+              />
+            </div>
+            <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
+              {destinataire
+                ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataire}`
+                : "Aucune coordonnée pour ce canal."}
+            </p>
+          </fieldset>
+
+          {/* **Sans flèche**, et le mot dit l'envoi : *« arrêter la facture, tu
+              mets envoyer la facture sans la flèche »*. */}
+          <PrimaryButton
+            disabled={enCours || !destinataire}
+            onClick={envoyerLaFacture}
+            // **Un repère stable, pour que le contrôle accuse le bon coupable.**
+            // Attendu par son LIBELLÉ, il mourait sur un délai dépassé dès que le
+            // mot changeait — un rouge qui n'apprend rien. Repéré ainsi, la suite
+            // trouve le bouton, puis dit ce qui cloche dans ce qu'il porte.
+            repere="envoyer-la-facture"
+          >
+            {enCours ? "Envoi…" : "Envoyer la facture"}
           </PrimaryButton>
+
+          {/* **CE QUE LE BOUTON ENGAGE, dit sous lui — proposition B.**
+
+              Le libellé qu'il a choisi parle d'envoi ; l'appui, lui, ARRÊTE la
+              facture, et c'est sans retour. Deux gestes séparés le lui
+              rappelaient ; avec un seul, ces deux lignes sont tout ce qui
+              reste. Il ne les relira pas deux fois — elles seront là le jour où
+              il se demandera pourquoi sa facture ne se modifie plus. */}
+          <div className="py-1 pl-[13px]" style={{ borderLeft: `1px solid ${colors.or}` }}>
+            <p className="text-[13px] leading-[1.4]" style={{ color: colors.ink }}>
+              En l&apos;envoyant, vous l&apos;arrêtez :{" "}
+              {regimeTva === "encaissements"
+                ? "elle ne se modifie plus, et entrera au relevé de TVA le jour où votre client vous paiera."
+                : "elle entre dans votre TVA et ne se modifie plus."}
+            </p>
+            <p className="mt-[3px] text-[12px]" style={{ color: colors.muted }}>
+              Une correction passerait par un avoir.
+            </p>
+          </div>
+
+          <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
+            Votre messagerie s&apos;ouvre aussitôt. Rien ne part tant que vous ne l&apos;envoyez pas.
+          </p>
         </>
       )}
     </div>

@@ -4,6 +4,7 @@ import {
   distanceRegardVersZone,
   trajetLePlusLong,
   ECART_MAX_ENTRE_ZONES,
+  poserSurLeTerrain,
   type ZonePositionnee,
 } from "../src/lib/arrosage/geometrie-croquis";
 
@@ -167,6 +168,79 @@ const PELOUSE: ZonePositionnee = {
   };
   const t = trajetLePlusLong({ x: 0, y: 0 }, [immense]);
   dire(!t.ok, t.ok ? `un trajet de ${t.metres} m a été rendu` : `refusé : ${t.raison}`);
+}
+
+// ── POSER LE CROQUIS SUR LE TERRAIN — le passage aux mètres ─────────────────
+//
+// **C'est la jonction entre la lecture et le DESSIN**, ajoutée le 23 août 2026.
+// Le tracé et le contour travaillent en mètres ; la lecture ne rend que des
+// fractions. Un seul chemin les convertit — deux finiraient par poser la même
+// pelouse à deux endroits (`CLAUDE.md` §3).
+//
+// **Le défaut que ces cas attrapent est MUET.** Une conversion oubliée passe la
+// fraction telle quelle : le plan reste cohérent avec lui-même, simplement
+// dessiné sur un jardin d'un mètre de large. Aucun total ne bouge, aucune
+// alerte ne parle — seule une mesure sur le résultat le voit.
+{
+  // Son jardin du 21 août : une pelouse de 12 × 12 et une bande de 8 × 4
+  // collée à sa droite, dessinées dans un cadre où une unité de fraction vaut
+  // vingt mètres.
+  //
+  // **Le jeu d'essai est lui-même à l'échelle, et ce n'est pas un détail** : la
+  // première version ne l'était pas — des fractions posées au jugé —, et le
+  // contrôle de chevauchement l'a attrapée. Il avait raison : un jeu d'essai
+  // incohérent fait accuser le code à sa place.
+  const CROQUIS = [
+    { position: { x: 0.3, y: 0.3 }, largeurFraction: 0.6, hauteurFraction: 0.6, L: 12, l: 12 },
+    { position: { x: 0.8, y: 0.1 }, largeurFraction: 0.4, hauteurFraction: 0.2, L: 8, l: 4 },
+  ];
+
+  const pose = poserSurLeTerrain({ x: 0, y: 0.2 }, CROQUIS);
+  dire(pose.ok, pose.ok ? "le croquis se pose sur le terrain" : `refusé : ${pose.raison}`);
+  if (pose.ok) {
+    const [a, b] = pose.terrain.zones;
+    // **Les CÔTÉS viennent des cotes lues, jamais du rectangle dessiné.** Un
+    // trait tracé de travers ne doit pas changer un métré.
+    dire(a.L === 12 && a.l === 12 && b.L === 8 && b.l === 4, "les cotes traversent intactes");
+    // Le repère est ramené à zéro sur le coin haut-gauche de ce qui est montré.
+    dire(
+      Math.min(a.x, b.x, pose.terrain.nourrice?.x ?? 0) === 0,
+      `l'origine est ramenée à zéro (x mini : ${Math.min(a.x, b.x, pose.terrain.nourrice?.x ?? 0)})`,
+    );
+    // **Et surtout : on est bien en MÈTRES.** Une fraction laissée telle quelle
+    // donnerait un terrain large de moins de deux unités.
+    const large = Math.max(a.x + a.L, b.x + b.L);
+    dire(large > 15, `le terrain fait ${large.toFixed(1)} m de large — pas une fraction`);
+    // La seconde zone est à DROITE de la première, comme sur le dessin.
+    dire(b.x > a.x, `la bande est à droite de la pelouse (${b.x} contre ${a.x})`);
+    // **ET ELLES NE SE CHEVAUCHENT PAS.** C'est le contrôle qui attrape une
+    // conversion oubliée : les cotes viennent des mètres et les places de la
+    // fraction ; mélanger les deux repères fait rentrer une pelouse de douze
+    // mètres dans un dessin qui en fait un — les zones se marchent dessus, et
+    // le contour du terrain devient un bloc au lieu d'un L.
+    dire(
+      b.x >= a.x + a.L - 0.01,
+      `les deux zones ne se chevauchent pas (la bande commence à ${b.x} m, la pelouse finit à ${a.x + a.L} m)`,
+    );
+    dire(pose.terrain.nourrice !== null, "la nourrice est posée, elle aussi, en mètres");
+  }
+
+  // **Sans nourrice dessinée, le terrain se pose quand même** — c'est le
+  // DESSIN qui refuse ensuite, pas la conversion. Les deux refus au même
+  // endroit rendraient le message moins précis.
+  const sansRegard = poserSurLeTerrain(null, CROQUIS);
+  dire(
+    sansRegard.ok && sansRegard.terrain.nourrice === null,
+    "sans nourrice dessinée, les zones se posent et le regard reste absent",
+  );
+
+  // Un croquis qui n'est pas à l'échelle est refusé ici comme ailleurs : c'est
+  // la même règle, appelée au même endroit.
+  const detraque = poserSurLeTerrain({ x: 0, y: 0 }, [
+    { position: { x: 0.25, y: 0.5 }, largeurFraction: 0.5, hauteurFraction: 0.5, L: 12, l: 12 },
+    { position: { x: 0.75, y: 0.5 }, largeurFraction: 0.5, hauteurFraction: 0.5, L: 60, l: 60 },
+  ]);
+  dire(!detraque.ok, detraque.ok ? "un croquis hors d'échelle a été posé" : `refusé : ${detraque.raison}`);
 }
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);

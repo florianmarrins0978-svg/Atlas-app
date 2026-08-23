@@ -45,6 +45,153 @@ anticipé « ce client n'a pas de chantier » l'aurait fait disparaître de son
 dossier.
 
 
+### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
+
+*« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
+**télécharger** un fichier au lieu d'ouvrir Atlas.
+
+Sa fiche d'état annonçait *« réponse 404 d'ATLAS lui-même — c'est l'application
+qui refuse »* et l'envoyait lire le journal du serveur. **C'était une
+devinette** : le verdict tranchait sur la présence du mot « github » dans
+l'en-tête `Server`, et un refus arrivé nu — sans en-tête ni type, ce qu'il a
+justement reçu — tombait du mauvais côté. Deux hypothèses fausses lui ont été
+livrées avant qu'on ne le voie : l'espace éteint, puis le port privé, démenti
+par un *« je suis déjà en public »*.
+
+`/api/health/live` pose désormais **`x-atlas-vivant: 1`**. Le relais ne peut pas
+inventer cette signature : présente, c'est Atlas qui a répondu ; absente, la
+requête n'est jamais arrivée jusqu'à lui. Et la fiche ne propose plus « deux
+causes possibles, dans cet ordre » — devant lesquelles il essayait la première
+et revenait — mais **un seul geste**, celui qui correspond.
+
+**La signature devait être sur le fil, pas dans le code** : éprouvée d'abord sur
+un binaire pas reconstruit, elle paraissait absente. Le contrôle interroge donc
+le serveur pour de bon, et il a été vu rouge contre une route dont l'en-tête
+avait été retiré. `ARCHITECTURE.md` §155.
+
+
+### La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
+
+*« Je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le voit pas
+trop »*, puis, sur l'écran voisin : *« on ne comprend pas trop que scanner ou
+écrire à la main, c'est pour la TVA déductible. »*
+
+Rien ne fonctionnait mal dans les deux cas : c'est la **place** qui mentait. Six
+propositions dessinées et essayables au doigt (`docs/maquettes/85` et `86`), et
+son choix, mot pour mot : **« Pour ma TVA la B / Et pour les achats la C »**.
+
+**La B** met en tête de « Terminés » une carte **portant le montant** — pas un
+lien à aller chercher, mais ce qu'il vient y voir. Elle nomme sa période et dit
+« Reste à payer sur la période », parce que ce montant n'est **pas dû le jour où
+il le lit** : il dépend du rythme et du régime, et n'est exigible qu'à
+l'échéance.
+
+**La C** remonte « Scanner un ticket » et « Écrire à la main » **contre**
+l'encadré des chiffres. Aucun mot de plus n'a été ajouté : le lien se dit par la
+continuité de la pièce.
+
+**Ce qui a coûté le plus n'est pas l'écran, c'est le contrôle.** Une place ne
+casse pas : la carte peut redescendre, les boutons repasser sous les achats, et
+tout resterait vert. Deux mesures fausses ont été écrites avant les bonnes —
+l'une comparait la carte à sa **propre mention**, qui descend avec elle, et
+**restait verte sur le défaut dont elle portait le nom** ; l'autre comptait le
+rembourrage d'une carte comme une brèche et **accusait à tort**. Détail dans
+`ARCHITECTURE.md` §153.
+
+### La note ne part sur aucun document — et le contrôle qui le promettait ne savait pas lire
+
+La note de la feuille de chantier a été codée **deux fois le même jour**, par
+deux sessions qui ne se voyaient pas. Celle arrivée la première sur `main` fait
+foi ; la seconde a été retirée — deux colonnes pour la même chose auraient été
+les deux vérités que le dépôt interdit.
+
+Ce qu'elle apportait et qui reste : le contrôle de sa promesse. La note ne doit
+sortir sur **aucun** document, et c'est ce qui l'autorise à y écrire ce qu'il ne
+dirait pas devant le client. Or ce contrôle a été **vert deux fois de suite en
+confrontation avec une note délibérément versée dans le PDF** : il cherchait les
+mots dans les octets bruts d'un fichier comprimé, puis en clair dans un flux qui
+écrit son texte en hexadécimal. Il prouve désormais d'abord qu'il sait **lire**
+ce PDF. `ARCHITECTURE.md` §154.
+
+### Deux réparations tombées à la batterie
+
+La carte « Ma TVA à déclarer » gardait un coin à 12 px, contre sa règle du
+12 août — même forme partout. Elle passe aux 4 px des plages : une capsule sur
+une carte pleine largeur serait le galet que la charte refuse. Le contrôle porte
+une exception **bornée à cette carte**, et tout autre bouton carré du même écran
+le fait toujours rougir.
+
+Et `test-envoyer-la-facture-e2e` visait mot pour mot « Une date, ou deux au choix
+du client ? » — une phrase qu'il a fait changer le 23 août même. La suite mourait
+sur du code juste, pour une demande exaucée : c'est `CLAUDE.md` §5 bis, et le
+repère posé par l'autre session existait exactement pour ça.
+
+
+### Le plan d'arrosage se DESSINE, à la forme du jardin lu
+
+**Son feu vert :** *« très bien, tu peux coder la maquette »*, après sa demande
+du 21 — *« il manque la photo, le schéma avec les réseaux, et l'implantation des
+arroseurs ; les différents réseaux de couleurs »*.
+
+**Ce qui manquait n'était pas le calcul.** Les têtes étaient posées depuis le
+17 août, leur vanne connue depuis le 19 : rien ne SORTAIT. Le plan des maquettes
+portait donc le contour de son jardin, écrit en dur — ce qui suffit pour une
+planche et ne fait pas un outil.
+
+**Le contour sort maintenant des zones**, par union et non par juxtaposition :
+deux pelouses qui se touchent forment un seul terrain, et la ligne qui les
+sépare n'existe pas sur place. Deux pelouses séparées par la maison donnent deux
+morceaux, chacun tracé pour lui-même, avec un **pointillé** entre eux — le
+cheminement passe hors de la pelouse, et ce mètre-là n'est pas mesuré.
+
+**La tranchée se partage, et c'est ce qui la raccourcit.** Un segment déjà
+creusé est facturé zéro au réseau suivant : sa règle du 21 août — *« lorsque
+c'est égal il faut privilégier de réutiliser la tranchée, car c'est moins
+fatigant »*. Sur son jardin en L, 53 ml de tranchée pour 69 ml de tuyau.
+
+**Les pièces se lisent sur le dessin.** Une tête traversée porte un té, une tête
+terminale un coude, un point à trois branches qui n'arrose rien un té égal.
+`tés + coudes = arroseurs` tient donc par construction, **réseau par réseau** —
+et la suite le vérifie ainsi, jamais au total : au total, deux erreurs
+s'annulent, ce qu'il avait relevé.
+
+**Sans nourrice, plus rien.** `CLAUDE.md` §4 bis appliqué à la lettre : pas
+d'endroit définitif du regard, pas de plan — ni dessin ni liste de pièces, et
+l'on dit ce qui manque. La nourrice n'est jamais déduite : la lecture du croquis
+la cherche, et rend `null` plutôt que de la poser au piquage « pour dépanner ».
+
+**Quatre défauts trouvés à la capture, aucun par un test** (`ARCHITECTURE.md`
+§150) : les portées débordaient de la pelouse, le mot « nourrice » tombait sur
+une cote, deux réseaux partageant une tranchée dessinaient le même trait — le
+second effaçant le premier —, et la tranchée était du même jaune que le
+troisième réseau. Les deux derniers ne se voient que sur un jardin à trois
+réseaux, et la maquette validée n'en portait que deux.
+
+Détail et partis pris : `ARCHITECTURE.md` §150.
+
+### La pluviométrie ne sépare plus deux vannes, et les pièces se comptent en « 13x »
+
+**Ses deux décisions :** *« ne prends pas en compte la pluviométrie »* et *« pour
+le calcul des pièces, 13x et pas 13 u »*.
+
+**La pluviométrie sort de la clé de secteur.** Elle y était depuis le 17 août —
+c'est lui qui l'y avait mise, c'est lui qui l'en retire. Deux turbines de buses
+différentes peuvent désormais partager une vanne ; elles versent alors des
+millimètres/heure différents pour une même durée d'ouverture, et c'est lui qui
+arbitre à l'arrosage. **Le matériel sépare toujours** : une turbine et une
+tuyère ne s'ouvrent jamais ensemble.
+
+**Un réseau peut donc porter deux modèles**, et le plan les nomme tous les deux,
+comptés : « 4× Turbine 3504 · buse 0,75 » et « 1× Turbine 5000 Plus · buse 6,0 ».
+N'en nommer qu'un ferait commander de travers.
+
+**« 13x » remplace « 13 u »** partout où une pièce se compte — l'application, la
+page publiée et la maquette. L'unité reste dans les données : les mètres restent
+des mètres, « 80x de PE Ø25 » ne se commande pas. Une seule fonction sert les
+deux écrans.
+
+Détail : `ARCHITECTURE.md` §151.
+
 ### Une note sur la feuille de chantier — « penser à prendre le broyeur »
 
 *« Entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un petit
@@ -54,7 +201,7 @@ broyeur, client plus disponible à partir de neuf heures. »*
 **Cherché avant d'affirmer que c'était neuf** (`CLAUDE.md` §5 ter) : la table
 `chantiers` ne portait aucun champ libre, `notes_vocales` est la dictée, et le
 seul `note` du schéma appartenait aux paiements. Colonne posée par la
-migration 0060, bornée à 2 000 caractères — la note descend avec la liste
+migration 0061, bornée à 2 000 caractères — la note descend avec la liste
 entière du planning.
 
 **La variante A retenue, et c'est LUI qui a tranché sans le savoir.** La

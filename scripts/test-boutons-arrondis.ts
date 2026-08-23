@@ -120,6 +120,30 @@ const HORS_CHARTE: Array<{
   // Le champ de saisie de la même page, lui, garde ses coins doux : la charte
   // ne donne la capsule qu'à ce qu'on APPUIE, jamais à ce qu'on remplit.
   {
+    /**
+     * **Une PLAGE qu'on touche, et non un geste qu'on appuie.**
+     *
+     * La carte « Ma TVA à déclarer », en tête de « Terminés » depuis le 23 août
+     * 2026 (sa proposition B, `ARCHITECTURE.md` §149). Elle mène quelque part,
+     * donc elle s'écrit `<Link>` — mais ce qu'on voit est une carte pleine
+     * largeur portant un libellé, une période et un montant, et elle se tient à
+     * côté des plages du relevé, qui portent leurs 4 px.
+     *
+     * **En capsule, elle serait le galet que la charte refuse** — « au-delà de
+     * 6 px, une plage devient un galet et l'écran perd sa tenue » —, et sur
+     * toute la largeur de l'écran l'effet est maximal. La charte ne donne la
+     * capsule qu'à ce qu'on APPUIE ; elle n'a jamais été demandée pour ce qu'on
+     * PARCOURT.
+     *
+     * **L'exception est bornée au repère de cette carte** : tout autre bouton
+     * carré de `termines/page.tsx` fait toujours rougir, et c'est vérifié plus
+     * bas contre un bouton voisin.
+     */
+    motif: /^src[/\\]app[/\\]termines[/\\]page\.tsx$/,
+    pourquoi: "carte pleine largeur qu'on parcourt, plage à 4 px et non geste en capsule",
+    seulement: /data-atlas="carte-tva"/,
+  },
+  {
     // Le chevron de retour : 32 × 32, une icône dans un cadre, pas un bouton
     // d'action. La charte réserve la capsule à ce qu'on FAIT ; l'arrondir
     // entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle

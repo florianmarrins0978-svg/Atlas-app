@@ -1039,19 +1039,28 @@ function decouperUneFois(){
     // La clé du groupe ne contient QUE ce qui ne change pas avec la saison :
     // le matériel et la famille de plantes. Un secteur est du câblage.
     //
-    // **ET LA PLUVIOMÉTRIE EN FAIT PARTIE — sa règle du 17 août, « ça ne se
-    // mélange jamais ».** Le type ne suffit pas : deux TURBINES peuvent avoir
-    // des pluviométries différentes selon leur buse, et une vanne les ouvrirait
-    // pour la même durée. Le défaut est resté invisible tant que les deux
-    // pelouses du jardin d'exemple étaient l'une en turbines et l'autre en
-    // tuyères ; le jour où sa règle sur les tuyères les a mises toutes deux en
-    // turbines, elles se sont retrouvées sur la même vanne avec 5,9 et
-    // 6,1 mm/h — et c'est le PLAN, en les coloriant de la même couleur, qui l'a
-    // montré. Ici l'écart était de 3 % ; entre une 3504 fine et une grosse
-    // PGP, il se compte en multiples.
-    var clef = p.cle + '|' + TYPES[z.type].famille + '|' + (p.m.pluvio || 0);
-    if (!groupes[clef]) { groupes[clef] = { zones:[], membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
+    // **LA PLUVIOMÉTRIE N'EN FAIT PLUS PARTIE — sa décision du 23 août 2026 :**
+    // *« ne prends pas en compte la pluviométrie »*. Elle y était depuis le
+    // 17 août, et c'est LUI qui l'y avait mise (« ça ne se mélange jamais ») ;
+    // c'est donc lui qui l'en retire, et il n'y a rien à rouvrir ici.
+    //
+    // **Ce que cela change, pour qui reprendra ce fichier.** Deux turbines de
+    // buses différentes peuvent désormais partager une vanne. Elles versent
+    // alors des millimètres/heure différents, et la vanne les ouvre pour la même
+    // durée : la durée calculée (`r.minutes`) convient à l'une et pas à l'autre.
+    // Sur son jardin, l'écart mesuré était de 3 % — entre une 3504 fine et une
+    // grosse PGP, il se compterait en multiples. Il le sait, il arbitre à
+    // l'arrosage.
+    //
+    // **La pluviométrie sert toujours aux DURÉES** (`poser()`), qui restent
+    // calculées par modèle. Ce qui a disparu, c'est son pouvoir de séparer deux
+    // secteurs — rien d'autre.
+    var clef = p.cle + '|' + TYPES[z.type].famille;
+    if (!groupes[clef]) { groupes[clef] = { zones:[], nomDeZone:{}, membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
     groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
+    // **Le nom de chaque zone, retrouvable par son identifiant.** Un secteur ne
+    // dessert pas forcément tout le groupe : il faut pouvoir nommer LES SIENNES.
+    groupes[clef].nomDeZone[z.id] = z.nom || TYPES[z.type].nom;
     groupes[clef].membres.push({ zoneId: z.id, points: p.points });
     groupes[clef].debit += p.debit;
     groupes[clef].minutes = p.minutes;
@@ -1073,9 +1082,32 @@ function decouperUneFois(){
   ordre.forEach(function(clef){
     var g = groupes[clef];
     var premier = secteurs.length;
-    var ajouter = function(debit, combien, rang, points){
+    // **UN SECTEUR NOMME LES ZONES QU'IL ARROSE, PAS CELLES DE SON GROUPE.**
+    //
+    // *Défaut révélé le 23 août 2026 par le retrait de la pluviométrie.* Tant
+    // qu'elle coupait, un groupe ne portait qu'un modèle et se répartissait
+    // presque toujours sur une seule zone : nommer le groupe entier revenait au
+    // même. Depuis, deux pelouses de buses différentes tombent dans le même
+    // groupe — et la coupe par points contiguës peut retomber exactement sur
+    // leur limite. L'écran annonçait alors « Devant + Derrière » pour une vanne
+    // qui n'arrose que « Devant ». Un plan qui nomme la mauvaise zone fait
+    // creuser au mauvais endroit.
+    var nommer = function(points){
+      if (!points || !points.length) return g.zones.join(' + ');
+      var vues = [];
+      points.forEach(function(x){
+        var nom = g.nomDeZone[x.zoneId];
+        if (nom && vues.indexOf(nom) < 0) vues.push(nom);
+      });
+      return vues.length ? vues.join(' + ') : g.zones.join(' + ');
+    };
+
+    var ajouter = function(debit, combien, rang, points, membres){
       secteurs.push({
-        nom: g.zones.join(' + '),
+        // **`membres` porte le zoneId, `points` ne le porte pas.** Les têtes
+        // rendues par `poser()` ne savent pas de quelle zone elles viennent :
+        // c'est le découpage qui l'a noté, et lui seul peut nommer.
+        nom: nommer(membres),
         part: combien > 1 ? rang + ' sur ' + combien : null,
         famille: g.m.famille,
         debit: debit,
@@ -1158,7 +1190,7 @@ function decouperUneFois(){
       paquets[i].push(x); debits[i] += x.debit;
     });
     paquets.forEach(function(pq, i){
-      ajouter(debits[i], paquets.length, i+1, pq.map(function(x){ return x.pt; }));
+      ajouter(debits[i], paquets.length, i+1, pq.map(function(x){ return x.pt; }), pq);
       pq.forEach(function(x){
         reseauDuPoint[x.zoneId + ':' + x.pt.x.toFixed(3) + ':' + x.pt.y.toFixed(3)] = premier + i;
         noterZone(x.zoneId, premier + i);
@@ -1173,6 +1205,23 @@ function decouperUneFois(){
            limiteDuTuyau: duTuyau, limiteDeLaSource: deLaSource,
            reseauxDeZone:reseauxDeZone,
            demande: etat.zones.reduce(function(s,z){ return s + poser(z).debit; }, 0) };
+}
+
+/**
+ * La quantité, écrite comme il la lit — sa demande du 23 août 2026 :
+ * *« pour le calcul des pièces, 13x et pas 13 u »*.
+ *
+ * **Le « u » ne disparaît pas du calcul, seulement de l'écran.** L'unité reste
+ * dans les données (`{ q, u }`) : c'est elle qui distingue une pièce qu'on
+ * compte d'un tuyau qu'on mesure, et le fournisseur ne commande pas
+ * « 80x de PE Ø25 ». Ce qui change, c'est le mot affiché devant une pièce.
+ *
+ * **Une seule fonction pour les deux écrans** — la page publiée et
+ * l'application. Deux façons d'écrire la même quantité finiraient par
+ * diverger, et c'est ce que `CLAUDE.md` §3 interdit.
+ */
+function quantiteEcrite(q, u){
+  return u === 'u' ? q + 'x' : q + ' ' + u;
 }
 
 function voiesProgrammateur(n){

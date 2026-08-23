@@ -174,12 +174,19 @@ const vu = await page.evaluate(() => {
     hauteur: marque.getBoundingClientRect().height,
   };
 
+  // **Toutes les quantités, telles qu'elles sont ÉCRITES** — pas leur nombre.
+  // C'est le seul moyen d'attraper un « 13 u » qui reviendrait par une ligne
+  // ajoutée à la main dans un des trois tableaux.
+  const quantitesEcrites = [...document.querySelectorAll("table .q")]
+    .map((e) => e.textContent.trim());
+
   return {
     contour,
     reseaux,
     cartes,
     boite,
     pieces,
+    quantitesEcrites,
     tranchee,
     legende,
     references,
@@ -207,6 +214,25 @@ const aire = (pts) => {
   return Math.abs(a) / 2;
 };
 const surface = aire(vu.contour);
+
+// ── « 13x », ET NON « 13 u » — sa demande du 23 août 2026 ──────────────────
+//
+// **Le contrôle porte sur ce qui est ÉCRIT**, parce que c'est ce qu'il lit chez
+// son fournisseur. Les mètres restent des mètres : « 80x de PE Ø25 » ne se
+// commande pas, et un contrôle qui les transformerait aussi ferait pire que ne
+// rien faire.
+cas("les pièces se comptent en « 13x », jamais en « 13 u »", () => {
+  const fautives = vu.quantitesEcrites.filter((q) => /^\d+\s*u$/.test(q));
+  if (fautives.length > 0) {
+    throw new Error(`${fautives.length} quantité(s) encore en « u » : ${fautives.join(", ")}`);
+  }
+  if (!vu.quantitesEcrites.some((q) => /^\d+x$/.test(q))) {
+    throw new Error("aucune quantité n'est écrite en « x » : le tableau ne compte plus rien");
+  }
+  if (!vu.quantitesEcrites.some((q) => /ml$/.test(q))) {
+    throw new Error("les longueurs de tuyau ont disparu, ou sont passées en « x » — « 80x de PE Ø25 » ne se commande pas");
+  }
+});
 
 cas("la surface dessinée est celle qu'on annonce", () => {
   const annonce = Number(vu.texte.match(/(\d+)\s*m²/)?.[1]);
