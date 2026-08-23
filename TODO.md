@@ -2651,6 +2651,44 @@ rouge sur ce défaut précis).
 
 **Rien n'est codé tant qu'il n'a pas dit 1 ou 2.**
 
+**SES RÉPONSES DU 23 AOÛT AU SOIR, sur l'allure :** *« Allure des devis B, juste
+pour devis facture. Fais-en une dizaine. Le fond teinté fais-le modifiable et
+choisiront s'ils le gardent ou s'ils mettent autre chose ; les réglages actuels
+doivent être par défaut. »*
+
+| | Tranché |
+|---|---|
+| Où ça se règle | **B** — un bloc dans « Devis & factures », pas de rubrique de plus |
+| Sur quoi ça porte | **le devis et la facture SEULEMENT.** La feuille de chantier et le compte rendu d'entretien gardent leur allure |
+| Typographies | **dix**, la première étant celle d'aujourd'hui |
+| Fond de page | **modifiable — n'importe quelle couleur**, pas une liste de trois |
+| Le départ | **ses réglages d'aujourd'hui** : crème, or, police de l'appareil |
+
+**CE QU'IL FAUDRA CODER, ET CE QUE ÇA COÛTE — mesuré, pas supposé.** Le PDF est
+fait par `pdf-lib` et n'embarque que **Times et Helvetica**, les polices
+standard du format (`src/server/pdf/document-commun.ts`). Les dix typographies
+demandent donc `@pdf-lib/fontkit` et un fichier par famille, embarqué dans
+chaque devis. C'est faisable ; ce n'est pas gratuit, et la planche le lui dit.
+
+**Et la planche charge ces polices depuis Google Fonts.** Acceptable pour une
+maquette qu'il ouvre sur son téléphone ; **pas pour le produit** — l'allure d'un
+document ne doit pas dépendre d'un domaine tiers. Au codage, les fichiers vivent
+dans le dépôt, et ils serviront à la fois l'écran et le PDF.
+
+**Deux leçons d'outillage, payées ici :**
+
+- **un contrôle ne doit pas accuser une panne de réseau.** Le mandataire de
+  l'agent refuse `fonts.googleapis.com` : le contrôle rougissait sur « Failed to
+  load resource », c'est-à-dire sur la planche, pour une panne qui n'est pas la
+  sienne. Il ignore désormais ce seul domaine et rapporte toutes les autres
+  ressources manquantes. Le choix des dix reste mesurable sans elles : on
+  compare les **piles déclarées**, pas les glyphes rendus ;
+- **un contrôle qui PLANTE n'accuse personne.** En retirant une typographie pour
+  l'éprouver, le clic sur la dixième a levé une exception et le rapport n'a
+  jamais été écrit — une pile d'appels au lieu de « neuf au lieu de dix ». Tout
+  le corps est sous filet : une panne devient un souci comme un autre, et le
+  verdict s'écrit toujours.
+
 
 **Sa demande du 23 août 2026**, en deux morceaux : *« y a-t-il un endroit dans
 les réglages où l'utilisateur peut rédiger ce message automatique ? S'il n'y en
