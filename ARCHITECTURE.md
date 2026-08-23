@@ -13222,8 +13222,6 @@ empreintes différentes selon qu'elles montrent leur temps ou non.
 Il ne s'est pas prononcé sur le **réglage de départ** — codé sur « Visible ».
 Passer à « Masqué » est le défaut de la colonne à retourner. Voir `TODO.md`.
 
----
-
 ## 150. Le plan se DESSINE : du croquis lu au tracé de la tranchée
 
 **Sa demande du 21 août 2026 :** *« il manque la photo, le schéma avec les
@@ -13329,7 +13327,14 @@ se commande quand même.
 | Ce qui manque | Ce qu'on fait |
 |---|---|
 | l'endroit **définitif** de la nourrice | refus, en le nommant |
-| la position des zones les unes par rapport aux autres | refus, en le nommant |
+| la position des zones les unes par rapport aux autres | **le plan sort sans son dessin**, et l'on dit pourquoi |
+
+**La seconde ligne a changé le 23 août 2026**, et c'est lui qui l'a corrigée.
+Ses trois éléments obligatoires sont les métrés, le piquage et la nourrice ;
+l'AGENCEMENT n'en fait pas partie. Un croquis qui porte les trois donne un plan
+juste — le compte d'arroseurs, les réseaux, les pièces — même si le dessin ne
+peut pas être reconstitué. Tout refuser dans ce cas, c'est ce qu'il a vu :
+*« il n'arrive pas à me lire mon croquis... là, il y a tous les métrés »*.
 
 Le second mérite son existence : le calcul rend `x = 0, y = 0` quand le croquis
 ne situe pas la zone. Deux pelouses se superposeraient alors **exactement**, et
@@ -13831,6 +13836,50 @@ moyenne au lieu de médiane. Chacun fait rougir la suite en nommant le chiffre.
 
 ---
 
+### Un croquis à main levée se lit quand même (23 août 2026)
+
+**Sa correction, et elle allait au fond :** *« il n'arrive pas à me lire mon
+croquis sous prétexte qu'il n'est pas à l'échelle. Ce qui serait bien, c'est
+qu'il arrive à le lire même s'il n'est pas totalement à l'échelle, car les
+utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à chaque fois.
+Là, il y a tous les métrés. »*
+
+Il avait raison. **Les COTES commandent, le dessin ne fait qu'ordonner.** Un
+croquis à main levée dit avec certitude qui est à gauche de qui et qui touche
+quoi ; il ne dit rien de fiable sur les longueurs — c'est justement pour cela
+qu'on y écrit les métrés. Refuser le plan parce que le dessin n'est pas
+proportionné, c'était refuser le croquis pour ce qu'il n'a jamais eu à être.
+
+**Deux règles, désormais, et la sévérité reste où elle sert :**
+
+| | Ce qu'elle sert | Devant un dessin approximatif |
+|---|---|---|
+| `echelleDuCroquis` | le **trajet du regard**, donc la pression, donc l'espacement | refuse — un chiffre faux y coûte un plan faux |
+| `echelleTolerante` | le **dessin** | conclut, et le dit en réserve |
+
+Une pelouse placée un peu de travers se voit et se corrige à l'œil ; une
+pression fausse ne se voit qu'en juillet.
+
+**Trois sources d'échelle, dans cet ordre :** les zones qui portent à la fois
+leur cote et leur proportion ; **la haie**, qui porte sa longueur et dont on
+prend le plus grand côté dessiné ; et, en dernier recours, la plus grande cote
+du croquis rapportée à l'étendue du dessin — un ordre de grandeur, rendu marqué
+« approchée ».
+
+**Ce qui reste refusé, et doit l'être :** un croquis qui ne situe RIEN. Là, il
+n'y a pas d'agencement à reconstituer, seulement à inventer.
+
+**Et le refus n'accuse plus les cotes.** Le message qu'il a vu — *« aucune zone
+du croquis ne porte à la fois ses cotes et sa place »* — désignait ses métrés
+alors qu'ils étaient tous là : le fautif était la lecture, qui n'avait rendu
+aucune proportion. Une erreur qui accuse à tort coûte plus cher que pas d'erreur
+du tout (`CLAUDE.md` §5).
+
+**La consigne au modèle a été reprise en conséquence.** « Tu ne devines jamais »
+ne s'applique PAS aux places : une cote se LIT (illisible = null), une place se
+MESURE sur l'image et se voit toujours dès que la zone est dessinée.
+
+
 ## 157. Ouvrir une fiche referme une autre — et la ligne touchée doit rester sous le doigt
 
 **Son défaut du 22 août 2026, capture à l'appui :** *« lorsque le client se
@@ -13901,3 +13950,106 @@ Elle a été **confrontée à l'état dégradé** (`CLAUDE.md` §5) : l'ancrage
 neutralisé, elle rougit en nommant le bon coupable — *« le client touché a bougé
 de 422 px (145 → -277) »*. Et elle refuse de conclure si le montage n'a pas pu
 amener la ligne assez haut, plutôt que de rendre un vert qui ne prouve rien.
+## 158. Un devis vide ne part pas — la barrière porte sur les lignes, pas sur l'euro
+
+**Le patron, le 23 août 2026 :** *« Le devis part à zéro euro chez la cliente,
+alors qu'il y a un arbre à tailler et un à démonter. Rien n'apparaît chez elle. »*
+
+Sa cliente avait donc sous les yeux un document qui n'énonçait **rien** — ni
+prestation, ni prix — et un bouton « J'accepte ce devis » sous ce vide.
+
+### Ce n'était pas une perte de données
+
+Les lignes du devis viennent des lignes de **PRIX** (`genererDevis`), jamais des
+prestations. Deux arbres décrits mais jamais chiffrés donnent un devis
+authentiquement vide : le document était juste. **C'est de l'avoir laissé PARTIR
+qui ne l'était pas.**
+
+L'envoi savait refuser un devis absent, un canal non choisi, une coordonnée
+manquante. Jamais un devis sans une seule ligne.
+
+### Zéro LIGNE, et non zéro euro
+
+Un devis à **0,00 €** peut être légitime — un geste commercial, un déplacement
+offert. Le refuser interdirait au patron quelque chose qu'il a le droit de faire,
+et ce serait une règle inventée (`CLAUDE.md` §4).
+
+Un devis **sans une seule ligne** n'est jamais légitime : il n'y a rien à
+accepter. La barrière porte donc sur ce qui est **écrit**, pas sur ce qui est
+compté (`src/lib/devis-envoyable.ts`).
+
+### Le refus vit aux DEUX bouts, depuis une seule règle
+
+L'écran cache le bouton, et `envoyerAuClientAction` refuse de son côté : cacher
+ne ferme rien, l'action reste appelable, et un devis vide parti est sans retour.
+La phrase vient du même fichier des deux côtés — deux recopies finiraient par
+diverger (`CLAUDE.md` §3).
+
+**Et le blocage passe AVANT le canal** : à quoi bon lui faire choisir comment
+joindre sa cliente pour lui envoyer un document qui n'énonce rien ?
+
+### Le contrôle qui ne pouvait pas échouer, et comment on l'a vu
+
+Le premier jet attendait le mot « aucune ligne » à l'écran — or l'éditeur de
+devis porte déjà *« Aucune ligne pour l'instant »*. Le contrôle restait donc
+**vert le garde-fou retiré** : il regardait le mauvais texte.
+
+Il vise désormais une phrase qui n'appartient qu'au refus — *« recevrait un
+document vide »* —, et il a été vu rouge contre l'absence du garde-fou. C'est la
+troisième fois de la journée qu'un contrôle passait au vert sur le défaut même
+dont il portait le nom ; le remède est toujours le même : **le confronter**.
+
+## 159. Le devis se recompose au moment d'envoyer, pas au chargement de l'écran
+
+**Le patron, le 23 août 2026 :** *« Le devis part à zéro euro chez la cliente,
+alors qu'il y a un arbre à tailler et un à démonter. »* Puis, quand on lui a
+répondu que rien n'était chiffré : *« j'avais mis des prix, cinq cent cinquante
+et je ne sais plus combien, un devis à mille trois cents euros »*.
+
+**Il avait raison, et la première explication était fausse.** Elle est consignée
+telle quelle en §156 : elle concluait à des prestations jamais chiffrées, et
+posait un garde-fou contre les devis vides. Le garde-fou reste utile ; le
+diagnostic, lui, était à côté.
+
+### Rien ne se perdait — rien n'arrivait
+
+Ses prix étaient bien en base, dans `lignes_prix`. Ce sont les lignes du
+**DOCUMENT** qui manquaient. Le devis ne se recompose que dans
+`getOuCreerDevisBrouillon`, appelé au **chargement** de l'écran
+(`src/app/chantiers/[id]/devis-complet/page.tsx`). Tout prix tapé ensuite — c'est-à-dire tous ceux qu'on
+tape vraiment — restait dehors.
+
+**Mesuré avant correction, sur son geste exact :** écran à **660,00 €**,
+`lignes_prix` à 1 ligne, et le devis à **0,00 € et zéro ligne**.
+
+### Deux nœuds, et le second était le plus discret
+
+1. `envoyerAuClientAction` figeait le devis **sans le recomposer** ;
+2. `creerEnvoi` retenait le `devisId` **venu du navigateur** — celui du
+   chargement de la page. Or la page publique du client lit les lignes de CE
+   devis-là. Le document recomposé pouvait donc être juste pendant que le lien
+   pointait toujours sur le vide.
+
+L'identifiant vient désormais du serveur, qui reprend la version courante du
+chantier qu'il vient lui-même de recomposer. Le paramètre reçu est conservé dans
+la signature mais ignoré : le retirer ferait glisser les arguments suivants et
+transformerait une correction en panne.
+
+### Le garde-fou de §156 accusait à tort, et c'est ce qui l'a révélé
+
+Posé contre les devis vides, il comptait les lignes du **document périmé** — donc
+il refusait un envoi parfaitement légitime : écran à 660 €, refus affiché. *Un
+contrôle qui accuse à tort coûte plus cher que pas de contrôle du tout*
+(`AGENTS.md`).
+
+La recomposition a été portée dans `preparerEnvoiAction`, c'est-à-dire **à
+l'ouverture de la feuille d'envoi**. Ce que l'écran compte, ce qu'il montre et ce
+qui partira sont enfin la même chose.
+
+### Ce que le contrôle doit faire, et qu'aucun autre ne faisait
+
+Toutes les suites d'envoi chiffraient **avant** d'ouvrir l'écran du devis — par
+`/prix` —, si bien que la recomposition du chargement suffisait et que le défaut
+restait invisible. Le nouveau cas chiffre **sur l'écran du devis, après son
+ouverture** : c'est le geste réel du patron, et le seul qui prenne le défaut. Il
+a été vu rouge contre l'ancien code.

@@ -60,6 +60,14 @@ export type ZonePositionnee = {
   /** Ses cotes réelles, en mètres — celles déjà lues par `lire-croquis`. */
   L: number | null;
   l: number | null;
+  /**
+   * Ses mètres linéaires, pour une haie ou un massif.
+   *
+   * **Ajouté le 23 août 2026 : une haie sait aussi donner l'échelle.** Sur son
+   * croquis, la haie longe tout le haut du terrain et porte sa longueur ; la
+   * lui refuser, c'était jeter la moitié de ce que le dessin dit.
+   */
+  ml?: number | null;
 };
 
 /**
@@ -101,9 +109,15 @@ function mediane(valeurs: number[]): number {
  * par sa hauteur. Les deux entrent dans le lot : une zone allongée dessinée de
  * travers se corrige ainsi par son autre côté.
  */
-export function echelleDuCroquis(zones: ZonePositionnee[]): Echelle {
+/**
+ * Toutes les estimations d'échelle qu'un croquis permet — sans en juger.
+ *
+ * **La haie compte aussi, depuis le 23 août 2026.** Sur son croquis, elle longe
+ * tout le haut du terrain et porte sa longueur : la lui refuser jetait la
+ * moitié de ce que le dessin disait, et pouvait ne rien laisser du tout.
+ */
+function estimationsDEchelle(zones: ZonePositionnee[]): number[] {
   const estimations: number[] = [];
-
   for (const z of zones) {
     if (z.L !== null && z.L > 0 && z.largeurFraction !== null && z.largeurFraction >= FRACTION_MINIMALE) {
       estimations.push(z.L / z.largeurFraction);
@@ -111,7 +125,18 @@ export function echelleDuCroquis(zones: ZonePositionnee[]): Echelle {
     if (z.l !== null && z.l > 0 && z.hauteurFraction !== null && z.hauteurFraction >= FRACTION_MINIMALE) {
       estimations.push(z.l / z.hauteurFraction);
     }
+    // Une haie n'a qu'une longueur : c'est son plus grand côté dessiné qui la
+    // porte, quel que soit le sens dans lequel elle est tracée.
+    const dessine = Math.max(z.largeurFraction ?? 0, z.hauteurFraction ?? 0);
+    if (z.ml != null && z.ml > 0 && dessine >= FRACTION_MINIMALE) {
+      estimations.push(z.ml / dessine);
+    }
   }
+  return estimations;
+}
+
+export function echelleDuCroquis(zones: ZonePositionnee[]): Echelle {
+  const estimations = estimationsDEchelle(zones);
 
   if (estimations.length === 0) {
     return {
@@ -133,6 +158,108 @@ export function echelleDuCroquis(zones: ZonePositionnee[]): Echelle {
   }
 
   return { ok: true, metresParFraction: mediane(estimations), surCombienDeZones: estimations.length };
+}
+
+/**
+ * L'échelle POUR DESSINER — celle qui ne refuse presque jamais.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * **SA CORRECTION DU 23 AOÛT 2026, ET ELLE EST JUSTE.**
+ *
+ * *« Il n'arrive pas à me lire mon croquis sous prétexte qu'il n'est pas à
+ * l'échelle. Ce qui serait bien, c'est qu'il arrive à le lire même s'il n'est
+ * pas totalement à l'échelle, car les utilisateurs ne vont pas s'amuser à faire
+ * des croquis à l'échelle à chaque fois. Là, il y a tous les métrés. »*
+ *
+ * Il avait raison, et le défaut était de fond : **les COTES commandent, le
+ * dessin ne fait qu'ordonner.** Un croquis à main levée dit avec certitude qui
+ * est à gauche de qui et qui touche quoi ; il ne dit rien de fiable sur les
+ * longueurs — c'est justement pour cela qu'on y écrit les métrés. Refuser le
+ * plan parce que le dessin n'est pas proportionné, c'est refuser le croquis
+ * pour ce qu'il n'a jamais eu à être.
+ *
+ * **La sévérité reste là où elle sert** : `echelleDuCroquis` refuse toujours,
+ * et c'est elle qui nourrit le trajet du regard — un nombre qui entre dans le
+ * calcul de pression et décide de l'espacement des arroseurs. Un chiffre faux
+ * y coûte un plan faux. Ici, ce qui est en jeu est un DESSIN : une pelouse
+ * placée dix centimètres trop à droite se voit et se corrige à l'œil.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+export type EchelleTolerante =
+  | {
+      ok: true;
+      metresParFraction: number;
+      /** Le rapport entre la plus grande et la plus petite estimation. 1 = parfait. */
+      dispersion: number;
+      /** Vrai quand aucune zone ne portait à la fois sa cote et sa place. */
+      approchee: boolean;
+    }
+  | { ok: false; raison: string };
+
+export function echelleTolerante(zones: ZonePositionnee[]): EchelleTolerante {
+  const estimations = estimationsDEchelle(zones);
+
+  if (estimations.length > 0) {
+    const mini = Math.min(...estimations);
+    const maxi = Math.max(...estimations);
+    // **On ne refuse plus au-delà du double** : on prend la médiane et l'on DIT
+    // que le dessin était approximatif. La médiane, jamais la moyenne — une
+    // seule zone tracée de travers ne doit pas emporter tout le croquis.
+    return {
+      ok: true,
+      metresParFraction: mediane(estimations),
+      dispersion: mini > 0 ? maxi / mini : 1,
+      approchee: false,
+    };
+  }
+
+  // ── Le dernier recours : la plus grande cote sur la plus grande étendue ───
+  //
+  // **Quand AUCUNE zone ne porte à la fois sa cote et sa place**, le croquis
+  // dit encore quelque chose : il montre un terrain qui occupe une certaine
+  // étendue du dessin, et il porte quelque part la plus grande longueur du
+  // jardin. Le rapport des deux donne un ordre de grandeur — pas une mesure, et
+  // c'est pourquoi il est rendu marqué « approchée ».
+  //
+  // C'est ce qui manquait le 23 août : sur son croquis, plein de métrés, la
+  // lecture n'avait rendu aucune proportion de zone — et le plan était refusé
+  // avec un message qui accusait ses cotes, c'est-à-dire le mauvais coupable.
+  const cotes = zones.flatMap((z) => [z.L, z.l, z.ml ?? null].filter((v): v is number => v != null && v > 0));
+  if (cotes.length === 0) {
+    return { ok: false, raison: "le croquis ne porte aucune cote : rien ne peut être placé" };
+  }
+  const etendue = etendueDuDessin(zones);
+  if (etendue === null) {
+    return {
+      ok: false,
+      raison: "le croquis ne situe aucune zone : le plan ne peut pas être dessiné",
+    };
+  }
+  return {
+    ok: true,
+    metresParFraction: Math.max(...cotes) / etendue,
+    dispersion: 1,
+    approchee: true,
+  };
+}
+
+/** L'étendue occupée par le dessin, en fraction — la plus grande des deux. */
+function etendueDuDessin(zones: ZonePositionnee[]): number | null {
+  const xs: number[] = [];
+  const ys: number[] = [];
+  for (const z of zones) {
+    if (!z.position) continue;
+    const dx = (z.largeurFraction ?? 0) / 2;
+    const dy = (z.hauteurFraction ?? 0) / 2;
+    xs.push(z.position.x - dx, z.position.x + dx);
+    ys.push(z.position.y - dy, z.position.y + dy);
+  }
+  if (xs.length === 0) return null;
+  const large = Math.max(...xs) - Math.min(...xs);
+  const haut = Math.max(...ys) - Math.min(...ys);
+  const etendue = Math.max(large, haut);
+  // Une étendue nulle — toutes les zones au même point — ne dit rien.
+  return etendue >= FRACTION_MINIMALE ? etendue : null;
 }
 
 /**
@@ -239,13 +366,26 @@ export type TerrainPose = {
   zones: { x: number; y: number; L: number; l: number }[];
   /** Le regard, en mètres, sur le même repère. `null` s'il n'est pas dessiné. */
   nourrice: PointCroquis | null;
+  /**
+   * Ce qu'il faut DIRE du placement, ou `null` quand il n'y a rien à dire.
+   *
+   * **Une réserve, jamais un refus** — sa correction du 23 août 2026. Les cotes
+   * sont justes ; c'est l'agencement qui suit un dessin à main levée. Le taire
+   * ferait croire à un plan mesuré au cordeau ; en faire un refus lui
+   * demanderait de dessiner à l'échelle, ce qu'aucun artisan ne fera.
+   */
+  reserve: string | null;
 };
 
 export function poserSurLeTerrain(
   regard: PointCroquis | null,
   zones: ZonePositionnee[]
 ): { ok: true; terrain: TerrainPose } | { ok: false; raison: string } {
-  const echelle = echelleDuCroquis(zones);
+  // **L'échelle TOLÉRANTE, pas la sévère** — et c'est tout le changement du
+  // 23 août. Le trajet du regard garde la sévère : lui entre dans le calcul de
+  // pression, et un chiffre faux y coûte un plan faux. Ici, ce qui est en jeu
+  // est un dessin, et une pelouse placée un peu de travers se voit à l'œil.
+  const echelle = echelleTolerante(zones);
   if (!echelle.ok) return { ok: false, raison: echelle.raison };
   const m = echelle.metresParFraction;
 
@@ -274,9 +414,19 @@ export function poserSurLeTerrain(
   const oy = Math.min(...ys);
   const arrondir = (v: number) => Math.round(v * 100) / 100;
 
+  // **Ce qu'on dit du placement**, dans son langage et sans jargon.
+  const reserve = echelle.approchee
+    ? "le croquis ne donne pas les proportions des zones : elles sont placées à l’estime, " +
+      "d’après leurs cotes — les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
+    : echelle.dispersion > ECART_MAX_ENTRE_ZONES
+      ? "le croquis n’est pas à l’échelle : les zones sont placées d’après leurs cotes, " +
+        "pas d’après le dessin — les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
+      : null;
+
   return {
     ok: true,
     terrain: {
+      reserve,
       // **`null` reste `null`**, et il compte : une zone sans place laisse un
       // trou dans la liste, à la même position que dans `zones`. C'est ce qui
       // permet à l'appelant de savoir LAQUELLE n'a pas pu être posée, au lieu

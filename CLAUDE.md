@@ -341,6 +341,20 @@ au mauvais endroit, et une tranchée ne se déplace pas.
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
 
+**UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME — sa correction du 23 août 2026 :**
+*« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à
+chaque fois ; là, il y a tous les métrés »*. **Les cotes commandent, le dessin
+ne fait qu'ordonner.** Ne jamais refuser un plan parce que le dessin n'est pas
+proportionné : le placer d'après ses cotes et le DIRE en réserve.
+
+La sévérité reste sur le **trajet du regard** — lui entre dans le calcul de
+pression, et un chiffre faux y coûte un plan faux. Une pelouse placée de travers
+se voit à l'œil ; une pression fausse ne se voit qu'en juillet.
+
+**Et l'agencement n'est pas l'un des trois éléments obligatoires.** Métrés,
+piquage, nourrice : ceux-là retirent le plan. Un agencement illisible ne retire
+que le DESSIN — le plan sort, et l'on dit pourquoi il n'est pas dessiné.
+
 **LA PLUVIOMÉTRIE NE SÉPARE PAS DEUX VANNES — sa décision du 23 août 2026 :**
 *« ne prends pas en compte la pluviométrie »*. Elle était dans la clé de secteur
 depuis le 17 août, mise par lui (« ça ne se mélange jamais ») ; il l'a retirée le
@@ -1042,6 +1056,52 @@ Trois règles qui en découlent, et qui ne se négocient pas :
 **Après une fusion, rejouer la batterie SEULEMENT si le code arrivé touche ce
 qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code
 touche »*.
+
+#### Ce que la soirée du 23 août a coûté, et qui n'était écrit nulle part
+
+**Sa consigne :** *« il y a six sessions qui tournent en même temps ; donc
+organisez-vous, vous êtes la même application »*. Ce qui suit ne remplace pas
+les règles ci-dessus : il s'ajoute, parce que ces trois-là ont été payées en
+temps ce soir-là et que rien ne les disait.
+
+**A. REGARDER LES AUTRES BRANCHES AVANT D'OUVRIR UN LOT.** Le même après-midi,
+deux sessions ont codé **la même chose** — lire les places des zones sur le
+croquis. Une des deux implémentations a été jetée, et il s'en est fallu de peu
+qu'il reste deux façons de lire un croquis, ce que le §3 interdit. Trente
+secondes suffisent :
+
+```bash
+git branch -r --sort=-committerdate | head            # qui a bougé récemment
+git log -1 --format='%ar · %s' origin/claude/<branche>
+```
+
+Si une branche touche le même coin de l'application, lire son dernier commit
+**avant** d'écrire. On ne demande la permission à personne — on évite de payer
+deux fois.
+
+**B. UN PARAGRAPHE NEUF D'`ARCHITECTURE.md` S'AJOUTE À LA FIN, JAMAIS AU
+MILIEU** — et son numéro n'est pas réservé. Ce soir-là, §147 et §148 ont été
+pris deux fois le même jour : quatre renumérotations, à quatre fusions. Pire, un
+§149 écrit ailleurs était **recollé à chaque fusion**, parce que les deux
+historiques ne le plaçaient pas au même endroit.
+
+| Ce qu'on trouve à la fusion | Ce qu'on fait |
+|---|---|
+| deux paragraphes portant le même numéro | renuméroter **le sien** — celui qui n'est pas encore sur `main` |
+| le même paragraphe à deux endroits | garder **la place de `main`**, y reporter son ajout, supprimer l'autre |
+
+La seconde ligne est la seule qui arrête le doublon : tant qu'on garde sa propre
+place, chaque fusion le recrée.
+
+**C. UNE SEULE EN-TÊTE DE DATE DANS `CHANGELOG.md`.** Trois « `## 2026-08-23` »
+ont dû être réunis à la main ce soir-là. Une entrée neuve se glisse **sous
+l'en-tête du jour qui existe déjà** ; on n'en crée jamais un second.
+
+**Et ce qui N'EST PAS partagé, contre l'intuition :** la machine. Chaque session
+a son propre conteneur — sa base, son Redis, son port 3000. Un serveur orphelin
+qui tient le port 3000 est **le sien**, jamais celui d'à côté : le chercher chez
+les autres fait perdre le temps qu'on croyait gagner. Le seul bien commun, c'est
+`main`.
 
 **Pourquoi elle a été prise, et ce qu'elle corrige.** Ce soir-là, un écran fini
 et vérifié a mis des heures à parvenir jusqu'à lui — non pas par difficulté,

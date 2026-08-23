@@ -97,6 +97,7 @@ Forme attendue :
 Règles :
 - Tu ne DEVINES jamais. Une cote illisible vaut null. Une zone sans aucune cote se rend quand même, avec ses champs à null.
 - LES PLACES SE DONNENT EN FRACTION DU DESSIN, de 0 à 1. x=0 est le bord gauche, x=1 le bord droit ; y=0 le haut, y=1 le bas. « x » et « y » sont le CENTRE de la zone ; « largeur_fraction » et « hauteur_fraction » sont ce qu'elle occupe. Ne convertis JAMAIS ces places en mètres : les mètres se déduisent des cotes.
+- « Tu ne devines jamais » NE S'APPLIQUE PAS AUX PLACES. Une cote se LIT (illisible = null) ; une place se MESURE SUR L'IMAGE, et tu la vois toujours dès que la zone est dessinée. Rends donc x, y, largeur_fraction et hauteur_fraction pour CHAQUE zone visible, même approximativement : le croquis est fait à main levée et n'est pas à l'échelle, personne n'attend d'exactitude. Ne les laisse à null que si la zone est citée par écrit sans être dessinée.
 - La nourrice est le regard d'où partent les réseaux (souvent un rectangle marqué « nourrice », « regard » ou « vannes »). Si elle n'est pas dessinée, rends x et y à null — ne la place pas au point d'eau pour dépanner.
 - Les pelouses et potagers se mesurent en longueur x largeur. Les haies et massifs se mesurent en mètres linéaires.
 - Les mesures sont en MÈTRES, en nombre décimal à point. Un « 1200 » à côté d'une haie est probablement 12,00 m : rends 12.

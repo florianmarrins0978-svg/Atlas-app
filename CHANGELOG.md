@@ -9,6 +9,132 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Les prix tapés sur l'écran du devis partent enfin chez le client
+
+*« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
+et un à démonter »*, puis, quand on lui a répondu que rien n'était chiffré :
+*« j'avais mis des prix, cinq cent cinquante et je ne sais plus combien, un devis
+à mille trois cents euros »*.
+
+**Il avait raison, et la première explication — juste en dessous — était
+fausse.** Elle est laissée telle quelle : elle raconte le chemin, et le
+garde-fou qu'elle a posé reste utile.
+
+**Rien ne se perdait ; rien n'arrivait.** Ses prix étaient bien en base. Ce sont
+les lignes du DOCUMENT qui manquaient : le devis ne se recompose qu'au
+CHARGEMENT de l'écran, et tout prix tapé ensuite — c'est-à-dire tous ceux qu'on
+tape vraiment — restait dehors. Mesuré sur son geste exact : écran à 660,00 €,
+document à 0,00 € et zéro ligne.
+
+Deux nœuds, et le second était le plus discret : l'envoi figeait le devis sans le
+recomposer, **et** retenait l'identifiant venu du navigateur — celui du
+chargement de la page. Or la page publique du client lit les lignes de ce
+devis-là : le document pouvait être juste pendant que le lien pointait sur le
+vide.
+
+Le devis se recompose désormais **à l'ouverture de la feuille d'envoi**, et
+l'identifiant vient du serveur. Ce que l'écran compte, ce qu'il montre et ce qui
+part sont enfin la même chose.
+
+**Et le garde-fou de l'entrée précédente accusait à tort :** il comptait les
+lignes du document périmé et refusait un envoi à 660 €. C'est ce refus qui a
+révélé la vraie cause. Détail dans `ARCHITECTURE.md` §159.
+
+
+### Un devis vide ne part plus chez le client
+
+*« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
+et un à démonter. Rien n'apparaît chez elle. »*
+
+Sa cliente avait sous les yeux un document qui n'énonçait **rien** — ni
+prestation ni prix — et un bouton « J'accepte ce devis » sous ce vide.
+
+**Ce n'était pas une perte de données.** Les lignes du devis viennent des lignes
+de PRIX, jamais des prestations : deux arbres décrits mais jamais chiffrés
+donnent un devis authentiquement vide. Le document était juste ; c'est de l'avoir
+laissé PARTIR qui était le défaut. L'envoi savait refuser un devis absent, un
+canal non choisi, une coordonnée manquante — jamais un devis sans une ligne.
+
+**La barrière porte sur les LIGNES, pas sur l'euro.** Un devis à 0,00 € peut être
+légitime — un geste commercial, un déplacement offert — et le refuser
+interdirait quelque chose qui est son droit. Un devis sans une seule ligne, lui,
+n'est jamais légitime : il n'y a rien à accepter.
+
+Le refus vit aux deux bouts depuis une seule règle : l'écran cache le bouton et
+le serveur refuse de son côté, car cacher ne ferme rien. Et il passe **avant** le
+canal — à quoi bon choisir comment joindre sa cliente pour lui envoyer un
+document vide ?
+
+**Le contrôle a d'abord été incapable d'échouer** : il attendait « aucune ligne »
+à l'écran, phrase que l'éditeur de devis porte déjà. Il restait vert le garde-fou
+retiré. Il vise maintenant une phrase qui n'appartient qu'au refus, et il a été
+vu rouge. `ARCHITECTURE.md` §158.
+
+
+### « La cliente ne peut pas proposer de jour » — le contrôle qui manquait sur son chemin
+
+Son signalement, capture à l'appui : *« je n'ai pas coché la case pour que la
+cliente ne puisse pas proposer de jour ; néanmoins elle ne peut quand même pas
+proposer de jour »*.
+
+**Cherché pour de bon, et NON REPRODUIT sur le code du jour** — c'est écrit ici
+plutôt qu'annoncé corrigé, parce qu'une réparation supposée lui coûterait l'essai
+puis l'aller-retour. Vérifié une chose après l'autre : l'interrupteur est ouvert
+à chaque ouverture de la feuille, ce qui part en base vaut « autorisé » sans y
+toucher — avec une date comme avec deux —, l'état ne survit pas à un envoi
+annulé, et un seul chemin de production crée un envoi. Son envoi porte pourtant
+« non autorisé », ce que seul un appui réel sur l'interrupteur produit.
+
+**Ce qui manquait vraiment, et qui est livré :** le refus était éprouvé depuis
+« Choisir la date », mais l'autorisation depuis l'ANCIEN écran d'envoi
+seulement. Le chemin qu'il emprunte tous les jours n'avait donc aucun contrôle
+sur la moitié qui l'intéresse — celle où il ne touche à rien. Le nouveau cas ne
+touche à rien, délibérément, et il a été vu rouge sur son symptôme exact : deux
+dates, aucune option pour en proposer une autre.
+
+**Reste à trancher avec lui :** après l'envoi, rien ne lui dit ce que sa cliente
+pourra faire. Il l'a découvert en ouvrant le lien — sans pouvoir distinguer un
+appui malheureux d'une panne. Une maquette avant de toucher à l'écran.
+
+### Un croquis à main levée se lit quand même — et l'attente souffle
+
+**Sa correction :** *« il n'arrive pas à me lire mon croquis sous prétexte qu'il
+n'est pas à l'échelle. Les utilisateurs ne vont pas s'amuser à faire des croquis
+à l'échelle à chaque fois. Là, il y a tous les métrés. »*
+
+**Les cotes commandent, le dessin ne fait qu'ordonner.** Un croquis à main levée
+dit avec certitude qui est à gauche de qui ; il ne dit rien de fiable sur les
+longueurs — c'est pour cela qu'on y écrit les métrés. Le plan n'est donc plus
+refusé parce que le dessin n'est pas proportionné : les zones sont posées
+d'après leurs cotes, et l'écart se dit en réserve.
+
+**La sévérité reste où elle sert** : le trajet du regard, qui entre dans le
+calcul de pression, garde sa règle stricte. Une pelouse placée de travers se
+voit à l'œil ; une pression fausse ne se voit qu'en juillet.
+
+**La haie donne l'échelle, elle aussi.** Sur son croquis elle longe tout le haut
+du terrain et porte sa longueur : la lui refuser jetait la moitié de ce que le
+dessin disait.
+
+**Et l'agencement n'est plus un motif de tout refuser.** Métrés, piquage,
+nourrice restent obligatoires ; un agencement illisible ne retire que le DESSIN.
+Le plan sort — arroseurs, réseaux, pièces — et l'on dit pourquoi il n'est pas
+dessiné.
+
+**Le message accusait le mauvais coupable.** *« Aucune zone du croquis ne porte
+à la fois ses cotes et sa place »* désignait ses métrés alors qu'ils étaient
+tous là : le fautif était la lecture, qui n'avait rendu aucune proportion. La
+consigne au modèle a été reprise — « tu ne devines jamais » ne s'applique pas
+aux places, qui se mesurent sur l'image.
+
+**Et l'attente souffle.** *« Lors de la lecture du croquis, mets les trois
+petits points qui bougent. »* Trois points de suspension immobiles étaient
+exactement le défaut relevé le 13 août sur la dictée : ils disent « rien ne se
+passe » pendant que le travail est en cours, et la lecture d'un croquis est la
+plus longue attente de l'application. Le geste est partagé
+(`PointsQuiSoufflent`), jamais recopié.
+
+Détail : `ARCHITECTURE.md` §149 et §150.
 ### Le client touché ne remonte plus : la fiche s'ouvre vers le bas
 
 **Son défaut :** *« lorsque le client se trouve sur la partie haute de l'écran
@@ -388,9 +514,6 @@ n'engage à rien.
 ceux qui réclamaient le refus vérifient désormais l'avertissement et la
 possibilité de passer outre.
 
----
-
-## 2026-08-23
 
 ### « Terminés » : cinq chiffres en moins, et de l'air
 
@@ -418,6 +541,10 @@ caché, on ne le voit pas trop »* — déplacer la carte en tête ne suffisait 
 une raison : ce que `docs/AGENT.md` §6 exige — Atlas prépare le relevé, il ne le
 déclare pas — s'écrit en toutes lettres **au bas du relevé lui-même**, là où les
 chiffres se lisent. La retirer des deux endroits serait autre chose.
+
+**« À facturer » passe en or**, sa correction du soir même : l'or porte ici ce
+qu'il porte déjà sur les lignes en dessous — ce qui attend un geste de lui. Deux
+comptes du même noir se lisaient comme un seul chiffre coupé en deux.
 
 **La démarcation qu'il demande est un TRAIT, pas de l'espace.** De l'espace seul
 se mange au premier ajout de contenu ; un trait tient. La phrase passe en noir
@@ -470,9 +597,6 @@ Trois contrôles neufs, **tous vus rougir** contre l'état dégradé qu'ils
 prétendent attraper — une lecture publique qui ignore le masquage, un masquage
 qui efface la durée, une empreinte qui scelle le temps caché.
 
----
-
-## 2026-08-23
 
 ### La durée passe sous le nom, et le filet du « + » disparaît
 

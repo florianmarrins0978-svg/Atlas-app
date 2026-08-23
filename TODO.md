@@ -27,6 +27,39 @@ la main ne se recalculerait plus.
 
 ---
 
+## ⚠ « La cliente ne peut pas proposer de jour » — NON REPRODUIT (23 août 2026)
+
+Son signalement : *« je n'ai pas coché la case pour que la cliente ne puisse pas
+proposer de jour ; néanmoins elle ne peut quand même pas proposer de jour »*.
+Capture à l'appui : deux dates, aucune option pour en proposer une autre.
+
+**Cherché pour de bon, et NON REPRODUIT sur le code du jour.** Ce qui a été
+vérifié, une chose après l'autre :
+
+| Vérifié | Résultat |
+|---|---|
+| l'interrupteur à l'ouverture de la feuille | `true` |
+| ce qui part en base sans y toucher, une date | `true`, et la cliente voit « je propose » |
+| idem avec DEUX dates, comme sur sa capture | `true`, trois options offertes |
+| l'état survit-il à un envoi annulé ? | **non** — il revient à `true` à chaque réouverture |
+| un autre chemin crée-t-il un envoi ? | **non** — un seul appelant en production, à `?? true` |
+
+Son envoi porte donc bien « non autorisé », et **seul un appui réel sur
+l'interrupteur produit cela**. Deux explications tiennent, et rien ne permet de
+trancher d'ici : l'interrupteur a été effleuré (il est juste au-dessus du bouton
+d'envoi), ou son banc servait une version d'avant au moment de cet envoi.
+
+**Ce qui a été livré :** le contrôle qui manquait sur SON chemin. Le refus était
+éprouvé depuis « Choisir la date », l'autorisation depuis l'ancien écran
+seulement — la moitié qui l'intéresse n'était pas tenue. Le nouveau cas a été vu
+rouge sur son symptôme exact.
+
+**Ce qui reste à trancher AVEC LUI :** après l'envoi, rien ne lui dit ce que sa
+cliente pourra faire. Il l'a découvert en ouvrant le lien, et n'avait aucun moyen
+de savoir s'il avait mal visé ou si l'application était en panne. Une maquette
+avant de toucher à l'écran (`CLAUDE.md` §3 bis).
+
+
 ## Arrosage : lire les positions sur une vraie photo (23 août 2026)
 
 `lire-croquis.ts` demande maintenant au modèle un repère en mètres, la position
@@ -2529,6 +2562,84 @@ préfixe (`batterie19`) a la suite au vert ; les quatre suivantes, avec, au roug
 **Rien n'est à corriger dans le produit ni dans la suite.** Elle a raison de
 refuser de conclure quand son montage n'a pas reproduit le cas — c'est ce qui a
 permis de le voir.
+
+### 0 quinvicies octies. ~~Ses maquettes étaient HORS LIGNE depuis dix heures~~ — **RÉPARÉ le 23 août 2026**
+
+**Sa plainte, en cinq mots :** *« Les pages ne s'ouvrent pas. »* Et elles ne
+s'ouvraient pas : la publication GitHub Pages échouait depuis 10 h 50, donc le
+site servait encore la version du matin — sans les deux planches qu'on venait de
+lui demander d'ouvrir.
+
+**DEUX défauts, tous deux nés du lot d'arrosage, et le second était INVISIBLE.**
+
+| | Ce qui rougissait | Pourquoi |
+|---|---|---|
+| `test:arrosage` | *« aucune vanne ne mélange deux pluviométries »* | il réclamait **la règle qu'il a retirée le 23 août** — *« ne prends pas en compte la pluviométrie »*. Un contrôle qui exige ce que le patron a fait enlever (`CLAUDE.md` §5 bis) |
+| `test:croquis` | *« aucun arroseur n'est laissé sans tuyau »* | un vrai défaut de plan : le tracé se faisait **zone par zone**, donc un réseau qui ne posait qu'une tête dans une zone n'avait aucun tuyau |
+
+**Le second n'a jamais été vu par la CI**, et c'est le point à retenir : l'étape
+enchaînait les quatre suites sous `set -e`, si bien qu'elle s'arrêtait à la
+première. Dix heures de publication barrée, un défaut réparé, et un autre qui
+attendait derrière. `pages.yml` joue désormais les quatre et les rapporte
+toutes.
+
+**Ce que le défaut du croquis touchait, et ce qu'il ne touchait pas.** Il vivait
+dans la maquette (`appli/arrosage-croquis.html`), pas dans le produit :
+`plan-dessine.ts` trace depuis l'entrée du terrain vers **chaque** arroseur, il
+n'a jamais eu ce trou. Vérifié avant de conclure, pas supposé.
+
+**Corrigé en traçant le réseau ENTIER, pas zone par zone** : un réseau est une
+vanne, son tuyau visite toutes ses têtes où qu'elles soient, et le départ se
+mesure depuis le regard — sa règle du 21 août. Regardé à l'écran sur les trois
+jardins d'exemple, pas seulement compté.
+
+### 0 quinvicies septies. Son message au client, et l'allure de ses devis — **DEUX PLANCHES, RIEN N'EST CODÉ**
+
+**Sa demande du 23 août 2026**, en deux morceaux : *« y a-t-il un endroit dans
+les réglages où l'utilisateur peut rédiger ce message automatique ? S'il n'y en
+a pas, il faut en créer un. Et il faudrait également que l'utilisateur puisse
+avoir un endroit dédié à la modification de son devis. S'il veut rajouter son
+logo, changer la typographie, changer le fond de page. »*
+
+**CHERCHÉ AVANT DE RÉPONDRE** (`CLAUDE.md` §5 ter), et les deux manquent
+vraiment :
+
+| | Ce qui existe | Ce qui manque |
+|---|---|---|
+| **le message** | `src/lib/message-client.ts` — écrit en dur, le même pour tous | aucun réglage, nulle part |
+| **l'allure du devis** | « Apparence » règle les couleurs de **l'application** ; « Devis & factures » règle validité, acompte, délai, mentions | le logo (aucune colonne au schéma), la typographie, le fond de page |
+
+**Les deux planches, qu'il doit ouvrir avant qu'on code :**
+
+- `appli/mon-message-au-client.html` — deux endroits où le poser, puis l'écran :
+  le cadre s'écrit, le téléphone dessous rend le SMS que reçoit vraiment le
+  client. Trois pastilles posent `[client]`, `[lien]`, `[entreprise]` **sous le
+  curseur**. Effacer le lien le **dit**, sans le remettre en douce.
+- `appli/allure-de-mes-devis.html` — logo, trois typographies, trois fonds,
+  quatre accents, et le devis se repeint à l'instant.
+
+**Le texte de la planche est RECOPIÉ du code qui l'envoie**, et un contrôle le
+tient (`scripts/verifier-maquette-message-et-allure.mjs`) : une planche qui
+montrerait un autre message lui ferait juger un texte que ses clients ne
+reçoivent pas — c'est le malentendu même qu'il vient corriger. Le contrôle sait
+rougir : éprouvé sur un mot changé, l'alerte du lien retirée, le jeton posé à la
+fin, et le fond figé.
+
+**CE QU'IL DOIT TRANCHER**, et rien ne se code avant :
+
+| | La question |
+|---|---|
+| 1 | le message : dans « Devis & factures », ou une rubrique « Mes messages » ? |
+| 2 | le lien est-il **obligatoire** — Atlas refuse-t-il un message sans lui ? |
+| 3 | un message par document, ou un seul pour tout ? |
+| 4 | l'allure : rubrique à part, ou bloc dans « Devis & factures » ? |
+| 5 | l'allure vaut-elle pour **tous** les documents, ou le devis seul ? |
+| 6 | trois typographies suffisent-elles ? |
+| 7 | garde-t-on le **fond teinté** ? Il s'imprime, donc il coûte de l'encre à chacun de ses clients |
+
+**Ce qui restera scellé quoi qu'il choisisse**, et la planche le dit : mentions
+obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
+n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
 ### 0 trigies quinquies. ~~Cinq suites du devis rougissaient une batterie sur deux~~ — **RÉPARÉES le 23 août 2026**
 
