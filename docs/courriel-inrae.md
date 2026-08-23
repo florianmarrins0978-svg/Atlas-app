@@ -90,6 +90,19 @@ passer à l'échelle.
 
 ---
 
+## La pièce jointe
+
+Un document de trois pages l'accompagne : `docs/piece-jointe-inrae/`. Il montre,
+sur l'anthracnose du platane, l'écran obtenu, l'origine de chaque ligne affichée
+et ce qu'Atlas s'interdit.
+
+**Il vaut mieux qu'un paragraphe de plus dans le courriel** : la question que se
+pose un institut devant ce genre de demande est « que devient notre texte chez
+eux ? », et c'est une question à laquelle on répond en montrant. Le document dit
+aussi, noir sur blanc, que la photographie affichée est du domaine public et non
+une image INRAE — ce qui isole la troisième demande au lieu de la mêler aux deux
+autres.
+
 ## Ce que ce courriel dit, et pourquoi
 
 Trois choix, au cas où la réponse demanderait de le reprendre :
