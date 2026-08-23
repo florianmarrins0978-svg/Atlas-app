@@ -365,6 +365,38 @@ qui efface la durée, une empreinte qui scelle le temps caché.
 
 ---
 
+## 2026-08-23
+
+### La durée passe sous le nom, et le filet du « + » disparaît
+
+*« Le "une journée" en doré, mets-le sous le nom, et la ligne qui se trouve
+entre le nom et le "+ Ajouter un chantier", supprime-la. »*
+
+**Corrigé sur la planche 86 D'ABORD**, puis dans l'écran (`CLAUDE.md` §3 bis) —
+la planche reste la référence des planifiés, et c'est elle qu'il ouvre.
+
+**Le filet n'existait que dans l'écran.** La planche n'en porte pas :
+`AjoutAuJour` en avait ajouté un, et il refermait la journée juste avant le
+geste qui la prolonge. Retiré des trois états du bloc — au repos comme pendant
+le choix —, sans quoi il serait apparu à l'appui pour disparaître ensuite.
+
+**Ce que le déplacement corrige, au-delà du goût.** À côté du nom, la durée lui
+disputait la largeur : sur sa capture, « Chantier test — Abri Pornic » cassait
+en deux lignes et « une demi-journée » finissait seule en dessous, à gauche,
+sans qu'on sache à quoi elle se rapportait. Dessous, elle y est toujours.
+
+**Un contrôle a été RETOURNÉ, pas supprimé.** `test-ligne-planning-e2e.ts`
+exigeait la ligne entière sous 30 px de haut — c'est-à-dire tout sur une seule
+ligne, l'inverse exact de ce qu'il demande aujourd'hui. Ce qu'il défendait
+vraiment, c'est que **le nom du chantier ne paie pas la phrase** : il mesure
+donc maintenant la hauteur du NOM seul, et vérifie en plus que la durée est
+bien SOUS lui (`CLAUDE.md` §5 bis). Sa sonde a été corrigée au passage : elle
+lisait `childNodes[0]`, ce qui ne marchait que tant que le nom était un nœud de
+texte nu.
+
+Mesuré dans un vrai navigateur, à 390 px : durée sous le nom, nom sur une seule
+ligne (23 px), et `border-top: 0px` au-dessus du « + ».
+
 ## 2026-08-22
 
 ### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
