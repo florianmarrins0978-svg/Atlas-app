@@ -38,7 +38,7 @@ part sont enfin la même chose.
 
 **Et le garde-fou de l'entrée précédente accusait à tort :** il comptait les
 lignes du document périmé et refusait un envoi à 660 €. C'est ce refus qui a
-révélé la vraie cause. Détail dans `ARCHITECTURE.md` §157.
+révélé la vraie cause. Détail dans `ARCHITECTURE.md` §159.
 
 
 ### Un devis vide ne part plus chez le client
@@ -68,7 +68,7 @@ document vide ?
 **Le contrôle a d'abord été incapable d'échouer** : il attendait « aucune ligne »
 à l'écran, phrase que l'éditeur de devis porte déjà. Il restait vert le garde-fou
 retiré. Il vise maintenant une phrase qui n'appartient qu'au refus, et il a été
-vu rouge. `ARCHITECTURE.md` §156.
+vu rouge. `ARCHITECTURE.md` §158.
 
 
 ### « La cliente ne peut pas proposer de jour » — le contrôle qui manquait sur son chemin
@@ -95,6 +95,55 @@ dates, aucune option pour en proposer une autre.
 **Reste à trancher avec lui :** après l'envoi, rien ne lui dit ce que sa cliente
 pourra faire. Il l'a découvert en ouvrant le lien — sans pouvoir distinguer un
 appui malheureux d'une panne. Une maquette avant de toucher à l'écran.
+
+### Le client touché ne remonte plus : la fiche s'ouvre vers le bas
+
+**Son défaut :** *« lorsque le client se trouve sur la partie haute de l'écran
+[…] et que je clique dessus, le client remonte et la fiche chantier aussi. […]
+tout remonte d'un bloc et je suis perdu, je ne sais plus où est mon client. Il
+disparaît sous mes yeux. »*
+
+Aucun défilement n'était en cause : ouvrir une fiche en referme une autre, et
+quand celle-ci se trouvait plus haut dans la page, tout remontait de sa hauteur
+— 422 px mesurés. Safari n'ancre pas le défilement ; la ligne touchée reste
+désormais immobile sous le doigt (`useAncrageDuGeste`, `ARCHITECTURE.md` §157).
+
+---
+
+### La colonne « Fiche chantier » ne se remplit plus toute seule
+
+*« Je viens de facturer monsieur Bernard […] néanmoins il y a une fiche chantier
+qui s'est créée en même temps. Cette catégorie est réservée lorsque les
+paysagistes créent une fiche chantier avec les informations type la tonte, la
+taille, ce qu'ils ont fait. À aucun moment, lorsqu'une facture doit être
+envoyée, une fiche chantier doit être créée. »*
+
+**Le mécanisme, invisible à la lecture.** Émettre une facture POSE la date de
+fin du chantier (`factures.ts` : `COALESCE(termine_at, now())`), et la colonne
+listait les chantiers terminés. Facturer fabriquait donc une pièce que personne
+n'avait écrite.
+
+**Et le document qu'elle ouvrait était le mauvais.** C'est la feuille INTERNE —
+équipe, créneau, note vocale, adresse du chantier —, celle que ses salariés
+ouvrent dans la camionnette. Rangée au dossier d'un client, elle donnait à
+croire qu'il l'avait reçue. Cette feuille reste joignable depuis le chantier :
+elle n'a simplement plus sa place dans le dossier du client.
+
+**Ce que la colonne porte désormais :** les fiches d'entretien qu'il a remplies
+et ENVOYÉES (Paysage → Fiche de chantier), à l'adresse même que le client a
+reçue. Un brouillon n'y entre pas — comme un devis non parti, il n'a ni date
+d'envoi ni adresse publique.
+
+**« Enregistrer » disparaît sur ces pièces-là**, et ce n'est pas un oubli : rien
+ne fige ce rapport en fichier. Le laisser aurait fait descendre une page web
+nommée `.pdf`, que rien n'ouvre — le défaut du 7 août 2026, retourné. La
+vignette dit « FICHE » plutôt que « PDF », et « Ouvrir » prend la place du geste
+principal.
+
+**Un client sans aucun chantier voit quand même sa fiche.** Elle s'ouvre depuis
+Paysage, se nomme, s'envoie — sans qu'aucun chantier n'existe. Le retour
+anticipé « ce client n'a pas de chantier » l'aurait fait disparaître de son
+dossier.
 
 
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
@@ -373,6 +422,48 @@ possibilité de passer outre.
 
 ## 2026-08-23
 
+### « Terminés » : cinq chiffres en moins, et de l'air
+
+**Ses six corrections du 23 août au soir**, capture de l'écran à l'appui :
+*« Ma TVA à déclarer, mets-le en gras or ; la petite phrase en dessous d'août
+2026, en gris, supprime-la ; là où il y a écrit trois à facturer et huit
+facturés, supprime les montants qu'il y a avec, essaye de laisser un peu
+d'espace entre cette phrase-là et le premier client, histoire qu'on fasse bien
+la démarcation ; pareil le montant 5 028,00 € qui est sur la même ligne qu'août
+2026, celui-là tu peux le supprimer. Il faut aérer un peu la page parce qu'il y
+a énormément d'informations. »*
+
+**Trois montants sont partis, et ils ne disaient pas la même chose.** Le total à
+droite du mois ne comptait que le mois affiché ; les deux montants de la phrase
+comptaient tous les mois ; les lignes en dessous, elles, ne montrent que le mois
+affiché. Trois portées différentes sur quatre centimètres d'écran : on les
+lisait comme une contradiction, et l'on cessait de croire la liste. Ce qu'on
+additionne se lit dans les lignes.
+
+**Le titre de la carte de TVA passe en or gras.** C'était l'élément le plus pâle
+de la carte alors qu'il nomme l'outil dont il disait le matin même *« il est
+caché, on ne le voit pas trop »* — déplacer la carte en tête ne suffisait pas.
+
+**La mention grise sous la carte est retirée**, et ce n'est possible que pour
+une raison : ce que `docs/AGENT.md` §6 exige — Atlas prépare le relevé, il ne le
+déclare pas — s'écrit en toutes lettres **au bas du relevé lui-même**, là où les
+chiffres se lisent. La retirer des deux endroits serait autre chose.
+
+**La démarcation qu'il demande est un TRAIT, pas de l'espace.** De l'espace seul
+se mange au premier ajout de contenu ; un trait tient. La phrase passe en noir
+gras entière — sa demande du 22 août pour le compte des factures —, les montants
+partis n'ayant plus rien à quoi s'opposer.
+
+**Le probe `capture-termines.mts` a été adapté, pas contourné** : il exigeait le
+compte du mois derrière son repère, que la phrase ne portait pas. Le repère est
+allé sur la phrase, qui EST ce compte (`CLAUDE.md` §5 bis).
+
+**Un défaut relevé au passage, et consigné plutôt que corrigé au jugé** : la
+planche 90, que `page.tsx` désigne comme la référence de cet écran, a dérivé —
+elle ignore la carte de TVA venue de la planche 86 et les retraits de ce soir.
+Voir `TODO.md` : il faut trancher entre la remettre à niveau et lui retirer son
+titre.
+
 ### Le temps passé se masque au client — codé, et il reste au patron
 
 **Sa demande du 22 août, puis ses deux corrections du 23** devant la planche 92 :
@@ -410,6 +501,38 @@ prétendent attraper — une lecture publique qui ignore le masquage, un masquag
 qui efface la durée, une empreinte qui scelle le temps caché.
 
 ---
+
+## 2026-08-23
+
+### La durée passe sous le nom, et le filet du « + » disparaît
+
+*« Le "une journée" en doré, mets-le sous le nom, et la ligne qui se trouve
+entre le nom et le "+ Ajouter un chantier", supprime-la. »*
+
+**Corrigé sur la planche 86 D'ABORD**, puis dans l'écran (`CLAUDE.md` §3 bis) —
+la planche reste la référence des planifiés, et c'est elle qu'il ouvre.
+
+**Le filet n'existait que dans l'écran.** La planche n'en porte pas :
+`AjoutAuJour` en avait ajouté un, et il refermait la journée juste avant le
+geste qui la prolonge. Retiré des trois états du bloc — au repos comme pendant
+le choix —, sans quoi il serait apparu à l'appui pour disparaître ensuite.
+
+**Ce que le déplacement corrige, au-delà du goût.** À côté du nom, la durée lui
+disputait la largeur : sur sa capture, « Chantier test — Abri Pornic » cassait
+en deux lignes et « une demi-journée » finissait seule en dessous, à gauche,
+sans qu'on sache à quoi elle se rapportait. Dessous, elle y est toujours.
+
+**Un contrôle a été RETOURNÉ, pas supprimé.** `test-ligne-planning-e2e.ts`
+exigeait la ligne entière sous 30 px de haut — c'est-à-dire tout sur une seule
+ligne, l'inverse exact de ce qu'il demande aujourd'hui. Ce qu'il défendait
+vraiment, c'est que **le nom du chantier ne paie pas la phrase** : il mesure
+donc maintenant la hauteur du NOM seul, et vérifie en plus que la durée est
+bien SOUS lui (`CLAUDE.md` §5 bis). Sa sonde a été corrigée au passage : elle
+lisait `childNodes[0]`, ce qui ne marchait que tant que le nom était un nœud de
+texte nu.
+
+Mesuré dans un vrai navigateur, à 390 px : durée sous le nom, nom sur une seule
+ligne (23 px), et `border-top: 0px` au-dessus du « + ».
 
 ## 2026-08-22
 

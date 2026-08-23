@@ -84,11 +84,16 @@ export default async function TerminesPage() {
         <Link
           href="/termines/tva"
           data-atlas="carte-tva"
-          className="mx-[26px] mt-4 flex items-center justify-between gap-3 rounded-[4px] px-[15px] py-[13px]"
+          className="mx-[26px] mt-[18px] flex items-center justify-between gap-3 rounded-[4px] px-[15px] py-[17px]"
           style={{ backgroundColor: colors.card }}
         >
           <span className="min-w-0">
-            <span className={`block ${libelleCaps}`} style={{ color: colors.muted }}>
+            {/* **En or et en gras — sa demande du 23 août 2026 au soir.** Ce
+                titre était le plus pâle de la carte alors que c'est lui qui
+                nomme l'outil dont il disait, le matin même, *« il est caché, on
+                ne le voit pas trop »*. Déplacer la carte en tête ne suffisait
+                donc pas : encore fallait-il qu'on la voie. */}
+            <span className={`block ${libelleCaps} font-bold`} style={{ color: colors.or }}>
               Ma TVA à déclarer
             </span>
             <span
@@ -105,12 +110,17 @@ export default async function TerminesPage() {
             {formatEuros.format(tva.reste)}
           </span>
         </Link>
-        {/* **Cette mention suit le lien où qu'il aille** (`docs/AGENT.md` §6) :
-            Atlas prépare le relevé, il ne le déclare pas. « Reste à payer »
-            l'accompagne, pour la raison dite plus haut. */}
-        <p className="mx-[26px] mt-[6px] text-[11px] leading-[1.6]" style={{ color: colors.muted }}>
-          Reste à payer sur la période. Atlas prépare ce relevé, il ne le déclare pas.
-        </p>
+        {/* **La mention grise sous la carte est partie le 23 août 2026**, à sa
+            demande : *« la petite phrase en dessous d'août 2026, en gris,
+            supprime-la »*. Cet écran portait trop de choses à lire pour ce
+            qu'il vient y faire.
+
+            **Ce que `docs/AGENT.md` §6 exige n'est pas perdu pour autant** —
+            Atlas prépare le relevé, il ne le déclare pas —, et c'est la seule
+            raison pour laquelle ce retrait est possible : la phrase existe en
+            toutes lettres AU BAS DU RELEVÉ lui-même (`termines/tva`), là où les
+            chiffres se lisent et où la question se pose. La retirer des deux
+            endroits serait autre chose, et se refuserait. */}
 
         {/* **Ce repère existe pour qu'un contrôle puisse mesurer une PLACE.**
             Sa proposition B tient à ce que la carte passe AVANT la liste ; sans

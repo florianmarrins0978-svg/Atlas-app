@@ -25,8 +25,21 @@ export type PieceDuClient = {
   jour: string | null;
   /** La ligne grise sous le titre — le jour, ou le nom du chantier. */
   precision: string | null;
-  /** L'adresse qui ouvre le PDF. */
+  /** L'adresse qui ouvre la pièce. */
   href: string;
+  /**
+   * Ce que l'adresse ouvre — un PDF, ou une page.
+   *
+   * **Le dossier n'a pas que des PDF depuis le 23 août 2026.** Les fiches
+   * d'entretien envoyées se lisent à leur adresse publique, celle-là même que
+   * le client a reçue : elles ne sont figées nulle part en fichier. Annoncer
+   * « PDF » sur leur vignette et proposer « Enregistrer » ferait tomber le
+   * patron sur une page web nommée `.pdf` — le défaut du 7 août, dans l'autre
+   * sens.
+   *
+   * Absent vaut `"pdf"` : les devis et les factures ne changent pas.
+   */
+  format?: "pdf" | "page";
 };
 
 /**

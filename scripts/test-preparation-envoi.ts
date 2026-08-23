@@ -85,7 +85,7 @@ async function main() {
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Élagage", clientId: client.id });
     // **Un prix, sans quoi ce cas n'éprouve plus ce qu'il annonce.** Depuis le
     // 23 août 2026, un devis SANS LIGNE bloque à lui seul l'envoi
-    // (`ARCHITECTURE.md` §156) et masquerait le motif qu'on veut lire ici.
+    // (`ARCHITECTURE.md` §158) et masquerait le motif qu'on veut lire ici.
     await prixRepo.ajouterLignePrix(ctx, chantier.id, "Élagage d'un chêne", "600.00");
     await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 
@@ -101,7 +101,7 @@ async function main() {
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Abattage", clientId: client.id });
     // **Un prix, sans quoi ce cas n'éprouve plus ce qu'il annonce.** Depuis le
     // 23 août 2026, un devis SANS LIGNE bloque à lui seul l'envoi
-    // (`ARCHITECTURE.md` §156) et masquerait le motif qu'on veut lire ici.
+    // (`ARCHITECTURE.md` §158) et masquerait le motif qu'on veut lire ici.
     await prixRepo.ajouterLignePrix(ctx, chantier.id, "Abattage d'un frêne", "600.00");
     await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 
@@ -156,7 +156,7 @@ async function main() {
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Taille", clientId: client.id });
     // **Un prix, sans quoi ce cas n'éprouve plus ce qu'il annonce.** Depuis le
     // 23 août 2026, un devis SANS LIGNE bloque à lui seul l'envoi
-    // (`ARCHITECTURE.md` §156) et masquerait le motif qu'on veut lire ici.
+    // (`ARCHITECTURE.md` §158) et masquerait le motif qu'on veut lire ici.
     await prixRepo.ajouterLignePrix(ctx, chantier.id, "Taille d'une haie", "600.00");
     await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 

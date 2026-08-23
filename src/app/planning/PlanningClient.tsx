@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useAncrageDuGeste } from "@/components/atlas/useAncrageDuGeste";
 import Link from "next/link";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
 import { estAuPlanning } from "@/lib/onglet-chantier";
@@ -184,6 +185,12 @@ export default function PlanningClient({
 
   const grilleRef = useRef<HTMLDivElement>(null);
   const carteRef = useRef<HTMLDivElement>(null);
+  /**
+   * **Ce qu'il touche ne doit pas lui échapper.** Ouvrir une fiche en referme
+   * une autre ; si celle-ci était plus haut, tout remonte de sa hauteur et la
+   * ligne touchée sort de l'écran (`useAncrageDuGeste`).
+   */
+  const ancrer = useAncrageDuGeste();
 
   /**
    * Le retrait DÉFINITIF reste branché ici — il ne se confond pas avec
@@ -646,7 +653,12 @@ export default function PlanningClient({
                 // **Le même nom REFERME ce qu'il a ouvert.** Sa correction du
                 // 22 août : la ligne « se transforme en le menu déroulant »,
                 // elle ne le pousse pas plus bas à chaque appui.
-                const ouvrir = () => {
+                const ouvrir = (e: { currentTarget: HTMLElement }) => {
+                  // La ligne du chantier reste immobile sous le doigt, quoi
+                  // qu'on referme au-dessus d'elle. Le nom du client est ce
+                  // qu'il cherche des yeux : c'est lui qu'on ancre, pas la
+                  // fiche qui s'ouvre en dessous.
+                  ancrer(e.currentTarget.closest("[data-atlas='ligne-planifiee']"));
                   setOuvert(null);
                   if (deplie) {
                     setCarteListe(null);
@@ -681,15 +693,23 @@ export default function PlanningClient({
                           color: colors.ink,
                         }}
                       >
-                        {c.nom}
+                        <span className="block">{c.nom}</span>
                         {/* **La durée, jamais le moment** — sa demande du
                             22 août, retenue sur la planche 86 : *« ce n'est pas
                             clair quand il y a marqué le matin et
                             l'après-midi »*. La demi-journée se lit deux lignes
-                            plus bas, sur la ligne MATIN. */}
+                            plus bas, sur la ligne MATIN.
+
+                            **Et elle passe SOUS le nom** — sa demande du
+                            23 août : *« le "une journée" en doré, mets-le sous
+                            le nom »*. À côté, elle disputait la largeur au nom
+                            et à l'équipe : « Chantier test — Abri Pornic »
+                            cassait en deux lignes et la durée finissait seule
+                            en dessous, à gauche, sans qu'on sache à quoi elle
+                            se rapportait. Vu sur sa capture. */}
                         <span
                           data-atlas="duree-planifiee"
-                          className="ml-2 text-[12.5px]"
+                          className="mt-[3px] block text-[12.5px]"
                           style={{ color: colors.or }}
                         >
                           {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
@@ -1010,7 +1030,8 @@ function PastilleEquipe({
 }: {
   libelle: string;
   vide: boolean;
-  onClick: () => void;
+  /** L'événement est transmis : l'appelant y trouve la ligne à garder immobile. */
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   avecPlus?: boolean;
 }) {
   return (
@@ -1106,7 +1127,7 @@ function AjoutAuJour({
   return (
     <>
       {ouvert?.quoi === "ajout-qui" && ouvert.cle === cle ? (
-        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+        <div className="mt-3.5 pt-3">
           {sansDate.length === 0 ? (
             <p className="m-0 text-[12px]" style={{ color: colors.muted }}>
               Aucun chantier n’attend de jour.
@@ -1136,7 +1157,6 @@ function AjoutAuJour({
         <div
           data-atlas="en-attente"
           className="mt-3.5 flex flex-wrap items-center gap-2 pt-3"
-          style={{ borderTop: `1px solid ${colors.line}` }}
         >
           <span
             className="flex-1"
@@ -1157,9 +1177,14 @@ function AjoutAuJour({
           </span>
         </div>
       ) : (
+        /* **Plus de filet au-dessus du « + »** — sa demande du 23 août 2026 :
+           *« la ligne qui se trouve entre le nom et le "+ Ajouter un chantier",
+           supprime-la »*. La planche 86 n'en porte pas : c'est l'écran qui en
+           avait ajouté un, et il refermait la journée juste avant le geste qui
+           la prolonge. */
         <div
           className="mt-3.5 flex items-center justify-center gap-2.5 pt-3 text-[12.5px]"
-          style={{ borderTop: `1px solid ${colors.line}`, color: colors.inkSoft }}
+          style={{ color: colors.inkSoft }}
         >
           <button
             type="button"
