@@ -94,6 +94,43 @@ possibilité de passer outre.
 
 ## 2026-08-22
 
+### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
+
+**Sa demande, capture de la fiche d'entretien à l'appui :** *« il faudrait
+mettre un petit bouton on/off pour si l'utilisateur ne veut pas que le temps
+apparaisse sur la fiche, pouvoir l'effacer — on, le temps apparaîtrait sur la
+fiche ; off, il n'apparaîtrait pas »*.
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis : une demande de geste se dessine
+avant de toucher `src/`, et « c'est tout petit » n'est pas une exception).
+La planche est à `appli/temps-sur-la-fiche.html`, n° 92.
+
+**Ce qu'elle tranche, et qui n'allait pas de soi :**
+
+· **« Effacer » ne veut pas dire OUBLIER.** La durée reste enregistrée sur le
+  passage — elle sert au patron, pas seulement au client —, et seul le compte
+  rendu l'ignore. Une phrase le dit sous la molette quand c'est éteint : sans
+  elle, il croit avoir perdu sa durée et la ressaisit au passage suivant.
+· **L'état se lit en toutes lettres**, « Visible » / « Masqué ». Un curseur nu
+  se décode ; cet écran se regarde avec un gant, entre deux chantiers.
+· **La ligne du client DISPARAÎT**, elle ne se grise pas : c'est ce que le
+  compte rendu fera pour de bon (`src/app/entretien/[jeton]/page.tsx` ne rend
+  ce paragraphe que si `rapport.minutes !== null`).
+· **Les deux côtés se voient à la fois** — sa fiche, et ce que sa cliente
+  reçoit. C'est le seul moyen de répondre à ce qu'il demande vraiment :
+  « qu'est-ce que mon client voit ? ». Une capture ne le dirait pas.
+
+**Deux questions lui sont posées sur la planche**, et la suite en dépend : le
+réglage de départ (elle s'ouvre sur « Visible », ce que l'application fait
+aujourd'hui) et le cas où il voudrait **ne rien saisir du tout**, qui serait
+autre chose qu'un masquage.
+
+Le contrôle (`scripts/verifier-maquette-temps-sur-la-fiche.mjs`, branché sur
+`npm run verifier:maquette`) **a été vu rougir** contre les trois états dégradés
+qu'il prétend attraper : une ligne cachée par une simple opacité — donc encore
+lue et encore à sa place —, la phrase « reste enregistré » supprimée, et un
+interrupteur qui survivait à l'envoi.
+
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 
 **Sa demande, puis sa validation :** *« lorsqu'on clique sur "Choisir la date"
