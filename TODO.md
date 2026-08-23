@@ -85,6 +85,11 @@ la valeur n'y est pas encore. L'enregistrement de l'éditeur est différé ; sur
 serveur de développement chargé par soixante suites, l'assertion arrive avant
 l'écriture.
 
+**`test-reprise-chantier-e2e.ts` a rejoint la liste le 22 août au soir**, avec
+la même signature : *« le total n'est pas montré avant l'envoi. Vu : […] TOTAL
+HT 0,00 € »*. Tombée en batterie, verte seule et verte au repassage complet
+(103/103) dans la foulée. Trois suites, un seul défaut.
+
 **Ce n'est pas un défaut du produit — c'est un contrôle qui lit trop tôt.** Mais
 il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un rouge.
 Le corriger, c'est attendre la trace de l'enregistrement plutôt qu'un délai —
