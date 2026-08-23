@@ -312,6 +312,10 @@ une raison : ce que `docs/AGENT.md` §6 exige — Atlas prépare le relevé, il 
 déclare pas — s'écrit en toutes lettres **au bas du relevé lui-même**, là où les
 chiffres se lisent. La retirer des deux endroits serait autre chose.
 
+**« À facturer » passe en or**, sa correction du soir même : l'or porte ici ce
+qu'il porte déjà sur les lignes en dessous — ce qui attend un geste de lui. Deux
+comptes du même noir se lisaient comme un seul chiffre coupé en deux.
+
 **La démarcation qu'il demande est un TRAIT, pas de l'espace.** De l'espace seul
 se mange au premier ajout de contenu ; un trait tient. La phrase passe en noir
 gras entière — sa demande du 22 août pour le compte des factures —, les montants
