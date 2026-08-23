@@ -65,20 +65,43 @@ jobs:
             sleep 1
           done
           curl -sf http://127.0.0.1:8080/app.html >/dev/null
-          BASE_URL=http://127.0.0.1:8080 npm run test:e2e
+
+          # **ON JOUE LES QUATRE, MÊME SI LA PREMIÈRE TOMBE.**
+          #
+          # *Payé le 23 août 2026.* Avec `set -e`, la première suite rouge
+          # arrêtait l'étape : `test:arrosage` a barré la publication pendant
+          # dix heures — donc TOUTES ses maquettes, dont celles qu'on venait de
+          # lui demander d'ouvrir —, et pendant ce temps un SECOND défaut
+          # dormait dans `test:croquis`, invisible parce que la suite n'était
+          # jamais atteinte. Le corriger a demandé de le découvrir à la main.
+          #
+          # C'est la règle du dépôt appliquée ici (`CLAUDE.md` §5) : savoir que
+          # deux choses cassent, et lesquelles, vaut mieux que de les découvrir
+          # une par une. On note l'échec, on continue, et l'on tombe à la fin.
+          ECHECS=""
+          jouer(){
+            echo "── $1"
+            BASE_URL=http://127.0.0.1:8080 npm run "$1" || ECHECS="$ECHECS $1"
+          }
+          jouer test:e2e
           # **Les suites de l'arrosage gardent le calcul, pas les écrans.** Elles
           # étaient jouées à la main jusqu'au 18 août — et ce jour-là, un morceau
           # de calcul resté dans `arrosage.html` a mis la liste des pièces à zéro
           # sur la page du croquis sans qu'aucune suite jouée en ligne ne le
           # voie. Une suite qui ne barre pas la publication ne barre rien.
-          BASE_URL=http://127.0.0.1:8080 npm run test:arrosage
-          BASE_URL=http://127.0.0.1:8080 npm run test:croquis
+          jouer test:arrosage
+          jouer test:croquis
           # **La planche qu'on lui demande d'ESSAYER se parcourt d'abord ici.**
           # Trois fois, une adresse lui a été transmise sans que personne ne
           # l'ait ouverte, et c'est lui qui a trouvé le défaut. Celle-ci
           # s'ouvre, ses quatre onglets s'affichent et ses boutons se pressent
           # dans un vrai navigateur avant qu'elle parte en ligne.
-          BASE_URL=http://127.0.0.1:8080 npm run test:termines
+          jouer test:termines
+
+          if [ -n "$ECHECS" ]; then
+            echo "::error::Suites en échec :$ECHECS"
+            exit 1
+          fi
 
   deploy:
     name: Déploiement

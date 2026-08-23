@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon message au client — un seul, pour les trois</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:24px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  /* ── L'écran des réglages ─────────────────────────────────────────── */
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--fond);border-radius:14px;
+         padding:16px 16px 18px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .ecran .chapeau{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--or);margin:0}
+  .ecran .titre{margin:8px 0 0;font:400 26px/1.2 ui-serif,Georgia,serif}
+
+  .rubrique{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--trait)}
+  .rubrique:first-of-type{border-top:0}
+  .rubrique .rond{width:34px;height:34px;border-radius:999px;background:var(--papier);
+                  display:grid;place-items:center;font-size:16px;flex:none}
+  .rubrique .nom{font-size:15.5px}
+  .rubrique .dit{display:block;font-size:12.5px;color:var(--gris);margin-top:2px}
+  .rubrique .fleche{margin-left:auto;color:var(--gris)}
+  .rubrique.neuve{background:rgba(185,139,71,.10);border-radius:10px;padding:13px 10px;
+                  border-top:0;margin-top:6px}
+
+  .cadre{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--trait)}
+  .cadre .etiquette{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                    text-transform:uppercase;color:var(--gris);margin:0 0 8px}
+  textarea.modele{width:100%;border:1px solid var(--trait);border-radius:9px;background:var(--plage);
+                  padding:11px 12px;font:400 16px/1.5 ui-sans-serif,-apple-system,sans-serif;
+                  color:var(--encre);resize:vertical;min-height:230px;
+                  -webkit-tap-highlight-color:transparent}
+  textarea.modele:focus{outline:none;border-color:var(--or)}
+
+  .jetons{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0 0}
+  .jetons button{border:1px solid var(--or);border-radius:999px;background:transparent;
+                 color:var(--or);padding:7px 12px;font-size:13px;cursor:pointer;
+                 -webkit-tap-highlight-color:transparent}
+  .jetons .mot{align-self:center;font-size:12.5px;color:var(--gris);margin-right:2px}
+
+  /* Le refus : le lien est OBLIGATOIRE — sa décision du 23 août. */
+  .refus{margin:10px 0 0;padding:11px 12px;border-radius:9px;background:rgba(110,36,51,.09);
+         font-size:13.5px;line-height:1.45;color:var(--bordeaux)}
+  .refus[hidden]{display:none}
+  .enregistrer{margin:12px 0 0;width:100%;border:0;border-radius:999px;background:var(--pin);
+               color:#faf9f5;padding:15px;font-size:16px;cursor:pointer;
+               -webkit-tap-highlight-color:transparent}
+  .enregistrer[disabled]{background:#c9c5bb;color:#6d6a62;cursor:not-allowed}
+
+  /* ── LES TROIS TÉLÉPHONES ─────────────────────────────────────────── */
+  .trois{max-width:430px;margin:10px auto 0;padding:0 20px;display:grid;gap:12px}
+  .tel{background:#fff;border-radius:14px;padding:12px 12px 14px;
+       box-shadow:0 8px 22px rgba(20,18,14,.12)}
+  .tel .qui{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+            color:var(--gris);margin:0 0 9px;text-align:center}
+  .bulle{background:#e9e9eb;border-radius:16px;padding:11px 13px;font-size:14.5px;line-height:1.45;
+         white-space:pre-wrap;color:#000;word-break:break-word}
+  .bulle .lien{color:#0a62d0;text-decoration:underline}
+  .bulle .doc{background:rgba(185,139,71,.30);border-radius:3px}
+  .faux{margin:8px 0 0;font-size:12.5px;line-height:1.4;color:var(--bordeaux)}
+  .faux[hidden]{display:none}
+
+  .verdict{max-width:430px;margin:16px auto 0;padding:14px 18px;border-radius:14px;
+           font-size:14.5px;line-height:1.5;background:var(--papier);color:var(--encre-douce)}
+  .verdict b{color:var(--encre)}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+            background:var(--papier);font-size:15px;line-height:1.55}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Tu as tranché :</b> le message se règle dans « Devis &amp; factures » (A), le
+  lien est <b>obligatoire</b>, et c'est <b>un seul message pour tous</b>.<br>
+  Reste une chose à voir de tes yeux : la phrase du milieu n'est pas la même sur
+  un devis et sur une facture. Voici les deux façons de le faire — <b>écris dans
+  le cadre, les trois téléphones suivent</b>.
+</div>
+
+<!-- ═══ L'ÉCRAN ═════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>Où il se règle — ton choix A</h2>
+  <p>Dans « Devis &amp; factures », en dernier bloc. Rien de neuf à trouver dans
+     le sommaire des réglages.</p>
+</div>
+<div class="ecran">
+  <p class="chapeau">Mon entreprise</p>
+  <p class="titre">Devis &amp; factures</p>
+  <div style="margin-top:14px">
+    <div class="rubrique"><span class="rond">📅</span><span class="nom">Validité du devis<span class="dit">30 jours</span></span><span class="fleche">›</span></div>
+    <div class="rubrique"><span class="rond">💶</span><span class="nom">Acompte demandé<span class="dit">30 %</span></span><span class="fleche">›</span></div>
+    <div class="rubrique neuve"><span class="rond">✉️</span><span class="nom">Mon message au client<span class="dit">Un seul, pour vos trois documents</span></span><span class="fleche">›</span></div>
+  </div>
+
+  <div class="cadre">
+    <p class="etiquette">Mon message</p>
+    <textarea class="modele" id="modele" spellcheck="false"></textarea>
+    <div class="jetons">
+      <span class="mot">Poser :</span>
+      <button type="button" data-jeton="[client]">le client</button>
+      <button type="button" data-jeton="[document]">le document</button>
+      <button type="button" data-jeton="[lien]">le lien</button>
+      <button type="button" data-jeton="[entreprise]">mon entreprise</button>
+      <button type="button" id="remettre">Remettre le texte d'origine</button>
+    </div>
+    <p class="refus" id="refus" hidden></p>
+    <button class="enregistrer" id="enregistrer" type="button">Enregistrer</button>
+  </div>
+</div>
+
+<!-- ═══ FAÇON 1 ═════════════════════════════════════════════════════ -->
+<div class="bloc" style="margin-top:30px">
+  <h2>Façon 1 — la pastille « le document »</h2>
+  <p>Tu écris le bonjour, la formule, la signature, tout ce que tu veux ajouter.
+     <b>Là où tu poses « le document », Atlas met la phrase juste</b> — surlignée
+     en doré dans les trois téléphones.</p>
+</div>
+<div class="trois" id="facon1"></div>
+
+<!-- ═══ FAÇON 2 ═════════════════════════════════════════════════════ -->
+<div class="bloc" style="margin-top:30px">
+  <h2>Façon 2 — le même texte, mot pour mot</h2>
+  <p>Pas de pastille : tu écris ta phrase toi-même — celle du devis, forcément,
+     c'est ce que tu envoies le plus. <b>Elle part telle quelle sur les trois.</b>
+     Regarde la facture et le compte rendu.</p>
+</div>
+<div class="trois" id="facon2"></div>
+
+<div class="verdict">
+  <b>Ce que la façon 2 te coûte, et c'est pour ça que je te montre :</b> ta
+  facture ne dit plus « à régler avant le 21 septembre », ton compte rendu parle
+  d'un devis, et ton client peut te rappeler pour comprendre. Tu peux écrire une
+  phrase qui convienne aux trois — « Voici votre document » —, mais c'est plus
+  froid, et l'échéance disparaît quand même.
+</div>
+
+<div class="question">
+  <b>Une seule question :</b> la <b>1</b> ou la <b>2</b> ?
+</div>
+
+<script>
+/* Le texte d'aujourd'hui, RECOPIÉ de src/lib/message-client.ts — pas réécrit de
+   mémoire : la planche doit montrer ce que ses clients reçoivent vraiment. */
+const ORIGINE = [
+  "Bonjour [client],",
+  "",
+  "[document]",
+  "",
+  "[lien]",
+  "",
+  "Bien à vous,",
+  "[entreprise]",
+].join("\n");
+
+const CLIENT = "Mme Larousse";
+const ENTREPRISE = "Eden Nature";
+const LIEN = "https://…app.github.dev/d/_7deYienbFTa4DISAZ";
+
+/* **Les trois phrases sont celles du code**, pas des exemples inventés
+   (`composerMessageClient`, `composerMessageFacture`, `composerMessageEntretien`).
+   Celle de la facture porte son échéance : c'est ce qui se perd façon 2. */
+const DOCUMENTS = [
+  { quoi: "Le devis",
+    phrase: "Voici votre devis. Vous pouvez le consulter et choisir votre date "
+          + "d'intervention en suivant ce lien :" },
+  { quoi: "La facture",
+    phrase: "Voici votre facture n° F2026-0008, à régler avant le 21 septembre. "
+          + "Vous pouvez la consulter et la télécharger ici :" },
+  { quoi: "Le compte rendu de passage",
+    phrase: "Voici le compte rendu de mon passage chez vous :" },
+];
+
+const modele = document.getElementById("modele");
+const refus = document.getElementById("refus");
+const enregistrer = document.getElementById("enregistrer");
+
+function echapper(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+/* Une SEULE fonction rend les six bulles : deux rendus écrits séparément
+   finiraient par ne plus dire pareil, et c'est justement la comparaison qui est
+   en jeu ici (CLAUDE.md §3). */
+function rendre(texte, doc, avecDocument) {
+  let t = echapper(texte)
+    .replace(/\[client\]/g, echapper(CLIENT))
+    .replace(/\[entreprise\]/g, echapper(ENTREPRISE))
+    .replace(/\[lien\]/g, '<span class="lien">' + echapper(LIEN) + "</span>");
+  // Façon 2 : la pastille n'existe pas. Ce qu'il a écrit part tel quel — et si
+  // son texte porte encore « [document] », il partirait ainsi, ce qui se voit.
+  // **Façon 2 : la pastille n'existe pas, alors il écrit SA phrase.** Et il
+  // l'écrit forcément en pensant au devis — c'est le document qu'il envoie dix
+  // fois par semaine. On rend donc la phrase du devis sur les TROIS : c'est
+  // exactement ce qui partirait, et c'est ce qu'il faut lui montrer. Laisser
+  // « [document] » en clair dans la bulle ne montrait rien qu'un écran cassé.
+  t = t.replace(
+    /\[document\]/g,
+    '<span class="doc">' + echapper(avecDocument ? doc.phrase : DOCUMENTS[0].phrase) + "</span>"
+  );
+  return t;
+}
+
+function peindre() {
+  const texte = modele.value;
+
+  // **Le lien est OBLIGATOIRE — sa décision du 23 août.** Atlas refuse
+  // d'enregistrer, il ne se contente pas de prévenir : sans lien, le message
+  // part et le client ne peut rien ouvrir. Le bouton s'éteint AVEC le message,
+  // sinon on appuie et rien ne se passe.
+  const sansLien = !texte.includes("[lien]");
+  refus.hidden = !sansLien;
+  refus.textContent = sansLien
+    ? "Le lien est obligatoire : sans lui, votre client ne peut ni ouvrir son document ni choisir sa date. Reposez-le pour enregistrer."
+    : "";
+  enregistrer.disabled = sansLien;
+
+  for (const [id, avecDocument] of [["facon1", true], ["facon2", false]]) {
+    document.getElementById(id).innerHTML = DOCUMENTS.map((doc) => {
+      const corps = rendre(texte, doc, avecDocument);
+      // On DIT ce qui cloche, plutôt que de le laisser deviner : une facture qui
+      // parle de dates d'intervention se lit vite fait sans qu'on la remarque.
+      // La bulle porte la phrase du DEVIS alors que ce n'est pas un devis : on le
+      // dit, plutôt que de le laisser deviner. Une facture qui parle de dates
+      // d'intervention se lit vite fait sans qu'on la remarque.
+      const faux = !avecDocument && doc.quoi !== "Le devis";
+      return '<div class="tel"><p class="qui">' + doc.quoi + "</p>"
+           + '<div class="bulle">' + corps + "</div>"
+           + '<p class="faux"' + (faux ? "" : " hidden") + ">"
+           + "Ce n'est pas ce que ce document doit dire.</p></div>";
+    }).join("");
+  }
+}
+
+for (const bouton of document.querySelectorAll("[data-jeton]")) {
+  bouton.addEventListener("click", () => {
+    // Posé LÀ OÙ IL ÉCRIT : un mot qui atterrit au bas du message oblige à le
+    // déplacer à la main, sur un téléphone, au doigt.
+    const debut = modele.selectionStart ?? modele.value.length;
+    const fin = modele.selectionEnd ?? debut;
+    const jeton = bouton.dataset.jeton;
+    modele.value = modele.value.slice(0, debut) + jeton + modele.value.slice(fin);
+    modele.focus();
+    modele.selectionStart = modele.selectionEnd = debut + jeton.length;
+    peindre();
+  });
+}
+
+document.getElementById("remettre").addEventListener("click", () => {
+  modele.value = ORIGINE;
+  peindre();
+});
+
+modele.addEventListener("input", peindre);
+modele.value = ORIGINE;
+peindre();
+</script>
+</body>
+</html>

@@ -81,11 +81,24 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // et il se lit ici.
   cas('le jardin de départ donne 5 secteurs', secteurs === 5, 'lu : ' + secteurs);
 
-  // **UN SECTEUR, UNE PLUVIOMÉTRIE — sa règle du 17 août, « ça ne se mélange
-  // jamais ».** Une vanne ouvre tout son secteur pour la MÊME durée : deux
-  // pluviométries dessous, et l'une des deux reçoit la mauvaise quantité,
-  // quoi qu'on règle. Le contrôle regarde les zones réellement réunies sous
-  // une même vanne, pas la théorie.
+  // **UN SECTEUR, UN MATÉRIEL** — et ce contrôle a CHANGÉ DE RÈGLE le 23 août
+  // 2026, parce que le patron a changé la sienne.
+  //
+  // Il exigeait « une seule pluviométrie par vanne », sa règle du 17 août
+  // (« ça ne se mélange jamais »). Le 23, il l'a retirée : *« ne prends pas en
+  // compte la pluviométrie »*. Deux turbines de buses différentes partagent
+  // désormais une vanne, et c'est lui qui arbitre à l'arrosage
+  // (`arrosage-calcul.js`, la clé de groupe).
+  //
+  // **Le contrôle a donc rougi sur du code JUSTE, et il a barré la publication
+  // de la page pendant deux jours** — c'est-à-dire qu'il a coûté au patron
+  // l'accès à toutes ses maquettes, pour réclamer ce qu'il avait fait enlever
+  // (`CLAUDE.md` §5 bis : on adapte le contrôle, on ne rétablit pas la règle).
+  //
+  // **Ce qui sépare toujours, en revanche, c'est le MATÉRIEL.** Une turbine et
+  // une tuyère ne s'ouvrent jamais ensemble : l'une verse environ trois fois
+  // plus vite, et la même durée d'ouverture noie l'une ou assoiffe l'autre.
+  // Cette règle-là n'a pas bougé, et c'est elle qu'on garde ici.
   const melange = await page.evaluate(() => {
     const d = decouper();
     const parVanne = {};
@@ -94,14 +107,14 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
       p.points.forEach(pt => {
         const i = d.reseauDuPoint[z.id + ':' + pt.x.toFixed(3) + ':' + pt.y.toFixed(3)];
         if (i == null) return;
-        (parVanne[i] = parVanne[i] || new Set()).add(p.m.pluvio);
+        (parVanne[i] = parVanne[i] || new Set()).add(p.cle);
       });
     });
     return { vannes: Object.keys(parVanne).length,
              fautives: Object.keys(parVanne).filter(k => parVanne[k].size > 1).length };
   });
   cas('des vannes a eprouver', melange.vannes >= 2, JSON.stringify(melange));
-  cas('aucune vanne ne melange deux pluviometries',
+  cas('aucune vanne ne melange turbine et tuyere',
       melange.fautives === 0, JSON.stringify(melange));
 
   // SA RÈGLE DE POSE (17 août) : l'écart ne descend JAMAIS sous la portée, et
