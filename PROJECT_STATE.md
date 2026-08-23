@@ -731,6 +731,12 @@ extérieure.
 | D'où vient le débit | `src/lib/arrosage/mesure-debit.ts` |
 | Qui sait lire une image | `etatVision`, dans `src/lib/etat-ia.ts` |
 
+**LE CROQUIS DIT OÙ SONT LES CHOSES** (22 août 2026, soir). La lecture relève
+les places en fraction du dessin (zones et nourrice) ; l'échelle se déduit des
+cotes, et le trajet du regard à la première tête entre dans le calcul de
+pression — 0,29 bar sur trente mètres. Sans nourrice dessinée, il n'est pas
+compté et l'écran le dit. `geometrie-croquis.ts`, `ARCHITECTURE.md` §149.
+
 **CE QUI ARRIVE AU DERNIER ARROSEUR EST CALCULÉ** (22 août 2026, soir). Le
 dernier trou connu est fermé : l'électrovanne, la ligne (débit décroissant
 tronçon par tronçon), ses raccords et l'antenne Ø16 sont retirés en plus de

@@ -75,11 +75,11 @@ export const DEBIT_COMPTEUR = 1.8;
  * 2,00**. Le second est un plancher de profession, le premier un relevé.
  *
  * **On garde le relevé, et c'est la règle du `CLAUDE.md` §4 ter qui tranche :**
- * devant deux valeurs défendables, retenir celle qui pose un arroseur de plus.
- * Calculer sur 2,00 mettrait un arroseur de plus par réseau qu'un compteur à
- * 1,80 ne peut alimenter — et un réseau qui ne se lève pas se découvre en
- * juillet, tranchée refermée. Calculer sur 1,80 chez quelqu'un qui a 2,00 coûte
- * au pire une vanne de trop.
+ * devant deux valeurs défendables, retenir celle qui met le MOINS d'arroseurs
+ * sur une vanne. Calculer sur 2,00 en mettrait un de plus par réseau qu'un
+ * compteur à 1,80 ne peut alimenter — et un réseau qui ne se lève pas se
+ * découvre en juillet, tranchée refermée. Calculer sur 1,80 chez quelqu'un qui
+ * a 2,00 coûte au pire une vanne de trop.
  *
  * **Ce que ce chiffre reste :** UNE mesure, sur UN branchement. Le jour où il en
  * relève d'autres, elles se rangent ici — et si plusieurs compteurs donnent

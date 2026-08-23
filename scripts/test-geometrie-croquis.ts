@@ -1,0 +1,174 @@
+import assert from "node:assert/strict";
+import {
+  echelleDuCroquis,
+  distanceRegardVersZone,
+  trajetLePlusLong,
+  ECART_MAX_ENTRE_ZONES,
+  type ZonePositionnee,
+} from "../src/lib/arrosage/geometrie-croquis";
+
+// LES PROPORTIONS DU CROQUIS — sa demande du 22 août 2026 : « oui fais-le lire
+// les proportions ».
+//
+// **Ce que cette suite défend, et pourquoi ça compte.** La distance du regard
+// au premier arroseur était le dernier morceau non compté du calcul de
+// pression. Je lui avais dit qu'aucune saisie ne la donnait ; il a répondu
+// qu'il n'avait pas à la donner, puisque le croquis porte la nourrice, les
+// zones et leurs cotes. Il avait raison.
+//
+// **Le risque de ce calcul, c'est l'ÉCHELLE.** Une échelle lue de travers ne
+// fait pas rougir un test de forme : elle rend une distance plausible et
+// fausse, donc une perte de charge fausse, donc une pression fausse, donc le
+// mauvais nombre d'arroseurs. Tout ce qui suit tourne autour de ça.
+
+let echecs = 0;
+const dire = (bon: boolean, quoi: string) => {
+  console.log(`${bon ? "  ✓" : "  ✗"} ${quoi}`);
+  if (!bon) echecs++;
+};
+
+console.log("=== Les proportions du croquis ===\n");
+
+/** Une pelouse de 16 × 6 m qui occupe 0,40 × 0,15 du croquis : 40 m par unité. */
+const PELOUSE: ZonePositionnee = {
+  position: { x: 0.3, y: 0.3 },
+  largeurFraction: 0.4,
+  hauteurFraction: 0.15,
+  L: 16,
+  l: 6,
+};
+
+// ── 1. L'échelle se déduit des cotes ────────────────────────────────────────
+{
+  const e = echelleDuCroquis([PELOUSE]);
+  dire(
+    e.ok && Math.abs(e.metresParFraction - 40) < 0.001,
+    e.ok ? `une pelouse de 16 m sur 0,40 du croquis : ${e.metresParFraction} m par unité` : "échelle refusée",
+  );
+
+  // **Chaque zone donne DEUX estimations** — une par côté. Une zone dessinée de
+  // travers dans un sens se corrige par l'autre.
+  dire(e.ok && e.surCombienDeZones === 2, "une zone cotée en L et l donne deux estimations, pas une");
+}
+
+// ── 2. La médiane, pas la moyenne ───────────────────────────────────────────
+//
+// **Une valeur aberrante ne doit pas déplacer le résultat.** Un modèle qui se
+// trompe sur une zone tirerait une moyenne vers son erreur ; la médiane
+// l'ignore. Ici deux zones à 40 et une à 60 : la médiane vaut 40.
+{
+  const petite: ZonePositionnee = { position: { x: 0.8, y: 0.8 }, largeurFraction: 0.1, hauteurFraction: 0.1, L: 6, l: 4 };
+  const e = echelleDuCroquis([PELOUSE, petite]);
+  dire(e.ok && e.metresParFraction === 40, e.ok ? `médiane retenue : ${e.metresParFraction} m` : "refusée");
+}
+
+// ── 3. Elle REFUSE quand les zones se contredisent ──────────────────────────
+//
+// C'est le contrôle qui compte : un croquis qui n'est pas à l'échelle produit
+// des distances inventées. On rend une raison, pas une moyenne.
+{
+  const incoherente: ZonePositionnee = {
+    position: { x: 0.7, y: 0.7 }, largeurFraction: 0.1, hauteurFraction: 0.1, L: 40, l: 40,
+  };
+  const e = echelleDuCroquis([PELOUSE, incoherente]);
+  dire(!e.ok, e.ok ? "acceptée à tort" : `refusée : ${e.raison}`);
+
+  // Et juste sous la limite, elle accepte — sinon elle refuserait tous les
+  // croquis à main levée, et un contrôle qui parle à tort s'apprend à être
+  // ignoré.
+  const limite: ZonePositionnee = {
+    position: { x: 0.7, y: 0.7 },
+    largeurFraction: 0.1,
+    hauteurFraction: 0.1,
+    L: 40 * ECART_MAX_ENTRE_ZONES * 0.1 * 0.99,
+    l: null,
+  };
+  const eLimite = echelleDuCroquis([PELOUSE, limite]);
+  dire(eLimite.ok, `juste sous le double d'écart, l'échelle est acceptée`);
+}
+
+// ── 4. Sans cote OU sans place, on ne conclut pas ───────────────────────────
+{
+  const sansPlace: ZonePositionnee = { position: null, largeurFraction: null, hauteurFraction: null, L: 16, l: 6 };
+  dire(!echelleDuCroquis([sansPlace]).ok, "une zone cotée mais sans place ne donne pas d'échelle");
+
+  const sansCote: ZonePositionnee = { position: { x: 0.3, y: 0.3 }, largeurFraction: 0.4, hauteurFraction: 0.15, L: null, l: null };
+  dire(!echelleDuCroquis([sansCote]).ok, "une zone placée mais sans cote ne donne pas d'échelle");
+}
+
+// ── 5. La distance se mesure en MANHATTAN, jusqu'au BORD ────────────────────
+//
+// Un tuyau suit les axes — une diagonale sous-estimerait le tuyau à acheter ET
+// la perte qu'il subit, dans le mauvais sens des deux. Et elle vise le bord :
+// la longueur DANS la zone est déjà comptée par la ligne d'arroseurs, la
+// compter deux fois gonflerait la perte et resserrerait la pose sans raison.
+{
+  // Regard à gauche de la pelouse (centre x=0,3, demi-largeur 0,2 → bord à 0,1).
+  const d = distanceRegardVersZone({ x: 0.0, y: 0.3 }, PELOUSE, 40);
+  dire(d !== null && Math.abs(d - 4) < 0.001, `regard à 0,1 du bord : ${d?.toFixed(1)} m (4 attendu)`);
+
+  // Regard AU-DESSUS de la zone : distance nulle, pas négative.
+  const dedans = distanceRegardVersZone({ x: 0.3, y: 0.3 }, PELOUSE, 40);
+  dire(dedans === 0, `regard sur la zone : ${dedans} m`);
+
+  // **En diagonale, les deux écarts s'ADDITIONNENT.** Regard en (0 ; 0,05),
+  // bord de la pelouse à 0,1 en x et 0,175 en y : 0,275 d'écart total, soit
+  // 11 m à 40 m par unité. À vol d'oiseau on ne trouverait que 8,06 m — un
+  // quart de tuyau en moins que ce qu'il faut acheter, et un quart de perte de
+  // charge en moins que ce qu'il subira.
+  //
+  // **Ce contrôle a rougi sur MON erreur, pas sur le code** : j'avais écrit 8 m
+  // en lisant les demi-côtés de travers. Le refaire à la main était le seul
+  // moyen de trancher, et c'est ce que vaut une valeur figée dans une suite.
+  const diago = distanceRegardVersZone({ x: 0.0, y: 0.05 }, PELOUSE, 40);
+  dire(
+    diago !== null && Math.abs(diago - 11) < 0.001,
+    `en diagonale : ${diago?.toFixed(2)} m (11 en Manhattan, 8,06 à vol d'oiseau)`,
+  );
+}
+
+// ── 6. Le trajet retenu est LE PLUS LONG ────────────────────────────────────
+//
+// Toutes les zones sont dimensionnées sur la même pression : elle doit être
+// celle du point le plus mal servi. Une moyenne donnerait un plan qui tient en
+// moyenne, c'est-à-dire un plan qui ne tient pas au bout du jardin.
+{
+  const loin: ZonePositionnee = { position: { x: 0.9, y: 0.9 }, largeurFraction: 0.1, hauteurFraction: 0.1, L: 4, l: 4 };
+  const t = trajetLePlusLong({ x: 0.0, y: 0.0 }, [PELOUSE, loin]);
+  const proche = distanceRegardVersZone({ x: 0, y: 0 }, PELOUSE, 40) ?? 0;
+  dire(
+    t.ok && t.metres > proche,
+    t.ok ? `le plus long trajet retenu : ${t.metres} m (la pelouse proche est à ${proche.toFixed(1)})` : "refusé",
+  );
+}
+
+// ── 7. Sans nourrice, aucun trajet — et surtout aucune supposition ──────────
+//
+// `CLAUDE.md` §4 bis : la nourrice se lit sur le croquis, jamais ne se déduit.
+// La poser au point d'eau « pour dépanner » ferait creuser au mauvais endroit,
+// et une tranchée ne se déplace pas.
+{
+  const t = trajetLePlusLong(null, [PELOUSE]);
+  dire(!t.ok, t.ok ? "un trajet a été rendu sans nourrice" : `refusé : ${t.raison}`);
+  dire(
+    !t.ok && /nourrice/.test(t.raison),
+    "et la raison nomme la nourrice — pas « données insuffisantes »",
+  );
+}
+
+// ── 8. Un trajet aberrant ne se rend pas ────────────────────────────────────
+//
+// Au-delà de 200 m, ce n'est plus un jardin de particulier : c'est une échelle
+// lue de travers. La perte de charge qu'on en tirerait condamnerait le plan
+// pour rien — et un refus qui parle à tort coûte autant qu'un silence.
+{
+  const immense: ZonePositionnee = {
+    position: { x: 0.95, y: 0.95 }, largeurFraction: 0.02, hauteurFraction: 0.02, L: 20, l: 20,
+  };
+  const t = trajetLePlusLong({ x: 0, y: 0 }, [immense]);
+  dire(!t.ok, t.ok ? `un trajet de ${t.metres} m a été rendu` : `refusé : ${t.raison}`);
+}
+
+console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
+if (echecs > 0) process.exit(1);
+assert.equal(echecs, 0);

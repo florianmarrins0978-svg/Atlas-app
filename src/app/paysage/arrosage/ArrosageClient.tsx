@@ -353,12 +353,16 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
               {m.q} {m.u}
             </span>
             <span className="min-w-0 flex-1">{m.nom}</span>
-            {/* **La référence, quand elle existe.** C'est elle qui part chez le
-                fournisseur ; une ligne sans référence est une ligne à mesurer ou
-                à assembler, et le silence vaut mieux qu'une référence inventée. */}
-            {m.ref && (
+            {/* **La référence, quand elle a été RELEVÉE — jamais la clé interne.**
+                Corrigé le 22 août 2026 sur sa consigne : *« tu ne dois surtout
+                pas inventer de prix ni de référence !!!!!!! »*. Cette colonne
+                affichait `te-taraude-25-34-25` et `electrovanne-100dv`, qui
+                sont des noms de variables. On ne commande pas avec ça, et
+                l'essayer coûte une matinée. Le nom de la pièce, lui, suffit au
+                comptoir. */}
+            {m.reference && (
               <span className="flex-none text-[11.5px]" style={{ color: colors.muted }}>
-                {m.ref}
+                {m.reference}
               </span>
             )}
           </p>

@@ -20,12 +20,28 @@ const dire = (bon: boolean, quoi: string) => {
   if (!bon) echecs++;
 };
 
+// **Un croquis COMPLET porte aussi les places et la nourrice** — ajouté le
+// 22 août 2026, sa demande : *« oui fais-le lire les proportions »*. Les places
+// sont en fraction du dessin (0 à 1) ; les mètres s'en déduisent avec les cotes
+// (`geometrie-croquis.ts`).
+//
+// **Ce jeu d'essai a rougi le jour où la nourrice est devenue obligatoire**, et
+// c'était juste : un croquis sans nourrice n'est pas « lisible » au sens du
+// `CLAUDE.md` §4 bis — sans elle, aucun plan ne se pose. On complète donc le
+// croquis d'essai plutôt que d'assouplir la règle (`CLAUDE.md` §5 bis).
 const JUSTE = JSON.stringify({
   zones: [
-    { type: "gazon", nom: "Pelouse devant", longueur_m: 16, largeur_m: 6, metres_lineaires: null },
-    { type: "haie", nom: "Haie de laurier", longueur_m: null, largeur_m: null, metres_lineaires: 22 },
+    {
+      type: "gazon", nom: "Pelouse devant", longueur_m: 16, largeur_m: 6, metres_lineaires: null,
+      x: 0.35, y: 0.4, largeur_fraction: 0.4, hauteur_fraction: 0.15,
+    },
+    {
+      type: "haie", nom: "Haie de laurier", longueur_m: null, largeur_m: null, metres_lineaires: 22,
+      x: 0.8, y: 0.5, largeur_fraction: 0.05, hauteur_fraction: 0.55,
+    },
   ],
   point_d_eau: "compteur",
+  nourrice: { x: 0.1, y: 0.9 },
 });
 
 console.log("=== Lire un croquis de jardin ===\n");
@@ -38,7 +54,60 @@ if (r.ok) {
   dire(r.croquis.zones[0].L === 16 && r.croquis.zones[0].l === 6, "la pelouse porte ses deux cotes");
   dire(r.croquis.zones[1].ml === 22, "la haie porte ses mètres linéaires");
   dire(r.croquis.pointDEau === "compteur", "le point d'eau est lu");
-  dire(r.croquis.reserves.length === 0, `aucune réserve sur un croquis lisible (${r.croquis.reserves.length})`);
+  dire(
+    r.croquis.reserves.length === 0,
+    `aucune réserve sur un croquis lisible (${r.croquis.reserves.length}${r.croquis.reserves.length ? " : " + r.croquis.reserves.join(" · ") : ""})`,
+  );
+  // ── Les places, et la nourrice ────────────────────────────────────────────
+  dire(
+    r.croquis.zones[0].x === 0.35 && r.croquis.zones[0].largeurFraction === 0.4,
+    "la place de la pelouse est lue en fraction du dessin",
+  );
+  dire(
+    r.croquis.nourrice !== null && r.croquis.nourrice.x === 0.1 && r.croquis.nourrice.y === 0.9,
+    "la nourrice est lue là où elle est dessinée",
+  );
+}
+
+// ── 1 bis. LA NOURRICE ABSENTE SE DIT, ET NE SE DEVINE PAS ──────────────────
+//
+// `CLAUDE.md` §4 bis : elle se lit sur le croquis, jamais ne se déduit. La
+// poser au point d'eau « pour dépanner » ferait creuser au mauvais endroit, et
+// une tranchée ne se déplace pas.
+{
+  const sansNourrice = lireReponseCroquis(
+    JSON.stringify({
+      zones: [{ type: "gazon", nom: "P", longueur_m: 16, largeur_m: 6 }],
+      point_d_eau: "compteur",
+    })
+  );
+  dire(
+    sansNourrice.ok && sansNourrice.croquis.nourrice === null,
+    "sans nourrice dessinée, elle reste nulle — jamais posée au point d'eau",
+  );
+  dire(
+    sansNourrice.ok && sansNourrice.croquis.reserves.some((x) => /nourrice/.test(x)),
+    "et l'absence est dite au patron",
+  );
+}
+
+// ── 1 ter. UNE PLACE HORS DE [0, 1] N'EN EST PAS UNE ────────────────────────
+//
+// Un modèle qui rend « 12 » pour un x n'a pas donné une fraction : il a donné
+// des mètres, ou un pixel. La rogner à 1 fabriquerait une position plausible et
+// fausse — et c'est une distance de tuyau qui en sortirait.
+{
+  const horsBornes = lireReponseCroquis(
+    JSON.stringify({
+      zones: [{ type: "gazon", nom: "P", longueur_m: 16, largeur_m: 6, x: 12, y: 0.5 }],
+      point_d_eau: "compteur",
+      nourrice: { x: 0.1, y: 0.9 },
+    })
+  );
+  dire(
+    horsBornes.ok && horsBornes.croquis.zones[0].x === null,
+    "un x de 12 est refusé, pas ramené à 1",
+  );
 }
 
 // ── 2. Le modèle entoure son objet ──────────────────────────────────────────

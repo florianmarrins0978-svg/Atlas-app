@@ -265,10 +265,41 @@ la tranchée à ses frais.
 1. **Aucune valeur d'arrosage ne se devine.** Un chiffre sans source relevée ne
    rentre pas dans le calcul : il se demande, ou le calcul refuse de conclure.
    « Plausible » n'est pas une source.
-2. **Se tromper vers le SÛR, toujours.** Devant deux hypothèses également
-   défendables, retenir celle qui pose un arroseur de plus, jamais celle qui en
-   pose un de moins. Un arroseur en trop coûte 30 € ; un réseau qui ne se lève
-   pas coûte le chantier.
+2. **Se tromper vers le SÛR — et le sûr, c'est MOINS D'ARROSEURS PAR RÉSEAU.**
+
+   **Cette règle a d'abord été écrite à l'envers, et c'est lui qui l'a
+   redressée le 22 août 2026 :** *« un arroseur de trop fait que le réseau ne
+   peut pas se lever ! »* Elle disait « retenir l'hypothèse qui pose un
+   arroseur de plus » — une formule qui, appliquée à un RÉSEAU, produit
+   exactement la panne qu'elle prétend éviter : une tête de plus sur une vanne,
+   c'est du débit en plus sur la même conduite, donc de la pression en moins,
+   donc des turbines qui sortent à moitié.
+
+   La bonne formulation, et il n'y en a qu'une :
+
+   | Devant un doute | Ce qu'on retient |
+   |---|---|
+   | combien d'arroseurs sur **une vanne** | **le moins**, quitte à ouvrir une vanne de plus |
+   | combien de **réseaux** | **le plus** |
+   | une perte de charge inconnue | **la plus forte** |
+   | une portée inconnue | **la plus courte** |
+
+   Une vanne de plus coûte une électrovanne et une voie de programmateur. Un
+   réseau qui ne se lève pas coûte le chantier.
+
+   **ET CETTE PRUDENCE NE S'APPLIQUE QU'AUX INCONNUES.** Sa précision du
+   22 août, dans la foulée : *« faut pas pour autant qu'il retire un arroseur,
+   il faut qu'il me calcule le nombre juste »*.
+
+   | | |
+   |---|---|
+   | ce qui se **calcule** — la couverture d'une zone, le débit d'une buse, les pertes | **exact**, sans marge ajoutée |
+   | ce qu'on **ignore** — une valeur non relevée, une longueur non saisie | prudent, dans le sens ci-dessus |
+
+   Retirer un arroseur « pour être tranquille » n'est pas de la prudence : c'est
+   un trou d'arrosage, et il se voit en juillet exactement comme la panne qu'on
+   voulait éviter. La marge se prend sur ce qu'on ne sait pas, jamais sur ce
+   qu'on sait.
 3. **Ce qui n'est pas calculé se DIT à l'écran.** Pas dans le dépôt, pas dans un
    commentaire : sous le plan, là où il le lit. Une réserve tue vaut un mensonge
    — parce qu'un plan silencieux est cru complet.
@@ -405,9 +436,21 @@ qui se perd, on refait. Une troisième passe remonterait la pression et l'on
 tournerait autour de la valeur : s'arrêter à deux garde les pertes des débits
 les plus forts, donc le côté sûr.
 
-**Ce qui n'est PAS compté se dit à l'écran** : le trajet du regard à la
-première tête, qui dépend de l'endroit où la nourrice est posée. La pression
-annoncée est un plafond.
+**LES PLACES SE LISENT SUR LE CROQUIS, EN FRACTION — les mètres se DÉDUISENT.**
+Sa demande du 22 août au soir : *« oui fais-le lire les proportions »*, après
+que je lui ai dit à tort qu'aucune saisie ne donnait le trajet du regard à la
+première tête. *« Il a tous les métrés du terrain, il a juste à calculer. »*
+
+Le modèle rend des places entre 0 et 1 — il voit qu'une pelouse occupe le tiers
+gauche, pas qu'elle est à douze mètres. **L'échelle sort des cotes déjà lues** :
+16 m sur 0,40 du croquis font 40 m par unité. On retient la **médiane** des
+estimations, jamais la moyenne, et **on refuse de conclure** au-delà du double
+d'écart entre zones — un croquis pas à l'échelle ne rend pas une distance
+moyenne, il rend une réserve.
+
+**Ce qui reste non compté se dit à l'écran** : quand la nourrice n'est pas
+dessinée, le trajet ne se calcule pas — et il ne se suppose pas davantage. La
+pression annoncée est alors un plafond.
 
 **UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU, PAS SEULEMENT PAR LE COMPTEUR.** Sa
 déduction du 22 août 2026 : *« en diamètre vingt-cinq c'est 1,76 m³/h, donc dans
@@ -439,7 +482,7 @@ dessous.
 constructeurs, pas de ses relevés à lui : au-dessus de la pression de
 référence, on garde la portée du catalogue. Espacer les arroseurs sur un chiffre
 supposé fabrique un trou d'arrosage qu'on ne voit qu'en juillet ; réduire coûte
-au pire un arroseur de plus. **Et une portée réduite se DIT à l'écran** — c'est
+au pire une vanne de plus. **Et une portée réduite se DIT à l'écran** — c'est
 une estimation, pas un fait.
 
 **LE DIAMÈTRE DU TUYAU SE CALCULE, ET SUR DEUX CRITÈRES — jamais un seul.**
