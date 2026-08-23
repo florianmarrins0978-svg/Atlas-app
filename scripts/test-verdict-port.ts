@@ -42,6 +42,47 @@ cas("SON CAS : `sans-gh` n'accuse plus le port d'être privé", () => {
   );
 });
 
+cas("un port QUE LE RELAIS NE CONNAÎT PAS n'envoie plus basculer une visibilité", () => {
+  // **Le cas du 23 août 2026, et il a coûté trois « ça ne marche pas ».** La
+  // fiche donnait le même geste — rendre le port public — quel que soit ce que
+  // le démarrage avait rencontré. Basculer la visibilité d'un port que le
+  // relais ne connaît pas ne peut RIEN : il n'y a rien à basculer.
+  const { souci } = verdictPort({
+    etatPort: "non-declare",
+    dehors: { joignable: false, statut: 404, type: null, motif: "404 sans type" },
+  });
+  assert.match(souci ?? "", /NE CONNAÎT MÊME PAS LE PORT/, "le souci ne dit pas que le port est inconnu du relais");
+  assert.match(souci ?? "", /RÉENREGISTRER|Transférer un port/, "il n'indique pas le geste qui, LUI, peut aboutir");
+  assert.ok(
+    !/« Visibilité du port » → « Public »/.test(souci ?? ""),
+    "il renvoie encore vers la bascule de visibilité, celle qui ne peut rien ici"
+  );
+});
+
+cas("un refus de GitHub est CITÉ, jamais résumé en « échec »", () => {
+  // Un mot qui ne désigne personne coûte plus cher que pas de message du tout.
+  const { souci } = verdictPort({
+    etatPort: "échec:HTTP 401: Bad credentials",
+    dehors: { joignable: false, statut: 404, type: null, motif: "404 sans type" },
+  });
+  assert.match(souci ?? "", /Bad credentials/, "la raison du refus est perdue en route");
+  assert.match(souci ?? "", /gh auth login/, "on ne dit pas comment lever le refus");
+});
+
+cas("« sans-gh » DIT que personne n'a réglé ce port depuis l'allumage", () => {
+  const { souci } = verdictPort({
+    etatPort: "sans-gh",
+    dehors: { joignable: false, statut: 404, type: null, motif: "404 sans type" },
+  });
+  assert.match(souci ?? "", /N'A PAS PU L'OUVRIR LUI-MÊME/, "rien ne dit que l'espace n'a rien pu faire");
+  assert.match(souci ?? "", /Rebuild Container/, "le remède de fond — un espace qui naît avec la déclaration — n'est pas donné");
+});
+
+cas("sans mesure, « non-declare » se dit tel quel et ne passe pas pour « inconnu »", () => {
+  const { ligne } = verdictPort({ etatPort: "non-declare", dehors: null });
+  assert.match(ligne, /NON DÉCLARÉ AU RELAIS/, "un port inconnu du relais est rangé avec les visibilités douteuses");
+});
+
 cas("la MESURE prime sur le réglage du démarrage", () => {
   // Le cas exact du 22 août : le démarrage n'a rien pu faire, mais le patron a
   // rendu le port public à la main, et l'adresse répond.

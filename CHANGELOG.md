@@ -9,6 +9,41 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### « Ça ne marche pas » trois fois : la fiche donnait un geste qui ne pouvait rien
+
+Son espace tournait, le serveur répondait sur 3000, et l'adresse publique rendait
+un **404 nu** — pas Atlas. La fiche l'envoyait rendre le port « public ». Il l'a
+fait. Trois fois.
+
+**Le défaut n'était pas dans le geste, il était dans la question qu'on ne posait
+pas.** « Privé » et « inconnu du relais » portent le même symptôme et n'ont pas
+le même remède : basculer la visibilité d'un port que GitHub **n'a jamais
+enregistré** ne peut rien — il n'y a rien à basculer. Rien, nulle part, ne
+demandait au relais s'il connaissait ce port.
+
+| | |
+|---|---|
+| `ouvrir-port.sh` | pose désormais la question — `gh codespace ports` — et rend **`non-declare`** quand le port n'y figure pas |
+| Le refus de `gh` | partait à `/dev/null` et se lisait « échec », un mot qui ne désigne personne. Il est **cité**, coupé à 160 caractères : la fiche se lit sur un téléphone |
+| `_verdict-port.mjs` | **lit enfin ce mot** et donne le geste qui correspond : réenregistrer le port, lever le refus de `gh`, ou reconstruire le conteneur |
+
+**La règle qui reste, et qui vaut au-delà de ce cas :** un diagnostic qui donne
+toujours le même remède quel que soit ce qu'il a rencontré n'est pas un
+diagnostic, c'est un rituel. Et un rituel qui échoue deux fois s'apprend à être
+ignoré — on perd alors la fiche entière, pas seulement sa dernière ligne.
+
+**Éprouvé en le confrontant à l'ancienne version** : les quatre contrôles neufs
+rougissent contre elle, et la nomment (`scripts/test-verdict-port.ts`).
+
+**Ce qui n'a PAS pu être reproduit ici, et s'écrit comme tel** : cet
+environnement n'est pas un espace GitHub. Le nouveau mot `non-declare` est
+éprouvé sur la règle qui le lit, pas sur un vrai relais — c'est au prochain
+allumage de son espace que la fiche le dira, ou non.
+
+---
+
+## 2026-08-23
+
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
 *« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
