@@ -94,6 +94,31 @@ possibilité de passer outre.
 
 ## 2026-08-22
 
+### Envoyer une facture : un appui au lieu de trois
+
+**Sa demande, capture à l'appui :** *« ça fait beaucoup trop de clics »*. Il en
+comptait trois — arrêter la facture, préparer le lien, ouvrir le SMS — et il
+comptait juste.
+
+**Le premier mentait.** « Confirmer le départ de la facture » ne faisait partir
+rien du tout : il l'**arrêtait**. Numéro définitif, entrée en TVA, plus aucune
+modification possible.
+
+**Ce qui change :** un encart **Par SMS / Par e-mail** au-dessus — la même
+capsule que sur la fiche client — puis un bouton **« Envoyer la facture »**,
+sans flèche. Un appui : la facture est arrêtée, et votre messagerie s'ouvre
+aussitôt.
+
+**Et deux lignes sous le bouton disent ce qu'il engage.** C'est ce qu'il a
+retenu sur planche : le mot parle d'envoi, l'appui arrête la facture pour de
+bon. Avant, deux gestes séparés le rappelaient ; il n'en reste qu'un.
+
+**Un canal sans coordonnée reste inerte** — sa règle : *« refuse l'envoi, ça
+veut dire qu'il communique par SMS, donc il enverra par SMS »*.
+`ARCHITECTURE.md` §148, `docs/maquettes/84`.
+
+## 2026-08-22
+
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 
 **Sa demande, puis sa validation :** *« lorsqu'on clique sur "Choisir la date"

@@ -351,10 +351,12 @@ async function main() {
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
-    await page.click("text=Confirmer le départ de la facture");
+    // **UN SEUL APPUI depuis le 22 août 2026** : les deux gestes d'avant —
+    // arrêter, puis préparer le lien — n'en font plus qu'un, et la messagerie
+    // s'ouvre dans la foulée (`ARCHITECTURE.md` §148). Le message tout prêt
+    // reste sur l'écran d'après, pour le cas où le téléphone aurait refusé.
+    await page.click('[data-atlas="envoyer-la-facture"]');
     await page.waitForSelector("text=arrêtée", { timeout: 15000 });
-
-    await page.click("text=Envoyer la facture au client");
     await page.waitForSelector("text=Ouvrir le", { timeout: 15000 });
 
     const { rows } = await inspecter(

@@ -422,6 +422,24 @@ const MAQUETTES = [
     quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
   },
   {
+    fichier: "86-ou-mettre-ma-tva.html",
+    titre: "O\u00f9 mettre \u00ab Ma TVA \u00e0 d\u00e9clarer \u00bb",
+    famille: "L\u2019argent qui ne rentre pas",
+    quoi: "\u00ab Il est cach\u00e9, on ne le voit pas trop. \u00bb Trois places : en t\u00eate, une carte avec le montant, ou sur la ligne du mois \u2014 l\u00e0 o\u00f9 il choisit d\u00e9j\u00e0 sa p\u00e9riode.",
+  },
+  {
+    fichier: "85-achats-tva-deductible.html",
+    titre: "Dire que ces achats FONT la TVA d\u00e9ductible",
+    famille: "L\u2019argent qui ne rentre pas",
+    quoi: "\u00ab On ne comprend pas trop que scanner ou \u00e9crire \u00e0 la main, c\u2019est pour la TVA d\u00e9ductible. \u00bb Le m\u00eame montant est \u00e9crit deux fois \u00e0 quinze lignes d\u2019\u00e9cart, et rien ne les relie. Trois fa\u00e7ons de le dire \u2014 aucune ne touche aux gestes.",
+  },
+  {
+    fichier: "84-envoyer-la-facture.html",
+    titre: "Envoyer la facture en un seul geste",
+    famille: "L\u2019argent qui ne rentre pas",
+    quoi: "Trois appuis pour envoyer une facture, et le premier ment : il l\u2019ARR\u00caTE au lieu de la faire partir. Un encart SMS / e-mail, un bouton, la messagerie tout de suite \u2014 et la question : le mot doit-il dire qu\u2019il arr\u00eate ?",
+  },
+  {
     fichier: "83-enregistrer-le-pdf.html",
     titre: "Enregistrer le PDF depuis la fiche client",
     famille: "Le devis avant l\u2019envoi",
