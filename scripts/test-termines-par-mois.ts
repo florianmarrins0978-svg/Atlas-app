@@ -22,7 +22,6 @@ import {
   factureesPartout,
   somme,
   formatEuros,
-  libelleCompte,
   libelleFacturee,
   numeroCourt,
   estFacture,
@@ -54,6 +53,18 @@ const ligne = (p: Partial<LigneTerminee> & { id: string }): LigneTerminee => ({
 });
 
 console.log("=== Le mois, et ce qu'il porte ===");
+
+// **Quatre essais ont disparu le 23 août 2026, avec la phrase qu'ils gardaient.**
+//
+// Le décompte sous le mois — « 2 factures envoyées · et 620,00 € qui attendent
+// leur facture » — a été remplacé, à sa demande, par celle qui vivait sous le
+// titre : *« supprime ce qui est marqué sous le mois d'août et à la place tu
+// écris la phrase qui est marquée sous Terminés »*. `libelleCompte` n'avait plus
+// d'appelant : la garder éprouvée aurait fait croire qu'un écran l'affiche.
+//
+// Ce que ces essais tenaient encore de vivant — le pluriel, l'espace insécable
+// des milliers — reste tenu par les essais de `resumeDuMois` ci-dessus, qui
+// portent les mêmes chiffres.
 
 essai("un chantier du 20 août est un chantier d'AOÛT, facturé ou non", () => {
   // Le sortir dans un bloc à part casserait le fil du temps : l'écran ne
@@ -233,49 +244,9 @@ essai("« Août 2026 » s'écrit en toutes lettres, capitale en tête", () => {
 
 console.log("\n=== Ce que l'écran ÉCRIT, au lieu de le coder ===");
 
-essai("le compte des factures est ce qu'il vient chercher", () => {
-  const mois = resumeDuMois(
-    preparer([
-      ligne({ id: "a", datePlanifiee: "2026-08-20", factureStatut: "emise", totalTtc: "1764.00" }),
-      ligne({ id: "b", datePlanifiee: "2026-08-19", factureStatut: "emise", totalTtc: "240.00" }),
-      ligne({ id: "c", datePlanifiee: "2026-08-21", devisTotalTtc: "620.00" }),
-    ]),
-    "2026-08"
-  );
-  // L'espace des milliers d'`Intl` est insécable et fine : on compose la
-  // phrase attendue avec le MÊME formateur, sinon le contrôle rougit sur un
-  // caractère invisible et accuse la règle à la place de lui-même.
-  assert.equal(libelleCompte(mois), `2 factures envoyées · et ${formatEuros(620)} qui attendent leur facture.`);
-});
 
-essai("au singulier, la phrase reste juste", () => {
-  const mois = resumeDuMois(
-    preparer([ligne({ id: "a", datePlanifiee: "2026-08-20", factureStatut: "emise", totalTtc: "10.00" })]),
-    "2026-08"
-  );
-  assert.equal(libelleCompte(mois), "1 facture envoyée.");
-});
 
-essai("sans facture mais avec de l'attente, le compte le dit quand même", () => {
-  const mois = resumeDuMois(
-    preparer([ligne({ id: "a", datePlanifiee: "2026-08-20", devisTotalTtc: "700.00" })]),
-    "2026-08"
-  );
-  assert.equal(libelleCompte(mois), `Aucune facture envoyée · et ${formatEuros(700)} qui attendent leur facture.`);
-});
 
-essai("un montant inconnu ne s'annonce pas « 0,00 € qui attendent »", () => {
-  // Dire zéro là où l'on ne sait pas, c'est annoncer qu'il n'y a rien à
-  // encaisser là où il y a peut-être tout.
-  const mois = resumeDuMois(
-    preparer([
-      ligne({ id: "a", datePlanifiee: "2026-08-20", factureStatut: "emise", totalTtc: "10.00" }),
-      ligne({ id: "muet", datePlanifiee: "2026-08-18" }),
-    ]),
-    "2026-08"
-  );
-  assert.equal(libelleCompte(mois), "1 facture envoyée.");
-});
 
 essai("« F2026-0005 » se dit « Facture n° 5 », jamais « n° -5 »", () => {
   // Le tiret entrait dans le nombre sur la planche 90, et l'écran écrivait

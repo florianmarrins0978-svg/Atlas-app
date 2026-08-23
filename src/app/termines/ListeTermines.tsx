@@ -9,7 +9,6 @@ import {
   decalerMois,
   factureesPartout,
   formatEuros,
-  libelleCompte,
   libelleFacturee,
   nomDuMois,
   resumeDuMois,
@@ -72,24 +71,15 @@ export default function ListeTermines({
 
   return (
     <div data-atlas="liste-termines">
-      {/* **La phrase qui dit les deux chiffres ET ce qu'ils sont.** L'ancien
-          écran les posait nus — un montant à droite d'« août », un autre en
-          pied — et rien ne disait lequel était rentré. */}
-      <p className="mx-[26px] mt-3.5 text-[14px] leading-[1.6]" style={{ color: colors.inkSoft }}>
-        {attente.length > 0 && (
-          <>
-            <b className="font-semibold" style={{ color: colors.ink }}>
-              {attente.length} à facturer
-            </b>
-            , {formatEuros(somme(attente))} ·{" "}
-          </>
-        )}
-        <b className="font-semibold" style={{ color: colors.ink }}>
-          {faites.length} facturé{faites.length > 1 ? "s" : ""}
-        </b>
-        , {formatEuros(somme(faites))}
-      </p>
+      {/* **La phrase des deux chiffres a QUITTÉ cette place le 23 août 2026**,
+          à sa demande : *« supprime ce qui est marqué sous le mois d'août et à
+          la place tu écris la phrase qui est marquée sous Terminés. Et tu
+          enlèves la phrase qui est marquée sous Terminés. »*
 
+          Elle vit maintenant sous le mois, où elle remplace un décompte qui
+          disait la même chose en d'autres mots. Deux phrases pour un seul état,
+          à trois centimètres l'une de l'autre, faisaient hésiter — est-ce le
+          même chiffre ? */}
       <div className="mx-[26px] mt-[18px] flex gap-2">
         <Onglet actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
           Tout
@@ -132,7 +122,31 @@ export default function ListeTermines({
             </p>
           ) : (
             <>
-              <Compte>{libelleCompte(mois)}</Compte>
+              {/* **Sa phrase, ici — 23 août 2026.** Elle porte les deux
+                  chiffres ET ce qu'ils sont : ce qui reste à facturer, et ce
+                  qui l'est déjà. Le décompte d'avant (« 7 factures envoyées ·
+                  et 2 160,00 € qui attendent leur facture ») disait la même
+                  chose en d'autres mots, et n'était pas le sien.
+
+                  **Ce que ces chiffres comptent, et qu'il faut savoir :** TOUS
+                  les mois, pas seulement celui qu'on regarde. C'est ainsi
+                  qu'ils étaient calculés là-haut, et il a demandé cette
+                  phrase-là. Le total du mois affiché, lui, se lit à droite du
+                  nom du mois, juste au-dessus. */}
+              <p className="mt-3.5 text-[14px] leading-[1.6]" style={{ color: colors.inkSoft }}>
+                {attente.length > 0 && (
+                  <>
+                    <b className="font-semibold" style={{ color: colors.ink }}>
+                      {attente.length} à facturer
+                    </b>
+                    , {formatEuros(somme(attente))} ·{" "}
+                  </>
+                )}
+                <b className="font-semibold" style={{ color: colors.ink }}>
+                  {faites.length} facturé{faites.length > 1 ? "s" : ""}
+                </b>
+                , {formatEuros(somme(faites))}
+              </p>
               {mois.lignes.map((l) => (
                 <Ligne key={l.id} ligne={l} />
               ))}
