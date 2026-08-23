@@ -679,7 +679,7 @@ async function main() {
       `SELECT id FROM chantiers WHERE entreprise_id = $1 AND date_planifiee IS NULL`,
       [entrepriseId]
     );
-    const rendus = sansDate.map((r) => r.id as string);
+    const rendus: string[] = sansDate.map((r) => r.id as string);
 
     try {
       // **On ne rejoue PAS la règle « à planifier » ici.** Elle vit dans
@@ -692,15 +692,43 @@ async function main() {
           [rendus, JOUR]
         );
       }
-      await allerAuPlanning();
-      await toucherLeJour(JOUR);
-      await page.waitForSelector('[data-atlas="carte-jour"]', { timeout: 15_000 });
-
-      // **La liste « Sans date » sert de témoin.** Sans elle, un écran qui
-      // n'aurait rien rendu du tout compterait zéro bouton et passerait au
-      // vert : un contrôle qui mesure zéro ne mesure rien (`CLAUDE.md` §5).
-      const temoin = await page.locator('[data-atlas="sans-date"]').count();
-      assert.equal(temoin, 0, `${temoin} chantier(s) attendent encore un jour : l'état n'est pas celui qu'on mesure`);
+      // **La liste « Sans date » sert de témoin, et on l'ATTEND.** Sans témoin,
+      // un écran qui n'aurait rien rendu du tout compterait zéro bouton et
+      // passerait au vert : un contrôle qui mesure zéro ne mesure rien
+      // (`CLAUDE.md` §5).
+      //
+      // **Et on recharge plutôt que de conclure au premier coup d'œil.** Cette
+      // mesure a rougi dans la batterie complète — « 1 chantier attend encore »
+      // — là où elle passe seule : le compte de démonstration est partagé par
+      // les cent quatre suites, et la liste servie peut être celle d'avant la
+      // requête qui vient de dater. On redemande la page jusqu'à ce que l'état
+      // soit celui qu'on prétend mesurer, et **on nomme ce qui reste** si l'on
+      // n'y arrive pas — un contrôle qui accuse sans désigner coûte plus cher
+      // que pas de contrôle (`AGENTS.md`).
+      let restants: string[] = [];
+      for (let essaiN = 0; essaiN < 6; essaiN++) {
+        await allerAuPlanning();
+        await toucherLeJour(JOUR);
+        await page.waitForSelector('[data-atlas="carte-jour"]', { timeout: 15_000 });
+        restants = await page.locator('[data-atlas="sans-date"]').allInnerTexts();
+        if (restants.length === 0) break;
+        // Ce qui reste vient peut-être d'arriver : on le date à son tour, et
+        // on relève SON identifiant — c'est lui qu'on rendra, pas « tout ce
+        // qui porte cette date », qui emporterait un chantier posé avant nous.
+        const { rows: encore } = await pool.query(
+          `UPDATE chantiers SET date_planifiee = $2
+             WHERE entreprise_id = $1 AND date_planifiee IS NULL
+           RETURNING id`,
+          [entrepriseId, JOUR]
+        );
+        rendus.push(...encore.map((r) => r.id as string));
+      }
+      assert.equal(
+        restants.length,
+        0,
+        `${restants.length} chantier(s) attendent encore un jour — l'état n'est pas celui qu'on mesure : ` +
+          JSON.stringify(restants.map((t) => t.replace(/\s+/g, " ").trim().slice(0, 60)))
+      );
       const carte = await page.locator('[data-atlas="carte-jour"]').count();
       assert.ok(carte >= 1, "la fiche du jour ne s'est pas ouverte : il n'y a rien à mesurer");
 
@@ -714,6 +742,10 @@ async function main() {
     } finally {
       // Hors du `try` : une mesure ratée ne doit pas laisser les chantiers du
       // compte de démonstration datés pour les suites suivantes.
+      // **On rend EXACTEMENT ce qu'on a daté**, la rattrapée comprise. Rendre
+      // « tout ce qui porte cette date » emporterait un chantier posé sur ce
+      // jour avant nous — et une suite qui abîme le décor des suivantes coûte
+      // plus cher que la mesure ne rapporte.
       if (rendus.length > 0) {
         await pool.query(
           `UPDATE chantiers SET date_planifiee = NULL WHERE id = ANY($1::uuid[])`,
