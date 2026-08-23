@@ -82,7 +82,6 @@ async function main() {
     "La sélection n'a pas pu être vidée : la suite mesurerait autre chose que son geste."
   );
 
-  /** Les jours du calendrier réellement choisissables, dans l'ordre du mois. */
   /**
    * Les journées qu'on peut aller REGARDER.
    *

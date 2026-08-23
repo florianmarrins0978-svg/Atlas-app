@@ -142,8 +142,15 @@ export default function MoisCharge({
               data-jour={c.jour}
               // **L'état de la case, lisible par une suite.** Il ne dit pas si
               // le serveur acceptera ce jour — lui seul le sait — mais ce que
-              // la case EST : retenue pour le client, un week-end qu'on ne
-              // propose jamais, ou une journée qu'on peut aller regarder.
+              // la case EST : retenue pour le client, un week-end, un jour
+              // passé, ou une journée qu'on peut aller regarder.
+              //
+              // **« week-end » DÉCRIT, il n'interdit pas.** Sa règle du 23 août
+              // 2026 : *« le samedi et le dimanche, l'utilisateur doit pouvoir
+              // le proposer ; s'il a des salariés qui font des extras, il doit
+              // pouvoir sélectionner ces deux jours »*. La case reste donc
+              // touchable — elle l'était déjà — et seule sa teinte le distingue
+              // d'un mardi.
               data-etat={
                 retenus.has(c.jour)
                   ? "retenu"

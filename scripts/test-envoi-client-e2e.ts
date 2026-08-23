@@ -193,13 +193,26 @@ async function main() {
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
-    const jours = page.locator('button[aria-pressed]');
-    const total = await jours.count();
-    assert.ok(total >= 3, `pas assez de jours libres proposés (${total})`);
+    // **Le geste passe par le CALENDRIER depuis le 23 août 2026.** La liste des
+    // six jours suggérés a été retirée à sa demande — *« les quelques jours
+    // qu'on peut sélectionner au tout début ne servent plus à rien, maintenant
+    // qu'on a le mois complet »* —, donc `button[aria-pressed]` ne rend plus
+    // que les dates DÉJÀ retenues. La règle éprouvée ici, elle, n'a pas
+    // changé : jamais plus de deux.
+    const cases = page.locator('[data-jour][data-etat="regardable"]');
+    const total = await cases.count();
+    assert.ok(total >= 3, `pas assez de jours libres au calendrier (${total})`);
 
-    // Le premier est pré-sélectionné : on en ajoute deux de plus.
-    await jours.nth(1).click();
-    await jours.nth(2).click();
+    // Une date est déjà retenue à l'ouverture : on en touche deux de plus, et
+    // la troisième doit chasser la première.
+    for (const rang of [0, 1]) {
+      await cases.nth(rang).click();
+      await page
+        .locator("text=Vérification de votre planning…")
+        .waitFor({ state: "hidden", timeout: 20_000 })
+        .catch(() => undefined);
+      await page.waitForTimeout(300);
+    }
 
     // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
     // le calendrier marque toute la sélection et non plus la dernière date
@@ -224,8 +237,14 @@ async function main() {
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
-    // Deux dates : c'est le cas qui laisse le client choisir.
-    await page.locator('button[aria-pressed]').nth(1).click();
+    // Deux dates : c'est le cas qui laisse le client choisir. Prise au
+    // calendrier, la liste des six ayant disparu le 23 août 2026.
+    await page.locator('[data-jour][data-etat="regardable"]').first().click();
+    await page
+      .locator("text=Vérification de votre planning…")
+      .waitFor({ state: "hidden", timeout: 20_000 })
+      .catch(() => undefined);
+    await page.waitForTimeout(300);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
