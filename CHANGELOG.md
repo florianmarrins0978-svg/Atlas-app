@@ -9,6 +9,20 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Le client touché ne remonte plus : la fiche s'ouvre vers le bas
+
+**Son défaut :** *« lorsque le client se trouve sur la partie haute de l'écran
+[…] et que je clique dessus, le client remonte et la fiche chantier aussi. […]
+tout remonte d'un bloc et je suis perdu, je ne sais plus où est mon client. Il
+disparaît sous mes yeux. »*
+
+Aucun défilement n'était en cause : ouvrir une fiche en referme une autre, et
+quand celle-ci se trouvait plus haut dans la page, tout remontait de sa hauteur
+— 422 px mesurés. Safari n'ancre pas le défilement ; la ligne touchée reste
+désormais immobile sous le doigt (`useAncrageDuGeste`, `ARCHITECTURE.md` §157).
+
+---
+
 ### La colonne « Fiche chantier » ne se remplit plus toute seule
 
 *« Je viens de facturer monsieur Bernard […] néanmoins il y a une fiche chantier
