@@ -96,8 +96,17 @@ async function chantierFacturable(page: Page): Promise<string> {
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.click("text=Créer la facture");
   await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 30_000 });
-  await page.click("text=Confirmer le départ de la facture");
+  // **UN SEUL APPUI depuis le 22 août 2026** : ce bouton arrête la facture ET
+  // ouvre la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
+  // jamais par son libellé — c'est le libellé qui a changé.
+  await page.click('[data-atlas="envoyer-la-facture"]');
   await page.waitForSelector("text=arrêtée", { timeout: 30_000 });
+  // **Et l'on attend que le GESTE SOIT FINI, pas seulement l'arrêt.** Depuis le
+  // geste unique du 22 août 2026, « arrêtée » s'affiche AVANT que le lien du
+  // client soit préparé — et cette préparation date le chantier de l'instant.
+  // Une suite qui antidate entre les deux voit son écriture écrasée, puis
+  // accuse l'accueil de ne pas poser la carte (`ARCHITECTURE.md` §147).
+  await page.waitForSelector("a[data-transmission-directe]", { state: "attached", timeout: 30_000 });
   return chantierId;
 }
 

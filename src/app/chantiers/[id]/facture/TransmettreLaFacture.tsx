@@ -62,6 +62,7 @@ export default function TransmettreLaFacture({
   numeroFacture,
   echeanceLisible,
   canal,
+  jetonInitial = null,
   telephone,
   email,
   origine,
@@ -75,6 +76,8 @@ export default function TransmettreLaFacture({
   echeanceLisible: string | null;
   /** Le canal convenu sur la fiche du client — un défaut, jamais une contrainte. */
   canal: CanalClient;
+  /** Le lien déjà préparé par l'envoi, s'il existe : évite un second appui. */
+  jetonInitial?: string | null;
   telephone: string;
   email: string;
   /** Adresse complète du site, bâtie côté serveur : un chemin seul ne s'ouvre nulle part. */
@@ -83,7 +86,14 @@ export default function TransmettreLaFacture({
   const [canalChoisi, setCanalChoisi] = useState<CanalClient>(canal);
   const [coordonnees, setCoordonnees] = useState<Record<CanalClient, string>>({ sms: telephone, email });
   const [saisie, setSaisie] = useState("");
-  const [jeton, setJeton] = useState<string | null>(null);
+  // **Jamais `useState(jetonInitial)` — le piège coûte un appui.**
+  //
+  // L'envoi arrête la facture, ce qui MONTE ce composant (avec `jetonInitial`
+  // encore nul), puis rafraîchit l'écran. Un état initialisé une fois ignore la
+  // valeur qui arrive ensuite : l'écran redemandait donc de préparer un lien
+  // déjà prêt. On dérive, pour que la prop rafraîchie soit lue.
+  const [jetonLocal, setJeton] = useState<string | null>(null);
+  const jeton = jetonLocal ?? jetonInitial;
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 

@@ -49,6 +49,7 @@ export default function FactureClient({
   clientTelephone,
   clientEmail,
   canalClient,
+  jetonDejaPrepare = null,
   regimeTva,
 }: {
   chantierId: string;
@@ -60,6 +61,14 @@ export default function FactureClient({
   clientTelephone: string | null;
   clientEmail: string | null;
   canalClient: CanalClient | null;
+  /**
+   * Le lien du client, s'il a déjà été préparé.
+   *
+   * Depuis le geste unique du 22 août 2026, l'envoi le fabrique en même temps
+   * qu'il arrête la facture. Sans cette valeur, l'écran d'après redemanderait de
+   * le préparer — un second appui pour refaire ce qui vient d'être fait.
+   */
+  jetonDejaPrepare?: string | null;
   /**
    * Quand la TVA devient exigible chez cette entreprise (migration 0045).
    *
@@ -347,7 +356,8 @@ export default function FactureClient({
               echeanceLisible={
                 initialFacture.dateEcheance ? jourLisible(initialFacture.dateEcheance) : null
               }
-              canal={canal}
+              canal={canalEnvoi}
+              jetonInitial={jetonDejaPrepare}
               telephone={clientTelephone ?? ""}
               email={clientEmail ?? ""}
               origine={origine}
