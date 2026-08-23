@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Dire que ces achats FONT la TVA déductible</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    DIRE QUE CES ACHATS FONT LA TVA DÉDUCTIBLE
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 23 août 2026, capture de « Ma TVA » à l'appui :
+
+      « Sur celle-là, on ne comprend pas trop que scanner ou écrire à la main,
+        c'est pour la TVA déductible. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE L'ÉCRAN DIT AUJOURD'HUI — vérifié dans le code
+
+    Deux tuiles en haut : COLLECTÉE 788,00 € · DÉDUCTIBLE 41,67 €.
+    Puis, quinze lignes plus bas, un titre : « VOS ACHATS », et deux boutons.
+
+    Le lien de cause à effet n'est écrit NULLE PART. Il faut le deviner : que
+    « vos achats » soient la matière de la tuile « déductible », que scanner un
+    ticket fasse monter ce chiffre-là et pas l'autre, et que ce soit même la
+    SEULE façon de le faire monter.
+
+    La preuve que le lien existe est pourtant sous ses yeux : l'essence à
+    250,00 € porte « 41,67 € » à droite — exactement le montant de la tuile.
+    Deux chiffres identiques à quinze lignes d'écart, et rien qui les relie.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE CES TROIS DOSAGES NE CHANGENT PAS
+
+    Ni les gestes, ni les boutons, ni les calculs. Uniquement ce que l'écran
+    DIT. C'est un défaut de mot, pas de mécanique — et il se répare avec des
+    mots.
+  */
+
+  :root {
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --alert:#9C3B2E; --line:rgba(28,28,26,0.12); --line-soft:rgba(28,28,26,0.07);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#e8e5de; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:28px 16px 60px; }
+  h1 { font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
+  .chapo { font-size:13.5px; color:var(--ink-soft); max-width:800px; line-height:1.5; margin:0 0 24px; }
+  .chapo b { color:var(--ink); }
+
+  .rangee { display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
+  .colonne { width:390px; }
+  .etiquette { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
+  .dit { font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:70px; }
+  .dit b { color:var(--ink); }
+
+  .ecran { width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.14); padding:16px 0 14px; }
+  .titre-mois { font-family:Georgia,serif; font-size:30px; margin:0 24px; letter-spacing:-.018em; }
+  .filet { height:1px; background:var(--line); margin:12px 24px 0; }
+  .nav { display:flex; justify-content:space-between; align-items:center; margin:12px 24px 0; font-size:13.5px; color:var(--ink-soft); }
+
+  .tuiles { margin:14px 24px 0; background:var(--cream); border-radius:10px; overflow:hidden; }
+  .deux { display:flex; }
+  .tuile { flex:1; padding:14px 8px 16px; text-align:center; }
+  .tuile + .tuile { border-left:1px solid var(--line-soft); }
+  .tuile .cle { font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+  .tuile .val { font-size:21px; font-weight:600; margin:0; }
+  .reste { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; border-top:1px solid var(--line-soft); }
+  .reste span:first-child { font-size:15px; }
+  .reste span:last-child { font-family:Georgia,serif; font-size:24px; color:var(--pine); }
+
+  .cle-section { font-size:10.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:20px 24px 9px; }
+  .explique { margin:-4px 24px 10px; font-size:12.5px; line-height:1.5; color:var(--ink-soft); }
+  .explique b { color:var(--ink); }
+  .gestes { display:flex; gap:10px; margin:0 24px; }
+  .geste { flex:1; border:1px solid var(--line); background:var(--cream); border-radius:999px;
+    padding:14px 8px; text-align:center; font-size:12.5px; }
+  .geste .ico { display:block; font-size:15px; color:var(--pine); margin-bottom:5px; }
+
+  .achat { display:flex; justify-content:space-between; align-items:center; margin:14px 24px 0; padding-top:12px; border-top:1px solid var(--line-soft); }
+  .achat .quoi { font-size:16px; margin:0; }
+  .achat .quand { font-size:12.5px; color:var(--muted); margin:2px 0 0; }
+  .achat .tva { font-size:15px; color:var(--ink-soft); }
+
+  /* C — la section remonte contre la tuile */
+  .tuile.visee { box-shadow: inset 0 0 0 1px var(--or); border-radius:8px; }
+  .rattache { margin:0 24px; padding:12px 14px; background:var(--cream); border-radius:0 0 10px 10px;
+    border-top:1px dashed var(--line); }
+  .rattache .cle { font-size:10.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--or); margin:0 0 8px; }
+
+  .note { width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
+  .note b { color:var(--ink); }
+
+  .question { max-width:820px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
+    border-left:3px solid var(--or); border-radius:0 10px 10px 0; }
+  .question h2 { font-size:14px; margin:0 0 8px; }
+  .question p { font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
+  .question p:last-child { margin-bottom:0; }
+  .question b { color:var(--ink); }
+</style>
+
+<h1>Dire que ces achats FONT la TVA déductible</h1>
+<p class="chapo">
+  Sa remarque : <b>« on ne comprend pas trop que scanner ou écrire à la main, c'est pour la TVA
+  déductible »</b>. Il a raison, et la preuve est sous ses yeux : l'essence porte <b>41,67 €</b> à
+  droite — exactement le chiffre de la tuile « Déductible », quinze lignes plus haut. Deux fois le
+  même montant, et rien qui les relie. Aucun des trois dosages ne touche aux gestes ni aux calculs :
+  <b>c'est un défaut de mot</b>.
+</p>
+
+<div class="rangee">
+
+  <!-- ————————————— A ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">A — le titre le dit</p>
+    <p class="dit">
+      « Vos achats » devient <b>« Ce qui fait votre TVA déductible »</b>. Un titre au lieu d'un autre,
+      rien de neuf à l'écran. <b>Ce que ça coûte :</b> le titre est long, et il nomme un calcul plutôt
+      qu'une chose — « vos achats », c'est ce qu'il a dans la poche ; « TVA déductible », c'est ce que
+      l'administration en fait.
+    </p>
+    <div class="ecran">
+      <p class="titre-mois">Août 2026</p><div class="filet"></div>
+      <div class="nav"><span>← Juillet 2026</span><span>Septembre 2026 →</span></div>
+      <div class="tuiles">
+        <div class="deux">
+          <div class="tuile"><p class="cle">Collectée</p><p class="val">788,00 €</p></div>
+          <div class="tuile"><p class="cle">Déductible</p><p class="val">41,67 €</p></div>
+        </div>
+        <div class="reste"><span>Reste à payer</span><span>746,33 €</span></div>
+      </div>
+      <p class="cle-section">Ce qui fait votre TVA déductible</p>
+      <div class="gestes">
+        <div class="geste"><span class="ico">⌗</span>Scanner un ticket</div>
+        <div class="geste"><span class="ico">✎</span>Écrire à la main</div>
+      </div>
+      <div class="achat">
+        <div><p class="quoi">Essence</p><p class="quand">22 août · 250,00 €</p></div>
+        <span class="tva">41,67 €</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ————————————— B ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">B — le titre reste, une phrase explique</p>
+    <p class="dit">
+      « Vos achats » ne bouge pas — c'est le mot juste pour ce qu'il ajoute. Une ligne dessous fait le
+      lien : <b>« Chaque ticket ajouté augmente la TVA déductible ci-dessus. »</b> Elle dit le sens de
+      cause à effet, et vers OÙ regarder.
+    </p>
+    <div class="ecran">
+      <p class="titre-mois">Août 2026</p><div class="filet"></div>
+      <div class="nav"><span>← Juillet 2026</span><span>Septembre 2026 →</span></div>
+      <div class="tuiles">
+        <div class="deux">
+          <div class="tuile"><p class="cle">Collectée</p><p class="val">788,00 €</p></div>
+          <div class="tuile"><p class="cle">Déductible</p><p class="val">41,67 €</p></div>
+        </div>
+        <div class="reste"><span>Reste à payer</span><span>746,33 €</span></div>
+      </div>
+      <p class="cle-section">Vos achats</p>
+      <p class="explique">Chaque ticket ajouté augmente la <b>TVA déductible</b> ci-dessus — et fait
+        baisser d'autant ce qui vous reste à payer.</p>
+      <div class="gestes">
+        <div class="geste"><span class="ico">⌗</span>Scanner un ticket</div>
+        <div class="geste"><span class="ico">✎</span>Écrire à la main</div>
+      </div>
+      <div class="achat">
+        <div><p class="quoi">Essence</p><p class="quand">22 août · 250,00 €</p></div>
+        <span class="tva">41,67 €</span>
+      </div>
+    </div>
+    <p class="note">
+      <b>Deux lignes de gris de plus</b> sur un écran qu'il veut court — mais elles disent aussi ce
+      que la tuile ne dit pas : que ça fait <b>baisser ce qu'il doit</b>. C'est la raison pour
+      laquelle il scanne.
+    </p>
+  </div>
+
+  <!-- ————————————— C ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">C — les gestes remontent contre la tuile</p>
+    <p class="dit">
+      Pas un mot de plus : les deux boutons <b>quittent le bas de l'écran</b> et se posent directement
+      sous les tuiles, rattachés à « Déductible ». La place dit le lien mieux qu'une phrase.
+    </p>
+    <div class="ecran">
+      <p class="titre-mois">Août 2026</p><div class="filet"></div>
+      <div class="nav"><span>← Juillet 2026</span><span>Septembre 2026 →</span></div>
+      <div class="tuiles" style="border-radius:10px 10px 0 0">
+        <div class="deux">
+          <div class="tuile"><p class="cle">Collectée</p><p class="val">788,00 €</p></div>
+          <div class="tuile visee"><p class="cle">Déductible</p><p class="val">41,67 €</p></div>
+        </div>
+        <div class="reste"><span>Reste à payer</span><span>746,33 €</span></div>
+      </div>
+      <div class="rattache">
+        <p class="cle">Pour faire monter la déductible</p>
+        <div class="gestes" style="margin:0">
+          <div class="geste"><span class="ico">⌗</span>Scanner un ticket</div>
+          <div class="geste"><span class="ico">✎</span>Écrire à la main</div>
+        </div>
+      </div>
+      <p class="cle-section">Vos achats</p>
+      <div class="achat" style="border-top:0; margin-top:0; padding-top:0">
+        <div><p class="quoi">Essence</p><p class="quand">22 août · 250,00 €</p></div>
+        <span class="tva">41,67 €</span>
+      </div>
+    </div>
+    <p class="note">
+      <b>Ce que ça coûte, et ce n'est pas rien :</b> les tuiles sont ce qu'il vient LIRE, et on y
+      accroche maintenant deux boutons. L'encadré des chiffres — celui qu'il recopie sur sa
+      déclaration — cesse d'être un bloc qu'on lit d'un coup d'œil.
+    </p>
+  </div>
+
+</div>
+
+<div class="question">
+  <h2>Ce que je ne tranche pas à sa place</h2>
+  <p>
+    Les trois disent la même chose. La question est <b>où</b> il veut la lire, et <b>combien de mots</b>
+    il accepte sur un écran qu'il ouvre pour recopier deux chiffres.
+  </p>
+  <p>
+    Mon avis : <b>la B</b>. « Vos achats » est le mot juste pour ce qu'il ajoute — un ticket
+    d'essence n'est pas « une TVA déductible », il le devient. Et la phrase dit ce qu'aucune des deux
+    autres ne dit : que scanner <b>fait baisser ce qu'il doit</b>. C'est la raison pour laquelle il
+    le fait.
+  </p>
+  <p>
+    La <b>A</b> est la plus courte et se défend très bien s'il veut zéro ligne de plus.
+    La <b>C</b> est la plus claire des trois sur le lien — mais elle encombre l'encadré des chiffres,
+    qui est précisément ce qu'il vient chercher.
+  </p>
+</div>
+
+</body>
+</html>

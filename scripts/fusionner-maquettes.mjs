@@ -422,6 +422,12 @@ const MAQUETTES = [
     quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
   },
   {
+    fichier: "85-achats-tva-deductible.html",
+    titre: "Dire que ces achats FONT la TVA d\u00e9ductible",
+    famille: "L\u2019argent qui ne rentre pas",
+    quoi: "\u00ab On ne comprend pas trop que scanner ou \u00e9crire \u00e0 la main, c\u2019est pour la TVA d\u00e9ductible. \u00bb Le m\u00eame montant est \u00e9crit deux fois \u00e0 quinze lignes d\u2019\u00e9cart, et rien ne les relie. Trois fa\u00e7ons de le dire \u2014 aucune ne touche aux gestes.",
+  },
+  {
     fichier: "84-envoyer-la-facture.html",
     titre: "Envoyer la facture en un seul geste",
     famille: "L\u2019argent qui ne rentre pas",
