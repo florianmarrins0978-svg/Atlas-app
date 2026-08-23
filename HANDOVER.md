@@ -1839,24 +1839,37 @@ reviendra à la prochaine page supprimée.
 
 **LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier
 l'adresse" et "Ouvrir le PDF", un petit encadré où marquer quelque chose. »*
-Proposition A retenue : cadre ouvert en permanence
-(`ARCHITECTURE.md` §150, migration 0060).
+Proposition A retenue : cadre ouvert en permanence. Colonne `chantiers.note`,
+migration 0061, règle pure dans `src/lib/note-chantier.ts`.
+
+**⚠ IL A ÉTÉ CODÉ DEUX FOIS LE MÊME JOUR, par deux sessions qui ne se voyaient
+pas.** Celle arrivée la première sur `main` fait foi ; la seconde a été retirée
+en entier — deux colonnes pour la même note auraient été les deux vérités que
+`CLAUDE.md` §3 interdit. **Ne pas ressusciter `note_feuille` ni la migration
+0060 du même nom** en la retrouvant dans l'historique : elle a été abandonnée
+délibérément, pas oubliée.
+
+*La leçon, et elle vaut pour la suite : il fait tourner trois ou quatre sessions
+en parallèle, et aucune ne lit les autres. Devant une demande qui vient de lui,
+`git fetch origin main` AVANT de coder coûte dix secondes et peut épargner un
+lot entier.*
 
 **Trois choses à ne pas défaire :**
 
 1. **Elle ne part sur AUCUN document** — sa décision. Ni devis, ni facture, ni
    PDF sans les prix. C'est cette promesse qui l'autorise à y écrire ce qu'il ne
-   dirait pas devant le client, et `test-note-feuille-e2e` la tient.
+   dirait pas devant le client, et `scripts/test-note-hors-documents-e2e.ts` la
+   tient.
 2. **Enregistré en sortant du cadre**, jamais par un bouton.
-3. **Le champ à 16 px en dur** : en dessous, iOS zoome et l'écran saute sous son
-   doigt. Contrainte du système, pas choix de charte.
+3. **Le champ à 16 px** : en dessous, iOS zoome et l'écran saute sous son doigt.
+   Contrainte du système, pas choix de charte.
 
-**⚠ LE PIÈGE, ET IL A ÉTÉ PAYÉ :** la note arrive APRÈS que le cadre soit à
-l'écran, et `useState` ne retient que sa valeur initiale — le cadre restait vide
-alors que la note était en base. **Rien ne se voyait à l'œil** : un cadre vide
-sur un chantier sans note est ce qu'on attend. L'effet qui répare ne pose la note
-lue que sur un cadre INTACT (`touche.current`) : le cadre étant ouvert d'emblée,
-il peut taper avant la réponse du serveur.
+**⚠ ET LE LECTEUR DE PDF DE CETTE SUITE, deux fois faux avant d'être juste :** le
+texte d'un PDF est comprimé, puis écrit en hexadécimal. Chercher des mots en
+clair y trouve toujours zéro — donc toujours vert, y compris confronté à une note
+délibérément versée dans le document. Le contrôle prouve désormais d'abord qu'il
+sait LIRE ce PDF, en y retrouvant une ligne du devis. **Ne pas retirer cette
+vérification préalable** en croyant simplifier (`ARCHITECTURE.md` §154).
 
 **⚠ ET LE LECTEUR DE PDF DE LA SUITE, deux fois faux avant d'être juste :** le
 texte d'un PDF est comprimé, puis écrit en hexadécimal. Chercher des mots en

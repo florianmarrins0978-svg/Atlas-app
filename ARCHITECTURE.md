@@ -13695,7 +13695,7 @@ client — donc elle a besoin d'un contrôle, pas d'un commentaire.**
 
 ### Deux fois où ce contrôle ne POUVAIT PAS échouer
 
-`scripts/test-note-feuille-e2e.ts` télécharge le PDF et y cherche les mots de la
+`scripts/test-note-hors-documents-e2e.ts` télécharge le PDF et y cherche les mots de la
 note. Ses deux premières versions étaient **vertes en confrontation avec une note
 délibérément versée dans le document** :
 

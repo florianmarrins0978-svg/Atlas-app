@@ -140,7 +140,7 @@ broyeur, client plus disponible à partir de neuf heures. »*
 **Cherché avant d'affirmer que c'était neuf** (`CLAUDE.md` §5 ter) : la table
 `chantiers` ne portait aucun champ libre, `notes_vocales` est la dictée, et le
 seul `note` du schéma appartenait aux paiements. Colonne posée par la
-migration 0060, bornée à 2 000 caractères — la note descend avec la liste
+migration 0061, bornée à 2 000 caractères — la note descend avec la liste
 entière du planning.
 
 **La variante A retenue, et c'est LUI qui a tranché sans le savoir.** La

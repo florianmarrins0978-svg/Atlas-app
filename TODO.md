@@ -44,7 +44,7 @@ Sa réponse à la planche 93 : *« oui prends A »*, et sur le PDF : *« non, el
 peut rester là, car les salariés auront accès au planning ; justement, c'est
 pour cela que je voulait le devis sans les prix »*.
 
-**Codé** : colonne `chantiers.note` (migration 0060), cadre toujours ouvert sur
+**Codé** : colonne `chantiers.note` (migration 0061), cadre toujours ouvert sur
 la feuille, enregistrement à la sortie du champ, aucune impression.
 
 **Ce qu'il faut retenir du choix de A**, parce que cela vaut au-delà de ce cas :
