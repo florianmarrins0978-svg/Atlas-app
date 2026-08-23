@@ -22,9 +22,12 @@
 
     1. **« Effacer » ne veut pas dire OUBLIER.** Le temps reste enregistré sur
        le passage — il sert au patron, pas seulement au client. Le bouton ne
-       gouverne QUE ce que le compte rendu montre. D'où la ligne sous la
-       molette quand il est éteint : sans elle, il croirait avoir perdu sa
-       durée et la ressaisirait au passage suivant.
+       gouverne QUE ce que le compte rendu montre.
+
+       **La phrase sous la molette a été raccourcie le 23 août, à sa demande** :
+       « votre client ne le verra pas sur son compte rendu », rien de plus. La
+       version longue disait aussi que la durée restait enregistrée ; il n'en
+       veut pas, et c'est sa fiche.
 
     2. **L'état se LIT en toutes lettres** — « Visible » / « Masqué » — et pas
        seulement à la position du curseur. Un interrupteur nu se décode ; un
@@ -109,14 +112,16 @@
   .bascule[aria-pressed="true"] .perle{transform:translateX(18px)}
   .bascule:disabled{cursor:default;opacity:.42}
 
-  /* ── La molette, recopiée de l'écran : deux listes et le total ───────── */
+  /* ── La molette, recopiée de l'écran : deux listes ────────────────────
+     **Le total gris à droite est parti le 23 août, à sa demande.** Les deux
+     listes disent déjà « 1 h » et « 40 » : le répéter en « 1 h 40 » à côté
+     n'apprenait rien et poussait les listes vers la gauche. */
   .molette{display:flex;align-items:center;gap:10px;margin:8px 26px 0}
   .molette select{flex:1;min-width:0;border-radius:14px;padding:12px 15px;font:17px/1.2 ui-serif,Georgia,serif;
                   background:var(--plage);color:var(--encre);border:1px solid var(--trait);outline:none}
   /* **Le chevron natif reste.** Sans lui, les deux listes se lisent comme des
      champs à remplir — or on ne tape rien ici, on fait tourner une molette.
      L'écran codé les laisse natives, la planche fait pareil. */
-  .molette .total{flex:none;font-size:13px;color:var(--gris)}
 
   /* La phrase qui n'existe QUE quand c'est masqué : elle répond à
      « où est passée ma durée ? » avant qu'il se pose la question. */
@@ -205,11 +210,10 @@
       <div class="molette">
         <select id="heures" aria-label="Heures"></select>
         <select id="minutes" aria-label="Minutes"></select>
-        <span class="total" id="total">1 h 40</span>
       </div>
 
       <p class="note cachee" id="note">
-        <b>1 h 40 reste enregistré</b> pour vous. Votre client ne le verra pas sur son compte rendu.
+        Votre client ne le verra pas sur son compte rendu.
       </p>
 
       <p class="titre-section">Observations</p>
@@ -293,7 +297,6 @@
   var note = document.getElementById('note');
   var tempsDoc = document.getElementById('temps-doc');
   var tempsDocValeur = document.getElementById('temps-doc-valeur');
-  var total = document.getElementById('total');
   var envoyer = document.getElementById('envoyer');
   var fige = document.getElementById('fige');
 
@@ -303,7 +306,6 @@
     var min = Number(selH.value) * 60 + Number(selM.value);
     var texte = libelle(min);
 
-    total.textContent = texte;
     tempsDocValeur.textContent = texte;
 
     bascule.setAttribute('aria-pressed', visible ? 'true' : 'false');
@@ -312,8 +314,10 @@
     // La ligne du client s'en va pour de bon — elle ne se grise pas.
     tempsDoc.classList.toggle('partie', !visible);
     note.classList.toggle('cachee', visible);
-    note.innerHTML = '<b>' + texte + ' reste enregistré</b> pour vous. ' +
-                     'Votre client ne le verra pas sur son compte rendu.';
+    // **La phrase est FIXE, elle ne porte plus la durée.** Sa demande du
+    // 23 août : « raccourcis la phrase à "votre client ne le verra pas sur son
+    // compte rendu" ». Elle disait aussi que la durée restait enregistrée — il
+    // n'en veut pas, et un écran encombré se lit moins bien qu'un écran sobre.
 
     bascule.disabled = parti;
     selH.disabled = parti; selM.disabled = parti;

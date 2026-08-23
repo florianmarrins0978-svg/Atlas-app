@@ -106,34 +106,23 @@ différentes ont mené la même enquête le même jour, chacune de son côté. L
 prochaine batterie rouge sur l'une de ces trois suites se joue **seule** avant
 toute autre hypothèse.
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — le temps passé, montré ou non (22 août 2026)
+## ~~Le temps passé, montré ou non~~ — **CODÉ le 23 août 2026**
 
-Sa demande, capture de la fiche d'entretien à l'appui : *« il faudrait mettre un
-petit bouton on/off pour si l'utilisateur ne veut pas que le temps apparaisse
-sur la fiche, pouvoir l'effacer — on, le temps apparaîtrait sur la fiche ; off,
-il n'apparaîtrait pas »*.
+Sa demande du 22 août, dessinée en planche 92, puis codée le 23 après ses deux
+corrections : *« raccourcis la phrase à "votre client ne le verra pas sur son
+compte rendu" »* et *« enlève le 1 h 40 en gris à droite de la sélection de
+l'heure »*.
 
-**Planche 92 : `appli/temps-sur-la-fiche.html`. RIEN N'EST CODÉ** (`CLAUDE.md`
-§3 bis). Elle montre les deux côtés à la fois — sa fiche et le compte rendu de
-la cliente, qui se recompose sous le doigt.
+Un interrupteur sur la ligne « Temps passé », colonne `temps_visible`
+(migration `0060`), masquage décidé au serveur, empreinte qui scelle ce que le
+client a lu. Le détail est dans `CHANGELOG.md`.
 
-**Deux questions attendent sa réponse, et la suite en dépend :**
+**Ce qui reste ouvert, et qui est pour lui** — il ne s'est pas prononcé :
 
 | | |
 |---|---|
-| **Le réglage de départ** | La planche s'ouvre sur **Visible**, ce que l'application fait aujourd'hui (le temps s'affiche toujours). S'il préfère que chaque fiche parte **Masquée**, c'est une valeur par défaut à changer |
-| **Masquer ou ne rien saisir ?** | La planche masque et **garde la durée enregistrée** pour lui. S'il voulait pouvoir ne rien saisir du tout, c'est autre chose : `minutes` deviendrait nullable au sens fort, et la molette elle-même devrait pouvoir revenir à « — » |
-
-**Ce que coder demandera, quand il aura répondu** — écrit ici pour que la
-prochaine session ne le redécouvre pas :
-
-· une colonne sur `passages_entretien` (`temps_visible`, défaut à décider) et
-  sa migration ;
-· `majPassageAction` la pose, comme `minutes` et `observations` ;
-· `lireRapportParJeton` la rend, et `src/app/entretien/[jeton]/page.tsx`
-  n'affiche le paragraphe que si elle est vraie **et** `minutes !== null` — la
-  règle vit côté serveur, jamais dans le HTML du client ;
-· l'interrupteur se fige avec le reste quand `envoyeLe !== null`.
+| **Le réglage de départ** | Codé sur **Visible**, ce que l'application faisait déjà. S'il préfère que chaque fiche parte **Masquée**, c'est le défaut de la colonne à retourner (une migration d'une ligne) |
+| **Masquer ou ne rien saisir ?** | Aujourd'hui masquer garde la durée pour lui. S'il voulait pouvoir ne rien saisir du tout, la molette devrait pouvoir revenir à « — », ce qu'elle ne sait pas faire |
 
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 

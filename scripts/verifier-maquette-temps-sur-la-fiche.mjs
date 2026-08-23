@@ -14,10 +14,10 @@
        C'est le cœur de sa demande, et c'est ce que le client verra.
     3. **Rallumé, elle revient**, et avec la bonne durée : un aller-retour qui
        ramènerait « — » ou un chiffre d'avant serait pire que pas de bouton.
-    4. **La durée reste enregistrée quand c'est masqué**, et la planche le DIT.
-       Sans cette phrase, il croit avoir perdu sa durée et la ressaisit.
-    5. **Le total et le compte rendu portent le MÊME libellé** : deux formules
-       finiraient par écrire « 1 h 4 » d'un côté et « 1 h 40 » de l'autre.
+    4. **Masqué, une phrase COURTE le dit** — celle qu'il a dictée le 23 août,
+       mot pour mot : « votre client ne le verra pas sur son compte rendu ».
+    5. **Aucun total gris à droite de la molette** (retiré le 23 août, à sa
+       demande), et le compte rendu porte le libellé de l'application.
     6. **Une fois le rapport parti, l'interrupteur s'éteint** avec la molette et
        le bouton — la fiche est figée, c'est déjà la règle de cet écran.
     7. **Rien ne déborde à 390 px**, la largeur de son téléphone.
@@ -98,11 +98,17 @@ const encoreLa = await page.evaluate(() => {
 });
 dire(!encoreLa, "la ligne du compte rendu est seulement grisée : elle prend encore sa place");
 
-// 4 — masqué, la planche DIT que la durée reste enregistrée
-dire(await note.isVisible(), "rien ne dit ce que devient la durée : il croira l'avoir perdue");
-const phrase = (await note.innerText()).toLowerCase();
-dire(/enregistr/.test(phrase), "la phrase ne dit pas que la durée reste enregistrée");
-dire(/client/.test(phrase), "la phrase ne dit pas que c'est le CLIENT qui ne la verra pas");
+// 4 — masqué, une phrase COURTE dit ce que le client ne verra pas
+//
+// **Elle a maigri le 23 août, à sa demande** : « raccourcis la phrase à "votre
+// client ne le verra pas sur son compte rendu" ». La version d'avant annonçait
+// aussi que la durée restait enregistrée, et ce contrôle l'exigeait — le garder
+// aurait rendu impossible le retrait qu'il demandait (`CLAUDE.md` §5 bis :
+// quand une suite rougit après un retrait voulu, on adapte le contrôle).
+dire(await note.isVisible(), "rien ne dit que le client ne verra pas le temps");
+const phrase = (await note.innerText()).trim();
+dire(phrase === "Votre client ne le verra pas sur son compte rendu.",
+  `la phrase masquée est « ${phrase} » au lieu de celle qu'il a dictée`);
 
 // 3 — rallumé, elle revient avec la bonne durée
 await bascule.click();
@@ -112,12 +118,16 @@ dire((await tempsDoc.innerText()).trim() === avant,
   `au retour le compte rendu écrit « ${(await tempsDoc.innerText()).trim()} » au lieu de « ${avant} »`);
 dire(await note.isHidden(), "la phrase du masquage reste affichée alors que le temps est visible");
 
-// 5 — un seul libellé, des deux côtés, y compris après changement de durée
+// 5 — le compte rendu suit la molette, et AUCUN total gris ne subsiste
+//
+// **Le total à droite des listes est parti le 23 août, à sa demande.** Ce
+// contrôle le refuse désormais : le laisser revenir par mégarde ferait
+// réapparaître ce qu'il a fait enlever.
+dire(await page.locator("#total").count() === 0,
+  "le total gris est revenu à droite de la molette : il l'a fait enlever le 23 août");
 await page.selectOption("#heures", "0");
 await page.selectOption("#minutes", "45");
 await page.waitForTimeout(150);
-dire((await page.locator("#total").innerText()).trim() === "45 min",
-  "le total de la molette n'écrit pas « 45 min »");
 dire((await page.locator("#temps-doc-valeur").innerText()).trim() === "45 min",
   "le compte rendu n'a pas suivi la molette : deux chiffres pour une même durée");
 await page.selectOption("#heures", "2");
