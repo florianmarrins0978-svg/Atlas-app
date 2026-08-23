@@ -64,7 +64,7 @@ async function chantierAvecDevis(page: Page, envoyer: boolean): Promise<string> 
   if (envoyer) {
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
   }

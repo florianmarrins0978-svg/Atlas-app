@@ -80,7 +80,7 @@ async function chantierRealise(page: Page, suffixe: string) {
 
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
   await page.click("text=Choisir la date");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
@@ -93,7 +93,10 @@ async function emettre(page: Page, chantierId: string): Promise<string> {
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.click("text=Créer la facture");
   await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
-  await page.click("text=Confirmer le départ de la facture");
+  // **UN SEUL APPUI depuis le 22 août 2026** : ce bouton arrête la facture ET
+  // ouvre la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
+  // jamais par son libellé — c'est le libellé qui a changé.
+  await page.click('[data-atlas="envoyer-la-facture"]');
   await page.waitForSelector("text=arrêtée", { timeout: 15000 });
   const { rows } = await inspecter(
     "SELECT numero_commercial FROM factures WHERE chantier_id = $1",

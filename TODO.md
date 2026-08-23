@@ -9,9 +9,72 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Arrosage : l'interface pour discuter le plan (23 août 2026)
+
+Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
+*« j'ai besoin que si l'utilisateur a besoin de te demander de faire une
+modification, qu'il puisse le faire — une petite interface pour qu'il puisse
+discuter avec toi »*, avec deux bornes qu'il a posées lui-même :
+
+- **la discussion ne crée jamais un plan** ; elle ne fait que le modifier ;
+- **pas de phrases pré-écrites** — *« il faut un endroit où on puisse discuter
+  avec toi »*, donc un champ libre.
+
+La maquette validée est `appli/arrosage-discuter.html`. Ce qui reste à trancher
+avant de coder : la discussion agit sur les **paramètres** du calcul (marque,
+famille d'arroseur, nombre de voies), jamais sur le dessin — un plan retouché à
+la main ne se recalculerait plus.
+
+---
+
+## Arrosage : lire les positions sur une vraie photo (23 août 2026)
+
+`lire-croquis.ts` demande maintenant au modèle un repère en mètres, la position
+de chaque zone et l'endroit de la nourrice. **Cela n'a été éprouvé sur aucune
+photo** — cet environnement n'a pas de clé de vision (`AGENTS.md`). Le premier
+essai sur son banc dira si le modèle sait tenir un repère cohérent ; s'il ne le
+sait pas, le repli est une saisie à la main des positions, pas un placement
+inventé.
+
+---
+
+## ~~Une note sur la feuille de chantier~~ — **TRANCHÉ le 23 août 2026 : A, codée**
+
+Sa réponse à la planche 93 : *« oui prends A »*, et sur le PDF : *« non, elle
+peut rester là, car les salariés auront accès au planning ; justement, c'est
+pour cela que je voulait le devis sans les prix »*.
+
+**Codé** : colonne `chantiers.note` (migration 0061), cadre toujours ouvert sur
+la feuille, enregistrement à la sortie du champ, aucune impression.
+
+**Ce qu'il faut retenir du choix de A**, parce que cela vaut au-delà de ce cas :
+la variante B était objectivement plus économe (45 px contre 141 à vide). Il ne
+l'a pas écartée sur un goût — il ne l'a **pas vue** sur la capture. Une
+invitation discrète qu'on manque sur une image, on la manque aussi sur un
+chantier ; c'est un renseignement, pas une distraction de sa part.
+
+---
+
+## ~~L'anneau doré d'aujourd'hui~~ — **TRANCHÉ le 23 août 2026 : on garde**
+
+Sa remarque : *« je ne comprends pas pourquoi le vingt-deux reste sélectionné,
+ce n'est pas très clair ; ça doit être un bug, je pense »*. Puis, la planche 92
+vue : *« ah, je n'avais pas compris que c'était le jour qu'on est. Peut-être le
+laisser. »*
+
+**Rien à coder.** Ce n'était pas un défaut d'affichage mais un code qu'il n'avait
+pas appris ; une fois le sens connu, l'anneau ne le gêne plus.
+
+**Ce qu'il faut en retenir, et qui vaut au-delà de ce cas :** le premier réflexe
+a été de vouloir corriger l'écran. La vraie question était *« sait-il ce que ce
+signe veut dire ? »* — et la planche a servi à le lui apprendre, pas à changer
+le produit. **Ne pas rouvrir** sans qu'il le redemande.
+
+La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
+chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
 ## Mode nuit : ce que le lot du 22 août ne couvre PAS (22 août 2026)
 
-Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §148), et deux contrôles
+Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §157), et deux contrôles
 le tiennent. Ce qui reste dehors, et qu'il faut savoir avant de croire
 l'application entièrement lisible en Nuit :
 
@@ -68,6 +131,11 @@ la valeur n'y est pas encore. L'enregistrement de l'éditeur est différé ; sur
 serveur de développement chargé par soixante suites, l'assertion arrive avant
 l'écriture.
 
+**`test-reprise-chantier-e2e.ts` a rejoint la liste le 22 août au soir**, avec
+la même signature : *« le total n'est pas montré avant l'envoi. Vu : […] TOTAL
+HT 0,00 € »*. Tombée en batterie, verte seule et verte au repassage complet
+(103/103) dans la foulée. Trois suites, un seul défaut.
+
 **Ce n'est pas un défaut du produit — c'est un contrôle qui lit trop tôt.** Mais
 il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un rouge.
 Le corriger, c'est attendre la trace de l'enregistrement plutôt qu'un délai —
@@ -84,10 +152,62 @@ que ses lignes soient écrites**. Même symptôme, même remède, et **elle pass
 seule** elle aussi. Trois suites, un seul motif : elles lisent un montant à
 l'écran sans attendre la trace de son enregistrement.
 
-**Ce que cela coûte déjà**, et c'est la raison d'écrire ceci : deux sessions
-différentes ont mené la même enquête le même jour, chacune de son côté. La
-prochaine batterie rouge sur l'une de ces trois suites se joue **seule** avant
-toute autre hypothèse.
+**Une QUATRIÈME, le 23 août :** `test-reduction-devis-e2e.ts`, sur *« écrire 0 %
+la retire pour de bon »* — la ligne or survit au zéro, dit-elle, sur un écran
+qu'aucun lot ne modifiait. **Verte jouée seule**, elle aussi. Même famille : elle
+relit un total après une écriture, sans attendre la trace de l'enregistrement.
+
+**Ce que cela coûte déjà**, et c'est la raison d'écrire ceci : trois sessions
+différentes ont mené la même enquête en deux jours, chacune de son côté. La
+prochaine batterie rouge sur l'une de ces **quatre** suites se joue **seule**
+avant toute autre hypothèse.
+
+**Le remède est connu et tient en une ligne** : attendre la trace de
+l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
+15 août. Il reste à l'appliquer aux quatre.
+
+## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
+
+`src/app/termines/page.tsx` dit d'elle : *« la planche reste la référence — toute
+correction de cet écran s'y porte D'ABORD, sinon les deux divergent, et c'est
+elle qu'il ouvre sur son téléphone »*. Elle ne l'est plus.
+
+**Ce que l'écran porte et que `appli/termines-simple.html` ignore :**
+
+| L'écran codé | La planche |
+|---|---|
+| la carte de TVA **en tête**, avec son montant | « Ma TVA à déclarer » en **pied**, sans montant |
+| « 1 à facturer · 3 facturés », sans montants, souligné d'un trait | la même phrase **avec ses montants**, sans trait |
+| la ligne du mois **sans total** | « ‹ Août 2026 › » **avec son total à droite** |
+| les lignes aérées (19 px de marge) | les lignes d'origine |
+
+**Personne ne l'a fait exprès** : la carte de TVA vient de la planche 86, posée
+par une autre session, et les retraits du 23 août au soir ont été portés au code
+seul — il regardait l'écran, pas la planche. **Ce n'est pas un défaut du
+produit**, c'est une référence qui ment, et elle ment dans le sens le plus
+coûteux : on la croit à jour.
+
+**Deux issues, et il faut trancher** — remettre la planche à niveau, ou lui
+retirer son titre de référence et le dire dans `page.tsx`. Ne pas laisser en
+l'état.
+
+## ~~Le temps passé, montré ou non~~ — **CODÉ le 23 août 2026**
+
+Sa demande du 22 août, dessinée en planche 92, puis codée le 23 après ses deux
+corrections : *« raccourcis la phrase à "votre client ne le verra pas sur son
+compte rendu" »* et *« enlève le 1 h 40 en gris à droite de la sélection de
+l'heure »*.
+
+Un interrupteur sur la ligne « Temps passé », colonne `temps_visible`
+(migration `0060`), masquage décidé au serveur, empreinte qui scelle ce que le
+client a lu. Le détail est dans `CHANGELOG.md`.
+
+**Ce qui reste ouvert, et qui est pour lui** — il ne s'est pas prononcé :
+
+| | |
+|---|---|
+| **Le réglage de départ** | Codé sur **Visible**, ce que l'application faisait déjà. S'il préfère que chaque fiche parte **Masquée**, c'est le défaut de la colonne à retourner (une migration d'une ligne) |
+| **Masquer ou ne rien saisir ?** | Aujourd'hui masquer garde la durée pour lui. S'il voulait pouvoir ne rien saisir du tout, la molette devrait pouvoir revenir à « — », ce qu'elle ne sait pas faire |
 
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 
@@ -826,9 +946,11 @@ personne ne la recompte. Son contrôle vérifie donc que **toute portée citée
 existe au catalogue**, prise par l'autre bout : pas « une bonne valeur est
 présente », mais « aucune valeur inventée n'est écrite ».
 
-**Ce qui attend sa réponse :** les deux questions mises de côté (combien de
-turbines par voie ; la pluviométrie entre un coin et un plein cercle), et
-l'accord pour coder.
+**Ce qui attend sa réponse :** ~~la pluviométrie entre un coin et un plein
+cercle~~ — **tranchée le 23 août 2026** : *« ne prends pas en compte la
+pluviométrie »*, elle est sortie de la clé de secteur. Reste « combien de
+turbines par voie », auquel le code répond déjà (`decouper()` plafonne une voie
+au plus petit de la source et du Ø25) sans qu'il l'ait validé.
 
 ---
 
@@ -1713,6 +1835,13 @@ même vanne avec **5,9 et 6,1 mm/h** — et c'est le plan, en les coloriant de l
 même couleur, qui l'a montré. La pluviométrie entre donc dans la clé de
 groupe : sa règle « ça ne se mélange jamais », appliquée à la lettre.
 
+> **~~Renversé le 23 août 2026~~ par le patron lui-même** — *« ne prends pas en
+> compte la pluviométrie »*. Elle est sortie de la clé de groupe : deux buses
+> différentes peuvent désormais partager une vanne, avec des mm/h différents
+> pour une même durée d'ouverture, et **c'est lui qui arbitre à l'arrosage**.
+> Le MATÉRIEL, lui, sépare toujours (`ARCHITECTURE.md` §151). Le récit ci-dessus
+> est conservé pour qu'on ne rouvre pas la question en croyant l'inventer.
+
 **Ce que ça lui coûte, et il faut le lui dire :** une vanne de plus quand deux
 zones portent des buses différentes, même de 3 % d'écart. C'est le sens
 prudent — jamais de sous-arrosage — mais s'il juge que quelques pour cent se
@@ -1793,7 +1922,7 @@ est appliqué dans `appli/arrosage.html`. Ne pas le redéduire, ne pas l'assoupl
 | 6 | **Quinconce au-delà de 4 arroseurs, carré en dessous. « Les derniers arroseurs doivent toujours être dans les coins »** — pourtour régulier, seules les rangées intérieures se décalent | `QUINCONCE_AU_DELA_DE`, `dessinerPlans` |
 | 7 | Il enverra **un tableau portée × distance** : l'écart viendra alors du catalogue, pas d'un facteur | à venir |
 | 8 | **85 % du débit par secteur : confirmé** | `MARGE` |
-| 9 | **« Ça ne se mélange jamais »** — ni deux pluviométries, ni deux familles | `decouper()` |
+| 9 | **« Ça ne se mélange jamais »** — ~~ni deux pluviométries~~ (retiré par lui le 23 août 2026), ni deux familles | `decouper()` |
 | 10 | **Massifs : lignes tous les 80 cm. Potager : 70 cm. Haies : une ou deux lignes, À DEMANDER à l'utilisateur** | `TYPES`, forme `nappe` |
 **LES RÉPONSES DU 17 AOÛT (deuxième tour, formulaire à cocher) :**
 
@@ -2195,10 +2324,12 @@ PAR-DESSUS le calcul, jamais à sa place.
 - **Le débit se mesure au seau**, il ne se suppose pas. Un plan bâti sur un débit
   supposé s'écroule à la mise en eau, et c'est le paysagiste qui revient
   gratuitement.
-- **Une seule pluviométrie par secteur.** La vanne ouvre son secteur entier pour
-  la même durée : turbines (11 mm/h) et tuyères (38 mm/h) ensemble, c'est trois
+- **Un seul MATÉRIEL par secteur.** La vanne ouvre son secteur entier pour la
+  même durée : turbines (11 mm/h) et tuyères (38 mm/h) ensemble, c'est trois
   fois trop d'eau d'un côté, quoi qu'on règle. **Un seul rythme par secteur**
-  pour la même raison.
+  pour la même raison. *(La pluviométrie, elle, ne sépare plus deux vannes
+  depuis sa décision du 23 août 2026 : deux turbines de buses différentes
+  peuvent se retrouver ensemble.)*
 - **Aucun prix inventé** (§4 du dépôt) : la nomenclature sort avec ses
   quantités, le prix vient de « Mes prix », et ce qui n'y est pas part vide et
   signalé.
@@ -2426,7 +2557,54 @@ préfixe (`batterie19`) a la suite au vert ; les quatre suivantes, avec, au roug
 refuser de conclure quand son montage n'a pas reproduit le cas — c'est ce qui a
 permis de le voir.
 
-### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
+### 0 trigies quinquies. ~~Cinq suites du devis rougissaient une batterie sur deux~~ — **RÉPARÉES le 23 août 2026**
+
+**Quatre l'étaient pour la même raison, et la cinquième pour une autre.** C'est
+cette distinction qui a coûté l'enquête, et qui vaut d'être écrite : leur
+symptôme était identique — un montant lu trop tôt —, leur cause ne l'était pas.
+
+| | Le mal | La parade |
+|---|---|---|
+| `test-devis-complet`, `test-devis-a-la-main`, `test-reduction-devis`, `test-reprise-chantier` | un `waitForTimeout` fixe : l'enregistrement partait au serveur pendant ce délai, qui suffisait à vide et manquait sous quatre-vingt-dix suites | relire la base **en boucle jusqu'à la valeur**, avec une borne qui sait abandonner (`80a12bc`) |
+| `test-devis-depuis-dictee` | **rien à voir avec la charge : elle rougissait AUSSI jouée seule** | elle visait un écran qui n'existe plus |
+
+**LE PIÈGE DE LA CINQUIÈME, ET IL RESSERVIRA.** Elle ouvrait
+`/chantiers/{id}/export` et cherchait « taille de haie » dans le texte de la
+page. Deux raisons de n'y jamais arriver, **toutes deux nées le 20 août**
+(`c9abb50`, la suppression de l'écran intermédiaire) :
+
+1. **`/export` RENVOIE sur `/devis-complet`** tant que le devis n'est pas parti.
+   Une suite qui n'envoie rien — et celle-ci vérifie précisément que *rien n'est
+   parti au client* — n'atteint donc jamais cet écran ;
+2. **sur le devis, la désignation vit dans un `<input>`.** La valeur d'un champ
+   ne fait pas partie du texte de la page : `innerText` ne la voit pas, et
+   aucune attente, si longue soit-elle, ne la fera apparaître.
+
+Le contrôle accusait donc la dictée pour un parcours qui avait changé sous lui.
+Il vise désormais ce que le client recevra **vraiment** : `lignes_devis` —
+l'instantané figé à l'impression, pas les lignes de prix encore corrigeables —
+relu sous l'aperçu PDF. Éprouvé rouge sur un libellé absent, et son message
+montre ce que le devis porte (`CLAUDE.md` §5 bis : on adapte le contrôle, on ne
+rétablit pas l'écran retiré).
+
+**Ce que ça apprend :** devant un rouge, la première question n'est pas *« est-ce
+la charge ? »* mais *« rougit-elle jouée seule ? »*. Trente secondes de réponse,
+et elles séparent deux enquêtes qui n'ont rien en commun.
+
+**ET UNE SIXIÈME LEÇON, PAYÉE PAR MON PROPRE CORRECTIF.** `test-reprise-chantier`
+est retombée à la batterie suivante, sur la garde que je venais de lui poser :
+elle relisait le **total affiché** pour prouver que le prix était enregistré. Or
+l'écran des prix montre le montant qu'on vient de taper **avant** que le serveur
+ait répondu. Sous une batterie entière, la garde lisait donc « 1 200,00 € » sur
+une base encore vide, se déclarait satisfaite, et l'écran d'arrivée — rendu par
+le serveur, lui — affichait 0,00 € deux cas plus loin et se faisait accuser.
+
+**Lire l'écran pour prouver un enregistrement, c'est mesurer ce qu'on vient de
+taper.** La garde interroge désormais `lignes_prix`. Éprouvée rouge en tapant un
+prix nul : elle nomme le total réellement en base, et accuse le prix, pas
+l'écran d'arrivée.
+
+### 0 trigies ter. ~~`test-reduction-devis-e2e` rougit sous charge, pas toute seule~~ — **RÉPARÉE le 23 août 2026** (`80a12bc`, et le point ci-dessus)
 
 **Vu le 16 août 2026**, sur la batterie qui suivait la fusion de son lot. Le
 dernier de ses six cas — *« elle se retire, et le devis revient à son prix

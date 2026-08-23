@@ -701,6 +701,36 @@ var CATALOGUE = {
     { ref:'pe25', nom:'Tuyau PE 25 (antennes)', regle:'aMesurer', unite:'ml', source:'provisoire' }
   ],
 
+  /* ══ CE QUE SA NOTICE RAIN BIRD DIT DE L'ÉLECTROVANNE ══════════════════════
+
+     **Relevé le 22 août 2026** sur la notice qu'il a envoyée
+     (`man_DV_DVF.pdf`, Rain Bird, P/N 231576-B). Ce sont ses vannes : toutes
+     ses fiches de nourrice montent des 100-DV.
+
+     | | 075-DV (3/4") | 100-DV (1") |
+     |---|---|---|
+     | débit admis | 0,05 à 5,0 m³/h | 0,05 à 9,08 m³/h |
+     | pression admise | 1 à 10 bar | 1 à 10 bar |
+
+     Et une règle que le dépôt appliquait de travers : **le réducteur de
+     pression ne sert qu'au-delà de 5,5 bar** (*« if pressure is greater than
+     80 psi (5,5 bar), install a pressure regulator on the line before the
+     valve »*). Il était facturé d'office sur chaque chantier.
+
+     ⚠ **CE QUE CETTE NOTICE NE DONNE PAS :** la perte de charge de la vanne.
+     C'est une notice d'installation, pas une fiche technique — il n'y a ni
+     courbe ni tableau ΔP. Le forfait majorant de `PERTE_ELECTROVANNE` reste
+     donc en place, et reste non relevé. */
+  electrovanneDV: {
+    debitMin: 0.05, debitMax100: 9.08, debitMax075: 5.0,
+    pressionMin: 1, pressionMax: 10,
+    // Au-delà, la notice impose un réducteur AVANT la vanne.
+    reducteurAuDelaDe: 5.5,
+    // Les modèles mâle-mâle et mâle-cannelé sont déconseillés au-delà.
+    debitMaxMMetMB: 6.8,
+    source: 'patron', releve: 'Notice Rain Bird DV/DVF, P/N 231576-B (2011)'
+  },
+
   /* ── LES PIÈCES DE NOURRICE — un catalogue à part, référencé par les fiches
      ci-dessous. Chaque pièce n'est écrite QU'UNE FOIS ici, même si elle
      revient dans les six fiches (l'électrovanne, par exemple, est dans les
@@ -946,6 +976,40 @@ CATALOGUE.busesDe = function (marqueCle, pourType) {
       return b.debit[90] != null && b.debit[180] != null && b.debit[360] != null;
     })
     .sort(function (a, b) { return b.rayon - a.rayon; });
+};
+
+/* ══ UNE RÉFÉRENCE, OU RIEN ════════════════════════════════════════════════
+
+   **Sa consigne du 22 août 2026, en majuscules et six points d'exclamation :**
+   *« tu ne dois surtout pas inventer de prix ni de référence !!!!!!! »*
+
+   **Il avait raison, et le défaut était à l'écran.** La liste de matériel
+   affichait une colonne « référence » remplie avec les CLÉS INTERNES du
+   catalogue : `te-taraude-25-34-25`, `electrovanne-100dv`, `regard-rect12`,
+   `sonde-pluie`. Ce ne sont pas des références : ce sont des noms de variables.
+   Un paysagiste qui arrive chez Aqua Plus en demandant un « te-taraude-25-34-25 »
+   se fait regarder de travers, et il a raison — ça n'existe pas.
+
+   **Ce qui EST une référence :** celle qu'on a relevée sur ses documents. Ces
+   entrées-là portent toutes un champ `releve` (« Aqua Plus 2026, p. 11 ») —
+   RA3504, RA3504-B075, OD501, RBT636. Les autres n'ont qu'un nom et une
+   marque, ce qui suffit pour commander au comptoir mais n'est PAS une
+   référence.
+
+   Cette fonction rend l'une ou l'autre, jamais un entre-deux. Le silence est
+   la bonne réponse quand on ne sait pas : un nom sans référence se commande,
+   une référence inventée fait perdre une matinée. */
+CATALOGUE.referenceDe = function (cle) {
+  if (!cle) return null;
+  var listes = [CATALOGUE.arroseurs, CATALOGUE.buses, CATALOGUE.corps,
+                CATALOGUE.coudes, CATALOGUE.gaines];
+  for (var i = 0; i < listes.length; i++) {
+    var trouve = (listes[i] || []).filter(function (x) { return x.ref === cle; })[0];
+    // **`releve` est le seul juge.** Une entrée sans relevé est une entrée
+    // dont la référence n'a jamais été lue sur un document du patron.
+    if (trouve) return trouve.releve ? trouve.ref : null;
+  }
+  return null;
 };
 
 /* Tout ce qui peut porter un prix, à un seul endroit : c'est la liste qu'il

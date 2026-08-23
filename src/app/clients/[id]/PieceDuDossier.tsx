@@ -44,6 +44,11 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
   const [erreur, setErreur] = useState<string | null>(null);
 
   const nomFichier = nomDuFichierDeLaPiece(piece);
+  // **Une fiche d'entretien n'est pas un fichier.** Elle se lit à l'adresse que
+  // le client a reçue, et rien ne la fige en PDF : lui proposer « Enregistrer »
+  // ferait descendre une page web nommée `.pdf`, que rien n'ouvrirait — le
+  // défaut du 7 août, retourné. Absent vaut PDF (`documents-du-client.ts`).
+  const estUnFichier = piece.format !== "page";
 
   async function partager() {
     setErreur(null);
@@ -60,11 +65,19 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
       } catch (e) {
         // Un partage annulé n'est pas une panne : il a changé d'avis.
         if (e instanceof Error && e.name === "AbortError") return;
-        setErreur("Le partage n'a pas abouti. « Enregistrer » reste possible ci-dessus.");
+        setErreur(
+          estUnFichier
+            ? "Le partage n'a pas abouti. « Enregistrer » reste possible ci-dessus."
+            : "Le partage n'a pas abouti. « Ouvrir » reste possible ci-dessus."
+        );
       }
       return;
     }
-    setErreur("Le partage n'est pas disponible sur cet appareil. « Enregistrer » reste possible ci-dessus.");
+    setErreur(
+      estUnFichier
+        ? "Le partage n'est pas disponible sur cet appareil. « Enregistrer » reste possible ci-dessus."
+        : "Le partage n'est pas disponible sur cet appareil. « Ouvrir » reste possible ci-dessus."
+    );
   }
 
   return (
@@ -95,7 +108,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
             letterSpacing: "0.06em",
           }}
         >
-          PDF
+          {estUnFichier ? "PDF" : "FICHE"}
         </span>
         <span data-atlas="piece-titre" className="mt-[5px] block truncate text-[12.5px] leading-[1.2]">
           {piece.titre}
@@ -115,17 +128,23 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
 
         {/* **« Enregistrer » en tête, et c'est le geste qu'il est venu chercher.**
             Les trois conditions du 7 août sont réunies ici, et le pavé au-dessus
-            dit pourquoi aucune ne se retire. */}
-        <a
-          href={`${piece.href}?telecharger=1`}
-          download={nomFichier}
-          onClick={() => setFeuilleOuverte(false)}
-          data-atlas="piece-enregistrer"
-          className="mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
-          style={{ backgroundColor: colors.rust, color: colors.cream }}
-        >
-          Enregistrer
-        </a>
+            dit pourquoi aucune ne se retire.
+
+            **Sauf pour une fiche d'entretien**, qui n'est pas un fichier : elle
+            n'a rien à enregistrer, et « Ouvrir » devient alors le geste
+            principal. */}
+        {estUnFichier && (
+          <a
+            href={`${piece.href}?telecharger=1`}
+            download={nomFichier}
+            onClick={() => setFeuilleOuverte(false)}
+            data-atlas="piece-enregistrer"
+            className="mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
+            style={{ backgroundColor: colors.rust, color: colors.cream }}
+          >
+            Enregistrer
+          </a>
+        )}
 
         {/* Un onglet à part : sans lui, regarder un devis ferait perdre la fiche
             du client, et il faudrait y revenir à la main. */}
@@ -135,8 +154,12 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           rel="noreferrer"
           onClick={() => setFeuilleOuverte(false)}
           data-atlas="piece-ouvrir"
-          className="mt-2 block py-4 text-center text-[15px]"
-          style={{ color: colors.ink }}
+          className={
+            estUnFichier
+              ? "mt-2 block py-4 text-center text-[15px]"
+              : "mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
+          }
+          style={estUnFichier ? { color: colors.ink } : { backgroundColor: colors.rust, color: colors.cream }}
         >
           Ouvrir
         </a>

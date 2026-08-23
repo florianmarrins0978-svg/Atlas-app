@@ -3,6 +3,33 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
+/**
+ * Attend que la BASE porte ce qu'on vient d'écrire à l'écran.
+ *
+ * **Le remède au défaut le plus coûteux de ces suites** (`TODO.md`) : elles
+ * lisaient la base après un `waitForTimeout` fixe. Neuf cents millisecondes
+ * suffisaient à vide et manquaient sous la charge d'une batterie — alors elles
+ * rougissaient une fois sur deux, sur du code parfaitement juste, et trois
+ * sessions ont mené la même enquête avant qu'on l'écrive.
+ *
+ * On interroge donc jusqu'à ce que la valeur soit là. Si elle ne vient jamais,
+ * on rend la dernière lue : c'est l'assertion de l'appelant qui accuse, avec
+ * son message et son chiffre — pas cette attente, qui ne saurait pas quoi dire.
+ */
+async function attendreEnBase<T>(
+  lire: () => Promise<T>,
+  tient: (v: T) => boolean,
+  msMax = 20_000
+): Promise<T> {
+  const fin = Date.now() + msMax;
+  let dernier = await lire();
+  while (!tient(dernier) && Date.now() < fin) {
+    await new Promise((r) => setTimeout(r, 200));
+    dernier = await lire();
+  }
+  return dernier;
+}
+
 // **Trois demandes du patron, le 4 août 2026, éprouvées de bout en bout.**
 //
 // 1. « Je ne peux toujours pas rédiger mon devis seulement à la main si je le
@@ -86,9 +113,11 @@ async function main() {
   await page.getByLabel("Description 1").blur();
   await page.getByLabel("Prix unitaire 1").fill("1250");
   await page.getByLabel("Prix unitaire 1").blur();
-  await page.waitForTimeout(900);
 
-  const lignes = await pool.query(`SELECT libelle, montant FROM lignes_prix WHERE chantier_id = $1`, [chantierId]);
+  const lignes = await attendreEnBase(
+    () => pool.query(`SELECT libelle, montant FROM lignes_prix WHERE chantier_id = $1`, [chantierId]),
+    (r) => r.rows[0]?.montant === "1250.00"
+  );
   assert.equal(lignes.rowCount, 1, "La ligne écrite à la main n'a pas été enregistrée.");
   assert.equal(lignes.rows[0].montant, "1250.00", `Montant enregistré : ${lignes.rows[0].montant}`);
   console.log("  ✓ une ligne écrite à la main est enregistrée avec son montant");

@@ -79,7 +79,7 @@ async function devisParti(page: Page, suffixe: string) {
 
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
   await page.click("text=Choisir la date");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
@@ -245,7 +245,7 @@ async function main() {
 
     // Et elle repart réellement : c'est tout l'objet de la reprise.
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     try {
       await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.

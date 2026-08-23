@@ -207,10 +207,7 @@ export default function AchatsTva({
   const armé = fournisseur.trim() !== "" && montantSaisi(tva) !== null && !enCours;
 
   return (
-    <div className="mt-5 px-6">
-      <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
-        Vos achats
-      </p>
+    <div>
 
       {/* **Sans `capture`.** L'attribut forcerait l'appareil photo et retirerait
           l'accès à la photothèque : un ticket déjà photographié la veille
@@ -228,34 +225,66 @@ export default function AchatsTva({
         }}
       />
 
-      <div className="flex gap-2.5">
-        <button
-          type="button"
-          onClick={() => objectif.current?.click()}
-          disabled={enCours}
-          className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[15px] text-[12.5px]"
-          style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
-            <path d="M4 8.4V6.2A2.2 2.2 0 0 1 6.2 4h2.2M15.6 4h2.2A2.2 2.2 0 0 1 20 6.2v2.2M20 15.6v2.2a2.2 2.2 0 0 1-2.2 2.2h-2.2M8.4 20H6.2A2.2 2.2 0 0 1 4 17.8v-2.2" strokeLinecap="round" />
-            <path d="M4 12h16" strokeLinecap="round" />
-          </svg>
-          {enCours && !ouverte ? "Envoi…" : "Scanner un ticket"}
-        </button>
-        <button
-          type="button"
-          onClick={() => ouvrir(null, null, null)}
-          className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[15px] text-[12.5px]"
-          style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
-            <path d="M4 20h4.2L19 9.2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20z" strokeLinejoin="round" />
-            <path d="M13.6 6.6l3.8 3.8" strokeLinecap="round" />
-          </svg>
-          Écrire à la main
-        </button>
+      {/* **LES DEUX GESTES REMONTENT CONTRE LA TUILE — proposition C, retenue
+          par le patron le 23 août 2026.**
+
+          Sa remarque : *« on ne comprend pas trop que scanner ou écrire à la
+          main, c'est pour la TVA déductible »*. Il avait raison, et la preuve
+          était sous ses yeux sans être écrite : le même montant s'affichait
+          deux fois, dans la tuile et sur la ligne de l'achat, à quinze lignes
+          d'écart, sans rien pour les relier.
+
+          Trois dosages lui ont été dessinés, essayables au doigt
+          (`docs/maquettes/85-achats-tva-deductible.html`) — dire le lien par le
+          titre, par une phrase, ou par la PLACE. Il a retenu la place : aucun
+          mot de plus, et le bloc se referme sous l'encadré des chiffres.
+
+          Le liseré haut est en pointillé : il rattache sans séparer. Le fond et
+          l'arrondi bas sont ceux de l'encadré au-dessus, qui a perdu le sien —
+          les deux ne font plus qu'une seule pièce. */}
+      <div
+        className="mx-6 rounded-b-[10px] px-3.5 pb-3 pt-2.5"
+        style={{ backgroundColor: colors.card, borderTop: `1px dashed ${colors.line}` }}
+      >
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.or }}>
+          Pour faire monter la déductible
+        </p>
+        <div className="flex gap-2.5" data-atlas="gestes-deductible">
+          <button
+            type="button"
+            onClick={() => objectif.current?.click()}
+            disabled={enCours}
+            className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[15px] text-[12.5px]"
+            style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
+              <path d="M4 8.4V6.2A2.2 2.2 0 0 1 6.2 4h2.2M15.6 4h2.2A2.2 2.2 0 0 1 20 6.2v2.2M20 15.6v2.2a2.2 2.2 0 0 1-2.2 2.2h-2.2M8.4 20H6.2A2.2 2.2 0 0 1 4 17.8v-2.2" strokeLinecap="round" />
+              <path d="M4 12h16" strokeLinecap="round" />
+            </svg>
+            {enCours && !ouverte ? "Envoi…" : "Scanner un ticket"}
+          </button>
+          <button
+            type="button"
+            onClick={() => ouvrir(null, null, null)}
+            className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[15px] text-[12.5px]"
+            style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
+              <path d="M4 20h4.2L19 9.2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20z" strokeLinejoin="round" />
+              <path d="M13.6 6.6l3.8 3.8" strokeLinecap="round" />
+            </svg>
+            Écrire à la main
+          </button>
+        </div>
       </div>
 
+      {/* La liste garde son titre, et son mot juste : ce qu'il ajoute, ce sont
+          des ACHATS. « TVA déductible », c'est ce que l'administration en fait. */}
+      <p className={`mb-2.5 mt-5 px-6 ${libelleCaps}`} style={{ color: colors.muted }}>
+        Vos achats
+      </p>
+
+      <div className="px-6">
       {achats.length === 0 ? (
         <p className="py-4 text-center text-[13px] leading-[1.6]" style={{ color: colors.muted }}>
           Rien encore. Scannez un ticket, ou écrivez-le.
@@ -412,6 +441,7 @@ export default function AchatsTva({
           Annuler
         </button>
       </BottomSheet>
+      </div>
     </div>
   );
 }

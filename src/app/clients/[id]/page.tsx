@@ -118,7 +118,7 @@ export default async function FicheClientPage({
       <div className="mt-6 grid grid-cols-3 gap-[7px] px-4">
         <Colonne titre="Devis" pieces={devis} rien="Aucun devis parti" />
         <Colonne titre="Facture" pieces={factures} rien="Aucune facture émise" />
-        <Colonne titre="Fiche chantier" pieces={fiches} rien="Aucun chantier terminé" />
+        <Colonne titre="Fiche chantier" pieces={fiches} rien="Aucune fiche envoyée" />
       </div>
 
       {/* Trois colonnes vides sans un mot laisseraient croire à un écran cassé.

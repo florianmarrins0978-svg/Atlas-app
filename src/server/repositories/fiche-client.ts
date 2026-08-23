@@ -1,12 +1,14 @@
-import { and, asc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   chantiers,
   clients,
   devis,
   factures,
+  lignesPassage,
   lignesPrix,
   paiementsFacture,
+  passagesEntretien,
   prestations,
 } from "../db/schema";
 import type { Ctx } from "./context";
@@ -78,6 +80,76 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       .from(chantiers)
       .where(and(eq(chantiers.clientId, clientId), isNull(chantiers.deletedAt)));
 
+    // ─── La colonne « Fiche chantier » ───────────────────────────────────
+    //
+    // **Elle ne porte QUE les fiches d'entretien qu'il a remplies lui-même**,
+    // et envoyées — sa règle du 23 août 2026 : *« cette catégorie est réservée
+    // lorsque les paysagistes créent une fiche chantier avec les informations
+    // type la tonte, la taille, ce qu'ils ont fait. À aucun moment, lorsqu'une
+    // facture doit être envoyée, une fiche chantier doit être créée. »*
+    //
+    // **CE QU'ELLE PORTAIT AVANT, ET POURQUOI C'ÉTAIT FAUX.** Elle listait les
+    // chantiers `termineAt IS NOT NULL`. Or facturer POSE cette date
+    // (`factures.ts` : `COALESCE(termine_at, now())`) : émettre une facture
+    // fabriquait donc une pièce que personne n'avait écrite. Pire, le document
+    // qu'elle ouvrait est la feuille INTERNE — équipe, créneau, note vocale,
+    // adresse du chantier —, celle que ses salariés ouvrent dans la camionnette.
+    // Rangée dans le dossier d'un client, elle donnait à croire qu'il l'avait
+    // reçue.
+    //
+    // **Envoyées seulement**, comme les devis et les factures de cette même
+    // rangée : un brouillon n'est pas une pièce, et il n'a d'ailleurs pas
+    // d'adresse publique tant qu'il n'est pas figé (`passages_entretien`).
+    const sesFiches = await tx
+      .select({
+        id: passagesEntretien.id,
+        jour: passagesEntretien.jour,
+        jeton: passagesEntretien.jeton,
+        // **`passages_entretien.id` écrit EN TOUTES LETTRES, et c'est
+        // indispensable.** `${passagesEntretien.id}` se rend en `"id"` NU dès
+        // qu'aucune jointure n'oblige Drizzle à qualifier ses colonnes : la
+        // sous-requête devenait `l.passage_id = l.id`, jamais vraie, et chaque
+        // fiche s'annonçait « 0 prestation » sur une base qui en portait deux ou
+        // trois. Aucun test ne l'a vu — c'est la CAPTURE qui l'a montré, la
+        // cinquième fois dans ce dépôt (`CLAUDE.md` §5).
+        //
+        // Le voisin `listerPassages` écrit la même chose et fonctionne : il
+        // porte un `leftJoin`, qui force la qualification. Le défaut n'apparaît
+        // donc que dans la requête SANS jointure — d'où l'illusion que le motif
+        // était éprouvé.
+        faites: sql<number>`(
+          select count(*)::int from ${lignesPassage} l
+           where l.passage_id = passages_entretien.id and l.faite
+        )`,
+      })
+      .from(passagesEntretien)
+      .where(
+        and(
+          eq(passagesEntretien.clientId, clientId),
+          isNotNull(passagesEntretien.envoyeLe),
+          isNotNull(passagesEntretien.jeton)
+        )
+      )
+      .orderBy(desc(passagesEntretien.jour));
+
+    const piecesFiches = rangerDuPlusRecent(
+      sesFiches.map((f) => ({
+        id: f.id,
+        // Le jour en titre : à l'inverse des devis et des factures, une fiche
+        // n'a pas de numéro — c'est sa date qui la désigne.
+        titre: jourCourt(f.jour),
+        jour: f.jour,
+        // Ce qu'elle porte, en un chiffre. « 6 prestations » distingue deux
+        // passages du même mois mieux que ne le ferait le nom du client, qui
+        // est déjà celui de la fiche qu'on regarde.
+        precision: `${f.faites} prestation${f.faites > 1 ? "s" : ""}`,
+        // **L'adresse que le client a reçue**, et non un PDF : ce rapport n'est
+        // figé nulle part en fichier. `format` le dit à la vignette.
+        href: `/entretien/${f.jeton}`,
+        format: "page" as const,
+      }))
+    );
+
     if (sesChantiers.length === 0) {
       return {
         ...composerFicheClient([], []),
@@ -89,7 +161,11 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           email: client.email,
         },
         derniere: null,
-        pieces: AUCUNE_PIECE,
+        // **Un client peut n'avoir AUCUN chantier et une fiche d'entretien.**
+        // La fiche s'ouvre depuis Paysage, se nomme, s'envoie — sans qu'aucun
+        // chantier n'existe. Rendre `AUCUNE_PIECE` ici l'aurait fait
+        // disparaître de son dossier.
+        pieces: { ...AUCUNE_PIECE, fiches: piecesFiches },
       };
     }
 
@@ -222,28 +298,6 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         jour: f.dateEmission,
         href: `/api/factures/${f.id}/pdf`,
       }))
-    );
-
-    // **Une fiche de chantier n'existe que pour un chantier TERMINÉ.** Elle rend
-    // compte de travaux faits : en proposer une pour un chantier qui n'a pas
-    // commencé imprimerait une feuille vide, et le patron l'ouvrirait pour
-    // découvrir qu'il n'y avait rien à lire.
-    const piecesFiches = rangerDuPlusRecent(
-      sesChantiers
-        .filter((c) => c.termineAt !== null)
-        .map((c) => {
-          const jour = c.termineAt!.toISOString().slice(0, 10);
-          return {
-            id: c.id,
-            // Le jour en titre, le chantier en dessous : à l'inverse des devis
-            // et des factures, une fiche n'a pas de numéro — c'est sa date qui
-            // la désigne, et c'est par elle qu'on la cherche.
-            titre: jourCourt(jour),
-            jour,
-            precision: c.nom,
-            href: `/api/chantiers/${c.id}/fiche/pdf`,
-          };
-        })
     );
 
     // ─── La dernière prestation ──────────────────────────────────────────

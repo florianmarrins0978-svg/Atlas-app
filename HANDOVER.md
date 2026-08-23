@@ -4,11 +4,150 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-22 · `main`
+**Point de reprise :** 2026-08-23 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
+## LE PLAN D'ARROSAGE EST DESSINÉ — CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (23 août 2026)
+
+**Trois fichiers purs, et aucun ne recalcule ce qui existait :**
+
+| | |
+|---|---|
+| `src/lib/arrosage/terrain.ts` | le contour, **union** des zones (jamais leur juxtaposition) |
+| `src/lib/arrosage/trace.ts` | par où passe le tuyau — graphe + plus-court-chemin |
+| `src/lib/arrosage/plan-dessine.ts` | l'assemblage, les réserves et **les deux refus** |
+
+`calcul.js` n'a gagné que `dessin` : la mise au jour des points que `poser()`
+calculait déjà, en coordonnées absolues. **Ne pas en écrire un second** — la
+divergence que `CLAUDE.md` §3 interdit se paie en matériel commandé de travers.
+
+### Les deux refus sont durs, et c'est voulu
+
+Pas d'endroit **définitif** de la nourrice → aucun plan : ni dessin, **ni liste
+de pièces**. Une liste sans tracé se commande quand même. Idem si le croquis ne
+situe pas les zones les unes par rapport aux autres : le calcul rend alors
+`x = 0, y = 0`, deux pelouses se superposeraient exactement, et rien ne le
+dirait.
+
+**La nourrice n'est jamais déduite** (sa règle du 22 août). `lire-croquis.ts` la
+cherche et rend `null` si elle n'est pas dessinée.
+
+### Ce qui n'a PAS pu être éprouvé ici
+
+La lecture réelle d'une photo : le modèle doit désormais rendre `x_m`, `y_m` par
+zone et l'endroit de la nourrice. **Aucune clé de vision dans cet
+environnement** — la fonction pure `lireReponseCroquis` est éprouvée
+(`test-lecture-croquis.ts`), l'appel au fournisseur ne l'est pas. Premier essai à
+faire sur son banc.
+
+### LE CROQUIS SE LIT EN FRACTIONS, ET UN SEUL ENDROIT LES CONVERTIT
+
+`lire-croquis.ts` rend des places **en fraction du dessin** (0 à 1), jamais des
+mètres — c'est tout ce qu'une image permet. `poserSurLeTerrain()`, dans
+`geometrie-croquis.ts`, en fait des mètres pour le dessin ; c'est le même module
+qui déduit l'échelle pour le trajet du regard, **et il ne doit pas y en avoir un
+second**. Les côtés viennent des cotes lues, la place vient du dessin.
+
+**Le défaut à craindre est muet** : oublier la conversion laisse un plan
+cohérent avec lui-même, dessiné sur un jardin d'un mètre de large. Il est
+éprouvé sur une mesure (`test-geometrie-croquis.ts`), pas sur une forme.
+
+### DEUX RÈGLES ONT CHANGÉ LE 23 AOÛT — ne pas les « corriger »
+
+**La pluviométrie n'est plus dans la clé de secteur.** Elle y était depuis le
+17 août, mise par LUI ; retirée le 23 par LUI (*« ne prends pas en compte la
+pluviométrie »*). Deux turbines de buses différentes peuvent donc partager une
+vanne, avec des mm/h différents pour une même durée d'ouverture. **C'est voulu,
+il arbitre à l'arrosage** — le remettre serait défaire sa décision.
+
+Ce qui tient toujours : une turbine et une tuyère ne partagent JAMAIS une vanne.
+Les deux faces sont éprouvées dans `test-arrosage-calcul.ts`.
+
+**Les pièces se comptent en « 13x », pas « 13 u ».** L'unité reste dans les
+données (`{ q, u }`) ; seul l'affichage change, par `quantiteEcrite(q, u)`, qui
+vit dans la partie PARTAGÉE de `calcul.js` — donc à recopier dans les deux
+copies si on y touche. Les mètres restent des mètres.
+
+### Regarder le dessin sans serveur ni clé
+
+```bash
+npx tsx scripts/capture-plan-arrosage.ts /tmp/captures
+```
+
+Il a déjà attrapé quatre défauts qu'aucun test ne voyait (`ARCHITECTURE.md`
+§150). **S'en servir avant de dire qu'un changement de dessin va bien.**
+
+## PRÉVENIR N'EST PAS REFUSER — et « proposée » n'est pas « forcée »
+
+Posé le 23 août 2026. **Deux de ses règles se ressemblent et disent le
+contraire ; ce qui les sépare est la délibération.**
+
+| Sa phrase | Ce qu'elle exige |
+|---|---|
+| 22 août — *« je peux proposer le 24 alors qu'un client a validé le 24, ça ne doit jamais se reproduire »* | l'application ne suggère **jamais** d'elle-même un jour plein |
+| 23 août — *« s'il juge qu'il peut rajouter un chantier, il doit pouvoir le faire quand même »* | il peut **forcer** un jour plein, en le voyant écrit « complet » |
+
+Les deux tiennent ensemble parce que `premiersJoursLibres` ne suggère aucun jour
+plein, tandis que `verifierJourPropose` **prévient sans refuser**.
+
+**Le piège, et il a été payé :** à la réponse du client, « la date figure dans
+l'envoi » ne suffit PAS à l'autoriser. Un jour proposé alors qu'il était LIBRE,
+puis rempli entre-temps, passerait sans que personne n'ait rien décidé — le
+double chantier du 22 août, dans sa version course. Seule `envois_devis.
+dates_forcees` (migration 0059) distingue les deux : c'est la photographie,
+prise à l'envoi, de ce qui était déjà plein. Elle se calcule **au serveur** ;
+reçue de l'écran, elle serait un moyen de forcer n'importe quel jour.
+
+**Ce qui reste refusé partout**, parce que ce n'est pas un jugement d'artisan :
+une date passée, ou au-delà de dix-huit mois.
+
+---
+
+## UNE RÉFÉRENCE, OU RIEN — et le sûr, c'est MOINS d'arroseurs par vanne
+
+**Deux consignes du 22 août 2026 au soir, toutes deux à ne jamais rouvrir.**
+
+**1. Ne jamais afficher une référence non relevée.** La colonne « référence »
+montrait les clés internes du catalogue (`te-taraude-25-34-25`,
+`electrovanne-100dv`). Ce sont des noms de variables : on ne commande pas avec.
+`CATALOGUE.referenceDe(cle)` est le seul juge — elle rend la référence
+seulement si l'entrée porte un `releve`. L'écran affiche `reference`, jamais
+`ref`. Un contrôle de la planche interdit d'en réafficher.
+
+**2. Le sûr, c'est MOINS d'arroseurs par vanne — pas plus.** La règle du
+`CLAUDE.md` §4 ter était écrite à l'envers, et c'est lui qui l'a redressée :
+*« un arroseur de trop fait que le réseau ne peut pas se lever ! »* Une tête de
+plus sur une vanne, c'est du débit en plus sur la même conduite. Devant un
+doute : moins d'arroseurs par vanne, plus de réseaux, la perte la plus forte, la
+portée la plus courte.
+
+---
+
+## LE CROQUIS PORTE LES PLACES — en fraction, jamais en mètres (22 août 2026)
+
+`lire-croquis.ts` demande maintenant, pour chaque zone et pour la nourrice, une
+place entre 0 et 1 (`x`, `y`, `largeur_fraction`, `hauteur_fraction`).
+`geometrie-croquis.ts` en tire les mètres.
+
+**L'échelle sort des cotes déjà lues** — 16 m sur 0,40 du croquis = 40 m par
+unité — en prenant la **médiane** des estimations. Au-delà du double d'écart
+entre zones, elle REFUSE de conclure et rend une raison.
+
+**Ne jamais rogner une place hors de [0, 1]** : un « 12 » pour un x n'est pas
+une fraction, et le ramener à 1 fabrique une distance de tuyau fausse.
+
+**La distance est en Manhattan, jusqu'au BORD de la zone** — pas au centre : la
+longueur dans la zone est déjà comptée par la ligne d'arroseurs.
+
+**Sans nourrice dessinée, aucun trajet**, et surtout aucune supposition : elle
+ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
+
+**Elle vit hors de `calcul.js`** parce que ce fichier est une copie partagée
+avec `appli/` : la distance est passée en entrée (`regardVersZone`).
+
+Détail : `ARCHITECTURE.md` §149.
 ## UNE COULEUR ÉCRITE EN CLAIR EST JUSTE SUR CINQ CHARTES ET FAUSSE SUR DEUX (22 août 2026)
 
 **Sa capture du planning en « Nuit », six mots :** *« Le mode nuit est
@@ -42,7 +181,7 @@ npx tsx scripts/test-mode-sombre-lisible-e2e.ts
 ```
 
 Le pourquoi de chaque choix, et ce qui reste non couvert : `ARCHITECTURE.md`
-§148.
+§157.
 
 ---
 
@@ -1731,6 +1870,74 @@ planches) : la batterie devrait nettoyer ces dossiers avant l'étape
 reviendra à la prochaine page supprimée.
 
 ## Ce qui vient d'être terminé
+
+**LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier
+l'adresse" et "Ouvrir le PDF", un petit encadré où marquer quelque chose. »*
+Proposition A retenue : cadre ouvert en permanence. Colonne `chantiers.note`,
+migration 0061, règle pure dans `src/lib/note-chantier.ts`.
+
+**⚠ IL A ÉTÉ CODÉ DEUX FOIS LE MÊME JOUR, par deux sessions qui ne se voyaient
+pas.** Celle arrivée la première sur `main` fait foi ; la seconde a été retirée
+en entier — deux colonnes pour la même note auraient été les deux vérités que
+`CLAUDE.md` §3 interdit. **Ne pas ressusciter `note_feuille` ni la migration
+0060 du même nom** en la retrouvant dans l'historique : elle a été abandonnée
+délibérément, pas oubliée.
+
+*La leçon, et elle vaut pour la suite : il fait tourner trois ou quatre sessions
+en parallèle, et aucune ne lit les autres. Devant une demande qui vient de lui,
+`git fetch origin main` AVANT de coder coûte dix secondes et peut épargner un
+lot entier.*
+
+**Trois choses à ne pas défaire :**
+
+1. **Elle ne part sur AUCUN document** — sa décision. Ni devis, ni facture, ni
+   PDF sans les prix. C'est cette promesse qui l'autorise à y écrire ce qu'il ne
+   dirait pas devant le client, et `scripts/test-note-hors-documents-e2e.ts` la
+   tient.
+2. **Enregistré en sortant du cadre**, jamais par un bouton.
+3. **Le champ à 16 px** : en dessous, iOS zoome et l'écran saute sous son doigt.
+   Contrainte du système, pas choix de charte.
+
+**⚠ ET LE LECTEUR DE PDF DE CETTE SUITE, deux fois faux avant d'être juste :** le
+texte d'un PDF est comprimé, puis écrit en hexadécimal. Chercher des mots en
+clair y trouve toujours zéro — donc toujours vert, y compris confronté à une note
+délibérément versée dans le document. Le contrôle prouve désormais d'abord qu'il
+sait LIRE ce PDF, en y retrouvant une ligne du devis. **Ne pas retirer cette
+vérification préalable** en croyant simplifier (`ARCHITECTURE.md` §154).
+
+**⚠ ET LE LECTEUR DE PDF DE LA SUITE, deux fois faux avant d'être juste :** le
+texte d'un PDF est comprimé, puis écrit en hexadécimal. Chercher des mots en
+clair y trouve toujours zéro — donc toujours vert. Le contrôle prouve maintenant
+d'abord qu'il sait lire ce PDF, en y retrouvant une ligne du devis. **Ne pas
+retirer cette vérification préalable** en croyant simplifier.
+
+
+**LA TVA SE LIT EN TÊTE, LES GESTES TOUCHENT LEUR CHIFFRE (23 août).** Ses deux
+remarques : *« l'outil Ma TVA à déclarer, il est caché »* et *« on ne comprend
+pas trop que scanner ou écrire à la main, c'est pour la TVA déductible »*. Deux
+planches essayables, deux choix — **« Pour ma TVA la B / Et pour les achats la
+C »** (`ARCHITECTURE.md` §149).
+
+**Trois choses à ne pas défaire :**
+
+1. **Le montant se lit dans `src/server/tva-courante.ts`**, jamais recomposé dans
+   l'écran : deux additions de la même somme lui montreraient deux chiffres à
+   deux écrans d'intervalle, sans savoir lequel croire.
+2. **La carte nomme sa période, et dit « Reste à payer »** — jamais « À payer ».
+   Ce montant n'est pas dû le jour où il le lit.
+3. **La couture entre l'encadré des chiffres et les deux gestes** est tout ce
+   qui dit le lien : aucun mot ne le dit. L'arrondi bas appartient au bloc des
+   gestes, plus à l'encadré.
+
+**⚠ ET LE PIÈGE, QUI A ÉTÉ PAYÉ DEUX FOIS ICI :** ces deux choix sont des choix
+de **place**, et une place ne casse pas. `scripts/test-tva-en-tete-e2e.ts` mesure
+donc des places. Deux de ses mesures étaient fausses avant d'être justes — l'une
+comparait la carte à sa **propre mention** (qui descend avec elle) et restait
+**verte sur le défaut dont elle portait le nom** ; l'autre comptait le
+rembourrage d'une carte comme une brèche et **accusait à tort**. Les repères
+`data-atlas="contenu-termines"` et `data-atlas="encadre-tva"` existent pour ça :
+ne pas les retirer en croyant nettoyer.
+
 
 **« IL PEUT PROPOSER UNE AUTRE DATE » (17 août, au soir).** Un interrupteur sous
 les dates, avant le bouton d'envoi : le patron décide, envoi par envoi, si le

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 // Module JavaScript repris tel quel de `appli/` : `allowJs` le laisse passer,
 // et `checkJs` étant coupé, il n'est pas typé. C'est voulu — le typer aurait
 // été le réécrire, donc en faire une seconde implémentation.
-import { calculerPlan, optionsCatalogue } from "../src/lib/arrosage/calcul.js";
+import { calculerPlan, optionsCatalogue, quantiteEcrite } from "../src/lib/arrosage/calcul.js";
 
 // Le calcul d'arrosage, tel qu'il tourne dans l'application.
 //
@@ -338,6 +338,104 @@ dire(
   );
 }
 
+// ── LA PLUVIOMÉTRIE NE SÉPARE PLUS DEUX SECTEURS (23 août 2026) ─────────────
+//
+// **Sa décision, en trois mots :** *« ne prends pas en compte la
+// pluviométrie »*. Elle était dans la clé de secteur depuis le 17 août, et
+// c'est lui qui l'y avait mise — c'est donc lui qui l'en retire.
+//
+// **Ce que cette suite tient, c'est la BASCULE**, pas l'idée : deux pelouses de
+// tailles très différentes reçoivent des buses différentes, donc des
+// pluviométries différentes. Avant, elles ne pouvaient pas se retrouver sur la
+// même vanne ; maintenant elles le peuvent. Si quelqu'un remettait la
+// pluviométrie dans la clé, ce contrôle rougirait aussitôt.
+//
+// **Le jardin est choisi pour que la bascule se VOIE au niveau des têtes**, et
+// pas seulement des groupes. Une petite pelouse et une grande reçoivent des
+// buses différentes (0,75 et 1,0), et la coupe tombe au milieu : une vanne
+// porte les deux. Sur d'autres jardins, les deux zones tombent bien dans le
+// même groupe mais la coupe retombe sur leur limite — le contrôle passerait
+// alors au vert sans rien avoir montré.
+{
+  const deuxBuses = calculerPlan({
+    seau: 10, temps: 20, pression: 3, amenee: 30,
+    zones: [
+      { id: 1, type: "gazon", nom: "Petite", L: 6, l: 5 },
+      { id: 2, type: "gazon", nom: "Grande", L: 20, l: 7 },
+    ],
+  });
+  const busesParReseau = new Map<number, Set<string>>();
+  for (const z of deuxBuses.dessin as { buse: string | null; points: { reseau?: number }[] }[]) {
+    for (const pt of z.points) {
+      if (pt.reseau === undefined) continue;
+      if (!busesParReseau.has(pt.reseau)) busesParReseau.set(pt.reseau, new Set());
+      busesParReseau.get(pt.reseau)!.add(z.buse ?? "?");
+    }
+  }
+  const melange = [...busesParReseau.values()].some((b) => b.size > 1);
+  dire(melange, "deux buses différentes peuvent partager une vanne — la pluviométrie ne coupe plus");
+
+  // **Mais le MATÉRIEL sépare toujours.** Une turbine et une tuyère ne
+  // s'ouvrent pas ensemble : l'une verse trois fois plus vite que l'autre, et
+  // c'est une règle qu'il n'a pas retirée.
+  const turbineEtTuyere = calculerPlan({
+    seau: 10, temps: 12, pression: 3, compteur: "oui",
+    zones: [
+      { id: 1, type: "gazon", nom: "Grande", x: 0, y: 0, L: 14, l: 14 },
+      { id: 2, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 3 },
+    ],
+  });
+  const clesParReseau = new Map<number, Set<string>>();
+  for (const z of turbineEtTuyere.dessin as { cle: string; points: { reseau?: number }[] }[]) {
+    for (const pt of z.points) {
+      if (pt.reseau === undefined) continue;
+      if (!clesParReseau.has(pt.reseau)) clesParReseau.set(pt.reseau, new Set());
+      clesParReseau.get(pt.reseau)!.add(z.cle);
+    }
+  }
+  dire(
+    [...clesParReseau.values()].every((c) => c.size === 1),
+    "une turbine et une tuyère ne partagent JAMAIS une vanne — cette règle-là tient",
+  );
+
+  // ── UN SECTEUR NOMME LES ZONES QU'IL ARROSE ───────────────────────────────
+  //
+  // **Défaut révélé par le retrait de la pluviométrie, et par rien d'autre.**
+  // Tant qu'elle coupait, un groupe ne portait qu'un modèle et retombait
+  // presque toujours sur une seule zone : nommer le groupe entier revenait au
+  // même. Depuis, deux pelouses de buses différentes tombent dans le même
+  // groupe — et la coupe par points contigus peut retomber exactement sur leur
+  // limite. L'écran annonçait « Devant + Derrière » pour une vanne qui n'arrose
+  // que « Devant ». **Un plan qui nomme la mauvaise zone fait creuser au
+  // mauvais endroit.**
+  const surLaLimite = calculerPlan({
+    seau: 10, temps: 20, pression: 3, amenee: 30,
+    zones: [
+      { id: 1, type: "gazon", nom: "Devant", L: 16, l: 6 },
+      { id: 2, type: "gazon", nom: "Derrière", L: 15, l: 8 },
+    ],
+  });
+  const noms = (surLaLimite.secteurs as { nom: string }[]).map((x) => x.nom);
+  dire(
+    noms.length === 2 && noms[0] === "Devant" && noms[1] === "Derrière",
+    `chaque vanne nomme la zone qu'elle arrose, pas tout son groupe (${noms.join(" · ")})`,
+  );
+}
+
+// ── « 13x », ET NON « 13 u » (23 août 2026) ─────────────────────────────────
+//
+// Sa demande : *« pour le calcul des pièces, 13x et pas 13 u »*. **L'unité
+// reste dans les données** — c'est elle qui distingue une pièce qu'on compte
+// d'un tuyau qu'on mesure. Seul le mot affiché change, et il change des deux
+// côtés à la fois : la page publiée et l'application appellent la même
+// fonction.
+dire(quantiteEcrite(13, "u") === "13x", `13 pièces s’écrivent « ${quantiteEcrite(13, "u")} »`);
+dire(quantiteEcrite(1, "u") === "1x", `une pièce s’écrit « ${quantiteEcrite(1, "u")} »`);
+dire(
+  quantiteEcrite(80, "ml") === "80 ml",
+  `80 mètres restent des mètres : « ${quantiteEcrite(80, "ml")} » — « 80x de PE Ø25 » ne se commande pas`,
+);
+
 // ── 12. CE QUI ARRIVE AU DERNIER ARROSEUR ───────────────────────────────────
 //
 // **Sa demande du 22 août 2026 : « oui corrige la 1 ».** Jusque-là, seule
@@ -395,7 +493,23 @@ dire(
   // le droit de bouger en silence (`CLAUDE.md` §4 ter). S'il change pour une
   // bonne raison — une constante relevée chez son fournisseur, une formule
   // corrigée — cette ligne se met à jour SCIEMMENT, avec la raison en commit.
-  const PERTE_RESEAU_ATTENDUE = 0.442;
+  //
+  // **ELLE A BOUGÉ LE 23 AOÛT 2026, DE 0,442 À 0,436**, et voici la raison —
+  // sans elle, cette ligne serait un simple re-calage, exactement ce que le
+  // commentaire ci-dessus interdit.
+  //
+  // Le patron a retiré la pluviométrie de la clé de secteur (*« ne prends pas
+  // en compte la pluviométrie »*, `ARCHITECTURE.md` §151). Sur CE jardin, les
+  // deux pelouses reçoivent des buses différentes — 0,75 devant, 1,5 derrière :
+  //
+  //   avant : « Devant » 0,96 · « Derrière » 1,50   → deux secteurs séparés
+  //   après : « Devant + Derrière » 0,94 et 1,47    → les deux mêlées
+  //
+  // La coupe n'est plus au même endroit, donc la ligne la plus chargée ne porte
+  // plus le même débit, donc elle ne perd plus la même chose. **Vérifié en
+  // remettant la pluviométrie dans la clé : la valeur redevient 0,442.** Ce
+  // n'est pas la formule qui a changé, c'est le jardin qu'on lui donne.
+  const PERTE_RESEAU_ATTENDUE = 0.436;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
     `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
@@ -429,6 +543,45 @@ dire(
     Math.abs(apresUnAutre.pressionAuxArroseurs - p.pressionAuxArroseurs) < 1e-9,
     `un jardin à 1,2 bar intercalé ne déteint pas sur le suivant ` +
       `(${apresUnAutre.pressionAuxArroseurs.toFixed(3)} bar)`,
+  );
+}
+
+// ── 13. LE RÉDUCTEUR EST POUR LE GOUTTE-À-GOUTTE, ET POUR LUI SEUL ──────────
+//
+// **Sa règle du 22 août 2026 :** *« non, remets-le, il est utilisé pour le
+// goutte-à-goutte seulement »*.
+//
+// **Deux erreurs de suite avant d'y arriver, et la seconde est instructive.**
+// La pièce était d'abord facturée d'office, sans source. Sa notice Rain Bird
+// m'a fait la conditionner à la pression — *« if pressure is greater than
+// 80 psi (5,5 bar), install a pressure regulator »* — ce qui la retirait de
+// tous ses chantiers à 3 bar. C'était encore faux : **une notice dit ce que le
+// MATÉRIEL supporte, jamais ce que le CHANTIER exige.** Une gaine de goutteurs
+// veut un réducteur quelle que soit la pression d'arrivée ; un réseau de
+// turbines n'en veut pas, même à 6 bar.
+{
+  const arroseursSeuls = calculerPlan({
+    seau: 10, temps: 20, pression: 3,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }],
+  });
+  const avecGoutteAGoutte = calculerPlan({
+    seau: 10, temps: 20, pression: 3,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }, { type: "haie", nom: "Haie", ml: 22 }],
+  });
+  // **Et la pression n'y change rien** : c'est ce que la version d'avant avait
+  // faux, et ce contrôle-ci l'empêche de revenir.
+  const arroseursAHautePression = calculerPlan({
+    seau: 10, temps: 20, pression: 6,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }],
+  });
+  const reducteur = (p: { materiel: { nom: string }[] }) =>
+    p.materiel.some((m) => /Réducteur/i.test(m.nom));
+
+  dire(!reducteur(arroseursSeuls), "que des arroseurs : aucun réducteur facturé");
+  dire(reducteur(avecGoutteAGoutte), "une gaine de goutteurs : le réducteur est facturé");
+  dire(
+    !reducteur(arroseursAHautePression),
+    "à 6 bar sans goutte-à-goutte : toujours aucun réducteur — c'est l'emploi qui décide, pas la pression",
   );
 }
 

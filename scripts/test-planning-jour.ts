@@ -18,6 +18,9 @@ import assert from "node:assert/strict";
 import {
   blocsDeLaJournee,
   departEtDuree,
+  MOT_QUAND,
+  quandDuChantier,
+  type QuandChantier,
   ditLeCompteDemi,
   ditLeCompteDuJour,
   ditLeQuand,
@@ -113,6 +116,50 @@ essai("un chantier se lit matin, après-midi, journée — ou en jours", () => {
   assert.equal(ditLeQuand("matin", 2), "journée");
   assert.equal(ditLeQuand("matin", 6), "3 jours");
   assert.equal(ditLeQuand("apres_midi", 5), "3 jours");
+});
+
+// ─── « DÉPLACER » NE DOIT JAMAIS OFFRIR UN CHOIX SANS EFFET ──────────────
+//
+// **Sa panne du 23 août 2026 :** *« cliquer sur Déplacer ne déplace pas le
+// chantier, ça ne fait rien du tout »*.
+//
+// Sur un chantier de plus d'une journée, `departEtDuree` protège la durée — la
+// raccourcir lui ferait perdre des jours de travail en silence. « Matin » et
+// « Journée » y écrivent donc le MÊME état. Mais `quandDuChantier` rendait
+// « journee » dès deux demi-journées : la pastille se posait sur « Journée », et
+// « Matin » restait éteint tout en n'écrivant rien.
+essai("un chantier de plusieurs jours est décrit par son DÉPART", () => {
+  const troisJours = { dureeDemiJournees: 6, creneauDebut: "matin" } as never;
+  assert.equal(quandDuChantier(troisJours), "matin");
+  const partiApres = { dureeDemiJournees: 6, creneauDebut: "apres_midi" } as never;
+  assert.equal(quandDuChantier(partiApres), "apres");
+});
+
+// La journée pleine, elle, se dit bien « Journée » : c'est le seul cas où le mot
+// décrit la réalité.
+essai("une journée pleine se dit « Journée »", () => {
+  assert.equal(quandDuChantier({ dureeDemiJournees: 2, creneauDebut: "matin" } as never), "journee");
+  assert.equal(quandDuChantier({ dureeDemiJournees: 1, creneauDebut: "matin" } as never), "matin");
+});
+
+// **Et le choix affiché doit toujours pouvoir CHANGER quelque chose.** C'est le
+// contrôle qui tient sa panne : pour chaque durée, aucun bouton offert ne doit
+// écrire l'état déjà en place.
+essai("aucun bouton de « Déplacer » n'est sans effet", () => {
+  for (const duree of [1, 2, 4, 6]) {
+    const courant = quandDuChantier({ dureeDemiJournees: duree, creneauDebut: "matin" } as never);
+    const offerts = (Object.keys(MOT_QUAND) as QuandChantier[]).filter(
+      (v) => v !== "journee" || duree <= 2
+    );
+    for (const v of offerts) {
+      if (v === courant) continue;
+      const r = departEtDuree(v, duree);
+      assert.ok(
+        !(r.moment === "matin" && r.duree === duree),
+        `à ${duree} demi-journée(s), « ${MOT_QUAND[v]} » n'écrit rien de neuf`
+      );
+    }
+  }
 });
 
 // ─── COMPTER LES ÉQUIPES, ET NON LES CHANTIERS ────────────────────────────

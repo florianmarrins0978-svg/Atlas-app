@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Où mettre « Ma TVA à déclarer »</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    OÙ METTRE « MA TVA À DÉCLARER » — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 23 août 2026 : « je trouve que l'outil Ma TVA à déclarer, il
+    est caché, on ne le voit pas trop. Propose-moi des trucs. »
+    Puis : « fais-moi des maquettes dynamiques en .html. Pas de photos. »
+
+    ————————————————————————————————————————————————————————————————
+    IL RÉVISE UNE DÉCISION ÉCRITE, ET C'EST SON DROIT — mais il faut le dire
+
+    Le code porte le raisonnement d'alors, en toutes lettres :
+
+      « Le relevé se consulte une fois par période : il n'a rien à faire en
+        tête d'écran, et il ne doit pas non plus finir collé à la barre du bas,
+        où il se lisait coupé en deux. »
+
+    L'argument tenait. Mais il vient de passer devant sans le trouver — et c'est
+    LUI qui s'en sert. Un raisonnement juste qui produit un écran où l'on ne
+    trouve pas ce qu'on cherche est un raisonnement à réviser.
+
+    ————————————————————————————————————————————————————————————————
+    POURQUOI CELLE-CI DOIT ÊTRE ESSAYABLE, ET PAS UNE IMAGE
+
+    La proposition C fait SUIVRE le lien au mois affiché — « Ma TVA d'août »,
+    puis « de juillet ». Sur une image, c'est une promesse ; au doigt, on voit
+    tout de suite ce qu'elle engage. Les flèches du mois marchent donc pour de
+    bon ici : c'est le seul moyen de juger.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EST VRAI, ET CE QUI NE L'EST PAS
+
+    VRAI : les trois places, les libellés, les mesures, et le fait que le lien
+    de C suive le mois. Les chiffres par mois sont plausibles et cohérents entre
+    eux (le total du mois, les deux comptes, le reste de TVA).
+
+    FAUX : rien n'est lu en base, aucun écran ne s'ouvre au bout du lien, et la
+    liste des chantiers est la même d'un mois à l'autre.
+  */
+
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+  /* **`hidden` doit VRAIMENT cacher.** Trouvé en parcourant la maquette au
+     doigt, pas en la regardant : un bloc en `display:flex` ignore l'attribut
+     `hidden` — la règle de la feuille l'emporte sur celle du navigateur. La
+     proposition C affichait donc les deux boutons DEUX FOIS, et la A gardait
+     son pied. Un `!important` est ici le remède exact, pas une facilité. */
+  [hidden]{display:none !important}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#e8e5de;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:0 0 40px}
+
+  header{position:sticky;top:0;z-index:5;background:#e8e5de;border-bottom:1px solid var(--line);padding:14px 16px 12px}
+  h1{font-size:16px;margin:0 0 3px}
+  .sous{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+  .sous b{color:var(--ink)}
+  .choix{display:flex;gap:8px}
+  .choix button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--cream);
+    color:var(--ink-soft);border-radius:999px;font-size:13px;font-family:inherit}
+  .choix button[aria-pressed="true"]{background:var(--pine);color:var(--bone);border-color:var(--pine);font-weight:600}
+
+  main{padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .ecran{width:100%;max-width:390px;background:var(--bone);border-radius:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.14);padding:18px 0 14px;overflow:hidden}
+
+  .titre{font-family:Georgia,serif;font-size:33px;margin:0 24px;letter-spacing:-.02em}
+
+  .lien-haut{display:flex;align-items:center;justify-content:space-between;margin:10px 24px 0;padding:11px 0}
+  .lien-haut .txt{font-family:Georgia,serif;font-size:16px}
+  .lien-haut .fl{color:var(--or);font-size:15px}
+  .mention{margin:0 24px;font-size:11px;color:var(--muted);line-height:1.5}
+
+  .carte{margin:12px 24px 0;background:var(--cream);border-radius:12px;padding:13px 15px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;width:calc(100% - 48px);
+    border:0;font-family:inherit;text-align:left}
+  .carte:active{background:var(--paper)}
+  .carte .cle{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+  .carte .quoi{font-family:Georgia,serif;font-size:16.5px;margin:0}
+  .carte .val{font-family:Georgia,serif;font-size:22px;color:var(--pine)}
+
+  .onglets{display:flex;gap:8px;margin:15px 24px 0}
+  .onglet{border-radius:999px;padding:9px 19px;font-size:13.5px;border:1px solid var(--line);
+    background:transparent;color:var(--muted);font-family:inherit}
+  .onglet.on{background:#1c1c1a;color:#fff;border-color:#1c1c1a}
+
+  .mois{display:flex;align-items:center;justify-content:space-between;margin:20px 24px 0}
+  .mois .bloc{display:flex;align-items:center;gap:4px}
+  .mois .fl{color:var(--or);font-size:17px;background:none;border:0;padding:6px 8px;font-family:inherit}
+  .mois .fl:disabled{opacity:.28}
+  .mois .nom{font-family:Georgia,serif;font-size:24px}
+  .mois .tot{font-size:16.5px}
+
+  .sousmois{display:flex;justify-content:space-between;align-items:center;margin:9px 24px 0;gap:10px}
+  .phrase{font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin:0}
+  .phrase b{color:var(--ink);font-weight:600}
+  .lien-mois{font-size:13px;color:var(--or);white-space:nowrap;background:none;border:0;font-family:inherit;padding:4px 0}
+
+  .ligne{display:flex;justify-content:space-between;align-items:center;margin:0 24px;padding:12px 0;
+    border-top:1px solid var(--line-soft);gap:10px}
+  .ligne .qui{font-family:Georgia,serif;font-size:18px;margin:0}
+  .ligne .quand{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+  .ligne .eur{font-size:15.5px;white-space:nowrap}
+  .facturer{background:var(--pine);color:var(--bone);border-radius:999px;padding:10px 18px;
+    font-size:11.5px;letter-spacing:.09em;border:0;font-family:inherit;white-space:nowrap}
+  .attente{color:var(--or)}
+
+  .pied{margin:16px 24px 0;padding-top:11px;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between}
+  .pied .txt{font-family:Georgia,serif;font-size:16px}
+
+  .cout{width:100%;max-width:390px;background:var(--cream);border-left:3px solid var(--or);
+    border-radius:0 10px 10px 0;padding:13px 15px;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .cout b{color:var(--ink)}
+  .cout p{margin:0 0 7px}
+  .cout p:last-child{margin:0}
+  .essai{width:100%;max-width:390px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+    background:#efece4;border-radius:10px;padding:12px 14px}
+  .essai b{color:var(--ink)}
+</style>
+
+<header>
+  <h1>Où mettre « Ma TVA à déclarer »</h1>
+  <p class="sous">Touchez une proposition, puis <b>changez de mois</b> avec les flèches : la C fait
+    suivre le lien.</p>
+  <div class="choix" role="group" aria-label="Proposition">
+    <button type="button" data-p="0" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-p="A" aria-pressed="false">A · en tête</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une carte</button>
+    <button type="button" data-p="C" aria-pressed="false">C · le mois</button>
+  </div>
+</header>
+
+<main>
+  <div class="ecran">
+    <p class="titre">Terminés</p>
+
+    <!-- A -->
+    <div id="blocA" hidden>
+      <div class="lien-haut"><span class="txt">Ma TVA à déclarer</span><span class="fl">›</span></div>
+      <p class="mention">Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>
+
+    <!-- B -->
+    <div id="blocB" hidden>
+      <button class="carte" type="button">
+        <span><span class="cle">Ma TVA à déclarer</span><span class="quoi" id="carteMois">Août 2026</span></span>
+        <span class="val" id="carteVal">746,33 €</span>
+      </button>
+      <p class="mention" style="margin-top:6px">Reste à payer. Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>
+
+    <div class="onglets">
+      <button class="onglet on" type="button">Tout</button>
+      <button class="onglet" type="button">À facturer</button>
+    </div>
+
+    <div class="mois">
+      <span class="bloc">
+        <button class="fl" type="button" id="avant" aria-label="Mois précédent">‹</button>
+        <span class="nom" id="nomMois">Août 2026</span>
+        <button class="fl" type="button" id="apres" aria-label="Mois suivant">›</button>
+      </span>
+      <span class="tot" id="totalMois">13 200,00 €</span>
+    </div>
+
+    <div class="sousmois">
+      <p class="phrase"><b id="nbAttente">8 à facturer</b>, <span id="eurAttente">8 520,00 €</span>
+        · <b id="nbFait">13 facturés</b>, <span id="eurFait">14 760,00 €</span></p>
+      <button class="lien-mois" type="button" id="lienMois" hidden>Ma TVA d'août ›</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="ligne">
+        <div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div>
+        <button class="facturer" type="button">FACTURER</button>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Monsieur Martins</p><p class="quand">Facturé le 12 août · Facture n° 1</p></div>
+        <span class="eur">936,00 €</span>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Chantier test — Muret Clisson</p><p class="quand attente">Pas encore facturé</p></div>
+        <button class="facturer" type="button">FACTURER</button>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Monsieur Martin</p><p class="quand">Facturé le 14 août · Facture n° 3</p></div>
+        <span class="eur">840,00 €</span>
+      </div>
+    </div>
+
+    <!-- Aujourd'hui : tout en bas, après la liste -->
+    <div class="pied" id="blocPied">
+      <span class="txt">Ma TVA à déclarer</span><span class="fl" style="color:var(--or)">›</span>
+    </div>
+    <p class="mention" id="mentionPied" style="margin-top:2px">Atlas prépare ce relevé, il ne le déclare pas.</p>
+  </div>
+
+  <div class="cout" id="cout"></div>
+
+  <p class="essai">
+    <b>Ce qui est vrai ici :</b> les trois places, les mots, les mesures, et le fait que le lien de la
+    C suive le mois affiché.<br>
+    <b>Ce qui ne l'est pas :</b> rien n'est lu en base, aucun écran ne s'ouvre au bout du lien, et la
+    liste des chantiers ne change pas d'un mois à l'autre.
+  </p>
+</main>
+
+<script>
+  // Quatre mois, avec des chiffres qui se tiennent entre eux — sans quoi on
+  // juge une maquette qui se contredit d'un appui à l'autre.
+  const MOIS = [
+    { nom: "Juin 2026",    total: 5400,  att: [3, 2100],  fait: [6, 5400],  tva: 412.5 },
+    { nom: "Juillet 2026", total: 9860,  att: [5, 4300],  fait: [9, 9860],  tva: 588.2 },
+    { nom: "Août 2026",    total: 13200, att: [8, 8520],  fait: [13, 14760], tva: 746.33 },
+    { nom: "Septembre 2026", total: 2400, att: [2, 1800], fait: [2, 2400],  tva: 158.9 },
+  ];
+  let i = 2;
+  let prop = "0";
+
+  const $ = (s) => document.querySelector(s);
+  const eur = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  // « Août 2026 » → « d'août » : l'élision se décide sur la voyelle, sinon on
+  // écrit « de août » et le mot sonne faux.
+  const duMois = (nom) => {
+    const m = nom.split(" ")[0].toLowerCase();
+    return /^[aeiouâéèêîôû]/.test(m) ? "d'" + m : "de " + m;
+  };
+
+  function rendre() {
+    const m = MOIS[i];
+    $("#nomMois").textContent = m.nom;
+    $("#totalMois").textContent = eur(m.total);
+    $("#nbAttente").textContent = m.att[0] + " à facturer";
+    $("#eurAttente").textContent = eur(m.att[1]);
+    $("#nbFait").textContent = m.fait[0] + " facturé" + (m.fait[0] > 1 ? "s" : "");
+    $("#eurFait").textContent = eur(m.fait[1]);
+    $("#carteMois").textContent = m.nom;
+    $("#carteVal").textContent = eur(m.tva);
+    $("#lienMois").textContent = "Ma TVA " + duMois(m.nom) + " ›";
+    $("#avant").disabled = i === 0;
+    $("#apres").disabled = i === MOIS.length - 1;
+  }
+
+  $("#avant").addEventListener("click", () => { if (i > 0) { i--; rendre(); } });
+  $("#apres").addEventListener("click", () => { if (i < MOIS.length - 1) { i++; rendre(); } });
+
+  const COUTS = {
+    0: "<p><b>Aujourd'hui.</b> Le lien vit tout en bas, après la liste entière. Le code assume cette place : « le relevé se consulte une fois par période, il n'a rien à faire en tête d'écran ».</p><p>L'argument tient — mais vous êtes passé devant sans le trouver, et c'est vous qui vous en servez.</p>",
+    A: "<p><b>A — en tête, dans la place libérée.</b> Le lien remonte sous le titre, là où la phrase des deux chiffres se trouvait avant qu'elle descende sous le mois. Une ligne, la même qu'en bas : rien de neuf, seulement déplacé.</p><p><b>Ce que ça coûte :</b> la TVA occupe la tête d'un écran qui parle d'abord de chantiers à facturer.</p>",
+    B: "<p><b>B — une carte, avec le chiffre.</b> Pas un lien : ce que vous venez y chercher. Le montant se lit sans ouvrir, et donne la raison d'ouvrir. Changez de mois : il suit.</p><p><b>Ce que ça coûte :</b> une requête de plus sur un écran ouvert souvent — et surtout, <b>ce montant peut se lire de travers</b>. Il dépend du rythme et du régime, et affiché loin de l'écran qui les explique, il ressemble à « ce que je dois aujourd'hui » alors qu'il n'est dû qu'à l'échéance.</p>",
+    C: "<p><b>C — sur la ligne du mois.</b> Le relevé se déclare par période, et c'est là que vous choisissez la vôtre. Changez de mois : <b>le lien suit</b> — « d'août », « de juillet ».</p><p><b>Ce que ça coûte :</b> une ligne de plus dans un en-tête déjà chargé. Et son piège : puisque le mot promet un mois, il faudra que le relevé s'ouvre bien sur CE mois-là, sans quoi la promesse est fausse.</p>",
+  };
+
+  function montrer(p) {
+    prop = p;
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.p === p))
+    );
+    $("#blocA").hidden = p !== "A";
+    $("#blocB").hidden = p !== "B";
+    $("#lienMois").hidden = p !== "C";
+    // **La mention de responsabilité suit le lien**, où qu'il aille : Atlas
+    // prépare le relevé, il ne le déclare pas (`docs/AGENT.md` §6). En C elle
+    // reste au pied, faute de place sur la ligne du mois.
+    const enBas = p === "0" || p === "C";
+    $("#blocPied").hidden = !enBas;
+    $("#mentionPied").hidden = !enBas;
+    $("#cout").innerHTML = COUTS[p];
+  }
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.addEventListener("click", () => montrer(b.dataset.p))
+  );
+
+  rendre();
+  montrer("0");
+</script>
+</body>
+</html>

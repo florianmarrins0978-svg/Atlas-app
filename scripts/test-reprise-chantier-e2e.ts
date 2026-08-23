@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { Pool } from "pg";
 
 // **« Il n'y a pas de mémoire dans les actions. »** — le patron, 13 août 2026.
 //
@@ -20,6 +21,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // parcours-là qu'il a fait, et c'est celui-là qui était cassé.
 
 const BASE = "http://localhost:3000";
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function main() {
   const navigateur = await lancerNavigateur();
@@ -108,31 +110,36 @@ async function main() {
   await champs.nth(1).fill("1200.00");
   await champs.nth(1).blur();
 
-  // **Puis on RELIT le TOTAL, qui est ce que l'écran garantit.** Relire un champ
-  // par son rang, c'est se fier au même repère qui vient de nous tromper ; le
-  // total, lui, ne peut afficher 1 200,00 € que si le montant est arrivé.
-  // Même remède que `test-prix-e2e.ts` : attendre ce qu'on affirme, jamais une
-  // durée.
+  // **Puis on attend que LA BASE l'ait reçu — pas l'écran.**
   //
-  // **Et l'on laisse l'appel PARTIR avant de recharger.** La version d'avant
-  // rechargeait aussitôt, ce qui avortait l'enregistrement qu'elle attendait,
-  // puis recommençait : elle empêchait exactement ce qu'elle guettait. C'est
-  // ainsi qu'elle rougissait encore sous la batterie, jamais jouée seule.
-  await page.waitForLoadState("networkidle");
-  let totalRelu = "";
-  for (const essai of [1, 2, 3, 4, 5]) {
-    totalRelu = await page.locator("p", { hasText: "€" }).first().innerText().catch(() => "");
-    if (/1[\s\u202f\u00a0]?200,00/.test(totalRelu)) break;
-    await page.waitForTimeout(essai * 500);
-    await page.reload({ waitUntil: "networkidle" });
-  }
+  // Une première version relisait le total affiché, et elle a laissé passer le
+  // défaut qu'elle prétendait attraper : l'écran des prix montre le montant
+  // qu'on vient de taper AVANT que le serveur ait répondu. Sous une batterie
+  // entière, la garde lisait donc « 1 200,00 € » sur une base encore vide, se
+  // déclarait satisfaite, et c'est l'écran d'arrivée — rendu par le serveur,
+  // lui — qui affichait 0,00 € deux cas plus loin et se faisait accuser.
+  //
+  // Lire l'écran pour prouver un enregistrement, c'est mesurer ce qu'on vient
+  // de taper (`CLAUDE.md` §5 bis : viser plus profond qu'un libellé).
+  let montantEnBase = "";
+  const finAttente = Date.now() + 20_000;
+  do {
+    const { rows } = await pool.query(
+      `SELECT COALESCE(sum(montant), 0)::text AS total FROM lignes_prix WHERE chantier_id = $1`,
+      [id]
+    );
+    montantEnBase = rows[0].total;
+    if (Number(montantEnBase) >= 1200) break;
+    await page.waitForTimeout(200);
+  } while (Date.now() < finAttente);
+
   // **Et l'on ACCUSE le bon coupable.** Sans cela, un prix non enregistré passait
   // inaperçu ici et faisait rougir l'écran d'arrivée deux cas plus loin — « le
   // total n'est pas montré avant l'envoi » —, qui n'y était pour rien.
-  assert.match(
-    totalRelu,
-    /1[\s\u202f\u00a0]?200,00/,
-    `le prix n'a jamais été enregistré (total lu : « ${totalRelu} ») : rien de ce que cette suite affirme ensuite n'a de sens`
+  assert.equal(
+    Number(montantEnBase),
+    1200,
+    `le prix n'a jamais atteint la base (total lu : ${montantEnBase}) : rien de ce que cette suite affirme ensuite n'a de sens`
   );
 
   await cas("SA SÉQUENCE : retour par mégarde, puis la ligne le ramène à l'envoi", async () => {
@@ -161,6 +168,16 @@ async function main() {
     // après. Lire le texte tout de suite mesurait un écran encore vide, et le
     // rouge accusait l'envoi — qui n'y était pour rien.
     await page.waitForSelector("text=Choisir la date", { timeout: 20000 });
+    // **Le bouton arrive AVANT le montant**, et c'est ce décalage qui faisait
+    // rougir cette suite une batterie sur deux : elle lisait « TOTAL HT
+    // 0,00 € » — un devis dont les lignes n'étaient pas encore écrites — et
+    // accusait l'envoi, qui n'y était pour rien. On attend donc la trace du
+    // total, jamais un délai (`TODO.md`, quatre suites du même motif).
+    await page
+      .locator("text=/1[\\s\\u202f\\u00a0]?440,00/")
+      .first()
+      .waitFor({ timeout: 20000 })
+      .catch(() => undefined);
     const texte = await page.locator("body").innerText();
     // Le geste s'appelle « Choisir la date » depuis le 20 août 2026, et il ne
     // vit plus sur l'écran récapitulatif mais sur le devis lui-même : c'est le
@@ -185,6 +202,7 @@ async function main() {
 
   await contexte.close();
   await navigateur.close();
+  await pool.end();
 
   console.log(
     echecs === 0

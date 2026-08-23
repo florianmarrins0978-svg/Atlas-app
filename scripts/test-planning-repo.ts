@@ -5,6 +5,20 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as clientsRepo from "../src/server/repositories/clients";
 import { getPlanificationEtat, trierParDatePlanifiee } from "../src/lib/chantier-etat";
 import { nettoyerBase } from "./_test-db";
+import { NOTE_MAX } from "../src/lib/note-chantier";
+
+/** Rend un chantier visible au planning, comme le fait un envoi de devis. */
+async function marquerDevisEnvoye(chantierId: string, entrepriseId: string) {
+  const c = await pool.connect();
+  try {
+    await c.query("BEGIN");
+    await c.query(`SELECT set_config('app.entreprise_id', $1, true)`, [entrepriseId]);
+    await c.query(`UPDATE chantiers SET devis_envoye_at = now() WHERE id = $1`, [chantierId]);
+    await c.query("COMMIT");
+  } finally {
+    c.release();
+  }
+}
 
 let passed = 0;
 let failed = 0;
@@ -140,6 +154,59 @@ async function main() {
     assert.equal(resultat, undefined, "RLS doit filtrer silencieusement (0 ligne affectée), pas d'exception");
     const relu = await chantiersRepo.getChantier(A, c2.id);
     assert.equal(relu?.datePlanifiee, null, "La tentative de B ne doit avoir aucun effet sur le chantier de A");
+  });
+
+  // ─── LE PENSE-BÊTE DU CHANTIER — sa demande du 23 août 2026 ─────────────
+  //
+  // *« Un petit encadré où l'utilisateur peut marquer quelque chose — penser à
+  // prendre le broyeur, client plus disponible à partir de neuf heures. »*
+
+  await test("la note d'un chantier s'écrit, se relit, et s'efface", async () => {
+    const chantier = await chantiersRepo.creerChantier(A, { nom: "Haie à noter" });
+    await marquerDevisEnvoye(chantier.id, A.entrepriseId);
+
+    const ecrit = await chantiersRepo.ecrireNoteChantier(A, chantier.id, "  Prendre le broyeur.  ");
+    // Rognée aux deux bouts : une note qui commence par une espace se relit mal.
+    assert.strictEqual(ecrit?.note, "Prendre le broyeur.");
+
+    const relu = await chantiersRepo.listerChantiersPourPlanning(A);
+    assert.strictEqual(
+      relu.find((c) => c.id === chantier.id)?.note,
+      "Prendre le broyeur.",
+      "la note ne descend pas avec la liste du planning : la feuille l'afficherait vide"
+    );
+
+    // **Le vide EFFACE, il ne stocke pas une chaîne creuse.** Sans quoi l'écran
+    // montrerait un cadre « rempli de rien », indistinguable d'une note oubliée.
+    const vide = await chantiersRepo.ecrireNoteChantier(A, chantier.id, "   ");
+    assert.strictEqual(vide?.note, null);
+  });
+
+  await test("une note démesurée est tronquée, jamais refusée", async () => {
+    // **Tronquée plutôt que refusée**, et ce n'est pas de la complaisance : la
+    // borne vit en base, et un refus lui ferait perdre ce qu'il vient d'écrire
+    // au doigt — alors qu'il n'a aucun moyen de compter ses caractères.
+    const chantier = await chantiersRepo.creerChantier(A, { nom: "Haie bavarde" });
+    const ecrit = await chantiersRepo.ecrireNoteChantier(A, chantier.id, "b".repeat(NOTE_MAX + 500));
+    assert.strictEqual(ecrit?.note?.length, NOTE_MAX);
+  });
+
+  await test("la note d'une AUTRE entreprise reste hors de portée", async () => {
+    // L'isolation vaut ici comme partout : une note porte des habitudes de
+    // chantier, et parfois le code d'un portail.
+    const sien = await chantiersRepo.creerChantier(A, { nom: "Chez A" });
+    await chantiersRepo.ecrireNoteChantier(A, sien.id, "Le code du portail est 1234.");
+    await marquerDevisEnvoye(sien.id, A.entrepriseId);
+
+    const vole = await chantiersRepo.ecrireNoteChantier(B, sien.id, "effacé par B");
+    assert.strictEqual(vole, null, "une entreprise a écrit dans la note d'une autre");
+
+    const chezA = await chantiersRepo.listerChantiersPourPlanning(A);
+    assert.strictEqual(
+      chezA.find((c) => c.id === sien.id)?.note,
+      "Le code du portail est 1234.",
+      "la note de A a été touchée par B"
+    );
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

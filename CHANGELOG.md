@@ -9,6 +9,432 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### La colonne « Fiche chantier » ne se remplit plus toute seule
+
+*« Je viens de facturer monsieur Bernard […] néanmoins il y a une fiche chantier
+qui s'est créée en même temps. Cette catégorie est réservée lorsque les
+paysagistes créent une fiche chantier avec les informations type la tonte, la
+taille, ce qu'ils ont fait. À aucun moment, lorsqu'une facture doit être
+envoyée, une fiche chantier doit être créée. »*
+
+**Le mécanisme, invisible à la lecture.** Émettre une facture POSE la date de
+fin du chantier (`factures.ts` : `COALESCE(termine_at, now())`), et la colonne
+listait les chantiers terminés. Facturer fabriquait donc une pièce que personne
+n'avait écrite.
+
+**Et le document qu'elle ouvrait était le mauvais.** C'est la feuille INTERNE —
+équipe, créneau, note vocale, adresse du chantier —, celle que ses salariés
+ouvrent dans la camionnette. Rangée au dossier d'un client, elle donnait à
+croire qu'il l'avait reçue. Cette feuille reste joignable depuis le chantier :
+elle n'a simplement plus sa place dans le dossier du client.
+
+**Ce que la colonne porte désormais :** les fiches d'entretien qu'il a remplies
+et ENVOYÉES (Paysage → Fiche de chantier), à l'adresse même que le client a
+reçue. Un brouillon n'y entre pas — comme un devis non parti, il n'a ni date
+d'envoi ni adresse publique.
+
+**« Enregistrer » disparaît sur ces pièces-là**, et ce n'est pas un oubli : rien
+ne fige ce rapport en fichier. Le laisser aurait fait descendre une page web
+nommée `.pdf`, que rien n'ouvre — le défaut du 7 août 2026, retourné. La
+vignette dit « FICHE » plutôt que « PDF », et « Ouvrir » prend la place du geste
+principal.
+
+**Un client sans aucun chantier voit quand même sa fiche.** Elle s'ouvre depuis
+Paysage, se nomme, s'envoie — sans qu'aucun chantier n'existe. Le retour
+anticipé « ce client n'a pas de chantier » l'aurait fait disparaître de son
+dossier.
+
+
+### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
+
+*« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
+**télécharger** un fichier au lieu d'ouvrir Atlas.
+
+Sa fiche d'état annonçait *« réponse 404 d'ATLAS lui-même — c'est l'application
+qui refuse »* et l'envoyait lire le journal du serveur. **C'était une
+devinette** : le verdict tranchait sur la présence du mot « github » dans
+l'en-tête `Server`, et un refus arrivé nu — sans en-tête ni type, ce qu'il a
+justement reçu — tombait du mauvais côté. Deux hypothèses fausses lui ont été
+livrées avant qu'on ne le voie : l'espace éteint, puis le port privé, démenti
+par un *« je suis déjà en public »*.
+
+`/api/health/live` pose désormais **`x-atlas-vivant: 1`**. Le relais ne peut pas
+inventer cette signature : présente, c'est Atlas qui a répondu ; absente, la
+requête n'est jamais arrivée jusqu'à lui. Et la fiche ne propose plus « deux
+causes possibles, dans cet ordre » — devant lesquelles il essayait la première
+et revenait — mais **un seul geste**, celui qui correspond.
+
+**La signature devait être sur le fil, pas dans le code** : éprouvée d'abord sur
+un binaire pas reconstruit, elle paraissait absente. Le contrôle interroge donc
+le serveur pour de bon, et il a été vu rouge contre une route dont l'en-tête
+avait été retiré. `ARCHITECTURE.md` §155.
+
+
+### La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
+
+*« Je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le voit pas
+trop »*, puis, sur l'écran voisin : *« on ne comprend pas trop que scanner ou
+écrire à la main, c'est pour la TVA déductible. »*
+
+Rien ne fonctionnait mal dans les deux cas : c'est la **place** qui mentait. Six
+propositions dessinées et essayables au doigt (`docs/maquettes/85` et `86`), et
+son choix, mot pour mot : **« Pour ma TVA la B / Et pour les achats la C »**.
+
+**La B** met en tête de « Terminés » une carte **portant le montant** — pas un
+lien à aller chercher, mais ce qu'il vient y voir. Elle nomme sa période et dit
+« Reste à payer sur la période », parce que ce montant n'est **pas dû le jour où
+il le lit** : il dépend du rythme et du régime, et n'est exigible qu'à
+l'échéance.
+
+**La C** remonte « Scanner un ticket » et « Écrire à la main » **contre**
+l'encadré des chiffres. Aucun mot de plus n'a été ajouté : le lien se dit par la
+continuité de la pièce.
+
+**Ce qui a coûté le plus n'est pas l'écran, c'est le contrôle.** Une place ne
+casse pas : la carte peut redescendre, les boutons repasser sous les achats, et
+tout resterait vert. Deux mesures fausses ont été écrites avant les bonnes —
+l'une comparait la carte à sa **propre mention**, qui descend avec elle, et
+**restait verte sur le défaut dont elle portait le nom** ; l'autre comptait le
+rembourrage d'une carte comme une brèche et **accusait à tort**. Détail dans
+`ARCHITECTURE.md` §153.
+
+### La note ne part sur aucun document — et le contrôle qui le promettait ne savait pas lire
+
+La note de la feuille de chantier a été codée **deux fois le même jour**, par
+deux sessions qui ne se voyaient pas. Celle arrivée la première sur `main` fait
+foi ; la seconde a été retirée — deux colonnes pour la même chose auraient été
+les deux vérités que le dépôt interdit.
+
+Ce qu'elle apportait et qui reste : le contrôle de sa promesse. La note ne doit
+sortir sur **aucun** document, et c'est ce qui l'autorise à y écrire ce qu'il ne
+dirait pas devant le client. Or ce contrôle a été **vert deux fois de suite en
+confrontation avec une note délibérément versée dans le PDF** : il cherchait les
+mots dans les octets bruts d'un fichier comprimé, puis en clair dans un flux qui
+écrit son texte en hexadécimal. Il prouve désormais d'abord qu'il sait **lire**
+ce PDF. `ARCHITECTURE.md` §154.
+
+### Deux réparations tombées à la batterie
+
+La carte « Ma TVA à déclarer » gardait un coin à 12 px, contre sa règle du
+12 août — même forme partout. Elle passe aux 4 px des plages : une capsule sur
+une carte pleine largeur serait le galet que la charte refuse. Le contrôle porte
+une exception **bornée à cette carte**, et tout autre bouton carré du même écran
+le fait toujours rougir.
+
+Et `test-envoyer-la-facture-e2e` visait mot pour mot « Une date, ou deux au choix
+du client ? » — une phrase qu'il a fait changer le 23 août même. La suite mourait
+sur du code juste, pour une demande exaucée : c'est `CLAUDE.md` §5 bis, et le
+repère posé par l'autre session existait exactement pour ça.
+
+
+### Le plan d'arrosage se DESSINE, à la forme du jardin lu
+
+**Son feu vert :** *« très bien, tu peux coder la maquette »*, après sa demande
+du 21 — *« il manque la photo, le schéma avec les réseaux, et l'implantation des
+arroseurs ; les différents réseaux de couleurs »*.
+
+**Ce qui manquait n'était pas le calcul.** Les têtes étaient posées depuis le
+17 août, leur vanne connue depuis le 19 : rien ne SORTAIT. Le plan des maquettes
+portait donc le contour de son jardin, écrit en dur — ce qui suffit pour une
+planche et ne fait pas un outil.
+
+**Le contour sort maintenant des zones**, par union et non par juxtaposition :
+deux pelouses qui se touchent forment un seul terrain, et la ligne qui les
+sépare n'existe pas sur place. Deux pelouses séparées par la maison donnent deux
+morceaux, chacun tracé pour lui-même, avec un **pointillé** entre eux — le
+cheminement passe hors de la pelouse, et ce mètre-là n'est pas mesuré.
+
+**La tranchée se partage, et c'est ce qui la raccourcit.** Un segment déjà
+creusé est facturé zéro au réseau suivant : sa règle du 21 août — *« lorsque
+c'est égal il faut privilégier de réutiliser la tranchée, car c'est moins
+fatigant »*. Sur son jardin en L, 53 ml de tranchée pour 69 ml de tuyau.
+
+**Les pièces se lisent sur le dessin.** Une tête traversée porte un té, une tête
+terminale un coude, un point à trois branches qui n'arrose rien un té égal.
+`tés + coudes = arroseurs` tient donc par construction, **réseau par réseau** —
+et la suite le vérifie ainsi, jamais au total : au total, deux erreurs
+s'annulent, ce qu'il avait relevé.
+
+**Sans nourrice, plus rien.** `CLAUDE.md` §4 bis appliqué à la lettre : pas
+d'endroit définitif du regard, pas de plan — ni dessin ni liste de pièces, et
+l'on dit ce qui manque. La nourrice n'est jamais déduite : la lecture du croquis
+la cherche, et rend `null` plutôt que de la poser au piquage « pour dépanner ».
+
+**Quatre défauts trouvés à la capture, aucun par un test** (`ARCHITECTURE.md`
+§150) : les portées débordaient de la pelouse, le mot « nourrice » tombait sur
+une cote, deux réseaux partageant une tranchée dessinaient le même trait — le
+second effaçant le premier —, et la tranchée était du même jaune que le
+troisième réseau. Les deux derniers ne se voient que sur un jardin à trois
+réseaux, et la maquette validée n'en portait que deux.
+
+Détail et partis pris : `ARCHITECTURE.md` §150.
+
+### La pluviométrie ne sépare plus deux vannes, et les pièces se comptent en « 13x »
+
+**Ses deux décisions :** *« ne prends pas en compte la pluviométrie »* et *« pour
+le calcul des pièces, 13x et pas 13 u »*.
+
+**La pluviométrie sort de la clé de secteur.** Elle y était depuis le 17 août —
+c'est lui qui l'y avait mise, c'est lui qui l'en retire. Deux turbines de buses
+différentes peuvent désormais partager une vanne ; elles versent alors des
+millimètres/heure différents pour une même durée d'ouverture, et c'est lui qui
+arbitre à l'arrosage. **Le matériel sépare toujours** : une turbine et une
+tuyère ne s'ouvrent jamais ensemble.
+
+**Un réseau peut donc porter deux modèles**, et le plan les nomme tous les deux,
+comptés : « 4× Turbine 3504 · buse 0,75 » et « 1× Turbine 5000 Plus · buse 6,0 ».
+N'en nommer qu'un ferait commander de travers.
+
+**« 13x » remplace « 13 u »** partout où une pièce se compte — l'application, la
+page publiée et la maquette. L'unité reste dans les données : les mètres restent
+des mètres, « 80x de PE Ø25 » ne se commande pas. Une seule fonction sert les
+deux écrans.
+
+Détail : `ARCHITECTURE.md` §151.
+
+### Une note sur la feuille de chantier — « penser à prendre le broyeur »
+
+*« Entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un petit
+encadré où l'utilisateur peut marquer quelque chose — penser à prendre le
+broyeur, client plus disponible à partir de neuf heures. »*
+
+**Cherché avant d'affirmer que c'était neuf** (`CLAUDE.md` §5 ter) : la table
+`chantiers` ne portait aucun champ libre, `notes_vocales` est la dictée, et le
+seul `note` du schéma appartenait aux paiements. Colonne posée par la
+migration 0061, bornée à 2 000 caractères — la note descend avec la liste
+entière du planning.
+
+**La variante A retenue, et c'est LUI qui a tranché sans le savoir.** La
+planche 93 proposait aussi une ligne discrète « ＋ Ajouter une note », plus
+économe de 96 px sur chaque feuille. Devant l'image, il a répondu : *« B, y'a
+rien ? Je vois rien. »* La ligne était pourtant là, en doré. **Une invitation
+qu'il ne voit pas sur une capture, il ne la trouvera pas davantage sur un
+chantier** — l'argument des 96 px ne pesait plus rien.
+
+**Elle ne part sur aucun document, et sa raison éclaire le PDF sans les prix :**
+*« elle peut rester là, car les salariés auront accès au planning ; justement,
+c'est pour cela que je voulait le devis sans les prix »*. Le PDF est le devis
+expurgé, destiné à sortir ; la note est un pense-bête interne, que ses équipes
+lisent en ouvrant la feuille.
+
+**Enregistrée en SORTANT du cadre**, jamais par un bouton : il range son
+téléphone et démarre, et un bouton non touché perdrait la note. Le refus se dit
+— une note perdue en silence, c'est le broyeur oublié alors qu'il croit l'avoir
+noté (le piège du 11 août).
+
+**Le vide efface**, il ne stocke pas une chaîne creuse : sinon l'écran
+afficherait un cadre « rempli de rien », indistinguable d'une note oubliée. Et
+une note démesurée est **tronquée, jamais refusée** — la borne vit en base, et
+un refus lui ferait perdre ce qu'il vient d'écrire au doigt.
+
+**`NOTE_MAX` vit dans `src/lib/`**, pas dans le dépôt : l'écran doit connaître
+ce chiffre, et l'importer du serveur aurait tiré la base dans le navigateur.
+Trois usages — l'écran, le dépôt, la base — un seul nombre.
+
+Trois contrôles, dont celui qui compte : **une entreprise ne peut ni lire ni
+écrire la note d'une autre.**
+
+---
+
+### « Déplacer » offrait des boutons qui n'écrivaient rien
+
+*« Cliquer sur Déplacer ne déplace pas le chantier, ça ne fait rien du tout. »*
+
+**Et c'était vrai, sur un chantier de plus d'une journée.** `departEtDuree`
+protège la durée d'un chantier long — la raccourcir lui ferait perdre des jours
+de travail en silence —, si bien que « Matin » et « Journée » y écrivent le
+**même** état : le départ. Or `quandDuChantier` rendait « journee » dès deux
+demi-journées : la pastille se posait sur « Journée », et « Matin » restait
+éteint **tout en n'écrivant rien**. Deux boutons sur trois, morts.
+
+Au-delà d'une journée, ce qu'il choisit est donc le **départ**, et l'écran le
+dit : « Journée » disparaît, la pastille tombe sur « Matin » ou « Après-midi ».
+Un bouton qui n'écrit rien se retire — le laisser en l'expliquant serait pire,
+puisqu'il faudrait le lire pour savoir de ne pas s'en servir.
+
+**Le contrôle qui tient ça ne vérifie pas un libellé mais une propriété :** pour
+chaque durée, aucun bouton offert n'écrit l'état déjà en place. Il survivra au
+prochain remaniement des mots, et il a été vu rouge contre l'ancienne règle.
+
+**`quandDuChantier` a quitté l'écran pour `src/lib/`** : c'est une règle, pas un
+dessin, et enfermée dans un composant elle ne s'éprouvait qu'au navigateur
+(`CLAUDE.md` §3). Son défaut a d'ailleurs survécu tout ce temps pour cette
+raison.
+
+**Et le refus est devenu bavard.** `if (!r.succes) return;` avalait toute erreur
+du serveur : « Déplacer » était alors indistinguable d'un bouton mort. C'est le
+piège du 11 août 2026 — *« Impossible d'enregistrer la note »* sans que personne
+puisse savoir laquelle des quatre causes s'appliquait. Journalisé plutôt que
+levé : le message d'une exception d'action serveur n'arrive jamais jusqu'à lui.
+
+---
+
+### Un jour plein se PRÉVIENT, il ne se refuse plus — et « trop tôt » disparaît
+
+*« Si l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le
+faire quand même. Nous on a mis un message disant que c'est complet. D'ailleurs
+"trop tôt" veut rien dire, on comprend pas bien, faut changer ça. »*
+
+**Le message.** « Trop tôt : proposez au moins après-demain, sinon vous vous
+mettez en défaut » énonçait la règle au lieu de dire quoi faire, obligeait à
+compter dans sa tête devant un calendrier qui affiche les dates, et le mettait
+en tort pour un appui. Il **nomme** désormais le premier jour possible, et
+l'offre d'un geste.
+
+**Le refus.** Un jour plein bloquait l'envoi. C'est sa décision du 21 août,
+appliquée là où elle manquait : *« il ne doit pas y avoir de limite d'ajout de
+chantier par jour [...] nous, on prévient juste »*. Lui seul sait qu'une taille
+de haie prend une heure.
+
+**Et c'est ici que ses DEUX règles ont failli se contredire.** Le 22 août :
+*« je peux proposer le 24 alors qu'un client a validé le 24 — ça ne doit jamais
+se reproduire »*. Le 23 : *« il doit pouvoir le faire quand même »*. Ce qui les
+sépare est la **délibération**, et rien d'autre :
+
+| | |
+|---|---|
+| il force un jour écrit « complet » | sa décision — son client peut prendre la date |
+| il propose un jour **libre** qui se remplit après | il n'a rien décidé — le client choisit ailleurs |
+
+**Ces deux cas étaient indiscernables à la lecture du lien**, et le contrôle du
+22 août l'a montré en rougissant : une date simplement « proposée » laissait
+passer le second cas, c'est-à-dire le double chantier dans sa version course.
+D'où la colonne `dates_forcees` (migration 0059) — la photographie, prise à
+l'envoi, de ce qui était déjà plein ce jour-là. **Calculée au serveur**, jamais
+reçue de l'écran : venue du navigateur, elle serait un moyen de forcer
+n'importe quelle date.
+
+**Ce qui reste refusé** : une date passée, ou au-delà de dix-huit mois. Ce ne
+sont pas des arbitrages d'artisan. Un contrôle le fixe, sans quoi le
+retournement aurait tout ouvert d'un coup.
+
+**Et l'avertissement se voit.** Il s'affichait en gris discret — la couleur des
+notes de bas de page —, or c'est le mot « complet » qu'il ne faut pas manquer
+avant d'envoyer. Le gris ne reste que pour la remarque du week-end, qui
+n'engage à rien.
+
+**Deux contrôles retournés, jamais le libellé remis** (`CLAUDE.md` §5 bis) :
+ceux qui réclamaient le refus vérifient désormais l'avertissement et la
+possibilité de passer outre.
+
+---
+
+## 2026-08-23
+
+### « Terminés » : cinq chiffres en moins, et de l'air
+
+**Ses six corrections du 23 août au soir**, capture de l'écran à l'appui :
+*« Ma TVA à déclarer, mets-le en gras or ; la petite phrase en dessous d'août
+2026, en gris, supprime-la ; là où il y a écrit trois à facturer et huit
+facturés, supprime les montants qu'il y a avec, essaye de laisser un peu
+d'espace entre cette phrase-là et le premier client, histoire qu'on fasse bien
+la démarcation ; pareil le montant 5 028,00 € qui est sur la même ligne qu'août
+2026, celui-là tu peux le supprimer. Il faut aérer un peu la page parce qu'il y
+a énormément d'informations. »*
+
+**Trois montants sont partis, et ils ne disaient pas la même chose.** Le total à
+droite du mois ne comptait que le mois affiché ; les deux montants de la phrase
+comptaient tous les mois ; les lignes en dessous, elles, ne montrent que le mois
+affiché. Trois portées différentes sur quatre centimètres d'écran : on les
+lisait comme une contradiction, et l'on cessait de croire la liste. Ce qu'on
+additionne se lit dans les lignes.
+
+**Le titre de la carte de TVA passe en or gras.** C'était l'élément le plus pâle
+de la carte alors qu'il nomme l'outil dont il disait le matin même *« il est
+caché, on ne le voit pas trop »* — déplacer la carte en tête ne suffisait pas.
+
+**La mention grise sous la carte est retirée**, et ce n'est possible que pour
+une raison : ce que `docs/AGENT.md` §6 exige — Atlas prépare le relevé, il ne le
+déclare pas — s'écrit en toutes lettres **au bas du relevé lui-même**, là où les
+chiffres se lisent. La retirer des deux endroits serait autre chose.
+
+**La démarcation qu'il demande est un TRAIT, pas de l'espace.** De l'espace seul
+se mange au premier ajout de contenu ; un trait tient. La phrase passe en noir
+gras entière — sa demande du 22 août pour le compte des factures —, les montants
+partis n'ayant plus rien à quoi s'opposer.
+
+**Le probe `capture-termines.mts` a été adapté, pas contourné** : il exigeait le
+compte du mois derrière son repère, que la phrase ne portait pas. Le repère est
+allé sur la phrase, qui EST ce compte (`CLAUDE.md` §5 bis).
+
+**Un défaut relevé au passage, et consigné plutôt que corrigé au jugé** : la
+planche 90, que `page.tsx` désigne comme la référence de cet écran, a dérivé —
+elle ignore la carte de TVA venue de la planche 86 et les retraits de ce soir.
+Voir `TODO.md` : il faut trancher entre la remettre à niveau et lui retirer son
+titre.
+
+### Le temps passé se masque au client — codé, et il reste au patron
+
+**Sa demande du 22 août, puis ses deux corrections du 23** devant la planche 92 :
+*« raccourcis la phrase à "votre client ne le verra pas sur son compte rendu" »*
+et *« enlève le 1 h 40 en gris à droite de la sélection de l'heure »*.
+
+**Un interrupteur sur la ligne « Temps passé »**, avec son état écrit en toutes
+lettres — Visible / Masqué. Un curseur nu se décode ; cet écran se regarde avec
+un gant, entre deux chantiers.
+
+**Masquer n'efface pas**, et c'est tout l'objet de la colonne `temps_visible`
+(migration `0060`). Réutiliser `minutes IS NULL` pour masquer aurait confondu
+deux choses différentes — « je n'ai pas chronométré » et « je ne veux pas le lui
+dire » — et lui aurait fait perdre le chiffre qui dit ce qu'a coûté un chantier.
+
+**Le masquage se décide au SERVEUR, jamais à l'écran.** `lireRapportParJeton`
+rend `minutes: null` quand c'est masqué : rendre la durée puis la cacher au
+rendu la laisserait dans le HTML du client, à portée d'un clic droit — le défaut
+même que le tri des prestations faites évite depuis le 16 août.
+
+**Et l'empreinte scelle ce que le client A LU.** Un temps masqué n'entre pas
+dans le contenu haché : y sceller une durée absente de sa page la rendrait
+indéfendable le jour où il conteste le passage. Deux fiches identiques, l'une
+montrant son temps et l'autre le masquant, portent donc deux empreintes
+différentes — c'est ce que le nouveau cas vérifie.
+
+**Le défaut est `true`** : c'est ce que l'application faisait déjà, et repeindre
+en masqués les rapports déjà partis changerait ce que des clients ont lu.
+
+**Le total gris à droite de la molette est parti**, à sa demande : les deux
+listes disent déjà « 1 h » et « 45 ».
+
+Trois contrôles neufs, **tous vus rougir** contre l'état dégradé qu'ils
+prétendent attraper — une lecture publique qui ignore le masquage, un masquage
+qui efface la durée, une empreinte qui scelle le temps caché.
+
+---
+
+## 2026-08-23
+
+### La durée passe sous le nom, et le filet du « + » disparaît
+
+*« Le "une journée" en doré, mets-le sous le nom, et la ligne qui se trouve
+entre le nom et le "+ Ajouter un chantier", supprime-la. »*
+
+**Corrigé sur la planche 86 D'ABORD**, puis dans l'écran (`CLAUDE.md` §3 bis) —
+la planche reste la référence des planifiés, et c'est elle qu'il ouvre.
+
+**Le filet n'existait que dans l'écran.** La planche n'en porte pas :
+`AjoutAuJour` en avait ajouté un, et il refermait la journée juste avant le
+geste qui la prolonge. Retiré des trois états du bloc — au repos comme pendant
+le choix —, sans quoi il serait apparu à l'appui pour disparaître ensuite.
+
+**Ce que le déplacement corrige, au-delà du goût.** À côté du nom, la durée lui
+disputait la largeur : sur sa capture, « Chantier test — Abri Pornic » cassait
+en deux lignes et « une demi-journée » finissait seule en dessous, à gauche,
+sans qu'on sache à quoi elle se rapportait. Dessous, elle y est toujours.
+
+**Un contrôle a été RETOURNÉ, pas supprimé.** `test-ligne-planning-e2e.ts`
+exigeait la ligne entière sous 30 px de haut — c'est-à-dire tout sur une seule
+ligne, l'inverse exact de ce qu'il demande aujourd'hui. Ce qu'il défendait
+vraiment, c'est que **le nom du chantier ne paie pas la phrase** : il mesure
+donc maintenant la hauteur du NOM seul, et vérifie en plus que la durée est
+bien SOUS lui (`CLAUDE.md` §5 bis). Sa sonde a été corrigée au passage : elle
+lisait `childNodes[0]`, ce qui ne marchait que tant que le nom était un nœud de
+texte nu.
+
+Mesuré dans un vrai navigateur, à 390 px : durée sous le nom, nom sur une seule
+ligne (23 px), et `border-top: 0px` au-dessus du « + ».
+
+## 2026-08-23
+
 ### Rien à poser : le geste « Ajouter un chantier » disparaît
 
 **Sa remarque, capture à l'appui :** *« lorsqu'aucun chantier n'attend de jour,
@@ -36,6 +462,45 @@ suites. L'autre éprouve qu'il **revient** dès qu'un chantier attend : sans ell
 un bouton supprimé pour de bon passerait au vert.
 
 ---
+
+## 2026-08-22
+
+### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
+
+**Sa demande, capture de la fiche d'entretien à l'appui :** *« il faudrait
+mettre un petit bouton on/off pour si l'utilisateur ne veut pas que le temps
+apparaisse sur la fiche, pouvoir l'effacer — on, le temps apparaîtrait sur la
+fiche ; off, il n'apparaîtrait pas »*.
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis : une demande de geste se dessine
+avant de toucher `src/`, et « c'est tout petit » n'est pas une exception).
+La planche est à `appli/temps-sur-la-fiche.html`, n° 92.
+
+**Ce qu'elle tranche, et qui n'allait pas de soi :**
+
+· **« Effacer » ne veut pas dire OUBLIER.** La durée reste enregistrée sur le
+  passage — elle sert au patron, pas seulement au client —, et seul le compte
+  rendu l'ignore. Une phrase le dit sous la molette quand c'est éteint : sans
+  elle, il croit avoir perdu sa durée et la ressaisit au passage suivant.
+· **L'état se lit en toutes lettres**, « Visible » / « Masqué ». Un curseur nu
+  se décode ; cet écran se regarde avec un gant, entre deux chantiers.
+· **La ligne du client DISPARAÎT**, elle ne se grise pas : c'est ce que le
+  compte rendu fera pour de bon (`src/app/entretien/[jeton]/page.tsx` ne rend
+  ce paragraphe que si `rapport.minutes !== null`).
+· **Les deux côtés se voient à la fois** — sa fiche, et ce que sa cliente
+  reçoit. C'est le seul moyen de répondre à ce qu'il demande vraiment :
+  « qu'est-ce que mon client voit ? ». Une capture ne le dirait pas.
+
+**Deux questions lui sont posées sur la planche**, et la suite en dépend : le
+réglage de départ (elle s'ouvre sur « Visible », ce que l'application fait
+aujourd'hui) et le cas où il voudrait **ne rien saisir du tout**, qui serait
+autre chose qu'un masquage.
+
+Le contrôle (`scripts/verifier-maquette-temps-sur-la-fiche.mjs`, branché sur
+`npm run verifier:maquette`) **a été vu rougir** contre les trois états dégradés
+qu'il prétend attraper : une ligne cachée par une simple opacité — donc encore
+lue et encore à sa place —, la phrase « reste enregistré » supprimée, et un
+interrupteur qui survivait à l'envoi.
 
 ## 2026-08-22
 
@@ -85,7 +550,7 @@ suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
 §5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
 et le clair se mesure au lieu de s'écrire.
 
-Le détail : `ARCHITECTURE.md` §148.
+Le détail : `ARCHITECTURE.md` §157.
 
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
@@ -126,6 +591,134 @@ suites tenaient l'ancien geste. La case éteinte n'existe plus, l'exception des
 tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour portait
 le même `data-jour` que les cases — deux éléments pour le même jour, et une
 suite qui ne savait plus lequel viser.
+
+### Le croquis dit enfin OÙ sont les choses — et le dernier trajet est compté
+
+**Sa demande : « oui fais-le lire les proportions ».** Elle répond à ce que je
+lui avais présenté comme impossible : le trajet du regard jusqu'au premier
+arroseur, que je disais « non saisi ». Sa réponse : *« j'ai pas besoin de lui
+dire, il a tous les métrés du terrain, il a juste à calculer »*.
+
+**Il avait raison sur le fond, je me trompais sur le fait.** Le croquis PORTE
+l'information — la nourrice y est dessinée, les zones aussi, et les cotes
+donnent l'échelle. C'est la LECTURE qui ne relevait rien de tout ça : elle ne
+rendait que des dimensions, jamais des places.
+
+**Ce qui change :** la lecture demande maintenant, pour chaque zone et pour la
+nourrice, une place en **fraction du dessin** (0 à 1). Pas en mètres — un
+modèle voit qu'une pelouse occupe le tiers gauche, il ne voit pas qu'elle est à
+douze mètres du regard.
+
+**L'échelle se déduit des cotes déjà lues**, elle ne se demande pas. Une pelouse
+de 16 m qui occupe 0,40 du croquis donne 40 m par unité. Chaque zone cotée
+fournit ainsi jusqu'à deux estimations, et l'on retient la **médiane** — pas la
+moyenne : un modèle qui se trompe sur une zone tirerait la moyenne vers son
+erreur.
+
+**Et l'on REFUSE de conclure quand les zones se contredisent.** Plus du double
+d'écart entre estimations : le croquis n'est pas à l'échelle, ou la lecture est
+fausse. On rend la raison, jamais une distance moyenne qui n'existe nulle part.
+
+Sur le jardin d'exemple, trente mètres de trajet coûtent **0,29 bar** — la
+pression au dernier arroseur passe de 2,28 à 2,01. Ce n'était pas un détail.
+
+**La nourrice reste lue, jamais déduite** (`CLAUDE.md` §4 bis). Absente du
+dessin, elle reste absente : le trajet n'est pas compté, et l'écran le dit.
+
+**Un contrôle a rougi sur MON erreur, et c'est ce qui prouve qu'il sert.**
+J'avais figé « 8 m » pour une distance en diagonale, en lisant les demi-côtés de
+travers ; le calcul disait 11. Refaire l'opération à la main était le seul moyen
+de trancher — c'est exactement ce que vaut une valeur figée dans une suite.
+
+### Sa notice Rain Bird retire une pièce facturée pour rien
+
+Il envoie la notice de ses électrovannes (`man_DV_DVF.pdf`, Rain Bird, P/N
+231576-B) en réponse à la valeur que je disais manquante.
+
+**Elle ne donne pas la perte de charge** — c'est une notice d'installation, pas
+une fiche technique : ni courbe, ni tableau ΔP. Le forfait majorant de 0,25 bar
+reste donc en place, et reste non relevé.
+
+**Mais elle apprend trois choses**, toutes désormais au catalogue :
+
+| | 075-DV (3/4") | 100-DV (1") |
+|---|---|---|
+| débit admis | 0,05 à 5,0 m³/h | 0,05 à 9,08 m³/h |
+| pression admise | 1 à 10 bar | 1 à 10 bar |
+
+Et surtout : *« if pressure is greater than 80 psi (5,5 bar), install a
+pressure regulator on the line before the valve »*.
+
+**Le réducteur de pression était facturé sur CHAQUE chantier** — une pièce que
+j'avais posée d'office, sans source (`source:'provisoire'`). Chez lui, la source
+donne 3 bar : la vanne travaille dans sa plage, le réducteur ne sert à rien. Il
+n'apparaît plus qu'au-delà de 5,5 bar.
+
+### « Il faut qu'il me calcule le nombre juste » — la prudence ne vaut que pour l'inconnu
+
+Sa précision, aussitôt après avoir redressé la règle du sûr : *« faut pas pour
+autant qu'il retire un arroseur, il faut qu'il me calcule le nombre juste »*.
+
+La règle pouvait se lire de travers — « en cas de doute, moins d'arroseurs »
+n'autorise pas à en retirer un au jugé. Elle distingue maintenant deux choses :
+
+| | |
+|---|---|
+| ce qui se **calcule** — couverture, débit d'une buse, pertes | **exact**, sans marge ajoutée |
+| ce qu'on **ignore** — une valeur non relevée, une longueur non saisie | prudent |
+
+Retirer un arroseur « pour être tranquille » n'est pas de la prudence : c'est un
+trou d'arrosage, et il se voit en juillet exactement comme la panne qu'on
+voulait éviter.
+
+### La colonne « référence » affichait des noms de variables
+
+**Sa consigne, en majuscules et six points d'exclamation :** *« tu ne dois
+surtout pas inventer de prix ni de référence !!!!!!! »*
+
+**Aucun prix n'était en cause** — le catalogue n'en porte aucun, c'est la règle
+depuis le 17 août et elle tenait. **Mais les références, si.** La liste de
+matériel et la planche du plan affichaient `te-taraude-25-34-25`,
+`electrovanne-100dv`, `regard-rect12`, `pehd25` : les clés internes du
+catalogue, c'est-à-dire des noms de variables. Un paysagiste qui arrive chez
+Aqua Plus en demandant un « te-taraude-25-34-25 » se fait regarder de travers.
+
+Sur vingt-six lignes de matériel, **cinq seulement portaient une vraie
+référence** — RA3504, RA3504-B075, RT1804, RBT636, OD501, OD502, celles qu'on a
+relevées sur ses documents.
+
+`CATALOGUE.referenceDe` en est désormais le seul juge : une référence ne
+s'affiche que si l'entrée du catalogue porte un `releve` (« Aqua Plus 2026,
+p. 11 »). Les autres lignes n'en montrent aucune — leur nom suffit au comptoir,
+et le silence vaut mieux qu'une référence qui n'existe pas.
+
+Un contrôle interdit maintenant à la planche d'en réafficher : il interroge le
+catalogue au lieu de porter sa propre liste, parce qu'une liste recopiée dans un
+contrôle finit par défendre le catalogue d'avant-hier — c'est ce qui était
+arrivé à la légende le matin même.
+
+### « Un arroseur de trop fait que le réseau ne se lève pas » — la règle était à l'envers
+
+**Sa correction, et elle vise une règle que j'avais écrite le matin même.** Le
+`CLAUDE.md` §4 ter disait : *« devant deux hypothèses également défendables,
+retenir celle qui pose un arroseur de plus »*. Appliquée à un RÉSEAU, cette
+formule produit exactement la panne qu'elle prétend éviter : une tête de plus
+sur une vanne, c'est du débit en plus sur la même conduite, donc de la pression
+en moins, donc des turbines qui sortent à moitié.
+
+La règle est redressée, et elle se lit maintenant par grandeur :
+
+| Devant un doute | Ce qu'on retient |
+|---|---|
+| combien d'arroseurs sur **une vanne** | **le moins**, quitte à ouvrir une vanne de plus |
+| combien de **réseaux** | **le plus** |
+| une perte de charge inconnue | **la plus forte** |
+| une portée inconnue | **la plus courte** |
+
+**Le code, lui, allait déjà dans le bon sens** — la marge de 0,85, le plafond du
+tuyau et la portée réduite bornent tous le débit par vanne. C'est le vocabulaire
+qui était faux, dans quatre commentaires et deux documents. Une règle mal
+formulée finit par être appliquée telle qu'elle est écrite.
 
 ### Ce qui arrive au DERNIER arroseur est enfin calculé
 

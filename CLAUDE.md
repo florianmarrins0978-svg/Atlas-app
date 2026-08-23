@@ -176,7 +176,7 @@ langage. Rien n'y entre sans son accord explicite (voir `AGENTS.md`).
   patron a signalé le 22 août 2026 : *« le mode nuit est illisible »*. Ce qui
   s'écrit à la place : `surPlein` pour ce qu'on pose SUR un aplat,
   `voile(colors.ink, α)` pour un voile, et les jetons pour les signaux
-  (`ARCHITECTURE.md` §148). En dix secondes :
+  (`ARCHITECTURE.md` §157). En dix secondes :
   `npx tsx scripts/test-chartes-lisibles.ts`.
 
 ## 3 ter. Lui répondre court
@@ -274,10 +274,41 @@ la tranchée à ses frais.
 1. **Aucune valeur d'arrosage ne se devine.** Un chiffre sans source relevée ne
    rentre pas dans le calcul : il se demande, ou le calcul refuse de conclure.
    « Plausible » n'est pas une source.
-2. **Se tromper vers le SÛR, toujours.** Devant deux hypothèses également
-   défendables, retenir celle qui pose un arroseur de plus, jamais celle qui en
-   pose un de moins. Un arroseur en trop coûte 30 € ; un réseau qui ne se lève
-   pas coûte le chantier.
+2. **Se tromper vers le SÛR — et le sûr, c'est MOINS D'ARROSEURS PAR RÉSEAU.**
+
+   **Cette règle a d'abord été écrite à l'envers, et c'est lui qui l'a
+   redressée le 22 août 2026 :** *« un arroseur de trop fait que le réseau ne
+   peut pas se lever ! »* Elle disait « retenir l'hypothèse qui pose un
+   arroseur de plus » — une formule qui, appliquée à un RÉSEAU, produit
+   exactement la panne qu'elle prétend éviter : une tête de plus sur une vanne,
+   c'est du débit en plus sur la même conduite, donc de la pression en moins,
+   donc des turbines qui sortent à moitié.
+
+   La bonne formulation, et il n'y en a qu'une :
+
+   | Devant un doute | Ce qu'on retient |
+   |---|---|
+   | combien d'arroseurs sur **une vanne** | **le moins**, quitte à ouvrir une vanne de plus |
+   | combien de **réseaux** | **le plus** |
+   | une perte de charge inconnue | **la plus forte** |
+   | une portée inconnue | **la plus courte** |
+
+   Une vanne de plus coûte une électrovanne et une voie de programmateur. Un
+   réseau qui ne se lève pas coûte le chantier.
+
+   **ET CETTE PRUDENCE NE S'APPLIQUE QU'AUX INCONNUES.** Sa précision du
+   22 août, dans la foulée : *« faut pas pour autant qu'il retire un arroseur,
+   il faut qu'il me calcule le nombre juste »*.
+
+   | | |
+   |---|---|
+   | ce qui se **calcule** — la couverture d'une zone, le débit d'une buse, les pertes | **exact**, sans marge ajoutée |
+   | ce qu'on **ignore** — une valeur non relevée, une longueur non saisie | prudent, dans le sens ci-dessus |
+
+   Retirer un arroseur « pour être tranquille » n'est pas de la prudence : c'est
+   un trou d'arrosage, et il se voit en juillet exactement comme la panne qu'on
+   voulait éviter. La marge se prend sur ce qu'on ne sait pas, jamais sur ce
+   qu'on sait.
 3. **Ce qui n'est pas calculé se DIT à l'écran.** Pas dans le dépôt, pas dans un
    commentaire : sous le plan, là où il le lit. Une réserve tue vaut un mensonge
    — parce qu'un plan silencieux est cru complet.
@@ -318,6 +349,22 @@ au mauvais endroit, et une tranchée ne se déplace pas.
 **Informer n'est pas proposer.** S'il demande ce que change tel ou tel
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
+
+**LA PLUVIOMÉTRIE NE SÉPARE PAS DEUX VANNES — sa décision du 23 août 2026 :**
+*« ne prends pas en compte la pluviométrie »*. Elle était dans la clé de secteur
+depuis le 17 août, mise par lui (« ça ne se mélange jamais ») ; il l'a retirée le
+23. **Ne pas la remettre** : deux turbines de buses différentes partagent
+désormais une vanne, avec des millimètres/heure différents pour une même durée
+d'ouverture, et c'est lui qui arbitre à l'arrosage.
+
+**Ce qui sépare, en revanche, c'est le MATÉRIEL.** Une turbine et une tuyère ne
+s'ouvrent jamais ensemble : l'une verse environ trois fois plus vite. Cette
+règle-là n'a pas bougé.
+
+**LES PIÈCES SE COMPTENT EN « 13x », PAS EN « 13 u »** — même jour. L'unité reste
+dans les données : elle distingue une pièce qu'on compte d'un tuyau qu'on mesure,
+et « 80x de PE Ø25 » ne se commande pas. Une seule fonction l'écrit
+(`quantiteEcrite`), pour l'application comme pour la page publiée.
 
 **L'AVERTISSEMENT SE LIT AVANT DE PHOTOGRAPHIER**, en gras, **au-dessus** du
 croquis : *« votre croquis doit impérativement contenir les métrés, l'endroit
@@ -414,9 +461,21 @@ qui se perd, on refait. Une troisième passe remonterait la pression et l'on
 tournerait autour de la valeur : s'arrêter à deux garde les pertes des débits
 les plus forts, donc le côté sûr.
 
-**Ce qui n'est PAS compté se dit à l'écran** : le trajet du regard à la
-première tête, qui dépend de l'endroit où la nourrice est posée. La pression
-annoncée est un plafond.
+**LES PLACES SE LISENT SUR LE CROQUIS, EN FRACTION — les mètres se DÉDUISENT.**
+Sa demande du 22 août au soir : *« oui fais-le lire les proportions »*, après
+que je lui ai dit à tort qu'aucune saisie ne donnait le trajet du regard à la
+première tête. *« Il a tous les métrés du terrain, il a juste à calculer. »*
+
+Le modèle rend des places entre 0 et 1 — il voit qu'une pelouse occupe le tiers
+gauche, pas qu'elle est à douze mètres. **L'échelle sort des cotes déjà lues** :
+16 m sur 0,40 du croquis font 40 m par unité. On retient la **médiane** des
+estimations, jamais la moyenne, et **on refuse de conclure** au-delà du double
+d'écart entre zones — un croquis pas à l'échelle ne rend pas une distance
+moyenne, il rend une réserve.
+
+**Ce qui reste non compté se dit à l'écran** : quand la nourrice n'est pas
+dessinée, le trajet ne se calcule pas — et il ne se suppose pas davantage. La
+pression annoncée est alors un plafond.
 
 **UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU, PAS SEULEMENT PAR LE COMPTEUR.** Sa
 déduction du 22 août 2026 : *« en diamètre vingt-cinq c'est 1,76 m³/h, donc dans
@@ -448,7 +507,7 @@ dessous.
 constructeurs, pas de ses relevés à lui : au-dessus de la pression de
 référence, on garde la portée du catalogue. Espacer les arroseurs sur un chiffre
 supposé fabrique un trou d'arrosage qu'on ne voit qu'en juillet ; réduire coûte
-au pire un arroseur de plus. **Et une portée réduite se DIT à l'écran** — c'est
+au pire une vanne de plus. **Et une portée réduite se DIT à l'écran** — c'est
 une estimation, pas un fait.
 
 **LE DIAMÈTRE DU TUYAU SE CALCULE, ET SUR DEUX CRITÈRES — jamais un seul.**
@@ -750,6 +809,21 @@ de navigation sur la page publique du client, l'ordre des totaux d'une facture,
 une pile de notifications qui repoussait tout le contenu hors de l'écran — ont
 été trouvés en regardant une capture, jamais par un test vert. Prendre une
 capture des écrans touchés fait partie du travail, pas de la finition.
+
+**Un écran qu'on ne peut pas atteindre ici se rend quand même.** Le plan
+d'arrosage demande une photo de croquis et une clé de vision, que cet
+environnement n'a pas : `scripts/capture-plan-arrosage.ts` rend donc le seul
+composant du dessin, avec les données que le calcul produit vraiment.
+
+```bash
+npx tsx scripts/capture-plan-arrosage.ts /tmp/captures
+```
+
+Il a attrapé, le 23 août 2026, quatre défauts qu'aucun test ne voyait — dont
+deux qui ne se montrent **qu'à partir de trois réseaux** : deux tuyaux d'une même
+tranchée dessinaient le même trait, et la tranchée avait la couleur du troisième
+réseau. La maquette validée n'en portait que deux. *Une règle éprouvée sur un
+seul cas n'est pas éprouvée.*
 
 ### Parcourir soi-même ce qu'on transmet
 

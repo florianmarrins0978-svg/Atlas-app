@@ -91,7 +91,7 @@ async function chantierRealise(page: Page, suffixe: string) {
 
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
   await page.click("text=Choisir la date");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: 10000 });
+  await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
@@ -162,7 +162,11 @@ async function main() {
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
-    await page.click("text=Confirmer le départ de la facture");
+    // **UN SEUL APPUI depuis le 22 août 2026** — il arrête la facture ET ouvre
+    // la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
+    // jamais par son libellé : c'est justement le libellé qui a changé, et
+    // l'attendre ferait mourir la suite sur un délai qui n'accuse personne.
+    await page.click('[data-atlas="envoyer-la-facture"]');
     await page.waitForSelector("text=arrêtée", { timeout: 15000 });
 
     const { rows } = await inspecter(
@@ -205,12 +209,16 @@ async function main() {
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
     await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
-    await page.click("text=Confirmer le départ de la facture");
+    // **UN SEUL APPUI depuis le 22 août 2026** — il arrête la facture ET ouvre
+    // la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
+    // jamais par son libellé : c'est justement le libellé qui a changé, et
+    // l'attendre ferait mourir la suite sur un délai qui n'accuse personne.
+    await page.click('[data-atlas="envoyer-la-facture"]');
     await page.waitForSelector("text=arrêtée", { timeout: 15000 });
 
     await page.reload({ waitUntil: "networkidle" });
     assert.strictEqual(
-      await page.locator("text=Confirmer le départ de la facture").count(),
+      await page.locator('[data-atlas="envoyer-la-facture"]').count(),
       0,
       "la facture peut être émise une seconde fois"
     );

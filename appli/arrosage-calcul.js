@@ -121,8 +121,11 @@ function paveSelonSaRegle(dimension, portee){
    la portée du catalogue est conservée**. Gonfler une portée sur une
    estimation ferait espacer les arroseurs davantage, et un espacement trop
    large est un trou d'arrosage qu'on ne découvre qu'en juillet. En dessous, on
-   réduit : c'est le sens où se tromper coûte un arroseur de plus, jamais une
-   tache sèche.
+   réduit : resserrer la pose ajoute des têtes sur la ZONE, que le découpage
+   répartira sur une vanne de plus — jamais sur la même. C'est le sens sûr, et
+   il coûte une électrovanne, pas un chantier (`CLAUDE.md` §4 ter, redressé par
+   lui le 22 août : *« un arroseur de trop fait que le réseau ne peut pas se
+   lever »*).
 
    ⚠ **La pression retenue est celle de la SOURCE**, pas celle qui reste au
    pied du dernier arroseur : les pertes du réseau lui-même ne sont pas encore
@@ -352,6 +355,9 @@ var DEFAUTS = {
   seau:10, temps:20, pression:3, saison:'juillet', compteur:null, corps:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   amenee:30, pe25:120, sonde:false, croquis:null,
+  // Du regard à la première tête, en mètres. Lu sur le croquis quand il montre
+  // la nourrice (`geometrie-croquis.ts`) ; zéro sinon, et l'écran le dit.
+  regardVersZone:0,
   zones:[
     { id:1, nom:'Pelouse arrière', type:'gazon',   L:18, l:12, materiel:'auto' },
     // **Plus de tuyères imposées sur une grande pelouse (17 août).** Les deux
@@ -541,6 +547,24 @@ function perteDuReseau(secteur){
   // Le débit qui passe encore dans le tronçon menant à la tête i : c'est la
   // somme de ce que boivent cette tête et toutes celles qui la suivent.
   var restant = pts.reduce(function(s, p){ return s + (p.debit || 0); }, 0);
+  var debitDuReseau = restant;
+
+  /* **LE TRAJET DU REGARD À LA PREMIÈRE TÊTE — comblé le 22 août 2026 au soir.**
+
+     C'était le dernier morceau non compté, et je lui avais dit qu'aucune saisie
+     ne le donnait. Sa réponse : *« j'ai pas besoin de lui dire, il a tous les
+     métrés du terrain, il a juste à calculer »*. Il avait raison — le croquis
+     porte la nourrice ET les zones, et les cotes donnent l'échelle. C'est la
+     LECTURE qui ne relevait pas les places (`geometrie-croquis.ts`).
+
+     **Tout le débit du réseau passe par ce tronçon**, puisqu'aucune tête n'y a
+     encore puisé : c'est le morceau le plus chargé de toute la ligne, et donc
+     celui qui perd le plus au mètre.
+
+     Zéro tant que la place de la nourrice n'a pas été lue — et l'écran le dit
+     plutôt que de laisser croire que le trajet est compté. */
+  var versLaZone = Number(etat.regardVersZone) || 0;
+  var amont = perteDeCharge(debitDuReseau, versLaZone, t25.dInterieur);
   for (var i = 1; i < pts.length; i++){
     restant -= (pts[i-1].debit || 0);
     var l = Math.abs(pts[i].x - pts[i-1].x) + Math.abs(pts[i].y - pts[i-1].y);
@@ -554,10 +578,11 @@ function perteDuReseau(secteur){
 
   return {
     lineaire: lineaire,
-    raccords: lineaire * MAJORATION_RACCORDS,
+    amont: amont,
+    raccords: (lineaire + amont) * MAJORATION_RACCORDS,
     electrovanne: PERTE_ELECTROVANNE,
     antenne: antenne,
-    total: lineaire * (1 + MAJORATION_RACCORDS) + PERTE_ELECTROVANNE + antenne
+    total: (lineaire + amont) * (1 + MAJORATION_RACCORDS) + PERTE_ELECTROVANNE + antenne
   };
 }
 
@@ -568,7 +593,8 @@ function perteDuReseau(secteur){
    une même pelouse : deux portées, deux espacements, un plan qu'on ne sait pas
    poser. On retient donc la pire, ce qui revient à poser partout la buse qui
    tient au point le plus mal alimenté. C'est le sens sûr (`CLAUDE.md` §4 ter),
-   et cela coûte au pire un arroseur de plus sur les réseaux les mieux servis. */
+   et cela coûte au pire une vanne de plus sur les réseaux les mieux servis —
+   jamais une tête de plus sur une vanne déjà chargée. */
 function pirePerteDeReseau(d){
   var pire = 0;
   (d.secteurs || []).forEach(function(s){
@@ -1013,19 +1039,28 @@ function decouperUneFois(){
     // La clé du groupe ne contient QUE ce qui ne change pas avec la saison :
     // le matériel et la famille de plantes. Un secteur est du câblage.
     //
-    // **ET LA PLUVIOMÉTRIE EN FAIT PARTIE — sa règle du 17 août, « ça ne se
-    // mélange jamais ».** Le type ne suffit pas : deux TURBINES peuvent avoir
-    // des pluviométries différentes selon leur buse, et une vanne les ouvrirait
-    // pour la même durée. Le défaut est resté invisible tant que les deux
-    // pelouses du jardin d'exemple étaient l'une en turbines et l'autre en
-    // tuyères ; le jour où sa règle sur les tuyères les a mises toutes deux en
-    // turbines, elles se sont retrouvées sur la même vanne avec 5,9 et
-    // 6,1 mm/h — et c'est le PLAN, en les coloriant de la même couleur, qui l'a
-    // montré. Ici l'écart était de 3 % ; entre une 3504 fine et une grosse
-    // PGP, il se compte en multiples.
-    var clef = p.cle + '|' + TYPES[z.type].famille + '|' + (p.m.pluvio || 0);
-    if (!groupes[clef]) { groupes[clef] = { zones:[], membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
+    // **LA PLUVIOMÉTRIE N'EN FAIT PLUS PARTIE — sa décision du 23 août 2026 :**
+    // *« ne prends pas en compte la pluviométrie »*. Elle y était depuis le
+    // 17 août, et c'est LUI qui l'y avait mise (« ça ne se mélange jamais ») ;
+    // c'est donc lui qui l'en retire, et il n'y a rien à rouvrir ici.
+    //
+    // **Ce que cela change, pour qui reprendra ce fichier.** Deux turbines de
+    // buses différentes peuvent désormais partager une vanne. Elles versent
+    // alors des millimètres/heure différents, et la vanne les ouvre pour la même
+    // durée : la durée calculée (`r.minutes`) convient à l'une et pas à l'autre.
+    // Sur son jardin, l'écart mesuré était de 3 % — entre une 3504 fine et une
+    // grosse PGP, il se compterait en multiples. Il le sait, il arbitre à
+    // l'arrosage.
+    //
+    // **La pluviométrie sert toujours aux DURÉES** (`poser()`), qui restent
+    // calculées par modèle. Ce qui a disparu, c'est son pouvoir de séparer deux
+    // secteurs — rien d'autre.
+    var clef = p.cle + '|' + TYPES[z.type].famille;
+    if (!groupes[clef]) { groupes[clef] = { zones:[], nomDeZone:{}, membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
     groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
+    // **Le nom de chaque zone, retrouvable par son identifiant.** Un secteur ne
+    // dessert pas forcément tout le groupe : il faut pouvoir nommer LES SIENNES.
+    groupes[clef].nomDeZone[z.id] = z.nom || TYPES[z.type].nom;
     groupes[clef].membres.push({ zoneId: z.id, points: p.points });
     groupes[clef].debit += p.debit;
     groupes[clef].minutes = p.minutes;
@@ -1047,9 +1082,32 @@ function decouperUneFois(){
   ordre.forEach(function(clef){
     var g = groupes[clef];
     var premier = secteurs.length;
-    var ajouter = function(debit, combien, rang, points){
+    // **UN SECTEUR NOMME LES ZONES QU'IL ARROSE, PAS CELLES DE SON GROUPE.**
+    //
+    // *Défaut révélé le 23 août 2026 par le retrait de la pluviométrie.* Tant
+    // qu'elle coupait, un groupe ne portait qu'un modèle et se répartissait
+    // presque toujours sur une seule zone : nommer le groupe entier revenait au
+    // même. Depuis, deux pelouses de buses différentes tombent dans le même
+    // groupe — et la coupe par points contiguës peut retomber exactement sur
+    // leur limite. L'écran annonçait alors « Devant + Derrière » pour une vanne
+    // qui n'arrose que « Devant ». Un plan qui nomme la mauvaise zone fait
+    // creuser au mauvais endroit.
+    var nommer = function(points){
+      if (!points || !points.length) return g.zones.join(' + ');
+      var vues = [];
+      points.forEach(function(x){
+        var nom = g.nomDeZone[x.zoneId];
+        if (nom && vues.indexOf(nom) < 0) vues.push(nom);
+      });
+      return vues.length ? vues.join(' + ') : g.zones.join(' + ');
+    };
+
+    var ajouter = function(debit, combien, rang, points, membres){
       secteurs.push({
-        nom: g.zones.join(' + '),
+        // **`membres` porte le zoneId, `points` ne le porte pas.** Les têtes
+        // rendues par `poser()` ne savent pas de quelle zone elles viennent :
+        // c'est le découpage qui l'a noté, et lui seul peut nommer.
+        nom: nommer(membres),
         part: combien > 1 ? rang + ' sur ' + combien : null,
         famille: g.m.famille,
         debit: debit,
@@ -1132,7 +1190,7 @@ function decouperUneFois(){
       paquets[i].push(x); debits[i] += x.debit;
     });
     paquets.forEach(function(pq, i){
-      ajouter(debits[i], paquets.length, i+1, pq.map(function(x){ return x.pt; }));
+      ajouter(debits[i], paquets.length, i+1, pq.map(function(x){ return x.pt; }), pq);
       pq.forEach(function(x){
         reseauDuPoint[x.zoneId + ':' + x.pt.x.toFixed(3) + ':' + x.pt.y.toFixed(3)] = premier + i;
         noterZone(x.zoneId, premier + i);
@@ -1147,6 +1205,23 @@ function decouperUneFois(){
            limiteDuTuyau: duTuyau, limiteDeLaSource: deLaSource,
            reseauxDeZone:reseauxDeZone,
            demande: etat.zones.reduce(function(s,z){ return s + poser(z).debit; }, 0) };
+}
+
+/**
+ * La quantité, écrite comme il la lit — sa demande du 23 août 2026 :
+ * *« pour le calcul des pièces, 13x et pas 13 u »*.
+ *
+ * **Le « u » ne disparaît pas du calcul, seulement de l'écran.** L'unité reste
+ * dans les données (`{ q, u }`) : c'est elle qui distingue une pièce qu'on
+ * compte d'un tuyau qu'on mesure, et le fournisseur ne commande pas
+ * « 80x de PE Ø25 ». Ce qui change, c'est le mot affiché devant une pièce.
+ *
+ * **Une seule fonction pour les deux écrans** — la page publiée et
+ * l'application. Deux façons d'écrire la même quantité finiraient par
+ * diverger, et c'est ce que `CLAUDE.md` §3 interdit.
+ */
+function quantiteEcrite(q, u){
+  return u === 'u' ? q + 'x' : q + ' ' + u;
 }
 
 function voiesProgrammateur(n){
@@ -1347,7 +1422,28 @@ function listeMateriel(d){
     // chaque commande. Ne pas le remettre « par prudence » : la question a été
     // posée et tranchée, et ce commentaire existe pour éviter qu'on la
     // rouvre.
-    lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    /* ══ LE RÉDUCTEUR EST POUR LE GOUTTE-À-GOUTTE, ET POUR LUI SEUL ══════════
+
+       **Sa règle du 22 août 2026, en deux temps.** Il était d'abord facturé
+       d'office sur chaque chantier — une pièce que j'avais posée sans source
+       (`source:'provisoire'`). Sa notice Rain Bird m'a fait le conditionner à
+       la pression : *« if pressure is greater than 80 psi (5,5 bar), install a
+       pressure regulator »*. Faux aussi, et il l'a corrigé aussitôt :
+       **« non, remets-le, il est utilisé pour le goutte-à-goutte seulement »**.
+
+       C'est son métier qui parle, et la notice de la vanne ne pouvait pas le
+       dire : une gaine de goutteurs travaille à basse pression — une bien plus
+       basse que ce qu'un réseau d'arroseurs demande. Sans réducteur, les
+       goutteurs se déboîtent ou débitent n'importe quoi. La pression de la
+       SOURCE n'y change rien : même à 3 bar, le goutte-à-goutte en a besoin ;
+       même à 6, un réseau de turbines n'en veut pas.
+
+       **La leçon vaut au-delà de cette pièce.** Une notice de constructeur dit
+       ce que le MATÉRIEL supporte, jamais ce que le CHANTIER exige. Prendre
+       l'une pour l'autre a retiré du devis une pièce qui devait y être. */
+    if (combienGoutteAGoutte(d) > 0){
+      lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    }
     if (etat.sonde) lignes.push({ ref:'sonde-pluie', nom:'Sonde de pluie', q:1, u:'u' });
   }
   return lignes;

@@ -17,7 +17,6 @@ import {
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import {
   jourLisibleCourt,
-  estWeekEndIso,
   MOIS_LONGS,
 } from "@/lib/mois";
 import {
@@ -29,6 +28,7 @@ import {
   etatDemi,
   MOT_DEMI,
   MOT_QUAND,
+  quandDuChantier,
   occupationDemi,
   type Demi,
   type EtatDemi,
@@ -40,9 +40,11 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
 import type { FeuilleDuChantier } from "@/server/repositories/devis";
+import { NOTE_MAX } from "@/lib/note-chantier";
 import {
   basculerEquipeAction,
   deplacerChantierAction,
+  ecrireNoteChantierAction,
   deplanifierChantierAction,
   planifierChantierAction,
   supprimerChantierAction,
@@ -99,6 +101,14 @@ export type ChantierPlanning = {
   equipes: EquipesParDemi;
   /** L'adresse du chantier, telle qu'elle est en base — jamais devinée. */
   adresseChantier?: string | null;
+  /**
+   * Le pense-bête du chantier, lu et écrit sur la feuille.
+   *
+   * **Modifiable sur l'objet** (`chantier.note = …` après enregistrement) : la
+   * feuille est remontée à chaque changement de chantier, et repeindre toute la
+   * liste pour un champ de texte ferait clignoter le planning sous le doigt.
+   */
+  note?: string | null;
   clientTelephone?: string | null;
   envoiEnvoyeAt: Date | string | null;
   envoiExpireAt: Date | string | null;
@@ -250,7 +260,9 @@ export default function PlanningClient({
 
   const occupationDe = useCallback(
     (jour: JourIso, demi: Demi) => {
-      if (estWeekEndIso(jour)) return occupationDemi<ChantierPlanning>([], nombreEquipes, 0);
+      // **Le week-end porte sa charge comme les autres.** Sa règle du 23 août
+      // 2026 : il y travaille en extra, et un samedi chargé qui s'affiche vide
+      // lui ferait poser un second chantier par-dessus.
       const cle = cleCreneau({ jour, moment: demi });
       return occupationDemi(
         parCreneau.get(cle) ?? [],
@@ -389,7 +401,18 @@ export default function PlanningClient({
     setOuvert(null);
     enTransition(async () => {
       const r = await deplacerChantierAction(chantierId, quand);
-      if (!r.succes) return;
+      if (!r.succes) {
+        // **Un refus avalé est un défaut muet**, et le dépôt l'a déjà payé le
+        // 11 août 2026 : « Impossible d'enregistrer la note » sans que personne
+        // puisse savoir laquelle des quatre causes s'appliquait. Ici le `return`
+        // seul rendait « Déplacer » indistinguable d'un bouton mort — c'est
+        // précisément ce qu'il a signalé le 23 août.
+        //
+        // Journalisé plutôt que levé : le message d'une exception d'action
+        // serveur n'arrive jamais jusqu'à lui (`AGENTS.md`).
+        console.error("Déplacement refusé", { chantierId, quand, erreur: r.erreur });
+        return;
+      }
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
       );
@@ -658,15 +681,23 @@ export default function PlanningClient({
                           color: colors.ink,
                         }}
                       >
-                        {c.nom}
+                        <span className="block">{c.nom}</span>
                         {/* **La durée, jamais le moment** — sa demande du
                             22 août, retenue sur la planche 86 : *« ce n'est pas
                             clair quand il y a marqué le matin et
                             l'après-midi »*. La demi-journée se lit deux lignes
-                            plus bas, sur la ligne MATIN. */}
+                            plus bas, sur la ligne MATIN.
+
+                            **Et elle passe SOUS le nom** — sa demande du
+                            23 août : *« le "une journée" en doré, mets-le sous
+                            le nom »*. À côté, elle disputait la largeur au nom
+                            et à l'équipe : « Chantier test — Abri Pornic »
+                            cassait en deux lignes et la durée finissait seule
+                            en dessous, à gauche, sans qu'on sache à quoi elle
+                            se rapportait. Vu sur sa capture. */}
                         <span
                           data-atlas="duree-planifiee"
-                          className="ml-2 text-[12.5px]"
+                          className="mt-[3px] block text-[12.5px]"
                           style={{ color: colors.or }}
                         >
                           {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
@@ -765,7 +796,11 @@ export default function PlanningClient({
               className="mx-[18px] mt-2 text-center text-[12.5px]"
               style={{ color: colors.muted }}
             >
-              {jourTouche && !estWeekEndIso(jourTouche)
+              {/* **Un samedi touché est un jour comme un autre** — sa règle
+                  du 23 août 2026. La condition écartait le week-end : il
+                  touchait son samedi, et l'écran continuait de lui dire de
+                  toucher un jour. */}
+              {jourTouche
                 ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
                 : "Touchez d’abord un jour du calendrier"}
             </p>
@@ -790,7 +825,7 @@ export default function PlanningClient({
                     >
                       {c.nom}
                     </span>
-                    {jourTouche && !estWeekEndIso(jourTouche) ? (
+                    {jourTouche ? (
                       <span className="flex flex-shrink-0 gap-[5px]">
                         {(
                           [
@@ -1097,7 +1132,7 @@ function AjoutAuJour({
   return (
     <>
       {ouvert?.quoi === "ajout-qui" && ouvert.cle === cle ? (
-        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+        <div className="mt-3.5 pt-3">
           {/* Plus de repli « Aucun chantier n'attend de jour » ici : on n'y
               arrive plus, puisque le geste lui-même n'existe pas dans ce cas.
               Le laisser aurait été une branche morte — et surtout la promesse
@@ -1123,7 +1158,6 @@ function AjoutAuJour({
         <div
           data-atlas="en-attente"
           className="mt-3.5 flex flex-wrap items-center gap-2 pt-3"
-          style={{ borderTop: `1px solid ${colors.line}` }}
         >
           <span
             className="flex-1"
@@ -1144,9 +1178,14 @@ function AjoutAuJour({
           </span>
         </div>
       ) : (
+        /* **Plus de filet au-dessus du « + »** — sa demande du 23 août 2026 :
+           *« la ligne qui se trouve entre le nom et le "+ Ajouter un chantier",
+           supprime-la »*. La planche 86 n'en porte pas : c'est l'écran qui en
+           avait ajouté un, et il refermait la journée juste avant le geste qui
+           la prolonge. */
         <div
           className="mt-3.5 flex items-center justify-center gap-2.5 pt-3 text-[12.5px]"
-          style={{ borderTop: `1px solid ${colors.line}`, color: colors.inkSoft }}
+          style={{ color: colors.inkSoft }}
         >
           <button
             type="button"
@@ -1225,30 +1264,27 @@ function CarteDuJour({
 } & GestesCarte) {
   const feuilleIci = feuille && feuille.cle === cle ? feuille.chantierId : null;
 
-  if (estWeekEndIso(jour)) {
-    return (
-      <div
-        data-atlas="carte-jour"
-        data-jour={jour}
-        className="mx-[18px] mt-4 rounded-[10px] px-[15px] py-[14px]"
-        style={{ background: colors.card }}
-      >
-        <p
-          className="mb-3.5 text-center text-[12.5px] font-bold uppercase leading-none"
-          style={{ letterSpacing: "0.14em", color: colors.ink }}
-        >
-          {jourLisibleCourt(jour)}
-        </p>
-        <p className="m-0 text-center text-[13px]" style={{ color: colors.muted }}>
-          Jamais proposé.
-        </p>
-      </div>
-    );
-  }
+  // **LE WEEK-END EST UNE JOURNÉE COMME UNE AUTRE.**
+  //
+  // *Sa règle du 23 août 2026 :* « le samedi et le dimanche, l'utilisateur doit
+  // pouvoir le proposer ; s'il a des salariés qui font des extras, il doit
+  // pouvoir sélectionner ces deux jours ».
+  //
+  // La fiche répondait « Jamais proposé. » et n'offrait aucun geste : un
+  // cul-de-sac, sur un jour où il travaille pour de bon. Le serveur, lui, ne
+  // l'a jamais refusé — `jourRetenable` accepte le samedi depuis toujours, et
+  // c'est écrit noir sur blanc dans `disponibilites.ts`. C'était donc l'ÉCRAN
+  // qui interdisait ce que la règle permettait.
+  //
+  // **Ce qui ne change pas :** le week-end n'est toujours pas SUGGÉRÉ parmi les
+  // six premiers jours (`premiersJoursLibres`). Pouvoir le choisir n'est pas se
+  // le voir proposer d'office — proposer un dimanche à un particulier n'est
+  // presque jamais ce qu'il veut.
 
   const duJour = chantiersDuJour(jour);
   const occupe = (c: ChantierPlanning, demi: Demi) =>
     occupationDe(jour, demi).pris.some((x) => x.id === c.id);
+
   // **Le chantier déplié, et ce qui reste libre — dans cet ordre.** Sa
   // correction du 22 août 2026 : *« l'après-midi de libre passe sous la feuille
   // de chantier, or il doit rester en dessous du matin même s'il est libre ;
@@ -1414,17 +1450,30 @@ function CarteDuJour({
                       // rotation qui déciderait à sa place. C'est la règle qu'il
                       // a posée pour l'équipe, et elle vaut partout.
                       <Choisir>
-                        {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
-                          <Petit
-                            key={v}
-                            serre
-                            data-vers={v}
-                            retenue={quandDuChantier(c) === v}
-                            onClick={() => deplacer(c.id, v)}
-                          >
-                            {MOT_QUAND[v]}
-                          </Petit>
-                        ))}
+                        {/* **« Journée » disparaît au-delà d'une journée.**
+                            Sur un chantier de trois jours, elle écrit le même
+                            état que « Matin » — le départ, la durée étant
+                            protégée — et l'une des deux ne faisait donc rien.
+                            Un bouton qui n'écrit rien se retire ; le laisser en
+                            expliquant serait pire, puisqu'il faut le lire pour
+                            savoir de ne pas l'employer. */}
+                        {(Object.keys(MOT_QUAND) as QuandChantier[])
+                          .filter(
+                            (v) =>
+                              v !== "journee" ||
+                              (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
+                          )
+                          .map((v) => (
+                            <Petit
+                              key={v}
+                              serre
+                              data-vers={v}
+                              retenue={quandDuChantier(c) === v}
+                              onClick={() => deplacer(c.id, v)}
+                            >
+                              {MOT_QUAND[v]}
+                            </Petit>
+                          ))}
                       </Choisir>
                     ) : (
                       <>
@@ -1470,11 +1519,92 @@ function CarteDuJour({
   );
 }
 
-/** Comment ce chantier se lit dans les trois boutons de « Déplacer ». */
-function quandDuChantier(c: ChantierPlanning): QuandChantier {
-  const duree = c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
-  if (duree >= 2) return "journee";
-  return c.creneauDebut === "apres_midi" ? "apres" : "matin";
+/**
+ * LE PENSE-BÊTE DU CHANTIER — « penser à prendre le broyeur ».
+ *
+ * **Sa demande du 23 août 2026**, et la planche 93 retenue : *« un petit
+ * encadré où l'utilisateur peut marquer quelque chose [...] client plus
+ * disponible à partir de neuf heures »*. Variante **A** : le cadre est ouvert
+ * en permanence.
+ *
+ * **Pourquoi A plutôt que B**, et la raison n'est pas le confort. La planche
+ * proposait aussi une ligne discrète « ＋ Ajouter une note », plus économe de
+ * 96 px. Devant l'image, il a répondu : *« B, y'a rien ? Je vois rien »* — et
+ * c'était le renseignement décisif. Une invitation qu'il ne voit pas sur une
+ * capture, il ne la trouvera pas davantage sur un chantier.
+ *
+ * **Elle ne part sur AUCUN document.** Sa décision : *« elle peut rester là,
+ * car les salariés auront accès au planning ; justement, c'est pour cela que je
+ * voulait le devis sans les prix »*. Le PDF est le devis expurgé de ses prix ;
+ * la note, elle, vit ici — et ses équipes la lisent en ouvrant la feuille.
+ */
+function NoteDuChantier({ chantier }: { chantier: ChantierPlanning }) {
+  // Semée depuis la liste, jamais relue au montage : la note descend déjà avec
+  // le planning, et un second aller-retour l'afficherait vide une seconde.
+  const [texte, setTexte] = useState(chantier.note ?? "");
+  const [etat, setEtat] = useState<"repos" | "ecrit" | "enregistre" | "perdu">("repos");
+  const [, enTransition] = useTransition();
+
+  function enregistrer() {
+    if (texte === (chantier.note ?? "")) return;
+    enTransition(async () => {
+      const r = await ecrireNoteChantierAction(chantier.id, texte);
+      if (!r.succes) {
+        // **Le refus se DIT.** Une note perdue en silence, c'est le broyeur
+        // oublié — et il croirait l'avoir noté.
+        setEtat("perdu");
+        return;
+      }
+      chantier.note = r.note;
+      setEtat("enregistre");
+    });
+  }
+
+  return (
+    <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+      <p
+        className="m-0 mb-2 text-[10px] font-semibold uppercase leading-none"
+        style={{ letterSpacing: "0.16em", color: colors.muted }}
+      >
+        Ma note
+      </p>
+      <textarea
+        data-atlas="note-chantier"
+        value={texte}
+        onChange={(e) => {
+          setTexte(e.target.value.slice(0, NOTE_MAX));
+          setEtat("ecrit");
+        }}
+        // **Enregistré en SORTANT du cadre, jamais par un bouton.** Il range
+        // son téléphone et démarre : un bouton non touché perdrait la note.
+        onBlur={enregistrer}
+        placeholder="Penser à prendre le broyeur. Client dispo à partir de 9 h."
+        rows={3}
+        className="w-full resize-none rounded-[9px] px-3 py-2.5"
+        style={{
+          border: `1px solid ${colors.line}`,
+          background: colors.card,
+          color: colors.ink,
+          // **16 px au moins.** En dessous, iOS grossit la page à la mise au
+          // point et l'écran saute sous le doigt — un piège déjà payé ici.
+          fontSize: 16,
+          lineHeight: 1.45,
+          WebkitTapHighlightColor: "transparent",
+        }}
+      />
+      <p
+        data-atlas="note-etat"
+        className="m-0 mt-1.5 min-h-[17px] text-[12.5px]"
+        style={{ color: etat === "perdu" ? colors.bordeaux : colors.rust }}
+      >
+        {etat === "enregistre"
+          ? "Enregistré."
+          : etat === "perdu"
+            ? "La note n’a pas pu être enregistrée. Réessayez."
+            : ""}
+      </p>
+    </div>
+  );
 }
 
 /**
@@ -1567,6 +1697,8 @@ function FeuilleChantier({
         </Geste>
         <Geste href={tel}>Appeler le client</Geste>
       </div>
+
+      <NoteDuChantier chantier={chantier} />
 
       <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
         {(feuille?.taches ?? []).length === 0 ? (

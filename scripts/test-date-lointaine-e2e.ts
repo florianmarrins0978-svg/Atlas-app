@@ -51,7 +51,7 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.getByText("Choisir la date", { exact: false }).first().click();
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?");
+  await page.waitForSelector('[data-atlas="invite-dates"]');
 
   // --- 1. Le calendrier existe, et il va jusqu'à dix-huit mois -------------
   //
@@ -84,15 +84,15 @@ async function main() {
       undefined,
       { timeout: 30_000 }
     );
-    // Un week-end ne porte même pas le bouton : la fiche dit « Jamais proposé »
-    // et s'arrête là. C'est un refus aussi, et le plus net des deux.
+    // **Le bouton existe toujours, week-end compris** — sa règle du 23 août
+    // 2026. Ce contrôle-ci ne porte pas sur le week-end mais sur le DÉLAI
+    // MINIMAL : demain est trop proche, quel que soit le jour de la semaine.
+    // Le repli « la fiche dit Jamais proposé » n'a donc plus lieu d'être, et il
+    // aurait rendu ce contrôle vert sur un samedi sans rien prouver du délai.
     const bouton = page.locator('[data-atlas="retenir-le-jour"]');
-    const refuse =
-      (await bouton.count()) === 0
-        ? /Jamais proposé/.test(await fiche.innerText())
-        : await bouton.isDisabled();
+    assert.equal(await bouton.count(), 1, "la fiche du jour n'offre pas son bouton");
     assert.ok(
-      refuse,
+      await bouton.isDisabled(),
       `Le calendrier laisse PROPOSER ${demain} (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
     );
     // On referme, pour repartir d'un écran propre.

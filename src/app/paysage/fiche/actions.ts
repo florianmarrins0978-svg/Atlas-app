@@ -67,7 +67,7 @@ export async function cocherLigneAction(
 
 export async function majPassageAction(
   passageId: string,
-  champs: { minutes?: number | null; observations?: string | null }
+  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null }
 ): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   const r = await majPassage(ctx, passageId, champs);

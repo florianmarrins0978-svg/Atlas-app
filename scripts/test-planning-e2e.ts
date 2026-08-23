@@ -946,6 +946,59 @@ async function main() {
   // Le produit ne pose pas de samedi lui-même ; une date venue d'ailleurs, si.
   // C'est pourquoi ce décor l'écrit en base : c'est un état que le chantier peut
   // atteindre, et l'écran doit savoir le montrer.
+  // **SA DEMANDE DU 23 AOÛT 2026 :** *« entre "Copier l'adresse" et "Ouvrir le
+  // PDF", j'aimerais avoir un petit encadré où l'utilisateur peut marquer
+  // quelque chose — penser à prendre le broyeur »*.
+  //
+  // **Ce que ce contrôle garde, c'est le RECHARGEMENT.** Écrire dans un champ
+  // marche toujours ; c'est l'enregistrement qui casse en silence, et il ne se
+  // voit qu'en revenant. Une note perdue sans un mot, c'est le broyeur oublié
+  // alors qu'il croit l'avoir noté.
+  await essai("la note de la feuille s'écrit et survit au rechargement", async () => {
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
+    await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    const champ = page.locator('[data-atlas="note-chantier"]').first();
+    await champ.waitFor({ state: "visible", timeout: 15_000 });
+
+    // **16 px au moins** : en dessous, iOS grossit la page à la mise au point et
+    // l'écran saute sous le doigt. Mesuré, jamais supposé.
+    const taille = await champ.evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+    assert.ok(taille >= 16, `le champ fait ${taille} px : iOS zoomera dessus`);
+
+    const note = `Broyeur — ${Date.now()}`;
+    await champ.fill(note);
+    // Enregistré en SORTANT du cadre, jamais par un bouton.
+    await page.locator('[data-atlas="feuille"]').first().click({ position: { x: 8, y: 8 } });
+    await page
+      .locator('[data-atlas="note-etat"]')
+      .first()
+      .filter({ hasText: /Enregistr/ })
+      .waitFor({ timeout: 15_000 });
+
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
+    await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    const relu = page.locator('[data-atlas="note-chantier"]').first();
+    await relu.waitFor({ state: "visible", timeout: 15_000 });
+    assert.equal(
+      await relu.inputValue(),
+      note,
+      "la note n'a pas survécu au rechargement : elle est perdue sans un mot"
+    );
+
+    // **Le vide EFFACE.** Sans quoi le cadre resterait « rempli de rien », et
+    // l'on ne saurait plus distinguer une note effacée d'une note oubliée.
+    await relu.fill("");
+    await page.locator('[data-atlas="feuille"]').first().click({ position: { x: 8, y: 8 } });
+    await page
+      .locator('[data-atlas="note-etat"]')
+      .first()
+      .filter({ hasText: /Enregistr/ })
+      .waitFor({ timeout: 15_000 });
+  });
+
   await essai("un chantier posé un SAMEDI reste visible dans les planifiés", async () => {
     // JOUR est un LUNDI (`lundiDansDeuxMois`) : cinq jours plus loin, samedi.
     const samedi = (() => {
@@ -972,25 +1025,44 @@ async function main() {
       "un chantier posé un samedi n'apparaît plus dans les planifiés : il est perdu"
     );
 
-    // Et la fiche du jour, elle, dit toujours « Jamais proposé » — c'est la
-    // planche, et elle ne change pas : on ne PROPOSE pas le week-end, on se
-    // contente de ne rien cacher.
+    // **Et la fiche du jour l'OUVRE, au lieu de le refuser.** Sa règle du
+    // 23 août 2026 : *« le samedi et le dimanche, l'utilisateur doit pouvoir le
+    // proposer ; s'il a des salariés qui font des extras, il doit pouvoir
+    // sélectionner ces deux jours »*. Elle répondait « Jamais proposé. » et
+    // s'arrêtait là — un cul-de-sac sur un jour où il travaille.
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${samedi}"]`);
-    assert.match(await carte.innerText(), /Jamais proposé/);
+    const dit = await carte.innerText();
+    assert.ok(!/Jamais proposé/.test(dit), `le samedi est encore refusé : « ${dit} »`);
+    assert.ok(
+      dit.includes(nom),
+      `la fiche du samedi ne montre pas le chantier qui y est posé : « ${dit} »`
+    );
 
     await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [chantierId, JOUR]);
   });
 
-  await essai("un samedi le dit, au lieu de proposer des gestes", async () => {
+  // **Ce contrôle a été RETOURNÉ le 23 août 2026.** Il exigeait qu'un samedi
+  // n'offre AUCUN geste — c'est-à-dire exactement ce qu'il fait retirer. Le
+  // remettre rendrait son écran impossible à changer (`CLAUDE.md` §5 bis).
+  await essai("un samedi offre les mêmes gestes qu'un mardi", async () => {
     const samedi = new Date(`${JOUR}T12:00:00Z`);
     samedi.setUTCDate(samedi.getUTCDate() + 5);
     await toucherLeJour(samedi.toISOString().slice(0, 10));
     const carte = page.locator('[data-atlas="carte-jour"]').first();
-    assert.match(await carte.innerText(), /Jamais proposé/);
+    const dit = await carte.innerText();
+    assert.ok(!/Jamais proposé/.test(dit), `le samedi est encore un cul-de-sac : « ${dit} »`);
     assert.equal(
       await carte.locator('[data-atlas="ajouter"]').count(),
-      0,
-      "un samedi propose d'ajouter un chantier"
+      1,
+      "un samedi ne propose pas d'ajouter un chantier : il ne sert à rien de le toucher"
+    );
+    // **Un contrôle qui mesure zéro ne mesure rien** : sans les deux
+    // demi-journées, l'absence de « Jamais proposé » ne prouverait qu'un écran
+    // vide.
+    assert.equal(
+      await carte.locator('[data-atlas="demi"]').count(),
+      2,
+      "le samedi n'affiche pas ses deux demi-journées"
     );
   });
 
