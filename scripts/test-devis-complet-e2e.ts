@@ -203,7 +203,11 @@ async function main() {
   await taux.blur();
   const devisApres = await attendreEnBase(
     () => pool.query(`SELECT taux_tva, total_ttc FROM devis WHERE chantier_id = $1`, [chantierId]),
-    (r) => r.rows[0]?.taux_tva === "10.00"
+    // **L'attente couvre TOUT ce que les assertions regardent.** N'attendre que
+    // le taux laissait passer le TTC, calculé juste après : la suite rougissait
+    // alors sur « 0,00 » une ligne plus bas — le défaut déplacé d'une
+    // assertion, pas réparé.
+    (r) => r.rows[0]?.taux_tva === "10.00" && r.rows[0]?.total_ttc === "825.00"
   );
   assert.equal(devisApres.rows[0].taux_tva, "10.00", `Taux enregistré : ${devisApres.rows[0].taux_tva}`);
   assert.equal(devisApres.rows[0].total_ttc, "825.00", `TTC à 10 % : ${devisApres.rows[0].total_ttc}`);

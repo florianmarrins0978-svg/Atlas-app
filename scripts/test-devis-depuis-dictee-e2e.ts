@@ -167,6 +167,15 @@ async function main() {
   // --- Le devis, tel qu'il partira au client ------------------------------
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Choisir la date", { timeout: 15000 });
+  // **Le bouton arrive AVANT les lignes du devis.** Lire le texte tout de suite
+  // mesurait un document encore vide, et la suite accusait la dictée — qui n'y
+  // était pour rien. On attend la prestation elle-même, jamais un délai
+  // (`TODO.md` : cinq suites du même motif).
+  await page
+    .locator("text=/taille de haie/i")
+    .first()
+    .waitFor({ timeout: 20000 })
+    .catch(() => undefined);
   const ecranDevis = await page.locator("body").innerText();
   assert.ok(/taille de haie/i.test(ecranDevis), "Le devis ne porte pas la prestation dictée.");
   assert.ok(
