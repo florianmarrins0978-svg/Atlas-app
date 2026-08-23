@@ -91,10 +91,19 @@ que ses lignes soient écrites**. Même symptôme, même remède, et **elle pass
 seule** elle aussi. Trois suites, un seul motif : elles lisent un montant à
 l'écran sans attendre la trace de son enregistrement.
 
-**Ce que cela coûte déjà**, et c'est la raison d'écrire ceci : deux sessions
-différentes ont mené la même enquête le même jour, chacune de son côté. La
-prochaine batterie rouge sur l'une de ces trois suites se joue **seule** avant
-toute autre hypothèse.
+**Une QUATRIÈME, le 23 août :** `test-reduction-devis-e2e.ts`, sur *« écrire 0 %
+la retire pour de bon »* — la ligne or survit au zéro, dit-elle, sur un écran
+qu'aucun lot ne modifiait. **Verte jouée seule**, elle aussi. Même famille : elle
+relit un total après une écriture, sans attendre la trace de l'enregistrement.
+
+**Ce que cela coûte déjà**, et c'est la raison d'écrire ceci : trois sessions
+différentes ont mené la même enquête en deux jours, chacune de son côté. La
+prochaine batterie rouge sur l'une de ces **quatre** suites se joue **seule**
+avant toute autre hypothèse.
+
+**Le remède est connu et tient en une ligne** : attendre la trace de
+l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
+15 août. Il reste à l'appliquer aux quatre.
 
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 
