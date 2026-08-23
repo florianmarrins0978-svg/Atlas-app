@@ -422,6 +422,12 @@ const MAQUETTES = [
     quoi: "« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.",
   },
   {
+    fichier: "86-ou-mettre-ma-tva.html",
+    titre: "O\u00f9 mettre \u00ab Ma TVA \u00e0 d\u00e9clarer \u00bb",
+    famille: "L\u2019argent qui ne rentre pas",
+    quoi: "\u00ab Il est cach\u00e9, on ne le voit pas trop. \u00bb Trois places : en t\u00eate, une carte avec le montant, ou sur la ligne du mois \u2014 l\u00e0 o\u00f9 il choisit d\u00e9j\u00e0 sa p\u00e9riode.",
+  },
+  {
     fichier: "85-achats-tva-deductible.html",
     titre: "Dire que ces achats FONT la TVA d\u00e9ductible",
     famille: "L\u2019argent qui ne rentre pas",

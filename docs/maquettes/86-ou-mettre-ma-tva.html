@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Où mettre « Ma TVA à déclarer »</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    OÙ METTRE « MA TVA À DÉCLARER »
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 23 août 2026, capture à l'appui :
+
+      « Je trouve que l'outil "Ma TVA à déclarer", il est caché. On ne le voit
+        pas trop. Je ne sais pas trop comment il faudrait le mettre sur cette
+        page. Propose-moi des trucs. »
+
+    ————————————————————————————————————————————————————————————————
+    IL RÉVISE UNE DÉCISION ÉCRITE, ET C'EST SON DROIT — mais il faut le dire
+
+    Le code porte le raisonnement d'alors, en toutes lettres :
+
+      « Le relevé se consulte une fois par période : il n'a rien à faire en
+        tête d'écran, et il ne doit pas non plus finir collé à la barre du bas,
+        où il se lisait coupé en deux. »
+
+    L'argument tenait : on ne déclare pas sa TVA vingt fois par jour, et l'écran
+    « Terminés » sert d'abord à voir ce qui reste à facturer. Mais il vient de
+    passer devant sans le trouver — et c'est LUI qui s'en sert. Un raisonnement
+    juste qui produit un écran où l'on ne trouve pas ce qu'on cherche est un
+    raisonnement à réviser.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI A CHANGÉ LA VEILLE, ET QUI OUVRE UNE PLACE
+
+    Le 23 août au matin, la phrase des deux chiffres a quitté le haut de l'écran
+    pour se poser sous le mois. **Sous le titre « Terminés », il y a désormais
+    un blanc** — c'est la proposition A.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE CHACUNE COÛTE, PUISQUE C'EST LÀ QUE ÇA SE JOUE
+
+    Aucune ne change le relevé lui-même. Elles diffèrent sur deux choses :
+    la place qu'elles prennent en tête d'un écran qui parle de CHANTIERS, et
+    le fait de montrer ou non un CHIFFRE — un chiffre d'argent attire l'œil
+    avant la liste du travail, et il faut une requête de plus pour l'obtenir.
+  */
+
+  :root {
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --alert:#9C3B2E; --line:rgba(28,28,26,0.12); --line-soft:rgba(28,28,26,0.07);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#e8e5de; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:28px 16px 60px; }
+  h1 { font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
+  .chapo { font-size:13.5px; color:var(--ink-soft); max-width:820px; line-height:1.5; margin:0 0 24px; }
+  .chapo b { color:var(--ink); }
+
+  .rangee { display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
+  .colonne { width:390px; }
+  .etiquette { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
+  .dit { font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:78px; }
+  .dit b { color:var(--ink); }
+
+  .ecran { width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.14); padding:18px 0 12px; }
+  .titre { font-family:Georgia,serif; font-size:34px; margin:0 26px; letter-spacing:-.02em; }
+  .onglets { display:flex; gap:8px; margin:16px 26px 0; }
+  .onglet { border-radius:999px; padding:9px 20px; font-size:14px; }
+  .onglet.on { background:#1c1c1a; color:#fff; }
+  .onglet.off { border:1px solid var(--line); color:var(--muted); }
+
+  .mois { display:flex; align-items:center; justify-content:space-between; margin:22px 26px 0; }
+  .mois .nom { font-family:Georgia,serif; font-size:25px; }
+  .mois .fl { color:var(--or); font-size:15px; padding:0 8px; }
+  .mois .tot { font-size:17px; }
+  .phrase { margin:12px 26px 0; font-size:14px; line-height:1.6; color:var(--ink-soft); }
+  .phrase b { color:var(--ink); font-weight:600; }
+
+  .ligne { display:flex; justify-content:space-between; align-items:center; margin:0 26px; padding:13px 0; border-top:1px solid var(--line-soft); }
+  .ligne .qui { font-family:Georgia,serif; font-size:19px; margin:0; }
+  .ligne .quand { font-size:13px; color:var(--muted); margin:2px 0 0; }
+  .ligne .eur { font-size:16px; }
+  .facturer { background:var(--pine); color:var(--bone); border-radius:999px; padding:11px 20px; font-size:12px; letter-spacing:.09em; }
+  .attente { color:var(--or); }
+
+  /* le lien, dans ses trois formes */
+  .lien-simple { display:flex; align-items:center; justify-content:space-between; margin:14px 26px 0;
+    padding:12px 0; border-top:1px solid var(--line); }
+  .lien-simple .txt { font-family:Georgia,serif; font-size:16px; }
+  .lien-simple .fl { color:var(--or); }
+  .mention { margin:0 26px; font-size:11px; color:var(--muted); }
+
+  .carte { margin:16px 26px 0; background:var(--cream); border-radius:12px; padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .carte .cle { font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 4px; }
+  .carte .quoi { font-family:Georgia,serif; font-size:17px; margin:0; }
+  .carte .val { font-family:Georgia,serif; font-size:23px; color:var(--pine); }
+
+  .dansmois { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--or); }
+
+  .note { width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
+  .note b { color:var(--ink); }
+
+  .question { max-width:840px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
+    border-left:3px solid var(--or); border-radius:0 10px 10px 0; }
+  .question h2 { font-size:14px; margin:0 0 8px; }
+  .question p { font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
+  .question p:last-child { margin-bottom:0; }
+  .question b { color:var(--ink); }
+</style>
+
+<h1>Où mettre « Ma TVA à déclarer »</h1>
+<p class="chapo">
+  Aujourd'hui il vit <b>tout en bas</b>, après la liste entière — il faut défiler pour le trouver.
+  Le code assume cette place : <i>« le relevé se consulte une fois par période, il n'a rien à faire en
+  tête d'écran »</i>. L'argument tient, mais il vient de passer devant sans le voir.
+  <b>Et la veille, une place s'est libérée</b> sous le titre : la phrase des deux chiffres est
+  descendue sous le mois.
+</p>
+
+<div class="rangee">
+
+  <!-- ————————————— A ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">A — en tête, dans la place libérée</p>
+    <p class="dit">
+      Le lien remonte sous le titre, là où la phrase des chiffres se trouvait hier. Une ligne, la même
+      qu'en bas — rien de neuf, seulement déplacé. <b>Ce que ça coûte :</b> la TVA occupe la tête d'un
+      écran qui parle d'abord de chantiers à facturer.
+    </p>
+    <div class="ecran">
+      <p class="titre">Terminés</p>
+      <div class="lien-simple" style="border-top:0; margin-top:10px; padding-top:0">
+        <span class="txt">Ma TVA à déclarer</span><span class="fl">›</span>
+      </div>
+      <p class="mention">Atlas prépare ce relevé, il ne le déclare pas.</p>
+      <div class="onglets"><span class="onglet on">Tout</span><span class="onglet off">À facturer</span></div>
+      <div class="mois"><span><span class="fl">‹</span><span class="nom">Août 2026</span><span class="fl">›</span></span><span class="tot">13 200,00 €</span></div>
+      <p class="phrase"><b>8 à facturer</b>, 8 520,00 € · <b>13 facturés</b>, 14 760,00 €</p>
+      <div class="ligne"><div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div><span class="facturer">FACTURER</span></div>
+      <div class="ligne"><div><p class="qui">Monsieur Martins</p><p class="quand">Facturé le 12 août · Facture n° 1</p></div><span class="eur">936,00 €</span></div>
+    </div>
+  </div>
+
+  <!-- ————————————— B ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">B — une carte, avec le chiffre</p>
+    <p class="dit">
+      Pas un lien : <b>ce qu'il vient y chercher</b>. Le montant restant à payer se lit sans ouvrir, et
+      donne la raison d'ouvrir. <b>Ce que ça coûte :</b> une requête de plus sur un écran ouvert
+      souvent, et un chiffre d'argent qui capte l'œil <b>avant</b> la liste du travail.
+    </p>
+    <div class="ecran">
+      <p class="titre">Terminés</p>
+      <div class="carte">
+        <div><p class="cle">Ma TVA à déclarer</p><p class="quoi">Août 2026</p></div>
+        <span class="val">746,33 €</span>
+      </div>
+      <p class="mention" style="margin-top:6px">Reste à payer. Atlas prépare ce relevé, il ne le déclare pas.</p>
+      <div class="onglets"><span class="onglet on">Tout</span><span class="onglet off">À facturer</span></div>
+      <div class="mois"><span><span class="fl">‹</span><span class="nom">Août 2026</span><span class="fl">›</span></span><span class="tot">13 200,00 €</span></div>
+      <p class="phrase"><b>8 à facturer</b>, 8 520,00 € · <b>13 facturés</b>, 14 760,00 €</p>
+      <div class="ligne"><div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div><span class="facturer">FACTURER</span></div>
+    </div>
+    <p class="note">
+      <b>Une réserve que je ne peux pas lever seul :</b> ce montant dépend du rythme (mois ou
+      trimestre) et du régime (encaissements ou débits). Affiché hors de l'écran qui les explique, il
+      peut se lire comme « ce que je dois aujourd'hui » — <b>alors qu'il n'est dû qu'à l'échéance</b>.
+    </p>
+  </div>
+
+  <!-- ————————————— C ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">C — sur la ligne du mois</p>
+    <p class="dit">
+      Le relevé se déclare <b>par période</b>, et c'est exactement là qu'il choisit sa période. Le lien
+      se pose sur la ligne du mois, sous le total. Il le trouve au moment où il pense « août ».
+      <b>Ce que ça coûte :</b> une ligne de plus dans un en-tête déjà chargé — mois, flèches, total.
+    </p>
+    <div class="ecran">
+      <p class="titre">Terminés</p>
+      <div class="onglets"><span class="onglet on">Tout</span><span class="onglet off">À facturer</span></div>
+      <div class="mois"><span><span class="fl">‹</span><span class="nom">Août 2026</span><span class="fl">›</span></span><span class="tot">13 200,00 €</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 26px 0">
+        <p class="phrase" style="margin:0"><b>8 à facturer</b>, 8 520,00 €</p>
+        <span class="dansmois">Ma TVA d'août ›</span>
+      </div>
+      <div class="ligne" style="margin-top:12px"><div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div><span class="facturer">FACTURER</span></div>
+      <div class="ligne"><div><p class="qui">Monsieur Martins</p><p class="quand">Facturé le 12 août · Facture n° 1</p></div><span class="eur">936,00 €</span></div>
+      <div class="ligne"><div><p class="qui">Chantier test — Muret Clisson</p><p class="quand attente">Pas encore facturé</p></div><span class="facturer">FACTURER</span></div>
+    </div>
+    <p class="note">
+      <b>Le lien SUIT le mois affiché</b> — « Ma TVA d'août », puis « de juillet » s'il recule. C'est sa
+      force et son piège : il faudra que le relevé s'ouvre bien sur CE mois-là, sans quoi la promesse
+      du mot est fausse.
+    </p>
+  </div>
+
+</div>
+
+<div class="question">
+  <h2>Ce que je ne tranche pas à sa place</h2>
+  <p>
+    <b>Mon avis : la C.</b> Elle place le relevé là où il pense déjà en mois, elle ne prend pas la tête
+    de l'écran, et elle n'affiche aucun chiffre qui pourrait se lire de travers. C'est aussi la seule
+    qui garde vrai le raisonnement d'origine — <i>« il se consulte une fois par période »</i> — au lieu
+    de le renverser.
+  </p>
+  <p>
+    La <b>A</b> est la plus simple à faire et la plus sûre : rien de neuf, un déplacement.
+    La <b>B</b> est la plus visible, et la seule qui donne une information sans ouvrir — mais c'est
+    aussi la seule qui peut tromper : le montant n'est pas dû le jour où il le lit.
+  </p>
+  <p>
+    <b>Et une chose qu'aucune ne règle :</b> le bas de l'écran garde la mention « Atlas prépare ce
+    relevé, il ne le déclare pas ». Elle doit suivre le lien où qu'il aille — c'est une phrase de
+    responsabilité, pas de décoration (<code>docs/AGENT.md</code> §6).
+  </p>
+</div>
+
+</body>
+</html>

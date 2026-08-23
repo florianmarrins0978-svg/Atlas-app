@@ -6806,7 +6806,7 @@
 #s62 .note li{margin-bottom:6px}
 
 
-/* 63 — Dire que ces achats FONT la TVA déductible */
+/* 63 — Où mettre « Ma TVA à déclarer » */
 #s63{
     --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
     --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
@@ -6816,45 +6816,46 @@
 #s63{ margin:0; background:#e8e5de; color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:28px 16px 60px; }
 #s63 h1{ font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
-#s63 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:800px; line-height:1.5; margin:0 0 24px; }
+#s63 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:820px; line-height:1.5; margin:0 0 24px; }
 #s63 .chapo b{ color:var(--ink); }
 #s63 .rangee{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
 #s63 .colonne{ width:390px; }
 #s63 .etiquette{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
-#s63 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:70px; }
+#s63 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:78px; }
 #s63 .dit b{ color:var(--ink); }
 #s63 .ecran{ width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
-    box-shadow:0 1px 3px rgba(0,0,0,.14); padding:16px 0 14px; }
-#s63 .titre-mois{ font-family:Georgia,serif; font-size:30px; margin:0 24px; letter-spacing:-.018em; }
-#s63 .filet{ height:1px; background:var(--line); margin:12px 24px 0; }
-#s63 .nav{ display:flex; justify-content:space-between; align-items:center; margin:12px 24px 0; font-size:13.5px; color:var(--ink-soft); }
-#s63 .tuiles{ margin:14px 24px 0; background:var(--cream); border-radius:10px; overflow:hidden; }
-#s63 .deux{ display:flex; }
-#s63 .tuile{ flex:1; padding:14px 8px 16px; text-align:center; }
-#s63 .tuile + .tuile{ border-left:1px solid var(--line-soft); }
-#s63 .tuile .cle{ font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
-#s63 .tuile .val{ font-size:21px; font-weight:600; margin:0; }
-#s63 .reste{ display:flex; justify-content:space-between; align-items:center; padding:13px 16px; border-top:1px solid var(--line-soft); }
-#s63 .reste span:first-child{ font-size:15px; }
-#s63 .reste span:last-child{ font-family:Georgia,serif; font-size:24px; color:var(--pine); }
-#s63 .cle-section{ font-size:10.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:20px 24px 9px; }
-#s63 .explique{ margin:-4px 24px 10px; font-size:12.5px; line-height:1.5; color:var(--ink-soft); }
-#s63 .explique b{ color:var(--ink); }
-#s63 .gestes{ display:flex; gap:10px; margin:0 24px; }
-#s63 .geste{ flex:1; border:1px solid var(--line); background:var(--cream); border-radius:999px;
-    padding:14px 8px; text-align:center; font-size:12.5px; }
-#s63 .geste .ico{ display:block; font-size:15px; color:var(--pine); margin-bottom:5px; }
-#s63 .achat{ display:flex; justify-content:space-between; align-items:center; margin:14px 24px 0; padding-top:12px; border-top:1px solid var(--line-soft); }
-#s63 .achat .quoi{ font-size:16px; margin:0; }
-#s63 .achat .quand{ font-size:12.5px; color:var(--muted); margin:2px 0 0; }
-#s63 .achat .tva{ font-size:15px; color:var(--ink-soft); }
-#s63 .tuile.visee{ box-shadow: inset 0 0 0 1px var(--or); border-radius:8px; }
-#s63 .rattache{ margin:0 24px; padding:12px 14px; background:var(--cream); border-radius:0 0 10px 10px;
-    border-top:1px dashed var(--line); }
-#s63 .rattache .cle{ font-size:10.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--or); margin:0 0 8px; }
+    box-shadow:0 1px 3px rgba(0,0,0,.14); padding:18px 0 12px; }
+#s63 .titre{ font-family:Georgia,serif; font-size:34px; margin:0 26px; letter-spacing:-.02em; }
+#s63 .onglets{ display:flex; gap:8px; margin:16px 26px 0; }
+#s63 .onglet{ border-radius:999px; padding:9px 20px; font-size:14px; }
+#s63 .onglet.on{ background:#1c1c1a; color:#fff; }
+#s63 .onglet.off{ border:1px solid var(--line); color:var(--muted); }
+#s63 .mois{ display:flex; align-items:center; justify-content:space-between; margin:22px 26px 0; }
+#s63 .mois .nom{ font-family:Georgia,serif; font-size:25px; }
+#s63 .mois .fl{ color:var(--or); font-size:15px; padding:0 8px; }
+#s63 .mois .tot{ font-size:17px; }
+#s63 .phrase{ margin:12px 26px 0; font-size:14px; line-height:1.6; color:var(--ink-soft); }
+#s63 .phrase b{ color:var(--ink); font-weight:600; }
+#s63 .ligne{ display:flex; justify-content:space-between; align-items:center; margin:0 26px; padding:13px 0; border-top:1px solid var(--line-soft); }
+#s63 .ligne .qui{ font-family:Georgia,serif; font-size:19px; margin:0; }
+#s63 .ligne .quand{ font-size:13px; color:var(--muted); margin:2px 0 0; }
+#s63 .ligne .eur{ font-size:16px; }
+#s63 .facturer{ background:var(--pine); color:var(--bone); border-radius:999px; padding:11px 20px; font-size:12px; letter-spacing:.09em; }
+#s63 .attente{ color:var(--or); }
+#s63 .lien-simple{ display:flex; align-items:center; justify-content:space-between; margin:14px 26px 0;
+    padding:12px 0; border-top:1px solid var(--line); }
+#s63 .lien-simple .txt{ font-family:Georgia,serif; font-size:16px; }
+#s63 .lien-simple .fl{ color:var(--or); }
+#s63 .mention{ margin:0 26px; font-size:11px; color:var(--muted); }
+#s63 .carte{ margin:16px 26px 0; background:var(--cream); border-radius:12px; padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px; }
+#s63 .carte .cle{ font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 4px; }
+#s63 .carte .quoi{ font-family:Georgia,serif; font-size:17px; margin:0; }
+#s63 .carte .val{ font-family:Georgia,serif; font-size:23px; color:var(--pine); }
+#s63 .dansmois{ display:flex; align-items:center; gap:6px; font-size:13px; color:var(--or); }
 #s63 .note{ width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
 #s63 .note b{ color:var(--ink); }
-#s63 .question{ max-width:820px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
+#s63 .question{ max-width:840px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
     border-left:3px solid var(--or); border-radius:0 10px 10px 0; }
 #s63 .question h2{ font-size:14px; margin:0 0 8px; }
 #s63 .question p{ font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
@@ -6862,73 +6863,67 @@
 #s63 .question b{ color:var(--ink); }
 
 
-/* 64 — Envoyer la facture en un seul geste */
+/* 64 — Dire que ces achats FONT la TVA déductible */
 #s64{
     --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
     --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
     --alert:#9C3B2E; --line:rgba(28,28,26,0.12); --line-soft:rgba(28,28,26,0.07);
   }
 #s64, #s64 *{ box-sizing:border-box; }
-#s64{
-    margin:0; background:#e8e5de; color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    padding:28px 16px 60px;
-  }
+#s64{ margin:0; background:#e8e5de; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:28px 16px 60px; }
 #s64 h1{ font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
-#s64 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:780px; line-height:1.5; margin:0 0 10px; }
-#s64 .compte{ display:flex; gap:10px; flex-wrap:wrap; margin:0 0 26px; }
-#s64 .pastille{ font-size:12px; padding:4px 10px; border-radius:999px; background:var(--cream); color:var(--ink-soft); }
-#s64 .pastille b{ color:var(--ink); }
+#s64 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:800px; line-height:1.5; margin:0 0 24px; }
+#s64 .chapo b{ color:var(--ink); }
 #s64 .rangee{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
 #s64 .colonne{ width:390px; }
 #s64 .etiquette{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
-#s64 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:74px; }
+#s64 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:70px; }
 #s64 .dit b{ color:var(--ink); }
-#s64 .ecran{ width:390px; background:var(--bone); border-radius:22px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.14); padding:18px 0 16px; }
-#s64 .carte{ margin:0 24px 12px; background:var(--cream); border-radius:4px; padding:16px 20px; }
-#s64 .cle{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
-#s64 .val{ font-size:15px; margin:0; }
-#s64 .sous{ font-size:13px; color:var(--muted); margin:4px 0 0; }
-#s64 .ligne{ display:flex; justify-content:space-between; font-size:15px; margin-top:4px; }
-#s64 .ligne span:last-child{ color:var(--muted); }
-#s64 .totaux{ border-top:1px solid var(--line); margin-top:12px; padding-top:12px; }
-#s64 .ttc-cle{ text-align:center; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:14px 0 2px; }
-#s64 .ttc{ text-align:center; font-family:Georgia,serif; font-size:34px; color:var(--or); margin:0; }
-#s64 .lien-pdf{ display:block; text-align:center; font-size:14px; margin-top:12px; color:var(--ink); text-decoration:none; }
-#s64 .lien-pdf.gris{ color:var(--muted); font-size:13px; margin-top:6px; }
-#s64 .encart{ margin:14px 24px 0; }
-#s64 .encart-cle{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 7px; text-align:center; }
-#s64 .choix{ display:flex; gap:8px; }
-#s64 .choix button{
-    flex:1; min-height:46px; border:0; border-radius:999px; font-size:15px;
-    background:var(--paper); color:var(--ink-soft); font-family:inherit;
-  }
-#s64 .choix button.actif{ background:var(--pine); color:var(--cream); font-weight:600; }
-#s64 .destinataire{ text-align:center; font-size:12.5px; color:var(--muted); margin:8px 0 0; }
-#s64 .bouton{
-    display:block; width:calc(100% - 48px); margin:14px 24px 0; min-height:54px;
-    border:0; border-radius:999px; background:var(--pine); color:var(--cream);
-    font-family:Georgia,serif; font-size:18px;
-  }
-#s64 .apres{ text-align:center; font-size:12.5px; color:var(--muted); margin:9px 24px 0; line-height:1.45; }
-#s64 .avertit{ margin:10px 24px 0; padding:2px 0 2px 13px; border-left:1px solid var(--or); }
-#s64 .avertit p{ margin:0; font-size:13px; line-height:1.4; color:var(--ink); }
-#s64 .avertit .fine{ margin-top:3px; font-size:12px; color:var(--muted); }
+#s64 .ecran{ width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.14); padding:16px 0 14px; }
+#s64 .titre-mois{ font-family:Georgia,serif; font-size:30px; margin:0 24px; letter-spacing:-.018em; }
+#s64 .filet{ height:1px; background:var(--line); margin:12px 24px 0; }
+#s64 .nav{ display:flex; justify-content:space-between; align-items:center; margin:12px 24px 0; font-size:13.5px; color:var(--ink-soft); }
+#s64 .tuiles{ margin:14px 24px 0; background:var(--cream); border-radius:10px; overflow:hidden; }
+#s64 .deux{ display:flex; }
+#s64 .tuile{ flex:1; padding:14px 8px 16px; text-align:center; }
+#s64 .tuile + .tuile{ border-left:1px solid var(--line-soft); }
+#s64 .tuile .cle{ font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+#s64 .tuile .val{ font-size:21px; font-weight:600; margin:0; }
+#s64 .reste{ display:flex; justify-content:space-between; align-items:center; padding:13px 16px; border-top:1px solid var(--line-soft); }
+#s64 .reste span:first-child{ font-size:15px; }
+#s64 .reste span:last-child{ font-family:Georgia,serif; font-size:24px; color:var(--pine); }
+#s64 .cle-section{ font-size:10.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:20px 24px 9px; }
+#s64 .explique{ margin:-4px 24px 10px; font-size:12.5px; line-height:1.5; color:var(--ink-soft); }
+#s64 .explique b{ color:var(--ink); }
+#s64 .gestes{ display:flex; gap:10px; margin:0 24px; }
+#s64 .geste{ flex:1; border:1px solid var(--line); background:var(--cream); border-radius:999px;
+    padding:14px 8px; text-align:center; font-size:12.5px; }
+#s64 .geste .ico{ display:block; font-size:15px; color:var(--pine); margin-bottom:5px; }
+#s64 .achat{ display:flex; justify-content:space-between; align-items:center; margin:14px 24px 0; padding-top:12px; border-top:1px solid var(--line-soft); }
+#s64 .achat .quoi{ font-size:16px; margin:0; }
+#s64 .achat .quand{ font-size:12.5px; color:var(--muted); margin:2px 0 0; }
+#s64 .achat .tva{ font-size:15px; color:var(--ink-soft); }
+#s64 .tuile.visee{ box-shadow: inset 0 0 0 1px var(--or); border-radius:8px; }
+#s64 .rattache{ margin:0 24px; padding:12px 14px; background:var(--cream); border-radius:0 0 10px 10px;
+    border-top:1px dashed var(--line); }
+#s64 .rattache .cle{ font-size:10.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--or); margin:0 0 8px; }
 #s64 .note{ width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
 #s64 .note b{ color:var(--ink); }
-#s64 .note.rouge b{ color:var(--alert); }
-#s64 .question{ max-width:820px; margin:34px 0 0; padding:16px 18px; background:var(--cream); border-left:3px solid var(--or); border-radius:0 10px 10px 0; }
+#s64 .question{ max-width:820px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
+    border-left:3px solid var(--or); border-radius:0 10px 10px 0; }
 #s64 .question h2{ font-size:14px; margin:0 0 8px; }
 #s64 .question p{ font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
 #s64 .question p:last-child{ margin-bottom:0; }
 #s64 .question b{ color:var(--ink); }
 
 
-/* 65 — Enregistrer le PDF depuis la fiche client */
+/* 65 — Envoyer la facture en un seul geste */
 #s65{
     --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
     --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
-    --alert:#9C3B2E; --line:rgba(28,28,26,0.12);
+    --alert:#9C3B2E; --line:rgba(28,28,26,0.12); --line-soft:rgba(28,28,26,0.07);
   }
 #s65, #s65 *{ box-sizing:border-box; }
 #s65{
@@ -6937,76 +6932,138 @@
     padding:28px 16px 60px;
   }
 #s65 h1{ font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
-#s65 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:760px; line-height:1.5; margin:0 0 26px; }
+#s65 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:780px; line-height:1.5; margin:0 0 10px; }
+#s65 .compte{ display:flex; gap:10px; flex-wrap:wrap; margin:0 0 26px; }
+#s65 .pastille{ font-size:12px; padding:4px 10px; border-radius:999px; background:var(--cream); color:var(--ink-soft); }
+#s65 .pastille b{ color:var(--ink); }
 #s65 .rangee{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
 #s65 .colonne{ width:390px; }
 #s65 .etiquette{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
-#s65 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:52px; }
+#s65 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:74px; }
 #s65 .dit b{ color:var(--ink); }
-#s65 .ecran{
-    width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
-    box-shadow:0 1px 3px rgba(0,0,0,.14); padding-bottom:14px;
+#s65 .ecran{ width:390px; background:var(--bone); border-radius:22px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.14); padding:18px 0 16px; }
+#s65 .carte{ margin:0 24px 12px; background:var(--cream); border-radius:4px; padding:16px 20px; }
+#s65 .cle{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+#s65 .val{ font-size:15px; margin:0; }
+#s65 .sous{ font-size:13px; color:var(--muted); margin:4px 0 0; }
+#s65 .ligne{ display:flex; justify-content:space-between; font-size:15px; margin-top:4px; }
+#s65 .ligne span:last-child{ color:var(--muted); }
+#s65 .totaux{ border-top:1px solid var(--line); margin-top:12px; padding-top:12px; }
+#s65 .ttc-cle{ text-align:center; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:14px 0 2px; }
+#s65 .ttc{ text-align:center; font-family:Georgia,serif; font-size:34px; color:var(--or); margin:0; }
+#s65 .lien-pdf{ display:block; text-align:center; font-size:14px; margin-top:12px; color:var(--ink); text-decoration:none; }
+#s65 .lien-pdf.gris{ color:var(--muted); font-size:13px; margin-top:6px; }
+#s65 .encart{ margin:14px 24px 0; }
+#s65 .encart-cle{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 7px; text-align:center; }
+#s65 .choix{ display:flex; gap:8px; }
+#s65 .choix button{
+    flex:1; min-height:46px; border:0; border-radius:999px; font-size:15px;
+    background:var(--paper); color:var(--ink-soft); font-family:inherit;
   }
-#s65 .entete{ padding:16px 26px 0; }
-#s65 .surtitre{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--or); margin:0; }
-#s65 .titre{ font-family:Georgia,"Times New Roman",serif; font-size:31px; line-height:1.05; margin:5px 0 0; letter-spacing:-.018em; }
-#s65 .coord{ font-size:12.5px; color:var(--muted); margin:6px 0 0; }
-#s65 .derniere{ padding:18px 26px 0; }
-#s65 .derniere p{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#000; margin:0; }
-#s65 .derniere ul{ list-style:none; padding:0; margin:11px 0 0; }
-#s65 .derniere li{ position:relative; padding-left:15px; font-size:14px; line-height:1.45; color:var(--ink-soft); margin-top:6px; }
-#s65 .derniere li::before{ content:""; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:50%; background:var(--or); }
-#s65 .colonnes{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:0 16px; margin-top:24px; }
-#s65 .cadre{ min-width:0; background:var(--cream); border-radius:12px; padding:12px 9px 10px; }
-#s65 .cadre h3{ margin:0; font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
-#s65 .compte{ display:block; margin-top:3px; font-size:10.5px; color:var(--muted); }
-#s65 .piece{ display:block; min-height:56px; padding:8px 0 2px; text-align:center; text-decoration:none; color:var(--ink); }
-#s65 .piece + .piece{ border-top:1px solid var(--line); margin-top:8px; }
-#s65 .vignette{
-    margin:0 auto; width:24px; height:29px; border-radius:3px; background:#fff;
-    box-shadow:inset 0 0 0 1px rgba(156,59,46,.35); color:var(--alert);
-    font-size:6.5px; font-weight:700; letter-spacing:.06em;
-    display:flex; align-items:flex-end; justify-content:center; padding-bottom:3px;
+#s65 .choix button.actif{ background:var(--pine); color:var(--cream); font-weight:600; }
+#s65 .destinataire{ text-align:center; font-size:12.5px; color:var(--muted); margin:8px 0 0; }
+#s65 .bouton{
+    display:block; width:calc(100% - 48px); margin:14px 24px 0; min-height:54px;
+    border:0; border-radius:999px; background:var(--pine); color:var(--cream);
+    font-family:Georgia,serif; font-size:18px;
   }
-#s65 .nom{ display:block; margin-top:5px; font-size:12.5px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#s65 .quand{ display:block; margin-top:2px; font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#s65 .fleche-bas{ position:absolute; right:-1px; bottom:-1px; width:13px; height:13px; border-radius:50%;
-    background:var(--pine); color:#fff; font-size:8px; line-height:13px; text-align:center; font-weight:700; }
-#s65 .vignette-enveloppe{ position:relative; width:24px; margin:0 auto; }
-#s65 .deux{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px; }
-#s65 .mini{
-    width:30px; height:30px; border-radius:50%; background:var(--paper); color:var(--pine);
-    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
-  }
-#s65 .voile{ position:relative; }
-#s65 .feuille{
-    margin:9px 0 0; background:#fff; border-radius:14px; padding:8px 0 4px;
-    box-shadow:0 -1px 10px rgba(0,0,0,.10);
-  }
-#s65 .feuille p{ margin:0 0 4px; text-align:center; font-size:10.5px; color:var(--muted); }
-#s65 .feuille a{ display:block; padding:11px 10px; font-size:13.5px; text-align:center; text-decoration:none; color:var(--ink); }
-#s65 .feuille a + a{ border-top:1px solid var(--line); }
-#s65 .feuille .principal{ font-weight:600; color:var(--pine); }
+#s65 .apres{ text-align:center; font-size:12.5px; color:var(--muted); margin:9px 24px 0; line-height:1.45; }
+#s65 .avertit{ margin:10px 24px 0; padding:2px 0 2px 13px; border-left:1px solid var(--or); }
+#s65 .avertit p{ margin:0; font-size:13px; line-height:1.4; color:var(--ink); }
+#s65 .avertit .fine{ margin-top:3px; font-size:12px; color:var(--muted); }
 #s65 .note{ width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
 #s65 .note b{ color:var(--ink); }
-#s65 .question{
-    max-width:800px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
-    border-left:3px solid var(--or); border-radius:0 10px 10px 0;
-  }
+#s65 .note.rouge b{ color:var(--alert); }
+#s65 .question{ max-width:820px; margin:34px 0 0; padding:16px 18px; background:var(--cream); border-left:3px solid var(--or); border-radius:0 10px 10px 0; }
 #s65 .question h2{ font-size:14px; margin:0 0 8px; }
 #s65 .question p{ font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
 #s65 .question p:last-child{ margin-bottom:0; }
 #s65 .question b{ color:var(--ink); }
 
 
-/* 66 — Choisir la date, sans l’écran du milieu */
+/* 66 — Enregistrer le PDF depuis la fiche client */
 #s66{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --alert:#9C3B2E; --line:rgba(28,28,26,0.12);
+  }
+#s66, #s66 *{ box-sizing:border-box; }
+#s66{
+    margin:0; background:#e8e5de; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:28px 16px 60px;
+  }
+#s66 h1{ font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
+#s66 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:760px; line-height:1.5; margin:0 0 26px; }
+#s66 .rangee{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
+#s66 .colonne{ width:390px; }
+#s66 .etiquette{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
+#s66 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:52px; }
+#s66 .dit b{ color:var(--ink); }
+#s66 .ecran{
+    width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.14); padding-bottom:14px;
+  }
+#s66 .entete{ padding:16px 26px 0; }
+#s66 .surtitre{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--or); margin:0; }
+#s66 .titre{ font-family:Georgia,"Times New Roman",serif; font-size:31px; line-height:1.05; margin:5px 0 0; letter-spacing:-.018em; }
+#s66 .coord{ font-size:12.5px; color:var(--muted); margin:6px 0 0; }
+#s66 .derniere{ padding:18px 26px 0; }
+#s66 .derniere p{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#000; margin:0; }
+#s66 .derniere ul{ list-style:none; padding:0; margin:11px 0 0; }
+#s66 .derniere li{ position:relative; padding-left:15px; font-size:14px; line-height:1.45; color:var(--ink-soft); margin-top:6px; }
+#s66 .derniere li::before{ content:""; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:50%; background:var(--or); }
+#s66 .colonnes{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:0 16px; margin-top:24px; }
+#s66 .cadre{ min-width:0; background:var(--cream); border-radius:12px; padding:12px 9px 10px; }
+#s66 .cadre h3{ margin:0; font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
+#s66 .compte{ display:block; margin-top:3px; font-size:10.5px; color:var(--muted); }
+#s66 .piece{ display:block; min-height:56px; padding:8px 0 2px; text-align:center; text-decoration:none; color:var(--ink); }
+#s66 .piece + .piece{ border-top:1px solid var(--line); margin-top:8px; }
+#s66 .vignette{
+    margin:0 auto; width:24px; height:29px; border-radius:3px; background:#fff;
+    box-shadow:inset 0 0 0 1px rgba(156,59,46,.35); color:var(--alert);
+    font-size:6.5px; font-weight:700; letter-spacing:.06em;
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:3px;
+  }
+#s66 .nom{ display:block; margin-top:5px; font-size:12.5px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#s66 .quand{ display:block; margin-top:2px; font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#s66 .fleche-bas{ position:absolute; right:-1px; bottom:-1px; width:13px; height:13px; border-radius:50%;
+    background:var(--pine); color:#fff; font-size:8px; line-height:13px; text-align:center; font-weight:700; }
+#s66 .vignette-enveloppe{ position:relative; width:24px; margin:0 auto; }
+#s66 .deux{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px; }
+#s66 .mini{
+    width:30px; height:30px; border-radius:50%; background:var(--paper); color:var(--pine);
+    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+#s66 .voile{ position:relative; }
+#s66 .feuille{
+    margin:9px 0 0; background:#fff; border-radius:14px; padding:8px 0 4px;
+    box-shadow:0 -1px 10px rgba(0,0,0,.10);
+  }
+#s66 .feuille p{ margin:0 0 4px; text-align:center; font-size:10.5px; color:var(--muted); }
+#s66 .feuille a{ display:block; padding:11px 10px; font-size:13.5px; text-align:center; text-decoration:none; color:var(--ink); }
+#s66 .feuille a + a{ border-top:1px solid var(--line); }
+#s66 .feuille .principal{ font-weight:600; color:var(--pine); }
+#s66 .note{ width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
+#s66 .note b{ color:var(--ink); }
+#s66 .question{
+    max-width:800px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
+    border-left:3px solid var(--or); border-radius:0 10px 10px 0;
+  }
+#s66 .question h2{ font-size:14px; margin:0 0 8px; }
+#s66 .question p{ font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
+#s66 .question p:last-child{ margin-bottom:0; }
+#s66 .question b{ color:var(--ink); }
+
+
+/* 67 — Choisir la date, sans l’écran du milieu */
+#s67{
     --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
     --or:#B98B47; --pin:#2f3b2f; --papier:#ece9e1;
     --trait:rgba(28,28,26,.12); --traitdoux:rgba(28,28,26,.07);
   }
 @media (prefers-color-scheme: dark){
-#s66:not([data-theme="light"]){
+#s67:not([data-theme="light"]){
       --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
       --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
       --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
@@ -7014,80 +7071,80 @@
 
   
 }
-#s66[data-theme="dark"]{
+#s67[data-theme="dark"]{
     --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
     --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
     --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
   }
-#s66, #s66 *{box-sizing:border-box}
-#s66{
+#s67, #s67 *{box-sizing:border-box}
+#s67{
     margin:0;background:var(--fond);color:var(--encre);
     font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
     padding:36px 18px 80px;
   }
-#s66 .chapo{max-width:780px;margin:0 auto 40px}
-#s66 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
-#s66 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
-#s66 .chapo b{color:var(--encre);font-weight:500}
-#s66 .fil{
+#s67 .chapo{max-width:780px;margin:0 auto 40px}
+#s67 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
+#s67 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+#s67 .chapo b{color:var(--encre);font-weight:500}
+#s67 .fil{
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     max-width:780px;margin:0 auto 40px;font-size:13px;
   }
-#s66 .etape{
+#s67 .etape{
     padding:8px 14px;border-radius:999px;border:1px solid var(--trait);
     background:var(--carte);color:var(--encre);
   }
-#s66 .etape.saute{
+#s67 .etape.saute{
     text-decoration:line-through;color:var(--gris);
     border-style:dashed;background:transparent;
   }
-#s66 .fleche{color:var(--gris)}
-#s66 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
-#s66 .colonne{width:390px;max-width:100%}
-#s66 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
-#s66 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
-#s66 .note b{color:var(--encre);font-weight:500}
-#s66 .tel{
+#s67 .fleche{color:var(--gris)}
+#s67 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
+#s67 .colonne{width:390px;max-width:100%}
+#s67 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+#s67 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
+#s67 .note b{color:var(--encre);font-weight:500}
+#s67 .tel{
     width:390px;max-width:100%;height:560px;overflow:hidden;background:var(--fond);
     border:1px solid var(--trait);border-radius:22px;display:flex;flex-direction:column;
   }
-#s66 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
-#s66 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
-#s66 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
-#s66 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
-#s66 .bloc{margin-top:18px}
-#s66 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
-#s66 .signature{
+#s67 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
+#s67 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s67 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
+#s67 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
+#s67 .bloc{margin-top:18px}
+#s67 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s67 .signature{
     margin-top:18px;height:76px;border:1px dashed var(--trait);border-radius:8px;
   }
-#s66 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
-#s66 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
-#s66 .vert{
+#s67 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
+#s67 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
+#s67 .vert{
     display:block;width:100%;padding:15px;border-radius:999px;text-align:center;
     background:var(--pin);color:#f5f3ee;font-size:16px;
     font-family:ui-serif,Georgia,"Times New Roman",serif;
   }
-#s66 .lien{
+#s67 .lien{
     display:block;width:100%;margin-top:12px;text-align:center;
     font-size:14px;font-weight:500;color:var(--pin);
   }
-#s66 .creux{
+#s67 .creux{
     display:block;width:100%;margin-top:10px;padding:13px;border-radius:999px;
     text-align:center;border:1px solid var(--trait);color:var(--pin);font-size:14.5px;
   }
-#s66 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
-#s66 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
-#s66 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
-#s66 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
-#s66 .apres b{color:var(--encre);font-weight:500}
-#s66 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
-#s66 .apres th,#s66 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
-#s66 .apres th{color:var(--encre);font-weight:500}
-#s66 .question{
+#s67 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
+#s67 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
+#s67 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+#s67 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+#s67 .apres b{color:var(--encre);font-weight:500}
+#s67 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
+#s67 .apres th,#s67 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
+#s67 .apres th{color:var(--encre);font-weight:500}
+#s67 .question{
     border-left:3px solid var(--or);background:rgba(185,139,71,.08);
     padding:14px 16px;border-radius:0 10px 10px 0;margin:0 0 18px;
   }
-#s66 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
+#s67 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
 
 
 </style>
@@ -7376,20 +7433,24 @@
       </a>
       <p class="famille">L’argent qui ne rentre pas</p>
       <a class="item" href="#m63">
-        <span class="no">63</span><span class="titre">Dire que ces achats FONT la TVA déductible</span><span class="fleche">↓</span>
-        <span class="quoi">« On ne comprend pas trop que scanner ou écrire à la main, c’est pour la TVA déductible. » Le même montant est écrit deux fois à quinze lignes d’écart, et rien ne les relie. Trois façons de le dire — aucune ne touche aux gestes.</span>
+        <span class="no">63</span><span class="titre">Où mettre « Ma TVA à déclarer »</span><span class="fleche">↓</span>
+        <span class="quoi">« Il est caché, on ne le voit pas trop. » Trois places : en tête, une carte avec le montant, ou sur la ligne du mois — là où il choisit déjà sa période.</span>
       </a>
       <a class="item" href="#m64">
-        <span class="no">64</span><span class="titre">Envoyer la facture en un seul geste</span><span class="fleche">↓</span>
+        <span class="no">64</span><span class="titre">Dire que ces achats FONT la TVA déductible</span><span class="fleche">↓</span>
+        <span class="quoi">« On ne comprend pas trop que scanner ou écrire à la main, c’est pour la TVA déductible. » Le même montant est écrit deux fois à quinze lignes d’écart, et rien ne les relie. Trois façons de le dire — aucune ne touche aux gestes.</span>
+      </a>
+      <a class="item" href="#m65">
+        <span class="no">65</span><span class="titre">Envoyer la facture en un seul geste</span><span class="fleche">↓</span>
         <span class="quoi">Trois appuis pour envoyer une facture, et le premier ment : il l’ARRÊTE au lieu de la faire partir. Un encart SMS / e-mail, un bouton, la messagerie tout de suite — et la question : le mot doit-il dire qu’il arrête ?</span>
       </a>
       <p class="famille">Le devis avant l’envoi</p>
-      <a class="item" href="#m65">
-        <span class="no">65</span><span class="titre">Enregistrer le PDF depuis la fiche client</span><span class="fleche">↓</span>
+      <a class="item" href="#m66">
+        <span class="no">66</span><span class="titre">Enregistrer le PDF depuis la fiche client</span><span class="fleche">↓</span>
         <span class="quoi">Les vignettes de la fiche client OUVRENT le PDF sans proposer de l’enregistrer. Trois dosages du geste — et la question qu’il doit trancher : vient-il regarder, ou garder ?</span>
       </a>
-      <a class="item" href="#m66">
-        <span class="no">66</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
+      <a class="item" href="#m67">
+        <span class="no">67</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
         <span class="quoi">« Envoyer au client » devient « Choisir la date », en vert et sans flèche, et mène droit au calendrier. L’écran du milieu, qui redit le devis qu’on vient de fermer, saute. Trois écrans deviennent deux.</span>
       </a>
     <p class="note">
@@ -24233,10 +24294,128 @@
   <section class="etape" id="m63">
     <div class="etape-tete">
       <span class="etape-no">63</span>
-      <h2>Dire que ces achats FONT la TVA déductible</h2>
+      <h2>Où mettre « Ma TVA à déclarer »</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s63">
+<h1>Où mettre « Ma TVA à déclarer »</h1>
+<p class="chapo">
+  Aujourd'hui il vit <b>tout en bas</b>, après la liste entière — il faut défiler pour le trouver.
+  Le code assume cette place : <i>« le relevé se consulte une fois par période, il n'a rien à faire en
+  tête d'écran »</i>. L'argument tient, mais il vient de passer devant sans le voir.
+  <b>Et la veille, une place s'est libérée</b> sous le titre : la phrase des deux chiffres est
+  descendue sous le mois.
+</p>
+
+<div class="rangee">
+
+  <!-- ————————————— A ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">A — en tête, dans la place libérée</p>
+    <p class="dit">
+      Le lien remonte sous le titre, là où la phrase des chiffres se trouvait hier. Une ligne, la même
+      qu'en bas — rien de neuf, seulement déplacé. <b>Ce que ça coûte :</b> la TVA occupe la tête d'un
+      écran qui parle d'abord de chantiers à facturer.
+    </p>
+    <div class="ecran">
+      <p class="titre">Terminés</p>
+      <div class="lien-simple" style="border-top:0; margin-top:10px; padding-top:0">
+        <span class="txt">Ma TVA à déclarer</span><span class="fl">›</span>
+      </div>
+      <p class="mention">Atlas prépare ce relevé, il ne le déclare pas.</p>
+      <div class="onglets"><span class="onglet on">Tout</span><span class="onglet off">À facturer</span></div>
+      <div class="mois"><span><span class="fl">‹</span><span class="nom">Août 2026</span><span class="fl">›</span></span><span class="tot">13 200,00 €</span></div>
+      <p class="phrase"><b>8 à facturer</b>, 8 520,00 € · <b>13 facturés</b>, 14 760,00 €</p>
+      <div class="ligne"><div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div><span class="facturer">FACTURER</span></div>
+      <div class="ligne"><div><p class="qui">Monsieur Martins</p><p class="quand">Facturé le 12 août · Facture n° 1</p></div><span class="eur">936,00 €</span></div>
+    </div>
+  </div>
+
+  <!-- ————————————— B ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">B — une carte, avec le chiffre</p>
+    <p class="dit">
+      Pas un lien : <b>ce qu'il vient y chercher</b>. Le montant restant à payer se lit sans ouvrir, et
+      donne la raison d'ouvrir. <b>Ce que ça coûte :</b> une requête de plus sur un écran ouvert
+      souvent, et un chiffre d'argent qui capte l'œil <b>avant</b> la liste du travail.
+    </p>
+    <div class="ecran">
+      <p class="titre">Terminés</p>
+      <div class="carte">
+        <div><p class="cle">Ma TVA à déclarer</p><p class="quoi">Août 2026</p></div>
+        <span class="val">746,33 €</span>
+      </div>
+      <p class="mention" style="margin-top:6px">Reste à payer. Atlas prépare ce relevé, il ne le déclare pas.</p>
+      <div class="onglets"><span class="onglet on">Tout</span><span class="onglet off">À facturer</span></div>
+      <div class="mois"><span><span class="fl">‹</span><span class="nom">Août 2026</span><span class="fl">›</span></span><span class="tot">13 200,00 €</span></div>
+      <p class="phrase"><b>8 à facturer</b>, 8 520,00 € · <b>13 facturés</b>, 14 760,00 €</p>
+      <div class="ligne"><div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div><span class="facturer">FACTURER</span></div>
+    </div>
+    <p class="note">
+      <b>Une réserve que je ne peux pas lever seul :</b> ce montant dépend du rythme (mois ou
+      trimestre) et du régime (encaissements ou débits). Affiché hors de l'écran qui les explique, il
+      peut se lire comme « ce que je dois aujourd'hui » — <b>alors qu'il n'est dû qu'à l'échéance</b>.
+    </p>
+  </div>
+
+  <!-- ————————————— C ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">C — sur la ligne du mois</p>
+    <p class="dit">
+      Le relevé se déclare <b>par période</b>, et c'est exactement là qu'il choisit sa période. Le lien
+      se pose sur la ligne du mois, sous le total. Il le trouve au moment où il pense « août ».
+      <b>Ce que ça coûte :</b> une ligne de plus dans un en-tête déjà chargé — mois, flèches, total.
+    </p>
+    <div class="ecran">
+      <p class="titre">Terminés</p>
+      <div class="onglets"><span class="onglet on">Tout</span><span class="onglet off">À facturer</span></div>
+      <div class="mois"><span><span class="fl">‹</span><span class="nom">Août 2026</span><span class="fl">›</span></span><span class="tot">13 200,00 €</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin:8px 26px 0">
+        <p class="phrase" style="margin:0"><b>8 à facturer</b>, 8 520,00 €</p>
+        <span class="dansmois">Ma TVA d'août ›</span>
+      </div>
+      <div class="ligne" style="margin-top:12px"><div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div><span class="facturer">FACTURER</span></div>
+      <div class="ligne"><div><p class="qui">Monsieur Martins</p><p class="quand">Facturé le 12 août · Facture n° 1</p></div><span class="eur">936,00 €</span></div>
+      <div class="ligne"><div><p class="qui">Chantier test — Muret Clisson</p><p class="quand attente">Pas encore facturé</p></div><span class="facturer">FACTURER</span></div>
+    </div>
+    <p class="note">
+      <b>Le lien SUIT le mois affiché</b> — « Ma TVA d'août », puis « de juillet » s'il recule. C'est sa
+      force et son piège : il faudra que le relevé s'ouvre bien sur CE mois-là, sans quoi la promesse
+      du mot est fausse.
+    </p>
+  </div>
+
+</div>
+
+<div class="question">
+  <h2>Ce que je ne tranche pas à sa place</h2>
+  <p>
+    <b>Mon avis : la C.</b> Elle place le relevé là où il pense déjà en mois, elle ne prend pas la tête
+    de l'écran, et elle n'affiche aucun chiffre qui pourrait se lire de travers. C'est aussi la seule
+    qui garde vrai le raisonnement d'origine — <i>« il se consulte une fois par période »</i> — au lieu
+    de le renverser.
+  </p>
+  <p>
+    La <b>A</b> est la plus simple à faire et la plus sûre : rien de neuf, un déplacement.
+    La <b>B</b> est la plus visible, et la seule qui donne une information sans ouvrir — mais c'est
+    aussi la seule qui peut tromper : le montant n'est pas dû le jour où il le lit.
+  </p>
+  <p>
+    <b>Et une chose qu'aucune ne règle :</b> le bas de l'écran garde la mention « Atlas prépare ce
+    relevé, il ne le déclare pas ». Elle doit suivre le lien où qu'il aille — c'est une phrase de
+    responsabilité, pas de décoration (<code>docs/AGENT.md</code> §6).
+  </p>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m64">
+    <div class="etape-tete">
+      <span class="etape-no">64</span>
+      <h2>Dire que ces achats FONT la TVA déductible</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s64">
 <h1>Dire que ces achats FONT la TVA déductible</h1>
 <p class="chapo">
   Sa remarque : <b>« on ne comprend pas trop que scanner ou écrire à la main, c'est pour la TVA
@@ -24376,13 +24555,13 @@
     </div>
   </section>
 
-  <section class="etape" id="m64">
+  <section class="etape" id="m65">
     <div class="etape-tete">
-      <span class="etape-no">64</span>
+      <span class="etape-no">65</span>
       <h2>Envoyer la facture en un seul geste</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s64">
+    <div class="cadre" id="s65">
 <h1>Envoyer la facture en un seul geste</h1>
 <p class="chapo">
   Sa demande : le petit encart <b>SMS / e-mail</b> au-dessus, un bouton <b>« Envoyer la facture »</b>
@@ -24565,13 +24744,13 @@
     </div>
   </section>
 
-  <section class="etape" id="m65">
+  <section class="etape" id="m66">
     <div class="etape-tete">
-      <span class="etape-no">65</span>
+      <span class="etape-no">66</span>
       <h2>Enregistrer le PDF depuis la fiche client</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s65">
+    <div class="cadre" id="s66">
 <h1>Enregistrer le PDF depuis la fiche client</h1>
 <p class="chapo">
   Aujourd'hui, toucher une vignette <b>ouvre</b> le PDF dans un onglet : rien ne propose de
@@ -24766,13 +24945,13 @@
     </div>
   </section>
 
-  <section class="etape" id="m66">
+  <section class="etape" id="m67">
     <div class="etape-tete">
-      <span class="etape-no">66</span>
+      <span class="etape-no">67</span>
       <h2>Choisir la date, sans l’écran du milieu</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s66">
+    <div class="cadre" id="s67">
 <div class="chapo">
   <h1>Choisir la date, sans l’écran du milieu</h1>
   <p>
