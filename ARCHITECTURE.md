@@ -13581,3 +13581,302 @@ Deux contrôles la tiennent, et tous deux savent échouer : la suite du calcul s
 la fonction elle-même, et le vérificateur de la maquette sur **ce qui est
 écrit** dans les trois tableaux — parce que c'est ce qu'il lit chez son
 fournisseur.
+---
+
+## 152. Envoyer la facture : trois appuis deviennent un, et le mot dit ce qu'il engage
+
+**Le patron, le 22 août 2026, capture à l'appui :** *« Quand je clique sur
+confirmer le départ de la facture, ça me l'arrête. Après, je clique pour
+l'envoyer. Ensuite, je dois recliquer pour ouvrir l'application SMS. Ça fait
+beaucoup trop de clics. »*
+
+Retenu sur planche (`docs/maquettes/84-envoyer-la-facture.html`) : **la B**,
+et *« le choix SMS ou e-mail, mais de la même forme que sur la page fiche
+client »*.
+
+### Il comptait juste, et le premier appui mentait
+
+| | Ce que ça faisait |
+|---|---|
+| « Confirmer le départ de la facture → » | l'**arrête** — numéro définitif, TVA, plus aucune modification |
+| « Envoyer la facture au client → » | fabrique le lien du client |
+| « Ouvrir le SMS tout prêt → » | ouvre enfin la messagerie |
+
+**Le premier ne faisait partir rien du tout.** Le code le savait déjà et le
+disait en commentaire — *« le patron a lu "facture arrêtée" et compris que son
+client l'avait reçue »* — sans que le libellé en tire la conséquence. Son mot à
+lui, « Envoyer la facture », est plus juste pour l'envoi ; mais il ne dit plus
+l'arrêt, qui est **sans retour**.
+
+### Pourquoi la B, et ce qu'elle coûte
+
+La **A** faisait exactement ce qu'il demandait, et rien de plus. Le risque n'est
+pas théorique : si la messagerie refuse de s'ouvrir — iOS le fait, sans un mot —
+la facture est **arrêtée quand même**, dans sa TVA, sans que le client ait rien
+reçu.
+
+Deux gestes séparés le lui rappelaient. Avec un seul, **la phrase est tout ce
+qui reste** : deux lignes sous le bouton, qui disent l'arrêt et nomment la
+sortie (l'avoir). Il ne les lira qu'une fois ; elles seront là le jour où il se
+demandera pourquoi sa facture ne se modifie plus.
+
+La **C** — n'arrêter qu'une fois le message parti — a été dessinée pour être
+**écartée**, et le dépôt savait déjà pourquoi : aucun navigateur ne distingue
+« expédié » de « ouvert puis abandonné » ni de « refusé sans un mot »
+(`src/lib/depart-messagerie.ts`). Elle laisserait des factures faites, envoyées,
+jamais entrées en comptabilité.
+
+### L'ordre des opérations n'est pas un détail
+
+Arrêter, préparer le lien, **ouvrir la messagerie, puis seulement rafraîchir**.
+Un navigateur peut refuser une navigation vers `sms:` qui ne suit pas le doigt
+d'assez près ; rafraîchir d'abord, c'est perdre le geste. Même ordre que l'envoi
+du devis, pour la même raison.
+
+Et si le lien manque après l'émission, l'écran **dit que la facture est arrêtée
+quand même** : le taire lui ferait croire que rien n'a eu lieu, et rappuyer sur
+un bouton qui a déjà engagé sa comptabilité.
+
+### La capsule du canal est EXTRAITE, pas recopiée
+
+`ChoixCanal` vivait dans `FormulaireNouveauChantier`, taillée aux mesures de sa
+maquette. Elle vit maintenant dans `src/components/atlas/` : deux dessins du
+même geste auraient divergé au premier ajustement, et c'est lui qui aurait vu
+deux capsules différentes pour la même question à deux écrans d'intervalle
+(`CLAUDE.md` §3).
+
+**Un canal sans coordonnée reste INERTE, jamais masqué** — sa règle, dictée le
+même jour : *« refuse l'envoi : ça veut dire qu'il communique avec le client par
+SMS, donc il enverra par SMS »*. Aucun champ de saisie ici : il a écarté l'idée.
+
+### Le contrôle, et ce qu'il a fallu corriger pour qu'il accuse juste
+
+`scripts/test-envoyer-la-facture-e2e.ts` attendait le bouton par son **libellé**.
+Confronté à l'ancien mot, il mourait sur un délai dépassé — il échouait, mais
+n'apprenait rien. Il vise désormais un repère stable (`data-atlas`), trouve le
+bouton, puis **cite ce qu'il a lu** : *« le bouton dit "Confirmer le départ de la
+facture →" »*. Éprouvé aussi sans la phrase d'engagement : il rougit en disant
+que rien n'avertit de l'arrêt.
+
+## 153. La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
+
+**Deux remarques du patron, le 23 août 2026, sur deux écrans voisins**, et une
+seule cause : *« je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le
+voit pas trop »*, puis *« on ne comprend pas trop que scanner ou écrire à la
+main, c'est pour la TVA déductible »*.
+
+Dans les deux cas, rien ne fonctionnait mal. C'est la **place** qui mentait.
+
+### Ce qui a été retenu, et par qui
+
+Six propositions dessinées, essayables au doigt — pas des captures :
+`docs/maquettes/86-ou-mettre-ma-tva.html` et
+`docs/maquettes/85-achats-tva-deductible.html`. Sa réponse, mot pour mot :
+**« Pour ma TVA la B / Et pour les achats la C »**.
+
+- **86 · B** — une carte, en tête de « Terminés », **portant le montant**. Pas un
+  lien : ce qu'il vient y chercher. Le chiffre se lit sans ouvrir, et donne la
+  raison d'ouvrir.
+- **85 · C** — « Scanner un ticket » et « Écrire à la main » remontent **contre
+  l'encadré des chiffres**, avec un liseré haut en pointillé et l'arrondi bas que
+  l'encadré a perdu. Le lien ne se dit par **aucun mot de plus** : il se dit par
+  la continuité de la pièce.
+
+### Pourquoi le montant se lit dans `src/server/tva-courante.ts`, et pas dans l'écran
+
+L'écran du relevé compose déjà collectée, déductible et reste. Les recomposer
+dans « Terminés » aurait donné **deux additions de la même somme** — et c'est LUI
+qui aurait vu deux montants différents à deux écrans d'intervalle, sans savoir
+lequel croire (`CLAUDE.md` §3 : jamais de règle dupliquée).
+
+Le prix est assumé et a été dit devant la planche avant qu'il ne choisisse :
+**trois requêtes de plus** sur un écran qu'il ouvre souvent.
+
+### La réserve que la carte doit porter
+
+Ce montant **n'est pas dû le jour où il le lit**. Il dépend du rythme (mois ou
+trimestre) et du régime (encaissements ou débits), et n'est exigible qu'à
+l'échéance. Affiché seul, il se lirait « ce que je dois aujourd'hui ». D'où deux
+précautions dans la carte elle-même : elle **nomme sa période**, et la mention
+sous elle dit **« Reste à payer sur la période »** — jamais « À payer ».
+
+### Ce qu'un contrôle doit tenir ici, et pourquoi c'est difficile
+
+**Les deux choix sont des choix de place, et une place ne casse pas.** La carte
+peut redescendre en pied de liste, les deux boutons peuvent repasser sous les
+achats : tout continue de fonctionner, et tout resterait vert. Ce sont
+exactement les défauts qu'aucune autre suite ne peut voir.
+
+`scripts/test-tva-en-tete-e2e.ts` mesure donc des **places**, pas des présences,
+et chacune de ses six mesures a été **confrontée au défaut qu'elle nomme** avant
+d'être gardée.
+
+**Et c'est ainsi qu'un contrôle faux a été trouvé.** Le premier jet vérifiait que
+la carte précédait « le dernier de ses frères » — or son frère, c'est sa propre
+mention, qui descend avec elle. La carte remise en pied d'écran, le contrôle
+**restait vert sur le défaut même dont il portait le nom**. D'où le repère
+`data-atlas="contenu-termines"` : la carte se mesure contre la **liste**, jamais
+contre ce qu'elle traîne derrière elle.
+
+Deuxième faux départ, même leçon : la couture se mesurait depuis le bas des
+**mots** « Reste à payer » et annonçait 25 px de brèche alors que les deux pièces
+se touchaient — le rembourrage de la carte compté comme un écart. Un contrôle qui
+accuse à tort coûte plus cher que pas de contrôle du tout (`AGENTS.md`). D'où le
+repère `data-atlas="encadre-tva"`, et une mesure d'encadré à encadré — largeur et
+bord gauche compris, car deux marges différentes feraient un décrochement visible
+que rien d'autre ne dirait.
+
+## 154. Ce qui ne doit sortir sur AUCUN document : le contrôle qui ne savait pas lire
+
+**La note de la feuille de chantier a été codée DEUX FOIS, le même jour, par deux
+sessions qui ne se voyaient pas.** Celle qui est arrivée la première sur `main`
+fait foi (`chantiers.note`, migration 0061) ; la seconde a été retirée — deux
+colonnes pour la même chose auraient été les deux vérités que `CLAUDE.md` §3
+interdit. Ce qui suit est la seule chose que la seconde apportait, et elle vaut
+d'être gardée.
+
+### La promesse qui l'autorise à écrire librement
+
+Sa décision du 23 août 2026 : la note **ne part sur aucun document** — ni devis,
+ni facture, ni PDF sans les prix. Sur le papier que ses gars emportent, elle
+serait devenue un écrit qui sort de l'entreprise, et *« client pas disponible
+avant neuf heures »* se serait rédigé en sachant que le client peut le lire.
+
+**C'est cette promesse qui l'autorise à y écrire ce qu'il ne dirait pas devant le
+client — donc elle a besoin d'un contrôle, pas d'un commentaire.**
+
+### Deux fois où ce contrôle ne POUVAIT PAS échouer
+
+`scripts/test-note-hors-documents-e2e.ts` télécharge le PDF et y cherche les mots de la
+note. Ses deux premières versions étaient **vertes en confrontation avec une note
+délibérément versée dans le document** :
+
+1. elle cherchait dans les **octets bruts** — or le texte d'un PDF est comprimé
+   (`FlateDecode`), et rien n'y est jamais trouvé, y compris quand le mot est
+   bel et bien imprimé ;
+2. les flux décomprimés, elle cherchait des mots **en clair** — or le texte s'y
+   écrit en hexadécimal, `<4174656C696572> Tj`.
+
+Deux fois, le contrôle promettait le silence d'un document qu'il ne savait pas
+ouvrir. C'est la faute de `CLAUDE.md` §5 : *un contrôle qui mesure zéro ne mesure
+rien, et il est pire qu'absent* — parce qu'on cesse de regarder.
+
+### La mesure qui garde les deux
+
+**Le contrôle prouve d'abord qu'il sait LIRE ce PDF**, en y retrouvant une ligne
+du devis, et refuse de conclure autrement. Ne pas retirer cette vérification
+préalable en croyant simplifier : elle est tout ce qui sépare une promesse tenue
+d'une promesse récitée.
+
+**Et il cherche les mots un par un** — « broyeur », « dispo » —, jamais la phrase
+entière : un PDF découpe son texte en fragments, et une recherche exacte ne
+trouverait rien pour une raison qui n'a rien à voir avec la fuite.
+
+## 155. Atlas SIGNE ses réponses, pour que le diagnostic cesse de deviner
+
+**Le 23 août 2026, le patron ouvre Atlas depuis son téléphone : son navigateur
+lui propose de TÉLÉCHARGER un fichier.** Sa fiche d'état annonce alors *« réponse
+404 d'ATLAS lui-même — le port est bien ouvert, c'est l'application qui refuse »*
+et l'envoie lire le journal du serveur.
+
+**C'était faux, et deux hypothèses fausses lui ont été livrées avant qu'on ne le
+voie** : l'espace éteint (démenti par sa capture), puis le port privé (démenti
+par un *« je suis déjà en public »*).
+
+### Le verdict devinait, et son indice ne valait rien
+
+`_verdict-port.mjs` tranchait sur la présence du mot « github » dans l'en-tête
+`Server` de la réponse. Un refus du relais arrivé **nu** — sans en-tête, sans
+type, ce qui est exactement ce qu'il a reçu — tombait donc du côté d'Atlas.
+
+C'est le travers que cette fiche avait été écrite pour éviter (`AGENTS.md` :
+*une erreur qui envoie chercher au mauvais endroit coûte plus cher que pas
+d'erreur du tout*), et il coûtait ici deux gestes inutiles au patron.
+
+### Une signature ne se devine pas
+
+`/api/health/live` pose désormais **`x-atlas-vivant: 1`**. Le relais de GitHub ne
+peut pas l'inventer : présente, c'est Atlas qui a répondu ; absente, la requête
+n'est jamais arrivée jusqu'à lui. Les marques de GitHub restent lues, mais
+seulement pour **nommer** le relais — plus pour décider.
+
+Et le conseil suit la certitude : la fiche ne propose plus *« deux causes
+possibles, dans cet ordre »* — devant laquelle il essayait la première et
+revenait dire qu'il l'avait déjà faite — mais **le geste**, un seul.
+
+### Ce que ça a exigé, et qu'il ne faut pas défaire
+
+**La signature doit être sur LE FIL, pas dans le code.** Éprouvée d'abord sur un
+binaire pas reconstruit, elle paraissait absente : le contrôle interroge donc le
+serveur pour de bon (`scripts/test-health.ts`), et il a été **vu rouge** contre
+une route dont on avait retiré l'en-tête.
+
+**Le perdre ne casserait rien à l'écran** — c'est tout le danger. Le diagnostic
+se remettrait simplement à accuser le relais en toutes circonstances, et
+personne ne le saurait avant la prochaine soirée perdue.
+
+### Et devant un refus NU, la fiche dit ce que la réponse portait
+
+Un 404 sans en-tête ni type ne laisse rien à examiner : la fiche décrivait un
+vide, et l'agent en était réduit à supposer — deux allers-retours au patron, un
+soir où il allait se coucher. Elle publie donc les **noms** des en-têtes reçus,
+ou « AUCUN » quand il n'y en avait pas.
+
+**Les noms, jamais les valeurs** : ce dépôt est public, et une valeur d'en-tête
+peut porter un jeton. Un contrôle le tient, et il a été vu rouge dans les deux
+sens — sur la disparition des noms, et sur la fuite d'une valeur.
+
+## 156. Le dossier du client ne porte que ce qu'il a reçu
+
+**Sa règle du 23 août 2026**, après avoir facturé M. Bernard : *« il y a une
+fiche chantier qui s'est créée en même temps. Cette catégorie est réservée
+lorsque les paysagistes créent une fiche chantier avec les informations type la
+tonte, la taille, ce qu'ils ont fait. À aucun moment, lorsqu'une facture doit
+être envoyée, une fiche chantier doit être créée. »*
+
+### Deux erreurs se cachaient l'une derrière l'autre
+
+| | |
+|---|---|
+| **Quand** | la colonne listait les chantiers `termine_at IS NOT NULL`, et **émettre une facture pose cette date** (`factures.ts` : `COALESCE(termine_at, now())`). Facturer fabriquait donc une pièce que personne n'avait écrite |
+| **Quoi** | le document servi était la feuille **interne** — équipe, créneau, note vocale, adresse — que ses salariés ouvrent dans la camionnette. Rangée au dossier d'un client, elle donnait à croire qu'il l'avait reçue |
+
+La seconde est la plus grave, et c'est celle qu'on ne voyait pas : une colonne
+qui se remplit toute seule finit par être crue.
+
+### La règle, et elle vaut pour les trois colonnes
+
+**Une pièce du dossier est un document que le client A REÇU.** Un devis envoyé,
+une facture émise, une fiche d'entretien partie. Ni brouillon, ni document
+interne, ni pièce déduite d'un état.
+
+La colonne porte donc les `passages_entretien` **figés** (`envoye_le` et `jeton`
+non nuls), à l'adresse même que le client a reçue — `/entretien/{jeton}`.
+
+### Une pièce n'est plus forcément un PDF
+
+`PieceDuClient.format` (`"pdf"` par défaut) le dit à la carte. Sur une page :
+la vignette annonce « FICHE », « Enregistrer » disparaît et « Ouvrir » devient
+le geste principal. Rien ne fige ce rapport en fichier : proposer de
+l'enregistrer aurait fait descendre une page web nommée `.pdf`, que rien
+n'ouvre — le défaut du 7 août 2026, retourné.
+
+### LE PIÈGE DRIZZLE, ET IL RESSERVIRA
+
+Une sous-requête corrélée écrite `${passagesEntretien.id}` se rend en **`"id"`
+NU** dès qu'aucune jointure n'oblige Drizzle à qualifier ses colonnes :
+
+```
+select count(*)::int from "lignes_passage" l
+ where l.passage_id = "id" and l.faite     -- « id » = celui de l, jamais vrai
+```
+
+Chaque fiche s'annonçait « 0 prestation » sur une base qui en portait deux ou
+trois. **Le voisin `listerPassages` écrit exactement la même chose et
+fonctionne** — il porte un `leftJoin`, qui force la qualification : le motif
+paraissait donc éprouvé. Écrire `passages_entretien.id` en toutes lettres.
+
+**Aucun test ne l'a vu ; c'est la CAPTURE qui l'a montré** — la cinquième fois
+dans ce dépôt qu'un défaut sort d'une image et d'aucun vert (`CLAUDE.md` §5). Le
+contrôle qui manquait exige désormais **deux fiches à comptes différents** : un
+seul compte juste peut l'être par hasard.

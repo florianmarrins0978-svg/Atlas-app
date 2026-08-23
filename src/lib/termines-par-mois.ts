@@ -218,24 +218,6 @@ export function somme(lignes: readonly LigneAffichee[]): number {
   return lignes.reduce((t, l) => t + (l.montant ?? 0), 0);
 }
 
-/**
- * « 5 factures envoyées · et 2 040,00 € qui attendent leur facture. »
- *
- * **Le patron l'a demandée en noir gras le 22 août 2026** : c'est ce qu'il
- * vient chercher, pas une note de bas de page. La seconde moitié n'apparaît que
- * s'il y a quelque chose en attente DANS CE MOIS, et seulement si son montant
- * est connu — annoncer « 0,00 € qui attendent » là où on ne sait pas serait
- * dire qu'il n'y a rien à encaisser.
- */
-export function libelleCompte(mois: ResumeMois): string {
-  const n = mois.facturees.length;
-  const debut = n === 0
-    ? "Aucune facture envoyée"
-    : `${n} facture${n > 1 ? "s" : ""} envoyée${n > 1 ? "s" : ""}`;
-  const montantConnu = mois.aFacturer.some((l) => l.montant !== null);
-  if (mois.aFacturer.length === 0 || !montantConnu) return `${debut}.`;
-  return `${debut} · et ${formatEuros(mois.totalPrevu)} qui attendent leur facture.`;
-}
 
 /**
  * « Facture n° 5 » — le numéro qu'il lit à voix haute.

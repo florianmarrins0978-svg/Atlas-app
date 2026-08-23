@@ -48,6 +48,122 @@ plus longue attente de l'application. Le geste est partagé
 (`PointsQuiSoufflent`), jamais recopié.
 
 Détail : `ARCHITECTURE.md` §149 et §150.
+### La colonne « Fiche chantier » ne se remplit plus toute seule
+
+*« Je viens de facturer monsieur Bernard […] néanmoins il y a une fiche chantier
+qui s'est créée en même temps. Cette catégorie est réservée lorsque les
+paysagistes créent une fiche chantier avec les informations type la tonte, la
+taille, ce qu'ils ont fait. À aucun moment, lorsqu'une facture doit être
+envoyée, une fiche chantier doit être créée. »*
+
+**Le mécanisme, invisible à la lecture.** Émettre une facture POSE la date de
+fin du chantier (`factures.ts` : `COALESCE(termine_at, now())`), et la colonne
+listait les chantiers terminés. Facturer fabriquait donc une pièce que personne
+n'avait écrite.
+
+**Et le document qu'elle ouvrait était le mauvais.** C'est la feuille INTERNE —
+équipe, créneau, note vocale, adresse du chantier —, celle que ses salariés
+ouvrent dans la camionnette. Rangée au dossier d'un client, elle donnait à
+croire qu'il l'avait reçue. Cette feuille reste joignable depuis le chantier :
+elle n'a simplement plus sa place dans le dossier du client.
+
+**Ce que la colonne porte désormais :** les fiches d'entretien qu'il a remplies
+et ENVOYÉES (Paysage → Fiche de chantier), à l'adresse même que le client a
+reçue. Un brouillon n'y entre pas — comme un devis non parti, il n'a ni date
+d'envoi ni adresse publique.
+
+**« Enregistrer » disparaît sur ces pièces-là**, et ce n'est pas un oubli : rien
+ne fige ce rapport en fichier. Le laisser aurait fait descendre une page web
+nommée `.pdf`, que rien n'ouvre — le défaut du 7 août 2026, retourné. La
+vignette dit « FICHE » plutôt que « PDF », et « Ouvrir » prend la place du geste
+principal.
+
+**Un client sans aucun chantier voit quand même sa fiche.** Elle s'ouvre depuis
+Paysage, se nomme, s'envoie — sans qu'aucun chantier n'existe. Le retour
+anticipé « ce client n'a pas de chantier » l'aurait fait disparaître de son
+dossier.
+
+
+### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
+
+*« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
+**télécharger** un fichier au lieu d'ouvrir Atlas.
+
+Sa fiche d'état annonçait *« réponse 404 d'ATLAS lui-même — c'est l'application
+qui refuse »* et l'envoyait lire le journal du serveur. **C'était une
+devinette** : le verdict tranchait sur la présence du mot « github » dans
+l'en-tête `Server`, et un refus arrivé nu — sans en-tête ni type, ce qu'il a
+justement reçu — tombait du mauvais côté. Deux hypothèses fausses lui ont été
+livrées avant qu'on ne le voie : l'espace éteint, puis le port privé, démenti
+par un *« je suis déjà en public »*.
+
+`/api/health/live` pose désormais **`x-atlas-vivant: 1`**. Le relais ne peut pas
+inventer cette signature : présente, c'est Atlas qui a répondu ; absente, la
+requête n'est jamais arrivée jusqu'à lui. Et la fiche ne propose plus « deux
+causes possibles, dans cet ordre » — devant lesquelles il essayait la première
+et revenait — mais **un seul geste**, celui qui correspond.
+
+**La signature devait être sur le fil, pas dans le code** : éprouvée d'abord sur
+un binaire pas reconstruit, elle paraissait absente. Le contrôle interroge donc
+le serveur pour de bon, et il a été vu rouge contre une route dont l'en-tête
+avait été retiré. `ARCHITECTURE.md` §155.
+
+
+### La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
+
+*« Je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le voit pas
+trop »*, puis, sur l'écran voisin : *« on ne comprend pas trop que scanner ou
+écrire à la main, c'est pour la TVA déductible. »*
+
+Rien ne fonctionnait mal dans les deux cas : c'est la **place** qui mentait. Six
+propositions dessinées et essayables au doigt (`docs/maquettes/85` et `86`), et
+son choix, mot pour mot : **« Pour ma TVA la B / Et pour les achats la C »**.
+
+**La B** met en tête de « Terminés » une carte **portant le montant** — pas un
+lien à aller chercher, mais ce qu'il vient y voir. Elle nomme sa période et dit
+« Reste à payer sur la période », parce que ce montant n'est **pas dû le jour où
+il le lit** : il dépend du rythme et du régime, et n'est exigible qu'à
+l'échéance.
+
+**La C** remonte « Scanner un ticket » et « Écrire à la main » **contre**
+l'encadré des chiffres. Aucun mot de plus n'a été ajouté : le lien se dit par la
+continuité de la pièce.
+
+**Ce qui a coûté le plus n'est pas l'écran, c'est le contrôle.** Une place ne
+casse pas : la carte peut redescendre, les boutons repasser sous les achats, et
+tout resterait vert. Deux mesures fausses ont été écrites avant les bonnes —
+l'une comparait la carte à sa **propre mention**, qui descend avec elle, et
+**restait verte sur le défaut dont elle portait le nom** ; l'autre comptait le
+rembourrage d'une carte comme une brèche et **accusait à tort**. Détail dans
+`ARCHITECTURE.md` §153.
+
+### La note ne part sur aucun document — et le contrôle qui le promettait ne savait pas lire
+
+La note de la feuille de chantier a été codée **deux fois le même jour**, par
+deux sessions qui ne se voyaient pas. Celle arrivée la première sur `main` fait
+foi ; la seconde a été retirée — deux colonnes pour la même chose auraient été
+les deux vérités que le dépôt interdit.
+
+Ce qu'elle apportait et qui reste : le contrôle de sa promesse. La note ne doit
+sortir sur **aucun** document, et c'est ce qui l'autorise à y écrire ce qu'il ne
+dirait pas devant le client. Or ce contrôle a été **vert deux fois de suite en
+confrontation avec une note délibérément versée dans le PDF** : il cherchait les
+mots dans les octets bruts d'un fichier comprimé, puis en clair dans un flux qui
+écrit son texte en hexadécimal. Il prouve désormais d'abord qu'il sait **lire**
+ce PDF. `ARCHITECTURE.md` §154.
+
+### Deux réparations tombées à la batterie
+
+La carte « Ma TVA à déclarer » gardait un coin à 12 px, contre sa règle du
+12 août — même forme partout. Elle passe aux 4 px des plages : une capsule sur
+une carte pleine largeur serait le galet que la charte refuse. Le contrôle porte
+une exception **bornée à cette carte**, et tout autre bouton carré du même écran
+le fait toujours rougir.
+
+Et `test-envoyer-la-facture-e2e` visait mot pour mot « Une date, ou deux au choix
+du client ? » — une phrase qu'il a fait changer le 23 août même. La suite mourait
+sur du code juste, pour une demande exaucée : c'est `CLAUDE.md` §5 bis, et le
+repère posé par l'autre session existait exactement pour ça.
 
 
 ### Le plan d'arrosage se DESSINE, à la forme du jardin lu
@@ -124,7 +240,7 @@ broyeur, client plus disponible à partir de neuf heures. »*
 **Cherché avant d'affirmer que c'était neuf** (`CLAUDE.md` §5 ter) : la table
 `chantiers` ne portait aucun champ libre, `notes_vocales` est la dictée, et le
 seul `note` du schéma appartenait aux paiements. Colonne posée par la
-migration 0060, bornée à 2 000 caractères — la note descend avec la liste
+migration 0061, bornée à 2 000 caractères — la note descend avec la liste
 entière du planning.
 
 **La variante A retenue, et c'est LUI qui a tranché sans le savoir.** La
@@ -240,7 +356,49 @@ n'engage à rien.
 ceux qui réclamaient le refus vérifient désormais l'avertissement et la
 possibilité de passer outre.
 
----
+
+### « Terminés » : cinq chiffres en moins, et de l'air
+
+**Ses six corrections du 23 août au soir**, capture de l'écran à l'appui :
+*« Ma TVA à déclarer, mets-le en gras or ; la petite phrase en dessous d'août
+2026, en gris, supprime-la ; là où il y a écrit trois à facturer et huit
+facturés, supprime les montants qu'il y a avec, essaye de laisser un peu
+d'espace entre cette phrase-là et le premier client, histoire qu'on fasse bien
+la démarcation ; pareil le montant 5 028,00 € qui est sur la même ligne qu'août
+2026, celui-là tu peux le supprimer. Il faut aérer un peu la page parce qu'il y
+a énormément d'informations. »*
+
+**Trois montants sont partis, et ils ne disaient pas la même chose.** Le total à
+droite du mois ne comptait que le mois affiché ; les deux montants de la phrase
+comptaient tous les mois ; les lignes en dessous, elles, ne montrent que le mois
+affiché. Trois portées différentes sur quatre centimètres d'écran : on les
+lisait comme une contradiction, et l'on cessait de croire la liste. Ce qu'on
+additionne se lit dans les lignes.
+
+**Le titre de la carte de TVA passe en or gras.** C'était l'élément le plus pâle
+de la carte alors qu'il nomme l'outil dont il disait le matin même *« il est
+caché, on ne le voit pas trop »* — déplacer la carte en tête ne suffisait pas.
+
+**La mention grise sous la carte est retirée**, et ce n'est possible que pour
+une raison : ce que `docs/AGENT.md` §6 exige — Atlas prépare le relevé, il ne le
+déclare pas — s'écrit en toutes lettres **au bas du relevé lui-même**, là où les
+chiffres se lisent. La retirer des deux endroits serait autre chose.
+
+**La démarcation qu'il demande est un TRAIT, pas de l'espace.** De l'espace seul
+se mange au premier ajout de contenu ; un trait tient. La phrase passe en noir
+gras entière — sa demande du 22 août pour le compte des factures —, les montants
+partis n'ayant plus rien à quoi s'opposer.
+
+**Le probe `capture-termines.mts` a été adapté, pas contourné** : il exigeait le
+compte du mois derrière son repère, que la phrase ne portait pas. Le repère est
+allé sur la phrase, qui EST ce compte (`CLAUDE.md` §5 bis).
+
+**Un défaut relevé au passage, et consigné plutôt que corrigé au jugé** : la
+planche 90, que `page.tsx` désigne comme la référence de cet écran, a dérivé —
+elle ignore la carte de TVA venue de la planche 86 et les retraits de ce soir.
+Voir `TODO.md` : il faut trancher entre la remettre à niveau et lui retirer son
+titre.
+
 ### Le temps passé se masque au client — codé, et il reste au patron
 
 **Sa demande du 22 août, puis ses deux corrections du 23** devant la planche 92 :
@@ -277,7 +435,36 @@ Trois contrôles neufs, **tous vus rougir** contre l'état dégradé qu'ils
 prétendent attraper — une lecture publique qui ignore le masquage, un masquage
 qui efface la durée, une empreinte qui scelle le temps caché.
 
----
+
+### La durée passe sous le nom, et le filet du « + » disparaît
+
+*« Le "une journée" en doré, mets-le sous le nom, et la ligne qui se trouve
+entre le nom et le "+ Ajouter un chantier", supprime-la. »*
+
+**Corrigé sur la planche 86 D'ABORD**, puis dans l'écran (`CLAUDE.md` §3 bis) —
+la planche reste la référence des planifiés, et c'est elle qu'il ouvre.
+
+**Le filet n'existait que dans l'écran.** La planche n'en porte pas :
+`AjoutAuJour` en avait ajouté un, et il refermait la journée juste avant le
+geste qui la prolonge. Retiré des trois états du bloc — au repos comme pendant
+le choix —, sans quoi il serait apparu à l'appui pour disparaître ensuite.
+
+**Ce que le déplacement corrige, au-delà du goût.** À côté du nom, la durée lui
+disputait la largeur : sur sa capture, « Chantier test — Abri Pornic » cassait
+en deux lignes et « une demi-journée » finissait seule en dessous, à gauche,
+sans qu'on sache à quoi elle se rapportait. Dessous, elle y est toujours.
+
+**Un contrôle a été RETOURNÉ, pas supprimé.** `test-ligne-planning-e2e.ts`
+exigeait la ligne entière sous 30 px de haut — c'est-à-dire tout sur une seule
+ligne, l'inverse exact de ce qu'il demande aujourd'hui. Ce qu'il défendait
+vraiment, c'est que **le nom du chantier ne paie pas la phrase** : il mesure
+donc maintenant la hauteur du NOM seul, et vérifie en plus que la durée est
+bien SOUS lui (`CLAUDE.md` §5 bis). Sa sonde a été corrigée au passage : elle
+lisait `childNodes[0]`, ce qui ne marchait que tant que le nom était un nœud de
+texte nu.
+
+Mesuré dans un vrai navigateur, à 390 px : durée sous le nom, nom sur une seule
+ligne (23 px), et `border-top: 0px` au-dessus du « + ».
 
 ## 2026-08-22
 

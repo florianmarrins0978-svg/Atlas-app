@@ -28,6 +28,14 @@ import {
   emettreFacture,
   getFacturePourChantier,
 } from "../src/server/repositories/factures";
+import { ajouterPrestation as ajouterPrestationEntretien } from "../src/server/repositories/prestations-entretien";
+import {
+  ouvrirPassage,
+  lirePassage,
+  cocherLigne,
+  nommerClient,
+  figerPassage,
+} from "../src/server/repositories/passages-entretien";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -85,6 +93,26 @@ await chantierDate(
   ]
 );
 
+// **Une fiche d'entretien REMPLIE ET ENVOYÉE.** Depuis sa règle du 23 août
+// 2026, c'est la seule chose qui remplit la troisième colonne : sans elle,
+// l'image montrerait « Aucune fiche envoyée » et ne dirait rien de ce qu'il
+// verra chez un client qu'il entretient.
+for (const [jour, faites] of [
+  ["2026-05-06", 2],
+  ["2026-08-19", 3],
+] as const) {
+  await ajouterPrestationEntretien(ctx, { famille: "Pelouse", libelle: "Tonte" });
+  await ajouterPrestationEntretien(ctx, { famille: "Pelouse", libelle: "Ramassage des feuilles" });
+  await ajouterPrestationEntretien(ctx, { famille: "Tailles", libelle: "Taille de haie" });
+  const ouvert = await ouvrirPassage(ctx, jour);
+  if (!ouvert.ok) throw new Error(`fiche non ouverte : ${ouvert.refus}`);
+  const passage = await lirePassage(ctx, ouvert.id);
+  for (const ligne of passage!.lignes.slice(0, faites)) await cocherLigne(ctx, ouvert.id, ligne.id, true);
+  await nommerClient(ctx, ouvert.id, client.id);
+  const fige = await figerPassage(ctx, ouvert.id);
+  if (!fige.ok) throw new Error(`fiche non partie : ${fige.phrase}`);
+}
+
 const navigateur = await lancerNavigateur();
 const page = await (await navigateur.newContext({ ...devices["iPhone 13"] })).newPage();
 
@@ -98,12 +126,30 @@ await page.goto(`${BASE}/clients/${client.id}`, { waitUntil: "networkidle" });
 await page.waitForTimeout(800);
 await page.screenshot({ path: `${dossier}/fiche-client-reelle.png`, fullPage: true });
 
+// **Et la feuille d'une fiche d'entretien**, celle qui n'offre plus
+// « Enregistrer » : c'est le geste qui a changé, et une image le dit mieux
+// qu'une assertion.
+const colonneFiche = page
+  .locator("div")
+  .filter({ has: page.locator('h3:text-is("Fiche chantier")') })
+  .last();
+await colonneFiche.locator('[data-atlas="piece"]').first().click();
+await page.locator('[data-atlas="piece-ouvrir"]').waitFor({ state: "visible", timeout: 20_000 });
+await page.waitForTimeout(400);
+await page.screenshot({ path: `${dossier}/feuille-de-la-fiche.png` });
+await page.getByRole("button", { name: "Annuler" }).click();
+await page.waitForTimeout(400);
+
 // Ce que l'écran porte vraiment, en clair — l'image se regarde, le texte se cite.
 const vu = await page.evaluate(() => ({
   colonnes: [...document.querySelectorAll("h3")].map((h3) => ({
     titre: (h3.textContent ?? "").trim(),
-    pieces: [...h3.parentElement!.querySelectorAll("a")].map((a) =>
-      (a.textContent ?? "").replace(/\s+/g, " ").trim()
+    // **`[data-atlas="piece"]`, et non `a`.** Les pièces sont des BOUTONS
+    // depuis le 21 août 2026 : ce relevé rendait trois colonnes vides et
+    // laissait croire à un écran nu, alors que l'image montrait six pièces.
+    // Un relevé qui mesure zéro ne mesure rien (`CLAUDE.md` §5).
+    pieces: [...h3.parentElement!.querySelectorAll('[data-atlas="piece"]')].map((b) =>
+      (b.textContent ?? "").replace(/\s+/g, " ").trim()
     ),
   })),
   derniere: (document.querySelector("h2")?.textContent ?? "").trim(),

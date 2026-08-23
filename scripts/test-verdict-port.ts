@@ -62,12 +62,17 @@ cas("une adresse publique qui ne rend PAS Atlas est signalée, avec ce qu'elle r
   assert.match(souci ?? "", /github\.com\/login/, "le souci ne dit pas CE QUE voit son téléphone");
 });
 
-cas("un 404 DÉSIGNE son auteur : le relais de GitHub, ou Atlas", async () => {
-  // **Deux 404 opposés portent le même chiffre** — trouvé le 22 août 2026,
-  // après avoir envoyé le patron deux fois à l'onglet PORTS sur un « 404 » qui
-  // n'accusait personne. Celui du relais veut dire « le port n'est pas
-  // public » ; celui d'Atlas veut dire l'inverse — le port est ouvert, et
-  // c'est l'application qui refuse. Le geste à faire n'est pas le même.
+cas("un 404 DÉSIGNE son auteur, et sur une SIGNATURE, non sur des indices", async () => {
+  // **Deux 404 opposés portent le même chiffre.** Celui du relais veut dire
+  // « la requête n'atteint pas Atlas » ; celui d'Atlas veut dire l'inverse. Le
+  // geste à faire n'est pas le même, et se tromper coûte une soirée.
+  //
+  // **La première version DEVINAIT**, sur la présence du mot « github » dans
+  // l'en-tête `Server`. Le 23 août 2026, le patron reçoit un refus arrivé NU —
+  // sans en-tête, sans type : il tombait donc du côté d'Atlas, et la fiche l'a
+  // envoyé lire un journal de serveur qui n'avait rien à dire. Atlas signe
+  // désormais ses réponses (`x-atlas-vivant`), et le relais ne peut pas
+  // inventer cette signature.
   const faux = (entetes: Record<string, string>) =>
     Promise.resolve({ status: 404, headers: new Headers(entetes) } as Response);
 
@@ -75,14 +80,57 @@ cas("un 404 DÉSIGNE son auteur : le relais de GitHub, ou Atlas", async () => {
     nom: "espace", domaine: "app.github.dev",
     chercher: () => faux({ server: "GitHub.com", "content-type": "text/html" }),
   });
-  assert.match(duRelais!.motif ?? "", /RELAIS GITHUB/, "un 404 de GitHub n'est pas reconnu : on renvoie lire le journal d'Atlas pour rien");
-  assert.match(duRelais!.motif ?? "", /pas public/, "il ne dit pas le geste qui répare");
+  assert.match(duRelais!.motif ?? "", /AVANT Atlas/, "un 404 de GitHub n'est pas reconnu : on renvoie lire le journal d'Atlas pour rien");
+  assert.match(duRelais!.motif ?? "", /n'atteint PAS l'application/, "il ne dit pas le geste qui répare");
 
+  // **SON CAS DU 23 AOÛT, et c'est celui qui a menti.** Un refus sans le
+  // moindre en-tête ne prouve RIEN sur Atlas ; l'ancienne règle le lui
+  // attribuait pourtant, faute d'y lire « github ».
+  const toutNu = await regarderDuDehors({
+    nom: "espace", domaine: "app.github.dev",
+    chercher: () => faux({}),
+  });
+  assert.doesNotMatch(
+    toutNu!.motif ?? "",
+    /d'ATLAS lui-même/,
+    "un refus SANS EN-TÊTE est mis sur le dos d'Atlas : c'est le défaut du 23 août, " +
+      "qui a envoyé le patron lire un journal muet pendant que le port était en cause"
+  );
+  assert.match(toutNu!.motif ?? "", /n'atteint PAS l'application/, "il n'oriente pas vers le port");
+  // **Et il DIT ce que la réponse portait.** Devant un refus nu, c'est la seule
+  // chose qui reste à examiner — sans elle, la fiche décrit un vide et l'agent
+  // en est réduit à supposer, ce qui a déjà coûté deux allers-retours au patron.
+  assert.match(
+    toutNu!.motif ?? "",
+    /en-têtes reçus : AUCUN/,
+    "la fiche ne dit pas que la réponse n'avait AUCUN en-tête : le seul fait qui restait à lire"
+  );
+
+  // Et quand il y en a, ce sont les NOMS qui sortent — jamais les valeurs, qui
+  // peuvent porter un jeton sur un dépôt public.
+  const avecEntetes = await regarderDuDehors({
+    nom: "espace", domaine: "app.github.dev",
+    chercher: () => faux({ "x-github-request-id": "SECRET-123", server: "GitHub.com" }),
+  });
+  assert.match(avecEntetes!.motif ?? "", /en-têtes reçus : .*x-github-request-id/, "les noms d'en-têtes ne sont pas publiés");
+  assert.doesNotMatch(avecEntetes!.motif ?? "", /SECRET-123/, "une VALEUR d'en-tête est publiée : ce dépôt est public");
+
+  // Et l'inverse : une réponse SIGNÉE est bien mise au compte d'Atlas, sans
+  // quoi le contrôle serait devenu incapable de désigner l'application et l'on
+  // enverrait toujours vers le port.
   const dAtlas = await regarderDuDehors({
     nom: "espace", domaine: "app.github.dev",
-    chercher: () => faux({ server: "next.js", "content-type": "application/json" }),
+    chercher: () => faux({ "x-atlas-vivant": "1", server: "next.js" }),
   });
-  assert.match(dAtlas!.motif ?? "", /ATLAS lui-même/, "un 404 d'Atlas est mis sur le dos du port : trois clics inutiles de plus");
+  assert.match(dAtlas!.motif ?? "", /ATLAS lui-même/, "une réponse signée n'est pas reconnue : on enverrait au port pour rien");
+
+  // **La signature ne doit pas se laisser imiter par le nom du serveur.** Sans
+  // ce cas, on aurait pu retomber sur la déduction d'avant sans s'en apercevoir.
+  const imitation = await regarderDuDehors({
+    nom: "espace", domaine: "app.github.dev",
+    chercher: () => faux({ server: "atlas-vivant" }),
+  });
+  assert.doesNotMatch(imitation!.motif ?? "", /d'ATLAS lui-même/, "un nom de serveur suffit à se faire passer pour Atlas");
 });
 
 cas("un renvoi ne publie QUE le domaine, jamais l'adresse d'authentification", async () => {

@@ -1852,6 +1852,74 @@ reviendra à la prochaine page supprimée.
 
 ## Ce qui vient d'être terminé
 
+**LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier
+l'adresse" et "Ouvrir le PDF", un petit encadré où marquer quelque chose. »*
+Proposition A retenue : cadre ouvert en permanence. Colonne `chantiers.note`,
+migration 0061, règle pure dans `src/lib/note-chantier.ts`.
+
+**⚠ IL A ÉTÉ CODÉ DEUX FOIS LE MÊME JOUR, par deux sessions qui ne se voyaient
+pas.** Celle arrivée la première sur `main` fait foi ; la seconde a été retirée
+en entier — deux colonnes pour la même note auraient été les deux vérités que
+`CLAUDE.md` §3 interdit. **Ne pas ressusciter `note_feuille` ni la migration
+0060 du même nom** en la retrouvant dans l'historique : elle a été abandonnée
+délibérément, pas oubliée.
+
+*La leçon, et elle vaut pour la suite : il fait tourner trois ou quatre sessions
+en parallèle, et aucune ne lit les autres. Devant une demande qui vient de lui,
+`git fetch origin main` AVANT de coder coûte dix secondes et peut épargner un
+lot entier.*
+
+**Trois choses à ne pas défaire :**
+
+1. **Elle ne part sur AUCUN document** — sa décision. Ni devis, ni facture, ni
+   PDF sans les prix. C'est cette promesse qui l'autorise à y écrire ce qu'il ne
+   dirait pas devant le client, et `scripts/test-note-hors-documents-e2e.ts` la
+   tient.
+2. **Enregistré en sortant du cadre**, jamais par un bouton.
+3. **Le champ à 16 px** : en dessous, iOS zoome et l'écran saute sous son doigt.
+   Contrainte du système, pas choix de charte.
+
+**⚠ ET LE LECTEUR DE PDF DE CETTE SUITE, deux fois faux avant d'être juste :** le
+texte d'un PDF est comprimé, puis écrit en hexadécimal. Chercher des mots en
+clair y trouve toujours zéro — donc toujours vert, y compris confronté à une note
+délibérément versée dans le document. Le contrôle prouve désormais d'abord qu'il
+sait LIRE ce PDF, en y retrouvant une ligne du devis. **Ne pas retirer cette
+vérification préalable** en croyant simplifier (`ARCHITECTURE.md` §154).
+
+**⚠ ET LE LECTEUR DE PDF DE LA SUITE, deux fois faux avant d'être juste :** le
+texte d'un PDF est comprimé, puis écrit en hexadécimal. Chercher des mots en
+clair y trouve toujours zéro — donc toujours vert. Le contrôle prouve maintenant
+d'abord qu'il sait lire ce PDF, en y retrouvant une ligne du devis. **Ne pas
+retirer cette vérification préalable** en croyant simplifier.
+
+
+**LA TVA SE LIT EN TÊTE, LES GESTES TOUCHENT LEUR CHIFFRE (23 août).** Ses deux
+remarques : *« l'outil Ma TVA à déclarer, il est caché »* et *« on ne comprend
+pas trop que scanner ou écrire à la main, c'est pour la TVA déductible »*. Deux
+planches essayables, deux choix — **« Pour ma TVA la B / Et pour les achats la
+C »** (`ARCHITECTURE.md` §149).
+
+**Trois choses à ne pas défaire :**
+
+1. **Le montant se lit dans `src/server/tva-courante.ts`**, jamais recomposé dans
+   l'écran : deux additions de la même somme lui montreraient deux chiffres à
+   deux écrans d'intervalle, sans savoir lequel croire.
+2. **La carte nomme sa période, et dit « Reste à payer »** — jamais « À payer ».
+   Ce montant n'est pas dû le jour où il le lit.
+3. **La couture entre l'encadré des chiffres et les deux gestes** est tout ce
+   qui dit le lien : aucun mot ne le dit. L'arrondi bas appartient au bloc des
+   gestes, plus à l'encadré.
+
+**⚠ ET LE PIÈGE, QUI A ÉTÉ PAYÉ DEUX FOIS ICI :** ces deux choix sont des choix
+de **place**, et une place ne casse pas. `scripts/test-tva-en-tete-e2e.ts` mesure
+donc des places. Deux de ses mesures étaient fausses avant d'être justes — l'une
+comparait la carte à sa **propre mention** (qui descend avec elle) et restait
+**verte sur le défaut dont elle portait le nom** ; l'autre comptait le
+rembourrage d'une carte comme une brèche et **accusait à tort**. Les repères
+`data-atlas="contenu-termines"` et `data-atlas="encadre-tva"` existent pour ça :
+ne pas les retirer en croyant nettoyer.
+
+
 **« IL PEUT PROPOSER UNE AUTRE DATE » (17 août, au soir).** Un interrupteur sous
 les dates, avant le bouton d'envoi : le patron décide, envoi par envoi, si le
 client peut sortir des dates offertes. `ARCHITECTURE.md` §132, migration 0055.
