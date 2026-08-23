@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ `ss` ne rend RIEN dans cet environnement — un port se mesure autrement (23 août 2026)
+
+**Payé trois batteries d'affilée ce soir**, chacune tombée sur un
+« Port 3000 déjà utilisé » alors que le port venait d'être déclaré libre.
+
+`ss -lptn` ne rend **aucune ligne** ici : le conteneur n'a pas le droit de
+rattacher une socket à son processus. La commande sort donc vide, sans erreur
+et sans code de retour fâché — exactement le piège que le dépôt nomme
+lui-même : **« un contrôle qui mesure ZÉRO ne mesure rien, et il est pire
+qu'absent »** (`CLAUDE.md` §5). Trois fois de suite, « le port est libre » n'a
+rien affirmé du tout.
+
+Le vrai coupable était un serveur de captures lancé par cette session
+même — `next dev -p 3000`, PID 3438, et son enfant `next-server` 3450.
+
+**Ce qui mesure vraiment, ici :**
+
+```bash
+fuser -n tcp 3000            # rend les PID qui tiennent le port
+curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/   # 000 = personne
+```
+
+`fuser` nomme le processus, `curl` dit ce qu'un client voit. Les deux ensemble
+tranchent ; `ss` seul ne tranche rien. Et devant un port occupé, chercher
+**ses propres serveurs** avant de soupçonner la machine : une capture d'écran
+prise plus tôt dans la session laisse un `next dev` derrière elle.
+
 ## Arrosage : l'interface pour discuter le plan (23 août 2026)
 
 Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
