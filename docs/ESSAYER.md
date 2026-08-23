@@ -414,6 +414,33 @@ Dans l'ordre :
    le démarrage automatique et le port ouvert sont lus **à la création**
    (encadré du geste 1).
 
+**Le téléphone propose de TÉLÉCHARGER un fichier au nom de l'adresse, au lieu
+d'afficher Atlas.** Une petite fenêtre s'ouvre, avec le nom de votre espace et un
+bouton « Télécharger ». N'acceptez pas : il n'y a rien à télécharger.
+
+**Ce que ça veut dire, et c'est précis :** le serveur a bien répondu — donc
+l'espace tourne et Atlas est debout. Mais **le port 3000 est privé**. GitHub
+renvoie alors sa propre page de connexion à la place d'Atlas, et le téléphone,
+qui n'y comprend rien, propose de l'enregistrer.
+
+C'est le piège du 10 août 2026, revenu : `devcontainer.json` déclare bien le port
+public, mais **cette ligne n'est lue qu'à la création de l'espace**. Et le geste
+de rattrapage joué à chaque allumage (`.devcontainer/ouvrir-port.sh`) a besoin de
+l'outil `gh`, **qui n'est pas dans ce conteneur** — il renonce alors en silence.
+
+**Le geste qui débloque**, depuis l'éditeur de l'espace (sur un ordinateur, c'est
+beaucoup plus facile qu'au doigt) :
+
+> onglet **PORTS** → ligne du port **3000** → clic droit → **Port Visibility** →
+> **Public**
+
+Puis rouvrez l'adresse sur le téléphone. Le réglage tient tant que l'espace
+existe.
+
+**Si vous n'avez pas d'ordinateur sous la main :** ouvrez l'adresse depuis un
+navigateur **où vous êtes connecté à GitHub**. Un port privé y répond ; c'est
+seulement au visiteur anonyme qu'il se ferme.
+
 **La page reste blanche depuis le téléphone.** Blanche, pas crème : ce n'est pas
 un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive.
 Trois causes, dans l'ordre de fréquence :
