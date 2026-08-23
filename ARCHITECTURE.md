@@ -13773,3 +13773,52 @@ ou « AUCUN » quand il n'y en avait pas.
 **Les noms, jamais les valeurs** : ce dépôt est public, et une valeur d'en-tête
 peut porter un jeton. Un contrôle le tient, et il a été vu rouge dans les deux
 sens — sur la disparition des noms, et sur la fuite d'une valeur.
+
+## 156. Un devis vide ne part pas — la barrière porte sur les lignes, pas sur l'euro
+
+**Le patron, le 23 août 2026 :** *« Le devis part à zéro euro chez la cliente,
+alors qu'il y a un arbre à tailler et un à démonter. Rien n'apparaît chez elle. »*
+
+Sa cliente avait donc sous les yeux un document qui n'énonçait **rien** — ni
+prestation, ni prix — et un bouton « J'accepte ce devis » sous ce vide.
+
+### Ce n'était pas une perte de données
+
+Les lignes du devis viennent des lignes de **PRIX** (`genererDevis`), jamais des
+prestations. Deux arbres décrits mais jamais chiffrés donnent un devis
+authentiquement vide : le document était juste. **C'est de l'avoir laissé PARTIR
+qui ne l'était pas.**
+
+L'envoi savait refuser un devis absent, un canal non choisi, une coordonnée
+manquante. Jamais un devis sans une seule ligne.
+
+### Zéro LIGNE, et non zéro euro
+
+Un devis à **0,00 €** peut être légitime — un geste commercial, un déplacement
+offert. Le refuser interdirait au patron quelque chose qu'il a le droit de faire,
+et ce serait une règle inventée (`CLAUDE.md` §4).
+
+Un devis **sans une seule ligne** n'est jamais légitime : il n'y a rien à
+accepter. La barrière porte donc sur ce qui est **écrit**, pas sur ce qui est
+compté (`src/lib/devis-envoyable.ts`).
+
+### Le refus vit aux DEUX bouts, depuis une seule règle
+
+L'écran cache le bouton, et `envoyerAuClientAction` refuse de son côté : cacher
+ne ferme rien, l'action reste appelable, et un devis vide parti est sans retour.
+La phrase vient du même fichier des deux côtés — deux recopies finiraient par
+diverger (`CLAUDE.md` §3).
+
+**Et le blocage passe AVANT le canal** : à quoi bon lui faire choisir comment
+joindre sa cliente pour lui envoyer un document qui n'énonce rien ?
+
+### Le contrôle qui ne pouvait pas échouer, et comment on l'a vu
+
+Le premier jet attendait le mot « aucune ligne » à l'écran — or l'éditeur de
+devis porte déjà *« Aucune ligne pour l'instant »*. Le contrôle restait donc
+**vert le garde-fou retiré** : il regardait le mauvais texte.
+
+Il vise désormais une phrase qui n'appartient qu'au refus — *« recevrait un
+document vide »* —, et il a été vu rouge contre l'absence du garde-fou. C'est la
+troisième fois de la journée qu'un contrôle passait au vert sur le défaut même
+dont il portait le nom ; le remède est toujours le même : **le confronter**.

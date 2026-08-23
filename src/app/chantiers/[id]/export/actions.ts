@@ -8,6 +8,7 @@ import { ingererDevis } from "@/server/documents/ingestion";
 import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/preparation-envoi";
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
 import { mettreAJourClient } from "@/server/repositories/clients";
+import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 
 export async function chargerDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();
@@ -128,6 +129,16 @@ export async function envoyerAuClientAction(
   const ctx = await getCurrentCtx();
 
   const preparation = await preparerEnvoi(ctx, chantierId, new Date(), dureeDemiJournees);
+  // **Le refus vit AUSSI ici, et pas seulement à l'écran.** Cacher un bouton ne
+  // ferme rien : cette action est appelable, et un devis vide parti chez une
+  // cliente est sans retour — elle a « J'accepte ce devis » sous un document
+  // qui n'énonce rien. Une seule règle (`src/lib/devis-envoyable.ts`) sert à
+  // l'écran et à cette vérification : deux implémentations finiraient par
+  // diverger (`CLAUDE.md` §3).
+  if (preparation.blocage === "devis_vide") {
+    return { succes: false, erreur: MOTIF_DEVIS_VIDE };
+  }
+
   if (preparation.blocage === "canal_absent") {
     return {
       succes: false,

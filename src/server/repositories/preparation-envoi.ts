@@ -1,10 +1,11 @@
-import { and, eq, gte, isNull, lte } from "drizzle-orm";
+import { and, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
 import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
-import { absencesEquipe, chantiers, clients, devis, entreprises } from "../db/schema";
+import { absencesEquipe, chantiers, clients, devis, entreprises, lignesDevis } from "../db/schema";
+import { devisEnvoyable } from "../../lib/devis-envoyable";
 import type { Ctx } from "./context";
 import { jourLisible } from "../../lib/jour";
 import {
@@ -79,7 +80,7 @@ export type PreparationEnvoi = {
   /** La durée a-t-elle été déduite de la dictée, ou faute de mieux ? */
   dureeDeduiteDeLaDictee: boolean;
   /** Motif rendant l'envoi impossible, à afficher tel quel au patron. */
-  blocage: "canal_absent" | "coordonnee_absente" | "devis_absent" | null;
+  blocage: "canal_absent" | "coordonnee_absente" | "devis_absent" | "devis_vide" | null;
 };
 
 /**
@@ -147,6 +148,20 @@ export async function preparerEnvoi(
       .from(devis)
       .where(and(eq(devis.chantierId, chantierId), eq(devis.entrepriseId, ctx.entrepriseId)))
       .limit(1);
+
+    // **Compter les lignes, parce qu'un devis vide part sinon sans un mot.**
+    //
+    // Son défaut du 23 août 2026 : *« le devis part à zéro euro chez la
+    // cliente, alors qu'il y a un arbre à tailler et un à démonter »*. Les
+    // lignes du devis viennent des lignes de PRIX, jamais des prestations : deux
+    // arbres décrits mais jamais chiffrés donnent un document authentiquement
+    // vide, et sa cliente avait « J'accepte ce devis » sous ce vide.
+    const [compte] = devisRow
+      ? await tx
+          .select({ n: sql<number>`count(*)::int` })
+          .from(lignesDevis)
+          .where(eq(lignesDevis.devisId, devisRow.id))
+      : [{ n: 0 }];
 
     // Les chantiers déjà posés, avec leur créneau et leur durée : c'est ce qui
     // permet de savoir qu'un 6 août pris le matin reste libre l'après-midi.
@@ -239,13 +254,18 @@ export async function preparerEnvoi(
 
     // L'ordre des blocages suit celui que le patron doit corriger : à quoi bon
     // signaler une coordonnée manquante si le canal n'est pas encore choisi ?
+    // **Le devis vide passe AVANT le canal**, et l'ordre n'est pas un détail :
+    // à quoi bon lui faire choisir comment joindre sa cliente pour lui envoyer
+    // un document qui n'énonce rien ? On corrige le contenu, puis l'adresse.
     const blocage: PreparationEnvoi["blocage"] = !devisRow
       ? "devis_absent"
-      : !canal
-        ? "canal_absent"
-        : !destinataire
-          ? "coordonnee_absente"
-          : null;
+      : devisEnvoyable({ nombreLignes: compte?.n ?? 0 })
+        ? "devis_vide"
+        : !canal
+          ? "canal_absent"
+          : !destinataire
+            ? "coordonnee_absente"
+            : null;
 
     return {
       canal,

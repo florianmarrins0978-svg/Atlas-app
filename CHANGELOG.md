@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Un devis vide ne part plus chez le client
+
+*« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
+et un à démonter. Rien n'apparaît chez elle. »*
+
+Sa cliente avait sous les yeux un document qui n'énonçait **rien** — ni
+prestation ni prix — et un bouton « J'accepte ce devis » sous ce vide.
+
+**Ce n'était pas une perte de données.** Les lignes du devis viennent des lignes
+de PRIX, jamais des prestations : deux arbres décrits mais jamais chiffrés
+donnent un devis authentiquement vide. Le document était juste ; c'est de l'avoir
+laissé PARTIR qui était le défaut. L'envoi savait refuser un devis absent, un
+canal non choisi, une coordonnée manquante — jamais un devis sans une ligne.
+
+**La barrière porte sur les LIGNES, pas sur l'euro.** Un devis à 0,00 € peut être
+légitime — un geste commercial, un déplacement offert — et le refuser
+interdirait quelque chose qui est son droit. Un devis sans une seule ligne, lui,
+n'est jamais légitime : il n'y a rien à accepter.
+
+Le refus vit aux deux bouts depuis une seule règle : l'écran cache le bouton et
+le serveur refuse de son côté, car cacher ne ferme rien. Et il passe **avant** le
+canal — à quoi bon choisir comment joindre sa cliente pour lui envoyer un
+document vide ?
+
+**Le contrôle a d'abord été incapable d'échouer** : il attendait « aucune ligne »
+à l'écran, phrase que l'éditeur de devis porte déjà. Il restait vert le garde-fou
+retiré. Il vise maintenant une phrase qui n'appartient qu'au refus, et il a été
+vu rouge. `ARCHITECTURE.md` §156.
+
+
 ### « La cliente ne peut pas proposer de jour » — le contrôle qui manquait sur son chemin
 
 Son signalement, capture à l'appui : *« je n'ai pas coché la case pour que la
