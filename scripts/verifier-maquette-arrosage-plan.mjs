@@ -151,6 +151,12 @@ const vu = await page.evaluate(() => {
     })
     .filter(Boolean);
 
+  // **Toutes les cellules « référence » du tableau**, quelle que soit la zone :
+  // le jardin, l'amenée et la nourrice en portent chacune.
+  const references = [...document.querySelectorAll("td.ref")]
+    .map((td) => td.textContent.trim())
+    .filter(Boolean);
+
   const legende = {
     // Un symbole DESSINÉ, pas un caractère : « ● » se lit mal, ne rend pas la
     // nuance plein/creux, et ne prouve pas qu'il ressemble à ce qui est tracé.
@@ -176,6 +182,7 @@ const vu = await page.evaluate(() => {
     pieces,
     tranchee,
     legende,
+    references,
     jonctions,
     piecesNourrice,
     piecesAmenee,
@@ -791,6 +798,32 @@ cas("la légende montre les symboles, et nomme la pièce de chacun", () => {
     ["la tuyère et sa buse", /tuyère\s+\S+.*buse/s],
   ]) {
     if (!motif.test(t)) throw new Error(`la légende ne dit pas où va ${quoi}`);
+  }
+});
+
+// ── UNE RÉFÉRENCE, OU RIEN ─────────────────────────────────────────────────
+//
+// **Sa consigne du 22 août 2026, en majuscules :** *« tu ne dois surtout pas
+// inventer de prix ni de référence !!!!!!! »*
+//
+// **Le défaut qu'il visait était là, sous les yeux, depuis le début.** La
+// colonne « référence » de cette planche portait `te-taraude-25-34-25`,
+// `electrovanne-100dv`, `pehd25` — les CLÉS INTERNES du catalogue, c'est-à-dire
+// des noms de variables. Un paysagiste qui arrive chez Aqua Plus en demandant
+// un « te-taraude-25-34-25 » se fait regarder de travers : ça n'existe pas.
+//
+// Ce qui EST une référence, c'est ce qu'on a lu sur SES documents — les entrées
+// du catalogue qui portent un `releve`. `CATALOGUE.referenceDe` en est le seul
+// juge, et ce contrôle l'interroge plutôt que de porter sa propre liste (une
+// liste recopiée ici finirait par défendre le catalogue d'avant-hier, comme la
+// légende l'a fait le matin même).
+cas("aucune référence inventée dans la commande", () => {
+  const fausses = vu.references.filter((r) => CATALOGUE.referenceDe(r) === null);
+  if (fausses.length > 0) {
+    throw new Error(
+      `${fausses.length} « référence(s) » qui n'en sont pas : ${fausses.join(", ")} — ` +
+        "ce sont des clés internes, on ne commande pas avec"
+    );
   }
 });
 

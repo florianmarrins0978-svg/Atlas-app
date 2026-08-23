@@ -48,6 +48,55 @@ tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour porta
 le même `data-jour` que les cases — deux éléments pour le même jour, et une
 suite qui ne savait plus lequel viser.
 
+### La colonne « référence » affichait des noms de variables
+
+**Sa consigne, en majuscules et six points d'exclamation :** *« tu ne dois
+surtout pas inventer de prix ni de référence !!!!!!! »*
+
+**Aucun prix n'était en cause** — le catalogue n'en porte aucun, c'est la règle
+depuis le 17 août et elle tenait. **Mais les références, si.** La liste de
+matériel et la planche du plan affichaient `te-taraude-25-34-25`,
+`electrovanne-100dv`, `regard-rect12`, `pehd25` : les clés internes du
+catalogue, c'est-à-dire des noms de variables. Un paysagiste qui arrive chez
+Aqua Plus en demandant un « te-taraude-25-34-25 » se fait regarder de travers.
+
+Sur vingt-six lignes de matériel, **cinq seulement portaient une vraie
+référence** — RA3504, RA3504-B075, RT1804, RBT636, OD501, OD502, celles qu'on a
+relevées sur ses documents.
+
+`CATALOGUE.referenceDe` en est désormais le seul juge : une référence ne
+s'affiche que si l'entrée du catalogue porte un `releve` (« Aqua Plus 2026,
+p. 11 »). Les autres lignes n'en montrent aucune — leur nom suffit au comptoir,
+et le silence vaut mieux qu'une référence qui n'existe pas.
+
+Un contrôle interdit maintenant à la planche d'en réafficher : il interroge le
+catalogue au lieu de porter sa propre liste, parce qu'une liste recopiée dans un
+contrôle finit par défendre le catalogue d'avant-hier — c'est ce qui était
+arrivé à la légende le matin même.
+
+### « Un arroseur de trop fait que le réseau ne se lève pas » — la règle était à l'envers
+
+**Sa correction, et elle vise une règle que j'avais écrite le matin même.** Le
+`CLAUDE.md` §4 ter disait : *« devant deux hypothèses également défendables,
+retenir celle qui pose un arroseur de plus »*. Appliquée à un RÉSEAU, cette
+formule produit exactement la panne qu'elle prétend éviter : une tête de plus
+sur une vanne, c'est du débit en plus sur la même conduite, donc de la pression
+en moins, donc des turbines qui sortent à moitié.
+
+La règle est redressée, et elle se lit maintenant par grandeur :
+
+| Devant un doute | Ce qu'on retient |
+|---|---|
+| combien d'arroseurs sur **une vanne** | **le moins**, quitte à ouvrir une vanne de plus |
+| combien de **réseaux** | **le plus** |
+| une perte de charge inconnue | **la plus forte** |
+| une portée inconnue | **la plus courte** |
+
+**Le code, lui, allait déjà dans le bon sens** — la marge de 0,85, le plafond du
+tuyau et la portée réduite bornent tous le débit par vanne. C'est le vocabulaire
+qui était faux, dans quatre commentaires et deux documents. Une règle mal
+formulée finit par être appliquée telle qu'elle est écrite.
+
 ### Ce qui arrive au DERNIER arroseur est enfin calculé
 
 Sa demande, après qu'on lui a nommé le dernier trou connu : *« oui corrige la

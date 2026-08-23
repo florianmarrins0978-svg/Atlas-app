@@ -948,6 +948,40 @@ CATALOGUE.busesDe = function (marqueCle, pourType) {
     .sort(function (a, b) { return b.rayon - a.rayon; });
 };
 
+/* ══ UNE RÉFÉRENCE, OU RIEN ════════════════════════════════════════════════
+
+   **Sa consigne du 22 août 2026, en majuscules et six points d'exclamation :**
+   *« tu ne dois surtout pas inventer de prix ni de référence !!!!!!! »*
+
+   **Il avait raison, et le défaut était à l'écran.** La liste de matériel
+   affichait une colonne « référence » remplie avec les CLÉS INTERNES du
+   catalogue : `te-taraude-25-34-25`, `electrovanne-100dv`, `regard-rect12`,
+   `sonde-pluie`. Ce ne sont pas des références : ce sont des noms de variables.
+   Un paysagiste qui arrive chez Aqua Plus en demandant un « te-taraude-25-34-25 »
+   se fait regarder de travers, et il a raison — ça n'existe pas.
+
+   **Ce qui EST une référence :** celle qu'on a relevée sur ses documents. Ces
+   entrées-là portent toutes un champ `releve` (« Aqua Plus 2026, p. 11 ») —
+   RA3504, RA3504-B075, OD501, RBT636. Les autres n'ont qu'un nom et une
+   marque, ce qui suffit pour commander au comptoir mais n'est PAS une
+   référence.
+
+   Cette fonction rend l'une ou l'autre, jamais un entre-deux. Le silence est
+   la bonne réponse quand on ne sait pas : un nom sans référence se commande,
+   une référence inventée fait perdre une matinée. */
+CATALOGUE.referenceDe = function (cle) {
+  if (!cle) return null;
+  var listes = [CATALOGUE.arroseurs, CATALOGUE.buses, CATALOGUE.corps,
+                CATALOGUE.coudes, CATALOGUE.gaines];
+  for (var i = 0; i < listes.length; i++) {
+    var trouve = (listes[i] || []).filter(function (x) { return x.ref === cle; })[0];
+    // **`releve` est le seul juge.** Une entrée sans relevé est une entrée
+    // dont la référence n'a jamais été lue sur un document du patron.
+    if (trouve) return trouve.releve ? trouve.ref : null;
+  }
+  return null;
+};
+
 /* Tout ce qui peut porter un prix, à un seul endroit : c'est la liste qu'il
    remplira dans son registre, et elle ne doit pas se tenir à deux endroits. */
 CATALOGUE.tousLesProduits = function () {

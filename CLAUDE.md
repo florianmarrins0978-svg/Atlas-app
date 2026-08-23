@@ -265,10 +265,27 @@ la tranchée à ses frais.
 1. **Aucune valeur d'arrosage ne se devine.** Un chiffre sans source relevée ne
    rentre pas dans le calcul : il se demande, ou le calcul refuse de conclure.
    « Plausible » n'est pas une source.
-2. **Se tromper vers le SÛR, toujours.** Devant deux hypothèses également
-   défendables, retenir celle qui pose un arroseur de plus, jamais celle qui en
-   pose un de moins. Un arroseur en trop coûte 30 € ; un réseau qui ne se lève
-   pas coûte le chantier.
+2. **Se tromper vers le SÛR — et le sûr, c'est MOINS D'ARROSEURS PAR RÉSEAU.**
+
+   **Cette règle a d'abord été écrite à l'envers, et c'est lui qui l'a
+   redressée le 22 août 2026 :** *« un arroseur de trop fait que le réseau ne
+   peut pas se lever ! »* Elle disait « retenir l'hypothèse qui pose un
+   arroseur de plus » — une formule qui, appliquée à un RÉSEAU, produit
+   exactement la panne qu'elle prétend éviter : une tête de plus sur une vanne,
+   c'est du débit en plus sur la même conduite, donc de la pression en moins,
+   donc des turbines qui sortent à moitié.
+
+   La bonne formulation, et il n'y en a qu'une :
+
+   | Devant un doute | Ce qu'on retient |
+   |---|---|
+   | combien d'arroseurs sur **une vanne** | **le moins**, quitte à ouvrir une vanne de plus |
+   | combien de **réseaux** | **le plus** |
+   | une perte de charge inconnue | **la plus forte** |
+   | une portée inconnue | **la plus courte** |
+
+   Une vanne de plus coûte une électrovanne et une voie de programmateur. Un
+   réseau qui ne se lève pas coûte le chantier.
 3. **Ce qui n'est pas calculé se DIT à l'écran.** Pas dans le dépôt, pas dans un
    commentaire : sous le plan, là où il le lit. Une réserve tue vaut un mensonge
    — parce qu'un plan silencieux est cru complet.
@@ -439,7 +456,7 @@ dessous.
 constructeurs, pas de ses relevés à lui : au-dessus de la pression de
 référence, on garde la portée du catalogue. Espacer les arroseurs sur un chiffre
 supposé fabrique un trou d'arrosage qu'on ne voit qu'en juillet ; réduire coûte
-au pire un arroseur de plus. **Et une portée réduite se DIT à l'écran** — c'est
+au pire une vanne de plus. **Et une portée réduite se DIT à l'écran** — c'est
 une estimation, pas un fait.
 
 **LE DIAMÈTRE DU TUYAU SE CALCULE, ET SUR DEUX CRITÈRES — jamais un seul.**

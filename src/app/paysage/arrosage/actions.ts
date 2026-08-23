@@ -40,7 +40,17 @@ export type EtatPlan =
          * longueur de tuyau à mesurer. Les forcer à en avoir une aurait obligé
          * à en inventer, ce que ce dépôt interdit.
          */
-        materiel: { ref?: string; nom: string; q: number; u: string }[];
+        /**
+         * **`reference` est la SEULE qu'on montre.**
+         *
+         * `ref` est une clé interne du catalogue (`te-taraude-25-34-25`) : elle
+         * sert à identifier une ligne, elle ne se commande pas. `reference` ne
+         * vaut que quand elle a été relevée sur un document du patron
+         * (« Aqua Plus 2026, p. 11 ») — sinon `null`, et l'écran n'affiche
+         * rien. Sa consigne du 22 août 2026 : *« tu ne dois surtout pas
+         * inventer de prix ni de référence »*.
+         */
+        materiel: { ref?: string; reference?: string | null; nom: string; q: number; u: string }[];
         /**
          * **À PARTIR DE COMBIEN DE MÈTRES IL FAUT DU Ø32** — sa demande du
          * 22 août 2026 : *« passé un certain nombre de mètres linéaires, il

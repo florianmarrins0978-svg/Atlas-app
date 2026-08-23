@@ -156,8 +156,11 @@ function paveSelonSaRegle(dimension, portee){
    la portée du catalogue est conservée**. Gonfler une portée sur une
    estimation ferait espacer les arroseurs davantage, et un espacement trop
    large est un trou d'arrosage qu'on ne découvre qu'en juillet. En dessous, on
-   réduit : c'est le sens où se tromper coûte un arroseur de plus, jamais une
-   tache sèche.
+   réduit : resserrer la pose ajoute des têtes sur la ZONE, que le découpage
+   répartira sur une vanne de plus — jamais sur la même. C'est le sens sûr, et
+   il coûte une électrovanne, pas un chantier (`CLAUDE.md` §4 ter, redressé par
+   lui le 22 août : *« un arroseur de trop fait que le réseau ne peut pas se
+   lever »*).
 
    ⚠ **La pression retenue est celle de la SOURCE**, pas celle qui reste au
    pied du dernier arroseur : les pertes du réseau lui-même ne sont pas encore
@@ -603,7 +606,8 @@ function perteDuReseau(secteur){
    une même pelouse : deux portées, deux espacements, un plan qu'on ne sait pas
    poser. On retient donc la pire, ce qui revient à poser partout la buse qui
    tient au point le plus mal alimenté. C'est le sens sûr (`CLAUDE.md` §4 ter),
-   et cela coûte au pire un arroseur de plus sur les réseaux les mieux servis. */
+   et cela coûte au pire une vanne de plus sur les réseaux les mieux servis —
+   jamais une tête de plus sur une vanne déjà chargée. */
 function pirePerteDeReseau(d){
   var pire = 0;
   (d.secteurs || []).forEach(function(s){
@@ -1447,7 +1451,14 @@ export function calculerPlan(entree) {
       reseauxDeZone: d.reseauxDeZone,
       voies: voiesProgrammateur(d.secteurs.length),
       couleurs: d.secteurs.map(function (_, i) { return couleurReseau(i); }),
-      materiel: listeMateriel(d),
+      // **UNE RÉFÉRENCE, OU RIEN** (sa consigne du 22 août : « tu ne dois
+      // surtout pas inventer de prix ni de référence »). La clé interne reste
+      // dans `ref` — les contrôles s'en servent pour identifier une ligne —
+      // mais `reference` ne porte que ce qui a été RELEVÉ sur ses documents.
+      // C'est `reference` que l'écran montre, et rien d'autre.
+      materiel: listeMateriel(d).map(function (l) {
+        return Object.assign({}, l, { reference: CATALOGUE.referenceDe(l.ref) });
+      }),
       amenee: amenee(d),
       // **L'ESTIMATION DE PORTÉE SE DIT** (`CLAUDE.md` §4). Le débit corrigé
       // est de la physique ; la portée, elle, suit un exposant qui n'est pas

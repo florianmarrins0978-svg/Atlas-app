@@ -121,8 +121,11 @@ function paveSelonSaRegle(dimension, portee){
    la portée du catalogue est conservée**. Gonfler une portée sur une
    estimation ferait espacer les arroseurs davantage, et un espacement trop
    large est un trou d'arrosage qu'on ne découvre qu'en juillet. En dessous, on
-   réduit : c'est le sens où se tromper coûte un arroseur de plus, jamais une
-   tache sèche.
+   réduit : resserrer la pose ajoute des têtes sur la ZONE, que le découpage
+   répartira sur une vanne de plus — jamais sur la même. C'est le sens sûr, et
+   il coûte une électrovanne, pas un chantier (`CLAUDE.md` §4 ter, redressé par
+   lui le 22 août : *« un arroseur de trop fait que le réseau ne peut pas se
+   lever »*).
 
    ⚠ **La pression retenue est celle de la SOURCE**, pas celle qui reste au
    pied du dernier arroseur : les pertes du réseau lui-même ne sont pas encore
@@ -568,7 +571,8 @@ function perteDuReseau(secteur){
    une même pelouse : deux portées, deux espacements, un plan qu'on ne sait pas
    poser. On retient donc la pire, ce qui revient à poser partout la buse qui
    tient au point le plus mal alimenté. C'est le sens sûr (`CLAUDE.md` §4 ter),
-   et cela coûte au pire un arroseur de plus sur les réseaux les mieux servis. */
+   et cela coûte au pire une vanne de plus sur les réseaux les mieux servis —
+   jamais une tête de plus sur une vanne déjà chargée. */
 function pirePerteDeReseau(d){
   var pire = 0;
   (d.secteurs || []).forEach(function(s){

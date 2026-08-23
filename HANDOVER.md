@@ -9,6 +9,26 @@ sert.
 
 ---
 
+## UNE RÉFÉRENCE, OU RIEN — et le sûr, c'est MOINS d'arroseurs par vanne
+
+**Deux consignes du 22 août 2026 au soir, toutes deux à ne jamais rouvrir.**
+
+**1. Ne jamais afficher une référence non relevée.** La colonne « référence »
+montrait les clés internes du catalogue (`te-taraude-25-34-25`,
+`electrovanne-100dv`). Ce sont des noms de variables : on ne commande pas avec.
+`CATALOGUE.referenceDe(cle)` est le seul juge — elle rend la référence
+seulement si l'entrée porte un `releve`. L'écran affiche `reference`, jamais
+`ref`. Un contrôle de la planche interdit d'en réafficher.
+
+**2. Le sûr, c'est MOINS d'arroseurs par vanne — pas plus.** La règle du
+`CLAUDE.md` §4 ter était écrite à l'envers, et c'est lui qui l'a redressée :
+*« un arroseur de trop fait que le réseau ne peut pas se lever ! »* Une tête de
+plus sur une vanne, c'est du débit en plus sur la même conduite. Devant un
+doute : moins d'arroseurs par vanne, plus de réseaux, la perte la plus forte, la
+portée la plus courte.
+
+---
+
 ## LA PRESSION QUI DIMENSIONNE EST CELLE DU DERNIER ARROSEUR (22 août 2026)
 
 **Avant de toucher à `decouper` ou à `buseALaPression`, sachez ceci :** le
