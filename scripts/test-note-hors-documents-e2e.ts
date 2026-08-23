@@ -6,34 +6,34 @@ import { inflateSync } from "node:zlib";
 import { pool } from "../src/server/db/client";
 
 /**
- * Le pense-bête de la feuille de chantier.
+ * Ce que la note ne doit JAMAIS quitter : l'application.
  *
- * *Sa demande du 23 août 2026 :* **« Entre "Copier l'adresse" et "Ouvrir le
- * PDF", j'aimerais avoir un petit encadré où l'utilisateur peut marquer quelque
- * chose — penser à prendre le broyeur, client plus disponible à partir de neuf
- * heures. »**
+ * *Sa décision du 23 août 2026,* posée devant la planche 93 : le pense-bête de
+ * la feuille de chantier **ne part sur aucun document** — ni devis, ni facture,
+ * ni le PDF sans les prix que ses gars emportent. Dedans, elle serait devenue un
+ * écrit qui sort de l'entreprise, et *« client pas disponible avant neuf
+ * heures »* se serait rédigé en sachant que le client peut le lire.
  *
- * Planche 93 (`appli/note-feuille-chantier.html`), **proposition A retenue** :
- * le cadre est ouvert en permanence. Et sa seconde réponse, qui décidait de
- * l'implémentation : **la note ne part PAS sur le PDF** que ses gars emportent.
+ * **C'est cette promesse qui l'autorise à écrire librement.**
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * **CE QUE CETTE SUITE TIENT, ET POURQUOI CHAQUE MESURE EXISTE.**
+ * **CE QUE CETTE SUITE AJOUTE À `test-planning-repo`**, qui tient déjà la règle
+ * d'écriture côté base : le parcours réel, au navigateur — et surtout la seule
+ * mesure qui éprouve la promesse ci-dessus, en ouvrant le document lui-même.
  *
- * 1. **Elle SURVIT.** Une note qui s'affiche puis disparaît au rechargement est
- *    pire qu'un cadre absent : il l'écrit, part en camion, et découvre le vide
- *    sur le chantier. C'est la seule mesure qui compte vraiment, et elle se fait
- *    en rechargeant pour de bon — pas en relisant l'état de l'écran.
- * 2. **Elle s'enregistre en SORTANT du cadre**, sans qu'un bouton soit touché.
- *    Un bouton non touché perdrait la note d'un homme qui range son téléphone.
- * 3. **Elle ne part sur AUCUN document.** Sa réponse du 23 août. Le PDF sans les
- *    prix est donc téléchargé et lu : rien d'autre ne prouve cette promesse, et
- *    c'est celle qui l'autorise à écrire « client pas commode ».
- * 4. **Le champ fait 16 px au moins.** En dessous, iOS zoome à la mise au point
- *    et l'écran saute sous le doigt au moment où il commence à écrire. Ce n'est
- *    pas une préférence de charte : ça se mesure.
- * 5. **Vider le cadre EFFACE**, et jusqu'en base — sans quoi une note fausse
- *    resterait pour toujours.
+ * **ET LE PIÈGE QU'ELLE A PAYÉ DEUX FOIS.** Ce contrôle a été vert deux fois de
+ * suite en confrontation avec une note délibérément versée dans le PDF :
+ *
+ *   1. il cherchait les mots dans les **octets bruts** — le texte d'un PDF est
+ *      comprimé, et rien n'y est jamais trouvé ;
+ *   2. les flux décomprimés, il les cherchait **en clair** — le texte s'y écrit
+ *      en hexadécimal, `<4174656C696572> Tj`.
+ *
+ * Deux fois, il promettait le silence d'un document qu'il ne savait pas ouvrir.
+ * D'où la mesure qui garde les deux : **il prouve d'abord qu'il sait LIRE ce
+ * PDF**, en y retrouvant une ligne du devis, et refuse de conclure autrement.
+ * Ne pas retirer cette vérification préalable en croyant simplifier
+ * (`ARCHITECTURE.md` §154).
  */
 
 const BASE = "http://localhost:3000";
@@ -57,7 +57,7 @@ async function ouvrirLaFeuille(page: Page, nom: string) {
   const ligne = page.getByText(nom).first();
   await ligne.waitFor({ state: "visible", timeout: 30_000 });
   await ligne.click();
-  await page.waitForSelector('[data-atlas="note-feuille"]', { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="note-etat"]', { timeout: 30_000 });
   // **Attendre que la feuille soit CHARGÉE, et non qu'elle soit à l'écran.**
   // Le cadre paraît tout de suite (sa proposition A), la note tombe une
   // fraction de seconde plus tard : lire aussitôt donnait un cadre vide, et la
@@ -170,7 +170,7 @@ async function main() {
   await ouvrirLaFeuille(page, nom);
 
   await cas("le cadre est OUVERT d'emblée — sa proposition A", async () => {
-    const zone = page.locator('[data-atlas="note-feuille"] textarea');
+    const zone = page.locator('[data-atlas="note-chantier"]');
     assert.ok(
       await zone.isVisible(),
       "le cadre n'est pas ouvert : c'est la proposition B (une ligne qui s'ouvre au doigt), " +
@@ -185,7 +185,7 @@ async function main() {
       return b.y;
     };
     const adresse = await boite("text=Copier l’adresse", "« Copier l'adresse »");
-    const note = await boite('[data-atlas="note-feuille"]', "Le cadre de la note");
+    const note = await boite('[data-atlas="note-etat"]', "Le cadre de la note");
     const pdf = await boite('[data-atlas="pdf-sans-prix"]', "« Ouvrir le PDF sans les prix »");
     assert.ok(
       adresse < note && note < pdf,
@@ -197,7 +197,7 @@ async function main() {
 
   await cas("le champ fait 16 px au moins — sinon iOS zoome et l'écran saute", async () => {
     const px = await page
-      .locator('[data-atlas="note-feuille"] textarea')
+      .locator('[data-atlas="note-chantier"]')
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     assert.ok(
       px >= 16,
@@ -209,25 +209,25 @@ async function main() {
   const TEXTE = "Prendre le broyeur. Client pas dispo avant 9 h.";
 
   await cas("elle s'enregistre en SORTANT du cadre, sans toucher de bouton", async () => {
-    await page.locator('[data-atlas="note-feuille"] textarea').fill(TEXTE);
+    await page.locator('[data-atlas="note-chantier"]').fill(TEXTE);
     // Sortir du cadre, et rien d'autre : aucun bouton n'est touché.
     await page.locator('[data-atlas="feuille"] p').first().click();
     await page.waitForFunction(
-      () => /Enregistrée\.|n'a pas pu/.test(document.querySelector('[data-atlas="note-feuille"]')?.textContent ?? ""),
+      () => /Enregistré\.|n'a pas pu/.test(document.querySelector('[data-atlas="note-etat"]')?.textContent ?? ""),
       undefined,
       { timeout: 30_000 }
     );
-    const dit = await page.locator('[data-atlas="note-feuille"]').innerText();
+    const dit = await page.locator('[data-atlas="note-etat"]').innerText();
     assert.match(
       dit,
-      /Enregistrée\./,
+      /Enregistré\./,
       `L'écran ne dit pas qu'elle est enregistrée : « ${dit.replace(/\s+/g, " ")} »`
     );
   });
 
   await cas("elle SURVIT au rechargement — c'est la seule mesure qui compte", async () => {
     await ouvrirLaFeuille(page, nom);
-    const relu = await page.locator('[data-atlas="note-feuille"] textarea').inputValue();
+    const relu = await page.locator('[data-atlas="note-chantier"]').inputValue();
     assert.equal(
       relu,
       TEXTE,
@@ -237,11 +237,11 @@ async function main() {
   });
 
   await cas("elle est bien en base, sur le chantier", async () => {
-    const { rows: r } = await pool.query<{ note_feuille: string | null }>(
-      "SELECT note_feuille FROM chantiers WHERE id = $1",
+    const { rows: r } = await pool.query<{ note: string | null }>(
+      "SELECT note FROM chantiers WHERE id = $1",
       [chantierId]
     );
-    assert.equal(r[0]?.note_feuille, TEXTE, "la base ne porte pas la note : l'écran ment");
+    assert.equal(r[0]?.note, TEXTE, "la base ne porte pas la note : l'écran ment");
   });
 
   await cas("SA RÈGLE : elle ne part sur AUCUN document — pas même le PDF des gars", async () => {
@@ -272,21 +272,21 @@ async function main() {
   });
 
   await cas("vider le cadre EFFACE la note, jusqu'en base", async () => {
-    await page.locator('[data-atlas="note-feuille"] textarea').fill("");
+    await page.locator('[data-atlas="note-chantier"]').fill("");
     await page.locator('[data-atlas="feuille"] p').first().click();
     await page.waitForFunction(
-      () => /Enregistrée\./.test(document.querySelector('[data-atlas="note-feuille"]')?.textContent ?? ""),
+      () => /Enregistré\./.test(document.querySelector('[data-atlas="note-etat"]')?.textContent ?? ""),
       undefined,
       { timeout: 30_000 }
     );
-    const { rows: r } = await pool.query<{ note_feuille: string | null }>(
-      "SELECT note_feuille FROM chantiers WHERE id = $1",
+    const { rows: r } = await pool.query<{ note: string | null }>(
+      "SELECT note FROM chantiers WHERE id = $1",
       [chantierId]
     );
     assert.equal(
-      r[0]?.note_feuille,
+      r[0]?.note,
       null,
-      `La base porte encore « ${r[0]?.note_feuille} ». Une note fausse qu'on ne peut pas ` +
+      `La base porte encore « ${r[0]?.note} ». Une note fausse qu'on ne peut pas ` +
         `effacer est pire que pas de note.`
     );
   });

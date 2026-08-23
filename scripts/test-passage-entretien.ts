@@ -572,6 +572,68 @@ async function main() {
     assert.equal(relu!.clientNom, "Rousseau", "le rapport a suivi le renommage du client");
   });
 
+  await cas("le temps MASQUÉ ne quitte pas le serveur, et reste enregistré", async () => {
+    // Sa demande du 22 août 2026, planche 92 : *« un petit bouton on/off pour
+    // si l'utilisateur ne veut pas que le temps apparaisse sur la fiche ».*
+    //
+    // **Ce que ce cas défend, et qu'aucun autre ne voit :** masquer n'est pas
+    // effacer. Le patron garde son chiffre — il lui dit ce qu'a coûté un
+    // chantier —, et c'est la LECTURE PUBLIQUE qui le tait. Si un jour
+    // quelqu'un « simplifiait » en remettant `minutes` à NULL pour masquer, ce
+    // cas rougirait, et c'est tout son intérêt.
+    const ctx = await contexte("temps-masque");
+    await petitModele(ctx);
+    const client = await creerClient(ctx, { nom: "Bertin", telephone: "0600000000" });
+    const ouverte = await ouvrirPassage(ctx, "2026-08-23");
+    assert.equal(ouverte.ok, true);
+    if (!ouverte.ok) return;
+
+    const lue = await lirePassage(ctx, ouverte.id);
+    assert.equal(lue!.tempsVisible, true, "une fiche neuve part masquée");
+    assert.equal((await cocherLigne(ctx, ouverte.id, lue!.lignes[0].id, true)).ok, true);
+    assert.equal((await majPassage(ctx, ouverte.id, { minutes: 100 })).ok, true);
+    assert.equal((await majPassage(ctx, ouverte.id, { tempsVisible: false })).ok, true);
+
+    // La durée est TOUJOURS là, côté patron.
+    const relue = await lirePassage(ctx, ouverte.id);
+    assert.equal(relue!.minutes, 100, "masquer a effacé la durée du patron");
+    assert.equal(relue!.tempsVisible, false);
+
+    assert.equal((await nommerClient(ctx, ouverte.id, client.id)).ok, true);
+    const fige = await figerPassage(ctx, ouverte.id);
+    assert.equal(fige.ok, true);
+    if (!fige.ok) return;
+
+    const rapport = await lireRapportParJeton(fige.jeton);
+    assert.equal(rapport!.minutes, null, "le temps masqué arrive quand même au client");
+    assert.deepEqual(rapport!.faites.map((l) => l.libelle), ["Tonte"]);
+  });
+
+  await cas("l'empreinte scelle ce que le client A LU, pas la durée cachée", async () => {
+    // **Deux passages identiques, l'un montrant son temps et l'autre le
+    // masquant, ne peuvent pas porter la même empreinte** : elle prouve ce que
+    // le client a reçu. Y sceller un chiffre absent de sa page la rendrait
+    // indéfendable le jour où il conteste le passage.
+    async function empreinteDe(nom: string, visible: boolean) {
+      const ctx = await contexte(nom);
+      await petitModele(ctx);
+      const client = await creerClient(ctx, { nom: "Bertin", telephone: "0600000000" });
+      const ouverte = await ouvrirPassage(ctx, "2026-08-23");
+      if (!ouverte.ok) throw new Error("fiche non ouverte");
+      const lue = await lirePassage(ctx, ouverte.id);
+      await cocherLigne(ctx, ouverte.id, lue!.lignes[0].id, true);
+      await majPassage(ctx, ouverte.id, { minutes: 100, tempsVisible: visible });
+      await nommerClient(ctx, ouverte.id, client.id);
+      const fige = await figerPassage(ctx, ouverte.id);
+      if (!fige.ok) throw new Error("fiche non figée");
+      return fige.empreinte;
+    }
+
+    const montre = await empreinteDe("empreinte-montre", true);
+    const masque = await empreinteDe("empreinte-masque", false);
+    assert.notEqual(masque, montre, "le temps masqué est scellé comme s'il avait été lu");
+  });
+
   await cas("sans le jeton exact, la page publique ne rend RIEN", async () => {
     // C'est la politique de la base qui filtre, pas ce code (migration 0055).
     // Le cas doit donc savoir échouer si la politique disparaissait.

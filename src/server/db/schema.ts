@@ -242,6 +242,16 @@ export const passagesEntretien = pgTable(
     jour: date("jour").notNull(),
     /** Le temps passé, à la molette. NULL tant qu'il ne l'a pas posé. */
     minutes: integer("minutes"),
+    /**
+     * Le temps paraît-il sur le compte rendu du CLIENT ? — sa demande du
+     * 22 août 2026, planche 92.
+     *
+     * **Faux n'efface rien** : la durée reste ici, c'est la lecture publique
+     * qui la tait. Masquer en remettant `minutes` à NULL aurait confondu « je
+     * n'ai pas chronométré » et « je ne veux pas le lui dire », et lui aurait
+     * fait perdre son chiffre (migration `0060`).
+     */
+    tempsVisible: boolean("temps_visible").notNull().default(true),
     observations: text("observations"),
     /** Recopié à l'envoi : un rapport parti ne se renomme plus (migration 0055). */
     clientNomFige: text("client_nom"),
@@ -499,22 +509,22 @@ export const chantiers = pgTable(
      * sans qu'on perde rien — et l'invariant comptable reste entier.
      */
     rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
-    /**
-     * Le pense-bête de la feuille de chantier — « prendre le broyeur »,
-     * « client pas dispo avant 9 h ».
-     *
-     * **Distincte de `notesVocales`, et ce n'est pas un doublon** : celle-là est
-     * la dictée que l'IA relit pour en tirer un devis. Y verser un pense-bête
-     * ferait chiffrer « prendre le broyeur ».
-     *
-     * **Elle ne sort de l'entreprise sur AUCUN document** — son choix du 23 août
-     * 2026, posé devant la planche 93 : ni devis, ni facture, ni PDF sans les
-     * prix. Sur le PDF que ses gars emportent, elle serait devenue un écrit qui
-     * se relit sur un chantier, et « client pas dispo avant 9 h » se serait
-     * rédigé en sachant que le client peut le lire.
-     */
-    noteFeuille: text("note_feuille"),
     tailleEquipe: text("taille_equipe"),
+    /**
+     * Le pense-bête de CE chantier — « penser à prendre le broyeur ».
+     *
+     * Sa demande du 23 août 2026. **Jamais imprimée** : ni sur le devis, ni sur
+     * le PDF sans les prix. C'est sa décision, et sa raison tient en une
+     * phrase — *« les salariés auront accès au planning ; justement, c'est pour
+     * cela que je voulais le devis sans les prix »*. Le PDF est le devis
+     * expurgé ; la note vit sur la feuille de chantier, que ses gars ouvrent
+     * depuis le planning.
+     *
+     * Bornée en base à 2 000 caractères (migration 0060) : elle descend avec
+     * la liste entière du planning, et un copier-coller malheureux alourdirait
+     * chaque lecture.
+     */
+    note: text("note"),
     // **Qui tient ce chantier vit dans `equipesDuChantier`, plus ici.** La
     // colonne `equipe_id` portait UNE équipe, pour le chantier entier ; il en
     // veut plusieurs, et différentes le matin et l'après-midi (migration 0058).

@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import {
   planifierChantier,
   deplanifierChantier,
+  ecrireNoteChantier,
   deplacerChantier,
   supprimerChantier,
   SuppressionChantierRefusee,
@@ -12,12 +13,7 @@ import {
 import type { Moment } from "@/server/disponibilites";
 import type { QuandChantier } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
-import {
-  tachesDuChantier,
-  enregistrerNoteFeuille,
-  type FeuilleDuChantier,
-  type EnregistrementNote,
-} from "@/server/repositories/devis";
+import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
 
 // **AUCUN `export type { … }` ICI, ni nulle part dans un fichier « use server ».**
 // Le chargeur d'actions de Next réécrit ce module en une liste d'exports de
@@ -138,6 +134,23 @@ export async function deplacerChantierAction(
   };
 }
 
+/**
+ * Écrit le pense-bête d'un chantier — sa demande du 23 août 2026.
+ *
+ * **Rend un résultat, ne lève jamais.** Le message d'une exception d'action
+ * serveur n'arrive pas jusqu'à lui (`AGENTS.md`) : un refus se rend en valeur,
+ * sinon l'écran affiche « Enregistré » sur une note perdue.
+ */
+export async function ecrireNoteChantierAction(
+  chantierId: string,
+  note: string
+): Promise<{ succes: true; note: string | null } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  const row = await ecrireNoteChantier(ctx, chantierId, note);
+  if (!row) return { succes: false, erreur: "Ce chantier n'existe plus." };
+  return { succes: true, note: row.note };
+}
+
 export async function deplanifierChantierAction(chantierId: string) {
   const ctx = await getCurrentCtx();
   const resultat = await deplanifierChantier(ctx, chantierId);
@@ -194,23 +207,4 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
 export async function tachesDuChantierAction(chantierId: string): Promise<FeuilleDuChantier> {
   const ctx = await getCurrentCtx();
   return tachesDuChantier(ctx, chantierId);
-}
-
-/**
- * Enregistrer le pense-bête de la feuille de chantier.
- *
- * *Sa demande du 23 août 2026 :* « entre "Copier l'adresse" et "Ouvrir le PDF",
- * j'aimerais avoir un petit encadré où l'utilisateur peut marquer quelque
- * chose — penser à prendre le broyeur, client plus disponible à partir de neuf
- * heures ».
- *
- * **Le refus est une valeur de retour, jamais une exception** : le message
- * d'une exception levée ici n'arriverait pas jusqu'à lui (`AGENTS.md`).
- */
-export async function enregistrerNoteFeuilleAction(
-  chantierId: string,
-  note: string
-): Promise<EnregistrementNote> {
-  const ctx = await getCurrentCtx();
-  return enregistrerNoteFeuille(ctx, chantierId, note);
 }

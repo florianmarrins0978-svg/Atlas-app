@@ -40,7 +40,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   // **Le lien déjà préparé, lu ICI plutôt que redemandé à l'écran.**
   //
   // Depuis le 22 août 2026, « Envoyer la facture » arrête ET prépare le lien en
-  // un seul appui (`ARCHITECTURE.md` §148). L'écran d'après ne le savait pas :
+  // un seul appui (`ARCHITECTURE.md` §152). L'écran d'après ne le savait pas :
   // il repropusait « Envoyer la facture au client », c'est-à-dire un second
   // appui pour refaire ce qui venait d'être fait. Le patron l'aurait retrouvé
   // le jour où sa messagerie refuse de s'ouvrir — précisément le jour où cet

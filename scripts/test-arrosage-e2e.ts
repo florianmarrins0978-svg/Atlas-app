@@ -112,6 +112,21 @@ async function main() {
         // ferait rougir le plafond sur un banc sans clé, pour un écran qui,
         // chez lui, ne les montre pas.
         ...document.querySelectorAll('[data-atlas="alerte"]'),
+        // **L'AVERTISSEMENT SUR LE CROQUIS NE SE COMPTE PAS NON PLUS**, et
+        // c'est lui qui a fait rougir ce contrôle le 23 août 2026.
+        //
+        // Deux de ses règles se croisaient ici : *« tous les autres mots, tu me
+        // les supprimes »* (20 août) et *« c'est un petit message qu'il faut
+        // mettre au-dessus du croquis, en noir gras »* (22 août). Il a tranché
+        // lui-même en demandant la seconde — et un contrôle qui interdit ce que
+        // le patron a demandé rend son écran impossible à faire (`CLAUDE.md`
+        // §5 bis, dans l'autre sens).
+        //
+        // **On l'exclut plutôt que de relever le plafond** : relever le plafond
+        // rendrait vingt mots de bavardage possibles ailleurs, ce que ce
+        // contrôle existe précisément pour empêcher. Sa présence, elle, est
+        // éprouvée à part — et sa position aussi.
+        ...document.querySelectorAll('[data-atlas="avertissement-croquis"]'),
       ]
         .map((e) => e.textContent ?? "")
         .join(" ");
@@ -303,6 +318,33 @@ async function main() {
       await page.locator('[data-atlas="plan-arrosage"]').count(),
       0,
       "le plan s'affiche avant qu'aucun croquis n'ait été lu"
+    );
+  });
+
+  // ── L'AVERTISSEMENT SE LIT AVANT DE PHOTOGRAPHIER ────────────────────────
+  //
+  // Sa demande du 22 août 2026 : *« c'est un petit message qu'il faut mettre
+  // au-dessus du croquis, en noir gras »*. **Au-dessus, pas en dessous** — placé
+  // après le bouton, il se lirait une fois la photo partie, donc trop tard, et
+  // il faudrait retourner au jardin refaire le croquis.
+  //
+  // Ce n'est pas une recommandation : sans ces trois éléments, l'outil ne
+  // propose rien (`CLAUDE.md` §4 bis). Le contrôle vérifie donc les trois mots
+  // ET la position, parce que c'est la position qui fait tout son intérêt.
+  await cas("l'avertissement sur le croquis se lit AVANT le bouton photo", async () => {
+    const avertissement = page.locator('[data-atlas="avertissement-croquis"]');
+    assert.equal(await avertissement.count(), 1, "l'avertissement sur le croquis a disparu de l'écran");
+    const texte = (await avertissement.innerText()).toLowerCase();
+    for (const mot of ["métrés", "nourrice", "piquage"]) {
+      assert.ok(texte.includes(mot), `l'avertissement ne parle pas des ${mot} : « ${texte} »`);
+    }
+    const gras = await avertissement.evaluate((e) => Number(getComputedStyle(e).fontWeight));
+    assert.ok(gras >= 600, `l'avertissement n'est pas en gras (${gras}) : il se lira comme une note de bas de page`);
+    const haut = await avertissement.boundingBox();
+    const bouton = await page.locator('[data-atlas="ajouter-croquis"]').boundingBox();
+    assert.ok(
+      haut !== null && bouton !== null && haut.y + haut.height <= bouton.y,
+      "l'avertissement est SOUS le bouton photo : il se lirait une fois la photo partie",
     );
   });
 

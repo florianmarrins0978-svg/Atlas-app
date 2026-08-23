@@ -476,15 +476,6 @@ export type FeuilleDuChantier = {
    * n'est pas « ne peut pas ».
    */
   avecDevis: boolean;
-  /**
-   * Son pense-bête, ou `null` s'il n'a rien écrit.
-   *
-   * **Lu ici plutôt que par un chargement séparé** : la feuille s'ouvre d'un
-   * appui, et deux allers-retours au serveur feraient apparaître le cadre vide
-   * une fraction de seconde avant que le texte n'y tombe — de quoi croire qu'on
-   * a perdu sa note.
-   */
-  note: string | null;
 };
 
 export async function tachesDuChantier(
@@ -492,18 +483,8 @@ export async function tachesDuChantier(
   chantierId: string
 ): Promise<FeuilleDuChantier> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    // La note vit sur le chantier, pas sur le devis : elle se lit même quand il
-    // n'y a aucun devis à imprimer, sans quoi le cadre s'ouvrirait vide sur un
-    // chantier qui en porte une.
-    const [ligneChantier] = await tx
-      .select({ note: chantiers.noteFeuille })
-      .from(chantiers)
-      .where(eq(chantiers.id, chantierId))
-      .limit(1);
-    const note = ligneChantier?.note ?? null;
-
     const d = await devisÀImprimer(tx, chantierId);
-    if (!d) return { taches: [], avecDevis: false, note };
+    if (!d) return { taches: [], avecDevis: false };
     const lignes = await tx
       .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite })
       .from(lignesDevis)
@@ -511,7 +492,6 @@ export async function tachesDuChantier(
       .orderBy(lignesDevis.ordre);
     return {
       avecDevis: true,
-      note,
       taches: lignes.map((l) => {
         // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
         // rien de plus que le libellé ; « 18 » dit combien de mètres de haie.
@@ -521,68 +501,6 @@ export async function tachesDuChantier(
           : l.libelle;
       }),
     };
-  });
-}
-
-/**
- * La longueur au-delà de laquelle on refuse d'enregistrer le pense-bête.
- *
- * **Ce n'est pas une limite de base** — la colonne est un `text` sans borne. Ce
- * qu'elle empêche, c'est qu'un appui malheureux sur un clavier resté ouvert, ou
- * un collage involontaire, remplisse la feuille d'un chantier de plusieurs
- * milliers de caractères qu'il faudra ensuite retrouver et vider à la main sur
- * un téléphone. Deux mille signes, c'est déjà une page pleine pour un mot
- * qu'il écrit debout, à côté d'un camion.
- */
-export const NOTE_FEUILLE_MAX = 2000;
-
-export type EnregistrementNote =
-  | { ok: true; note: string | null }
-  | { ok: false; raison: string };
-
-/**
- * Écrire — ou effacer — le pense-bête de la feuille de chantier.
- *
- * **Le refus se REND, il ne se lève pas.** Une exception levée par une action
- * serveur n'arrive jamais jusqu'au patron : Next.js la remplace en production
- * par un identifiant opaque, et son banc sert une version bâtie
- * (`AGENTS.md`, `HANDOVER.md` piège 0 ter). Il lirait « une erreur est
- * survenue » là où il faut lui dire ce qui cloche.
- *
- * **Vider le cadre EFFACE la note**, et rend `null` plutôt qu'une chaîne vide :
- * sans quoi la base porterait deux façons de dire « rien », et l'écran devrait
- * connaître les deux.
- */
-export async function enregistrerNoteFeuille(
-  ctx: Ctx,
-  chantierId: string,
-  note: string
-): Promise<EnregistrementNote> {
-  const propre = note.trim();
-  if (propre.length > NOTE_FEUILLE_MAX) {
-    return {
-      ok: false,
-      raison: `Cette note fait ${propre.length} caractères, le maximum est ${NOTE_FEUILLE_MAX}.`,
-    };
-  }
-  const valeur = propre === "" ? null : propre;
-
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const modifiees = await tx
-      .update(chantiers)
-      .set({ noteFeuille: valeur, updatedAt: new Date() })
-      .where(eq(chantiers.id, chantierId))
-      .returning({ id: chantiers.id });
-
-    // **Zéro ligne touchée n'est pas un succès silencieux.** Hors du contexte
-    // d'isolation, une requête ne renvoie rien SANS SE PLAINDRE (`CLAUDE.md`
-    // §3) : sans ce contrôle, une note écrite sur le chantier d'une autre
-    // entreprise s'afficherait comme enregistrée et disparaîtrait au
-    // rechargement.
-    if (modifiees.length === 0) {
-      return { ok: false, raison: "Ce chantier est introuvable." };
-    }
-    return { ok: true, note: valeur };
   });
 }
 

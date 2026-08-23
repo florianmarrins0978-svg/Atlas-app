@@ -40,14 +40,15 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
 import type { FeuilleDuChantier } from "@/server/repositories/devis";
+import { NOTE_MAX } from "@/lib/note-chantier";
 import {
   basculerEquipeAction,
   deplacerChantierAction,
+  ecrireNoteChantierAction,
   deplanifierChantierAction,
   planifierChantierAction,
   supprimerChantierAction,
   tachesDuChantierAction,
-  enregistrerNoteFeuilleAction,
 } from "./actions";
 
 /**
@@ -100,6 +101,14 @@ export type ChantierPlanning = {
   equipes: EquipesParDemi;
   /** L'adresse du chantier, telle qu'elle est en base — jamais devinée. */
   adresseChantier?: string | null;
+  /**
+   * Le pense-bête du chantier, lu et écrit sur la feuille.
+   *
+   * **Modifiable sur l'objet** (`chantier.note = …` après enregistrement) : la
+   * feuille est remontée à chaque changement de chantier, et repeindre toute la
+   * liste pour un champ de texte ferait clignoter le planning sous le doigt.
+   */
+  note?: string | null;
   clientTelephone?: string | null;
   envoiEnvoyeAt: Date | string | null;
   envoiExpireAt: Date | string | null;
@@ -1485,6 +1494,94 @@ function CarteDuJour({
 }
 
 /**
+ * LE PENSE-BÊTE DU CHANTIER — « penser à prendre le broyeur ».
+ *
+ * **Sa demande du 23 août 2026**, et la planche 93 retenue : *« un petit
+ * encadré où l'utilisateur peut marquer quelque chose [...] client plus
+ * disponible à partir de neuf heures »*. Variante **A** : le cadre est ouvert
+ * en permanence.
+ *
+ * **Pourquoi A plutôt que B**, et la raison n'est pas le confort. La planche
+ * proposait aussi une ligne discrète « ＋ Ajouter une note », plus économe de
+ * 96 px. Devant l'image, il a répondu : *« B, y'a rien ? Je vois rien »* — et
+ * c'était le renseignement décisif. Une invitation qu'il ne voit pas sur une
+ * capture, il ne la trouvera pas davantage sur un chantier.
+ *
+ * **Elle ne part sur AUCUN document.** Sa décision : *« elle peut rester là,
+ * car les salariés auront accès au planning ; justement, c'est pour cela que je
+ * voulait le devis sans les prix »*. Le PDF est le devis expurgé de ses prix ;
+ * la note, elle, vit ici — et ses équipes la lisent en ouvrant la feuille.
+ */
+function NoteDuChantier({ chantier }: { chantier: ChantierPlanning }) {
+  // Semée depuis la liste, jamais relue au montage : la note descend déjà avec
+  // le planning, et un second aller-retour l'afficherait vide une seconde.
+  const [texte, setTexte] = useState(chantier.note ?? "");
+  const [etat, setEtat] = useState<"repos" | "ecrit" | "enregistre" | "perdu">("repos");
+  const [, enTransition] = useTransition();
+
+  function enregistrer() {
+    if (texte === (chantier.note ?? "")) return;
+    enTransition(async () => {
+      const r = await ecrireNoteChantierAction(chantier.id, texte);
+      if (!r.succes) {
+        // **Le refus se DIT.** Une note perdue en silence, c'est le broyeur
+        // oublié — et il croirait l'avoir noté.
+        setEtat("perdu");
+        return;
+      }
+      chantier.note = r.note;
+      setEtat("enregistre");
+    });
+  }
+
+  return (
+    <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+      <p
+        className="m-0 mb-2 text-[10px] font-semibold uppercase leading-none"
+        style={{ letterSpacing: "0.16em", color: colors.muted }}
+      >
+        Ma note
+      </p>
+      <textarea
+        data-atlas="note-chantier"
+        value={texte}
+        onChange={(e) => {
+          setTexte(e.target.value.slice(0, NOTE_MAX));
+          setEtat("ecrit");
+        }}
+        // **Enregistré en SORTANT du cadre, jamais par un bouton.** Il range
+        // son téléphone et démarre : un bouton non touché perdrait la note.
+        onBlur={enregistrer}
+        placeholder="Penser à prendre le broyeur. Client dispo à partir de 9 h."
+        rows={3}
+        className="w-full resize-none rounded-[9px] px-3 py-2.5"
+        style={{
+          border: `1px solid ${colors.line}`,
+          background: colors.card,
+          color: colors.ink,
+          // **16 px au moins.** En dessous, iOS grossit la page à la mise au
+          // point et l'écran saute sous le doigt — un piège déjà payé ici.
+          fontSize: 16,
+          lineHeight: 1.45,
+          WebkitTapHighlightColor: "transparent",
+        }}
+      />
+      <p
+        data-atlas="note-etat"
+        className="m-0 mt-1.5 min-h-[17px] text-[12.5px]"
+        style={{ color: etat === "perdu" ? colors.bordeaux : colors.rust }}
+      >
+        {etat === "enregistre"
+          ? "Enregistré."
+          : etat === "perdu"
+            ? "La note n’a pas pu être enregistrée. Réessayez."
+            : ""}
+      </p>
+    </div>
+  );
+}
+
+/**
  * LA FEUILLE DE CHANTIER — le devis, sans un seul prix.
  *
  * Sa question du 21 août 2026 : *« le salarié ne doit pas avoir accès au prix.
@@ -1507,128 +1604,6 @@ function CarteDuJour({
  * **L'adresse ne s'AFFICHE plus** — sa demande du même message — mais elle sert
  * toujours : les quatre gestes la lisent sans la montrer.
  */
-/**
- * Le pense-bête de la feuille de chantier.
- *
- * *Sa demande du 23 août 2026 :* « entre "Copier l'adresse" et "Ouvrir le PDF",
- * j'aimerais avoir un petit encadré où l'utilisateur peut marquer quelque
- * chose — penser à prendre le broyeur, client plus disponible à partir de neuf
- * heures ». Planche 93, **proposition A retenue** : le cadre est ouvert en
- * permanence, un doigt et il écrit. Il occupe la place même vide, et c'est le
- * prix qu'il a choisi de payer contre un geste de moins.
- *
- * ── TROIS CHOIX QUI NE SE DÉFONT PAS SANS RAISON ────────────────────────────
- *
- * **1. Enregistré en SORTANT du cadre, jamais par un bouton.** Il range son
- * téléphone et démarre : un bouton non touché perdrait la note, et il ne s'en
- * apercevrait que sur le chantier suivant.
- *
- * **2. Le champ est à 16 px au moins.** En dessous, iOS zoome à la mise au
- * point et fait sauter tout l'écran — la feuille se déplace sous le doigt au
- * moment précis où il commence à écrire.
- *
- * **3. Ce qui rate se DIT.** L'enregistrement se joue hors de sa vue ; sans un
- * mot à l'écran, une note perdue se découvre le lendemain sur le chantier. Le
- * refus arrive en valeur de retour, jamais en exception (`AGENTS.md`).
- */
-function NoteDeLaFeuille({ chantierId, note }: { chantierId: string; note: string | null }) {
-  const [texte, setTexte] = useState(note ?? "");
-  const [etat, setEtat] = useState<"repos" | "enCours" | "enregistree" | "refusee">("repos");
-  const [raison, setRaison] = useState<string | null>(null);
-  // Ce qui est DÉJÀ en base : sortir du cadre sans avoir rien changé ne doit pas
-  // écrire pour rien, ni faire clignoter « Enregistrée ».
-  const enBase = useRef(note ?? "");
-  // A-t-il touché le cadre ? Répond à la question de l'effet ci-dessous, et à
-  // elle seule.
-  const touche = useRef(false);
-
-  /**
-   * **La note arrive APRÈS que le cadre soit à l'écran, et c'est tout le piège.**
-   *
-   * La feuille se charge d'un appui : le composant est monté avec `note = null`,
-   * et le texte tombe une fraction de seconde plus tard. `useState` ne retenant
-   * que sa valeur initiale, le cadre restait vide — la note était bien en base,
-   * et il ne la revoyait jamais. Trouvé par la suite, pas à l'œil : à l'écran,
-   * un cadre vide sur un chantier sans note est exactement ce qu'on attend.
-   *
-   * **Et ce qu'il ne fera JAMAIS : écraser ce qu'il vient d'écrire.** Le cadre
-   * étant ouvert d'emblée (sa proposition A), il peut taper avant que le serveur
-   * n'ait répondu. La note lue n'est donc posée que sur un cadre intact.
-   */
-  useEffect(() => {
-    if (touche.current) return;
-    enBase.current = note ?? "";
-    setTexte(note ?? "");
-  }, [note]);
-
-  async function enregistrer() {
-    const propre = texte.trim();
-    if (propre === enBase.current.trim()) {
-      setEtat("repos");
-      return;
-    }
-    setEtat("enCours");
-    const r = await enregistrerNoteFeuilleAction(chantierId, propre);
-    if (r.ok) {
-      enBase.current = r.note ?? "";
-      setTexte(r.note ?? "");
-      setRaison(null);
-      setEtat("enregistree");
-    } else {
-      setRaison(r.raison);
-      setEtat("refusee");
-    }
-  }
-
-  return (
-    <div
-      data-atlas="note-feuille"
-      className="mt-3.5 pt-3"
-      style={{ borderTop: `1px solid ${colors.line}` }}
-    >
-      <label
-        htmlFor={`note-${chantierId}`}
-        className="m-0 block text-[10.5px] font-bold uppercase leading-none"
-        style={{ letterSpacing: "0.2em", color: colors.or }}
-      >
-        Ma note
-      </label>
-      <textarea
-        id={`note-${chantierId}`}
-        value={texte}
-        onChange={(e) => {
-          touche.current = true;
-          setTexte(e.target.value);
-          if (etat !== "repos") setEtat("repos");
-        }}
-        onBlur={enregistrer}
-        rows={2}
-        placeholder="Prendre le broyeur. Client pas disponible avant 9 h."
-        className="mt-2 block w-full resize-none rounded-[4px] px-2.5 py-2 leading-[1.45]"
-        // 16 px en dur, et non une classe : c'est une contrainte d'iOS, pas un
-        // choix de charte, et elle ne doit pas se perdre dans un remaniement des
-        // tailles de texte.
-        style={{
-          fontSize: 16,
-          fontFamily: "inherit",
-          color: colors.ink,
-          background: colors.card,
-          border: `1px solid ${colors.line}`,
-        }}
-      />
-      <p className="m-0 mt-1.5 text-[11px] leading-[1.4]" style={{ color: etat === "refusee" ? colors.rust : colors.muted }}>
-        {etat === "enCours"
-          ? "Enregistrement…"
-          : etat === "enregistree"
-            ? "Enregistrée."
-            : etat === "refusee"
-              ? (raison ?? "Cette note n'a pas pu être enregistrée.")
-              : "Elle reste dans Atlas — elle ne part sur aucun document."}
-      </p>
-    </div>
-  );
-}
-
 function FeuilleChantier({
   chantier,
   feuille,
@@ -1697,10 +1672,7 @@ function FeuilleChantier({
         <Geste href={tel}>Appeler le client</Geste>
       </div>
 
-      {/* **Entre « Copier l'adresse » et « Ouvrir le PDF »**, à l'endroit qu'il a
-          nommé — et avant la liste des tâches, qui vient du devis et ne lui
-          appartient pas. */}
-      <NoteDeLaFeuille chantierId={chantier.id} note={feuille?.note ?? null} />
+      <NoteDuChantier chantier={chantier} />
 
       <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
         {(feuille?.taches ?? []).length === 0 ? (
