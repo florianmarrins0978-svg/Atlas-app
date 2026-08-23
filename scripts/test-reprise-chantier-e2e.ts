@@ -161,6 +161,16 @@ async function main() {
     // après. Lire le texte tout de suite mesurait un écran encore vide, et le
     // rouge accusait l'envoi — qui n'y était pour rien.
     await page.waitForSelector("text=Choisir la date", { timeout: 20000 });
+    // **Le bouton arrive AVANT le montant**, et c'est ce décalage qui faisait
+    // rougir cette suite une batterie sur deux : elle lisait « TOTAL HT
+    // 0,00 € » — un devis dont les lignes n'étaient pas encore écrites — et
+    // accusait l'envoi, qui n'y était pour rien. On attend donc la trace du
+    // total, jamais un délai (`TODO.md`, quatre suites du même motif).
+    await page
+      .locator("text=/1[\\s\\u202f\\u00a0]?440,00/")
+      .first()
+      .waitFor({ timeout: 20000 })
+      .catch(() => undefined);
     const texte = await page.locator("body").innerText();
     // Le geste s'appelle « Choisir la date » depuis le 20 août 2026, et il ne
     // vit plus sur l'écran récapitulatif mais sur le devis lui-même : c'est le
