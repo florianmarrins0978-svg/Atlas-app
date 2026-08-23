@@ -2563,6 +2563,36 @@ préfixe (`batterie19`) a la suite au vert ; les quatre suivantes, avec, au roug
 refuser de conclure quand son montage n'a pas reproduit le cas — c'est ce qui a
 permis de le voir.
 
+### 0 quinvicies octies. ~~Ses maquettes étaient HORS LIGNE depuis dix heures~~ — **RÉPARÉ le 23 août 2026**
+
+**Sa plainte, en cinq mots :** *« Les pages ne s'ouvrent pas. »* Et elles ne
+s'ouvraient pas : la publication GitHub Pages échouait depuis 10 h 50, donc le
+site servait encore la version du matin — sans les deux planches qu'on venait de
+lui demander d'ouvrir.
+
+**DEUX défauts, tous deux nés du lot d'arrosage, et le second était INVISIBLE.**
+
+| | Ce qui rougissait | Pourquoi |
+|---|---|---|
+| `test:arrosage` | *« aucune vanne ne mélange deux pluviométries »* | il réclamait **la règle qu'il a retirée le 23 août** — *« ne prends pas en compte la pluviométrie »*. Un contrôle qui exige ce que le patron a fait enlever (`CLAUDE.md` §5 bis) |
+| `test:croquis` | *« aucun arroseur n'est laissé sans tuyau »* | un vrai défaut de plan : le tracé se faisait **zone par zone**, donc un réseau qui ne posait qu'une tête dans une zone n'avait aucun tuyau |
+
+**Le second n'a jamais été vu par la CI**, et c'est le point à retenir : l'étape
+enchaînait les quatre suites sous `set -e`, si bien qu'elle s'arrêtait à la
+première. Dix heures de publication barrée, un défaut réparé, et un autre qui
+attendait derrière. `pages.yml` joue désormais les quatre et les rapporte
+toutes.
+
+**Ce que le défaut du croquis touchait, et ce qu'il ne touchait pas.** Il vivait
+dans la maquette (`appli/arrosage-croquis.html`), pas dans le produit :
+`plan-dessine.ts` trace depuis l'entrée du terrain vers **chaque** arroseur, il
+n'a jamais eu ce trou. Vérifié avant de conclure, pas supposé.
+
+**Corrigé en traçant le réseau ENTIER, pas zone par zone** : un réseau est une
+vanne, son tuyau visite toutes ses têtes où qu'elles soient, et le départ se
+mesure depuis le regard — sa règle du 21 août. Regardé à l'écran sur les trois
+jardins d'exemple, pas seulement compté.
+
 ### 0 quinvicies septies. Son message au client, et l'allure de ses devis — **DEUX PLANCHES, RIEN N'EST CODÉ**
 
 **Sa demande du 23 août 2026**, en deux morceaux : *« y a-t-il un endroit dans
