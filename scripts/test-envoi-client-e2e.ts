@@ -468,6 +468,190 @@ async function main() {
     await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
+  await test("LES PRIX TAPÉS SUR L'ÉCRAN DU DEVIS PARTENT BIEN — son défaut du 23 août", async () => {
+    // **Son signalement, et sa correction de ma première explication :** *« le
+    // devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
+    // et un à démonter »*, puis — quand on lui a répondu que rien n'était
+    // chiffré — *« j'avais mis des prix, cinq cent cinquante et je ne sais plus
+    // combien, un devis à mille trois cents euros »*.
+    //
+    // Il avait raison. Ses prix étaient bien en base, dans `lignes_prix`. Ce
+    // sont les lignes du DOCUMENT qui manquaient : le devis ne se recomposait
+    // qu'au CHARGEMENT de l'écran, et tout prix tapé ensuite restait dehors.
+    // Mesuré avant correction : écran à 660 €, document à 0,00 € et zéro ligne.
+    //
+    // **Rien ne se perdait ; rien n'arrivait.** C'est pourquoi ce cas chiffre
+    // SUR l'écran du devis, après son ouverture — la seule façon de le prendre.
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+    await page.fill('input[placeholder="Bernard"]', `Prix tardifs ${Date.now()}`);
+    await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
+    await creerPuisFiche(page);
+    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
+    const url = page.url();
+
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.waitForSelector("text=Total TTC", { timeout: DELAI_ECRAN_MS });
+    await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
+    await page.waitForTimeout(900);
+    await page.getByLabel("Description 1").fill("Taille d'un chêne");
+    await page.getByLabel("Prix unitaire 1").fill("550");
+    await page.getByLabel("Description 1").click();
+    await page.waitForTimeout(1500);
+
+    await page.click("text=Choisir la date");
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
+
+    // **Le garde-fou du devis vide ne doit PAS se déclencher ici.** Il comptait
+    // les lignes du document périmé et refusait un envoi parfaitement légitime :
+    // un contrôle qui accuse à tort coûte plus cher que pas de contrôle du tout.
+    const avantEnvoi = await page.locator("body").innerText();
+    assert.doesNotMatch(
+      avantEnvoi,
+      /recevrait un document vide/,
+      "l'envoi est refusé alors que l'écran affiche 660 € : le garde-fou compte un document périmé"
+    );
+
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+    const message = decodeURIComponent(
+      (await page.locator("a[data-transmission]").getAttribute("href")) ?? ""
+    );
+    const debut = message.indexOf("/devis/");
+    assert.ok(debut >= 0, `aucun lien de devis dans le message : ${message.slice(0, 90)}`);
+    const chemin = message.slice(debut).split(/\s/)[0];
+
+    const sansCompte = await browser.newContext();
+    const pageClient = await sansCompte.newPage();
+    await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
+    const vu = await pageClient.locator("body").innerText();
+    assert.match(
+      vu,
+      /660,00\s*€/,
+      "La cliente ne voit pas le montant chiffré : le devis lui parvient vide, " +
+        `c'est son défaut du 23 août. Elle a sous les yeux : ${JSON.stringify(vu.slice(0, 240))}`
+    );
+    assert.doesNotMatch(
+      vu,
+      /Total TTC\s*\n?\s*0,00\s*€/,
+      "la cliente reçoit un total à zéro euro"
+    );
+    await sansCompte.close();
+  });
+
+  await test("UN DEVIS VIDE NE PART PAS — son défaut du 23 août", async () => {
+    // **Son signalement, mot pour mot :** *« le devis part à zéro euro chez la
+    // cliente, alors qu'il y a un arbre à tailler et un à démonter. Rien
+    // n'apparaît chez elle. »*
+    //
+    // Sa cliente avait sous les yeux un document qui n'énonçait RIEN — ni
+    // prestation ni prix — et un bouton « J'accepte ce devis » sous ce vide.
+    //
+    // **La cause n'était pas une perte de données** : les lignes du devis
+    // viennent des lignes de PRIX, jamais des prestations. Deux arbres décrits
+    // mais jamais chiffrés donnent un devis authentiquement vide. C'est de
+    // l'avoir laissé PARTIR qui était le défaut — l'envoi savait refuser un
+    // devis absent, un canal non choisi, une coordonnée manquante, jamais un
+    // devis sans une seule ligne.
+    //
+    // On crée donc le chantier SANS passer par les prix : c'est son cas.
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+    await page.fill('input[placeholder="Bernard"]', `Devis vide ${Date.now()}`);
+    await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
+    await creerPuisFiche(page);
+    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
+    const url = page.url();
+
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
+
+    // **Visé sur une phrase qui n'appartient QU'AU REFUS.** Le premier jet
+    // attendait « aucune ligne » — or l'écran du devis vide porte déjà « Aucune
+    // ligne pour l'instant ». Le contrôle passait donc au vert le garde-fou
+    // retiré : il regardait le mauvais texte, et n'aurait jamais pu échouer
+    // (`CLAUDE.md` §5).
+    await page.waitForSelector("text=recevrait un document vide", { timeout: DELAI_ECRAN_MS });
+    const vu = await page.locator("body").innerText();
+    assert.match(
+      vu,
+      /Posez d'abord vos prix/i,
+      `le refus ne dit pas où aller poser ses prix : ${JSON.stringify(vu.slice(0, 240))}`
+    );
+
+    // **Et le bouton ne doit pas rester actif** : il ne mènerait qu'à envoyer
+    // un document vide, ce qui est sans retour une fois chez la cliente.
+    const envoyer = page.getByRole("button", { name: "Envoyer le devis" });
+    if (await envoyer.count()) {
+      assert.strictEqual(
+        await envoyer.isEnabled(),
+        false,
+        "« Envoyer le devis » reste cliquable sur un devis vide : la cliente recevrait zéro euro"
+      );
+    }
+  });
+
+  await test("SANS RIEN TOUCHER, la cliente peut proposer un jour — son défaut du 23 août", async () => {
+    // **Son signalement, mot pour mot :** *« je n'ai pas coché la case pour que
+    // la cliente ne puisse pas proposer de jour ; néanmoins elle ne peut quand
+    // même pas proposer de jour »*.
+    //
+    // **Ce cas manquait, et c'est tout le sujet.** Le refus était éprouvé depuis
+    // cet écran-ci (le cas juste en dessous), et l'autorisation depuis l'ANCIEN
+    // écran d'envoi seulement. Or c'est par « Choisir la date » que le patron
+    // envoie désormais : le chemin qu'il emprunte tous les jours n'avait aucun
+    // contrôle sur la moitié qui l'intéresse — celle où il ne touche à rien.
+    //
+    // **On ne touche donc à RIEN**, délibérément : pas un appui sur
+    // l'interrupteur. C'est la seule façon d'éprouver ce que voit un client
+    // quand le patron n'a rien décidé, qui est le cas courant.
+    const url = await creerChantierFacturable(page, "porte-restee-ouverte");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
+
+    // Deux dates, comme sur sa capture — un seul jour proposé change le libellé
+    // du choix, et un contrôle qui n'éprouve qu'une forme laisse passer l'autre.
+    const cases = page.locator('[data-jour][data-etat="regardable"]');
+    const plancher = new Date();
+    plancher.setDate(plancher.getDate() + 3);
+    const depuis = plancher.toISOString().slice(0, 10);
+    const libres = (
+      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => j >= depuis);
+    assert.ok(libres.length >= 2, `pas assez de jours libres au calendrier (${libres.length})`);
+    for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
+
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+    const message = decodeURIComponent(
+      (await page.locator("a[data-transmission]").getAttribute("href")) ?? ""
+    );
+    const debut = message.indexOf("/devis/");
+    assert.ok(debut >= 0, `aucun lien de devis dans le message : ${message.slice(0, 90)}`);
+    const chemin = message.slice(debut).split(/\s/)[0];
+
+    const sansCompte = await browser.newContext();
+    const pageClient = await sansCompte.newPage();
+    await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
+    const vu = await pageClient.locator("body").innerText();
+
+    assert.strictEqual(
+      await pageClient.locator('input[name="choixDate"][value="autre"]').count(),
+      1,
+      "La cliente ne peut PAS proposer de jour alors que le patron n'a rien refusé. " +
+        `C'est son défaut du 23 août, et voici ce qu'elle voit : ${JSON.stringify(vu.slice(0, 260))}`
+    );
+    assert.strictEqual(
+      await pageClient.locator('input[name="choixDate"]').count(),
+      3,
+      "il manque une option : deux dates proposées, plus « j'en propose une autre »"
+    );
+    await sansCompte.close();
+  });
+
   await test("refusé, le client ne voit AUCUN calendrier sur son lien", async () => {
     const url = await creerChantierFacturable(page, "sans-calendrier");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });

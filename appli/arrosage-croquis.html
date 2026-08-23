@@ -413,6 +413,24 @@ function dessinerPlan(d){
     });
   }
 
+  // **UN RÉSEAU SE TRACE EN ENTIER, PAS ZONE PAR ZONE.**
+  //
+  // *Défaut trouvé le 23 août 2026, et il barrait la publication de la page.*
+  // Le tracé vivait à l'intérieur de `boites.forEach` : un réseau qui ne posait
+  // qu'UNE tête dans une zone tombait sur `pts.length < 2` et ne recevait aucun
+  // tuyau — l'arroseur flottait, relié à rien. Sur « Devant et derrière », le
+  // réseau vert avait quatre têtes réparties sur deux pelouses, dont une seule
+  // d'un côté : celle-là n'était alimentée par rien.
+  //
+  // C'est le défaut que le patron avait relevé lui-même au chiffre près —
+  // *« il y a quatre arroseurs qui ne sont pas alimentés »* — et la raison
+  // d'être du contrôle des orphelins.
+  //
+  // Un réseau EST une vanne : son tuyau visite toutes ses têtes, où qu'elles
+  // soient. Points et têtes s'accumulent donc pour le plan entier, et le tracé
+  // se fait une fois, après les zones.
+  var parReseau = {}, ordreR = [], tetes = '';
+
   boites.forEach(function(b){
     var p = poser(b.z);
     svg.push('<rect class="gazon" x="' + b.x + '" y="' + b.y + '" width="' + b.L +
@@ -422,7 +440,7 @@ function dessinerPlan(d){
     var id = 'z' + b.z.id;
     svg.push('<defs><clipPath id="' + id + '"><rect x="' + b.x + '" y="' + b.y +
              '" width="' + b.L + '" height="' + b.H + '" rx="4"/></clipPath></defs>');
-    var couronnes = '', tetes = '', parReseau = {}, ordreR = [];
+    var couronnes = '';
     p.points.forEach(function(pt){
       var cx = b.x + pt.x * E, cy = b.y + pt.y * E;
       var i = d.reseauDuPoint[b.z.id + ':' + pt.x.toFixed(3) + ':' + pt.y.toFixed(3)];
@@ -447,74 +465,83 @@ function dessinerPlan(d){
     svg.push('<rect class="contour" x="' + b.x + '" y="' + b.y + '" width="' + b.L +
              '" height="' + b.H + '" rx="4"/>');
 
-    // ── LE TUYAU : UN TRACÉ QUI VISITE TOUTES LES TÊTES DE SON RÉSEAU ───────
-    //
-    // **La version d'avant dessinait une ligne PAR RANGÉE, et elle mentait.**
-    // Une rangée qui ne portait qu'une seule tête de ce réseau n'avait pas de
-    // ligne du tout : sur le plan « Pavillon simple », l'arroseur bleu du
-    // milieu flottait, relié à rien — et les deux verts du milieu formaient un
-    // trait suspendu, sans rien qui remonte vers leur rangée du bas. Un plan
-    // qu'on emporte sur le chantier doit montrer par où passe le tuyau, sinon
-    // il ne sert qu'à compter.
-    //
-    // Le tracé suit l'ORDRE DE POSE (`pointsDeLaPose` : rangée par rangée, de
-    // gauche à droite) et va d'une tête à la suivante en deux segments à angle
-    // droit — horizontal puis vertical. C'est le serpentin qu'on déroule pour
-    // de vrai, et c'est aussi ce qui rend visibles les tés de sa règle du
-    // 17 août : chaque tête traversée par le tracé en porte un, la dernière
-    // n'a qu'un coude.
-    ordreR.forEach(function(k){
-      var r = parReseau[k];
-      if (r.pts.length < 2) return;
-
-      // **LE TRACÉ VA AU PLUS PROCHE, ET DEUX VERSIONS ONT ÉCHOUÉ AVANT.**
-      //
-      // 1. Une ligne par RANGÉE : une rangée qui ne portait qu'une tête de ce
-      //    réseau n'avait pas de ligne du tout, et l'arroseur flottait, relié
-      //    à rien. Vu sur le plan « Pavillon simple ».
-      // 2. Un serpentin dans l'ordre de pose : il faisait descendre le tuyau
-      //    du bout d'une rangée jusqu'à une tête isolée à l'autre bout,
-      //    traversant au passage les arroseurs d'un AUTRE réseau. Sur
-      //    « Devant et derrière », le bleu repartait du coin droit pour aller
-      //    chercher une tête à gauche, en coupant deux verts — un plan qu'on
-      //    ne peut pas poser, et qui donne à lire des tés là où il n'y a rien.
-      //
-      // On part donc de la tête la plus proche du regard (en bas à gauche) et
-      // l'on rejoint chaque fois la plus proche restante, à angle droit. Ce
-      // n'est pas l'optimum du tracé — il n'existe pas ici, faute de savoir où
-      // passent les obstacles —, mais aucune jambe n'est absurde, et c'est ce
-      // qu'il doit pouvoir juger d'un regard.
-      var restants = r.pts.slice();
-      var depart = 0;
-      for (var q = 1; q < restants.length; q++){
-        var s0 = restants[depart], s1 = restants[q];
-        if ((s1.x - b.x) + (b.y + b.H - s1.y) < (s0.x - b.x) + (b.y + b.H - s0.y)) depart = q;
-      }
-      var suite = restants.splice(depart, 1);
-      while (restants.length){
-        var der = suite[suite.length - 1], meilleur = 0;
-        for (var q2 = 1; q2 < restants.length; q2++){
-          var da = Math.abs(restants[q2].x - der.x) + Math.abs(restants[q2].y - der.y);
-          var db = Math.abs(restants[meilleur].x - der.x) + Math.abs(restants[meilleur].y - der.y);
-          if (da < db) meilleur = q2;
-        }
-        suite.push(restants.splice(meilleur, 1)[0]);
-      }
-
-      var dd = 'M' + suite[0].x.toFixed(1) + ' ' + suite[0].y.toFixed(1);
-      for (var q3 = 1; q3 < suite.length; q3++){
-        var pt = suite[q3], av = suite[q3-1];
-        // Horizontal puis vertical : le tuyau longe la rangée, puis coupe.
-        if (Math.abs(pt.x - av.x) > 0.5) dd += ' H' + pt.x.toFixed(1);
-        if (Math.abs(pt.y - av.y) > 0.5) dd += ' V' + pt.y.toFixed(1);
-      }
-      svg.push('<path class="tuyau" stroke="' + r.c + '" d="' + dd + '"/>');
-    });
-    svg.push(tetes);
     svg.push('<text class="cote" x="' + (b.x + b.L/2).toFixed(0) + '" y="' +
              (b.y + b.H + 15) + '">' + (b.z.nom || '') + ' — ' + nb(Number(b.z.L),0) +
              ' × ' + nb(Number(b.z.l),0) + ' m</text>');
   });
+
+  // ── LE TUYAU : UN TRACÉ QUI VISITE TOUTES LES TÊTES DE SON RÉSEAU ───────
+  //
+  // **La version d'avant dessinait une ligne PAR RANGÉE, et elle mentait.**
+  // Une rangée qui ne portait qu'une seule tête de ce réseau n'avait pas de
+  // ligne du tout : sur le plan « Pavillon simple », l'arroseur bleu du
+  // milieu flottait, relié à rien — et les deux verts du milieu formaient un
+  // trait suspendu, sans rien qui remonte vers leur rangée du bas. Un plan
+  // qu'on emporte sur le chantier doit montrer par où passe le tuyau, sinon
+  // il ne sert qu'à compter.
+  //
+  // Le tracé suit l'ORDRE DE POSE (`pointsDeLaPose` : rangée par rangée, de
+  // gauche à droite) et va d'une tête à la suivante en deux segments à angle
+  // droit — horizontal puis vertical. C'est le serpentin qu'on déroule pour
+  // de vrai, et c'est aussi ce qui rend visibles les tés de sa règle du
+  // 17 août : chaque tête traversée par le tracé en porte un, la dernière
+  // n'a qu'un coude.
+  ordreR.forEach(function(k){
+    var r = parReseau[k];
+    if (r.pts.length < 2) return;
+
+    // **LE TRACÉ VA AU PLUS PROCHE, ET DEUX VERSIONS ONT ÉCHOUÉ AVANT.**
+    //
+    // 1. Une ligne par RANGÉE : une rangée qui ne portait qu'une tête de ce
+    //    réseau n'avait pas de ligne du tout, et l'arroseur flottait, relié
+    //    à rien. Vu sur le plan « Pavillon simple ».
+    // 2. Un serpentin dans l'ordre de pose : il faisait descendre le tuyau
+    //    du bout d'une rangée jusqu'à une tête isolée à l'autre bout,
+    //    traversant au passage les arroseurs d'un AUTRE réseau. Sur
+    //    « Devant et derrière », le bleu repartait du coin droit pour aller
+    //    chercher une tête à gauche, en coupant deux verts — un plan qu'on
+    //    ne peut pas poser, et qui donne à lire des tés là où il n'y a rien.
+    //
+    // On part donc de la tête la plus proche du regard et l'on rejoint chaque
+    // fois la plus proche restante, à angle droit. Ce n'est pas l'optimum du
+    // tracé — il n'existe pas ici, faute de savoir où passent les obstacles —,
+    // mais aucune jambe n'est absurde, et c'est ce qu'il doit pouvoir juger
+    // d'un regard.
+    //
+    // **Le départ se mesure depuis LE REGARD**, et non depuis le coin bas-gauche
+    // d'une zone : le tracé ne vit plus dans une zone, et sa règle du 21 août
+    // veut que tout parte de la nourrice. Elle est posée en bas à gauche du
+    // plan (`xR`, `yR`, plus bas).
+    var xNourrice = MARGE_PLAN, yNourrice = hauteur - 40;
+    var restants = r.pts.slice();
+    var depart = 0;
+    for (var q = 1; q < restants.length; q++){
+      var s0 = restants[depart], s1 = restants[q];
+      var d1 = Math.abs(s1.x - xNourrice) + Math.abs(s1.y - yNourrice);
+      var d0 = Math.abs(s0.x - xNourrice) + Math.abs(s0.y - yNourrice);
+      if (d1 < d0) depart = q;
+    }
+    var suite = restants.splice(depart, 1);
+    while (restants.length){
+      var der = suite[suite.length - 1], meilleur = 0;
+      for (var q2 = 1; q2 < restants.length; q2++){
+        var da = Math.abs(restants[q2].x - der.x) + Math.abs(restants[q2].y - der.y);
+        var db = Math.abs(restants[meilleur].x - der.x) + Math.abs(restants[meilleur].y - der.y);
+        if (da < db) meilleur = q2;
+      }
+      suite.push(restants.splice(meilleur, 1)[0]);
+    }
+
+    var dd = 'M' + suite[0].x.toFixed(1) + ' ' + suite[0].y.toFixed(1);
+    for (var q3 = 1; q3 < suite.length; q3++){
+      var pt = suite[q3], av = suite[q3-1];
+      // Horizontal puis vertical : le tuyau longe la rangée, puis coupe.
+      if (Math.abs(pt.x - av.x) > 0.5) dd += ' H' + pt.x.toFixed(1);
+      if (Math.abs(pt.y - av.y) > 0.5) dd += ' V' + pt.y.toFixed(1);
+    }
+    svg.push('<path class="tuyau" stroke="' + r.c + '" d="' + dd + '"/>');
+  });
+  svg.push(tetes);
 
   // ── LA NOURRICE, dans son regard, avec une vanne par réseau ──────────────
   var yR = hauteur - 40;

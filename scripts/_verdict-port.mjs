@@ -37,6 +37,61 @@
  *   l'essayer (hors Codespace, variables absentes).
  * @returns {{ligne:string, souci:string|null}}
  */
+/**
+ * LE GESTE À FAIRE, D'APRÈS CE QUE L'ESPACE A PU FAIRE LUI-MÊME.
+ *
+ * **Né le 23 août 2026, après trois « ça ne marche pas » d'affilée.** La fiche
+ * donnait toujours le même remède — rendre le port public dans l'onglet PORTS —
+ * quel que soit ce que le démarrage avait rencontré. Or « privé » et « inconnu
+ * du relais » portent le même symptôme et n'ont pas le même geste : basculer la
+ * visibilité d'un port que le relais ne connaît pas ne peut RIEN, et c'est
+ * pourtant ce qu'on lui faisait refaire.
+ *
+ * Le mot rendu par `ouvrir-port.sh` tranche, et il n'était pas lu ici.
+ */
+function gestePort(etatPort) {
+  const mot = String(etatPort ?? "");
+
+  if (mot === "non-declare") {
+    return (
+      "     LE RELAIS NE CONNAÎT MÊME PAS LE PORT 3000 — vérifié auprès de GitHub.\n" +
+      "     Le rendre « public » ne peut donc rien : il n'y a rien à basculer.\n" +
+      "     Il faut le RÉENREGISTRER : onglet PORTS → retirer la ligne 3000, puis\n" +
+      "     « Transférer un port » → 3000. S'il ne revient pas, reconstruire le\n" +
+      "     conteneur (⌘⇧P → « Rebuild Container ») : la déclaration publique de\n" +
+      "     `devcontainer.json` ne s'applique qu'à ce moment-là."
+    );
+  }
+
+  if (mot === "sans-gh") {
+    return (
+      "     L'ESPACE N'A PAS PU L'OUVRIR LUI-MÊME (`gh` est absent de cette image) :\n" +
+      "     personne n'a donc réglé ce port depuis son allumage.\n" +
+      "     onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».\n" +
+      "     S'il n'y a PAS de ligne 3000, c'est qu'il n'est pas déclaré : le\n" +
+      "     transférer, ou reconstruire le conteneur (« Rebuild Container »), qui\n" +
+      "     applique la déclaration publique de `devcontainer.json`."
+    );
+  }
+
+  if (mot.startsWith("échec:")) {
+    return (
+      `     L'ESPACE A ESSAYÉ DE L'OUVRIR ET GITHUB A REFUSÉ : ${mot.slice("échec:".length)}\n` +
+      "     C'est ce refus qu'il faut lever — pas la visibilité du port. Un jeton\n" +
+      "     expiré se renouvelle par `gh auth login` dans le terminal de l'espace."
+    );
+  }
+
+  // « ouvert », « hors-codespace », ou rien : on ne sait pas mieux, et on garde
+  // les deux gestes dans l'ordre où ils coûtent le moins cher.
+  return (
+    "     C'est le port qui n'est pas joignable de l'extérieur :\n" +
+    "     onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».\n" +
+    "     S'il est DÉJÀ public, c'est que le relais ne trouve personne sur 3000 :\n" +
+    "     retirer puis remettre le port dans l'onglet PORTS le réenregistre."
+  );
+}
+
 export function verdictPort({ etatPort, dehors }) {
   // **La mesure prime sur le réglage, toujours.** Un port qu'il a lui-même
   // rendu public répond, quoi qu'ait pu faire — ou ne pas faire — le script de
@@ -65,10 +120,7 @@ export function verdictPort({ etatPort, dehors }) {
         : "L'ADRESSE PUBLIQUE N'ATTEINT MÊME PAS ATLAS. L'espace tourne, mais la\n" +
           `     requête s'arrête avant : ${detail}.\n` +
           "     Le code n'y est pour rien — inutile de lire le journal du serveur.\n" +
-          "     C'est le port qui n'est pas joignable de l'extérieur :\n" +
-          "     onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».\n" +
-          "     S'il est DÉJÀ public, c'est que le relais ne trouve personne sur 3000 :\n" +
-          "     retirer puis remettre le port dans l'onglet PORTS le réenregistre.",
+          gestePort(etatPort),
     };
   }
 
@@ -81,6 +133,20 @@ export function verdictPort({ etatPort, dehors }) {
   }
   if (etatPort === null) {
     return { ligne: "inconnu (démarrage d'avant le 21 août, ou hors banc)", souci: null };
+  }
+  if (String(etatPort).startsWith("échec:")) {
+    return {
+      ligne: `NON RÉGLÉ — GitHub a refusé : ${String(etatPort).slice("échec:".length)}`,
+      souci:
+        "L'ESPACE A ESSAYÉ D'OUVRIR LE PORT ET S'EST FAIT REFUSER. Tant que ce\n" +
+        "     refus tient, chaque allumage repartira avec un port non réglé.",
+    };
+  }
+  if (etatPort === "non-declare") {
+    return {
+      ligne: "NON DÉCLARÉ AU RELAIS — GitHub ne connaît aucun port 3000 pour cet espace",
+      souci: "LE RELAIS NE CONNAÎT PAS LE PORT 3000.\n" + gestePort("non-declare"),
+    };
   }
   return {
     ligne: `visibilité INCONNUE (${etatPort}) — le démarrage n'a pas pu la régler NI la lire`,
