@@ -236,18 +236,45 @@ async function main() {
       );
       if (!ligne) return null;
       const style = getComputedStyle(ligne);
-      const coord = document.querySelector("h1")?.nextElementSibling;
+      const nom = document.querySelector("h1");
+      const coord = nom?.nextElementSibling;
       return {
         texte: (ligne.textContent ?? "").trim(),
         graisse: Number(style.fontWeight),
         couleur: style.color,
+        // L'encre de l'écran, lue là où elle est le plus sûrement pleine : le
+        // nom du client, en tête.
+        encre: nom ? getComputedStyle(nom).color : null,
+        // Ce qui l'entoure, et dont elle doit se détacher.
+        autour: coord ? getComputedStyle(coord).color : null,
         sousLeNom: ligne.getBoundingClientRect().top > (coord?.getBoundingClientRect().top ?? 0),
         puces: document.querySelectorAll("ul li").length,
       };
     });
     assert.ok(vu, "aucune ligne « Dernière prestation » sur l'écran");
     assert.ok(vu!.graisse >= 700, `la ligne n'est pas grasse (graisse lue : ${vu!.graisse})`);
-    assert.equal(vu!.couleur, "rgb(0, 0, 0)", `la ligne n'est pas noire (couleur lue : ${vu!.couleur})`);
+    // **« Noir » se mesure CONTRE l'écran, pas contre `rgb(0, 0, 0)`.**
+    //
+    // Ce contrôle exigeait le noir absolu, et il a rougi le 22 août 2026 sur du
+    // code juste : la ligne portait `#000` écrit en dur, ce qui la rend
+    // INVISIBLE sur les deux chartes sombres, où l'encre est claire
+    // (`ARCHITECTURE.md` §160). Elle prend donc l'encre de la charte — et sur
+    // « Origine », #1c1c1a contre #000, l'œil ne fait pas la différence.
+    //
+    // Ce qu'il a demandé — « en titre noir gras » — n'était pas une valeur
+    // hexadécimale : c'était *la ligne la plus appuyée de l'écran*. C'est cela
+    // qui se vérifie, et cela seul survivra au prochain changement de charte
+    // (`CLAUDE.md` §5 bis).
+    assert.equal(
+      vu!.couleur,
+      vu!.encre,
+      `la ligne ne porte pas l'encre pleine de l'écran (lue : ${vu!.couleur}, l'encre : ${vu!.encre})`
+    );
+    assert.notEqual(
+      vu!.couleur,
+      vu!.autour,
+      `la ligne se confond avec les coordonnées au-dessus (${vu!.couleur}) : elle ne ressort plus`
+    );
     assert.ok(vu!.sousLeNom, "la dernière prestation ne se place pas sous le nom du client");
     // **Les mois en toutes lettres, pas `\w`.** En JavaScript, `\w` ne couvre
     // que l'ASCII : « 20 août 2026 » ne correspondait pas à cause du « û », et

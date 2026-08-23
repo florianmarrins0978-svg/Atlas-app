@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import type { EtatAgendaApple } from "@/server/repositories/agenda-apple";
 import {
   basculerAppleAction,
@@ -230,7 +230,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
             disabled={enCours}
             onClick={relier}
             className="w-full rounded-full px-5 py-3 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: "#fff", opacity: enCours ? 0.6 : 1 }}
+            style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
           >
             {enCours ? "Connexion à Apple…" : "Relier mon agenda Apple"}
           </button>
@@ -263,7 +263,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
                 onClick={() => (etat.ecritureActive ? eteindreLEcriture() : ouvrirLeChoix())}
                 className="relative h-8 w-[52px] flex-none rounded-full"
                 style={{
-                  backgroundColor: etat.ecritureActive ? colors.rust : "rgba(28,28,26,0.18)",
+                  backgroundColor: etat.ecritureActive ? colors.rust : voile(colors.ink, 0.18),
                   opacity: enCours ? 0.6 : 1,
                 }}
               >
@@ -387,7 +387,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
                   disabled={enCours}
                   onClick={debrancher}
                   className="rounded-full px-4 py-2 text-[14px] font-medium"
-                  style={{ backgroundColor: colors.alert, color: "#fff", opacity: enCours ? 0.6 : 1 }}
+                  style={{ backgroundColor: colors.alert, color: surPlein, opacity: enCours ? 0.6 : 1 }}
                 >
                   Débrancher
                 </button>

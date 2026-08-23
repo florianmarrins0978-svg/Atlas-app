@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { montantSaisi, tvaDepuisTtc } from "@/lib/achat-tva";
 import { ajouterAchatAction, rangerTicketAction } from "./actions";
@@ -390,7 +390,7 @@ export default function AchatsTva({
 
         <p
           className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]"
-          style={{ backgroundColor: "rgba(185,139,71,0.10)", color: "#7d6234" }}
+          style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}
         >
           {photoCle
             ? `${lecture ? `${lecture} ` : "Ticket lu. Vérifiez les montants avant d’ajouter. "}Gardez le papier — la photo ne le remplace pas.`
@@ -404,7 +404,7 @@ export default function AchatsTva({
         {ailleurs && periodeDeLaSaisie && (
           <p
             className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]"
-            style={{ backgroundColor: "rgba(185,139,71,0.10)", color: "#7d6234" }}
+            style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}
           >
             Ce ticket est daté du {new Date(`${date}T12:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "UTC" })} :
             il ira dans <b style={{ color: colors.ink, fontWeight: 500 }}>{libellePeriode(periodeDeLaSaisie)}</b>,
@@ -458,7 +458,7 @@ function Ligne({
   return (
     <label
       className="flex items-center justify-between gap-3 px-[15px] py-[13px]"
-      style={{ backgroundColor: accent ? "#f2efe8" : colors.card }}
+      style={{ backgroundColor: accent ? colors.rustTint : colors.card }}
     >
       <span className="flex-shrink-0 text-[13px]" style={{ color: accent ? colors.or : colors.muted }}>
         {libelle}

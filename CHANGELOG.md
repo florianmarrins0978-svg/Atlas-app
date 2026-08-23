@@ -628,6 +628,36 @@ texte nu.
 Mesuré dans un vrai navigateur, à 390 px : durée sous le nom, nom sur une seule
 ligne (23 px), et `border-top: 0px` au-dessus du « + ».
 
+## 2026-08-23
+
+### Rien à poser : le geste « Ajouter un chantier » disparaît
+
+**Sa remarque, capture à l'appui :** *« lorsqu'aucun chantier n'attend de jour,
+il ne faudrait pas que le bouton "Ajouter un chantier" apparaisse à l'écran, car
+il peut nous induire en erreur »*.
+
+**Il avait raison au sens strict, et c'est ce qui rend la correction évidente :
+ce geste ne CRÉE pas de chantier.** Il ouvre la liste de ceux qui attendent une
+date, et les pose sur la journée. Sans aucun chantier en attente, il ne pouvait
+mener qu'à « Aucun chantier n'attend de jour » — une promesse suivie d'un refus.
+Et la même phrase s'écrivait déjà sous « Sans date », deux lignes plus bas :
+l'écran la disait deux fois.
+
+**Le bouton DISPARAÎT, il ne se grise pas.** Un rond doré éteint reste un rond
+doré : on appuie dessus pour savoir pourquoi il est éteint, et l'on retombe dans
+le même cul-de-sac par un chemin plus long.
+
+Le repli « Aucun chantier n'attend de jour » qui vivait dans ce geste est retiré
+avec lui : on ne peut plus y arriver, et le garder aurait été une branche morte.
+
+**Deux mesures, et la seconde tient la première.** L'une éprouve qu'aucun bouton
+ne subsiste quand rien n'attend — l'état est installé par la base, puis rendu, y
+compris si la mesure échoue, car le compte de démonstration sert aux cent quatre
+suites. L'autre éprouve qu'il **revient** dès qu'un chantier attend : sans elle,
+un bouton supprimé pour de bon passerait au vert.
+
+---
+
 ## 2026-08-22
 
 ### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
@@ -666,6 +696,57 @@ Le contrôle (`scripts/verifier-maquette-temps-sur-la-fiche.mjs`, branché sur
 qu'il prétend attraper : une ligne cachée par une simple opacité — donc encore
 lue et encore à sa place —, la phrase « reste enregistré » supprimée, et un
 interrupteur qui survivait à l'envoi.
+
+## 2026-08-22
+
+### Le mode nuit se lit — huit couleurs claires écrites en dur, et trois signaux tenus pour immuables
+
+**Sa capture du planning, en « Nuit », et six mots :** *« Le mode nuit est
+illisible. Corrige ça. »* La pastille d'équipe portait « Julien ＋ » en blanc
+sur un fond blanc cassé, les chiffres du week-end n'existaient pas, et
+« incomplet » et « complet » étaient devenus deux blancs.
+
+**Trois familles de fautes, toutes invisibles sur les cinq chartes claires.**
+
+1. **Un crème écrit en dur sur l'accent.** Huit endroits posaient `#faf9f5`,
+   `#fff` ou `fill="white"` sur `colors.rust`. Sur les claires, l'accent est un
+   vert pin sombre : parfait. Sur Nuit et Sylve, **l'accent EST l'encre** — un
+   crème sur un crème, 1,05 de contraste. `surPlein` remplace le tout, et vaut
+   `card` : dans chacune des sept chartes, la plage et l'accent sont aux deux
+   bouts de l'échelle. Sur Origine, `card` vaut `#faf9f5` au caractère près.
+2. **Un voile d'encre écrit en dur.** Le calendrier éteignait ses week-ends
+   avec `rgba(28,28,26,0.42)` — l'encre d'Origine. Sur un fond noir, du noir à
+   42 % est du noir : les « 29 » et « 30 » de sa capture n'existaient pas
+   (1,04). `voile(colors.ink, 0.42)` suit la charte, et retombe sur l'encre
+   pleine là où `color-mix` manque : trop vu, jamais invisible.
+3. **Trois couleurs de signal tenues pour immuables.** `design-tokens.ts`
+   affirmait qu'alerte, bordeaux et vert pâle n'avaient pas à suivre la charte.
+   Leur rôle est pourtant que quatre états se distinguent d'un coup d'œil — et
+   sur les sombres, « incomplet » et « complet » tenaient 1,5, le dépassement
+   1,76 contre son fond, un refus 2,5. Elles deviennent des jetons : la TEINTE
+   du patron ne bouge pas, seule la clarté s'accorde au fond, et **uniquement
+   quand elle en a besoin**.
+
+**Les cinq chartes claires ne bougent pas d'un caractère**, et c'est vérifié :
+la dérivation ne remonte la clarté que si le contraste manque, ce qui n'arrive
+jamais sur un fond clair. Ce qu'il regarde tous les jours est intact.
+
+**Deux contrôles, et aucun ne remplace l'autre.**
+`test-chartes-lisibles.ts` mesure les sept palettes sans navigateur, en dix
+secondes. `test-mode-sombre-lisible-e2e.ts` ouvre chaque écran deux fois — en
+Origine puis en Nuit — et compare **le même texte à lui-même** : c'est le seul
+qui pouvait voir une couleur écrite DANS un écran, hors de toute charte. Les
+deux ont été confrontés à l'état d'avant le lot, et ils rougissent en nommant
+« Julien ＋ » et les chiffres du week-end.
+
+**Aucun seuil inventé.** Sur Origine, le bordeaux et le vert pin tiennent 1,10
+l'un contre l'autre, et le chevron de navigation 2,6 : ce sont ses choix. Une
+suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
+§5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
+et le clair se mesure au lieu de s'écrire.
+
+Le détail : `ARCHITECTURE.md` §160.
+
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 

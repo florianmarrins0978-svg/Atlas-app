@@ -46,6 +46,23 @@ export type JetonsCharte = {
   line: string;
   lineSoft: string;
   chevron: string;
+  /**
+   * ─── LES TROIS COULEURS DE SIGNAL, RENDUES LISIBLES SUR LES DEUX SOMBRES ───
+   *
+   * **Elles étaient écrites en clair dans `design-tokens.ts`, et c'était une
+   * faute** que sa capture du 22 août 2026 a rendue visible : *« le mode nuit
+   * est illisible »*. Un rouge sombre sur un fond noir ne se lit pas, et un
+   * bordeaux non plus — or c'est précisément ce que le dépôt affirmait ne pas
+   * avoir besoin de suivre la charte.
+   *
+   * **Sur les cinq chartes claires, elles ne bougent pas d'un caractère** : la
+   * dérivation ci-dessous ne remonte la clarté que si le contraste manque, et
+   * il ne manque jamais sur un fond clair. C'est vérifié par
+   * `scripts/test-chartes-lisibles.ts`.
+   */
+  alerte: string;
+  bordeaux: string;
+  vertPale: string;
 };
 
 export type NomCharte = "origine" | "pierre" | "beurre" | "moka" | "prune" | "sylve" | "nuit";
@@ -71,6 +88,89 @@ function voile(hex: string, alpha: string): string {
   const v = parseInt(n.slice(2, 4), 16);
   const b = parseInt(n.slice(4, 6), 16);
   return `rgba(${r},${v},${b},${alpha})`;
+}
+
+/** La clarté perçue d'une couleur, au sens de la norme (WCAG). */
+export function lumiere(hex: string): number {
+  const n = hex.replace("#", "");
+  const canal = (i: number) => {
+    const x = parseInt(n.slice(i, i + 2), 16) / 255;
+    return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * canal(0) + 0.7152 * canal(2) + 0.0722 * canal(4);
+}
+
+/** L'écart de lisibilité entre deux couleurs : 1 = confondues, 21 = noir sur blanc. */
+export function contraste(a: string, b: string): number {
+  const la = lumiere(a);
+  const lb = lumiere(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+/** Une charte est sombre quand son fond est plus foncé que son encre. */
+export function estSombre(jetons: Pick<JetonsCharte, "cream" | "ink">): boolean {
+  return lumiere(jetons.cream) < lumiere(jetons.ink);
+}
+
+// ─── Teinte, saturation, clarté — pour remonter une couleur SANS la changer ──
+//
+// **Pourquoi passer par là plutôt que de mêler vers l'encre.** Éclaircir le
+// rouge d'alerte en le mêlant à l'encre d'une charte sombre le tire vers le
+// gris-vert : on obtient un brun terne qui ne dit plus « attention », et qui
+// se confond avec le bordeaux du dépassement — les deux couleurs qui devaient
+// justement rester distinctes (`design-tokens.ts`). En ne touchant qu'à la
+// clarté, la teinte du patron survit : sa terre cuite reste une terre cuite,
+// son bordeaux reste un bordeaux.
+function versTSL(hex: string): [number, number, number] {
+  const n = hex.replace("#", "");
+  const [r, v, b] = [0, 2, 4].map((i) => parseInt(n.slice(i, i + 2), 16) / 255);
+  const haut = Math.max(r, v, b);
+  const bas = Math.min(r, v, b);
+  const l = (haut + bas) / 2;
+  if (haut === bas) return [0, 0, l];
+  const d = haut - bas;
+  const s = l > 0.5 ? d / (2 - haut - bas) : d / (haut + bas);
+  const t = haut === r ? (v - b) / d + (v < b ? 6 : 0) : haut === v ? (b - r) / d + 2 : (r - v) / d + 4;
+  return [t / 6, s, l];
+}
+
+function depuisTSL(t: number, s: number, l: number): string {
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const canal = (x: number) => {
+    if (x < 0) x += 1;
+    if (x > 1) x -= 1;
+    if (x < 1 / 6) return p + (q - p) * 6 * x;
+    if (x < 1 / 2) return q;
+    if (x < 2 / 3) return p + (q - p) * (2 / 3 - x) * 6;
+    return p;
+  };
+  const v = s === 0 ? [l, l, l] : [canal(t + 1 / 3), canal(t), canal(t - 1 / 3)];
+  return `#${v.map((x) => Math.round(x * 255).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * Décale la CLARTÉ d'une couleur — et rien d'autre — jusqu'à ce qu'elle se
+ * détache de tout ce contre quoi elle sera posée.
+ *
+ * **Elle ne bouge que si elle en a besoin** : sur les cinq chartes claires, le
+ * premier essai passe déjà le seuil et la valeur du patron sort intacte. C'est
+ * ce qui fait que ce lot ne repeint pas un pixel de ce qu'il regarde tous les
+ * jours.
+ *
+ * **Et elle ne descend jamais en dessous de ce qu'on lui demande** : faute de
+ * trouver, elle rend la couleur d'origine plutôt qu'une valeur extrême — un
+ * signal délavé qui aurait « passé le seuil » ne dit plus rien.
+ */
+function detacher(base: string, contre: string[], seuil: number, sens: 1 | -1): string {
+  const [t, s, l0] = versTSL(base);
+  for (let i = 0; i <= 200; i++) {
+    const l = l0 + sens * i * 0.005;
+    if (l < 0.02 || l > 0.98) break;
+    const essai = depuisTSL(t, s, l);
+    if (Math.min(...contre.map((c) => contraste(essai, c))) >= seuil) return essai;
+  }
+  return base;
 }
 
 /** Mélange deux couleurs — sert à dériver ce que la planche ne donnait pas. */
@@ -102,6 +202,10 @@ function depuisPlanche(p: {
   plein: string;
   pleinSigne: string;
 }): JetonsCharte {
+  const sombre = lumiere(p.fond) < lumiere(p.encre);
+  // Sur une charte sombre on REMONTE la clarté, sur une claire on la descend :
+  // dans les deux cas on s'éloigne du fond, jamais on ne s'en rapproche.
+  const sens: 1 | -1 = sombre ? 1 : -1;
   return {
     cream: p.fond,
     card: p.plage,
@@ -122,8 +226,30 @@ function depuisPlanche(p: {
     line: voile(p.encre, "0.12"),
     lineSoft: voile(p.encre, "0.07"),
     chevron: voile(p.encre, "0.28"),
+    // Du texte : 4,5 contre les deux fonds sur lesquels il se pose.
+    alerte: detacher(ALERTE_ORIGINE, [p.fond, p.plage], 4.5, sens),
+    // Des aplats de six pixels, pas du texte : 3 suffit — mais il leur faut
+    // AUSSI se détacher de l'accent plein, qui est l'état « complet » juste à
+    // côté dans le calendrier. Sans cela, sur une charte sombre, « incomplet »
+    // et « complet » deviennent deux blancs, et le mois cesse de se lire d'un
+    // coup d'œil — sa seule raison d'être.
+    bordeaux: detacher(BORDEAUX_ORIGINE, [p.fond, p.plage, p.plein], 3, sens),
+    // Elle descend là où les autres montent : sur un écran sombre, plus la
+    // demi-journée est pleine, plus la barre est claire. C'est l'inverse exact
+    // d'un écran clair, et c'est la même règle.
+    vertPale: detacher(VERT_PALE_ORIGINE, [p.fond, p.plage, p.plein], 3, sombre ? -1 : 1),
   };
 }
+
+// ─── Les trois valeurs du patron, celles dont tout le reste part ────────────
+//
+// Elles vivaient dans `design-tokens.ts`, écrites en clair, avec la mention
+// qu'elles « ne changent pas d'une charte à l'autre ». Elles changent : leur
+// TEINTE est la sienne et ne bouge pas, leur CLARTÉ s'accorde au fond, sans
+// quoi elles disparaissent sur Nuit et sur Sylve.
+const ALERTE_ORIGINE = "#9C3B2E";
+const BORDEAUX_ORIGINE = "#6E2433";
+const VERT_PALE_ORIGINE = "#b9c6b4";
 
 export const CHARTES: Charte[] = [
   {
@@ -147,6 +273,9 @@ export const CHARTES: Charte[] = [
       line: "rgba(28,28,26,0.12)",
       lineSoft: "rgba(28,28,26,0.07)",
       chevron: "rgba(28,28,26,0.28)",
+      alerte: ALERTE_ORIGINE,
+      bordeaux: BORDEAUX_ORIGINE,
+      vertPale: VERT_PALE_ORIGINE,
     },
   },
   {
