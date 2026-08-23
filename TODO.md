@@ -23,11 +23,16 @@ Planche 93, `appli/note-feuille-chantier.html` : **A** le cadre toujours ouvert
 (141 px à vide sur chaque feuille), **B** une ligne discrète qui s'ouvre au doigt
 (45 px).
 
-**La seconde question décide de l'implémentation**, et il ne l'a pas soulevée :
-la note va-t-elle sur le **PDF sans les prix** — celui que ses gars emportent —
-ou reste-t-elle dans l'application ? Sur le PDF, elle devient un document qui
-sort de l'entreprise et se relit sur un chantier ; dedans seulement, elle reste
-un pense-bête.
+**LA SECONDE QUESTION EST TRANCHÉE — 23 août 2026 : la note NE PART PAS sur le
+PDF.** Elle reste dans l'application : un pense-bête pour lui, qui ne sort pas de
+l'entreprise et que ses gars ne lisent pas sur le chantier. Cela ferme la porte
+au risque qu'il écrive « client pas dispo avant 9 h » sans savoir que le client
+peut le lire.
+
+**Reste sa réponse sur la FORME** (A ou B), et il ne s'en souvenait plus le
+23 août — c'est normal, la demande datait du matin. Ne pas la lui reposer sèche :
+lui redonner sa propre phrase, puis l'adresse de la planche
+(`…github.io/Atlas-app/note-feuille-chantier.html`).
 
 **Ce qu'il faudra, si c'est retenu :** une colonne sur `chantiers`, une action
 serveur, et l'enregistrement à la sortie du cadre — un bouton non touché
