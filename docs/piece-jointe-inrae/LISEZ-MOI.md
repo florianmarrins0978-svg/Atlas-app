@@ -91,15 +91,33 @@ contre lui.
 | les figures d'Ephytia | **écartées à dessein** : deux portent un « © » nominatif (CHAMONT S. (INRA), Arnaud Giraudel, Jean-Pierre Henry) |
 | l'import | **refuse** toute image dont la licence porte « © » ou « droits réservés » (`import-fiches-phyto.ts`, refus n° 7) |
 
-**Ce qui n'a PAS pu être vérifié depuis l'environnement de l'agent :** la page
-Commons elle-même. Le mandataire réseau bloque `commons.wikimedia.org`, et le
-fichier local ne porte aucune métadonnée — la vignette servie par Commons les
-retire. La mention « domaine public, travail d'un employé de l'USDA » vient donc
-de ce que le patron a transmis le 20 août avec la photo, pas d'un relevé fait
-ici. **Le dire ainsi plutôt que de laisser croire à une vérification qui n'a pas
-eu lieu** (`AGENTS.md`).
+**VÉRIFIÉ LE 23 AOÛT 2026 — et la vérification a corrigé quelque chose.** Le
+mandataire réseau bloque `commons.wikimedia.org` depuis l'environnement de
+l'agent, et la vignette servie par Commons ne porte aucune métadonnée : rien
+n'était donc éprouvable ici. C'est le patron qui a ouvert la page sur son
+téléphone et transmis trois captures.
 
-**Ce qui la vérifie en dix secondes, depuis un navigateur :** ouvrir
-<https://commons.wikimedia.org/wiki/File:Apiognomonia_veneta_leaf.JPG> et lire
-le bandeau de licence. S'il n'annonce pas le domaine public, la photo sort de la
-fiche et le document se refait — la phrase de la page 1 deviendrait fausse.
+| Ce que la page dit | Ce que le dépôt en a fait |
+|---|---|
+| bandeau **PD-USDA** — *« work of a United States Department of Agriculture employee, taken or made as part of that person's official duties […] the image is in the public domain »* | la licence enregistrée était **juste**, mot pour mot |
+| **Author : Clemson University** | absent du dépôt |
+| **Permission : « Cite: Clemson University - USDA Cooperative Extension Slide Series, Bugwood.org »** | le crédit disait « USDA, via Wikimedia Commons » — pas faux, mais **pas la citation demandée** |
+| Source : Forestry Images / The Bugwood Network (University of Georgia, USDA Forest Service), image n° 1234089, 18 août 2003 | absent du dépôt |
+| Description : *« Symptoms of the fungal plant pathogen Apiognomonia veneta on the leaf of a Platanus occidentalis tree »* | conforme à la légende enregistrée |
+
+**Le crédit a donc été corrigé** pour porter la citation que la source réclame,
+dans la fiche, sous la photo à l'écran et dans l'annotation n° 4 du document.
+Une demande d'autorisation qui cite mal une autre source se dessert elle-même —
+et c'est précisément la question que le patron a posée : *« il ne faut pas les
+prendre pour des cons »*.
+
+**La leçon, plus large que cette photo :** une licence recopiée sans la page qui
+la porte laisse passer ce que la page EXIGE en plus. Le contrôle d'intégrité
+compare le fichier source à la base ; il ne compare rien à l'original hors du
+dépôt. Pour toute image future, relever aussi le champ **Permission** de la page
+Commons, pas seulement son bandeau de licence.
+
+**Si la photo change un jour**, la page à rouvrir est
+<https://commons.wikimedia.org/wiki/File:Apiognomonia_veneta_leaf.JPG>. Sans
+bandeau de domaine public, la photo sort de la fiche et le document se refait :
+la phrase de la page 1 deviendrait fausse.

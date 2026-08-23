@@ -9,6 +9,50 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### La photo du platane : la licence tenait, la citation non
+
+Sa question, devant la pièce jointe destinée à l'INRAE : *« tu es sûr que la
+photo utilisée n'est pas une photo de l'INRAE, parce qu'il ne faut pas les
+prendre pour des cons »*. Elle visait juste — c'est la seule affirmation du
+document qui pouvait se retourner contre lui.
+
+**Rien n'était éprouvable ici** : le mandataire bloque `commons.wikimedia.org`,
+et la vignette servie par Commons ne porte aucune métadonnée. Il a ouvert la
+page sur son téléphone. Le bandeau est bien **PD-USDA** — la licence enregistrée
+était juste, mot pour mot.
+
+**Mais la page demande une citation nommée que le dépôt ne portait pas :**
+« Cite: Clemson University - USDA Cooperative Extension Slide Series,
+Bugwood.org ». Le crédit disait « USDA, via Wikimedia Commons » : pas faux, et
+pas ce que la source réclame. Corrigé dans la fiche, sous la photo à l'écran et
+dans l'annotation n° 4 du document — une demande d'autorisation qui cite mal une
+autre source se dessert elle-même.
+
+**Ce que cela apprend, au-delà de cette photo :** une licence recopiée sans la
+page qui la porte laisse passer ce que la page EXIGE en plus. Le contrôle
+d'intégrité compare le fichier source à la base ; il ne compare rien à
+l'original hors du dépôt. Pour toute image future, relever aussi le champ
+**Permission**, pas seulement le bandeau de licence.
+
+**Et la capture d'écran de la pièce jointe se refait désormais en une commande**
+(`scripts/capture-inrae.mts`). Elle se remontait de mémoire, décrite en prose
+dans un mode d'emploi : c'est exactement pourquoi elle a failli partir chez
+l'INRAE avec l'ancien crédit affiché dessous. Le script refuse de rendre une
+image si la fiche n'est pas en base, si une photo n'est pas chargée ou si une
+boîte mesure zéro pixel.
+
+### Le courriel à l'INRAE reprend sa version
+
+Il a reformulé la première partie — d'où il vient, et pourquoi il fait cet
+outil : des arbres abattus sous prétexte de maladie, sans diagnostic. Seuls
+l'orthographe et quelques tournures sont corrigées ; l'ordre de ses idées ne
+bouge pas, parce qu'un institut lit la différence entre un artisan qui explique
+son métier et un texte lissé.
+
+Deux écarts rendus plutôt que tranchés en silence : « célèbre » retiré devant le
+nom de son école, et « pourrait atteindre quelques centaines » conservé — c'est
+ce chiffre-là qui rend l'autorisation nécessaire.
+
 ### Les prix tapés sur l'écran du devis partent enfin chez le client
 
 *« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
@@ -237,10 +281,6 @@ sous-commandes (`scripts/test-ouvrir-port.ts`) : `ouvert`, `non-declare`,
 environnement n'est pas un espace GitHub. Le nouveau mot `non-declare` est
 éprouvé sur la règle qui le lit, pas sur un vrai relais — c'est au prochain
 allumage de son espace que la fiche le dira, ou non.
-
----
-
-## 2026-08-23
 
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
