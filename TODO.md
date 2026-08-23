@@ -560,7 +560,7 @@ charge de la machine finit par être ignoré.
 
 ---
 
-## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
+## ⏳ `test-fiche-client-e2e.ts` rougit sous charge — deux occurrences, deux causes possibles
 
 **Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
 cette suite sont tombés ensemble :
@@ -584,6 +584,36 @@ refonte que le patron vient de demander.
 besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'elle
 refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
 (`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
+
+### Deuxième occurrence, le 23 août 2026 — et elle désigne AUTRE CHOSE
+
+Trois cas sont retombés dans une batterie complète, mais **pas les mêmes**, et
+le message change tout :
+
+    ✗ elle porte son nom, et les informations sous le nom
+      le nom du client manque :
+      ATLAS
+      Chargement…
+      CHANTIERS PLANNING TERMINÉS PAYSAGE RÉGLAGES
+
+**« Chargement… », c'est l'écran qui n'a pas fini de se rendre** — pas une base
+vide. La lecture de 20 août (« les colonnes étaient VIDES, une suite d'avant n'a
+rien laissé ») ne couvre donc pas ce cas-ci : ici la page n'a simplement pas eu
+le temps. Les deux occurrences n'ont peut-être pas la même cause, et **traiter
+la seconde avec l'explication de la première ferait chercher au mauvais
+endroit** — ce que ce dépôt paie régulièrement.
+
+**Vérifié avant de conclure**, comme pour `test-lecons-prix-e2e.ts` :
+
+- le lot en cours ne touche **rien** de ce chemin (photo d'une fiche phyto,
+  script de capture, documents) — `git diff --name-only` le dit ;
+- rejouée **seule** juste après : **13 cas sur 13 au vert** ;
+- 105 des 106 suites de la même batterie sont vertes.
+
+**Ce qu'il faudrait, et c'est le même remède que pour `test-prix-e2e.ts` :**
+attendre **ce qu'on affirme** — le nom du client à l'écran — plutôt que la fin
+d'un chargement réseau. `networkidle` ne dit rien du rendu, et une machine
+chargée fait le reste.
 
 ---
 
