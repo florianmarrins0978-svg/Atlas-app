@@ -9,6 +9,68 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — une note sur la feuille de chantier (23 août 2026)
+
+Sa demande : *« entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un
+petit encadré où l'utilisateur peut marquer quelque chose — penser à prendre le
+broyeur, client plus disponible à partir de neuf heures »*.
+
+**Rien de tel n'existe**, vérifié plutôt que supposé (`CLAUDE.md` §5 ter) : la
+table `chantiers` n'a aucun champ libre, `notes_vocales` porte la dictée, et le
+`note` du schéma appartient aux paiements.
+
+Planche 93, `appli/note-feuille-chantier.html` : **A** le cadre toujours ouvert
+(141 px à vide sur chaque feuille), **B** une ligne discrète qui s'ouvre au doigt
+(45 px).
+
+**La seconde question décide de l'implémentation**, et il ne l'a pas soulevée :
+la note va-t-elle sur le **PDF sans les prix** — celui que ses gars emportent —
+ou reste-t-elle dans l'application ? Sur le PDF, elle devient un document qui
+sort de l'entreprise et se relit sur un chantier ; dedans seulement, elle reste
+un pense-bête.
+
+**Ce qu'il faudra, si c'est retenu :** une colonne sur `chantiers`, une action
+serveur, et l'enregistrement à la sortie du cadre — un bouton non touché
+perdrait la note d'un homme qui range son téléphone et démarre. Le champ à
+**16 px** au moins, sous quoi iOS zoome et fait sauter l'écran.
+
+---
+
+## ~~L'anneau doré d'aujourd'hui~~ — **TRANCHÉ le 23 août 2026 : on garde**
+
+Sa remarque : *« je ne comprends pas pourquoi le vingt-deux reste sélectionné,
+ce n'est pas très clair ; ça doit être un bug, je pense »*. Puis, la planche 92
+vue : *« ah, je n'avais pas compris que c'était le jour qu'on est. Peut-être le
+laisser. »*
+
+**Rien à coder.** Ce n'était pas un défaut d'affichage mais un code qu'il n'avait
+pas appris ; une fois le sens connu, l'anneau ne le gêne plus.
+
+**Ce qu'il faut en retenir, et qui vaut au-delà de ce cas :** le premier réflexe
+a été de vouloir corriger l'écran. La vraie question était *« sait-il ce que ce
+signe veut dire ? »* — et la planche a servi à le lui apprendre, pas à changer
+le produit. **Ne pas rouvrir** sans qu'il le redemande.
+
+La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
+chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
+
+Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
+sorti trois manques du calcul d'arrosage. **Les trois sont faits** — le diamètre du tuyau
+(`ARCHITECTURE.md` §144), la buse à la pression du chantier (§145), les pertes du
+réseau (§147). Ce qui suit est l'historique, et ce qui reste dehors :
+
+| Ce qui manque | Ce que ça change | Coût |
+|---|---|---|
+| ~~le débit d'une buse baisse avec la pression~~ | **FAIT le 22 août 2026** — `ARCHITECTURE.md` §145 | |
+| ~~les pertes de charge du réseau lui-même~~ | **FAIT le 22 août 2026** — `ARCHITECTURE.md` §147. Reste dehors : le trajet du regard à la première tête, qu'aucune saisie ne donne | |
+
+**Ne pas les coder d'office.** Le second surtout rendrait des plans plus sévères
+— donc plus d'arroseurs, donc des devis plus chers — et c'est une décision de
+métier, pas de code.
+
+---
+
 ## Les suites du devis « à la main » lâchent sous charge (22 août 2026)
 
 **Constaté sur quatre batteries complètes du 22 août**, sur du code qu'aucune

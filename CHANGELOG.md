@@ -7,6 +7,91 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-23
+
+### « Déplacer » offrait des boutons qui n'écrivaient rien
+
+*« Cliquer sur Déplacer ne déplace pas le chantier, ça ne fait rien du tout. »*
+
+**Et c'était vrai, sur un chantier de plus d'une journée.** `departEtDuree`
+protège la durée d'un chantier long — la raccourcir lui ferait perdre des jours
+de travail en silence —, si bien que « Matin » et « Journée » y écrivent le
+**même** état : le départ. Or `quandDuChantier` rendait « journee » dès deux
+demi-journées : la pastille se posait sur « Journée », et « Matin » restait
+éteint **tout en n'écrivant rien**. Deux boutons sur trois, morts.
+
+Au-delà d'une journée, ce qu'il choisit est donc le **départ**, et l'écran le
+dit : « Journée » disparaît, la pastille tombe sur « Matin » ou « Après-midi ».
+Un bouton qui n'écrit rien se retire — le laisser en l'expliquant serait pire,
+puisqu'il faudrait le lire pour savoir de ne pas s'en servir.
+
+**Le contrôle qui tient ça ne vérifie pas un libellé mais une propriété :** pour
+chaque durée, aucun bouton offert n'écrit l'état déjà en place. Il survivra au
+prochain remaniement des mots, et il a été vu rouge contre l'ancienne règle.
+
+**`quandDuChantier` a quitté l'écran pour `src/lib/`** : c'est une règle, pas un
+dessin, et enfermée dans un composant elle ne s'éprouvait qu'au navigateur
+(`CLAUDE.md` §3). Son défaut a d'ailleurs survécu tout ce temps pour cette
+raison.
+
+**Et le refus est devenu bavard.** `if (!r.succes) return;` avalait toute erreur
+du serveur : « Déplacer » était alors indistinguable d'un bouton mort. C'est le
+piège du 11 août 2026 — *« Impossible d'enregistrer la note »* sans que personne
+puisse savoir laquelle des quatre causes s'appliquait. Journalisé plutôt que
+levé : le message d'une exception d'action serveur n'arrive jamais jusqu'à lui.
+
+---
+
+### Un jour plein se PRÉVIENT, il ne se refuse plus — et « trop tôt » disparaît
+
+*« Si l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le
+faire quand même. Nous on a mis un message disant que c'est complet. D'ailleurs
+"trop tôt" veut rien dire, on comprend pas bien, faut changer ça. »*
+
+**Le message.** « Trop tôt : proposez au moins après-demain, sinon vous vous
+mettez en défaut » énonçait la règle au lieu de dire quoi faire, obligeait à
+compter dans sa tête devant un calendrier qui affiche les dates, et le mettait
+en tort pour un appui. Il **nomme** désormais le premier jour possible, et
+l'offre d'un geste.
+
+**Le refus.** Un jour plein bloquait l'envoi. C'est sa décision du 21 août,
+appliquée là où elle manquait : *« il ne doit pas y avoir de limite d'ajout de
+chantier par jour [...] nous, on prévient juste »*. Lui seul sait qu'une taille
+de haie prend une heure.
+
+**Et c'est ici que ses DEUX règles ont failli se contredire.** Le 22 août :
+*« je peux proposer le 24 alors qu'un client a validé le 24 — ça ne doit jamais
+se reproduire »*. Le 23 : *« il doit pouvoir le faire quand même »*. Ce qui les
+sépare est la **délibération**, et rien d'autre :
+
+| | |
+|---|---|
+| il force un jour écrit « complet » | sa décision — son client peut prendre la date |
+| il propose un jour **libre** qui se remplit après | il n'a rien décidé — le client choisit ailleurs |
+
+**Ces deux cas étaient indiscernables à la lecture du lien**, et le contrôle du
+22 août l'a montré en rougissant : une date simplement « proposée » laissait
+passer le second cas, c'est-à-dire le double chantier dans sa version course.
+D'où la colonne `dates_forcees` (migration 0059) — la photographie, prise à
+l'envoi, de ce qui était déjà plein ce jour-là. **Calculée au serveur**, jamais
+reçue de l'écran : venue du navigateur, elle serait un moyen de forcer
+n'importe quelle date.
+
+**Ce qui reste refusé** : une date passée, ou au-delà de dix-huit mois. Ce ne
+sont pas des arbitrages d'artisan. Un contrôle le fixe, sans quoi le
+retournement aurait tout ouvert d'un coup.
+
+**Et l'avertissement se voit.** Il s'affichait en gris discret — la couleur des
+notes de bas de page —, or c'est le mot « complet » qu'il ne faut pas manquer
+avant d'envoyer. Le gris ne reste que pour la remarque du week-end, qui
+n'engage à rien.
+
+**Deux contrôles retournés, jamais le libellé remis** (`CLAUDE.md` §5 bis) :
+ceux qui réclamaient le refus vérifient désormais l'avertissement et la
+possibilité de passer outre.
+
+---
+
 ## 2026-08-22
 
 ### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
@@ -84,6 +169,235 @@ suites tenaient l'ancien geste. La case éteinte n'existe plus, l'exception des
 tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour portait
 le même `data-jour` que les cases — deux éléments pour le même jour, et une
 suite qui ne savait plus lequel viser.
+
+### Ce qui arrive au DERNIER arroseur est enfin calculé
+
+Sa demande, après qu'on lui a nommé le dernier trou connu : *« oui corrige la
+1 »*.
+
+**Le défaut.** Seule l'amenée compteur → regard était comptée, et l'écran
+l'avouait : *« ce calcul ne compte QUE l'amenée — ni les antennes, ni les
+raccords, ni l'électrovanne »*. Ce qui restait au pied du dernier arroseur d'une
+ligne, personne ne le savait. Or c'est lui qui décide : sans la pression à
+laquelle sa buse est donnée, il porte moins loin que le plan ne le suppose, et
+le coin de pelouse qu'il devait atteindre jaunit en juillet.
+
+**Sur son jardin d'exemple, à 3 bar au compteur :**
+
+| | |
+|---|---|
+| perdu dans l'amenée | 0,27 bar |
+| perdu dans le réseau | **0,44 bar** |
+| il arrive au dernier arroseur | **2,28 bar** |
+
+Le réseau perd plus que l'amenée — l'électrovanne seule pèse davantage que
+trente mètres de Ø25. C'est cela qui manquait, et les buses sont désormais
+dimensionnées sur 2,28 bar et non sur 3.
+
+**Le débit décroît le long de la ligne, et c'est tout le calcul.** Entre la
+vanne et la première tête passe le débit du réseau entier ; entre la première et
+la deuxième, ce débit moins une tête. Compter le débit total partout — le
+raccourci tentant — donnerait 0,77 bar au lieu de 0,44 : assez pour condamner
+des plans qui tiennent.
+
+**Deux passes, jamais trois.** La pression au bout dépend des débits, qui
+dépendent de la pression : on calcule un premier plan à la pression de la
+source, on mesure ce qui se perd, on refait le plan à la pression obtenue. Une
+troisième passe *remonterait* la pression (moins de débit, moins de perte) : on
+tournerait autour de la valeur au lieu de s'en approcher. S'arrêter à deux garde
+les pertes des débits les plus forts, donc le côté sûr.
+
+**Deux valeurs ne viennent pas de ses catalogues**, et cela s'écrit plutôt que de
+se taire : la perte de l'électrovanne (0,25 bar, forfait majorant) et la majoration
+pour raccords (+15 %). Posées en majorant : une perte surestimée pose un
+arroseur de plus, jamais un de moins.
+
+**Ce qui reste dehors, et que l'écran dit :** le trajet du regard à la première
+tête. Il dépend de l'endroit où la nourrice est posée, et aucune saisie ne le
+donne. La pression annoncée est donc un plafond.
+
+**Un contrôle a été pris en flagrant délit de ne rien prouver.** Il bornait la
+perte à « moins du double du pire débit » — la version juste ET la version
+fausse y passaient au vert. Il a fallu injecter le défaut pour s'en apercevoir.
+La valeur est désormais figée à cinq millièmes de bar près : ce chiffre décide
+du nombre d'arroseurs par ligne, il n'a pas le droit de bouger en silence.
+
+### Un réseau est plafonné par SON TUYAU, plus seulement par le compteur
+
+**C'est lui qui l'a déduit**, et il avait raison : *« tu ne viens pas de me dire
+qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous les cas le calcul
+doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80, non ? »*
+
+**Le découpage ne regardait que la SOURCE.** Un réseau était coupé à
+`débit du seau × 0,85`, sans jamais se demander si le tuyau pouvait le porter.
+Or toutes ses lignes de réseau sont en Ø25 — c'est le diamètre de tous ses
+raccords, té 25×3/4"×25 et coude 25×3/4".
+
+| Source mesurée | Ancienne limite par réseau | Ce que le Ø25 passe |
+|---|---|---|
+| 1,80 m³/h | 1,53 | 1,76 — la source commandait, rien à voir |
+| 3,00 m³/h | 2,55 | **1,76 — dépassé de 45 %** |
+| 4,50 m³/h | 3,82 | **1,76 — plus du double** |
+
+**Chez lui, le défaut ne se voyait pas** : son compteur donne 1,80, donc la
+source a toujours commandé. Il serait apparu chez le premier utilisateur mieux
+alimenté — l'eau à plus de 2 m/s dans la ligne, la pression qui tombe avant le
+dernier arroseur, et un gazon jauni en juillet. Exactement ce que sa règle du
+22 août interdit (`CLAUDE.md` §4 ter).
+
+**La limite d'un réseau est désormais le plus petit des deux**, et l'écran dit
+lequel commande : un artisan qui a mesuré 3 m³/h et voit ses réseaux coupés plus
+tôt qu'attendu doit lire que c'est son Ø25, pas un défaut de calcul.
+
+Le plafond du tuyau ne porte pas la marge de 0,85 en plus : les 1,5 m/s sont
+déjà une limite de bonne pratique, l'empiler paierait deux fois la même
+prudence, en vannes.
+
+**Cinq contrôles rougissent si on retire le plafond** — le pire réseau monte à
+1,97 puis 2,63 et 3,94 m³/h à mesure que la source grossit.
+
+### Le débit au compteur reste à 1,80 — et on sait maintenant pourquoi
+
+Sa précision du 22 août : *« je sais que nos fournisseurs, lorsqu'on se pique
+après compteur, estiment au moins 2 m³/h »*. Et, sur la proposition de demander
+le calibre du compteur plutôt qu'un seau : *« non, laisse le calcul au seau,
+tout le monde a l'habitude de faire comme ça »*.
+
+**Aucun code ne change** — c'est la raison qui manquait. Deux chiffres
+coexistent : sa mesure au seau sur son compteur (1,80 m³/h) et le plancher que
+son métier retient (2,00). Le `CLAUDE.md` §4 ter tranche : calculer sur 2,00
+mettrait un arroseur de plus par réseau qu'un compteur à 1,80 ne peut
+alimenter, et un réseau qui ne se lève pas se découvre en juillet. Calculer sur
+1,80 chez quelqu'un qui a 2,00 coûte au pire une vanne de trop.
+
+**Et le calibre du compteur est écarté**, avec sa raison : le seau est le geste
+que tout le monde connaît. C'est écrit dans `mesure-debit.ts` pour que personne
+ne rouvre la question.
+
+### Les buses sont ramenées à la pression du chantier, plus à celle du catalogue
+
+Sa demande, après avoir vu ce qui manquait encore : *« oui code le »*.
+
+**Le défaut.** Le catalogue ne donne qu'UNE valeur par buse, à UNE pression de
+référence — 2,5 bar pour ses turbines Rain Bird, 2 bar pour ses tuyères VAN. Le
+calcul les prenait telles quelles, quelle que soit la pression du chantier. Sur
+un robinet à 2 bar, cela mettait **un arroseur de trop par réseau** : la
+pression tombe, les turbines sortent à moitié, et le gazon jaunit en bout de
+ligne — le défaut le plus cher, parce qu'il ne se voit qu'en août.
+
+**Le débit : de la physique.** L'eau qui sort d'un orifice suit la racine carrée
+de la pression (Torricelli) : `Q(P) = Q_catalogue × √(P / P_catalogue)`. Une
+5004 buse 3,0 donnée 0,71 m³/h à 2,5 bar en donne 0,63 à 2 bar et 0,78 à 3.
+Corrigé **dans les deux sens** — sous-estimer un débit chargerait trop un
+réseau, ce qui est exactement le défaut visé.
+
+**La portée : réduite, jamais gonflée.** Aucune loi simple ne donne la portée
+d'un jet — la balistique pure la ferait suivre la pression, mais l'air freine le
+jet. Les tables des constructeurs montrent une variation de l'ordre de la racine
+cubique, et c'est l'exposant retenu. **Il n'est pas relevé de ses catalogues à
+lui** : au-dessus de la pression de référence, la portée du catalogue est donc
+conservée telle quelle. Gonfler une portée sur une estimation ferait espacer les
+arroseurs, et un espacement trop large est un trou d'arrosage qu'on ne découvre
+qu'en juillet. En dessous on réduit : c'est le sens où se tromper coûte un
+arroseur de plus, jamais une tache sèche. **Et l'écran le dit** — une réserve
+apparaît sous le plan dès qu'une portée a été réduite.
+
+**Ce que cela change sur un plan.** Son jardin d'exemple à 3 bar passe de trois
+à quatre réseaux : les buses données à 2,5 bar débitent 9,5 % de plus qu'annoncé
+à cette pression-là. Le plan d'avant tenait sur des débits sous-estimés.
+
+**Ce qui reste, et qui n'est pas fait :** la pression retenue est celle de la
+SOURCE, pas celle qui reste au pied du dernier arroseur — les pertes du réseau
+lui-même ne sont toujours pas calculées (`TODO.md`). C'est un progrès, pas une
+garantie.
+
+**Les trois défauts plausibles ont été joués** — correction retirée, portée
+gonflée vers le haut, loi linéaire au lieu de la racine — et chacun fait rougir
+`test-arrosage-calcul.ts`. Le contrôle qui les attrape tient l'égalité exacte :
+à quatre fois la pression, la demande doit valoir exactement le double.
+
+### La légende du plan annonçait un arroseur que le plan ne posait pas
+
+**C'est lui qui l'a vu**, et sa question était la bonne : *« il m'a déjà donné
+4 arroseurs en 5004 buse 3 sur un seul réseau avec 3 bar de pression et du Ø25
+pour le PEHD — est-ce correct ? »*
+
+**Non, et de loin.** Quatre buses 3.0 de 5004 tirent 4 × 0,71 = **2,84 m³/h** :
+
+| | |
+|---|---|
+| ce qu'un Ø25 laisse passer | 1,76 m³/h |
+| ce que donne son compteur à 3 bar | 1,80 m³/h |
+| ce que quatre 5004 buse 3.0 demandent | **2,84 m³/h** |
+
+**Mais le calcul, lui, n'a jamais proposé ça.** Sur ce plan, il pose **neuf
+turbines 3504 buse 0,75** (0,16 m³/h chacune, 1,44 sur le réseau) et **quatre
+tuyères 12-VAN** (0,90). Les deux réseaux tiennent sous 1,80.
+
+**Le mensonge était dans la LÉGENDE de `appli/arrosage-plan.html`**, restée sur
+le matériel de la toute première version de la planche : « turbine 5004 · buse
+3.0 · portée 6 m » à côté d'un plan de 3504 — et une portée de 6 m qui
+n'appartient ni à l'une ni à l'autre (la 5004 buse 3.0 porte à 11,1 m, la 3504
+buse 0,75 à 5,2 m).
+
+**Et le contrôle TENAIT le mensonge en place.**
+`verifier-maquette-arrosage-plan.mjs` exigeait littéralement `/turbine 5004/`,
+`/buse 3\.0/` et `/portée 6 m/` : les libellés de la première version, recopiés
+dans le contrôle. Le plan a changé de matériel, la légende est restée, et le
+contrôle interdisait de la corriger. C'est le `CLAUDE.md` §5 bis retourné —
+un contrôle qui réclame ce qui n'existe plus.
+
+**Ce qu'il vérifie maintenant**, et qui ne peut plus mentir : la légende cite
+une buse qui existe au catalogue **sous son nom exact**, elle annonce **la
+portée du catalogue**, et elle nomme le matériel que **la liste des pièces
+facture**. Les trois défauts — libellé périmé, portée inventée, légende
+décalée de la commande — ont été joués et font rougir le contrôle en nommant
+le coupable.
+
+### Le diamètre du tuyau se calcule, et l'outil dit À PARTIR DE COMBIEN DE MÈTRES
+
+Sa demande : *« ils sont également en capacité de me dire, passé un certain
+nombre de mètres linéaires, qu'il faut passer du PEHD en diamètre vingt-cinq à
+celui en diamètre trente-deux. J'aimerais que mon outil arrosage puisse faire la
+même chose. »*
+
+**Ce que le calcul savait déjà, et ce qui lui manquait.** Il répondait OUI ou
+NON sur la longueur **saisie** — il fallait donc la ressaisir trois fois pour
+trouver où la bascule se produit. Il annonce maintenant le **seuil** : « le Ø25
+tient jusqu'à 73 m à ce débit, le Ø32 jusqu'à 248 m ». C'est le seul chiffre
+utile avant de creuser, parce qu'il se compare au mètre ruban sur place.
+
+C'est la formule de perte de charge déjà présente (Hazen-Williams), retournée :
+
+    L max = budget × 10,2 × D^4,87 / (10,67 × (Q/C)^1,852)
+
+le budget étant ce qui reste à la source une fois retirée la pression à laquelle
+la buse posée est donnée au catalogue.
+
+**Un second critère est entré, et il corrige un vrai défaut.** Le calcul ne
+regardait que la perte de charge : un tuyau court n'en perd presque aucune,
+donc **un Ø25 « passait » à n'importe quel débit pourvu qu'il soit assez
+court**. C'est faux — au-delà de 1,5 m/s l'eau cogne, le coup de bélier fatigue
+les électrovannes, et le bruit s'entend dans la maison. D'où les débits maximaux
+que les fournisseurs annoncent par diamètre, et que l'outil applique désormais :
+**1,76 m³/h en Ø25, 2,91 en Ø32**.
+
+**Ce chiffre recoupe sa propre mesure**, et c'est ce qui permet de le croire :
+au seau, sur son compteur en Ø25, il avait relevé 1,80 m³/h. La formule en donne
+1,76 — le tuyau ne laissait pas passer davantage.
+
+**Ce que la suite a appris en cours de route.** Le premier contrôle du seuil
+disait `seuil > 0`. Confronté à la formule retournée de travers — multiplier au
+lieu de diviser —, il est resté **vert** en annonçant « 0 m » : le seuil valait
+quatre dix-millièmes de mètre. C'est le contrôle qui mesure zéro du `CLAUDE.md`
+§5, dans sa version la plus sournoise, puisqu'il affichait le bon chiffre et
+concluait le contraire. La suite exige maintenant une longueur **plausible**
+(5 à 500 m), et éprouve la bascule un mètre avant et un mètre après le seuil.
+
+**Non éprouvé ici :** l'écran de l'application n'affiche le seuil qu'une fois un
+croquis lu, ce qui demande une clé d'IA que cet environnement n'a pas. La ligne
+a été vérifiée sur la page publiée (`appli/arrosage.html`), au navigateur, dans
+ses deux cas — Ø25 suffisant, et débit qui l'interdit.
 
 
 ### La place se compte en ÉQUIPES, plus en chantiers
@@ -480,6 +794,39 @@ coupable.
 ---
 
 ## 2026-08-21
+
+### La nourrice se place par lui, jamais par l'outil
+
+*« Ça, c'est l'utilisateur qui placera la nourrice où il veut. »*
+
+Elle n'est ni calculée, ni déduite, ni proposée d'office : elle est **lue** sur
+le croquis. L'IA la cherche ; si elle ne la trouve pas, elle refuse et le dit —
+elle ne la pose pas au piquage « pour dépanner », ce que j'avais fait.
+
+**Ce n'est pas une question de politesse.** L'endroit du regard dépend de ce que
+lui seul sait : un point d'eau existant, un passage de voiture, un massif qu'on
+ne rouvre pas, l'accès pour l'hivernage. Un outil qui le placerait ferait creuser
+au mauvais endroit — et une tranchée ne se déplace pas.
+
+**Informer n'est pas proposer** : s'il demande ce que change tel emplacement, on
+répond avec des chiffres — l'amenée s'allonge, les lignes raccourcissent. On ne
+dit jamais où le mettre. Un contrôle refuse désormais un écran qui suggère un
+emplacement, et exige qu'il le LUI demande.
+
+### Le plan avoue qu'il n'est pas valable
+
+*« Il n'est pas valable avec cette nouvelle règle. »*
+
+**La maquette affichait l'interdit puis l'enfreignait juste en dessous** :
+« sans les trois, aucun plan n'est proposé », et un plan tracé sur une nourrice
+que j'avais placée d'office, son croquis ne la portant pas. **Un écran qui se
+contredit ainsi apprend à ne plus lire ses propres avertissements** — c'est
+pire que de n'en pas mettre.
+
+Le plan reste montré, parce qu'une maquette sert à voir le rendu, mais il porte
+désormais en tête : « ce plan-ci ne respecte pas cette règle — je l'ai placée au
+piquage pour vous montrer ; dans l'application, il serait refusé ». Un contrôle
+exige cet aveu tant que la nourrice n'est pas sur le croquis.
 
 ### L'avertissement passe au-dessus du croquis, et les suggestions restent en maquette
 

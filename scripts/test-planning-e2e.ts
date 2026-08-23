@@ -848,25 +848,44 @@ async function main() {
       "un chantier posé un samedi n'apparaît plus dans les planifiés : il est perdu"
     );
 
-    // Et la fiche du jour, elle, dit toujours « Jamais proposé » — c'est la
-    // planche, et elle ne change pas : on ne PROPOSE pas le week-end, on se
-    // contente de ne rien cacher.
+    // **Et la fiche du jour l'OUVRE, au lieu de le refuser.** Sa règle du
+    // 23 août 2026 : *« le samedi et le dimanche, l'utilisateur doit pouvoir le
+    // proposer ; s'il a des salariés qui font des extras, il doit pouvoir
+    // sélectionner ces deux jours »*. Elle répondait « Jamais proposé. » et
+    // s'arrêtait là — un cul-de-sac sur un jour où il travaille.
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${samedi}"]`);
-    assert.match(await carte.innerText(), /Jamais proposé/);
+    const dit = await carte.innerText();
+    assert.ok(!/Jamais proposé/.test(dit), `le samedi est encore refusé : « ${dit} »`);
+    assert.ok(
+      dit.includes(nom),
+      `la fiche du samedi ne montre pas le chantier qui y est posé : « ${dit} »`
+    );
 
     await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [chantierId, JOUR]);
   });
 
-  await essai("un samedi le dit, au lieu de proposer des gestes", async () => {
+  // **Ce contrôle a été RETOURNÉ le 23 août 2026.** Il exigeait qu'un samedi
+  // n'offre AUCUN geste — c'est-à-dire exactement ce qu'il fait retirer. Le
+  // remettre rendrait son écran impossible à changer (`CLAUDE.md` §5 bis).
+  await essai("un samedi offre les mêmes gestes qu'un mardi", async () => {
     const samedi = new Date(`${JOUR}T12:00:00Z`);
     samedi.setUTCDate(samedi.getUTCDate() + 5);
     await toucherLeJour(samedi.toISOString().slice(0, 10));
     const carte = page.locator('[data-atlas="carte-jour"]').first();
-    assert.match(await carte.innerText(), /Jamais proposé/);
+    const dit = await carte.innerText();
+    assert.ok(!/Jamais proposé/.test(dit), `le samedi est encore un cul-de-sac : « ${dit} »`);
     assert.equal(
       await carte.locator('[data-atlas="ajouter"]').count(),
-      0,
-      "un samedi propose d'ajouter un chantier"
+      1,
+      "un samedi ne propose pas d'ajouter un chantier : il ne sert à rien de le toucher"
+    );
+    // **Un contrôle qui mesure zéro ne mesure rien** : sans les deux
+    // demi-journées, l'absence de « Jamais proposé » ne prouverait qu'un écran
+    // vide.
+    assert.equal(
+      await carte.locator('[data-atlas="demi"]').count(),
+      2,
+      "le samedi n'affiche pas ses deux demi-journées"
     );
   });
 

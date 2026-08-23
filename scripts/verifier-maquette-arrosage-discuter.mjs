@@ -169,6 +169,22 @@ cas("les trois éléments obligatoires sont nommés, et l'on voit lequel manque"
   }
 });
 
+// **Atlas DEMANDE l'endroit de la nourrice, il ne le propose pas.** Sa règle du
+// 21 août : « c'est l'utilisateur qui placera la nourrice où il veut ». L'endroit
+// du regard dépend de ce que lui seul sait — un point d'eau existant, un passage
+// de voiture, un massif qu'on ne rouvre pas. Le proposer, c'est faire creuser au
+// mauvais endroit ; et une tranchée ne se déplace pas.
+cas("l'endroit de la nourrice lui est demandé, pas suggéré", () => {
+  const t = incomplet.manque + " " + texte;
+  if (!/où voulez-vous|placez-la|où va la nourrice/i.test(t)) {
+    throw new Error("l'écran ne LUI demande pas où poser le regard");
+  }
+  // Une suggestion se reconnaît à ce qu'elle nomme un endroit.
+  if (/je (la )?(mettrais|propose|placerais|conseille)|au mieux (près|à)|je l.ai plac/i.test(incomplet.manque)) {
+    throw new Error("l'écran propose un emplacement de nourrice : c'est sa décision, pas la nôtre");
+  }
+});
+
 cas("rien ne déborde sur 390 px", async () => {});
 const deborde = await page.evaluate(() => document.documentElement.scrollWidth > 390);
 cas("la page tient dans la largeur de son téléphone", () => {

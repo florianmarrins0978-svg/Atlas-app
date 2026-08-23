@@ -4,7 +4,6 @@ import { useCallback, useMemo } from "react";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import { equipesAffichees, libelleEquipe } from "@/lib/equipes";
 import { occupationDemi, type Demi } from "@/lib/planning-jour";
-import { estWeekEndIso } from "@/lib/mois";
 import {
   cleCreneau,
   creneauxDuChantier,
@@ -77,7 +76,9 @@ export function useOccupation({
 
   const occupationDe = useCallback(
     (jour: JourIso, demi: Demi) => {
-      if (estWeekEndIso(jour)) return occupationDemi<ChantierPlanning>([], nombreEquipes, 0);
+      // **Le week-end porte sa charge comme les autres.** Sa règle du 23 août
+      // 2026 : il y travaille en extra, et un samedi chargé qui s'affiche vide
+      // lui ferait poser un second chantier par-dessus.
       const cle = cleCreneau({ jour, moment: demi });
       return occupationDemi(
         parCreneau.get(cle) ?? [],

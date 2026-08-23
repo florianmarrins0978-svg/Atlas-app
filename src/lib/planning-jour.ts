@@ -12,7 +12,7 @@
  * peindre une couleur qui contredit le compte écrit juste à côté.
  */
 
-import type { Moment } from "@/server/disponibilites";
+import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type Moment } from "@/server/disponibilites";
 
 /**
  * Une demi-journée. Le même vocabulaire que `creneauDebut` en base et que
@@ -309,4 +309,29 @@ export function ditLeQuand(moment: Demi, duree: number): string {
   }
   if (duree === 2) return "journée";
   return moment === "matin" ? "matin" : "après-midi";
+}
+
+/**
+ * Comment ce chantier se lit dans les boutons de « Déplacer ».
+ *
+ * **Vit ici, et non dans l'écran** : c'est une règle, pas un dessin, et une
+ * règle enfermée dans un composant ne s'éprouve qu'au navigateur (`CLAUDE.md`
+ * §3).
+ */
+export function quandDuChantier(c: {
+  dureeDemiJournees: number | null;
+  creneauDebut: string | null;
+}): QuandChantier {
+  const duree = c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+  // **« Journée » ne décrit QUE la journée pleine.** Un chantier de trois jours
+  // rendait « journee » lui aussi : la pastille se posait donc sur « Journée »,
+  // et « Matin » — qui écrit exactement le même état pour lui — restait éteint
+  // et sans effet. C'est ce qu'il a signalé le 23 août 2026 : *« cliquer sur
+  // Déplacer ne déplace pas le chantier, ça ne fait rien du tout »*.
+  //
+  // Au-delà d'une journée, ce qu'il choisit est le DÉPART, jamais la durée
+  // (`departEtDuree` protège les jours de travail) : l'état courant est donc
+  // « matin » ou « après-midi », et la pastille tombe juste.
+  if (duree === 2) return "journee";
+  return c.creneauDebut === "apres_midi" ? "apres" : "matin";
 }
