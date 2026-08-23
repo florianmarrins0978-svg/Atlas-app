@@ -222,21 +222,26 @@ async function main() {
     const mesure = await rangee.evaluate((r) => {
       const bouton = r.querySelector('[data-atlas="nom-planifie"]') as HTMLElement;
       const quand = bouton.querySelector('[data-atlas="duree-planifiee"]') as HTMLElement;
+      const nomSeul = bouton.firstElementChild as HTMLElement;
+      const boiteNom = nomSeul.getBoundingClientRect();
+      const boiteDuree = quand.getBoundingClientRect();
       return {
-        // Le nom seul : le bouton porte aussi le moment, en petit et en or.
-        nom: (bouton.childNodes[0]?.textContent ?? "").trim(),
-        // **Le débordement se lit sur le BOUTON, jamais sur le `<span>` du
-        // moment.** Ce span est EN LIGNE — la planche le veut collé au nom — et
-        // un élément en ligne n'a ni `clientWidth` ni `scrollWidth` : les deux
-        // valent zéro, et `0 − 0 = 0` annoncerait « rien n'est coupé » sur une
-        // ligne coupée. C'est exactement le défaut du 15 août 2026, et c'est le
-        // garde-fou plus bas qui l'a rattrapé ici même.
+        // Le nom seul : le bouton porte aussi la durée, en petit et en or.
+        nom: (nomSeul.textContent ?? "").trim(),
+        // **Le débordement se lit sur le BOUTON.** Historiquement, la durée
+        // était un `<span>` EN LIGNE, sans `clientWidth` ni `scrollWidth` : les
+        // deux valaient zéro, et `0 − 0 = 0` annonçait « rien n'est coupé » sur
+        // une ligne coupée — le défaut du 15 août 2026. Elle est désormais un
+        // bloc sous le nom (sa demande du 23 août), mais on continue de mesurer
+        // le bouton : c'est lui qui porte la colonne.
         debord: bouton.scrollWidth - bouton.clientWidth,
         largeurNom: bouton.clientWidth,
         texte: (quand.textContent ?? "").trim(),
-        // `getBoundingClientRect` fonctionne, LUI, sur un élément en ligne.
-        largeurTexte: quand.getBoundingClientRect().width,
+        largeurTexte: boiteDuree.width,
         hauteur: Math.round(bouton.getBoundingClientRect().height),
+        // **Le nom tient sur UNE ligne**, la durée est sur la sienne, dessous.
+        hauteurNom: Math.round(boiteNom.height),
+        dureeSousLeNom: boiteDuree.top >= boiteNom.bottom - 1,
         couleur: getComputedStyle(quand).color,
       };
     });
@@ -318,7 +323,12 @@ async function main() {
     }
   });
 
-  await test("À 390 px, rien n'est coupé et rien ne se replie", async () => {
+  await test("À 390 px, la durée est SOUS le nom, et le nom tient sur une ligne", async () => {
+    // **Sa demande du 23 août 2026 :** *« le "une journée" en doré, mets-le
+    // sous le nom »*. Le contrôle d'avant exigeait l'inverse — tout sur une
+    // ligne, 30 px de haut au plus. Il a été retourné, pas supprimé : ce qu'il
+    // défendait vraiment, c'est que **le nom du chantier ne paie pas la
+    // phrase**, et cela vaut toujours (`CLAUDE.md` §5 bis).
     await allerAuPlanning();
     await amenerSurLaSemaineDesCas();
     for (const c of [journee, demi, longue]) {
@@ -329,11 +339,16 @@ async function main() {
         `« ${l.nom} ${l.texte} » déborde de ${l.debord} px sur les ${l.largeurNom} px ` +
           "de la colonne : c'est le nom du chantier qui paie la phrase"
       );
-      // Le nom est en serif de 19 px : une seule ligne en fait vingt-quatre.
-      // Repliée, elle en ferait le double.
       assert.ok(
-        l.hauteur <= 30,
-        `« ${l.nom} ${l.texte} » fait ${l.hauteur} px de haut : elle se replie sur deux lignes`
+        l.dureeSousLeNom,
+        `« ${l.texte} » n'est pas sous « ${l.nom} » : elle est revenue à côté`
+      );
+      // Le nom est en serif de 19 px : une seule ligne en fait vingt-quatre.
+      // Repliée, elle en ferait le double — et c'est le défaut que la durée
+      // posée À CÔTÉ provoquait sur les noms longs.
+      assert.ok(
+        l.hauteurNom <= 30,
+        `« ${l.nom} » fait ${l.hauteurNom} px de haut : le nom se replie sur deux lignes`
       );
     }
   });

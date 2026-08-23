@@ -681,15 +681,23 @@ export default function PlanningClient({
                           color: colors.ink,
                         }}
                       >
-                        {c.nom}
+                        <span className="block">{c.nom}</span>
                         {/* **La durée, jamais le moment** — sa demande du
                             22 août, retenue sur la planche 86 : *« ce n'est pas
                             clair quand il y a marqué le matin et
                             l'après-midi »*. La demi-journée se lit deux lignes
-                            plus bas, sur la ligne MATIN. */}
+                            plus bas, sur la ligne MATIN.
+
+                            **Et elle passe SOUS le nom** — sa demande du
+                            23 août : *« le "une journée" en doré, mets-le sous
+                            le nom »*. À côté, elle disputait la largeur au nom
+                            et à l'équipe : « Chantier test — Abri Pornic »
+                            cassait en deux lignes et la durée finissait seule
+                            en dessous, à gauche, sans qu'on sache à quoi elle
+                            se rapportait. Vu sur sa capture. */}
                         <span
                           data-atlas="duree-planifiee"
-                          className="ml-2 text-[12.5px]"
+                          className="mt-[3px] block text-[12.5px]"
                           style={{ color: colors.or }}
                         >
                           {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
@@ -1106,7 +1114,7 @@ function AjoutAuJour({
   return (
     <>
       {ouvert?.quoi === "ajout-qui" && ouvert.cle === cle ? (
-        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+        <div className="mt-3.5 pt-3">
           {sansDate.length === 0 ? (
             <p className="m-0 text-[12px]" style={{ color: colors.muted }}>
               Aucun chantier n’attend de jour.
@@ -1136,7 +1144,6 @@ function AjoutAuJour({
         <div
           data-atlas="en-attente"
           className="mt-3.5 flex flex-wrap items-center gap-2 pt-3"
-          style={{ borderTop: `1px solid ${colors.line}` }}
         >
           <span
             className="flex-1"
@@ -1157,9 +1164,14 @@ function AjoutAuJour({
           </span>
         </div>
       ) : (
+        /* **Plus de filet au-dessus du « + »** — sa demande du 23 août 2026 :
+           *« la ligne qui se trouve entre le nom et le "+ Ajouter un chantier",
+           supprime-la »*. La planche 86 n'en porte pas : c'est l'écran qui en
+           avait ajouté un, et il refermait la journée juste avant le geste qui
+           la prolonge. */
         <div
           className="mt-3.5 flex items-center justify-center gap-2.5 pt-3 text-[12.5px]"
-          style={{ borderTop: `1px solid ${colors.line}`, color: colors.inkSoft }}
+          style={{ color: colors.inkSoft }}
         >
           <button
             type="button"
