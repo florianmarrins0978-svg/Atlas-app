@@ -198,6 +198,12 @@ await cas("AUCUN secteur ne mélange deux matériels", () => {
   // Le défaut réellement commis en écrivant ce lot. Une vanne ouvre son
   // secteur entier pour la même durée : turbines (11 mm/h) et tuyères
   // (38 mm/h) ensemble, c'est trois fois trop d'eau d'un côté.
+  //
+  // **Ce contrôle porte sur le MATÉRIEL, pas sur la pluviométrie** — et cette
+  // distinction compte depuis le 23 août 2026, où le patron a retiré la
+  // pluviométrie de la clé de secteur (*« ne prends pas en compte la
+  // pluviométrie »*). Deux turbines de buses différentes peuvent maintenant
+  // partager une vanne ; une turbine et une tuyère, jamais.
   assert(nomsDesZones.length > 0, "la planche 69 n'affiche aucune zone : rien à comparer");
   // Le matériel est comparé TEL QUE LE PATRON LE LIT (« turbine », « tuyère »),
   // pas sur une clé technique cachée : un contrôle qui regarde autre chose que
@@ -214,7 +220,7 @@ await cas("AUCUN secteur ne mélange deux matériels", () => {
     assert(
       materiels.size === 1,
       `le secteur S${i + 1} (${libelle}) mélange ${[...materiels].join(" et ")} — ` +
-        "une seule pluviométrie par secteur"
+        "un seul matériel par secteur"
     );
   }
 });

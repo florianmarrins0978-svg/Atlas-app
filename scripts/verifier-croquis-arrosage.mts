@@ -51,6 +51,16 @@ try {
  * non en surface), un massif, et le point d'eau nommé. Un modèle qui rendrait
  * « une zone de 10 × 5 par défaut » se ferait prendre.
  */
+/**
+ * **La nourrice EST dessinée sur ce croquis d'essai**, au milieu du côté gauche
+ * du gazon. Sans elle, l'outil refuse tout plan (CLAUDE.md §4 bis) : un croquis
+ * d'essai qui ne la porterait pas éprouverait un cas que le patron n'aura
+ * jamais, et laisserait le vrai — la lecture de son emplacement — sans contrôle.
+ *
+ * *Attention en modifiant ce dessin :* c'est un gabarit, donc **aucune
+ * apostrophe inversée à l'intérieur** — elle refermerait la chaîne, et l'erreur
+ * de compilation qui s'ensuit accuse une ligne de HTML.
+ */
 const CROQUIS = `
 <div style="font-family: Georgia, serif; background:#fff; width:760px; padding:28px">
   <div style="font-size:22px; margin-bottom:18px">Jardin — M. Martins</div>
@@ -59,6 +69,8 @@ const CROQUIS = `
       <div style="position:absolute; top:96px; left:96px; font-size:20px">GAZON</div>
       <div style="position:absolute; bottom:-30px; left:120px; font-size:19px">12 m</div>
       <div style="position:absolute; top:96px; right:-58px; font-size:19px">8 m</div>
+      <div style="position:absolute; top:104px; left:-16px; width:26px; height:34px; border:3px solid #222; background:#fff"></div>
+      <div style="position:absolute; top:146px; left:-42px; font-size:17px">NOURRICE</div>
     </div>
     <div style="border:3px solid #222; width:190px; height:150px; position:relative">
       <div style="position:absolute; top:58px; left:34px; font-size:20px">POTAGER</div>
@@ -149,6 +161,31 @@ async function main() {
   // **Rien n'a été inventé.** Une zone de plus est plus grave qu'une zone de
   // moins : celle qui manque se rajoute à la main, celle qui est de trop fait
   // commander des pièces pour un morceau de jardin qui n'existe pas.
+  // ── OÙ LES CHOSES SONT, ajouté le 23 août 2026 ────────────────────────────
+  //
+  // **C'est ce qui décide si le plan peut être dessiné.** Les cotes seules
+  // permettent de compter les arroseurs ; sans position, on ne sait pas où les
+  // poser ni par où passe la tranchée. Les bornes sont larges à dessein : ce
+  // qu'on éprouve, c'est que le modèle tient un REPÈRE cohérent, pas qu'il
+  // lise au centimètre un dessin fait à main levée.
+  await cas("les zones sont situées l'une par rapport à l'autre", () => {
+    const g = parType("gazon")[0];
+    const pot = parType("potager")[0];
+    assert.ok(g.x !== null && g.y !== null, "le gazon n'a aucune position");
+    assert.ok(pot.x !== null && pot.y !== null, "le potager n'a aucune position");
+    assert.ok(
+      (pot.x ?? 0) >= (g.x ?? 0) + 8,
+      `le potager est à droite du gazon sur le croquis, il est lu en x=${pot.x} contre ${g.x}`,
+    );
+  });
+
+  // **La nourrice n'est jamais déduite, mais elle doit être LUE quand elle est
+  // là.** Deux défauts opposés, et celui-ci est le moins visible : un refus
+  // permanent ferait croire que l'outil ne marche pas.
+  await cas("la nourrice dessinée est lue", () => {
+    assert.notEqual(lu.croquis.nourrice, null, "la nourrice est sur le croquis et n'a pas été lue");
+  });
+
   await cas("aucune zone n'a été inventée", () => {
     assert.equal(zones.length, 4, `${zones.length} zones au lieu de 4 : ${zones.map((z) => z.type).join(", ")}`);
   });

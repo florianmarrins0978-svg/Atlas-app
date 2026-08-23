@@ -13063,3 +13063,198 @@ qu'il veille — **un contrôle qui ne peut plus rougir ne prouve rien**
 (`CLAUDE.md` §5), et le prétendre serait pire que de l'avoir retiré. Ce que la
 suite éprouve à sa place, c'est la garantie qui l'a rendu inatteignable.
 
+
+---
+
+## 147. Le plan se DESSINE : du croquis lu au tracé de la tranchée
+
+**Sa demande du 21 août 2026 :** *« il manque la photo, le schéma avec les
+réseaux, et l'implantation des arroseurs — les différents réseaux de
+couleurs »*. Puis son feu vert du 23 : *« très bien, tu peux coder la
+maquette »*.
+
+### Ce qui manquait, et qui n'était pas ce qu'on croyait
+
+Le calcul savait déjà **tout ce qu'il faut** : `poser()` engendre les têtes
+depuis le 17 août, `decouper()` sait depuis le 19 laquelle va sur quelle vanne.
+Rien ne SORTAIT : `calculerPlan` rendait des comptes et une liste de pièces, pas
+des coordonnées. Le plan des maquettes portait donc le contour de SON jardin,
+écrit en dur — un outil ne peut pas fonctionner ainsi.
+
+Trois pièces ont été ajoutées, et **aucune ne recalcule ce qui existait** :
+
+| Fichier | Ce qu'il tient |
+|---|---|
+| `src/lib/arrosage/terrain.ts` | la forme du terrain, **union** des zones |
+| `src/lib/arrosage/trace.ts` | par où passe le tuyau, et donc la tranchée |
+| `src/lib/arrosage/plan-dessine.ts` | l'assemblage, et les deux refus |
+
+`calcul.js` n'a gagné qu'une chose : `dessin`, la mise au jour des points déjà
+calculés, en coordonnées **absolues** (`poser()` les rend relatifs au coin de la
+zone — ce qui suffit pour compter, jamais pour dessiner).
+
+### Le contour est une UNION, jamais une juxtaposition
+
+Deux pelouses qui se touchent forment **un seul terrain**, et la ligne qui les
+sépare n'existe pas sur place. La laisser dans le contour ferait croire au tracé
+qu'il longe un bord alors qu'il coupe en plein milieu — et toute la règle « on
+ne traverse pas le jardin » reposerait sur une frontière imaginaire.
+
+Les zones étant des rectangles à côtés droits — un croquis de jardin ne donne
+rien d'autre —, l'union se fait par la méthode la plus simple qui soit juste :
+découper le plan sur toutes les abscisses et toutes les ordonnées présentes,
+marquer les cases couvertes, suivre le bord des cases marquées. Le **signe de
+l'aire** sépare ensuite un contour d'un trou, sans test d'inclusion.
+
+**Plusieurs contours n'est pas une anomalie** : une pelouse devant et une
+derrière, séparées par la maison, c'est le cas le plus courant. Chaque morceau
+se trace pour lui-même, et le cheminement entre les deux — qui passe hors de la
+pelouse, sur un chemin que le croquis ne montre pas — est dessiné **en
+pointillé** et porté en réserve. Un trait plein ferait croire à un métré.
+
+### Le tracé : un graphe, et deux poids
+
+L'arbre le plus court reliant des points est un arbre de Steiner, qu'on ne
+résout pas exactement. On construit donc un graphe — arroseurs, nourrice,
+**sommets du contour** et projections —, on ne relie que des points alignés dont
+le segment reste dans le terrain, et l'on cherche le plus-court-chemin depuis
+tout ce que le réseau atteint déjà.
+
+Deux poids, et non un seul :
+
+- un segment qui **longe** un bord est facturé sa longueur ;
+- un segment qui **coupe** l'intérieur est facturé sa longueur × 2.
+
+**Et un segment déjà creusé coûte ZÉRO.** C'est là que la règle du patron se
+joue — *« lorsque c'est égal il faut privilégier de réutiliser la tranchée, car
+c'est moins fatigant »* : le mètre de tuyau se pose, le mètre de tranchée se
+creuse et se remblaie. Un réseau a donc raison de rallonger son tuyau pour
+rester dans une saignée déjà ouverte.
+
+**Une première version a été jetée**, et c'est instructif : elle reliait chaque
+arroseur au point atteint le plus proche par un simple coude. Elle ne savait pas
+CONTOURNER — pour aller de la nourrice au coin opposé, elle traversait, faute de
+pouvoir passer par les sommets du terrain. Elle rendait 76 ml de tranchée là où
+le tracé fait à la main en demandait 64.
+
+### Les deux refus, et pourquoi ils sont durs
+
+`CLAUDE.md` §4 bis : *« sans ça il ne doit rien proposer »*. Ce n'est pas le
+dessin qu'on retire, c'est **le plan entier** — une liste de pièces sans tracé
+se commande quand même.
+
+| Ce qui manque | Ce qu'on fait |
+|---|---|
+| l'endroit **définitif** de la nourrice | refus, en le nommant |
+| la position des zones les unes par rapport aux autres | refus, en le nommant |
+
+Le second mérite son existence : le calcul rend `x = 0, y = 0` quand le croquis
+ne situe pas la zone. Deux pelouses se superposeraient alors **exactement**, et
+le plan sortirait — juste au sens du compte, faux au sens du terrain, et rien à
+l'écran ne le dirait.
+
+**La nourrice n'est jamais déduite.** Elle est LUE sur le croquis
+(`lire-croquis.ts` la cherche ; s'il ne la trouve pas, il rend `null` et le dit).
+L'endroit du regard dépend de ce que lui seul sait — un point d'eau existant, un
+passage de voiture, l'accès pour l'hivernage — et une tranchée ne se déplace pas.
+
+### Les pièces se LISENT sur le dessin, elles ne se comptent pas à part
+
+Le **degré** d'un point décide de sa pièce, et rien d'autre :
+
+| Degré | Ce que c'est |
+|---|---|
+| 1 — la ligne s'arrête | **coude** taraudé 25×3/4" (tête creuse) |
+| ≥ 2 — la ligne continue | **té** taraudé 25×3/4"×25 (tête pleine) |
+| ≥ 3 sans arroseur | **té égal** 25×25×25 (losange) |
+
+C'est la seule lecture qui ne puisse pas diverger du dessin. `tés + coudes =
+arroseurs` tient donc **par construction, réseau par réseau** — et la suite le
+vérifie réseau par réseau, jamais au total : au total, un té de trop d'un côté
+et un coude de trop de l'autre s'annulent, ce qu'il avait justement relevé.
+
+### Quatre défauts trouvés à la capture, aucun par un test
+
+`CLAUDE.md` §5 : *« et surtout, regarder l'écran »*. Le plan ne s'atteint pas
+normalement ici — il faut une photo et une clé de vision, que cet environnement
+n'a pas. `scripts/capture-plan-arrosage.ts` rend donc le seul composant du
+dessin, avec les données que le calcul produit vraiment.
+
+1. Les cercles de portée **débordaient de la pelouse** et noyaient le dessin →
+   découpés sur le contour (`clipPath`).
+2. Le mot « nourrice » tombait **sur la cote du côté** → les cotes vivent
+   dehors, ce mot vit dedans.
+3. Deux réseaux qui partagent une tranchée dessinaient **le même trait**, et le
+   second effaçait le premier — un réseau entier réduit à un point, sans qu'aucun
+   chiffre soit faux. Chaque réseau est désormais écarté de l'axe, comme deux
+   tuyaux le sont au fond de la saignée.
+4. La tranchée était **du même jaune** que le troisième réseau (`#D8B45E` contre
+   `#D9A520`). La maquette validée le 21 août ne portait que deux réseaux, bleu
+   et vert : le défaut ne pouvait pas s'y voir. La tranchée est passée à une
+   terre neutre, qui ne peut se confondre avec aucune des huit couleurs.
+
+Le troisième et le quatrième ne se voient QUE sur un jardin à trois réseaux :
+une règle éprouvée sur un seul cas n'est pas éprouvée (§146).
+
+### Ce qui reste ouvert
+
+**Deux têtes peuvent tomber au même endroit** — deux zones qui se touchent
+posent chacune son arroseur sur l'arête commune. Le cas n'est pas soluble ici :
+elles sont sur des vannes différentes, donc l'une ne peut pas remplacer l'autre.
+C'est un coup de bêche à décaler sur place, et le plan le **dit** en réserve.
+
+
+---
+
+## 148. La pluviométrie ne coupe plus les secteurs — et « 13x », pas « 13 u »
+
+**Ses deux décisions du 23 août 2026**, en une phrase chacune : *« ne prends pas
+en compte la pluviométrie »* et *« pour le calcul des pièces, 13x et pas
+13 u »*.
+
+### La pluviométrie sort de la clé de secteur
+
+Elle y était depuis le 17 août, et **c'est lui qui l'y avait mise** — *« ça ne
+se mélange jamais »*. C'est donc lui qui l'en retire, et il n'y a rien à rouvrir
+ici : la question a été posée et tranchée deux fois, dans les deux sens.
+
+```
+avant : p.cle + '|' + famille + '|' + pluvio
+après : p.cle + '|' + famille
+```
+
+**Ce que cela change concrètement.** Deux turbines de buses différentes peuvent
+désormais partager une vanne. Elles versent alors des millimètres/heure
+différents, et la vanne les ouvre pour la même durée : la durée calculée
+convient à l'une et pas à l'autre. Sur son jardin, l'écart mesuré était de 3 % ;
+entre une 3504 fine et une grosse PGP, il se compterait en multiples. **Il le
+sait, il arbitre à l'arrosage** — ce n'est pas un défaut à corriger dans son dos.
+
+**Ce qui NE change pas :** la pluviométrie sert toujours aux durées (`poser()`),
+et le MATÉRIEL sépare toujours. Une turbine et une tuyère ne s'ouvrent jamais
+ensemble : l'une verse environ trois fois plus vite, et cette règle-là, il ne
+l'a pas retirée. `test-arrosage-calcul.ts` éprouve **les deux faces** — que deux
+buses peuvent se retrouver ensemble, et que deux matériels ne le peuvent pas.
+
+**Conséquence dans le plan dessiné (§147) :** un réseau ne porte plus forcément
+un seul modèle. `ReseauDessine.materiels` est devenu une LISTE, comptée par
+modèle. N'en nommer qu'un ferait commander de travers, et c'était exactement le
+raccourci que le code prenait tant que la pluviométrie garantissait l'unicité.
+
+### « 13x », et non « 13 u »
+
+**L'unité reste dans les données**, et c'est ce qui rend ce changement anodin
+plutôt que dangereux : `{ q, u }` distingue une pièce qu'on compte d'un tuyau
+qu'on mesure. Seul le mot affiché change — `quantiteEcrite(q, u)`, rendue « 13x »
+pour une pièce et « 80 ml » pour un tuyau. *« 80x de PE Ø25 » ne se commande
+pas.*
+
+**Une seule fonction pour les deux écrans**, la page publiée et l'application :
+elle vit dans la partie PARTAGÉE de `calcul.js`, donc identique des deux côtés
+au caractère près (`verifier-arrosage-une-seule-source.mjs`). Deux façons
+d'écrire la même quantité auraient fini par diverger — `CLAUDE.md` §3.
+
+Deux contrôles la tiennent, et tous deux savent échouer : la suite du calcul sur
+la fonction elle-même, et le vérificateur de la maquette sur **ce qui est
+écrit** dans les trois tableaux — parce que c'est ce qu'il lit chez son
+fournisseur.

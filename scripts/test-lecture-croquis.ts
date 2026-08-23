@@ -22,10 +22,11 @@ const dire = (bon: boolean, quoi: string) => {
 
 const JUSTE = JSON.stringify({
   zones: [
-    { type: "gazon", nom: "Pelouse devant", longueur_m: 16, largeur_m: 6, metres_lineaires: null },
-    { type: "haie", nom: "Haie de laurier", longueur_m: null, largeur_m: null, metres_lineaires: 22 },
+    { type: "gazon", nom: "Pelouse devant", longueur_m: 16, largeur_m: 6, metres_lineaires: null, x_m: 0, y_m: 0 },
+    { type: "haie", nom: "Haie de laurier", longueur_m: null, largeur_m: null, metres_lineaires: 22, x_m: 0, y_m: 6 },
   ],
   point_d_eau: "compteur",
+  nourrice: { x_m: 0, y_m: 3 },
 });
 
 console.log("=== Lire un croquis de jardin ===\n");
@@ -39,6 +40,17 @@ if (r.ok) {
   dire(r.croquis.zones[1].ml === 22, "la haie porte ses mètres linéaires");
   dire(r.croquis.pointDEau === "compteur", "le point d'eau est lu");
   dire(r.croquis.reserves.length === 0, `aucune réserve sur un croquis lisible (${r.croquis.reserves.length})`);
+  // ── LES POSITIONS, ajoutées le 23 août 2026 ───────────────────────────────
+  //
+  // **Sans elles, le plan ne peut être que COMPTÉ, jamais dessiné.** La lecture
+  // rendait des surfaces sans dire où elles étaient : le plan des maquettes
+  // portait donc le contour de son jardin, écrit en dur.
+  dire(r.croquis.zones[0].x === 0 && r.croquis.zones[0].y === 0, "la position d'une zone à l'origine est LUE, pas confondue avec un manque");
+  dire(r.croquis.zones[1].y === 6, "la seconde zone porte sa position");
+  dire(
+    r.croquis.nourrice !== null && r.croquis.nourrice.x === 0 && r.croquis.nourrice.y === 3,
+    "l'endroit de la nourrice est lu",
+  );
 }
 
 // ── 2. Le modèle entoure son objet ──────────────────────────────────────────
@@ -141,6 +153,56 @@ const sansEau = lireReponseCroquis(
 dire(
   sansEau.ok && sansEau.croquis.reserves.some((x) => /d’où vient l’eau/.test(x)),
   "le point d'eau non lu est signalé — c'est ce qui décide de tout le reste",
+);
+
+// ── 10. LA NOURRICE — sa règle du 22 août 2026 ──────────────────────────────
+//
+// *« C'est l'utilisateur qui placera la nourrice où il veut. »* Ce qui interdit
+// deux choses opposées, et il faut éprouver les deux : la deviner quand elle
+// manque, et la perdre quand elle est là.
+const sansNourrice = lireReponseCroquis(
+  JSON.stringify({ zones: [{ type: "gazon", nom: "P", longueur_m: 16, largeur_m: 6, x_m: 0, y_m: 0 }], point_d_eau: "compteur" })
+);
+dire(
+  sansNourrice.ok && sansNourrice.croquis.nourrice === null,
+  "une nourrice absente reste ABSENTE — elle n'est jamais placée d'office",
+);
+dire(
+  sansNourrice.ok && sansNourrice.croquis.reserves.some((x) => /nourrice/.test(x)),
+  "et la réserve le dit, puisque c'est ce qui retire le plan",
+);
+
+// Une seule coordonnée place le regard sur une ligne, pas sur un point.
+const demiNourrice = lireReponseCroquis(
+  JSON.stringify({
+    zones: [{ type: "gazon", nom: "P", longueur_m: 16, largeur_m: 6, x_m: 0, y_m: 0 }],
+    point_d_eau: "compteur",
+    nourrice: { x_m: 4 },
+  })
+);
+dire(
+  demiNourrice.ok && demiNourrice.croquis.nourrice === null,
+  "une nourrice à une seule coordonnée est refusée, pas complétée au jugé",
+);
+
+// ── 11. Les positions non lues se signalent ─────────────────────────────────
+const sansPosition = lireReponseCroquis(
+  JSON.stringify({
+    zones: [
+      { type: "gazon", nom: "Devant", longueur_m: 12, largeur_m: 12 },
+      { type: "gazon", nom: "Derrière", longueur_m: 8, largeur_m: 4 },
+    ],
+    point_d_eau: "compteur",
+    nourrice: { x_m: 0, y_m: 4 },
+  })
+);
+dire(
+  sansPosition.ok && sansPosition.croquis.zones.every((z) => z.x === null),
+  "une zone sans position reste sans position — jamais posée à l'origine",
+);
+dire(
+  sansPosition.ok && sansPosition.croquis.reserves.some((x) => /situe pas toutes les zones/.test(x)),
+  "et la réserve le dit : deux zones à l'origine se superposeraient en silence",
 );
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);

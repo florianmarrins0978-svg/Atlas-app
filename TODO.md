@@ -9,6 +9,35 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Arrosage : l'interface pour discuter le plan (23 août 2026)
+
+Le plan se dessine (`ARCHITECTURE.md` §147). Reste ce qu'il a demandé le 21 :
+*« j'ai besoin que si l'utilisateur a besoin de te demander de faire une
+modification, qu'il puisse le faire — une petite interface pour qu'il puisse
+discuter avec toi »*, avec deux bornes qu'il a posées lui-même :
+
+- **la discussion ne crée jamais un plan** ; elle ne fait que le modifier ;
+- **pas de phrases pré-écrites** — *« il faut un endroit où on puisse discuter
+  avec toi »*, donc un champ libre.
+
+La maquette validée est `appli/arrosage-discuter.html`. Ce qui reste à trancher
+avant de coder : la discussion agit sur les **paramètres** du calcul (marque,
+famille d'arroseur, nombre de voies), jamais sur le dessin — un plan retouché à
+la main ne se recalculerait plus.
+
+---
+
+## Arrosage : lire les positions sur une vraie photo (23 août 2026)
+
+`lire-croquis.ts` demande maintenant au modèle un repère en mètres, la position
+de chaque zone et l'endroit de la nourrice. **Cela n'a été éprouvé sur aucune
+photo** — cet environnement n'a pas de clé de vision (`AGENTS.md`). Le premier
+essai sur son banc dira si le modèle sait tenir un repère cohérent ; s'il ne le
+sait pas, le repli est une saisie à la main des positions, pas un placement
+inventé.
+
+---
+
 ## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
 
 Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
@@ -799,9 +828,11 @@ personne ne la recompte. Son contrôle vérifie donc que **toute portée citée
 existe au catalogue**, prise par l'autre bout : pas « une bonne valeur est
 présente », mais « aucune valeur inventée n'est écrite ».
 
-**Ce qui attend sa réponse :** les deux questions mises de côté (combien de
-turbines par voie ; la pluviométrie entre un coin et un plein cercle), et
-l'accord pour coder.
+**Ce qui attend sa réponse :** ~~la pluviométrie entre un coin et un plein
+cercle~~ — **tranchée le 23 août 2026** : *« ne prends pas en compte la
+pluviométrie »*, elle est sortie de la clé de secteur. Reste « combien de
+turbines par voie », auquel le code répond déjà (`decouper()` plafonne une voie
+au plus petit de la source et du Ø25) sans qu'il l'ait validé.
 
 ---
 
@@ -1686,6 +1717,13 @@ même vanne avec **5,9 et 6,1 mm/h** — et c'est le plan, en les coloriant de l
 même couleur, qui l'a montré. La pluviométrie entre donc dans la clé de
 groupe : sa règle « ça ne se mélange jamais », appliquée à la lettre.
 
+> **~~Renversé le 23 août 2026~~ par le patron lui-même** — *« ne prends pas en
+> compte la pluviométrie »*. Elle est sortie de la clé de groupe : deux buses
+> différentes peuvent désormais partager une vanne, avec des mm/h différents
+> pour une même durée d'ouverture, et **c'est lui qui arbitre à l'arrosage**.
+> Le MATÉRIEL, lui, sépare toujours (`ARCHITECTURE.md` §148). Le récit ci-dessus
+> est conservé pour qu'on ne rouvre pas la question en croyant l'inventer.
+
 **Ce que ça lui coûte, et il faut le lui dire :** une vanne de plus quand deux
 zones portent des buses différentes, même de 3 % d'écart. C'est le sens
 prudent — jamais de sous-arrosage — mais s'il juge que quelques pour cent se
@@ -1766,7 +1804,7 @@ est appliqué dans `appli/arrosage.html`. Ne pas le redéduire, ne pas l'assoupl
 | 6 | **Quinconce au-delà de 4 arroseurs, carré en dessous. « Les derniers arroseurs doivent toujours être dans les coins »** — pourtour régulier, seules les rangées intérieures se décalent | `QUINCONCE_AU_DELA_DE`, `dessinerPlans` |
 | 7 | Il enverra **un tableau portée × distance** : l'écart viendra alors du catalogue, pas d'un facteur | à venir |
 | 8 | **85 % du débit par secteur : confirmé** | `MARGE` |
-| 9 | **« Ça ne se mélange jamais »** — ni deux pluviométries, ni deux familles | `decouper()` |
+| 9 | **« Ça ne se mélange jamais »** — ~~ni deux pluviométries~~ (retiré par lui le 23 août 2026), ni deux familles | `decouper()` |
 | 10 | **Massifs : lignes tous les 80 cm. Potager : 70 cm. Haies : une ou deux lignes, À DEMANDER à l'utilisateur** | `TYPES`, forme `nappe` |
 **LES RÉPONSES DU 17 AOÛT (deuxième tour, formulaire à cocher) :**
 
@@ -2168,10 +2206,12 @@ PAR-DESSUS le calcul, jamais à sa place.
 - **Le débit se mesure au seau**, il ne se suppose pas. Un plan bâti sur un débit
   supposé s'écroule à la mise en eau, et c'est le paysagiste qui revient
   gratuitement.
-- **Une seule pluviométrie par secteur.** La vanne ouvre son secteur entier pour
-  la même durée : turbines (11 mm/h) et tuyères (38 mm/h) ensemble, c'est trois
+- **Un seul MATÉRIEL par secteur.** La vanne ouvre son secteur entier pour la
+  même durée : turbines (11 mm/h) et tuyères (38 mm/h) ensemble, c'est trois
   fois trop d'eau d'un côté, quoi qu'on règle. **Un seul rythme par secteur**
-  pour la même raison.
+  pour la même raison. *(La pluviométrie, elle, ne sépare plus deux vannes
+  depuis sa décision du 23 août 2026 : deux turbines de buses différentes
+  peuvent se retrouver ensemble.)*
 - **Aucun prix inventé** (§4 du dépôt) : la nomenclature sort avec ses
   quantités, le prix vient de « Mes prix », et ce qui n'y est pas part vide et
   signalé.

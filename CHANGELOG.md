@@ -7,6 +7,73 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-23
+
+### Le plan d'arrosage se DESSINE, à la forme du jardin lu
+
+**Son feu vert :** *« très bien, tu peux coder la maquette »*, après sa demande
+du 21 — *« il manque la photo, le schéma avec les réseaux, et l'implantation des
+arroseurs ; les différents réseaux de couleurs »*.
+
+**Ce qui manquait n'était pas le calcul.** Les têtes étaient posées depuis le
+17 août, leur vanne connue depuis le 19 : rien ne SORTAIT. Le plan des maquettes
+portait donc le contour de son jardin, écrit en dur — ce qui suffit pour une
+planche et ne fait pas un outil.
+
+**Le contour sort maintenant des zones**, par union et non par juxtaposition :
+deux pelouses qui se touchent forment un seul terrain, et la ligne qui les
+sépare n'existe pas sur place. Deux pelouses séparées par la maison donnent deux
+morceaux, chacun tracé pour lui-même, avec un **pointillé** entre eux — le
+cheminement passe hors de la pelouse, et ce mètre-là n'est pas mesuré.
+
+**La tranchée se partage, et c'est ce qui la raccourcit.** Un segment déjà
+creusé est facturé zéro au réseau suivant : sa règle du 21 août — *« lorsque
+c'est égal il faut privilégier de réutiliser la tranchée, car c'est moins
+fatigant »*. Sur son jardin en L, 53 ml de tranchée pour 69 ml de tuyau.
+
+**Les pièces se lisent sur le dessin.** Une tête traversée porte un té, une tête
+terminale un coude, un point à trois branches qui n'arrose rien un té égal.
+`tés + coudes = arroseurs` tient donc par construction, **réseau par réseau** —
+et la suite le vérifie ainsi, jamais au total : au total, deux erreurs
+s'annulent, ce qu'il avait relevé.
+
+**Sans nourrice, plus rien.** `CLAUDE.md` §4 bis appliqué à la lettre : pas
+d'endroit définitif du regard, pas de plan — ni dessin ni liste de pièces, et
+l'on dit ce qui manque. La nourrice n'est jamais déduite : la lecture du croquis
+la cherche, et rend `null` plutôt que de la poser au piquage « pour dépanner ».
+
+**Quatre défauts trouvés à la capture, aucun par un test** (`ARCHITECTURE.md`
+§147) : les portées débordaient de la pelouse, le mot « nourrice » tombait sur
+une cote, deux réseaux partageant une tranchée dessinaient le même trait — le
+second effaçant le premier —, et la tranchée était du même jaune que le
+troisième réseau. Les deux derniers ne se voient que sur un jardin à trois
+réseaux, et la maquette validée n'en portait que deux.
+
+Détail et partis pris : `ARCHITECTURE.md` §147.
+
+### La pluviométrie ne sépare plus deux vannes, et les pièces se comptent en « 13x »
+
+**Ses deux décisions :** *« ne prends pas en compte la pluviométrie »* et *« pour
+le calcul des pièces, 13x et pas 13 u »*.
+
+**La pluviométrie sort de la clé de secteur.** Elle y était depuis le 17 août —
+c'est lui qui l'y avait mise, c'est lui qui l'en retire. Deux turbines de buses
+différentes peuvent désormais partager une vanne ; elles versent alors des
+millimètres/heure différents pour une même durée d'ouverture, et c'est lui qui
+arbitre à l'arrosage. **Le matériel sépare toujours** : une turbine et une
+tuyère ne s'ouvrent jamais ensemble.
+
+**Un réseau peut donc porter deux modèles**, et le plan les nomme tous les deux,
+comptés : « 4× Turbine 3504 · buse 0,75 » et « 1× Turbine 5000 Plus · buse 6,0 ».
+N'en nommer qu'un ferait commander de travers.
+
+**« 13x » remplace « 13 u »** partout où une pièce se compte — l'application, la
+page publiée et la maquette. L'unité reste dans les données : les mètres restent
+des mètres, « 80x de PE Ø25 » ne se commande pas. Une seule fonction sert les
+deux écrans.
+
+Détail : `ARCHITECTURE.md` §148.
+
 ## 2026-08-22
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là

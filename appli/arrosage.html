@@ -642,7 +642,7 @@ function dessinerMateriel(d){
     var b = document.createElement('div');
     b.className = 'mat';
     var p = l.ref != null ? PRIX[l.ref] : undefined;
-    b.innerHTML = '<span class="mat-q">' + l.q + ' ' + l.u + '</span><span class="mat-n">' + l.nom + '</span>' +
+    b.innerHTML = '<span class="mat-q">' + quantiteEcrite(l.q, l.u) + '</span><span class="mat-n">' + l.nom + '</span>' +
       (p != null ? '<span class="mat-a">' + nb(p * l.q) + ' € HT</span>' : '');
     hote.appendChild(b);
   });
@@ -742,7 +742,7 @@ function dessinerNourrice(d){
   fiche.pieces.forEach(function(x){
     var p = CATALOGUE.piece(x.ref);
     var nom = p ? (p.marque ? p.marque + ' ' : '') + p.nom : x.ref;
-    html += '<div class="piece"><span>' + x.q + ' u</span><span>' + nom + '</span></div>';
+    html += '<div class="piece"><span>' + quantiteEcrite(x.q, 'u') + '</span><span>' + nom + '</span></div>';
   });
   hote.innerHTML = html;
 }
@@ -784,7 +784,7 @@ function totalDeLaListe(lignes){
 function texteDeLaListe(d){
   var l = ['Demande de prix — arrosage automatique',
            'Marque souhaitée : ' + nomDeMarque(marqueCourante()), ''];
-  listeMateriel(d).forEach(function(x){ l.push('- ' + x.q + ' ' + x.u + '  ' + x.nom); });
+  listeMateriel(d).forEach(function(x){ l.push('- ' + quantiteEcrite(x.q, x.u) + '  ' + x.nom); });
   // Le diamètre de l'amenée est CALCULÉ (sa règle : Ø25 par défaut, Ø32 s'il
   // le faut) — le fournisseur doit lire le bon, pas un Ø32 posé d'office.
   var a = amenee(d);

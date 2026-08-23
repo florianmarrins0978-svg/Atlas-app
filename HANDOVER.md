@@ -4,8 +4,68 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-22 · `main`
+**Point de reprise :** 2026-08-23 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## LE PLAN D'ARROSAGE EST DESSINÉ — CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (23 août 2026)
+
+**Trois fichiers purs, et aucun ne recalcule ce qui existait :**
+
+| | |
+|---|---|
+| `src/lib/arrosage/terrain.ts` | le contour, **union** des zones (jamais leur juxtaposition) |
+| `src/lib/arrosage/trace.ts` | par où passe le tuyau — graphe + plus-court-chemin |
+| `src/lib/arrosage/plan-dessine.ts` | l'assemblage, les réserves et **les deux refus** |
+
+`calcul.js` n'a gagné que `dessin` : la mise au jour des points que `poser()`
+calculait déjà, en coordonnées absolues. **Ne pas en écrire un second** — la
+divergence que `CLAUDE.md` §3 interdit se paie en matériel commandé de travers.
+
+### Les deux refus sont durs, et c'est voulu
+
+Pas d'endroit **définitif** de la nourrice → aucun plan : ni dessin, **ni liste
+de pièces**. Une liste sans tracé se commande quand même. Idem si le croquis ne
+situe pas les zones les unes par rapport aux autres : le calcul rend alors
+`x = 0, y = 0`, deux pelouses se superposeraient exactement, et rien ne le
+dirait.
+
+**La nourrice n'est jamais déduite** (sa règle du 22 août). `lire-croquis.ts` la
+cherche et rend `null` si elle n'est pas dessinée.
+
+### Ce qui n'a PAS pu être éprouvé ici
+
+La lecture réelle d'une photo : le modèle doit désormais rendre `x_m`, `y_m` par
+zone et l'endroit de la nourrice. **Aucune clé de vision dans cet
+environnement** — la fonction pure `lireReponseCroquis` est éprouvée
+(`test-lecture-croquis.ts`), l'appel au fournisseur ne l'est pas. Premier essai à
+faire sur son banc.
+
+### DEUX RÈGLES ONT CHANGÉ LE 23 AOÛT — ne pas les « corriger »
+
+**La pluviométrie n'est plus dans la clé de secteur.** Elle y était depuis le
+17 août, mise par LUI ; retirée le 23 par LUI (*« ne prends pas en compte la
+pluviométrie »*). Deux turbines de buses différentes peuvent donc partager une
+vanne, avec des mm/h différents pour une même durée d'ouverture. **C'est voulu,
+il arbitre à l'arrosage** — le remettre serait défaire sa décision.
+
+Ce qui tient toujours : une turbine et une tuyère ne partagent JAMAIS une vanne.
+Les deux faces sont éprouvées dans `test-arrosage-calcul.ts`.
+
+**Les pièces se comptent en « 13x », pas « 13 u ».** L'unité reste dans les
+données (`{ q, u }`) ; seul l'affichage change, par `quantiteEcrite(q, u)`, qui
+vit dans la partie PARTAGÉE de `calcul.js` — donc à recopier dans les deux
+copies si on y touche. Les mètres restent des mètres.
+
+### Regarder le dessin sans serveur ni clé
+
+```bash
+npx tsx scripts/capture-plan-arrosage.ts /tmp/captures
+```
+
+Il a déjà attrapé quatre défauts qu'aucun test ne voyait (`ARCHITECTURE.md`
+§147). **S'en servir avant de dire qu'un changement de dessin va bien.**
 
 ---
 

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 // Module JavaScript repris tel quel de `appli/` : `allowJs` le laisse passer,
 // et `checkJs` étant coupé, il n'est pas typé. C'est voulu — le typer aurait
 // été le réécrire, donc en faire une seconde implémentation.
-import { calculerPlan, optionsCatalogue } from "../src/lib/arrosage/calcul.js";
+import { calculerPlan, optionsCatalogue, quantiteEcrite } from "../src/lib/arrosage/calcul.js";
 
 // Le calcul d'arrosage, tel qu'il tourne dans l'application.
 //
@@ -315,6 +315,74 @@ dire(
     `source généreuse : « ${genereuse.limitePar} » commande · source modeste : « ${modeste.limitePar} »`,
   );
 }
+
+// ── LA PLUVIOMÉTRIE NE SÉPARE PLUS DEUX SECTEURS (23 août 2026) ─────────────
+//
+// **Sa décision, en trois mots :** *« ne prends pas en compte la
+// pluviométrie »*. Elle était dans la clé de secteur depuis le 17 août, et
+// c'est lui qui l'y avait mise — c'est donc lui qui l'en retire.
+//
+// **Ce que cette suite tient, c'est la BASCULE**, pas l'idée : deux pelouses de
+// tailles très différentes reçoivent des buses différentes, donc des
+// pluviométries différentes. Avant, elles ne pouvaient pas se retrouver sur la
+// même vanne ; maintenant elles le peuvent. Si quelqu'un remettait la
+// pluviométrie dans la clé, ce contrôle rougirait aussitôt.
+{
+  const deuxBuses = calculerPlan({
+    seau: 10, temps: 12, pression: 3, compteur: "oui",
+    zones: [
+      { id: 1, type: "gazon", nom: "Grande", x: 0, y: 0, L: 14, l: 14 },
+      { id: 2, type: "gazon", nom: "Petite", x: 14, y: 0, L: 5, l: 5 },
+    ],
+  });
+  const busesParReseau = new Map<number, Set<string>>();
+  for (const z of deuxBuses.dessin as { buse: string | null; points: { reseau?: number }[] }[]) {
+    for (const pt of z.points) {
+      if (pt.reseau === undefined) continue;
+      if (!busesParReseau.has(pt.reseau)) busesParReseau.set(pt.reseau, new Set());
+      busesParReseau.get(pt.reseau)!.add(z.buse ?? "?");
+    }
+  }
+  const melange = [...busesParReseau.values()].some((b) => b.size > 1);
+  dire(melange, "deux buses différentes peuvent partager une vanne — la pluviométrie ne coupe plus");
+
+  // **Mais le MATÉRIEL sépare toujours.** Une turbine et une tuyère ne
+  // s'ouvrent pas ensemble : l'une verse trois fois plus vite que l'autre, et
+  // c'est une règle qu'il n'a pas retirée.
+  const turbineEtTuyere = calculerPlan({
+    seau: 10, temps: 12, pression: 3, compteur: "oui",
+    zones: [
+      { id: 1, type: "gazon", nom: "Grande", x: 0, y: 0, L: 14, l: 14 },
+      { id: 2, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 3 },
+    ],
+  });
+  const clesParReseau = new Map<number, Set<string>>();
+  for (const z of turbineEtTuyere.dessin as { cle: string; points: { reseau?: number }[] }[]) {
+    for (const pt of z.points) {
+      if (pt.reseau === undefined) continue;
+      if (!clesParReseau.has(pt.reseau)) clesParReseau.set(pt.reseau, new Set());
+      clesParReseau.get(pt.reseau)!.add(z.cle);
+    }
+  }
+  dire(
+    [...clesParReseau.values()].every((c) => c.size === 1),
+    "une turbine et une tuyère ne partagent JAMAIS une vanne — cette règle-là tient",
+  );
+}
+
+// ── « 13x », ET NON « 13 u » (23 août 2026) ─────────────────────────────────
+//
+// Sa demande : *« pour le calcul des pièces, 13x et pas 13 u »*. **L'unité
+// reste dans les données** — c'est elle qui distingue une pièce qu'on compte
+// d'un tuyau qu'on mesure. Seul le mot affiché change, et il change des deux
+// côtés à la fois : la page publiée et l'application appellent la même
+// fonction.
+dire(quantiteEcrite(13, "u") === "13x", `13 pièces s’écrivent « ${quantiteEcrite(13, "u")} »`);
+dire(quantiteEcrite(1, "u") === "1x", `une pièce s’écrit « ${quantiteEcrite(1, "u")} »`);
+dire(
+  quantiteEcrite(80, "ml") === "80 ml",
+  `80 mètres restent des mètres : « ${quantiteEcrite(80, "ml")} » — « 80x de PE Ø25 » ne se commande pas`,
+);
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

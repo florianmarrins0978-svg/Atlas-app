@@ -3,6 +3,10 @@
 import { useActionState, useRef, useState } from "react";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { lireLeCroquis, type EtatPlan } from "./actions";
+// Module JavaScript repris tel quel de `appli/` — la même fonction sert à la
+// page publiée : deux façons d'écrire une quantité finiraient par diverger.
+import { quantiteEcrite } from "@/lib/arrosage/calcul.js";
+import PlanDessine from "./PlanDessine";
 
 /**
  * L'écran « Plan d'arrosage » — deux gestes, et le plan sort.
@@ -207,6 +211,25 @@ export default function ArrosageClient({
           Le croquis et ses métrés
         </h2>
 
+        {/* **L'AVERTISSEMENT SE LIT AVANT DE PHOTOGRAPHIER** — sa demande du
+            22 août 2026 : *« c'est un petit message qu'il faut mettre
+            au-dessus du croquis, en noir gras »*.
+
+            **Au-dessus du bouton, pas en dessous.** Placé après, il se lirait
+            une fois la photo partie — donc trop tard, et il faudrait retourner
+            au jardin refaire le croquis. Les trois éléments sont ceux sans
+            lesquels l'outil ne propose rien (`CLAUDE.md` §4 bis) : ce texte
+            n'est pas une recommandation, c'est la condition d'existence du
+            plan. */}
+        <p
+          data-atlas="avertissement-croquis"
+          className="mt-[10px] text-[13.5px] font-bold leading-relaxed"
+          style={{ color: colors.ink }}
+        >
+          Votre croquis doit impérativement contenir les métrés, l’endroit définitif de la
+          nourrice, et l’endroit où le piquage se fait.
+        </p>
+
         {/* 64 px de haut : c'est un bouton qu'il touche dehors, avec des gants. */}
         <label
           htmlFor="croquis"
@@ -279,12 +302,16 @@ function virgule(x: number) {
   return x.toFixed(2).replace(".", ",");
 }
 
-/** Le plan, une fois le croquis lu : les réseaux, puis le détail des pièces. */
+/** Le plan, une fois le croquis lu : le dessin, les réseaux, puis les pièces. */
 function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
-  const { plan, reserves } = etat;
+  const { plan, reserves, dessin } = etat;
 
   return (
     <div data-atlas="plan-arrosage">
+      {/* **LE DESSIN D'ABORD.** C'est ce qu'il regarde ; la liste de pièces,
+          c'est ce qu'il emporte chez le fournisseur ensuite. L'ordre inverse
+          l'obligeait à faire défiler tout un tableau pour voir son jardin. */}
+      <PlanDessine dessin={dessin} />
       <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
         {plan.secteurs.length} réseau{plan.secteurs.length > 1 ? "x" : ""}
         {plan.debitDisponible > 0 ? ` · ${plan.debitDisponible.toFixed(2).replace(".", ",")} m³/h` : ""}
@@ -349,8 +376,13 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
             className="flex items-baseline gap-3 py-[9px] text-[14.5px]"
             style={i === 0 ? undefined : { borderTop: `1px solid ${colors.line}` }}
           >
+            {/* **« 13x », pas « 13 u » — sa demande du 23 août 2026.** L'unité
+                reste dans les données : elle distingue une pièce qu'on compte
+                d'un tuyau qu'on mesure, et « 80x de PE Ø25 » ne se commande
+                pas. Seul le mot affiché change, et il change des deux côtés à
+                la fois (`quantiteEcrite`). */}
             <span className="w-[42px] flex-none text-[13.5px] font-semibold tabular-nums" style={{ color: colors.or }}>
-              {m.q} {m.u}
+              {quantiteEcrite(m.q, m.u)}
             </span>
             <span className="min-w-0 flex-1">{m.nom}</span>
             {/* **La référence, quand elle existe.** C'est elle qui part chez le

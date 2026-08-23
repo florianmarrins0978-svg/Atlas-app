@@ -859,17 +859,23 @@ function decouper(){
     // La clé du groupe ne contient QUE ce qui ne change pas avec la saison :
     // le matériel et la famille de plantes. Un secteur est du câblage.
     //
-    // **ET LA PLUVIOMÉTRIE EN FAIT PARTIE — sa règle du 17 août, « ça ne se
-    // mélange jamais ».** Le type ne suffit pas : deux TURBINES peuvent avoir
-    // des pluviométries différentes selon leur buse, et une vanne les ouvrirait
-    // pour la même durée. Le défaut est resté invisible tant que les deux
-    // pelouses du jardin d'exemple étaient l'une en turbines et l'autre en
-    // tuyères ; le jour où sa règle sur les tuyères les a mises toutes deux en
-    // turbines, elles se sont retrouvées sur la même vanne avec 5,9 et
-    // 6,1 mm/h — et c'est le PLAN, en les coloriant de la même couleur, qui l'a
-    // montré. Ici l'écart était de 3 % ; entre une 3504 fine et une grosse
-    // PGP, il se compte en multiples.
-    var clef = p.cle + '|' + TYPES[z.type].famille + '|' + (p.m.pluvio || 0);
+    // **LA PLUVIOMÉTRIE N'EN FAIT PLUS PARTIE — sa décision du 23 août 2026 :**
+    // *« ne prends pas en compte la pluviométrie »*. Elle y était depuis le
+    // 17 août, et c'est LUI qui l'y avait mise (« ça ne se mélange jamais ») ;
+    // c'est donc lui qui l'en retire, et il n'y a rien à rouvrir ici.
+    //
+    // **Ce que cela change, pour qui reprendra ce fichier.** Deux turbines de
+    // buses différentes peuvent désormais partager une vanne. Elles versent
+    // alors des millimètres/heure différents, et la vanne les ouvre pour la même
+    // durée : la durée calculée (`r.minutes`) convient à l'une et pas à l'autre.
+    // Sur son jardin, l'écart mesuré était de 3 % — entre une 3504 fine et une
+    // grosse PGP, il se compterait en multiples. Il le sait, il arbitre à
+    // l'arrosage.
+    //
+    // **La pluviométrie sert toujours aux DURÉES** (`poser()`), qui restent
+    // calculées par modèle. Ce qui a disparu, c'est son pouvoir de séparer deux
+    // secteurs — rien d'autre.
+    var clef = p.cle + '|' + TYPES[z.type].famille;
     if (!groupes[clef]) { groupes[clef] = { zones:[], membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
     groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
     groupes[clef].membres.push({ zoneId: z.id, points: p.points });
@@ -986,6 +992,23 @@ function decouper(){
            limiteDuTuyau: duTuyau, limiteDeLaSource: deLaSource,
            reseauxDeZone:reseauxDeZone,
            demande: etat.zones.reduce(function(s,z){ return s + poser(z).debit; }, 0) };
+}
+
+/**
+ * La quantité, écrite comme il la lit — sa demande du 23 août 2026 :
+ * *« pour le calcul des pièces, 13x et pas 13 u »*.
+ *
+ * **Le « u » ne disparaît pas du calcul, seulement de l'écran.** L'unité reste
+ * dans les données (`{ q, u }`) : c'est elle qui distingue une pièce qu'on
+ * compte d'un tuyau qu'on mesure, et le fournisseur ne commande pas
+ * « 80x de PE Ø25 ». Ce qui change, c'est le mot affiché devant une pièce.
+ *
+ * **Une seule fonction pour les deux écrans** — la page publiée et
+ * l'application. Deux façons d'écrire la même quantité finiraient par
+ * diverger, et c'est ce que `CLAUDE.md` §3 interdit.
+ */
+function quantiteEcrite(q, u){
+  return u === 'u' ? q + 'x' : q + ' ' + u;
 }
 
 function voiesProgrammateur(n){
@@ -1217,7 +1240,8 @@ function combienGoutteAGoutte(d){
 /**
  * @param {{seau?:number, temps?:number, pression?:number, compteur?:string,
  *          marque?:string, corps?:string, sonde?:boolean,
- *          zones:Array<{id?:number,type:string,nom?:string,L?:number,l?:number,ml?:number}>,
+ *          zones:Array<{id?:number,type:string,nom?:string,L?:number,l?:number,ml?:number,
+ *                       x?:number,y?:number}>,
  *          amenee?:number}} entree
  */
 export function calculerPlan(entree) {
@@ -1255,11 +1279,62 @@ export function calculerPlan(entree) {
         return Boolean(m && m.porteeCatalogue && m.portee < m.porteeCatalogue - 0.001);
       }),
       pression: Number(etat.pression) || 0,
+      // **OÙ SONT LES ARROSEURS, ET SUR QUELLE VANNE** — ajouté le 23 août 2026
+      // pour que le plan puisse enfin se DESSINER dans l'application.
+      //
+      // Tout était déjà calculé : `poser()` engendre les points depuis le
+      // 17 août, `decouper()` sait depuis le 19 lequel va sur quelle vanne.
+      // Rien ne SORTAIT, et le plan restait un dessin fait à la main dans les
+      // maquettes, aux cotes de son jardin du 21 août. Ajouter un second calcul
+      // des positions aurait fabriqué la divergence que `CLAUDE.md` §3
+      // interdit : c'est donc une simple mise au jour.
+      dessin: dessinDesZones(d),
     };
   } finally {
     etat = avant;
   }
 }
+
+/**
+ * Les zones à leur place sur le terrain, avec leurs têtes et leurs réseaux.
+ *
+ * **Les points remontent en coordonnées ABSOLUES.** `poser()` les rend relatifs
+ * au coin de la zone — ce qui suffit pour compter, jamais pour dessiner : deux
+ * pelouses auraient alors des arroseurs aux mêmes coordonnées et se
+ * superposeraient. Le décalage se fait ici, une seule fois, et le tracé n'a
+ * plus à savoir qu'il a existé.
+ *
+ * **`x` et `y` valent zéro quand le croquis ne les donne pas**, et l'écran
+ * refuse alors de dessiner plutôt que d'empiler les zones à l'origine — un plan
+ * faux est pire qu'un plan absent (`CLAUDE.md` §4 bis).
+ */
+function dessinDesZones(d){
+  return etat.zones.map(function(z){
+    var p = poser(z);
+    var ox = Number(z.x) || 0, oy = Number(z.y) || 0;
+    return {
+      id: z.id,
+      nom: z.nom || TYPES[z.type].nom,
+      type: z.type,
+      x: ox, y: oy, L: Number(z.L) || 0, l: Number(z.l) || 0,
+      /** 'turbine', 'tuyere' ou 'gaine' — c'est elle qui décide de la forme dessinée. */
+      cle: p.cle,
+      modele: p.m ? p.m.nom : null,
+      buse: p.m ? (p.m.detail || null) : null,
+      portee: p.m ? (Number(p.m.portee) || 0) : 0,
+      points: (p.points || []).map(function(pt){
+        return {
+          x: ox + pt.x, y: oy + pt.y,
+          // La clé est celle que `decouper()` a posée : elle se lit sur les
+          // coordonnées RELATIVES, celles d'avant le décalage.
+          reseau: d.reseauDuPoint[z.id + ':' + pt.x.toFixed(3) + ':' + pt.y.toFixed(3)]
+        };
+      })
+    };
+  });
+}
+
+export { quantiteEcrite };
 
 /** Les marques et les corps proposés — pour les menus de l'écran. */
 export function optionsCatalogue() {

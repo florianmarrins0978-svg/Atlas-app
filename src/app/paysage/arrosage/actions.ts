@@ -5,6 +5,7 @@ import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
+import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
 
 /**
  * Les gestes de l'écran « Plan d'arrosage ».
@@ -29,6 +30,15 @@ export type EtatPlan =
       etat: "lu";
       zones: { type: string; nom: string | null; L: number | null; l: number | null; ml: number | null }[];
       reserves: string[];
+      /**
+       * LE PLAN DESSINÉ — le contour du jardin, la tranchée, les réseaux.
+       *
+       * *Sa demande du 21 août 2026 : « il manque la photo, le schéma avec les
+       * réseaux, et l'implantation des arroseurs ».* Il ne peut exister que si
+       * le croquis porte les trois éléments obligatoires ; sinon l'écran
+       * n'arrive jamais ici, il refuse (`CLAUDE.md` §4 bis).
+       */
+      dessin: Dessin;
       plan: {
         debitDisponible: number;
         secteurs: { nom: string; debit: number; famille: string; part: string | null }[];
@@ -136,6 +146,11 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
       L: z.L ?? undefined,
       l: z.l ?? undefined,
       ml: z.ml ?? undefined,
+      // **Où la zone se trouve** — sans quoi le plan se compte mais ne se
+      // dessine pas. `undefined` traverse jusqu'au dessin, qui refuse : c'est
+      // là que la règle vit, pas ici.
+      x: z.x ?? undefined,
+      y: z.y ?? undefined,
     })),
   });
 
@@ -159,10 +174,27 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     };
   }
 
+  // ── SANS CROQUIS COMPLET, AUCUN PLAN — `CLAUDE.md` §4 bis ────────────────
+  //
+  // *« L'outil doit fonctionner avec un plan avec toutes les métrées,
+  // l'emplacement du piquage et l'endroit définitif de la nourrice — sans ça il
+  // ne doit rien proposer. »* Ce n'est pas le DESSIN qu'on retire, c'est le
+  // plan entier : une liste de pièces sans tracé se commande quand même, et
+  // c'est ce qu'il a refusé le 21 août (« il n'est pas valable avec cette
+  // nouvelle règle »). On dit lequel des trois manque, et l'on s'arrête.
+  const dessine = dessinerPlan(
+    plan.dessin as ZoneDessinee[],
+    lu.croquis.nourrice,
+    plan.couleurs as string[]
+  );
+  if (!dessine.ok) return { etat: "refus", raison: dessine.raison };
+  reserves.push(...dessine.reserves);
+
   return {
     etat: "lu",
     zones: lu.croquis.zones,
     reserves,
+    dessin: dessine.dessin,
     plan: {
       debitDisponible: plan.debitDisponible,
       secteurs: plan.secteurs,
