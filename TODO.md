@@ -139,6 +139,31 @@ avant toute autre hypothèse.
 l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
 15 août. Il reste à l'appliquer aux quatre.
 
+## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
+
+`src/app/termines/page.tsx` dit d'elle : *« la planche reste la référence — toute
+correction de cet écran s'y porte D'ABORD, sinon les deux divergent, et c'est
+elle qu'il ouvre sur son téléphone »*. Elle ne l'est plus.
+
+**Ce que l'écran porte et que `appli/termines-simple.html` ignore :**
+
+| L'écran codé | La planche |
+|---|---|
+| la carte de TVA **en tête**, avec son montant | « Ma TVA à déclarer » en **pied**, sans montant |
+| « 1 à facturer · 3 facturés », sans montants, souligné d'un trait | la même phrase **avec ses montants**, sans trait |
+| la ligne du mois **sans total** | « ‹ Août 2026 › » **avec son total à droite** |
+| les lignes aérées (19 px de marge) | les lignes d'origine |
+
+**Personne ne l'a fait exprès** : la carte de TVA vient de la planche 86, posée
+par une autre session, et les retraits du 23 août au soir ont été portés au code
+seul — il regardait l'écran, pas la planche. **Ce n'est pas un défaut du
+produit**, c'est une référence qui ment, et elle ment dans le sens le plus
+coûteux : on la croit à jour.
+
+**Deux issues, et il faut trancher** — remettre la planche à niveau, ou lui
+retirer son titre de référence et le dire dans `page.tsx`. Ne pas laisser en
+l'état.
+
 ## ~~Le temps passé, montré ou non~~ — **CODÉ le 23 août 2026**
 
 Sa demande du 22 août, dessinée en planche 92, puis codée le 23 après ses deux
