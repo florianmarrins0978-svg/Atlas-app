@@ -277,6 +277,45 @@ Pour effacer vos essais et retrouver les données de démonstration :
 npm run essai:reinitialiser
 ```
 
+## « Elle marche vingt minutes, puis elle crache »
+
+**Ce n'est pas Atlas qui tombe : c'est l'espace de travail qui s'endort.**
+
+Signalé le 21 août 2026 : *« l'application marche vingt, trente minutes et après
+au bout d'un moment elle crache. Elle fait ça à chaque fois. »* Le compte est
+juste, et la cause n'est pas dans l'application — un espace de travail
+**s'arrête tout seul au bout de trente minutes**, c'est le réglage d'origine de
+Codespaces. L'adresse ne répond alors plus, et rien ne dit pourquoi.
+
+**Ce qui compte comme activité, et c'est le piège.** Le compte à rebours regarde
+si l'on est connecté à l'ESPACE — l'éditeur, un terminal. Se servir de
+l'application depuis son téléphone ne le remet pas à zéro : on peut donc
+travailler dans Atlas sans interruption et le voir s'éteindre quand même. C'est
+exactement le cas décrit, et c'est ce qui le rend incompréhensible sur le moment.
+
+### Ce qui allonge le délai — deux minutes, une fois pour toutes
+
+Sur **github.com/settings/codespaces**, le réglage **« Default idle timeout »**
+porte ce délai. Il se pousse jusqu'à **240 minutes** (quatre heures).
+
+> **Non vérifié depuis cet environnement, et il faut le dire :** le mandataire
+> réseau d'ici refuse GitHub, je n'ai donc pas pu ouvrir cette page ni confirmer
+> le libellé exact ni le plafond. Ce qui est vérifié, en revanche, c'est le
+> délai d'origine de trente minutes — il est écrit dans `devcontainer.json` et
+> il correspond au symptôme.
+>
+> Attention à ce que cela coûte : un espace qui reste allumé quatre heures
+> **consomme quatre heures** sur les 60 heures mensuelles du compte gratuit.
+
+### Ce que cela ne règle pas
+
+Quatre heures au lieu de trente minutes, c'est une journée de travail qui tient.
+**Ce n'est pas une application qui marche plusieurs jours sans y penser** — pour
+cela il faut l'héberger ailleurs qu'un espace de travail, qui n'est pas fait
+pour ça. C'est le point 3 de [`A-FAIRE.md`](A-FAIRE.md).
+
+---
+
 ## Fermer proprement
 
 Un espace de travail inutilisé s'arrête tout seul après trente minutes, et ne
@@ -374,6 +413,33 @@ Dans l'ordre :
 4. Si l'espace date d'avant le 2026-08-01, supprimez-le et créez-en un neuf :
    le démarrage automatique et le port ouvert sont lus **à la création**
    (encadré du geste 1).
+
+**Le téléphone propose de TÉLÉCHARGER un fichier au nom de l'adresse, au lieu
+d'afficher Atlas.** Une petite fenêtre s'ouvre, avec le nom de votre espace et un
+bouton « Télécharger ». N'acceptez pas : il n'y a rien à télécharger.
+
+**Ce que ça veut dire, et c'est précis :** le serveur a bien répondu — donc
+l'espace tourne et Atlas est debout. Mais **le port 3000 est privé**. GitHub
+renvoie alors sa propre page de connexion à la place d'Atlas, et le téléphone,
+qui n'y comprend rien, propose de l'enregistrer.
+
+C'est le piège du 10 août 2026, revenu : `devcontainer.json` déclare bien le port
+public, mais **cette ligne n'est lue qu'à la création de l'espace**. Et le geste
+de rattrapage joué à chaque allumage (`.devcontainer/ouvrir-port.sh`) a besoin de
+l'outil `gh`, **qui n'est pas dans ce conteneur** — il renonce alors en silence.
+
+**Le geste qui débloque**, depuis l'éditeur de l'espace (sur un ordinateur, c'est
+beaucoup plus facile qu'au doigt) :
+
+> onglet **PORTS** → ligne du port **3000** → clic droit → **Port Visibility** →
+> **Public**
+
+Puis rouvrez l'adresse sur le téléphone. Le réglage tient tant que l'espace
+existe.
+
+**Si vous n'avez pas d'ordinateur sous la main :** ouvrez l'adresse depuis un
+navigateur **où vous êtes connecté à GitHub**. Un port privé y répond ; c'est
+seulement au visiteur anonyme qu'il se ferme.
 
 **La page reste blanche depuis le téléphone.** Blanche, pas crème : ce n'est pas
 un écran de l'application qui s'affiche mal, c'est qu'aucune page n'arrive.

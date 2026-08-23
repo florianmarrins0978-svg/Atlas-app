@@ -6806,89 +6806,417 @@
 #s62 .note li{margin-bottom:6px}
 
 
-/* 63 — Enregistrer le PDF depuis la fiche client */
+/* 63 — Où mettre « Ma TVA à déclarer » */
 #s63{
     --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
     --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
-    --alert:#9C3B2E; --line:rgba(28,28,26,0.12);
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
   }
-#s63, #s63 *{ box-sizing:border-box; }
-#s63{
+#s63 [hidden]{display:none !important}
+#s63, #s63 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+#s63{margin:0;background:#e8e5de;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:0 0 40px}
+#s63 header{position:sticky;top:0;z-index:5;background:#e8e5de;border-bottom:1px solid var(--line);padding:14px 16px 12px}
+#s63 h1{font-size:16px;margin:0 0 3px}
+#s63 .sous{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+#s63 .sous b{color:var(--ink)}
+#s63 .choix{display:flex;gap:8px}
+#s63 .choix button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--cream);
+    color:var(--ink-soft);border-radius:999px;font-size:13px;font-family:inherit}
+#s63 .choix button[aria-pressed="true"]{background:var(--pine);color:var(--bone);border-color:var(--pine);font-weight:600}
+#s63 main{padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+#s63 .ecran{width:100%;max-width:390px;background:var(--bone);border-radius:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.14);padding:18px 0 14px;overflow:hidden}
+#s63 .titre{font-family:Georgia,serif;font-size:33px;margin:0 24px;letter-spacing:-.02em}
+#s63 .lien-haut{display:flex;align-items:center;justify-content:space-between;margin:10px 24px 0;padding:11px 0}
+#s63 .lien-haut .txt{font-family:Georgia,serif;font-size:16px}
+#s63 .lien-haut .fl{color:var(--or);font-size:15px}
+#s63 .mention{margin:0 24px;font-size:11px;color:var(--muted);line-height:1.5}
+#s63 .carte{margin:12px 24px 0;background:var(--cream);border-radius:12px;padding:13px 15px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;width:calc(100% - 48px);
+    border:0;font-family:inherit;text-align:left}
+#s63 .carte:active{background:var(--paper)}
+#s63 .carte .cle{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+#s63 .carte .quoi{font-family:Georgia,serif;font-size:16.5px;margin:0}
+#s63 .carte .val{font-family:Georgia,serif;font-size:22px;color:var(--pine)}
+#s63 .onglets{display:flex;gap:8px;margin:15px 24px 0}
+#s63 .onglet{border-radius:999px;padding:9px 19px;font-size:13.5px;border:1px solid var(--line);
+    background:transparent;color:var(--muted);font-family:inherit}
+#s63 .onglet.on{background:#1c1c1a;color:#fff;border-color:#1c1c1a}
+#s63 .mois{display:flex;align-items:center;justify-content:space-between;margin:20px 24px 0}
+#s63 .mois .bloc{display:flex;align-items:center;gap:4px}
+#s63 .mois .fl{color:var(--or);font-size:17px;background:none;border:0;padding:6px 8px;font-family:inherit}
+#s63 .mois .fl:disabled{opacity:.28}
+#s63 .mois .nom{font-family:Georgia,serif;font-size:24px}
+#s63 .mois .tot{font-size:16.5px}
+#s63 .sousmois{display:flex;justify-content:space-between;align-items:center;margin:9px 24px 0;gap:10px}
+#s63 .phrase{font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin:0}
+#s63 .phrase b{color:var(--ink);font-weight:600}
+#s63 .lien-mois{font-size:13px;color:var(--or);white-space:nowrap;background:none;border:0;font-family:inherit;padding:4px 0}
+#s63 .ligne{display:flex;justify-content:space-between;align-items:center;margin:0 24px;padding:12px 0;
+    border-top:1px solid var(--line-soft);gap:10px}
+#s63 .ligne .qui{font-family:Georgia,serif;font-size:18px;margin:0}
+#s63 .ligne .quand{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+#s63 .ligne .eur{font-size:15.5px;white-space:nowrap}
+#s63 .facturer{background:var(--pine);color:var(--bone);border-radius:999px;padding:10px 18px;
+    font-size:11.5px;letter-spacing:.09em;border:0;font-family:inherit;white-space:nowrap}
+#s63 .attente{color:var(--or)}
+#s63 .pied{margin:16px 24px 0;padding-top:11px;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between}
+#s63 .pied .txt{font-family:Georgia,serif;font-size:16px}
+#s63 .cout{width:100%;max-width:390px;background:var(--cream);border-left:3px solid var(--or);
+    border-radius:0 10px 10px 0;padding:13px 15px;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+#s63 .cout b{color:var(--ink)}
+#s63 .cout p{margin:0 0 7px}
+#s63 .cout p:last-child{margin:0}
+#s63 .essai{width:100%;max-width:390px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+    background:#efece4;border-radius:10px;padding:12px 14px}
+#s63 .essai b{color:var(--ink)}
+
+
+/* 64 — Dire que ces achats FONT la TVA déductible */
+#s64{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+#s64 [hidden]{display:none !important}
+#s64, #s64 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+#s64{margin:0;background:#e8e5de;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:0 0 40px}
+#s64 header{position:sticky;top:0;z-index:5;background:#e8e5de;
+    border-bottom:1px solid var(--line);padding:14px 16px 12px}
+#s64 h1{font-size:16px;margin:0 0 3px}
+#s64 .sous{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+#s64 .choix{display:flex;gap:8px}
+#s64 .choix button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--cream);
+    color:var(--ink-soft);border-radius:999px;font-size:13.5px;font-family:inherit}
+#s64 .choix button[aria-pressed="true"]{background:var(--pine);color:var(--bone);border-color:var(--pine);font-weight:600}
+#s64 main{padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+#s64 .ecran{width:100%;max-width:390px;background:var(--bone);border-radius:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.14);padding:16px 0 16px;overflow:hidden}
+#s64 .titre-mois{font-family:Georgia,serif;font-size:29px;margin:0 22px;letter-spacing:-.018em}
+#s64 .filet{height:1px;background:var(--line);margin:11px 22px 0}
+#s64 .nav{display:flex;justify-content:space-between;margin:11px 22px 0;font-size:13px;color:var(--ink-soft)}
+#s64 .tuiles{margin:13px 22px 0;background:var(--cream);border-radius:10px;overflow:hidden}
+#s64 .deux{display:flex}
+#s64 .tuile{flex:1;padding:13px 8px 15px;text-align:center;transition:background .35s}
+#s64 .tuile+.tuile{border-left:1px solid var(--line-soft)}
+#s64 .tuile .cle{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+#s64 .tuile .val{font-size:20px;font-weight:600;margin:0;transition:color .35s}
+#s64 .tuile.bouge{background:#f2eee2}
+#s64 .tuile.bouge .val{color:var(--or)}
+#s64 .tuile.visee{box-shadow:inset 0 0 0 1px var(--or);border-radius:8px}
+#s64 .reste{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-top:1px solid var(--line-soft)}
+#s64 .reste b{font-family:Georgia,serif;font-size:23px;color:var(--pine);font-weight:400}
+#s64 .cle-section{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);margin:19px 22px 8px}
+#s64 .explique{margin:-2px 22px 9px;font-size:12.5px;line-height:1.5;color:var(--ink-soft)}
+#s64 .explique b{color:var(--ink)}
+#s64 .gestes{display:flex;gap:10px;margin:0 22px}
+#s64 .geste{flex:1;border:1px solid var(--line);background:var(--cream);border-radius:999px;
+    padding:13px 6px;text-align:center;font-size:12.5px;color:var(--ink);font-family:inherit}
+#s64 .geste .ico{display:block;font-size:15px;color:var(--pine);margin-bottom:4px}
+#s64 .geste:active{background:var(--paper)}
+#s64 .rattache{margin:0 22px;padding:11px 13px;background:var(--cream);
+    border-radius:0 0 10px 10px;border-top:1px dashed var(--line)}
+#s64 .rattache .cle{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--or);margin:0 0 8px}
+#s64 .achat{display:flex;justify-content:space-between;align-items:center;margin:12px 22px 0;
+    padding-top:11px;border-top:1px solid var(--line-soft)}
+#s64 .achat .quoi{font-size:15.5px;margin:0}
+#s64 .achat .quand{font-size:12px;color:var(--muted);margin:2px 0 0}
+#s64 .achat .tva{font-size:14.5px;color:var(--ink-soft)}
+#s64 .achat.neuf{animation:s64-entre .5s ease}
+@keyframes s64-entre{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+#s64 .cout{width:100%;max-width:390px;background:var(--cream);border-left:3px solid var(--or);
+    border-radius:0 10px 10px 0;padding:13px 15px;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+#s64 .cout b{color:var(--ink)}
+#s64 .cout p{margin:0 0 7px}
+#s64 .cout p:last-child{margin:0}
+#s64 .essai{width:100%;max-width:390px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+    background:#efece4;border-radius:10px;padding:12px 14px}
+#s64 .essai b{color:var(--ink)}
+
+
+/* 65 — Envoyer la facture en un seul geste */
+#s65{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --alert:#9C3B2E; --line:rgba(28,28,26,0.12); --line-soft:rgba(28,28,26,0.07);
+  }
+#s65, #s65 *{ box-sizing:border-box; }
+#s65{
     margin:0; background:#e8e5de; color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     padding:28px 16px 60px;
   }
-#s63 h1{ font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
-#s63 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:760px; line-height:1.5; margin:0 0 26px; }
-#s63 .rangee{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
-#s63 .colonne{ width:390px; }
-#s63 .etiquette{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
-#s63 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:52px; }
-#s63 .dit b{ color:var(--ink); }
-#s63 .ecran{
+#s65 h1{ font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
+#s65 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:780px; line-height:1.5; margin:0 0 10px; }
+#s65 .compte{ display:flex; gap:10px; flex-wrap:wrap; margin:0 0 26px; }
+#s65 .pastille{ font-size:12px; padding:4px 10px; border-radius:999px; background:var(--cream); color:var(--ink-soft); }
+#s65 .pastille b{ color:var(--ink); }
+#s65 .rangee{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
+#s65 .colonne{ width:390px; }
+#s65 .etiquette{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
+#s65 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:74px; }
+#s65 .dit b{ color:var(--ink); }
+#s65 .ecran{ width:390px; background:var(--bone); border-radius:22px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.14); padding:18px 0 16px; }
+#s65 .carte{ margin:0 24px 12px; background:var(--cream); border-radius:4px; padding:16px 20px; }
+#s65 .cle{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+#s65 .val{ font-size:15px; margin:0; }
+#s65 .sous{ font-size:13px; color:var(--muted); margin:4px 0 0; }
+#s65 .ligne{ display:flex; justify-content:space-between; font-size:15px; margin-top:4px; }
+#s65 .ligne span:last-child{ color:var(--muted); }
+#s65 .totaux{ border-top:1px solid var(--line); margin-top:12px; padding-top:12px; }
+#s65 .ttc-cle{ text-align:center; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:14px 0 2px; }
+#s65 .ttc{ text-align:center; font-family:Georgia,serif; font-size:34px; color:var(--or); margin:0; }
+#s65 .lien-pdf{ display:block; text-align:center; font-size:14px; margin-top:12px; color:var(--ink); text-decoration:none; }
+#s65 .lien-pdf.gris{ color:var(--muted); font-size:13px; margin-top:6px; }
+#s65 .encart{ margin:14px 24px 0; }
+#s65 .encart-cle{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 7px; text-align:center; }
+#s65 .choix{ display:flex; gap:8px; }
+#s65 .choix button{
+    flex:1; min-height:46px; border:0; border-radius:999px; font-size:15px;
+    background:var(--paper); color:var(--ink-soft); font-family:inherit;
+  }
+#s65 .choix button.actif{ background:var(--pine); color:var(--cream); font-weight:600; }
+#s65 .destinataire{ text-align:center; font-size:12.5px; color:var(--muted); margin:8px 0 0; }
+#s65 .bouton{
+    display:block; width:calc(100% - 48px); margin:14px 24px 0; min-height:54px;
+    border:0; border-radius:999px; background:var(--pine); color:var(--cream);
+    font-family:Georgia,serif; font-size:18px;
+  }
+#s65 .apres{ text-align:center; font-size:12.5px; color:var(--muted); margin:9px 24px 0; line-height:1.45; }
+#s65 .avertit{ margin:10px 24px 0; padding:2px 0 2px 13px; border-left:1px solid var(--or); }
+#s65 .avertit p{ margin:0; font-size:13px; line-height:1.4; color:var(--ink); }
+#s65 .avertit .fine{ margin-top:3px; font-size:12px; color:var(--muted); }
+#s65 .note{ width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
+#s65 .note b{ color:var(--ink); }
+#s65 .note.rouge b{ color:var(--alert); }
+#s65 .question{ max-width:820px; margin:34px 0 0; padding:16px 18px; background:var(--cream); border-left:3px solid var(--or); border-radius:0 10px 10px 0; }
+#s65 .question h2{ font-size:14px; margin:0 0 8px; }
+#s65 .question p{ font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
+#s65 .question p:last-child{ margin-bottom:0; }
+#s65 .question b{ color:var(--ink); }
+
+
+/* 66 — Enregistrer le PDF depuis la fiche client */
+#s66{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --alert:#9C3B2E; --line:rgba(28,28,26,0.12);
+  }
+#s66, #s66 *{ box-sizing:border-box; }
+#s66{
+    margin:0; background:#e8e5de; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:28px 16px 60px;
+  }
+#s66 h1{ font-size:19px; margin:0 0 4px; letter-spacing:-0.01em; }
+#s66 .chapo{ font-size:13.5px; color:var(--ink-soft); max-width:760px; line-height:1.5; margin:0 0 26px; }
+#s66 .rangee{ display:flex; flex-wrap:wrap; gap:22px; align-items:flex-start; }
+#s66 .colonne{ width:390px; }
+#s66 .etiquette{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--pine); margin:0 0 3px; }
+#s66 .dit{ font-size:12.5px; color:var(--ink-soft); line-height:1.45; margin:0 0 9px; min-height:52px; }
+#s66 .dit b{ color:var(--ink); }
+#s66 .ecran{
     width:390px; background:var(--bone); border-radius:22px; overflow:hidden;
     box-shadow:0 1px 3px rgba(0,0,0,.14); padding-bottom:14px;
   }
-#s63 .entete{ padding:16px 26px 0; }
-#s63 .surtitre{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--or); margin:0; }
-#s63 .titre{ font-family:Georgia,"Times New Roman",serif; font-size:31px; line-height:1.05; margin:5px 0 0; letter-spacing:-.018em; }
-#s63 .coord{ font-size:12.5px; color:var(--muted); margin:6px 0 0; }
-#s63 .derniere{ padding:18px 26px 0; }
-#s63 .derniere p{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#000; margin:0; }
-#s63 .derniere ul{ list-style:none; padding:0; margin:11px 0 0; }
-#s63 .derniere li{ position:relative; padding-left:15px; font-size:14px; line-height:1.45; color:var(--ink-soft); margin-top:6px; }
-#s63 .derniere li::before{ content:""; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:50%; background:var(--or); }
-#s63 .colonnes{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:0 16px; margin-top:24px; }
-#s63 .cadre{ min-width:0; background:var(--cream); border-radius:12px; padding:12px 9px 10px; }
-#s63 .cadre h3{ margin:0; font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
-#s63 .compte{ display:block; margin-top:3px; font-size:10.5px; color:var(--muted); }
-#s63 .piece{ display:block; min-height:56px; padding:8px 0 2px; text-align:center; text-decoration:none; color:var(--ink); }
-#s63 .piece + .piece{ border-top:1px solid var(--line); margin-top:8px; }
-#s63 .vignette{
+#s66 .entete{ padding:16px 26px 0; }
+#s66 .surtitre{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--or); margin:0; }
+#s66 .titre{ font-family:Georgia,"Times New Roman",serif; font-size:31px; line-height:1.05; margin:5px 0 0; letter-spacing:-.018em; }
+#s66 .coord{ font-size:12.5px; color:var(--muted); margin:6px 0 0; }
+#s66 .derniere{ padding:18px 26px 0; }
+#s66 .derniere p{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#000; margin:0; }
+#s66 .derniere ul{ list-style:none; padding:0; margin:11px 0 0; }
+#s66 .derniere li{ position:relative; padding-left:15px; font-size:14px; line-height:1.45; color:var(--ink-soft); margin-top:6px; }
+#s66 .derniere li::before{ content:""; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:50%; background:var(--or); }
+#s66 .colonnes{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:0 16px; margin-top:24px; }
+#s66 .cadre{ min-width:0; background:var(--cream); border-radius:12px; padding:12px 9px 10px; }
+#s66 .cadre h3{ margin:0; font-size:9px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
+#s66 .compte{ display:block; margin-top:3px; font-size:10.5px; color:var(--muted); }
+#s66 .piece{ display:block; min-height:56px; padding:8px 0 2px; text-align:center; text-decoration:none; color:var(--ink); }
+#s66 .piece + .piece{ border-top:1px solid var(--line); margin-top:8px; }
+#s66 .vignette{
     margin:0 auto; width:24px; height:29px; border-radius:3px; background:#fff;
     box-shadow:inset 0 0 0 1px rgba(156,59,46,.35); color:var(--alert);
     font-size:6.5px; font-weight:700; letter-spacing:.06em;
     display:flex; align-items:flex-end; justify-content:center; padding-bottom:3px;
   }
-#s63 .nom{ display:block; margin-top:5px; font-size:12.5px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#s63 .quand{ display:block; margin-top:2px; font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#s63 .fleche-bas{ position:absolute; right:-1px; bottom:-1px; width:13px; height:13px; border-radius:50%;
+#s66 .nom{ display:block; margin-top:5px; font-size:12.5px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#s66 .quand{ display:block; margin-top:2px; font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#s66 .fleche-bas{ position:absolute; right:-1px; bottom:-1px; width:13px; height:13px; border-radius:50%;
     background:var(--pine); color:#fff; font-size:8px; line-height:13px; text-align:center; font-weight:700; }
-#s63 .vignette-enveloppe{ position:relative; width:24px; margin:0 auto; }
-#s63 .deux{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px; }
-#s63 .mini{
+#s66 .vignette-enveloppe{ position:relative; width:24px; margin:0 auto; }
+#s66 .deux{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px; }
+#s66 .mini{
     width:30px; height:30px; border-radius:50%; background:var(--paper); color:var(--pine);
     font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
   }
-#s63 .voile{ position:relative; }
-#s63 .feuille{
+#s66 .voile{ position:relative; }
+#s66 .feuille{
     margin:9px 0 0; background:#fff; border-radius:14px; padding:8px 0 4px;
     box-shadow:0 -1px 10px rgba(0,0,0,.10);
   }
-#s63 .feuille p{ margin:0 0 4px; text-align:center; font-size:10.5px; color:var(--muted); }
-#s63 .feuille a{ display:block; padding:11px 10px; font-size:13.5px; text-align:center; text-decoration:none; color:var(--ink); }
-#s63 .feuille a + a{ border-top:1px solid var(--line); }
-#s63 .feuille .principal{ font-weight:600; color:var(--pine); }
-#s63 .note{ width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
-#s63 .note b{ color:var(--ink); }
-#s63 .question{
+#s66 .feuille p{ margin:0 0 4px; text-align:center; font-size:10.5px; color:var(--muted); }
+#s66 .feuille a{ display:block; padding:11px 10px; font-size:13.5px; text-align:center; text-decoration:none; color:var(--ink); }
+#s66 .feuille a + a{ border-top:1px solid var(--line); }
+#s66 .feuille .principal{ font-weight:600; color:var(--pine); }
+#s66 .note{ width:390px; font-size:12px; color:var(--ink-soft); line-height:1.5; margin-top:10px; }
+#s66 .note b{ color:var(--ink); }
+#s66 .question{
     max-width:800px; margin:34px 0 0; padding:16px 18px; background:var(--cream);
     border-left:3px solid var(--or); border-radius:0 10px 10px 0;
   }
-#s63 .question h2{ font-size:14px; margin:0 0 8px; }
-#s63 .question p{ font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
-#s63 .question p:last-child{ margin-bottom:0; }
-#s63 .question b{ color:var(--ink); }
+#s66 .question h2{ font-size:14px; margin:0 0 8px; }
+#s66 .question p{ font-size:13px; line-height:1.55; color:var(--ink-soft); margin:0 0 8px; }
+#s66 .question p:last-child{ margin-bottom:0; }
+#s66 .question b{ color:var(--ink); }
 
 
-/* 64 — Choisir la date, sans l’écran du milieu */
-#s64{
+/* 67 — Où mettre « Ma TVA à déclarer » */
+#s67{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+#s67 [hidden]{display:none !important}
+#s67, #s67 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+#s67{margin:0;background:#e8e5de;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:0 0 40px}
+#s67 header{position:sticky;top:0;z-index:5;background:#e8e5de;border-bottom:1px solid var(--line);padding:14px 16px 12px}
+#s67 h1{font-size:16px;margin:0 0 3px}
+#s67 .sous{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+#s67 .sous b{color:var(--ink)}
+#s67 .choix{display:flex;gap:8px}
+#s67 .choix button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--cream);
+    color:var(--ink-soft);border-radius:999px;font-size:13px;font-family:inherit}
+#s67 .choix button[aria-pressed="true"]{background:var(--pine);color:var(--bone);border-color:var(--pine);font-weight:600}
+#s67 main{padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+#s67 .ecran{width:100%;max-width:390px;background:var(--bone);border-radius:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.14);padding:18px 0 14px;overflow:hidden}
+#s67 .titre{font-family:Georgia,serif;font-size:33px;margin:0 24px;letter-spacing:-.02em}
+#s67 .lien-haut{display:flex;align-items:center;justify-content:space-between;margin:10px 24px 0;padding:11px 0}
+#s67 .lien-haut .txt{font-family:Georgia,serif;font-size:16px}
+#s67 .lien-haut .fl{color:var(--or);font-size:15px}
+#s67 .mention{margin:0 24px;font-size:11px;color:var(--muted);line-height:1.5}
+#s67 .carte{margin:12px 24px 0;background:var(--cream);border-radius:12px;padding:13px 15px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;width:calc(100% - 48px);
+    border:0;font-family:inherit;text-align:left}
+#s67 .carte:active{background:var(--paper)}
+#s67 .carte .cle{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+#s67 .carte .quoi{font-family:Georgia,serif;font-size:16.5px;margin:0}
+#s67 .carte .val{font-family:Georgia,serif;font-size:22px;color:var(--pine)}
+#s67 .onglets{display:flex;gap:8px;margin:15px 24px 0}
+#s67 .onglet{border-radius:999px;padding:9px 19px;font-size:13.5px;border:1px solid var(--line);
+    background:transparent;color:var(--muted);font-family:inherit}
+#s67 .onglet.on{background:#1c1c1a;color:#fff;border-color:#1c1c1a}
+#s67 .mois{display:flex;align-items:center;justify-content:space-between;margin:20px 24px 0}
+#s67 .mois .bloc{display:flex;align-items:center;gap:4px}
+#s67 .mois .fl{color:var(--or);font-size:17px;background:none;border:0;padding:6px 8px;font-family:inherit}
+#s67 .mois .fl:disabled{opacity:.28}
+#s67 .mois .nom{font-family:Georgia,serif;font-size:24px}
+#s67 .mois .tot{font-size:16.5px}
+#s67 .sousmois{display:flex;justify-content:space-between;align-items:center;margin:9px 24px 0;gap:10px}
+#s67 .phrase{font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin:0}
+#s67 .phrase b{color:var(--ink);font-weight:600}
+#s67 .lien-mois{font-size:13px;color:var(--or);white-space:nowrap;background:none;border:0;font-family:inherit;padding:4px 0}
+#s67 .ligne{display:flex;justify-content:space-between;align-items:center;margin:0 24px;padding:12px 0;
+    border-top:1px solid var(--line-soft);gap:10px}
+#s67 .ligne .qui{font-family:Georgia,serif;font-size:18px;margin:0}
+#s67 .ligne .quand{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+#s67 .ligne .eur{font-size:15.5px;white-space:nowrap}
+#s67 .facturer{background:var(--pine);color:var(--bone);border-radius:999px;padding:10px 18px;
+    font-size:11.5px;letter-spacing:.09em;border:0;font-family:inherit;white-space:nowrap}
+#s67 .attente{color:var(--or)}
+#s67 .pied{margin:16px 24px 0;padding-top:11px;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between}
+#s67 .pied .txt{font-family:Georgia,serif;font-size:16px}
+#s67 .cout{width:100%;max-width:390px;background:var(--cream);border-left:3px solid var(--or);
+    border-radius:0 10px 10px 0;padding:13px 15px;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+#s67 .cout b{color:var(--ink)}
+#s67 .cout p{margin:0 0 7px}
+#s67 .cout p:last-child{margin:0}
+#s67 .essai{width:100%;max-width:390px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+    background:#efece4;border-radius:10px;padding:12px 14px}
+#s67 .essai b{color:var(--ink)}
+
+
+/* 68 — Dire que ces achats FONT la TVA déductible */
+#s68{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+#s68 [hidden]{display:none !important}
+#s68, #s68 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+#s68{margin:0;background:#e8e5de;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:0 0 40px}
+#s68 header{position:sticky;top:0;z-index:5;background:#e8e5de;
+    border-bottom:1px solid var(--line);padding:14px 16px 12px}
+#s68 h1{font-size:16px;margin:0 0 3px}
+#s68 .sous{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+#s68 .choix{display:flex;gap:8px}
+#s68 .choix button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--cream);
+    color:var(--ink-soft);border-radius:999px;font-size:13.5px;font-family:inherit}
+#s68 .choix button[aria-pressed="true"]{background:var(--pine);color:var(--bone);border-color:var(--pine);font-weight:600}
+#s68 main{padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+#s68 .ecran{width:100%;max-width:390px;background:var(--bone);border-radius:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.14);padding:16px 0 16px;overflow:hidden}
+#s68 .titre-mois{font-family:Georgia,serif;font-size:29px;margin:0 22px;letter-spacing:-.018em}
+#s68 .filet{height:1px;background:var(--line);margin:11px 22px 0}
+#s68 .nav{display:flex;justify-content:space-between;margin:11px 22px 0;font-size:13px;color:var(--ink-soft)}
+#s68 .tuiles{margin:13px 22px 0;background:var(--cream);border-radius:10px;overflow:hidden}
+#s68 .deux{display:flex}
+#s68 .tuile{flex:1;padding:13px 8px 15px;text-align:center;transition:background .35s}
+#s68 .tuile+.tuile{border-left:1px solid var(--line-soft)}
+#s68 .tuile .cle{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+#s68 .tuile .val{font-size:20px;font-weight:600;margin:0;transition:color .35s}
+#s68 .tuile.bouge{background:#f2eee2}
+#s68 .tuile.bouge .val{color:var(--or)}
+#s68 .tuile.visee{box-shadow:inset 0 0 0 1px var(--or);border-radius:8px}
+#s68 .reste{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-top:1px solid var(--line-soft)}
+#s68 .reste b{font-family:Georgia,serif;font-size:23px;color:var(--pine);font-weight:400}
+#s68 .cle-section{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);margin:19px 22px 8px}
+#s68 .explique{margin:-2px 22px 9px;font-size:12.5px;line-height:1.5;color:var(--ink-soft)}
+#s68 .explique b{color:var(--ink)}
+#s68 .gestes{display:flex;gap:10px;margin:0 22px}
+#s68 .geste{flex:1;border:1px solid var(--line);background:var(--cream);border-radius:999px;
+    padding:13px 6px;text-align:center;font-size:12.5px;color:var(--ink);font-family:inherit}
+#s68 .geste .ico{display:block;font-size:15px;color:var(--pine);margin-bottom:4px}
+#s68 .geste:active{background:var(--paper)}
+#s68 .rattache{margin:0 22px;padding:11px 13px;background:var(--cream);
+    border-radius:0 0 10px 10px;border-top:1px dashed var(--line)}
+#s68 .rattache .cle{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--or);margin:0 0 8px}
+#s68 .achat{display:flex;justify-content:space-between;align-items:center;margin:12px 22px 0;
+    padding-top:11px;border-top:1px solid var(--line-soft)}
+#s68 .achat .quoi{font-size:15.5px;margin:0}
+#s68 .achat .quand{font-size:12px;color:var(--muted);margin:2px 0 0}
+#s68 .achat .tva{font-size:14.5px;color:var(--ink-soft)}
+#s68 .achat.neuf{animation:s68-entre .5s ease}
+@keyframes s68-entre{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+#s68 .cout{width:100%;max-width:390px;background:var(--cream);border-left:3px solid var(--or);
+    border-radius:0 10px 10px 0;padding:13px 15px;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+#s68 .cout b{color:var(--ink)}
+#s68 .cout p{margin:0 0 7px}
+#s68 .cout p:last-child{margin:0}
+#s68 .essai{width:100%;max-width:390px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+    background:#efece4;border-radius:10px;padding:12px 14px}
+#s68 .essai b{color:var(--ink)}
+
+
+/* 69 — Choisir la date, sans l’écran du milieu */
+#s69{
     --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
     --or:#B98B47; --pin:#2f3b2f; --papier:#ece9e1;
     --trait:rgba(28,28,26,.12); --traitdoux:rgba(28,28,26,.07);
   }
 @media (prefers-color-scheme: dark){
-#s64:not([data-theme="light"]){
+#s69:not([data-theme="light"]){
       --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
       --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
       --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
@@ -6896,80 +7224,80 @@
 
   
 }
-#s64[data-theme="dark"]{
+#s69[data-theme="dark"]{
     --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
     --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
     --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
   }
-#s64, #s64 *{box-sizing:border-box}
-#s64{
+#s69, #s69 *{box-sizing:border-box}
+#s69{
     margin:0;background:var(--fond);color:var(--encre);
     font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
     padding:36px 18px 80px;
   }
-#s64 .chapo{max-width:780px;margin:0 auto 40px}
-#s64 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
-#s64 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
-#s64 .chapo b{color:var(--encre);font-weight:500}
-#s64 .fil{
+#s69 .chapo{max-width:780px;margin:0 auto 40px}
+#s69 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
+#s69 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+#s69 .chapo b{color:var(--encre);font-weight:500}
+#s69 .fil{
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     max-width:780px;margin:0 auto 40px;font-size:13px;
   }
-#s64 .etape{
+#s69 .etape{
     padding:8px 14px;border-radius:999px;border:1px solid var(--trait);
     background:var(--carte);color:var(--encre);
   }
-#s64 .etape.saute{
+#s69 .etape.saute{
     text-decoration:line-through;color:var(--gris);
     border-style:dashed;background:transparent;
   }
-#s64 .fleche{color:var(--gris)}
-#s64 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
-#s64 .colonne{width:390px;max-width:100%}
-#s64 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
-#s64 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
-#s64 .note b{color:var(--encre);font-weight:500}
-#s64 .tel{
+#s69 .fleche{color:var(--gris)}
+#s69 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
+#s69 .colonne{width:390px;max-width:100%}
+#s69 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+#s69 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
+#s69 .note b{color:var(--encre);font-weight:500}
+#s69 .tel{
     width:390px;max-width:100%;height:560px;overflow:hidden;background:var(--fond);
     border:1px solid var(--trait);border-radius:22px;display:flex;flex-direction:column;
   }
-#s64 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
-#s64 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
-#s64 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
-#s64 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
-#s64 .bloc{margin-top:18px}
-#s64 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
-#s64 .signature{
+#s69 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
+#s69 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s69 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
+#s69 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
+#s69 .bloc{margin-top:18px}
+#s69 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s69 .signature{
     margin-top:18px;height:76px;border:1px dashed var(--trait);border-radius:8px;
   }
-#s64 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
-#s64 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
-#s64 .vert{
+#s69 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
+#s69 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
+#s69 .vert{
     display:block;width:100%;padding:15px;border-radius:999px;text-align:center;
     background:var(--pin);color:#f5f3ee;font-size:16px;
     font-family:ui-serif,Georgia,"Times New Roman",serif;
   }
-#s64 .lien{
+#s69 .lien{
     display:block;width:100%;margin-top:12px;text-align:center;
     font-size:14px;font-weight:500;color:var(--pin);
   }
-#s64 .creux{
+#s69 .creux{
     display:block;width:100%;margin-top:10px;padding:13px;border-radius:999px;
     text-align:center;border:1px solid var(--trait);color:var(--pin);font-size:14.5px;
   }
-#s64 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
-#s64 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
-#s64 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
-#s64 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
-#s64 .apres b{color:var(--encre);font-weight:500}
-#s64 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
-#s64 .apres th,#s64 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
-#s64 .apres th{color:var(--encre);font-weight:500}
-#s64 .question{
+#s69 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
+#s69 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
+#s69 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+#s69 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+#s69 .apres b{color:var(--encre);font-weight:500}
+#s69 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
+#s69 .apres th,#s69 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
+#s69 .apres th{color:var(--encre);font-weight:500}
+#s69 .question{
     border-left:3px solid var(--or);background:rgba(185,139,71,.08);
     padding:14px 16px;border-radius:0 10px 10px 0;margin:0 0 18px;
   }
-#s64 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
+#s69 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
 
 
 </style>
@@ -7256,13 +7584,36 @@
         <span class="no">62</span><span class="titre">Mes mots au catalogue</span><span class="fleche">↓</span>
         <span class="quoi">« À quoi sert cette page ?? On peut rien modifier rajouter » — le catalogue appartient à tout le monde : à part, par-dessus, ou tout mélangé. Et la flèche de retour revient.</span>
       </a>
-      <p class="famille">Le devis avant l’envoi</p>
+      <p class="famille">L’argent qui ne rentre pas</p>
       <a class="item" href="#m63">
-        <span class="no">63</span><span class="titre">Enregistrer le PDF depuis la fiche client</span><span class="fleche">↓</span>
-        <span class="quoi">Les vignettes de la fiche client OUVRENT le PDF sans proposer de l’enregistrer. Trois dosages du geste — et la question qu’il doit trancher : vient-il regarder, ou garder ?</span>
+        <span class="no">63</span><span class="titre">Où mettre « Ma TVA à déclarer »</span><span class="fleche">↓</span>
+        <span class="quoi">« Il est caché, on ne le voit pas trop. » Trois places : en tête, une carte avec le montant, ou sur la ligne du mois — là où il choisit déjà sa période.</span>
       </a>
       <a class="item" href="#m64">
-        <span class="no">64</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
+        <span class="no">64</span><span class="titre">Dire que ces achats FONT la TVA déductible</span><span class="fleche">↓</span>
+        <span class="quoi">« On ne comprend pas trop que scanner ou écrire à la main, c’est pour la TVA déductible. » Le même montant est écrit deux fois à quinze lignes d’écart, et rien ne les relie. Trois façons de le dire — aucune ne touche aux gestes.</span>
+      </a>
+      <a class="item" href="#m65">
+        <span class="no">65</span><span class="titre">Envoyer la facture en un seul geste</span><span class="fleche">↓</span>
+        <span class="quoi">Trois appuis pour envoyer une facture, et le premier ment : il l’ARRÊTE au lieu de la faire partir. Un encart SMS / e-mail, un bouton, la messagerie tout de suite — et la question : le mot doit-il dire qu’il arrête ?</span>
+      </a>
+      <p class="famille">Le devis avant l’envoi</p>
+      <a class="item" href="#m66">
+        <span class="no">66</span><span class="titre">Enregistrer le PDF depuis la fiche client</span><span class="fleche">↓</span>
+        <span class="quoi">Les vignettes de la fiche client OUVRENT le PDF sans proposer de l’enregistrer. Trois dosages du geste — et la question qu’il doit trancher : vient-il regarder, ou garder ?</span>
+      </a>
+      <p class="famille">L’argent qui ne rentre pas</p>
+      <a class="item" href="#m67">
+        <span class="no">67</span><span class="titre">Où mettre « Ma TVA à déclarer »</span><span class="fleche">↓</span>
+        <span class="quoi">« Il est caché, on ne le voit pas trop. » Trois places, ESSAYABLES : en tête, une carte avec le montant, ou sur la ligne du mois — changez de mois, le lien suit.</span>
+      </a>
+      <a class="item" href="#m68">
+        <span class="no">68</span><span class="titre">Dire que ces achats FONT la TVA déductible</span><span class="fleche">↓</span>
+        <span class="quoi">« On ne comprend pas trop que scanner, c’est pour la TVA déductible. » Trois façons de le dire — ajoutez un ticket et regardez quel chiffre bouge.</span>
+      </a>
+      <p class="famille">Le devis avant l’envoi</p>
+      <a class="item" href="#m69">
+        <span class="no">69</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
         <span class="quoi">« Envoyer au client » devient « Choisir la date », en vert et sans flèche, et mène droit au calendrier. L’écran du milieu, qui redit le devis qu’on vient de fermer, saute. Trois écrans deviennent deux.</span>
       </a>
     <p class="note">
@@ -24106,10 +24457,363 @@
   <section class="etape" id="m63">
     <div class="etape-tete">
       <span class="etape-no">63</span>
-      <h2>Enregistrer le PDF depuis la fiche client</h2>
+      <h2>Où mettre « Ma TVA à déclarer »</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s63">
+<h1>Où mettre « Ma TVA à déclarer »</h1>
+  <p class="sous">Touchez une proposition, puis <b>changez de mois</b> avec les flèches : la C fait
+    suivre le lien.</p>
+  <div class="choix" role="group" aria-label="Proposition">
+    <button type="button" data-p="0" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-p="A" aria-pressed="false">A · en tête</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une carte</button>
+    <button type="button" data-p="C" aria-pressed="false">C · le mois</button>
+  </div>
+
+
+<main>
+  <div class="ecran">
+    <p class="titre">Terminés</p>
+
+    <!-- A -->
+    <div id="blocA" hidden>
+      <div class="lien-haut"><span class="txt">Ma TVA à déclarer</span><span class="fl">›</span></div>
+      <p class="mention">Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>
+
+    <!-- B -->
+    <div id="blocB" hidden>
+      <button class="carte" type="button">
+        <span><span class="cle">Ma TVA à déclarer</span><span class="quoi" id="carteMois">Août 2026</span></span>
+        <span class="val" id="carteVal">746,33 €</span>
+      </button>
+      <p class="mention" style="margin-top:6px">Reste à payer. Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>
+
+    <div class="onglets">
+      <button class="onglet on" type="button">Tout</button>
+      <button class="onglet" type="button">À facturer</button>
+    </div>
+
+    <div class="mois">
+      <span class="bloc">
+        <button class="fl" type="button" id="avant" aria-label="Mois précédent">‹</button>
+        <span class="nom" id="nomMois">Août 2026</span>
+        <button class="fl" type="button" id="apres" aria-label="Mois suivant">›</button>
+      </span>
+      <span class="tot" id="totalMois">13 200,00 €</span>
+    </div>
+
+    <div class="sousmois">
+      <p class="phrase"><b id="nbAttente">8 à facturer</b>, <span id="eurAttente">8 520,00 €</span>
+        · <b id="nbFait">13 facturés</b>, <span id="eurFait">14 760,00 €</span></p>
+      <button class="lien-mois" type="button" id="lienMois" hidden>Ma TVA d'août ›</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="ligne">
+        <div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div>
+        <button class="facturer" type="button">FACTURER</button>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Monsieur Martins</p><p class="quand">Facturé le 12 août · Facture n° 1</p></div>
+        <span class="eur">936,00 €</span>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Chantier test — Muret Clisson</p><p class="quand attente">Pas encore facturé</p></div>
+        <button class="facturer" type="button">FACTURER</button>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Monsieur Martin</p><p class="quand">Facturé le 14 août · Facture n° 3</p></div>
+        <span class="eur">840,00 €</span>
+      </div>
+    </div>
+
+    <!-- Aujourd'hui : tout en bas, après la liste -->
+    <div class="pied" id="blocPied">
+      <span class="txt">Ma TVA à déclarer</span><span class="fl" style="color:var(--or)">›</span>
+    </div>
+    <p class="mention" id="mentionPied" style="margin-top:2px">Atlas prépare ce relevé, il ne le déclare pas.</p>
+  </div>
+
+  <div class="cout" id="cout"></div>
+
+  <p class="essai">
+    <b>Ce qui est vrai ici :</b> les trois places, les mots, les mesures, et le fait que le lien de la
+    C suive le mois affiché.<br>
+    <b>Ce qui ne l'est pas :</b> rien n'est lu en base, aucun écran ne s'ouvre au bout du lien, et la
+    liste des chantiers ne change pas d'un mois à l'autre.
+  </p>
+</main>
+    </div>
+  </section>
+
+  <section class="etape" id="m64">
+    <div class="etape-tete">
+      <span class="etape-no">64</span>
+      <h2>Dire que ces achats FONT la TVA déductible</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s64">
+<h1>Dire que ces achats font la TVA déductible</h1>
+  <p class="sous">Touchez une proposition, puis <b>ajoutez un ticket</b> : regardez quel chiffre bouge.</p>
+  <div class="choix" role="group" aria-label="Proposition">
+    <button type="button" data-p="A" aria-pressed="true">A · le titre</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une phrase</button>
+    <button type="button" data-p="C" aria-pressed="false">C · la place</button>
+  </div>
+
+
+<main>
+  <div class="ecran">
+    <p class="titre-mois">Août 2026</p>
+    <div class="filet"></div>
+    <div class="nav"><span>← Juillet 2026</span><span>Septembre 2026 →</span></div>
+
+    <div class="tuiles" id="tuiles">
+      <div class="deux">
+        <div class="tuile"><p class="cle">Collectée</p><p class="val">788,00 €</p></div>
+        <div class="tuile" id="tuileDed"><p class="cle">Déductible</p><p class="val" id="ded">41,67 €</p></div>
+      </div>
+      <div class="reste"><span>Reste à payer</span><b id="reste">746,33 €</b></div>
+    </div>
+
+    <!-- C : les gestes rattachés à la tuile -->
+    <div class="rattache" id="blocC" hidden>
+      <p class="cle">Pour faire monter la déductible</p>
+      <div class="gestes" style="margin:0">
+        <button class="geste" type="button" data-ajout="1"><span class="ico">⌗</span>Scanner un ticket</button>
+        <button class="geste" type="button" data-ajout="1"><span class="ico">✎</span>Écrire à la main</button>
+      </div>
+    </div>
+
+    <p class="cle-section" id="titreSection">Ce qui fait votre TVA déductible</p>
+    <p class="explique" id="phrase" hidden>Chaque ticket ajouté augmente la <b>TVA déductible</b>
+      ci-dessus — et fait baisser d'autant ce qui vous reste à payer.</p>
+
+    <!-- A et B : les gestes à leur place d'aujourd'hui -->
+    <div class="gestes" id="blocAB">
+      <button class="geste" type="button" data-ajout="1"><span class="ico">⌗</span>Scanner un ticket</button>
+      <button class="geste" type="button" data-ajout="1"><span class="ico">✎</span>Écrire à la main</button>
+    </div>
+
+    <div id="achats">
+      <div class="achat">
+        <div><p class="quoi">Essence</p><p class="quand">22 août · 250,00 €</p></div>
+        <span class="tva">41,67 €</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cout" id="cout"></div>
+
+  <p class="essai">
+    <b>Ce qui est vrai ici :</b> les mots, la place, et le calcul — ajouter un ticket fait monter
+    « Déductible » et baisser « Reste à payer », comme dans l'application.<br>
+    <b>Ce qui ne l'est pas :</b> rien n'est enregistré, et le scanner ne lit aucune photo — il ajoute
+    un achat d'exemple.
+  </p>
+</main>
+    </div>
+  </section>
+
+  <section class="etape" id="m65">
+    <div class="etape-tete">
+      <span class="etape-no">65</span>
+      <h2>Envoyer la facture en un seul geste</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s65">
+<h1>Envoyer la facture en un seul geste</h1>
+<p class="chapo">
+  Sa demande : le petit encart <b>SMS / e-mail</b> au-dessus, un bouton <b>« Envoyer la facture »</b>
+  sans flèche, et la messagerie qui s'ouvre <b>tout de suite</b>. Les trois dosages font exactement
+  cela. Ils ne diffèrent que sur une chose — celle de l'encadré du bas.
+</p>
+<p class="compte">
+  <span class="pastille">Aujourd'hui : <b>3 appuis</b> — arrêter · préparer le lien · ouvrir la messagerie</span>
+  <span class="pastille">Ces trois planches : <b>1 appui</b></span>
+</p>
+
+<div class="rangee">
+
+  <!-- ————————————— A ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">A — ses mots, à la lettre</p>
+    <p class="dit">
+      L'encart, le bouton, l'ouverture immédiate. Rien d'autre.
+      <b>Ce que ça tait :</b> cet appui <b>arrête</b> la facture — numéro définitif, entrée au relevé
+      de TVA, plus aucune modification possible. Le mot « envoyer » ne le dit pas.
+    </p>
+    <div class="ecran">
+      <div class="carte">
+        <p class="cle">Facture</p>
+        <p class="val">F2026-0006 — Mr. Martins</p>
+        <p class="sous">À régler avant le lundi 21 septembre</p>
+      </div>
+      <div class="carte">
+        <p class="cle">Reprise du devis</p>
+        <div class="ligne"><span>Haie de laurier (20 ml)</span><span>200,00 €</span></div>
+      </div>
+      <div class="carte">
+        <div class="ligne"><span>Total HT</span><span>200,00 €</span></div>
+        <div class="ligne"><span>TVA 20 %</span><span>40,00 €</span></div>
+        <div class="totaux"></div>
+        <p class="ttc-cle">Total TTC</p>
+        <p class="ttc">240,00 €</p>
+        <a class="lien-pdf" href="#">Voir la facture en PDF →</a>
+      </div>
+
+      <div class="encart">
+        <p class="encart-cle">Vous l'envoyez par</p>
+        <div class="choix">
+          <button class="actif">SMS</button>
+          <button>E-mail</button>
+        </div>
+        <p class="destinataire">Au 06 79 98 45 14</p>
+      </div>
+      <button class="bouton">Envoyer la facture</button>
+      <p class="apres">Votre messagerie s'ouvre aussitôt. Rien ne part tant que vous ne l'envoyez pas.</p>
+    </div>
+    <p class="note rouge">
+      <b>La réserve, dite franchement.</b> Si sa messagerie refuse de s'ouvrir — iOS le fait, et sans
+      un mot — la facture est <b>arrêtée quand même</b>. Elle est dans sa TVA, et le client n'a rien reçu.
+    </p>
+  </div>
+
+  <!-- ————————————— B ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">B — ses mots, et ce qu'ils engagent</p>
+    <p class="dit">
+      <b>Exactement le même geste</b> : un appui, la messagerie s'ouvre. Une seule ligne en plus, sous
+      le bouton, dit ce qu'il vient de faire à sa comptabilité. Il ne relit pas cette ligne deux fois —
+      mais elle est là le jour où il se demande pourquoi la facture ne se modifie plus.
+    </p>
+    <div class="ecran">
+      <div class="carte">
+        <p class="cle">Facture</p>
+        <p class="val">F2026-0006 — Mr. Martins</p>
+        <p class="sous">À régler avant le lundi 21 septembre</p>
+      </div>
+      <div class="carte">
+        <p class="cle">Reprise du devis</p>
+        <div class="ligne"><span>Haie de laurier (20 ml)</span><span>200,00 €</span></div>
+      </div>
+      <div class="carte">
+        <div class="ligne"><span>Total HT</span><span>200,00 €</span></div>
+        <div class="ligne"><span>TVA 20 %</span><span>40,00 €</span></div>
+        <div class="totaux"></div>
+        <p class="ttc-cle">Total TTC</p>
+        <p class="ttc">240,00 €</p>
+        <a class="lien-pdf" href="#">Voir la facture en PDF →</a>
+      </div>
+
+      <div class="encart">
+        <p class="encart-cle">Vous l'envoyez par</p>
+        <div class="choix">
+          <button class="actif">SMS</button>
+          <button>E-mail</button>
+        </div>
+        <p class="destinataire">Au 06 79 98 45 14</p>
+      </div>
+      <button class="bouton">Envoyer la facture</button>
+      <div class="avertit">
+        <p>En l'envoyant, vous l'arrêtez : elle entre dans votre TVA et ne se modifie plus.</p>
+        <p class="fine">Une correction passerait par un avoir.</p>
+      </div>
+      <p class="apres">Votre messagerie s'ouvre aussitôt.</p>
+    </div>
+    <p class="note">
+      <b>Le coût, honnêtement : quatre lignes de gris de plus sur un écran qu'il veut court.</b>
+      Le gain : le mot ne cache plus l'acte. C'est la règle que le dépôt s'est donnée — rien ne
+      s'engage sans qu'il sache quoi.
+    </p>
+  </div>
+
+  <!-- ————————————— C ————————————— -->
+  <div class="colonne">
+    <p class="etiquette">C — n'arrêter que si c'est vraiment parti</p>
+    <p class="dit">
+      L'idée qui vient naturellement : la messagerie s'ouvre d'abord, et la facture ne s'arrête
+      <b>que si le message est bien parti</b>. Aucun avertissement à lire, aucun risque d'arrêter
+      pour rien.
+    </p>
+    <div class="ecran">
+      <div class="carte">
+        <p class="cle">Facture</p>
+        <p class="val">F2026-0006 — Mr. Martins</p>
+        <p class="sous">À régler avant le lundi 21 septembre</p>
+      </div>
+      <div class="carte">
+        <p class="cle">Reprise du devis</p>
+        <div class="ligne"><span>Haie de laurier (20 ml)</span><span>200,00 €</span></div>
+      </div>
+      <div class="carte">
+        <div class="ligne"><span>Total HT</span><span>200,00 €</span></div>
+        <div class="ligne"><span>TVA 20 %</span><span>40,00 €</span></div>
+        <div class="totaux"></div>
+        <p class="ttc-cle">Total TTC</p>
+        <p class="ttc">240,00 €</p>
+        <a class="lien-pdf" href="#">Voir la facture en PDF →</a>
+      </div>
+
+      <div class="encart">
+        <p class="encart-cle">Vous l'envoyez par</p>
+        <div class="choix">
+          <button class="actif">SMS</button>
+          <button>E-mail</button>
+        </div>
+        <p class="destinataire">Au 06 79 98 45 14</p>
+      </div>
+      <button class="bouton">Envoyer la facture</button>
+      <p class="apres">Elle ne sera arrêtée qu'une fois le message parti.</p>
+    </div>
+    <p class="note rouge">
+      <b>ÉCARTÉE, et le dépôt sait déjà pourquoi.</b> Aucun navigateur ne dit si le SMS est parti :
+      il ne distingue pas « expédié » de « ouvert puis abandonné » ni de « refusé sans un mot »
+      (<code>src/lib/depart-messagerie.ts</code>). Cette promesse ne peut pas être tenue —
+      elle laisserait des factures faites, envoyées, et jamais entrées en comptabilité.
+      <b>Dessinée pour qu'on cesse d'y revenir.</b>
+    </p>
+  </div>
+
+</div>
+
+<div class="question">
+  <h2>La seule question, et je ne la tranche pas à sa place</h2>
+  <p>
+    Les trois planches font <b>ce qu'il a demandé</b> : l'encart SMS / e-mail, « Envoyer la facture »
+    sans flèche, la messagerie tout de suite. Un appui au lieu de trois.
+  </p>
+  <p>
+    Elles ne diffèrent que sur ceci : <b>le bouton doit-il dire qu'il arrête la facture ?</b>
+    Arrêter une facture est <b>sans retour</b> — numéro définitif, entrée au relevé de TVA, plus
+    aucune modification. Aujourd'hui deux gestes séparés le lui rappelaient ; avec un seul, le mot
+    est tout ce qui reste.
+  </p>
+  <p>
+    Mon avis, s'il le veut : <b>la B</b>. Même geste, même vitesse — quatre lignes de gris qu'il ne
+    lira qu'une fois, mais qui seront là le jour où il se demandera pourquoi sa facture ne se modifie
+    plus. La <b>A</b> reste parfaitement défendable si ces lignes l'encombrent : c'est lui qui
+    facture tous les jours, pas moi.
+  </p>
+  <p>
+    <b>Un point à trancher aussi, plus petit :</b> s'il choisit « E-mail » et qu'Atlas n'a pas
+    l'adresse du client, faut-il un champ pour la saisir sur place — comme sur le devis — ou refuser
+    l'envoi ? Il n'existe aucun autre écran où renseigner une adresse.
+  </p>
+</div>
+    </div>
+  </section>
+
+  <section class="etape" id="m66">
+    <div class="etape-tete">
+      <span class="etape-no">66</span>
+      <h2>Enregistrer le PDF depuis la fiche client</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s66">
 <h1>Enregistrer le PDF depuis la fiche client</h1>
 <p class="chapo">
   Aujourd'hui, toucher une vignette <b>ouvre</b> le PDF dans un onglet : rien ne propose de
@@ -24304,13 +25008,177 @@
     </div>
   </section>
 
-  <section class="etape" id="m64">
+  <section class="etape" id="m67">
     <div class="etape-tete">
-      <span class="etape-no">64</span>
+      <span class="etape-no">67</span>
+      <h2>Où mettre « Ma TVA à déclarer »</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s67">
+<h1>Où mettre « Ma TVA à déclarer »</h1>
+  <p class="sous">Touchez une proposition, puis <b>changez de mois</b> avec les flèches : la C fait
+    suivre le lien.</p>
+  <div class="choix" role="group" aria-label="Proposition">
+    <button type="button" data-p="0" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-p="A" aria-pressed="false">A · en tête</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une carte</button>
+    <button type="button" data-p="C" aria-pressed="false">C · le mois</button>
+  </div>
+
+
+<main>
+  <div class="ecran">
+    <p class="titre">Terminés</p>
+
+    <!-- A -->
+    <div id="blocA" hidden>
+      <div class="lien-haut"><span class="txt">Ma TVA à déclarer</span><span class="fl">›</span></div>
+      <p class="mention">Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>
+
+    <!-- B -->
+    <div id="blocB" hidden>
+      <button class="carte" type="button">
+        <span><span class="cle">Ma TVA à déclarer</span><span class="quoi" id="carteMois">Août 2026</span></span>
+        <span class="val" id="carteVal">746,33 €</span>
+      </button>
+      <p class="mention" style="margin-top:6px">Reste à payer. Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>
+
+    <div class="onglets">
+      <button class="onglet on" type="button">Tout</button>
+      <button class="onglet" type="button">À facturer</button>
+    </div>
+
+    <div class="mois">
+      <span class="bloc">
+        <button class="fl" type="button" id="avant" aria-label="Mois précédent">‹</button>
+        <span class="nom" id="nomMois">Août 2026</span>
+        <button class="fl" type="button" id="apres" aria-label="Mois suivant">›</button>
+      </span>
+      <span class="tot" id="totalMois">13 200,00 €</span>
+    </div>
+
+    <div class="sousmois">
+      <p class="phrase"><b id="nbAttente">8 à facturer</b>, <span id="eurAttente">8 520,00 €</span>
+        · <b id="nbFait">13 facturés</b>, <span id="eurFait">14 760,00 €</span></p>
+      <button class="lien-mois" type="button" id="lienMois" hidden>Ma TVA d'août ›</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="ligne">
+        <div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div>
+        <button class="facturer" type="button">FACTURER</button>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Monsieur Martins</p><p class="quand">Facturé le 12 août · Facture n° 1</p></div>
+        <span class="eur">936,00 €</span>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Chantier test — Muret Clisson</p><p class="quand attente">Pas encore facturé</p></div>
+        <button class="facturer" type="button">FACTURER</button>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Monsieur Martin</p><p class="quand">Facturé le 14 août · Facture n° 3</p></div>
+        <span class="eur">840,00 €</span>
+      </div>
+    </div>
+
+    <!-- Aujourd'hui : tout en bas, après la liste -->
+    <div class="pied" id="blocPied">
+      <span class="txt">Ma TVA à déclarer</span><span class="fl" style="color:var(--or)">›</span>
+    </div>
+    <p class="mention" id="mentionPied" style="margin-top:2px">Atlas prépare ce relevé, il ne le déclare pas.</p>
+  </div>
+
+  <div class="cout" id="cout"></div>
+
+  <p class="essai">
+    <b>Ce qui est vrai ici :</b> les trois places, les mots, les mesures, et le fait que le lien de la
+    C suive le mois affiché.<br>
+    <b>Ce qui ne l'est pas :</b> rien n'est lu en base, aucun écran ne s'ouvre au bout du lien, et la
+    liste des chantiers ne change pas d'un mois à l'autre.
+  </p>
+</main>
+    </div>
+  </section>
+
+  <section class="etape" id="m68">
+    <div class="etape-tete">
+      <span class="etape-no">68</span>
+      <h2>Dire que ces achats FONT la TVA déductible</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s68">
+<h1>Dire que ces achats font la TVA déductible</h1>
+  <p class="sous">Touchez une proposition, puis <b>ajoutez un ticket</b> : regardez quel chiffre bouge.</p>
+  <div class="choix" role="group" aria-label="Proposition">
+    <button type="button" data-p="A" aria-pressed="true">A · le titre</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une phrase</button>
+    <button type="button" data-p="C" aria-pressed="false">C · la place</button>
+  </div>
+
+
+<main>
+  <div class="ecran">
+    <p class="titre-mois">Août 2026</p>
+    <div class="filet"></div>
+    <div class="nav"><span>← Juillet 2026</span><span>Septembre 2026 →</span></div>
+
+    <div class="tuiles" id="tuiles">
+      <div class="deux">
+        <div class="tuile"><p class="cle">Collectée</p><p class="val">788,00 €</p></div>
+        <div class="tuile" id="tuileDed"><p class="cle">Déductible</p><p class="val" id="ded">41,67 €</p></div>
+      </div>
+      <div class="reste"><span>Reste à payer</span><b id="reste">746,33 €</b></div>
+    </div>
+
+    <!-- C : les gestes rattachés à la tuile -->
+    <div class="rattache" id="blocC" hidden>
+      <p class="cle">Pour faire monter la déductible</p>
+      <div class="gestes" style="margin:0">
+        <button class="geste" type="button" data-ajout="1"><span class="ico">⌗</span>Scanner un ticket</button>
+        <button class="geste" type="button" data-ajout="1"><span class="ico">✎</span>Écrire à la main</button>
+      </div>
+    </div>
+
+    <p class="cle-section" id="titreSection">Ce qui fait votre TVA déductible</p>
+    <p class="explique" id="phrase" hidden>Chaque ticket ajouté augmente la <b>TVA déductible</b>
+      ci-dessus — et fait baisser d'autant ce qui vous reste à payer.</p>
+
+    <!-- A et B : les gestes à leur place d'aujourd'hui -->
+    <div class="gestes" id="blocAB">
+      <button class="geste" type="button" data-ajout="1"><span class="ico">⌗</span>Scanner un ticket</button>
+      <button class="geste" type="button" data-ajout="1"><span class="ico">✎</span>Écrire à la main</button>
+    </div>
+
+    <div id="achats">
+      <div class="achat">
+        <div><p class="quoi">Essence</p><p class="quand">22 août · 250,00 €</p></div>
+        <span class="tva">41,67 €</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cout" id="cout"></div>
+
+  <p class="essai">
+    <b>Ce qui est vrai ici :</b> les mots, la place, et le calcul — ajouter un ticket fait monter
+    « Déductible » et baisser « Reste à payer », comme dans l'application.<br>
+    <b>Ce qui ne l'est pas :</b> rien n'est enregistré, et le scanner ne lit aucune photo — il ajoute
+    un achat d'exemple.
+  </p>
+</main>
+    </div>
+  </section>
+
+  <section class="etape" id="m69">
+    <div class="etape-tete">
+      <span class="etape-no">69</span>
       <h2>Choisir la date, sans l’écran du milieu</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
-    <div class="cadre" id="s64">
+    <div class="cadre" id="s69">
 <div class="chapo">
   <h1>Choisir la date, sans l’écran du milieu</h1>
   <p>
@@ -25336,6 +26204,336 @@ function armer(geste) {
 
 })(porteeDe("s24")); } catch (erreur) {
   console.error("Maquette 24 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+  // Quatre mois, avec des chiffres qui se tiennent entre eux — sans quoi on
+  // juge une maquette qui se contredit d'un appui à l'autre.
+  const MOIS = [
+    { nom: "Juin 2026",    total: 5400,  att: [3, 2100],  fait: [6, 5400],  tva: 412.5 },
+    { nom: "Juillet 2026", total: 9860,  att: [5, 4300],  fait: [9, 9860],  tva: 588.2 },
+    { nom: "Août 2026",    total: 13200, att: [8, 8520],  fait: [13, 14760], tva: 746.33 },
+    { nom: "Septembre 2026", total: 2400, att: [2, 1800], fait: [2, 2400],  tva: 158.9 },
+  ];
+  let i = 2;
+  let prop = "0";
+
+  const $ = (s) => document.querySelector(s);
+  const eur = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  // « Août 2026 » → « d'août » : l'élision se décide sur la voyelle, sinon on
+  // écrit « de août » et le mot sonne faux.
+  const duMois = (nom) => {
+    const m = nom.split(" ")[0].toLowerCase();
+    return /^[aeiouâéèêîôû]/.test(m) ? "d'" + m : "de " + m;
+  };
+
+  function rendre() {
+    const m = MOIS[i];
+    $("#nomMois").textContent = m.nom;
+    $("#totalMois").textContent = eur(m.total);
+    $("#nbAttente").textContent = m.att[0] + " à facturer";
+    $("#eurAttente").textContent = eur(m.att[1]);
+    $("#nbFait").textContent = m.fait[0] + " facturé" + (m.fait[0] > 1 ? "s" : "");
+    $("#eurFait").textContent = eur(m.fait[1]);
+    $("#carteMois").textContent = m.nom;
+    $("#carteVal").textContent = eur(m.tva);
+    $("#lienMois").textContent = "Ma TVA " + duMois(m.nom) + " ›";
+    $("#avant").disabled = i === 0;
+    $("#apres").disabled = i === MOIS.length - 1;
+  }
+
+  $("#avant").addEventListener("click", () => { if (i > 0) { i--; rendre(); } });
+  $("#apres").addEventListener("click", () => { if (i < MOIS.length - 1) { i++; rendre(); } });
+
+  const COUTS = {
+    0: "<p><b>Aujourd'hui.</b> Le lien vit tout en bas, après la liste entière. Le code assume cette place : « le relevé se consulte une fois par période, il n'a rien à faire en tête d'écran ».</p><p>L'argument tient — mais vous êtes passé devant sans le trouver, et c'est vous qui vous en servez.</p>",
+    A: "<p><b>A — en tête, dans la place libérée.</b> Le lien remonte sous le titre, là où la phrase des deux chiffres se trouvait avant qu'elle descende sous le mois. Une ligne, la même qu'en bas : rien de neuf, seulement déplacé.</p><p><b>Ce que ça coûte :</b> la TVA occupe la tête d'un écran qui parle d'abord de chantiers à facturer.</p>",
+    B: "<p><b>B — une carte, avec le chiffre.</b> Pas un lien : ce que vous venez y chercher. Le montant se lit sans ouvrir, et donne la raison d'ouvrir. Changez de mois : il suit.</p><p><b>Ce que ça coûte :</b> une requête de plus sur un écran ouvert souvent — et surtout, <b>ce montant peut se lire de travers</b>. Il dépend du rythme et du régime, et affiché loin de l'écran qui les explique, il ressemble à « ce que je dois aujourd'hui » alors qu'il n'est dû qu'à l'échéance.</p>",
+    C: "<p><b>C — sur la ligne du mois.</b> Le relevé se déclare par période, et c'est là que vous choisissez la vôtre. Changez de mois : <b>le lien suit</b> — « d'août », « de juillet ».</p><p><b>Ce que ça coûte :</b> une ligne de plus dans un en-tête déjà chargé. Et son piège : puisque le mot promet un mois, il faudra que le relevé s'ouvre bien sur CE mois-là, sans quoi la promesse est fausse.</p>",
+  };
+
+  function montrer(p) {
+    prop = p;
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.p === p))
+    );
+    $("#blocA").hidden = p !== "A";
+    $("#blocB").hidden = p !== "B";
+    $("#lienMois").hidden = p !== "C";
+    // **La mention de responsabilité suit le lien**, où qu'il aille : Atlas
+    // prépare le relevé, il ne le déclare pas (`docs/AGENT.md` §6). En C elle
+    // reste au pied, faute de place sur la ligne du mois.
+    const enBas = p === "0" || p === "C";
+    $("#blocPied").hidden = !enBas;
+    $("#mentionPied").hidden = !enBas;
+    $("#cout").innerHTML = COUTS[p];
+  }
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.addEventListener("click", () => montrer(b.dataset.p))
+  );
+
+  rendre();
+  montrer("0");
+
+})(porteeDe("s63")); } catch (erreur) {
+  console.error("Maquette 63 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+  // Les achats d'exemple, ajoutés l'un après l'autre. Des montants ronds et
+  // plausibles : ce qu'un élagueur achète vraiment dans un mois.
+  const EXEMPLES = [
+    { quoi: "Gazole",              ttc: 90,  jour: "23 août" },
+    { quoi: "Chaîne de tronçonneuse", ttc: 48,  jour: "23 août" },
+    { quoi: "Huile de chaîne",     ttc: 24,  jour: "24 août" },
+    { quoi: "Gants et visière",    ttc: 62,  jour: "24 août" },
+  ];
+  const TAUX = 0.20;
+  let rang = 0;
+  let deductible = 41.67;
+  const COLLECTEE = 788;
+
+  const eur = (n) =>
+    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+  const $ = (s) => document.querySelector(s);
+
+  function rendreChiffres() {
+    $("#ded").textContent = eur(deductible);
+    $("#reste").textContent = eur(COLLECTEE - deductible);
+  }
+
+  function ajouterTicket() {
+    const e = EXEMPLES[rang % EXEMPLES.length];
+    rang++;
+    // La TVA d'un achat TTC à 20 % : c'est le calcul de l'application.
+    const tva = e.ttc - e.ttc / (1 + TAUX);
+    deductible += tva;
+
+    const ligne = document.createElement("div");
+    ligne.className = "achat neuf";
+    ligne.innerHTML =
+      '<div><p class="quoi"></p><p class="quand"></p></div><span class="tva"></span>';
+    ligne.querySelector(".quoi").textContent = e.quoi;
+    ligne.querySelector(".quand").textContent = e.jour + " · " + eur(e.ttc);
+    ligne.querySelector(".tva").textContent = eur(tva);
+    $("#achats").prepend(ligne);
+
+    rendreChiffres();
+
+    // **La tuile se signale une seconde.** Sans cela, le chiffre change hors du
+    // champ de vision : sur 390 px, le doigt est en bas, la tuile en haut — et
+    // c'est précisément le lien qu'il ne voyait pas.
+    const t = $("#tuileDed");
+    t.classList.remove("bouge");
+    void t.offsetWidth;
+    t.classList.add("bouge");
+    setTimeout(() => t.classList.remove("bouge"), 900);
+  }
+
+  document.querySelectorAll("[data-ajout]").forEach((b) =>
+    b.addEventListener("click", ajouterTicket)
+  );
+
+  const COUTS = {
+    A: "<p><b>A — le titre le dit.</b> « Vos achats » devient « Ce qui fait votre TVA déductible ». Un titre au lieu d'un autre, rien de neuf à l'écran.</p><p><b>Ce que ça coûte :</b> le titre est long, et il nomme un calcul plutôt qu'une chose. Dans votre poche c'est un ticket d'essence ; « TVA déductible », c'est ce que l'administration en fait.</p>",
+    B: "<p><b>B — le titre reste, une phrase explique.</b> « Vos achats » ne bouge pas — c'est le mot juste pour ce que vous ajoutez. La ligne dessous dit le sens de cause à effet, et vers où regarder.</p><p><b>Ce que ça coûte :</b> deux lignes de gris sur un écran que vous voulez court. Ce qu'elles apportent : elles disent que scanner <b>fait baisser ce que vous devez</b> — la raison pour laquelle vous le faites.</p>",
+    C: "<p><b>C — les gestes remontent contre la tuile.</b> Pas un mot de plus : les deux boutons quittent le bas et se posent sous « Déductible ». La place dit le lien mieux qu'une phrase.</p><p><b>Ce que ça coûte, et ce n'est pas rien :</b> les tuiles sont ce que vous venez LIRE pour recopier deux chiffres. On y accroche maintenant deux boutons, et l'encadré cesse d'être un bloc qu'on lit d'un coup d'œil.</p>",
+  };
+
+  function montrer(p) {
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.p === p))
+    );
+    $("#titreSection").textContent =
+      p === "A" ? "Ce qui fait votre TVA déductible" : "Vos achats";
+    $("#phrase").hidden = p !== "B";
+    $("#blocC").hidden = p !== "C";
+    $("#blocAB").hidden = p === "C";
+    $("#tuileDed").classList.toggle("visee", p === "C");
+    // En C, la section « Vos achats » ne porte plus que la liste : le titre se
+    // rapproche d'elle.
+    $("#titreSection").style.marginTop = p === "C" ? "16px" : "19px";
+    $("#cout").innerHTML = COUTS[p];
+  }
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.addEventListener("click", () => montrer(b.dataset.p))
+  );
+
+  rendreChiffres();
+  montrer("A");
+
+})(porteeDe("s64")); } catch (erreur) {
+  console.error("Maquette 64 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+  // Quatre mois, avec des chiffres qui se tiennent entre eux — sans quoi on
+  // juge une maquette qui se contredit d'un appui à l'autre.
+  const MOIS = [
+    { nom: "Juin 2026",    total: 5400,  att: [3, 2100],  fait: [6, 5400],  tva: 412.5 },
+    { nom: "Juillet 2026", total: 9860,  att: [5, 4300],  fait: [9, 9860],  tva: 588.2 },
+    { nom: "Août 2026",    total: 13200, att: [8, 8520],  fait: [13, 14760], tva: 746.33 },
+    { nom: "Septembre 2026", total: 2400, att: [2, 1800], fait: [2, 2400],  tva: 158.9 },
+  ];
+  let i = 2;
+  let prop = "0";
+
+  const $ = (s) => document.querySelector(s);
+  const eur = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  // « Août 2026 » → « d'août » : l'élision se décide sur la voyelle, sinon on
+  // écrit « de août » et le mot sonne faux.
+  const duMois = (nom) => {
+    const m = nom.split(" ")[0].toLowerCase();
+    return /^[aeiouâéèêîôû]/.test(m) ? "d'" + m : "de " + m;
+  };
+
+  function rendre() {
+    const m = MOIS[i];
+    $("#nomMois").textContent = m.nom;
+    $("#totalMois").textContent = eur(m.total);
+    $("#nbAttente").textContent = m.att[0] + " à facturer";
+    $("#eurAttente").textContent = eur(m.att[1]);
+    $("#nbFait").textContent = m.fait[0] + " facturé" + (m.fait[0] > 1 ? "s" : "");
+    $("#eurFait").textContent = eur(m.fait[1]);
+    $("#carteMois").textContent = m.nom;
+    $("#carteVal").textContent = eur(m.tva);
+    $("#lienMois").textContent = "Ma TVA " + duMois(m.nom) + " ›";
+    $("#avant").disabled = i === 0;
+    $("#apres").disabled = i === MOIS.length - 1;
+  }
+
+  $("#avant").addEventListener("click", () => { if (i > 0) { i--; rendre(); } });
+  $("#apres").addEventListener("click", () => { if (i < MOIS.length - 1) { i++; rendre(); } });
+
+  const COUTS = {
+    0: "<p><b>Aujourd'hui.</b> Le lien vit tout en bas, après la liste entière. Le code assume cette place : « le relevé se consulte une fois par période, il n'a rien à faire en tête d'écran ».</p><p>L'argument tient — mais vous êtes passé devant sans le trouver, et c'est vous qui vous en servez.</p>",
+    A: "<p><b>A — en tête, dans la place libérée.</b> Le lien remonte sous le titre, là où la phrase des deux chiffres se trouvait avant qu'elle descende sous le mois. Une ligne, la même qu'en bas : rien de neuf, seulement déplacé.</p><p><b>Ce que ça coûte :</b> la TVA occupe la tête d'un écran qui parle d'abord de chantiers à facturer.</p>",
+    B: "<p><b>B — une carte, avec le chiffre.</b> Pas un lien : ce que vous venez y chercher. Le montant se lit sans ouvrir, et donne la raison d'ouvrir. Changez de mois : il suit.</p><p><b>Ce que ça coûte :</b> une requête de plus sur un écran ouvert souvent — et surtout, <b>ce montant peut se lire de travers</b>. Il dépend du rythme et du régime, et affiché loin de l'écran qui les explique, il ressemble à « ce que je dois aujourd'hui » alors qu'il n'est dû qu'à l'échéance.</p>",
+    C: "<p><b>C — sur la ligne du mois.</b> Le relevé se déclare par période, et c'est là que vous choisissez la vôtre. Changez de mois : <b>le lien suit</b> — « d'août », « de juillet ».</p><p><b>Ce que ça coûte :</b> une ligne de plus dans un en-tête déjà chargé. Et son piège : puisque le mot promet un mois, il faudra que le relevé s'ouvre bien sur CE mois-là, sans quoi la promesse est fausse.</p>",
+  };
+
+  function montrer(p) {
+    prop = p;
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.p === p))
+    );
+    $("#blocA").hidden = p !== "A";
+    $("#blocB").hidden = p !== "B";
+    $("#lienMois").hidden = p !== "C";
+    // **La mention de responsabilité suit le lien**, où qu'il aille : Atlas
+    // prépare le relevé, il ne le déclare pas (`docs/AGENT.md` §6). En C elle
+    // reste au pied, faute de place sur la ligne du mois.
+    const enBas = p === "0" || p === "C";
+    $("#blocPied").hidden = !enBas;
+    $("#mentionPied").hidden = !enBas;
+    $("#cout").innerHTML = COUTS[p];
+  }
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.addEventListener("click", () => montrer(b.dataset.p))
+  );
+
+  rendre();
+  montrer("0");
+
+})(porteeDe("s67")); } catch (erreur) {
+  console.error("Maquette 67 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+  // Les achats d'exemple, ajoutés l'un après l'autre. Des montants ronds et
+  // plausibles : ce qu'un élagueur achète vraiment dans un mois.
+  const EXEMPLES = [
+    { quoi: "Gazole",              ttc: 90,  jour: "23 août" },
+    { quoi: "Chaîne de tronçonneuse", ttc: 48,  jour: "23 août" },
+    { quoi: "Huile de chaîne",     ttc: 24,  jour: "24 août" },
+    { quoi: "Gants et visière",    ttc: 62,  jour: "24 août" },
+  ];
+  const TAUX = 0.20;
+  let rang = 0;
+  let deductible = 41.67;
+  const COLLECTEE = 788;
+
+  const eur = (n) =>
+    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+  const $ = (s) => document.querySelector(s);
+
+  function rendreChiffres() {
+    $("#ded").textContent = eur(deductible);
+    $("#reste").textContent = eur(COLLECTEE - deductible);
+  }
+
+  function ajouterTicket() {
+    const e = EXEMPLES[rang % EXEMPLES.length];
+    rang++;
+    // La TVA d'un achat TTC à 20 % : c'est le calcul de l'application.
+    const tva = e.ttc - e.ttc / (1 + TAUX);
+    deductible += tva;
+
+    const ligne = document.createElement("div");
+    ligne.className = "achat neuf";
+    ligne.innerHTML =
+      '<div><p class="quoi"></p><p class="quand"></p></div><span class="tva"></span>';
+    ligne.querySelector(".quoi").textContent = e.quoi;
+    ligne.querySelector(".quand").textContent = e.jour + " · " + eur(e.ttc);
+    ligne.querySelector(".tva").textContent = eur(tva);
+    $("#achats").prepend(ligne);
+
+    rendreChiffres();
+
+    // **La tuile se signale une seconde.** Sans cela, le chiffre change hors du
+    // champ de vision : sur 390 px, le doigt est en bas, la tuile en haut — et
+    // c'est précisément le lien qu'il ne voyait pas.
+    const t = $("#tuileDed");
+    t.classList.remove("bouge");
+    void t.offsetWidth;
+    t.classList.add("bouge");
+    setTimeout(() => t.classList.remove("bouge"), 900);
+  }
+
+  document.querySelectorAll("[data-ajout]").forEach((b) =>
+    b.addEventListener("click", ajouterTicket)
+  );
+
+  const COUTS = {
+    A: "<p><b>A — le titre le dit.</b> « Vos achats » devient « Ce qui fait votre TVA déductible ». Un titre au lieu d'un autre, rien de neuf à l'écran.</p><p><b>Ce que ça coûte :</b> le titre est long, et il nomme un calcul plutôt qu'une chose. Dans votre poche c'est un ticket d'essence ; « TVA déductible », c'est ce que l'administration en fait.</p>",
+    B: "<p><b>B — le titre reste, une phrase explique.</b> « Vos achats » ne bouge pas — c'est le mot juste pour ce que vous ajoutez. La ligne dessous dit le sens de cause à effet, et vers où regarder.</p><p><b>Ce que ça coûte :</b> deux lignes de gris sur un écran que vous voulez court. Ce qu'elles apportent : elles disent que scanner <b>fait baisser ce que vous devez</b> — la raison pour laquelle vous le faites.</p>",
+    C: "<p><b>C — les gestes remontent contre la tuile.</b> Pas un mot de plus : les deux boutons quittent le bas et se posent sous « Déductible ». La place dit le lien mieux qu'une phrase.</p><p><b>Ce que ça coûte, et ce n'est pas rien :</b> les tuiles sont ce que vous venez LIRE pour recopier deux chiffres. On y accroche maintenant deux boutons, et l'encadré cesse d'être un bloc qu'on lit d'un coup d'œil.</p>",
+  };
+
+  function montrer(p) {
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.p === p))
+    );
+    $("#titreSection").textContent =
+      p === "A" ? "Ce qui fait votre TVA déductible" : "Vos achats";
+    $("#phrase").hidden = p !== "B";
+    $("#blocC").hidden = p !== "C";
+    $("#blocAB").hidden = p === "C";
+    $("#tuileDed").classList.toggle("visee", p === "C");
+    // En C, la section « Vos achats » ne porte plus que la liste : le titre se
+    // rapproche d'elle.
+    $("#titreSection").style.marginTop = p === "C" ? "16px" : "19px";
+    $("#cout").innerHTML = COUTS[p];
+  }
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.addEventListener("click", () => montrer(b.dataset.p))
+  );
+
+  rendreChiffres();
+  montrer("A");
+
+})(porteeDe("s68")); } catch (erreur) {
+  console.error("Maquette 68 — son script a échoué :", erreur);
 }
 </script>
 

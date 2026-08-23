@@ -13166,9 +13166,617 @@ rendus faux :
   reçues.
 
 
+## 148. Le temps passé se masque au client — et ce qui est masqué ne sort pas du serveur
+
+**Sa demande du 22 août 2026**, capture de la fiche d'entretien à l'appui :
+*« il faudrait mettre un petit bouton on/off pour si l'utilisateur ne veut pas
+que le temps apparaisse sur la fiche, pouvoir l'effacer — on, le temps
+apparaîtrait sur la fiche ; off, il n'apparaîtrait pas. »* Dessiné en planche 92
+(`appli/temps-sur-la-fiche.html`), codé le 23 après deux corrections de sa part.
+
+### Une colonne à part, et non `minutes IS NULL`
+
+La solution qui n'écrit rien de neuf était tentante : masquer en remettant
+`minutes` à NULL. Elle confond deux choses qui n'ont rien à voir —
+
+| | |
+|---|---|
+| `minutes IS NULL` | **je n'ai pas chronométré** |
+| `temps_visible = false` | **je ne veux pas le lui dire** |
+
+— et elle coûte au patron le chiffre qui dit ce qu'a coûté un chantier. Il le
+ressaisirait au passage suivant, et l'application lui aurait fait perdre une
+information qu'il avait prise. D'où `passages_entretien.temps_visible`
+(migration `0060`), défaut `true` : c'est ce que l'application faisait déjà, et
+repeindre en masqués les rapports déjà partis changerait ce que des clients ont
+lu — alors que leur empreinte, elle, ne bouge pas (l'invariant du 16 août).
+
+### Le masquage se décide au SERVEUR
+
+`lireRapportParJeton` rend `minutes: null` quand c'est masqué. Rendre la durée
+puis la cacher au rendu la laisserait dans le HTML du client, à portée d'un clic
+droit — le défaut exact que le tri des prestations faites évite depuis le
+16 août, dans la même fonction. **Ce qui est masqué ne quitte pas le serveur.**
+
+### L'empreinte scelle ce que le client A LU
+
+Un temps masqué n'entre pas dans le contenu haché par `figerPassage`. Ce n'est
+pas un détail de forme : cette empreinte remplace une signature (décision du
+16 août). Y sceller une durée absente de la page du client la rendrait
+indéfendable le jour où il conteste le passage — on lui opposerait un chiffre
+qu'il n'a jamais vu. **Pour cette preuve, un temps caché est un temps qui
+n'existe pas**, et deux fiches par ailleurs identiques portent donc deux
+empreintes différentes selon qu'elles montrent leur temps ou non.
+
+### Ce qu'il a fait retirer
+
+- **Le total gris à droite de la molette** (« 1 h 45 ») : les deux listes disent
+  déjà « 1 h » et « 45 ». Sa demande du 23 août.
+- **La phrase longue sous la molette**, qui annonçait aussi que la durée restait
+  enregistrée. Elle est réduite à ce qu'il a dicté : *« Votre client ne le verra
+  pas sur son compte rendu. »* Le contrôle qui exigeait la version longue a été
+  adapté, pas contourné (`CLAUDE.md` §5 bis).
+
+### Ce qui reste ouvert
+
+Il ne s'est pas prononcé sur le **réglage de départ** — codé sur « Visible ».
+Passer à « Masqué » est le défaut de la colonne à retourner. Voir `TODO.md`.
+
 ---
 
-## 148. Ouvrir une fiche referme une autre — et la ligne touchée doit rester sous le doigt
+## 149. Le croquis dit où sont les choses : les proportions, et l'échelle déduite
+
+**Sa demande du 22 août 2026 au soir : « oui fais-le lire les proportions ».**
+
+### Ce que je lui avais dit, et pourquoi c'était faux
+
+Le §147 avait fermé le calcul de pression sauf un morceau : le trajet du regard
+à la PREMIÈRE tête. Je le lui ai présenté comme hors d'atteinte — *« aucune
+saisie ne le donne »*. Sa réponse : *« j'ai pas besoin de lui dire, il a tous
+les métrés du terrain, il a juste à calculer »*.
+
+**Il avait raison sur le fond, je me trompais sur le fait.** Le croquis porte la
+nourrice (c'est même obligatoire, `CLAUDE.md` §4 bis), les zones, et leurs
+cotes. Ce qui manquait n'était pas l'information : c'était la LECTURE, qui ne
+rendait que des dimensions et jamais des places. C'est le §5 ter du dépôt dans
+sa version la plus coûteuse — déclarer impossible ce qui n'était qu'à écrire.
+
+### Les places en fraction, jamais en mètres
+
+Le modèle rend, pour chaque zone et pour la nourrice, `x`, `y`,
+`largeur_fraction`, `hauteur_fraction`, tous entre 0 et 1. C'est tout ce qu'une
+image permet de dire sûrement : il voit qu'une pelouse occupe le tiers gauche du
+dessin, il ne voit pas qu'elle est à douze mètres du regard.
+
+**Hors de [0, 1], la valeur est refusée, pas rognée.** Un « 12 » pour un x n'est
+pas une fraction : c'est des mètres, un pixel, ou une confusion de champ. Le
+ramener à 1 fabriquerait une position plausible et fausse — et c'est une
+distance de tuyau qui en sortirait.
+
+### L'échelle se DÉDUIT des cotes
+
+`echelleDuCroquis` (dans `geometrie-croquis.ts`) croise les deux : une pelouse
+de 16 m qui occupe 0,40 du croquis donne 40 m par unité de fraction. Chaque zone
+cotée fournit jusqu'à **deux** estimations — une par côté, ce qui corrige une
+zone dessinée de travers dans un seul sens.
+
+**Médiane, pas moyenne.** Un modèle qui se trompe sur une zone tirerait la
+moyenne vers son erreur ; la médiane l'ignore.
+
+**Et le refus est la bonne réponse quand les zones se contredisent.** Au-delà de
+`ECART_MAX_ENTRE_ZONES` (2), le croquis n'est pas à l'échelle ou la lecture est
+fausse : on rend une raison, jamais une distance moyenne qui n'existe nulle
+part. Deux, parce qu'un croquis à main levée n'est jamais exact — refuser plus
+tôt ferait parler le garde-fou à tort, et un avertissement qui parle à tort
+s'apprend à être ignoré.
+
+### La distance : Manhattan, jusqu'au bord
+
+Un tuyau suit les axes. À vol d'oiseau, on sous-estimerait à la fois le tuyau à
+acheter et la perte qu'il subit — le mauvais sens des deux.
+
+**Et elle vise le BORD de la zone, pas son centre.** La première tête est sur le
+pourtour ; compter jusqu'au milieu ajouterait la moitié de la pelouse à un
+trajet que la ligne parcourt déjà — cette longueur-là est comptée par
+`perteDuReseau`, et la compter deux fois resserrerait la pose sans raison.
+
+**Le trajet retenu est LE PLUS LONG** de toutes les zones : elles sont
+dimensionnées sur une seule pression, qui doit être celle du point le plus mal
+servi.
+
+### Ce que ça change, et les garde-fous
+
+Sur le jardin d'exemple, trente mètres de trajet coûtent **0,29 bar** : la
+pression au dernier arroseur tombe de 2,28 à 2,01. Ce n'était pas un détail.
+
+Deux refus supplémentaires, parce que ce calcul repose sur une lecture
+approximative : au-delà de 200 m de trajet, ce n'est plus un jardin de
+particulier mais une échelle lue de travers ; et sans nourrice dessinée, aucun
+trajet — elle ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
+
+### Pourquoi un fichier à part, et pas dans `calcul.js`
+
+`calcul.js` est une copie octet pour octet partagée avec `appli/`
+(`verifier-arrosage-une-seule-source.mjs`). Y mettre cette géométrie l'aurait
+dupliquée dans une page qui n'en a pas l'usage. La distance est donc calculée
+côté serveur et **passée en entrée** (`regardVersZone`), comme la longueur
+d'amenée l'était déjà.
+
+### Un contrôle a rougi sur mon erreur
+
+`test-geometrie-croquis.ts` figeait « 8 m » pour une distance en diagonale ;
+le calcul rendait 11. C'est moi qui avais lu les demi-côtés de travers — refaire
+l'opération à la main était le seul moyen de trancher, et c'est exactement ce
+que vaut une valeur figée dans une suite plutôt qu'une borne large.
+
+Les deux défauts plausibles ont été joués : vol d'oiseau au lieu de Manhattan,
+moyenne au lieu de médiane. Chacun fait rougir la suite en nommant le chiffre.
+
+## 150. Le plan se DESSINE : du croquis lu au tracé de la tranchée
+
+**Sa demande du 21 août 2026 :** *« il manque la photo, le schéma avec les
+réseaux, et l'implantation des arroseurs — les différents réseaux de
+couleurs »*. Puis son feu vert du 23 : *« très bien, tu peux coder la
+maquette »*.
+
+### Ce qui manquait, et qui n'était pas ce qu'on croyait
+
+Le calcul savait déjà **tout ce qu'il faut** : `poser()` engendre les têtes
+depuis le 17 août, `decouper()` sait depuis le 19 laquelle va sur quelle vanne.
+Rien ne SORTAIT : `calculerPlan` rendait des comptes et une liste de pièces, pas
+des coordonnées. Le plan des maquettes portait donc le contour de SON jardin,
+écrit en dur — un outil ne peut pas fonctionner ainsi.
+
+Trois pièces ont été ajoutées, et **aucune ne recalcule ce qui existait** :
+
+| Fichier | Ce qu'il tient |
+|---|---|
+| `src/lib/arrosage/terrain.ts` | la forme du terrain, **union** des zones |
+| `src/lib/arrosage/trace.ts` | par où passe le tuyau, et donc la tranchée |
+| `src/lib/arrosage/plan-dessine.ts` | l'assemblage, et les deux refus |
+
+`calcul.js` n'a gagné qu'une chose : `dessin`, la mise au jour des points déjà
+calculés, en coordonnées **absolues** (`poser()` les rend relatifs au coin de la
+zone — ce qui suffit pour compter, jamais pour dessiner).
+
+### Le contour est une UNION, jamais une juxtaposition
+
+Deux pelouses qui se touchent forment **un seul terrain**, et la ligne qui les
+sépare n'existe pas sur place. La laisser dans le contour ferait croire au tracé
+qu'il longe un bord alors qu'il coupe en plein milieu — et toute la règle « on
+ne traverse pas le jardin » reposerait sur une frontière imaginaire.
+
+Les zones étant des rectangles à côtés droits — un croquis de jardin ne donne
+rien d'autre —, l'union se fait par la méthode la plus simple qui soit juste :
+découper le plan sur toutes les abscisses et toutes les ordonnées présentes,
+marquer les cases couvertes, suivre le bord des cases marquées. Le **signe de
+l'aire** sépare ensuite un contour d'un trou, sans test d'inclusion.
+
+**Plusieurs contours n'est pas une anomalie** : une pelouse devant et une
+derrière, séparées par la maison, c'est le cas le plus courant. Chaque morceau
+se trace pour lui-même, et le cheminement entre les deux — qui passe hors de la
+pelouse, sur un chemin que le croquis ne montre pas — est dessiné **en
+pointillé** et porté en réserve. Un trait plein ferait croire à un métré.
+
+### Le tracé : un graphe, et deux poids
+
+L'arbre le plus court reliant des points est un arbre de Steiner, qu'on ne
+résout pas exactement. On construit donc un graphe — arroseurs, nourrice,
+**sommets du contour** et projections —, on ne relie que des points alignés dont
+le segment reste dans le terrain, et l'on cherche le plus-court-chemin depuis
+tout ce que le réseau atteint déjà.
+
+Deux poids, et non un seul :
+
+- un segment qui **longe** un bord est facturé sa longueur ;
+- un segment qui **coupe** l'intérieur est facturé sa longueur × 2.
+
+**Et un segment déjà creusé coûte ZÉRO.** C'est là que la règle du patron se
+joue — *« lorsque c'est égal il faut privilégier de réutiliser la tranchée, car
+c'est moins fatigant »* : le mètre de tuyau se pose, le mètre de tranchée se
+creuse et se remblaie. Un réseau a donc raison de rallonger son tuyau pour
+rester dans une saignée déjà ouverte.
+
+**Une première version a été jetée**, et c'est instructif : elle reliait chaque
+arroseur au point atteint le plus proche par un simple coude. Elle ne savait pas
+CONTOURNER — pour aller de la nourrice au coin opposé, elle traversait, faute de
+pouvoir passer par les sommets du terrain. Elle rendait 76 ml de tranchée là où
+le tracé fait à la main en demandait 64.
+
+### Du croquis au terrain : un seul passage, et il est ailleurs
+
+**La lecture ne rend pas des mètres, elle rend des FRACTIONS du dessin** (§149,
+sa demande du 22 août : *« oui fais-le lire les proportions »*). C'est tout ce
+qu'une image permet de dire sûrement : le modèle voit qu'une pelouse occupe le
+tiers gauche du croquis, il ne voit pas qu'elle est à douze mètres du regard.
+
+Le tracé et le contour, eux, travaillent en mètres. Il fallait donc un passage,
+et **il vit dans `geometrie-croquis.ts`, pas ici** : `poserSurLeTerrain()`.
+C'est le même module qui déduit déjà l'échelle pour le trajet du regard, et l'y
+laisser garantit qu'une seule échelle sert aux deux. Deux conversions
+finiraient par poser la même pelouse à deux endroits — `CLAUDE.md` §3.
+
+**Les CÔTÉS viennent des cotes lues, jamais du rectangle dessiné.** Seule la
+PLACE vient du dessin. Un trait tracé de travers ne doit pas changer un métré.
+
+**Le défaut que ce passage évite est muet**, et c'est pour cela qu'il est
+éprouvé sur une mesure et non sur une forme : une conversion oubliée passe la
+fraction telle quelle, le plan reste cohérent avec lui-même, et il est
+simplement dessiné sur un jardin d'un mètre de large. Aucun total ne bouge,
+aucune alerte ne parle. `test-geometrie-croquis.ts` mesure donc la largeur du
+terrain obtenu et vérifie que **deux zones voisines ne se chevauchent pas** —
+c'est ce second contrôle qui a d'abord attrapé un jeu d'essai dont les
+proportions n'étaient pas, elles-mêmes, à l'échelle.
+
+### Les deux refus, et pourquoi ils sont durs
+
+`CLAUDE.md` §4 bis : *« sans ça il ne doit rien proposer »*. Ce n'est pas le
+dessin qu'on retire, c'est **le plan entier** — une liste de pièces sans tracé
+se commande quand même.
+
+| Ce qui manque | Ce qu'on fait |
+|---|---|
+| l'endroit **définitif** de la nourrice | refus, en le nommant |
+| la position des zones les unes par rapport aux autres | refus, en le nommant |
+
+Le second mérite son existence : le calcul rend `x = 0, y = 0` quand le croquis
+ne situe pas la zone. Deux pelouses se superposeraient alors **exactement**, et
+le plan sortirait — juste au sens du compte, faux au sens du terrain, et rien à
+l'écran ne le dirait.
+
+**La nourrice n'est jamais déduite.** Elle est LUE sur le croquis
+(`lire-croquis.ts` la cherche ; s'il ne la trouve pas, il rend `null` et le dit).
+L'endroit du regard dépend de ce que lui seul sait — un point d'eau existant, un
+passage de voiture, l'accès pour l'hivernage — et une tranchée ne se déplace pas.
+
+### Les pièces se LISENT sur le dessin, elles ne se comptent pas à part
+
+Le **degré** d'un point décide de sa pièce, et rien d'autre :
+
+| Degré | Ce que c'est |
+|---|---|
+| 1 — la ligne s'arrête | **coude** taraudé 25×3/4" (tête creuse) |
+| ≥ 2 — la ligne continue | **té** taraudé 25×3/4"×25 (tête pleine) |
+| ≥ 3 sans arroseur | **té égal** 25×25×25 (losange) |
+
+C'est la seule lecture qui ne puisse pas diverger du dessin. `tés + coudes =
+arroseurs` tient donc **par construction, réseau par réseau** — et la suite le
+vérifie réseau par réseau, jamais au total : au total, un té de trop d'un côté
+et un coude de trop de l'autre s'annulent, ce qu'il avait justement relevé.
+
+### Quatre défauts trouvés à la capture, aucun par un test
+
+`CLAUDE.md` §5 : *« et surtout, regarder l'écran »*. Le plan ne s'atteint pas
+normalement ici — il faut une photo et une clé de vision, que cet environnement
+n'a pas. `scripts/capture-plan-arrosage.ts` rend donc le seul composant du
+dessin, avec les données que le calcul produit vraiment.
+
+1. Les cercles de portée **débordaient de la pelouse** et noyaient le dessin →
+   découpés sur le contour (`clipPath`).
+2. Le mot « nourrice » tombait **sur la cote du côté** → les cotes vivent
+   dehors, ce mot vit dedans.
+3. Deux réseaux qui partagent une tranchée dessinaient **le même trait**, et le
+   second effaçait le premier — un réseau entier réduit à un point, sans qu'aucun
+   chiffre soit faux. Chaque réseau est désormais écarté de l'axe, comme deux
+   tuyaux le sont au fond de la saignée.
+4. La tranchée était **du même jaune** que le troisième réseau (`#D8B45E` contre
+   `#D9A520`). La maquette validée le 21 août ne portait que deux réseaux, bleu
+   et vert : le défaut ne pouvait pas s'y voir. La tranchée est passée à une
+   terre neutre, qui ne peut se confondre avec aucune des huit couleurs.
+
+Le troisième et le quatrième ne se voient QUE sur un jardin à trois réseaux :
+une règle éprouvée sur un seul cas n'est pas éprouvée (§146).
+
+### Ce qui reste ouvert
+
+**Deux têtes peuvent tomber au même endroit** — deux zones qui se touchent
+posent chacune son arroseur sur l'arête commune. Le cas n'est pas soluble ici :
+elles sont sur des vannes différentes, donc l'une ne peut pas remplacer l'autre.
+C'est un coup de bêche à décaler sur place, et le plan le **dit** en réserve.
+
+
+---
+
+## 151. La pluviométrie ne coupe plus les secteurs — et « 13x », pas « 13 u »
+
+**Ses deux décisions du 23 août 2026**, en une phrase chacune : *« ne prends pas
+en compte la pluviométrie »* et *« pour le calcul des pièces, 13x et pas
+13 u »*.
+
+### La pluviométrie sort de la clé de secteur
+
+Elle y était depuis le 17 août, et **c'est lui qui l'y avait mise** — *« ça ne
+se mélange jamais »*. C'est donc lui qui l'en retire, et il n'y a rien à rouvrir
+ici : la question a été posée et tranchée deux fois, dans les deux sens.
+
+```
+avant : p.cle + '|' + famille + '|' + pluvio
+après : p.cle + '|' + famille
+```
+
+**Ce que cela change concrètement.** Deux turbines de buses différentes peuvent
+désormais partager une vanne. Elles versent alors des millimètres/heure
+différents, et la vanne les ouvre pour la même durée : la durée calculée
+convient à l'une et pas à l'autre. Sur son jardin, l'écart mesuré était de 3 % ;
+entre une 3504 fine et une grosse PGP, il se compterait en multiples. **Il le
+sait, il arbitre à l'arrosage** — ce n'est pas un défaut à corriger dans son dos.
+
+**Ce qui NE change pas :** la pluviométrie sert toujours aux durées (`poser()`),
+et le MATÉRIEL sépare toujours. Une turbine et une tuyère ne s'ouvrent jamais
+ensemble : l'une verse environ trois fois plus vite, et cette règle-là, il ne
+l'a pas retirée. `test-arrosage-calcul.ts` éprouve **les deux faces** — que deux
+buses peuvent se retrouver ensemble, et que deux matériels ne le peuvent pas.
+
+**Conséquence dans le plan dessiné (§150) :** un réseau ne porte plus forcément
+un seul modèle. `ReseauDessine.materiels` est devenu une LISTE, comptée par
+modèle. N'en nommer qu'un ferait commander de travers, et c'était exactement le
+raccourci que le code prenait tant que la pluviométrie garantissait l'unicité.
+
+### « 13x », et non « 13 u »
+
+**L'unité reste dans les données**, et c'est ce qui rend ce changement anodin
+plutôt que dangereux : `{ q, u }` distingue une pièce qu'on compte d'un tuyau
+qu'on mesure. Seul le mot affiché change — `quantiteEcrite(q, u)`, rendue « 13x »
+pour une pièce et « 80 ml » pour un tuyau. *« 80x de PE Ø25 » ne se commande
+pas.*
+
+**Une seule fonction pour les deux écrans**, la page publiée et l'application :
+elle vit dans la partie PARTAGÉE de `calcul.js`, donc identique des deux côtés
+au caractère près (`verifier-arrosage-une-seule-source.mjs`). Deux façons
+d'écrire la même quantité auraient fini par diverger — `CLAUDE.md` §3.
+
+Deux contrôles la tiennent, et tous deux savent échouer : la suite du calcul sur
+la fonction elle-même, et le vérificateur de la maquette sur **ce qui est
+écrit** dans les trois tableaux — parce que c'est ce qu'il lit chez son
+fournisseur.
+---
+
+## 152. Envoyer la facture : trois appuis deviennent un, et le mot dit ce qu'il engage
+
+**Le patron, le 22 août 2026, capture à l'appui :** *« Quand je clique sur
+confirmer le départ de la facture, ça me l'arrête. Après, je clique pour
+l'envoyer. Ensuite, je dois recliquer pour ouvrir l'application SMS. Ça fait
+beaucoup trop de clics. »*
+
+Retenu sur planche (`docs/maquettes/84-envoyer-la-facture.html`) : **la B**,
+et *« le choix SMS ou e-mail, mais de la même forme que sur la page fiche
+client »*.
+
+### Il comptait juste, et le premier appui mentait
+
+| | Ce que ça faisait |
+|---|---|
+| « Confirmer le départ de la facture → » | l'**arrête** — numéro définitif, TVA, plus aucune modification |
+| « Envoyer la facture au client → » | fabrique le lien du client |
+| « Ouvrir le SMS tout prêt → » | ouvre enfin la messagerie |
+
+**Le premier ne faisait partir rien du tout.** Le code le savait déjà et le
+disait en commentaire — *« le patron a lu "facture arrêtée" et compris que son
+client l'avait reçue »* — sans que le libellé en tire la conséquence. Son mot à
+lui, « Envoyer la facture », est plus juste pour l'envoi ; mais il ne dit plus
+l'arrêt, qui est **sans retour**.
+
+### Pourquoi la B, et ce qu'elle coûte
+
+La **A** faisait exactement ce qu'il demandait, et rien de plus. Le risque n'est
+pas théorique : si la messagerie refuse de s'ouvrir — iOS le fait, sans un mot —
+la facture est **arrêtée quand même**, dans sa TVA, sans que le client ait rien
+reçu.
+
+Deux gestes séparés le lui rappelaient. Avec un seul, **la phrase est tout ce
+qui reste** : deux lignes sous le bouton, qui disent l'arrêt et nomment la
+sortie (l'avoir). Il ne les lira qu'une fois ; elles seront là le jour où il se
+demandera pourquoi sa facture ne se modifie plus.
+
+La **C** — n'arrêter qu'une fois le message parti — a été dessinée pour être
+**écartée**, et le dépôt savait déjà pourquoi : aucun navigateur ne distingue
+« expédié » de « ouvert puis abandonné » ni de « refusé sans un mot »
+(`src/lib/depart-messagerie.ts`). Elle laisserait des factures faites, envoyées,
+jamais entrées en comptabilité.
+
+### L'ordre des opérations n'est pas un détail
+
+Arrêter, préparer le lien, **ouvrir la messagerie, puis seulement rafraîchir**.
+Un navigateur peut refuser une navigation vers `sms:` qui ne suit pas le doigt
+d'assez près ; rafraîchir d'abord, c'est perdre le geste. Même ordre que l'envoi
+du devis, pour la même raison.
+
+Et si le lien manque après l'émission, l'écran **dit que la facture est arrêtée
+quand même** : le taire lui ferait croire que rien n'a eu lieu, et rappuyer sur
+un bouton qui a déjà engagé sa comptabilité.
+
+### La capsule du canal est EXTRAITE, pas recopiée
+
+`ChoixCanal` vivait dans `FormulaireNouveauChantier`, taillée aux mesures de sa
+maquette. Elle vit maintenant dans `src/components/atlas/` : deux dessins du
+même geste auraient divergé au premier ajustement, et c'est lui qui aurait vu
+deux capsules différentes pour la même question à deux écrans d'intervalle
+(`CLAUDE.md` §3).
+
+**Un canal sans coordonnée reste INERTE, jamais masqué** — sa règle, dictée le
+même jour : *« refuse l'envoi : ça veut dire qu'il communique avec le client par
+SMS, donc il enverra par SMS »*. Aucun champ de saisie ici : il a écarté l'idée.
+
+### Le contrôle, et ce qu'il a fallu corriger pour qu'il accuse juste
+
+`scripts/test-envoyer-la-facture-e2e.ts` attendait le bouton par son **libellé**.
+Confronté à l'ancien mot, il mourait sur un délai dépassé — il échouait, mais
+n'apprenait rien. Il vise désormais un repère stable (`data-atlas`), trouve le
+bouton, puis **cite ce qu'il a lu** : *« le bouton dit "Confirmer le départ de la
+facture →" »*. Éprouvé aussi sans la phrase d'engagement : il rougit en disant
+que rien n'avertit de l'arrêt.
+
+## 153. La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
+
+**Deux remarques du patron, le 23 août 2026, sur deux écrans voisins**, et une
+seule cause : *« je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le
+voit pas trop »*, puis *« on ne comprend pas trop que scanner ou écrire à la
+main, c'est pour la TVA déductible »*.
+
+Dans les deux cas, rien ne fonctionnait mal. C'est la **place** qui mentait.
+
+### Ce qui a été retenu, et par qui
+
+Six propositions dessinées, essayables au doigt — pas des captures :
+`docs/maquettes/86-ou-mettre-ma-tva.html` et
+`docs/maquettes/85-achats-tva-deductible.html`. Sa réponse, mot pour mot :
+**« Pour ma TVA la B / Et pour les achats la C »**.
+
+- **86 · B** — une carte, en tête de « Terminés », **portant le montant**. Pas un
+  lien : ce qu'il vient y chercher. Le chiffre se lit sans ouvrir, et donne la
+  raison d'ouvrir.
+- **85 · C** — « Scanner un ticket » et « Écrire à la main » remontent **contre
+  l'encadré des chiffres**, avec un liseré haut en pointillé et l'arrondi bas que
+  l'encadré a perdu. Le lien ne se dit par **aucun mot de plus** : il se dit par
+  la continuité de la pièce.
+
+### Pourquoi le montant se lit dans `src/server/tva-courante.ts`, et pas dans l'écran
+
+L'écran du relevé compose déjà collectée, déductible et reste. Les recomposer
+dans « Terminés » aurait donné **deux additions de la même somme** — et c'est LUI
+qui aurait vu deux montants différents à deux écrans d'intervalle, sans savoir
+lequel croire (`CLAUDE.md` §3 : jamais de règle dupliquée).
+
+Le prix est assumé et a été dit devant la planche avant qu'il ne choisisse :
+**trois requêtes de plus** sur un écran qu'il ouvre souvent.
+
+### La réserve que la carte doit porter
+
+Ce montant **n'est pas dû le jour où il le lit**. Il dépend du rythme (mois ou
+trimestre) et du régime (encaissements ou débits), et n'est exigible qu'à
+l'échéance. Affiché seul, il se lirait « ce que je dois aujourd'hui ». D'où deux
+précautions dans la carte elle-même : elle **nomme sa période**, et la mention
+sous elle dit **« Reste à payer sur la période »** — jamais « À payer ».
+
+### Ce qu'un contrôle doit tenir ici, et pourquoi c'est difficile
+
+**Les deux choix sont des choix de place, et une place ne casse pas.** La carte
+peut redescendre en pied de liste, les deux boutons peuvent repasser sous les
+achats : tout continue de fonctionner, et tout resterait vert. Ce sont
+exactement les défauts qu'aucune autre suite ne peut voir.
+
+`scripts/test-tva-en-tete-e2e.ts` mesure donc des **places**, pas des présences,
+et chacune de ses six mesures a été **confrontée au défaut qu'elle nomme** avant
+d'être gardée.
+
+**Et c'est ainsi qu'un contrôle faux a été trouvé.** Le premier jet vérifiait que
+la carte précédait « le dernier de ses frères » — or son frère, c'est sa propre
+mention, qui descend avec elle. La carte remise en pied d'écran, le contrôle
+**restait vert sur le défaut même dont il portait le nom**. D'où le repère
+`data-atlas="contenu-termines"` : la carte se mesure contre la **liste**, jamais
+contre ce qu'elle traîne derrière elle.
+
+Deuxième faux départ, même leçon : la couture se mesurait depuis le bas des
+**mots** « Reste à payer » et annonçait 25 px de brèche alors que les deux pièces
+se touchaient — le rembourrage de la carte compté comme un écart. Un contrôle qui
+accuse à tort coûte plus cher que pas de contrôle du tout (`AGENTS.md`). D'où le
+repère `data-atlas="encadre-tva"`, et une mesure d'encadré à encadré — largeur et
+bord gauche compris, car deux marges différentes feraient un décrochement visible
+que rien d'autre ne dirait.
+
+## 154. Ce qui ne doit sortir sur AUCUN document : le contrôle qui ne savait pas lire
+
+**La note de la feuille de chantier a été codée DEUX FOIS, le même jour, par deux
+sessions qui ne se voyaient pas.** Celle qui est arrivée la première sur `main`
+fait foi (`chantiers.note`, migration 0061) ; la seconde a été retirée — deux
+colonnes pour la même chose auraient été les deux vérités que `CLAUDE.md` §3
+interdit. Ce qui suit est la seule chose que la seconde apportait, et elle vaut
+d'être gardée.
+
+### La promesse qui l'autorise à écrire librement
+
+Sa décision du 23 août 2026 : la note **ne part sur aucun document** — ni devis,
+ni facture, ni PDF sans les prix. Sur le papier que ses gars emportent, elle
+serait devenue un écrit qui sort de l'entreprise, et *« client pas disponible
+avant neuf heures »* se serait rédigé en sachant que le client peut le lire.
+
+**C'est cette promesse qui l'autorise à y écrire ce qu'il ne dirait pas devant le
+client — donc elle a besoin d'un contrôle, pas d'un commentaire.**
+
+### Deux fois où ce contrôle ne POUVAIT PAS échouer
+
+`scripts/test-note-hors-documents-e2e.ts` télécharge le PDF et y cherche les mots de la
+note. Ses deux premières versions étaient **vertes en confrontation avec une note
+délibérément versée dans le document** :
+
+1. elle cherchait dans les **octets bruts** — or le texte d'un PDF est comprimé
+   (`FlateDecode`), et rien n'y est jamais trouvé, y compris quand le mot est
+   bel et bien imprimé ;
+2. les flux décomprimés, elle cherchait des mots **en clair** — or le texte s'y
+   écrit en hexadécimal, `<4174656C696572> Tj`.
+
+Deux fois, le contrôle promettait le silence d'un document qu'il ne savait pas
+ouvrir. C'est la faute de `CLAUDE.md` §5 : *un contrôle qui mesure zéro ne mesure
+rien, et il est pire qu'absent* — parce qu'on cesse de regarder.
+
+### La mesure qui garde les deux
+
+**Le contrôle prouve d'abord qu'il sait LIRE ce PDF**, en y retrouvant une ligne
+du devis, et refuse de conclure autrement. Ne pas retirer cette vérification
+préalable en croyant simplifier : elle est tout ce qui sépare une promesse tenue
+d'une promesse récitée.
+
+**Et il cherche les mots un par un** — « broyeur », « dispo » —, jamais la phrase
+entière : un PDF découpe son texte en fragments, et une recherche exacte ne
+trouverait rien pour une raison qui n'a rien à voir avec la fuite.
+
+## 155. Atlas SIGNE ses réponses, pour que le diagnostic cesse de deviner
+
+**Le 23 août 2026, le patron ouvre Atlas depuis son téléphone : son navigateur
+lui propose de TÉLÉCHARGER un fichier.** Sa fiche d'état annonce alors *« réponse
+404 d'ATLAS lui-même — le port est bien ouvert, c'est l'application qui refuse »*
+et l'envoie lire le journal du serveur.
+
+**C'était faux, et deux hypothèses fausses lui ont été livrées avant qu'on ne le
+voie** : l'espace éteint (démenti par sa capture), puis le port privé (démenti
+par un *« je suis déjà en public »*).
+
+### Le verdict devinait, et son indice ne valait rien
+
+`_verdict-port.mjs` tranchait sur la présence du mot « github » dans l'en-tête
+`Server` de la réponse. Un refus du relais arrivé **nu** — sans en-tête, sans
+type, ce qui est exactement ce qu'il a reçu — tombait donc du côté d'Atlas.
+
+C'est le travers que cette fiche avait été écrite pour éviter (`AGENTS.md` :
+*une erreur qui envoie chercher au mauvais endroit coûte plus cher que pas
+d'erreur du tout*), et il coûtait ici deux gestes inutiles au patron.
+
+### Une signature ne se devine pas
+
+`/api/health/live` pose désormais **`x-atlas-vivant: 1`**. Le relais de GitHub ne
+peut pas l'inventer : présente, c'est Atlas qui a répondu ; absente, la requête
+n'est jamais arrivée jusqu'à lui. Les marques de GitHub restent lues, mais
+seulement pour **nommer** le relais — plus pour décider.
+
+Et le conseil suit la certitude : la fiche ne propose plus *« deux causes
+possibles, dans cet ordre »* — devant laquelle il essayait la première et
+revenait dire qu'il l'avait déjà faite — mais **le geste**, un seul.
+
+### Ce que ça a exigé, et qu'il ne faut pas défaire
+
+**La signature doit être sur LE FIL, pas dans le code.** Éprouvée d'abord sur un
+binaire pas reconstruit, elle paraissait absente : le contrôle interroge donc le
+serveur pour de bon (`scripts/test-health.ts`), et il a été **vu rouge** contre
+une route dont on avait retiré l'en-tête.
+
+**Le perdre ne casserait rien à l'écran** — c'est tout le danger. Le diagnostic
+se remettrait simplement à accuser le relais en toutes circonstances, et
+personne ne le saurait avant la prochaine soirée perdue.
+
+### Et devant un refus NU, la fiche dit ce que la réponse portait
+
+Un 404 sans en-tête ni type ne laisse rien à examiner : la fiche décrivait un
+vide, et l'agent en était réduit à supposer — deux allers-retours au patron, un
+soir où il allait se coucher. Elle publie donc les **noms** des en-têtes reçus,
+ou « AUCUN » quand il n'y en avait pas.
+
+**Les noms, jamais les valeurs** : ce dépôt est public, et une valeur d'en-tête
+peut porter un jeton. Un contrôle le tient, et il a été vu rouge dans les deux
+sens — sur la disparition des noms, et sur la fuite d'une valeur.
+
+---
+
+## 156. Ouvrir une fiche referme une autre — et la ligne touchée doit rester sous le doigt
 
 **Son défaut du 22 août 2026, capture à l'appui :** *« lorsque le client se
 trouve sur la partie haute de l'écran comme sur la photo, monsieur Pornic, et

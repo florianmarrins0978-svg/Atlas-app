@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-23 · branche `main`
-· dernière migration `drizzle/0056_diagnostic_vegetal.sql`
+· dernière migration `drizzle/0061_note_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -23,7 +23,45 @@ Son défaut : le client haut sur l'écran disparaît quand on le touche.
 | Sa séquence rejouée au navigateur, à 390 px | **fait** (`test-ligne-planning-e2e.ts`) |
 | Le contrôle confronté à l'état dégradé | **fait** — rouge à 422 px sans l'ancrage |
 
-Le détail et les partis pris : `ARCHITECTURE.md` §148.
+Le détail et les partis pris : `ARCHITECTURE.md` §156.
+
+---
+
+## Le plan d'arrosage dessiné (23 août 2026)
+
+Son feu vert : *« très bien, tu peux coder la maquette »*.
+
+| | État |
+|---|---|
+| Le contour du jardin, **union** des zones lues | **fait** (`terrain.ts`) |
+| Le tracé des lignes et la tranchée, depuis la nourrice | **fait** (`trace.ts`) |
+| Le dessin à l'écran : cotes, tranchée, réseaux en couleur | **fait** (`PlanDessine.tsx`) |
+| Ronds/carrés, pleins/creux, losanges — sa planche du 17 août | **fait** |
+| `tés + coudes = arroseurs`, **par réseau** | **fait**, et éprouvé ainsi |
+| La tranchée partagée coûte zéro au réseau suivant | **fait** |
+| Deux morceaux de terrain : liaison en pointillé + réserve | **fait** |
+| **Sans nourrice, aucun plan** — ni dessin ni pièces | **fait** |
+| La nourrice lue sur le croquis, jamais déduite | **fait** (`lire-croquis.ts`) |
+| Quel arroseur, quelle buse, quelle portée, par réseau | **fait** |
+
+**Non vérifié ici :** la lecture réelle d'une photo de croquis. Cet
+environnement n'a aucune clé de vision — le modèle doit maintenant rendre les
+positions des zones et l'endroit de la nourrice, et **cela n'a pas pu être
+éprouvé** (`AGENTS.md`). C'est le premier essai à faire sur son banc.
+
+Le détail : `ARCHITECTURE.md` §150.
+
+### Ses deux corrections du 23 août
+
+| | État |
+|---|---|
+| La pluviométrie **ne sépare plus** deux vannes | **fait** — *« ne prends pas en compte la pluviométrie »* |
+| Le matériel sépare toujours (turbine ≠ tuyère) | inchangé, et éprouvé |
+| Un réseau nomme **tous** ses modèles, comptés | **fait** (`materiels`) |
+| Les pièces se comptent en **« 13x »**, plus en « 13 u » | **fait**, des deux côtés |
+| Les mètres restent des mètres (« 80 ml ») | **fait** |
+
+Le détail : `ARCHITECTURE.md` §151.
 
 ---
 
@@ -745,6 +783,12 @@ extérieure.
 | L'écran | `src/app/paysage/arrosage/ArrosageClient.tsx` |
 | D'où vient le débit | `src/lib/arrosage/mesure-debit.ts` |
 | Qui sait lire une image | `etatVision`, dans `src/lib/etat-ia.ts` |
+
+**LE CROQUIS DIT OÙ SONT LES CHOSES** (22 août 2026, soir). La lecture relève
+les places en fraction du dessin (zones et nourrice) ; l'échelle se déduit des
+cotes, et le trajet du regard à la première tête entre dans le calcul de
+pression — 0,29 bar sur trente mètres. Sans nourrice dessinée, il n'est pas
+compté et l'écran le dit. `geometrie-croquis.ts`, `ARCHITECTURE.md` §149.
 
 **CE QUI ARRIVE AU DERNIER ARROSEUR EST CALCULÉ** (22 août 2026, soir). Le
 dernier trou connu est fermé : l'électrovanne, la ligne (débit décroissant

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Dire que ces achats FONT la TVA déductible</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    DIRE QUE CES ACHATS FONT LA TVA DÉDUCTIBLE — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Le patron, le 23 août 2026 : « on ne comprend pas trop que scanner ou
+    écrire à la main, c'est pour la TVA déductible. »
+
+    Puis, devant trois planches en images : « fais-moi des maquettes dynamiques
+    en .html pour les deux. Pas de photos. »
+
+    Il a raison, et c'est déjà écrit dans le dépôt à propos du plan d'arrosage :
+    une image ne se juge pas au doigt. Ici, la question EST un lien de cause à
+    effet — « ce bouton fait monter ce chiffre ». Une image ne peut pas le
+    montrer ; un bouton qu'on touche, si.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI EST VRAI DANS CETTE MAQUETTE, ET CE QUI NE L'EST PAS
+
+    VRAI : les trois libellés, la place des blocs, les mesures (390 px), et
+    surtout le CALCUL — ajouter un ticket fait monter « Déductible » et baisser
+    « Reste à payer », exactement comme dans l'application (TVA à 20 %).
+
+    FAUX : rien n'est enregistré, les montants de départ sont ceux de sa
+    capture, et le scanner ne lit aucune photo — il ajoute un achat d'exemple.
+  */
+
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+  /* **`hidden` doit VRAIMENT cacher.** Trouvé en parcourant la maquette au
+     doigt, pas en la regardant : un bloc en `display:flex` ignore l'attribut
+     `hidden` — la règle de la feuille l'emporte sur celle du navigateur. La
+     proposition C affichait donc les deux boutons DEUX FOIS, et la A gardait
+     son pied. Un `!important` est ici le remède exact, pas une facilité. */
+  [hidden]{display:none !important}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#e8e5de;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:0 0 40px}
+
+  header{position:sticky;top:0;z-index:5;background:#e8e5de;
+    border-bottom:1px solid var(--line);padding:14px 16px 12px}
+  h1{font-size:16px;margin:0 0 3px}
+  .sous{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+  .choix{display:flex;gap:8px}
+  .choix button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--cream);
+    color:var(--ink-soft);border-radius:999px;font-size:13.5px;font-family:inherit}
+  .choix button[aria-pressed="true"]{background:var(--pine);color:var(--bone);border-color:var(--pine);font-weight:600}
+
+  main{padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+
+  .ecran{width:100%;max-width:390px;background:var(--bone);border-radius:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.14);padding:16px 0 16px;overflow:hidden}
+  .titre-mois{font-family:Georgia,serif;font-size:29px;margin:0 22px;letter-spacing:-.018em}
+  .filet{height:1px;background:var(--line);margin:11px 22px 0}
+  .nav{display:flex;justify-content:space-between;margin:11px 22px 0;font-size:13px;color:var(--ink-soft)}
+
+  .tuiles{margin:13px 22px 0;background:var(--cream);border-radius:10px;overflow:hidden}
+  .deux{display:flex}
+  .tuile{flex:1;padding:13px 8px 15px;text-align:center;transition:background .35s}
+  .tuile+.tuile{border-left:1px solid var(--line-soft)}
+  .tuile .cle{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+  .tuile .val{font-size:20px;font-weight:600;margin:0;transition:color .35s}
+  .tuile.bouge{background:#f2eee2}
+  .tuile.bouge .val{color:var(--or)}
+  .tuile.visee{box-shadow:inset 0 0 0 1px var(--or);border-radius:8px}
+  .reste{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-top:1px solid var(--line-soft)}
+  .reste b{font-family:Georgia,serif;font-size:23px;color:var(--pine);font-weight:400}
+
+  .cle-section{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);margin:19px 22px 8px}
+  .explique{margin:-2px 22px 9px;font-size:12.5px;line-height:1.5;color:var(--ink-soft)}
+  .explique b{color:var(--ink)}
+  .gestes{display:flex;gap:10px;margin:0 22px}
+  .geste{flex:1;border:1px solid var(--line);background:var(--cream);border-radius:999px;
+    padding:13px 6px;text-align:center;font-size:12.5px;color:var(--ink);font-family:inherit}
+  .geste .ico{display:block;font-size:15px;color:var(--pine);margin-bottom:4px}
+  .geste:active{background:var(--paper)}
+
+  .rattache{margin:0 22px;padding:11px 13px;background:var(--cream);
+    border-radius:0 0 10px 10px;border-top:1px dashed var(--line)}
+  .rattache .cle{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--or);margin:0 0 8px}
+
+  .achat{display:flex;justify-content:space-between;align-items:center;margin:12px 22px 0;
+    padding-top:11px;border-top:1px solid var(--line-soft)}
+  .achat .quoi{font-size:15.5px;margin:0}
+  .achat .quand{font-size:12px;color:var(--muted);margin:2px 0 0}
+  .achat .tva{font-size:14.5px;color:var(--ink-soft)}
+  .achat.neuf{animation:entre .5s ease}
+  @keyframes entre{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+  .cout{width:100%;max-width:390px;background:var(--cream);border-left:3px solid var(--or);
+    border-radius:0 10px 10px 0;padding:13px 15px;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .cout b{color:var(--ink)}
+  .cout p{margin:0 0 7px}
+  .cout p:last-child{margin:0}
+
+  .essai{width:100%;max-width:390px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+    background:#efece4;border-radius:10px;padding:12px 14px}
+  .essai b{color:var(--ink)}
+</style>
+
+<header>
+  <h1>Dire que ces achats font la TVA déductible</h1>
+  <p class="sous">Touchez une proposition, puis <b>ajoutez un ticket</b> : regardez quel chiffre bouge.</p>
+  <div class="choix" role="group" aria-label="Proposition">
+    <button type="button" data-p="A" aria-pressed="true">A · le titre</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une phrase</button>
+    <button type="button" data-p="C" aria-pressed="false">C · la place</button>
+  </div>
+</header>
+
+<main>
+  <div class="ecran">
+    <p class="titre-mois">Août 2026</p>
+    <div class="filet"></div>
+    <div class="nav"><span>← Juillet 2026</span><span>Septembre 2026 →</span></div>
+
+    <div class="tuiles" id="tuiles">
+      <div class="deux">
+        <div class="tuile"><p class="cle">Collectée</p><p class="val">788,00 €</p></div>
+        <div class="tuile" id="tuileDed"><p class="cle">Déductible</p><p class="val" id="ded">41,67 €</p></div>
+      </div>
+      <div class="reste"><span>Reste à payer</span><b id="reste">746,33 €</b></div>
+    </div>
+
+    <!-- C : les gestes rattachés à la tuile -->
+    <div class="rattache" id="blocC" hidden>
+      <p class="cle">Pour faire monter la déductible</p>
+      <div class="gestes" style="margin:0">
+        <button class="geste" type="button" data-ajout="1"><span class="ico">⌗</span>Scanner un ticket</button>
+        <button class="geste" type="button" data-ajout="1"><span class="ico">✎</span>Écrire à la main</button>
+      </div>
+    </div>
+
+    <p class="cle-section" id="titreSection">Ce qui fait votre TVA déductible</p>
+    <p class="explique" id="phrase" hidden>Chaque ticket ajouté augmente la <b>TVA déductible</b>
+      ci-dessus — et fait baisser d'autant ce qui vous reste à payer.</p>
+
+    <!-- A et B : les gestes à leur place d'aujourd'hui -->
+    <div class="gestes" id="blocAB">
+      <button class="geste" type="button" data-ajout="1"><span class="ico">⌗</span>Scanner un ticket</button>
+      <button class="geste" type="button" data-ajout="1"><span class="ico">✎</span>Écrire à la main</button>
+    </div>
+
+    <div id="achats">
+      <div class="achat">
+        <div><p class="quoi">Essence</p><p class="quand">22 août · 250,00 €</p></div>
+        <span class="tva">41,67 €</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cout" id="cout"></div>
+
+  <p class="essai">
+    <b>Ce qui est vrai ici :</b> les mots, la place, et le calcul — ajouter un ticket fait monter
+    « Déductible » et baisser « Reste à payer », comme dans l'application.<br>
+    <b>Ce qui ne l'est pas :</b> rien n'est enregistré, et le scanner ne lit aucune photo — il ajoute
+    un achat d'exemple.
+  </p>
+</main>
+
+<script>
+  // Les achats d'exemple, ajoutés l'un après l'autre. Des montants ronds et
+  // plausibles : ce qu'un élagueur achète vraiment dans un mois.
+  const EXEMPLES = [
+    { quoi: "Gazole",              ttc: 90,  jour: "23 août" },
+    { quoi: "Chaîne de tronçonneuse", ttc: 48,  jour: "23 août" },
+    { quoi: "Huile de chaîne",     ttc: 24,  jour: "24 août" },
+    { quoi: "Gants et visière",    ttc: 62,  jour: "24 août" },
+  ];
+  const TAUX = 0.20;
+  let rang = 0;
+  let deductible = 41.67;
+  const COLLECTEE = 788;
+
+  const eur = (n) =>
+    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+  const $ = (s) => document.querySelector(s);
+
+  function rendreChiffres() {
+    $("#ded").textContent = eur(deductible);
+    $("#reste").textContent = eur(COLLECTEE - deductible);
+  }
+
+  function ajouterTicket() {
+    const e = EXEMPLES[rang % EXEMPLES.length];
+    rang++;
+    // La TVA d'un achat TTC à 20 % : c'est le calcul de l'application.
+    const tva = e.ttc - e.ttc / (1 + TAUX);
+    deductible += tva;
+
+    const ligne = document.createElement("div");
+    ligne.className = "achat neuf";
+    ligne.innerHTML =
+      '<div><p class="quoi"></p><p class="quand"></p></div><span class="tva"></span>';
+    ligne.querySelector(".quoi").textContent = e.quoi;
+    ligne.querySelector(".quand").textContent = e.jour + " · " + eur(e.ttc);
+    ligne.querySelector(".tva").textContent = eur(tva);
+    $("#achats").prepend(ligne);
+
+    rendreChiffres();
+
+    // **La tuile se signale une seconde.** Sans cela, le chiffre change hors du
+    // champ de vision : sur 390 px, le doigt est en bas, la tuile en haut — et
+    // c'est précisément le lien qu'il ne voyait pas.
+    const t = $("#tuileDed");
+    t.classList.remove("bouge");
+    void t.offsetWidth;
+    t.classList.add("bouge");
+    setTimeout(() => t.classList.remove("bouge"), 900);
+  }
+
+  document.querySelectorAll("[data-ajout]").forEach((b) =>
+    b.addEventListener("click", ajouterTicket)
+  );
+
+  const COUTS = {
+    A: "<p><b>A — le titre le dit.</b> « Vos achats » devient « Ce qui fait votre TVA déductible ». Un titre au lieu d'un autre, rien de neuf à l'écran.</p><p><b>Ce que ça coûte :</b> le titre est long, et il nomme un calcul plutôt qu'une chose. Dans votre poche c'est un ticket d'essence ; « TVA déductible », c'est ce que l'administration en fait.</p>",
+    B: "<p><b>B — le titre reste, une phrase explique.</b> « Vos achats » ne bouge pas — c'est le mot juste pour ce que vous ajoutez. La ligne dessous dit le sens de cause à effet, et vers où regarder.</p><p><b>Ce que ça coûte :</b> deux lignes de gris sur un écran que vous voulez court. Ce qu'elles apportent : elles disent que scanner <b>fait baisser ce que vous devez</b> — la raison pour laquelle vous le faites.</p>",
+    C: "<p><b>C — les gestes remontent contre la tuile.</b> Pas un mot de plus : les deux boutons quittent le bas et se posent sous « Déductible ». La place dit le lien mieux qu'une phrase.</p><p><b>Ce que ça coûte, et ce n'est pas rien :</b> les tuiles sont ce que vous venez LIRE pour recopier deux chiffres. On y accroche maintenant deux boutons, et l'encadré cesse d'être un bloc qu'on lit d'un coup d'œil.</p>",
+  };
+
+  function montrer(p) {
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.p === p))
+    );
+    $("#titreSection").textContent =
+      p === "A" ? "Ce qui fait votre TVA déductible" : "Vos achats";
+    $("#phrase").hidden = p !== "B";
+    $("#blocC").hidden = p !== "C";
+    $("#blocAB").hidden = p === "C";
+    $("#tuileDed").classList.toggle("visee", p === "C");
+    // En C, la section « Vos achats » ne porte plus que la liste : le titre se
+    // rapproche d'elle.
+    $("#titreSection").style.marginTop = p === "C" ? "16px" : "19px";
+    $("#cout").innerHTML = COUTS[p];
+  }
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.addEventListener("click", () => montrer(b.dataset.p))
+  );
+
+  rendreChiffres();
+  montrer("A");
+</script>
+</body>
+</html>

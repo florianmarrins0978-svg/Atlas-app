@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Une note sur la feuille de chantier</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:24px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  /* ── La feuille de chantier, telle qu'elle est ────────────────────── */
+  .feuille{max-width:430px;margin:10px auto 0;background:var(--papier);border-radius:12px;
+           padding:16px 16px 18px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .feuille .chapeau{text-align:center;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                    text-transform:uppercase;color:var(--or)}
+  .feuille .client{margin:10px 0 0;text-align:center;font:400 26px/1.2 ui-serif,Georgia,serif}
+  .gestes{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .gestes button{border:0;border-radius:9px;background:var(--plage);padding:14px 8px;
+                 font-size:14.5px;color:var(--encre);cursor:pointer;
+                 -webkit-tap-highlight-color:transparent}
+  .rien{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--trait);
+        font-size:14px;color:var(--gris)}
+  .pdf{margin:14px auto 0;display:block;border:0;border-radius:999px;background:var(--pin);
+       color:#faf9f5;padding:14px 24px;font-size:15px;cursor:pointer;
+       -webkit-tap-highlight-color:transparent}
+
+  /* ── L'ENCADRÉ — ce que la planche propose ───────────────────────── */
+  .note{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--trait)}
+  .note .titre{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+               text-transform:uppercase;color:var(--gris);margin:0 0 8px}
+  .note textarea{width:100%;border:1px solid var(--trait);border-radius:9px;background:var(--plage);
+                 padding:11px 12px;font:400 16px/1.45 ui-sans-serif,-apple-system,sans-serif;
+                 color:var(--encre);resize:none;min-height:78px;-webkit-tap-highlight-color:transparent}
+  .note textarea::placeholder{color:var(--gris)}
+  .note textarea:focus{outline:none;border-color:var(--or)}
+  .note .etat{margin:6px 0 0;font-size:12.5px;color:var(--gris);min-height:17px}
+  .note .etat.enregistre{color:var(--pin)}
+
+  /* Variante B : une ligne discrète tant que rien n'est écrit. */
+  .note .inviter{display:flex;align-items:center;gap:9px;width:100%;border:0;background:transparent;
+                 padding:2px 0;font-size:14.5px;color:var(--or);cursor:pointer;text-align:left;
+                 -webkit-tap-highlight-color:transparent}
+  .note .inviter .rond{width:26px;height:26px;border-radius:999px;border:1px solid var(--or);
+                       display:grid;place-items:center;font-size:16px;flex-shrink:0}
+  .note .ecrite{white-space:pre-wrap;font-size:15px;line-height:1.5;color:var(--encre);
+                background:var(--plage);border:1px solid var(--trait);border-radius:9px;
+                padding:11px 12px;cursor:text}
+  .note[hidden]{display:none}
+
+  .verdict{max-width:430px;margin:14px auto 0;padding:14px 18px;border-radius:14px;
+           font-size:14.5px;line-height:1.5;background:var(--papier);color:var(--encre-douce)}
+  .verdict b{color:var(--encre)}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+            background:var(--papier);font-size:15px;line-height:1.55}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px}
+  .question .choix{margin-top:14px;padding-top:14px;border-top:1px solid var(--trait)}
+  .question .choix div{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+  .question .choix .mot{flex-shrink:0;width:34px;font-weight:700;color:var(--pin)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ta demande :</b> « entre "Copier l'adresse" et "Ouvrir le PDF", un petit
+  encadré où je peux écrire quelques lignes — <i>penser à prendre le broyeur</i>,
+  <i>client disponible à partir de neuf heures</i> ».<br>
+  Ça n'existe nulle part aujourd'hui. Deux façons de le poser, <b>et les deux
+  s'écrivent</b> : tape dedans.
+</div>
+
+<!-- ═══ A ═══════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>A — l'encadré toujours là</h2>
+  <p>Le cadre est ouvert en permanence. <b>Un doigt, tu écris.</b>
+     En contrepartie il occupe la place même quand il est vide, sur chaque
+     chantier.</p>
+</div>
+<div class="feuille" data-variante="A"></div>
+
+<!-- ═══ B ═══════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>B — une ligne, qui s'ouvre au doigt</h2>
+  <p>Tant que rien n'est écrit : une seule ligne discrète. Dès qu'il y a une
+     note, <b>elle se lit en entier</b> et se retouche d'un doigt.
+     Un geste de plus pour la première fois, rien à l'écran le reste du temps.</p>
+</div>
+<div class="feuille" data-variante="B"></div>
+
+<div class="verdict">
+  <b>Dans les deux cas :</b> ça s'enregistre tout seul dès que tu sors du cadre —
+  pas de bouton « Enregistrer » à ne pas oublier avant de partir en camion.
+</div>
+
+<div class="question">
+  <b>Deux questions :</b>
+  <div class="choix">
+    <div><span class="mot">1.</span><span><b>A</b> ou <b>B</b> ?</span></div>
+    <div><span class="mot">2.</span><span>Cette note doit-elle apparaître sur
+      le <b>PDF sans les prix</b> — celui que tes gars emportent — ou rester
+      seulement dans l'application ?</span></div>
+  </div>
+</div>
+
+<script>
+/* Le chantier de sa capture, à l'identique. */
+const CLIENT = "Marco";
+const EXEMPLE = "Penser à prendre le broyeur. Client dispo à partir de 9 h.";
+
+function gestes() {
+  return '<div class="gestes">'
+    + "<button type=\"button\">Maps</button>"
+    + "<button type=\"button\">Waze</button>"
+    + "<button type=\"button\">Copier l’adresse</button>"
+    + "<button type=\"button\">Appeler le client</button>"
+    + "</div>";
+}
+
+/* Une seule fonction dessine les deux : elles ne divergent qu'à l'endroit où la
+   note est VIDE. Deux dessins pour la même feuille finiraient par ne plus dire
+   pareil (CLAUDE.md §3). */
+function monter(hote, variante) {
+  // **Les deux partent VIDES, et c'est tout l'objet de la comparaison.**
+  // B pré-rempli ne montrait jamais sa ligne discrète — c'est-à-dire la seule
+  // chose qui la distingue de A. On voyait deux fois le même cadre.
+  let texte = "";
+  let ouvert = variante === "A";
+
+  function peindre() {
+    const corps = ouvert
+      ? `<textarea placeholder="${EXEMPLE}">${texte}</textarea>
+         <p class="etat"></p>`
+      : texte
+        ? `<div class="ecrite">${texte.replace(/</g, "&lt;")}</div>
+           <p class="etat"></p>`
+        : `<button class="inviter" type="button"><span class="rond">+</span>
+             Ajouter une note</button>`;
+
+    hote.innerHTML = '<p class="chapeau">Feuille de chantier</p>'
+      + `<p class="client">${CLIENT}</p>`
+      + gestes()
+      + `<div class="note">
+           ${texte || ouvert ? '<p class="titre">Ma note</p>' : ""}
+           ${corps}
+         </div>`
+      + '<p class="rien">Aucune ligne sur le devis.</p>'
+      + '<button class="pdf" type="button">Ouvrir le PDF sans les prix</button>';
+
+    const zone = hote.querySelector("textarea");
+    const etat = hote.querySelector(".etat");
+    if (zone) {
+      zone.addEventListener("input", () => {
+        texte = zone.value;
+        if (etat) etat.textContent = "";
+      });
+      // **Enregistré en sortant du cadre**, jamais par un bouton : il range son
+      // téléphone et part ; un bouton non touché perdrait la note.
+      zone.addEventListener("blur", () => {
+        texte = zone.value;
+        if (variante === "B" && !texte.trim()) { ouvert = false; peindre(); return; }
+        if (etat) { etat.textContent = "Enregistré."; etat.className = "etat enregistre"; }
+      });
+    }
+    const inviter = hote.querySelector(".inviter");
+    if (inviter) inviter.addEventListener("click", () => { ouvert = true; peindre();
+      hote.querySelector("textarea")?.focus(); });
+    const ecrite = hote.querySelector(".ecrite");
+    if (ecrite) ecrite.addEventListener("click", () => { ouvert = true; peindre();
+      const z = hote.querySelector("textarea"); z?.focus();
+      if (z) z.selectionStart = z.selectionEnd = z.value.length; });
+  }
+  peindre();
+}
+
+for (const hote of document.querySelectorAll("[data-variante]")) {
+  monter(hote, hote.dataset.variante);
+}
+</script>
+</body>
+</html>

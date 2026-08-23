@@ -139,10 +139,11 @@ async function main() {
         apres: e.querySelector('[data-demi="apres_midi"]')?.getAttribute("data-etat"),
       }))
     );
-    // **Un samedi n'est jamais « pris », et il n'accueille rien pour autant.**
-    // Sa fiche dit « Jamais proposé » et n'offre aucun geste — chercher « le
-    // premier jour libre » tombait dessus, et le contrôle accusait l'écran de
-    // ne pas proposer d'ajouter là où il ne le doit surtout pas.
+    // **On vise un jour OUVRABLE, et depuis le 23 août 2026 ce n'est plus
+    // parce qu'un samedi refuserait quoi que ce soit** — il offre désormais les
+    // mêmes gestes (sa règle : « s'il a des salariés qui font des extras »).
+    // C'est simplement le cas ordinaire que ce contrôle décrit ; le samedi a le
+    // sien, dans `test-planning-e2e.ts`.
     const ouvrable = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
     const libre = jours.find(
       (j) => j.jour && ouvrable(j.jour) && j.matin === "libre" && j.apres === "libre"

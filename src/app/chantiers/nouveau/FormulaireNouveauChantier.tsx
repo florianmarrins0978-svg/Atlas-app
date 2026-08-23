@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
+import ChoixCanal from "@/components/atlas/ChoixCanal";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
@@ -638,36 +639,6 @@ export default function FormulaireNouveauChantier({
 
 // Un canal sans sa coordonnée est proposé mais inerte : le masquer laisserait
 // le patron chercher pourquoi le choix qu'il attend n'est pas là.
-function ChoixCanal({
-  libelle,
-  actif,
-  disponible,
-  onClick,
-}: {
-  libelle: string;
-  actif: boolean;
-  disponible: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={!disponible}
-      aria-pressed={actif}
-      // Les mesures de sa maquette (`.canal button`) : 14 px de texte, un
-      // liseré gris au repos, l'OR et le fond papier quand le canal est pris.
-      className="flex-1 rounded-full py-[11px] text-[14px] disabled:opacity-40"
-      style={{
-        backgroundColor: actif ? colors.rustTint : "transparent",
-        color: actif ? colors.ink : colors.inkSoft,
-        boxShadow: `inset 0 0 0 1px ${actif ? colors.or : colors.line}`,
-      }}
-    >
-      {libelle}
-    </button>
-  );
-}
 
 function Field({
   label,

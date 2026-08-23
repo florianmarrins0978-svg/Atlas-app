@@ -6,7 +6,7 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import * as devisRepo from "../src/server/repositories/devis";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, enregistrerReponse } from "../src/server/repositories/envois-devis";
-import { preparerEnvoi, premiersJoursLibres } from "../src/server/repositories/preparation-envoi";
+import { preparerEnvoi, premiersJoursLibres, verifierJourPropose } from "../src/server/repositories/preparation-envoi";
 import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from "../src/server/disponibilites";
 
 // Depuis les créneaux (migration 0019), la disponibilité dépend du chantier
@@ -260,35 +260,73 @@ async function main() {
     );
   });
 
-  await test("l'envoi REFUSE de proposer un jour qu'un chantier en cours occupe", async () => {
-    // Le premier verrou : le patron ne peut même pas mettre ce jour dans son
-    // envoi. Avant la correction, `creerEnvoi` lisait la même occupation
-    // tronquée et laissait passer.
+  await test("l'écran PRÉVIENT qu'un chantier en cours occupe ce jour", async () => {
+    // **Retourné le 23 août 2026, sur sa règle :** *« si l'utilisateur juge
+    // qu'il peut rajouter un chantier, il doit pouvoir le faire quand même »*.
+    // Ce n'est plus le refus qu'on éprouve, c'est l'AVERTISSEMENT : sans lui, il
+    // passerait outre sans savoir qu'il passe outre, et l'on retomberait sur le
+    // défaut du 22 août — un jour déjà pris proposé sans que rien ne le dise.
     const ctx = await contexte(`deborde-envoi-${Date.now()}@t.test`);
     const client = await clientsRepo.creerClient(ctx, { nom: "M. Faucher", email: "f@ex.test" });
     await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie", clientId: client.id });
-    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 
     const long = await chantiersRepo.creerChantier(ctx, { nom: "Trois jours de taille" });
     await chantiersRepo.mettreAJourDureeEquipe(ctx, long.id, { dureePrevue: "3 jours" });
     await chantiersRepo.planifierChantier(ctx, long.id, dans(0));
 
-    await assert.rejects(
-      () =>
-        creerEnvoi(
-          ctx,
-          {
-            chantierId: chantier.id,
-            devisId: brouillon.id,
-            canal: "email",
-            datesProposees: [dans(2)],
-            contenuDevis: "Taille de haie",
-          },
-          LUNDI
-        ),
-      /jour_occupe/,
-      `${dans(2)} a été proposé alors qu'un chantier commencé le ${dans(0)} l'occupe encore`
+    const v = await verifierJourPropose(ctx, chantier.id, dans(2), undefined, LUNDI);
+    assert.strictEqual(v.retenable, true, "le jour est refusé au lieu d'être signalé");
+    assert.match(
+      v.raison ?? "",
+      /complet/i,
+      `rien ne l'avertit que le ${dans(2)} est pris : « ${v.raison} »`
+    );
+    // Prévenir sans montrer la sortie, c'est le laisser chercher à l'aveugle.
+    assert.ok(v.alternative, "aucun jour libre proposé à côté");
+  });
+
+  await test("et ce qu'il a proposé, son client peut le prendre", async () => {
+    // **L'autre bout de la même règle.** Le laisser proposer un jour plein puis
+    // le refuser à son client, c'est perdre le devis sur une décision qu'il
+    // avait prise — et le client, lui, n'y comprendrait rien : il a reçu cette
+    // date.
+    const ctx = await contexte(`force-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Faucher", email: "f@ex.test" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "email" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const deja = await chantiersRepo.creerChantier(ctx, { nom: "Déjà calé" });
+    await chantiersRepo.planifierChantier(ctx, deja.id, dans(10));
+
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId: chantier.id,
+        devisId: brouillon.id,
+        canal: "email",
+        datesProposees: [dans(10)],
+        contenuDevis: "Taille de haie",
+      },
+      LUNDI
+    );
+    const r = await enregistrerReponse(
+      envoi.jeton,
+      {
+        decision: "accepte",
+        dateRetenue: dans(10),
+        precision: null,
+        adresseIp: null,
+        agentUtilisateur: null,
+      },
+      LUNDI
+    );
+    assert.deepStrictEqual(
+      r,
+      { succes: true, dateRetenue: dans(10), contreProposee: false },
+      "le client s'est vu refuser une date que le patron lui avait proposée"
     );
   });
 
@@ -509,6 +547,34 @@ async function main() {
       !p.joursOccupes.includes(dans(10)),
       `${dans(10)} est barré alors que son après-midi est libre`
     );
+  });
+
+  await test("une date trop proche NOMME le premier jour possible", async () => {
+    // **Sa remarque du 23 août 2026 :** *« "trop tôt" veut rien dire, on
+    // comprend pas bien »*. La phrase énonçait la règle — « proposez au moins
+    // après-demain » — au lieu de dire quoi faire, et obligeait à compter dans
+    // sa tête devant un calendrier qui affiche déjà les dates.
+    const ctx = await contexte(`tot-${Date.now()}@t.test`);
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const v = await verifierJourPropose(ctx, chantier.id, dans(0), undefined, LUNDI);
+    assert.strictEqual(v.retenable, false, "une date passée doit rester refusée");
+    assert.ok(
+      !/trop tôt/i.test(v.raison ?? ""),
+      `« trop tôt » est revenu : « ${v.raison} »`
+    );
+    assert.ok(
+      !/en défaut/i.test(v.raison ?? ""),
+      `la phrase le met encore en tort : « ${v.raison} »`
+    );
+    // **Elle doit NOMMER le jour**, pas le lui faire calculer.
+    assert.match(
+      v.raison ?? "",
+      /\d{1,2}\s+\p{L}+/u,
+      `la phrase ne nomme aucune date : « ${v.raison} »`
+    );
+    assert.strictEqual(v.alternative, dans(2), "le premier jour possible n'est pas offert");
   });
 
   console.log(`\n${passed} réussis, ${failed} échoués`);

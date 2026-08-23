@@ -1,5 +1,6 @@
 import { and, eq, isNull, isNotNull, or, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
+import { NOTE_MAX } from "../../lib/note-chantier";
 import { equipesParChantier } from "./occupation-chantiers";
 import { chantiers, clients, entreprises, equipesDuChantier, factures } from "../db/schema";
 import {
@@ -680,6 +681,10 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         // aller chercher l'adresse arrive vide exactement là où elle sert.
         adresseChantier: chantiers.adresseChantier,
         clientTelephone: clients.telephone,
+        // Le pense-bête, lu sur la feuille de chantier. Il descend avec la
+        // liste plutôt qu'au moment du geste : le patron ouvre sa feuille en
+        // voiture, souvent sans réseau — la même raison que l'adresse.
+        note: chantiers.note,
         ...DERNIER_ENVOI,
       })
       .from(chantiers)
@@ -733,6 +738,42 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
       ...l,
       equipes: rangerParDemi(parChantier.get(l.id) ?? []),
     }));
+  });
+}
+
+/**
+ * Écrit le pense-bête d'un chantier.
+ *
+ * **Sa demande du 23 août 2026** : *« un petit encadré où l'utilisateur peut
+ * marquer quelque chose — penser à prendre le broyeur, client plus disponible à
+ * partir de neuf heures »*.
+ *
+ * **Le vide efface**, il ne stocke pas une chaîne creuse : une note effacée doit
+ * redevenir absente, sans quoi l'écran afficherait un cadre « rempli de rien »
+ * qu'on ne saurait plus distinguer d'une note oubliée.
+ *
+ * **Tronquée ici plutôt que refusée.** La borne en base ferait rougir une
+ * écriture faite au doigt, et il perdrait ce qu'il vient d'écrire — alors qu'il
+ * n'a aucun moyen de compter ses caractères. Deux mille caractères, c'est déjà
+ * une page : personne n'y arrive en notant un broyeur.
+ */
+export async function ecrireNoteChantier(ctx: Ctx, chantierId: string, note: string | null) {
+  if (!UUID_RE.test(chantierId)) return null;
+  const propre = (note ?? "").trim();
+  const valeur = propre ? propre.slice(0, NOTE_MAX) : null;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .update(chantiers)
+      .set({ note: valeur, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+      .where(
+        and(
+          eq(chantiers.id, chantierId),
+          eq(chantiers.entrepriseId, ctx.entrepriseId),
+          isNull(chantiers.deletedAt)
+        )
+      )
+      .returning({ note: chantiers.note });
+    return row ?? null;
   });
 }
 

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aujourd'hui, ou le jour touché</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+    --rouille:#8a4b3a; --rouille-voile:rgba(138,75,58,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:24px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  .tel{max-width:430px;margin:10px auto 0;background:var(--fond);border-radius:20px;
+       padding:16px 12px 14px;box-shadow:0 12px 34px rgba(20,18,14,.15)}
+  .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .nom-jour{text-align:center;font:600 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;
+            color:var(--gris);padding-bottom:5px}
+  .case{aspect-ratio:1/1.06;border:0;background:transparent;border-radius:10px;padding:0;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+        cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .case .n{font:400 17px/1 ui-serif,Georgia,serif;color:var(--encre)}
+  .case.week{background:rgba(28,28,26,.035)}
+  .case.week .n{color:rgba(28,28,26,.42)}
+  .barres{display:flex;flex-direction:column;gap:2px;width:60%}
+  .b{height:3px;border-radius:2px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .b.plein{background:var(--pin);box-shadow:none}
+
+  /* Aujourd'hui : le chiffre doré et gras, dans les deux versions. */
+  .case.aujourdhui .n{color:var(--or);font-weight:600}
+  /* L'anneau doré — c'est LUI seul qui est en question. */
+  .avec .case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or)}
+  /* Le jour touché : fond teinté et anneau noir, inchangé. */
+  .case.touche{background:var(--rouille-voile);box-shadow:inset 0 0 0 1.5px var(--encre)}
+
+  .etiquettes{display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:12px;
+              color:var(--encre-douce);flex-wrap:wrap}
+  .etiquettes span{display:flex;align-items:center;gap:6px}
+  .puce{width:22px;height:22px;border-radius:6px;flex-shrink:0}
+  .puce.or{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .puce.orsansanneau{display:grid;place-items:center;font:600 13px/1 ui-serif,Georgia,serif;color:var(--or)}
+  .puce.noir{background:var(--rouille-voile);box-shadow:inset 0 0 0 1.5px var(--encre)}
+
+  .verdict{max-width:430px;margin:14px auto 0;padding:14px 18px;border-radius:14px;
+           font-size:14.5px;line-height:1.5}
+  .verdict.mauvais{background:var(--bordeaux);color:#fff}
+  .verdict.bon{background:var(--pin);color:#fff}
+  .verdict b{color:#fff}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+            background:var(--papier);font-size:15px;line-height:1.55}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px}
+  .question .choix{margin-top:14px;padding-top:14px;border-top:1px solid var(--trait)}
+  .question .choix div{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+  .question .choix .mot{flex-shrink:0;width:38px;font-weight:700}
+  .question .choix .a{color:var(--pin)}
+  .question .choix .b{color:var(--gris)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ta remarque :</b> « je ne comprends pas pourquoi le 22 reste sélectionné,
+  ce n'est pas très clair ».<br>
+  <b>Ce n'est pas un bug</b> — mais tu as raison, c'est illisible. Deux anneaux
+  de la même épaisseur, seule la couleur change.
+</div>
+
+<div class="bloc">
+  <h2>A — aujourd'hui, ce que tu as</h2>
+  <p><b>22</b> a un anneau doré (c'est la date du jour).
+     <b>20</b> a un anneau noir (c'est le jour que tu as touché).
+     Deux cases entourées : on croit en avoir choisi deux.</p>
+</div>
+<div class="tel avec" data-mois></div>
+<div class="verdict mauvais">
+  L'anneau doré <b>répète</b> ce que le chiffre doré dit déjà — et il le dit
+  dans la forme réservée au jour choisi.
+</div>
+
+<div class="bloc">
+  <h2>B — l'anneau doré retiré</h2>
+  <p>Aujourd'hui reste marqué : son chiffre est <b>doré et gras</b>, comme avant.
+     Mais <b>une seule case est entourée</b> — celle que tu as touchée.</p>
+</div>
+<div class="tel" data-mois></div>
+<div class="verdict bon">
+  Un seul anneau à l'écran, un seul jour choisi. Rien n'est perdu :
+  le 22 se repère toujours du premier coup d'œil.
+</div>
+
+<div class="question">
+  <b>La question :</b>
+  Je retire l'anneau doré d'aujourd'hui ?
+  <div class="choix">
+    <div><span class="mot a">A</span><span>on garde comme c'est.</span></div>
+    <div><span class="mot b">B</span><span>je le retire.</span></div>
+  </div>
+</div>
+
+<script>
+/* Le mois d'août 2026 tel qu'il tombe, et les jours de sa capture : le 22 est
+   aujourd'hui, le 20 est celui qu'il a touché. Les barres reprennent sa
+   charge — 20, 21, 26, 28 pleins, 14 et 17 à moitié. */
+const AUJOURDHUI = 22, TOUCHE = 20;
+const PLEINS = { 18: 2, 19: 2, 20: 2, 21: 2, 25: 1, 26: 2, 28: 2 };
+const DEMI = { 14: 1, 17: 1 };
+
+for (const hote of document.querySelectorAll("[data-mois]")) {
+  let html = "";
+  for (const n of ["LUN", "MAR", "MER", "JEU", "VEN", "SAM", "DIM"]) {
+    html += `<div class="nom-jour">${n}</div>`;
+  }
+  // Le 1ᵉʳ août 2026 est un samedi : cinq cases creuses avant lui.
+  for (let v = 0; v < 5; v++) html += "<span></span>";
+  for (let j = 1; j <= 31; j++) {
+    const rang = (new Date(Date.UTC(2026, 7, j))).getUTCDay();
+    const week = rang === 0 || rang === 6;
+    const classes = ["case"];
+    if (week) classes.push("week");
+    if (j === AUJOURDHUI) classes.push("aujourdhui");
+    if (j === TOUCHE) classes.push("touche");
+    const pleines = PLEINS[j] ?? 0;
+    const demies = DEMI[j] ?? 0;
+    html += `<button class="${classes.join(" ")}" type="button">`
+      + `<span class="n">${j}</span>`
+      + (week ? "" : `<span class="barres">`
+          + `<span class="b${pleines >= 1 || demies >= 1 ? " plein" : ""}"></span>`
+          + `<span class="b${pleines >= 2 ? " plein" : ""}"></span></span>`)
+      + "</button>";
+  }
+  hote.innerHTML = `<div class="grille">${html}</div>`
+    + '<div class="etiquettes">'
+    + (hote.classList.contains("avec")
+        ? '<span><i class="puce or"></i>aujourd’hui</span>'
+        : '<span><i class="puce orsansanneau">22</i>aujourd’hui</span>')
+    + '<span><i class="puce noir"></i>le jour touché</span></div>';
+}
+</script>
+</body>
+</html>
