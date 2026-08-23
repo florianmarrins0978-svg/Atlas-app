@@ -105,6 +105,24 @@ avant toute autre hypothèse.
 l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
 15 août. Il reste à l'appliquer aux quatre.
 
+## ~~Le temps passé, montré ou non~~ — **CODÉ le 23 août 2026**
+
+Sa demande du 22 août, dessinée en planche 92, puis codée le 23 après ses deux
+corrections : *« raccourcis la phrase à "votre client ne le verra pas sur son
+compte rendu" »* et *« enlève le 1 h 40 en gris à droite de la sélection de
+l'heure »*.
+
+Un interrupteur sur la ligne « Temps passé », colonne `temps_visible`
+(migration `0060`), masquage décidé au serveur, empreinte qui scelle ce que le
+client a lu. Le détail est dans `CHANGELOG.md`.
+
+**Ce qui reste ouvert, et qui est pour lui** — il ne s'est pas prononcé :
+
+| | |
+|---|---|
+| **Le réglage de départ** | Codé sur **Visible**, ce que l'application faisait déjà. S'il préfère que chaque fiche parte **Masquée**, c'est le défaut de la colonne à retourner (une migration d'une ligne) |
+| **Masquer ou ne rien saisir ?** | Aujourd'hui masquer garde la durée pour lui. S'il voulait pouvoir ne rien saisir du tout, la molette devrait pouvoir revenir à « — », ce qu'elle ne sait pas faire |
+
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 
 Sa colère du 22 août : *« je peux proposer le 24 alors qu'un client a validé le

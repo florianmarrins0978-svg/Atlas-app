@@ -219,6 +219,67 @@ async function main() {
     assert.match(rows[0].observations ?? "", /haie du fond/);
   });
 
+  await test("Le temps se masque au client, et la durée reste au patron", async () => {
+    // Sa demande du 22 août 2026, dessinée en planche 92 puis codée le 23 :
+    // *« un petit bouton on/off pour si l'utilisateur ne veut pas que le temps
+    // apparaisse sur la fiche — on, il apparaîtrait ; off, il n'apparaîtrait
+    // pas ».*
+    //
+    // **Le total gris à droite des listes est parti**, à sa demande du 23 août.
+    // Le contrôle le refuse : sans lui, il reviendrait au premier remaniement.
+    const molette = page.locator('select[aria-label="Heures"]').locator("..");
+    const litMolette = (await molette.innerText()).trim();
+    assert.doesNotMatch(
+      litMolette,
+      /1\s*h\s*45/,
+      `le total gris est revenu à côté de la molette — lu : « ${litMolette} »`
+    );
+
+    const bascule = page.locator('[data-atlas="temps-visible"]');
+    await bascule.waitFor({ state: "visible", timeout: 15_000 });
+    assert.equal(
+      await bascule.getAttribute("aria-pressed"),
+      "true",
+      "une fiche neuve ne part pas sur « Visible » : ce n'est plus ce que l'application faisait"
+    );
+
+    await bascule.click();
+    await page.waitForTimeout(900);
+    await capturer(page, "07b-temps-masque");
+    assert.equal(await bascule.getAttribute("aria-pressed"), "false", "l'interrupteur ne s'éteint pas");
+    // **L'état se lit en toutes lettres** : un curseur nu se décode, et cet
+    // écran se regarde avec un gant, entre deux chantiers.
+    assert.match((await bascule.innerText()).trim(), /masqué/i, "l'état éteint ne s'écrit pas");
+    const fiche = await page.locator('[data-atlas="fiche-chantier"]').innerText();
+    assert.match(
+      fiche,
+      /Votre client ne le verra pas sur son compte rendu\./,
+      "la phrase qu'il a dictée le 23 août ne paraît pas sous la molette"
+    );
+
+    // **Masquer n'efface pas.** La durée est toujours en base — c'est ce qui
+    // lui dit ce qu'a coûté un chantier, et la perdre l'obligerait à la
+    // ressaisir au passage suivant.
+    const masque = await pool.query(
+      `SELECT p.minutes, p.temps_visible FROM passages_entretien p
+         JOIN clients c ON c.id = p.client_id WHERE c.nom = $1`,
+      [CLIENT]
+    );
+    assert.equal(masque.rows[0].temps_visible, false, "le masquage n'est pas arrivé en base");
+    assert.equal(masque.rows[0].minutes, 105, "masquer a effacé la durée du patron");
+
+    // On rallume : la suite de ce parcours lit « 1 h 45 » sur la page du client.
+    await bascule.click();
+    await page.waitForTimeout(900);
+    assert.equal(await bascule.getAttribute("aria-pressed"), "true", "l'interrupteur ne se rallume pas");
+    const rallume = await pool.query(
+      `SELECT p.temps_visible FROM passages_entretien p
+         JOIN clients c ON c.id = p.client_id WHERE c.nom = $1`,
+      [CLIENT]
+    );
+    assert.equal(rallume.rows[0].temps_visible, true, "rallumer n'est pas arrivé en base");
+  });
+
   await test("« Envoyé par » se choisit sous le nom du client", async () => {
     // Sa demande du 20 août 2026 : *« sous le nom du client, il doit y avoir la
     // mention envoyé par avec le choix soit SMS, soit par email »*.
