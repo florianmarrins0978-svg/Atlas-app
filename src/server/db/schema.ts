@@ -500,6 +500,21 @@ export const chantiers = pgTable(
      */
     rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
     tailleEquipe: text("taille_equipe"),
+    /**
+     * Le pense-bête de CE chantier — « penser à prendre le broyeur ».
+     *
+     * Sa demande du 23 août 2026. **Jamais imprimée** : ni sur le devis, ni sur
+     * le PDF sans les prix. C'est sa décision, et sa raison tient en une
+     * phrase — *« les salariés auront accès au planning ; justement, c'est pour
+     * cela que je voulais le devis sans les prix »*. Le PDF est le devis
+     * expurgé ; la note vit sur la feuille de chantier, que ses gars ouvrent
+     * depuis le planning.
+     *
+     * Bornée en base à 2 000 caractères (migration 0060) : elle descend avec
+     * la liste entière du planning, et un copier-coller malheureux alourdirait
+     * chaque lecture.
+     */
+    note: text("note"),
     // **Qui tient ce chantier vit dans `equipesDuChantier`, plus ici.** La
     // colonne `equipe_id` portait UNE équipe, pour le chantier entier ; il en
     // veut plusieurs, et différentes le matin et l'après-midi (migration 0058).

@@ -9,30 +9,20 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — une note sur la feuille de chantier (23 août 2026)
+## ~~Une note sur la feuille de chantier~~ — **TRANCHÉ le 23 août 2026 : A, codée**
 
-Sa demande : *« entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un
-petit encadré où l'utilisateur peut marquer quelque chose — penser à prendre le
-broyeur, client plus disponible à partir de neuf heures »*.
+Sa réponse à la planche 93 : *« oui prends A »*, et sur le PDF : *« non, elle
+peut rester là, car les salariés auront accès au planning ; justement, c'est
+pour cela que je voulait le devis sans les prix »*.
 
-**Rien de tel n'existe**, vérifié plutôt que supposé (`CLAUDE.md` §5 ter) : la
-table `chantiers` n'a aucun champ libre, `notes_vocales` porte la dictée, et le
-`note` du schéma appartient aux paiements.
+**Codé** : colonne `chantiers.note` (migration 0060), cadre toujours ouvert sur
+la feuille, enregistrement à la sortie du champ, aucune impression.
 
-Planche 93, `appli/note-feuille-chantier.html` : **A** le cadre toujours ouvert
-(141 px à vide sur chaque feuille), **B** une ligne discrète qui s'ouvre au doigt
-(45 px).
-
-**La seconde question décide de l'implémentation**, et il ne l'a pas soulevée :
-la note va-t-elle sur le **PDF sans les prix** — celui que ses gars emportent —
-ou reste-t-elle dans l'application ? Sur le PDF, elle devient un document qui
-sort de l'entreprise et se relit sur un chantier ; dedans seulement, elle reste
-un pense-bête.
-
-**Ce qu'il faudra, si c'est retenu :** une colonne sur `chantiers`, une action
-serveur, et l'enregistrement à la sortie du cadre — un bouton non touché
-perdrait la note d'un homme qui range son téléphone et démarre. Le champ à
-**16 px** au moins, sous quoi iOS zoome et fait sauter l'écran.
+**Ce qu'il faut retenir du choix de A**, parce que cela vaut au-delà de ce cas :
+la variante B était objectivement plus économe (45 px contre 141 à vide). Il ne
+l'a pas écartée sur un goût — il ne l'a **pas vue** sur la capture. Une
+invitation discrète qu'on manque sur une image, on la manque aussi sur un
+chantier ; c'est un renseignement, pas une distraction de sa part.
 
 ---
 
