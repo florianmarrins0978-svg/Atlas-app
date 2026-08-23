@@ -2505,7 +2505,54 @@ préfixe (`batterie19`) a la suite au vert ; les quatre suivantes, avec, au roug
 refuser de conclure quand son montage n'a pas reproduit le cas — c'est ce qui a
 permis de le voir.
 
-### 0 trigies ter. `test-reduction-devis-e2e` rougit sous charge, pas toute seule
+### 0 trigies quinquies. ~~Cinq suites du devis rougissaient une batterie sur deux~~ — **RÉPARÉES le 23 août 2026**
+
+**Quatre l'étaient pour la même raison, et la cinquième pour une autre.** C'est
+cette distinction qui a coûté l'enquête, et qui vaut d'être écrite : leur
+symptôme était identique — un montant lu trop tôt —, leur cause ne l'était pas.
+
+| | Le mal | La parade |
+|---|---|---|
+| `test-devis-complet`, `test-devis-a-la-main`, `test-reduction-devis`, `test-reprise-chantier` | un `waitForTimeout` fixe : l'enregistrement partait au serveur pendant ce délai, qui suffisait à vide et manquait sous quatre-vingt-dix suites | relire la base **en boucle jusqu'à la valeur**, avec une borne qui sait abandonner (`80a12bc`) |
+| `test-devis-depuis-dictee` | **rien à voir avec la charge : elle rougissait AUSSI jouée seule** | elle visait un écran qui n'existe plus |
+
+**LE PIÈGE DE LA CINQUIÈME, ET IL RESSERVIRA.** Elle ouvrait
+`/chantiers/{id}/export` et cherchait « taille de haie » dans le texte de la
+page. Deux raisons de n'y jamais arriver, **toutes deux nées le 20 août**
+(`c9abb50`, la suppression de l'écran intermédiaire) :
+
+1. **`/export` RENVOIE sur `/devis-complet`** tant que le devis n'est pas parti.
+   Une suite qui n'envoie rien — et celle-ci vérifie précisément que *rien n'est
+   parti au client* — n'atteint donc jamais cet écran ;
+2. **sur le devis, la désignation vit dans un `<input>`.** La valeur d'un champ
+   ne fait pas partie du texte de la page : `innerText` ne la voit pas, et
+   aucune attente, si longue soit-elle, ne la fera apparaître.
+
+Le contrôle accusait donc la dictée pour un parcours qui avait changé sous lui.
+Il vise désormais ce que le client recevra **vraiment** : `lignes_devis` —
+l'instantané figé à l'impression, pas les lignes de prix encore corrigeables —
+relu sous l'aperçu PDF. Éprouvé rouge sur un libellé absent, et son message
+montre ce que le devis porte (`CLAUDE.md` §5 bis : on adapte le contrôle, on ne
+rétablit pas l'écran retiré).
+
+**Ce que ça apprend :** devant un rouge, la première question n'est pas *« est-ce
+la charge ? »* mais *« rougit-elle jouée seule ? »*. Trente secondes de réponse,
+et elles séparent deux enquêtes qui n'ont rien en commun.
+
+**ET UNE SIXIÈME LEÇON, PAYÉE PAR MON PROPRE CORRECTIF.** `test-reprise-chantier`
+est retombée à la batterie suivante, sur la garde que je venais de lui poser :
+elle relisait le **total affiché** pour prouver que le prix était enregistré. Or
+l'écran des prix montre le montant qu'on vient de taper **avant** que le serveur
+ait répondu. Sous une batterie entière, la garde lisait donc « 1 200,00 € » sur
+une base encore vide, se déclarait satisfaite, et l'écran d'arrivée — rendu par
+le serveur, lui — affichait 0,00 € deux cas plus loin et se faisait accuser.
+
+**Lire l'écran pour prouver un enregistrement, c'est mesurer ce qu'on vient de
+taper.** La garde interroge désormais `lignes_prix`. Éprouvée rouge en tapant un
+prix nul : elle nomme le total réellement en base, et accuse le prix, pas
+l'écran d'arrivée.
+
+### 0 trigies ter. ~~`test-reduction-devis-e2e` rougit sous charge, pas toute seule~~ — **RÉPARÉE le 23 août 2026** (`80a12bc`, et le point ci-dessus)
 
 **Vu le 16 août 2026**, sur la batterie qui suivait la fusion de son lot. Le
 dernier de ses six cas — *« elle se retire, et le devis revient à son prix
