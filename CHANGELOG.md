@@ -285,6 +285,48 @@ possibilité de passer outre.
 
 ## 2026-08-23
 
+### « Terminés » : cinq chiffres en moins, et de l'air
+
+**Ses six corrections du 23 août au soir**, capture de l'écran à l'appui :
+*« Ma TVA à déclarer, mets-le en gras or ; la petite phrase en dessous d'août
+2026, en gris, supprime-la ; là où il y a écrit trois à facturer et huit
+facturés, supprime les montants qu'il y a avec, essaye de laisser un peu
+d'espace entre cette phrase-là et le premier client, histoire qu'on fasse bien
+la démarcation ; pareil le montant 5 028,00 € qui est sur la même ligne qu'août
+2026, celui-là tu peux le supprimer. Il faut aérer un peu la page parce qu'il y
+a énormément d'informations. »*
+
+**Trois montants sont partis, et ils ne disaient pas la même chose.** Le total à
+droite du mois ne comptait que le mois affiché ; les deux montants de la phrase
+comptaient tous les mois ; les lignes en dessous, elles, ne montrent que le mois
+affiché. Trois portées différentes sur quatre centimètres d'écran : on les
+lisait comme une contradiction, et l'on cessait de croire la liste. Ce qu'on
+additionne se lit dans les lignes.
+
+**Le titre de la carte de TVA passe en or gras.** C'était l'élément le plus pâle
+de la carte alors qu'il nomme l'outil dont il disait le matin même *« il est
+caché, on ne le voit pas trop »* — déplacer la carte en tête ne suffisait pas.
+
+**La mention grise sous la carte est retirée**, et ce n'est possible que pour
+une raison : ce que `docs/AGENT.md` §6 exige — Atlas prépare le relevé, il ne le
+déclare pas — s'écrit en toutes lettres **au bas du relevé lui-même**, là où les
+chiffres se lisent. La retirer des deux endroits serait autre chose.
+
+**La démarcation qu'il demande est un TRAIT, pas de l'espace.** De l'espace seul
+se mange au premier ajout de contenu ; un trait tient. La phrase passe en noir
+gras entière — sa demande du 22 août pour le compte des factures —, les montants
+partis n'ayant plus rien à quoi s'opposer.
+
+**Le probe `capture-termines.mts` a été adapté, pas contourné** : il exigeait le
+compte du mois derrière son repère, que la phrase ne portait pas. Le repère est
+allé sur la phrase, qui EST ce compte (`CLAUDE.md` §5 bis).
+
+**Un défaut relevé au passage, et consigné plutôt que corrigé au jugé** : la
+planche 90, que `page.tsx` désigne comme la référence de cet écran, a dérivé —
+elle ignore la carte de TVA venue de la planche 86 et les retraits de ce soir.
+Voir `TODO.md` : il faut trancher entre la remettre à niveau et lui retirer son
+titre.
+
 ### Le temps passé se masque au client — codé, et il reste au patron
 
 **Sa demande du 22 août, puis ses deux corrections du 23** devant la planche 92 :
