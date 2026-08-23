@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -572,7 +572,7 @@ export default function NoteVocaleClient({
             className="mt-4 block w-full rounded-full py-3 text-center text-[15px] font-medium disabled:opacity-40"
             style={{
               backgroundColor: complementEnCours ? colors.alert : colors.rustTint,
-              color: complementEnCours ? "#FFFFFF" : colors.rust,
+              color: complementEnCours ? surPlein : colors.rust,
             }}
           >
             {complementEnCours
@@ -662,14 +662,14 @@ function StopIcon() {
 }
 function PlayIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+    <svg width="18" height="18" viewBox="0 0 24 24" style={{ fill: surPlein }}>
       <path d="M8 5.5v13l11-6.5-11-6.5Z" />
     </svg>
   );
 }
 function PauseIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+    <svg width="18" height="18" viewBox="0 0 24 24" style={{ fill: surPlein }}>
       <rect x="6" y="5" width="4" height="14" rx="1" />
       <rect x="14" y="5" width="4" height="14" rx="1" />
     </svg>

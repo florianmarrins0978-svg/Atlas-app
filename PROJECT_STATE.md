@@ -76,6 +76,31 @@ Le détail : `ARCHITECTURE.md` §149.
 | Les mètres restent des mètres (« 80 ml ») | **fait** |
 
 Le détail : `ARCHITECTURE.md` §151.
+## Le planning ne promet plus ce qu'il ne peut pas tenir (23 août 2026)
+
+| | État |
+|---|---|
+| « Ajouter un chantier » disparaît quand rien n'attend de jour | **fait** (`AjoutAuJour`) |
+| Le cul-de-sac « Aucun chantier n'attend de jour » retiré du geste | **fait** — la phrase reste sous « Sans date », à sa place |
+| Deux mesures : le bouton part, et il revient | **fait** (`test-planning-e2e.ts`) |
+
+---
+
+## Le mode nuit se lit (22 août 2026)
+
+*« Le mode nuit est illisible. Corrige ça. »* — sa capture du planning.
+
+| | État |
+|---|---|
+| Ce qu'on écrit sur un aplat plein suit la charte (`surPlein`) | **fait** — 8 endroits, `#faf9f5`/`#fff`/`fill="white"` |
+| Les voiles d'encre suivent la charte (`voile()`) | **fait** — calendrier, interrupteur d'agenda |
+| Alerte, bordeaux et vert pâle deviennent des jetons de charte | **fait** — teinte gardée, clarté accordée |
+| Les cinq chartes claires, intactes au caractère près | **fait**, et fixé par une suite |
+| Contrôle sans navigateur, sur les sept palettes | **fait** (`test-chartes-lisibles.ts`) |
+| Contrôle qui REGARDE l'écran, Origine contre Nuit | **fait** (`test-mode-sombre-lisible-e2e.ts`) |
+
+Non couvert : les états qui ne s'ouvrent qu'au doigt et les écrans profonds — le
+parcours de la suite porte six écrans. Détail : `ARCHITECTURE.md` §160.
 
 ---
 

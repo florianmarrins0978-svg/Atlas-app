@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import {
   libelleCourt,
@@ -137,7 +137,7 @@ export default function CalendrierPeriodes({
                 {mois && (
                   <span
                     className="mt-0.5 block text-[11px]"
-                    style={{ color: regarde ? "rgba(245,243,238,0.66)" : colors.muted }}
+                    style={{ color: regarde ? voile(colors.cream, 0.66) : colors.muted }}
                   >
                     {mois}
                   </span>

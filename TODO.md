@@ -132,6 +132,33 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## Mode nuit : ce que le lot du 22 août ne couvre PAS (22 août 2026)
+
+Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §160), et deux contrôles
+le tiennent. Ce qui reste dehors, et qu'il faut savoir avant de croire
+l'application entièrement lisible en Nuit :
+
+| Ce qui n'est pas éprouvé | Pourquoi |
+|---|---|
+| **les états qui ne s'ouvrent qu'au doigt** — feuilles, tiroirs, listes déroulantes, champs en cours de saisie | la suite navigateur parcourt des écrans au repos ; ouvrir chaque geste demanderait un scénario par écran |
+| **les écrans profonds** — fiche chantier, devis complet, facture, catalogue, arrosage | le parcours porte neuf écrans, pas l'application entière |
+| **la pastille d'équipe elle-même**, dans la CI | le jeu de démonstration n'a qu'une équipe et aucun chantier planifié : le cas exact de sa capture ne se rejoue qu'avec deux équipes en base |
+
+Le troisième point est le plus gênant : c'est celui qu'il a signalé, et la suite
+le mesurerait s'il y avait de quoi le mesurer. Le corriger demande soit
+d'enrichir le jeu de démonstration — qui sert aux quatre-vingts suites de la
+batterie —, soit de faire poser un chantier et une seconde équipe par la suite
+elle-même, à travers les écrans. La seconde voie est la plus sûre et n'a pas été
+prise faute de temps.
+
+**Les pages publiques du client restent volontairement claires** — devis,
+facture, fiche d'entretien, documents légaux. Un devis ne part pas en noir chez
+le client parce que l'artisan a choisi « Nuit » (`design-tokens.ts`,
+`couleursDocument`). Ce n'est pas un manque, c'est une décision, et elle est
+tenue.
+
+---
+
 ## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
 
 Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
@@ -2651,6 +2678,74 @@ mesure depuis le regard — sa règle du 21 août. Regardé à l'écran sur les 
 jardins d'exemple, pas seulement compté.
 
 ### 0 quinvicies septies. Son message au client, et l'allure de ses devis — **DEUX PLANCHES, RIEN N'EST CODÉ**
+
+**SES RÉPONSES DU 23 AOÛT AU SOIR, sur le message :** *« Message client A. Liens
+obligatoire. Et message pour tous. »*
+
+| | Tranché |
+|---|---|
+| Où il se règle | **A** — dans « Devis & factures », en dernier bloc |
+| Le lien | **obligatoire** : Atlas REFUSE d'enregistrer un message sans lui, il ne se contente pas de prévenir |
+| Combien de messages | **un seul, pour les trois documents** |
+
+**RESTE UN POINT, ET UN SEUL** — il l'a demandé en images : *« pas compris,
+montre des exemples »*. Un texte unique se heurte à ce que le milieu du message
+n'est pas le même selon ce qui part. La planche montre les deux façons, avec
+les trois téléphones côte à côte :
+
+- **façon 1** — une pastille `[document]` : il écrit le bonjour, la formule et
+  la signature ; Atlas pose la phrase juste — « votre devis, choisissez votre
+  date », « votre facture n° F2026-0008, à régler avant le 21 septembre », « le
+  compte rendu de mon passage ». Rien n'est perdu ;
+- **façon 2** — le même texte mot pour mot : sa facture dit alors *« Voici votre
+  devis… choisir votre date d'intervention »*, et l'échéance disparaît.
+
+**La planche a dû être REFAITE pour qu'il puisse choisir.** Sa première version
+affichait « [document] » en clair dans les bulles de la façon 2 : cela ne
+montrait rien qu'un écran cassé, au lieu de sa facture parlant d'un devis. Un
+contrôle le tient désormais (`verifier-maquette-message-et-allure.mjs`, éprouvé
+rouge sur ce défaut précis).
+
+**Rien n'est codé tant qu'il n'a pas dit 1 ou 2.**
+
+**SES RÉPONSES DU 23 AOÛT AU SOIR, sur l'allure :** *« Allure des devis B, juste
+pour devis facture. Fais-en une dizaine. Le fond teinté fais-le modifiable et
+choisiront s'ils le gardent ou s'ils mettent autre chose ; les réglages actuels
+doivent être par défaut. »*
+
+| | Tranché |
+|---|---|
+| Où ça se règle | **B** — un bloc dans « Devis & factures », pas de rubrique de plus |
+| Sur quoi ça porte | **le devis et la facture SEULEMENT.** La feuille de chantier et le compte rendu d'entretien gardent leur allure |
+| Typographies | **dix**, la première étant celle d'aujourd'hui |
+| Fond de page | **modifiable — n'importe quelle couleur**, pas une liste de trois |
+| Le départ | **ses réglages d'aujourd'hui** : crème, or, police de l'appareil |
+
+**CE QU'IL FAUDRA CODER, ET CE QUE ÇA COÛTE — mesuré, pas supposé.** Le PDF est
+fait par `pdf-lib` et n'embarque que **Times et Helvetica**, les polices
+standard du format (`src/server/pdf/document-commun.ts`). Les dix typographies
+demandent donc `@pdf-lib/fontkit` et un fichier par famille, embarqué dans
+chaque devis. C'est faisable ; ce n'est pas gratuit, et la planche le lui dit.
+
+**Et la planche charge ces polices depuis Google Fonts.** Acceptable pour une
+maquette qu'il ouvre sur son téléphone ; **pas pour le produit** — l'allure d'un
+document ne doit pas dépendre d'un domaine tiers. Au codage, les fichiers vivent
+dans le dépôt, et ils serviront à la fois l'écran et le PDF.
+
+**Deux leçons d'outillage, payées ici :**
+
+- **un contrôle ne doit pas accuser une panne de réseau.** Le mandataire de
+  l'agent refuse `fonts.googleapis.com` : le contrôle rougissait sur « Failed to
+  load resource », c'est-à-dire sur la planche, pour une panne qui n'est pas la
+  sienne. Il ignore désormais ce seul domaine et rapporte toutes les autres
+  ressources manquantes. Le choix des dix reste mesurable sans elles : on
+  compare les **piles déclarées**, pas les glyphes rendus ;
+- **un contrôle qui PLANTE n'accuse personne.** En retirant une typographie pour
+  l'éprouver, le clic sur la dixième a levé une exception et le rapport n'a
+  jamais été écrit — une pile d'appels au lieu de « neuf au lieu de dix ». Tout
+  le corps est sous filet : une panne devient un souci comme un autre, et le
+  verdict s'écrit toujours.
+
 
 **Sa demande du 23 août 2026**, en deux morceaux : *« y a-t-il un endroit dans
 les réglages où l'utilisateur peut rédiger ce message automatique ? S'il n'y en
