@@ -12,7 +12,6 @@ import {
   libelleFacturee,
   nomDuMois,
   resumeDuMois,
-  somme,
   type LigneAffichee,
 } from "@/lib/termines-par-mois";
 
@@ -80,7 +79,7 @@ export default function ListeTermines({
           disait la même chose en d'autres mots. Deux phrases pour un seul état,
           à trois centimètres l'une de l'autre, faisaient hésiter — est-ce le
           même chiffre ? */}
-      <div className="mx-[26px] mt-[18px] flex gap-2">
+      <div className="mx-[26px] mt-[22px] flex gap-2">
         <Onglet actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
           Tout
         </Onglet>
@@ -90,7 +89,7 @@ export default function ListeTermines({
       </div>
 
       {onglet === "attente" ? (
-        <section className="mx-[26px] mt-[26px]" data-atlas="tout-ce-qui-attend">
+        <section className="mx-[26px] mt-[30px]" data-atlas="tout-ce-qui-attend">
           {attente.length === 0 ? (
             <p className="text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
               Rien n&apos;attend. Vous êtes à jour.
@@ -108,10 +107,9 @@ export default function ListeTermines({
           )}
         </section>
       ) : (
-        <section className="mx-[26px] mt-[26px]" data-atlas="le-mois">
+        <section className="mx-[26px] mt-[30px]" data-atlas="le-mois">
           <NavigationMois
             cle={cle}
-            total={mois.totalFacture}
             peutReculer={cle > plancher}
             peutAvancer={cle < borne}
             surMois={setCle}
@@ -122,30 +120,33 @@ export default function ListeTermines({
             </p>
           ) : (
             <>
-              {/* **Sa phrase, ici — 23 août 2026.** Elle porte les deux
-                  chiffres ET ce qu'ils sont : ce qui reste à facturer, et ce
-                  qui l'est déjà. Le décompte d'avant (« 7 factures envoyées ·
-                  et 2 160,00 € qui attendent leur facture ») disait la même
-                  chose en d'autres mots, et n'était pas le sien.
+              {/* **Sa phrase, ici — 23 août 2026 —, réduite à ses DEUX
+                  COMPTES le soir même** : *« là où il y a écrit trois à
+                  facturer et huit facturés, supprime les montants qu'il y a
+                  avec »*.
 
-                  **Ce que ces chiffres comptent, et qu'il faut savoir :** TOUS
-                  les mois, pas seulement celui qu'on regarde. C'est ainsi
-                  qu'ils étaient calculés là-haut, et il a demandé cette
-                  phrase-là. Le total du mois affiché, lui, se lit à droite du
-                  nom du mois, juste au-dessus. */}
-              <p className="mt-3.5 text-[14px] leading-[1.6]" style={{ color: colors.inkSoft }}>
-                {attente.length > 0 && (
-                  <>
-                    <b className="font-semibold" style={{ color: colors.ink }}>
-                      {attente.length} à facturer
-                    </b>
-                    , {formatEuros(somme(attente))} ·{" "}
-                  </>
-                )}
-                <b className="font-semibold" style={{ color: colors.ink }}>
-                  {faites.length} facturé{faites.length > 1 ? "s" : ""}
-                </b>
-                , {formatEuros(somme(faites))}
+                  **Elle compte TOUS les mois**, pas seulement celui qu'on
+                  regarde : c'est ainsi qu'elle a été demandée. Ses montants
+                  disaient donc des sommes que la liste en dessous ne montrait
+                  pas — trois chiffres d'origines différentes sur deux lignes.
+
+                  **Le trait sous elle est la démarcation qu'il a demandée** —
+                  *« essaye de laisser un peu d'espace entre cette phrase-là et
+                  le premier client, histoire qu'on fasse bien la démarcation »*.
+                  De l'espace seul se serait mangé au premier ajout de contenu ;
+                  un trait tient.
+
+                  **Toute la phrase est en noir gras** — c'était déjà sa demande
+                  du 22 août pour le compte des factures, et les montants partis,
+                  il ne reste plus rien à mettre en retrait : deux graisses pour
+                  deux mots feraient une hiérarchie sans objet. */}
+              <p
+                className="mb-[9px] mt-3.5 pb-[15px] text-[14px] font-bold leading-[1.6]"
+                style={{ color: colors.ink, borderBottom: `1px solid ${colors.line}` }}
+                data-atlas="compte-du-mois"
+              >
+                {attente.length > 0 && <>{attente.length} à facturer{" · "}</>}
+                {faites.length} facturé{faites.length > 1 ? "s" : ""}
               </p>
               {mois.lignes.map((l) => (
                 <Ligne key={l.id} ligne={l} />
@@ -169,16 +170,22 @@ const RECUL_MAX = 18;
  *
  * **44 px de haut**, comme partout : c'est un pouce, sur un chantier, parfois
  * avec des gants.
+ *
+ * **Le total du mois a quitté cette ligne le 23 août 2026, à sa demande** :
+ * *« le montant 5 028,00 € qui est sur la même ligne qu'août 2026, celui-là tu
+ * peux le supprimer »*. Il n'avait pas la même portée que les deux comptes en
+ * dessous — lui ne comptait que le mois affiché, eux comptent tous les mois —
+ * et deux chiffres voisins de portées différentes se lisent comme une
+ * contradiction. Le nom du mois se déplace ; ce qu'on additionne se lit dans
+ * les lignes.
  */
 function NavigationMois({
   cle,
-  total,
   peutReculer,
   peutAvancer,
   surMois,
 }: {
   cle: string;
-  total: number;
   peutReculer: boolean;
   peutAvancer: boolean;
   surMois: (cle: string) => void;
@@ -194,12 +201,6 @@ function NavigationMois({
         {nomDuMois(cle)}
       </span>
       <Fleche sens="futur" desactivee={!peutAvancer} onClick={() => surMois(decalerMois(cle, -1))} />
-      <span
-        className="ml-auto text-[16px]"
-        style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}
-      >
-        {total > 0 ? formatEuros(total) : ""}
-      </span>
     </div>
   );
 }
@@ -242,8 +243,8 @@ function Fleche({
 function Compte({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="mb-0.5 mt-1.5 text-[13px] font-bold leading-[1.55]"
-      style={{ color: colors.ink }}
+      className="mb-[9px] mt-1.5 pb-[15px] text-[13px] font-bold leading-[1.55]"
+      style={{ color: colors.ink, borderBottom: `1px solid ${colors.line}` }}
       data-atlas="compte-du-mois"
     >
       {children}
@@ -294,7 +295,12 @@ function Ligne({ ligne }: { ligne: LigneAffichee }) {
     <Link
       href={`/chantiers/${ligne.id}/facture`}
       data-atlas="ligne-terminee"
-      className="flex items-center gap-3.5 py-3.5"
+      // **Aéré le 23 août 2026, à sa demande** : *« il faut aérer un peu la
+      // page parce qu'il y a énormément d'informations »*. Une ligne porte deux
+      // étages de texte et parfois une capsule de 44 px ; à 14 px de marge, le
+      // trait du dessous touchait presque le second étage, et douze lignes se
+      // lisaient comme un bloc.
+      className="flex items-center gap-3.5 py-[19px]"
       style={{ borderBottom: `1px solid ${colors.line}`, minWidth: 0 }}
     >
       <span className="min-w-0 flex-1">
@@ -310,7 +316,7 @@ function Ligne({ ligne }: { ligne: LigneAffichee }) {
             lui-même. Le NOM, lui, reste sur une ligne — un nom se reconnaît
             tronqué, un chiffre coupé ne se devine pas. */}
         <span
-          className="mt-1 block text-[12.5px] leading-[1.45]"
+          className="mt-[5px] block text-[13px] leading-[1.5]"
           style={{ color: ligne.aFacturer ? colors.or : colors.muted }}
         >
           {ligne.aFacturer
