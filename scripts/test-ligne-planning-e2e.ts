@@ -338,6 +338,111 @@ async function main() {
     }
   });
 
+  /**
+   * **CE QU'IL TOUCHE NE DOIT PAS LUI ÉCHAPPER.**
+   *
+   * *Son défaut du 22 août 2026, capture à l'appui :* « lorsque le client se
+   * trouve sur la partie haute de l'écran […] et que je clique dessus pour
+   * pouvoir afficher sa fiche chantier, le client remonte et la fiche chantier
+   * aussi. […] tout remonte d'un bloc et je suis perdu, je ne sais plus où est
+   * mon client. Il disparaît sous mes yeux. »
+   *
+   * **Aucun défilement n'est en cause, et c'est ce qui rend le défaut
+   * sournois.** Personne n'appelle `scrollTo`. Ouvrir une fiche en REFERME une
+   * autre — sa règle du 22 août, « le même nom referme ce qu'il a ouvert » —,
+   * et quand la fiche refermée se trouvait PLUS HAUT dans la page, tout ce qui
+   * suit remonte de sa hauteur. Safari n'ancre pas le défilement
+   * (`overflow-anchor` n'y existe pas) : il faut le rattraper nous-mêmes.
+   *
+   * **Cette suite rejoue la SÉQUENCE, pas le geste.** Ouvrir une fiche, faire
+   * défiler jusqu'à ce qu'un AUTRE client soit haut sur l'écran, puis le
+   * toucher. Un contrôle qui se contenterait de toucher une ligne sur une page
+   * fraîche ne fermerait rien au-dessus d'elle, ne bougerait rien, et serait
+   * vert sur le défaut même qu'il prétend attraper.
+   */
+  await test("Le client touché ne remonte pas : la fiche s'ouvre VERS LE BAS", async () => {
+    await allerAuPlanning();
+    await amenerSurLaSemaineDesCas();
+
+    const rangeeDe = (id: string) =>
+      page.locator(`[data-atlas="ligne-planifiee"][data-chantier="${id}"]`).first();
+    const hautDe = async (id: string) =>
+      await rangeeDe(id).evaluate((r) => r.getBoundingClientRect().top);
+
+    // 1. Une première fiche est ouverte PLUS HAUT dans la page — c'est elle qui
+    //    se refermera, et sa hauteur qui manquera d'un coup.
+    await rangeeDe(journee.id).locator('[data-atlas="nom-planifie"]').click();
+    await page.waitForTimeout(400);
+
+    const hauteurCarte = await rangeeDe(journee.id).evaluate(
+      (r) => r.getBoundingClientRect().height
+    );
+    if (hauteurCarte < 120) {
+      throw new Error(
+        `La première fiche ne s'est pas ouverte (${Math.round(hauteurCarte)} px) : sans elle ` +
+          "rien ne se referme au-dessus, rien ne remonte, et ce contrôle ne mesure rien."
+      );
+    }
+
+    // 2. On amène le SECOND client vers le haut de l'écran, là où il se plaint
+    //    de le perdre. 100 px : sous l'en-tête, comme sur sa capture.
+    const HAUT_VOULU = 100;
+    await page.evaluate(
+      ([id, vise]) => {
+        const r = document.querySelector(
+          `[data-atlas="ligne-planifiee"][data-chantier="${id}"]`
+        ) as HTMLElement;
+        window.scrollBy({ top: r.getBoundingClientRect().top - (vise as number), behavior: "instant" as ScrollBehavior });
+      },
+      [longue.id, HAUT_VOULU] as [string, number]
+    );
+    await page.waitForTimeout(200);
+
+    const avant = await hautDe(longue.id);
+    // **Un contrôle qui ne peut pas se placer refuse de conclure.** Si la page
+    // n'est pas assez haute pour amener ce client sous l'en-tête, le geste
+    // qu'il décrit n'est pas rejoué — et un vert dirait le contraire.
+    if (avant > 260) {
+      throw new Error(
+        `Le second client est à ${Math.round(avant)} px du haut : la page n'est pas assez ` +
+          "longue pour rejouer son geste. Ce n'est pas le produit qui est en cause, c'est " +
+          "ce montage."
+      );
+    }
+
+    // 3. Son geste : il touche le nom.
+    await rangeeDe(longue.id).locator('[data-atlas="nom-planifie"]').click();
+    await page.waitForTimeout(400);
+
+    const apres = await hautDe(longue.id);
+    const saut = avant - apres;
+
+    // **La ligne touchée reste sous le doigt.** Deux pixels de tolérance : le
+    // rendu arrondit, il ne déplace pas.
+    assert.ok(
+      Math.abs(saut) <= 2,
+      `le client touché a bougé de ${Math.round(saut)} px (${Math.round(avant)} → ` +
+        `${Math.round(apres)}) : « il disparaît sous mes yeux »`
+    );
+    // Et il est toujours à l'écran, ce qui est la plainte elle-même.
+    assert.ok(
+      apres >= 0,
+      `le client touché est passé au-dessus du bord de l'écran (${Math.round(apres)} px)`
+    );
+
+    // La fiche, elle, s'est bien ouverte — SOUS lui.
+    const hauteurApres = await rangeeDe(longue.id).evaluate(
+      (r) => r.getBoundingClientRect().height
+    );
+    assert.ok(
+      hauteurApres > 120,
+      `la fiche du client touché ne s'est pas ouverte (${Math.round(hauteurApres)} px)`
+    );
+
+    mkdirSync("artifacts/screenshots", { recursive: true });
+    await page.screenshot({ path: "artifacts/screenshots/planning-ouverture-vers-le-bas.png" });
+  });
+
   await test("À plusieurs équipes, le nom de l'équipe n'est écrit QU'UNE fois", async () => {
     await pool.query(
       `UPDATE entreprises SET nombre_equipes = 2

@@ -4,8 +4,26 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-22 · `main`
+**Point de reprise :** 2026-08-23 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## PIÈGE : « TOUT REMONTE » N'EST PAS UN DÉFILEMENT (23 août 2026)
+
+**Si un écran d'Atlas saute sous le doigt, ne cherchez pas de `scrollTo` — il
+n'y en a pas.** Sur le planning, ouvrir une fiche en REFERME une autre
+(`carteListe` n'en porte qu'une). Quand la fiche refermée était plus haut dans
+la page, tout ce qui suit remonte de sa hauteur : 422 px mesurés, et la ligne
+touchée sort de l'écran.
+
+**Safari n'implémente pas `overflow-anchor`** — et c'est Safari qu'il a dans la
+main. Le rattrapage est donc à notre charge : `useAncrageDuGeste` relève la
+position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
+(jamais `useEffect` : le second peint d'abord, et l'on verrait le saut).
+
+Le même piège guette partout où un panneau se referme au-dessus du point
+regardé. Détail : `ARCHITECTURE.md` §148.
 
 ---
 

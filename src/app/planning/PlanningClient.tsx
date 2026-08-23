@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useAncrageDuGeste } from "@/components/atlas/useAncrageDuGeste";
 import Link from "next/link";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
 import { estAuPlanning } from "@/lib/onglet-chantier";
@@ -174,6 +175,12 @@ export default function PlanningClient({
 
   const grilleRef = useRef<HTMLDivElement>(null);
   const carteRef = useRef<HTMLDivElement>(null);
+  /**
+   * **Ce qu'il touche ne doit pas lui échapper.** Ouvrir une fiche en referme
+   * une autre ; si celle-ci était plus haut, tout remonte de sa hauteur et la
+   * ligne touchée sort de l'écran (`useAncrageDuGeste`).
+   */
+  const ancrer = useAncrageDuGeste();
 
   /**
    * Le retrait DÉFINITIF reste branché ici — il ne se confond pas avec
@@ -623,7 +630,12 @@ export default function PlanningClient({
                 // **Le même nom REFERME ce qu'il a ouvert.** Sa correction du
                 // 22 août : la ligne « se transforme en le menu déroulant »,
                 // elle ne le pousse pas plus bas à chaque appui.
-                const ouvrir = () => {
+                const ouvrir = (e: { currentTarget: HTMLElement }) => {
+                  // La ligne du chantier reste immobile sous le doigt, quoi
+                  // qu'on referme au-dessus d'elle. Le nom du client est ce
+                  // qu'il cherche des yeux : c'est lui qu'on ancre, pas la
+                  // fiche qui s'ouvre en dessous.
+                  ancrer(e.currentTarget.closest("[data-atlas='ligne-planifiee']"));
                   setOuvert(null);
                   if (deplie) {
                     setCarteListe(null);
@@ -983,7 +995,8 @@ function PastilleEquipe({
 }: {
   libelle: string;
   vide: boolean;
-  onClick: () => void;
+  /** L'événement est transmis : l'appelant y trouve la ligne à garder immobile. */
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   avecPlus?: boolean;
 }) {
   return (
