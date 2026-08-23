@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
+
+*« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
+**télécharger** un fichier au lieu d'ouvrir Atlas.
+
+Sa fiche d'état annonçait *« réponse 404 d'ATLAS lui-même — c'est l'application
+qui refuse »* et l'envoyait lire le journal du serveur. **C'était une
+devinette** : le verdict tranchait sur la présence du mot « github » dans
+l'en-tête `Server`, et un refus arrivé nu — sans en-tête ni type, ce qu'il a
+justement reçu — tombait du mauvais côté. Deux hypothèses fausses lui ont été
+livrées avant qu'on ne le voie : l'espace éteint, puis le port privé, démenti
+par un *« je suis déjà en public »*.
+
+`/api/health/live` pose désormais **`x-atlas-vivant: 1`**. Le relais ne peut pas
+inventer cette signature : présente, c'est Atlas qui a répondu ; absente, la
+requête n'est jamais arrivée jusqu'à lui. Et la fiche ne propose plus « deux
+causes possibles, dans cet ordre » — devant lesquelles il essayait la première
+et revenait — mais **un seul geste**, celui qui correspond.
+
+**La signature devait être sur le fil, pas dans le code** : éprouvée d'abord sur
+un binaire pas reconstruit, elle paraissait absente. Le contrôle interroge donc
+le serveur pour de bon, et il a été vu rouge contre une route dont l'en-tête
+avait été retiré. `ARCHITECTURE.md` §155.
+
+
 ### La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
 
 *« Je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le voit pas

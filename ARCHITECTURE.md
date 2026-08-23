@@ -13719,3 +13719,46 @@ d'une promesse récitée.
 **Et il cherche les mots un par un** — « broyeur », « dispo » —, jamais la phrase
 entière : un PDF découpe son texte en fragments, et une recherche exacte ne
 trouverait rien pour une raison qui n'a rien à voir avec la fuite.
+
+## 155. Atlas SIGNE ses réponses, pour que le diagnostic cesse de deviner
+
+**Le 23 août 2026, le patron ouvre Atlas depuis son téléphone : son navigateur
+lui propose de TÉLÉCHARGER un fichier.** Sa fiche d'état annonce alors *« réponse
+404 d'ATLAS lui-même — le port est bien ouvert, c'est l'application qui refuse »*
+et l'envoie lire le journal du serveur.
+
+**C'était faux, et deux hypothèses fausses lui ont été livrées avant qu'on ne le
+voie** : l'espace éteint (démenti par sa capture), puis le port privé (démenti
+par un *« je suis déjà en public »*).
+
+### Le verdict devinait, et son indice ne valait rien
+
+`_verdict-port.mjs` tranchait sur la présence du mot « github » dans l'en-tête
+`Server` de la réponse. Un refus du relais arrivé **nu** — sans en-tête, sans
+type, ce qui est exactement ce qu'il a reçu — tombait donc du côté d'Atlas.
+
+C'est le travers que cette fiche avait été écrite pour éviter (`AGENTS.md` :
+*une erreur qui envoie chercher au mauvais endroit coûte plus cher que pas
+d'erreur du tout*), et il coûtait ici deux gestes inutiles au patron.
+
+### Une signature ne se devine pas
+
+`/api/health/live` pose désormais **`x-atlas-vivant: 1`**. Le relais de GitHub ne
+peut pas l'inventer : présente, c'est Atlas qui a répondu ; absente, la requête
+n'est jamais arrivée jusqu'à lui. Les marques de GitHub restent lues, mais
+seulement pour **nommer** le relais — plus pour décider.
+
+Et le conseil suit la certitude : la fiche ne propose plus *« deux causes
+possibles, dans cet ordre »* — devant laquelle il essayait la première et
+revenait dire qu'il l'avait déjà faite — mais **le geste**, un seul.
+
+### Ce que ça a exigé, et qu'il ne faut pas défaire
+
+**La signature doit être sur LE FIL, pas dans le code.** Éprouvée d'abord sur un
+binaire pas reconstruit, elle paraissait absente : le contrôle interroge donc le
+serveur pour de bon (`scripts/test-health.ts`), et il a été **vu rouge** contre
+une route dont on avait retiré l'en-tête.
+
+**Le perdre ne casserait rien à l'écran** — c'est tout le danger. Le diagnostic
+se remettrait simplement à accuser le relais en toutes circonstances, et
+personne ne le saurait avant la prochaine soirée perdue.

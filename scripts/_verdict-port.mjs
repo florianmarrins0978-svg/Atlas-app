@@ -49,15 +49,26 @@ export function verdictPort({ etatPort, dehors }) {
     const detail = dehors.motif
       ? dehors.motif
       : `réponse ${dehors.statut ?? "?"}${dehors.type ? ` (${dehors.type})` : ""}`;
+    // **Le geste À FAIRE découle de QUI a répondu, et il n'y a plus à choisir.**
+    // Tant que la fiche proposait « deux causes possibles, dans cet ordre », le
+    // patron essayait la première — rendre le port public — et revenait dire
+    // « je suis déjà en public ». La signature d'Atlas tranche : on ne lui
+    // propose plus une liste, on lui donne le geste.
+    const atteintAtlas = /d'ATLAS lui-même/.test(detail);
     return {
       ligne: `INJOIGNABLE DE L'EXTÉRIEUR — ${detail}`,
-      souci:
-        "L'ADRESSE PUBLIQUE NE REND PAS ATLAS. L'espace tourne, mais ce que voit\n" +
-        `     son téléphone est autre chose : ${detail}.\n` +
-        "     Deux causes possibles, dans cet ordre : le port 3000 n'est pas public\n" +
-        "     (onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public »),\n" +
-        "     ou Atlas lui-même refuse cette adresse — et c'est alors le journal de\n" +
-        "     démarrage qu'il faut lire, pas le réglage du port.",
+      souci: atteintAtlas
+        ? "L'ADRESSE PUBLIQUE ATTEINT ATLAS, ET C'EST ATLAS QUI REFUSE.\n" +
+          `     Ce que voit son téléphone : ${detail}.\n` +
+          "     Le port n'y est pour rien — inutile d'y toucher. C'est le JOURNAL DE\n" +
+          "     DÉMARRAGE qu'il faut lire (/tmp/essai.log), et lui seul."
+        : "L'ADRESSE PUBLIQUE N'ATTEINT MÊME PAS ATLAS. L'espace tourne, mais la\n" +
+          `     requête s'arrête avant : ${detail}.\n` +
+          "     Le code n'y est pour rien — inutile de lire le journal du serveur.\n" +
+          "     C'est le port qui n'est pas joignable de l'extérieur :\n" +
+          "     onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».\n" +
+          "     S'il est DÉJÀ public, c'est que le relais ne trouve personne sur 3000 :\n" +
+          "     retirer puis remettre le port dans l'onglet PORTS le réenregistre.",
     };
   }
 
@@ -147,14 +158,33 @@ export async function regarderDuDehors({
     // dépôt est public, et une censure faite au jugé finit toujours par
     // laisser passer l'imprévu (`scripts/rapporter-espace.mjs`).
     const serveur = r.headers.get("server") ?? "sans nom";
-    const relais = /github/i.test(serveur) || /github/i.test(r.headers.get("x-github-request-id") ?? "x");
+    // **QUI a répondu se CONSTATE, il ne se devine plus.**
+    //
+    // Le 23 août 2026, le patron reçoit un téléchargement au lieu d'Atlas. La
+    // fiche annonce « 404 d'ATLAS lui-même » et l'envoie lire le journal du
+    // serveur — alors que la requête n'avait jamais atteint Atlas. La déduction
+    // reposait sur l'absence du mot « github » dans l'en-tête `Server` : un
+    // refus du relais arrivé NU, sans en-tête ni type, tombait donc du mauvais
+    // côté. Deux hypothèses fausses lui ont été livrées avant qu'on ne le voie.
+    //
+    // Atlas signe désormais cette route (`x-atlas-vivant`, voir
+    // `src/app/api/health/live/route.ts`). Le relais ne peut pas inventer cette
+    // signature : présente, c'est Atlas ; absente, la requête n'est pas arrivée
+    // jusqu'à lui. Les marques de GitHub restent lues, mais seulement pour
+    // NOMMER le relais — plus pour décider.
+    const signeAtlas = r.headers.get("x-atlas-vivant") !== null;
+    const marqueGithub = /github/i.test(serveur) || /github/i.test(r.headers.get("x-github-request-id") ?? "x");
+    const relais = !signeAtlas;
     return {
       joignable: false,
       statut: r.status,
       type,
       motif: relais
-        ? `réponse ${r.status} du RELAIS GITHUB (serveur « ${serveur} ») — la requête n'atteint pas Atlas, le port n'est pas public`
-        : `réponse ${r.status} d'ATLAS lui-même (serveur « ${serveur} », ${type || "sans type"}) — le port est bien ouvert, c'est l'application qui refuse`,
+        ? `réponse ${r.status} de ${marqueGithub ? "GitHub" : "quelque chose"} AVANT Atlas ` +
+          `(serveur « ${serveur} », ${type || "sans type"}, non signée) — la requête ` +
+          `n'atteint PAS l'application : c'est le port ou le relais, pas le code`
+        : `réponse ${r.status} d'ATLAS lui-même (signature reçue, serveur « ${serveur} », ` +
+          `${type || "sans type"}) — le port est bien ouvert, c'est l'application qui refuse`,
     };
   } catch (err) {
     return {
