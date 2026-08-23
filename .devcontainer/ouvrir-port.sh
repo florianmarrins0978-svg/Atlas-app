@@ -67,9 +67,54 @@ if [ -z "${CODESPACE_NAME:-}" ]; then
   exit 0
 fi
 
+# **`gh` ABSENT : on l'installe, plutôt que de renvoyer le patron à un panneau.**
+#
+# Le 23 août 2026, il a écrit trois fois « ça ne marche pas ». La déclaration de
+# `devcontainer.json` qui embarque `gh` ne vaut que pour un espace À NAÎTRE — le
+# sien est plus ancien —, si bien que rien, chez lui, ne pouvait ouvrir ce port :
+# le démarrage rendait `sans-gh` et lui demandait de viser un panneau minuscule
+# sur un écran de six pouces. C'est la quatrième fois que ce piège coûte une
+# soirée (voir `ARCHITECTURE.md` §55).
+#
+# **Ce que cette tentative ne peut pas faire, et c'est voulu :**
+#
+#   · elle est BORNÉE À 90 SECONDES et rend la main quoi qu'il arrive. Un banc
+#     qui démarre lentement reste un banc ; un banc suspendu à `apt` est mort ;
+#   · elle n'écrit rien sur la sortie : ce script ne rend qu'UN mot, et une
+#     ligne d'`apt` au milieu ferait dire n'importe quoi à `demarrer.sh` ;
+#   · elle échoue en silence. Si l'installation ne passe pas, on retombe sur
+#     `sans-gh` — exactement l'état d'avant, jamais pire.
+#
+# **NON ÉPROUVÉE DANS L'ENVIRONNEMENT DE L'AGENT**, et il faut le dire plutôt que
+# de la présenter comme sûre (`AGENTS.md`) : son mandataire réseau refuse les
+# dépôts `apt` (403 sur `cli.github.com`). Ce qui est éprouvé, c'est qu'un échec
+# ici ne coûte rien — le chemin `sans-gh` reste exactement celui d'avant.
+installer_gh() {
+  command -v sudo > /dev/null 2>&1 || return 1
+  sudo -n true 2>/dev/null || return 1
+  command -v apt-get > /dev/null 2>&1 || return 1
+
+  timeout 90 bash -c '
+    set -e
+    sudo -n mkdir -p -m 755 /etc/apt/keyrings
+    curl -fsSL --max-time 30 https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | sudo -n tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+    sudo -n chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      | sudo -n tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    sudo -n apt-get update -qq -o Dir::Etc::sourcelist=/etc/apt/sources.list.d/github-cli.list \
+      -o Dir::Etc::sourceparts=- -o APT::Get::List-Cleanup=0
+    sudo -n apt-get install -y -qq gh
+  ' > /dev/null 2>&1 || return 1
+
+  command -v gh > /dev/null 2>&1
+}
+
 if ! command -v gh > /dev/null 2>&1; then
-  echo "sans-gh"
-  exit 0
+  if ! installer_gh; then
+    echo "sans-gh"
+    exit 0
+  fi
 fi
 
 # Le délai est là pour le cas où `gh` attend une authentification qui ne viendra

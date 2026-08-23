@@ -84,6 +84,29 @@ ignoré — on perd alors la fiche entière, pas seulement sa dernière ligne.
 **Éprouvé en le confrontant à l'ancienne version** : les quatre contrôles neufs
 rougissent contre elle, et la nomment (`scripts/test-verdict-port.ts`).
 
+### Et son espace installe désormais `gh` au lieu de le réclamer
+
+**La vraie raison pour laquelle rien ne s'ouvrait chez lui**, et elle était
+écrite depuis le 10 août : l'image de son conteneur n'embarque pas `gh`. La
+fonctionnalité déclarée dans `devcontainer.json` ne vaut que pour un espace **à
+naître** — le sien est plus ancien. Rien, chez lui, ne POUVAIT ouvrir ce port :
+le démarrage rendait `sans-gh` et le renvoyait viser un panneau minuscule sur un
+écran de six pouces. Quatrième fois que ce piège coûte une soirée
+(`ARCHITECTURE.md` §55).
+
+`ouvrir-port.sh` tente donc l'installation avant d'abandonner. **Bornée à
+90 secondes**, muette, et sans pouvoir faire tomber le démarrage : si elle
+échoue, on retombe sur `sans-gh` — l'état d'avant, jamais pire.
+
+**NON ÉPROUVÉE DANS L'ENVIRONNEMENT DE L'AGENT**, et c'est écrit plutôt que de la présenter comme sûre :
+son mandataire réseau refuse les dépôts `apt` (403 sur `cli.github.com`). Ce qui
+EST éprouvé, et qui fonde la décision de la livrer quand même : le chemin
+dégradé rend `sans-gh` en 1,6 seconde, exactement comme avant.
+
+**Les quatre issues sont éprouvées avec un faux `gh`** qui distingue ses deux
+sous-commandes (`scripts/test-ouvrir-port.ts`) : `ouvert`, `non-declare`,
+`échec:<raison>`, et la liste muette qui ne fait **pas** conclure à une absence.
+
 **Ce qui n'a PAS pu être reproduit ici, et s'écrit comme tel** : cet
 environnement n'est pas un espace GitHub. Le nouveau mot `non-declare` est
 éprouvé sur la règle qui le lit, pas sur un vrai relais — c'est au prochain
