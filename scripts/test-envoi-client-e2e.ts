@@ -187,6 +187,28 @@ async function main() {
     );
   });
 
+  /**
+   * Retenir un jour au calendrier — le geste complet depuis la planche 91.
+   *
+   * **Toucher une case ne retient plus rien** : elle OUVRE la fiche du jour,
+   * pour qu'il voie ce qui s'y trouve avant de décider. C'est « Proposer ce
+   * jour » qui retient. Écrit une fois ici : deux copies de ce geste
+   * finiraient par diverger (`CLAUDE.md` §3).
+   */
+  async function retenirAuCalendrier(page: Page, jour: string) {
+    await page.locator(`[data-jour="${jour}"]`).click();
+    await page
+      .locator("text=Vérification de votre planning…")
+      .waitFor({ state: "hidden", timeout: 20_000 })
+      .catch(() => undefined);
+    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
+    await bouton.waitFor({ state: "visible", timeout: 20_000 });
+    await bouton.click();
+    // On referme la fiche : la suivante s'ouvrira sur un écran propre.
+    await page.locator(`[data-jour="${jour}"]`).click();
+    await page.waitForTimeout(250);
+  }
+
   await test("le patron ne propose jamais plus de deux dates", async () => {
     const url = await creerChantierFacturable(page, "deuxmax");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
@@ -203,16 +225,21 @@ async function main() {
     const total = await cases.count();
     assert.ok(total >= 3, `pas assez de jours libres au calendrier (${total})`);
 
-    // Une date est déjà retenue à l'ouverture : on en touche deux de plus, et
-    // la troisième doit chasser la première.
-    for (const rang of [0, 1]) {
-      await cases.nth(rang).click();
-      await page
-        .locator("text=Vérification de votre planning…")
-        .waitFor({ state: "hidden", timeout: 20_000 })
-        .catch(() => undefined);
-      await page.waitForTimeout(300);
-    }
+    // Une date est déjà retenue à l'ouverture : on en retient deux de plus, et
+    // la troisième doit chasser la première — jamais trois.
+    // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
+    // au 1er : ses premiers jours sont derrière nous, et le délai minimal en
+    // écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
+    // parfaitement juste — le pire des rouges (`AGENTS.md`), et c'est ce qui
+    // vient d'arriver : « Proposer ce jour » restait désactivé.
+    const plancher = new Date();
+    plancher.setDate(plancher.getDate() + 3);
+    const depuis = plancher.toISOString().slice(0, 10);
+    const aRetenir = (
+      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => j >= depuis);
+    assert.ok(aRetenir.length >= 2, `pas assez de jours acceptables (${aRetenir.length})`);
+    for (const jour of aRetenir.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
     // le calendrier marque toute la sélection et non plus la dernière date
@@ -239,12 +266,16 @@ async function main() {
 
     // Deux dates : c'est le cas qui laisse le client choisir. Prise au
     // calendrier, la liste des six ayant disparu le 23 août 2026.
-    await page.locator('[data-jour][data-etat="regardable"]').first().click();
-    await page
-      .locator("text=Vérification de votre planning…")
-      .waitFor({ state: "hidden", timeout: 20_000 })
-      .catch(() => undefined);
-    await page.waitForTimeout(300);
+    const plancherCycle = new Date();
+    plancherCycle.setDate(plancherCycle.getDate() + 3);
+    const depuisCycle = plancherCycle.toISOString().slice(0, 10);
+    const offerts = (
+      await page
+        .locator('[data-jour][data-etat="regardable"]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => j >= depuisCycle);
+    assert.ok(offerts.length >= 1, "aucun jour acceptable au calendrier");
+    await retenirAuCalendrier(page, offerts[0]);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
