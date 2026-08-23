@@ -46,6 +46,25 @@ function fauxGh(codeSortie: number): string {
   return bac;
 }
 
+/**
+ * Un faux `gh` qui distingue ses deux sous-commandes.
+ *
+ * `visibility` échoue avec la raison donnée ; `ports` rend la liste donnée.
+ * C'est ce qu'il fallait pour éprouver la question posée depuis le 23 août
+ * 2026 : *le relais connaît-il seulement ce port ?*
+ */
+function fauxGhDeuxTemps(raison: string, liste: string): string {
+  const bac = path.join(dossier, `gh-deux-${Buffer.from(raison + liste).toString("hex").slice(0, 12)}`);
+  execFileSync("mkdir", ["-p", bac]);
+  const faux = path.join(bac, "gh");
+  writeFileSync(
+    faux,
+    `#!/usr/bin/env bash\ncase "$*" in\n  *visibility*) printf '%s\\n' ${JSON.stringify(raison)} >&2; exit 1;;\n  *ports*) printf '%s\\n' ${JSON.stringify(liste)};;\nesac\n`
+  );
+  chmodSync(faux, 0o755);
+  return bac;
+}
+
 function jouer(env: Record<string, string>, chemin?: string): string {
   return execFileSync("bash", [SCRIPT, "3000"], {
     env: {
@@ -85,9 +104,57 @@ cas("dans un espace, le port est publié — et la commande est la bonne", () =>
   );
 });
 
-cas("gh en échec : on le DIT, et le démarrage continue", () => {
+cas("gh en échec : on le DIT, AVEC SA RAISON, et le démarrage continue", () => {
+  // **« échec » tout seul ne désignait personne.** Jusqu'au 23 août 2026 la
+  // raison du refus partait à `/dev/null` : jeton expiré, espace introuvable,
+  // réseau — un seul mot pour trois pannes qui n'ont pas le même remède, et le
+  // patron renvoyé au même geste inutile à chaque fois.
   const sortie = jouer({ CODESPACE_NAME: "reimagined-space-yodel" }, fauxGh(1));
-  assert.equal(sortie, "échec", `attendu « échec », reçu « ${sortie} »`);
+  assert.match(sortie, /^échec:/, `attendu « échec:<raison> », reçu « ${sortie} »`);
+});
+
+cas("UN PORT QUE LE RELAIS NE CONNAÎT PAS se dit « non-declare »", () => {
+  // **Le cas du 23 août 2026, payé de trois « ça ne marche pas ».** Régler la
+  // visibilité d'un port jamais enregistré ne peut rien : il n'y a rien à
+  // basculer. On pose donc la question, au lieu de renvoyer au même panneau.
+  const sortie = jouer(
+    { CODESPACE_NAME: "reimagined-space-yodel" },
+    fauxGhDeuxTemps("HTTP 403", "LABEL PORT VISIBILITY\nweb 8080 private")
+  );
+  assert.equal(sortie, "non-declare", `attendu « non-declare », reçu « ${sortie} »`);
+});
+
+cas("un port DÉCLARÉ mais refusé reste un échec, avec sa raison", () => {
+  const sortie = jouer(
+    { CODESPACE_NAME: "reimagined-space-yodel" },
+    fauxGhDeuxTemps("HTTP 401: Bad credentials", "LABEL PORT VISIBILITY\nAtlas 3000 private")
+  );
+  assert.match(sortie, /^échec:.*Bad credentials/, `la raison du refus est perdue : « ${sortie} »`);
+});
+
+cas("une LISTE MUETTE ne fait pas conclure « non déclaré »", () => {
+  // Une supposition présentée comme une mesure coûte plus cher qu'un « je ne
+  // sais pas » : si `gh ports` échoue lui aussi, on rend le refus initial.
+  const bac = path.join(dossier, "gh-muet");
+  execFileSync("mkdir", ["-p", bac]);
+  const faux = path.join(bac, "gh");
+  writeFileSync(faux, "#!/usr/bin/env bash\nprintf 'boum\\n' >&2\nexit 1\n");
+  chmodSync(faux, 0o755);
+  const sortie = jouer({ CODESPACE_NAME: "reimagined-space-yodel" }, bac);
+  assert.match(sortie, /^échec:/, `attendu un échec, reçu « ${sortie} »`);
+  assert.ok(!sortie.startsWith("non-declare"), "une liste muette a été prise pour une preuve d'absence");
+});
+
+cas("le script ne rend JAMAIS qu'un seul mot, quoi qu'il tente", () => {
+  // L'installation de `gh` parle beaucoup ; `demarrer.sh`, lui, lit une ligne.
+  // Une ligne d'`apt` échappée d'ici lui ferait dire n'importe quoi.
+  for (const sortie of [
+    jouer({ CODESPACE_NAME: "" }),
+    jouer({ CODESPACE_NAME: "x" }),
+    jouer({ CODESPACE_NAME: "x" }, fauxGh(0)),
+  ]) {
+    assert.equal(sortie.split("\n").length, 1, `plusieurs lignes rendues : « ${sortie} »`);
+  }
 });
 
 cas("gh absent : on le dit aussi, sans tomber", () => {

@@ -83,6 +83,10 @@ async function main() {
     const ctx = await contexte(`sanscanal-${Date.now()}@t.test`);
     const client = await clientsRepo.creerClient(ctx, { nom: "Mme Martin", telephone: "0600000000" });
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Élagage", clientId: client.id });
+    // **Un prix, sans quoi ce cas n'éprouve plus ce qu'il annonce.** Depuis le
+    // 23 août 2026, un devis SANS LIGNE bloque à lui seul l'envoi
+    // (`ARCHITECTURE.md` §158) et masquerait le motif qu'on veut lire ici.
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Élagage d'un chêne", "600.00");
     await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 
     const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
@@ -95,10 +99,54 @@ async function main() {
     const client = await clientsRepo.creerClient(ctx, { nom: "M. Dupont" });
     await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "sms" });
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Abattage", clientId: client.id });
+    // **Un prix, sans quoi ce cas n'éprouve plus ce qu'il annonce.** Depuis le
+    // 23 août 2026, un devis SANS LIGNE bloque à lui seul l'envoi
+    // (`ARCHITECTURE.md` §158) et masquerait le motif qu'on veut lire ici.
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Abattage d'un frêne", "600.00");
     await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 
     const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
     assert.strictEqual(p.blocage, "coordonnee_absente");
+  });
+
+  await test("un devis SANS LIGNE bloque à lui seul, avant même le canal", async () => {
+    // **Son défaut du 23 août 2026 :** *« le devis part à zéro euro chez la
+    // cliente »*. Rien ne s'opposait à l'envoi d'un document qui n'énonce rien,
+    // et sa cliente avait « J'accepte ce devis » sous ce vide.
+    //
+    // **Le motif passe AVANT le canal**, et l'ordre n'est pas un détail : à quoi
+    // bon lui faire choisir comment joindre sa cliente pour lui envoyer un
+    // document vide ? Ce cas donne donc TOUT ce qu'il faut par ailleurs —
+    // canal et téléphone — pour qu'aucun autre motif ne puisse expliquer le
+    // refus.
+    const ctx = await contexte(`vide-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "Mme Roux", telephone: "0655443322" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "sms" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Sans prix", clientId: client.id });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
+    assert.strictEqual(
+      p.blocage,
+      "devis_vide",
+      "un devis sans une seule ligne peut partir : le client recevrait un document à zéro euro"
+    );
+  });
+
+  await test("une ligne suffit à lever le blocage — un devis GRATUIT reste possible", async () => {
+    // **La barrière porte sur les LIGNES, jamais sur l'euro.** Un devis à
+    // 0,00 € peut être légitime — un geste commercial, un déplacement offert —
+    // et le refuser interdirait au patron quelque chose qui est son droit
+    // (`CLAUDE.md` §4 : ne rien inventer).
+    const ctx = await contexte(`gratuit-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Offert", telephone: "0644332211" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "sms" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Geste", clientId: client.id });
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Passage offert", "0.00");
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
+    assert.strictEqual(p.blocage, null, "un devis gratuit mais ÉCRIT est refusé : c'est son droit");
   });
 
   await test("canal et coordonnée présents : rien ne bloque", async () => {
@@ -106,6 +154,10 @@ async function main() {
     const client = await clientsRepo.creerClient(ctx, { nom: "Mme Costa", telephone: "0611223344" });
     await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "sms" });
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Taille", clientId: client.id });
+    // **Un prix, sans quoi ce cas n'éprouve plus ce qu'il annonce.** Depuis le
+    // 23 août 2026, un devis SANS LIGNE bloque à lui seul l'envoi
+    // (`ARCHITECTURE.md` §158) et masquerait le motif qu'on veut lire ici.
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Taille d'une haie", "600.00");
     await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 
     const p = await preparerEnvoi(ctx, chantier.id, LUNDI);

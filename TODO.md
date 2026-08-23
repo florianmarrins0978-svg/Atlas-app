@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ `ss` ne rend RIEN dans cet environnement — un port se mesure autrement (23 août 2026)
+
+**Payé trois batteries d'affilée ce soir**, chacune tombée sur un
+« Port 3000 déjà utilisé » alors que le port venait d'être déclaré libre.
+
+`ss -lptn` ne rend **aucune ligne** ici : le conteneur n'a pas le droit de
+rattacher une socket à son processus. La commande sort donc vide, sans erreur
+et sans code de retour fâché — exactement le piège que le dépôt nomme
+lui-même : **« un contrôle qui mesure ZÉRO ne mesure rien, et il est pire
+qu'absent »** (`CLAUDE.md` §5). Trois fois de suite, « le port est libre » n'a
+rien affirmé du tout.
+
+Le vrai coupable était un serveur de captures lancé par cette session
+même — `next dev -p 3000`, PID 3438, et son enfant `next-server` 3450.
+
+**Ce qui mesure vraiment, ici :**
+
+```bash
+fuser -n tcp 3000            # rend les PID qui tiennent le port
+curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/   # 000 = personne
+```
+
+`fuser` nomme le processus, `curl` dit ce qu'un client voit. Les deux ensemble
+tranchent ; `ss` seul ne tranche rien. Et devant un port occupé, chercher
+**ses propres serveurs** avant de soupçonner la machine : une capture d'écran
+prise plus tôt dans la session laisse un `next dev` derrière elle.
+
 ## Arrosage : l'interface pour discuter le plan (23 août 2026)
 
 Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
@@ -26,6 +53,39 @@ famille d'arroseur, nombre de voies), jamais sur le dessin — un plan retouché
 la main ne se recalculerait plus.
 
 ---
+
+## ⚠ « La cliente ne peut pas proposer de jour » — NON REPRODUIT (23 août 2026)
+
+Son signalement : *« je n'ai pas coché la case pour que la cliente ne puisse pas
+proposer de jour ; néanmoins elle ne peut quand même pas proposer de jour »*.
+Capture à l'appui : deux dates, aucune option pour en proposer une autre.
+
+**Cherché pour de bon, et NON REPRODUIT sur le code du jour.** Ce qui a été
+vérifié, une chose après l'autre :
+
+| Vérifié | Résultat |
+|---|---|
+| l'interrupteur à l'ouverture de la feuille | `true` |
+| ce qui part en base sans y toucher, une date | `true`, et la cliente voit « je propose » |
+| idem avec DEUX dates, comme sur sa capture | `true`, trois options offertes |
+| l'état survit-il à un envoi annulé ? | **non** — il revient à `true` à chaque réouverture |
+| un autre chemin crée-t-il un envoi ? | **non** — un seul appelant en production, à `?? true` |
+
+Son envoi porte donc bien « non autorisé », et **seul un appui réel sur
+l'interrupteur produit cela**. Deux explications tiennent, et rien ne permet de
+trancher d'ici : l'interrupteur a été effleuré (il est juste au-dessus du bouton
+d'envoi), ou son banc servait une version d'avant au moment de cet envoi.
+
+**Ce qui a été livré :** le contrôle qui manquait sur SON chemin. Le refus était
+éprouvé depuis « Choisir la date », l'autorisation depuis l'ancien écran
+seulement — la moitié qui l'intéresse n'était pas tenue. Le nouveau cas a été vu
+rouge sur son symptôme exact.
+
+**Ce qui reste à trancher AVEC LUI :** après l'envoi, rien ne lui dit ce que sa
+cliente pourra faire. Il l'a découvert en ouvrant le lien, et n'avait aucun moyen
+de savoir s'il avait mal visé ou si l'application était en panne. Une maquette
+avant de toucher à l'écran (`CLAUDE.md` §3 bis).
+
 
 ## Arrosage : lire les positions sur une vraie photo (23 août 2026)
 
