@@ -13312,6 +13312,51 @@ que vaut une valeur figée dans une suite plutôt qu'une borne large.
 Les deux défauts plausibles ont été joués : vol d'oiseau au lieu de Manhattan,
 moyenne au lieu de médiane. Chacun fait rougir la suite en nommant le chiffre.
 
+### Un croquis à main levée se lit quand même (23 août 2026)
+
+**Sa correction, et elle allait au fond :** *« il n'arrive pas à me lire mon
+croquis sous prétexte qu'il n'est pas à l'échelle. Ce qui serait bien, c'est
+qu'il arrive à le lire même s'il n'est pas totalement à l'échelle, car les
+utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à chaque fois.
+Là, il y a tous les métrés. »*
+
+Il avait raison. **Les COTES commandent, le dessin ne fait qu'ordonner.** Un
+croquis à main levée dit avec certitude qui est à gauche de qui et qui touche
+quoi ; il ne dit rien de fiable sur les longueurs — c'est justement pour cela
+qu'on y écrit les métrés. Refuser le plan parce que le dessin n'est pas
+proportionné, c'était refuser le croquis pour ce qu'il n'a jamais eu à être.
+
+**Deux règles, désormais, et la sévérité reste où elle sert :**
+
+| | Ce qu'elle sert | Devant un dessin approximatif |
+|---|---|---|
+| `echelleDuCroquis` | le **trajet du regard**, donc la pression, donc l'espacement | refuse — un chiffre faux y coûte un plan faux |
+| `echelleTolerante` | le **dessin** | conclut, et le dit en réserve |
+
+Une pelouse placée un peu de travers se voit et se corrige à l'œil ; une
+pression fausse ne se voit qu'en juillet.
+
+**Trois sources d'échelle, dans cet ordre :** les zones qui portent à la fois
+leur cote et leur proportion ; **la haie**, qui porte sa longueur et dont on
+prend le plus grand côté dessiné ; et, en dernier recours, la plus grande cote
+du croquis rapportée à l'étendue du dessin — un ordre de grandeur, rendu marqué
+« approchée ».
+
+**Ce qui reste refusé, et doit l'être :** un croquis qui ne situe RIEN. Là, il
+n'y a pas d'agencement à reconstituer, seulement à inventer.
+
+**Et le refus n'accuse plus les cotes.** Le message qu'il a vu — *« aucune zone
+du croquis ne porte à la fois ses cotes et sa place »* — désignait ses métrés
+alors qu'ils étaient tous là : le fautif était la lecture, qui n'avait rendu
+aucune proportion. Une erreur qui accuse à tort coûte plus cher que pas d'erreur
+du tout (`CLAUDE.md` §5).
+
+**La consigne au modèle a été reprise en conséquence.** « Tu ne devines jamais »
+ne s'applique PAS aux places : une cote se LIT (illisible = null), une place se
+MESURE sur l'image et se voit toujours dès que la zone est dessinée.
+
+---
+
 ## 150. Le plan se DESSINE : du croquis lu au tracé de la tranchée
 
 **Sa demande du 21 août 2026 :** *« il manque la photo, le schéma avec les
@@ -13417,7 +13462,14 @@ se commande quand même.
 | Ce qui manque | Ce qu'on fait |
 |---|---|
 | l'endroit **définitif** de la nourrice | refus, en le nommant |
-| la position des zones les unes par rapport aux autres | refus, en le nommant |
+| la position des zones les unes par rapport aux autres | **le plan sort sans son dessin**, et l'on dit pourquoi |
+
+**La seconde ligne a changé le 23 août 2026**, et c'est lui qui l'a corrigée.
+Ses trois éléments obligatoires sont les métrés, le piquage et la nourrice ;
+l'AGENCEMENT n'en fait pas partie. Un croquis qui porte les trois donne un plan
+juste — le compte d'arroseurs, les réseaux, les pièces — même si le dessin ne
+peut pas être reconstitué. Tout refuser dans ce cas, c'est ce qu'il a vu :
+*« il n'arrive pas à me lire mon croquis... là, il y a tous les métrés »*.
 
 Le second mérite son existence : le calcul rend `x = 0, y = 0` quand le croquis
 ne situe pas la zone. Deux pelouses se superposeraient alors **exactement**, et

@@ -36,6 +36,20 @@ positions des zones et l'endroit de la nourrice, et **cela n'a pas pu être
 
 Le détail : `ARCHITECTURE.md` §150.
 
+### Lire un croquis à main levée (23 août 2026)
+
+| | État |
+|---|---|
+| Un croquis **pas à l'échelle** se lit quand même | **fait** (`echelleTolerante`) |
+| Le trajet du regard garde sa règle **stricte** | inchangé, et éprouvé |
+| La **haie** donne l'échelle, elle aussi | **fait** |
+| Dernier recours : la plus grande cote sur l'étendue du dessin | **fait**, marqué « approchée » |
+| Un agencement illisible ne retire que le **dessin**, pas le plan | **fait** |
+| Le refus n'accuse plus les cotes quand elles sont là | **fait** |
+| Les **trois points qui soufflent** pendant la lecture | **fait** (`PointsQuiSoufflent`) |
+
+Le détail : `ARCHITECTURE.md` §149.
+
 ### Ses deux corrections du 23 août
 
 | | État |

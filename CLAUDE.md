@@ -341,6 +341,20 @@ au mauvais endroit, et une tranchée ne se déplace pas.
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
 
+**UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME — sa correction du 23 août 2026 :**
+*« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à
+chaque fois ; là, il y a tous les métrés »*. **Les cotes commandent, le dessin
+ne fait qu'ordonner.** Ne jamais refuser un plan parce que le dessin n'est pas
+proportionné : le placer d'après ses cotes et le DIRE en réserve.
+
+La sévérité reste sur le **trajet du regard** — lui entre dans le calcul de
+pression, et un chiffre faux y coûte un plan faux. Une pelouse placée de travers
+se voit à l'œil ; une pression fausse ne se voit qu'en juillet.
+
+**Et l'agencement n'est pas l'un des trois éléments obligatoires.** Métrés,
+piquage, nourrice : ceux-là retirent le plan. Un agencement illisible ne retire
+que le DESSIN — le plan sort, et l'on dit pourquoi il n'est pas dessiné.
+
 **LA PLUVIOMÉTRIE NE SÉPARE PAS DEUX VANNES — sa décision du 23 août 2026 :**
 *« ne prends pas en compte la pluviométrie »*. Elle était dans la clé de secteur
 depuis le 17 août, mise par lui (« ça ne se mélange jamais ») ; il l'a retirée le

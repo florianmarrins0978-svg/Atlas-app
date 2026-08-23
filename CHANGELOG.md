@@ -9,6 +9,47 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Un croquis à main levée se lit quand même — et l'attente souffle
+
+**Sa correction :** *« il n'arrive pas à me lire mon croquis sous prétexte qu'il
+n'est pas à l'échelle. Les utilisateurs ne vont pas s'amuser à faire des croquis
+à l'échelle à chaque fois. Là, il y a tous les métrés. »*
+
+**Les cotes commandent, le dessin ne fait qu'ordonner.** Un croquis à main levée
+dit avec certitude qui est à gauche de qui ; il ne dit rien de fiable sur les
+longueurs — c'est pour cela qu'on y écrit les métrés. Le plan n'est donc plus
+refusé parce que le dessin n'est pas proportionné : les zones sont posées
+d'après leurs cotes, et l'écart se dit en réserve.
+
+**La sévérité reste où elle sert** : le trajet du regard, qui entre dans le
+calcul de pression, garde sa règle stricte. Une pelouse placée de travers se
+voit à l'œil ; une pression fausse ne se voit qu'en juillet.
+
+**La haie donne l'échelle, elle aussi.** Sur son croquis elle longe tout le haut
+du terrain et porte sa longueur : la lui refuser jetait la moitié de ce que le
+dessin disait.
+
+**Et l'agencement n'est plus un motif de tout refuser.** Métrés, piquage,
+nourrice restent obligatoires ; un agencement illisible ne retire que le DESSIN.
+Le plan sort — arroseurs, réseaux, pièces — et l'on dit pourquoi il n'est pas
+dessiné.
+
+**Le message accusait le mauvais coupable.** *« Aucune zone du croquis ne porte
+à la fois ses cotes et sa place »* désignait ses métrés alors qu'ils étaient
+tous là : le fautif était la lecture, qui n'avait rendu aucune proportion. La
+consigne au modèle a été reprise — « tu ne devines jamais » ne s'applique pas
+aux places, qui se mesurent sur l'image.
+
+**Et l'attente souffle.** *« Lors de la lecture du croquis, mets les trois
+petits points qui bougent. »* Trois points de suspension immobiles étaient
+exactement le défaut relevé le 13 août sur la dictée : ils disent « rien ne se
+passe » pendant que le travail est en cours, et la lecture d'un croquis est la
+plus longue attente de l'application. Le geste est partagé
+(`PointsQuiSoufflent`), jamais recopié.
+
+Détail : `ARCHITECTURE.md` §149 et §150.
+
+
 ### Le plan d'arrosage se DESSINE, à la forme du jardin lu
 
 **Son feu vert :** *« très bien, tu peux coder la maquette »*, après sa demande
@@ -200,9 +241,6 @@ ceux qui réclamaient le refus vérifient désormais l'avertissement et la
 possibilité de passer outre.
 
 ---
-
-## 2026-08-23
-
 ### Le temps passé se masque au client — codé, et il reste au patron
 
 **Sa demande du 22 août, puis ses deux corrections du 23** devant la planche 92 :

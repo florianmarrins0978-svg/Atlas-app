@@ -39,7 +39,8 @@ export type EtatPlan =
        * le croquis porte les trois éléments obligatoires ; sinon l'écran
        * n'arrive jamais ici, il refuse (`CLAUDE.md` §4 bis).
        */
-      dessin: Dessin;
+      /** `null` quand le croquis ne permet pas de reconstituer l'agencement. */
+      dessin: Dessin | null;
       plan: {
         debitDisponible: number;
         secteurs: { nom: string; debit: number; famille: string; part: string | null }[];
@@ -177,6 +178,10 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     hauteurFraction: z.hauteurFraction,
     L: z.L,
     l: z.l,
+    // **La haie aussi donne l'échelle** (23 août 2026). Sur son croquis, elle
+    // longe tout le haut du terrain et porte sa longueur : la lui refuser
+    // jetait la moitié de ce que le dessin disait.
+    ml: z.ml,
   }));
   const trajet = trajetLePlusLong(lu.croquis.nourrice, places);
   const terrain = poserSurLeTerrain(lu.croquis.nourrice, places);
@@ -259,7 +264,19 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // plan entier : une liste de pièces sans tracé se commande quand même, et
   // c'est ce qu'il a refusé le 21 août (« il n'est pas valable avec cette
   // nouvelle règle »). On dit lequel des trois manque, et l'on s'arrête.
-  if (!terrain.ok) return { etat: "refus", raison: terrain.raison };
+  // **LE DESSIN PEUT MANQUER SANS QUE LE PLAN TOMBE** — sa correction du
+  // 23 août 2026. Ses trois éléments obligatoires sont les métrés, le piquage
+  // et l'endroit de la nourrice ; l'AGENCEMENT n'en fait pas partie. Un croquis
+  // qui les porte tous les trois donne un plan juste — le compte d'arroseurs,
+  // les réseaux, les pièces — même si le dessin ne peut pas être reconstitué.
+  //
+  // Refuser tout dans ce cas, c'est ce qu'il a vu : *« il n'arrive pas à me
+  // lire mon croquis... là, il y a tous les métrés »*. Il avait raison.
+  if (!terrain.ok) {
+    reserves.push(`${terrain.raison} : le plan est calculé, mais il n’est pas dessiné`);
+    return { etat: "lu", zones: lu.croquis.zones, reserves, dessin: null, plan: leCalcul(plan) };
+  }
+  if (terrain.terrain.reserve) reserves.push(terrain.terrain.reserve);
   const dessine = dessinerPlan(
     plan.dessin as ZoneDessinee[],
     // **La nourrice EN MÈTRES**, sur le même repère que les zones. Lui passer
@@ -268,7 +285,13 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     terrain.terrain.nourrice,
     plan.couleurs as string[]
   );
-  if (!dessine.ok) return { etat: "refus", raison: dessine.raison };
+  // Idem si le tracé lui-même n'aboutit pas : c'est le dessin qui manque, pas
+  // le plan. Seule l'absence de nourrice retire tout (`CLAUDE.md` §4 bis), et
+  // elle est refusée plus haut, à la lecture.
+  if (!dessine.ok) {
+    reserves.push(`${dessine.raison} Le plan est calculé, mais il n’est pas dessiné.`);
+    return { etat: "lu", zones: lu.croquis.zones, reserves, dessin: null, plan: leCalcul(plan) };
+  }
   reserves.push(...dessine.reserves);
 
   return {
@@ -276,25 +299,39 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     zones: lu.croquis.zones,
     reserves,
     dessin: dessine.dessin,
-    plan: {
-      debitDisponible: plan.debitDisponible,
-      secteurs: plan.secteurs,
-      voies: plan.voies,
-      couleurs: plan.couleurs,
-      materiel: plan.materiel,
-      tuyau: {
-        seuil25: plan.amenee.longueurMax25,
-        seuil32: plan.amenee.longueurMax32,
-        debit: plan.amenee.debit,
-        insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
-        // **Le calcul repris n'est pas typé** (`allowJs`, `checkJs` coupé) : il
-        // rend une chaîne. On la RESSERRE ici plutôt que d'élargir le type de
-        // l'écran — c'est la frontière, et c'est là qu'un « tuyeau » mal
-        // orthographié doit tomber, pas trois écrans plus loin.
-        limitePar: plan.limitePar === "tuyau" ? "tuyau" : "source",
-        plafond: plan.limiteDuTuyau,
-      },
-      pressionAuxArroseurs: plan.pressionAuxArroseurs,
+    plan: leCalcul(plan),
+  };
+}
+
+/**
+ * Ce que le calcul rend à l'écran — la même forme, que le plan soit dessiné ou
+ * non.
+ *
+ * **Sortie en fonction le 23 août 2026**, quand le dessin est devenu facultatif :
+ * trois sorties le construisaient, et trois copies d'une même mise en forme
+ * finissent toujours par diverger (`CLAUDE.md` §3). Ici, le risque était
+ * concret : un croquis non dessinable aurait rendu un plan aux champs
+ * légèrement différents de celui d'un croquis dessinable.
+ */
+function leCalcul(plan: ReturnType<typeof calculerPlan>) {
+  return {
+    debitDisponible: plan.debitDisponible,
+    secteurs: plan.secteurs,
+    voies: plan.voies,
+    couleurs: plan.couleurs,
+    materiel: plan.materiel,
+    tuyau: {
+      seuil25: plan.amenee.longueurMax25,
+      seuil32: plan.amenee.longueurMax32,
+      debit: plan.amenee.debit,
+      insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
+      // **Le calcul repris n'est pas typé** (`allowJs`, `checkJs` coupé) : il
+      // rend une chaîne. On la RESSERRE ici plutôt que d'élargir le type de
+      // l'écran — c'est la frontière, et c'est là qu'un « tuyeau » mal
+      // orthographié doit tomber, pas trois écrans plus loin.
+      limitePar: (plan.limitePar === "tuyau" ? "tuyau" : "source") as "tuyau" | "source",
+      plafond: plan.limiteDuTuyau,
     },
+    pressionAuxArroseurs: plan.pressionAuxArroseurs,
   };
 }
