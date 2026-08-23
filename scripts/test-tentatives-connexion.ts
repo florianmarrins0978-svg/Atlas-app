@@ -19,6 +19,7 @@ import {
   echecsRetenus,
   etatApresEchec,
   messageAttente,
+  porteeTemporisation,
   type EtatTentatives,
 } from "../src/lib/tentatives-connexion";
 
@@ -151,6 +152,41 @@ essai("il dit aussi que quelqu'un essaie d'entrer — le taire serait pire", () 
 
 essai("jamais « dans 0 minute »", () => {
   assert.match(messageAttente(1), /1 minute\b/);
+});
+
+// ─── SUR QUOI on compte — la panne du 6 août, réparée une seconde fois ──────
+//
+// La temporisation par compte, écrite le 23 août, refaisait le défaut du
+// 6 août : le banc partage un compte unique, donc cinq fautes de n'importe qui
+// temporisaient tout le monde. `test-connexion-limite-e2e.ts` l'a attrapé.
+// **Les deux moitiés comptent, et il faut les deux.**
+
+essai("HORS PRODUCTION, deux visiteurs ne partagent pas le même compteur", () => {
+  const a = porteeTemporisation({ email: "demo@atlas.local", source: "essai:203.0.113.1", horsProduction: true });
+  const b = porteeTemporisation({ email: "demo@atlas.local", source: "essai:203.0.113.2", horsProduction: true });
+  assert.notEqual(a, b, "les erreurs d'un visiteur du banc temporisent les autres");
+});
+
+essai("EN PRODUCTION, c'est le COMPTE et lui seul", () => {
+  // Sinon il suffirait de changer d'adresse à chaque essai : c'est exactement
+  // l'attaque répartie que cette couche existe pour casser.
+  const a = porteeTemporisation({ email: "patron@exemple.fr", source: "ip:203.0.113.1", horsProduction: false });
+  const b = porteeTemporisation({ email: "patron@exemple.fr", source: "ip:198.51.100.9", horsProduction: false });
+  assert.equal(a, b, "changer d'adresse offre un compteur neuf : la protection ne tient plus");
+});
+
+essai("deux comptes différents ne se gênent jamais, nulle part", () => {
+  for (const horsProduction of [true, false]) {
+    const a = porteeTemporisation({ email: "un@exemple.fr", source: "ip:203.0.113.1", horsProduction });
+    const b = porteeTemporisation({ email: "deux@exemple.fr", source: "ip:203.0.113.1", horsProduction });
+    assert.notEqual(a, b);
+  }
+});
+
+essai("la casse et les espaces ne fabriquent pas une portée neuve", () => {
+  const a = porteeTemporisation({ email: " Demo@Atlas.LOCAL ", source: "ip:1.2.3.4", horsProduction: false });
+  const b = porteeTemporisation({ email: "demo@atlas.local", source: "ip:1.2.3.4", horsProduction: false });
+  assert.equal(a, b);
 });
 
 console.log("");

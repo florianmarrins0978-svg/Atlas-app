@@ -24,15 +24,21 @@ import {
  */
 
 /**
- * L'empreinte d'une saisie.
+ * L'empreinte d'une portée de comptage.
  *
  * Normalisée d'abord — `Jean@Atlas.LOCAL ` et `jean@atlas.local` sont la même
  * tentative, et compter séparément offrirait autant de compteurs neufs qu'il y
  * a de façons d'écrire une adresse. C'est exactement le contournement que ce
  * lot ferme du côté de `x-forwarded-for` ; il n'a pas à se rouvrir ici.
+ *
+ * **Ce dépôt ne décide PAS sur quoi on compte.** Il reçoit une portée déjà
+ * composée — `porteeTemporisation` dans `src/lib/tentatives-connexion.ts` —
+ * parce que la réponse dépend de l'environnement : le compte seul en
+ * production, le compte ET la source ailleurs. Ce choix est une règle métier,
+ * il vit avec les autres, éprouvé sans base.
  */
-export function empreinteDe(email: string): string {
-  return createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
+export function empreinteDe(portee: string): string {
+  return createHash("sha256").update(portee.trim().toLowerCase()).digest("hex");
 }
 
 async function lire(empreinte: string): Promise<EtatTentatives | null> {
@@ -60,9 +66,9 @@ async function lire(empreinte: string): Promise<EtatTentatives | null> {
  * n'en a fait aucune — une erreur qui accuse à tort coûte plus cher que pas
  * d'erreur du tout (`AGENTS.md`).
  */
-export async function attenteAvantEssai(email: string, maintenant = new Date()): Promise<number | null> {
+export async function attenteAvantEssai(portee: string, maintenant = new Date()): Promise<number | null> {
   try {
-    return attenteRestanteMs(await lire(empreinteDe(email)), maintenant);
+    return attenteRestanteMs(await lire(empreinteDe(portee)), maintenant);
   } catch {
     return null;
   }
@@ -74,8 +80,8 @@ export async function attenteAvantEssai(email: string, maintenant = new Date()):
  * **Ne lève jamais.** Un compteur qui tombe ne doit pas transformer un mot de
  * passe faux en écran d'erreur : le refus doit rester lisible.
  */
-export async function noterEchec(email: string, maintenant = new Date()): Promise<void> {
-  const empreinte = empreinteDe(email);
+export async function noterEchec(portee: string, maintenant = new Date()): Promise<void> {
+  const empreinte = empreinteDe(portee);
   try {
     /**
      * **Lire et écrire dans la MÊME transaction, la ligne verrouillée.**
@@ -143,9 +149,9 @@ export async function noterEchec(email: string, maintenant = new Date()): Promis
  * de plus qu'une ligne absente, et la laisser ferait grossir la table pour
  * chaque adresse jamais tapée à côté.
  */
-export async function oublierEchecs(email: string): Promise<void> {
+export async function oublierEchecs(portee: string): Promise<void> {
   try {
-    await db.delete(tentativesConnexion).where(eq(tentativesConnexion.empreinte, empreinteDe(email)));
+    await db.delete(tentativesConnexion).where(eq(tentativesConnexion.empreinte, empreinteDe(portee)));
   } catch {
     // Idem : ne jamais faire échouer une connexion réussie sur un ménage.
   }

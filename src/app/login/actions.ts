@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
 import { getEnv } from "@/server/env";
-import { messageAttente as messageTemporisation } from "@/lib/tentatives-connexion";
+import { messageAttente as messageTemporisation, porteeTemporisation } from "@/lib/tentatives-connexion";
 import { sourceDepuisEntetes } from "@/lib/source-visiteur";
 import { attenteAvantEssai, noterEchec, oublierEchecs } from "@/server/repositories/tentatives-connexion";
 
@@ -98,19 +98,29 @@ function messageAttente(secondes: number): string {
  * mais moins finement. Le compteur par compte, lui, ne dépend de rien de tout
  * cela (voir plus bas).
  */
-async function sourceDuVisiteur(): Promise<string> {
+async function sourceDuVisiteur(horsProduction: boolean): Promise<string> {
   const entetes = await headers();
   // La règle vit dans `src/lib/source-visiteur.ts` — fonction pure, éprouvée
   // sans requête HTTP. Ici, on ne fait que lui donner ce que le serveur voit.
   return sourceDepuisEntetes({
     xff: entetes.get("x-forwarded-for"),
     sauts: getEnv().proxySauts,
-    // **Sur un banc, on distingue encore les visiteurs par leur adresse.**
-    // Sans cela, tout le monde retomberait dans le même seau — cinq essais à se
-    // partager sur un compte de démonstration unique, c'est-à-dire la panne du
-    // 6 août 2026, recréée par le remède. Voir `src/lib/source-visiteur.ts`.
-    horsProduction: getEnv().nodeEnv !== "production" || getEnv().bancDEssai,
+    horsProduction,
   });
+}
+
+/**
+ * Sommes-nous ailleurs qu'en production réelle ?
+ *
+ * **Une seule notion, deux usages**, et il ne faut pas qu'ils divergent : elle
+ * décide si l'on distingue encore les visiteurs par leur adresse, ET sur quoi
+ * la temporisation se compte. Les deux répondent à la même question — « ce
+ * serveur sert-il de vrais clients ? » — et un banc d'essai, qui sert une
+ * version bâtie, répond non malgré son `NODE_ENV`.
+ */
+function horsProductionReelle(): boolean {
+  const env = getEnv();
+  return env.nodeEnv !== "production" || env.bancDEssai;
 }
 
 export async function connexionAction(
@@ -124,7 +134,8 @@ export async function connexionAction(
 
   // Par visiteur d'abord — c'est ce seuil qui protège du martèlement, et lui
   // seul peut bloquer quelqu'un de bonne foi, d'où un message qui le dit.
-  const source = await sourceDuVisiteur();
+  const horsProduction = horsProductionReelle();
+  const source = await sourceDuVisiteur(horsProduction);
   const parVisiteur = await verifierLimite(`connexion:${email}:${source}`, LIMITES.connexion);
   if (!parVisiteur.autorise) {
     logger.warn("Limite de tentatives de connexion atteinte (visiteur)", { email });
@@ -165,7 +176,19 @@ export async function connexionAction(
    * **Posée AVANT `signIn`**, donc avant toute comparaison de condensat : c'est
    * ce qui rend la temporisation réelle plutôt que cosmétique.
    */
-  const attente = await attenteAvantEssai(email);
+  /**
+   * **SUR QUOI on compte, et pourquoi ce n'est pas toujours le seul compte.**
+   *
+   * La règle vit dans `src/lib/tentatives-connexion.ts` et s'y explique : le
+   * compte seul en production — c'est ce qui casse une attaque répartie sur
+   * beaucoup d'adresses —, le compte ET la source ailleurs, pour que les
+   * visiteurs d'un banc partageant un compte unique ne se verrouillent pas les
+   * uns les autres. C'est l'invariant du 6 août 2026, et une suite le tient
+   * (`test-connexion-limite-e2e.ts`).
+   */
+  const portee = porteeTemporisation({ email, source, horsProduction });
+
+  const attente = await attenteAvantEssai(portee);
   if (attente !== null) {
     logger.warn("Connexion temporisée : trop d'échecs consécutifs sur ce compte", { email });
     return { erreur: messageTemporisation(attente) };
@@ -185,7 +208,7 @@ export async function connexionAction(
         // base couchée ou un secret manquant ne sont pas des essais ratés :
         // les compter temporiserait l'artisan pour une panne qui n'est pas la
         // sienne — le piège que la branche du dessous existe pour éviter.
-        await noterEchec(email);
+        await noterEchec(portee);
         return { erreur: MESSAGE_GENERIQUE };
       }
       // Bruyant à dessein : c'est la seule trace qui restera, et le message
@@ -204,7 +227,7 @@ export async function connexionAction(
   // se trompe quatre fois puis se rappelle son mot de passe ne doit pas rester
   // à un doigt de la temporisation pendant l'heure qui suit. Posé avant
   // `redirect()`, qui lève et ne rend jamais la main.
-  await oublierEchecs(email);
+  await oublierEchecs(portee);
   redirect("/");
 }
 

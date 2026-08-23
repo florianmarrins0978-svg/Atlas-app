@@ -112,3 +112,48 @@ export function messageAttente(resteMs: number): string {
     `Si ce n'est pas vous qui venez d'essayer, quelqu'un cherche à entrer : changez votre mot de passe dès que vous le pourrez.`
   );
 }
+
+/**
+ * SUR QUOI la temporisation se compte — et pourquoi ce n'est pas toujours le
+ * seul compte.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **Le défaut que ce réglage répare, et il a été trouvé par une suite du dépôt,
+ * pas par une relecture.** `test-connexion-limite-e2e.ts` tient depuis le
+ * 6 août 2026 l'invariant que le patron a payé d'une soirée : *les erreurs d'un
+ * visiteur ne verrouillent pas les autres*. Ce jour-là, il avait donné
+ * l'adresse à ses parents, qui ont lu « mot de passe incorrect » avec le bon
+ * mot de passe.
+ *
+ * La temporisation par compte, telle qu'elle a été écrite le 23 août, la
+ * refaisait exactement : **le banc d'essai partage un compte unique**, donc
+ * cinq fautes de n'importe qui temporisaient tout le monde. La suite est
+ * devenue rouge, et elle avait raison.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE QU'ON NE POUVAIT PAS FAIRE : relâcher en production.** Compter par
+ * (compte × source) partout, c'est rouvrir la porte qu'on vient de fermer —
+ * il suffirait de changer d'adresse à chaque essai, ce que fait n'importe
+ * quelle attaque répartie. Le compte est la SEULE clé qui tient contre elle.
+ *
+ * D'où la distinction, et elle ne coûte rien :
+ *
+ * | | Ce qu'on compte |
+ * |---|---|
+ * | **En production** | le compte, et lui seul — l'attaque répartie s'y casse |
+ * | **Hors production, banc compris** | le compte ET la source — les visiteurs ne se gênent plus |
+ *
+ * **Ce que le banc perd, dit franchement : rien.** Son mot de passe est écrit
+ * dans un dépôt public et son adresse est ouverte ; il n'y a pas de compte à
+ * protéger. Ce qu'il gagne, c'est de rester utilisable à plusieurs — ce pour
+ * quoi il existe.
+ */
+export function porteeTemporisation(entree: {
+  email: string;
+  /** Ce que rend `sourceDepuisEntetes` — jamais une valeur brute du client. */
+  source: string;
+  horsProduction: boolean;
+}): string {
+  const compte = entree.email.trim().toLowerCase();
+  return entree.horsProduction ? `${compte}|${entree.source}` : compte;
+}
