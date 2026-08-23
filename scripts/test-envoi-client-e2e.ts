@@ -468,6 +468,67 @@ async function main() {
     await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
+  await test("SANS RIEN TOUCHER, la cliente peut proposer un jour — son défaut du 23 août", async () => {
+    // **Son signalement, mot pour mot :** *« je n'ai pas coché la case pour que
+    // la cliente ne puisse pas proposer de jour ; néanmoins elle ne peut quand
+    // même pas proposer de jour »*.
+    //
+    // **Ce cas manquait, et c'est tout le sujet.** Le refus était éprouvé depuis
+    // cet écran-ci (le cas juste en dessous), et l'autorisation depuis l'ANCIEN
+    // écran d'envoi seulement. Or c'est par « Choisir la date » que le patron
+    // envoie désormais : le chemin qu'il emprunte tous les jours n'avait aucun
+    // contrôle sur la moitié qui l'intéresse — celle où il ne touche à rien.
+    //
+    // **On ne touche donc à RIEN**, délibérément : pas un appui sur
+    // l'interrupteur. C'est la seule façon d'éprouver ce que voit un client
+    // quand le patron n'a rien décidé, qui est le cas courant.
+    const url = await creerChantierFacturable(page, "porte-restee-ouverte");
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.click("text=Choisir la date");
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
+
+    // Deux dates, comme sur sa capture — un seul jour proposé change le libellé
+    // du choix, et un contrôle qui n'éprouve qu'une forme laisse passer l'autre.
+    const cases = page.locator('[data-jour][data-etat="regardable"]');
+    const plancher = new Date();
+    plancher.setDate(plancher.getDate() + 3);
+    const depuis = plancher.toISOString().slice(0, 10);
+    const libres = (
+      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => j >= depuis);
+    assert.ok(libres.length >= 2, `pas assez de jours libres au calendrier (${libres.length})`);
+    for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
+
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+    const message = decodeURIComponent(
+      (await page.locator("a[data-transmission]").getAttribute("href")) ?? ""
+    );
+    const debut = message.indexOf("/devis/");
+    assert.ok(debut >= 0, `aucun lien de devis dans le message : ${message.slice(0, 90)}`);
+    const chemin = message.slice(debut).split(/\s/)[0];
+
+    const sansCompte = await browser.newContext();
+    const pageClient = await sansCompte.newPage();
+    await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
+    const vu = await pageClient.locator("body").innerText();
+
+    assert.strictEqual(
+      await pageClient.locator('input[name="choixDate"][value="autre"]').count(),
+      1,
+      "La cliente ne peut PAS proposer de jour alors que le patron n'a rien refusé. " +
+        `C'est son défaut du 23 août, et voici ce qu'elle voit : ${JSON.stringify(vu.slice(0, 260))}`
+    );
+    assert.strictEqual(
+      await pageClient.locator('input[name="choixDate"]').count(),
+      3,
+      "il manque une option : deux dates proposées, plus « j'en propose une autre »"
+    );
+    await sansCompte.close();
+  });
+
   await test("refusé, le client ne voit AUCUN calendrier sur son lien", async () => {
     const url = await creerChantierFacturable(page, "sans-calendrier");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });

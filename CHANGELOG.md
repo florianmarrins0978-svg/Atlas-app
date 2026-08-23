@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### « La cliente ne peut pas proposer de jour » — le contrôle qui manquait sur son chemin
+
+Son signalement, capture à l'appui : *« je n'ai pas coché la case pour que la
+cliente ne puisse pas proposer de jour ; néanmoins elle ne peut quand même pas
+proposer de jour »*.
+
+**Cherché pour de bon, et NON REPRODUIT sur le code du jour** — c'est écrit ici
+plutôt qu'annoncé corrigé, parce qu'une réparation supposée lui coûterait l'essai
+puis l'aller-retour. Vérifié une chose après l'autre : l'interrupteur est ouvert
+à chaque ouverture de la feuille, ce qui part en base vaut « autorisé » sans y
+toucher — avec une date comme avec deux —, l'état ne survit pas à un envoi
+annulé, et un seul chemin de production crée un envoi. Son envoi porte pourtant
+« non autorisé », ce que seul un appui réel sur l'interrupteur produit.
+
+**Ce qui manquait vraiment, et qui est livré :** le refus était éprouvé depuis
+« Choisir la date », mais l'autorisation depuis l'ANCIEN écran d'envoi
+seulement. Le chemin qu'il emprunte tous les jours n'avait donc aucun contrôle
+sur la moitié qui l'intéresse — celle où il ne touche à rien. Le nouveau cas ne
+touche à rien, délibérément, et il a été vu rouge sur son symptôme exact : deux
+dates, aucune option pour en proposer une autre.
+
+**Reste à trancher avec lui :** après l'envoi, rien ne lui dit ce que sa cliente
+pourra faire. Il l'a découvert en ouvrant le lien — sans pouvoir distinguer un
+appui malheureux d'une panne. Une maquette avant de toucher à l'écran.
+
+
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
 *« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
