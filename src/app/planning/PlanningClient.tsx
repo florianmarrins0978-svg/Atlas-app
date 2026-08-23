@@ -1076,29 +1076,43 @@ function AjoutAuJour({
   cle: string;
   jour: JourIso;
 } & Pick<GestesCarte, "ouvert" | "setOuvert" | "sansDate" | "poser">) {
+  // ─── RIEN À AJOUTER : PAS DE GESTE ────────────────────────────────────────
+  //
+  // **Sa remarque du 23 août 2026 :** *« lorsqu'aucun chantier n'attend de
+  // jour, il ne faudrait pas que le bouton "Ajouter un chantier" apparaisse à
+  // l'écran, car il peut nous induire en erreur »*.
+  //
+  // Et il a raison au sens strict : ce geste ne CRÉE rien. Il ouvre la liste
+  // des chantiers qui attendent une date, et les pose sur la journée. Sans
+  // aucun chantier en attente, il ne pouvait mener qu'à « Aucun chantier
+  // n'attend de jour » — un cul-de-sac qui promet un chantier de plus et rend
+  // une phrase. Pire : la même phrase s'écrivait déjà sous « Sans date », deux
+  // lignes plus bas, si bien que l'écran la disait deux fois.
+  //
+  // **Le bouton ne se grise pas, il DISPARAÎT.** Un rond doré éteint reste un
+  // rond doré : on appuie dessus pour savoir pourquoi il est éteint, et l'on
+  // retombe dans le même cul-de-sac par un chemin plus long.
+  if (sansDate.length === 0) return null;
+
   return (
     <>
       {ouvert?.quoi === "ajout-qui" && ouvert.cle === cle ? (
         <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
-          {sansDate.length === 0 ? (
-            <p className="m-0 text-[12px]" style={{ color: colors.muted }}>
-              Aucun chantier n’attend de jour.
-            </p>
-          ) : (
-            <Choisir>
-              {sansDate.map((s) => (
-                <Petit
-                  key={s.id}
-                  data-qui={s.id}
-                  onClick={() =>
-                    setOuvert({ quoi: "ajout-quand", cle, chantierId: s.id })
-                  }
-                >
-                  {s.nom}
-                </Petit>
-              ))}
-            </Choisir>
-          )}
+          {/* Plus de repli « Aucun chantier n'attend de jour » ici : on n'y
+              arrive plus, puisque le geste lui-même n'existe pas dans ce cas.
+              Le laisser aurait été une branche morte — et surtout la promesse
+              qu'on peut encore tomber sur ce cul-de-sac. */}
+          <Choisir>
+            {sansDate.map((s) => (
+              <Petit
+                key={s.id}
+                data-qui={s.id}
+                onClick={() => setOuvert({ quoi: "ajout-quand", cle, chantierId: s.id })}
+              >
+                {s.nom}
+              </Petit>
+            ))}
+          </Choisir>
         </div>
       ) : ouvert?.quoi === "ajout-quand" && ouvert.cle === cle ? (
         // **Le nom choisi prend la forme des autres lignes** — sa demande du

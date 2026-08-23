@@ -652,6 +652,90 @@ async function main() {
     assert.equal(c.duree_demi_journees, 1);
   });
 
+  // ─── RIEN À POSER : LE GESTE DISPARAÎT ──────────────────────────────────
+  //
+  // **Sa remarque du 23 août 2026 :** *« lorsqu'aucun chantier n'attend de
+  // jour, il ne faudrait pas que le bouton "Ajouter un chantier" apparaisse à
+  // l'écran, car il peut nous induire en erreur »*.
+  //
+  // Ce geste ne CRÉE pas de chantier : il pose sur la journée un chantier qui
+  // attend déjà une date. Sans aucun chantier en attente, il ne menait qu'à
+  // « Aucun chantier n'attend de jour » — une promesse suivie d'un refus.
+  //
+  // **L'état s'installe par la base, et se rend en partant.** Le compte de
+  // démonstration est partagé par les cent quatre suites : dater tous ses
+  // chantiers le temps d'une mesure est le seul moyen d'atteindre le cas zéro
+  // sans dépendre de ce qu'une autre suite y a laissé. Les dates retirées sont
+  // relevées AVANT, et remises après, y compris si la mesure échoue.
+  await essai("aucun chantier en attente : plus de « Ajouter un chantier »", async () => {
+    const { rows: entreprise } = await pool.query(
+      `SELECT entreprise_id FROM chantiers WHERE id = $1`,
+      [chantierId]
+    );
+    const entrepriseId = entreprise[0].entreprise_id as string;
+
+    // Ce qu'on va dater, pour pouvoir le rendre exactement.
+    const { rows: sansDate } = await pool.query(
+      `SELECT id FROM chantiers WHERE entreprise_id = $1 AND date_planifiee IS NULL`,
+      [entrepriseId]
+    );
+    const rendus = sansDate.map((r) => r.id as string);
+
+    try {
+      // **On ne rejoue PAS la règle « à planifier » ici.** Elle vit dans
+      // `getPlanificationEtat`, et la recopier en SQL serait la seconde
+      // implémentation que `CLAUDE.md` §3 interdit. On force un état où elle
+      // ne peut que rendre « aucun » : tout chantier porte une date.
+      if (rendus.length > 0) {
+        await pool.query(
+          `UPDATE chantiers SET date_planifiee = $2 WHERE id = ANY($1::uuid[])`,
+          [rendus, JOUR]
+        );
+      }
+      await allerAuPlanning();
+      await toucherLeJour(JOUR);
+      await page.waitForSelector('[data-atlas="carte-jour"]', { timeout: 15_000 });
+
+      // **La liste « Sans date » sert de témoin.** Sans elle, un écran qui
+      // n'aurait rien rendu du tout compterait zéro bouton et passerait au
+      // vert : un contrôle qui mesure zéro ne mesure rien (`CLAUDE.md` §5).
+      const temoin = await page.locator('[data-atlas="sans-date"]').count();
+      assert.equal(temoin, 0, `${temoin} chantier(s) attendent encore un jour : l'état n'est pas celui qu'on mesure`);
+      const carte = await page.locator('[data-atlas="carte-jour"]').count();
+      assert.ok(carte >= 1, "la fiche du jour ne s'est pas ouverte : il n'y a rien à mesurer");
+
+      const boutons = await page.locator('[data-atlas="ajouter"]').count();
+      assert.equal(
+        boutons,
+        0,
+        `${boutons} bouton(s) « Ajouter un chantier » sur un écran où rien n'attend de jour : ` +
+          "il promet un chantier de plus et ne rend qu'une phrase"
+      );
+    } finally {
+      // Hors du `try` : une mesure ratée ne doit pas laisser les chantiers du
+      // compte de démonstration datés pour les suites suivantes.
+      if (rendus.length > 0) {
+        await pool.query(
+          `UPDATE chantiers SET date_planifiee = NULL WHERE id = ANY($1::uuid[])`,
+          [rendus]
+        );
+      }
+    }
+  });
+
+  // **Et il revient dès qu'il y a de quoi poser** — sans quoi la mesure
+  // d'au-dessus serait satisfaite par un bouton retiré pour de bon.
+  await essai("un chantier en attente le fait revenir", async () => {
+    await pool.query(`UPDATE chantiers SET date_planifiee = NULL WHERE id = $1`, [chantierId]);
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
+    await page.waitForSelector('[data-atlas="carte-jour"]', { timeout: 15_000 });
+    const boutons = await page.locator('[data-atlas="ajouter"]').count();
+    assert.ok(boutons >= 1, "le geste d'ajout n'est pas revenu alors qu'un chantier attend un jour");
+    // On rend le chantier à sa journée pour la suite du parcours.
+    await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [chantierId, JOUR]);
+  });
+
   // ─── LA SEMAINE — elle ne gouverne QUE les planifiés ────────────────────
 
   await essai("toucher un jour du mois amène la liste sur SA semaine", async () => {

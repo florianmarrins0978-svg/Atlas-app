@@ -7,6 +7,36 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-23
+
+### Rien à poser : le geste « Ajouter un chantier » disparaît
+
+**Sa remarque, capture à l'appui :** *« lorsqu'aucun chantier n'attend de jour,
+il ne faudrait pas que le bouton "Ajouter un chantier" apparaisse à l'écran, car
+il peut nous induire en erreur »*.
+
+**Il avait raison au sens strict, et c'est ce qui rend la correction évidente :
+ce geste ne CRÉE pas de chantier.** Il ouvre la liste de ceux qui attendent une
+date, et les pose sur la journée. Sans aucun chantier en attente, il ne pouvait
+mener qu'à « Aucun chantier n'attend de jour » — une promesse suivie d'un refus.
+Et la même phrase s'écrivait déjà sous « Sans date », deux lignes plus bas :
+l'écran la disait deux fois.
+
+**Le bouton DISPARAÎT, il ne se grise pas.** Un rond doré éteint reste un rond
+doré : on appuie dessus pour savoir pourquoi il est éteint, et l'on retombe dans
+le même cul-de-sac par un chemin plus long.
+
+Le repli « Aucun chantier n'attend de jour » qui vivait dans ce geste est retiré
+avec lui : on ne peut plus y arriver, et le garder aurait été une branche morte.
+
+**Deux mesures, et la seconde tient la première.** L'une éprouve qu'aucun bouton
+ne subsiste quand rien n'attend — l'état est installé par la base, puis rendu, y
+compris si la mesure échoue, car le compte de démonstration sert aux cent quatre
+suites. L'autre éprouve qu'il **revient** dès qu'un chantier attend : sans elle,
+un bouton supprimé pour de bon passerait au vert.
+
+---
+
 ## 2026-08-22
 
 ### Le mode nuit se lit — huit couleurs claires écrites en dur, et trois signaux tenus pour immuables

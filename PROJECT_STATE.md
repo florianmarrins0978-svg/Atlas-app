@@ -12,6 +12,16 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le planning ne promet plus ce qu'il ne peut pas tenir (23 août 2026)
+
+| | État |
+|---|---|
+| « Ajouter un chantier » disparaît quand rien n'attend de jour | **fait** (`AjoutAuJour`) |
+| Le cul-de-sac « Aucun chantier n'attend de jour » retiré du geste | **fait** — la phrase reste sous « Sans date », à sa place |
+| Deux mesures : le bouton part, et il revient | **fait** (`test-planning-e2e.ts`) |
+
+---
+
 ## Le mode nuit se lit (22 août 2026)
 
 *« Le mode nuit est illisible. Corrige ça. »* — sa capture du planning.
