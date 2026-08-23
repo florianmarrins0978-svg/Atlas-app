@@ -2494,6 +2494,19 @@ rétablit pas l'écran retiré).
 la charge ? »* mais *« rougit-elle jouée seule ? »*. Trente secondes de réponse,
 et elles séparent deux enquêtes qui n'ont rien en commun.
 
+**ET UNE SIXIÈME LEÇON, PAYÉE PAR MON PROPRE CORRECTIF.** `test-reprise-chantier`
+est retombée à la batterie suivante, sur la garde que je venais de lui poser :
+elle relisait le **total affiché** pour prouver que le prix était enregistré. Or
+l'écran des prix montre le montant qu'on vient de taper **avant** que le serveur
+ait répondu. Sous une batterie entière, la garde lisait donc « 1 200,00 € » sur
+une base encore vide, se déclarait satisfaite, et l'écran d'arrivée — rendu par
+le serveur, lui — affichait 0,00 € deux cas plus loin et se faisait accuser.
+
+**Lire l'écran pour prouver un enregistrement, c'est mesurer ce qu'on vient de
+taper.** La garde interroge désormais `lignes_prix`. Éprouvée rouge en tapant un
+prix nul : elle nomme le total réellement en base, et accuse le prix, pas
+l'écran d'arrivée.
+
 ### 0 trigies ter. ~~`test-reduction-devis-e2e` rougit sous charge, pas toute seule~~ — **RÉPARÉE le 23 août 2026** (`80a12bc`, et le point ci-dessus)
 
 **Vu le 16 août 2026**, sur la batterie qui suivait la fusion de son lot. Le
