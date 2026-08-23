@@ -92,7 +92,7 @@ console.log("");
 // **Le compte n'est plus écrit ici, et c'est délibéré.** Il valait « treize »,
 // et le lot du 22 août 2026 en a ajouté trois — alerte, bordeaux, vert pâle,
 // qui devaient suivre la charte pour rester lisibles sur Nuit et Sylve
-// (`ARCHITECTURE.md` §157). La suite a rougi sur du code juste, pour un chiffre
+// (`ARCHITECTURE.md` §158). La suite a rougi sur du code juste, pour un chiffre
 // qui ne défendait rien : ce qu'elle doit fixer, c'est qu'**aucune charte ne
 // porte moins de jetons qu'une autre** — un jeton oublié sur une seule des sept
 // laisse un écran à demi repeint, et c'est ce défaut-là qui coûte cher.

@@ -176,7 +176,7 @@ langage. Rien n'y entre sans son accord explicite (voir `AGENTS.md`).
   patron a signalé le 22 août 2026 : *« le mode nuit est illisible »*. Ce qui
   s'écrit à la place : `surPlein` pour ce qu'on pose SUR un aplat,
   `voile(colors.ink, α)` pour un voile, et les jetons pour les signaux
-  (`ARCHITECTURE.md` §157). En dix secondes :
+  (`ARCHITECTURE.md` §158). En dix secondes :
   `npx tsx scripts/test-chartes-lisibles.ts`.
 
 ## 3 ter. Lui répondre court

@@ -74,7 +74,7 @@ La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
 ## Mode nuit : ce que le lot du 22 août ne couvre PAS (22 août 2026)
 
-Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §157), et deux contrôles
+Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §158), et deux contrôles
 le tiennent. Ce qui reste dehors, et qu'il faut savoir avant de croire
 l'application entièrement lisible en Nuit :
 

@@ -258,7 +258,7 @@ async function main() {
     // Ce contrôle exigeait le noir absolu, et il a rougi le 22 août 2026 sur du
     // code juste : la ligne portait `#000` écrit en dur, ce qui la rend
     // INVISIBLE sur les deux chartes sombres, où l'encre est claire
-    // (`ARCHITECTURE.md` §157). Elle prend donc l'encre de la charte — et sur
+    // (`ARCHITECTURE.md` §158). Elle prend donc l'encre de la charte — et sur
     // « Origine », #1c1c1a contre #000, l'œil ne fait pas la différence.
     //
     // Ce qu'il a demandé — « en titre noir gras » — n'était pas une valeur

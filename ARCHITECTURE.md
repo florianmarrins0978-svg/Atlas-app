@@ -13828,9 +13828,82 @@ que vaut une valeur figée dans une suite plutôt qu'une borne large.
 
 Les deux défauts plausibles ont été joués : vol d'oiseau au lieu de Manhattan,
 moyenne au lieu de médiane. Chacun fait rougir la suite en nommant le chiffre.
+
 ---
 
-## 157. Le mode nuit : ce qui rendait deux chartes sur sept illisibles
+## 157. Ouvrir une fiche referme une autre — et la ligne touchée doit rester sous le doigt
+
+**Son défaut du 22 août 2026, capture à l'appui :** *« lorsque le client se
+trouve sur la partie haute de l'écran comme sur la photo, monsieur Pornic, et
+que je clique dessus pour pouvoir afficher sa fiche chantier, le client remonte
+et la fiche chantier aussi. […] tout remonte d'un bloc et je suis perdu, je ne
+sais plus où est mon client. Il disparaît sous mes yeux. »*
+
+### Ce n'était pas un défilement, et c'est ce qui rendait le défaut sournois
+
+Aucun `scrollTo`, aucun `scrollIntoView` : chercher un appel de défilement dans
+`PlanningClient.tsx` ne donne rien, et l'on conclut trop vite que l'écran est
+innocent.
+
+La cause est ailleurs, et elle vient d'une règle qu'il a lui-même demandée le
+22 août — *« le même nom referme ce qu'il a ouvert »* : `carteListe` ne porte
+**qu'une** fiche ouverte à la fois. Toucher un client en referme donc un autre.
+Quand la fiche refermée se trouvait **plus haut dans la page**, tout ce qui la
+suit remonte de sa hauteur — mesuré : **422 px** —, et la ligne touchée passe
+au-dessus du bord de l'écran pendant que le doigt est encore dessus.
+
+D'où la forme du symptôme, qu'aucune autre hypothèse n'explique : le défaut
+n'apparaît **que** lorsque le client visé est haut sur l'écran, jamais au milieu
+ni en bas. Au milieu, la fiche refermée est encore visible et l'on voit la page
+se recomposer ; en haut, la ligne sort du cadre.
+
+### Le navigateur ne le rattrape pas
+
+Les navigateurs savent ancrer le défilement quand du contenu disparaît
+au-dessus du point regardé (`overflow-anchor`). **Safari ne l'implémente pas** —
+et c'est Safari qu'il a dans la main. Compter dessus, c'était livrer un écran
+juste sur une machine et faux sur la sienne.
+
+### La réparation : mesurer avant, rattraper après
+
+`src/components/atlas/useAncrageDuGeste.ts` — un crochet, volontairement
+minuscule :
+
+1. dans le gestionnaire, **avant** tout changement d'état, on relève la position
+   de la ligne dans la fenêtre (`getBoundingClientRect().top`) ;
+2. `useLayoutEffect` la restaure une fois React repeint, par un `scrollBy` de
+   l'écart.
+
+**`useLayoutEffect`, jamais `useEffect`.** Le second s'exécute après que le
+navigateur a peint : on verrait la page sauter, puis revenir. Le premier
+s'intercale avant la peinture, et le saut n'existe jamais à l'œil.
+
+**Ce qu'on ancre, c'est la LIGNE, pas la fiche.** Le nom du client est ce qu'il
+cherche des yeux ; la fiche s'ouvre dessous et peut grandir sans le gêner.
+
+**Ce que le crochet ne fait pas :** amener une ligne à l'écran quand elle n'y
+est pas. Ce n'est pas son besoin — il touche ce qu'il voit — et un défilement de
+confort par-dessus le sien lui reprendrait la main.
+
+Un écart de moins d'un pixel est ignoré : c'est l'arrondi du rendu, pas un saut,
+et le rattraper ferait vibrer la page à chaque geste.
+
+### Le contrôle rejoue la SÉQUENCE, pas le geste
+
+`scripts/test-ligne-planning-e2e.ts`, cas « Le client touché ne remonte pas ».
+Une suite qui se contenterait de toucher une ligne sur une page fraîche ne
+fermerait rien au-dessus d'elle, ne bougerait rien, et serait **verte sur le
+défaut même qu'elle prétend attraper**. Elle ouvre donc une première fiche plus
+haut, fait défiler jusqu'à ce qu'un autre client soit sous l'en-tête, puis le
+touche.
+
+Elle a été **confrontée à l'état dégradé** (`CLAUDE.md` §5) : l'ancrage
+neutralisé, elle rougit en nommant le bon coupable — *« le client touché a bougé
+de 422 px (145 → -277) »*. Et elle refuse de conclure si le montage n'a pas pu
+amener la ligne assez haut, plutôt que de rendre un vert qui ne prouve rien.
+---
+
+## 158. Le mode nuit : ce qui rendait deux chartes sur sept illisibles
 
 *Payé le 22 août 2026, sur sa capture du planning en « Nuit » et six mots :*
 ***« Le mode nuit est illisible. Corrige ça. »***

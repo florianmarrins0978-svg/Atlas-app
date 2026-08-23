@@ -9,6 +9,24 @@ sert.
 
 ---
 
+## PIÈGE : « TOUT REMONTE » N'EST PAS UN DÉFILEMENT (23 août 2026)
+
+**Si un écran d'Atlas saute sous le doigt, ne cherchez pas de `scrollTo` — il
+n'y en a pas.** Sur le planning, ouvrir une fiche en REFERME une autre
+(`carteListe` n'en porte qu'une). Quand la fiche refermée était plus haut dans
+la page, tout ce qui suit remonte de sa hauteur : 422 px mesurés, et la ligne
+touchée sort de l'écran.
+
+**Safari n'implémente pas `overflow-anchor`** — et c'est Safari qu'il a dans la
+main. Le rattrapage est donc à notre charge : `useAncrageDuGeste` relève la
+position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
+(jamais `useEffect` : le second peint d'abord, et l'on verrait le saut).
+
+Le même piège guette partout où un panneau se referme au-dessus du point
+regardé. Détail : `ARCHITECTURE.md` §157.
+
+---
+
 ## LE PLAN D'ARROSAGE EST DESSINÉ — CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (23 août 2026)
 
 **Trois fichiers purs, et aucun ne recalcule ce qui existait :**
@@ -181,7 +199,7 @@ npx tsx scripts/test-mode-sombre-lisible-e2e.ts
 ```
 
 Le pourquoi de chaque choix, et ce qui reste non couvert : `ARCHITECTURE.md`
-§157.
+§158.
 
 ---
 
