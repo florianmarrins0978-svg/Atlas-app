@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-22 · `main`
+**Point de reprise :** 2026-08-23 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -1717,6 +1717,33 @@ planches) : la batterie devrait nettoyer ces dossiers avant l'étape
 reviendra à la prochaine page supprimée.
 
 ## Ce qui vient d'être terminé
+
+**LA TVA SE LIT EN TÊTE, LES GESTES TOUCHENT LEUR CHIFFRE (23 août).** Ses deux
+remarques : *« l'outil Ma TVA à déclarer, il est caché »* et *« on ne comprend
+pas trop que scanner ou écrire à la main, c'est pour la TVA déductible »*. Deux
+planches essayables, deux choix — **« Pour ma TVA la B / Et pour les achats la
+C »** (`ARCHITECTURE.md` §149).
+
+**Trois choses à ne pas défaire :**
+
+1. **Le montant se lit dans `src/server/tva-courante.ts`**, jamais recomposé dans
+   l'écran : deux additions de la même somme lui montreraient deux chiffres à
+   deux écrans d'intervalle, sans savoir lequel croire.
+2. **La carte nomme sa période, et dit « Reste à payer »** — jamais « À payer ».
+   Ce montant n'est pas dû le jour où il le lit.
+3. **La couture entre l'encadré des chiffres et les deux gestes** est tout ce
+   qui dit le lien : aucun mot ne le dit. L'arrondi bas appartient au bloc des
+   gestes, plus à l'encadré.
+
+**⚠ ET LE PIÈGE, QUI A ÉTÉ PAYÉ DEUX FOIS ICI :** ces deux choix sont des choix
+de **place**, et une place ne casse pas. `scripts/test-tva-en-tete-e2e.ts` mesure
+donc des places. Deux de ses mesures étaient fausses avant d'être justes — l'une
+comparait la carte à sa **propre mention** (qui descend avec elle) et restait
+**verte sur le défaut dont elle portait le nom** ; l'autre comptait le
+rembourrage d'une carte comme une brèche et **accusait à tort**. Les repères
+`data-atlas="contenu-termines"` et `data-atlas="encadre-tva"` existent pour ça :
+ne pas les retirer en croyant nettoyer.
+
 
 **« IL PEUT PROPOSER UNE AUTRE DATE » (17 août, au soir).** Un interrupteur sous
 les dates, avant le bouton d'envoi : le patron décide, envoi par envoi, si le

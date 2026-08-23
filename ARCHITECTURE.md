@@ -13241,3 +13241,71 @@ n'apprenait rien. Il vise désormais un repère stable (`data-atlas`), trouve le
 bouton, puis **cite ce qu'il a lu** : *« le bouton dit "Confirmer le départ de la
 facture →" »*. Éprouvé aussi sans la phrase d'engagement : il rougit en disant
 que rien n'avertit de l'arrêt.
+
+## §149. La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
+
+**Deux remarques du patron, le 23 août 2026, sur deux écrans voisins**, et une
+seule cause : *« je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le
+voit pas trop »*, puis *« on ne comprend pas trop que scanner ou écrire à la
+main, c'est pour la TVA déductible »*.
+
+Dans les deux cas, rien ne fonctionnait mal. C'est la **place** qui mentait.
+
+### Ce qui a été retenu, et par qui
+
+Six propositions dessinées, essayables au doigt — pas des captures :
+`docs/maquettes/86-ou-mettre-ma-tva.html` et
+`docs/maquettes/85-achats-tva-deductible.html`. Sa réponse, mot pour mot :
+**« Pour ma TVA la B / Et pour les achats la C »**.
+
+- **86 · B** — une carte, en tête de « Terminés », **portant le montant**. Pas un
+  lien : ce qu'il vient y chercher. Le chiffre se lit sans ouvrir, et donne la
+  raison d'ouvrir.
+- **85 · C** — « Scanner un ticket » et « Écrire à la main » remontent **contre
+  l'encadré des chiffres**, avec un liseré haut en pointillé et l'arrondi bas que
+  l'encadré a perdu. Le lien ne se dit par **aucun mot de plus** : il se dit par
+  la continuité de la pièce.
+
+### Pourquoi le montant se lit dans `src/server/tva-courante.ts`, et pas dans l'écran
+
+L'écran du relevé compose déjà collectée, déductible et reste. Les recomposer
+dans « Terminés » aurait donné **deux additions de la même somme** — et c'est LUI
+qui aurait vu deux montants différents à deux écrans d'intervalle, sans savoir
+lequel croire (`CLAUDE.md` §3 : jamais de règle dupliquée).
+
+Le prix est assumé et a été dit devant la planche avant qu'il ne choisisse :
+**trois requêtes de plus** sur un écran qu'il ouvre souvent.
+
+### La réserve que la carte doit porter
+
+Ce montant **n'est pas dû le jour où il le lit**. Il dépend du rythme (mois ou
+trimestre) et du régime (encaissements ou débits), et n'est exigible qu'à
+l'échéance. Affiché seul, il se lirait « ce que je dois aujourd'hui ». D'où deux
+précautions dans la carte elle-même : elle **nomme sa période**, et la mention
+sous elle dit **« Reste à payer sur la période »** — jamais « À payer ».
+
+### Ce qu'un contrôle doit tenir ici, et pourquoi c'est difficile
+
+**Les deux choix sont des choix de place, et une place ne casse pas.** La carte
+peut redescendre en pied de liste, les deux boutons peuvent repasser sous les
+achats : tout continue de fonctionner, et tout resterait vert. Ce sont
+exactement les défauts qu'aucune autre suite ne peut voir.
+
+`scripts/test-tva-en-tete-e2e.ts` mesure donc des **places**, pas des présences,
+et chacune de ses six mesures a été **confrontée au défaut qu'elle nomme** avant
+d'être gardée.
+
+**Et c'est ainsi qu'un contrôle faux a été trouvé.** Le premier jet vérifiait que
+la carte précédait « le dernier de ses frères » — or son frère, c'est sa propre
+mention, qui descend avec elle. La carte remise en pied d'écran, le contrôle
+**restait vert sur le défaut même dont il portait le nom**. D'où le repère
+`data-atlas="contenu-termines"` : la carte se mesure contre la **liste**, jamais
+contre ce qu'elle traîne derrière elle.
+
+Deuxième faux départ, même leçon : la couture se mesurait depuis le bas des
+**mots** « Reste à payer » et annonçait 25 px de brèche alors que les deux pièces
+se touchaient — le rembourrage de la carte compté comme un écart. Un contrôle qui
+accuse à tort coûte plus cher que pas de contrôle du tout (`AGENTS.md`). D'où le
+repère `data-atlas="encadre-tva"`, et une mesure d'encadré à encadré — largeur et
+bord gauche compris, car deux marges différentes feraient un décrochement visible
+que rien d'autre ne dirait.

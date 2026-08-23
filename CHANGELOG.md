@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### La TVA se lit en tête, et les gestes touchent le chiffre qu'ils font monter
+
+*« Je trouve que l'outil Ma TVA à déclarer, il est caché, on ne le voit pas
+trop »*, puis, sur l'écran voisin : *« on ne comprend pas trop que scanner ou
+écrire à la main, c'est pour la TVA déductible. »*
+
+Rien ne fonctionnait mal dans les deux cas : c'est la **place** qui mentait. Six
+propositions dessinées et essayables au doigt (`docs/maquettes/85` et `86`), et
+son choix, mot pour mot : **« Pour ma TVA la B / Et pour les achats la C »**.
+
+**La B** met en tête de « Terminés » une carte **portant le montant** — pas un
+lien à aller chercher, mais ce qu'il vient y voir : le chiffre se lit sans
+ouvrir, et donne la raison d'ouvrir. Elle nomme sa période et dit « Reste à payer
+sur la période », parce que ce montant n'est **pas dû le jour où il le lit** :
+il dépend du rythme et du régime, et n'est exigible qu'à l'échéance.
+
+**La C** remonte « Scanner un ticket » et « Écrire à la main » **contre**
+l'encadré des chiffres. Aucun mot de plus n'a été ajouté : le lien se dit par la
+continuité de la pièce — liseré haut en pointillé, et l'arrondi bas que l'encadré
+a cédé.
+
+**Ce qui a coûté le plus n'est pas l'écran, c'est le contrôle.** Une place ne
+casse pas : la carte peut redescendre en pied de liste, les boutons repasser sous
+les achats, et tout resterait vert. Deux mesures fausses ont été écrites avant
+les bonnes — l'une comparait la carte à sa **propre mention**, qui descend avec
+elle, et **restait verte sur le défaut dont elle portait le nom** ; l'autre
+comptait le rembourrage d'une carte comme une brèche et **accusait à tort**. Les
+six mesures gardées ont chacune été vues rouges contre le défaut qu'elles
+nomment. Détail dans `ARCHITECTURE.md` §149.
+
+
 ### « Déplacer » offrait des boutons qui n'écrivaient rien
 
 *« Cliquer sur Déplacer ne déplace pas le chantier, ça ne fait rien du tout. »*

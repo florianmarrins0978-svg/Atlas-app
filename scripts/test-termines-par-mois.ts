@@ -21,7 +21,6 @@ import {
   aFacturerPartout,
   factureesPartout,
   somme,
-  formatEuros,
   libelleFacturee,
   numeroCourt,
   estFacture,
