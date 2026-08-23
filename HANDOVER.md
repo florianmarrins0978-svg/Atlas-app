@@ -29,6 +29,32 @@ portée la plus courte.
 
 ---
 
+## LE CROQUIS PORTE LES PLACES — en fraction, jamais en mètres (22 août 2026)
+
+`lire-croquis.ts` demande maintenant, pour chaque zone et pour la nourrice, une
+place entre 0 et 1 (`x`, `y`, `largeur_fraction`, `hauteur_fraction`).
+`geometrie-croquis.ts` en tire les mètres.
+
+**L'échelle sort des cotes déjà lues** — 16 m sur 0,40 du croquis = 40 m par
+unité — en prenant la **médiane** des estimations. Au-delà du double d'écart
+entre zones, elle REFUSE de conclure et rend une raison.
+
+**Ne jamais rogner une place hors de [0, 1]** : un « 12 » pour un x n'est pas
+une fraction, et le ramener à 1 fabrique une distance de tuyau fausse.
+
+**La distance est en Manhattan, jusqu'au BORD de la zone** — pas au centre : la
+longueur dans la zone est déjà comptée par la ligne d'arroseurs.
+
+**Sans nourrice dessinée, aucun trajet**, et surtout aucune supposition : elle
+ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
+
+**Elle vit hors de `calcul.js`** parce que ce fichier est une copie partagée
+avec `appli/` : la distance est passée en entrée (`regardVersZone`).
+
+Détail : `ARCHITECTURE.md` §148.
+
+---
+
 ## LA PRESSION QUI DIMENSIONNE EST CELLE DU DERNIER ARROSEUR (22 août 2026)
 
 **Avant de toucher à `decouper` ou à `buseALaPression`, sachez ceci :** le

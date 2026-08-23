@@ -48,6 +48,44 @@ tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour porta
 le même `data-jour` que les cases — deux éléments pour le même jour, et une
 suite qui ne savait plus lequel viser.
 
+### Le croquis dit enfin OÙ sont les choses — et le dernier trajet est compté
+
+**Sa demande : « oui fais-le lire les proportions ».** Elle répond à ce que je
+lui avais présenté comme impossible : le trajet du regard jusqu'au premier
+arroseur, que je disais « non saisi ». Sa réponse : *« j'ai pas besoin de lui
+dire, il a tous les métrés du terrain, il a juste à calculer »*.
+
+**Il avait raison sur le fond, je me trompais sur le fait.** Le croquis PORTE
+l'information — la nourrice y est dessinée, les zones aussi, et les cotes
+donnent l'échelle. C'est la LECTURE qui ne relevait rien de tout ça : elle ne
+rendait que des dimensions, jamais des places.
+
+**Ce qui change :** la lecture demande maintenant, pour chaque zone et pour la
+nourrice, une place en **fraction du dessin** (0 à 1). Pas en mètres — un
+modèle voit qu'une pelouse occupe le tiers gauche, il ne voit pas qu'elle est à
+douze mètres du regard.
+
+**L'échelle se déduit des cotes déjà lues**, elle ne se demande pas. Une pelouse
+de 16 m qui occupe 0,40 du croquis donne 40 m par unité. Chaque zone cotée
+fournit ainsi jusqu'à deux estimations, et l'on retient la **médiane** — pas la
+moyenne : un modèle qui se trompe sur une zone tirerait la moyenne vers son
+erreur.
+
+**Et l'on REFUSE de conclure quand les zones se contredisent.** Plus du double
+d'écart entre estimations : le croquis n'est pas à l'échelle, ou la lecture est
+fausse. On rend la raison, jamais une distance moyenne qui n'existe nulle part.
+
+Sur le jardin d'exemple, trente mètres de trajet coûtent **0,29 bar** — la
+pression au dernier arroseur passe de 2,28 à 2,01. Ce n'était pas un détail.
+
+**La nourrice reste lue, jamais déduite** (`CLAUDE.md` §4 bis). Absente du
+dessin, elle reste absente : le trajet n'est pas compté, et l'écran le dit.
+
+**Un contrôle a rougi sur MON erreur, et c'est ce qui prouve qu'il sert.**
+J'avais figé « 8 m » pour une distance en diagonale, en lisant les demi-côtés de
+travers ; le calcul disait 11. Refaire l'opération à la main était le seul moyen
+de trancher — c'est exactement ce que vaut une valeur figée dans une suite.
+
 ### Sa notice Rain Bird retire une pièce facturée pour rien
 
 Il envoie la notice de ses électrovannes (`man_DV_DVF.pdf`, Rain Bird, P/N

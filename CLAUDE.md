@@ -436,9 +436,21 @@ qui se perd, on refait. Une troisième passe remonterait la pression et l'on
 tournerait autour de la valeur : s'arrêter à deux garde les pertes des débits
 les plus forts, donc le côté sûr.
 
-**Ce qui n'est PAS compté se dit à l'écran** : le trajet du regard à la
-première tête, qui dépend de l'endroit où la nourrice est posée. La pression
-annoncée est un plafond.
+**LES PLACES SE LISENT SUR LE CROQUIS, EN FRACTION — les mètres se DÉDUISENT.**
+Sa demande du 22 août au soir : *« oui fais-le lire les proportions »*, après
+que je lui ai dit à tort qu'aucune saisie ne donnait le trajet du regard à la
+première tête. *« Il a tous les métrés du terrain, il a juste à calculer. »*
+
+Le modèle rend des places entre 0 et 1 — il voit qu'une pelouse occupe le tiers
+gauche, pas qu'elle est à douze mètres. **L'échelle sort des cotes déjà lues** :
+16 m sur 0,40 du croquis font 40 m par unité. On retient la **médiane** des
+estimations, jamais la moyenne, et **on refuse de conclure** au-delà du double
+d'écart entre zones — un croquis pas à l'échelle ne rend pas une distance
+moyenne, il rend une réserve.
+
+**Ce qui reste non compté se dit à l'écran** : quand la nourrice n'est pas
+dessinée, le trajet ne se calcule pas — et il ne se suppose pas davantage. La
+pression annoncée est alors un plafond.
 
 **UN RÉSEAU EST PLAFONNÉ PAR SON TUYAU, PAS SEULEMENT PAR LE COMPTEUR.** Sa
 déduction du 22 août 2026 : *« en diamètre vingt-cinq c'est 1,76 m³/h, donc dans

@@ -432,26 +432,43 @@ dire(
   );
 }
 
-// ── 13. LE RÉDUCTEUR DE PRESSION NE SE FACTURE PLUS D'OFFICE ────────────────
+// ── 13. LE RÉDUCTEUR EST POUR LE GOUTTE-À-GOUTTE, ET POUR LUI SEUL ──────────
 //
-// **Sa notice Rain Bird, envoyée le 22 août 2026** (`man_DV_DVF.pdf`) : *« if
-// pressure is greater than 80 psi (5,5 bar), install a pressure regulator on
-// the line before the valve »*. En dessous, la vanne travaille dans sa plage
-// (1 à 10 bar) et le réducteur ne sert à rien.
+// **Sa règle du 22 août 2026 :** *« non, remets-le, il est utilisé pour le
+// goutte-à-goutte seulement »*.
 //
-// Il était pourtant sur CHAQUE devis — une pièce que j'avais posée d'office,
-// sans source. Chez lui, la source donne 3 bar : facturée pour rien à chaque
-// chantier. C'est l'inverse de ce qu'il demande : *« il faut qu'il me calcule
-// le nombre juste »*.
+// **Deux erreurs de suite avant d'y arriver, et la seconde est instructive.**
+// La pièce était d'abord facturée d'office, sans source. Sa notice Rain Bird
+// m'a fait la conditionner à la pression — *« if pressure is greater than
+// 80 psi (5,5 bar), install a pressure regulator »* — ce qui la retirait de
+// tous ses chantiers à 3 bar. C'était encore faux : **une notice dit ce que le
+// MATÉRIEL supporte, jamais ce que le CHANTIER exige.** Une gaine de goutteurs
+// veut un réducteur quelle que soit la pression d'arrivée ; un réseau de
+// turbines n'en veut pas, même à 6 bar.
 {
-  const ZONE_SIMPLE = [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }];
-  const aTroisBars = calculerPlan({ seau: 10, temps: 20, pression: 3, zones: ZONE_SIMPLE });
-  const aSixBars = calculerPlan({ seau: 10, temps: 20, pression: 6, zones: ZONE_SIMPLE });
+  const arroseursSeuls = calculerPlan({
+    seau: 10, temps: 20, pression: 3,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }],
+  });
+  const avecGoutteAGoutte = calculerPlan({
+    seau: 10, temps: 20, pression: 3,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }, { type: "haie", nom: "Haie", ml: 22 }],
+  });
+  // **Et la pression n'y change rien** : c'est ce que la version d'avant avait
+  // faux, et ce contrôle-ci l'empêche de revenir.
+  const arroseursAHautePression = calculerPlan({
+    seau: 10, temps: 20, pression: 6,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }],
+  });
   const reducteur = (p: { materiel: { nom: string }[] }) =>
     p.materiel.some((m) => /Réducteur/i.test(m.nom));
 
-  dire(!reducteur(aTroisBars), "à 3 bar, aucun réducteur facturé — la vanne est dans sa plage");
-  dire(reducteur(aSixBars), "à 6 bar, le réducteur est facturé — au-dessus de 5,5, sa notice l'impose");
+  dire(!reducteur(arroseursSeuls), "que des arroseurs : aucun réducteur facturé");
+  dire(reducteur(avecGoutteAGoutte), "une gaine de goutteurs : le réducteur est facturé");
+  dire(
+    !reducteur(arroseursAHautePression),
+    "à 6 bar sans goutte-à-goutte : toujours aucun réducteur — c'est l'emploi qui décide, pas la pression",
+  );
 }
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);

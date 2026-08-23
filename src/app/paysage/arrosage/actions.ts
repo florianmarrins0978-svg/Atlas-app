@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
+import { trajetLePlusLong } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 
 /**
@@ -142,7 +143,32 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   });
   if (!mesure.ok) return { etat: "refus", raison: mesure.raison };
 
+  /* ══ LE TRAJET DU REGARD À LA PREMIÈRE TÊTE ═══════════════════════════════
+
+     **Sa demande du 22 août 2026 : « oui fais-le lire les proportions ».**
+
+     Je lui avais dit qu'aucune saisie ne donnait cette distance. Il a répondu
+     qu'il n'avait pas à la donner — le croquis porte la nourrice et les zones,
+     et les cotes donnent l'échelle. Il avait raison : c'est la lecture qui ne
+     relevait pas les places.
+
+     **Une lecture ratée n'arrête pas le plan, elle se DIT.** Le trajet vaut
+     alors zéro et la réserve l'annonce : c'est ce que le calcul faisait déjà
+     hier pour tout le monde, donc ce n'est pas une régression — mais le taire
+     ferait croire que le trajet est compté. */
+  const trajet = trajetLePlusLong(
+    lu.croquis.nourrice,
+    mesurees.map((z) => ({
+      position: z.x !== null && z.y !== null ? { x: z.x, y: z.y } : null,
+      largeurFraction: z.largeurFraction,
+      hauteurFraction: z.hauteurFraction,
+      L: z.L,
+      l: z.l,
+    }))
+  );
+
   const plan = calculerPlan({
+    regardVersZone: trajet.ok ? trajet.metres : 0,
     // Le calcul raisonne en seau et temps : on lui rend le débit retenu sous
     // cette forme, sans repasser par la saisie — une seule source du débit.
     seau: SEAU_LITRES,
@@ -160,6 +186,11 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
 
   const reserves = [...lu.croquis.reserves];
   if (mesure.reserve) reserves.push(mesure.reserve);
+  if (!trajet.ok) {
+    reserves.push(
+      `${trajet.raison} : le trajet du regard jusqu'au premier arroseur n'est pas compté`
+    );
+  }
   // **Une portée réduite est une ESTIMATION, et elle se dit.** Le débit des
   // buses est ramené à la pression du chantier par la loi de l'orifice — de la
   // physique. La portée, elle, suit un exposant tiré des tables des
@@ -182,8 +213,9 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     reserves.push(
       `${plan.pressionAuxArroseurs.toFixed(1).replace(".", ",")} bar au dernier arroseur ` +
         `(${plan.perteReseau.toFixed(2).replace(".", ",")} bar perdus dans le réseau, ` +
-        `${plan.perteAmenee.toFixed(2).replace(".", ",")} dans l'amenée) — le trajet du regard ` +
-        "jusqu'à la première tête n'est pas compté"
+        `${plan.perteAmenee.toFixed(2).replace(".", ",")} dans l'amenée` +
+        (trajet.ok ? `, trajet du regard ${trajet.metres.toFixed(0)} m lu sur le croquis` : "") +
+        ")"
     );
   }
   if (plan.porteeEstimee) {
