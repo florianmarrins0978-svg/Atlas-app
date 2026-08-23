@@ -23,7 +23,7 @@ position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
 (jamais `useEffect` : le second peint d'abord, et l'on verrait le saut).
 
 Le même piège guette partout où un panneau se referme au-dessus du point
-regardé. Détail : `ARCHITECTURE.md` §156.
+regardé. Détail : `ARCHITECTURE.md` §157.
 
 ---
 

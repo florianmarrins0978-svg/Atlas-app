@@ -23,7 +23,7 @@ Son défaut : le client haut sur l'écran disparaît quand on le touche.
 | Sa séquence rejouée au navigateur, à 390 px | **fait** (`test-ligne-planning-e2e.ts`) |
 | Le contrôle confronté à l'état dégradé | **fait** — rouge à 422 px sans l'ancrage |
 
-Le détail et les partis pris : `ARCHITECTURE.md` §156.
+Le détail et les partis pris : `ARCHITECTURE.md` §157.
 
 ---
 

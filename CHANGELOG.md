@@ -19,9 +19,45 @@ disparaît sous mes yeux. »*
 Aucun défilement n'était en cause : ouvrir une fiche en referme une autre, et
 quand celle-ci se trouvait plus haut dans la page, tout remontait de sa hauteur
 — 422 px mesurés. Safari n'ancre pas le défilement ; la ligne touchée reste
-désormais immobile sous le doigt (`useAncrageDuGeste`, `ARCHITECTURE.md` §156).
+désormais immobile sous le doigt (`useAncrageDuGeste`, `ARCHITECTURE.md` §157).
 
 ---
+
+### La colonne « Fiche chantier » ne se remplit plus toute seule
+
+*« Je viens de facturer monsieur Bernard […] néanmoins il y a une fiche chantier
+qui s'est créée en même temps. Cette catégorie est réservée lorsque les
+paysagistes créent une fiche chantier avec les informations type la tonte, la
+taille, ce qu'ils ont fait. À aucun moment, lorsqu'une facture doit être
+envoyée, une fiche chantier doit être créée. »*
+
+**Le mécanisme, invisible à la lecture.** Émettre une facture POSE la date de
+fin du chantier (`factures.ts` : `COALESCE(termine_at, now())`), et la colonne
+listait les chantiers terminés. Facturer fabriquait donc une pièce que personne
+n'avait écrite.
+
+**Et le document qu'elle ouvrait était le mauvais.** C'est la feuille INTERNE —
+équipe, créneau, note vocale, adresse du chantier —, celle que ses salariés
+ouvrent dans la camionnette. Rangée au dossier d'un client, elle donnait à
+croire qu'il l'avait reçue. Cette feuille reste joignable depuis le chantier :
+elle n'a simplement plus sa place dans le dossier du client.
+
+**Ce que la colonne porte désormais :** les fiches d'entretien qu'il a remplies
+et ENVOYÉES (Paysage → Fiche de chantier), à l'adresse même que le client a
+reçue. Un brouillon n'y entre pas — comme un devis non parti, il n'a ni date
+d'envoi ni adresse publique.
+
+**« Enregistrer » disparaît sur ces pièces-là**, et ce n'est pas un oubli : rien
+ne fige ce rapport en fichier. Le laisser aurait fait descendre une page web
+nommée `.pdf`, que rien n'ouvre — le défaut du 7 août 2026, retourné. La
+vignette dit « FICHE » plutôt que « PDF », et « Ouvrir » prend la place du geste
+principal.
+
+**Un client sans aucun chantier voit quand même sa fiche.** Elle s'ouvre depuis
+Paysage, se nomme, s'envoie — sans qu'aucun chantier n'existe. Le retour
+anticipé « ce client n'a pas de chantier » l'aurait fait disparaître de son
+dossier.
+
 
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
