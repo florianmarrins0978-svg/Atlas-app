@@ -31,7 +31,17 @@ même mécanique que les suites navigateur :
 5. imprimer `document.html` en PDF avec Chromium (`page.pdf`, format A4,
    `printBackground: true`).
 
-**Deux pièges rencontrés, et ils reviendront :**
+Les étapes 5 et 6 tiennent dans un script du dépôt, une fois les captures
+faites :
+
+```bash
+node docs/piece-jointe-inrae/composer-pdf.mjs   # → captures/Atlas-INRAE.pdf
+```
+
+Il refuse de composer si une capture manque, mesure les trois pages **à la
+largeur d'une A4**, et relit le PDF produit pour compter ses pages.
+
+**Trois pièges rencontrés, et ils reviendront :**
 
 - **la barre de navigation du bas mange la légende de la photo.** Elle est fixée
   au bas de la fenêtre : il faut une fenêtre haute (1500 px) et rogner
@@ -39,9 +49,17 @@ même mécanique que les suites navigateur :
   doit montrer à l'INRAE — est coupé ;
 - **une capture d'ÉLÉMENT colle au pixel près à sa boîte**, et le texte touche le
   bord. Capturer la région avec une quinzaine de pixels de marge.
+- **le document se rend depuis `captures/`, jamais depuis `docs/`.** Ses deux
+  `<img>` sont relatifs et les captures vivent dans `captures/`. Rendu depuis
+  `docs/`, il compose sans une erreur et sans une page manquante — **et sans les
+  photos**. Rien n'échoue, et le PDF ne prouve rien.
 
 **Et mesurer les pages plutôt que de les supposer.** À 96 dpi, une A4 moins ses
-marges laisse 1002 px de hauteur utile. Une section plus haute déborde sur une
+marges laisse 1002 px de hauteur utile. **Mais mesurer À CETTE
+LARGEUR-LÀ** : à 1280 px, la colonne fait presque le double, l'image du
+téléphone posée en pourcentage grandit d'autant, et la page 1 s'annonce à
+1468 px alors que le PDF tient en trois pages. Une mesure prise au mauvais
+gabarit accuse à tort — 680 px de large (180 mm), et `emulateMedia('print')`. Une section plus haute déborde sur une
 page suivante, ce qui ne se voit qu'une fois le PDF ouvert. Un aperçu qui mesure
 la hauteur de chaque `section.page` et la compare à 1002 évite l'aller-retour ;
 c'est ainsi que la première version, qui débordait de 148 px, a été prise.
