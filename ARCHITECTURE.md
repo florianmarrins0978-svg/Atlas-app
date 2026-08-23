@@ -13224,7 +13224,95 @@ Passer à « Masqué » est le défaut de la colonne à retourner. Voir `TODO.md
 
 ---
 
-## 149. Le plan se DESSINE : du croquis lu au tracé de la tranchée
+## 149. Le croquis dit où sont les choses : les proportions, et l'échelle déduite
+
+**Sa demande du 22 août 2026 au soir : « oui fais-le lire les proportions ».**
+
+### Ce que je lui avais dit, et pourquoi c'était faux
+
+Le §147 avait fermé le calcul de pression sauf un morceau : le trajet du regard
+à la PREMIÈRE tête. Je le lui ai présenté comme hors d'atteinte — *« aucune
+saisie ne le donne »*. Sa réponse : *« j'ai pas besoin de lui dire, il a tous
+les métrés du terrain, il a juste à calculer »*.
+
+**Il avait raison sur le fond, je me trompais sur le fait.** Le croquis porte la
+nourrice (c'est même obligatoire, `CLAUDE.md` §4 bis), les zones, et leurs
+cotes. Ce qui manquait n'était pas l'information : c'était la LECTURE, qui ne
+rendait que des dimensions et jamais des places. C'est le §5 ter du dépôt dans
+sa version la plus coûteuse — déclarer impossible ce qui n'était qu'à écrire.
+
+### Les places en fraction, jamais en mètres
+
+Le modèle rend, pour chaque zone et pour la nourrice, `x`, `y`,
+`largeur_fraction`, `hauteur_fraction`, tous entre 0 et 1. C'est tout ce qu'une
+image permet de dire sûrement : il voit qu'une pelouse occupe le tiers gauche du
+dessin, il ne voit pas qu'elle est à douze mètres du regard.
+
+**Hors de [0, 1], la valeur est refusée, pas rognée.** Un « 12 » pour un x n'est
+pas une fraction : c'est des mètres, un pixel, ou une confusion de champ. Le
+ramener à 1 fabriquerait une position plausible et fausse — et c'est une
+distance de tuyau qui en sortirait.
+
+### L'échelle se DÉDUIT des cotes
+
+`echelleDuCroquis` (dans `geometrie-croquis.ts`) croise les deux : une pelouse
+de 16 m qui occupe 0,40 du croquis donne 40 m par unité de fraction. Chaque zone
+cotée fournit jusqu'à **deux** estimations — une par côté, ce qui corrige une
+zone dessinée de travers dans un seul sens.
+
+**Médiane, pas moyenne.** Un modèle qui se trompe sur une zone tirerait la
+moyenne vers son erreur ; la médiane l'ignore.
+
+**Et le refus est la bonne réponse quand les zones se contredisent.** Au-delà de
+`ECART_MAX_ENTRE_ZONES` (2), le croquis n'est pas à l'échelle ou la lecture est
+fausse : on rend une raison, jamais une distance moyenne qui n'existe nulle
+part. Deux, parce qu'un croquis à main levée n'est jamais exact — refuser plus
+tôt ferait parler le garde-fou à tort, et un avertissement qui parle à tort
+s'apprend à être ignoré.
+
+### La distance : Manhattan, jusqu'au bord
+
+Un tuyau suit les axes. À vol d'oiseau, on sous-estimerait à la fois le tuyau à
+acheter et la perte qu'il subit — le mauvais sens des deux.
+
+**Et elle vise le BORD de la zone, pas son centre.** La première tête est sur le
+pourtour ; compter jusqu'au milieu ajouterait la moitié de la pelouse à un
+trajet que la ligne parcourt déjà — cette longueur-là est comptée par
+`perteDuReseau`, et la compter deux fois resserrerait la pose sans raison.
+
+**Le trajet retenu est LE PLUS LONG** de toutes les zones : elles sont
+dimensionnées sur une seule pression, qui doit être celle du point le plus mal
+servi.
+
+### Ce que ça change, et les garde-fous
+
+Sur le jardin d'exemple, trente mètres de trajet coûtent **0,29 bar** : la
+pression au dernier arroseur tombe de 2,28 à 2,01. Ce n'était pas un détail.
+
+Deux refus supplémentaires, parce que ce calcul repose sur une lecture
+approximative : au-delà de 200 m de trajet, ce n'est plus un jardin de
+particulier mais une échelle lue de travers ; et sans nourrice dessinée, aucun
+trajet — elle ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
+
+### Pourquoi un fichier à part, et pas dans `calcul.js`
+
+`calcul.js` est une copie octet pour octet partagée avec `appli/`
+(`verifier-arrosage-une-seule-source.mjs`). Y mettre cette géométrie l'aurait
+dupliquée dans une page qui n'en a pas l'usage. La distance est donc calculée
+côté serveur et **passée en entrée** (`regardVersZone`), comme la longueur
+d'amenée l'était déjà.
+
+### Un contrôle a rougi sur mon erreur
+
+`test-geometrie-croquis.ts` figeait « 8 m » pour une distance en diagonale ;
+le calcul rendait 11. C'est moi qui avais lu les demi-côtés de travers — refaire
+l'opération à la main était le seul moyen de trancher, et c'est exactement ce
+que vaut une valeur figée dans une suite plutôt qu'une borne large.
+
+Les deux défauts plausibles ont été joués : vol d'oiseau au lieu de Manhattan,
+moyenne au lieu de médiane. Chacun fait rougir la suite en nommant le chiffre.
+
+## 150. Le plan se DESSINE : du croquis lu au tracé de la tranchée
 
 **Sa demande du 21 août 2026 :** *« il manque la photo, le schéma avec les
 réseaux, et l'implantation des arroseurs — les différents réseaux de
@@ -13295,6 +13383,31 @@ CONTOURNER — pour aller de la nourrice au coin opposé, elle traversait, faute
 pouvoir passer par les sommets du terrain. Elle rendait 76 ml de tranchée là où
 le tracé fait à la main en demandait 64.
 
+### Du croquis au terrain : un seul passage, et il est ailleurs
+
+**La lecture ne rend pas des mètres, elle rend des FRACTIONS du dessin** (§149,
+sa demande du 22 août : *« oui fais-le lire les proportions »*). C'est tout ce
+qu'une image permet de dire sûrement : le modèle voit qu'une pelouse occupe le
+tiers gauche du croquis, il ne voit pas qu'elle est à douze mètres du regard.
+
+Le tracé et le contour, eux, travaillent en mètres. Il fallait donc un passage,
+et **il vit dans `geometrie-croquis.ts`, pas ici** : `poserSurLeTerrain()`.
+C'est le même module qui déduit déjà l'échelle pour le trajet du regard, et l'y
+laisser garantit qu'une seule échelle sert aux deux. Deux conversions
+finiraient par poser la même pelouse à deux endroits — `CLAUDE.md` §3.
+
+**Les CÔTÉS viennent des cotes lues, jamais du rectangle dessiné.** Seule la
+PLACE vient du dessin. Un trait tracé de travers ne doit pas changer un métré.
+
+**Le défaut que ce passage évite est muet**, et c'est pour cela qu'il est
+éprouvé sur une mesure et non sur une forme : une conversion oubliée passe la
+fraction telle quelle, le plan reste cohérent avec lui-même, et il est
+simplement dessiné sur un jardin d'un mètre de large. Aucun total ne bouge,
+aucune alerte ne parle. `test-geometrie-croquis.ts` mesure donc la largeur du
+terrain obtenu et vérifie que **deux zones voisines ne se chevauchent pas** —
+c'est ce second contrôle qui a d'abord attrapé un jeu d'essai dont les
+proportions n'étaient pas, elles-mêmes, à l'échelle.
+
 ### Les deux refus, et pourquoi ils sont durs
 
 `CLAUDE.md` §4 bis : *« sans ça il ne doit rien proposer »*. Ce n'est pas le
@@ -13364,7 +13477,7 @@ C'est un coup de bêche à décaler sur place, et le plan le **dit** en réserve
 
 ---
 
-## 150. La pluviométrie ne coupe plus les secteurs — et « 13x », pas « 13 u »
+## 151. La pluviométrie ne coupe plus les secteurs — et « 13x », pas « 13 u »
 
 **Ses deux décisions du 23 août 2026**, en une phrase chacune : *« ne prends pas
 en compte la pluviométrie »* et *« pour le calcul des pièces, 13x et pas
@@ -13394,7 +13507,7 @@ ensemble : l'une verse environ trois fois plus vite, et cette règle-là, il ne
 l'a pas retirée. `test-arrosage-calcul.ts` éprouve **les deux faces** — que deux
 buses peuvent se retrouver ensemble, et que deux matériels ne le peuvent pas.
 
-**Conséquence dans le plan dessiné (§149) :** un réseau ne porte plus forcément
+**Conséquence dans le plan dessiné (§150) :** un réseau ne porte plus forcément
 un seul modèle. `ReseauDessine.materiels` est devenu une LISTE, comptée par
 modèle. N'en nommer qu'un ferait commander de travers, et c'était exactement le
 raccourci que le code prenait tant que la pluviométrie garantissait l'unicité.

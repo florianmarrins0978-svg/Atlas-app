@@ -11,7 +11,7 @@ langage, et rien n'y entre sans son accord.
 
 ## Arrosage : l'interface pour discuter le plan (23 août 2026)
 
-Le plan se dessine (`ARCHITECTURE.md` §149). Reste ce qu'il a demandé le 21 :
+Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
 *« j'ai besoin que si l'utilisateur a besoin de te demander de faire une
 modification, qu'il puisse le faire — une petite interface pour qu'il puisse
 discuter avec toi »*, avec deux bornes qu'il a posées lui-même :
@@ -103,6 +103,11 @@ Les deux échouent au même endroit : on écrit dans un champ, on relit la base,
 la valeur n'y est pas encore. L'enregistrement de l'éditeur est différé ; sur un
 serveur de développement chargé par soixante suites, l'assertion arrive avant
 l'écriture.
+
+**`test-reprise-chantier-e2e.ts` a rejoint la liste le 22 août au soir**, avec
+la même signature : *« le total n'est pas montré avant l'envoi. Vu : […] TOTAL
+HT 0,00 € »*. Tombée en batterie, verte seule et verte au repassage complet
+(103/103) dans la foulée. Trois suites, un seul défaut.
 
 **Ce n'est pas un défaut du produit — c'est un contrôle qui lit trop tôt.** Mais
 il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un rouge.
@@ -1782,7 +1787,7 @@ groupe : sa règle « ça ne se mélange jamais », appliquée à la lettre.
 > compte la pluviométrie »*. Elle est sortie de la clé de groupe : deux buses
 > différentes peuvent désormais partager une vanne, avec des mm/h différents
 > pour une même durée d'ouverture, et **c'est lui qui arbitre à l'arrosage**.
-> Le MATÉRIEL, lui, sépare toujours (`ARCHITECTURE.md` §150). Le récit ci-dessus
+> Le MATÉRIEL, lui, sépare toujours (`ARCHITECTURE.md` §151). Le récit ci-dessus
 > est conservé pour qu'on ne rouvre pas la question en croyant l'inventer.
 
 **Ce que ça lui coûte, et il faut le lui dire :** une vanne de plus quand deux

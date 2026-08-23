@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
+import { trajetLePlusLong, poserSurLeTerrain } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
 
@@ -50,7 +51,17 @@ export type EtatPlan =
          * longueur de tuyau à mesurer. Les forcer à en avoir une aurait obligé
          * à en inventer, ce que ce dépôt interdit.
          */
-        materiel: { ref?: string; nom: string; q: number; u: string }[];
+        /**
+         * **`reference` est la SEULE qu'on montre.**
+         *
+         * `ref` est une clé interne du catalogue (`te-taraude-25-34-25`) : elle
+         * sert à identifier une ligne, elle ne se commande pas. `reference` ne
+         * vaut que quand elle a été relevée sur un document du patron
+         * (« Aqua Plus 2026, p. 11 ») — sinon `null`, et l'écran n'affiche
+         * rien. Sa consigne du 22 août 2026 : *« tu ne dois surtout pas
+         * inventer de prix ni de référence »*.
+         */
+        materiel: { ref?: string; reference?: string | null; nom: string; q: number; u: string }[];
         /**
          * **À PARTIR DE COMBIEN DE MÈTRES IL FAUT DU Ø32** — sa demande du
          * 22 août 2026 : *« passé un certain nombre de mètres linéaires, il
@@ -142,29 +153,64 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   });
   if (!mesure.ok) return { etat: "refus", raison: mesure.raison };
 
+  /* ══ LE TRAJET DU REGARD À LA PREMIÈRE TÊTE ═══════════════════════════════
+
+     **Sa demande du 22 août 2026 : « oui fais-le lire les proportions ».**
+
+     Je lui avais dit qu'aucune saisie ne donnait cette distance. Il a répondu
+     qu'il n'avait pas à la donner — le croquis porte la nourrice et les zones,
+     et les cotes donnent l'échelle. Il avait raison : c'est la lecture qui ne
+     relevait pas les places.
+
+     **Une lecture ratée n'arrête pas le plan, elle se DIT.** Le trajet vaut
+     alors zéro et la réserve l'annonce : c'est ce que le calcul faisait déjà
+     hier pour tout le monde, donc ce n'est pas une régression — mais le taire
+     ferait croire que le trajet est compté. */
+  //
+  // **Les places se lisent EN FRACTION, et se convertissent ici** — une seule
+  // fois, par un seul chemin (`geometrie-croquis.ts`). Le trajet et le dessin
+  // partent donc des mêmes mètres : deux conversions finiraient par poser la
+  // même pelouse à deux endroits (`CLAUDE.md` §3).
+  const places = mesurees.map((z) => ({
+    position: z.x !== null && z.y !== null ? { x: z.x, y: z.y } : null,
+    largeurFraction: z.largeurFraction,
+    hauteurFraction: z.hauteurFraction,
+    L: z.L,
+    l: z.l,
+  }));
+  const trajet = trajetLePlusLong(lu.croquis.nourrice, places);
+  const terrain = poserSurLeTerrain(lu.croquis.nourrice, places);
+
   const plan = calculerPlan({
+    regardVersZone: trajet.ok ? trajet.metres : 0,
     // Le calcul raisonne en seau et temps : on lui rend le débit retenu sous
     // cette forme, sans repasser par la saisie — une seule source du débit.
     seau: SEAU_LITRES,
     temps: (SEAU_LITRES / mesure.debit) * 3.6,
     pression: mesure.pression,
     compteur: piquage === "compteur" ? "oui" : "non",
-    zones: mesurees.map((z) => ({
+    zones: mesurees.map((z, i) => ({
       type: z.type,
       nom: z.nom ?? undefined,
       L: z.L ?? undefined,
       l: z.l ?? undefined,
       ml: z.ml ?? undefined,
-      // **Où la zone se trouve** — sans quoi le plan se compte mais ne se
-      // dessine pas. `undefined` traverse jusqu'au dessin, qui refuse : c'est
-      // là que la règle vit, pas ici.
-      x: z.x ?? undefined,
-      y: z.y ?? undefined,
+      // **Où la zone se trouve, EN MÈTRES** — sans quoi le plan se compte mais
+      // ne se dessine pas. Ce n'est pas la fraction lue : c'est elle passée à
+      // l'échelle du croquis. `undefined` traverse jusqu'au dessin, qui refuse
+      // alors — c'est là que la règle vit, pas ici.
+      x: terrain.ok ? terrain.terrain.zones[i].x : undefined,
+      y: terrain.ok ? terrain.terrain.zones[i].y : undefined,
     })),
   });
 
   const reserves = [...lu.croquis.reserves];
   if (mesure.reserve) reserves.push(mesure.reserve);
+  if (!trajet.ok) {
+    reserves.push(
+      `${trajet.raison} : le trajet du regard jusqu'au premier arroseur n'est pas compté`
+    );
+  }
   // **Une portée réduite est une ESTIMATION, et elle se dit.** Le débit des
   // buses est ramené à la pression du chantier par la loi de l'orifice — de la
   // physique. La portée, elle, suit un exposant tiré des tables des
@@ -187,8 +233,9 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     reserves.push(
       `${plan.pressionAuxArroseurs.toFixed(1).replace(".", ",")} bar au dernier arroseur ` +
         `(${plan.perteReseau.toFixed(2).replace(".", ",")} bar perdus dans le réseau, ` +
-        `${plan.perteAmenee.toFixed(2).replace(".", ",")} dans l'amenée) — le trajet du regard ` +
-        "jusqu'à la première tête n'est pas compté"
+        `${plan.perteAmenee.toFixed(2).replace(".", ",")} dans l'amenée` +
+        (trajet.ok ? `, trajet du regard ${trajet.metres.toFixed(0)} m lu sur le croquis` : "") +
+        ")"
     );
   }
   if (plan.porteeEstimee) {
@@ -212,9 +259,13 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // plan entier : une liste de pièces sans tracé se commande quand même, et
   // c'est ce qu'il a refusé le 21 août (« il n'est pas valable avec cette
   // nouvelle règle »). On dit lequel des trois manque, et l'on s'arrête.
+  if (!terrain.ok) return { etat: "refus", raison: terrain.raison };
   const dessine = dessinerPlan(
     plan.dessin as ZoneDessinee[],
-    lu.croquis.nourrice,
+    // **La nourrice EN MÈTRES**, sur le même repère que les zones. Lui passer
+    // la fraction lue dessinerait un jardin d'un mètre de large : le défaut
+    // aurait été muet, puisque tout resterait cohérent entre soi.
+    terrain.terrain.nourrice,
     plan.couleurs as string[]
   );
   if (!dessine.ok) return { etat: "refus", raison: dessine.raison };

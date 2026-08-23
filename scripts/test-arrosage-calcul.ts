@@ -499,7 +499,7 @@ dire(
   // commentaire ci-dessus interdit.
   //
   // Le patron a retiré la pluviométrie de la clé de secteur (*« ne prends pas
-  // en compte la pluviométrie »*, `ARCHITECTURE.md` §150). Sur CE jardin, les
+  // en compte la pluviométrie »*, `ARCHITECTURE.md` §151). Sur CE jardin, les
   // deux pelouses reçoivent des buses différentes — 0,75 devant, 1,5 derrière :
   //
   //   avant : « Devant » 0,96 · « Derrière » 1,50   → deux secteurs séparés
@@ -543,6 +543,45 @@ dire(
     Math.abs(apresUnAutre.pressionAuxArroseurs - p.pressionAuxArroseurs) < 1e-9,
     `un jardin à 1,2 bar intercalé ne déteint pas sur le suivant ` +
       `(${apresUnAutre.pressionAuxArroseurs.toFixed(3)} bar)`,
+  );
+}
+
+// ── 13. LE RÉDUCTEUR EST POUR LE GOUTTE-À-GOUTTE, ET POUR LUI SEUL ──────────
+//
+// **Sa règle du 22 août 2026 :** *« non, remets-le, il est utilisé pour le
+// goutte-à-goutte seulement »*.
+//
+// **Deux erreurs de suite avant d'y arriver, et la seconde est instructive.**
+// La pièce était d'abord facturée d'office, sans source. Sa notice Rain Bird
+// m'a fait la conditionner à la pression — *« if pressure is greater than
+// 80 psi (5,5 bar), install a pressure regulator »* — ce qui la retirait de
+// tous ses chantiers à 3 bar. C'était encore faux : **une notice dit ce que le
+// MATÉRIEL supporte, jamais ce que le CHANTIER exige.** Une gaine de goutteurs
+// veut un réducteur quelle que soit la pression d'arrivée ; un réseau de
+// turbines n'en veut pas, même à 6 bar.
+{
+  const arroseursSeuls = calculerPlan({
+    seau: 10, temps: 20, pression: 3,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }],
+  });
+  const avecGoutteAGoutte = calculerPlan({
+    seau: 10, temps: 20, pression: 3,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }, { type: "haie", nom: "Haie", ml: 22 }],
+  });
+  // **Et la pression n'y change rien** : c'est ce que la version d'avant avait
+  // faux, et ce contrôle-ci l'empêche de revenir.
+  const arroseursAHautePression = calculerPlan({
+    seau: 10, temps: 20, pression: 6,
+    zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }],
+  });
+  const reducteur = (p: { materiel: { nom: string }[] }) =>
+    p.materiel.some((m) => /Réducteur/i.test(m.nom));
+
+  dire(!reducteur(arroseursSeuls), "que des arroseurs : aucun réducteur facturé");
+  dire(reducteur(avecGoutteAGoutte), "une gaine de goutteurs : le réducteur est facturé");
+  dire(
+    !reducteur(arroseursAHautePression),
+    "à 6 bar sans goutte-à-goutte : toujours aucun réducteur — c'est l'emploi qui décide, pas la pression",
   );
 }
 

@@ -43,13 +43,13 @@ l'on dit ce qui manque. La nourrice n'est jamais déduite : la lecture du croqui
 la cherche, et rend `null` plutôt que de la poser au piquage « pour dépanner ».
 
 **Quatre défauts trouvés à la capture, aucun par un test** (`ARCHITECTURE.md`
-§149) : les portées débordaient de la pelouse, le mot « nourrice » tombait sur
+§150) : les portées débordaient de la pelouse, le mot « nourrice » tombait sur
 une cote, deux réseaux partageant une tranchée dessinaient le même trait — le
 second effaçant le premier —, et la tranchée était du même jaune que le
 troisième réseau. Les deux derniers ne se voient que sur un jardin à trois
 réseaux, et la maquette validée n'en portait que deux.
 
-Détail et partis pris : `ARCHITECTURE.md` §149.
+Détail et partis pris : `ARCHITECTURE.md` §150.
 
 ### La pluviométrie ne sépare plus deux vannes, et les pièces se comptent en « 13x »
 
@@ -72,7 +72,7 @@ page publiée et la maquette. L'unité reste dans les données : les mètres res
 des mètres, « 80x de PE Ø25 » ne se commande pas. Une seule fonction sert les
 deux écrans.
 
-Détail : `ARCHITECTURE.md` §150.
+Détail : `ARCHITECTURE.md` §151.
 
 ### Une note sur la feuille de chantier — « penser à prendre le broyeur »
 
@@ -318,6 +318,134 @@ suites tenaient l'ancien geste. La case éteinte n'existe plus, l'exception des
 tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour portait
 le même `data-jour` que les cases — deux éléments pour le même jour, et une
 suite qui ne savait plus lequel viser.
+
+### Le croquis dit enfin OÙ sont les choses — et le dernier trajet est compté
+
+**Sa demande : « oui fais-le lire les proportions ».** Elle répond à ce que je
+lui avais présenté comme impossible : le trajet du regard jusqu'au premier
+arroseur, que je disais « non saisi ». Sa réponse : *« j'ai pas besoin de lui
+dire, il a tous les métrés du terrain, il a juste à calculer »*.
+
+**Il avait raison sur le fond, je me trompais sur le fait.** Le croquis PORTE
+l'information — la nourrice y est dessinée, les zones aussi, et les cotes
+donnent l'échelle. C'est la LECTURE qui ne relevait rien de tout ça : elle ne
+rendait que des dimensions, jamais des places.
+
+**Ce qui change :** la lecture demande maintenant, pour chaque zone et pour la
+nourrice, une place en **fraction du dessin** (0 à 1). Pas en mètres — un
+modèle voit qu'une pelouse occupe le tiers gauche, il ne voit pas qu'elle est à
+douze mètres du regard.
+
+**L'échelle se déduit des cotes déjà lues**, elle ne se demande pas. Une pelouse
+de 16 m qui occupe 0,40 du croquis donne 40 m par unité. Chaque zone cotée
+fournit ainsi jusqu'à deux estimations, et l'on retient la **médiane** — pas la
+moyenne : un modèle qui se trompe sur une zone tirerait la moyenne vers son
+erreur.
+
+**Et l'on REFUSE de conclure quand les zones se contredisent.** Plus du double
+d'écart entre estimations : le croquis n'est pas à l'échelle, ou la lecture est
+fausse. On rend la raison, jamais une distance moyenne qui n'existe nulle part.
+
+Sur le jardin d'exemple, trente mètres de trajet coûtent **0,29 bar** — la
+pression au dernier arroseur passe de 2,28 à 2,01. Ce n'était pas un détail.
+
+**La nourrice reste lue, jamais déduite** (`CLAUDE.md` §4 bis). Absente du
+dessin, elle reste absente : le trajet n'est pas compté, et l'écran le dit.
+
+**Un contrôle a rougi sur MON erreur, et c'est ce qui prouve qu'il sert.**
+J'avais figé « 8 m » pour une distance en diagonale, en lisant les demi-côtés de
+travers ; le calcul disait 11. Refaire l'opération à la main était le seul moyen
+de trancher — c'est exactement ce que vaut une valeur figée dans une suite.
+
+### Sa notice Rain Bird retire une pièce facturée pour rien
+
+Il envoie la notice de ses électrovannes (`man_DV_DVF.pdf`, Rain Bird, P/N
+231576-B) en réponse à la valeur que je disais manquante.
+
+**Elle ne donne pas la perte de charge** — c'est une notice d'installation, pas
+une fiche technique : ni courbe, ni tableau ΔP. Le forfait majorant de 0,25 bar
+reste donc en place, et reste non relevé.
+
+**Mais elle apprend trois choses**, toutes désormais au catalogue :
+
+| | 075-DV (3/4") | 100-DV (1") |
+|---|---|---|
+| débit admis | 0,05 à 5,0 m³/h | 0,05 à 9,08 m³/h |
+| pression admise | 1 à 10 bar | 1 à 10 bar |
+
+Et surtout : *« if pressure is greater than 80 psi (5,5 bar), install a
+pressure regulator on the line before the valve »*.
+
+**Le réducteur de pression était facturé sur CHAQUE chantier** — une pièce que
+j'avais posée d'office, sans source (`source:'provisoire'`). Chez lui, la source
+donne 3 bar : la vanne travaille dans sa plage, le réducteur ne sert à rien. Il
+n'apparaît plus qu'au-delà de 5,5 bar.
+
+### « Il faut qu'il me calcule le nombre juste » — la prudence ne vaut que pour l'inconnu
+
+Sa précision, aussitôt après avoir redressé la règle du sûr : *« faut pas pour
+autant qu'il retire un arroseur, il faut qu'il me calcule le nombre juste »*.
+
+La règle pouvait se lire de travers — « en cas de doute, moins d'arroseurs »
+n'autorise pas à en retirer un au jugé. Elle distingue maintenant deux choses :
+
+| | |
+|---|---|
+| ce qui se **calcule** — couverture, débit d'une buse, pertes | **exact**, sans marge ajoutée |
+| ce qu'on **ignore** — une valeur non relevée, une longueur non saisie | prudent |
+
+Retirer un arroseur « pour être tranquille » n'est pas de la prudence : c'est un
+trou d'arrosage, et il se voit en juillet exactement comme la panne qu'on
+voulait éviter.
+
+### La colonne « référence » affichait des noms de variables
+
+**Sa consigne, en majuscules et six points d'exclamation :** *« tu ne dois
+surtout pas inventer de prix ni de référence !!!!!!! »*
+
+**Aucun prix n'était en cause** — le catalogue n'en porte aucun, c'est la règle
+depuis le 17 août et elle tenait. **Mais les références, si.** La liste de
+matériel et la planche du plan affichaient `te-taraude-25-34-25`,
+`electrovanne-100dv`, `regard-rect12`, `pehd25` : les clés internes du
+catalogue, c'est-à-dire des noms de variables. Un paysagiste qui arrive chez
+Aqua Plus en demandant un « te-taraude-25-34-25 » se fait regarder de travers.
+
+Sur vingt-six lignes de matériel, **cinq seulement portaient une vraie
+référence** — RA3504, RA3504-B075, RT1804, RBT636, OD501, OD502, celles qu'on a
+relevées sur ses documents.
+
+`CATALOGUE.referenceDe` en est désormais le seul juge : une référence ne
+s'affiche que si l'entrée du catalogue porte un `releve` (« Aqua Plus 2026,
+p. 11 »). Les autres lignes n'en montrent aucune — leur nom suffit au comptoir,
+et le silence vaut mieux qu'une référence qui n'existe pas.
+
+Un contrôle interdit maintenant à la planche d'en réafficher : il interroge le
+catalogue au lieu de porter sa propre liste, parce qu'une liste recopiée dans un
+contrôle finit par défendre le catalogue d'avant-hier — c'est ce qui était
+arrivé à la légende le matin même.
+
+### « Un arroseur de trop fait que le réseau ne se lève pas » — la règle était à l'envers
+
+**Sa correction, et elle vise une règle que j'avais écrite le matin même.** Le
+`CLAUDE.md` §4 ter disait : *« devant deux hypothèses également défendables,
+retenir celle qui pose un arroseur de plus »*. Appliquée à un RÉSEAU, cette
+formule produit exactement la panne qu'elle prétend éviter : une tête de plus
+sur une vanne, c'est du débit en plus sur la même conduite, donc de la pression
+en moins, donc des turbines qui sortent à moitié.
+
+La règle est redressée, et elle se lit maintenant par grandeur :
+
+| Devant un doute | Ce qu'on retient |
+|---|---|
+| combien d'arroseurs sur **une vanne** | **le moins**, quitte à ouvrir une vanne de plus |
+| combien de **réseaux** | **le plus** |
+| une perte de charge inconnue | **la plus forte** |
+| une portée inconnue | **la plus courte** |
+
+**Le code, lui, allait déjà dans le bon sens** — la marge de 0,85, le plafond du
+tuyau et la portée réduite bornent tous le débit par vanne. C'est le vocabulaire
+qui était faux, dans quatre commentaires et deux documents. Une règle mal
+formulée finit par être appliquée telle qu'elle est écrite.
 
 ### Ce qui arrive au DERNIER arroseur est enfin calculé
 

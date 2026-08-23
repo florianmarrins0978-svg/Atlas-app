@@ -56,16 +56,17 @@ export type ZoneLue = {
   /** Pour une haie ou un massif : les mètres linéaires. */
   ml: number | null;
   /**
-   * OÙ la zone se trouve — le coin haut-gauche, en mètres, sur le repère du
-   * croquis. `null` quand le dessin ne permet pas de la situer.
+   * Où la zone se trouve SUR LE DESSIN, en fraction (0 à 1) — pas en mètres.
    *
-   * **Sans elle, aucun plan ne peut être DESSINÉ** — seulement compté. C'est
-   * ce qui manquait le 23 août 2026 : la lecture rendait des surfaces sans
-   * jamais dire où elles étaient, et le plan des maquettes portait donc le
-   * contour de SON jardin, écrit en dur.
+   * **Sa demande du 22 août 2026 : « oui fais-le lire les proportions ».** Le
+   * modèle voit qu'une pelouse occupe le tiers gauche du croquis ; il ne voit
+   * pas qu'elle est à douze mètres du regard. Les mètres se déduisent ensuite
+   * des cotes déjà lues (`geometrie-croquis.ts`), jamais du dessin.
    */
   x: number | null;
   y: number | null;
+  largeurFraction: number | null;
+  hauteurFraction: number | null;
 };
 
 export type CroquisLu = {
@@ -73,14 +74,12 @@ export type CroquisLu = {
   /** Où l'eau arrive : « compteur », « robinet », « puits », ou inconnu. */
   pointDEau: "compteur" | "robinet" | "puits" | null;
   /**
-   * L'ENDROIT DÉFINITIF DE LA NOURRICE, sur le même repère que les zones.
+   * Où la nourrice est dessinée, en fraction du croquis. `null` si absente.
    *
-   * **`null` n'est pas un manque à combler : c'est un refus** (`CLAUDE.md`
-   * §4 bis). *« L'outil doit fonctionner avec un plan avec toutes les métrées,
-   * l'emplacement du piquage et l'endroit définitif de la nourrice — sans ça
-   * il ne doit rien proposer. »* Et surtout, on ne la DEVINE pas : *« c'est
-   * l'utilisateur qui placera la nourrice où il veut »*. Informer n'est pas
-   * proposer.
+   * **Elle ne se déduit JAMAIS du point d'eau** (`CLAUDE.md` §4 bis) : c'est
+   * l'utilisateur qui la place, et l'endroit dépend de ce que lui seul sait —
+   * un passage de voiture, un massif qu'on ne rouvre pas, l'accès pour
+   * l'hivernage. Absente du croquis, elle reste absente ici.
    */
   nourrice: { x: number; y: number } | null;
   /** Ce que la lecture n'a pas su faire, dit en français au patron. */
@@ -94,16 +93,15 @@ export type ResultatCroquis =
 const SYSTEME = `Tu lis des croquis de jardin dessinés à la main par un paysagiste français, avec leurs métrés.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Forme attendue :
-{"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x_m":number|null,"y_m":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x_m":number,"y_m":number}|null}
+{"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null}}
 Règles :
 - Tu ne DEVINES jamais. Une cote illisible vaut null. Une zone sans aucune cote se rend quand même, avec ses champs à null.
+- LES PLACES SE DONNENT EN FRACTION DU DESSIN, de 0 à 1. x=0 est le bord gauche, x=1 le bord droit ; y=0 le haut, y=1 le bas. « x » et « y » sont le CENTRE de la zone ; « largeur_fraction » et « hauteur_fraction » sont ce qu'elle occupe. Ne convertis JAMAIS ces places en mètres : les mètres se déduisent des cotes.
+- La nourrice est le regard d'où partent les réseaux (souvent un rectangle marqué « nourrice », « regard » ou « vannes »). Si elle n'est pas dessinée, rends x et y à null — ne la place pas au point d'eau pour dépanner.
 - Les pelouses et potagers se mesurent en longueur x largeur. Les haies et massifs se mesurent en mètres linéaires.
 - Les mesures sont en MÈTRES, en nombre décimal à point. Un « 1200 » à côté d'une haie est probablement 12,00 m : rends 12.
 - N'invente aucune zone qui ne figure pas sur le dessin.
-- Si le croquis ne montre pas d'où vient l'eau, rends null.
-- POSITIONS : pose un repère en mètres, origine au coin HAUT-GAUCHE du dessin, x vers la droite, y vers le BAS. Pour chaque zone, "x_m" et "y_m" sont son coin haut-gauche dans ce repère. Deux zones qui se touchent partagent leur arête : leurs coordonnées doivent le montrer.
-- Si le dessin ne permet pas de situer une zone les unes par rapport aux autres, rends x_m et y_m à null plutôt qu'un placement inventé.
-- "nourrice" est l'endroit du regard de vannes (souvent noté « nourrice », « regard » ou « vannes »), dans le même repère. S'il n'est PAS dessiné, rends null — ne le place jamais toi-même.`;
+- Si le croquis ne montre pas d'où vient l'eau, rends null.`;
 
 const CONSIGNE = "Lis ce croquis de jardin et rends l'objet JSON demandé.";
 
@@ -156,6 +154,21 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     return Number.isFinite(n) ? n : null;
   };
 
+  /**
+   * Une place sur le dessin : un nombre entre 0 et 1, ou rien.
+   *
+   * **Hors de [0, 1], on refuse plutôt que de ramener dans les bornes.** Un
+   * modèle qui rend « 12 » pour un x n'a pas donné une fraction : il a donné
+   * des mètres, ou un pixel, ou il s'est trompé de champ. Le rogner à 1
+   * fabriquerait une position plausible et fausse, et c'est une distance de
+   * tuyau qui en sortirait.
+   */
+  const fraction = (v: unknown): number | null => {
+    const n = nombre(v);
+    if (n === null) return null;
+    return n >= 0 && n <= 1 ? n : null;
+  };
+
   const reserves: string[] = [];
 
   /** Une cote plausible pour un jardin de particulier, ou rien. */
@@ -170,13 +183,6 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
       reserves.push(`une mesure invraisemblable a été lue pour ${quoi} (${n} m)`);
       return null;
     }
-    return Math.round(n * 100) / 100;
-  };
-
-  /** Une abscisse : zéro est licite, le négatif et l'invraisemblable ne le sont pas. */
-  const position = (v: unknown): number | null => {
-    const n = nombre(v);
-    if (n === null || n < 0 || n > 200) return null;
     return Math.round(n * 100) / 100;
   };
 
@@ -205,12 +211,10 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
       L: lineaire ? null : cote(o.longueur_m, 100, nom ?? type),
       l: lineaire ? null : cote(o.largeur_m, 100, nom ?? type),
       ml: lineaire ? cote(o.metres_lineaires, 200, nom ?? type) : null,
-      // **Une position peut valoir zéro**, contrairement à une cote : la zone
-      // du coin haut-gauche est en (0 ; 0). `cote()` refuserait ce zéro comme
-      // une mesure nulle — d'où une lecture séparée, qui n'accepte pas non plus
-      // le négatif (l'origine est un coin, rien n'est à sa gauche).
-      x: position(o.x_m),
-      y: position(o.y_m),
+      x: fraction(o.x),
+      y: fraction(o.y),
+      largeurFraction: fraction(o.largeur_fraction),
+      hauteurFraction: fraction(o.hauteur_fraction),
     };
     // Une zone dont aucune cote n'a été lue reste dans la liste — le patron sait
     // qu'elle existe et la complète. La faire disparaître lui ferait croire que
@@ -230,18 +234,15 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     eauBrute === "compteur" || eauBrute === "robinet" || eauBrute === "puits" ? eauBrute : null;
   if (pointDEau === null) reserves.push("le croquis ne dit pas d’où vient l’eau");
 
-  // **La nourrice n'est retenue que si les DEUX coordonnées sont lues.** Une
-  // seule des deux placerait le regard sur une ligne au lieu d'un point, et le
-  // tracé partirait d'un endroit que personne n'a dessiné.
-  const nourriceBrute = brut.nourrice as Record<string, unknown> | null | undefined;
-  const nx = nourriceBrute ? position(nourriceBrute.x_m) : null;
-  const ny = nourriceBrute ? position(nourriceBrute.y_m) : null;
+  // **LA NOURRICE SE LIT, ELLE NE SE DÉDUIT PAS** (`CLAUDE.md` §4 bis). Absente
+  // du dessin, elle reste absente : la poser au point d'eau « pour dépanner »
+  // ferait creuser au mauvais endroit, et une tranchée ne se déplace pas.
+  const nourriceBrute = (brut.nourrice ?? {}) as Record<string, unknown>;
+  const nx = fraction(nourriceBrute.x);
+  const ny = fraction(nourriceBrute.y);
   const nourrice = nx !== null && ny !== null ? { x: nx, y: ny } : null;
   if (nourrice === null) {
-    reserves.push("le croquis ne montre pas l’endroit définitif de la nourrice");
-  }
-  if (zones.some((z) => z.x === null || z.y === null)) {
-    reserves.push("le croquis ne situe pas toutes les zones les unes par rapport aux autres");
+    reserves.push("le croquis ne montre pas où la nourrice est posée");
   }
 
   return { ok: true, croquis: { zones, pointDEau, nourrice, reserves } };

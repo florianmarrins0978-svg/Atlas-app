@@ -42,6 +42,18 @@ environnement** — la fonction pure `lireReponseCroquis` est éprouvée
 (`test-lecture-croquis.ts`), l'appel au fournisseur ne l'est pas. Premier essai à
 faire sur son banc.
 
+### LE CROQUIS SE LIT EN FRACTIONS, ET UN SEUL ENDROIT LES CONVERTIT
+
+`lire-croquis.ts` rend des places **en fraction du dessin** (0 à 1), jamais des
+mètres — c'est tout ce qu'une image permet. `poserSurLeTerrain()`, dans
+`geometrie-croquis.ts`, en fait des mètres pour le dessin ; c'est le même module
+qui déduit l'échelle pour le trajet du regard, **et il ne doit pas y en avoir un
+second**. Les côtés viennent des cotes lues, la place vient du dessin.
+
+**Le défaut à craindre est muet** : oublier la conversion laisse un plan
+cohérent avec lui-même, dessiné sur un jardin d'un mètre de large. Il est
+éprouvé sur une mesure (`test-geometrie-croquis.ts`), pas sur une forme.
+
 ### DEUX RÈGLES ONT CHANGÉ LE 23 AOÛT — ne pas les « corriger »
 
 **La pluviométrie n'est plus dans la clé de secteur.** Elle y était depuis le
@@ -65,7 +77,7 @@ npx tsx scripts/capture-plan-arrosage.ts /tmp/captures
 ```
 
 Il a déjà attrapé quatre défauts qu'aucun test ne voyait (`ARCHITECTURE.md`
-§149). **S'en servir avant de dire qu'un changement de dessin va bien.**
+§150). **S'en servir avant de dire qu'un changement de dessin va bien.**
 
 ## PRÉVENIR N'EST PAS REFUSER — et « proposée » n'est pas « forcée »
 
@@ -90,6 +102,55 @@ reçue de l'écran, elle serait un moyen de forcer n'importe quel jour.
 
 **Ce qui reste refusé partout**, parce que ce n'est pas un jugement d'artisan :
 une date passée, ou au-delà de dix-huit mois.
+
+---
+
+## UNE RÉFÉRENCE, OU RIEN — et le sûr, c'est MOINS d'arroseurs par vanne
+
+**Deux consignes du 22 août 2026 au soir, toutes deux à ne jamais rouvrir.**
+
+**1. Ne jamais afficher une référence non relevée.** La colonne « référence »
+montrait les clés internes du catalogue (`te-taraude-25-34-25`,
+`electrovanne-100dv`). Ce sont des noms de variables : on ne commande pas avec.
+`CATALOGUE.referenceDe(cle)` est le seul juge — elle rend la référence
+seulement si l'entrée porte un `releve`. L'écran affiche `reference`, jamais
+`ref`. Un contrôle de la planche interdit d'en réafficher.
+
+**2. Le sûr, c'est MOINS d'arroseurs par vanne — pas plus.** La règle du
+`CLAUDE.md` §4 ter était écrite à l'envers, et c'est lui qui l'a redressée :
+*« un arroseur de trop fait que le réseau ne peut pas se lever ! »* Une tête de
+plus sur une vanne, c'est du débit en plus sur la même conduite. Devant un
+doute : moins d'arroseurs par vanne, plus de réseaux, la perte la plus forte, la
+portée la plus courte.
+
+---
+
+## LE CROQUIS PORTE LES PLACES — en fraction, jamais en mètres (22 août 2026)
+
+`lire-croquis.ts` demande maintenant, pour chaque zone et pour la nourrice, une
+place entre 0 et 1 (`x`, `y`, `largeur_fraction`, `hauteur_fraction`).
+`geometrie-croquis.ts` en tire les mètres.
+
+**L'échelle sort des cotes déjà lues** — 16 m sur 0,40 du croquis = 40 m par
+unité — en prenant la **médiane** des estimations. Au-delà du double d'écart
+entre zones, elle REFUSE de conclure et rend une raison.
+
+**Ne jamais rogner une place hors de [0, 1]** : un « 12 » pour un x n'est pas
+une fraction, et le ramener à 1 fabrique une distance de tuyau fausse.
+
+**La distance est en Manhattan, jusqu'au BORD de la zone** — pas au centre : la
+longueur dans la zone est déjà comptée par la ligne d'arroseurs.
+
+**Sans nourrice dessinée, aucun trajet**, et surtout aucune supposition : elle
+ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
+
+**Elle vit hors de `calcul.js`** parce que ce fichier est une copie partagée
+avec `appli/` : la distance est passée en entrée (`regardVersZone`).
+
+Détail : `ARCHITECTURE.md` §149.
+
+---
+
 ## LA PRESSION QUI DIMENSIONNE EST CELLE DU DERNIER ARROSEUR (22 août 2026)
 
 **Avant de toucher à `decouper` ou à `buseALaPression`, sachez ceci :** le

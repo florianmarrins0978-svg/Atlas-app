@@ -121,8 +121,11 @@ function paveSelonSaRegle(dimension, portee){
    la portée du catalogue est conservée**. Gonfler une portée sur une
    estimation ferait espacer les arroseurs davantage, et un espacement trop
    large est un trou d'arrosage qu'on ne découvre qu'en juillet. En dessous, on
-   réduit : c'est le sens où se tromper coûte un arroseur de plus, jamais une
-   tache sèche.
+   réduit : resserrer la pose ajoute des têtes sur la ZONE, que le découpage
+   répartira sur une vanne de plus — jamais sur la même. C'est le sens sûr, et
+   il coûte une électrovanne, pas un chantier (`CLAUDE.md` §4 ter, redressé par
+   lui le 22 août : *« un arroseur de trop fait que le réseau ne peut pas se
+   lever »*).
 
    ⚠ **La pression retenue est celle de la SOURCE**, pas celle qui reste au
    pied du dernier arroseur : les pertes du réseau lui-même ne sont pas encore
@@ -352,6 +355,9 @@ var DEFAUTS = {
   seau:10, temps:20, pression:3, saison:'juillet', compteur:null, corps:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   amenee:30, pe25:120, sonde:false, croquis:null,
+  // Du regard à la première tête, en mètres. Lu sur le croquis quand il montre
+  // la nourrice (`geometrie-croquis.ts`) ; zéro sinon, et l'écran le dit.
+  regardVersZone:0,
   zones:[
     { id:1, nom:'Pelouse arrière', type:'gazon',   L:18, l:12, materiel:'auto' },
     // **Plus de tuyères imposées sur une grande pelouse (17 août).** Les deux
@@ -541,6 +547,24 @@ function perteDuReseau(secteur){
   // Le débit qui passe encore dans le tronçon menant à la tête i : c'est la
   // somme de ce que boivent cette tête et toutes celles qui la suivent.
   var restant = pts.reduce(function(s, p){ return s + (p.debit || 0); }, 0);
+  var debitDuReseau = restant;
+
+  /* **LE TRAJET DU REGARD À LA PREMIÈRE TÊTE — comblé le 22 août 2026 au soir.**
+
+     C'était le dernier morceau non compté, et je lui avais dit qu'aucune saisie
+     ne le donnait. Sa réponse : *« j'ai pas besoin de lui dire, il a tous les
+     métrés du terrain, il a juste à calculer »*. Il avait raison — le croquis
+     porte la nourrice ET les zones, et les cotes donnent l'échelle. C'est la
+     LECTURE qui ne relevait pas les places (`geometrie-croquis.ts`).
+
+     **Tout le débit du réseau passe par ce tronçon**, puisqu'aucune tête n'y a
+     encore puisé : c'est le morceau le plus chargé de toute la ligne, et donc
+     celui qui perd le plus au mètre.
+
+     Zéro tant que la place de la nourrice n'a pas été lue — et l'écran le dit
+     plutôt que de laisser croire que le trajet est compté. */
+  var versLaZone = Number(etat.regardVersZone) || 0;
+  var amont = perteDeCharge(debitDuReseau, versLaZone, t25.dInterieur);
   for (var i = 1; i < pts.length; i++){
     restant -= (pts[i-1].debit || 0);
     var l = Math.abs(pts[i].x - pts[i-1].x) + Math.abs(pts[i].y - pts[i-1].y);
@@ -554,10 +578,11 @@ function perteDuReseau(secteur){
 
   return {
     lineaire: lineaire,
-    raccords: lineaire * MAJORATION_RACCORDS,
+    amont: amont,
+    raccords: (lineaire + amont) * MAJORATION_RACCORDS,
     electrovanne: PERTE_ELECTROVANNE,
     antenne: antenne,
-    total: lineaire * (1 + MAJORATION_RACCORDS) + PERTE_ELECTROVANNE + antenne
+    total: (lineaire + amont) * (1 + MAJORATION_RACCORDS) + PERTE_ELECTROVANNE + antenne
   };
 }
 
@@ -568,7 +593,8 @@ function perteDuReseau(secteur){
    une même pelouse : deux portées, deux espacements, un plan qu'on ne sait pas
    poser. On retient donc la pire, ce qui revient à poser partout la buse qui
    tient au point le plus mal alimenté. C'est le sens sûr (`CLAUDE.md` §4 ter),
-   et cela coûte au pire un arroseur de plus sur les réseaux les mieux servis. */
+   et cela coûte au pire une vanne de plus sur les réseaux les mieux servis —
+   jamais une tête de plus sur une vanne déjà chargée. */
 function pirePerteDeReseau(d){
   var pire = 0;
   (d.secteurs || []).forEach(function(s){
@@ -1396,7 +1422,28 @@ function listeMateriel(d){
     // chaque commande. Ne pas le remettre « par prudence » : la question a été
     // posée et tranchée, et ce commentaire existe pour éviter qu'on la
     // rouvre.
-    lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    /* ══ LE RÉDUCTEUR EST POUR LE GOUTTE-À-GOUTTE, ET POUR LUI SEUL ══════════
+
+       **Sa règle du 22 août 2026, en deux temps.** Il était d'abord facturé
+       d'office sur chaque chantier — une pièce que j'avais posée sans source
+       (`source:'provisoire'`). Sa notice Rain Bird m'a fait le conditionner à
+       la pression : *« if pressure is greater than 80 psi (5,5 bar), install a
+       pressure regulator »*. Faux aussi, et il l'a corrigé aussitôt :
+       **« non, remets-le, il est utilisé pour le goutte-à-goutte seulement »**.
+
+       C'est son métier qui parle, et la notice de la vanne ne pouvait pas le
+       dire : une gaine de goutteurs travaille à basse pression — une bien plus
+       basse que ce qu'un réseau d'arroseurs demande. Sans réducteur, les
+       goutteurs se déboîtent ou débitent n'importe quoi. La pression de la
+       SOURCE n'y change rien : même à 3 bar, le goutte-à-goutte en a besoin ;
+       même à 6, un réseau de turbines n'en veut pas.
+
+       **La leçon vaut au-delà de cette pièce.** Une notice de constructeur dit
+       ce que le MATÉRIEL supporte, jamais ce que le CHANTIER exige. Prendre
+       l'une pour l'autre a retiré du devis une pièce qui devait y être. */
+    if (combienGoutteAGoutte(d) > 0){
+      lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    }
     if (etat.sonde) lignes.push({ ref:'sonde-pluie', nom:'Sonde de pluie', q:1, u:'u' });
   }
   return lignes;
