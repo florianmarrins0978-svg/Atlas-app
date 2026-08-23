@@ -242,6 +242,16 @@ export const passagesEntretien = pgTable(
     jour: date("jour").notNull(),
     /** Le temps passé, à la molette. NULL tant qu'il ne l'a pas posé. */
     minutes: integer("minutes"),
+    /**
+     * Le temps paraît-il sur le compte rendu du CLIENT ? — sa demande du
+     * 22 août 2026, planche 92.
+     *
+     * **Faux n'efface rien** : la durée reste ici, c'est la lecture publique
+     * qui la tait. Masquer en remettant `minutes` à NULL aurait confondu « je
+     * n'ai pas chronométré » et « je ne veux pas le lui dire », et lui aurait
+     * fait perdre son chiffre (migration `0060`).
+     */
+    tempsVisible: boolean("temps_visible").notNull().default(true),
     observations: text("observations"),
     /** Recopié à l'envoi : un rapport parti ne se renomme plus (migration 0055). */
     clientNomFige: text("client_nom"),

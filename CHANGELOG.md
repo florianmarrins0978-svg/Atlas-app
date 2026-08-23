@@ -92,6 +92,46 @@ possibilité de passer outre.
 
 ---
 
+## 2026-08-23
+
+### Le temps passé se masque au client — codé, et il reste au patron
+
+**Sa demande du 22 août, puis ses deux corrections du 23** devant la planche 92 :
+*« raccourcis la phrase à "votre client ne le verra pas sur son compte rendu" »*
+et *« enlève le 1 h 40 en gris à droite de la sélection de l'heure »*.
+
+**Un interrupteur sur la ligne « Temps passé »**, avec son état écrit en toutes
+lettres — Visible / Masqué. Un curseur nu se décode ; cet écran se regarde avec
+un gant, entre deux chantiers.
+
+**Masquer n'efface pas**, et c'est tout l'objet de la colonne `temps_visible`
+(migration `0060`). Réutiliser `minutes IS NULL` pour masquer aurait confondu
+deux choses différentes — « je n'ai pas chronométré » et « je ne veux pas le lui
+dire » — et lui aurait fait perdre le chiffre qui dit ce qu'a coûté un chantier.
+
+**Le masquage se décide au SERVEUR, jamais à l'écran.** `lireRapportParJeton`
+rend `minutes: null` quand c'est masqué : rendre la durée puis la cacher au
+rendu la laisserait dans le HTML du client, à portée d'un clic droit — le défaut
+même que le tri des prestations faites évite depuis le 16 août.
+
+**Et l'empreinte scelle ce que le client A LU.** Un temps masqué n'entre pas
+dans le contenu haché : y sceller une durée absente de sa page la rendrait
+indéfendable le jour où il conteste le passage. Deux fiches identiques, l'une
+montrant son temps et l'autre le masquant, portent donc deux empreintes
+différentes — c'est ce que le nouveau cas vérifie.
+
+**Le défaut est `true`** : c'est ce que l'application faisait déjà, et repeindre
+en masqués les rapports déjà partis changerait ce que des clients ont lu.
+
+**Le total gris à droite de la molette est parti**, à sa demande : les deux
+listes disent déjà « 1 h » et « 45 ».
+
+Trois contrôles neufs, **tous vus rougir** contre l'état dégradé qu'ils
+prétendent attraper — une lecture publique qui ignore le masquage, un masquage
+qui efface la durée, une empreinte qui scelle le temps caché.
+
+---
+
 ## 2026-08-22
 
 ### Planche 92 : le temps passé, montré ou non sur le compte rendu du client

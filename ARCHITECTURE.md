@@ -13165,9 +13165,66 @@ rendus faux :
   3,2 bar, où la même buse est retenue, contre les pressions réellement
   reçues.
 
+
+## 148. Le temps passé se masque au client — et ce qui est masqué ne sort pas du serveur
+
+**Sa demande du 22 août 2026**, capture de la fiche d'entretien à l'appui :
+*« il faudrait mettre un petit bouton on/off pour si l'utilisateur ne veut pas
+que le temps apparaisse sur la fiche, pouvoir l'effacer — on, le temps
+apparaîtrait sur la fiche ; off, il n'apparaîtrait pas. »* Dessiné en planche 92
+(`appli/temps-sur-la-fiche.html`), codé le 23 après deux corrections de sa part.
+
+### Une colonne à part, et non `minutes IS NULL`
+
+La solution qui n'écrit rien de neuf était tentante : masquer en remettant
+`minutes` à NULL. Elle confond deux choses qui n'ont rien à voir —
+
+| | |
+|---|---|
+| `minutes IS NULL` | **je n'ai pas chronométré** |
+| `temps_visible = false` | **je ne veux pas le lui dire** |
+
+— et elle coûte au patron le chiffre qui dit ce qu'a coûté un chantier. Il le
+ressaisirait au passage suivant, et l'application lui aurait fait perdre une
+information qu'il avait prise. D'où `passages_entretien.temps_visible`
+(migration `0060`), défaut `true` : c'est ce que l'application faisait déjà, et
+repeindre en masqués les rapports déjà partis changerait ce que des clients ont
+lu — alors que leur empreinte, elle, ne bouge pas (l'invariant du 16 août).
+
+### Le masquage se décide au SERVEUR
+
+`lireRapportParJeton` rend `minutes: null` quand c'est masqué. Rendre la durée
+puis la cacher au rendu la laisserait dans le HTML du client, à portée d'un clic
+droit — le défaut exact que le tri des prestations faites évite depuis le
+16 août, dans la même fonction. **Ce qui est masqué ne quitte pas le serveur.**
+
+### L'empreinte scelle ce que le client A LU
+
+Un temps masqué n'entre pas dans le contenu haché par `figerPassage`. Ce n'est
+pas un détail de forme : cette empreinte remplace une signature (décision du
+16 août). Y sceller une durée absente de la page du client la rendrait
+indéfendable le jour où il conteste le passage — on lui opposerait un chiffre
+qu'il n'a jamais vu. **Pour cette preuve, un temps caché est un temps qui
+n'existe pas**, et deux fiches par ailleurs identiques portent donc deux
+empreintes différentes selon qu'elles montrent leur temps ou non.
+
+### Ce qu'il a fait retirer
+
+- **Le total gris à droite de la molette** (« 1 h 45 ») : les deux listes disent
+  déjà « 1 h » et « 45 ». Sa demande du 23 août.
+- **La phrase longue sous la molette**, qui annonçait aussi que la durée restait
+  enregistrée. Elle est réduite à ce qu'il a dicté : *« Votre client ne le verra
+  pas sur son compte rendu. »* Le contrôle qui exigeait la version longue a été
+  adapté, pas contourné (`CLAUDE.md` §5 bis).
+
+### Ce qui reste ouvert
+
+Il ne s'est pas prononcé sur le **réglage de départ** — codé sur « Visible ».
+Passer à « Masqué » est le défaut de la colonne à retourner. Voir `TODO.md`.
+
 ---
 
-## 148. Le croquis dit où sont les choses : les proportions, et l'échelle déduite
+## 149. Le croquis dit où sont les choses : les proportions, et l'échelle déduite
 
 **Sa demande du 22 août 2026 au soir : « oui fais-le lire les proportions ».**
 
@@ -13254,4 +13311,3 @@ que vaut une valeur figée dans une suite plutôt qu'une borne large.
 
 Les deux défauts plausibles ont été joués : vol d'oiseau au lieu de Manhattan,
 moyenne au lieu de médiane. Chacun fait rougir la suite en nommant le chiffre.
-

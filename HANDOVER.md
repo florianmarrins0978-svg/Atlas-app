@@ -77,7 +77,7 @@ ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
 **Elle vit hors de `calcul.js`** parce que ce fichier est une copie partagée
 avec `appli/` : la distance est passée en entrée (`regardVersZone`).
 
-Détail : `ARCHITECTURE.md` §148.
+Détail : `ARCHITECTURE.md` §149.
 
 ---
 
