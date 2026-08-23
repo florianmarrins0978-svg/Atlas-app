@@ -138,7 +138,7 @@ async function main() {
     });
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
     assert.ok(
       await page.locator("text=Par e-mail au dupuis@exemple.fr").isVisible(),
@@ -163,7 +163,7 @@ async function main() {
     });
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", {
+    await page.waitForSelector('[data-atlas="invite-dates"]', {
       timeout: DELAI_ECRAN_MS,
     });
     await page.locator('button[aria-pressed]').nth(1).click();
@@ -191,7 +191,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "deuxmax");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
     const jours = page.locator('button[aria-pressed]');
     const total = await jours.count();
@@ -222,7 +222,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "cycle");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
     // Deux dates : c'est le cas qui laisse le client choisir.
     await page.locator('button[aria-pressed]').nth(1).click();
@@ -362,7 +362,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "rejoue");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
@@ -388,7 +388,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "porte-ouverte");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
     const bascule = page.getByRole("switch", { name: /autre date/i });
     assert.ok(await bascule.isVisible(), "l'interrupteur « une autre date » manque avant l'envoi");
@@ -422,7 +422,7 @@ async function main() {
     const url = await creerChantierFacturable(page, "sans-calendrier");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
-    await page.waitForSelector("text=Une date, ou deux au choix du client ?", { timeout: DELAI_ECRAN_MS });
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
     await page.getByRole("switch", { name: /autre date/i }).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
