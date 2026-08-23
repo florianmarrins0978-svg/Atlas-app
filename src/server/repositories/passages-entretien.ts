@@ -34,6 +34,8 @@ export type Passage = {
   clientCanal: "sms" | "email" | null;
   jour: string;
   minutes: number | null;
+  /** Le temps paraît-il sur le compte rendu du client ? Vrai par défaut. */
+  tempsVisible: boolean;
   observations: string | null;
   envoyeLe: Date | null;
   jeton: string | null;
@@ -87,6 +89,7 @@ export async function lirePassage(ctx: Ctx, id: string): Promise<Passage | null>
         clientId: passagesEntretien.clientId,
         jour: passagesEntretien.jour,
         minutes: passagesEntretien.minutes,
+        tempsVisible: passagesEntretien.tempsVisible,
         observations: passagesEntretien.observations,
         envoyeLe: passagesEntretien.envoyeLe,
         jeton: passagesEntretien.jeton,
@@ -159,11 +162,18 @@ export async function cocherLigne(
   });
 }
 
-/** Le temps passé et les observations. */
+/**
+ * Le temps passé, sa visibilité, et les observations.
+ *
+ * **`tempsVisible` ne touche PAS `minutes`**, et c'est délibéré : masquer n'est
+ * pas effacer (migration `0060`). Les remettre à NULL ensemble ferait perdre au
+ * patron le chiffre qui lui dit ce qu'a coûté un chantier, pour la seule raison
+ * qu'il ne veut pas le facturer sous les yeux de son client.
+ */
 export async function majPassage(
   ctx: Ctx,
   passageId: string,
-  champs: { minutes?: number | null; observations?: string | null }
+  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null }
 ): Promise<{ ok: true } | { ok: false; refus: RefusPassage }> {
   let minutes: number | null | undefined;
   if (champs.minutes !== undefined) {
@@ -191,6 +201,7 @@ export async function majPassage(
       .update(passagesEntretien)
       .set({
         ...(minutes !== undefined ? { minutes } : {}),
+        ...(champs.tempsVisible !== undefined ? { tempsVisible: champs.tempsVisible } : {}),
         ...(champs.observations !== undefined ? { observations: champs.observations } : {}),
         updatedAt: new Date(),
       })
@@ -315,9 +326,14 @@ export async function figerPassage(
   // L'empreinte porte ce que le client lira : les prestations faites, le temps,
   // les observations, le jour. Y mettre l'identifiant du passage ne prouverait
   // rien du CONTENU.
+  //
+  // **Et le temps masqué n'y entre pas.** L'empreinte prouve ce que le client a
+  // reçu : y sceller une durée qu'il n'a jamais vue la rendrait indéfendable le
+  // jour où il conteste le passage — on lui opposerait un chiffre absent de sa
+  // page. Un temps caché est, pour cette preuve, un temps qui n'existe pas.
   const contenu = JSON.stringify({
     jour: passage.jour,
-    minutes: passage.minutes,
+    minutes: passage.tempsVisible ? passage.minutes : null,
     observations: passage.observations ?? "",
     faites: passage.lignes.filter((l) => l.faite).map((l) => l.libelle).sort(),
   });
@@ -437,6 +453,7 @@ export async function brouillonVierge(ctx: Ctx, jour: string): Promise<string | 
 /** Le rapport tel que le CLIENT le reçoit. */
 export type RapportPublic = {
   jour: string;
+  /** `null` s'il n'a rien chronométré — **ou s'il a masqué le temps** (§0060). */
   minutes: number | null;
   observations: string | null;
   envoyeLe: Date;
@@ -472,6 +489,7 @@ export async function lireRapportParJeton(jeton: string): Promise<RapportPublic 
         id: passagesEntretien.id,
         jour: passagesEntretien.jour,
         minutes: passagesEntretien.minutes,
+        tempsVisible: passagesEntretien.tempsVisible,
         observations: passagesEntretien.observations,
         envoyeLe: passagesEntretien.envoyeLe,
         clientNom: passagesEntretien.clientNomFige,
@@ -491,7 +509,11 @@ export async function lireRapportParJeton(jeton: string): Promise<RapportPublic 
 
     return {
       jour: p.jour,
-      minutes: p.minutes,
+      // **Le masquage se décide ICI, pas à l'écran.** Rendre la durée puis la
+      // cacher au rendu la laisserait dans le HTML de la page, à portée d'un
+      // clic droit — exactement ce que le tri des prestations faites évite
+      // juste en dessous. Ce qui est masqué ne quitte pas le serveur.
+      minutes: p.tempsVisible ? p.minutes : null,
       observations: p.observations,
       envoyeLe: p.envoyeLe,
       clientNom: p.clientNom ?? null,
