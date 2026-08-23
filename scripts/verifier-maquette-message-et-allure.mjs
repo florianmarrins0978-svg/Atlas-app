@@ -55,79 +55,112 @@ page.on("pageerror", (e) => soucis.push(`erreur JS : ${e.message}`));
 page.on("console", (m) => { if (m.type() === "error") soucis.push(`console : ${m.text()}`); });
 
 // ─── LA PLANCHE DU MESSAGE ───────────────────────────────────────────────
+//
+// **Elle a changé de forme le 23 août au soir**, et c'est lui qui l'a demandé :
+// *« Pas compris, montre des exemples. »* Un aperçu unique ne montrait pas ce
+// qui se joue — la phrase du milieu n'est pas la même sur un devis et sur une
+// facture. Elle porte donc SIX bulles : les trois documents, dans les deux
+// façons de faire.
 await page.goto(MESSAGE, { waitUntil: "networkidle" });
 await page.waitForTimeout(200);
 
 const modele = page.locator("#modele");
-const apercu = page.locator("#apercu");
-const alerte = page.locator("#alerte");
+const refus = page.locator("#refus");
+const enregistrer = page.locator("#enregistrer");
 
 const depart = await modele.inputValue();
 dire(depart.trim().length > 0, "le cadre est vide au départ : rien à juger, et rien à mesurer");
 
-// 1 — mot pour mot ce que le code envoie
+// 1 — les trois phrases de la planche sont celles que le code envoie
 //
-// **On lit la SOURCE, on ne rejoue pas la fonction** : elle est en TypeScript et
-// tire la civilité d'un autre module. Ce qui compte est que les phrases
-// littérales qu'elle assemble soient celles que la planche montre — une phrase
-// ajoutée là-bas sans l'être ici fait rougir ce contrôle, et c'est le but.
+// **On lit la SOURCE, on ne rejoue pas les fonctions** : elles sont en
+// TypeScript et tirent la civilité d'un autre module. Ce qui compte est que les
+// phrases littérales qu'elles assemblent soient celles que la planche montre —
+// une phrase changée là-bas sans l'être ici fait rougir ce contrôle, et c'est
+// le but : la planche doit dire ce que ses clients reçoivent, pas autre chose.
 const source = readFileSync("src/lib/message-client.ts", "utf8");
-dire(
-  source.includes("export function composerMessageClient"),
-  "composerMessageClient a été renommée : ce contrôle ne mesure plus le bon message"
-);
+for (const nom of [
+  "composerMessageClient",
+  "composerMessageFacture",
+  "composerMessageEntretien",
+]) {
+  dire(source.includes(`export function ${nom}`), `${nom} a été renommée : le contrôle ne mesure plus le bon message`);
+}
+const planche = readFileSync("appli/mon-message-au-client.html", "utf8");
 for (const phrase of [
-  "Voici votre devis. Vous pouvez le consulter et choisir votre date d'intervention en suivant ce lien :",
-  "Si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre.",
-  "Bien à vous,",
+  "Voici votre devis. Vous pouvez le consulter et choisir votre date ",
+  "Vous pouvez la consulter et la télécharger ici :",
+  "Voici le compte rendu de mon passage chez vous :",
 ]) {
   dire(source.includes(phrase), `le code n'envoie plus : « ${phrase} »`);
-  dire(depart.includes(phrase), `la planche ne montre pas ce que le code envoie : « ${phrase} »`);
+  dire(planche.includes(phrase), `la planche ne montre pas ce que le code envoie : « ${phrase} »`);
 }
-for (const jeton of ["[client]", "[lien]", "[entreprise]"]) {
+for (const jeton of ["[client]", "[document]", "[lien]", "[entreprise]"]) {
   dire(depart.includes(jeton), `le texte de départ ne porte pas ${jeton} : rien ne se remplace`);
 }
 
-// 2 — l'aperçu remplace, et le lien est habillé en lien
-const vu = await apercu.innerText();
-dire(vu.includes("Mme Larousse"), "l'aperçu ne remplace pas le nom du client");
-dire(vu.includes("Eden Nature"), "l'aperçu ne remplace pas le nom de l'entreprise");
-dire(!vu.includes("[") , `l'aperçu laisse un mot à remplacer : ${vu.slice(0, 80)}`);
-const lienHabille = await page.evaluate(() => {
-  const l = document.querySelector("#apercu .lien");
-  if (!l) return null;
-  return { texte: l.textContent ?? "", couleur: getComputedStyle(l).color };
+// 2 — SIX bulles, et la façon 1 rend à chacune SA phrase
+const bulles = () => page.evaluate(() => {
+  const lire = (id) => [...document.querySelectorAll(`#${id} .bulle`)].map((b) => b.innerText);
+  return { un: lire("facon1"), deux: lire("facon2") };
 });
-dire(lienHabille !== null, "le lien n'est pas habillé : sur son téléphone il paraîtrait en texte noir");
-dire(Boolean(lienHabille && lienHabille.texte.startsWith("http")),
-  "ce qui est habillé en lien n'est pas une adresse");
+const vu = await bulles();
+dire(vu.un.length === 3 && vu.deux.length === 3,
+  `les six bulles ne sont pas là : ${vu.un.length} + ${vu.deux.length}`);
+dire(vu.un.every((b) => b.length > 40), "une bulle est presque vide : mesure impossible, pas un succès");
 
-// 3 — effacer le lien se DIT
-dire((await alerte.innerText()).trim() === "", "l'écran alerte alors que le lien est là");
-await modele.fill("Bonjour [client], voici votre devis. [entreprise]");
+dire(/votre devis/i.test(vu.un[0]), "le devis ne porte pas sa phrase");
+dire(/votre facture/i.test(vu.un[1]), "la facture ne porte pas sa phrase");
+dire(/à régler avant le/i.test(vu.un[1]),
+  "l'échéance manque à la facture : c'est précisément ce que la façon 2 lui coûte, il faut le voir");
+dire(/compte rendu/i.test(vu.un[2]), "le compte rendu ne porte pas sa phrase");
+dire(!vu.un.join(" ").includes("["), `une pastille n'a pas été remplacée : ${vu.un.join(" | ").slice(0, 90)}`);
+
+// 3 — LA DÉMONSTRATION : façon 2, les trois bulles disent la MÊME chose
+//
+// **Et c'est le cœur de la planche.** Elle affichait « [document] » en clair
+// dans ces trois bulles-là : cela ne montrait rien qu'un écran cassé. Ce qu'il
+// doit voir, c'est sa facture qui parle d'un devis.
+dire(vu.deux[0] === vu.deux[1] && vu.deux[1] === vu.deux[2],
+  "les trois bulles de la façon 2 diffèrent : elle ne démontre plus rien");
+dire(/votre devis/i.test(vu.deux[1]),
+  "la facture de la façon 2 ne parle pas d'un devis : la démonstration est perdue");
+dire(!vu.deux.join(" ").includes("["), "la façon 2 laisse une pastille en clair dans la bulle");
+
+// Et l'écran DIT lesquelles sont fausses — deux, jamais celle du devis.
+dire(await page.locator(".faux:visible").count() === 2,
+  "l'écran ne désigne pas les deux bulles fausses de la façon 2");
+
+// 4 — LE LIEN EST OBLIGATOIRE, sa décision du 23 août
+//
+// **Atlas REFUSE, il ne se contente pas de prévenir.** Et le bouton s'éteint
+// avec le message : un bouton qui reste allumé s'appuie, ne fait rien, et l'on
+// croit l'écran cassé.
+dire(await refus.isHidden(), "l'écran refuse alors que le lien est là");
+dire(!(await enregistrer.isDisabled()), "« Enregistrer » est éteint alors que le message est complet");
+await modele.fill("Bonjour [client], voici [document]. [entreprise]");
 await page.waitForTimeout(120);
-const dit = (await alerte.innerText()).trim();
-dire(dit.length > 0, "le lien effacé ne dit rien : son client ne pourrait ni voir son devis ni choisir sa date");
-dire(/lien/i.test(dit), `l'alerte ne nomme pas le lien : « ${dit} »`);
-// **On DIT, on ne rattrape pas.** Un lien remis tout seul dans son texte se
-// verrait à l'envoi et pas à l'écriture : il croirait avoir écrit autre chose.
+const dit = (await refus.innerText()).trim();
+dire(dit.length > 0, "le lien effacé ne dit rien : son client ne pourrait rien ouvrir");
+dire(/obligatoire/i.test(dit), `le refus ne dit pas que le lien est obligatoire : « ${dit} »`);
+dire(await enregistrer.isDisabled(), "on peut encore enregistrer un message sans lien");
+// **On DIT, on ne rattrape pas.** Un lien remis tout seul se verrait à l'envoi
+// et pas à l'écriture : il croirait avoir écrit autre chose que ce qui part.
 dire(!(await modele.inputValue()).includes("[lien]"),
   "la planche a remis le lien toute seule : il ne verrait pas ce qu'il envoie");
 
-// 4 — la pastille pose le mot LÀ OÙ LE CURSEUR EST
-await modele.fill("AVANT APRES");
+// 5 — la pastille pose le mot LÀ OÙ LE CURSEUR EST
+await modele.fill("AVANT [lien] APRES");
 await page.evaluate(() => {
   const z = document.getElementById("modele");
   z.focus();
   z.selectionStart = z.selectionEnd = "AVANT ".length;
 });
-await page.locator('[data-jeton="[lien]"]').click();
+await page.locator('[data-jeton="[document]"]').click();
 const pose = await modele.inputValue();
-dire(pose === "AVANT [lien]APRES",
+dire(pose === "AVANT [document][lien] APRES",
   `le jeton n'atterrit pas sous le curseur : « ${pose} » — il faudrait le déplacer au doigt`);
 
-// Et « Remettre le texte d'origine » rend bien l'original, sinon un essai
-// malheureux lui coûterait le message de départ.
 await page.locator("#remettre").click();
 dire(await modele.inputValue() === depart, "« Remettre le texte d'origine » ne rend pas le texte de départ");
 

@@ -2562,6 +2562,36 @@ jardins d'exemple, pas seulement compté.
 
 ### 0 quinvicies septies. Son message au client, et l'allure de ses devis — **DEUX PLANCHES, RIEN N'EST CODÉ**
 
+**SES RÉPONSES DU 23 AOÛT AU SOIR, sur le message :** *« Message client A. Liens
+obligatoire. Et message pour tous. »*
+
+| | Tranché |
+|---|---|
+| Où il se règle | **A** — dans « Devis & factures », en dernier bloc |
+| Le lien | **obligatoire** : Atlas REFUSE d'enregistrer un message sans lui, il ne se contente pas de prévenir |
+| Combien de messages | **un seul, pour les trois documents** |
+
+**RESTE UN POINT, ET UN SEUL** — il l'a demandé en images : *« pas compris,
+montre des exemples »*. Un texte unique se heurte à ce que le milieu du message
+n'est pas le même selon ce qui part. La planche montre les deux façons, avec
+les trois téléphones côte à côte :
+
+- **façon 1** — une pastille `[document]` : il écrit le bonjour, la formule et
+  la signature ; Atlas pose la phrase juste — « votre devis, choisissez votre
+  date », « votre facture n° F2026-0008, à régler avant le 21 septembre », « le
+  compte rendu de mon passage ». Rien n'est perdu ;
+- **façon 2** — le même texte mot pour mot : sa facture dit alors *« Voici votre
+  devis… choisir votre date d'intervention »*, et l'échéance disparaît.
+
+**La planche a dû être REFAITE pour qu'il puisse choisir.** Sa première version
+affichait « [document] » en clair dans les bulles de la façon 2 : cela ne
+montrait rien qu'un écran cassé, au lieu de sa facture parlant d'un devis. Un
+contrôle le tient désormais (`verifier-maquette-message-et-allure.mjs`, éprouvé
+rouge sur ce défaut précis).
+
+**Rien n'est codé tant qu'il n'a pas dit 1 ou 2.**
+
+
 **Sa demande du 23 août 2026**, en deux morceaux : *« y a-t-il un endroit dans
 les réglages où l'utilisateur peut rédiger ce message automatique ? S'il n'y en
 a pas, il faut en créer un. Et il faudrait également que l'utilisateur puisse
