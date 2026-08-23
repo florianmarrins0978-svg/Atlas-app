@@ -161,11 +161,20 @@ dire(
     `le Ø25 tient jusqu'à ${seuil.toFixed(0)} m à ${auSeuil.amenee.debit.toFixed(2)} m³/h`,
   );
 
-  const avant = calculerPlan({ ...JARDIN, amenee: Math.floor(seuil) - 1 });
-  const apres = calculerPlan({ ...JARDIN, amenee: Math.ceil(seuil) + 1 });
+  // **LE SEUIL N'EST PLUS UNE CONSTANTE, et c'est le prix de l'auto-cohérence.**
+  // Depuis que la pression retenue est celle du dernier arroseur (§12),
+  // allonger l'amenée fait perdre davantage, donc baisse cette pression, donc
+  // change la buse retenue et son débit — et le seuil avec. Vérifier la
+  // bascule au mètre près n'a donc plus de sens : c'est un point fixe, pas une
+  // frontière fixe.
+  //
+  // Ce qui reste vrai et qui compte : **il existe une bascule, et le Ø25 tient
+  // du bon côté.** On l'éprouve aux deux bouts.
+  const court = calculerPlan({ ...JARDIN, amenee: 5 });
+  const long = calculerPlan({ ...JARDIN, amenee: 400 });
   dire(
-    avant.amenee.diametre === 25 && apres.amenee.diametre === 32,
-    `un mètre avant le seuil : Ø${avant.amenee.diametre} · un mètre après : Ø${apres.amenee.diametre}`,
+    court.amenee.diametre === 25 && long.amenee.diametre === 32,
+    `amenée de 5 m : Ø${court.amenee.diametre} · de 400 m : Ø${long.amenee.diametre}`,
   );
 
   // Le Ø32 tient forcément plus loin que le Ø25, à débit égal. Une inversion
@@ -230,26 +239,39 @@ dire(
   const quadruple = calculerPlan({ seau: 10, temps: 20, pression: 10, zones: ZONE });
   const moitie = calculerPlan({ seau: 10, temps: 20, pression: 2, zones: ZONE });
 
-  // **√4 = 2 : à quatre fois la pression, un orifice débite deux fois plus.**
-  // C'est la loi de Torricelli, et c'est le contrôle qui la tient. Au-dessus de
-  // la référence la portée ne bouge pas (voir plus bas), donc la buse choisie
-  // est la même et la demande double EXACTEMENT — une tolérance large
-  // laisserait passer un exposant de travers.
-  const rapport = quadruple.demande / aLaReference.demande;
+  // **LA LOI S'ÉPROUVE À BUSE CONSTANTE — et c'est le raffinement qui l'impose.**
+  //
+  // La première version comparait 2,5 bar à 10 bar et exigeait un rapport de
+  // débit de exactement 2 (√4). Elle a cessé d'être juste le soir même, quand
+  // la pression de dimensionnement est devenue celle du DERNIER ARROSEUR
+  // (§12) : à 10 bar de source il n'en arrive plus 10 au bout, et à 2,5 la
+  // portée réduite fait choisir une buse plus petite. Deux choses changeaient
+  // à la fois, et le rapport ne prouvait plus rien.
+  //
+  // On compare donc deux pressions PROCHES, où la même buse est retenue, et
+  // l'on exige alors l'égalité avec √(P₂/P₁) — les pressions étant celles qui
+  // arrivent vraiment aux arroseurs, pas celles de la source.
+  const bas = calculerPlan({ seau: 10, temps: 20, pression: 3, zones: ZONE });
+  const haut = calculerPlan({ seau: 10, temps: 20, pression: 3.2, zones: ZONE });
+  const buses = (p: { materiel: { nom: string; q: number }[] }) =>
+    JSON.stringify(p.materiel.filter((m) => /buse/i.test(m.nom)));
+  const attendu = Math.sqrt(haut.pressionAuxArroseurs / bas.pressionAuxArroseurs);
+  const observe = haut.demande / bas.demande;
   dire(
-    Math.abs(rapport - 2) < 0.02,
-    `à 4 × la pression, la demande vaut ${rapport.toFixed(3)} × celle de référence (2 attendu)`,
+    buses(bas) === buses(haut) && Math.abs(observe - attendu) < 0.005,
+    `même buse à 3 et 3,2 bar : le débit suit √P (${observe.toFixed(4)} observé, ` +
+      `${attendu.toFixed(4)} attendu)`,
   );
 
   // **La portée ne se GONFLE jamais.** L'exposant de la portée est une
   // estimation, pas un relevé de ses catalogues : l'appliquer vers le haut
   // ferait espacer les arroseurs sur un chiffre supposé, et un espacement trop
-  // large est un trou d'arrosage qu'on ne découvre qu'en juillet.
-  const teteRef = aLaReference.materiel.find((m: { nom: string }) => /buse/i.test(m.nom));
-  const teteHaut = quadruple.materiel.find((m: { nom: string }) => /buse/i.test(m.nom));
+  // large est un trou d'arrosage qu'on ne découvre qu'en juillet. À très forte
+  // pression, AUCUNE portée ne doit donc être corrigée : le calcul s'arrête à
+  // celle du catalogue.
   dire(
-    teteRef !== undefined && teteHaut !== undefined && teteRef.q === teteHaut.q,
-    `à 4 × la pression, le même nombre d'arroseurs (${teteRef?.q} → ${teteHaut?.q}) : la portée n'a pas été gonflée`,
+    quadruple.porteeEstimee === false,
+    "à 10 bar, aucune portée n'est gonflée au-delà de celle du catalogue",
   );
 
   // **En dessous, on réduit — et ça se voit.** Moins de portée, donc au moins
@@ -327,12 +349,19 @@ dire(
 // pluviométries différentes. Avant, elles ne pouvaient pas se retrouver sur la
 // même vanne ; maintenant elles le peuvent. Si quelqu'un remettait la
 // pluviométrie dans la clé, ce contrôle rougirait aussitôt.
+//
+// **Le jardin est choisi pour que la bascule se VOIE au niveau des têtes**, et
+// pas seulement des groupes. Une petite pelouse et une grande reçoivent des
+// buses différentes (0,75 et 1,0), et la coupe tombe au milieu : une vanne
+// porte les deux. Sur d'autres jardins, les deux zones tombent bien dans le
+// même groupe mais la coupe retombe sur leur limite — le contrôle passerait
+// alors au vert sans rien avoir montré.
 {
   const deuxBuses = calculerPlan({
-    seau: 10, temps: 12, pression: 3, compteur: "oui",
+    seau: 10, temps: 20, pression: 3, amenee: 30,
     zones: [
-      { id: 1, type: "gazon", nom: "Grande", x: 0, y: 0, L: 14, l: 14 },
-      { id: 2, type: "gazon", nom: "Petite", x: 14, y: 0, L: 5, l: 5 },
+      { id: 1, type: "gazon", nom: "Petite", L: 6, l: 5 },
+      { id: 2, type: "gazon", nom: "Grande", L: 20, l: 7 },
     ],
   });
   const busesParReseau = new Map<number, Set<string>>();
@@ -368,6 +397,29 @@ dire(
     [...clesParReseau.values()].every((c) => c.size === 1),
     "une turbine et une tuyère ne partagent JAMAIS une vanne — cette règle-là tient",
   );
+
+  // ── UN SECTEUR NOMME LES ZONES QU'IL ARROSE ───────────────────────────────
+  //
+  // **Défaut révélé par le retrait de la pluviométrie, et par rien d'autre.**
+  // Tant qu'elle coupait, un groupe ne portait qu'un modèle et retombait
+  // presque toujours sur une seule zone : nommer le groupe entier revenait au
+  // même. Depuis, deux pelouses de buses différentes tombent dans le même
+  // groupe — et la coupe par points contigus peut retomber exactement sur leur
+  // limite. L'écran annonçait « Devant + Derrière » pour une vanne qui n'arrose
+  // que « Devant ». **Un plan qui nomme la mauvaise zone fait creuser au
+  // mauvais endroit.**
+  const surLaLimite = calculerPlan({
+    seau: 10, temps: 20, pression: 3, amenee: 30,
+    zones: [
+      { id: 1, type: "gazon", nom: "Devant", L: 16, l: 6 },
+      { id: 2, type: "gazon", nom: "Derrière", L: 15, l: 8 },
+    ],
+  });
+  const noms = (surLaLimite.secteurs as { nom: string }[]).map((x) => x.nom);
+  dire(
+    noms.length === 2 && noms[0] === "Devant" && noms[1] === "Derrière",
+    `chaque vanne nomme la zone qu'elle arrose, pas tout son groupe (${noms.join(" · ")})`,
+  );
 }
 
 // ── « 13x », ET NON « 13 u » (23 août 2026) ─────────────────────────────────
@@ -383,6 +435,116 @@ dire(
   quantiteEcrite(80, "ml") === "80 ml",
   `80 mètres restent des mètres : « ${quantiteEcrite(80, "ml")} » — « 80x de PE Ø25 » ne se commande pas`,
 );
+
+// ── 12. CE QUI ARRIVE AU DERNIER ARROSEUR ───────────────────────────────────
+//
+// **Sa demande du 22 août 2026 : « oui corrige la 1 ».** Jusque-là, seule
+// l'amenée était comptée ; ce qui restait au pied du dernier arroseur d'une
+// ligne — après l'électrovanne, la ligne, ses raccords et l'antenne Ø16 —
+// n'était calculé nulle part. Un arroseur qui ne reçoit pas la pression de sa
+// buse porte moins loin que le plan ne le suppose, et le coin qu'il devait
+// atteindre jaunit en juillet.
+{
+  const JARDIN_PRESSION = {
+    seau: 10, temps: 20, pression: 3, amenee: 30,
+    zones: [
+      { type: "gazon", nom: "Pelouse devant", L: 16, l: 6 },
+      { type: "gazon", nom: "Pelouse derrière", L: 15, l: 8 },
+    ],
+  };
+  const p = calculerPlan(JARDIN_PRESSION);
+
+  dire(
+    p.pressionAuxArroseurs > 0 && p.pressionAuxArroseurs < 3,
+    `3 bar à la source, ${p.pressionAuxArroseurs.toFixed(2)} au dernier arroseur`,
+  );
+
+  // **L'arithmétique doit se REFAIRE À LA MAIN** (`CLAUDE.md` §4 bis) : deux
+  // chiffres d'un même écran qui ne se recomposent pas, c'est toute la liste
+  // dont on cesse de douter à raison.
+  dire(
+    Math.abs(3 - p.perteAmenee - p.perteReseau - p.pressionAuxArroseurs) < 1e-9,
+    `3 − ${p.perteAmenee.toFixed(3)} − ${p.perteReseau.toFixed(3)} = ${p.pressionAuxArroseurs.toFixed(3)}`,
+  );
+
+  // **Le réseau perd plus que l'amenée**, et c'est bien pour ça que l'ignorer
+  // était le trou : l'électrovanne seule pèse plus que trente mètres de Ø25.
+  dire(
+    p.perteReseau > p.perteAmenee,
+    `le réseau perd ${p.perteReseau.toFixed(2)} bar, l'amenée ${p.perteAmenee.toFixed(2)}`,
+  );
+
+  // ── LE DÉBIT DÉCROÎT LE LONG DE LA LIGNE : UNE VALEUR DE RÉFÉRENCE ────────
+  //
+  // Entre la vanne et la première tête passe le débit du réseau entier ; entre
+  // la première et la deuxième, ce débit moins une tête. Compter le débit
+  // total sur toute la longueur — le raccourci tentant — donne **0,77 bar au
+  // lieu de 0,44** sur ce jardin : assez pour condamner des plans qui
+  // tiennent, et un avertissement qui parle à tort s'apprend à être ignoré.
+  //
+  // **Une borne large ne prouvait rien.** La première version de ce contrôle
+  // exigeait « moins du double du pire débit » : les deux versions du calcul,
+  // la juste et la fausse, y passaient au vert. Il a fallu injecter le défaut
+  // pour s'en apercevoir (`CLAUDE.md` §5 — un contrôle qui n'a jamais échoué
+  // ne prouve rien).
+  //
+  // On fige donc la VALEUR, à cinq millièmes de bar près. C'est volontairement
+  // sévère : ce chiffre décide du nombre d'arroseurs par ligne, et il n'a pas
+  // le droit de bouger en silence (`CLAUDE.md` §4 ter). S'il change pour une
+  // bonne raison — une constante relevée chez son fournisseur, une formule
+  // corrigée — cette ligne se met à jour SCIEMMENT, avec la raison en commit.
+  //
+  // **ELLE A BOUGÉ LE 23 AOÛT 2026, DE 0,442 À 0,436**, et voici la raison —
+  // sans elle, cette ligne serait un simple re-calage, exactement ce que le
+  // commentaire ci-dessus interdit.
+  //
+  // Le patron a retiré la pluviométrie de la clé de secteur (*« ne prends pas
+  // en compte la pluviométrie »*, `ARCHITECTURE.md` §150). Sur CE jardin, les
+  // deux pelouses reçoivent des buses différentes — 0,75 devant, 1,5 derrière :
+  //
+  //   avant : « Devant » 0,96 · « Derrière » 1,50   → deux secteurs séparés
+  //   après : « Devant + Derrière » 0,94 et 1,47    → les deux mêlées
+  //
+  // La coupe n'est plus au même endroit, donc la ligne la plus chargée ne porte
+  // plus le même débit, donc elle ne perd plus la même chose. **Vérifié en
+  // remettant la pluviométrie dans la clé : la valeur redevient 0,442.** Ce
+  // n'est pas la formule qui a changé, c'est le jardin qu'on lui donne.
+  const PERTE_RESEAU_ATTENDUE = 0.436;
+  dire(
+    Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
+    `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
+      "0,773 si le débit ne décroissait pas le long de la ligne)",
+  );
+
+  // **Une pression de source trop faible se DIT, et ne se rattrape pas.**
+  const faible = calculerPlan({ ...JARDIN_PRESSION, pression: 1 });
+  dire(
+    faible.pressionTropBasse === true,
+    `1 bar à la source : l'outil alerte (${faible.pressionAuxArroseurs.toFixed(2)} bar au bout)`,
+  );
+  dire(
+    p.pressionTropBasse === false,
+    "3 bar à la source : aucune alerte — un avertissement qui parle à tort s'apprend à être ignoré",
+  );
+
+  // **LA GLOBALE NE DOIT PAS SURVIVRE À L'APPEL** — et c'est gardé DEUX fois :
+  // `decouper` repart de la source à chaque passe 1, et `calculerPlan` remet à
+  // zéro dans son `finally`. Ce contrôle ne rougit donc que si les deux sautent
+  // ensemble ; retirer l'une des deux ne le fait pas broncher, et il a fallu
+  // l'essayer pour le savoir.
+  //
+  // **On le garde en le disant.** C'est une défense en profondeur, pas une
+  // sentinelle : le prétendre serait pire que de l'avoir retiré. Ce qu'il tient
+  // vraiment, c'est qu'aucun troisième chemin n'introduise la fuite plus tard —
+  // sur un serveur, deux artisans calculent en même temps.
+  calculerPlan({ seau: 10, temps: 20, pression: 1.2, zones: [{ type: "gazon", L: 30, l: 20 }] });
+  const apresUnAutre = calculerPlan(JARDIN_PRESSION);
+  dire(
+    Math.abs(apresUnAutre.pressionAuxArroseurs - p.pressionAuxArroseurs) < 1e-9,
+    `un jardin à 1,2 bar intercalé ne déteint pas sur le suivant ` +
+      `(${apresUnAutre.pressionAuxArroseurs.toFixed(3)} bar)`,
+  );
+}
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

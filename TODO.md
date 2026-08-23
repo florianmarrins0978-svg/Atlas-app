@@ -11,7 +11,7 @@ langage, et rien n'y entre sans son accord.
 
 ## Arrosage : l'interface pour discuter le plan (23 août 2026)
 
-Le plan se dessine (`ARCHITECTURE.md` §147). Reste ce qu'il a demandé le 21 :
+Le plan se dessine (`ARCHITECTURE.md` §149). Reste ce qu'il a demandé le 21 :
 *« j'ai besoin que si l'utilisateur a besoin de te demander de faire une
 modification, qu'il puisse le faire — une petite interface pour qu'il puisse
 discuter avec toi »*, avec deux bornes qu'il a posées lui-même :
@@ -38,17 +38,61 @@ inventé.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — une note sur la feuille de chantier (23 août 2026)
+
+Sa demande : *« entre "Copier l'adresse" et "Ouvrir le PDF", j'aimerais avoir un
+petit encadré où l'utilisateur peut marquer quelque chose — penser à prendre le
+broyeur, client plus disponible à partir de neuf heures »*.
+
+**Rien de tel n'existe**, vérifié plutôt que supposé (`CLAUDE.md` §5 ter) : la
+table `chantiers` n'a aucun champ libre, `notes_vocales` porte la dictée, et le
+`note` du schéma appartient aux paiements.
+
+Planche 93, `appli/note-feuille-chantier.html` : **A** le cadre toujours ouvert
+(141 px à vide sur chaque feuille), **B** une ligne discrète qui s'ouvre au doigt
+(45 px).
+
+**La seconde question décide de l'implémentation**, et il ne l'a pas soulevée :
+la note va-t-elle sur le **PDF sans les prix** — celui que ses gars emportent —
+ou reste-t-elle dans l'application ? Sur le PDF, elle devient un document qui
+sort de l'entreprise et se relit sur un chantier ; dedans seulement, elle reste
+un pense-bête.
+
+**Ce qu'il faudra, si c'est retenu :** une colonne sur `chantiers`, une action
+serveur, et l'enregistrement à la sortie du cadre — un bouton non touché
+perdrait la note d'un homme qui range son téléphone et démarre. Le champ à
+**16 px** au moins, sous quoi iOS zoome et fait sauter l'écran.
+
+---
+
+## ~~L'anneau doré d'aujourd'hui~~ — **TRANCHÉ le 23 août 2026 : on garde**
+
+Sa remarque : *« je ne comprends pas pourquoi le vingt-deux reste sélectionné,
+ce n'est pas très clair ; ça doit être un bug, je pense »*. Puis, la planche 92
+vue : *« ah, je n'avais pas compris que c'était le jour qu'on est. Peut-être le
+laisser. »*
+
+**Rien à coder.** Ce n'était pas un défaut d'affichage mais un code qu'il n'avait
+pas appris ; une fois le sens connu, l'anneau ne le gêne plus.
+
+**Ce qu'il faut en retenir, et qui vaut au-delà de ce cas :** le premier réflexe
+a été de vouloir corriger l'écran. La vraie question était *« sait-il ce que ce
+signe veut dire ? »* — et la planche a servi à le lui apprendre, pas à changer
+le produit. **Ne pas rouvrir** sans qu'il le redemande.
+
+La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
+chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
 ## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
 
 Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
-sorti trois manques du calcul d'arrosage. **Les deux premiers sont faits** (le diamètre du
-tuyau, `ARCHITECTURE.md` §144 ; la buse à la pression du chantier, §145). Reste
-le troisième, à ne coder que s'il le demande :
+sorti trois manques du calcul d'arrosage. **Les trois sont faits** — le diamètre du tuyau
+(`ARCHITECTURE.md` §144), la buse à la pression du chantier (§145), les pertes du
+réseau (§147). Ce qui suit est l'historique, et ce qui reste dehors :
 
 | Ce qui manque | Ce que ça change | Coût |
 |---|---|---|
 | ~~le débit d'une buse baisse avec la pression~~ | **FAIT le 22 août 2026** — `ARCHITECTURE.md` §145 | |
-| **les pertes de charge du réseau lui-même** | `perteDeCharge` ne sert qu'à l'amenée compteur → regard ; rien ne dit ce qui reste au DERNIER arroseur d'une ligne, ni ce que mangent l'électrovanne et les raccords | le calcul existe, il faut le promener le long de la ligne |
+| ~~les pertes de charge du réseau lui-même~~ | **FAIT le 22 août 2026** — `ARCHITECTURE.md` §147. Reste dehors : le trajet du regard à la première tête, qu'aucune saisie ne donne | |
 
 **Ne pas les coder d'office.** Le second surtout rendrait des plans plus sévères
 — donc plus d'arroseurs, donc des devis plus chers — et c'est une décision de
@@ -90,6 +134,24 @@ l'écran sans attendre la trace de son enregistrement.
 différentes ont mené la même enquête le même jour, chacune de son côté. La
 prochaine batterie rouge sur l'une de ces trois suites se joue **seule** avant
 toute autre hypothèse.
+
+## ~~Le temps passé, montré ou non~~ — **CODÉ le 23 août 2026**
+
+Sa demande du 22 août, dessinée en planche 92, puis codée le 23 après ses deux
+corrections : *« raccourcis la phrase à "votre client ne le verra pas sur son
+compte rendu" »* et *« enlève le 1 h 40 en gris à droite de la sélection de
+l'heure »*.
+
+Un interrupteur sur la ligne « Temps passé », colonne `temps_visible`
+(migration `0060`), masquage décidé au serveur, empreinte qui scelle ce que le
+client a lu. Le détail est dans `CHANGELOG.md`.
+
+**Ce qui reste ouvert, et qui est pour lui** — il ne s'est pas prononcé :
+
+| | |
+|---|---|
+| **Le réglage de départ** | Codé sur **Visible**, ce que l'application faisait déjà. S'il préfère que chaque fiche parte **Masquée**, c'est le défaut de la colonne à retourner (une migration d'une ligne) |
+| **Masquer ou ne rien saisir ?** | Aujourd'hui masquer garde la durée pour lui. S'il voulait pouvoir ne rien saisir du tout, la molette devrait pouvoir revenir à « — », ce qu'elle ne sait pas faire |
 
 ## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
 
@@ -1721,7 +1783,7 @@ groupe : sa règle « ça ne se mélange jamais », appliquée à la lettre.
 > compte la pluviométrie »*. Elle est sortie de la clé de groupe : deux buses
 > différentes peuvent désormais partager une vanne, avec des mm/h différents
 > pour une même durée d'ouverture, et **c'est lui qui arbitre à l'arrosage**.
-> Le MATÉRIEL, lui, sépare toujours (`ARCHITECTURE.md` §148). Le récit ci-dessus
+> Le MATÉRIEL, lui, sépare toujours (`ARCHITECTURE.md` §150). Le récit ci-dessus
 > est conservé pour qu'on ne rouvre pas la question en croyant l'inventer.
 
 **Ce que ça lui coûte, et il faut le lui dire :** une vanne de plus quand deux

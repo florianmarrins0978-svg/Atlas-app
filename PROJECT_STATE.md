@@ -34,7 +34,7 @@ environnement n'a aucune clé de vision — le modèle doit maintenant rendre le
 positions des zones et l'endroit de la nourrice, et **cela n'a pas pu être
 éprouvé** (`AGENTS.md`). C'est le premier essai à faire sur son banc.
 
-Le détail : `ARCHITECTURE.md` §147.
+Le détail : `ARCHITECTURE.md` §149.
 
 ### Ses deux corrections du 23 août
 
@@ -46,7 +46,7 @@ Le détail : `ARCHITECTURE.md` §147.
 | Les pièces se comptent en **« 13x »**, plus en « 13 u » | **fait**, des deux côtés |
 | Les mètres restent des mètres (« 80 ml ») | **fait** |
 
-Le détail : `ARCHITECTURE.md` §148.
+Le détail : `ARCHITECTURE.md` §150.
 
 ---
 
@@ -768,6 +768,14 @@ extérieure.
 | L'écran | `src/app/paysage/arrosage/ArrosageClient.tsx` |
 | D'où vient le débit | `src/lib/arrosage/mesure-debit.ts` |
 | Qui sait lire une image | `etatVision`, dans `src/lib/etat-ia.ts` |
+
+**CE QUI ARRIVE AU DERNIER ARROSEUR EST CALCULÉ** (22 août 2026, soir). Le
+dernier trou connu est fermé : l'électrovanne, la ligne (débit décroissant
+tronçon par tronçon), ses raccords et l'antenne Ø16 sont retirés en plus de
+l'amenée. Sur son jardin à 3 bar : **2,28 bar au dernier arroseur**, et les
+buses sont dimensionnées là-dessus. Deux passes, jamais trois. **Reste dehors :**
+le trajet du regard à la première tête, qu'aucune saisie ne donne — les deux
+écrans le disent. Détail : `ARCHITECTURE.md` §147.
 
 **LES BUSES SONT RAMENÉES À LA PRESSION DU CHANTIER** (22 août 2026). Le
 catalogue ne donne qu'une valeur par buse, à une pression de référence : le

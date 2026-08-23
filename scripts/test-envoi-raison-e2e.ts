@@ -71,7 +71,7 @@ async function main() {
   }
 
   await ouvrir.first().click();
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?");
+  await page.waitForSelector('[data-atlas="invite-dates"]');
   await page.locator("button[aria-pressed]").first().click();
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForTimeout(2500);

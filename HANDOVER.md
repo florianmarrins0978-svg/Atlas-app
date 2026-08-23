@@ -65,7 +65,61 @@ npx tsx scripts/capture-plan-arrosage.ts /tmp/captures
 ```
 
 Il a déjà attrapé quatre défauts qu'aucun test ne voyait (`ARCHITECTURE.md`
-§147). **S'en servir avant de dire qu'un changement de dessin va bien.**
+§149). **S'en servir avant de dire qu'un changement de dessin va bien.**
+
+## PRÉVENIR N'EST PAS REFUSER — et « proposée » n'est pas « forcée »
+
+Posé le 23 août 2026. **Deux de ses règles se ressemblent et disent le
+contraire ; ce qui les sépare est la délibération.**
+
+| Sa phrase | Ce qu'elle exige |
+|---|---|
+| 22 août — *« je peux proposer le 24 alors qu'un client a validé le 24, ça ne doit jamais se reproduire »* | l'application ne suggère **jamais** d'elle-même un jour plein |
+| 23 août — *« s'il juge qu'il peut rajouter un chantier, il doit pouvoir le faire quand même »* | il peut **forcer** un jour plein, en le voyant écrit « complet » |
+
+Les deux tiennent ensemble parce que `premiersJoursLibres` ne suggère aucun jour
+plein, tandis que `verifierJourPropose` **prévient sans refuser**.
+
+**Le piège, et il a été payé :** à la réponse du client, « la date figure dans
+l'envoi » ne suffit PAS à l'autoriser. Un jour proposé alors qu'il était LIBRE,
+puis rempli entre-temps, passerait sans que personne n'ait rien décidé — le
+double chantier du 22 août, dans sa version course. Seule `envois_devis.
+dates_forcees` (migration 0059) distingue les deux : c'est la photographie,
+prise à l'envoi, de ce qui était déjà plein. Elle se calcule **au serveur** ;
+reçue de l'écran, elle serait un moyen de forcer n'importe quel jour.
+
+**Ce qui reste refusé partout**, parce que ce n'est pas un jugement d'artisan :
+une date passée, ou au-delà de dix-huit mois.
+## LA PRESSION QUI DIMENSIONNE EST CELLE DU DERNIER ARROSEUR (22 août 2026)
+
+**Avant de toucher à `decouper` ou à `buseALaPression`, sachez ceci :** le
+calcul tourne **deux fois**.
+
+1. un plan à la pression de la SOURCE ;
+2. on mesure ce que perdent l'amenée et le pire réseau, on retire, on REFAIT.
+
+`pressionDeCalcul` (globale) porte la pression de la passe 2. Elle est remise à
+`null` au début de chaque `decouper` **et** dans le `finally` de `calculerPlan` —
+deux gardes, parce que sur un serveur deux artisans calculent en même temps.
+
+**Ne pas ajouter de troisième passe.** Elle irait dans le mauvais sens : moins
+de pression → moins de débit → moins de perte → la pression remonterait. On
+tournerait autour de la valeur. Deux passes gardent les pertes des débits les
+plus forts, donc le côté sûr.
+
+**Ce qui est compté :** ligne (débit décroissant, Manhattan), antenne Ø16,
+électrovanne (0,25 bar, **non relevé**), raccords (+15 %, **non relevé**).
+**Ce qui ne l'est pas :** le trajet regard → première tête. Les deux écrans le
+disent ; ne pas le taire si vous y touchez.
+
+**Les chiffres affichés viennent tous de la passe 2** — sinon deux pertes
+d'amenée différentes cohabiteraient dans le même écran.
+
+**Et `test-arrosage-calcul.ts` fige la perte à 0,442 bar ± 0,005.** Ce n'est pas
+une rigidité gratuite : ce chiffre décide du nombre d'arroseurs par ligne. S'il
+change, c'est SCIEMMENT, avec la raison dans le commit.
+
+Détail : `ARCHITECTURE.md` §147.
 
 ---
 

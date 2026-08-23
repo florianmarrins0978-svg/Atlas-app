@@ -707,8 +707,22 @@ function dessinerMateriel(d){
         ? ' <b>Et le Ø32 lui-même est en surrégime à ce débit</b> (' + nb(a.debitMax32) + ' m³/h au ' +
           'maximum) : c\'est du Ø40, ou un secteur de plus.'
         : '') +
-      ' <span class="provisoire">Ce calcul ne compte QUE l\'amenée</span> — ni les antennes, ni les ' +
-      'raccords, ni l\'électrovanne. Un « le Ø25 suffit » est donc un plancher, pas une garantie.';
+      // **CE QUI ARRIVE AU DERNIER ARROSEUR — le trou fermé le 22 août au soir.**
+      // Cette phrase disait « ce calcul ne compte QUE l'amenée ». Ce n'est plus
+      // vrai : l'électrovanne, la ligne, ses raccords et l'antenne Ø16 sont
+      // maintenant retirés. Ce qui reste dehors, c'est le trajet du regard à la
+      // première tête — et c'est CELA qu'il faut dire, pas l'ancien aveu.
+      (d.pressionAuxArroseurs > 0
+        ? ' <b>Au dernier arroseur : ' + nb(d.pressionAuxArroseurs, 2) + ' bar</b> — il s\'en ' +
+          'perd encore ' + nb(d.perteReseau, 2) + ' bar après le regard (électrovanne, ligne, ' +
+          'raccords, antenne Ø16).' +
+          (d.pressionTropBasse
+            ? ' <span class="provisoire">C\'est trop peu pour que les arroseurs se lèvent</span> : ' +
+              'raccourcissez les lignes, ajoutez une vanne, ou piquez plus en amont.'
+            : '')
+        : '') +
+      ' <span class="provisoire">Le trajet du regard à la première tête n\'est pas compté</span> — ' +
+      'il dépend de l\'endroit où la nourrice est posée. La pression annoncée est donc un plafond.';
   }
   hote.appendChild(note);
 }

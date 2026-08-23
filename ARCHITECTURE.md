@@ -13063,10 +13063,168 @@ qu'il veille — **un contrôle qui ne peut plus rougir ne prouve rien**
 (`CLAUDE.md` §5), et le prétendre serait pire que de l'avoir retiré. Ce que la
 suite éprouve à sa place, c'est la garantie qui l'a rendu inatteignable.
 
+---
+
+## 147. Ce qui arrive au dernier arroseur : le calcul en deux passes
+
+**Sa demande du 22 août 2026 au soir : « oui corrige la 1 ».** C'était le
+dernier trou connu du calcul d'arrosage.
+
+### Le problème
+
+Seule l'amenée compteur → regard était comptée (§144), et l'écran l'avouait :
+*« ce calcul ne compte QUE l'amenée — ni les antennes, ni les raccords, ni
+l'électrovanne »*. Or c'est la pression au pied du DERNIER arroseur qui décide
+de sa portée, et donc de l'espacement de toute la ligne.
+
+Sur son jardin d'exemple à 3 bar : 0,27 bar perdus dans l'amenée, **0,44 dans
+le réseau**, il arrive **2,28 bar**. Les buses étaient dimensionnées sur 3.
+
+### Ce qui est compté, et d'où ça vient
+
+| | Valeur | Source |
+|---|---|---|
+| la ligne, tronçon par tronçon | Hazen-Williams | formule, déjà au dépôt |
+| l'antenne PEBD Ø16 | calculée, 2 m par tête | longueur de sa nomenclature |
+| l'électrovanne | 0,25 bar | **non relevée** — majorant |
+| les raccords | +15 % du linéaire | **non relevée** — règle de l'art |
+
+Les deux valeurs non relevées sont posées **en majorant** : une perte
+surestimée conclut plus tôt, donc pose un arroseur de plus — le sens où se
+tromper coûte 30 € au lieu d'un chantier (`CLAUDE.md` §4 ter). Le jour où il les
+relève, elles se corrigent en un seul endroit.
+
+### Le débit décroît le long de la ligne
+
+Entre la vanne et la première tête passe le débit du réseau entier ; entre la
+première et la deuxième, ce débit moins une tête. Le calcul parcourt donc les
+têtes **dans l'ordre où le tuyau les visite** — celui que `decouper` a déjà
+établi pour colorier le plan — et somme tronçon par tronçon, en distance de
+Manhattan (un tuyau suit les axes).
+
+Compter le débit total sur toute la longueur donnerait **0,77 bar au lieu de
+0,44** : assez pour condamner des plans qui tiennent, et un avertissement qui
+parle à tort s'apprend à être ignoré.
+
+### Deux passes, et pourquoi jamais trois
+
+La pression au bout dépend des débits, qui dépendent de la pression. On ne peut
+pas commencer par la fin :
+
+1. un plan à la pression de la SOURCE — ce que faisait le calcul jusqu'ici ;
+2. on mesure ce que perdent l'amenée et le pire réseau, on retire, on REFAIT.
+
+**Une troisième passe irait dans le mauvais sens.** La seconde passe baisse les
+débits (moins de pression, moins de débit), donc ses pertes sont plus faibles,
+donc la troisième passe *remonterait* la pression. On tournerait autour de la
+valeur au lieu de s'en approcher. S'arrêter à deux garde les pertes des débits
+les plus forts : le côté prudent.
+
+**La pire perte vaut pour tout le jardin.** Dimensionner chaque réseau à sa
+propre pression donnerait des buses différentes d'une vanne à l'autre sur une
+même pelouse — deux portées, deux espacements, un plan qu'on ne sait pas poser.
+
+**Sous un demi-bar de reste** (`PLANCHER_UTILE`), on ne raffine plus : ce n'est
+plus un ajustement de portée, c'est un réseau qui ne fonctionne pas, et cela
+s'écrit à l'écran.
+
+### Ce qui reste dehors
+
+Le trajet du regard à la première tête. Il dépend de l'endroit où la nourrice
+est posée, et aucune saisie ne le donne aujourd'hui. La pression annoncée est
+donc un **plafond**, et les deux écrans le disent.
+
+### Les chiffres affichés viennent tous de la passe 2
+
+Les deux passes ne donnent pas les mêmes pertes. Publier celles de la passe 1 à
+côté d'un plan issu de la passe 2 mettrait deux pertes d'amenée différentes dans
+le même écran — on relit sans méfiance, on ne retombe pas sur ses pieds, et
+c'est toute la liste dont on doute (`CLAUDE.md` §4 bis). La pression qui a servi
+à choisir les buses reste, elle, celle de la passe 1, plus basse de quelques
+centièmes : l'écart va dans le sens sûr.
+
+### Un contrôle pris en flagrant délit
+
+Le premier contrôle de la perte bornait le résultat à « moins du double du pire
+débit ». La version juste **et** la version fausse y passaient au vert : il a
+fallu injecter le défaut pour s'en apercevoir. La valeur est désormais figée à
+cinq millièmes près, et le message nomme les deux nombres — 0,442 attendu, 0,773
+si la décroissance saute. Sévère à dessein : ce chiffre décide du nombre
+d'arroseurs par ligne.
+
+**Deux autres contrôles ont dû être réécrits**, parce que le raffinement les a
+rendus faux :
+
+- le seuil Ø25 → Ø32 **n'est plus une constante** : allonger l'amenée baisse la
+  pression au bout, donc change la buse et le débit, donc le seuil. C'est un
+  point fixe, pas une frontière fixe ; la suite éprouve l'existence de la
+  bascule, plus son emplacement au mètre ;
+- la loi en √P ne peut plus s'éprouver entre 2,5 et 10 bar : à 10 bar de source
+  il n'en arrive plus 10 au bout, et à 2,5 la portée réduite fait changer de
+  buse. Deux choses bougeaient à la fois. Elle s'éprouve désormais entre 3 et
+  3,2 bar, où la même buse est retenue, contre les pressions réellement
+  reçues.
+
+
+## 148. Le temps passé se masque au client — et ce qui est masqué ne sort pas du serveur
+
+**Sa demande du 22 août 2026**, capture de la fiche d'entretien à l'appui :
+*« il faudrait mettre un petit bouton on/off pour si l'utilisateur ne veut pas
+que le temps apparaisse sur la fiche, pouvoir l'effacer — on, le temps
+apparaîtrait sur la fiche ; off, il n'apparaîtrait pas. »* Dessiné en planche 92
+(`appli/temps-sur-la-fiche.html`), codé le 23 après deux corrections de sa part.
+
+### Une colonne à part, et non `minutes IS NULL`
+
+La solution qui n'écrit rien de neuf était tentante : masquer en remettant
+`minutes` à NULL. Elle confond deux choses qui n'ont rien à voir —
+
+| | |
+|---|---|
+| `minutes IS NULL` | **je n'ai pas chronométré** |
+| `temps_visible = false` | **je ne veux pas le lui dire** |
+
+— et elle coûte au patron le chiffre qui dit ce qu'a coûté un chantier. Il le
+ressaisirait au passage suivant, et l'application lui aurait fait perdre une
+information qu'il avait prise. D'où `passages_entretien.temps_visible`
+(migration `0060`), défaut `true` : c'est ce que l'application faisait déjà, et
+repeindre en masqués les rapports déjà partis changerait ce que des clients ont
+lu — alors que leur empreinte, elle, ne bouge pas (l'invariant du 16 août).
+
+### Le masquage se décide au SERVEUR
+
+`lireRapportParJeton` rend `minutes: null` quand c'est masqué. Rendre la durée
+puis la cacher au rendu la laisserait dans le HTML du client, à portée d'un clic
+droit — le défaut exact que le tri des prestations faites évite depuis le
+16 août, dans la même fonction. **Ce qui est masqué ne quitte pas le serveur.**
+
+### L'empreinte scelle ce que le client A LU
+
+Un temps masqué n'entre pas dans le contenu haché par `figerPassage`. Ce n'est
+pas un détail de forme : cette empreinte remplace une signature (décision du
+16 août). Y sceller une durée absente de la page du client la rendrait
+indéfendable le jour où il conteste le passage — on lui opposerait un chiffre
+qu'il n'a jamais vu. **Pour cette preuve, un temps caché est un temps qui
+n'existe pas**, et deux fiches par ailleurs identiques portent donc deux
+empreintes différentes selon qu'elles montrent leur temps ou non.
+
+### Ce qu'il a fait retirer
+
+- **Le total gris à droite de la molette** (« 1 h 45 ») : les deux listes disent
+  déjà « 1 h » et « 45 ». Sa demande du 23 août.
+- **La phrase longue sous la molette**, qui annonçait aussi que la durée restait
+  enregistrée. Elle est réduite à ce qu'il a dicté : *« Votre client ne le verra
+  pas sur son compte rendu. »* Le contrôle qui exigeait la version longue a été
+  adapté, pas contourné (`CLAUDE.md` §5 bis).
+
+### Ce qui reste ouvert
+
+Il ne s'est pas prononcé sur le **réglage de départ** — codé sur « Visible ».
+Passer à « Masqué » est le défaut de la colonne à retourner. Voir `TODO.md`.
 
 ---
 
-## 147. Le plan se DESSINE : du croquis lu au tracé de la tranchée
+## 149. Le plan se DESSINE : du croquis lu au tracé de la tranchée
 
 **Sa demande du 21 août 2026 :** *« il manque la photo, le schéma avec les
 réseaux, et l'implantation des arroseurs — les différents réseaux de
@@ -13206,7 +13364,7 @@ C'est un coup de bêche à décaler sur place, et le plan le **dit** en réserve
 
 ---
 
-## 148. La pluviométrie ne coupe plus les secteurs — et « 13x », pas « 13 u »
+## 150. La pluviométrie ne coupe plus les secteurs — et « 13x », pas « 13 u »
 
 **Ses deux décisions du 23 août 2026**, en une phrase chacune : *« ne prends pas
 en compte la pluviométrie »* et *« pour le calcul des pièces, 13x et pas
@@ -13236,7 +13394,7 @@ ensemble : l'une verse environ trois fois plus vite, et cette règle-là, il ne
 l'a pas retirée. `test-arrosage-calcul.ts` éprouve **les deux faces** — que deux
 buses peuvent se retrouver ensemble, et que deux matériels ne le peuvent pas.
 
-**Conséquence dans le plan dessiné (§147) :** un réseau ne porte plus forcément
+**Conséquence dans le plan dessiné (§149) :** un réseau ne porte plus forcément
 un seul modèle. `ReseauDessine.materiels` est devenu une LISTE, comptée par
 modèle. N'en nommer qu'un ferait commander de travers, et c'était exactement le
 raccourci que le code prenait tant que la pluviométrie garantissait l'unicité.

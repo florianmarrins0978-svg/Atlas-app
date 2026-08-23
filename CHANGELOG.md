@@ -43,13 +43,13 @@ l'on dit ce qui manque. La nourrice n'est jamais déduite : la lecture du croqui
 la cherche, et rend `null` plutôt que de la poser au piquage « pour dépanner ».
 
 **Quatre défauts trouvés à la capture, aucun par un test** (`ARCHITECTURE.md`
-§147) : les portées débordaient de la pelouse, le mot « nourrice » tombait sur
+§149) : les portées débordaient de la pelouse, le mot « nourrice » tombait sur
 une cote, deux réseaux partageant une tranchée dessinaient le même trait — le
 second effaçant le premier —, et la tranchée était du même jaune que le
 troisième réseau. Les deux derniers ne se voient que sur un jardin à trois
 réseaux, et la maquette validée n'en portait que deux.
 
-Détail et partis pris : `ARCHITECTURE.md` §147.
+Détail et partis pris : `ARCHITECTURE.md` §149.
 
 ### La pluviométrie ne sépare plus deux vannes, et les pièces se comptent en « 13x »
 
@@ -72,9 +72,169 @@ page publiée et la maquette. L'unité reste dans les données : les mètres res
 des mètres, « 80x de PE Ø25 » ne se commande pas. Une seule fonction sert les
 deux écrans.
 
-Détail : `ARCHITECTURE.md` §148.
+Détail : `ARCHITECTURE.md` §150.
+
+### « Déplacer » offrait des boutons qui n'écrivaient rien
+
+*« Cliquer sur Déplacer ne déplace pas le chantier, ça ne fait rien du tout. »*
+
+**Et c'était vrai, sur un chantier de plus d'une journée.** `departEtDuree`
+protège la durée d'un chantier long — la raccourcir lui ferait perdre des jours
+de travail en silence —, si bien que « Matin » et « Journée » y écrivent le
+**même** état : le départ. Or `quandDuChantier` rendait « journee » dès deux
+demi-journées : la pastille se posait sur « Journée », et « Matin » restait
+éteint **tout en n'écrivant rien**. Deux boutons sur trois, morts.
+
+Au-delà d'une journée, ce qu'il choisit est donc le **départ**, et l'écran le
+dit : « Journée » disparaît, la pastille tombe sur « Matin » ou « Après-midi ».
+Un bouton qui n'écrit rien se retire — le laisser en l'expliquant serait pire,
+puisqu'il faudrait le lire pour savoir de ne pas s'en servir.
+
+**Le contrôle qui tient ça ne vérifie pas un libellé mais une propriété :** pour
+chaque durée, aucun bouton offert n'écrit l'état déjà en place. Il survivra au
+prochain remaniement des mots, et il a été vu rouge contre l'ancienne règle.
+
+**`quandDuChantier` a quitté l'écran pour `src/lib/`** : c'est une règle, pas un
+dessin, et enfermée dans un composant elle ne s'éprouvait qu'au navigateur
+(`CLAUDE.md` §3). Son défaut a d'ailleurs survécu tout ce temps pour cette
+raison.
+
+**Et le refus est devenu bavard.** `if (!r.succes) return;` avalait toute erreur
+du serveur : « Déplacer » était alors indistinguable d'un bouton mort. C'est le
+piège du 11 août 2026 — *« Impossible d'enregistrer la note »* sans que personne
+puisse savoir laquelle des quatre causes s'appliquait. Journalisé plutôt que
+levé : le message d'une exception d'action serveur n'arrive jamais jusqu'à lui.
+
+---
+
+### Un jour plein se PRÉVIENT, il ne se refuse plus — et « trop tôt » disparaît
+
+*« Si l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le
+faire quand même. Nous on a mis un message disant que c'est complet. D'ailleurs
+"trop tôt" veut rien dire, on comprend pas bien, faut changer ça. »*
+
+**Le message.** « Trop tôt : proposez au moins après-demain, sinon vous vous
+mettez en défaut » énonçait la règle au lieu de dire quoi faire, obligeait à
+compter dans sa tête devant un calendrier qui affiche les dates, et le mettait
+en tort pour un appui. Il **nomme** désormais le premier jour possible, et
+l'offre d'un geste.
+
+**Le refus.** Un jour plein bloquait l'envoi. C'est sa décision du 21 août,
+appliquée là où elle manquait : *« il ne doit pas y avoir de limite d'ajout de
+chantier par jour [...] nous, on prévient juste »*. Lui seul sait qu'une taille
+de haie prend une heure.
+
+**Et c'est ici que ses DEUX règles ont failli se contredire.** Le 22 août :
+*« je peux proposer le 24 alors qu'un client a validé le 24 — ça ne doit jamais
+se reproduire »*. Le 23 : *« il doit pouvoir le faire quand même »*. Ce qui les
+sépare est la **délibération**, et rien d'autre :
+
+| | |
+|---|---|
+| il force un jour écrit « complet » | sa décision — son client peut prendre la date |
+| il propose un jour **libre** qui se remplit après | il n'a rien décidé — le client choisit ailleurs |
+
+**Ces deux cas étaient indiscernables à la lecture du lien**, et le contrôle du
+22 août l'a montré en rougissant : une date simplement « proposée » laissait
+passer le second cas, c'est-à-dire le double chantier dans sa version course.
+D'où la colonne `dates_forcees` (migration 0059) — la photographie, prise à
+l'envoi, de ce qui était déjà plein ce jour-là. **Calculée au serveur**, jamais
+reçue de l'écran : venue du navigateur, elle serait un moyen de forcer
+n'importe quelle date.
+
+**Ce qui reste refusé** : une date passée, ou au-delà de dix-huit mois. Ce ne
+sont pas des arbitrages d'artisan. Un contrôle le fixe, sans quoi le
+retournement aurait tout ouvert d'un coup.
+
+**Et l'avertissement se voit.** Il s'affichait en gris discret — la couleur des
+notes de bas de page —, or c'est le mot « complet » qu'il ne faut pas manquer
+avant d'envoyer. Le gris ne reste que pour la remarque du week-end, qui
+n'engage à rien.
+
+**Deux contrôles retournés, jamais le libellé remis** (`CLAUDE.md` §5 bis) :
+ceux qui réclamaient le refus vérifient désormais l'avertissement et la
+possibilité de passer outre.
+
+---
+
+## 2026-08-23
+
+### Le temps passé se masque au client — codé, et il reste au patron
+
+**Sa demande du 22 août, puis ses deux corrections du 23** devant la planche 92 :
+*« raccourcis la phrase à "votre client ne le verra pas sur son compte rendu" »*
+et *« enlève le 1 h 40 en gris à droite de la sélection de l'heure »*.
+
+**Un interrupteur sur la ligne « Temps passé »**, avec son état écrit en toutes
+lettres — Visible / Masqué. Un curseur nu se décode ; cet écran se regarde avec
+un gant, entre deux chantiers.
+
+**Masquer n'efface pas**, et c'est tout l'objet de la colonne `temps_visible`
+(migration `0060`). Réutiliser `minutes IS NULL` pour masquer aurait confondu
+deux choses différentes — « je n'ai pas chronométré » et « je ne veux pas le lui
+dire » — et lui aurait fait perdre le chiffre qui dit ce qu'a coûté un chantier.
+
+**Le masquage se décide au SERVEUR, jamais à l'écran.** `lireRapportParJeton`
+rend `minutes: null` quand c'est masqué : rendre la durée puis la cacher au
+rendu la laisserait dans le HTML du client, à portée d'un clic droit — le défaut
+même que le tri des prestations faites évite depuis le 16 août.
+
+**Et l'empreinte scelle ce que le client A LU.** Un temps masqué n'entre pas
+dans le contenu haché : y sceller une durée absente de sa page la rendrait
+indéfendable le jour où il conteste le passage. Deux fiches identiques, l'une
+montrant son temps et l'autre le masquant, portent donc deux empreintes
+différentes — c'est ce que le nouveau cas vérifie.
+
+**Le défaut est `true`** : c'est ce que l'application faisait déjà, et repeindre
+en masqués les rapports déjà partis changerait ce que des clients ont lu.
+
+**Le total gris à droite de la molette est parti**, à sa demande : les deux
+listes disent déjà « 1 h » et « 45 ».
+
+Trois contrôles neufs, **tous vus rougir** contre l'état dégradé qu'ils
+prétendent attraper — une lecture publique qui ignore le masquage, un masquage
+qui efface la durée, une empreinte qui scelle le temps caché.
+
+---
 
 ## 2026-08-22
+
+### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
+
+**Sa demande, capture de la fiche d'entretien à l'appui :** *« il faudrait
+mettre un petit bouton on/off pour si l'utilisateur ne veut pas que le temps
+apparaisse sur la fiche, pouvoir l'effacer — on, le temps apparaîtrait sur la
+fiche ; off, il n'apparaîtrait pas »*.
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis : une demande de geste se dessine
+avant de toucher `src/`, et « c'est tout petit » n'est pas une exception).
+La planche est à `appli/temps-sur-la-fiche.html`, n° 92.
+
+**Ce qu'elle tranche, et qui n'allait pas de soi :**
+
+· **« Effacer » ne veut pas dire OUBLIER.** La durée reste enregistrée sur le
+  passage — elle sert au patron, pas seulement au client —, et seul le compte
+  rendu l'ignore. Une phrase le dit sous la molette quand c'est éteint : sans
+  elle, il croit avoir perdu sa durée et la ressaisit au passage suivant.
+· **L'état se lit en toutes lettres**, « Visible » / « Masqué ». Un curseur nu
+  se décode ; cet écran se regarde avec un gant, entre deux chantiers.
+· **La ligne du client DISPARAÎT**, elle ne se grise pas : c'est ce que le
+  compte rendu fera pour de bon (`src/app/entretien/[jeton]/page.tsx` ne rend
+  ce paragraphe que si `rapport.minutes !== null`).
+· **Les deux côtés se voient à la fois** — sa fiche, et ce que sa cliente
+  reçoit. C'est le seul moyen de répondre à ce qu'il demande vraiment :
+  « qu'est-ce que mon client voit ? ». Une capture ne le dirait pas.
+
+**Deux questions lui sont posées sur la planche**, et la suite en dépend : le
+réglage de départ (elle s'ouvre sur « Visible », ce que l'application fait
+aujourd'hui) et le cas où il voudrait **ne rien saisir du tout**, qui serait
+autre chose qu'un masquage.
+
+Le contrôle (`scripts/verifier-maquette-temps-sur-la-fiche.mjs`, branché sur
+`npm run verifier:maquette`) **a été vu rougir** contre les trois états dégradés
+qu'il prétend attraper : une ligne cachée par une simple opacité — donc encore
+lue et encore à sa place —, la phrase « reste enregistré » supprimée, et un
+interrupteur qui survivait à l'envoi.
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 
@@ -114,6 +274,58 @@ suites tenaient l'ancien geste. La case éteinte n'existe plus, l'exception des
 tuiles de calendrier avait déménagé avec le dessin, et la fiche du jour portait
 le même `data-jour` que les cases — deux éléments pour le même jour, et une
 suite qui ne savait plus lequel viser.
+
+### Ce qui arrive au DERNIER arroseur est enfin calculé
+
+Sa demande, après qu'on lui a nommé le dernier trou connu : *« oui corrige la
+1 »*.
+
+**Le défaut.** Seule l'amenée compteur → regard était comptée, et l'écran
+l'avouait : *« ce calcul ne compte QUE l'amenée — ni les antennes, ni les
+raccords, ni l'électrovanne »*. Ce qui restait au pied du dernier arroseur d'une
+ligne, personne ne le savait. Or c'est lui qui décide : sans la pression à
+laquelle sa buse est donnée, il porte moins loin que le plan ne le suppose, et
+le coin de pelouse qu'il devait atteindre jaunit en juillet.
+
+**Sur son jardin d'exemple, à 3 bar au compteur :**
+
+| | |
+|---|---|
+| perdu dans l'amenée | 0,27 bar |
+| perdu dans le réseau | **0,44 bar** |
+| il arrive au dernier arroseur | **2,28 bar** |
+
+Le réseau perd plus que l'amenée — l'électrovanne seule pèse davantage que
+trente mètres de Ø25. C'est cela qui manquait, et les buses sont désormais
+dimensionnées sur 2,28 bar et non sur 3.
+
+**Le débit décroît le long de la ligne, et c'est tout le calcul.** Entre la
+vanne et la première tête passe le débit du réseau entier ; entre la première et
+la deuxième, ce débit moins une tête. Compter le débit total partout — le
+raccourci tentant — donnerait 0,77 bar au lieu de 0,44 : assez pour condamner
+des plans qui tiennent.
+
+**Deux passes, jamais trois.** La pression au bout dépend des débits, qui
+dépendent de la pression : on calcule un premier plan à la pression de la
+source, on mesure ce qui se perd, on refait le plan à la pression obtenue. Une
+troisième passe *remonterait* la pression (moins de débit, moins de perte) : on
+tournerait autour de la valeur au lieu de s'en approcher. S'arrêter à deux garde
+les pertes des débits les plus forts, donc le côté sûr.
+
+**Deux valeurs ne viennent pas de ses catalogues**, et cela s'écrit plutôt que de
+se taire : la perte de l'électrovanne (0,25 bar, forfait majorant) et la majoration
+pour raccords (+15 %). Posées en majorant : une perte surestimée pose un
+arroseur de plus, jamais un de moins.
+
+**Ce qui reste dehors, et que l'écran dit :** le trajet du regard à la première
+tête. Il dépend de l'endroit où la nourrice est posée, et aucune saisie ne le
+donne. La pression annoncée est donc un plafond.
+
+**Un contrôle a été pris en flagrant délit de ne rien prouver.** Il bornait la
+perte à « moins du double du pire débit » — la version juste ET la version
+fausse y passaient au vert. Il a fallu injecter le défaut pour s'en apercevoir.
+La valeur est désormais figée à cinq millièmes de bar près : ce chiffre décide
+du nombre d'arroseurs par ligne, il n'a pas le droit de bouger en silence.
 
 ### Un réseau est plafonné par SON TUYAU, plus seulement par le compteur
 

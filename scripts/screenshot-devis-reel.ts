@@ -39,7 +39,7 @@ async function main() {
   writeFileSync(`${OUT}/apercu-devis.pdf`, await reponse.body());
 
   await page.click("text=Choisir la date");
-  await page.waitForSelector("text=Une date, ou deux au choix du client ?");
+  await page.waitForSelector('[data-atlas="invite-dates"]');
   await page.screenshot({ path: `${OUT}/02-confirmation-envoi.png`, fullPage: true });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
   await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.

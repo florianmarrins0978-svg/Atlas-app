@@ -84,6 +84,15 @@ export type EtatPlan =
           /** Ce qu'un réseau en Ø25 peut porter, en m³/h. */
           plafond: number;
         };
+        /**
+         * Ce qui arrive au pied du DERNIER arroseur, en bar.
+         *
+         * **C'est lui qui décide de la portée**, pas le compteur : entre les
+         * deux se perdent l'amenée, l'électrovanne, la ligne, ses raccords et
+         * l'antenne Ø16. Le trajet du regard à la première tête n'est PAS
+         * compté — il dépend de l'endroit où la nourrice est posée.
+         */
+        pressionAuxArroseurs: number;
       };
     };
 
@@ -161,6 +170,27 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // physique. La portée, elle, suit un exposant tiré des tables des
   // constructeurs et non de ses catalogues à lui : la taire ferait passer pour
   // acquis un chiffre qui ne l'est pas (`CLAUDE.md` §4).
+  // **CE QUI ARRIVE AU DERNIER ARROSEUR, ET CE QUI N'EST PAS COMPTÉ.**
+  //
+  // Le calcul retire maintenant l'amenée, l'électrovanne, la ligne, ses
+  // raccords et l'antenne Ø16 — mais PAS le trajet du regard jusqu'à la
+  // première tête, qui dépend de l'endroit où la nourrice est posée et
+  // qu'aucune saisie ne donne. La pression annoncée est donc un plafond, et le
+  // dire vaut mieux qu'un chiffre qu'on croit exact (`CLAUDE.md` §4 ter).
+  if (plan.pressionTropBasse) {
+    reserves.push(
+      `Il ne resterait que ${plan.pressionAuxArroseurs.toFixed(1).replace(".", ",")} bar au dernier ` +
+        "arroseur : trop peu pour qu'il se lève correctement. Raccourcissez les lignes, " +
+        "ajoutez une vanne, ou piquez plus en amont."
+    );
+  } else if (plan.pressionRaffinee) {
+    reserves.push(
+      `${plan.pressionAuxArroseurs.toFixed(1).replace(".", ",")} bar au dernier arroseur ` +
+        `(${plan.perteReseau.toFixed(2).replace(".", ",")} bar perdus dans le réseau, ` +
+        `${plan.perteAmenee.toFixed(2).replace(".", ",")} dans l'amenée) — le trajet du regard ` +
+        "jusqu'à la première tête n'est pas compté"
+    );
+  }
   if (plan.porteeEstimee) {
     reserves.push(
       `${mesure.pression.toString().replace(".", ",")} bar : les portées sont réduites par rapport au ` +
@@ -213,6 +243,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
         limitePar: plan.limitePar === "tuyau" ? "tuyau" : "source",
         plafond: plan.limiteDuTuyau,
       },
+      pressionAuxArroseurs: plan.pressionAuxArroseurs,
     },
   };
 }

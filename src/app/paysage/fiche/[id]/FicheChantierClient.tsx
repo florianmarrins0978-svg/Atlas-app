@@ -5,12 +5,7 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { jourLisible } from "@/lib/jour";
 import { parFamilles } from "@/lib/prestations-entretien";
-import {
-  MINUTES_MAX,
-  PAS_MINUTES,
-  empechementEnvoi,
-  libelleMinutes,
-} from "@/lib/passage-entretien";
+import { MINUTES_MAX, PAS_MINUTES, empechementEnvoi } from "@/lib/passage-entretien";
 import { composerMessageEntretien, lienTransmission } from "@/lib/message-client";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
 import type { CiviliteChoisie } from "@/lib/civilite";
@@ -50,6 +45,7 @@ export type PassageAffiche = {
   clientCivilite: string | null;
   clientCanal: "sms" | "email" | null;
   minutes: number | null;
+  tempsVisible: boolean;
   observations: string | null;
   envoyeLe: string | null;
   jeton: string | null;
@@ -83,6 +79,14 @@ export default function FicheChantierClient({
   const [email, setEmail] = useState(passage.clientEmail);
   const [civilite, setCivilite] = useState(passage.clientCivilite);
   const [minutes, setMinutes] = useState(passage.minutes);
+  /**
+   * Le temps paraît-il sur le compte rendu du client ? — sa demande du 22 août.
+   *
+   * **Il ne gouverne QUE la page du client.** La durée reste enregistrée : elle
+   * lui dit ce qu'a coûté un chantier, et la perdre en masquant l'obligerait à
+   * la ressaisir au passage suivant (migration `0060`).
+   */
+  const [tempsVisible, setTempsVisible] = useState(passage.tempsVisible);
   const [observations, setObservations] = useState(passage.observations ?? "");
   const [envoyeLe, setEnvoyeLe] = useState(passage.envoyeLe);
   const [jeton, setJeton] = useState(passage.jeton);
@@ -138,6 +142,20 @@ export default function FicheChantierClient({
     setMinutes(valeur);
     const r = await majPassageAction(passage.id, { minutes: valeur });
     if (!r.ok) setPhrase(r.phrase);
+  }
+
+  async function basculerTemps() {
+    if (parti) return;
+    const voulu = !tempsVisible;
+    // L'écran bouge d'abord, le serveur suit — comme les coches, et pour la
+    // même raison : sous un gant, un demi-seconde d'attente se lit comme un
+    // appui manqué, et il rappuie.
+    setTempsVisible(voulu);
+    const r = await majPassageAction(passage.id, { tempsVisible: voulu });
+    if (!r.ok) {
+      setTempsVisible(!voulu);
+      setPhrase(r.phrase);
+    }
   }
 
   async function choisirClient(c: Client) {
@@ -331,10 +349,54 @@ export default function FicheChantierClient({
 
       {/* ─── LE TEMPS PASSÉ, À LA MOLETTE ───────────────────────────────────── */}
       <section className="mx-[26px] mt-[28px]">
-        <h2 className={smallCaps} style={{ color: colors.muted }}>
-          Temps passé
-        </h2>
+        {/* **L'état s'écrit en toutes lettres, à gauche du curseur.** Un
+            interrupteur nu se décode ; cet écran se regarde avec un gant, entre
+            deux chantiers. Et le mot est CONTRE son curseur : posé à droite, il
+            se rattacherait au titre de la section suivante. */}
+        <div className="flex items-center justify-between gap-3">
+          <h2 className={smallCaps} style={{ color: colors.muted }}>
+            Temps passé
+          </h2>
+          <button
+            type="button"
+            data-atlas="temps-visible"
+            aria-pressed={tempsVisible}
+            aria-label="Montrer le temps passé sur le compte rendu du client"
+            disabled={parti}
+            onClick={basculerTemps}
+            className="flex items-center gap-2 disabled:opacity-40"
+          >
+            <span className={smallCaps} style={{ color: tempsVisible ? colors.rust : colors.muted }}>
+              {tempsVisible ? "Visible" : "Masqué"}
+            </span>
+            <span
+              aria-hidden="true"
+              className="relative block h-[26px] w-[44px] rounded-full transition-colors"
+              style={
+                tempsVisible
+                  ? { backgroundColor: colors.rust }
+                  : { backgroundColor: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.line}` }
+              }
+            >
+              <span
+                className="absolute left-[3px] top-[3px] block h-[20px] w-[20px] rounded-full transition-transform"
+                style={{
+                  backgroundColor: colors.card,
+                  boxShadow: "0 1px 3px rgba(20,18,14,0.28)",
+                  transform: tempsVisible ? "translateX(18px)" : "none",
+                }}
+              />
+            </span>
+          </button>
+        </div>
         <MoletteDuree minutes={minutes} figee={parti} poser={poserMinutes} />
+        {/* La phrase qu'il a dictée le 23 août, mot pour mot. Elle n'existe que
+            masqué : un écran qui commente un réglage au repos est du bruit. */}
+        {!tempsVisible && (
+          <p className="mt-[9px] text-[12.5px] leading-[1.5]" style={{ color: colors.muted }}>
+            Votre client ne le verra pas sur son compte rendu.
+          </p>
+        )}
       </section>
 
       {/* ─── LES OBSERVATIONS ───────────────────────────────────────────────── */}
@@ -524,9 +586,6 @@ function MoletteDuree({
           </option>
         ))}
       </select>
-      <span className="text-[13px]" style={{ color: colors.muted, flex: "none" }}>
-        {libelleMinutes(minutes)}
-      </span>
     </div>
   );
 }
