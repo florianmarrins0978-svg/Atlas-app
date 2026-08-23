@@ -428,6 +428,18 @@ const MAQUETTES = [
     quoi: "Les vignettes de la fiche client OUVRENT le PDF sans proposer de l\u2019enregistrer. Trois dosages du geste \u2014 et la question qu\u2019il doit trancher : vient-il regarder, ou garder ?",
   },
   {
+    fichier: "86-ou-mettre-ma-tva.html",
+    titre: "O\u00f9 mettre \u00ab Ma TVA \u00e0 d\u00e9clarer \u00bb",
+    famille: "L\u2019argent qui ne rentre pas",
+    quoi: "\u00ab Il est cach\u00e9, on ne le voit pas trop. \u00bb Trois places, ESSAYABLES : en t\u00eate, une carte avec le montant, ou sur la ligne du mois \u2014 changez de mois, le lien suit.",
+  },
+  {
+    fichier: "85-achats-tva-deductible.html",
+    titre: "Dire que ces achats FONT la TVA d\u00e9ductible",
+    famille: "L\u2019argent qui ne rentre pas",
+    quoi: "\u00ab On ne comprend pas trop que scanner, c\u2019est pour la TVA d\u00e9ductible. \u00bb Trois fa\u00e7ons de le dire \u2014 ajoutez un ticket et regardez quel chiffre bouge.",
+  },
+  {
     fichier: "82-choisir-la-date.html",
     titre: "Choisir la date, sans l’écran du milieu",
     famille: "Le devis avant l’envoi",

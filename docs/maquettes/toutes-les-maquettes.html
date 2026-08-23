@@ -6881,14 +6881,147 @@
 #s63 .question b{ color:var(--ink); }
 
 
-/* 64 — Choisir la date, sans l’écran du milieu */
+/* 64 — Où mettre « Ma TVA à déclarer » */
 #s64{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+#s64 [hidden]{display:none !important}
+#s64, #s64 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+#s64{margin:0;background:#e8e5de;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:0 0 40px}
+#s64 header{position:sticky;top:0;z-index:5;background:#e8e5de;border-bottom:1px solid var(--line);padding:14px 16px 12px}
+#s64 h1{font-size:16px;margin:0 0 3px}
+#s64 .sous{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+#s64 .sous b{color:var(--ink)}
+#s64 .choix{display:flex;gap:8px}
+#s64 .choix button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--cream);
+    color:var(--ink-soft);border-radius:999px;font-size:13px;font-family:inherit}
+#s64 .choix button[aria-pressed="true"]{background:var(--pine);color:var(--bone);border-color:var(--pine);font-weight:600}
+#s64 main{padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+#s64 .ecran{width:100%;max-width:390px;background:var(--bone);border-radius:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.14);padding:18px 0 14px;overflow:hidden}
+#s64 .titre{font-family:Georgia,serif;font-size:33px;margin:0 24px;letter-spacing:-.02em}
+#s64 .lien-haut{display:flex;align-items:center;justify-content:space-between;margin:10px 24px 0;padding:11px 0}
+#s64 .lien-haut .txt{font-family:Georgia,serif;font-size:16px}
+#s64 .lien-haut .fl{color:var(--or);font-size:15px}
+#s64 .mention{margin:0 24px;font-size:11px;color:var(--muted);line-height:1.5}
+#s64 .carte{margin:12px 24px 0;background:var(--cream);border-radius:12px;padding:13px 15px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;width:calc(100% - 48px);
+    border:0;font-family:inherit;text-align:left}
+#s64 .carte:active{background:var(--paper)}
+#s64 .carte .cle{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
+#s64 .carte .quoi{font-family:Georgia,serif;font-size:16.5px;margin:0}
+#s64 .carte .val{font-family:Georgia,serif;font-size:22px;color:var(--pine)}
+#s64 .onglets{display:flex;gap:8px;margin:15px 24px 0}
+#s64 .onglet{border-radius:999px;padding:9px 19px;font-size:13.5px;border:1px solid var(--line);
+    background:transparent;color:var(--muted);font-family:inherit}
+#s64 .onglet.on{background:#1c1c1a;color:#fff;border-color:#1c1c1a}
+#s64 .mois{display:flex;align-items:center;justify-content:space-between;margin:20px 24px 0}
+#s64 .mois .bloc{display:flex;align-items:center;gap:4px}
+#s64 .mois .fl{color:var(--or);font-size:17px;background:none;border:0;padding:6px 8px;font-family:inherit}
+#s64 .mois .fl:disabled{opacity:.28}
+#s64 .mois .nom{font-family:Georgia,serif;font-size:24px}
+#s64 .mois .tot{font-size:16.5px}
+#s64 .sousmois{display:flex;justify-content:space-between;align-items:center;margin:9px 24px 0;gap:10px}
+#s64 .phrase{font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin:0}
+#s64 .phrase b{color:var(--ink);font-weight:600}
+#s64 .lien-mois{font-size:13px;color:var(--or);white-space:nowrap;background:none;border:0;font-family:inherit;padding:4px 0}
+#s64 .ligne{display:flex;justify-content:space-between;align-items:center;margin:0 24px;padding:12px 0;
+    border-top:1px solid var(--line-soft);gap:10px}
+#s64 .ligne .qui{font-family:Georgia,serif;font-size:18px;margin:0}
+#s64 .ligne .quand{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+#s64 .ligne .eur{font-size:15.5px;white-space:nowrap}
+#s64 .facturer{background:var(--pine);color:var(--bone);border-radius:999px;padding:10px 18px;
+    font-size:11.5px;letter-spacing:.09em;border:0;font-family:inherit;white-space:nowrap}
+#s64 .attente{color:var(--or)}
+#s64 .pied{margin:16px 24px 0;padding-top:11px;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between}
+#s64 .pied .txt{font-family:Georgia,serif;font-size:16px}
+#s64 .cout{width:100%;max-width:390px;background:var(--cream);border-left:3px solid var(--or);
+    border-radius:0 10px 10px 0;padding:13px 15px;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+#s64 .cout b{color:var(--ink)}
+#s64 .cout p{margin:0 0 7px}
+#s64 .cout p:last-child{margin:0}
+#s64 .essai{width:100%;max-width:390px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+    background:#efece4;border-radius:10px;padding:12px 14px}
+#s64 .essai b{color:var(--ink)}
+
+
+/* 65 — Dire que ces achats FONT la TVA déductible */
+#s65{
+    --bone:#f5f3ee; --cream:#faf9f5; --ink:#1c1c1a; --ink-soft:#4a4a44;
+    --muted:#8a8578; --pine:#2f3b2f; --paper:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  }
+#s65 [hidden]{display:none !important}
+#s65, #s65 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+#s65{margin:0;background:#e8e5de;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:0 0 40px}
+#s65 header{position:sticky;top:0;z-index:5;background:#e8e5de;
+    border-bottom:1px solid var(--line);padding:14px 16px 12px}
+#s65 h1{font-size:16px;margin:0 0 3px}
+#s65 .sous{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+#s65 .choix{display:flex;gap:8px}
+#s65 .choix button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--cream);
+    color:var(--ink-soft);border-radius:999px;font-size:13.5px;font-family:inherit}
+#s65 .choix button[aria-pressed="true"]{background:var(--pine);color:var(--bone);border-color:var(--pine);font-weight:600}
+#s65 main{padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+#s65 .ecran{width:100%;max-width:390px;background:var(--bone);border-radius:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.14);padding:16px 0 16px;overflow:hidden}
+#s65 .titre-mois{font-family:Georgia,serif;font-size:29px;margin:0 22px;letter-spacing:-.018em}
+#s65 .filet{height:1px;background:var(--line);margin:11px 22px 0}
+#s65 .nav{display:flex;justify-content:space-between;margin:11px 22px 0;font-size:13px;color:var(--ink-soft)}
+#s65 .tuiles{margin:13px 22px 0;background:var(--cream);border-radius:10px;overflow:hidden}
+#s65 .deux{display:flex}
+#s65 .tuile{flex:1;padding:13px 8px 15px;text-align:center;transition:background .35s}
+#s65 .tuile+.tuile{border-left:1px solid var(--line-soft)}
+#s65 .tuile .cle{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+#s65 .tuile .val{font-size:20px;font-weight:600;margin:0;transition:color .35s}
+#s65 .tuile.bouge{background:#f2eee2}
+#s65 .tuile.bouge .val{color:var(--or)}
+#s65 .tuile.visee{box-shadow:inset 0 0 0 1px var(--or);border-radius:8px}
+#s65 .reste{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-top:1px solid var(--line-soft)}
+#s65 .reste b{font-family:Georgia,serif;font-size:23px;color:var(--pine);font-weight:400}
+#s65 .cle-section{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);margin:19px 22px 8px}
+#s65 .explique{margin:-2px 22px 9px;font-size:12.5px;line-height:1.5;color:var(--ink-soft)}
+#s65 .explique b{color:var(--ink)}
+#s65 .gestes{display:flex;gap:10px;margin:0 22px}
+#s65 .geste{flex:1;border:1px solid var(--line);background:var(--cream);border-radius:999px;
+    padding:13px 6px;text-align:center;font-size:12.5px;color:var(--ink);font-family:inherit}
+#s65 .geste .ico{display:block;font-size:15px;color:var(--pine);margin-bottom:4px}
+#s65 .geste:active{background:var(--paper)}
+#s65 .rattache{margin:0 22px;padding:11px 13px;background:var(--cream);
+    border-radius:0 0 10px 10px;border-top:1px dashed var(--line)}
+#s65 .rattache .cle{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--or);margin:0 0 8px}
+#s65 .achat{display:flex;justify-content:space-between;align-items:center;margin:12px 22px 0;
+    padding-top:11px;border-top:1px solid var(--line-soft)}
+#s65 .achat .quoi{font-size:15.5px;margin:0}
+#s65 .achat .quand{font-size:12px;color:var(--muted);margin:2px 0 0}
+#s65 .achat .tva{font-size:14.5px;color:var(--ink-soft)}
+#s65 .achat.neuf{animation:s65-entre .5s ease}
+@keyframes s65-entre{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+#s65 .cout{width:100%;max-width:390px;background:var(--cream);border-left:3px solid var(--or);
+    border-radius:0 10px 10px 0;padding:13px 15px;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+#s65 .cout b{color:var(--ink)}
+#s65 .cout p{margin:0 0 7px}
+#s65 .cout p:last-child{margin:0}
+#s65 .essai{width:100%;max-width:390px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+    background:#efece4;border-radius:10px;padding:12px 14px}
+#s65 .essai b{color:var(--ink)}
+
+
+/* 66 — Choisir la date, sans l’écran du milieu */
+#s66{
     --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
     --or:#B98B47; --pin:#2f3b2f; --papier:#ece9e1;
     --trait:rgba(28,28,26,.12); --traitdoux:rgba(28,28,26,.07);
   }
 @media (prefers-color-scheme: dark){
-#s64:not([data-theme="light"]){
+#s66:not([data-theme="light"]){
       --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
       --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
       --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
@@ -6896,80 +7029,80 @@
 
   
 }
-#s64[data-theme="dark"]{
+#s66[data-theme="dark"]{
     --fond:#171613; --carte:#1e1c19; --encre:#e9e5dc; --gris:#8a867c;
     --or:#C9A15E; --pin:#8fa88c; --papier:#262420;
     --trait:rgba(233,229,220,.16); --traitdoux:rgba(233,229,220,.09);
   }
-#s64, #s64 *{box-sizing:border-box}
-#s64{
+#s66, #s66 *{box-sizing:border-box}
+#s66{
     margin:0;background:var(--fond);color:var(--encre);
     font:400 16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
     padding:36px 18px 80px;
   }
-#s64 .chapo{max-width:780px;margin:0 auto 40px}
-#s64 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
-#s64 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
-#s64 .chapo b{color:var(--encre);font-weight:500}
-#s64 .fil{
+#s66 .chapo{max-width:780px;margin:0 auto 40px}
+#s66 h1{font-size:27px;line-height:1.22;margin:0 0 14px;font-weight:500}
+#s66 .chapo p{margin:0 0 12px;color:var(--gris);font-size:14.5px}
+#s66 .chapo b{color:var(--encre);font-weight:500}
+#s66 .fil{
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     max-width:780px;margin:0 auto 40px;font-size:13px;
   }
-#s64 .etape{
+#s66 .etape{
     padding:8px 14px;border-radius:999px;border:1px solid var(--trait);
     background:var(--carte);color:var(--encre);
   }
-#s64 .etape.saute{
+#s66 .etape.saute{
     text-decoration:line-through;color:var(--gris);
     border-style:dashed;background:transparent;
   }
-#s64 .fleche{color:var(--gris)}
-#s64 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
-#s64 .colonne{width:390px;max-width:100%}
-#s64 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
-#s64 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
-#s64 .note b{color:var(--encre);font-weight:500}
-#s64 .tel{
+#s66 .fleche{color:var(--gris)}
+#s66 .grille{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1330px;margin:0 auto}
+#s66 .colonne{width:390px;max-width:100%}
+#s66 .titre-prop{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+#s66 .note{font-size:13.5px;color:var(--gris);margin:0 0 16px;min-height:96px}
+#s66 .note b{color:var(--encre);font-weight:500}
+#s66 .tel{
     width:390px;max-width:100%;height:560px;overflow:hidden;background:var(--fond);
     border:1px solid var(--trait);border-radius:22px;display:flex;flex-direction:column;
   }
-#s64 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
-#s64 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
-#s64 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
-#s64 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
-#s64 .bloc{margin-top:18px}
-#s64 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
-#s64 .signature{
+#s66 .ecran{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:22px 26px 0}
+#s66 .lib{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+#s66 .rang{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px}
+#s66 .rang.fort{font-size:17px;font-weight:500;border-top:2px solid var(--encre);padding-top:12px;margin-top:4px}
+#s66 .bloc{margin-top:18px}
+#s66 .bloc p{margin:6px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
+#s66 .signature{
     margin-top:18px;height:76px;border:1px dashed var(--trait);border-radius:8px;
   }
-#s64 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
-#s64 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
-#s64 .vert{
+#s66 .sous-sig{margin:7px 0 0;text-align:center;font-size:12px;color:var(--gris)}
+#s66 .actions{margin-top:auto;padding:18px 0 20px;border-top:1px solid var(--traitdoux)}
+#s66 .vert{
     display:block;width:100%;padding:15px;border-radius:999px;text-align:center;
     background:var(--pin);color:#f5f3ee;font-size:16px;
     font-family:ui-serif,Georgia,"Times New Roman",serif;
   }
-#s64 .lien{
+#s66 .lien{
     display:block;width:100%;margin-top:12px;text-align:center;
     font-size:14px;font-weight:500;color:var(--pin);
   }
-#s64 .creux{
+#s66 .creux{
     display:block;width:100%;margin-top:10px;padding:13px;border-radius:999px;
     text-align:center;border:1px solid var(--trait);color:var(--pin);font-size:14.5px;
   }
-#s64 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
-#s64 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
-#s64 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
-#s64 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
-#s64 .apres b{color:var(--encre);font-weight:500}
-#s64 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
-#s64 .apres th,#s64 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
-#s64 .apres th{color:var(--encre);font-weight:500}
-#s64 .question{
+#s66 .pied{margin:14px 0 0;text-align:center;font-size:12px;color:var(--gris);line-height:1.6}
+#s66 .apres{max-width:780px;margin:58px auto 0;padding-top:26px;border-top:1px solid var(--trait)}
+#s66 .apres h2{font-size:17px;font-weight:500;margin:0 0 12px}
+#s66 .apres p{margin:0 0 12px;font-size:14px;color:var(--gris)}
+#s66 .apres b{color:var(--encre);font-weight:500}
+#s66 .apres table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0 20px}
+#s66 .apres th,#s66 .apres td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--trait);color:var(--gris);vertical-align:top}
+#s66 .apres th{color:var(--encre);font-weight:500}
+#s66 .question{
     border-left:3px solid var(--or);background:rgba(185,139,71,.08);
     padding:14px 16px;border-radius:0 10px 10px 0;margin:0 0 18px;
   }
-#s64 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
+#s66 .question p{margin:0;color:var(--encre);font-size:14px;line-height:1.6}
 
 
 </style>
@@ -7261,8 +7394,18 @@
         <span class="no">63</span><span class="titre">Enregistrer le PDF depuis la fiche client</span><span class="fleche">↓</span>
         <span class="quoi">Les vignettes de la fiche client OUVRENT le PDF sans proposer de l’enregistrer. Trois dosages du geste — et la question qu’il doit trancher : vient-il regarder, ou garder ?</span>
       </a>
+      <p class="famille">L’argent qui ne rentre pas</p>
       <a class="item" href="#m64">
-        <span class="no">64</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
+        <span class="no">64</span><span class="titre">Où mettre « Ma TVA à déclarer »</span><span class="fleche">↓</span>
+        <span class="quoi">« Il est caché, on ne le voit pas trop. » Trois places, ESSAYABLES : en tête, une carte avec le montant, ou sur la ligne du mois — changez de mois, le lien suit.</span>
+      </a>
+      <a class="item" href="#m65">
+        <span class="no">65</span><span class="titre">Dire que ces achats FONT la TVA déductible</span><span class="fleche">↓</span>
+        <span class="quoi">« On ne comprend pas trop que scanner, c’est pour la TVA déductible. » Trois façons de le dire — ajoutez un ticket et regardez quel chiffre bouge.</span>
+      </a>
+      <p class="famille">Le devis avant l’envoi</p>
+      <a class="item" href="#m66">
+        <span class="no">66</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">↓</span>
         <span class="quoi">« Envoyer au client » devient « Choisir la date », en vert et sans flèche, et mène droit au calendrier. L’écran du milieu, qui redit le devis qu’on vient de fermer, saute. Trois écrans deviennent deux.</span>
       </a>
     <p class="note">
@@ -24307,10 +24450,174 @@
   <section class="etape" id="m64">
     <div class="etape-tete">
       <span class="etape-no">64</span>
-      <h2>Choisir la date, sans l’écran du milieu</h2>
+      <h2>Où mettre « Ma TVA à déclarer »</h2>
       <a class="retour" href="#sommaire">Sommaire ↑</a>
     </div>
     <div class="cadre" id="s64">
+<h1>Où mettre « Ma TVA à déclarer »</h1>
+  <p class="sous">Touchez une proposition, puis <b>changez de mois</b> avec les flèches : la C fait
+    suivre le lien.</p>
+  <div class="choix" role="group" aria-label="Proposition">
+    <button type="button" data-p="0" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-p="A" aria-pressed="false">A · en tête</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une carte</button>
+    <button type="button" data-p="C" aria-pressed="false">C · le mois</button>
+  </div>
+
+
+<main>
+  <div class="ecran">
+    <p class="titre">Terminés</p>
+
+    <!-- A -->
+    <div id="blocA" hidden>
+      <div class="lien-haut"><span class="txt">Ma TVA à déclarer</span><span class="fl">›</span></div>
+      <p class="mention">Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>
+
+    <!-- B -->
+    <div id="blocB" hidden>
+      <button class="carte" type="button">
+        <span><span class="cle">Ma TVA à déclarer</span><span class="quoi" id="carteMois">Août 2026</span></span>
+        <span class="val" id="carteVal">746,33 €</span>
+      </button>
+      <p class="mention" style="margin-top:6px">Reste à payer. Atlas prépare ce relevé, il ne le déclare pas.</p>
+    </div>
+
+    <div class="onglets">
+      <button class="onglet on" type="button">Tout</button>
+      <button class="onglet" type="button">À facturer</button>
+    </div>
+
+    <div class="mois">
+      <span class="bloc">
+        <button class="fl" type="button" id="avant" aria-label="Mois précédent">‹</button>
+        <span class="nom" id="nomMois">Août 2026</span>
+        <button class="fl" type="button" id="apres" aria-label="Mois suivant">›</button>
+      </span>
+      <span class="tot" id="totalMois">13 200,00 €</span>
+    </div>
+
+    <div class="sousmois">
+      <p class="phrase"><b id="nbAttente">8 à facturer</b>, <span id="eurAttente">8 520,00 €</span>
+        · <b id="nbFait">13 facturés</b>, <span id="eurFait">14 760,00 €</span></p>
+      <button class="lien-mois" type="button" id="lienMois" hidden>Ma TVA d'août ›</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="ligne">
+        <div><p class="qui">Mr. Bernard</p><p class="quand attente">Pas encore facturé · 300,00 € prévus</p></div>
+        <button class="facturer" type="button">FACTURER</button>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Monsieur Martins</p><p class="quand">Facturé le 12 août · Facture n° 1</p></div>
+        <span class="eur">936,00 €</span>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Chantier test — Muret Clisson</p><p class="quand attente">Pas encore facturé</p></div>
+        <button class="facturer" type="button">FACTURER</button>
+      </div>
+      <div class="ligne">
+        <div><p class="qui">Monsieur Martin</p><p class="quand">Facturé le 14 août · Facture n° 3</p></div>
+        <span class="eur">840,00 €</span>
+      </div>
+    </div>
+
+    <!-- Aujourd'hui : tout en bas, après la liste -->
+    <div class="pied" id="blocPied">
+      <span class="txt">Ma TVA à déclarer</span><span class="fl" style="color:var(--or)">›</span>
+    </div>
+    <p class="mention" id="mentionPied" style="margin-top:2px">Atlas prépare ce relevé, il ne le déclare pas.</p>
+  </div>
+
+  <div class="cout" id="cout"></div>
+
+  <p class="essai">
+    <b>Ce qui est vrai ici :</b> les trois places, les mots, les mesures, et le fait que le lien de la
+    C suive le mois affiché.<br>
+    <b>Ce qui ne l'est pas :</b> rien n'est lu en base, aucun écran ne s'ouvre au bout du lien, et la
+    liste des chantiers ne change pas d'un mois à l'autre.
+  </p>
+</main>
+    </div>
+  </section>
+
+  <section class="etape" id="m65">
+    <div class="etape-tete">
+      <span class="etape-no">65</span>
+      <h2>Dire que ces achats FONT la TVA déductible</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s65">
+<h1>Dire que ces achats font la TVA déductible</h1>
+  <p class="sous">Touchez une proposition, puis <b>ajoutez un ticket</b> : regardez quel chiffre bouge.</p>
+  <div class="choix" role="group" aria-label="Proposition">
+    <button type="button" data-p="A" aria-pressed="true">A · le titre</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une phrase</button>
+    <button type="button" data-p="C" aria-pressed="false">C · la place</button>
+  </div>
+
+
+<main>
+  <div class="ecran">
+    <p class="titre-mois">Août 2026</p>
+    <div class="filet"></div>
+    <div class="nav"><span>← Juillet 2026</span><span>Septembre 2026 →</span></div>
+
+    <div class="tuiles" id="tuiles">
+      <div class="deux">
+        <div class="tuile"><p class="cle">Collectée</p><p class="val">788,00 €</p></div>
+        <div class="tuile" id="tuileDed"><p class="cle">Déductible</p><p class="val" id="ded">41,67 €</p></div>
+      </div>
+      <div class="reste"><span>Reste à payer</span><b id="reste">746,33 €</b></div>
+    </div>
+
+    <!-- C : les gestes rattachés à la tuile -->
+    <div class="rattache" id="blocC" hidden>
+      <p class="cle">Pour faire monter la déductible</p>
+      <div class="gestes" style="margin:0">
+        <button class="geste" type="button" data-ajout="1"><span class="ico">⌗</span>Scanner un ticket</button>
+        <button class="geste" type="button" data-ajout="1"><span class="ico">✎</span>Écrire à la main</button>
+      </div>
+    </div>
+
+    <p class="cle-section" id="titreSection">Ce qui fait votre TVA déductible</p>
+    <p class="explique" id="phrase" hidden>Chaque ticket ajouté augmente la <b>TVA déductible</b>
+      ci-dessus — et fait baisser d'autant ce qui vous reste à payer.</p>
+
+    <!-- A et B : les gestes à leur place d'aujourd'hui -->
+    <div class="gestes" id="blocAB">
+      <button class="geste" type="button" data-ajout="1"><span class="ico">⌗</span>Scanner un ticket</button>
+      <button class="geste" type="button" data-ajout="1"><span class="ico">✎</span>Écrire à la main</button>
+    </div>
+
+    <div id="achats">
+      <div class="achat">
+        <div><p class="quoi">Essence</p><p class="quand">22 août · 250,00 €</p></div>
+        <span class="tva">41,67 €</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cout" id="cout"></div>
+
+  <p class="essai">
+    <b>Ce qui est vrai ici :</b> les mots, la place, et le calcul — ajouter un ticket fait monter
+    « Déductible » et baisser « Reste à payer », comme dans l'application.<br>
+    <b>Ce qui ne l'est pas :</b> rien n'est enregistré, et le scanner ne lit aucune photo — il ajoute
+    un achat d'exemple.
+  </p>
+</main>
+    </div>
+  </section>
+
+  <section class="etape" id="m66">
+    <div class="etape-tete">
+      <span class="etape-no">66</span>
+      <h2>Choisir la date, sans l’écran du milieu</h2>
+      <a class="retour" href="#sommaire">Sommaire ↑</a>
+    </div>
+    <div class="cadre" id="s66">
 <div class="chapo">
   <h1>Choisir la date, sans l’écran du milieu</h1>
   <p>
@@ -25336,6 +25643,171 @@ function armer(geste) {
 
 })(porteeDe("s24")); } catch (erreur) {
   console.error("Maquette 24 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+  // Quatre mois, avec des chiffres qui se tiennent entre eux — sans quoi on
+  // juge une maquette qui se contredit d'un appui à l'autre.
+  const MOIS = [
+    { nom: "Juin 2026",    total: 5400,  att: [3, 2100],  fait: [6, 5400],  tva: 412.5 },
+    { nom: "Juillet 2026", total: 9860,  att: [5, 4300],  fait: [9, 9860],  tva: 588.2 },
+    { nom: "Août 2026",    total: 13200, att: [8, 8520],  fait: [13, 14760], tva: 746.33 },
+    { nom: "Septembre 2026", total: 2400, att: [2, 1800], fait: [2, 2400],  tva: 158.9 },
+  ];
+  let i = 2;
+  let prop = "0";
+
+  const $ = (s) => document.querySelector(s);
+  const eur = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  // « Août 2026 » → « d'août » : l'élision se décide sur la voyelle, sinon on
+  // écrit « de août » et le mot sonne faux.
+  const duMois = (nom) => {
+    const m = nom.split(" ")[0].toLowerCase();
+    return /^[aeiouâéèêîôû]/.test(m) ? "d'" + m : "de " + m;
+  };
+
+  function rendre() {
+    const m = MOIS[i];
+    $("#nomMois").textContent = m.nom;
+    $("#totalMois").textContent = eur(m.total);
+    $("#nbAttente").textContent = m.att[0] + " à facturer";
+    $("#eurAttente").textContent = eur(m.att[1]);
+    $("#nbFait").textContent = m.fait[0] + " facturé" + (m.fait[0] > 1 ? "s" : "");
+    $("#eurFait").textContent = eur(m.fait[1]);
+    $("#carteMois").textContent = m.nom;
+    $("#carteVal").textContent = eur(m.tva);
+    $("#lienMois").textContent = "Ma TVA " + duMois(m.nom) + " ›";
+    $("#avant").disabled = i === 0;
+    $("#apres").disabled = i === MOIS.length - 1;
+  }
+
+  $("#avant").addEventListener("click", () => { if (i > 0) { i--; rendre(); } });
+  $("#apres").addEventListener("click", () => { if (i < MOIS.length - 1) { i++; rendre(); } });
+
+  const COUTS = {
+    0: "<p><b>Aujourd'hui.</b> Le lien vit tout en bas, après la liste entière. Le code assume cette place : « le relevé se consulte une fois par période, il n'a rien à faire en tête d'écran ».</p><p>L'argument tient — mais vous êtes passé devant sans le trouver, et c'est vous qui vous en servez.</p>",
+    A: "<p><b>A — en tête, dans la place libérée.</b> Le lien remonte sous le titre, là où la phrase des deux chiffres se trouvait avant qu'elle descende sous le mois. Une ligne, la même qu'en bas : rien de neuf, seulement déplacé.</p><p><b>Ce que ça coûte :</b> la TVA occupe la tête d'un écran qui parle d'abord de chantiers à facturer.</p>",
+    B: "<p><b>B — une carte, avec le chiffre.</b> Pas un lien : ce que vous venez y chercher. Le montant se lit sans ouvrir, et donne la raison d'ouvrir. Changez de mois : il suit.</p><p><b>Ce que ça coûte :</b> une requête de plus sur un écran ouvert souvent — et surtout, <b>ce montant peut se lire de travers</b>. Il dépend du rythme et du régime, et affiché loin de l'écran qui les explique, il ressemble à « ce que je dois aujourd'hui » alors qu'il n'est dû qu'à l'échéance.</p>",
+    C: "<p><b>C — sur la ligne du mois.</b> Le relevé se déclare par période, et c'est là que vous choisissez la vôtre. Changez de mois : <b>le lien suit</b> — « d'août », « de juillet ».</p><p><b>Ce que ça coûte :</b> une ligne de plus dans un en-tête déjà chargé. Et son piège : puisque le mot promet un mois, il faudra que le relevé s'ouvre bien sur CE mois-là, sans quoi la promesse est fausse.</p>",
+  };
+
+  function montrer(p) {
+    prop = p;
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.p === p))
+    );
+    $("#blocA").hidden = p !== "A";
+    $("#blocB").hidden = p !== "B";
+    $("#lienMois").hidden = p !== "C";
+    // **La mention de responsabilité suit le lien**, où qu'il aille : Atlas
+    // prépare le relevé, il ne le déclare pas (`docs/AGENT.md` §6). En C elle
+    // reste au pied, faute de place sur la ligne du mois.
+    const enBas = p === "0" || p === "C";
+    $("#blocPied").hidden = !enBas;
+    $("#mentionPied").hidden = !enBas;
+    $("#cout").innerHTML = COUTS[p];
+  }
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.addEventListener("click", () => montrer(b.dataset.p))
+  );
+
+  rendre();
+  montrer("0");
+
+})(porteeDe("s64")); } catch (erreur) {
+  console.error("Maquette 64 — son script a échoué :", erreur);
+}
+
+try { (function (document) {
+
+  // Les achats d'exemple, ajoutés l'un après l'autre. Des montants ronds et
+  // plausibles : ce qu'un élagueur achète vraiment dans un mois.
+  const EXEMPLES = [
+    { quoi: "Gazole",              ttc: 90,  jour: "23 août" },
+    { quoi: "Chaîne de tronçonneuse", ttc: 48,  jour: "23 août" },
+    { quoi: "Huile de chaîne",     ttc: 24,  jour: "24 août" },
+    { quoi: "Gants et visière",    ttc: 62,  jour: "24 août" },
+  ];
+  const TAUX = 0.20;
+  let rang = 0;
+  let deductible = 41.67;
+  const COLLECTEE = 788;
+
+  const eur = (n) =>
+    n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+
+  const $ = (s) => document.querySelector(s);
+
+  function rendreChiffres() {
+    $("#ded").textContent = eur(deductible);
+    $("#reste").textContent = eur(COLLECTEE - deductible);
+  }
+
+  function ajouterTicket() {
+    const e = EXEMPLES[rang % EXEMPLES.length];
+    rang++;
+    // La TVA d'un achat TTC à 20 % : c'est le calcul de l'application.
+    const tva = e.ttc - e.ttc / (1 + TAUX);
+    deductible += tva;
+
+    const ligne = document.createElement("div");
+    ligne.className = "achat neuf";
+    ligne.innerHTML =
+      '<div><p class="quoi"></p><p class="quand"></p></div><span class="tva"></span>';
+    ligne.querySelector(".quoi").textContent = e.quoi;
+    ligne.querySelector(".quand").textContent = e.jour + " · " + eur(e.ttc);
+    ligne.querySelector(".tva").textContent = eur(tva);
+    $("#achats").prepend(ligne);
+
+    rendreChiffres();
+
+    // **La tuile se signale une seconde.** Sans cela, le chiffre change hors du
+    // champ de vision : sur 390 px, le doigt est en bas, la tuile en haut — et
+    // c'est précisément le lien qu'il ne voyait pas.
+    const t = $("#tuileDed");
+    t.classList.remove("bouge");
+    void t.offsetWidth;
+    t.classList.add("bouge");
+    setTimeout(() => t.classList.remove("bouge"), 900);
+  }
+
+  document.querySelectorAll("[data-ajout]").forEach((b) =>
+    b.addEventListener("click", ajouterTicket)
+  );
+
+  const COUTS = {
+    A: "<p><b>A — le titre le dit.</b> « Vos achats » devient « Ce qui fait votre TVA déductible ». Un titre au lieu d'un autre, rien de neuf à l'écran.</p><p><b>Ce que ça coûte :</b> le titre est long, et il nomme un calcul plutôt qu'une chose. Dans votre poche c'est un ticket d'essence ; « TVA déductible », c'est ce que l'administration en fait.</p>",
+    B: "<p><b>B — le titre reste, une phrase explique.</b> « Vos achats » ne bouge pas — c'est le mot juste pour ce que vous ajoutez. La ligne dessous dit le sens de cause à effet, et vers où regarder.</p><p><b>Ce que ça coûte :</b> deux lignes de gris sur un écran que vous voulez court. Ce qu'elles apportent : elles disent que scanner <b>fait baisser ce que vous devez</b> — la raison pour laquelle vous le faites.</p>",
+    C: "<p><b>C — les gestes remontent contre la tuile.</b> Pas un mot de plus : les deux boutons quittent le bas et se posent sous « Déductible ». La place dit le lien mieux qu'une phrase.</p><p><b>Ce que ça coûte, et ce n'est pas rien :</b> les tuiles sont ce que vous venez LIRE pour recopier deux chiffres. On y accroche maintenant deux boutons, et l'encadré cesse d'être un bloc qu'on lit d'un coup d'œil.</p>",
+  };
+
+  function montrer(p) {
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.p === p))
+    );
+    $("#titreSection").textContent =
+      p === "A" ? "Ce qui fait votre TVA déductible" : "Vos achats";
+    $("#phrase").hidden = p !== "B";
+    $("#blocC").hidden = p !== "C";
+    $("#blocAB").hidden = p === "C";
+    $("#tuileDed").classList.toggle("visee", p === "C");
+    // En C, la section « Vos achats » ne porte plus que la liste : le titre se
+    // rapproche d'elle.
+    $("#titreSection").style.marginTop = p === "C" ? "16px" : "19px";
+    $("#cout").innerHTML = COUTS[p];
+  }
+
+  document.querySelectorAll(".choix button").forEach((b) =>
+    b.addEventListener("click", () => montrer(b.dataset.p))
+  );
+
+  rendreChiffres();
+  montrer("A");
+
+})(porteeDe("s65")); } catch (erreur) {
+  console.error("Maquette 65 — son script a échoué :", erreur);
 }
 </script>
 
